@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.19 2001/02/26 03:50:43 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.19.2.1 2001/03/28 03:34:12 segher Exp $
 
  ********************************************************************/
 
@@ -69,6 +69,9 @@ typedef struct {
   float ***tonecurves;
   float **peakatt;
   float *noisemedian;
+  int   *inoisemedian;
+  int   *barknoisewindowlo;
+  int   *barknoisewindowhi;
   float *noiseoffset;
 
   float *ath;
