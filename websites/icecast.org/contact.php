@@ -23,10 +23,6 @@ webmaster@xiph.org
 </pre>
 
 <p>Email the webmaster if you notice a broken link, outdated or inaccurate information, or another flaw on icecast.org.</p>
-<pre>
-team@icecast.org 
-</pre>
-<p>Email the team if you have questions about Icecast and don't feel like signing up for one (or more) of the mailing lists.</p>
 </div>
 <div class="roundbottom">
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
