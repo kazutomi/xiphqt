@@ -4,12 +4,11 @@ AUTOMAKE_OPTIONS = foreign
 
 bin_PROGRAMS = vorbiscomment
 
-INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@ -I$(top_srcdir)/include
+INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@
 
-vorbiscomment_LDADD = @VORBIS_LIBS@ @OGG_LIBS@ @LIBICONV@ @SHARE_LIBS@
-vorbiscomment_DEPENDENCIES = @SHARE_LIBS@
+vorbiscomment_LDADD = @VORBIS_LIBS@ @OGG_LIBS@
 
-vorbiscomment_SOURCES = vcedit.c vcedit.h vcomment.c
+vorbiscomment_SOURCES = vcedit.c vcedit.h vcomment.c getopt.c getopt.h getopt1.c
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"

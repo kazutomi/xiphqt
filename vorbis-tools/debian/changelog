@@ -1,10 +1,3 @@
-vorbis-tools (1.0rc2-1) unstable; urgency=low
-
-  * New upstream. (Closes: #98059, #99050)
-  * Build with empty diff.gz to fix bug. (Closes: #104473)
-
- -- Christopher L Cheney <ccheney@debian.org>  Mon, 13 Aug 2001 00:00:00 -0500
-
 vorbis-tools (1.0rc1-1) unstable; urgency=low
 
   * New upstream. (Closes: #87697, #87907, #98937)

@@ -3,13 +3,12 @@
 AUTOMAKE_OPTIONS = foreign
 
 bin_PROGRAMS = ogginfo
-mandir = @MANDIR@
+mandir = $(datadir)/man
 man_MANS = ogginfo.1
 
 INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@
 
-ogginfo_LDADD = @VORBIS_LIBS@ @OGG_LIBS@ @LIBICONV@ @SHARE_LIBS@
-ogginfo_DEPENDENCIES = @SHARE_LIBS@
+ogginfo_LDADD = @VORBISFILE_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@
 
 ogginfo_SOURCES = ogginfo.c
 

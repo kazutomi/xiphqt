@@ -285,10 +285,9 @@ int aiff_open(FILE *in, oe_enc_opt *opt, unsigned char *buf, int buflen)
 	{
 		/* From here on, this is very similar to the wav code. Oh well. */
 		
-		if(format.rate != 44100 && format.rate != 48000)
-			fprintf(stderr, "Warning: Vorbis is not currently tuned for this input (%.3f kHz).\n"
-				" At other than 44.1/48 kHz quality will be degraded.\n",
-				(float)format.rate * 1.0e-3);
+		if(format.rate != 44100)
+			fprintf(stderr,"Warning: Vorbis is currently untuned for input\n"
+					       "at other than 44.1kHz, quality may be degraded.\n");
 
 		opt->rate = format.rate;
 		opt->channels = format.channels;
@@ -336,7 +335,7 @@ int wav_id(unsigned char *buf, int len)
 
 int wav_open(FILE *in, oe_enc_opt *opt, unsigned char *oldbuf, int buflen)
 {
-	unsigned char buf[16];
+	unsigned char buf[18];
 	unsigned int len;
 	int samplesize;
 	wav_fmt format;
@@ -351,7 +350,7 @@ int wav_open(FILE *in, oe_enc_opt *opt, unsigned char *oldbuf, int buflen)
 	if(!find_wav_chunk(in, "fmt ", &len))
 		return 0; /* EOF */
 
-	if(len < 16) 
+	if(len>18 || len < 16) 
 	{
 		fprintf(stderr, "Warning: Unrecognised format chunk in WAV header\n");
 		return 0; /* Weird format chunk */
@@ -368,16 +367,11 @@ int wav_open(FILE *in, oe_enc_opt *opt, unsigned char *oldbuf, int buflen)
 				"Warning: INVALID format chunk in wav header.\n"
 				" Trying to read anyway (may not work)...\n");
 
-	if(fread(buf,1,16,in) < 16)
+	if(fread(buf,1,len,in) < len)
 	{
 		fprintf(stderr, "Warning: Unexpected EOF in reading WAV header\n");
 		return 0;
 	}
-
-	/* Deal with stupid broken apps. Don't use these programs.
-	 */
-	if(len - 16 > 0 && !seek_forward(in, len-16))
-	    return 0;
 
 	format.format =      READ_U16_LE(buf); 
 	format.channels =    READ_U16_LE(buf+2); 
@@ -412,11 +406,10 @@ int wav_open(FILE *in, oe_enc_opt *opt, unsigned char *oldbuf, int buflen)
 	if( format.align == format.channels*samplesize &&
 			format.samplesize == samplesize*8)
 	{
-		if(format.samplerate != 44100 && format.samplerate != 48000)
-			fprintf(stderr, "Warning: Vorbis is not currently tuned for this input (%.3f kHz).\n"
-					" At other than 44.1/48 kHz quality will be degraded.\n",
-					(float)format.samplerate * 1.0e-3);
-
+		if(format.samplerate != 44100)
+			fprintf(stderr, "Warning: Vorbis is currently not tuned for input\n"
+							" at other than 44.1kHz. Quality may be somewhat\n"
+							" degraded.\n");
 		/* OK, good - we have the one supported format,
 		   now we want to find the size of the file */
 		opt->rate = format.samplerate;
@@ -553,10 +546,9 @@ int raw_open(FILE *in, oe_enc_opt *opt)
 	wav_fmt format; /* fake wave header ;) */
 	wavfile *wav = malloc(sizeof(wavfile));
 
-	if(opt->rate != 44100 && opt->rate != 48000)
-		fprintf(stderr, "Warning: Vorbis is not currently tuned for this input (%.3f kHz).\n"
-				" At other than 44.1/48 kHz quality will be significantly degraded.\n",
-				(float)opt->rate * 1.0e-3);
+	if(opt->rate != 44100)
+		fprintf(stderr,"Warning: Vorbis is currently untuned for input\n"
+				       "at other than 44.1kHz, quality may be degraded.\n");
 
 	/* construct fake wav header ;) */
 	format.format =      2; 

@@ -1,3 +1,4 @@
+# ogg.m4
 # Configure paths for libogg
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
@@ -12,11 +13,11 @@ dnl
 AC_ARG_WITH(ogg-prefix,[  --with-ogg-prefix=PFX   Prefix where libogg is installed (optional)], ogg_prefix="$withval", ogg_prefix="")
 AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run a test Ogg program],, enable_oggtest=yes)
 
-  if test "x$ogg_prefix" != "x"; then
+  if test "x$ogg_prefix" != "xNONE" ; then
     ogg_args="$ogg_args --prefix=$ogg_prefix"
     OGG_CFLAGS="-I$ogg_prefix/include"
     OGG_LIBS="-L$ogg_prefix/lib"
-  elif test "x$prefix" != "xNONE"; then
+  elif test "$prefix" != ""; then
     ogg_args="$ogg_args --prefix=$prefix"
     OGG_CFLAGS="-I$prefix/include"
     OGG_LIBS="-L$prefix/lib"
@@ -94,68 +95,7 @@ int main ()
   rm -f conf.oggtest
 ])
 
-dnl Shamelessly stolen from Joerg Schilling's star.
-dnl Copyright 1998 J. Schilling
-
-dnl Checks if mmap() works to get shared memory
-dnl Defines HAVE_SMMAP on success.
-AC_DEFUN(AC_FUNC_SMMAP,
-[AC_CACHE_CHECK([if mmap works to get shared memory], ac_cv_func_smmap,
-                [AC_TRY_RUN([
-#include <sys/types.h>
-#include <sys/mman.h>
-
-char *
-mkshare()
-{
-        int     size = 8192;
-        int     f;
-        char    *addr;
-
-        if ((f = open("/dev/zero", 2)) < 0)
-                exit(1);
-        addr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, f, 0);
-        if (addr == (char *)-1)
-                exit(1);
-        close(f);
-
-        return (addr);
-}
-
-main()
-{
-        char    *addr;
-        
-        addr = mkshare(8192);
-        *addr = 'I';
-
-        switch (fork()) {
-
-        case -1:
-                printf("help\n"); exit(1);
-
-        case 0: /* child */
-                *addr = 'N';
-                _exit(0);
-                break;
-        default: /* parent */
-                wait(0);
-                sleep(1);
-                break;
-        }
-
-        if (*addr != 'N')
-                exit(1);
-        exit(0);
-}
-], 
-                [ac_cv_func_smmap=yes],
-                [ac_cv_func_smmap=no],
-                [ac_cv_func_smmap=no])])
-if test $ac_cv_func_smmap = yes; then
-  AC_DEFINE(HAVE_SMMAP)
-fi])
-
+# vorbis.m4
 # Configure paths for libvorbis
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
@@ -170,11 +110,11 @@ dnl
 AC_ARG_WITH(vorbis-prefix,[  --with-vorbis-prefix=PFX   Prefix where libvorbis is installed (optional)], vorbis_prefix="$withval", vorbis_prefix="")
 AC_ARG_ENABLE(vorbistest, [  --disable-vorbistest       Do not try to compile and run a test Vorbis program],, enable_vorbistest=yes)
 
-  if test "x$vorbis_prefix" != "x" ; then
+  if test "x$vorbis_prefix" != "xNONE" ; then
     vorbis_args="$vorbis_args --prefix=$vorbis_prefix"
     VORBIS_CFLAGS="-I$vorbis_prefix/include"
     VORBIS_LIBDIR="-L$vorbis_prefix/lib"
-  elif test "x$prefix" != "xNONE"; then
+  elif test "$prefix" != ""; then
     vorbis_args="$vorbis_args --prefix=$prefix"
     VORBIS_CFLAGS="-I$prefix/include"
     VORBIS_LIBDIR="-L$prefix/lib"
@@ -272,11 +212,11 @@ dnl
 AC_ARG_WITH(ao-prefix,[  --with-ao-prefix=PFX   Prefix where libao is installed (optional)], ao_prefix="$withval", ao_prefix="")
 AC_ARG_ENABLE(aotest, [  --disable-aotest       Do not try to compile and run a test ao program],, enable_aotest=yes)
 
-  if test "x$ao_prefix" != "x"; then
+  if test "x$ao_prefix" != "xNONE" ; then
     ao_args="$ao_args --prefix=$ao_prefix"
     AO_CFLAGS="-I$ao_prefix/include"
     AO_LIBS="-L$ao_prefix/lib"
-  elif test "x$prefix" != "xNONE"; then
+  elif test "$prefix" != ""; then
     ao_args="$ao_args --prefix=$prefix"
     AO_CFLAGS="-I$prefix/include"
     AO_LIBS="-L$prefix/lib"
@@ -361,88 +301,64 @@ int main ()
   rm -f conf.aotest
 ])
 
-dnl This macros shamelessly stolen from
-dnl http://gcc.gnu.org/ml/gcc-bugs/2001-06/msg01398.html.
-dnl Written by Bruno Haible.
+dnl Shamelessly stolen from Joerg Schilling's star.
+dnl Copyright 1998 J. Schilling
 
-AC_DEFUN([AM_ICONV],
-[
-  dnl Some systems have iconv in libc, some have it in libiconv (OSF/1 and
-  dnl those with the standalone portable GNU libiconv installed).
+dnl Checks if mmap() works to get shared memory
+dnl Defines HAVE_SMMAP on success.
+AC_DEFUN(AC_FUNC_SMMAP,
+[AC_CACHE_CHECK([if mmap works to get shared memory], ac_cv_func_smmap,
+                [AC_TRY_RUN([
+#include <sys/types.h>
+#include <sys/mman.h>
 
-  AC_ARG_WITH([libiconv-prefix],
-[  --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib], [
-    for dir in `echo "$withval" | tr : ' '`; do
-      if test -d $dir/include; then CPPFLAGS="$CPPFLAGS -I$dir/include"; fi
-      if test -d $dir/lib; then LDFLAGS="$LDFLAGS -L$dir/lib"; fi
-    done
-   ])
+char *
+mkshare()
+{
+        int     size = 8192;
+        int     f;
+        char    *addr;
 
-  AC_CACHE_CHECK(for iconv, am_cv_func_iconv, [
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-    AC_TRY_LINK([#include <stdlib.h>
-#include <iconv.h>],
-      [iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);],
-      am_cv_func_iconv=yes)
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_LIBS="$LIBS"
-      LIBS="$LIBS -liconv"
-      AC_TRY_LINK([#include <stdlib.h>
-#include <iconv.h>],
-        [iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);],
-        am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes)
-      LIBS="$am_save_LIBS"
-    fi
-  ])
-  if test "$am_cv_func_iconv" = yes; then
-    AC_DEFINE(HAVE_ICONV, 1, [Define if you have the iconv() function.])
-    AC_MSG_CHECKING([for iconv declaration])
-    AC_CACHE_VAL(am_cv_proto_iconv, [
-      AC_TRY_COMPILE([
-#include <stdlib.h>
-#include <iconv.h>
-extern
-#ifdef __cplusplus
-"C"
-#endif
-#if defined(__STDC__) || defined(__cplusplus)
-size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-], [], am_cv_proto_iconv_arg1="", am_cv_proto_iconv_arg1="const")
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"])
-    am_cv_proto_iconv=`echo "[$]am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    AC_MSG_RESULT([$]{ac_t:-
-         }[$]am_cv_proto_iconv)
-    AC_DEFINE_UNQUOTED(ICONV_CONST, $am_cv_proto_iconv_arg1,
-      [Define as const if the declaration of iconv() needs const.])
-  fi
-  LIBICONV=
-  if test "$am_cv_lib_iconv" = yes; then
-    LIBICONV="-liconv"
-  fi
-  AC_SUBST(LIBICONV)
-])
+        if ((f = open("/dev/zero", 2)) < 0)
+                exit(1);
+        addr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, f, 0);
+        if (addr == (char *)-1)
+                exit(1);
+        close(f);
 
-dnl From Bruno Haible.
-dnl
-AC_DEFUN([AM_LANGINFO_CODESET],
-[
-  AC_CACHE_CHECK([for nl_langinfo and CODESET], am_cv_langinfo_codeset,
-    [AC_TRY_LINK([#include <langinfo.h>],
-      [char* cs = nl_langinfo(CODESET);],
-      am_cv_langinfo_codeset=yes,
-      am_cv_langinfo_codeset=no)
-    ])
-  if test $am_cv_langinfo_codeset = yes; then
-    AC_DEFINE(HAVE_LANGINFO_CODESET, 1,
-      [Define if you have <langinfo.h> and nl_langinfo(CODESET).])
-  fi
-])
+        return (addr);
+}
+
+main()
+{
+        char    *addr;
+        
+        addr = mkshare(8192);
+        *addr = 'I';
+
+        switch (fork()) {
+
+        case -1:
+                printf("help\n"); exit(1);
+
+        case 0: /* child */
+                *addr = 'N';
+                _exit(0);
+                break;
+        default: /* parent */
+                wait(0);
+                sleep(1);
+                break;
+        }
+
+        if (*addr != 'N')
+                exit(1);
+        exit(0);
+}
+], 
+                [ac_cv_func_smmap=yes],
+                [ac_cv_func_smmap=no],
+                [ac_cv_func_smmap=no])])
+if test $ac_cv_func_smmap = yes; then
+  AC_DEFINE(HAVE_SMMAP)
+fi])

@@ -11,12 +11,10 @@ man_MANS = ogg123.1
 INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@ @AO_CFLAGS@
 
 ogg123_LDADD = @VORBISFILE_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ @AO_LIBS@ \
-		@SOCKET_LIBS@ @SHARE_LIBS@
-ogg123_DEPENDENCIES = @SHARE_LIBS@
+		@SOCKET_LIBS@ -lcurl
 
-ogg123_SOURCES = ogg123.c ao_interface.c buffer.c ogg123.h buffer.h
-## Comment the above and uncomment the next line to disable the buffer support
-##ogg123_SOURCES = ogg123.c ao_interface.c nullbuffer.c ogg123.h buffer.h
+ogg123_SOURCES = ogg123.c ao_interface.c buffer.c getopt.c getopt1.c curl_interface.c options.c status.c \
+	         ogg123.h ao_interface.h buffer.h getopt.h           curl_interface.h options.h status.h
 
 EXTRA_DIST = $(man_MANS) $(doc_DATA)
 

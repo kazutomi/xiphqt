@@ -1,5 +1,20 @@
-/* This file is part of ogg123, an Ogg Vorbis player. See ogg123.c
- * for copyright information. */
+/********************************************************************
+ *                                                                  *
+ * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS BEFORE DISTRIBUTING.                     *
+ *                                                                  *
+ * THE Ogg123 SOURCE CODE IS (C) COPYRIGHT 2000-2001                *
+ * by Kenneth C. Arnold <ogg@arnoldnet.net> AND OTHER CONTRIBUTORS  *
+ * http://www.xiph.org/                                             *
+ *                                                                  *
+ ********************************************************************
+
+ last mod: $Id: ogg123.h,v 1.7.2.12 2001/08/23 01:15:46 kcarnold Exp $
+
+ ********************************************************************/
+
 #ifndef __OGG123_H
 #define __OGG123_H
 
@@ -13,39 +28,52 @@
 #include <alloca.h>
 #endif
 
-/* For facilitating output to multiple devices */
-typedef struct devices_s {
-  int driver_id;
-  ao_device *device;
-  ao_option *options;
-  char *filename;
-  struct devices_s *next_device;
-} devices_t;
+#include "ao_interface.h"
+#include "curl_interface.h"
+#include "status.h"
 
 typedef struct ogg123_options_s {
-  char *read_file;            /* File to decode */
-  char shuffle;               /* Should we shuffle playing? */
-  signed short int verbose;   /* Verbose output if > 0, quiet if < 0 */
-  signed short int quiet;     /* Be quiet (no title) */
-  double seekpos;             /* Amount to seek by */
-  FILE *instream;             /* Stream to read from. */
-  devices_t *outdevices;      /* Streams to write to. */
-  int buffer_size;            /* Size of the buffer in chunks. */
-  int rate, channels;         /* playback params for opening audio devices */
-  int delay;                  /* delay for skip to next song */
-} ogg123_options_t;           /* Changed in 0.6 to be non-static */
+  struct {
+    char *read_file;            /* File to decode */
+    char shuffle;               /* Should we shuffle playing? */
+    double seekpos;             /* Amount to seek by */
+    int delay;                  /* delay for skip to next song */
+    int nth;                    /* Play every nth chunk */
+    int ntimes;                 /* Play every chunk n times */
+  } playOpts;
+  struct {
+    long int verbose;           /* Verbose output if > 1, quiet if 0 */
+    
+    /* Status options:
+     * stats[0] - currently playing file / stream
+     * stats[1] - current playback time
+     * stats[2] - remaining playback time
+     * stats[3] - total playback time
+     * stats[4] - instantaneous bitrate
+     * stats[5] - average bitrate (not yet implemented)
+     * stats[6] - input buffer fill %
+     * stats[7] - input buffer status
+     * stats[8] - output buffer fill %
+     * stats[9] - output buffer status
+     */
+    Stat_t stats[10];
+  } statOpts;
+  InputOpts_t inputOpts;
+  struct {
+    buf_t *buffer;
+    long BufferSize;
+    float Prebuffer;
+    int rate, channels;         /* playback params for opening audio devices */
+    char devicesOpen;
+    devices_t *devices;
+    char *default_device;
+  } outputOpts;
+} ogg123_options_t;
 
-/* This goes here because it relies on some of the above. */
-#include "buffer.h"
-
-devices_t *append_device(devices_t * devices_list, int driver_id,
-                         ao_option * options, char *filename);
-void devices_write(void *ptr, size_t size, devices_t * d);
 void usage(void);
-int add_option(ao_option ** op_h, const char *optstring);
-void play_file(ogg123_options_t opt);
-int get_tcp_socket(void); /* Will be going soon. */
-FILE *http_open(char *server, int port, char *path); /* ditto */
-int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t ** buffer);
+void play_file();
+int open_audio_devices();
+void SigHandler (int ignored);
+void ogg123_onexit (int exitcode, void *arg);
 
 #endif /* !defined(__OGG123_H) */

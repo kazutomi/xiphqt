@@ -53,7 +53,7 @@ section for a list of devices.  Any number of devices may be specified.
 Specify output file for file devices.  The filename "-" writes to standard
 out.  If the file already exists,
 .B ogg123
-will overwrite it.
+will abort.
 .IP "-h, --help"
 Show command help.
 .IP "-k n, --skip n"
@@ -200,9 +200,9 @@ Use the ESD driver
 .RE
 .PP
 
-Use the WAV driver with the output file, "test.wav":
+Use the WAV driver with the default output file, "output.wav":
 .RS
-.B ogg123 -d wav -f test.wav test.ogg
+.B ogg123 -d wav test.ogg
 .RE
 .PP
 
@@ -246,12 +246,16 @@ than one or two seconds.
 
 .SH NOTES
 
-The use of
+Configuration for many parameters can be specified in 
 .B /etc/ogg123rc
 and
-.B ~/.ogg123rc
-has been removed in favor of the configuration system provided by
-libao.  The ability to override libao will be added in a future version.
+.B ~/.ogg123rc.
+To see the available configuration options, use:
+.RS
+.B ogg123 -c
+.RS
+This needs more documentation.
+
 
 .SH FILES
 
