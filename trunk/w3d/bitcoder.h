@@ -10,7 +10,7 @@
 #define OUTPUT_BIT_DIRECT(coder,bit)      bitcoder_write_bit(coder,bit)
 #define INPUT_BIT_DIRECT(coder)           bitcoder_read_bit(coder)
 #define ENTROPY_CODER                     BitCoderState
-#define ENTROPY_ENCODER_INIT(coder,limit) bitcoder_encoder_init(coder,limit)
+#define ENTROPY_ENCODER_init(coder,limit) bitcoder_coder_init(coder,limit)
 #define ENTROPY_ENCODER_DONE(coder)       bitcoder_encoder_done(coder)
 #define ENTROPY_ENCODER_FLUSH(coder)      bitcoder_flush(coder)
 #define ENTROPY_DECODER_INIT(coder,bitstream,limit) \
@@ -18,7 +18,7 @@
 #define ENTROPY_DECODER_DONE(coder)       /* nothing to do ... */
 #define ENTROPY_CODER_BITSTREAM(coder)    (coder)->bitstream
 
-#define ENTROPY_CODER_MPS(coder)          1
+#define ENTROPY_CODER_SYMBOL(coder)       1
 #define ENTROPY_CODER_RUNLENGTH(coder)    0
 #define ENTROPY_CODER_SKIP(coder,skip)
 
@@ -124,7 +124,7 @@ int bitcoder_read_bit (BitCoderState *s)
    s->byte <<= 1; 
    s->bit_count--;
 
-   return ret;
+   return ret & 1;
 }
 
 

@@ -1,7 +1,7 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O2 -Wall
+CFLAGS = -pg -O2 -Wall -I../ogg/ogg/include
 
 # use 16 bit signed integers as wavelet coefficients
 CFLAGS+= -DTYPE=int16_t
@@ -13,23 +13,23 @@ CFLAGS+= -DTYPE_BITS=10
 CFLAGS+= -DRLECODER
 
 # simple malloc debugging
-CFLAGS+= -DDBG_MEMLEAKS
+#CFLAGS+= -DDBG_MEMLEAKS
 
 # dump a lot debug images
-CFLAGS+= -DDBG_XFORM
+#CFLAGS+= -DDBG_XFORM
 
 # dump ogg packet infos
-CFLAGS+= -DDBG_OGG
+#CFLAGS+= -DDBG_OGG
 
 # disable assertions
 #CFLAGS+= -DNDEBUG
 
-LFLAGS = -g -lefence -logg
+LFLAGS = -pg -lefence -logg -L../ogg/ogg/src/.libs
 
-OBJS = mem.o pnm.o huffman.o wavelet.o wavelet_xform.o wavelet_coeff.o \
+OBJS = mem.o pnm.o wavelet.o wavelet_xform.o wavelet_coeff.o \
 	yuv.o tarkin.o info.o
 
-TEST_TARGETS = _test_bitcoder _test_rle _test_huffman
+TEST_TARGETS = _test_bitcoder _test_rle
 
 SRCS = $(OBJS:.o=.c)
 TEST_OBJS = $(TEST_TARGETS:=.o)
@@ -51,15 +51,12 @@ clean:
 	$(RM) $(OBJS) $(TARGET) gmon.out core .depend .depend.bak rle.histogram
 	$(RM) $(TEST_TARGETS) $(TEST_OBJS)
 	$(RM) tarkin_enc tarkin_dec tarkin_enc.o tarkin_dec.o
-	$(RM) *.ppm *.pgm
 	$(RM) stream.ogg
-
+	$(RM) *.ppm *.pgm
 
 test: .depend $(TEST_TARGETS)
 	./_test_bitcoder
-	./_test_huffman
 	./_test_rle
-
 
 .depend: $(SRCS) $(TEST_SRCS)
 	$(RM) .depend

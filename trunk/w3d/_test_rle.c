@@ -4,7 +4,7 @@
 
 #define TEST(x)                                       \
    if(!(x)) {                                         \
-      fprintf(stderr, "Test ("#x") FAILED !!!\n");    \
+      fprintf(stderr, "Test ("#x") FAILED (i == %i) !!!\n", i);    \
       exit (-1);                                      \
    }
 
@@ -56,7 +56,7 @@ int main ()
          ENTROPY_ENCODER_INIT(&encoder, limit);
 
          for (i=0; i<limit; i++) {
-            bit[i] = (rand() > RAND_MAX/100) ? 0 : 1;  /* avg. runlength 100 */
+            bit[i] = (rand() > RAND_MAX/1000) ? 0 : 1;  /* avg. runlength 1000 */
             OUTPUT_BIT(&encoder, bit[i]);
          }
 
@@ -85,7 +85,7 @@ int main ()
             TEST(bit[i] == b);
 
             skip = ENTROPY_CODER_RUNLENGTH(&decoder);
-            if (skip > 0 && ENTROPY_CODER_MPS(&decoder) == 0) {
+            if (skip > 0 && ENTROPY_CODER_SYMBOL(&decoder) == 0) {
                int j;
                for (j=0; j<skip; j++)
                   TEST(bit[i+j] == 0);
