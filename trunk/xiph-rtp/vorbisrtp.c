@@ -96,21 +96,6 @@ struct VorbisBitfields {
 } VorbisBitfields;
 
 /*****************************************************************************/
-/*  Vorbis configuration packet                                              */
-/*****************************************************************************/
-
-struct VorbisConfig {
-    unsigned int bsz0:4;
-    unsigned int bsz1:4;
-    unsigned char channels;
-    unsigned long version:32;
-    unsigned long samplerate:32;
-    unsigned long bitratemax:32;
-    unsigned long bitratenom:32;
-    unsigned long bitratemin:32;
-} VorbisConfig;
-
-/*****************************************************************************/
 /*  RTP header                                                               */
 /*****************************************************************************/
 
@@ -241,25 +226,6 @@ void progressmarker (int type)
         outmarkpos = 0;
     } else 
         outmarkpos++;
-}
-
-/*****************************************************************************/
-/*  Creates and send configuration packet                                    */
-/*****************************************************************************/
-
-void configpacket (struct VorbisConfig *Config, int bsz0, int bsz1, vorbis_info vi) 
-{
-    Config -> bsz0 = bsz0;
-    Config -> bsz1 = bsz1;
-    Config -> channels = htons (vi.channels);
-    Config -> version = htonl (vi.version);
-    Config -> samplerate = htonl (vi.rate);
-    Config -> bitratemin = htonl (vi.bitrate_lower);
-    Config -> bitratenom = htonl (vi.bitrate_nominal);
-    Config -> bitratemax = htonl (vi.bitrate_upper);
-
-    creatertp ((unsigned char*) Config, 22, vi.rate, &VorbisBitfields, 1);
-    progressmarker (6);
 }
 
 /*****************************************************************************/
@@ -577,6 +543,23 @@ int sendrtp (struct RTPHeaders *RTPHeaders, int rtpsocket, struct sockaddr_in *s
 }
 
 /*****************************************************************************/
+/*  Duplicates an Ogg packet                                                 */
+/*****************************************************************************/
+int ogg_copy_packet(ogg_packet *dst, ogg_packet *src)
+{
+  dst->packet = malloc(src->bytes);
+  memcpy(dst->packet, src->packet, src->bytes);
+  dst->bytes = src->bytes;
+  dst->b_o_s = src->b_o_s;
+  dst->e_o_s = src->e_o_s;
+
+  dst->granulepos = src->granulepos;
+  dst->packetno = src->packetno;
+
+  return 0;
+}
+
+/*****************************************************************************/
 
 int main (int argc, char **argv) 
 {
@@ -584,6 +567,7 @@ int main (int argc, char **argv)
     ogg_stream_state os;
     ogg_page og;
     ogg_packet op;
+    ogg_packet header[3];
   
     vorbis_info vi; 
 
@@ -720,6 +704,8 @@ int main (int argc, char **argv)
         exit (1);
     }
 
+    ogg_copy_packet(&(header[i]), &op);
+
 /*===========================================================================*/
 /*  Process comment and codebook headers                                     */
 /*===========================================================================*/
@@ -747,6 +733,8 @@ int main (int argc, char **argv)
 
                     vorbis_synthesis_headerin (&vi, &vc, &op);
                     i++;
+
+                    ogg_copy_packet(&(header[i]), &op);
                 }
             }
         }
@@ -781,16 +769,16 @@ int main (int argc, char **argv)
     fprintf (stdout, "||  Processing\n||  ");
 
 /*===========================================================================*/
-/*  Create configuration header                                              */
+/*  Send the three headers inline                                            */
 /*===========================================================================*/
 
-    configpacket (&VorbisConfig, vorbis_info_blocksize (&vi, 0), vorbis_info_blocksize (&vi, 1), vi);
+    creatertp(header[0].packet, header[0].bytes, vi.rate, &VorbisBitfields, 6);
+    progressmarker (6);
 
-/*===========================================================================*/
-/*  Create and send codebook                                                 */
-/*===========================================================================*/
+    creatertp(header[1].packet, header[1].bytes, vi.rate, &VorbisBitfields, 3);
+    progressmarker (3);
 
-    creatertp ((char*) &vd, sizeof (vd), vi.rate, &VorbisBitfields, 2);
+    creatertp(header[2].packet, header[2].bytes, vi.rate, &VorbisBitfields, 4);
     progressmarker (4);
 
 /*===========================================================================*/
@@ -833,6 +821,10 @@ int main (int argc, char **argv)
             if (bytes == 0) eos = 1;
         }
     }
+
+    ogg_packet_clear (&(header[0]));
+    ogg_packet_clear (&(header[1]));
+    ogg_packet_clear (&(header[2]));
 
     ogg_stream_clear (&os);
   
