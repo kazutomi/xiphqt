@@ -8,7 +8,7 @@
 <h3>Official Documenation</h3>
 
 <p>Here is an index to the icecast documentation we know about.  If there is something out ther on the Web that you know about, but is not listed here, send an email to webmaster@icecast.org. </p>
-<p>All official icecast documentation is <a href="http://www.icecast.org/files/icecast_docs/">now available online</a>.</p>
+<p>All official icecast documentation is <a href="docs/">now available online</a>.</p>
 <p>Also, we have a simple <a href="faq.php">FAQ</a>.</p>
 
 <h3>Other Information</h3>
