@@ -198,14 +198,13 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
       }
    }
 
-printf ("s == %i, minmax == %i\n", buf->data[0], buf->minmax [2]);
+/*printf ("s == %i, minmax == %i\n", buf->data[0], buf->minmax [2]);*/
 
    if (buf->data[0] >= 0)          /*  put DC coefficient bitmask in level 2 */
       buf->minmax [2] |= buf->data[0];
    else
       buf->minmax [2] |= ~(buf->data[0]);
-printf ("s == %i, minmax == %i\n", buf->data[0], buf->minmax [2]);
-printf ("\n");
+/*printf ("s == %i, minmax == %i\n", buf->data[0], buf->minmax [2]);*/
 }
 
 
