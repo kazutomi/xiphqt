@@ -5,17 +5,16 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: illustrate simple use of chained bitstream and vorbisfile.a
- last mod: $Id: chaining_example.c,v 1.18 2002/10/11 11:14:41 xiphmont Exp $
+ last mod: $Id: chaining_example.c,v 1.14 2001/12/12 09:45:22 xiphmont Exp $
 
  ********************************************************************/
 
-#include <stdlib.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 
@@ -45,8 +44,6 @@ int main(){
   if(ov_seekable(&ov)){
     printf("Input bitstream contained %ld logical bitstream section(s).\n",
 	   ov_streams(&ov));
-    printf("Total bitstream samples: %ld\n\n",
-	   (long)ov_pcm_total(&ov,-1));
     printf("Total bitstream playing time: %ld seconds\n\n",
 	   (long)ov_time_total(&ov,-1));
 

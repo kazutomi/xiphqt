@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: simple example decoder using vorbisfile
- last mod: $Id: vorbisfile_example.c,v 1.10 2002/07/11 06:40:47 xiphmont Exp $
+ last mod: $Id: vorbisfile_example.c,v 1.7 2001/09/17 01:06:18 cwolf Exp $
 
  ********************************************************************/
 
@@ -32,7 +32,7 @@
 
 char pcmout[4096]; /* take 4k out of the data segment, not the stack */
 
-int main(){
+int main(int argc, char **argv){
   OggVorbis_File vf;
   int eof=0;
   int current_section;

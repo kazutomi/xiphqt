@@ -5,20 +5,19 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.24 2002/10/16 07:44:21 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.19 2001/10/02 00:14:31 segher Exp $
 
   The LSP generation code is taken (with minimal modification and a
   few bugfixes) from "On the Computation of the LSP Frequencies" by
-  Joseph Rothweiler (see http://www.rothweiler.us for contact info).
-  The paper is available at:
-
-  http://www.myown1.com/joe/lsf
+  Joseph Rothweiler <rothwlr@altavista.net>, available at:
+  
+  http://www2.xtdl.com/~rothwlr/lsfpaper/lsfpage.html 
 
  ********************************************************************/
 
@@ -52,7 +51,7 @@
    ARM family. */
 
 /* undefine both for the 'old' but more precise implementation */
-#define   FLOAT_LOOKUP
+#undef   FLOAT_LOOKUP
 #undef    INT_LOOKUP
 
 #ifdef FLOAT_LOOKUP
@@ -295,7 +294,10 @@ static void cheby(float *g, int ord) {
 }
 
 static int comp(const void *a,const void *b){
-  return (*(float *)a<*(float *)b)-(*(float *)a>*(float *)b);
+  if(*(float *)a<*(float *)b)
+    return(1);
+  else
+    return(-1);
 }
 
 /* Newton-Raphson-Maehly actually functioned as a decent root finder,

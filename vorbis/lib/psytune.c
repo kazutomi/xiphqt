@@ -5,14 +5,14 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c,v 1.20 2003/03/04 21:22:11 xiphmont Exp $
+ last mod: $Id: psytune.c,v 1.17 2001/08/21 19:05:06 giles Exp $
 
  ********************************************************************/
 
@@ -24,7 +24,6 @@
 #include "vorbis/codec.h"
 #include "codec_internal.h"
 #include "os.h"
-#include "misc.h"
 #include "psy.h"
 #include "mdct.h"
 #include "smallft.h"
@@ -280,7 +279,7 @@ int main(int argc,char *argv[]){
   flr[1]=_ogg_calloc(framesize/2,sizeof(float));
   buffer=_ogg_malloc(framesize*4);
   buffer2=buffer+framesize*2;
-  window=_vorbis_window_create(0,framesize,framesize/2,framesize/2);
+  window=_vorbis_window(0,framesize,framesize/2,framesize/2);
   mdct_init(&m_look,framesize);
   drft_init(&f_look,framesize);
   _vp_psy_init(&p_look,&_psy_set0,&_psy_set0G,framesize/2,44100);
