@@ -1,11 +1,11 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
+ * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -99,7 +99,7 @@ int ogg_page_packets(ogg_page *og){
   return(count);
 }
 
-/* Static CRC calculation table.  See older code in SVN for dead
+/* Static CRC calculation table.  See older code in CVS for dead
    run-time initialization code. */
 
 static ogg_uint32_t crc_lookup[256]={
