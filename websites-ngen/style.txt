@@ -37,15 +37,26 @@ Behind the Scenes
 
 *	Have two blank lines before headings and one blank line after, as in this file.
 
+*	Use all-lowercase Markdown URL identifiers. Markdown URL identifiers are compared
+	case-insensitively, which means that `[foo][]` and `[Foo][]` resolve to the same identifier
+	elsewhere in the page. To avoid getting caught by this snag, use lower case consistently
+	in the part with the actual URL in it (and the optional title attribute).
 
-Spelling, Grammar, and Punctuation
-----------------------------------
+
+Spelling, Grammar, Punctuation, and Terminology
+-----------------------------------------------
 
 *	Do not write “CODEC” in all caps.
+
 *	Prefer “© 2004 Xiph.Org” to both “Copyright © 2004 Xiph.Org” and
 	“Copyright (c) 2004 Xiph.Org”; the latter two are redundant.
 	If you can’t type a proper copyright symbol, use its HTML entity, `&copy;` or simply write out
 	“Copyright 2004 Xiph.Org”.
+
+*	Do not refer to “Ogg” as a project; only refer to it as a container format.
+
+*	Use “Ogg Vorbis” when speaking of on-disk Vorbis-in-Ogg files; use “Vorbis” when referring to
+	Vorbis-specific features such as lossy compression or Vorbis-style comment headers.
 
 
 ### English-Specific Considerations
