@@ -30,6 +30,7 @@ static void ices_setup_parse_command_line (ices_config_t *ices_config, char **ar
 static void ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *ices_config);
 static void ices_setup_usage (void);
+static void ices_setup_version (void);
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize (void);
 static void ices_setup_run_mode_select (ices_config_t *ices_config);
@@ -314,8 +315,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 		
                 if (s[0] == '-') {
 			
-			/* RrivBzx all require arguments */
-			if ((strchr ("RrivBzxHN", s[1]) == NULL) && arg >= (argc - 1)) {
+			if ((strchr ("RriVvBzxHN", s[1]) == NULL) && arg >= (argc - 1)) {
 				ices_log ("Option %c requires an argument!\n", s[1]);
 				ices_setup_usage ();
 				ices_setup_shutdown ();
@@ -439,6 +439,9 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 						ices_util_free (ices_config->url);
 					ices_config->url = ices_util_strdup (argv[arg]);
 					break;
+			        case 'V':
+				  ices_setup_version ();
+				  exit (0);
 				case 'v':
 					ices_config->verbose = 1;
 					break;
@@ -488,6 +491,7 @@ ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *i
 static void
 ices_setup_usage (void)
 {
+  ices_log ("This is ices " VERSION);
 	ices_log ("ices <options>");
 	ices_log ("Options:");
 	ices_log ("\t-B (Background (daemon mode))");
@@ -510,8 +514,33 @@ ices_setup_usage (void)
 	ices_log ("\t-s (private stream)");
 	ices_log ("\t-S <perl|python|builtin>");
 	ices_log ("\t-u <stream url>");
+	ices_log ("\t-v (verbose output)");
 	ices_log ("\t-H <reencoded sample rate>");
 	ices_log ("\t-N <reencoded number of channels>");
+}
+
+/* display version information */
+static void
+ices_setup_version (void)
+{
+  ices_log ("ices " VERSION "\nFeatures: "
+
+#ifdef HAVE_LIBLAME
+  "LAME "
+#endif
+
+#ifdef HAVE_LIBPERL
+  "PERL "
+#endif
+
+#ifdef HAVE_LIBPYTHON
+  "python "
+#endif
+
+#ifdef HAVE_LIBXML
+  "libxml "
+#endif
+    );
 }
 
 /* This function makes ices run in the selected way.
