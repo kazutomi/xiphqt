@@ -21,13 +21,14 @@ s.mount = "/pyshout"
 # s.url = ''
 # s.public = 0 | 1
 # s.audio_info = { 'key': 'val', ... }
-#  (keys are 'bitrate', 'samplerate', 'channels', 'quality')
+#  (keys are shout.SHOUT_AI_BITRATE, shout.SHOUT_AI_SAMPLERATE,
+#   shout.SHOUT_AI_CHANNELS, shout.SHOUT_AI_QUALITY)
 
 s.open()
 
 total = 0
 st = time.time()
-for fa in sys.argv[0:]:
+for fa in sys.argv[1:]:
     print "opening file %s" % fa
     f = open(fa)
     s.set_metadata({'song': fa})
