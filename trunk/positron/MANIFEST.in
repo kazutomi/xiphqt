@@ -2,4 +2,5 @@ include TODO
 include COPYING
 graft scripts
 graft setupext
+graft doc
 global-exclude *.pyc
