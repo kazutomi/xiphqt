@@ -264,7 +264,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
         if (rc < 0) {
           if (stream->errs > 10) {
             ices_log ("Too many stream errors, giving up");
-            goto err;
+	    ices_setup_shutdown ();
           }
           ices_log ("Error during send: %s", ices_log_get_error ());
         } else {
