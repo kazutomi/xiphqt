@@ -30,7 +30,9 @@
 /* Probably 1.8.7 backwards crap */
 #  include <parser.h>
 #  include <xmlmemory.h>
-#endif
+# else
+#  undef HAVE_LIBXML
+# endif
 
 /* Private function declarations */
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
