@@ -511,12 +511,18 @@ ssize_t read(int fd, void *buf,size_t count){
 ssize_t write(int fd, const void *buf,size_t count){
 
   if(fd==audio_fd){
+
     /* track audio sync regardless of record activity or fake setting;
        we could have record suddenly activated */
     
     long a,b;
     double now=bigtime(NULL,NULL),fa;
     double stime=audio_samplepos/(double)audio_rate+audio_timezero;
+
+    /* do it first so we know how many bytes actually succeed */
+    if(!fake_audiop)
+      count=(*libc_write)(fd,buf,count);
+    if(count<=0)return(count);
     
     /* video and audio buffer differently; video is always 'just
        in time' and thus uses absolute time positioning.  Video
@@ -535,12 +541,16 @@ ssize_t write(int fd, const void *buf,size_t count){
       audio_samplepos=(now-audio_timezero)*audio_rate;
       stime=audio_samplepos/(double)audio_rate+audio_timezero;
     }
-
+    
     b=modf(stime,&fa)*1000000.;
     a=fa;
     
     if(count>0 && snatch_active==1){
+      
+      pthread_mutex_lock(&output_mutex);
       if(outfile_fd<0)OpenOutputFile();
+      pthread_mutex_unlock(&output_mutex);
+      
       if(outfile_fd>=0){ /* always be careful */
 	char cbuf[80];
 	int len;
@@ -556,8 +566,8 @@ ssize_t write(int fd, const void *buf,size_t count){
       }
     }
     audio_samplepos+=(count/(audio_channels*audio_fmt_bytesps[audio_format]));
-
-    if(fake_audiop)return(count);
+    
+    return(count);
   }
 
   if(esd_rw_hook_p(fd))return(esd_write_hook(fd,buf,count));
@@ -611,7 +621,6 @@ static void queue_task(void (*f)(void)){
 }
 
 static void OpenOutputFile(){
-  pthread_mutex_lock(&output_mutex);
   if(outfile_fd!=-2){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
@@ -667,7 +676,6 @@ static void OpenOutputFile(){
 		    (audio_channels==1?"mono":"stereo"),
 		    audio_rate);
 	  }else{
-	    pthread_mutex_unlock(&output_mutex);
 	    return;
 	  }
 	}
@@ -721,7 +729,6 @@ static void OpenOutputFile(){
       }
     }
   }
-  pthread_mutex_unlock(&output_mutex);
 }
 
 static void CloseOutputFile(){
