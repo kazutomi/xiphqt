@@ -15,9 +15,13 @@
 
 #define VORBIS_DEFAULT_QUALITY 75
 
+#define CREATEFONT(sz) \
+  CreateFont((sz), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+              VARIABLE_PITCH | FF_SWISS, "")
+   
 HANDLE event = NULL;
 int width = 120, height = 120;
-RECT bar1, bar2;
+RECT bar1, bar2, vbrBR;
 int prog1 = 0, prog2 = 0;
 int moving = 0;
 POINT pt;
@@ -31,8 +35,13 @@ int totalfiles;
 int numfiles;
 HWND g_hwnd;
 HWND qcwnd;
+HFONT font2;
 int qcValue;
 int bitRate;
+char *fileName;
+OE_MODE oe_mode;
+int nominalBitrate;
+int showNBR;
 
 
 static const char *bitRateCaption[] =
@@ -118,6 +127,13 @@ void set_logerr(HWND hwnd, int v)
 	write_setting("logerr", v);
 }
 
+void set_showNBR(HWND hwnd, int v)
+{
+  CheckMenuItem(menu, IDM_SHOWNBR, v ? MF_CHECKED : MF_UNCHECKED);
+  write_setting("shownbr", v);
+  showNBR = v;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
     static char szAppName[] = "oggdropWin";
@@ -155,12 +171,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	ShowWindow(hwnd, iCmdShow);
 	UpdateWindow(hwnd);
 
+  font2 = CREATEFONT(10);
+
 	SetTimer(hwnd, 1, 80, NULL);
 
   qcValue = read_setting("quality", VORBIS_DEFAULT_QUALITY);
   set_quality_coefficient(qcValue);
 	set_always_on_top(hwnd, read_setting("always_on_top", 1));
 	set_logerr(hwnd, read_setting("logerr", 0));
+  set_showNBR(hwnd, read_setting("shownbr", 1));
 	
 	for (frame = 0; frame < 12; frame++)
 		hbm[frame] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF01 + frame), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
@@ -215,6 +234,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC desktop;
 	HBITMAP hbitmap;
 	HANDLE hdrop;
+  HFONT dfltFont;
+  int dfltBGMode;
 	double percomp;
 
 	switch (message) {
@@ -252,11 +273,45 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		percomp = ((double)(totalfiles - numfiles) + 1 - (1 - file_complete)) / (double)totalfiles;
 
-		SetRect(&bar1, 0, height - 23, (int)(file_complete * width), height - 13);
-		SetRect(&bar2, 0, height - 12, (int)(percomp * width), height - 2);
+    //SetRect(&vbrBR, 0, height - (height-14), width, height - (height-26));
+    SetRect(&vbrBR, 0, height - 29, width, height - 19);
 
-		FillRect(offscreen, &bar1, (HBRUSH)GetStockObject(BLACK_BRUSH));
-		FillRect(offscreen, &bar2, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    dfltBGMode = SetBkMode(offscreen, TRANSPARENT);
+    dfltFont = SelectObject(offscreen, font2);
+
+    if (oe_mode == OE_MODE_QUALITY && showNBR)
+    {
+      char nbrCaption[80];
+
+      (void) sprintf(nbrCaption, "%d NBR", nominalBitrate);
+
+      DrawText(offscreen, nbrCaption, -1, 
+             &vbrBR, DT_SINGLELINE | DT_CENTER);
+    }
+
+
+		SetRect(&bar1, 0, height - 19, (int)(file_complete * width), height - 9);
+		SetRect(&bar2, 0, height - 8, (int)(percomp * width), height - 2);
+
+		FillRect(offscreen, &bar1, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+		FillRect(offscreen, &bar2, (HBRUSH)GetStockObject(GRAY_BRUSH));
+
+    if (fileName)
+    {
+      char* sep;
+      char  fileCaption[80];
+
+      if ((sep = strrchr(fileName, '\\')) != 0)
+        fileName = sep+1;
+
+      (void) strcpy(fileCaption, "   ");
+      (void) strcat(fileCaption, fileName);
+
+      DrawText(offscreen, fileCaption, -1, &bar1, DT_SINGLELINE | DT_LEFT);
+    }
+
+    SelectObject(offscreen, dfltFont);
+    SetBkMode(offscreen, dfltBGMode);
 
 		BitBlt(hdc, 0, 0, width, height, offscreen, 0, 0, SRCCOPY);
 
@@ -338,6 +393,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_LOGERR:
 			set_logerr(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
 			break;
+    case IDM_SHOWNBR:
+      set_showNBR(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
+      break;
 
     case IDM_SAVEQUALITY:
       {
@@ -476,11 +534,13 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
           if (IsDlgButtonChecked(hwndDlg, IDC_USEQUALITY) == BST_CHECKED)
           {
             write_setting("mode", IDC_USEQUALITY);
+            oe_mode = OE_MODE_QUALITY;
             EndDialog(hwndDlg, qcValue);
           }
           else
           {
             write_setting("mode", IDC_USEBITRATE);
+            oe_mode = OE_MODE_BITRATE;
             EndDialog(hwndDlg, -2); // use bitrate
           }
           return TRUE;
@@ -581,3 +641,4 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
   return FALSE; 
 } 
  
+        

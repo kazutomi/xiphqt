@@ -75,10 +75,8 @@ BEGIN
     POPUP "Menu"
     BEGIN
         MENUITEM "&Encode Parameters",          IDM_SAVEQUALITY
-        POPUP "&Options"
-        BEGIN
-            MENUITEM "&Errors to log file",         IDM_LOGERR
-        END
+        MENUITEM "&Errors to log file",         IDM_LOGERR
+        MENUITEM "&Show Nominal Bitrate",       IDM_SHOWNBR
         MENUITEM "Always on &Top",              IDM_ONTOP
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",               IDM_QUIT
