@@ -297,12 +297,17 @@ Where to look for RealPlayer on startup.  This field is a glob.
 
 Where to look for the file libsnatch.so on startup.  This field is a glob.
 
-3) audio device
+3) OSS audio device
 
-Which OSS audio device names to watch for.  This is not used for the
-Enlightened Sound Daemon (which needs no configuration).
+Which OSS audio device names to watch for. This is only relevant if
+your Linux is using OSS directly.
 
-4) full debug output
+4) EsounD server socket
+
+Where the Enlightened Sound Daemon keeps its connect socket.  This
+option is only relevant if you're using the EsounD daemon.
+
+5) full debug output
 
 The best first thing to set when something goes wrong, but the error
 messages dialogs from the Snatch Robot aren't being helpful.
@@ -310,7 +315,7 @@ messages dialogs from the Snatch Robot aren't being helpful.
 This reports to stderr the continuous debugging output from
 libsnatch/RealPlayer.
 
-5) capture output
+6) capture output
 
 Select where to put the captured data.  This field may specify stdout
 (but filling in with a bare -), a directory (in which case Snatch will
@@ -323,17 +328,17 @@ If you specify a file for the output path and hit 2GB, Snatch will
 stop capturing.  If you specify an output directory instead, Snatch
 will close the 2GB file, open a new file, and continue capturing.
 
-6) ok
+7) ok
 
 Pressing OK applies any configuration changes immedaitely, saves the
 changes to the configuration file ~/.snatch/config.txt and closes the
 Configuration panel.
 
-7) apply
+8) apply
 
 Same as 'ok', but doe snot close the Configuration panel.
 
-8) cancel
+9) cancel
 
 Discard any changes and close the Configuration panel.
 

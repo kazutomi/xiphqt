@@ -23,7 +23,6 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <stdarg.h>
-#include <linux/soundcard.h>
 #include <pthread.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XShm.h>
@@ -35,8 +34,12 @@ static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t display_mutex=PTHREAD_MUTEX_INITIALIZER;
 
 static int      (*libc_open)(const char *,int,mode_t);
+static int      (*libc_connect)(int sockfd, const struct sockaddr *serv_addr,
+				socklen_t addrlen);
 static int      (*libc_close)(int);
+static size_t   (*libc_read)(int,void *,size_t);
 static size_t   (*libc_write)(int,const void *,size_t);
+static int      (*libc_readv)(int,struct iovec *,int);
 static int      (*libc_writev)(int,const struct iovec *,int);
 static int      (*libc_ioctl)(int,int,void *);
 static pid_t    (*libc_fork)(void);
@@ -60,16 +63,12 @@ static Display *Xdisplay;
 
 static int debug;
 static char *outpath;
-static char *audioname;
-
 static FILE *backchannel_fd=NULL;
 
 static int audio_fd=-1;
-static int audio_fd_fakeopen=0;
 static int audio_channels=-1;
 static int audio_rate=-1;
 static int audio_format=-1;
-
 static long long audio_samplepos=0;
 static double audio_timezero=0;
 
@@ -93,32 +92,17 @@ static void CloseOutputFile();
 static void OpenOutputFile();
 
 static char *audio_fmts[]={"unknown format",
-			  "8 bit mu-law",
-			  "8 bit A-law",
-			  "ADPCM",
-			  "unsigned, 8 bit",
-			  "signed, 16 bit, little endian",
-			  "signed, 16 bit, big endian",
-			  "signed, 8 bit",
-			  "unsigned, 16 bit, little endian",
-			  "unsigned, 16 bit, big endian",
-			  "MPEG 2",
-			  "Dolby Digial AC3"};
+			   "8 bit mu-law",
+			   "8 bit A-law",
+			   "ADPCM",
+			   "unsigned, 8 bit",
+			   "signed, 16 bit, little endian",
+			   "signed, 16 bit, big endian",
+			   "signed, 8 bit",
+			   "unsigned, 16 bit, little endian",
+			   "unsigned, 16 bit, big endian"};
 
-static char *formatname(int format){
-  int i;
-  for(i=0;i<12;i++)
-    if(format==((1<<i)>>1))return(audio_fmts[i]);
-  return(audio_fmts[0]);
-}
-
-static int fmtbytesps[]={0,1,1,0,1,2,2,1,2,2,0,0};
-static int formatbytes(int format){
-  int i;
-  for(i=0;i<12;i++)
-    if(format==((1<<i)>>1))return(fmtbytesps[i]);
-  return(0);
-}
+static int audio_fmt_bytesps[]={0,1,1,0,1,2,2,1,2,2};
 
 static char *nstrdup(char *s){
   if(s)return strdup(s);
@@ -154,13 +138,10 @@ static double bigtime(long *seconds,long *micros){
   return(tp.tv_sec+tp.tv_usec*.000001);
 }
 
-#include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
-		    Oh and I'm lazy. */
-
-
-/* although RealPlayer is both multiprocess and multithreaded, we
-don't lock because we assume only one thread/process will be mucking
-with a specific X drawable or audio device at a time */
+/* yeah, ugly, but I don't want to leak symbols.  Oh and I'm lazy. */
+#include "x11.c" 
+#include "oss.c"
+#include "esd.c"
 
 void *get_me_symbol(char *symbol){
   void *ret=dlsym(RTLD_NEXT,symbol);
@@ -234,6 +215,7 @@ void *backchannel_thread(void *dummy){
       CloseOutputFile(); /* it will only happen on Robot commands that would
 			    be starting a new file */
       break;
+    case 'E':
     case 'U':
     case 'P':
     case 'L':
@@ -262,13 +244,17 @@ void *backchannel_thread(void *dummy){
 	    if(openfile)free(openfile);
 	    openfile=buf;
 	    break;
+	  case 'E':
+	    if(esdsocket)free(esdsocket);
+	    esdsocket=buf;
+	    break;
 	  case 'F':
 	    if(outpath)free(outpath);
 	    outpath=buf;
 	    break;
 	  case 'D':
-	    if(audioname)free(audioname);
-	    audioname=buf;
+	    if(ossname)free(ossname);
+	    ossname=buf;
 	    break;
 	  }
       }
@@ -317,8 +303,11 @@ void initialize(void){
 
     /* get handles to the libc symbols we're subverting */
     libc_open=get_me_symbol("open");
+    libc_connect=get_me_symbol("connect");
     libc_close=get_me_symbol("close");
+    libc_read=get_me_symbol("read");
     libc_write=get_me_symbol("write");
+    libc_readv=get_me_symbol("readv");
     libc_writev=get_me_symbol("writev");
     libc_ioctl=get_me_symbol("ioctl");
     libc_fork=get_me_symbol("fork");
@@ -347,20 +336,8 @@ void initialize(void){
 		"           set (%s)\n",outpath);
     }
 
-    /* audio device? */
-    audioname=nstrdup(getenv("SNATCH_AUDIO_DEVICE"));
-    if(!audioname){
-      if(debug)
-	fprintf(stderr,
-		"----env: SNATCH_AUDIO_DEVICE\n"
-		"           not set. Using default (/dev/dsp*).\n");
-      audioname=nstrdup("/dev/dsp*");
-    }else{
-      if(debug)
-	fprintf(stderr,
-		"----env: SNATCH_AUDIO_DEVICE\n"
-		"           set (%s)\n",audioname);
-    }
+    oss_hook_init();
+    esd_hook_init();
 
     if(getenv("SNATCH_AUDIO_FAKE")){
       if(debug)
@@ -387,7 +364,7 @@ void initialize(void){
 		"           not set.\n");
 
     if(debug)
-      fprintf(stderr,"    ...: Now watching for RealPlayer audio output.\n");
+      fprintf(stderr,"    ...: Now watching for RealPlayer audio/video output.\n");
 
 
     {
@@ -420,7 +397,7 @@ void initialize(void){
 	addr.sun_family=AF_UNIX;
 	strcpy(addr.sun_path,backchannel_socket);
 
-	if(connect(temp_fd,(struct sockaddr *)&addr,sizeof(addr))<0){
+	if((*libc_connect)(temp_fd,(struct sockaddr *)&addr,sizeof(addr))<0){
 	  fprintf(stderr,
 		  "**ERROR: connect() call for backchannel failed.\n"
 		  "         returned error %d: %s\n"
@@ -477,65 +454,13 @@ pid_t fork(void){
   return((*libc_fork)());
 }
 
-/* The audio device is subverted through open().  If we didn't care
-   about allowing a fake audio open() to 'succeed' even when the real
-   device is busy, then we could just watch for the ioctl(), grab the
-   fd() then, and not need to bother with any silly string matching.
-   However, we *do* care, so we do this the more complex, slightly
-   more error prone way. */
-
 int open(const char *pathname,int flags,...){
   va_list ap;
-  int ret;
   mode_t mode;
 
   initialize();
 
-  /* open needs only watch for the audio device. */
-  if( (audioname[strlen(audioname)-1]=='*' &&
-       !strncmp(pathname,audioname,strlen(audioname)-1)) ||
-      (audioname[strlen(audioname)-1]!='*' &&
-       !strcmp(pathname,audioname))){
-
-      /* a match! */
-      if(audio_fd>-1){
-	/* umm... an audio fd is already open.  report the problem and
-	   continue */
-	fprintf(stderr,
-		"\n"
-		"WARNING: RealPlayer is attempting to open more than one\n"
-		"         audio device (in this case, %s).\n"
-		"         This behavior is unexpected; ignoring this open()\n"
-		"         request.\n",pathname);
-      }else{
-
-	/* are we faking the audio? */
-	if(fake_audiop){
-	  ret=(*libc_open)("/dev/null",O_RDWR,mode);
-	  audio_fd_fakeopen=1;
-	}else{
-	  ret=(*libc_open)(pathname,flags,mode);
-	  audio_fd_fakeopen=0;
-	}
-
-	audio_fd=ret;
-	audio_channels=-1;
-	audio_rate=-1;
-	audio_format=-1;
-	audio_samplepos=0;
-	audio_timezero=bigtime(NULL,NULL);
-
-	if(debug)
-	  fprintf(stderr,
-		  "    ...: Caught RealPlayer opening audio device "
-		  "%s (fd %d).\n",
-		  pathname,ret);
-	if(debug && fake_audiop)
-	  fprintf(stderr,
-		  "    ...: Faking the audio open and writes as requested.\n");
-      }
-      return(ret);
-  }
+  if(oss_identify(pathname))return oss_open_hook(pathname);
 
   if(flags|O_CREAT){
     va_start(ap,flags);
@@ -543,8 +468,16 @@ int open(const char *pathname,int flags,...){
     va_end(ap);
   }
 
-  ret=(*libc_open)(pathname,flags,mode);
-  return(ret);
+  return ((*libc_open)(pathname,flags,mode));
+}
+
+int connect(int sockfd,const struct sockaddr *serv_addr,socklen_t addrlen){
+  initialize();
+
+  if(esd_identify(serv_addr,addrlen)) 
+    return esd_connect_hook(sockfd,serv_addr,addrlen);
+  
+  return ((*libc_connect)(sockfd,serv_addr,addrlen));
 }
 
 int close(int fd){
@@ -552,8 +485,11 @@ int close(int fd){
 
   initialize();
 
-  ret=(*libc_close)(fd);
+  oss_close_hook(fd);
+  esd_close_hook(fd);
   
+  ret=(*libc_close)(fd);
+
   if(fd==audio_fd){
     audio_fd=-1;
     audio_samplepos=0;
@@ -563,11 +499,17 @@ int close(int fd){
 	      "    ...: RealPlayer closed audio playback fd %d\n",fd);
     CloseOutputFile();
   }
-  
+    
   return(ret);
 }
 
+ssize_t read(int fd, void *buf,size_t count){
+  if(esd_rw_hook_p(fd))return(esd_read_hook(fd,buf,count));
+  return((*libc_read)(fd,buf,count));
+}
+
 ssize_t write(int fd, const void *buf,size_t count){
+
   if(fd==audio_fd){
     /* track audio sync regardless of record activity or fake setting;
        we could have record suddenly activated */
@@ -586,6 +528,7 @@ ssize_t write(int fd, const void *buf,size_t count){
        the current sample buffer will begin playing, not when it
        is queued */
     
+    fprintf(stderr,"Queue is at T%+f\n",stime-now);
     if(stime<now){
       /* queue starved; player will need to skip or stretch.  Advance
 	 the absolute position to maintain sync.  Note that this is
@@ -611,99 +554,51 @@ ssize_t write(int fd, const void *buf,size_t count){
 	
       }
     }
-    audio_samplepos+=(count/(audio_channels*formatbytes(audio_format)));
+    audio_samplepos+=(count/(audio_channels*audio_fmt_bytesps[audio_format]));
 
     if(fake_audiop)return(count);
   }
+
+  if(esd_rw_hook_p(fd))return(esd_write_hook(fd,buf,count));
 
   return((*libc_write)(fd,buf,count));
 }
 
 int writev(int fd,const struct iovec *v,int n){
-  if(fd==audio_fd){
-    int i,ret,count=0;
-    for(i=0;i<n;i++){
-      ret=write(fd,v[i].iov_base,v[i].iov_len);
-      if(ret<0 && count==0)return(ret);
-      if(ret<0)return(count);
-      count+=ret;
-      if(ret<v[i].iov_len)return(count);
-    }
-    return(count);
-  }else
-    return((*libc_writev)(fd,v,n));
+  int i,ret,count=0;
+  for(i=0;i<n;i++){
+    ret=write(fd,v[i].iov_base,v[i].iov_len);
+    if(ret<0 && count==0)return(ret);
+    if(ret<0)return(count);
+    count+=ret;
+    if(ret<v[i].iov_len)return(count);
+  }
+  return(count);
 }
 
-/* watch audio ioctl()s to track playback rate/channels/depth */
-/* stdargs are here only to force the clean compile */
+int readv(int fd,const struct iovec *v,int n){
+  int i,ret,count=0;
+  for(i=0;i<n;i++){
+    ret=read(fd,v[i].iov_base,v[i].iov_len);
+    if(ret<0 && count==0)return(ret);
+    if(ret<0)return(count);
+    count+=ret;
+    if(ret<v[i].iov_len)return(count);
+  }
+  return(count);
+}
+
 int ioctl(int fd,unsigned long int rq, ...){
   va_list optional;
   void *arg;
-  int ret=0;
   initialize();
   
   va_start(optional,rq);
   arg=va_arg(optional,void *);
   va_end(optional);
-  
-  if(fd==audio_fd){
 
-    if(!fake_audiop && !audio_fd_fakeopen)
-      ret=(*libc_ioctl)(fd,rq,arg);
-    
-    switch(rq){
-    case SNDCTL_DSP_SPEED:
-      audio_rate=*(int *)arg;
-      if(debug)
-	fprintf(stderr,
-		"    ...: Audio output sampling rate set to %dHz.\n",
-		audio_rate);
-      CloseOutputFile();
-      break;
-    case SNDCTL_DSP_CHANNELS:
-      audio_channels=*(int *)arg;
-      if(debug)
-	fprintf(stderr,
-		"    ...: Audio output set to %d channels.\n",
-		  audio_channels);
-      CloseOutputFile();
-      break;
-    case SNDCTL_DSP_SETFMT:
-      audio_format=*(int *)arg;
-      if(debug)
-	fprintf(stderr,
-		"    ...: Audio output format set to %s.\n",
-		formatname(audio_format));
-      CloseOutputFile();
-      break;
-    case SNDCTL_DSP_GETOSPACE:
-      if(fake_audiop){
-	audio_buf_info *temp=arg;
-	temp->fragments=32;
-	temp->fragstotal=32;
-	temp->fragsize=2048;
-	temp->bytes=64*1024;
-	
-	if(debug)
-	  fprintf(stderr,"    ...: Audio output buffer size requested; faking 64k\n");
-	ret=0;
-      }
-      break;
-    case SNDCTL_DSP_GETODELAY: /* Must reject the ODELAY if we're not going to track 
-				  audio bytes and timing! */
-      if(fake_audiop){
-	if(debug)
-	  fprintf(stderr,
-		  "    ...: Rejecting SNDCTL_DSP_GETODELAY ioctl()\n");
-	*(int *)arg=0;
-	ret=-1;
-      }
-      break;
-    }
-    
-    return(ret);
+  if(oss_ioctl_hook_p(fd))return(oss_ioctl_hook(fd,rq,arg));
 
-  }
   return((*libc_ioctl)(fd,rq,arg));
 }
 
@@ -789,7 +684,6 @@ static void CloseOutputFile(){
   pthread_mutex_lock(&open_mutex);
   if(outfile_fd>=0){
     videocount=0;
-
     if(debug)fprintf(stderr,"    ...: Capture stopped.\n");
     if(outfile_fd!=STDOUT_FILENO)
       close(outfile_fd);
