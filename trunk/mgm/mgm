@@ -1,0 +1,277 @@
+#!/usr/bin/perl
+
+use Tk;
+use Tk qw(exit); 
+use IPC::Open2;
+# graph pseudo-widget, built out of Tk canvases.
+
+package MGM::Bar;
+@ISA=("Tk::Canvas");
+
+sub new{
+    my ($p,$width,$height,$fore,$back,$afore,$aback,$name,$relief,$arelief)=@_;
+
+    $orient=$main::toplevel->optionGet("bars","Bars");
+    $pad=$main::toplevel->optionGet("pad","Pad");
+
+    $border=0;
+    $border=2 if ($relief eq 'groove');
+    $border=1 if ($relief eq 'sunken');
+    $border=1 if ($relief eq 'raised');
+
+    $aborder=0;
+    $aborder=2 if ($arelief eq 'groove');
+    $aborder=1 if ($arelief eq 'sunken');
+    $aborder=1 if ($arelief eq 'raised');
+
+    my $unlit=$main::toplevel->Canvas(-borderwidth=>$border,
+				      -background=>$back,
+				      highlightthickness=>0,
+				      width=>($width-$border*2),
+				      height=>($height-$border*2),
+				      relief=>$relief);
+    bless $unlit,"MGM::Bar";
+
+    my$lit=$unlit->{'lit'}=$unlit->Canvas(-borderwidth=>$aborder,
+					  -background=>$aback,
+					  highlightthickness=>0,
+					  width=>($width-2*$aborder),
+					  height=>($height-2*$aborder),
+					  relief=>$arelief)->
+					      place(-relx=>0,-rely=>1.0,
+						    -anchor=>sw, 
+						    -bordermode=>outside);
+    
+    if($orient eq 'vertical'){
+
+	$unlittext=&maketext($name,$width-($pad*2),
+				   $height-($pad*2),$fore,$back,"vertical");
+	$littext=&maketext($name,$width-($pad*2),
+				 $height-($pad*2),$afore,$aback,"vertical");
+
+    }else{
+
+	$unlittext=&maketext($name,$width-($pad*2),
+				   $height-($pad*2),$fore,$back,"horizontal");
+	$littext=&maketext($name,$width-($pad*2),
+				 $height-($pad*2),$afore,$aback,"horizontal");
+
+    }
+    
+    $unlit->createImage($pad,$height-$pad,-image=>$unlittext,-anchor=>'sw');
+    
+    $lit->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
+		      -tags=>['littext']);
+
+    $unlit;
+}
+
+sub set{
+    my($bar,$per)=@_;
+    
+    my $orient=$main::toplevel->optionGet("bars","Bars");
+    my $border=$bar->{'lit'}->cget("-borderwidth");
+    if($orient eq 'vertical'){
+	$bar->{'lit'}->coords('littext',$pad,($per-$pad));
+	$bar->{'lit'}->configure('-height'=>($per-2*$border));
+    }else{
+	$bar->{'lit'}->configure('-width'=>($per-2*$border));
+    }
+}
+
+sub maketext{
+    my($text,$width,$height,$fore,$back,$dir)=@_;
+    
+    $data=qx{pbmtext -font $main::fontfile $text | pnmcrop 2>/dev/null };
+    
+    die unless IPC::Open2::open2(OUT,IN,"pnmfile");
+    print IN $data;
+    
+    my $test;
+    while(<OUT>){
+	$test=$test.$_;
+    }
+    close IN;
+    close OUT;
+    
+    $test=~m/(\d*)\s*by\s*(\d*)/;
+    my$ratio=$1/$2;
+
+    if($dir eq "vertical"){
+
+	# will it be too long to fit with a preserved aspect ratio?
+	if($ratio > $height/$width){
+	    # yes.  Squash it
+	    
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xsize $height -ysize $width| pnmflip -r90 |ppmtoxpm 2>/dev/null");
+	    
+	}else{
+	    # no.  preserve the ratio
+	    
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xysize $height $width| pnmflip -r90 |ppmtoxpm 2>/dev/null");
+	    
+	}
+    }else{
+	
+	# will it be too long to fit with a preserved aspect ratio?
+	if($ratio > $width/$height){
+	    # yes.  Squash it
+	    
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xsize $width -ysize $height|ppmtoxpm 2>/dev/null");
+	    
+	}else{
+	    # no.  preserve the ratio
+	    
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xysize $width $height|ppmtoxpm 2>/dev/null");
+	    
+	}
+    }
+
+    print IN $data;
+    undef $data;
+    while(<OUT>){
+	$data=$data.$_;
+    }
+    close IN;
+    close OUT;
+
+    $main::toplevel->Pixmap('-data'=>"$data");
+}
+
+package main;
+
+$|=1;
+$0="moaning-goat-meter"; # OK, this is evil.
+
+$moddir="/home/xiphmont/SnotfishCVS/mgm/modules/";
+$fontfile="helvetica24.bdf";
+
+&doit(@ARGV);
+
+$test=new MGM::Bar(100,20,'gray','blue4','white','red','CPU','groove','raised')->place(-x=>0,-y=>0,-anchor=>nw);
+
+$test->repeat(1000,[sub{$test->set()}]);
+
+Tk::MainLoop();
+
+
+
+# toplevel setup
+
+sub doit{
+    # load the modules 
+
+    $toplevel=new MainWindow();
+    $Xname=$toplevel->Class;
+
+    $toplevel->optionAdd("$Xname.background",  '#202020',20);
+    $toplevel->optionAdd("$Xname.foreground",  '#cccccc',20);
+    $toplevel->optionAdd("$Xname.geometry",    '300x100',20);
+    $toplevel->optionAdd("$Xname.stack",       'horizontal',20);
+    $toplevel->optionAdd("$Xname.bars",        'vertical',20);
+    $toplevel->optionAdd("$Xname.pad",         '3',20);
+
+    # suck in command line resources
+    while(my $arg=shift){
+	$arg=~s{-(\S*)$}{$1};
+
+	if($arg){
+	    $val=shift;
+	    $toplevel->optionAdd("$Xname.$arg",  "$val",80);
+	}
+    }
+    
+    $background=$toplevel->optionGet("background","Background");
+    $foreground=$toplevel->optionGet("foreground","Foreground");
+	
+    $toplevel->configure('-background'=>"$background",'-foreground'
+			 =>"$foreground");
+	
+    my $geometry=$toplevel->optionGet("geometry","Geometry");
+    $toplevel->geometry($geometry);
+    $toplevel->resizable(TRUE,TRUE);
+
+    &LoadModules($moddir);
+}
+
+# load the modules
+
+sub LoadModules{
+    my($prefix)=@_;
+    
+    $prefix=~s{/\s*$}{}; # strip trailing slash
+    $platform=`uname`;
+    chop($platform);       
+
+    # get the filenames in $prefix/<platform>
+    my $searchdir="$prefix/$platform";
+    if(opendir(D,$searchdir)){
+
+        my$file;
+        while(defined($file=readdir(D))){
+            if(substr($file,0,1) ne '.'){
+                print "Loading plugin $file\n";
+                &LoadModule($prefix,$file);
+            }
+        }
+        closedir(D);
+        
+    }else{
+        print STDERR "Unable to open plugin directory $searchdir: $!\n";
+    }
+}
+
+sub LoadModule{
+    my($path,$filename)=@_;
+
+    my $moduleref= eval {do "$prefix/share/$filename";};
+
+    if(defined($moduleref)){
+
+      # The hash returned is just a string/function bundle; it contains the 
+      # following keys:
+      #    mgm_module_name         => string containing module name
+      #    mgm_module_construct    => build the bar
+
+      # Be certain we've not already loaded this plugin.
+
+      my$name=$moduleref->{"mgm_module_name"};
+      my$con=$moduleref->{"mgm_module_construct"};
+
+      if(defined($modules{$name})){
+	  print STDERR
+	      "Module $name already loaded.\n";
+	  return(0);
+      }
+      
+      $modules{$name}=$moduleref;
+
+      if(!defined($name)){
+	  print STDERR 
+	      "Module plugin $file doesn't define mgm_module_name.\n";
+	  return 0;
+      }
+      if(!defined($com)){
+	  print STDERR 
+	      "Module plugin $file doesn't define mgm_module_construct.\n";
+	  return 0;
+      }
+
+      # set default module options
+      $toplevel->optionAdd("$Xname.$name.active",           'true',19);
+      $toplevel->optionAdd("$Xname.$name.background",       '#313656',19);
+      $toplevel->optionAdd("$Xname.$name.foreground",       "$background",19);
+      $toplevel->optionAdd("$Xname.$name.activebackground", '#74ade7',19);
+      $toplevel->optionAdd("$Xname.$name.activeforeground", "$background",19);
+      $toplevel->optionAdd("$Xname.$name.activebackground2",'#74ade7',19);
+      $toplevel->optionAdd("$Xname.$name.activeforeground2","$background",19);
+      $toplevel->optionAdd("$Xname.$name.name",             "$name",19);
+      $toplevel->optionAdd("$Xname.$name.activerelief",     'raised',19);
+      $toplevel->optionAdd("$Xname.$name.relief",           'groove',19);
+      $toplevel->optionAdd("$Xname.$name.scale",            'true',19);
+      $toplevel->optionAdd("$Xname.$name.scalecolor",       'yellow',19);
+      $toplevel->optionAdd("$Xname.$name.refresh",          '1000',19);
+  }
+}
+
+package MGM::PixText;
