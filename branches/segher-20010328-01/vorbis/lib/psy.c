@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: psychoacoustics not including preecho
- last mod: $Id: psy.c,v 1.44 2001/03/21 07:44:46 msmith Exp $
+ last mod: $Id: psy.c,v 1.44.2.1 2001/03/28 03:34:12 segher Exp $
 
  ********************************************************************/
 
@@ -28,6 +28,40 @@
 #include "smallft.h"
 #include "scales.h"
 #include "misc.h"
+
+
+
+
+
+
+
+
+//#define todB_t(x) todB(x)
+
+
+#define todB_t(x) (dbtab[(*(int *)&(x) >> 20)&2047])
+
+static float dbtab[2048];
+
+static void initdbtab()
+{
+	int i, x;
+
+	for (i = 0; i < 2048; i++) {
+		*(int *)(dbtab + i) = (i << 20) | (1 << 19);
+		dbtab[i] = todB(dbtab[i]);
+//fprintf(stderr, "%4d: %08x %12.6f\n", i, (i << 20) | (1 << 19), dbtab[i]);
+	}
+}
+
+
+
+
+
+
+
+
+
 
 #define NEGINF -9999.f
 
@@ -183,6 +217,8 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,int n,long rate){
   memset(p,0,sizeof(vorbis_look_psy));
 
 
+initdbtab();
+
   p->eighth_octave_lines=vi->eighth_octave_lines;
   p->shiftoc=rint(log(vi->eighth_octave_lines*8)/log(2))-1;
 
@@ -191,7 +227,7 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,int n,long rate){
   p->total_octave_lines=maxoc-p->firstoc+1;
 
   p->ath=_ogg_malloc(n*sizeof(float));
-  p->octave=_ogg_malloc(n*sizeof(long));
+  p->octave=_ogg_malloc(n*sizeof(int));
   p->bark=_ogg_malloc(n*sizeof(float));
   p->vi=vi;
   p->n=n;
@@ -207,6 +243,9 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,int n,long rate){
 
   p->tonecurves=_ogg_malloc(P_BANDS*sizeof(float **));
   p->noisemedian=_ogg_malloc(n*sizeof(float));
+  p->inoisemedian=_ogg_malloc(n*sizeof(int));
+  p->barknoisewindowlo=_ogg_malloc(n*sizeof(int));
+  p->barknoisewindowhi=_ogg_malloc(n*sizeof(int));
   p->noiseoffset=_ogg_malloc(n*sizeof(float));
   p->peakatt=_ogg_malloc(P_BANDS*sizeof(float *));
   for(i=0;i<P_BANDS;i++){
@@ -299,10 +338,26 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,int n,long rate){
     p->noisemedian[i]=
       p->vi->noisemedian[inthalfoc*2]*(1.-del) + 
       p->vi->noisemedian[inthalfoc*2+2]*del;
+    p->inoisemedian[i]=(int)(65536.0f*p->noisemedian[i]);
     p->noiseoffset[i]=
       p->vi->noisemedian[inthalfoc*2+1]*(1.-del) + 
       p->vi->noisemedian[inthalfoc*2+3]*del;
   }
+
+  {
+    long i=0,lo=0,hi=0;
+    float bi;
+    for(i=0;i<n;i++){
+      /* find new lo/hi */
+      bi=p->bark[i]+p->vi->noisewindowhi;
+      for(;hi<n && (hi<i+p->vi->noisewindowhimin || p->bark[hi]<=bi);hi++) ;
+      p->barknoisewindowhi[i] = hi;
+      bi=p->bark[i]-p->vi->noisewindowlo;
+      for(;lo<i && lo+p->vi->noisewindowlomin<i && p->bark[lo]<=bi;lo++) ;
+      p->barknoisewindowlo[i] = lo;
+    }
+  }
+
   /*_analysis_output("mediancurve",0,p->noisemedian,n,0,0);*/
 }
 
@@ -322,6 +377,9 @@ void _vp_psy_clear(vorbis_look_psy *p){
       }
       _ogg_free(p->tonecurves);
       _ogg_free(p->noisemedian);
+      _ogg_free(p->inoisemedian);
+      _ogg_free(p->barknoisewindowlo);
+      _ogg_free(p->barknoisewindowhi);
       _ogg_free(p->noiseoffset);
       _ogg_free(p->peakatt);
     }
@@ -337,15 +395,18 @@ static void seed_curve(float *seed,
   int i;
   long seedptr;
   float *posts,*curve;
+  int a,b;
 
   int choice=(int)((amp+dBoffset)*.1f);
   choice=max(choice,0);
   choice=min(choice,P_LEVELS-1);
   posts=curves[choice];
+  a=posts[0];
+  b=posts[1];
   curve=posts+2;
-  seedptr=oc+(posts[0]-16)*linesper-(linesper>>1);
+  seedptr=oc+(a-16)*linesper-(linesper>>1);
 
-  for(i=posts[0];i<posts[1];i++){
+  for(i=a;i<b;i++){
     if(seedptr>0){
       float lin=amp+curve[i];
       if(seed[seedptr]<lin)seed[seedptr]=lin;
@@ -537,7 +598,7 @@ static void max_seeds(vorbis_look_psy *p,float *minseed,float *maxseed,
 #define BINCOUNT (200*4)
 #define LASTBIN  (BINCOUNT-1)
 
-static void bark_noise_median(long n,float *b,float *f,float *noise,
+static void old_bark_noise_median(long n,float *b,float *f,float *noise,
 			      float lowidth,float hiwidth,
 			      int lomin,int himin,
 			      float *thresh,float *off){
@@ -570,6 +631,7 @@ static void bark_noise_median(long n,float *b,float *f,float *noise,
       else
 	countbelow++;
     }
+//fprintf(stderr, "%d: %d, ", i, hi);
     bi=b[i]-lowidth;
     for(;lo<i && lo+lomin<i && b[lo]<=bi;lo++){
       int bin=BIN(f[lo]);
@@ -581,9 +643,10 @@ static void bark_noise_median(long n,float *b,float *f,float *noise,
       else
 	countbelow--;
     }
+//fprintf(stderr, "%d\n", lo);
 
     /* move the median if needed */
-    if(countabove+countbelow){
+//    if(countabove+countbelow){
       threshi = thresh[i]*(countabove+countbelow);
 
       while(threshi>countbelow && median>0){
@@ -598,10 +661,85 @@ static void bark_noise_median(long n,float *b,float *f,float *noise,
 	countbelow-=radix[median];
 	median++;
       }
-    }
+//    }
     noise[i]=BINdB(median)+off[i];
   }
+//exit(1);
+}
 
+static void bark_noise_median(long n,float *b,float *f,float *noise,
+			      float lowidth,float hiwidth,
+			      int lomin,int himin,
+			      float *thresh,int *ithresh,int *bhi, int *blo, float *off){
+  long i=0,lo=0,hi=0;
+//  float bi;
+int threshi;
+  long median=LASTBIN;
+  float negFour = -4.0f;
+  float negQuarter = -0.25f;
+
+  int radix[BINCOUNT];
+  int countabove=0;
+  int countbelow=0;
+
+//old_bark_noise_median(n,b,f,noise,lowidth,hiwidth,lomin,himin,thresh,off);return;
+  memset(radix,0,sizeof(radix));
+
+  for(i=0;i<n;i++){
+    /* find new lo/hi */
+//    bi=b[i]+hiwidth;
+//    for(;hi<n && (hi<i+himin || b[hi]<=bi);hi++){
+    for(;hi<bhi[i];hi++){
+      int bin=BIN(f[hi]);
+      if(bin>LASTBIN)bin=LASTBIN;
+      if(bin<0)bin=0;
+      radix[bin]++;
+//countabove += (bin < median);
+//countbelow += (bin >= median);
+      if(bin<median)
+	countabove++;
+    else
+	countbelow++;
+    }
+//fprintf(stderr, "%d: %d, ", i, hi);
+//    bi=b[i]-lowidth;
+//    for(;lo<i && lo+lomin<i && b[lo]<=bi;lo++){
+    for(;lo<blo[i];lo++){
+      int bin=BIN(f[lo]);
+      if(bin>LASTBIN)bin=LASTBIN;
+      if(bin<0)bin=0;
+      radix[bin]--;
+//countabove -= (bin < median);
+//countbelow -= (bin >= median);
+      if(bin<median)
+	countabove--;
+      else
+	countbelow--;
+    }
+//fprintf(stderr, "%d\n", lo);
+
+    /* move the median if needed */
+//      threshi = thresh[i]*(countabove+countbelow);
+//      threshi = (ithresh[i]*(countabove+countbelow)+32768)>>16;
+      threshi = (ithresh[i]*(countabove+countbelow))>>16;
+//!fprintf(stderr, "%f %f\n", (float)threshi, thresh[i]*(countabove+countbelow));
+//if(n==1024)fprintf(stderr, "%f\n", thresh[i]);
+      while(threshi>countbelow && median>0){
+	median--;
+	countabove-=radix[median];
+	countbelow+=radix[median];
+      }
+
+      while(threshi<(countbelow-radix[median]) &&
+	    median<LASTBIN){
+	countabove+=radix[median];
+	countbelow-=radix[median];
+	median++;
+      }
+    noise[i]=BINdB(median)+off[i];
+  }
+//if(n==1024)exit(1);
+//!exit(1);
 }
 
 float _vp_compute_mask(vorbis_look_psy *p,
@@ -620,14 +758,14 @@ float _vp_compute_mask(vorbis_look_psy *p,
 
   /* go to dB scale. Also find the highest peak so we know the limits */
   for(i=0;i<n;i++){
-    fft[i]=todB_nn(fft[i]);
+    fft[i]=todB_t(fft[i]);
     if(fft[i]>localmax)localmax=fft[i];
   }
   if(specmax<localmax)specmax=localmax;
 
 
   for(i=0;i<n;i++){
-    mdct[i]=todB(mdct[i]);
+    mdct[i]=todB_t(mdct[i]);
   }
 
   _analysis_output("mdct",seq,mdct,n,0,0);
@@ -641,6 +779,9 @@ float _vp_compute_mask(vorbis_look_psy *p,
 		      p->vi->noisewindowlomin,
 		      p->vi->noisewindowhimin,
 		      p->noisemedian,
+		      p->inoisemedian,
+		      p->barknoisewindowhi,
+		      p->barknoisewindowlo,
 		      p->noiseoffset);
     /* suppress any noise curve > specmax+p->vi->noisemaxsupp */
     for(i=0;i<n;i++)
