@@ -130,6 +130,7 @@ sub write{
     my($xpm,$black,$white,$quant,$transp)=@_;
     # easier than reading, but harder to do efficiently
     
+    $transp=-1 if(!defined($transp));
     my$width=$xpm->{"width"};
     my$height=$xpm->{"height"};
     my$colors=0;
@@ -162,8 +163,8 @@ sub write{
     foreach $key (0..$quant){
 	$c=chr($key+65);
 	$out.="\",\n\"$c  $type ";
-	if("#$key" eq 'transp'){
-	    $out.="None\",\n";
+	if($key eq $transp){
+	    $out.="None";
 	}else{
 	    
 	    my$r=($key/$quant)*$wr+$br;

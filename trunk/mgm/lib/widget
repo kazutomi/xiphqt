@@ -265,7 +265,7 @@ sub cacheem{
 		Pixmap(-data=>$MGM::Bar::font->
 		       maketext($num,$size,undef,1,
 				$orient eq 'vertical'?1:undef)->
-		       write($fg,$bg,32));
+		       write($fg,$bg,32,32));
 	}
     }
 }
@@ -288,19 +288,19 @@ sub cacheprompt{
 	$prompts{"$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg,32));
+					  write($fg,$bg,32,32));
 	$prompts{"k$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("k$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg,32));
+					  write($fg,$bg,32,32));
 	$prompts{"M$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("M$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg,32));
+					  write($fg,$bg,32,32));
 	$prompts{"G$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("G$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg,32));
+					  write($fg,$bg,32,32));
     }
 }
 
