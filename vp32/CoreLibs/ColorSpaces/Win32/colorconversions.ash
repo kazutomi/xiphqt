@@ -20,6 +20,8 @@ CConvParams  STRUC
     YBuffer         dd  ?
     UBuffer         dd  ?
     VBuffer         dd  ?
+    SrcPitch        dd  ?
+    YPitch          dd  ?
 CConvParams  ENDS
 ;------------------------------------------------
 
@@ -32,6 +34,8 @@ YVYUConvParams  STRUC
     YBuffer         dd  ?
     UBuffer         dd  ?
     VBuffer         dd  ?
+    SrcPitch        dd  ?
+    YPitch          dd  ?
 YVYUConvParams  ENDS
 
 ;------------------------------------------------

@@ -1,15 +1,3 @@
-//==========================================================================
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-//  KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
-//  PURPOSE.
-//
-//  Copyright (c) 1999 - 2001  On2 Technologies Inc. All Rights Reserved.
-//
-//--------------------------------------------------------------------------
-
-
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
 // Used by dxlqt.rc

@@ -114,7 +114,7 @@ BEGIN
                     8,NOT WS_GROUP
     CONTROL         154,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_SUNKEN | WS_BORDER,1,2,255,126
-    CTEXT           "VP3 Codec - Version 3.2.2.0\nCopyright © 2001 On2 Technologies. All Rights Reserved.",
+    CTEXT           "VP3 Codec - Version 3.2.4.0\nCopyright © 2001 On2 Technologies. All Rights Reserved.",
                     IDC_STATIC,19,129,223,21
     GROUPBOX        "   Auto Key Frame Settings   ",IDC_STATIC,103,151,153,
                     84
@@ -139,8 +139,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,2,0
- PRODUCTVERSION 3,2,2,0
+ FILEVERSION 3,2,4,0
+ PRODUCTVERSION 3,2,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -158,14 +158,14 @@ BEGIN
             VALUE "Comments", "On2 VP3 Video Codec \0"
             VALUE "CompanyName", "On2.com\0"
             VALUE "FileDescription", "On2_VP3\0"
-            VALUE "FileVersion", "3, 2, 2, 0\0"
+            VALUE "FileVersion", "3, 2, 4, 0\0"
             VALUE "InternalName", "On2_VP3p\0"
             VALUE "LegalCopyright", "Copyright © 2000 On2.com\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "On2_VP3\0"
-            VALUE "ProductVersion", "3, 2, 2, 0\0"
+            VALUE "ProductVersion", "3, 2, 4, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
