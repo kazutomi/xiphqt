@@ -2,9 +2,9 @@
 
    make Esc behavior correct in editing menus by using temp cue/tag storage
    tag list menu
-
+   proper locking around edit to prevent playback problems
 */
-
+#define _REENTRANT 1
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -13,6 +13,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#define __USE_GNU 1
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
@@ -20,6 +22,8 @@
 #include <curses.h>
 #include <fcntl.h>
 
+#include <sys/soundcard.h>
+#include <sys/ioctl.h>
 
 #define int16 short
 static char *tempdir="/tmp/beaverphonic/";
@@ -30,16 +34,27 @@ static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
 
-pthread_mutex_t master_mutex=PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t master_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static long main_master_volume=50;
 char *program;
-static int playback_buffer_minfill=-1;
+static int playback_buffer_minfill=0;
 static int running=1;
 static enum menutype menu=MENU_MAIN;
 static int cue_list_position=0;
 static int cue_list_number=0;
 static int firstsave=0;
 static int unsaved=0;
+
+static FILE *audiofd=NULL;
+int ttyfd;
+int ttypipe[2];
+
+
+pthread_t main_thread_id;
+pthread_t playback_thread_id;
+pthread_t tty_thread_id;
+
+void main_update_tags(int y);
 
 void *m_realloc(void *in,int bytes){
   if(!in)
@@ -63,10 +78,18 @@ void switch_to_ncurses(){
   refresh();                 /* restore save modes, repaint screen */
 }
 
+int mgetch(){
+  while(1){
+    int ret=getch();
+    if(ret>0)return(ret);
+  }
+}
+
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
 #define MAX_CHANNELS 2
 #define CHANNEL_LABEL_LENGTH 50
+int playback_bufsize=0;
 
 typedef struct {
   char label[CHANNEL_LABEL_LENGTH];
@@ -207,6 +230,8 @@ typedef struct {
   
   long   sample_position;
   long   sample_lapping;
+  long   sample_loop_start;
+  long   sample_fade_start;
 
   double master_vol_current;
   double master_vol_target;
@@ -317,7 +342,7 @@ int load_sample(tag *t,const char *path){
     }
     
     t->channels=head.channels;
-    t->samplelength=length/(t->channels*2);
+    t->samplelength=(length-sizeof(head))/(t->channels*2);
 
     /* mmap the sample file */
     fprintf(stderr,"\tmmaping...\n");
@@ -363,10 +388,13 @@ int unload_sample(tag *t){
 
 int edit_tag(int number,tag t){
   int ret;
-  tag *tag;
+  int refcount;
   _alloc_tag_if_needed(number);
+
+  refcount=tag_list[number].refcount;
   
   tag_list[number]=t;
+  tag_list[number].refcount=refcount;
 
   /* state is zeroed when we go to production mode.  Done  */
   return(0);
@@ -572,10 +600,12 @@ int load_cue(FILE *f){
     addnlstr("LOAD ERROR (CUE): too few fields.",80,' ');
     return(-1);
   }
-  if(c.tag>=tag_count ||
-     !tag_list[c.tag].basemap){
-    addnlstr("LOAD ERROR (CUE): references a bad TAG",80,' ');
-    return(-1);
+  if(c.tag!=-1){
+    if(c.tag>=tag_count ||
+       !tag_list[c.tag].basemap){
+      addnlstr("LOAD ERROR (CUE): references a bad TAG",80,' ');
+      return(-1);
+    }
   }
 
   for(i=0;i<maxchannels;i++){
@@ -671,7 +701,7 @@ int load_program(FILE *f){
   }
 
   attroff(A_BOLD);
-  if(ret)getch();
+  if(ret)mgetch();
   return(ret);
 }
    
@@ -683,6 +713,306 @@ int save_program(FILE *f){
   ret|=save_val(f,"MAS",main_master_volume);
   return ret;
 }
+
+/*************** threaded playback ****************************/
+
+static inline double _slew_ms(long ms,double now,double target){
+
+  return((target-now)/(ms*44.1));
+  
+}
+
+/* position in active list */
+static inline void _playback_remove(int i){
+  tag *t=active_list[i];
+  t->activep=0;
+  refresh();
+  active_count--;
+  if(i<active_count)
+    memmove(active_list+i,
+	    active_list+i+1,
+	    (active_count-i)*sizeof(*active_list));
+  write(ttypipe[1],"",1);
+}
+
+/* position in tag list */
+static inline void _playback_add(int tagnum,int cuenum){
+  tag *t=tag_list+tagnum;
+  cue *c=cue_list+cuenum;
+  int j,k;
+
+  if(t->activep)return;
+  t->activep=1;
+  refresh();
+
+  active_list[active_count]=t;
+  active_count++;
+  t->sample_position=0;
+  t->sample_lapping=t->loop_lapping*44.1;
+  if(t->sample_lapping>(t->samplelength-t->sample_loop_start)/2)
+    t->sample_lapping=(t->samplelength-t->sample_loop_start)/2;
+  t->sample_lapping=t->samplelength-t->sample_lapping;
+
+  t->sample_loop_start=t->loop_start*44.1;
+  if(t->sample_loop_start>t->samplelength)
+    t->sample_loop_start=t->samplelength;
+
+  t->sample_fade_start=t->samplelength-t->fade_out*44.1;
+  if(t->sample_fade_start<0)t->sample_fade_start=0;
+  t->master_vol_current=0;
+
+  t->master_vol_target=c->mix.vol_master;
+  t->master_vol_slew=_slew_ms(c->mix.vol_ms,0,c->mix.vol_master);
+  			   
+  for(j=0;j<MAX_CHANNELS;j++)
+    for(k=0;k<t->channels;k++){
+      t->outvol_current[k][j]=0;
+      t->outvol_target[k][j]=c->mix.outvol[k][j];
+      t->outvol_slew[k][j]=_slew_ms(c->mix.vol_ms,0,c->mix.outvol[k][j]);
+    }
+  write(ttypipe[1],"",1);
+}
+
+/* position in tag list */
+static inline void _playback_mix(int i,int cuenum){
+  tag *t=tag_list+i;
+  cue *c=cue_list+cuenum;
+  int j,k;
+
+  if(!t->activep)return;
+
+  t->master_vol_target=c->mix.vol_master;
+  t->master_vol_slew=_slew_ms(c->mix.vol_ms,t->master_vol_current,
+			   c->mix.vol_master);
+  			   
+  for(j=0;j<MAX_CHANNELS;j++)
+    for(k=0;k<t->channels;k++){
+      t->outvol_target[k][j]=c->mix.outvol[k][j];
+      t->outvol_slew[k][j]=_slew_ms(c->mix.vol_ms,t->outvol_current[k][j],
+				 c->mix.outvol[k][j]);
+    }
+}
+
+static inline void _next_sample(int16 *out){
+  int i,j,k;
+  int staging[MAX_CHANNELS];
+
+  memset(staging,0,sizeof(staging));
+
+  /* iterate through the active sample list */
+  for(i=active_count-1;i>=0;i--){
+    tag *t=active_list[i];
+    for(j=0;j<t->channels;j++){
+      double value;
+      int lappoint=t->samplelength-t->sample_lapping;
+
+      /* get the base value, depending on loop or no */
+      if(t->loop_p && t->sample_position>=lappoint){
+	long looppos=t->sample_position-lappoint+t->sample_loop_start;
+	double value2=t->data[looppos*t->channels+j];
+	value=t->data[t->sample_position*t->channels+j];
+	
+	value=(value2*looppos/t->sample_lapping+
+	  value-value*looppos/t->sample_lapping)*t->master_vol_current*.01;
+
+      }else{
+	value=t->data[t->sample_position*t->channels+j]*
+	  t->master_vol_current*.01;
+      }
+
+      /* output split and mix */
+      for(k=0;k<MAX_CHANNELS;k++){
+	staging[k]+=value*t->outvol_current[j][k]*main_master_volume*.0001;
+	
+	t->outvol_current[j][k]+=t->outvol_slew[j][k];
+	if(t->outvol_slew[j][k]>0 && 
+	   t->outvol_current[j][k]>t->outvol_target[j][k]){
+	  t->outvol_slew[j][k]=0;
+	  t->outvol_current[j][k]=t->outvol_target[j][k];
+	}
+	t->outvol_current[j][k]+=t->outvol_slew[j][k];
+	if(t->outvol_slew[j][k]<0 && 
+	   t->outvol_current[j][k]<t->outvol_target[j][k]){
+	  t->outvol_slew[j][k]=0;
+	  t->outvol_current[j][k]=t->outvol_target[j][k];
+	}
+      }
+    }
+
+    /* update master volume */
+    t->master_vol_current+=t->master_vol_slew;
+    if(t->master_vol_slew>0 && t->master_vol_current>t->master_vol_target){
+      t->master_vol_slew=0;
+      t->master_vol_current=t->master_vol_target;
+    }
+    if(t->master_vol_slew<0 && t->master_vol_current<t->master_vol_target){
+      t->master_vol_slew=0;
+      t->master_vol_current=t->master_vol_target;
+    }
+    if(t->master_vol_current==0)
+      _playback_remove(i);
+    
+    /* determine if fade out has begun */
+    if(t->sample_position==t->sample_fade_start){
+      /* effect a master volume slew *now* */
+      t->master_vol_slew=_slew_ms(t->fade_out,
+				  t->master_vol_current,0);
+      t->master_vol_target=0;
+    }
+
+    /* update playback position */
+    t->sample_position++;
+    if(t->sample_position>=t->samplelength){
+      if(t->loop_p){
+	t->sample_position=t->sample_loop_start;
+      }else{
+	_playback_remove(i);
+      }
+    }
+
+  }
+
+  /* declipping, conversion */
+  for(i=0;i<MAX_CHANNELS;i++){
+    if(channel_list[i].peak<fabs(staging[i]))
+      channel_list[i].peak=fabs(staging[i]);
+    if(staging[i]>32767.){
+      out[i]=32767;
+    }else if(staging[i]<-32768.){
+      out[i]=-32768;
+    }else
+      out[i]=rint(staging[i]);
+  }
+}
+
+static int playback_active=0;
+static int playback_exit=0;
+
+void *playback_thread(void *dummy){
+  /* sound device startup */
+  audio_buf_info info;
+  int fd=fileno(audiofd),i;
+  int format=AFMT_S16_NE;
+  int stereo=1;
+  int rate=44100;
+  long last=0;
+  long delay=10;
+  long totalsize;
+  int fragment=0x7fff000d;
+  int16 audiobuf[256];
+
+  ioctl(fd,SNDCTL_DSP_SETFRAGMENT,&fragment);
+  ioctl(fd,SNDCTL_DSP_SETFMT,&format);
+  ioctl(fd,SNDCTL_DSP_STEREO,&stereo);
+  ioctl(fd,SNDCTL_DSP_SPEED,&rate);
+
+  ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
+  totalsize=info.fragstotal*info.fragsize;
+
+  while(!playback_exit){
+    int samples;
+
+    pthread_mutex_lock(&master_mutex);
+    delay--;
+    if(delay<0){
+      delay=0;
+      ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
+      playback_bufsize=totalsize;      
+      samples=playback_bufsize-info.bytes;
+      
+      if(playback_buffer_minfill>samples)
+	playback_buffer_minfill=samples;
+    }
+
+    for(i=0;i<256;i+=2)
+      _next_sample(audiobuf+i);
+    fwrite(audiobuf,2,256,audiofd);
+    
+    pthread_mutex_unlock(&master_mutex);
+    
+    {
+      struct timeval tv;
+      long foo;
+      gettimeofday(&tv,NULL);
+      foo=tv.tv_sec*2+tv.tv_usec/500000;
+      if(last!=foo)
+	write(ttypipe[1],"",1);
+      last=foo;
+    }
+
+  }
+  
+  playback_active=0;
+  
+  /* sound device shutdown */
+  
+  ioctl(fd,SNDCTL_DSP_RESET);
+  pthread_mutex_unlock(&master_mutex);
+  return(NULL);
+}
+
+/* cuenum is the base number */ 
+int play_cue(int cuenum){
+  pthread_mutex_lock(&master_mutex);
+  while(1){
+    cue *c=cue_list+cuenum;
+    if(c->tag>=0){
+      if(c->tag_create_p)
+	_playback_add(c->tag,cuenum);
+      else
+	_playback_mix(c->tag,cuenum);
+    }
+    cuenum++;
+    if(cuenum>=cue_count || cue_list[cuenum].tag==-1)break;
+  }
+  /* is a playback thread running? */
+  if(!playback_active){
+    pthread_t dummy;
+    pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
+    playback_active=1;
+  }
+  pthread_mutex_unlock(&master_mutex);
+  return(0);
+}
+
+int play_sample(int cuenum){
+  cue *c=cue_list+cuenum;
+  pthread_mutex_lock(&master_mutex);
+  if(c->tag>=0){
+    if(c->tag_create_p)
+      _playback_add(c->tag,cuenum);
+      else
+	_playback_mix(c->tag,cuenum);
+  }
+  
+  /* is a playback thread running? */
+  if(!playback_active){
+    pthread_t dummy;
+    pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
+    playback_active=1;
+  }
+  pthread_mutex_unlock(&master_mutex);
+  return(0);
+}
+
+int halt_playback(){
+  int i;
+  pthread_mutex_lock(&master_mutex);
+  for(i=0;i<tag_count;i++){
+    tag *t=tag_list+i;
+    int j,k;
+
+    if(t->activep){
+
+      t->master_vol_target=0;
+      t->master_vol_slew=_slew_ms(100,t->master_vol_current,0);
+      
+    }
+  }
+  pthread_mutex_unlock(&master_mutex);
+  return(0);
+}
+
 
 /***************** simple form entry fields *******************/
 
@@ -920,11 +1250,11 @@ int form_handle_char(form *f,int c){
 	{
 	  int *val=(int *)ff->var;
 	  switch(c){
-	  case '+':case '=':case KEY_LEFT:
+	  case '+':case '=':case KEY_RIGHT:
 	    (*val)++;
 	    if(*val>100)*val=100;
 	    break;
-	  case '-':case '_':case KEY_RIGHT:
+	  case '-':case '_':case KEY_LEFT:
 	    (*val)--;
 	    if(*val<0)*val=0;
 	    break;
@@ -1050,17 +1380,27 @@ void main_update_playbuffer(int y){
     char buf[20];
     int  n;
     static int starve=0;
-    
+
     pthread_mutex_lock(&master_mutex);
     n=playback_buffer_minfill;
+    playback_buffer_minfill=playback_bufsize;
     pthread_mutex_unlock(&master_mutex);
     
-    if(n==0)starve=1;
-    if(n<0){
+    if(n==0){
+      starve=15;
+    }
+    starve--;
+    if(starve<0){
       starve=0; /* reset */
-      n=0;
     }
     
+    if(playback_bufsize)
+      n=rint(100.*n/playback_bufsize);
+    else{
+      n=0;
+      starve=0;
+    }
+
     move(y,4);
     addstr("playbuffer: ");
     sprintf(buf,"%3d%% %s",n,starve?"***STARVE***":"            ");
@@ -1069,7 +1409,7 @@ void main_update_playbuffer(int y){
 }
 
 #define todB_nn(x)   ((x)==0.f?-400.f:log((x))*8.6858896f)
-
+static int clip[MAX_CHANNELS];
 void main_update_outchannel_levels(int y){
   int i,j;
   if(menu==MENU_MAIN){
@@ -1078,10 +1418,17 @@ void main_update_outchannel_levels(int y){
       char buf[11];
       pthread_mutex_lock(&master_mutex);
       val=channel_list[i].peak;
+      channel_list[i].peak=0;
       pthread_mutex_unlock(&master_mutex);
-
+      
       move(y+i+1,24);
       if(val>=32767){
+	clip[i]=15;
+	val=32767;
+      }
+      clip[i]--;
+      if(clip[i]<0)clip[i]=0;
+      if(clip[i]){
 	attron(A_BOLD);
 	addstr("CLIP");
       }else{
@@ -1173,8 +1520,11 @@ void main_update_cues(int y){
 void main_update_tags(int y){
   if(menu==MENU_MAIN){
     int i;
+    static int last_tags=0;
 
     move(y,0);
+    
+    pthread_mutex_lock(&master_mutex);
     if(active_count){
       int len;
       addstr("playing tags:");
@@ -1186,10 +1536,9 @@ void main_update_tags(int y){
 	label_number path;
 	
 	move(y+i,14);
-	/* normally called by playback so no locking */
 	loop=active_list[i]->loop_p;
-	ms=active_list[i]->samplelength-active_list[i]->sample_position;
-	path=active_list[i]->sample_path;
+	ms=(active_list[i]->samplelength-active_list[i]->sample_position)/44.1;
+	path=active_list[i]->sample_desc;
 	
 	if(loop)
 	  sprintf(buf,"[loop] ");
@@ -1198,13 +1547,17 @@ void main_update_tags(int y){
 	addstr(buf);
 	addnlstr(label_text(path),55,' ');
       }
-      move(y+i,14);
-      addnlstr("",55,' ');
     }else{
       addstr("             ");
-      move(y,14);
+    }
+
+    for(i=active_count;i<last_tags;i++){
+      move(y+i,14);
       addnlstr("",55,' ');
     }
+
+    last_tags=active_count;
+    pthread_mutex_unlock(&master_mutex);
   }
 }
 
@@ -1300,7 +1653,6 @@ int main_menu(){
   move(2,7);
   addstr(" output ");
 
-
   mvhline(9+MAX_CHANNELS,0,0,80);
   mvhline(18+MAX_CHANNELS,0,0,80);
 
@@ -1325,14 +1677,14 @@ int main_menu(){
       addnlstr("Really quit? [y/N] ",80,' ');
       attroff(A_BOLD);
       refresh();
-      ch=getch();
+      ch=mgetch();
       if(ch=='y'){
 	if(unsaved){
 	  move(0,0);
 	  attron(A_BOLD);
 	  addnlstr("Save changes first? [Y/n] ",80,' ');
 	  attroff(A_BOLD);
-	  ch=getch();
+	  ch=mgetch();
 	  if(ch!='n' && ch!='N')save_top_level(program);
 	}
 	return(MENU_QUIT);
@@ -1352,13 +1704,13 @@ int main_menu(){
       break;
     case 'd':
       if(editable){
-	//halt_playback();
+	halt_playback();
 	move(0,0);
 	attron(A_BOLD);
 	addnlstr("Really delete cue? [y/N] ",80,' ');
 	attroff(A_BOLD);
 	refresh();
-	ch=getch();
+	ch=mgetch();
 	if(ch=='y'){
 	  unsaved=1;
 	  delete_cue_bank(cue_list_number);
@@ -1378,7 +1730,7 @@ int main_menu(){
       break;
     case 's':
       save_top_level(program);
-      getch();
+      mgetch();
       return(MENU_MAIN);
     case '-':case '_':
       unsaved=1;
@@ -1389,7 +1741,7 @@ int main_menu(){
       main_update_master(main_master_volume+1,5);
       break;
     case ' ':
-      //run_next_cue();
+      play_cue(cue_list_number);
       move_next_cue();
       break;
     case KEY_UP:case '\b':case KEY_BACKSPACE:
@@ -1399,10 +1751,10 @@ int main_menu(){
       move_next_cue();
       break;
     case 'H':
-      //halt_playback();
+      halt_playback();
       break;
     case 'R':
-      //halt_playback();
+      halt_playback();
       cue_list_position=0;
       cue_list_number=0;
       return(MENU_MAIN);
@@ -1412,6 +1764,11 @@ int main_menu(){
       else
 	editable=1;
       update_editable();
+    case 0:
+      main_update_tags(19+MAX_CHANNELS);
+      main_update_playbuffer(4);
+      main_update_outchannel_labels(7);
+      break;
     }
   }
 }
@@ -1453,7 +1810,7 @@ int main_keypress_menu(){
 
   mvaddstr(19,12,"any key to return to main menu");
   refresh();
-  getch();
+  mgetch();
   return(MENU_MAIN);
 }
 
@@ -1483,7 +1840,7 @@ int add_cue_menu(){
   refresh();
   
   while(1){
-    int ch=form_handle_char(&f,getch());
+    int ch=form_handle_char(&f,mgetch());
     switch(ch){
     case KEY_ENTER:case 'x':case 'X':
       goto enter;
@@ -1535,6 +1892,8 @@ void edit_keypress_menu(){
   mvaddstr(9,2, "        d");
   mvaddstr(10,2,"    enter");
   mvaddstr(11,2,"        l");
+  mvaddstr(12,2,"    space");
+  mvaddstr(12,2,"        H");
 
   attroff(A_BOLD);
   mvaddstr(2,12,"keypress menu (you're there now)");
@@ -1546,10 +1905,12 @@ void edit_keypress_menu(){
   mvaddstr(9,12,"delete highlighted action");
   mvaddstr(10,12,"edit highlighted action");
   mvaddstr(11,12,"list all samples and sample tags");
+  mvaddstr(12,12,"play cue");
+  mvaddstr(13,12,"halt playback");
 
-  mvaddstr(13,12,"any key to return to cue edit menu");
+  mvaddstr(15,12,"any key to return to cue edit menu");
   refresh();
-  getch();
+  mgetch();
 }
 
 void edit_sample_menu(int n){
@@ -1656,6 +2017,12 @@ void edit_sample_menu(int n){
     int ch=form_handle_char(&f,getch());
     
     switch(ch){
+    case ' ':
+      play_sample(n);
+      break;
+    case 'H':
+      halt_playback();
+      break;
     case 27:
       goto out;
     case 'x':case 'X':case KEY_ENTER:
@@ -1796,7 +2163,7 @@ int add_sample_menu(){
   form_redraw(&f);
 
   while(1){
-    int ch=getch();
+    int ch=mgetch();
     int re=form_handle_char(&f,ch);
 
     if(re>=0 || !f.edit){
@@ -1804,19 +2171,21 @@ int add_sample_menu(){
 	form_clear(&f);
 	return(MENU_EDIT);
       }
-      break;
+
+      /* try to load the sample! */
+      switch_to_stderr();
+      memset(&t,0,sizeof(t));
+      if(load_sample(&t,path)){
+	fprintf(stderr,"Press enter to continue\n");
+	getc(stdin);
+	switch_to_ncurses();
+
+      }else{
+	switch_to_ncurses();
+	break;
+      }
     }
   }
-
-  /* try to load the sample! */
-  switch_to_stderr();
-  if(load_sample(&t,path)){
-    fprintf(stderr,"Press enter to continue\n");
-    getc(stdin);
-    switch_to_ncurses();
-    return(1);
-  }
-  switch_to_ncurses();
 
   unsaved=1;
 
@@ -1886,7 +2255,7 @@ int add_mix_menu(){
   addstr("' for a list of sample tags                    ");
 
   while(1){
-    int ch=getch();
+    int ch=mgetch();
     int re=form_handle_char(&f,ch);
 
     if(re>=0 || !f.edit){
@@ -1896,7 +2265,7 @@ int add_mix_menu(){
       }
       if(tagno>=tag_count || tag_list[tagno].refcount<=0){
 	mvaddstr(4,2,"Bad tag number; any key to continue.");
-	getch();
+	mgetch();
 	mvaddstr(4,2,"'");
 	attron(A_BOLD);
 	addstr("l");
@@ -1986,7 +2355,7 @@ int edit_cue_menu(){
     form_redraw(&f);
     
     while(loop){
-      int ch=form_handle_char(&f,getch());
+      int ch=form_handle_char(&f,mgetch());
       
       switch(ch){
       case '?':case '/':
@@ -2023,6 +2392,12 @@ int edit_cue_menu(){
       case 'l': case 'L':
 	//list_tag_menu();
 	loop=0;
+	break;
+      case ' ':
+	play_cue(cue_list_number);
+	break;
+      case 'H':
+	halt_playback();
 	break;
       case KEY_ENTER:
 	if(f.cursor==3+actions){
@@ -2072,13 +2447,25 @@ int main_loop(){
       menu=menu_output();
       break;
     case MENU_EDIT:
-      //halt_playback();
+      halt_playback();
       menu=edit_cue_menu();
       break;
     }
   }
 }
-  
+
+pthread_mutex_t pipe_mutex=PTHREAD_MUTEX_INITIALIZER;
+
+void *tty_thread(void *dummy){
+  char buf;
+
+  while(!playback_exit){
+    int ret=read(ttyfd,&buf,1);
+    if(ret==1)
+      write(ttypipe[1],&buf,1);
+  }
+}
+
 int main(int gratuitously,char *different[]){
   int lf;
 
@@ -2102,31 +2489,78 @@ int main(int gratuitously,char *different[]){
     exit(1);
   }
 
-  /* load the sound config if the file exists, else create it */
-  program=strdup(different[1]);
-  {
-    FILE *f=fopen(program,"rb");
-    if(f){
-      if(load_program(f)){
-	fprintf(stderr,"Press enter to continue\n");
-	getc(stdin);
-      }
-      fclose(f);
-    }
+  audiofd=fopen("/dev/dsp","wb");
+  if(!audiofd){
+    fprintf(stderr,"unable to open audio device: %s.\n",strerror(errno));
+    fprintf(stderr,"\nPress enter to continue\n");
+    getc(stdin);
   }
 
+  /* set up the hack for interthread ncurses event triggering through
+   input subversion */
+  ttyfd=open("/dev/tty",O_RDONLY);
+  if(ttyfd<0){
+    fprintf(stderr,"Unable to open /dev/tty:\n"
+	    "  %s\n",strerror(errno));
+    
+    exit(1);
+  }
+  if(pipe(ttypipe)){
+    fprintf(stderr,"Unable to open tty pipe:\n"
+	    "  %s\n",strerror(errno));
+    
+    exit(1);
+  }
+  dup2(ttypipe[0],0);
+  pthread_create(&tty_thread_id,NULL,tty_thread,NULL);
+  
 
+
+
+
+
+  /* load the sound config if the file exists, else create it */
   initscr(); cbreak(); noecho();
   nonl();
   intrflush(stdscr, FALSE);
   keypad(stdscr, TRUE);
   use_default_colors();
   signal(SIGINT,SIG_IGN);
-
   
+  clear();
+  switch_to_stderr();
+  program=strdup(different[1]);
+  {
+    FILE *f=fopen(program,"rb");
+    if(f){
+      if(load_program(f)){
+	fprintf(stderr,"\nPress enter to continue\n");
+	getc(stdin);
+      }
+      fclose(f);
+    }
+  }
+  switch_to_ncurses();
+
+  main_thread_id=pthread_self();
+
   main_loop();
   endwin();                  /* restore original tty modes */  
   close(lf);
+  halt_playback();
+  pthread_mutex_lock(&master_mutex);
+  playback_exit=1;
+  pthread_mutex_unlock(&master_mutex);
+
+  while(1){
+    pthread_mutex_lock(&master_mutex);
+    if(!playback_active)break;
+    sched_yield();
+    pthread_mutex_unlock(&master_mutex);
+  }
+  pthread_mutex_unlock(&master_mutex);
+  fclose(audiofd);
+
   unlink(lockfile);
 }  
 
