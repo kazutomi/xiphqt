@@ -20,15 +20,15 @@
 
 #include "definitions.h"
 
-char lasterror[BUFSIZE];
-FILE *logfile = NULL;
-
 extern ices_config_t ices_config;
 
 /* Private function declarations */
 static void ices_log_string (char *format, char *string);
 static int ices_log_open_logfile ();
 static int ices_log_close_logfile ();
+
+static char lasterror[BUFSIZE];
+static FILE *logfile = NULL;
 
 /* Public function definitions */
 
@@ -39,6 +39,7 @@ ices_log_initialize ()
 	if (!ices_log_open_logfile ()) {
 		ices_log ("%s", ices_log_get_error ());
 	}
+	ices_log ("Logfile opened");
 }
 
 /* Shutdown the log module, close the logfile */

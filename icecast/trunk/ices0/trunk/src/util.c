@@ -32,20 +32,6 @@ const char cnull[7] = "(null)";
 
 /* Public function definitions */
 
-/* Wrapper function around the libshout config object */
-shout_conn_t *
-ices_util_get_conn ()
-{
-	return &conn;
-}
-
-/* Wrapper function around the ices config object */
-ices_config_t *
-ices_util_get_config ()
-{
-	return &ices_config;
-}
-
 /* Wrapper function around strdup. Will always return
  * an allocated string, "(null)" if given NULL argument. */
 char *

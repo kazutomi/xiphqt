@@ -23,6 +23,7 @@
 #include <resolver.h>
 
 extern shout_conn_t conn;
+extern ices_config_t ices_config;
 
 /* Private function declarations */
 static int ices_stream_send_file (const char *file);
@@ -186,12 +187,11 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
 	int bitrate = ices_mp3_get_bitrate ();
 	unsigned char buff[4096];
 	char namespace[1024];
-	ices_config_t *ices_config = ices_util_get_config ();
 
 	ices_log ("Streaming %d bytes from file %s", file_bytes, file);
 
 #ifdef HAVE_LIBLAME
-	if (ices_config->reencode) {
+	if (ices_config.reencode) {
 		ices_reencode_set_channels (ices_mp3_get_channels ());
 		ices_reencode_set_mode (ices_mp3_get_mode ());
 		ices_reencode_set_sample_rate (ices_mp3_get_sample_rate ());
@@ -206,7 +206,7 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
 
 			file_bytes -= read_bytes;
 
-			if (ices_config->reencode) {
+			if (ices_config.reencode) {
 				/* Users wants us to reencode to different
 				 * bitrate, this reencodes and sends the
 				 * reencoded buff to the server */

@@ -19,8 +19,6 @@
  */
 
 /* Public function declarations */
-shout_conn_t *ices_util_get_conn ();
-ices_config_t *ices_util_get_config ();
 char **ices_util_get_argv();
 int ices_util_get_argc();
 char *ices_util_strdup (const char *string);

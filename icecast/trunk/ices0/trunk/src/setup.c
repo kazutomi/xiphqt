@@ -36,6 +36,9 @@ static void ices_setup_run_mode_select (ices_config_t *ices_config);
 static int  ices_setup_shutting_down = 0;
 static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 
+extern shout_conn_t conn;
+extern ices_config_t ices_config;
+
 /* Global function definitions */
 
 /* Top level initialization function for ices.
@@ -44,18 +47,20 @@ static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 void
 ices_setup_initialize ()
 {
-	/* Request libshout and ices configuration objects */
-	ices_config_t *ices_config = ices_util_get_config ();
-	shout_conn_t *conn = ices_util_get_conn ();
-	
-	/* Initialize the libshout structure */
-	shout_init_connection (conn);
-	
+	/* Setup signal handlers */
+	ices_signals_setup ();
+
 	/* Parse the options in the config file, and the command line */
-	ices_setup_parse_options (ices_config);
+	ices_setup_parse_options (&ices_config);
+
+	/* Go into daemon mode if requested */
+	ices_setup_run_mode_select (&ices_config);
+
+	/* Initialize the libshout structure */
+	shout_init_connection (&conn);
 	
 	/* Copy those options to the libshout structure */
-	ices_setup_activate_libshout_changes (conn, ices_config);
+	ices_setup_activate_libshout_changes (&conn, &ices_config);
 
 	/* Open logfiles */
 	ices_log_initialize ();
@@ -65,9 +70,6 @@ ices_setup_initialize ()
 
 	/* Initialize the thread library */
 	thread_initialize ();
-
-	/* Setup signal handlers */
-	ices_signals_setup ();
 
 	/* Initialize the playlist handler */
 	ices_playlist_initialize ();
@@ -80,8 +82,6 @@ ices_setup_initialize ()
 	ices_reencode_initialize ();
 #endif
 	
-	/* Go into daemon mode if requested */
-	ices_setup_run_mode_select (ices_config);
 }
 
 /* Top level ices shutdown function.
@@ -89,8 +89,6 @@ ices_setup_initialize ()
 void
 ices_setup_shutdown ()
 {
-	shout_conn_t *conn;
-
 	/* Protection for multiple threads calling shutdown.
 	 * Remember that this is can be called from many places,
 	 * including the SIGING signal handler */
@@ -105,11 +103,8 @@ ices_setup_shutdown ()
 		thread_library_unlock ();
 	}
 
-	/* Request libshout object */
-	conn = ices_util_get_conn ();
-
 	/* Tell libshout to disconnect from server */
-	shout_disconnect (conn);
+	shout_disconnect (&conn);
 
 #ifdef HAVE_LIBLAME
 	/* Order the reencoding engine to shutdown */
@@ -131,7 +126,7 @@ ices_setup_shutdown ()
 	/* Make sure we're not leaving any memory allocated around when
 	 * we exit. This makes it easier to find memory leaks, and 
 	 * some systems actually don't clean up that well */
-	ices_setup_free_all_allocations (ices_util_get_config());
+	ices_setup_free_all_allocations (&ices_config);
 	
 	/* Let the log and console know we wen't down ok */
 	ices_log ("Ices Exiting...");
@@ -505,14 +500,13 @@ ices_setup_daemonize ()
 	}
 
 	if (icespid != 0) {
-		ices_log ("Into the land of the dreaded daemons we go... (pid: %d)\n", icespid);
 #ifdef HAVE_SETPGID
 		setpgid (icespid, icespid);
 #endif
 		/* Update the pidfile (so external applications know what pid
 		   ices is running with. */
-		ices_setup_update_pidfile (icespid);
-		exit (0);
+		printf ("Into the land of the dreaded daemons we go... (pid: %d)\n", icespid);
+		ices_setup_shutdown ();
 	}
 #ifdef HAVE_SETPGID
 	setpgid (0, 0);
@@ -520,11 +514,11 @@ ices_setup_daemonize ()
 	freopen ("/dev/null", "r", stdin);
 	freopen ("/dev/null", "w", stdout);
 	freopen ("/dev/null", "w", stderr);
-	close (0);
-	close (1);
-	close (2);
-	
-	ices_log_debug ("After daemonizing.. I'm still alive...");
+	close (0); 
+        close (1); 
+        close (2);
+
+	ices_setup_update_pidfile (getpid());
 }
 
 /* Update a file called ices.pid with the given process id */

@@ -22,6 +22,9 @@
 
 #include <thread.h>
 
+extern shout_conn_t conn;
+extern ices_config_t ices_config;
+
 static char *ices_id3_filename = NULL;
 static char *ices_id3_song = NULL;
 static char *ices_id3_artist = NULL;
@@ -208,7 +211,7 @@ ices_id3_update_thread (void *arg)
 		thread_sleep (3000000);
 	}
 
-	ret = shout_update_metadata (ices_util_get_conn (), metastring);
+	ret = shout_update_metadata (&conn, metastring);
 	
 	if (ret != 1)
 		ices_log ("Updating metadata on server failed.");
