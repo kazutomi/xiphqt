@@ -27,6 +27,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/file.h>
 #define __USE_GNU 1
@@ -55,7 +56,7 @@ static int original_policy;
      struct sched_param param; \
      pthread_getschedparam(pthread_self(), &original_policy, &param); \
      if(param.sched_priority==90){ \
-       fprintf(stderr,"ATOMIC sections do not stack at line %ld\n",__LINE__); \
+       fprintf(stderr,"ATOMIC sections do not stack at line %d\n",__LINE__); \
        exit(1); \
      } \
      original_priority=param.sched_priority; \
@@ -77,7 +78,55 @@ static char *tempdir="/tmp/beaverphonic/";
 static char *lockfile="/tmp/beaverphonic/lock";
 //static char *installdir="/usr/local/beaverphonic/";
 static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
-#define VERSION "$Id: soundboard.c,v 1.14 2003/10/02 17:14:19 xiphmont Exp $"
+#define VERSION "$Id: soundboard.c,v 1.13 2003/10/02 17:11:58 xiphmont Exp $"
+
+/******** channel mappings.  All hardwired for now... ***********/
+// only OSS stereo builin for now
+#define MAX_CHANNELS 4
+
+#define OUTPUT_CHANNELS1 4
+#define OUTPUT_CHANNELS2 0
+
+#define INPUT_CHANNELS1 0
+#define INPUT_CHANNELS2 0
+#define INPUT_SAMPLE_BYTES 2
+#define INPUT_SAMPLE_FMT AFMT_S16_LE
+
+
+#define MAX_INPUT_CHANNELS (INPUT_CHANNELS1+INPUT_CHANNELS2)
+#define MAX_OUTPUT_CHANNELS (OUTPUT_CHANNELS1+OUTPUT_CHANNELS2)
+
+#define MAX_FILECHANNELS 2
+#define CHANNEL_LABEL_LENGTH 50
+
+int playback_bufsize=0;
+
+typedef struct {
+  char label[CHANNEL_LABEL_LENGTH];
+  int  peak;
+  /* real stuff not here yet */
+} outchannel;
+  
+static outchannel channel_list[MAX_OUTPUT_CHANNELS]={
+  {"house L",0},
+  {"center L",0},
+  {"center R",0},
+  {"house R",0},
+  {"",0},
+  {"",0},
+  {"",0},
+  {"",0},
+};
+static outchannel rchannel_list[8]={
+  {"1",0},
+  {"2",0},
+  {"3",0},
+  {"4",0},
+  {"5",0},
+  {"6",0},
+  {"7",0},
+  {"8",0},
+};
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
 
@@ -96,8 +145,15 @@ static int cue_list_number=0;
 static int firstsave=0;
 static int unsaved=0;
 
-static FILE *playfd=NULL;
-static FILE *recfd=NULL;
+static char *playdevice1="/dev/dsp";
+static char *playdevice2="/dev/dsp2";
+static FILE *playfd1=NULL;
+static FILE *playfd2=NULL;
+
+static char *recdevice1="/dev/dsp1";
+static char *recdevice2="/dev/dsp2";
+static FILE *recfd1=NULL;
+static FILE *recfd2=NULL;
 int ttyfd;
 int ttypipe[2];
 
@@ -142,32 +198,6 @@ int mgetch(){
   }
 }
 
-/******** channel mappings.  All hardwired for now... ***********/
-// only OSS stereo builin for now
-#define MAX_OUTPUT_CHANNELS 6
-#define MAX_FILECHANNELS 2
-#define CHANNEL_LABEL_LENGTH 50
-int playback_bufsize=0;
-
-typedef struct {
-  char label[CHANNEL_LABEL_LENGTH];
-  int  peak;
-  /* real stuff not here yet */
-} outchannel;
-  
-static outchannel channel_list[MAX_OUTPUT_CHANNELS]={
-  {"house left",0},
-  {"house right",0},
-  {"stage left",0},
-  {"stage right",0},
-  {"rear left",0},
-  {"rear right",0},
-};
-static outchannel rchannel_list[2]={
-  {"left",0},
-  {"right",0},
-};
-static int channel_count=MAX_OUTPUT_CHANNELS;
 
 /******** label abstraction code; use this for all alloced strings
           that need to be saved to config file (shared or not) */
@@ -819,12 +849,15 @@ int save_program(FILE *f){
   return ret;
 }
 
+#if (MAX_INPUT_CHANNELS)
+
 /*************** threaded record ****************************/
 
-#define REC_SAMPLE_BYTES 3
-#define REC_SAMPLE_FMT AFMT_S24_LE
-#define REC_SAMPLE_CH 2
-#define REC_BLOCK (REC_SAMPLE_CH * REC_SAMPLE_BYTES * 512) 
+#define REC_BLOCK1 (INPUT_CHANNELS1 * INPUT_SAMPLE_BYTES * 512) 
+#define REC_BLOCK2 (INPUT_CHANNELS2 * INPUT_SAMPLE_BYTES * 512) 
+#define REC_BLOCK  (REC_BLOCK1 + REC_BLOCK2)
+unsigned char recordbuffer1[REC_BLOCK1];
+unsigned char recordbuffer2[REC_BLOCK2];
 unsigned char recordbuffer[REC_BLOCK*512];
 
 pthread_mutex_t rec_buffer_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -870,6 +903,13 @@ void *record_disk_thread(void *dummy){
   FILE *recdiskfd=NULL;
   long filesize=0;
 
+  struct sched_param param;
+  param.sched_priority=78;
+  if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
+    fprintf(stderr,"Could not set realtime priority for caching; am I suid root?\n");
+    exit(1);
+  }
+
   while(1){
     /* open a file; name the capture by time/date */
     struct stat buf;
@@ -879,7 +919,7 @@ void *record_disk_thread(void *dummy){
 
       pthread_mutex_lock(&rec_mutex);
       if(!rec_flush_req && recdiskfd){
-	WriteWav(recdiskfd,2,44100,REC_SAMPLE_BYTES*8,filesize);
+	WriteWav(recdiskfd,MAX_INPUT_CHANNELS,44100,INPUT_SAMPLE_BYTES*8,filesize);
 	fclose(recdiskfd);
 	recdiskfd=NULL;
 	rec_flush_ok=0;
@@ -925,7 +965,7 @@ void *record_disk_thread(void *dummy){
       filesize+=REC_BLOCK;
 
       pthread_mutex_lock(&rec_mutex);
-      if(filesize>10*60*44100*2*3)break;
+      if(filesize>10*60*44100*MAX_INPUT_CHANNELS*INPUT_SAMPLE_BYTES)break;
       if(rec_flush_req && !recdiskfd)break;
       if(rec_exit)break;
       pthread_mutex_unlock(&rec_mutex);
@@ -936,7 +976,7 @@ void *record_disk_thread(void *dummy){
     pthread_mutex_unlock(&rec_mutex);
 
     if(recdiskfd){
-      WriteWav(recdiskfd,2,44100,REC_SAMPLE_BYTES*8,filesize);
+      WriteWav(recdiskfd,MAX_INPUT_CHANNELS,44100,INPUT_SAMPLE_BYTES*8,filesize);
       fclose(recdiskfd);
       filesize=0;
     }
@@ -958,7 +998,7 @@ void *record_disk_thread(void *dummy){
       sprintf(buf2,"record/%s.wav",buf1);
       recdiskfd=fopen(buf2,"wb");
       if(recdiskfd){
-	WriteWav(recdiskfd,2,44100,REC_SAMPLE_BYTES*8,-1);
+	WriteWav(recdiskfd,MAX_INPUT_CHANNELS,44100,INPUT_SAMPLE_BYTES*8,-1);
 	pthread_mutex_lock(&rec_mutex);
 	rec_flush_ok=1;
 	filesize=0;
@@ -971,7 +1011,7 @@ void *record_disk_thread(void *dummy){
   }
 
   if(recdiskfd){
-    WriteWav(recdiskfd,2,44100,REC_SAMPLE_BYTES*8,filesize);
+    WriteWav(recdiskfd,MAX_INPUT_CHANNELS,44100,INPUT_SAMPLE_BYTES*8,filesize);
     fclose(recdiskfd);
   }
 
@@ -983,43 +1023,67 @@ void *record_disk_thread(void *dummy){
 
 void *record_thread(void *dummy){
   /* sound device startup */
-  int fd=fileno(recfd),i,j;
-  int format=REC_SAMPLE_FMT;
-  int channels=2;
-  int rate=44100;
-  long totalsize;
-  int ret;
-  audio_buf_info info;
+  int i,j;
 
-  /* realtime schedule setup */
-  {
-    struct sched_param param;
-    param.sched_priority=89;
-    if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
-      fprintf(stderr,"Could not set realtime priority for playback; am I suid root?\n");
-      exit(1);
-    }
+#if (INPUT_CHANNELS1)
+  int fd1=fileno(recfd1);
+#endif
+#if (INPUT_CHANNELS2)
+  int fd2=fileno(recfd2);
+#endif
+  int format=INPUT_SAMPLE_FMT;
+  int channels1=INPUT_CHANNELS1;
+  int channels2=INPUT_CHANNELS2;
+  int rate=44100;
+  long totalsize[2];
+  int ret;
+  audio_buf_info info,info2;
+
+  struct sched_param param;
+  param.sched_priority=89;
+  if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
+    fprintf(stderr,"Could not set realtime priority for caching; am I suid root?\n");
+    exit(1);
   }
 
-  ret=ioctl(fd,SNDCTL_DSP_SETFMT,&format);
-  if(ret || format!=REC_SAMPLE_FMT){
+#if (INPUT_CHANNELS1)
+  ret=ioctl(fd1,SNDCTL_DSP_SETFMT,&format);
+  if(ret || format!=INPUT_SAMPLE_FMT){
     fprintf(stderr,"Could not set recording format\n");
     exit(1);
   }
-  ret=ioctl(fd,SNDCTL_DSP_CHANNELS,&channels);
-  if(ret || channels!=2){
-    fprintf(stderr,"Could not set %d channel recording\n",2);
+  ret=ioctl(fd1,SNDCTL_DSP_CHANNELS,&channels1);
+  if(ret || channels1!=INPUT_CHANNELS1){
+    fprintf(stderr,"Could not set %d channel recording\n",INPUT_CHANNELS1);
     exit(1);
   }
-  ret=ioctl(fd,SNDCTL_DSP_SPEED,&rate);
+  ret=ioctl(fd1,SNDCTL_DSP_SPEED,&rate);
   if(ret || rate!=44100){
     fprintf(stderr,"Could not set %dHz recording\n",44100);
     exit(1);
   }
-
-  ioctl(fd,SNDCTL_DSP_GETISPACE,&info);
-  totalsize=info.fragstotal*info.fragsize;
-
+  ioctl(fd1,SNDCTL_DSP_GETISPACE,&info);
+  totalsize[0]=info.fragstotal*info.fragsize;
+#endif
+#if (INPUT_CHANNELS2)
+  ret=ioctl(fd2,SNDCTL_DSP_SETFMT,&format);
+  if(ret || format!=INPUT_SAMPLE_FMT){
+    fprintf(stderr,"Could not set recording format\n");
+    exit(1);
+  }
+  ret=ioctl(fd2,SNDCTL_DSP_CHANNELS,&channels2);
+  if(ret || channels2!=INPUT_CHANNELS2){
+    fprintf(stderr,"Could not set %d channel recording\n",INPUT_CHANNELS2);
+    exit(1);
+  }
+  ret=ioctl(fd2,SNDCTL_DSP_SPEED,&rate);
+  if(ret || rate!=44100){
+    fprintf(stderr,"Could not set %dHz recording\n",44100);
+    exit(1);
+  }
+  ioctl(fd2,SNDCTL_DSP_GETISPACE,&info);
+  totalsize[1]=info.fragstotal*info.fragsize;
+#endif
 
   pthread_create(&record_disk_thread_id,NULL,record_disk_thread,NULL);
 
@@ -1044,24 +1108,51 @@ void *record_thread(void *dummy){
     pthread_mutex_unlock(&rec_buffer_mutex);
 
     /* update ISPACE min */
-    ioctl(fd,SNDCTL_DSP_GETISPACE,&info);
+#if (INPUT_CHANNELS1)
+    ioctl(fd1,SNDCTL_DSP_GETISPACE,&info);
     {
-      int percent=rint((totalsize-info.bytes)*100./totalsize);
-      pthread_mutex_lock(&rec_mutex);
-      if(rec_buffer_dma_min>percent)rec_buffer_dma_min=percent;
-      pthread_mutex_unlock(&rec_mutex);
+      int percent1=rint((totalsize[0]-info.bytes)*100./totalsize[0]);
+      if(rec_buffer_dma_min>percent1)rec_buffer_dma_min=percent1;
     }
+#endif
+#if (INPUT_CHANNELS2)
+    ioctl(fd2,SNDCTL_DSP_GETISPACE,&info2);
+    {
+      int percent2=rint((totalsize[1]-info2.bytes)*100./totalsize[1]);
+      if(rec_buffer_dma_min>percent2)rec_buffer_dma_min=percent2;
+    }
+#endif
 
-    ret=fread(recordbuffer+record_head,1,REC_BLOCK,recfd);
+#if (INPUT_CHANNELS1)
+    fread(recordbuffer1,1,REC_BLOCK1,recfd1);
+#endif
+#if (INPUT_CHANNELS2)
+    fread(recordbuffer2,1,REC_BLOCK2,recfd2);
+#endif 
 
     pthread_mutex_lock(&rec_mutex);
+    {
+      unsigned char *ptr1=recordbuffer1;
+      unsigned char *ptr2=recordbuffer2;
+      for(i=record_head;i<record_head+REC_BLOCK;){
+	for(j=0;j<INPUT_CHANNELS1;j++){
+	  recordbuffer[i++]=*ptr1++;
+	  recordbuffer[i++]=*ptr1++;
+	}
+	for(j=0;j<INPUT_CHANNELS2;j++){
+	  recordbuffer[i++]=*ptr2++;
+	  recordbuffer[i++]=*ptr2++;
+	}
+      }
+    }
+
     for(i=record_head;i<record_head+REC_BLOCK;)
-      for(j=0;j<REC_SAMPLE_CH;j++){
-	int val=((recordbuffer[i]<<8)|(recordbuffer[i+1]<<16)|(recordbuffer[i+2]<<24))>>8;
-	//int val=((recordbuffer[i]<<16)|(recordbuffer[i+1]<<24))>>8;
+      for(j=0;j<MAX_INPUT_CHANNELS;j++){
+	//int val=((recordbuffer[i]<<8)|(recordbuffer[i+1]<<16)|(recordbuffer[i+2]<<24))>>8;
+	int val=((recordbuffer[i]<<16)|(recordbuffer[i+1]<<24))>>8;
 	if(labs(val)>rchannel_list[j].peak)
 	  rchannel_list[j].peak=labs(val);
-	i+=REC_SAMPLE_BYTES;
+	i+=INPUT_SAMPLE_BYTES;
       }
     if(rec_exit)break;
 
@@ -1085,6 +1176,7 @@ void *record_thread(void *dummy){
   
   return(NULL);
 }
+#endif
 
 /*************** threaded precache ****************************/
 
@@ -1315,7 +1407,7 @@ static inline void _playback_mix(int i,int cuenum){
     }
 }
 
-static inline void _next_sample(int16 *out){
+static inline void _next_sample(int16 *out1,int ch1,int16 *out2,int ch2){
   int i,j,k;
   double staging[MAX_OUTPUT_CHANNELS];
   double mmv=main_master_volume*.0001;
@@ -1402,15 +1494,26 @@ static inline void _next_sample(int16 *out){
   }
 
   /* declipping, conversion */
-  for(i=0;i<MAX_OUTPUT_CHANNELS;i++){
+  for(i=0;i<ch1;i++){
     if(channel_list[i].peak<fabs(staging[i]))
       channel_list[i].peak=fabs(staging[i]);
     if(staging[i]>32767.){
-      out[i]=32767;
+      out1[i]=32767;
     }else if(staging[i]<-32768.){
-      out[i]=-32768;
+      out1[i]=-32768;
     }else
-      out[i]=(int)(rint(staging[i]));
+      out1[i]=(int)(rint(staging[i]));
+  }
+
+  for(i=0;i<ch2;i++){
+    if(channel_list[i+ch1].peak<fabs(staging[i+ch1]))
+      channel_list[i+ch1].peak=fabs(staging[i+ch1]);
+    if(staging[i+ch1]>32767.){
+      out2[i]=32767;
+    }else if(staging[i+ch1]<-32768.){
+      out2[i]=-32768;
+    }else
+      out2[i]=(int)(rint(staging[i+ch1]));
   }
 }
 
@@ -1424,15 +1527,22 @@ static int playback_exit=0;
 void *playback_thread(void *dummy){
   /* sound device startup */
   audio_buf_info info;
-  int fd=fileno(playfd),i;
+#if (OUTPUT_CHANNELS1)
+  int fd1=fileno(playfd1),i;
+#endif
+#if (OUTPUT_CHANNELS2)
+  int fd2=fileno(playfd2);
+#endif
   int format=AFMT_S16_NE;
-  int channels=MAX_OUTPUT_CHANNELS;
+  int channels1=OUTPUT_CHANNELS1;
+  int channels2=OUTPUT_CHANNELS2;
   int rate=44100;
   long last=0;
   long delay=10;
   long totalsize;
   int fragment=0x7fff000d;
-  int16 audiobuf[256*MAX_OUTPUT_CHANNELS];
+  int16 audiobuf1[256*OUTPUT_CHANNELS1];
+  int16 audiobuf2[256*OUTPUT_CHANNELS2];
   int ret;
 
   /* realtime schedule setup */
@@ -1445,52 +1555,94 @@ void *playback_thread(void *dummy){
     }
   }
 
-  ioctl(fd,SNDCTL_DSP_SETFRAGMENT,&fragment);
-  ret=ioctl(fd,SNDCTL_DSP_SETFMT,&format);
+#if (OUTPUT_CHANNELS1)
+  ioctl(fd1,SNDCTL_DSP_SETFRAGMENT,&fragment);
+  ret=ioctl(fd1,SNDCTL_DSP_SETFMT,&format);
   if(ret || format!=AFMT_S16_NE){
     fprintf(stderr,"Could not set AFMT_S16_NE playback\n");
     exit(1);
   }
-  ret=ioctl(fd,SNDCTL_DSP_CHANNELS,&channels);
-  if(ret || channels!=MAX_OUTPUT_CHANNELS){
-    fprintf(stderr,"Could not set %d channel playback\n",MAX_OUTPUT_CHANNELS);
+  ret=ioctl(fd1,SNDCTL_DSP_CHANNELS,&channels1);
+  if(ret || channels1!=OUTPUT_CHANNELS1){
+    fprintf(stderr,"Could not set %d channel playback\n",OUTPUT_CHANNELS1);
     exit(1);
   }
-
-  ret=ioctl(fd,SNDCTL_DSP_SPEED,&rate);
+  ret=ioctl(fd1,SNDCTL_DSP_SPEED,&rate);
   if(ret || rate!=44100){
     fprintf(stderr,"Could not set %dHz playback\n",44100);
     exit(1);
   }
-
-  ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
+  ioctl(fd1,SNDCTL_DSP_GETOSPACE,&info);
   playback_buffer_minfill=totalsize=info.fragstotal*info.fragsize;
+#else
+  totalsize=0;
+#endif
+#if (OUTPUT_CHANNELS2)  
+  ioctl(fd2,SNDCTL_DSP_SETFRAGMENT,&fragment);
+  ret=ioctl(fd2,SNDCTL_DSP_SETFMT,&format);
+  if(ret || format!=AFMT_S16_NE){
+    fprintf(stderr,"Could not set AFMT_S16_NE playback\n");
+    exit(1);
+  }
+  ret=ioctl(fd2,SNDCTL_DSP_CHANNELS,&channels2);
+  if(ret || channels2!=OUTPUT_CHANNELS2){
+    fprintf(stderr,"Could not set %d channel playback\n",OUTPUT_CHANNELS2);
+    exit(1);
+  }
+  ret=ioctl(fd2,SNDCTL_DSP_SPEED,&rate);
+  if(ret || rate!=44100){
+    fprintf(stderr,"Could not set %dHz playback\n",44100);
+    exit(1);
+  }
+  ioctl(fd2,SNDCTL_DSP_GETOSPACE,&info);
+  playback_buffer_minfill=totalsize+=info.fragstotal*info.fragsize;
+#endif
 
   while(!playback_exit){
     int samples;
-    int ret;
 
     delay--;
     if(delay<0){
       delay=0;
-      ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
-
+      samples=0;
+#if (OUTPUT_CHANNELS1)
+      ioctl(fd1,SNDCTL_DSP_GETOSPACE,&info);
       playback_bufsize=totalsize;      
-      samples=playback_bufsize-info.bytes;
+      samples=info.bytes;
+#else
+      playback_bufsize=0;      
+      samples=0;
+#endif
+#if (OUTPUT_CHANNELS2)
+      ioctl(fd2,SNDCTL_DSP_GETOSPACE,&info);
+      playback_bufsize+=totalsize;      
+      samples+=info.bytes;
+#endif
+      
+      samples+=playback_bufsize-samples;
+      
       if(playback_buffer_minfill>samples)
 	playback_buffer_minfill=samples-64; // sample fragment
-
+      
     }
 
     for(i=0;i<256;i++)
-      _next_sample(audiobuf+i*MAX_OUTPUT_CHANNELS);
+      _next_sample(audiobuf1+i*OUTPUT_CHANNELS1,
+		   OUTPUT_CHANNELS1,
+		   audiobuf2+i*OUTPUT_CHANNELS2,
+		   OUTPUT_CHANNELS2);
 
     /* this is a calculated race; the race would not trip except in
        situations where our locking latency would also cause the
        realtime house of cards to come crashing down anyway */
     pthread_cond_signal(&cache_cond);
 
-    fwrite(audiobuf,2*MAX_OUTPUT_CHANNELS,256,playfd);
+#if (OUTPUT_CHANNELS1)
+    fwrite(audiobuf1,2*OUTPUT_CHANNELS1,256,playfd1);
+#endif
+#if (OUTPUT_CHANNELS2)
+    fwrite(audiobuf2,2*OUTPUT_CHANNELS2,256,playfd2);
+#endif
     
     {
       struct timeval tv;
@@ -1507,8 +1659,12 @@ void *playback_thread(void *dummy){
   playback_active=0;
   
   /* sound device shutdown */
-  
-  ioctl(fd,SNDCTL_DSP_RESET);
+#if (OUTPUT_CHANNELS1)
+  ioctl(fd1,SNDCTL_DSP_RESET);
+#endif
+#if (OUTPUT_CHANNELS2)
+  ioctl(fd2,SNDCTL_DSP_RESET);
+#endif
   fprintf(stderr,"Playback thread exit...\n");
   return(NULL);
 }
@@ -1544,7 +1700,7 @@ int play_cue(int cuenum){
 int cache_cue(int cuenum){
   pthread_mutex_lock(&cache_mutex);
 
-  while(1){
+  while(cuenum<cue_count){
     cue *c=cue_list+cuenum;
     if(c->tag>=0){
       if(c->tag_create_p)
@@ -2035,6 +2191,7 @@ void main_update_playbuffer(int y){
 
 
     move(y+1,63);
+#if (MAX_INPUT_CHANNELS)
     {
       int state=0;
       pthread_mutex_lock(&rec_mutex);
@@ -2093,6 +2250,7 @@ void main_update_playbuffer(int y){
     addstr("recbuffer(disk):");
     sprintf(buf," %3d%% %s",nr,starver2?"***OVERRUN***":"");
     addstr(buf);
+#endif
   }
 }
 
@@ -2149,17 +2307,15 @@ void main_update_outchannel_levels(int y){
   }
 }
 
-static int rclip[2];
+static int rclip[MAX_INPUT_CHANNELS];
 void main_update_inchannel_levels(int y){
   int i,j;
   if(menu==MENU_MAIN){
-    for(i=0;i<2;i++){
+    for(i=0;i<MAX_INPUT_CHANNELS;i++){
       int val;
       char buf[11];
-      pthread_mutex_lock(&rec_mutex);
       val=rchannel_list[i].peak;
       rchannel_list[i].peak=0;
-      pthread_mutex_unlock(&rec_mutex);
       
       move(y+i+1,55);
       if(val>=0x7fffff){
@@ -2200,13 +2356,11 @@ void main_update_channel_labels(int y){
       addstr(buf);
       addstr(channel_list[i].label);
     }
-    for(i=0;i<2;i++){
+    for(i=0;i<MAX_INPUT_CHANNELS;i++){
       move(y+i+1,42);
       sprintf(buf,"-[          ]+0dB ");
       addstr(buf);
-      pthread_mutex_lock(&rec_mutex);
       addstr(rchannel_list[i].label);
-      pthread_mutex_unlock(&rec_mutex);
     }
   }
 
@@ -2333,7 +2487,7 @@ void move_next_cue(){
   cache_cull();
   cache_cue(cue_list_number);
   wake_cache();
-  main_update_cues(10+MAX_OUTPUT_CHANNELS);
+  main_update_cues(10+MAX_CHANNELS);
 }
 
 void move_prev_cue(){
@@ -2345,7 +2499,7 @@ void move_prev_cue(){
   cache_cull();
   cache_cue(cue_list_number);
   wake_cache();
-  main_update_cues(10+MAX_OUTPUT_CHANNELS);
+  main_update_cues(10+MAX_CHANNELS);
 }
 
 int save_top_level(char *fn){
@@ -2393,18 +2547,18 @@ int main_menu(){
   attroff(A_BOLD);
   update_editable();
 
-  mvvline(3,2,0,MAX_OUTPUT_CHANNELS+5);
-  mvvline(3,77,0,MAX_OUTPUT_CHANNELS+5);
-  mvvline(3,40,0,MAX_OUTPUT_CHANNELS+5);
+  mvvline(3,2,0,MAX_CHANNELS+5);
+  mvvline(3,77,0,MAX_CHANNELS+5);
+  mvvline(3,40,0,MAX_CHANNELS+5);
   mvhline(2,2,0,76);
   mvhline(7,2,0,76);
-  mvhline(8+MAX_OUTPUT_CHANNELS,2,0,76);
+  mvhline(8+MAX_CHANNELS,2,0,76);
   mvaddch(2,2,ACS_ULCORNER);
   mvaddch(2,77,ACS_URCORNER);
   mvaddch(2,40,ACS_TTEE);
-  mvaddch(8+MAX_OUTPUT_CHANNELS,2,ACS_LLCORNER);
-  mvaddch(8+MAX_OUTPUT_CHANNELS,40,ACS_BTEE);
-  mvaddch(8+MAX_OUTPUT_CHANNELS,77,ACS_LRCORNER);
+  mvaddch(8+MAX_CHANNELS,2,ACS_LLCORNER);
+  mvaddch(8+MAX_CHANNELS,40,ACS_BTEE);
+  mvaddch(8+MAX_CHANNELS,77,ACS_LRCORNER);
 
   mvaddch(7,2,ACS_LTEE);
   mvaddch(7,40,ACS_PLUS);
@@ -2416,15 +2570,15 @@ int main_menu(){
   move(2,45);
   addstr(" input ");
 
-  mvhline(9+MAX_OUTPUT_CHANNELS,0,0,80);
-  mvhline(18+MAX_OUTPUT_CHANNELS,0,0,80);
+  mvhline(9+MAX_CHANNELS,0,0,80);
+  mvhline(18+MAX_CHANNELS,0,0,80);
 
   main_update_master(main_master_volume,5);
   main_update_playbuffer(4);
   main_update_channel_labels(7);
 
-  main_update_cues(10+MAX_OUTPUT_CHANNELS);
-  main_update_tags(19+MAX_OUTPUT_CHANNELS);
+  main_update_cues(10+MAX_CHANNELS);
+  main_update_tags(19+MAX_CHANNELS);
   curs_set(0);
 
   refresh();
@@ -2477,7 +2631,7 @@ int main_menu(){
 	if(ch=='y'){
 	  unsaved=1;
 	  delete_cue_bank(cue_list_number);
-	  main_update_cues(10+MAX_OUTPUT_CHANNELS);
+	  main_update_cues(10+MAX_CHANNELS);
 	}
 	move(0,0);
 	addstr("MTG Beaverphonic build "VERSION": ");
@@ -2523,26 +2677,23 @@ int main_menu(){
 	editable=1;
       update_editable();
     case 0:
-      main_update_tags(19+MAX_OUTPUT_CHANNELS);
+      main_update_tags(19+MAX_CHANNELS);
       main_update_playbuffer(4);
       main_update_outchannel_levels(7);
       main_update_inchannel_levels(7);
       break;
-      //    default:
-      //     if(ctrl[0]=='^'){
-      //	switch(ctrl[1]){
-	case 'r':
-	  pthread_mutex_lock(&rec_mutex);
-	  rec_flush_req=1;
-	  pthread_mutex_unlock(&rec_mutex);
-	  break;
-	case 'R':
-	  pthread_mutex_lock(&rec_mutex);
-	  rec_flush_req=0;
-	  pthread_mutex_unlock(&rec_mutex);
-	  break;
-	  //	}
-	  //      }
+#if MAX_INPUT_CHANNELS
+    case 'r':
+      pthread_mutex_lock(&rec_mutex);
+      rec_flush_req=1;
+      pthread_mutex_unlock(&rec_mutex);
+      break;
+    case 'R':
+      pthread_mutex_lock(&rec_mutex);
+      rec_flush_req=0;
+      pthread_mutex_unlock(&rec_mutex);
+      break;
+#endif
     }
   }
 }
@@ -3283,20 +3434,41 @@ int main(int gratuitously,char *different[]){
     exit(1);
   }
 
-  playfd=fopen("/dev/dsp1","wb");
-  if(!playfd){
-    fprintf(stderr,"unable to open audio device for playback: %s.\n",strerror(errno));
+#if (OUTPUT_CHANNELS1)
+  playfd1=fopen(playdevice1,"wb");
+  if(!playfd1){
+    fprintf(stderr,"unable to open audio device 1 for playback: %s.\n",strerror(errno));
     fprintf(stderr,"\nPress enter to continue\n");
     getc(stdin);
   }
+#endif
 
-  recfd=fopen("/dev/dsp1","rb");
-  if(!recfd){
-    fprintf(stderr,"unable to open audio device fo record: %s.\n",strerror(errno));
+#if (OUTPUT_CHANNELS2)
+  playfd2=fopen(playdevice2,"wb");
+  if(!playfd2){
+    fprintf(stderr,"unable to open audio device 2 for playback: %s.\n",strerror(errno));
     fprintf(stderr,"\nPress enter to continue\n");
     getc(stdin);
   }
+#endif
 
+#if (INPUT_CHANNELS1)
+  recfd1=fopen(recdevice1,"rb");
+  if(!recfd1){
+    fprintf(stderr,"unable to open audio device 1 for record: %s.\n",strerror(errno));
+    fprintf(stderr,"\nPress enter to continue\n");
+    getc(stdin);
+  }
+#endif
+
+#if (INPUT_CHANNELS2)
+  recfd2=fopen(recdevice2,"rb");
+  if(!recfd2){
+    fprintf(stderr,"unable to open audio device 2 for record: %s.\n",strerror(errno));
+    fprintf(stderr,"\nPress enter to continue\n");
+    getc(stdin);
+  }
+#endif
     
   /* set up the hack for interthread ncurses event triggering through
    input subversion */
@@ -3324,12 +3496,15 @@ int main(int gratuitously,char *different[]){
     pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
     pthread_create(&cache_thread_id,NULL,cache_thread,NULL);
   }
+
+#if (MAX_INPUT_CHANNELS)
   {
     pthread_t dummy;
     rec_active1=1;
     rec_active2=1;
     pthread_create(&record_thread_id,NULL,record_thread,NULL);
   }
+#endif
 
   pthread_create(&cache_thread_id,NULL,cache_thread,NULL);
 
@@ -3363,6 +3538,8 @@ int main(int gratuitously,char *different[]){
   close(lf);
   halt_playback();
   playback_exit=1;
+
+#if MAX_INPUT_CHANNELS
   pthread_mutex_lock(&rec_mutex);
   rec_exit=1;
   pthread_mutex_unlock(&rec_mutex);
@@ -3373,37 +3550,32 @@ int main(int gratuitously,char *different[]){
   pthread_mutex_unlock(&rec_buffer_mutex);
 
   while(1){
-    if(!playback_active)break;
-    sched_yield();
-  }
-
-  while(1){
     pthread_mutex_lock(&rec_mutex);
     if(!rec_active1 && !rec_active2)break;
     pthread_mutex_unlock(&rec_mutex);
     sched_yield();
   }
   pthread_mutex_unlock(&rec_mutex);
-  fclose(playfd);
-  fclose(recfd);
+#endif 
 
+  while(1){
+    if(!playback_active)break;
+    sched_yield();
+  }
+
+#if (OUTPUT_CHANNELS1)
+  fclose(playfd1);
+#endif
+#if (OUTPUT_CHANNELS2)
+  fclose(playfd2);
+#endif
+#if (INPUT_CHANNELS1)
+  fclose(recfd1);
+#endif
+#if (INPUT_CHANNELS2)
+  fclose(recfd2);
+#endif
   unlink(lockfile);
   return 0;
 }  
-
-
-#if 0 
-
-OUTPUT CHANNELS
-
-0: [                         ] built in OSS left 
-1: [                         ] built in OSS right
-2: [                         ] Quattro 0
-
-
-#endif
-
-
-
-
 
