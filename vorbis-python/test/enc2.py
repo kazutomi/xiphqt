@@ -2,8 +2,8 @@
 '''An example of encoding using the Python wave module'''
 import ogg.vorbis, wave
 
-fout = open('out.ogg', 'w')
-inwav = wave.open('in.wav','r')
+fout = open('out.ogg', 'wb')
+inwav = wave.open('in.wav','rb')
 channels = inwav.getnchannels()
 vd = ogg.vorbis.VorbisInfo(channels = channels,
                            rate = inwav.getframerate(),
