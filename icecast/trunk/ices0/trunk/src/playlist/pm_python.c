@@ -30,6 +30,7 @@
 extern ices_config_t ices_config;
 
 static PyObject *python_module;
+static char* python_path = NULL;
 
 static char* pl_init_hook;
 static char* pl_shutdown_hook;
@@ -49,7 +50,7 @@ static void playlist_python_shutdown (void);
 
 static int python_init (void);
 static void python_shutdown (void);
-static void python_setup_path (void);
+static int python_setup_path (void);
 static PyObject* python_eval (char *functionname);
 #if PM_PYTHON_MAKE_THREADS
 static PyThreadState* python_init_thread (void);
@@ -162,7 +163,8 @@ python_init (void)
 {
   /* For some reason, python refuses to look in the
    * current directory for modules */
-  python_setup_path ();
+  if (python_setup_path () < 0)
+    return -1;
 
   /* Initialize the python structure and thread stuff */
   Py_Initialize ();
@@ -204,25 +206,23 @@ python_init (void)
 
 /* Force the python interpreter to look in our module path
  * and in the current directory for modules */
-static void
+static int
 python_setup_path (void)
 {
-	char *pythonpath = getenv ("PYTHONPATH");
-	char newpath[1024];
+  char *oldpath = getenv ("PYTHONPATH");
 
-	if (pythonpath && (strlen (pythonpath) > 900)) {
-		ices_log ("Environment variable PYTHONPATH is too long, please rectify!");
-		ices_setup_shutdown ();
-		return;
-	}
+  if (oldpath && (python_path = (char*) malloc (strlen(oldpath) + strlen (ICES_MODULEDIR) + 15)))
+    sprintf (python_path, "PYTHONPATH=%s:%s:.", oldpath, ICES_MODULEDIR);
+  else if ((python_path = (char*) malloc (strlen (ICES_MODULEDIR) + 14)))
+    sprintf (python_path, "PYTHONPATH=%s:.", ICES_MODULEDIR);
+  else {
+    ices_log_error ("Could not allocate memory for python environment");
+    return -1;
+  }
 
-	if (pythonpath) {
-		sprintf (newpath, "PYTHONPATH=%s:%s:.", pythonpath, ICES_MODULEDIR);
-	} else {
-		sprintf (newpath, "PYTHONPATH=%s:.", ICES_MODULEDIR);
-	}
+  putenv (python_path);
 
-	putenv (newpath);
+  return 0;
 }
 
 /* Shutdown the python interpreter */
@@ -231,6 +231,7 @@ python_shutdown (void)
 {
   PyEval_AcquireLock ();
   Py_Finalize ();
+  ices_util_free (python_path);
 }
 
 /* Evaluate the python function in a new thread */
