@@ -24,13 +24,15 @@
 import os
 import wx
 import ogg2
-import time
+import time, string
 from wxPython.wx import *
 from wxPython.lib.scrolledpanel import wxScrolledPanel
 
 def geticon(name, size=1):
   sizes=('16x16','22x22','32x32','48x48')
   f = 'icons/%s/%s.png' % (sizes[size], name)
+  if not os.path.exists(f) :
+    f = 'icons/%s/%s.png' % (sizes[size], 'unknown')
   return wxImage(f, wxBITMAP_TYPE_PNG).ConvertToBitmap()
 
 def gettext(parent, string, size=1):
@@ -40,4 +42,30 @@ def gettext(parent, string, size=1):
   text.SetFont(font)
   return text
 
+def timestr(seconds):
+  hours   = seconds/3600
+  minutes = (seconds-( hours*3600 ))/60
+  seconds = (seconds-((hours*3600)+(minutes*60)))
+  return '%s:%s:%s' % \
+   (str(hours).zfill(2), str(minutes).zfill(2), str(seconds).zfill(2))
+
+def ratestr(bytes, seconds):
+  if seconds == 0 : return '0bps'
+  bps = (bytes * 8.0) / seconds
+  if bps > 1073741823:
+    return '%dgbps' % round(bps/1073741824,2)
+  if bps > 1048575 :
+    return '%dmbps' % round(bps/1048576,1)
+  if bps > 1023 : 
+    return '%dkbps' % round(bps/1024,0)
+  return '%dbps' % round(bps,0)
+
+def bytestr(bytes):
+  if bytes > 1073741823:
+    return '%dgb' % round(bytes/1073741824,2)
+  if bytes > 1048575 :
+    return '%dmb' % round(bytes/1048576,1)
+  if bytes > 1023 : 
+    return '%dkb' % round(bytes/1024,0)
+  return '%db' % round(bytes,0)
 

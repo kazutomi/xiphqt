@@ -141,7 +141,7 @@ class BottomWindow(wxSplitterWindow):
     self.infoboxWin = InfoboxPanel(self)
 
     self.SetMinimumPaneSize(5)
-    self.SplitVertically(self.sandboxWin, self.infoboxWin, 200)
+    self.SplitVertically(self.sandboxWin, self.infoboxWin, 150)
  
 
 
