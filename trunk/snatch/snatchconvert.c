@@ -640,7 +640,7 @@ void yuvscale(unsigned char *src,int sw,int sh,
   int dyo=(dh-sh)/4,syo=0;
   
   /* dirt simple for now. No scaling, just centering */
-  memset(dst,0,dw*dh*3/2);
+  memset(dst,1,dw*dh*3/2);
   
   if(dyo<0){
     syo= -dyo;
@@ -656,6 +656,8 @@ void yuvscale(unsigned char *src,int sw,int sh,
     unsigned char *dptr=dst+(y+dyo*2)*dw+dxo*2;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
+    for(x=0;x<dw;x++)
+      *dptr++=0;
   }
 
   src+=sw*sh;
@@ -670,6 +672,8 @@ void yuvscale(unsigned char *src,int sw,int sh,
     unsigned char *dptr=dst+(y+dyo)*dw+dxo;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
+    for(x=0;x<dw;x++)
+      *dptr++=128;
   }
 
   src+=sw*sh;
@@ -680,6 +684,8 @@ void yuvscale(unsigned char *src,int sw,int sh,
     unsigned char *dptr=dst+(y+dyo)*dw+dxo;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
+    for(x=0;x<dw;x++)
+      *dptr++=128;
   }
 
 }
