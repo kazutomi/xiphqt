@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.13 2001/08/13 20:41:51 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.14 2001/08/13 21:00:41 kcarnold Exp $
  
 ********************************************************************/
 
@@ -79,5 +79,6 @@ long buffer_full (buf_t *buf);
 void buffer_Pause (buf_t *buf);
 void buffer_Unpause (buf_t *buf);
 char buffer_Paused (buf_t *buf);
+void buffer_KillBuffer (buf_t *buf, int signo);
 
 #endif /* !defined (__BUFFER_H) */
