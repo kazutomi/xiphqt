@@ -38,7 +38,7 @@ synchronization.  The primary databases are:
 </dl>
 
 <p>
-Each database can be thought as a collection of records with a fixed
+Each database can be thought of as a collection of records with a fixed
 number (greater than or equal to 1) of fields.  The first field is the
 primary field.  Next are zero or more fields called <emph>access
 keys</emph>, which are fields whose contents are indexed.  All the
@@ -47,7 +47,7 @@ quickly looked up.  (Example: finding all the songs with the genre
 "Rock") Finally, the access keys are followed by zero or more
 <emph>extra info</emph> fields.  These fields contain data that does
 not need to be indexed, like filenames or file sizes.  Some fields may
-also contain a collection of values, called a "bag".  This is used in
+also contain a collection of values, called a "bag."  This is used in
 the audio database to allow one file to be in multiple playlists at
 once (i.e. have multiple values in its playlist field).  Every
 database is required to have a special null record.
@@ -78,7 +78,7 @@ contents of the root database, a <emph>MDB</emph> file and a
 <emph>SAI</emph> file.  Child databases have a MDB and SAI file as
 well as a <emph>PAI</emph> file used for reverse lookups.  The name of
 each of these files will be the name of the database with either a
-".mdb", ".sai", or ".pai" extension.  All the files for the root and
+".mdb," ".sai," or ".pai" extension.  All the files for the root and
 child databases are stored in the same directory.  The file layout for
 the audio database is:
 </p>
@@ -121,7 +121,7 @@ types of data:
   <dt>Integers</dt><dd>Integers are 16 or 32 bits and also stored in
   big-endian byte order.</dd>
 
-  <dt>Pointers</dt><dd>Pointers are 32 bit integers that point to
+  <dt>Pointers</dt><dd>Pointers are 32-bit integers that point to
   offsets in a file, rather than memory locations.  However, unlike
   the pointers most programmers are used to, these pointers point at
   16-bit words rather than bytes.  So a pointer with value 0 refers to
@@ -165,7 +165,7 @@ extra info fields:
 </ul>
 <p>
 The primary field is always a null-terminated string, and the access
-keys are 32 bit pointers to records in child databases which have only a
+keys are 32-bit pointers to records in child databases which have only a
 primary field (also a null-terminated string).
 </p>
 
@@ -182,7 +182,8 @@ primary field (also a null-terminated string).
      recorded from the radio and "Microphone" if it was recorded from the microphone.</td></tr>
   <tr><td>6</td><td>Time</td><td>uint32</td><td>Length of track in seconds</td></tr>
   <tr><td>7</td><td>Size</td><td>uint32</td><td>Size of track in kilobytes</td></tr>
-  <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on Neuros filesystem.  Follows path conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
+  <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on Neuros filesystem. 
+     Follows path conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
 </table>
 
 <h4 id="pcaudio">pcaudio</h4>
