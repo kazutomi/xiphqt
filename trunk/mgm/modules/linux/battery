@@ -84,8 +84,12 @@ sub module_update{
     
     my$percent=$this->read_proc;
     if(defined($percent)){
-	# apm, for some reason, seems to occasionally return -1.
+	# apm, for some reason, seems to occasionally return -1/1.
 	# guard against that
+	if($percent<=1){
+	    $percent=$this->read_proc;
+	}
+
 	if($percent>=0){
 	    $graph->set($percent);
 	    if($percent<30){
