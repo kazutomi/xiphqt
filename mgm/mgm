@@ -210,7 +210,7 @@ sub LoadModule{
 sub order_modules{
     # Build the order-of-appearance list 
     my$count=0;
-    foreach my $key (keys %modules){
+    foreach my $key (sort (keys %modules)){
 	# each order entry may have more than one location
 	my$opt=&moption($modules{$key},'order');
 	my@l=split ',', $opt;
@@ -226,7 +226,7 @@ sub order_modules{
 			  $AA>$BB;
 		      }else{
 			  $A>$B;
-		      }} sort(keys %instances);
+		      }} keys %instances;
 }
 
 # build module instances from the module refs
