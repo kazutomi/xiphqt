@@ -483,6 +483,7 @@ del_comment(py_vcomment *self, char *key)
   /* Get rid of the old comment structure */
   if (self->parent) {
     Py_DECREF(self->parent); /* parent will clear for us */
+    self->parent = NULL;
   } else {
     vorbis_comment_clear(self->vc);
   }
