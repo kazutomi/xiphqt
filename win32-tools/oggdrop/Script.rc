@@ -26,18 +26,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Bitmap
 //
 
-IDB_TF12                BITMAP  DISCARDABLE     "twirlfish12.bmp"
-IDB_TF02                BITMAP  DISCARDABLE     "twirlfish02.bmp"
-IDB_TF03                BITMAP  DISCARDABLE     "twirlfish03.bmp"
-IDB_TF04                BITMAP  DISCARDABLE     "twirlfish04.bmp"
-IDB_TF05                BITMAP  DISCARDABLE     "twirlfish05.bmp"
-IDB_TF06                BITMAP  DISCARDABLE     "twirlfish06.bmp"
-IDB_TF07                BITMAP  DISCARDABLE     "twirlfish07.bmp"
-IDB_TF08                BITMAP  DISCARDABLE     "twirlfish08.bmp"
-IDB_TF09                BITMAP  DISCARDABLE     "twirlfish09.bmp"
-IDB_TF10                BITMAP  DISCARDABLE     "twirlfish10.bmp"
-IDB_TF11                BITMAP  DISCARDABLE     "twirlfish11.bmp"
-IDB_TF01                BITMAP  DISCARDABLE     "twirlfish01.bmp"
+IDB_TF12                BITMAP  DISCARDABLE     "resource/twirlfish12.bmp"
+IDB_TF02                BITMAP  DISCARDABLE     "resource/twirlfish02.bmp"
+IDB_TF03                BITMAP  DISCARDABLE     "resource/twirlfish03.bmp"
+IDB_TF04                BITMAP  DISCARDABLE     "resource/twirlfish04.bmp"
+IDB_TF05                BITMAP  DISCARDABLE     "resource/twirlfish05.bmp"
+IDB_TF06                BITMAP  DISCARDABLE     "resource/twirlfish06.bmp"
+IDB_TF07                BITMAP  DISCARDABLE     "resource/twirlfish07.bmp"
+IDB_TF08                BITMAP  DISCARDABLE     "resource/twirlfish08.bmp"
+IDB_TF09                BITMAP  DISCARDABLE     "resource/twirlfish09.bmp"
+IDB_TF10                BITMAP  DISCARDABLE     "resource/twirlfish10.bmp"
+IDB_TF11                BITMAP  DISCARDABLE     "resource/twirlfish11.bmp"
+IDB_TF01                BITMAP  DISCARDABLE     "resource/twirlfish01.bmp"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON    DISCARDABLE     "fish.ico"
+IDI_ICON1               ICON    DISCARDABLE     "resource/fish.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
