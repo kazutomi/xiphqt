@@ -121,4 +121,13 @@ extern long vorbis_book_decode(codebook *book, oggpack_buffer *b);
 
 extern int floor_info_unpack(vorbis_info *vi,oggpack_buffer *opb,
 			     vorbis_info_floor *fi);
+extern int res_unpack(vorbis_info_residue *info,
+		      vorbis_info *vi,oggpack_buffer *opb);
 
+extern int res_inverse(vorbis_info *vi,
+		       vorbis_info_residue *info,
+		       int *nonzero,int ch,
+		       oggpack_buffer *opb);
+
+extern int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
+			       oggpack_buffer *opb);
