@@ -137,9 +137,8 @@ extern int      ogg_page_packets(ogg_page *og);
 extern int      ogg_packet_release(ogg_packet *op);
 extern int      ogg_page_release(ogg_page *og);
 
-/* Ogg BITSTREAM PRIMITIVES: return codes ***************************/
+/* Ogg BITSTREAM PRIMITIVES: mode flags *****************************/
 
-#define	OGG_CONT	0
 #define	OGG_DISCONT	1
 
 /* Ogg BITSTREAM PRIMITIVES: return codes ***************************/
