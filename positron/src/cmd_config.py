@@ -132,8 +132,10 @@ computer when you synchronize with \"positron sync\"."""
             
             recordingdir = trim_newline(
                 raw_input("Where should recordings be copied to? [%s]\n=>  " % old_recordingdir))
-            # What error checking should go here?
+            if recordingdir == "":
+                recordingdir = old_recordingdir
 
+            # What error checking should go here?
             config.recordingdir = recordingdir
             break
     else:
