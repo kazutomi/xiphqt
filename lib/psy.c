@@ -854,14 +854,12 @@ void _vp_offset_and_mix(vorbis_look_psy *p,
 			int offset_select,
 			float *logmask,
 			float *mdct,
-			float *logmdct,
-			float *adj){
+			float *logmdct){
   int i,n=p->n;
-  float de, coeffi, cx=1.0, cy=1.0; /* AoTuV */
+  float de, coeffi, cx;/* AoTuV */
   float toneatt=p->vi->tone_masteratt[offset_select];
 
   cx = p->m_val;
-  if(offset_select != 1) cx = 0;   // XXX
   
   for(i=0;i<n;i++){
     float val= noise[i]+p->noiseoffset[offset_select][i];
@@ -878,8 +876,8 @@ void _vp_offset_and_mix(vorbis_look_psy *p,
 	by Aoyumi @ 2004/04/18
     */
 
-    {
-      coeffi = -17.2*cy;       /* coeffi is a -17.2dB threshold */
+    if(offset_select == 1) {
+      coeffi = -17.2;       /* coeffi is a -17.2dB threshold */
       val = val - logmdct[i];  /* val == mdct line value relative to floor in dB */
 
       if(val > coeffi){
@@ -903,7 +901,6 @@ void _vp_offset_and_mix(vorbis_look_psy *p,
 	   etc... */
 
       mdct[i] *= de;
-      if(adj)adj[i]=de;
     }
   }
 }
@@ -1219,8 +1216,8 @@ void hf_reduction(vorbis_info_psy_global *g,
   int start=p->vi->normal_start;
   
   for(i=0; i<vi->coupling_steps; i++){
-    for(j=start; j<limit; j++){} // ???
-    for(; j<n; j++) 
+    /* for(j=start; j<limit; j++){} // ???*/
+    for(j=limit; j<n; j++) 
       mdct[i][j] *= (1.0 - de*((float)(j-limit) / (float)(n-limit)));
   }
 }
