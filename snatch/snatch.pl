@@ -674,9 +674,10 @@ sub TimerWatch{
     if($mode=~/timer/){
 	my$now=time();
 
-	if($TIMER_ENDTIMES[$#TIMER]<$now){
+	if($TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<$now){
 	    Robot_Stop();
 	    Robot_Inactive();
+	    ButtonPressConfig();
 	}else{
 	    
 	    if($now>=$next_timer_event){
@@ -1091,7 +1092,8 @@ sub ButtonPressConfig(){
 
 sub ButtonConfig{
     my$now=time();
-    if ($#TIMER<0 || $TIMER_ENDTIMES[$#TIMER]<$now || !$comm_ready){
+    if ($#TIMER<0 || $TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<$now || 
+	!$comm_ready){
 	$window_timer->configure(state=>disabled);
     }else{ 
 	$window_timer->configure(state=>normal);
