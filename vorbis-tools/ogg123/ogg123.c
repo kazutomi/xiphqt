@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.4 2001/06/24 01:03:12 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.5 2001/06/24 01:24:56 kcarnold Exp $
 
  ********************************************************************/
 
@@ -69,6 +69,7 @@ struct option long_options[] = {
     {"quiet", no_argument, 0, 'q'},
     {"shuffle", no_argument, 0, 'z'},
     {"buffer", required_argument, 0, 'b'},
+    {"prebuffer", required_argument, 0, 'p'},
     {"delay", required_argument, 0, 'l'},
     {"nth", required_argument, 0, 'x'},
     {"ntimes", required_argument, 0, 'y'},
@@ -123,7 +124,7 @@ int main(int argc, char **argv)
     signal (SIGINT, signal_quit);
     ao_initialize();
 
-    while (-1 != (ret = getopt_long(argc, argv, "b:d:hl:k:o:qvVxyz",
+    while (-1 != (ret = getopt_long(argc, argv, "b:d:hl:k:o:p:qvVx:y:z",
 				    long_options, &option_index))) {
 	switch (ret) {
 	case 0:
@@ -159,6 +160,9 @@ int main(int argc, char **argv)
 	case 'h':
 	    usage();
 	    exit(0);
+	case 'p':
+	  opt.prebuffer = atoi (optarg);
+	  break;
 	case 'q':
 	    opt.quiet++;
 	    break;
@@ -184,6 +188,9 @@ int main(int argc, char **argv)
 	    exit(1);
 	}
     }
+
+    if (opt.buffer_size > 1 && opt.prebuffer == 0)
+      opt.prebuffer = 1; /* for good measure */
 
     /* Add last device to device list or use the default device */
     if (temp_driver_id < 0) {
@@ -620,7 +627,7 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
   }
   
   if (opt->buffer_size)
-    *buffer = fork_writer (opt->buffer_size, opt->outdevices);
+    *buffer = fork_writer (opt->buffer_size, opt->outdevices, opt->prebuffer);
   
     return 0;
 }
