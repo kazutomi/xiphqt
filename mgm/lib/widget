@@ -237,11 +237,11 @@ sub cacheem{
     my$fg=$main::foreground;
     my$bg=$main::background;
     my$orient=$main::orient;
-    while(my$num=shift){
-	if(!defined($numbers{$num})){
-	    $numbers{$num}=$main::toplevel->
+    while(defined(my$num=shift)){
+	if(!defined($numbers{"$num"})){
+	    $numbers{"$num"}=$main::toplevel->
 		Pixmap(-data=>$MGM::Bar::font->
-		       maketext($num,$size,undef,1,
+		       maketext("$num",$size,undef,1,
 				$orient eq 'vertical'?1:undef)->
 		       write($fg,$bg,32,32));
 	}
@@ -250,7 +250,7 @@ sub cacheem{
 
 sub cacheinit{
     if(!defined($numbers)){
-	&cacheem("1","2","4","8","16","32","64","128","256","512");
+	&cacheem("0","1","2","4","8","16","32","64","128","256","512");
     }
 }
 
@@ -284,12 +284,13 @@ sub cacheprompt{
 
 sub promptsize{
     my($prompt,$setting)=@_;
+
     if($main::orient eq 'vertical'){
-	($numbers{$setting}->width,
-	 $numbers{$setting}->height+$prompts{"$prompt"}->height);
+	($numbers{"$setting"}->width,
+	 $numbers{"$setting"}->height+$prompts{"$prompt"}->height);
     }else{
-	($numbers{$setting}->height,
-	 $numbers{$setting}->width+$prompts{"$prompt"}->width);
+	($numbers{"$setting"}->height,
+	 $numbers{"$setting"}->width+$prompts{"$prompt"}->width);
     }
 }
 
@@ -580,7 +581,14 @@ sub drawvscale{
 
     # powers of two. tics no closer than every 4 pixels
 
-    my$max=$height/$this->{"rangecurrent"}*$this->{"rangesetting"};
+    my$max=0.;
+    if($this->{"rangesetting"}){
+	$max=$height/$this->{"rangecurrent"}*$this->{"rangesetting"};
+    }else{
+	if($this->{"rangecurrent"}){
+	    $max=$height/$this->{"rangecurrent"};
+	}
+    }
     if($this->{"rangecurrent"}==$this->{"rangesetting"}){
 	$widget->createLine($xo,0,$xo-$width,0,
 			    -tags=>['newscale'],-fill=>$color,
@@ -634,13 +642,20 @@ sub drawhscale{
 			-capstyle=>'projecting');
     
     # powers of two. tics no closer than every 4 pixels
-    my$max=$width/$this->{"rangecurrent"}*$this->{"rangesetting"};
+    my$max=0.;
+    if($this->{"rangesetting"}){
+	$max=$width/$this->{"rangecurrent"}*$this->{"rangesetting"};
+    }else{
+	if($this->{"rangecurrent"}){
+	    $max=$width/$this->{"rangecurrent"};
+	}
+    }
     if($this->{"rangecurrent"}==$this->{"rangesetting"}){
 	$widget->createLine($width-1,$yo-$height,$width-1,$yo,
 			    -tags=>['newscale'],-fill=>$color,
 			    -capstyle=>'projecting');
     }
-    
+  
     my$step=1;
     for(my$div=2;;$div*=2){
 	my$flag=0;
@@ -670,6 +685,7 @@ sub drawhscale{
 sub _newscale{
     my$this=shift;
     my$val=$this->{'rangesetting'};
+
     $this->{"numlabel"}->destroy;
     $this->{"numlabel"}=$this->promptlabel($val,$this->{'prompt'});
     $this->{"rangediff"}=$this->{"rangesetting"}-$this->{"rangecurrent"};
@@ -685,13 +701,24 @@ sub _animate{
 	$this->{"rangecurrent"}=$this->{"rangesetting"};
 	undef $this->{"anitimer"};
     }else{
-	if(abs($this->{"rangecurrent"}/$this->{"rangesetting"}-1)<.02){
-	    $this->{"rangecurrent"}=$this->{"rangesetting"};
-	    undef $this->{"anitimer"};
+	if($this->{"rangesetting"}==0){
+	    if($this->{"rangecurrent"}<.02){
+		$this->{"rangecurrent"}=$this->{"rangesetting"};
+		undef $this->{"anitimer"};
+	    }else{
+		$this->{"rangecurrent"}+=$this->{"rangediff"}*.1;
+		$this->{"anitimer"}->cancel if(defined($this->{"anitimer"}));
+		$this->{"anitimer"}=$this->{"widget"}->after(30,sub{$this->set;});
+	    }
 	}else{
-	    $this->{"rangecurrent"}+=$this->{"rangediff"}*.1;
-	    $this->{"anitimer"}->cancel if(defined($this->{"anitimer"}));
-	    $this->{"anitimer"}=$this->{"widget"}->after(30,sub{$this->set;});
+	    if(abs($this->{"rangecurrent"}/($this->{"rangesetting"})-1)<.02){
+		$this->{"rangecurrent"}=$this->{"rangesetting"};
+		undef $this->{"anitimer"};
+	    }else{
+		$this->{"rangecurrent"}+=$this->{"rangediff"}*.1;
+		$this->{"anitimer"}->cancel if(defined($this->{"anitimer"}));
+		$this->{"anitimer"}=$this->{"widget"}->after(30,sub{$this->set;});
+	    }
 	}
     }
 
@@ -702,15 +729,23 @@ sub _animate{
     }
     my$length=$this->{"barlength"};
     my$num=$this->{"num"};
-    for(my$i=0;$i<$num;$i++){
-	$this->{$i}->
-	    set($this->{"meter"}->[$i]*$length/$this->{"rangecurrent"});
+    if($this->{"rangecurrent"}){
+	for(my$i=0;$i<$num;$i++){
+	    $this->{$i}->
+		set($this->{"meter"}->[$i]*$length/$this->{"rangecurrent"});
+	}
+    }else{
+	for(my$i=0;$i<$num;$i++){
+	    $this->{$i}->
+		set(0);
+	}
     }
 }
 
 sub set{
     my$this=shift;
     my$num=$this->{"num"};
+
     my$length=$this->{"barlength"};
 
     # length is in barlength
@@ -741,7 +776,11 @@ sub set{
 	if($fixed==0 && $metermax>$this->{"rangesetting"}){
 	    splice @{$this->{"meter"}},0,$#_+1,@_;
 	    while($metermax>$this->{"rangesetting"}){
-		$this->{"rangesetting"}*=2;
+		if($this->{"rangesetting"} == 0){
+		    $this->{"rangesetting"}=1;
+		}else{
+		    $this->{"rangesetting"}*=2;
+		}
 		$this->{"scaletimer"}=0; # reset the timer
 		$this->{"scalemax"}=$metermax;
 		$this->_newscale();
@@ -754,7 +793,7 @@ sub set{
 	       $metermax*$this->{"scalethresh"}<$this->{"rangesetting"} &&
 	       $this->{"rangesetting"}==$this->{"rangecurrent"}){
 		
-		$this->{"rangesetting"}/=2;
+		$this->{"rangesetting"}=int($this->{"rangesetting"}/2);
 		$this->{"scaletimer"}=0;
 		$this->{"scalemax"}=0;
 		splice @{$this->{"meter"}},0,$#_+1,@_;
