@@ -1,0 +1,145 @@
+Snatch 20011114
+
+Converting Snatch capture files to MPEG audio/video with MJPEG-1.4.1
+
+****************************** ABOUT ******************************
+
+mjpegtools-1.4.1 is a nice little collection of MPEG audio and video
+utilities that, for the most part, work out of the box.  The output
+quality is very nice, and the tool set is intelligently arranged.
+
+The various tools in the mjpeg-tools trade video in YUV format and
+audio as WAV.  Snatch support for mjpegtools consists of two
+conversion utilities, snatch2wav and snatch2yuv (naturally, these
+utilities need not be used only with mjpegtools.
+
+Converting a snatch capture file to MPEG video using mjpeg is done in
+three steps: encode audio to MPEG-1 layer 2 audio using snatch2wav and
+mp2enc(.mp2), encode the video to MPEG-1/2 video using snatch2yuv and
+mpeg2enc and then multiplexing the audio/video into a complete MPEG
+video stream with mplex.  All of these tools are included in the package.
+
+***************************** INSTALL *****************************
+
+The official home of mjpegtools is http://mjpeg.sourceforge.net/ Note
+that the official mjpegtools-1.4.1 has a few annoying build and option
+parsing bugs.  I've patched the bugs I've found, as well as added the
+Snatch conversion utility source to my own distribution of the
+mjpegtools source:
+
+A patch against stock mjpegtools-1.4.1 can be found at: 
+http://www.mit.edu/afs/athena/user/x/i/xiphmont/Public/Snatch/mjpegtools-1.4.1-snatchpatch.diff
+
+The complete source with patch already applied is at:
+http://www.mit.edu/afs/athena/user/x/i/xiphmont/Public/Snatch/mjpegtools-1.4.1-snatch.tgz
+
+If you just want the utilities, the source files 'snatchconvert.c',
+'snatch2yuv.c' and 'snatch2wav.c' are included in the main
+distribution.  They build/work fine without mjpegtools.
+
+When building mjpeg-tools, pay attention to the INSTALL document in
+the mjpegtools tarball.  Things will probably go wrong if you don't
+read it.
+
+One trick wrt Debian and installing quicktime4linux through dpkg/apt;
+the mjpeg tools build system is confused by it being installed, but
+not where 'INSTALL' suggests putting it.  When running configure, do
+like:
+
+./configure --with-quicktime=/usr/include/quicktime
+
+****************************** USAGE ******************************
+
+Once installed, snatch2wav and snatch2yuv work just like the other
+mjpeg 'xxxx2wav' and 'xxx2yuv' tools.  The command line options are
+different, but snatch2wav -h and snatch2yuv -h will give a clear
+summary.
+
+The basic idea:
+
+Encode an .mp2 audio file from the Snatch capture file using 
+snatch2wav < capture.snatch | mp2enc -o temp.mp2
+
+Encode an .m1v video file from the Snatch capture file using 
+snatch2yuv -f fpscode < capture.snatch | mpeg2enc -a 1 -f fpscode -o temp.mp2
+
+Multiplex them into one movie file:
+mplex temp.mp2 temp.m1v -o output.mpeg
+
+(the standalone .mp2 and .m1v files are valid MPEG audio and video
+files respectively; you don't *have* to multiplex if you only want the
+sound or only want the video).
+
+Some notes before we get onto examples:
+
+1) snatch2yuv doesn't currently do any scaling.  The size options
+   merely letterbox/crop.  That's OK, mpeg2enc will encode practically
+   any frame size.
+
+2) snatch2yuv does not autosense frame rate.  Real frame rates are
+   going to be weird, non-MPEG ones for the most part, so choosing an
+   even multiple of the Real frame rate is the best bet.  Eg, if the
+   Real stream was 15fps, select '30fps' when using snatch2yuv; it
+   will do the pullup/pulldown automatically. see snatch2yuv -h for a 
+   list of frame rates/
+
+   snatch2yuv will stuff the capture data into any frame rate the user
+   selects; choosing the wrong one will work, it will just be jerky
+   and not smooth.
+
+3) audio/video sync is Just Not A Concern.  Snatch records timing data
+   in the capture file; snatch2wav pays attention to the video timing
+   when extracting audio and snatch2yuv watches the audio when
+   extracting video.  The separated audio and video will always be in
+   sync unless explicitly requested otherwise.
+
+4) It's possible a capture file will contain different sampling rates
+   or mixed frame sizes/rates; this can happen if the window is
+   resized, congestion causes a change in stream rate, etc.
+
+   snatch2wav will resample the capture data into a uniform output
+   automatically; by default it forces all output audio to the
+   rate/channels it sees in the file first.  The user can override
+   these settings.  mp2enc is also capable of resampling, but it want
+   to see a file all in one format.
+
+   snatch2yuv, similarly, forces all output to the same frame rate and
+   frame size.
+
+Now for a real example:
+
+snatch2wav < 20011115_22:00:10_mono22050Hz_320x240_AV.snatch | \
+	   mp2enc -m -b 128 -o temp.mp2
+
+snatch2yuv -f 5 < 20011115_22:00:10_mono22050Hz_320x240_AV.snatch | \
+	   mpeg2enc -a 1 -f 5 -b 576 -o temp.m1v
+
+mplex temp.mp2 temp.m1v -o out.mpeg
+
+The first line instructs snatch2wav to convert the audio from the
+.snatch file into standard RIFF WAV (but without the length tag set.
+That won't be an issue here).  mp2enc then turns that WAV into a 128
+kbps mono mpeg2 file.  These options can vary (and are not actually
+necessary at all).
+
+The second line instructs snatch2yuv to convert the video from the
+capture file into YUV 4:2:0 (also called YV12), the format preferred
+by mpeg2enc.  The frame rate here is 'MPEG frame rate # 5', which
+equals 30fps.  In this case, the input was 15fps, so snatch2yuv is
+doing an automatic pullup.  mpeg2enc then produces an output video in
+MPEG format consisting of square pixels (-a 1) 30fps (-f 5 , the
+number given to -f should match the one given to snatch2yuv unless
+you're doing something deliberately odd), 576kbps (-b 576).
+
+The third line mixes the audio and video files into the final stream.
+
+****************************** MORE *******************************
+
+The MJPEG webpages have much much more on using the tool suite.
+Specific pages:
+
+homepage: 
+http://mjpeg.sourceforge.net/
+
+Mjpeg-HOWTO: 
+https://sourceforge.net/docman/display_doc.php?docid=3456&group_id=5776
