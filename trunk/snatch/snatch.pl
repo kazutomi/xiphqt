@@ -1210,9 +1210,9 @@ sub Timer{
 		   place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
     
     $timerw_quit->configure(-command=>[sub{
+	$timerw->destroy();
 	undef $listbox;
 	undef $timerw;
-	$timerw->destroy();
 	$window_timerbar->configure(state=>'normal');
 	$window_timerbar->configure(relief=>'raised');
     }]);
