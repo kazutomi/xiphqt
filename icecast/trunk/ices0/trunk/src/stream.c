@@ -36,7 +36,7 @@ ices_stream_loop ()
 	if (!isdigit ((int)(conn.ip[strlen (conn.ip) - 1]))) {
 		char hostbuff[1024];
 
-		conn.ip = resolver_lookup (conn.ip, hostbuff, 1024);
+		conn.ip = resolver_getname (conn.ip, hostbuff, 1024);
 		if (conn.ip == NULL) {
 			ices_log ("Failed resolving servername.");
 			return;

@@ -45,7 +45,7 @@ aclocal $ACLOCAL_FLAGS
 echo "  autoheader"
 autoheader
 echo "  automake --add-missing"
-automake --add-missing --copy
+automake --add-missing 
 echo "  autoconf"
 autoconf
 

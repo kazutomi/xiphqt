@@ -6,3 +6,9 @@ Redhat Linux 6.1
 	perl 5.0 patchlevel 5 subversion 3
 	libxml version 2.1.1
 	lame 3.86.1
+Redhat Linux 5.2
+	Kernel 2.2.15-mosix on a i586
+	glibc version 2.0.7-29
+	gcc version 2.8.1
+	perl 5.0 patchlevel 4 subversion 4
+	Without xml, lame and python
