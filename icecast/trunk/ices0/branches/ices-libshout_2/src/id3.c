@@ -126,6 +126,12 @@ ices_id3v2_parse (input_stream_t* source)
   tag.len = id3v2_decode_synchsafe (buf + 6);
   ices_log_debug ("ID3v2: version %d.%d. Tag size is %d bytes.",
                   tag.major_version, tag.minor_version, tag.len);
+  if (tag.minor_version > 4) {
+    ices_log_debug ("ID3v2: Tag version %d.%d greater than maximum supported (2.4), skipping");
+    id3v2_skip_data (source, &tag, tag.len);
+
+    return;
+  }
 
   if ((tag.flags & ID3V2_FLAG_EXTHDR) && id3v2_read_exthdr (source, &tag) < 0) {
     ices_log ("Error reading ID3v2 extended header");
@@ -139,7 +145,8 @@ ices_id3v2_parse (input_stream_t* source)
 
   while (remaining > 10 && (tag.artist == NULL || tag.title == NULL)) {
     if ((rv = id3v2_read_frame (source, &tag)) < 0) {
-      ices_log ("Error reading ID3v2 frames");
+      ices_log ("Error reading ID3v2 frames, skipping to end of ID3v2 tag");
+      id3v2_skip_data (source, &tag, tag.len - tag.pos);
 
       return;
     }
@@ -201,7 +208,11 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
   if (hdr[0] == '\0')
     return 0;
 
-  len = id3v2_decode_synchsafe (hdr + 4);
+  if ((len = id3v2_decode_synchsafe (hdr + 4)) > tag->len - tag->pos) {
+    ices_log ("Error parsing ID3v2 frame header: Frame too large (%d bytes)", len);
+    
+    return -1;
+  }
   hdr[4] = '\0';
 
   /* ices_log_debug("ID3v2: Frame type [%s] found, %d bytes", hdr, len); */
