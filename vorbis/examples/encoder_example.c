@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: simple example encoder
- last mod: $Id: encoder_example.c,v 1.13 2000/08/15 14:01:02 xiphmont Exp $
+ last mod: $Id: encoder_example.c,v 1.13.2.1 2000/08/31 08:59:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -131,7 +131,7 @@ int main(){
       /* data to encode */
 
       /* expose the buffer to submit data */
-      double **buffer=vorbis_analysis_buffer(&vd,READ);
+      float **buffer=vorbis_analysis_buffer(&vd,READ);
       
       /* uninterleave samples */
       for(i=0;i<bytes/4;i++){

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.33 2000/08/15 09:09:42 xiphmont Exp $
+ last mod: $Id: analysis.c,v 1.33.2.2 2000/09/02 09:39:19 xiphmont Exp $
 
  ********************************************************************/
 
@@ -53,9 +53,9 @@ int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
   if(vb->W){
     _oggpack_write(&vb->opb,vb->lW,1);
     _oggpack_write(&vb->opb,vb->nW,1);
-    /*fprintf(stderr,"*");
+    fprintf(stderr,"*");
   }else{
-    fprintf(stderr,".");*/
+    fprintf(stderr,".");
   }
 
   if(_mapping_P[type]->forward(vb,vd->mode[mode]))
@@ -74,7 +74,7 @@ int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
 }
 
 /* there was no great place to put this.... */
-void _analysis_output(char *base,int i,double *v,int n,int bark,int dB){
+void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
 #ifdef ANALYSIS
   int j;
   FILE *of;

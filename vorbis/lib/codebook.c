@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: basic codebook pack/unpack/code/decode operations
- last mod: $Id: codebook.c,v 1.17 2000/07/07 01:37:00 xiphmont Exp $
+ last mod: $Id: codebook.c,v 1.17.4.2 2000/09/02 05:19:24 xiphmont Exp $
 
  ********************************************************************/
 
@@ -233,7 +233,7 @@ int vorbis_staticbook_unpack(oggpack_buffer *opb,static_codebook *s){
       }
       
       /* quantized values */
-      s->quantlist=malloc(sizeof(double)*quantvals);
+      s->quantlist=malloc(sizeof(float)*quantvals);
       for(i=0;i<quantvals;i++)
 	s->quantlist[i]=_oggpack_read(opb,s->q_quant);
       
@@ -268,13 +268,13 @@ and doesn't change.
 
 Residue0 encoding interleaves, uses multiple stages, and each stage
 peels of a specific amount of resolution from a lattice (thus we want
-to match by threshhold, not nearest match).  Residue doesn't *have* to
+to match by threshold, not nearest match).  Residue doesn't *have* to
 be encoded that way, but to change it, one will need to add more
 infrastructure on the encode side (decode side is specced and simpler) */
 
 /* floor0 LSP (single stage, non interleaved, nearest match) */
 /* returns entry number and *modifies a* to the quantization value *****/
-int vorbis_book_errorv(codebook *book,double *a){
+int vorbis_book_errorv(codebook *book,float *a){
   int dim=book->dim,k;
   int best=_best(book,a,1);
   for(k=0;k<dim;k++)
@@ -283,7 +283,7 @@ int vorbis_book_errorv(codebook *book,double *a){
 }
 
 /* returns the number of bits and *modifies a* to the quantization value *****/
-int vorbis_book_encodev(codebook *book,int best,double *a,oggpack_buffer *b){
+int vorbis_book_encodev(codebook *book,int best,float *a,oggpack_buffer *b){
   int k,dim=book->dim;
   for(k=0;k<dim;k++)
     a[k]=(book->valuelist+best*dim)[k];
@@ -292,7 +292,7 @@ int vorbis_book_encodev(codebook *book,int best,double *a,oggpack_buffer *b){
 
 /* res0 (multistage, interleave, lattice) */
 /* returns the number of bits and *modifies a* to the remainder value ********/
-int vorbis_book_encodevs(codebook *book,double *a,oggpack_buffer *b,
+int vorbis_book_encodevs(codebook *book,float *a,oggpack_buffer *b,
 			 int step,int addmul){
 
   int best=vorbis_book_besterror(book,a,step,addmul);
@@ -309,14 +309,23 @@ int vorbis_book_encodevs(codebook *book,double *a,oggpack_buffer *b,
    Cascades may be additive or multiplicitive; this is not inherent in
    the codebook, but set in the code using the codebook.  Like
    interleaving, it's easiest to do it here.  
-   stage==0 -> declarative (set the value)
-   stage==1 -> additive
-   stage==2 -> multiplicitive */
+   addmul==0 -> declarative (set the value)
+   addmul==1 -> additive
+   addmul==2 -> multiplicitive */
 
 /* returns the entry number or -1 on eof *************************************/
 long vorbis_book_decode(codebook *book, oggpack_buffer *b){
   long ptr=0;
   decode_aux *t=book->decode_tree;
+  int lok = _oggpack_look(b, t->tabn);
+
+  if (lok >= 0) {
+    ptr = t->tab[lok];
+    _oggpack_adv(b, t->tabl[lok]);
+    if (ptr <= 0)
+      return -ptr;
+  }
+
   do{
     switch(_oggpack_read1(b)){
     case 0:
@@ -333,26 +342,78 @@ long vorbis_book_decode(codebook *book, oggpack_buffer *b){
 }
 
 /* returns the entry number or -1 on eof *************************************/
-long vorbis_book_decodevs(codebook *book,double *a,oggpack_buffer *b,
+long vorbis_book_decodevs(codebook *book,float *a,oggpack_buffer *b,
 			  int step,int addmul){
   long entry=vorbis_book_decode(book,b);
   int i,o;
+  float *t;
   if(entry==-1)return(-1);
+  t = book->valuelist+entry*book->dim;
   switch(addmul){
   case -1:
-    for(i=0,o=0;i<book->dim;i++,o+=step)
-      a[o]=(book->valuelist+entry*book->dim)[i];
+    for(i=0,o=0;i<book->dim-3;i+=4,o+=4*step) {
+      a[o]=t[i];
+      a[o+step]=t[i+1];
+      a[o+2*step]=t[i+2];
+      a[o+3*step]=t[i+3];
+    }
+    for(;i<book->dim;i++,o+=step)
+      a[o]=t[i];
     break;
   case 0:
-    for(i=0,o=0;i<book->dim;i++,o+=step)
-      a[o]+=(book->valuelist+entry*book->dim)[i];
+    for(i=0,o=0;i<book->dim-3;i+=4,o+=4*step) {
+      a[o]+=t[i];
+      a[o+step]+=t[i+1];
+      a[o+2*step]+=t[i+2];
+      a[o+3*step]+=t[i+3];
+    }
+    for(;i<book->dim;i++,o+=step)
+      a[o]+=t[i];
     break;
   case 1:
-    for(i=0,o=0;i<book->dim;i++,o+=step)
-      a[o]*=(book->valuelist+entry*book->dim)[i];
+    for(i=0,o=0;i<book->dim-3;i+=4,o+=4*step) {
+      a[o]*=t[i];
+      a[o+step]*=t[i+1];
+      a[o+2*step]*=t[i+2];
+      a[o+3*step]*=t[i+3];
+    }
+    for(;i<book->dim;i++,o+=step)
+      a[o]*=t[i];
     break;
   }
   return(entry);
+}
+
+/* returns 0 on OK or -1 on eof *************************************/
+long s_vorbis_book_decodevs(codebook *book,float *a,oggpack_buffer *b,
+                         int step,int addmul){
+  long entry[step];
+  float *t[step];
+  int i,j,o;
+
+  for (i = 0; i < step; i++) {
+    entry[i]=vorbis_book_decode(book,b);
+    if(entry[i]==-1)return(-1);
+    t[i] = book->valuelist+entry[i]*book->dim;
+  }
+  switch(addmul){
+  case -1:
+    for(i=0,o=0;i<book->dim;i++,o+=step)
+      for (j=0;j<step;j++)
+       a[o+j]=t[j][i];
+    break;
+  case 0:
+    for(i=0,o=0;i<book->dim;i++,o+=step)
+      for (j=0;j<step;j++)
+       a[o+j]+=t[j][i];
+    break;
+  case 1:
+    for(i=0,o=0;i<book->dim;i++,o+=step)
+      for (j=0;j<step;j++)
+       a[o+j]*=t[j][i];
+    break;
+  }
+  return(0);
 }
 
 #ifdef _V_SELFTEST
@@ -368,7 +429,7 @@ long vorbis_book_decodevs(codebook *book,double *a,oggpack_buffer *b,
 #include "vorbis/book/res0a_13.vqh"
 #define TESTSIZE 40
 
-double test1[TESTSIZE]={
+float test1[TESTSIZE]={
   0.105939,
   0.215373,
   0.429117,
@@ -420,7 +481,7 @@ double test1[TESTSIZE]={
   0.708603,
 };
 
-double test3[TESTSIZE]={
+float test3[TESTSIZE]={
   0,1,-2,3,4,-5,6,7,8,9,
   8,-2,7,-1,4,6,8,3,1,-9,
   10,11,12,13,14,15,26,17,18,19,
@@ -428,7 +489,7 @@ double test3[TESTSIZE]={
 
 static_codebook *testlist[]={&_vq_book_lsp20_0,
 			     &_vq_book_res0a_13,NULL};
-double   *testvec[]={test1,test3};
+float   *testvec[]={test1,test3};
 
 int main(){
   oggpack_buffer write;
@@ -441,10 +502,10 @@ int main(){
   while(testlist[ptr]){
     codebook c;
     static_codebook s;
-    double *qv=alloca(sizeof(double)*TESTSIZE);
-    double *iv=alloca(sizeof(double)*TESTSIZE);
-    memcpy(qv,testvec[ptr],sizeof(double)*TESTSIZE);
-    memset(iv,0,sizeof(double)*TESTSIZE);
+    float *qv=alloca(sizeof(float)*TESTSIZE);
+    float *iv=alloca(sizeof(float)*TESTSIZE);
+    memcpy(qv,testvec[ptr],sizeof(float)*TESTSIZE);
+    memset(iv,0,sizeof(float)*TESTSIZE);
 
     fprintf(stderr,"\tpacking/coding %ld... ",ptr);
 

@@ -12,7 +12,7 @@
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.9 2000/08/19 11:46:28 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.9.2.3 2000/09/02 09:39:19 xiphmont Exp $
 
   The LSP generation code is taken (with minimal modification) from
   "On the Computation of the LSP Frequencies" by Joseph Rothweiler
@@ -29,7 +29,7 @@
    LPC f response) which in turn should be impossible in our use of
    the code.  If this *does* happen anyway, it's a bug in the floor
    finder; find the cause of the confusion (probably a single bin
-   spike or accidental near-double-limit resolution problems) and
+   spike or accidental near-float-limit resolution problems) and
    correct it. */
 
 #include <math.h>
@@ -39,25 +39,24 @@
 #include "os.h"
 #include "misc.h"
 
-void vorbis_lsp_to_curve(double *curve,int n,double *lsp,int m,double amp,
-			 double *w){
+void vorbis_lsp_to_curve(float *curve,int n,float *lsp,int m,float amp,
+			 float *w){
   int i,j,k;
-  double *coslsp=alloca(m*sizeof(double));
+  float *coslsp=alloca(m*sizeof(float));
   for(i=0;i<m;i++)coslsp[i]=2*cos(lsp[i]);
 
   for(k=0;k<n;k++){
-    double p=.70710678118654752440;
-    double q=.70710678118654752440;
-    for(j=0;j<m;){
-      p*= *w-coslsp[j++];
-      q*= *w-coslsp[j++];
+    double p=.5;
+    double q=.5;
+    for(j=0;j<m;j+=2){
+      p*= w[k]-coslsp[j];
+      q*= w[k]-coslsp[j+1];
     }
-    curve[k]=amp/sqrt(p*p*(1.+ *w*.5)+q*q*(1.- *w*.5));
-    w++;
+    curve[k]=amp/sqrt(p*p*(2.+ w[k])+q*q*(2.- w[k]));
   }
 }
 
-static void cheby(double *g, int ord) {
+static void cheby(float *g, int ord) {
   int i, j;
 
   g[0] *= 0.5;
@@ -70,14 +69,17 @@ static void cheby(double *g, int ord) {
 }
 
 static int comp(const void *a,const void *b){
-  if(*(double *)a<*(double *)b)
+  if(*(float *)a<*(float *)b)
     return(1);
   else
     return(-1);
 }
 
 /* CACM algorithm 283. */
-static void cacm283(double *a,int ord,double *r){
+/* we require doubles here due to the huge spread between val/p and
+   the required max error of 1.e-12, which is beyond the capabilities
+   of floats */
+static void cacm283(float *a,int ord,float *r){
   int i, k;
   double val, p, delta, error;
   double rooti;
@@ -104,17 +106,17 @@ static void cacm283(double *a,int ord,double *r){
   /* Replaced the original bubble sort with a real sort.  With your
      help, we can eliminate the bubble sort in our lifetime. --Monty */
   
-  qsort(r,ord,sizeof(double),comp);
+  qsort(r,ord,sizeof(float),comp);
 
 }
 
 /* Convert lpc coefficients to lsp coefficients */
-void vorbis_lpc_to_lsp(double *lpc,double *lsp,int m){
+void vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
   int order2=m/2;
-  double *g1=alloca(sizeof(double)*(order2+1));
-  double *g2=alloca(sizeof(double)*(order2+1));
-  double *g1r=alloca(sizeof(double)*(order2+1));
-  double *g2r=alloca(sizeof(double)*(order2+1));
+  float *g1=alloca(sizeof(float)*(order2+1));
+  float *g2=alloca(sizeof(float)*(order2+1));
+  float *g1r=alloca(sizeof(float)*(order2+1));
+  float *g2r=alloca(sizeof(float)*(order2+1));
   int i;
 
   /* Compute the lengths of the x polynomials. */

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: fft transform
- last mod: $Id: smallft.h,v 1.6 2000/01/22 13:28:32 xiphmont Exp $
+ last mod: $Id: smallft.h,v 1.6.10.1 2000/08/31 09:00:02 xiphmont Exp $
 
 ********************************************************************/
 
@@ -23,12 +23,12 @@
 
 typedef struct {
   int n;
-  double *trigcache;
+  float *trigcache;
   int *splitcache;
 } drft_lookup;
 
-extern void drft_forward(drft_lookup *l,double *data);
-extern void drft_backward(drft_lookup *l,double *data);
+extern void drft_forward(drft_lookup *l,float *data);
+extern void drft_backward(drft_lookup *l,float *data);
 extern void drft_init(drft_lookup *l,int n);
 extern void drft_clear(drft_lookup *l);
 
