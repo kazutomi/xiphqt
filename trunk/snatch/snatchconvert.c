@@ -4,8 +4,8 @@
  *    
  *	Copyright (C) 2001 Monty
  *
- *  This file is part of snatch2{wav,yuv}, a component of the "MJPEG tools"
- *  suite of open source tools for MJPEG and MPEG processing.
+ *  This file is part of snatch2{wav,yuv}, for use with the MJPEG 
+ *  tool suite.
  *	
  *  snatch2wav is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,9 @@
 int audio_p;
 int video_p;
 
-int videoframes=0;
+double begin_time=0.;
+double end_time=1e90;
+double global_zerotime=0.;
 
 unsigned char *buftemp;
 long           buftempsize;
@@ -413,6 +415,31 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   if(!s)return(0);
   length=atoi(s);
 
+  if(length>buftempsize){
+    if(buftemp)
+      buftemp=realloc(buftemp,length*sizeof(*buftemp));
+    else
+      buftemp=malloc(length*sizeof(*buftemp));
+    buftempsize=length;
+  }
+
+  if(track_or_process){
+    ret=fread(buftemp,1,length,f);
+    if(ret<length)return(0);
+  }else{
+    ret=fseek(f,length,SEEK_CUR);
+    if(ret)return(0);
+  }
+
+  if(global_zerotime==0){
+    global_zerotime=t;
+    begin_time+=t;
+    end_time+=t;
+  }
+
+  if(t<begin_time)return(1);
+  if(t>end_time)return(1);
+
 
   if(audbuf_zerotime==0){
     audbuf_zerotime=t;
@@ -454,22 +481,6 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
 
       
     }
-  }
-  
-  if(length>buftempsize){
-    if(buftemp)
-      buftemp=realloc(buftemp,length*sizeof(*buftemp));
-    else
-      buftemp=malloc(length*sizeof(*buftemp));
-    buftempsize=length;
-  }
-
-  if(track_or_process){
-    ret=fread(buftemp,1,length,f);
-    if(ret<length)return(0);
-  }else{
-    ret=fseek(f,length,SEEK_CUR);
-    if(ret)return(0);
   }
   
   if(audbuf_rate==0)audbuf_rate=ra;
@@ -570,15 +581,55 @@ void rgbscale(char *src,int sw,int sh,
 	      int w, int h){
   int x,y;
 
-  /* dirt simple until output works */
+  int xo=(dw-sw)/2;
+  int yo=(dh-sh)/2;
+
+  /* dirt simple for now. No scaling, just centering */
   memset(dst,0,dw*dh*3);
-  for(y=0;y<sh && y<dh;y++){
-    char *sptr=src+y*sw*3;
-    char *dptr=dst+y*dw*3;
-    for(x=0;x<sw && x<dw;x++){
-      *dptr++=*sptr++;
-      *dptr++=*sptr++;
-      *dptr++=*sptr++;
+
+  if(yo>0){
+    if(xo>0){
+      for(y=0;y<sh && y<dh;y++){
+	char *sptr=src+y*sw*3;
+	char *dptr=dst+(y+yo)*dw*3+xo*3;
+	for(x=0;x<sw && x<dw;x++){
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	}
+      }
+    }else{
+      for(y=0;y<sh && y<dh;y++){
+	char *sptr=src+y*sw*3-xo*3;
+	char *dptr=dst+(y+yo)*dw*3;
+	for(x=0;x<sw && x<dw;x++){
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	}
+      }
+    }
+  }else{
+    if(xo>0){
+      for(y=0;y<sh && y<dh;y++){
+	char *sptr=src+(y-yo)*sw*3;
+	char *dptr=dst+y*dw*3+xo*3;
+	for(x=0;x<sw && x<dw;x++){
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	}
+      }
+    }else{
+      for(y=0;y<sh && y<dh;y++){
+	char *sptr=src+(y-yo)*sw*3-xo*3;
+	char *dptr=dst+y*dw*3;
+	for(x=0;x<sw && x<dw;x++){
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	  *dptr++=*sptr++;
+	}
+      }
     }
   }
 }
@@ -640,6 +691,15 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep){
     ret=fseek(f,length,SEEK_CUR);
     if(ret)return(0);
   }
+
+  if(global_zerotime==0){
+    global_zerotime=t;
+    begin_time+=t;
+    end_time+=t;
+  }
+
+  if(t<begin_time)return(1);
+  if(t>end_time)return(1);
 
   /* video sync is fundamentally different from audio. We assume that
      frames never appear early; an frame that seems early in context
@@ -931,10 +991,29 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
     
     if(synced){
       if(drain){
-	
-	/** XXXXXXXXX **/
-	exit(0);
-	
+	int i;
+
+	/* write out all pending audio/video */
+	for(i=vidbuf_tail;i<vidbuf_head;i++){
+	  int frames=(i+1<vidbuf_head)?
+	    vidbuf_frameno[i+1]-vidbuf_frameno[i]:
+	    1;
+	  
+	  framesout+=frames;
+	  framesmissing+=(frames-1);
+	  
+	  if(process_video)
+	    while(frames--)
+	      YUVout(vidbuf[i],out);
+	}
+
+	{
+	  long samples=audbuf_head-audbuf_tail;
+	  samplesout+=samples/audbuf_channels;
+	  if(process_audio)
+	      fwrite(audbuf+audbuf_tail,2,samples,out);
+	}	    
+	done=1;
 	
       }else{
 	/* write out heads in sync.  This is mostly to be sure that
@@ -952,9 +1031,9 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 	  /* write out samples */
 	  {
 	    long samples=
-	      ((audbuf_head-audbuf_tail)-
-	      ((audbuf_samples-endsamplepos)>>
-	      (audbuf_channels-1)))<<
+	      ((audbuf_head-audbuf_tail-
+		audbuf_samples+endsamplepos)>>
+	      (audbuf_channels-1))<<
 	      (audbuf_channels-1);
 
 	    /* samples can't be negative because the first vid frame
