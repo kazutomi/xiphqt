@@ -29,10 +29,17 @@
 
 extern ices_config_t ices_config;
 
+static PyObject *python_module;
+
+static char* pl_init_hook;
+static char* pl_shutdown_hook;
+static char* pl_get_next_hook;
+static char* pl_get_metadata_hook;
+static char* pl_get_lineno_hook;
+
 #if PM_PYTHON_MAKE_THREADS
 static PyThreadState *mainthreadstate = NULL;
 #endif
-static PyObject *ices_python_module;
 
 /* -- local prototypes -- */
 static int playlist_python_get_lineno (void);
@@ -48,13 +55,14 @@ static PyObject* python_eval (char *functionname);
 static PyThreadState* python_init_thread (void);
 static void python_shutdown_thread (PyThreadState *threadstate);
 #endif
+static char* python_find_attr (PyObject* module, char* f1, char* f2);
 
 /* Call python function to inialize the python script */
 int
 ices_playlist_python_initialize (playlist_module_t* pm)
 {
   PyObject* res;
-  int rc = -1;
+  int rc = 1;
 
   pm->get_next = playlist_python_get_next;
   pm->get_metadata = playlist_python_get_metadata;
@@ -64,15 +72,15 @@ ices_playlist_python_initialize (playlist_module_t* pm)
   if (python_init () < 0)
     return -1;
 
-  res = python_eval ("ices_init");
-
-  if (res && PyInt_Check (res))
-    rc = PyInt_AsLong (res);
-  else
-    ices_log_error ("ices_init failed");
+  if (pl_init_hook) {
+    if ((res = python_eval (pl_init_hook)) && PyInt_Check (res))
+      rc = PyInt_AsLong (res);
+    else
+      ices_log_error ("ices_init failed");
+    
+    Py_XDECREF (res);
+  }
   
-  Py_XDECREF (res);
-
   return rc;
 }
 
@@ -80,27 +88,29 @@ ices_playlist_python_initialize (playlist_module_t* pm)
 static int
 playlist_python_get_lineno (void)
 {
+  PyObject* res;
   int rc = 0;
-  PyObject* res = python_eval ("ices_get_lineno");
 
-  if (res && PyInt_Check (res))
-    rc = PyInt_AsLong (res);
-  else
-    ices_log_error ("ices_get_lineno failed");
+  if (pl_get_lineno_hook) {
+    if ((res = python_eval (pl_get_lineno_hook)) && PyInt_Check (res))
+      rc = PyInt_AsLong (res);
+    else
+      ices_log_error ("ices_get_lineno failed");
 
-  Py_XDECREF (res);
+    Py_XDECREF (res);
+  }
 
-  return 0;
+  return rc;
 }
 
 /* Call python function to get next file to play */
 static char *
 playlist_python_get_next (void)
 {
+  PyObject* res;
   char* rc = NULL;
-  PyObject* res = python_eval ("ices_get_next");
 
-  if (res && PyString_Check (res))
+  if ((res = python_eval (pl_get_next_hook)) && PyString_Check (res))
     rc = ices_util_strdup (PyString_AsString (res));
   else
     ices_log_error ("ices_get_next failed");
@@ -113,15 +123,17 @@ playlist_python_get_next (void)
 static char*
 playlist_python_get_metadata (void)
 {
+  PyObject* res;
   char* rc = NULL;
-  PyObject* res = python_eval ("ices_get_metadata");
 
-  if (res && PyString_Check (res))
-    rc = ices_util_strdup (PyString_AsString (res));
-  else
-    ices_log_error ("ices_get_metadata failed");
+  if (pl_get_metadata_hook) {
+    if ((res = python_eval (pl_get_metadata_hook)) && PyString_Check (res))
+      rc = ices_util_strdup (PyString_AsString (res));
+    else
+      ices_log_error ("ices_get_metadata failed");
 
-  Py_XDECREF (res);
+    Py_XDECREF (res);
+  }
 
   return rc;
 }
@@ -130,12 +142,14 @@ playlist_python_get_metadata (void)
 static void
 playlist_python_shutdown (void)
 {
-  PyObject* res = python_eval ("ices_shutdown");
+  PyObject* res;
 
-  if (! (res && PyInt_Check (res)))
-    ices_log_error ("ices_shutdown failed");
+  if (pl_shutdown_hook) {
+    if (! ((res = python_eval (pl_shutdown_hook)) && PyInt_Check (res)))
+      ices_log_error ("ices_shutdown failed");
 
-  Py_XDECREF (res);
+    Py_XDECREF (res);
+  }
 
   python_shutdown ();
 }
@@ -160,12 +174,29 @@ python_init (void)
   ices_log_debug ("Importing %s.py module...", ices_config.pm.module);
 
   /* Call the python api code to import the module */
-  if (!(ices_python_module = PyImport_ImportModule (ices_config.pm.module))) {
+  if (!(python_module = PyImport_ImportModule (ices_config.pm.module))) {
     ices_log ("Error: Could not import module %s", ices_config.pm.module);
     PyErr_Print();
   }
 
+  /* Find defined methods */
+  pl_init_hook = python_find_attr (python_module, "ices_init",
+				   "ices_python_initialize");
+  pl_shutdown_hook = python_find_attr (python_module, "ices_shutdown",
+				       "ices_python_shutdown");
+  pl_get_next_hook = python_find_attr (python_module, "ices_get_next",
+				       "ices_python_get_next");
+  pl_get_metadata_hook = python_find_attr (python_module, "ices_get_metadata",
+					   "ices_python_get_metadata");
+  pl_get_lineno_hook = python_find_attr (python_module, "ices_get_lineno",
+					 "ices_python_get_current_lineno");
+
   PyEval_ReleaseLock ();
+
+  if (! pl_get_next_hook) {
+    ices_log_error ("The playlist module must define at least the ices_get_next method");
+    return -1;
+  }
 
   return 0;
 }
@@ -218,7 +249,7 @@ python_eval (char *functionname)
   ices_log_debug ("Interpreting [%s]", functionname);
 	
   /* Call the python function */
-  ret = PyObject_CallMethod (ices_python_module, functionname, NULL);
+  ret = PyObject_CallMethod (python_module, functionname, NULL);
   if (! ret)
     PyErr_Print ();
 #if PM_PYTHON_MAKE_THREADS
@@ -264,3 +295,21 @@ python_shutdown_thread (PyThreadState *threadstate)
   PyEval_ReleaseLock ();
 }
 #endif
+
+static char*
+python_find_attr (PyObject* module, char* f1, char* f2)
+{
+  char* rc;
+
+  if (PyObject_HasAttrString (module, f1))
+    rc = f1;
+  else if (PyObject_HasAttrString (module, f2))
+    rc = f2;
+  else
+    rc = NULL;
+
+  if (rc)
+    ices_log_debug ("Found method: %s", rc);
+
+  return rc;
+}
