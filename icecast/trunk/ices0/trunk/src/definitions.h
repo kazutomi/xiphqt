@@ -115,7 +115,7 @@
 #define ICES_DEFAULT_PORT 8000
 #define ICES_DEFAULT_MOUNT "/ices"
 #define ICES_DEFAULT_PASSWORD "letmein"
-#define ICES_DEFAULT_PROTOCOL xaudiocast_protocol_e
+#define ICES_DEFAULT_PROTOCOL http_protocol_e
 #define ICES_DEFAULT_NAME "Default stream name"
 #define ICES_DEFAULT_GENRE "Default genre"
 #define ICES_DEFAULT_DESCRIPTION "Default description"

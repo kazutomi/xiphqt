@@ -545,6 +545,7 @@ ices_setup_usage (void)
   printf ("\t-r (randomize playlist)\n");
   printf ("\t-s (private stream)\n");
   printf ("\t-S <perl|python|builtin>\n");
+  printf ("\t-t <http|xaudiocast|icy>\n");
   printf ("\t-u <stream url>\n");
   printf ("\t-v (verbose output)\n");
   printf ("\t-H <reencoded sample rate>\n");
