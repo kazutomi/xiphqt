@@ -1082,8 +1082,8 @@ void test_pack(const int *pl, const int **headers){
 
 int main(void){
 
-  os_en=ogg_stream_create(0x04030201, 0);
-  os_de=ogg_stream_create(0x04030201, 0);
+  os_en=ogg_stream_create(0x04030201);
+  os_de=ogg_stream_create(0x04030201);
   oy=ogg_sync_create();
   bs=ogg_buffer_create();
 
