@@ -13,6 +13,6 @@
 #include "theoracc.h"
 #include <boost/python.hpp>
 
-PyObject* tostrings(ogg::theora::yuv_image *yuv);
+PyObject* tostrings(ogg::theora::yuv_image *yuv, ogg::theora::info *theora_info);
 
 #endif

@@ -29,7 +29,7 @@ boost::python::list get_comments(ogg::theora::comment *vco)
 */
 
 
-PyObject* tostrings (ogg::theora::yuv_image *yuv)
+PyObject* tostrings (ogg::theora::yuv_image *yuv, ogg::theora::info *theora_info)
 { 
     int crop_offset=0;
     int i;
@@ -50,7 +50,7 @@ PyObject* tostrings (ogg::theora::yuv_image *yuv)
     u = PyString_AS_STRING(ustring);
     v = PyString_AS_STRING(vstring);
 
-    //crop_offset=theora_info::offset_x+yuv->y_stride*theora_info::offset_y;
+    crop_offset=theora_info->offset_x + yuv->y_stride * theora_info->offset_y;
     for(i=0; i < yuv->y_height; i++)
     {
         std::memcpy(y+i*yuv->y_width,
@@ -58,7 +58,7 @@ PyObject* tostrings (ogg::theora::yuv_image *yuv)
                     yuv->y_width);
     }
 
-    //crop_offset=theora_info::offset_x/2+yuv->y_stride*theora_info::offset_y/2;
+    crop_offset=theora_info->offset_x/2 + yuv->uv_stride * theora_info->offset_y/2;
     for(i=0; i < yuv->uv_height; i++)
     {        
         std::memcpy(u+i*yuv->uv_width, 
