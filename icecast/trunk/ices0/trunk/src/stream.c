@@ -101,6 +101,7 @@ ices_stream_send_file (const char *file)
 		case 0:
 			ices_stream_fd_until_eof (fd, file);
 			ices_util_close (fd);
+			return 1;
 			break;
 	}
 

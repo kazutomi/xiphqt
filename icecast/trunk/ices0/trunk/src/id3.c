@@ -173,6 +173,14 @@ ices_id3_update_thread (void *arg)
 		sprintf (metastring, "%s", song);
 	else
 		sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
+
+	/* If we just started, let's give the icecast server a while to
+           accept and mount the source */
+	if (ices_playlist_get_current_lineno () <= 1) {
+		ices_log_debug ("Initially delaying metadata update...");
+		thread_sleep (3000000);
+	}
+
 	ret = shout_update_metadata (ices_util_get_conn (), metastring);
 	
 	if (ret != 1)
