@@ -1,6 +1,7 @@
 #ifndef __RLE_H
 #define __RLE_H
 
+#include <string.h>
 #include "bitcoder.h"
 
 #if defined(RLECODER)

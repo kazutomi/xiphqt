@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "wavelet.h"
 #include "rle.h"
 
@@ -184,7 +185,6 @@ TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
 
 
 
-#if 1
 
 static inline
 void encode_quadrant (const Wavelet3DBuf* buf,
@@ -292,30 +292,6 @@ void decode_coefficients (Wavelet3DBuf* buf,
          decode_quadrant (buf,level,7,w1,h1,f1,s_stream,i_stream);
    }
 }
-#else
-
-static inline
-void encode_coefficients (const Wavelet3DBuf* buf,
-                          ENTROPY_CODER s_stream [],
-                          ENTROPY_CODER i_stream [])
-{
-   uint32_t i;
-
-   for (i=0; i<buf->width*buf->height*buf->frames; i++)
-      encode_coeff(s_stream, i_stream, buf->data[i]);
-}
-
-static inline
-void decode_coefficients (Wavelet3DBuf* buf,
-                          ENTROPY_CODER s_stream [],
-                          ENTROPY_CODER i_stream [])
-{
-   uint32_t i;
-
-   for (i=0; i<buf->width*buf->height*buf->frames; i++)
-      buf->data[i] = decode_coeff(s_stream, i_stream);
-}
-#endif
 
 
 static
@@ -342,6 +318,8 @@ bytes=i > 5 ? 100 : 10*i;
       byte_count += bytes;
    }
 
+byte_count += 2 * 9 * sizeof(uint32_t);  /* 2 limittabs, coded binary */
+
    return byte_count;
 }
 
@@ -358,13 +336,11 @@ uint8_t* write_limittabs (uint8_t *bitstream,
 
    for (i=0; i<9; i++) {
       *(uint32_t*) bitstream = significand_limittab[i];
-printf("significand_limittab[%i] == %u\n", i, significand_limittab[i]);
       bitstream += 4;
    }
 
    for (i=0; i<9; i++) {
       *(uint32_t*) bitstream = insignificand_limittab[i];
-printf("insignificand_limittab[%i] == %u\n", i, insignificand_limittab[i]);
       bitstream += 4;
    }
 
@@ -381,13 +357,11 @@ uint8_t* read_limittabs (uint8_t *bitstream,
 
    for (i=0; i<9; i++) {
       significand_limittab[i] = *(uint32_t*) bitstream;
-//printf("> significand_limittab[%i] == %u\n", i, significand_limittab[i]);
       bitstream += 4;
    }
 
    for (i=0; i<9; i++) {
       insignificand_limittab[i] = *(uint32_t*) bitstream;
-//printf("> insignificand_limittab[%i] == %u\n", i, insignificand_limittab[i]);
       bitstream += 4;
    }
  
@@ -467,10 +441,8 @@ int wavelet_3d_buf_encode_coeff (const Wavelet3DBuf* buf,
 
    encode_coefficients (buf, significand_bitstream, insignificand_bitstream);
 
-   byte_count = setup_limittabs (significand_bitstream,
-                                 insignificand_bitstream,
-                                 significand_limittab,
-                                 insignificand_limittab);
+   byte_count = setup_limittabs (significand_bitstream, insignificand_bitstream,
+                                 significand_limittab, insignificand_limittab);
 
    bitstream = write_limittabs (bitstream,
                                 significand_limittab, insignificand_limittab);
