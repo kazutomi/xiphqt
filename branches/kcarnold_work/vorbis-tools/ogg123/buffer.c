@@ -5,7 +5,7 @@
  * that program is used in this buffer.
  */
 
-#define DEBUG_BUFFER
+/* #define DEBUG_BUFFER */
 
 #include <sys/types.h>
 #if HAVE_SMMAP
@@ -14,6 +14,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h> /* for fork and pipe*/
 #include <fcntl.h>
@@ -266,4 +267,25 @@ void buffer_shutdown (buf_t *buf)
   shmdt(buf);
 #endif /* HAVE_SMMAP */
   DEBUG0("buffer done.");
+}
+
+long buffer_full (buf_t* buf) {
+  chunk_t *reader = buf->reader; /* thread safety... */
+
+  if (reader > buf->writer)
+    return (reader - buf->writer + 1);
+  else
+    return (buf->end - reader) + (buf->writer - buf->buffer) + 2;
+}
+
+void buffer_cleanup (buf_t *buf) {
+  if (buf) {
+    if (buf->readerpid)
+      kill (buf->readerpid, SIGTERM);
+    wait (0);
+    buf->readerpid = 0;
+#ifndef HAVE_SMMAP
+    shmdt(buf);
+#endif
+  }
 }

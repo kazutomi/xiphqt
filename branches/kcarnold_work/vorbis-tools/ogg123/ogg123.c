@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.3 2001/06/23 00:28:17 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.4 2001/06/24 01:03:12 kcarnold Exp $
 
  ********************************************************************/
 
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
     opt.nth = 1;
     opt.ntimes = 1;
 
-    atexit (buffer_cleanup);
+    atexit (ogg123_atexit);
     signal (SIGINT, signal_quit);
     ao_initialize();
 
@@ -262,7 +262,9 @@ void signal_skipfile(int which_signal)
     signal(which_signal,old_sig);
     raise(which_signal);
   }
-
+  else
+    signal (SIGINT, signal_quit);
+  /* should that be unconditional? man pages are not clear on this */
 }
 
 void signal_activate_skipfile(int ignored)
@@ -623,19 +625,9 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
     return 0;
 }
 
-long buffer_full (buf_t* buf) {
-  chunk_t *reader = buf->reader; /* thread safety... */
-
-  if (reader > buf->writer)
-    return (reader - buf->writer + 1);
-  else
-    return (buf->end - reader) + (buf->writer - buf->buffer) + 2;
-}
-
-void buffer_cleanup (void) {
-  if (buffer) {
-    buffer_flush (buffer);
-    buffer_shutdown (buffer);
-    buffer = NULL;
-  }
+void ogg123_atexit (void)
+{
+  if (buffer)
+    buffer_cleanup (buffer);
+  buffer = NULL;
 }
