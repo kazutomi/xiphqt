@@ -27,13 +27,13 @@ static long _vq_quantlist_res_Ac_5[] = {
 };
 
 static long _vq_lengthlist_res_Ac_5[] = {
-	 2, 4, 4, 7, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 4, 7, 6, 0, 0,
+	 2, 3, 4, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 6, 6, 0, 0,
 	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	 0, 0, 3, 4, 4, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 7, 6,10, 9,
+	 0, 0, 4, 4, 4, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 8, 8,
 	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 6, 6, 7, 8,10, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 7, 6, 6, 8, 8, 0, 0, 0, 0, 0, 0, 0,
 	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -84,36 +84,6 @@ static encode_aux_threshmatch _vq_auxt_res_Ac_5 = {
 	5
 };
 
-static long _vq_pigeonmap_res_Ac_5[] = {
-	    1,     0,     0,     0, 
-};
-
-static long _vq_fitlist_res_Ac_5[] = {
-	    0,     1,     2,     3,    25,    26,    27,    28, 
-	   50,    51,    52,    53,    75,    76,    77,    78, 
-	    4,    29,    54,    79,   100,   101,   102,   103, 
-	  104, 
-};
-
-static long _vq_fitmap_res_Ac_5[] = {
-	    0,     0,     0,     0,     0,     0,     0,     0, 
-	    0,     0,     0,     0,     0,     0,     0,     0, 
-};
-
-static long _vq_fitlength_res_Ac_5[] = {
-	   25,    25,    25,    25,    25,    25,    25,    25, 
-	   25,    25,    25,    25,    25,    25,    25,    25, 
-};
-
-static encode_aux_pigeonhole _vq_auxp_res_Ac_5 = {
-	-2, 1, 4, 2,
-	_vq_pigeonmap_res_Ac_5,
-	25,
-	_vq_fitlist_res_Ac_5,
-	_vq_fitmap_res_Ac_5,
-	_vq_fitlength_res_Ac_5
-};
-
 static static_codebook _vq_book_res_Ac_5 = {
 	4, 625,
 	_vq_lengthlist_res_Ac_5,
@@ -121,7 +91,7 @@ static static_codebook _vq_book_res_Ac_5 = {
 	_vq_quantlist_res_Ac_5,
 	NULL,
 	&_vq_auxt_res_Ac_5,
-	&_vq_auxp_res_Ac_5,
+	NULL,
 	0
 };
 
