@@ -14,6 +14,7 @@ int main(int argc, char * argv[])
 	char	listing_ip[255];
 	char	server_name[101];
 	char	server_type[26];
+	char	server_subtype[255];
 	char	bitrate[26];
 	char	desc[256];
 	char	st[256];
@@ -32,12 +33,13 @@ int main(int argc, char * argv[])
 	int	use_listingIP = 0;
 
 
-	setErrorType(LM_ERROR);
+	setErrorType(LM_DEBUG);
 	setLogFile(YP_LOGDIR"yp_cgi.log");
 	memset(error, '\000', sizeof(error));
 	memset(listing_ip, '\000', sizeof(listing_ip));
 	memset(server_name, '\000', sizeof(server_name));
 	memset(server_type, '\000', sizeof(server_type));
+	memset(server_subtype, '\000', sizeof(server_subtype));
 	memset(bitrate, '\000', sizeof(bitrate));
 	memset(desc, '\000', sizeof(desc));
 	memset(genre, '\000', sizeof(genre));
@@ -179,6 +181,16 @@ int main(int argc, char * argv[])
 				ptmp = cgi_unescape_special_chars(cgi_param("type"));
 				if (ptmp) {
 					strncpy(server_type, ptmp, sizeof(server_type)-1);
+					free(ptmp);
+				}
+			}
+		}
+		if (cgi_param("stype") != NULL) {
+			Log(LOG_DEBUG, "Getting Server SubType");
+			if (strlen(cgi_param("stype")) > 0) {
+				ptmp = cgi_unescape_special_chars(cgi_param("stype"));
+				if (ptmp) {
+					strncpy(server_subtype, ptmp, sizeof(server_subtype)-1);
 					free(ptmp);
 				}
 			}
@@ -336,7 +348,7 @@ int main(int argc, char * argv[])
 			}
 			Log(LOG_DEBUG, "Going to Add Server");
 			memset(sid, '\000', sizeof(sid));
-			ret = addServer(server_name, genre, cluster_password, desc, url, listenurl, server_type, bitrate, listing_ip, sid, samplerate, channels, error);
+			ret = addServer(server_name, genre, cluster_password, desc, url, listenurl, server_type, server_subtype, bitrate, listing_ip, sid, samplerate, channels, error);
 			Log(LOG_DEBUG, "Done With Add Server");
 			if (ret == YP_ADDED) {
 				Log(LOG_DEBUG, "sending sid  of %s", sid);

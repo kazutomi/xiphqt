@@ -1,4 +1,3 @@
-use icecast2_yp;
 DROP TABLE if exists server_details;
 DROP TABLE if exists servers_touch;
 DROP TABLE if exists servers;
@@ -40,6 +39,7 @@ CREATE TABLE if not exists server_details (
   listen_url varchar(200) default NULL,
   playlist_id mediumint(9) default NULL,
   server_type varchar(25) default NULL,
+  server_subtype varchar(255) default NULL,
   bitrate varchar(25) default NULL,
   listeners int(11) default NULL,
   channels varchar(25) default NULL,
