@@ -41,7 +41,7 @@ dict_to_options(PyObject *dict)
 */
 static int
 parse_args(PyObject *args, PyObject *kwargs, 
-	   ao_sample_format * format, PyObject **py_options,
+	   ao_sample_format *format, PyObject **py_options,
 	   const char **filename, 
 	   uint_32 *driver_id,
 	   uint_32 *overwrite)
@@ -69,7 +69,7 @@ parse_args(PyObject *args, PyObject *kwargs,
   format->channels = 2;
   format->byte_format = 1; /* What should this be by default? Anyone? */
   
-  overwrite = 0;
+  *overwrite = 0;
 
   if(PyArg_ParseTupleAndKeywords(args, kwargs, "s|llllO!sl", 
 				 (char **) driver_name_kwlist,
@@ -107,7 +107,7 @@ static PyObject*
 py_ao_new(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   uint_32 overwrite, driver_id;
-  const char * filename = NULL;
+  const char *filename = NULL;
   PyObject *py_options = NULL;
   ao_option *c_options = NULL;
   ao_device *dev;
@@ -128,16 +128,13 @@ py_ao_new(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
   }
-
-  if (py_options) {
-    Py_DECREF(py_options);
-  }
-
-  if (filename == NULL)
+ 
+  if (filename == NULL) {
     dev = ao_open_live(driver_id, &sample_format, c_options);
-  else
+  } else {
     dev = ao_open_file(driver_id, filename, overwrite, 
 		       &sample_format, c_options);
+  }
   ao_free_options(c_options);
 
   if (dev == NULL) {
@@ -259,7 +256,16 @@ py_ao_getattr(PyObject *self, char *name)
 static PyObject*
 py_ao_is_big_endian(PyObject *self, PyObject *args)
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyInt_FromLong(ao_is_big_endian());
+}
+
+static PyObject*
+py_ao_default_driver_id(PyObject *self, PyObject *args)
+{
+  /* Passed with METH_NOARGS */
+  return PyInt_FromLong(ao_default_driver_id());
 }
 
 #define AddInt(x) PyDict_SetItemString(dict, #x, PyInt_FromLong(x))
