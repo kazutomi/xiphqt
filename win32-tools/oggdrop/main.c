@@ -288,9 +288,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
       (void) sprintf(nbrCaption, "%s: %.1f kbit/s ", 
         approxBRCaption, nominalBitrate/1000);
 
-      if (oe_mode != OE_MODE_QUALITY)
-        (void) strcpy(approxBRCaption, "Bitrate");
-
       DrawText(offscreen, nbrCaption, -1, 
              &vbrBR, DT_SINGLELINE | DT_CENTER);
     }
