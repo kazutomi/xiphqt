@@ -59,6 +59,7 @@ ices_setup_init ()
 
 	/* Initialize the thread library */
 	thread_initialize ();
+	thread_catch_signals ();
 
 	/* Setup signal handlers */
 	ices_signals_setup ();
@@ -109,6 +110,8 @@ ices_setup_shutdown ()
 	thread_shutdown ();
 
 	ices_log_shutdown ();
+	
+	exit (1);
 }
 
 /* Local function definitions */

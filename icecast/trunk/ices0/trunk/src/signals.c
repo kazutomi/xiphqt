@@ -57,6 +57,7 @@ ices_signals_setup ()
 static void
 ices_signals_int (const int sig)
 {
+	ices_log_debug ("Caught SIGINT, closing down...");
 	ices_setup_shutdown ();
 }
 			
@@ -73,6 +74,7 @@ ices_signals_child (const int sig)
 static void
 ices_signals_hup (const int sig)
 {
+	ices_log_debug ("Caught SIGHUP, cycling logfiles...");
 	ices_log_reopen_logfile ();
 }
 
