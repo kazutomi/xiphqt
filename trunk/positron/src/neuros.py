@@ -41,9 +41,10 @@ class Neuros:
         self.mountpoint = mountpoint
 
         # Check and see if the mountpoint looks legit
-        mount_dir = os.listdir(mountpoint)
-
-        if Neuros.DB_DIR not in mount_dir:
+        dbpath = path.join(self.mountpoint, Neuros.DB_DIR)
+        try:
+            os.listdir(dbpath)
+        except OSError:
             raise Error("%s does not look like a Neuros mountpoint"
                         % (mountpoint,))
 
