@@ -1,17 +1,5 @@
 /* top layer of subversion library to intercept RealPlayer socket and
-   device I/O. --Monty 20011101 */
-
-/* We grab audio by watching for open() on the audio device, and then
-   capturing ioctl()s and read()s.  X is dealt with at two levels;
-   when we need to add our own X events, we do that through
-   RealPlayer's own Xlib state (to avoid opening another, or confusing
-   Xlib by adding/removing events from its stream.  This is another
-   way to get the infamous 'Xlib: Unexpected async reply' error, even
-   if things are properly locked).  Mostly we deal with X by
-   watching/effecting the wire level protocol over the X fd.  Watching
-   the raw X gives some extra flexibility (like capturing expose),
-   especially for potential future features (like not mapping the RP
-   windows at all, but RP being unaware of it). */
+   device I/O. --20011101 */
 
 #define _GNU_SOURCE
 #define _LARGEFILE_SOURCE

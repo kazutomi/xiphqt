@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20011106";
+$version="Snatch 20011110";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
@@ -1557,7 +1557,7 @@ sub Timer_Entry{
 	    Alert("Impossible date setting!",
 		  "The date checking routines believe the entered date doesn't exist (or is".
 		  " far enough in the past it will never trigger anyway).  Please correct the".
-		  ' date specification before proceeding, or file a bug report with monty@xiph.org'.
+		  ' date specification before proceeding, or file a bug report'.
 		  " if the date is correct and the code is wrong.\n",$tentry);
 	}elsif(TestOutpath($outfile,$tentry)){
 	    $outfile=trim_glob($outfile);
