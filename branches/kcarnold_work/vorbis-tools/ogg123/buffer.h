@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.11 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.12 2001/08/13 00:43:20 kcarnold Exp $
  
 ********************************************************************/
 
@@ -46,6 +46,8 @@ typedef struct buf_s
   /* the buffer itself */
   char StatMask;
   char FlushPending; /* must be separate from statmask */
+  char ReaderActive;
+  char WriterActive;
   int OptimalWriteSize; /* optimal size to write out in chunks of, if possible. */
   long size;         /* buffer size, for reference */
   long curfill;      /* how much the buffer is currently filled */
@@ -59,13 +61,14 @@ typedef struct buf_s
 
 #define STAT_PREBUFFERING 1
 #define STAT_PLAYING 2
-#define STAT_EMPTYING 4
+#define STAT_INACTIVE 4
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
 		    pWriteFunc write_func, void *initData, 
 		    pInitFunc init_func, int OptimalWriteSize);
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb);
 void buffer_MarkEOS (buf_t *buf);
+void buffer_ReaderQuit (buf_t *buf);
 void buffer_shutdown (buf_t *buf);
 void buffer_cleanup (buf_t *buf);
 void buffer_flush (buf_t *buf);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.4 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.5 2001/08/13 00:43:20 kcarnold Exp $
  
 ********************************************************************/
 
@@ -26,9 +26,12 @@
 #include "buffer.h"
 
 typedef struct InputOpts_s {
+  buf_t *buffer;
   /* Input buffer options */
   long BufferSize;
   long Prebuffer;
+  char seekable;
+  double totalTime;
 
   char *SaveStream;
   

@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.14 2001/08/12 18:34:47 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.15 2001/08/13 00:43:20 kcarnold Exp $
 
  ********************************************************************/
 
@@ -39,8 +39,9 @@
 #define BUFFER_CHUNK_SIZE 4096
 char convbuffer[BUFFER_CHUNK_SIZE];
 int convsize = BUFFER_CHUNK_SIZE;
-buf_t * InBuffer = NULL;
-buf_t * OutBuffer = NULL;
+
+/* take big options structure from the data segment */
+ogg123_options_t Options;
 
 static char skipfile_requested;
 static char exit_requested;
@@ -96,7 +97,12 @@ int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, char *filename, cha
     }
   else
     {
-      fprintf (stderr, "Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
+      int len = 80 + strlen(filename) + strlen(line);
+      char *buf = malloc (len);
+      if (!buf) { perror ("malloc"); return -1; }
+      snprintf (buf, len, "Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
+      ShowMessage (0, 0, buf);
+      free(buf);
       return 0;
     }
 }
@@ -122,18 +128,127 @@ void ReadStdConfigs (Option_t opts[])
 }
 /* /configuration interface */
 
+/* status interface */
+/* string temporary data (from the data segment) */
+char TwentyBytes1[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char TwentyBytes2[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char TwentyBytes3[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+void InitOgg123Stats (Stat_t stats[])
+{
+  Stat_t *cur;
+
+  cur = &stats[0]; /* currently playing file / stream */
+  cur->prio = 3; cur->enabled = 0; cur->formatstr = "File: %s"; cur->type = stat_stringarg;
+  cur = &stats[1]; /* current playback time (preformatted) */
+  cur->prio = 1; cur->enabled = 1; cur->formatstr = "Time: %s"; cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes1;
+  cur = &stats[2]; /* remaining playback time (preformatted) */
+  cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s"; cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes2;
+  cur = &stats[3]; /* total playback time (preformatted) */
+  cur->prio = 1; cur->enabled = 0; cur->formatstr = "of %s"; cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes3;
+  cur = &stats[4]; /* instantaneous bitrate */
+  cur->prio = 2; cur->enabled = 1; cur->formatstr = "Bitrate: %5.1f"; cur->type = stat_doublearg;
+  cur = &stats[5]; /* average bitrate (not yet implemented) */
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = "Avg bitrate: %5.1f"; cur->type = stat_doublearg;
+  cur = &stats[6]; /* input buffer fill % */
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = " Input Buffer %5.1f%%"; cur->type = stat_doublearg;
+  cur = &stats[7]; /* input buffer status */
+  cur->prio = 3; cur->enabled = 0; cur->formatstr = "(%s)"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+  cur = &stats[8]; /* output buffer fill % */
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = " Output Buffer %5.1f%%"; cur->type = stat_doublearg;
+  cur = &stats[9]; /* output buffer status */
+  cur->prio = 3; cur->enabled = 0; cur->formatstr = "%s"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+}
+
+void SetTime (Stat_t stats[], ogg_int64_t sample)
+{
+  double time = (double) sample / (double) Options.outputOpts.rate;
+  long c_min = (long) time / (long) 60;
+  double c_sec = time - 60.0f * c_min;
+  long r_min, t_min;
+  double r_sec, t_sec;
+
+  if (stats[2].enabled && Options.inputOpts.seekable) {
+    r_min = (long) (Options.inputOpts.totalTime - time) / (long) 60;
+    r_sec = ((double) Options.inputOpts.totalTime - time) - 60.0f * (double) r_min;
+    sprintf (stats[2].arg.stringarg, "[%02li:%05.2f]", r_min, r_sec);
+    if (stats[3].arg.stringarg[0] == '\0') {
+      t_min = (long) Options.inputOpts.totalTime / (long) 60;
+      t_sec = Options.inputOpts.totalTime - 60.0f * t_min;
+      sprintf (stats[3].arg.stringarg, "of %02li:%05.2f", t_min, t_sec);
+    }    
+  }
+  sprintf (stats[1].arg.stringarg, "%02li:%05.2f", c_min, c_sec);
+}
+
+void SetBufferStats (buf_t *buf, char *strbuf)
+{
+  char *cur = strbuf;
+  char *comma = ", ";
+  char *sep = "(";
+
+  if (buf->StatMask & STAT_PREBUFFERING) {
+    cur += sprintf (cur, "%sPrebuffering", sep);
+    sep = comma;
+  }
+  if (!buf->StatMask & STAT_PLAYING) {
+    cur += sprintf (cur, "%sPaused", sep);
+    sep = comma;
+  }
+  if (buf->FlushPending) {
+    cur += sprintf (cur, "%sFlushing", sep);
+    sep = comma;
+  }
+  if (buf->StatMask & STAT_INACTIVE) {
+    cur += sprintf (cur, "%sInactive", sep);
+    sep = comma;
+  }
+  if (cur != strbuf)
+    cur += sprintf (cur, ")");
+}
+
+void SetBuffersStats ()
+{
+  char strbuf[80];
+  Stat_t *stats = Options.statOpts.stats;
+
+  memset (strbuf, 0, 80);
+  if (Options.inputOpts.buffer) {
+    SetBufferStats (Options.inputOpts.buffer, strbuf);
+    stats[6].arg.doublearg = (double) buffer_full(Options.inputOpts.buffer) / (double) Options.inputOpts.buffer->size * 100.0f;
+  }
+  if (stats[7].arg.stringarg)
+    free (stats[7].arg.stringarg);
+  stats[7].arg.stringarg = strdup (strbuf);
+
+  memset (strbuf, 0, 80);
+  if (Options.outputOpts.buffer) {
+    SetBufferStats (Options.outputOpts.buffer, strbuf);
+    stats[8].arg.doublearg = (double) buffer_full(Options.outputOpts.buffer) / (double) Options.outputOpts.buffer->size * 100.0f;
+  }
+  if (stats[9].arg.stringarg)
+    free (stats[9].arg.stringarg);
+  stats[9].arg.stringarg = strdup (strbuf);
+}
+
+/* /status interface */
+
 /* buffer interface */
 size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseos)
 {
   static ogg_int64_t cursample = 0;
   
-  /* update status */
-  /* update cursample */
+  SetTime (Options.statOpts.stats, cursample);
+  SetBuffersStats ();
+  UpdateStats (Options.statOpts.stats);
+  cursample += size * nmemb / Options.outputOpts.channels / 2; /* locked to 16-bit */
+  
   if (iseos)
     cursample = 0;
-  devices_write (ptr, size, nmemb, (devices_t *) arg);
+  return devices_write (ptr, size, nmemb, Options.outputOpts.devices);
 }
 /* /buffer interface */
+
 
 void usage(void)
 {
@@ -176,7 +291,6 @@ void usage(void)
 
 int main(int argc, char **argv)
 {
-  ogg123_options_t opt;
   int ret;
   int option_index = 1;
   ao_option *temp_options = NULL;
@@ -196,30 +310,30 @@ int main(int argc, char **argv)
   /* *INDENT-OFF* */
   Option_t opts[] = {
     /* found, name, description, type, ptr, default */
-    {0, "default_device", "default output device", opt_type_string, &opt.default_device, NULL},
-    {0, "shuffle",        "shuffle playlist",      opt_type_char,   &opt.shuffle,        &char_n},
-    {0, "verbose",        "be verbose",            opt_type_int,    &opt.verbose,        &int_0},
-    {0, "quiet",          "be quiet",              opt_type_int,    &opt.quiet,          &int_0},
-    {0, "outbuffer",      "out buffer size (kB)",  opt_type_int,    &opt.outbuffer_size, &int_0},
-    {0, "outprebuffer",   "out prebuffer (%)",     opt_type_float,  &opt.outprebuffer,   &float_0f},
-    {0, "inbuffer",       "in buffer size (kB)",   opt_type_int,    &opt.inputOpts.BufferSize, &int_10000},
-    {0, "inprebuffer",    "in prebuffer (%)",      opt_type_float,  &opt.inputOpts.Prebuffer, &float_50f},
-    {0, "save_stream",    "append stream to file", opt_type_string, &opt.inputOpts.SaveStream, NULL},
-    {0, "delay",          "skip file delay (sec)", opt_type_int,    &opt.delay,          &int_1},
+    {0, "default_device", "default output device", opt_type_string, &Options.outputOpts.default_device, NULL},
+    {0, "shuffle",        "shuffle playlist",      opt_type_char,   &Options.playOpts.shuffle,        &char_n},
+    {0, "verbose",        "be verbose",            opt_type_int,    &Options.statOpts.verbose,        &int_0},
+    {0, "quiet",          "be quiet",              opt_type_int,    &Options.statOpts.quiet,          &int_0},
+    {0, "outbuffer",      "out buffer size (kB)",  opt_type_int,    &Options.outputOpts.BufferSize, &int_0},
+    {0, "outprebuffer",   "out prebuffer (%)",     opt_type_float,  &Options.outputOpts.Prebuffer,   &float_0f},
+    {0, "inbuffer",       "in buffer size (kB)",   opt_type_int,    &Options.inputOpts.BufferSize, &int_10000},
+    {0, "inprebuffer",    "in prebuffer (%)",      opt_type_float,  &Options.inputOpts.Prebuffer, &float_50f},
+    {0, "save_stream",    "append stream to file", opt_type_string, &Options.inputOpts.SaveStream, NULL},
+    {0, "delay",          "skip file delay (sec)", opt_type_int,    &Options.playOpts.delay,          &int_1},
     {0, NULL,             NULL,                    0,               NULL,                NULL}
   };
   /* *INDENT-ON* */
 
-  memset (&opt, 0, sizeof(opt));
-  
-  opt.delay = 1;
-  opt.nth = 1;
-  opt.ntimes = 1;
+  Options.playOpts.delay = 1;
+  Options.playOpts.nth = 1;
+  Options.playOpts.ntimes = 1;
 
-  on_exit (ogg123_onexit, &opt);
+  on_exit (ogg123_onexit, &Options);
   signal (SIGINT, signal_quit);
   ao_initialize();
   
+  InitOgg123Stats (Options.statOpts.stats);
+
   InitOpts(opts);
   ReadStdConfigs (opts);
 
@@ -231,7 +345,7 @@ int main(int argc, char **argv)
 		    "Internal error: long option given when none expected.\n");
 	    exit(1);
 	case 'b':
-	  opt.outbuffer_size = atoi(optarg);
+	  Options.outputOpts.BufferSize = atoi(optarg);
 	  break;
 	case 'c':
 	  if (optarg)
@@ -257,10 +371,10 @@ int main(int argc, char **argv)
 		fprintf(stderr, "No such device %s.\n", optarg);
 		exit(1);
 	    }
-	    current = append_device(opt.outdevices, temp_driver_id, 
+	    current = append_device(Options.outputOpts.devices, temp_driver_id, 
 				    NULL, NULL);
-	    if(opt.outdevices == NULL)
-		    opt.outdevices = current;
+	    if(Options.outputOpts.devices == NULL)
+		    Options.outputOpts.devices = current;
 	    current_options = &current->options;
 	    break;
 	case 'f':
@@ -280,10 +394,10 @@ int main(int argc, char **argv)
 	  }
 	  break;
 	case 'k':
-	    opt.seekpos = atof(optarg);
+	    Options.playOpts.seekpos = atof(optarg);
 	    break;
 	case 'l':
-	    opt.delay = atoi(optarg);
+	    Options.playOpts.delay = atoi(optarg);
 	    break;
 	case 'o':
 	    if (optarg && !add_option(current_options, optarg)) {
@@ -295,30 +409,30 @@ int main(int argc, char **argv)
 	    usage();
 	    exit(0);
 	case 'p':
-	  opt.outprebuffer = atof (optarg);
-	  if (opt.outprebuffer < 0.0f || opt.outprebuffer > 100.0f)
+	  Options.outputOpts.Prebuffer = atof (optarg);
+	  if (Options.outputOpts.Prebuffer < 0.0f || Options.outputOpts.Prebuffer > 100.0f)
 	    {
 	      fprintf (stderr, "Prebuffer value invalid. Range is 0-100, using nearest value.\n");
-	      opt.outprebuffer = opt.outprebuffer < 0.0f ? 0.0f : 100.0f;
+	      Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer < 0.0f ? 0.0f : 100.0f;
 	    }
 	  break;
 	case 'q':
-	    opt.quiet++;
+	    Options.statOpts.quiet++;
 	    break;
 	case 'v':
-	    opt.verbose++;
+	    Options.statOpts.verbose++;
 	    break;
 	case 'V':
 	    fprintf(stderr, "Ogg123 from " PACKAGE " " VERSION "\n");
 	    exit(0);
 	case 'x':
-	  opt.nth = atoi (optarg);
+	  Options.playOpts.nth = atoi (optarg);
 	  break;
 	case 'y':
-	  opt.ntimes = atoi (optarg);
+	  Options.playOpts.ntimes = atoi (optarg);
 	  break;
 	case 'z':
-	    opt.shuffle = 1;
+	    Options.playOpts.shuffle = 1;
 	    break;
 	case '?':
 	    break;
@@ -333,12 +447,14 @@ int main(int argc, char **argv)
 	exit(1);
     }
 
+    SetPriority (Options.statOpts.verbose);
+
     /* Add last device to device list or use the default device */
     if (temp_driver_id < 0) {
-      if (opt.default_device) {
-	temp_driver_id = ao_driver_id (opt.default_device);
-	if (temp_driver_id < 0 && opt.quiet < 2)
-	  fprintf (stderr, "Warning: driver %s specified in configuration file invalid.\n", opt.default_device);
+      if (Options.outputOpts.default_device) {
+	temp_driver_id = ao_driver_id (Options.outputOpts.default_device);
+	if (temp_driver_id < 0 && Options.statOpts.quiet < 2)
+	  fprintf (stderr, "Warning: driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
       }
     }
 
@@ -352,26 +468,28 @@ int main(int argc, char **argv)
       exit(1);
     }
 
-    opt.outdevices = append_device(opt.outdevices, temp_driver_id, 
+    Options.outputOpts.devices = append_device(Options.outputOpts.devices, temp_driver_id, 
 				   temp_options, NULL);
 
-    opt.inputOpts.BufferSize *= 1024;
+    Options.inputOpts.BufferSize *= 1024;
 
-    if (opt.outbuffer_size)
+    if (Options.outputOpts.BufferSize)
       {
-	opt.outbuffer_size *= 1024;
-	opt.outprebuffer = (opt.outprebuffer * (float) opt.outbuffer_size / 100.0f);
-	OutBuffer = StartBuffer (opt.outbuffer_size, (int) opt.outprebuffer,
-				 opt.outdevices, (pWriteFunc) OutBufferWrite,
-				 NULL, NULL, 4096);
+	Options.outputOpts.BufferSize *= 1024;
+	Options.outputOpts.Prebuffer = (Options.outputOpts.Prebuffer * (float) Options.outputOpts.BufferSize / 100.0f);
+	Options.outputOpts.buffer = StartBuffer (Options.outputOpts.BufferSize, (int) Options.outputOpts.Prebuffer,
+					     NULL, (pWriteFunc) OutBufferWrite,
+					     NULL, NULL, 4096);
+	Options.statOpts.stats[8].enabled = 1;
+	Options.statOpts.stats[9].enabled = 1;
       }
     
-    if (opt.shuffle == 'n' || opt.shuffle == 'N')
-      opt.shuffle = 0;
-    else if (opt.shuffle == 'y' || opt.shuffle == 'Y')
-      opt.shuffle = 1;
+    if (Options.playOpts.shuffle == 'n' || Options.playOpts.shuffle == 'N')
+      Options.playOpts.shuffle = 0;
+    else if (Options.playOpts.shuffle == 'y' || Options.playOpts.shuffle == 'Y')
+      Options.playOpts.shuffle = 1;
 
-    if (opt.shuffle) {
+    if (Options.playOpts.shuffle) {
 	int i;
 	int range = argc - optind;
 	
@@ -386,13 +504,13 @@ int main(int argc, char **argv)
     }
 
     while (optind < argc) {
-	opt.read_file = argv[optind];
-	play_file(&opt);
+	Options.playOpts.read_file = argv[optind];
+	play_file();
 	optind++;
     }
 
-    if (OutBuffer != NULL) {
-      buffer_WaitForEmpty (OutBuffer);
+    if (Options.outputOpts.buffer != NULL) {
+      buffer_WaitForEmpty (Options.outputOpts.buffer);
     }
     
     exit (0);
@@ -426,8 +544,8 @@ void signal_activate_skipfile(int ignored)
 void signal_quit(int ignored)
 {
   exit_requested = 1;
-  if (OutBuffer)
-    buffer_flush (OutBuffer);
+  if (Options.outputOpts.buffer)
+    buffer_flush (Options.outputOpts.buffer);
 }
 
 #if 0
@@ -439,64 +557,63 @@ static int _fseek64_wrap(FILE *f,ogg_int64_t off,int whence)
 }
 #endif
 
-void play_file(ogg123_options_t *opt)
+void play_file()
 {
   OggVorbis_File vf;
   int current_section = -1, eof = 0, eos = 0, ret;
   int old_section = -1;
-  long t_min = 0, c_min = 0, r_min = 0;
-  double t_sec = 0, c_sec = 0, r_sec = 0;
   int is_big_endian = ao_is_big_endian();
-  double realseekpos = opt->seekpos;
+  double realseekpos = Options.playOpts.seekpos;
   int nthc = 0, ntimesc = 0;
-  double u_time, u_pos;
   int tmp;
   ov_callbacks VorbisfileCallbacks;
   
-  tmp = strchr(opt->read_file, ':') - opt->read_file;
-  if (tmp < 10 && tmp + 2 < strlen(opt->read_file) && !strncmp(opt->read_file + tmp, "://", 3))
+  tmp = strchr(Options.playOpts.read_file, ':') - Options.playOpts.read_file;
+  if (tmp < 10 && tmp + 2 < strlen(Options.playOpts.read_file) && !strncmp(Options.playOpts.read_file + tmp, "://", 3))
     {
       /* let's call this a URL. */
-      if (opt->quiet < 1)
-	fprintf (stderr, "Playing from stream %s\n", opt->read_file);
+      if (Options.statOpts.quiet < 1)
+	fprintf (stderr, "Playing from stream %s\n", Options.playOpts.read_file);
       VorbisfileCallbacks.read_func = StreamBufferRead;
       VorbisfileCallbacks.seek_func = StreamBufferSeek;
       VorbisfileCallbacks.close_func = StreamBufferClose;
       VorbisfileCallbacks.tell_func = StreamBufferTell;
       
-      opt->inputOpts.URL = opt->read_file;
-      InBuffer = InitStream (opt->inputOpts);
-      if ((ov_open_callbacks (InBuffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
+      Options.inputOpts.URL = Options.playOpts.read_file;
+      Options.inputOpts.buffer = InitStream (Options.inputOpts);
+      if ((ov_open_callbacks (Options.inputOpts.buffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
 	fprintf(stderr, "Error: input not an Ogg Vorbis audio stream.\n");
 	return;
       }
-      
+      Options.statOpts.stats[6].enabled = 1;
+      Options.statOpts.stats[7].enabled = 1;
     }
   else
     {
+      FILE *InStream;
 #if 0
       VorbisfileCallbacks.read_func = fread;
       VorbisfileCallbacks.seek_func = _fseek64_wrap;
       VorbisfileCallbacks.close_func = fclose;
       VorbisfileCallbacks.tell_func = ftell;
 #endif
-      if (strcmp(opt->read_file, "-"))
+      if (strcmp(Options.playOpts.read_file, "-"))
 	{
-	  if (opt->quiet < 1)
-	    fprintf(stderr, "Playing from file %s.\n", opt->read_file);
+	  if (Options.statOpts.quiet < 1)
+	    fprintf(stderr, "Playing from file %s.\n", Options.playOpts.read_file);
 	  /* Open the file. */
-	  if ((opt->instream = fopen(opt->read_file, "rb")) == NULL) {
+	  if ((InStream = fopen(Options.playOpts.read_file, "rb")) == NULL) {
 	    fprintf(stderr, "Error opening input file.\n");
 	    exit(1);
 	  }
 	}
       else
 	{
-	  if (opt->quiet < 1)
+	  if (Options.statOpts.quiet < 1)
 	    fprintf(stderr, "Playing from standard input.\n");
-	  opt->instream = stdin;
+	  InStream = stdin;
 	}
-      if ((ov_open (opt->instream, &vf, NULL, 0)) < 0) {
+      if ((ov_open (InStream, &vf, NULL, 0)) < 0) {
 	fprintf(stderr, "Error: input not an Ogg Vorbis audio stream.\n");
 	return;
       }
@@ -506,10 +623,10 @@ void play_file(ogg123_options_t *opt)
      * interrupts the program, but after the first second, skips
      * the song.  This functionality is similar to mpg123's abilities. */
     
-    if (opt->delay > 0) {
+    if (Options.playOpts.delay > 0) {
       skipfile_requested = 0;
       signal(SIGALRM,signal_activate_skipfile);
-      alarm(opt->delay);
+      alarm(Options.playOpts.delay);
     }
     
     exit_requested = 0;
@@ -519,132 +636,140 @@ void play_file(ogg123_options_t *opt)
       vorbis_comment *vc = ov_comment(&vf, -1);
       vorbis_info *vi = ov_info(&vf, -1);
       
-      if(open_audio_devices(opt, vi->rate, vi->channels) < 0)
+      Options.outputOpts.rate = vi->rate;
+      Options.outputOpts.channels = vi->channels;
+      if(open_audio_devices() < 0)
 	exit(1);
-
-	if (opt->quiet < 1) {
-	    if (eos && opt->verbose) fprintf (stderr, "\r                                                                          \r\n");
-	    for (i = 0; i < vc->comments; i++) {
-		char *cc = vc->user_comments[i];	/* current comment */
-		int i;
-
-		for (i = 0; ogg_comment_keys[i].key != NULL; i++)
-		    if (!strncasecmp
-			(ogg_comment_keys[i].key, cc,
-			 strlen(ogg_comment_keys[i].key))) {
-			fprintf(stderr, ogg_comment_keys[i].formatstr,
-				cc + strlen(ogg_comment_keys[i].key));
-			break;
-		    }
-		if (ogg_comment_keys[i].key == NULL)
-		    fprintf(stderr, "Unrecognized comment: '%s'\n", cc);
-	    }
-
-	    fprintf(stderr, "\nBitstream is %d channel, %ldHz\n",
-		    vi->channels, vi->rate);
-	    if (opt->verbose > 1)
-	      fprintf(stderr, "Encoded by: %s\n\n", vc->vendor);
-	}
-
-	if (opt->verbose > 0 && ov_seekable(&vf)) {
-	    /* Seconds with double precision */
-	    u_time = ov_time_total(&vf, -1);
-	    t_min = (long) u_time / (long) 60;
-	    t_sec = u_time - 60 * t_min;
-	}
-
-	if ((realseekpos > ov_time_total(&vf, -1)) || (realseekpos < 0))
-	    /* If we're out of range set it to right before the end. If we set it
-	     * right to the end when we seek it will go to the beginning of the song */
-	    realseekpos = ov_time_total(&vf, -1) - 0.01;
-
-	if (realseekpos > 0)
-	    ov_time_seek(&vf, realseekpos);
-
-	eos = 0;
-
-	while (!eos && !exit_requested) {
-
-	    if (skipfile_requested) {
-	      eof = eos = 1;
-	      skipfile_requested = 0;
-	      signal(SIGALRM,signal_activate_skipfile);
-	      alarm(opt->delay);
-	      if (OutBuffer)
-		buffer_flush (OutBuffer);
+      
+      if (Options.statOpts.quiet < 1) {
+	if (eos && Options.statOpts.verbose) fprintf (stderr, "\r                                                                          \r\n");
+	for (i = 0; i < vc->comments; i++) {
+	  char *cc = vc->user_comments[i];	/* current comment */
+	  int i;
+	  
+	  for (i = 0; ogg_comment_keys[i].key != NULL; i++)
+	    if (!strncasecmp
+		(ogg_comment_keys[i].key, cc,
+		 strlen(ogg_comment_keys[i].key))) {
+	      fprintf(stderr, ogg_comment_keys[i].formatstr,
+		      cc + strlen(ogg_comment_keys[i].key));
 	      break;
-  	    }
-
-	    old_section = current_section;
-	    ret =
-		ov_read(&vf, convbuffer, sizeof(convbuffer), is_big_endian,
-			2, 1, &current_section);
-	    if (ret == 0) {
-		/* End of file */
-		eof = eos = 1;
-	    } else if (ret == OV_HOLE) {
-	      if (opt->verbose > 1) 
-		/* we should be able to resync silently; if not there are 
-		   bigger problems. */
-		fprintf (stderr, "Warning: hole in the stream; probably harmless\n");
-	    } else if (ret < 0) {
-	      /* Stream error */
-	      fprintf(stderr, "Error: libvorbis reported a stream error.\n");
-	    } else {
-		/* did we enter a new logical bitstream */
-		if (old_section != current_section && old_section != -1)
-		    eos = 1;
-
-		do {
-		  if (nthc-- == 0) {
-		    if (OutBuffer)
-			SubmitData (OutBuffer, convbuffer, ret, 1);
-		    else
-		      devices_write(convbuffer, ret, 1, opt->outdevices);
-		    nthc = opt->nth - 1;
-		  }
-		} while (++ntimesc < opt->ntimes);
-		ntimesc = 0;
-
-		if (opt->verbose > 0) {
-		    if (ov_seekable (&vf)) {
-		      u_pos = ov_time_tell(&vf);
-		      c_min = (long) u_pos / (long) 60;
-		      c_sec = u_pos - 60 * c_min;
-		      r_min = (long) (u_time - u_pos) / (long) 60;
-		      r_sec = (u_time - u_pos) - 60 * r_min;
-		      if (OutBuffer)
-			fprintf(stderr,
-				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %5.1f, Buffer fill: %3.0f%%   \r",
-				c_min, c_sec, r_min, r_sec, t_min, t_sec,
-				(double) ov_bitrate_instant(&vf) / 1000.0F,
-				(double) buffer_full(OutBuffer) / (double) OutBuffer->size * 100.0F);
-		      else
-			fprintf(stderr,
-				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %5.1f   \r",
-				c_min, c_sec, r_min, r_sec, t_min, t_sec,
-				(double) ov_bitrate_instant(&vf) / 1000.0F);
-		    } else {
-		      /* working around a bug in vorbisfile */
-		      /* I don't think that bug is there anymore -ken */
-		      u_pos = (double) ov_pcm_tell(&vf) / (double) vi->rate;
-		      c_min = (long) u_pos / (long) 60;
-		      c_sec = u_pos - 60 * c_min;
-		      if (OutBuffer)
-			fprintf(stderr,
-				"\rTime: %02li:%05.2f, Bitrate: %5.1f, Buffer fill: %3.0f%%   \r",
-				c_min, c_sec,
-				(float) ov_bitrate_instant (&vf) / 1000.0F,
-				(double) buffer_full(OutBuffer) / (double) OutBuffer->size * 100.0F);
-		      else
-			fprintf(stderr,
-				"\rTime: %02li:%05.2f, Bitrate: %5.1f   \r",
-				c_min, c_sec,
-				(float) ov_bitrate_instant (&vf) / 1000.0F);
-		    }
-		}
 	    }
+	  if (ogg_comment_keys[i].key == NULL)
+	    fprintf(stderr, "Unrecognized comment: '%s'\n", cc);
 	}
+	
+	fprintf(stderr, "\nBitstream is %d channel, %ldHz\n",
+		vi->channels, vi->rate);
+	if (Options.statOpts.verbose > 1)
+	  fprintf(stderr, "Encoded by: %s\n\n", vc->vendor);
+      }
+      
+      if (ov_seekable (&vf)) {
+	if ((realseekpos > ov_time_total(&vf, -1)) || (realseekpos < 0))
+	  /* If we're out of range set it to right before the end. If we set it
+	   * right to the end when we seek it will go to the beginning of the song */
+	  realseekpos = ov_time_total(&vf, -1) - 0.01;
+	
+	Options.inputOpts.seekable = 1;
+	Options.inputOpts.totalTime = ov_time_total(&vf, -1);
+	Options.statOpts.stats[2].enabled = 1;
+	Options.statOpts.stats[3].enabled = 1;
+	if (Options.statOpts.verbose > 0)
+	  SetTime (Options.statOpts.stats, realseekpos / vi->rate);
+	
+	if (realseekpos > 0)
+	  ov_time_seek(&vf, realseekpos);
+      }
+      else
+	Options.inputOpts.seekable = 0;
+
+      eos = 0;
+      
+      while (!eos && !exit_requested) {
+	
+	if (skipfile_requested) {
+	  eof = eos = 1;
+	  skipfile_requested = 0;
+	  signal(SIGALRM,signal_activate_skipfile);
+	  alarm(Options.playOpts.delay);
+	  if (Options.outputOpts.buffer)
+	    buffer_flush (Options.outputOpts.buffer);
+	  break;
+	}
+	
+	old_section = current_section;
+	ret =
+	  ov_read(&vf, convbuffer, sizeof(convbuffer), is_big_endian,
+		  2, 1, &current_section);
+	if (ret == 0) {
+	  /* End of file */
+	  eof = eos = 1;
+	} else if (ret == OV_HOLE) {
+	  if (Options.statOpts.verbose > 1) 
+	    /* we should be able to resync silently; if not there are 
+	       bigger problems. */
+	    fprintf (stderr, "Warning: hole in the stream; probably harmless\n");
+	} else if (ret < 0) {
+	  /* Stream error */
+	  fprintf(stderr, "Error: libvorbis reported a stream error.\n");
+	} else {
+	  /* did we enter a new logical bitstream */
+	  if (old_section != current_section && old_section != -1)
+	    eos = 1;
+	  
+	  Options.statOpts.stats[4].arg.doublearg = (double) ov_bitrate_instant (&vf) / 1000.0f;
+
+	  do {
+	    if (nthc-- == 0) {
+	      if (Options.outputOpts.buffer)
+		SubmitData (Options.outputOpts.buffer, convbuffer, ret, 1);
+	      else
+		OutBufferWrite (convbuffer, ret, 1, &Options, 0);
+	      nthc = Options.playOpts.nth - 1;
+	    }
+	  } while (++ntimesc < Options.playOpts.ntimes);
+	  ntimesc = 0;
+	  
+#if 0
+	  /* old status code */
+	  if (ov_seekable (&vf)) {
+	    u_pos = ov_time_tell(&vf);
+	    c_min = (long) u_pos / (long) 60;
+	    c_sec = u_pos - 60 * c_min;
+	    r_min = (long) (u_time - u_pos) / (long) 60;
+	    r_sec = (u_time - u_pos) - 60 * r_min;
+	    if (Options.outputOpts.buffer)
+	      fprintf(stderr,
+		      "\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %5.1f, Buffer fill: %3.0f%%   \r",
+		      c_min, c_sec, r_min, r_sec, t_min, t_sec,
+		      (double) ov_bitrate_instant(&vf) / 1000.0F,
+		      (double) buffer_full(Options.outputOpts.buffer) / (double) Options.outputOpts.buffer->size * 100.0F);
+	    else
+	      fprintf(stderr,
+		      "\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %5.1f   \r",
+		      c_min, c_sec, r_min, r_sec, t_min, t_sec,
+		      (double) ov_bitrate_instant(&vf) / 1000.0F);
+	  } else {
+	    /* working around a bug in vorbisfile */
+	    u_pos = (double) ov_pcm_tell(&vf) / (double) vi->rate;
+	    c_min = (long) u_pos / (long) 60;
+	    c_sec = u_pos - 60 * c_min;
+	    if (Options.outputOpts.buffer)
+	      fprintf(stderr,
+		      "\rTime: %02li:%05.2f, Bitrate: %5.1f, Buffer fill: %3.0f%%   \r",
+		      c_min, c_sec,
+		      (float) ov_bitrate_instant (&vf) / 1000.0F,
+		      (double) buffer_full(Options.outputOpts.buffer) / (double) Options.outputOpts.buffer->size * 100.0F);
+	    else
+	      fprintf(stderr,
+		      "\rTime: %02li:%05.2f, Bitrate: %5.1f   \r",
+		      c_min, c_sec,
+		      (float) ov_bitrate_instant (&vf) / 1000.0F);
+	  }
+#endif
+	}
+      }
     }
     
     alarm(0);
@@ -652,45 +777,41 @@ void play_file(ogg123_options_t *opt)
     signal(SIGINT,signal_quit);
     
     ov_clear(&vf);
-
-    if (opt->quiet < 1)
-	fprintf(stderr, "\nDone.\n");
-
+    
+    if (Options.statOpts.quiet < 1)
+      fprintf(stderr, "\nDone.\n");
+    
     if (exit_requested)
-      {
-	exit (0);
-      }
+      exit (0);
 }
 
-/* if not for the two lines involving the buffer, this would go in
- * ao_interface.c. */
-int open_audio_devices(ogg123_options_t *opt, int rate, int channels)
+int open_audio_devices()
 {
   static int prevrate=0, prevchan=0;
   devices_t *current;
   ao_sample_format format;
 
-  if(prevrate == rate && prevchan == channels)
+  if(prevrate == Options.outputOpts.rate && prevchan == Options.outputOpts.channels)
     return 0;
   
   if(prevrate !=0 && prevchan!=0)
 	{
-	  if (OutBuffer)
-	    buffer_WaitForEmpty (OutBuffer);
+	  if (Options.outputOpts.buffer)
+	    buffer_WaitForEmpty (Options.outputOpts.buffer);
 
-	  close_audio_devices (opt->outdevices);
+	  close_audio_devices (Options.outputOpts.devices);
 	}
   
-  format.rate = prevrate = rate;
-  format.channels = prevchan = channels;
+  format.rate = prevrate = Options.outputOpts.rate;
+  format.channels = prevchan = Options.outputOpts.channels;
   format.bits = 16;
   format.byte_format = AO_FMT_NATIVE;
 
-  current = opt->outdevices;
+  current = Options.outputOpts.devices;
   while (current != NULL) {
     ao_info *info = ao_driver_info(current->driver_id);
     
-    if (opt->verbose > 0) {
+    if (Options.statOpts.verbose > 0) {
       fprintf(stderr, "Device:   %s\n", info->name);
       fprintf(stderr, "Author:   %s\n", info->author);
       fprintf(stderr, "Comments: %s\n", info->comment);
@@ -748,17 +869,15 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels)
 
 void ogg123_onexit (int exitcode, void *arg)
 {
-  ogg123_options_t *opt = (ogg123_options_t*) arg;
-
-  if (InBuffer) {
-    StreamInputCleanup (InBuffer);
-    InBuffer = NULL;
+  if (Options.inputOpts.buffer) {
+    StreamInputCleanup (Options.inputOpts.buffer);
+    Options.inputOpts.buffer = NULL;
   }
       
-  if (OutBuffer) {
-    buffer_cleanup (OutBuffer);
-    OutBuffer = NULL;
+  if (Options.outputOpts.buffer) {
+    buffer_cleanup (Options.outputOpts.buffer);
+    Options.outputOpts.buffer = NULL;
   }
 
-  ao_onexit (exitcode, opt->outdevices);
+  ao_onexit (exitcode, Options.outputOpts.devices);
 }

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.4 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.5 2001/08/13 00:43:20 kcarnold Exp $
  
 ********************************************************************/
 
@@ -22,7 +22,7 @@
 #include <string.h> /* for memmove */
 #include <signal.h>		/* for SIGINT */
 
-#define DEBUG_CURLINTERFACE
+#undef DEBUG_CURLINTERFACE
 
 #ifdef DEBUG_CURLINTERFACE
 #define debug(x, y...) do { fprintf (stderr, x , ## y); } while (0)
@@ -62,7 +62,7 @@ BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
       data->CurWritePtr += size;
       data->BytesRequested -= size;
       pthread_mutex_unlock (&data->ReadDataMutex);
-      if (data->BytesRequested == 0)
+      if (data->BytesRequested == 0 || iseos)
 	pthread_cond_signal (&data->ReadDoneCondition);
     }
   else
@@ -151,6 +151,7 @@ CurlGo (void *arg)
   ret = curl_easy_perform ((CURL *) data->CurlHandle);
   debug ("curl done.\n");
   buffer_MarkEOS (buf);
+  buffer_ReaderQuit (buf);
   curl_easy_cleanup (data->CurlHandle);
   data->CurlHandle = 0;
   return (void *) ret;
@@ -256,8 +257,8 @@ _StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 
       while (data->BytesRequested > 0 && !data->EOS)
 	{
-	  debug ("Waiting for %d bytes of data to be read.\n",
-		 data->BytesRequested);
+	  debug ("Waiting for %d bytes of data to be read, eos=%d.\n",
+		 data->BytesRequested, data->EOS);
 	  pthread_cond_wait (&data->ReadDoneCondition, &data->ReadDataMutex);
 	}
       if (data->EOS)
@@ -296,6 +297,7 @@ StreamBufferClose (void *arg)
       pthread_kill (data->CurlThread, SIGTERM);
       pthread_join (data->CurlThread, NULL);
       data->ShuttingDown = 1;
+      data->EOS = 1;
       data->BytesRequested = 0;
       pthread_cond_signal (&data->ReadRequestedCondition);
       memset (data, 0, sizeof(data));

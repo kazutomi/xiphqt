@@ -11,11 +11,15 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.1 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.2 2001/08/13 00:43:20 kcarnold Exp $
 
  ********************************************************************/
 
 #define _GNU_SOURCE
+
+/* if strcasecmp is giving you problems, switch to strcmp or the appropriate
+ * function for your platform / compiler.
+ */
 
 #include "options.h"
 
@@ -31,32 +35,35 @@ void InitOpts (Option_t opts[])
 {
   while (opts && opts->name)
     {
-      switch (opts->type) {
-      case opt_type_none:
-	/* do nothing */
-	break;
-
-      case opt_type_char:
-	*(char *) opts->ptr = *(char*) opts->dfl;
-	break;
-
-      case opt_type_string:
-	*(char **) opts->ptr = (char *) opts->dfl;
-	break;
-
-      case opt_type_int:
-	*(long int *) opts->ptr = *(int *) opts->dfl;
-	break;
-	
-      case opt_type_float:
-	*(float *) opts->ptr = *(float *) opts->dfl;
-	break;
-
-      case opt_type_double:
+      opts->found = 0;
+      if (opts->dfl) {
+	switch (opts->type) {
+	case opt_type_none:
+	  /* do nothing */
+	  break;
+	  
+	case opt_type_char:
+	  *(char *) opts->ptr = *(char*) opts->dfl;
+	  break;
+	  
+	case opt_type_string:
+	  *(char **) opts->ptr = (char *) opts->dfl;
+	  break;
+	  
+	case opt_type_int:
+	  *(long int *) opts->ptr = *(int *) opts->dfl;
+	  break;
+	  
+	case opt_type_float:
+	  *(float *) opts->ptr = *(float *) opts->dfl;
+	  break;
+	  
+	case opt_type_double:
 	*(double *) opts->ptr = *(double *) opts->dfl;
 	break;
-
-      default:
+	
+	default:
+	}
       }
       opts++;
     }
@@ -114,7 +121,7 @@ ParseCode ParseLine (Option_t opts[], char *line)
   /* now key is in line and value is in value. Search for a matching option. */
   opt = opts;
   while (opt->name) {
-    if (!strcmp (opt->name, line)) {
+    if (!strcasecmp (opt->name, line)) {
       long tmpl;
       char **endptr;
 
@@ -276,7 +283,7 @@ int PrintSpace (FILE *f, int s, int c)
 void DescribeOptions (Option_t opts[], FILE *f)
 {
   /* name | description | type | default */
-  int colWidths[] = {0, 0, 7};
+  int colWidths[] = {0, 0, 7, 7};
   int totalWidth = 0;
   Option_t *opt = opts;
 
@@ -304,15 +311,15 @@ void DescribeOptions (Option_t opts[], FILE *f)
   
   /* Description */
   totalWidth += fprintf (f, "Description");
-  totalWidth += PrintSpace (f, (colWidths[0] - 11), ' ');
+  totalWidth += PrintSpace (f, (colWidths[1] - 11), ' ');
   
   /* Type */
   totalWidth += fprintf (f, "Type");
-  totalWidth += PrintSpace (f, (colWidths[0] - 4), ' ');
+  totalWidth += PrintSpace (f, (colWidths[2] - 4), ' ');
   
   /* Default */
   totalWidth += fprintf (f, "Default");
-  totalWidth += PrintSpace (f, (colWidths[0] - 7), ' ');
+  totalWidth += PrintSpace (f, (colWidths[3] - 7), ' ');
 
   fputc ('\n', f);
   

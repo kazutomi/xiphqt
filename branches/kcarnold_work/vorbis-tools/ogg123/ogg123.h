@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.8 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.9 2001/08/13 00:43:20 kcarnold Exp $
 
  ********************************************************************/
 
@@ -30,28 +30,49 @@
 
 #include "ao_interface.h"
 #include "curl_interface.h"
+#include "status.h"
 
 typedef struct ogg123_options_s {
-  char *read_file;            /* File to decode */
-  char shuffle;               /* Should we shuffle playing? */
-  long int verbose;           /* Verbose output if > 0, quiet if < 0 */
-  long int quiet;             /* Be quiet (no title) */
-  double seekpos;             /* Amount to seek by */
-  FILE *instream;             /* Stream to read from. */
-  char *default_device;       /* default device for playback */
-  devices_t *outdevices;      /* Streams to write to. */
-  long outbuffer_size;            /* Size of the buffer in chunks. */
-  float outprebuffer;              /* number of chunks to prebuffer */
-  int rate, channels;         /* playback params for opening audio devices */
-  int delay;                  /* delay for skip to next song */
-  int nth;                    /* Play every nth chunk */
-  int ntimes;                 /* Play every chunk n times */
+  struct {
+    char *read_file;            /* File to decode */
+    char shuffle;               /* Should we shuffle playing? */
+    double seekpos;             /* Amount to seek by */
+    int delay;                  /* delay for skip to next song */
+    int nth;                    /* Play every nth chunk */
+    int ntimes;                 /* Play every chunk n times */
+  } playOpts;
+  struct {
+    long int verbose;           /* Verbose output if > 0, quiet if < 0 */
+    long int quiet;             /* Be quiet (no title) */
+    
+    /* Status options:
+     * stats[0] - currently playing file / stream
+     * stats[1] - current playback time
+     * stats[2] - remaining playback time
+     * stats[3] - total playback time
+     * stats[4] - instantaneous bitrate
+     * stats[5] - average bitrate (not yet implemented)
+     * stats[6] - input buffer fill %
+     * stats[7] - input buffer status
+     * stats[8] - output buffer fill %
+     * stats[9] - output buffer status
+     */
+    Stat_t stats[10];
+  } statOpts;
   InputOpts_t inputOpts;
+  struct {
+    buf_t *buffer;
+    long BufferSize;
+    float Prebuffer;
+    int rate, channels;         /* playback params for opening audio devices */
+    devices_t *devices;
+    char *default_device;
+  } outputOpts;
 } ogg123_options_t;
 
 void usage(void);
-void play_file(ogg123_options_t *opt);
-int open_audio_devices(ogg123_options_t *opt, int rate, int channels);
+void play_file();
+int open_audio_devices();
 void signal_quit (int ignored);
 void ogg123_onexit (int exitcode, void *arg);
 
