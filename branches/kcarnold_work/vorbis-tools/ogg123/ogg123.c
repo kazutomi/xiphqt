@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.28 2001/08/31 18:19:57 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.29 2001/09/24 18:44:46 volsung Exp $
 
  ********************************************************************/
 
@@ -47,6 +47,8 @@ ogg123_options_t Options;
 
 char skipfile_requested;
 char exit_requested;
+
+pthread_mutex_t stats_lock = PTHREAD_MUTEX_INITIALIZER;
 
 struct {
     const char *key;			/* includes the '=' for programming convenience */
@@ -243,8 +245,10 @@ void SetBuffersStats ()
 
 void Ogg123UpdateStats (void)
 {
+  pthread_mutex_lock(&stats_lock);
   SetBuffersStats ();
   UpdateStats (Options.statOpts.stats);
+  pthread_mutex_unlock(&stats_lock);
 }
 
 /* /status interface */
@@ -296,8 +300,9 @@ void usage(void)
 {
   int i, driver_count;
   ao_info **devices = ao_driver_info_list(&driver_count);
-  
-  Error ("Ogg123 from " PACKAGE " " VERSION "\n"
+
+  printf ( 
+         "Ogg123 from " PACKAGE " " VERSION "\n"
 	 " by Kenneth Arnold <kcarnold@arnoldnet.net> and others\n\n"
 	 "Usage: ogg123 [<options>] <input file> ...\n\n"
 	 "  -h, --help     this help\n"
@@ -307,17 +312,18 @@ void usage(void)
 	 "        ");
   
   for(i = 0; i < driver_count; i++) {
-    Error ("%s", devices[i]->short_name);
+    printf ("%s", devices[i]->short_name);
     if (devices[i]->type == AO_TYPE_LIVE)
-      Error ("*");
+      printf ("*");
     else if (devices[i]->type == AO_TYPE_FILE)
-      Error ("@");
-    Error (" ");
+      printf ("@");
+    printf (" ");
   }
 
-  Error ("\n");
+  printf ("\n");
   
-  Error ("  -f, --file=filename  Set the output filename for a previously\n"
+  printf (
+	 "  -f, --file=filename  Set the output filename for a previously\n"
 	 "      specified file device (with -d).\n"
 	 "  -k n, --skip n  Skip the first 'n' seconds\n"
 	 "  -o, --device-option=k:v passes special option k with value\n"
@@ -653,7 +659,7 @@ void play_file()
   if (tmp < 10 && tmp + 2 < strlen(Options.playOpts.read_file) && !strncmp(Options.playOpts.read_file + tmp, "://", 3))
     {
       /* let's call this a URL. */
-      ShowMessage (1, 0, 1, "-=( Stream: %s )=-", Options.playOpts.read_file);
+      ShowMessage (1, 0, 1, "Stream: %s", Options.playOpts.read_file);
       VorbisfileCallbacks.read_func = StreamBufferRead;
       VorbisfileCallbacks.seek_func = StreamBufferSeek;
       VorbisfileCallbacks.close_func = StreamBufferClose;
@@ -679,7 +685,7 @@ void play_file()
 #endif
       if (strcmp(Options.playOpts.read_file, "-"))
 	{
-	  ShowMessage (1, 0, 1, "-=( File: %s )=-", Options.playOpts.read_file);
+	  ShowMessage (1, 0, 1, "File: %s", Options.playOpts.read_file);
 	  /* Open the file. */
 	  if ((InStream = fopen(Options.playOpts.read_file, "rb")) == NULL) {
 	    perror ("=== Error opening input file");
@@ -807,8 +813,7 @@ void play_file()
 	    if (nthc-- == 0) {
 	      if (Options.outputOpts.buffer) {
 		SubmitData (Options.outputOpts.buffer, convbuffer, ret, 1);
-		SetBuffersStats ();
-		UpdateStats (Options.statOpts.stats);
+		Ogg123UpdateStats();
 	      }
 	      else
 		OutBufferWrite (convbuffer, ret, 1, &Options, 0);
