@@ -4,7 +4,6 @@ $baseurl="http://www.greenwitch.com/remote";
 $player="xmms";
 
 use LWP;
-use File::MkTemp;
 use Tk;
 use Tk::JPEG;
 use Tk qw(exit); 
@@ -72,8 +71,10 @@ $toplevel->optionAdd("$Xname*background",       '#000000',100);
 $toplevel->optionAdd("$Xname*foreground",       '#ffffff',100);
 $toplevel->optionAdd("$Xname*textlabel.foreground",       '#f0b000',100);
 $toplevel->optionAdd("$Xname*artistlabel.foreground",     '#00f0b0',100);
-$toplevel->optionAdd("$Xname*artistlabel.background",     '#102010',100);
-$toplevel->optionAdd("$Xname*songlabel.background",       '#102010',100);
+$toplevel->optionAdd("$Xname*albumlabel.foreground",     '#f0f080',100);
+$toplevel->optionAdd("$Xname*Titleline*background",       '#102010',100);
+$toplevel->optionAdd("$Xname*Songline*background",       '#102010',100);
+$toplevel->optionAdd("$Xname*ActiveSongline*background", '#205020',100);
 
 
 $toplevel->optionAdd("$Xname*font",    
@@ -127,11 +128,17 @@ unlink $headgif;
 
 # pack the logo and header graphics
 
-$toplevel->Label(Name=>'logo',-image=>$logoimage)->
-    pack(side=>'left',fill=>'y');
+$toplevel->Frame()->
+    pack(side=>'left',fill=>'y')->
+    Label(Name=>'logo',-image=>$logoimage)->
+    pack(side=>'top',fill=>'y',expand=>0);
+
 $toplevel->Label(Name=>'header',-image=>$headimage)->
     pack(side=>'top',fill=>'x',-padx=>'20',-pady=>'4');
 $selectl=$toplevel->Frame(Name=>'select')->pack(side=>'top',fill=>'x');
+
+#space
+$toplevel->Frame()->pack(side=>'top',fill=>'x',pady=>4);
 
 # build the 'Station | Channel | play' bar
 
@@ -140,9 +147,9 @@ $listlabel=$selectl->Label(Name=>"textlabel",text=>"Station:")->
 $play_widget=$selectl->Button(Name=>"play",
 			      text=>"play > "
 			      )->pack(side=>'right',fill=>'y',
-				      -pady=>1, -padx=>1);
+				      -pady=>1);
 $ch_widget=$selectl->Menubutton()->pack(side=>'left',fill=>'both',
-					expand=>'1',-pady=>1,-padx=>1);
+					expand=>'1',-pady=>1,-padx=>2);
 $ch_menu=$ch_widget->Menu();
 $ch_widget->configure(-menu=>$ch_menu);
 
@@ -153,19 +160,29 @@ $channelvalues=$toplevel->Frame()->pack(side=>'left',fill=>'x',expand=>1);
 
 # fill in 'now playing'
 
+$channellabels->Frame()->pack(side=>'top',fill=>'x',pady=>1)->
+    Label(Name=>"textlabel",text=>"Artist:")->pack(side=>'right');
 $channellabels->Frame()->pack(side=>'top',fill=>'x')->
-    Label(Name=>"textlabel",text=>"Now")->pack(side=>'right');
-$channellabels->Frame()->pack(side=>'top',fill=>'x',-pady=>1)->
-    Label(Name=>"textlabel",text=>"Playing:")->pack(side=>'right');
+    Label(Name=>"textlabel",text=>"Album:")->pack(side=>'right');
 
 # fill in the playlist text widgets
 
-$artist_widget=$channelvalues->Frame(Name=>"artistlabel")->
-    pack(side=>'top',fill=>'x')->
-    Label(Name=>"artistlabel")->pack(side=>"left");
-$song_widget=$channelvalues->Frame(Name=>"songlabel")->
-    pack(side=>'top',fill=>'x',pady=>1)->
-    Label(Name=>"songlabel")->pack(side=>"left");
+$artist_widget=$channelvalues->Frame(-class=>"Titleline")->
+    pack(side=>'top',fill=>'x',pady=>0)->
+    Label(Name=>"artistlabel",text=>" ")->
+    pack(side=>"left",expand=>0,pady=>0);
+
+$album_frame=$channelvalues->Frame(-class=>"Titleline")->
+    pack(side=>'top',fill=>'x',pady=>1);
+
+$album_widget=$album_frame->
+    Label(Name=>"albumlabel",text=>" ")->
+    pack(side=>"left",expand=>0,pady=>0);
+
+$packsetting='more';
+$more_widget=$album_frame->Button(text=>"more",padx=>0,pady=>0,
+				   command=>[sub{more_toggle();}])->
+    pack(side=>"right");
 
 # fill in the channel menu entries.  Note that we need 
 
@@ -185,7 +202,7 @@ $ch_menu->add('command',
 	      label=>"Quit",
 	      command=>[sub{Tk::exit()}]);
 
-# refetch the nav page to get a clean URL; the previous one had
+# refetch the nav page to get clean URLs; the previous one had
 $page=get_page($baseurl,$remotepages->{"remote_nav"});
 $remotepages->{"remote_nav"}=
     fields_from_page($page,'form',
@@ -194,6 +211,11 @@ $remotepages->{"remote_nav"}=
                      {"selector"}.
                      "&real_chan=".$current_channel.
                      "&chan=".$current_channel;
+$remotepages->{"remote_content"}=
+    fields_from_page($page,'parent',
+		     '(remote_content).location\s*=\s*',
+		     'remote_content.location\s*=\s*[\'"]?([^"\'\s>]*)')->
+{"remote_content"};
 
 
  Tk::MainLoop();
@@ -201,39 +223,22 @@ $remotepages->{"remote_nav"}=
 
 sub fetch_channel{
     my($key)=@_;
-    
+
     $current_channel=$channels->{$key};
-    $ch_widget->configure(-text=>$key);
+    $ch_widget->configure(-text=>$key,-state=>'disabled');
+    $toplevel->update();
     
-    # fetch the current mountpoint and server information
-    $page=get_page($baseurl,$remotepages->{"remote_nav"});
-    $remotepages->{"remote_nav"}=
-	fields_from_page($page,'form',
-			 'name\s*=\s*[\'"]?(selector)',
-			 'action\s*=\s*[\'"]?([^"\'>]*)',)->
-			 {"selector"}.
-			     "&real_chan=".$current_channel.
-				 "&chan=".$current_channel;
-    $page=get_page($baseurl,$remotepages->{"remote_nav"});
-
-
-    $form_fields=&fields_from_page($page,'input\s+',
-				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
-				   'value\s*=\s*[\'"]?([^"\'\s>]*)');
-    
-    $form_actions=fields_from_page($page,'form\s+',
-				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
-				   'action\s*=\s*[\'"]?([^"\'\s>]*)');
-
-    $remotepages->{"remote_content"}=
-	fields_from_page($page,'parent',
-			 '(remote_content).location\s*=\s*',
-			 'remote_content.location\s*=\s*[\'"]?([^"\'\s>]*)')->
-			 {"remote_content"};
-
-    # fetch the current artist, using the current channel
+    # fetch the content page using the current channel
     $page=get_page($baseurl,$remotepages->{"remote_content"}.
 		   $current_channel."&real_chan=".$current_channel);
+
+    $old_artist_page=$remotepages->{"remote_artist"};
+    $remotepages->{"remote_artist"}=
+	fields_from_page($page,'openMore\(\)',
+			 '["\']?(artist)[\'"]?',
+			 'url\s*=\s*[\'"]?([^"\'\s]*)')->
+			 {"artist"};
+
     $artisth=&fields_from_page($page,
 			      'Now[^<]*<\s*',
 
@@ -260,6 +265,7 @@ sub fetch_channel{
 				'setTimeout',
 				'(refresh)',
 				'\([^,]*,\s*(\d*)')->{"refresh"};
+
     if($timeleft<2000){
 	$timeleft=2000;
     }
@@ -267,26 +273,96 @@ sub fetch_channel{
     $alarm_id=$toplevel->after($timeleft,
 			       [sub{fetch_channel($key)}]);
 
-    $artist_widget->configure(-text=>$current_artist);
-    $song_widget->configure(-text=>$current_song);
+
+    if($remotepages->{"remote_artist"} ne $old_artist_page){
+	$page=get_page(undef,$remotepages->{"remote_artist"});
+	undef %track_names;
+	undef %track_times;
+	undef %track_rating;
+	undef %track_votes;
+	undef %track_color;
+	undef %track_color_count;
+	
+	$tracks=0;
+	$page=~m/<!-- album -->\s*(.*)/s;
+	$page=$1;
+	
+	$page=~/<b><i><font color=\"CC6600\">([^<]*)/;
+	$current_album=$1;
+	$current_album=~s/^\s*(\S.*)\s*$/$1/;
+
+	while(1){
+	    my$pattern='<b>\s*'.($tracks+1).'\.?\s*</b>(.*)';
+	    if($page=~/$pattern/s){
+		$tracks++;
+		$page=$1;
+		
+		$page=~/<\s*td[^>]*>[^<]*<[^>]*>\s*([^<]*)(.*)/s;
+		$track_names{$tracks}=$1;
+		$page=$2;
+		
+		$page=~/<\s*td[^>]*>[^<]*<[^>]*>\s*([^<]*)(.*)/s;
+		$track_times{$tracks}=$1;
+		$page=$2;
+		$track_times{$tracks}=~s/(\s*)$//;
+	    
+		$page=~/<\s*td[^>]*>[^<]*<[^>]*>\s*([^<]*)(.*)/s;
+		$track_rating{$tracks}=$1;
+		$page=$2;
+		
+		$page=~/<\s*td(?:[^>\#]*\#(\d*))?[^>]*>[^<]*<[^>]*>\s*([^<]*)(.*)/s;
+		$track_color{$tracks}=$1;
+		if(defined($track_color_count{$1})){
+		    $track_color_count{$1}++;
+		}else{
+		    $track_color_count{$1}=1;
+		}
+		$track_votes{$tracks}=$2;
+		$page=$3;
+		
+	    }else{
+		last;
+	    }
+	}
+	&gw_repack();
+    }
+
+    $old_artist_page=$remotepages->{"remote_artist"};
+    $artist_widget->configure(-text=>"$current_artist ");
+    $album_widget->configure(-text=>"$current_album");
     $play_widget->configure(-command=>[sub{&fetch_play}]);
+    $ch_widget->configure(-text=>$key,-state=>'normal');
+
 #    print "time left to play $timeleft ms\n";
 }    
 
 sub get_page{
-    my ($baseurl,$page)=@_;
+    my ($baseurl,$page,$nostrip)=@_;
 
     if($page=~/^\//){
 	$baseurl=~s/^(\s*http:\/\/[^\/]*)(.*)/$1/;
     }
+    my$url;
 
-    my$req = HTTP::Request->new( 'GET' => "$baseurl/$page") ;
+    if(defined($baseurl)){
+	$url="$baseurl/$page";
+    }else{
+	$url="$page";
+    }	
+
+    my$req = HTTP::Request->new( 'GET' => $url) ;
     my$response=$ua->request( $req ) ;
 
     if($response->is_success){
-	$response->content;
+	my$c=$response->content;
+
+	if(!defined($nostrip)){
+	    $c=~s/&nbsp;//g;
+	    $c=~s/\n//g;
+	}
+	$c;
     }else{
-	print "Could not fetch $baseurl/$page\n\tResponse:\n\t";
+	print "Could not fetch $url\n\tResponse:\n\t";
 	print $response->status_line."\n";
 	undef;
     }
@@ -302,11 +378,11 @@ sub fields_from_page{
 
 	# search for key, followed by value.
 	while(defined($content) && $content ne ""){
-	    if($content=~m/$tag/){
+	    if($content=~m/$tag/s){
 		$content=$'; # yeah, yeah
-		if($content=~m/$namepat/){
+		if($content=~m/$namepat/s){
 		    $name=$1;
-		    $content=~m/$valpat/;
+		    $content=~m/$valpat/s;
 		    
 #		    print "$name :: $1\n";
 		    if(!defined($fields{$name})){ # hack alert
@@ -338,7 +414,7 @@ use POSIX qw(tmpnam waitpid);
 
 sub get_pic{
     my ($baseurl,$page,$ext)=@_;
-    my$data=get_page($baseurl,$page);
+    my$data=get_page($baseurl,$page,1);
     if(defined($data)){
 	my$name;
 	do { $name = tmpnam().$ext }
@@ -357,8 +433,18 @@ sub get_pic{
 use POSIX ":sys_wait_h";
 
 sub fetch_play{
-    # get up to date nav attributes
+    # fetch the current mountpoint and server information
     $page=get_page($baseurl,$remotepages->{"remote_nav"});
+    $remotepages->{"remote_nav"}=
+	fields_from_page($page,'form',
+			 'name\s*=\s*[\'"]?(selector)',
+			 'action\s*=\s*[\'"]?([^"\'>]*)',)->
+			 {"selector"}.
+			     "&real_chan=".$current_channel.
+				 "&chan=".$current_channel;
+    $page=get_page($baseurl,$remotepages->{"remote_nav"});
+
+
     $form_fields=&fields_from_page($page,'input\s+',
 				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
 				   'value\s*=\s*[\'"]?([^"\'\s>]*)');
@@ -367,14 +453,11 @@ sub fetch_play{
 				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
 				   'action\s*=\s*[\'"]?([^"\'\s>]*)');
 
-    # might as well update the URL we're using too
-    $remotepages->{"remote_nav"}=
-	fields_from_page($page,'form',
-			 'name\s*=\s*[\'"]?(selector)',
-			 'action\s*=\s*[\'"]?([^"\'>]*)',)->
-			 {"selector"}.
-			     "&real_chan=".$current_channel.
-				 "&chan=".$current_channel;
+    $remotepages->{"remote_content"}=
+	fields_from_page($page,'parent',
+			 '(remote_content).location\s*=\s*',
+			 'remote_content.location\s*=\s*[\'"]?([^"\'\s>]*)')->
+			 {"remote_content"};
 
     # hit the server for the m3u file
     unlink $m3u;
@@ -391,5 +474,70 @@ sub fetch_play{
 #    print "$player $m3u &";
     if(!fork()){
 	exec "$player $m3u &";
+    }
+}
+
+sub more_toggle{
+    if($packsetting eq 'more'){
+	$packsetting='less';
+    }else{
+	$packsetting='more';
+    }
+    $more_widget->configure(-text=>$packsetting);
+    &gw_repack();
+}
+
+#rebuild the artist list 
+sub gw_repack{
+    # nuke old widgets
+    if(defined(%track_widgets)){
+	foreach my $key (keys(%track_widgets)){
+	    $track_widgets{$key}->destroy();
+	    undef $track_widgets{$key}; # just in case
+	}
+	undef %track_widgets;
+    }
+    if(defined(%track_numbers)){
+	foreach my $key (keys(%track_numbers)){
+	    $track_numbers{$key}->destroy();
+	    undef $track_numbers{$key}; # just in case
+	}
+	undef %track_numbers;
+    }
+    
+    if($packsetting eq 'less'){
+	for(my$i=1;$i<=$tracks;$i++){
+	    my$class="Songline";
+	    if($track_color_count{$track_color{$i}}==1){
+		$class="ActiveSongline";
+	    }
+	    my$fw=$track_widgets{$i}=$channelvalues->
+		Frame(-class=>$class)->
+		    pack(side=>'top',fill=>'x',pady=>(($i+1) & 1),ipady=>0);
+
+	    $fw->Label(text=>$track_names{$i})->
+		pack(side=>"left");
+	    
+	    $fw->Label(text=>$track_times{$i})->
+		pack(side=>"right",expand=>0);
+
+	    my$lw=$track_numbers{$i}=$channellabels->Frame()->
+		pack(side=>'top',fill=>'x',-pady=>(($i+1) & 1));
+	    $lw->Label(Name=>"textlabel",text=>$i.".")->
+		pack(side=>'right');
+
+	}
+    }else{
+	my$fw=$track_widgets{1}=$channelvalues->Frame(-class=>"Songline")->
+	    pack(side=>'top',fill=>'x',pady=>0);
+	
+	$fw->Label(text=>$current_song)->
+	    pack(side=>"left");
+
+	my$lw=$track_numbers{"1"}=$channellabels->Frame()->
+	    pack(side=>'top',fill=>'x',-pady=>1);
+	$lw->Label(Name=>"textlabel",text=>"Song:")->
+	    pack(side=>'right');
+
     }
 }
