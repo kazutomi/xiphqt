@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.6 2001/08/13 17:31:46 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.7 2001/08/31 18:01:12 kcarnold Exp $
  
 ********************************************************************/
 
@@ -66,7 +66,7 @@ typedef struct StreamInputBufferData_s {
   unsigned char *WriteTarget;
   unsigned char *CurWritePtr;
   unsigned char ExcessData[VORBIS_CHUNKIN_SIZE];
-  int ExcessDataSize;
+  size_t ExcessDataSize;
   FILE *SavedStream;
 } StreamInputBufferData_t;
 

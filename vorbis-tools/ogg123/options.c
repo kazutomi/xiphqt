@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.7 2001/08/30 23:38:41 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.8 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
 
@@ -61,8 +61,6 @@ void InitOpts (Option_t opts[])
 	case opt_type_double:
 	*(double *) opts->ptr = *(double *) opts->dfl;
 	break;
-	
-	default:
 	}
       }
       opts++;
@@ -196,9 +194,9 @@ ParseCode ParseLine (Option_t opts[], char *line)
  *  Output: opts[] is updated with the options in the file.
  *  Return: a ParseCode
  */
-ParseCode ParseFile (Option_t opts[], char *filename, int (*errfunc) (void *, ParseCode, int, char*, char*), void *arg)
+ParseCode ParseFile (Option_t opts[], const char *filename, int (*errfunc) (void *, ParseCode, int, const char*, char*), void *arg)
 {
-  int len=80;
+  unsigned int len=80;
   char *line = malloc (len);
   int readoffset, thischar, lineno;
   FILE *file;
@@ -396,7 +394,6 @@ void DescribeOptions (Option_t opts[], FILE *f)
 	case opt_type_double:
 	  fprintf (f, "%f", *(double *) opt->dfl);
 	  break;
-	default:
 	}
       }
       fputc ('\n', f);

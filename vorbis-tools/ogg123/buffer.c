@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.21 2001/08/31 15:18:53 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.22 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
 
@@ -21,6 +21,8 @@
  * Thanks to Lee McLouchlin's buffer(1) for inspiration; no code from
  * that program is used in this buffer.
  */
+
+#define _GNU_SOURCE
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -385,7 +387,8 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
 
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb)
 {
-  int i, s;
+  size_t i, s;
+
   size *= nmemb;
   for (i = 0; i < size; i += buf->OptimalWriteSize) {
     s = i + buf->OptimalWriteSize <= size ? buf->OptimalWriteSize : size - i;

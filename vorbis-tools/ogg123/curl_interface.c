@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.5 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.6 2001/08/31 18:01:12 kcarnold Exp $
  
 ********************************************************************/
 
@@ -30,19 +30,28 @@
 #define debug(x, y...) do { } while (0)
 #endif
 
+/* we only need one function from ogg123 itself. */
+extern void Ogg123UpdateStats(void);
+/* and one flag. */
+extern char exit_requested;
+
 size_t
 CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
 {
   buf_t *buf = arg;
   debug ("CurlWriteFunction, submitting %d bytes.\n", size * nmemb);
+  if (exit_requested)
+    exit(0);
   SubmitData (buf, ptr, size, nmemb);
+  Ogg123UpdateStats();
   return size * nmemb;
 }
 
 size_t
-BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
+BufferWriteChunk (void *voidptr, size_t size, void *arg, char iseos)
 {
   StreamInputBufferData_t *data = arg;
+  unsigned char *ptr = voidptr;
 
   debug ("buffer writing chunk of %d, %d bytes to go\n", size,
 	 data->BytesRequested);
@@ -210,9 +219,10 @@ InitStream (InputOpts_t inputOpts)
 }
 
 size_t
-_StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
+_StreamBufferRead (void *voidptr, size_t size, size_t nmemb, void *arg)
 {
   StreamInputBufferData_t *data = arg;
+  unsigned char *ptr = voidptr;
   size_t ret;
 
   ret = size *= nmemb;		/* makes things simpler and run smoother */

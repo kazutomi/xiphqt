@@ -11,9 +11,11 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ao_interface.c,v 1.5.2.6 2001/08/12 18:34:46 kcarnold Exp $
+ last mod: $Id: ao_interface.c,v 1.5.2.7 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
+
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <string.h>
