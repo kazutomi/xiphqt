@@ -8,7 +8,7 @@ div#content {
 
 div#sidebar {
 	position: absolute;
-	top: 50px;
+	top: 2em;
 	right: 1em;
 	width: 13em;
 	margin: 0;

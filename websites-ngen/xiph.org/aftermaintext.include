@@ -1,4 +1,5 @@
 <div id='languages'>
 	<a href='./' title='English'	hreflang='en-US'>en</a> |
-	<a href='es' title='Español'	hreflang='es'   >es</a>
+	<a href='es' title='Español'	hreflang='es'   >es</a> |
+	<a href='de' title='Deutsch'	hreflang='de'   >de</a>
 </div>

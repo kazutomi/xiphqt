@@ -4,7 +4,7 @@ div#content {
 
 div#sidebar {
 	position: absolute;
-	top: 50px;
+	top: 2em; /* the top property must match the padding-top of the body element. */
 	right: 1em;
 	width: 15em;
 	margin: 0;
@@ -61,9 +61,9 @@ div#sidebar li.speex a:hover {
 
 div#sidebar li.flac a:hover {
 	background: #ff9; /* banana-ish */
-	background: #6e6942;
-	background: #c7cf97; /* Mike calls this one "gloomy AND nasty" */
-	background: #cac8a9; /* "less nasty" */
+	background: #ddddc3; /* a slightly darker version of what's on flac.sf.net */
+	background: #9c9; /* background from flac.sf.net */
+
 }
 
 div#sidebar li.theora a:hover {

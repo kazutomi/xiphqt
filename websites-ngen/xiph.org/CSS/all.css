@@ -28,7 +28,7 @@ html {
 
 body {
 	margin: 0;
-	padding: 50px 0 0; /* the 50px here must match the 50px of the sidebar div. */
+	padding: 2em 0 0; /* the top padding here must match the top: bit of the sidebar div. */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -101,14 +101,17 @@ div#locations {
 
 div#languages {
 	position: absolute;
-	top: 0;
-	right: 0;
+	top: .1em;
+	right: 1em;
 	text-transform: lowercase;
 	color: #aaa;
-	background: #f5f5f5; /* white smoke */
-	border-bottom: 1px solid gray;
-	border-left: 1px solid gray;
-	padding: 0 .125em .125em .25em;
+}
+
+div#languages a,
+div#langauges a:link,
+div#languages a:visited {
+	color: white;
+	text-decoration: none;
 }
 
 div#copyright {
