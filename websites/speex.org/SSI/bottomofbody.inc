@@ -1,6 +1,6 @@
 ﻿<div id="footer">
 	<img class="separator" alt="" src="/Images/hfuzz.png" width="100%" height="1"/>
-	<a href="http://uk.eurorights.org/issues/cd/quick/"
+	<a href="http://ukcdr.org/issues/cd/quick/"
 		><img src="Images/badcd002.png"
 			  alt="say NO to corrupt audio discs"
 			  class="corruptaudio"/></a>
