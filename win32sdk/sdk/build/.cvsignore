@@ -1,6 +1,7 @@
 Debug
 Release
-*.ncb
 *.plg
+*.ncb
+*.aps
 *.mak
 *.dep
