@@ -294,6 +294,7 @@ void *backchannel_thread(void *dummy){
       break;
     case 'V':
       fake_videop=0;
+      FakeExposeRPPlay();
       break;
     }
   }
