@@ -260,7 +260,7 @@ _mode_extensions = [
 
 _emphases = [ "none", "50/15 ms", "reserved", "CCIT J.17" ]
 
-_MP3_HEADER_SEEK_LIMIT = 8192
+_MP3_HEADER_SEEK_LIMIT = 102400
 
 class MPEG:
     def __init__(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT, seekstart=0):
@@ -298,33 +298,29 @@ class MPEG:
     def _find_header(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT,
                      seekstart=0):
         file.seek(seekstart, 0)
-        amount_read = 0
-        header = ""
+        header = file.read(4) # see if we get lucky with the first four bytes
+        curr_pos = 0
+        amt = 1024
         
-        # see if we get lucky with the first four bytes
-        amt = 4
-
-        while amount_read < seeklimit:
-            header += file.read(amt)
-            if len(header) < amt:
-                # awfully short file. just give up.
-                return -1, None
-            
-            amount_read = amount_read + len(header)
-            
-            # on the next read, grab a lot more
-            amt = 500
+        while len(header) <= seeklimit:
             
             # look for the sync byte
-            offset = string.find(header, chr(255))
+            offset = string.find(header, chr(255), curr_pos)
             if offset == -1:
-                continue
-            elif offset + 4 <= len(header):
-                if ord(header[offset+1]) & 0xE0 != 0xE0:
-                    continue
-                else:
-                    return amount_read - len(header) + offset, \
-                           header[offset:offset+4]
+                curr_pos = len(header)  # Header after everything so far
+            elif offset + 4 > len(header):
+                curr_pos = offset  # Need to read more, jump back here later
+            elif ord(header[offset+1]) & 0xE0 == 0xE0:
+                return seekstart+offset, header[offset:offset+4]
+            else:
+                curr_pos = offset+2 # Gotta be after the 2 bytes we looked at
+
+            chunk = file.read(amt)  # Read bigger chunks
+            header += chunk
+
+            if len(chunk) == 0:
+                # no more to read, give up
+                return -1, None
         
         # couldn't find the header
         return -1, None
