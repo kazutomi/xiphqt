@@ -2,6 +2,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+SUBDIRS = vorbisfile
+
 docdir = $(prefix)/doc/$(PACKAGE)-$(VERSION)
 
 doc_DATA = v-comment.html vorbisword2.png white-ogg.png programming.html\
