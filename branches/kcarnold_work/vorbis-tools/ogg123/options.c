@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.5 2001/08/30 02:06:24 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.6 2001/08/30 23:32:09 kcarnold Exp $
 
  ********************************************************************/
 
@@ -128,7 +128,7 @@ ParseCode ParseLine (Option_t opts[], char *line)
   while (opt->name) {
     if (!strcasecmp (opt->name, line)) {
       long tmpl;
-      char **endptr;
+      char *endptr;
 
       /* found the key. now set the value. */
       switch (opt->type) {
@@ -154,9 +154,9 @@ ParseCode ParseLine (Option_t opts[], char *line)
       case opt_type_int:
 	if (!value || *value == '\0')
 	  return parse_badvalue;
-	tmpl = strtol (value, endptr, 0);
+	tmpl = strtol (value, &endptr, 0);
 	if (((tmpl == LONG_MIN || tmpl == LONG_MAX) && errno == ERANGE)
-	    || (**endptr != '\0'))
+	    || (*endptr != '\0'))
 	  return parse_badvalue;
 	opt->found++;
 	*(long int *) opt->ptr = tmpl;
@@ -243,6 +243,7 @@ ParseCode ParseFile (Option_t opts[], char *filename, int (*errfunc) (void *, Pa
 	line[readoffset] = (unsigned char) thischar;
       readoffset++;
     }
+    fprintf (stderr, "Read line: %s\n", line);
     pcode = ParseLine (opts, line);
     if (pcode != parse_ok)
       if (!errfunc (arg, pcode, lineno, filename, line)) {
