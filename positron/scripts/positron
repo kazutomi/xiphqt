@@ -65,6 +65,21 @@ def usage():
     print
     print "For more help on a specific command, type: positron help <command>"
 
+def oggvorbis_sanity_check():
+    try:
+        import ogg.vorbis
+    except ImportError:
+        print """
+********************************************************************
+WARNING: You have enabled Ogg Vorbis support in your configuration
+file, but do not have pyogg and pyvorbis installed, so Ogg
+Vorbis support is not available.
+
+Please go to the positron homepage to download pyogg and pyvorbis:
+
+http://www.xiph.org/positron/
+********************************************************************
+"""
 
 def main(argv):
     options = "c:hm:v"
@@ -139,6 +154,9 @@ def main(argv):
         if commands.has_key(remaining[0]):
             (cmd, display_order) = commands[remaining[0]]
             cmd.run(config, myNeuros, remaining[1:])
+
+            if config.oggvorbis_support:
+                oggvorbis_sanity_check()
         else:
             print remaining[0], "is not a valid command."
             print
