@@ -1,0 +1,395 @@
+#!/usr/bin/perl
+
+$baseurl="http://www.greenwitch.com/remote";
+$player="xmms";
+
+use LWP;
+use File::MkTemp;
+use Tk;
+use Tk::JPEG;
+use Tk qw(exit); 
+#use strict;
+
+$/ = undef ;
+$|=1;
+
+$ua = LWP::UserAgent->new ;
+
+# $remotepages is a hash reference
+# this assumes quoted quantities won't contain whitespace...
+$page=get_page($baseurl,"remote.html?skin=greenwitch");
+$remotepages=&fields_from_page($page,
+			       # find 'frame src=(foo)'
+			       'frame\s+',
+			       'name\s*=\s*["\']?([^"\'\s>]*)',
+			       'src\s*=\s*["\']?([^"\'\s>]*)');
+
+# get the logo jpeg URL
+$page=get_page($baseurl,$remotepages->{"remote_logo"});
+$logourl=&fields_from_page($page,
+			   'img\s*',
+			   '(src)',
+			   'src\s*=\s*[\'"]?([^\'"\s>]*)');
+# get the jpeg itself
+$jpeg=&get_pic($baseurl,$logourl->{'src'});
+
+# get the header gif URL
+$page=get_page($baseurl,$remotepages->{"remote_head"});
+$headerurl=&fields_from_page($page,
+			   'img\s*',
+			   '(src)',
+			   'src\s*=\s*["\']?([^\'"\s>]*)');
+# get the GIF itself
+$headgif=&get_pic($baseurl,$headerurl->{'src'});
+
+# get the other page locations
+$page=get_page($baseurl,$remotepages->{"remote_controls"});
+$remotepages=&fields_from_page($page,
+			       'frame\s+',
+			       'name\s*=\s*[\'"]?([^\'"\s>]*)',
+			       'src\s*=\s*[\'"]?([^\'"\s>]*)');
+
+# fetch the channels
+$page=get_page($baseurl,$remotepages->{"remote_nav"});
+$channels=&fields_from_page($page,
+			    'option\s+',
+			    '>([^<]*)',
+			    'value\s*=\s*[\'"]?([^\'"\s>]*)');
+
+# which channel starts active?
+$current_channel=&fields_from_page($page,
+				   'option\s+',
+				   '(selected)[^>]*>',
+				   'value\s*=\s*[\'"]?([^\'"\s>]*)')->{"selected"};
+
+# build the basics for the toplevel window.  Hardwire defaults because
+# the GIFs have backgrounds.
+
+$toplevel=new MainWindow(-class=>'GreenWitch');
+my$Xname=$toplevel->Class;
+
+$toplevel->optionAdd("$Xname*background",       '#000000',100);
+$toplevel->optionAdd("$Xname*foreground",       '#ffffff',100);
+$toplevel->optionAdd("$Xname*textlabel.foreground",       '#f0b000',100);
+$toplevel->optionAdd("$Xname*artistlabel.foreground",     '#00f0b0',100);
+$toplevel->optionAdd("$Xname*artistlabel.background",     '#102010',100);
+$toplevel->optionAdd("$Xname*songlabel.background",       '#102010',100);
+
+
+$toplevel->optionAdd("$Xname*font",    
+                     '-*-helvetica-medium-r-*-*-8-*-*-*-*-*-*-*',20);
+
+$toplevel->optionAdd("$Xname*Button.background",       '#205020',100);
+$toplevel->optionAdd("$Xname*Button.highlightThickness",      '0',100);
+$toplevel->optionAdd("$Xname*Button.activeBackground",       '#80d080',100);
+$toplevel->optionAdd("$Xname*Button.borderWidth",      '1',100);
+
+$toplevel->optionAdd("$Xname*Menubutton.relief",     'raised',100);
+$toplevel->optionAdd("$Xname*Menubutton.background",       '#205020',100);
+$toplevel->optionAdd("$Xname*Menubutton.highlightThickness",      '0',100);
+$toplevel->optionAdd("$Xname*Menubutton.activeBackground",       '#80d080',100);
+$toplevel->optionAdd("$Xname*Menubutton.borderWidth",      '1',100);
+
+$toplevel->optionAdd("$Xname*Menu.relief",     'raised',100);
+$toplevel->optionAdd("$Xname*Menu.background",       '#102010',100);
+$toplevel->optionAdd("$Xname*Menu.highlightThickness",      '0',100);
+$toplevel->optionAdd("$Xname*Menu.activeBackground",       '#80d080',100);
+$toplevel->optionAdd("$Xname*Menu.borderWidth",      '1',100);
+$toplevel->optionAdd("$Xname*Menu.tearOff",      '0',100);
+
+# suck in command line resources
+while(my $arg=shift @ARGV){
+    $arg=~s/-(\S*)$/$1/;
+            
+    if($arg){
+        my$val=shift;
+        $toplevel->optionAdd("$Xname*$arg",  "$val",120);
+    }
+}
+$background=$toplevel->optionGet("background","");
+$foreground=$toplevel->optionGet("foreground","");
+
+$toplevel->configure('-background'=>"$background",'-foreground'
+                     =>"$foreground");
+
+# start building the pane layout.  First a frame to give some
+# surrounding buffer
+
+$toplevel=$toplevel->Frame(Name=>'main')->
+    pack(fill=>'both',-padx=>'6',-pady=>'6');
+
+# load the logo and header graphics
+
+$logoimage=$toplevel->Photo(-file=>$jpeg);
+$headimage=$toplevel->Photo(-file=>$headgif);
+unlink $jpeg;
+unlink $headgif;
+
+# pack the logo and header graphics
+
+$toplevel->Label(Name=>'logo',-image=>$logoimage)->
+    pack(side=>'left',fill=>'y');
+$toplevel->Label(Name=>'header',-image=>$headimage)->
+    pack(side=>'top',fill=>'x',-padx=>'20',-pady=>'4');
+$selectl=$toplevel->Frame(Name=>'select')->pack(side=>'top',fill=>'x');
+
+# build the 'Station | Channel | play' bar
+
+$listlabel=$selectl->Label(Name=>"textlabel",text=>"Station:")->
+    pack(side=>'left',fill=>'y');
+$play_widget=$selectl->Button(Name=>"play",
+			      text=>"play > "
+			      )->pack(side=>'right',fill=>'y',
+				      -pady=>1, -padx=>1);
+$ch_widget=$selectl->Menubutton()->pack(side=>'left',fill=>'both',
+					expand=>'1',-pady=>1,-padx=>1);
+$ch_menu=$ch_widget->Menu();
+$ch_widget->configure(-menu=>$ch_menu);
+
+# make two panes, left for 'Now playing', right for the values
+
+$channellabels=$toplevel->Frame()->pack(side=>'left');
+$channelvalues=$toplevel->Frame()->pack(side=>'left',fill=>'x',expand=>1);
+
+# fill in 'now playing'
+
+$channellabels->Frame()->pack(side=>'top',fill=>'x')->
+    Label(Name=>"textlabel",text=>"Now")->pack(side=>'right');
+$channellabels->Frame()->pack(side=>'top',fill=>'x',-pady=>1)->
+    Label(Name=>"textlabel",text=>"Playing:")->pack(side=>'right');
+
+# fill in the playlist text widgets
+
+$artist_widget=$channelvalues->Frame(Name=>"artistlabel")->
+    pack(side=>'top',fill=>'x')->
+    Label(Name=>"artistlabel")->pack(side=>"left");
+$song_widget=$channelvalues->Frame(Name=>"songlabel")->
+    pack(side=>'top',fill=>'x',pady=>1)->
+    Label(Name=>"songlabel")->pack(side=>"left");
+
+# fill in the channel menu entries.  Note that we need 
+
+foreach my $key (sort(keys %$channels)){
+    $ch_menu->add('command',
+		  label=>$key,
+		  command=>[sub{&fetch_channel($key);}],
+		  );
+    if($channels->{$key}==$current_channel){
+        # finish setup now that we have a starting channel
+	fetch_channel($key);
+    }
+}
+
+$ch_menu->add('separator');
+$ch_menu->add('command',
+	      label=>"Quit",
+	      command=>[sub{Tk::exit()}]);
+
+# refetch the nav page to get a clean URL; the previous one had
+$page=get_page($baseurl,$remotepages->{"remote_nav"});
+$remotepages->{"remote_nav"}=
+    fields_from_page($page,'form',
+		     'name\s*=\s*[\'"]?(selector)',
+		     'action\s*=\s*[\'"]?([^"\'>]*)')->
+                     {"selector"}.
+                     "&real_chan=".$current_channel.
+                     "&chan=".$current_channel;
+
+
+ Tk::MainLoop();
+
+
+sub fetch_channel{
+    my($key)=@_;
+    
+    $current_channel=$channels->{$key};
+    $ch_widget->configure(-text=>$key);
+    
+    # fetch the current mountpoint and server information
+    $page=get_page($baseurl,$remotepages->{"remote_nav"});
+    $remotepages->{"remote_nav"}=
+	fields_from_page($page,'form',
+			 'name\s*=\s*[\'"]?(selector)',
+			 'action\s*=\s*[\'"]?([^"\'>]*)',)->
+			 {"selector"}.
+			     "&real_chan=".$current_channel.
+				 "&chan=".$current_channel;
+    $page=get_page($baseurl,$remotepages->{"remote_nav"});
+
+
+    $form_fields=&fields_from_page($page,'input\s+',
+				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
+				   'value\s*=\s*[\'"]?([^"\'\s>]*)');
+    
+    $form_actions=fields_from_page($page,'form\s+',
+				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
+				   'action\s*=\s*[\'"]?([^"\'\s>]*)');
+
+    $remotepages->{"remote_content"}=
+	fields_from_page($page,'parent',
+			 '(remote_content).location\s*=\s*',
+			 'remote_content.location\s*=\s*[\'"]?([^"\'\s>]*)')->
+			 {"remote_content"};
+
+    # fetch the current artist, using the current channel
+    $page=get_page($baseurl,$remotepages->{"remote_content"}.
+		   $current_channel."&real_chan=".$current_channel);
+    $artisth=&fields_from_page($page,
+			      'Now[^<]*<\s*',
+
+			      # skip non-font tag
+			      '(?:(?!font)[^>]*>[^<]*<\s*)*'.
+			      # skip font tag
+			      'font[^>]*>[^<]*<'.
+			      # skip non-font tag
+			      '(?:(?!font)[^>]*>[^<]*<\s*)*'.
+			      # skip font tag and store
+			      'font[^>]*>\s*([^<]*)',
+
+			      '(?:(?!font)[^>]*>[^<]*<\s*)*'.
+			      'font[^>]*>[^<]*<'.
+			      '(?:(?!font)[^>]*>[^<]*<\s*)*'.
+			      'font[^>]*>[^<]*<'.
+			      '(?:(?!font)[^>]*>[^<]*<\s*)*'.
+			      'font[^>]*>\s*([^<]*)');
+    $current_artist=(keys(%$artisth))[0];
+    $current_song=$artisth->{$current_artist};
+
+    #fetch the timestamp
+    $timeleft=fields_from_page($page,
+				'setTimeout',
+				'(refresh)',
+				'\([^,]*,\s*(\d*)')->{"refresh"};
+    if($timeleft<2000){
+	$timeleft=2000;
+    }
+    $toplevel->afterCancel($alarm_id);
+    $alarm_id=$toplevel->after($timeleft,
+			       [sub{fetch_channel($key)}]);
+
+    $artist_widget->configure(-text=>$current_artist);
+    $song_widget->configure(-text=>$current_song);
+    $play_widget->configure(-command=>[sub{&fetch_play}]);
+    print "time left to play $timeleft ms\n";
+}    
+
+sub get_page{
+    my ($baseurl,$page)=@_;
+
+    if($page=~/^\//){
+	$baseurl=~s/^(\s*http:\/\/[^\/]*)(.*)/$1/;
+    }
+
+    my$req = HTTP::Request->new( 'GET' => "$baseurl/$page") ;
+    my$response=$ua->request( $req ) ;
+
+    if($response->is_success){
+	$response->content;
+    }else{
+	print "Could not fetch $baseurl/$page\n\tResponse:\n\t";
+	print $response->status_line."\n";
+	undef;
+    }
+}
+
+sub fields_from_page{
+    my ($content,$tag,$namepat,$valpat)=@_;
+    if(defined $content){
+	my%fields;
+	my$name;
+	my$val;
+	my$count=0;
+
+	# search for key, followed by value.
+	while(defined($content) && $content ne ""){
+	    if($content=~m/$tag/){
+		$content=$'; # yeah, yeah
+		if($content=~m/$namepat/){
+		    $name=$1;
+		    $content=~m/$valpat/;
+		    
+		    printf "$name :: $1\n";
+		    if(!defined($fields{$name})){ # hack alert
+			$fields{$name}=$1;
+			$count++;
+		    }
+		    $content=$'; # yeah, yeah
+		}else{
+		    undef $content;
+		}
+	    }else{
+		undef $content;
+	    }
+	}
+
+	if($count==0){
+	    print "Could not read any pairs from response.\n";
+	    print "\tURL: $baseurl/$page\n";
+	    print "\tresponse: ".$response->content."\n";
+	}
+	\%fields;
+    }else{
+	undef;
+    }
+}
+
+use Fcntl;
+use POSIX qw(tmpnam waitpid);
+
+sub get_pic{
+    my ($baseurl,$page,$ext)=@_;
+    my$data=get_page($baseurl,$page);
+    if(defined($data)){
+	my$name;
+	do { $name = tmpnam().$ext }
+        until sysopen(FH, $name, O_RDWR|O_CREAT|O_EXCL);
+
+	syswrite FH, $data;
+	close FH;
+	print "tempfile = $name\n";
+  
+	$name;
+    }else{
+	undef;
+    }
+}
+
+use POSIX ":sys_wait_h";
+
+sub fetch_play{
+    # get up to date nav attributes
+    $page=get_page($baseurl,$remotepages->{"remote_nav"});
+    $form_fields=&fields_from_page($page,'input\s+',
+				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
+				   'value\s*=\s*[\'"]?([^"\'\s>]*)');
+    
+    $form_actions=fields_from_page($page,'form\s+',
+				   'name\s*=\s*[\'"]?([^\'"\s>]*)',
+				   'action\s*=\s*[\'"]?([^"\'\s>]*)');
+
+    # might as well update the URL we're using too
+    $remotepages->{"remote_nav"}=
+	fields_from_page($page,'form',
+			 'name\s*=\s*[\'"]?(selector)',
+			 'action\s*=\s*[\'"]?([^"\'>]*)',)->
+			 {"selector"}.
+			     "&real_chan=".$current_channel.
+				 "&chan=".$current_channel;
+
+    # hit the server for the m3u file
+    unlink $m3u;
+    do {
+	$kid = waitpid(-1,&WNOHANG);
+    } until $kid == -1;
+
+    $m3u=&get_pic($baseurl,
+		  $form_actions->{"radio"}.
+		  "?server=".$form_fields->{"server"}.
+		  "&port=".$form_fields->{"port"}.
+		  "&mount=".$form_fields->{"mount"}.
+		  "&filename=".$form_fields->{"filename"},".m3u");
+    print "$player $m3u &";
+    if(!fork()){
+	exec "$player $m3u &";
+    }
+}
