@@ -1,64 +1,50 @@
 /*  shout.h
- *
- *  API for libshout, the streaming library for icecast
- *
- *  Copyright (C) 2002-2003 the Icecast team <team@icecast.org>
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
- *  License as published by the Free Software Foundation; either
- *  version 2 of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
- *
- *  You should have received a copy of the GNU Library General Public
- *  License along with this library; if not, write to the Free
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+**
+**  API for libshout, the streaming library for icecast
+*/
 #ifndef __LIBSHOUT_SHOUT_H__
 #define __LIBSHOUT_SHOUT_H__
 
 #include <sys/types.h>
-#ifdef WIN32
-#include <os.h>
-#endif
 
-#define SHOUTERR_SUCCESS	(0)
-#define SHOUTERR_INSANE		(-1)
-#define SHOUTERR_NOCONNECT	(-2)
-#define SHOUTERR_NOLOGIN	(-3)
-#define SHOUTERR_SOCKET		(-4)
-#define SHOUTERR_MALLOC		(-5)
-#define SHOUTERR_METADATA	(-6)
-#define SHOUTERR_CONNECTED	(-7)
-#define SHOUTERR_UNCONNECTED	(-8)
-#define SHOUTERR_UNSUPPORTED	(-9)
+#define SHOUTERR_SUCCESS            (0)
+#define SHOUTERR_INSANE             (-1)
+#define SHOUTERR_NOCONNECT          (-2)
+#define SHOUTERR_NOLOGIN            (-3)
+#define SHOUTERR_SOCKET             (-4)
+#define SHOUTERR_MALLOC             (-5)
+#define SHOUTERR_METADATA           (-6)
+#define SHOUTERR_CONNECTED          (-7)
+#define SHOUTERR_UNCONNECTED        (-8)
+#define SHOUTERR_UNSUPPORTED        (-9)
+#define SHOUTERR_PENDING            (-11)
+#define SHOUTERR_BUSY               (-12)
+#define SHOUTERR_PENDING_FULL       (-13)
 
-#define SHOUT_FORMAT_VORBIS	(0)
-#define SHOUT_FORMAT_MP3	(1)
+#define SHOUT_FORMAT_VORBIS         (0)
+#define SHOUT_FORMAT_MP3            (1)
+#define SHOUT_FORMAT_VORBISPAGE     (2)
+#define SHOUT_FORMAT_OGG            (3)
 
-#define SHOUT_PROTOCOL_HTTP		(0)
-#define SHOUT_PROTOCOL_XAUDIOCAST	(1)
-#define SHOUT_PROTOCOL_ICY		(2)
+#define SHOUT_PROTOCOL_HTTP         (0)
+#define SHOUT_PROTOCOL_XAUDIOCAST   (1)
+#define SHOUT_PROTOCOL_ICY          (2)
 
-#define SHOUT_AI_BITRATE	"bitrate"
-#define SHOUT_AI_SAMPLERATE	"samplerate"
-#define SHOUT_AI_CHANNELS	"channels"
-#define SHOUT_AI_QUALITY	"quality"
-
-typedef struct shout shout_t;
-typedef struct _util_dict shout_metadata_t;
+#define SHOUT_AI_BITRATE            "bitrate"
+#define SHOUT_AI_SAMPLERATE         "samplerate"
+#define SHOUT_AI_CHANNELS           "channels"
+#define SHOUT_AI_QUALITY            "quality"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct shout shout_t;
+typedef struct _util_dict shout_metadata_t;
+
 /* initializes the shout library. Must be called before anything else */
 void shout_init(void);
-
+ 
 /* shuts down the shout library, deallocating any global storage. Don't call
  * anything afterwards */
 void shout_shutdown(void);
@@ -142,28 +128,25 @@ int shout_open(shout_t *self);
 int shout_close(shout_t *self);
 
 /* Send data to the server, parsing it for format specific timing info */
-int shout_send(shout_t *self, const unsigned char *data, size_t len);
+int shout_send(shout_t *self, const void *data, size_t len);
 
 /* Send unparsed data to the server.  Do not use this unless you know
  * what you are doing. 
  * Returns the number of bytes written, or < 0 on error.
  */
-ssize_t shout_send_raw(shout_t *self, const unsigned char *data, size_t len);
+int shout_send_raw (shout_t *self, const void *data, size_t len);
+
 
 /* Puts caller to sleep until it is time to send more data to the server */
 void shout_sync(shout_t *self);
 
 /* Amount of time in ms caller should wait before sending again */
 int shout_delay(shout_t *self);
-  
+ 
 /* Sets MP3 metadata.
  * Returns:
- *   SHOUTERR_SUCCESS
- *   SHOUTERR_UNSUPPORTED if format isn't MP3
- *   SHOUTERR_MALLOC
- *   SHOUTERR_INSANE
- *   SHOUTERR_NOCONNECT
- *   SHOUTERR_SOCKET
+ *   SHOUTERR_SUCCESS on success
+ *   SHOUTERR_UNSUPPORTED if protocol isn't Icy or X-Audiocast
  */
 int shout_set_metadata(shout_t *self, shout_metadata_t *metadata);
 
@@ -180,12 +163,21 @@ void shout_metadata_free(shout_metadata_t *self);
  *   SHOUTERR_MALLOC if memory can't be allocated */
 int shout_metadata_add(shout_metadata_t *self, const char *name, const char *value);
 
-#ifdef __cplusplus
-}
-#endif
+/* set/unset blocking mode on the shout socket */
+void shout_set_nonblocking (shout_t *self, const int nonblock);
+
+/* flush any outstanding buffers */
+int shout_send_pending (shout_t *self);
+
+/* report is connection is ready for audio data */
+int shout_connection_ready (shout_t *self);
 
 /* --- Compiled features --- */
 
 #define SHOUT_THREADSAFE @SHOUT_THREADSAFE@
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LIBSHOUT_SHOUT_H__ */

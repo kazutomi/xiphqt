@@ -4,3 +4,12 @@ AUTOMAKE_OPTIONS = foreign
 
 includedir = $(prefix)/include/shout
 nodist_include_HEADERS = shout.h
+
+# SCCS stuff (for BitKeeper)
+GET = bk get -Sq
+
+debug:
+	$(MAKE) all CFLAGS="@DEBUG@"
+
+profile:
+	$(MAKE) all CFLAGS="@PROFILE@"

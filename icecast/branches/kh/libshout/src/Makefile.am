@@ -1,22 +1,19 @@
 ## Process this with automake to create Makefile.in
 
-AUTOMAKE_OPTIONS = foreign 1.6
+AUTOMAKE_OPTIONS = foreign
 
-if HAVE_THREAD
-  MAYBE_THREAD = thread
-  MAYBE_THREAD_LIB = thread/libicethread.la
-endif
-SUBDIRS = avl net timing httpp $(MAYBE_THREAD)
+SUBDIRS = avl net timing httpp thread
 
 lib_LTLIBRARIES = libshout.la
 libshout_la_LDFLAGS = -version-info 3:0:0
+AM_CFLAGS = @XIPH_CFLAGS@
+AM_CPPFLAGS = @XIPH_CPPFLAGS@
 
 noinst_HEADERS = shout_private.h util.h
-libshout_la_SOURCES = shout.c util.c vorbis.c mp3.c
-AM_CFLAGS = @XIPH_CFLAGS@
+libshout_la_SOURCES = shout.c util.c ogg.c mp3.c
 
 libshout_la_LIBADD = net/libicenet.la timing/libicetiming.la avl/libiceavl.la\
-		httpp/libicehttpp.la $(MAYBE_THREAD_LIB) $(VORBIS_LIBS)
+		httpp/libicehttpp.la thread/libicethread.la
 
 INCLUDES = -I$(top_builddir)/include
 
@@ -25,3 +22,4 @@ debug:
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@"
+

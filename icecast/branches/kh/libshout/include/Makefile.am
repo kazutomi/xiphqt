@@ -4,4 +4,11 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = shout
 
-EXTRA_DIST = os.h
+# SCCS stuff (for BitKeeper)
+GET = true
+
+debug:
+	$(MAKE) all CFLAGS="@DEBUG@"
+
+profile:
+	$(MAKE) all CFLAGS="@PROFILE@"

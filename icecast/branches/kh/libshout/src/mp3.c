@@ -1,5 +1,4 @@
-/* -*- c-basic-offset: 8; -*- */
-/* mp3.c: libshout MP3 format handler
+/* mp3.c: libshout MP3 format handler 
  *
  *  Copyright (C) 2002-2003 the Icecast team <team@icecast.org>
  *
@@ -17,6 +16,10 @@
  *  License along with this library; if not, write to the Free
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,7 +96,7 @@ static const unsigned int samplerate[3][4] =
 };
 
 /* -- static prototypes -- */
-static int send_mp3(shout_t *self, const unsigned char *data, size_t len);
+static int send_mp3(shout_t *self, const void *data, unsigned len);
 static void close_mp3(shout_t *self);
 
 static void parse_header(mp3_header_t *mh, uint32_t header);
@@ -103,18 +106,22 @@ int shout_open_mp3(shout_t *self)
 {
 	mp3_data_t *mp3_data;
 
-	if (!(mp3_data = (mp3_data_t *)calloc(1, sizeof(mp3_data_t))))
-		return SHOUTERR_MALLOC;
+    self->error = SHOUTERR_MALLOC;
+	if ((mp3_data = (mp3_data_t *)calloc(1, sizeof(mp3_data_t))) == NULL)
+		return -1;
 	self->format_data = mp3_data;
 
 	self->send = send_mp3;
 	self->close = close_mp3;
+    self->mime_type = "audio/mpeg";
 
-	return SHOUTERR_SUCCESS;
+    self->error = SHOUTERR_SUCCESS;
+	return 0;
 }
 
-static int send_mp3(shout_t* self, const unsigned char* buff, size_t len)
+static int send_mp3(shout_t* self, const void *in_buff, unsigned len)
 {
+    const unsigned char *buff = in_buff;
 	mp3_data_t* mp3_data = (mp3_data_t*) self->format_data;
 	unsigned long pos;
 	uint32_t head;
@@ -203,7 +210,7 @@ static int send_mp3(shout_t* self, const unsigned char* buff, size_t len)
 				end = pos - 1;
 				count = end - start + 1;
 				if (count > 0)
-					ret = sock_write_bytes(self->socket, (char *)&buff[start], count);
+					ret = shout_send_raw (self, (char *)&buff[start], count);
 				else
 					ret = 0;
 
@@ -234,7 +241,7 @@ static int send_mp3(shout_t* self, const unsigned char* buff, size_t len)
 		/* if there's no errors, lets send the frames */
 		count = end - start + 1;
 		if (count > 0)
-			ret = sock_write_bytes(self->socket, (char *)&buff[start], count);
+            ret = shout_send_raw (self, (char *)&buff[start], count);
 		else
 			ret = 0;
 
