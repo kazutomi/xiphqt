@@ -9,6 +9,7 @@
 		<span class="right">Open Standards for Internet Multimedia</span>
 		<div class='spacer'> </div>
 	</div>
+	<div id="nav2">
 	<div id="nav">
 	<ul><li class="first"><a href="/" title="Return to the speex.org homepage.">Home</a></li>
 	<li><a href="news.html" title="Catch up on old news">All News</a></li>
@@ -22,5 +23,8 @@
 	<li><a href="projects.html"
 			title="See what others are doing with Speex">Plugins &amp; Software</a></li>
 	<li><a href="contact.html" title="Get in touch with us">Contact</a></li></ul>
-	<img src="/Images/banana120x200.png" width=120 height=200 alt="No more patents">
+	</div>
+	<a href="http://www.ffii.org/">
+	<img src="/Images/banana120x200.png" width=120 height=200 alt="No more software patents">
+	</a>
 	</div>

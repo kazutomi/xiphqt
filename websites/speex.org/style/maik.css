@@ -42,11 +42,15 @@ div#xiphnav a {
   margin-right:10px;
 }
 
-#nav {
+#nav2 {
   margin-right:3%;
   width:15%;
   margin-top:40px;
-  float:right;
+  float:left;
+}
+
+div#nav {
+  float: none;
 }
 
 div#nav ul {
