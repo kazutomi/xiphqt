@@ -27,6 +27,7 @@ static void ices_setup_parse_options (ices_config_t *ices_config);
 static void ices_setup_parse_defaults (ices_config_t *ices_config);
 static void ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile);
 static void ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc);
+static void ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_activate_changes (shout_conn_t *conn, const ices_config_t *ices_config);
 static void ices_setup_usage ();
 static void ices_setup_update_pidfile (int icespid);
@@ -61,6 +62,9 @@ ices_setup_init ()
 	/* Initialize the playlist handler */
 	ices_playlist_initialize ();
 
+	/* Initialize id3 stuff */
+	ices_id3_initialize ();
+	
 	/* Go into daemon mode if requested */
 	ices_setup_run_mode_select (ices_config);
 }
@@ -74,6 +78,8 @@ ices_setup_shutdown ()
 
 	ices_playlist_shutdown ();
 
+	ices_id3_shutdown ();
+
 	thread_shutdown ();
 }
 
@@ -84,6 +90,9 @@ ices_setup_parse_options (ices_config_t *ices_config)
 	/* Get default values for the settings */
 	ices_setup_parse_defaults (ices_config);
 
+	/* Look for given configfile on the commandline */
+	ices_setup_parse_command_line_for_new_configfile (ices_config, ices_util_get_argv(), ices_util_get_argc ());
+	
 	/* Parse the configfile */
 	ices_setup_parse_config_file (ices_config, ices_config->configfile);
 	
@@ -131,6 +140,30 @@ ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile
 }
 
 static void
+ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc)
+{
+	int arg;
+	char *s;
+
+        arg = 1;
+	
+        while (arg < argc) {
+                s = argv[arg];
+		
+                if (s[0] == '-') {
+			
+			switch (s[1]) {
+				case 'c':
+					arg++;
+					ices_config->configfile = ices_util_strdup (argv[arg]);
+					break;
+			}
+		}
+		arg++;
+	}
+}
+
+static void
 ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc)
 {
 	int arg;
@@ -159,8 +192,6 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'c':
 					arg++;
-					ices_config->configfile = ices_util_strdup (argv[arg]);
-					ices_setup_parse_config_file (ices_config, ices_config->configfile);
 					break;
 				case 'd':
 					arg++;

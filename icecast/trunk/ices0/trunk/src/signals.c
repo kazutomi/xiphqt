@@ -38,6 +38,7 @@
 
 /* Private function declarations */
 static void ices_signals_child (const int sig);
+static void ices_signals_int (const int sig);
 
 /* Global function definitions */
 void
@@ -48,6 +49,13 @@ ices_signals_setup ()
 	signal (SIGCHLD, ices_signals_child);
 	signal (SIGIO, SIG_IGN);
 	signal (SIGALRM, SIG_IGN);
+	signal (SIGINT, ices_signals_int);
+}
+
+static void
+ices_signals_int (const int sig)
+{
+	ices_setup_shutdown ();
 }
 			
 static void

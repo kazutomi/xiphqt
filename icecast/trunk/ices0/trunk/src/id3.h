@@ -22,4 +22,5 @@
 int ices_id3_parse_file (const char *filename, int file_bytes);
 char *ices_id3_get_artist ();
 char *ices_id3_get_title ();
-
+void ices_id3_initialize ();
+void ices_id3_shutdown ();

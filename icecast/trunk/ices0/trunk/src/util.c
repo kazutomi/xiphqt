@@ -46,10 +46,15 @@ ices_util_get_config ()
 char *
 ices_util_strdup (const char *string)
 {
-	if (string)
-		return strdup (string);
-	else
-		return strdup ("(null)");
+	char *out;
+
+	if (string) {
+		out = strdup (string);
+	} else {
+		out = strdup ("(null)");
+	}
+
+	return out;
 }
 
 char **
