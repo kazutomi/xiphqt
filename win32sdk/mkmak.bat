@@ -1,10 +1,10 @@
-@echo off
-rem $Id: mkmak.bat,v 1.2 2001/09/15 08:09:24 cwolf Exp $
+rem @echo off
+rem $Id: mkmak.bat,v 1.3 2001/09/17 01:25:38 cwolf Exp $
 rem
 rem This can't be called from the build script because 
 rem it runs asychronously.
 rem
-if ."%SRCROOT"==."" goto notset
+if ."%SRCROOT%"==."" goto notset
 
 rem Create and install MSVC macros, if needed
 call mfmacro.bat
