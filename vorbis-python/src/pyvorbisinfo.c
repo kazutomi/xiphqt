@@ -843,8 +843,11 @@ py_comment_new(PyObject *self, PyObject *args)
   vorbis_comment *vcomment;
   if (PyArg_ParseTuple(args, "")) {
     return py_comment_new_empty();
-  } else if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
-    return NULL;
+  } else {
+    PyErr_Clear(); /* Clear the first error */
+    if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
+      return NULL;
+  }
   vcomment = create_comment_from_dict(dict);
   if (!vcomment)
     return NULL;
