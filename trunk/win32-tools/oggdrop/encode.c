@@ -47,11 +47,15 @@ int oe_encode(oe_enc_opt *opt)
 
 	/* Have vorbisenc choose a mode for us */
 	vorbis_info_init(&vi);
-  /*
-	vorbis_encode_init(&vi, opt->channels, opt->rate, -1, 
+  
+  /* Not yet...
+  if (opt->oeMode == OE_MODE_BITRATE)
+	  vorbis_encode_init(&vi, opt->channels, opt->rate, -1, 
 			opt->bitrate*1000, -1);
+  else
   */
-  vorbis_encode_init_vbr(&vi, opt->channels, opt->rate, opt->quality_coefficient);
+    vorbis_encode_init_vbr(&vi, opt->channels, opt->rate, 
+                                opt->quality_coefficient);
 
 	/* Now, set up the analysis engine, stream encoder, and other
 	   preparation before the encoding begins.

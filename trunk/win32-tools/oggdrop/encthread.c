@@ -19,7 +19,7 @@ typedef struct enclist_tag {
 enclist_t *head = NULL;
 
 oe_options opt = {NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 
-		0, 0, NULL,NULL, 0, 1.0}; /* Default values */
+		0, 0, NULL,NULL, 0, 1.0, OE_MODE_QUALITY}; /* Default values */
 
 /* Define supported formats here */
 input_format formats[] = {
@@ -108,6 +108,7 @@ char *_getfile()
 void encthread_setbitrate(int kbps)
 {
 	opt.kbps = kbps;
+  opt.oeMode = OE_MODE_BITRATE;
 }
 
 void encthread_setquality(int quality)
@@ -118,6 +119,8 @@ void encthread_setquality(int quality)
     quality = 100;
 
   opt.quality_coefficient = (float)(((float)quality)/100.0);
+
+  opt.oeMode = OE_MODE_QUALITY;
 }
 
 void _nothing_prog(char *fn, long total, long done, double time)
@@ -226,8 +229,9 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			enc_opts.comments = &vc;
 			enc_opts.filename = out_fn;
 
-			//enc_opts.bitrate = opt.kbps * enc_opts.channels / 2; /* Olaf: Scale to match channel count */
+			enc_opts.bitrate = opt.kbps * enc_opts.channels / 2; /* Olaf: Scale to match channel count */
       enc_opts.quality_coefficient = opt.quality_coefficient;
+      enc_opts.oeMode = opt.oeMode;
 
 			if (!enc_opts.total_samples_per_channel)
 				enc_opts.progress_update = _nothing_prog;
