@@ -141,7 +141,7 @@ def main(argv):
             usage()
 
         exit_value = 0
-    except neuros.Error, e:
+    except positron.neuros.Error, e:
         print "Error:", e
         exit_value = 1
 
