@@ -1,4 +1,4 @@
-$Id: README.win32sdk,v 1.1 2001/09/14 03:16:13 cwolf Exp $
+$Id: README.win32sdk,v 1.2 2001/09/14 03:26:57 cwolf Exp $
 $Name:  $
 
 win32sdk Readme, 13 September, 2001 Chris Wolf
@@ -36,13 +36,18 @@ BUILDING
       directories and copy the required files from the cvs modules.
 
   2.) Using nmake, build the static and dynamic (DLL) libraries 
-      and copy them to the sdk\lib directory.
+      and copy them to the sdk\lib directory.  This is accomplished
+      by "makesdk.bat" invoking the "build_all.bat" script.
 
   Note that the makefiles are generated from the IDE, and are thus a
   reflection of the workspace and project file states.  It is strongly
   recommended to make changes via the IDE and export the makefiles,
   rather than tweaking the makefiles directly.
 
+
+
+  The following steps are optional and only builds the libraries in place.
+  The purpose of this step is for libaray development under win32.
 
   IDE build:
 
