@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.11 2001/08/11 02:55:37 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.12 2001/08/11 16:04:22 kcarnold Exp $
 
  ********************************************************************/
 
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 	opt.prebuffer = (int) ((double) opt.prebuffer * (double) opt.buffer_size / 100.0F);
 	OutBuffer = StartBuffer (opt.buffer_size, opt.prebuffer,
 				 opt.outdevices, devices_write,
-				 NULL, NULL);
+				 NULL, NULL, 4096);
       }
     
     if (opt.shuffle) {
@@ -272,8 +272,6 @@ int main(int argc, char **argv)
 
     if (OutBuffer != NULL) {
       buffer_WaitForEmpty (OutBuffer);
-      buffer_cleanup (OutBuffer);
-      OutBuffer = NULL;
     }
     
     exit (0);
@@ -344,7 +342,7 @@ void play_file(ogg123_options_t opt)
       VorbisfileCallbacks.tell_func = StreamBufferTell;
       
       inputOpts.BufferSize = 1024*1024;
-      inputOpts.Prebuffer = 0;
+      inputOpts.Prebuffer = 10000;
       inputOpts.URL = opt.read_file;
       InBuffer = InitStream (inputOpts);
       if ((ov_open_callbacks (InBuffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
@@ -721,6 +719,11 @@ void ogg123_onexit (int exitcode, void *arg)
 {
   ogg123_options_t *opt = (ogg123_options_t*) arg;
 
+  if (InBuffer) {
+    StreamInputCleanup (InBuffer);
+    InBuffer = NULL;
+  }
+      
   if (OutBuffer) {
     buffer_flush (OutBuffer);
     buffer_cleanup (OutBuffer);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.9 2001/08/11 02:55:37 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.10 2001/08/11 16:04:22 kcarnold Exp $
  
 ********************************************************************/
 
@@ -43,6 +43,7 @@ typedef struct buf_s
   
   /* the buffer itself */
   char StatMask;
+  int OptimalWriteSize; /* optimal size to write out in chunks of, if possible. */
   long size;         /* buffer size, for reference */
   long curfill;      /* how much the buffer is currently filled */
   long prebuffer;    /* number of chunks to prebuffer */
@@ -57,11 +58,9 @@ typedef struct buf_s
 #define STAT_PLAYING 2
 #define STAT_EMPTYING 4
 
-#define TARGET_WRITE_SIZE 4096 /* to agree with other mechanisms used in ogg123 */
-
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
 		    size_t (*write_func) (void *, size_t, size_t, void *, char),
-		    void *initData, int (*init_func) (void*));
+		    void *initData, int (*init_func) (void*), int OptimalWriteSize);
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb);
 void buffer_MarkEOS (buf_t *buf);
 void buffer_shutdown (buf_t *buf);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.9 2001/08/11 02:55:37 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.10 2001/08/11 16:04:21 kcarnold Exp $
 
  ********************************************************************/
 
@@ -136,14 +136,17 @@ void* BufferFunc (void *arg)
 	   * |-------------------------------|
 	   * |-^       ^---------------------|
 	   *  reader   writer, our range
+	   * EOS applicable only if reader is at beginning of buffer
 	   */
 	  DEBUG1("up to buf->end, buf->end - buf->writer + 1 = %d", buf->end - buf->writer + 1);
-	  if (buf->end - buf->writer + 1 > TARGET_WRITE_SIZE) {
-	    WriteThisTime = TARGET_WRITE_SIZE;
+	  if (buf->end - buf->writer + 1 > buf->OptimalWriteSize) {
+	    WriteThisTime = buf->OptimalWriteSize;
 	    NewWriterPtr = buf->writer + WriteThisTime;
 	  } else {
 	    NewWriterPtr = buf->buffer;
 	    WriteThisTime = buf->end - buf->writer + 1;
+	    if (buf->reader == buf->buffer)
+	      iseos = buf->eos;
 	  }
 	}
       else
@@ -153,17 +156,18 @@ void* BufferFunc (void *arg)
 	   *    ^--------------^
 	   *   writer         reader
 	   * but we can't use buf->reader itself, becuase that's not in the data.
+	   * EOS applicable if we're reading right up to reader.
 	   */
 	  DEBUG1("up to buf->reader, buf->reader - buf->writer = %d", buf->reader - buf->writer);
-	  if (buf->reader - buf->writer > TARGET_WRITE_SIZE)
-	    WriteThisTime = TARGET_WRITE_SIZE;
+	  if (buf->reader - buf->writer > buf->OptimalWriteSize)
+	    WriteThisTime = buf->OptimalWriteSize;
 	  else {
 	    WriteThisTime = buf->reader - buf->writer;
 	    iseos = buf->eos;
 	  }
 	  NewWriterPtr = buf->writer + WriteThisTime;
 	}
-
+      
       DEBUG0("writing chunk to output");
       /* unlock while playing sample */
       UNLOCK_MUTEX (buf->SizeMutex);
@@ -178,7 +182,7 @@ void* BufferFunc (void *arg)
 
       /* slight abuse of the DataReady condition, but makes sense. */
       DEBUG0 ("signalling buffer no longer full");
-      if (buf->curfill + WriteThisTime + TARGET_WRITE_SIZE >= buf->size)
+      if (buf->curfill + WriteThisTime + buf->OptimalWriteSize >= buf->size)
 	pthread_cond_signal (&buf->DataReadyCondition);
    }
   /* should never get here */
@@ -188,7 +192,7 @@ void* BufferFunc (void *arg)
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
 		    size_t (*write_func) (void *, size_t, size_t, void *, char),
-		    void *initData, int (*init_func) (void*))
+		    void *initData, int (*init_func) (void*), int OptimalWriteSize)
 {
   buf_t *buf = malloc (sizeof(buf_t) + sizeof (chunk) * (size - 1));
 
@@ -217,6 +221,7 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
 
   buf->reader = buf->writer = buf->buffer;
   buf->end = buf->buffer + (size - 1);
+  buf->OptimalWriteSize = OptimalWriteSize;
   buf->size = size;
   buf->prebuffer = prebuffer;
   Prebuffer (buf);
@@ -287,13 +292,11 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb)
 {
   int i, s;
-  while (nmemb > 0) {
-    for (i = 0; i < size; i += TARGET_WRITE_SIZE) {
-      s = i + TARGET_WRITE_SIZE <= size ? TARGET_WRITE_SIZE : size - i;
-      _SubmitDataChunk (buf, data, s);
-      data += s;
-    }
-    nmemb--;
+  size *= nmemb;
+  for (i = 0; i < size; i += buf->OptimalWriteSize) {
+    s = i + buf->OptimalWriteSize <= size ? buf->OptimalWriteSize : size - i;
+    _SubmitDataChunk (buf, data, s);
+    data += s;
   }
 }
 
@@ -363,6 +366,7 @@ void buffer_cleanup (buf_t *buf) {
   if (buf) {
     buffer_shutdown (buf);
     PthreadCleanup (buf);
+    memset (buf, 0, sizeof(buf));
     free (buf);
   }
 }

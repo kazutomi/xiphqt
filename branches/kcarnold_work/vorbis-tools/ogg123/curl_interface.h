@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.2 2001/08/11 02:55:37 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.3 2001/08/11 16:04:22 kcarnold Exp $
  
 ********************************************************************/
 
@@ -43,6 +43,8 @@ typedef struct InputOpts_s {
   char *CookieFile;
 } InputOpts_t;
 
+#define VORBIS_CHUNKIN_SIZE (8500)
+
 typedef struct StreamInputBufferData_s {
   pthread_t CurlThread;
   pthread_mutex_t ReadDataMutex;
@@ -56,7 +58,7 @@ typedef struct StreamInputBufferData_s {
   size_t BytesRequested;
   unsigned char *WriteTarget;
   unsigned char *CurWritePtr;
-  unsigned char ExcessData[TARGET_WRITE_SIZE];
+  unsigned char ExcessData[VORBIS_CHUNKIN_SIZE];
   int ExcessDataSize;
 } StreamInputBufferData_t;
 
@@ -65,5 +67,6 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg);
 int StreamBufferSeek (void *arg, ogg_int64_t offset, int whence);
 int StreamBufferClose (void *arg);
 long StreamBufferTell (void *arg);
+void StreamBufferCleanup (buf_t *buf);
 
 #endif /* __CURL_INTERFACE_H */
