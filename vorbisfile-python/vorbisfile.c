@@ -777,6 +777,81 @@ static PyObject *ov_read_py(PyObject *self, PyObject *args)
     return result;
 }
 
+static PyObject *ov_crosslap_py(PyObject *self, PyObject *args)
+{
+    PyObject *cobj1, *cobj2, *result;
+    int ret;
+    OggVorbis_File *vf1, *vf2;
+
+    if (!PyArg_ParseTuple(args, "OO", &cobj1, &cobj2)) {
+	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
+	return NULL;
+    }
+
+    if (!PyCObject_Check(cobj1)) {
+	PyErr_SetString(PyExc_StandardError, "Expected vorbisfile object");
+	return NULL;
+    }
+
+    if (!PyCObject_Check(cobj2)) {
+	PyErr_SetString(PyExc_StandardError, "Expected vorbisfile object");
+	return NULL;
+    }
+
+    vf1 = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj1);
+    vf2 = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj2);
+    ret = ov_crosslap(vf1, vf2);
+
+    result = Py_BuildValue("i", ret);
+    return result;
+}
+
+static PyObject *ov_halfrate_py(PyObject *self, PyObject *args)
+{
+    PyObject *cobj, *result;
+    int ret, flag;
+    OggVorbis_File *vf;
+
+    if (!PyArg_ParseTuple(args, "Oi", &cobj, &flag)) {
+	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
+	return NULL;
+    }
+
+    if (!PyCObject_Check(cobj)) {
+	PyErr_SetString(PyExc_StandardError, "Expected vorbisfile object");
+	return NULL;
+    }
+
+    vf = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj);
+    ret = ov_halfrate(vf, flag);
+
+    result = Py_BuildValue("i", ret);
+    return result;
+}
+
+static PyObject *ov_halfrate_p_py(PyObject *self, PyObject *args)
+{
+    PyObject *cobj, *result;
+    int ret;
+    OggVorbis_File *vf;
+
+    if (!PyArg_ParseTuple(args, "O", &cobj)) {
+	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
+	return NULL;
+    }
+
+    if (!PyCObject_Check(cobj)) {
+	PyErr_SetString(PyExc_StandardError, "Expected vorbisfile object");
+	return NULL;
+    }
+
+    vf = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj);
+    ret = ov_halfrate_p(vf);
+
+    result = Py_BuildValue("i", ret);
+    return result;
+}
+
 static PyMethodDef vorbisfileMethods[] = {
     {"ov_open", ov_open_py, METH_VARARGS, "Open an Ogg Vorbis file"},
     {"ov_clear", ov_clear_py, METH_VARARGS, "Clear a VorbisFile object"},
@@ -823,8 +898,12 @@ static PyMethodDef vorbisfileMethods[] = {
     // "return something"},
     {"ov_read", ov_read_py, METH_VARARGS,
      "return something"},
-    //{"ov_crosslap", ov_crosslap_py, METH_VARARGS,
-    // "return something"},
+    {"ov_crosslap", ov_crosslap_py, METH_VARARGS,
+     "return something"},
+    {"ov_halfrate", ov_halfrate_py, METH_VARARGS,
+     "return something"},
+    {"ov_halfrate_p", ov_halfrate_p_py, METH_VARARGS,
+     "return something"},
     {NULL, NULL, 0, NULL}
 };
 
