@@ -83,18 +83,16 @@ div#navbar2 a:hover {
 
 /* These are the properties necessary to make the tabs have the fancy hover effects*/
 
-div#navbar1 a#xiph {
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) left; 
-}
+div#navbar1 a#xiph { background:  no-repeat url(/Images/logos/xiph/35x20.png) left; }
+div#navbar1 a#speex	{ background: no-repeat url(/Images/logos/speex/35x20.png) left; -moz-border-radius: 10px; }
+div#navbar1 a#theora	{ background: no-repeat url(/Images/logos/theora/35x20.png) left; -moz-border-radius: 10px; }
+div#navbar1 a#other { background:  no-repeat url(/Images/logos/xiph/35x20.png) left; }
 
-
-div#navbar1 a#xiph:hover {
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) left #819cc9; 
-}
-div#navbar1 a:hover		{ background: #aaaaaa; -moz-border-radius: 10px;  }
+div#navbar1 a#xiph:hover	{ background:  no-repeat url(/Images/logos/xiph/35x20.png) top left #819cc9; }
+div#navbar1 a:hover			{ background: #aaaaaa; -moz-border-radius: 10px;  }
 div#navbar1 a#vorbis:hover	{ background: #aa75f4; -moz-border-radius: 10px; }
-div#navbar1 a#theora:hover	{ background: #F9AFAF; -moz-border-radius: 10px;  }
-div#navbar1 a#speex:hover	{ background: #99d25d; -moz-border-radius: 10px;  }
+div#navbar1 a#theora:hover	{ background: no-repeat url(/Images/logos/theora/35x20.png) left #F9AFAF; -moz-border-radius: 10px;  }
+div#navbar1 a#speex:hover	{ background: no-repeat url(/Images/logos/speex/35x20.png) left #99d25d; -moz-border-radius: 10px;  }
 div#navbar1 a#flac:hover	{ background: #ffff56; -moz-border-radius: 10px;  }
 div#navbar1 a#icecast:hover	{ background: #aaaaaa; -moz-border-radius: 10px;  }
-div#navbar1 a#other:hover	{ background: #8099f4; -moz-border-radius: 10px;  }
+div#navbar1 a#other:hover	{ background:  no-repeat url(/Images/logos/xiph/35x20.png) left #8099f4; -moz-border-radius: 10px; }

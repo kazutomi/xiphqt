@@ -37,7 +37,7 @@ li.newsitem {
 	background: #ded;
 	margin: .5em 0 .5em 0;
 	padding: 0 1em 1em 1em;
-	border: 2px dotted black;
+	border: 1px dotted black;
 	-moz-border-radius: 10px;
 }
 
@@ -50,16 +50,16 @@ li.newsitem {
 #headlines .newsitem+.newsitem+.newsitem, 
 #headlines .newsitem+.newsitem+.newsitem+.newsitem+.newsitem, 
 #headlines .newsitem+.newsitem+.newsitem+.newsitem+.newsitem+.newsitem+.newsitem {
-    margin: -.9em 2em 0 1em;
-    background: #efe;
+    margin: 0 2em -.9em 1em;
+    background: #f9fff9;
 }
 
 /* ditto for second, fourth, and sixth */
 #headlines .newsitem+.newsitem, 
 #headlines .newsitem+.newsitem+.newsitem+.newsitem, 
 #headlines .newsitem+.newsitem+.newsitem+.newsitem+.newsitem+.newsitem {
-    margin: -.9em 1em 0 2em;
-    background: #eff;
+    margin: 0 1em -.9em 2em;
+    background: #f7ffff;
 }
 
 

@@ -11,9 +11,7 @@ div#thepage {
 }
 
 div#navbar1 a#flac {
-	font-weight: bold;
-	background: #ffff56;
-	border-top: solid #ffff56;
+	font-style: italic;
 }
 
 div#navbar2 {

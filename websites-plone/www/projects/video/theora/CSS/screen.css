@@ -9,9 +9,7 @@ div#thepage {
 }
 
 div#navbar1 a#theora {
-	font-weight: bold;
-	background: #F9AFAF;
-	border-top: solid #F9AFAF;
+	font-style: italic;
 }
 
 div#navbar2 {

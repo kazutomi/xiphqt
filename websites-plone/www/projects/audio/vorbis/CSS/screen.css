@@ -9,9 +9,7 @@ div#thepage {
 }
 
 div#navbar1 a#vorbis {
-	font-weight: bold;
-	background: #aa75f4;
-	border-top: solid #aa75f4;
+	font-style: italic;
 }
 
 div#navbar2 {

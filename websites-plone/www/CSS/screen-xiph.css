@@ -11,10 +11,7 @@ div#thepage {
 }
 
 div#navbar1 a#xiph {
-	padding: 0px 3px 6px 35px;
-	font-weight: bold;
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) top left #819cc9;
-	border-top: solid #819cc9;
+	font-style: italic;
 }
 
 div#navbar2 {
