@@ -1,5 +1,6 @@
 import ports
 import shlex
+import os
 from os import path
 import ConfigParser
 
@@ -49,14 +50,33 @@ def strip_quotes(s):
 
 class Config:
     def __init__(self):
-        self.config_filename = ports.user_config_file_path()
+        self.set_config_dir(ports.user_config_dir())
         self.mountpoint = None
         self.recording_dir = None
         self.neuros_musicdir = "MUSIC"
         self.sort_database = True
         self.syncdirs = []
 
+    def set_config_dir(self, config_dir):
+        """Sets the positron configuration directory.
 
+        Use this instead of directly changing the config_dir attribute.""" 
+        self.config_dir = config_dir
+        self._generate_filenames()
+
+    def _generate_filenames(self):
+        self.config_filenames = {
+            "config"     : path.join(self.config_dir, "config"),
+            "deleted"    : path.join(self.config_dir, "deleted"),
+            "recordings" : path.join(self.config_dir, "recordings") }
+
+    def create_new_config(self):
+        os.makedirs(self.config_dir)
+        self.write_config_file()
+        self.clear_deleted()
+        self.clear_recordings()
+
+    # --------- Config file methods ---------
 
     def _read_key_value_pair(self, tokenizer):
         key = tokenizer.get_token()
@@ -117,11 +137,8 @@ class Config:
                         +"sync block is never closed")
 
 
-    def read_config_file(self, filename=None):
-        if (filename == None):
-            filename = self.config_filename
-            
-        f = file(filename, "r")
+    def read_config_file(self):
+        f = file(self.config_filenames["config"], "r")
 
         tokenizer = shlex.shlex(f)
         tokenizer.wordchars = wordchars 
@@ -161,8 +178,8 @@ class Config:
 
             token = tokenizer.get_token()
 
-    def write_config_file(self, filename):
-        f = file(filename, "w")
+    def write_config_file(self):
+        f = file(self.config_filenames["config"], "w")
 
         if self.mountpoint != None:
             f.write("mountpoint=%s\n" % (quote_string(self.mountpoint),))
@@ -186,4 +203,44 @@ class Config:
             f.write("end sync\n")
         
         f.close()
+
+    # ------- Deleted File Methods -----------
+
+    def clear_deleted(self):
+        self._clear_file(self.config_filenames["deleted"])
+
+    def get_deleted(self):
+        return self._get_list(self.config_filenames["deleted"])
+
+    def add_deleted(self, item):
+        self._add_item(self.config_filenames["deleted"], item)
+
+    # ------- Recordings File Methods -----------
+
+    def clear_recordings(self):
+        self._clear_file(self.config_filenames["recordings"])
+
+    def get_recordings(self):
+        return self._get_list(self.config_filenames["recordings"])
+
+    def add_recording(self, item):
+        self._add_item(self.config_filenames["recordings"], item)
+
+    # ------- Shared Deleted/Recordings Methods --------
+
+    def _clear_file(self, filename):
+        f = file(filename, "w")
+        f.close()
         
+    def _get_list(self, filename):
+        f = file(filename, "r")
+        l = f.readlines()
+        f.close()
+
+        # Eliminate null entries and trim trailing newlines
+        return [item.rstrip("\n") for item in l if item != "" or item == "\n"]
+
+    def _add_item(self, filename, item):
+        f = file(filename, "a")
+        f.write(item+"\n")
+        f.close()

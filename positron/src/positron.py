@@ -65,7 +65,7 @@ def main(argv):
             usage()
             sys.exit()
         elif o in ("-c", "--config"):
-            config.config_filename = a
+            config.set_config_dir(a)
         elif o in ("-m", "--mount-point"):
             mountpoint = a
 
@@ -88,8 +88,8 @@ def main(argv):
     try:
         config.read_config_file()
     except IOError,e:
-        print "Error opening configuration file \"%s\": %s" \
-              % (config.config_file, e)
+        print "Error opening configuration file \"%s\":\n  %s" \
+              % (config.config_filenames["config"], e)
         print "You can create or modify the configuration file with \"positron config\""
         sys.exit(1)
 
