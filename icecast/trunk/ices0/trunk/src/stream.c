@@ -92,6 +92,11 @@ ices_stream_loop (ices_config_t* config)
       ices_setup_shutdown ();
     }
 
+    if (source.path[0] == '\0') {
+      ices_log ("Playlist file name is empty, shutting down.");
+      ices_setup_shutdown ();
+    }
+
     /* This stops ices from entering a loop with 10-20 lines of output per
 	 second. Usually caused by a playlist handler that produces only
 	 invalid file names. */
