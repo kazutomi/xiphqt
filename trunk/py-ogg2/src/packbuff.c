@@ -99,19 +99,19 @@ PyOggPackBuffer_New(PyObject *self, PyObject *args)
                                                &PyOggPackBuffer_Type);
   if (ret == NULL) return NULL;
   ret->msb_flag = 0;
-  PyOggPackBuffer_AsOggPackBuffer(ret) = PyMem_Malloc(oggpack_buffersize());
+  PyOggPackBuffer_AsOggPackBuffer(ret) = PyMem_Malloc(ogg2pack_buffersize());
 
   if ( packetobj ) { 
     ret->write_flag = 0;
     ret->packetobj = packetobj; /* Must keep packet around for now! */
     Py_INCREF(((PyOggPackBufferObject *) ret)->packetobj);
-    oggpack_readinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
+    ogg2pack_readinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
                      PyOggPacket_AsOggPacket(packetobj)->packet);
     return (PyObject *)ret;
   } 
   ret->write_flag = 1;
-  oggpack_writeinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
-                    ogg_buffer_create());
+  ogg2pack_writeinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
+                    ogg2_buffer_create());
   return (PyObject *)ret;
 }
 
@@ -131,19 +131,19 @@ PyOggPackBuffer_NewB(PyObject *self, PyObject *args)
                                                &PyOggPackBuffer_Type);
   if (ret == NULL) return NULL;
   ret->msb_flag = 1;
-  PyOggPackBuffer_AsOggPackBuffer(ret) = PyMem_Malloc(oggpack_buffersize());
+  PyOggPackBuffer_AsOggPackBuffer(ret) = PyMem_Malloc(ogg2pack_buffersize());
 
   if ( packetobj ) { 
     ret->write_flag = 0;
     ret->packetobj = packetobj; /* Must keep packet around for now! */
     Py_INCREF(((PyOggPackBufferObject *) ret)->packetobj);
-    oggpack_readinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
+    ogg2pack_readinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
                      PyOggPacket_AsOggPacket(packetobj)->packet);
     return (PyObject *)ret;
   } 
   ret->write_flag = 1;
-  oggpack_writeinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
-                    ogg_buffer_create());
+  ogg2pack_writeinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
+                    ogg2_buffer_create());
   return (PyObject *)ret;
 }
 
@@ -154,9 +154,9 @@ PyOggPackBuffer_Dealloc(PyObject *self)
   if ( ((PyOggPackBufferObject *) self)->write_flag ) { 
     if ( ((PyOggPackBufferObject *) self)->write_flag == 1 ) {
       if ( ((PyOggPackBufferObject *) self)->msb_flag )
-        oggpackB_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+        ogg2packB_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
       else 
-        oggpack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+        ogg2pack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
     }
   }
   else  /* Release the packet being read */
@@ -189,9 +189,9 @@ PyOggPackBuffer_Bytes(PyObject *self, PyObject *args)
     return NULL;
 
   if ( ((PyOggPackBufferObject *) self)->msb_flag )
-    ret = oggpackB_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
+    ret = ogg2packB_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
   else
-    ret = oggpack_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
+    ret = ogg2pack_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
   return PyLong_FromLong(ret);
 }
 
@@ -204,9 +204,9 @@ PyOggPackBuffer_Bits(PyObject *self, PyObject *args)
     return NULL;
 
   if ( ((PyOggPackBufferObject *) self)->msb_flag )
-    ret = oggpackB_bits(PyOggPackBuffer_AsOggPackBuffer(self));
+    ret = ogg2packB_bits(PyOggPackBuffer_AsOggPackBuffer(self));
   else
-    ret = oggpack_bits(PyOggPackBuffer_AsOggPackBuffer(self));
+    ret = ogg2pack_bits(PyOggPackBuffer_AsOggPackBuffer(self));
   return PyLong_FromLong(ret);
 }
 
@@ -218,9 +218,9 @@ PyOggPackBuffer_Reset(PyObject *self, PyObject *args)
     return NULL;
     
   if ( ((PyOggPackBufferObject *) self)->msb_flag )
-    oggpackB_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+    ogg2packB_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
   else
-    oggpack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+    ogg2pack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -237,9 +237,9 @@ PyOggPackBuffer_Look(PyObject *self, PyObject *args)
 
   if ( bits == 1 ) {
     if ( ((PyOggPackBufferObject *) self)->msb_flag )
-      ret = oggpackB_look1(PyOggPackBuffer_AsOggPackBuffer(self));
+      ret = ogg2packB_look1(PyOggPackBuffer_AsOggPackBuffer(self));
     else
-      ret = oggpack_look1(PyOggPackBuffer_AsOggPackBuffer(self));
+      ret = ogg2pack_look1(PyOggPackBuffer_AsOggPackBuffer(self));
     return PyLong_FromLong(ret);
   }
   
@@ -249,9 +249,9 @@ PyOggPackBuffer_Look(PyObject *self, PyObject *args)
   }
 
   if ( ((PyOggPackBufferObject *) self)->msb_flag )
-    ret = oggpackB_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
+    ret = ogg2packB_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
   else
-    ret = oggpack_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
+    ret = ogg2pack_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
   if ( ret == 0 )
     return PyLong_FromLong(num);
   Py_INCREF(Py_None);
@@ -271,9 +271,9 @@ PyOggPackBuffer_Read(PyObject *self, PyObject *args)
   
   if ( bits == 1 ) {
     if ( ((PyOggPackBufferObject *) self)->msb_flag )
-      ret = oggpackB_read1(PyOggPackBuffer_AsOggPackBuffer(self));
+      ret = ogg2packB_read1(PyOggPackBuffer_AsOggPackBuffer(self));
     else
-      ret = oggpack_read1(PyOggPackBuffer_AsOggPackBuffer(self));
+      ret = ogg2pack_read1(PyOggPackBuffer_AsOggPackBuffer(self));
     return PyInt_FromLong(ret);
   }
   
@@ -284,9 +284,9 @@ PyOggPackBuffer_Read(PyObject *self, PyObject *args)
 
 
   if ( ((PyOggPackBufferObject *) self)->msb_flag )
-    ret = oggpackB_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
+    ret = ogg2packB_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
   else
-    ret = oggpack_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
+    ret = ogg2pack_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &num);
   if ( ret == 0 )
     return PyInt_FromLong(num);
   Py_INCREF(Py_None);
@@ -304,14 +304,14 @@ PyOggPackBuffer_Adv(PyObject *self, PyObject *args)
 
   if ( bits == 1 ) 
     if ( ((PyOggPackBufferObject *) self)->msb_flag )
-      oggpackB_adv1(PyOggPackBuffer_AsOggPackBuffer(self));
+      ogg2packB_adv1(PyOggPackBuffer_AsOggPackBuffer(self));
     else
-      oggpack_adv1(PyOggPackBuffer_AsOggPackBuffer(self));
+      ogg2pack_adv1(PyOggPackBuffer_AsOggPackBuffer(self));
   else 
     if ( ((PyOggPackBufferObject *) self)->msb_flag )
-      oggpackB_adv(PyOggPackBuffer_AsOggPackBuffer(self), bits);
+      ogg2packB_adv(PyOggPackBuffer_AsOggPackBuffer(self), bits);
     else
-      oggpack_adv(PyOggPackBuffer_AsOggPackBuffer(self), bits);
+      ogg2pack_adv(PyOggPackBuffer_AsOggPackBuffer(self), bits);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -333,9 +333,9 @@ PyOggPackBuffer_Write(PyObject *self, PyObject *args)
   }
     
   if ( ((PyOggPackBufferObject *) self)->msb_flag )
-    oggpackB_write(PyOggPackBuffer_AsOggPackBuffer(self), val, bits);
+    ogg2packB_write(PyOggPackBuffer_AsOggPackBuffer(self), val, bits);
   else
-    oggpack_write(PyOggPackBuffer_AsOggPackBuffer(self), val, bits);
+    ogg2pack_write(PyOggPackBuffer_AsOggPackBuffer(self), val, bits);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -345,7 +345,7 @@ PyOggPackBuffer_Write(PyObject *self, PyObject *args)
 static PyObject *
 PyOggPackBuffer_Packetout(PyObject *self, PyObject *args)
 {
-  ogg_packet *op;
+  ogg2_packet *op;
   PyOggPacketObject *packetobj;
 
   if (!PyArg_ParseTuple(args, ""))
@@ -355,15 +355,16 @@ PyOggPackBuffer_Packetout(PyObject *self, PyObject *args)
   op = packetobj->packet;
 
   if ( ((PyOggPackBufferObject *) self)->msb_flag ) {
-    op->packet = oggpackB_writebuffer(PyOggPackBuffer_AsOggPackBuffer(self));
-    op->bytes = oggpackB_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
+    op->packet = ogg2packB_writebuffer(PyOggPackBuffer_AsOggPackBuffer(self));
+    op->bytes = ogg2packB_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
   } else {
-    op->packet = oggpackB_writebuffer(PyOggPackBuffer_AsOggPackBuffer(self));
-    op->bytes = oggpackB_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
+    op->packet = ogg2packB_writebuffer(PyOggPackBuffer_AsOggPackBuffer(self));
+    op->bytes = ogg2packB_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
   }
   op->b_o_s = 0;
   op->e_o_s = 0;
-  op->granulepos = 0;
+  op->top_granule = 0;
+  op->end_granule = 0;
   op->packetno = 0;
 
   ((PyOggPackBufferObject *) self)->write_flag = 2;
@@ -374,7 +375,7 @@ PyOggPackBuffer_Packetout(PyObject *self, PyObject *args)
 static PyObject *
 PyOggPackBuffer_Repr(PyObject *self)
 {
-  oggpack_buffer *ob = PyOggPackBuffer_AsOggPackBuffer(self);
+  ogg2pack_buffer *ob = PyOggPackBuffer_AsOggPackBuffer(self);
   char buf[256];
 
   if ( ((PyOggPackBufferObject *) self)->write_flag == 2 ) {

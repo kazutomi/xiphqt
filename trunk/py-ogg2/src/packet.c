@@ -59,7 +59,8 @@ PyTypeObject PyOggPacket_Type = {
 static PyMethodDef PyOggPacket_methods[] = {
   {"bos", NULL},
   {"eos", NULL},
-  {"granulepos", NULL},
+  {"top_granule", NULL},
+  {"end_granule", NULL},
   {"packetno", NULL},
   {NULL, NULL}
 };
@@ -67,7 +68,7 @@ static PyMethodDef PyOggPacket_methods[] = {
 PyOggPacketObject * 
 PyOggPacket_Alloc() 
 {
-  ogg_packet *packet;
+  ogg2_packet *packet;
   PyOggPacketObject *ret;
 
   ret = (PyOggPacketObject *) PyObject_NEW(PyOggPacketObject,
@@ -77,12 +78,12 @@ PyOggPacket_Alloc()
 
   ret->valid_flag = 1;
 
-  ret->packet = PyMem_New(ogg_packet, 1);
+  ret->packet = PyMem_New(ogg2_packet, 1);
   if (ret->packet == NULL) {
     PyObject_Del(ret);
     return NULL;
   }
-  memset(ret->packet, 0, sizeof(ogg_packet));
+  memset(ret->packet, 0, sizeof(ogg2_packet));
   return ret;
 }
 
@@ -90,7 +91,7 @@ PyOggPacket_Alloc()
 static void
 PyOggPacket_Dealloc(PyObject *self)
 {
-  ogg_packet_release(PyOggPacket_AsOggPacket(self));
+  ogg2_packet_release(PyOggPacket_AsOggPacket(self));
   PyMem_Del(PyOggPacket_AsOggPacket(self));
   PyObject_DEL(self);
 }
@@ -118,8 +119,10 @@ PyOggPacket_Getattr(PyObject *self, char *name)
     return PyLong_FromLong(PyOggPacket_AsOggPacket(self)->b_o_s);
   if (strcmp(name, "eos") == 0)
     return PyLong_FromLong(PyOggPacket_AsOggPacket(self)->e_o_s);
-  if (strcmp(name, "granulepos") == 0)
-    return PyLong_FromLongLong(PyOggPacket_AsOggPacket(self)->granulepos);
+  if (strcmp(name, "top_granule") == 0)
+    return PyLong_FromLongLong(PyOggPacket_AsOggPacket(self)->top_granule);
+  if (strcmp(name, "end_granule") == 0)
+    return PyLong_FromLongLong(PyOggPacket_AsOggPacket(self)->end_granule);
   if (strcmp(name, "packetno") == 0)
     return PyLong_FromLongLong(PyOggPacket_AsOggPacket(self)->packetno);
   return Py_FindMethod(PyOggPacket_methods, self, name);
@@ -146,11 +149,18 @@ PyOggPacket_Setattr(PyObject *self, char *name, PyObject *value)
     PyOggPacket_AsOggPacket(self)->e_o_s = v;
     return 0;
   }
-  if (strcmp(name, "granulepos") == 0) {
+  if (strcmp(name, "top_granule") == 0) {
     ogg_int64_t v;
     if (!arg_to_int64(value, &v))
       return -1;
-    PyOggPacket_AsOggPacket(self)->granulepos = v;
+    PyOggPacket_AsOggPacket(self)->top_granule = v;
+    return 0;
+  }
+  if (strcmp(name, "end_granule") == 0) {
+    ogg_int64_t v;
+    if (!arg_to_int64(value, &v))
+      return -1;
+    PyOggPacket_AsOggPacket(self)->end_granule = v;
     return 0;
   }
   if (strcmp(name, "packetno") == 0) {
@@ -178,10 +188,11 @@ PyOggPacket_Repr(PyObject *self)
 
   bos = PyOggPacket_AsOggPacket(self)->b_o_s ? "BOS, " : "";
   eos = PyOggPacket_AsOggPacket(self)->e_o_s ? "EOS, " : "";
-  sprintf(buf, "<OggPacket, %s%spacketno = %lld, granulepos = %lld,"
-	  " length = %ld at %p (%p)>", bos, eos, 
+  sprintf(buf, "<OggPacket, %s%spacketno = %lld, topgranule = %lld,"
+          " endgranule = %lld, length = %ld at %p (%p)>", bos, eos, 
           PyOggPacket_AsOggPacket(self)->packetno,
-	  PyOggPacket_AsOggPacket(self)->granulepos, 
+	  PyOggPacket_AsOggPacket(self)->top_granule, 
+	  PyOggPacket_AsOggPacket(self)->end_granule, 
           PyOggPacket_AsOggPacket(self)->bytes, self,
           PyOggPacket_AsOggPacket(self)->packet);
   return PyString_FromString(buf);

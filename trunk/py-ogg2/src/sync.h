@@ -5,7 +5,7 @@
 
 typedef struct {
   PyObject_HEAD
-  ogg_sync_state *sync;
+  ogg2_sync_state *sync;
 } PyOggSyncStateObject;
 
 #define PyOggSyncState_AsOggSyncState(x) (((PyOggSyncStateObject *) (x))->sync)

@@ -6,7 +6,7 @@
 typedef struct {
   PyObject_HEAD
   int valid_flag;
-  ogg_page *page;
+  ogg2_page *page;
 } PyOggPageObject;
 
 #define PyOggPage_AsOggPage(x) ( ((PyOggPageObject *) (x))->page )
