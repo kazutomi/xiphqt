@@ -1,7 +1,7 @@
 </head>
 <body>
-<div class="bodyborder">
-<div class="xiphbar">
+<div id="bodyborder">
+<div id="xiphbar">
 	<div>
 	<img src="/images/logos/xiphbar.png" alt="Xiph logo"/>
 	<ul>

@@ -20,7 +20,7 @@ img {
 	border: 0;
 }
 
-.bodyborder {
+#bodyborder {
 	margin: 0;
 	border: 0;
 	padding: 0 0 3em 0;
@@ -30,18 +30,18 @@ img {
 	bottom: 0;
 }
 
-.thepage {
+#thepage {
 	margin-left: auto;
 	margin-right: auto;
 	width: 50em;
 }
 
-.logos {
+#logos {
 	padding: 72px 465px 0 0;
 	text-align: center;
 }
 
-.navbar ul {
+#navbar ul {
 	color:#FEAC0E;
 	margin: 0;
 	border: 0;
@@ -51,7 +51,7 @@ img {
 	text-transform: uppercase;
 }
 
-.navbar li {
+#navbar li {
 	margin: 0;
 	border: 0;
 	padding: 0 16px 0 11px;
@@ -61,43 +61,35 @@ img {
 	font-size: .6em;
 }
 
-.navbar li a {
+#navbar li a {
 	color: #3366CC;
 	text-decoration: none;
 	font-weight: bold;
 }
 
-.navbar li a:hover {
+#navbar li a:hover {
 	text-decoration: underline;
 }
 
-#contact_ {
+#navbar #contact_ {
 	padding-right: 0;
-	background: none;
+	background: none ;
 }
 
-.banners {
+#banners {
 	width: 232px;
 	float: right;
 }
 
-.banners img {
+#banners img {
 	display: block;
 	padding-top: 10px;
 }
 
-.content {
+#content {
 	margin: 0 240px 0 0;
 	padding: 0 1em 0 1em;
 	vertical-align: top;
-}
-
-.content p {
-	font-size: .7em;
-	line-height: 1.5;
-}
-
-.content li {
 	font-size: .7em;
 	line-height: 1.5;
 }
@@ -120,7 +112,7 @@ h3 {
 	color: #FF9900;
 }
 
-.copyright {
+#copyright {
 	margin: 0;
 	border: 0;
 	padding: 4em 1em 1em 1em;

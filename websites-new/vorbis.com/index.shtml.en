@@ -42,8 +42,8 @@ a {
 
 </head>
 <body>
-<div class="bodyborder">
-<div class="xiphbar">
+<div id="bodyborder">
+<div id="xiphbar">
 	<div>
 	<img src="/images/logos/xiphbar.png" alt="Xiph logo"/>
 	<ul>
@@ -58,23 +58,23 @@ a {
 	</div>
 </div>
 
-<div class="thepage">
-<div class="logos" style="padding-bottom: 15px;">
+<div id="thepage">
+<div id="logos" style="padding-bottom: 15px;">
 
 	<img src="/images/logos/vorbisdotcom.png" alt="Vorbis dot com logo"/>
 </div>
 
 
 
-<div class="banners">
+<div id="banners">
 
 	<img src="/images/banners/download_music.png" alt="Download music"/>
 	<img src="/images/banners/music_sites.png" alt="Music sites"/>
 	<img src="/images/banners/donate_today.png" alt="Donate today"/>
 </div>
 
-<div class="main">
-<div class="content">
+<div id="main">
+<div id="content">
 <!--  All your page content goes here  -->
 <div class="getsetupandlisten">
 	<p><img src="/images/banners/getsetupandlisten.png" height="121" width="483" alt="Choose your OS to get setup on" usemap="#map"/></p>
@@ -110,7 +110,7 @@ a {
 
 </div>
 </div>
-<div class="navbar" style="clear: both; ">
+<div id="navbar" style="clear: both; ">
 	<ul>
 		<li id="setup_"><a href="/setup/">Get Set Up</a></li>
 		<li id="faq_"><a href="/">FAQ</a></li>
