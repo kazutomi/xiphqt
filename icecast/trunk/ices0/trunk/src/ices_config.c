@@ -21,16 +21,8 @@
 
 #include "definitions.h"
 
-#ifdef HAVE_LIBXML_PARSER_H
-#  include <libxml/xmlmemory.h>
-#  include <libxml/parser.h>
-#elif defined(HAVE_GNOME_XML_PARSER_H)
-#  include <gnome-xml/parser.h>
-#elif defined(HAVE_PARSER_H)
-/* Probably 1.8.7 backwards crap */
-#  include <parser.h>
-#  include <xmlmemory.h>
-#endif
+#include <parser.h>
+#include <xmlmemory.h>
 
 /* Private function declarations */
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);

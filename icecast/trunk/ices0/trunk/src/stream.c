@@ -27,7 +27,16 @@
 #endif
 
 #include <resolver.h>
-#include <time.h>
+#ifdef TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
+#else
+#  ifdef HAVE_SYS_TIME_H
+#    include <sys/time.h>
+#  else
+#    include <time.h>
+#  endif
+#endif
 
 #define INPUT_BUFSIZ 4096
 /* sleep this long in ms when every stream has errors */
@@ -355,11 +364,11 @@ stream_connect (ices_stream_t* stream)
   char errbuf[1024];
 
   if (shout_connect (&stream->conn)) {
-    ices_log ("Mounted on http://%s:%d/%s", stream->conn.ip, stream->conn.port,
+    ices_log ("Mounted on http://%s:%d%s", stream->conn.ip, stream->conn.port,
 	      ices_util_nullcheck (stream->conn.mount));
     return 0;
   } else {
-    ices_log_error ("Mount failed on http://%s:%d/%s, error: %s",
+    ices_log_error ("Mount failed on http://%s:%d%s, error: %s",
 		    stream->conn.ip, stream->conn.port,
 		    ices_util_nullcheck (stream->conn.mount),
 		    shout_strerror (&stream->conn, stream->conn.error, errbuf,
