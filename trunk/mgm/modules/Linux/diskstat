@@ -1,0 +1,89 @@
+# -*-Perl-*-
+use Tk;
+
+package MGMmodule::diskstat;
+use vars qw($graph $numdisks @prevr @prevw $refreshtime);
+
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xpath=$this->{"xpath"};
+
+    # how many disks?  Call update once to init
+
+    $numdisks=0;
+    $this->module_update;
+
+    # modify defaults
+    for(my$i=0;$i<$numdisks;$i++){
+	$toplevel->optionAdd("$xpath.bar.".($i*2).".label", "disk$i read",21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".label", "disk$i write",21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2).".litbackground", '#e7ad74',21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".litbackground", '#ade774',21);
+    }
+    $toplevel->optionAdd("$xpath.scalewidadj", 150*$numdisks,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalereturn", 240,21); # about 1m
+    
+    # this relies on the above defaults
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,
+					    ' sect/s',$numdisks*2);
+    
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
+    1;
+}
+
+sub module_construct{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>$numdisks*2,prompt=>' sect/s',
+			   minscale=>128);
+    undef@prevr; # avoid a spike in the usage stat because
+    undef@prevw; # we can't update during redraw
+    $refreshtime=$graph->{"widget"}->optionGet('scalerefresh','')/1000;
+    $graph->{"widget"};        # must return the widget
+}
+
+sub module_update{ 
+    my @rsectors;
+    my @wsectors;
+	
+    die "Couldn't open /proc/stat\n" unless open(PROC,"</proc/stat");
+    while(<PROC>){
+	my$use;
+	$use=\@rsectors if(m/^disk_rblk/);
+	$use=\@wsectors if(m/^disk_wblk/);
+	
+	if(defined($use)){
+	    my$count=0;
+	    my@vals=split ' ',$_;
+	    shift @vals;
+	    while(my$val=shift @vals){
+		$use->[$count]=$val;
+		$count++;
+	    }
+	    $numdisks=$count if($numdisks<$count);
+	}
+    }
+    close PROC;
+    
+    if(defined(@prevr)){
+	my @vals;
+	for(my$i=0;$i<$numdisks;$i++){
+	    push @vals, (($rsectors[$i]-$prevr[$i])/$refreshtime,
+			 ($wsectors[$i]-$prevw[$i])/$refreshtime);
+	}
+
+	# don't be clever and only call set if values change; set must
+	# be called each refresh period or the graph will get
+	# confused.
+
+	$graph->set(@vals);
+    }
+    @prevr=@rsectors;
+    @prevw=@wsectors;
+
+}
+
+bless {};
+

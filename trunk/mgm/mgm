@@ -38,7 +38,6 @@ $toplevel->optionAdd("$Xname*font",
 $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
 $toplevel->optionAdd("$Xname*scale",            'true',20);
-$toplevel->optionAdd("$Xname*minscale",         '1',20); 
 $toplevel->optionAdd("$Xname*scalejustify",     '1',20);
 $toplevel->optionAdd("$Xname*scalethresh",      '4',20);
 $toplevel->optionAdd("$Xname*scalelenadj",      '100',20);
