@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: cmdline_options.c,v 1.1.2.3 2001/12/16 04:38:36 volsung Exp $
+ last mod: $Id: cmdline_options.c,v 1.1.2.4 2001/12/18 15:49:05 volsung Exp $
 
  ********************************************************************/
 
@@ -38,7 +38,6 @@ struct option long_options[] = {
     {"device-option", required_argument, 0, 'o'},
     {"prebuffer", required_argument, 0, 'p'},
     {"quiet", no_argument, 0, 'q'},
-    {"save", required_argument, 0, 's'},
     {"verbose", no_argument, 0, 'v'},
     {"nth", required_argument, 0, 'x'},
     {"ntimes", required_argument, 0, 'y'},
@@ -267,6 +266,8 @@ void cmdline_usage (void)
 	 "  -p n, --prebuffer n  prebuffer n%% of the buffer before playing\n"
 	 "  -v, --verbose  display progress and other status information\n"
 	 "  -q, --quiet    don't display anything (no title)\n"
+	 "  -x n, --nth    play every 'n'th block\n"
+	 "  -y n, --ntimes repeat every played block 'n' times\n"
 	 "  -z, --shuffle  shuffle play\n"
 	 "\n"
 	 "ogg123 will skip to the next song on SIGINT (Ctrl-C) after s seconds after\n"
