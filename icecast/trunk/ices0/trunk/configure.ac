@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.7 2003/03/14 22:42:25 brendan Exp $
+# $Id: configure.ac,v 1.8 2003/06/13 19:22:15 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -94,44 +94,9 @@ AC_SUBST(moddir)
 
 dnl -- Required extra libraries --
 
-AC_ARG_WITH([shout-config],
-  [[  --with-shout-config[=DIR]   use shout-config in PATH to find libshout]])
-
-have_libshout="no"
-if test "$with_shout_config" != "no"
-then
-  if test -n "$with_shout_config" -a "$with_shout_config" != "yes"
-  then
-    SHOUTCONFIG="$with_shout_config"
-  fi
-  AC_PATH_PROG(SHOUTCONFIG, [shout-config])
-
-  if test -x "$SHOUTCONFIG"
-  then
-    LIBS="$LIBS `$SHOUTCONFIG --libs`"
-    CFLAGS="$CFLAGS `$SHOUTCONFIG --cflags`"
-  elif test -n "$with_shout_config"
-  then
-    AC_MSG_ERROR([Could not run shout-config])
-  fi
-fi
-
-AC_CHECK_HEADER([shout/shout.h], [
-  AC_DEFINE(HAVE_SHOUT_SHOUT_H, 1, [Define if you have <shout/shout.h>])
-  have_libshout="maybe"
-  ])
-if test "$have_libshout" != "no"
-then
-  dnl shout_new was introduced in libshout2 so it serves as a version check.
-  AC_CHECK_LIB([shout], [shout_new], [
-    have_libshout="yes"
-    if test -z "$SHOUTCONFIG"
-    then
-      LIBS="$LIBS -lshout"
-    fi
-  ],
-  [AC_MSG_ERROR([Could not find a usable installed libshout])])
-fi
+XIPH_PATH_SHOUT(, [AC_MSG_ERROR([Could not find a usable libshout])])
+CFLAGS="$CFLAGS $SHOUT_CFLAGS"
+LIBS="$LIBS $SHOUT_LIBS"
 
 dnl -- Optional features --
 AC_CACHE_SAVE

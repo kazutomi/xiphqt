@@ -1,5 +1,7 @@
 ## Process this with automake to create Makefile.in
 
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = src conf doc
 
 EXTRA_DIST = README BUGS AUTHORS TODO INSTALL COPYING NEWS FAQ README.playlist
