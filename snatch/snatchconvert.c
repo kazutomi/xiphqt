@@ -40,6 +40,8 @@ double end_time=1e90;
 double global_zerotime=0.;
 
 unsigned char *buftemp;
+long           buftemphead;
+long           buftemptail;
 long           buftempsize;
 
 /* audio resampling ripped from sox and simplified */
@@ -386,6 +388,32 @@ static int read_snatch_header(FILE *f){
   return(1);
 }
 
+int read_snatch_frame_helper(FILE *f,long length,int verify){
+  long toread=length-buftemphead+buftemptail+5;
+
+  if(toread+buftemphead+1>buftempsize){
+    if(buftemp)
+      buftemp=realloc(buftemp,(toread+buftemphead+1)*sizeof(*buftemp));
+    else
+      buftemp=malloc((toread+buftemphead+1)*sizeof(*buftemp));
+    buftempsize+=toread+1;
+  }
+
+  if((long)fread(buftemp+buftemphead,1,toread,f)!=toread)return(0);
+  buftemphead+=toread;
+
+  buftemp[buftemphead]='\0';
+  
+  if(verify){
+    if(strstr(buftemp+buftemphead-5,"AUDIO"))return(1);
+    if(strstr(buftemp+buftemphead-5,"VIDEO"))return(1);
+    if(strstr(buftemp+buftemphead-5,"YUV12"))return(1);
+    return(0);
+  }else{
+    return(1);
+  }
+}
+
 resample_t resampler[2];
 
 static int process_audio_frame(char *head,FILE *f,int track_or_process){
@@ -415,21 +443,7 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   if(!s)return(0);
   length=atoi(s);
 
-  if(length>buftempsize){
-    if(buftemp)
-      buftemp=realloc(buftemp,length*sizeof(*buftemp));
-    else
-      buftemp=malloc(length*sizeof(*buftemp));
-    buftempsize=length;
-  }
-
-  //if(track_or_process){
-    ret=fread(buftemp,1,length,f);
-    if(ret<length)return(0);
-    //}else{
-    //ret=fseek(f,length,SEEK_CUR);
-    //if(ret)return(0);
-    //}
+  if(!read_snatch_frame_helper(f,length,1))return(0);
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -437,9 +451,8 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     end_time+=t;
   }
 
-  if(t<begin_time)return(1);
-  if(t>end_time)return(1);
-
+  if(t<begin_time)return(length);
+  if(t>end_time)return(0);
 
   if(audbuf_zerotime==0){
     audbuf_zerotime=t;
@@ -500,12 +513,12 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     double left,right;
     
     for(i=0;i<n;){
-      i+=convert_input(buftemp+i,fmt,&ileft);
+      i+=convert_input(buftemp+buftemptail+i,fmt,&ileft);
       samplesin++;
       left=ileft*3.0517578e-5;
       
       if(ch>1){
-	i+=convert_input(buftemp+i,fmt,&iright);
+	i+=convert_input(buftemp+buftemptail+i,fmt,&iright);
 	right=iright*3.0517578e-5;
       }
       
@@ -557,9 +570,9 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     
     for(i=0;i<n;){
       samplesin++;
-      i+=convert_input(buftemp+i,fmt,&left);
+      i+=convert_input(buftemp+buftemptail+i,fmt,&left);
       if(ch>1)
-	i+=convert_input(buftemp+i,fmt,&right);
+	i+=convert_input(buftemp+buftemptail+i,fmt,&right);
       
       lebuffer_sample(left,track_or_process);
       if(audbuf_channels>1){
@@ -571,7 +584,7 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
       }
     }
   }
-  return(1);
+  return(length);
 }
 
 /*********************** video manipulation ***********************/
@@ -726,20 +739,7 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   if(!s)return(0);
   length=atoi(s);
 
-  if(length>buftempsize){
-    if(buftemp)
-      buftemp=realloc(buftemp,length*sizeof(*buftemp));
-    else
-      buftemp=malloc(length*sizeof(*buftemp));
-    buftempsize=length;
-  }
-  //if(notfakep){
-    ret=fread(buftemp,1,length,f);
-    if(ret<length)return(0);
-    //}else{
-    //ret=fseek(f,length,SEEK_CUR);
-    //if(ret)return(0);
-    //}
+  if(!read_snatch_frame_helper(f,length,1))return(0);
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -747,8 +747,8 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
     end_time+=t;
   }
 
-  if(t<begin_time)return(1);
-  if(t>end_time)return(1);
+  if(t<begin_time)return(length);
+  if(t>end_time)return(0);
 
   /* video sync is fundamentally different from audio. We assume that
      frames never appear early; an frame that seems early in context
@@ -787,7 +787,7 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
 	/* no room to bump back.  Discard the 'early' frame 
 	   in order to reclaim sync, even if destructively. */
 	framesdiscarded++;
-	return(1);
+	return(length);
       }
     }
 
@@ -838,51 +838,75 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   /* scale image into buffer */
   if(notfakep){
     if(yuvp)
-      yuvscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
+      yuvscale(buftemp+buftemptail,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
 	       scale_width,scale_height);
     else
-      rgbscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
+      rgbscale(buftemp+buftemptail,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
 	       scale_width,scale_height);
   }
   /* finally any needed invasive blanking */
 
   vidbuf_head++;
-  return(1);
+  return(length);
 }
 
-static int read_snatch_frame(FILE *f,int wa,int wv){
-  char buffer[130];
-  char *ptr=buffer;
-  while(1){
-    int c=getc(f);
-    if(c==EOF)return(0);
-    *ptr++=c;
-    if(c==':')break;
-    if(ptr>=buffer+130)return(0);
+
+static char *strrstr(char *string,char *test){
+  char *ret=NULL;
+  char *temp;
+  while((temp=strstr(string,test))){
+    ret=temp;
+    string=temp+1;
   }
-  *ptr='\0';
+  return ret;
+}
 
-  if(!strncmp(buffer,"AUDIO",5)){
-    /* buffer or just track the audio, doing automatic resampling to
-       keep the same parameters start to end. */
-    return process_audio_frame(buffer, f, wa);
+/* more complicated than it used to be; we need to check framing */
+static int read_snatch_frame(FILE *f,int wa,int wv){
+  while(!feof(f)){
+    if(buftemptail){
+      memmove(buftemp,buftemp+buftemptail,buftemphead-buftemptail);
+      buftemphead-=buftemptail;
+      buftemptail=0;
+    }
 
-  }else {
-    if(!strncmp(buffer,"VIDEO",5)){
-      framesin++;
-      return process_video_frame(buffer, f, wv,0);
+    if(!read_snatch_frame_helper(f,2048,0))return(0);
 
-    }else{
-      if(!strncmp(buffer,"YUV12",5)){
-	framesin++;
-	return process_video_frame(buffer, f, wv,1);
-      }else{
+    {
+      unsigned char *poss=strchr(buftemp,':');
+      int pos=-1;
+      if(poss)pos=poss-buftemp;
+      if(poss){
+	char *audio,*video,*yuv12;
+	int ret=0;
+	buftemp[pos]='\0';
 	
-	fprintf(stderr,"Garbage/unknown frame type\n");
-	return(0);
+	/* search *backwards* from the colon */
+	audio=strrstr(buftemp,"AUDIO");
+	video=strrstr(buftemp,"VIDEO");
+	yuv12=strrstr(buftemp,"YUV12");
+
+	buftemptail=pos+1;
+
+	if(audio || video || yuv12){
+	  if(audio)
+	    ret=process_audio_frame(audio, f, wa);
+	  else if(video)
+	    ret=process_video_frame(video, f, wv,0);
+	  else
+	    ret=process_video_frame(yuv12, f, wv,1);
+
+	  buftemptail+=ret;
+	  return(ret);
+	  
+	}
+       
+      }else{
+	buftemptail=buftemphead-130;
       }
     }
   }
+  return(0);
 }
 
 /* writes a wav header without the length set.  This is also the 32
