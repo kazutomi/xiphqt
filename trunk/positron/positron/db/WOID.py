@@ -14,12 +14,41 @@
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+from types import *
 from util import *
 from os import path
 from MDB import MDB
-from SAI import SAI
+from SAI import SAI,cmp_sai_record
 from PAI import PAI
 from XIM import XIM
+
+def _mangle_field(field):
+    """Replaces extended ASCII characters in a field with underscores.
+
+    These characters cannot be displayed on the Neuros.
+    Non-text fields are passed-through unchanged."""
+
+    if type(field) is ListType or type(field) is TupleType:
+        return map(_mangle_field, field)  # Recursively handle list elements
+    elif type(field) is StringType or type(field) is UnicodeType:
+        # This is a singlet field
+        new_string = ""
+        for old_char in field:
+            if ord(old_char) >= 0x7F:
+                new_string += "_"
+            else:
+                new_string += old_char
+
+        return new_string
+    else:
+        return field
+
+def _mangle_record(record):
+    """Replaces extended ASCII characters in a record with underscores.
+
+    See _mangle_field()."""
+
+    return map(_mangle_field, record)
 
 class WOID:
 
@@ -128,6 +157,10 @@ class WOID:
         """Returns the SAI index number for the first non-deleted record
         containing data in field number \"check_field\"."""
 
+        # Since records have been mangled, we should transform the data
+        # similarly
+        data = _mangle_field(data)
+
         for i in range(len(self.sai)):
             (mdb_pointer, sai_pointer) = self.sai[i]
 
@@ -169,6 +202,9 @@ class WOID:
         First element of return value is a word pointer to the MDB
         record and the second element is a word pointer to the PAI
         module corresponding to new record."""
+
+        # Eliminate bad characters
+        record = _mangle_record(record)
 
         # Put single objects into lists
         record = map(unflatten_singlet, record)
@@ -242,6 +278,9 @@ class WOID:
         (mdb_pointer, pai_pointer) = self.sai[sai_index]
 
         (record, next) = self.mdb.read_record_at(mdb_pointer)
+        if record == None:
+            return # DON'T DELETE THE NULL RECORD
+        
         self.mdb.delete_record_at(mdb_pointer)
         self.sai.delete(sai_index)
         if self.pai != None:
@@ -302,6 +341,15 @@ class WOID:
             
         for record in records:
             self.add_record(record)
+
+    def sort(self):
+        """Sorts the contents of this database and all child databases."""
+
+        cmpfunc = lambda a,b: cmp_sai_record(self.mdb, a, b)
+        self.sai.sort(cmpfunc)
+
+        for child in self.children:
+            child.sort()
 
     def close(self):
         self.mdb.close()
