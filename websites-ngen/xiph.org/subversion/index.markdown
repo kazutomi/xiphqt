@@ -18,7 +18,7 @@ An example initial checkout:
 
 
 ## Accessing our Subversion Repository With TortoiseSVN
-<img src='1-checkout.cropped.png' class='tortoiseSvnScreenie'
+<img src='1-checkout.png' class='tortoiseSvnScreenie'
      alt='Windows Explorer’s right-click menu with “Checkout...” selected'>
  
 [TortoiseSVN][] is a Windows Explorer shell extension that will let you do Subversion
@@ -30,7 +30,7 @@ option from the menu.
 
 <div style='clear: both;'>&nbsp;</div>
 
-<img src='2-url.cropped.png' class='tortoiseSvnScreenie'
+<img src='2-url.png' class='tortoiseSvnScreenie'
 	 alt=''>
 
 Now, type in the URL of the section of the repository that you want. Not sure what you want
@@ -39,10 +39,10 @@ for Icecast-specific things, what you want will probably be in a subdirectory of
 
 <div style='clear: both;'>&nbsp;</div>
 
-<img src='3-directory.cropped.png' class='tortoiseSvnScreenie'
+<img src='3-directory.png' class='tortoiseSvnScreenie'
      alt=''>
 
-Now that you’ve found something 
+Now that you’ve found something…
 <div style='clear: both;'>&nbsp;</div>
 <div style='clear: both;'>&nbsp;</div>
 ## Accessing Our Subversion Repository With Commit Access

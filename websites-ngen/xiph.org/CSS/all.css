@@ -98,7 +98,7 @@ div#copyright {
 }
 
 img.tortoiseSvnScreenie {
-	float: right;
 	border: 1px solid gray;
-	margin: 2px;
+	float: right;
+	margin: 5px;
 }
