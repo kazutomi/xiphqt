@@ -576,62 +576,111 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
 
 /*********************** video manipulation ***********************/
 
-void rgbscale(char *src,int sw,int sh,
-	      char *dst,int dw,int dh,
+/* planar YUV12 (4:2:0) */
+void yuvscale(unsigned char *src,int sw,int sh,
+	      unsigned char *dst,int dw,int dh,
 	      int w, int h){
   int x,y;
-
-  int xo=(dw-sw)/2;
-  int yo=(dh-sh)/2;
-
+  int dxo=(dw-sw)/4,sxo=0;
+  int dyo=(dh-sh)/4,syo=0;
+  
   /* dirt simple for now. No scaling, just centering */
-  memset(dst,0,dw*dh*3);
-
-  if(yo>0){
-    if(xo>0){
-      for(y=0;y<sh && y<dh;y++){
-	char *sptr=src+y*sw*3;
-	char *dptr=dst+(y+yo)*dw*3+xo*3;
-	for(x=0;x<sw && x<dw;x++){
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	}
-      }
-    }else{
-      for(y=0;y<sh && y<dh;y++){
-	char *sptr=src+y*sw*3-xo*3;
-	char *dptr=dst+(y+yo)*dw*3;
-	for(x=0;x<sw && x<dw;x++){
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	}
-      }
-    }
-  }else{
-    if(xo>0){
-      for(y=0;y<sh && y<dh;y++){
-	char *sptr=src+(y-yo)*sw*3;
-	char *dptr=dst+y*dw*3+xo*3;
-	for(x=0;x<sw && x<dw;x++){
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	}
-      }
-    }else{
-      for(y=0;y<sh && y<dh;y++){
-	char *sptr=src+(y-yo)*sw*3-xo*3;
-	char *dptr=dst+y*dw*3;
-	for(x=0;x<sw && x<dw;x++){
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	  *dptr++=*sptr++;
-	}
-      }
-    }
+  memset(dst,0,dw*dh*3/2);
+  
+  if(dyo<0){
+    syo= -dyo;
+    dyo=0;
   }
+  if(dxo<0){
+    sxo= -dxo;
+    dxo=0;
+  }
+
+  for(y=0;y<sh && y<dh;y++){
+    unsigned char *sptr=src+(y+syo*2)*sw+sxo*2;
+    unsigned char *dptr=dst+(y+dyo*2)*dw+dxo*2;
+    for(x=0;x<sw && x<dw;x++)
+      *dptr++=*sptr++;
+  }
+
+  src+=sw*sh;
+  dst+=dw*dh;
+  sw/=2;
+  dw/=2;
+  sh/=2;
+  dh/=2;
+
+  for(y=0;y<sh && y<dh;y++){
+    unsigned char *sptr=src+(y+syo)*sw+sxo;
+    unsigned char *dptr=dst+(y+dyo)*dw+dxo;
+    for(x=0;x<sw && x<dw;x++)
+      *dptr++=*sptr++;
+  }
+
+  src+=sw*sh;
+  dst+=dw*dh;
+
+  for(y=0;y<sh && y<dh;y++){
+    unsigned char *sptr=src+(y+syo)*sw+sxo;
+    unsigned char *dptr=dst+(y+dyo)*dw+dxo;
+    for(x=0;x<sw && x<dw;x++)
+      *dptr++=*sptr++;
+  }
+
+}
+
+void rgbscale(unsigned char *rgb,int sw,int sh,
+	      unsigned char *dst,int dw,int dh,
+	      unsigned int w, int h){
+  int ih=sh/2*2;
+  int iw=sw/2*2;
+
+  unsigned char *y=alloca(ih*iw*3/2);
+  unsigned char *u=y+ih*iw;
+  unsigned char *v=u+ih*iw/4;
+
+  int every=0,other=sw*3,c4=0,i,j;
+  unsigned char *ye=y,*yo=y+iw;
+
+  for(i=0;i<ih;i+=2){
+    for(j=0;j<iw;j+=2){
+      long yval,uval,vval;
+      
+      yval =   rgb[every]*19595 + rgb[every+1]*38470 + rgb[every+2]*7471;
+      uval = rgb[every+2]*65536 -   rgb[every]*22117 - rgb[every+1]*43419;
+      vval =   rgb[every]*65536 - rgb[every+1]*54878 - rgb[every+2]*10658;
+      *ye++ =yval>>16;
+      every+=3;
+      yval =   rgb[every]*19595 + rgb[every+1]*38470 + rgb[every+2]*7471;
+      uval+= rgb[every+2]*65536 -   rgb[every]*22117 - rgb[every+1]*43419;
+      vval+=   rgb[every]*65536 - rgb[every+1]*54878 - rgb[every+2]*10658;
+      *ye++ =yval>>16;
+      every+=3;
+      
+      yval =   rgb[other]*19595 + rgb[other+1]*38470 + rgb[other+2]*7471;
+      uval = rgb[other+2]*65536 -   rgb[other]*22117 - rgb[other+1]*43419;
+      vval =   rgb[other]*65536 - rgb[other+1]*54878 - rgb[other+2]*10658;
+      *yo++ =yval>>16;
+      other+=3;
+      yval =   rgb[other]*19595 + rgb[other+1]*38470 + rgb[other+2]*7471;
+      uval+= rgb[other+2]*65536 -   rgb[other]*22117 - rgb[other+1]*43419;
+      vval+=   rgb[other]*65536 - rgb[other+1]*54878 - rgb[other+2]*10658;
+      *yo++ =yval>>16;
+      other+=3;
+      
+      u[c4]  =(uval>>19)+128;
+      v[c4++]=(vval>>19)+128;
+      
+    }
+    ye+=iw;
+    yo+=iw;
+    every+=sw*3 + sw%2*3;
+    other+=sw*3 + sw%2*3;
+    
+  }
+  
+  yuvscale(y,iw,ih,dst,dw,dh,w,h);
+
 }
 
 
@@ -654,7 +703,7 @@ long long framesout=0;
 long long framesmissing=0;
 long long framesdiscarded=0;
       
-static int process_video_frame(char *buffer,FILE *f,int notfakep){
+static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   char *s=buffer+6;
   long a=atoi(s),b,w,h,length;
   double t;
@@ -779,19 +828,23 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep){
 	vidbuf=malloc(vidbuf_size*sizeof(*vidbuf));
 	vidbuf_frameno=malloc(vidbuf_size*sizeof(*vidbuf_frameno));
       }
-      if(notfakep)vidbuf[vidbuf_size-1]=malloc(vidbuf_width*vidbuf_height*3);
+      if(notfakep)
+	vidbuf[vidbuf_size-1]=malloc(vidbuf_width*vidbuf_height*3/2);
     }
   }
   vidbuf_frameno[vidbuf_head]=vidbuf_frames;
   vidbuf_frames++;
   
   /* scale image into buffer */
-  if(notfakep)
-    rgbscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
-	     scale_width,scale_height);
-  
+  if(notfakep){
+    if(yuvp)
+      yuvscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
+	       scale_width,scale_height);
+    else
+      rgbscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
+	       scale_width,scale_height);
+  }
   /* finally any needed invasive blanking */
-
 
   vidbuf_head++;
   return(1);
@@ -817,11 +870,17 @@ static int read_snatch_frame(FILE *f,int wa,int wv){
   }else {
     if(!strncmp(buffer,"VIDEO",5)){
       framesin++;
-      return process_video_frame(buffer, f, wv);
+      return process_video_frame(buffer, f, wv,0);
 
     }else{
-      fprintf(stderr,"Garbage/unknown frame type\n");
-      return(0);
+      if(!strncmp(buffer,"YUV12",5)){
+	framesin++;
+	return process_video_frame(buffer, f, wv,1);
+      }else{
+	
+	fprintf(stderr,"Garbage/unknown frame type\n");
+	return(0);
+      }
     }
   }
 }
@@ -859,55 +918,9 @@ void WriteYuv(FILE *f,int w,int h,int fpscode){
 }
 
 /* YV12 aka 4:2:0 planar */
-void YUVout(unsigned char *rgb,FILE *f){
-  unsigned char *y=alloca(vidbuf_width*vidbuf_height);
-  unsigned char *u=alloca(vidbuf_width*vidbuf_height/4);
-  unsigned char *v=alloca(vidbuf_width*vidbuf_height/4);
-  int every=0,other=vidbuf_width*3,c4=0,i,j;
-  unsigned char *ye=y,*yo=y+vidbuf_width;
-
-  for(i=0;i<vidbuf_height;i+=2){
-    for(j=0;j<vidbuf_width;j+=2){
-      long yval,uval,vval;
-
-      yval= rgb[every]*19595+rgb[every+1]*38470+rgb[every+2]*7471;
-      uval= (rgb[every+2]<<16)-yval;
-      vval= (rgb[every]<<16)-yval;
-      *ye++ =yval>>16;
-      every+=3;
-
-      yval= rgb[every]*19595+rgb[every+1]*38470+rgb[every+2]*7471;
-      uval+= (rgb[every+2]<<16)-yval;
-      vval+= (rgb[every]<<16)-yval;
-      *ye++ =yval>>16;
-      every+=3;
-
-      yval= rgb[other]*19595+rgb[other+1]*38470+rgb[other+2]*7471;
-      uval+= (rgb[other+2]<<16)-yval;
-      vval+= (rgb[other]<<16)-yval;
-      *yo++ =yval>>16;
-      other+=3;
-
-      yval= rgb[other]*19595+rgb[other+1]*38470+rgb[other+2]*7471;
-      uval+= (rgb[other+2]<<16)-yval;
-      vval+= (rgb[other]<<16)-yval;
-      *yo++ =yval>>16;
-      other+=3;
-      
-      u[c4]=(uval>>19)+128;
-      v[c4++]=(vval>>19)+128;
-
-    }
-    ye+=vidbuf_width;
-    yo+=vidbuf_width;
-    every+=vidbuf_width*3;
-    other+=vidbuf_width*3;
-
-  }
+void YUVout(unsigned char *buf,FILE *f){
   fprintf(f,"FRAME\n");
-  fwrite(y,1,vidbuf_width*vidbuf_height,f);
-  fwrite(u,1,vidbuf_width*vidbuf_height/4,f);
-  fwrite(v,1,vidbuf_width*vidbuf_height/4,f);
+  fwrite(buf,1,vidbuf_width*vidbuf_height*3/2,f);
 }
 
 static int synced;
