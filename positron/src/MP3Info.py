@@ -299,12 +299,13 @@ class MPEG:
                      seekstart=0):
         file.seek(seekstart, 0)
         amount_read = 0
-
+        header = ""
+        
         # see if we get lucky with the first four bytes
         amt = 4
 
         while amount_read < seeklimit:
-            header = file.read(amt)
+            header += file.read(amt)
             if len(header) < amt:
                 # awfully short file. just give up.
                 return -1, None
@@ -318,19 +319,12 @@ class MPEG:
             offset = string.find(header, chr(255))
             if offset == -1:
                 continue
-            
-            if offset + 4 > len(header):
-                more = file.read(4)
-                if len(more) < 4:
-                    # end of file. can't find a header
-                    return -1, None
-                elif more[0] & 0xE0 != 0xE0:
-                    return -1, None  # Last three sync bits not present
-                
-                amount_read = amount_read + 4
-                header = header + more
-
-            return amount_read - len(header) + offset, header[offset:offset+4]
+            elif offset + 4 <= len(header):
+                if ord(header[offset+1]) & 0xE0 != 0xE0:
+                    continue
+                else:
+                    return amount_read - len(header) + offset, \
+                           header[offset:offset+4]
         
         # couldn't find the header
         return -1, None
