@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20011125";
+$version="Snatch 20020308";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
