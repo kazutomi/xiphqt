@@ -23,7 +23,8 @@
 #include "rand.h"
 
 static FILE* fp = NULL;
-int lineno;
+static time_t playlist_modtime = 0;
+static int lineno = 0;
 
 extern ices_config_t ices_config;
 
@@ -32,8 +33,10 @@ static char* playlist_builtin_get_next (void);
 static int playlist_builtin_get_lineno (void);
 static void playlist_builtin_shutdown (void);
 
+static int playlist_builtin_open_playlist (playlist_module_t* pm);
+static int playlist_builtin_reopen_playlist (playlist_module_t* pm);
 static void playlist_builtin_shuffle_playlist (void);
-static int playlist_builtin_verify_playlist (playlist_module_t* pm);
+static int playlist_builtin_line_skip (int lineno, FILE* fp);
 
 /* Global function definitions */
 
@@ -48,7 +51,7 @@ ices_playlist_builtin_initialize (playlist_module_t* pm)
   pm->get_lineno = playlist_builtin_get_lineno;
   pm->shutdown = playlist_builtin_shutdown;
 
-  if (!playlist_builtin_verify_playlist (pm)) {
+  if (!playlist_builtin_open_playlist (pm)) {
     ices_log ("Could not find a valid playlist file.");
     ices_setup_shutdown ();
     return -1;
@@ -68,9 +71,18 @@ playlist_builtin_get_next (void)
 {
   char *out;
   static int level = 0;
+  struct stat st;
+
+  /* If the original playlist has changed on disk (and we are not
+   * randomising) reload it. */
+  if ((!fp || (!ices_config.pm.randomize &&
+	       (stat (ices_config.pm.playlist_file, &st) == 0) &&
+	       (st.st_mtime > playlist_modtime))) &&
+      !playlist_builtin_reopen_playlist (&ices_config.pm))
+    return NULL;
 
   if (feof (fp)) {
-    ices_log_debug ("Caught end of file on playlist, starting over");
+    ices_log_debug ("Reached end of playlist, rewinding");
     lineno = 0;
     rewind (fp);
   }
@@ -84,6 +96,7 @@ playlist_builtin_get_next (void)
   if (! out[0]) {
     if (level++) {
       level = 0;
+      ices_log_error ("Unreadable or empty playlist");
       return NULL;
     }
     return playlist_builtin_get_next ();
@@ -147,19 +160,71 @@ playlist_builtin_shuffle_playlist (void)
 
 /* Verify that the user specified playlist actually exists */
 static int
-playlist_builtin_verify_playlist (playlist_module_t* pm)
+playlist_builtin_open_playlist (playlist_module_t* pm)
 {
+  struct stat st;
+
   if (!pm->playlist_file || !pm->playlist_file[0]) {
-    ices_log ("ERROR: Playlist file is not set!");
+    ices_log_error ("Playlist file is not set!");
     return 0;
   }
 
   fp = ices_util_fopen_for_reading (pm->playlist_file);
 
   if (fp) {
+    if (stat (pm->playlist_file, &st) == 0)
+      playlist_modtime = st.st_mtime;
+
     return 1;
   } else {
-    ices_log ("ERROR: Could not open playlist file: %s", pm->playlist_file);
+    ices_log_error ("Could not open playlist file: %s", pm->playlist_file);
     return 0;
   }
+}
+
+static int
+playlist_builtin_reopen_playlist (playlist_module_t* pm)
+{
+  ices_log_debug ("Reopening playlist file");
+
+  if (fp) {
+    ices_util_fclose (fp);
+    fp = NULL;
+  }
+
+  if (! playlist_builtin_open_playlist (&ices_config.pm))
+    return 0;
+
+  /* if the file has been shortened, reset to the beginning */
+  if (!playlist_builtin_line_skip (lineno, fp)) {
+    if (! feof (fp)) {
+      ices_log_error ("Error seeking in playlist file");
+      return 0;
+    } else {
+      ices_log_debug ("Reached end of playlist, rewinding");
+      lineno = 0;
+      rewind (fp);
+    }
+  }
+
+  return 1;
+}
+
+static int
+playlist_builtin_line_skip (int lineno, FILE* fp)
+{
+  int i;
+  char buf[1024];
+
+  for (i = lineno; i > 0;) {
+    if (! fgets (buf, 1024, fp))
+      return 0;
+    if (strchr (buf, '\n'))
+      i--;
+  }
+
+  if (feof (fp))
+    return 0;
+
+  return 1;
 }
