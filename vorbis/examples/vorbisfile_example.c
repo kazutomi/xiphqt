@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: simple example decoder using vorbisfile
- last mod: $Id: vorbisfile_example.c,v 1.2 2000/10/12 03:12:39 xiphmont Exp $
+ last mod: $Id: vorbisfile_example.c,v 1.2.2.1 2000/10/30 20:51:21 jack Exp $
 
  ********************************************************************/
 
@@ -65,20 +65,16 @@ int main(int argc, char **argv){
   
   while(!eof){
     long ret=ov_read(&vf,pcmout,sizeof(pcmout),0,2,1,&current_section);
-    switch(ret){
-    case 0:
+    if (ret == 0) {
       /* EOF */
       eof=1;
-      break;
-    case -1:
+    } else if (ret < 0) {
       /* error in the stream.  Not a problem, just reporting it in
 	 case we (the app) cares.  In this case, we don't. */
-      break;
-    default:
+    } else {
       /* we don't bother dealing with sample rate changes, etc, but
 	 you'll have to*/
       fwrite(pcmout,1,ret,stdout);
-      break;
     }
   }
 
