@@ -100,10 +100,10 @@ def run(config, neuros, args):
     else:
         print "  Checking for new recordings...  ",
         recordinglist = config.get_recordings()
-        new_recordings = [track
+        new_recordings = [track[8]
                           for track in audio_db.get_records()
                           if track != None and track[5] != None \
-                          and track[8].lower not in recordinglist]
+                          and track[8].lower() not in recordinglist]
 
         if len(new_recordings) == 0:
             print "None."
@@ -117,7 +117,7 @@ def run(config, neuros, args):
             for neuros_trackname in new_recordings:
                 sourcename = neuros.neurospath_to_hostpath(neuros_trackname)
                 basename = path.basename(sourcename)
-                targetname = path.join(config.recording_dir, basename)
+                targetname = path.join(config.recordingdir, basename)
 
                 print "    %s..." % (basename,)
                 util.copy_file(sourcename, targetname)
