@@ -1,5 +1,5 @@
 #! /bin/sh
-# postinst script for vorbis-python
+# postinst script for pyvorbis
 #
 # see: dh_installdeb(1)
 

@@ -1,5 +1,5 @@
 #! /bin/sh
-# postrm script for vorbis-python
+# postrm script for pyvorbis
 #
 # see: dh_installdeb(1)
 
