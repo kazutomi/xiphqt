@@ -33,3 +33,16 @@ A: At the libxml site at http://www.xmlsoft.org/
 
 7. Will ices run on windows?
 A: Yes, we're working on a port to win32.
+
+8. When compiling ices with lame support, I get link errors on some
+   termcap functions like tgetret(), what's wrong?
+A: There are different ways to compile the libmp3lame.a file, and ices
+   wants it to be clean of GTK and termcap stuff. So edit the
+   lame Makefile and comment out the GTK, GTKLIBS, BRHIST_SWITCH and
+   LIBTERMCAP lines for your target. Or, add -ltermcap and whatever
+   other libraries are needed to the ices Makefile. 
+
+9. Ices refuses to accept my configuration file, it says something about
+   XML not accepting the namespace, what's wrong?
+A: Simply put, you've got a too old version of libxml.
+   Get a new one from http://www.xmlsoft.org/.

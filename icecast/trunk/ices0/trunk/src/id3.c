@@ -93,6 +93,7 @@ ices_id3_get_artist (char *namespace, int maxlen)
 		strncpy (namespace, ices_util_nullcheck (ices_id3_artist), maxlen);
 	} else {
 		namespace[0] = '\0';
+		namespace = NULL;
 	}
 
 	thread_mutex_unlock (&id3_mutex);
@@ -110,6 +111,7 @@ ices_id3_get_title (char *namespace, int maxlen)
 		strncpy (namespace, ices_util_nullcheck (ices_id3_song), maxlen);
 	} else {
 		namespace[0] = '\0';
+		namespace = NULL;
 	}
 
 	thread_mutex_unlock (&id3_mutex);
@@ -126,6 +128,7 @@ ices_id3_get_genre (char *namespace, int maxlen)
 		strncpy (namespace, ices_util_nullcheck (ices_id3_genre), maxlen);
 	} else {
 		namespace[0] = '\0';
+		namespace = NULL;
 	}
 
 	thread_mutex_unlock (&id3_mutex);
@@ -143,6 +146,7 @@ ices_id3_get_filename (char *namespace, int maxlen)
 		strncpy (namespace, ices_util_nullcheck (ices_id3_filename), maxlen);
 	} else {
 		namespace[0] = '\0';
+		namespace = NULL;
 	}
 	
 	thread_mutex_unlock (&id3_mutex);

@@ -79,9 +79,9 @@ interpreter_python_setup_path ()
 	}
 
 	if (pythonpath) {
-		sprintf (newpath, "%s:%s:.", pythonpath, ICES_MODULEDIR);
+		sprintf (newpath, "PYTHONPATH=%s:%s:.", pythonpath, ICES_MODULEDIR);
 	} else {
-		sprintf (newpath, "%s:.", ICES_MODULEDIR);
+		sprintf (newpath, "PYTHONPATH=%s:.", ICES_MODULEDIR);
 	}
 
 	putenv (newpath);

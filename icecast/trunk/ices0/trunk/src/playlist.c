@@ -80,26 +80,39 @@ ices_playlist_get_next ()
 int
 ices_playlist_initialize ()
 {
+	int res = 0;
 	ices_log_debug ("Initializing playlist handler...");
 
 	switch (ices_config.playlist_type) {
 		case ices_playlist_builtin_e:
-			return ices_playlist_builtin_initialize (&ices_config);
+			res = ices_playlist_builtin_initialize (&ices_config);
 			break;
-#ifdef HAVE_LIBPYTHON
 		case ices_playlist_python_e:
-			return interpreter_playlist_python_initialize (&ices_config);
-			break;
+#ifdef HAVE_LIBPYTHON
+			res = interpreter_playlist_python_initialize (&ices_config);
+#else
+			ices_log_error ("This binary has no support for embedded python");
 #endif
-#ifdef HAVE_LIBPERL
+			break;
+
 		case ices_playlist_perl_e:
-			return interpreter_playlist_perl_initialize (&ices_config);
-			break;
+#ifdef HAVE_LIBPERL
+			res = interpreter_playlist_perl_initialize (&ices_config);
+#else
+			ices_log_error ("This binary has no support for embedded perl");
 #endif
+			break;
 		default:
 			ices_log_error ("Unknown playlist module!");
-			return 0;
+			break;
 	}
+
+	if (res == 0) {
+		ices_log ("Initialization of playlist handler failed. [%s]", ices_log_get_error ());
+		ices_setup_shutdown ();
+	}
+
+	return res;
 }
 
 /* Shutdown the playlist handler */

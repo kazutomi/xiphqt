@@ -395,6 +395,7 @@ fi
 if test "$with_python"; then
 dnl I can't say for sure what libs we need for python, but this is what my system needs
 AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_LIB(m, log)
 AC_CHECK_FUNCS(Py_Initialize)
 	if test "$ac_cv_func_Py_Initialize" = no; then
 		for lib in python python1.5 python1.6; do

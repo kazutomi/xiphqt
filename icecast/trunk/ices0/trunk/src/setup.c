@@ -236,14 +236,28 @@ ices_setup_free_all_allocations (ices_config_t *ices_config)
 static void
 ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile)
 {
-	int ret = ices_xml_parse_config_file (ices_config, configfile);
+	char namespace[1024];
+	const char *realname = NULL;
+	int ret;
 
-	if (ret == -1) {
-		/* ret == -1 means we have no libxml support */
-		ices_log_debug ("%s", ices_log_get_error ());
-	} else if (ret == 0) {
-		/* A real error */
-		ices_log ("%s", ices_log_get_error ());
+	if (ices_util_verify_file (configfile)) {
+		realname = configfile;
+	} else {
+		sprintf (namespace, "%s/%s", ICES_ETCDIR, configfile);
+		if (ices_util_verify_file (namespace))
+			realname = &namespace[0];
+	}
+	
+	if (realname) {
+		ret = ices_xml_parse_config_file (ices_config, realname);
+
+		if (ret == -1) {
+			/* ret == -1 means we have no libxml support */
+			ices_log_debug ("%s", ices_log_get_error ());
+		} else if (ret == 0) {
+			/* A real error */
+			ices_log ("%s", ices_log_get_error ());
+		}
 	}
 }
 
