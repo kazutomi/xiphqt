@@ -15,6 +15,9 @@ AC_PROG_CC
 dnl Checks for header files.
 AC_HEADER_STDC
 
+dnl Checks for types
+AC_C_BIGENDIAN
+
 dnl check for Simple Direct Media Layer
 AC_CHECK_PROG(HAS_SDL, sdl-config, yes)
 if test "x$HAS_SDL" != "xyes"; then
