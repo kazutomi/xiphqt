@@ -7,7 +7,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::cpustat;
 use vars qw($numcpus $statcpus $xpath $graph @load @total @prevload 
 	    @prevtotal $widget $lastmod);
@@ -56,6 +55,7 @@ sub module_instance{
 	}
     }
 
+    $toplevel->optionAdd("$xpath.scalerefresh", 500,21); # faster
     $toplevel->optionAdd("$xpath.scalewidadj", 100*$statcpus,21);
     $toplevel->optionAdd("$xpath.scalelenadj", 100,21); 
 

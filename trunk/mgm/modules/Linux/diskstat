@@ -7,7 +7,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::diskstat;
 use vars qw($xpath @rsectors @wsectors @prevr @prevw $widget $graph 
 	    $numdisks $lastmod);
@@ -49,8 +48,7 @@ sub module_instance{
 			     '#ade774',21);
     }
     $toplevel->optionAdd("$xpath.scalewidadj", 150*$numdisks,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalerefresh",500,21); # about 1m
-    $toplevel->optionAdd("$xpath.scalereturn", 120,21); # about 1m    
+    $toplevel->optionAdd("$xpath.scalereturn", 120,21);
     # this relies on the above defaults
 
     my($minx,$miny)=MGM::Graph::calcxysize($this,1024*1024*512,

@@ -9,7 +9,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::loadav;
 use vars qw($xpath $widget $graph);
 
@@ -31,7 +30,7 @@ sub module_instance{
     return undef if(defined($xpath));
     $xpath=$this->{"xpath"};
     # modify defaults
-    $toplevel->optionAdd("$xpath*scalerefresh",1000,21); # slower
+    $toplevel->optionAdd("$xpath*scalerefresh",2000,21); # 2s
     $toplevel->optionAdd("$xpath.bar.0.label", "Load average",21);
     $toplevel->optionAdd("$xpath.bar.1.label", "Load (5min)",21);
     $toplevel->optionAdd("$xpath.bar.2.label", "Load (15min)",21);
@@ -55,10 +54,9 @@ sub module_run{
 sub module_update{ 
     my$this=shift;
     if(open(PROC,"</proc/loadavg")){
-	while(<PROC>){
-	    if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
-		$graph->set($1,$2,$3);
-	    }
+	sysread PROC, $_, 1024;
+	if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
+	    $graph->set($1,$2,$3);
 	}
 	close PROC;
     }

@@ -7,8 +7,8 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::memuse;
+use IO::Seekable;
 use vars qw($xpath $widget $graph $memtotal $swaptotal $memuse $swapuse $bars);
 
 sub module_init{
@@ -44,9 +44,12 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);          
     # modify defaults
-    $toplevel->optionAdd("$xpath*scalerefresh",1000,21); # slower
+
+    # for some reason, reading from /proc/meminfo is *very* expensive.
+    # don't do it often.
+    $toplevel->optionAdd("$xpath.scalerefresh",2000,21);      # 2s
     $toplevel->optionAdd("$xpath.scalewidadj", 80*$bars,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);        # shorter
     $this;
 }
 
@@ -72,7 +75,7 @@ sub read_proc{
     if(open(PROC,"/proc/meminfo")){
 	<PROC>;
 	$_=<PROC>;
-	if(m/Mem:\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)/){
+	if(m/^Mem:\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)/){
 	    $memtotal=$1;
 	    $memuse=$2-$3-$4;
 	}else{
@@ -80,7 +83,7 @@ sub read_proc{
 	    $memuse=0;
 	}
 	$_=<PROC>;
-	if(m/Swap:\s+(\d+)\s+(\d+)/){
+	if(m/^Swap:\s+(\d+)\s+(\d+)/){
 	    $swaptotal=$1;
 	    $swapuse=$2;
 	}else{

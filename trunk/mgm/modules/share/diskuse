@@ -37,8 +37,8 @@ sub module_instance{
     for(my$i=0;$i<$fs;$i++){
 	my$label=shift @data;
 	my$cap=shift @data;
-	my($adj,$mult)=MGM::Graph::scalemod($cap);
-	$adj=substr $adj,0,3;
+	my($adj,$mult)=MGM::Graph::scalemod($cap*10);
+	$adj=int($adj+.5)/10;
 
 	$toplevel->optionAdd("$xpath.bar.$i.label", "$label ($adj$mult)",22);
 	shift @data;

@@ -12,7 +12,7 @@ $0="moaning-goat-meter"; # OK, this is evil.
 $basedir="/home/xiphmont/SnotfishCVS/mgm";
 $moddir="$basedir/modules";
 $libdir="$basedir/lib";
-$fontfile="$libdir/helvetica.xpm";
+$fontfile="$libdir/helvetica2.xpm";
 
 $|=1;
 
@@ -22,6 +22,7 @@ my%instances;
 my@ordered;
 my$Xname=$toplevel->Class;
 require "$libdir/widget";
+require "$libdir/sched";
 
 $toplevel->optionAdd("$Xname*background",       '#202020',20);
 $toplevel->optionAdd("$Xname*foreground",       '#a0a0a0',20);
@@ -50,7 +51,7 @@ $toplevel->optionAdd("$Xname*scalelenadj",      '100',20);
 $toplevel->optionAdd("$Xname*scalewidadj",      '100',20);
 $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
 $toplevel->optionAdd("$Xname*scalescroll",          'true',20);
-$toplevel->optionAdd("$Xname*scalerefresh",          '250',20);
+$toplevel->optionAdd("$Xname*scalerefresh",          '1000',20);
 $toplevel->optionAdd("$Xname*scalereturn",           '8',20);  # 2 seconds
 
 
@@ -417,9 +418,8 @@ sub build_and_run{
 		    $ret->place('-x'=>$x,'-y'=>$y,-anchor=>'nw');
 		    my$refresh=$ret->optionGet("scalerefresh","");
 		    $ret->repeat($refresh,sub{$mod->module_update})
+#		    &MGM::schedule::perm_schedule($mod,$refresh)
 			if($refresh);
-
-
 		}
 	    }
 	}

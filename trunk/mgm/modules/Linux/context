@@ -7,7 +7,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::context;
 use vars qw($xpath $context $prev $widget $graph $lastmod);
 
@@ -34,9 +33,8 @@ sub module_instance{
     
     # modify defaults
     $toplevel->optionAdd("$xpath.bar.0.label", "context",21);
-    $toplevel->optionAdd("$xpath.scalerefresh",500,21);
-    $toplevel->optionAdd("$xpath.scalereturn", 30,21); # about 15s
-    $toplevel->optionAdd("$xpath.scalewidadj", 80,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalereturn", 30,21);
+    $toplevel->optionAdd("$xpath.scalewidadj", 80,21);
     
     # this relies on the above defaults
 

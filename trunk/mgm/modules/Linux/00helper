@@ -11,7 +11,8 @@
 
 
 package MGMmodule::helperST;
-use vars qw(%proc %net $lastmod);
+use vars qw(%proc %net $lastmod $active);
+use IO::Seekable;
 
 sub module_init{
     my$this=shift;
@@ -19,12 +20,19 @@ sub module_init{
     my$toplevel=$this->{"toplevel"};
     my$widget=$this->{"widget"};
     
+    $toplevel->optionAdd("$xclass.scalerefresh",500,21); # keep up with cpustat
     my$refresh=$widget->optionGet("scalerefresh","");
     
     $lastmod=0;
-    $this->module_update;
-    $toplevel->repeat($refresh,\&module_update)if(defined(%proc));
-
+    $active=0;
+    if(open(PROC,"/proc/stat")){
+	if(open(NET,"/proc/net/dev")){
+	    $active=1;
+	    $this->module_update;
+	    $toplevel->repeat($refresh,\&module_update)if(defined(%proc));
+#	    &MGM::schedule::perm_schedule($this,$refresh);
+	}
+    }
     $toplevel->optionAdd("$xclass.active",0,21);
     $this;
 }
@@ -34,32 +42,24 @@ sub module_instance{
 }
 
 sub module_update{
-    undef $/;
     my$data;
     my$netd;
-    if(open(PROC,"/proc/stat")){
-	if(open(NET,"/proc/net/dev")){
-	    $data=<PROC>;
-	    $netd=<NET>;
-	    close NET;
-	    close PROC;
-	    map{
-		my$pos=rindex $_, ":";
-		if($pos>0){
-		    my$key=substr $_,0,$pos;
-		    $key=~s/^\s*(\S+)/$1/;
-		    $net{$key}=substr $_, $pos+1;
-		}
-	    } split "\n", $netd;
-	}else{
-	    $data=<PROC>;
-	    close PROC;
-	}
-    }
-    $/="\n";
+    sysseek PROC, 0, SEEK_SET;
+    sysseek NET, 0, SEEK_SET;
+    sysread NET,$netd,1024;
+    sysread PROC,$data,4096;
 
     map{
-	m/^(\S+)\s*(.*)/;
+	my$pos=rindex $_, ":";
+	if($pos>0){
+	    my$key=substr $_,0,$pos;
+	    $key=~s/^\s*(\S+)/$1/;
+	    $net{$key}=substr $_, $pos+1;
+	}
+    } split "\n", $netd;
+
+    map{
+	m/^(\S+)\s+(.*)/;
 	$proc{$1}=$2;
     } split "\n", $data;
 
@@ -69,3 +69,5 @@ sub module_update{
 }
 
 bless {};
+
+

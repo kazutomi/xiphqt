@@ -7,7 +7,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::forks;
 use vars qw($xpath $forks $prev $widget $graph $lastmod);
 
@@ -34,8 +33,7 @@ sub module_instance{
     
     # modify defaults
     $toplevel->optionAdd("$xpath.bar.0.label", "forks",21);
-    $toplevel->optionAdd("$xpath.scalerefresh",500,21);
-    $toplevel->optionAdd("$xpath.scalereturn", 8,21); # about 4s
+    $toplevel->optionAdd("$xpath.scalereturn", 100,21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);  # narrower
     
     # this relies on the above defaults
