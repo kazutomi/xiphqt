@@ -7,7 +7,7 @@ from distutils.core import setup
 from distutils.extension import Extension
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 4
+VERSION_MINOR = 5
 pyvorbis_version = str(VERSION_MAJOR) + '.' + str(VERSION_MINOR)
 
 try:
