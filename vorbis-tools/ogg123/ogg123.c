@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.6 2001/08/06 21:35:40 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.7 2001/08/09 01:56:55 kcarnold Exp $
 
  ********************************************************************/
 
@@ -41,7 +41,7 @@ int convsize = BUFFER_CHUNK_SIZE;
 buf_t * buffer = NULL;
 
 static char skipfile_requested;
-static void (*old_sig)(int);
+/*static void (*old_sig)(int);*/
 
 struct {
     char *key;			/* includes the '=' for programming convenience */
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 
 	for (i = optind; i < argc; i++) {
-		int j = optind + rand() % (argc - i);
+		int j = optind + (int) ((double)(argc - i)*(double)rand()/(RAND_MAX+1.0));
 		char *temp = argv[i];
 		argv[i] = argv[j];
 		argv[j] = temp;
@@ -292,26 +292,29 @@ void signal_skipfile(int which_signal)
    * and blow away existing "output.wav" file.
    */
 
+  fprintf (stderr, "skipfile\n");
+  
+#if 0
   if (old_sig != NULL) {
     signal(which_signal,old_sig);
     raise(which_signal);
   }
   else
+#endif
     signal (SIGINT, signal_quit);
   /* should that be unconditional? man pages are not clear on this */
 }
 
 void signal_activate_skipfile(int ignored)
 {
-  old_sig = signal(SIGINT,signal_skipfile);
+  fprintf (stderr, "activate skipfile.\n");
+  /*old_sig = */signal(SIGINT,signal_skipfile);
 }
 
 void signal_quit(int ignored)
 {
   exit(0);
 }
-
-
 
 void play_file(ogg123_options_t opt)
 {
@@ -569,7 +572,7 @@ void play_file(ogg123_options_t opt)
     
     alarm(0);
     signal(SIGALRM,SIG_DFL);
-    signal(SIGINT,old_sig);
+    signal(SIGINT,signal_quit);
     
     ov_clear(&vf);
 
