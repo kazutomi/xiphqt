@@ -8,7 +8,10 @@ $name="hostlogo";
 $main::toplevel->optionAdd("$main::Xname.$name*font",             
 			   "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
 $main::toplevel->optionAdd("$main::Xname.$name*refresh",        80,20);      
-$main::toplevel->optionAdd("$main::Xname.$name*order",        0,20);      
+$main::toplevel->optionAdd("$main::Xname.$name*order",        0,20);
+
+# center the widget      
+$main::toplevel->optionAdd("$main::Xname.$name.scalejustify", 0,20);      
 
 $logo=$main::toplevel->Pixmap(-file => "$main::libdir/fishframe.xpm");
 
