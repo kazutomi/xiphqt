@@ -22,7 +22,7 @@ int main(int _argc,char *_argv[]){
   FILE          *in_v;
   FILE          *in_a;
   FILE          *in_f;
-  FILE          *out_yuv;
+  FILE          *out_y4m;
   int            y_w;
   int            y_h;
   int            c_w;
@@ -67,7 +67,7 @@ int main(int _argc,char *_argv[]){
      " If both of these options are be specified, the three files\n"
      "  <sequence><ddd>.y, <sequence><ddd>.u, and <sequence><ddd>.v are\n"
      "  opened for each frame.\n"
-     " If neither of these options are specified, a single <sequence>.raw\n"
+     " If neither of these options are specified, a single <sequence>.yuv\n"
      "  file is opened, containing, the raw, unpadded image data for all\n"
      "  components of all frames.\n"
      " This must be organized in a planar fashion, with each complete frame\n"
@@ -227,7 +227,7 @@ int main(int _argc,char *_argv[]){
       in_f=fopen(fname,"rb");
     }
     else{
-      sprintf(fname,"%s.raw",_argv[1]);
+      sprintf(fname,"%s.yuv",_argv[1]);
       in_f=fopen(fname,"rb");
     }
     in_y=in_f;
@@ -239,31 +239,31 @@ int main(int _argc,char *_argv[]){
     fprintf(stderr,"Error opening input file(s).\n");
     return -1;
   }
-  sprintf(fname,"%s.yuv",_argv[1]);
-  out_yuv=fopen(fname,"wb");
-  if(out_yuv==NULL){
+  sprintf(fname,"%s.y4m",_argv[1]);
+  out_y4m=fopen(fname,"wb");
+  if(out_y4m==NULL){
     fprintf(stderr,"Error opening output file.\n");
     return -1;
   }
   /*Start output.*/
-  fprintf(out_yuv,"YUV4MPEG2 W%i H%i F%i:%i I%c A%i:%i",
+  fprintf(out_y4m,"YUV4MPEG2 W%i H%i F%i:%i I%c A%i:%i",
    y_w,y_h,fps_n,fps_d,ip,par_n,par_d);
-  if(strcmp(chroma,"420jpeg")!=0)fprintf(out_yuv," C%s",chroma);
-  fprintf(out_yuv,"\n");
+  if(strcmp(chroma,"420jpeg")!=0)fprintf(out_y4m," C%s",chroma);
+  fprintf(out_y4m,"\n");
   buf=(unsigned char *)malloc((size_t)(y_w*y_h));
   for(;;){
     if(fread(buf,y_w,y_h,in_y)<y_h)break;
-    fprintf(out_yuv,"FRAME\n");
-    fwrite(buf,y_w,y_h,out_yuv);
+    fprintf(out_y4m,"FRAME\n");
+    fwrite(buf,y_w,y_h,out_y4m);
     if(have_chroma){
       fread(buf,c_w,c_h,in_u);
-      fwrite(buf,c_w,c_h,out_yuv);
+      fwrite(buf,c_w,c_h,out_y4m);
       fread(buf,c_w,c_h,in_v);
-      fwrite(buf,c_w,c_h,out_yuv);
+      fwrite(buf,c_w,c_h,out_y4m);
     }
     if(have_alpha){
       fread(buf,y_w,y_h,in_a);
-      fwrite(buf,y_w,y_h,out_yuv);
+      fwrite(buf,y_w,y_h,out_y4m);
     }
     if(frame_digits>0){
       frame_num++;
