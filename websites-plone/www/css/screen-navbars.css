@@ -43,7 +43,6 @@ div#leftside {
 	border-width: 0px;
 	padding: 0px;
 	text-align: left;
-	background: #819cc9;
 }
 
 div#logo {
@@ -89,6 +88,7 @@ div#navbar2 a {
 	border-bottom: 3px solid #718CB9;
 	border-right: 3px solid #718CB9;
 	-moz-border-radius: 13px;
+	background: #819cc9;
 }
 
 div#navbar2 li:hover {

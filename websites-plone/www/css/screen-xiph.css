@@ -6,17 +6,12 @@ html, body {
 	background-color: #819cc9;
 }
 
-div#thepage {
-	border-color: #2b4556;
-}
-
 div#navbar1 a#xiph {
 	font-style: italic;
 }
 
 div#navbar2 {
 	border: 0px;
-	background: #819cc9;
 }
 
 div#navbar2 a:hover {

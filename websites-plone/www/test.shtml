@@ -9,7 +9,8 @@
 
 <div id="thepage">
 
-<div id="label">Xiph's Open Media Technologies</div>
+<div id="label"><img class="back" src="/images/layout/fire.jpg"/><div id='label2'>Xiph's Open Media Technologies</div>
+</div>
 
 <div id="navbar1">
 	<ul>
@@ -65,9 +66,10 @@ markets. </p>
 
 </div>
 
-</div>
-
 <div id="footer">
 	© 2004 Xiph.org Foundation
 </div>
+
+</div>
+
 </body></html>
