@@ -85,20 +85,28 @@ def detect_oggvorbis(filename):
                  "genre" : None,
                  "tracknumber" : None}
 
-        actual_keys = map(string.lower, vc.keys())
-        
+        actual_keys = []
+        for tag in vc.keys():
+            try:
+                actual_keys.append(tag.lower())
+            except UnicodeError:
+                pass  # Don't let bad tags stop us
+            
         for tag in ("title","artist","album","genre","tracknumber"):
             if tag in actual_keys:
-                value = vc[tag]
-                # Force these to be single valued
-                if type(value) == ListType or type(value) == TupleType:
-                    value = value[0]
+                try:
+                    value = vc[tag]
+                    # Force these to be single valued
+                    if type(value) == ListType or type(value) == TupleType:
+                        value = value[0]
 
-                # Convert from Unicode to ASCII since the Neuros can't
-                # do Unicode anyway.
-                #
-                # I will probably burn in i18n hell for this.
-                info[tag] = value.encode('ascii','replace')
+                    # Convert from Unicode to ASCII since the Neuros can't
+                    # do Unicode anyway.
+                    #
+                    # I will probably burn in i18n hell for this.
+                    info[tag] = value.encode('ascii','replace')
+                except UnicodeError:
+                    pass
 
     except ogg.vorbis.VorbisError:
         return None
