@@ -14,4 +14,4 @@ edit = sed -e 's,@sysconfdir\@,$(sysconfdir),g' \
 ices.1: $(srcdir)/ices.1.in
 	$(edit) $(srcdir)/ices.1.in > ices.1
 
-EXTRA_DIST = $(doc_DATA)
+EXTRA_DIST = $(doc_DATA) ices.1.in
