@@ -338,12 +338,6 @@ void oc_mcenc_free(oc_mcenc_ctx *_mcenc){
   _ogg_free(_mcenc);
 }
 
-static int med_test_count;
-static int seta_test_count;
-static int setb_test_count;
-static int mbsquare_test_count;
-static int bsquare_test_count;
-
 /*Perform a motion vector search for this macro block against a single
    reference frame.
   As a bonus, individual block motion vectors are computed as well, as much of
@@ -388,7 +382,6 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
   hit_cache[candy+15]|=(ogg_int32_t)1<<candx+15;
   best_err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,candx,candy,
    ref_framei,block_err);
-  med_test_count++;
   best_vec[0]=candx;
   best_vec[1]=candy;
   for(bi=0;bi<4;bi++){
@@ -418,7 +411,6 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
       hit_cache[candy+15]|=hitbit;
       err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,candx,candy,
        ref_framei,block_err);
-      seta_test_count++;
       if(err<best_err){
         best_err=err;
         best_vec[0]=candx;
@@ -440,7 +432,6 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
         hit_cache[candy+15]|=hitbit;
         err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,candx,candy,
          ref_framei,block_err);
-        setb_test_count++;
         if(err<best_err){
           best_err=err;
           best_vec[0]=candx;
@@ -475,7 +466,6 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
             hit_cache[candy+15]|=hitbit;
             err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,
              candx,candy,ref_framei,block_err);
-            mbsquare_test_count++;
             if(err<best_err){
               best_err=err;
               best_site=site;
@@ -536,7 +526,6 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
               hit_cache[candy+15]|=hitbit;
               err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,
                candx,candy,ref_framei,block_err);
-              bsquare_test_count++;
               if(err<best_err){
                 best_err=err;
                 best_vec[0]=candx;
@@ -605,7 +594,6 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
   hit_cache[candy+15]|=(ogg_int32_t)1<<candx+15;
   best_err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,candx,candy,
    ref_framei,block_err);
-  med_test_count++;
   best_vec[0]=candx;
   best_vec[1]=candy;
   /*If this predictor fails, move on to set A.*/
@@ -630,7 +618,6 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
       hit_cache[candy+15]|=hitbit;
       err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,candx,candy,
        ref_framei,block_err);
-      seta_test_count++;
       if(err<best_err){
         best_err=err;
         best_vec[0]=candx;
@@ -647,7 +634,6 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
         hit_cache[candy+15]|=hitbit;
         err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,candx,candy,
          ref_framei,block_err);
-        setb_test_count++;
         if(err<best_err){
           best_err=err;
           best_vec[0]=candx;
@@ -677,7 +663,6 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
             hit_cache[candy+15]|=hitbit;
             err=oc_mcenc_ysad_check_mbcandidate_fullpel(_mcenc,_mbi,
              candx,candy,ref_framei,block_err);
-            mbsquare_test_count++;
             if(err<best_err){
               best_err=err;
               best_site=site;
