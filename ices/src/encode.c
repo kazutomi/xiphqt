@@ -1,7 +1,7 @@
 /* encode.c
  * - runtime encoding of PCM data.
  *
- * $Id: encode.c,v 1.6.2.2 2002/02/08 11:14:03 msmith Exp $
+ * $Id: encode.c,v 1.6.2.3 2002/02/08 12:54:08 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -77,6 +77,7 @@ static void append_page(ref_buffer *buf, ogg_page *page)
     buf->buf = realloc(buf->buf, buf->len);
     memcpy(buf->buf + old, page->header, page->header_len);
     memcpy(buf->buf + old + page->header_len, page->body, page->body_len);
+    buf->aux_data = -1;
 }
 
 static int encode_flush(encoder_state *s, ogg_page *og)

@@ -1,7 +1,7 @@
 /* im_stdinpcm.c
  * - Raw PCM input from stdin
  *
- * $Id: im_stdinpcm.c,v 1.2.2.2 2002/02/08 11:14:03 msmith Exp $
+ * $Id: im_stdinpcm.c,v 1.2.2.3 2002/02/08 12:54:08 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -76,6 +76,7 @@ static int stdin_read(instance_t *instance, void *self,
     rb->rate = s->rate;
     rb->channels = s->channels;
     rb->subtype = SUBTYPE_PCM_LE_16;
+    rb->aux_data = s->rate*s->channels*2;
 
 	if(s->newtrack)
 	{
