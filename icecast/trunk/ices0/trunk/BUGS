@@ -1,3 +1,2 @@
 * Handles error conditions poorly.
-* Unreliable at reencoding VBR files (fixed?)
-* May crash when reencoding if bad input is fed to the lame library.
+* Doesn't update metadata on server on reconnect until next track.

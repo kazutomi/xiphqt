@@ -38,7 +38,7 @@
 #endif
 
 #define INPUT_BUFSIZ 4096
-#define OUTPUT_BUFSIZ 8192
+#define OUTPUT_BUFSIZ 32768
 /* sleep this long in ms when every stream has errors */
 #define ERROR_DELAY 999
 
@@ -175,8 +175,9 @@ stream_send (ices_config_t* config, input_stream_t* source)
 #ifdef HAVE_LIBLAME
   int decode = 0;
   buffer_t obuf;
-  static int16_t left[INPUT_BUFSIZ * 30];
-  static int16_t right[INPUT_BUFSIZ * 30];
+  /* worst case decode: 22050 Hz at 8kbs = 44.1 samples/byte */
+  static int16_t left[INPUT_BUFSIZ * 45];
+  static int16_t right[INPUT_BUFSIZ * 45];
 #endif
 
 #ifdef HAVE_LIBLAME
@@ -189,13 +190,16 @@ stream_send (ices_config_t* config, input_stream_t* source)
       if (stream->bitrate != source->bitrate) {
 	decode = 1;
 	ices_reencode_reset (source);
-        if (!(obuf.data = malloc(OUTPUT_BUFSIZ))) {
-	  ices_log_error("Error allocating output buffer");
-	  return -1;
-	}
-	obuf.len = OUTPUT_BUFSIZ;
 	break;
       }
+
+    if (decode) {
+      obuf.len = OUTPUT_BUFSIZ;
+      if (!(obuf.data = malloc(OUTPUT_BUFSIZ))) {
+        ices_log_error("Error allocating encode buffer");
+	return -1;
+      }
+    }
 #endif
 
   for (stream = config->streams; stream; stream = stream->next)
@@ -226,30 +230,37 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	  /* don't reencode if the source is MP3 and the same bitrate */
 	  if (!stream->reencode || (source->read &&
 				    (stream->bitrate == source->bitrate))) {
-	    shout_sync(stream->conn);
 	    rc = stream_send_data (stream, ibuf, len);
 	  }
 #ifdef HAVE_LIBLAME
 	  else {
 	    if (samples > 0) {
-	      while ((olen = ices_reencode (stream, samples, left, right, obuf.data,
-	          obuf.len)) == -1) {
-	        char* tmpbuf;
+	      if (obuf.len < 7200 + samples + samples / 4) {
+	        char *tmpbuf;
 
-                if (!(tmpbuf = realloc(obuf.data, obuf.len + OUTPUT_BUFSIZ))) {
+		/* pessimistic estimate from lame.h */
+                obuf.len = 7200 + 5 * samples / 2;
+		if (!(tmpbuf = realloc(obuf.data, obuf.len))) {
 		  ices_log_error ("Error growing output buffer, aborting track");
 		  goto err;
 		}
 		obuf.data = tmpbuf;
-		obuf.len += OUTPUT_BUFSIZ;
 		ices_log_debug ("Grew output buffer to %d bytes", obuf.len);
 	      }
-
-	      if (olen < 0) {
+	      if ((olen = ices_reencode (stream, samples, left, right, obuf.data,
+	          obuf.len)) < -1) {
 	        ices_log_error ("Reencoding error, aborting track");
 		goto err;
+	      } else if (olen == -1) {
+	        char *tmpbuf;
+
+		if ((tmpbuf = realloc(obuf.data, obuf.len + OUTPUT_BUFSIZ))) {
+                  obuf.data = tmpbuf;
+		  obuf.len += OUTPUT_BUFSIZ;
+		  ices_log_debug ("Grew output buffer to %d bytes", obuf.len);
+		} else
+		  ices_log_debug ("%d byte output buffer is too small", obuf.len);
               } else if (olen > 0) {
-                shout_sync(stream->conn);
                 rc = stream_send_data (stream, obuf.data, olen);
               }
             }
@@ -369,6 +380,7 @@ stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
     rc = stream_connect (stream);
 
   if (shout_get_connected (stream->conn) == SHOUTERR_CONNECTED) {
+    shout_sync(stream->conn);
     if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
       stream->errs = 0;
       rc = 0;
