@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.5 2001/10/31 05:38:55 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.6 2001/11/02 02:22:08 volsung Exp $
 
  ********************************************************************/
 
@@ -181,6 +181,9 @@ void InitStats (Stat_t stats[])
   cur = &stats[9]; /* output buffer status */
   cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s";
   cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+
+  cur = &stats[10]; /* End flag */
+  cur->formatstr = NULL;
 }
 
 void SetTime (Stat_t stats[], ogg_int64_t sample)
@@ -270,7 +273,7 @@ void UpdateStats (void)
 	free (stats[9].arg.stringarg);
       stats[9].arg.stringarg = strdup (strbuf);
       
-      PrintStatsLine (Options.statOpts.stats);
+      PrintStatsLine (stats);
     }
 
   pthread_mutex_unlock(&stats_lock);
