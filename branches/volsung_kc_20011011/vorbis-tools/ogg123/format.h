@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: format.h,v 1.1.2.1 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: format.h,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -30,6 +30,15 @@ typedef struct audio_format_t {
 } audio_format_t;
 
 
+typedef struct decoder_stats_t {
+  double total_time;  /* seconds */
+  double current_time;   /* seconds */
+  long   instant_bitrate;
+  long   avg_bitrate;
+} decoder_stats_t;
+
+
+/* Severity constants */
 enum { ERROR, WARNING, INFO };
 
 typedef struct decoder_callbacks_t {
@@ -58,7 +67,7 @@ typedef struct format_t {
 		       decoder_callbacks_t *callbacks, void *callback_arg);
   int (* read) (decoder_t *decoder, void *ptr, int nbytes, int *eos, 
 		audio_format_t *audio_fmt);
-  long (* instant_bitrate) (decoder_t *decoder);
+  decoder_stats_t* (* statistics) (decoder_t *decoder);
   void (* cleanup) (decoder_t *decoder);
 } format_t;
 
@@ -66,5 +75,7 @@ format_t *get_format_by_name (char *name);
 format_t *select_format (data_source_t *source);
 int audio_format_equal (audio_format_t *a, audio_format_t *b);
 void audio_format_copy  (audio_format_t *source, audio_format_t *dest);
+
+decoder_stats_t *malloc_decoder_stats (decoder_stats_t *to_copy);
 
 #endif /* __FORMAT_H__ */

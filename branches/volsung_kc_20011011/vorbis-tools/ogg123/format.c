@@ -11,13 +11,15 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: format.c,v 1.1.2.1 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: format.c,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
+#include <stdio.h>
+#include <string.h>
+
 #include "transport.h"
 #include "format.h"
-#include "string.h"
 
 extern format_t oggvorbis_format;
 
@@ -65,3 +67,20 @@ void audio_format_copy (audio_format_t *dest, audio_format_t *source)
   dest->rate          = source->rate;  
   dest->channels      = source->channels;
 }  
+
+
+decoder_stats_t *malloc_decoder_stats (decoder_stats_t *to_copy)
+{
+  decoder_stats_t *new_stats;
+
+  new_stats = malloc(sizeof(decoder_stats_t));
+
+  if (new_stats == NULL) {
+    fprintf(stderr, "Error: Could not allocate memory in malloc_decoder_stats()\n");
+    exit(1);
+  }
+
+  *new_stats = *to_copy;  /* Copy the data */
+
+  return new_stats;
+}

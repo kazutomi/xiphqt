@@ -11,12 +11,14 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: transport.c,v 1.1.2.1 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: transport.c,v 1.1.2.2 2001/12/11 05:29:09 volsung Exp $
 
  ********************************************************************/
 
+#include <stdio.h>
+#include <string.h>
+
 #include "transport.h"
-#include "string.h"
 
 extern transport_t file_transport;
 
@@ -44,3 +46,19 @@ transport_t *select_transport (char *source)
   return transports[i];
 }
 
+
+data_source_stats_t *malloc_data_source_stats (data_source_stats_t *to_copy)
+{
+  data_source_stats_t *new_stats;
+
+  new_stats = malloc(sizeof(data_source_stats_t));
+
+  if (new_stats == NULL) {
+    fprintf(stderr, "Error: Could not allocate memory in malloc_data_source_stats()\n");
+    exit(1);
+  }
+
+  *new_stats = *to_copy;  /* Copy the data */
+
+  return new_stats;
+}

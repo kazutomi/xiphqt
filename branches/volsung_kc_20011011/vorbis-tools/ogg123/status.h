@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.4.2.3 2001/12/09 03:45:26 volsung Exp $
+ last mod: $Id: status.h,v 1.1.2.4.2.4 2001/12/11 05:29:09 volsung Exp $
 
  ********************************************************************/
 
@@ -19,6 +19,9 @@
 #define __STATUS_H__
 
 #include <stdarg.h>
+#include "buffer.h"
+#include "transport.h"
+#include "format.h"
 
 typedef struct {
   int verbosity;
@@ -37,7 +40,14 @@ typedef struct {
     float floatarg;
     double doublearg;
   } arg;
-} stat_t;
+} stat_format_t;
+
+
+typedef struct print_statistics_arg_t {
+  stat_format_t *stat_format;
+  data_source_stats_t *transport_statistics;
+  decoder_stats_t *decoder_statistics;
+} print_statistics_arg_t;
 
 
 /* Status options:
@@ -48,22 +58,29 @@ typedef struct {
  * stats[4] - instantaneous bitrate
  * stats[5] - average bitrate (not yet implemented)
  * stats[6] - input buffer fill %
- * stats[7] - input buffer status
+ * stats[7] - input buffer state
  * stats[8] - output buffer fill %
- * stats[9] - output buffer status
+ * stats[9] - output buffer state
  * stats[10] - Null format string to mark end of array
  */
-
-stat_t *stats_create ();
-void stats_cleanup (stat_t *stats);
+stat_format_t *stat_format_create ();
+void stat_format_cleanup (stat_format_t *stats);
 
 void status_set_verbosity (int verbosity);
 void status_reset_output_lock ();
 void status_clear_line ();
-void status_print_statistics (stat_t *stats);
+void status_print_statistics (stat_format_t *stats,
+			      buffer_stats_t *audio_statistics,
+			      data_source_stats_t *transport_statistics,
+			      decoder_stats_t *decoder_statistics);
 void status_message (int verbosity, const char *fmt, ...);
 void vstatus_message (int verbosity, const char *fmt, va_list ap);
 void status_error (const char *fmt, ...);
 void vstatus_error (const char *fmt, va_list);
 
+void print_statistics_callback (buf_t *buf, void *arg);
+print_statistics_arg_t *new_print_statistics_arg (
+			       stat_format_t *stat_format,
+			       data_source_stats_t *transport_statistics,
+			       decoder_stats_t *decoder_statistics);
 #endif /* __STATUS_H__ */

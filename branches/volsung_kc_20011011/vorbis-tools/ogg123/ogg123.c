@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.13 2001/12/09 03:45:26 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.14 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -47,7 +47,7 @@ unsigned char convbuffer[AUDIO_CHUNK_SIZE];
 int convsize = AUDIO_CHUNK_SIZE;
 
 ogg123_options_t options;
-stat_t *stats;
+stat_format_t *stat_format;
 buf_t *audio_buffer;
 
 audio_play_arg_t audio_play_arg;
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
   int optind;
 
   ao_initialize();
-  stats = stats_create();
+  stat_format = stat_format_create();
   options_init(&options);
   file_options_init(file_opts);
 
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
   optind = parse_cmdline_options(argc, argv, &options, file_opts);
 
   audio_play_arg.devices = options.devices;
-  audio_play_arg.stats = stats;
+  audio_play_arg.stat_format = stat_format;
 
 
   status_set_verbosity(options.verbosity);
@@ -250,6 +250,7 @@ void play (char *source_string)
   decoder_t *decoder;
   decoder_callbacks_t decoder_callbacks = { &decoder_error_callback,
 					    &decoder_metadata_callback };
+  print_statistics_arg_t *pstats_arg;
   
   /* Preserve between calls so we only open the audio device when we 
      have to */
@@ -258,9 +259,8 @@ void play (char *source_string)
   audio_reopen_arg_t *reopen_arg;
 
   int eof = 0, eos = 0, ret;
-  long bitrate;
-
   int nthc = 0, ntimesc = 0;
+  ogg_int64_t last_stats_tick = 0;
 
   new_audio_fmt.big_endian = ao_is_big_endian();
   new_audio_fmt.signed_sample = 1;
@@ -351,22 +351,37 @@ void play (char *source_string)
 	reopen_arg = new_audio_reopen_arg(options.devices, &new_audio_fmt);
 
 	if (audio_buffer)	  
-	  buffer_action_at_end(audio_buffer, &audio_reopen_callback,
-			       reopen_arg);
+	  buffer_insert_action_at_end(audio_buffer, &audio_reopen_callback,
+				      reopen_arg);
 	else
 	  audio_reopen_callback(NULL, reopen_arg);
       }
       
+
+      /* Update statistics display if needed */
+      if (last_stats_tick < sig_request.ticks) {
+	last_stats_tick = sig_request.ticks;
+
+	pstats_arg = new_print_statistics_arg(stat_format,
+					      transport->statistics(source),
+					      format->statistics(decoder));
+	if (audio_buffer)
+	  buffer_append_action_at_end(audio_buffer,
+				      &print_statistics_callback,
+				      pstats_arg);
+	else
+	  print_statistics_callback(NULL, pstats_arg);
+				      
+      }
 
       /* Write audio data block to output, skipping or repeating chunks
 	 as needed */
       do {
 	
 	if (nthc-- == 0) {
-	  if (audio_buffer) {
+	  if (audio_buffer)
 	    buffer_submit_data(audio_buffer, convbuffer, ret);
-	    status_print_statistics(stats);
-	  } else
+	  else
 	    audio_play_callback(convbuffer, ret, eos, &audio_play_arg);
 	  
 	  nthc = options.nth - 1;
@@ -375,12 +390,7 @@ void play (char *source_string)
       } while (++ntimesc < options.ntimes);
 
       ntimesc = 0;
-      
-      /* Update bitrate display */
-      bitrate = format->instant_bitrate (decoder);
-      if (bitrate > 0)
-	stats[4].arg.doublearg = (double) bitrate  / 1000.0f;
-      
+            
     } /* End of data loop */
     
   

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.2 2001/12/09 03:45:26 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.3 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -31,6 +31,8 @@ typedef struct ovf_private_t {
   int current_section;
 
   int bos; /* At beginning of logical bitstream */
+
+  decoder_stats_t stats;
 } ovf_private_t;
 
 /* Forward declarations */
@@ -95,6 +97,11 @@ decoder_t* ovf_init (data_source_t *source, audio_format_t *audio_fmt,
 
     private->bos = 1;
     private->current_section = -1;
+
+    private->stats.total_time = 0.0;
+    private->stats.current_time = 0.0;
+    private->stats.instant_bitrate = 0;
+    private->stats.avg_bitrate = 0;
   } else {
     fprintf(stderr, "Error: Out of memory.\n");
     exit(1);
@@ -185,11 +192,27 @@ int ovf_read (decoder_t *decoder, void *ptr, int nbytes, int *eos,
   return bytes_read;
 }
 
-long ovf_instant_bitrate (decoder_t *decoder)
+
+decoder_stats_t *ovf_statistics (decoder_t *decoder)
 {
   ovf_private_t *priv = decoder->private;
+  long instant_bitrate;
+  long avg_bitrate;
 
-  return ov_bitrate_instant(&priv->vf);
+  priv->stats.total_time = ov_time_total(&priv->vf, -1);
+  priv->stats.current_time = ov_time_tell(&priv->vf);
+
+  /* vorbisfile returns 0 when no bitrate change has occurred */
+  instant_bitrate = ov_bitrate_instant(&priv->vf);
+  if (instant_bitrate > 0)
+    priv->stats.instant_bitrate = instant_bitrate;
+
+  avg_bitrate = ov_bitrate(&priv->vf, priv->current_section);
+  /* Catch error case caused by non-seekable stream */
+  priv->stats.avg_bitrate = avg_bitrate > 0 ? avg_bitrate : 0;
+
+
+  return malloc_decoder_stats(&priv->stats);
 }
 
 
@@ -209,7 +232,7 @@ format_t oggvorbis_format = {
   &ovf_can_decode,
   &ovf_init,
   &ovf_read,
-  &ovf_instant_bitrate,
+  &ovf_statistics,
   &ovf_cleanup,
 };
 

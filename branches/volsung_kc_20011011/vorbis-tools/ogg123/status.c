@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.3 2001/12/09 03:45:26 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.4 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -31,33 +31,44 @@ pthread_mutex_t output_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* ------------------- Private functions ------------------ */
 
-void set_buffer_state_string (buf_t *buf, char *strbuf)
+void write_buffer_state_string (char *dest, buffer_stats_t *buf_stats)
 {
-  char *cur = strbuf;
+  char *cur = dest;
   char *comma = ", ";
   char *sep = "(";
 
-  if (buf->prebuffering) {
+  if (buf_stats->prebuffering) {
     cur += sprintf (cur, "%sPrebuf", sep);
     sep = comma;
   }
-  if (buf->paused) {
+  if (buf_stats->paused) {
     cur += sprintf (cur, "%sPaused", sep);
     sep = comma;
   }
-  if (buf->eos) {
+  if (buf_stats->eos) {
     cur += sprintf (cur, "%sEOS", sep);
     sep = comma;
   }
-  if (cur != strbuf)
+  if (cur != dest)
     cur += sprintf (cur, ")");
   else
     *cur = '\0';
 }
 
 
+/* Write a min:sec.msec style string to dest corresponding to time.
+   The time parameter is in seconds.  Returns the number of characters
+   written */
+int write_time_string (char *dest, double time)
+{
+  long min = (long) time / (long) 60;
+  double sec = time - 60.0f * min;
+
+  return sprintf (dest, "%02li:%05.2f", min, sec);
+}
+
 #if 0
-void SetTime (stat_t stats[], ogg_int64_t sample)
+void SetTime (stat_format_t stats[], ogg_int64_t sample)
 {
   double CurTime = (double) sample / (double) Options.outputOpts.rate;
   long c_min = (long) CurTime / (long) 60;
@@ -106,11 +117,11 @@ void clear_line ()
 }
 
 
-void print_statistics_line (stat_t stats[])
+int print_statistics_line (stat_format_t stats[])
 {
   int len = 0;
   
-  status_clear_line(last_line_len);
+  clear_line(last_line_len);
   
   while (stats->formatstr != NULL) {
     
@@ -143,7 +154,9 @@ void print_statistics_line (stat_t stats[])
     stats++;
   }
 
-  last_line_len = len;
+  fprintf(stderr, "\r");
+
+  return len;
 }
 
 
@@ -166,12 +179,12 @@ void vstatus_print_nolock (const char *fmt, va_list ap)
 #define STATE_STR_SIZE 25
 #define NUM_STATS 10
 
-stat_t *stats_create ()
+stat_format_t *stat_format_create ()
 {
-  stat_t *stats;
-  stat_t *cur;
+  stat_format_t *stats;
+  stat_format_t *cur;
 
-  stats = calloc(NUM_STATS + 1, sizeof(stat_t));  /* One extra for end flag */
+  stats = calloc(NUM_STATS + 1, sizeof(stat_format_t));  /* One extra for end flag */
   if (stats == NULL) {
     fprintf(stderr, "Memory allocation error in stats_init()\n");
     exit(1);
@@ -279,7 +292,7 @@ stat_t *stats_create ()
 }
 
 
-void stats_cleanup (stat_t *stats)
+void stat_format_cleanup (stat_format_t *stats)
 {
   free(stats[1].arg.stringarg);
   free(stats[2].arg.stringarg);
@@ -311,38 +324,63 @@ void status_clear_line ()
   pthread_mutex_unlock(&output_lock);
 }
 
-void status_print_statistics (stat_t *stats)
+void status_print_statistics (stat_format_t *stats,
+			      buffer_stats_t *audio_statistics,
+			      data_source_stats_t *transport_statistics,
+			      decoder_stats_t *decoder_statistics)
 {
 
   /* Updating statistics is not critical.  If another thread is
      already doing output, we skip it. */
   if (pthread_mutex_trylock(&output_lock) == 0) {
 
-#if 0
-    if () {
-      set_buffer_state_string(Options.inputOpts.data->buf,
-			      stats[7].arg.stringarg);
-      stats[6].arg.doublearg = 
-	(double) buffer_full(Options.inputOpts.data->buf)
-	/ (double) Options.inputOpts.data->buf->size * 100.0f;
-    }
-
-    if (Options.outputOpts.buffer) {
-      set_buffer_state_string(Options.inputOpts.data->buf,
-			      stats[9].arg.stringarg);
+    if (decoder_statistics) {
+      /* Current playback time */
+      write_time_string(stats[1].arg.stringarg,
+			decoder_statistics->current_time);
+	
+      /* Remaining playback time */
+      write_time_string(stats[2].arg.stringarg,
+			decoder_statistics->total_time - 
+			decoder_statistics->current_time);
       
-      stats[8].arg.doublearg =
-	(double) buffer_full(Options.outputOpts.buffer) 
-	/ (double) Options.outputOpts.buffer->size * 100.0f;
+      /* Total playback time */
+      write_time_string(stats[3].arg.stringarg,
+			decoder_statistics->total_time);
+
+      /* Instantaneous bitrate */
+      stats[4].arg.doublearg = decoder_statistics->instant_bitrate / 1000.0f;
+
+      /* Instantaneous bitrate */
+      stats[5].arg.doublearg = decoder_statistics->avg_bitrate / 1000.0f;
     }
 
-    
-    print_statistics_line(stats);
-#endif
 
-    clear_line();
-    last_line_len = fprintf(stderr, "Boing!");
+    if (transport_statistics != NULL && 
+	transport_statistics->input_buffer_used) {
+      
+      /* Input buffer fill % */
+      stats[6].arg.doublearg = transport_statistics->input_buffer.fill;
+
+      /* Input buffer state */
+      write_buffer_state_string(stats[7].arg.stringarg,
+				&transport_statistics->input_buffer);
+    }
+
+
+    if (audio_statistics != NULL) {
+      
+      /* Output buffer fill % */
+      stats[8].arg.doublearg = audio_statistics->fill;
+      
+      /* Output buffer state */
+      write_buffer_state_string(stats[9].arg.stringarg, audio_statistics);
+    }
     
+    clear_line();
+
+    last_line_len = print_statistics_line(stats);
+
     pthread_mutex_unlock(&output_lock);
   }
 }
@@ -401,3 +439,43 @@ void vstatus_error (const char *fmt, va_list ap)
   pthread_mutex_unlock(&output_lock);
 }
 
+
+void print_statistics_callback (buf_t *buf, void *arg)
+{
+  print_statistics_arg_t *stats_arg = (print_statistics_arg_t *) arg;
+  buffer_stats_t *buffer_stats;
+
+  if (buf != NULL)
+    buffer_stats = buffer_statistics(buf);
+  else
+    buffer_stats = NULL;
+
+  status_print_statistics(stats_arg->stat_format,
+			  buffer_stats,
+			  stats_arg->transport_statistics,
+			  stats_arg->decoder_statistics);
+
+  free(stats_arg->transport_statistics);
+  free(stats_arg->decoder_statistics);
+  free(stats_arg);
+}
+
+
+print_statistics_arg_t *new_print_statistics_arg (
+			       stat_format_t *stat_format,
+			       data_source_stats_t *transport_statistics,
+			       decoder_stats_t *decoder_statistics)
+{
+  print_statistics_arg_t *arg;
+
+  if ( (arg = malloc(sizeof(print_statistics_arg_t))) == NULL ) {
+    status_error("Error: Out of memory in new_print_statistics_arg().\n");
+    exit(1);
+  }  
+  
+  arg->stat_format = stat_format;
+  arg->transport_statistics = transport_statistics;
+  arg->decoder_statistics = decoder_statistics;
+
+  return arg;
+}
