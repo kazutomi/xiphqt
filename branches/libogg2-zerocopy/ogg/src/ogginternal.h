@@ -11,66 +11,83 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.1 2002/12/31 01:18:02 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.2 2003/01/21 08:18:34 xiphmont Exp $
 
  ********************************************************************/
 
 #ifndef _OGGI_H
 #define _OGGI_H
 
-typedef struct _ogg_sync_state * ogg_sync_state;
-typedef struct _ogg_stream_state * ogg_stream_state;
-typedef struct ogg_lbuffer fragmented_reference;
-
 #include <ogg/ogg.h>
+#include "mutex.h"
+
+struct ogg_buffer_state{
+  ogg_buffer *unused_pool;
+  int         outstanding;
+  ogg_mutex_t mutex;
+};
 
 typedef struct{
-  fragmented_reference *segment;
+  ogg_buffer_reference *segment;
   int                   cursor;
 } fragmented_cursor;
 
-/* an internal type meant to be struct-compatable with fragmented_reference */
-typedef struct fragmented_buffer {
-  unsigned char            *data;
-  int                       used;
-  struct fragmented_buffer *next;
-  int                       size;
-} fragmented_buffer;
+struct ogg_buffer {
+  unsigned char     *data;
+  int                used;
+  struct ogg_buffer *next;
+  int                size;
+  int                refcount;
+};
+
+struct oggpack_buffer {
+  int               headbit;
+  unsigned char    *headptr;
+  long              headend;
+
+  /* memory management */
+  ogg_buffer       *head;
+  ogg_buffer       *tail;  
+  ogg_buffer_state *owner; /* centralized mem management; buffer fragment 
+			      memory is owned and managed by the physical
+			      stream abstraction */
+
+  /* render the byte/bit counter API constant time */
+  long length; /* meaningful only in decode */
+  long count;  /* doesn't count the tail */
+
+};
 
 typedef struct ogg_packet_chain {
-  fragmented_reference    *packet;
-  long                     bytes;
+  ogg_buffer_reference     packet;
   ogg_int64_t              granulepos;
 
   struct ogg_packet_chain *next;
 } ogg_packet_chain;
 
-
-typedef struct {
+struct ogg_sync_state {
 
   /* stream buffers */
-  fragmented_buffer *unused_fifo;
-  fragmented_buffer *fifo_head;
-  fragmented_buffer *fifo_tail;
-  fragmented_buffer *fifo_returned;
-  int                fifo_returned_pos;
-  int                fifo_fill;
+  ogg_buffer *unused_fifo;
+  ogg_buffer *fifo_head;
+  ogg_buffer *fifo_tail;
+  ogg_buffer *fifo_returned;
+  int         fifo_returned_pos;
+  int         fifo_fill;
 
   /* stream sync management */
-  int                unsynced;
-  int                headerbytes;
-  int                bodybytes;
+  int         unsynced;
+  int         headerbytes;
+  int         bodybytes;
 
-  /* page/packet tracking and management */
-  ogg_packet_chain  *unused_packet; /* contain allocated ->data
-                                              storage */
-  struct _ogg_stream_state *stream_list;
+};
 
-} _ogg_sync_state;
-
-typedef struct ogg_stream_state {
+struct ogg_stream_state {
+  ogg_packet_chain *unused;
   ogg_packet_chain *head;
   ogg_packet_chain *tail;
+
+
   long              body_len;
 
   unsigned char    *header;       /* working space for header encode */
@@ -90,9 +107,9 @@ typedef struct ogg_stream_state {
                            layer) also knows about the gap */
 
   /* for sync memory management use */
-  struct _ogg_sync_state   *sync;
-  struct _ogg_stream_state *next;
+  struct ogg_sync_state   *sync;
+  struct ogg_stream_state *next;
 
-} _ogg_stream_state;
+};
 
 #endif

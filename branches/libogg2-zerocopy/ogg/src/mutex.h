@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: #ifdef jail for basic thread mutexing
- last mod: $Id: mutex.h,v 1.1.2.1 2002/12/31 01:18:02 xiphmont Exp $
+ last mod: $Id: mutex.h,v 1.1.2.2 2003/01/21 08:18:34 xiphmont Exp $
 
  ********************************************************************/
 
@@ -25,20 +25,17 @@
 #ifndef _OGG_MUTEX_H_
 #define _OGG_MUTEX_H_
 
-#include <ogg/ogg.h>
-
 #ifdef USE_POSIX_THREADS
 #define _REENTRANT 1
 #include <pthread.h>
-static typedef ogg_mutex_t pthread_mutex_t;
-#define ogg_mutex_init(m) (pthread_mutex_init(m,NULL))
+typedef pthread_mutex_t ogg_mutex_t;
+#define ogg_mutex_init(m) (pthread_mutex_init((m),NULL))
 #define ogg_mutex_clear(m) (pthread_mutex_destroy(m))
 #define ogg_mutex_lock(m) (pthread_mutex_lock(m))
 #define ogg_mutex_unlock(m) (pthread_mutex_unlock(m))
 
-#else
-#ifdef USE_NO_THREADS
-static typedef ogg_mutex_t int;
+#elif USE_NO_THREADS
+typedef int ogg_mutex_t;
 static void noop(void){return};
 #define ogg_mutex_init(m) (noop())
 #define ogg_mutex_clear(m) (noop())
@@ -50,5 +47,4 @@ static void noop(void){return};
 
 #endif
 
-
-#endif 
+#endif /*_OGG_MUTEX_H_*/

@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.1 2003/01/21 07:16:46 xiphmont Exp $
+  last mod: $Id: buffer.c,v 1.1.2.2 2003/01/21 08:18:34 xiphmont Exp $
 
  ********************************************************************/
 
@@ -19,8 +19,8 @@
 #include <stdio.h>
 #endif
 
+#include <stdlib.h>
 #include "ogginternal.h"
-#include "mutex.h"
 
 /* basic, centralized Ogg memory management.
 
@@ -146,7 +146,7 @@ void ogg_reference_release(ogg_buffer_reference *or){
     {
       ogg_buffer *next=ob->next;
       bytes-=ob->used;
-      _ogg_buffer_release(ob);
+      _ogg_buffer_release(ob,or->owner);
       ob=next;
     }
   }
