@@ -276,8 +276,8 @@ int main(int _argc,char **_argv){
   int         c;
   if(_argc!=2){
     fprintf(stderr,"Specify a color space: \n"
-     " Rec601\n"
-     " Rec709\n");
+     " Rec470M\n"
+     " Rec470BG\n");
     exit(-1);
   }
   if(strcmp(_argv[1],"Rec470M")==0)cs=&ITUREC470M;
