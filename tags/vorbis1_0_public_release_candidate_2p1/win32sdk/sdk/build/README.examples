@@ -1,0 +1,23 @@
+$Id: README.examples,v 1.3 2001/10/18 17:26:18 cwolf Exp $
+$Name:  $
+=======================================================================
+The SDKHOME environment variable must be set to where the SDK is rooted,
+including the "sdk" part of the path.  Remember to enclose the path
+in double quotes, especially if the path contains embedded spaces.
+e.g. "c:\src\xiph source\sdk"
+
+The sample programs in "SDKHOME\examples\vorbis"
+can be built by using this build environment.
+
+For an IDE build, the workspace "examples.dsw" can be loaded,
+then from the "build" menu, the "build" menu item will build
+all the example programs, both static and dynamic, debug and
+release versions.
+
+For a command line build, run "build_all.bat"
+
+"run_tests.bat" will run each version, of each example program,
+against test data.  The versions are debug-static, release-static,
+debug DLL and release DLL.
+
+"clean_all.bat" will run all the clean targets.
