@@ -11,6 +11,7 @@ To Do
 	*	Extra things to put **after**  `<div id='content'>`
 	* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
 	Maybe I could use PyYaml. Although that's probably serious overkill.
+*	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
 
 For the News Things
 ------------------

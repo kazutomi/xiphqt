@@ -1,5 +1,5 @@
 html {
-	font: 80% Verdana, sans-serif;
+	font: 80% "Helvetica Neue", "Lucida Sans Unicode", Verdana, sans-serif;
 	color: #010;
 
 	/* guess which colors I like... */
@@ -17,6 +17,7 @@ html {
 	background: #6495ed; /* cornflower blue */
 	background: #1e90ff; /* cornflower blue */
 	background: #556b2f; /* dark olive green */
+	background: #333;
 
 	margin: 0;
 	padding: 0;
@@ -24,7 +25,7 @@ html {
 
 body {
 	margin: 0;
-	padding: 50px 0 0;
+	padding: 50px 0 0; /* the 50px here must match the 50px of the sidebar div. */
 }
 
 h1 {
@@ -32,7 +33,7 @@ h1 {
 }
 
 div#content {
-	margin: 0 1em 1em 15em;
+	margin: 0 1em 1em 19em;
 	padding: 0 .5em;
 	border: 1px solid gray;
 	background: white;
@@ -43,7 +44,7 @@ div#sidebar {
 	position: absolute;
 	top: 50px;
 	left: 1em;
-	width: 13em;
+	width: 17em;
 	margin: 0;
 	padding: 0;
 }
@@ -75,9 +76,11 @@ ul#bignavbuttons a {
 	display: block;
 	padding: .25em;
 	text-decoration: none;
-	font-size: .8em;
 }
-
+ul#bignavbuttons a:link,
+ul#bignavbuttons a:visited {
+	color: black;
+}
 ul#bignavbuttons li.vorbis a:hover {
 	background: #74a5fd;
 }
@@ -91,7 +94,7 @@ ul#bignavbuttons li.speex a:hover {
 }
 
 ul#bignavbuttons li.theora a:hover {
-	background: #e9f;
+	background: #ebf;
 }
 
 ul#bignavbuttons li.icecast a:hover {
