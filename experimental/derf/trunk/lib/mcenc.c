@@ -387,6 +387,9 @@ void oc_mcenc_analyze(oc_mcenc_ctx *_mcenc){
   int                mbi;
   /*TODO: customize error function for speed/(quality+size) tradeoff.*/
   ref_idx=_mcenc->enc->state.ref_frame_idx[OC_FRAME_PREV];
+  /*If there is no previous frame, then skip motion analysis: Every vector has
+     been initialized to (0,0).*/
+  if(ref_idx<=0)return;
   fplane=_mcenc->enc->state.frarray.frplanes+0;
   mbs=_mcenc->enc->state.frarray.mbs;
   embs=_mcenc->enc->mbinfo;

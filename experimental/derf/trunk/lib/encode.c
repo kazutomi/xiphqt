@@ -74,8 +74,8 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
             int ny;
             int nmb;
             nx=mbx+CDX[mbn][i];
-            ny=mby+CDY[mbn][y];
-            if(nx<0||nx>=nhmbs||ny<0)continue;
+            ny=mby+CDY[mbn][i];
+            if(nx<0||nx>=nhmbs||ny<0||ny>=nvmbs)continue;
             nmb=nx+ny*nhmbs+OC_MB_MAP[ny&1][nx&1];
             if(mbs[nmb].mode<0)continue;
             emb->cneighbors[emb->ncneighbors++]=nmb;
@@ -88,7 +88,7 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
             nx=mbx+PDX[i];
             ny=mby+PDY[i];
             if(nx<0||nx>=nhmbs||ny<0||ny>=nvmbs)continue;
-            nmb=nx+ny*nhmbs+OC_MB_MAP[ny&1][nx&1];
+            nmb=(nx&~1)+(ny&~1)*nhmbs+OC_MB_MAP[ny&1][nx&1];
             if(mbs[nmb].mode<0)continue;
             emb->pneighbors[emb->npneighbors++]=nmb;
           }
@@ -98,7 +98,7 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
   }
 }
 
-int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
+static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   int ret;
   ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
@@ -106,8 +106,19 @@ int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
    sizeof(_enc->frinfo[0]));
   _enc->mbinfo=_ogg_calloc(_enc->state.frarray.nmbs,sizeof(_enc->mbinfo[0]));
   oc_enc_init_mbinfo(_enc);
+  _enc->mcenc=oc_mcenc_alloc(_enc);
+  _enc->impmap=oc_impmap_alloc(_enc);
   return 0;
 }
+
+static void oc_enc_clear(oc_enc_ctx *_enc){
+  oc_impmap_free(_enc->impmap);
+  oc_mcenc_free(_enc->mcenc);
+  _ogg_free(_enc->mbinfo);
+  _ogg_free(_enc->frinfo);
+  oc_state_clear(&_enc->state);
+}
+
 
 /*Performs an initial DCT on the data for each fragment before any attempt at
    motion compensation.
@@ -165,4 +176,51 @@ static void oc_enc_init_dcts(oc_enc_ctx *_enc,oc_yuv_buffer _img){
       }
     }
   }
+}
+
+static int oc_enc_yuv_in(oc_enc_ctx *_enc,oc_yuv_buffer _img){
+  int cwidth;
+  int cheight;
+  /*Step 1: validate parameters.*/
+  if(_enc==NULL||_img==NULL)return OC_FAULT;
+  if(_img[0].width!=(int)_enc->state.info.width||
+   _img[0].height!=(int)_enc->state.info.height){
+    return OC_EINVAL;
+  }
+  cwidth=_enc->state.info.width;
+  if(_enc->state.info.chroma_x_decimated)cwidth>>=1;
+  cheight=_enc->state.info.height;
+  if(_enc->state.info.chroma_y_decimated)cheight>>=1;
+  if(_img[1].width!=cwidth||_img[2].width!=cwidth||
+   _img[1].height!=cheight||_img[2].height!=cheight){
+    return OC_EINVAL;
+  }
+  /*Step 2: Fill the fragment array with pointers into the user buffer.*/
+  oc_frarray_fill_buffer_ptrs(&_enc->state.frarray,3,_img);
+  /*Step 3: Analyze motion.*/
+  oc_mcenc_analyze(_enc->mcenc);
+  /*Step 4: Compute importance map.*/
+  oc_impmap_fill(_enc->impmap,_img,
+   _enc->state.info.fps_denominator/(float)_enc->state.info.fps_numerator);
+  /*TODO: other things, like, maybe encoding.*/
+  return 0;
+}
+
+
+void *theora_encode_alloc(theora_info *_info){
+  oc_enc_ctx *enc;
+  enc=_ogg_malloc(sizeof(*enc));
+  oc_enc_init(enc,_info);
+  return enc;
+}
+
+void theora_encode_free(void *_enc){
+  if(_enc!=NULL){
+    oc_enc_clear((oc_enc_ctx *)_enc);
+    _ogg_free(_enc);
+  }
+}
+
+int theora_encode_yuv_in(void *_enc,oc_yuv_buffer _img){
+  return oc_enc_yuv_in((oc_enc_ctx *)_enc,_img);
 }

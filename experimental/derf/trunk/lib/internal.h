@@ -1,7 +1,7 @@
 #if !defined(_internal_H)
 # define _internal_H (1)
 # include <stdlib.h>
-# include "theora.h"
+# include "theora/theora.h"
 # include "huffman.h"
 
 /*Theora bitstream version.*/
@@ -229,10 +229,8 @@ typedef struct{
   theora_info           info;
   /*The fragment array.*/
   oc_fragment_array     frarray;
-  /*The index of the buffers being used for the current reference frames.
-    The first is the buffer containing the previous I frame, while the second
-     is the buffer containing the previous I or P frame.*/
-  int                   ref_frame_idx[2];
+  /*The index of the buffers being used for each OC_FRAME_* reference frame.*/
+  int                   ref_frame_idx[3];
   /*The actual buffers used for the previously decoded frames.*/
   oc_yuv_buffer         ref_frame_bufs[3];
   /*The storage for the reference frame buffers.*/
@@ -259,9 +257,11 @@ void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
 void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info);
+void oc_frarray_clear(oc_fragment_array *_frarray);
 void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
  oc_yuv_buffer _img);
 
 int oc_state_init(oc_theora_state *_state,theora_info *_info);
+void oc_state_clear(oc_theora_state *_state);
 
 #endif

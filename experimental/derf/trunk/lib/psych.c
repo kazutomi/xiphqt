@@ -1,5 +1,9 @@
 #include "encint.h"
 
+/*This is where we attempt to model low-level vision processes, such as
+   sensitivities due to the way human eyes are constructed and how data flows
+   through the early stages of the vision process.*/
+
 /*All CSF curves are scaled so that their peak is at 1.0, but JND
    values are computed at frequency 0, which is not the peak of the
    Y curve.

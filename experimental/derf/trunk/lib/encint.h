@@ -1,6 +1,6 @@
 #if !defined(_encint_H)
 # define _encint_H (1)
-# include "theora.h"
+# include "theora/theora.h"
 # include "internal.h"
 # include "fdct.h"
 # include "huffenc.h"
@@ -63,6 +63,14 @@ typedef struct{
   oc_impmap_ctx        *impmap;
 }oc_enc_ctx;
 
-int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info);
+oc_mcenc_ctx *oc_mcenc_alloc(oc_enc_ctx *_enc);
+void oc_mcenc_free(oc_mcenc_ctx *_mcenc);
+void oc_mcenc_analyze(oc_mcenc_ctx *_mcenc);
+
+oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc);
+void oc_impmap_free(oc_impmap_ctx *_impmap);
+void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
+ float _duration);
+
 
 #endif

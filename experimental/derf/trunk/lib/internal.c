@@ -61,7 +61,7 @@ const int OC_MB_MAP[2][2]={{0,3},{1,2}};
   If chroma is decimated in either direction, the padding is reduced by a
    factor of 2 on the appropriate sides.
   _enc: The encoding context to store the buffers in.*/
-static void oc_state_init_ref_bufs(oc_theora_state *_state){
+static void oc_state_ref_bufs_init(oc_theora_state *_state){
   theora_info   *info;
   unsigned char *ref_frame_data;
   size_t         yplane_sz;
@@ -108,6 +108,14 @@ static void oc_state_init_ref_bufs(oc_theora_state *_state){
     _state->ref_frame_bufs[i][2].data=ref_frame_data+coffset;
     ref_frame_data+=cplane_sz;
   }
+  /*Initialize the reference frame indexes.*/
+  _state->ref_frame_idx[OC_FRAME_GOLD]=-1;
+  _state->ref_frame_idx[OC_FRAME_PREV]=-1;
+  _state->ref_frame_idx[OC_FRAME_SELF]=0;
+}
+
+static void oc_state_ref_bufs_clear(oc_theora_state *_state){
+  _ogg_free(_state->ref_frame_data);
 }
 
 int oc_state_init(oc_theora_state *_state,theora_info *_info){
@@ -121,8 +129,13 @@ int oc_state_init(oc_theora_state *_state,theora_info *_info){
   memset(_state,0,sizeof(_state));
   memcpy(&_state->info,_info,sizeof(*_info));
   oc_frarray_init(&_state->frarray,_info);
-  oc_state_init_ref_bufs(_state);
+  oc_state_ref_bufs_init(_state);
   return 0;
+}
+
+void oc_state_clear(oc_theora_state *_state){
+  oc_state_ref_bufs_clear(_state);
+  oc_frarray_clear(&_state->frarray);
 }
 
 /*Duplicates the pixels on the border of the image plane out into the

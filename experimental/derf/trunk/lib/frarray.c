@@ -462,7 +462,7 @@ static void oc_mb_create_mapping(oc_mb _mbs[],
    region of the frame.
   _frarray: The fragment array containing the fragments to be marked.
   _info:    The encoding information describing the frame.*/
-static void oc_frarray_init_border(oc_fragment_array *_frarray,
+static void oc_frarray_border_init(oc_fragment_array *_frarray,
  const theora_info *_info){
   typedef struct{
     int x0;
@@ -508,7 +508,7 @@ static void oc_frarray_init_border(oc_fragment_array *_frarray,
     y=0;
     for(yfrag_end+=fplane->nfrags;frag<yfrag_end;){
       x=0;
-      for(xfrag_end=yfrag_end+fplane->nhfrags;frag<xfrag_end;frag++){
+      for(xfrag_end=frag+fplane->nhfrags;frag<xfrag_end;frag++){
         /*Note the special checks for an empty cropping rectangle.
           This guarantees that if we count a fragment as straddling the
            border, at least one pixel in the fragment will be inside the
@@ -523,6 +523,7 @@ static void oc_frarray_init_border(oc_fragment_array *_frarray,
         }
         x+=8;
       }
+      y+=8;
     }
   }
   /*If we have no fragments straddling the boundary, there's nothing left to
@@ -563,6 +564,11 @@ static void oc_frarray_init_border(oc_fragment_array *_frarray,
     }
   }
 }
+
+static void oc_frarray_border_clear(oc_fragment_array *_frarray){
+  _ogg_free(_frarray->borders);
+}
+
 
 void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info){
   int yhfrags;
@@ -638,7 +644,15 @@ void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info){
   oc_mb_create_mapping(_frarray->mbs,_frarray->frplanes,
    _info->chroma_x_decimated,_info->chroma_y_decimated);
   /*Initialize the invalid and border fields of each fragment.*/
-  oc_frarray_init_border(_frarray,_info);
+  oc_frarray_border_init(_frarray,_info);
+}
+
+void oc_frarray_clear(oc_fragment_array *_frarray){
+  oc_frarray_border_clear(_frarray);
+  _ogg_free(_frarray->block_coded_flags);
+  _ogg_free(_frarray->mbs);
+  _ogg_free(_frarray->sbs);
+  _ogg_free(_frarray->frags);
 }
 
 /*Sets the buffer pointer in each fragment to point to the portion of the

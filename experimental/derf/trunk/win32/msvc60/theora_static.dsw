@@ -3,7 +3,31 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "ogg_static"="..\..\..\xiph-write\ogg\win32\ogg_static.dsp" - Package Owner=<4>
+Project: "encoder_example"=".\encoder_example.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name theora_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbisenc_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbis_static
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ogg_static"="..\..\..\xiph\ogg\win32\ogg_static.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -23,6 +47,39 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "vorbis_static"="..\..\..\xiph\vorbis\win32\vorbis_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vorbisenc_static"="..\..\..\xiph\vorbis\win32\vorbisenc_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbis_static
+    End Project Dependency
 }}}
 
 ###############################################################################

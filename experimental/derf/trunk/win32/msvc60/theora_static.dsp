@@ -127,6 +127,10 @@ SOURCE=..\..\lib\internal.c
 
 SOURCE=..\..\lib\mcenc.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\psych.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -173,7 +177,7 @@ SOURCE=..\..\lib\psych.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\theora.h
+SOURCE=..\..\include\theora\theora.h
 # End Source File
 # End Group
 # End Target
