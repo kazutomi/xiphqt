@@ -423,7 +423,7 @@ py_ov_pcm_seek(PyObject *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "O", &longobj))
     return NULL;
  
-  if (!arg_to_int64(longobj, &pos))
+  if (!modinfo->arg_to_int64(longobj, &pos))
     return NULL;
 
   val = ov_pcm_seek(ov_self->ovf, pos);
@@ -441,7 +441,7 @@ py_ov_pcm_seek_page(PyObject *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "O", &longobj)) 
     return NULL;
 
-  if (!arg_to_int64(longobj, &pos))
+  if (!modinfo->arg_to_int64(longobj, &pos))
     return NULL;
 
   val = ov_pcm_seek_page(ov_self->ovf, pos);
