@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.6 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.6.2.1 2001/10/14 05:42:51 volsung Exp $
  
 ********************************************************************/
 
@@ -22,7 +22,7 @@
 #include <string.h> /* for memmove */
 #include <signal.h>		/* for SIGINT */
 
-#undef DEBUG_CURLINTERFACE
+#define DEBUG_CURLINTERFACE
 
 #ifdef DEBUG_CURLINTERFACE
 #define debug(x, y...) do { fprintf (stderr, x , ## y); } while (0)
@@ -42,7 +42,7 @@ CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
   debug ("CurlWriteFunction, submitting %d bytes.\n", size * nmemb);
   if (exit_requested)
     exit(0);
-  SubmitData (buf, ptr, size, nmemb);
+  buffer_submit_data (buf, ptr, size, nmemb);
   Ogg123UpdateStats();
   return size * nmemb;
 }
@@ -159,8 +159,7 @@ CurlGo (void *arg)
   debug ("CurlGo\n");
   ret = curl_easy_perform ((CURL *) data->CurlHandle);
   debug ("curl done.\n");
-  buffer_MarkEOS (buf);
-  buffer_ReaderQuit (buf);
+  buffer_thread_kill (buf);
   curl_easy_cleanup (data->CurlHandle);
   data->CurlHandle = 0;
   return (void *) ret;
@@ -194,14 +193,13 @@ InitStream (InputOpts_t inputOpts)
       exit (1);
     }
 
-  debug (" start buffer\n");
-  buf =
-    StartBuffer (inputOpts.BufferSize, inputOpts.Prebuffer, data,
-		 BufferWriteFunction, NULL, NULL, VORBIS_CHUNKIN_SIZE);
+  debug (" create buffer\n");
+  buf = buffer_create (inputOpts.BufferSize, inputOpts.Prebuffer, data,
+		       BufferWriteFunction, NULL, NULL, VORBIS_CHUNKIN_SIZE);
 
   if (!buf)
     {
-      perror ("StartBuffer");
+      perror ("Create Buffer");
       exit (1);
     }
 
@@ -326,6 +324,6 @@ void StreamInputCleanup (buf_t *buf)
 { 
   StreamBufferClose (buf->data);
   buf->data = 0;
-  buffer_flush (buf);
-  buffer_cleanup (buf);
+  buffer_thread_kill (buf);
+  buffer_destroy (buf);
 }

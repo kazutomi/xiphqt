@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ao_interface.c,v 1.5.2.7 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: ao_interface.c,v 1.5.2.7.2.1 2001/10/14 05:42:51 volsung Exp $
 
  ********************************************************************/
 
@@ -45,21 +45,19 @@ devices_t *append_device(devices_t * devices_list, int driver_id,
     return devices_list;
 }
 
-size_t devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d)
+int devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d)
 {
-  size_t i, total = 0;
+  size_t i;
   devices_t * start = d;
   for (i=0; i < nmemb; i++) {
     d = start;
     while (d != NULL) {
-      int ret = ao_play(d->device, ptr, size);
-      if (ret < size)
-	return total + ret;
-      total += ret;
+      if (ao_play(d->device, ptr, size) == 0)
+	return 0; /* error occurred */
       d = d->next_device;
     }
   }
-  return total;
+  return 1;
 }
 
 int add_option(ao_option ** op_h, const char *optstring)

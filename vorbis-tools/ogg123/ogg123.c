@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30 2001/09/24 21:11:34 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.1 2001/10/14 05:42:51 volsung Exp $
 
  ********************************************************************/
 
@@ -195,20 +195,12 @@ void SetBufferStats (buf_t *buf, char *strbuf)
   char *comma = ", ";
   char *sep = "(";
 
-  if (buf->StatMask & STAT_PREBUFFERING) {
+  if (buf->prebuffering) {
     cur += sprintf (cur, "%sPrebuffering", sep);
     sep = comma;
   }
-  if (!buf->Playing) {
+  if (buf->paused) {
     cur += sprintf (cur, "%sPaused", sep);
-    sep = comma;
-  }
-  if (buf->FlushPending) {
-    cur += sprintf (cur, "%sFlushing", sep);
-    sep = comma;
-  }
-  if (buf->StatMask & STAT_INACTIVE) {
-    cur += sprintf (cur, "%sInactive", sep);
     sep = comma;
   }
   if (buf->eos) {
@@ -263,12 +255,14 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   size_t origSize;
   unsigned char *data = ptr;
 
-  size *= nmemb;
   origSize = size;
+  size *= nmemb;
   
   SetTime (Options.statOpts.stats, cursample);
   Ogg123UpdateStats();
-  cursample += Options.playOpts.nth * size * nmemb / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
+  cursample += Options.playOpts.nth * size / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
+  //  fprintf(stderr, "nmemb = %d, size = %d, cursample = %lld\n", nmemb, size,
+  //  cursample);
 
   /* optimized fast path */
   if (curBuffered == BUFFER_CHUNK_SIZE && curBuffered == 0)
@@ -422,7 +416,8 @@ int main(int argc, char **argv)
 		Error ("=== No such device %s.\n", optarg);
 		exit(1);
 	    }
-	    current = append_device(Options.outputOpts.devices, temp_driver_id, 
+	    current = append_device(Options.outputOpts.devices,
+				    temp_driver_id, 
 				    NULL, NULL);
 	    if(Options.outputOpts.devices == NULL)
 		    Options.outputOpts.devices = current;
@@ -535,10 +530,9 @@ int main(int argc, char **argv)
     if (Options.outputOpts.BufferSize)
       {
 	Options.outputOpts.BufferSize *= 1024;
-	Options.outputOpts.Prebuffer = (Options.outputOpts.Prebuffer * (float) Options.outputOpts.BufferSize / 100.0f);
-	Options.outputOpts.buffer = StartBuffer (Options.outputOpts.BufferSize, (int) Options.outputOpts.Prebuffer,
-					     NULL, (pWriteFunc) OutBufferWrite,
-					     NULL, NULL, 4096);
+	Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer * 
+	  (float) Options.outputOpts.BufferSize / 100.0f;
+	Options.outputOpts.buffer = buffer_create(Options.outputOpts.BufferSize, (int) Options.outputOpts.Prebuffer, NULL, (pWriteFunc) OutBufferWrite, NULL, NULL, 4096);
 	Options.statOpts.stats[8].enabled = 1;
 	Options.statOpts.stats[9].enabled = 1;
       }
@@ -569,7 +563,7 @@ int main(int argc, char **argv)
     }
 
     if (Options.outputOpts.buffer != NULL) {
-      buffer_WaitForEmpty (Options.outputOpts.buffer);
+      buffer_wait_for_empty (Options.outputOpts.buffer);
     }
     
     exit (0);
@@ -606,11 +600,11 @@ void SigHandler (int signo)
   case SIGINT:
     exit_requested = 1;
     if (Options.outputOpts.buffer)
-      buffer_flush (Options.outputOpts.buffer);
+      buffer_thread_kill (Options.outputOpts.buffer);
     break;
   case SIGTSTP:
     if (Options.outputOpts.buffer) {
-      buffer_KillBuffer (Options.outputOpts.buffer, SIGSTOP);
+      buffer_thread_pause (Options.outputOpts.buffer);
     }
     kill (getpid(), SIGSTOP);
     /* buffer_Pause (Options.outputOpts.buffer);
@@ -629,7 +623,7 @@ void SigHandler (int signo)
     break;
   case SIGCONT:
     if (Options.outputOpts.buffer)
-      buffer_KillBuffer (Options.outputOpts.buffer, SIGCONT);
+      buffer_thread_unpause (Options.outputOpts.buffer);
     break;
   default:
     psignal (signo, "Unknown signal caught");
@@ -713,10 +707,7 @@ void play_file()
       signal(SIGALRM,signal_activate_skipfile);
       alarm(Options.playOpts.delay);
     }
-    
-    if (Options.outputOpts.buffer)
-      buffer_NewStream (Options.outputOpts.buffer);
-    
+        
     exit_requested = 0;
     
     while (!eof && !exit_requested) {
@@ -772,6 +763,11 @@ void play_file()
       else
 	Options.inputOpts.seekable = 0;
 
+      /* Ready to start sending data to the audio playback thread */
+
+      if (Options.outputOpts.buffer)
+	buffer_thread_start (Options.outputOpts.buffer);
+
       eos = 0;
       
       while (!eos && !exit_requested) {
@@ -782,8 +778,7 @@ void play_file()
 	  signal(SIGALRM,signal_activate_skipfile);
 	  alarm(Options.playOpts.delay);
 	  if (Options.outputOpts.buffer) {
-	    buffer_MarkEOS (Options.outputOpts.buffer);
-	    buffer_flush (Options.outputOpts.buffer);
+	    buffer_thread_kill (Options.outputOpts.buffer);
 	  }
 	  break;
 	}
@@ -813,7 +808,8 @@ void play_file()
 	  do {
 	    if (nthc-- == 0) {
 	      if (Options.outputOpts.buffer) {
-		SubmitData (Options.outputOpts.buffer, convbuffer, ret, 1);
+		buffer_submit_data (Options.outputOpts.buffer, 
+				    convbuffer, ret, 1);
 		Ogg123UpdateStats();
 	      }
 	      else
@@ -823,45 +819,16 @@ void play_file()
 	  } while (++ntimesc < Options.playOpts.ntimes);
 	  ntimesc = 0;
 	  
-#if 0
-	  /* old status code */
-	  if (ov_seekable (&vf)) {
-	    u_pos = ov_time_tell(&vf);
-	    c_min = (long) u_pos / (long) 60;
-	    c_sec = u_pos - 60 * c_min;
-	    r_min = (long) (u_time - u_pos) / (long) 60;
-	    r_sec = (u_time - u_pos) - 60 * r_min;
-	    if (Options.outputOpts.buffer)
-	      fprintf(stderr,
-		      "\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %5.1f, Buffer fill: %3.0f%%   \r",
-		      c_min, c_sec, r_min, r_sec, t_min, t_sec,
-		      (double) ov_bitrate_instant(&vf) / 1000.0F,
-		      (double) buffer_full(Options.outputOpts.buffer) / (double) Options.outputOpts.buffer->size * 100.0F);
-	    else
-	      fprintf(stderr,
-		      "\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %5.1f   \r",
-		      c_min, c_sec, r_min, r_sec, t_min, t_sec,
-		      (double) ov_bitrate_instant(&vf) / 1000.0F);
-	  } else {
-	    /* working around a bug in vorbisfile */
-	    u_pos = (double) ov_pcm_tell(&vf) / (double) vi->rate;
-	    c_min = (long) u_pos / (long) 60;
-	    c_sec = u_pos - 60 * c_min;
-	    if (Options.outputOpts.buffer)
-	      fprintf(stderr,
-		      "\rTime: %02li:%05.2f, Bitrate: %5.1f, Buffer fill: %3.0f%%   \r",
-		      c_min, c_sec,
-		      (float) ov_bitrate_instant (&vf) / 1000.0F,
-		      (double) buffer_full(Options.outputOpts.buffer) / (double) Options.outputOpts.buffer->size * 100.0F);
-	    else
-	      fprintf(stderr,
-		      "\rTime: %02li:%05.2f, Bitrate: %5.1f   \r",
-		      c_min, c_sec,
-		      (float) ov_bitrate_instant (&vf) / 1000.0F);
-	  }
-#endif
 	}
       }
+
+      /* Done playing this logical bitstream.  Now we cleanup. */
+      if (Options.outputOpts.buffer) {
+	buffer_mark_eos (Options.outputOpts.buffer);
+	buffer_wait_for_empty (Options.outputOpts.buffer);
+	buffer_thread_kill (Options.outputOpts.buffer);
+      }
+
     }
     
     alarm(0);
@@ -870,11 +837,6 @@ void play_file()
     
     ov_clear(&vf);
     
-    if (Options.outputOpts.buffer) {
-      buffer_MarkEOS (Options.outputOpts.buffer);
-      buffer_WaitForEmpty (Options.outputOpts.buffer);
-    }
-
     ShowMessage (1, 1, 1, "Done.");
     
     if (exit_requested)
@@ -892,9 +854,6 @@ int open_audio_devices()
   
   if(prevrate !=0 && prevchan!=0 && Options.outputOpts.devicesOpen)
     {
-      if (Options.outputOpts.buffer)
-	buffer_WaitForEmpty (Options.outputOpts.buffer);
-      
       close_audio_devices (Options.outputOpts.devices);
       Options.outputOpts.devicesOpen = 0;
     }
@@ -972,7 +931,7 @@ void ogg123_onexit (int exitcode, void *arg)
   }
       
   if (Options.outputOpts.buffer) {
-    buffer_cleanup (Options.outputOpts.buffer);
+    buffer_destroy (Options.outputOpts.buffer);
     Options.outputOpts.buffer = NULL;
   }
 
