@@ -298,12 +298,13 @@ static void _span_queued_page(ogg_stream_state *os){
     os->lacing_fill=0;
     os->laceptr=0;
     os->clearflag=0;
+    os->packets=0;
 
     if(!os->header_tail){
       os->header_head=0;
       break;
     }else{
-      
+
       /* process/prepare next page, if any */
 
       ogg_page og;               /* only for parsing header values */
@@ -315,7 +316,7 @@ static void _span_queued_page(ogg_stream_state *os){
 
       oggbyte_init(&ob,os->header_tail,0);
       os->lacing_fill=oggbyte_read1(&ob,26);
-      
+
       /* are we in sequence? */
       if(pageno!=os->pageno){
 	if(os->pageno==-1) /* indicates seek or reset */
@@ -329,8 +330,9 @@ static void _span_queued_page(ogg_stream_state *os){
 	os->body_fill=0;
 
       }
-    
+
       if(ogg_page_continued(&og)){
+        os->continued=1;
 	if(os->body_fill==0){
 	  /* continued packet, but no preceeding data to continue */
 	  /* dump the first partial packet on the page */
@@ -342,6 +344,7 @@ static void _span_queued_page(ogg_stream_state *os){
 	  if(!os->spanflag && !os->holeflag)os->spanflag=2;
 	}
       }else{
+        os->continued=0;
 	if(os->body_fill>0){
 	  /* preceeding data to continue, but not a continued page */
 	  /* dump body_fill */
@@ -358,12 +361,12 @@ static void _span_queued_page(ogg_stream_state *os){
       if(os->laceptr<os->lacing_fill){
 	os->granulepos=ogg_page_granulepos(&og);
 
-	/* get current packet size & flag */
-	_next_lace(&ob,os);
-	os->body_fill+=os->body_fill_next; /* addition handles the flag fine;
+        /* get current packet size & flag */
+        _next_lace(&ob,os);
+        os->body_fill+=os->body_fill_next; /* addition handles the flag fine;
 					     unsigned on purpose */
-	/* ...and next packet size & flag */
-	_next_lace(&ob,os);
+        /* ...and next packet size & flag */
+        _next_lace(&ob,os);
 
       }
       
@@ -487,21 +490,16 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
       op->e_o_s=os->e_o_s;
     else
       op->e_o_s=0;
+
     if(os->mode&1){
       /* Discontinuous Mode */
-      printf("Not yet..\n");
-
-/* The jist of what needs to happen here :
-      if((!os->continued&&os->laceptr==0)||
-         (os->continued&&os->laceptr>0&&oggbyte_read1(ob,26+os->laceptr)<255))
-        op->granulepos=os->granulepos;
-        
- or, as Monty said,
-
-      "first lacing if continued flag is not set, else first lacing 
-       after the first non-255 lacing"
-*/
-
+      if(!os->continued) {
+        if(os->packets==0)op->granulepos=os->granulepos;
+        else op->granulepos=-1;
+      }else{
+        if(os->packets==1)op->granulepos=os->granulepos;
+        else op->granulepos=-1;
+      }
     }else{
       /* Continuous Mode */
       if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
@@ -509,6 +507,8 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
       else
         op->granulepos=-1;
     }
+    
+    os->packets++;
     op->packetno=os->packetno;
   }
 
