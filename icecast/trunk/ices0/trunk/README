@@ -60,7 +60,7 @@
                o Sending SIGHUP to ices will make it close and reopen the
                  logfile.
          3. Reencoding
-            If compiled with support for reencoding using liblame, and
+            If compiled with support for reencoding using libmp3lame, and
             you supply the -R command line option or set the
             Execution/Reencode to 1 in the XML config file, then ices
             will start reencoding your files on the fly to the bitrate
@@ -76,8 +76,8 @@
             part of lame (what does the decoding) is rather unstable and
             will call exit(0) when errors are encountered.
             This will make ices exit, which is kinda bad :)
-            I've only tested this with lame 3.86.1, and your mileage my
-            vary.
+	    You'll need at least lame 3.88beta, and current CVS is a bit
+	    better.
          4. Playlist handling
             About 96% of all emails I got about shout was people asking
             me to add small changes to shout playlist handling to suit

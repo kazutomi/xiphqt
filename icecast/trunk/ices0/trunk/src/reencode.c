@@ -21,8 +21,6 @@
 
 #include "definitions.h"
 
-#ifdef HAVE_LIBLAME
-
 #ifdef HAVE_LAME_LAME_H
 # include <lame/lame.h>
 #else
@@ -31,11 +29,13 @@
 
 extern ices_config_t ices_config;
 
-static int ices_reencode_initialized = 0;
+static int reencode_lame_allocated = 0;
 static lame_global_flags* ices_reencode_flags;
 static short int right[4096 * 30]; /* Probably overkill like hell, can someone calculate a better value please? */
 static short int left[4096 * 30];
 
+/* -- local prototypes -- */
+static void reencode_lame_init (void);
 
 /* Global function definitions */
 
@@ -44,47 +44,14 @@ static short int left[4096 * 30];
 void
 ices_reencode_initialize (void)
 {
-	if (!ices_config.reencode) 
-		return;
+  if (!ices_config.reencode) 
+    return;
 
-	if (! (ices_reencode_flags = lame_init ())) {
-		ices_log ("Error: initialization of liblame failed!");
-		ices_setup_shutdown ();
-	}
+#ifdef HAVE_LAME_NOGAP
+  reencode_lame_init ();
+#endif
 
-	lame_set_brate (ices_reencode_flags, ices_config.bitrate);
-	if (ices_config.out_numchannels != -1)
-		lame_set_num_channels (ices_reencode_flags, ices_config.out_numchannels);
-	if (ices_config.out_samplerate != -1)
-		lame_set_out_samplerate (ices_reencode_flags, ices_config.out_samplerate);
-
-	if (lame_init_params (ices_reencode_flags) == -1) {
-		ices_log ("Error: lame_init_params() failed!");
-	}
-
-	ices_log_debug ("Initializing lame version %s\n", get_lame_version ());
-	ices_reencode_initialized = 1;
-}
-
-/* Tell the reencoder what number of channels the current song has */
-void
-ices_reencode_set_channels (int channels)
-{
-	ices_reencode_flags->num_channels = channels;
-}
-
-/* Tell the reencoder what sample rate the current song is */
-void
-ices_reencode_set_sample_rate (int samplerate)
-{
-	ices_reencode_flags->in_samplerate = samplerate;
-}
-
-/* What mode is the current song in? */
-void
-ices_reencode_set_mode (int mode)
-{
-	ices_reencode_flags->mode = mode;
+  ices_log_debug ("Using LAME version %s\n", get_lame_version ());
 }
 
 /* For each song, reset the liblame engine, otherwize it craps out if
@@ -92,17 +59,21 @@ ices_reencode_set_mode (int mode)
 void
 ices_reencode_reset (void) 
 {
-	if (lame_decode_init () == -1) {
-		ices_log ("Error: initialization of liblame's decoder failed!");
-		ices_setup_shutdown ();
-	}
+#ifndef HAVE_LAME_NOGAP  
+  reencode_lame_init ();
+#endif
+
+  if (lame_decode_init () == -1) {
+    ices_log ("Error: initialization of liblame's decoder failed!");
+    ices_setup_shutdown ();
+  }
 }
 
 /* If initialized, shutdown the reencoding engine */
 void
 ices_reencode_shutdown (void)
 {
-  if (ices_reencode_initialized)
+  if (reencode_lame_allocated)
     lame_close (ices_reencode_flags);
 }
 
@@ -121,7 +92,49 @@ ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *ou
 int
 ices_reencode_flush (unsigned char *outbuf, int maxlen)
 {
-	int ret = lame_encode_flush_nogap (ices_reencode_flags, (char *)outbuf, maxlen);
-	return ret;
-}
+  int ret;
+
+#ifdef HAVE_LAME_NOGAP
+  ret = lame_encode_flush_nogap (ices_reencode_flags, (char *)outbuf, maxlen);
+#else
+  ret = lame_encode_flush (ices_reencode_flags, (char*) outbuf, maxlen);
+  lame_close (ices_reencode_flags);
+  reencode_lame_allocated = 0;
 #endif
+
+  return ret;
+}
+
+/* Resets the lame engine. Depending on which version of LAME we have, we must
+ * do this either only at startup or between each song */
+static void
+reencode_lame_init ()
+{
+  if (! (ices_reencode_flags = lame_init ())) {
+    ices_log ("Error initialising LAME.");
+    ices_setup_shutdown ();
+  }
+
+  /* not all of these functions were implemented by LAME 3.88 */
+#ifdef HAVE_LAME_NOGAP
+  lame_set_brate (ices_reencode_flags, ices_config.bitrate);
+  if (ices_config.out_numchannels != -1)
+    lame_set_num_channels (ices_reencode_flags, ices_config.out_numchannels);
+  if (ices_config.out_samplerate != -1)
+    lame_set_out_samplerate (ices_reencode_flags, ices_config.out_samplerate);
+#else
+  ices_reencode_flags->brate = ices_config.bitrate;
+  if (ices_config.out_numchannels != -1)
+    ices_reencode_flags->num_channels = ices_config.out_numchannels;
+  if (ices_config.out_samplerate != -1)
+    ices_reencode_flags->out_samplerate = ices_config.out_samplerate;
+#endif
+
+  /* lame_init_params isn't more specific about the problem */
+  if (lame_init_params (ices_reencode_flags) < 0) {
+    ices_log ("Error setting LAME parameters. Check bitrate, channels, and "
+	      "sample rate.");
+  }
+
+  reencode_lame_allocated = 1;
+}

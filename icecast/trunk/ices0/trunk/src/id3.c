@@ -161,17 +161,19 @@ ices_id3_get_filename (char *namespace, int maxlen)
 static void
 ices_id3_update_metadata (const char *filename, int file_bytes)
 {
-	static int first = 0;
+  static int first = 1;
+  static int delay = 0;
 
-	if (first == 0) {
-		ices_log_debug ("Initially delaying metadata update...");
-		thread_sleep (3000000);
-		first = 1;
-	}
+  if (first) {
+    ices_log_debug ("Initially delaying metadata update...");
+    delay = 3000000;
+  } else
+    delay = 0;
 
-	if (thread_create ("Metadata Update Thread", ices_id3_update_thread, NULL) == -1) {
-		ices_log ("Error: Could not create metadata update thread!");
-	}
+  if (thread_create ("Metadata Update Thread", ices_id3_update_thread, &delay) == -1) {
+    ices_log ("Error: Could not create metadata update thread!");
+  }
+
 }
 
 /* Function used by the updating thread to update metadata on server.
@@ -183,33 +185,36 @@ ices_id3_update_metadata (const char *filename, int file_bytes)
 void *
 ices_id3_update_thread (void *arg)
 {
-	int ret;
-	char metastring[1024], song[2048], artistspace[1024], titlespace[1024],
-	     filespace[1024];
-	char *id3_artist = ices_id3_get_artist (artistspace, 1024);
-	char *id3_song = ices_id3_get_title (titlespace, 1024);
-	const char *filename = ices_id3_get_filename (filespace, 1024);
-	
-	if (id3_artist) {
-		sprintf (song, "%s - %s", id3_artist, id3_song ? id3_song : filename);
-	} else {
-		sprintf (song, "%s", (id3_song != NULL) ? id3_song : ices_id3_filename_cleanup (filename, metastring, 1024));
-	}
-	
-	if (ices_config.header_protocol == icy_header_protocol_e)
-		sprintf (metastring, "%s", song);
-	else
-		sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
+  int ret;
+  char metastring[1024], song[2048], artistspace[1024], titlespace[1024],
+    filespace[1024];
+  char *id3_artist = ices_id3_get_artist (artistspace, 1024);
+  char *id3_song = ices_id3_get_title (titlespace, 1024);
+  const char *filename = ices_id3_get_filename (filespace, 1024);
+  
+  if (*((int*)arg))
+    thread_sleep (*((int*)arg));
 
-	ret = shout_update_metadata (&conn, metastring);
+  if (id3_artist) {
+    sprintf (song, "%s - %s", id3_artist, id3_song ? id3_song : filename);
+  } else {
+    sprintf (song, "%s", (id3_song != NULL) ? id3_song : ices_id3_filename_cleanup (filename, metastring, 1024));
+  }
 	
-	if (ret != 1)
-		ices_log ("Updating metadata on server failed.");
-	else
-		ices_log ("Updated metadata on server to: %s", song);
+  if (ices_config.header_protocol == icy_header_protocol_e)
+    sprintf (metastring, "%s", song);
+  else
+    sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
+
+  ret = shout_update_metadata (&conn, metastring);
 	
-	thread_exit (0);
-	return 0;
+  if (ret != 1)
+    ices_log ("Updating metadata on server failed.");
+  else
+    ices_log ("Updated metadata on server to: %s", song);
+	
+  thread_exit (0);
+  return 0;
 }
 
 /* Function that does the id3 tag parsing of a file */

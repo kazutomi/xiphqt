@@ -22,9 +22,6 @@
 void ices_reencode_initialize (void);
 void ices_reencode_shutdown (void);
 int ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *outbuf, int outlen);
-void ices_reencode_set_channels (int channels);
-void ices_reencode_set_sample_rate (int samplerate);
-void ices_reencode_set_mode (int mode);
 void ices_reencode_reset (void);
 int ices_reencode_flush (unsigned char *outbuf, int maxlen);
 

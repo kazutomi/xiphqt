@@ -1,21 +1,20 @@
 BUILDING FROM SOURCE
 ~~~~~~~~~~~~~~~~~~~~
 Do ./configure, optionally with --with-perl, --with-python and --with-lame, 
-if you want support for that.
+if you want support for them (but configure will try to detect them
+automatically).
 
 If for some reason the configure script doesn't find the include files for
 python, perl or lame, you have to specify the path to these with
 --with-something-includes and --with-something-libraries.
 
-It's probably a good idea to do this anyway.
-
 ./configure --help will help you out with the exact syntax for those options.
 
-To configure it all, I use
-./configure --with-perl --with-python --with-lame --with-lame-includes=/home/eel/lame --with-lame-libraries=/home/eel/lame
+To configure it all on my debian/sid system with python 2, I use
+./configure --with-python-includes=/usr/include/python2
 
-My python is in /usr/include/python1.5, and perl in /usr/lib/perl/perl5/..., but the configure script
-finds it there so I don't have to specify the path for those.
+I installed lame as a debian package so lame.h is in /usr/include/lame/lame.h
+and libmp3lame.a is in /usr/lib. configure finds everything automatically.
 
 Then, do 'make' and everything should be fine.
 
