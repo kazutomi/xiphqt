@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.2 2003/01/21 08:18:34 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.3 2003/01/21 10:21:06 xiphmont Exp $
 
  ********************************************************************/
 
@@ -111,5 +111,14 @@ struct ogg_stream_state {
   struct ogg_stream_state *next;
 
 };
+
+extern void ogg_buffer_init(ogg_buffer_state *bs);
+extern void ogg_buffer_clear(ogg_buffer_state *bs);
+extern ogg_buffer *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes);
+extern void ogg_buffer_release(ogg_buffer *ob,ogg_buffer_state *bs);
+extern void ogg_reference_mark(ogg_buffer_reference *or);
+extern void ogg_reference_release(ogg_buffer_reference *or);
+
+
 
 #endif

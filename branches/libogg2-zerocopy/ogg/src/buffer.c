@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.2 2003/01/21 08:18:34 xiphmont Exp $
+  last mod: $Id: buffer.c,v 1.1.2.3 2003/01/21 10:21:06 xiphmont Exp $
 
  ********************************************************************/
 
