@@ -45,7 +45,6 @@ sub module_instance{
 	$adj=int($adj+.5)/10;
 
 	# modify the label (if needed)
-	$label=~s{/dev/}{}; # strip 'dev' off dev mounts
 
 	$toplevel->optionAdd("$xpath.bar.$i.label", "$label $adj$mult",22);
 	shift @data;
@@ -81,16 +80,17 @@ sub read_proc{
     if($temp[0]=~m/Filesystem/){
 	shift @temp;
 	while(defined(my$line=shift @temp)){
-	    if($line=~m/^(\S+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)/){
+	    if($line=~m/^\S+\s+(\d+)\s+\d+\s+\d+\s+(\d+)\%\s+(\S+)/){
 
 		# is this a label we want to display?  Filter /proc and AFS
 		# for example...
 
-		next if($1=~m/^\s*AFS/);
-		next if($1=~m/^\/?proc/);
+		next if($3=~m/^\/?afs/);
+		next if($3=~m/^\/?proc/);
+		next if($3=~m/^\/?kern/);
 
 		$fs++;
-		push @data, ($1,$2*1024,$3);
+		push @data, ($3,$1*1024,$2);
 	    }
 	}
     }

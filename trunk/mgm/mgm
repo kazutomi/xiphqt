@@ -8,7 +8,11 @@ use strict;
 use vars qw($basedir $moddir $libdir $fontfile $toplevel
 	    $orient $stack $background $foreground);
 
-# find our install without hardwiring it.  What was the execution path?
+# current install strategy: plop ourselves somewhere line
+# /usr/local/mgm.  Make sure the mgm entry that is found in the path
+# is a symlink to the absolute path of the actual Perl script.  That
+# way, $0 will be a full path.
+
 $basedir=$0;
 # find the real mgm, not a symlink
 while(defined(my$test=readlink($basedir))){$basedir=$test};
