@@ -125,5 +125,6 @@ AC_CONFIG_FILES([
   include/Makefile include/theora/Makefile
   examples/Makefile doc/Makefile
   debian/Makefile
+  theora.pc
 ])
 AC_OUTPUT
