@@ -124,7 +124,7 @@ int VorbisPlugin::processVorbis(vorbis_info* vi,vorbis_comment* comment) {
 			     decoding in case we need to change
 			     playback settings at a section
 			     boundary */
-  ret=ov_read(&vf,pcmout,sizeof(pcmout),0,2,1,&current_section);
+  ret=ov_read(&vf,pcmout,4096,0,2,1,&current_section);
   switch(ret){
   case 0:
     /* EOF */
