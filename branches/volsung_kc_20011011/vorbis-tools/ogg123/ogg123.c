@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.1 2001/10/14 05:42:51 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.2 2001/10/15 05:56:55 volsung Exp $
 
  ********************************************************************/
 
@@ -47,6 +47,7 @@ ogg123_options_t Options;
 
 char skipfile_requested;
 char exit_requested;
+char pause_requested;
 
 pthread_mutex_t stats_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -562,10 +563,6 @@ int main(int argc, char **argv)
 	optind++;
     }
 
-    if (Options.outputOpts.buffer != NULL) {
-      buffer_wait_for_empty (Options.outputOpts.buffer);
-    }
-    
     exit (0);
 }
 
@@ -599,14 +596,8 @@ void SigHandler (int signo)
   switch (signo) {
   case SIGINT:
     exit_requested = 1;
-    if (Options.outputOpts.buffer)
-      buffer_thread_kill (Options.outputOpts.buffer);
-    break;
   case SIGTSTP:
-    if (Options.outputOpts.buffer) {
-      buffer_thread_pause (Options.outputOpts.buffer);
-    }
-    kill (getpid(), SIGSTOP);
+    pause_requested = 1;
     /* buffer_Pause (Options.outputOpts.buffer);
        buffer_WaitForPaused (Options.outputOpts.buffer);
        }
@@ -622,8 +613,6 @@ void SigHandler (int signo)
     */
     break;
   case SIGCONT:
-    if (Options.outputOpts.buffer)
-      buffer_thread_unpause (Options.outputOpts.buffer);
     break;
   default:
     psignal (signo, "Unknown signal caught");
@@ -709,7 +698,8 @@ void play_file()
     }
         
     exit_requested = 0;
-    
+    pause_requested = 0;
+
     while (!eof && !exit_requested) {
       int i;
       vorbis_comment *vc = ov_comment(&vf, -1);
@@ -774,14 +764,20 @@ void play_file()
 	
 	if (skipfile_requested) {
 	  eof = eos = 1;
-	  skipfile_requested = 0;
 	  signal(SIGALRM,signal_activate_skipfile);
 	  alarm(Options.playOpts.delay);
-	  if (Options.outputOpts.buffer) {
-	    buffer_thread_kill (Options.outputOpts.buffer);
-	  }
 	  break;
 	}
+
+	if (pause_requested) {
+	  buffer_thread_pause (Options.outputOpts.buffer);
+	  kill (getpid(), SIGSTOP); /* We stall here */
+	  
+	  /* Done pausing */
+	  buffer_thread_unpause (Options.outputOpts.buffer);
+	  pause_requested = 0;
+	}
+
 
 	old_section = current_section;
 	ret =
@@ -824,8 +820,13 @@ void play_file()
 
       /* Done playing this logical bitstream.  Now we cleanup. */
       if (Options.outputOpts.buffer) {
-	buffer_mark_eos (Options.outputOpts.buffer);
-	buffer_wait_for_empty (Options.outputOpts.buffer);
+	fprintf(stderr, "exit requested = %d", exit_requested);
+
+	if (!exit_requested && !skipfile_requested) {
+	  buffer_mark_eos (Options.outputOpts.buffer);
+	  buffer_wait_for_empty (Options.outputOpts.buffer);
+	}
+
 	buffer_thread_kill (Options.outputOpts.buffer);
       }
 
