@@ -8,9 +8,49 @@ Creating Ogg video files on Linux
 <style>
 <!--
 .shift {margin-left: 15px;}
+table.command {border: thin dotted black; background-color: #f5f5f5; width: 80%}
 -->
 </style>
 
-	
+A easy way to convert a video to theora (ogg) format is to use 
+<a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a>.
+Just <a href="http://www.v2v.cc/~j/ffmpeg2theora/download.html">download</a>
+the binary and run
+<br>
+<table class="command">
+<tr><td>
+ffmpeg2theora videoclip.avi
+</td></tr>
+<table>
+This will create videoclip.avi.ogg. To explore see some more
+<a href="http://www.v2v.cc/~j/ffmpeg2theora/examples.html"> examples</a>. 
+You can also try a KDE fontend 
+(<a href="http://www.kde-apps.org/content/show.php?content=17831">Katiuska</a>)
+for same.
+<br><br>
+You can also use mplayer/encoder_example to encode your videos. 
+Firstly, using mencoder you will need to extract from your video file
+raw video and audio stream. Then you can use encoder_example (supplied
+with theora package) to make a ogg video.
+<table class="command">
+<tr><td>
+mkfifo stream.wav
+</td></tr>
+<tr><td>
+mkfifo stream.yuv
+</td></tr>
+<tr><td>
+mplayer -quiet -ao pcm -aofile stream.wav -vo null -vc null inputvideo.avi
+</td></tr>
+<tr><td>
+mplayer -quiet -vo yuv4mpeg -ao null -ac null -nosound inputvideo.avi
+</td></tr>
+<tr><td>
+encoder_example -v 3 -a 2 stream.wav stream.yuv &gt; outfile.ogg
+</td></tr>
+<table>
+You can <a href="http://www.hut.fi/~tajyrink/proj_info.html">
+download a script</a> that does all this.
+<br><br>
 Go back to <a href="/ogg/howto/">ogg howto</a>
 <!--#include virtual="/xiphbottom.include" -->

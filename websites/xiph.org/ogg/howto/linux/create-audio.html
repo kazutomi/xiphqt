@@ -8,9 +8,30 @@ Creating Ogg audio files on Linux
 <style>
 <!--
 .shift {margin-left: 15px;}
+table.command {border: thin dotted black; background-color: #f5f5f5; width: 80%}
 -->
 </style>
 
-	
+You can try using <a href="http://oggasm.sf.net/">oggasm</a> to convert mp3 to ogg vorbis. 
+You can also try <a href="http://www.hut.fi/~tajyrink/proj_info.html#convvorbis">
+a modified version</a> of same software with some enhancements.
+<br><br>
+One can also try <a href="http://www.vorbis.com/">oggenc</a> which is 
+supplied with vorbis-tools to convert raw wav files to wav.
+<table class="command">
+<tr><td>
+oggenc input.wav
+</td></tr>
+<table>
+<br>
+To rip audio on CD to ogg files, you can first rip it to wav files using 
+<a href="http://www.xiph.org/paranoia/">CD Paranoia</a> and then use oggenc
+to convert wav to ogg. <a href="http://korbis.sourceforge.net/korbis.html">
+Korbis</a> provides a KDE based frontend to this.
+<br><br>
+Note: Converting files from mp3 to ogg is not recommended. This is becase,
+both mp3 and ogg vorbis are lossy formats and changing from one lossy format
+to other will result in degradation in quality.
+<br><br>
 Go back to <a href="/ogg/howto/">ogg howto</a>
 <!--#include virtual="/xiphbottom.include" -->
