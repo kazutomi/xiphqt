@@ -1,0 +1,38 @@
+Ices Playlist Management
+------------------------
+
+----------------------------------------------------
+What you need to do to write a python or perl script
+to handle your playlists.
+----------------------------------------------------
+First, take a look in ices.pm for perl or ices.py
+for python. These files are skeletons for your code.
+They contain the functions (or procedures or whatever
+your languages calls them) that need to be present
+in a playlist handler. Ices will call these functions
+and it's up to you to specify what they should do.
+
+The init function, called ices_perl_initialize(), or
+ices_python_initialize(), is called once when ices
+starts. Here you could setup and login to your
+database, randomize your playlist files, launch
+a GTK window with a file selector, anything
+you want. Remember to return 1 if everything is ok,
+and 0 if something went wrong.
+
+The shutdown function is called when ices exits, and
+is the place where you cleanup all your stuff, close
+the connections, close the files, cleanup memory, etc.
+Return 1 if ok, 0 if something went wrong.
+
+The get_next function (ices_perl_get_next(), ices_python_get_next()),
+is a function that should return a string with the filename
+that ices should stream next. If you return NULL ices will
+exit.
+
+The get_current_lineno() function should return 0 the very
+first time, and then an arbitrary nonzero number indicating
+which song is playing. The 0 is important if you want
+titlestreaming to work for the very first song. The next return
+values will be used when updating the cue file. If you don't
+care about the cue file, then return whatever you want.

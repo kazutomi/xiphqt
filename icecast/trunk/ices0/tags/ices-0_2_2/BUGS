@@ -1,0 +1,3 @@
+- ices will crash due to a segfault in mpglib when reencoding
+  corrupted mp3 files. We have to live with this until someone
+  takes the time to clean up mpglib.
