@@ -23,6 +23,7 @@
 #define IDM_BITRATE350                  40009
 #define IDM_BITRATE192                  40010
 #define IDM_BITRATE160                  40011
+#define IDM_LOGERR                      40012
 
 // Next default values for new objects
 // 
@@ -30,7 +31,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        132
-#define _APS_NEXT_COMMAND_VALUE         40012
+#define _APS_NEXT_COMMAND_VALUE         40013
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

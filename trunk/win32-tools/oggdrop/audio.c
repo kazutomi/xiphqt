@@ -15,9 +15,9 @@
 #include <string.h>
 #include <sys/types.h>
 #include <malloc.h>
+#include <windows.h>
+#include <stdarg.h>
 #include "audio.h"
-
-#define WAV_HEADER_SIZE 44
 
 /* Macros to read header data */
 #define READ_U32(buf) \
@@ -25,6 +25,9 @@
 
 #define READ_U16(buf) \
 	(((buf)[1]<<8)|((buf)[0]&0xff));
+
+static char *_filename;
+void (*error_handler)(const char *fmt, ...) = error_dialog;
 
 static int find_chunk(FILE *in, char *type, unsigned int *len)
 {
@@ -34,6 +37,7 @@ static int find_chunk(FILE *in, char *type, unsigned int *len)
 	{
 		if(fread(buf,1,8,in) < 8) /* Suck down a chunk specifier */
 		{
+			error_handler("Unexpected EOF in reader WAV header");
 			fprintf(stderr, "Warning: Unexpected EOF in reading WAV header\n");
 			return 0; /* EOF before reaching the appropriate chunk */
 		}
@@ -49,9 +53,10 @@ static int find_chunk(FILE *in, char *type, unsigned int *len)
 				while(seek_needed>0)
 				{
 					seeked = fread(buf2,1,seek_needed>1024?1024:seek_needed,in);
-					if(!seeked)
+					if(!seeked) {
+						error_handler("Unexpected EOF in reading WAV header");
 						return 0; /* Couldn't read more, can't read file */
-					else
+					} else
 						seek_needed -= seeked;
 				}
 			}
@@ -68,20 +73,22 @@ static int find_chunk(FILE *in, char *type, unsigned int *len)
 
 int wav_open(FILE *in, oe_enc_opt *opt)
 {
-	unsigned char buf[16];
+	unsigned char hdrbuf[12];
+	unsigned char *buf;
 	unsigned int len;
 	wav_fmt format;
 	wavfile *wav = malloc(sizeof(wavfile));
 
-	int ret = fread(buf, 1, 12, in);
+	int ret = fread(hdrbuf, 1, 12, in);
+
 	if(ret < 12)
 		return 0;
 
-	if(memcmp(buf, "RIFF", 4))
+	if(memcmp(hdrbuf, "RIFF", 4))
 		return 0;
 
-	len = READ_U32(buf+4); /* We don't actually use this */
-	if(memcmp(buf+8, "WAVE",4))
+	len = READ_U32(hdrbuf+4); /* We don't actually use this */
+	if(memcmp(hdrbuf+8, "WAVE",4))
 		return 0; /* Not wave file */
 
 	/* Ok. At this point, we know we have a WAV file. Now we have to detect
@@ -91,24 +98,54 @@ int wav_open(FILE *in, oe_enc_opt *opt)
 	if(!find_chunk(in, "fmt ", &len))
 		return 0; /* EOF */
 
-	if(len!=16) 
+	/* dunamic allocation, since "fmt" chunk can be any length */
+	buf = malloc(len);
+
+	if(len<16) 
 	{
-		fprintf(stderr, "Warning: Unrecognised format chunk in WAV header\n");
+		free(buf);
+		error_handler("Truncated format chunk of length %d in WAV header", len);
+		fprintf(stderr, "Error: Truncated format chunk in WAV header\n");
 		return 0; /* Weird format chunk */
 	}
 
-	if(fread(buf,1,16,in) < 16)
+	if(fread(buf,1,len,in) < 16)
 	{
-		fprintf(stderr, "Warning: Unexpected EOF in reading WAV header\n");
+		free(buf);
+		error_handler("Unexpected EOF in reading WAV header");
+		fprintf(stderr, "Error: Unexpected EOF in reading WAV header\n");
 		return 0;
 	}
 
 	format.format =      READ_U16(buf); 
+
+/* temporary hack, until we decide where to put this defined constant */
+#ifndef WAVE_FORMAT_PCM
+# define WAVE_FORMAT_PCM 0x0001
+#endif
+
+	if (format.format != WAVE_FORMAT_PCM)
+	{
+		free(buf);
+		error_handler("WAVE format: %#02.02x not supported.", format.format);
+		fprintf(stderr, "Error: WAVE format: %#02.02x not supported.\n", format.format);
+		return 0;
+	} 
+	else if (len > 18)
+	{
+		free(buf);
+		error_handler("WAVE PCM with bad format size %d\n", len);
+		fprintf(stderr, "Error: WAVE PCM with bad format size: %d\n", len);
+		return 0;
+	}
+
 	format.channels =    READ_U16(buf+2); 
 	format.samplerate =  READ_U32(buf+4);
 	format.bytespersec = READ_U32(buf+8);
 	format.align =       READ_U16(buf+12);
 	format.samplesize =  READ_U16(buf+14);
+
+	free(buf);
 
 	if(!find_chunk(in, "data", &len))
 		return 0; /* EOF */
@@ -118,10 +155,6 @@ int wav_open(FILE *in, oe_enc_opt *opt)
 		format.align == format.channels*2 && /* We could deal with this one pretty easily */
 		format.samplesize == 16)
 	{
-		if(format.samplerate != 44100)
-			fprintf(stderr, "Warning: Vorbis is currently not tuned for input\n"
-							" at other than 44.1kHz. Quality may be somewhat\n"
-							" degraded.\n");
 		/* OK, good - we have the one supported format,
 		   now we want to find the size of the file */
 		opt->rate = format.samplerate;
@@ -160,7 +193,14 @@ int wav_open(FILE *in, oe_enc_opt *opt)
 	}
 	else
 	{
-		fprintf(stderr, "ERROR: Wav file is unsupported subformat (must be 44.1kHz/16bit, this is %f/%dbit, %s)\n", (double)format.samplerate/1000, format.samplesize, (format.channels ==1)?"mono":"stereo");
+		error_handler("WAV file is unsupported subformat (must be 44.1kHz/16bit, this is %f/%dbit, %s)\n",
+			(double)format.samplerate / 1000,
+			format.samplesize,
+			(format.channels == 1) ? "mono" : "stereo");
+		fprintf(stderr, "ERROR: WAV file is unsupported subformat (must be 44.1kHz/16bit, this is %f/%dbit, %s)\n",
+			(double)format.samplerate / 1000,
+			format.samplesize,
+			(format.channels == 1) ? "mono" : "stereo");
 		return 0;
 	}
 }
@@ -234,4 +274,105 @@ int raw_open(FILE *in, oe_enc_opt *opt)
 	opt->read_samples = raw_read_stereo; /* it's the same, currently */
 	opt->total_samples_per_channel = 0; /* raw mode, don't bother */
 	return 1;
+}
+
+/**
+ * Set teh current input file name.
+ */
+void set_filename(const char *filename)
+{
+	_filename = filename;
+}
+
+/**
+ * Display an error dialog, possibly adding system error information.
+ */
+void error_dialog(const char *fmt, ...)
+{
+	va_list ap;
+	char msgbuf[1024];
+	char *bufp = msgbuf;
+
+	/* A really rough sanity check to protect against blatant buffer overrun */
+	if (strlen(fmt) > 750)
+	{
+		sprintf(msgbuf, "%s %s", "<buffer overflow> ", fmt);
+	} 
+	else 
+	{
+		if (_filename != NULL && strlen(_filename) < 255)
+		{
+			sprintf(msgbuf, "%s: ", _filename);
+			bufp += strlen(msgbuf);
+		}
+
+		va_start(ap, fmt);
+		
+		vsprintf(bufp, fmt, ap);
+
+		va_end(ap);
+
+		if (errno != 0)
+		{
+			bufp = msgbuf + strlen(msgbuf);
+			sprintf(bufp, " error is %s (%d)", strerror(errno), errno);
+			errno = 0;
+		}
+	}
+
+	MessageBox(NULL, msgbuf, "Error", 0);
+}
+
+void log_error(const char *fmt, ...)
+{
+	va_list ap;
+	FILE *fp;
+	char msgbuf[1024];
+	char *bufp = msgbuf;
+
+	/* A really rough sanity check to protect against blatant buffer overrun */
+	if (strlen(fmt) > 750)
+	{
+		sprintf(msgbuf, "%s %s", "<buffer overflow> ", fmt);
+	}
+	else
+	{
+		if (_filename != NULL && strlen(_filename) < 255)
+		{
+			sprintf(msgbuf, "%s : ", _filename);
+			bufp += strlen(msgbuf);
+		}
+
+		va_start(ap, fmt);
+
+		vsprintf(bufp, fmt, ap);
+
+		va_end(ap);
+
+		if (errno != 0)
+		{
+			bufp = msgbuf + strlen(msgbuf);
+			sprintf(bufp, " error is: %s (%d)", strerror(errno), errno);
+			errno = 0;
+		}
+	}
+
+	va_start(ap, fmt);
+
+	if ((fp = fopen("oggdrop.log", "a")) == (FILE *)NULL)
+		return;
+
+	fprintf(fp, "%s\n", msgbuf);
+	fflush(fp);
+	fclose(fp);
+
+	va_end(ap);
+}
+
+void set_use_dialogs(int use_dialogs)
+{
+	if (!use_dialogs)
+		error_handler = log_error;
+	else
+		error_handler = error_dialog;
 }

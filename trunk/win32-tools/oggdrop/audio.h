@@ -29,5 +29,12 @@ long wav_read_stereo(void *, float **buffer, int samples);
 long wav_read_mono(void *, float **buffer, int samples);
 long raw_read_stereo(void *, float **buffer, int samples);
 
+void set_filename(const char *filename);
+
+extern void error_dialog(const char *fmt, ...);
+extern void log_error(const char *fmt, ...);
+extern void set_use_dialogs(int use_dialogs);
+extern void (*error_handler)(const char *fmt, ...);
+
 #endif /* __AUDIO_H */
 
