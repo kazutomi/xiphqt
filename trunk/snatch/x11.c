@@ -495,7 +495,7 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
   int ret;
 
   if(snatch_active==1 && id==rpvideo_window){
-    fprintf(stderr,"putimage");
+
   }
 
   /* Subvert the Real sign on logo; paste the Snatch logo in.
@@ -630,11 +630,15 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 			       dest_x, dest_y, width, height, send_event);
 
 
-  fprintf(stderr,"shm");
-  
   if(snatch_active==1 && id==rpvideo_window){
-    fprintf(stderr,"putimage");
+
   }
   
+  return(ret);
+}
+
+int XCloseDisplay(Display  *d){
+  int ret=(*xlib_xclose)(d);
+  if(debug)fprintf(stderr,"    ...: X display closed; goodbye.\n\n");
   return(ret);
 }

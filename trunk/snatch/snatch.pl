@@ -969,7 +969,7 @@ sub ReadStderr{
 	ThrowRealPlayer();
     }
 
-    if($scalar=~/shut down X/){
+    if($scalar=~/X display closed/){
 	Disconnect();
 	$toplevel->fileevent(REAL_STDERR,'readable' => ''); 
       Tk::exit(0);
