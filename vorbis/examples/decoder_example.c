@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: simple example decoder
- last mod: $Id: decoder_example.c,v 1.27 2002/07/12 15:07:52 giles Exp $
+ last mod: $Id: decoder_example.c,v 1.9 2000/06/15 09:18:34 xiphmont Exp $
 
  ********************************************************************/
 
@@ -24,23 +25,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <vorbis/codec.h>
+#include "vorbis/codec.h"
 
 #ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
 #include <io.h>
 #include <fcntl.h>
 #endif
 
-#if defined(__MACOS__) && defined(__MWERKS__)
-#include <console.h>      /* CodeWarrior's Mac "command-line" support */
-#endif
-
-ogg_int16_t convbuffer[4096]; /* take 8k out of the data segment, not the stack */
+int16_t convbuffer[4096]; /* take 8k out of the data segment, not the stack */
 int convsize=4096;
 
-extern void _VDBG_dump(void);
-
-int main(){
+int main(int argc, char **argv){
   ogg_sync_state   oy; /* sync and verify incoming physical bitstream */
   ogg_stream_state os; /* take physical pages, weld into a logical
 			  stream of packets */
@@ -63,14 +58,6 @@ int main(){
   _setmode( _fileno( stdout ), _O_BINARY );
 #endif
 
-#if defined(macintosh) && defined(__MWERKS__)
-  {
-    int argc;
-    char **argv;
-    argc=ccommand(&argv); /* get a "command line" from the Mac user */
-                     /* this also lets the user set stdin and stdout */
-  }
-#endif
 
   /********** Decode setup ************/
 
@@ -157,7 +144,7 @@ int main(){
 	  while(i<2){
 	    result=ogg_stream_packetout(&os,&op);
 	    if(result==0)break;
-	    if(result<0){
+	    if(result==-1){
 	      /* Uh oh; data at some point was corrupted or missing!
 		 We can't tolerate that in a header.  Die. */
 	      fprintf(stderr,"Corrupt secondary header.  Exiting.\n");
@@ -206,7 +193,7 @@ int main(){
       while(!eos){
 	int result=ogg_sync_pageout(&oy,&og);
 	if(result==0)break; /* need more data */
-	if(result<0){ /* missing or corrupt data at this page position */
+	if(result==-1){ /* missing or corrupt data at this page position */
 	  fprintf(stderr,"Corrupt or missing data in bitstream; "
 		  "continuing...\n");
 	}else{
@@ -216,18 +203,18 @@ int main(){
 	    result=ogg_stream_packetout(&os,&op);
 
 	    if(result==0)break; /* need more data */
-	    if(result<0){ /* missing or corrupt data at this page position */
+	    if(result==-1){ /* missing or corrupt data at this page position */
 	      /* no reason to complain; already complained above */
 	    }else{
 	      /* we have a packet.  Decode it */
-	      float **pcm;
+	      double **pcm;
 	      int samples;
 	      
 	      if(vorbis_synthesis(&vb,&op)==0) /* test for success! */
 		vorbis_synthesis_blockin(&vd,&vb);
 	      /* 
 		 
-	      **pcm is a multichannel float vector.  In stereo, for
+	      **pcm is a multichannel double vector.  In stereo, for
 	      example, pcm[0] is left, and pcm[1] is right.  samples is
 	      the size of each channel.  Convert the float values
 	      (-1.<=range<=1.) to whatever PCM format and write it out */
@@ -237,17 +224,13 @@ int main(){
 		int clipflag=0;
 		int bout=(samples<convsize?samples:convsize);
 		
-		/* convert floats to 16 bit signed ints (host order) and
+		/* convert doubles to 16 bit signed ints (host order) and
 		   interleave */
 		for(i=0;i<vi.channels;i++){
-		  ogg_int16_t *ptr=convbuffer+i;
-		  float  *mono=pcm[i];
+		  int16_t *ptr=convbuffer+i;
+		  double  *mono=pcm[i];
 		  for(j=0;j<bout;j++){
-#if 1
-		    int val=mono[j]*32767.f;
-#else /* optional dither */
-		    int val=mono[j]*32767.f+drand48()-0.5f;
-#endif
+		    int val=mono[j]*32767.;
 		    /* might as well guard against clipping */
 		    if(val>32767){
 		      val=32767;
@@ -258,7 +241,7 @@ int main(){
 		      clipflag=1;
 		    }
 		    *ptr=val;
-		    ptr+=vi.channels;
+		    ptr+=2;
 		  }
 		}
 		
@@ -295,7 +278,6 @@ int main(){
     
     vorbis_block_clear(&vb);
     vorbis_dsp_clear(&vd);
-	vorbis_comment_clear(&vc);
     vorbis_info_clear(&vi);  /* must be called last */
   }
 
@@ -305,3 +287,4 @@ int main(){
   fprintf(stderr,"Done.\n");
   return(0);
 }
+

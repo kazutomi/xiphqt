@@ -4,18 +4,18 @@
 
 
 <h1><font color=#000070>
-Programming with Xiph.org <tt>libvorbis</tt>
+Programming with Xiphophorus <tt>libvorbis</tt>
 </font></h1>
 
 <em>Last update to this document: July 22, 1999</em><br> 
 
 <h2>Description</h2> 
 
-Libvorbis is the Xiph.org Foundation's portable Ogg Vorbis CODEC
-implemented as a programmatic library.  Libvorbis provides primitives
-to handle framing and manipulation of Ogg bitstreams (used by the
-Vorbis for streaming), a full analysis (encoding) interface as well as
-packet decoding and synthesis for playback. <p>
+Libvorbis is Xiphophorus's portable Ogg Vorbis CODEC implemented as a
+programmatic library.  Libvorbis provides primitives to handle framing
+and manipulation of Ogg bitstreams (used by the Vorbis for
+streaming), a full analysis (encoding) interface as well as packet
+decoding and synthesis for playback. <p>
 
 The libvorbis library does not provide any system interface; a
 full-featured demonstration player included with the library
@@ -98,7 +98,7 @@ typedef struct {
   long  b_o_s;
   long  e_o_s;
 
-  size64 granulepos;
+  size64 frameno;
 
 } ogg_packet;
 </pre>
@@ -110,7 +110,7 @@ typedef struct {
               the logical bitstream
 <dt>e_o_s: <dd>end of stream; nonzero if this is the last packet of the 
               logical bitstream
-<dt>granulepos: <dd>the absolute position of this packet in the original 
+<dt>frameno: <dd>the absolute position of this packet in the original 
              uncompressed data stream.
 </dl>
 
@@ -123,10 +123,10 @@ page.  <tt>e_o_s</tt>, however, must be set; this is the means by
 which the stream encoding primitives handle end of stream and cleanup.
 
 <h4>decoding notes</h4><tt>ogg_stream_packetout()</tt> sets the fields
-to appropriate values.  Note that granulepos will be >= 0 only in the
+to appropriate values.  Note that frameno will be >= 0 only in the
 case that the given packet actually represents that position (ie, only
 the last packet completed on any page will have a meaningful
-<tt>granulepos</tt>).  Intervening frames will see <tt>granulepos</tt> set
+<tt>frameno</tt>).  Intervening frames will see <tt>frameno</tt> set
 to -1.
 
 <h3>ogg_page</h3>
@@ -189,7 +189,7 @@ logical bitstream and that no addiitonal pages belonging to this
 bitstream may follow.<p>
 
 <h3>
-size64 ogg_page_granulepos(ogg_page *og);
+size64 ogg_page_frameno(ogg_page *og);
 </h3>
 
 Returns the position of this page as an absolute position within the
@@ -476,27 +476,32 @@ when the number of bytes written were larger than the buffer.<p>
 </a>
 <font size=-2 color=#505050>
 
-Ogg is a <a href="http://www.xiph.org"></a> effort to
+Ogg is a <a href="http://www.xiph.org">Xiphophorus</a> effort to
 protect essential tenets of Internet multimedia from corporate
 hostage-taking; Open Source is the net's greatest tool to keep
 everyone honest. See <a href="http://www.xiph.org/about.html">About
-</a> for details.
+Xiphophorus</a> for details.
 <p>
 
-Ogg Vorbis is the first Ogg audio CODEC.  Anyone may freely use and
-distribute the Ogg and Vorbis specification, whether in a private,
-public or corporate capacity.  However, the Xiph.org Foundation and
-the Ogg project (xiph.org) reserve the right to set the Ogg Vorbis
-specification and certify specification compliance.<p>
+Ogg Vorbis is the first Ogg audio CODEC.  Anyone may
+freely use and distribute the Ogg and Vorbis specification,
+whether in a private, public or corporate capacity.  However,
+Xiphophorus and the Ogg project (xiph.org) reserve the right to set
+the Ogg/Vorbis specification and certify specification compliance.<p>
 
-Xiph.org's Vorbis software CODEC implementation is distributed under a
-BSD-like license.  This does not restrict third parties from
-distributing independent implementations of Vorbis software under
-other licenses.<p>
+Xiphophorus's Vorbis software CODEC implementation is distributed
+under the Lesser/Library GNU Public License.  This does not restrict
+third parties from distributing independent implementations of Vorbis
+software under other licenses.<p>
 
-Ogg, Vorbis, Xiph.org Foundation and their logos are trademarks (tm)
-of the <a href="http://www.xiph.org/">Xiph.org Foundation</a>.  These
-pages are copyright (C) 1994-2002 Xiph.org Foundation. All rights
-reserved.<p>
+OggSquish, Vorbis, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-2000 Xiphophorus. All rights reserved.<p>
 
 </body>
+
+
+
+
+
+
