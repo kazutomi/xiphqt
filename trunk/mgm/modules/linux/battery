@@ -56,7 +56,7 @@ sub module_run{
     my$this=shift;
     
     $graph=MGM::Graph->new($this,num=>1,fixed=>1,rangesetting=>100,
-			   rangecurrent=>100,
+			   rangecurrent=>100,minscale=>0,
 			   prompt=>'%');
 
     # color change hack

@@ -75,7 +75,7 @@ sub module_run{
     my$this=shift;
     
     $graph=MGM::Graph->new($this,num=>1,prompt=>' msgs',
-				     minscale=>4);
+				     minscale=>0);
     $this->module_update;
     $widget=$graph->{"widget"};        # must return the widget
 }
