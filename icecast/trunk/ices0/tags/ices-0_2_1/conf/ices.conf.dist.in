@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<ices:Configuration xmlns:ices="http://www.icecast.org/projects/ices">
+  <Playlist>
+    <!-- This is the filename used as a playlist when using the builtin 
+	 playlist handler. -->
+    <File>apan.txt</File>
+    <!-- Set this to 0 if you don't want to randomize your playlist, and to
+	 1 if you do. -->
+    <Randomize>1</Randomize>
+    <!-- Either builtin, perl, or python. -->
+    <Type>builtin</Type>
+    <!-- Module name to pass to the playlist handler if using  perl or python.
+	 If you use the builtin playlist handler then this is ignored -->
+    <Module>ices</Module>
+  </Playlist>
+
+  <Server>
+    <!-- Hostname or ip of the icecast server you want to connect to -->
+    <Hostname>localhost</Hostname>
+    <!-- Port of the same -->
+    <Port>8000</Port>
+    <!-- Encoder password on the icecast server -->
+    <Password>letmein</Password>
+    <!-- Header protocol to use when communicating with the server.
+         Use xaudiocast for icecast, or icy for shoutcast compatibility -->
+    <Protocol>xaudiocast</Protocol>
+  </Server>
+
+  <Execution>
+    <!-- Set this to 1 if you want ices to launch in the background as a
+         daemon -->
+    <Background>0</Background>
+    <!-- Set this to 1 if you want to see more verbose output from ices -->
+    <Verbose>0</Verbose>
+    <!-- This directory specifies where ices should put the logfile, cue file
+	 and pid file (if daemonizing). -->
+    <BaseDirectory>/tmp</BaseDirectory>
+  </Execution>
+
+  <Stream>
+    <!-- The name of the mountpoint on the icecast server -->
+    <Mountpoint>ices</Mountpoint>
+    <!-- The name of the dumpfile on the server for your stream. DO NOT set
+	 this unless you know what you're doing.
+    <Dumpfile>ices.dump</Dumpfile>
+    -->
+    <!-- The name of you stream, not the name of the song! -->
+    <Name>Cool ices default name from XML</Name>
+    <!-- Genre of your stream, be it rock or pop or whatever -->
+    <Genre>Cool ices genre from XML</Genre>
+    <!-- Longer description of your stream -->
+    <Description>Cool ices description from XML</Description>
+    <!-- URL to a page describing your stream -->
+    <URL>Cool ices URL from XML</URL>
+    <!-- 0 if you don't want the icecast server to publish your stream on
+	 the yp server, 1 if you do -->
+    <Public>1</Public>
+
+    <!-- Stream bitrate, used to specify bitrate if reencoding, otherwise
+	 just used for display on yp and on the server. Try to keep it
+	 accurate -->
+    <Bitrate>128</Bitrate>
+    <!-- If this is set to 1, and ices is compiled with liblame support,
+	 ices will reencode the stream on the fly to the stream bitrate. -->
+    <Reencode>0</Reencode>
+    <!-- Number of channels to reencode to, 1 for mono or 2 for stereo -->
+    <Channels>2</Channels>
+  </Stream>
+</ices:Configuration>
