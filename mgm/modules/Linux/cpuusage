@@ -1,0 +1,96 @@
+# -*-Perl-*-
+use Tk;
+
+package MGMmodule::cpuusage;
+$name="cpuusage";
+%module;
+
+$main::toplevel->optionAdd("$main::Xname.$name*refresh",        250,20);      
+
+# how many CPUs? Get this from /proc/cpuinfo, not /proc/stat
+
+$numcpus=0;
+die "Couldn't open /proc/cpuinfo\n" unless open(PROC,"</proc/cpuinfo");
+while(<PROC>){
+    if(m/processor\s*:\s*(\d*)/){
+	$numcpus=$1+1 if ($numcpus<$1+1);
+    }
+}
+close PROC;
+
+for(my$i=0;$i<$numcpus;$i++){
+    $main::toplevel->optionAdd("$main::Xname.$name.bar.$i.label","CPU $i",22);
+}
+
+sub module_construct{
+    my($this,$width,$height)=@_;
+    
+    $graph=MGM::Graph::new($main::toplevel,num=>$numcpus,fixed=>'1',
+			   width=>$width,height=>$height,prompt=>"%",
+			   rangesetting=>'100',rangecurrent=>'100',
+			   name=>$name);
+
+    $widget=$graph->{"widget"};
+    my$refresh=$widget->optionGet("refresh","Refresh");
+    $widget->repeat($refresh,\&update);
+
+    $this->{"graph"}=$graph;
+    $this->{"widget"}=$widget;
+}
+
+sub update{ 
+# in late 2.1+ kernels, each CPU has an entry in /proc/stat along with
+# a common entry.  Earlier, only the common entry.
+
+    my@load;
+    my@total;
+
+    die "Couldn't open /proc/stat\n" unless open(PROC,"</proc/stat");
+    while(<PROC>){
+	if(m/^cpu(\d*)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/){
+	    if(defined($1)){
+		# per-cpu entry
+		$load[$1+1]=$2+$3+$4;
+		$total[$1+1]=$2+$3+$4+$5;
+	    }else{
+		# the common entry 
+		$load[0]=$2+$3+$4;
+		$total[0]=$2+$3+$4+$5;
+	    }
+	}
+    }
+    close PROC;    
+
+    if(defined(@prevload)){
+	my@vals;
+	for(my$i=0;$i<$numcpus;$i++){
+	    my$use=0;
+	    if(defined($load[$i+1])){
+		$use=$i+1;
+	    }
+	    my$tot=$total[$use]-$prevtotal[$use];
+	    if($tot>0){
+		$vals[$i]=100*($load[$use]-$prevload[$use])/$tot;
+		$vals[$i]=100 if $vals[$i]>100;
+	    }else{
+		$vals[$i]=0;
+	    }
+	}
+	$graph->set(@vals);
+    }
+
+    @prevload=@load;
+    @prevtotal=@total;
+
+}
+
+($minx,$miny)=&MGM::Graph::calcxysize(\%module,100,'%',$numcpus);
+
+$module{"mgm_module_name"}=$name;
+$module{"mgm_module_minx"}=$minx;
+$module{"mgm_module_miny"}=$miny;
+$module{"mgm_module_wdemand"}=10*$numcpus;
+$module{"mgm_module_ldemand"}=50;
+$module{"mgm_module_construct"}=\&module_construct;
+
+\%module;

@@ -1,0 +1,47 @@
+# -*-Perl-*-
+use Tk;
+
+package MGMmodule::loadav;
+$name="loadav";
+%module;
+
+$main::toplevel->optionAdd("$main::Xname.$name*refresh",        500,20);      
+$main::toplevel->optionAdd("$main::Xname.$name.bar.0.label","Load average",22);
+$main::toplevel->optionAdd("$main::Xname.$name.bar.1.label","Load (5min)",22);
+$main::toplevel->optionAdd("$main::Xname.$name.bar.2.label","Load (15min)",22);
+
+sub module_construct{
+    my($this,$width,$height)=@_;
+    
+    $graph=MGM::Graph::new($main::toplevel,num=>3,
+			   width=>$width,height=>$height,prompt=>"proc(s)",
+			   name=>$name);
+    
+    $widget=$graph->{"widget"};
+    my$refresh=$widget->optionGet("refresh","Refresh");
+    $widget->repeat($refresh,\&update);
+    
+    $this->{"graph"}=$graph;
+    $this->{"widget"}=$widget;
+}
+
+sub update{ 
+    die "Couldn't open /proc/loadavg\n" unless open(PROC,"</proc/loadavg");
+    while(<PROC>){
+	if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
+	    $graph->set($1,$2,$3);
+	}
+    }
+    close PROC;
+}
+
+($minx,$miny)=&MGM::Graph::calcxysize(\%module,1,' proc(s)',3);
+
+$module{"mgm_module_name"}=$name;
+$module{"mgm_module_minx"}=$minx;
+$module{"mgm_module_miny"}=$miny;
+$module{"mgm_module_wdemand"}=20;
+$module{"mgm_module_ldemand"}=50;
+$module{"mgm_module_construct"}=\&module_construct;
+
+\%module;
