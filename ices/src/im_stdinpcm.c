@@ -1,9 +1,9 @@
 /* im_stdinpcm.c
  * - Raw PCM input from stdin
  *
- * $Id: im_stdinpcm.c,v 1.2 2001/09/25 12:04:21 msmith Exp $
+ * $Id: im_stdinpcm.c,v 1.2.2.1 2002/02/07 09:11:11 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -22,7 +22,7 @@
 #include "config.h"
 #include "stream.h"
 
-#include "inputmodule.h"
+#include "process.h"
 
 #include "im_stdinpcm.h"
 
@@ -31,23 +31,22 @@
 
 #define BUFSIZE 32768
 
-static int event_handler(input_module_t *mod, enum event_type ev, void *param)
+static int event_handler(process_chain_element *mod, event_type ev, 
+        void *param)
 {
 	switch(ev)
 	{
 		case EVENT_SHUTDOWN:
 			if(mod)
 			{
-				if(mod->internal)
-					free(mod->internal);
-				free(mod);
+				if(mod->priv_data)
+					free(mod->priv_data);
 			}
 			break;
 		case EVENT_NEXTTRACK:
-			((stdinpcm_state *)mod->internal)->newtrack = 1;
+			((stdinpcm_state *)mod->priv_data)->newtrack = 1;
 			break;
 		default:
-			LOG_WARN1("Unhandled event %d", ev);
 			return -1;
 	}
 
@@ -61,48 +60,59 @@ static int event_handler(input_module_t *mod, enum event_type ev, void *param)
  *            0  Non-fatal error.
  *           <0  Fatal error.
  */
-static int stdin_read(void *self, ref_buffer *rb)
+static int stdin_read(instance_t *instance, void *self, 
+        ref_buffer *in, ref_buffer **out)
 {
 	int result;
 	stdinpcm_state *s = self;
+    ref_buffer *rb;
+
+    rb = new_ref_buffer(MEDIA_PCM, NULL, 0);
 
 	rb->buf = malloc(BUFSIZE);
 	result = fread(rb->buf, 1,BUFSIZE, stdin);
 
 	rb->len = result;
-	rb->aux_data = s->rate*s->channels*2;
+    rb->rate = s->rate;
+    rb->channels = s->channels;
+    rb->subtype = SUBTYPE_PCM_LE_16;
+
 	if(s->newtrack)
 	{
-		rb->critical = 1;
+		rb->flags |= FLAG_CRITICAL | FLAG_BOS;
 		s->newtrack = 0;
 	}
 
 	if(rb->len <= 0)
 	{
 		LOG_INFO0("Reached EOF, no more data available\n");
-		free(rb->buf);
+		release_buffer(rb);
 		return -1;
 	}
+
+    *out = rb;
 
 	return rb->len;
 }
 
-input_module_t *stdin_open_module(module_param_t *params)
+int stdin_open_module(process_chain_element *mod, module_param_t *params)
 {
-	input_module_t *mod = calloc(1, sizeof(input_module_t));
 	stdinpcm_state *s;
 	module_param_t *current;
 
-	mod->type = ICES_INPUT_PCM;
-	mod->getdata = stdin_read;
-	mod->handle_event = event_handler;
-	mod->metadata_update = NULL;
+    mod->name = "input-stdinpcm";
+    mod->input_type = MEDIA_NONE;
+	mod->output_type = MEDIA_PCM;
 
-	mod->internal = malloc(sizeof(stdinpcm_state));
-	s = mod->internal;
+	mod->process = stdin_read;
+	mod->event_handler = event_handler;
+
+	mod->priv_data = malloc(sizeof(stdinpcm_state));
+	s = mod->priv_data;
 
 	s->rate = 44100; /* Defaults */
-	s->channels = 2; 
+	s->channels = 2;
+    s->newtrack = 1;
 
 	current = params;
 
@@ -117,8 +127,9 @@ input_module_t *stdin_open_module(module_param_t *params)
 
 		current = current->next;
 	}
+    config_free_params(params);
 
-	return mod;
+	return 0;
 }
 
 

@@ -1,9 +1,9 @@
 /* signals.c
  * - signal handling/setup
  *
- * $Id: signals.c,v 1.4 2001/09/25 12:04:22 msmith Exp $
+ * $Id: signals.c,v 1.4.2.1 2002/02/07 09:11:12 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -17,10 +17,10 @@
 
 #include "thread.h"
 
+#include "process.h"
 #include "config.h"
 #include "stream.h"
 #include "input.h"
-#include "inputmodule.h"
 #include "event.h"
 
 #define MODULE "signals/"
@@ -30,8 +30,8 @@ extern volatile int metadata_update_signalled;
 
 void signal_usr1_handler(int signum)
 {
-	LOG_INFO0("Metadata update requested");
-    metadata_update_signalled = 1;
+	LOG_INFO0("Metadata update requested (Sorry. Currently not working.)");
+    // FIXME: readd this metadata_update_signalled = 1;
     thread_cond_broadcast(&ices_config->event_pending_cond);
 
 	signal(SIGUSR1, signal_usr1_handler);
@@ -43,7 +43,7 @@ void signal_hup_handler(int signum)
 	log_flush(ices_config->log_id);
 
 	/* Now, let's tell it to move to the next track */
-	ices_config->inmod->handle_event(ices_config->inmod,EVENT_NEXTTRACK,NULL);
+	create_event(ices_config->input_chain, EVENT_NEXTTRACK,NULL, 0);
 
 	signal(SIGHUP, signal_hup_handler);
 }

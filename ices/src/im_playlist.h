@@ -1,9 +1,9 @@
 /* im_playlist.h
  * - Basic playlist functionality
  *
- * $Id: im_playlist.h,v 1.2 2001/09/25 12:04:21 msmith Exp $
+ * $Id: im_playlist.h,v 1.2.2.1 2002/02/07 09:11:11 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -14,7 +14,7 @@
 #ifndef __IM_PLAYLIST_H__
 #define __IM_PLAYLIST_H__
 
-#include "inputmodule.h"
+#include "process.h"
 #include <ogg/ogg.h>
 
 typedef struct _playlist_state_tag
@@ -23,6 +23,7 @@ typedef struct _playlist_state_tag
 	char *filename; /* Currently streaming file */
 	int errors; /* Consecutive errors */
 	int nexttrack;
+    int prev_was_header_page;
 	ogg_sync_state oy;
 	
 	char *(*get_filename)(void *data); /* returns the next desired filename */
@@ -32,6 +33,6 @@ typedef struct _playlist_state_tag
 
 } playlist_state_t;
 
-input_module_t *playlist_open_module(module_param_t *params);
+int playlist_open_module(process_chain_element *self, module_param_t *params);
 
 #endif  /* __IM_PLAYLIST_H__ */

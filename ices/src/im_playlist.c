@@ -1,9 +1,9 @@
 /* playlist.c
  * - Basic playlist functionality
  *
- * $Id: im_playlist.c,v 1.3 2001/10/21 10:21:59 msmith Exp $
+ * $Id: im_playlist.c,v 1.3.2.1 2002/02/07 09:11:11 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -23,7 +23,7 @@
 #include "stream.h"
 #include "event.h"
 
-#include "inputmodule.h"
+#include "process.h"
 #include "im_playlist.h"
 
 #include "playlist_basic.h"
@@ -44,33 +44,35 @@ static module modules[] = {
 	{NULL,NULL}
 };
 
-static void close_module(input_module_t *mod)
+static void close_module(process_chain_element *mod)
 {
-	if (mod == NULL) return;
+	if (mod == NULL) {
+        LOG_ERROR0("close_module called without module available");
+        return;
+    }
 
-	if (mod->internal) 
+	if (mod->priv_data) 
 	{
-		playlist_state_t *pl = (playlist_state_t *)mod->internal;
+		playlist_state_t *pl = (playlist_state_t *)mod->priv_data;
 		pl->clear(pl->data);
 		ogg_sync_clear(&pl->oy);
 		free(pl);
 	}
-	free(mod);
 }
 
-static int event_handler(input_module_t *mod, enum event_type ev, void *param)
+static int event_handler(process_chain_element *self, event_type ev, 
+        void *param)
 {
 	switch(ev)
 	{
 		case EVENT_SHUTDOWN:
-			close_module(mod);
+			close_module(self);
 			break;
 		case EVENT_NEXTTRACK:
 			LOG_INFO0("Moving to next file in playlist.");
-			((playlist_state_t *)mod->internal)->nexttrack = 1;
+			((playlist_state_t *)self->priv_data)->nexttrack = 1;
 			break;
 		default:
-			LOG_WARN1("Unhandled event %d", ev);
 			return -1;
 	}
 
@@ -84,7 +86,8 @@ static int event_handler(input_module_t *mod, enum event_type ev, void *param)
  *            0  Non-fatal error.
  *           <0  Fatal error.
  */
-static int playlist_read(void *self, ref_buffer *rb)
+static int playlist_read(instance_t *instance, void *self, 
+        ref_buffer *in, ref_buffer **out)
 {
 	playlist_state_t *pl = (playlist_state_t *)self;
 	int bytes;
@@ -92,6 +95,11 @@ static int playlist_read(void *self, ref_buffer *rb)
 	char *newfn;
 	int result;
 	ogg_page og;
+
+    if(in) {
+        LOG_ERROR0("Non-null input buffer for playlist module, not allowed");
+        return -1;
+    }
 
 	if (pl->errors > 5) 
 	{
@@ -149,14 +157,25 @@ static int playlist_read(void *self, ref_buffer *rb)
 			LOG_WARN1("Corrupt or missing data in file (%s)", pl->filename);
 		else if(result > 0)
 		{
-			rb->len = og.header_len + og.body_len;
-			rb->buf = malloc(rb->len);
-			rb->aux_data = og.header_len;
+            void *buf = malloc(og.header_len + og.body_len);
+            *out = new_ref_buffer(MEDIA_VORBIS, buf, 
+                    og.header_len + og.body_len);
 
-			memcpy(rb->buf, og.header, og.header_len);
-			memcpy(rb->buf+og.header_len, og.body, og.body_len);
-			if(ogg_page_granulepos(&og)==0)
-				rb->critical = 1;
+			(*out)->aux_data = og.header_len;
+            (*out)->channels = -1; /* We don't know yet, and it's unimportant */
+            (*out)->rate = -1;
+
+			memcpy((*out)->buf, og.header, og.header_len);
+			memcpy((*out)->buf+og.header_len, og.body, og.body_len);
+			if(ogg_page_granulepos(&og)==0) {
+				(*out)->flags = FLAG_CRITICAL;
+                if(!pl->prev_was_header_page) {
+                    (*out)->flags |= FLAG_BOS;
+                }
+                pl->prev_was_header_page = 1;
+            }
+            else
+                pl->prev_was_header_page = 0;
 			break;
 		}
 
@@ -168,7 +187,7 @@ static int playlist_read(void *self, ref_buffer *rb)
 			if (feof(pl->current_file)) 
 			{
 				pl->nexttrack = 1;
-				return playlist_read(pl,rb);
+				return playlist_read(instance, self, in, out);
 			} 
 			else 
 			{
@@ -186,23 +205,25 @@ static int playlist_read(void *self, ref_buffer *rb)
 
 	pl->errors=0;
 
-	return rb->len;
+	return (*out)->len;
 }
 
-input_module_t *playlist_open_module(module_param_t *params)
+int playlist_open_module(process_chain_element *mod,
+        module_param_t *params)
 {
-	input_module_t *mod = calloc(1, sizeof(input_module_t));
 	playlist_state_t *pl;
 	module_param_t *current;
 	int (*init)(module_param_t *, playlist_state_t *)=NULL;
 
-	mod->type = ICES_INPUT_VORBIS;
-	mod->getdata = playlist_read;
-	mod->handle_event = event_handler;
-	mod->metadata_update = NULL; /* Not used for playlists */
+    mod->name = "input-playlist";
+	mod->input_type = MEDIA_NONE;
+    mod->output_type = MEDIA_VORBIS;
 
-	mod->internal = calloc(1, sizeof(playlist_state_t));
-	pl = (playlist_state_t *)mod->internal;
+	mod->process = playlist_read;
+	mod->event_handler = event_handler;
+
+	mod->priv_data = calloc(1, sizeof(playlist_state_t));
+	pl = (playlist_state_t *)mod->priv_data;
 
 	current = params;
 	while(current)
@@ -240,21 +261,23 @@ input_module_t *playlist_open_module(module_param_t *params)
 		else 
 		{
 			ogg_sync_init(&pl->oy);
-			return mod; /* Success. Finished initialising */
+            config_free_params(params);
+			return 0; /* Success. Finished initialising */
 		}
 	}
 	else
 		LOG_ERROR0("No playlist type given, cannot initialise playlist module");
 
 fail:
+    config_free_params(params);
+
 	if (mod) 
 	{
-		if (mod->internal)
-			free(mod->internal);
-		free(mod);
+		if (mod->priv_data)
+			free(mod->priv_data);
 	}
 
-	return NULL;
+	return -1;
 }
 
 

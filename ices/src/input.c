@@ -2,9 +2,9 @@
  *  - Main producer control loop. Fetches data from input modules, and controls
  *    submission of these to the instance threads. Timing control happens here.
  *
- * $Id: input.c,v 1.12 2002/01/23 03:40:28 jack Exp $
+ * $Id: input.c,v 1.12.2.1 2002/02/07 09:11:11 msmith Exp $
  * 
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -15,40 +15,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#endif
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>
 #include <string.h>
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 
 #include "thread/thread.h"
 #include "config.h"
 #include "stream.h"
 #include "timing.h"
 #include "input.h"
-#include "event.h"
-#include "inputmodule.h"
-#include "im_playlist.h"
-#include "im_stdinpcm.h"
-
-#ifdef HAVE_OSS
-#include "im_oss.h"
-#endif
-
-#ifdef HAVE_SUN_AUDIO
-#include "im_sun.h"
-#endif
-
-#ifdef _WIN32
-typedef __int64 int64_t
-typedef unsigned __int64 uint64_t
-#endif
+#include "process.h"
 
 #define MODULE "input/"
 #include "logging.h"
 
 #define MAX_BUFFER_FAILURES 15
+
+#ifdef _WIN32
+typedef __int64 int64_t
+typedef unsigned __int64 uint64_t
+#endif
 
 typedef struct _timing_control_tag 
 {
@@ -59,24 +48,6 @@ typedef struct _timing_control_tag
 	int samplerate;
 	long serialno;
 } timing_control;
-
-typedef struct _module 
-{
-	char *name;
-	input_module_t *(*open)(module_param_t *params);
-} module;
-
-static module modules[] = {
-	{ "playlist", playlist_open_module},
-	{ "stdinpcm", stdin_open_module},
-#ifdef HAVE_OSS
-	{ "oss", oss_open_module},
-#endif
-#ifdef HAVE_SUN_AUDIO
-	{ "sun", sun_open_module},
-#endif
-	{NULL,NULL}
-};
 
 /* This is identical to shout_sync(), really. */
 static void _sleep(timing_control *control)
@@ -139,8 +110,10 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
             control->samplerate = 0;
             ret = -1;
         }
-        else
+        else {
 		    control->samplerate = vi.rate;
+        }
+
 
 		vorbis_comment_clear(&vc);
 		vorbis_info_clear(&vi);
@@ -163,10 +136,13 @@ void input_flush_queue(buffer_queue *queue, int keep_critical)
 
 	LOG_DEBUG0("Input queue flush requested");
 
+    thread_mutex_lock(&ices_config->flush_lock);
+
 	thread_mutex_lock(&queue->lock);
 	if(!queue->head)
 	{
 		thread_mutex_unlock(&queue->lock);
+        thread_mutex_unlock(&ices_config->flush_lock);
 		return;
 	}
 
@@ -175,7 +151,7 @@ void input_flush_queue(buffer_queue *queue, int keep_critical)
 	{
 		next = item->next;
 
-		if(!(keep_critical && item->buf->critical))
+		if(!(keep_critical && (item->buf->flags & FLAG_CRITICAL)))
 		{
 			thread_mutex_lock(&ices_config->refcount_lock);
 			item->buf->count--;
@@ -200,6 +176,7 @@ void input_flush_queue(buffer_queue *queue, int keep_critical)
 		{
 			prev = item;
 			item = next;
+            LOG_DEBUG0("Keeping critical buffer on flush");
 		}
 	}
 
@@ -214,36 +191,17 @@ void input_flush_queue(buffer_queue *queue, int keep_critical)
 	}
 
 	thread_mutex_unlock(&queue->lock);
+    thread_mutex_unlock(&ices_config->flush_lock);
 }
 
 void input_loop(void)
 {
-	input_module_t *inmod=NULL;
 	timing_control *control = calloc(1, sizeof(timing_control));
 	instance_t *instance, *prev, *next;
 	queue_item *queued;
+    process_chain_element *chain;
 	int shutdown = 0;
-	int current_module = 0;
     int valid_stream = 1;
-
-	while(ices_config->playlist_module && modules[current_module].open)
-	{
-		if(!strcmp(ices_config->playlist_module, modules[current_module].name))
-		{
-			inmod = modules[current_module].open(ices_config->module_params);
-			break;
-		}
-		current_module++;
-	}
-
-	if(!inmod)
-	{
-		LOG_ERROR1("Couldn't initialise input module \"%s\"\n", 
-				ices_config->playlist_module);
-		return;
-	}
-
-	ices_config->inmod = inmod;
 
 	thread_cond_create(&ices_config->queue_cond);
 	thread_cond_create(&ices_config->event_pending_cond);
@@ -252,22 +210,25 @@ void input_loop(void)
 
 
 	/* ok, basic config stuff done. Now, we want to start all our listening
-	 * threads.
+	 * threads, and initialise the processing chains
 	 */
+
+    chain = ices_config->input_chain;
+    while(chain) {
+        chain->open(chain, chain->params);
+        chain = chain->next;
+    }
 
 	instance = ices_config->instances;
 
 	while(instance) 
 	{
-		stream_description *arg = calloc(1, sizeof(stream_description));
-		arg->stream = instance;
-		arg->input = inmod;
-        /*
-		if(instance->savefilename != NULL)
-			thread_create("savefile", savefile_stream, arg, 1);
-         */
-		thread_create("stream", ices_instance_stream, arg, 1);
-
+        chain = instance->output_chain;
+        while(chain) {
+            chain->open(chain, chain->params);
+            chain = chain->next;
+        }
+		thread_create("stream", ices_instance_output, instance, 1);
 		instance = instance->next;
 	}
 
@@ -277,7 +238,7 @@ void input_loop(void)
 	 */
 	while(!shutdown) 
 	{
-		ref_buffer *chunk = calloc(1, sizeof(ref_buffer));
+        ref_buffer *outchunk;
 		buffer_queue *current;
 		int ret;
 
@@ -303,14 +264,12 @@ void input_loop(void)
 				else
 					ices_config->instances = next;
 
-				/* Just in case, flush any existing buffers
-				 * Locks shouldn't be needed, but lets be SURE */
-				thread_mutex_lock(&ices_config->flush_lock);
+				/* Just in case, flush any existing buffers*/
 				input_flush_queue(instance->queue, 0);
-				thread_mutex_unlock(&ices_config->flush_lock);
+
+                create_event(instance->output_chain, EVENT_SHUTDOWN, NULL, 1);
 
 				config_free_instance(instance);
-				free(instance);
 
 				instance = next;
 				continue;
@@ -325,24 +284,31 @@ void input_loop(void)
 		if(!instance)
 		{
 			shutdown = 1;
-			free(chunk);
 			continue;
 		}
 
 		if(ices_config->shutdown) /* We've been signalled to shut down, but */
 		{						  /* the instances haven't done so yet... */
 			timing_sleep(250); /* sleep for quarter of a second */
-			free(chunk);
 			continue;
 		}
 
-		/* get a chunk of data from the input module */
-		ret = inmod->getdata(inmod->internal, chunk);
+        /* Process the input chain -
+         * This includes fetching data from some sort of input module, and
+         * possibly some processing on this data.
+         */
+        ret = process_chain(NULL, ices_config->input_chain, NULL, &outchunk);
+
+        if(ret > 0 && outchunk->count != 1) {
+            LOG_ERROR0("Output chunk has wrong refcount!!");
+            exit(1);
+        }
 
 		/* input module signalled non-fatal error. Skip this chunk */
 		if(ret==0)
 		{
-			free(chunk);
+			if(outchunk)
+                release_buffer(outchunk);
 			continue;
 		}
 
@@ -352,22 +318,24 @@ void input_loop(void)
 		{
 			ices_config->shutdown = 1;
 			thread_cond_broadcast(&ices_config->queue_cond);
-			free(chunk);
+			release_buffer(outchunk);
 			continue;
 		}
 
-        if(chunk->critical)
+        if(outchunk->flags & FLAG_CRITICAL)
             valid_stream = 1;
 
 		/* figure out how much time the data represents */
-		switch(inmod->type)
+		switch(outchunk->type)
 		{
-			case ICES_INPUT_VORBIS:
-				ret = _calculate_ogg_sleep(chunk, control);
+			case MEDIA_VORBIS:
+				ret = _calculate_ogg_sleep(outchunk, control);
 				break;
-			case ICES_INPUT_PCM:
-				ret = _calculate_pcm_sleep(chunk, control);
+			case MEDIA_PCM:
+				ret = _calculate_pcm_sleep(outchunk, control);
 				break;
+            default:
+                LOG_ERROR0("Cannot handle datatype in main input loop");
 		}
 
         if(ret < 0)
@@ -378,7 +346,10 @@ void input_loop(void)
     		while(instance)
 	    	{
 		    	if(instance->skip || 
-                        (instance->wait_for_critical && !chunk->critical))
+                        (instance->wait_for_critical && 
+                        !(outchunk->flags & FLAG_CRITICAL)) ||
+                        (instance->queue->length >= instance->max_queue_length
+                        && !(outchunk->flags & FLAG_CRITICAL)))
 	    		{
 		    		instance = instance->next;
 			    	continue;
@@ -386,12 +357,10 @@ void input_loop(void)
     
 	    		queued = malloc(sizeof(queue_item));
     
-	    		queued->buf = chunk;
+	    		queued->buf = outchunk;
     			current = instance->queue;
     
-	    		thread_mutex_lock(&ices_config->refcount_lock);
-		    	chunk->count++;
-			    thread_mutex_unlock(&ices_config->refcount_lock);
+                acquire_buffer(outchunk);
     
 	    		thread_mutex_lock(&current->lock);
     
@@ -414,17 +383,8 @@ void input_loop(void)
 	    	}
         }
 
-		/* Make sure we don't end up with a 0-refcount buffer that 
-		 * will never hit any of the free points. (this happens
-		 * if all threads are set to skip, for example).
-		 */
-		thread_mutex_lock(&ices_config->refcount_lock);
-		if(!chunk->count)
-		{
-			free(chunk->buf);
-			free(chunk);
-		}
-		thread_mutex_unlock(&ices_config->refcount_lock);
+        /* We create it with a refcount of 1, so release it now */
+        release_buffer(outchunk);
 
         if(valid_stream) {
     		/* wake up the instances */
@@ -443,8 +403,7 @@ void input_loop(void)
 
 	free(control);
 
-
-	inmod->handle_event(inmod, EVENT_SHUTDOWN, NULL);
+    create_event(ices_config->input_chain, EVENT_SHUTDOWN, NULL, 1);
 
 	return;
 }
