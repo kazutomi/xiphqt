@@ -1,0 +1,383 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(src/ices.c)
+
+ICES_MAJOR=0
+ICES_MINOR=0
+ICES_MICRO=1
+
+dnl Check to see if ICES_SPECIAL is overridden on commandline
+if test -z "$ICES_SPECIAL"; then
+	ICES_SPECIAL=NONE
+fi
+
+ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO
+
+if test "x$ICES_SPECIAL" = "xNONE"; then
+	ICES_VERSION=$ICES_VERSION_SMALL
+else
+	ICES_VERSION=$ICES_VERSION_SMALL.$ICES_SPECIAL
+fi
+
+PACKAGE=ices
+VERSION="$ICES_VERSION"
+
+echo "Building ices-$VERSION..."
+
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_MAINTAINER_MODE
+AM_CONDITIONAL(FSSTD, test x$enable_fsstd = xyes)
+AC_SUBST(USE_FSSTD)
+
+dnl reasonable guesses for where stuff is installed
+if test "x$prefix" = "xNONE"; then
+	prefix="/usr/local/icecast"
+else
+	prefix=$prefix
+fi
+
+AC_ARG_ENABLE(fsstd, [  --enable-fsstd	install files following FSSTD [default=no]], , enable_fsstd=no)
+
+if test "x$enable_fsstd" = "xyes"; then
+	ICES_BINDIR=/usr/bin
+	ICES_SBINDIR=/usr/sbin
+	ICES_ETCDIR=/etc/icecast
+	ICES_ETCDIR_INST=/etc/icecast
+	ICES_MODULE_DIR=/usr/share/icecast/modules
+	ICES_SHAREDIR=/usr/share/icecast
+	ICES_LOGDIR=/var/log/icecast
+	ICES_LOGDIR_INST=/var/log/icecast
+	ICES_DOCDIR=/usr/doc/ices-${ICES_VERSION_SMALL}
+	USE_FSSTD=yes
+else
+	ICES_BINDIR=${prefix}/bin
+	ICES_SBINDIR=${prefix}/bin
+	ICES_ETCDIR=conf
+	ICES_ETCDIR_INST=${prefix}/conf
+	ICES_MODULEDIR=${prefix}/modules
+	ICES_SHAREDIR=${prefix}
+	ICES_LOGDIR=logs
+	ICES_LOGDIR_INST=${prefix}/logs
+	ICES_TEMPLATEDIR=templates
+	ICES_TEMPLATEDIR_INST=${prefix}/templates
+	ICES_STATICDIR=static
+	ICES_STATICDIR_INST=${prefix}/static
+	ICES_DOCDIR=${prefix}/doc
+	USE_FSSTD=no
+fi
+
+AM_CONFIG_HEADER(config.h)
+
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(VERSION)
+
+AC_SUBST(ICES_BINDIR)
+AC_SUBST(ICES_SBINDIR)
+AC_SUBST(ICES_ETCDIR_INST)
+AC_SUBST(ICES_LOGDIR_INST)
+AC_SUBST(ICES_DOCDIR)
+
+
+AC_DEFINE_UNQUOTED(ICES_ETCDIR, "$ICES_ETCDIR")
+AC_SUBST(ICES_ETCDIR)
+AC_DEFINE_UNQUOTED(ICES_LOGDIR, "$ICES_LOGDIR")
+AC_SUBST(ICES_LOGDIR)
+AC_DEFINE_UNQUOTED(ICES_MODULEDIR, "$ICES_MODULEDIR")
+AC_SUBST(ICES_MODULEDIR)
+
+AC_ARG_PROGRAM
+AC_PROG_RANLIB
+
+dnl Checks for programs.
+AC_PROG_CC
+
+if test "$GCC" = yes; then
+	CFLAGS="$CFLAGS -Wall"
+fi
+
+AC_CHECK_PROG(UNAME,uname,uname)
+AC_PROG_INSTALL
+
+dnl weird ass systems
+AC_AIX
+AC_ISC_POSIX
+AC_MINIX
+
+AC_MSG_CHECKING(your OS)
+system=`$UNAME`
+IRIX=no
+case $system in
+	Linux)
+		LINUX=1
+		AC_DEFINE(LINUX)
+		AC_MSG_RESULT(Linux)
+		;;
+	SunOS)
+		if test x`uname -r | cut -d . -f 1` = "x5"; then
+			SYSV=1
+			SVR4=1
+			SOLARIS=1
+			AC_MSG_RESULT(Solaris)
+			AC_DEFINE(SYSV)
+			AC_DEFINE(SVR4)
+			AC_DEFINE(SOLARIS)
+		else
+			AC_MSG_RESULT(SunOS)
+		fi
+		if test "$CC" = cc; then
+			CFLAGS="$CFLAGS -mt"
+		fi
+		;;
+	HP-UX)
+		hpux=1
+		AC_DEFINE(hpux)
+		AC_MSG_RESULT(HP-UX)
+		CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
+		if test "$CC" = cc; then
+			CFLAGS="$CFLAGS -Aa"
+		fi
+		;;
+	IRIX)
+		IRIX=yes
+		AC_DEFINE(IRIX)
+		AC_MSG_RESULT(IRIX)
+		;;
+	*BSD*)
+		__SOMEBSD__=yes
+		AC_DEFINE(__SOMEBSD__)
+		AC_MSG_RESULT(Some BSD variant)
+		;;
+	*)
+		AC_MSG_RESULT($system)
+		;;
+esac
+
+if test ${IRIX} = yes; then
+	echo Skipping library tests because they confuse Irix.
+else
+
+	
+
+  AC_CHECK_FUNCS(socket)
+
+  if test "$ac_cv_func_socket" = no; then
+    for lib in socket inet; do
+	if test "$HAVE_SOCKET" != 1; then
+		AC_CHECK_LIB($lib, socket,LIBS="$LIBS -l$lib";HAVE_SOCKET=1;AC_DEFINE(HAVE_SOCKET))
+	fi
+    done
+  fi
+  
+  AC_CHECK_FUNCS(connect)	
+
+  if test "$ac_cv_func_connect" = no; then
+    for lib in nsl; do
+	if test "$HAVE_CONNECT" != 1; then
+		AC_CHECK_LIB($lib, connect,LIBS="$LIBS -l$lib";HAVE_CONNECT=1;AC_DEFINE(HAVE_CONNECT))
+	fi
+    done
+  fi
+
+  AC_CHECK_FUNCS(gethostbyname)
+  if test "$ac_cv_func_gethostbyname" = no; then
+	for lib in dns nsl resolv; do
+	  if test "$HAVE_GETHOSTBYNAME" != 1; then
+	    AC_CHECK_LIB($lib, gethostbyname, LIBS="$LIBS -l$lib";HAVE_GETHOSTBYNAME=1;AC_DEFINE(HAVE_GETHOSTBYNAME))
+	  fi
+	done	
+  fi	
+
+fi
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_HEADER_DIRENT
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SIGNAL
+AC_HEADER_TIME
+AC_STRUCT_TM
+AC_RETSIGTYPE
+
+AC_MSG_CHECKING([for unix98 socklen_t])
+AC_TRY_COMPILE([#include <sys/types.h>
+		#include <sys/socket.h>],
+	    [typedef socklen_t int; 
+	    int apan (void) {return 1;}],
+	AC_MSG_RESULT(yeah)
+	HAVE_SOCKLEN_T=yes,
+	AC_MSG_RESULT(nah)
+	HAVE_SOCKLEN_T=no)
+
+if test ${HAVE_SOCKLEN_T} = yes ;then 
+	AC_DEFINE(HAVE_SOCKLEN_T)		
+fi
+
+dnl Checks for library functions.
+AC_FUNC_STRFTIME
+AC_FUNC_VPRINTF
+
+THREADLIBS="no"
+
+AC_MSG_CHECKING(for pthread functions in standard libraries)
+AC_TRY_LINK(, [pthread_create();],AC_MSG_RESULT(yes);THREADLIBS="",AC_MSG_RESULT(no))
+
+if test "$THREADLIBS" = ""; then
+	AC_MSG_CHECKING(if that definition really works)
+	AC_TRY_RUN([int main() { return !pthread_equal(pthread_self(), pthread_self());}],
+		    AC_MSG_RESULT(yes);THREADLIBS="",
+		    AC_MSG_RESULT(no);THREADLIBS="no",
+		    AC_MSG_RESULT(crosscompiling so no);THREADLIBS="no")
+fi
+
+if test "$THREADLIBS" = "no"; then
+    for lib in pthread c_r dce pthreads; do
+      AC_CHECK_LIB($lib,pthread_create,THREADLIBS="-l$lib")
+      if test $THREADLIBS != "no"; then
+	break
+      fi
+    done
+fi
+  
+if test "$THREADLIBS" = "no"; then
+	  AC_CHECK_FUNCS(pthread_create,THREADLIBS="")
+fi
+
+if test "$THREADLIBS" = "no"; then
+        AC_MSG_ERROR(Your system doesn't seem to support posix threads. Icecast 1.3 and above won't work without threads support)
+        exit
+fi
+
+LIBS="$LIBS $THREADLIBS"
+
+OLDCPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS -pthread"
+AC_TRY_COMPILE([#include <pthread.h>],
+	       [pthread_t thread; ],	
+	       ,
+	       CPPFLAGS="$OLDCPPFLAGS")
+
+OLDCPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS -mt"
+AC_TRY_COMPILE([#include <pthread.h>],
+	       [pthread_t thread; ],	
+	       ,
+	       CPPFLAGS="$OLDCPPFLAGS")
+
+AC_ARG_WITH(python,
+[  --with-python[=ARG]        enable usage of the python interpreter [ARG=yes]])
+
+use_python=$withval
+
+AC_ARG_WITH(python-includes,
+[  --with-python-includes=DIR Python include files are in DIR])
+AC_ARG_WITH(python-libraries,
+[  --with-python-libraries=DIR Python library file are in DIR])
+
+if test "$with_python_includes"; then
+        CPPFLAGS="$CPPFLAGS -I$with_python_includes"
+        if test "x$with_python" = "xyes"; then
+                with_python=yes
+        fi
+elif test "$with_python"; then
+	if test -f "/usr/include/python1.5/Python.h"; then
+		CPPFLAGS="$CPPFLAGS -I/usr/include/python1.5"
+	elif test -f "/usr/include/python1.6/Python.h"; then
+		CPPFLAGS="$CPPFLAGS -I/usr/include/python1.6"
+	elif test -f "/usr/local/include/python1.5/Python.h"; then
+		CPPFLAGS="$CPPFLAGS -I/usr/local/include/python1.5"
+	elif test -f "/usr/local/include/python1.6/Python.h"; then
+		CPPFLAGS="$CPPFLAGS -I/usr/local/include/python1.6"
+	fi
+fi
+
+if test "$with_python_libraries"; then
+        LIBS="$LIBS -L$with_python_libraries"
+        if test "$with_python" = ""; then
+                with_python=yes
+        fi
+elif test "$with_python"; then
+	if test -d "/usr/lib/python1.5/config"; then
+		LIBS="$LIBS -L/usr/lib/python1.5/config"
+	elif test -d "/usr/lib/python1.6/config"; then
+		LIBS="$LIBS -L/usr/lib/python1.6/config"
+	elif test -d "/usr/local/lib/python1.5/config"; then
+		LIBS="$LIBS -L/usr/local/lib/python1.5/config"
+	elif test -d "/usr/local/lib/python1.6/config"; then
+		LIBS="$LIBS -L/usr/local/lib/python1.6/config"
+	fi
+fi
+
+if test "$with_python"; then
+dnl I can't say for sure what libs we need for python, but this is what my system needs
+AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_FUNCS(Py_Initialize)
+	if test "$ac_cv_func_Py_Initialize" = no; then
+		for lib in python python1.5 python1.6; do
+			if test "$HAVE_LIBPYTHON" != 1; then
+				AC_CHECK_LIB($lib, Py_Initialize,LIBS="$LIBS -l$lib";HAVE_LIBPYTHON=1;AC_DEFINE(HAVE_LIBPYTHON))
+			fi
+		done
+	fi
+fi
+
+AC_ARG_WITH(libshout-includes,
+[  --with-libshout-includes=DIR		Directory to find shout.h])
+if test -f "$withval/shout.h"; then
+	CPPFLAGS="$CPPFLAGS -I$withval"
+elif test -f "$withval/shout/shout.h"; then
+	CPPFLAGS="$CPPFLAGS -I$withval/shout"
+elif test -f "$withval/include/shout/shout.h"; then
+	CPPFLAGS="$CPPFLAGS -I$withval/include/shout"
+elif test -f "/usr/include/shout/shout.h"; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/shout"
+elif test -f "/usr/local/include/shout/shout.h"; then
+	CPPFLAGS="$CPPFLAGS -I/usr/local/include/shout"
+else
+	echo 'Could not find shout.h anywhere nere the location you said.'
+	echo 'Without libshout, no ices.'
+	exit
+fi
+
+AC_ARG_WITH(libshout-libraries,
+[  --with-libshout-libraries=DIR	Directory to find libshout library])
+
+if test -f "$withval/libshout.a"; then
+	LDFLAGS="$LDFLAGS -L$withval"
+elif test -f "$withval/lib/libshout.a"; then
+	LDFLAGS="$LDFLAGS -L$withval/lib"
+elif test -f "/usr/local/lib/libshout.a"; then
+	LDFLAGS="$LDFLAGS -L/usr/local/lib"
+elif test -f "/usr/lib/libshout.a"; then
+	LDFLAGS="$LDFLAGS -L/usr/lib"
+else
+	echo 'Could not find libshout libraries anywhere.'
+	echo 'Without libshout, no ices.'
+	exit
+fi
+
+AC_CHECK_PROG(XMLCONFIG,xml-config,xml-config)
+
+if test "$XMLCONFIG"; then
+	HAVE_LIBXML=1
+	AC_DEFINE(HAVE_LIBXML)
+	LDFLAGS="$LDFLAGS `$XMLCONFIG --libs`"
+	CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
+else
+	echo "xml-config program not found, compiling without libxml support. (This means no support for configfiles)"
+fi
+
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h)
+AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename setsockopt umask inet_addr inet_aton inet_ntoa sigaction)
+
+AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])
+
+echo "Compiling with CPPFLAGS=$CPPFLAGS"
+echo "Linking with LDFLAGS=$LDFLAGS $LIBS"
+
+echo "Ok, everything seems ok. Now do 'make'."
+echo "You can then run make install to install as you specified"
