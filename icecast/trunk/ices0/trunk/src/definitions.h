@@ -117,6 +117,7 @@ typedef struct ices_config_St {
 	char *dumpfile;
 	char *configfile;
 	char *playlist_file;
+	char *interpreter_file;
 	char *base_directory;
 }ices_config_t;
 

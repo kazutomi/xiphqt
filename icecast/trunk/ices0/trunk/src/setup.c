@@ -117,6 +117,7 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 	ices_config->dumpfile = NULL; /* No dumpfile by default */
 	ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
 	ices_config->playlist_file = ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
+	ices_config->interpreter_file = NULL; /* Default to the hardcoded default */
 	ices_config->randomize_playlist = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
 	ices_config->daemon = ICES_DEFAULT_DAEMON;
 	ices_config->pre_dj = ICES_DEFAULT_PRE_DJ;
@@ -220,6 +221,10 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 				case 'i':
 					ices_config->header_protocol = icy_header_protocol_e;
 					break;
+				case 'M':
+					arg++;
+					ices_config->interpreter_file = ices_util_strdup (argv[arg]);
+					break;
 				case 'm':
 					arg++;
 					ices_config->mount = ices_util_strdup (argv[arg]);
@@ -315,6 +320,7 @@ ices_setup_usage ()
 	ices_log ("\t-g <stream genre>");
 	ices_log ("\t-h <host>");
 	ices_log ("\t-i (use icy headers)");
+	ices_log ("\t-M <interpreter module>");
 	ices_log ("\t-m <mountpoint>");
 	ices_log ("\t-n <stream name>");
 	ices_log ("\t-p <port>");

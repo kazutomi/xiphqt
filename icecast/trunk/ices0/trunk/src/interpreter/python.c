@@ -29,24 +29,33 @@ static void interpreter_python_setup_path ();
 static void
 interpreter_python_init ()
 {
+	char *module_name;
+
 	interpreter_python_setup_path ();
 
 	Py_Initialize ();
 	PyEval_InitThreads ();
 	
 	mainthreadstate = PyThreadState_Get ();
-	/* ices_python_init ();  This is if we want to export C functions to the python scripts */
-	
-	ices_log_debug ("Importing ices.py module...");
 
-	if (!(ices_python_module = PyImport_ImportModule ("ices"))) {
-		ices_log ("Error: Could not import module ices");
-		PyErr_Print();
+	if (ices_config.interpreter_file) {
+		module_name = ices_config.interpreter_file;
 	} else {
-		ices_log_debug ("Calling testfunction in ices python module");
-		PyObject_CallMethod (ices_python_module, "testfunction", NULL);
+		module_name = "ices";
 	}
 
+	/* ices_python_init ();  This is if we want to export C functions to the python scripts */
+	
+	ices_log_debug ("Importing %s.py module...", module_name);
+
+	if (!(ices_python_module = PyImport_ImportModule (module_name))) {
+		ices_log ("Error: Could not import module %s", module_name);
+		PyErr_Print();
+	} else {
+		ices_log_debug ("Calling testfunction in %s python module", module_name);
+		PyObject_CallMethod (ices_python_module, "testfunction", NULL);
+	}
+	
 	PyEval_ReleaseLock ();
 }
 

@@ -206,7 +206,8 @@ ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_
 				ices_config->playlist_type = ices_playlist_builtin_e;
 		} else if (strcmp (cur->name, "File") == 0) {
 			ices_config->playlist_file = ices_util_strdup (xmlNodeListGetString (doc, cur->xmlChildrenNode, 1));
-
+		} else if (strcmp (cur->name, "Module") == 0) {
+			ices_config->interpreter_file = ices_util_strdup (xmlNodeListGetString (doc, cur->xmlChildrenNode, 1));
 		} else {
 			ices_log ("Unknown playlist keyword: %s", cur->name);
 		}
