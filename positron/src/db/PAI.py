@@ -90,7 +90,11 @@ class PAI:
         # num_entries * 32 bit word pointers, and empty space
         if (length - PAI.MODULE_HEADER_LEN - PAI.MODULE_FOOTER_LEN
             - num_entries * 2) == 0:
-            extension_offset = self.extend_module_at(pointer, 1)
+            # Argh, stupid difference between SAI pointer (which we
+            # use in the calling convention in this module) and
+            # the pointer to the start of the module
+            extension_offset = self.extend_module_at(pointer
+                                                     +PAI.MODULE_HEADER_LEN, 1)
 
             # Reread header
             (length, flag, num_entries) = self._read_module_header(pointer)
@@ -175,13 +179,13 @@ class PAI:
         # in the MDB, so we must "overwrite it" when adding a module
         # for to an empty PAI.  In actuality, we just find it and
         # return a pointer to it.
-        modules = self.get_module_pointers()
-        if len(modules) == 1 and len(self.read_module_at(modules[0])[0]) == 0:
+##         modules = self.get_module_pointers()
+##         if len(modules) == 1 and len(self.read_module_at(modules[0])[0]) == 0:
 
-            for entry in entries:
-                self.add_entry_to_module_at(modules[0], entry)
+##             for entry in entries:
+##                 self.add_entry_to_module_at(modules[0], entry)
 
-            return modules[0]
+##             return modules[0]
 
         #Compute header values
         num_entries = len(entries)
@@ -274,9 +278,10 @@ class PAI:
         f.truncate()
 
         # Always have to have one dummy module in it
-        self.append_module([])
+        position = self.append_module([])
         
         f.flush()
+        return position
     
     def close(self):
         self.file.close()
