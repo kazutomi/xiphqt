@@ -34,9 +34,9 @@ typedef struct {
 } output_ctrl_t;
 
 
-int       output_ctrl_init(output_ctrl_t *oc, char *pathname);
+int       output_ctrl_init(output_ctrl_t *oc, const char *pathname);
 int       output_ctrl_free(output_ctrl_t *oc);
-output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c);
+output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c, int dryrun);
 int       output_ctrl_output_free(output_ctrl_t *oc, int id);
 
 int       output_page_write(output_t *op, ogg_page *og);

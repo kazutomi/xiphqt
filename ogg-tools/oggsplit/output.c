@@ -19,7 +19,7 @@
 /* outdir given on command line */
 extern char *outdir;
 
-int output_ctrl_init(output_ctrl_t *oc, char *pathname)
+int output_ctrl_init(output_ctrl_t *oc, const char *pathname)
 {
   int pathname_len, i;
   /* indexes in pathname where basname begs ends ends.*/
@@ -89,7 +89,7 @@ int output_ctrl_free(output_ctrl_t *oc)
 {
   int i;
   for(i=0; i<oc->outputs_used; i++){
-    fclose(oc->outputs[i]->file);
+    if (oc->outputs[i]->file) fclose(oc->outputs[i]->file);
     free(oc->outputs[i]->filename);
     free(oc->outputs[i]);
   }
@@ -100,7 +100,7 @@ int output_ctrl_free(output_ctrl_t *oc)
   return 1;
 }
 
-output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c)
+output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c, int dryrun)
 {
   output_t *op;
   int fnlen, fnret;
@@ -141,12 +141,16 @@ output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c)
     break;
   }
 
-  op->file=fopen(op->filename, "w");
-  if(op->file==NULL){
-    fprintf(stderr, "Cannot open output file \"%s\": %s\n",
-	    op->filename, strerror(errno));
-    exit(1);
+  if (!dryrun){
+    op->file=fopen(op->filename, "w");
+    if(op->file==NULL){
+      fprintf(stderr, "Cannot open output file \"%s\": %s\n",
+	      op->filename, strerror(errno));
+      exit(1);
+    }
   }
+  else
+    op->file=NULL;
 
   op->id=oc->idcount++;
   op->count=1;
@@ -163,8 +167,8 @@ int output_ctrl_output_free(output_ctrl_t *oc, int id)
     if(oc->outputs[i]->id==id){
       oc->outputs[i]->count--;
       if(oc->outputs[i]->count==0){
-	fclose(oc->outputs[i]->file);
-	free(oc->outputs[i]->filename);
+        if (oc->outputs[i]->file) fclose(oc->outputs[i]->file);
+        free(oc->outputs[i]->filename);
 
 	oc->outputs_used--;
 
@@ -182,8 +186,10 @@ int output_ctrl_output_free(output_ctrl_t *oc, int id)
 
 int output_page_write(output_t *op, ogg_page *og)
 {
-  if(fwrite(og->header, og->header_len, 1, op->file)==0)return 0;
-  if(fwrite(og->body, og->body_len, 1, op->file)==0)return 0;
+  if (op->file){
+    if(fwrite(og->header, og->header_len, 1, op->file)==0)return 0;
+    if(fwrite(og->body, og->body_len, 1, op->file)==0)return 0;
+  }
 
   return 1;
 }
