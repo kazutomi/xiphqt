@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.2 2000/05/15 14:25:39 msmith Exp $
+# $Id: Makefile.in,v 1.3 2000/06/16 05:54:30 msmith Exp $
 # Makefile for the OggVorbis XMMS module.
 
 # still needs an 'install' entry, but how to find kmp?
@@ -7,7 +7,7 @@
 # (unless, of course, you know what you are doing :) ##########################
 
 @SET_MAKE@
-FLAGS=-I. -I$(KDEDIR)/include -I/usr/local/include -I../include @TYPESIZES@ @CFLAGS@   -fno-exceptions -fno-rtti -fno-check-new
+FLAGS=-I. -I/usr/local/include/mpeglib -I/usr/include/mpeglib -I$(KDEDIR)/include -I/usr/local/include -I../include @TYPESIZES@ @CFLAGS@   -fno-exceptions -fno-rtti -fno-check-new
 OPT=@OPT@ $(FLAGS)
 DEBUG=@DEBUG@ $(FLAGS)
 PROFILE=@PROFILE@ $(FLAGS)
