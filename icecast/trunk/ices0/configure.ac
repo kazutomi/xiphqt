@@ -1,8 +1,8 @@
 # configure script for ices
-# $Id: configure.ac,v 1.11 2003/07/13 17:42:47 brendan Exp $
+# $Id$
 
 m4_define(ICES_MAJOR, 0)
-m4_define(ICES_MINOR, 3)
+m4_define(ICES_MINOR, 4)
 m4_define(ICES_MICRO, 0)
 m4_define(ICES_VERSION,
   m4_if(ICES_MICRO, 0, ICES_MAJOR.ICES_MINOR, ICES_MAJOR.ICES_MINOR.ICES_MICRO))
