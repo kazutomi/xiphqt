@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.8 2001/12/16 00:31:42 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.9 2001/12/19 02:13:57 volsung Exp $
 
  ********************************************************************/
 
@@ -337,8 +337,6 @@ void print_stream_comments (decoder_t *decoder)
   
   if (cb == NULL || cb->printf_metadata == NULL)
     return;
-
-  cb->printf_metadata(decoder->callback_arg, 1, ""); /* Add a blank line */
 
   for (i = 0; i < priv->vc->comments; i++) {
     comment = priv->vc->user_comments[i];
