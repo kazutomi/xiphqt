@@ -73,7 +73,7 @@ class Config:
         self.neuros_musicdir = "MUSIC"
         self.sort_database = True
         self.mp3_support = True
-        self.oggvorbis_support = False
+        self.oggvorbis_support = True
         self.wav_support = True
         self.syncdirs = []
 
