@@ -166,6 +166,9 @@ def run(config, neuros, args):
         print "  Packing audio database...",
         audio_db.pack()
         print " Done."
+
+    if config.sort_database:
+        audio_db.sort()
         
     neuros.close_db("audio")
     

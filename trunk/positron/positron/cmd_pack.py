@@ -40,6 +40,10 @@ def run(config, neuros, args):
             database = neuros.open_db(arg)
             print "  Packing database \"%s\"..." % (arg,)
             database.pack()
+
+            if config.sort_database:
+                database.sort()
+                
             neuros.close_db(arg)
         except neuros_module.Error, e:
             print "Error:", e
