@@ -76,7 +76,7 @@ ices_id3v1_parse (input_stream_t* source)
   char title[31];
   int i;
 
-  if (! source->canseek)
+  if (! source->filesize)
     return;
 
   buffer[30] = '\0';
@@ -159,9 +159,7 @@ ices_id3v2_parse (input_stream_t* source)
   while (remaining > ID3V2_FRAME_LEN(&tag) && (tag.artist == NULL || tag.title == NULL)) {
     if ((rv = id3v2_read_frame (source, &tag)) < 0) {
       ices_log ("Error reading ID3v2 frames, skipping to end of ID3v2 tag");
-      id3v2_skip_data (source, &tag, tag.len - tag.pos);
-
-      return;
+      break;
     }
     /* found padding */
     if (rv == 0)
@@ -177,11 +175,8 @@ ices_id3v2_parse (input_stream_t* source)
   ices_util_free (tag.title);
 
   remaining = tag.len - tag.pos;
-  if (remaining) {
-    ices_log_debug ("ID3v2: Skipping %d bytes to end of tag", remaining);
-
+  if (remaining)
     id3v2_skip_data (source, &tag, remaining);
-  }
 }
 
 static int
@@ -251,7 +246,7 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
     while (len2) {
       if ((rlen = source->read (source, buf, len)) < 0) {
         ices_log ("Error reading ID3v2 frame data");
-	free (buf);
+        free (buf);
       
         return -1;
       }

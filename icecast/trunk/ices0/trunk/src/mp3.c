@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.25 2003/03/15 20:58:54 brendan Exp $
+ * $Id: mp3.c,v 1.26 2003/03/16 08:32:34 brendan Exp $
  */
 
 #include "definitions.h"
@@ -85,6 +85,7 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 				 int16_t* left, int16_t* right);
 #endif
 static int ices_mp3_close (input_stream_t* self);
+static int mp3_fill_buffer (input_stream_t* self, size_t len);
 static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header);
 static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header);
 static size_t mp3_frame_length(mp3_header_t* header);
@@ -113,16 +114,10 @@ static int ices_mp3_parse (input_stream_t* source)
   if (! strncmp ("ID3", mp3_data->buf, 3))
     ices_id3v2_parse (source);
 
-  /* refill buffer if ID3v2 parsing consumed it */
-  if (!mp3_data->buf) {
-    buffer = (unsigned char*) malloc (MP3_BUFFER_SIZE);
-    len = source->read (source, buffer, MP3_BUFFER_SIZE);
-    mp3_data->buf = buffer;
-    mp3_data->len = len;
-    mp3_data->pos = 0;
-  }
-
-  if (mp3_data->len < 4) {
+  /* ensure we have at least 4 bytes in the read buffer */
+  if (!mp3_data->buf || mp3_data->len - mp3_data->pos < 4)
+    mp3_fill_buffer (source, MP3_BUFFER_SIZE);
+  if (mp3_data->len - mp3_data->pos < 4) {
     ices_log_error("Short file");
     return  -1;
   }
@@ -145,8 +140,41 @@ static int ices_mp3_parse (input_stream_t* source)
     }
 
     /* we must be able to read at least 4 bytes of header */
-    while (mp3_data->len - mp3_data->pos >= 4
-        && !(rc = mp3_parse_frame(buffer + mp3_data->pos, &mh))) {
+    while (mp3_data->len - mp3_data->pos >= 4) {
+      if ((rc = mp3_parse_frame(buffer + mp3_data->pos, &mh))) {
+        size_t framelen;
+        mp3_header_t next_header;
+
+        source->samplerate = mh.samplerate;
+        source->bitrate = mh.bitrate;
+
+        if (mp3_check_vbr (source, &mh)) {
+          source->bitrate = 0;
+          break;
+        }
+
+        /* check next frame if possible */
+        if ((framelen = mp3_frame_length (&mh)) <= 0)
+          break;
+        if (mp3_fill_buffer (source, framelen + 4) <= 0)
+          break;
+
+        /* if we can't find the second frame, we assume the first frame was junk */
+        if ((rc = mp3_parse_frame(mp3_data->buf + mp3_data->pos + framelen, &next_header))) {
+          if (mh.version != next_header.version || mh.layer != next_header.layer
+              || mh.samplerate != next_header.samplerate) {
+            rc = 0;
+          /* fallback VBR check if VBR tag is missing */
+          } else if (mh.bitrate != next_header.bitrate) {
+            ices_log_debug ("Bit rate of first frame (%d) doesn't match second frame (%d), assuming VBR",
+                mh.bitrate, next_header.bitrate);
+            source->bitrate = 0;
+          }
+          break;
+        }
+        if (!rc)
+          ices_log_debug ("Bad frame at offset %d", source->bytes_read);
+      }
       mp3_data->pos++;
       off++;
     }
@@ -159,13 +187,6 @@ static int ices_mp3_parse (input_stream_t* source)
 
   if (off)
     ices_log_debug("Skipped %d bytes of garbage before MP3", off);
-
-  source->samplerate = mh.samplerate;
-  source->bitrate = mh.bitrate;
-
-  /* bitrate of zero ensures that lazy reencoding won't be lazy */
-  if (mp3_check_vbr(source, &mh) > 0)
-    source->bitrate = 0;
 
   if (source->bitrate)
     ices_log_debug ("%s layer %s, %d kbps, %d Hz, %s", version_names[mh.version],
@@ -245,7 +266,7 @@ ices_mp3_read (input_stream_t* self, void* buf, size_t len)
     }
   } else {
     /* we don't just use EOF because we'd like to avoid the ID3 tag */
-    if (self->canseek && self->filesize - self->bytes_read < len)
+    if (self->filesize && self->filesize - self->bytes_read < len)
       len = self->filesize - self->bytes_read;
     if (len)
       rlen = read (self->fd, buf, len);
@@ -285,6 +306,58 @@ ices_mp3_close (input_stream_t* self)
   free (self->data);
 
   return close (self->fd);
+}
+
+/* make sure source buffer has at least len bytes.
+ * returns: 1: success, 0: EOF before len, -1: malloc error, -2: read error */
+static int mp3_fill_buffer (input_stream_t* self, size_t len) {
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) self->data;
+  char errbuf[1024];
+  char* buffer;
+  size_t buflen;
+  ssize_t rlen;
+  size_t needed;
+
+  buflen = mp3_data->len - mp3_data->pos;
+
+  if (mp3_data->buf && len < buflen)
+    return 1;
+
+  if (self->filesize && len > buflen + self->filesize - self->bytes_read)
+    return 0;
+
+  /* put off adjusting mp3_data->len until read succeeds. len indicates how much valid
+   * data is in the buffer, not how much has been allocated. We don't need to track
+   * that for free or even realloc, although in the odd case that we can't fill the
+   * extra memory we may end up reallocing when we don't strictly have to. */
+  if (!mp3_data->buf) {
+    needed = len;
+    if (!(mp3_data->buf = malloc(needed)))
+      return -1;
+    mp3_data->pos = 0;
+    mp3_data->len = 0;
+  } else {
+    needed = len - buflen;
+    if (!(buffer = realloc(mp3_data->buf, mp3_data->len + needed)))
+      return -1;
+    mp3_data->buf = buffer;
+  }
+
+  while (needed && (rlen = read(self->fd, mp3_data->buf + mp3_data->len, needed)) > 0) {
+    mp3_data->len += rlen;
+    self->bytes_read += rlen;
+    needed -= rlen;
+  }
+
+  if (!needed)
+    return 1;
+
+  if (!rlen)
+    return 0;
+
+  ices_log_error ("Error filling read buffer: %s",
+    ices_util_strerror (errno, errbuf, sizeof (errbuf)));
+  return -1;
 }
 
 static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
@@ -333,19 +406,10 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
   return 1;
 }
 
-/* TODO: check without seeking */
 static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
   ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
-  char buf[4];
-  mp3_header_t next_header;
-  ssize_t framelen;
-  off_t cur;
   int offset;
 
-  if (!source->canseek)
-    return -1;
-
-  cur = lseek(source->fd, 0, SEEK_CUR);
   /* check for VBR tag */
   /* Tag offset varies (but FhG VBRI is always MPEG1 Layer III 160 kbps stereo) */
   if (header->version == 0) {
@@ -359,44 +423,19 @@ static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
     else
       offset = 21;
   }
-
-  offset -= mp3_data->len - mp3_data->pos;
-  lseek(source->fd, offset, SEEK_CUR);
-  if (read(source->fd, buf, 4) == 4) {
-    if (!strncmp("VBRI", buf, 4) || !strncmp("Xing", buf, 4)) {
-      ices_log_debug("VBR tag found");
-      lseek(source->fd, cur, SEEK_SET);
-      return 1;
-    }
-  } else {
-    ices_log_debug("Error trying to read VBR tag");
-    lseek(source->fd, cur, SEEK_SET);
+  /* only needed if frame length can't be calculated (free bitrate) */
+  if (mp3_fill_buffer (source, offset + 4) <= 0) {
+    ices_log_debug ("Error trying to read VBR tag");
     return -1;
   }
 
-  /* otherwise check next frame if possible */
-  offset = mp3_data->len - mp3_data->pos;
-  lseek(source->fd, cur, SEEK_SET);
-  if ((framelen = mp3_frame_length(header))) {
-    ices_log_debug("Frame length expected: %d bytes", framelen);
-    lseek(source->fd, framelen - offset, SEEK_CUR);
-    if (read(source->fd, buf, 4) == 4) {
-      if (!mp3_parse_frame(buf, &next_header))
-        ices_log_debug("Couldn't find second frame header");
-      else {
-        ices_log_debug("Second frame: %s layer %s, %d kbps, %d Hz", 
-                       version_names[next_header.version],
-                       layer_names[next_header.layer - 1], next_header.bitrate,
-	               next_header.samplerate);
-        /* if bit rates don't match assume VBR */
-        if (header->bitrate != next_header.bitrate)
-	  return 1;
-      }
-    } else
-      ices_log_debug("Error reading next frame");
-    lseek(source->fd, cur, SEEK_SET);
+  offset += mp3_data->pos;
+  if (!strncmp("VBRI", mp3_data->buf + offset, 4)
+      || !strncmp("Xing", mp3_data->buf + offset, 4)) {
+    ices_log_debug("VBR tag found");
+    return 1;
   }
-  
+
   return 0;
 }
 

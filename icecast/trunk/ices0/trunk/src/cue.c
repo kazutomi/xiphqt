@@ -59,7 +59,7 @@ ices_cue_update (input_stream_t* source)
 
   fprintf (fp, "%s\n%d\n%d\n%s\n%f\n%d\n%s\n%s\n", source->path,
 	   source->filesize, source->bitrate,
-	   ices_util_nullcheck (ices_util_file_time (source->bitrate, source->filesize, buf)),
+       ices_util_file_time (source->bitrate, source->filesize, buf),
 	   ices_util_percent (source->bytes_read, source->filesize),
 	   ices_cue_lineno, artist, title);
 

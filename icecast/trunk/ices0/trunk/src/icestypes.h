@@ -99,7 +99,6 @@ typedef struct _input_stream_t {
 
   char* path;
   int fd;
-  int canseek;
   size_t filesize;
   size_t bytes_read;
   unsigned int bitrate;
