@@ -115,7 +115,12 @@ ices_reencode_flush (ices_stream_config_t* stream, unsigned char *outbuf,
   int rc;
 
 #ifdef HAVE_LAME_NOGAP
+  /* nogap will cause problems if the next track isn't being reencoded */
+#  if 0
   rc = lame_encode_flush_nogap (lame, (char *)outbuf, maxlen);
+#else
+  rc = lame_encode_flush (lame, (char *)outbuf, maxlen);
+#  endif
 #else
   rc = lame_encode_flush (lame, (char*) outbuf, maxlen);
   lame_close (lame);
