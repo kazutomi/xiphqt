@@ -202,6 +202,22 @@ $toplevel->optionAdd("$Xname*Scrollbar*foreground",  '#000000',20);
 $toplevel->optionAdd("$Xname*Scrollbar*borderWidth",  '2',20);
 $toplevel->optionAdd("$Xname*Scrollbar*relief",  'sunken',20);
 
+$toplevel->optionAdd("$Xname*ClickList*background",  "#f0d0b0",20);
+$toplevel->optionAdd("$Xname*ClickList*foreground",  '#000000',20);
+$toplevel->optionAdd("$Xname*ClickList*borderWidth",  '1',20);
+$toplevel->optionAdd("$Xname*ClickList*relief",  'raised',20);
+
+$toplevel->optionAdd("$Xname*ClickListButton*background",  "#f0d0b0",20);
+$toplevel->optionAdd("$Xname*ClickListButton*foreground",  '#000000',20);
+$toplevel->optionAdd("$Xname*ClickListButton*borderWidth",  '1',20);
+$toplevel->optionAdd("$Xname*ClickListButton*relief",  'raised',20);
+
+
+$toplevel->optionAdd("$Xname*ClickList.Item*background",  "#f0d0b0",20);
+$toplevel->optionAdd("$Xname*ClickList.Item*foreground",  '#000000',20);
+$toplevel->optionAdd("$Xname*ClickList.Item*borderWidth",  '0',20);
+$toplevel->optionAdd("$Xname*ClickList.Item*relief",  'flat',20);
+
 
 
 $toplevel->configure(-background=>$toplevel->optionGet("background",""));
@@ -310,14 +326,23 @@ ThrowRealPlayer();
 # main loop 
 Tk::MainLoop();
 
+sub trim_glob{
+    # the bsd glob routine deals poorly with some whitespace...
+    my$pattern=shift;
+
+    $pattern=~s/^(\s+).*//;
+    $pattern=~s/(\s+)$//;
+    
+    bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE);
+}
 
 sub ThrowRealPlayer{
     $SIG{CHLD}='IGNORE';
 
     Status("Starting RealPlayer...");
     # set up the environment
-    my@list=bsd_glob("$CONFIG{'LIBSNATCH'}",
-		     GLOB_TILDE|GLOB_ERR|GLOB_BRACE);
+    my@list=trim_glob("$CONFIG{'LIBSNATCH'}");
+
     if(GLOB_ERROR || $#list<0){
 	Status("Failed to find libsnatch.so!");
 	Alert("Failed to find libsnatch.so!",
@@ -331,8 +356,7 @@ sub ThrowRealPlayer{
     $ENV{"LD_PRELOAD"}=@list[0];
     $ENV{"SNATCH_COMM_SOCKET"}=$backchannel_socket;
 
-    @list=bsd_glob("$CONFIG{'REALPLAYER'}",
-		     GLOB_TILDE|GLOB_ERR|GLOB_BRACE);
+    @list=trim_glob("$CONFIG{'REALPLAYER'}");
     if(GLOB_ERROR || $#list<0){
 	Status("Failed to find RealPlayer!");
 	Alert("Failed to find RealPlayer!",
@@ -633,7 +657,7 @@ sub SplitTimerEntry{
 	($password,$fields)=LengthParse($fields);
 	($outfile,$fields)=LengthParse($fields);
 	($url,$fields)=LengthParse($fields);
-	
+
 	($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
 	 $password,$outfile,$url);
     }else{
@@ -669,8 +693,15 @@ sub MonthDays{
     }
 }
 
+sub TimerStart{
+    print "$_[2]\n";
+    my($try,$etry)=TimerWhen(@_);
+    print " ******** $try\n";
+    $try;
+}
+	       
 sub TimerWhen{
-    my($try,$year,$month,$day,$dayofweek,$hour,$minute,$duration)=@_;
+    my($try,$etry,$year,$month,$day,$dayofweek,$hour,$minute,$duration)=@_;
 
     #overguard 
     if($minute ne '*'){while($minute>=60){$minute-=60;
@@ -696,51 +727,79 @@ sub TimerWhen{
     # boundary cases in each...  rather than solving it exactly, we'll
     # solve it empirically. Laziness as a virtue.
     if($year eq '*'){
-	$try=TimerWhen($try,$nowyear-1,$month,$day,$dayofweek,
+	($try,$etry)=TimerWhen($try,$etry,$nowyear-1,$month,$day,$dayofweek,
 		       $hour,$minute,$duration);
-	return $try if($try!=-1);
-	$try=TimerWhen($try,$nowyear,$month,$day,$dayofweek,
+	return ($try,$etry) if($try>$now);
+	($try,$etry)=TimerWhen($try,$etry,$nowyear,$month,$day,$dayofweek,
 		       $hour,$minute,$duration);
-	return $try if($try!=-1);
-	$try=TimerWhen($try,$nowyear+1,$month,$day,$dayofweek,
+	return ($try,$etry) if($try>$now);
+	($try,$etry)=TimerWhen($try,$etry,$nowyear+1,$month,$day,$dayofweek,
 		       $hour,$minute,$duration);
-	return $try if($try!=-1);
+	return ($try,$etry) if($try>$now);
     }elsif($month eq '*'){
 	for(my$i=1;$i<13;$i++){
-	    $try=TimerWhen($try,$year,$i,$day,$dayofweek,
+	    ($try,$etry)=TimerWhen($try,$etry,$year,$i,$day,$dayofweek,
 			   $hour,$minute,$duration);
-	    return $try if($try!=-1);
+	    return ($try,$etry) if($try>$now);
 	}
     }elsif($day eq '*'){
 	# important to go for a weekday match */
 	for(my$i=1;$i<32;$i++){
-	    $try=TimerWhen($try,$year,$month,$i,$dayofweek,
+	    ($try,$etry)=TimerWhen($try,$etry,$year,$month,$i,$dayofweek,
 			   $hour,$minute,$duration);
-	    return $try if($try!=-1);
+	    return ($try,$etry) if($try>$now);
 	}
     }elsif($hour eq "*"){
-	return $try;
-    }elsif($hour eq "*"){
-	return $try;
+	return ($try,$etry);
+    }elsif($minute eq "*"){
+	return ($try,$etry);
     }elsif($duration eq "*"){
-	return $try;
+	return ($try,$etry);
     }else{
+	if($month==0){
+	    # oops; we got a bad line in the history file
+	    return ($try,$etry);
+	}
+	    
 	my $start=timelocal(0,$minute,$hour,$day,$month-1,$year);
 	my $end=$start+$duration;
 	
 	# make sure day-of-month and day-of-week agree
 	if($dayofweek ne '*'){
 	    my($tsec,$tmin,$thour,$tday,$tmon,$tyear,$twday)=localtime($start);
-	    if($twday != $dayofweek){return $try};
+	    if($twday != $dayofweek){return ($try,$etry)};
 	}
 	
-	if($try==-1 ||
-	   ($start<$try && $end>$now) ||
-	   ($start>$try && $end<$now)){
-	    return $start;
+	if($try==-1){
+	    print "$year $month $day $thour $minute\n";
+	    
+	    return($start,$end);
 	}
+
+	if($try<$now && $etry>$now){
+	    # current best guess straddles now 
+	    if($start<$now && $start>$try){
+		#shouldn't allow this case but eh
+
+	    print "$year $month $day $thour $minute\n";
+		return ($start,$end);
+	    }
+	}
+
+	if($etry<$now){
+	    # current guess entirely preceeds now; prefer any guess in the future
+	    print "$year $month $day $thour $minute\n";
+	    return ($start,$end) if($start>$try);
+	}
+
+	if($try>$now){
+	    # current guess in the future.  prefer any guess earlier in time that is not entirely past.
+	    print "$year $month $day $thour $minute\n";
+	    return ($start,$end) if($start<$try && $end>$now);
+	}
+
     }
-    $try;
+    ($try,$etry);
 }
 
 sub max{
@@ -757,9 +816,10 @@ sub Status{
 }
 
 sub Alert{
-    my($message,$detail)=@_;
+    my($message,$detail,$window)=@_;
 
-    if(defined($modal)){$modal->destroy()};
+    $window=$toplevel if(!defined($window));
+    $modal->destroy() if(defined($modal));
 
     $modal=new MainWindow(-class=>"$Xname");
     $modal->configure(-background=>$modal->optionGet("background",""));
@@ -789,17 +849,17 @@ sub Alert{
     $width+=20;
     $height=$modal_message->reqheight()+$modal_detail->reqheight()+30;
 
-    my$xx=$toplevel->rootx();
-    my$yy=$toplevel->rooty();
-    my$ww=$toplevel->width();
-    my$hh=$toplevel->height();
+    my$xx=$window->rootx();
+    my$yy=$window->rooty();
+    my$ww=$window->width();
+    my$hh=$window->height();
 
     $x=$xx+$ww/2-$width/2;
     $y=$yy+$hh/2-$height/2;
-    
+
     $modal->geometry($width."x".$height."+".int($x)."+".int($y));
     $modal->resizable(FALSE,FALSE);
-    $modal->transient($toplevel);
+    $modal->transient($window);
     $modal_exit->configure(-command=>[sub{$modal->destroy();undef $modal}]);
 }
 
@@ -867,14 +927,16 @@ sub Setup{
     $window_setupbar->configure(-relief=>'flat');
     $setup=new MainWindow(-class=>'Snatch');
 
-    my$xpm_snatch=$setup->Pixmap("_snatchlogo_xpm",-file=>$logofile);
+    $setup_title=$setup->
+	Label(Name=>"setup text",-class=>"Panel",text=>"Configuration")->
+		  place(-x=>10,-y=>5);
 
     $setup_shell=$setup->Label(Name=>"shell",borderwidth=>1,relief=>raised)->
-	place(-x=>10,-y=>36,-relwidth=>1.0,-relheight=>1.0,
-	      -width=>-20,-height=>-46,-anchor=>'nw');
+	place(-x=>10,-y=>$setup_title->reqheight()+10,-relwidth=>1.0,-relheight=>1.0,
+	      -width=>-20,-height=>-$setup_title->reqheight()-20,-anchor=>'nw');
     
     $setup_quit=$setup_shell->
-	Button(-class=>"Exit",text=>"OK")->
+	Button(-class=>"Exit",text=>"ok")->
 		   place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
     $setup_apply=$setup_shell->
 	Button(-class=>"Exit",text=>"apply")->
@@ -884,15 +946,6 @@ sub Setup{
 	Button(-class=>"Exit",text=>"cancel")->
 		   place(-x=>1,-y=>-1,-rely=>1.0,-anchor=>'sw');
     
-
-    $setup_logo=$setup->
-	Label(Name=>"logo",-class=>"Panel",image=>$xpm_snatch)->
-		  place(-x=>5,-y=>5,-anchor=>'nw');
-
-    $setup_title=$setup->
-	Label(Name=>"setup text",-class=>"Panel",text=>"Configuration")->
-		  place(-x=>5,-relx=>1.0,-rely=>1.0,-anchor=>'sw',
-			-in=>$setup_logo);
 
     # Real location
     $nexty=5;
@@ -977,7 +1030,7 @@ sub Setup{
 
 
     $minwidth=400;
-    $minheight=$nexty+28+$setup_logo->reqheight()+$setup_cancel->reqheight();
+    $minheight=$nexty+28+$setup_title->reqheight()+$setup_cancel->reqheight();
     
     $setup->minsize($minwidth,$minheight);
     $setup->geometry(($minwidth+20)."x".$minheight);
@@ -1001,7 +1054,7 @@ sub Setup{
 	
 	ThrowRealPlayer() if(!$comm_ready);
 	Status("Configuration successful");
-	TestOutpath();
+	TestOutpath($setup);
     }]);
     
     $setup_cancel->configure(-command=>[sub{
@@ -1015,13 +1068,22 @@ sub Setup{
 }
 
 sub TestOutpath(){
+    my $window=shift;
     if($CONFIG{OUTPUT_PATH} ne '-'){
 	if(!-W $CONFIG{OUTPUT_PATH}){
+	    # in the event this is a file spec in a writable directory, try touching it
+	    if(open TEST,">$CONFIG{OUTPUT_PATH}"){
+		# oh, ok...
+		close(TEST);
+		unlink($CONFIG{OUTPUT_PATH});
+		return;
+	    }
+
 	    Status("Bad output path");
 	    Alert("Selected output path isn't writable!",
 		  "The output path currently set on the configuration panel either does not exist,".
-		  " or is inaccessible due to permissions.  Please set a usable path to prevent ".
-		  "recording failure.");
+		  " or is inaccessible due to permissions.  Please set a usable path else ".
+		  "recording will fail.\n",$window);
 	    return;
 	}
     }
@@ -1058,12 +1120,14 @@ sub Timer{
     $window_timerbar->configure(-relief=>'flat');
     $timerw=new MainWindow(-class=>'Snatch');
 
-    my$xpm_snatch=$timerw->Pixmap("_snatchlogo_xpm",-file=>$logofile);
-
-    $timerw_shell=$timerw->Label(Name=>"shell",borderwidth=>1,relief=>raised)->
-	place(-x=>10,-y=>36,-relwidth=>1.0,-relheight=>1.0,
-	      -width=>-20,-height=>-46,-anchor=>'nw');
+    $timerw_title=$timerw->
+	Label(Name=>"timer text",-class=>"Panel",text=>"Timer Setup")->
+	    place(-x=>10,-y=>5);
     
+    $timerw_shell=$timerw->Label(Name=>"shell",borderwidth=>1,relief=>raised)->
+	place(-x=>10,-y=>$timerw_title->reqheight()+10,-relwidth=>1.0,-relheight=>1.0,
+	      -width=>-20,-height=>-$timerw_title->reqheight()-20,-anchor=>'nw');
+
     $timerw_quit=$timerw_shell->
 	Button(-class=>"Exit",text=>"X")->
 		   place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
@@ -1074,15 +1138,6 @@ sub Timer{
 	$window_timerbar->configure(state=>'normal');
 	$window_timerbar->configure(relief=>'raised');
     }]);
-
-    $timerw_logo=$timerw->
-	Label(Name=>"logo",-class=>"Panel",image=>$xpm_snatch)->
-		  place(-x=>5,-y=>5,-anchor=>'nw');
-
-    $timerw_title=$timerw->
-	Label(Name=>"timertext",-class=>"Panel",text=>"Timed Record Setup")->
-	    place(-x=>5,-relx=>1.0,-rely=>1.0,-anchor=>'sw',
-		  -in=>$timerw_logo);
 
     $timerw_delete=$timerw_shell->
 	Button(Name=>"delete",text=>"delete",-state=>disabled)->
@@ -1105,7 +1160,7 @@ sub Timer{
     $listbox=BuildListBox();
     
     $minwidth=500;
-    $minheight=$timerw_add->reqheight()*4+$timerw_quit->reqheight()+115;
+    $minheight=$timerw_add->reqheight()*4+$timerw_quit->reqheight()+$timerw_title->reqheight()+95;
     
     $timerw->minsize($minwidth,$minheight);
     $timerw->geometry(($minwidth+20)."x".$minheight);
@@ -1153,31 +1208,35 @@ sub BuildListBox(){
     for(my$i=0;$i<=$n;$i++){
 	my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
 	   $password,$outfile,$url)=SplitTimerEntry($TIMER[$TIMER_SORTED[$i]]);
-	my$start=$TIMER_TIMES[$TIMER_SORTED[$i]];
-	#also need the end...
-	my$end=$TIMER_TIMES[$TIMER_SORTED[$i]]+$duration;
-	my$now=time();
-	my$emph='';
-	if($end<$now){
-	    $emph='Old';
-	}
-	
-	my$dur_hours=int($duration/3600);
-	$duration-=$dur_hours*3600;
-	my$dur_minutes=int($duration/60);
-	$duration-=$dur_minutes*60;
-	
-	if($dur_hours==0){
-	    $dur_hours='';
+	if(defined($url)){
+	    my$start=$TIMER_TIMES[$TIMER_SORTED[$i]];
+	    #also need the end...
+	    my$end=$TIMER_TIMES[$TIMER_SORTED[$i]]+$duration;
+	    my$now=time();
+	    my$emph='';
+	    if($end<$now){
+		$emph='Old';
+	    }
+	    
+	    my$dur_hours=int($duration/3600);
+	    $duration-=$dur_hours*3600;
+	    my$dur_minutes=int($duration/60);
+	    $duration-=$dur_minutes*60;
+	    
+	    if($dur_hours==0){
+		$dur_hours='';
+	    }else{
+		$dur_hours.=":";
+	    }
+	    $dur_minutes='00' if($dur_minutes==0);
+	    
+	    push @listarray, "$emph","$year ",$monthtrans->{$month},"$day ",
+	    $daytrans->{$dayofweek},"$hour:$minute ","$dur_hours$dur_minutes ",$url;
 	}else{
-	    $dur_hours.=":";
-	}
-	$dur_minutes='00' if($dur_minutes==0);
-	
-	push @listarray, "$emph","$year ",$monthtrans->{$month},"$day ",
-	$daytrans->{$dayofweek},"$hour:$minute ",
-	"$dur_hours$dur_minutes ",$url;
+            # bad entry; prevent death
+	    push @listarray, "Old","X ","X ","X ","X ","XXX ","XXX ","Bad Entry ";
 
+	}
     }
     $listbox=Snatch::ListBox::new($timerw_shell,7,@listarray)->
 	place(-x=>5,-y=>5,-relheight=>1.0,-relwidth=>1.0,
@@ -1187,19 +1246,35 @@ sub BuildListBox(){
     
     $listbox->callback(\&Timer_Highlight);
     $listbox;
+    undef $timer_row;
 }
 
 sub TimerSort{
     $count=0;
-    @TIMER_TIMES=(map {TimerWhen(-1,(SplitTimerEntry($_)))} @TIMER);
+    @TIMER_TIMES=(map {TimerStart(-1,-1,(SplitTimerEntry($_)))} @TIMER);
     @TIMER_SORTED=sort {$TIMER_TIMES[$a]-$TIMER_TIMES[$b]} (map {$count++} @TIMER);
 }    
 
 sub Timer_Highlight{
-    $timerw_edit->configure(-state=>normal);
-    $timerw_delete->configure(-state=>normal);
-    $timerw_duplicate->configure(-state=>normal);
-    $timer_row=shift;
+    if(!defined($tentry)){
+	if(defined($highlightnow) && $highlightnow+2>time){
+	    
+	    print "$timer_row $_[0]\n";
+	    if($timer_row==$_[0]){
+		# doubleclick hack.  Edit this entry
+		Timer_Edit();
+		return;
+	    }
+	}
+	
+	
+	$timerw_edit->configure(-state=>normal);
+	$timerw_delete->configure(-state=>normal);
+	$timerw_duplicate->configure(-state=>normal);
+	$timer_row=shift;
+	
+	$highlightnow=time;
+    }
 }
 
 sub Timer_Delete{
@@ -1215,9 +1290,10 @@ sub Timer_Delete{
 }
 
 sub Timer_Add{
-    my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime($now);    
+    my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime time;    
     $nowmonth+=1;
-    Timer_Entry(-1,"$nowyear $nowmonth $nowday * $nowhour:$nowminute 3600 FAKEA FAKEV 0: 0: ".
+    $nowyear+=1900;
+    Timer_Entry(-1,"$nowyear $nowmonth $nowday * $nowhour:$nowmin 3600 yes yes 0: 0: ".
 	       length($CONFIG{OUTPUT_PATH}).":$CONFIG{OUTPUT_PATH} 0:");
 }
 
@@ -1230,10 +1306,237 @@ sub Timer_Copy{
 }
     
 sub Timer_Entry{
-    my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
-       $password,$outfile,$url)=SplitTimerEntry(@_);
-    
+    my$row=shift;
 
+    my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+       $password,$outfile,$url)=SplitTimerEntry(shift);
+
+    my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime time;    
+    $nowmonth++;
+    $nowyear+=1900;
+
+    $timerw_add->configure(-state=>disabled);
+    $timerw_edit->configure(-state=>disabled);
+    $timerw_duplicate->configure(-state=>disabled);
+    $timerw_delete->configure(-state=>disabled);
+
+    $tentry=new MainWindow(-class=>'Snatch');
+
+    $tentry_title=$tentry->
+	Label(Name=>"timer text",-class=>"Panel",text=>"Add/Edit Timer Entry")->
+	    place(-x=>10,-y=>5);
+    
+    $tentry_shell=$tentry->Label(Name=>"shell",borderwidth=>1,relief=>raised)->
+	place(-x=>10,-y=>$timerw_title->reqheight()+10,-relwidth=>1.0,-relheight=>1.0,
+	      -width=>-20,-height=>-$timerw_title->reqheight()-20,-anchor=>'nw');
+    
+    $tentry_quit=$tentry_shell->
+	Button(-class=>"Exit",text=>"ok")->
+	    place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
+    $tentry_cancel=$tentry_shell->
+	Button(-class=>"Exit",text=>"cancel")->
+	    place(-x=>1,-y=>-1,-rely=>1.0,-anchor=>'sw');
+   
+    $tentry_quit->configure(-command=>[sub{
+	my$entry="$year $month $day $dayofweek $hour:$minute $duration $audio $video ".
+	    length($username).":$username ".length($password).":$password ".
+		length($outfile).":$outfile ".length($url).":$url";
+
+	# check the entry out
+	my$time=TimerStart(-1,-1,$year,$month,$day,$dayofweek,$hour,$minute,$duration);
+	if($time<0){
+	    Alert("Impossible date setting!",
+		  "The date checking routines believe the entered date doesn't exist (or is".
+		  " far enough in the past it will never trigger anyway).  Please correct the".
+		  ' date specification before proceeding, or file a bug report with monty@xiph.org'.
+		  " if the date is correct and the code is wrong.\n",$tentry);
+	}else{
+
+	    if($row<0){
+		push @TIMER, $entry;
+	    }else{
+		splice @TIMER,$row,1,$entry;
+	    }
+	    
+	    SaveHistory();
+	    BuildListBox();
+	    
+	    $tentry->destroy();
+	    $timerw_add->configure(-state=>normal);
+	    if(defined($timer_row)){
+		$timerw_edit->configure(-state=>normal);
+		$timerw_duplicate->configure(-state=>normal);
+		$timerw_delete->configure(-state=>normal);
+	    }
+	    undef $tentry;
+	}
+    }]);
+    $tentry_cancel->configure(-command=>[sub{
+	$tentry->destroy();
+	$timerw_add->configure(-state=>normal);
+	if(defined($timer_row)){
+	    $timerw_edit->configure(-state=>normal);
+	    $timerw_duplicate->configure(-state=>normal);
+	    $timerw_delete->configure(-state=>normal);
+	}
+	undef $tentry;
+    }]);
+
+    # bwah ha ha.  The bitter end.  
+    my $x=5;
+    my $y=10;
+    my$reqheight=0;
+
+    my$t=$tentry_shell->Label(-text=>"Date:")->
+	place(-x=>$x, -y=>$y);
+    $x+=$t->reqwidth()+5;
+
+    # Year
+    my$tt=Snatch::ClickList::new($tentry_shell,\$year,
+				 "* (any)",'*',
+				 "$nowyear",$nowyear,
+				 $nowyear+1,$nowyear+1,
+				 $nowyear+2,$nowyear+2)->
+				     place(-x=>$x,-y=>$y);
+    $x+=$tt->reqwidth+5;
+    $reqheight=$tt->maxheight()if($tt->maxheight()>$reqheight);
+    
+    $t->place(-height=>$tt->reqheight());
+
+    # month
+    my$t=Snatch::ClickList::new($tentry_shell,\$month,
+				 "* (any)",'*',
+				 "January","1",
+				 "February","2",
+				 "March","3",
+				 "April","4",
+				 "May","5",
+				 "June","6",
+				 "July","7",
+				 "August","8",
+				 "September","9",
+				 "October","10",
+				 "November","11",
+				 "December","12")->
+				     place(-x=>$x,-y=>$y);
+    $x+=$t->reqwidth+5;
+    $reqheight=$t->maxheight()if($t->maxheight()>$reqheight);
+
+    # day
+    my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$day,-justify=>right)->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth+5;
+
+    # day of week
+    my$t=Snatch::ClickList::new($tentry_shell,\$dayofweek,
+				 "* (any)",'*',
+				 "Sunday","0",
+				 "Monday","1",
+				 "Tuesday","2",
+				 "Wednesday","3",
+				 "Thursday","4",
+				 "Friday","5",
+				 "Saturday","6")->
+				     place(-x=>$x,-y=>$y);
+    $x+=$t->reqwidth+15;
+    $reqheight=$t->maxheight()if($t->maxheight()>$reqheight);
+
+    my$t=$tentry_shell->Label(-text=>"Time:")->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth()+5;
+
+    # hour
+    my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$hour,-justify=>right)->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth();
+
+    my$t=$tentry_shell->Label(-text=>":")->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth();
+
+    # minute
+    my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$minute,-justify=>right)->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth+15;
+
+    my$t=$tentry_shell->Label(-text=>"Duration:")->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth()+5;
+
+    my$duration_hour=int($duration/3600);
+    my$duration_minute=int(($duration-$duration_hour*3600+59)/60);
+    $duration_minute='00' if("$duration_minute" eq '0');
+
+    # duration hour
+    my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$duration_hour,-justify=>right)->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth();
+
+    my$t=$tentry_shell->Label(-text=>":")->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth();
+
+    # duration minute
+    my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$duration_minute,-justify=>right)->
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+    $x+=$t->reqwidth+5;
+
+    my$reqwidth=$x+10;
+    $reqheight+=$tentry_title->reqheight()+30;  # this is just for the pulldown menus
+    $y+=$tt->reqheight()+20;
+
+
+    my$tentry_urllabel=$tentry_shell->Label(-text=>"URL:")->place(-y=>$y,-x=>5);
+    my$tentry_url=$tentry_shell->Entry(-textvariable=>\$url,-width=>2048)->
+	place(-in=>$tentry_urllabel,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside,
+	      -width=>$reqwidth-25-$tentry_urllabel->reqwidth());
+    $y+=$tentry_urllabel->reqheight()+5;
+    my$tentry_usernamelabel=$tentry_shell->Label(-text=>"username:")->place(-y=>$y,-x=>5);
+    my$tentry_username=$tentry_shell->Entry(-textvariable=>\$username,-width=>2048)->
+	place(-in=>$tentry_usernamelabel,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside,
+	      -width=>$reqwidth-25-$tentry_usernamelabel->reqwidth());
+    $y+=$tentry_usernamelabel->reqheight()+5;
+    my$tentry_passwordlabel=$tentry_shell->Label(-text=>"password:")->place(-y=>$y,-x=>5);
+    my$tentry_password=$tentry_shell->Entry(-textvariable=>\$password,-width=>2048)->
+	place(-in=>$tentry_passwordlabel,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside,
+	      -width=>$reqwidth-25-$tentry_passwordlabel->reqwidth());
+    $y+=$tentry_passwordlabel->reqheight()+5;
+
+
+    print "$audio $video\n";
+
+    my$tentry_silent=$tentry_shell->Label(-text=>"silent record:")->place(-y=>$y,-x=>5);
+    my$tentry_audio=$tentry_shell->Button(-text=>"audio")->
+	place(-in=>$tentry_silent,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
+    $tentry_audio->configure(-command=>[main::nonmomentary,\$tentry_audio,\$audio]);
+    my$tentry_video=$tentry_shell->Button(-text=>"video")->
+	place(-in=>$tentry_audio,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
+    $tentry_video->configure(-command=>[main::nonmomentary,\$tentry_video,\$video]);
+    #laziness
+    print "$audio $video\n";
+    nonmomentary(\$tentry_audio,\$audio);
+    print "$audio $video\n";
+    nonmomentary(\$tentry_audio,\$audio);
+    print "$audio $video\n";
+    nonmomentary(\$tentry_video,\$video);
+    print "$audio $video\n";
+    nonmomentary(\$tentry_video,\$video);
+
+    $tentry->minsize($reqwidth,$reqheight);
+    $tentry->geometry(($reqwidth+20)."x".$reqheight);
+			    
+}
+
+sub nonmomentary{
+    my($buttonref,$valref)=@_;
+
+    if($$valref eq 'yes'){
+	$$valref='no';
+	$$buttonref->configure(-relief=>groove);
+    }else{
+	$$valref='yes';
+	$$buttonref->configure(-relief=>sunken);
+    }
 }
 package Snatch::ListBox;
 
@@ -1399,3 +1702,131 @@ sub callback{
     $this->{'callback'}=shift;
 }
 
+# these are a hack that doesn't quite work because Tk doesn't give
+# arbitrary control over toplevel, and I don't want to use menu
+# widgets for various reasons.
+
+package Snatch::ClickList;
+
+sub new{
+    my%clicklist;
+    my$this=bless \%clicklist;
+
+    my$parent=$clicklist{parent}=shift @_;
+    my$var=$clicklist{variable}=shift @_;
+    my$rows=00;
+    my@textrows;
+    my@widgetrows;
+
+    $clicklist{textrows}=\@textrows;
+    $clicklist{valrows}=\@valrows;
+    $clicklist{widgetrows}=\@widgetrows;
+
+    my$button=$clicklist{button}=$parent->Button(-command=>[$this=>poplist],-class=>'ClickListButton');
+    my$list=$clicklist{list}=$parent->Frame(-class=>'ClickList');
+
+    my$maxheight=0;
+    my$maxwidth=0;
+
+    # row by row
+    for($rows=0;;$rows++){
+	my $text=shift;
+	my $value=shift;
+	if(defined($value)){
+	    $textrows[$rows]=$text;
+	    $valrows[$rows]=$value;
+	    my$w=$widgetrows[$rows]=$list->Button(-class=>'Item',-text=>$text,
+						  -command=>[$this=>setrow,$rows]);
+	    $maxheight=$w->reqheight() if($w->reqheight()>$maxheight);
+	    $maxwidth=$w->reqwidth() if($w->reqwidth()>$maxwidth);
+	    
+	}else{
+	    last;
+	}
+    }
+
+
+
+    $clicklist{rows}=$rows;
+    $clicklist{reqwidth}=$maxwidth+=$list->optionGet(borderWidth,"")*2;
+    $clicklist{reqheight}=$maxheight+=$list->optionGet(borderWidth,"")*2;
+
+    my$y=0;
+    for(my$i=0;$i<$rows;$i++){
+	$widgetrows[$i]->place(-y=>$y,-relwidth=>1.0,-height=>$maxheight);
+	$y+=$maxheight;
+    }
+    $y+=$list->optionGet(borderWidth,"")*2;
+
+
+    $button->place(-height=>$maxheight,-width=>$maxwidth);
+    $list->configure(-width=>$maxwidth,-height=>$y);
+    $clicklist{maxheight}=$y;
+
+
+    $this->setval($$var);
+    $this;
+}
+
+sub reqheight{
+    my$this=shift;
+    $this->{reqheight};
+}
+sub maxheight{
+    my$this=shift;
+    $this->{maxheight};
+}
+
+sub reqwidth{
+    my$this=shift;
+    $this->{reqwidth};
+}
+
+sub place{
+    my$this=shift;
+    $this->{button}->place(@_);
+    $this;
+}
+
+
+sub setrow{
+    my$this=shift;
+    my$row=shift;
+    my$val=$this->{valrows}[$row];
+
+    $this->{'set'}=$row;
+    ${$this->{'variable'}}=$val;
+    $this->{'list'}->placeForget;
+    $this->{'button'}->configure(-text=>$this->{textrows}[$this->{'set'}]);
+    $this;
+}
+
+sub setval{
+    my$this=shift;
+    my$val=shift;
+
+    my$rows=$this->{rows};
+    for(my$i;$i<$rows;$i++){
+	if("$this->{valrows}[$i]" eq "$val"){
+	    $this->setrow($i);
+	    last;
+	}
+    }
+    $this;
+}
+
+sub poplist{
+    my$this=shift;
+    my$row=$this->{'set'};
+    my$list=$this->{'list'};
+    my$button=$this->{'button'};
+    
+    $list->raise();
+    $list->place(-in=>$button,-relwidth=>1.0,-bordermode=>outside);
+    $this;
+}
+
+sub button{
+    my$this=shift;
+    $this->{'button'};
+}
