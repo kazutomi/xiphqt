@@ -4,9 +4,8 @@
  *
  * Parameters: number of seconds to sleep
  *
- * $Id: sleep.js,v 1.1 2001/10/18 03:28:24 cwolf Exp $
+ * $Id: sleep.js,v 1.2 2001/10/18 03:44:19 cwolf Exp $
  */
-var a;
 WScript.Interactive = false;
 argv = WScript.Arguments;
 
