@@ -5,4 +5,5 @@ graft scripts
 graft setupext
 graft doc
 graft debian
+exclude doc/*.1
 global-exclude *.pyc
