@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
 	int	use_listingIP = 0;
 
 
-	setErrorType(LM_DEBUG);
+	setErrorType(LM_ERROR);
 	setLogFile(YP_LOGDIR"yp_cgi.log");
 	memset(error, '\000', sizeof(error));
 	memset(listing_ip, '\000', sizeof(listing_ip));
