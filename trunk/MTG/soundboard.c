@@ -54,6 +54,7 @@ static FILE *audiofd=NULL;
 int ttyfd;
 int ttypipe[2];
 
+static inline void _playback_remove(int i);
 
 pthread_t main_thread_id;
 pthread_t playback_thread_id;
@@ -104,8 +105,12 @@ typedef struct {
 } outchannel;
   
 static outchannel channel_list[MAX_OUPUT_CHANNELS]={
-  {"offstage left",0},
-  {"offstage right",0},
+  {"one",0},
+  {"two",0},
+  {"three",0},
+  {"four",0},
+  {"five",0},
+  {"six",0},
 };
 static int channel_count=MAX_OUPUT_CHANNELS;
 
@@ -819,6 +824,8 @@ static inline void _playback_mix(int i,int cuenum){
     }
 }
 
+#define SWAP(x) ( (((x)>>8)&0xff) | (((x)&0xff)<<8))
+
 static inline void _next_sample(int16 *out){
   int i,j,k;
   int staging[MAX_OUPUT_CHANNELS];
@@ -890,7 +897,7 @@ static inline void _next_sample(int16 *out){
     t->sample_position++;
     if(t->sample_position>=t->samplelength){
       if(t->loop_p){
-	t->sample_position=t->sample_loop_start;
+	t->sample_position=t->sample_loop_start+t->sample_lapping;
       }else{
 	_playback_remove(i);
       }
@@ -903,11 +910,11 @@ static inline void _next_sample(int16 *out){
     if(channel_list[i].peak<fabs(staging[i]))
       channel_list[i].peak=fabs(staging[i]);
     if(staging[i]>32767.){
-      out[i]=32767;
+      out[i]=SWAP(32767);
     }else if(staging[i]<-32768.){
-      out[i]=-32768;
+      out[i]=SWAP(-32768);
     }else
-      out[i]=rint(staging[i]);
+      out[i]=SWAP((int)(rint(staging[i])));
   }
 }
 
@@ -918,18 +925,24 @@ void *playback_thread(void *dummy){
   /* sound device startup */
   audio_buf_info info;
   int fd=fileno(audiofd),i;
-  int format=AFMT_S16_NE;
-  int stereo=1;
+  int format=AFMT_S16_LE;
+  int channels=MAX_OUPUT_CHANNELS;
   int rate=44100;
   long last=0;
   long delay=10;
   long totalsize;
   int fragment=0x7fff000d;
-  int16 audiobuf[256];
+  int16 audiobuf[256*MAX_OUPUT_CHANNELS];
+  int count=0,ret;
 
   ioctl(fd,SNDCTL_DSP_SETFRAGMENT,&fragment);
   ioctl(fd,SNDCTL_DSP_SETFMT,&format);
-  ioctl(fd,SNDCTL_DSP_STEREO,&stereo);
+  ret=ioctl(fd,SNDCTL_DSP_CHANNELS,&channels);
+  if(ret){
+    fprintf(stderr,"Could not set %d channels\n",channels);
+    exit(1);
+  }
+
   ioctl(fd,SNDCTL_DSP_SPEED,&rate);
 
   ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
@@ -937,30 +950,35 @@ void *playback_thread(void *dummy){
 
   while(!playback_exit){
     int samples;
+    int ret;
 
-    pthread_mutex_lock(&master_mutex);
     delay--;
     if(delay<0){
       delay=0;
       ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
+
+
+      pthread_mutex_lock(&master_mutex);
       playback_bufsize=totalsize;      
       samples=playback_bufsize-info.bytes;
-      
       if(playback_buffer_minfill>samples)
-	playback_buffer_minfill=samples;
+	playback_buffer_minfill=samples-64; // sample fragment
+      pthread_mutex_unlock(&master_mutex);
+
     }
 
-    for(i=0;i<256;i+=2)
-      _next_sample(audiobuf+i);
-    fwrite(audiobuf,2,256,audiofd);
-    
+    pthread_mutex_lock(&master_mutex);
+    for(i=0;i<256;i++)
+      _next_sample(audiobuf+i*MAX_OUPUT_CHANNELS);
     pthread_mutex_unlock(&master_mutex);
+
+    ret=fwrite(audiobuf,2*MAX_OUPUT_CHANNELS,256,audiofd);
     
     {
       struct timeval tv;
       long foo;
       gettimeofday(&tv,NULL);
-      foo=tv.tv_sec*2+tv.tv_usec/500000;
+      foo=tv.tv_sec*10+tv.tv_usec/100000;
       if(last!=foo)
 	write(ttypipe[1],"",1);
       last=foo;
@@ -973,7 +991,7 @@ void *playback_thread(void *dummy){
   /* sound device shutdown */
   
   ioctl(fd,SNDCTL_DSP_RESET);
-  pthread_mutex_unlock(&master_mutex);
+  //pthread_mutex_unlock(&master_mutex);
   return(NULL);
 }
 
@@ -991,12 +1009,6 @@ int play_cue(int cuenum){
     cuenum++;
     if(cuenum>=cue_count || cue_list[cuenum].tag==-1)break;
   }
-  /* is a playback thread running? */
-  if(!playback_active){
-    pthread_t dummy;
-    pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
-    playback_active=1;
-  }
   pthread_mutex_unlock(&master_mutex);
   return(0);
 }
@@ -1011,12 +1023,6 @@ int play_sample(int cuenum){
 	_playback_mix(c->tag,cuenum);
   }
   
-  /* is a playback thread running? */
-  if(!playback_active){
-    pthread_t dummy;
-    pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
-    playback_active=1;
-  }
   pthread_mutex_unlock(&master_mutex);
   return(0);
 }
@@ -1923,7 +1929,7 @@ void edit_keypress_menu(){
   mvaddstr(10,2,"    enter");
   mvaddstr(11,2,"        l");
   mvaddstr(12,2,"    space");
-  mvaddstr(12,2,"        H");
+  mvaddstr(13,2,"        H");
 
   attroff(A_BOLD);
   mvaddstr(2,12,"keypress menu (you're there now)");
@@ -2490,13 +2496,15 @@ void *tty_thread(void *dummy){
 
   while(!playback_exit){
     int ret=read(ttyfd,&buf,1);
-    if(ret==1)
+    if(ret==1){
       write(ttypipe[1],&buf,1);
+    }
   }
 }
 
 int main(int gratuitously,char *different[]){
   int lf;
+  int flags;
 
   if(gratuitously<2){
     fprintf(stderr,"Usage: beaverphonic <settingfile>\n");
@@ -2525,9 +2533,11 @@ int main(int gratuitously,char *different[]){
     getc(stdin);
   }
 
+    
   /* set up the hack for interthread ncurses event triggering through
    input subversion */
   ttyfd=open("/dev/tty",O_RDONLY);
+
   if(ttyfd<0){
     fprintf(stderr,"Unable to open /dev/tty:\n"
 	    "  %s\n",strerror(errno));
@@ -2541,11 +2551,14 @@ int main(int gratuitously,char *different[]){
     exit(1);
   }
   dup2(ttypipe[0],0);
+
   pthread_create(&tty_thread_id,NULL,tty_thread,NULL);
   
-
-
-
+  {
+    pthread_t dummy;
+    pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
+    playback_active=1;
+  }
 
 
   /* load the sound config if the file exists, else create it */
