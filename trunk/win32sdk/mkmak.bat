@@ -1,5 +1,5 @@
 @echo off
-rem $Id: mkmak.bat,v 1.4 2001/09/17 01:25:56 cwolf Exp $
+rem $Id: mkmak.bat,v 1.5 2001/10/18 03:17:45 cwolf Exp $
 rem
 rem This can't be called from the build script because 
 rem it runs asychronously.
@@ -13,10 +13,12 @@ if errorlevel 1 goto error
 rem If one of the makefiles doesn't exist,
 rem assume they all need to be generated
 rem
+rem sleep is required because msdev runs asynchronously
+rem
 if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
   echo Generating makefiles, please wait...
   msdev -ex ExportMakefile
-  sleep 10
+  call sleep.js 10
   echo Done.
 )
 goto done

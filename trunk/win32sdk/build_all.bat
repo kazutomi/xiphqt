@@ -1,5 +1,5 @@
 @echo off
-rem $Id: build_all.bat,v 1.5 2001/09/15 07:00:31 cwolf Exp $
+rem $Id: build_all.bat,v 1.6 2001/10/18 03:15:49 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
@@ -12,7 +12,7 @@ rem Makefile generation is asychronous, so it cannot be
 rem called inline with this script.
 if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
   echo Error: must invoke "mkmak.bat" first
-  exit
+  goto done
 )
 
 if not exist %SRCROOT%\ogg\include\ogg\ogg.h goto noogg
@@ -39,18 +39,18 @@ nmake /nologo /F .\vorbisfile_dynamic.mak CFG="vorbisfile_dynamic - Win32 Releas
 nmake /nologo /F .\vorbisfile_static.mak CFG="vorbisfile_static - Win32 Debug" %1
 nmake /nologo /F .\vorbisfile_static.mak CFG="vorbisfile_static - Win32 Release" %1
 cd "..\..\win32sdk"
-goto normal
+goto done
 
 :noogg
 echo ***** Need module OGG -- not present
-exit
+goto done
 
 :novorbis
 echo ***** Need module VORBIS -- not present
-exit
+goto done
 
 :notset
 echo ***** Error: must set SRCROOT
-exit
+goto done
 
-:normal
+:done

@@ -1,7 +1,7 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.9 2001/09/15 08:46:22 cwolf Exp $
+rem $Id: makesdk.bat,v 1.10 2001/10/18 03:16:09 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
@@ -13,7 +13,7 @@ rem assume they all need to be generated
 rem
 if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
   echo Error: must invoke "mkmak.bat" first
-  exit
+  goto exit
 )
   
 rd /s /q sdk\include 2> nul
@@ -85,6 +85,9 @@ xcopy %SRCROOT%\vorbis\doc\vorbisenc\*.html %SRCROOT%\win32sdk\sdk\doc\vorbis\vo
 xcopy %SRCROOT%\vorbis\doc\vorbisenc\*.css %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisenc > nul
 xcopy %SRCROOT%\vorbis\doc\vorbisfile\*.html %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisfile > nul
 xcopy %SRCROOT%\vorbis\doc\vorbisfile\*.css %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisfile > nul
+
+copy sleep.bat %SRCROOT%\win32sdk\sdk\build
+copy sleep.js %SRCROOT%\win32sdk\sdk\build
 
 echo ... copied.
 
