@@ -1,0 +1,1035 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+		  <!ENTITY rfc2119 PUBLIC '' 
+				   'http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml'>
+		  ]>
+
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+
+<?rfc toc="yes" ?>
+<?rfc symrefs="yes" ?>
+<?rfc sortrefs="yes"?>
+<?rfc iprnotified="no" ?>
+<?rfc strict="yes" ?>
+
+<!-- fixme: put the elements in the same order as in the two schemas -->
+<rfc category="info" ipr="full2026" docName="xspf-v1-draft1">
+
+  <front>
+    <title>XSPF Version 1</title>
+
+    <author initials='L.' surname="Gonze" fullname='Lucas Gonze'>
+	  <address>
+		<email>lucas@gonze.com</email>
+	  </address>
+    </author>
+    <author initials='M.' surname="Friedrich" fullname='Matthias Friedrich'>
+	  <address>
+		<email>matt@mafr.de</email>
+	  </address>
+    </author>
+    <author initials='R.' surname="Kaye" fullname='Robert Kaye'>
+	  <address>
+		<email>rob@eorbit.net</email>
+	  </address>
+    </author>
+    <author initials='D.' surname="Brown" fullname='Dave Brown'>
+	  <address>
+		<email>dabrown@yahoo-inc.com</email>
+	  </address>
+    </author>
+
+    <date month="January" year="2005"/>
+    <abstract><t>We describe an XML playlist format which is open,
+    moderately simple, and carefully engineered.</t></abstract>
+
+    <area>General</area>
+    <workgroup>Playlist Ad-Hoc Group</workgroup>
+
+  </front>
+
+  <middle>
+
+	<section title="Introduction">
+	  <t>There is no XML format for playlists that can measure up to the
+		standards of the formats for web pages (HTML), weblogs (RSS),
+		and web graphs (RDF/XML). It is evident that there is a need,
+		because XML is the preferred data description language of the
+		moment and as a result the tools and skills to use it are
+		ubiquitous.</t>
+
+	  <t>It is also evident that existing playlist formats fall short.
+		ASX (for Windows Media Player) and the iTunes library format
+		are proprietary.  ASX resembles XML in that it uses angle
+		brackets, but is not XML by any means.  M3U, RAM, and M4U are
+		flat files; QuickTime is binary; Pls is in the Windows .ini
+		format; Gnomoradio RDF is RDF, not XML.  SMIL addresses a much
+		larger problem space than the average MP3 player.  The timing
+		model of RSS doesn't fit audio and video.  Forcing timing
+		models into HTML, as HTML+Time does, creates an unintelligible
+		feature set.  Few of these formats are well documented.  None
+		of these formats make simple features easy to code and hard
+		features possible.  Only one is an open standard.  Not one
+		offers playlist interoperability across major vendors.</t>
+
+	  <t>The question for software developers is <spanx
+		  style="emph">why should I support this new XML playlist
+		  format</spanx>?  The choice is mainly between M3U and SMIL.
+		  Almost every MP3 player accepts M3U but also invents an XML
+		  playlist format.  Inventing a format creates work, for
+		  example to study related formats; you should use XSPF to
+		  avoid the work.  SMIL, on the other hand, is a prescription
+		  for a kind of application that is different from an MP3
+		  player -- it describes layouts in time, while XSPF describes
+		  concepts common among MP3 players.  Given a song with the
+		  comment "danceable!", SMIL might have an instruction to
+		  write that text in the upper left in a bold sans-serif font,
+		  while XSPF would tell an MP3 player that the text is a
+		  comment and say nothing about formatting.</t>
+
+	  <section title="Example">
+		<figure>
+		  <preamble>A very simple document looks like this:</preamble>
+		  <artwork><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<playlist version="1" xmlns = "http://xspf.org/ns/0/">
+  <trackList>
+    <track><location>file:///mp3s/song_1.mp3</location></track>
+    <track><location>file:///mp3s/song_2.mp3</location></track>
+    <track><location>file:///mp3s/song_3.mp3</location></track>
+  </trackList>
+</playlist>]]>
+		  </artwork>
+		</figure>
+
+		<figure>
+		  <preamble>or this:</preamble>
+		  <artwork><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<playlist version="1" xmlns = "http://xspf.org/ns/0/">
+  <trackList>
+    <track><location>http://example.com/song_1.mp3</location></track>
+    <track><location>http://example.com/song_2.mp3</location></track>
+    <track><location>http://example.com/song_3.mp3</location></track>
+  </trackList>
+</playlist>]]>
+		  </artwork>
+		</figure>
+	  </section>
+
+	</section>
+
+	<section title="Administration">
+
+	  <section  title="History">
+
+		  <t>Our group started work in February 2004, achieved rough
+		  consensus on version 0 in April 2004, did implementations
+		  and fine tuning throughout summer and fall 2004, and
+		  declared the tuned version to be version 1 in January
+		  2005.  Version 1 is not far from being frozen and
+		  code-ready.</t>
+
+		<t>This document describes version 1, which is not ready for
+		  implementation.  Version 0, the previous one, is stable and
+		  frozen -- developers can assume that it will not change.</t>
+
+		<t>The home of our working group on the web is
+		  http://xspf.org.</t>
+
+	  </section>
+
+	  <section  title="Acknowledgements">
+		<t>We have benefitted a great deal from the contributions of
+		  Dan Brickley, Kevin Marks and Ian C. Rogers, each of whom
+		  strongly influenced the shape of the format.  We are
+		  grateful for comments and feedback from Ryan Shaw, Alf
+		  Eaton, Steve Gedikian, Russell Garrett, and Ben Tesch.
+		  Special thanks to the developers Tomas Franz&#233;n (who
+		  participated in our work from the very beginning), Jim
+		  Garrison, Brander Lien, and Fabricio Zuardi, and to everyone
+		  who contributed their time and skill on the mailing list and
+		  wiki.</t>
+	  </section>
+
+	  <section  title="terminology">
+
+		<section  title="URI, URLs and URNs">
+		  <t>The terms URI, URL, and URN should be interpreted here as
+			follows: a URL is an address of something that can be
+			fetched by a computer; a URN is a name of something which
+			may be purely an abstraction; a URI is either.  In this
+			document, //playlist[@xmlns], //playlist/identifier,
+			meta[@rel], link[@rel], and
+			//playlist/trackList/track/identifier are URNs, all other
+			elements are URLs.</t>
+		  <t>See also: <xref target="http://gbiv.com/protocols/uri/rev-2002/rfc2396bis.html">RFC2396bis</xref>; <xref target="http://www.w3.org/TR/uri-clarification/">URIs, URLs, and URNs: Clarifications and Recommendations 1.0</xref></t>
+		</section>
+		
+        <section  title="Requirements notation">
+          <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL",
+            "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",
+            "MAY", and "OPTIONAL" in this document MUST NOT be
+            interpreted as described in <xref target="RFC2119"/>.
+            In this document these should be interpreted to mean
+            that something shouted is important.  XSPF is not a
+            standards track document, it is an ad-hoc project by a
+            group of individuals.  Developers may, however, find
+            that <xref target="RFC2119"/> is a useful source
+            anyway.</t>
+        </section>
+
+	  </section>
+
+	</section>
+
+	<section title="Abstractions">
+
+	  <section  title="Defining playlists">
+		
+		<t>An XSPF playlist describes a sequence of objects to
+		  be rendered.  Objects might be audio, video, text,
+		  playlists, or any other media type.  The function of a
+		  playlist is to identify the objects and communicate
+		  their order.</t>
+	  </section>
+
+	  <section  title="What a playlist is not">
+		
+		<t>The function of a playlist <spanx style="emph">is not</spanx> to
+		  communicate metadata about the composer, song title,
+		  etc.  Metadata is hard and there are many providers
+		  already.  We decided that we couldn't compete, and
+		  that there was no need for us to try.  Moreover, good
+		  metadata does not travel well -- every user has to
+		  recreate it.  Metadata should come from external
+		  sources and namespaces like MusicBrainz or Gracenote;
+		  this what the XSPF <spanx class="verb">link</spanx>
+		  and <spanx class="verb">meta</spanx> elements are
+		  for.</t>
+
+		<t>The function of a playlist <spanx style="emph">is not</spanx> to store
+		  derived information about objects that a user has a
+		  copy of.  A playlist is not a catalog.  A catalog is
+		  computed across hard data like files; it stores
+		  information like filesystem paths and the contents of
+		  ID3 tags.  This data has no value on any machine but
+		  the one on which it originated.  Sharing this data
+		  would be a privacy and security violation.  Software
+		  which needs access to this data has no reason to
+		  maintain it in a standard format, because it has no
+		  reason to allow access to it.  Standardizing this data
+		  would be fruitless, because there are an endless
+		  number of measurements that software might take and
+		  store.  Derived information belongs in
+		  a <spanx style="emph">catalog</spanx>.</t>
+
+		<t>Things a playlist is not, then, are a metadata format or a
+		  catalog.  We took care to enable these features, but also to
+		  avoid duplicating their functionality, poorly.</t>
+
+	  </section>
+
+	  <section  title="Shareability">
+		<t>If there is no reason for a playlist to be shared, there is
+		  no need for a new format.  Even a buggy format does no
+		  damage if it is created and consumed by the same software on
+		  the same machine.  The need for a new format only comes up
+		  when a playlist travels from one machine to another, for
+		  example when it is published on the internet.</t>
+
+		<t>One type of shareability is between different pieces of
+		  software on the same machine.  It is common for playlists
+		  created with one application to not be usable by another
+		  application on the same machine because of different or
+		  conflicting interpretations of the playlist format.  M3U
+		  suffers from this very badly, because M3U playlists often
+		  reference files according to a base path which changes from
+		  application to application.  The XSPF group aimed to fix this
+		  by providing unambiguous definitions.</t>
+
+		<t>The other type of shareability is between different
+		  machines.  For playlists to be meaningful on different
+		  machines, they must be able to identify network resources.
+		  Audio and video objects are often abstractions like "movie X
+		  by director Y" rather than computer-friendly objects like
+		  "whatever file can be gotten from the URL http://foo/x/y".  To
+		  handle this problem, we have provided support for media
+		  objects to be found via queries; XSPF identifiers
+		  are <spanx style="emph">fuzzy names</spanx>.</t>
+	  </section>
+
+	  <section  title="Content resolver">	  
+
+		<t>On a surface level you can use XSPF like any other playlist
+		  format.  Drop a bunch of filenames into an XSPF document, prepend
+		  "file://" to each, and you're ready to go.  Under the surface
+		  there is much more.</t>
+		
+		<t>The guiding design principle was to separate the functionality
+		  of a catalog of files from the functionality of a list of songs.
+		  Most MP3 players have some sort of cache for file information.
+		  This cache stores a list, or catalog, of available files and
+		  metadata from ID3 tags and other sources.  XSPF is not a catalog
+		  format.  XSPF exists only to say which songs to play.  Almost
+		  everything in XSPF is for the purpose of answering the
+		  question <spanx class="emph">which resource</spanx>, rather than the
+		  question <spanx class="emph">what is this resource</spanx>.</t>
+		
+		<t>If XSPF is not a catalog format, what is it?  XSPF is an
+		  intermediate format.  We expected a new kind of software called
+		  a <spanx class="emph">content resolver</spanx> to do the job of converting XSPF to a
+		  plain old list of files or URLs.  A content resolver would be
+		  smart enough to keep your playlists from breaking when you move
+		  your MP3s from /mp3s to /music/mp3.  It would be able to figure
+		  out that a playlist entry by the artist "Hank Williams" with the
+		  title "Your Cheating Heart" could be satisfied by the file
+		  /mp3s/hankwilliams/yourcheatingheart.mp3.  It might even know how
+		  to query the iTunes music store or another online provider to
+		  locate and download a missing song.</t>
+		
+		<t>The content resolver maintains the catalog of your songs in
+		  whatever format it prefers.  It might use a flatfile, a file in
+		  the Berkeley DB format, or a SQL database.  It might use only ID3
+		  metadata, but it might also know how to query MusicBrainz or
+		  another metadata service.</t>
+	  </section>
+
+	  <section  title="Fuzzy names">
+		<t>Any given track can be identified in a number of ways.  We
+		  provided means for absolute identifiers like URLs, filesystem
+		  paths and secure hashes, but also for query-based identifiers -- 
+		  free text fields like artist and work title and numeric fields
+		  for song length, all of which together should be enough for a
+		  good content resolver to turn into files.</t>
+	  </section>
+
+	</section><!-- end of abstractions -->
+
+	<!-- begin element definitions -->
+<section title="Element definitions">
+  <section  title="elements">
+    <section title="playlist">
+
+      <section  title="attributes">
+        <section  title="xmlns">
+          <t>http://xspf.org/ns/0/</t>
+        </section>
+		<section  title="version">
+          <t>1</t>
+		</section>
+		<t>Notice that the namespace is 0 but the version is 1.  This is because version 1 playlists are backwards compatible with version 0 parsers.</t>
+      </section>
+
+	  <section  title="elements">
+
+		<section title="title">
+          <t>A human-readable title for the
+			playlist. xspf:playlist elements MAY contain exactly
+			one.</t>
+        </section>
+
+		<section title="creator">
+          <t>Human-readable name of the entity (author, authors,
+			group, company, etc) that authored the
+			playlist. xspf:playlist elements MAY contain exactly
+			one.</t>
+        </section>
+
+		<section title="annotation">
+          <t>A human-readable comment on the playlist.  This is
+			character data, not HTML, and it may not contain
+			markup.  xspf:playlist elements MAY contain exactly
+			one.</t>
+        </section>
+
+		<section title="info">
+          <t>URL of a web page to find out more about this
+			playlist. Likely to be homepage of the author, and would
+			be used to find out more about the author and to find
+			more playlists by the author. xspf:playlist elements MAY
+			contain exactly one.</t>
+        </section>
+
+		<section title="location">
+          <t>Source URL for this playlist. xspf:playlist elements
+			MAY contain exactly one.</t>
+        </section>
+
+		<section title="identifier">
+          <t>Canonical ID for this playlist. Likely to be a hash
+			or other location-independent name. MUST be a legal
+			URN. xspf:playlist elements MAY contain exactly
+			one.</t>
+        </section>
+
+		<section title="image">
+          <t>URL of an image to display in the absence of a
+			//playlist/trackList/image element. xspf:playlist
+			elements MAY contain exactly one.</t>
+        </section>
+
+		<section title="date">
+          <t>Creation date (not last-modified date) of the playlist,
+			formatted as a <xref
+			target="http://www.w3.org/TR/xmlschema-2/#dateTime">XML
+			schema dateTime</xref>.  xspf:playlist elements MAY contain
+			exactly one.</t>
+
+		  <figure>
+			<preamble>A sample date is
+			  "2005-01-08T17:10:47-05:00".  PHP to produce such a
+			  string from a unix timestamp is:</preamble>
+			<artwork><![CDATA[$main_date = date("Y-m-d\TH:i:s", $timestamp);				
+$tz = date("O", $timestamp);				
+$tz = substr_replace ($tz, ':', 3, 0);]]>
+			</artwork>
+		  </figure>
+
+		  <t>Note: in version 0 of XSPF, this was specifed as an ISO
+		  8601 date.  xsd:dateTime is the same thing (with better
+		  documentation) for almost every date in history, and there
+		  are no playlist creation dates that might be different.</t>
+
+        </section>
+
+		<section title="license">
+          <t>URL of a resource that describes the license under
+			which this playlist was released.  xspf:playlist
+			elements may contain zero or one license element.</t>
+        </section>
+
+		<section title="attribution">
+          <t>An ordered list of URIs. The purpose is to satisfy
+            licenses allowing modification but requiring
+            attribution. If you modify such a playlist, move its
+            //playlist/location or //playlist/identifier element
+            to the top of the items in the //playlist/attribution
+            element.  xspf:playlist elements MAY contain exactly
+            one xspf:attribution element.</t>
+		  <t>Such a list can grow without limit, so as a
+			practical matter we suggest deleting ancestors more
+			than ten generations back.</t>
+          <figure>
+			<artwork><![CDATA[<attribution>
+   <location>http://bar.com/modified_version_of_original_playlist.xspf</location>
+   <identifier>somescheme:original_playlist.xspf</identifier>
+</attribution>]]></artwork>
+		  </figure>
+        </section>
+
+		<section title="link">
+          <t>The link element allows non-XSPF web resources to be included in XSPF
+            documents without breaking XSPF validation.  xspf:playlist elements MAY
+			contain zero or more link elements.</t>
+          <figure>
+			<artwork><![CDATA[
+<link rel="http://foaf.example.org/namespace/version1">http://socialnetwork.example.org/foaf/mary.rdfs</link>]]>
+			</artwork>
+		  </figure>
+          <section  title="attributes">
+            <section  title="rel">
+              <t>URI of a resource type.</t>
+			</section>
+		  </section>
+		  <section  title="content">
+			<t>URL of a resource.</t>
+		  </section>
+		</section>
+
+		<section title="meta">
+          <t>The meta element allows non-XSPF metadata to be
+            included in XSPF documents without breaking XSPF
+            validation.  xspf:playlist elements MAY contain zero
+            or more meta elements.</t>
+          <figure>
+			<artwork><![CDATA[
+<meta rel="http://example.org/key">value</meta>]]>
+			</artwork>
+		  </figure>
+          <section  title="attributes">
+            <section  title="rel">
+              <t>URI of a resource defining the metadata.</t>
+			</section>
+		  </section>
+		  <section  title="content">				
+			<t>Value of the metadata element. This is plain old
+			  text, not XML, and it may not contain markup.
+			  xspf:playlist elements MAY contain exactly one.</t>
+		  </section>
+
+        </section>
+
+		<section title="extension">
+          <t>The extension element allows non-XSPF XML to be included
+            in XSPF documents without breaking XSPF validation.  The
+            purpose is to allow nested XML, which the meta and link
+            elements do not.  xspf:playlist elements MAY contain zero
+            or more extension elements.</t>
+          <figure>
+			<artwork><![CDATA[
+<playlist xmlns:cl="http://example.com">
+   <extension application="http://example.com">
+      <cl:clip start="25000" end="34500"/>
+   </extension>
+</playlist>]]>
+			</artwork>
+		  </figure>
+          <section title="attributes">
+            <section title="application">
+              <t>URI of a resource defining the structure and purpose
+              of the nested XML.</t>
+			</section>
+		  </section>
+		  <section  title="content">				
+			<t>nested XML.</t>
+		  </section>
+		</section>
+
+		<section title="trackList">
+          <t>Ordered list of xspf:track elements to be rendered.
+            The sequence is a hint, not a requirement; renderers
+            are advised to play tracks from top to bottom unless
+            there is an indication otherwise.</t>
+
+		  <t>If an xspf:track element cannot be rendered, a
+            user-agent MUST skip to the next xspf:track element
+            and MUST NOT interrupt the sequence.</t>
+
+		  <t>xspf:playlist elements MUST contain one and only one
+            trackList element.  The trackList element my be empty.</t>
+
+          <section  title="elements">
+            <section title="track">
+              <section  title="elements">
+
+                <section title="location">
+                  <t>URL of resource to be rendered. Probably an
+					audio resource, but MAY be any type of
+					resource with a well-known duration, such as
+					video, a SMIL document, or an XSPF
+					document. The duration of the resource defined
+					in this element defines the duration of
+					rendering.  xspf:track elements MAY contain
+					zero or more location elements, but a
+					user-agent MUST NOT render more than one of
+					the named resources.</t>
+                </section>
+
+				<section title="identifier">
+				  <t>Canonical ID for this resource. Likely to
+					be a hash or other location-independent
+					name, such as a MusicBrainz identifier or
+					isbn URN (if there existed isbn numbers for
+					audio).  MUST be a legal URN. xspf:playlist
+					elements MAY contain zero or more identifier
+					elements.</t>
+                </section>
+
+				<section title="title">
+                  <t>Human-readable name of the track that
+					authored the resource which defines the
+					duration of track rendering. This value is
+					primarily for fuzzy lookups, though a
+					user-agent may display it.  xspf:track
+					elements MAY contain exactly one.</t>
+                </section>
+
+				<section title="creator">
+				  <t>Human-readable name of the entity (author, authors, group,
+					company, etc) that authored the resource which defines the duration
+					of track rendering. This value is primarily for fuzzy lookups,
+					though a user-agent may display it. xspf:track
+					elements MAY contain exactly one.</t>
+                </section>
+
+				<section title="annotation">
+                  <t>A human-readable comment on the track.  This
+				    is character data, not HTML, and it may not
+				    contain markup.  xspf:track elements MAY
+				    contain exactly one.</t>
+                </section>
+
+				<section title="info">
+                  <t>URL of a place where this resource can be
+					bought or more info can be found.</t>
+                </section>
+
+				<section title="image">
+                  <t>URL of an image to display for the duration
+					of the track.  xspf:track elements MAY contain
+					exactly one.</t>
+                </section>
+
+				<section title="album">
+                  <t>Human-readable name of the collection from which the resource
+					which defines the duration of track rendering comes. For a song
+					originally published as a part of a CD or LP, this would be the
+					title of the original release. This value is primarily for fuzzy
+					lookups, though a user-agent may display it.
+					xspf:track elements MAY contain exactly
+					one.</t>
+                </section>
+
+				<section title="trackNum">
+                  <t>Integer with value greater than zero giving the ordinal
+					position of the media on the xspf:album. This value is primarily
+					for fuzzy lookups, though a user-agent may display it.
+					xspf:track elements MAY contain exactly
+					one.   It MUST be a valid <eref target="http://www.w3.org/TR/xmlschema-2/#dt-nonNegativeInteger">XML Schema nonNegativeInteger</eref>.</t>
+
+                </section>
+
+				<section title="duration">
+				  <t>The time to render a resource, in
+					milliseconds.  It MUST be a valid <eref
+														 target="http://www.w3.org/TR/xmlschema-2/#dt-nonNegativeInteger">XML
+					  Schema nonNegativeInteger</eref>.  This value
+					is only a hint -- different XSPF generators
+					will generate slightly different values. A
+					user-agent MUST NOT use this value to
+					determine the rendering duration, since the
+					data will likely be low quality.  xspf:track
+					elements MAY contain exactly one duration
+					element.</t>
+				</section>
+
+				<section title="link">
+				  <t>The link element allows non-XSPF web
+					resources to be included in xspf:track
+					elements without breaking XSPF
+					validation.</t>
+				  <figure>
+					<artwork><![CDATA[
+<link rel="http://foaf.org/namespace/version1">http://socialnetwork.org/foaf/mary.rdfs</link>]]>
+					</artwork>
+				  </figure>
+				  <section  title="attributes">
+					<section  title="rel">
+					  <t>URN of a resource type.</t>
+					</section>
+				  </section>
+				  <section  title="content">
+					<t>URL of a resource.</t>
+				  </section>
+				</section>
+
+				<section title="meta">
+				  <t>The meta element allows non-XSPF metadata
+					to be included in xspf:track elements
+					without breaking XSPF validation.</t>
+				  <figure>
+					<artwork><![CDATA[
+<meta rel="http://example.org/key">value</meta>]]>
+					</artwork>
+				  </figure>
+				  <section  title="attributes">
+					<section  title="rel">
+					  <t>URN of a resource defining the metadata.</t>
+					</section>
+				  </section>
+				  <section  title="content">
+					<t>Value of the metadata element.  This is
+					  character data, not HTML, and it may not
+					  contain markup.  xspf:playlist elements MAY
+					  contain exactly one.</t>
+				  </section>
+                </section>
+
+				<section title="extension">
+				  <t>The extension element allows non-XSPF XML to be included
+					in XSPF documents without breaking XSPF validation.  The
+					purpose is to allow nested XML, which the meta and link
+					elements do not.  xspf:playlist elements MAY contain zero
+					or more extension elements.</t>
+				  <figure>
+					<artwork><![CDATA[
+<playlist xmlns:cl="http://example.com">
+   <trackList>
+      <track>
+         <extension application="http://example.com">
+            <cl:clip start="25000" end="34500"/>
+         </extension>
+      </track>
+   </trackList>
+</playlist>]]>
+					</artwork>
+				  </figure>
+				  <section title="attributes">
+					<section title="application">
+					  <t>URI of a resource defining the structure and purpose
+						of the nested XML.</t>
+					</section>
+				  </section>
+				  <section  title="content">				
+					<t>nested XML.</t>
+				  </section>
+				</section>
+
+			  </section>
+			</section>
+		  </section>
+		</section>
+	  </section>
+	</section>
+  </section>
+</section>
+	
+	<!-- end element definitions -->
+
+	<section title="Requirements for XSPF generators">
+	  <t>To ensure interoperability, conforming applications MUST
+         generate playlists that follow the definitions listed in
+         section 4 (element descriptions). <eref
+         target="http://mayhem-chaos.net/stuff/xspf-draft8.rng">A
+         Relax NG schema</eref> has been provided to test for
+         syntactic conformance.</t>
+	</section>
+
+	<section title="Requirements for XSPF players">
+
+	  <section  title="Graceful failure"><!-- first child of normative -->
+		
+		<t>If a media player is unable to render a resource, the show
+		  MUST go on.  Playlists exist in time; a player that stops
+		  processing when it encounters an error is considered broken;
+		  it is not conformant with the standard; it must be shunned by
+		  the community and made an outcast.  Players will frequently
+		  encounter resources that they cannot render -- this is not a
+		  fatal error unless the player stops processing the
+		  playlist.</t>
+
+	  </section>
+	  <section  title="Relative paths"><!-- first child of normative -->
+		  
+		<t>Relative paths MUST be resolved according to the <eref
+		  target="http://www.w3.org/TR/xmlbase/">XML Base</eref>
+		  specification or <eref
+		  target="http://www.w3.org/TR/xmlbase/#RFC2396">IETF RFC
+		  2396</eref>:</t>
+		<artwork><![CDATA[
+The rules for determining the base URI can be be
+summarized as follows (highest priority to lowest):
+  The base URI is embedded in the document's content.
+  The base URI is that of the encapsulating entity (message, 
+	document, or none).
+  The base URI is the URI used to retrieve the entity.
+  The base URI is defined by the context of the application.
+  ]]></artwork>
+	  </section>
+
+	  <section title="Extension URIs">
+
+		<t>Applications MUST assign unique URNs from their own
+		  namespace for each link, meta and extension element. New
+		  URNs SHOULD be assigned if syntax and/or semantics of a
+		  link, meta or extension element changes.
+		</t>
+	  </section>
+
+	</section><!-- end of requirements -->
+	<section title="Usecases for playlists">
+
+		  <section  title="Flag player application"><!-- first child of usecases -->
+			
+			<t>Scenario: A user clicks on a link to an audio or
+			  video object in their browser.  The browser needs to
+			  hand the object off to a helper application like an
+			  MP3 player.  If there is an intermediate playlist
+			  object between the browser and helper application, and
+			  the browser needs to ensure that the right helper is
+			  launched, the playlist needs to be of a type which is
+			  mapped to the same helper application.</t>
+
+			<t>Typical solution: Use a dedicated playlist format
+			  for almost every media subtype.  For Real audio there
+			  is RAM; for MP4 video there is M4U; for MP3 there is
+			  M3U; even though RAM, M4U and M3U are almost identical
+			  in syntax.  The QuickTime format is able to avoid this
+			  problem only because the container format and media
+			  format are integrated -- a QuickTime file is both a
+			  playlist and a media object.</t>
+
+			<t>XSPF' solution: The XSPF format does not yet have a
+			  solution to this problem, because the working group
+			  has not yet tackled it.  (Though I can speculate that
+			  a content resolver in between the browser and helper
+			  application would have the means to do it).</t>
+
+		  </section>
+
+		  <section  title="Allow streaming"><!-- first child of usecases -->	  
+
+			<t>Scenario: A user clicks on an audio or video link.
+			  Before handing off control to the helper application,
+			  the browser must download whatever the link points to.
+			  For streaming media this makes no sense; either the
+			  download will never finish or waiting for a complete
+			  download defeats the purpose.</t>
+
+			<t>Typical solution: rather than linking to an audio
+			  or video document, link to a playlist containing a URL
+			  of an audio or video document.  Playlists used for
+			  this purpose often contain only a single URL.  The Pls
+			  format, which is used for MP3-based webcasting, and
+			  which contains a single URL of a never-ending stream,
+			  takes this approach.</t>
+
+			<t>XSPF' solution: any reasonably compact playlist
+			  format supports this equally well.  This rules out
+			  iTunes library format and sometimes QuickTime, but
+			  allows XSPF along with M3U, Pls and other relatively
+			  terse formats.</t>
+
+		  </section>
+
+		  <section  title="Collecting fragmented resources"><!-- first child of usecases -->
+			
+			<t>Scenario: There is a very large object like a DVD
+			  rip.  The likelyhood of downloading the entire object
+			  in one shot is low, so the object has been split into
+			  pieces.  The object then needs to be reassembled on
+			  the client side.</t>
+
+			<t>Typical solution: Create a zip file or tarball,
+			  which use checksums to ensure integrity of the
+			  download; start by sending a playlist which acts a
+			  file manifest and allows a user agent to download
+			  sub-objects in digestible chunks.  However, a manifest
+			  has to express paths to related objects according to a
+			  filesystem which does not exist on the client, there
+			  has to be agreement between the client and server on
+			  how to interpret relative paths in a playlist.  The
+			  problem is that few playlist formats -- only SMIL, to
+			  my knowledge -- define the meaning of relative paths
+			  in a playlist.</t>
+
+			<t>XSPF' solution: XSPF clearly defines the meaning of
+			  relative paths according to the rule that a client
+			  must interpret relative paths in a playlist according
+			  to the XML Base specification or IETF RFC 2396.</t>
+
+		  </section>
+
+		  <section  title="Alternate media types"><!-- first child of usecases -->	 
+			<t>Scenario: There is a renderer which is capable of
+			  rendering one form of a media object but not another.
+			  The server is able to deliver the object in either
+			  format, but it needs to communicate URLs for both.
+			  Though HTTP content negotiation can be used for
+			  instances where the renderer contacts the server
+			  directly, it doesn't support protocol negotiation, and
+			  it can't be used in non-HTTP protocols.</t>
+
+			<t>Typical solution: This is particularly a problem
+			  for Real, which has a large installed base of obsolete
+			  software to be babied.  The solution is to delver
+			  alternate URLs within the same playlist and allow the
+			  client to choose.  The RAM format allows both a pnm:
+			  and a rtsp: URL within the same playlist, separated by
+			  a line containg the keyword "--stop--".</t>
+
+			<t>XSPF' solution: An XSPF track object can contain
+			  multiple identifiers or locations for the same media
+			  object.</t>
+		  </section>
+
+		  <section  title="Caching derived info"><!-- first child of usecases -->
+			
+			<t>Scenario: An MP3 player needs to access information
+			  about media objects which is too expensive to compute
+			  in real time.  For a large number of file a user can't
+			  wait to re-read ID3 tags, computing SHA1 hashes, or
+			  perform a fourier transform for each.</t>
+			<t>Typical solution: An MP3 player computes the
+			  information once, the first time it encounters an
+			  object, then caches the data.  The iTunes library
+			  format stores computed information like ID3 data in
+			  the global catalog and playlist.</t>
+			<t>XSPF' solution: XSPF defers this information to an
+			  external module called the content resolver, and
+			  mandates that the information not be included in
+			  shared playlists.</t>
+		  </section>
+
+		  <section  title="Metadata storage"><!-- first child of usecases -->
+			
+			<t>Scenario: A user needs information about high level
+			  concepts like artist and song title rather than
+			  machine-level concepts like file name and bit rate.
+			  How should artist and song title be communicated, and
+			  how should they be stored?</t>
+			<t>Typical solution: Derive the metadata according to
+			  an application-defined process like extracting ID3
+			  tags, then then store a copy of the metadata in any
+			  playlists that reference a media object.  The EXTINF
+			  property of the extended M3U format is used in this
+			  way.</t>
+			<t>XSPF' solution: XSPF defers this functionality to other
+			  sources.  Metadata is hard; there are already many
+			  projects to deal with it, some of which are very good.
+			  Metadata is attached to an XSPF track according to
+			  whatever syntax an imported vocabulary defines.  XML
+			  namespaces may be used, but the preferred syntax is the
+			  XSPF <spanx class="verb">link</spanx> and <spanx
+														   class="verb">meta</spanx> elements.  (These elements
+			  allows us to validate metadata from external sources,
+			  while namespaces don't.)</t>
+		  </section>
+
+		  <section  title="Authoring compilations for expressive reasons"><!-- first child of usecases -->
+			
+			<t>Scenario: A businessperson wants to make a batch of
+			  videos of related talks from a conference because
+			  watching them in a shared context gives a deeper
+			  understanding of the subject as a whole.</t>
+
+			<t>Typical solution: A user compiles copies of the
+			  videos and puts them in the same location, maybe in
+			  the same directory on a web server, maybe in the same
+			  directory on a hard drive.  The user then puts the
+			  locations, whether paths or URLs, into a file in the
+			  M3U format.</t>
+
+			<t>XSPF' solution: The XSPF <spanx class="verb">trackList</spanx> element contains a
+			  sequence of <spanx class="verb">track</spanx> elements,
+			  each of which points to one of the objects.</t>
+		  </section>
+
+		</section><!-- end of usecases -->
+
+		<section title="Recipes">
+
+		  <section title="How do I set relative paths in an XSPF playlist, for example if I want to use it as a file manifest?">
+			<t>See the <eref target="http://www.w3.org/TR/xmlbase/">XML Base</eref> specification or <eref target="http://www.w3.org/TR/xmlbase/#RFC2396">IETF RFC 2396</eref>.</t>
+		  </section>
+
+		  <section title="How to I convert XSPF to M3U?">
+			<t>Use the <eref target="http://gonze.com/xspf/xspf2m3u.xsl">xspf2m3u.xsl</eref> stylesheet.</t>
+		  </section>
+
+		  <section title="How to I convert XSPF to HTML?">
+			<t>Use the <eref target="http://gonze.com/xspf/xspf2html.xsl">xspf2html.xsl</eref> stylesheet.</t>
+		  </section>
+
+		  <section title="How to I convert XSPF to SMIL?">
+			<t>Use the <eref target="http://gonze.com/xspf/xspf2smil.xsl">xspf2smil.xsl</eref> stylesheet.</t>
+		  </section>
+
+		  <section title="How to I convert XSPF to Soundblox?">
+			<t>Use the <eref target="http://gonze.com/xspf/xspf2soundblox.xsl">xspf2soundblox.xsl</eref> stylesheet.</t>
+		  </section>
+
+		  <section title="How do I customize XSPF?  Should I use namespaces?">
+			<t>Use the meta or link elements.  Use meta if the element
+			  contains a single value, like "blue" or "rock"; use link if the
+			  element contents are a URL.  Try to avoid using namespaces to
+			  add fields, because namespaced items cannot be validated by an
+			  XSPF validator.</t>
+		  </section>
+
+		  <section title="How do I validate XSPF?">
+
+			<t>Matthias Friedrich has created an XML schema for XSPF
+			version 1 at <eref
+			target="http://www.stud.uni-karlsruhe.de/~uy7l/xspf-1.xsd">http://www.stud.uni-karlsruhe.de/~uy7l/xspf-1.xsd</eref>.</t>
+
+			<t>Robert Kaye has created a Relax NG schema for XSPF
+			version 0 draft 8 at <eref
+			target="http://mayhem-chaos.net/stuff/xspf-draft8.rng">http://mayhem-chaos.net/stuff/xspf-draft8.rng</eref>.
+			You can use <eref
+			target="http://www.thaiopensource.com/relaxng/jing.html">Jing</eref>
+			to invoke it.</t>
+			<t>For users of Emacs nxml-mode, Ryan Shaw has posted a
+			  .rnc version of Robert's schema at <eref
+													target="http://lists.musicbrainz.org/pipermail/playlist/2004-October/000429.html">http://lists.musicbrainz.org/pipermail/playlist/2004-October/000429.html</eref>.
+			  This is just a matter of putting the .rnc file in the
+			  schema/ subdirectory of your nxml-mode installation.
+			  nxml-mode will find it automatically and add it to the
+			  list of available schemas; if you begin authoring an
+			  XSPF playlist, nxml-mode will choose the correct schema
+			  by examining the root element name.</t>
+		  </section>
+
+		  <section title="How do I use MusicBrainz metadata?">
+			<t>
+			  Rather than include the literal artist name, song
+			  duration, etc, for a track within a playlist,
+			  MusicBrainz gives the URL of an XML file containing
+			  these items.  Assume that the MusicBrainz definition of
+			  what a track listing means is at
+			  http://musicbrainz.org/track.  (There is nothing at that
+			  URL, which is fine -- the URL in an XSPF meta[@rel]
+			  attribute works the same way as the URL in an XML
+			  namespace declaration).  A typical track listing has a
+			  URL like
+			  http://musicbrainz.org/mm-2.1/track/bdc846e7-6c26-4193-82a6-8d1b5a4d3429.</t>
+			<figure>
+			  <artwork><![CDATA[
+<track>
+  <identifier>bdc846e7-6c26-4193-82a6-8d1b5a4d3429</identifier>
+  <title>Smoke Two Joints</title>
+  <creator>Sublime</creator>
+  <duration>175466</duration>
+  <meta rel="http://musicbrainz.org/track">http://musicbrainz.org/mm-2.1/track/bdc846e7-6c26-4193-82a6-8d1b5a4d3429</meta>
+</track>]]>
+			  </artwork>
+			</figure>
+		  </section>
+
+		  <section title="How do I refer to a BitTorrent?">
+			<t>Put the torrent file in a playlist/trackList/track/location element.</t>
+		  </section>
+
+		  <section title="How do I refer to a Magnet or sha1: URI?">
+			<t>A sha1: URI is a location independent canonical ID, so it
+			  belongs in a playlist/trackList/track/identifier element.  A
+			  Magnet URI is resolvable, so belongs in
+			  playlist/trackList/track/location.</t>
+		  </section>	  
+
+		</section>
+  </middle>
+
+  <back>
+
+	<section title="IANA Considerations">
+
+	  <section title="MIME media type name">
+		<t>application</t>
+	  </section>
+
+	  <section title="MIME subtype name">
+		<t>xspf+xml</t>
+		<t>(This name is provisional, meaning that we have not yet
+		found a volunteer to steer it through the name-granting
+		process).</t>
+	  </section>
+
+	  <section title="Mandatory parameters">	
+		<t>none</t>
+	  </section>
+
+	  <section title="Optional parameters">	
+		<t>"charset", per <xref target="http://www.ietf.org/rfc/rfc3023.txt">RFC3023</xref>.</t>
+	  </section>
+
+	  <section title="Translated into plain english">
+		<t>The mime type for XSPF playlists is <spanx style="code">application/xspf+xml</spanx>.</t>
+	  </section>
+
+	  <section title="File extension">
+		<t>.xspf</t>
+	  </section>	
+
+	  <section title="Security Considerations">
+		<t>Playlist authors should not publish documents containing local paths.</t>
+	  </section>	
+
+	</section>
+
+	<references>&rfc2119;</references>
+  </back>
+  
+</rfc>
