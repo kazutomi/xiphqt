@@ -4,7 +4,7 @@ oggmerge -- utility for splicing together ogg bitstreams
 
 	oggmerge.c
 
-	Copyright 2000 Ralph Giles <Ralph_Giles@telus.net>
+	Copyright 2000 Ralph Giles <giles@xiph.org>
 	               Jack Moffitt <jack@xiph.org>
 
 	Distributed under the GPL
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
 	/* let her rip! */
 	while (1) {
 		/* Step 1: make sure an ogg page is available for each input 
-		** as long we havne't already processed the last one
+		** as long we haven't already processed the last one
 		*/
 		file = params.input;
 		while (file) {
