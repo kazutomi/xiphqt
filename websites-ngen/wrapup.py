@@ -413,7 +413,6 @@ class NewsFormatter(object):
 	def formatOne(self, newsItem): pass
 
 class HTMLNewsFormatter(NewsFormatter):
-	""" This is just one HTML news formatter of possibly many, really."""
 	def __init__(self, newsItems, dateFormat="%A, %B %d, %Y"):
 		NewsFormatter.__init__(self, newsItems)
 		self.newsItems = newsItems
@@ -453,20 +452,32 @@ class HTMLNewsFormatter(NewsFormatter):
 		
 		
 	def formatOne(self, newsItem, headingLevel=1):
+		reg = re.compile(r'^http://www.xiph.org(.*)$')
+		m = reg.match(newsItem.url)
+		url = m.groups(1)
+
 		ret =  "<div class='newsEntry'>\n"
 		ret += " <h%s>%s</h%s>\n" % (headingLevel, newsItem.title, headingLevel)
 		ret +=  newsItem.post[:]
 		ret += " <div class='postInfo'>Posted %s (<a href='%s'>permalink</a>)</div>\n" % \
-			    (time.strftime(self.dateFormat, newsItem.dateIssued), newsItem.url)
+			    (time.strftime(self.dateFormat, newsItem.dateIssued), url)
 		ret += "</div>\n\n"
 
 		return ret
 	
-	def format(self):
+	def format(self, howMany=0):
+		"""Formats all in the series if howMany is 0; formats and returns that many otherwise."""
 		ret = ''
-		for ni in self.newsItems:
-			ret += self.formatOne(ni)
-		return ret
+		items = self.dispenser.items()
+		# lame way of coding, but what the hey
+		if howMany == 0:
+			for ni in items:
+				ret += self.formatOne(ni)
+			return ret
+		else:
+			for ni in items[:min(howMany, len(items))]:
+				ret += self.formatOne(ni)
+			return ret
 
 class AtomNewsFormatter(NewsFormatter):
 	def __init__(self, newsItems):
@@ -707,7 +718,17 @@ def doNews():
 					fh.close()
 
 		def toplevel(formatter):
-			pass
+			howManyOnFrontPage = len(formatter.dispenser.items())
+			if howManyOnFrontPage > 5:
+				howManyOnFrontPage = 5
+			for item in formatter.dispenser.items()[:howManyOnFrontPage]:
+				destPath = os.path.join('xiph.org', 'news', 'index.markdown')
+				fh = open(destPath, 'w')
+				try:
+					fh.write(formatter.format(howManyOnFrontPage))
+				finally:
+					fh.close()
+				
 
 		formatter = HTMLNewsFormatter(newsDispenser)
 		
