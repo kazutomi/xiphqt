@@ -2,6 +2,7 @@ Version 1.0b1 (May 22, 2003):
 	* Initial public release
 
 Version 1.0b2 (May 28, 2003):
+	* Dual licensed MP3Info.py under both Xiph.org BSD and GPL
 	* User's Guide and Developer's Guide added
 	* Fixed crashing while using "positron del"
 	* Albums, Artists, and Genres are now sorted on the Neuros
