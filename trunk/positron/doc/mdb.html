@@ -50,7 +50,7 @@ implementations, but are not normative in any way.</p>
   <li>Bits 1-15 = Reserved, zero by default</li>
 </td></tr>
 <tr><td>NumOfKeys</td><td>3</td><td>1</td><td>1 + the number of access keys, sometimes 
-   called "rules", per record.  Essentially, the primary data field is being counted here, 
+   called "rules," per record.  Essentially, the primary data field is being counted here, 
    even though it is not an access key.  (M)</td></tr>
 <tr><td>NumOfFieldsPerRecord</td><td>4</td><td>1</td><td>Number of Fields per record.  
    Includes the primary data field, access keys, and extra info fields.</td></tr>
@@ -157,7 +157,7 @@ without any multivalued fields, would have the following form:
 </p>
 
 <table class="recordlayout">
-<tr><td class="descriptive">Record Flag - 16 bit flag
+<tr><td class="descriptive">Record Flag - 16-bit flag
 <ul>
   <li>Bit 0 (isDeleted) - 0 if an active record, 1 if a deleted record</li>
   <li>Bits 1-14 - Reserved (default to 0)</li>
