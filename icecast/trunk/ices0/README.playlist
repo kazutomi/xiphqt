@@ -11,6 +11,10 @@ reading the ices.pm.dist or ices.py.dist (for perl or python,
 respectively) included in the ices distribution. Others should keep
 reading.
 
+Shell scripts are somewhat simpler: At each invocation, the shell script
+must return the path to an audio file as its first line of output.
+Optionally it may return the metadata on the second line.
+
 The following methods may be defined:
 
 ices_get_next

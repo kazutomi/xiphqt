@@ -73,6 +73,9 @@ ices_playlist_initialize (void)
     case ices_playlist_builtin_e:
       rc = ices_playlist_builtin_initialize (&ices_config.pm);
       break;
+	case ices_playlist_script_e:
+	  rc = ices_playlist_script_initialize (&ices_config.pm);
+	  break;
     case ices_playlist_python_e:
 #ifdef HAVE_LIBPYTHON
       rc = ices_playlist_python_initialize (&ices_config.pm);

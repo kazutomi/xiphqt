@@ -268,6 +268,8 @@ parse_playlist_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *
 	ices_config->pm.playlist_type = ices_playlist_python_e;
       else if (str && (strcmp (str, "perl") == 0))
 	ices_config->pm.playlist_type = ices_playlist_perl_e;
+      else if (str && (strcmp (str, "script") == 0))
+	ices_config->pm.playlist_type = ices_playlist_script_e;
       else
 	ices_config->pm.playlist_type = ices_playlist_builtin_e;
     } else if (strcmp (cur->name, "File") == 0) {

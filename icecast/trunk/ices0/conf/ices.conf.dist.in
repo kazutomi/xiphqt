@@ -7,10 +7,10 @@
     <!-- Set this to 0 if you don't want to randomize your playlist, and to
 	 1 if you do. -->
     <Randomize>1</Randomize>
-    <!-- One of builtin, perl, or python. -->
+    <!-- One of builtin, script, perl, or python. -->
     <Type>builtin</Type>
-    <!-- Module name to pass to the playlist handler if using  perl or python.
-	 If you use the builtin playlist handler then this is ignored -->
+    <!-- Module name to pass to the playlist handler if using a script,
+         perl, or python. Ignored for builtin -->
     <Module>ices</Module>
     <!-- Set this to the number of seconds to crossfade between tracks.
          Leave out or set to zero to disable crossfading (the default).

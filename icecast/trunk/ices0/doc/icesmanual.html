@@ -161,9 +161,12 @@ Shout had a feature to call an external program with a system() call, before
 each song, and that could possibly modify the playlist.
 This was rather ugly, but did the trick.
 In ices, we take this a step further and include scripting support inside the
-program. You can write your own playlist handler in perl or python, whatever
-you prefer.
-<br>
+program. You can write your own playlist handler in shell, perl or python,
+whatever you prefer.
+<p>
+Shell scripts simply return the path to a file as their first line of
+output, and may optionally return metadata as their second line.
+</p>
 Your script module has to define at least a function named
 <tt>ices_get_next</tt>, which should return a path to a file or FIFO
 containing MP3 data.

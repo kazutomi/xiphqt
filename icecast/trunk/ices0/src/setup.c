@@ -441,6 +441,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	    ices_config->pm.playlist_type = ices_playlist_python_e;
 	  else if (strcmp (argv[arg], "perl") == 0)
 	    ices_config->pm.playlist_type = ices_playlist_perl_e;
+	  else if (strcmp (argv[arg], "script") == 0)
+	    ices_config->pm.playlist_type = ices_playlist_script_e;
 	  else 
 	    ices_config->pm.playlist_type = ices_playlist_builtin_e;
 	  break;

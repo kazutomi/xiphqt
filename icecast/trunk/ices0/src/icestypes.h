@@ -30,6 +30,7 @@ typedef enum {
 
 typedef enum {
   ices_playlist_builtin_e,
+  ices_playlist_script_e,
   ices_playlist_python_e,
   ices_playlist_perl_e
 } playlist_type_t;

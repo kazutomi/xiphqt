@@ -1,3 +1,4 @@
+        * script module ported from ices 2 by Ville Koskinen.
 0.4     2004-08-28
 	* FLAC transcoding support.
 	* MP4 transcoding support added via libfaad.

@@ -89,11 +89,13 @@
             could possibly modify the playlist. This was rather ugly, but
             did the trick. In ices, we take this a step further an
             include scripting support inside the program. You can write
-            your own playlist handler in perl or python, whatever you
-            prefer. Your script module has to define 5 functions; test,
+            your own playlist handler in shell, perl or python, whatever you
+            prefer. Your script module may define 5 functions: test,
             init, shutdown, get_next, and get_current_lineno. I suggest
             you take a look in the distributed module files and just
-            expand on that.
+            expand on that. Shell scripts should return two lines - the
+            first is a path to a file, and the second is an optional
+            metadata string.
 	 5. Vorbis, FLAC and MP4 transcoding
             If compiled with the appropriate libraries, ices can transcode
             Ogg Vorbis, FLAC and MP4 (AAC) audio files to MP3 on the fly. Keep
@@ -128,7 +130,7 @@
                o -P <password>
                o -r (randomize playlist)
                o -s (private stream)
-               o -S <perl|python|builtin>
+               o -S <script|perl|python|builtin>
                o -u <stream url>
                o -N <Reencoded number of channels>
                o -H <Reencoded sample rate>
@@ -291,7 +293,7 @@ L</Description>
                  This option is passed to the playlist handler, and tells
                  it to randomize the playlist.
                o Playlist Type
-                 Command line option: -S <perl|python|builtin>
+                 Command line option: -S <script|perl|python|builtin>
                  Config file tag: Playlist/Type
                  By default, ices using a builtin playlist handler. It
                  handles randomization and not much more. Most people
@@ -300,8 +302,8 @@ L</Description>
                  handles embedded python and embedded perl, so now you
                  can write your own modules, without modifying ices, that
                  does just about anything. Use this option to change the
-                 playlist handler type from builtin (default), to python
-                 or perl.
+                 playlist handler type from builtin (default), to python,
+                 perl or script.
                o Playlist Module
                  Command line option: -M <module>
                  Config file tag: Playlist/Module
