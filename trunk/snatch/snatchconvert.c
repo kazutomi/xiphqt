@@ -454,7 +454,8 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   if(!s)return(0);
   length=atoi(s);
 
-  if(!read_snatch_frame_helper(f,length,1))return(0);
+  if(!read_snatch_frame_helper(f,length,1))
+    return(0);
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -463,7 +464,8 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   }
 
   if(t<begin_time)return(length);
-  if(t>end_time)return(0);
+  if(t>end_time)
+    return(0);
 
   if(audbuf_zerotime==0){
     audbuf_zerotime=t;
@@ -753,7 +755,8 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   if(!s)return(0);
   length=atoi(s);
 
-  if(!read_snatch_frame_helper(f,length,1))return(0);
+  if(!read_snatch_frame_helper(f,length,1))
+    return(0);
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -762,7 +765,8 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   }
 
   if(t<begin_time)return(length);
-  if(t>end_time)return(0);
+  if(t>end_time)
+    return(0);
 
   if(last_t!=-1){
     double del_t=t-last_t;
@@ -983,11 +987,11 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 
       if(process_audio && !audio_p){
 	fprintf(stderr,"No audio in this stream\n");
-	return(1);
+	exit(1);
       }
       if(process_video && !video_p){
 	fprintf(stderr,"No video in this stream\n");
-	return(1);
+	exit(1);
       }
 
       header=1;
@@ -999,7 +1003,7 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
   if(!drain){
     int ret=read_snatch_frame(in,process_audio,process_video);
     
-    if(ret==0 && feof(in))drain=1;
+    if(ret==0)drain=1;
   }
   
   if(audio_p && video_p){
