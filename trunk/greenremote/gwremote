@@ -270,7 +270,7 @@ sub fetch_channel{
     $artist_widget->configure(-text=>$current_artist);
     $song_widget->configure(-text=>$current_song);
     $play_widget->configure(-command=>[sub{&fetch_play}]);
-    print "time left to play $timeleft ms\n";
+#    print "time left to play $timeleft ms\n";
 }    
 
 sub get_page{
@@ -308,7 +308,7 @@ sub fields_from_page{
 		    $name=$1;
 		    $content=~m/$valpat/;
 		    
-		    printf "$name :: $1\n";
+#		    print "$name :: $1\n";
 		    if(!defined($fields{$name})){ # hack alert
 			$fields{$name}=$1;
 			$count++;
@@ -346,7 +346,7 @@ sub get_pic{
 
 	syswrite FH, $data;
 	close FH;
-	print "tempfile = $name\n";
+#	print "tempfile = $name\n";
   
 	$name;
     }else{
@@ -388,7 +388,7 @@ sub fetch_play{
 		  "&port=".$form_fields->{"port"}.
 		  "&mount=".$form_fields->{"mount"}.
 		  "&filename=".$form_fields->{"filename"},".m3u");
-    print "$player $m3u &";
+#    print "$player $m3u &";
     if(!fork()){
 	exec "$player $m3u &";
     }
