@@ -437,7 +437,7 @@ class MP3Info:
             self.id3 = id3
 
         if id3v2.valid:
-            self.mpeg = MPEG(file)
+            self.mpeg = MPEG(file, seekstart=id3v2.header_size)
         else:
             # Header better be the first thing if there is no ID3v2
             self.mpeg = MPEG(file, seeklimit=4)
