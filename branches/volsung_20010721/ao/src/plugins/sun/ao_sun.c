@@ -47,7 +47,7 @@
 
 static char *ao_sun_options[] = {"dev"};
 ao_info ao_sun_info = {
-	AO_TYPE_LIVE
+	AO_TYPE_LIVE,
 	"Sun audio driver output",
 	"sun",
 	"Christian Weisgerber <naddy@openbsd.org>",
@@ -68,7 +68,7 @@ int plugin_test()
 {
 	int fd;
 
-	if ( (fd = state->fd = open(AO_SUN_DEFAULT_DEV, O_WRONLY)) < 0 )
+	if ( (fd = open(AO_SUN_DEFAULT_DEV, O_WRONLY)) < 0 )
 		return 0; /* Cannot use this plugin with default parameters */
 	else {
 		close(fd);
@@ -125,7 +125,7 @@ int plugin_open(ao_device *device, ao_sample_format *format)
 	
 	audio_info_t info;
 
-	if ( (internal->fd = open(state->dev, O_WRONLY)) < 0 )
+	if ( (internal->fd = open(internal->dev, O_WRONLY)) < 0 )
 		return 0;
 
 	AUDIO_INITINFO(&info);
