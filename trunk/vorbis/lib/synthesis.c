@@ -24,7 +24,7 @@
 #include "lpc.h"
 #include "lsp.h"
 
-int vorbis_synthesis(vorbis_block *vb){
+int vorbis_synthesis(vorbis_block *vb,ogg_packet *op){
   int i;
   vorbis_info *vi=&vb->vd->vi;
   double *window=vb->vd->window[vb->W][vb->lW][vb->nW];
