@@ -20,6 +20,8 @@
 
 #include "in2.h"
 
+#error Don't use this plugin, it's deprecated. 
+
 
 // post this to the main window at end of file (after playback has stopped)
 #define WM_WA_MPEG_EOF WM_USER + 2
