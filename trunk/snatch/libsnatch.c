@@ -93,6 +93,7 @@ static int fake_videop=0;
 static void (*QueuedTask)(void);
 
 static int outfile_fd=-1;
+static FILE *outfile_file=NULL;
 
 static void CloseOutputFile();
 static void OpenOutputFile();
@@ -248,7 +249,11 @@ void *backchannel_thread(void *dummy){
       snatch_active=1;
       FakeExposeRPPlay();
       break;
+    case 'C':
+      CloseOutputFile();
+      break;
     case 'I':
+      CloseOutputFile();
       snatch_active=0;
       FakeExposeRPPlay();
       break;
@@ -523,12 +528,14 @@ int close(int fd){
 
 ssize_t write(int fd, const void *buf,size_t count){
   if(fd==audio_fd){
-    if(count>0){
+    if(count>0 && snatch_active==1){
       if(outfile_fd<0)OpenOutputFile();
       if(outfile_fd>=0){ /* always be careful */
+
+	  fprintf(outfile_file,"AUDIO %d %d %d %d:",audio_channels,
+		  audio_rate,audio_format,count);
+	  fwrite(buf,1,count,outfile_file);
 	
-
-
       }
     }
     if(fake_audiop)return(count);
@@ -645,6 +652,7 @@ static void OpenOutputFile(){
   if(outfile_fd!=-2){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
+      outfile_file=stdout;
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
     }else{
       struct stat buf;
@@ -652,7 +660,7 @@ static void OpenOutputFile(){
       if(!ret && S_ISDIR(buf.st_mode)){
 	/* construct a new filename */
 	struct tm *now;
-	char buf2[256];
+	char buf2[4096];
 	char buf1[256];
 	time_t nows;
 	nows=time(NULL);
@@ -660,20 +668,23 @@ static void OpenOutputFile(){
 	strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
 	if(videocount){
 	  if(audio_channels){
-	    sprintf(buf2,"%s_%s%dHz_%dx%d_AV.snatch",
+	    sprintf(buf2,"%s/%s_%s%dHz_%dx%d_AV.snatch",
+		    outpath,
 		    buf1,
 		    (audio_channels==1?"mono":"stereo"),
 		    audio_rate,
 		    video_width,
 		    video_height);
 	  }else{
-	    sprintf(buf2,"%s_%dx%d_V.snatch",
+	    sprintf(buf2,"%s/%s_%dx%d_V.snatch",
+		    outpath,
 		    buf1,
 		    video_width,
 		    video_height);
 	  }
 	}else{
-	  sprintf(buf2,"%s_%s%dHz_A.snatch",
+	  sprintf(buf2,"%s/%s_%s%dHz_A.snatch",
+		  outpath,
 		  buf1,
 		  (audio_channels==1?"mono":"stereo"),
 		  audio_rate);
@@ -684,8 +695,10 @@ static void OpenOutputFile(){
 	  fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
 		  "         %s: %s\n\n",buf2,strerror(errno));
 	  outfile_fd=-2;
-	}else
+	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
+	  outfile_file=fdopen(outfile_fd,"w+");
+	}
 	
       }else{
 	outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
@@ -695,6 +708,7 @@ static void OpenOutputFile(){
 	  outfile_fd=-2;
 	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
+	  outfile_file=fdopen(outfile_fd,"w+");
 	}
       }
     }
@@ -709,14 +723,8 @@ static void CloseOutputFile(){
 
     if(debug)fprintf(stderr,"    ...: Capture stopped.\n");
     if(outfile_fd!=STDOUT_FILENO)
-      (*libc_close)(outfile_fd);
+      fclose(outfile_file);
     outfile_fd=-1;
+    outfile_file=NULL;
   }
 }
-
-
-
-
-
-
-
