@@ -1,3 +1,12 @@
+2002-02-17  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* pyvorbisfile.c: (py_ov_open): Fixed fd leak pointed out by
+	Harald Meland. Also correctly incref file objects passed in to
+	keep them open.
+
+	* vorbismodule.c, pyvorbisfile.c, pyvorbiscodec.c, pyvorbisinfo.c:
+	Set the ob_types in the init method instead of statically, as 
+	MSVC complains.
+
 2002-01-27  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* pyvorbisinfo.c (del_comment): Set parent to NULL after decref
 	

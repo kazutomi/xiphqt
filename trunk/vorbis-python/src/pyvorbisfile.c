@@ -8,9 +8,9 @@
 #include "pyvorbisinfo.h"
 
 /*  
-   *********************************************************
-                        VorbisFile Object methods 
-   *********************************************************
+*********************************************************
+VorbisFile Object methods 
+*********************************************************
 */
 
 char py_vorbisfile_doc[] = "";
@@ -37,21 +37,21 @@ FDEF(ov_seekable) "Returns whether this VorbisFile is seekable.";
 FDEF(ov_bitrate) "Returns the bitrate of this VorbisFile.";
 
 FDEF(ov_serialnumber) \
-"x.serialnumber(link):\n\n\
+     "x.serialnumber(link):\n\n\
 Returns the serialnumber of this VorbisFile. What's link do?";
 
 FDEF(ov_bitrate_instant) \
-"Returns the bitrate_instant value for this VorbisFile.";
+     "Returns the bitrate_instant value for this VorbisFile.";
 
-FDEF(ov_raw_total) "x.raw_total(i):\n\n\
+     FDEF(ov_raw_total) "x.raw_total(i):\n\n\
 Returns the raw_total value for this VorbisFile. What's i?";
 
 FDEF(ov_pcm_total) \
-"x.pcm_total(i):\n\n\
+     "x.pcm_total(i):\n\n\
 Returns the pcm_total value for this VorbisFile. What's i?";
 
 FDEF(ov_time_total) \
-"x.time_total(i):\n\n\
+     "x.time_total(i):\n\n\
 Returns the time_total value for this VorbisFile. What's i?";
 
 FDEF(ov_raw_seek) "x.raw_seek(pos):\n\nSeeks to raw position pos.";
@@ -65,7 +65,7 @@ FDEF(ov_time_tell) "Returns the time position.";
 FDEF(ov_info) "Return an info object for this file";
 
 FDEF(ov_comment) \
-"Returns a dictionary of lists for the comments in this file.\n\
+     "Returns a dictionary of lists for the comments in this file.\n\
 All values are stored in uppercase, since values should be case-insensitive.";
 
 static PyObject *py_ov_file_getattr(PyObject *, char *name);
@@ -80,7 +80,7 @@ either an open, readable file object or a filename string.\n\
 The most useful method for a VorbisFile object is \"read\".";
 
 PyTypeObject py_vorbisfile_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "VorbisFile",
   sizeof(py_vorbisfile),
@@ -176,6 +176,9 @@ py_ov_file_dealloc(PyObject *self)
   if (PY_VORBISFILE(self))
     ov_clear(PY_VORBISFILE(self));
 
+  /* If file was opened from a file object, decref it, so it can close */
+  Py_XDECREF(((py_vorbisfile *) self)->py_file);
+
   PyMem_DEL(self);
 }
 
@@ -194,6 +197,7 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
   if (PyArg_ParseTuple(args, "s|sl", &fname, &initial, &ibytes)) {
 
     file = fopen(fname, "r");
+    fobject = NULL;
 
     if (file == NULL) {
       snprintf(errmsg, MSG_SIZE, "Could not open file: %s", fname);
@@ -202,9 +206,10 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
     }
 
   } else if (PyArg_ParseTuple(args, "O!|sl", &PyFile_Type, &fobject,
-			      &initial, &ibytes)) {
+                              &initial, &ibytes)) {
     PyErr_Clear(); /* clear first failure */
 
+    fname = NULL;
     file = PyFile_AsFile(fobject);
 
     if (file == NULL) 
@@ -212,16 +217,23 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
 
   } else {
     PyErr_SetString(PyExc_TypeError, 
-		    "Argument 1 is not a filename or file object");
+                    "Argument 1 is not a filename or file object");
     return NULL;
   }
 
   self->ovf = (OggVorbis_File*) malloc(sizeof(OggVorbis_File));
+  self->py_file = fobject;
+  Py_XINCREF(fobject); /* Prevent the file from being closed */
   
   retval = ov_open(file, self->ovf, initial, ibytes);
 
-  if (retval < 0)
+  if (retval < 0) {
+    if (fname != NULL)
+      fclose(file);
+    Py_XDECREF(self->py_file);
+
     return v_error_from_code(retval, "Error opening file: ");
+  }
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -250,7 +262,7 @@ py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
   sgned = 1;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwdict, "|llll", read_kwlist,
-				   &length, &bigendianp, &word, &sgned))
+                                   &length, &bigendianp, &word, &sgned))
     return NULL;
 
   buffobj = PyBuffer_New(length);
@@ -265,14 +277,14 @@ py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
   Py_DECREF(tuple);
 
   Py_BEGIN_ALLOW_THREADS
-  retval = ov_read(ov_self->ovf, buff, length, 
-		   bigendianp, word, sgned, &bitstream);
+    retval = ov_read(ov_self->ovf, buff, length, 
+                     bigendianp, word, sgned, &bitstream);
   Py_END_ALLOW_THREADS
 
-  if (retval < 0) {
-    Py_DECREF(buffobj);
-    return v_error_from_code(retval, "Error reading file: ");
-  }
+    if (retval < 0) {
+      Py_DECREF(buffobj);
+      return v_error_from_code(retval, "Error reading file: ");
+    }
 
   retobj = Py_BuildValue("Oii", buffobj, retval, bitstream);
   Py_DECREF(buffobj);
