@@ -37,9 +37,9 @@ static char py_ao_driver_info_doc[] =
 "Return a dictionary of information about a driver.\n\
 \n\
 It can either be called as a member function of an AudioDevice object:\n\
-   x.get_driver_info()\n\
+   x.driver_info()\n\
 or as a standalone function which takes the integer id of the driver:\n\
-   get_driver_info(1)";
+   driver_info(1)";
 static PyObject *py_ao_driver_info(PyObject *, PyObject *);
 
 static char py_ao_is_big_endian_doc[] =
@@ -88,7 +88,7 @@ static PyTypeObject ao_Type = {
 
 
 struct PyMethodDef ao_Object_methods[] = {
-  {"get_driver_info", py_ao_driver_info, 
+  {"driver_info", py_ao_driver_info, 
    METH_VARARGS, py_ao_driver_info_doc},
   {"play", py_ao_play, 
    METH_VARARGS, py_ao_play_doc},
