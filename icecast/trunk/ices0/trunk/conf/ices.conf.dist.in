@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<ices:Configuration xmlns:ices="http://www.icecast.org/projects/ices">
+	<ices:Playlist>
+		<ices:File>apan.txt</ices:File>
+		<ices:Randomize>1</ices:Randomize>
+		<ices:Type>builtin</ices:Type>
+	</ices:Playlist>
+	<ices:Server>
+		<ices:Hostname>localhost</ices:Hostname>
+		<ices:Port>8000</ices:Port>
+		<ices:Password>letmein</ices:Password>
+		<ices:Protocol>xaudiocast</ices:Protocol>
+	</ices:Server>
+	<ices:Execution>
+		<ices:Background>0</ices:Background>
+		<ices:Verbose>1</ices:Verbose>
+		<ices:Base_Directory>/tmp</ices:Base_Directory>
+	</ices:Execution>
+	<ices:Stream>
+		<ices:Name>Cool ices default name from XML</ices:Name>
+		<ices:Genre>Cool ices genre from XML</ices:Genre>
+		<ices:Description>Cool ices description from XML</ices:Description>
+		<ices:URL>Cool ices URL from XML</ices:URL>
+		<ices:Bitrate>128</ices:Bitrate>
+		<ices:Public>1</ices:Public>
+	</ices:Stream>
+</ices:Configuration>
