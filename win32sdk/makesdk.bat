@@ -1,7 +1,7 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.10 2001/10/18 03:16:09 cwolf Exp $
+rem $Id: makesdk.bat,v 1.11 2001/10/18 03:26:33 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
@@ -86,7 +86,6 @@ xcopy %SRCROOT%\vorbis\doc\vorbisenc\*.css %SRCROOT%\win32sdk\sdk\doc\vorbis\vor
 xcopy %SRCROOT%\vorbis\doc\vorbisfile\*.html %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisfile > nul
 xcopy %SRCROOT%\vorbis\doc\vorbisfile\*.css %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisfile > nul
 
-copy sleep.bat %SRCROOT%\win32sdk\sdk\build
 copy sleep.js %SRCROOT%\win32sdk\sdk\build
 
 echo ... copied.
