@@ -396,7 +396,31 @@ int sock_write_fmt(sock_t sock, const char *fmt, va_list ap)
 }
 
 
-int sock_read_bytes(sock_t sock, char *buff, const int len)
+/* function to check if there are any pending reads on
+ * the stated socket.  timeout in ms, 0 for immediate
+ * return
+ */
+int sock_read_pending(sock_t sock, unsigned timeout)
+{
+    struct timeval tv;
+    fd_set rfds;
+
+    tv.tv_sec = timeout/1000;
+    tv.tv_usec = (timeout%1000)*1000;
+
+    FD_ZERO(&rfds);
+    FD_SET(sock, &rfds);
+
+    switch (select(sock + 1, &rfds, NULL, NULL, &tv))
+    {
+        case 0:  return SOCK_TIMEOUT;
+        default: return 1;
+        case -1: return SOCK_ERROR;
+    }
+}
+
+
+int sock_read_bytes(sock_t sock, char *buff, size_t len)
 {
 
     /*if (!sock_valid_socket(sock)) return 0; */

@@ -74,6 +74,7 @@ typedef int sock_t;
 # define sock_shutdown _mangle(sock_shutdown)
 # define sock_get_localip _mangle(sock_get_localip)
 # define sock_error _mangle(sock_error)
+# define sock_set_error _mangle(sock_set_error)
 # define sock_recoverable _mangle(sock_recoverable)
 # define sock_stalled _mangle(sock_stalled)
 # define sock_valid_socket _mangle(sock_valid_socket)
@@ -126,7 +127,7 @@ ssize_t sock_writev (int sock, const struct iovec *iov, const size_t count);
 
 
 /* Socket read functions */
-int sock_read_bytes(sock_t sock, char *buff, const int len);
+int sock_read_bytes(sock_t sock, char *buff, size_t len);
 int sock_read_line(sock_t sock, char *string, const int len);
 
 /* server socket functions */
