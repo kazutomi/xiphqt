@@ -4,11 +4,10 @@ package MGMmodule::cpustat;
 use vars qw($statcpus @prevload @prevtotal $numcpus $graph);
 
 sub module_construct{
-    my($this,$toplevel,$width,$height)=@_;
+    my($this)=@_;
 
-    $graph=MGM::Graph->new($this,num=>$statcpus,fixed=>'1',
-			   width=>$width,height=>$height,prompt=>"%",
-			   rangesetting=>'100',rangecurrent=>'100');
+    $graph=MGM::Graph->new($this,num=>$statcpus,fixed=>'1',prompt=>"%",
+			   rangecurrent=>100,rangesetting=>'100');
 
     $graph->{"widget"};        # must return widget
 }
@@ -70,7 +69,9 @@ sub module_update{
 }
 
 sub module_init{
-    my($this,$toplevel,$xpath)=@_;
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xpath=$this->{"xpath"};
 
     # how many CPUs? Get this from /proc/cpuinfo then /proc/stat.
     # /proc/stat only sees multiple CPUs as of late 2.1, but we
