@@ -23,7 +23,7 @@ bin_PROGRAMS = ices
 #noinst_HEADERS = config.h input.h im_playlist.h signals.h stream.h reencode.h encode.h playlist_basic.h logging.h im_stdinpcm.h $(ossheaders) $(sunheaders) event.h stream_shared.h metadata.h process.h
 #ices_SOURCES = input.c config.c stream.c ices.c signals.c im_playlist.c reencode.c encode.c playlist_basic.c im_stdinpcm.c $(osssources) $(sunsources) stream_shared.c savefile.c metadata.c stream_rewrite.c process.c
 noinst_HEADERS = config.h input.h im_playlist.h signals.h stream.h encode.h playlist_basic.h logging.h process.h $(ossheaders) im_stdinpcm.h
-ices_SOURCES = input.c config.c stream.c ices.c signals.c im_playlist.c encode.c playlist_basic.c process.c output.c $(osssources) im_stdinpcm.c
+ices_SOURCES = input.c config.c stream.c ices.c signals.c im_playlist.c encode.c playlist_basic.c process.c output.c $(osssources) im_stdinpcm.c savefile.c
 
 ices_LDADD = net/libicenet.la thread/libicethread.la log/libicelog.la\
 	avl/libiceavl.la timing/libicetiming.la
