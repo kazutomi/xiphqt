@@ -263,14 +263,14 @@ ices_stream_fd_until_eof (int fd, const char *file)
 static int
 ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, int read_bytes, int file_bytes)
 {
-	int ret = 0;
+	int ret = 1;
 #ifdef HAVE_LIBLAME
 	unsigned char reencode_buff[7200];
 	int len = ices_reencode_reencode_chunk (buff, read_bytes, reencode_buff, 7200);
 	
 	if (len > 0)
 		ret = shout_send_data (conn, reencode_buff, len);
-	else
+	else if (len < 0)
 		return 0;
 	
 	/* Flush and send remains if file is up */
