@@ -1,9 +1,9 @@
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include "wavelet.h"
-#include "coder.h"
 #include "yuv.h"
 #include "rle.h"
 
@@ -143,31 +143,41 @@ int main (int argc, char **argv)
    int i, ycount, ucount, vcount;
    int ylimit, ulimit, vlimit;
    int width = -1, height = -1, frames = 0, frame = 0;
+   int a_moments, s_moments;
 
-   if (argc == 5)
-      fmt = argv[4];
-   else if (argc != 4) {
+   if (argc == 1) {
+      ylimit = 1000;
+      ulimit = 150;
+      vlimit = 150;
+      a_moments = 2;
+      s_moments = 2;
+   } else if (argc == 7) {
+      fmt = argv[1];
+      ylimit = strtol (argv[2], 0, 0);
+      ulimit = strtol (argv[3], 0, 0);
+      vlimit = strtol (argv[4], 0, 0);
+      a_moments = strtol (argv[5], 0, 0);
+      s_moments = strtol (argv[6], 0, 0);
+   } else {
       printf ("\n"
-        " usage: %s <ylimit> <ulimit> <vlimit> <input filename format string>\n"
+        " usage: %s <input filename format string> <ylimit> <ulimit> <vlimit> <a_m> <s_m>\n"
         "\n"
-        "   ylimit, ulimit, vlimit:     cut Y/U/V bitstream after limit bytes/frame\n"
         "   input ppm filename format:  optional, \"%%i.ppm\" by default\n"
+        "   ylimit, ulimit, vlimit:     cut Y/U/V bitstream after limit bytes/frame\n"
+        "   a_m, s_m:                   number of vanishing moments of the\n"
+        "                               analysis/synthesis filter, (2,2) by default\n"
         "\n", argv[0]);
       exit (-1);
    }
-
-   ylimit = strtol (argv[1], 0, 0);
-   ulimit = strtol (argv[2], 0, 0);
-   vlimit = strtol (argv[3], 0, 0);
 
    if (read_ppm_info (fmt, &width, &height) < 0)
       exit (-1);
 
    rgb  = malloc (width * height * 3 * N_FRAMES);
    rgb2 = malloc (width * height * 3 * N_FRAMES);
-   bitstream[0] = malloc (width * height * N_FRAMES);
-   bitstream[1] = malloc (width * height * N_FRAMES);
-   bitstream[2] = malloc (width * height * N_FRAMES);
+   bitstream[0] = malloc (width * height * N_FRAMES*2);
+   bitstream[1] = malloc (width * height * N_FRAMES*2);
+   bitstream[2] = malloc (width * height * N_FRAMES*2);
 
    if (!rgb || !rgb2 || !bitstream[0] || !bitstream[1] || !bitstream[2]) {
       printf ("memory allocation failed.\n");
@@ -203,21 +213,21 @@ int main (int argc, char **argv)
          return (-1);
       }
 
-      save_ppm ("orig%i.ppm", rgb, width, height, frame, frames);
+      save_ppm ("orig%03d.ppm", rgb, width, height, frame, frames);
 
-      rgb2yuv (rgb, y->data, u->data, v->data, width * height * frames, 3);
+      rgb24_to_yuv (rgb, y->data, u->data, v->data, width * height * frames, 3);
 /*
-      save_ppm16 ("y%i.ppm", y->data, width, height, frame, frames);
-      save_ppm16 ("u%i.ppm", u->data, width, height, frame, frames);
-      save_ppm16 ("v%i.ppm", v->data, width, height, frame, frames);
+      save_ppm16 ("y%03d.ppm", y->data, width, height, frame, frames);
+      save_ppm16 ("u%03d.ppm", u->data, width, height, frame, frames);
+      save_ppm16 ("v%03d.ppm", v->data, width, height, frame, frames);
 */
-      wavelet_3d_buf_fwd_xform (y);
-      wavelet_3d_buf_fwd_xform (u);
-      wavelet_3d_buf_fwd_xform (v);
+      wavelet_3d_buf_fwd_xform (y, a_moments, s_moments);
+      wavelet_3d_buf_fwd_xform (u, a_moments, s_moments);
+      wavelet_3d_buf_fwd_xform (v, a_moments, s_moments);
 
-      save_ppm16 ("y.coeff%i.ppm", y->data, width, height, frame, frames);
-      save_ppm16 ("u.coeff%i.ppm", u->data, width, height, frame, frames);
-      save_ppm16 ("v.coeff%i.ppm", v->data, width, height, frame, frames);
+      save_ppm16 ("y.coeff%03d.ppm", y->data, width, height, frame, frames);
+      save_ppm16 ("u.coeff%03d.ppm", u->data, width, height, frame, frames);
+      save_ppm16 ("v.coeff%03d.ppm", v->data, width, height, frame, frames);
 
       ycount = width * height * frames;
       ucount = width * height * frames;
@@ -227,40 +237,42 @@ int main (int argc, char **argv)
       if (ucount > frames * ulimit) ucount = frames * ulimit;
       if (vcount > frames * vlimit) vcount = frames * vlimit;
 
-      ycount = encode_coeff3d (y, bitstream [0], ycount);
-      ucount = encode_coeff3d (u, bitstream [1], ucount);
-      vcount = encode_coeff3d (v, bitstream [2], vcount);
+      ycount = wavelet_3d_buf_encode_coeff (y, bitstream [0], ycount*2);
+      ucount = wavelet_3d_buf_encode_coeff (u, bitstream [1], ucount*2);
+      vcount = wavelet_3d_buf_encode_coeff (v, bitstream [2], vcount*2);
 
-      decode_coeff3d (y2, bitstream [0], ycount);
-      decode_coeff3d (u2, bitstream [1], ucount);
-      decode_coeff3d (v2, bitstream [2], vcount);
+      wavelet_3d_buf_decode_coeff (y2, bitstream [0], ycount);
+      wavelet_3d_buf_decode_coeff (u2, bitstream [1], ucount);
+      wavelet_3d_buf_decode_coeff (v2, bitstream [2], vcount);
 
       for (i=0; i<width*height*frames; i++) {
          rgb [3*i]   = (y->data[i] == y2->data [i]) ? 0 : ~0;
          rgb [3*i+1] = (u->data[i] == u2->data [i]) ? 0 : ~0;
          rgb [3*i+2] = (v->data[i] == v2->data [i]) ? 0 : ~0;
-/*if (y->data[i] != y2->data [i]) {
-   printf ("%i: %i <-> %i\n", i, y->data[i], y2->data[i]);
+/*
+if (y->data[i] != y2->data [i]) {
+   printf ("error %i: %i <-> %i\n", i, y->data[i], y2->data[i]);
 bit_print (y->data[i]);
 bit_print (y2->data[i]);
-}*/
+}
+*/
       }
 
-      save_ppm ("coeffdiff%i.ppm", rgb, width, height, frame, frames);
+      save_ppm ("coeffdiff%03d.ppm", rgb, width, height, frame, frames);
 
-      save_ppm16 ("y.rcoeff%i.ppm", y2->data, width, height, frame, frames);
-      save_ppm16 ("u.rcoeff%i.ppm", u2->data, width, height, frame, frames);
-      save_ppm16 ("v.rcoeff%i.ppm", v2->data, width, height, frame, frames);
+      save_ppm16 ("y.rcoeff%03d.ppm", y2->data, width, height, frame, frames);
+      save_ppm16 ("u.rcoeff%03d.ppm", u2->data, width, height, frame, frames);
+      save_ppm16 ("v.rcoeff%03d.ppm", v2->data, width, height, frame, frames);
 
-      wavelet_3d_buf_inv_xform (y2);
-      wavelet_3d_buf_inv_xform (u2);
-      wavelet_3d_buf_inv_xform (v2);
+      wavelet_3d_buf_inv_xform (y2, a_moments, s_moments);
+      wavelet_3d_buf_inv_xform (u2, a_moments, s_moments);
+      wavelet_3d_buf_inv_xform (v2, a_moments, s_moments);
 
-      save_ppm16 ("yr%i.ppm", y2->data, width, height, frame, frames);
-      save_ppm16 ("ur%i.ppm", u2->data, width, height, frame, frames);
-      save_ppm16 ("vr%i.ppm", v2->data, width, height, frame, frames);
+      save_ppm16 ("yr%03d.ppm", y2->data, width, height, frame, frames);
+      save_ppm16 ("ur%03d.ppm", u2->data, width, height, frame, frames);
+      save_ppm16 ("vr%03d.ppm", v2->data, width, height, frame, frames);
 
-      yuv2rgb (y2->data, u2->data, v2->data, rgb2, width * height * frames, 3);
+      yuv_to_rgb24 (y2->data, u2->data, v2->data, rgb2, width * height * frames, 3);
 
       save_ppm ("out%03d.ppm", rgb2, width, height, frame, frames);
 

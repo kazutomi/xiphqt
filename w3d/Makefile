@@ -1,31 +1,39 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O0 -Wall -DTYPE=int16_t
-LFLAGS = 
+CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER
+LFLAGS = -g
 
-OBJS = coder.o main.o wavelet.o yuv.o
+OBJS = wavelet.o wavelet_xform.o yuv.o tarkin.o main.o
 SRCS = $(OBJS:.o=.c)
+TEST_TARGETS = _test_bitcoder _test_rle _test_huffman
+TEST_OBJS = $(TEST_TARGETS:=.o)
+TEST_SRCS = $(TEST_OBJS:.o=.c)
 TARGET = main
 
 
-all: .depend $(TARGET)
+all: $(TARGET)
 
-$(TARGET): .depend $(OBJS)
+$(TARGET): $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o $@
-
-coder.c: coder.c.in rle.h
-	cpp -P $< | indent -i3 -kr -bad > $@
 
 .c.o: .depend
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	$(RM) $(OBJS) $(TARGET) core .depend .depend.bak rle.histogram *.ppm coder.c
+	$(RM) $(OBJS) $(TARGET) gmon.out core .depend .depend.bak rle.histogram *.ppm
+	$(RM) $(TEST_TARGETS) $(TEST_OBJS)
 
 
-.depend: $(SRCS)
+test: .depend $(TEST_TARGETS)
+	./_test_bitcoder
+	./_test_huffman
+	./_test_rle
+
+
+.depend: $(SRCS) $(TEST_SRCS)
+	$(RM) .depend
 	touch .depend
-	makedepend -f.depend -- $(CFLAGS) -- $(SRCS) coder.c.in
+	sh makedepend -f.depend -- $(CFLAGS) -- $(SRCS) $(TEST_SRCS)
 
 -include .depend
