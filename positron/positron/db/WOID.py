@@ -262,6 +262,9 @@ class WOID:
         new_sai_record = (mdb_pointer, pai_pointer) 
         self.sai.append(new_sai_record)
 
+        # Mark the modification
+        self.mdb.set_modified_flag()
+
         # Now we update the child PAI files with back pointers and
         # keep SAI file in sync if an offset occured
         for index, child_pai_module_ptr in child_pai_modules:
@@ -308,6 +311,8 @@ class WOID:
                 if num_entries == 0:
                     child_db.delete_record(child_index)
 
+        self.mdb.set_modified_flag()
+
     def clear(self):
         """Removes all records in this database and child databases."""
         for child in self.children:
@@ -322,6 +327,7 @@ class WOID:
             
         # Add required null record
         self.sai.append((null_rec_pointer, pai_ptr))
+        self.mdb.set_modified_flag()
 
     def count_deleted(self):
         "Returns the number of deleted records in this database"
@@ -378,6 +384,8 @@ class WOID:
         for child in self.children:
             child.sort(tracklist_filename, root_mdb)
 
+        self.mdb.set_modified_flag()
+
     def close(self):
         self.mdb.close()
         self.sai.close()
@@ -387,5 +395,3 @@ class WOID:
         for child in self.children:
             child.close()
         self.__init__()  # Reset variables to undefined state
-
-    
