@@ -8,10 +8,10 @@
 <h3>Download</h3>
 <br></br>
 <p>
-Version 0.1.2 is available at <a href="http://downloads.us.xiph.org/releases/ezstream/ezstream-0.1.2.tar.gz">ezstream-0.1.2.tar.gz</a> - Version 0.1.2 supports handling of a SIGHUP message which will cause ezstream to reread the currently processing playlist.  This only works on unix platforms and so I'm not going to release a 0.1.2 binary for win32.
+Version 0.1.2 is available at <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.1.2.tar.gz">ezstream-0.1.2.tar.gz</a> - Version 0.1.2 supports handling of a SIGHUP message which will cause ezstream to reread the currently processing playlist.  This only works on unix platforms and so I'm not going to release a 0.1.2 binary for win32.
 </p>
 <p>
-A windows binary is available as well at <a href="http://downloads.us.xiph.org/releases/ezstream/ezstream_win32_0.1.1_setup.exe">ezstream_win32_0.1.1_setup.exe</a>
+A windows binary is available as well at <a href="http://downloads.xiph.org/releases/ezstream/ezstream_win32_0.1.1_setup.exe">ezstream_win32_0.1.1_setup.exe</a>
 </p>
 <br></br>
 <h3>What is it ?</h3>
