@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.3 2001/10/17 16:58:14 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.4 2001/10/17 19:15:26 volsung Exp $
 
  ********************************************************************/
 
@@ -218,7 +218,7 @@ void SetBuffersStats ()
   Stat_t *stats = Options.statOpts.stats;
 
   memset (strbuf, 0, 80);
-  if (Options.inputOpts.data->buf) {
+  if (Options.inputOpts.data) {
     SetBufferStats (Options.inputOpts.data->buf, strbuf);
     stats[6].arg.doublearg = (double) buffer_full(Options.inputOpts.data->buf) / (double) Options.inputOpts.data->buf->size * 100.0f;
   }
