@@ -135,7 +135,9 @@ void tarkin_stream_flush (TarkinStream *s)
                               s->current_frame - s->current_frame_in_buf, j,
                               layer->waveletbuf[j]);
 
-         wavelet_3d_buf_fwd_xform (layer->waveletbuf[j], 2, 2);
+         wavelet_3d_buf_fwd_xform (layer->waveletbuf[j],
+                                   layer->desc.a_moments,
+                                   layer->desc.s_moments);
 
          wavelet_3d_buf_dump ("coeff-%d-%03d.pgm",
                               s->current_frame - s->current_frame_in_buf, j,
@@ -280,7 +282,9 @@ uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **rgba)
             wavelet_3d_buf_dump ("rcoeff-%d-%03d.pgm",
                                  s->current_frame, j, layer->waveletbuf[j]);
 
-            wavelet_3d_buf_inv_xform (layer->waveletbuf[j], 2, 2);
+            wavelet_3d_buf_inv_xform (layer->waveletbuf[j], 
+                                      layer->desc.a_moments,
+                                      layer->desc.s_moments);
 
             wavelet_3d_buf_dump ("rcolor-%d-%03d.pgm",
                                  s->current_frame - s->current_frame_in_buf, j,

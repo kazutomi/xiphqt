@@ -31,7 +31,6 @@ int main (int argc, char **argv)
    char fname[256];
    uint32_t frame = 0;
    uint8_t *rgb;
-   int a_moments, s_moments;
    int fd;
    TarkinStream *tarkin_stream;
    TarkinVideoLayerDesc layer [] = { { 0, 0, 1, 5000, TARKIN_RGB24 } };
@@ -39,13 +38,13 @@ int main (int argc, char **argv)
 
    if (argc == 1) {
       layer[0].bitstream_len = 1000;
-      a_moments = 2;
-      s_moments = 2;
+      layer[0].a_moments = 2;
+      layer[0].s_moments = 2;
    } else if (argc == 5) {
       fmt = argv[1];
       layer[0].bitstream_len = strtol (argv[2], 0, 0);
-      a_moments = strtol (argv[3], 0, 0);
-      s_moments = strtol (argv[4], 0, 0);
+      layer[0].a_moments = strtol (argv[3], 0, 0);
+      layer[0].s_moments = strtol (argv[4], 0, 0);
    } else {
       usage (argv[0]);
    }
