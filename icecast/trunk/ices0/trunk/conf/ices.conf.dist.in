@@ -14,18 +14,6 @@
     <Module>ices</Module>
   </Playlist>
 
-  <Server>
-    <!-- Hostname or ip of the icecast server you want to connect to -->
-    <Hostname>localhost</Hostname>
-    <!-- Port of the same -->
-    <Port>8000</Port>
-    <!-- Encoder password on the icecast server -->
-    <Password>letmein</Password>
-    <!-- Header protocol to use when communicating with the server.
-         Use xaudiocast for icecast, or icy for shoutcast compatibility -->
-    <Protocol>xaudiocast</Protocol>
-  </Server>
-
   <Execution>
     <!-- Set this to 1 if you want ices to launch in the background as a
          daemon -->
@@ -38,6 +26,18 @@
   </Execution>
 
   <Stream>
+    <Server>
+      <!-- Hostname or ip of the icecast server you want to connect to -->
+      <Hostname>localhost</Hostname>
+      <!-- Port of the same -->
+      <Port>8000</Port>
+      <!-- Encoder password on the icecast server -->
+      <Password>letmein</Password>
+      <!-- Header protocol to use when communicating with the server.
+           Use xaudiocast for icecast, or icy for shoutcast compatibility -->
+      <Protocol>xaudiocast</Protocol>
+    </Server>
+
     <!-- The name of the mountpoint on the icecast server -->
     <Mountpoint>ices</Mountpoint>
     <!-- The name of the dumpfile on the server for your stream. DO NOT set

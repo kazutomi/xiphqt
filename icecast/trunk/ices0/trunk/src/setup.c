@@ -175,10 +175,6 @@ ices_setup_parse_options (ices_config_t *ices_config)
 static void
 ices_setup_parse_defaults (ices_config_t *ices_config)
 {
-  ices_config->host = ices_util_strdup (ICES_DEFAULT_HOST);
-  ices_config->port = ICES_DEFAULT_PORT;
-  ices_config->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
-  ices_config->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
   ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
   ices_config->daemon = ICES_DEFAULT_DAEMON;
   ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
@@ -200,6 +196,11 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 void
 ices_setup_parse_stream_defaults (ices_stream_t* stream)
 {
+  stream->host = ices_util_strdup (ICES_DEFAULT_HOST);
+  stream->port = ICES_DEFAULT_PORT;
+  stream->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
+  stream->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
+
   stream->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
   stream->dumpfile = NULL;
   
@@ -225,6 +226,9 @@ ices_setup_parse_stream_defaults (ices_stream_t* stream)
 static void
 ices_setup_free_stream (ices_stream_t* stream)
 {
+  ices_util_free (stream->host);
+  ices_util_free (stream->password);
+
   ices_util_free (stream->mount);
   ices_util_free (stream->dumpfile);
 
@@ -240,8 +244,6 @@ ices_setup_free_all_allocations (ices_config_t *ices_config)
 {
   ices_stream_t *stream, *next;
 
-  ices_util_free (ices_config->host);
-  ices_util_free (ices_config->password);
   ices_util_free (ices_config->configfile);
   ices_util_free (ices_config->base_directory);
 
@@ -383,15 +385,15 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  break;
         case 'h':
 	  arg++;
-	  ices_util_free (ices_config->host);
-	  ices_config->host = ices_util_strdup (argv[arg]);
+	  ices_util_free (stream->host);
+	  stream->host = ices_util_strdup (argv[arg]);
 	  break;
         case 'H':
 	  arg++;
 	  stream->out_samplerate = atoi (argv[arg]);
 	  break;
         case 'i':
-	  ices_config->header_protocol = icy_header_protocol_e;
+	  stream->header_protocol = icy_header_protocol_e;
 	  break;
         case 'M':
 	  arg++;
@@ -421,12 +423,12 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  break;
         case 'P':
 	  arg++;
-	  ices_util_free (ices_config->password);
-	  ices_config->password = ices_util_strdup (argv[arg]);
+	  ices_util_free (stream->password);
+	  stream->password = ices_util_strdup (argv[arg]);
 	  break;
         case 'p':
 	  arg++;
-	  ices_config->port = atoi (argv[arg]);
+	  stream->port = atoi (argv[arg]);
 	  break;
         case 'R':
 #ifdef HAVE_LIBLAME
@@ -480,11 +482,10 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
   int streamno = 0;
 
   for (stream = ices_config->streams; stream; stream = stream->next) {
-    stream->conn.port = ices_config->port;
-    stream->conn.ip = ices_config->host;
-    stream->conn.password = ices_config->password;
-    stream->conn.icy_compat =
-      ices_config->header_protocol == icy_header_protocol_e;
+    stream->conn.ip = stream->host;
+    stream->conn.port = stream->port;
+    stream->conn.password = stream->password;
+    stream->conn.icy_compat = stream->header_protocol == icy_header_protocol_e;
     stream->conn.dumpfile = stream->dumpfile;
     stream->conn.name = stream->name;
     stream->conn.url = stream->url;

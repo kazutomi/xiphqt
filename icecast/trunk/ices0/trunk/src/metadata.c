@@ -138,12 +138,6 @@ metadata_thread (void *arg)
   } else
     metadata = playlist_metadata;
 
-  if (ices_config.header_protocol == icy_header_protocol_e)
-    ;
-  else
-    /* This should have length as well but libshout doesn't handle it */
-    ;
-
   for (stream = ices_config.streams; stream; stream = stream->next) {
     rc = shout_update_metadata (&stream->conn, metadata);
 	

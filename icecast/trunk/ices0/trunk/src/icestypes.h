@@ -36,6 +36,11 @@ typedef struct ices_stream_St {
   void* encoder_state;
   int encoder_initialised;
 
+  char *host;
+  int port;
+  char *password;
+  header_protocol_t header_protocol;
+
   char* mount;
   char* dumpfile;
 
@@ -66,10 +71,6 @@ typedef struct {
 } playlist_module_t;
 
 typedef struct {
-  char *host;
-  int port;
-  char *password;
-  header_protocol_t header_protocol;
   int daemon;
   int verbose;
   int reencode;

@@ -28,7 +28,8 @@
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
 static void ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
-static void ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
+static void parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+				ices_stream_t *ices_config);
 static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_stream_t *stream);
 static char* ices_xml_read_node (xmlDocPtr doc, xmlNodePtr node);
 
@@ -114,9 +115,7 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
   for (; cur != NULL; cur = cur->next) {
     if (cur->type == XML_COMMENT_NODE)
       continue;
-    if (strcmp (cur->name, "Server") == 0) {
-      ices_xml_parse_server_nodes (doc, ns, cur->xmlChildrenNode, ices_config);
-    } else if (strcmp (cur->name, "Stream") == 0) {
+    if (strcmp (cur->name, "Stream") == 0) {
       /* first stream is preallocated */
       if (nstreams) {
 	stream->next = (ices_stream_t*)malloc (sizeof (ices_stream_t));
@@ -151,7 +150,9 @@ ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     if (cur->type == XML_COMMENT_NODE)
       continue;
 
-    if (strcmp (cur->name, "Name") == 0) {
+    if (strcmp (cur->name, "Server") == 0) {
+      parse_server_node (doc, ns, cur->xmlChildrenNode, stream);
+    } else if (strcmp (cur->name, "Name") == 0) {
       ices_util_free (stream->name);
       stream->name = ices_util_strdup (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Genre") == 0) {
@@ -196,7 +197,8 @@ ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /* Parse the server specific configuration */
 static void
-ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
+parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		   ices_stream_t *ices_config)
 {
   for (; cur; cur = cur->next) {
     if (cur->type == XML_COMMENT_NODE)
