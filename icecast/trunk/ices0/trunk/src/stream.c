@@ -64,6 +64,7 @@ ices_stream_loop ()
 		
 		if (!ices_stream_send_file (file)) {
 			ices_log ("Warning: Encountered error while transfering %s. [%s]", file, ices_log_get_error ());
+			ices_util_free (file);
 			continue;
 		}
 		

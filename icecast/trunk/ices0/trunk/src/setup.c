@@ -33,6 +33,7 @@ static void ices_setup_usage ();
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize ();
 static void ices_setup_run_mode_select (ices_config_t *ices_config);
+static int _ices_setup_shutting_down = 0;
 
 /* Global function definitions */
 void
@@ -80,7 +81,20 @@ ices_setup_init ()
 void
 ices_setup_shutdown ()
 {
-	shout_conn_t *conn = ices_util_get_conn ();
+	shout_conn_t *conn;
+
+	if (thread_is_initialized ()) {
+		thread_library_lock ();
+
+		if (_ices_setup_shutting_down)
+			return;
+
+		_ices_setup_shutting_down = 1;
+
+		thread_library_unlock ();
+	}
+
+	conn = ices_util_get_conn ();
 
 	shout_disconnect (conn);
 
