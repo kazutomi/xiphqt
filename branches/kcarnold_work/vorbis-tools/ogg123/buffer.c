@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.15 2001/08/13 20:41:51 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.16 2001/08/13 21:00:41 kcarnold Exp $
 
  ********************************************************************/
 
@@ -35,6 +35,7 @@
 #include "buffer.h"
 
 #undef DEBUG_BUFFER
+#undef DEADLOCK_PROTECTION
 
 #ifdef DEBUG_BUFFER
 FILE *debugfile;
@@ -49,7 +50,12 @@ FILE *debugfile;
 
 #define LOCK_MUTEX(mutex) do { DEBUG1("Locking mutex %s.", #mutex); pthread_mutex_lock (&(mutex)); } while (0)
 #define UNLOCK_MUTEX(mutex) do { DEBUG1("Unlocking mutex %s", #mutex); pthread_mutex_unlock(&(mutex)); } while (0) 
+
+#ifdef DEADLOCK_PROTECTION
 #define TIMEDWAIT(cond, mutex, sec, nsec) do { struct timeval now; struct timespec timeout; gettimeofday(&now, NULL); timeout.tv_sec = now.tv_sec + sec; timeout.tv_nsec = now.tv_usec * 1000 + nsec; pthread_cond_timedwait (&(cond), &(mutex), &timeout); } while (0)
+#else
+#define TIMEDWAIT(cond, mutex, sec, nsec) do { pthread_cond_wait (&(cond), &(mutex)); } while (0)
+#endif
 
 void Prebuffer (buf_t * buf)
 {
@@ -422,13 +428,24 @@ void buffer_Pause (buf_t *buf)
 void buffer_Unpause (buf_t *buf)
 {
   buf->Playing = 1;
+#if 0
   /* can't signal here; this can be called from sighandler :( */
   /* pthread_cond_signal (&buf->DataReadyCondition); */
+#else
+  /* this function cannot be called from a signal handler. */
+  pthread_cond_signal (&buf->DataReadyCondition);
+#endif
 }
 
 char buffer_Paused (buf_t *buf)
 {
   return (char) !(buf->Playing);
+}
+
+/* don't TERM or KILL the buffer with this if possible. */
+void buffer_KillBuffer (buf_t *buf, int signo)
+{
+  pthread_kill (buf->BufferThread, signo);
 }
 
 void buffer_MarkEOS (buf_t *buf)

@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.20 2001/08/13 20:41:51 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.21 2001/08/13 21:00:41 kcarnold Exp $
 
  ********************************************************************/
 
@@ -562,12 +562,14 @@ void SigHandler (int signo)
     break;
   case SIGTSTP:
     if (Options.outputOpts.buffer)
-      buffer_Pause (Options.outputOpts.buffer);
+      buffer_KillBuffer (Options.outputOpts.buffer, SIGSTOP);
+      /*      buffer_Pause (Options.outputOpts.buffer); */
     kill (getpid(), SIGSTOP);
     break;
   case SIGCONT:
     if (Options.outputOpts.buffer)
-      buffer_Unpause (Options.outputOpts.buffer);
+      buffer_KillBuffer (Options.outputOpts.buffer, SIGCONT);
+      /* buffer_Unpause (Options.outputOpts.buffer); */
     break;
   default:
     psignal (signo, "Unknown signal caught");
