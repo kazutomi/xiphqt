@@ -120,27 +120,38 @@ class SandboxPanel(wxPanel):
           st.pagein(page)
           packet = st.packetout()
           bp = ogg2.OggPackBuff(packet)
-          magic = ""
-          for a in range(10):
+          header = ""
+          while 1:
             byte = bp.read(8)
-            if byte : magic = magic + chr(byte)
-          #print ord(magic[0]),magic
-          if magic[:7] == '\x01vorbis':
-            stream = self.tree.AppendItem(chain,  'Vorbis')
-            self.tree.SetPyData(stream, None) 
+            if type(byte) == int : header = header + chr(byte)
+            else : break
+          if header[:7] == '\x01vorbis':
+            if header[7:11] == '\x00\x00\x00\x00' : 
+              ch = ord(header[11])
+              sa = ord(header[12])+(ord(header[13])*256)
+              sa = sa+(ord(header[14])*65536)+(ord(header[15])*16777216)
+              stream = self.tree.AppendItem(chain,  'Vorbis I (%d channels, %d samples/sec)' % (ch, sa))
+              self.tree.SetPyData(stream, ('vorbis', 0, ch, sa)) 
+            else : 
+              stream = self.tree.AppendItem(chain,  'Vorbis (Unsupported Version)')
+              self.tree.SetPyData(stream, ('vorbis',)) 
             self.tree.SetItemImage(stream, self.vorbisidx, which = wxTreeItemIcon_Normal)
-          elif magic[:7] == '\x80theora':
+          elif header[:7] == '\x80theora':
             stream = self.tree.AppendItem(chain,  'Theora')
             self.tree.SetPyData(stream, None) 
             self.tree.SetItemImage(stream, self.theoraidx, which = wxTreeItemIcon_Normal)
-          elif magic[:5] == 'Speex':
+          elif header[:5] == 'Speex':
             stream = self.tree.AppendItem(chain,  'Speex')
             self.tree.SetPyData(stream, None) 
             self.tree.SetItemImage(stream, self.speexidx, which = wxTreeItemIcon_Normal)
-          elif magic[:4] == 'fLaC':
+          elif header[:4] == 'fLaC':
             stream = self.tree.AppendItem(chain,  'FLAC')
             self.tree.SetPyData(stream, None) 
             self.tree.SetItemImage(stream, self.flacidx, which = wxTreeItemIcon_Normal)
+          elif header[:5] == '\x00writ':
+            stream = self.tree.AppendItem(chain,  'Writ')
+            self.tree.SetPyData(stream, None) 
+            self.tree.SetItemImage(stream, self.unknownidx, which = wxTreeItemIcon_Normal)
           else :
             stream = self.tree.AppendItem(chain,  'Unknown Codec')
             self.tree.SetPyData(stream, None) 
