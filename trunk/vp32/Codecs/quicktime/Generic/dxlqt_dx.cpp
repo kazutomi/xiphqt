@@ -20,6 +20,11 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
+///	dbm -- 6/12/02 -- changes made for QT6 release -- pixel format lists
+///			saved as vp32_qt3.zip
+///			vp32_qt4.zip -- changes released to QT team for Win testing 6/13/02 -- version bumped to 3.2.6.0
+///		-- 7/15/02 -- 3.2.6.1 -- incorporating recent fixes (ebx bug, QT colorspace) for XIPH release
+
 #include "common.h"
 #include <fstream.h>
 #if TARGET_OS_MAC 
@@ -49,7 +54,6 @@
 #include "regentry.h"
 
 #include "dxlqt_codec.h"
-
 
 extern "C" void DXL_watermark(DXL_XIMAGE_HANDLE src,int state);
 
@@ -104,12 +108,15 @@ extern "C" void DXL_watermark(DXL_XIMAGE_HANDLE src,int state);
 // Argument         : dxlqt_Globals glob
 // Argument         : CodecDecompressParams *p
 // ************************************************************
+
+///	dbm -- debugging stuff
 pascal ComponentResult 
 dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 {
 
 	CodecCapabilities *capabilities = p->capabilities;
 	OSType *pft;
+ OSType *temp;
 	unsigned long tempPixelFormat;
 
 	DXLQT_LOG(sprintf(logmsg,"Instance:%d CDPreFlight\n",(**glob).instancenum))
@@ -119,9 +126,15 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 	capabilities->bandInc = capabilities->bandMin;
 
 	// Tell Quick Time we want to do 32 Bit 
+
+///	dbm -- as per skipper, set to zero:
+/*
 	capabilities->wantedPixelSize = (**p->imageDescription).depth;
 	if (capabilities->wantedPixelSize == 24)
 		capabilities->wantedPixelSize = 32;
+*/
+	capabilities->wantedPixelSize = 0;			///	QT should use wantedDestinationPixelTypes below
+
 
 #if 0
 	// In previous versions we did extend width and height to a 
@@ -147,6 +160,7 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 
 	p->wantedDestinationPixelTypes = (**glob).PixelFormatList;
 	pft=(OSType *) *p->wantedDestinationPixelTypes;
+ temp=pft;
 	tempPixelFormat = GETPIXMAPPIXELFORMAT((&(p->dstPixMap)));
 
 //	*pft=k32BGRAPixelFormat;
@@ -159,21 +173,36 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 
 //capabilities->flags |= codecImageBufferIsOnScreen;
 
+	int mType = p->matrixType;
 
+///	dbm -- new code for QT6 (David Eldred et al):
+	*pft++ = DUCK_YUVS;						///	always support YUV
+	*pft++ = DUCK_16RGB555;
+#if !TARGET_OS_MAC
+	*pft++ = DUCK_16RGB565;
+	*pft++ = DUCK_24RGB;
+#endif
+	if(mType <= translateMatrixType) {		///	only in this case,
+		*pft++ = DUCK_32RGB;				///	32-bit mode
+	}
+	*pft++ = 0;								///	null-terminate
+
+#if 0
 	
 	switch(tempPixelFormat) 
 	{
 
 	case DUCK_YUVS: 
-		if(!(**glob).stretchThis/**/)
-			*pft++ = DUCK_YUVS;
-		*pft++ = DUCK_32RGB;
+///		if(!(**glob).stretchThis/**/)
+			*pft++ = DUCK_YUVS;				///	1
+///		*pft++ = DUCK_32RGB;				///	2
 #if !TARGET_OS_MAC
-		*pft++ = DUCK_24RGB;
+///		*pft++ = DUCK_24RGB;
 #endif
-		*pft++ = DUCK_16RGB555;
+///		*pft++ = DUCK_16RGB555;				///	3
+
 #if !TARGET_OS_MAC
-		*pft++ = DUCK_16RGB565;
+///		*pft++ = DUCK_16RGB565;
 #endif
 		*pft++ = 0;
 		break;
@@ -189,9 +218,9 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 */
 	case DUCK_16RGB555:
 		*pft++ = DUCK_16RGB555;
-		if(!(**glob).stretchThis/**/)
+///		if(!(**glob).stretchThis/**/)
 			*pft++ = DUCK_YUVS;
-		*pft++ = DUCK_32RGB;
+///		*pft++ = DUCK_32RGB;
 #if !TARGET_OS_MAC
 		*pft++ = DUCK_24RGB;
 #endif
@@ -203,7 +232,7 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 
 	case DUCK_16RGB565:
 		*pft++ = DUCK_16RGB565;
-		if(!(**glob).stretchThis)
+///		if(!(**glob).stretchThis)
 			*pft++ = DUCK_YUVS;
 		*pft++ = DUCK_32RGB;
 		*pft++ = DUCK_24RGB;
@@ -213,9 +242,9 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 
 	case DUCK_24RGB: 
 		*pft++ = DUCK_24RGB;
-		if(!(**glob).stretchThis)
+///		if(!(**glob).stretchThis)
 			*pft++ = DUCK_YUVS;
-		*pft++ = DUCK_32RGB;
+///		*pft++ = DUCK_32RGB;
 		*pft++ = DUCK_16RGB555;
 		*pft++ = DUCK_16RGB565;
 		*pft++ = 0;
@@ -224,8 +253,8 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 #endif 
 
 	case DUCK_32RGB:
-		*pft++ = DUCK_32RGB;
-		if(!(**glob).stretchThis/**/)
+///		*pft++ = DUCK_32RGB;
+///		if(!(**glob).stretchThis/**/)
 			*pft++ = DUCK_YUVS;
 #if !TARGET_OS_MAC
 		*pft++ = DUCK_24RGB;
@@ -238,9 +267,9 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 		break;
 		
 	default:					// we don't know how to do these, so return the default
-		if(!(**glob).stretchThis/**/)
+///		if(!(**glob).stretchThis/**/)
 			*pft++ = DUCK_YUVS;
-		*pft++ = DUCK_32RGB;
+///		*pft++ = DUCK_32RGB;
 #if !TARGET_OS_MAC
 		*pft++ = DUCK_24RGB;
 #endif
@@ -252,7 +281,7 @@ dxlqt_CDPreflight(dxlqt_Globals glob, CodecDecompressParams *p)
 		break;
 	}
 	//****************************************************
-
+#endif
 	return noErr;
 }
 

@@ -1,10 +1,10 @@
 #define SystemSevenOrLater 1
 #define UseExtendedThingResource 1
 
-#include "ConditionalMacros.r"
-#include "MacTypes.r"
-#include "Components.r"
-#include "ImageCodec.r"
+#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\ConditionalMacros.r"
+#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\MacTypes.r"
+#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\Components.r"
+#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\ImageCodec.r"
 #include "Common.h"
 
 #if TARGET_OS_MAC
@@ -198,4 +198,4 @@ resource 'STR ' (resid_DecoInfo) {
 	resource 'dlle' (resid_Deco) {
 		"CDComponentDispatch"
 	};
-#endif
+#endif

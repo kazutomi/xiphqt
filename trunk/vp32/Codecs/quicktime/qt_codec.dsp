@@ -62,12 +62,12 @@ SOURCE="$(InputPath)"
 
 ".\release\On2_VP3.qtx" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	del .\release\On2_VP3.qtx 
-	rezwack -d $(InputPath) -r .\release\On2_VP3.qtr -o .\release\On2_VP3.qtx 
+	c:\bench\qt501sdk\sdk\tools\rezwack -d $(InputPath) -r .\release\On2_VP3.qtr -o .\release\On2_VP3.qtx 
 	
 # End Custom Build
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Desc=Clean and Copy To System
+PostBuild_Desc=set read only
 PostBuild_Cmds=attrib -r .\release\On2_VP3.qtx
 # End Special Build Tool
 
@@ -182,7 +182,7 @@ TargetPath=.\Release\On2_VP3.dll
 InputPath=.\Generic\dxlqt_codec.r
 
 ".\release\On2_VP3.qtr" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	Rez $(InputPath) -o $(TargetPath)
+	c:\bench\qt501sdk\sdk\tools\Rez $(InputPath) -o $(TargetPath)
 
 # End Custom Build
 

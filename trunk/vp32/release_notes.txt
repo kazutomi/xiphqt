@@ -1,5 +1,13 @@
 Release Notes:
 
+3.2.6.1
+- bug fixes: ebx bug (CPU ID on NVIDIA & other machines)
+- first dbm commit to XIPH CVS
+
+3.2.6.0
+- consolidated numbering bet. QT & VFW builds
+- changes to colorspace per suggestions from Apple
+
 3.2.5.0 vfw codec
 - solved xp playback problem
 

@@ -260,6 +260,8 @@ void WmtReconIntra( PB_INSTANCE *pbi, UINT8 * dest, INT16 * idct, UINT32 stride 
 {
     __asm
     {
+		push		ebx								;/// dbm -- added 5/20/02 -- lack was causing block bug on P4's!!!!
+
         mov         eax,[idct]						; Signed 16 bit inputs
         mov         edx,[dest]						; Unsigned 8 bit outputs
 
@@ -282,6 +284,8 @@ loop_label:
 
         lea         edx,[edx+ebx]					; Step output buffer
         jc          loop_label						; Loop back if we are not done
+
+		pop			ebx								;/// dbm -- added 5/20/02 -- 
     }
 
 }
