@@ -27,6 +27,11 @@
 #include <vorbis/vorbisfile.h>
 
 #define SAMPLESIZE 2
+#ifdef WORDS_BIGENDIAN
+# define ICES_OV_BE 1
+#else
+# define ICES_OV_BE 0
+#endif
 
 /* -- data structures -- */
 typedef struct {
@@ -145,7 +150,7 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
     vorbis_data->offset = 0;
     do {
       if ((len = ov_read (vorbis_data->vf, (char*) vorbis_data->buf,
-			  sizeof (vorbis_data->buf), 0, SAMPLESIZE, 1, &pos)) <= 0) {
+			  sizeof (vorbis_data->buf), ICES_OV_BE, SAMPLESIZE, 1, &pos)) <= 0) {
 	if (len == OV_HOLE) {
 	  ices_log_error ("Skipping bad vorbis data");
 	} else
