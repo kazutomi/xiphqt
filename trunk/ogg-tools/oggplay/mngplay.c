@@ -1,9 +1,9 @@
 /*
 	mngplay
 
-	$Date: 2001/08/25 22:22:31 $
+	$Date: 2003/06/20 18:21:05 $
 
-	Ralph Giles <giles@ashlu.bc.ca>
+	Ralph Giles <giles@xiph.org>
 
 	This program my be redistributed under the terms of the
 	GNU General Public Licence, version 2, or at your preference,
@@ -26,7 +26,7 @@
 /* structure for keeping track of our mng stream inside the callbacks */
 typedef struct {
 	FILE		*file;	   /* pointer to the file we're decoding */
-	char		*filename; /* pointer to the file path/name */
+	char		*filename; /* pointer to the file's path/name */
 	SDL_Surface	*surface;  /* SDL display */
 	mng_uint32	delay;     /* ticks to wait before resuming decode */
 } mngstuff;
@@ -161,6 +161,12 @@ mng_bool mymngrefresh(mng_handle mng, mng_uint32 x, mng_uint32 y,
 			mng_uint32 w, mng_uint32 h)
 {
 	mngstuff	*mymng;
+	SDL_Rect        frame;
+
+	frame.x = x;
+	frame.y = y;
+	frame.w = w;
+	frame.h = h;
 
 	/* dereference our structure */
         mymng = (mngstuff*)mng_get_userdata(mng);
@@ -171,7 +177,7 @@ mng_bool mymngrefresh(mng_handle mng, mng_uint32 x, mng_uint32 y,
         }
 
         /* refresh the screen with the new frame */
-        SDL_UpdateRect(mymng->surface, x,y, w,h);
+        SDL_UpdateRects(mymng->surface, 1, &frame);
 	
 	/* in necessary, relock the drawing surface */
         if (SDL_MUSTLOCK(mymng->surface)) {
@@ -259,6 +265,9 @@ int checkevents(mng_handle mng)
 		case SDL_QUIT:
 			mymngquit(mng);	/* quit */ 
 			break;
+               case SDL_MOUSEBUTTONUP:
+			mymngquit(mng);
+			break;
 		case SDL_KEYUP:
 			switch (event.key.keysym.sym) {
 				case SDLK_ESCAPE:
@@ -269,6 +278,42 @@ int checkevents(mng_handle mng)
 		default:
 			return 1;
 	}
+
+	return 0;
+}
+
+int usage(FILE *out, char *name)
+{
+	const SDL_version *pSDLver = SDL_Linked_Version();
+
+	fprintf(out, "Usage:  %s <mngfile>\n\n", name);
+	fprintf(out, "After playback finishes, ress Esc or Q, or "
+		     "click on the window to quit.\n\n");
+
+	fprintf(out, "  Compiled with SDL %d.%d.%d; using SDL %d.%d.%d.\n",
+		SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL,
+		pSDLver->major, pSDLver->minor, pSDLver->patch);
+	fprintf(out, "  Compiled with libmng %s; using libmng %s.\n",
+		MNG_VERSION_TEXT, mng_version_text());
+	fprintf(out, "  Compiled with zlib %s; using zlib %s.\n",
+		ZLIB_VERSION, zlib_version);
+#ifdef JPEG_LIB_VERSION
+	{
+		int major = JPEG_LIB_VERSION / 10;
+		int minor = JPEG_LIB_VERSION % 10;
+		char minoralpha[2];
+
+		if (minor) {
+			minoralpha[0] = (char)(minor - 1 + 'a');
+			minoralpha[1] = '\0';
+		} else
+        		minoralpha[0] = '\0';
+
+		fprintf(out, "  Compiled with libjpeg %d%s.\n",
+			major, minoralpha);
+	}
+#endif
+	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -278,7 +323,7 @@ int main(int argc, char *argv[])
 	SDL_Rect	updaterect;
 
 	if (argc < 2) {
-		fprintf(stderr, "usage: %s <mngfile>\n", argv[0]);
+		usage(stderr, argv[0]);
 		exit(1);
 	}
 
@@ -324,7 +369,6 @@ int main(int argc, char *argv[])
 	SDL_EventState(SDL_KEYDOWN, SDL_IGNORE); /* keyup only */
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
-	SDL_EventState(SDL_MOUSEBUTTONUP, SDL_IGNORE);
 
 //	fprintf(stderr, "playing mng...maybe.\n");
 
