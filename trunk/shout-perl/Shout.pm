@@ -14,6 +14,7 @@ Shout - Perl glue for libshout MP3 streaming source library
 	port		=> 8000,
 	mount		=> 'testing',
 	password	=> 'pa$$word!',
+	user		=> 'username',
 	dumpfile	=> undef,
 	name		=> 'Wir sind nur Affen',
 	url		=> 'http://apan.org/'
@@ -31,6 +32,7 @@ Shout - Perl glue for libshout MP3 streaming source library
   $conn->port(8000);
   $conn->mount('testing');
   $conn->password('pa$$word!');
+  $conn->user('username');
   $conn->dumpfile(undef);
   $conn->name('Test libshout-perl stream');
   $conn->url('http://www.icecast.org/');
@@ -94,6 +96,7 @@ tag is given as an argument to the C<use> statement.
 	shout_set_port
 	shout_set_mount
 	shout_set_password
+	shout_set_user
 	shout_set_icq
 	shout_set_irc
 	shout_set_dumpfile
@@ -106,6 +109,7 @@ tag is given as an argument to the C<use> statement.
 	shout_get_port
 	shout_get_mount
 	shout_get_password
+	shout_get_user
 	shout_get_icq
 	shout_get_irc
 	shout_get_dumpfile
@@ -155,7 +159,7 @@ use strict;
 BEGIN {
     use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $AUTOLOAD);
 
-    $VERSION = '2.0.1';
+    $VERSION = '2.0.2';
 
     use Carp;
 
@@ -188,11 +192,11 @@ BEGIN {
 	shout_set_metadata shout_metadata_new shout_metadata_free 
 	shout_metadata_add shout_send_data shout_sync shout_delay
 	shout_set_host shout_set_port shout_set_mount shout_set_password
-	shout_set_dumpfile shout_set_name
+	shout_set_user shout_set_dumpfile shout_set_name
 	shout_set_url shout_set_genre shout_set_description
 	shout_set_public shout_get_host
 	shout_get_port shout_get_mount shout_get_password
-	shout_get_dumpfile shout_get_name
+	shout_get_user shout_get_dumpfile shout_get_name
 	shout_get_url shout_get_genre shout_get_description
 	shout_get_public shout_get_error shout_set_format shout_get_format
 	shout_get_audio_info shout_set_audio_info
@@ -213,11 +217,11 @@ BEGIN {
 	    shout_metadata_free shout_send_data shout_sync shout_delay
 	    shout_get_audio_info shout_set_audio_info
 	    shout_set_host shout_set_port shout_set_mount shout_set_password
-	    shout_set_dumpfile shout_set_name
+	    shout_set_user shout_set_dumpfile shout_set_name
 	    shout_set_url shout_set_genre shout_set_description
 	    shout_set_public shout_get_host
 	    shout_get_port shout_get_mount shout_get_password
-	    shout_get_dumpfile shout_get_name
+	    shout_get_user shout_get_dumpfile shout_get_name
 	    shout_get_url shout_get_genre shout_get_description
 	    shout_get_public shout_get_error shout_get_errno
 	    shout_set_protocol shout_get_protocol
@@ -246,6 +250,7 @@ use vars qw{@TranslatedMethods %CompatibilityMethods};
     port
     mount
     password
+    user
     dumpfile
     name
     url
@@ -274,6 +279,7 @@ use vars qw{@TranslatedMethods %CompatibilityMethods};
 ###			port		=> <destination port>,
 ###			mount		=> <stream mountpoint>,
 ###			password	=> <password to use when connecting>,
+###			user		=> <username to use when connecting>,
 ###			dumpfile	=> <dumpfile for the stream>,
 ###			name		=> <name of the stream>,
 ###			url		=> <url of stream's homepage>,
@@ -498,6 +504,9 @@ sub updateMetadata ($$) {
 ###	METHOD: password( $password )
 ###	Get/set the password to use when connecting to the Icecast server.
 
+###	METHOD: user( $username )
+###	Get/set the username to use when connecting to the Icecast server.
+
 ### METHOD: dumpfile( $filename )
 ### Get/set the name of the icecast dumpfile for the stream.  The dumpfile is a
 ###		special feature of recent icecast servers. When dumpfile is not
@@ -636,6 +645,10 @@ Get/set the name of the stream.
 
 Get/set the password to use when connecting to the Icecast server.
 
+=item I<user( $username )>
+
+Get/set the username to use when connecting to the Icecast server.
+
 =item I<port( $portNumber )>
 
 Get/set the port to connect to on the target Icecast server.
@@ -688,6 +701,7 @@ hash is in the following form:
         port        => <destination port>,
         mount       => <stream mountpoint>,
         password    => <password to use when connecting>,
+        user	    => <username to use when connecting>,
         dumpfile    => <dumpfile for the stream>,
         name        => <name of the stream>,
         url         => <url of stream's homepage>,
