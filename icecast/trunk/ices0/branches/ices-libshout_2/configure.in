@@ -133,7 +133,7 @@ AC_TYPE_SIGNAL
 dnl -- System function check --
 
 AC_FUNC_STRFTIME
-AC_CHECK_FUNCS([vsnprintf setsid inet_addr inet_aton setlinebuf])
+AC_CHECK_FUNCS([vsnprintf setsid setlinebuf])
 
 dnl -- Required extra libraries --
 
@@ -193,11 +193,11 @@ AC_ARG_WITH(lame-libraries,
 
 if test "$with_lame_includes"
 then
-  if test -f "$with_lame_includes/lame.h"
+  if test -f "$with_lame_includes/lame.h" -o -f "$with_lame_includes/lame/lame.h"
   then
     CPPFLAGS="$CPPFLAGS -I$with_lame_includes"
   else
-    AC_MSG_ERROR("lame.h is not where you told me it should be. No that is just plain rude.")
+    AC_MSG_ERROR([lame.h not found in $with_lame_includes])
   fi
 fi
 
@@ -219,9 +219,9 @@ then
   AC_CHECK_HEADER(lame/lame.h, [
     have_LAME="maybe",
     AC_DEFINE(HAVE_LAME_LAME_H, 1, [Use <lame/lame.h> instead of <lame.h>])
-    ],
+    ], [
     AC_CHECK_HEADER(lame.h, [
-      have_LAME="maybe"]))
+    have_LAME="maybe"])])
 
   if test "$have_LAME" != "no"
   then
