@@ -21,11 +21,10 @@
  * 
  */
 
-extern void time_linkage_init(time_linkage *new,int ch);
-extern int time_linkage_copy(time_linkage *dest,time_linkage *src);
-extern int time_linkage_channels(time_linkage *in);
-extern int time_linkage_samples(time_linkage *in);
-extern int time_linkage_init_alias_split(time_linkage *in,time_linkage *out);
-extern void time_linkage_init_alias_combine(time_linkage *in,time_linkage *out,int ch);
-extern void time_linkage_swap(time_linkage *a, time_linkage *b);
-extern void time_linkage_clear(time_linkage *in);
+#include "libpostfish.h"
+
+struct postfish_instance {
+  int rate;
+  int blocksize;
+  float ***window_func;
+};
