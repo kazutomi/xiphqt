@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: pack variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14.2.7 2003/02/10 18:05:46 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.8 2003/03/06 23:13:36 xiphmont Exp $
 
  ********************************************************************/
 
@@ -413,7 +413,6 @@ long oggpackB_look1(oggpack_buffer *b){
 static void _oggpack_adv_halt(oggpack_buffer *b){
   /* implicit; called only when b->length<=b->head->used */
   b->headptr=b->head->data+b->length;
-  b->length=0;
   b->headend=0;
   b->headbit=0;
 }
@@ -955,7 +954,7 @@ int main(void){
 
   /* Test read/write together */
   /* Later we test against pregenerated bitstreams */
-  ogg_buffer_init(&bs);
+  ogg_buffer_init(&bs,0);
 
   fprintf(stderr,"\nSmall preclipped packing (LSb): ");
   cliptest(testbuffer1,test1size,0,one,onesize);
