@@ -652,6 +652,8 @@ sub SetupTimerDispatch{
     my$now=time();
     my@TIMETEMP=@TIMER_TIMES;
     my@ENDTIMETEMP=@TIMER_ENDTIMES;
+    $next_timer_event=0;
+
     foreach my$line (@TIMER){
 	my$start=shift @TIMETEMP;
 	my$end=shift @ENDTIMETEMP;
@@ -677,7 +679,7 @@ sub TimerWatch{
 	if($TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<$now){
 	    Robot_Stop();
 	    Robot_Inactive();
-	    ButtonPressConfig();
+	    ButtonConfig();
 	}else{
 	    
 	    if($now>=$next_timer_event){
