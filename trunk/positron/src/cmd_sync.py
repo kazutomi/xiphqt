@@ -81,6 +81,23 @@ def run(config, neuros, args):
         filelist = [item for item in filelist
                     if item[1].lower() not in deletedlist]
 
+        # Cut recordings (so we don't resync them back onto the Neuros in
+        # the event the recordings dir is under the music tree)
+        if config.recordingdir != None:
+            recordinglist = config.get_recordings()
+            targets_to_avoid = []
+            for neuros_trackname in recordinglist:
+                sourcename = neuros.neurospath_to_hostpath(neuros_trackname)
+                basename = path.basename(sourcename)
+                targetname = path.join(config.recordingdir, basename)
+                # We lowercase everything here because config.get_recordings
+                # only contains lowercased names, so we're going to lower
+                # case everything before comparison
+                targets_to_avoid.append(targetname.lower())
+
+            filelist = [item for item in filelist
+                        if item[0].lower() not in targets_to_avoid]
+
         if len(filelist) == 0:
             print "None."
         else:
