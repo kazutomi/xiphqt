@@ -2,6 +2,10 @@
 '''An example of encoding using the Python wave module'''
 import ogg.vorbis, wave
 
+
+# Used to switch between different ways of writing the file out
+write_as_string = 1
+
 fout = open('out.ogg', 'wb')
 inwav = wave.open('in.wav','rb')
 channels = inwav.getnchannels()
@@ -16,6 +20,15 @@ while og:
     og = os.flush()
 nsamples = 1024
 
+def FinishPage(ogg_page):
+    """Take a finished ogg page object and write it out to a file."""
+    if not write_as_string:
+        ogg_page.writeout(fout)  # write it to a file
+    else:
+        # We'll do this the longer way
+        data = ogg_page.tostring()
+        fout.write(data)
+
 eos = 0
 total = 0
 while not eos:
@@ -23,9 +36,9 @@ while not eos:
     total = total + nsamples
     if not data:
         vd.write(None)
-        break
-    vd.write_wav(data)
-    #print 100.0 * total / inwav.getnframes()
+    else:
+        vd.write_wav(data)
+    print 100.0 * total / inwav.getnframes()
     vb = vd.blockout()
     while vb:
         vb.analysis()
@@ -37,7 +50,7 @@ while not eos:
             while not eos:
                 og = os.pageout()
                 if not og: break
-                og.writeout(fout)
+                FinishPage(og)
                 eos = og.eos()
             op = vd.bitrate_flushpacket()
         vb = vd.blockout()
