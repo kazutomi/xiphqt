@@ -334,13 +334,9 @@ py_comment_new_from_vc(vorbis_comment *vc, PyObject *parent)
 }
 
 PyObject *
-py_comment_new(PyObject *self, PyObject *args)
+py_comment_new_empty()
 {
   py_vcomment *newobj;
-
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
   newobj = (py_vcomment *) PyObject_NEW(py_vcomment, 
                                         &py_vcomment_type);
   if (!newobj)
@@ -688,6 +684,133 @@ make_caps_key(char *in, int size)
   }
   in[pos] = '\0';
   return 0;
+}
+
+/* Assign a tag in a vorbis_comment, special-casing the VENDOR tag. */
+static int
+assign_tag(vorbis_comment *vcomment, const char *key, PyObject *tag)
+{
+  char *tag_str;
+  char tag_buff[1024];
+  if (PyString_Check(tag)) {
+    tag_str = PyString_AsString(tag);
+  } else {
+    /* TODO - Unicode */
+  }
+  if (!strcasecmp(key, "vendor")) {
+    vcomment->vendor = strdup(tag_str);
+  } else {
+    snprintf(tag_buff, sizeof(tag_buff), "%s=%s", key, tag_str);
+    printf("Add tag %s\n", tag_buff);
+    vorbis_comment_add(vcomment, tag_buff);
+  }
+  return 1;
+}
+
+/* 
+   NOTE:
+   Something like this should be wrong but will, I guess, 'work':
+   { 'Vendor' : 'me', 'VENDOR': 'someone else'} 
+ */
+static int
+create_comment_from_items(vorbis_comment *vcomment, 
+                          const char *key, PyObject *item_vals)
+{
+  
+  if (PyString_Check(item_vals)) {
+    return assign_tag(vcomment, key, item_vals);
+  } else if (PySequence_Check(item_vals)) {
+    int j, val_length = PySequence_Length(item_vals);
+    if (!strcasecmp(key, "vendor") && val_length > 1) {
+      PyErr_SetString(PyExc_ValueError, "Cannot have multiple vendor tags");
+    }
+    for (j = 0; j < val_length; j++) {
+      PyObject *tag_value = PySequence_GetItem(item_vals, j);
+      if (!tag_value) 
+        return 0;
+      if (!assign_tag(vcomment, key, tag_value))
+        return 0;
+    }
+  } else {
+    PyErr_SetString(PyExc_ValueError, "Value not a string or sequence.");
+    return 0;
+  }
+  return 1;
+}
+
+static vorbis_comment *
+create_comment_from_dict(PyObject *dict)
+{
+  vorbis_comment *vcomment = NULL;
+  int initted = 0;
+  PyObject *items = NULL;
+  int k, length;
+
+  vcomment = (vorbis_comment *) malloc(sizeof(vorbis_comment));
+  if (!vcomment) {
+    PyErr_SetString(PyExc_MemoryError, "error allocating vcomment");
+    goto error;
+  }
+
+  vorbis_comment_init(vcomment);
+  initted = 1;
+  items = PyDict_Items(dict);
+  if (!items)
+    goto error;
+  length = PyList_Size(items);
+  for (k = 0; k < length; k++) {
+    PyObject *pair = PyList_GetItem(items, k);
+    PyObject *key, *val;
+    if (!pair)
+      goto error;
+    assert(PyTuple_Check(pair));
+    key = PyTuple_GetItem(pair, 0);
+    val = PyTuple_GetItem(pair, 1);
+    if (!PyString_Check(key)) {
+      PyErr_SetString(PyExc_ValueError, "Key not a string");
+      goto error;
+    }
+    if (!create_comment_from_items(vcomment, PyString_AsString(key), val))
+      goto error;
+  }
+  
+  return vcomment;
+
+ error:
+  /* Note: I hate dealing with memory */
+  Py_XDECREF(items);
+  if (vcomment) {
+    if (initted)
+      vorbis_comment_clear(vcomment);
+    free(vcomment);
+  }
+  return NULL;
+}
+
+PyObject *
+py_comment_new(PyObject *self, PyObject *args)
+{
+  py_vcomment *pvc;
+  PyObject *dict;
+  vorbis_comment *vcomment;
+  if (PyArg_ParseTuple(args, "")) {
+    return py_comment_new_empty();
+  } else if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
+    return NULL;
+  vcomment = create_comment_from_dict(dict);
+  if (!vcomment)
+    return NULL;
+  pvc = (py_vcomment *) PyObject_NEW(py_vcomment,
+                                     &py_vcomment_type);
+  if (!pvc) {
+    vorbis_comment_clear(vcomment);
+    free(vcomment);
+    return NULL;
+  }
+  pvc->vc = vcomment;
+  pvc->parent = NULL;
+  pvc->malloced = 1;
+  return (PyObject *) pvc;
 }
 
 static PyObject *

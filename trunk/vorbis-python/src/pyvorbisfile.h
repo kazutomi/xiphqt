@@ -14,6 +14,8 @@ typedef struct {
 #define PY_VORBISFILEOBJECT(x) (((py_vorbisfile *)x)->py_file)
 extern PyTypeObject py_vorbisfile_type;
 
+PyObject *py_file_new(PyObject *, PyObject *);
+
 #endif /* __PYVORBIS_FILE_H__ */
 
 
