@@ -148,7 +148,6 @@ static static_bookblock _resbook_44s_9={
    }
 };
 
-
 static vorbis_residue_template _res_44s_0[]={
   {2,0,  &_residue_44_mid,
    &_huff_book__44c0_s_short,&_huff_book__44c0_sm_short,
@@ -241,6 +240,7 @@ static vorbis_residue_template _res_44s_9[]={
 };
 
 static vorbis_mapping_template _mapres_template_44_stereo[]={
+  { _map_nominal, _res_44s_0 }, /* -1 */
   { _map_nominal, _res_44s_0 }, /* 0 */
   { _map_nominal, _res_44s_1 }, /* 1 */
   { _map_nominal, _res_44s_2 }, /* 2 */
@@ -253,8 +253,3 @@ static vorbis_mapping_template _mapres_template_44_stereo[]={
   { _map_nominal, _res_44s_9 }, /* 9 */
 };
 
-// low-mode added
-static vorbis_mapping_template _mapres_template_44_stereo_low[]={
-  { _map_nominal, _res_44s_0 }, /* 0(-2) */
-  { _map_nominal, _res_44s_0 }, /* 1(-1) */
-};

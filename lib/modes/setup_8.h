@@ -74,7 +74,7 @@ ve_setup_data_template ve_setup_8_stereo={
 
   {_noise_start_8,_noise_start_8},
   {_noise_part_8,_noise_part_8},
-  _noise_thresh_44_2,
+  _noise_thresh_5only,
 
   _psy_ath_floater_8,
   _psy_ath_abs_8,
@@ -125,7 +125,7 @@ ve_setup_data_template ve_setup_8_uncoupled={
 
   {_noise_start_8,_noise_start_8},
   {_noise_part_8,_noise_part_8},
-  _noise_thresh_44_2,
+  _noise_thresh_5only,
 
   _psy_ath_floater_8,
   _psy_ath_abs_8,

@@ -283,6 +283,7 @@ static vorbis_residue_template _res_44u_9[]={
 };
 
 static vorbis_mapping_template _mapres_template_44_uncoupled[]={
+  { _map_nominal_u, _res_44u_0 }, /* -1 */
   { _map_nominal_u, _res_44u_0 }, /* 0 */
   { _map_nominal_u, _res_44u_1 }, /* 1 */
   { _map_nominal_u, _res_44u_2 }, /* 2 */
@@ -293,10 +294,4 @@ static vorbis_mapping_template _mapres_template_44_uncoupled[]={
   { _map_nominal_u, _res_44u_7 }, /* 7 */
   { _map_nominal_u, _res_44u_8 }, /* 8 */
   { _map_nominal_u, _res_44u_9 }, /* 9 */
-};
-
-// low-mode added
-static vorbis_mapping_template _mapres_template_44_uncoupled_low[]={
-  { _map_nominal_u, _res_44u_0 }, /* 0(-2) */
-  { _map_nominal_u, _res_44u_0 }, /* 1(-1) */
 };

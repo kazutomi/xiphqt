@@ -879,28 +879,29 @@ void _vp_offset_and_mix(vorbis_look_psy *p,
     if(offset_select == 1) {
       coeffi = -17.2;       /* coeffi is a -17.2dB threshold */
       val = val - logmdct[i];  /* val == mdct line value relative to floor in dB */
-
+      
       if(val > coeffi){
 	/* mdct value is > -17.2 dB below floor */
-
+	
 	de = 1.0-((val-coeffi)*0.005*cx);
 	/* pro-rated attenuation:
 	   -0.00 dB boost if mdct value is -17.2dB (relative to floor) 
 	   -0.77 dB boost if mdct value is 0dB (relative to floor) 
 	   -1.64 dB boost if mdct value is +17.2dB (relative to floor) 
 	   etc... */
-
+	
 	if(de < 0) de = 0.0001;
       }else
 	/* mdct value is <= -17.2 dB below floor */
- 
+	
 	de = 1.0-((val-coeffi)*0.0003*cx);
-	/* pro-rated attenuation:
-	   +0.00 dB atten if mdct value is -17.2dB (relative to floor) 
-	   +0.45 dB atten if mdct value is -34.4dB (relative to floor) 
-	   etc... */
-
+      /* pro-rated attenuation:
+	 +0.00 dB atten if mdct value is -17.2dB (relative to floor) 
+	 +0.45 dB atten if mdct value is -34.4dB (relative to floor) 
+	 etc... */
+      
       mdct[i] *= de;
+      
     }
   }
 }
