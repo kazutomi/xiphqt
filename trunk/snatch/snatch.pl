@@ -330,13 +330,21 @@ Tk::MainLoop();
 sub trim_glob{
     # the bsd glob routine deals poorly with some whitespace...
     my$pattern=shift;
+    if($pattern eq ""){
+	$pattern=".";
+    }
     if($pattern ne '-'){
 
 	$pattern=~s/^(\s+).*//;
 	$pattern=~s/(\s+)$//;
 	
 	my@result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE);
+
+	if(!defined($result[0])){
+	    @result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE|GLOB_NOCHECK);
+	}
 	$result[0];
+
     }else{
 	'-';
     }
@@ -559,7 +567,7 @@ sub Robot_Active{
     $timer_entry_active=0;
     $last_timer_event=0;
     $next_timer_event=0;
-    if(defined($timer_callback)){
+    if(defined($timer_callback) && !recording_active){
 	$timer_callback->cancel();
 	undef $timer_callback;
     }
@@ -573,7 +581,7 @@ sub Robot_Active{
     syswrite COMM_SOCK,'A';
     Robot_Audio($CONFIG{"AUDIO_MUTE"});
     Robot_Video($CONFIG{"VIDEO_MUTE"});
-    Status("Ready/waiting to record");
+    Status("Ready/waiting to record") if (!$recording_active);
     $mode='active';
     ButtonPressConfig();
 }
@@ -601,17 +609,17 @@ sub Robot_Inactive{
 }
 
 sub Robot_Timer{
+    $last_timer_event=0;
+    $next_timer_event=0;
+    $timer_entry_active=0;
+    send_string("O","");
+    send_string("L","");
+    syswrite COMM_SOCK,'T';
+    Status("Timer wait");
+    $mode='timer';
+    ButtonPressConfig();
+    SetupTimerDispatch();
     if(!defined($timer_callback)){
-	$last_timer_event=0;
-	$next_timer_event=0;
-	$timer_entry_active=0;
-	send_string("O","");
-	send_string("L","");
-	syswrite COMM_SOCK,'T';
-	Status("Timer wait");
-	$mode='timer';
-	ButtonPressConfig();
-	SetupTimerDispatch();
 	$timer_callback=$toplevel->repeat(1000,[main::TimerWatch]);
     }
 }
@@ -643,11 +651,10 @@ sub SetupTimerDispatch{
     TimerSort();
     my$now=time();
     my@TIMETEMP=@TIMER_TIMES;
+    my@ENDTIMETEMP=@TIMER_ENDTIMES;
     foreach my$line (@TIMER){
 	my$start=shift @TIMETEMP;
-	my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
-	   $password,$outfile,$url)=SplitTimerEntry($line);
-	my$end=$start+$duration;
+	my$end=shift @ENDTIMETEMP;
 
 	if($start>$last_timer_event && $start<=$now && $end>$now){    
 	    Robot_Stop();
@@ -663,34 +670,63 @@ sub SetupTimerDispatch{
 }
     
 sub TimerWatch{
-    my$now=time();
-    my$waiting_seconds=$next_timer_event-$now;
-
-    my$waiting_minutes=int($waiting_seconds/60);
-    $waiting_seconds-=$waiting_minutes*60;
-
-    my$waiting_hours=int($waiting_minutes/60);
-    $waiting_minutes-=$waiting_hours*60;
-
-    my$waiting_days=int($waiting_hours/24);
-    $waiting_hours-=$waiting_days*24;
-    my$prompt;
-    
-    if($waiting_days){
-	$prompt=$waiting_days."d $waiting_hours:$waiting_minutes";
-    }elsif($waiting_hours){
-	$prompt=$waiting_days."$waiting_hours:$waiting_minutes";
+    if($mode=~/timer/){
+	my$now=time();
+	my$waiting_seconds=$next_timer_event-$now;
+	
+	my$waiting_minutes=int($waiting_seconds/60);
+	$waiting_seconds-=$waiting_minutes*60;
+	
+	my$waiting_hours=int($waiting_minutes/60);
+	$waiting_minutes-=$waiting_hours*60;
+	
+	my$waiting_days=int($waiting_hours/24);
+	$waiting_hours-=$waiting_days*24;
+	my$prompt;
+	
+	if($waiting_days){
+	    $prompt=$waiting_days."d $waiting_hours:$waiting_minutes";
+	}elsif($waiting_hours){
+	    $prompt=$waiting_days."$waiting_hours:$waiting_minutes";
+	}else{
+	    $prompt=$waiting_minutes."m ".$waiting_seconds."s";
+	}
+	
+	if($timer_entry_active){
+	    Status("Timer recording [$prompt]");
+	}else{
+	    Status("Timer wait [$prompt]");
+	}
+	
+	SetupTimerDispatch() if($now>=$next_timer_event);
     }else{
-	$prompt=$waiting_minutes."m ".$waiting_seconds."s";
-    }
+	if($recording_active){
 
-    if($timer_entry_active){
-	Status("Timer recording [$prompt]");
-    }else{
-	Status("Timer wait [$prompt]");
-    }
-
-    SetupTimerDispatch() if($now>=$next_timer_event);
+	    my$now=time();
+	    my$seconds=$now-$recording_active;
+	    
+	    my$minutes=int($seconds/60);
+	    $seconds-=$minutes*60;
+	
+	    my$hours=int($minutes/60);
+	    $minutes-=$hours*60;
+	    
+	    my$prompt;
+	    
+	    if($hours){
+		$prompt=$waiting_days."$hours:$minutes";
+	    }else{
+		$prompt=$minutes."m ".$seconds."s";
+	    }
+	    
+	    
+	    Status("Recording [$prompt]");
+	}else{
+	    Status("Ready/waiting to record");
+	    $timer_callback->cancel();
+	    undef $timer_callback;
+	}
+    }	
 }
 
 sub Robot_Audio{
@@ -974,6 +1010,28 @@ sub ReadStderr{
 	$toplevel->fileevent(REAL_STDERR,'readable' => ''); 
       Tk::exit(0);
     }	
+
+    if($scalar=~/ERROR: Could not stat[^\n]+\n\s+([^:]*): (.+)*/){
+	Alert("Unable to open output file!",
+	      "Libsnatch reported $1: $2\n");
+    }
+
+    if($scalar=~/Password not/){
+	Alert("Password not accepted!",
+	      "Hopefully self explanatory...\n");
+    }
+
+    if($scalar=~/Capturing/){
+	$recording_active=time();
+	if(!defined($timer_callback)){
+	    $timer_callback=$toplevel->repeat(1000,[sub{main::TimerWatch();}]);
+	}
+    }
+
+    if($scalar=~/Capture stopped/){
+	$recording_active=0;
+    }
+
     print $scalar if($CONFIG{DEBUG} eq 'yes');
 }
 
@@ -1003,7 +1061,8 @@ sub ButtonPressConfig(){
 }
 
 sub ButtonConfig{
-    if ($#TIMER<0 || !$comm_ready){
+    my$now=time();
+    if ($#TIMER<0 || $TIMER_ENDTIMES[$#TIMER]<$now || !$comm_ready){
 	$window_timer->configure(state=>disabled);
     }else{ 
 	$window_timer->configure(state=>normal);
@@ -1123,7 +1182,8 @@ sub Setup{
     $setup_quit->configure(-command=>[sub{
 	my $temppath=$TEMPCONF{"OUTPUT_PATH"};
 	if(TestOutpath($temppath,$setup)){
-	    $setup->destroy();undef $setup;%CONFIG=%TEMPCONF;
+	    %CONFIG=%TEMPCONF;
+	    $setup->destroy();undef $setup;
 	    $CONFIG{OUTPUT_PATH}=trim_glob($temppath);
 	    $window_setupbar->configure(state=>'normal');
 	    $window_setupbar->configure(relief=>'raised');
@@ -1163,7 +1223,7 @@ sub TestOutpath{
 	$path=trim_glob($path);
 	if(!-W $path){
 	    # in the event this is a file spec in a writable directory, try touching it
-	    if(open TEST,">$path"){
+	    if(open (TEST,">$path")){
 		# oh, ok...
 		close(TEST);
 		unlink($path);
@@ -1301,7 +1361,7 @@ sub BuildListBox(){
 	    $duration-=$dur_minutes*60;
 	    
 	    if($dur_hours==0){
-		$dur_hours='';
+		$dur_hours='00:';
 	    }else{
 		$dur_hours.=":";
 	    }
@@ -1333,24 +1393,18 @@ sub BuildListBox(){
 }
 
 sub CheckTimerOverlap{
-    my@TIMETEMP=@TIMER_TIMES;
-    my@TIMER_END;
-    my$rows=0;
+    my$rows=($#TIMER)+1;
 
     foreach my$line (@TIMER){
-	my$time=shift @TIMETEMP;
-	my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
-	   $password,$outfile,$url)=SplitTimerEntry($TIMER[$TIMER_SORTED[$i]]);
-	push @TIMER_END,$time+$duration;
 	$rows++;
     }
 
     for(my$i=0;$i<$rows;$i++){
 	for(my$j=$i+1;$j<$rows;$j++){
 	    my $start1=$TIMER_TIMES[$i];
-	    my $end1=$TIMER_END[$i];
+	    my $end1=$TIMER_ENDTIMES[$i];
 	    my $start2=$TIMER_TIMES[$j];
-	    my $end2=$TIMER_END[$j];
+	    my $end2=$TIMER_ENDTIMES[$j];
 
 	    if($start1>0 && $start2>0){
 		if(($start1>=$start2 && $start1<$end2)||
@@ -1370,7 +1424,18 @@ sub CheckTimerOverlap{
 
 sub TimerSort{
     $count=0;
-    @TIMER_TIMES=(map {TimerStart(-1,-1,(SplitTimerEntry($_)))} @TIMER);
+    my@TIMER_FULL=(map {TimerWhen(-1,-1,(SplitTimerEntry($_)))} @TIMER);
+    undef @TIMER_TIMES;
+    undef @TIMER_ENDTIMES;
+    while(1){
+	my$temp=shift @TIMER_FULL;
+	if(defined($temp)){
+	    push @TIMER_TIMES, $temp;
+	    push @TIMER_ENDTIMES, shift @TIMER_FULL;
+	}else{
+	    last;
+	}
+    }
     @TIMER_SORTED=sort {$TIMER_TIMES[$a]-$TIMER_TIMES[$b]} (map {$count++} @TIMER);
 }    
 
