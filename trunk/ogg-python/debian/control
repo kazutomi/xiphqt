@@ -8,5 +8,7 @@ Standards-Version: 3.5.1.0
 Package: ogg-python
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: A Python interface to the Ogg library
+ This module makes the libogg (Ogg) functions available
+ in Python. With this module you can write Python applications
+ that use the ogg library.
