@@ -37,10 +37,10 @@
 #endif
 
 /* Private function declarations */
-static RETSIGTYPE ices_signals_child (const int sig);
-static RETSIGTYPE ices_signals_int (const int sig);
-static RETSIGTYPE ices_signals_hup (const int sig);
-static RETSIGTYPE ices_signals_usr1 (const int sig);
+static RETSIGTYPE signals_child (const int sig);
+static RETSIGTYPE signals_int (const int sig);
+static RETSIGTYPE signals_hup (const int sig);
+static RETSIGTYPE signals_usr1 (const int sig);
 
 /* Global function definitions */
 
@@ -53,46 +53,46 @@ ices_signals_setup (void)
 {
 #ifndef _WIN32
   signal (SIGPIPE, SIG_IGN);
-  signal (SIGCHLD, ices_signals_child);
+  signal (SIGCHLD, signals_child);
   signal (SIGIO, SIG_IGN);
   signal (SIGALRM, SIG_IGN);
-  signal (SIGINT, ices_signals_int);
-  signal (SIGTERM, ices_signals_int);
-  signal (SIGHUP, ices_signals_hup);
-  signal (SIGUSR1, ices_signals_usr1);
+  signal (SIGINT, signals_int);
+  signal (SIGTERM, signals_int);
+  signal (SIGHUP, signals_hup);
+  signal (SIGUSR1, signals_usr1);
+}
+
+/* Guess we fork()ed, let's take care of the dead process */
+static RETSIGTYPE
+signals_child (const int sig)
+{
+  int stat;
+
+  signal (SIGCHLD, signals_child);
+  wait (&stat);
 }
 
 /* SIGINT, ok, let's be nice and just drop dead */
 static RETSIGTYPE
-ices_signals_int (const int sig)
+signals_int (const int sig)
 {
-	ices_log_debug ("Caught signal, shutting down...");
-	ices_setup_shutdown ();
+  ices_log_debug ("Caught signal, shutting down...");
+  ices_setup_shutdown ();
 }
 			
-/* Guess we fork()ed, let's take care of the dead process */
-static RETSIGTYPE
-ices_signals_child (const int sig)
-{
-	pid_t pid;
-	int stat;
-
-	ices_signals_setup ();
-	pid = wait (&stat);
-}
-
 /* SIGHUP caught, let's cycle logfiles */
 static RETSIGTYPE
-ices_signals_hup (const int sig)
+signals_hup (const int sig)
 {
-	ices_log_debug ("Caught SIGHUP, cycling logfiles...");
-	ices_log_reopen_logfile ();
+  ices_log_debug ("Caught SIGHUP, cycling logfiles...");
+  ices_log_reopen_logfile ();
 }
 
 /* I'm not sure whether I'll keep this... */
 static RETSIGTYPE
-ices_signals_usr1 (const int sig)
+signals_usr1 (const int sig)
 {
+  signal (SIGUSR1, signals_usr1);
   ices_log_debug ("Caught SIGUSR1, skipping to next track...");
   ices_stream_next ();
 #endif
