@@ -158,7 +158,7 @@ py_vorbis_analysis_headerout(PyObject *self, PyObject *args)
   if (comm == NULL) {
     vorbis_comment_init(&vc); /* Initialize an empty comment struct */
   } else {
-    vc = comm->vc;
+    vc = *comm->vc;
   }
     
   if ((code = vorbis_analysis_headerout(&dsp_self->vd, &vc, &header,
