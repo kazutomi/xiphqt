@@ -1,3 +1,9 @@
+2004-1-18   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* Wow, exactly one year between changes :)
+	* pyoggpage.c(ogg_page_tostring): Provide a way to get the
+	contents of a page as a string. Useful for streaming.
+	* Made it version 1.4, seeing as that's the next highest number.
+	
 2003-1-18   Andrew H. Chatham <pyogg@andrewchatham.com>
 	* Applied a patch from Nicodemus <nicodemus@globalite.com.br> to 
 	get this to build on windows.
