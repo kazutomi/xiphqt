@@ -104,7 +104,7 @@ def run(config, neuros, args):
         (recordings, rest) = list_split(filelist, test_rec_func)
         (hisi, rest) = list_split(rest, test_hisi_func)
 
-        print "  %d found." % (len(filelist),)
+        print "  %d found." % (len(filelist),), " "*60
 
         print "\nAdding music tracks to audio database..."
         audio_db = neuros.open_db("audio")
