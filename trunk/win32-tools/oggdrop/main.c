@@ -20,7 +20,7 @@
               VARIABLE_PITCH | FF_SWISS, "")
    
 HANDLE event = NULL;
-int width = 120, height = 120;
+int width = 130, height = 130;
 RECT bar1, bar2, vbrBR;
 int prog1 = 0, prog2 = 0;
 int moving = 0;
@@ -40,8 +40,9 @@ int qcValue;
 int bitRate;
 char *fileName;
 OE_MODE oe_mode;
-int nominalBitrate;
+float nominalBitrate;
 int showNBR;
+char approxBRCaption[80];
 
 
 static const char *bitRateCaption[] =
@@ -88,7 +89,7 @@ int read_setting(const char* name, int default_value)
 		int value;
 		DWORD cb_value = sizeof(int);
 		if (ERROR_SUCCESS == RegQueryValueEx(base_key, name, NULL, NULL, 
-                                         (byte*)&value, &cb_value))
+                                         (BYTE*)&value, &cb_value))
 			return value;
 	}
 	return default_value;
@@ -98,7 +99,7 @@ void write_setting(const char* name, int value)
 {
 	HKEY base_key;
 	if (!get_base_key(&base_key))
-		RegSetValueEx(base_key, name, 0, REG_DWORD, (byte*)&value, sizeof(int));
+		RegSetValueEx(base_key, name, 0, REG_DWORD, (BYTE*)&value, sizeof(int));
 }
 
 void set_quality_coefficient(int v)
@@ -140,8 +141,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	HWND hwnd;
 	MSG msg;
 	WNDCLASS wndclass;
-  const int width = 120;
-	const int height = 120;
+  const int width = 130;
+	const int height = 130;
 	int x;
 	int y;
 
@@ -180,6 +181,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	set_always_on_top(hwnd, read_setting("always_on_top", 1));
 	set_logerr(hwnd, read_setting("logerr", 0));
   set_showNBR(hwnd, read_setting("shownbr", 1));
+  (void) strcpy(approxBRCaption, "Nominal Bitrate");
 	
 	for (frame = 0; frame < 12; frame++)
 		hbm[frame] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF01 + frame), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
@@ -274,27 +276,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		percomp = ((double)(totalfiles - numfiles) + 1 - (1 - file_complete)) / (double)totalfiles;
 
     //SetRect(&vbrBR, 0, height - (height-14), width, height - (height-26));
-    SetRect(&vbrBR, 0, height - 29, width, height - 19);
+    SetRect(&vbrBR, 0, height - 35, width, height - 19);
 
     dfltBGMode = SetBkMode(offscreen, TRANSPARENT);
     dfltFont = SelectObject(offscreen, font2);
 
-    if (oe_mode == OE_MODE_QUALITY && showNBR)
+    if (showNBR)
     {
       char nbrCaption[80];
 
-      (void) sprintf(nbrCaption, "%d NBR", nominalBitrate);
+      (void) sprintf(nbrCaption, "%s: %.1f kbit/s ", 
+        approxBRCaption, nominalBitrate/1000);
+
+      if (oe_mode != OE_MODE_QUALITY)
+        (void) strcpy(approxBRCaption, "Bitrate");
 
       DrawText(offscreen, nbrCaption, -1, 
              &vbrBR, DT_SINGLELINE | DT_CENTER);
     }
 
 
-		SetRect(&bar1, 0, height - 19, (int)(file_complete * width), height - 9);
-		SetRect(&bar2, 0, height - 8, (int)(percomp * width), height - 2);
+		SetRect(&bar1, 0, height - 23, (int)(file_complete * width), height - 13);
+		SetRect(&bar2, 0, height - 12, (int)(percomp * width), height - 2);
+//		SetRect(&bar1, 0, height - 19, (int)(file_complete * width), height - 9);
+//		SetRect(&bar2, 0, height - 8, (int)(percomp * width), height - 2);
 
 		FillRect(offscreen, &bar1, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
-		FillRect(offscreen, &bar2, (HBRUSH)GetStockObject(GRAY_BRUSH));
+		FillRect(offscreen, &bar2, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
 
     if (fileName)
     {
@@ -520,6 +528,7 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
     (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
                                      IDC_USEBITRATE,
                                      IDC_USEQUALITY);
+    (void) strcpy(approxBRCaption, "Nominal Bitrate");
     
     break;
 
@@ -535,12 +544,15 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
           {
             write_setting("mode", IDC_USEQUALITY);
             oe_mode = OE_MODE_QUALITY;
+            nominalBitrate = 0;
+            (void) strcpy(approxBRCaption, "Nominal Bitrate");
             EndDialog(hwndDlg, qcValue);
           }
           else
           {
             write_setting("mode", IDC_USEBITRATE);
             oe_mode = OE_MODE_BITRATE;
+            nominalBitrate = (float)(bitRate*1000);
             EndDialog(hwndDlg, -2); // use bitrate
           }
           return TRUE;
@@ -556,6 +568,9 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
             bitRate = SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_GETITEMDATA,
                    (WPARAM) br, (LPARAM) 0);
           }
+
+          (void) strcpy(approxBRCaption, "Bitrate");
+          nominalBitrate = (float)(bitRate*1000);
 
           break;
 
@@ -597,7 +612,7 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
             (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
                                              IDC_USEBITRATE,
                                              IDC_USEQUALITY);
-
+            (void) strcpy(approxBRCaption, "Nominal Bitrate");
           }
             
             break;
