@@ -260,7 +260,7 @@ void bit_print (TYPE byte)
  *
  */
 #define ENCODE(offset,w,h,f)                                                  \
-{                                                                             \
+do {                                                                          \
    int i, j, k;                                                               \
                                                                               \
    for (k=0; k<f; k++) {                                                      \
@@ -290,11 +290,11 @@ void bit_print (TYPE byte)
          }                                                                    \
       }                                                                       \
    }                                                                          \
-}                                                                             \
+} while (0)
 
 
 #define DECODE(offset,w,h,f)                                                  \
-{                                                                             \
+do {                                                                          \
    int i, j, k;                                                               \
                                                                               \
    for (k=0; k<f; k++) {                                                      \
@@ -322,11 +322,11 @@ void bit_print (TYPE byte)
          }                                                                    \
       }                                                                       \
    }                                                                          \
-}
+} while (0)
 
 
 
-#define  BIT_SHIFT  2
+#define  BIT_SHIFT  1
 
 
 
@@ -354,7 +354,11 @@ size_t encode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t limit)
          int bitplane = 8*sizeof(TYPE)-2 - b + level * BIT_SHIFT;
          TYPE mask = 1 << bitplane;
 
-         if (mask & (TYPE) ~(1 << (8*sizeof(TYPE) - 1)))
+/*
+ *  XXX BUG !!!!!!!!!!   This should be work in level 1, tooo !!!!!!!!!!!!!!!!
+ */ 
+         if ((mask & (TYPE) ~(1 << (8*sizeof(TYPE) - 1))) &&
+             (mask <= waveletbuf->minmax [level+1] || level == 1))
          {
             TYPE sent_mask = (~0 << (bitplane+1)) & ~(1 << (8*sizeof(TYPE)-1));
             int  sign_shift = 8*sizeof(TYPE) - 1 - bitplane;
@@ -411,8 +415,10 @@ void decode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t count)
          int bitplane = 8*sizeof(TYPE)-2 - b + level * BIT_SHIFT;
          TYPE mask = 1 << bitplane;
 
-         if (mask & (TYPE) ~(1 << (8*sizeof(TYPE) - 1)))
-         {
+
+         if ((mask & (TYPE) ~(1 << (8*sizeof(TYPE) - 1))) &&
+             (mask <= waveletbuf->minmax [level+1] || level == 1))
+         {                                  /*  skip leading empty bitplanes */
             int  w = waveletbuf->w [level];
             int  h = waveletbuf->h [level];
             int  f = waveletbuf->f [level];
