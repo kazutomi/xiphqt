@@ -93,7 +93,7 @@ int mgetch(){
 
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
-#define MAX_OUPUT_CHANNELS 2
+#define MAX_OUPUT_CHANNELS 4
 #define MAX_INPUT_CHANNELS 2
 #define CHANNEL_LABEL_LENGTH 50
 int playback_bufsize=0;
@@ -782,7 +782,6 @@ static inline void _playback_add(int tagnum,int cuenum){
   t->sample_lapping=t->loop_lapping*44.1;
   if(t->sample_lapping>(t->samplelength-t->sample_loop_start)/2)
     t->sample_lapping=(t->samplelength-t->sample_loop_start)/2;
-  t->sample_lapping=t->samplelength-t->sample_lapping;
 
   t->sample_loop_start=t->loop_start*44.1;
   if(t->sample_loop_start>t->samplelength)
@@ -823,8 +822,6 @@ static inline void _playback_mix(int i,int cuenum){
 				 c->mix.outvol[k][j]);
     }
 }
-
-#define SWAP(x) ( (((x)>>8)&0xff) | (((x)&0xff)<<8))
 
 static inline void _next_sample(int16 *out){
   int i,j,k;
