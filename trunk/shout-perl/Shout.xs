@@ -14,35 +14,20 @@ not_here(char *s)
 static const char *
 strconstant(const char *name, int arg)
 {
+  errno = 0;
+
   if (strEQ(name,"SHOUT_AI_BITRATE"))
-#ifdef SHOUT_AI_BITRATE
     return SHOUT_AI_BITRATE;
-#else
-  goto notthere;
-#endif
 
   if (strEQ(name,"SHOUT_AI_SAMPLERATE"))
-#ifdef SHOUT_AI_SAMPLERATE
     return SHOUT_AI_SAMPLERATE;
-#else
-  goto notthere;
-#endif
 
   if (strEQ(name,"SHOUT_AI_CHANNELS"))
-#ifdef SHOUT_AI_CHANNELS
     return SHOUT_AI_CHANNELS;
-#else
-  goto notthere;
-#endif
 
   if (strEQ(name,"SHOUT_AI_QUALITY"))
-#ifdef SHOUT_AI_QUALITY
     return SHOUT_AI_QUALITY;
-#else
-  goto notthere;
-#endif
 
-notthere:
   errno = EINVAL;  
   return NULL;
 }
@@ -51,155 +36,39 @@ static double
 constant(char *name, int arg)
 {
    errno = 0;
-   switch (*name) {
-   case 'A':
-	break;
-   case 'B':
-	break;
-   case 'C':
-	break;
-   case 'D':
-	break;
-   case 'E':
-	break;
-   case 'F':
-	break;
-   case 'G':
-	break;
-   case 'H':
-	break;
-   case 'I':
-	break;
-   case 'J':
-	break;
-   case 'K':
-	break;
-   case 'L':
-	break;
-   case 'M':
-	break;
-   case 'N':
-	break;
-   case 'O':
-	break;
-   case 'P':
-	break;
-   case 'Q':
-	break;
-   case 'R':
-	break;
-   case 'S':
-		if (strEQ(name,"SHOUTERR_SUCCESS"))
-#ifdef SHOUTERR_SUCCESS
-				return SHOUTERR_SUCCESS;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_INSANE"))
-#ifdef SHOUTERR_INSANE
-				return SHOUTERR_INSANE;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_NOCONNECT"))
-#ifdef SHOUTERR_NOCONNECT
-				return SHOUTERR_NOCONNECT;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_NOLOGIN"))
-#ifdef SHOUTERR_NOLOGIN
-				return SHOUTERR_NOLOGIN;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_SOCKET"))
-#ifdef SHOUTERR_SOCKET
-				return SHOUTERR_SOCKET;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_MALLOC"))
-#ifdef SHOUTERR_MALLOC
-				return SHOUTERR_MALLOC;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_METADATA"))
-#ifdef SHOUTERR_METADATA
-				return SHOUTERR_METADATA;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_CONNECTED"))
-#ifdef SHOUTERR_CONNECTED
-				return SHOUTERR_CONNECTED;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_UNCONNECTED"))
-#ifdef SHOUTERR_UNCONNECTED
-				return SHOUTERR_UNCONNECTED;
-#else
-				goto not_there;
-#endif
-		if (strEQ(name,"SHOUTERR_UNSUPPORTED"))
-#ifdef SHOUTERR_UNSUPPORTED
-				return SHOUTERR_UNSUPPORTED;
-#else
-				goto not_there;
-#endif
-	if (strEQ(name, "SHOUT_FORMAT_MP3"))
-#ifdef SHOUT_FORMAT_MP3
-	    return SHOUT_FORMAT_MP3;
-#else
-			goto not_there;
-#endif
-	if (strEQ(name, "SHOUT_FORMAT_VORBIS"))
-#ifdef SHOUT_FORMAT_VORBIS
-	    return SHOUT_FORMAT_VORBIS;
-#else
-			goto not_there;
-#endif
-	if (strEQ(name, "SHOUT_PROTOCOL_ICY"))
-#ifdef SHOUT_PROTOCOL_ICY
-	    return SHOUT_PROTOCOL_ICY;
-#else
-			goto not_there;
-#endif
-	if (strEQ(name, "SHOUT_PROTOCOL_XAUDIOCAST"))
-#ifdef SHOUT_PROTOCOL_XAUDIOCAST
-	    return SHOUT_PROTOCOL_XAUDIOCAST;
-#else
-			goto not_there;
-#endif
-	if (strEQ(name, "SHOUT_PROTOCOL_HTTP"))
-#ifdef SHOUT_PROTOCOL_HTTP
-	    return SHOUT_PROTOCOL_HTTP;
-#else
-			goto not_there;
-#endif
-	break;
-   case 'T':
-	break;
-   case 'U':
-	break;
-   case 'V':
-	break;
-   case 'W':
-	break;
-   case 'X':
-	break;
-   case 'Y':
-	break;
-   case 'Z':
-	break;
-   }
-   errno = EINVAL;
-   return 0;
 
-not_there:
-   errno = ENOENT;
+   if (strEQ(name,"SHOUTERR_SUCCESS"))
+     return SHOUTERR_SUCCESS;
+   if (strEQ(name,"SHOUTERR_INSANE"))
+     return SHOUTERR_INSANE;
+   if (strEQ(name,"SHOUTERR_NOCONNECT"))
+     return SHOUTERR_NOCONNECT;
+   if (strEQ(name,"SHOUTERR_NOLOGIN"))
+     return SHOUTERR_NOLOGIN;
+   if (strEQ(name,"SHOUTERR_SOCKET"))
+     return SHOUTERR_SOCKET;
+   if (strEQ(name,"SHOUTERR_MALLOC"))
+     return SHOUTERR_MALLOC;
+   if (strEQ(name,"SHOUTERR_METADATA"))
+     return SHOUTERR_METADATA;
+   if (strEQ(name,"SHOUTERR_CONNECTED"))
+     return SHOUTERR_CONNECTED;
+   if (strEQ(name,"SHOUTERR_UNCONNECTED"))
+     return SHOUTERR_UNCONNECTED;
+   if (strEQ(name,"SHOUTERR_UNSUPPORTED"))
+     return SHOUTERR_UNSUPPORTED;
+   if (strEQ(name, "SHOUT_FORMAT_MP3"))
+     return SHOUT_FORMAT_MP3;
+   if (strEQ(name, "SHOUT_FORMAT_VORBIS"))
+     return SHOUT_FORMAT_VORBIS;
+   if (strEQ(name, "SHOUT_PROTOCOL_ICY"))
+     return SHOUT_PROTOCOL_ICY;
+   if (strEQ(name, "SHOUT_PROTOCOL_XAUDIOCAST"))
+     return SHOUT_PROTOCOL_XAUDIOCAST;
+   if (strEQ(name, "SHOUT_PROTOCOL_HTTP"))
+     return SHOUT_PROTOCOL_HTTP;
+
+   errno = EINVAL;
    return 0;
 }
 
