@@ -31,7 +31,7 @@ sub module_instance{
     $xpath=$this->{"xpath"};
 
     # modify defaults
-    $toplevel->optionAdd("$xpath.order",200,21); # status group
+    $toplevel->optionAdd("$xpath.order",201,21); # status group
     $toplevel->optionAdd("$xpath.scalerefresh",10000,21); # 10s
     $toplevel->optionAdd("$xpath.scalereturn" ,1,21);     # don't need hyst
     $toplevel->optionAdd("$xpath*label", "battery",21);
