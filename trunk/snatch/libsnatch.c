@@ -617,15 +617,15 @@ static void OpenOutputFile(){
 
       if(videocount){
 	if(audio_channels){
-	  gwrite(outfile_fd,"SNATCHAV---\n",6);
+	  gwrite(outfile_fd,"SNATCHAV---\n",12);
 	}else{
-	  gwrite(outfile_fd,"SNATCH-V---\n",6);
+	  gwrite(outfile_fd,"SNATCH-V---\n",12);
 	}
       }else{
 	if(audio_channels){
-	  gwrite(outfile_fd,"SNATCHA----\n",6);
+	  gwrite(outfile_fd,"SNATCHA----\n",12);
 	}else{
-	  gwrite(outfile_fd,"SNATCH-----\n",6);
+	  gwrite(outfile_fd,"SNATCH-----\n",12);
 	}
       }
 
@@ -681,15 +681,15 @@ static void OpenOutputFile(){
 	
 	if(videocount){
 	  if(audio_channels){
-	    gwrite(outfile_fd,"SNATCHAV---\n",6);
+	    gwrite(outfile_fd,"SNATCHAV---\n",12);
 	  }else{
-	    gwrite(outfile_fd,"SNATCH-V---\n",6);
+	    gwrite(outfile_fd,"SNATCH-V---\n",12);
 	  }
 	}else{
 	  if(audio_channels){
-	    gwrite(outfile_fd,"SNATCHA----\n",6);
+	    gwrite(outfile_fd,"SNATCHA----\n",12);
 	  }else{
-	    gwrite(outfile_fd,"SNATCH-----\n",6);
+	    gwrite(outfile_fd,"SNATCH-----\n",12);
 	  }
 	}
 	
@@ -704,15 +704,15 @@ static void OpenOutputFile(){
 	  
 	  if(videocount){
 	    if(audio_channels){
-	      gwrite(outfile_fd,"SNATCHAV---\n",6);
+	      gwrite(outfile_fd,"SNATCHAV---\n",12);
 	    }else{
-	      gwrite(outfile_fd,"SNATCH-V---\n",6);
+	      gwrite(outfile_fd,"SNATCH-V---\n",12);
 	    }
 	  }else{
 	    if(audio_channels){
-	      gwrite(outfile_fd,"SNATCHA----\n",6);
+	      gwrite(outfile_fd,"SNATCHA----\n",12);
 	    }else{
-	      gwrite(outfile_fd,"SNATCH-----\n",6);
+	      gwrite(outfile_fd,"SNATCH-----\n",12);
 	    }
 	  }
 	}
