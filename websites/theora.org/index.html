@@ -9,7 +9,7 @@
 </style>
 </head>
 <body bgcolor="#666699" text="#000000">
-<table width="500" border="0" cellspacing="0" cellpadding="2" align="center">
+<table width="700" border="0" cellspacing="0" cellpadding="2" align="center">
   <tr> 
     <td bgcolor="#000000"> 
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -43,11 +43,14 @@
                   </table>
                 </td>
                 <td valign="top" align="right"> 
+		  <p style="float: left; text-align: left;">
+		    <span style="font-weight: bold">Free Video Compression</span>
+		    <br>from <a href="http://www.xiph.org/">Xiph.org</a>
+		  </p>
                   <table border="0" cellspacing="0" cellpadding="0">
                     <tr> 
-                      <td class="nutrition" align="right"> 
-                        <!-- Title (HINT: Shorter is better.)
--->theora.org<!-- Close Title -->
+                      <td class="title" align="right"> 
+			theora.org
                       </td>
                     </tr>
                     <tr> 
@@ -55,12 +58,12 @@
                         <table border="0" cellspacing="0" cellpadding="0">
                           <tr> 
                             <!-- Menu (HINT: Each item is inside a <td>.)-->
-                            <td class="menu"> <a href="http://www.theora.org/">Home</a></td>
+                            <td class="menu"><a href="http://www.theora.org/">News</a></td>
                             <td class="menu"><a href="theorafaq.html">FAQ</a></td>
-                            <td class="menu"><a href="lists.html">Mailing Lists</a></td>
+                            <td class="menu"><a href="lists.html">Discusss</a></td>
+                            <td class="menu"><a href="download.html">Download</a></td>
+                            <td class="menu"><a href="torrents/">Torrents</a></td>
                             <td class="menu"><a href="svn.html">SVN</a></td>
-                            <td class="menu"><a href="contact.html">Contact</a></td>
-                            <td class="menu"><a href="http://www.xiph.org/">Xiph.org</a></td>
                             <!-- Close Menu -->
                           </tr>
                         </table>
@@ -81,8 +84,43 @@
                     <tr> 
                       <td> 
                         <!-- Main Content -->
+<div class="nav">
+<h3 class="nav">Source</h3>
+<ul class="nav">
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0a3.tar.gz">libtheora-1.0a3</a></li>
+<li><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.tar.gz">libogg-1.1</a></li>
+<li><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.0.1.tar.gz">libvorbis-1.0.1</a></li>
+</ul>
+<h3 class="nav">Binaries</h3>
+<ul class="nav">
+<li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a></li>
+<li><a href="http://videolan.org/">VLC player</a></li>
+<li><a href="https://player.helixcommunity.org/2004/downloads/">Helix Player</a></li>
+<li><a href="http://ogg.illiminable.org/">DirectShow plugins</a></li>
+</ul>
+<h3 class="nav">Content</h3>
+<ul class="nav">
+<li><a href="http://www.theora.org/torrents/cc-theora-small.torrent">CC spots</a></li>
+<li><a href="http://www.theora.org/torrents/Honey-small.torrent">Honey</a></li>
+</ul>
+<h3 class="nav">Support us</h3>
+<div style="padding: 0em 0em 0em 0.5em; margin: 1em;">
+&nbsp;
+<form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+ <input type="hidden" name="cmd" value="_xclick">
+ <input type="hidden" name="business" value="donate@xiph.org">
+ <input type="hidden" name="item_name" value="theora donation">
+ <input type="hidden" name="currency_code" value="USD">
+ <input type="hidden" name="amount" value="10.00">
+ <input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif" border="0" name="submit" alt="Make a donation via PayPal">
+</form>
+</div>
+
+</div>
+
 <div class="content">			
 <h3>[ 2004 Aug 28 - kfile_theora 0.2 announced ]</h3>
+
 <p>kfile_theora is a KDE kfile plugin that will display infos about ogg theora video files in konqueror & meta data dialog.<br>
  Currently gives info about size, length, quality and some audio settings.<br>
  Requires libogg, libvorbis and libtheora.
@@ -92,6 +130,7 @@
  </p> 
  
 <h3>[ 2004 Aug 25 - Richard Stallman on software patents ]</h3>
+
 <p>Videos in Ogg Theora format of Richard Stallman of 
 FSF + Christian Engstr&ouml;m and Marco Schulze of FFII visiting the 
 Estonian Information Technology College, and 
@@ -112,7 +151,6 @@ talking about the danger of patenting software have been put on the net.</p>
 <p>Videos are encoded as described in ogg-theora-microhowto.  They are half of the 
 original size, and qualities are Vorbis: 2/10 and Theora: 4/10.</p>
 			
-
 <h3>[ 2004 Aug 21 -   aKademy broadcast in theora ]</h3>
 
 <p>Streaming startup <a href="http://fluendo.com/">fluendo.com</a> is doing it again.<br />
@@ -142,6 +180,7 @@ href="https://helixcommunity.org/project/showfiles.php?group_id=7">use
 RealPlayer</a> to watch them!</p>
 
 <h3>[ 2004 Jun 15 - Creative Commons videos ]</h3>
+
 <p>
 In honor of our slashdotting, we've made torrents available for
 <a href="torrents/cc-theora-small.torrent">small</a> and
@@ -160,7 +199,9 @@ license.
 </p><p>
 Share and enjoy!
 </p>
+
 <h3>[ 2004 Jun 1 - Theora I bitstream freeze ]</h3>
+
 <p>
 Big news. The Theora I bitstream format is now frozen! This means it's safe
 to start distributing videos in the theora format.
@@ -343,35 +384,10 @@ Thanks for stopping by, and happy hacking!
                   <table border="0" cellspacing="0" cellpadding="3">
                     <tr> 
                       <td class="bl" bgcolor="#777777" nowrap> 
-                        <!-- Copyright (HINT: This is for decoration.  You may change it to what you like.) -->
-                        <a
-href="http://www.opencontent.org">OpenContent</a> for the People. 
+                        <!-- Copyright footer -->
+                        <!-- CC link here? -->
+                        Support free and open digital media!
                         <!-- Close Copyright -->
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-                <td width="79" align="right" valign="bottom"> 
-                  <table border="0" cellspacing="0" cellpadding="0">
-                    <tr> 
-                      <td>&nbsp;</td>
-                      <td align="right"> 
-                        <table border="0" cellspacing="0" cellpadding="0">
-                          <tr> 
-                            <td bgcolor="#9898BA" width="25" height="25" class="brsmt">&nbsp;</td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    <tr> 
-                      <td valign="bottom"> 
-                        <table border="0" cellspacing="0" cellpadding="0">
-                          <tr> 
-                            <td bgcolor="#9898BA" width="25" height="25" class="brsmt">&nbsp;</td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td width="50" height="50" bgcolor="#444466" class="brsmt">&nbsp; 
                       </td>
                     </tr>
                   </table>

@@ -2,12 +2,43 @@ html {
 	font-family: Verdana, Helvetica, sans-serif;
 	font-size: 80%;
 }
-.brsmt { border: #000000 solid; border-width: 2px 0px 0px 2px }
-.tl { border: #000000 solid; border-width: 0px 2px 2px 0px }
-.nutrition { font-size: 280%; font-weight: bold; text-decoration: underline }
+
+.title { font-size: 280%; font-weight: bold; text-decoration: underline }
+
+h3 {
+	font-size: 100%; font-weight: bold;
+}
+
 a { color: #003399; text-decoration: none }
 a:hover { color: #286FFF; text-decoration: none }
+
 .menu { padding-right: 5px; padding-left: 5px }
+.nav {
+        width: 170px;
+        float: left;
+        padding: 3.2em 0em 1em 1em;
+}
+h3.nav {
+	margin: 0;
+	padding: 1em 0em 0em 0em;
+}
+ul.nav {
+	list-style: none;
+	margin: 0;
+	padding: 0 0 0 .5em;
+	border: none;
+}
+
+.content {
+	width: 500px;
+	padding-left: 2.2em;
+	padding-right: 0.8em;
+	margin-left: 170px;
+	border-left: 2px solid #000000
+}
+
+.brsmt { border: #000000 solid; border-width: 2px 0px 0px 2px }
+.tl { border: #000000 solid; border-width: 0px 2px 2px 0px }
 .bl {
 	font-size: smaller;
 	border-color: black;
@@ -20,9 +51,6 @@ a:hover { color: #286FFF; text-decoration: none }
 }
 .xiphtag {
 	text-align: center;
-}
-h3 {
-	font-size: 100%; font-weight: bold;
 }
 .txt {
 	text-align: justify;
