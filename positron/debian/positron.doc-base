@@ -2,12 +2,11 @@ Document: positron
 Title: Debian positron Manual
 Author: Stan Seibert <volsung@xiph.org>
 Abstract: This manual describes what positron is
- and how it can be used to
- manage online manuals on Debian systems.
-Section: unknown
+ and how it can be used.
+Section: sound
 
 Format: HTML
-Index: /usr/share/doc/positron/html/index.html
-Files: /usr/share/doc/positron/html/*.html
+Index: /usr/share/doc/positron/index.html
+Files: /usr/share/doc/positron/*.html /usr/share/doc/positron/*.css /usr/share/doc/positron/*.png
 
   
