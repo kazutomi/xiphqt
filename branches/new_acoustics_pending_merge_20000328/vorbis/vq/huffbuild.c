@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: hufftree builder
- last mod: $Id: huffbuild.c,v 1.2 2000/02/23 09:23:51 xiphmont Exp $
+ last mod: $Id: huffbuild.c,v 1.2.4.1 2000/04/13 04:53:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -176,8 +176,8 @@ int main(int argc, char *argv[]){
     
     /* the toplevel book */
     fprintf(file,"static static_codebook _huff_book_%s = {\n",base);
-    fprintf(file,"\t%d, %ld, %d, %d, %d, %d,\n",
-	    subn,vals,0,0,0,0);
+    fprintf(file,"\t%d, %ld, 0, 0, 0, 0, 0, 0, 0, 0,\n",
+	    subn,vals);
     fprintf(file,"\tNULL,\n");
     fprintf(file,"\t_huff_lengthlist_%s,\n",base);
     fprintf(file,"\tNULL,\n");
