@@ -16,6 +16,8 @@ die $! unless bind(LISTEN_SOCK,$uaddr);
 die $! unless listen(LISTEN_SOCK,SOMAXCONN);
 die $! unless accept(COMM_SOCK,LISTEN_SOCK);
 
+undef $/;
+
 while(1){
     $char=getc STDIN;
     syswrite COMM_SOCK,$char,1;

@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <X11/Xlib.h>
 #include "snatchppm.h"
 static int savefile=-1;
 
 static unsigned long window_id_base=0;
 static unsigned long window_id_mask=0;
 
+static unsigned long root_window=0;
 static unsigned long rpshell_window=0;
 static unsigned long rpmain_window=0;
 static unsigned long rpmenu_window=0;
@@ -74,6 +76,8 @@ static void CreateWindow(unsigned char *buf){
   unsigned long parent=ILong(&buf[8]);
    
   if((id & ~window_id_mask) == window_id_base){
+    if(!root_window)
+      root_window=parent;
 
     if(parent==rpshell_window){
       rpmain_window=id;
@@ -154,7 +158,7 @@ static void ChangeProperty(unsigned char *buf){
       if(n>26 &&  !memcmp(data,"RealPlayer\0RCACoreAppShell\0",27)){
 	/* it's our shell window above the WM parent */
 	rpshell_window=id;
-	
+
 	/* re-setup */
 	rpmain_window=0;
 	rpmenu_window=0;
@@ -183,7 +187,7 @@ static void ChangeProperty(unsigned char *buf){
 static void PutImage(unsigned char *buf){
   int id=ILong(&buf[4]);
   
-  if(id==rpvideo_window){
+  if(snatch_active && id==rpvideo_window){
     int width=IShort(&buf[12])+IByte(&buf[20]);
     int height=IShort(&buf[14]);
     int n = width*height*4,i,j;
@@ -303,61 +307,63 @@ static void PutImage(unsigned char *buf){
     }
 
     /* blank background */
-    if(bigendian_p){
-      int lower=(play_blacklower==-1?y+height:play_blacklower);
-      for(i=play_blackupper;i<lower;i++)
-	if(i>=y && i<y+height)
-	  for(j=play_blackleft;j<play_blackright;j++)
-	    if(j>=x && j<x+width){
-	      ptr[(i-y)*width*4+(j-x)*4]=0x00;
-	      ptr[(i-y)*width*4+(j-x)*4+1]=snatchppm[0];
-	      ptr[(i-y)*width*4+(j-x)*4+2]=snatchppm[1];
-	      ptr[(i-y)*width*4+(j-x)*4+3]=snatchppm[2];
-	    }
-    }else{
-      int lower=(play_blacklower==-1?y+height:play_blacklower);
-      for(i=play_blackupper;i<lower;i++)
-	if(i>=y && i<y+height)
-	  for(j=play_blackleft;j<play_blackright;j++)
-	    if(j>=x && j<x+width){
-	      ptr[(i-y)*width*4+(j-x)*4+3]=0x00;
-	      ptr[(i-y)*width*4+(j-x)*4+2]=snatchppm[0];
+    if(snatch_active){
+      if(bigendian_p){
+	int lower=(play_blacklower==-1?y+height:play_blacklower);
+	for(i=play_blackupper;i<lower;i++)
+	  if(i>=y && i<y+height)
+	    for(j=play_blackleft;j<play_blackright;j++)
+	      if(j>=x && j<x+width){
+		ptr[(i-y)*width*4+(j-x)*4]=0x00;
+		ptr[(i-y)*width*4+(j-x)*4+1]=snatchppm[0];
+		ptr[(i-y)*width*4+(j-x)*4+2]=snatchppm[1];
+		ptr[(i-y)*width*4+(j-x)*4+3]=snatchppm[2];
+	      }
+      }else{
+	int lower=(play_blacklower==-1?y+height:play_blacklower);
+	for(i=play_blackupper;i<lower;i++)
+	  if(i>=y && i<y+height)
+	    for(j=play_blackleft;j<play_blackright;j++)
+	      if(j>=x && j<x+width){
+		ptr[(i-y)*width*4+(j-x)*4+3]=0x00;
+		ptr[(i-y)*width*4+(j-x)*4+2]=snatchppm[0];
 		ptr[(i-y)*width*4+(j-x)*4+1]=snatchppm[1];
 		ptr[(i-y)*width*4+(j-x)*4]=snatchppm[2];
-	    }
-    }
-
-    /* paint logo */
-    if(logo_y!=-1){
-      for(i=0;i<snatchheight;i++){
-	if(i+logo_y>=y && i+logo_y<height+y){
-	  char *snatch=snatchppm+snatchwidth*3*i;
-	  char *real;
-	  long end;
-	  
-	  k=x-logo_x;
-	  if(k<0)k=0;
-	  end=x+snatchwidth-logo_x;
-	  j=(logo_x-x)*4;
-	  if(j<0)j=0;
-	  
-	  real=ptr+width*4*(i+logo_y-y);
-	  snatch=snatchppm+snatchwidth*3*i;
-	  
-	  if(bigendian_p){
-	    for(k*=3;k<snatchwidth*3 && j<width*4;){
-	      real[++j]=snatch[k++];
-	      real[++j]=snatch[k++];
-	      real[++j]=snatch[k++];
-	      ++j;
-	    }
+	      }
+      }
+      
+      /* paint logo */
+      if(logo_y!=-1){
+	for(i=0;i<snatchheight;i++){
+	  if(i+logo_y>=y && i+logo_y<height+y){
+	    char *snatch=snatchppm+snatchwidth*3*i;
+	    char *real;
+	    long end;
 	    
+	    k=x-logo_x;
+	    if(k<0)k=0;
+	    end=x+snatchwidth-logo_x;
+	    j=(logo_x-x)*4;
+	    if(j<0)j=0;
 	    
-	  }else{
-	    for(k*=3;k<snatchwidth*3 && j<width*4;j+=4){
-	      real[j+2]=snatch[k++];
-	      real[j+1]=snatch[k++];
-	      real[j]=snatch[k++];
+	    real=ptr+width*4*(i+logo_y-y);
+	    snatch=snatchppm+snatchwidth*3*i;
+	    
+	    if(bigendian_p){
+	      for(k*=3;k<snatchwidth*3 && j<width*4;){
+		real[++j]=snatch[k++];
+		real[++j]=snatch[k++];
+		real[++j]=snatch[k++];
+		++j;
+	      }
+	      
+	      
+	    }else{
+	      for(k*=3;k<snatchwidth*3 && j<width*4;j+=4){
+		real[j+2]=snatch[k++];
+		real[j+1]=snatch[k++];
+		real[j]=snatch[k++];
+	      }
 	    }
 	  }
 	}
@@ -401,14 +407,17 @@ static long DataToServer(unsigned char *buf,long n){
   long togo=n;
   unsigned char *p=buf;
   
-  while(togo>0){
-    int bw=(*libc_write)(X_fd,p,togo);
-    if(bw<0 && (errno==EAGAIN || errno==EINTR))bw=0;
-    if(bw>=0)
-      p+=bw;
-    else
-      return(bw);
-    togo-=bw;
+  if(n){
+    while(togo>0){
+      int bw=(*libc_write)(X_fd,p,togo);
+      if(bw<0 && (errno==EAGAIN || errno==EINTR))bw=0;
+      if(bw>=0)
+	p+=bw;
+      else{
+	return(bw);
+      }
+      togo-=bw;
+    }
   }
   return(0);
 }
@@ -583,4 +592,56 @@ static void ProcessBuffer(struct ConnState *cs,unsigned char *buf,long n,
   return;
 }
 
+static void FakeKeycode(int keycode, int shift, int ctrl, 
+		  unsigned long window){
+  XKeyEvent event;
+  memset(&event,0,sizeof(event));
+
+  event.display=Xdisplay;
+  event.type=2; /* key down */
+  event.keycode=keycode;
+  event.root=root_window;
+  event.window=window;
+  event.state=(shift?1:0)|(ctrl?4:0);
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+  event.type=3; /* key up */
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+}
+
+void FakeButton1(unsigned long window){
+
+  XButtonEvent event;
+  memset(&event,0,sizeof(event));
+
+  event.display=Xdisplay;
+  event.type=4; /* key down */
+  event.button=1;
+  event.root=root_window;
+  event.window=window;
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+  event.type=5; /* key up */
+  event.state=0x100;
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+}
+
+void FakeExposeRPPlay(void){
+  XExposeEvent event;
+  memset(&event,0,sizeof(event));
+
+  event.display=Xdisplay;
+  event.type=12;
+  event.window=rpplay_window;
+  event.width=rpplay_width;
+  event.height=rpplay_height;
+
+  XSendEvent(Xdisplay,(Window)rpplay_window,0,0,(XEvent *)&event);
+}
 

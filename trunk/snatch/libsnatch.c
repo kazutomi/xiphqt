@@ -4,6 +4,7 @@
 #define _GNU_SOURCE
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
+#define _REENTRANT
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,6 +21,7 @@
 #include <stdarg.h>
 #include <linux/soundcard.h>
 #include <pthread.h>
+#include <X11/Xlib.h>
 
 static int    (*libc_open)(const char *,int,mode_t);
 static int    (*libc_connect)(int sockfd, const struct sockaddr *serv_addr,
@@ -32,9 +34,8 @@ static int    (*libc_writev)(int,const struct iovec *,int);
 static int    (*libc_ioctl)(int,int,void *);
 static pid_t  (*libc_fork)(void);
 
-/* of the members of the poll family, RP only uses select */
-static int  (*libc_select)(int,fd_set *,fd_set *,fd_set *,
-			   struct timeval *timeout);
+static Display *(*xlib_xopen)(const char *);
+static Display *Xdisplay;
 
 static int debug;
 static char *outpath;
@@ -53,6 +54,10 @@ static int audio_format=-1;
 static int X_fd=-1;
 
 static pthread_t snatch_backchannel_thread;
+
+static char username[256];
+static char password[256];
+static int snatch_active=1;
 
 #include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
 		    Oh and I'm lazy. */
@@ -86,8 +91,8 @@ void *get_me_symbol(char *symbol){
   if(ret==NULL){
     char *dlerr=dlerror();
     fprintf(stderr,
-	    "**ERROR: libsnatch.so could not find the function '%s()'\n"
-	    "         in libc.  This shouldn't happen and I'm not going to\n"
+	    "**ERROR: libsnatch.so could not find the function '%s()'.\n"
+	    "         This shouldn't happen and I'm not going to\n"
 	    "         make any wild guesses as to what caused it.  The\n"
 	    "         error returned by dlsym() was:\n         %s",
 	    symbol,(dlerr?dlerr:"no such symbol"));
@@ -106,8 +111,9 @@ void *backchannel_and_timer(void *dummy){
 	    (unsigned long)pthread_self());
 
   while(1){
-    char length;
-    size_t bytes=fread(&length,1,1,backchannel_fd);
+    char rq;
+    char buffer[256];
+    size_t bytes=fread(&rq,1,1,backchannel_fd);
     
     if(bytes<=0){
       fprintf(stderr,"**ERROR: Backchannel lost!  exit(1)ing...\n");
@@ -116,6 +122,33 @@ void *backchannel_and_timer(void *dummy){
 
     if(debug)
       fprintf(stderr,"    ...: Backchannel request\n");
+
+    switch(rq){
+    case 'K':
+      bytes=fread(buffer,1,256,backchannel_fd);
+      FakeKeycode(buffer[0],buffer[1],buffer[2],rpplay_window);
+      break;
+    case 'U':
+      fread(username,1,256,backchannel_fd);
+      break;
+    case 'P':
+      fread(password,1,256,backchannel_fd);
+      break;
+    case 'A':
+      snatch_active=1;
+      FakeExposeRPPlay();
+      break;
+    case 'I':
+      snatch_active=0;
+      FakeExposeRPPlay();
+      break;
+    case 'S':
+      FakeKeycode(9,0,1,rpplay_window);
+      break;
+    case 'G':
+      FakeKeycode(43,0,1,rpplay_window);
+      break;
+    }
   }
 }
 
@@ -138,7 +171,7 @@ void initialize(void){
     libc_connect=get_me_symbol("connect");
     libc_ioctl=get_me_symbol("ioctl");
     libc_fork=get_me_symbol("fork");
-    libc_select=get_me_symbol("select");
+    xlib_xopen=get_me_symbol("XOpenDisplay");
 
     /* output path? */
     outpath=getenv("SNATCH_OUTPUT_PATH");
@@ -524,22 +557,12 @@ int ioctl(int fd,unsigned long int rq, ...){
   return((*libc_ioctl)(fd,rq,arg));
 }
 
-int select(int  n,  fd_set  *readfds,  fd_set  *writefds,
-	   fd_set *exceptfds, struct timeval *timeout){
-  int ret;
 
-  ret=(*libc_select)(n,readfds,writefds,exceptfds,timeout);
-
-  /* it turns out that RealPlayer busywaits using select [jeez], so we
-     don't need to do any extra work to wake it up to send our own
-     events. However, just in case, if we're called with a large
-     timeout, shave it down a bit. */
-
-  /* do we have a pending synthetic event? */
-  
-  /* is one of the read fds our X socket? */
-
-  return (*libc_select)(n,readfds,writefds,exceptfds,timeout);
-
+Display *XOpenDisplay(const char *d){
+  if(!XInitThreads()){
+    fprintf(stderr,"**ERROR: Unable to set multithreading support in Xlib.\n"
+	    "         exit(1)ing...\n\n");
+    exit(1);
+  }
+  return(Xdisplay=(*xlib_xopen)(d));
 }
-
