@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: stdio-based convenience library for opening/seeking/decoding
- last mod: $Id: vorbisfile.c,v 1.4.4.1 2003/03/29 01:07:59 xiphmont Exp $
+ last mod: $Id: vorbisfile.c,v 1.4.4.2 2003/03/29 01:20:14 xiphmont Exp $
 
  ********************************************************************/
 
@@ -281,10 +281,12 @@ static int _fetch_headers(OggVorbis_File *vf,
       }
   }
 
+  ogg_packet_release(&op);
   ogg_page_release(&og);
   return 0; 
 
  bail_header:
+  ogg_packet_release(&op);
   ogg_page_release(&og);
   vorbis_info_clear(vi);
   vorbis_comment_clear(vc);
