@@ -32,8 +32,11 @@ ogg_stream_state *ogg_stream_create(int serialno){
 } 
 
 int ogg_stream_setmode(ogg_stream_state *os, int mode){
+  /* I don't know what extra modes may be needed, but we might as well
+     provide support for them in the API. */
+
   /* (Dis)cont mode must be known and set before Page 1 is processed */
-  if(mode==0||mode==1){
+  if(mode&1){
     if(os->pageno==0||(os->pageno==1&&os->packets==0)){
       os->mode=mode;
       return OGG_SUCCESS;
@@ -143,7 +146,7 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
     oggbyte_init(&os->header_build,0,os->bufferpool);
 
   /* for discontinuous mode */
-  if(os->mode&&!os->packets)os->granulepos=op->granulepos;
+  if(os->mode&1&&!os->packets)os->granulepos=op->granulepos;
   os->packets++;   
 
   /* concat packet data */
@@ -166,7 +169,7 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
      granulepos et al and then finish packet lacing */
   
   os->body_fill+=remainder;
-  if(!os->mode)os->granulepos=op->granulepos;
+  if(!(os->mode&1))os->granulepos=op->granulepos;
   os->packetno++;  /* for the sake of completeness */
   if(op->e_o_s)os->e_o_s=1;
   oggbyte_set1(&os->header_build,remainder,27+os->lacing_fill++);
@@ -484,10 +487,17 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
       op->e_o_s=os->e_o_s;
     else
       op->e_o_s=0;
-    if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
-      op->granulepos=os->granulepos;
-    else
-      op->granulepos=-1;
+    if(os->mode&1){
+      /* Discontinuous Mode */
+      printf("Not yet..\n");
+      
+    }else{
+      /* Continuous Mode */
+      if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
+        op->granulepos=os->granulepos;
+      else
+        op->granulepos=-1;
+    }
     op->packetno=os->packetno;
   }
 
