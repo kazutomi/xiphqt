@@ -135,10 +135,10 @@ void write_pnm (char *fname, uint8_t *rgb, int w, int h)
    }
 
 
-   if (strstr(fname, ".ppm") != fname + strlen(fname)-4) {
+   if (strstr(fname, ".ppm") == fname + strlen(fname)-4) {
       fprintf (outfile, "P6\n%d %d\n%d\n", w, h, 255);
       fwrite (rgb, 3, w*h, outfile);
-   } else if (strstr(fname, ".pgm") != fname + strlen(fname)-4) {
+   } else if (strstr(fname, ".pgm") == fname + strlen(fname)-4) {
       fprintf (outfile, "P5\n%d %d\n%d\n", w, h, 255);
       fwrite (rgb, 1, w*h, outfile);
    } else {
