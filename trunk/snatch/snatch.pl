@@ -667,7 +667,7 @@ sub SplitTimerEntry{
 
 sub LengthParse{
     my($line)=@_;
-    $line=~/(\d+):(.+)/;
+    $line=~/(\d+):(.*)/;
     $length=$1;
     $rest=$2;
 
@@ -1308,8 +1308,12 @@ sub Timer_Copy{
 sub Timer_Entry{
     my$row=shift;
 
+    print "$_[0]\n";
+
     my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
        $password,$outfile,$url)=SplitTimerEntry(shift);
+
+    print "$url\n";
 
     my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime time;    
     $nowmonth++;
@@ -1503,8 +1507,6 @@ sub Timer_Entry{
     $y+=$tentry_passwordlabel->reqheight()+5;
 
 
-    print "$audio $video\n";
-
     my$tentry_silent=$tentry_shell->Label(-text=>"silent record:")->place(-y=>$y,-x=>5);
     my$tentry_audio=$tentry_shell->Button(-text=>"audio")->
 	place(-in=>$tentry_silent,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
@@ -1513,13 +1515,9 @@ sub Timer_Entry{
 	place(-in=>$tentry_audio,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
     $tentry_video->configure(-command=>[main::nonmomentary,\$tentry_video,\$video]);
     #laziness
-    print "$audio $video\n";
     nonmomentary(\$tentry_audio,\$audio);
-    print "$audio $video\n";
     nonmomentary(\$tentry_audio,\$audio);
-    print "$audio $video\n";
     nonmomentary(\$tentry_video,\$video);
-    print "$audio $video\n";
     nonmomentary(\$tentry_video,\$video);
 
     $tentry->minsize($reqwidth,$reqheight);
