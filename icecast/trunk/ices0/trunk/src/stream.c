@@ -152,6 +152,7 @@ ices_stream_send_file (const char *file)
   unsigned char buf[INPUT_BUFSIZ * 4];
   char namespace[1024];
   ssize_t len;
+  ssize_t olen;
   size_t bytes_read;
   int rc;
 #ifdef HAVE_LIBLAME
@@ -186,15 +187,16 @@ ices_stream_send_file (const char *file)
     bytes_read += len;
 
     if (len > 0) {
-
+      olen = len;
       for (stream = ices_config.streams; stream; stream = stream->next) {
 #ifdef HAVE_LIBLAME
 	if (ices_config.reencode || source.type != ICES_INPUT_MP3)
-	  len = ices_reencode_reencode_chunk (stream, len, left, right, buf,
-					      sizeof (buf));
+	  olen = ices_reencode_reencode_chunk (stream, len, left, right, buf,
+					      0);
 #endif
-	if (len) {
-	  rc = shout_send_data (&stream->conn, buf, len);
+	if (olen) {
+	  rc = shout_send_data (&stream->conn, buf, olen);
+	  shout_sleep (&stream->conn);
 			
 	  if (!rc) {
 	    ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
@@ -214,8 +216,6 @@ ices_stream_send_file (const char *file)
     }
 
     ices_cue_update (&source, bytes_read);
-    for (stream = ices_config.streams; stream; stream = stream->next)
-      shout_sleep(&stream->conn);
   }
 
 #ifdef HAVE_LIBLAME
