@@ -22,7 +22,7 @@ Topic :: Multimedia :: Sound/Audio
 Topic :: Multimedia :: Video
 """
 
-version = "0.5.2"
+version = "0.5.3"
 url = "http://dingoskidneys.com/oggpy/"
 
 setup(name="oggpy",
@@ -48,10 +48,10 @@ setup(name="oggpy",
                               include_dirs=config.vorbispy_include_dirs,
                               depends=["oggcc.h", "vorbiscc.h", "vorbispy_wrappers.h"]),
                    
-                    Extension("theorapy", ["oggcc.cc", "theorapy.cpp"],
+                    Extension("theorapy", ["oggcc.cc", "theorapy.cpp", "theora_wrappers.cc", "theoracc.cc"],
                               libraries=config.theorapy_libraries,
                               include_dirs=config.theorapy_include_dirs,
-                              depends=["oggcc.h", "theoracc.h"]),
+                              depends=["oggcc.h", "theoracc.h", "theora_wrappers.h"]),
                     
 #                    Extension("flacpy", ["flacpy.cpp"],
 #                              libraries=config.flacpy_libraries,

@@ -13,11 +13,6 @@
 #include "theoracc.h"
 #include <boost/python.hpp>
 
-/// Return a list of all the comments in a theora comment object.
-///
-/// Less important now that we have query_index.
-// boost::python::str get_comment(ogg::theora::comment *tco);
-// "Wrapper" (w)tostrings until tested.
-PyObject* wtostrings(ogg::theora::yuv_image *yuv);
+PyObject* tostrings(ogg::theora::yuv_image *yuv);
 
 #endif

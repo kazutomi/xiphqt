@@ -5,8 +5,6 @@
  */
 
 #include <theora/theora.h>
-#include <string.h>
-#include <boost/version.hpp>
 #include "theora_wrappers.h"
 
 using namespace ogg;
@@ -31,7 +29,7 @@ boost::python::list get_comments(ogg::theora::comment *vco)
 */
 
 
-PyObject* wtostrings (ogg::theora::yuv_image *yuv)
+PyObject* tostrings (ogg::theora::yuv_image *yuv)
 { 
     int crop_offset=0;
     int i;

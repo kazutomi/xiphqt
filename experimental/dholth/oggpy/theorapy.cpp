@@ -82,12 +82,12 @@ BOOST_PYTHON_MODULE(theorapy)
         .def_readwrite("y", &yuv_buffer::y)
         .def_readwrite("u", &yuv_buffer::u)
         .def_readwrite("v", &yuv_buffer::v)
-        // .def("tostrings", &ogg::theora::yuv_image::tostrings)
-        .def("wtostrings", &wtostrings)
+        .def("tostrings", &tostrings)
     ;
 
     def("version_number", &ogg::theora::version_number);
     def("version_string", &ogg::theora::version_string);
+
     enum_< ogg::theora::theora_errors >("theora_errors")
         .value("ocBadPacket", ogg::theora::ocBadPacket)
         .value("ocNotFormat", ogg::theora::ocNotFormat)
