@@ -89,10 +89,10 @@ int rtpsocket;
 
 struct VorbisBitfields {
     unsigned int cbident:32;
-    int continuation:1;
-    int fragment:1;
-    int reserved:1;
-    int pkts:5;
+    unsigned int continuation:1;
+    unsigned int fragment:1;
+    unsigned int reserved:1;
+    unsigned int pkts:5;
 } VorbisBitfields;
 
 /*****************************************************************************/
