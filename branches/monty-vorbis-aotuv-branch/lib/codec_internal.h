@@ -21,9 +21,6 @@
 #include "envelope.h"
 #include "codebook.h"
 
-#define TRAIN_RESAUX
-#define TRAIN_RES
-
 #define BLOCKTYPE_IMPULSE    0
 #define BLOCKTYPE_PADDING    1
 #define BLOCKTYPE_TRANSITION 0 
