@@ -159,6 +159,14 @@ class PAI:
         # null padded correctly.
         f.seek(to_offset(next_entry_pointer - 2))
         f.write(module_remainder)
+
+        # And fix the number of entries
+        num_entries -= 1
+        if num_entries == 0:
+            flag &= 0x0001
+        
+        f.seek(to_offset(pointer+1))
+        f.write(struct.pack(">HH", flag, num_entries))
         f.flush()
 
         return True
@@ -264,7 +272,7 @@ class PAI:
 
     def clear(self):
         f = self.file
-        f.seek(to_pointer(PAI.FILE_HEADER_LEN))
+        f.seek(to_offset(PAI.FILE_HEADER_LEN))
         f.truncate()
 
         # Always have to have one dummy module in it
