@@ -30,10 +30,10 @@
 */
 extern "C" {
 
-extern size_t  fread_func  (void *ptr,size_t size,size_t nmemb, FILE *stream);
-extern int     fseek_func  (FILE *stream, long offset, int whence);
-extern int     fclose_func (FILE *stream);
-extern long    ftell_func  (FILE *stream);
+extern size_t  fread_func  (void *ptr,size_t size,size_t nmemb, void *stream);
+extern int     fseek_func  (void *stream, int64_t offset, int whence);
+extern int     fclose_func (void *stream);
+extern long    ftell_func  (void *stream);
 
 }
 
