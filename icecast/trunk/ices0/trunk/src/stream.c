@@ -111,7 +111,7 @@ ices_stream_loop (void)
 	  }
 	}
       }
-			
+
       /* This stops ices from entering a loop with 10-20 lines of output per
 	 second. Usually caused by a playlist handler that produces only
 	 invalid file names. */
@@ -144,7 +144,6 @@ ices_stream_send_file (const char *file)
   char namespace[1024];
   ssize_t len;
   ssize_t olen;
-  size_t bytes_read;
   int samples;
   int rc;
 #ifdef HAVE_LIBLAME
@@ -154,7 +153,7 @@ ices_stream_send_file (const char *file)
 #endif
 
   source.path = file;
-  bytes_read = 0;
+  source.bytes_read = 0;
 
   if (ices_stream_open_source (&source) < 0) {
     return -1;
@@ -175,20 +174,19 @@ ices_stream_send_file (const char *file)
     }
   }
 
-  ices_metadata_set (&source);
-
 #ifdef HAVE_LIBLAME
   ices_reencode_reset ();
 #endif
   
-  ices_log ("Now playing %s", source.path);
+  ices_log ("Playing %s", source.path);
+
+  ices_metadata_set (&source);
 
   finish_send = 0;
   while (! finish_send) {
     len = samples = 0;
     if (source.read) {
       len = source.read (&source, ibuf, sizeof (ibuf));
-      bytes_read += len;
 #ifdef HAVE_LIBLAME
       if (ices_config.reencode)
 	samples = ices_reencode_decode (ibuf, len, sizeof (left), left, right);
@@ -233,7 +231,7 @@ ices_stream_send_file (const char *file)
       return -1;
     }
 
-    ices_cue_update (&source, bytes_read);
+    ices_cue_update (&source);
   }
 
 #ifdef HAVE_LIBLAME
@@ -268,8 +266,10 @@ ices_stream_open_source (input_stream_t* source)
 
   source->fd = fd;
 
-  if (lseek (fd, SEEK_SET, 0) == -1)
+  if (lseek (fd, SEEK_SET, 0) == -1) {
     source->canseek = 0;
+    source->filesize = 0;
+  }
   else {
     source->canseek = 1;
     source->filesize = ices_util_fd_size (fd);
