@@ -1,12 +1,12 @@
 dnl process this file with autoconf to generate the configure script
 
 AC_INIT(oggmerge.c)
-AM_INIT_AUTOMAKE(oggmerge,0.1)
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(oggmerge,0.9)
 
 AC_PROG_CC
 
 AM_PATH_OGG()
+AM_PATH_VORBIS()
 
 dnl Check for libraries
 #AC_CHECK_LIB(png, png_check_sig)
@@ -15,6 +15,6 @@ dnl Check for libraries
 
 dnl Check for headers
 AC_HEADER_STDC()
-AC_CHECK_HEADERS(libmng.h)
+#AC_CHECK_HEADERS(libmng.h)
 
 AC_OUTPUT(Makefile)

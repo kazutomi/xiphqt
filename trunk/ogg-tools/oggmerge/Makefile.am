@@ -1,9 +1,11 @@
 ## process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = dist-zip foreign
 
 bin_PROGRAMS = oggmerge
 
-oggmerge_SOURCES = oggmerge.c oggmerge.h mngread.c
-oggmerge_CFLAGS = @OGG_CFLAGS@
-oggmerge_LDADD = @OGG_LIBS@
+oggmerge_SOURCES = oggmerge.c vorbis.c midi.c\
+			oggmerge.h vorbis.h midi.h mng.h
+
+oggmerge_CFLAGS = @OGG_CFLAGS@ @VORBIS_CFLAGS@
+oggmerge_LDADD = @OGG_LIBS@ @VORBIS_LIBS@
