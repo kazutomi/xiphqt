@@ -30,7 +30,7 @@ int utf8_encode(char *from, char **to, const char *encoding)
 	unsigned short *unicode;
 	int wchars, err;
 
-	wchars = MultiByteToWideChar(GetConsoleCP(), MB_PRECOMPOSED, from,
+	wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from,
 			strlen(from), NULL, 0);
 
 	if(wchars == 0)
