@@ -11,10 +11,12 @@
  ********************************************************************
 
  encode.c: Writ stream encoding
- last mod: $Id: encode.c,v 1.1 2003/12/09 06:38:44 arc Exp $
+ last mod: $Id: encode.c,v 1.2 2003/12/09 07:11:30 arc Exp $
 
  ********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
 #include <writ/writ.h>
 
 int writ_encode_init(writ_state *ws, ogg_uint32_t granule_num, 
@@ -52,6 +54,7 @@ int writ_encode_lang_add(writ_state *ws, char *name, char *desc) {
     if (ws->wi->num_languages == 15) 
       ws->wi->languages = realloc(ws->wi->languages, 
                                   sizeof(writ_language)*256);
+    if (ws->wi->num_languages == 255) return -1;
     ws->wi->num_languages++;
   }
   new_lang = ws->wi->languages + ws->wi->num_languages;
@@ -64,4 +67,34 @@ int writ_encode_lang_add(writ_state *ws, char *name, char *desc) {
   memcpy(new_lang->language_desc.string, desc, desc_length); 
 
   return ws->wi->num_languages;
+}
+
+int writ_encode_wind_init(writ_state *ws, int scale_x, int scale_y) {
+  if (ws->wi->subversion == 0) return -1; /* Lang must come first */
+  if (ws->wi->subversion >= 2) return -1; /* Windows already init */
+
+  ws->wi->location_scale_x = scale_x;
+  ws->wi->location_scale_y = scale_y;
+  ws->wi->num_windows = 0;
+  ws->wi->windows = malloc(sizeof(writ_window)*16);
+
+  return OGG_SUCCESS;
+}
+
+int writ_encode_wind_add(writ_state *ws, int left, int top, int width, 
+                         int height, int align_x, int align_y) {
+  if (ws->wi->num_windows == 15) 
+      ws->wi->windows = realloc(ws->wi->windows, 
+                                sizeof(writ_window)*256);
+  if (ws->wi->num_windows == 255) return -1;
+  
+  ws->wi->windows[ws->wi->num_windows].location_x = left;
+  ws->wi->windows[ws->wi->num_windows].location_y = top;
+  ws->wi->windows[ws->wi->num_windows].location_width = width;
+  ws->wi->windows[ws->wi->num_windows].location_height = height;
+  ws->wi->windows[ws->wi->num_windows].alignment_x = align_x;
+  ws->wi->windows[ws->wi->num_windows].alignment_y = align_y;
+  ws->wi->num_windows++;
+
+  return OGG_SUCCESS;
 }
