@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: transport.c,v 1.1.2.2 2001/12/11 05:29:09 volsung Exp $
+ last mod: $Id: transport.c,v 1.1.2.3 2001/12/14 05:45:14 volsung Exp $
 
  ********************************************************************/
 
@@ -21,8 +21,9 @@
 #include "transport.h"
 
 extern transport_t file_transport;
+extern transport_t http_transport;
 
-transport_t *transports[] = { &file_transport, NULL };
+transport_t *transports[] = { &http_transport, &file_transport, NULL };
 
 
 transport_t *get_transport_by_name (char *name)

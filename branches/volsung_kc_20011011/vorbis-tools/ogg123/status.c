@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.7 2001/12/12 15:52:25 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.8 2001/12/14 05:45:14 volsung Exp $
 
  ********************************************************************/
 
@@ -65,38 +65,6 @@ int write_time_string (char *dest, double time)
 
   return sprintf (dest, "%02li:%05.2f", min, sec);
 }
-
-#if 0
-void SetTime (stat_format_t stats[], ogg_int64_t sample)
-{
-  double CurTime = (double) sample / (double) Options.outputOpts.rate;
-  long c_min = (long) CurTime / (long) 60;
-  double c_sec = CurTime - 60.0f * c_min;
-  long r_min, t_min;
-  double r_sec, t_sec;
-
-  if (stats[2].enabled && Options.inputOpts.seekable) {
-    if (sample > Options.inputOpts.totalSamples) {
-      /* file probably grew while playing; update total time */
-      Options.inputOpts.totalSamples = sample;
-      Options.inputOpts.totalTime = CurTime;
-      stats[3].arg.stringarg[0] = '\0';
-      r_min = 0;
-      r_sec = 0.0f;
-    } else {
-      r_min = (long) (Options.inputOpts.totalTime - CurTime) / (long) 60;
-      r_sec = ((double) Options.inputOpts.totalTime - CurTime) - 60.0f * (double) r_min;
-    }
-    sprintf (stats[2].arg.stringarg, "[%02li:%05.2f]", r_min, r_sec);
-    if (stats[3].arg.stringarg[0] == '\0') {
-      t_min = (long) Options.inputOpts.totalTime / (long) 60;
-      t_sec = Options.inputOpts.totalTime - 60.0f * t_min;
-      sprintf (stats[3].arg.stringarg, "%02li:%05.2f", t_min, t_sec);
-    }    
-  }
-  sprintf (stats[1].arg.stringarg, "%02li:%05.2f", c_min, c_sec);
-}
-#endif
 
 
 void clear_line (int len)
