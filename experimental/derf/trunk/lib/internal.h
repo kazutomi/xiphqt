@@ -1,0 +1,262 @@
+#if !defined(_internal_H)
+# define _internal_H (1)
+# include "theora.h"
+# include "huffman.h"
+
+/*Theora bitstream version.*/
+# define OC_VERSION_MAJOR (3)
+# define OC_VERSION_MINOR (2)
+# define OC_VERSION_SUB   (0)
+
+/*A keyframe.*/
+#define OC_INTER_FRAME (0)
+/*A predicted frame.*/
+#define OC_INTRA_FRAME (1)
+/*A frame of unknown type (frame type decision has not yet been made).*/
+#define OC_UNKWN_FRAME (-1)
+
+/*The amount of padding to add to the reconstructed frame buffers on all
+   sides.
+  This is used to allow unrestricted motion vectors without special casing.
+  This must be a multiple of 2.*/
+#define OC_UMV_PADDING (16)
+
+/*Frame classification indices.*/
+/*The current frame.*/
+#define OC_FRAME_SELF (0)
+/*The previous frame.*/
+#define OC_FRAME_PREV (1)
+/*The previous golden frame.*/
+#define OC_FRAME_GOLD (2)
+
+/*Macroblock modes.*/
+/*Encoded with no motion compensated prediction.*/
+#define OC_MODE_INTRA           (0)
+/*Encoded difference from the same macro block in the previous frame.*/
+#define OC_MODE_INTER           (1)
+/*Encoded difference from the previous frame offset by the given motion
+   vector.*/
+#define OC_MODE_INTER_MV        (2)
+/*Encoded difference from the previous frame offset by the last coded motion
+   vector.*/
+#define OC_MODE_INTER_MV_LAST   (3)
+/*Encoded difference from the previous frame offset by the second to last
+   coded motion vector.*/
+#define OC_MODE_INTER_MV_LAST2  (4)
+/*Encoded difference from the previous frame offset by the individual motion
+   vectors given for each block.*/
+#define OC_MODE_INTER_MV_FOUR   (5)
+/*Encoded difference from the same macro block in the previous golden frame.*/
+#define OC_MODE_INTER_GOLDEN    (6)
+/*Encoded difference from the previous golden frame offset by the given motion
+   vector.*/
+#define OC_MODE_INTER_GOLDEN_MV (7)
+
+/*Predictor bit flags.*/
+/*Left.*/
+#define OC_PL  (1)
+/*Upper-left.*/
+#define OC_PUL (2)
+/*Up.*/
+#define OC_PU  (4)
+/*Upper-right.*/
+#define OC_PUR (8)
+
+/*Divides an integer by a power of two, rounding towards 0.
+  _dividend: The integer to divide.
+  _shift:    The non-negative power of two to divide by.
+  _rmask:    (1<<_shift)-1*/
+#define OC_DIV_POW2(_dividend,_shift,_rmask) \
+ ((_dividend)+(((_dividend)>>sizeof(_dividend)*8-1)&(_rmask))>>(_shift))
+
+
+
+/*A map from a super block to fragment numbers.*/
+typedef int oc_sb_map[4][4];
+/*A map from a macro block to fragment numbers.*/
+typedef int oc_mb_map[3][4];
+
+
+
+/*Super block information.
+  Super blocks are 32x32 segments of pixels in a single color plane indexed
+   in image order.
+  Internally, super blocks are broken up into a 2x2 pattern of macro blocks,
+   each of which contains a 2x2 pattern of blocks, each of which is an 8x8
+   block of pixels.
+  Macro blocks, and the blocks within them, are indexed in a special order
+   called a "Hilbert curve" within the super block.
+
+  In order to differentiate between the Hilbert-curve indexing strategy and
+   the regular image order indexing strategy, blocks indexed in image order
+   are called "fragments".
+  Fragments are indexed in image order, left to right, then top to bottom,
+   from Y plane to U plane to V plane.*/
+typedef struct{
+  unsigned  coded_fully:1;
+  unsigned  coded_partially:1;
+  unsigned  mb_valid:4;
+  oc_sb_map map;
+}oc_sb;
+
+
+
+/*Macro block information.
+  Only macro blocks in the Y plane matter.
+  Fragments in the U and V planes inherit their mode and motion vectors from
+   the co-located macro block in the Y plane.
+  Therefore macro block information is kept in a separate array from super
+   blocks, to avoid unused space in the other planes.*/
+typedef struct{
+  /*The current macro block mode.
+    A negative number indicates the macro block is invalid.*/
+  int           mode;
+  /*The fragments that belong to this macro block in each color plane.
+    Fragments are stored in image order (left to right then top to bottom).
+    Fragments outside the encoded region have index -1.
+    When chroma components are decimated, the extra fragments are treated as
+     if they are outside the encoded region (e.g., their index is -1).*/
+  oc_mb_map     map;
+}oc_mb;
+
+
+
+/*Information about a fragment which intersects the border of the displayable
+   region.
+  This marks which pixels belong to the displayable region, and is used to
+   ensure that pixels outside of this region are never referenced.
+  This allows applications to pass in buffers that are really the size of the
+   displayable region without causing a seg fault.*/
+typedef struct{
+  /*A bit mask marking which pixels are in the displayable region.
+    Pixel (x,y) corresponds to bit (y<<3|x).*/
+  ogg_int64_t mask;
+  /*The number of pixels in the displayable region.
+    This is always positive, and always less than 64.*/
+  int         npixels;
+}oc_border_info;
+
+
+
+/*Fragment information.*/
+typedef struct{
+  /*A flag indicating whether or not this fragment is coded.*/
+  unsigned        coded:1;
+  /*A flag indicating that all of this fragment lies outside the displayable
+     region of the frame.*/
+  unsigned        invalid:1;
+  /*The mode of the macroblock this fragment belongs to.*/
+  unsigned        mbmode;
+  /*A pointer to the portion of an image covered by this fragment in several
+     images.
+    The first three are reconstructed frame buffers, while the last is the
+     input image buffer.
+    The appropriate stride value is determined by the color plane the fragment
+     belongs in.*/
+  unsigned char  *buffer[4];
+  /*Information for fragments which lie partially outside the displayable
+     region.
+    For fragments completely inside or outside this region, this is NULL.*/
+  oc_border_info *border;
+  /*The motion vector used for this fragment.*/
+  char            mv[2];
+}oc_fragment;
+
+
+
+/*A description of each fragment plane.*/
+typedef struct{
+  /*The number of fragments in the horizontal direction.*/
+  int nhfrags;
+  /*The number of fragments in the vertical direction.*/
+  int nvfrags;
+  /*The offset of the first fragment in the plane.*/
+  int froffset;
+  /*The total number of fragments in the plane.*/
+  int nfrags;
+  /*The number of super blocks in the horizontal direction.*/
+  int nhsbs;
+  /*The number of super blocks in the vertical direction.*/
+  int nvsbs;
+  /*The offset of the first super block in the plane.*/
+  int sboffset;
+  /*The total number of super blocks in the plane.*/
+  int nsbs;
+}oc_fragment_plane;
+
+
+
+/*The fragment array.*/
+typedef struct{
+  /*The fragment plane descriptions.*/
+  oc_fragment_plane  frplanes[3];
+  /*The list of fragments, indexed in image order.*/
+  oc_fragment       *frags;
+  /*The total number of fragments in a single frame.*/
+  int                nfrags;
+  /*The list of super blocks, indexed in image order.*/
+  oc_sb             *sbs;
+  /*The total number of super blocks in a single frame.*/
+  int                nsbs;
+  /*The list of macro blocks, indexed in super block order.
+    That is, the macro block corresponding to the macro block mbi in super
+     block sbi is (sbi<<2|mbi).*/
+  oc_mb             *mbs;
+  /*The total number of macro blocks.*/
+  int                nmbs;
+  /*The list of flags indicating which blocks are coded in all partially coded
+     super blocks.*/
+  int               *block_coded_flags;
+  /*The number of block coded flags in the list.
+    This is 16 times the number of super blocks with their partially coded
+     flag set.*/
+  int                nblock_coded_flags;
+  /*A copy of the image data used to fill the input pointers in each fragment.
+    If the data pointers or strides change, these input pointers must be
+     re-populated.*/
+  oc_yuv_buffer      input;
+  /*The storage for the border info for all border fragments.
+    This data is pointed to from the appropriate fragments.*/
+  oc_border_info    *borders;
+}oc_fragment_array;
+
+
+
+/*Common state information between the encoder and decoder.*/
+typedef struct{
+  /*The stream information.*/
+  theora_info           info;
+  /*The fragment array.*/
+  oc_fragment_array     frarray;
+  /*The index of the buffers being used for the current reference frames.
+    The first is the buffer containing the previous I frame, while the second
+     is the buffer containing the previous I or P frame.*/
+  int                   ref_frame_idx[2];
+  /*The actual buffers used for the previously decoded frames.*/
+  oc_yuv_buffer         ref_frame_bufs[3];
+  /*The storage for the reference frame buffers.*/
+  unsigned char        *ref_frame_data;
+}oc_theora_state;
+
+
+
+/*A map from the index in the zig zag scan to the coefficient number in a
+   block.*/
+extern const int OC_FZIG_ZAG[64];
+/*A map from the coefficient number in a block to its index in the zig zag
+   scan.*/
+extern const int OC_IZIG_ZAG[64];
+/*The predictor frame to use for each macro block mode.*/
+extern const int OC_FRAME_FOR_MODE[8];
+
+
+void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz);
+void oc_free_2d(void **_ptr);
+
+void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info);
+void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
+ oc_yuv_buffer _img);
+
+int oc_state_init(oc_theora_state *_state,theora_info *_info);
+
+#endif
