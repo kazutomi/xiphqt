@@ -7,7 +7,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::pagestat;
 use vars qw($xpath $pagei $pageo $previ $prevo $widget $graph $lastmod);
 
@@ -42,8 +41,7 @@ sub module_instance{
 			 '#ade774',21);
 
     $toplevel->optionAdd("$xpath.scalewidadj", 160,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalerefresh",500,21); # about 1m
-    $toplevel->optionAdd("$xpath.scalereturn", 120,21); # about 1m
+    $toplevel->optionAdd("$xpath.scalereturn", 120,21);
     
     # this relies on the above defaults
 

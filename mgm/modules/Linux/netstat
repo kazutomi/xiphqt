@@ -7,7 +7,6 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
-use Tk;
 package MGMmodule::netstat;
 use vars qw($xpath @if @keys $active $field $prompt @prev @bytes $widget 
 	    $graph $lastmod);
@@ -56,8 +55,7 @@ sub module_instance{
     }
 
     $toplevel->optionAdd("$xpath.scalewidadj", 80*$i*2,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalerefresh",500,21);
-    $toplevel->optionAdd("$xpath.scalereturn", 120,21); # about 1m
+    $toplevel->optionAdd("$xpath.scalereturn", 120,21);
     
     # this relies on the above defaults
 

@@ -1,5 +1,4 @@
 # -*-Perl-*-
-use Tk;
 
 # instances allowed: one 
 
@@ -33,7 +32,7 @@ sub module_instance{
 
     # modify defaults
     $toplevel->optionAdd("$xpath.order",100,21); # status group
-    $toplevel->optionAdd("$xpath.scalerefresh",5000,21); # 5s
+    $toplevel->optionAdd("$xpath.scalerefresh",10000,21); # 10s
     $toplevel->optionAdd("$xpath.scalereturn" ,1,21);     # don't need hyst
     $toplevel->optionAdd("$xpath*label", "battery",21);
     $toplevel->optionAdd("$xpath*lowlabel", "battery low",21);
@@ -69,8 +68,8 @@ sub module_run{
 sub read_proc{
     my$this=shift;
     my$percent;
-    if(open(PROC,"</proc/apm")){
-	$_=<PROC>;
+    if(open(PROC,"/proc/apm")){
+	sysread PROC,$_,1024;
 	if(m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+([^ \%]+)\%/){
 	    $percent=$1;
 	}
@@ -88,10 +87,10 @@ sub module_update{
 	# apm, for some reason, seems to occasionally return -1.
 	# guard against that
 	if($percent>=0){
+	    $graph->set($percent);
 	    if($percent<30){
 		# below 30%, it would be nice to unfix the scale so 
-		#the  user can see
-		
+		#the  user can see		
 		if($percent<8){
 		    if($state!=2){
 			$graph->
@@ -121,7 +120,6 @@ sub module_update{
 		    $state=0;
 		}
 	    }
-	    $graph->set($percent);
 	}
     }
 }
