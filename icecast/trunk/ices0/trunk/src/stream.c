@@ -215,7 +215,6 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	      ices_log_debug ("Output buffer too small, skipping chunk");
 	    } else if (olen > 0) {
 	      shout_sync(stream->conn);
-	      ices_log_debug ("Sending %d bytes", olen);
 	      rc = stream_send_data (stream, obuf, olen);
 	    }
 	  }
