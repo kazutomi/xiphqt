@@ -2,13 +2,12 @@
    device I/O. --20011101 */
 
 #define _GNU_SOURCE
-#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
 #define _REENTRANT
 
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <math.h>
 #include <sys/uio.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -67,6 +66,9 @@ static int audio_channels=-1;
 static int audio_rate=-1;
 static int audio_format=-1;
 
+static long long audio_samplepos=0;
+static double audio_timezero=0;
+
 static pthread_t snatch_backchannel_thread;
 static pthread_t snatch_event_thread;
 
@@ -106,6 +108,14 @@ static char *formatname(int format){
   return(audio_fmts[0]);
 }
 
+static int fmtbytesps[]={0,1,1,0,1,2,2,1,2,2,0,0};
+static int formatbytes(int format){
+  int i;
+  for(i=0;i<12;i++)
+    if(format==((1<<i)>>1))return(fmtbytesps[i]);
+  return(0);
+}
+
 static char *nstrdup(char *s){
   if(s)return strdup(s);
   return NULL;
@@ -126,13 +136,13 @@ static int gwrite(int fd, void *buf, int n){
   return(0);
 }
 
-static void bigtime(long *seconds,long *micros){
+static double bigtime(long *seconds,long *micros){
   static struct timeval   tp;
     
   (void)gettimeofday(&tp, (struct timezone *)NULL);
-  *seconds=tp.tv_sec;
-  *micros=tp.tv_usec;
-
+  if(seconds)*seconds=tp.tv_sec;
+  if(micros)*micros=tp.tv_usec;
+  return(tp.tv_sec+tp.tv_usec*.000001);
 }
 
 #include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
@@ -499,6 +509,9 @@ int open(const char *pathname,int flags,...){
 	audio_channels=-1;
 	audio_rate=-1;
 	audio_format=-1;
+	audio_samplepos=0;
+	audio_timezero=bigtime(NULL,NULL);
+
 	if(debug)
 	  fprintf(stderr,
 		  "    ...: Caught RealPlayer opening audio device "
@@ -530,6 +543,8 @@ int close(int fd){
   
   if(fd==audio_fd){
     audio_fd=-1;
+    audio_samplepos=0;
+    audio_timezero=bigtime(NULL,NULL);
     if(debug)
       fprintf(stderr,
 	      "    ...: RealPlayer closed audio playback fd %d\n",fd);
@@ -541,21 +556,50 @@ int close(int fd){
 
 ssize_t write(int fd, const void *buf,size_t count){
   if(fd==audio_fd){
+    /* track audio sync regardless of record activity or fake setting;
+       we could have record suddenly activated */
+    
+    long a,b;
+    double now=bigtime(NULL,NULL),fa;
+    double stime=audio_samplepos/(double)audio_rate+audio_timezero;
+    
+    /* video and audio buffer differently; video is always 'just
+       in time' and thus uses absolute time positioning.  Video
+       frames can also arrive 'late' because of X server
+       congestion, but frames will never arrive early.  Sound is
+       the opposite; samples must be queued ahead of time (and
+       will queue arbitrarily deep) and always must arrive early,
+       not late. For this reason, we need to pay attention to when
+       the current sample buffer will begin playing, not when it
+       is queued */
+    
+    if(stime<now){
+      /* queue starved; player will need to skip or stretch.  Advance
+	 the absolute position to maintain sync.  Note that this is
+	 normal at beginning of capture or after pause */
+      audio_samplepos=(now-audio_timezero)*audio_rate;
+      stime=audio_samplepos/(double)audio_rate+audio_timezero;
+    }
+
+    b=modf(stime,&fa)*1000000.;
+    a=fa;
+    
     if(count>0 && snatch_active==1){
       if(outfile_fd<0)OpenOutputFile();
       if(outfile_fd>=0){ /* always be careful */
 	char cbuf[80];
-	long a,b;
 	int len;
-
-	bigtime(&a,&b);
+	
 	len=sprintf(cbuf,"AUDIO %ld %ld %d %d %d %d:",a,b,audio_channels,
 		    audio_rate,audio_format,count);
+	
 	gwrite(outfile_fd,cbuf,len);
 	gwrite(outfile_fd,(void *)buf,count);
 	
       }
     }
+    audio_samplepos+=(count/(audio_channels*formatbytes(audio_format)));
+
     if(fake_audiop)return(count);
   }
 
@@ -710,7 +754,7 @@ static void OpenOutputFile(){
 	    return;
 	}
 	
-	outfile_fd=(*libc_open)(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
+	outfile_fd=open64(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
 	if(outfile_fd<0){
 	  fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
 		  "         %s: %s\n\n",buf2,strerror(errno));
@@ -720,7 +764,7 @@ static void OpenOutputFile(){
 	}
 	
       }else{
-	outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
+	outfile_fd=open64(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
 	if(outfile_fd<0){
 	  fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
 		  "         %s: %s\n\n",outpath,strerror(errno));
@@ -736,8 +780,6 @@ static void OpenOutputFile(){
 static void CloseOutputFile(){
   if(outfile_fd>=0){
     videocount=0;
-    audio_channels=0;
-    audio_rate=0;
 
     if(debug)fprintf(stderr,"    ...: Capture stopped.\n");
     if(outfile_fd!=STDOUT_FILENO)

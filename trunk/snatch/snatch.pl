@@ -566,6 +566,7 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
+
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback) && !recording_active){
