@@ -22,4 +22,5 @@
 	<li><a href="projects.html"
 			title="See what others are doing with Speex">Plugins &amp; Software</a></li>
 	<li><a href="contact.html" title="Get in touch with us">Contact</a></li></ul>
+	<img src="/Images/banana120x200.png" width=120 height=200 alt="No more patents">
 	</div>
