@@ -173,7 +173,1029 @@ int file_entries=0;
 int current_file_entry_number=-1;
 file_entry *current_file_entry=NULL;
 
-#include "form.c"
+/* some ncurses editing helpers */
+
+void *m_realloc(void *in,int bytes){
+  if(!in)
+    return(malloc(bytes));
+  return(realloc(in,bytes));
+}
+
+void addnlstr(const char *s,int n,char c){
+  int len=strlen(s),i;
+  addnstr(s,n);
+  n-=len;
+  for(i=0;i<n;i++)addch(c);
+}
+
+void switch_to_stderr(){
+  def_prog_mode();           /* save current tty modes */
+  endwin();                  /* restore original tty modes */
+}
+
+void switch_to_ncurses(){
+  refresh();                 /* restore save modes, repaint screen */
+}
+
+int mgetch(){
+  while(1){
+    int ret=getch();
+    if(ret>0)return(ret);
+  }
+}
+/***************** simple form entry fields *******************/
+
+enum field_type { FORM_TIME, FORM_DB, FORM_P2 };
+
+typedef struct {
+  enum field_type type;
+  int x;
+  int y;
+  int width;
+  int editwidth;
+  int editgroup;
+
+  int min;
+  int max;
+  int dpoint;
+  
+  void *var;
+  int  *flag;
+  struct form *form;
+
+  int cursor;
+} formfield;
+
+typedef struct form {
+  formfield *fields;
+  int count;
+  int storage;
+
+  int cursor;
+  int editable;
+} form;
+
+void form_init(form *f,int maxstorage,int editable){
+  memset(f,0,sizeof(*f));
+  f->fields=calloc(maxstorage,sizeof(formfield));
+  f->editable=editable;
+  f->storage=maxstorage;
+}
+
+void form_clear(form *f){
+  if(f->fields)free(f->fields);
+  memset(f,0,sizeof(*f));
+}
+
+void draw_field(formfield *f){
+  int y,x;
+  int i;
+  long lval;
+  long focus=(f->form->fields+f->form->cursor==f?1:0);
+  getyx(stdscr,y,x);
+  move(f->y,f->x);
+
+  if(f->form->editable){
+    if(focus){
+      attron(A_REVERSE);
+    }else{
+      attron(A_BOLD);
+    }
+  }
+  
+  pthread_mutex_lock(&master_mutex);
+  lval=*(long *)(f->var);
+  pthread_mutex_unlock(&master_mutex);
+
+  switch(f->type){
+  case FORM_TIME:
+    {
+      long mult=rint(pow(10,f->editwidth-1));
+      int zeroflag=0;
+      /*xxxHHHHH:MM:SS.HH*/
+      /*       9876543210*/
+      for(i=f->width-1;i>=0;i--){
+	switch(i){
+	case 2:
+	  addch('.');
+	  break;
+	case 5: case 8:
+	  addch(':');
+	  break;
+	default:
+	  if(lval!=-1 && ((lval/mult)%10 || i<5)){
+	    zeroflag=1;
+	    addch(48+(lval/mult)%10);
+	  }else{
+	    if(zeroflag)
+	      addch('0');
+	    else
+	      addch(' ');
+	  }
+	  mult/=10;
+	}
+      }
+
+      /* cursor? */
+      if(focus){
+	int val=f->editwidth-f->cursor-1;
+	curs_set(1);
+	switch(val){
+	case 0:case 1:
+	  move(f->y,f->x+f->width-val-1);
+	  break;
+	case 2:case 3:
+	  move(f->y,f->x+f->width-val-2);
+	  break;
+	case 4:case 5:
+	  move(f->y,f->x+f->width-val-3);
+	  break;
+	default:
+	  move(f->y,f->x+f->width-val-4);
+	  break;
+	}
+      }else{
+	curs_set(0);
+      } 
+    }
+    break;
+  case FORM_P2:
+    {
+      char buf[80];
+      snprintf(buf,80,"%*ld",f->width,lval);
+      addstr(buf);
+      curs_set(0);
+    }
+    break;
+  default:
+    {
+      char buf[80];
+      if(f->dpoint)
+	snprintf(buf,80,"%+*.1f",f->width,lval*.1);
+      else
+	snprintf(buf,80,"%+*ld",f->width,lval);
+      addstr(buf);
+      curs_set(0);
+    }
+    break;
+  }
+  
+  attrset(0);
+}
+
+void form_redraw(form *f){
+  int i;
+  for(i=0;i<f->count;i++)
+    draw_field(f->fields+i);
+}
+
+formfield *field_add(form *f,enum field_type type,int x,int y,int width,
+	      int group,void *var,int *flag,int d,int min, int max){
+  int n=f->count;
+  if(f->storage==n)return(NULL);
+  if(width<1)return(NULL);
+  /* add the struct, then draw contents */
+  f->fields[n].type=type;
+  f->fields[n].x=x;
+  f->fields[n].y=y;
+  f->fields[n].width=width;
+  f->fields[n].var=var;
+  f->fields[n].flag=flag;
+  f->fields[n].dpoint=d;
+  f->fields[n].editgroup=group;
+
+  f->fields[n].min=min;
+  f->fields[n].max=max;
+
+  f->fields[n].form=f;
+
+  switch(type){
+  case FORM_TIME:
+    switch(width){
+    case 1: case 2:
+      f->fields[n].editwidth=width;
+      break;
+    case 3: case 4:
+      f->fields[n].editwidth=width-1;
+      break;
+    case 5: case 6:
+      f->fields[n].editwidth=width-2;
+      break;
+    default:
+      f->fields[n].editwidth=width-3;
+      break;
+    }
+    break;
+  default:
+    f->fields[n].editwidth=width;
+  }
+  
+  f->count++;
+  
+  draw_field(f->fields+n);
+  return(f->fields+n);
+}
+
+void form_next_field(form *f){
+  int temp=f->cursor++;
+  draw_field(f->fields+temp);
+  if(f->cursor>=f->count)f->cursor=0;
+  draw_field(f->fields+f->cursor);
+}
+
+void form_prev_field(form *f){
+  int temp=f->cursor--;
+  draw_field(f->fields+temp);
+  if(f->cursor<0)f->cursor=f->count-1;
+  draw_field(f->fields+f->cursor);
+}
+
+void form_left_field(form *f){
+  int temp=f->cursor;
+  int i;
+  double dist=99999;
+  int best=f->cursor;
+  int x=f->fields[f->cursor].x;
+  int y=f->fields[f->cursor].y;
+  for(i=0;i<f->count;i++){
+    int tx=f->fields[i].x+f->fields[i].width-1;
+    int ty=f->fields[i].y;
+    if(tx<x){
+      double testdist=abs(ty-y)*100+abs(tx-x);
+      if(testdist<dist){
+	best=i;
+	dist=testdist;
+      }
+    }
+  }
+  f->cursor=best;
+  
+  draw_field(f->fields+temp);
+  draw_field(f->fields+f->cursor);
+}
+
+void form_right_field(form *f){
+  int temp=f->cursor;
+  int i;
+  double dist=99999;
+  int best=f->cursor;
+  int x=f->fields[f->cursor].x+f->fields[f->cursor].width-1;
+  int y=f->fields[f->cursor].y;
+  for(i=0;i<f->count;i++){
+    int tx=f->fields[i].x;
+    int ty=f->fields[i].y;
+    if(tx>x){
+      double testdist=abs(ty-y)*100+abs(tx-x);
+      if(testdist<dist){
+	best=i;
+	dist=testdist;
+      }
+    }
+  }  
+  f->cursor=best;
+  
+  draw_field(f->fields+temp);
+  draw_field(f->fields+f->cursor);
+}
+
+void form_down_field(form *f){
+  int temp=f->cursor;
+  int i;
+  double dist=99999;
+  int best=f->cursor;
+  int x=f->fields[f->cursor].x;
+  int y=f->fields[f->cursor].y;
+  for(i=0;i<f->count;i++){
+    int tx=f->fields[i].x;
+    int ty=f->fields[i].y;
+    if(ty>y){
+      double testdist=abs(ty-y)+abs(tx-x)*100;
+      if(testdist<dist){
+	best=i;
+	dist=testdist;
+      }
+    }
+  }
+  f->cursor=best;
+  
+  draw_field(f->fields+temp);
+  draw_field(f->fields+f->cursor);
+}
+
+void form_up_field(form *f){
+  int temp=f->cursor;
+  int i;
+  double dist=99999;
+  int best=f->cursor;
+  int x=f->fields[f->cursor].x;
+  int y=f->fields[f->cursor].y;
+  for(i=0;i<f->count;i++){
+    int tx=f->fields[i].x;
+    int ty=f->fields[i].y;
+    if(ty<y){
+      double testdist=abs(ty-y)+abs(tx-x)*100;
+      if(testdist<dist){
+	best=i;
+	dist=testdist;
+      }
+    }
+  }
+  f->cursor=best;
+  
+  draw_field(f->fields+temp);
+  draw_field(f->fields+f->cursor);
+}
+
+/* returns >=0 if it does not handle the character */
+int form_handle_char(form *f,int c){
+  formfield *ff=f->fields+f->cursor;
+  int ret=-1;
+
+  switch(c){
+  case KEY_UP:
+    form_up_field(f);
+    break;
+  case KEY_DOWN:
+    form_down_field(f);
+    break;
+  case '\t':
+    form_next_field(f);
+    break;
+  case KEY_BTAB:
+    form_prev_field(f);
+    break;
+  case KEY_LEFT:
+    if(ff->type==FORM_TIME && ff->cursor>0){
+      ff->cursor--;
+    }else{
+      form_left_field(f);
+    }
+    break;
+  case KEY_RIGHT:
+    if(ff->type==FORM_TIME){
+      ff->cursor++;
+      if(ff->cursor>=ff->editwidth)ff->cursor=ff->editwidth-1;
+    }else{
+      form_right_field(f);
+    }
+    break;
+  default:
+    pthread_mutex_lock(&master_mutex);
+    switch(ff->type){
+      
+    case FORM_DB:
+      {
+	long *val=(long *)ff->var;
+	switch(c){
+	case '=':
+	  (*val)++;
+	  if(ff->flag)*(ff->flag)=1;
+	  if(*val>ff->max)*val=ff->max;
+	  break;
+	case '+':
+	  (*val)+=10;
+	  if(ff->flag)*(ff->flag)=1;
+	  if(*val>ff->max)*val=ff->max;
+	  break;
+	case '-':
+	  (*val)--;
+	  if(ff->flag)*(ff->flag)=1;
+	  if(*val<ff->min)*val=ff->min;
+	  break;
+	case '_':
+	  (*val)-=10;
+	  if(ff->flag)*(ff->flag)=1;
+	  if(*val<ff->min)*val=ff->min;
+	  break;
+	default:
+	  ret=c;
+	  break;
+	}
+      }
+      break;
+    case FORM_P2:
+      {
+	long *val=(long *)ff->var;
+	switch(c){
+	case '=':case '+':
+	  (*val)*=2;
+	  if(ff->flag)*(ff->flag)=1;
+	  if(*val>ff->max)*val=ff->max;
+	  break;
+	case '-':case '_':
+	  (*val)/=2;
+	  if(ff->flag)*(ff->flag)=1;
+	  if(*val<ff->min)*val=ff->min;
+	  break;
+	default:
+	  ret=c;
+	  break;
+	}
+      }
+      break;
+    case FORM_TIME:
+      {
+	long *val=(long *)ff->var;
+	switch(c){
+	case '0':case '1':case '2':case '3':case '4':
+	case '5':case '6':case '7':case '8':case '9':
+	  {
+	    long mult=(int)rint(pow(10.,ff->editwidth-ff->cursor-1));
+	    long oldnum=(*val/mult)%10;
+	    
+	    if(ff->flag)*(ff->flag)=1;
+	    *val-=oldnum*mult;
+	    *val+=(c-48)*mult;
+	    
+	    ff->cursor++;
+	    if(ff->cursor>=ff->editwidth)ff->cursor=ff->editwidth-1;
+	  }
+	  break;
+	case KEY_BACKSPACE:case '\b':
+	  {
+	    long mult=(int)rint(pow(10.,ff->editwidth-ff->cursor-1));
+	    long oldnum=(*val/mult)%10;
+	    
+	    if(ff->flag)*(ff->flag)=1;
+	    *val-=oldnum*mult;
+	    ff->cursor--;
+	    if(ff->cursor<0)ff->cursor=0;
+	  }
+	  break;
+	default:
+	  ret=c;
+	  break;
+	}
+      }
+      break;
+    default:
+      ret=c;
+      break;
+    }
+    pthread_mutex_unlock(&master_mutex);
+  } 
+  draw_field(f->fields+f->cursor);    
+  return(ret);
+}
+
+/* -------------------------------------- */
+
+#define N_Y 2
+#define N_X 2
+
+#define E_Y 2
+#define E_X 36
+
+#define D_Y 2
+#define D_X 70
+
+#define T_Y (6+BANDS)
+#define T_X 6
+
+#define C_Y (BANDS-CONFIG_MAX+2)
+#define C_X D_X
+
+form editf;
+form noneditf;
+
+
+void update_N(){
+  mvaddstr(N_Y,N_X+4,"     [n] Noise Filter ");
+  if(wc.noise_p){
+    attron(A_BOLD);
+    addstr("ON ");
+  }else{
+    attron(A_BOLD);
+    addstr("OFF");
+  }
+
+  attrset(0);
+
+}
+
+void update_static_N(){
+  int i;
+  mvaddstr(N_Y+2, N_X,"  63 ");
+  mvaddstr(N_Y+4, N_X,"  88 ");
+  mvaddstr(N_Y+6, N_X," 125 ");
+  mvaddstr(N_Y+8, N_X," 175 ");
+  mvaddstr(N_Y+10,N_X," 250 ");
+  mvaddstr(N_Y+12,N_X," 350 ");
+  mvaddstr(N_Y+14,N_X," 500 ");
+  mvaddstr(N_Y+16,N_X," 700 ");
+  mvaddstr(N_Y+18,N_X,"  1k ");
+  mvaddstr(N_Y+20,N_X,"1.4k ");
+  mvaddstr(N_Y+22,N_X,"  2k ");
+  mvaddstr(N_Y+24,N_X,"2.8k ");
+  mvaddstr(N_Y+26,N_X,"  4k ");
+  mvaddstr(N_Y+28,N_X,"5.6k ");
+  mvaddstr(N_Y+30,N_X,"  8k ");
+  mvaddstr(N_Y+32,N_X," 11k ");
+  mvaddstr(N_Y+34,N_X," 16k ");
+  mvaddstr(N_Y+36,N_X," 22k ");
+
+  mvvline(N_Y+2,N_X+9,0,BANDS);
+  mvvline(N_Y+2,N_X+20,0,BANDS);
+  mvvline(N_Y+2,N_X+31,0,BANDS);
+
+  mvhline(N_Y+1,N_X+9,0,23);
+  mvhline(N_Y+2+BANDS,N_X+9,0,23);
+
+  mvaddch(N_Y+1,N_X+9,ACS_ULCORNER);
+  mvaddch(N_Y+1,N_X+31,ACS_URCORNER);
+  mvaddch(N_Y+1,N_X+20,ACS_TTEE);
+  mvaddch(N_Y+2+BANDS,N_X+9,ACS_LLCORNER);
+  mvaddch(N_Y+2+BANDS,N_X+31,ACS_LRCORNER);
+
+  mvaddstr(N_Y+2+BANDS,N_X,"       dB");
+  mvaddstr(N_Y+2+BANDS,N_X+10,"30- ");
+  mvaddstr(N_Y+2+BANDS,N_X+19," 0 ");
+  mvaddstr(N_Y+2+BANDS,N_X+27," +30");
+
+  for(i=0;i<BANDS;i++)
+    field_add(&editf,FORM_DB,N_X+5,N_Y+2+i,4,0,&wc.noiset[i],&noise_dirty,0,-150,0);
+}
+
+void update_E(){
+  mvaddstr(E_Y,E_X+4,"    [e] Equalizer ");
+  if(wc.eq_p){
+    attron(A_BOLD);
+    addstr("ON ");
+  }else{
+    attron(A_BOLD);
+    addstr("OFF");
+  }
+  attrset(0);
+}
+
+void update_static_E(){
+  int i;
+  mvaddstr(E_Y+2, E_X,"  63 ");
+  mvaddstr(E_Y+4, E_X,"  88 ");
+  mvaddstr(E_Y+6, E_X," 125 ");
+  mvaddstr(E_Y+8, E_X," 175 ");
+  mvaddstr(E_Y+10,E_X," 250 ");
+  mvaddstr(E_Y+12,E_X," 350 ");
+  mvaddstr(E_Y+14,E_X," 500 ");
+  mvaddstr(E_Y+16,E_X," 700 ");
+  mvaddstr(E_Y+18,E_X,"  1k ");
+  mvaddstr(E_Y+20,E_X,"1.4k ");
+  mvaddstr(E_Y+22,E_X,"  2k ");
+  mvaddstr(E_Y+24,E_X,"2.8k ");
+  mvaddstr(E_Y+26,E_X,"  4k ");
+  mvaddstr(E_Y+28,E_X,"5.6k ");
+  mvaddstr(E_Y+30,E_X,"  8k ");
+  mvaddstr(E_Y+32,E_X," 11k ");
+  mvaddstr(E_Y+34,E_X," 16k ");
+  mvaddstr(E_Y+36,E_X," 22k ");
+
+  mvvline(E_Y+2,E_X+8,0,BANDS);
+  mvvline(E_Y+2,E_X+30,0,BANDS);
+
+  mvhline(E_Y+1,E_X+8,0,23);
+  mvhline(E_Y+2+BANDS,E_X+8,0,23);
+
+  mvaddch(E_Y+1,E_X+8,ACS_ULCORNER);
+  mvaddch(E_Y+1,E_X+30,ACS_URCORNER);
+  mvaddch(E_Y+2+BANDS,E_X+8,ACS_LLCORNER);
+  mvaddch(E_Y+2+BANDS,E_X+30,ACS_LRCORNER);
+
+  mvaddstr(E_Y+2+BANDS,E_X,"      dB");
+  mvaddstr(E_Y+2+BANDS,E_X+9,"30- ");
+  mvaddstr(E_Y+2+BANDS,E_X+18," 0 ");
+  mvaddstr(E_Y+2+BANDS,E_X+26," +30");
+
+  mvaddstr(E_Y+1,E_X+9,"120- ");
+  mvaddstr(E_Y+1,E_X+27," +0");
+
+  for(i=0;i<BANDS;i++)
+    field_add(&editf,FORM_DB,E_X+5,E_Y+2+i,3,1,&wc.eqt[i],&eq_dirty,0,-30,30);
+}
+
+void update_D(){
+  attron(A_BOLD);
+
+  move(D_Y,D_X+18);
+  if(wc.masteratt_p)
+    addstr("ON ");
+  else
+    addstr("OFF");
+
+  move(D_Y+1,D_X+18);
+  if(wc.dynamicatt_p)
+    addstr("ON ");
+  else
+    addstr("OFF");
+  
+  move(D_Y+8,D_X+18);
+  if(wc.dyn_p)
+    addstr("ON ");
+  else
+    addstr("OFF");
+
+  attrset(0);
+}
+
+static formfield *A_field;
+static formfield *B_field;
+static formfield *T_field;
+
+static formfield *pre_field;
+static formfield *post_field;
+static long pre_var=0;
+static long post_var=0;
+
+void update_static_D(){
+
+  mvaddstr(D_Y+0,D_X,"[m]    Master Att            dB");
+  mvaddstr(D_Y+1,D_X,"[r] Dynamic Range            db");
+  mvaddstr(D_Y+2,D_X,"       Frame size");
+
+  mvvline(D_Y+5,D_X,0,1);
+  mvvline(D_Y+5,D_X+11,0,1);
+  mvvline(D_Y+5,D_X+22,0,1);
+
+  mvhline(D_Y+4,D_X,0,23);
+  mvhline(D_Y+6,D_X,0,23);
+
+  mvaddch(D_Y+4,D_X,ACS_ULCORNER);
+  mvaddch(D_Y+4,D_X+22,ACS_URCORNER);
+  mvaddch(D_Y+4,D_X+11,ACS_TTEE);
+  mvaddch(D_Y+6,D_X,ACS_LLCORNER);
+  mvaddch(D_Y+6,D_X+22,ACS_LRCORNER);
+
+  mvaddstr(D_Y+6,D_X+1,"30- ");
+  mvaddstr(D_Y+6,D_X+10," 0 ");
+  mvaddstr(D_Y+6,D_X+18," +30");
+
+  mvaddstr(D_Y+8,D_X,"[l] Dynamic Limit            dB");
+  mvaddstr(D_Y+9,D_X,"    peak integral            ms");
+
+  mvvline(D_Y+11,D_X,0,1);
+  mvvline(D_Y+11,D_X+11,0,1);
+  mvvline(D_Y+11,D_X+22,0,1);
+
+  mvhline(D_Y+10,D_X,0,23);
+  mvhline(D_Y+12,D_X,0,23);
+
+  mvaddch(D_Y+10,D_X,ACS_ULCORNER);
+  mvaddch(D_Y+10,D_X+22,ACS_URCORNER);
+  mvaddch(D_Y+10,D_X+11,ACS_TTEE);
+  mvaddch(D_Y+12,D_X,ACS_LLCORNER);
+  mvaddch(D_Y+12,D_X+22,ACS_LRCORNER);
+
+  mvaddstr(D_Y+12,D_X+1,"30- ");
+  mvaddstr(D_Y+12,D_X+10," A ");
+  mvaddstr(D_Y+12,D_X+19," +0");
+
+  field_add(&editf,FORM_DB,D_X+23,D_Y+0,5,2,&wc.masteratt,NULL,1,-900,+900);
+  field_add(&editf,FORM_DB,D_X+23,D_Y+1,5,3,&wc.dynamicatt,NULL,1,-900,+900);
+  field_add(&editf,FORM_P2,D_X+23,D_Y+2,5,4,&wc.block_a,NULL,0,64,MAX_BLOCKSIZE);
+  field_add(&editf,FORM_DB,D_X+23,D_Y+8,5,5,&wc.dynt,NULL,1,-300,0);
+  field_add(&editf,FORM_DB,D_X+23,D_Y+9,5,6,&wc.dynms,NULL,0,0,MAX_DECAY_MS);
+
+  mvaddstr(D_Y+14,D_X,"[a]             [A] Clear");
+  mvaddstr(D_Y+15,D_X,"[b]             [B] Clear");
+
+  A_field=field_add(&editf,FORM_TIME,D_X+4,D_Y+14,11,9,&A,NULL,0,0,99999999);
+  B_field=field_add(&editf,FORM_TIME,D_X+4,D_Y+15,11,10,&B,NULL,0,0,99999999);
+  noneditf.cursor=-1;
+
+  T_field=field_add(&noneditf,FORM_TIME,D_X+4,D_Y+16,11,0,&T,NULL,0,0,99999999);
+
+  pre_field=field_add(&noneditf,FORM_DB,D_X+23,D_Y+5,5,0,&pre_var,NULL,0,-30,30);
+  post_field=field_add(&noneditf,FORM_DB,D_X+23,D_Y+11,5,0,&post_var,NULL,0,-30,0);
+
+}
+
+void update_0(){
+  /* redraw the whole form; easiest */
+  form_redraw(&noneditf);
+
+}
+
+
+void update_C(){
+  mvaddstr(C_Y,C_X,"Configuration cache:\n");
+  
+  if(configactive==0)
+    mvaddstr(C_Y+2,C_X,"<v>>CURRENT [V] Clear");
+  else
+    if(configlist[0].used)
+      mvaddstr(C_Y+2,C_X,"[v] full    [V] Clear");
+    else
+      mvaddstr(C_Y+2,C_X,"[v]         [V] Clear");
+
+  if(configactive==1)
+    mvaddstr(C_Y+3,C_X,"<w>>CURRENT [W] Clear");
+  else
+    if(configlist[1].used)
+      mvaddstr(C_Y+3,C_X,"[w] full    [W] Clear");
+    else
+      mvaddstr(C_Y+3,C_X,"[w]         [W] Clear");
+
+  if(configactive==2)
+    mvaddstr(C_Y+4,C_X,"<x>>CURRENT [X] Clear");
+  else
+    if(configlist[2].used)
+      mvaddstr(C_Y+4,C_X,"[x] full    [X] Clear");
+    else
+      mvaddstr(C_Y+4,C_X,"[x]         [X] Clear");
+
+  if(configactive==3)
+    mvaddstr(C_Y+5,C_X,"<y>>CURRENT [Y] Clear");
+  else
+    if(configlist[3].used)
+      mvaddstr(C_Y+5,C_X,"[y] full    [Y] Clear");
+    else
+      mvaddstr(C_Y+5,C_X,"[y]         [Y] Clear");
+
+  if(configactive==4)
+    mvaddstr(C_Y+6,C_X,"<z>>CURRENT [Z] Clear");
+  else
+    if(configlist[4].used)
+      mvaddstr(C_Y+6,C_X,"[z] full    [Z] Clear");
+    else
+      mvaddstr(C_Y+6,C_X,"[z]         [Z] Clear");
+
+}
+
+void update_static_0(){
+
+  mvaddstr(T_Y,T_X,"[0>");
+  field_add(&noneditf,FORM_TIME,T_X+3,T_Y,11,0,&TX[0],NULL,0,0,99999999);
+  mvaddstr(T_Y,T_X+19,"[1>");
+  field_add(&noneditf,FORM_TIME,T_X+21,T_Y,11,0,&TX[1],NULL,0,0,99999999);
+  mvaddstr(T_Y,T_X+38,"[2>");
+  field_add(&noneditf,FORM_TIME,T_X+41,T_Y,11,0,&TX[2],NULL,0,0,99999999);
+  mvaddstr(T_Y,T_X+57,"[3>");
+  field_add(&noneditf,FORM_TIME,T_X+60,T_Y,11,0,&TX[3],NULL,0,0,99999999);
+  mvaddstr(T_Y,T_X+76,"[4>");
+  field_add(&noneditf,FORM_TIME,T_X+79,T_Y,11,0,&TX[4],NULL,0,0,99999999);
+
+  mvaddstr(T_Y+1,T_X,"[5>");
+  field_add(&noneditf,FORM_TIME,T_X+3,T_Y+1,11,0,&TX[5],NULL,0,0,99999999);
+  mvaddstr(T_Y+1,T_X+19,"[6>");
+  field_add(&noneditf,FORM_TIME,T_X+21,T_Y+1,11,0,&TX[6],NULL,0,0,99999999);
+  mvaddstr(T_Y+1,T_X+38,"[7>");
+  field_add(&noneditf,FORM_TIME,T_X+41,T_Y+1,11,0,&TX[7],NULL,0,0,99999999);
+  mvaddstr(T_Y+1,T_X+57,"[8>");
+  field_add(&noneditf,FORM_TIME,T_X+60,T_Y+1,11,0,&TX[8],NULL,0,0,99999999);
+  mvaddstr(T_Y+1,T_X+76,"[9>");
+  field_add(&noneditf,FORM_TIME,T_X+79,T_Y+1,11,0,&TX[9],NULL,0,0,99999999);
+
+}
+
+void update_a(){
+  draw_field(A_field);
+}
+
+void update_b(){
+  draw_field(B_field);
+}
+
+off_t time_to_cursor(long t){
+  if(t<0)
+    return(-1);
+
+  {
+    off_t c=t%10000;
+    
+    c+=t/10000%100*6000;
+    c+=t/1000000*600000;
+    
+    return((off_t)rint(c*.01*rate)*ch*inbytes);
+  }
+}
+
+long cursor_to_time(off_t c){
+  long T;
+  if(c<0)return(-1);
+  c=c*100./rate/ch/inbytes;
+  T =c/(100*60*60)*1000000;
+  T+=c/(100*60)%60*10000;
+  T+=c/(100)%60*100;
+  T+=c%100;
+  return(T);
+}
+
+void update_ui(){
+  int i,j;
+
+  pthread_mutex_lock(&master_mutex); 
+  T=cursor_to_time(cursor);
+  pthread_mutex_unlock(&master_mutex); 
+  draw_field(T_field);
+
+  for(i=0;i<BANDS;i++){
+    int valM,valA,valT;
+    valT=rint(wc.eqt[i]/3.+10);
+    pthread_mutex_lock(&master_mutex);
+    valM=rint(todB(eqt_feedbackmax[i])/5.7142857+21);
+    valA=rint(todB(eqt_feedbackav[i]/eqt_feedbackcount[i])/5.7142857+21);
+    pthread_mutex_unlock(&master_mutex);
+
+    move(E_Y+2+i,E_X+9);
+    for(j=0;j<valA && j<21;j++){
+      if(j==valT)
+	addch(ACS_VLINE);
+      else
+	addch(' ');
+    }
+
+    for(;j<=valM && j<21;j++){
+      if(j==valT)
+	addch(ACS_PLUS);
+      else
+	addch(ACS_HLINE);
+    }
+    
+    for(;j<21;j++){
+      if(j==valT)
+	addch(ACS_VLINE);
+      else
+	addch(' ');
+    }
+  }
+}
+
+void update_play(){
+  int i,j;
+  pthread_mutex_lock(&master_mutex); 
+  update_ui();
+  if(playback_active){
+    if(B!=-1){
+      pthread_mutex_unlock(&master_mutex);
+      mvaddstr(D_Y+16,D_X,"A-B");
+    }else{
+      pthread_mutex_unlock(&master_mutex);
+      mvaddstr(D_Y+16,D_X,">>>");
+    }
+  }else{
+    pthread_mutex_unlock(&master_mutex);
+    if(T==0)
+      mvaddstr(D_Y+16,D_X,"   ");
+    else
+      if(T==A)
+	mvaddstr(D_Y+16,D_X,"CUE");
+      else
+	mvaddstr(D_Y+16,D_X,"|||");
+  }
+  
+  for(i=0;i<BANDS;i++){
+    int valM,valA;
+    pthread_mutex_lock(&master_mutex);
+
+    if(noiset_feedbackcount[i]){
+      valM=rint(todB(noiset_feedbackmax[i])/3.+10);
+      valA=rint(todB(noiset_feedbackav[i]/noiset_feedbackcount[i])/3.+10);
+    }else{
+      valM=-1;
+      valA=-1;
+    }
+    pthread_mutex_unlock(&master_mutex);
+
+    move(N_Y+2+i,N_X+10);
+    for(j=0;j<valA && j<=21;j++){
+      if(j==21)
+	addch('+');
+      else
+	if(j==10)
+	  addch(ACS_VLINE);
+	else
+	  addch(' ');
+    }
+
+    for(;j<=valM && j<=21;j++){
+      if(j==21)
+	addch('+');
+      else
+	if(j==10)
+	  addch(ACS_PLUS);
+	else
+	  addch(ACS_HLINE);
+    }
+
+
+    for(;j<22;j++){
+      if(j==21 || j==10)
+	addch(ACS_VLINE);
+      else
+	addch(' ');
+    }
+
+
+    noiset_feedbackav[i]/=2;
+    noiset_feedbackmax[i]/=2;
+    noiset_feedbackcount[i]/=2;
+  }
+
+  for(i=0;i<BANDS;i++){
+    eqt_feedbackav[i]/=2;
+    eqt_feedbackmax[i]/=2;
+    eqt_feedbackcount[i]/=2;
+  }
+
+  /* pre-limit bargraph */
+  {
+    double val;
+    int ival;
+    move(D_Y+5,D_X+1);
+    pthread_mutex_lock(&master_mutex);
+    if(maxtimeprehold){
+      val=maxtimepre;
+      pre_var=rint(todB(maxtimeprehold));
+      pthread_mutex_unlock(&master_mutex);
+      
+      ival=(todB(val)+30.)/3.;
+      if(ival<0)ival=0;
+      if(ival>22)ival=22;
+      
+      for(i=0;i<ival;i++){
+	if(i==10){
+	  addch(ACS_PLUS);
+	}else if(i==21){
+	  addch('+');
+	}else
+	  addch(ACS_HLINE);
+      }
+      for(;i<22;i++){
+	if(i==10){
+	  addch(ACS_VLINE);
+	}else if(i==21){
+	  addch(ACS_VLINE);
+	}else
+	  addch(' ');
+      }
+      
+      maxtimepre/=2;
+      draw_field(pre_field);
+    }else{
+      pthread_mutex_unlock(&master_mutex);
+      for(i=0;i<22;i++){
+	if(i==10 || i==21){
+	  addch(ACS_VLINE);
+	}else
+	  addch(' ');
+      }
+    }
+  }
+
+  /* post-limit bargraph */
+  {
+    double val;
+    int ival;
+    move(D_Y+11,D_X+1);
+    pthread_mutex_lock(&master_mutex);
+    if(&wc.dyn_p && maxtimeposthold){
+      val=maxtimepost;
+      post_var=rint(todB(maxtimeposthold));
+      pthread_mutex_unlock(&master_mutex);
+      
+      if(todB(val)<wc.dynt*.1){
+	ival=(todB(val)+30.)/(wc.dynt*.1+30)*10;
+	if(ival<0)ival=0;
+      }else{
+	if(wc.dynt==0){
+	  ival=22;	   
+	}else{
+	  ival=(todB(val)-wc.dynt*.1)/(-wc.dynt*.1)*10+10;
+	  if(ival>22)ival=22;
+	}
+      }
+      
+      for(i=0;i<ival;i++){
+	if(i==10){
+	  addch(ACS_PLUS);
+	}else if(i==21){
+	  addch('+');
+	}else
+	  addch(ACS_HLINE);
+      }
+      for(;i<22;i++){
+	if(i==10){
+	  addch(ACS_VLINE);
+	}else if(i==21){
+	  addch(ACS_VLINE);
+	}else
+	  addch(' ');
+      }
+      
+      maxtimepost/=2;
+      draw_field(post_field);
+    }else{
+      pthread_mutex_unlock(&master_mutex);
+      for(i=0;i<22;i++){
+	if(i==10 || i==21){
+	  addch(ACS_VLINE);
+	}else
+	  addch(' ');
+      }
+    }
+  }
+    
+}
+
 
 /* simple dB-scale volume scaling */
 void master_att(double *b){
@@ -1087,7 +2109,7 @@ int main(int argc, char **argv){
     form_init(&editf,120,1);
     form_init(&noneditf,50,0);
     box(stdscr,0,0);
-    mvaddstr(0, 2, " MTG Postprocess Filter build 20021120.0 ");
+    mvaddstr(0, 2, " Postfish Filter build 20021120.0 ");
     mvaddstr(LINES-1, 2, 
 	     " [<]<<   [,]<   [Spc] Play/Pause   [Bksp] Stop   [.]>   [>]>>   [p] Process ");
 
