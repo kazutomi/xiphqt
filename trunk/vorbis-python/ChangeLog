@@ -1,3 +1,8 @@
+2002-07-23  Andrew H. Chatham <andrew@andrewchatham.com>
+	* README - documented new comment interface
+	* Bumped to 1.0 to match Vorbis
+	* pyvorbisinfo.c: Removed printf
+
 2002-07-16  Andrew H. Chatham <andrew@andrewchatham.com>
 	* pyvorbisinfo.c: Can now create comments from dictionaries 
 	(a MUCH better interface)

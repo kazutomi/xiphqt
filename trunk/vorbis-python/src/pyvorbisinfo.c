@@ -701,7 +701,6 @@ assign_tag(vorbis_comment *vcomment, const char *key, PyObject *tag)
     vcomment->vendor = strdup(tag_str);
   } else {
     snprintf(tag_buff, sizeof(tag_buff), "%s=%s", key, tag_str);
-    printf("Add tag %s\n", tag_buff);
     vorbis_comment_add(vcomment, tag_buff);
   }
   return 1;
