@@ -24,7 +24,7 @@ from setupext import install_data_ext
 
 docdirbase = 'share/doc/positron'
 manpagebase = 'share/man/man1'
-docfiles = filter(isfile, glob('doc/*.html'))
+docfiles = filter(isfile, glob('doc/*.html')) + ['README', 'COPYING']
 examfiles = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
