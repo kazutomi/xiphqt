@@ -9,6 +9,8 @@
 #define LOSHORT(l)           ((SHORT)(l))
 #define HISHORT(l)           ((SHORT)(((DWORD)(l) >> 16) & 0xFFFF))
 
+#define BASEKEY "Software\\Xiphophorus\\Oggdrop"
+
 HANDLE event = NULL;
 int width = 120, height = 120;
 RECT bar1, bar2;
@@ -18,7 +20,6 @@ POINT pt;
 HINSTANCE hinst;
 int frame = 0;
 HBITMAP hbm[12], temp;
-HDC offscreen;
 HMENU menu;
 int encoding_done = 0;
 double file_complete;
@@ -27,13 +28,72 @@ int numfiles;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int animate = 0;
 
+int get_base_key(HKEY* key)
+{
+	DWORD disposition;
+	return ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, 
+         BASEKEY, 0, 0, 0, KEY_ALL_ACCESS, 0, key, &disposition);
+}
+
+int read_setting(const char* name, int default_value)
+{
+	HKEY base_key;
+	if (!get_base_key(&base_key))
+	{
+		int value;
+		DWORD cb_value = sizeof(int);
+		if (ERROR_SUCCESS == RegQueryValueEx(base_key, name, NULL, NULL, 
+                                         (byte*)&value, &cb_value))
+			return value;
+	}
+	return default_value;
+}
+
+void write_setting(const char* name, int value)
+{
+	HKEY base_key;
+	if (!get_base_key(&base_key))
+		RegSetValueEx(base_key, name, 0, REG_DWORD, (byte*)&value, sizeof(int));
+}
+
+void set_bitrate(int v)
+{
+	CheckMenuItem(menu, IDM_BITRATE64, v == 64 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE80, v == 80 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE96, v == 96 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE128, v == 128 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE160, v == 160 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE192, v == 192 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE256, v == 256 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(menu, IDM_BITRATE350, v == 350 ? MF_CHECKED : MF_UNCHECKED);
+	encthread_setbitrate(v);
+	write_setting("bitrate", v);
+}
+
+void set_always_on_top(HWND hwnd, int v)
+{
+	CheckMenuItem(menu, IDM_ONTOP, v ? MF_CHECKED : MF_UNCHECKED);
+	SetWindowPos(hwnd, v ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
+	write_setting("always_on_top", v);
+}
+
+void set_logerr(HWND hwnd, int v)
+{
+	CheckMenuItem(menu, IDM_LOGERR, v ? MF_CHECKED : MF_UNCHECKED);
+	set_use_dialogs(v);
+	write_setting("logerr", v);
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-        static char szAppName[] = "oggdropWin";
+    static char szAppName[] = "oggdropWin";
 	HWND hwnd;
 	MSG msg;
 	WNDCLASS wndclass;
+    const int width = 120;
+	const int height = 120;
+	int x;
+	int y;
 
 	hinst = hInstance;
 
@@ -50,7 +110,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 	RegisterClass(&wndclass);
 
-        hwnd = CreateWindow(szAppName, "oggdrop", WS_POPUP | WS_DLGFRAME, CW_USEDEFAULT, CW_USEDEFAULT,
+	x = max(min(read_setting("window_x", 64), GetSystemMetrics(SM_CXSCREEN) - width), 0);
+    y = max(min(read_setting("window_y", 64), GetSystemMetrics(SM_CYSCREEN) - height), 0);
+
+    hwnd = CreateWindow(szAppName, "OggDrop", WS_POPUP | WS_DLGFRAME, x, y,
 		width, height, NULL, NULL, hInstance, NULL);
 
 	ShowWindow(hwnd, iCmdShow);
@@ -58,20 +121,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 	SetTimer(hwnd, 1, 80, NULL);
 
+	set_bitrate(read_setting("bitrate", 96));
+	set_always_on_top(hwnd, read_setting("always_on_top", 1));
+	set_logerr(hwnd, read_setting("logerr", 0));
 	
-	frame = 0;
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF01), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF02), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF03), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF04), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF05), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF06), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF07), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF08), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF09), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF10), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF11), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    hbm[frame++] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF12), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	for (frame = 0; frame < 12; frame++)
+		hbm[frame] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF01 + frame), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 	frame = 0;
 
 	while (GetMessage(&msg, NULL, 0, 0)) {
@@ -123,7 +178,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC desktop;
 	HBITMAP hbitmap;
 	HANDLE hdrop;
-	int state;
 	double percomp;
 
 	switch (message) {
@@ -174,16 +228,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_TIMER:
-		if (animate) {
-			frame++;
-			if (frame >= 12) frame = 0;
-			GetClientRect(hwnd, &rect);
-			InvalidateRect(hwnd, &rect, FALSE);
+		if (animate || frame) {
+			frame--;
+			if (frame < 0) 
+				frame += 12;
 		} else {
 			frame = 0;
-			GetClientRect(hwnd, &rect);
-			InvalidateRect(hwnd, &rect, FALSE);
 		}
+		GetClientRect(hwnd, &rect);
+		InvalidateRect(hwnd, &rect, FALSE);
 		return 0;
 
 	case WM_LBUTTONDOWN:
@@ -214,6 +267,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
       */
 			ClientToScreen(hwnd, &point);
 			SetWindowPos(hwnd, 0, point.x - start.x, point.y - start.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+			write_setting("window_x", point.x - start.x);
+			write_setting("window_y", point.y - start.y);
 		}
 		return 0;
 
@@ -237,122 +292,42 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			encoding_done = 1;
 			PostQuitMessage(0);
 			break;
-
 		case IDM_ONTOP:
-			state = GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND);
-			if ((state & MF_CHECKED) == MF_CHECKED) {
-				CheckMenuItem(menu, LOWORD(wParam), MF_UNCHECKED);
-				SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
-			} else {
-				CheckMenuItem(menu, LOWORD(wParam), MF_CHECKED);
-				SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
-			}
-			break;
-	
+			set_always_on_top(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
+			break;	
 		case IDM_LOGERR:
-			state = GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND);
-			if ((state & MF_CHECKED) == MF_CHECKED) {
-				CheckMenuItem(menu, LOWORD(wParam), MF_UNCHECKED);
-				set_use_dialogs(1);
-			} else {
-				CheckMenuItem(menu, LOWORD(wParam), MF_CHECKED);
-				set_use_dialogs(0);
-			}
+			set_logerr(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
 			break;
-
 		case IDM_BITRATE64:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(64);
 			encthread_setbitrate(64);
 			break;
-
 		case IDM_BITRATE80:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(80);
 			encthread_setbitrate(80);
 			break;
-
 		case IDM_BITRATE96:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(96);
 			encthread_setbitrate(96);
 			break;
-
 		case IDM_BITRATE128:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(128);
 			encthread_setbitrate(128);
 			break;
-
 		case IDM_BITRATE160:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(160);
 			encthread_setbitrate(160);
 			break;
-
 		case IDM_BITRATE192:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(192);
 			encthread_setbitrate(192);
 			break;
-			
 		case IDM_BITRATE256:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_CHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			set_bitrate(256);
 			encthread_setbitrate(256);
 			break;
-
 		case IDM_BITRATE350:
-			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
-			CheckMenuItem(menu, IDM_BITRATE350, MF_CHECKED);
+			set_bitrate(350);
 			encthread_setbitrate(350);
 			break;
 		}
@@ -372,4 +347,3 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	return DefWindowProc(hwnd, message, wParam, lParam);
 }
-
