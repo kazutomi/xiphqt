@@ -97,8 +97,18 @@ my @pmulist=("Unknown",
 	     "G4/NewWorld/iBook",
 	     "newer than Titanium");
 
-# Mac style power management
 sub read_proc{
+    my$test;
+    my$this=shift;
+
+    if($openp){return $this->read_proc_mac;}
+    $test=$this->read_proc_apm;
+    if(defined($test)){return $test;}
+    return $this->read_proc_mac;
+}
+
+# Mac style power management
+sub read_proc_mac{
     my $percent;
     my $line;
 
@@ -119,6 +129,8 @@ sub read_proc{
 		  SWITCH:{
 		      if($1>=10 && $1<=12){
 			  $openp=$1;
+			  my$foo="\n";
+			  syswrite B_FD,$foo,1;
 			  last SWITCH;
 		      }
 		      print "PowerMac PMU version $1 (".
@@ -132,7 +144,6 @@ sub read_proc{
     }
     
     if($openp){
-	syswrite B_FD,"\n",1;
 	if($openp>=10 && $openp<=12){
 	    sysread B_FD,$line,1024;
 	    $line=~m/^S\s+\{([^\}]*)\}\s+\{([^\}]*)\}/;
@@ -151,6 +162,8 @@ sub read_proc{
 	    $percent.= ($rcharge*1000.0 / $rbatt)/10.
 		if(defined $rcurrent);
 	    
+	    my$foo="\n";
+	    syswrite B_FD,$foo,1;
 	}
     }
     $percent;
