@@ -13,7 +13,7 @@
 
 #define BASEKEY "Software\\Xiphophorus\\Oggdrop"
 
-#define VORBIS_DEFAULT_QUALITY 75
+#define VORBIS_DEFAULT_QUALITY 40
 
 #define CREATEFONT(sz) \
   CreateFont((sz), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -64,8 +64,8 @@ static const char *bitRateCaption[] =
 
 typedef union
 {
-  int buflen;
-  char buf[16];
+	int buflen;
+	char buf[16];
 } EBUF;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -73,6 +73,8 @@ int animate = 0;
 
 BOOL CALLBACK QCProc(HWND hwndDlg, UINT message, 
                      WPARAM wParam, LPARAM lParam) ;
+
+float qc2approxBitrate(int qcValue);
 
 int get_base_key(HKEY* key)
 {
@@ -90,7 +92,7 @@ int read_setting(const char* name, int default_value)
 		DWORD cb_value = sizeof(int);
 		if (ERROR_SUCCESS == RegQueryValueEx(base_key, name, NULL, NULL, 
                                          (BYTE*)&value, &cb_value))
-			return value;
+		return value;
 	}
 	return default_value;
 }
@@ -104,14 +106,14 @@ void write_setting(const char* name, int value)
 
 void set_quality_coefficient(int v)
 {
-  encthread_setquality(v);
-  write_setting("quality", v);
+	encthread_setquality(v);
+	write_setting("quality", v);
 }
 
 void set_bitrate(int v)
 {
-  encthread_setbitrate(v);
-  write_setting("bitrate", v);
+	encthread_setbitrate(v);
+	write_setting("bitrate", v);
 }
 
 void set_always_on_top(HWND hwnd, int v)
@@ -130,9 +132,9 @@ void set_logerr(HWND hwnd, int v)
 
 void set_showNBR(HWND hwnd, int v)
 {
-  CheckMenuItem(menu, IDM_SHOWNBR, v ? MF_CHECKED : MF_UNCHECKED);
-  write_setting("shownbr", v);
-  showNBR = v;
+	CheckMenuItem(menu, IDM_SHOWNBR, v ? MF_CHECKED : MF_UNCHECKED);
+	write_setting("shownbr", v);
+	showNBR = v;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
@@ -141,7 +143,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	HWND hwnd;
 	MSG msg;
 	WNDCLASS wndclass;
-  const int width = 130;
+	const int width = 130;
 	const int height = 130;
 	int x;
 	int y;
@@ -162,26 +164,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	RegisterClass(&wndclass);
 
 	x = max(min(read_setting("window_x", 64), GetSystemMetrics(SM_CXSCREEN) - width), 0);
-  y = max(min(read_setting("window_y", 64), GetSystemMetrics(SM_CYSCREEN) - height), 0);
+	y = max(min(read_setting("window_y", 64), GetSystemMetrics(SM_CYSCREEN) - height), 0);
 
-  hwnd = CreateWindow(szAppName, "OggDrop", WS_POPUP | WS_DLGFRAME, x, y,
-  width, height, NULL, NULL, hInstance, NULL);
+	hwnd = CreateWindow(szAppName, "OggDrop", WS_POPUP | WS_DLGFRAME, x, y,
+	width, height, NULL, NULL, hInstance, NULL);
 
-  g_hwnd = hwnd;
+	g_hwnd = hwnd;
 
 	ShowWindow(hwnd, iCmdShow);
 	UpdateWindow(hwnd);
 
-  font2 = CREATEFONT(10);
+	font2 = CREATEFONT(10);
 
 	SetTimer(hwnd, 1, 80, NULL);
 
-  qcValue = read_setting("quality", VORBIS_DEFAULT_QUALITY);
-  set_quality_coefficient(qcValue);
+	qcValue = read_setting("quality", VORBIS_DEFAULT_QUALITY);
+	set_quality_coefficient(qcValue);
 	set_always_on_top(hwnd, read_setting("always_on_top", 1));
 	set_logerr(hwnd, read_setting("logerr", 0));
-  set_showNBR(hwnd, read_setting("shownbr", 1));
-  (void) strcpy(approxBRCaption, "Nominal Bitrate");
+	set_showNBR(hwnd, read_setting("shownbr", 1));
+	(void) strcpy(approxBRCaption, "Nominal Bitrate");
 	
 	for (frame = 0; frame < 12; frame++)
 		hbm[frame] = LoadImage(hinst, MAKEINTRESOURCE(IDB_TF01 + frame), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
@@ -236,8 +238,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC desktop;
 	HBITMAP hbitmap;
 	HANDLE hdrop;
-  HFONT dfltFont;
-  int dfltBGMode;
+	HFONT dfltFont;
+	int dfltBGMode;
 	double percomp;
 
 	switch (message) {
@@ -275,54 +277,51 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		percomp = ((double)(totalfiles - numfiles) + 1 - (1 - file_complete)) / (double)totalfiles;
 
-    //SetRect(&vbrBR, 0, height - (height-14), width, height - (height-26));
-    SetRect(&vbrBR, 0, height - 35, width, height - 19);
+    	//SetRect(&vbrBR, 0, height - (height-14), width, height - (height-26));
+	    SetRect(&vbrBR, 0, height - 35, width, height - 19);
 
-    dfltBGMode = SetBkMode(offscreen, TRANSPARENT);
-    dfltFont = SelectObject(offscreen, font2);
+    	dfltBGMode = SetBkMode(offscreen, TRANSPARENT);
+	    dfltFont = SelectObject(offscreen, font2);
 
-    if (showNBR)
-    {
-      char nbrCaption[80];
+    	if (showNBR)
+    	{
+      		char nbrCaption[80];
 
-      (void) sprintf(nbrCaption, "%s: %.1f kbit/s ", 
-        approxBRCaption, nominalBitrate/1000);
+			(void) sprintf(nbrCaption, "%s: %.1f kbit/s ", 
+			approxBRCaption, nominalBitrate/1000);
 
-      DrawText(offscreen, nbrCaption, -1, 
-             &vbrBR, DT_SINGLELINE | DT_CENTER);
-    }
+			DrawText(offscreen, nbrCaption, -1, &vbrBR, DT_SINGLELINE | DT_CENTER);
+		}
 
 
 		SetRect(&bar1, 0, height - 23, (int)(file_complete * width), height - 13);
 		SetRect(&bar2, 0, height - 12, (int)(percomp * width), height - 2);
-//		SetRect(&bar1, 0, height - 19, (int)(file_complete * width), height - 9);
-//		SetRect(&bar2, 0, height - 8, (int)(percomp * width), height - 2);
 
 		FillRect(offscreen, &bar1, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
 		FillRect(offscreen, &bar2, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
 
-    if (fileName)
-    {
-      char* sep;
-      char  fileCaption[80];
+		if (fileName)
+		{
+			char* sep;
+			char  fileCaption[80];
 
-      if ((sep = strrchr(fileName, '\\')) != 0)
-        fileName = sep+1;
+			if ((sep = strrchr(fileName, '\\')) != 0)
+				fileName = sep+1;
 
-      (void) strcpy(fileCaption, "   ");
-      (void) strcat(fileCaption, fileName);
+			(void) strcpy(fileCaption, "   ");
+			(void) strcat(fileCaption, fileName);
 
-      DrawText(offscreen, fileCaption, -1, &bar1, DT_SINGLELINE | DT_LEFT);
-    }
+			DrawText(offscreen, fileCaption, -1, &bar1, DT_SINGLELINE | DT_LEFT);
+		}
 
-    SelectObject(offscreen, dfltFont);
-    SetBkMode(offscreen, dfltBGMode);
+		SelectObject(offscreen, dfltFont);
+		SetBkMode(offscreen, dfltBGMode);
 
 		BitBlt(hdc, 0, 0, width, height, offscreen, 0, 0, SRCCOPY);
 
 		EndPaint(hwnd, &ps);
 
-    return DefWindowProc(hwnd, message, wParam, lParam);
+		return DefWindowProc(hwnd, message, wParam, lParam);
 		//return 0;
 
 	case WM_TIMER:
@@ -357,12 +356,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_MOUSEMOVE:
 		if (dragging) {
-      point.x = LOSHORT(lParam);
-      point.y = HISHORT(lParam);
-      /* lParam can contain negative coordinates !
+			point.x = LOSHORT(lParam);
+			point.y = HISHORT(lParam);
+
+			/* lParam can contain negative coordinates !
 			point.x = LOWORD(lParam);
 			point.y = HIWORD(lParam);
-      */
+			*/
+
 			ClientToScreen(hwnd, &point);
 			SetWindowPos(hwnd, 0, point.x - start.x, point.y - start.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 			write_setting("window_x", point.x - start.x);
@@ -386,7 +387,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) 
-    {
+		{
  
 		case IDM_QUIT:
 			encoding_done = 1;
@@ -398,24 +399,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_LOGERR:
 			set_logerr(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
 			break;
-    case IDM_SHOWNBR:
-      set_showNBR(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
-      break;
+		case IDM_SHOWNBR:
+			set_showNBR(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
+			break;
+		case IDM_SAVEQUALITY:
+			{
+				int value = 
+				DialogBox(
+                	hinst,  
+                	MAKEINTRESOURCE(IDD_QUALITY),   
+                	hwnd, QCProc);
 
-    case IDM_SAVEQUALITY:
-      {
-        int value = 
-          DialogBox(
-                hinst,  
-                MAKEINTRESOURCE(IDD_QUALITY),   
-                hwnd, QCProc);
-
-        if (value == -2)
-          set_bitrate(bitRate);
-        else if (value != -1)
-          set_quality_coefficient(value);
-      }
-      break;
+				if (value == -2)
+				set_bitrate(bitRate);
+				else if (value != -1)
+				set_quality_coefficient(value);
+			}
+		break;
 
     } // LOWORD(wParam)
 		return 0;
@@ -443,216 +443,256 @@ int sliding=FALSE;
 BOOL CALLBACK QCProc(HWND hwndDlg, UINT message, 
                      WPARAM wParam, LPARAM lParam) 
 {
-  char editBuf[16];
-  EBUF buf2;
-  int br, i, len;
+	char editBuf[16];
+	EBUF buf2;
+	int br, i, len;
 
-  switch (message) 
-  { 
-  case WM_INITDIALOG: 
+	switch (message) 
+	{ 
+	case WM_INITDIALOG: 
  
-    sliding = FALSE;
+    	sliding = FALSE;
 
-    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETRANGE, 
-        (WPARAM) TRUE,                   // redraw flag 
-        (LPARAM) MAKELONG(0, 100));  // min. & max. positions 
+    	SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETRANGE, 
+        	(WPARAM) TRUE,                   // redraw flag 
+        	(LPARAM) MAKELONG(0, 100));  // min. & max. positions 
 
-    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPAGESIZE, 
-        0, (LPARAM) 4);                  // new page size 
+    	SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPAGESIZE, 
+        	0, (LPARAM) 4);                  // new page size 
  
-    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETSEL, 
-        (WPARAM) FALSE,                  // redraw flag 
-        (LPARAM) MAKELONG(0, 100));
+    	SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETSEL, 
+        	(WPARAM) FALSE,                  // redraw flag 
+        	(LPARAM) MAKELONG(0, 100));
 
-    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
-        (WPARAM) TRUE,                   // redraw flag 
-        (LPARAM) read_setting("quality", VORBIS_DEFAULT_QUALITY));
+    	SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
+        	(WPARAM) TRUE,                   // redraw flag 
+        	(LPARAM) read_setting("quality", VORBIS_DEFAULT_QUALITY));
 
-    SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETLIMITTEXT,
-        (WPARAM) 4, (LPARAM)0);
+    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETLIMITTEXT,
+        	(WPARAM) 4, (LPARAM)0);
 
-    (void) sprintf(editBuf, "%02.1f", 
+    	(void) sprintf(editBuf, "%02.1f", 
         (float) ((float)read_setting("quality", VORBIS_DEFAULT_QUALITY)/10.0));
 
-    SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
-        (WPARAM)0, (LPARAM)editBuf);
+    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,(WPARAM)0, (LPARAM)editBuf);
 
-    SetFocus(GetDlgItem(hwndDlg, IDC_EDIT1));
+    	SetFocus(GetDlgItem(hwndDlg, IDC_EDIT1));
 
-    SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
-                  (WPARAM)0, (LPARAM)-1);
+    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,(WPARAM)0, (LPARAM)-1);
 
-    (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
-                                     IDC_USEBITRATE,
-                                     read_setting("mode", IDC_USEQUALITY));
+		  qcValue = read_setting("quality", VORBIS_DEFAULT_QUALITY);
 
-    for (br=0; bitRateCaption[br] != 0; br++)
-    {
-      SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_ADDSTRING,
-          (WPARAM)0, (LPARAM) bitRateCaption[br]);
+			nominalBitrate = qc2approxBitrate(qcValue);
+	    (void) sprintf(editBuf, "%03.1fkbps", nominalBitrate/1000);
 
-      SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_SETITEMDATA, 
-          (WPARAM) br, (LPARAM) atoi(bitRateCaption[br]));
-    }
+    	SendDlgItemMessage(hwndDlg, IDC_EDIT2, WM_SETTEXT,(WPARAM)0, (LPARAM)editBuf);
 
-    bitRate = read_setting("bitrate", 128);
-    (void) sprintf(editBuf, "%d", bitRate);
-    
-    for(br=0; bitRateCaption[br] != 0; br++)
-    {
-      if ( ! strcmp(bitRateCaption[br], editBuf) )
-      {
-        SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_SETCURSEL,
-            (WPARAM) br, (LPARAM) 0);
-        break;
-      }
-    }
+    	(void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+        	                             IDC_USEBITRATE,
+            	                         read_setting("mode", IDC_USEQUALITY));
 
-   break;
+    	for (br=0; bitRateCaption[br] != 0; br++)
+    	{
+      	SendDlgItemMessage(hwndDlg, IDC_BITRATE, CB_ADDSTRING,
+          	(WPARAM)0, (LPARAM) bitRateCaption[br]);
+
+      	SendDlgItemMessage(hwndDlg, IDC_BITRATE, CB_SETITEMDATA, 
+          	(WPARAM) br, (LPARAM) atoi(bitRateCaption[br]));
+    	}
+
+    	bitRate = read_setting("bitrate", 128);
+    	(void) sprintf(editBuf, "%d", bitRate);
+
+   	for(br=0; bitRateCaption[br] != 0; br++)
+    	{
+      		if ( ! strcmp(bitRateCaption[br], editBuf) )
+      		{
+        		SendDlgItemMessage(hwndDlg, IDC_BITRATE, CB_SETCURSEL,
+            		(WPARAM) br, (LPARAM) 0);
+        		break;
+      		}
+    	}
+
+   		break;
 
    case WM_HSCROLL:
 
-    sliding = TRUE;
+    	sliding = TRUE;
 
-    qcValue = (LONG)SendDlgItemMessage(hwndDlg, IDC_SLIDER1, 
+    	qcValue = (LONG)SendDlgItemMessage(hwndDlg, IDC_SLIDER1, 
                         TBM_GETPOS, (WPARAM)0, (LPARAM)0 );
 
-    (void) sprintf(editBuf, "%02.1f", (float)(((float)qcValue/10.0)));
+    	(void) sprintf(editBuf, "%02.1f", (float)(((float)qcValue/10.0)));
 
-    SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
-        (WPARAM)0, (LPARAM)editBuf);
+    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+        	(WPARAM)0, (LPARAM)editBuf);
 
-    (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
-                                     IDC_USEBITRATE,
-                                     IDC_USEQUALITY);
-    (void) strcpy(approxBRCaption, "Nominal Bitrate");
+    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,(WPARAM)0, (LPARAM)editBuf);
+
+//    	SetFocus(GetDlgItem(hwndDlg, IDC_EDIT1));
+//    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,(WPARAM)0, (LPARAM)-1);
+
+			nominalBitrate = qc2approxBitrate(qcValue);
+			(void) sprintf(editBuf, "%03.1fkbps", nominalBitrate/1000);
+
+			SendDlgItemMessage(hwndDlg, IDC_EDIT2, WM_SETTEXT,(WPARAM)0, (LPARAM)editBuf);
+
+
+    	(void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+        	                         IDC_USEBITRATE,
+            	                         IDC_USEQUALITY);
+    	(void) strcpy(approxBRCaption, "Nominal Bitrate");
     
-    break;
+    	break;
 
     case WM_CLOSE:
-      EndDialog(hwndDlg, -1);
-    break;
+      	EndDialog(hwndDlg, -1);
+    	break;
 
     case WM_COMMAND: 
-      switch (LOWORD(wParam)) 
-      { 
-        case IDC_BUTTON1:
-          if (IsDlgButtonChecked(hwndDlg, IDC_USEQUALITY) == BST_CHECKED)
-          {
-            write_setting("mode", IDC_USEQUALITY);
-            oe_mode = OE_MODE_QUALITY;
-            nominalBitrate = 0;
-            (void) strcpy(approxBRCaption, "Nominal Bitrate");
-            EndDialog(hwndDlg, qcValue);
-          }
-          else
-          {
-            write_setting("mode", IDC_USEBITRATE);
-            oe_mode = OE_MODE_BITRATE;
-            nominalBitrate = (float)(bitRate*1000);
-            EndDialog(hwndDlg, -2); // use bitrate
-          }
-          return TRUE;
+      	switch (LOWORD(wParam)) 
+      	{ 
+        	case IDC_BUTTON1:
+          		if (IsDlgButtonChecked(hwndDlg, IDC_USEQUALITY) == BST_CHECKED)
+          		{
+            		write_setting("mode", IDC_USEQUALITY);
+            		oe_mode = OE_MODE_QUALITY;
+            		(void) strcpy(approxBRCaption, "Nominal Bitrate");
+            		EndDialog(hwndDlg, qcValue);
+          		}
+          		else
+          		{
+            		write_setting("mode", IDC_USEBITRATE);
+            		oe_mode = OE_MODE_BITRATE;
+            		nominalBitrate = (float)(bitRate*1000);
+            		(void) strcpy(approxBRCaption, "Bitrate");
+            		EndDialog(hwndDlg, -2); // use bitrate
+          		}
+          		return TRUE;
         
-        case IDC_BITRATE:
-          (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
-                                           IDC_USEBITRATE,
-                                           IDC_USEBITRATE);
+        	case IDC_BITRATE:
+          		(void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                	                           	 IDC_USEBITRATE,
+                                           		 IDC_USEBITRATE);
 
-          if ((br = SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_GETCURSEL,
-                   (WPARAM) 0, (LPARAM) 0)) != LB_ERR)
-          {
-            bitRate = SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_GETITEMDATA,
-                   (WPARAM) br, (LPARAM) 0);
-          }
+          		if ((br = SendDlgItemMessage(hwndDlg, IDC_BITRATE, CB_GETCURSEL,
+                		   (WPARAM) 0, (LPARAM) 0)) != LB_ERR)
+          		{
+            			bitRate = SendDlgItemMessage(hwndDlg, IDC_BITRATE, CB_GETITEMDATA,
+                   			(WPARAM) br, (LPARAM) 0);
+          		}
 
-          (void) strcpy(approxBRCaption, "Bitrate");
-          nominalBitrate = (float)(bitRate*1000);
+          		(void) strcpy(approxBRCaption, "Bitrate");
+          		nominalBitrate = (float)(bitRate*1000);
 
-          break;
+          		break;
 
-        case IDC_EDIT1:
+        	case IDC_EDIT1:
  
-
-          switch (HIWORD(wParam))
-          {
+          		switch (HIWORD(wParam))
+          		{
            
-          case EN_UPDATE:
-          {
+          			case EN_UPDATE:
+          			{
 
-            buf2.buflen = sizeof(buf2.buf);
+            			buf2.buflen = sizeof(buf2.buf);
 
-            len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
-              (WPARAM) 0, (LPARAM) buf2.buf);
+            			len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
+              					(WPARAM) 0, (LPARAM) buf2.buf);
 
-            buf2.buf[len] = '\0';
+            			buf2.buf[len] = '\0';
 
-            for (i=0; i<len; i++)
-            {
-              if ( ! isdigit(buf2.buf[i]) && buf2.buf[i] != '.')
-              {
-                buf2.buf[i] = '\0';
-                SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
-                  (WPARAM) 0, (LPARAM) buf2.buf);
-              }
-            }
+            			for (i=0; i<len; i++)
+            			{
+              				if ( ! isdigit(buf2.buf[i]) && buf2.buf[i] != '.')
+              				{
+                				buf2.buf[i] = '\0';
+                				SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+                  					(WPARAM) 0, (LPARAM) buf2.buf);
+              				}
+            			}
             
-            if ( atof(buf2.buf) > 10.0f )
-            {
-              SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
-                  (WPARAM) 0, (LPARAM) "10.0");
+            			if ( atof(buf2.buf) > 10.0f )
+            			{
+              				SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+                  				(WPARAM) 0, (LPARAM) "10.0");
 
-              SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
-                  (WPARAM)0, (LPARAM)-1);
-            }
+              				SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
+                  				(WPARAM)0, (LPARAM)-1);
+            			}
 
-            (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
-                                             IDC_USEBITRATE,
-                                             IDC_USEQUALITY);
-            (void) strcpy(approxBRCaption, "Nominal Bitrate");
-          }
+            			(void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                        			                     IDC_USEBITRATE,
+                                    			         IDC_USEQUALITY);
+            			(void) strcpy(approxBRCaption, "Nominal Bitrate");
+          			}
             
-            break;
+            		break;
 
-          case EN_CHANGE:
-            if ( ! sliding )
-            {
-              float v=0.0;
+          			case EN_CHANGE:
+            			if ( ! sliding )
+            			{
+              				float v=0.0;
 
-              buf2.buflen = sizeof(buf2.buf);
-              len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
-              (WPARAM) 0, (LPARAM) buf2.buf);
+              				buf2.buflen = sizeof(buf2.buf);
+              				len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
+              						(WPARAM) 0, (LPARAM) buf2.buf);
 
-              buf2.buf[len] = '\0';
+              				buf2.buf[len] = '\0';
             
-              v = (float)atof(buf2.buf);
+              				v = (float)atof(buf2.buf);
 
-              qcValue = (int)(v*10.0f);
+              				qcValue = (int)(v*10.0f);
 
-              //MessageBox(g_hwnd, buf2.buf, "Second", 0);
+              				//MessageBox(g_hwnd, buf2.buf, "Second", 0);
 
-              SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
-                (WPARAM) TRUE,                   // redraw flag 
-                (LPARAM)(int)(v*10.0f));
-            }
-            else
-              sliding = FALSE;
+              				SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
+                					(WPARAM) TRUE,                   // redraw flag 
+                					(LPARAM)(int)(v*10.0f));
+            			}
+            			else
+              				sliding = FALSE;
 
             
-          default:
-            break;
-          }
+          			default:
+            		break;
+          		}
 
-        default: 
-            break; 
-      }
-      break; 
+        		default: 
+            	break; 
+      		}
+      		break; 
 
 
-      default:
+      	default:
         break;
-  } 
-  return FALSE; 
+	} 
+	return FALSE; 
 } 
- 
-        
+
+
+float qc2approxBitrate(int qcValue)
+{
+  float approxBitrate;
+
+  if ( qcValue < 41)
+  {
+    approxBitrate = 1000 * (float)(((float)qcValue/10.0)*32);
+  }
+  else if ( qcValue < 81 )
+  {
+    approxBitrate = 1000 * (float)(((float)qcValue/10.0)*32);
+  }
+  else if ( qcValue < 91 )
+  {
+    approxBitrate = 1000 *(float)((((float)qcValue/10.0)*32)+
+							       ((((float)qcValue/10)-8)*32));
+  }
+  else
+  {
+    approxBitrate = 1000 * (float)((((float)qcValue/10.0)*32)+
+	    ((((float)qcValue/10)-8)*32)+((((float)qcValue/10)-9)*116));
+  }
+
+  return approxBitrate;
+}
