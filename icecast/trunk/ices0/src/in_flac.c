@@ -109,11 +109,13 @@ ices_flac_open (input_stream_t* self, char* buf, size_t len)
     ices_log_error("Could not find FLAC metadata header");
     free(flac_data);
     FLAC__stream_decoder_delete(decoder);
-    return 1;;
+    return 1;
   }
   if (!flac_data->parsed) {
     ices_log_error("Could not find FLAC metadata header in prebuffer");
-    goto errData;
+    free(flac_data);
+    FLAC__stream_decoder_delete(decoder);
+    return 1;
   }
 
   self->type = ICES_INPUT_FLAC;
