@@ -20,3 +20,15 @@ Redhat Linux 5.2
 	gcc version 2.8.1
 	perl 5.0 patchlevel 4 subversion 4
 	Without xml, lame and python
+SunOS 5.7
+	Kernel Generic_106541-02 on a sun4m SUNW,SPARCstation-20
+	gcc version 2.95.1
+	without xml, lame, python and perl.
+SunOS 5.7
+	Kernel Generic_106541-08 sun4u sparc SUNW,Ultra-4
+	gcc version 2.8.0
+	    version 2.8.1
+	without xml, lame, python
+	Perl 5.0 patchlevel 3 subversion 0
+	     5.0 patchlevel 4 subversion 3
+	     5.0 patchlevel 5 subversion 3
