@@ -1,4 +1,4 @@
-$Id: README.win32sdk,v 1.4 2001/09/15 08:46:22 cwolf Exp $
+$Id: README.win32sdk,v 1.5 2001/09/15 08:56:12 cwolf Exp $
 $Name:  $
 
 win32sdk Readme, 13 September, 2001 Chris Wolf
@@ -52,7 +52,7 @@ BUILDING
       in "makesdk.bat" by invoking the "build_all.bat" script.
 
   Note that the makefiles are generated from the IDE, and are thus a
-  reflection of the workspace and project file states.  It id strongly
+  reflection of the workspace and project file states.  It is strongly
   recommended to make changes via the IDE and export the makefiles,
   rather than tweaking the makefiles directly.
 
