@@ -189,7 +189,8 @@ for(my$i=1;$i<=99;$i++){
 
 $totaly=int(46+$window_quit->reqheight()+10+$y);
 
-$toplevel->geometry($width.'x'.$totaly);
+$toplevel->configure(-width=>$width);
+$toplevel->configure(-height=>$totaly);
 
 $window_scan->configure(-command=>[sub{Rescan();}]);
 $window_check->configure(-command=>[sub{Recheck();}]);
@@ -517,7 +518,8 @@ sub AlbumUpdate{
     my $geometry=$toplevel->geometry();
     $toplevel->minsize(400,$totaly);
     $geometry=~/^(\d+)/;
-    $toplevel->geometry($1."x$totaly");
+    $toplevel->configure(-width=>$1);
+    $toplevel->configure(-height=>$totaly);
 }
 
 sub Shutdown{
@@ -579,6 +581,7 @@ sub Alert{
     my$y=$yy+$hh/2-$height/2;
 
     $modal->geometry($width."x".$height."+".int($x)."+".int($y));
+
     $modal->resizable(FALSE,FALSE);
     $modal->transient($window);
     $modal_exit->configure(-command=>[sub{$modal->destroy();undef $modal}]);
