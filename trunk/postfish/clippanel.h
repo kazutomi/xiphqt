@@ -28,3 +28,6 @@ extern void clippanel_create(postfish_mainpanel *mp,
 			     GtkWidget **activebutton);
 extern void clippanel_feedback(int workp);
 extern void clippanel_reset(void);
+
+extern void clippanel_state_from_config(int bank);
+extern void clippanel_state_to_config(int bank);
