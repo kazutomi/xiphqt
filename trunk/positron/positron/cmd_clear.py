@@ -32,6 +32,8 @@ from neuros import Neuros
 import neuros as neuros_module
 import util
 
+import os
+
 def run(config, neuros, args):
     if len(args) == 0:
         args = ["audio", "unidedhisi", "idedhisi", "failedhisi"]
@@ -45,3 +47,9 @@ def run(config, neuros, args):
         except neuros_module.Error, e:
             print "Error:", e
     
+    try:
+        filename = os.path.join(*neuros.mountpoint_parts +
+                                [neuros.DB_DIR, 'tracks.txt'])
+        os.remove(filename)
+    except OSError:
+        pass
