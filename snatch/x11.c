@@ -53,7 +53,7 @@ static int rpfile_lowest=0;
 
 static void queue_task(void (*f)(void));
 static void initialize();
-
+static int videocount=0;
 
 static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
   int x=0;
@@ -377,7 +377,7 @@ int XConfigureWindow(Display *display,Window id,unsigned int bitmask,XWindowChan
       logo_y=-1;
     }
     if(bitmask & CWWidth){
-      rpplay_width=values->width;
+      rpplay_width=values->width; 
       logo_y=-1;
     }
   }
@@ -385,10 +385,31 @@ int XConfigureWindow(Display *display,Window id,unsigned int bitmask,XWindowChan
   if(id==rpvideo_window){
     if(bitmask & CWHeight){
       video_height=values->height;
+      CloseOutputFile();
     }
     if(bitmask & CWWidth){
       video_width=values->width;
+      CloseOutputFile();
     }
+  }
+
+  return(ret);
+}
+
+int XResizeWindow(Display *display,Window id,unsigned int width,unsigned int height){
+  
+  int ret=(*xlib_xresizewindow)(display, id, width, height);
+  
+  if(id==rpplay_window){
+    rpplay_height=height;
+    rpplay_width=width; 
+    logo_y=-1;
+  }
+
+  if(id==rpvideo_window){
+    video_height=height;
+    video_width=width;
+    CloseOutputFile();
   }
 
   return(ret);
@@ -495,7 +516,15 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
   int ret;
 
   if(snatch_active==1 && id==rpvideo_window){
+    videocount++;
+    if(videocount>5 && outfile_fd<0)OpenOutputFile();
+    if(outfile_fd>=0){
 
+
+
+
+
+    }    
   }
 
   /* Subvert the Real sign on logo; paste the Snatch logo in.
@@ -631,7 +660,15 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 
 
   if(snatch_active==1 && id==rpvideo_window){
+    videocount++;
+    if(videocount>5 && outfile_fd<0)OpenOutputFile();
+    if(outfile_fd>=0){
 
+
+
+
+
+    }
   }
   
   return(ret);
@@ -639,6 +676,7 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 
 int XCloseDisplay(Display  *d){
   int ret=(*xlib_xclose)(d);
+  CloseOutputFile();
   if(debug)fprintf(stderr,"    ...: X display closed; goodbye.\n\n");
   return(ret);
 }

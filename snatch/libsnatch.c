@@ -63,6 +63,7 @@ static int      (*xlib_xputimage)(Display *,Drawable,GC,XImage *,int,int,int,int
 static int      (*xlib_xshmputimage)(Display *,Drawable,GC,XImage *,int,int,int,int,
 				     unsigned int,unsigned int,Bool);
 
+static int      (*xlib_xresizewindow)(Display *,Window,unsigned int,unsigned int);
 
 static Display *Xdisplay;
 
@@ -92,6 +93,9 @@ static int fake_videop=0;
 static void (*QueuedTask)(void);
 
 static int outfile_fd=-1;
+
+static void CloseOutputFile();
+static void OpenOutputFile();
 
 #include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
 		    Oh and I'm lazy. */
@@ -194,6 +198,8 @@ void *backchannel_thread(void *dummy){
 	if(ret==1)
 	  FakeKeySym(sym,mod,rpplay_window);
       }
+      CloseOutputFile(); /* it will only happen on Robot commands that would
+			    be starting a new file */
       break;
     case 'U':
     case 'P':
@@ -286,6 +292,7 @@ void initialize(void){
     xlib_xchangeproperty=get_me_symbol("XChangeProperty");
     xlib_xputimage=get_me_symbol("XPutImage");
     xlib_xshmputimage=get_me_symbol("XShmPutImage");
+    xlib_xresizewindow=get_me_symbol("XResizeWindow");
 
     /* output path? */
     outpath=nstrdup(getenv("SNATCH_OUTPUT_PATH"));
@@ -508,17 +515,22 @@ int close(int fd){
     if(debug)
       fprintf(stderr,
 	      "    ...: RealPlayer closed audio playback fd %d\n",fd);
+    CloseOutputFile();
   }
   
   return(ret);
 }
 
 ssize_t write(int fd, const void *buf,size_t count){
-  int ret;
   if(fd==audio_fd){
-    //    ret=((*libc_write)(fd,buf,count));
-    //return(ret);
+    if(count>0){
+      if(outfile_fd<0)OpenOutputFile();
+      if(outfile_fd>=0){ /* always be careful */
+	
 
+
+      }
+    }
     if(fake_audiop)return(count);
   }
 
@@ -570,6 +582,7 @@ int ioctl(int fd,unsigned long int rq, ...){
 	  fprintf(stderr,
 		  "    ...: Audio output sampling rate set to %dHz.\n",
 		    audio_rate);
+	CloseOutputFile();
 	break;
       case SNDCTL_DSP_CHANNELS:
 	audio_channels=*(int *)arg;
@@ -577,6 +590,7 @@ int ioctl(int fd,unsigned long int rq, ...){
 	  fprintf(stderr,
 		  "    ...: Audio output set to %d channels.\n",
 		  audio_channels);
+	CloseOutputFile();
 	break;
       case SNDCTL_DSP_SETFMT:
 	audio_format=*(int *)arg;
@@ -584,6 +598,7 @@ int ioctl(int fd,unsigned long int rq, ...){
 	  fprintf(stderr,
 		  "    ...: Audio output format set to %s.\n",
 		  formatname(audio_format));
+	CloseOutputFile();
 	break;
       case SNDCTL_DSP_GETOSPACE:
 	if(fake_audiop){
@@ -597,17 +612,18 @@ int ioctl(int fd,unsigned long int rq, ...){
 	    fprintf(stderr,"    ...: Audio output buffer size requested; faking 64k\n");
 	  ret=0;
 	}
+	CloseOutputFile();
 	break;
       case SNDCTL_DSP_GETODELAY: /* Must reject the ODELAY if we're not going to track 
 				    audio bytes and timing! */
 	if(fake_audiop){
-	  int foo=*(int *)arg;
 	  if(debug)
 	    fprintf(stderr,
 		    "    ...: Rejecting SNDCTL_DSP_GETODELAY ioctl()\n");
 	  *(int *)arg=0;
 	  ret=-1;
 	}
+	CloseOutputFile();
 	break;
       }
     
@@ -625,41 +641,88 @@ static void queue_task(void (*f)(void)){
   pthread_mutex_unlock(&event_mutex);
 }
 
-#if 0
 static void OpenOutputFile(){
-  if(strcmp(outpath,"-")){
-    outfile_fd=STDOUT_FILENO;
-  }else{
-    struct stat buf;
-    int ret=stat(outpath,&buf);
-    if(ret){
-      fprintf("**ERROR: Could not stat requested output path!\n"
-	      "         %s: %s\n\n",outpath,strerror(errno));
-      outfile_fd=-2;
+  if(outfile_fd!=2){
+    if(!strcmp(outpath,"-")){
+      outfile_fd=STDOUT_FILENO;
+      if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
     }else{
-      if(S_ISDIR(buf.st_mode)){
-	/* construct a new filename */
-	struct tm *now;
-	char buf2[256];
-	char buf1[256];
-	now=localtime(time(NULL));
-	strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
-	//if(
-	//sprintf(buf2,"%s_%s%dHz_%dx%d.snatch",buf1,
-
-	/****** XXXXX */
-	
+      struct stat buf;
+      int ret=stat(outpath,&buf);
+      if(ret){
+	fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
+		"         %s: %s\n\n",outpath,strerror(errno));
+	outfile_fd=-2;
       }else{
-	outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
-	if(outfile_fd<0){
-	  fprintf("**ERROR: Could not stat requested output path!\n"
-		  "         %s: %s\n\n",outpath,strerror(errno));
-	  outfile_fd=-2;
+	if(S_ISDIR(buf.st_mode)){
+	  /* construct a new filename */
+	  struct tm *now;
+	  char buf2[256];
+	  char buf1[256];
+	  time_t nows;
+	  nows=time(NULL);
+	  now=localtime(&nows);
+	  strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
+	  if(videocount){
+	    if(audio_channels){
+	      sprintf(buf2,"%s_%s%dHz_%dx%d_AV.snatch",
+		      buf1,
+		      (audio_channels==1?"mono":"stereo"),
+		      audio_rate,
+		      video_width,
+		      video_height);
+	    }else{
+	      sprintf(buf2,"%s_%dx%d_V.snatch",
+		      buf1,
+		      video_width,
+		      video_height);
+	    }
+	  }else{
+	    sprintf(buf2,"%s_%s%dHz_A.snatch",
+		    buf1,
+		    (audio_channels==1?"mono":"stereo"),
+		    audio_rate);
+	  }
+      	  
+	  outfile_fd=(*libc_open)(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
+	  if(outfile_fd<0){
+	    fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
+		    "         %s: %s\n\n",buf2,strerror(errno));
+	    outfile_fd=-2;
+	  }else
+	    if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
+	  
+	}else{
+	  outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
+	  if(outfile_fd<0){
+	    fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
+		    "         %s: %s\n\n",outpath,strerror(errno));
+	    outfile_fd=-2;
+	  }else{
+	    if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
+	  }
 	}
       }
     }
   }
 }
 
+static void CloseOutputFile(){
+  if(outfile_fd>=0){
+    videocount=0;
+    audio_channels=0;
+    audio_rate=0;
 
-#endif
+    if(debug)fprintf(stderr,"    ...: Capture stopped.\n");
+    if(outfile_fd!=STDOUT_FILENO)
+      (*libc_close)(outfile_fd);
+    outfile_fd=-1;
+  }
+}
+
+
+
+
+
+
+
