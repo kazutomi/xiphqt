@@ -1,0 +1,90 @@
+# -*-Perl-*-
+
+use Tk;
+
+package MGMmodule::diskuse;
+
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+    # how many filesystems?
+    my($fs)=$this->{"filesystems"}=$this->read_proc;
+    unless ($fs>0){
+	$toplevel->optionAdd("$xclass*active",'false',21);
+    }
+    $toplevel->optionAdd("$xclass.order",100,21);
+    $this;
+}
+
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xpath=$this->{"xpath"};
+    # modify defaults
+    $toplevel->optionAdd("$xpath*scalerefresh",30000,21); # slower
+    my@temp=$this->read_proc;
+    my$fs=$this->{"fs"}=shift @temp;
+
+    for(my$i=0;$i<$fs;$i++){
+	my$label=shift @temp;
+	my$cap=shift @temp;
+	my($adj,$mult)=MGM::Graph::scalemod($cap);
+	$adj=substr $adj,0,3;
+
+	$toplevel->optionAdd("$xpath.bar.$i.label", "$label ($adj$mult)",22);
+	shift @temp;
+    }
+
+    $toplevel->optionAdd("$xpath.scalewidadj", 75*$fs,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
+
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,100,'% used',$fs);
+
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);          
+    $this;
+}
+
+sub module_run{
+    my$this=shift;
+    $this->{"graph"}=MGM::Graph->new($this,num=>$this->{"fs"},
+				     prompt=>'% used',fixed=>1,
+				     rangesetting=>100,rangecurrent=>100);
+    $this->module_update;
+    $this->{"graph"}{"widget"};        # must return the widget
+}
+
+sub read_proc{
+    my$output=qx{'df' '-k'};
+    my@temp=split "\n",$output;
+    my@out;
+    my$count=0;
+    if($temp[0]=~m/Filesystem/){
+	shift @temp;
+	while(defined(my$line=shift @temp)){
+	    if($line=~m/^(\S+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)/){
+		$count++;
+		push @out, ($1,$2*1024,$3);
+	    }
+	}
+    }
+    ($count,@out);
+}
+
+sub module_update{
+    my$this=shift;
+    my@data=$this->read_proc;
+    my$fs=shift @data;
+    my@adj;
+    while($#data>0){
+	shift @data;
+	shift @data;
+	push @adj, (shift @data);
+    }
+    $this->{"graph"}->set(@adj);
+}
+
+bless {};
+

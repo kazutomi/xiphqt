@@ -33,6 +33,7 @@ sub module_init{
 	}
     }
     $this->{"maildrop"}=$maildrop;
+    $toplevel->optionAdd("$xclass.order", 100,21);
     $this;
 }
 
