@@ -2145,7 +2145,7 @@ int form_handle_char(form *f,int c){
 /********************** main run screen ***********************/
 void main_update_master(int n,int y){
   if(menu==MENU_MAIN){
-    char buf[4];
+    char buf[5];
     if(n>300)n=300;
     if(n<0)n=0;
 
@@ -2541,9 +2541,9 @@ int save_top_level(char *fn){
 int main_menu(){
   clear();
   move(0,0);
-  addstr("MTG Beaverphonic build "VERSION": ");
+  addnstr("MTG Beaverphonic build "VERSION": ",67);
   attron(A_BOLD);
-  addstr(program);
+  mvaddnstr(1,0,program, -1);
   attroff(A_BOLD);
   update_editable();
 
@@ -2607,10 +2607,11 @@ int main_menu(){
 	return(MENU_QUIT);
       }
       move(0,0);
-      addstr("MTG Beaverphonic build "VERSION": ");
+      addnstr("MTG Beaverphonic build "VERSION": ",67);
       attron(A_BOLD);
-      addstr(program);
+      mvaddnstr(1,0,program,-1);
       attroff(A_BOLD);
+      update_editable();
       break;
     case 'e':
       if(editable && cue_list_number<cue_count)return(MENU_EDIT);
