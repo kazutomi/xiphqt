@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility for paring low hit count cells from lattice codebook
- last mod: $Id: latticepare.c,v 1.11 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: latticepare.c,v 1.2 2000/05/08 20:49:50 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,11 +21,11 @@
 #include <math.h>
 #include <string.h>
 #include <errno.h>
-#include "../lib/scales.h"
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
 #include "vqgen.h"
 #include "vqsplit.h"
-#include "../lib/os.h"
 
 /* Lattice codebooks have two strengths: important fetaures that are
    poorly modelled by global error minimization training (eg, strong
@@ -56,20 +57,20 @@
    produces a new output book on stdout 
 */
 
-static float _dist(int el,float *a, float *b){
+static double _dist(int el,double *a, double *b){
   int i;
-  float acc=0.f;
+  double acc=0.;
   for(i=0;i<el;i++){
-    float val=(a[i]-b[i]);
+    double val=(a[i]-b[i]);
     acc+=val*val;
   }
   return(acc);
 }
 
-static float *pointlist;
+static double *pointlist;
 static long points=0;
 
-void add_vector(codebook *b,float *vec,long n){
+void add_vector(codebook *b,double *vec,long n){
   int dim=b->dim,i,j;
   int step=n/dim;
   for(i=0;i<step;i++){
@@ -79,75 +80,113 @@ void add_vector(codebook *b,float *vec,long n){
   }
 }
 
-static int bestm(codebook *b,float *vec){
+/* search neighboring [non-culled] cells for lowest distance.  Spiral
+   out in the event culling is deep */
+static int secondbest(codebook *b,double *vec,int best){
   encode_aux_threshmatch *tt=b->c->thresh_tree;
   int dim=b->dim;
-  int i,k,o;
-  int best=0;
-  
-  /* what would be the closest match if the codebook was fully
-     populated? */
-  
-  for(k=0,o=dim-1;k<dim;k++,o--){
-    int i;
-    for(i=0;i<tt->threshvals-1;i++)
-      if(vec[o]<tt->quantthresh[i])break;
-    best=(best*tt->quantvals)+tt->quantmap[i];
-  }
-  return(best);
-}
+  int i,j,spiral=1;
+  int *index=alloca(dim*sizeof(int)*2);
+  int *mod=index+dim;
+  int entry=best;
 
-static int closest(codebook *b,float *vec,int current){
-  encode_aux_threshmatch *tt=b->c->thresh_tree;
-  int dim=b->dim;
-  int i,k,o;
-
-  float bestmetric=0;
+  double bestmetric=0;
   int bestentry=-1;
-  int best=bestm(b,vec);
 
-  if(current<0 && b->c->lengthlist[best]>0)return best;
+  /* decompose index */
+  for(i=0;i<dim;i++){
+    index[i]=best%tt->quantvals;
+    best/=tt->quantvals;
+  }
 
-  for(i=0;i<b->entries;i++){
-    if(b->c->lengthlist[i]>0 && i!=best && i!=current){
-      float thismetric=_dist(dim, vec, b->valuelist+i*dim);
-      if(bestentry==-1 || thismetric<bestmetric){
-	bestentry=i;
-	bestmetric=thismetric;
+  /* hit one off on all sides of it; most likely we'll find a possible
+     match */
+  /* suboptimal for unaligned entries */
+#if 0
+  for(i=0;i<dim;i++){
+    /* one up */
+    if(index[i]+1<tt->quantvals){
+      int newentry=entry+rint(pow(tt->quantvals,i));
+      if(b->c->lengthlist[newentry]>0){
+	double thismetric=_dist(dim, vec, b->valuelist+newentry*dim);
+
+	if(bestentry==-1 || bestmetric>thismetric){
+	  bestmetric=thismetric;
+	  bestentry=newentry;
+	}
       }
     }
+      
+    /* one down */
+    if(index[i]-1>=0){
+      int newentry=entry-rint(pow(tt->quantvals,i));
+      if(b->c->lengthlist[newentry]>0){
+	double thismetric=_dist(dim, vec, b->valuelist+newentry*dim);
+
+	if(bestentry==-1 || bestmetric>thismetric){
+	  bestmetric=thismetric;
+	  bestentry=newentry;
+	}
+      }
+    }
+  }
+     
+#endif 
+  /* no match?  search all cells, binary count, that are one away on
+     one or more axes.  Then continue out until there's a match.
+     We'll find one eventually, it's relatively OK to be inefficient
+     as the attempt above will almost always succeed */
+  while(bestentry==-1){
+    for(i=0;i<dim;i++)mod[i]= -spiral;
+    while(1){
+      int newentry=entry;
+
+      /* update the mod */
+      for(j=0;j<dim;j++){
+	if(mod[j]<=spiral)
+	  break;
+	else{
+	  if(j+1<dim){
+	    mod[j]= -spiral;
+	    mod[j+1]++;
+	  }
+	}
+      }
+      if(j==dim)break;
+
+      /* reconstitute the entry */
+      for(j=0;j<dim;j++){
+	if(index[j]+mod[j]<0 || index[j]+mod[j]>=tt->quantvals){
+	  newentry=-1;
+	  break;
+	}
+	newentry+=mod[j]*rint(pow(tt->quantvals,j));
+      }
+
+      if(newentry!=-1 && newentry!=entry)
+	if(b->c->lengthlist[newentry]>0){
+	  double thismetric=_dist(dim, vec, b->valuelist+newentry*dim);
+
+	  if(bestentry==-1 || bestmetric>thismetric){
+	    bestmetric=thismetric;
+	    bestentry=newentry;
+	  }
+	}
+      mod[0]++;
+    }
+    spiral++;
   }
 
   return(bestentry);
 }
 
-static float _heuristic(codebook *b,float *ppt,int secondbest){
-  float *secondcell=b->valuelist+secondbest*b->dim;
-  int best=bestm(b,ppt);
-  float *firstcell=b->valuelist+best*b->dim;
-  float error=_dist(b->dim,firstcell,secondcell);
-  float *zero=alloca(b->dim*sizeof(float));
-  float fromzero;
-  
-  memset(zero,0,b->dim*sizeof(float));
-  fromzero=sqrt(_dist(b->dim,firstcell,zero));
-
-  return(error/fromzero);
-}
-
-static int longsort(const void *a, const void *b){
-  return **(long **)b-**(long **)a;
-}
-
 void usage(void){
   fprintf(stderr,"Ogg/Vorbis lattice codebook paring utility\n\n"
-	  "usage: latticepare book.vqh data.vqd <target_cells> <protected_cells> base\n"
+	  "usage: latticepare book.vqh data.vqd <target_cells>\n"
+	  "                   -<n_0,n_1,...> [-<n_0,n_1,...>]\n\n"
 	  "where <target_cells> is the desired number of final cells (or -1\n"
-	  "                     for no change)\n"
-	  "      <protected_cells> is the number of highest-hit count cells\n"
-	  "                     to protect from dispersal\n"
-	  "      base is the base name (not including .vqh) of the new\n"
-	  "                     book\n\n");
+	  "for no change) and n,n,n,n...n  are explicit entries to cull\n\n"
+	  "produces new book on stdout\n\n");
   exit(1);
 }
 
@@ -156,150 +195,150 @@ int main(int argc,char *argv[]){
   codebook *b=NULL;
   int entries=0;
   int dim=0;
-  long i,j,target=-1,protect=-1;
-  FILE *out=NULL;
+  long i,j,target=-1;
+  int *cvec=NULL;
 
-  int argnum=0;
+  long *cullist=malloc(sizeof(int));
+  long culls=0;
 
   argv++;
+
+
   if(*argv==NULL){
     usage();
     exit(1);
   }
 
+  /* yes, this is evil.  However, it's very convenient to parse file
+     extentions */
+
   while(*argv){
     if(*argv[0]=='-'){
+      char *ptr=argv[0];
+      long index=0;
+      /* explicit cull */
+      if(!b)usage();
+      if(!cvec)cvec=malloc(dim*sizeof(int)); /* lazy ;-) */
+      
+      for(i=0;i<dim;i++){
+	if(!ptr){
+	  fprintf(stderr,"too few values in cull argument %s\n",argv[0]);
+	  exit(1);
+	}
+	cvec[i]=atoi(ptr+1);
+	if(cvec[i]<0 || cvec[i]>=b->c->thresh_tree->quantvals){
+	  fprintf(stderr,"value too large in cull argument %s\n",argv[0]);
+	  exit(1);
+	}
 
+	ptr=strchr(ptr+1,',');
+      }
+      if(ptr){
+	fprintf(stderr,"too many values in cull argument %s\n",argv[0]);
+	exit(1);
+      }
+      for(i=dim;i>0;i--)
+	index=index*b->c->thresh_tree->quantvals+cvec[i-1];
+	
+      cullist=realloc(cullist,++culls*sizeof(long));
+      cullist[culls-1]=index;
+      fprintf(stderr,"\rExplicitly culling index %ld\n",index);
       argv++;
 	
     }else{
-      switch (argnum++){
-      case 0:case 1:
-	{
-	  /* yes, this is evil.  However, it's very convenient to parse file
-	     extentions */
-	  
-	  /* input file.  What kind? */
-	  char *dot;
-	  char *ext=NULL;
-	  char *name=strdup(*argv++);
-	  dot=strrchr(name,'.');
-	  if(dot)
-	    ext=dot+1;
-	  else{
-	    ext="";
-	    
-	  }
-	  
-	  
-	  /* codebook */
-	  if(!strcmp(ext,"vqh")){
-	    
-	    basename=strrchr(name,'/');
-	    if(basename)
-	      basename=strdup(basename)+1;
-	    else
-	      basename=strdup(name);
-	    dot=strrchr(basename,'.');
-	    if(dot)*dot='\0';
-	    
-	    b=codebook_load(name);
-	    dim=b->dim;
-	    entries=b->entries;
-	  }
-	  
-	  /* data file; we do actually need to suck it into memory */
-	  /* we're dealing with just one book, so we can de-interleave */ 
-	  if(!strcmp(ext,"vqd") && !points){
-	    int cols;
-	    long lines=0;
-	    char *line;
-	    float *vec;
-	    FILE *in=fopen(name,"r");
-	    if(!in){
-	      fprintf(stderr,"Could not open input file %s\n",name);
-	      exit(1);
-	    }
-	    
-	    reset_next_value();
-	    line=setup_line(in);
-	    /* count cols before we start reading */
-	    {
-	      char *temp=line;
-	      while(*temp==' ')temp++;
-	      for(cols=0;*temp;cols++){
-		while(*temp>32)temp++;
-		while(*temp==' ')temp++;
-	      }
-	    }
-	    vec=alloca(cols*sizeof(float));
-	    /* count, then load, to avoid fragmenting the hell out of
-	       memory */
-	    while(line){
-	      lines++;
-	      for(j=0;j<cols;j++)
-		if(get_line_value(in,vec+j)){
-		  fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
-		  exit(1);
-		}
-	      if((lines&0xff)==0)spinnit("counting samples...",lines*cols);
-	      line=setup_line(in);
-	    }
-	    pointlist=_ogg_malloc((cols*lines+entries*dim)*sizeof(float));
-	    
-	    rewind(in);
-	    line=setup_line(in);
-	    while(line){
-	      lines--;
-	      for(j=0;j<cols;j++)
-		if(get_line_value(in,vec+j)){
-		  fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
-		  exit(1);
-		}
-	      /* deinterleave, add to heap */
-	      add_vector(b,vec,cols);
-	      if((lines&0xff)==0)spinnit("loading samples...",lines*cols);
-	      
-	      line=setup_line(in);
-	    }
-	    fclose(in);
-	  }
-	}
-	break;
-      case 2:
-	target=atol(*argv++);
+      /* input file.  What kind? */
+      char *dot;
+      char *ext=NULL;
+      char *name=strdup(*argv++);
+      dot=strrchr(name,'.');
+      if(dot)
+        ext=dot+1;
+      else{
+	ext="";
+	target=atol(name);
 	if(target==0)target=entries;
-	break;
-      case 3:
-	protect=atol(*argv++);
-	break;
-      case 4:
-	{
-	  char *buff=alloca(strlen(*argv)+5);
-	  sprintf(buff,"%s.vqh",*argv);
-	  basename=*argv++;
+      }
+      
 
-	  out=fopen(buff,"w");
-	  if(!out){
-	    fprintf(stderr,"unable ot open %s for output",buff);
-	    exit(1);
-	  }
-	}
-	break;
-      default:
-	usage();
+      /* codebook */
+      if(!strcmp(ext,"vqh")){
+
+        basename=strrchr(name,'/');
+        if(basename)
+          basename=strdup(basename)+1;
+        else
+          basename=strdup(name);
+        dot=strrchr(basename,'.');
+        if(dot)*dot='\0';
+
+        b=codebook_load(name);
+	dim=b->dim;
+	entries=b->entries;
+      }
+
+      /* data file; we do actually need to suck it into memory */
+      /* we're dealing with just one book, so we can de-interleave */ 
+      if(!strcmp(ext,"vqd") && !points){
+        int cols;
+        long lines=0;
+        char *line;
+        double *vec;
+        FILE *in=fopen(name,"r");
+        if(!in){
+          fprintf(stderr,"Could not open input file %s\n",name);
+          exit(1);
+        }
+
+        reset_next_value();
+        line=setup_line(in);
+        /* count cols before we start reading */
+        {
+          char *temp=line;
+          while(*temp==' ')temp++;
+          for(cols=0;*temp;cols++){
+            while(*temp>32)temp++;
+            while(*temp==' ')temp++;
+          }
+        }
+        vec=alloca(cols*sizeof(double));
+	/* count, then load, to avoid fragmenting the hell out of
+           memory */
+        while(line){
+          lines++;
+          for(j=0;j<cols;j++)
+            if(get_line_value(in,vec+j)){
+              fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
+              exit(1);
+            }
+	  if((lines&0xff)==0)spinnit("counting samples...",lines*cols);
+          line=setup_line(in);
+        }
+	pointlist=malloc(cols*lines*sizeof(double));
+
+	rewind(in);
+	line=setup_line(in);
+        while(line){
+          lines--;
+          for(j=0;j<cols;j++)
+            if(get_line_value(in,vec+j)){
+              fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
+              exit(1);
+            }
+	  /* deinterleave, add to heap */
+	  add_vector(b,vec,cols);
+	  if((lines&0xff)==0)spinnit("loading samples...",lines*cols);
+
+          line=setup_line(in);
+        }
+        fclose(in);
       }
     }
   }
-  if(!entries || !points || !out)usage();
+  if(!entries || !points)usage();
   if(target==-1)usage();
 
-  /* add guard points */
-  for(i=0;i<entries;i++)
-    for(j=0;j<dim;j++)
-      pointlist[points++]=b->valuelist[i*dim+j];
-  
   points/=dim;
+
 
   /* set up auxiliary vectors for error tracking */
   {
@@ -309,160 +348,111 @@ int main(int argc,char *argv[]){
     long indexedpoints=0;
     long *entryindex;
     long *reventry;
-    long *membership=_ogg_malloc(points*sizeof(long));
-    long *firsthead=_ogg_malloc(entries*sizeof(long));
-    long *secondary=_ogg_malloc(points*sizeof(long));
-    long *secondhead=_ogg_malloc(entries*sizeof(long));
-
-    long *cellcount=_ogg_calloc(entries,sizeof(long));
-    long *cellcount2=_ogg_calloc(entries,sizeof(long));
-    float *cellerror=_ogg_calloc(entries,sizeof(float));
-    float *cellerrormax=_ogg_calloc(entries,sizeof(float));
+    long *membership=malloc(points*sizeof(long));
+    long *cellhead=malloc(entries*sizeof(long));
+    long *cellcount=calloc(entries,sizeof(long));
+    double *cellerror1=calloc(entries,sizeof(double)); /* error for
+                                                          firstentries */
+    double *cellerror2=calloc(entries,sizeof(double)); /* error for
+                                                          secondentry */
+    double globalerror=0.;
     long cellsleft=entries;
     for(i=0;i<points;i++)membership[i]=-1;
-    for(i=0;i<entries;i++)firsthead[i]=-1;
-    for(i=0;i<points;i++)secondary[i]=-1;
-    for(i=0;i<entries;i++)secondhead[i]=-1;
+    for(i=0;i<entries;i++)cellhead[i]=-1;
 
     for(i=0;i<points;i++){
       /* assign vectors to the nearest cell.  Also keep track of second
 	 nearest for error statistics */
-      float *ppt=pointlist+i*dim;
-      int    firstentry=closest(b,ppt,-1);
-      int    secondentry=closest(b,ppt,firstentry);
-      float firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
-      float secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
+      double *ppt=pointlist+i*dim;
+      int    firstentry=_best(b,ppt,1);
+      int    secondentry=secondbest(b,ppt,firstentry);
+
+      double firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
+      double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
       
       if(!(i&0xff))spinnit("initializing... ",points-i);
     
-      membership[i]=firsthead[firstentry];
-      firsthead[firstentry]=i;
-      secondary[i]=secondhead[secondentry];
-      secondhead[secondentry]=i;
+      membership[i]=cellhead[firstentry];
+      cellhead[firstentry]=i;
 
-      if(i<points-entries){
-	cellerror[firstentry]+=secondmetric-firstmetric;
-	cellerrormax[firstentry]=max(cellerrormax[firstentry],
-				     _heuristic(b,ppt,secondentry));
-	cellcount[firstentry]++;
-	cellcount2[secondentry]++;
-      }
+      cellerror1[firstentry]+=firstmetric;
+      cellcount[firstentry]++;
+      globalerror+=firstmetric;
+      cellerror2[firstentry]+=secondmetric;
+
     }
 
-    /* which cells are most heavily populated?  Protect as many from
-       dispersal as the user has requested */
-    {
-      long **countindex=_ogg_calloc(entries,sizeof(long *));
-      for(i=0;i<entries;i++)countindex[i]=cellcount+i;
-      qsort(countindex,entries,sizeof(long *),longsort);
-      for(i=0;i<protect;i++){
-	int ptr=countindex[i]-cellcount;
-	cellerrormax[ptr]=9e50f;
-      }
-    }
-
-    {
-      fprintf(stderr,"\r");
-      for(i=0;i<entries;i++){
-	/* decompose index */
-	int entry=i;
-	for(j=0;j<dim;j++){
-	  fprintf(stderr,"%d:",entry%b->c->thresh_tree->quantvals);
-	  entry/=b->c->thresh_tree->quantvals;
+    /* handle the explicit cull list */
+    for(i=0;i<culls;i++){
+      long bestcell=cullist[i];
+      char buf[80];
+      sprintf(buf,"explicit culls (%d left)... ",(int)culls-i);
+      
+      /* disperse cell.  move each point out, adding it (properly) to
+         the second best */
+      if(b->c->lengthlist[bestcell]>0){
+	long head=cellhead[bestcell];
+	b->c->lengthlist[bestcell]=0;
+	cellhead[bestcell]=-1;
+	while(head!=-1){
+	  /* head is a point number */
+	  double *ppt=pointlist+head*dim;
+	  int newentry=secondbest(b,ppt,bestcell);
+	  int secondentry=secondbest(b,pointlist+head*dim,newentry);
+	  double firstmetric=_dist(dim,b->valuelist+dim*newentry,ppt);
+	  double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
+	  long next=membership[head];
+	  cellcount[newentry]++;
+	  cellcount[bestcell]--;
+	  cellerror1[newentry]+=firstmetric;
+	  cellerror2[newentry]+=secondmetric;
+	  spinnit(buf,cellcount[bestcell]);
+	  
+	  membership[head]=cellhead[newentry];
+	  cellhead[newentry]=head;
+	  head=next;
 	}
-	
-	fprintf(stderr,":%ld/%ld, ",cellcount[i],cellcount2[i]);
+	cellsleft--;
       }
-      fprintf(stderr,"\n");
     }
-
+    
     /* do the automatic cull request */
     while(cellsleft>target){
       int bestcell=-1;
-      float besterror=0;
-      float besterror2=0;
+      double besterror=0;
       long head=-1;
-      char spinbuf[80];
-      sprintf(spinbuf,"cells left to eliminate: %ld : ",cellsleft-target);
+      spinnit("cells left to eliminate... ",cellsleft-target);
 
       /* find the cell with lowest removal impact */
       for(i=0;i<entries;i++){
 	if(b->c->lengthlist[i]>0){
-	  if(bestcell==-1 || cellerrormax[i]<=besterror2){
-	    if(bestcell==-1 || cellerrormax[i]<besterror2 || 
-	       besterror>cellerror[i]){
-	      besterror=cellerror[i];
-	      besterror2=cellerrormax[i];
-	      bestcell=i;
-	    }
+	  double thiserror=globalerror-cellerror1[i]+cellerror2[i];
+	  if(bestcell==-1 || besterror>thiserror){
+	    besterror=thiserror;
+	    bestcell=i;
 	  }
 	}
       }
 
-      fprintf(stderr,"\reliminating cell %d                              \n"
-	      "     dispersal error of %g max/%g total (%ld hits)\n",
-	      bestcell,besterror2,besterror,cellcount[bestcell]);
-
       /* disperse it.  move each point out, adding it (properly) to
          the second best */
       b->c->lengthlist[bestcell]=0;
-      head=firsthead[bestcell];
-      firsthead[bestcell]=-1;
+      head=cellhead[bestcell];
+      cellhead[bestcell]=-1;
       while(head!=-1){
 	/* head is a point number */
-	float *ppt=pointlist+head*dim;
-	int firstentry=closest(b,ppt,-1);
-	int secondentry=closest(b,ppt,firstentry);
-	float firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
-	float secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
+	double *ppt=pointlist+head*dim;
+	int newentry=secondbest(b,ppt,bestcell);
+	int secondentry=secondbest(b,pointlist+head*dim,newentry);
+	double firstmetric=_dist(dim,b->valuelist+dim*newentry,ppt);
+	double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
 	long next=membership[head];
+	cellerror1[newentry]+=firstmetric;
+	cellerror2[newentry]+=secondmetric;
 
-	if(head<points-entries){
-	  cellcount[firstentry]++;
-	  cellcount[bestcell]--;
-	  cellerror[firstentry]+=secondmetric-firstmetric;
-	  cellerrormax[firstentry]=max(cellerrormax[firstentry],
-				       _heuristic(b,ppt,secondentry));
-	}
-
-	membership[head]=firsthead[firstentry];
-	firsthead[firstentry]=head;
+	membership[head]=cellhead[newentry];
+	cellhead[newentry]=head;
 	head=next;
-	if(cellcount[bestcell]%128==0)
-	  spinnit(spinbuf,cellcount[bestcell]+cellcount2[bestcell]);
-
-      }
-
-      /* now see that all points that had the dispersed cell as second
-         choice have second choice reassigned */
-      head=secondhead[bestcell];
-      secondhead[bestcell]=-1;
-      while(head!=-1){
-	float *ppt=pointlist+head*dim;
-	/* who are we assigned to now? */
-	int firstentry=closest(b,ppt,-1);
-	/* what is the new second closest match? */
-	int secondentry=closest(b,ppt,firstentry);
-	/* old second closest is the cell being disbanded */
-	float oldsecondmetric=_dist(dim,b->valuelist+dim*bestcell,ppt);
-	/* new second closest error */
-	float secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
-	long next=secondary[head];
-
-	if(head<points-entries){
-	  cellcount2[secondentry]++;
-	  cellcount2[bestcell]--;
-	  cellerror[firstentry]+=secondmetric-oldsecondmetric;
-	  cellerrormax[firstentry]=max(cellerrormax[firstentry],
-				       _heuristic(b,ppt,secondentry));
-	}
-	
-	secondary[head]=secondhead[secondentry];
-	secondhead[secondentry]=head;
-	head=next;
-
-	if(cellcount2[bestcell]%128==0)
-	  spinnit(spinbuf,cellcount2[bestcell]);
       }
 
       cellsleft--;
@@ -473,7 +463,7 @@ int main(int argc,char *argv[]){
     /* we don't free membership; we flatten it in order to use in lp_split */
 
     for(i=0;i<entries;i++){
-      long head=firsthead[i];
+      long head=cellhead[i];
       spinnit("rearranging membership cache... ",entries-i);
       while(head!=-1){
 	long next=membership[head];
@@ -482,13 +472,11 @@ int main(int argc,char *argv[]){
       }
     }
 
-    free(secondhead);
-    free(firsthead);
-    free(cellerror);
-    free(cellerrormax);
-    free(secondary);
+    free(cellhead);
+    free(cellerror1);
+    free(cellerror2);
 
-    pointindex=_ogg_malloc(points*sizeof(long));
+    pointindex=malloc(points*sizeof(long));
     /* make a point index of fall-through points */
     for(i=0;i<points;i++){
       int best=_best(b,pointlist+i*dim,1);
@@ -498,7 +486,7 @@ int main(int argc,char *argv[]){
     }
 
     /* make an entry index */
-    entryindex=_ogg_malloc(entries*sizeof(long));
+    entryindex=malloc(entries*sizeof(long));
     target=0;
     for(i=0;i<entries;i++){
       if(b->c->lengthlist[i]>0)
@@ -506,17 +494,17 @@ int main(int argc,char *argv[]){
     }
 
     /* make working space for a reverse entry index */
-    reventry=_ogg_malloc(entries*sizeof(long));
+    reventry=malloc(entries*sizeof(long));
 
     /* do the split */
     nt=b->c->nearest_tree=
-      _ogg_calloc(1,sizeof(encode_aux_nearestmatch));
+      calloc(1,sizeof(encode_aux_nearestmatch));
 
     nt->alloc=4096;
-    nt->ptr0=_ogg_malloc(sizeof(long)*nt->alloc);
-    nt->ptr1=_ogg_malloc(sizeof(long)*nt->alloc);
-    nt->p=_ogg_malloc(sizeof(long)*nt->alloc);
-    nt->q=_ogg_malloc(sizeof(long)*nt->alloc);
+    nt->ptr0=malloc(sizeof(long)*nt->alloc);
+    nt->ptr1=malloc(sizeof(long)*nt->alloc);
+    nt->p=malloc(sizeof(long)*nt->alloc);
+    nt->q=malloc(sizeof(long)*nt->alloc);
     nt->aux=0;
 
     fprintf(stderr,"Leaves added: %d              \n",
@@ -528,17 +516,11 @@ int main(int argc,char *argv[]){
     free(membership);
     free(reventry);
     free(pointindex);
-
-    /* hack alert.  I should just change the damned splitter and
-       codebook writer */
-    for(i=0;i<nt->aux;i++)nt->p[i]*=dim;
-    for(i=0;i<nt->aux;i++)nt->q[i]*=dim;
     
     /* recount hits.  Build new lengthlist. reuse entryindex storage */
     for(i=0;i<entries;i++)entryindex[i]=1;
-    for(i=0;i<points-entries;i++){
+    for(i=0;i<points;i++){
       int best=_best(b,pointlist+i*dim,1);
-      float *a=pointlist+i*dim;
       if(!(i&0xff))spinnit("counting hits...",i);
       if(best==-1){
 	fprintf(stderr,"\nINTERNAL ERROR; a point count not be matched to a\n"
@@ -547,25 +529,16 @@ int main(int argc,char *argv[]){
       }
       entryindex[best]++;
     }
-    for(i=0;i<nt->aux;i++)nt->p[i]/=dim;
-    for(i=0;i<nt->aux;i++)nt->q[i]/=dim;
     
     /* the lengthlist builder doesn't actually deal with 0 hit entries.
        So, we pack the 'sparse' hit list into a dense list, then unpack
        the lengths after the build */
     {
       int upper=0;
-      long *lengthlist=_ogg_calloc(entries,sizeof(long));
-      for(i=0;i<entries;i++){
+      long *lengthlist=calloc(entries,sizeof(long));
+      for(i=0;i<entries;i++)
 	if(b->c->lengthlist[i]>0)
 	  entryindex[upper++]=entryindex[i];
-	else{
-	  if(entryindex[i]>1){
-	    fprintf(stderr,"\nINTERNAL ERROR; _best matched to unused entry\n");
-	    exit(1);
-	  }
-	}
-      }
       
       /* sanity check */
       if(upper != target){
@@ -573,18 +546,17 @@ int main(int argc,char *argv[]){
 	exit(1);
       }
     
+
       build_tree_from_lengths(upper,entryindex,lengthlist);
       
       upper=0;
-      for(i=0;i<entries;i++){
+      for(i=0;i<entries;i++)
 	if(b->c->lengthlist[i]>0)
 	  b->c->lengthlist[i]=lengthlist[upper++];
-      }
-
     }
   }
   /* we're done.  write it out. */
-  write_codebook(out,basename,b->c);
+  write_codebook(stdout,"foo",b->c);
 
   fprintf(stderr,"\r                                        \nDone.\n");
   return(0);

@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: build a VQ codebook 
- last mod: $Id: vqgen.h,v 1.19 2001/12/20 01:00:40 segher Exp $
+ last mod: $Id: vqgen.h,v 1.13 2000/05/08 20:49:51 xiphmont Exp $
 
  ********************************************************************/
 
@@ -19,32 +20,27 @@
 #define _VQGEN_H_
 
 typedef struct vqgen{
-  int seeded;
-  int sorted;
-
   int it;
   int elements;
 
   int aux;
-  float mindist;
-  int centroid;
+  double mindist;
 
   /* point cache */
-  float *pointlist; 
+  double *pointlist; 
   long   points;
   long   allocated;
 
   /* entries */
-  float *entrylist;
+  double *entrylist;
   long   *assigned;
-  float *bias;
+  double *bias;
   long   entries;
-  float *max;
+  double *max;
   
-  float  (*metric_func) (struct vqgen *v,float *entry,float *point);
-  float *(*weight_func) (struct vqgen *v,float *point);
 
-  FILE *asciipoints;
+  double  (*metric_func) (struct vqgen *v,double *entry,double *point);
+  double *(*weight_func) (struct vqgen *v,double *point);
 } vqgen;
 
 typedef struct {
@@ -54,25 +50,25 @@ typedef struct {
   int    sequencep; /* bitflag */
 } quant_meta;
 
-static inline float *_point(vqgen *v,long ptr){
+static inline double *_point(vqgen *v,long ptr){
   return v->pointlist+((v->elements+v->aux)*ptr);
 }
 
-static inline float *_aux(vqgen *v,long ptr){
+static inline double *_aux(vqgen *v,long ptr){
   return _point(v,ptr)+v->aux;
 }
 
-static inline float *_now(vqgen *v,long ptr){
+static inline double *_now(vqgen *v,long ptr){
   return v->entrylist+(v->elements*ptr);
 }
 
 extern void vqgen_init(vqgen *v,
-		       int elements,int aux,int entries,float mindist,
-		       float  (*metric)(vqgen *,float *, float *),
-		       float *(*weight)(vqgen *,float *),int centroid);
-extern void vqgen_addpoint(vqgen *v, float *p,float *aux);
+		       int elements,int aux,int entries,double mindist,
+		       double  (*metric)(vqgen *,double *, double *),
+		       double *(*weight)(vqgen *,double *));
+extern void vqgen_addpoint(vqgen *v, double *p,double *aux);
 
-extern float vqgen_iterate(vqgen *v,int biasp);
+extern double vqgen_iterate(vqgen *v,int biasp);
 extern void vqgen_unquantize(vqgen *v,quant_meta *q);
 extern void vqgen_quantize(vqgen *v,quant_meta *q);
 extern void vqgen_cellmetric(vqgen *v);

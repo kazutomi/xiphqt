@@ -23,15 +23,17 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 
+
+
 /**
    callbacks from vorbisfile
 */
 extern "C" {
 
-extern size_t  fread_func  (void *ptr,size_t size,size_t nmemb, void *stream);
-extern int     fseek_func  (void *stream, ogg_int64_t offset, int whence);
-extern int     fclose_func (void *stream);
-extern long    ftell_func  (void *stream);
+extern size_t  fread_func  (void *ptr,size_t size,size_t nmemb, FILE *stream);
+extern int     fseek_func  (FILE *stream, long offset, int whence);
+extern int     fclose_func (FILE *stream);
+extern long    ftell_func  (FILE *stream);
 
 }
 
@@ -51,19 +53,19 @@ class VorbisPlugin : public DecoderPlugin {
   char* pcmout;           // temporay pcm buffer
   int last_section;
   int current_section;
-  int lshutdown; 
+ 
 
  public:
   VorbisPlugin();
   ~VorbisPlugin();
 
   void decoder_loop();
-  int seek_impl(int second);
-  void config(char* key, char* value,void* user_data);
+  int seek(int second);
+  void config(char* key, char* value);
  
  private:
   int processVorbis(vorbis_info* vi,vorbis_comment* comment);
-  int getTotalLength();
+  int getSongLength(OggVorbis_File* vf);
   int init();
 
 };
