@@ -55,6 +55,7 @@ static int stream_send (ices_config_t* config, input_stream_t* source);
 static int stream_send_data (ices_stream_t* stream, unsigned char* buf,
 			     size_t len);
 static int stream_open_source (input_stream_t* source);
+static int stream_needs_reencoding (input_stream_t* source, ices_stream_t* stream);
 
 /* Public function definitions */
 
@@ -177,22 +178,22 @@ stream_send (ices_config_t* config, input_stream_t* source)
   obuf.data = NULL;
   obuf.len = 0;
 
-  if (config->reencode)
-    /* only actually decode/reencode if the bitrate of the stream != source */
+  if (config->reencode) {
+    ices_reencode_reset (source);
     for (stream = config->streams; stream; stream = stream->next)
-      if (stream->bitrate != source->bitrate) {
+      if (stream->reencode && stream_needs_reencoding (source, stream)) {
         decode = 1;
-        ices_reencode_reset (source);
         break;
       }
+  }
 
-    if (decode) {
-      obuf.len = OUTPUT_BUFSIZ;
-      if (!(obuf.data = malloc(OUTPUT_BUFSIZ))) {
-        ices_log_error("Error allocating encode buffer");
-        return -1;
-      }
+  if (decode) {
+    obuf.len = OUTPUT_BUFSIZ;
+    if (!(obuf.data = malloc(OUTPUT_BUFSIZ))) {
+      ices_log_error("Error allocating encode buffer");
+      return -1;
     }
+  }
 #endif
 
   for (stream = config->streams; stream; stream = stream->next)
@@ -230,10 +231,8 @@ stream_send (ices_config_t* config, input_stream_t* source)
       rc = olen = 0;
       for (stream = config->streams; stream; stream = stream->next) {
         /* don't reencode if the source is MP3 and the same bitrate */
-        if (!stream->reencode || (source->read && (stream->bitrate == source->bitrate))) {
-          rc = stream_send_data (stream, ibuf, len);
 #ifdef HAVE_LIBLAME
-        } else {
+        if (stream->reencode && stream_needs_reencoding (source, stream)) {
           if (samples > 0) {
             if (obuf.len < 7200 + samples + samples / 4) {
               char *tmpbuf;
@@ -264,8 +263,9 @@ stream_send (ices_config_t* config, input_stream_t* source)
               rc = stream_send_data (stream, obuf.data, olen);
             }
           }
-        }
+        } else
 #endif
+          rc = stream_send_data (stream, ibuf, len);
 
         if (rc < 0) {
           if (stream->errs > 10) {
@@ -292,8 +292,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 
 #ifdef HAVE_LIBLAME
   for (stream = config->streams; stream; stream = stream->next)
-    if (stream->reencode && (!source->read
-        || (source->bitrate != stream->bitrate))) {
+    if (stream->reencode && stream_needs_reencoding (source, stream)) {
       len = ices_reencode_flush (stream, obuf.data, obuf.len);
       if (len > 0)
         rc = shout_send (stream->conn, obuf.data, len);
@@ -412,6 +411,15 @@ stream_connect (ices_stream_t* stream)
   ices_log ("Mounted on http://%s:%d%s%s", shout_get_host (stream->conn),
             shout_get_port (stream->conn),
             (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
+
+  return 0;
+}
+
+static int stream_needs_reencoding (input_stream_t* source, ices_stream_t* stream) {
+    if (!source->read || source->bitrate != stream->bitrate
+        || (stream->out_samplerate > 0 && source->samplerate != stream->out_samplerate)
+        || (stream->out_numchannels > 0 && source->channels != stream->out_numchannels))
+      return 1;
 
   return 0;
 }

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.30 2003/03/17 02:22:38 brendan Exp $
+ * $Id: mp3.c,v 1.31 2003/03/17 04:45:03 brendan Exp $
  */
 
 #include "definitions.h"
@@ -149,6 +149,7 @@ static int ices_mp3_parse (input_stream_t* source)
 
         source->samplerate = mh.samplerate;
         source->bitrate = mh.bitrate;
+        source->channels = mh.channels;
 
         if (mp3_check_vbr (source, &mh)) {
           source->bitrate = 0;

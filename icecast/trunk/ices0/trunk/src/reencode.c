@@ -98,7 +98,7 @@ ices_reencode_reset (input_stream_t* source)
     if (stream->out_samplerate > 0)
       lame_set_out_samplerate (lame, stream->out_samplerate);
     lame_set_original (lame, 0);
-
+    
     lame_set_in_samplerate (lame, source->samplerate);
     /* lame_init_params isn't more specific about the problem */
     if (lame_init_params (lame) < 0) {
@@ -106,6 +106,10 @@ ices_reencode_reset (input_stream_t* source)
       lame_close (lame);
       ices_setup_shutdown ();
     }
+
+    /* adjust default stream sample rate to LAME default for lazy reencoding tests */
+    if (stream->out_samplerate <= 0)
+      stream->out_samplerate = lame_get_out_samplerate (lame);
   }
 }
 
