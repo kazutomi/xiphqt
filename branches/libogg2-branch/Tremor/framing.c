@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ogg.h"
+#include "misc.h"
+
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 
@@ -42,18 +44,11 @@ static ogg_buffer_state *ogg_buffer_create(void){
    finish destruction. */
 
 /* call the helper while holding lock */
-#include <stdio.h>
 static void _ogg_buffer_destroy(ogg_buffer_state *bs){
   ogg_buffer *bt;
   ogg_reference *rt;
 
   if(bs->shutdown){
-
-    fprintf(stderr,"\nZero-copy pool %p lazy destroy: %d buffers outstanding.\n"
-	    ,
-            bs,bs->outstanding);
-    if(!bs->outstanding)
-      fprintf(stderr,"Finishing memory cleanup of %p.\n",bs);
 
     bt=bs->unused_buffers;
     rt=bs->unused_references;

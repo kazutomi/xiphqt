@@ -20,7 +20,7 @@
 #include "ivorbiscodec.h"
 #include "os_types.h"
 
-#define _VDBG_GRAPHFILE "0.m"
+//#define _VDBG_GRAPHFILE "_0.m"
 extern void *_VDBG_malloc(void *ptr,long bytes,char *file,long line); 
 extern void _VDBG_free(void *ptr,char *file,long line); 
 
