@@ -1,6 +1,6 @@
 dnl local M4 configure macros
 dnl Brendan Cully <brendan@xiph.org>
-dnl $Id: acinclude.m4,v 1.2.2.1 2003/03/04 06:05:06 brendan Exp $
+dnl $Id: acinclude.m4,v 1.2.2.2 2003/03/04 18:25:11 brendan Exp $
 
 # XIPH_PATH_PYTHON(PATH)
 # Search for python in PATH, or in the path if none is given.
@@ -70,4 +70,4 @@ fi
 # _XIPH_PYTHON_CFG(PYTHONPATH, CFGVAR)
 # Ask python in PYTHONPATH for the definition of CFGVAR
 m4_define([_XIPH_PYTHON_CFG],
-  [`$1 -c 'from distutils.sysconfig import get_config_var; print get_config_var("$2")'`])
+  [`$1 -c 'from distutils.sysconfig import get_config_var; print get_config_var("$2")' | sed 's/None//'`])
