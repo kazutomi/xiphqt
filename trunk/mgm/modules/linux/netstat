@@ -20,18 +20,19 @@ sub module_init{
     # is the helper up and running?
     if(!defined(%MGMmodule::helperST::net)){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
-    } 
-    @keys=keys %MGMmodule::helperST::net;
-    $active=$#keys+1;
-
-    # three possible different formats.  
-    my@test=split ' ', $MGMmodule::helperST::net{$keys[0]};
-    if($#test==9){
-	$field=5;
-	$prompt=' packets/s';
-    }else{
-	$field=($#test+1)/2;
-	$prompt='B/s';
+    } else{
+	@keys=keys %MGMmodule::helperST::net;
+	$active=$#keys+1;
+	
+	# three possible different formats.  
+	my@test=split ' ', $MGMmodule::helperST::net{$keys[0]};
+	if($#test==9){
+	    $field=5;
+	    $prompt=' packets/s';
+	}else{
+	    $field=($#test+1)/2;
+	    $prompt='B/s';
+	}
     }
     $toplevel->optionAdd("$xclass.order",1,21);   
     $this;

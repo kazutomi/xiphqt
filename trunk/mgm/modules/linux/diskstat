@@ -19,7 +19,8 @@ sub module_init{
 
     # how many disks?  Call read once to init
     $numdisks=0;
-    $this->read_proc;
+    $this->read_proc if(defined($MGMmodule::helperST::proc{"disk_rblk"}));
+
     map{$numdisks++ if ($rsectors[$_] || $wsectors[$_])}(0..$#rsectors);
 
     if(!$numdisks){

@@ -22,7 +22,8 @@ sub module_init{
 
     $numcpus=0;
     $statcpus=0;
-    if(open(PROC,"</proc/cpuinfo")){
+    if(defined($MGMmodule::helperST::proc{"cpu"}) &&
+	       open(PROC,"</proc/cpuinfo")){
 	while(<PROC>){
 	    if(m/processor\s*:\s*(\d*)/){
 		$numcpus=$1+1 if ($numcpus<$1+1);
