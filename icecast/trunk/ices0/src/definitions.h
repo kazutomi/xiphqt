@@ -53,19 +53,6 @@
 # define __USE_POSIX
 #endif
 
-#ifndef _POSIX_C_SOURCE
-#if !defined(__FreeBSD__) || __FreeBSD__ < 5
-#define _POSIX_C_SOURCE 199506L
-#endif
-#endif
-
-/* This for freebsd (needed on 3.2 at least) */
-#ifdef SOMEBSD
-# ifndef _POSIX_VERSION
-# define _POSIX_VERSION 199309L
-# endif
-#endif
-
 #include <stdio.h>
 #include <stdarg.h>
 #ifdef HAVE_SHOUT_SHOUT_H
