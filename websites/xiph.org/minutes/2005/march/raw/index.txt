@@ -1,0 +1,283 @@
+07:00:06 * boxofpurpleducks Bangs the gavel
+07:00:26< boxofpurpleducks> Good morning, welcome to the Monthly Meeting for 200503
+07:00:37< boxofpurpleducks> In addition to the default agenda on the wiki
+07:00:43< MikeS_> Also saw this yesterday, does it look roughly plausible? If it does I'll check out the details. http://trac.xiph.org/cgi-bin/trac.cgi/ticket/622
+07:00:56< MikeS_> oh, meeting's started. We can return to my question later.
+07:01:06< boxofpurpleducks> the big three things I want to talka bout are SXSW, the new website and XSPF
+07:01:34< boxofpurpleducks> we'll do the rest of the agenda in order after that.
+07:01:40< boxofpurpleducks> Starting with SXSW:
+07:02:01< boxofpurpleducks> Ralph, Paul, Jack Camilla and myself will be there at a minimum.
+07:02:28< boxofpurpleducks> We have a complmentary booth, the starndard materials, hoping to also scum some power.
+07:02:28< Atamido> Xiph is only in the Interactive section, correct?
+07:02:38< boxofpurpleducks> Officially, yes.
+07:02:42< boxofpurpleducks> Jack will be there longer.
+07:02:48< boxofpurpleducks> (at least)
+07:02:54< Atamido> Okay, I only have an interactive pass.
+07:02:58< boxofpurpleducks> Same here
+07:03:11< boxofpurpleducks> We'll adapt according to situation.
+07:03:20< boxofpurpleducks> Three things regarding SXSW:
+07:03:31< Atamido> March 11th - 15th.
+07:03:49< boxofpurpleducks> First: we'll not be webcasting it.  Dave warned me that if a paying sponsor came along, they'd dump us fo the money.  One did, and they did.
+07:03:56-!- GShang [geoff@CPE-60-226-25-41.qld.bigpond.net.au] has joined #xiphmeet
+07:04:00< boxofpurpleducks> that's fine.
+07:04:13< boxofpurpleducks> (Ralph already established the new sponsor is using Icecast tho ;-)
+07:04:29< MikeS_> are they using vorbis?
+07:04:44< boxofpurpleducks> Second: Minor epiphany.  I'm not going down there to 'sell' our 'product'.  I'm going to recruit.
+07:04:50< boxofpurpleducks> MikeS_: no, mp3
+07:05:16< MikeS_> pity. maybe we can convince them to add vorbis. anyway...
+07:05:19< boxofpurpleducks> I'm goingt o recruit technical interest, and I'm also going to start gathering leads on my own replacement such that we have an effective executive director.
+07:05:33< boxofpurpleducks> I don't want to rush back with prospectives, just begin the process.
+07:05:48< boxofpurpleducks> MikeS_: Oh, I agree.  I expect we'll get along fine and I plan to talk to them.
+07:06:19< boxofpurpleducks> I want to get back to tech director.  Actually, what I *really* want to get back to is Postfish and Vorbis II.
+07:06:24< MikeS_> ok. I'll leave it up to you, then. Feel free to pull me in if there are any questions on the icecast side of things
+07:06:32< boxofpurpleducks> MikeS_: Oh, definitely.
+07:07:22< MikeS_> ok, well, that sounds like an eminently sensible plan.
+07:07:23< boxofpurpleducks> Third: this blends into the next topic: attemptin to have the long-awaited new website substantially up before I leave on the 10th.  Melissa is due to deliver finished templates Friday.
+07:07:57< boxofpurpleducks> We're already printing new handouts, etc.
+07:08:11< MikeS_> There's presumably still a lot of grunt-work in that ~5 days to move content into those templates?
+07:08:19< boxofpurpleducks> Oh, yes.  yes, yes, yes.
+07:08:40< MikeS_> so, we probably need to grab volunteers to help out with that. 
+07:08:41< boxofpurpleducks> Consider this a heads-up that I'm going to be cutting into day-job time and girlfriend time to be making that happen.
+07:09:06< boxofpurpleducks> Atamido is already signed up for it.  Another helper or two certainly can't hurt.
+07:09:19< boxofpurpleducks> What I especially need help with is verifying and updating content.
+07:09:35< boxofpurpleducks> "Is this software still available?" "Does this music still suck?" etc.
+07:09:55< Atamido> Yes.
+07:10:05< boxofpurpleducks> Perhaps even making sure our own goddamned docs are up to date with what's available and maybe even checking builds :-)
+07:10:10< Atamido> Any updates/contact from Melissa would be peachy also.
+07:10:35< boxofpurpleducks> Atamido: she knows you're waiting on her, we met for about two hours earlier tonight.  er, yesterday.
+07:11:11< boxofpurpleducks> This will be a minimum of vorbis.com and xiph.org redeployment.
+07:11:29< MikeS_> I'll have some time this weekend, but probably nothing after that (packing/moving/travelling) for the forseeable future. I'm happy to help out with website stuff this weekend, just let me know what needs doing.
+07:11:32< boxofpurpleducks> As many of the satellite sites as possible as well.
+07:11:58< boxofpurpleducks> MikeS_: well, we'll be coordinating through IRC 'like the old days' :-)
+07:12:09< boxofpurpleducks> ok, that was my second thing.
+07:12:33< MikeS_> And number 3!
+07:12:38< boxofpurpleducks> Third: XSPF integration conversation continues.  Next step is pinging lawyers (primarily about copyright stuff).
+07:13:15< boxofpurpleducks> I also want very much to bring one/several of those folks into the Xiph inner circle.
+07:13:32< MikeS_> (when you're done, I have a couple of items to bring up that aren't on the official agenda)
+07:13:37< boxofpurpleducks> We've gotten along well in the past, and they're high-powered minds.  And fun to party with.
+07:13:50< boxofpurpleducks> That's it for me.  I hand the floor to Mike.
+07:14:33< boxofpurpleducks> Hey, Mike....
+07:14:42< boxofpurpleducks> MikeS_: the squirrels are hunting you....
+07:14:46< MikeS_> So, quickly: I've been doing stuff with a few bugs over the last several days, and frankly the new BTS is unusable.
+07:15:17< boxofpurpleducks> I was rather surprised to go look for a bug and see it had been changed.
+07:15:25< MikeS_> I think we really need to move back to bugzilla. Obviously, this needs someone willing to run/maintain it (and I can't be that person, since I'm going to have very intermittent net access for the next few months)
+07:15:47< Arc> what is XSPF again?
+07:15:48< MikeS_> So, that's just a note: I'd really, really like to move back, if anyone is willing to run it, please let us know.
+07:15:58< MikeS_> Arc: xspf.org (I think)
+07:16:02< illi> arc: xspf is a playlist format
+07:16:08< Atamido> Arc:  http://xspf.xiph.org
+07:16:08< boxofpurpleducks> Ralph was instrumental to the move apparently, and he's not here to comment.  I personally second your desire, but this necessarily has to move to email.
+07:16:10< Arc> oh yes, 
+07:16:22< Arc> nevermind brain fart :-P
+07:16:29< boxofpurpleducks> Arc: s'ok.
+07:16:33< boxofpurpleducks> MikeS_: what else?
+07:16:43< MikeS_> 2nd: over the last couple of months, we've been seeing a lot of people on the tremor and vorbis-dev lists implementing vorbis decoders (possibly tremor based?) for hardware devices.
+07:16:50< MikeS_> A LOT of them are asking for test files.
+07:17:04< MikeS_> We don't have anything like that. Should we plan for adding them?
+07:17:11< boxofpurpleducks> yes, it's true; third party implementation efforts have really exploded past six months.
+07:17:19< boxofpurpleducks> Yes.  We absolutely should.
+07:17:23< MikeS_> (you reponded to one of these today, I think - someone looking for long-block examples)
+07:17:29< boxofpurpleducks> right
+07:17:48< boxofpurpleducks> see, silly thing is that I had half of such a set assembled, and stupidly kept them only on MofishII.
+07:18:24< MikeS_> Relatedly: the full vorbis spec isn't really implementable on any finite-memory device. Which isn't a problem in practice, but... should we do something like define a "profile" that embedded devices are expected to handle?
+07:18:40< MikeS_> Limits on things like blocksizes (maybe), codebook sizes (definately), etc. 
+07:19:05< boxofpurpleducks> that is an excellent idea for a page under Vorbis documetnation.
+07:19:22< derf_> Theora suffers similar problems, which I've pretty much ignored to this point.
+07:19:24< MikeS_> I don't really like the idea of 'profiles' - but looking around, we see that a lot of implementations only support a subset of the full spec. If we can have rules for what you can call "vorbis support", that would encourage meeting those minimum standards.
+07:19:28< boxofpurpleducks> Don't worry, I'm not going to stick you with it ;-)
+07:20:02< illi> i would also like to se something like profiles or a set of requirements to meet certain levels of support
+07:20:03< MikeS_> needs a lot of discussion for details, obviously. I'm mostly wondering if there's interest in getting it done.
+07:20:11< boxofpurpleducks> yes.  I went through that process originally with MCS logic, and they paid for a reference set of samples (these were the samples that were lost from MofishII).
+07:20:24< boxofpurpleducks> It's a necessity at this point, to be honest.
+07:20:47< boxofpurpleducks> has been a necessity for some time, honestly, it should have been done at the same time as the spec.
+07:21:24< MikeS_> as an aside, is what I suggested to that guy sufficient to get libvorbis to generate longer-block files, or will that just cause something to crash? (I didn't have time to check anything)
+07:22:06< MikeS_> The problem, obviously, is that it's really boring work with no direct benefit to users (only to implementers). 
+07:22:07< boxofpurpleducks> a bunch of things need to change.
+07:22:17< MikeS_> ok.
+07:22:22< boxofpurpleducks> you can't just set a longer blocksize, no.
+07:23:20< Atamido> Wasn't a lot of that going to be implemented with Vorbis II?
+07:23:21< boxofpurpleducks> (the psychoacoustics have lots of niggling hardwired setting related to setting up for a blocksize.  Most of it is autogenerated, but not all, and there are no 8192 templates)
+07:23:30< MikeS_> My final item, repeating from last month: as of the end of this month, I'll be out of contact for the next 3-4 months minimum (I'll respond to email intermittently, but that's about it). We need regular mailing list moderators (which I seem to be doing most of at the moment), for ALL the lists (which I'm not doing at the moment)
+07:23:51< boxofpurpleducks> OK
+07:24:04< boxofpurpleducks> Damn, left my pilot at work.
+07:24:10< boxofpurpleducks> I need to write that down.
+07:24:11< MikeS_> Atamido volunteered to help out with that. I'd like to see one or two others
+07:24:17< boxofpurpleducks> yeah, I woudl too.
+07:24:41< MikeS_> (clearing the moderation queues daily is about the minimum acceptable level.)
+07:24:44< GShang> I offered to help with Icecast lists, can probably do a few more that I'm on, but definitely don't want to do the lot.
+07:25:11< boxofpurpleducks> MikeS_: anything else?
+07:25:13< MikeS_> GShang: ok, did I give you details on how to do that last time? If not, could you email me (msmith@xiph.org), and I'll give you all the details. 
+07:25:16< MikeS_> No, I'm done now.
+07:25:29< boxofpurpleducks> OK, project reports in agenda order.
+07:25:34< boxofpurpleducks> Ogg:
+07:25:36< GShang> Mike, no you were going to write me but I never saw anything.  I'll write you.
+07:25:43< MikeS_> When I have a moment tomorrow, I'll write up a wiki page listing all the mailing lists and who we have as moderator volunteers.
+07:25:51< MikeS_> GShang: sorry.
+07:25:55< boxofpurpleducks> Arc and I had a discussion about libogg2 pre-meeting.
+07:25:59< MikeS_> back to the agenda
+07:25:59< GShang> Mike, no worries.
+07:26:38< boxofpurpleducks> I'm going to be adding him as a maintainer of libogg2, and we're getting his changes (and other needed updates) onto mainline.  
+07:26:58< boxofpurpleducks> Then, eventually, we'll need to migrate all the codecs over to libogg2 in one swoop.... but niot quite yet.
+07:27:07< boxofpurpleducks> so this is just informational for now.
+07:27:20< Arc> .. the next thing I'm going to be doing is finishing libogg1 compatability in libogg2
+07:27:30< Arc> which will ease the transition.
+07:27:34< kfish> Arc, excellent :)
+07:27:40< illi> do the libogg2 changes affect the bitpacking the codecs use... or is it primarily in the mux/demux stuff things have changed ?
+07:27:51< boxofpurpleducks> for tohers... not for us.  we will internally adopt.
+07:27:55< Arc> I actually just made the first commit for that in branches/ogg2-arc
+07:27:57< MikeS_> illi: it's just a more efficient API.
+07:28:07< boxofpurpleducks> illi: no great semantic change.
+07:28:15< MikeS_> illi: from the point of view of what bitstreams are produced, there's no change at all.
+07:28:21< boxofpurpleducks> the primary noticable change is that memory management is slightly different.
+07:28:33< boxofpurpleducks> the codecs won't care.  the bitpacker looks identical to them.
+07:28:34< derf_> "slightly"
+07:28:44< illi> i just mean... i only use what the codecs use for bitpacking... but nothing else...
+07:28:51< boxofpurpleducks> right
+07:29:01< illi> i was wondering if there's any performance benefit in that part of it
+07:29:05< boxofpurpleducks> in which case, you don't really care unless you're breaking an abstraction barrier somewhere.
+07:29:08< boxofpurpleducks> yes.
+07:29:12< illi> ok cool
+07:29:25< Arc> well, theora outputs packets IIRC
+07:29:29< Arc> libtheora, rather
+07:29:33< boxofpurpleducks> libogg2 isn't faster, but it uses far less memory; damn near theoretical minimum.
+07:29:51< illi> ok
+07:29:56< boxofpurpleducks> aggressive sharing, aggressive partial-buffer recycling, zero-copy.
+07:29:57< MikeS_> next: vorbis. Monty?
+07:30:29< boxofpurpleducks> Vorbis: Mercora contract continues.  The work is for-hire, and I'm doing it as me, not Xiph, so it's not strictly a Xiph tyhing.
+07:30:59< boxofpurpleducks> However, for instructional purposes, I'm currently a 3.2x the speed of stock libvorbis encoding with C modifications only.
+07:31:23< illi> nice !
+07:31:24< boxofpurpleducks> I expect to hit 3.5-4x before resorting to anything too drastic.
+07:31:46< MikeS_> Anything useful coming out of that work that will feed back (indirectly, obviously) into mainline vorbis (research, etc)?
+07:32:12< boxofpurpleducks> that code belongs to mercora, but I do hope they decide to make a little encoder out of it.  And eventually, they've stated the intent it will come back to us (although there's no binding agreement it do so).
+07:32:23< boxofpurpleducks> MikeS_: yes.  Not immediately, but yes.
+07:32:51< boxofpurpleducks> other vorbis: has anyone played with the new AoTuV -q -2?
+07:32:56< MikeS_> anything else on vorbis? 
+07:33:13< boxofpurpleducks> Mike is lagged.  Or he can't touch type either :-)
+07:33:15< GShang> I just downloaded and compiled latest Aotuv tonight, so no not yet.  but I plan to.
+07:33:28< boxofpurpleducks> OK, I plan to try it out next few days too.
+07:33:33< boxofpurpleducks> On to speex:
+07:33:36< MikeS_> I'm probably lagged, and this keyboard isn't a model M. I can't type decently except on a model M :-)
+07:33:51< boxofpurpleducks> Oh, no Jean-Marc.
+07:33:56< boxofpurpleducks> OK, probably no speex.
+07:34:01< boxofpurpleducks> Theora:
+07:34:41< boxofpurpleducks> derf_?
+07:35:00< boxofpurpleducks> we will catch up with derf.
+07:35:05< boxofpurpleducks> Or he with us.
+07:35:13< derf_> I'm here.
+07:35:14< boxofpurpleducks> FLAC: no josh, so probably not....
+07:35:19< boxofpurpleducks> OK, anything for Theora?
+07:35:20< derf_> Sorry, debugging in other window.
+07:35:22< MikeS_> let's do the next two, since they should be quick, while we wait for derf
+07:35:29< MikeS_> FLAC: nobody here to cover it?
+07:35:33< boxofpurpleducks> no
+07:35:55< derf_> Well, I've been helping ruik with some MMX optimization work for the experimental decoder.
+07:36:32< boxofpurpleducks> The other ones likely to have comments are Icecast, Iceshare and DirectShow.
+07:36:37< derf_> He's gotten something like an 11% speed-up so far (over the gains already over the mainline decoder).
+07:36:48< boxofpurpleducks> Cool.
+07:36:59< MikeS_> derf's also written up some (doxygen) documentation for his experimental codebase that we were looking at a day or two ago. It's excellent - well done.
+07:37:02< derf_> I've also done documentation for the experimental branch's API.
+07:37:07< derf_> Yeha.
+07:37:09< derf_> Yeah.
+07:37:14< boxofpurpleducks> Others who have a project report should chime in and I'll grant the floor.
+07:37:18< boxofpurpleducks> derf_: spiffy!
+07:37:24< illi> ok
+07:37:25< boxofpurpleducks> documentation GOOOD!
+07:37:29< Arc>     iceshare
+07:37:41< boxofpurpleducks> illi: you first
+07:37:42< derf_> Now, if I can just get time to make a working encoder, we'll be in a pretty good position to move the experimental codebase over and call it beta1.
+07:37:49< illi> ok a few things...
+07:37:55< MikeS_> Not that I'll have time any time soon, but I might in a few months: what would you think of throwing doxygen stuff into libvorbis, monty?
+07:38:07< illi> was a new release, with a new multilingual one-click install... seems to have been well received
+07:38:14< boxofpurpleducks> MikeS_: hm.... ask again offline.
+07:38:19< MikeS_> k
+07:38:27< boxofpurpleducks> illi: easy install usually is well received.
+07:38:49< illi> also talked with someone at MS about their auto-codec download system... and they mentioned they would like to do something to handle updating of new container formats as well as codecs
+07:39:04< boxofpurpleducks> BTW, the DirectShow stuff is currently incredibly neglected by vorbis.com; I'll be asking questions in the next week to correct that.
+07:39:18< MikeS_> illi: that sounds like excellent news... potentially, anyway
+07:39:18< illi> which is what we need to get it download codecs when the demux is already not present...
+07:39:24< Atamido> About speex, jmspeex mentioned to me that he plans another release soon.
+07:39:28< illi> it may have just been talk... so have to see what happens
+07:39:45< Atamido> jmspeex	Atamido: I'll release 1.1.7 soon, so I'll need a little help for the web page.
+07:39:57< boxofpurpleducks> A tech peer at Microsoft?  Still good news.
+07:40:12< derf_> illi: Not that I've ever seen MS's codec download actually work correctly.
+07:40:13< illi> also... there will be another release in the next month or so... updating all the codecs to their latest...
+07:40:29< illi> and hopefully getting derf experimental decoder in
+07:40:35< boxofpurpleducks> Atamido: cool, thanks.
+07:40:41< derf_> illi: Oh, nice.
+07:40:52< boxofpurpleducks> illi: well, getting the best of the available two in :-)  Derf has to earn it ;-)
+07:41:02-!- nettings [~nettings@p508BD62C.dip.t-dialin.net] has joined #xiphmeet
+07:41:08< illi> then since i'll be quite busy for the next 6 months... the 0.7x stream will be mainly error handling fixing
+07:41:25< illi> since it's handle of errorneous situations leaves a lot to be desired... and i can do that fairly piecewise in spare time
+07:41:36< illi> thats it from me
+07:41:39< MikeS_> Icecast: no major news. Things look good for the current version. I've just been fixing up documentation problems, etc. merging a few things from karl's experimental branch is next. 
+07:41:58< MikeS_> unless anyone has questions on icecast, that's it from me there.
+07:42:12< boxofpurpleducks> MikeS_: I'm going to be setting up some new Icecast stuff this week meself... I plan to bug you if it breaks :-)
+07:42:25< boxofpurpleducks> OK, Icecast is done.  Arc, you're next.
+07:42:29< Arc> Iceshare: SHA1 has been proven weak, which means we're back to needing a hashing algo for IceT protocol.. also still missing the authentication stuff, which I need help with. otherwise, just waiting for more infrastructure development (OggStream, etc) to make it ready
+07:42:44< MikeS_> sure. if I don't respond within 10 minutes on irc, then i'm probably not actually there - use email :-)
+07:42:49< Arc> if anyone knows anyone who's into crypto stuff, please send them to arc@Xiph.org
+07:42:59< boxofpurpleducks> oh dear god
+07:43:03< boxofpurpleducks> OK, sure! :-)
+07:43:27< derf_> Arc: Crypto was a hobby of mine at one point.
+07:43:33< boxofpurpleducks> Actually, I think Marc and Eichin would not succeed in crushing you mind, but will they give good advice....
+07:43:41< GShang> So exactly how far off are these things that Iceshare is dependent on?
+07:43:43< boxofpurpleducks> No armchair crypto, plzkthx.
+07:43:50< derf_> Haha.
+07:44:09< Arc> GShang: well, in an ideal world, not very long. but things around these parts tend to be drawn out
+07:44:35< Arc> it "works" now, if you consider a non-standardised protocol "working" and not having a working player for it yet
+07:44:48< boxofpurpleducks> Arc: In fact, I have NSA-grade crypto freaks I can throw at you if they feel like being thrown.
+07:44:51< GShang> Oh so there's code somewhere?
+07:45:09< Arc> tho I did get it to do a http proxy to XMMS a few months ago, worked fine, splitting bandwidth from two peers
+07:45:11< derf_> boxofpurpleducks: You realize that video is just a hobby of mine at this point, right?
+07:45:21< boxofpurpleducks> They probably won't, but they might be willing to say what to use :-)
+07:45:39< MikeS_> The only crypto-freak i know works for the defence department, and probably can't talk about it :)
+07:45:44< Arc> boxofpurpleducks: lol great :-)  I could use the help.  I had some big-wig with RSA helping at HOPE5, but he was recommending SSL, which has FAR too much latency for IceT
+07:45:58< boxofpurpleducks> derf_: the failure model requires a unique attention to detail in crypto.
+07:46:09< Arc> the hashing algo is what concerns me the most tho
+07:46:15< boxofpurpleducks> OK
+07:46:19< derf_> boxofpurpleducks: Yeah, no kidding.
+07:46:28< Arc> I'm not a math guy.  I need that "other half" to get it finished, everything else is "already there"
+07:46:36< boxofpurpleducks> OK, we're wandering.
+07:46:41< Arc> done.
+07:46:47< Atamido> Has anyone talked to the FLAC guys about migrating their website?
+07:46:53< boxofpurpleducks> Atamido: yes.
+07:47:01 * Arc raises hand, repeatedly
+07:47:08< boxofpurpleducks> At least, we got as far as Josh liked the new branding.
+07:47:09< Arc> its been an ongoing discussion
+07:47:14< boxofpurpleducks> :-)
+07:47:19< MikeS_> Remaining things on the agenda: xspf (covered earlier?), cdparanoia, postfish, rtp. Any updates from anyone on those?
+07:47:28< boxofpurpleducks> nothing I need to mention.
+07:47:36< boxofpurpleducks> AFAIK
+07:47:52< Atamido> Also, has anyone brought up having translations of website pages?
+07:48:13< boxofpurpleducks> Argh, right!  And again, I don't have my bloody palm pilot.
+07:48:25< MikeS_> ok, I don't think there's anything left on the official agenda, so shall we throw it open to questions from the floor? Any other topics people want to talk about?
+07:48:30< boxofpurpleducks> Atamido: have you asked Melissa, just so she's aware?  I meant to and forgot.  My damn fault.
+07:48:47< MikeS_> (sorry, I'm typing too slowly tonight. )
+07:48:54< boxofpurpleducks> yes, you're 1:30 behind me.
+07:48:55< Atamido> I've just been waiting to hear from here.
+07:48:56< GShang> There's two bugs (features?) I wanted to ask about the status of.
+07:49:06< boxofpurpleducks> GShang: go.
+07:49:15< Atamido> *hear from her.
+07:49:22< boxofpurpleducks> we understood.
+07:49:51< GShang> Ok.  The ogg123 bug which results in regular noise after prelonged playback (playing streams at least).  This has been mentioned a number of times but I've not seen any movement re fixing it.  i get nagged about it regularly.
+07:50:29< GShang> just wanted to know if it's on anyone's raidar.
+07:50:33< MikeS_> ogg123 doesn't seem to have an active maintainer any more, afaik. 
+07:50:42< boxofpurpleducks> Oh, no stan?  well.
+07:50:47< MikeS_> So the answer to that is probably "no".
+07:50:52< GShang> Other one is chained bitstream support in oggdec.
+07:50:53< MikeS_> boxofpurpleducks: I haven't seen him around lately.
+07:51:30< MikeS_> GShang: ask me about that offline. 
+07:51:35< GShang> ok
+07:51:36< MikeS_> (preferably in email)
+07:51:49< MikeS_> I hadn't known anyone was interested in that.
+07:52:02< GShang> I know people who are.
+07:52:11< MikeS_> as for the ogg123 thing: is there a bug report?
+07:52:28< GShang> yeah, at least there was in bugzilla.  more than one possibly.
+07:52:53-!- HackRip [Fennryl@ip-7.net-81-220-227.henin.rev.numericable.fr] has quit []
+07:53:00< MikeS_> (471, possibly?)
+07:53:01< boxofpurpleducks> OK, and we've come back to the bug system.  This discussion should continue, but I think the meeting is done.
+07:53:20< GShang> ummm. don't know the bug number, can check.
+07:53:29< boxofpurpleducks> Aside from discussion of this bug, any other items?
+07:53:51< boxofpurpleducks> OK, meeting adjourned.
+07:54:01< MikeS_> thanks to everyone for coming.
+07:54:06< boxofpurpleducks> Feel free to continue chatting here, especially if it gets work done :-)
