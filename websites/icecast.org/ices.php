@@ -7,7 +7,7 @@
 <div class="newscontent">
 <h3>Documentation</h3>
 <br></br>
-<p>Ices comes in two flavors, the 0.3 flavor which supports sending an MP3 stream to an icecast server, and the 2.x flavor which supports sending an Ogg Vorbis stream to an icecast server.  Currently, the 2.x version of ices is actively maintained.</p>
+<p>Ices comes in two flavors, the 0.3 flavor which supports sending an MP3 stream to an icecast server, and the 2.x flavor which supports sending an Ogg Vorbis stream to an icecast server.</p>
 <p>Documenation for ices2 can be found <a href="docs/ices/">here</a></p>
 </div>
 <div class="roundbottom">
