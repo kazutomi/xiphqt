@@ -279,7 +279,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 static int
 stream_open_source (input_stream_t* source)
 {
-  char buf[1024];
+  char buf[INPUT_BUFSIZ];
   size_t len;
   int fd;
   int rc;
