@@ -16,7 +16,7 @@
 <h1>Base Data Structures</h1>
 <p>Libogg uses several data structures to hold data and state information.
 <p>
-All the <b>libogg</b> specific data structures are declared in "ogg/ogg.h".
+All the <b>libogg</b> specific data structures are declared in "ogg2/ogg.h".
 <p>
 
 <table border=1 color=black width=50% cellspacing=0 cellpadding=7>
@@ -26,19 +26,11 @@ All the <b>libogg</b> specific data structures are declared in "ogg/ogg.h".
 </tr>
 <tr valign=top>
 <td><a href="ogg_page.html">ogg_page</a></td>
-	<td>This structure encapsulates data into one ogg bitstream page.</td>
-</tr>
-<tr valign=top>
-<td><a href="ogg_stream_state.html">ogg_stream_state</a></td>
-	<td>This structure contains current encode/decode data for a logical bitstream.</td>
+	<td>This structure references the data of an Ogg bitstream page.</td>
 </tr>
 <tr valign=top>
 <td><a href="ogg_packet.html">ogg_packet</a></td>
-	<td>This structure encapsulates the data and metadata for a single raw Ogg Vorbis packet.</td>
-</tr>
-<tr valign=top>
-<td><a href="ogg_sync_state.html">ogg_sync_state</a></td>
-	<td>Contains bitstream synchronization information.</td>
+	<td>This structure references the data and metadata for an Ogg packet.</td>
 </tr>
 </table>
 
