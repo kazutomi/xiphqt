@@ -20,19 +20,21 @@ static void py_ao_dealloc(ao_Object *);
 static PyObject* py_ao_getattr(PyObject *, char *);
 
 static char py_ao_play_doc[] = 
-"x.play(buff, n=len(buff))\n\
-Writes n characters from the string/buffer buff to the audio\n\
-device represented by x. n defaults to the size of buff.";
-
+"Play the contents of a given audio buffer.\n\
+\
+\n
+Arguments:\n\
+buff : Buffer or string containing audio data\n\
+n : Number of bytes to play (defaults to len(buff))";
 static PyObject *py_ao_play(PyObject *, PyObject *);
 
 static char py_ao_get_driver_id_doc[] = 
-"get_driver_id(s)\n\
-Returns the integer identifier for the driver with name s";
+"Return the integer identifier for the driver with the given name (or object).";
 static PyObject *py_ao_get_driver_id(PyObject *, PyObject *);
 
 static char py_ao_get_driver_info_doc[] =
-"Returns a dictionary of information about a driver.\n\
+"Return a dictionary of information about a driver.\n\
+\n\
 It can either be called as a member function of an AudioDevice object:\n\
    x.get_driver_info()\n\
 or as a standalone function which takes the integer id of the driver:\n\
@@ -80,7 +82,6 @@ static PyTypeObject ao_Type = {
 
 
 struct PyMethodDef ao_Object_methods[] = {
-  // add support for open and close?
   {"get_driver_info", py_ao_get_driver_info, 
    METH_VARARGS, py_ao_get_driver_info_doc},
   {"play", py_ao_play, 
@@ -101,9 +102,8 @@ struct PyMethodDef ao_methods[] = {
 };
 
 static char docstring[] = 
-"A Python wrapper for the ao library using in the ogg project.\n\
-By Andrew Chatham <andrew.chatham@duke.edu>\n\
-Documentation will come!";
+"A Python wrapper for the ao library using in the ogg project.";
+
 
 #endif __AO_MODULE_H__
 

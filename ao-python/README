@@ -5,17 +5,51 @@ library. libao is available with ogg/vorbis at http://www.xiph.org.
 
 To build you need distutils package from
 http://www.python.org/sigs/distutils-sig/download.html (it comes with
-Python 2.0). First edit setup.py so that the AO_INCLUDE_DIR and
-AO_LIB_DIR point to the right place. Type "python setup.py build" and
-then "python setup.py install" as root to install the module.
+Python 2.0). To install:
 
-Access the module by using "import ao" in your Python code.
+python setup.py config
+python setup.py build
+[as root] python setup.py install
 
-There is currently a problem where you can't use any ao output plugin
-which requires a symbol inside libao. This has something to do with
-linker magic and dlopen voodoo. Everything works fine compiled into a
-program, but linked into a Python module, libao's ao_is_big_endian
-function isn't available to the plugins it opens (most importantly,
-'oss'). If anybody has any clue, please let me know how to fix this...
+The config script is new and still pretty weak. If you have any
+problems let me know. Access the module by using "import ao" in your
+Python code.
 
-Also, right now (Nov-28-2000) the CVS for ao is a little inconsistent.
+Here's an interactive session of just playing with the module, until I
+create better documentation (there should be docstrings for
+everything). Watch as I read some random data and "play" it to a wave
+file.
+
+>>> import ao
+
+>>> myoptions = {'file': 'myoutput.wav'}
+
+>>> dev = ao.AudioDevice('wav', options = myoptions)
+
+>>> f = open('/dev/urandom', 'r') #that's some good stuff
+
+>>> print dev
+<AudioDevice object at 0x812ac28>
+
+>>> print dev.get_driver_info()
+{'author': 'Aaron Holtzman <aholtzma@ess.engr.uvic.ca>', 
+ 'short_name': 'wav', 
+ 'name': 'WAV file output', 
+ 'comment': 'Sends output to a .wav file'}
+
+>>> print ao.get_driver_info('oss')
+{'author': 'Aaron Holtzman <aholtzma@ess.engr.uvic.ca>', 
+ 'short_name': 'oss', 
+ 'name': 'OSS audio driver output ', 
+ 'comment': 'Outputs audio to the Open Sound System driver.'}
+
+>>> data = f.read(1024*8)
+
+>>> dev.play(data)
+
+>>> <control-d>
+
+And now I have a file myoutput.wav with random noise in it.
+
+
+Andrew Chatham <andrew.chatham@duke.edu>
