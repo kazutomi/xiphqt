@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.18 2001/08/23 01:15:46 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.19 2001/08/29 00:13:41 kcarnold Exp $
 
  ********************************************************************/
 
@@ -34,7 +34,7 @@
 #include "ogg123.h"
 #include "buffer.h"
 
-#undef DEBUG_BUFFER
+#define DEBUG_BUFFER
 #undef DEADLOCK_PROTECTION
 
 #ifdef DEBUG_BUFFER
@@ -103,6 +103,16 @@ void PthreadCleanup (void *arg)
 #endif
 }
 
+void BufferAsserts(buf_t *buf)
+{
+  DUMP_BUFFER_INFO(buf);
+  assert (buf->curfill >= 0);
+  assert (buf->writer >= buf->buffer);
+  assert (buf->writer <= buf->end);
+  assert (buf->reader >= buf->buffer);
+  assert (buf->reader <= buf->end);
+}
+
 void* BufferFunc (void *arg)
 {
   sigset_t set;
@@ -137,12 +147,7 @@ void* BufferFunc (void *arg)
 	TIMEDWAIT (buf->DataReadyCondition, buf->SizeMutex, 1, 0);
       }
 
-      DUMP_BUFFER_INFO(buf);
-      assert (buf->curfill >= 0);
-      assert (buf->writer >= buf->buffer);
-      assert (buf->writer <= buf->end);
-      assert (buf->reader >= buf->buffer);
-      assert (buf->reader <= buf->end);
+      BufferAsserts(buf);
 
       if (buf->FlushPending)
 	{
@@ -162,10 +167,8 @@ void* BufferFunc (void *arg)
 	}
 
       if (buf->curfill == 0) {
-	UNLOCK_MUTEX (buf->SizeMutex);
 	DEBUG0 ("signalling buffer underflow");
 	pthread_cond_signal (&buf->UnderflowCondition);
-	LOCK_MUTEX (buf->SizeMutex);
 	Prebuffer (buf);
 	if (buf->FlushPending)
 	  goto flushing;
@@ -305,6 +308,8 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
 
   buf->reader = buf->writer = buf->buffer;
   buf->end = buf->buffer + size;
+  if (OptimalWriteSize > size || OptimalWriteSize == 0)
+    OptimalWriteSize = size / 2;
   buf->OptimalWriteSize = OptimalWriteSize;
   buf->size = size;
   buf->prebuffer = prebuffer;
@@ -329,10 +334,12 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
   LOCK_MUTEX (buf->SizeMutex);
 
   PrevSize = buf->curfill;
-  DUMP_BUFFER_INFO(buf);
+  BufferAsserts(buf);
 
   /* wait on buffer overflow or ack for eos */
   while (buf->curfill + size > buf->size || buf->eos) {
+    /* for really small buffers */
+    pthread_cond_signal (&buf->DataReadyCondition);
     UnPrebuffer (buf);
     TIMEDWAIT (buf->DataReadyCondition, buf->SizeMutex, 1, 0);
   }
@@ -340,7 +347,7 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
   DEBUG0("writing chunk into buffer");
   buf->curfill += size;
   /* we're guaranteed to have enough space in the buffer by now */
-  if (buf->reader < buf->writer) {
+  if (buf->reader < buf->writer && buf->reader + size <= buf->end) {
     DEBUG0("writer before end");
     /* don't worry about falling off end */
     memmove (buf->reader, data, size);
@@ -348,17 +355,20 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
   } else {
     size_t avail = buf->end - buf->reader + 1;
     DEBUG0("don't run over the end!");
-    if (avail >= size)
+    if (avail > size)
       memmove (buf->reader, data, size);
     else {
       memmove (buf->reader, data, avail);
       size -= avail;
       data += avail;
       buf->reader = buf->buffer;
+      DEBUG1("unconditional write of %d", size);
       memmove (buf->reader, data, size);
     }
     buf->reader += size;
   }
+
+  BufferAsserts(buf);
     
   UNLOCK_MUTEX (buf->SizeMutex);
 
@@ -375,7 +385,7 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
 
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb)
 {
-  int i, s;
+  int i, s, writeSize;
   size *= nmemb;
   for (i = 0; i < size; i += buf->OptimalWriteSize) {
     s = i + buf->OptimalWriteSize <= size ? buf->OptimalWriteSize : size - i;
