@@ -99,24 +99,29 @@ IDI_ICON1               ICON    DISCARDABLE     "resource/fish.ico"
 // Dialog
 //
 
-IDD_QUALITY DIALOG DISCARDABLE  0, 0, 222, 108
+IDD_QUALITY DIALOG DISCARDABLE  0, 0, 247, 146
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Encode Parameters"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | 
                     TBS_BOTH | WS_TABSTOP,45,39,115,24
-    DEFPUSHBUTTON   "Accept",IDC_BUTTON1,99,81,30,14
+    DEFPUSHBUTTON   "Accept",IDC_BUTTON1,107,119,30,14
     EDITTEXT        IDC_EDIT1,13,44,25,14,ES_MULTILINE
-    GROUPBOX        "Quality",IDC_STATIC,7,31,161,40
+    GROUPBOX        "Quality",IDC_STATIC,7,31,229,40
+    EDITTEXT        IDC_EDIT2,176,45,36,14,ES_CENTER | ES_MULTILINE | 
+                    ES_READONLY | ES_NUMBER | NOT WS_BORDER
+    GROUPBOX        "Nominal Bitrate",IDC_STATIC,163,36,59,24
     CONTROL         "Quality Setting",IDC_USEQUALITY,"Button",
                     BS_AUTORADIOBUTTON,15,17,61,10
-    GROUPBOX        "Bit Rate",IDC_STATIC,172,31,39,40
+    GROUPBOX        "Bit Rate",IDC_STATIC,7,72,228,37
     CONTROL         "Bitrate Setting",IDC_USEBITRATE,"Button",
                     BS_AUTORADIOBUTTON,87,17,60,10
-    LISTBOX         IDC_BITRATE,178,41,28,27,LBS_NOINTEGRALHEIGHT | 
-                    LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Parameter Mode",IDC_STATIC,7,7,204,23
+    COMBOBOX        IDC_BITRATE,13,87,32,59,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    GROUPBOX        "Parameter Mode",IDC_STATIC,7,7,228,23
+    CTEXT           "This mode is not recommended.  Using the Quality Setting gives best results.",
+                    IDC_STATIC,59,83,154,18,SS_SUNKEN
 END
 
 
@@ -131,9 +136,9 @@ BEGIN
     IDD_QUALITY, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 217
+        RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 101
+        BOTTOMMARGIN, 139
     END
 END
 #endif    // APSTUDIO_INVOKED
