@@ -1,3 +1,8 @@
+2001-09-02  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* setup.py: Bumped version number to 0.8 to match libao
+
+	* config_unix.py (find_ao): pass the include dir to run_test
+	
 2001-08-30  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* aomodule.[ch] Updated to work with the updated ao API.
 	  Not entirely sure the way of dealing with files is perfect,
