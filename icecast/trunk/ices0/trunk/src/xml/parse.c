@@ -26,7 +26,7 @@
 #  include <libxml/parser.h>
 # elif HAVE_GNOME_XML_PARSER_H
 #  include <gnome-xml/parser.h>
-# else
+# elif HAVE_PARSER_H
 /* Probably 1.8.7 backwards crap */
 #  include <parser.h>
 #  include <xmlmemory.h>
