@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: http_transport.c,v 1.1.2.1 2001/12/14 05:45:14 volsung Exp $
+ last mod: $Id: http_transport.c,v 1.1.2.2 2001/12/18 04:15:45 volsung Exp $
  
 ********************************************************************/
 
@@ -104,6 +104,15 @@ void *curl_thread_func (void *arg)
 {
   curl_thread_arg_t *myarg = (curl_thread_arg_t *) arg;
   CURLcode ret;
+  sigset_t set;
+
+  /* Block signals to this thread */
+  sigfillset (&set);
+  sigaddset (&set, SIGINT);
+  sigaddset (&set, SIGTSTP);
+  sigaddset (&set, SIGCONT);
+  if (pthread_sigmask (SIG_BLOCK, &set, NULL) != 0)
+    status_error("Error: Could not set signal mask.");
 
   ret = curl_easy_perform((CURL *) myarg->curl_handle);
 
@@ -256,8 +265,9 @@ void http_close (data_source_t *source)
 {
   http_private_t *private = source->private;
 
-  pthread_kill (private->curl_thread, SIGTERM);
-  pthread_join (private->curl_thread, NULL);
+  pthread_cancel(private->curl_thread);
+  buffer_abort_write(private->buf);
+  pthread_join(private->curl_thread, NULL);
 
   buffer_destroy(private->buf);
   private->buf = NULL;

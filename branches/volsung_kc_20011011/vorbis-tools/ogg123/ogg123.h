@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.12.2.7 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12.2.8 2001/12/18 04:15:46 volsung Exp $
 
  ********************************************************************/
 
@@ -20,25 +20,6 @@
 
 #include <ogg/os_types.h>
 #include "audio.h"
-
-/* Compatibility fixes */
-
-#ifdef __sun
-#include <alloca.h>
-#endif
-
-/* SunOS 4 does on_exit() and everything else does atexit() */
-#ifdef HAVE_ATEXIT
-#define ATEXIT(x) (atexit(x))
-#else
-#ifdef HAVE_ON_EXIT
-#define ATEXIT(x) (on_exit( (void (*)(int, void*))(x) , NULL)
-#else
-#define ATEXIT(x)
-#warning "Neither atexit() nor on_exit() is present.  Bad things may happen when the application terminates."
-#endif
-#endif
- 
 
 typedef struct ogg123_options_t {
   long int verbosity;         /* Verbose output if > 1, quiet if 0 */
