@@ -1,6 +1,7 @@
 // OggVorbis plugin for WinAmp and compatible media player
 // Copyright 2000 Jack Moffitt <jack@icecast.org> 
 //			and Michael Smith <msmith@labyrinth.net.au>
+// HTTP streaming support by Aaron Porter <aaron@javasource.org>
 // Licensed under terms of the LGPL
 
 #include <windows.h>
@@ -11,9 +12,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <process.h>
+
 #include <vorbis/vorbisfile.h>
 
+#include "httpstream.h"
+
 #include "in2.h"
+
 
 // post this to the main window at end of file (after playback has stopped)
 #define WM_WA_MPEG_EOF WM_USER + 2
@@ -37,6 +42,10 @@ HANDLE thread_handle=INVALID_HANDLE_VALUE;	// the handle to the decode thread
 
 void DecodeThread(void *b); // the decode thread procedure
 
+void * btdvp=0;
+
+char iniFilename[MAX_PATH];
+
 void config(HWND hwndParent)
 {
 	MessageBox(hwndParent,
@@ -44,26 +53,63 @@ void config(HWND hwndParent)
 		"Configuration",MB_OK);
 	// if we had a configuration we'd want to write it here :)
 }
+
 void about(HWND hwndParent)
 {
-	MessageBox(hwndParent,"OggVorbis Player, by Jack Moffitt <jack@icecast.org>\n\tand Michael Smith <msmith@labyrinth.net.au>","About OggVorbis Player",MB_OK);
+	MessageBox(hwndParent,"OggVorbis Player, by Jack Moffitt <jack@icecast.org>\n\tand Michael Smith <msmith@labyrinth.net.au>\n\nHTTP streaming by Aaron Porter <aaron@javasource.org>","About OggVorbis Player",MB_OK);
 }
 
 void init() 
 {
-
+    iniFilename[0] = 0;
+	httpInit();
 }
 
 void quit() 
 { 
+	httpShutdown();
+}
 
+void setHttpVars()
+{
+    static HWND hwndWinamp = 0;
+    static DWORD lastProxyCheck = 0;
+
+    if (GetTickCount() - lastProxyCheck > 5000) // Don't check to see if proxy changed if we checked less than 5 seconds ago
+    {
+        if (*iniFilename == 0)
+        {
+            if (GetModuleFileName(GetModuleHandle(NULL), iniFilename, MAX_PATH))
+            {
+                char * lastSlash = strrchr(iniFilename, '\\');
+
+                *(lastSlash + 1) = 0;
+
+                strcat(iniFilename, "winamp.ini");
+            }
+        }
+
+        if (*iniFilename != 0)
+        {
+            char proxy[256];
+
+            GetPrivateProfileString("Winamp", "proxy", "", proxy, 256, iniFilename);
+
+            httpSetProxy(proxy);
+        }
+
+        lastProxyCheck = GetTickCount();
+    }
+
+    if (!hwndWinamp)
+	    httpSetHwnd(hwndWinamp = FindWindow("Winamp v1.x", NULL));
 }
 
 int isourfile(char *fn) 
-{ 
-	// used for detecting URL streams.. unused here. strncmp(fn,"http://",7) to detect HTTP streams, etc
-	//MessageBox(mod.outMod->hMainWindow,fn,"Debug",MB_OK);
-	return 0; 
+{
+    setHttpVars();
+
+    return isOggUrl(fn);
 } 
 
 size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
@@ -75,14 +121,15 @@ size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 	{
 		return bytesread/size;
 	}
-	else
-		return 0; /* It failed */
+
+	return 0; /* It failed */
 }
 
-int seek_func(void *datasource, ogg_int64_t offset, int whence)
+int seek_func(void *datasource, int64_t offset, int whence)
 { /* Note that we still need stdio.h even though we don't use stdio, 
    * in order to get appropriate definitions for SEEK_SET, etc.
    */
+
 	HANDLE file = (HANDLE)datasource;
 	int seek_type;
 	unsigned long retval;
@@ -133,21 +180,34 @@ int play(char *fn)
 	vorbis_info *vi = NULL;
 	ov_callbacks callbacks = {read_func, seek_func, close_func, tell_func};
 
-	stream = CreateFile(fn, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    setHttpVars();
 
-	if (stream == INVALID_HANDLE_VALUE)
-	{	
-		return -1;
-	}
+	if (isOggUrl(fn))
+	{
+        mod.is_seekable = FALSE;
 
-	if (ov_open_callbacks(stream, &input_file, NULL, 0, callbacks) < 0) {
-		CloseHandle(stream);
-		return 1;
+		if ((btdvp = httpStartBuffering(fn, &input_file, TRUE)) == 0)
+            return -1;
 	}
+    else
+    {
+        mod.is_seekable = TRUE;
+
+	    stream = CreateFile(fn, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+		    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	    if (stream == INVALID_HANDLE_VALUE)
+	    {	
+		    return -1;
+	    }
+
+	    if (ov_open_callbacks(stream, &input_file, NULL, 0, callbacks) < 0) {
+		    CloseHandle(stream);
+		    return 1;
+	    }
+    }
 
 	file_length = (int)ov_time_total(&input_file, -1) * 1000;
-	
 	strcpy(lastfn, fn);
 	paused = 0;
 	decode_pos_ms = 0;
@@ -198,7 +258,7 @@ int play(char *fn)
 }
 
 void pause() 
-{ 
+{
 	paused = 1; 
 	mod.outMod->Pause(1); 
 }
@@ -216,6 +276,12 @@ int ispaused()
 
 void stop() 
 { 
+	if (btdvp)
+    {
+		httpStopBuffering(btdvp);
+        btdvp = 0;
+    }
+
 	if (thread_handle != INVALID_HANDLE_VALUE) {
 		killDecodeThread = 1;
 		
@@ -224,7 +290,6 @@ void stop()
 			TerminateThread(thread_handle, 0);
 		}
 		ov_clear(&input_file);
-		CloseHandle(thread_handle);
 		thread_handle = INVALID_HANDLE_VALUE;
 
 	}
@@ -282,7 +347,12 @@ char *generate_title(vorbis_comment *comment, char *fn)
 	else if(artist)
 		_snprintf(buff, 1024, "%s - unknown", artist);
 	else
+    {
+	    if (title = httpGetTitle(fn))
+		    return title;
+
 		_snprintf(buff, 1024, "%s (no title)", fn);
+    }
 
 	finaltitle = strdup(buff);
 
@@ -297,23 +367,31 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 	ov_callbacks callbacks = {read_func, seek_func, close_func, tell_func};
 
 
-	if (filename != NULL && filename[0] != 0) {
+	if (filename != NULL && filename[0] != 0)
+    {
+        if (isOggUrl(filename))
+        {
+            if (!httpStartBuffering(filename, &vf, FALSE))
+                return;
+        }
+        else
+        {
+		    stream = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+			    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-		stream = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		    if(stream == INVALID_HANDLE_VALUE)
+			    return;
 
-		if(stream == INVALID_HANDLE_VALUE)
-			return;
+		    // The ov_open() function performs full stream detection and machine
+		    // initialization.  If it returns 0, the stream *is* Vorbis and we're
+		    // fully ready to decode.
+		    
 
-		// The ov_open() function performs full stream detection and machine
-		// initialization.  If it returns 0, the stream *is* Vorbis and we're
-		// fully ready to decode.
-		
-
-		if (ov_open_callbacks(stream, &vf, NULL, 0, callbacks) < 0) {
-			CloseHandle(stream);
-			return;
-		}
+		    if (ov_open_callbacks(stream, &vf, NULL, 0, callbacks) < 0) {
+			    CloseHandle(stream);
+			    return;
+		    }
+        }
 
 		file_length = (int)ov_time_total(&vf, -1) * 1000;
 		*length_in_ms = file_length;
@@ -445,17 +523,16 @@ void DecodeThread(void *b)
 		}
 	}
 	
-	return;
+	_endthread();
 }
 
 In_Module mod = 
 {
 	IN_VER,
-	"OggVorbis Input Plugin 0.1",
+	"OggVorbis Input Plugin 0.2",
 	0,	// hMainWindow
 	0,  // hDllInstance
-	"OGG\0OggVorbis File (*.OGG)\0"
-	,
+	"OGG\0OggVorbis File (*.OGG)\0",
 	1,	// is_seekable
 	1, // uses output
 	config,
