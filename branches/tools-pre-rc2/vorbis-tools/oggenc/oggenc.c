@@ -21,12 +21,12 @@
 #include "audio.h"
 #include "utf8.h"
 
-#define VERSION_STRING "OggEnc v0.7 (libvorbis rc1)\n"
+#define VERSION_STRING "OggEnc v0.8 (libvorbis rc2)\n"
 #define COPYRIGHT "(c) 2000 Michael Smith <msmith@labyrinth.net.au)\n"
 #define CHUNK 4096 /* We do reads, etc. in multiples of this */
 
 struct option long_options[] = {
-	{"quiet",0,0,'q'},
+	{"quiet",0,0,'Q'},
 	{"help",0,0,'h'},
 	{"comment",1,0,'c'},
 	{"artist",1,0,'a'},
@@ -40,6 +40,9 @@ struct option long_options[] = {
 	{"raw-chan",1,0,'C'},
 	{"raw-rate",1,0,'R'},
 	{"bitrate",1,0,'b'},
+	{"min-bitrate",1,0,'m'},
+	{"max-bitrate",1,0,'M'},
+	{"quality",1,0,'q'},
 	{"date",1,0,'d'},
 	{"tracknum",1,0,'N'},
 	{"serial",1,0,'s'},
@@ -56,7 +59,7 @@ void usage(void);
 int main(int argc, char **argv)
 {
 	oe_options opt = {"ISO-8859-1", NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 
-		0, NULL, 0, 0, 0,16,44100,2, NULL,NULL,128,0}; /* Default values */
+		0, NULL, 0, 0, 0,16,44100,2, NULL,NULL,-1,-1,-1, 0.5f,0}; /* Default values */
 	int i;
 
 	char **infiles;
@@ -233,7 +236,9 @@ int main(int argc, char **argv)
 		enc_opts.out = out;
 		enc_opts.comments = &vc;
 		enc_opts.filename = out_fn;
-		enc_opts.bitrate = opt.kbps; /* defaulted at the start, so this is ok */
+		enc_opts.bitrate = opt.nominal_bitrate; 
+		enc_opts.min_bitrate = opt.min_bitrate;
+		enc_opts.max_bitrate = opt.max_bitrate;
 
 		if(!enc_opts.total_samples_per_channel)
 			enc_opts.progress_update = update_statistics_notime;
@@ -271,15 +276,22 @@ void usage(void)
 		"\n"
 		"OPTIONS:\n"
 		" General:\n"
-		" -q, --quiet          Produce no output to stderr\n"
+		" -Q, --quiet          Produce no output to stderr\n"
 		" -h, --help           Print this help text\n"
 		" -r, --raw            Raw mode. Input files are read directly as PCM data\n"
 		" -B, --raw-bits=n     Set bits/sample for raw input. Default is 16\n"
 		" -C, --raw-chan=n     Set number of channels for raw input. Default is 2\n"
 		" -R, --raw-rate=n     Set samples/sec for raw input. Default is 44100\n"
-		" -b, --bitrate        Choose a bitrate to encode at. Internally,\n"
-		"                      a mode approximating this value is chosen.\n"
-		"                      Takes an argument in kbps. Default is 128kbps\n"
+		" -b, --bitrate        Choose a nominal bitrate to encode at. Attempt\n"
+		"                      to encode at a bitrate averaging this. Takes an\n"
+		"                      argument in kbps.\n"
+		" -m, --min-bitrate    Specify a minimum bitrate (in kbps). Useful for\n"
+		"                      encoding for a fixed-size channel.\n"
+		" -M, --max-bitrate    Specify a maximum bitrate in kbps. Usedful for\n"
+		"                      streaming purposes.\n"
+		" -q, --quality        Specify quality between 0 (low) and 10 (high),\n"
+		"                      instead of specifying a particular bitrate.\n"
+		"                      This is the normal mode of operation.\n"
 		" -s, --serial         Specify a serial number for the stream. If encoding\n"
 		"                      multiple files, this will be incremented for each\n"
 		"                      stream after the first.\n"
@@ -391,7 +403,7 @@ void parse_options(int argc, char **argv, oe_options *opt)
 	int ret;
 	int option_index = 1;
 
-	while((ret = getopt_long(argc, argv, "a:b:B:c:C:d:e:hl:n:N:o:qrR:s:t:v", 
+	while((ret = getopt_long(argc, argv, "a:b:B:c:C:d:e:hl:m:M:n:N:o:qQ:rR:s:t:v", 
 					long_options, &option_index)) != -1)
 	{
 		switch(ret)
@@ -430,7 +442,26 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				opt->title[opt->title_count - 1] = strdup(optarg);
 				break;
 			case 'b':
-				opt->kbps = atoi(optarg);
+				opt->nominal_bitrate = atoi(optarg);
+				break;
+			case 'm':
+				opt->min_bitrate = atoi(optarg);
+				break;
+			case 'M':
+				opt->max_bitrate = atoi(optarg);
+				break;
+			case 'q':
+				opt->quality = (float)(atof(optarg) * 0.1);
+				if(opt->quality > 1.0f)
+				{
+					opt->quality = 1.0f;
+					fprintf(stderr, "WARNING: quality setting too high, setting to maximum quality.\n");
+				}
+				else if(opt->quality < 0.f)
+				{
+					opt->quality = 0.f;
+					fprintf(stderr, "WARNING: negative quality specified, setting to minimum.\n");
+				}
 				break;
 			case 'n':
 				if(opt->namefmt)
@@ -452,7 +483,7 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				usage();
 				exit(0);
 				break;
-			case 'q':
+			case 'Q':
 				opt->quiet = 1;
 				break;
 			case 'r':
