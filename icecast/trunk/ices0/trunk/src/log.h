@@ -26,3 +26,21 @@ char *ices_log_get_error ();
 int ices_log_reopen_logfile ();
 void ices_log_initialize ();
 void ices_log_shutdown ();
+void ices_log_daemonize ();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

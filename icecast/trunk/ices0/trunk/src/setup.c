@@ -511,13 +511,7 @@ ices_setup_daemonize ()
 #ifdef HAVE_SETPGID
 	setpgid (0, 0);
 #endif
-	freopen ("/dev/null", "r", stdin);
-	freopen ("/dev/null", "w", stdout);
-	freopen ("/dev/null", "w", stderr);
-	close (0); 
-        close (1); 
-        close (2);
-
+	ices_log_daemonize ();
 	ices_setup_update_pidfile (getpid());
 }
 

@@ -28,8 +28,6 @@ static int ices_log_open_logfile ();
 static int ices_log_close_logfile ();
 
 static char lasterror[BUFSIZE];
-static FILE *logfile = NULL;
-
 /* Public function definitions */
 
 /* Initialize the log module, creates log file */
@@ -49,6 +47,22 @@ ices_log_shutdown ()
 	if (!ices_log_close_logfile ()) {
 		ices_log ("%s", ices_log_get_error ());
 	}
+}
+
+/* Close everything, start up with clean slate when 
+ * run as a daemon */
+void
+ices_log_daemonize ()
+{
+	close (0); 
+	close (1); 
+	close (2);
+
+	freopen ("/dev/null", "r", stdin);
+	freopen ("/dev/null", "w", stdout);
+	freopen ("/dev/null", "w", stderr);
+
+	ices_log_reopen_logfile ();
 }
 
 /* Cycle the logfile, usually called from the SIGHUP handler */
@@ -150,10 +164,14 @@ thread_log (char *type, int level, char *fmt, ...)
 static void
 ices_log_string (char *format, char *string)
 {
-	if (logfile) {
-		fprintf (logfile, format, string);
+	if (ices_config.logfile) {
+		fprintf (ices_config.logfile, format, string);
+#ifndef HAVE_SETLINEBUF
+		fflush (ices_config.logfile);
+#endif
 	}
 	
+	/* Don't log to console when daemonized */
 	if (!ices_config.daemon) {
 		fprintf (stdout, format, string);
 	}
@@ -176,7 +194,11 @@ ices_log_open_logfile ()
 		return 0;
 	}
 
-	logfile = logfp;
+	ices_config.logfile = logfp;
+#ifdef HAVE_SETLINEBUF
+	setlinebuf (ices_config.logfile);
+#endif
+
 	return 1;
 }
 
@@ -184,8 +206,8 @@ ices_log_open_logfile ()
 static int
 ices_log_close_logfile ()
 {
-	if (logfile) {
-		ices_util_fclose (logfile);
+	if (ices_config.logfile) {
+		ices_util_fclose (ices_config.logfile);
 	}
 
 	return 1;

@@ -13,3 +13,6 @@ Libshout was written and designed by
 Jack Moffitt    <jack@icecast.org>
 Chad Armstrong  <chad@icecast.org>
 Scott Manley    <szyzyg@icecast.org>
+
+The file rand.c used for randomizing files
+is Copyright (C) 1998 Erik Greenwald <br0ke@math.smsu.edu>

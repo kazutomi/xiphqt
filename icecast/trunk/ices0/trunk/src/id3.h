@@ -20,7 +20,7 @@
 
 /* Public function declarations */
 int ices_id3_parse_file (const char *filename, int file_bytes);
-char *ices_id3_get_artist ();
-char *ices_id3_get_title ();
+char *ices_id3_get_artist (char *namespace, int maxlen);
+char *ices_id3_get_title (char *namespace, int maxlen);
 void ices_id3_initialize ();
 void ices_id3_shutdown ();

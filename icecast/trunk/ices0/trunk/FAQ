@@ -13,3 +13,13 @@ A: Either ices can't find the config file, or you compiled ices without
    libxml). Without libxml, no config files.
    It could also mean that you compiled the icecast server with crypt
    support.
+
+3. I want to write a perl or python playlist handler for ices, but
+   I don't know where to start.
+A: Have a look in the skeleton files ices.pm for perl and ices.py for
+   python. That's a good place to start. Also read README.playlist.
+
+4. Why don't you support embedded TCL?
+A: Code it yourself if you like it so much. Check src/interpreter/interpreter.c
+   for details. We support python and perl, so adding another language can't
+   be that hard.

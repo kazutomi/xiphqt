@@ -40,11 +40,11 @@ void
 ices_cue_update (const char *filename, const int filesize, const int bitrate, const int bytes_played) 
 {
 	char buf[1024];
-
+	char namespace[1024], namespace2[1024];
 	FILE *fp = ices_util_fopen_for_writing (ices_cue_get_filename());
 	
-	char *id3artist = ices_id3_get_artist ();
-	char *id3title = ices_id3_get_title ();
+	char *id3artist = ices_id3_get_artist (namespace, 1024);
+	char *id3title = ices_id3_get_title (namespace2, 1024);
 
 	if (!fp) {
 		ices_log ("Could not open cuefile [%s] for writing, cuefile not updated!", ices_cue_get_filename ());

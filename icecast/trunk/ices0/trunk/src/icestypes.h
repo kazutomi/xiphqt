@@ -48,6 +48,7 @@ typedef struct ices_config_St {
 	char *playlist_file;
 	char *interpreter_file;
 	char *base_directory;
+	FILE *logfile;
 }ices_config_t;
 
 #endif

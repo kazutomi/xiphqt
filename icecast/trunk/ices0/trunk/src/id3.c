@@ -83,87 +83,71 @@ ices_id3_parse_file (const char *filename, int file_bytes)
 	return file_bytes;
 }
 
-/* Return the id3 module artist name, if found.
- * String return is static memory */
+/* Return the id3 module artist name, if found. */
 char *
-ices_id3_get_artist ()
+ices_id3_get_artist (char *namespace, int maxlen)
 {
-	static char artist[41];
-	char *out = NULL;
-
 	thread_mutex_lock (&id3_mutex);
 
 	if (ices_id3_artist) {
-		memset (artist, 0, 40);
-		strncpy (artist, ices_util_nullcheck (ices_id3_artist), 40);
-		out = &artist[0];
+		strncpy (namespace, ices_util_nullcheck (ices_id3_artist), maxlen);
+	} else {
+		namespace[0] = '\0';
 	}
 
 	thread_mutex_unlock (&id3_mutex);
 	
-	return out;
+	return namespace;
 }
 
-/* Return the id3 module title name, if found.
- * String return is static memory */
+/* Return the id3 module title name, if found. */
 char *
-ices_id3_get_title ()
+ices_id3_get_title (char *namespace, int maxlen)
 {
-	static char title[41];
-	char *out = NULL;
-
 	thread_mutex_lock (&id3_mutex);
 
 	if (ices_id3_song) {
-		memset (title, 0, 40);
-		strncpy (title, ices_util_nullcheck (ices_id3_song), 40);
-		out = &title[0];
+		strncpy (namespace, ices_util_nullcheck (ices_id3_song), maxlen);
+	} else {
+		namespace[0] = '\0';
 	}
 
 	thread_mutex_unlock (&id3_mutex);
-	return out;
+	return namespace;
 }
 
-/* Return the id3 module genre name, if found.
- * String return is static memory */
+/* Return the id3 module genre name, if found. */
 char *
-ices_id3_get_genre ()
+ices_id3_get_genre (char *namespace, int maxlen)
 {
-	static char genre[41];
-	char *out = NULL;
-
 	thread_mutex_lock (&id3_mutex);
 
 	if (ices_id3_genre) {
-		memset (genre, 0, 40);
-		strncpy (genre, ices_util_nullcheck (ices_id3_genre), 40);
-		out = &genre[0];
+		strncpy (namespace, ices_util_nullcheck (ices_id3_genre), maxlen);
+	} else {
+		namespace[0] = '\0';
 	}
 
 	thread_mutex_unlock (&id3_mutex);
 
-	return out;
+	return namespace;
 }
 
-/* Return the id3 module file name, if found.
- * String return is static memory */
+/* Return the id3 module file name, if found. */
 char *
-ices_id3_get_filename ()
+ices_id3_get_filename (char *namespace, int maxlen)
 {
-	static char filename[1025];
-	char *out = NULL;
-
 	thread_mutex_lock (&id3_mutex);
 
 	if (ices_id3_filename) {
-		memset (filename, 0, 1024);
-		strncpy (filename, ices_util_nullcheck (ices_id3_filename), 1024);
-		out = &filename[0];
+		strncpy (namespace, ices_util_nullcheck (ices_id3_filename), maxlen);
+	} else {
+		namespace[0] = '\0';
 	}
 	
 	thread_mutex_unlock (&id3_mutex);
 	
-	return out;
+	return namespace;
 }
 
 /* Private function definitions */
@@ -188,10 +172,11 @@ void *
 ices_id3_update_thread (void *arg)
 {
 	int ret;
-	char metastring[1024], song[2048];
-	char *id3_artist = ices_id3_get_artist ();
-	char *id3_song = ices_id3_get_title ();
-	const char *filename = ices_id3_get_filename ();
+	char metastring[1024], song[2048], artistspace[1024], titlespace[1024],
+	     filespace[1024];
+	char *id3_artist = ices_id3_get_artist (artistspace, 1024);
+	char *id3_song = ices_id3_get_title (titlespace, 1024);
+	const char *filename = ices_id3_get_filename (filespace, 1024);
 	
 	if (id3_artist) {
 		sprintf (song, "%s - %s", id3_artist, id3_song ? id3_song : filename);
