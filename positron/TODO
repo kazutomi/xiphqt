@@ -3,8 +3,7 @@ Positron TODO List
 Bugs
 ----
 
-* Sorting entries in all child databases, not just the root.  (I think
-  we can do this by quicksorting just the SAI entries.)
+* Sorting entries in PAI modules.
 
 * A file can be added to the database twice if the file is removed
   from disk but not the database, then it is added again.

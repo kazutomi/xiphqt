@@ -1,5 +1,6 @@
 include TODO
 include COPYING
+include ChangeLog
 graft scripts
 graft setupext
 graft doc
