@@ -16,7 +16,7 @@ CFLAGS+= -DRLECODER
 #CFLAGS+= -DDBG_MEMLEAKS
 
 # dump a lot debug images
-CFLAGS+= -DDBG_XFORM
+#CFLAGS+= -DDBG_XFORM
 
 # dump ogg packet infos
 #CFLAGS+= -DDBG_OGG
@@ -44,6 +44,12 @@ tarkin_enc: $(OBJS) tarkin_enc.o
 tarkin_dec: $(OBJS) tarkin_dec.o
 	$(CC) $(LFLAGS) $(OBJS) tarkin_dec.o -o $@
 
+tarkin_sdl_player: $(OBJS) tarkin_sdl_player.o
+	$(CC) $(LFLAGS) `sdl-config --libs` $(OBJS) tarkin_sdl_player.o -o $@
+
+tarkin_sdl_player.o: tarkin_sdl_player.c
+	$(CC) $(CFLAGS) `sdl-config --cflags` -c $< -o $@
+
 .c.o: .depend
 	$(CC) $(CFLAGS) -c $<
 
@@ -51,6 +57,7 @@ clean:
 	$(RM) $(OBJS) $(TARGET) gmon.out core .depend .depend.bak rle.histogram
 	$(RM) $(TEST_TARGETS) $(TEST_OBJS)
 	$(RM) tarkin_enc tarkin_dec tarkin_enc.o tarkin_dec.o
+	$(RM) tarkin_sdl_player tarkin_sdl_player.o
 	$(RM) stream.ogg
 	$(RM) *.ppm *.pgm
 
