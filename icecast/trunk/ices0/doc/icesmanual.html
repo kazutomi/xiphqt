@@ -14,7 +14,8 @@
 	 <ol type=1>
 		<li> <a href="#features_cue">Cue file </a></li>
 		<li> <a href="#features_signals">Signal Handling </a></li>
-		<li> <a href="#features_reencoding">Reencoding</a></li>
+		<li> <a	href="#features_reencoding">Reencoding</a></li>
+		<li> <a href="#features_crossfading">Crossfading</a></li>
 	        <li> <a href="#features_multistream">Multiple streams</a></li>
 		<li> <a href="#features_playlists">Playlist Handling </a></li>
 	</ol>
@@ -115,10 +116,6 @@ convenience while still supporting as many listeners as possible.
 <br>
 The sample rate, number of channels, etc, will be chosen on the fly by
 lame itself, unless you specify something using the -H and -N options.
-<br>
-If you want to change it, I suggest you add support for this to ices
-and mail me a patch.
-<br>
 I think you should be fine with whatever lame chooses though.
 <br>
 Also, please make sure that your files are ok before you start
@@ -128,6 +125,22 @@ errors are encountered.
 <br>
 This will make ices exit, which is kinda bad :)
 	</p>
+	</li>
+
+	<li> <a name="features_crossfading">Crossfading</a>
+	<p>
+If you've compiled with support for reencoding, you can
+crossfade between tracks (blend the end of one into the start
+of the next). This is controlled by the <tt>-C</tt> command line
+option or the <tt>Playlist/Crossfade</tt> parameter in the
+configuration file. Both of these take an integer argument,
+which is the number of seconds to crossfade.
+Songs less than twice the length of the crossfade requested will not
+be faded. This is handy for eg station IDs. <b>NOTE</b>: The
+crossfader doesn't know how to resample, so if you activate this
+feature you should make sure that all your source tracks have the
+same sampling rate.
+        </p>
 	</li>
 
 	<li> <a name="features_multistream">Multiple streams</a>
@@ -198,6 +211,7 @@ some options have been renamed.
 		<ul>
 			<li>-B (Background (daemon mode))</li>
 			<li>-b &lt;stream bitrate&gt;</li>
+			<li>-C &lt;crossfade seconds&gt;</li>
 			<li>-c &lt;configfile&gt;</li>
 			<li>-D &lt;base directory&gt;</li>
 			<li>-d &lt;stream description&gt;</li>
@@ -233,34 +247,35 @@ names, and reencoding options.
 
 			&lt;?xml version="1.0"?&gt;
 			&lt;ices:Configuration xmlns:ices="http://www.icecast.org/projects/ices"&gt;
-			&lt;ices:Playlist&gt;
-				&lt;ices:File&gt;apan.txt&lt;/ices:File&gt;
-				&lt;ices:Randomize&gt;1&lt;/ices:Randomize&gt;
-				&lt;ices:Type&gt;builtin&lt;/ices:Type&gt;
-				&lt;ices:Module&gt;ices&lt;/ices:Module&gt;
-			&lt;/ices:Playlist&gt;
-			&lt;ices:Server&gt;
-				&lt;ices:Hostname&gt;localhost&lt;/ices:Hostname&gt;
-				&lt;ices:Port&gt;8000&lt;/ices:Port&gt;
-				&lt;ices:Password&gt;letmein&lt;/ices:Password&gt;
-				&lt;ices:Protocol&gt;xaudiocast&lt;/ices:Protocol&gt;
-			&lt;/ices:Server&gt;
-			&lt;ices:Execution&gt;
-				&lt;ices:Background&gt;0&lt;/ices:Background&gt;
-				&lt;ices:Verbose&gt;1&lt;/ices:Verbose&gt;
-				&lt;ices:Base_Directory&gt;/tmp&lt;/ices:Base_Directory&gt;
-			&lt;/ices:Execution&gt;
-			&lt;ices:Stream&gt;
-				&lt;ices:Name&gt;Cool ices default name from XML&lt;/ices:Name&gt;
-				&lt;ices:Genre&gt;Cool ices genre from XML&lt;/ices:Genre&gt;
-				&lt;ices:Description&gt;Cool ices description from XML&lt;/ices:Description&gt;
-				&lt;ices:URL&gt;Cool ices URL from XML&lt;/ices:URL&gt;
-				&lt;ices:Bitrate&gt;128&lt;/ices:Bitrate&gt;
-				&lt;ices:Public&gt;1&lt;/ices:Public&gt;
-				&lt;ices:Reencode&gt;0&lt;/ices:Reencode&gt;
-				&lt;ices:Samplerate&gt;-1&lt;/ices:Samplerate&gt;
-				&lt;ices:Channels&gt;-1&lt;/ices:Channels&gt;
-			&lt;/ices:Stream&gt;
+			&lt;Playlist&gt;
+				&lt;File&gt;apan.txt&lt;/File&gt;
+				&lt;Randomize&gt;1&lt;/Randomize&gt;
+				&lt;Type&gt;builtin&lt;/Type&gt;
+				&lt;Module&gt;ices&lt;/Module&gt;
+			        &lt;Crossfade&gt;0;&lt;Crossfade&gt;
+			&lt;/Playlist&gt;
+			&lt;Server&gt;
+				&lt;Hostname&gt;localhost&lt;/Hostname&gt;
+				&lt;Port&gt;8000&lt;/Port&gt;
+				&lt;Password&gt;letmein&lt;/Password&gt;
+				&lt;Protocol&gt;xaudiocast&lt;/Protocol&gt;
+			&lt;/Server&gt;
+			&lt;Execution&gt;
+				&lt;Background&gt;0&lt;/Background&gt;
+				&lt;Verbose&gt;1&lt;/Verbose&gt;
+				&lt;Base_Directory&gt;/tmp&lt;/Base_Directory&gt;
+			&lt;/Execution&gt;
+			&lt;Stream&gt;
+				&lt;Name&gt;Cool ices default name from XML&lt;/Name&gt;
+				&lt;Genre&gt;Cool ices genre from XML&lt;/Genre&gt;
+				&lt;Description&gt;Cool ices description from XML&lt;/Description&gt;
+				&lt;URL&gt;Cool ices URL from XML&lt;/URL&gt;
+				&lt;Bitrate&gt;128&lt;/Bitrate&gt;
+				&lt;Public&gt;1&lt;/Public&gt;
+				&lt;Reencode&gt;0&lt;/Reencode&gt;
+				&lt;Samplerate&gt;-1&lt;/Samplerate&gt;
+				&lt;Channels&gt;-1&lt;/Channels&gt;
+			&lt;/Stream&gt;
 			&lt;/ices:Configuration&gt;
 		</pre>
 		</p>
@@ -422,6 +437,11 @@ the x-audiocast protocol.
 			      Default for python is ices.py and default for perl is ices.pm, although do NOT specify the file extension for the module. Use 'whatever' instead of 'whatever.pm' or 'whatever.py'<br>
 			</li>
 
+			<li>Crossfade<br/>
+			    Command line option: -C &lt;seconds&gt;   <br/>
+			    Config file tag: Playlist/Crossfade<br>
+If this option is specified and reencoding is enabled, ices will
+crossfade <tt>seconds</tt> between tracks.
 		</ul>
 	      </p>
          </ol>
@@ -444,10 +464,9 @@ the x-audiocast protocol.
 
 <hr width="10%">
 
-<p align=right> This document is written by Alexander Haväng [eel@icecast.org].<br>
-<!-- hhmts start -->
-Last modified: Sat Jun 23 18:44:50 EDT 2001
-<!-- hhmts end -->
+<p align=right> This document was mostly written by Alexander Haväng
+  [eel@icecast.org].<br>
+
 </p>
 
 </body>
