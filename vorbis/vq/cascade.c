@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: function call to do simple data cascading
- last mod: $Id: cascade.c,v 1.5 2000/01/21 13:42:37 xiphmont Exp $
+ last mod: $Id: cascade.c,v 1.5.4.1 2000/04/04 07:08:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -55,7 +55,7 @@ void process_vector(codebook **bs,double *a){
 
   while(*bs){
     codebook *b=*bs;
-    int entry=codebook_entry(b,work);
+    int entry=(book->c->q_log?_logbest(book,a,step):_best(book,a,step));
     double *e=b->valuelist+b->c->dim*entry;
 
     for(i=0;i<b->c->dim;i++)work[i]-=e[i];

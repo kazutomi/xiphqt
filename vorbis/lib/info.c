@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: maintain the info structure, info <-> header packets
- last mod: $Id: info.c,v 1.22 2000/02/23 11:50:29 xiphmont Exp $
+ last mod: $Id: info.c,v 1.22.4.1 2000/04/04 07:08:44 xiphmont Exp $
 
  ********************************************************************/
 
@@ -24,6 +24,7 @@
 #include "vorbis/codec.h"
 #include "vorbis/backends.h"
 #include "bitwise.h"
+#include "sharedbook.h"
 #include "bookinternal.h"
 #include "registry.h"
 #include "window.h"

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: build a VQ codebook and the encoding decision 'tree'
- last mod: $Id: vqsplit.c,v 1.18 2000/02/23 09:10:13 xiphmont Exp $
+ last mod: $Id: vqsplit.c,v 1.18.4.1 2000/04/04 07:08:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -34,6 +34,7 @@
 #include "vqgen.h"
 #include "vqsplit.h"
 #include "bookutil.h"
+#include "../lib/sharedbook.h"
 
 /* Codebook generation happens in two steps: 
 
@@ -543,7 +544,9 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
     for(i=0;i<t->aux;i++)t->q[i]*=c->dim;
     
     for(i=0;i<v->points;i++){
-      int ret=codebook_entry(b,v->pointlist+i*v->elements);
+      /* we use the linear matcher regardless becuase the trainer
+         doesn't convert log to linear */
+      int ret=_best(b,v->pointlist+i*v->elements,1);
       probability[ret]++;
       if(!(i&0xff))spinnit("counting hits... ",v->points-i);
     }
