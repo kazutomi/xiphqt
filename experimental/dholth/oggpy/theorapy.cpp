@@ -6,6 +6,7 @@
 // Includes ====================================================================
 #include <theora/theora.h>
 #include <theoracc.h>
+#include "theora_wrappers.h"
 
 // Using =======================================================================
 using namespace boost::python;
@@ -81,8 +82,8 @@ BOOST_PYTHON_MODULE(theorapy)
         .def_readwrite("y", &yuv_buffer::y)
         .def_readwrite("u", &yuv_buffer::u)
         .def_readwrite("v", &yuv_buffer::v)
-        .def("tostring", &ogg::theora::yuv_image::tostring)
-        .def("tostrings", &ogg::theora::yuv_image::tostrings)
+        // .def("tostrings", &ogg::theora::yuv_image::tostrings)
+        .def("wtostrings", &wtostrings)
     ;
 
     def("version_number", &ogg::theora::version_number);
