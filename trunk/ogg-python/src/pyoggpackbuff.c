@@ -16,7 +16,6 @@ FDEF(oggpack_reset) "";
 FDEF(oggpack_writeclear) "";
 
 FDEF(oggpack_look) "";
-FDEF(oggpack_look_huff) "";
 FDEF(oggpack_look1) "";
 
 FDEF(oggpack_bytes) "";
@@ -26,7 +25,6 @@ FDEF(oggpack_read) "Return the value of n bits";
 FDEF(oggpack_read1) "";
 
 FDEF(oggpack_adv) "Advance the read location by n bits";
-FDEF(oggpack_adv_huff) "";
 FDEF(oggpack_adv1) "";
 
 FDEF(oggpack_write) "Write bits to the buffer.\n\n\
@@ -69,8 +67,6 @@ static PyMethodDef py_oggpack_buffer_methods[] = {
    METH_VARARGS, py_oggpack_writeclear_doc},
   {"look", py_oggpack_look,
    METH_VARARGS, py_oggpack_look_doc},
-  {"look_huff", py_oggpack_look_huff,
-   METH_VARARGS, py_oggpack_look_huff_doc},
   {"look1", py_oggpack_look1,
    METH_VARARGS, py_oggpack_look1_doc},
   {"bytes", py_oggpack_bytes,
@@ -85,8 +81,6 @@ static PyMethodDef py_oggpack_buffer_methods[] = {
    METH_VARARGS, py_oggpack_write_doc},
   {"adv", py_oggpack_adv,
    METH_VARARGS, py_oggpack_adv_doc},
-  {"adv_huff", py_oggpack_adv_huff,
-   METH_VARARGS, py_oggpack_adv_huff_doc},
   {"adv1", py_oggpack_adv1,
    METH_VARARGS, py_oggpack_adv1_doc},
   {NULL, NULL}
@@ -157,23 +151,6 @@ py_oggpack_look(PyObject *self, PyObject *args)
   }
 
   ret = oggpack_look(PY_OGGPACK_BUFF(self), bits);
-  return PyLong_FromLong(ret);
-}
-
-static PyObject *
-py_oggpack_look_huff(PyObject *self, PyObject *args) 
-{
-  int bits = 8;
-  long ret;
-  if (!PyArg_ParseTuple(args, "l", &bits))
-    return NULL;
-
-  if (bits > 8) {
-    PyErr_SetString(PyExc_ValueError, "Cannot look at more than 8 bits");
-    return NULL;
-  }
-
-  ret = oggpack_look_huff(PY_OGGPACK_BUFF(self), bits);
   return PyLong_FromLong(ret);
 }
 
@@ -273,20 +250,6 @@ py_oggpack_adv(PyObject *self, PyObject *args)
     return NULL;
 
   oggpack_adv(PY_OGGPACK_BUFF(self), bits);
-
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject *
-py_oggpack_adv_huff(PyObject *self, PyObject *args)
-{
-  int bits;
-
-  if (!PyArg_ParseTuple(args, "i", &bits))
-    return NULL;
-
-  oggpack_adv_huff(PY_OGGPACK_BUFF(self), bits);
 
   Py_INCREF(Py_None);
   return Py_None;
