@@ -28,6 +28,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XShm.h>
 
+static pthread_mutex_t open_mutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
@@ -714,6 +715,7 @@ static void queue_task(void (*f)(void)){
 }
 
 static void OpenOutputFile(){
+  pthread_mutex_lock(&open_mutex);
   if(outfile_fd!=-2){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
@@ -753,8 +755,10 @@ static void OpenOutputFile(){
 		    buf1,
 		    (audio_channels==1?"mono":"stereo"),
 		    audio_rate);
-	  }else
+	  }else{
+	    pthread_mutex_unlock(&open_mutex);
 	    return;
+	  }
 	}
 	
 	outfile_fd=open64(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
@@ -778,9 +782,11 @@ static void OpenOutputFile(){
       }
     }
   }
+  pthread_mutex_unlock(&open_mutex);
 }
 
 static void CloseOutputFile(){
+  pthread_mutex_lock(&open_mutex);
   if(outfile_fd>=0){
     videocount=0;
 
@@ -789,4 +795,5 @@ static void CloseOutputFile(){
       close(outfile_fd);
     outfile_fd=-1;
   }
+  pthread_mutex_unlock(&open_mutex);
 }
