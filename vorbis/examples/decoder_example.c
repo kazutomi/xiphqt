@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and the XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: simple example decoder
- last mod: $Id: decoder_example.c,v 1.27 2002/07/12 15:07:52 giles Exp $
+ last mod: $Id: decoder_example.c,v 1.15 2000/12/21 21:04:37 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,16 +32,14 @@
 #include <fcntl.h>
 #endif
 
-#if defined(__MACOS__) && defined(__MWERKS__)
+#if defined(macintosh) && defined(__MWERKS__)
 #include <console.h>      /* CodeWarrior's Mac "command-line" support */
 #endif
 
 ogg_int16_t convbuffer[4096]; /* take 8k out of the data segment, not the stack */
 int convsize=4096;
 
-extern void _VDBG_dump(void);
-
-int main(){
+int main(int argc, char **argv){
   ogg_sync_state   oy; /* sync and verify incoming physical bitstream */
   ogg_stream_state os; /* take physical pages, weld into a logical
 			  stream of packets */
@@ -64,12 +63,9 @@ int main(){
 #endif
 
 #if defined(macintosh) && defined(__MWERKS__)
-  {
-    int argc;
-    char **argv;
-    argc=ccommand(&argv); /* get a "command line" from the Mac user */
-                     /* this also lets the user set stdin and stdout */
-  }
+
+  argc = ccommand(&argv); /* get a "command line" from the Mac user */
+                          /* this also lets the user set stdin and stdout */
 #endif
 
   /********** Decode setup ************/
@@ -258,7 +254,7 @@ int main(){
 		      clipflag=1;
 		    }
 		    *ptr=val;
-		    ptr+=vi.channels;
+		    ptr+=2;
 		  }
 		}
 		
@@ -295,7 +291,6 @@ int main(){
     
     vorbis_block_clear(&vb);
     vorbis_dsp_clear(&vd);
-	vorbis_comment_clear(&vc);
     vorbis_info_clear(&vi);  /* must be called last */
   }
 
@@ -305,3 +300,4 @@ int main(){
   fprintf(stderr,"Done.\n");
   return(0);
 }
+

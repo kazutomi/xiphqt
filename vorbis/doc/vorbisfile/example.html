@@ -1,27 +1,27 @@
 <html>
 
 <head>
-<title>Vorbisfile - Example Code</title>
+<title>vorbisfile - Example Code</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
 <body bgcolor=white text=black link="#5555ff" alink="#5555ff" vlink="#5555ff">
 <table border=0 width=100%>
 <tr>
-<td><p class=tiny>Vorbisfile documentation</p></td>
-<td align=right><p class=tiny>vorbisfile version 1.68 - 20030307</p></td>
+<td><p class=tiny>vorbisfile documentation</p></td>
+<td align=right><p class=tiny>vorbisfile version 1.25 - 20000615</p></td>
 </tr>
 </table>
 
-<h1>Decoding Example Code</h1>
+<h1>Example Code</h1>
 
 <p>
 The following is a run-through of the decoding example program supplied
-with libvorbisfile, vorbisfile_example.c.  
+with vorbisfile - <a href="vorbisfile_example_c.html">vorbisfile_example.c</a>.  
 This program takes a vorbis bitstream from stdin and writes raw pcm to stdout.
 
 <p>
-First, relevant headers, including vorbis-specific "vorbis/codec.h" and "vorbisfile.h" have to be included.
+First, relevant headers, including vorbis-specific "codec.h" and "vorbisfile.h" have to be included.
 
 <br><br>
 <table border=0 width=100% color=black cellspacing=0 cellpadding=7>
@@ -32,7 +32,7 @@ First, relevant headers, including vorbis-specific "vorbis/codec.h" and "vorbisf
 #include &lt;stdlib.h&gt;
 #include &lt;math.h&gt;
 #include "vorbis/codec.h"
-#include "vorbisfile.h"
+#include "vorbis/vorbisfile.h"
 </b></pre>
 	</td>
 </tr>
@@ -123,8 +123,6 @@ We also want to pull out and show the user a comment attached to the file using 
       ++ptr;
     }
     fprintf(stderr,"\nBitstream is %d channel, %ldHz\n",vi->channels,vi->rate);
-    fprintf(stderr,"\nDecoded length: %ld samples\n",
-            (long)ov_pcm_total(&vf,-1));
     fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);
   }
   
@@ -143,7 +141,7 @@ Here's the read loop:
 <pre><b>
 
   while(!eof){
-    long ret=ov_read(&vf,pcmout,sizeof(pcmout),&current_section);
+    long ret=ov_read(&vf,pcmout,sizeof(pcmout),0,2,1,&current_section);
     if (ret == 0) {
       /* EOF */
       eof=1;
@@ -187,16 +185,18 @@ Now that we've finished playing, we can pack up and go home.  It's important to 
 </table>
 
 <p>
+The full source for vorbisfile_example.c can be found with the vorbis
+distribution in <a href="vorbisfile_example_c.html">vorbisfile_example.c</a>.
 
 <br><br>
 <hr noshade>
 <table border=0 width=100%>
 <tr valign=top>
-<td><p class=tiny>copyright &copy; 2003 Xiph.org</p></td>
-<td align=right><p class=tiny><a href="http://www.xiph.org/ogg/vorbis/">Ogg Vorbis</a></p></td>
+<td><p class=tiny>copyright &copy; 2000 vorbis team</p></td>
+<td align=right><p class=tiny><a href="http://www.xiph.org/ogg/vorbis/">Ogg Vorbis</a><br><a href="mailto:team@vorbis.org">team@vorbis.org</a></p></td>
 </tr><tr>
-<td><p class=tiny>Vorbisfile documentation</p></td>
-<td align=right><p class=tiny>vorbisfile version 1.68 - 20030307</p></td>
+<td><p class=tiny>vorbisfile documentation</p></td>
+<td align=right><p class=tiny>vorbisfile version 1.25 - 20000615</p></td>
 </tr>
 </table>
 

@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and the XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility main for building codebooks from lattice descriptions
- last mod: $Id: latticebuild.c,v 1.12 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: latticebuild.c,v 1.8 2000/11/08 03:23:23 xiphmont Exp $
 
  ********************************************************************/
 
@@ -56,7 +57,7 @@ static int ilog(unsigned int v){
 int main(int argc,char *argv[]){
   codebook b;
   static_codebook c;
-  double *quantlist;
+  float *quantlist;
   long *hits;
 
   int entries=-1,dim=-1,quantvals=-1,addmul=-1,sequencep=0;
@@ -97,7 +98,7 @@ int main(int argc,char *argv[]){
   line=get_line(in);
   if(sscanf(line,"%d %d %d %d",&quantvals,&dim,&addmul,&sequencep)!=4){
     if(sscanf(line,"%d %d %d",&quantvals,&dim,&addmul)!=3){
-      fprintf(stderr,"Syntax error reading description file (line 1)\n");
+      fprintf(stderr,"Syntax error reading book file (line 1)\n");
       exit(1);
     }
   }
@@ -109,29 +110,24 @@ int main(int argc,char *argv[]){
   c.q_sequencep=sequencep;
   c.quantlist=_ogg_calloc(quantvals,sizeof(long));
 
-  quantlist=_ogg_malloc(sizeof(double)*c.dim*c.entries);
+  quantlist=_ogg_malloc(sizeof(long)*c.dim*c.entries);
   hits=_ogg_malloc(c.entries*sizeof(long));
   for(j=0;j<entries;j++)hits[j]=1;
   for(j=0;j<entries;j++)c.lengthlist[j]=1;
 
   reset_next_value();
-  line=setup_line(in);
-  for(j=0;j<quantvals;j++){ 
-    char *temp;
-    if(!line || sscanf(line,"%lf",quantlist+j)!=1){
+  setup_line(in);
+  for(j=0;j<quantvals;j++){  
+    if(get_line_value(in,quantlist+j)==-1){
       fprintf(stderr,"Ran out of data on line 2 of description file\n");
       exit(1);
     }
-    temp=strchr(line,',');
-    if(!temp)temp=strchr(line,' ');
-    if(temp)temp++;
-    line=temp;
   }
 
   /* gen a real quant list from the more easily human-grokked input */
   {
-    double min=quantlist[0];
-    double mindel=-1;
+    float min=quantlist[0];
+    float mindel=-1;
     int fac=1;
     for(j=1;j<quantvals;j++)if(quantlist[j]<min)min=quantlist[j];
     for(j=0;j<quantvals;j++)
@@ -142,10 +138,9 @@ int main(int argc,char *argv[]){
     j=0;
     while(j<quantvals){
       for(j=0;j<quantvals;j++){
-	double test=fac*(quantlist[j]-min)/mindel;
-	if( fabs(rint(test)-test)>.00001f) break;
+	float test=(quantlist[j]-min)/(mindel/fac);
+	if( fabs(rint(test)-test)>.000001) break;
       }
-      if(fac>100)break;
       if(j<quantvals)fac++;
     }
 

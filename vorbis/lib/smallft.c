@@ -1,19 +1,20 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and the XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: *unnormalized* fft transform
- last mod: $Id: smallft.c,v 1.17 2002/07/11 06:40:50 xiphmont Exp $
+ last mod: $Id: smallft.c,v 1.12 2000/12/21 21:04:41 xiphmont Exp $
 
- ********************************************************************/
+********************************************************************/
 
 /* FFT implementation from OggSquish, minus cosine transforms,
  * minus all but radix 2/4 case.  In Vorbis we only need this
@@ -1240,8 +1241,8 @@ void drft_backward(drft_lookup *l,float *data){
 
 void drft_init(drft_lookup *l,int n){
   l->n=n;
-  l->trigcache=_ogg_calloc(3*n,sizeof(*l->trigcache));
-  l->splitcache=_ogg_calloc(32,sizeof(*l->splitcache));
+  l->trigcache=_ogg_calloc(3*n,sizeof(float));
+  l->splitcache=_ogg_calloc(32,sizeof(int));
   fdrffti(n, l->trigcache, l->splitcache);
 }
 
@@ -1249,6 +1250,6 @@ void drft_clear(drft_lookup *l){
   if(l){
     if(l->trigcache)_ogg_free(l->trigcache);
     if(l->splitcache)_ogg_free(l->splitcache);
-    memset(l,0,sizeof(*l));
+    memset(l,0,sizeof(drft_lookup));
   }
 }

@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and the XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: simple example decoder using vorbisfile
- last mod: $Id: vorbisfile_example.c,v 1.10 2002/07/11 06:40:47 xiphmont Exp $
+ last mod: $Id: vorbisfile_example.c,v 1.3 2000/11/06 00:06:54 xiphmont Exp $
 
  ********************************************************************/
 
@@ -32,7 +33,7 @@
 
 char pcmout[4096]; /* take 4k out of the data segment, not the stack */
 
-int main(){
+int main(int argc, char **argv){
   OggVorbis_File vf;
   int eof=0;
   int current_section;
@@ -59,8 +60,6 @@ int main(){
       ++ptr;
     }
     fprintf(stderr,"\nBitstream is %d channel, %ldHz\n",vi->channels,vi->rate);
-    fprintf(stderr,"\nDecoded length: %ld samples\n",
-	    (long)ov_pcm_total(&vf,-1));
     fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);
   }
   
@@ -85,3 +84,4 @@ int main(){
   fprintf(stderr,"Done.\n");
   return(0);
 }
+

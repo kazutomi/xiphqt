@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and the XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: hufftree builder
- last mod: $Id: huffbuild.c,v 1.13 2002/06/28 22:19:56 xiphmont Exp $
+ last mod: $Id: huffbuild.c,v 1.6 2000/11/06 00:07:25 xiphmont Exp $
 
  ********************************************************************/
 
@@ -50,7 +51,7 @@ static int getval(FILE *in,int begin,int n,int group,int max){
 static void usage(){
   fprintf(stderr,
 	  "usage:\n" 
-	  "huffbuild <input>.vqd <begin,n,group>|<lorange-hirange> [noguard]\n"
+	  "huffbuild <input>.vqd <begin,n,group> [noguard]\n"
 	  "   where begin,n,group is first scalar, \n"
 	  "                          number of scalars of each in line,\n"
 	  "                          number of scalars in a group\n"
@@ -65,7 +66,6 @@ int main(int argc, char *argv[]){
   int i,j,k,begin,n,subn,guard=1;
   FILE *file;
   int maxval=0;
-  int loval=0;
 
   if(argc<3)usage();
   if(argc==4)guard=0;
@@ -77,27 +77,19 @@ int main(int argc, char *argv[]){
 
   {
     char *pos=strchr(argv[2],',');
-    char *dpos=strchr(argv[2],'-');
-    if(dpos){
-      loval=atoi(argv[2]);
-      maxval=atoi(dpos+1);
-      subn=1;
-      begin=0;
-    }else{
-      begin=atoi(argv[2]);
-      if(!pos)
-	usage();
-      else
-	n=atoi(pos+1);
-      pos=strchr(pos+1,',');
-      if(!pos)
-	usage();
-      else
-	subn=atoi(pos+1);
-      if(n/subn*subn != n){
-	fprintf(stderr,"n must be divisible by group\n");
-	exit(1);
-      }
+    begin=atoi(argv[2]);
+    if(!pos)
+      usage();
+    else
+      n=atoi(pos+1);
+    pos=strchr(pos+1,',');
+    if(!pos)
+      usage();
+    else
+      subn=atoi(pos+1);
+    if(n/subn*subn != n){
+      fprintf(stderr,"n must be divisible by group\n");
+      exit(1);
     }
   }
 
@@ -105,44 +97,35 @@ int main(int argc, char *argv[]){
   file=fopen(infile,"r");
   if(!file){
     fprintf(stderr,"Could not open file %s\n",infile);
-    if(!maxval)
-      exit(1);
-    else
-      fprintf(stderr,"  making untrained books.\n");
-
+    exit(1);
   }
+  i=0;
+  while(1){
+    long v;
+    if(get_next_ivalue(file,&v))break;
+    if(v>maxval)maxval=v;
 
-  if(!maxval){
-    i=0;
-    while(1){
-      long v;
-      if(get_next_ivalue(file,&v))break;
-      if(v>maxval)maxval=v;
-      
-      if(!(i++&0xff))spinnit("loading... ",i);
-    }
-    rewind(file);
-    maxval++;
+    if(!(i++&0xff))spinnit("loading... ",i);
   }
+  rewind(file);
+  maxval++;
 
   {
     long vals=pow(maxval,subn);
-    long *hist=_ogg_calloc(vals,sizeof(long));
-    long *lengths=_ogg_calloc(vals,sizeof(long));
+    long *hist=_ogg_malloc(vals*sizeof(long));
+    long *lengths=_ogg_malloc(vals*sizeof(long));
     
-    for(j=loval;j<vals;j++)hist[j]=guard;
+    for(j=0;j<vals;j++)hist[j]=guard;
     
-    if(file){
-      reset_next_value();
-      i/=subn;
-      while(!feof(file)){
-	long val=getval(file,begin,n,subn,maxval);
-	if(val==-1 || val>=vals)break;
-	hist[val]++;
-	if(!(i--&0xff))spinnit("loading... ",i*subn);
-      }
-      fclose(file);
+    reset_next_value();
+    i/=subn;
+    while(!feof(file)){
+      long val=getval(file,begin,n,subn,maxval);
+      if(val==-1)break;
+      hist[val]++;
+      if(!(i--&0xff))spinnit("loading... ",i*subn);
     }
+    fclose(file);
  
     /* we have the probabilities, build the tree */
     fprintf(stderr,"Building tree for %ld entries\n",vals);
@@ -159,6 +142,27 @@ int main(int argc, char *argv[]){
 	exit(1);
       }
     }
+    
+    fprintf(file,
+ "/********************************************************************\n"
+ " *                                                                  *\n"
+ " * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *\n"
+ " * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *\n"
+ " * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *\n"
+ " * PLEASE READ THESE TERMS DISTRIBUTING.                            *\n"
+ " *                                                                  *\n"
+ " * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-1999             *\n"
+ " * by 1999 Monty <monty@xiph.org> and The XIPHOPHORUS Company       *\n"
+ " * http://www.xiph.org/                                             *\n"
+ " *                                                                  *\n"
+ " ********************************************************************\n"
+ "\n"
+ " function: static codebook autogenerated by huff/huffbuld\n"
+ "\n"
+ " ********************************************************************/\n\n");
+
+    fprintf(file,"#ifndef _V_%s_VQH_\n#define _V_%s_VQH_\n",base,base);
+    fprintf(file,"#include \"codebook.h\"\n\n");
     
     /* first, the static vectors, then the book structure to tie it together. */
     /* lengthlist */
@@ -177,25 +181,15 @@ int main(int argc, char *argv[]){
     fprintf(file,"\t_huff_lengthlist_%s,\n",base);
     fprintf(file,"\t0, 0, 0, 0, 0,\n");
     fprintf(file,"\tNULL,\n");
-
-    fprintf(file,"\tNULL,\n");
     fprintf(file,"\tNULL,\n");
     fprintf(file,"\tNULL,\n");
     fprintf(file,"\t0\n};\n\n");
     
+    fprintf(file,"\n#endif\n");
     fclose(file);
     fprintf(stderr,"Done.                                \n\n");
   }
   exit(0);
 }
-
-
-
-
-
-
-
-
-
 
 

@@ -30,7 +30,7 @@ while (<ONE>) {
     @nums = split(/,/);
     my$cols=$#nums;
     for($i=0;$i<$cols;$i++){
-	print 0+$nums[$i].", ";
+	print $nums[$i].", ";
     }
     if($bands>1){
 	$_=<TWO>;
