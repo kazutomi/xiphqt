@@ -10,8 +10,8 @@
 
  ********************************************************************
 
- function: residue backend 0 implementation
- last mod: $Id: res0.c,v 1.26 2001/02/26 03:50:43 xiphmont Exp $
+ function: residue backend 0 and 1 implementation
+ last mod: $Id: res0.c,v 1.26.4.1 2001/05/11 22:07:50 xiphmont Exp $
 
  ********************************************************************/
 
@@ -385,6 +385,12 @@ int res0_inverse(vorbis_block *vb,vorbis_look_residue *vl,float **in,int ch){
   return(0);
 }
 
+int res1_forward(vorbis_block *vb,vorbis_look_residue *vl,
+	    float **in,int ch){
+}
+int res1_inverse(vorbis_block *vb,vorbis_look_residue *vl,float **in,int ch){
+}
+
 vorbis_func_residue residue0_exportbundle={
   &res0_pack,
   &res0_unpack,
@@ -394,4 +400,15 @@ vorbis_func_residue residue0_exportbundle={
   &res0_free_look,
   &res0_forward,
   &res0_inverse
+};
+
+vorbis_func_residue residue1_exportbundle={
+  &res0_pack,
+  &res0_unpack,
+  &res0_look,
+  &res0_copy_info,
+  &res0_free_info,
+  &res0_free_look,
+  &res1_forward,
+  &res1_inverse
 };

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: basic codebook pack/unpack/code/decode operations
- last mod: $Id: codebook.c,v 1.23 2001/02/26 03:50:41 xiphmont Exp $
+ last mod: $Id: codebook.c,v 1.23.4.1 2001/05/11 22:07:49 xiphmont Exp $
 
  ********************************************************************/
 
@@ -40,7 +40,7 @@ int vorbis_staticbook_pack(const static_codebook *c,oggpack_buffer *opb){
      length random.  Decide between the two now. */
   
   for(i=1;i<c->entries;i++)
-    if(c->lengthlist[i]<c->lengthlist[i-1])break;
+    if(c->lengthlist[i-1]==0 || c->lengthlist[i]<c->lengthlist[i-1])break;
   if(i==c->entries)ordered=1;
   
   if(ordered){
