@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.1.2.1 2003/03/04 02:52:21 brendan Exp $
+# $Id: configure.ac,v 1.1.2.2 2003/03/04 06:05:06 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -39,14 +39,13 @@ AC_ARG_PROGRAM
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
 
 if test "$GCC" = yes
 then
   CFLAGS="$CFLAGS -Wall"
 fi
-
-AC_PROG_INSTALL
-AC_PROG_MAKE_SET
 
 dnl -- System check --
 
@@ -81,12 +80,6 @@ case $host in
   ;;
 esac
 
-dnl -- Build system init --
-
-AM_INIT_AUTOMAKE(ices, $VERSION)
-AC_PROG_LIBTOOL
-AC_SUBST(LIBTOOL_DEPS)
-
 dnl -- Compiler feature check --
 
 AC_C_CONST
@@ -116,6 +109,12 @@ dnl -- System function check --
 
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([vsnprintf setsid setlinebuf])
+
+dnl -- Build system init --
+
+AM_INIT_AUTOMAKE(ices, $VERSION)
+AC_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
 
 dnl -- Required extra libraries --
 
@@ -162,6 +161,25 @@ fi
 AM_CONDITIONAL(NEED_SHOUT, test "$have_libshout" != "yes")
 
 dnl -- Optional features --
+AC_CACHE_SAVE
+
+AC_ARG_WITH([python],
+  [[  --with-python[=PATH]       include python scripting support]],,[with_python="yes"])
+
+have_python="no"
+if test "$with_python" != "no"
+then
+  XIPH_PATH_PYTHON($with_python)
+  if test -n "$PYTHON_LIBS"
+  then
+    have_python="yes"
+    CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
+    LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
+    LIBS="$LIBS $PYTHON_LIBS"
+    PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_python.o"
+    AC_DEFINE(HAVE_LIBPYTHON, 1, [Define if you have the python library])
+  fi
+fi
 
 AC_ARG_WITH(lame,
   [[  --with-lame[=DIR]       enable support for reencoding with lame [in DIR]]])
@@ -190,7 +208,6 @@ fi
 have_LAME="no"
 if test "$with_lame" != "no"
 then
-  AC_CACHE_SAVE
   if test -n "$with_lame" -a "$with_lame" != "yes"
   then
     CPPFLAGS="$CPPFLAGS -I$with_lame/include"
@@ -244,7 +261,6 @@ fi
 have_vorbis="no"
 if test "$with_vorbis" != "no"
 then
-  AC_CACHE_SAVE
   if test -n "$with_vorbis" -a "$with_vorbis" != "yes"
   then
     CPPFLAGS="$CPPFLAGS -I$with_vorbis/include"
@@ -280,7 +296,6 @@ have_perl="no"
 PERL=perl
 if test "$with_perl" != "no"
 then
-  AC_CACHE_SAVE
   if test -n "$with_perl" -a "$with_perl" != "yes"
   then
     PERL="$with_perl/bin/perl"
@@ -320,30 +335,10 @@ then
   fi
 fi
 
-AC_ARG_WITH(python,
-  [[  --with-python[=DIR]     enable python interpreter [in DIR]]])
-
-use_python=$withval
-
-AC_ARG_WITH(python-includes,
-[  --with-python-includes=DIR  python include files are in DIR])
-AC_ARG_WITH(python-libraries,
-[  --with-python-libraries=DIR python libraries are in DIR])
-
-if test -n "$with_python_includes"
-then
-  CPPFLAGS="$CPPFLAGS -I$with_python_includes"
-fi
-
-if test -n "$with_python_libraries"
-then
-  LDFLAGS="$LDFLAGS -L$with_python_libraries"
-fi
-
+m4_if([
 have_python="no"
 if test "$with_python" != "no"
 then
-  AC_CACHE_SAVE
   if test -n "$with_python" -a "$with_python" != "yes"
   then
     CPPFLAGS="$CPPFLAGS -I$with_python/include"
@@ -381,6 +376,7 @@ then
     AC_MSG_RESULT([Could not find the python library, python scripting disabled])
   fi
 fi
+])
 
 AC_ARG_WITH(xml-config,
   [  --with-xml-config=PATH  use xml-config in PATH to find libxml ])
