@@ -77,8 +77,8 @@ $miny=$logoheight+$textheight;
 $module{"mgm_module_name"}=$name;
 $module{"mgm_module_minx"}=$minx;
 $module{"mgm_module_miny"}=$miny;
-$module{"mgm_module_wdemand"}=0;
-$module{"mgm_module_ldemand"}=0;
+$module{"mgm_module_wdemand"}=5;
+$module{"mgm_module_ldemand"}=5;
 $module{"mgm_module_construct"}=\&module_construct;
 
 \%module;

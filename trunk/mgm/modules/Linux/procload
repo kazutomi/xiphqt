@@ -6,6 +6,7 @@ $name="loadav";
 %module;
 
 $main::toplevel->optionAdd("$main::Xname.$name*refresh",        500,20);      
+$main::toplevel->optionAdd("$main::Xname.$name*scalethresh",    4,20);      
 $main::toplevel->optionAdd("$main::Xname.$name.bar.0.label","Load average",22);
 $main::toplevel->optionAdd("$main::Xname.$name.bar.1.label","Load (5min)",22);
 $main::toplevel->optionAdd("$main::Xname.$name.bar.2.label","Load (15min)",22);
@@ -14,7 +15,7 @@ sub module_construct{
     my($this,$width,$height)=@_;
     
     $graph=MGM::Graph::new($main::toplevel,num=>3,
-			   width=>$width,height=>$height,prompt=>"proc(s)",
+			   width=>$width,height=>$height,prompt=>' proc(s)',
 			   name=>$name);
     
     $widget=$graph->{"widget"};
@@ -40,7 +41,7 @@ sub update{
 $module{"mgm_module_name"}=$name;
 $module{"mgm_module_minx"}=$minx;
 $module{"mgm_module_miny"}=$miny;
-$module{"mgm_module_wdemand"}=20;
+$module{"mgm_module_wdemand"}=26;
 $module{"mgm_module_ldemand"}=50;
 $module{"mgm_module_construct"}=\&module_construct;
 
