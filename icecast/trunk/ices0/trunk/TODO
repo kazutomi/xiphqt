@@ -1,5 +1,9 @@
-* Make the scripting engines, and vorbis and MP3 reencoding, run-time linkable
-* Support reencoding of VBR files
 * Improved error handling
+* Make the scripting engines, and vorbis and MP3 reencoding, run-time linkable
+* Investigate preventing chirps. These can happen if the previous file ended in
+  the middle frame. Possibly padding out to the frame length with NULL would fix it.
+  A really cheap hack would be to just dump the maximum possible frame size worth of
+  NULLs into the stream. In practice, this might not be any different since the
+  player should just ignore everything up until the next sync word.
 
-$Id: TODO,v 1.2 2003/03/05 18:20:12 brendan Exp $
+$Id: TODO,v 1.3 2003/03/16 05:50:34 brendan Exp $
