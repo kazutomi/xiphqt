@@ -33,7 +33,7 @@ import util
     
 def run(config, neuros, args):
     if len(args) == 0:
-        args = ["audio", "unidedhisi", "idedhisi", "failedhisi"]
+        args = ["audio", "pcaudio", "unidedhisi", "idedhisi", "failedhisi"]
 
     for arg in args:
         try:
