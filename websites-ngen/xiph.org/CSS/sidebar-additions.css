@@ -1,11 +1,11 @@
 div#content {
-	margin-left: 17em;
+	margin-right: 17em;
 }
 
 div#sidebar {
 	position: absolute;
 	top: 50px;
-	left: 1em;
+	right: 1em;
 	width: 15em;
 	margin: 0;
 	padding: 0;
