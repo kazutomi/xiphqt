@@ -26,14 +26,29 @@ class Neuros:
     DB_DIR = path.normcase("WOID_DB")
 
     db_formats = {
-        "audio"    : { "extra_format" : (">I",">I","z"),
-                       "extra_names"  : ("Time", "Size", "Path") },
+        "audio"      : { "no_flatten"   : (1, ),
+                         "extra_format" : (">I",">I","z"),
+                         "extra_names"  : ("Time", "Size", "Path") },
         
-        "pcaudio"  : { "extra_format" : (">I",">I","z"),
-                       "extra_names"  : ("Time", "Size", "Path") },
+        "pcaudio"    : { "no_flatten"   : (1, ),
+                         "extra_format" : (">I",">I","z"),
+                         "extra_names"  : ("Time", "Size", "Path") },
         
-        "idedhisi" : { "extra_format" : (">I",">I","z"),
-                       "extra_names"  : ("Time", "Size", "Path") }
+        "unidedhisi" : { "no_flatten"   : (),
+                         "extra_format" : ("z","z"),
+                         "extra_names"  : ("Source", "Path") },
+
+        "idedhisi"   : { "no_flatten"   : (),
+                         "extra_format" : ("z","z","z",
+                                           "z","z",
+                                           ">I",">I","z"),
+                         "extra_names"  : ("Source", "Artist", "Album",
+                                           "Genre", "Track Name",
+                                           "Time", "Size", "Path") },
+        
+        "failedhisi" : { "no_flatten"   : (),
+                         "extra_format" : ("z","z"),
+                         "extra_names"  : ("Source", "Path") }
         }
 
 
@@ -64,7 +79,8 @@ class Neuros:
         rootpath = path.join(self.mountpoint, Neuros.DB_DIR, name, name)
 
         self.db[name] = db.WOID()
-        self.db[name].open(rootpath, self.db_formats[name]["extra_format"])
+        self.db[name].open(rootpath, self.db_formats[name]["extra_format"],
+                           self.db_formats[name]["no_flatten"])
         return self.db[name]
 
     def close_db(self, name):

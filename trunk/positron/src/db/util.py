@@ -1,5 +1,5 @@
 import struct
-
+from types import *
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -14,7 +14,7 @@ class Special:
     # '%' - Marks the end of the current record
     END_OF_RECORD = "\x00\x25"
 
-    # '$' - NO IDEA!!!
+    # '$' - Delimiter between multiple values in a single field
     BAG_DELIM = "\x00\x24"
 
     # '/' Used to represent special words within strings, much as in C:
@@ -53,19 +53,6 @@ def read_stringz(str):
 
     return str[:term]
 
-def escape_string(str):
-    """Returns str with special characters escaped and null-word terminated"""
-    # I'm unclear on how escaping is used in practice (I don't see it in any of the
-    # sample files), so for now this is almost a no-op.  I just null-terminate it.
-
-    new = str
-
-    # Need to word align things and add a null-termination word
-    if len(new) % 2 == 0:
-        return new + "\x00\x00"
-    else:
-        return new + "\x00\x00\x00"
-
 def fread_word(f):
     "Reads a 16 bit big endian word from file object f."
     return struct.unpack(">H", f.read(2))[0]
@@ -74,34 +61,53 @@ def fwrite_word(f, word):
     "Writes an integer as a 16 bit big endian word to file object f."
     f.write(struct.pack(">H", word))
 
-def fread_escaped_string(f):
-    """Reads string with special characters escaped from f.
+def trim_string(str):
+    "Returns copy of str with trailing null bytes removed"
 
-    Also consumes extra nulls."""
+    substr_len = len(str)
+    while substr_len > 0 and str[substr_len-1] == "\x00":
+        substr_len -= 1
 
-    str = ""
-    word = f.read(2)
-    escape_mode = False
-    while word != "":
-        if escape_mode:
-            str += word
-            escape_mode = False
-        else:
-            if word == Special.FIELD_DELIM or word == Special.END_OF_RECORD:
-                # In order to consume extra nulls, we actually terminate on the
-                # delimiter and not on the null, like one would expect
-                break
-            elif word == Special.ESCAPER:
-                escape_mode = True
-            elif word == "\x00\x00":
-                pass
-            elif word[1] == "\x00":
-                str += word[0]
-            else:
-                str += word
+    return str[:substr_len]
 
-        word = f.read(2)
+def term_string(str):
+    """Returns str terminated with null word and padded to word boundary"""
+    # Need to word align things and add a null-termination word
+    if len(str) % 2 == 0:
+        return str + "\x00\x00"
     else:
-        raise Error("Premature EOF while reading string.")
-    
-    return (str, word)
+        return str + "\x00\x00\x00"
+
+def collapse_null_list(obj):
+    """Converts [None] to []"""
+
+    if type(obj) is ListType or type(obj) is TupleType:
+        if len(obj) == 1 and obj[0] == None:
+            return []
+        else:
+            return obj
+    else:
+        return obj
+
+def flatten_singlet(obj):
+    """Extracts element from single object lists, otherwise returns obj unchanged
+
+    This is the inverse operation to unflatten_singlet()."""
+
+    if type(obj) is ListType or type(obj) is TupleType:
+        if len(obj) == 1:
+            return obj[0]
+        else:
+            return obj
+    else:
+        return obj
+
+def unflatten_singlet(obj):
+    """If obj is a list, returned unchanged.  Otherwise obj put in single element list.
+
+    This is the inverse operation to flatten_singlet()."""
+
+    if type(obj) is ListType or type(obj) is TupleType:
+        return obj
+    else:
+        return [obj]

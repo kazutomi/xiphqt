@@ -15,8 +15,9 @@ class WOID:
         self.pai = None
         self.children = ()
         self.extra_format = ()
+        self.no_flatten = ()
 
-    def open(self, root, extra_format):
+    def open(self, root, extra_format, no_flatten):
         # Construct pathnames
         mdbpath = root + ".mdb"
         saipath = root + ".sai"
@@ -48,7 +49,7 @@ class WOID:
                 child_root = path.join(dirname, child_name)
 
                 child = WOID()
-                child.open(child_root, ())
+                child.open(child_root, (), ())
                 children.append(child)
 
         # Now save all the attributes
@@ -59,6 +60,7 @@ class WOID:
         self.pai = pai
         self.children = children
         self.extra_format = extra_format
+        self.no_flatten = no_flatten
         
     def _get_record_at(self, pointer):
         mdb_record = self.mdb.read_record_at(pointer)[0]
@@ -68,18 +70,28 @@ class WOID:
 
             # Append access key fields (looking up their values in child DBs
             for i in range(len(mdb_record["keys"])):
-                child_ptr = mdb_record["keys"][i]
-                child_record = self.children[i]._get_record_at(child_ptr)
-                if child_record == None:
-                    record.append(None)
-                else:
-                    record.append(child_record[0])
+                bag = []
+                for child_ptr in mdb_record["keys"][i]:
+                    child_record = self.children[i]._get_record_at(child_ptr)
+                    if child_record == None:
+                        bag.append(None)
+                    else:
+                        bag.append(child_record[0])
+
+                record.append(bag)
 
             # Append extra data fields
             record.extend(mdb_record["extra"])
 
+            # Flatten records if necessary
+            for i in range(len(record)):
+                if i not in self.no_flatten:
+                    record[i] = flatten_singlet(record[i])
+                else:
+                    record[i] = collapse_null_list(record[i])
         else:
             record = None
+
 
         return record
 
@@ -95,7 +107,7 @@ class WOID:
             if record == None:
                 if data == None:
                     break
-            elif record["data"] == data:
+            elif data in record["data"]:
                 break
         else:
                sai_record = None   # Could not find record
@@ -112,6 +124,9 @@ class WOID:
         record and the second element is a word pointer to the PAI
         module corresponding to new record."""
 
+        # Put single objects into lists
+        record = map(unflatten_singlet, record)
+
         # Build record hash
         mdb_record = {"isDeleted" : False,
                       "data" : record[0],
@@ -121,22 +136,29 @@ class WOID:
         # Need to lookup keys
         child_pai_modules = []
         for i in range(1,self.mdb.header["NumOfKeys"]):
-            # Find the pointers to child records corresponding to
-            # each of the access keys and queue up pointers to PAI modules
-            # for each child record so we can update them later once we know
-            # the pointer to the main record we are adding
-            sai_record = self.children[i-1].find(record[i])
+            bag = []
+            for key in record[i]:
+                
+                # Find the pointers to child records corresponding to
+                # each of the access keys and queue up pointers to PAI
+                # modules for each child record so we can update them
+                # later once we know the pointer to the main record we
+                # are adding
+                sai_record = self.children[i-1].find(key)
             
-            if sai_record == None:
-                # Need to add this key to child database
-                child_record = (record[i],)
-                sai_record = self.children[i-1]._add_record(child_record)
+                if sai_record == None:
+                    # Need to add this key to child database
+                    child_record = (key,)
+                    sai_record = self.children[i-1]._add_record(child_record)
 
-            pointer = sai_record[0] # MDB pointer to matching record in child db
-            if (sai_record[1] != 0):  # Don't update if PAI module pointer is zero
-                child_pai_modules.append((self.children[i-1].pai, sai_record[1]))
+                # MDB pointer to matching record in child db
+                pointer = sai_record[0]
+                if (sai_record[1] != 0):  # Don't update if PAI module pointer is zero
+                    child_pai_modules.append((self.children[i-1].pai, sai_record[1]))
 
-            mdb_record["keys"].append(pointer)
+                bag.append(pointer)
+                
+            mdb_record["keys"].append(bag)
 
         # Now update all the databases
         mdb_pointer = self.mdb.append_record(mdb_record)
