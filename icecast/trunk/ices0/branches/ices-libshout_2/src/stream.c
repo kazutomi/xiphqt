@@ -65,9 +65,8 @@ ices_stream_loop (void)
   input_stream_t source;
   ices_stream_t* stream;
 
-  for (stream = ices_config.streams; stream; stream = stream->next) {
+  for (stream = ices_config.streams; stream; stream = stream->next)
     stream_connect (stream);
-  }
 
   while (1) {
     source.path = ices_playlist_get_next ();
@@ -353,11 +352,10 @@ stream_connect (ices_stream_t* stream)
   const char* mount = shout_get_mount (stream->conn);
 
   if (shout_open (stream->conn) != SHOUTERR_SUCCESS) {
-    ices_log_error ("Mount failed on http://%s:%d%s%s, error: %s",
+    ices_log ("Mount failed on http://%s:%d%s%s, error: %s",
 		    shout_get_host (stream->conn), shout_get_port (stream->conn),
-                    shout_get_port (stream->conn),
-		    (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
-		    shout_get_error (stream->conn);
+		    (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount),
+		    shout_get_error (stream->conn));
     stream->connect_delay = time(NULL) + 1;
     stream->errs++;
 
