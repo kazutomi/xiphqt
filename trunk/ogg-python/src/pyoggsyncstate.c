@@ -13,6 +13,12 @@ char py_ogg_sync_state_doc[] = "";
 static void py_ogg_sync_state_dealloc(py_ogg_sync_state *);
 static PyObject* py_ogg_sync_state_getattr(PyObject *, char *);
 
+FDEF(ogg_sync_clear) "";
+FDEF(ogg_sync_reset) "";
+FDEF(ogg_sync_wrote) "";
+FDEF(ogg_stream_pagein) "";
+FDEF(ogg_stream_packetout) "";
+
 PyTypeObject py_ogg_sync_state_type = {
   PyObject_HEAD_INIT(&PyType_Type)
   0,
@@ -43,6 +49,10 @@ PyTypeObject py_ogg_sync_state_type = {
 };
 
 static PyMethodDef py_ogg_sync_state_methods[] = {
+  {"reset", py_ogg_sync_reset,
+   METH_VARARGS, py_ogg_sync_reset_doc},
+  {"wrote", py_ogg_sync_wrote,
+   METH_VARARGS, py_ogg_sync_wrote_doc},
   {NULL, NULL}
 };
 
@@ -56,4 +66,26 @@ static PyObject*
 py_ogg_sync_state_getattr(PyObject *self, char *name)
 {
   return Py_FindMethod(py_ogg_sync_state_methods, self, name);
+}
+
+static PyObject *
+py_ogg_sync_reset(PyObject *self, PyObject *args)
+{
+  int ret;
+  ret = ogg_sync_reset(PY_OGG_SYNC_STATE(self));
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject *
+py_ogg_sync_wrote(PyObject *self, PyObject *args)
+{
+  long bytes;
+  int ret; 
+  if (!PyArg_ParseTuple(args, "l", &bytes))
+    return NULL;
+
+  ret = ogg_sync_wrote(PY_OGG_SYNC_STATE(self), bytes);
+  Py_INCREF(Py_None);
+  return Py_None;
 }

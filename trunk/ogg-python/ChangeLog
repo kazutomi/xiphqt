@@ -1,3 +1,14 @@
+3-17-2001 Andrew H. Chatham <andrew.chatham@duke.edu>
+	* src/_oggmodule.c: Remove dependency on Vorbis
+
+	* src/pyoggpackbuff.c: More PackBuff methods
+
+	* src/pyoggsyncstate.c: Simple SyncState methods.
+
+	* src/pyoggpack.c: Removed
+
+	* src/_oggmodule.c: Added ability to create OggPackBuff object
+	
 1-17-2001 Andrew H. Chatham <andrew.chatham@duke.edu>
 	* src/audiofilemodule.c
 	  src/audioread.c

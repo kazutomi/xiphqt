@@ -8,5 +8,6 @@ PyObject *Py_OggError;
 /* Object docstrings */
 
 extern char py_ogg_stream_state_doc[];
+extern char py_oggpack_buffer_doc[];
 
 #endif /* __OGGMODULE_H__ */
