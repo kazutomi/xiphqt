@@ -7,7 +7,7 @@ Standards-Version: 3.5.1.0
 
 Package: vorbis-python
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, ogg-python
 Description: A Python interface to the Ogg Vorbis library
  This module makes the libvorbis (Ogg Vorbis) functions available
  in Python. With this module you can write Python applications
