@@ -42,7 +42,7 @@ $module{"mgm_module_name"}=$name;
 $module{"mgm_module_minx"}=$minx;
 $module{"mgm_module_miny"}=$miny;
 $module{"mgm_module_wdemand"}=26;
-$module{"mgm_module_ldemand"}=50;
+$module{"mgm_module_ldemand"}=40;
 $module{"mgm_module_construct"}=\&module_construct;
 
 \%module;

@@ -28,6 +28,7 @@ $toplevel->optionAdd("$Xname*font",
 $toplevel->optionAdd("$Xname*labelsize",   '9',20);
 
 $toplevel->optionAdd("$Xname*scale",            'true',20);
+$toplevel->optionAdd("$Xname*scalejustify",     '1',20);
 $toplevel->optionAdd("$Xname*scalethresh",      '10',20);
 $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
 $toplevel->optionAdd("$Xname*refresh",          '100',20);
@@ -272,27 +273,26 @@ sub build_and_run{
 	
     # calculate demand/sizes
 
-    my$extra;
-    if($stack eq 'vertical'){
-	$extra=$actualy-$miny;
-    }else{
-	$extra=$actualx-$minx;
-    }
+    my$extrax=$actualx-$minx;
+    my$extray=$actualy-$miny;
 
-    my$demand;
-    if($stack eq $orient){
-	$demand=$ldemand;
-    }else{
-	$demand=$wdemand;
-    }
+    print "$ldemand $wdemand\n";
 
-    my$extradel=0;
-    $extradel=$extra/$demand if($demand>0);
+    my$extradelx=0;
+    my$extradely=0;
+    if($orient eq 'vertical'){
+	$extradelx=$extrax/$wdemand if($wdemand>0);
+	$extradely=$extray/$ldemand if($ldemand>0);    
+    }else{
+	$extradelx=$extrax/$ldemand if($ldemand>0);
+	$extradely=$extray/$wdemand if($wdemand>0);    
+    }
 
     # build the widgets in order
 
     my$sofar=0;
-    my$pos=($extra-$extradel*$demand)/2;
+    my$pos=0;
+
     for(my$i=0;$sofar<$count;$i++){
 	my $mod=$ordered{$i};
 	if(defined($mod)){
@@ -300,30 +300,45 @@ sub build_and_run{
 
 	    my $active=&moption($mod,"active");
 	    my $pad=&moption($mod,"widgetpad");
+	    my $justify=&moption($mod,"scalejustify");
 	    if($active eq 'true'){
 		my$x;
 		my$y;
 		my$width;
 		my$height;
-		my$localdemand;
-		if($stack eq $orient){
-		    $localdemand=$mod->{"mgm_module_ldemand"};
+
+		my$xlocaldemand;
+		my$ylocaldemand;
+		
+		if($orient eq 'vertical'){
+		    $xlocaldemand=&max(1,$mod->{"mgm_module_wdemand"});
+		    $ylocaldemand=&max(1,$mod->{"mgm_module_ldemand"});
 		}else{
-		    $localdemand=$mod->{"mgm_module_wdemand"};
+		    $xlocaldemand=&max(1,$mod->{"mgm_module_ldemand"});
+		    $ylocaldemand=&max(1,$mod->{"mgm_module_wdemand"});
 		}
+
+                # we can add justification options below later
+		# note that some versions of TK have an off by one error 
+		# positioning along the south border.  Always use nw 
+		# anchors for safety when possible even if the math is 
+		# annoying
+		
 		if($stack eq 'vertical'){
-		    $x=$pad;
-		    $width=$actualx-$pad*2;
-		    $y=$pos+$pad/2;
+		    $width=$minx+$extradelx*$xlocaldemand-$pad*2;
 		    $height=$mod->{"mgm_module_miny"}+
-			$extradel*$localdemand;
+		    $extradely*$ylocaldemand;
+		    $x=$pad+
+			($justify-1)/-2*($actualx-$pad*2-$width);
+		    $y=$pos+$pad/2;
 		    $pos+=$height+$pad;
 		}else{
-		    $y=$pad;
-		    $height=$actualy-$pad*2;
-		    $x=$pos+$pad/2;
 		    $width=$mod->{"mgm_module_minx"}+
-			$extradel*$localdemand;
+			$extradelx*$xlocaldemand;
+		    $height=$miny+$extradely*$ylocaldemand-$pad*2;
+		    $y=$pad+
+			($justify+1)/2*($actualy-$pad*2-$height);
+		    $x=$pos+$pad/2;
 		    $pos+=$width+$pad;
 		}
 
