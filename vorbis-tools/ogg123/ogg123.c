@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.25 2001/08/23 01:52:54 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.26 2001/08/31 15:18:53 kcarnold Exp $
 
  ********************************************************************/
 
@@ -97,7 +97,7 @@ int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, char *filename, cha
     }
   else
     {
-      Error ("Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
+      Error ("=== Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
       return 0;
     }
 }
@@ -391,9 +391,8 @@ int main(int argc, char **argv)
 	      char *tmp = strdup (optarg);
 	      ParseCode pcode = ParseLine (opts, tmp);
 	      if (pcode != parse_ok)
-		Error ("Error parsing config option from command line.\n"
-		       "Error: %s\n"
-		       "Option was: %s\n", ParseErr (pcode), optarg);
+		Error ("=== Error \"%s\" while parsing config option from command line.\n"
+		       "=== Option was: %s\n", ParseErr (pcode), optarg);
 	      free (tmp);
 	    }
 	  else {
@@ -406,7 +405,7 @@ int main(int argc, char **argv)
 	case 'd':
 	    temp_driver_id = ao_driver_id(optarg);
 	    if (temp_driver_id < 0) {
-		Error ("No such device %s.\n", optarg);
+		Error ("=== No such device %s.\n", optarg);
 		exit(1);
 	    }
 	    current = append_device(Options.outputOpts.devices, temp_driver_id, 
@@ -422,12 +421,12 @@ int main(int argc, char **argv)
 	      free(current->filename);
 	      current->filename = strdup(optarg);
 	    } else {
-	      Error ("Driver %s is not a file output driver.\n",
+	      Error ("=== Driver %s is not a file output driver.\n",
 		     info->short_name);
 	      exit(1);
 	    }
 	  } else {
-	    Error ("Cannot specify output file without specifying a driver.\n");
+	    Error ("=== Cannot specify output file without specifying a driver.\n");
 	    exit (1);
 	  }
 	  break;
@@ -439,7 +438,7 @@ int main(int argc, char **argv)
 	    break;
 	case 'o':
 	    if (optarg && !add_option(current_options, optarg)) {
-		Error ("Incorrect option format: %s.\n", optarg);
+		Error ("=== Incorrect option format: %s.\n", optarg);
 		exit(1);
 	    }
 	    break;
@@ -450,7 +449,7 @@ int main(int argc, char **argv)
 	  Options.outputOpts.Prebuffer = atof (optarg);
 	  if (Options.outputOpts.Prebuffer < 0.0f || Options.outputOpts.Prebuffer > 100.0f)
 	    {
-	      Error ("Prebuffer value invalid. Range is 0-100, using nearest value.\n");
+	      Error ("--- Prebuffer value invalid. Range is 0-100, using nearest value.\n");
 	      Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer < 0.0f ? 0.0f : 100.0f;
 	    }
 	  break;
@@ -466,14 +465,15 @@ int main(int argc, char **argv)
 	case 'x':
 	  Options.playOpts.nth = atoi (optarg);
 	  if (Options.playOpts.nth == 0) {
-	    Error ("Cannot play every 0th chunk!\n");
+	    Error ("--- Cannot play every 0th chunk!\n");
 	    Options.playOpts.nth = 1;
 	  }
 	  break;
 	case 'y':
 	  Options.playOpts.ntimes = atoi (optarg);
 	  if (Options.playOpts.ntimes == 0) {
-	    Error ("Cannot play every chunk 0 times. To do a test decode, use the null output driver.\n");
+	    Error ("--- Cannot play every chunk 0 times.\n"
+		   "--- To do a test decode, use the null output driver.\n");
 	    Options.playOpts.ntimes = 1;
 	  }
 	  break;
@@ -500,7 +500,7 @@ int main(int argc, char **argv)
       if (Options.outputOpts.default_device) {
 	temp_driver_id = ao_driver_id (Options.outputOpts.default_device);
 	if (temp_driver_id < 0)
-	  Error ("Warning: driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
+	  Error ("--- Driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
       }
       
       if (temp_driver_id < 0) {
@@ -508,7 +508,7 @@ int main(int argc, char **argv)
       }
       
       if (temp_driver_id < 0) {
-	Error ("Could not load default driver and no driver specified in config file. Exiting.\n");
+	Error ("=== Could not load default driver and no driver specified in config file. Exiting.\n");
 	exit(1);
       }
 
@@ -646,7 +646,7 @@ void play_file()
   if (tmp < 10 && tmp + 2 < strlen(Options.playOpts.read_file) && !strncmp(Options.playOpts.read_file + tmp, "://", 3))
     {
       /* let's call this a URL. */
-      ShowMessage (1, 0, 1, "Playing from stream %s", Options.playOpts.read_file);
+      ShowMessage (1, 0, 1, "-=( Stream: %s )=-", Options.playOpts.read_file);
       VorbisfileCallbacks.read_func = StreamBufferRead;
       VorbisfileCallbacks.seek_func = StreamBufferSeek;
       VorbisfileCallbacks.close_func = StreamBufferClose;
@@ -655,7 +655,7 @@ void play_file()
       Options.inputOpts.URL = Options.playOpts.read_file;
       Options.inputOpts.buffer = InitStream (Options.inputOpts);
       if ((ov_open_callbacks (Options.inputOpts.buffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
-	Error ("Error: input not an Ogg Vorbis audio stream.\n");
+	Error ("=== Input not an Ogg Vorbis audio stream.\n");
 	return;
       }
       Options.statOpts.stats[6].enabled = 1;
@@ -672,20 +672,20 @@ void play_file()
 #endif
       if (strcmp(Options.playOpts.read_file, "-"))
 	{
-	  ShowMessage (1, 0, 1, "Playing from file %s.", Options.playOpts.read_file);
+	  ShowMessage (1, 0, 1, "-=( File: %s )=-", Options.playOpts.read_file);
 	  /* Open the file. */
 	  if ((InStream = fopen(Options.playOpts.read_file, "rb")) == NULL) {
-	    Error ("Error opening input file.\n");
-	    exit(1);
+	    perror ("=== Error opening input file");
+	    return;
 	  }
 	}
       else
 	{
-	  ShowMessage (1, 0, 1, "Playing from standard input.");
+	  ShowMessage (1, 0, 1, "-=( Standard Input )=- ");
 	  InStream = stdin;
 	}
       if ((ov_open (InStream, &vf, NULL, 0)) < 0) {
-	Error ("Error: input not an Ogg Vorbis audio stream.\n");
+	Error ("=== Input not an Ogg Vorbis audio stream.\n");
 	return;
       }
     }
@@ -783,10 +783,10 @@ void play_file()
 	  if (Options.statOpts.verbose > 1) 
 	    /* we should be able to resync silently; if not there are 
 	       bigger problems. */
-	    Error ("Warning: hole in the stream; probably harmless\n");
+	    Error ("--- Hole in the stream; probably harmless\n");
 	} else if (ret < 0) {
 	  /* Stream error */
-	  Error ("Error: libvorbis reported a stream error.\n");
+	  Error ("=== Vorbis library reported a stream error.\n");
 	} else {
 	  /* did we enter a new logical bitstream */
 	  if (old_section != current_section && old_section != -1)
