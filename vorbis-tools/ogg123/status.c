@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.2 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: status.c,v 1.1.2.3 2001/08/13 00:59:43 kcarnold Exp $
 
  ********************************************************************/
 
@@ -35,9 +35,8 @@ void ClearLine ()
 
 void UpdateStats (Stat_t stats[])
 {
-  int len = 0;
+  int len = 0, left;
 
-  ClearLine();
   while (stats->formatstr != NULL)
     {
       if (stats->prio > MaxPrio || !stats->enabled) {
@@ -46,6 +45,8 @@ void UpdateStats (Stat_t stats[])
       }
       if (len != 0)
 	len += fprintf (stderr, " ");
+      else
+	fputc ('\r', stderr);
       switch (stats->type) {
       case stat_noarg:
 	len += fprintf (stderr, stats->formatstr);
@@ -65,6 +66,9 @@ void UpdateStats (Stat_t stats[])
       }
       stats++;
     }
+  left = LastLineLen - len;
+  while (left-- > 0)
+    fputc (' ', stderr);
   LastLineLen = len;
   fputc ('\r', stderr);
 }
