@@ -32,13 +32,6 @@
 #include <mp4.h>
 #include <faad.h>
 
-#define SAMPLESIZE 2
-#ifdef WORDS_BIGENDIAN
-# define ICES_OV_BE 1
-#else
-# define ICES_OV_BE 0
-#endif
-
 /* -- data structures -- */
 typedef struct {
   MP4FileHandle mp4file;
