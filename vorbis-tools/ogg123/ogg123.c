@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.24 2001/08/23 01:26:42 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.25 2001/08/23 01:52:54 kcarnold Exp $
 
  ********************************************************************/
 
@@ -148,11 +148,11 @@ void InitOgg123Stats (Stat_t stats[])
   cur = &stats[6]; /* input buffer fill % */
   cur->prio = 2; cur->enabled = 0; cur->formatstr = " Input Buffer %5.1f%%"; cur->type = stat_doublearg;
   cur = &stats[7]; /* input buffer status */
-  cur->prio = 3; cur->enabled = 0; cur->formatstr = "(%s)"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = "(%s)"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
   cur = &stats[8]; /* output buffer fill % */
   cur->prio = 2; cur->enabled = 0; cur->formatstr = " Output Buffer %5.1f%%"; cur->type = stat_doublearg;
   cur = &stats[9]; /* output buffer status */
-  cur->prio = 3; cur->enabled = 0; cur->formatstr = "%s"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+  cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
 }
 
 void SetTime (Stat_t stats[], ogg_int64_t sample)
@@ -258,18 +258,23 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   UpdateStats (Options.statOpts.stats);
   cursample += Options.playOpts.nth * size * nmemb / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
 
-  /* don't actually write until we have a full chunk, or of course EOS */
-  while (size) {
-    int toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? BUFFER_CHUNK_SIZE - curBuffered : size;
-    memmove (RechunkBuffer + curBuffered, data, toChunkNow);
-    size -= toChunkNow;
-    data += toChunkNow;
-    curBuffered += toChunkNow;
-    if (curBuffered == BUFFER_CHUNK_SIZE) {
-      devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);
-      curBuffered = 0;
+  /* optimized fast path */
+  if (curBuffered == BUFFER_CHUNK_SIZE && curBuffered == 0)
+    devices_write (ptr, size, 1, Options.outputOpts.devices);
+  else
+    /* don't actually write until we have a full chunk, or of course EOS */
+    while (size) {
+      int toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? BUFFER_CHUNK_SIZE - curBuffered : size;
+      memmove (RechunkBuffer + curBuffered, data, toChunkNow);
+      size -= toChunkNow;
+      data += toChunkNow;
+      curBuffered += toChunkNow;
+      if (curBuffered == BUFFER_CHUNK_SIZE) {
+	devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);
+	curBuffered = 0;
+      }
     }
-  }
+
   if (iseos) {
     cursample = 0;
     devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);

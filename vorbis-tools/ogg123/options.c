@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.3 2001/08/22 16:42:31 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.4 2001/08/23 01:52:55 kcarnold Exp $
 
  ********************************************************************/
 
@@ -142,6 +142,7 @@ ParseCode ParseLine (Option_t opts[], char *line)
 
       case opt_type_string:
 	opt->found++;
+	if (*(char **)opt->ptr) free(*(char **)opt->ptr);
 	*(char **) opt->ptr = strdup (value);
 	break;
 
