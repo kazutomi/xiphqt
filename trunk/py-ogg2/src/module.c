@@ -52,7 +52,6 @@ initogg2(void)
   PyModule_AddStringConstant(module, "__doc__", docstring);
   PyModule_AddStringConstant(module, "__version__", "2.0-pre_20040721");
 
-  PyModule_AddIntConstant(module, "Ogg_Cont", OGG_CONT);
   PyModule_AddIntConstant(module, "Ogg_Discont", OGG_DISCONT);
 
   if (PyErr_Occurred())
