@@ -171,8 +171,8 @@ static refbuf_t *format_vorbis_get_buffer (source_t *source)
             header = state->header_pages;
             while (header)
             {
-                DEBUG0 ("clearing out header page");
                 refbuf_t *to_release = header;
+                DEBUG0 ("clearing out header page");
                 header = header->next;
                 refbuf_release (to_release);
             }
