@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: residue backend 0 implementation
- last mod: $Id: res0.c,v 1.17 2000/08/15 09:09:43 xiphmont Exp $
+ last mod: $Id: res0.c,v 1.17.2.1 2000/08/31 09:00:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -160,13 +160,13 @@ vorbis_look_residue *look (vorbis_dsp_state *vd,vorbis_info_mode *vm,
 
 /* does not guard against invalid settings; eg, a subn of 16 and a
    subgroup request of 32.  Max subn of 128 */
-static int _testhack(double *vec,int n,vorbis_look_residue0 *look,
+static int _testhack(float *vec,int n,vorbis_look_residue0 *look,
 		     int auxparts,int auxpartnum){
   vorbis_info_residue0 *info=look->info;
   int i,j=0;
-  double max,localmax=0.;
-  double temp[128];
-  double entropy[8];
+  float max,localmax=0.;
+  float temp[128];
+  float entropy[8];
 
   /* setup */
   for(i=0;i<n;i++)temp[i]=fabs(vec[i]);
@@ -201,7 +201,7 @@ static int _testhack(double *vec,int n,vorbis_look_residue0 *look,
   return(i);
 }
 
-static int _encodepart(oggpack_buffer *opb,double *vec, int n,
+static int _encodepart(oggpack_buffer *opb,float *vec, int n,
 		       int stages, codebook **books,int mode,int part){
   int i,j,bits=0;
 
@@ -227,11 +227,11 @@ static int _encodepart(oggpack_buffer *opb,double *vec, int n,
   return(bits);
 }
 
-static int _decodepart(oggpack_buffer *opb,double *work,double *vec, int n,
+static int _decodepart(oggpack_buffer *opb,float *work,float *vec, int n,
 		       int stages, codebook **books){
   int i,j;
   
-  memset(work,0,sizeof(double)*n);
+  memset(work,0,sizeof(float)*n);
   for(j=0;j<stages;j++){
     int dim=books[j]->dim;
     int step=n/dim;
@@ -247,7 +247,7 @@ static int _decodepart(oggpack_buffer *opb,double *work,double *vec, int n,
 }
 
 int forward(vorbis_block *vb,vorbis_look_residue *vl,
-	    double **in,int ch){
+	    float **in,int ch){
   long i,j,k,l;
   vorbis_look_residue0 *look=(vorbis_look_residue0 *)vl;
   vorbis_info_residue0 *info=look->info;
@@ -324,7 +324,7 @@ int forward(vorbis_block *vb,vorbis_look_residue *vl,
 }
 
 /* a truncated packet here just means 'stop working'; it's not an error */
-int inverse(vorbis_block *vb,vorbis_look_residue *vl,double **in,int ch){
+int inverse(vorbis_block *vb,vorbis_look_residue *vl,float **in,int ch){
   long i,j,k,l,transend=vb->pcmend/2;
   vorbis_look_residue0 *look=(vorbis_look_residue0 *)vl;
   vorbis_info_residue0 *info=look->info;
@@ -337,12 +337,12 @@ int inverse(vorbis_block *vb,vorbis_look_residue *vl,double **in,int ch){
   int partvals=n/samples_per_partition;
   int partwords=(partvals+partitions_per_word-1)/partitions_per_word;
   int **partword=alloca(ch*sizeof(long *));
-  double *work=alloca(sizeof(double)*samples_per_partition);
+  float *work=alloca(sizeof(float)*samples_per_partition);
   partvals=partwords*partitions_per_word;
 
   /* make sure we're zeroed up to the start */
   for(j=0;j<ch;j++)
-    memset(in[j],0,sizeof(double)*info->begin);
+    memset(in[j],0,sizeof(float)*info->begin);
 
   for(i=info->begin,l=0;i<info->end;){
     /* fetch the partition word for each channel */
@@ -366,14 +366,14 @@ int inverse(vorbis_block *vb,vorbis_look_residue *vl,double **in,int ch){
  eopbreak:
   if(i<transend){
     for(j=0;j<ch;j++)
-      memset(in[j]+i,0,sizeof(double)*(transend-i));
+      memset(in[j]+i,0,sizeof(float)*(transend-i));
   }
 
   return(0);
 
  errout:
   for(j=0;j<ch;j++)
-    memset(in[j],0,sizeof(double)*transend);
+    memset(in[j],0,sizeof(float)*transend);
   return(0);
 }
 

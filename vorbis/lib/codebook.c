@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: basic codebook pack/unpack/code/decode operations
- last mod: $Id: codebook.c,v 1.17 2000/07/07 01:37:00 xiphmont Exp $
+ last mod: $Id: codebook.c,v 1.17.4.1 2000/08/31 09:00:00 xiphmont Exp $
 
  ********************************************************************/
 
@@ -233,7 +233,7 @@ int vorbis_staticbook_unpack(oggpack_buffer *opb,static_codebook *s){
       }
       
       /* quantized values */
-      s->quantlist=malloc(sizeof(double)*quantvals);
+      s->quantlist=malloc(sizeof(float)*quantvals);
       for(i=0;i<quantvals;i++)
 	s->quantlist[i]=_oggpack_read(opb,s->q_quant);
       
@@ -274,7 +274,7 @@ infrastructure on the encode side (decode side is specced and simpler) */
 
 /* floor0 LSP (single stage, non interleaved, nearest match) */
 /* returns entry number and *modifies a* to the quantization value *****/
-int vorbis_book_errorv(codebook *book,double *a){
+int vorbis_book_errorv(codebook *book,float *a){
   int dim=book->dim,k;
   int best=_best(book,a,1);
   for(k=0;k<dim;k++)
@@ -283,7 +283,7 @@ int vorbis_book_errorv(codebook *book,double *a){
 }
 
 /* returns the number of bits and *modifies a* to the quantization value *****/
-int vorbis_book_encodev(codebook *book,int best,double *a,oggpack_buffer *b){
+int vorbis_book_encodev(codebook *book,int best,float *a,oggpack_buffer *b){
   int k,dim=book->dim;
   for(k=0;k<dim;k++)
     a[k]=(book->valuelist+best*dim)[k];
@@ -292,7 +292,7 @@ int vorbis_book_encodev(codebook *book,int best,double *a,oggpack_buffer *b){
 
 /* res0 (multistage, interleave, lattice) */
 /* returns the number of bits and *modifies a* to the remainder value ********/
-int vorbis_book_encodevs(codebook *book,double *a,oggpack_buffer *b,
+int vorbis_book_encodevs(codebook *book,float *a,oggpack_buffer *b,
 			 int step,int addmul){
 
   int best=vorbis_book_besterror(book,a,step,addmul);
@@ -333,7 +333,7 @@ long vorbis_book_decode(codebook *book, oggpack_buffer *b){
 }
 
 /* returns the entry number or -1 on eof *************************************/
-long vorbis_book_decodevs(codebook *book,double *a,oggpack_buffer *b,
+long vorbis_book_decodevs(codebook *book,float *a,oggpack_buffer *b,
 			  int step,int addmul){
   long entry=vorbis_book_decode(book,b);
   int i,o;
@@ -368,7 +368,7 @@ long vorbis_book_decodevs(codebook *book,double *a,oggpack_buffer *b,
 #include "vorbis/book/res0a_13.vqh"
 #define TESTSIZE 40
 
-double test1[TESTSIZE]={
+float test1[TESTSIZE]={
   0.105939,
   0.215373,
   0.429117,
@@ -420,7 +420,7 @@ double test1[TESTSIZE]={
   0.708603,
 };
 
-double test3[TESTSIZE]={
+float test3[TESTSIZE]={
   0,1,-2,3,4,-5,6,7,8,9,
   8,-2,7,-1,4,6,8,3,1,-9,
   10,11,12,13,14,15,26,17,18,19,
@@ -428,7 +428,7 @@ double test3[TESTSIZE]={
 
 static_codebook *testlist[]={&_vq_book_lsp20_0,
 			     &_vq_book_res0a_13,NULL};
-double   *testvec[]={test1,test3};
+float   *testvec[]={test1,test3};
 
 int main(){
   oggpack_buffer write;
@@ -441,10 +441,10 @@ int main(){
   while(testlist[ptr]){
     codebook c;
     static_codebook s;
-    double *qv=alloca(sizeof(double)*TESTSIZE);
-    double *iv=alloca(sizeof(double)*TESTSIZE);
-    memcpy(qv,testvec[ptr],sizeof(double)*TESTSIZE);
-    memset(iv,0,sizeof(double)*TESTSIZE);
+    float *qv=alloca(sizeof(float)*TESTSIZE);
+    float *iv=alloca(sizeof(float)*TESTSIZE);
+    memcpy(qv,testvec[ptr],sizeof(float)*TESTSIZE);
+    memset(iv,0,sizeof(float)*TESTSIZE);
 
     fprintf(stderr,"\tpacking/coding %ld... ",ptr);
 
