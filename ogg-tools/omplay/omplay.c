@@ -685,6 +685,16 @@ void global_note_off(void)
 	}
 }
 
+void usage(void)
+{
+	fprintf(stderr, "omplay [-v] [-s] [-p client:port] [-D pcmdevice]\n");
+	fprintf(stderr, "\t -v: verbose\n");
+	fprintf(stderr, "\t -s: use status files\n");
+	fprintf(stderr, "\t -p: use ALSA client:port (default is 64:0)\n");
+	fprintf(stderr, "\t -D: use ALSA pcm device specified (default is 'default')\n");
+	fprintf(stderr, "\n");
+}
+
 int main(int argc, char **argv)
 {
 	int err;
@@ -727,8 +737,15 @@ int main(int argc, char **argv)
 			break;
 		default:
 			fprintf(stderr, "invalid options %c\n", c);
+			usage();
 			return 1;
 		}
+	}
+
+	if (optind >= argc) {
+		fprintf(stderr, "error: no file specified\n");
+		usage();
+		return 1;
 	}
 
 	open_file(argv[optind]);
