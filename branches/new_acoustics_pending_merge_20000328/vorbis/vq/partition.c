@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: function call to do data partitioning
- last mod: $Id: partition.c,v 1.3 2000/01/21 13:42:39 xiphmont Exp $
+ last mod: $Id: partition.c,v 1.3.4.1 2000/04/06 15:59:38 xiphmont Exp $
 
  ********************************************************************/
 
@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
 
 /* open all the partitioning files */
@@ -63,7 +65,7 @@ void process_postprocess(codebook **b,char *basename){
 /* just redirect this entry to the appropriate partition file */
 void process_vector(codebook **b,double *a){
   codebook *b0=*b;
-  int entry=codebook_entry(b0,a);
+  int entry=(b0->c->q_log?_logbest(b0,a,1):_best(b0,a,1));
   int i;
 
   for(i=0;i<b0->c->dim;i++)

@@ -13,7 +13,7 @@
 
  function: code raw [Vorbis] packets into framed OggSquish stream and
            decode Ogg streams back into raw packets
- last mod: $Id: framing.c,v 1.14 2000/01/12 11:34:40 xiphmont Exp $
+ last mod: $Id: framing.c,v 1.14.4.1 2000/04/06 15:59:36 xiphmont Exp $
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -610,8 +610,10 @@ int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
     os->lacing_fill=os->lacing_packet;
 
     /* make a note of dropped data in segment table */
-    os->lacing_vals[os->lacing_fill++]=0x400;
-    os->lacing_packet++;
+    if(os->pageno!=-1){
+      os->lacing_vals[os->lacing_fill++]=0x400;
+      os->lacing_packet++;
+    }
 
     /* are we a 'continued packet' page?  If so, we'll need to skip
        some segments */
@@ -683,7 +685,7 @@ int ogg_sync_reset(ogg_sync_state *oy){
   return(0);
 }
 
-int ogg_stream_reset(ogg_stream_state *os,long expected_pageno){
+int ogg_stream_reset(ogg_stream_state *os){
   os->body_fill=0;
   os->body_returned=0;
 
@@ -695,7 +697,7 @@ int ogg_stream_reset(ogg_stream_state *os,long expected_pageno){
 
   os->e_o_s=0;
   os->b_o_s=0;
-  os->pageno=expected_pageno;
+  os->pageno=-1;
   os->packetno=0;
   os->pcmpos=0;
 

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: function calls to collect codebook metrics
- last mod: $Id: metrics.c,v 1.6 2000/02/16 16:18:37 xiphmont Exp $
+ last mod: $Id: metrics.c,v 1.6.4.1 2000/04/06 15:59:38 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
 
 /* set up metrics */
@@ -234,7 +236,7 @@ void process_vector(codebook **bs,double *a){
 
   for(bi=0;bi<books;bi++){
     codebook *b=bs[bi];
-    entry=codebook_entry(b,work);
+    entry=(b->c->q_log?_logbest(b,work,1):_best(b,work,1));
     e=b->valuelist+b->c->dim*entry;
     for(i=0;i<b->c->dim;i++)work[i]-=e[i];
   }
