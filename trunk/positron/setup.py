@@ -19,13 +19,13 @@ from distutils.core import setup
 
 setup(name="positron",
       version="1.0b1",
-      summary="Positron synchronization software for the Neuros Audio Computer",
-      platform=["POSIX"],
-      license="BSD",
+      #summary="Positron synchronization software for the Neuros Audio Computer",
+      #platform=["POSIX"],
+      #license="BSD",
       author="Stan Seibert",
       author_email="volsung@xiph.org",
       url="http://www.neurosaudio.com/",
-      packages=['positron']
+      packages=['positron'],
       scripts=['scripts/positron']
       )
 
