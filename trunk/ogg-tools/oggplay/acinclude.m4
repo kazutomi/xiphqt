@@ -23,7 +23,7 @@ AC_DEFUN(LIBMNG_CHECK, [
 		_libmng_present=1
 	])
   ])
-  if test $_libmng_present -eq 1; then
+  if test x$_libmng_present = x1; then
 	LIBS="$LIBS -lmng"
 	AC_DEFINE(HAVE_LIBMNG)
   fi
