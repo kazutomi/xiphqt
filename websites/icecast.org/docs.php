@@ -19,7 +19,7 @@
 * <a href="http://melmoth.dyndns.org/stream/">Pierre Amadio's Quelques notes éparses sur l'installation d'Icecast 2 sur une Woody</a>
 </p>
 <p>
-* <a href="http://www.hanfbu.de/downloads/linux/howto/streaming.pdf">German icecast2 and ices2 howto written by Tobias Haf.</a>
+* <a href="http://www.mpex.net/info/icecast.html">German icecast2 introduction</a>
 </p>
 <p>
 * <a href="http://www.gnuware.com/icecast/">icecast howto written by Kerry Cox.</a>
