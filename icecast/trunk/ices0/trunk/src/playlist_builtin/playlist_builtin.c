@@ -1,6 +1,7 @@
 /* playlist_text.c
  * - Module for simple playlist
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,104 +19,98 @@
  *
  */
 
-char playlist_file[1024];
-int lineno;
-
 #include <definitions.h>
 #include "rand.h"
+
+static FILE* fp = NULL;
+int lineno;
 
 extern ices_config_t ices_config;
 
 /* Private function declarations */
+static char* playlist_builtin_get_next (void);
+static int playlist_builtin_get_lineno (void);
+static void playlist_builtin_shutdown (void);
+
 static void playlist_builtin_shuffle_playlist (void);
-static int playlist_builtin_verify_playlist (ices_config_t *ices_config);
-static int playlist_builtin_line_skip (int lineno, FILE *fp);
+static int playlist_builtin_verify_playlist (playlist_module_t* pm);
 
 /* Global function definitions */
 
-/* Every time this is called, it opens the
-   playlist file, skips to the right line,
-   reads the line, closes the file and
-   returns the line. */
-char *
-ices_playlist_builtin_get_next (void)
+/* Initialize the builting playlist handler */
+int
+ices_playlist_builtin_initialize (playlist_module_t* pm)
 {
-	FILE *fp = ices_util_fopen_for_reading (playlist_file);
-	char *out;
+  ices_log_debug ("Initializing builting playlist handler...");
 
-	if (!fp) {
-		ices_log_error ("Could not open playlist file!");
-		return NULL;
-	}
+  pm->get_next = playlist_builtin_get_next;
+  pm->get_metadata = NULL;
+  pm->get_lineno = playlist_builtin_get_lineno;
+  pm->shutdown = playlist_builtin_shutdown;
 
-	if (!playlist_builtin_line_skip (lineno, fp)) {
-		ices_log_debug ("Caught end of file on playlist, starting over");
-		lineno = 0;
-		ices_util_fclose (fp);
-		return ices_playlist_builtin_get_next ();
-	}
-	
-	out = ices_util_read_line (fp);
-	
-	if (out && out[0]) {
-		out[strlen (out) - 1] = '\0';
-	} else if (feof (fp)) {
-		ices_log_debug ("Caught end of file on playlist, starting over");
-		lineno = 0;
-		ices_util_fclose (fp);
-		if (out)
-			ices_util_free (out);
-		return ices_playlist_builtin_get_next ();
-	}
-	
-	ices_util_fclose (fp);
-	
-	lineno++;
+  if (!playlist_builtin_verify_playlist (pm)) {
+    ices_log ("Could not find a valid playlist file.");
+    ices_setup_shutdown ();
+    return -1;
+  }
 
-	ices_log_debug ("Builtin playlist handler serving: %s", ices_util_nullcheck (out));
+  if (pm->randomize) {
+    ices_log_debug ("Randomizing playlist...");
+    playlist_builtin_shuffle_playlist ();
+  }
 
-	return out;
+  lineno = 0;
+  return 1;
+}
+
+static char *
+playlist_builtin_get_next (void)
+{
+  char *out;
+  static int level = 0;
+
+  if (feof (fp)) {
+    ices_log_debug ("Caught end of file on playlist, starting over");
+    lineno = 0;
+    rewind (fp);
+  }
+
+  if (! (out = ices_util_read_line (fp)))
+    return NULL;
+
+  if (out[0])
+    out[strlen (out) - 1] = '\0';
+
+  if (! out[0]) {
+    if (level++) {
+      level = 0;
+      return NULL;
+    }
+    return playlist_builtin_get_next ();
+  }
+
+  level = 0;
+
+  lineno++;
+
+  ices_log_debug ("Builtin playlist handler serving: %s", ices_util_nullcheck (out));
+
+  return out;
 }
 
 /* Return the current playlist file line number */
-int
-ices_playlist_builtin_get_current_lineno (void)
+static int
+playlist_builtin_get_lineno (void)
 {
-	return lineno;
-}
-
-/* Initialize the builting playlist handler */
-int
-ices_playlist_builtin_initialize (ices_config_t *ices_config)
-{
-	ices_log_debug ("Initializing builting playlist handler...");
-
-	if (!playlist_builtin_verify_playlist (ices_config)) {
-		ices_log ("Could not find a valid playlist, and I can't bloody well make up the music myself.");
-		ices_setup_shutdown ();
-		return -1;
-	}
-	
-	strncpy (playlist_file, ices_config->playlist_file, 1024);
-
-	if (ices_config->randomize_playlist) {
-		ices_log_debug ("Randomizing playlist...");
-		playlist_builtin_shuffle_playlist ();
-	}
-	
-	lineno = 0;
-	return 1;
+  return lineno;
 }
 
 /* Shutdown the builtin playlist handler */
-int
-ices_playlist_builtin_shutdown (ices_config_t *ices_config)
+static void
+playlist_builtin_shutdown (void)
 {
-	if (ices_config->randomize_playlist) {
-		ices_log_debug ("Removing temp playlist file [%s]", playlist_file);
-		return ices_util_remove (playlist_file);
-	}
-	return 1;
+  if (fp)
+    ices_util_fclose (fp);
 }
 	
 /* Private function definitions */
@@ -126,75 +121,45 @@ static void
 playlist_builtin_shuffle_playlist (void)
 {
   char *newname, namespace[1024], buf[1024];
-  FILE *old, *new;
+  FILE* new;
 
   if (! ices_config.base_directory) {
     ices_log_error ("Base directory is invalid");
     return;
   }
 
-  old = ices_util_fopen_for_reading (playlist_file);
   newname = ices_util_get_random_filename (buf, "playlist");
   snprintf (namespace, sizeof (namespace), "%s/%s",
 	    ices_config.base_directory, buf);
-  new = ices_util_fopen_for_writing (namespace);
-
-  if (!old || !new) {
-    ices_log ("ERROR: Error opening playlist [%s] or playlist random [%s] file",
-	      playlist_file, namespace);
+  new = fopen (namespace, "w+");
+  if (!new) {
+    ices_log ("Error writing randomized playlist file: %s", namespace);
     return;
   }
-		
-  rand_file (old, new);
+  unlink (namespace);
+  
+  rand_file (fp, new);
+  ices_util_fclose (fp);
 
-  ices_util_fclose (new);
-  ices_util_fclose (old);
-
-  ices_log_debug ("Randomized playlist [%s] is now in [%s]", playlist_file,
-		  namespace);
-
-  strncpy (playlist_file, namespace, 1024);
+  fp = new;
+  rewind (fp);
 }
 
 /* Verify that the user specified playlist actually exists */
 static int
-playlist_builtin_verify_playlist (ices_config_t *ices_config)
+playlist_builtin_verify_playlist (playlist_module_t* pm)
 {
-	FILE *new;
+  if (!pm->playlist_file || !pm->playlist_file[0]) {
+    ices_log ("ERROR: Playlist file is not set!");
+    return 0;
+  }
 
-	if (!ices_config->playlist_file || !ices_config->playlist_file[0]) {
-		ices_log ("ERROR: Playlist file is not set!");
-		return 0;
-	}
-	
-	new = ices_util_fopen_for_reading (ices_config->playlist_file);
+  fp = ices_util_fopen_for_reading (pm->playlist_file);
 
-	if (new) {
-		ices_util_fclose (new);
-		return 1;
-	} else {
-		ices_log ("ERROR: Could not open playlist file [%s].", ices_config->playlist_file);
-		return 0;
-	}
+  if (fp) {
+    return 1;
+  } else {
+    ices_log ("ERROR: Could not open playlist file: %s", pm->playlist_file);
+    return 0;
+  }
 }
-
-/* Skip to line number lineno in file */
-static int
-playlist_builtin_line_skip (int lineno, FILE *fp)
-{
-	int i;
-	char buffvoid[1024];
-	
-	for (i = lineno; i > 0;) {
-		if (!fgets (buffvoid, 1024, fp))
-			return 0;
-		if (strchr (buffvoid, '\n')) 
-			i--; 
-	}
-
-	if (feof (fp))
-		return 0;
-
-	return 1;
-}
-		

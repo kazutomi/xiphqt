@@ -55,6 +55,8 @@ extern ices_config_t ices_config;
  * fail :)
  */ 
 
+/* ewwwww! gross! - Brendan */
+
 #if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
 static void interpreter_python_initialize (void);
 static void interpreter_python_shutdown (void);
@@ -77,11 +79,11 @@ void
 interpreter_initialize (void)
 {
 #ifdef HAVE_LIBPYTHON
-	if (ices_config.playlist_type == ices_playlist_python_e)
+	if (ices_config.pm.playlist_type == ices_playlist_python_e)
 		interpreter_python_initialize();
 #endif
 #ifdef HAVE_LIBPERL
-	if (ices_config.playlist_type == ices_playlist_perl_e)
+	if (ices_config.pm.playlist_type == ices_playlist_perl_e)
 		interpreter_perl_initialize();
 #endif
 }
@@ -91,11 +93,11 @@ void
 interpreter_shutdown (void)
 {
 #ifdef HAVE_LIBPYTHON
-	if (ices_config.playlist_type == ices_playlist_python_e)
+	if (ices_config.pm.playlist_type == ices_playlist_python_e)
 		interpreter_python_shutdown ();
 #endif
 #ifdef HAVE_LIBPERL
-	if (ices_config.playlist_type == ices_playlist_perl_e)
+	if (ices_config.pm.playlist_type == ices_playlist_perl_e)
 		interpreter_perl_shutdown ();
 #endif
 }

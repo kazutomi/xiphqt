@@ -23,21 +23,14 @@
 
 void interpreter_initialize (void);
 void interpreter_shutdown (void);
-# if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
-char *interpreter_playlist_python_get_next (void);
-char *interpreter_playlist_python_get_metadata (void);
-int interpreter_playlist_python_initialize (ices_config_t *ices_config);
-int interpreter_playlist_python_shutdown (ices_config_t *ices_config);
-int interpreter_playlist_python_get_current_lineno (void);
+
+#ifdef HAVE_LIBPYTHON
+int interpreter_playlist_python_initialize (playlist_module_t* pm);
 void *interpreter_python_eval_function (char *functionname);
-# endif
+#endif
 
 # if defined(HAVE_LIBPERL)
-char *interpreter_playlist_perl_get_next (void);
-char *interpreter_playlist_perl_get_metadata (void);
-int interpreter_playlist_perl_initialize (ices_config_t *ices_config);
-int interpreter_playlist_perl_shutdown (ices_config_t *ices_config);
-int interpreter_playlist_perl_get_current_lineno (void);
+int interpreter_playlist_perl_initialize (playlist_module_t* pm);
 void * interpreter_perl_eval_function (char *functionname);
 # endif
 

@@ -186,16 +186,18 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
   ices_config->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
   ices_config->dumpfile = NULL; /* No dumpfile by default */
   ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
-  ices_config->playlist_file = ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
-  ices_config->interpreter_file = NULL; /* Default to the hardcoded default */
-  ices_config->randomize_playlist = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
   ices_config->daemon = ICES_DEFAULT_DAEMON;
   ices_config->pre_dj = ICES_DEFAULT_PRE_DJ;
   ices_config->post_dj = ICES_DEFAULT_POST_DJ;
   ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
-  ices_config->playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
   ices_config->verbose = ICES_DEFAULT_VERBOSE;
   ices_config->reencode = 0;
+
+  ices_config->pm.playlist_file =
+    ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
+  ices_config->pm.module = NULL; /* Default to the hardcoded default */
+  ices_config->pm.randomize = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
+  ices_config->pm.playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
 
   ices_config->streams =
     (ices_stream_config_t*) malloc (sizeof (ices_stream_config_t));
@@ -248,9 +250,10 @@ ices_setup_free_all_allocations (ices_config_t *ices_config)
   ices_util_free (ices_config->password);
   ices_util_free (ices_config->dumpfile);
   ices_util_free (ices_config->configfile);
-  ices_util_free (ices_config->playlist_file);
-  ices_util_free (ices_config->interpreter_file);
   ices_util_free (ices_config->base_directory);
+
+  ices_util_free (ices_config->pm.playlist_file);
+  ices_util_free (ices_config->pm.module);
 
   for (stream = ices_config->streams; stream; stream = next)
   {
@@ -369,9 +372,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'F':
 					arg++;
-					if (ices_config->playlist_file)
-						ices_util_free (ices_config->playlist_file);
-					ices_config->playlist_file = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->pm.playlist_file);
+					ices_config->pm.playlist_file = ices_util_strdup (argv[arg]);
 					break;
 				case 'f':
 					arg++;
@@ -399,9 +401,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'M':
 					arg++;
-					if (ices_config->interpreter_file)
-						ices_util_free (ices_config->interpreter_file);
-					ices_config->interpreter_file = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->pm.module);
+					ices_config->pm.module = ices_util_strdup (argv[arg]);
 					break;
 				case 'm':
 					arg++;
@@ -436,17 +437,17 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 #endif
 					break;
 				case 'r':
-					ices_config->randomize_playlist = 1;
+					ices_config->pm.randomize = 1;
 					break;
 				case 'S':
 					arg++;
 
 					if (strcmp (argv[arg], "python") == 0)
-						ices_config->playlist_type = ices_playlist_python_e;
+						ices_config->pm.playlist_type = ices_playlist_python_e;
 					else if (strcmp (argv[arg], "perl") == 0)
-						ices_config->playlist_type = ices_playlist_perl_e;
+						ices_config->pm.playlist_type = ices_playlist_perl_e;
 					else 
-						ices_config->playlist_type = ices_playlist_builtin_e;
+						ices_config->pm.playlist_type = ices_playlist_builtin_e;
 					break;
 				case 's':
 					arg++;

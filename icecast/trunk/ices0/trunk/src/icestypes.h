@@ -22,7 +22,12 @@
 #define _ICES_ICESTYPES_H
 
 typedef enum {icy_header_protocol_e = 0, xaudiocast_header_protocol_e = 1} header_protocol_t;
-typedef enum {ices_playlist_python_e = 0, ices_playlist_builtin_e = 1, ices_playlist_perl_e = 2} playlist_type_t;
+
+typedef enum {
+  ices_playlist_builtin_e,
+  ices_playlist_python_e,
+  ices_playlist_perl_e
+} playlist_type_t;
 
 typedef struct ices_stream_config_St {
   shout_conn_t conn;
@@ -45,27 +50,36 @@ typedef struct ices_stream_config_St {
   struct ices_stream_config_St* next;
 } ices_stream_config_t;
 
-typedef struct ices_config_St {
+typedef struct {
+  playlist_type_t playlist_type;
+  int randomize;
+  char* playlist_file;
+  char* module;
+
+  char* (*get_next) (void);     /* caller frees result */
+  char* (*get_metadata) (void); /* caller frees result */
+  int (*get_lineno) (void);
+  void (*shutdown) (void);
+} playlist_module_t;
+
+typedef struct {
   char *host;
   int port;
   char *password;
   header_protocol_t header_protocol;
   int daemon;
-  int randomize_playlist;
   int pre_dj;
   int post_dj;
-  int playlist_type;
   int verbose;
   int reencode;
   char *dumpfile;
   char *configfile;
-  char *playlist_file;
-  char *interpreter_file;
   char *base_directory;
   FILE *logfile;
 
   ices_stream_config_t* streams;
-}ices_config_t;
+  playlist_module_t pm;
+} ices_config_t;
 
 /* -- input stream types -- */
 typedef enum {

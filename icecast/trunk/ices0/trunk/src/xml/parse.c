@@ -263,22 +263,22 @@ ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_
       continue;
 
     if (strcmp (cur->name, "Randomize") == 0) {
-      ices_config->randomize_playlist = atoi (ices_xml_read_node (doc, cur));
+      ices_config->pm.randomize = atoi (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Type") == 0) {
       unsigned char *str = ices_xml_read_node (doc, cur);
       if (str && (strcmp (str, "python") == 0))
-	ices_config->playlist_type = ices_playlist_python_e;
+	ices_config->pm.playlist_type = ices_playlist_python_e;
       else if (str && (strcmp (str, "perl") == 0))
-	ices_config->playlist_type = ices_playlist_perl_e;
+	ices_config->pm.playlist_type = ices_playlist_perl_e;
       else
-	ices_config->playlist_type = ices_playlist_builtin_e;
+	ices_config->pm.playlist_type = ices_playlist_builtin_e;
     } else if (strcmp (cur->name, "File") == 0) {
-      ices_util_free (ices_config->playlist_file);
-      ices_config->playlist_file =
+      ices_util_free (ices_config->pm.playlist_file);
+      ices_config->pm.playlist_file =
 	ices_util_strdup (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Module") == 0) {
-      ices_util_free (ices_config->interpreter_file);
-      ices_config->interpreter_file = 
+      ices_util_free (ices_config->pm.module);
+      ices_config->pm.module =
 	ices_util_strdup (ices_xml_read_node (doc, cur));
     } else {
       ices_log ("Unknown playlist keyword: %s", cur->name);

@@ -55,8 +55,8 @@ interpreter_perl_initialize (void)
 
 	/* User might have specified a different module, other than
 	   ices.pm */
-	if (ices_config.interpreter_file) {
-		strncpy (module_space, ices_config.interpreter_file, 251);
+	if (ices_config.pm.module) {
+		strncpy (module_space, ices_config.pm.module, 251);
 		module_space[251] = '\0'; /* Just to make sure */
 		strcat (module_space, ".pm");
 		my_argv[1] = module_space;

@@ -44,8 +44,8 @@ interpreter_python_initialize (void)
 
 	/* If user specified a certain module to be loaded,
 	 * then obey */
-	if (ices_config.interpreter_file) {
-		module_name = ices_config.interpreter_file;
+	if (ices_config.pm.module) {
+		module_name = ices_config.pm.module;
 	} else {
 		module_name = "ices";
 	}

@@ -20,66 +20,77 @@
 
 #include <Python.h>
 
-/* Call the python function to get the current line number */
-int
-interpreter_playlist_python_get_current_lineno (void)
-{
-	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_current_lineno");
-
-	if (res && PyInt_Check (res))
-		return PyInt_AsLong (res);
-
-	ices_log_error ("Execution of 'ices_python_get_current_lineno()' in ices.py failed");
-	return 0;
-}
-
-/* Call python function to get next file to play */
-char *
-interpreter_playlist_python_get_next (void)
-{
-	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_next");
-
-	if (res && PyString_Check (res))
-		return ices_util_strdup (PyString_AsString (res));
-	ices_log_error ("Execution of 'ices_python_get_next()' in ices.py failed");
-	return NULL;
-}
-
-char*
-interpreter_playlist_python_get_metadata (void)
-{
-	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_metadata");
-
-	if (res && PyString_Check (res))
-		return ices_util_strdup (PyString_AsString (res));
-	ices_log_error ("Execution of 'ices_python_get_metadata()' in ices.py failed");
-	return NULL;
-}
+/* -- local prototypes -- */
+static int playlist_python_get_lineno (void);
+static char* playlist_python_get_next (void);
+static char* playlist_python_get_metadata (void);
+static void playlist_python_shutdown (void);
 
 /* Call python function to inialize the python script */
 int
-interpreter_playlist_python_initialize (ices_config_t *ices_config)
+interpreter_playlist_python_initialize (playlist_module_t* pm)
 {
-	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_initialize");
+  PyObject* res = (PyObject*) interpreter_python_eval_function ("ices_python_initialize");
 
-	if (res && PyInt_Check (res))
-		return PyInt_AsLong (res);
+  pm->get_next = playlist_python_get_next;
+  pm->get_metadata = playlist_python_get_metadata;
+  pm->get_lineno = playlist_python_get_lineno;
+  pm->shutdown = playlist_python_shutdown;
 
-	ices_log_error ("Execution of 'ices_python_initialize()' in ices.py failed");
-	return 0;
+  if (res && PyInt_Check (res))
+    return PyInt_AsLong (res);
+
+  ices_log_error ("ices_python_initialize failed");
+  return 0;
 }
 
+/* Call the python function to get the current line number */
+static int
+playlist_python_get_lineno (void)
+{
+  PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_current_lineno");
+
+  if (res && PyInt_Check (res))
+    return PyInt_AsLong (res);
+
+  ices_log_error ("ices_python_get_current_lineno failed");
+  return 0;
+}
+
+/* Call python function to get next file to play */
+static char *
+playlist_python_get_next (void)
+{
+  PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_next");
+
+  if (res && PyString_Check (res))
+    return ices_util_strdup (PyString_AsString (res));
+  ices_log_error ("ices_python_get_next failed");
+
+  return NULL;
+}
+
+static char*
+playlist_python_get_metadata (void)
+{
+  PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_metadata");
+
+  if (res && PyString_Check (res))
+    return ices_util_strdup (PyString_AsString (res));
+
+  ices_log_error ("ices_python_get_metadata failed");
+  return NULL;
+}
 
 /* Call python function to shutdown the script */
-int
-interpreter_playlist_python_shutdown (ices_config_t *ices_config)
+static void
+playlist_python_shutdown (void)
 {
-	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_shutdown");
+  PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_shutdown");
 
-	if (res && PyInt_Check (res))
-		return PyInt_AsLong (res);
+  if (res && PyInt_Check (res))
+    return;
 
-	ices_log_error ("Execution of 'ices_python_shutdown()' in ices.py failed");
-	return 0;
+  ices_log_error ("ices_python_shutdown failed");
 }
 

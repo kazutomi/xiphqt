@@ -1,6 +1,7 @@
 /* playlist_perl.c
  * - Interpreter functions for perl
  * Copyright (c) 2000 Chad Armstrong, Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,8 +27,35 @@
 #include <EXTERN.h>
 #include <perl.h>
 
+/* -- local prototypes -- */
+static int playlist_perl_get_lineno (void);
+static char* playlist_perl_get_next (void);
+static char* playlist_perl_get_metadata (void);
+static void playlist_perl_shutdown (void);
+
 int
-interpreter_playlist_perl_get_current_lineno (void)
+interpreter_playlist_perl_initialize (playlist_module_t* pm)
+{
+  char *str;
+  int ret = 0;
+
+  pm->get_next = playlist_perl_get_next;
+  pm->get_metadata = playlist_perl_get_metadata;
+  pm->get_lineno = playlist_perl_get_lineno;
+  pm->shutdown = playlist_perl_shutdown;
+
+  str = interpreter_perl_eval_function ("ices_perl_initialize");
+  ret = atoi (str);	/* allocated in perl.c */
+  ices_util_free (str);	/* clean up after yourself! */
+		
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
+
+  return ret;
+}
+
+static int
+playlist_perl_get_lineno (void)
 {
  	char *str;
 	int ret = 0;
@@ -42,38 +70,21 @@ interpreter_playlist_perl_get_current_lineno (void)
 	return ret;
 }
 
-char *
-interpreter_playlist_perl_get_next (void)
+static char *
+playlist_perl_get_next (void)
 {
 	return interpreter_perl_eval_function ("ices_perl_get_next");
 	/* implied free(str), this is called higher up */
 }
 
-char*
-interpreter_playlist_perl_get_metadata (void)
+static char*
+playlist_perl_get_metadata (void)
 {
   return interpreter_perl_eval_function ("ices_perl_get_metadata");
 }
 
-int
-interpreter_playlist_perl_initialize (ices_config_t *ices_config)
-{
-        char *str;
-        int ret = 0;
-			
-        str = interpreter_perl_eval_function ("ices_perl_initialize");
-        ret = atoi (str);	/* allocated in perl.c */
-	ices_util_free (str);	/* clean up after yourself! */
-		
-        if (!ret) 
-		ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
-
-        return ret;
-
-}
-
-int
-interpreter_playlist_perl_shutdown (ices_config_t *ices_config)
+static void
+playlist_perl_shutdown (void)
 {
         char *str;
         int ret = 0;
@@ -85,6 +96,5 @@ interpreter_playlist_perl_shutdown (ices_config_t *ices_config)
         if (!ret) 
 		ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
 
-        return ret;
+        return;
 }
-

@@ -1,6 +1,7 @@
 /* playlist.c
  * - Functions for playlist handling
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,6 +20,7 @@
  */
 
 #include "definitions.h"
+#include "playlist.h"
 
 extern ices_config_t ices_config;
 
@@ -30,24 +32,10 @@ extern ices_config_t ices_config;
 int
 ices_playlist_get_current_lineno (void)
 {
-	switch (ices_config.playlist_type) {
-		case ices_playlist_builtin_e:
-			return ices_playlist_builtin_get_current_lineno ();
-			break;
-#ifdef HAVE_LIBPYTHON
-		case ices_playlist_python_e:
-			return interpreter_playlist_python_get_current_lineno ();
-			break;
-#endif
-#ifdef HAVE_LIBPERL
-		case ices_playlist_perl_e:
-			return interpreter_playlist_perl_get_current_lineno ();
-			break;
-#endif
-		default:
-			ices_log_error ("Unknown playlist module!");
-			return -1;
-	}
+  if (ices_config.pm.get_lineno)
+    return ices_config.pm.get_lineno ();
+
+  return 0;
 }
 
 /* Wrapper for the playlist handler's next file function.
@@ -56,110 +44,62 @@ ices_playlist_get_current_lineno (void)
 char *
 ices_playlist_get_next (void)
 {
-	switch (ices_config.playlist_type) {
-		case ices_playlist_builtin_e:
-			return ices_playlist_builtin_get_next ();
-			break;
-#ifdef HAVE_LIBPYTHON
-		case ices_playlist_python_e:
-			return interpreter_playlist_python_get_next ();
-			break;
-#endif
-#ifdef HAVE_LIBPERL
-		case ices_playlist_perl_e:
-			return interpreter_playlist_perl_get_next ();
-			break;
-#endif
-	        default:
-			ices_log_error ("Unknown playlist module!");
-			return NULL;
-	}
+  return ices_config.pm.get_next ();
 }
 
 /* Allows a script to override file metadata if it wants. Returns NULL
- *   to mean 'do it yourself' */
+ *   to mean 'do it yourself'. Modules need not implement this. */
 char*
 ices_playlist_get_metadata (void)
 {
-  switch (ices_config.playlist_type) {
-    case ices_playlist_builtin_e:
-      return NULL;
-      break;
-#ifdef HAVE_LIBPYTHON
-    case ices_playlist_python_e:
-      return interpreter_playlist_python_get_metadata ();
-      break;
-#endif
-#ifdef HAVE_LIBPERL
-    case ices_playlist_perl_e:
-      return interpreter_playlist_perl_get_metadata ();
-      break;
-#endif
-    default:
-      ices_log_error ("Unknown playlist module!");
-      return NULL;
-  }
+  if (ices_config.pm.get_metadata)
+    return ices_config.pm.get_metadata ();
+
+  return NULL;
 }
 
 /* Initialize the toplevel playlist handler */
 int
 ices_playlist_initialize (void)
 {
-	int res = 0;
-	ices_log_debug ("Initializing playlist handler...");
+  int rc = 0;
 
-	switch (ices_config.playlist_type) {
-		case ices_playlist_builtin_e:
-			res = ices_playlist_builtin_initialize (&ices_config);
-			break;
-		case ices_playlist_python_e:
+  ices_log_debug ("Initializing playlist handler...");
+
+  switch (ices_config.pm.playlist_type) {
+    case ices_playlist_builtin_e:
+      rc = ices_playlist_builtin_initialize (&ices_config.pm);
+      break;
+    case ices_playlist_python_e:
 #ifdef HAVE_LIBPYTHON
-			res = interpreter_playlist_python_initialize (&ices_config);
+      rc = interpreter_playlist_python_initialize (&ices_config.pm);
 #else
-			ices_log_error ("This binary has no support for embedded python");
+      ices_log_error ("This binary has no support for embedded python");
 #endif
-			break;
-
-		case ices_playlist_perl_e:
+      break;
+    case ices_playlist_perl_e:
 #ifdef HAVE_LIBPERL
-			res = interpreter_playlist_perl_initialize (&ices_config);
+      rc = interpreter_playlist_perl_initialize (&ices_config.pm);
 #else
-			ices_log_error ("This binary has no support for embedded perl");
+      ices_log_error ("This binary has no support for embedded perl");
 #endif
-			break;
-		default:
-			ices_log_error ("Unknown playlist module!");
-			break;
-	}
+      break;
+    default:
+      ices_log_error ("Unknown playlist module!");
+      break;
+  }
 
-	if (res == 0) {
-		ices_log ("Initialization of playlist handler failed. [%s]", ices_log_get_error ());
-		ices_setup_shutdown ();
-	}
+  if (!rc) {
+    ices_log ("Initialization of playlist handler failed. [%s]", ices_log_get_error ());
+    ices_setup_shutdown ();
+  }
 
-	return res;
+  return rc;
 }
 
 /* Shutdown the playlist handler */
-int
+void
 ices_playlist_shutdown (void)
-{	
-	switch (ices_config.playlist_type) {
-		case ices_playlist_builtin_e:
-			return ices_playlist_builtin_shutdown (&ices_config);
-			break;
-#ifdef HAVE_LIBPYTHON
-		case ices_playlist_python_e:
-			return interpreter_playlist_python_shutdown (&ices_config);
-			break;
-#endif
-#ifdef HAVE_LIBPERL
-		case ices_playlist_perl_e:
-			return interpreter_playlist_perl_shutdown (&ices_config);
-			break;
-#endif
-		default:
-			ices_log_error ("Unknown playlist module!");
-			return 0;
-	}
+{
+  ices_config.pm.shutdown ();
 }
