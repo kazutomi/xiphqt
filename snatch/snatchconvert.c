@@ -1040,6 +1040,7 @@ void PutNumLE(long num,FILE *f,int bytes){
     i++;
   }
 }
+
 void WriteWav(FILE *f,long channels,long rate,long bits){
   fprintf(f,"RIFF");
   PutNumLE(0x7fffffffUL,f,4);
@@ -1159,7 +1160,17 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
       }
       return 0;
     }
-  }    
+  }else{
+    if(!begun){
+      if(process_audio)
+	WriteWav(out,audbuf_channels,audbuf_rate,16);
+      if(process_video==2)
+	WriteYuv2(out,vidbuf_width,vidbuf_height,ratecode);
+      if(process_video==1)
+	WriteYuv(out,vidbuf_width,vidbuf_height,ratecode);
+      begun=1;
+    }
+  }
 
   if(drain){
     int i;
