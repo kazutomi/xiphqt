@@ -217,6 +217,8 @@ ices_mp3_open (input_stream_t* self, const char* buf, size_t len)
   self->read = ices_mp3_read;
 #ifdef HAVE_LIBLAME
   self->readpcm = ices_mp3_readpcm;
+#else
+  self->readpcm = NULL;
 #endif
   self->get_metadata = ices_mp3_get_metadata;
   self->close = ices_mp3_close;

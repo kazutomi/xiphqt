@@ -95,7 +95,7 @@ ices_stream_loop (void)
     }
 		
     /* If something goes on while transfering, we just go on */
-    if (!ices_stream_send_file (file)) {
+    if (ices_stream_send_file (file) < 0) {
       ices_log ("Warning: Encountered error while transfering %s. [%s]", file, ices_log_get_error ());
 
       consecutive_errors++;
@@ -149,11 +149,13 @@ ices_stream_send_file (const char *file)
 {
   input_stream_t source;
   ices_stream_config_t* stream;
+  unsigned char ibuf[INPUT_BUFSIZ];
   unsigned char buf[INPUT_BUFSIZ * 4];
   char namespace[1024];
   ssize_t len;
   ssize_t olen;
   size_t bytes_read;
+  int samples;
   int rc;
 #ifdef HAVE_LIBLAME
   static int16_t left[INPUT_BUFSIZ * 30];
@@ -168,71 +170,94 @@ ices_stream_send_file (const char *file)
     return 0;
   }
 
+  if (! source.read) {
+    if (! source.readpcm) {
+      ices_log_error ("No read method implemented for %s", source.path);
+      source.close (&source);
+      return -1;
+    }
+    for (stream = ices_config.streams; stream; stream = stream->next) {
+      if (! (stream->reencode)) {
+	ices_log_error ("Cannot play without reencoding");
+	source.close (&source);
+	return -1;
+      }
+    }
+  }
+
   ices_metadata_set (&source);
 
 #ifdef HAVE_LIBLAME
   ices_reencode_reset ();
 #endif
   
-  ices_log ("Streaming from %s until EOF..", source.path);
+  ices_log ("Now playing %s", source.path);
 
   finish_send = 0;
   while (! finish_send) {
+    len = samples = 0;
+    if (source.read) {
+      len = source.read (&source, ibuf, sizeof (ibuf));
+      bytes_read += len;
 #ifdef HAVE_LIBLAME
-    if (ices_config.reencode || source.type != ICES_INPUT_MP3) {
-      len = source.readpcm (&source, sizeof (left), left, right);
-    } else
+      if (ices_config.reencode)
+	samples = ices_reencode_decode (ibuf, len, sizeof (left), left, right);
+    } else if (source.readpcm) {
+      len = samples = source.readpcm (&source, sizeof (left), left, right);
 #endif
-      len = source.read (&source, buf, sizeof (buf));
-
-    bytes_read += len;
+    }
 
     if (len > 0) {
-      olen = len;
+      olen = 0;
+      rc = 1;
       for (stream = ices_config.streams; stream; stream = stream->next) {
+	if (! stream->reencode) {
+	  rc = shout_send_data (&stream->conn, ibuf, len);
+	  shout_sleep (&stream->conn);
+	}
 #ifdef HAVE_LIBLAME
-	if (ices_config.reencode || source.type != ICES_INPUT_MP3) {
-	  olen = ices_reencode_reencode_chunk (stream, len, left, right, buf,
-					       sizeof (buf));
+	else {
+	  olen = ices_reencode_reencode_chunk (stream, samples, left, right,
+					       buf, sizeof (buf));
 	  if (olen == -1) {
 	    ices_log_debug ("Output buffer too small, skipping chunk");
+	  } else if (olen > 0) {
+	    rc = shout_send_data (&stream->conn, buf, olen);
+	    shout_sleep (&stream->conn);
 	  }
 	}
 #endif
-	if (olen > 0) {
-	  rc = shout_send_data (&stream->conn, buf, olen);
-	  shout_sleep (&stream->conn);
-			
-	  if (!rc) {
-	    ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
-	    break;
-	  }
+
+	if (!rc) {
+	  ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
+	  source.close (&source);
+	  return -1;
 	}
       }
-			
     } else if (len == 0) {
       finish_send = 1;
     } else {
-      ices_log_error ("Read error while reading %s: %s", source.path,
+      ices_log_error ("Read error: %s",
 		      ices_util_strerror (errno, namespace, 1024));
       source.close (&source);
-      return 0;
+      return -1;
     }
 
     ices_cue_update (&source, bytes_read);
   }
 
 #ifdef HAVE_LIBLAME
-  for (stream = ices_config.streams; stream; stream = stream->next) {
-    len = ices_reencode_flush (stream, buf, sizeof (buf));
-    if (len > 0)
-      rc = shout_send_data (&stream->conn, buf, len);
-  }
+  for (stream = ices_config.streams; stream; stream = stream->next)
+    if (stream->reencode) {
+      len = ices_reencode_flush (stream, buf, sizeof (buf));
+      if (len > 0)
+	rc = shout_send_data (&stream->conn, buf, len);
+    }
 #endif
 
   source.close (&source);
 
-  return 1;
+  return 0;
 }
 
 /* open up path, figure out what kind of input it is, and set up source */

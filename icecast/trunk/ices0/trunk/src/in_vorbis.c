@@ -99,7 +99,7 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   self->data = vorbis_data;
 
   self->read = NULL;
-  self->readpcm= ices_vorbis_readpcm;
+  self->readpcm = ices_vorbis_readpcm;
   self->close = ices_vorbis_close;
   self->get_metadata = ices_vorbis_get_metadata;
 
