@@ -1,3 +1,12 @@
+- 0.2.1		2001-07-12
+	- Thread stack size increased, to prevent segfaults during metadata
+	  updates on Solaris, FreeBSD, OpenBSD, and probably anything that
+	  isn't Linux.
+	- Sleep code fixed to work better on other platforms. Solaris users
+	  should be happy.
+	- All playlist functions but ices_get_next made optional.
+	- Compatibility code uses old ices_(perl|python)_... function names
+	  if new, documented (man 1 ices) functions aren't found.
 - 0.2		2001-06-29
 	- This is a development release. It is not guaranteed to be as stable
 	  as 0.1.
