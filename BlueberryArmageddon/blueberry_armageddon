@@ -662,10 +662,6 @@ sub ReadStderr{
 	    $metaartist=~s/([\"\$\`\\])/\\$1/g;
 	    $metaalbum=~s/([\"\$\`\\])/\\$1/g;
 
-	    $metatitle=~s/\"/\\\"/g;
-	    $metaartist=~s/\"/\\\"/g;
-	    $metaalbum=~s/\"/\\\"/g;
-
 	    my$glob;
 	    eval "\$glob=\"$encode\"";
 	    $glob=~s/[\{\}]/\"/g;
