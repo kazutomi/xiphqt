@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.5 2001/08/22 04:16:15 kcarnold Exp $
+ last mod: $Id: status.c,v 1.1.2.6 2001/08/22 16:42:31 kcarnold Exp $
 
  ********************************************************************/
 
@@ -19,7 +19,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include "status.h"
 
 /* a few globals */
@@ -109,13 +108,15 @@ void UpdateStats (Stat_t stats[])
   left = LastLineLen - fprintf (stderr, "%s", tmpbuf);
   while (left-- > 0)
     fputc (' ', stderr);
-  fputc ('\r', stderr);
+  if (LastLineLen || len)
+    fputc ('\r', stderr);
   LastLineLen = len;
 }
 
-/* msg has no final \n and no formatting */
-void ShowMessage (int prio, char keepLastLine, char *msg)
+void ShowMessage (int prio, char keepLastLine, char addNewline, char *fmt, ...)
 {
+  va_list ap;
+
   if (prio > MaxPrio)
     return;
   if (!keepLastLine)
@@ -123,8 +124,22 @@ void ShowMessage (int prio, char keepLastLine, char *msg)
   else
     if (LastLineLen)
       fputc ('\n', stderr);
-  fprintf (stderr, msg);
-  fputc ('\n', stderr);
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  if (addNewline)
+    fputc ('\n', stderr);
+  LastLineLen = 0;
+}
+
+/* a degenerate ShowMessage specifically for spitting out an error. fmt has a newline. */
+void Error (char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+  ClearLine();
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
   LastLineLen = 0;
 }
 

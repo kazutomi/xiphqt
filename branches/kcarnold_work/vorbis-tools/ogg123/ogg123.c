@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.21 2001/08/13 21:00:41 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.22 2001/08/22 16:42:31 kcarnold Exp $
 
  ********************************************************************/
 
@@ -50,17 +50,17 @@ struct {
     char *key;			/* includes the '=' for programming convenience */
     char *formatstr;		/* formatted output */
 } ogg_comment_keys[] = {
-  {"ARTIST=", "Artist: %s\n"},
-  {"ALBUM=", "Album: %s\n"},
-  {"TITLE=", "Title: %s\n"},
-  {"VERSION=", "Version: %s\n"},
-  {"TRACKNUMBER=", "Track number: %s\n"},
-  {"ORGANIZATION=", "Organization: %s\n"},
-  {"GENRE=", "Genre: %s\n"},
-  {"DESCRIPTION=", "Description: %s\n"},
-  {"DATE=", "Date: %s\n"},
-  {"LOCATION=", "Location: %s\n"},
-  {"COPYRIGHT=", "Copyright %s\n"},
+  {"ARTIST=", "Artist: %s"},
+  {"ALBUM=", "Album: %s"},
+  {"TITLE=", "Title: %s"},
+  {"VERSION=", "Version: %s"},
+  {"TRACKNUMBER=", "Track number: %s"},
+  {"ORGANIZATION=", "Organization: %s"},
+  {"GENRE=", "Genre: %s"},
+  {"DESCRIPTION=", "Description: %s"},
+  {"DATE=", "Date: %s"},
+  {"LOCATION=", "Location: %s"},
+  {"COPYRIGHT=", "Copyright %s"},
   {NULL, NULL}
 };
 
@@ -97,12 +97,7 @@ int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, char *filename, cha
     }
   else
     {
-      int len = 80 + strlen(filename) + strlen(line);
-      char *buf = malloc (len);
-      if (!buf) { perror ("malloc"); return -1; }
-      snprintf (buf, len, "Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
-      ShowMessage (0, 0, buf);
-      free(buf);
+      Error ("Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
       return 0;
     }
 }
@@ -212,6 +207,10 @@ void SetBufferStats (buf_t *buf, char *strbuf)
     cur += sprintf (cur, "%sInactive", sep);
     sep = comma;
   }
+  if (buf->eos) {
+    cur += sprintf (cur, "%sEOS", sep);
+    sep = comma;
+  }
   if (cur != strbuf)
     cur += sprintf (cur, ")");
 }
@@ -250,8 +249,8 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   SetTime (Options.statOpts.stats, cursample);
   SetBuffersStats ();
   UpdateStats (Options.statOpts.stats);
-  cursample += size * nmemb / Options.outputOpts.channels / 2; /* locked to 16-bit */
-  
+  cursample += Options.playOpts.nth * size * nmemb / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
+
   if (iseos)
     cursample = 0;
   return devices_write (ptr, size, nmemb, Options.outputOpts.devices);
@@ -261,41 +260,44 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
 
 void usage(void)
 {
-  FILE *o = stderr;
   int i, driver_count;
   ao_info **devices = ao_driver_info_list(&driver_count);
   
-  fprintf(o,
-	  "Ogg123 from " PACKAGE " " VERSION "\n"
-	  " by Kenneth Arnold <kcarnold@arnoldnet.net> and others\n\n"
-	  "Usage: ogg123 [<options>] <input file> ...\n\n"
-	  "  -h, --help     this help\n"
-	  "  -V, --version  display Ogg123 version\n"
-	  "  -d, --device=d uses 'd' as an output device\n"
-	  "      Possible devices are:\n"
-	  "        ");
+  Error ("Ogg123 from " PACKAGE " " VERSION "\n"
+	 " by Kenneth Arnold <kcarnold@arnoldnet.net> and others\n\n"
+	 "Usage: ogg123 [<options>] <input file> ...\n\n"
+	 "  -h, --help     this help\n"
+	 "  -V, --version  display Ogg123 version\n"
+	 "  -d, --device=d uses 'd' as an output device\n"
+	 "      Possible devices are ('*'=live, '@'=file):\n"
+	 "        ");
   
-  for(i = 0; i < driver_count; i++)
-    fprintf(o,"%s ",devices[i]->short_name);
+  for(i = 0; i < driver_count; i++) {
+    Error ("%s", devices[i]->short_name);
+    if (devices[i]->type == AO_TYPE_LIVE)
+      Error ("*");
+    else if (devices[i]->type == AO_TYPE_FILE)
+      Error ("@");
+    Error (" ");
+  }
+
+  Error ("\n");
   
-  fprintf(o,"\n");
-  
-  fprintf(o,
-	  "  -f, --file=filename  Set the output filename for a previously\n"
-	  "      specified file device (with -d).\n"
-	  "  -k n, --skip n  Skip the first 'n' seconds\n"
-	  "  -o, --device-option=k:v passes special option k with value\n"
-	  "      v to previously specified device (with -d).  See\n"
-	  "      man page for more info.\n"
-	  "  -b n, --buffer n  use a buffer of approximately 'n' kilobytes\n"
-	  "  -p n, --prebuffer n  prebuffer n%% of the buffer before playing\n"
-	  "  -v, --verbose  display progress and other status information\n"
-	  "  -q, --quiet    don't display anything (no title)\n"
-	  "  -z, --shuffle  shuffle play\n"
-	  "\n"
-	  "ogg123 will skip to the next song on SIGINT (Ctrl-C) after s seconds after\n"
-	  "song start.\n"
-	  "  -l, --delay=s  set s (default 1). If s=-1, disable song skip.\n");
+  Error ("  -f, --file=filename  Set the output filename for a previously\n"
+	 "      specified file device (with -d).\n"
+	 "  -k n, --skip n  Skip the first 'n' seconds\n"
+	 "  -o, --device-option=k:v passes special option k with value\n"
+	 "      v to previously specified device (with -d).  See\n"
+	 "      man page for more info.\n"
+	 "  -b n, --buffer n  use a buffer of approximately 'n' kilobytes\n"
+	 "  -p n, --prebuffer n  prebuffer n%% of the buffer before playing\n"
+	 "  -v, --verbose  display progress and other status information\n"
+	 "  -q, --quiet    don't display anything (no title)\n"
+	 "  -z, --shuffle  shuffle play\n"
+	 "\n"
+	 "ogg123 will skip to the next song on SIGINT (Ctrl-C) after s seconds after\n"
+	 "song start.\n"
+	 "  -l, --delay=s  set s (default 1). If s=-1, disable song skip.\n");
 }
 
 int main(int argc, char **argv)
@@ -321,8 +323,7 @@ int main(int argc, char **argv)
     /* found, name, description, type, ptr, default */
     {0, "default_device", "default output device", opt_type_string, &Options.outputOpts.default_device, NULL},
     {0, "shuffle",        "shuffle playlist",      opt_type_char,   &Options.playOpts.shuffle,        &char_n},
-    {0, "verbose",        "be verbose",            opt_type_int,    &Options.statOpts.verbose,        &int_0},
-    {0, "quiet",          "be quiet",              opt_type_int,    &Options.statOpts.quiet,          &int_0},
+    {0, "verbose",        "verbosity level",       opt_type_int,    &Options.statOpts.verbose,        &int_1},
     {0, "outbuffer",      "out buffer size (kB)",  opt_type_int,    &Options.outputOpts.BufferSize, &int_0},
     {0, "outprebuffer",   "out prebuffer (%)",     opt_type_float,  &Options.outputOpts.Prebuffer,   &float_0f},
     {0, "inbuffer",       "in buffer size (kB)",   opt_type_int,    &Options.inputOpts.BufferSize, &int_10000},
@@ -333,9 +334,9 @@ int main(int argc, char **argv)
   };
   /* *INDENT-ON* */
 
-  Options.playOpts.delay = 1;
   Options.playOpts.nth = 1;
   Options.playOpts.ntimes = 1;
+  Options.statOpts.verbose = 1;
 
   on_exit (ogg123_onexit, &Options);
   signal (SIGINT, SigHandler);
@@ -352,9 +353,8 @@ int main(int argc, char **argv)
 				    long_options, &option_index))) {
 	switch (ret) {
 	case 0:
-	    fprintf(stderr,
-		    "Internal error: long option given when none expected.\n");
-	    exit(1);
+	  Error ("Internal error: long option given when none expected.\n");
+	  exit(1);
 	case 'b':
 	  Options.outputOpts.BufferSize = atoi(optarg);
 	  break;
@@ -364,13 +364,13 @@ int main(int argc, char **argv)
 	      char *tmp = strdup (optarg);
 	      ParseCode pcode = ParseLine (opts, tmp);
 	      if (pcode != parse_ok)
-		fprintf (stderr,
-			 "Error parsing config option from command line.\n"
-			 "Error: %s\n"
-			 "Option was: %s\n", ParseErr (pcode), optarg);
+		Error ("Error parsing config option from command line.\n"
+		       "Error: %s\n"
+		       "Option was: %s\n", ParseErr (pcode), optarg);
 	      free (tmp);
 	    }
 	  else {
+	    /* not using the status interface here */
 	    fprintf (stdout, "Available options:\n");
 	    DescribeOptions (opts, stdout);
 	    exit (0);
@@ -379,7 +379,7 @@ int main(int argc, char **argv)
 	case 'd':
 	    temp_driver_id = ao_driver_id(optarg);
 	    if (temp_driver_id < 0) {
-		fprintf(stderr, "No such device %s.\n", optarg);
+		Error ("No such device %s.\n", optarg);
 		exit(1);
 	    }
 	    current = append_device(Options.outputOpts.devices, temp_driver_id, 
@@ -395,12 +395,12 @@ int main(int argc, char **argv)
 	      free(current->filename);
 	      current->filename = strdup(optarg);
 	    } else {
-	      fprintf(stderr, "Driver %s is not a file output driver.\n",
-		      info->short_name);
+	      Error ("Driver %s is not a file output driver.\n",
+		     info->short_name);
 	      exit(1);
 	    }
 	  } else {
-	    fprintf (stderr, "Cannot specify output file without specifying a driver.\n");
+	    Error ("Cannot specify output file without specifying a driver.\n");
 	    exit (1);
 	  }
 	  break;
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 	    break;
 	case 'o':
 	    if (optarg && !add_option(current_options, optarg)) {
-		fprintf(stderr, "Incorrect option format: %s.\n", optarg);
+		Error ("Incorrect option format: %s.\n", optarg);
 		exit(1);
 	    }
 	    break;
@@ -423,24 +423,32 @@ int main(int argc, char **argv)
 	  Options.outputOpts.Prebuffer = atof (optarg);
 	  if (Options.outputOpts.Prebuffer < 0.0f || Options.outputOpts.Prebuffer > 100.0f)
 	    {
-	      fprintf (stderr, "Prebuffer value invalid. Range is 0-100, using nearest value.\n");
+	      Error ("Prebuffer value invalid. Range is 0-100, using nearest value.\n");
 	      Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer < 0.0f ? 0.0f : 100.0f;
 	    }
 	  break;
 	case 'q':
-	    Options.statOpts.quiet++;
-	    break;
+	  Options.statOpts.verbose = 0;
+	  break;
 	case 'v':
-	    Options.statOpts.verbose++;
-	    break;
+	  Options.statOpts.verbose++;
+	  break;
 	case 'V':
-	    fprintf(stderr, "Ogg123 from " PACKAGE " " VERSION "\n");
-	    exit(0);
+	  Error ("Ogg123 from " PACKAGE " " VERSION "\n");
+	  exit(0);
 	case 'x':
 	  Options.playOpts.nth = atoi (optarg);
+	  if (Options.playOpts.nth == 0) {
+	    Error ("Cannot play every 0th chunk!\n");
+	    Options.playOpts.nth = 1;
+	  }
 	  break;
 	case 'y':
 	  Options.playOpts.ntimes = atoi (optarg);
+	  if (Options.playOpts.ntimes == 0) {
+	    Error ("Cannot play every chunk 0 times. To do a test decode, use the null output driver.\n");
+	    Options.playOpts.ntimes = 1;
+	  }
 	  break;
 	case 'z':
 	    Options.playOpts.shuffle = 1;
@@ -464,8 +472,8 @@ int main(int argc, char **argv)
     if (temp_driver_id < 0) {
       if (Options.outputOpts.default_device) {
 	temp_driver_id = ao_driver_id (Options.outputOpts.default_device);
-	if (temp_driver_id < 0 && Options.statOpts.quiet < 2)
-	  fprintf (stderr, "Warning: driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
+	if (temp_driver_id < 0)
+	  Error ("Warning: driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
       }
       
       if (temp_driver_id < 0) {
@@ -473,8 +481,7 @@ int main(int argc, char **argv)
       }
       
       if (temp_driver_id < 0) {
-	fprintf(stderr,
-		"Could not load default driver and no driver specified in config file. Exiting.\n");
+	Error ("Could not load default driver and no driver specified in config file. Exiting.\n");
 	exit(1);
       }
 
@@ -600,8 +607,7 @@ void play_file()
   if (tmp < 10 && tmp + 2 < strlen(Options.playOpts.read_file) && !strncmp(Options.playOpts.read_file + tmp, "://", 3))
     {
       /* let's call this a URL. */
-      if (Options.statOpts.quiet < 1)
-	fprintf (stderr, "Playing from stream %s\n", Options.playOpts.read_file);
+      ShowMessage (1, 0, 1, "Playing from stream %s", Options.playOpts.read_file);
       VorbisfileCallbacks.read_func = StreamBufferRead;
       VorbisfileCallbacks.seek_func = StreamBufferSeek;
       VorbisfileCallbacks.close_func = StreamBufferClose;
@@ -610,7 +616,7 @@ void play_file()
       Options.inputOpts.URL = Options.playOpts.read_file;
       Options.inputOpts.buffer = InitStream (Options.inputOpts);
       if ((ov_open_callbacks (Options.inputOpts.buffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
-	fprintf(stderr, "Error: input not an Ogg Vorbis audio stream.\n");
+	Error ("Error: input not an Ogg Vorbis audio stream.\n");
 	return;
       }
       Options.statOpts.stats[6].enabled = 1;
@@ -627,22 +633,20 @@ void play_file()
 #endif
       if (strcmp(Options.playOpts.read_file, "-"))
 	{
-	  if (Options.statOpts.quiet < 1)
-	    fprintf(stderr, "Playing from file %s.\n", Options.playOpts.read_file);
+	  ShowMessage (1, 0, 1, "Playing from file %s.", Options.playOpts.read_file);
 	  /* Open the file. */
 	  if ((InStream = fopen(Options.playOpts.read_file, "rb")) == NULL) {
-	    fprintf(stderr, "Error opening input file.\n");
+	    Error ("Error opening input file.\n");
 	    exit(1);
 	  }
 	}
       else
 	{
-	  if (Options.statOpts.quiet < 1)
-	    fprintf(stderr, "Playing from standard input.\n");
+	  ShowMessage (1, 0, 1, "Playing from standard input.");
 	  InStream = stdin;
 	}
       if ((ov_open (InStream, &vf, NULL, 0)) < 0) {
-	fprintf(stderr, "Error: input not an Ogg Vorbis audio stream.\n");
+	Error ("Error: input not an Ogg Vorbis audio stream.\n");
 	return;
       }
     }
@@ -657,6 +661,9 @@ void play_file()
       alarm(Options.playOpts.delay);
     }
     
+    if (Options.outputOpts.buffer)
+      buffer_NewStream (Options.outputOpts.buffer);
+    
     exit_requested = 0;
     
     while (!eof && !exit_requested) {
@@ -669,29 +676,28 @@ void play_file()
       if(open_audio_devices() < 0)
 	exit(1);
       
-      if (Options.statOpts.quiet < 1) {
-	if (eos && Options.statOpts.verbose) fprintf (stderr, "\r                                                                          \r\n");
-	for (i = 0; i < vc->comments; i++) {
-	  char *cc = vc->user_comments[i];	/* current comment */
-	  int i;
-	  
-	  for (i = 0; ogg_comment_keys[i].key != NULL; i++)
-	    if (!strncasecmp
-		(ogg_comment_keys[i].key, cc,
-		 strlen(ogg_comment_keys[i].key))) {
-	      fprintf(stderr, ogg_comment_keys[i].formatstr,
-		      cc + strlen(ogg_comment_keys[i].key));
-	      break;
-	    }
-	  if (ogg_comment_keys[i].key == NULL)
-	    fprintf(stderr, "Unrecognized comment: '%s'\n", cc);
-	}
+      for (i = 0; i < vc->comments; i++) {
+	char *cc = vc->user_comments[i];	/* current comment */
+	int i;
 	
-	fprintf(stderr, "\nBitstream is %d channel, %ldHz\n",
-		vi->channels, vi->rate);
-	if (Options.statOpts.verbose > 1)
-	  fprintf(stderr, "Encoded by: %s\n\n", vc->vendor);
+	for (i = 0; ogg_comment_keys[i].key != NULL; i++)
+	  if (!strncasecmp
+	      (ogg_comment_keys[i].key, cc,
+	       strlen(ogg_comment_keys[i].key))) {
+	    ShowMessage (1, 0, 1, ogg_comment_keys[i].formatstr,
+			 cc + strlen(ogg_comment_keys[i].key));
+	    break;
+	  }
+	if (ogg_comment_keys[i].key == NULL)
+	  ShowMessage (1, 0, 1, "Unrecognized comment: '%s'", cc);
       }
+      
+      ShowMessage (3, 0, 1, "Version is %d", vi->version);
+      ShowMessage (3, 0, 1, "Bitrate Hints: upper=%ld nominal=%ld lower=%ld window=%ld",
+		   vi->bitrate_upper, vi->bitrate_nominal, vi->bitrate_lower, vi->bitrate_window);
+      ShowMessage (2, 0, 1, "Bitstream is %d channel, %ldHz",
+		   vi->channels, vi->rate);
+      ShowMessage (2, 0, 1, "Encoded by: %s", vc->vendor);
       
       if (ov_seekable (&vf)) {
 	if ((realseekpos > ov_time_total(&vf, -1)) || (realseekpos < 0))
@@ -738,10 +744,10 @@ void play_file()
 	  if (Options.statOpts.verbose > 1) 
 	    /* we should be able to resync silently; if not there are 
 	       bigger problems. */
-	    fprintf (stderr, "Warning: hole in the stream; probably harmless\n");
+	    Error ("Warning: hole in the stream; probably harmless\n");
 	} else if (ret < 0) {
 	  /* Stream error */
-	  fprintf(stderr, "Error: libvorbis reported a stream error.\n");
+	  Error ("Error: libvorbis reported a stream error.\n");
 	} else {
 	  /* did we enter a new logical bitstream */
 	  if (old_section != current_section && old_section != -1)
@@ -815,8 +821,7 @@ void play_file()
       buffer_WaitForEmpty (Options.outputOpts.buffer);
     }
 
-    if (Options.statOpts.quiet < 1)
-      fprintf(stderr, "\nDone.\n");
+    ShowMessage (1, 1, 1, "Done.");
     
     if (exit_requested)
       exit (0);
@@ -849,10 +854,9 @@ int open_audio_devices()
     ao_info *info = ao_driver_info(current->driver_id);
     
     if (Options.statOpts.verbose > 0) {
-      fprintf(stderr, "Device:   %s\n", info->name);
-      fprintf(stderr, "Author:   %s\n", info->author);
-      fprintf(stderr, "Comments: %s\n", info->comment);
-      fprintf(stderr, "\n");	
+      ShowMessage (1, 0, 1, "Device:   %s", info->name);
+      ShowMessage (1, 0, 1, "Author:   %s", info->author);
+      ShowMessage (1, 0, 1, "Comments: %s\n", info->comment);
     }
     
     if (current->filename == NULL)
@@ -865,34 +869,34 @@ int open_audio_devices()
     if (current->device == NULL) {
       switch (errno) {
       case AO_ENODRIVER:
-	fprintf(stderr, "Error: Device not available.\n");
+	Error ("Error: Device not available.\n");
 	break;
       case AO_ENOTLIVE:
-	fprintf(stderr, "Error: %s requires an output filename to be specified with -f.\n", info->short_name);
+	Error ("Error: %s requires an output filename to be specified with -f.\n", info->short_name);
 	break;
       case AO_EBADOPTION:
-	fprintf(stderr, "Error: Unsupported option value to %s device.\n",
+	Error ("Error: Unsupported option value to %s device.\n",
 		info->short_name);
 	break;
       case AO_EOPENDEVICE:
-	fprintf(stderr, "Error: Cannot open device %s.\n",
+	Error ("Error: Cannot open device %s.\n",
 		info->short_name);
 	break;
       case AO_EFAIL:
-	fprintf(stderr, "Error: Device failure.\n");
+	Error ("Error: Device failure.\n");
 	break;
       case AO_ENOTFILE:
-	fprintf(stderr, "Error: An output file cannot be given for %s device.\n", info->short_name);
+	Error ("Error: An output file cannot be given for %s device.\n", info->short_name);
 	break;
       case AO_EOPENFILE:
-	fprintf(stderr, "Error: Cannot open file %s for writing.\n",
+	Error ("Error: Cannot open file %s for writing.\n",
 		current->filename);
 	break;
       case AO_EFILEEXISTS:
-	fprintf(stderr, "Error: File %s already exists.\n", current->filename);
+	Error ("Error: File %s already exists.\n", current->filename);
 	break;
       default:
-	fprintf(stderr, "Error: This error should never happen.  Panic!\n");
+	Error ("Error: This error should never happen.  Panic!\n");
 	break;
       }
 	

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.16 2001/08/13 21:00:41 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.17 2001/08/22 16:42:30 kcarnold Exp $
 
  ********************************************************************/
 
@@ -248,7 +248,7 @@ void* BufferFunc (void *arg)
 
       if (EOSApplies) {
 	if (tmpEOS != buf->eos) {
-	  /* EOS was signalled while we were playing, so that sample
+	  /* EOS was signalled or cleared while we were playing, so that sample
 	   * didn't get EOS set. Call write_func with no data, just
 	   * the right EOS flag. write_func is called here with the
 	   * locked; it better not take too long if size == nmemb == 0. */
@@ -456,6 +456,13 @@ void buffer_MarkEOS (buf_t *buf)
   buf->eos = 1;
   UNLOCK_MUTEX (buf->SizeMutex);
   UnPrebuffer (buf);
+  pthread_cond_signal (&buf->DataReadyCondition);
+}
+
+void buffer_NewStream (buf_t *buf)
+{
+  buf->eos = 0;
+  Prebuffer (buf);
   pthread_cond_signal (&buf->DataReadyCondition);
 }
 

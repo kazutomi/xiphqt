@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.2 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.3 2001/08/22 16:42:31 kcarnold Exp $
 
  ********************************************************************/
 
@@ -47,7 +47,7 @@ void InitOpts (Option_t opts[])
 	  break;
 	  
 	case opt_type_string:
-	  *(char **) opts->ptr = (char *) opts->dfl;
+	  *(char **) opts->ptr = *(char **) opts->dfl;
 	  break;
 	  
 	case opt_type_int:
@@ -379,7 +379,7 @@ void DescribeOptions (Option_t opts[], FILE *f)
 	  fputc (*(char *) opt->dfl, f);
 	  break;
 	case opt_type_string:
-	  fputs ((char *) opt->dfl, f);
+	  fputs (*(char **) opt->dfl, f);
 	  break;
 	case opt_type_int:
 	  fprintf (f, "%ld", *(long int *) opt->dfl);
