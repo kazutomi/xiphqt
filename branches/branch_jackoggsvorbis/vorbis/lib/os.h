@@ -14,7 +14,7 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os.h,v 1.9 2000/08/23 06:38:49 xiphmont Exp $
+ last mod: $Id: os.h,v 1.9.4.1 2000/09/07 07:42:57 jack Exp $
 
  ********************************************************************/
 
@@ -57,9 +57,4 @@
 #  define max(x,y)  ((x)<(y)?(y):(x))
 #endif
 
-#include "../include/vorbis/os_types.h"
-
 #endif /* _OS_H */
-
-
-
