@@ -109,7 +109,7 @@ def run(config, neuros, args):
             add_track(neuros, None, track,
                       recording=recording_source(track))
         if config.sort_database:
-            audio_db.pack(util.cmp_records)
+            audio_db.sort()
         neuros.close_db("audio")
 
         print "\nAdding HiSi clips to unidedhisi database..."
