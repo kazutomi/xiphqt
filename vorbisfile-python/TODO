@@ -1,0 +1,5 @@
+Things to add for 1.0
+---------------------
+* documentation strings
+* vorbisfile.py wrapper around _vorbisfile
+* comment access
