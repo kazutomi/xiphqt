@@ -147,6 +147,7 @@ static int oc_sb_run_unpack(oggpack_buffer *_opb){
 
 static int oc_block_run_unpack(oggpack_buffer *_opb){
   long bits;
+  long bits2;
   /*Coding scheme:
      Codeword             Run Length
      0x                      1-2
@@ -167,13 +168,10 @@ static int oc_block_run_unpack(oggpack_buffer *_opb){
     theora_read(_opb,2,&bits);
     return 7+(int)bits;
   }
-  theora_read1(_opb,&bits);
-  if(!bits){
-    theora_read(_opb,2,&bits);
-    return 11+bits;
-  }
-  theora_read(_opb,4,&bits);
-  return 15+bits;
+  theora_read(_opb,3,&bits);
+  if((bits&4)==0)return 11+bits;
+  theora_read(_opb,2,&bits2);
+  return 15+((bits&3)<<2)+bits2;
 }
 
 
@@ -1583,7 +1581,7 @@ static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,
   notstart=_fragy0>0;
   notdone=_fragy_end<fplane->nvfrags;
   /*We want to clear an extra row of variances, except at the end.*/
-  memset(variance+notstart*fplane->nhfrags,0,
+  memset(variance+(fplane->nhfrags&-notstart),0,
    (_fragy_end+notdone-_fragy0-notstart)*fplane->nhfrags*sizeof(variance[0]));
   /*Except for the first time, we want to point to the middle of the row.*/
   y=(_fragy0<<3)+(notstart<<2);
@@ -2008,21 +2006,28 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
         oc_state_borders_fill_rows(&_dec->state,refi,pli,
          (pipe.fragy0[pli]-sdelay<<3)-(sdelay<<1),
          (pipe.fragy_end[pli]-edelay<<3)-(edelay<<1));
-        sdelay+=notstart;
-        edelay+=notdone;
         /*Out-of-loop post-processing.*/
         pp_offset=3*(pli!=0);
         if(pipe.pp_level>=OC_PP_LEVEL_DEBLOCKY+pp_offset){
-          /*Perform de-blocking in the Y plane.*/
+          /*Perform de-blocking in one plane.*/
+          sdelay+=notstart;
+          edelay+=notdone;
           oc_dec_deblock_frag_rows(_dec,_dec->pp_frame_buf,
            _dec->state.ref_frame_bufs[refi],pli,
            pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
           if(pipe.pp_level>=OC_PP_LEVEL_DERINGY+pp_offset){
+            /*Perform de-ringing in one plane.*/
             sdelay+=notstart;
             edelay+=notdone;
             oc_dec_dering_frag_rows(_dec,_dec->pp_frame_buf,pli,
              pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
           }
+        }
+        /*If no post-processing is done, we still need to delay a row for the
+           loop filter, thanks to the strange filtering order VP3 chose.*/
+        else if(pipe.loop_filter){
+          sdelay+=notstart;
+          edelay+=notdone;
         }
         /*Compute the intersection of the available rows in all planes.
           If chroma is sub-sampled, the effect of each of its delays is

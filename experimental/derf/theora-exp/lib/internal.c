@@ -7,7 +7,9 @@
 
 
 /*A map from the index in the zig zag scan to the coefficient number in a
-   block.*/
+   block.
+  All zig zag indices beyond 63 are sent to coefficient 64, so that zero runs
+   past the end of a block in bogus streams get mapped to a known location.*/
 const int OC_FZIG_ZAG[128]={
    0, 1, 8,16, 9, 2, 3,10,
   17,24,32,25,18,11, 4, 5,
