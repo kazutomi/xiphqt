@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Compiler Requirements for Building VP3 Library on Windows PC</TITLE>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.04Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY LINK="#0000FF" VLINK="#800080" lang="EN-US" style="tab-interval:.5in">
+
+<H3><A HREF="#_Building_VP3_Code_1">Building VP3 Code Modules on the PC</A></H3>
+
+<H3><A HREF="#_Building_VP3_Code">Building VP3 Code Modules on the MAC</A></H3>
+
+<H3>&nbsp;</H3>
+
+<H1>Building VP3 Code Modules on the PC</H1>
+
+<P>To compile the VP3 code modules on windows PC, the following compilers/software
+with proper configurations are required: </P>
+
+<OL style='margin-top:0in' start=1 type=1>
+<LI>Microsoft Visual C++ 6.0 (Visual Studio 6.0)</LI>
+
+<LI>Microsoft Visual Studio 6.0 Service Pack 4</LI>
+
+<LI>Microsoft Visual C++ Processor Pack (VCPP). Its available at <A HREF="http://msdn.microsoft.com/vstudio/downloads/ppack/default.asp">http://msdn.microsoft.com/vstudio/downloads/ppack/default.asp</A>)</LI>
+
+<LI>Macro File for Microsoft Macro Assembler for Intel&reg; Streaming SIMD
+Extensions “iaxmm.inc”. Its available at: <A HREF="http://developer.intel.com/vtune/macropak/download.htm">http://developer.intel.com/vtune/macropak/download.htm</A>)</LI>
+
+<LI>QuickTime for Windows SDK version 4.0 . Its available</LI>
+
+<P><BR>
+<A HREF="http://developer.apple.com/quicktime">http://developer.apple.com/quicktime</A></P>
+</OL>
+
+<P>Once the system has been configured :<BR>
+<BR>
+</P>
+
+<LI>open the workspace \vp32\vp32.dsw using Microsoft Visual Studio&nbsp;<BR>
+<BR>
+</LI>
+
+<LI>select the video for windows codec project and then project\build&nbsp;<BR>
+<BR>
+</LI>
+
+<LI>select the quicktime codec and then project\build</LI>
+
+<P><BR>
+<B><FONT SIZE=+1>Notes: <BR>
+</FONT></B>&nbsp; </P>
+
+<UL>
+<LI><B>Microsoft Visual C++ Processor Pack <BR>
+</B><FONT SIZE=-1>The Processor pack provides support for Intel and AMD’s
+newest instruction sets on their newest processors in form of both C Intrinsic
+and inline assembly code. However, the previous version of the Processor
+Pack will generate “Internal Compiler Error” in compiling the VP3 library
+with default optimization settings.</FONT> <BR>
+<BR>
+</LI>
+
+<LI><B>Microsoft Visual Studio 6.0 Service <BR>
+</B>The installation of the Service Pack is required by the installation
+of Microsoft Visual C++ Processor Pack (VCPP). The SP4 provides the support
+to view the MMX and XMM registers in debug window. <BR>
+<BR>
+</LI>
+
+<LI><B>Assemblers <BR>
+</B>Microsoft now includes the MASM complier version 6.15, ML.exe and H2inc.exe,
+as part of the processor pack, so a separate installation of MASM is not
+required. However, the macro file for Intel&reg; Streaming SIMD Extensions
+is required to compile assembly files( *.asm ) using SSE instructions.
+<BR>
+<BR>
+</LI>
+
+<LI><B>Include Path for the macro file <BR>
+</B>The path to the file of “iaxmm.inc” should add into the settings of
+Visual studio through “tools-&gt;options-&gt;directories-&gt;include” <BR>
+<BR>
+</LI>
+
+<LI><B>Executable, Include and Lib Path for the quicktime codec must be
+set correctly in Visual Studio <BR>
+</B>The path to the quicktime sdk cincludes and component includes directory
+should be add into the settings of Visual studio through “tools-&gt;options-&gt;directories-&gt;include”
+, the path to the quicktime directory libraries should be added through
+“tools-&gt;options-&gt;directories-&gt;libraries”, and&nbsp; the path to
+the quicktime tools directory should be added through “tools-&gt;options-&gt;directories-&gt;executables”
+<BR>
+<BR>
+</LI>
+
+<LI><B>resource include file must be setup correctly for building the quicktime
+codec&nbsp; <BR>
+</B><I>NT or Win2K</I> add a new environment variable ( to your autoexec.bat
+on win98 or ME or to your system environment variables on NT, or 2000 :<BR>
+&nbsp; Rincludes = C:\qtwsdk\rincludes ( or whatever)&nbsp; <BR>
+<I>Other </I>add the following to the custom build line of dxlqt_codec.r<BR>
+-i c:\qtwsdk\rincludes (or whatever) <BR>
+<BR>
+</LI>
+</UL>
+
+<P><BR>
+&nbsp; </P>
+
+<H1><A NAME="_Building_VP3_Code"></A>Building VP3 Code Modules on the MAC</H1>
+
+<P><FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
+for OS 9 and Below:</FONT> </P>
+
+<LI>Codewarrior 5.3</LI>
+
+<LI>Universal Interfaces 3.3.2 or higher.</LI>
+
+<P><BR>
+<FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
+for OS X:</FONT> </P>
+
+<LI>Codewarrior 6, patched to 6.2.</LI>
+
+<LI>Universal Interfaces 3.4b10 or higher. (the project's access path for
+Universal Interfaces points at Universal3.4 inside CW6's MacOS Support
+folder)</LI>
+
+<P><BR>
+<FONT SIZE=+1>Once the system has been configured :</FONT> </P>
+
+<LI>open the workspace \vp32\vp32.mcp using CodeWarrior</LI>
+
+<LI>select the vp32 project and then build the library</LI>
+
+<LI>open the workspace file \vp32\Codecs\quicktime\mac\VP3QTCodec.CW53.mcp</LI>
+
+<LI>select the quicktime codec and then build</LI>
+
+</BODY>
+</HTML>
