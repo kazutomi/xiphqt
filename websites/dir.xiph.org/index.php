@@ -79,11 +79,17 @@ else {
 	$pagesize = $max_per_page;
 }
 
-function contentTypeLookup($content_type) {
+function contentTypeLookup($content_type, $server_subtype) {
 	if ($content_type == "application/x-ogg") {
 		return "Ogg Vorbis";
 	}
 	if ($content_type == "application/ogg") {
+		if (preg_match("/theora/i", $server_subtype)) {
+			return "Ogg Theora";
+		}
+		else if (preg_match("/vorbis/i", $server_subtype)) {
+			return "Ogg Vorbis";
+		}
 		return "Ogg Vorbis";
 	}
 	if ($content_type == "audio/mpeg") {
@@ -106,7 +112,6 @@ function contentTypeLookup($content_type) {
 function getPrevLink($current, $pagesize, $rowcounter) {
 	global $search;
 	global $sgenre;
-	global $stype;
 
 	if (($current - $pagesize) < 0) {
 		$prev = -1;
@@ -121,9 +126,6 @@ function getPrevLink($current, $pagesize, $rowcounter) {
 	if ($sgenre) {
 		$extra .= "&sgenre=".urlencode($sgenre);
 	}
-	if ($stype) {
-		$extra .= "&stype=".urlencode($stype);
-	}
 	if ($prev >= 0) {
 		return "<a class=\"nav\" href=\"?start=$prev&num=$pagesize$extra\"><font size=3>Prev</font></a>";
 	}
@@ -134,7 +136,6 @@ function getPrevLink($current, $pagesize, $rowcounter) {
 function getNextLink($current, $pagesize, $rowcounter) {
 	global $search;
 	global $sgenre;
-	global $stype;
 
 	if ($rowcounter < $pagesize) {
 		return "";
@@ -146,9 +147,6 @@ function getNextLink($current, $pagesize, $rowcounter) {
 	}
 	if ($sgenre) {
 		$extra .= "&sgenre=".urlencode($sgenre);
-	}
-	if ($stype) {
-		$extra .= "&stype=".urlencode($stype);
 	}
 	return "<a class=\"nav\" href=\"?start=$next&num=$pagesize$extra\"><font size=3>Next</font></a>";
 }
@@ -213,7 +211,7 @@ function buildStreamDescription($listeners, $url, $server_name, $bgcolor) {
 ';
 	return $streamLine;
 }
-function buildStreamLine($server_name,$listen_url, $genre, $listeners, $description, $current_song, $server_type, $bitrate, $samplerate, $channels, $stream_id, $bgcolor) {
+function buildStreamLine($server_name,$listen_url, $genre, $listeners, $description, $current_song, $server_type, $server_subtype, $bitrate, $samplerate, $channels, $stream_id, $bgcolor, $clustercount, $playlist_id) {
 	if ($channels == "1") {
 		$channels = "Mono";
 	}
@@ -221,7 +219,7 @@ function buildStreamLine($server_name,$listen_url, $genre, $listeners, $descript
 		$channels = "Stereo";
 	}
 	$mountpoint = preg_replace("/^http:\/\/.*:.*\//", "/", $listen_url);
-	$server_type = contentTypeLookup($server_type);
+	$server_type = contentTypeLookup($server_type, $server_subtype);
 	$channels = str_replace(" ", "", $channels);
 	$channels = str_replace("\r\n", "", $channels);
 	if ($channels == "1") {
@@ -278,13 +276,20 @@ function buildStreamLine($server_name,$listen_url, $genre, $listeners, $descript
 	if (($samplerate == "0") || ($channels == "0")) {
 		$audio_info = "Unknown";
 	}
+	$clustertext = "";
+	if ($clustercount > 1) {
+		$clustertext = '<font color="#CCCCFF">Cluster</font>';
+	}
 	if ($server_name != $description) {
 		$description_tag = '<font color="#AAAAAA">'.$description.'</font><br>';
 	}
+	else {
+		$description_tag = '<br>';
+	}
 	$streamLine = '
 	<tr>
-		<td class="streamtd_alt" width=75 valign="middle" bgcolor="'.$bgcolor.'" ><center><a href="listen.php?serverURL='.urlencode($listen_url).'&file=listen.m3u" alt="'.$server_type.'" title="'.$server_type.'" class="listen_a"><div id="listen">'.$server_type.'</div></a></center></td>
-		<td class="streamtd_alt" bgcolor="'.$bgcolor.'">'.$description_tag.'Now playing on <a class="streamtd_alt_2" href="listen.php?serverURL='.urlencode($listen_url).'&file=listen.m3u">'.$mountpoint.'</a> :&nbsp;&nbsp;<font color=yellow>'.substr($current_song, 0, 100).'</font></td>
+		<td class="streamtd_alt" width=75 valign="middle" bgcolor="'.$bgcolor.'" ><center>'.$clustertext.'<a href="listen.php?pid='.$playlist_id.'&file=listen.m3u" alt="'.$server_type.'" title="'.$server_type.'" class="listen_a"><div id="listen">'.$server_type.'</div></a></center></td>
+		<td class="streamtd_alt" bgcolor="'.$bgcolor.'">'.$description_tag.'Now playing on <a class="streamtd_alt_2" href="listen.php?pid='.$playlist_id.'&file=listen.m3u">'.$mountpoint.'</a> :&nbsp;&nbsp;<font color=yellow>'.substr($current_song, 0, 100).'</font></td>
 		<td class="streamtd_alt" width=75 bgcolor="'.$bgcolor.'"> <center><font color=white>'.substr($genre, 0, 30).'</font></td>
 		<td class="streamtd_alt" width=150 bgcolor="'.$bgcolor.'"><center>'.$audio_info.'</td>
 	</tr>
@@ -376,7 +381,10 @@ while ($row = mysql_fetch_row($result)) {
 	}
 	if ($server_name != "") {
 		$all_listeners = $listeners;
-		$query = "select description, genre, url, current_song, listen_url, server_type, bitrate, samplerate, channels, listeners+0, parent_id, id from server_details where parent_id = $id $subquery";
+		$clustercount = 1;
+	
+
+		$query = "select description, genre, url, current_song, listen_url, server_type, bitrate, samplerate, channels, listeners+0, parent_id, id, playlist_id, server_subtype from server_details where parent_id = $id $subquery group by cluster_password";
 		
 		$streamDetailsLine = "";
 		$result2 = mysql_query($query);
@@ -401,8 +409,14 @@ while ($row = mysql_fetch_row($result)) {
 			$listeners = htmlentities($row2[9]);
 			$cluster_id = htmlentities($row2[10]);
 			$stream_id = htmlentities($row2[11]);
+			$playlist_id = $row2[12];
+			$server_subtype = htmlentities($row2[13]);
 			$total_listeners = $total_listeners + $listeners;
-			$streamDetailsLine .= buildStreamLine($server_name, $listen_url_raw, $genre, $listeners, $description, $current_song, $server_type, $bitrate, $samplerate, $channels, $stream_id, $bgcolor);
+			$query2 = "select count(*) from playlists where id = $playlist_id";
+			$result3 = mysql_query($query2);
+			$row3 = mysql_fetch_row($result3);
+			$clustercount = $row3[0];
+			$streamDetailsLine .= buildStreamLine($server_name, $listen_url_raw, $genre, $listeners, $description, $current_song, $server_type, $server_subtype, $bitrate, $samplerate, $channels, $stream_id, $bgcolor, $clustercount, $playlist_id);
 		}
 		$streamDescriptionLine = buildStreamDescription($all_listeners, $url, $server_name, $bgcolor);
 		$directory_data .= '
@@ -436,7 +450,8 @@ print $nav_text;
 <td class="streamtd" valign=top align=right>
 <b>Search</b><br>
 <form method=GET action=index.php>
-Genre<br><select style="font-size:8pt" name=sgenre>
+Genre<br>
+<select style="font-size:8pt" name=sgenre>
 <option>
 <option value="Alternative">Alternative
 <option value="Classical">Classical
@@ -470,4 +485,3 @@ Total Servers: <? print getTotalServers(); ?>
 </table>
 </body>
 </html>
-
