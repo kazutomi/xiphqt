@@ -4,6 +4,7 @@ configure
 aclocal.m4
 config.cache
 config.guess
+config.h.in
 config.log
 config.status
 config.sub
@@ -22,6 +23,3 @@ mkinstalldirs
 *.so
 .libs
 .deps
-*.tar.gz
-*.zip
-ogg-config
