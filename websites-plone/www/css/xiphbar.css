@@ -1,0 +1,43 @@
+body {
+	margin: 0;
+	border: 0;
+	padding: 0;
+}
+
+.xiphbar {
+	background-color: #606160;
+}
+
+
+.xiphbar img {
+	margin: 0;
+	border: 0;
+	padding: .4em 0 0 12px;
+	float: left;
+	text-transform: lowercase;
+}
+
+
+
+.sites {
+	margin: 0;
+	border: 0;
+	padding: .23em 12px .45em 0;
+	text-align: right;
+	text-transform: uppercase;
+}
+
+.sites li {
+	margin: 0;
+	border: 0;
+	padding: 0 10px 0 0;
+	display: inline;
+	list-style: none;
+}
+
+.sites a {
+	color: #FFCE67;
+	text-decoration: none;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: .6em;
+}

@@ -1,0 +1,93 @@
+@import url(xiphbar.css);
+
+body {
+	margin: 0;
+	border: 0;
+	padding: 0;
+}
+
+.logos {
+	padding: 72px 0 0 47px;
+}
+
+.thepage {
+	margin: 8px 0 0 0;
+	border: 0;
+	padding: 0 0 0 80px;
+	position: absolute;
+}
+
+.leftside {
+	margin: 0;
+	border: 0;
+	border-right: 1px solid #9FC0D7;
+	padding: 1em 1em 1em 0;
+	position: absolute;
+	width: 8em;
+	min-height: 15em;
+	height: 100%;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.leftside ul {
+	margin: 0;
+	padding: 0;
+}
+
+.leftside li {
+	text-align: right;
+	font-size: .7em;
+	list-style: none;
+}
+
+.leftside li a {
+	font-weight: bold;
+	color: #3366CC;
+	text-decoration: none;
+	line-height: 0;
+}
+
+.leftspacer {
+	height: 10em;
+}
+
+.copyright {
+	position: absolute;
+	bottom: 0;
+	text-align: right;
+	font-size: .6em;
+	color: #999999;
+}
+
+.content {
+	margin: 0;
+	padding: 0 0 0 10em;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+h2 {
+	font-size: 1em;
+	color: #FF9900;
+}
+
+.newslist {
+	margin: 0;
+	padding: 0;
+}
+
+.newslist li {
+	margin-bottom: .5em;
+	list-style: none;
+	font-size: .7em;
+	color: #3366CC;
+}
+
+.newslist a {
+	color: #3366CC;
+	line-height: 0;
+}
+
+.xiph {
+	color: #FF9900;
+	font-weight: bold;
+}
