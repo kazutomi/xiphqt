@@ -37,8 +37,7 @@
 #include <signal.h>
 #include <curses.h>
 #include <fcntl.h>
-
-#include <sys/soundcard.h>
+#include <alsa/asoundlib.h>
 #include <sys/ioctl.h>
 
 /* we need some cooperative multitasking to eliminate locking (and
@@ -78,19 +77,19 @@ static char *tempdir="/tmp/beaverphonic/";
 static char *lockfile="/tmp/beaverphonic/lock";
 //static char *installdir="/usr/local/beaverphonic/";
 static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
-#define VERSION "$Id: soundboard.c,v 1.13 2003/10/02 17:11:58 xiphmont Exp $"
+#define VERSION "$Id$"
 
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
-#define MAX_CHANNELS 4
+#define MAX_CHANNELS 12
 
-#define OUTPUT_CHANNELS1 4
-#define OUTPUT_CHANNELS2 0
+#define OUTPUT_CHANNELS1 2
+#define OUTPUT_CHANNELS2 2
 
-#define INPUT_CHANNELS1 0
-#define INPUT_CHANNELS2 0
+#define INPUT_CHANNELS1 6
+#define INPUT_CHANNELS2 6
 #define INPUT_SAMPLE_BYTES 2
-#define INPUT_SAMPLE_FMT AFMT_S16_LE
+#define INPUT_SAMPLE_FMT SND_PCM_FORMAT_S16_LE
 
 
 #define MAX_INPUT_CHANNELS (INPUT_CHANNELS1+INPUT_CHANNELS2)
@@ -109,23 +108,28 @@ typedef struct {
   
 static outchannel channel_list[MAX_OUTPUT_CHANNELS]={
   {"house L",0},
-  {"center L",0},
-  {"center R",0},
   {"house R",0},
-  {"",0},
-  {"",0},
-  {"",0},
-  {"",0},
-};
-static outchannel rchannel_list[8]={
-  {"1",0},
-  {"2",0},
   {"3",0},
   {"4",0},
   {"5",0},
   {"6",0},
   {"7",0},
   {"8",0},
+};
+static outchannel rchannel_list[MAX_INPUT_CHANNELS]={
+  {"drums L",0},
+  {"drums R",0},
+  {"guitar 1",0},
+  {"guitar 2",0},
+  {"keyboard L",0},
+  {"keyboard R",0},
+
+  {"bass",0},
+  {"upstage L",0},
+  {"upstage R",0},
+  {"house L",0},
+  {"house R",0},
+  {"vocal",0},
 };
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
@@ -138,6 +142,7 @@ pthread_cond_t cache_cond=PTHREAD_COND_INITIALIZER;
 static long main_master_volume=50;
 char *program;
 static int playback_buffer_minfill=0;
+static int playback_buffer_starve=0;
 static int running=1;
 static enum menutype menu=MENU_MAIN;
 static int cue_list_position=0;
@@ -145,15 +150,15 @@ static int cue_list_number=0;
 static int firstsave=0;
 static int unsaved=0;
 
-static char *playdevice1="/dev/dsp";
-static char *playdevice2="/dev/dsp2";
-static FILE *playfd1=NULL;
-static FILE *playfd2=NULL;
+static char *playdevice1="hw:1,0";
+static char *playdevice2="hw:2,0";
+static snd_pcm_t *playhandle1=NULL;
+static snd_pcm_t *playhandle2=NULL;
 
-static char *recdevice1="/dev/dsp1";
-static char *recdevice2="/dev/dsp2";
-static FILE *recfd1=NULL;
-static FILE *recfd2=NULL;
+static char *recdevice1="hw:1,0";
+static char *recdevice2="hw:2,0";
+static snd_pcm_t *rechandle1=NULL;
+static snd_pcm_t *rechandle2=NULL;
 int ttyfd;
 int ttypipe[2];
 
@@ -853,8 +858,9 @@ int save_program(FILE *f){
 
 /*************** threaded record ****************************/
 
-#define REC_BLOCK1 (INPUT_CHANNELS1 * INPUT_SAMPLE_BYTES * 512) 
-#define REC_BLOCK2 (INPUT_CHANNELS2 * INPUT_SAMPLE_BYTES * 512) 
+#define RECBUFFER 512
+#define REC_BLOCK1 (INPUT_CHANNELS1 * INPUT_SAMPLE_BYTES * RECBUFFER) 
+#define REC_BLOCK2 (INPUT_CHANNELS2 * INPUT_SAMPLE_BYTES * RECBUFFER) 
 #define REC_BLOCK  (REC_BLOCK1 + REC_BLOCK2)
 unsigned char recordbuffer1[REC_BLOCK1];
 unsigned char recordbuffer2[REC_BLOCK2];
@@ -874,6 +880,7 @@ int rec_flush_ok=0;
 
 int rec_buffer_disk_min=100;
 int rec_buffer_dma_min=100;
+int rec_dmabuffer_starve=0;
 
 /* writes a wav header without the length set. */
 void PutNumLE(long num,FILE *f,int bytes){
@@ -906,7 +913,7 @@ void *record_disk_thread(void *dummy){
   struct sched_param param;
   param.sched_priority=78;
   if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
-    fprintf(stderr,"Could not set realtime priority for caching; am I suid root?\n");
+    fprintf(stderr,"Could not set realtime priority for record flush; am I suid root?\n");
     exit(1);
   }
 
@@ -933,23 +940,14 @@ void *record_disk_thread(void *dummy){
 	  /* wait for it */
 	  pthread_cond_wait(&rec_buffer_cond,&rec_buffer_mutex);
 	  pthread_mutex_unlock(&rec_buffer_mutex);
-	  pthread_mutex_lock(&rec_mutex);
 	}else{
 	  pthread_mutex_unlock(&rec_buffer_mutex);
-	  pthread_mutex_lock(&rec_mutex);
 	  break;
 	}
 
 	if(rec_exit)break;
-	pthread_mutex_unlock(&rec_mutex);
 
       }
-      /* rec mutex lock fell through */
-      {
-	int percent=rint(100.-record_count*100./sizeof(recordbuffer));
-	if(rec_buffer_disk_min>percent)rec_buffer_disk_min=percent;
-      }
-      pthread_mutex_unlock(&rec_mutex);
 
       /* flush to disk */
 
@@ -1025,19 +1023,14 @@ void *record_thread(void *dummy){
   /* sound device startup */
   int i,j;
 
-#if (INPUT_CHANNELS1)
-  int fd1=fileno(recfd1);
-#endif
-#if (INPUT_CHANNELS2)
-  int fd2=fileno(recfd2);
-#endif
   int format=INPUT_SAMPLE_FMT;
   int channels1=INPUT_CHANNELS1;
   int channels2=INPUT_CHANNELS2;
   int rate=44100;
-  long totalsize[2];
+  int totalsize[2]={0,0};
   int ret;
-  audio_buf_info info,info2;
+  snd_pcm_uframes_t frames;
+  snd_pcm_sframes_t sframes;
 
   struct sched_param param;
   param.sched_priority=89;
@@ -1047,42 +1040,144 @@ void *record_thread(void *dummy){
   }
 
 #if (INPUT_CHANNELS1)
-  ret=ioctl(fd1,SNDCTL_DSP_SETFMT,&format);
-  if(ret || format!=INPUT_SAMPLE_FMT){
-    fprintf(stderr,"Could not set recording format\n");
-    exit(1);
+  {
+    snd_pcm_hw_params_t *hw;
+    if ((ret = snd_pcm_hw_params_malloc (&hw)) < 0) {
+      fprintf (stderr, "capture 1 cannot allocate hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_any (rechandle1, hw)) < 0) {
+      fprintf (stderr, "capture 1 cannot initialize hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    if ((ret = snd_pcm_hw_params_set_access (rechandle1, hw, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+      fprintf (stderr, "capture 1 cannot set access type (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_format (rechandle1, hw, format)) < 0) {
+      fprintf (stderr, "capture 1 cannot set sample format (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    if ((ret = snd_pcm_hw_params_set_rate (rechandle1, hw, rate, 0)) < 0) {
+      fprintf (stderr, "capture 1 cannot set sample rate (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_channels (rechandle1, hw, channels1)) < 0) {
+      fprintf (stderr, "capture 1 cannot set channel count (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params (rechandle1, hw)) < 0) {
+      fprintf (stderr, "capture 1 cannot set parameters (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    {
+      if((ret = snd_pcm_hw_params_get_buffer_size(hw,&frames)) < 0){
+	fprintf (stderr, "capture 1 cannot query buffer size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+      
+      totalsize[0] = frames;
+    }
+
+    snd_pcm_hw_params_free (hw);
+    
+    if ((ret = snd_pcm_prepare (rechandle1)) < 0) {
+      fprintf (stderr, "capture 1 cannot prepare audio interface for use (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
   }
-  ret=ioctl(fd1,SNDCTL_DSP_CHANNELS,&channels1);
-  if(ret || channels1!=INPUT_CHANNELS1){
-    fprintf(stderr,"Could not set %d channel recording\n",INPUT_CHANNELS1);
-    exit(1);
-  }
-  ret=ioctl(fd1,SNDCTL_DSP_SPEED,&rate);
-  if(ret || rate!=44100){
-    fprintf(stderr,"Could not set %dHz recording\n",44100);
-    exit(1);
-  }
-  ioctl(fd1,SNDCTL_DSP_GETISPACE,&info);
-  totalsize[0]=info.fragstotal*info.fragsize;
 #endif
+
 #if (INPUT_CHANNELS2)
-  ret=ioctl(fd2,SNDCTL_DSP_SETFMT,&format);
-  if(ret || format!=INPUT_SAMPLE_FMT){
-    fprintf(stderr,"Could not set recording format\n");
+  {
+    snd_pcm_hw_params_t *hw;
+    if ((ret = snd_pcm_hw_params_malloc (&hw)) < 0) {
+      fprintf (stderr, "capture 2 cannot allocate hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_any (rechandle2, hw)) < 0) {
+      fprintf (stderr, "capture 2 cannot initialize hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    if ((ret = snd_pcm_hw_params_set_access (rechandle2, hw, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+      fprintf (stderr, "capture 2 cannot set access type (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_format (rechandle2, hw, format)) < 0) {
+      fprintf (stderr, "capture 2 cannot set sample format (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    if ((ret = snd_pcm_hw_params_set_rate (rechandle2, hw, rate, 0)) < 0) {
+      fprintf (stderr, "capture 2 cannot set sample rate (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_channels (rechandle2, hw, channels2)) < 0) {
+      fprintf (stderr, "capture 2 cannot set channel count (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params (rechandle2, hw)) < 0) {
+      fprintf (stderr, "capture 2 cannot set parameters (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    {
+      if((ret = snd_pcm_hw_params_get_buffer_size(hw,&frames)) < 0){
+	fprintf (stderr, "capture 2 cannot query buffer size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+      
+      totalsize[1] = frames;
+    }
+
+    snd_pcm_hw_params_free (hw);
+    
+    if ((ret = snd_pcm_prepare (rechandle2)) < 0) {
+      fprintf (stderr, "capture 2 cannot prepare audio interface for use (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+  }
+
+#if (INPUT_CHANNELS1)
+
+  if ((ret = snd_pcm_link(rechandle1, rechandle2)) < 0) {
+    printf("record streams link error: %s\n", snd_strerror(ret));
     exit(1);
   }
-  ret=ioctl(fd2,SNDCTL_DSP_CHANNELS,&channels2);
-  if(ret || channels2!=INPUT_CHANNELS2){
-    fprintf(stderr,"Could not set %d channel recording\n",INPUT_CHANNELS2);
-    exit(1);
-  }
-  ret=ioctl(fd2,SNDCTL_DSP_SPEED,&rate);
-  if(ret || rate!=44100){
-    fprintf(stderr,"Could not set %dHz recording\n",44100);
-    exit(1);
-  }
-  ioctl(fd2,SNDCTL_DSP_GETISPACE,&info);
-  totalsize[1]=info.fragstotal*info.fragsize;
+
+#endif
 #endif
 
   pthread_create(&record_disk_thread_id,NULL,record_disk_thread,NULL);
@@ -1109,26 +1204,95 @@ void *record_thread(void *dummy){
 
     /* update ISPACE min */
 #if (INPUT_CHANNELS1)
-    ioctl(fd1,SNDCTL_DSP_GETISPACE,&info);
-    {
-      int percent1=rint((totalsize[0]-info.bytes)*100./totalsize[0]);
+    if(snd_pcm_delay (rechandle1, &sframes) ==0){
+      int percent1=rint((totalsize[0]-sframes)*100./totalsize[0]);
       if(rec_buffer_dma_min>percent1)rec_buffer_dma_min=percent1;
     }
 #endif
 #if (INPUT_CHANNELS2)
-    ioctl(fd2,SNDCTL_DSP_GETISPACE,&info2);
-    {
-      int percent2=rint((totalsize[1]-info2.bytes)*100./totalsize[1]);
+    if(snd_pcm_delay (rechandle2, &sframes) ==0){
+      int percent2=rint((totalsize[1]-sframes)*100./totalsize[1]);
       if(rec_buffer_dma_min>percent2)rec_buffer_dma_min=percent2;
     }
 #endif
 
+
+
 #if (INPUT_CHANNELS1)
-    fread(recordbuffer1,1,REC_BLOCK1,recfd1);
+    {
+      int frames=0;
+
+      while(frames<RECBUFFER){
+	ret = snd_pcm_readi (rechandle1,recordbuffer1+frames*channels1*INPUT_SAMPLE_BYTES,
+			     RECBUFFER-frames);
+
+	if(ret<0){
+	  // most likely an underrun
+	  switch(ret){
+	  case -EAGAIN:
+	    break;
+	  case -EPIPE: case -ESTRPIPE:
+	    // underrun; set starve and reset soft device
+	    rec_dmabuffer_starve=1;
+	    snd_pcm_drop(rechandle1);
+	    snd_pcm_prepare(rechandle1);
+	    frames=0; // start this frame over such that both channels are in sync
+
+	    break;
+	  case -EBADFD:
+	  default:
+	    // "well, shit." Don't hose the machine here in a realtime thread
+	    frames=RECBUFFER;
+	    rec_exit=1;
+	    fprintf (stderr, "capture1 read error (%s)\n",
+		     snd_strerror (ret));
+	    break;
+	  }
+	}else{
+	  frames+=ret;
+	}	
+      }
+    }
 #endif
 #if (INPUT_CHANNELS2)
-    fread(recordbuffer2,1,REC_BLOCK2,recfd2);
-#endif 
+    {
+      int frames=0;
+
+      while(frames<RECBUFFER){
+	ret = snd_pcm_readi (rechandle2,recordbuffer2+frames*channels2*INPUT_SAMPLE_BYTES,
+			     RECBUFFER-frames);
+	if(ret<0){
+	  // most likely an underrun
+	  switch(ret){
+	  case -EAGAIN:
+	    break;
+	  case -EPIPE: case -ESTRPIPE:
+	    // underrun; set starve and reset soft device
+	    rec_dmabuffer_starve=1;
+#if(INPUT_CHANNELS1)
+	    snd_pcm_drop(rechandle1); // operate on linked interface
+	    snd_pcm_prepare(rechandle1);
+#else
+	    snd_pcm_drop(rechandle2);
+	    snd_pcm_prepare(rechandle2);
+#endif
+	    frames=RECBUFFER; // abort this frame such that both channels are in sync
+	    break;
+	  case -EBADFD:
+	  default:
+	    // "well, shit." Don't hose the machine here in a realtime thread
+	    frames=RECBUFFER;
+	    rec_exit=1;
+	    fprintf (stderr, "capture2 read error (%s)\n",
+		     snd_strerror (ret));
+	    break;
+	  }
+	}else{
+	  frames+=ret;
+	}
+      }
+    }
+#endif
 
     pthread_mutex_lock(&rec_mutex);
     {
@@ -1163,6 +1327,10 @@ void *record_thread(void *dummy){
       record_head+=REC_BLOCK;
       if((unsigned)record_head>=sizeof(recordbuffer))record_head=0;
       record_count+=REC_BLOCK;
+      {
+	int percent=rint(100.-record_count*100./sizeof(recordbuffer));
+	if(rec_buffer_disk_min>percent)rec_buffer_disk_min=percent;
+      }
       pthread_cond_signal(&rec_buffer_cond);
       pthread_mutex_unlock(&rec_buffer_mutex);
     }else{
@@ -1503,6 +1671,8 @@ static inline void _next_sample(int16 *out1,int ch1,int16 *out2,int ch2){
       out1[i]=-32768;
     }else
       out1[i]=(int)(rint(staging[i]));
+
+    out1[i]= ((out1[i]<<8)&0xff00) | ((out1[i]>>8)&0xff);
   }
 
   for(i=0;i<ch2;i++){
@@ -1514,6 +1684,8 @@ static inline void _next_sample(int16 *out1,int ch1,int16 *out2,int ch2){
       out2[i]=-32768;
     }else
       out2[i]=(int)(rint(staging[i+ch1]));
+
+    out2[i]= ((out2[i]<<8)&0xff00) | ((out2[i]>>8)&0xff);
   }
 }
 
@@ -1526,24 +1698,19 @@ static int playback_exit=0;
 
 void *playback_thread(void *dummy){
   /* sound device startup */
-  audio_buf_info info;
-#if (OUTPUT_CHANNELS1)
-  int fd1=fileno(playfd1),i;
-#endif
-#if (OUTPUT_CHANNELS2)
-  int fd2=fileno(playfd2);
-#endif
-  int format=AFMT_S16_NE;
+  int i;
+  int format=SND_PCM_FORMAT_S16_LE;
   int channels1=OUTPUT_CHANNELS1;
   int channels2=OUTPUT_CHANNELS2;
   int rate=44100;
-  long last=0;
-  long delay=10;
-  long totalsize;
-  int fragment=0x7fff000d;
-  int16 audiobuf1[256*OUTPUT_CHANNELS1];
-  int16 audiobuf2[256*OUTPUT_CHANNELS2];
+  int last=0;
+  int totalsize;
+  int buffersize=1024;
+  int16 audiobuf1[buffersize*OUTPUT_CHANNELS1];
+  int16 audiobuf2[buffersize*OUTPUT_CHANNELS2];
   int ret;
+  snd_pcm_uframes_t frames;
+  snd_pcm_sframes_t sframes;
 
   /* realtime schedule setup */
   {
@@ -1556,92 +1723,281 @@ void *playback_thread(void *dummy){
   }
 
 #if (OUTPUT_CHANNELS1)
-  ioctl(fd1,SNDCTL_DSP_SETFRAGMENT,&fragment);
-  ret=ioctl(fd1,SNDCTL_DSP_SETFMT,&format);
-  if(ret || format!=AFMT_S16_NE){
-    fprintf(stderr,"Could not set AFMT_S16_NE playback\n");
-    exit(1);
+  {
+    snd_pcm_hw_params_t *hw;
+    if ((ret = snd_pcm_hw_params_malloc (&hw)) < 0) {
+      fprintf (stderr, "playback 1 cannot allocate hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+				 
+    if ((ret = snd_pcm_hw_params_any (playhandle1, hw)) < 0) {
+      fprintf (stderr, "playback 1 cannot initialize hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    if ((ret = snd_pcm_hw_params_set_access(playhandle1,hw,SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+      fprintf (stderr, "playback 1 cannot set access type (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_format (playhandle1, hw, format)) < 0) {
+      fprintf (stderr, "playback 1 cannot set sample format (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_rate(playhandle1, hw, rate, 0)) < 0) {
+      fprintf (stderr, "playback 1 cannot set sample rate (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_channels(playhandle1, hw, channels1)) < 0) {
+      fprintf (stderr, "playback 1 cannot set channel count (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    {
+      snd_pcm_uframes_t near=buffersize*2;
+      if((ret = snd_pcm_hw_params_set_buffer_size_near (playhandle1,hw,&near)) < 0){
+	fprintf (stderr, "playback 1 cannot set buffer size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+
+      near=buffersize/4;
+      if((ret = snd_pcm_hw_params_set_period_size_near (playhandle1,hw,&near,0)) < 0){
+	fprintf (stderr, "playback 1 cannot set period size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+    }
+
+    if ((ret = snd_pcm_hw_params (playhandle1, hw)) < 0) {
+      fprintf (stderr, "playback 1 cannot set parameters (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    {
+      if((ret = snd_pcm_hw_params_get_buffer_size(hw,&frames)) < 0){
+	fprintf (stderr, "playback 1 cannot query buffer size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+      
+      playback_buffer_minfill = totalsize = frames;
+    }
+
+    snd_pcm_hw_params_free (hw);
+	
+    if ((ret = snd_pcm_prepare (playhandle1)) < 0) {
+      fprintf (stderr, "playback 1 cannot prepare audio interface for use (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
   }
-  ret=ioctl(fd1,SNDCTL_DSP_CHANNELS,&channels1);
-  if(ret || channels1!=OUTPUT_CHANNELS1){
-    fprintf(stderr,"Could not set %d channel playback\n",OUTPUT_CHANNELS1);
-    exit(1);
-  }
-  ret=ioctl(fd1,SNDCTL_DSP_SPEED,&rate);
-  if(ret || rate!=44100){
-    fprintf(stderr,"Could not set %dHz playback\n",44100);
-    exit(1);
-  }
-  ioctl(fd1,SNDCTL_DSP_GETOSPACE,&info);
-  playback_buffer_minfill=totalsize=info.fragstotal*info.fragsize;
 #else
   totalsize=0;
 #endif
-#if (OUTPUT_CHANNELS2)  
-  ioctl(fd2,SNDCTL_DSP_SETFRAGMENT,&fragment);
-  ret=ioctl(fd2,SNDCTL_DSP_SETFMT,&format);
-  if(ret || format!=AFMT_S16_NE){
-    fprintf(stderr,"Could not set AFMT_S16_NE playback\n");
+
+#if (OUTPUT_CHANNELS2)
+  {
+    snd_pcm_hw_params_t *hw;
+    if ((ret = snd_pcm_hw_params_malloc (&hw)) < 0) {
+      fprintf (stderr, "playback 2 cannot allocate hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+				 
+    if ((ret = snd_pcm_hw_params_any (playhandle2, hw)) < 0) {
+      fprintf (stderr, "cannot initialize hardware parameter structure (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+	
+    if ((ret = snd_pcm_hw_params_set_access(playhandle2,hw,SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+      fprintf (stderr, "cannot set access type (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_format (playhandle2, hw, format)) < 0) {
+      fprintf (stderr, "cannot set sample format (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_rate(playhandle2, hw, rate, 0)) < 0) {
+      fprintf (stderr, "cannot set sample rate (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    if ((ret = snd_pcm_hw_params_set_channels(playhandle2, hw, channels2)) < 0) {
+      fprintf (stderr, "cannot set channel count (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    {
+      snd_pcm_uframes_t near=buffersize*2;
+      if((ret = snd_pcm_hw_params_set_buffer_size_near (playhandle2,hw,&near)) < 0){
+	fprintf (stderr, "playback 2 cannot set buffer size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+
+      near=buffersize/4;
+      if((ret = snd_pcm_hw_params_set_period_size_near (playhandle2,hw,&near,0)) < 0){
+	fprintf (stderr, "playback 2 cannot set period size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+    }
+
+    if ((ret = snd_pcm_hw_params (playhandle2, hw)) < 0) {
+      fprintf (stderr, "cannot set parameters (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+    
+    {
+      if((ret = snd_pcm_hw_params_get_buffer_size(hw,&frames)) < 0){
+	fprintf (stderr, "cannot query buffer size (%s)\n",
+		 snd_strerror (ret));
+	exit (1);
+      }
+      
+      playback_buffer_minfill = totalsize += frames;
+    }
+
+    snd_pcm_hw_params_free (hw);
+	
+    if ((ret = snd_pcm_prepare (playhandle2)) < 0) {
+      fprintf (stderr, "cannot prepare audio interface for use (%s)\n",
+	       snd_strerror (ret));
+      exit (1);
+    }
+
+
+  }
+
+#if (OUTPUT_CHANNELS1)
+  
+  if ((ret = snd_pcm_link(playhandle1, playhandle2)) < 0) {
+    printf("playback streams link error: %s\n", snd_strerror(ret));
     exit(1);
   }
-  ret=ioctl(fd2,SNDCTL_DSP_CHANNELS,&channels2);
-  if(ret || channels2!=OUTPUT_CHANNELS2){
-    fprintf(stderr,"Could not set %d channel playback\n",OUTPUT_CHANNELS2);
-    exit(1);
-  }
-  ret=ioctl(fd2,SNDCTL_DSP_SPEED,&rate);
-  if(ret || rate!=44100){
-    fprintf(stderr,"Could not set %dHz playback\n",44100);
-    exit(1);
-  }
-  ioctl(fd2,SNDCTL_DSP_GETOSPACE,&info);
-  playback_buffer_minfill=totalsize+=info.fragstotal*info.fragsize;
+  
+#endif
+
 #endif
 
   while(!playback_exit){
-    int samples;
+    int samples=0;
 
-    delay--;
-    if(delay<0){
-      delay=0;
-      samples=0;
+    playback_bufsize=totalsize;      
+
 #if (OUTPUT_CHANNELS1)
-      ioctl(fd1,SNDCTL_DSP_GETOSPACE,&info);
-      playback_bufsize=totalsize;      
-      samples=info.bytes;
-#else
-      playback_bufsize=0;      
-      samples=0;
+    if(snd_pcm_delay (playhandle1, &sframes) == 0)
+      samples+=sframes;
 #endif
-#if (OUTPUT_CHANNELS2)
-      ioctl(fd2,SNDCTL_DSP_GETOSPACE,&info);
-      playback_bufsize+=totalsize;      
-      samples+=info.bytes;
-#endif
-      
-      samples+=playback_bufsize-samples;
-      
-      if(playback_buffer_minfill>samples)
-	playback_buffer_minfill=samples-64; // sample fragment
-      
-    }
 
-    for(i=0;i<256;i++)
+#if (OUTPUT_CHANNELS2)
+    if(snd_pcm_delay (playhandle2, &sframes) == 0)
+      samples+=sframes;
+#endif
+    
+    if(playback_buffer_minfill>samples)
+      playback_buffer_minfill=samples;
+    
+    for(i=0;i<buffersize;i++)
       _next_sample(audiobuf1+i*OUTPUT_CHANNELS1,
 		   OUTPUT_CHANNELS1,
 		   audiobuf2+i*OUTPUT_CHANNELS2,
 		   OUTPUT_CHANNELS2);
-
+    
     /* this is a calculated race; the race would not trip except in
        situations where our locking latency would also cause the
        realtime house of cards to come crashing down anyway */
     pthread_cond_signal(&cache_cond);
-
+    
 #if (OUTPUT_CHANNELS1)
-    fwrite(audiobuf1,2*OUTPUT_CHANNELS1,256,playfd1);
+    {
+      int frames=0;
+
+      while(frames<buffersize){
+	ret = snd_pcm_writei (playhandle1,audiobuf1+frames*channels1,buffersize-frames);
+	if(ret<0){
+	  // most likely an underrun
+	  switch(ret){
+	  case -EAGAIN:
+	    break;
+	  case -EPIPE: case -ESTRPIPE:
+	    // underrun; set starve and reset soft device
+	    playback_buffer_starve=1;
+	    snd_pcm_drop(playhandle1);
+	    snd_pcm_prepare(playhandle1);
+	    frames=0; // start this frame over such that both channels are in sync
+
+	    break;
+	  case -EBADFD:
+	  default:
+	    // "well, shit." Don't hose the machine here in a realtime thread
+	    frames=buffersize;
+	    playback_exit=1;
+	    fprintf (stderr, "playback1 write error (%s)\n",
+		     snd_strerror (ret));
+	    break;
+	  }
+	}else{
+	  frames+=ret;
+	}
+      }
+    }
 #endif
 #if (OUTPUT_CHANNELS2)
-    fwrite(audiobuf2,2*OUTPUT_CHANNELS2,256,playfd2);
+    {
+      int frames=0;
+
+      while(frames<buffersize){
+	ret = snd_pcm_writei (playhandle2,audiobuf2+frames*channels2,buffersize-frames);
+	if(ret<0){
+	  // most likely an underrun
+	  switch(ret){
+	  case -EAGAIN:
+	    break;
+	  case -EPIPE: case -ESTRPIPE:
+	    // underrun; set starve and reset soft device
+	    playback_buffer_starve=1;
+#if(OUTPUT_CHANNELS1)
+	    snd_pcm_drop(playhandle1); // operate on linked interface
+	    snd_pcm_prepare(playhandle1);
+#else
+	    snd_pcm_drop(playhandle2);
+	    snd_pcm_prepare(playhandle2);
+#endif
+	    frames=buffersize; // abort this frame such that both channels are in sync
+	    break;
+	  case -EBADFD:
+	  default:
+	    // "well, shit." Don't hose the machine here in a realtime thread
+	    frames=buffersize;
+	    playback_exit=1;
+	    fprintf (stderr, "playback2 write error (%s)\n",
+		     snd_strerror (ret));
+	    break;
+	  }
+	}else{
+	  frames+=ret;
+	}
+      }
+    }
 #endif
     
     {
@@ -1660,10 +2016,10 @@ void *playback_thread(void *dummy){
   
   /* sound device shutdown */
 #if (OUTPUT_CHANNELS1)
-  ioctl(fd1,SNDCTL_DSP_RESET);
+  snd_pcm_drop (playhandle1);
 #endif
 #if (OUTPUT_CHANNELS2)
-  ioctl(fd2,SNDCTL_DSP_RESET);
+  snd_pcm_drop (playhandle2);
 #endif
   fprintf(stderr,"Playback thread exit...\n");
   return(NULL);
@@ -2169,8 +2525,9 @@ void main_update_playbuffer(int y){
     n=playback_buffer_minfill;
     playback_buffer_minfill=playback_bufsize;
     
-    if(n==0){
-      starve=15;
+    if(playback_buffer_starve){ // get this from the HW interface now
+      starve=45;
+      playback_buffer_starve=0;
     }
     starve--;
     if(starve<0){
@@ -2220,8 +2577,9 @@ void main_update_playbuffer(int y){
     rec_buffer_dma_min=100;
     pthread_mutex_unlock(&rec_mutex);
     
-    if(nr==0){
-      starver1=15;
+    if(rec_dmabuffer_starve){
+      starver1=45;
+      rec_dmabuffer_starve=0;
     }
     starver1--;
     if(starver1<0){
@@ -3413,7 +3771,7 @@ void *tty_thread(void *dummy){
 }
 
 int main(int gratuitously,char *different[]){
-  int lf;
+  int lf,err;
 
   if(gratuitously<2){
     fprintf(stderr,"Usage: beaverphonic <settingfile>\n");
@@ -3436,36 +3794,32 @@ int main(int gratuitously,char *different[]){
   }
 
 #if (OUTPUT_CHANNELS1)
-  playfd1=fopen(playdevice1,"wb");
-  if(!playfd1){
-    fprintf(stderr,"unable to open audio device 1 for playback: %s.\n",strerror(errno));
+  if ((err = snd_pcm_open (&playhandle1, playdevice1, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    fprintf(stderr,"unable to open audio device 1 for playback: %s.\n",snd_strerror(err));
     fprintf(stderr,"\nPress enter to continue\n");
     getc(stdin);
   }
 #endif
 
 #if (OUTPUT_CHANNELS2)
-  playfd2=fopen(playdevice2,"wb");
-  if(!playfd2){
-    fprintf(stderr,"unable to open audio device 2 for playback: %s.\n",strerror(errno));
+  if ((err = snd_pcm_open (&playhandle2, playdevice2, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    fprintf(stderr,"unable to open audio device 2 for playback: %s.\n",snd_strerror(err));
     fprintf(stderr,"\nPress enter to continue\n");
     getc(stdin);
   }
 #endif
 
 #if (INPUT_CHANNELS1)
-  recfd1=fopen(recdevice1,"rb");
-  if(!recfd1){
-    fprintf(stderr,"unable to open audio device 1 for record: %s.\n",strerror(errno));
+  if ((err = snd_pcm_open (&rechandle1, recdevice1, SND_PCM_STREAM_CAPTURE, 0)) < 0) {
+    fprintf(stderr,"unable to open audio device 1 for record: %s.\n",snd_strerror(err));
     fprintf(stderr,"\nPress enter to continue\n");
     getc(stdin);
   }
 #endif
 
 #if (INPUT_CHANNELS2)
-  recfd2=fopen(recdevice2,"rb");
-  if(!recfd2){
-    fprintf(stderr,"unable to open audio device 2 for record: %s.\n",strerror(errno));
+  if ((err = snd_pcm_open (&rechandle2, recdevice2, SND_PCM_STREAM_CAPTURE, 0)) < 0) {
+    fprintf(stderr,"unable to open audio device 2 for record: %s.\n",snd_strerror(err));
     fprintf(stderr,"\nPress enter to continue\n");
     getc(stdin);
   }
@@ -3565,16 +3919,16 @@ int main(int gratuitously,char *different[]){
   }
 
 #if (OUTPUT_CHANNELS1)
-  fclose(playfd1);
+  snd_pcm_close(playhandle1);
 #endif
 #if (OUTPUT_CHANNELS2)
-  fclose(playfd2);
+  snd_pcm_close(playhandle2);
 #endif
 #if (INPUT_CHANNELS1)
-  fclose(recfd1);
+  snd_pcm_close(rechandle1);
 #endif
 #if (INPUT_CHANNELS2)
-  fclose(recfd2);
+  snd_pcm_close(rechandle2);
 #endif
   unlink(lockfile);
   return 0;
