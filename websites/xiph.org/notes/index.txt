@@ -1,1 +1,0 @@
-This page will be for Xiph.Org Notes--documents dealing with how best to support our stuff in your app.
