@@ -4,14 +4,12 @@
 
 package="vorbis"
 
-olddir=`pwd`
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
 cd "$srcdir"
 DIE=0
 
-echo "checking for autoconf... "
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
         echo
         echo "You must have autoconf installed to compile $package."
@@ -20,7 +18,6 @@ echo "checking for autoconf... "
         DIE=1
 }
 
-echo "checking for automake... "
 (automake --version) < /dev/null > /dev/null 2>&1 || {
         echo
         echo "You must have automake installed to compile $package."
@@ -30,17 +27,7 @@ echo "checking for automake... "
         DIE=1
 }
 
-echo -n "checking for libtool... "
-for LIBTOOLIZE in libtoolize glibtoolize nope; do
-  (which $LIBTOOLIZE) > /dev/null 2>&1 && break
-done
-if test x$LIBTOOLIZE = xnope; then
-  echo "nope."
-  LIBTOOLIZE=libtoolize
-else
-  echo $LIBTOOLIZE
-fi
-($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1 || {
+(libtool --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have libtool installed to compile $package."
 	echo "Download the appropriate package for your system,"
@@ -64,12 +51,11 @@ echo "  aclocal $ACLOCAL_FLAGS"
 aclocal $ACLOCAL_FLAGS
 #echo "  autoheader"
 #autoheader
-echo "  $LIBTOOLIZE --automake"
-$LIBTOOLIZE --automake
+echo "  libtoolize --automake"
+libtoolize --automake
 echo "  automake --add-missing $AUTOMAKE_FLAGS"
 automake --add-missing $AUTOMAKE_FLAGS 
 echo "  autoconf"
 autoconf
 
-cd $olddir
 $srcdir/configure "$@" && echo

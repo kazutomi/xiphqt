@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: PCM data envelope analysis 
- last mod: $Id: envelope.c,v 1.54 2003/09/05 23:17:49 giles Exp $
+ last mod: $Id: envelope.c,v 1.49 2002/04/06 03:07:25 xiphmont Exp $
 
  ********************************************************************/
 
@@ -218,7 +218,7 @@ long _ve_envelope_search(vorbis_dsp_state *v){
   vorbis_info *vi=v->vi;
   codec_setup_info *ci=vi->codec_setup;
   vorbis_info_psy_global *gi=&ci->psy_g_param;
-  envelope_lookup *ve=((private_state *)(v->backend_state))->ve;
+  envelope_lookup *ve=((backend_lookup_state *)(v->backend_state))->ve;
   long i,j;
 
   int first=ve->current/ve->searchstep;
@@ -226,7 +226,7 @@ long _ve_envelope_search(vorbis_dsp_state *v){
   if(first<0)first=0;
 
   /* make sure we have enough storage to match the PCM */
-  if(last+VE_WIN+VE_POST>ve->storage){
+  if(last>ve->storage){
     ve->storage=last+VE_WIN+VE_POST; /* be sure */
     ve->mark=_ogg_realloc(ve->mark,ve->storage*sizeof(*ve->mark));
   }
@@ -245,6 +245,7 @@ long _ve_envelope_search(vorbis_dsp_state *v){
 
     ve->mark[j+VE_POST]=0;
     if(ret&1){
+      //ve->mark[j-1]=1;
       ve->mark[j]=1;
       ve->mark[j+1]=1;
     }
@@ -329,7 +330,7 @@ long _ve_envelope_search(vorbis_dsp_state *v){
 }
 
 int _ve_envelope_mark(vorbis_dsp_state *v){
-  envelope_lookup *ve=((private_state *)(v->backend_state))->ve;
+  envelope_lookup *ve=((backend_lookup_state *)(v->backend_state))->ve;
   vorbis_info *vi=v->vi;
   codec_setup_info *ci=vi->codec_setup;
   long centerW=v->centerW;
@@ -358,6 +359,7 @@ void _ve_envelope_shift(envelope_lookup *e,long shift){
   int smallsize=e->current/e->searchstep+VE_POST; /* adjust for placing marks
 						     ahead of ve->current */
   int smallshift=shift/e->searchstep;
+  int i;
 
   memmove(e->mark,e->mark+smallshift,(smallsize-smallshift)*sizeof(*e->mark));
   

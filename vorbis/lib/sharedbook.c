@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: basic shared codebook operations
- last mod: $Id: sharedbook.c,v 1.29 2002/10/11 07:44:28 xiphmont Exp $
+ last mod: $Id: sharedbook.c,v 1.27 2002/01/22 08:06:07 xiphmont Exp $
 
  ********************************************************************/
 
@@ -310,8 +310,7 @@ static ogg_uint32_t bitreverse(ogg_uint32_t x){
 }
 
 static int sort32a(const void *a,const void *b){
-  return ( **(ogg_uint32_t **)a>**(ogg_uint32_t **)b)- 
-    ( **(ogg_uint32_t **)a<**(ogg_uint32_t **)b);
+  return ( (**(ogg_uint32_t **)a>**(ogg_uint32_t **)b)<<1)-1;
 }
 
 /* decode codebook arrangement is more heavily optimized than encode */
@@ -442,36 +441,25 @@ static float _dist(int el,float *ref, float *b,int step){
 }
 
 int _best(codebook *book, float *a, int step){
-  encode_aux_threshmatch *tt=book->c->thresh_tree;
-
-#if 0
   encode_aux_nearestmatch *nt=book->c->nearest_tree;
+  encode_aux_threshmatch *tt=book->c->thresh_tree;
   encode_aux_pigeonhole *pt=book->c->pigeon_tree;
-#endif
   int dim=book->dim;
-  int k,o;
+  int ptr=0,k,o;
   /*int savebest=-1;
     float saverr;*/
 
   /* do we have a threshhold encode hint? */
   if(tt){
-    int index=0,i;
+    int index=0;
     /* find the quant val of each scalar */
     for(k=0,o=step*(dim-1);k<dim;k++,o-=step){
-
-      i=tt->threshvals>>1;
-      if(a[o]<tt->quantthresh[i]){
-
-	for(;i>0;i--)
-	  if(a[o]>=tt->quantthresh[i-1])
-	    break;
-	
-      }else{
-
-	for(i++;i<tt->threshvals-1;i++)
-	  if(a[o]<tt->quantthresh[i])break;
-
-      }
+      int i;
+      /* linear search the quant list for now; it's small and although
+	 with > ~8 entries, it would be faster to bisect, this would be
+	 a misplaced optimization for now */
+      for(i=0;i<tt->threshvals-1;i++)
+	if(a[o]<tt->quantthresh[i])break;
 
       index=(index*tt->quantvals)+tt->quantmap[i];
     }
@@ -482,7 +470,6 @@ int _best(codebook *book, float *a, int step){
       return(index);
   }
 
-#if 0
   /* do we have a pigeonhole encode hint? */
   if(pt){
     const static_codebook *c=book->c;
@@ -545,7 +532,6 @@ int _best(codebook *book, float *a, int step){
     }
     return(-ptr);
   }
-#endif 
 
   /* brute force it! */
   {
@@ -580,6 +566,29 @@ int _best(codebook *book, float *a, int step){
       }*/
     return(besti);
   }
+}
+
+/* returns the entry number and *modifies a* to the remainder value ********/
+int vorbis_book_besterror(codebook *book,float *a,int step,int addmul){
+  int dim=book->dim,i,o;
+  int best=_best(book,a,step);
+  switch(addmul){
+  case 0:
+    for(i=0,o=0;i<dim;i++,o+=step)
+      a[o]-=(book->valuelist+best*dim)[i];
+    break;
+  case 1:
+    for(i=0,o=0;i<dim;i++,o+=step){
+      float val=(book->valuelist+best*dim)[i];
+      if(val==0){
+	a[o]=0;
+      }else{
+	a[o]/=val;
+      }
+    }
+    break;
+  }
+  return(best);
 }
 
 long vorbis_book_codeword(codebook *book,int entry){
