@@ -5,6 +5,6 @@ AUTOMAKE_OPTIONS = foreign
 all: 
 
 docdir = $(ICES_DOCDIR)
-doc_DATA = 
+doc_DATA = icesmanual.html
 
 EXTRA_DIST = $(doc_DATA)
