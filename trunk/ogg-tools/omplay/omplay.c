@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <sys/asoundlib.h>
+#include <alsa/asoundlib.h>
 
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>

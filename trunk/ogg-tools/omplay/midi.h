@@ -29,7 +29,7 @@
 #define __MIDI_H__
 
 #include <ogg/ogg.h>
-#include <sys/asoundlib.h>
+#include <alsa/asoundlib.h>
 
 typedef struct {
 	int version;

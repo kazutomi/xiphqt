@@ -26,7 +26,7 @@
 */
 
 #include <stdio.h>
-#include <sys/asoundlib.h>
+#include <alsa/asoundlib.h>
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>
 #include "midi.h"
