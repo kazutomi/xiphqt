@@ -306,7 +306,7 @@ class Config:
         f.close()
 
         # Eliminate null entries and trim trailing newlines
-        return [trim_newline(item) for item in l if item != "" or item == "\n"]
+        return [trim_newline(item) for item in l if item != "" and item != "\n"]
 
     def _add_item(self, filename, item):
         f = file(filename, "a")
