@@ -92,11 +92,11 @@ def detect_oggvorbis(filename):
                 if type(value) == ListType or type(value) == TupleType:
                     value = value[0]
 
-                # Convert from Unicode back to normal string since
-                # the Neuros can't do Unicode anyway.
+                # Convert from Unicode to ASCII since the Neuros can't
+                # do Unicode anyway.
                 #
                 # I will probably burn in i18n hell for this.
-                info[tag] = str(value)
+                info[tag] = value.encode('ascii','replace')
 
     except ogg.vorbis.VorbisError:
         return None
