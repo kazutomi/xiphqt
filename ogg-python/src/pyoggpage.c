@@ -24,7 +24,7 @@ FDEF(ogg_page_bos) "Return whether this page is the beginning of a logical bistr
 FDEF(ogg_page_granulepos) "Return the granular position of the data contained in this page.";
 
 PyTypeObject py_ogg_page_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "OggPage",
   sizeof(py_ogg_page),
