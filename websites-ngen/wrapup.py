@@ -25,7 +25,7 @@ import pdb
 from ConfigParser import SafeConfigParser
 from sets import Set
 
-MARKDOWN_COMMAND = "perl Markdown.pl" # could also be "perl Markdown.pl"
+MARKDOWN_COMMAND = "perl Markdown.pl --htmltags"
 TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
 LANGUAGE_EXTRACTOR = re.compile(r"^.*\.(.{2,5})\..*$") # anything from “.es.” to “.zh-TW.”
 

@@ -7,12 +7,15 @@ Ogg Vorbis FAQ
 * [What is the MIME type for an Ogg Vorbis stream?](#mime)
 * [How can I convert my music collection to Ogg Vorbis?](#convertCollection)
 
+<!-- -->
 
+<!-- Removed until people actually ask us about this stuff after we've added /vorbis/license/
 * [What is the license of the Ogg Vorbis format?](#formatLicense)
 * [What is the license of Xiph.Org’s Ogg Vorbis tools?](#formatTools)
 * [We make commercial, closed-source software. Can we use Ogg Vorbis at all?](#commercial)
 * [Are there license fees for distributing or streaming things in Ogg Vorbis?](#distributionFees)
-
+-->
+<!-- -->
 
 <h2 id='what'>What is Ogg Vorbis?</h2>
 
@@ -28,9 +31,10 @@ Ogg Vorbis FAQ
 
 Re-rip from CD or another lossless source such as [FLAC][].
 
-This may be significantly more difficult and time-consuming than transcoding to Ogg Vorbis
-from another format, but [transcoding will only make your music sound worse](#transcode).
+This will probably be significantly more annoying and time-consuming than pointing a transcoder
+at a directory full of MP3s and pressing a “Transcode” button, but [transcoding][] to Ogg Vorbis
+from another [lossy][] format will only [make your music sound worse](#transcode).
 
-
-
-	[flac]:			http://flac.sourceforge.net/ 'Free Lossless Audio Codec'
+	[transcoding]:	/glossary/#transcode	"See our glossary entry for “transcoding”"
+	[lossy]:		/glossary/#lossy		"See our glossary entry for “lossy”"
+	[flac]:			http://flac.sourceforge.net/ "Free Lossless Audio Codec"

@@ -1,4 +1,8 @@
 Theora
 ======
 
-Theora si teh rox.
+Theora is a [free][] VP3-based video codec that can be combined with [Vorbis][] in [Ogg][]
+to make a complete video solution.
+
+	[vorbis]:	/vorbis/
+	[ogg]:		/ogg/

@@ -4,8 +4,8 @@ DirectoryIndex index.html index.markdown index.txt
 # good guess, but not good enough
 RedirectMatch permanent ^/svn/?$				/subversion/ 
 RedirectMatch permanent ^/help/?$				/contribute/ 
-RedirectMatch permanent ^/speex/licence/?$		/speex/license/
-RedirectMatch permanent ^/speex/doc/?$			/speex/documentation/
+RedirectMatch permanent ^/(.*)/licence/?$		/$1/license/
+RedirectMatch permanent ^/(.*)/doc/?$			/$1/documentation/
 
 ErrorDocument 404 /Error/404/
 ErrorDocument 410 /Error/410/
