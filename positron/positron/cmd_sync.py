@@ -155,6 +155,11 @@ def run(config, neuros, args):
                 print "    %s..." % (basename,)
                 util.copy_file(sourcename, targetname)
                 config.add_recording(neuros_trackname.lower())
-    
+
+    # Only pack when necessary
+    if audio_db.count_deleted() > 0:
+        print "  Packing audio database."
+        audio_db.pack()
+        
     neuros.close_db("audio")
     

@@ -120,6 +120,8 @@ def run(config, neuros, args):
             record = (basename, hisi_source(track),
                       neuros.hostpath_to_neurospath(track))
             unidedhisi_db.add_record(record)
+        if config.sort_database:
+            unidedhisi_db.sort()
         neuros.close_db("unidedhisi")
         
     except neuros_module.Error, e:

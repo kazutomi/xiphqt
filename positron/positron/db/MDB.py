@@ -233,7 +233,13 @@ class MDB:
         if i != self.header["NumOfFieldsPerRecord"]:
             raise Error("Incorrect number of fields in record.")
 
-        return (record, to_pointer(f.tell()))
+        # Check if this is the last record
+        current_offset = f.tell()
+        f.seek(0,2)
+        if current_offset != f.tell():
+            return (record, to_pointer(current_offset))
+        else:
+            return (record, None)
 
     def is_record_deleted_at(self, pointer):
         f = self.file
@@ -270,6 +276,26 @@ class MDB:
         f.seek(-2, 1)
         fwrite_word(f, flags)
         f.flush()
+
+    def count_deleted(self):
+        "Returns the number of deleted records in this database."
+
+        f = self.file
+        f.seek(0,2)
+        size = f.tell()
+
+        if to_pointer(size) > self.header["RecordStart"]:
+            curr_ptr = self.header["RecordStart"]
+        else:
+            curr_ptr = None
+
+        count = 0
+        while curr_ptr != None:
+            (curr_record, curr_ptr) = self.read_record_at(curr_ptr)
+            if curr_record != None and curr_record["isDeleted"]:
+                count += 1
+
+        return count
 
     def append_record(self, record):
         """Writes a new record to the end of the file.

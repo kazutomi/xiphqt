@@ -322,6 +322,10 @@ class WOID:
         # Add required null record
         self.sai.append((null_rec_pointer, pai_ptr))
 
+    def count_deleted(self):
+        "Returns the number of deleted records in this database"
+        return self.mdb.count_deleted()
+
     def pack(self, cmpfunc=None):
         """Removes all deleted records in this database and child databases.
 
