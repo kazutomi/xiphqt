@@ -351,7 +351,7 @@ then
   AC_CACHE_SAVE
   if test -n "$with_perl" -a "$with_perl" != "yes"
   then
-    $PERL="$with_perl/bin/perl"
+    PERL="$with_perl/bin/perl"
     if ! test -x "$PERL"
     then
       AC_MSG_ERROR([Perl not found in the specified location])
