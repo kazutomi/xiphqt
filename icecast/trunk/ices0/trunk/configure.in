@@ -1,6 +1,5 @@
-
-
 AC_INIT(src/ices.c)
+AC_CONFIG_SUBDIRS(libshout)
 
 ICES_MAJOR=0
 ICES_MINOR=0
@@ -422,11 +421,6 @@ AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename se
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])
 
-echo "Running configure in libshout..."
-
-cd libshout
-./configure && echo
-cd ..
 
 echo "Compiling with CPPFLAGS=$CPPFLAGS"
 echo "Linking with LDFLAGS=$LDFLAGS $LIBS"
