@@ -12,7 +12,7 @@
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.4 1999/12/30 07:26:42 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.4.4.1 2000/04/06 15:59:37 xiphmont Exp $
 
   The LSP generation code is taken (with minimal modification) from
   "On the Computation of the LSP Frequencies" by Joseph Rothweiler
@@ -25,6 +25,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include "lsp.h"
 #include "os.h"
 
 void vorbis_lsp_to_lpc(double *lsp,double *lpc,int m){ 
@@ -99,7 +100,10 @@ static void kw(double *r,int n) {
 
 
 static int comp(const void *a,const void *b){
-  return(*(double *)a<*(double *)b);
+  if(*(double *)a<*(double *)b)
+    return(-1);
+  else
+    return(1);
 }
 
 /* CACM algorithm 283. */

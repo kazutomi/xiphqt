@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: metrics and quantization code for LSP VQ codebooks
- last mod: $Id: lspdata.c,v 1.11 2000/02/21 01:12:56 xiphmont Exp $
+ last mod: $Id: lspdata.c,v 1.11.4.1 2000/04/06 15:59:38 xiphmont Exp $
 
  ********************************************************************/
 
@@ -23,22 +23,26 @@
 #include "vqext.h"
 
 char *vqext_booktype="LSPdata";  
-quant_meta q={0,0,0,1};          /* set sequence data */
+quant_meta q={0,0,0,1, 0,0,0};          /* set sequence data */
 int vqext_aux=1;
 
 void vqext_quantize(vqgen *v,quant_meta *q){
   vqgen_quantize(v,q);
 }
 
+/* the custom weighting was of questionable value; keep it simple
+   until we know something else is better */
+
+double global_maxdel=M_PI;
+double *weight=NULL;
+#if 1
 /* LSP training metric.  We weight error proportional to distance
    *between* LSP vector values.  The idea of this metric is not to set
    final cells, but get the midpoint spacing into a form conducive to
    what we want, which is weighting toward preserving narrower
    features. */
 
-double global_maxdel=M_PI;
 #define FUDGE (global_maxdel-weight[i])
-double *weight=NULL;
 
 double *vqext_weight(vqgen *v,double *p){
   int i;
@@ -52,6 +56,12 @@ double *vqext_weight(vqgen *v,double *p){
   }
   return p;
 }
+#else
+#define FUDGE 1.
+double *vqext_weight(vqgen *v,double *p){
+  return p;
+}
+#endif
 
                             /* candidate,actual */
 double vqext_metric(vqgen *v,double *e, double *p){
