@@ -3,10 +3,10 @@
     <background>0</background>  <!-- run in background? (unimplemented) -->
     <realtime>0</realtime>      <!-- disable realtime, enabled by default -->
     <user>ices</user>           <!-- user to change to when started as root -->
-	<logpath>/tmp</logpath>     <!-- where log goes. -->
-	<logsize>2048</logsize>     <!-- the size the log has to get to before cycling -->
-	<logfile>ices.log</logfile>
-	<loglevel>4</loglevel>      <!-- 1=error,2=warn,3=info,4=debug -->
+    <logpath>/tmp</logpath>     <!-- where log goes. -->
+    <logsize>2048</logsize>     <!-- the size the log has to get to before cycling -->
+    <logfile>ices.log</logfile>
+    <loglevel>4</loglevel>      <!-- 1=error,2=warn,3=info,4=debug -->
     <consolelog>0</consolelog>  <!-- logfile is ignored if this is set to 1 -->
     <pidfile>/var/ices/ices.pid</pidfile> <!-- file to write process id to -->
 
@@ -16,7 +16,7 @@
         <genre>Example genre</genre>
         <description>A short description of your stream</description>
 
-		<!-- input module -->
+	<!-- input module -->
         <!-- This example uses the 'jack' module. It takes input from the -->
         <!-- jack ports and processes it for live -->
         <!-- encoding. If metadatafilename is set then at start and on USR1 -->
