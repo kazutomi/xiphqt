@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <X11/Xlib.h>
 #include "snatchppm.h"
+#include "waitppm.h"
 static int savefile=-1;
 
 static unsigned long window_id_base=0;
@@ -33,6 +34,17 @@ static int video_width=-1;
 static int video_length=-1;
 static int bigendian_p=0;
 
+static unsigned long rpauth_shell=0;
+static unsigned long rpauth_main=0;
+static unsigned long rpauth_password=0;
+static unsigned long rpauth_username=0;
+static unsigned long rpauth_okbutton=0;
+static unsigned long rpauth_cancel=0;
+static int rpauth_count=0;
+static int rpauth_already=0;
+
+static void queue_task(void (*f)(void));
+
 /* Built out of a few pieces of xscope by James Peterson, 1988 
    xscope is (c) Copyright MCC, 1988 */
 
@@ -54,6 +66,88 @@ static unsigned short IByte (unsigned char *buf){
   return(buf[0]);
 }
 
+static void FakeKeycode(int keycode, int modmask, unsigned long window){
+  XKeyEvent event;
+  memset(&event,0,sizeof(event));
+
+  event.display=Xdisplay;
+  event.type=2; /* key down */
+  event.keycode=keycode;
+  event.root=root_window;
+  event.window=window;
+  event.state=modmask;
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+  event.type=3; /* key up */
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+}
+
+static void FakeKeySym(int keysym, int modmask, unsigned long window){
+  KeyCode c=XKeysymToKeycode(Xdisplay,keysym);
+  
+  if(XKeycodeToKeysym(Xdisplay,c,0)==keysym){
+    FakeKeycode(c,modmask,window);
+  }else{
+    FakeKeycode(c,1|modmask,window);
+  }
+
+}
+
+void FakeButton1(unsigned long window){
+  XButtonEvent event;
+  XCrossingEvent enter;
+
+  memset(&enter,0,sizeof(enter));
+  enter.type=7;
+  enter.display=Xdisplay;
+  enter.window=window;
+  enter.root=root_window;
+  enter.mode=0;
+  enter.detail=3;
+  enter.same_screen=1;
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&enter);
+
+  memset(&event,0,sizeof(event));
+  event.display=Xdisplay;
+  event.type=4; /* button down */
+  event.button=1;
+  event.root=root_window;
+  event.window=window;
+  event.same_screen=1;
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+  event.type=5; /* button up */
+  event.state=0x100;
+
+  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+
+}
+
+void FakeExposeRPPlay(void){
+  XExposeEvent event;
+  memset(&event,0,sizeof(event));
+
+  event.display=Xdisplay;
+  event.type=12;
+  event.window=rpplay_window;
+  event.width=rpplay_width;
+  event.height=rpplay_height;
+
+  XSendEvent(Xdisplay,(Window)rpplay_window,0,0,(XEvent *)&event);
+}
+
+void FakeTypeString(unsigned char *buf,unsigned long window){
+  FakeButton1(window);
+  while(*buf){
+    FakeKeySym(*buf,0,window);
+    buf++;
+  }
+}
+
 static void SetUpReply(unsigned char *buf){
   if(IByte(&buf[0])){
     window_id_base=ILong(&buf[12]);
@@ -71,6 +165,38 @@ static void SetUpReply(unsigned char *buf){
   }
 }
 
+static void UsernameAndPassword(void){
+
+  fprintf(stderr,"    ...: filling in username and password...");
+  if(username)
+    FakeTypeString(username,rpauth_username);
+  if(password)
+    FakeTypeString(password,rpauth_password);
+
+  FakeTypeString(" ",rpauth_okbutton); /* space activates the button.
+                                          Saves work parsing the
+                                          window tree to get an
+                                          absolute X,Y to make an
+                                          event */
+  rpauth_shell=0;
+  rpauth_main=0;
+  rpauth_password=0;
+  rpauth_username=0;
+  rpauth_okbutton=0;
+  rpauth_count=0;
+  
+}
+
+static void PolySegment(unsigned char *buf){
+  /* we assume the auth window is ready when we see the last polylines put
+     into the cancel window */
+  unsigned long id=ILong(&buf[4]);
+  if(id==rpauth_cancel){
+    rpauth_cancel=0;
+    queue_task(UsernameAndPassword);
+  }
+}
+
 static void CreateWindow(unsigned char *buf){
   unsigned long id=ILong(&buf[4]);
   unsigned long parent=ILong(&buf[8]);
@@ -79,6 +205,7 @@ static void CreateWindow(unsigned char *buf){
     if(!root_window)
       root_window=parent;
 
+    /* Main player windows */
     if(parent==rpshell_window){
       rpmain_window=id;
       rpplay_window=0;
@@ -104,8 +231,46 @@ static void CreateWindow(unsigned char *buf){
 		  "    ...: RealPlayer video window id=%lx\n",rpvideo_window);
       }
     }
+    
+    /* Auth dialog windows */
+    if(parent==rpauth_shell){
+	rpauth_main=id;
+    }
+    if(parent==rpauth_main){
+      switch(rpauth_count++){
+      case 5:
+	rpauth_username=id;
+	fprintf(stderr,"    ...: username window: %lx\n",id);
+	break;
+      case 3:
+	rpauth_password=id;
+	fprintf(stderr,"    ...: password window: %lx\n",id);
+	break;
+      case 1:
+	rpauth_okbutton=id;
+	fprintf(stderr,"    ...: OK button: %lx\n",id);
+	break;
+      case 0:
+	rpauth_cancel=id;
+	fprintf(stderr,"    ...: cancel button: %lx\n",id);
+	break;
+      }
+    }
   }
 }
+
+/*
+  13.49: Client -->   16 bytes
+         ............REQUEST: ChangeWindowAttributes
+             sequence number: 00000c7f
+              request length: 0004
+                      window: WIN 012000ce
+                  value-mask: event-mask
+                  value-list:
+                          event-mask: KeyPress | ButtonPress | ButtonRelease |                                       EnterWindow | LeaveWindow | 
+			              ButtonMotion | Exposure | FocusChange
+
+*/
 
 static void ConfigureWindow(unsigned char *buf){
   unsigned long id=ILong(&buf[4]);
@@ -144,54 +309,78 @@ static void ChangeProperty(unsigned char *buf){
   long format=ILong(&buf[16]);
   char *data;
 
+  if(property!=67 || type!=31)return;  /* not interested if not
+                                          WM_CLASS and STRING */
+  n = ILong(&buf[20])*format/8;
+  data=&buf[24];
+  
+  /* look for the RealPlayer shell window; the other player windows
+     descend from it in a predicatble pattern */
+  
   if(rpshell_window==0){
-    if(property==67 && type==31){ /* WM_CLASS and STRING */
-      n = ILong(&buf[20])*format/8;
-      data=&buf[24];
+    if(debug)
+      fprintf(stderr,
+	      "    ...: looking for our shell window...\n"
+	      "           candidate: id=%lx, name=%s class=%s\n",
+	      id,(data?data:""),(data?strchr(data,'\0')+1:""));
+    
+    if(n>26 &&  !memcmp(data,"RealPlayer\0RCACoreAppShell\0",27)){
+      /* it's our shell window above the WM parent */
+      rpshell_window=id;
+      
+      /* re-setup */
+      rpmain_window=0;
+      rpmenu_window=0;
+      rpplay_window=0;
+      rpplay_width=0;
+      rpplay_height=0;
+      
+      logo_x=0;
+      logo_y=0;
+      logo_prev=-1;
+      
+      rpvideo_window=0;
+      video_width=-1;
+      video_length=-1;
       
       if(debug)
-	fprintf(stderr,
-		"    ...: looking for our shell window...\n"
-		"           candidate: id=%lx, name=%s class=%s\n",
-		id,(data?data:""),(data?strchr(data,'\0')+1:""));
-				   
-      if(n>26 &&  !memcmp(data,"RealPlayer\0RCACoreAppShell\0",27)){
-	/* it's our shell window above the WM parent */
-	rpshell_window=id;
-
-	/* re-setup */
-	rpmain_window=0;
-	rpmenu_window=0;
-	rpplay_window=0;
-	rpplay_width=0;
-	rpplay_height=0;
-	
-	logo_x=0;
-	logo_y=0;
-	logo_prev=-1;
-	
-	rpvideo_window=0;
-	video_width=-1;
-	video_length=-1;
-
-	if(debug)
-	  fprintf(stderr,"           GOT IT!\n");
-      }else{
-	if(debug)
-	  fprintf(stderr,"           nope...\n");
-      }
+	fprintf(stderr,"           GOT IT!\n");
+    }else{
+      if(debug)
+	fprintf(stderr,"           nope...\n");
     }
   }
+
+  /* watch for the auth password window */
+  if(n>32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
+    if(rpauth_already>2){
+      fprintf(stderr,
+	      "**ERROR: Password not accepted.\n");
+      rpauth_shell=0;
+      rpauth_already=0;
+    }else{      
+      fprintf(stderr,
+	      "    ...: RealPlayer popped auth window.  Watching for username\n"
+	      "         password and ok button windows\n");
+      rpauth_shell=id;
+      rpauth_count=0;
+      rpauth_username=0;
+      rpauth_password=0;
+      rpauth_okbutton=0;
+      rpauth_already++;
+    }
+  }
+
+
 }
 
-static void PutImage(unsigned char *buf){
-  int id=ILong(&buf[4]);
-  
+static void PutImage(unsigned char *header,unsigned char *data){
+  int id=ILong(&header[4]);
   if(snatch_active && id==rpvideo_window){
-    int width=IShort(&buf[12])+IByte(&buf[20]);
-    int height=IShort(&buf[14]);
+    int width=IShort(&header[12])+IByte(&header[20]);
+    int height=IShort(&header[14]);
     int n = width*height*4,i,j;
-    char *work=alloca(n+1),*ptr=&buf[24],charbuf[80]; 
+    unsigned char *work=alloca(n+1),*ptr=data,charbuf[80]; 
     
     static long ZeroTime1 = -1;
     static long ZeroTime2 = -1;
@@ -236,14 +425,14 @@ static void PutImage(unsigned char *buf){
      Although this might seem like a vanity issue, the primary reason
      for doing this is to give the user a clear indication Snatch is
      working properly, so some care should be taken to get it right. */
-
+  
   if(id==rpplay_window){
-    int width=IShort(&buf[12])+IByte(&buf[20]);
-    int height=IShort(&buf[14]);
-    int x=IShort(&buf[16]);
-    int y=IShort(&buf[18]);
+    int width=IShort(&header[12])+IByte(&header[20]);
+    int height=IShort(&header[14]);
+    int x=IShort(&header[16]);
+    int y=IShort(&header[18]);
 
-    char *ptr=&buf[24]; 
+    unsigned char *ptr=data;
     long i,j,k;
 
     if(x==0 && width==rpplay_width){
@@ -308,6 +497,13 @@ static void PutImage(unsigned char *buf){
 
     /* blank background */
     if(snatch_active){
+      unsigned char *bptr;
+      
+      if(snatch_active==1)
+	bptr=snatchppm;
+      else
+	bptr=waitppm;
+
       if(bigendian_p){
 	int lower=(play_blacklower==-1?y+height:play_blacklower);
 	for(i=play_blackupper;i<lower;i++)
@@ -315,9 +511,9 @@ static void PutImage(unsigned char *buf){
 	    for(j=play_blackleft;j<play_blackright;j++)
 	      if(j>=x && j<x+width){
 		ptr[(i-y)*width*4+(j-x)*4]=0x00;
-		ptr[(i-y)*width*4+(j-x)*4+1]=snatchppm[0];
-		ptr[(i-y)*width*4+(j-x)*4+2]=snatchppm[1];
-		ptr[(i-y)*width*4+(j-x)*4+3]=snatchppm[2];
+		ptr[(i-y)*width*4+(j-x)*4+1]=bptr[0];
+		ptr[(i-y)*width*4+(j-x)*4+2]=bptr[1];
+		ptr[(i-y)*width*4+(j-x)*4+3]=bptr[2];
 	      }
       }else{
 	int lower=(play_blacklower==-1?y+height:play_blacklower);
@@ -326,17 +522,17 @@ static void PutImage(unsigned char *buf){
 	    for(j=play_blackleft;j<play_blackright;j++)
 	      if(j>=x && j<x+width){
 		ptr[(i-y)*width*4+(j-x)*4+3]=0x00;
-		ptr[(i-y)*width*4+(j-x)*4+2]=snatchppm[0];
-		ptr[(i-y)*width*4+(j-x)*4+1]=snatchppm[1];
-		ptr[(i-y)*width*4+(j-x)*4]=snatchppm[2];
+		ptr[(i-y)*width*4+(j-x)*4+2]=bptr[0];
+		ptr[(i-y)*width*4+(j-x)*4+1]=bptr[1];
+		ptr[(i-y)*width*4+(j-x)*4]=bptr[2];
 	      }
       }
-      
+    
       /* paint logo */
       if(logo_y!=-1){
 	for(i=0;i<snatchheight;i++){
 	  if(i+logo_y>=y && i+logo_y<height+y){
-	    char *snatch=snatchppm+snatchwidth*3*i;
+	    char *snatch;
 	    char *real;
 	    long end;
 	    
@@ -347,7 +543,7 @@ static void PutImage(unsigned char *buf){
 	    if(j<0)j=0;
 	    
 	    real=ptr+width*4*(i+logo_y-y);
-	    snatch=snatchppm+snatchwidth*3*i;
+	    snatch=(snatch_active==1?snatchppm:waitppm)+snatchwidth*3*i;
 	    
 	    if(bigendian_p){
 	      for(k*=3;k<snatchwidth*3 && j<width*4;){
@@ -375,31 +571,47 @@ static void PutImage(unsigned char *buf){
 /* Client-to-Server and Server-to-Client interception processing */
 /* Here are the most in-tact bits of xscope */
 struct ConnState {
-    unsigned char   *SavedBytes;
-    long    SizeofSavedBytes;
-    long    NumberofSavedBytes;
-    long    NumberofBytesNeeded;
-    long    (*ByteProcessing)();
+  unsigned char   *SavedBytes;
+  long    SizeofSavedBytes;
+  long    NumberofSavedBytes;
+  long    NumberofBytesNeeded;
+  long    (*ByteProcessing)();
+
+  /* a hack to optimize the video PutImage; this is the only case
+     where we actually care much about copies.  Most X requests are
+     either very infrequent or tiny.  PutImage, on the other hand, is
+     blasting several MB a second to do video.  So, this is ugly, but
+     needed. */
+  unsigned char PutImageHeader[24];
+  int PutImageUsed;
 };
  
 static struct ConnState serverCS;
 static struct ConnState clientCS;
 
-static void DecodeRequest(unsigned char *buf,long n){
-  int   Request = IByte (&buf[0]);
-  switch (Request){
-  case 1:
-    CreateWindow(buf);
-    break;
-  case 12:
-    ConfigureWindow(buf);
-    break;
-  case 18:
-    ChangeProperty(buf);
-    break;
-  case 72:
-    PutImage(buf);
-    break;
+static void DecodeRequest(unsigned char *pih,int pi,
+			  unsigned char *buf,long n){
+  if(pi){
+    PutImage(pih,buf);
+  }else{
+    int   Request = IByte (&buf[0]);
+    switch (Request){
+    case 1:
+      CreateWindow(buf);
+      break;
+    case 12:
+      ConfigureWindow(buf);
+      break;
+    case 18:
+      ChangeProperty(buf);
+      break;
+    case 66:
+      PolySegment(buf);
+      break;
+    case 72:
+      PutImage(buf,buf+24);
+      break;
+    }
   }
 }
 
@@ -410,6 +622,7 @@ static long DataToServer(unsigned char *buf,long n){
   if(n){
     while(togo>0){
       int bw=(*libc_write)(X_fd,p,togo);
+
       if(bw<0 && (errno==EAGAIN || errno==EINTR))bw=0;
       if(bw>=0)
 	p+=bw;
@@ -419,25 +632,55 @@ static long DataToServer(unsigned char *buf,long n){
       togo-=bw;
     }
   }
+
   return(0);
 }
 
 static void SaveBytes(struct ConnState *cs,unsigned char *buf,long n){
 
-  /* check if there is enough space to hold the bytes we want */
-  if (cs->NumberofSavedBytes + n > cs->SizeofSavedBytes){
-    long    SizeofNewBytes = (cs->NumberofSavedBytes + n + 1);
-    if(cs->SavedBytes)
-      cs->SavedBytes = realloc(cs->SavedBytes,SizeofNewBytes);
-    else
-      cs->SavedBytes = malloc(SizeofNewBytes);
+  /* a hack to avoid huge copies in PutImage */
+  if(cs->NumberofSavedBytes==0 && 
+     n>=24 && 
+     cs->PutImageUsed==0 && 
+     IByte(&buf[0])==72){
 
-    cs->SizeofSavedBytes = SizeofNewBytes;
+    unsigned long id=ILong(&buf[4]);
+    /* other putimage requests have side effects and we don't want to
+       write into Xlib maintained memory.  Besides, the only case we
+       really need to optimize is the video window (which we currently
+       don't alter) */
+    if(id==rpvideo_window){
+      memcpy(cs->PutImageHeader,buf,24);
+      cs->PutImageUsed=24;
+      n-=cs->PutImageUsed;
+    }
   }
 
-  /* now copy the new bytes onto the end of the old bytes */
-  memcpy(cs->SavedBytes + cs->NumberofSavedBytes,buf,n);
-  cs->NumberofSavedBytes += n;
+  /* In fact,t he way Xlib flushes events, this will practically never
+     be needed, but is good to have around */
+  
+  /* check if there is enough space to hold the bytes we want */
+  if(n>0){
+    if (cs->NumberofSavedBytes + n > cs->SizeofSavedBytes){
+      long    SizeofNewBytes = (cs->NumberofSavedBytes + n + 1);
+      if(cs->SavedBytes)
+	cs->SavedBytes = realloc(cs->SavedBytes,SizeofNewBytes);
+      else
+	cs->SavedBytes = malloc(SizeofNewBytes);
+      
+    cs->SizeofSavedBytes = SizeofNewBytes;
+    }
+    
+    /* now copy the new bytes onto the end of the old bytes */
+    memcpy(cs->SavedBytes + cs->NumberofSavedBytes,buf,n);
+    cs->NumberofSavedBytes += n;
+  }
+}
+
+static long RemoveHeader(struct ConnState *cs){
+  long ret=cs->PutImageUsed;
+  cs->PutImageUsed=0;
+  return(ret);
 }
 
 static void RemoveSavedBytes(struct ConnState *cs,long n){
@@ -488,7 +731,7 @@ static long StartSetUpMessage(struct ConnState *cs,unsigned char *buf,long n){
 }
 
 static long FinishRequest(struct ConnState *cs,unsigned char *buf,long n){
-  DecodeRequest(buf, n);
+  DecodeRequest(cs->PutImageHeader,cs->PutImageUsed,buf, n);
   cs->ByteProcessing = StartRequest;
   cs->NumberofBytesNeeded = 4;
   return(n);
@@ -540,9 +783,10 @@ static void ProcessBuffer(struct ConnState *cs,unsigned char *buf,long n,
   long             NumberofUsedBytes;
   
   while (cs->ByteProcessing && /* we turn off watching replies from
-				    the server after grabbing set up */
-	 
-	 cs->NumberofSavedBytes + n >= cs->NumberofBytesNeeded){
+				    the server after grabbing set up */	 
+	 cs->NumberofSavedBytes + n + cs->PutImageUsed >= 
+	 cs->NumberofBytesNeeded){
+
     if (cs->NumberofSavedBytes == 0){
       /* no saved bytes, so just process the first bytes in the
 	 read buffer */
@@ -567,14 +811,19 @@ static void ProcessBuffer(struct ConnState *cs,unsigned char *buf,long n,
     
     /* *After* we've processed the buffer (and possibly caused side
        effects), we ship the request off to the recipient */
-    if(w)(*w)(BytesToProcess,NumberofUsedBytes);
-    
+    if(w){
+      (*w)(cs->PutImageHeader,cs->PutImageUsed);
+      (*w)(BytesToProcess,NumberofUsedBytes-cs->PutImageUsed);
+    }
+
     /* the number of bytes that were actually used is normally (but not
        always) the number of bytes needed.  Discard the bytes that were
        actually used, not the bytes that were needed. The number of used
        bytes must be less than or equal to the number of needed bytes. */
     
     if (NumberofUsedBytes > 0){
+      n-=RemoveHeader(cs);
+
       if (cs->NumberofSavedBytes > 0)
 	RemoveSavedBytes(cs, NumberofUsedBytes);
       else{
@@ -590,58 +839,5 @@ static void ProcessBuffer(struct ConnState *cs,unsigned char *buf,long n,
   if (cs->ByteProcessing && n > 0)
     SaveBytes(cs, buf, n);
   return;
-}
-
-static void FakeKeycode(int keycode, int shift, int ctrl, 
-		  unsigned long window){
-  XKeyEvent event;
-  memset(&event,0,sizeof(event));
-
-  event.display=Xdisplay;
-  event.type=2; /* key down */
-  event.keycode=keycode;
-  event.root=root_window;
-  event.window=window;
-  event.state=(shift?1:0)|(ctrl?4:0);
-
-  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
-
-  event.type=3; /* key up */
-
-  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
-
-}
-
-void FakeButton1(unsigned long window){
-
-  XButtonEvent event;
-  memset(&event,0,sizeof(event));
-
-  event.display=Xdisplay;
-  event.type=4; /* key down */
-  event.button=1;
-  event.root=root_window;
-  event.window=window;
-
-  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
-
-  event.type=5; /* key up */
-  event.state=0x100;
-
-  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
-
-}
-
-void FakeExposeRPPlay(void){
-  XExposeEvent event;
-  memset(&event,0,sizeof(event));
-
-  event.display=Xdisplay;
-  event.type=12;
-  event.window=rpplay_window;
-  event.width=rpplay_width;
-  event.height=rpplay_height;
-
-  XSendEvent(Xdisplay,(Window)rpplay_window,0,0,(XEvent *)&event);
 }
 
