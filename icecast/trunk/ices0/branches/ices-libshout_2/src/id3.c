@@ -151,6 +151,8 @@ ices_id3v2_parse (input_stream_t* source)
   }
 
   ices_metadata_set (tag.artist, tag.title);
+  ices_util_free (tag.artist);
+  ices_util_free (tag.title);
 
   remaining = tag.len - tag.pos;
   if (remaining) {
@@ -202,7 +204,7 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
   len = id3v2_decode_synchsafe (hdr + 4);
   hdr[4] = '\0';
 
-/*  ices_log_debug("ID3v2: Frame type [%s] found, %d bytes", hdr, len); */
+  /* ices_log_debug("ID3v2: Frame type [%s] found, %d bytes", hdr, len); */
   if (!strcmp (hdr, "TIT2") || !strcmp (hdr, "TPE1")) {
     if (! (buf = malloc(len))) {
       ices_log ("Error allocating memory while reading ID3v2 frame");
@@ -219,11 +221,13 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
     /* skip encoding */
     if (!strcmp (hdr, "TIT2")) {
       ices_log_debug ("ID3v2: Title found: %s", buf + 1);
-      tag->title = buf + 1;
+      tag->title = ices_util_strdup (buf + 1);
     } else {
       ices_log_debug ("ID3v2: Artist found: %s", buf + 1);
-      tag->artist = buf + 1;
+      tag->artist = ices_util_strdup (buf + 1);
     }
+
+    free (buf);
   } else if (id3v2_skip_data (source, tag, len))
     return -1;
 
