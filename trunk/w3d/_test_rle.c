@@ -17,8 +17,8 @@
 
 
 
-#define MAX_COUNT 650000          /*  write/read up to 650000 bits   */
-#define N_TESTS   100             /*  test 100 times                 */
+#define MAX_COUNT 650000        /*  write/read up to 650000 bits   */
+#define N_TESTS   100           /*  test 100 times                 */
 
 
 int main ()
@@ -54,7 +54,7 @@ int main ()
          ENTROPY_ENCODER_INIT(&encoder, limit);
 
          for (i=0; i<limit; i++) {
-            bit[i] = (rand() > RAND_MAX/2) ? 0 : 1;
+            bit[i] = (rand() > RAND_MAX/20) ? 0 : 1;
             OUTPUT_BIT(&encoder, bit[i]);
          }
 
