@@ -72,52 +72,43 @@ void
 ices_id3v1_parse (input_stream_t* source)
 {
   off_t pos;
-  char tag[3];
-  char song_name[31];
-  char artist[31];
-  char namespace[1024];
+  char buffer[1024];
+  char title[31];
+  int i;
 
   if (! source->canseek)
     return;
 
-  if ((pos = lseek (source->fd, 0, SEEK_CUR)) == -1) {
-    ices_log ("Error seeking for ID3v1: %s",
-	      ices_util_strerror (errno, namespace, 1024));
-    return;
-  }
-  
-  if (lseek (source->fd, -128, SEEK_END) == -1) {
-    ices_log ("Error seeking for ID3v1: %s",
-	      ices_util_strerror (errno, namespace, 1024));
-    return;
-  }
+  buffer[30] = '\0';
+  pos = lseek (source->fd, 0, SEEK_CUR);
 
-  memset (song_name, 0, 31);
-  memset (artist, 0, 31);
+  lseek (source->fd, -128, SEEK_END);
 
-  if ((read (source->fd, tag, 3) == 3) && !strncmp (tag, "TAG", 3)) {
+  if ((read (source->fd, buffer, 3) == 3) && !strncmp (buffer, "TAG", 3)) {
     /* Don't stream the tag */
     source->filesize -= 128;
 
-    if (read (source->fd, song_name, 30) != 30) {
-      ices_log ("Error reading ID3v1 song title");
+    if (read (source->fd, title, 30) != 30) {
+      ices_log ("Error reading ID3v1 song title: %s",
+        ices_util_strerror (errno, buffer, sizeof (buffer)));
       goto out;
     }
 
-    while (song_name[strlen (song_name) - 1] == ' ')
-      song_name[strlen (song_name) - 1] = '\0';
-    ices_log_debug ("ID3v1: Title: %s", song_name);
+    for (i = strlen (title) - 1; i >= 0 && title[i] == ' '; i--)
+      title[i] = '\0';
+    ices_log_debug ("ID3v1: Title: %s", title);
 
-    if (read (source->fd, artist, 30) != 30) {
-      ices_log ("Error reading ID3v1 artist");
+    if (read (source->fd, buffer, 30) != 30) {
+      ices_log ("Error reading ID3v1 artist: %s",
+        ices_util_strerror (errno, buffer, sizeof (buffer)));
       goto out;
     }
 
-    while (artist[strlen (artist) - 1] == '\040')
-      artist[strlen (artist) - 1] = '\0';
-    ices_log_debug ("ID3v1: Artist: %s", artist);
+    for (i = strlen (buffer) - 1; i >= 0 && buffer[i] == ' '; i--)
+      buffer[i] = '\0';
+    ices_log_debug ("ID3v1: Artist: %s", buffer);
 
-    ices_metadata_set (artist, song_name);
+    ices_metadata_set (buffer, title);
   }
   
 out:
