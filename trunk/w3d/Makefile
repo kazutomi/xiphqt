@@ -1,10 +1,10 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM
-LFLAGS = -g
+CFLAGS = -pg -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM -DDBG_MEMLEAKS
+LFLAGS = -pg -lefence
 
-OBJS = ppm.o wavelet.o wavelet_xform.o yuv.o tarkin.o tarkin-io.o
+OBJS = mem.o pnm.o wavelet.o wavelet_xform.o yuv.o tarkin.o tarkin-io.o
 
 TEST_TARGETS = _test_bitcoder _test_rle _test_huffman
 

@@ -6,7 +6,7 @@ LFLAGS = -g
 
 TARGETS = ppmdiff
 
-OBJS = $(TARGETS:=.o) ../ppm.o
+OBJS = $(TARGETS:=.o) ../pnm.o
 SRCS = $(OBJS:.o=.c)
 
 

@@ -2,12 +2,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <string.h>
+#include "mem.h"
 #include "tarkin.h"
-#include "ppm.h"
+#include "pnm.h"
 
 
 
@@ -44,17 +42,17 @@ int main (int argc, char **argv)
 
    tarkin_stream_get_layer_desc (tarkin_stream, 0, &layer);
 
-   rgb  = malloc (layer.width * layer.height * 3);
+   rgb  = MALLOC (layer.width * layer.height * 3);
 
    while (tarkin_stream_read_frame (tarkin_stream, &rgb) != 0xffffffff) {
       snprintf(ofname, 11, "out%03d.ppm", frame);
       printf ("write '%s'\n", ofname);
-      write_ppm (ofname, rgb, layer.width, layer.height);
+      write_pnm (ofname, rgb, layer.width, layer.height);
 
       frame ++;
    };
 
-   free (rgb);
+   FREE (rgb);
    tarkin_stream_destroy (tarkin_stream);
    close (fd);
 

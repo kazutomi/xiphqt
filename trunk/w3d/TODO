@@ -1,12 +1,9 @@
 Open bugs and stuff required to fix them:
 
  - there is something really wrong in the truncation table code 
- - segfaults when bitstream limit is very high
-    (we better should check malloc return codes)
  - there are strange errors accumulating over time ...
     (probably incomplete initialisation)
  - add the pnsr tools
- - use Simon's pnm routines, support grayscale images, ppmdiff->pnmdiff
 
 
 Wavelet-related TODO's:

@@ -2,6 +2,7 @@
 #define __RLE_H
 
 #include <string.h>
+#include "mem.h"
 #include "bitcoder.h"
 
 #if defined(RLECODER)

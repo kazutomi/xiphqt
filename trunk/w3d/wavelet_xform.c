@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include "mem.h"
 #include <assert.h>
 #include "wavelet.h"
 

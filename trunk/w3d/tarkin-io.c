@@ -6,11 +6,9 @@
  *   binary.
  */
 
-#include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
-#include <string.h>
-
+#include "mem.h"
 #include "tarkin-io.h"
 
 
@@ -107,8 +105,6 @@ int read_tarkin_header (int fd, TarkinStream *s)
 int read_layer_descs (int fd, TarkinStream *s)
 {
    int i;
-
-   s->layer = (TarkinVideoLayer*) calloc (1, s->n_layers * sizeof(TarkinVideoLayer));
 
    for (i=0; i<s->n_layers; i++) {
       if (read (fd, &s->layer[i], sizeof(TarkinVideoLayer)) < sizeof(TarkinVideoLayer)) {
