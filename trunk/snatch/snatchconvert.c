@@ -423,13 +423,13 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     buftempsize=length;
   }
 
-  if(track_or_process){
+  //if(track_or_process){
     ret=fread(buftemp,1,length,f);
     if(ret<length)return(0);
-  }else{
-    ret=fseek(f,length,SEEK_CUR);
-    if(ret)return(0);
-  }
+    //}else{
+    //ret=fseek(f,length,SEEK_CUR);
+    //if(ret)return(0);
+    //}
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -733,13 +733,13 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
       buftemp=malloc(length*sizeof(*buftemp));
     buftempsize=length;
   }
-  if(notfakep){
+  //if(notfakep){
     ret=fread(buftemp,1,length,f);
     if(ret<length)return(0);
-  }else{
-    ret=fseek(f,length,SEEK_CUR);
-    if(ret)return(0);
-  }
+    //}else{
+    //ret=fseek(f,length,SEEK_CUR);
+    //if(ret)return(0);
+    //}
 
   if(global_zerotime==0){
     global_zerotime=t;
