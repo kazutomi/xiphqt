@@ -108,7 +108,8 @@ int plugin_open(ao_device *device, ao_sample_format *format)
 }
 
 
-int plugin_play(ao_device *device, char *output_samples, uint_32 num_bytes)
+int plugin_play(ao_device *device, const char *output_samples, 
+		uint_32 num_bytes)
 {
 	ao_arts_internal *internal = (ao_arts_internal *) device->internal;
 
