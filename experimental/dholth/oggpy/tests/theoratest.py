@@ -71,8 +71,8 @@ def test(ogg, imagewriter = None):
             td.decode_init(ti)
             yield (ti, tc, td)
             
-            # print "This theora encoded by: ", tc.get_vendor()
-            # print "Trying to decode with: ", theorapy.version_string(), theorapy.version_number()
+            print "This theora encoded by: ", tc.get_vendor()
+            print "Trying to decode with: ", theorapy.version_string(), theorapy.version_number()
             # for i in dir(ti):
             #     if i[0:2] != "__":
             #         try:

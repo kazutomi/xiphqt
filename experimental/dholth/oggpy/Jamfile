@@ -1,0 +1,58 @@
+# Daniel Holth <dholth@fastmail.fm>, 2004
+# based on David Abraham's example from Boost.Python
+
+# This is the top of our own project tree
+project-root ;
+
+# Include definitions needed for Python modules
+SEARCH on python.jam = $(BOOST_BUILD_PATH) ;
+import python ;
+
+# Declare a Python extension called oggpy
+extension oggpy
+: # sources
+  oggcc.cc
+  oggpy.cpp
+  oggpy_wrappers.cc
+: # requirements
+
+  # <release><find-library>boost_python
+  # <debug><find-library>boost_python
+  # <debug-python><find-library>boost_python
+  # <release><find-library>ogg
+  # <debug><find-library>ogg
+  # <debug-python><find-library>ogg
+  
+  <find-library>ogg
+  <find-library>boost_python
+  
+  <library-path>/usr/lib
+  ;
+
+extension vorbispy
+: # sources
+	oggcc.cc 
+	vorbispy.cpp 
+	vorbispy_wrappers.cc
+: # depends	
+  <find-library>ogg
+  <find-library>vorbis
+  <find-library>boost_python
+  
+  <library-path>/usr/lib
+  ;
+
+
+
+#extension flacpy
+#: # sources
+#  flacpy.cpp
+
+  # requirements and dependencies for Boost.Python extensions
+  # <template>@boost/libs/python/build/extension
+#: # requirements
+#  <dll>FLAC
+#  <dll>FLAC++
+
+#  ;
+

@@ -22,7 +22,7 @@ Topic :: Multimedia :: Sound/Audio
 Topic :: Multimedia :: Video
 """
 
-version = "0.5"
+version = "0.5.2"
 url = "http://dingoskidneys.com/oggpy/"
 
 setup(name="oggpy",
@@ -53,12 +53,12 @@ setup(name="oggpy",
                               include_dirs=config.theorapy_include_dirs,
                               depends=["oggcc.h", "theoracc.h"]),
                     
-                    Extension("flacpy", ["flacpy.cpp"],
-                              libraries=config.flacpy_libraries,
-                              include_dirs=config.flacpy_include_dirs)
+#                    Extension("flacpy", ["flacpy.cpp"],
+#                              libraries=config.flacpy_libraries,
+#                              include_dirs=config.flacpy_include_dirs)
 
                     # It works!
-                    , Extension("pygame_bridge", ["pygame_bridge.cc"],
+                    Extension("pygame_bridge", ["pygame_bridge.cc"],
                                 libraries=config.bridge_libraries,
                                 include_dirs=config.bridge_include_dirs)
 

@@ -5,3 +5,6 @@ include tests/encode.py
 include tests/oggtext.py
 include tests/test.py
 include config.py
+include Jamfile Jamrules boost-build.jam
+recursive-include debian *
+recursive-include gentoo *.ebuild

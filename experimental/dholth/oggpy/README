@@ -21,10 +21,6 @@ tests/reencode.py
 
 Incidentally there's a separately usable C++ wrapper here too.
 
-This is still an early release.  By downloading this software, you're
-participating in the receiving end of the 'release early, release often'
-open source philosophy, so I'd very much appreciate your feedback.
-
 Send feedback to dholth@fastmail.fm.
 
 Thanks, I hope you enjoy this wrapper.
@@ -42,10 +38,6 @@ If you're using gentoo, you will want to emerge the following packages first:
 
 	I've also submitted an ebuild.
 
-Then use setup.py build as normal.
-
-Hopefully I'll figure out an ebuild for this.
-
 To compile this software, use setup.py.
 	
 Edit the setup:
@@ -62,3 +54,6 @@ For example, Boost.Python has a number of different library names.
 
 Boost.Python 1.31 or CVS is necessary; 1.30 won't work because it lacks
 a str:: constructor used in vorbispy_wrappers.cc
+
+If you have boost.build and a copy of the boost source installed, you
+might be interested in using boost-jam (bjam) to build this software.

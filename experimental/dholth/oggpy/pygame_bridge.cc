@@ -95,11 +95,16 @@ static void video_write(yuv_buffer &yuv, theora_info &ti, SDL_Surface *screen, S
     /* and crop input properly, respecting the encoded frame rect */
     crop_offset=ti.offset_x+yuv.y_stride*ti.offset_y;
     for(i=0;i<yuv_overlay->h;i++)
+    {
         memcpy(yuv_overlay->pixels[0]+yuv_overlay->pitches[0]*i,
                yuv.y+crop_offset+yuv.y_stride*i,
                yuv_overlay->w);
+    }
+
     crop_offset=(ti.offset_x/2)+(yuv.uv_stride)*(ti.offset_y/2);
-    for(i=0;i<yuv_overlay->h/2;i++){
+    
+    for(i=0;i<yuv_overlay->h/2;i++)
+    {
         memcpy(yuv_overlay->pixels[1]+yuv_overlay->pitches[1]*i,
                yuv.v+crop_offset+yuv.uv_stride*i,
                yuv_overlay->w/2);

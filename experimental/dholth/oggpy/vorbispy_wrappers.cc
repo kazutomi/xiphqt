@@ -8,6 +8,7 @@
 #include <string.h>
 #include <vorbis/codec.h>
 #include <numarray/libnumarray.h>
+#include <fenv.h>
 
 using namespace ogg;
 using namespace boost::python;
@@ -24,11 +25,14 @@ void oggpy_wrappers_init()
 PyObject *oggpy_synthesis_pcmout(ogg::vorbis::dsp *dsp)
 {
   PyArrayObject *pcmarray = NULL;
+  PyObject *retval;
   float **pcm;
   float *mono;
   int samples;
   int channels;
+  fenv_t env;
 
+  feholdexcept(&env);
   samples = dsp->synthesis_pcmout(&pcm);
   
   if(samples > 0)
@@ -41,11 +45,15 @@ PyObject *oggpy_synthesis_pcmout(ogg::vorbis::dsp *dsp)
       memcpy((void*)mono, (void*)*(pcm+i), samples*sizeof(float));
     }
     vorbis_synthesis_read(&dsp->data, samples);
-    return NA_ReturnOutput(NULL, pcmarray);
+    retval = NA_ReturnOutput(NULL, pcmarray);  
+  } else {
+    Py_INCREF(Py_None);
+    retval = Py_None;
   }
+  
+  feupdateenv(&env);
 
-  Py_INCREF(Py_None);
-  return Py_None;
+  return retval;
 }
 
 
