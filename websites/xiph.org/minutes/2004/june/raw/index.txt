@@ -1,0 +1,637 @@
+--- Log opened Wed Jun 02 08:00:25 2004
+08:00 -!- xiphlog [~giles@motherfish-II.xiph.org] has joined #xiphmeet
+08:00 -!- Topic for #xiphmeet: Welcome to the Xiph.org meeting and discussion channel. The next monthly meeting will be 2004-06-02 12:00 +00:00; please add items to the agenda for that meeting at <http://wiki.xiph.org/MonthlyMeeting200406>.
+08:00 -!- Topic set by ChanServ [] [Wed Jun  2 03:45:15 2004]
+08:00 [Users #xiphmeet]
+08:00 [ adiabatic  ] [ jack      ] [ myidiym ] [ volsung ] 
+08:00 [ Arc        ] [ jmspeex   ] [ rillian ] [ xiphlog ] 
+08:00 [ illiminable] [ maikmerten] [ thomasvs] [ xiphmont] 
+08:00 -!- Irssi: #xiphmeet: Total of 12 nicks [0 ops, 0 halfops, 0 voices, 12 normal]
+08:00 -!- Channel #xiphmeet created Wed Jun  2 03:45:15 2004
+08:00 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+08:00 -!- [freenode-info] help freenode weed out clonebots, please register your IRC nick and auto-identify: http://freenode.net/faq.shtml#nicksetup
+08:01 -!- rillian changed the topic of #xiphmeet to: Welcome to the Xiph.org meeting and discussion channel. June Monthlymeeting in progress. The agenda is at <http://wiki.xiph.org/MonthlyMeeting200406>.
+08:01 < jmspeex> I'm there :)
+08:02 -!- LarstiQ [larstiq@cust.7.157.adsl.cistron.nl] has joined #xiphmeet
+08:02 -!- rillian changed the topic of #xiphmeet to: Welcome to the Xiph.org meeting and discussion channel. June Monthlymeeting in progress. The agenda is at <http://wiki.xiph.org/MonthlyMeeting200406>. Live log at http://xiph.org/~giles/xiphmeet.log for those joining us late.
+08:02 < myidiym> myidiym is Brett from IEEE-ISTO
+08:02 < rillian> hi Brett
+08:02 -!- wtay [~wtay@213.170.47.91] has joined #xiphmeet
+08:02 -!- jdahlin [~jdahlin@213.170.47.91] has joined #xiphmeet
+08:03 < rillian> thomasvs, yes, now's the time
+08:03 < LarstiQ> hello all
+08:03 < rillian> shall we begin?
+08:03 < rillian> I see someone filled out the agenda :)
+08:03 < jmspeex> Can we start with the topics that concern me?
+08:04 < jmspeex> (have to leave before the end)
+08:04 < rillian> ok.
+08:04 < rillian> Speex firts
+08:04 < rillian> first
+08:04 < rillian> jmspeex, status report?
+08:04 < jmspeex> Nothing new :)
+08:05  * jmspeex has been busy with PhD
+08:05 < rillian> :)
+08:05 < rillian> The other thing that came up
+08:06 < rillian> is that jack and I have been talking to stpeter, one of the jabber developers
+08:06 < rillian> and they're very interested in adding conferencing abilities to the jabber messaging framework
+08:06 < rillian> starting with speex
+08:06 < rillian> which is quite exciting
+08:06 < rillian> jabber is sort of our equivalent in the 'Instant Messaging' field
+08:07 < volsung> Ooh.  That would be neat.
+08:07 < rillian> so if anyone's interested in helping with that, dig in and write an example implementation
+08:07 < jmspeex> Except that as I understand it, they provide specs, but no software directly
+08:07 < rillian> that's correct
+08:08 < rillian> I think the idea was that we write something, then give them a spec
+08:08 < jmspeex> I'm interested, but there's a networking issue that needs to be resolved first.
+08:08 < rillian> they basically provide a way to negotiate a connection
+08:08 < rillian> and there are a couple of ways of openning a data stream between clients that we could use
+08:08 < jmspeex> jack told me the initial goal was to define something over TCP, so that it goes over a NAT, but I don't think it's a good idea.
+08:09 < rillian> well, it would be a place to start
+08:09 < rillian> stpeter was also resistent to sending the data over jabber itself
+08:09 < rillian> although that would solve all the NAT issues
+08:09 < volsung> Heh.  TCP for tunnelling through NAT was precisely why I was interested.  :)
+08:09 < LarstiQ> The Helix-Jabber group is working on something like this, they thought of speex as a minimum codec iirc
+08:10 < rillian> but latency may be unacceptable there
+08:10 < rillian> so I'd try that, followed by a direct connection
+08:10 < jmspeex> latency *will* be unacceptable
+08:10 < rillian> the other point is that to do more than 1-on-1 conferencing you need a reflector *anyway*
+08:10 < jmspeex> (jack is checking the STUN protocol, which may solve the problem)
+08:10 < rillian> which also solves the NAT issue
+08:11 < jmspeex> no it doesn't (only one way)
+08:11 < rillian> LarstiQ, interesting. I didn't know they were working on it.
+08:11 < rillian> so maybe we can catch up to apple in a year :)
+08:12 -!- vanguardist [~vanguardi@motherfish-II.xiph.org] has joined #xiphmeet
+08:12 < rillian> anyway, that's a new project idea
+08:12 < rillian> on with the project reports
+08:12 < rillian> the server replacement didn't go well
+08:12 < rillian> we had the new machine shipped to the colocation facility
+08:12 < rillian> but it would not boot
+08:13 < rillian> the vendor diagnosed a bad power supply
+08:13 < rillian> and one is on route.
+08:13 < rillian> should arrive today or tomorrow; so we'll see if that's the issue
+08:13 < xiphmont> "Another bad power supply?  How nice fo them." :-)
+08:13 < rillian> the old server remains flakey, as everyone noticed this weekend, I'm sure
+08:13 < rillian> xiphmont, want to give us an update on ogg and vorbis?
+08:14 < xiphmont> You just know that MF-II does tequila shots friday nights.
+08:14 < xiphmont> Yes
+08:14 < xiphmont> No vorbis work from us at the moment, but you've noticed a third-party tuning recently won HA's latest listening test, beating all comers along with Musepack.
+08:15 -!- volsung is now known as volsung_brb
+08:15 < xiphmont> AoTuV is the original reference modified with some 'symptom fixes' while the world waits for deeper fixes to the modfel from us.
+08:15 < xiphmont> symptom fixes or not, the tuning is effective.
+08:17 < xiphmont> Topping a listening test against all the latest/best/baddest from the competition is quite a feat and keeps the Vorbis world right on the edge while we're not doing Vorbis tuning ourselves.  Three cheers to AoTuV!
+08:17 < myidiym> press release opportunity?
+08:17 < xiphmont> Ogg: Oggfile's code and API are taking shape.  You'll see code in SVN as soon as I do a full theora/vorbis encode using only the three outlined function calls.
+08:17 < xiphmont> myidiym: not really.
+08:18 < xiphmont> ...but it did get slashdotted
+08:18 < xiphmont> ...and generated some firece trolling on the microsoft user community boards :-)
+08:18 < myidiym> so press packet opportunity at least
+08:18 < xiphmont> (WMA9 didn't do so well)
+08:18 < xiphmont> that I agree with
+08:18 < xiphmont> in the sense that the listening test was rigorous.
+08:19 < xiphmont> Well, the listening test methodology was rigorous; it was conducted in distributed fashion over the net.
+08:19 < rillian> myidiym, yes, certainly a press release opportunity
+08:20 < xiphmont> you think? OK
+08:20 < xiphmont> it is certainly real news.
+08:20 < xiphmont> ...and more defensible than most of the 'tests' Real and Microsoft have published ;-)
+08:21 < myidiym> it is "goodness" either way, and "goodness" must be shared :)... is the "advocacy" list the right place to discuss/collaborate on PR activities?
+08:21 < rillian> it's appears a rigorous test, and vorbis won. that sounds like press criteria to me
+08:21 < rillian> myidiym, yes, that would be a good place
+08:21 < rillian> ok. for my part
+08:21 < myidiym> ok
+08:21 < rillian> I believe libogg 1.1.1 is still waiting a bug fix from monty
+08:22 < rillian> and libvorbis 1.0.2 is just waiting my getting the win32 build organized
+08:22 < jack> whn exactly are we switching to libogg2?
+08:22 < jack> because it seems to me there could be a significant amount of work to port oggfile
+08:22 < rillian> vorbis-tools 1.0.2 still needs some build attention on *nix
+08:22 < rillian> (particularly flac detection and disabling static linking on macos)
+08:23 < Arc> jack: libtheora should still be ready for libogg2-building with just the build switch.
+08:23  * LarstiQ has been looking at using libogg2 for the Helix plugins also.
+08:23 < xiphmont> jack: all oggfile work is assuming libogg2
+08:23 < Arc> and because of Tremor, technically, vorbis has already been ported (kinda)
+08:23 < xiphmont> I'm not straddling there.
+08:23 < rillian> jack, the original plan was to release ogg2 and oggfile together
+08:23 < jack> ok
+08:24 < rillian> xiphmont, have you ported libvorbis then?
+08:24 < xiphmont> rillian: yes
+08:24 < xiphmont> Tremor was the first deployment
+08:25 -!- volsung_brb is now known as volsung
+08:25 < xiphmont> the porting for a codec is nrear-trivial
+08:25 < xiphmont> ...assuming the codec is using the bitpacker exclusively (Vorbis is)
+08:25 < rillian> it was vorbisfile and the examples that were painful
+08:25 < jmspeex> Speex will be just a wrapper anyway
+08:25 < xiphmont> Yes
+08:25 < xiphmont> ...and Oggfile takes the place of Vorbisfile.
+08:26 < xiphmont> the vorbisfile example is not painful and neither will Oggfile's be.
+08:26 < rillian> so work will still need to be done to port the examples
+08:26 < rillian> unless you're going to do an #ifdef like Arc did for libtheora
+08:26 < xiphmont> Right now, and OggFile encode of Vorbis/Theora is three function calls if you're not gettin' fancy.
+08:26 < xiphmont> No ifdefs.
+08:26 < xiphmont> I convert whole-cloth.
+08:27 < LarstiQ> The plan is to move everything to ogg2 entirely?
+08:27 < rillian> what version number are we going to put on that libvorbis?
+08:27 < jack> 1.1 i think.
+08:28 < xiphmont> LarstiQ: yes, libogg2 is a workalike, but it gives things needed for Oggfile
+08:28 < rillian> I agree, even though a dependency change is the only big difference
+08:28 < xiphmont> yes, it is
+08:28 -!- purple_haese [~carsten@motherfish-II.xiph.org] has joined #xiphmeet
+08:28 < Arc> xiphmont: I ported libtheora so that the ifdef's can be removed, along with the macro calls, and a search and replace.  the macros use the same syntax as libogg2
+08:28 < rillian> I suppose we can call it 1.2 when new tunings go in
+08:28 < LarstiQ> xiphmont: good, so ogg calls will be more or less the same between Tremor and vorbis I take it?
+08:29 < xiphmont> yes
+08:29 < xiphmont> the codecs pretty much only talk to the bitpacker abstraction in libogg2
+08:29 < xiphmont> the codec glue needs to do more talking to OggFile
+08:29 < xiphmont> Arc: I saw in the code review.  Thanks.
+08:29 -!- dev0 [tobias@pD9E58F1E.dip.t-dialin.net] has joined #xiphmeet
+08:29 < rillian> ok. shall we move on to icecast?
+08:29 < rillian> anyone here want to give a report?
+08:30 < xiphmont> Oh, one other thing
+08:30 < rillian> xiphmont, go ahead
+08:30 < xiphmont> I wanted to alert Aaron that I want to talk to him about Real and its freaky async framework
+08:30 < xiphmont> he's not here, so later on that.
+08:30 -!- Yen [Yen@d51A5849A.kabel.telenet.be] has joined #xiphmeet
+08:30 < rillian> ok
+08:30 < LarstiQ> Aaron is on vacation till the 9th.
+08:30 < xiphmont> ah
+08:31 < rillian> I don't think any of the icecast people are here
+08:31 < xiphmont> It's early, and they party at night.
+08:31 < xiphmont> :-)
+08:31 < rillian> the yp code rewrite made it into svn
+08:31 < rillian> which was one of the major pieces for 2.1
+08:31 < jack> yp code rewrite?
+08:31 < jack> oh
+08:31 < jack> the icecast side code
+08:32 < rillian> jack, yes
+08:32 < rillian> otherwise there's not been much activity
+08:32 < xiphmont> BTW, is it us who implemented burst-on-connect?
+08:32 < rillian> karl implemented it on his branch
+08:32 < Arc> with OggFile getting close, does anyone know if they're planning to include multi-codec support in 2.1?
+08:32 < xiphmont> Some of the servers advertising on yp have been doing it.
+08:32 < rillian> I'm not sure if that's in the trunk or not
+08:33 < jmspeex> Bye everyone
+08:33 < rillian> Arc, I've discussed that being a gate for 2.1 with Mike
+08:33 < jack> bye jm
+08:33 < rillian> jmspeex, thanks for joining us
+08:33 < xiphmont> Bye Jean-Marc!
+08:33 -!- jmspeex [~jmspeex@modemcable201.229-70-69.mc.videotron.ca] has quit ["Si tu fais le mal, fais le bien, car le mal bien fait ne fait jamais bien mal."]
+08:34 < rillian> and we'd certainly like that for theora as soon as the beta is out
+08:34 < Arc> iirc, that's more an issue for libshout than Icecast, but Icecast does need to know about the header pages
+08:34 < rillian> but it's also not worth holding up a release if they want to do one
+08:34 < rillian> I don't expect Mike will let us switch to ogg2 for 2.1
+08:35 < rillian> but he's said he'd take multiplexed ogg stream patches
+08:35 < Arc> *nod*
+08:35 < volsung> Ack.  Gotta begin my morning commute, so I'll interject this now:  All I've been working on is making Theora videos, now available at http://www.xiph.org/~volsung/theora/   Mixtape is from the CC moving images contest, and Honey is a 90 minute film released under a CC attribution-noncommercial-noderivs license.  I'm a video n00b, so let me know if I botched something up.  (And don't send these to your friends just yet.)
+08:35 -!- volsung is now known as volsung_away
+08:36 < rillian> anything else before we go on with theora?
+08:36 < thomasvs> on a general note, how resistant is the whole xiph codec tree to using pkg-config ?
+08:36 < thomasvs> I'm tired of inventing workarounds in configure for various versions
+08:36 < jack> i'd like to discuss briefly the RTP draft at some point
+08:36 < rillian> jack, ok.
+08:37 < rillian> thomasvs, I've no objection to including pkg-config support
+08:37 < rillian> but it needs to be optional
+08:37 < jack> i thought we already did pkg-config support?
+08:37 < rillian> so we still work with non-pkg-config installs
+08:37 < jack> oh.  didn't we decide we didn't need it? :)
+08:37 < jack> that's why we use plugins in libao.
+08:38 < rillian> it's very convenient if it's all available
+08:38 < rillian> we just can't depend on it ourselves
+08:38 < thomasvs> well, in that case some of the .m4's need touching up.  but I'll check on them first.
+08:38 < jack> it's convinient? isn't it longer than -lvorbis :)
+08:38 < jack> `pkg-config --libs vorbis`
+08:38 < rillian> thomasvs, so want to write a 'use pkg-config if available or fallback to the old tests' macro set for us?
+08:38 < xiphmont> "Works better than libtool" 
+08:38 < thomasvs> jack: it does the right thing when not installed in /usr
+08:38 < jack> doesn't our stuff do that currently?
+08:38 < thomasvs> jack: which is kind of important if you guys are seriously thinking about pushing ogg2 and new versoins
+08:39 < jack> xiphmont: no even similar programs.
+08:39 < jack> s/no/not/
+08:39 < thomasvs> jack: sure, but it breaks all over and pkg-config is a much nicer solution to the problem.
+08:40 < xiphmont> jack: yes, one works.  I know, but it can be used to eliminate some of what libtool is needed for.
+08:40 < jack> just seems like a pain to support multiple build infrastructures.
+08:40 < xiphmont> Yes
+08:40 < rillian> yes
+08:40 < thomasvs> jack: right, which is why you should switch to pkg-config :)
+08:40 < thomasvs> it's ten times easier to support than all the crap hardcoded .m4 files that all contain "# Shamelessly stolen from Owen Taylor and Manish Singh" at the top :)
+08:41 < xiphmont> ha ha ha
+08:41 < thomasvs> but I digress, I'll try and compile the full svn suite in a different prefix and investigate
+08:41  * LarstiQ tries to block out the thought of having to support msvc again
+08:41 < xiphmont> It's like "All manpanges have a common troff ancestor"
+08:41  * rillian just wishes someone would add MSVC output to automake
+08:41 < rillian> ok, on with theora
+08:42 < rillian> derf has written a lot of spec
+08:42 < thomasvs> rillian: the matroska guys are underway porting gst to win, maybe we can get them to tackle the xiph stack too.
+08:42 < rillian> thomasvs, that would be nice. we still lack regular win32 build support
+08:42 < rillian> unfortunately there's about 2 chapters to go
+08:42 < rillian> so we missed our last deadline
+08:43 < rillian> Silvia from CSIRO has been chipping in with figures and editing suggestions, which is wonderful :)
+08:43 < rillian> However, we've not found any more design gotcha's
+08:43 < illiminable> If people need build support for win32, just get them to mail me... it only takes a minute.
+08:44 < adiabatic> illiminable: cool...would you be able to work on our SDKs and stuff?
+08:44 < rillian> and the multiplexing issue, at least for theora+vorbis was settled in favor of what we were already doing
+08:44 < illiminable> Sure... just mail me where they are. Whiuch project in particular do you mean ?
+08:44 < rillian> so there was no reason to delay adoption any further
+08:44 < Arc> rillian: so what's the current ETA on Beta-1, given the documentation todo?
+08:45 < rillian> so, as of friday we froze the bitstream format
+08:45 < rillian> anything encoded with the alpha-3 theora encoder_example will be playable in the future
+08:45 < rillian> so yay, that's a major milestone.
+08:45 < adiabatic> illiminable: ogg, vorbis, and vorbis-tools, if nothing else...
+08:46 < rillian> and theora
+08:46 < illiminable> Sure... i have builds of all those (not current) in my project which i can work from
+08:46 < rillian> illiminable, thanks for volunteering. If you could make sure latest svn off all those work out of the box, that would be the first step
+08:46 < jack> we already have infrastucture for this. we just need to update it i believe.  look at win32sdk.
+08:46 < rillian> then we we do releases, build the dlls and sdk for us.
+08:47 < rillian> what jack said
+08:47 < illiminable> Sure... one thing that i 've found with the previous ones, is that .sln files tend to like to have all their dependancies contained. And they really need to to "build out of the box"
+08:47 < rillian> So, we are *also* doing a theora beta-1 release next week
+08:47 < rillian> despite the spec not being finished
+08:47 < rillian> at this point, getting people using it is more important than holding to that promise
+08:47 < illiminable> Most of the changes i make to the configs are is to have dependencies properly mapped, and heavy optimisation settings
+08:48 < rillian> so the code will be released June 8,
+08:48 < Yen> any idea when the specs are finished?
+08:48 < rillian> followed by a media push June 9 and 10
+08:48 < thomasvs> was there an actual alpha4 release now ?
+08:48 < Arc> thomasvs: there was no need because no changes were made from alpha3
+08:48 < rillian> thomasvs, I did not do one
+08:49 < thomasvs> rillian: we hope to get an online theora stream up this week, but it'd be nice if we could get our code on an online server that can front the stream for us
+08:49 < thomasvs> rillian: that way it could be mentioned somewhere public
+08:49 < illiminable> Oh... one thing i should mention is i don't run VC6 at all... only .net 2002 that could be a problem
+08:49 < rillian> thomasvs, that would be good
+08:49 < jack> thomasvs: can't say much for reliability, but we're happy to host the the demo stream
+08:49 < adiabatic> illiminable: Considering that most of what we have are ancient MSVC++6 things, this would be an improvement...
+08:49 < jack> we have plenty of bandwidth.
+08:50 < thomasvs> jack: well, reliability is not my concern, bandwidth and "being able to compile the gst/python/twisted stack on it" is
+08:50 < thomasvs> maybe we can discuss that over email
+08:50 < jack> yep.
+08:50 < rillian> thomasvs, yes please.
+08:50 < illiminable> Good... vc6 is dead... and ms have released a free vs.net  2003 optimising compiler... so no-one has any reason to use that outdated crap any more :)
+08:50 < rillian> So the major things we need by next week are:
+08:50 < jack> i've been emailing lots of my old contacts for video content
+08:50 < rillian> demo video clips
+08:50 < jack> i have a call with warner brothers in the near future :)
+08:50 < rillian> volsung has done some encodes as he mentioned
+08:51 < jack> that probably won't pan out, but there is always hope :)
+08:51 < rillian> Arc also has some CC content in http://xiph.org/~arc/CC/
+08:51 < purple_haese> They could probably supply movie trailers, though.
+08:51 < purple_haese> Free advertising is always nice.
+08:51 < jack> purple_haese: that's what i'm hoping.
+08:51 < Arc> I'm tackling the 1st and 3rd place CC videos, volsung is doing the 2nd place (his sister's)
+08:52 < rillian> we have permission to use the _Revolution OS_ trailer and music video, but I'm still trying to get a copy of the dvd to encode from. No higher-bitrate master coming unfortunately.
+08:52 < Arc> I just got ahold of the 3rd place video producer last night, he's getting a lossless
+08:52 < rillian> purple_haese, except that this is the major movie studios we're talking about :)
+08:52 < rillian> Arc, oh good. glad to hear you finally reached him
+08:52 < rillian> the other thing we need in players people can just download
+08:53 < rillian> I'll take care of MacOS
+08:53 < jack> we need one player for each os, or an easy set of plugins.
+08:53 < rillian> some help with linux would be appreciated
+08:53 < rillian> and someone needs to spiff up splayer and do a windows build
+08:53 < jack> a staticly linked standalone player is probably preferable 
+08:53 < rillian> basically a small static application that can play theora video
+08:53 < rillian> right
+08:53 < LarstiQ> what help and player is this about?
+08:53 -!- ozone [~pan068@c211-30-78-105.belrs2.nsw.optusnet.com.au] has joined #xiphmeet
+08:53 < Arc> rillian: don't we have mplayer, xine, and Real's Helix player already on Linux?
+08:54  * LarstiQ nods
+08:54 < jack> arc: we can't ask people to install mplayer.
+08:54 < rillian> Aaron said he would try to make sure helixplayer is available with the latest theora plugins by the 9th
+08:54 < rillian> that's one thing we can link to
+08:54 < illiminable> vlc plays theora under windows
+08:54 < rillian> illiminable, ok, that's another to link to
+08:54 < adiabatic> rillian: ...but he's on vacation until the 9th, right?
+08:54 < Arc> I've noticed that KDE's Multimedia player suite doesnt support Theora, but does support Vorbis
+08:54 < rillian> we'd still like a smaller demo app
+08:54 < rillian> adiabatic, yes
+08:54 < illiminable> my directshow filter play reasonably well... but not really reliable enough yet... and they have a major problem with WMP 9
+08:55 < xiphmont> I've also found some sync clarifications that need to be docced (not changes; details realized in implementation) that I should talk to aaron about.
+08:55 < rillian> illiminable, right. that's why we'd like a static example player
+08:56 < illiminable> vlc is probably the go.
+08:56 < rillian> illiminable, I take it that's a 'no'? :)
+08:56 < jack> vlc isn't very good in linux.
+08:56 < rillian> I need to ping mau and see what he can do
+08:56 < thomasvs> gstreamer will have a player that works too
+08:56 < illiminable> rillian: ????
+08:57 < rillian> illiminable, to building a static win32 example player for us
+08:57 < jack> thomasvs: we don't want the example player to come with an army of dependencies.
+08:57 < illiminable> A static player won't really help the situtation, it will still be based on directshow.
+08:57 < thomasvs> jack: understood
+08:57 < jack> after the first release, we will go the normal player route like we did with vorbis.
+08:57 < rillian> thomasvs, nevertheless, I'd like to link to gstreamer if you have a supporting version available
+08:58 < rillian> Arc, can you handle writing a press release and submitting the story to online news sites the 9th or 10th?
+08:58 < Arc> absolutly. why not the 8th, however?
+08:58 < jack> send the press erlease to us for checking please.
+08:58 < rillian> breathing space
+08:58 < adiabatic> ...yes. do run it by the rest of us first.
+08:58 < rillian> yes, send the release to us for review
+08:59 < Arc> if I submit a press release on the 8th, it wont get to most sites until the 9th. especially if it's sent out at night.
+08:59 < illiminable> I really have no desire to imlplement video playback the old fashioned way, when directshow pretty much does all the hard stuff. I think i'd be better off trying to fix the directshow filter. I know whats wrong with it i just haven't been bothered to fix it yet :)
+08:59 < rillian> what's wrong with the 10th? :)
+08:59 < Arc> I'm just concerned that someone will beat us to it, and possibly, bungle the wording of the release
+09:00 < illiminable> And i'm just about to start exams... so i wouldn't want to have dealines that i may not be able to keep.
+09:00 < Arc> if we're not going to have the press out until later, let's delay making the announcements until then
+09:00 < rillian> illiminable, ok that's fine.
+09:00 < rillian> Arc, so have something ready for the 8th, just don't submit it
+09:00 < Arc> ok.
+09:01 < rillian> I'll also be in transit most of the 9th to a conference in Berlin
+09:01 < Arc> oh can I raise an issue I've been meaning to bring up on this for awile?
+09:01 -!- segher [~segher@blueice2n1.de.ibm.com] has joined #xiphmeet
+09:01 < rillian> ok
+09:01 < Arc> we need bittorrent installed on mfii(i).
+09:01 < adiabatic> That would be handy.
+09:01 < Arc> we simply cannot handle a /.'ing of the sample content on our own
+09:01 < jack> yes.  the theora demos will need to be bittorrented
+09:02 < ozone> sorry i've jumped in on the discussion late: VLC plays theora alpha 3 files already, FYI
+09:02 -!- Netsplit kornbluth.freenode.net <-> irc.freenode.net quits: thomasvs
+09:02 < rillian> Arc, is there a tracker web interface we can use?
+09:02 < jack> and we pretty much could handle a /.ing i think.  we could saturate the local ethernet and not fill the pipe.
+09:02 < Arc> I think we should install a bt tracker on mfii(i), not my home system this time, and make sure that before the release we've setup enough seeds amoung ourselves
+09:02 < rillian> I recall running bt to serve a bunch of individual files being a pain
+09:02 < Arc> rillian: I'm unsure, the tracker I've always used has been a cli.. it's all python based so it's not like it's a big deal
+09:03 < rillian> ozone, thanks for the confirmation
+09:03 < Arc> I can manage setting everything up. I've done it before
+09:03 < rillian> Ok, so bittorrent tracker for mf is on the todo list
+09:04 < rillian> that's is for theora
+09:04 < rillian> Next item is from adiabatic
+09:04 < rillian> dropping 'Ogg' as a meta-project name
+09:04 -!- Netsplit over, joins: thomasvs
+09:04 < rillian> and just using it to refer to the container format
+09:04 < rillian> I think we should do this
+09:05 < rillian> xiphmont, any objection?
+09:05 < xiphmont> I'm not sysadmin, no.
+09:05 < jack> this has nothing to do with sysadmin :)
+09:05 < xiphmont> Oh, Ogg
+09:05 < xiphmont> I was behind.  Gaim is pissing me off
+09:05 < xiphmont> Um...
+09:05 < rillian> not the 'ogg family of codecs'
+09:05 < adiabatic> Same number of terms visitors will need to know, fewer meanings. Fewer things to think about while they learn about our stuff.
+09:05 -!- Misirlou [~asdf@c-24-125-118-27.va.client2.attbi.com] has joined #xiphmeet
+09:05 < jack> Xiph has been adopted as the metaproject name
+09:05 < xiphmont> Well, I have no objection to retronaming
+09:05 < rillian> but 'the xiph family of codecs'
+09:06 < rillian> adiabatic, exactly
+09:06 < xiphmont> Hrm.
+09:06 < jack> anyway, i agree with the change.
+09:06 < xiphmont> My gut objects, but I suspect my gut will not object after a few days of thinking, so OK
+09:06 < adiabatic> Excellent.
+09:06 < rillian> it makes xiph about the codecs we do, rather than about your personal projects, which I think you've been resisting :)
+09:07 < xiphmont> Hey!
+09:07 < xiphmont> Ogg is merely the most successful of my personal projects!
+09:07 < rillian> exactly
+09:07 < jack> someone register him moaninggoat.com
+09:07 < xiphmont> :-)
+09:07 < rillian> haha
+09:07 < rillian> adiabatic, ok. make it so.
+09:07 < xiphmont> Well, I think we should be about the audio projects in general.
+09:08 < xiphmont> But yes, "Xiph family of codecs" is fine.
+09:08 < rillian> xiphmont, sure
+09:08 < myidiym> this sounds a bit like a "product managment" discussion... is there a mail list where this type of thread lives?
+09:08 < rillian> audio and video :)
+09:08 < rillian> myidiym, not really
+09:08 < xiphmont> sorry, audio and video.  And metadat
+09:08 < rillian> advocacy would be appropriate, except a lot of developers aren't there
+09:08 < xiphmont> Ralph just likes to wait and spring these things on me when there are people watching.
+09:09 < rillian> we generally use vorbis-dev as a default for generic discussions
+09:09 < rillian> next item
+09:10 < rillian> anyone want to write a .NET wrapper for our stuff?
+09:10 < illiminable> I'm already in progress.
+09:10 < rillian> sounds good.
+09:10 < jack> good news :)
+09:10 < illiminable> it's a wrapper around libfishsound though.
+09:10 < rillian> adiabatic, you have anything to say?
+09:10 < adiabatic> illiminable: Does it use System.UInt*?
+09:10 < jack> illiminable: why?
+09:10 < rillian> illiminable, 3 levels of nesting? sounds perfect for .NET :)
+09:10 < illiminable> because it has a sensible oo like api
+09:11 < illiminable> and it gives speex and vorbis in one
+09:11 < adiabatic> will libfishsound do naked flac anytime soon?
+09:11  * rillian agrees a .NET port of libfishsound (as opposed to a wrapper) would be more appropriate
+09:12 < ozone> i'm fairly sure conrad isn't very keen on porting libfishsound to .NET ...
+09:12 < illiminable> Yes... i previously wrote a whole bunch of marshalling code to make conversions of most native type to .net types
+09:12 < illiminable> @adiabatic
+09:12 -!- volsung [~volsung@w-central-232-254.public.utexas.edu] has joined #xiphmeet
+09:12 < illiminable> Do note... that any wrapper around antive code will be platform tied to win32
+09:12 < adiabatic> illiminable: Eek. VB.NET doesn't have UInt*.
+09:13 < illiminable> It's easy enough to change... it's not finished yet
+09:13 < adiabatic> Using Managed C++, or just DllImportAttribute?
+09:13 < illiminable> Managed C++
+09:13 < illiminable> MONO and alike will not support native code inside managed code in the next 3-5 years if ever
+09:14 < rillian> ok, perhaps this can continue on the mailing lists
+09:14 < rillian> adi's been soliciting website translations
+09:14 < rillian> so if anyone would like to help, please contact hime
+09:15 < jack> we have no text to translate yet, so i think this is moot other than finding who is interested in doing them.
+09:15 < rillian> or webmaster at xiph
+09:15 < rillian> *nod*
+09:15 < adiabatic> jack: If someone wants to do stuff, /speex/ is ported already.
+09:15 < rillian> well, you could translate the existing text. maybe then you could help rewrite it ;)
+09:16 < rillian> Next item is better vorbis support
+09:16 < rillian> this is just jack's point from the last meeting
+09:16 < rillian> pick your favorite program and lobby them to support free codecs by default
+09:16 < jack> i'm still working on flash.
+09:16 < jack> i have a contact at apple finally, still searching for one at microsoft.
+09:16 < jack> has anyone else made any progress here?
+09:17  * rillian has not
+09:17 < adiabatic> flash, that thing that "only in kenya" is made in?
+09:17 < rillian> thomasvs, how's your effort with gnome schemes coming?
+09:17 < jack> adiabatic: macromedia in general
+09:17 < adiabatic> Gotcha.
+09:17 < Yen> i'm telling people about Ogg Vorbis and flac...
+09:17 < jack> ok people, we need to make more of an effort
+09:18 < jack> i want everyone to do something for next month.
+09:18 < adiabatic> What I wanted to address in that line is not only the problem of free codecs by default, but also making the UIs easier to use and faster to learn.
+09:18 < jack> adiabatic: ui code is beyond our scope.
+09:18 < jack> adiabatic: feel free to file bugs against those projects
+09:18 < xiphmont> I'm working on Ximian/Novell
+09:19 < Yen> there are some good GUI encoders avaible, that have optional support for ogg vorbis
+09:19 < adiabatic> But maybe not FLAC.
+09:19 < jack> xiphmont: what's the status there?
+09:19 < myidiym> regarding "lobby them"... is there a comment "pitch" that everyone is working from? 
+09:19 < adiabatic> myidiym: I don't think we're that coordinated yet.
+09:20 < Yen> dbpoweramp hosts plugins for it's music convertor, for Ogg Vorbis, FLAC and Speex
+09:20 < xiphmont> Very receptive; I'm a bit hamstrung right now on "well, what do you guys really want?"
+09:20 < rillian> myidiym, well, there's the version in the collective consciousness
+09:20 < rillian> would be a good advocacy@ thread
+09:20 < myidiym> adiabatic: is this another work item to live on "advocacy" list?
+09:20 < xiphmont> As in, they need to know what it is we're after.
+09:20 < Yen> + dbpoweramp works on wine
+09:20 < xiphmont> Rather than just theoretical objectives, hard, specific requests we can negotiate.,
+09:20 < adiabatic> I've sketched some notes on http://xiph.cyclooctane.com/contribute/ , but...yeah, the advocacy list would be a good place for that...I'll sign up for that list one of these days.
+09:21 < jack> xiphmont: money? :)
+09:21 < xiphmont> I'm trying to come up with a coherent, concise response.
+09:21 < jack> xiphmont: they don't make any multimedia tools to my knowledge.
+09:22 < xiphmont> yes, that makes it harder.
+09:22 < adiabatic> xiphmont: Automatic VorbisGain processing, Vorbis and (naked) FLAC encoding
+09:22 < xiphmont> ...and yet they are one of the desktop lynchpins.
+09:22 < rillian> a policy statement and some leadership of adoption for the linux desktop would help
+09:22 < xiphmont> adiabatic: it is not an engineering discussion
+09:22 < jack> why naked flac?
+09:22 < jack> shouldn't we be pushing for ogg wrapped flac as the standard?
+09:22 < adiabatic> Because Ogg FLAC has seeking bugs in the current release.
+09:22 < jack> well, we should fix those.
+09:22 < rillian> jack, I think that's an uphill battle
+09:23 < xiphmont> Fix the goddamned bugs then
+09:23 < jack> not undermine ourselves by working around them.
+09:23 < jack> we're supposed to be developing a cohesive set of stuff
+09:23 < adiabatic> Then if you could help bring Josh into the fold and see if we can get some more useful work out of him...
+09:23 < adiabatic> ...and help move him and his team off sourceforge once and for all...
+09:24 < rillian> adiabatic, do you know why they never followed through?
+09:24 < jack> well he has to respond to email for any of that to happen.
+09:24 < jack> the only time he's replied to me was in person in LA
+09:24 < adiabatic> rillian: There wasn't pushing on both sides.
+09:25 < Yen> rillian, iirc, the KDE team is converting their wav files to ogg vorbis for the next release.
+09:25 < adiabatic> Then there's the (as far as I can tell) repeated stalling and resistance to migrating the mailing lists...do we even have flac@ and flac-dev@?
+09:25 < rillian> Yen, you mean system sounds?
+09:25 < Yen> yes
+09:25 < volsung> Didn't they already do that?
+09:25 < rillian> adiabatic, yes we do
+09:25 < adiabatic> jack: I've gotten mail from josh.
+09:26 < illiminable> There is virtually 0 activity in the other flac mailing lists... all i've got is spam and viruses
+09:26 < Yen> volsungi think I saw that in some todo list
+09:26 < adiabatic> illiminable: It's in there if you have a decent shovel and a good back.
+09:27 < rillian> Yen, well, good news then :)
+09:27 < adiabatic> The point would be to move everything of the SF project so nobody refers to it.
+09:27 < Arc> google link:
+09:27 < rillian> Ok, I think that's all the useful discussion we can have for the moment
+09:27 < adiabatic> jack, rillian: assuming that mf-iii goes in in the next week, would you be willing to move them over to our stuff?
+09:27 < Arc> great way to find out who's linking to what
+09:28 < rillian> adiabatic, can you try and interest them in an actual move?
+09:28 < adiabatic> rillian: Will do. Should I hold off until -iii is up and running?
+09:28 < rillian> no
+09:28 < adiabatic> Right. Inertia.
+09:28 < rillian> *nod*
+09:28 < rillian> Ok, next item.
+09:29 < rillian> can we get an endorsement statement from someone at Epic?
+09:29 < rillian> Jack?
+09:29 < adiabatic> ...or anyone else respected?
+09:29 < jack> we already have them.
+09:29 < adiabatic> I wouldn't mind having Scott say how wonderful we are, but the last thing I want is a backlash from his higher-ups.
+09:29 < jack> there have been numerous such endorsements in press releases, etc
+09:30 < jack> what do you want it for?
+09:30 < adiabatic> Something along the lines of...
+09:30 < xiphmont> Yes, we may be able to get a new one out of Bungie/Gearbox/Microsoft.
+09:30 < jack> xiphmont: please email them and cc me.
+09:30 < xiphmont> OK
+09:30 < xiphmont> Writing that down
+09:31 < myidiym> and EA?
+09:31 < LarstiQ> an endorsement out of Microsoft? Oh dear :)
+09:31 < adiabatic> jack: For front pages (either / or /vorbis/) telling others how wonderful it is how we (they) saved money by using our stuff.
+09:31 < jack> ok
+09:31 < adiabatic> Stuff buried in the press releases don't help us like that.
+09:31 < jack> monty: try and also get one from a hardware vendor.  iriver is probably best.
+09:32 < jack> adiabatic: no, but you could go look at the press releases and pull out the quotes.
+09:32 < jack> that's more what i meant.
+09:32 < purple_haese> What about DI?
+09:32 < jack> what's DI?
+09:32 < LarstiQ> Digitally Imported?
+09:32 < Yen> This is from the Unreal 2 engine specs: Ogg Vorbis streaming sound and music support on Windows, Linux and Macintosh, offering higher quality audio with smaller file sizes than MP3
+09:32 < purple_haese> Digital Innovations. The Neuros folks.
+09:32 < rillian> Yen, :)
+09:32 < adiabatic> jack: I was hoping for something a little more in-depth--possibly in the mini-interview range.
+09:33 < jack> that would take effort.
+09:33 < myidiym> adiabatic... you are looking for a case study I think
+09:33 < Yen> rillian: they also have a link to this: http://www.mp3licensing.com/royalty/games.html
+09:33 < myidiym> which is a great idea
+09:33 < jack> and since no one put any in on general advocacy this month, i think the chances of that effort happening are slim.
+09:33 < rillian> shall we move on to the last item?
+09:34 < adiabatic> hold up...
+09:34 < adiabatic> Perhaps I could put together a question list to be forwarded on to one of the developers, or...
+09:34 < adiabatic> ?
+09:34 < jack> if you do the work, sure
+09:34 < jack> no objections
+09:35 < adiabatic> I'lll need someone else to introduce me, though.
+09:35 < jack> happy to do that once you've got the stuff prepared.
+09:35 < adiabatic> Good, good. Next!
+09:35 < rillian> ok, good.
+09:36 < rillian> Should we drop Ogg Traffic in favor of a continuous stream of news posts
+09:36 < rillian> I would prefer to maintain the latter
+09:36 < rillian> but there's nothing wrong with having both
+09:36 < adiabatic> Any particular reason why?
+09:36 < rillian> personal preference
+09:36 < volsung> I think a decentralized system where several of us have news posting privs is more likely to work.
+09:36 < xiphmont> OggTraffic is fine and good... if it was more regular.
+09:37 < xiphmont> Well...
+09:37 < segher> continuous posts would be to a mailing list or on the front page or such?
+09:37 < jack> volsung: we had that with vorbis.com. no one ever used it.
+09:37 < xiphmont> the thing that made OggTraffic work is that someone owned the task.
+09:37 < xiphmont> what jack just said.
+09:37 < adiabatic> One reason for keeping OT would be to translate commit activity into actual news posts with the ability to rattle the tin can.
+09:37 < xiphmont> Or rather, used it in bursts.
+09:37 < jack> oggtraffic has the benefit of having some preparation and polish, which news items genearlly don't have.
+09:37 < rillian> jack, I'd use it if I had any idea how to post things :)
+09:37 < jack> rillian: you had an idea at one time. you all did.
+09:37 < adiabatic> rillian: I'm working on documentation for our new news system.
+09:37 < jack> i wrote a whole interface for this.
+09:38 < jack> i was disappointed it never got used.
+09:38 < volsung> I can see that.  So who owns OT now?
+09:38 < Arc> I do
+09:38 < jack> i dunno.  i'm also a little upset that meeting minutes stopped happening.
+09:38 < Arc> and I just recently learned how to compile ReST for the web
+09:38 < Arc> I just haven't dedicated a day to "catching up" with a OT release
+09:39 < adiabatic> jack: I might have used it if you let me know about it.
+09:39 < Arc> I tried forming an editorial group around OT, to decentralize the task so multiple people could share the workload, but that didnt work
+09:39 < rillian> so sounds like we have consensus for both
+09:39 < adiabatic> Both...?
+09:39 < rillian> (and I agree the meeting minutes were nice. do we have a new volunteer?)
+09:39 < jack> you have an account dumbass :)
+09:39 < jack> so you did know about it.
+09:39 < jack> ralph didn't.
+09:40 < jack> carsten and manuel also had accounts.
+09:40 < adiabatic> On vorbis.com?
+09:40 < jack> yes
+09:41 < Arc> now what's happening to vorbis.com post change, adiabatic?
+09:41 < adiabatic> It will consist entirely of HTTP Redirect Permanent codes.
+09:41 < Arc> i mean with the codebase
+09:42 < Arc> where is the news going to go
+09:42 < adiabatic> /news/
+09:42 < Arc> so people are going to have to click to view it?
+09:42 < adiabatic> Not if I can help it.
+09:43 < vanguardist> (ugh, gotta go. busy morning)
+09:43 < Arc> so there's going to be a rotating news content section on the frontpage of xiph.org, like vorbis.com has now
+09:43 < rillian> vanguardist, thanks for comiong
+09:43 < rillian> coming
+09:43 < adiabatic> Arc: Right.
+09:43 < Arc> cool
+09:43 < adiabatic> Plus the smells-like-a-blog news archives.
+09:43 < adiabatic> http://io.cyclooctane.com/news/2004/
+09:44 < rillian> Ok, I think that's everything on the agenda
+09:44 < rillian> any general questions?
+09:44 < illiminable> Can we discuss the file extension ?
+09:44 < adiabatic> Yes. Let's.
+09:44 < rillian> ugh
+09:44 < rillian> illiminable, you do know this is an ancient flamewar?
+09:44 < xiphmont> Well, I added one thing.
+09:44 < illiminable> No
+09:44 < illiminable> But i know why it would be :)
+09:45 < xiphmont> "I prereleased the Postfish.  Flame on.  I mean, rock on."
+09:45 < Yen> hehe, I use .ogg for Ogg Vorbis files, .flac for flac fiels and .spx for speex
+09:45 < jack> we can't discuss this in 15 minutes.
+09:45 < Yen> files*
+09:45 < jack> so i motion to adjourn
+09:45 < xiphmont> illiminable: that is the oldest, most drug-out argumetn int he history of the .org.
+09:45 < rillian> agreed. seconded.
+09:45 < illiminable> I've taken to .vorb.ogg .spx.ogg etc
+09:45 < rillian> illiminable, keep it on the lists, I guess
+09:45 < jack> put it on next month's agenda.
+09:45 < ozone> i third it
+09:45 < adiabatic> illiminable: Put it on next month's agenda.
+09:45 < xiphmont> better idea.
+09:45 < illiminable> Sure...
+09:45  * rillian bangs the gavel
+09:46 < segher> yay
+09:46 < rillian> this MonthlyMeeting is adjourned
+09:46 < adiabatic> illiminable: That won't help.
+09:46 < rillian> thanks everyone for coming
+09:46 < segher> someone warn me before next month
+09:46 < segher> i want to watch the flames :_)
+09:46 < Arc> next month is regular time right?
+09:46 < illiminable> i know it doesn't help windows... but it helps me to know at a glance
+09:46 < adiabatic> No, we have the other regular time.
+09:46 < rillian> Next meeting is 23:59 July 2
+09:46 < xiphmont> we're alternating now, next month s evening
+09:46 < rillian> er, July 7, sorry
+09:46 < rillian> Thanks everyone for coming
+09:46 < Arc> yea thats what i ment
+09:46 < Yen> rillian, time zone?
+09:46 < adiabatic> Yen: UTC.
+09:47 < Yen> k
+09:47 < rillian> Yen, 23:59 GMT
+09:47 -!- jack [~jack@i.cantcode.com] has left #xiphmeet []
+09:47 < rillian> we now return you to informal discussion
+09:47 -!- ozone [~pan068@c211-30-78-105.belrs2.nsw.optusnet.com.au] has left #xiphmeet []
+--- Log closed Wed Jun 02 09:47:16 2004
