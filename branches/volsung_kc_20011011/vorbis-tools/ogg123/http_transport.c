@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: http_transport.c,v 1.1.2.2 2001/12/18 04:15:45 volsung Exp $
+ last mod: $Id: http_transport.c,v 1.1.2.3 2001/12/19 01:34:26 volsung Exp $
  
 ********************************************************************/
 
@@ -36,7 +36,7 @@ typedef struct http_private_t {
   pthread_t curl_thread;
 
   CURL *curl_handle;
-
+  char error[CURL_ERROR_SIZE];
   data_source_stats_t stats;
 } http_private_t;
 
@@ -44,6 +44,7 @@ typedef struct http_private_t {
 typedef struct curl_thread_arg_t {
   buf_t *buf;
   data_source_t *data_source;
+  http_private_t *http_private;
   CURL *curl_handle;
 } curl_thread_arg_t;
 
@@ -64,7 +65,7 @@ size_t write_callback (void *ptr, size_t size, size_t nmemb, void *arg)
 
 /* -------------------------- Private functions --------------------- */
 
-void set_curl_opts (CURL *handle, buf_t *buf, char *url)
+void set_curl_opts (CURL *handle, buf_t *buf, char *url, http_private_t *priv)
 {
   curl_easy_setopt(handle, CURLOPT_FILE, buf);
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
@@ -77,6 +78,8 @@ void set_curl_opts (CURL *handle, buf_t *buf, char *url)
   if (inputOpts.ProxyTunnel)
     curl_easy_setopt (handle, CURLOPT_HTTPPROXYTUNNEL, inputOpts.ProxyTunnel);
   */
+  curl_easy_setopt(handle, CURLOPT_MUTE, 1);
+  curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, priv->error);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(handle, CURLOPT_USERAGENT, "ogg123 "VERSION);
 }
@@ -94,6 +97,7 @@ curl_thread_arg_t *new_curl_thread_arg (buf_t *buf, data_source_t *data_source,
   
   arg->buf = buf;
   arg->data_source = data_source;
+  arg->http_private = data_source->private;
   arg->curl_handle = curl_handle;
 
   return arg;
@@ -116,6 +120,9 @@ void *curl_thread_func (void *arg)
 
   ret = curl_easy_perform((CURL *) myarg->curl_handle);
 
+  if (ret != 0)
+    status_error(myarg->http_private->error);
+    
   buffer_mark_eos(myarg->buf);
 
   curl_easy_cleanup(myarg->curl_handle);
@@ -179,7 +186,7 @@ data_source_t* http_open (char *source_string, ogg123_options_t *ogg123_opts)
   if (private->curl_handle == NULL)
     goto fail;
 
-  set_curl_opts(private->curl_handle, private->buf, source_string);
+  set_curl_opts(private->curl_handle, private->buf, source_string, private);
 
   /* Start thread */
   if (pthread_create(&private->curl_thread, NULL, 

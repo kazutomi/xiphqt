@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.10 2001/12/18 04:15:44 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.11 2001/12/19 01:34:26 volsung Exp $
 
  ********************************************************************/
 
@@ -56,6 +56,7 @@ void buffer_init_vars (buf_t *buf)
   buf->prebuffering = buf->prebuffer_size > 0;
   buf->paused = 0;
   buf->eos = 0;
+  buf->abort_write = 0;
   
   buf->curfill = 0;
   buf->start = 0;
@@ -208,6 +209,8 @@ void *buffer_thread_func (void *arg)
     
     UNLOCK_MUTEX(buf->mutex);
 
+    pthread_testcancel();
+
     /* Don't need to lock buffer while running actions since position
        won't change.  We clear out any actions before we compute the
        dequeue size so we don't consider actions that need to
@@ -218,6 +221,8 @@ void *buffer_thread_func (void *arg)
 
     /* Need to be locked while we check things. */
     write_amount = compute_dequeue_size(buf, buf->audio_chunk_size);
+
+    pthread_testcancel();
 
     UNLOCK_MUTEX(buf->mutex);
  
@@ -497,6 +502,9 @@ size_t buffer_get_data (buf_t *buf, char *data, long nbytes)
       COND_WAIT(buf->playback_cond, buf->mutex);
     }
 
+    if (buf->abort_write)
+      break;
+
     /* Note: Even if curfill is still 0, nothing bad will happen here */
     
     /* For simplicity, the number of bytes played must satisfy
@@ -528,6 +536,8 @@ size_t buffer_get_data (buf_t *buf, char *data, long nbytes)
 
   UNLOCK_MUTEX(buf->mutex);
   
+  pthread_testcancel();
+
   DEBUG("Exit buffer_get_data");
    
   return orig_size - nbytes;
@@ -549,6 +559,7 @@ void buffer_abort_write (buf_t *buf)
   DEBUG("buffer_mark_eos");
 
   LOCK_MUTEX(buf->mutex);
+  buf->abort_write = 1;
   COND_SIGNAL(buf->write_cond);
   UNLOCK_MUTEX(buf->mutex);  
 }
