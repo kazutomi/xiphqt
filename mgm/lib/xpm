@@ -127,7 +127,7 @@ sub copy{
 }
 
 sub write{
-    my($xpm,$black,$white,$transp)=@_;
+    my($xpm,$black,$white,$quant,$transp)=@_;
     # easier than reading, but harder to do efficiently
     
     my$width=$xpm->{"width"};
@@ -152,25 +152,23 @@ sub write{
 	$buffer.="\",\n\"";
 	
 	for(my$j=0;$j<$width;$j++){
-	    print chr($g[$j]*(16/255)+65) ." ";
-
-	    $buffer.=chr(int($g[$j]*(16/255))+65);
+	    $buffer.=chr(int($g[$j]*($quant/255))+65);
 	}	
     }
     
     $out="/* XPM */\nstatic char * mgm_xpm[] = {\n".
-	"\"$width $height 17 1";
+	"\"$width $height ".($quant+1)." 1";
     
-    foreach $key (0..16){
+    foreach $key (0..$quant){
 	$c=chr($key+65);
 	$out.="\",\n\"$c  $type ";
 	if("#$key" eq 'transp'){
 	    $out.="None\",\n";
 	}else{
 	    
-	    my$r=($key/16)*$wr+$br;
-	    my$g=($key/16)*$wg+$bg;
-	    my$b=($key/16)*$wb+$bb;
+	    my$r=($key/$quant)*$wr+$br;
+	    my$g=($key/$quant)*$wg+$bg;
+	    my$b=($key/$quant)*$wb+$bb;
 	    
 	    my$val=$hex[$r].$hex[$g].$hex[$b];
 	    

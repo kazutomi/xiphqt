@@ -14,6 +14,7 @@ sub module_init{
 
     # modify defaults
     $toplevel->optionAdd("$xpath*scalerefresh",5000,21); # slower
+    $toplevel->optionAdd("$xpath*scalereturn",0,21);
     $toplevel->optionAdd("$xpath*label", "mail",21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);   # narrower
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter

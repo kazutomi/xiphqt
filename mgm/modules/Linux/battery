@@ -2,8 +2,6 @@
 use Tk;
 
 package MGMmodule::battery;
-use vars qw($graph $litbackground $midbackground $lowbackground
-	    $label $lowlabel $state);
 
 sub module_init{
     my$this=shift;
@@ -11,39 +9,43 @@ sub module_init{
     my$xpath=$this->{"xpath"};
 
     # modify defaults
-    $toplevel->optionAdd("$xpath*scalerefresh",5000,21); # 5s
-    $toplevel->optionAdd("$xpath*scalereturn" ,1,21);     # don't need hyst
-    $toplevel->optionAdd("$xpath.bar.0.label", "battery",21);
-    $toplevel->optionAdd("$xpath.bar.0.lowlabel", "battery low",21);
+    $toplevel->optionAdd("$xpath.order",100,21); # status group
+    $toplevel->optionAdd("$xpath.scalerefresh",5000,21); # 5s
+    $toplevel->optionAdd("$xpath.scalereturn" ,1,21);     # don't need hyst
+    $toplevel->optionAdd("$xpath*label", "battery",21);
+    $toplevel->optionAdd("$xpath*lowlabel", "battery low",21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);  # narrower
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);  # shorter
-    $toplevel->optionAdd("$xpath.bar.0.litbackground", '#60c060',21);
-    $toplevel->optionAdd("$xpath.bar.0.midbackground", '#b0b060',21);
-    $toplevel->optionAdd("$xpath.bar.0.lowbackground", '#ff8080',21);
+
+    my$fg=&main::moption($this,"litforeground");
+
+    $toplevel->optionAdd("$xpath*litbackground", '#60c060',21);
+    $toplevel->optionAdd("$xpath*midbackground", '#d0d060',21);
+    $toplevel->optionAdd("$xpath*lowbackground", '#ff4040',21);
+    $toplevel->optionAdd("$xpath*midforeground", $fg,21);
+    $toplevel->optionAdd("$xpath*lowforeground", '#ffffff',21);
+
     my($minx,$miny)=&MGM::Graph::calcxysize($this,100,'%',1);
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);      
     
+    $this->module_update;
+    if(!$this->{"active"}){
+	$toplevel->optionAdd("$xpath.active",        'false',21);      
+    }
     1;
 }
 
 sub module_construct{
     my$this=shift;
     
-    $graph=MGM::Graph->new($this,num=>1,fixed=>1,rangesetting=>100,
+    my$graph=MGM::Graph->new($this,num=>1,fixed=>1,rangesetting=>100,
 			   rangecurrent=>100,
 			   prompt=>'%');
 
     # color change hack
-    $state=0;
-    $litbackground=$graph->{"bar0"}->optionGet("litbackground","");
-    $midbackground=$graph->{"bar0"}->optionGet("midbackground","");
-    $lowbackground=$graph->{"bar0"}->optionGet("lowbackground","");
-    
-    $label=$graph->{"bar0"}->optionGet("label","");
-    $lowlabel=$graph->{"bar0"}->optionGet("lowlabel","");
-
-
+    $this->{"state"}=0;
+    $this->{"graph"}=$graph;
     $this->module_update;
     $graph->{"widget"};        # must return the widget
 }
@@ -52,48 +54,60 @@ sub module_update{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xpath=$this->{"xpath"};
-
-    die "Couldn't open /proc/apm\n" unless open(PROC,"</proc/apm");
-    $_=<PROC>;
-    if(m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+([^ \%]+)\%/){
-
-	if($1<30){
-	    # below 30%, it would be nice to unfix the scale so the user
-	    # can see
-
-	    if($1<8){
-		if($state!=2){
-		    $toplevel->optionAdd("$xpath.bar.0.litbackground", 
-					 $lowbackground,21);
-		    $toplevel->optionAdd("$xpath.bar.0.label", 
-					 $lowlabel,21);
-		    $graph->configure(fixed=>0,rangesetting=>8);
-		    $state=2;
-		}
-	    }else{
-		if($state!=1){
-		    $toplevel->optionAdd("$xpath.bar.0.litbackground", 
-					 $midbackground,21);
-		    $toplevel->optionAdd("$xpath.bar.0.label", 
-					 $label,21);
-		    $graph->configure(fixed=>0,rangesetting=>32);
-		    $state=1;
+    my$graph=$this->{"graph"};
+    
+    if(open(PROC,"</proc/apm")){
+	$_=<PROC>;
+	if(m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+([^ \%]+)\%/){
+	    
+	    if(defined($graph)){
+		# apm, for some reason, seems to occasionally return -1.
+		# guard against that
+		if($1>=0){
+		    if($1<30){
+			# below 30%, it would be nice to unfix the scale so 
+			#the  user can see
+		    
+			if($1<8){
+			    if($this->{"state"}!=2){
+				$graph->
+				    barconfigure(0,'aforeXr'=>'lowforeground',
+						 'abackXr'=>'lowbackground',
+						 'labelXr'=>'lowlabel');
+				$graph->configure(fixed=>0,rangesetting=>8);
+				$this->{"state"}=2;
+			    }
+			}else{
+			    if($this->{"state"}!=1){
+				$graph->
+				    barconfigure(0,'aforeXr'=>'midforeground',
+						 'abackXr'=>'midbackground',
+						 'labelXr'=>'label');
+				$graph->configure(fixed=>0,rangesetting=>32);
+				$this->{"state"}=1;
+			    }
+			}
+		    }else{
+			if($this->{"state"}!=0){
+			    $graph->
+				barconfigure(0,'aforeXr'=>'litforeground',
+					     'abackXr'=>'litbackground',
+					     'labelXr'=>'label');
+			    $graph->configure(fixed=>1,rangesetting=>100);
+			    $this->{"state"}=0;
+			}
+		    }
+		    $graph->set($1);
 		}
 	    }
+	    $this->{"active"}=1;
 	}else{
-	    if($state!=0){
-		$toplevel->optionAdd("$xpath.bar.0.litbackground", 
-				     $litbackground,21);
-		    $toplevel->optionAdd("$xpath.bar.0.label", 
-					 $label,21);
-		$graph->configure(fixed=>1,rangesetting=>100);
-		$state=0;
-	    }
+	    $this->{"active"}=0;
 	}
-
-	$graph->set($1);
-    }
-    close PROC;
+	close PROC;
+    }else{
+	$this->{"active"}=0;
+    }    
 }
 
 bless {};

@@ -18,6 +18,8 @@ $|=1;
 
 $toplevel=new MainWindow();
 my%modules;
+my%ordindex;
+my@ordered;
 my$Xname=$toplevel->Class;
 require "$libdir/widget";
 
@@ -37,6 +39,7 @@ $toplevel->optionAdd("$Xname*font",
 		     '-misc-fixed-*-*-*-*-8-*-*-*-*-*-*-*',20);
 $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
+$toplevel->optionAdd("$Xname*order",            1000,20);
 $toplevel->optionAdd("$Xname*scale",            'true',20);
 $toplevel->optionAdd("$Xname*scalejustify",     '1',20);
 $toplevel->optionAdd("$Xname*scalethresh",      '4',20);
@@ -66,25 +69,26 @@ while(my $arg=shift @ARGV){
     }
 }
 
-$orient=$toplevel->optionGet("bars","Bars");
-$stack=$toplevel->optionGet("stack","Stack");
-$background=$toplevel->optionGet("background","Background");
-$foreground=$toplevel->optionGet("foreground","Foreground");
+$orient=$toplevel->optionGet("bars","");
+$stack=$toplevel->optionGet("stack","");
+$background=$toplevel->optionGet("background","");
+$foreground=$toplevel->optionGet("foreground","");
 
-$toplevel->optionAdd("$Xname*bar*dimforeground",  "$background",20);
-$toplevel->optionAdd("$Xname*bar*litforeground", "$background",20);
+$toplevel->optionAdd("$Xname*dimforeground",  "$background",20);
+$toplevel->optionAdd("$Xname*litforeground", "$background",20);
 
 $toplevel->configure('-background'=>"$background",'-foreground'
 		     =>"$foreground");
 
 &LoadModules($moddir);
+&order_modules;
 
 # set up desired/min geometry, add a default geometry setting
 
 my($minx,$miny,$reqx,$reqy,$ladj,$wadj)=&geometries;
 $toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
 
-my $geometry=$toplevel->optionGet("geometry","Geometry");
+my $geometry=$toplevel->optionGet("geometry","");
 $toplevel->geometry($geometry);
 $toplevel->minsize($minx,$miny);
 $toplevel->resizable('TRUE','TRUE');
@@ -160,9 +164,10 @@ sub LoadModule{
 	    
 	    # Be certain we've not already loaded this plugin.
 	    
-	    my$name=$moduleref->{"name"}=(split /::/, ref $moduleref)[-1];
+	    my$name=$moduleref->{"name"}=
+		ucfirst ((split /::/,ref $moduleref)[-1]);
 	    $moduleref->{"toplevel"}=$toplevel;
-	    $moduleref->{"xpath"}="$Xname.$name";
+	    $moduleref->{"xpath"}="$Xname*$name";
 	    
 	    if(!defined($name)){
 		print STDERR 
@@ -179,7 +184,7 @@ sub LoadModule{
 	
 	    # dummy; Tk doesn't let us look up resources for windows 
 	    # that don't exist.
-	    $moduleref->{"widget"}=$toplevel->Label(Name=>$name); 
+	    $moduleref->{"widget"}=$toplevel->Label(-class=>$name); 
 
 	    # set default module options
 	    $toplevel->optionAdd("$Xname.$name.name",   "$name",19);
@@ -228,16 +233,14 @@ sub geometries{
 	    }
 
 	    if($stack eq 'vertical'){
-		$minx=&moption($mod,'minx')if
-		    ($minx<&moption($mod,'minx'));
+		my$tempx=&moption($mod,'minx')+$pad*2;
+		$minx=$tempx if ($minx<$tempx);
 		$miny+=&moption($mod,'miny');
-		$minx+=$pad*2;
 		$miny+=$pad;
 	    }else{
-		$miny=&moption($mod,'miny')if
-		    ($miny<&moption($mod,'miny'));
+		my$tempy=&moption($mod,'miny')+$pad*2;
+		$miny=$tempy if ($miny<$tempy);
 		$minx+=&moption($mod,'minx');
-		$miny+=$pad*2;
 		$minx+=$pad;
 	    }
 	}
@@ -252,30 +255,29 @@ sub geometries{
     }
 }
 
-sub build_and_run{
+sub order_modules{
     # Build the order-of-appearance list 
-    my%ordered;
-    my@remaining;
-    my@modlist=keys %modules;
-    my$count=$#modlist+1;
+    my$count=0;
+    foreach my $key (keys %modules){
+	# each order entry may have more than one location
+	my$opt=&moption($modules{$key},'order');
+	my@l=split ',', $opt;
+	foreach my $loc (@l){
+	    $ordindex{"$loc $count"}=$modules{$key};
+	    $count++;
+	}
+    }
     
-    while(my$key=pop(@modlist)){
-	my $mod=$modules{$key};
-	my $order=&moption($mod,"order");
-	
-	if(defined($order) && !defined($ordered{$order})){
-	    $ordered{$order}=$mod;
-	}else{
-	    push @remaining, $mod;
-	}
-    }
+    @ordered= sort {my($A,$AA)=(split ' ',$a);
+		    my($B,$BB)=(split ' ',$b);
+		    if($A==$B){
+			  $AA>$BB;
+		      }else{
+			  $A>$B;
+		      }}keys %ordindex;
+}
 
-    for(my$i=0;$i<$count;$i++){
-	if(!defined($ordered{$i})){
-	    $ordered{$i}=shift @remaining;
-	}
-    }
-	
+sub build_and_run{
     # calculate demand/sizes
 
     my$extrax=$actualx-$minx;
@@ -296,8 +298,8 @@ sub build_and_run{
     my$sofar=0;
     my$pos=0;
 
-    for(my$i=0;$sofar<$count;$i++){
-	my $mod=$ordered{$i};
+    foreach my $key (@ordered){
+	my $mod=$ordindex{$key};
 	if(defined($mod)){
 	    $sofar++;
 
@@ -354,6 +356,7 @@ sub build_and_run{
 		# so we set them
 		$mod->{"width"}=$width;
 		$mod->{"height"}=$height;
+		$mod->{"sequence"}=$i;
 		my$ret=eval{$mod->module_construct};
 		if(!defined($ret)){
 		    print STDERR "Error eval()ing ->module_construct for ".
