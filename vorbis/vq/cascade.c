@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: function call to do simple data cascading
- last mod: $Id: cascade.c,v 1.13 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: cascade.c,v 1.6.8.1 2000/08/31 09:00:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,11 +21,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
 
 /* set up metrics */
 
-float count=0.f;
+float count=0.;
 
 
 void process_preprocess(codebook **bs,char *basename){
@@ -57,7 +60,7 @@ void process_vector(codebook **bs,int *addmul,int inter,float *a,int n){
   int booknum=0;
   
   while(*bs){
-    float base=0.f;
+    float base=0.;
     codebook *b=*bs;
     int dim=b->dim;
     

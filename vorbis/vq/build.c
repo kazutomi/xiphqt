@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility main for building codebooks from training sets
- last mod: $Id: build.c,v 1.21 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: build.c,v 1.14.6.1 2000/08/31 09:00:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,6 +21,8 @@
 #include <math.h>
 #include <string.h>
 #include <errno.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
 
 #include "vqgen.h"
@@ -38,10 +41,10 @@ static char *rline(FILE *in,FILE *out){
       if(sofar>=lbufsize){
 	if(!lbufsize){	
 	  lbufsize=1024;
-	  linebuffer=_ogg_malloc(lbufsize);
+	  linebuffer=malloc(lbufsize);
 	}else{
 	  lbufsize*=2;
-	  linebuffer=_ogg_realloc(linebuffer,lbufsize);
+	  linebuffer=realloc(linebuffer,lbufsize);
 	}
       }
       {
@@ -130,7 +133,7 @@ int main(int argc,char *argv[]){
   }
   
   /* just use it to allocate mem */
-  vqgen_init(&v,dim,0,entries,0.f,NULL,NULL,0);
+  vqgen_init(&v,dim,0,entries,0.,NULL,NULL,0);
   
   /* quant */
   line=rline(in,out);
@@ -144,12 +147,12 @@ int main(int argc,char *argv[]){
   /* save quant data; we don't want to requantize later as our method
      is currently imperfect wrt repeated application */
   i=0;
-  quantlist=_ogg_malloc(sizeof(long)*v.elements*v.entries);
+  quantlist=malloc(sizeof(long)*v.elements*v.entries);
   for(j=0;j<entries;j++){
     float a;
     for(k=0;k<dim;k++){
       line=rline(in,out);
-      sscanf(line,"%f",&a);
+      sscanf(line,"%lf",&a);
       v.entrylist[i]=a;
       quantlist[i++]=rint(a);
     }
@@ -169,7 +172,7 @@ int main(int argc,char *argv[]){
       for(k=0;k<dim+aux;k++){
 	line=rline(in,out);
 	if(!line)break;
-	sscanf(line,"%f",b+k);
+	sscanf(line,"%lf",b+k);
       }
       if(feof(in))break;
       vqgen_addpoint(&v,b,NULL);

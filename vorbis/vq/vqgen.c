@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: train a VQ codebook 
- last mod: $Id: vqgen.c,v 1.41 2002/10/11 07:44:28 xiphmont Exp $
+ last mod: $Id: vqgen.c,v 1.33.4.1 2000/08/31 09:00:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,6 +32,7 @@
 
 #include "vqgen.h"
 #include "bookutil.h"
+#include "../lib/sharedbook.h"
 
 /* Codebook generation happens in two steps: 
 
@@ -60,7 +62,7 @@
 float _dist(vqgen *v,float *a, float *b){
   int i;
   int el=v->elements;
-  float acc=0.f;
+  float acc=0.;
   for(i=0;i<el;i++){
     float val=(a[i]-b[i]);
     acc+=val*val;
@@ -83,12 +85,13 @@ void _vqgen_seed(vqgen *v){
 int directdsort(const void *a, const void *b){
   float av=*((float *)a);
   float bv=*((float *)b);
-  return (av<bv)-(av>bv);
+  if(av>bv)return(-1);
+  return(1);
 }
 
 void vqgen_cellmetric(vqgen *v){
   int j,k;
-  float min=-1.f,max=-1.f,mean=0.f,acc=0.f;
+  float min=-1.,max=-1.,mean=0.,acc=0.;
   long dup=0,unused=0;
  #ifdef NOISY
   int i;
@@ -175,7 +178,7 @@ void vqgen_quantize(vqgen *v,quant_meta *q){
   mindel=maxdel=_now(v,0)[0];
   
   for(j=0;j<v->entries;j++){
-    float last=0.f;
+    float last=0.;
     for(k=0;k<v->elements;k++){
       if(mindel>_now(v,j)[k]-last)mindel=_now(v,j)[k]-last;
       if(maxdel<_now(v,j)[k]-last)maxdel=_now(v,j)[k]-last;
@@ -188,7 +191,7 @@ void vqgen_quantize(vqgen *v,quant_meta *q){
      encoded.  Loosen the delta slightly to allow for additional error
      during sequence quantization */
 
-  delta=(maxdel-mindel)/((1<<q->quant)-1.5f);
+  delta=(maxdel-mindel)/((1<<q->quant)-1.5);
 
   q->min=_float32_pack(mindel);
   q->delta=_float32_pack(delta);
@@ -227,7 +230,7 @@ void vqgen_unquantize(vqgen *v,quant_meta *q){
   float delta=_float32_unpack(q->delta);
 
   for(j=0;j<v->entries;j++){
-    float last=0.f;
+    float last=0.;
     for(k=0;k<v->elements;k++){
       float now=_now(v,j)[k];
       now=fabs(now)*delta+last+mindel;
@@ -247,13 +250,13 @@ void vqgen_init(vqgen *v,int elements,int aux,int entries,float mindist,
   v->aux=aux;
   v->mindist=mindist;
   v->allocated=32768;
-  v->pointlist=_ogg_malloc(v->allocated*(v->elements+v->aux)*sizeof(float));
+  v->pointlist=malloc(v->allocated*(v->elements+v->aux)*sizeof(float));
 
   v->entries=entries;
-  v->entrylist=_ogg_malloc(v->entries*v->elements*sizeof(float));
-  v->assigned=_ogg_malloc(v->entries*sizeof(long));
-  v->bias=_ogg_calloc(v->entries,sizeof(float));
-  v->max=_ogg_calloc(v->entries,sizeof(float));
+  v->entrylist=malloc(v->entries*v->elements*sizeof(float));
+  v->assigned=malloc(v->entries*sizeof(long));
+  v->bias=calloc(v->entries,sizeof(float));
+  v->max=calloc(v->entries,sizeof(float));
   if(metric)
     v->metric_func=metric;
   else
@@ -276,7 +279,7 @@ void vqgen_addpoint(vqgen *v, float *p,float *a){
 
   if(v->points>=v->allocated){
     v->allocated*=2;
-    v->pointlist=_ogg_realloc(v->pointlist,v->allocated*(v->elements+v->aux)*
+    v->pointlist=realloc(v->pointlist,v->allocated*(v->elements+v->aux)*
 			 sizeof(float));
   }
 
@@ -284,7 +287,7 @@ void vqgen_addpoint(vqgen *v, float *p,float *a){
   if(v->aux)memcpy(_point(v,v->points)+v->elements,a,sizeof(float)*v->aux);
  
   /* quantize to the density mesh if it's selected */
-  if(v->mindist>0.f){
+  if(v->mindist>0.){
     /* quantize to the mesh */
     for(k=0;k<v->elements+v->aux;k++)
       _point(v,v->points)[k]=
@@ -304,7 +307,7 @@ static int meshcomp(const void *a,const void *b){
 
 void vqgen_sortmesh(vqgen *v){
   sortit=0;
-  if(v->mindist>0.f){
+  if(v->mindist>0.){
     long i,march=1;
 
     /* sort to make uniqueness detection trivial */
@@ -337,8 +340,8 @@ float vqgen_iterate(vqgen *v,int biasp){
   long  desired;
   long  desired2;
 
-  float asserror=0.f;
-  float meterror=0.f;
+  float asserror=0.;
+  float meterror=0.;
   float *new;
   float *new2;
   long   *nearcount;
@@ -368,10 +371,10 @@ float vqgen_iterate(vqgen *v,int biasp){
   fdesired=(float)v->points/v->entries;
   desired=fdesired;
   desired2=desired*2;
-  new=_ogg_malloc(sizeof(float)*v->entries*v->elements);
-  new2=_ogg_malloc(sizeof(float)*v->entries*v->elements);
-  nearcount=_ogg_malloc(v->entries*sizeof(long));
-  nearbias=_ogg_malloc(v->entries*desired2*sizeof(float));
+  new=malloc(sizeof(float)*v->entries*v->elements);
+  new2=malloc(sizeof(float)*v->entries*v->elements);
+  nearcount=malloc(v->entries*sizeof(long));
+  nearbias=malloc(v->entries*desired2*sizeof(float));
 
   /* fill in nearest points for entry biasing */
   /*memset(v->bias,0,sizeof(float)*v->entries);*/
@@ -542,7 +545,7 @@ float vqgen_iterate(vqgen *v,int biasp){
 	  _now(v,j)[k]=vN(new,j)[k]/v->assigned[j];
       }else{
 	for(k=0;k<v->elements;k++)
-	  _now(v,j)[k]=(vN(new,j)[k]+vN(new2,j)[k])/2.f;
+	  _now(v,j)[k]=(vN(new,j)[k]+vN(new2,j)[k])/2.;
       }
     }
   }

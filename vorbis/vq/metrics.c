@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: function calls to collect codebook metrics
- last mod: $Id: metrics.c,v 1.15 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: metrics.c,v 1.8.6.1 2000/08/31 09:00:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -19,6 +20,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
 
 /* collect the following metrics:
@@ -36,18 +39,18 @@
 
 /* set up metrics */
 
-float meanamplitude_acc=0.f;
-float meanamplitudesq_acc=0.f;
-float meanerror_acc=0.f;
-float meanerrorsq_acc=0.f;
+float meanamplitude_acc=0.;
+float meanamplitudesq_acc=0.;
+float meanerror_acc=0.;
+float meanerrorsq_acc=0.;
 
 float **histogram=NULL;
 float **histogram_error=NULL;
 float **histogram_errorsq=NULL;
 float **histogram_hi=NULL;
 float **histogram_lo=NULL;
-float bits=0.f;
-float count=0.f;
+float bits=0.;
+float count=0.;
 
 static float *_now(codebook *c, int i){
   return c->valuelist+i*c->c->dim;
@@ -60,11 +63,11 @@ void process_preprocess(codebook **bs,char *basename){
   while(bs[books])books++;
   
   if(books){
-    histogram=_ogg_calloc(books,sizeof(float *));
-    histogram_error=_ogg_calloc(books,sizeof(float *));
-    histogram_errorsq=_ogg_calloc(books,sizeof(float *));
-    histogram_hi=_ogg_calloc(books,sizeof(float *));
-    histogram_lo=_ogg_calloc(books,sizeof(float *));
+    histogram=calloc(books,sizeof(float *));
+    histogram_error=calloc(books,sizeof(float *));
+    histogram_errorsq=calloc(books,sizeof(float *));
+    histogram_hi=calloc(books,sizeof(float *));
+    histogram_lo=calloc(books,sizeof(float *));
   }else{
     fprintf(stderr,"Specify at least one codebook\n");
     exit(1);
@@ -72,17 +75,17 @@ void process_preprocess(codebook **bs,char *basename){
 
   for(i=0;i<books;i++){
     codebook *b=bs[i];
-    histogram[i]=_ogg_calloc(b->entries,sizeof(float));
-    histogram_error[i]=_ogg_calloc(b->entries*b->dim,sizeof(float));
-    histogram_errorsq[i]=_ogg_calloc(b->entries*b->dim,sizeof(float));
-    histogram_hi[i]=_ogg_calloc(b->entries*b->dim,sizeof(float));
-    histogram_lo[i]=_ogg_calloc(b->entries*b->dim,sizeof(float));
+    histogram[i]=calloc(b->entries,sizeof(float));
+    histogram_error[i]=calloc(b->entries*b->dim,sizeof(float));
+    histogram_errorsq[i]=calloc(b->entries*b->dim,sizeof(float));
+    histogram_hi[i]=calloc(b->entries*b->dim,sizeof(float));
+    histogram_lo[i]=calloc(b->entries*b->dim,sizeof(float));
   }
 }
 
 static float _dist(int el,float *a, float *b){
   int i;
-  float acc=0.f;
+  float acc=0.;
   for(i=0;i<el;i++){
     float val=(a[i]-b[i]);
     acc+=val*val;
@@ -92,7 +95,7 @@ static float _dist(int el,float *a, float *b){
 
 void cell_spacing(codebook *c){
   int j,k;
-  float min=-1.f,max=-1.f,mean=0.f,meansq=0.f;
+  float min=-1,max=-1,mean=0.,meansq=0.;
   long total=0;
 
   /* minimum, maximum, mean, ms cell spacing */
@@ -209,7 +212,7 @@ void process_postprocess(codebook **bs,char *basename){
 float process_one(codebook *b,int book,float *a,int dim,int step,int addmul,
 		   float base){
   int j,entry;
-  float amplitude=0.f;
+  float amplitude=0.;
 
   if(book==0){
     float last=base;
@@ -266,7 +269,7 @@ void process_vector(codebook **bs,int *addmul,int inter,float *a,int n){
   for(bi=0;bi<books;bi++){
     codebook *b=bs[bi];
     int dim=b->dim;
-    float base=0.f;
+    float base=0.;
 
     if(inter){
       for(i=0;i<n/dim;i++)

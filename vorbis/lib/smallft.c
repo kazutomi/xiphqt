@@ -1,19 +1,20 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: *unnormalized* fft transform
- last mod: $Id: smallft.c,v 1.17 2002/07/11 06:40:50 xiphmont Exp $
+ last mod: $Id: smallft.c,v 1.8.8.1 2000/08/31 09:00:02 xiphmont Exp $
 
- ********************************************************************/
+********************************************************************/
 
 /* FFT implementation from OggSquish, minus cosine transforms,
  * minus all but radix 2/4 case.  In Vorbis we only need this
@@ -36,7 +37,7 @@
 
 static void drfti1(int n, float *wa, int *ifac){
   static int ntryh[4] = { 4,2,3,5 };
-  static float tpi = 6.28318530717958648f;
+  static float tpi = 6.28318530717958647692528676655900577;
   float arg,argh,argld,fi;
   int ntry=0,i,j=-1;
   int k1, l1, l2, ib;
@@ -91,9 +92,9 @@ static void drfti1(int n, float *wa, int *ifac){
       ld+=l1;
       i=is;
       argld=(float)ld*argh;
-      fi=0.f;
+      fi=0.;
       for (ii=2;ii<ido;ii+=2){
-	fi+=1.f;
+	fi+=1.;
 	arg=fi*argld;
 	wa[i++]=cos(arg);
 	wa[i++]=sin(arg);
@@ -167,7 +168,7 @@ static void dradf2(int ido,int l1,float *cc,float *ch,float *wa1){
 
 static void dradf4(int ido,int l1,float *cc,float *ch,float *wa1,
 	    float *wa2,float *wa3){
-  static float hsqt2 = .70710678118654752f;
+  static float hsqt2 = .70710678118654752440084436210485;
   int i,k,t0,t1,t2,t3,t4,t5,t6;
   float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
   t0=l1*ido;
@@ -270,7 +271,7 @@ static void dradf4(int ido,int l1,float *cc,float *ch,float *wa1,
 static void dradfg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
                           float *c2,float *ch,float *ch2,float *wa){
 
-  static float tpi=6.283185307179586f;
+  static float tpi=6.28318530717958647692528676655900577;
   int idij,ipph,i,j,k,l,ic,ik,is;
   int t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
   float dc2,ai1,ai2,ar1,ar2,ds2;
@@ -404,8 +405,8 @@ L119:
     }
   }
 
-  ar1=1.f;
-  ai1=0.f;
+  ar1=1.;
+  ai1=0.;
   t1=0;
   t2=ipp2*idl1;
   t3=(ip-1)*idl1;
@@ -684,8 +685,8 @@ L105:
 
 static void dradb3(int ido,int l1,float *cc,float *ch,float *wa1,
                           float *wa2){
-  static float taur = -.5f;
-  static float taui = .8660254037844386f;
+  static float taur = -.5;
+  static float taui = .86602540378443864676372317075293618;
   int i,k,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
   float ci2,ci3,di2,di3,cr2,cr3,dr2,dr3,ti2,tr2;
   t0=l1*ido;
@@ -747,7 +748,7 @@ static void dradb3(int ido,int l1,float *cc,float *ch,float *wa1,
 
 static void dradb4(int ido,int l1,float *cc,float *ch,float *wa1,
 			  float *wa2,float *wa3){
-  static float sqrt2=1.414213562373095f;
+  static float sqrt2=1.4142135623730950488016887242097;
   int i,k,t0,t1,t2,t3,t4,t5,t6,t7,t8;
   float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
   t0=l1*ido;
@@ -838,7 +839,7 @@ static void dradb4(int ido,int l1,float *cc,float *ch,float *wa1,
 
 static void dradbg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
             float *c2,float *ch,float *ch2,float *wa){
-  static float tpi=6.283185307179586f;
+  static float tpi=6.28318530717958647692528676655900577;
   int idij,ipph,i,j,k,l,ik,is,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,
       t11,t12;
   float dc2,ai1,ai2,ar1,ar2,ds2;
@@ -975,8 +976,8 @@ static void dradbg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
   }
 
 L116:
-  ar1=1.f;
-  ai1=0.f;
+  ar1=1.;
+  ai1=0.;
   t1=0;
   t9=(t2=ipp2*idl1);
   t3=(ip-1)*idl1;
@@ -1240,15 +1241,15 @@ void drft_backward(drft_lookup *l,float *data){
 
 void drft_init(drft_lookup *l,int n){
   l->n=n;
-  l->trigcache=_ogg_calloc(3*n,sizeof(*l->trigcache));
-  l->splitcache=_ogg_calloc(32,sizeof(*l->splitcache));
+  l->trigcache=calloc(3*n,sizeof(float));
+  l->splitcache=calloc(32,sizeof(int));
   fdrffti(n, l->trigcache, l->splitcache);
 }
 
 void drft_clear(drft_lookup *l){
   if(l){
-    if(l->trigcache)_ogg_free(l->trigcache);
-    if(l->splitcache)_ogg_free(l->splitcache);
-    memset(l,0,sizeof(*l));
+    if(l->trigcache)free(l->trigcache);
+    if(l->splitcache)free(l->splitcache);
+    memset(l,0,sizeof(drft_lookup));
   }
 }

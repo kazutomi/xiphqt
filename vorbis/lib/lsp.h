@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.h,v 1.11 2002/07/11 06:40:49 xiphmont Exp $
+  last mod: $Id: lsp.h,v 1.4.2.1 2000/08/31 09:00:00 xiphmont Exp $
 
  ********************************************************************/
 
@@ -19,10 +20,9 @@
 #ifndef _V_LSP_H_
 #define _V_LSP_H_
 
-extern int vorbis_lpc_to_lsp(float *lpc,float *lsp,int m);
-
-extern void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,
-				float *lsp,int m,
-				float amp,float ampoffset);
+extern void vorbis_lpc_to_lsp(float *lpc,float *lsp,int m);
+extern void vorbis_lsp_to_curve(float *curve,int n,
+				float *lsp,int m,float amp,
+				float *w);
   
 #endif

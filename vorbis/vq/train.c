@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility main for training codebooks
- last mod: $Id: train.c,v 1.24 2001/12/20 01:00:40 segher Exp $
+ last mod: $Id: train.c,v 1.18.6.1 2000/08/31 09:00:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -78,7 +79,7 @@ int main(int argc,char *argv[]){
 
   int entries=-1,dim=-1;
   int start=0,num=-1;
-  float desired=.05f,mindist=0.f;
+  float desired=.05,mindist=0.;
   int iter=1000;
   int biasp=1;
   int centroid=0;
@@ -150,7 +151,7 @@ int main(int argc,char *argv[]){
       for(j=0;j<entries;j++){
 	for(k=0;k<dim;k++){
 	  line=rline(in,out,0);
-	  sscanf(line,"%f",&a);
+	  sscanf(line,"%lf",&a);
 	  v.entrylist[i++]=a;
 	}
       }      
@@ -160,7 +161,7 @@ int main(int argc,char *argv[]){
       i=0;
       for(j=0;j<entries;j++){
 	line=rline(in,out,0);
-	sscanf(line,"%f",&a);
+	sscanf(line,"%lf",&a);
 	v.bias[i++]=a;
       }
       
@@ -172,7 +173,7 @@ int main(int argc,char *argv[]){
 	  for(k=0;k<dim+vqext_aux;k++){
 	    line=rline(in,out,0);
 	    if(!line)break;
-	    sscanf(line,"%f",b+k);
+	    sscanf(line,"%lf",b+k);
 	  }
 	  if(feof(in))break;
 	  vqgen_addpoint(&v,b,b+dim);
@@ -205,11 +206,11 @@ int main(int argc,char *argv[]){
 	}
 	break;
       case 'e':
-	if(sscanf(argv[1],"%f",&desired)!=1)
+	if(sscanf(argv[1],"%lf",&desired)!=1)
 	  goto syner;
 	break;
       case 'd':
-	if(sscanf(argv[1],"%f",&mindist)!=1)
+	if(sscanf(argv[1],"%lf",&mindist)!=1)
 	  goto syner;
 	if(init)v.mindist=mindist;
 	break;
@@ -259,9 +260,6 @@ int main(int argc,char *argv[]){
 	    while(*temp>32)temp++;
 	    while(*temp==' ')temp++;
 	  }
-
-	  fprintf(stderr,"%d colums per line in file %s\n",cols,file);
-
 	}
 	{
 	  int i;

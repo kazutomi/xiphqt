@@ -1,7 +1,6 @@
 // OggVorbis plugin for WinAmp and compatible media player
 // Copyright 2000 Jack Moffitt <jack@icecast.org> 
 //			and Michael Smith <msmith@labyrinth.net.au>
-// HTTP streaming support by Aaron Porter <aaron@javasource.org>
 // Licensed under terms of the LGPL
 
 #include <windows.h>
@@ -12,21 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <process.h>
-
 #include <vorbis/vorbisfile.h>
-//#include <vorbis/os_types.h>
-
-#include "httpstream.h"
 
 #include "in2.h"
 
-#error Don't use this plugin, it's deprecated. 
-
-
 // post this to the main window at end of file (after playback has stopped)
 #define WM_WA_MPEG_EOF WM_USER + 2
-
-#define UTF8_ILSEQ	-1
 
 In_Module mod; // the output module (declared near the bottom of this file)
 char lastfn[MAX_PATH]; // currently playing file (used for getting info on the current file)
@@ -47,8 +37,6 @@ HANDLE thread_handle=INVALID_HANDLE_VALUE;	// the handle to the decode thread
 
 void DecodeThread(void *b); // the decode thread procedure
 
-void * btdvp=0;
-
 void config(HWND hwndParent)
 {
 	MessageBox(hwndParent,
@@ -56,109 +44,27 @@ void config(HWND hwndParent)
 		"Configuration",MB_OK);
 	// if we had a configuration we'd want to write it here :)
 }
-
 void about(HWND hwndParent)
 {
-	MessageBox(hwndParent,"OggVorbis Player, by Jack Moffitt <jack@icecast.org>\n\tand Michael Smith <msmith@labyrinth.net.au>\n\nHTTP streaming by Aaron Porter <aaron@javasource.org>","About OggVorbis Player",MB_OK);
+	MessageBox(hwndParent,"OggVorbis Player, by Jack Moffitt <jack@icecast.org>\n\tand Michael Smith <msmith@labyrinth.net.au>","About OggVorbis Player",MB_OK);
 }
 
 void init() 
 {
-	httpInit();
+
 }
 
 void quit() 
 { 
-	httpShutdown();
+
 }
 
 int isourfile(char *fn) 
-{
-    setHttpVars();
-
-    return isOggUrl(fn);
+{ 
+	// used for detecting URL streams.. unused here. strncmp(fn,"http://",7) to detect HTTP streams, etc
+	//MessageBox(mod.outMod->hMainWindow,fn,"Debug",MB_OK);
+	return 0; 
 } 
-
-/* Converts a UTF-8 character sequence to a UCS-4 character */
-int _utf8_to_ucs4(unsigned int *target, const char *utf8, int n)
-{
-	unsigned int result = 0;
-	int count;
-	int i;
-
-	/* Determine the number of characters in sequence */
-	if ((*utf8 & 0x80) == 0)
-		count = 1;
-	else if ((*utf8 & 0xE0) == 0xC0)
-		count = 2;
-	else if ((*utf8 & 0xF0) == 0xE0)
-		count = 3;
-	else if ((*utf8 & 0xF8) == 0xF0)
-		count = 4;
-	else if ((*utf8 & 0xFC) == 0xF8)
-		count = 5;
-	else if ((*utf8 & 0xFE) == 0xFC)
-		count = 6;
-	else
-		return UTF8_ILSEQ; /* Invalid start byte */
-
-	if (n < count)
-		return UTF8_ILSEQ; /* Not enough characters */
-
-	if (count == 2 && (*utf8 & 0x1E) == 0)
-		return UTF8_ILSEQ; /* Overlong sequence */
-
-	/* Convert the first character */
-	if (count == 1)
-		result = *utf8;
-	else
-		result = (0xFF >> (count +1)) & *utf8;
-
-	/* Convert the continuation bytes */
-	for (i = 1; i < count; i++)
-	{
-		if ((utf8[i] & 0xC0) != 0x80)
-			return UTF8_ILSEQ; /* Not a continuation byte */
-		if (result == 0 &&
-			i == 2 &&
-			((utf8[i] & 0x7F) >> (7 - count)) == 0)
-			return UTF8_ILSEQ; /* Overlong sequence */
-		result = (result << 6) | (utf8[i] & 0x3F);
-	}
-
-	if (target != 0)
-		*target = result;
-
-	return count;
-}
-
-/* Converts a UTF-8 string to a WCHAR string */
-int UTF8ToWideChar(LPWSTR target, LPCSTR utf8, WCHAR unknown)
-{
-	int wcount = 0;
-	int conv;
-	unsigned int ucs4;
-	int count = lstrlenA(utf8) +1;
-
-	while (count != 0)
-	{
-		conv = _utf8_to_ucs4(&ucs4, utf8, count);
-		if (conv == UTF8_ILSEQ) return UTF8_ILSEQ;
-		if (target != 0)
-		{
-			if (ucs4 > 0xFFFF)
-				*target = unknown; /* Can only handle BMP */
-			else
-				*target = (WCHAR) ucs4;
-			target++;
-		}
-		wcount++;
-		count -= conv;
-		utf8 += conv;
-	}
-
-	return wcount;
-}
 
 size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
@@ -169,15 +75,14 @@ size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 	{
 		return bytesread/size;
 	}
-
-	return 0; /* It failed */
+	else
+		return 0; /* It failed */
 }
 
 int seek_func(void *datasource, ogg_int64_t offset, int whence)
 { /* Note that we still need stdio.h even though we don't use stdio, 
    * in order to get appropriate definitions for SEEK_SET, etc.
    */
-
 	HANDLE file = (HANDLE)datasource;
 	int seek_type;
 	unsigned long retval;
@@ -228,34 +133,21 @@ int play(char *fn)
 	vorbis_info *vi = NULL;
 	ov_callbacks callbacks = {read_func, seek_func, close_func, tell_func};
 
-    setHttpVars();
+	stream = CreateFile(fn, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (isOggUrl(fn))
-	{
-        mod.is_seekable = FALSE;
-
-		if ((btdvp = httpStartBuffering(fn, &input_file, TRUE)) == 0)
-            return -1;
+	if (stream == INVALID_HANDLE_VALUE)
+	{	
+		return -1;
 	}
-    else
-    {
-        mod.is_seekable = TRUE;
 
-	    stream = CreateFile(fn, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
-		    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-	    if (stream == INVALID_HANDLE_VALUE)
-	    {	
-		    return -1;
-	    }
-
-	    if (ov_open_callbacks(stream, &input_file, NULL, 0, callbacks) < 0) {
-		    CloseHandle(stream);
-		    return 1;
-	    }
-    }
+	if (ov_open_callbacks(stream, &input_file, NULL, 0, callbacks) < 0) {
+		CloseHandle(stream);
+		return 1;
+	}
 
 	file_length = (int)ov_time_total(&input_file, -1) * 1000;
+	
 	strcpy(lastfn, fn);
 	paused = 0;
 	decode_pos_ms = 0;
@@ -306,7 +198,7 @@ int play(char *fn)
 }
 
 void pause() 
-{
+{ 
 	paused = 1; 
 	mod.outMod->Pause(1); 
 }
@@ -324,12 +216,6 @@ int ispaused()
 
 void stop() 
 { 
-	if (btdvp)
-    {
-		httpStopBuffering(btdvp);
-        btdvp = 0;
-    }
-
 	if (thread_handle != INVALID_HANDLE_VALUE) {
 		killDecodeThread = 1;
 		
@@ -338,6 +224,7 @@ void stop()
 			TerminateThread(thread_handle, 0);
 		}
 		ov_clear(&input_file);
+		CloseHandle(thread_handle);
 		thread_handle = INVALID_HANDLE_VALUE;
 
 	}
@@ -382,74 +269,21 @@ int infoDlg(char *fn, HWND hwnd)
 
 char *generate_title(vorbis_comment *comment, char *fn)
 {/* Later, extend this to be configurable like the mp3 player */
-	int len;
 	char buff[1024];
 	char *title, *artist, *finaltitle;
-	LPWSTR titleW, artistW;
-	LPSTR titleL = NULL, artistL = NULL;
 
 	title = vorbis_comment_query(comment, "title", 0);
 	artist = vorbis_comment_query(comment, "artist", 0);
 
-	if (title)
-	{
-		/* Convert the UTF-8 title to the system code page */
-		len = UTF8ToWideChar(NULL, title, '?');
-		if (len == UTF8_ILSEQ)
-		{
-			/* Fallback to ascii */
-			titleL = strdup(title);
-		}
-		else
-		{
-			/* Convert the UTF-8 string */
-			titleL = calloc(len, sizeof(CHAR));
-			titleW = calloc(len, sizeof(WCHAR));
-			UTF8ToWideChar(titleW, title, '?');
-			WideCharToMultiByte(CP_ACP, 0, titleW, -1, titleL,
-			                    len, "?", NULL);
-			free(titleW);
-		}
-	}
-
-	if (artist)
-	{
-		/* Convert the UTF-8 artist to the system code page */
-		len = UTF8ToWideChar(NULL, artist, '?');
-		if (len == UTF8_ILSEQ)
-		{
-			/* Fallback to ascii */
-			artistL = strdup(artist);
-		}
-		else
-		{
-			/* Convert the UTF-8 string */
-			artistL = calloc(len, sizeof(CHAR));
-			artistW = calloc(len, sizeof(WCHAR));
-			UTF8ToWideChar(artistW, artist, '?');
-			WideCharToMultiByte(CP_ACP, 0, artistW, -1, artistL,
-			                    len, "?", NULL);
-			free(artistW);
-		}
-	}
-
-
 	if(artist && title)
-		_snprintf(buff, 1024, "%s - %s", artistL, titleL);
+		_snprintf(buff, 1024, "%s - %s", artist, title);
 	else if(title)
-		_snprintf(buff, 1024, "%s", titleL);
+		_snprintf(buff, 1024, "%s", title);
 	else if(artist)
-		_snprintf(buff, 1024, "%s - unknown", artistL);
+		_snprintf(buff, 1024, "%s - unknown", artist);
 	else
-    {
-	    if (title = httpGetTitle(fn))
-		    return title;
-
 		_snprintf(buff, 1024, "%s (no title)", fn);
-    }
 
-	free(artistL);
-	free(titleL);
 	finaltitle = strdup(buff);
 
 	return finaltitle;
@@ -463,31 +297,23 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 	ov_callbacks callbacks = {read_func, seek_func, close_func, tell_func};
 
 
-	if (filename != NULL && filename[0] != 0)
-    {
-        if (isOggUrl(filename))
-        {
-            if (!httpStartBuffering(filename, &vf, FALSE))
-                return;
-        }
-        else
-        {
-		    stream = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
-			    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (filename != NULL && filename[0] != 0) {
 
-		    if(stream == INVALID_HANDLE_VALUE)
-			    return;
+		stream = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-		    // The ov_open() function performs full stream detection and machine
-		    // initialization.  If it returns 0, the stream *is* Vorbis and we're
-		    // fully ready to decode.
-		    
+		if(stream == INVALID_HANDLE_VALUE)
+			return;
 
-		    if (ov_open_callbacks(stream, &vf, NULL, 0, callbacks) < 0) {
-			    CloseHandle(stream);
-			    return;
-		    }
-        }
+		// The ov_open() function performs full stream detection and machine
+		// initialization.  If it returns 0, the stream *is* Vorbis and we're
+		// fully ready to decode.
+		
+
+		if (ov_open_callbacks(stream, &vf, NULL, 0, callbacks) < 0) {
+			CloseHandle(stream);
+			return;
+		}
 
 		file_length = (int)ov_time_total(&vf, -1) * 1000;
 		*length_in_ms = file_length;
@@ -619,16 +445,17 @@ void DecodeThread(void *b)
 		}
 	}
 	
-	_endthread();
+	return;
 }
 
 In_Module mod = 
 {
 	IN_VER,
-	"OggVorbis Input Plugin 0.2",
+	"OggVorbis Input Plugin 0.1",
 	0,	// hMainWindow
 	0,  // hDllInstance
-	"OGG\0OggVorbis File (*.OGG)\0",
+	"OGG\0OggVorbis File (*.OGG)\0"
+	,
 	1,	// is_seekable
 	1, // uses output
 	config,

@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: metrics and quantization code for LSP VQ codebooks
- last mod: $Id: lspdata.c,v 1.19 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: lspdata.c,v 1.12.8.1 2000/08/31 09:00:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,7 +21,7 @@
 #include <stdio.h>
 #include "vqgen.h"
 #include "vqext.h"
-#include "codebook.h"
+#include "../lib/sharedbook.h"
 
 char *vqext_booktype="LSPdata";  
 quant_meta q={0,0,0,1};          /* set sequence data */
@@ -38,7 +39,7 @@ void vqext_quantize(vqgen *v,quant_meta *q){
      encoded.  Loosen the delta slightly to allow for additional error
      during sequence quantization */
 
-  delta=(global_maxdel-global_mindel)/((1<<q->quant)-1.5f);
+  delta=(global_maxdel-global_mindel)/((1<<q->quant)-1.5);
   
   q->min=_float32_pack(global_mindel);
   q->delta=_float32_pack(delta);
@@ -88,7 +89,7 @@ float *weight=NULL;
 float *vqext_weight(vqgen *v,float *p){
   int i;
   int el=v->elements;
-  float lastp=0.f;
+  float lastp=0.;
   for(i=0;i<el;i++){
     float predist=(p[i]-lastp);
     float postdist=(p[i+1]-p[i]);
@@ -98,7 +99,7 @@ float *vqext_weight(vqgen *v,float *p){
   return p;
 }
 #else
-#define FUDGE 1.f
+#define FUDGE 1.
 float *vqext_weight(vqgen *v,float *p){
   return p;
 }
@@ -108,7 +109,7 @@ float *vqext_weight(vqgen *v,float *p){
 float vqext_metric(vqgen *v,float *e, float *p){
   int i;
   int el=v->elements;
-  float acc=0.f;
+  float acc=0.;
   for(i=0;i<el;i++){
     float val=(p[i]-e[i])*FUDGE;
     acc+=val*val;
@@ -116,8 +117,11 @@ float vqext_metric(vqgen *v,float *e, float *p){
   return sqrt(acc/v->elements);
 }
 
-/* Data files are line-vectors, now just deltas.  The codebook entries
-   want to be monotonically increasing, so we adjust */
+/* Data files are line-vectors, starting with zero.  If we want to
+   train on a subvector starting in the middle, we need to adjust the
+   data as if it was starting at zero.  we also need to add the 'aux'
+   value, which is an extra point at the end so we have leading and
+   trailing space */
 
 /* assume vqext_aux==1 */
 void vqext_addpoint_adj(vqgen *v,float *b,int start,int dim,int cols,int num){
@@ -125,13 +129,12 @@ void vqext_addpoint_adj(vqgen *v,float *b,int start,int dim,int cols,int num){
   float base=0;
   int i;
 
-  for(i=0;i<dim;i++)
-    base=a[i]=b[i+start]+base;
-
+  if(start>0)base=b[start-1];
+  for(i=0;i<dim;i++)a[i]=b[i+start]-base;
   if(start+dim+1>cols) /* +aux */
-    a[i]=M_PI;
+    a[i]=a[i-1];
   else
-    a[i]=b[i+start]+base;
+    a[i]=b[i+start]-base;
   
   vqgen_addpoint(v,a,a+dim);
 }
@@ -140,7 +143,7 @@ void vqext_addpoint_adj(vqgen *v,float *b,int start,int dim,int cols,int num){
 void vqext_preprocess(vqgen *v){
   long j,k;
 
-  global_maxdel=0.f;
+  global_maxdel=0.;
   global_mindel=M_PI;
   for(j=0;j<v->points;j++){
     float last=0.;
@@ -152,6 +155,6 @@ void vqext_preprocess(vqgen *v){
     }
   }
 
-  weight=_ogg_malloc(sizeof(float)*v->elements);
+  weight=malloc(sizeof(float)*v->elements);
 }
 
