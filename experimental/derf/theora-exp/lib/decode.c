@@ -1516,7 +1516,7 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
     dst+=_ystride;
     psrc=src;
     src=nsrc;
-    nsrc+=_ystride&-((by<7)|!(_b&8));
+    nsrc+=_ystride&-(!(_b&8)|by<7);
   }
 }
 
@@ -1551,7 +1551,7 @@ static void oc_dec_dering_plane(oc_dec_ctx *_dec,int _pli,
       int var;
       qi=frag->qi;
       var=*variance;
-      b=(x<=0)|(x+8>=iplane->width)<<1|(y<=0)<<2|(y+8>=iplane->height);
+      b=(x<=0)|(x+8>=iplane->width)<<1|(y<=0)<<2|(y+8>=iplane->height)<<3;
       if(strong&&var>sthresh){
         oc_dering_block(idata+x,iplane->ystride,b,
          _dec->pp_dc_scale[qi],_dec->pp_sharp_mod[qi],1);
