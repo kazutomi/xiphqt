@@ -47,14 +47,15 @@ void tarkin_stream_destroy (TarkinStream *s)
    if (s->layer)
       FREE(s->layer);
 
-   if (s->headers.header);
+   if (s->headers.header)
       FREE(s->headers.header);
 
-   if (s->headers.header1);
+   if (s->headers.header1)
       FREE(s->headers.header1);
 
-   if (s->headers.header2);
+   if (s->headers.header2)
       FREE(s->headers.header2);
+
 
    FREE(s);
 }
@@ -86,12 +87,13 @@ extern int      tarkin_analysis_add_layer(TarkinStream *s,
       s->layer = MALLOC(sizeof(*s->layer));
    }
    layer = s->layer + s->n_layers;
+   memset(layer,0,sizeof(*s->layer));
    memcpy (&layer->desc , tvld, sizeof(TarkinVideoLayerDesc));
    
    s->n_layers++;
    s->ti->n_layers = s->n_layers;
    s->ti->layer = s->layer;
-   printf("n_layers: %d\n",s->n_layers); 
+
    switch (layer->desc.format) {
       case TARKIN_GRAYSCALE:
          layer->n_comp = 1;
@@ -116,6 +118,11 @@ extern int      tarkin_analysis_add_layer(TarkinStream *s,
       default:
          return -TARKIN_INVALID_COLOR_FORMAT;
    };
+   
+#ifdef DBG_OGG   
+   printf("dbg_ogg:add_layer %d with %d components\n",
+                       s->n_layers, layer->n_comp);
+#endif   
 
    layer->waveletbuf = (Wavelet3DBuf**) CALLOC (layer->n_comp,
                                                    sizeof(Wavelet3DBuf*));
@@ -161,8 +168,8 @@ TarkinError _analysis_packetout(TarkinStream *s, uint32_t layer_id,
    op.bytes = oggpack_bytes(&opb)+4;
    op.packet = opb.buffer;
 #ifdef DBG_OGG
-   printf("ogg: writing packet layer %d, comp %d, data_len %d\n",
-                   layer_id, comp, data_len);
+   printf("dbg_ogg: writing packet layer %d, comp %d, data_len %d %s\n",
+                   layer_id, comp, data_len, op.e_o_s?"eos":""); 
 #endif
    s->layer[layer_id].packet[comp].data_len = 0; /* so direct call => eos */
    return(s->packet_out(s,&op));
@@ -233,7 +240,14 @@ uint32_t tarkin_analysis_framein (TarkinStream *s, uint8_t *frame,
 
    if (s->current_frame_in_buf == s->frames_per_buf)
       _stream_flush (s);
-
+   
+#ifdef DBG_OGG
+   printf("dbg_ogg: framein at pos %d/%d, n° %d,%d on layer %d\n",
+           date->numerator, date->denominator, 
+	   layer->frameno, s->current_frame, layer_id);
+#endif
+   
+   layer->frameno++;
    return (++s->current_frame);
 }
 
@@ -263,9 +277,6 @@ TarkinError tarkin_synthesis_init (TarkinStream *s, TarkinInfo *ti)
    s->ti = ti;
    s->layer = ti->layer; /* It was malloc()ed by headerin() */
    s->n_layers = ti->n_layers;
-#ifdef DBG_OGG
-   printf("tarkin_synthesis_init\n");
-#endif
    return (TARKIN_OK);
 }
 
@@ -277,7 +288,9 @@ TarkinError tarkin_synthesis_packetin (TarkinStream *s, ogg_packet *op)
    oggpack_buffer opb;
    TarkinPacket *packet;
 #ifdef DBG_OGG
-   printf("Reading packet %lld: ", op->packetno);
+   printf("dbg_ogg: Reading packet n° %lld, granulepos %lld, len %ld, %s%s\n", 
+          op->packetno, op->granulepos, op->bytes,
+          op->b_o_s?"b_o_s":"", op->e_o_s?"e_o_s":"");
 #endif
    oggpack_readinit(&opb,op->packet,op->bytes);
    flags = oggpack_read(&opb,8);
@@ -286,9 +299,6 @@ TarkinError tarkin_synthesis_packetin (TarkinStream *s, ogg_packet *op)
                                            * packetno would be enough ?) */
    nread = 4;
 
-#ifdef DBG_OGG
-   printf("layer_id %d, comp %d", layer_id, comp);
-#endif
    if(flags){     /* This is void "infinite future features" feature ;) */
      if(flags & 1<<7){
        junk = flags;
@@ -309,10 +319,17 @@ TarkinError tarkin_synthesis_packetin (TarkinStream *s, ogg_packet *op)
          * 31 potentially usefull bits in last chunk. */
    }
         
+   nread = (opb.ptr - opb.buffer);
+   data_len = op->bytes - nread;
+   
+#ifdef DBG_OGG
+   printf("   layer_id %d, comp %d, meta-data %dB, w3d data %dB.\n", 
+		   layer_id, comp,nread, data_len);
+#endif
+
    /* We now have for shure our data. */
    packet = &s->layer[layer_id].packet[comp];
    if(packet->data_len)return(-TARKIN_UNUSED); /* Previous data wasn't used */
-   data_len = op->bytes - (opb.ptr - opb.buffer);
    
    if(packet->storage < data_len){
       packet->storage = data_len + 255;
@@ -338,7 +355,7 @@ TarkinError tarkin_synthesis_frameout(TarkinStream *s,
       for (j=0; j<layer->n_comp; j++) {
          TarkinPacket *packet = layer->packet + j;
             
-         if(packet->data_len == 0) return (TARKIN_NEED_MORE);
+         if(packet->data_len == 0)goto err_out ;
             
          wavelet_3d_buf_decode_coeff (layer->waveletbuf[j], packet->data,
                                          packet->data_len);
@@ -367,14 +384,25 @@ TarkinError tarkin_synthesis_frameout(TarkinStream *s,
 
    if (s->current_frame_in_buf == s->frames_per_buf)
       s->current_frame_in_buf=0;
-
+   
+   date->numerator   = layer->frameno * s->ti->inter.numerator;
+   date->denominator = s->ti->inter.denominator;
+#ifdef DBG_OGG
+   printf("dbg_ogg: outputting frame pos %d/%d from layer %d.\n",
+           date->numerator, date->denominator, layer_id);
+#endif
+   layer->frameno++;
    return (TARKIN_OK);
+err_out:
+   FREE(*frame);
+   return (TARKIN_NEED_MORE);
 }
 
 int tarkin_synthesis_freeframe(TarkinStream *s, uint8_t *frame)
 {
    FREE(frame);
-   return(TARKIN_OK);
+   
+   return(TARKIN_OK);   
 }
 
 

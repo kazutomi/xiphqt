@@ -71,6 +71,7 @@ typedef struct {
    Wavelet3DBuf **waveletbuf;
    TarkinPacket *packet;
    uint32_t current_frame_in_buf;
+   uint32_t frameno;
 
    void (*color_fwd_xform) (uint8_t *rgba, Wavelet3DBuf *yuva [], uint32_t count);
    void (*color_inv_xform) (Wavelet3DBuf *yuva [], uint8_t *rgba, uint32_t count);

@@ -56,12 +56,13 @@ int main (int argc, char **argv)
 	  ogg_sync_wrote(&oy, nread);
       else{
 	  ogg_sync_wrote(&oy,0);
-	  break;
       }	  
       if(ogg_sync_pageout(&oy,&og)){
           ogg_stream_pagein(&os,&og);
 	  while(ogg_stream_packetout(&os,&op)){
-             if(nheader<3){
+             if(op.e_o_s)
+                break;
+             if(nheader<3){ /* 3 first packets to headerin */
                 tarkin_synthesis_headerin(&ti, &tc, &op);
 		if(nheader == 2){
                    tarkin_synthesis_init(tarkin_stream, &ti);
@@ -81,6 +82,8 @@ int main (int argc, char **argv)
 	     }
 	  }
       }
+      if(nread==0)
+	  break;
    }
    tarkin_stream_destroy (tarkin_stream);
    close (fd);
