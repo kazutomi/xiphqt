@@ -11,6 +11,9 @@
 #define STREAM_NO 0
 #define STREAM_MIME_TYPE "application/x-ogg"
 #define READ_LENGTH 4096
+#ifdef _WIN32
+#define strncasecmp strnicmp
+#endif
 
 typedef enum
 {
