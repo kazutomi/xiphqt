@@ -527,11 +527,12 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 static void
 ices_setup_usage (void)
 {
-  printf ("This is ices " VERSION "\n");
-  printf ("ices <options>\n");
-  printf ("Options:\n");
-  printf ("\t-B (Background (daemon mode))\n");
-  printf ("\t-b <stream bitrate>\n");
+  printf ("This is ices " VERSION "\n"
+	  "ices <options>\n"
+	  "Options:\n"
+	  "\t-B (Background (daemon mode))\n"
+	  "\t-b <stream bitrate>\n"
+	  "\t-C <crossfade seconds>\n");
   printf ("\t-c <configfile>\n");
   printf ("\t-D <base directory>\n");
   printf ("\t-d <stream description>\n");
