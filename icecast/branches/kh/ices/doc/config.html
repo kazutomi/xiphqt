@@ -2,7 +2,7 @@
 <html>
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <title>IceS v2.0 Documentation</title>
+  <title>IceS v2.0-kh Documentation</title>
   <link rel="STYLESHEET" type="text/css" href="style.css">
  </head>
  <body>
@@ -10,14 +10,30 @@
    <h1>Config File</h1>
    <table width="100%"><tr><td bgcolor="#007B79" height="10" align="center"></td></tr></table>
    <p>The ices 2 configuration file is in XML format, which is described in detail below.
-   There are 2 sample XML files provided which show the two main ways ices is used.<p>
+   There are a few sample XML files provided which show the main ways ices is used.<p>
    </p>
+   A live audio feed often comes from a soundcard but may come via a server such as JACK
    <ul>
-   <li><a href="ices-live.xml">live</a> audio streaming, takes audio from the soundcard which can
-   be captured from say the Mic, line-In, or CD. 
-   <li><a href="ices-playlist.xml">playlist</a> audio streaming, takes pre-encoded Ogg Vorbis files
-   and either sends them as-is or re-encodes them to different settings</p>
+       <li>ices-oss.xml
+       <li>ices-alsa.xml
+       <li>ices-jack.xml
    </ul>
+   <p>Other possibilities usually involve a playlist, but you may want to invoke a separate
+   program which can produce PCM via a pipe into ices.</p>
+   <ul>
+       <li>ices-pcm.xml
+       <li>ices-playlist.xml
+   </ul>
+   <p>The ices-switch.xml is an example of how you can define a series of inputs. You could
+   use this to switch between a live session and a pre-recorded playlist if it require. All
+   available inputs can be used with this mechanism, but only 1 can be used at any one time.
+   A switch between inputs can occur if an input stops or manual intervention occurs with a
+   USR2 signal.
+   </p>
+   <p>An unusual one is the ices-fixit.xml, which is basically a playlist but just outputs
+   to files and the timer is disabled so that it runs very quickly. This can be used to
+   split files or maybe even repair some Ogg Vorbis files.</p>
+
    <h2>General layout</h2>
    <pre>
     &lt;?xml version="1.0"?&gt;
@@ -50,12 +66,14 @@
     <h4>logfile</h4>
     <div class=indentedbox>
      The name of the logfile created. On log re-opening the existing logfile is
-     renamed to &lt;logfile&gt;.1
+     renamed to &lt;logfile&gt;.old. In the case of HUP, renaming is not done as
+     it is often moved/deleted before the signal is sent.
     </div>
     <h4>logsize</h4>
     <div class=indentedbox>
      When the log file reaches this size (in kilobytes) then the log file will
-     be cycled (the default is 2Meg)
+     be cycled (the default is 2Meg). Sending the HUP signal reopens the log
+     which is another way for logs to be cycled.
     </div>
     <h4>loglevel</h4>
     <div class=indentedbox>
@@ -85,28 +103,26 @@
     <p>This describes how the input and outgoing streams are configured.<p>
     <pre>
      &lt;stream&gt;
-         Metadata
-         Input
-         Instance
+         Global metadata
+         Inputs
+         Runners
      &lt;/stream&gt;
     </pre>
 
-    <h3>Metadata</h3>
+    <h3>Global metadata</h3>
     <pre>
-     &lt;metadata&gt;
          &lt;name&gt;My Stream&lt;/name&gt;
          &lt;genre&gt;Rock&lt;/genre&gt;
          &lt;description&gt;A short description of your stream&lt;/description&gt;
          &lt;url&gt;http://mysite.org&lt;/url&gt;
-     &lt;/metadata&gt;
     </pre>
-    <p>
+    <div class=indentedbox>
      This section describes what metadata information is passed in the headers
      at connection time to icecast.  This applies to each instance defined within
      the stream section but maybe overridden by a per-instance &lt;metadata&gt;
      section.
-    </p>
-    <h3>Input</h3>
+    </div>
+    <h3>Inputs</h3>
     <p>
      This section deals with getting the audio data into IceS. There are a few
      ways that can happen. Typically it's either from a playlist or via a soundcard.
@@ -118,93 +134,83 @@
      param tags supplied to a module.  Details of the module parameters are
      shown later.
     </p>
-    <h3>Instance</h3>
-    <p>
-     Multiple instances can be defined to allow for multiple encodings, this
-     is useful for encoding the same input to multiple bitrates. Each instance
-     defines a particular set actions that occur on the passed in audio. Any
-     modifications to the input data is isolated to the instance.
+    <h3>Runners</h3>
+    <p>A runner is a thread. You need at least 1, but each runner can process
+    several encodings. As encoding is a CPU intensive task, grouping these
+    into the same runner can help the load on the machine, especially if your
+    machine does other work. Often only 1 runner is needed but you could say 
+    that the general rule of thumb is 1 runner per CPU.
+    </p>
+    <p>While a runner may indicate the CPU usage, the actual encoding of the
+    stream is placed within an &lt;instance&gt;.  More than 1 instance can be
+    defined within each runner.
     </p>
     <pre>
-     &lt;instance&gt;
-        hostname
-        port
-        password
-        mount
-        yp
-        resample
-        downmix
-        savefile
-        encode
-     &lt;/instance&gt;
+        &lt;runner&gt;
+            &lt;instance&gt;
+            ...
+            &lt;/instance&gt;
+
+            &lt;instance&gt;
+            ...
+            &lt;/instance&gt;
+        &lt;/runner&gt;
     </pre>
-    <h4>hostname</h4>
-    <div class=indentedbox>
-     State the hostname of the icecast to contact, this can be a name or IP
-     address and can be ipv4 or ipv6 on systems that support IPv6. The default
-     is localhost.
-   </div>
-   <h4>port</h4>
-   <div class=indentedbox>
-    State the port to connect to, this will be the port icecast is listening on,
-    typically 8000 but can be any.
-   </div>
-   <h4>password</h4>
-   <div class=indentedbox>
-    For providing a stream, a username/password has to be provided, and must
-    match what icecast expects.
-   </div>
-   <h4>mount</h4>
-   <div class=indentedbox>
-    Mountpoints are used to identify a particular stream on a icecast server,
-    they must begin with / and for the sake of certain listening clients should
-    end with the .ogg extension.
-   </div>
-   <h4>yp</h4>
-   <div class=indentedbox>
-    By default streams will not be advertised on a YP server unless this is set,
-    and only then if the icecast if configured to talk to YP servers.
-   </div>
-   <h4>Resample</h4>
-   <pre>
-    &lt;resample&gt;
-        &lt;in-rate&gt;44100&lt;/in-rate&gt;
-        &lt;out-rate&gt;22050&lt;/out-rate&gt;
-    &lt;/resample&gt;
-   </pre>
-   <div class=indentedbox>
+    <h3>Instance</h3>
     <p>
-     When encoding or re-encoding, there is a point where you take PCM audio
-     and encode to Ogg Vorbis. In some situations a particular encoded stream may
-     require a lower samplerate to achieve a lower bitrate. The resample will
-     modifiy the audio data before it enters the encoder, but does not affect
-     other instances.
+    Each instance defines 1 encoded stream. This means that for multiple
+    bitrate/quality streams, a separate &lt;instance&gt; is needed for each
+    bitrate.  Each instance defines a particular set actions that occur on the
+    passed in audio. Any modifications to the input data are isolated to the
+    instance.
     </p>
+    <pre>
+        &lt;instance&gt;
+            name
+            description
+            genre
+            url
+            resample
+            downmix
+            encode
+            savefile
+            shout
+        &lt;/instance&gt;
+    </pre>
+    <h4>name, description, genre and url</h4>
+    <div class=indentedbox>
+    These are exactly the same as the ones defined in the global metadata.
+    In here they override the global settings, so often these are not needed
+    </div>
+
+    <h4>Resample</h4>
+    <pre>
+        &lt;resample&gt;
+            &lt;out-rate&gt;22050&lt;/out-rate&gt;
+        &lt;/resample&gt;
+    </pre>
+    <div class=indentedbox>
+    This is used to force the samples coming from the input to be at a specific
+    samplerate, this can be useful if the input can be varied or if the input can only
+    do 1 samplerate like 48000 and you want to stream at 22050. Reducing the samplerate
+    is one way to reduce the stream bitrate but you lose higher frequency sound.
     <p>
      The most common values used are 48000, 44100, 22050 and 11025, and is
      really only used to resample to a lower samplerate, going to a higher rate
      serves no purpose within IceS.
     </p>
-   </div>
-   <h4>Downmix</h4>
-   <pre>
-    &lt;downmix&gt;1&lt;/downmix&gt;
-   </pre>
-   <div class=indentedbox>
+    </div>
+    <h4>Downmix</h4>
+    <pre>
+        &lt;downmix&gt;1&lt;/downmix&gt;
+    </pre>
+    <div class=indentedbox>
     Some streams want to reduce the bitrate further, reducing the number of channels
     used to just 1. Converting stereo to mono is fairly common and when this is set
     to 1 the number of channels encoded is just 1. Like resample, this only affects
     the one instance it's enabled in.
    </div>
-   <h4>Savefile</h4>
-   <pre>
-    &lt;savefile&gt;/home/ices/dump/stream1.ogg&lt;/savefile&gt;
-   </pre>
-   <div class=indentedbox>
-    Sometimes the stream transmitted wants to be saved to disk. This can be useful
-    for live recordings.
-   </div>
-   <h4>encode</h4>
+   <h4>Encode</h4>
    <pre>
     &lt;encode&gt;  
         &lt;quality&gt;0&lt;/quality&gt;
@@ -212,8 +218,7 @@
         &lt;maximum-bitrate&gt;131072&lt;/maximum-bitrate&gt;
         &lt;minimum-bitrate&gt;-1&lt;/minimum-bitrate&gt;
         &lt;managed&gt;0&lt;/managed&gt;
-        &lt;samplerate&gt;22050&lt;/samplerate&gt;
-        &lt;channels&gt;1&lt;/channels&gt;
+        &lt;passthru&gt;0&lt;/passthru&gt;
     &lt;/encode&gt;
    </pre>
    <p>quality</p>
@@ -246,20 +251,113 @@
     State bitrate in bits per second to limit minimum bandwidth used on a stream.
     Only applies if managed is enabled, this option has very little use so
     shouldn't really be needed.
-   </div>
-   <p>samplerate</p>
-   <div class=indentedbox>
-    State the samplerate used for the encoding, this should be either the same as
-    the input or the result of the resample. Getting the samplerate wrong will
-    cause the audio to be represented wrong and therefore sound like it's running
-    too fast or too slow.
-   </div>
-   <p>channels</p>
-   <div class=indentedbox>
-    State the number of channels to use in the encoding. This will either be the
-    number of channels from the input or 1 due to downmix.
-   </div>
-  </div>
- </body>
+    </div>
+    <p>passthru</p>
+    <div class=indentedbox>
+    Set to 1 if you want incoming pre-recoded vorbis (from playlist) to not 
+    be re-encoded. This should only really be used if you have a PCM input
+    that needs encoding but a playlist that does not.
+    </div>
+
+    <h4>Savefile</h4>
+    <pre>
+        &lt;savefile&gt;
+            &lt;filename&gt;/archive/ices/%F/stream.ogg&lt;/filename&gt;
+            &lt;duration&gt;86400&lt;/duration&gt;
+            &lt;fmask&gt;0644&lt;fmask&gt;
+            &lt;dmask&gt;0755&lt;dmask&gt;
+            &lt;on-metadata&gt;1&lt;/on-metadata&gt;
+        &lt;/savefile&gt;
+    </pre>
+    Sometimes the stream transmitted wants to be saved to disk. This can be useful
+    for live recordings.
+    <p>filename</p>
+    <div class=indentedbox>
+        State a filename for saving the Ogg Vorbis data. Files can be re-opened so
+        you probably want to state a pattern like as shown that allows for expanding
+        at the time it is opened. The % codes can be found in strftime(2) and can
+        apply to directories as well as files.
+    </div>
+
+    <p>duration</p>
+    <div class=indentedbox>
+        After the stated number of seconds, the current save file is closed and then
+        another is automatically re-opened based upon the filename pattern.
+    </div>
+
+    <p>on-metadata</p>
+    <div class=indentedbox>
+        Like above this determines when the save file is closed and the next reopens,
+        in this case new headers (new metadata) triggers the reopening.
+    </div>
+
+    <p>fmask</p>
+    <div class=indentedbox>
+        When a new file is created, it is given the stated mask so that permission
+        access is maintained.
+    </div>
+
+    <p>dmask</p>
+    <div class=indentedbox>
+        It is possible that new directories could be created (if the pattern uses a
+        % code for a directory component), if so, then this states the directory
+        mask.
+    </div>
+
+    <h4>Shout</h4>
+    <p>This is used to define a connection to an icecast server. Several &lt;shout&gt;
+    definitions can be used if you want to state different servers for the same
+    encoded stream.  Each shout connection acts independantly from each other but they
+    send the same encoded stream</p>
+
+    <pre>
+        &lt;shout&gt;
+            &lt;hostname&gt;streamingserver.org&lt;/hostname&gt;
+            &lt;port&gt;8000&lt;port&gt;
+            &lt;password&gt;hackme&lt;password&gt;
+            &lt;mount&gt;/stream.ogg&lt;mount&gt;
+            &lt;yp&gt;1&lt;yp&gt;
+            &lt;flush-samples&gt;20000&lt;flush-samples&gt;
+            &lt;reconnectdelay&gt;60&lt;reconnectdelay&gt;
+        &lt;/shout&gt;
+    </pre>
+    <p>hostname</p>
+    <div class=indentedbox>
+        State the hostname of the icecast to contact, this can be a name or IP
+        address and can be ipv4 or ipv6 on systems that support IPv6. The default
+        is localhost.
+    </div>
+    <p>port</p>
+    <div class=indentedbox>
+        State the port to connect to, this will be the port icecast is listening on,
+        typically 8000 but can be any.
+    </div>
+    <h4>password</h4>
+    <div class=indentedbox>
+        For providing a stream, a username/password has to be provided, and must
+        match what icecast expects.
+    </div>
+    <h4>mount</h4>
+    <div class=indentedbox>
+        Mountpoints are used to identify a particular stream on a icecast server,
+        they must begin with / and for the sake of certain listening clients should
+        end with the .ogg extension.
+    </div>
+    <h4>yp</h4>
+    <div class=indentedbox>
+        By default streams will not be advertised on a YP server unless this is set,
+        and only then if the icecast if configured to talk to YP servers.
+    </div>
+    <h4>flush-samples</h4>
+    <div class=indentedbox>
+        This is the trigger level in samples for when ogg pages are sent out. The
+        default is the samplerate which means some data is sent each second.
+    </div>
+    <h4>reconnectdelay</h4>
+    <div class=indentedbox>
+        This is the number of seconds, after a disconnect, that will be left to pass
+        before another connection is attempted.
+    </div>
+</body>
 </html>
 

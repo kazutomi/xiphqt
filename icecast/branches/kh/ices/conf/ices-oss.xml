@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <ices>
 
-	<background>0</background>  <!-- run in background? (unimplemented) -->
+    <background>0</background>  <!-- run in background? (unimplemented) -->
     <realtime>0</realtime>      <!-- disable realtime, enabled by default -->
     <user>ices</user>           <!-- user to change to when started as root -->
-	<logpath>/tmp</logpath>     <!-- where log goes. -->
-	<logsize>2048</logsize>     <!-- the size the log has to get to before cycling -->
-	<logfile>ices.log</logfile>
-	<loglevel>4</loglevel>      <!-- 1=error,2=warn,3=info,4=debug -->
+    <logpath>/tmp</logpath>     <!-- where log goes. -->
+    <logsize>2048</logsize>     <!-- the size the log has to get to before cycling -->
+    <logfile>ices.log</logfile>
+    <loglevel>4</loglevel>      <!-- 1=error,2=warn,3=info,4=debug -->
     <consolelog>0</consolelog>  <!-- logfile is ignored if this is set to 1 -->
     <pidfile>/var/ices/ices.pid</pidfile> <!-- file to write process id to -->
 
-	<stream>
+    <stream>
         <!-- global settings for all streams - optional-->
         <name>Example stream name</name>
         <genre>Example genre</genre>
@@ -22,13 +22,13 @@
         <!-- oss audio device (i.e. line-in), and processes it for live -->
         <!-- encoding. If metadatafilename is set then at start and on USR1 -->
         <!-- the file is read and the comments are added into the stream -->
-		<input>
-			<module>oss</module>
-			<param name="rate">44100</param>        <!-- samplerate -->
-			<param name="channels">2</param>        <!-- number of channels -->
-			<param name="device">/dev/dsp</param>   <!-- audio device -->
-			<param name="metadatafilename">metadata</param>
-		</input>
+        <input>
+            <module>oss</module>
+            <param name="rate">44100</param>        <!-- samplerate -->
+            <param name="channels">2</param>        <!-- number of channels -->
+            <param name="device">/dev/dsp</param>   <!-- audio device -->
+            <param name="metadatafilename">metadata</param>
+        </input>
         <!-- more input section can be stated here, and can be switched manually -->
         <!-- by USR2 or whenever the previous input finishes. The order is       -->
         <!-- dictated in here and loops aronnd to the first one listed -->
@@ -105,9 +105,11 @@
 
         </runner>
 
+        <!-- define another thread for processing streams
         <runner>
             ....
         </runner>
+        -->
 
 	</stream>
 </ices>
