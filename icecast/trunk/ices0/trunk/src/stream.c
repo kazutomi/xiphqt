@@ -1,7 +1,7 @@
 /* stream.c
  * - Functions for streaming in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-2 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,15 +39,13 @@
 
 #define INPUT_BUFSIZ 4096
 /* sleep this long in ms when every stream has errors */
-#define ERROR_DELAY 1000
-
-extern ices_config_t ices_config;
+#define ERROR_DELAY 999
 
 static volatile int finish_send = 0;
 
 /* Private function declarations */
 static int stream_connect (ices_stream_t* stream);
-static int stream_send (input_stream_t* source);
+static int stream_send (ices_config_t* config, input_stream_t* source);
 static int stream_send_data (ices_stream_t* stream, unsigned char* buf,
 			     size_t len);
 static int stream_open_source (input_stream_t* source);
@@ -57,7 +55,7 @@ static int stream_open_source (input_stream_t* source);
 /* Top level streaming function, called once from main() to
  * connect to server and start streaming */
 void
-ices_stream_loop (void)
+ices_stream_loop (ices_config_t* config)
 {
   int consecutive_errors = 0;
   int linenum_old = 0;
@@ -65,25 +63,8 @@ ices_stream_loop (void)
   input_stream_t source;
   ices_stream_t* stream;
 
-  /* Resolve hostname if necessary */
-  for (stream = ices_config.streams; stream; stream = stream->next) {
-    if (!isdigit ((int)(stream->conn.ip[strlen (stream->conn.ip) - 1]))) {
-      char ip[1024];
-
-      ip[0] = '\0';
-      ices_util_getip (stream->conn.ip, ip, 1024);
-      if (ip[0] == '\0') {
-	ices_log ("Could not resolve server name.");
-	ices_setup_shutdown ();
-      }
-      ices_util_free (stream->conn.ip);
-      stream->conn.ip = ices_util_strdup(ip);
-    }
-  }
-
-  for (stream = ices_config.streams; stream; stream = stream->next) {
+  for (stream = config->streams; stream; stream = stream->next)
     stream_connect (stream);
-  }
 
   while (1) {
     source.path = ices_playlist_get_next ();
@@ -100,14 +81,14 @@ ices_stream_loop (void)
     ices_cue_set_lineno (linenum_new);
 
     /* we quit if we're told not to loop and the the new line num is lower than the old */
-    if ( !ices_config.pm.loop_playlist && ( linenum_new < linenum_old ) ) {
-      ices_log ("Info: next playlist line number less than previous.  Looping disabled.  Quiting.");
+    if ( !config->pm.loop_playlist && ( linenum_new < linenum_old ) ) {
+      ices_log ("Info: next playlist line number less than previous and looping disabled: quitting.");
       ices_setup_shutdown ();
     }
 
     /* We quit if the playlist handler gives us a NULL filename */
     if (!source.path) {
-      ices_log ("Warning: ices_file_get_next() gave me an error, this is not good. [%s]", ices_log_get_error ());
+      ices_log ("Warning: ices_file_get_next() returned an error: %s", ices_log_get_error ());
       ices_setup_shutdown ();
     }
 
@@ -128,7 +109,7 @@ ices_stream_loop (void)
     }
 
     if (!source.read)
-      for (stream = ices_config.streams; stream; stream = stream->next)
+      for (stream = config->streams; stream; stream = stream->next)
 	if (!stream->reencode) {
 	  ices_log ("Cannot play %s without reencoding", source.path);
 	  source.close (&source);
@@ -138,7 +119,7 @@ ices_stream_loop (void)
 	}
 
     /* If something goes on while transfering, we just go on */
-    if (stream_send (&source) < 0) {
+    if (stream_send (config, &source) < 0) {
       ices_log ("Encountered error while transfering %s: %s", source.path, ices_log_get_error ());
 
       consecutive_errors++;
@@ -165,7 +146,7 @@ ices_stream_next (void)
 
 /* This function is called to stream a single file */
 static int
-stream_send (input_stream_t* source)
+stream_send (ices_config_t* config, input_stream_t* source)
 {
   ices_stream_t* stream;
   unsigned char ibuf[INPUT_BUFSIZ];
@@ -184,16 +165,17 @@ stream_send (input_stream_t* source)
 
 
 #ifdef HAVE_LIBLAME
-  if (ices_config.reencode)
+  if (config->reencode)
     /* only actually decode/reencode if the bitrate of the stream != source */
-    for (stream = ices_config.streams; stream; stream = stream->next)
+    for (stream = config->streams; stream; stream = stream->next)
       if (stream->bitrate != source->bitrate) {
 	decode = 1;
-	ices_reencode_reset ();
+	ices_reencode_reset (source);
+	break;
       }
 #endif
 
-  for (stream = ices_config.streams; stream; stream = stream->next)
+  for (stream = config->streams; stream; stream = stream->next)
     stream->errs = 0;
   
   ices_log ("Playing %s", source->path);
@@ -217,7 +199,7 @@ stream_send (input_stream_t* source)
       do_sleep = 1;
       while (do_sleep) {
 	rc = olen = 0;
-	for (stream = ices_config.streams; stream; stream = stream->next) {
+	for (stream = config->streams; stream; stream = stream->next) {
 	  /* don't reencode if the source is MP3 and the same bitrate */
 	  if (!stream->reencode || (source->read &&
 				    (stream->bitrate == source->bitrate))) {
@@ -271,12 +253,12 @@ stream_send (input_stream_t* source)
   }
 
 #ifdef HAVE_LIBLAME
-  for (stream = ices_config.streams; stream; stream = stream->next)
+  for (stream = config->streams; stream; stream = stream->next)
     if (stream->reencode && (!source->read ||
 	(source->bitrate != stream->bitrate))) {
       len = ices_reencode_flush (stream, obuf, sizeof (obuf));
       if (len > 0)
-	rc = shout_send_data (&stream->conn, obuf, len);
+	rc = shout_send (stream->conn, obuf, len);
     }
 #endif
 
@@ -304,9 +286,8 @@ stream_open_source (input_stream_t* source)
 
   source->fd = fd;
 
-  if (lseek (fd, SEEK_SET, 0) == -1) {
+  if (lseek (fd, SEEK_SET, 0) == -1)
     source->canseek = 0;
-  }
   else {
     source->canseek = 1;
     source->filesize = ices_util_fd_size (fd);
@@ -340,22 +321,20 @@ err:
 static int
 stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 {
-  char errbuf[1024];
   int rc = -1;
 
-  if (! stream->conn.connected && stream->connect_delay <= time(NULL))
+  if (shout_get_connected (stream->conn) != SHOUTERR_CONNECTED)
     rc = stream_connect (stream);
 
-  if (stream->conn.connected) {
-    if ((rc = shout_send_data (&stream->conn, buf, len))) {
-      shout_sleep (&stream->conn);
+  if (shout_get_connected (stream->conn) == SHOUTERR_CONNECTED) {
+    if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
+      shout_sync (stream->conn);
       stream->errs = 0;
       rc = 0;
     } else {
       ices_log_error ("Libshout reported send error, disconnecting: %s",
-		      shout_strerror (&stream->conn, stream->conn.error,
-				      errbuf, 1024));
-      shout_disconnect (&stream->conn);
+		      shout_get_error (stream->conn));
+      shout_close (stream->conn);
       stream->errs++;
       rc = -1;
     }
@@ -367,23 +346,26 @@ stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 static int
 stream_connect (ices_stream_t* stream)
 {
-  char errbuf[1024];
+  time_t now = time(NULL);
+  const char* mount = shout_get_mount (stream->conn);
 
-  if (shout_connect (&stream->conn)) {
-    ices_log ("Mounted on http://%s:%d%s%s", stream->conn.ip,
-	      stream->conn.port,
-	      (stream->conn.mount && stream->conn.mount[0] == '/') ? "" : "/",
-	      ices_util_nullcheck (stream->conn.mount));
-    return 0;
-  } else {
+  if (stream->connect_delay > now)
+    return -1;
+
+  if (shout_open (stream->conn) != SHOUTERR_SUCCESS) {
     ices_log_error ("Mount failed on http://%s:%d%s%s, error: %s",
-		    stream->conn.ip, stream->conn.port,
-		    (stream->conn.mount && stream->conn.mount[0] == '/') ? "" : "/",
-		    ices_util_nullcheck (stream->conn.mount),
-		    shout_strerror (&stream->conn, stream->conn.error, errbuf,
-				    sizeof (errbuf)));
-    stream->connect_delay = time(NULL) + 1;
+		    shout_get_host (stream->conn), shout_get_port (stream->conn),
+		    (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount),
+		    shout_get_error (stream->conn));
+    stream->connect_delay = now + 1;
     stream->errs++;
+
     return -1;
   }
+
+  ices_log ("Mounted on http://%s:%d%s%s", shout_get_host (stream->conn),
+                  shout_get_port (stream->conn),
+                  (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
+
+  return 0;
 }

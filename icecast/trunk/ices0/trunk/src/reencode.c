@@ -1,7 +1,7 @@
 /* reencode.c
  * - Functions for reencoding in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,15 +43,15 @@ ices_reencode_initialize (void)
 
   /* are any streams reencoding? */
   for (stream = ices_config.streams; stream; stream = stream->next)
-    if (stream->reencode)
+    if (stream->reencode) {
       ices_config.reencode = 1;
+      break;
+    }
 
   if (! ices_config.reencode)
     return;
 
-#ifdef HAVE_LAME_NOGAP
   reencode_lame_init ();
-#endif
 
   ices_log_debug ("Using LAME version %s\n", get_lame_version ());
 }
@@ -59,15 +59,33 @@ ices_reencode_initialize (void)
 /* For each song, reset the liblame engine, otherwize it craps out if
  * the bitrate or sample rate changes */
 void
-ices_reencode_reset (void) 
+ices_reencode_reset (input_stream_t* source) 
 {
-#ifndef HAVE_LAME_NOGAP  
-  reencode_lame_init ();
-#endif
+  ices_stream_t* stream;
+  lame_global_flags* lame;
 
   if (lame_decode_init () < 0) {
     ices_log ("Error: initialization of liblame's decoder failed!");
     ices_setup_shutdown ();
+  }
+
+  /* notify lame if incoming sample rate changes */
+  for (stream = ices_config.streams; stream; stream = stream->next) {
+    if (! stream->reencode)
+      continue;
+
+    lame = (lame_global_flags*)stream->encoder_state;
+
+    if (lame_get_in_samplerate (lame) == source->samplerate)
+      continue;
+
+    lame_set_in_samplerate (lame, source->samplerate);
+    /* lame_init_params isn't more specific about the problem */
+    if (lame_init_params (lame) < 0) {
+      ices_log ("LAME: error resetting sample rate.");
+      lame_close (lame);
+      ices_setup_shutdown ();
+    }
   }
 }
 
@@ -110,18 +128,12 @@ ices_reencode_flush (ices_stream_t* stream, unsigned char *outbuf,
   lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
   int rc;
 
-#ifdef HAVE_LAME_NOGAP
   /* nogap will cause problems if the next track isn't being reencoded */
 #  if 0
   rc = lame_encode_flush_nogap (lame, (char *)outbuf, maxlen);
 #  else
   rc = lame_encode_flush (lame, (char *)outbuf, maxlen);
 #  endif
-#else
-  rc = lame_encode_flush (lame, (char*) outbuf, maxlen);
-  lame_close (lame);
-  stream->encoder_initialised = 0;
-#endif
 
   return rc;
 }
@@ -142,31 +154,22 @@ reencode_lame_init ()
       continue;
 
     if (! (stream->encoder_state = lame_init ())) {
-      ices_log ("Error resetting LAME.");
+      ices_log ("LAME: error initializing encoder.");
       ices_setup_shutdown ();
     }
 
     lame = (lame_global_flags*) stream->encoder_state;
 
-    /* not all of these functions were implemented by LAME 3.88 */
-#ifdef HAVE_LAME_NOGAP
     lame_set_brate (lame, stream->bitrate);
-    if (stream->out_numchannels > 0)
-      lame_set_num_channels (lame, stream->out_numchannels);
+    if (stream->out_numchannels == 1)
+      lame_set_mode (lame, MONO);
     if (stream->out_samplerate > 0)
       lame_set_out_samplerate (lame, stream->out_samplerate);
     lame_set_original (lame, 0);
-#else
-    lame->brate = stream->bitrate;
-    if (stream->out_numchannels > 0)
-      lame->num_channels = stream->out_numchannels;
-    if (stream->out_samplerate != -1)
-      lame->out_samplerate = stream->out_samplerate;
-#endif
 
     /* lame_init_params isn't more specific about the problem */
     if (lame_init_params (lame) < 0) {
-      ices_log ("Error setting LAME parameters. Check bitrate, channels, and "
+      ices_log ("LAME: Error setting parameters. Check bitrate, channels, and "
 		"sample rate.");
       lame_close (lame);
       ices_setup_shutdown ();

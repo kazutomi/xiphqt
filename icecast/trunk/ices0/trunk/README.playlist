@@ -1,38 +1,44 @@
 Ices Playlist Management
 ------------------------
 
-----------------------------------------------------
-What you need to do to write a python or perl script
-to handle your playlists.
-----------------------------------------------------
-First, take a look in ices.pm for perl or ices.py
-for python. These files are skeletons for your code.
-They contain the functions (or procedures or whatever
-your languages calls them) that need to be present
-in a playlist handler. Ices will call these functions
-and it's up to you to specify what they should do.
+Often the built-in playlist capabilities of ices are not enough. Luckily,
+ices can also be controlled by a perl or python script. Some ideas for
+scripts: toproduce fancier metadata, call out to a database, insert
+station IDs every half an hour...
 
-The init function, called ices_perl_initialize(), or
-ices_python_initialize(), is called once when ices
-starts. Here you could setup and login to your
-database, randomize your playlist files, launch
-a GTK window with a file selector, anything
-you want. Remember to return 1 if everything is ok,
-and 0 if something went wrong.
+The impatient should be able to figure out what they need to do by
+reading the ices.pm.dist or ices.py.dist (for perl or python,
+respectively) included in the ices distribution. Others should keep
+reading.
 
-The shutdown function is called when ices exits, and
-is the place where you cleanup all your stuff, close
-the connections, close the files, cleanup memory, etc.
-Return 1 if ok, 0 if something went wrong.
+The following methods may be defined:
 
-The get_next function (ices_perl_get_next(), ices_python_get_next()),
-is a function that should return a string with the filename
-that ices should stream next. If you return NULL ices will
-exit.
+ices_get_next
+-------------
+This method is the only required method. It is called by ices at
+startup or when it has finished playing the previous file. It should
+return the path to a track.
 
-The get_current_lineno() function should return 0 the very
-first time, and then an arbitrary nonzero number indicating
-which song is playing. The 0 is important if you want
-titlestreaming to work for the very first song. The next return
-values will be used when updating the cue file. If you don't
-care about the cue file, then return whatever you want.
+ices_init
+---------
+If this method is defined, it will be called before any other
+method in your script. A return value other than 1 indicates
+that your script has failed to initialize and ices should
+terminate.
+
+ices_shutdown
+-------------
+If this method is defined, it will be called before ices
+exits.
+
+ices_get_metadata
+-----------------
+If this method is defined, it will be called after ices_get_next
+and the result will be used as the current track title on
+the icecast server.
+
+ices_get_lineno
+---------------
+If this method is defined, it will be called after ices_get_next
+and the result will be used for the line number field of the cue
+file. You probably won't be interested in this method.

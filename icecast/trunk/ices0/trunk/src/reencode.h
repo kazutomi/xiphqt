@@ -21,7 +21,7 @@
 /* Public function declarations */
 void ices_reencode_initialize (void);
 void ices_reencode_shutdown (void);
-void ices_reencode_reset (void);
+void ices_reencode_reset (input_stream_t* source);
 int ices_reencode_decode (unsigned char* buf, size_t blen, size_t olen,
 			  int16_t* left, int16_t* right);
 int ices_reencode (ices_stream_t* stream, int nsamples, int16_t* left,

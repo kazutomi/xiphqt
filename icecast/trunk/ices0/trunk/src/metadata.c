@@ -1,5 +1,5 @@
 /* metadata.c
- * Copyright (c) 2001-2 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 
 #include "definitions.h"
 
-#define INITDELAY 3000000
+#define INITDELAY 2000000
 
 extern ices_config_t ices_config;
 
@@ -86,9 +86,10 @@ static void
 metadata_update (input_stream_t* source, int delay)
 {
   ices_stream_t* stream;
+  shout_metadata_t* metadata;
   char song[1024];
   char* playlist_metadata;
-  char* metadata;
+  char* value;
   int rc;
 
   if (delay)
@@ -103,20 +104,34 @@ metadata_update (input_stream_t* source, int delay)
     } else
       metadata_clean_filename (source->path, song, sizeof (song));
     
-    metadata = song;
+    value = song;
   } else
-    metadata = playlist_metadata;
+    value = playlist_metadata;
+
+  if (!(metadata = shout_metadata_new())) {
+    ices_log_error ("Error allocating metadata structure");
+    ices_util_free (playlist_metadata);
+    return;
+  }
+
+  if (shout_metadata_add (metadata, "song", value) != SHOUTERR_SUCCESS) {
+    ices_log_error ("Error adding info to metadata structure");
+    ices_util_free (playlist_metadata);
+    shout_metadata_free (metadata);
+    return;
+  }
 
   for (stream = ices_config.streams; stream; stream = stream->next) {
-    rc = shout_update_metadata (&stream->conn, metadata);
+    rc = shout_set_metadata (stream->conn, metadata);
 	
-    if (rc != 1)
+    if (rc != SHOUTERR_SUCCESS)
       ices_log_error ("Updating metadata on %s failed.", stream->mount);
     else
-      ices_log_debug ("Updated metadata on %s to: %s", stream->mount, metadata);
+      ices_log_debug ("Updated metadata on %s to: %s", stream->mount, value);
   }
 
   ices_util_free (playlist_metadata);
+  shout_metadata_free (metadata);
 }
 
 /* Cleanup a filename so it looks more like a song name */

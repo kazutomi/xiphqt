@@ -1,7 +1,6 @@
 /* mp3.h
- * - mp3 function declarations for ices
- * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * mp3 function declarations for ices
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,9 +19,4 @@
  */
 
 /* Public function declarations */
-int ices_mp3_get_bitrate (void);
-int ices_mp3_get_sample_rate (void);
-int ices_mp3_get_mode (void);
-int ices_mp3_get_channels (void);
-
 int ices_mp3_open (input_stream_t* self, const char* buf, size_t len);

@@ -1,7 +1,7 @@
-/* vorbis.c
+/* in_vorbis.c
  * Plugin to read vorbis files as PCM
  *
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,9 +26,17 @@
 
 #include <vorbis/vorbisfile.h>
 
+#define SAMPLESIZE 2
+#ifdef WORDS_BIGENDIAN
+# define ICES_OV_BE 1
+#else
+# define ICES_OV_BE 0
+#endif
+
 /* -- data structures -- */
 typedef struct {
   OggVorbis_File* vf;
+  vorbis_info* info;
   int16_t buf[2048];
   size_t samples;
   int offset;
@@ -92,6 +100,30 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
     return -1;
   }
 
+  if (!(vorbis_data->info = ov_info(vf, -1))) {
+    ices_log_error ("Vorbis: error reading vorbis info");
+    ices_vorbis_close (self);
+
+    return -1;
+  }
+  
+  if (vorbis_data->info->channels < 1) {
+    ices_log_error ("Vorbis: Cannot decode, %d channels of audio data!",
+                    vorbis_data->info->channels);
+    ices_vorbis_close (self);
+
+    return -1;
+  }
+
+  self->bitrate = vorbis_data->info->bitrate_nominal / 1000;
+  if (! self->bitrate)
+    self->bitrate = ov_bitrate (vf, -1) / 1000;
+  self->samplerate = (unsigned int) vorbis_data->info->rate;
+
+  ices_log_debug("Ogg vorbis file found, version %d, %d kbps, %d channels, %ld Hz",
+                 vorbis_data->info->version, self->bitrate, vorbis_data->info->channels,
+		 self->samplerate);
+
   vorbis_data->vf = vf;
   vorbis_data->samples = 0;
 
@@ -101,8 +133,6 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   self->read = NULL;
   self->readpcm = ices_vorbis_readpcm;
   self->close = ices_vorbis_close;
-
-  self->bitrate = ov_bitrate (vf, -1) / 1000;
 
   in_vorbis_set_metadata (vorbis_data);
   
@@ -116,13 +146,14 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
   ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
   int pos;
   int len;
+  int i;
 
   /* refill buffer if necessary */
   if (! vorbis_data->samples) {
     vorbis_data->offset = 0;
     do {
-      if ((len = ov_read (vorbis_data->vf, (unsigned char*) vorbis_data->buf,
-			  sizeof (vorbis_data->buf), 0, 2, 1, &pos)) <= 0) {
+      if ((len = ov_read (vorbis_data->vf, (char*) vorbis_data->buf,
+			  sizeof (vorbis_data->buf), ICES_OV_BE, SAMPLESIZE, 1, &pos)) <= 0) {
 	if (len == OV_HOLE) {
 	  ices_log_error ("Skipping bad vorbis data");
 	} else
@@ -130,18 +161,26 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
       }
     } while (len <= 0);
 
-    /* 2 bytes/sample, 2 channels */
-    vorbis_data->samples = len >> 2;
+    vorbis_data->samples = len / SAMPLESIZE;
+    if (vorbis_data->info->channels > 1)
+      vorbis_data->samples /= vorbis_data->info->channels;
     self->bytes_read = ov_raw_tell (vorbis_data->vf);
   }
 
   len = 0;
   while (vorbis_data->samples && olen) {
-    *left++ = vorbis_data->buf[vorbis_data->offset++];
-    *right++ = vorbis_data->buf[vorbis_data->offset++];
+    if (vorbis_data->info->channels == 1) {
+      *left = *right = vorbis_data->buf[vorbis_data->offset++];
+      left++;
+      right++;
+    } else {
+      *left++ = vorbis_data->buf[vorbis_data->offset++];
+      *right++ = vorbis_data->buf[vorbis_data->offset++];
+    }
+    for (i = 0; i < vorbis_data->info->channels - 2; i++)
+      vorbis_data->offset++;
     vorbis_data->samples--;
-    /* 2 bytes/sample */
-    olen -= 2;
+    olen -= SAMPLESIZE;
     len++;
   }
 

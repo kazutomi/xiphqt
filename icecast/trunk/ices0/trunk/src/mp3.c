@@ -1,7 +1,7 @@
 /* mp3.c
  * - Functions for mp3 in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,19 +25,19 @@
 
 typedef struct mp3_headerSt
 {
-	int lay;
-	int version;
-	int error_protection;
-	int bitrate_index;
-	int sampling_frequency;
-	int padding;
-	int extension;
-	int mode;
-	int mode_ext;
-	int copyright;
-	int original;
-	int emphasis;
-	int stereo;
+  int lay;
+  int version;
+  int error_protection;
+  int bitrate_index;
+  int sampling_frequency;
+  int padding;
+  int extension;
+  int mode;
+  int mode_ext;
+  int copyright;
+  int original;
+  int emphasis;
+  int stereo;
 } mp3_header_t;
 
 typedef struct {
@@ -48,38 +48,33 @@ typedef struct {
 
 static unsigned int bitrates[3][3][15] =
 {
-	{
-		{0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448},
-		{0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384},
-		{0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320}
-	},
-	{
-		{0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
-		{0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
-		{0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160}
-	},
-	{
-		{0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
-		{0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
-		{0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160}
-	}
+  {
+    {0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448},
+    {0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384},
+    {0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320}
+  },
+  {
+    {0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
+    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
+    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160}
+  },
+  {
+    {0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
+    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
+    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160}
+  }
 };
 
 static unsigned int s_freq[3][4] =
 {
-	{44100, 48000, 32000, 0},
-	{22050, 24000, 16000, 0},
-	{11025, 8000, 8000, 0}
+  {44100, 48000, 32000, 0},
+  {22050, 24000, 16000, 0},
+  {11025, 8000, 8000, 0}
 };
 
 static char *mode_names[5] = {"stereo", "j-stereo", "dual-ch", "single-ch", "multi-ch"};
 static char *layer_names[3] = {"I", "II", "III"};
 static char *version_names[3] = {"MPEG-1", "MPEG-2 LSF", "MPEG-2.5"};
-
-static int ices_mp3_bitrate = -1;
-static int ices_mp3_sample_rate = -1;
-static int ices_mp3_mode = -1;
-static int ices_mp3_channels = -1;
 
 /* -- static prototypes -- */
 static int ices_mp3_parse (input_stream_t* source);
@@ -89,34 +84,6 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 				 int16_t* left, int16_t* right);
 #endif
 static int ices_mp3_close (input_stream_t* self);
-
-/* Return the current song's bitrate */
-int
-ices_mp3_get_bitrate (void)
-{
-	return ices_mp3_bitrate;
-}
-
-/* Return the current song's sample rate */
-int
-ices_mp3_get_sample_rate (void)
-{
-	return ices_mp3_sample_rate;
-}
-
-/* Return the current song's mode */
-int
-ices_mp3_get_mode (void)
-{
-	return ices_mp3_mode;
-}
-
-/* return the number of channels in current song */
-int
-ices_mp3_get_channels (void)
-{
-	return ices_mp3_channels;
-}
 
 /* Global function definitions */
 
@@ -199,24 +166,21 @@ ices_mp3_parse (input_stream_t* source)
   mh.emphasis = (buffer[3]) & 0x3;
   mh.stereo = (mh.mode == MPG_MD_MONO) ? 1 : 2;
 
-  /* sanity check */
-  ices_mp3_bitrate = bitrates[mh.version][mh.lay -1][mh.bitrate_index];
-  if (! ices_mp3_bitrate) {
+  source->bitrate = bitrates[mh.version][mh.lay -1][mh.bitrate_index];
+  if (! source->bitrate) {
     ices_log_error ("Bitrate is 0");
     return rc;
   }
+  source->samplerate = s_freq[mh.version][mh.sampling_frequency];
 
-  ices_log_debug ("Layer: %s\t\tVersion: %s\tFrequency: %d", layer_names[mh.lay - 1], version_names[mh.version], s_freq[mh.version][mh.sampling_frequency]);
-  ices_log_debug ("Bitrate: %d kbit/s\tPadding: %d\tMode: %s", ices_mp3_bitrate, mh.padding, mode_names[mh.mode]);
-  ices_log_debug ("Ext: %d\tMode_Ext: %d\tCopyright: %d\tOriginal: %d", mh.extension, mh.mode_ext, mh.copyright, mh.original);
-  ices_log_debug ("Error Protection: %d\tEmphasis: %d\tStereo: %d", mh.error_protection, mh.emphasis, mh.stereo);
-
-  ices_mp3_mode = mh.mode;
-  ices_mp3_sample_rate = s_freq[mh.version][mh.sampling_frequency];
-  if (mh.mode == 3)
-    ices_mp3_channels = 1;
-  else
-    ices_mp3_channels = 2;
+  ices_log_debug ("Layer: %s\t\tVersion: %s\tFrequency: %d", layer_names[mh.lay - 1],
+                  version_names[mh.version], source->samplerate);
+  ices_log_debug ("Bitrate: %d kbit/s\tPadding: %d\tMode: %s", source->bitrate, mh.padding,
+                  mode_names[mh.mode]);
+  ices_log_debug ("Ext: %d\tMode_Ext: %d\tCopyright: %d\tOriginal: %d", mh.extension,
+                  mh.mode_ext, mh.copyright, mh.original);
+  ices_log_debug ("Error Protection: %d\tEmphasis: %d\tStereo: %d", mh.error_protection,
+                  mh.emphasis, mh.stereo);
 
   return 0;
 }
@@ -259,8 +223,6 @@ ices_mp3_open (input_stream_t* self, const char* buf, size_t len)
     free (mp3_data);
     return rc;
   }
-
-  self->bitrate = ices_mp3_get_bitrate ();
 
   return 0;
 }
