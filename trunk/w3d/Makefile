@@ -1,8 +1,8 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM -DDBG_MEMLEAKS
-LFLAGS = -g -lefence
+CFLAGS = -pg -O3 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM -DDBG_MEMLEAKS
+LFLAGS = -pg -lefence
 
 OBJS = mem.o pnm.o wavelet.o wavelet_xform.o yuv.o tarkin.o tarkin-io.o
 

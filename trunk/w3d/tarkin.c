@@ -103,8 +103,7 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
                                                     desc[i].height,
                                                     desc[i].frames_per_buf);
 
-      layer->bitstream_len = layer->desc.bitrate / (8 * layer->n_comp);
-      max_bitstream_len += layer->bitstream_len * layer->n_comp
+      max_bitstream_len += layer->desc.bitstream_len
           + 5000
           + 2 * 9 * sizeof(uint32_t) * layer->n_comp;    // truncation tables 
    }
@@ -144,7 +143,7 @@ void tarkin_stream_flush (TarkinStream *s)
 
          bitstream_len = wavelet_3d_buf_encode_coeff (layer->waveletbuf[j],
                                                       s->bitstream,
-                                                      layer->bitstream_len);
+                                                      layer->desc.bitstream_len);
          write_tarkin_bitstream (s->fd, s->bitstream, bitstream_len);
       }
    }
@@ -230,8 +229,7 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
             return 0;
       }
 
-      layer->bitstream_len = layer->desc.bitrate / (8 * layer->n_comp);
-      max_bitstream_len += layer->bitstream_len * layer->n_comp
+      max_bitstream_len += layer->desc.bitstream_len
           + 5000
           + 2 * 9 * sizeof(uint32_t) * layer->n_comp;
    }

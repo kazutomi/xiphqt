@@ -18,6 +18,9 @@
 #define ENTROPY_DECODER_DONE(coder)       /* nothing to do ... */
 #define ENTROPY_CODER_BITSTREAM(coder)    (coder)->bitstream
 
+#define ENTROPY_CODER_MPS                 1
+#define ENTROPY_CODER_RUNLENGTH(coder)    0
+
 #endif
 
 

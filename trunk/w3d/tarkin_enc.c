@@ -38,12 +38,12 @@ int main (int argc, char **argv)
    TarkinColorFormat type;
 
    if (argc == 1) {
-      layer[0].bitrate = 1000;
+      layer[0].bitstream_len = 1000;
       a_moments = 2;
       s_moments = 2;
    } else if (argc == 5) {
       fmt = argv[1];
-      layer[0].bitrate = strtol (argv[2], 0, 0);
+      layer[0].bitstream_len = strtol (argv[2], 0, 0);
       a_moments = strtol (argv[3], 0, 0);
       s_moments = strtol (argv[4], 0, 0);
    } else {
