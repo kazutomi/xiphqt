@@ -1,0 +1,34 @@
+BUGS
+----
+- stats get off?  this needs testing more testing.
+
+- autoconf doesn't set HAVE_POLL 
+
+- automake isn't installing things (conf, web) correctly.
+
+- some stuff (like 'genre') isn't making it into the stats dump
+
+- thread_join uses thread->sys_thread, but thread structure has
+  already been freed in thread_exit()
+
+
+FEATURES
+--------
+
+- pull out vorbis comments.  and send to stats. This seems to be being
+  done, but it isn't working right.
+
+- directory server GUID checks
+	directory server does GET /GUID-asldjfasldfjalsdkfjasldkfj HTTP/1.0
+	and either gets a 404 if it's wrong, or a 200 if it's correct.
+
+- adding new stats type, event.  events don't modify the global stats tree,
+	ie, source /1234.ogg disconnected
+
+- support W3C Extended Logging (http://www.w3.org/TR/WD-logfile.html)
+	toggle between this and Apache Combined Log Format in the config file.
+	default to apache style.
+
+- allow using get_predata() stuff to send an "intro" to any newly-connected
+  user?
+

@@ -1,0 +1,166 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(src/main.c)
+
+AM_INIT_AUTOMAKE(icecast,2.0-alpha-1)
+
+AC_PROG_CC
+AC_CANONICAL_HOST
+AM_PROG_LIBTOOL
+
+dnl Set some options based on environment
+
+SOCKET_LIBS=
+
+if test -z "$GCC"; then
+        case $host in 
+        *-*-irix*)
+                DEBUG="-g -signed -D_REENTRANT" 
+                CFLAGS="-O2 -w -signed -D_REENTRANT"
+                PROFILE="-p -g3 -O2 -signed -D_REENTRANT"
+		;;
+        *-*-solaris*)
+                DEBUG="-v -g -D_REENTRANT"
+                CFLAGS="-xO4 -fast -w -fsimple -native -xcg92 -D_REENTRANT"
+                PROFILE="-v -xpg -g -xO4 -fast -native -fsimple -xcg92 -Dsuncc -D_REENTRANT"
+		SOCKET_LIBS="-lnsl -lsocket -lresolv"
+		;;
+        *)
+                DEBUG="-g -D_REENTRANT"
+                CFLAGS="-O -D_REENTRANT"
+                PROFILE="-g -p -D_REENTRANT"
+		;;
+        esac
+else
+        case $host in 
+        *-*-linux*)
+                DEBUG="-g -Wall -fsigned-char -D_REENTRANT -D_GNU_SOURCE"
+                CFLAGS="-O20 -ffast-math -fsigned-char -D_REENTRANT -D_GNU_SOURCE"
+                PROFILE="-Wall -W -pg -g -O20 -ffast-math -fsigned-char -D_REENTRANT -D_GNU_SOURCE"
+		;;
+        sparc-sun-solaris*)
+                DEBUG="-g -Wall -fsigned-char -mv8 -D_REENTRANT"
+                CFLAGS="-O20 -ffast-math -fsigned-char -mv8 -D_REENTRANT"
+                PROFILE="-pg -g -O20 -fsigned-char -mv8 -D_REENTRANT" 
+		SOCKET_LIBS="-lnsl -lsocket -lresolv"
+		;;
+	*-pc-solaris*)
+                DEBUG="-g -Wall -fsigned-char -D_REENTRANT"
+                CFLAGS="-O20 -ffast-math -fsigned-char -D_REENTRANT"
+                PROFILE="-pg -g -O20 -fsigned-char -D_REENTRANT" 
+		SOCKET_LIBS="-lnsl -lsocket -lresolv"
+		;;
+        *)
+                DEBUG="-g -Wall -fsigned-char -D_REENTRANT"
+                CFLAGS="-O20 -fsigned-char -D_REENTRANT"
+                PROFILE="-O20 -g -pg -fsigned-char -D_REENTRANT" 
+		;;
+        esac
+fi
+
+dnl Checks for programs.
+
+dnl Checks for libraries.
+
+dnl IPV6
+AC_SEARCH_LIBS(inet_pton, socket, AC_DEFINE(HAVE_IPV6, 1, [Define if you have IPV6 support]))
+AC_SEARCH_LIBS(getipnodebyname, nsl,
+  AC_DEFINE(HAVE_GETIPNODEBYNAME, 1, 
+  [Define if you have the getipnodebyname function])
+)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+AC_CHECK_HEADER(stdint.h, AC_DEFINE(HAVE_STDINT_H, 1),,)
+AC_CHECK_HEADER(pwd.h, AC_DEFINE(CHUID, 1),,)
+AC_CHECK_HEADER(unistd.h, AC_DEFINE(CHROOT, 1),,)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+dnl Check for types
+
+dnl Checks for library functions.
+
+dnl -- configure options --
+
+AC_ARG_WITH(xslt-config,
+  [ --with-xslt-config=PATH  use xslt-config in PATH to find libxslt ],
+  [if ! test -x "$with_xslt_config"
+   then
+     AC_MSG_ERROR([$with_xslt_config cannot be executed])
+   fi
+   XSLTCONFIG="$with_xslt_config"]
+)
+if test -z "$XSLTCONFIG"
+then
+  AC_CHECK_PROGS(XSLTCONFIG, [xslt-config])
+fi
+if test -n "$XSLTCONFIG"
+then
+  XSLT_LIBS="`$XSLTCONFIG --libs`"
+  XSLT_CFLAGS="`$XSLTCONFIG --cflags`"
+  save_LIBS="$LIBS"
+  save_CFLAGS="$CFLAGS"
+  LIBS="$LIBS $XSLT_LIBS"
+  CFLAGS="$CFLAGS $XSLT_CFLAGS"
+  AC_CHECK_FUNC(xsltParseStylesheetFile,, [AC_MSG_ERROR([There was a problem linking with libxslt])])
+  LIBS="$save_LIBS"
+  CFLAGS="$save_CFLAGS"
+  save_LIBS=
+  save_CFLAGS=
+else
+  AC_MSG_ERROR([xslt-config could not be found])
+fi
+
+AC_ARG_WITH(xml-config,
+  [  --with-xml-config=PATH  use xml-config in PATH to find libxml ],
+  [if ! test -x "$with_xml_config"
+   then
+     AC_MSG_ERROR([$with_xml_config cannot be executed])
+   fi
+   XMLCONFIG="$with_xml_config"]
+)
+if test -z "$XMLCONFIG"
+then
+  AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
+fi
+if test -n "$XMLCONFIG"
+then
+  XML_LIBS="`$XMLCONFIG --libs`"
+  XML_CFLAGS="`$XMLCONFIG --cflags`"
+  save_LIBS="$LIBS"
+  save_CFLAGS="$CFLAGS"
+  LIBS="$LIBS $XML_LIBS"
+  CFLAGS="$CFLAGS $XML_CFLAGS"
+  AC_CHECK_FUNC(xmlParseFile,, [AC_MSG_ERROR([There was a problem linking with libxml])])
+  LIBS="$save_LIBS"
+  CFLAGS="$save_CFLAGS"
+  save_LIBS=
+  save_CFLAGS=
+else
+  AC_MSG_ERROR([xml-config could not be found])
+fi
+
+AM_PATH_OGG(, AC_MSG_ERROR(must have Ogg installed!))
+AM_PATH_VORBIS(, AC_MSG_ERROR(must have Vorbis installed!))
+
+dnl Make substitutions
+
+AC_SUBST(XSLT_CFLAGS)
+AC_SUBST(XML_CFLAGS)
+AC_SUBST(OGG_CFLAGS)
+AC_SUBST(VORBIS_CFLAGS)
+AC_SUBST(XSLT_LIBS)
+AC_SUBST(XML_LIBS)
+AC_SUBST(OGG_LIBS)
+AC_SUBST(VORBIS_LIBS)
+AC_SUBST(SOCKET_LIBS)
+AC_SUBST(LIBTOOL_DEPS)
+AC_SUBST(OPT)
+AC_SUBST(LIBS)
+AC_SUBST(DEBUG)
+AC_SUBST(CFLAGS)
+AC_SUBST(PROFILE)
+
+AC_OUTPUT(Makefile conf/Makefile src/Makefile src/avl/Makefile src/httpp/Makefile src/thread/Makefile src/log/Makefile src/net/Makefile src/timing/Makefile doc/Makefile web/Makefile win32/Makefile win32/res/Makefile)
