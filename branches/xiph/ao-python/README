@@ -1,0 +1,21 @@
+pyao - a Python wrapper module for the ao library
+
+This is a wrapper for libao, an audio device abstraction
+library. libao is available with ogg/vorbis at http://www.xiph.org.
+
+To build you need distutils package from
+http://www.python.org/sigs/distutils-sig/download.html (it comes with
+Python 2.0). First edit setup.py so that the AO_INCLUDE_DIR and
+AO_LIB_DIR point to the right place. Type "python setup.py build" and
+then "python setup.py install" as root to install the module.
+
+Access the module by using "import ao" in your Python code.
+
+There is currently a problem where you can't use any ao output plugin
+which requires a symbol inside libao. This has something to do with
+linker magic and dlopen voodoo. Everything works fine compiled into a
+program, but linked into a Python module, libao's ao_is_big_endian
+function isn't available to the plugins it opens (most importantly,
+'oss'). If anybody has any clue, please let me know how to fix this...
+
+Also, right now (Nov-28-2000) the CVS for ao is a little inconsistent.
