@@ -27,8 +27,8 @@ static PyMethodDef py_vinfo_methods[] = {
    METH_VARARGS, py_ov_info_clear_doc},
   {"analysis_init", py_vorbis_analysis_init, 
    METH_VARARGS, py_vorbis_analysis_init_doc},
-	{"blocksize", py_vorbis_info_blocksize,
-	 METH_VARARGS, py_vorbis_info_blocksize_doc},
+  {"blocksize", py_vorbis_info_blocksize,
+   METH_VARARGS, py_vorbis_info_blocksize_doc},
   {NULL, NULL}
 };
 
@@ -71,20 +71,20 @@ py_info_new_from_vi(vorbis_info *vi)
 {
   py_vinfo *newobj;
   newobj = (py_vinfo *) PyObject_NEW(py_vinfo, 
-																		 &py_vinfo_type);
+                                     &py_vinfo_type);
   newobj->vi = *vi;
   return (PyObject *) newobj;
 }
 
 static char *py_info_new_kw[] = {"channels", "rate", "max_bitrate",
-																 "nominal_bitrate", "min_bitrate", "quality",
-																 NULL};
+                                 "nominal_bitrate", "min_bitrate", "quality",
+                                 NULL};
 
 PyObject *
 py_info_new(PyObject *self, PyObject *args, PyObject *kwdict)
 {
   long channels, rate, max_bitrate, nominal_bitrate, min_bitrate;
-	double quality = -1.0;
+  double quality = -1.0;
   vorbis_info vi; 
   int res;
 
@@ -94,19 +94,19 @@ py_info_new(PyObject *self, PyObject *args, PyObject *kwdict)
   nominal_bitrate = 128000;
   min_bitrate = -1;
   if (!PyArg_ParseTupleAndKeywords(args, kwdict, 
-																	 "|llllld", py_info_new_kw, 
-																	 &channels, &rate, &max_bitrate,
-																	 &nominal_bitrate, &min_bitrate, &quality))
+                                   "|llllld", py_info_new_kw, 
+                                   &channels, &rate, &max_bitrate,
+                                   &nominal_bitrate, &min_bitrate, &quality))
     return NULL;
   vorbis_info_init(&vi);
 
-	if (quality > 0.0) {
-		res = vorbis_encode_init_vbr(&vi, channels, rate, quality);
-	} else {
-		res = vorbis_encode_init(&vi, channels, rate,
-														 max_bitrate, nominal_bitrate,
-														 min_bitrate);
-	}
+  if (quality > 0.0) {
+    res = vorbis_encode_init_vbr(&vi, channels, rate, quality);
+  } else {
+    res = vorbis_encode_init(&vi, channels, rate,
+                             max_bitrate, nominal_bitrate,
+                             min_bitrate);
+  }
 
   if (res != 0) {
     vorbis_info_clear(&vi);
@@ -143,13 +143,13 @@ static PyObject *
 py_vorbis_info_blocksize(PyObject *self, PyObject *args)
 {
   vorbis_info *vi = PY_VINFO(self);
-	int res, zo;
-	
-	if (!PyArg_ParseTuple(args, "l", &zo))
-		return NULL;
-	
-	res = vorbis_info_blocksize(vi, zo);
-	return PyInt_FromLong(res);
+  int res, zo;
+  
+  if (!PyArg_ParseTuple(args, "l", &zo))
+    return NULL;
+  
+  res = vorbis_info_blocksize(vi, zo);
+  return PyInt_FromLong(res);
 }
 
 static PyObject *
@@ -253,16 +253,16 @@ static PyMethodDef py_vcomment_methods[] = {
    METH_VARARGS, py_comment_items_doc},
   {"values", py_comment_values,
    METH_VARARGS, py_comment_values_doc},
-	{"write_to", py_comment_write_to,
-	 METH_VARARGS, py_comment_write_to_doc},
-	{"append_to", py_comment_append_to,
-	 METH_VARARGS, py_comment_append_to_doc},
+  {"write_to", py_comment_write_to,
+   METH_VARARGS, py_comment_write_to_doc},
+  {"append_to", py_comment_append_to,
+   METH_VARARGS, py_comment_append_to_doc},
   {NULL, NULL}
 };
 
 static int py_comment_length(py_vcomment *);
 static int py_comment_assign(py_vcomment *, 
-														 PyObject *, PyObject *);
+                             PyObject *, PyObject *);
 static PyObject *py_comment_subscript(py_vcomment *, PyObject *);
 
 static PyMappingMethods py_vcomment_Mapping_Methods = {
@@ -325,10 +325,10 @@ py_comment_new_from_vc(vorbis_comment *vc, PyObject *parent)
   py_vcomment *newobj;
 
   newobj = (py_vcomment *) PyObject_NEW(py_vcomment, 
-																				&py_vcomment_type);
+                                        &py_vcomment_type);
   newobj->vc = vc;
   newobj->parent = parent;
-	newobj->malloced = 0;
+  newobj->malloced = 0;
   Py_XINCREF(parent);
   return (PyObject *) newobj;
 }
@@ -342,18 +342,18 @@ py_comment_new(PyObject *self, PyObject *args)
     return NULL;
 
   newobj = (py_vcomment *) PyObject_NEW(py_vcomment, 
-																				&py_vcomment_type);
-	if (!newobj)
-		return NULL;
+                                        &py_vcomment_type);
+  if (!newobj)
+    return NULL;
 
   newobj->parent = NULL;
-	newobj->malloced = 1;
-	newobj->vc = (vorbis_comment *) malloc(sizeof(vorbis_comment));
-	if (!newobj->vc) {
-		PyErr_SetString(PyExc_MemoryError, "Could not create vorbis_comment");
-		return NULL;
-	}
-	vorbis_comment_init(newobj->vc);
+  newobj->malloced = 1;
+  newobj->vc = (vorbis_comment *) malloc(sizeof(vorbis_comment));
+  if (!newobj->vc) {
+    PyErr_SetString(PyExc_MemoryError, "Could not create vorbis_comment");
+    return NULL;
+  }
+  vorbis_comment_init(newobj->vc);
   return (PyObject *) newobj;
 }
 
@@ -381,11 +381,12 @@ py_vorbis_comment_dealloc(PyObject *self)
     Py_DECREF(ovc_self->parent); /* parent will clear for us */
   } else {
     vorbis_comment_clear(ovc_self->vc); 
-	}
-	if (ovc_self->malloced)
-		free(ovc_self->vc);
+  }
+  if (ovc_self->malloced) {
+    free(ovc_self->vc);
+  }
 
-	PyMem_DEL(self);
+  PyMem_DEL(self);
 }
 
 static PyObject*
@@ -407,7 +408,7 @@ py_comment_length(py_vcomment *self)
 
 static PyObject *
 py_comment_subscript(py_vcomment *self, 
-										 PyObject *keyobj)
+                     PyObject *keyobj)
 {
   char *res, *tag;
   int cur = 0;
@@ -443,22 +444,72 @@ py_comment_subscript(py_vcomment *self,
   return retlist;
 }
 
+#define UPPER(x) (((x) <= 'z' && (x) >= 'a') ? (x) - 'a' + 'A' : (x))
+/* Return whether tag is of the form query=... */
+static int
+find_tag_insensitive(char *tag, char *key) 
+{
+  int k;
+  for (k = 0; key[k] != 0 && tag[k] != 0; k++) {
+    if (UPPER(key[k]) != UPPER(tag[k])) {
+      return 0;
+    }
+  }
+  if (tag[k] != '=') {
+    return 0;
+  }
+  return 1;
+}
+
+/* 
+   Create a new vorbis_comment, copy every comment from the old
+   vorbis_comment which does not start with the given key, and set the
+   new comment struct into the py_vcomment Object
+*/
+static void
+del_comment(py_vcomment *self, char *key)
+{
+  vorbis_comment *vc = malloc(sizeof(vorbis_comment));
+  int k;
+  vorbis_comment_init(vc);
+
+  /* TODO: Vendor tag */
+  for (k = 0; k < self->vc->comments; k++) {
+    if (!find_tag_insensitive(self->vc->user_comments[k], key)) {
+      vorbis_comment_add(vc, self->vc->user_comments[k]);
+    }
+  }
+
+  /* Get rid of the old comment structure */
+  if (self->parent) {
+    Py_DECREF(self->parent); /* parent will clear for us */
+  } else {
+    vorbis_comment_clear(self->vc);
+  }
+  if (self->malloced) {
+    free(self->vc);
+  }
+  /* The new vorbis_comment was malloced */
+  self->malloced = 1;
+  self->vc = vc;
+}
+
 static int
 py_comment_assign(py_vcomment *self, 
-									PyObject *keyobj, PyObject *valobj)
+                  PyObject *keyobj, PyObject *valobj)
 {
   vorbis_comment *vc = PY_VCOMMENT(self);
   char *tag, *val;
 
-	if (!PyString_Check(keyobj)) {
+  if (!PyString_Check(keyobj)) {
     PyErr_SetString(PyExc_KeyError, "Keys may only be ASCII strings");
     return -1;
   }
-	
-	if (valobj == NULL) {
-		PyErr_SetString(PyExc_NotImplementedError, "Cannot yet delete comments");
-		return -1;
-	}
+  
+  if (valobj == NULL) {
+    del_comment(self, PyString_AsString(keyobj));
+    return 0;
+  }
 
   if (PyString_Check(valobj)) {
     val = PyString_AsString(valobj);
@@ -476,7 +527,6 @@ py_comment_assign(py_vcomment *self,
   }
 
   tag = PyString_AsString(keyobj);
-
   vorbis_comment_add_tag(vc, tag, val);
   return 0;
 }
@@ -681,32 +731,32 @@ py_comment_as_dict(PyObject *self, PyObject *args)
 #endif
 
       if (!item)
-				goto error;
+        goto error;
       
       if (make_caps_key(key, keylen)) { /* overwrites key */
-				Py_DECREF(item);
-				goto error;
+        Py_DECREF(item);
+        goto error;
       }
 
       /* GetItem borrows a reference */
       if ((curlist = PyDict_GetItemString(retdict, key))) {
 
-				/* A list already exists for that key */
-				if (PyList_Append(curlist, item) < 0) {
-					Py_DECREF(item);
-					goto error;
-				}
+        /* A list already exists for that key */
+        if (PyList_Append(curlist, item) < 0) {
+          Py_DECREF(item);
+          goto error;
+        }
 
       } else {
 
-				/* Add a new list in that position */
-				curlist = PyList_New(1);
-				PyList_SET_ITEM(curlist, 0, item);
-				Py_INCREF(item);
+        /* Add a new list in that position */
+        curlist = PyList_New(1);
+        PyList_SET_ITEM(curlist, 0, item);
+        Py_INCREF(item);
 
-				/* this does not steal a reference */
-				PyDict_SetItemString(retdict, key, curlist); 
-				Py_DECREF(curlist);
+        /* this does not steal a reference */
+        PyDict_SetItemString(retdict, key, curlist); 
+        Py_DECREF(curlist);
       }
       Py_DECREF(item);
     }
@@ -725,128 +775,102 @@ py_comment_as_dict(PyObject *self, PyObject *args)
 static PyObject*
 write_comments(vorbis_comment *vc, const char *filename, int append)
 {
-	vcedit_state *state;
-	vorbis_comment *file_comments;
-	FILE *in_file, *out_file;
-	int k;
-	char *tempfile = malloc(strlen(filename) + sizeof(".pytemp"));
-	strcpy(tempfile, filename);
-	strcat(tempfile, ".pytemp");
-	
-	/* Open the file */
-	in_file = fopen(filename, "r");
-	if (!in_file) {
-		printf("No in file %s\n", filename);
-		PyErr_SetFromErrno(PyExc_IOError);
-		return NULL;
-	}
-	out_file = fopen(tempfile, "wb");
-	if (!out_file) {
-		fclose(in_file);
-		printf("No out file\n");
-		PyErr_SetFromErrno(PyExc_IOError);
-		return NULL;
-	}
+  vcedit_state *state;
+  vorbis_comment *file_comments;
+  FILE *in_file, *out_file;
+  int k;
+  char *tempfile = malloc(strlen(filename) + sizeof(".pytemp"));
+  strcpy(tempfile, filename);
+  strcat(tempfile, ".pytemp");
+  
+  /* Open the file */
+  in_file = fopen(filename, "r");
+  if (!in_file) {
+    PyErr_SetFromErrno(PyExc_IOError);
+    return NULL;
+  }
+  out_file = fopen(tempfile, "wb");
+  if (!out_file) {
+    fclose(in_file);
+    PyErr_SetFromErrno(PyExc_IOError);
+    return NULL;
+  }
 
-	state = vcedit_new_state();
+  state = vcedit_new_state();
 
-	/* Make sure it's a vorbis file */
-	if (vcedit_open(state, in_file) < 0) {
-		char buff[256];
-		snprintf(buff, sizeof(buff), "Could not open file %s as vorbis: %s", 
-						 filename,
-						 vcedit_error(state));
-		PyErr_SetString(Py_VorbisError, buff);
+  /* Make sure it's a vorbis file */
+  if (vcedit_open(state, in_file) < 0) {
+    char buff[256];
+    snprintf(buff, sizeof(buff), "Could not open file %s as vorbis: %s", 
+             filename,
+             vcedit_error(state));
+    PyErr_SetString(Py_VorbisError, buff);
 
-		vcedit_clear(state);
-		fclose(in_file);
-		fclose(out_file);
+    vcedit_clear(state);
+    fclose(in_file);
+    fclose(out_file);
 
-		return NULL;
-	}
+    return NULL;
+  }
 
-	/* Get the vorbis comments that are already in the file, 
-		 and clear if necessary */
-	file_comments = vcedit_comments(state);
-	if (!append) {
-		vorbis_comment_clear(file_comments);
-		vorbis_comment_init(file_comments);
-	}
+  /* Get the vorbis comments that are already in the file, 
+     and clear if necessary */
+  file_comments = vcedit_comments(state);
+  if (!append) {
+    vorbis_comment_clear(file_comments);
+    vorbis_comment_init(file_comments);
+  }
 
-	/* Append all the comments we already have in vc */
-	for (k = 0; k < vc->comments; k++) {
-		vorbis_comment_add(file_comments, vc->user_comments[k]);
-	}
+  /* Append all the comments we already have in vc */
+  for (k = 0; k < vc->comments; k++) {
+    vorbis_comment_add(file_comments, vc->user_comments[k]);
+  }
 
-	if (vcedit_write(state, out_file) < 0) {
-		char buff[256];
-		snprintf(buff, sizeof(buff), "Could not write comments to file: %s",
-						 vcedit_error(state));
-		PyErr_SetString(Py_VorbisError, buff);
+  if (vcedit_write(state, out_file) < 0) {
+    char buff[256];
+    snprintf(buff, sizeof(buff), "Could not write comments to file: %s",
+             vcedit_error(state));
+    PyErr_SetString(Py_VorbisError, buff);
 
-		vcedit_clear(state);
-		fclose(in_file);
-		fclose(out_file);
+    vcedit_clear(state);
+    fclose(in_file);
+    fclose(out_file);
 
-		return NULL;
-	}
+    return NULL;
+  }
 
-	vcedit_clear(state);
+  vcedit_clear(state);
 
-	fclose(in_file);
-	fclose(out_file);
+  fclose(in_file);
+  fclose(out_file);
 
-	if (rename(tempfile, filename)) {
-		PyErr_SetFromErrno(PyExc_IOError);
-		return NULL;
-	}
-	
-	Py_INCREF(Py_None);
-	return Py_None;
+  if (rename(tempfile, filename)) {
+    PyErr_SetFromErrno(PyExc_IOError);
+    return NULL;
+  }
+  
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 static PyObject *
 py_comment_append_to(PyObject *self, PyObject *args) 
 {
-	vorbis_comment *vc = PY_VCOMMENT(self);
-	const char *filename;
-	if (!PyArg_ParseTuple(args, "s", &filename))
-		return NULL;
+  vorbis_comment *vc = PY_VCOMMENT(self);
+  const char *filename;
+  if (!PyArg_ParseTuple(args, "s", &filename))
+    return NULL;
 
-	return write_comments(vc, filename, 1);
+  return write_comments(vc, filename, 1);
 }
 
 static PyObject *
 py_comment_write_to(PyObject *self, PyObject *args)
 {
-	vorbis_comment *vc = PY_VCOMMENT(self);
-	const char *filename;
-	if (!PyArg_ParseTuple(args, "s", &filename))
-		return NULL;
+  vorbis_comment *vc = PY_VCOMMENT(self);
+  const char *filename;
+  if (!PyArg_ParseTuple(args, "s", &filename))
+    return NULL;
 
-	return write_comments(vc, filename, 0);
+  return write_comments(vc, filename, 0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

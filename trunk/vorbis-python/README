@@ -77,9 +77,14 @@ how vorbis comments work. So I might do:
 
 Each entry in the "dictionary" is a list of values. Each key is
 treated as case-insensitive. If you use Python >= 1.6, the values (but
-not keys) will be unicode strings. Note that I have not yet
-implemented deleting a key, since I have yet to find a good way to
-implement this.
+not keys) will be unicode strings. 
+
+To delete a comment entry, you just do "del v[key]". This will delete
+_all_ tags which have that key (there may be more than one). This is
+implemented by just creating a new comment structure and copying in
+every comment that doesn't match the one you want to delete, so if you
+plan to delete or replace a lot of keys, it might be faster to just
+construct a new object.
 
 You can also get the comments from an existing file by opening that
 file as a VorbisFile object and then calling .comment() on it. This is

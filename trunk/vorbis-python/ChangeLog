@@ -1,4 +1,10 @@
 2002-01-27  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* test/comment.py: Added
+	* pyvorbisinfo.c (del_comment), (find_tag_insensitive): Added. 
+		You can now delete comments.
+	* README: Explain how to delete comments
+	
+2002-01-27  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* bump to version 0.5
 
 2002-01-27  Andrew H. Chatham <andrew.chatham@duke.edu>
