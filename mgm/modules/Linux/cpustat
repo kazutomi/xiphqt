@@ -1,19 +1,16 @@
 # -*-Perl-*-
 use Tk;
 package MGMmodule::cpustat;
+use vars qw($statcpus @prevload @prevtotal $numcpus $graph);
 
 sub module_construct{
     my($this,$toplevel,$width,$height)=@_;
 
-    $graph=MGM::Graph->new($toplevel,num=>$statcpus,fixed=>'1',
+    $graph=MGM::Graph->new($this,num=>$statcpus,fixed=>'1',
 			   width=>$width,height=>$height,prompt=>"%",
-			   rangesetting=>'100',rangecurrent=>'100',
-			   name=>$this->module_name); # don't forget name!!
+			   rangesetting=>'100',rangecurrent=>'100');
 
-    $widget=$graph->{"widget"};
-    $this->{"graph"}=$graph;   # for local use
-    $this->{"widget"}=$widget; # widget is required by mgm
-    $widget;
+    $graph->{"widget"};        # must return widget
 }
 
 $statcpus=1;
@@ -73,7 +70,7 @@ sub module_update{
 }
 
 sub module_init{
-    my($mod,$toplevel,$xpath)=@_;
+    my($this,$toplevel,$xpath)=@_;
 
     # how many CPUs? Get this from /proc/cpuinfo then /proc/stat.
     # /proc/stat only sees multiple CPUs as of late 2.1, but we
@@ -90,28 +87,23 @@ sub module_init{
 
     # now run one 'update' to intialize things and see what CPUs pop up there.
 
-    $mod->module_update;
+    $this->module_update;
 
-    ($minx,$miny)=MGM::Graph::calcxysize($mod,100,'%',$statcpus);
+    ($minx,$miny)=MGM::Graph::calcxysize($this,100,'%',$statcpus);
 
     if($numcpus>1 && $statcpus==1){
-	$toplevel->optionAdd("$xpath.bar.0.label", "cpu 0-".($numcpus-1),22);
+	$toplevel->optionAdd("$xpath.bar.0.label", "cpus 0-".($numcpus-1),22);
     }else{
 	for(my$i=0;$i<$numcpus;$i++){
 	    $toplevel->optionAdd("$xpath.bar.$i.label", "cpu $i",22);
 	}
     }
 
-    $toplevel->optionAdd("$xpath.refresh",  250,21);      
     $toplevel->optionAdd("$xpath.minx",     $minx,21);      
     $toplevel->optionAdd("$xpath.miny",     $miny,21);      
     $toplevel->optionAdd("$xpath.scalewidadj", 100*$statcpus,21);
     $toplevel->optionAdd("$xpath.scalelenadj", 100,21); 
     1;
-}
-
-sub module_name{
-    "cpustat";
 }
 
 bless {};

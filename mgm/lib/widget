@@ -76,15 +76,15 @@ sub new{
     # we're not as flat as we like to think 
     my $below=$p->Canvas(Name=>"$num");
 
-    my $pad=$below->optionGet("textpad","Textpad");
-    my $relief=$below->optionGet('dimrelief','Dimelief');
-    my $arelief=$below->optionGet('litrelief','Litrelief');
-    my $afore=$below->optionGet('litforeground','Litforeground');
-    my $aback=$below->optionGet('litbackground','Litbackground');
-    my $fore=$below->optionGet('dimforeground','Dimforeground');
-    my $back=$below->optionGet('dimbackground','Dimbackground');
-    my $label=$below->optionGet('label','Label');
-    my $ratio=$below->optionGet('ratio','Ratio');
+    my $pad=$below->optionGet("textpad","");
+    my $relief=$below->optionGet('dimrelief','');
+    my $arelief=$below->optionGet('litrelief','');
+    my $afore=$below->optionGet('litforeground','');
+    my $aback=$below->optionGet('litbackground','');
+    my $fore=$below->optionGet('dimforeground','');
+    my $back=$below->optionGet('dimbackground','');
+    my $label=$below->optionGet('label','');
+    my $ratio=$below->optionGet('ratio','');
     
     my$border=0;
     $border=2 if ($relief eq 'groove');
@@ -213,6 +213,8 @@ package MGM::Graph;
 
 # all the labels are the same size/color, but we have to do this after the toplevel is created so we have the size/color resources
 
+my%numbers;
+
 sub cacheem{
     my$size=$main::toplevel->optionGet("labelsize","");
     my$fg=$main::foreground;
@@ -338,14 +340,15 @@ sub new{
     my$class=shift;
     my$p=shift;
 
-    my %graph = ( 'num' => '1',
+    my %graph = ( 'name' => $p->{"name"},
+		  'num' => '1',
 		  'fixed' => '0',
 		  'rangesetting'=> '4',
-		  'rangecurrent'=> '4' );
+		  'rangecurrent'=> '4');
 
     my $ret=\%graph;
     bless $ret, 'MGM::Graph';
-    $graph{"parent"}=$p;
+    $graph{"parent"}=$p->{"toplevel"};
 
     $ret->configure(@_);
     $ret;

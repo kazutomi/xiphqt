@@ -3,22 +3,22 @@
 use Tk;
 use Tk qw(exit); 
 use IPC::Open2;
+use strict;
+use vars qw($basedir $moddir $libdir $fontfile $toplevel
+	    $orient $stack $background $foreground);
 
 $0="moaning-goat-meter"; # OK, this is evil.
 
 $basedir="/home/xiphmont/SnotfishCVS/mgm";
 $moddir="$basedir/modules";
 $libdir="$basedir/lib";
-
-
-# shut up!  
-$fontfile="$libdir/helvetica.xpm";
 $fontfile="$libdir/helvetica.xpm";
 
 $|=1;
 
 $toplevel=new MainWindow();
-$Xname=$toplevel->Class;
+my%modules;
+my$Xname=$toplevel->Class;
 require "$libdir/widget";
 
 $toplevel->optionAdd("$Xname*background",       '#202020',20);
@@ -44,7 +44,7 @@ $toplevel->optionAdd("$Xname*scalelenadj",      '100',20);
 $toplevel->optionAdd("$Xname*scalewidadj",      '100',20);
 $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
 $toplevel->optionAdd("$Xname*scroll",          'true',20);
-$toplevel->optionAdd("$Xname*refresh",          '100',20);
+$toplevel->optionAdd("$Xname*refresh",          '250',20);
 
 
 $toplevel->optionAdd("$Xname*bar*dimbackground",'#313656',20);
@@ -60,14 +60,13 @@ while(my $arg=shift @ARGV){
     $arg=~s/-(\S*)$/$1/;
 	    
     if($arg){
-	$val=shift;
+	my$val=shift;
 	$toplevel->optionAdd("$Xname*$arg",  "$val",80);
     }
 }
 
 $orient=$toplevel->optionGet("bars","Bars");
 $stack=$toplevel->optionGet("stack","Stack");
-
 $background=$toplevel->optionGet("background","Background");
 $foreground=$toplevel->optionGet("foreground","Foreground");
 
@@ -81,16 +80,16 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 
 # set up desired/min geometry, add a default geometry setting
 
-($minx,$miny,$reqx,$reqy,$ladj,$wadj)=&geometries;
+my($minx,$miny,$reqx,$reqy,$ladj,$wadj)=&geometries;
 $toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
 
 my $geometry=$toplevel->optionGet("geometry","Geometry");
 $toplevel->geometry($geometry);
 $toplevel->minsize($minx,$miny);
-$toplevel->resizable(TRUE,TRUE);
+$toplevel->resizable('TRUE','TRUE');
 $geometry=~m{(\d*)x(\d*)};
-$actualx=$1;
-$actualy=$2;
+my$actualx=$1;
+my$actualy=$2;
 
 $toplevel->bind('MainWindow','<Configure>',[\&resize,Ev('w'),Ev('h')]);
 
@@ -118,7 +117,7 @@ sub LoadModules{
     my($prefix)=@_;
     
     $prefix=~s{/\s*$}{}; # strip trailing slash
-    $platform=`uname`;
+    my$platform=`uname`;
     chop($platform);       
 
     # get the filenames in $prefix/<platform>
@@ -154,14 +153,14 @@ sub LoadModule{
 	if(defined($moduleref)){
 	    
 	    # The hash returned is an object. It defines the following methods:
-	    #    module_name         => returns string containing module name
 	    #    module_init         => set up basic config.  Call that now.
 	    #    module_construct    => build the bar
 	    #    module_update       => run at refresh interval
 	    
 	    # Be certain we've not already loaded this plugin.
 	    
-	    my$name=$moduleref->{"name"}=$moduleref->module_name;
+	    my$name=$moduleref->{"name"}=(split /::/, ref $moduleref)[-1];
+	    $moduleref->{"toplevel"}=$toplevel;
 	    
 	    if(!defined($name)){
 		print STDERR 
@@ -201,7 +200,7 @@ sub LoadModule{
 }
 
 sub geometries{
-    @modlist=keys %modules;
+    my@modlist=keys %modules;
 
     my$minx=0;
     my$miny=0;
@@ -351,8 +350,9 @@ sub build_and_run{
 		my$ret=eval{$mod->module_construct($toplevel,$width,$height)};
 		if(!defined($ret)){
 		    print STDERR "Error eval()ing ->module_construct for ".
-			($mod->module_name).": $@\n";
+			($mod->{"name"}).": $@\n";
 		}else{
+		    $mod->{"widget"}=$ret; # must store the widget
 		    $ret->place('-x'=>$x,'-y'=>$y,-anchor=>'nw');
 
 		    my$refresh=$ret->optionGet("refresh","Refresh");
