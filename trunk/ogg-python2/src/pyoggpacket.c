@@ -76,7 +76,8 @@ static void
 PyOggPacket_Dealloc(PyObject *self)
 {
   ogg_packet_release(PyOggPacket_AsOggPacket(self));
-  PyMem_DEL(self);
+  PyMem_Del(PyOggPacket_AsOggPacket(self));
+  PyObject_DEL(self);
 }
 
 static PyObject*
@@ -143,7 +144,10 @@ PyOggPacket_Repr(PyObject *self)
   char *eos = PyOggPacket_AsOggPacket(self)->e_o_s ? "EOS, " : "";
 
   sprintf(buf, "<OggPacket, %s%spacketno = %lld, granulepos = %lld,"
-	  " length = %ld at %p>", bos, eos, PyOggPacket_AsOggPacket(self)->packetno,
-	  PyOggPacket_AsOggPacket(self)->granulepos, PyOggPacket_AsOggPacket(self)->bytes, self);
+	  " length = %ld at %p (%p)>", bos, eos, 
+          PyOggPacket_AsOggPacket(self)->packetno,
+	  PyOggPacket_AsOggPacket(self)->granulepos, 
+          PyOggPacket_AsOggPacket(self)->bytes, self,
+          PyOggPacket_AsOggPacket(self)->packet);
   return PyString_FromString(buf);
 }

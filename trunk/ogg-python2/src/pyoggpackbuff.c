@@ -13,25 +13,18 @@ static void PyOggPackBuffer_Dealloc(PyObject *);
 static PyObject* PyOggPackBuffer_Getattr(PyObject *, char *);
 static PyObject *PyOggPackBuffer_Repr(PyObject *self);
 
-FDEF(PyOggPackBuffer_Reset) "Clears and resets the packet buffer";
-
-FDEF(PyOggPackBuffer_Look) "Return the value of n bits without advancing pointer";
-FDEF(PyOggPackBuffer_Look1) "Return the value of 1 bit without advancing pointer";
-
 FDEF(PyOggPackBuffer_Bytes) "Return the number of bytes in the buffer";
 FDEF(PyOggPackBuffer_Bits) "Return the number of bits in the buffer";
 
 FDEF(PyOggPackBuffer_Read) "Return the value of n bits";
-FDEF(PyOggPackBuffer_Read1) "Return the value of 1 bit";
-
+FDEF(PyOggPackBuffer_Look) "Return the value of n bits without advancing pointer";
 FDEF(PyOggPackBuffer_Adv) "Advance the read location by n bits";
-FDEF(PyOggPackBuffer_Adv1) "Advance the read location by 1 bit";
 
-FDEF(PyOggPackBuffer_Export) "Export the OggPacket built by the buffer";
-
+FDEF(PyOggPackBuffer_Reset) "Clears and resets the packet buffer";
+FDEF(PyOggPackBuffer_Packetout) "Export the OggPacket built by the buffer";
 FDEF(PyOggPackBuffer_Write) "Write bits to the buffer.\n\n\
 The first parameter is an integer from which the bits will be extracted.\n\
-The second parameter is the number of bits to write (defaults to 32)";
+The second parameter is the number of bits to write (defaults to 1)";
 
 PyTypeObject PyOggPackBuffer_Type = {
   PyObject_HEAD_INIT(NULL)
@@ -62,29 +55,31 @@ PyTypeObject PyOggPackBuffer_Type = {
   PyOggPackBuffer_Doc
 };
 
-static PyMethodDef PyOggPackBuffer_methods[] = {
-  {"reset", PyOggPackBuffer_Reset,
-   METH_VARARGS, PyOggPackBuffer_Reset_Doc},
-  {"look", PyOggPackBuffer_Look,
-   METH_VARARGS, PyOggPackBuffer_Look_Doc},
-  {"look1", PyOggPackBuffer_Look1,
-   METH_VARARGS, PyOggPackBuffer_Look1_Doc},
+static PyMethodDef PyOggPackBuffer_Read_Methods[] = {
   {"bytes", PyOggPackBuffer_Bytes,
    METH_VARARGS, PyOggPackBuffer_Bytes_Doc},
   {"bits", PyOggPackBuffer_Bits,
    METH_VARARGS, PyOggPackBuffer_Bits_Doc},
+  {"look", PyOggPackBuffer_Look,
+   METH_VARARGS, PyOggPackBuffer_Look_Doc},
   {"read", PyOggPackBuffer_Read,
    METH_VARARGS, PyOggPackBuffer_Read_Doc},
-  {"read1", PyOggPackBuffer_Read1,
-   METH_VARARGS, PyOggPackBuffer_Read1_Doc},
-  {"write", PyOggPackBuffer_Write,
-   METH_VARARGS, PyOggPackBuffer_Write_Doc},
   {"adv", PyOggPackBuffer_Adv,
    METH_VARARGS, PyOggPackBuffer_Adv_Doc},
-  {"adv1", PyOggPackBuffer_Adv1,
-   METH_VARARGS, PyOggPackBuffer_Adv1_Doc},
-  {"export", PyOggPackBuffer_Export,
-   METH_VARARGS, PyOggPackBuffer_Export_Doc},
+  {NULL, NULL}  
+};
+
+static PyMethodDef PyOggPackBuffer_Write_Methods[] = {
+  {"bytes", PyOggPackBuffer_Bytes,
+   METH_VARARGS, PyOggPackBuffer_Bytes_Doc},
+  {"bits", PyOggPackBuffer_Bits,
+   METH_VARARGS, PyOggPackBuffer_Bits_Doc},
+  {"reset", PyOggPackBuffer_Reset,
+   METH_VARARGS, PyOggPackBuffer_Reset_Doc},
+  {"write", PyOggPackBuffer_Write,
+   METH_VARARGS, PyOggPackBuffer_Write_Doc},
+  {"packetout", PyOggPackBuffer_Packetout,
+   METH_VARARGS, PyOggPackBuffer_Packetout_Doc},
   {NULL, NULL}  
 };
 
@@ -103,13 +98,19 @@ PyOggPackBuffer_New(PyObject *self, PyObject *args)
   ret = (PyOggPackBufferObject *) PyObject_NEW(PyOggPackBufferObject,
                                                &PyOggPackBuffer_Type);
   if (ret == NULL) return NULL;
-  ret->buffer = PyMem_Malloc(oggpack_buffersize());
+  PyOggPackBuffer_AsOggPackBuffer(ret) = PyMem_Malloc(oggpack_buffersize());
 
   if ( packetobj ) { 
-    oggpack_readinit(ret->buffer, PyOggPacket_AsOggPacket(packetobj)->packet);
+    ret->write_flag = 0;
+    ret->packetobj = packetobj; /* Must keep packet around for now! */
+    Py_INCREF(((PyOggPackBufferObject *) ret)->packetobj);
+    oggpack_readinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
+                     PyOggPacket_AsOggPacket(packetobj)->packet);
     return (PyObject *)ret;
   } 
-  oggpack_writeinit(ret->buffer, ogg_buffer_create());
+  ret->write_flag = 1;
+  oggpack_writeinit(PyOggPackBuffer_AsOggPackBuffer(ret), 
+                    ogg_buffer_create());
   return (PyObject *)ret;
 }
 
@@ -117,7 +118,13 @@ PyOggPackBuffer_New(PyObject *self, PyObject *args)
 static void
 PyOggPackBuffer_Dealloc(PyObject *self)
 {
-  oggpack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+  if ( ((PyOggPackBufferObject *) self)->write_flag ) { 
+    if ( ((PyOggPackBufferObject *) self)->write_flag == 1 ) {
+      oggpack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+    }
+  }
+  else  /* Release the packet being read */
+    Py_DECREF(((PyOggPackBufferObject *) self)->packetobj); 
   PyMem_Free(PyOggPackBuffer_AsOggPackBuffer(self));
   PyObject_DEL(self);
 }
@@ -125,54 +132,17 @@ PyOggPackBuffer_Dealloc(PyObject *self)
 static PyObject*
 PyOggPackBuffer_Getattr(PyObject *self, char *name)
 {
-  return Py_FindMethod(PyOggPackBuffer_methods, self, name);
-}
-
-
-static PyObject *
-PyOggPackBuffer_Reset(PyObject *self, PyObject *args)
-{
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-/* I believe this needs to, now, return the current buffer for a new
-   one through one of the init functions.  
-  oggpack_reset(PyOggPackBuffer_AsOggPackBuffer(self));
-*/
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject *
-PyOggPackBuffer_Look(PyObject *self, PyObject *args) 
-{
-  int bits = 32;
-  long ret;
-  if (!PyArg_ParseTuple(args, "l", &bits))
-    return NULL;
-
-  if (bits > 32) {
-    PyErr_SetString(PyExc_ValueError, "Cannot look at more than 32 bits");
-    return NULL;
+  if ( !((PyOggPackBufferObject *) self)->write_flag ) 
+    return Py_FindMethod(PyOggPackBuffer_Read_Methods, self, name);
+  else {
+    if ( ((PyOggPackBufferObject *) self)->write_flag == 2) {
+      PyErr_SetString(PyExc_ValueError, "DEAD BUFFER!");
+      return NULL;
+    }
+    return Py_FindMethod(PyOggPackBuffer_Write_Methods, self, name);
   }
-
-  if ( oggpack_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &ret) )
-    return PyLong_FromLong(ret);
-  PyErr_SetString(PyExc_ValueError, "I DONT KNOW! PyOggPackBuffer_Look");
-  return NULL;
 }
 
-static PyObject *
-PyOggPackBuffer_Look1(PyObject *self, PyObject *args) 
-{
-  long ret;
-
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  ret = oggpack_look1(PyOggPackBuffer_AsOggPackBuffer(self));
-  return PyLong_FromLong(ret);
-}
 
 static PyObject *
 PyOggPackBuffer_Bytes(PyObject *self, PyObject *args)
@@ -198,6 +168,88 @@ PyOggPackBuffer_Bits(PyObject *self, PyObject *args)
   return PyLong_FromLong(ret);
 }
 
+
+static PyObject *
+PyOggPackBuffer_Reset(PyObject *self, PyObject *args)
+{
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+    
+  oggpack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
+static PyObject *
+PyOggPackBuffer_Look(PyObject *self, PyObject *args) 
+{
+  int bits = 1;
+  long ret;
+  if (!PyArg_ParseTuple(args, "l", &bits))
+    return NULL;
+
+  if ( bits == 1 ) {
+    ret = oggpack_look1(PyOggPackBuffer_AsOggPackBuffer(self));
+    return PyLong_FromLong(ret);
+  }
+  
+  if (bits > 32) {
+    PyErr_SetString(PyExc_ValueError, "Cannot look at more than 32 bits");
+    return NULL;
+  }
+
+  if ( oggpack_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &ret) == 0 )
+    return PyLong_FromLong(ret);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
+static PyObject *
+PyOggPackBuffer_Read(PyObject *self, PyObject *args) 
+{
+  int bits = 1;
+  long ret;
+  
+  if (!PyArg_ParseTuple(args, "|i", &bits))
+    return NULL;
+  
+  if ( bits == 1 ) {
+    ret = oggpack_read1(PyOggPackBuffer_AsOggPackBuffer(self));
+    return PyInt_FromLong(ret);
+  }
+  
+  if (bits > 32) {
+    PyErr_SetString(PyExc_ValueError, "Cannot read more than 32 bits");
+    return NULL;
+  } 
+
+  if ( oggpack_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &ret) == 0 )
+    return PyInt_FromLong(ret);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
+static PyObject *
+PyOggPackBuffer_Adv(PyObject *self, PyObject *args)
+{
+  int bits = 1;
+
+  if (!PyArg_ParseTuple(args, "|i", &bits))
+    return NULL;
+
+  if ( bits == 1 ) 
+    oggpack_adv1(PyOggPackBuffer_AsOggPackBuffer(self));
+  else 
+    oggpack_adv(PyOggPackBuffer_AsOggPackBuffer(self), bits);
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
 static PyObject *
 PyOggPackBuffer_Write(PyObject *self, PyObject *args) 
 {
@@ -218,65 +270,9 @@ PyOggPackBuffer_Write(PyObject *self, PyObject *args)
   return Py_None;
 }
 
-static PyObject *
-PyOggPackBuffer_Read(PyObject *self, PyObject *args) 
-{
-  int bits = 32;
-  long ret;
-  
-  if (!PyArg_ParseTuple(args, "|i", &bits))
-    return NULL;
-  
-  if (bits > 32) {
-    PyErr_SetString(PyExc_ValueError, "Cannot read more than 32 bits");
-    return NULL;
-  }
-
-  if ( oggpack_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &ret) )
-    return PyInt_FromLong(ret);
-  PyErr_SetString(PyExc_ValueError, "I DONT KNOW! PyOggPackBuffer_Read");
-  return NULL;
-}
 
 static PyObject *
-PyOggPackBuffer_Read1(PyObject *self, PyObject *args)
-{
-  long ret;
-
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  ret = oggpack_read1(PyOggPackBuffer_AsOggPackBuffer(self));
-  return PyInt_FromLong(ret);
-}
-
-static PyObject *
-PyOggPackBuffer_Adv(PyObject *self, PyObject *args)
-{
-  int bits;
-
-  if (!PyArg_ParseTuple(args, "i", &bits))
-    return NULL;
-
-  oggpack_adv(PyOggPackBuffer_AsOggPackBuffer(self), bits);
-
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject *
-PyOggPackBuffer_Adv1(PyObject *self, PyObject *args)
-{
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  oggpack_adv1(PyOggPackBuffer_AsOggPackBuffer(self));
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject *
-PyOggPackBuffer_Export(PyObject *self, PyObject *args)
+PyOggPackBuffer_Packetout(PyObject *self, PyObject *args)
 {
   ogg_packet *op;
   PyOggPacketObject *packetobj;
@@ -294,6 +290,7 @@ PyOggPackBuffer_Export(PyObject *self, PyObject *args)
   op->granulepos = 0;
   op->packetno = 0;
 
+  ((PyOggPackBufferObject *) self)->write_flag = 2;
   return (PyObject *) packetobj;
 }
   
@@ -304,6 +301,10 @@ PyOggPackBuffer_Repr(PyObject *self)
   oggpack_buffer *ob = PyOggPackBuffer_AsOggPackBuffer(self);
   char buf[256];
 
+  if ( ((PyOggPackBufferObject *) self)->write_flag == 2 ) {
+    PyErr_SetString(PyExc_ValueError, "DEAD BUFFER!");
+    return NULL;
+  }
   sprintf(buf, "<OggPackBuff at %p>", self);
   return PyString_FromString(buf);
 }
