@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- Mode: python -*-
 # 
 # Copyright (c) 2002 Vivake Gupta (vivakeATomniscia.org).  All rights reserved.
