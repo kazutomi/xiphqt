@@ -29,6 +29,9 @@
 #ifdef HAVE_LIBFAAD
 #include "in_mp4.h"
 #endif
+#ifdef HAVE_LIBFLAC
+#include "in_flac.h"
+#endif
 
 #ifdef TIME_WITH_SYS_TIME
 #  include <sys/time.h>
@@ -356,14 +359,23 @@ stream_open_source (input_stream_t* source)
     return -1;
   }
 
-  #ifdef HAVE_LIBFAAD
+#ifdef HAVE_LIBFLAC
+  if (!(rc = ices_flac_open (source, buf, len)))
+    return 0;
+  if (rc < 0) {
+    close(fd);
+    return -1;
+  }
+#endif
+
+#ifdef HAVE_LIBFAAD
   if (!(rc = ices_mp4_open (source, buf, len)))
     return 0;
   if (rc < 0) {
     close(fd);
     return -1;
   }
-  #endif
+#endif
 
   if (!(rc = ices_mp3_open (source, buf, len)))
     return 0;

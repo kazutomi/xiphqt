@@ -342,6 +342,52 @@ then
   fi
 fi
 
+AC_ARG_WITH(flac,
+  [[  --with-flac[=DIR]     support for FLAC transcoding using libFLAC [in DIR]]])
+
+if test "$have_LAME" != "yes"
+then
+  if test -n "$with_flac" -a "$with_flac" != "no"
+  then
+    AC_MSG_ERROR([FLAC transcoding cannot be enabled without LAME])
+  elif test "$with_flac" != "no"
+  then
+    AC_MSG_RESULT([FLAC transcoding is disabled because LAME is not enabled])
+    with_flac="no"
+  fi
+fi
+
+have_flac="no"
+if test "$with_flac" != "no"
+then
+  if test -n "$with_flac" -a "$with_flac" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_flac/include"
+    LDFLAGS="$LDFLAGS -L$with_flac/lib"
+  fi
+
+  AC_CHECK_HEADER(faad.h, have_flac="maybe")
+  if test "$have_flac" != "no"
+  then
+    AC_CHECK_LIB(FLAC, FLAC__stream_decoder_new, [
+      LIBS="$LIBS -lFLAC"
+      AC_DEFINE(HAVE_LIBFLAC, 1, [Define if you have libFLAC])
+      ICES_OBJECTS="$ICES_OBJECTS in_flac.o"
+      have_flac="yes"
+    ],[have_flac="no"])
+  fi
+fi
+
+if test "$with_flac" != "no" -a "$have_flac" != "yes"
+then
+  if test -n "$with_flac"
+  then
+    AC_MSG_ERROR([Could not find libFLAC])
+  else
+    AC_MSG_RESULT([Could not find libFLAC, FLAC transcoding disabled])
+  fi
+fi
+
 dnl -- and finish up --
 
 LIBS="$LIBS $LIBM $LIBDL"
@@ -359,3 +405,4 @@ AC_MSG_RESULT([  Perl    : $have_perl])
 AC_MSG_RESULT([  LAME    : $have_LAME])
 AC_MSG_RESULT([  Vorbis  : $have_vorbis])
 AC_MSG_RESULT([  MP4     : $have_faad])
+AC_MSG_RESULT([  FLAC    : $have_flac])

@@ -79,7 +79,8 @@ typedef struct {
 typedef enum {
   ICES_INPUT_VORBIS,
   ICES_INPUT_MP3,
-  ICES_INPUT_MP4
+  ICES_INPUT_MP4,
+  ICES_INPUT_FLAC
 } input_type_t;
 
 typedef struct _input_stream_t {
