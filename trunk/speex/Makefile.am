@@ -5,7 +5,7 @@
 
 EXTRA_DIST = Speex.spec Speex.spec.in
 
-SUBDIRS = libspeex @src@ doc
+SUBDIRS = libspeex @src@ doc win32
 
 rpm: dist
 	rpmbuild -ta ${PACKAGE}-${VERSION}.tar.gz
