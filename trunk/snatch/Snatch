@@ -15,13 +15,13 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20011111";
+$version="Snatch 20011112";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
 $logofile=$configdir."/logo.xpm";
 
-my $backchannel_socket="/tmp/snatch.$PID";
+my $backchannel_socket="/tmp/snatch.$$";
 my $uaddr=sockaddr_un($backchannel_socket);
 my $proto=getprotobyname('tcp');
 my $comm_ready=0;
@@ -31,7 +31,8 @@ my $mode='active';
 $CONFIG{'REALPLAYER'}='{realplay,~/RealPlayer8/realplay,/usr/bin/realplay,/usr/local/bin/realplay}';
 $CONFIG{'LIBSNATCH'}='{/usr/local/lib/libsnatch.so,/usr/lib/libsnatch.so,~/snatch/libsnatch.so,~/.snatch/libsnatch.so}';
 $CONFIG{'OUTPUT_PATH'}=$HOME;
-$CONFIG{'AUDIO_DEVICE'}="/dev/dsp*";
+$CONFIG{'OSS_DEVICE'}="/dev/dsp*";
+$CONFIG{'ESD_SOCK'}="/var/run/esound/socket";
 $CONFIG{'AUDIO_MUTE'}='no';
 $CONFIG{'VIDEO_MUTE'}='no';
 $CONFIG{'DEBUG'}='no';
@@ -443,13 +444,18 @@ sub ThrowRealPlayer{
     Status("RealPlayer started...");
     $toplevel->fileevent(REAL_STDERR,'readable'=>[sub{ReadStderr();}]);
     ButtonConfig();
-    send_string("F",$CONFIG{'OUTPUT_PATH'});
-    send_string("D",$CONFIG{'AUDIO_DEVICE'});
+    SendConfig();
     Robot_Active() if($mode eq 'active');
     Robot_Timer() if($mode eq 'timer');
     Robot_Inactive() if($mode eq 'inactive');
     TestOutpath($CONFIG{OUTPUT_PATH});
 
+}
+
+sub SendConfig{
+    send_string("F",$CONFIG{'OUTPUT_PATH'});
+    send_string("E",$CONFIG{'ESD_SOCK'});
+    send_string("D",$CONFIG{'OSS_DEVICE'});
 }
 
 sub BindSocket{
@@ -1032,7 +1038,7 @@ sub ReadStderr{
 	ThrowRealPlayer();
     }
 
-    print $scalar if($CONFIG{DEBUG} eq 'yes');
+    print STDERR $scalar if($CONFIG{'DEBUG'} eq 'yes');
 
     push my@lines, split /\n/, $saved_stderr.$scalar;
     if((chomp $scalar)==0){
@@ -1052,12 +1058,14 @@ sub ReadStderr{
 	if($line=~/ERROR: Could not stat[^\n]+\n\s+([^:]*): (.+)*/){
 	    Alert("Unable to open output file!",
 		  "Libsnatch reported $1: $2\n");
-	}
-	
-	if($line=~/Password not/){
+	}elsif($line=~/Password not/){
 	    Alert("Password not accepted!",
 		  "Hopefully self explanatory...\n");
+	}elsif($line=~/\*\*ERROR: /){
+	    Alert("Libsnatch reported an error!",
+		  $saved_stderr.$scalar."\n");
 	}
+	
 
 	if($line=~/bit ZPixmap/){
 	    Alert("ERROR: This X server is not using 24/32 bit visuals!",
@@ -1188,10 +1196,22 @@ sub Setup{
 
     #audio device
     $temp=$setup_shell->
-	Label(text=>"audio device (OSS only):")->
+	Label(text=>"OSS audio device:")->
 	    place(-x=>5,-y=>$nexty);
     $setup_shell->
-	Entry(-textvariable=>\$TEMPCONF{'AUDIO_DEVICE'},-width=>"256")->
+	Entry(-textvariable=>\$TEMPCONF{'OSS_DEVICE'},-width=>"256")->
+	    place(-y=>$nexty,-x=>$temp->reqwidth()+10,
+		  -anchor=>'nw',-relwidth=>1.0,
+		  -height=>$temp->reqheight(),
+		  -width=>-$temp->reqwidth()-18);
+    $nexty+=8+$temp->reqheight();
+    
+    #esd port
+    $temp=$setup_shell->
+	Label(text=>"EsounD server socket:")->
+	    place(-x=>5,-y=>$nexty);
+    $setup_shell->
+	Entry(-textvariable=>\$TEMPCONF{'ESD_SOCK'},-width=>"256")->
 	    place(-y=>$nexty,-x=>$temp->reqwidth()+10,
 		  -anchor=>'nw',-relwidth=>1.0,
 		  -height=>$temp->reqheight(),
@@ -1241,7 +1261,7 @@ sub Setup{
 	    $window_setupbar->configure(state=>'normal');
 	    $window_setupbar->configure(relief=>'raised');
 	    SaveConfig();
-	    
+	    SendConfig();
 	    ThrowRealPlayer() if(!$comm_ready);
 	    Status("Configuration successful");
 	}
@@ -1254,7 +1274,7 @@ sub Setup{
 	    %CONFIG=%TEMPCONF;
 	    $CONFIG{OUTPUT_PATH}=trim_glob($temppath);
 	    SaveConfig();
-	    
+	    SendConfig();	    
 	    ThrowRealPlayer() if(!$comm_ready);
 	    Status("Configuration successful");
 	}

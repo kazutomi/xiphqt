@@ -105,3 +105,6 @@ A: RealPlayer is trying to start up external applications; Snatch
    synchronized multimedia events'.  I personally don't consider that
    a huge loss.
 
+   This also happens for one other common reason: Having EsounD support
+   enabled, but no EsounD daemon running.
+
