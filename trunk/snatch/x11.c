@@ -43,6 +43,19 @@ static unsigned long rpauth_cancel=0;
 static int rpauth_count=0;
 static int rpauth_already=0;
 
+static unsigned long rploc_shell=0;
+static unsigned long rploc_button=0;
+static unsigned long rploc_clear=0;
+static unsigned long rploc_entry=0;
+static unsigned long rploc_ok=0;
+static unsigned long rploc_main=0;
+static int rploc_count=0;
+
+static unsigned long rpfile_shell=0;
+static unsigned long rpfile_entry=0;
+static unsigned long rpfile_main=0;
+static int rpfile_count=0;
+
 static void queue_task(void (*f)(void));
 
 /* Built out of a few pieces of xscope by James Peterson, 1988 
@@ -167,7 +180,7 @@ static void SetUpReply(unsigned char *buf){
 
 static void UsernameAndPassword(void){
 
-  fprintf(stderr,"    ...: filling in username and password...");
+  fprintf(stderr,"    ...: filling in username and password...\n");
   if(username)
     FakeTypeString(username,rpauth_username);
   if(password)
@@ -187,6 +200,43 @@ static void UsernameAndPassword(void){
   
 }
 
+static void Location(void){
+  
+  fprintf(stderr,"    ...: filling in location field...\n");
+
+  FakeTypeString(" ",rploc_clear); /* space activates the button.
+				      Saves work parsing the
+				      window tree to get an
+				      absolute X,Y to make an
+				      event */
+  if(location)
+    FakeTypeString(location,rploc_entry);
+  FakeTypeString(" ",rploc_ok);
+
+  rpauth_shell=0;
+  rpauth_main=0;
+  rpauth_password=0;
+  rpauth_username=0;
+  rpauth_okbutton=0;
+  rpauth_count=0;
+  
+}
+
+static void FileEntry(void){
+  
+  fprintf(stderr,"    ...: filling in file field...\n");
+  if(openfile)
+    FakeTypeString(openfile,rpfile_entry);
+
+  FakeKeySym(XStringToKeysym("Return"),0,rpfile_entry);
+
+  rpfile_shell=0;
+  rpfile_main=0;
+  rpfile_entry=0;
+  rpfile_count=0;
+  
+}
+
 static void PolySegment(unsigned char *buf){
   /* we assume the auth window is ready when we see the last polylines put
      into the cancel window */
@@ -194,6 +244,16 @@ static void PolySegment(unsigned char *buf){
   if(id==rpauth_cancel){
     rpauth_cancel=0;
     queue_task(UsernameAndPassword);
+  }
+
+  if(id==rploc_entry && rploc_button){
+    rploc_button=0;
+    queue_task(Location);
+  }
+
+  if(id==rpfile_entry && rpfile_main){
+    rpfile_main=0;
+    queue_task(FileEntry);
   }
 }
 
@@ -253,6 +313,46 @@ static void CreateWindow(unsigned char *buf){
       case 0:
 	rpauth_cancel=id;
 	fprintf(stderr,"    ...: cancel button: %lx\n",id);
+	break;
+      }
+    }
+
+    /* Location dialog windows */
+    if(parent==rploc_shell){
+      rploc_main=id;
+    }
+    if(parent==rploc_main || parent==rploc_button){
+      switch(rploc_count++){
+      case 0:
+	rploc_button=id;
+	break;
+      case 1:
+	fprintf(stderr,"    ...: clear button: %lx\n",id);
+	rploc_clear=id;
+	break;
+      case 3:
+	fprintf(stderr,"    ...: ok button: %lx\n",id);
+	rploc_ok=id;
+	break;
+      case 5:
+	rploc_main=id;
+	break;
+      case 7:
+	fprintf(stderr,"    ...: text entry: %lx\n",id);
+	rploc_entry=id;
+	break;
+      }
+    }
+
+    /* File dialog windows */
+    if(parent==rpfile_shell){
+      rpfile_main=id;
+    }
+    if(parent==rpfile_main){
+      switch(rpfile_count++){
+      case 3:
+	fprintf(stderr,"    ...: text entry: %lx\n",id);
+	rpfile_entry=id;
 	break;
       }
     }
@@ -371,7 +471,27 @@ static void ChangeProperty(unsigned char *buf){
     }
   }
 
+  /* watch for the open location window */
+  if(n>36 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",36)){
+    fprintf(stderr,
+	    "    ...: RealPlayer popped open location dialog.  Watching for\n"
+	    "         dialog window tree...\n");
+    rploc_shell=id;
+    rploc_count=0;
+    rploc_entry=0;
+    rploc_clear=0;
+    rploc_ok=0;
+  }
 
+  /* watch for the open file window */
+  if(n>32 &&  !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
+    fprintf(stderr,
+	    "    ...: RealPlayer popped open file dialog.  Watching for\n"
+	    "         dialog window tree...\n");
+    rpfile_shell=id;
+    rpfile_entry=0;
+    rpfile_main=0;
+  }
 }
 
 static void PutImage(unsigned char *header,unsigned char *data){

@@ -697,10 +697,8 @@ Display *XOpenDisplay(const char *d){
 }
 
 static void queue_task(void (*f)(void)){
-  fprintf(stderr,"Queueing task...\n");
   pthread_mutex_lock(&event_mutex);
   QueuedTask=f;
   pthread_cond_signal(&event_cond);
   pthread_mutex_unlock(&event_mutex);
-  fprintf(stderr,"done...");
 }
