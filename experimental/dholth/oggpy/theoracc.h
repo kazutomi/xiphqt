@@ -139,83 +139,85 @@ namespace ogg {
                 int decode_header ( theora::comment *cc , ogg::packet *op )  { 
                     return  theora_decode_header ( this->get_data() , cc->get_data() , op->get_data() ); }
         };
-        
 
+		
         /// YUV image data
         class yuv_image : public yuv_buffer
         {
             public:
                 yuv_buffer *get_data()  { return (yuv_buffer*)this; }
                 
-                PyObject* tostring () { 
-                    int crop_offset=0;
-                    int i,j;
+                PyObject* tostring (info &theora_info) { 
+                    int   crop_offset=0;
+                    int   i,j;
                     char  y[this->y_width*this->y_height];
                     char  u[this->y_width*this->y_height];
                     char  v[this->y_width*this->y_height];
                     char  data[this->y_width*this->y_height*3];
 
-                    //crop_offset=ti.offset_x+yuv.y_stride*ti.offset_y;
+                    crop_offset=theora_info.offset_x+this->y_stride*theora_info.offset_y;
                     for(i=0;i<this->y_height;i++){
                         std::memcpy(y+i*this->y_width,
                                 this->y+crop_offset+this->y_stride*i,this->y_width);
                     }
-                    //  crop_offset=(ti.offset_x/2)+(yuv.uv_stride)*(ti.offset_y/2);
-                    for(i=0;i<this->uv_height;i++) {
-                        std::memcpy(u+i*this->uv_width,
-                                this->v+crop_offset+this->uv_stride*i,this->uv_width);
-                        std::memcpy(v+i*this->uv_width,
-                                this->v+crop_offset+this->uv_stride*i,this->uv_width);
+					if(this->uv_widht < this->y_widht)
+						crop_offset=theora_info.offset_x/2+this->y_stride*theora_info.offset_y/2;
+                    for(i=0; i < this->uv_height; i++) {
+                        std::memcpy(u+i * this->uv_width,
+                                this->u+crop_offset + this->uv_stride * i, this->uv_width);
+                        std::memcpy(v+i * this->uv_width,
+                                this->v + crop_offset + this->uv_stride * i, this->uv_width);
                     }
 
-                    for(i=0;i<this->uv_height;i++) {
-                        for(j=0;j<this->uv_width;j++) {
-                            int uv_count=(i/2)*(j/2);
-                            data[i*j*3]=y[i*j];
-                            data[i*j*3+1]=u[uv_count];
-                            data[i*j*3+2]=v[uv_count];
+                    for(i=0;i < this->uv_height; i++) {
+                        for(j=0; j < this->uv_width; j++) {
+                            int uv_count = (i/2) * (j/2);
+                            data[i*j*3] = y[i * j];
+                            data[i*j*3+1] = u[uv_count];
+                            data[i*j*3+2] = v[uv_count];
                         }
                     }
-                    return PyString_FromStringAndSize(data,this->y_width*this->y_height*3); 
+                    return PyString_FromStringAndSize(data, this->y_width * this->y_height * 3); 
                 }
                 
-                PyObject* tostrings () { 
-                    int crop_offset=0;
-                    int i;
-                    char  y[this->y_width*this->y_height];
-                    char  u[this->uv_width*this->uv_height];
-                    char  v[this->uv_width*this->uv_height];
+                PyObject* tostrings (info &theora_info) { 
+					int i;
+                    int crop_offset = 0;
+                    char  y[this->y_width * this->y_height];
+                    char  u[this->uv_width * this->uv_height];
+                    char  v[this->uv_width * this->uv_height];
+					PyObject *tuple;
 
-                    //crop_offset=theora_info::offset_x+this->y_stride*theora_info::offset_y;
-                    for(i=0;i<this->y_height;i++) {
-                        std::memcpy(y+i*this->y_width,
-                                this->y+crop_offset+this->y_stride*i,this->y_width);
+                    crop_offset=theora_info.offset_x + this->y_stride * theora_info.offset_y;
+                    for(i = 0; i < this->y_height; i++) {
+                        std::memcpy(y + i * this->y_width,
+                                this->y + crop_offset + this->y_stride * i, this->y_width);
                     }
-                    
-                    //crop_offset=theora_info::offset_x/2+this->y_stride*theora_info::offset_y/2;
+                    if(this->uv_widht < this->y_widht)
+						crop_offset=theora_info.offset_x/2 + this->y_stride * theora_info.offset_y/2;
                     for(i=0; i < this->uv_height; i++) {
-                        std::memcpy(u+i*this->uv_width, this->u+crop_offset+this->uv_stride*i,this->uv_width);
-                        std::memcpy(v+i*this->uv_width, this->v+crop_offset+this->uv_stride*i,this->uv_width);
+                        std::memcpy(u + i * this->uv_width, 
+								this->u + crop_offset + this->uv_stride * i, this->uv_width);
+                        std::memcpy(v + i * this->uv_width, 
+								this->v + crop_offset + this->uv_stride * i, this->uv_width);
                     }
 
-                    PyObject *tuple, *string;
+
                     tuple = PyTuple_New(3);
-                    if (tuple == NULL) {
+                    if (tuple == NULL)
                         return NULL;
-                    }
                     
-                    string = PyString_FromStringAndSize(y,this->y_width*this->y_height);
-                    PyTuple_SET_ITEM(tuple, 0, string);
-                    string = PyString_FromStringAndSize(u,this->uv_width*this->uv_height);
-                    PyTuple_SET_ITEM(tuple, 1, string);
-                    string = PyString_FromStringAndSize(v,this->uv_width*this->uv_height);
-                    PyTuple_SET_ITEM(tuple, 2, string);
+                    PyTuple_SET_ITEM(tuple, 0, 
+			PyString_FromStringAndSize(y, this->y_width * this->y_height));
+                    PyTuple_SET_ITEM(tuple, 1, 
+			PyString_FromStringAndSize(u, this->uv_width * this->uv_height));
+                    PyTuple_SET_ITEM(tuple, 2, 
+			PyString_FromStringAndSize(v, this->uv_width * this->uv_height));
                     return tuple;
                 }
         };
-	
 
-
+		
         /// Codec state.
         class state {
             private:
