@@ -2,7 +2,7 @@
 import sys
 from os import path
 import getopt
-from ConfigParser import ConfigParser
+from config import Config
 from neuros import Neuros
 import neuros
 import cmd_add
@@ -10,6 +10,7 @@ import cmd_del
 import cmd_list
 import cmd_clear
 import cmd_pack
+import cmd_config
 
 import ports
 
@@ -42,9 +43,6 @@ def usage():
     print
     print "For more help on a specific command, type: positron help <command>"
 
-def set_config_defaults(config):
-    config.add_section("general")
-    config.set("general", "musicdir", "MUSIC")
 
 def main(argv):
     options = "c:hm:v"
@@ -58,8 +56,8 @@ def main(argv):
         usage()
         sys.exit()
 
-    config_file = None
-    mountpoint = None
+    config = Config()
+    
     for o,a in opts:
         if o in ("-v", "--version"):
             print version
@@ -68,9 +66,9 @@ def main(argv):
             usage()
             sys.exit()
         elif o in ("-c", "--config"):
-            config_file = a
+            config.config_filename = a
         elif o in ("-m", "--mount-point"):
-            mountpoint = a
+            config.mountpoint = a
 
     if len(remaining) == 0:
         usage()
@@ -87,28 +85,17 @@ def main(argv):
             usage()
             sys.exit(0)
 
-    # Open config file
-    config = ConfigParser()
-    set_config_defaults(config)
-    if config_file != None:
-        config.read(config_file)
-    else:
-        config.read([ports.site_config_file_path(), ports.user_config_file_path()])
-
-    # Override config file settings with command line options
-    if mountpoint != None:
-        config.set("general","mountpoint",mountpoint)
-
     # Sanity check
-    if not config.has_option("general","mountpoint"):
+    if not config.mountpoint:
         print "Error: Neuros mountpoint not set with -m and not present in config file."
+        print "Please use \"positron config\" to create or modify the configuration."
         sys.exit(1)
 
     try:
-        myNeuros = Neuros(config.get("general", "mountpoint"))
+        myNeuros = Neuros(config.mountpoint)
 
         if commands.has_key(remaining[0]):
-            cmd = commands[remaining[0]]
+            (cmd, display_order) = commands[remaining[0]]
             cmd.run(config, myNeuros, remaining[1:])
         else:
             print remaining[0], "is not a valid command."

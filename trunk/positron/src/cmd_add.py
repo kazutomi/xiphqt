@@ -104,8 +104,7 @@ def run(config, neuros, args):
     
     # Deal with case 3 first
     if not neuros.is_valid_hostpath(args[-1]) or path.isfile(args[-1]):
-        musicdir = path.join(neuros.mountpoint,
-                             config.get("general","musicdir"))
+        musicdir = path.join(neuros.mountpoint, config.musicdir)
 
         if not path.exists(musicdir):
             os.makedirs(musicdir)  # Does not work on Win32 UNC paths
