@@ -44,7 +44,7 @@ typedef struct
 	int newtrack;
     int user_terminated;
     unsigned sleep;
-
+    const char *connect;
 	int jack_shutdown;
     const char *clientname;
 	jack_client_t *client;

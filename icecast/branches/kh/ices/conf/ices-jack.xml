@@ -25,6 +25,7 @@
 			<module>jack</module>
 			<param name="channels">2</param>        <!-- number channels that will be available as jack ports-->
 			<param name="clientname">ices</param>   <!-- jackclient name  -->
+			<param name="connect">alsa_pcm:capture_1,alsa_pcm:capture_2</param> <!-- Comma-separated list of ports to connect to at startup.(optional, it is also possible to use tools like jack.plumbing to take care of the connections)  -->
 			<param name="metadatafilename">metadata</param>
 		</input>
         <!-- more input section can be stated here, and can be switched manually -->
@@ -112,4 +113,3 @@
 
 	</stream>
 </ices>
-

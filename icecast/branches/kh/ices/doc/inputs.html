@@ -136,6 +136,7 @@
 	&lt;module&gt;jack&lt;/module&gt;
 	&lt;param name="channels"&gt;2&lt;/param&gt;
 	&lt;param name="clientname"&gt;ices&lt;/param&gt;
+	&lt;param name="connect"&gt;alsa_pcm:capture_1,alsa_pcm:capture_2&lt;/param&gt;
 	&lt;param name="metadatafilename"&gt;/home/ices/metadata&lt;/param&gt;
    </pre>
    <p>
@@ -153,6 +154,11 @@ to other jack clients
    <h4>clientname</h4>
    <div class=indentedbox>
 	The name ices registers as at the jack server.
+   </div>
+   <h4>connect</h4>
+   <div class=indentedbox>
+    Comma-separated list of ports to connect to at startup.<br />
+    (optional, it is also possible to use tools like jack.plumbing to take care of the connections)
    </div>
    <h4>metadatafilename</h4>
    <div class=indentedbox>

@@ -157,11 +157,13 @@ static int jack_read(input_module_t *mod)
     jack_default_audio_sample_t **pcms;
     jack_nframes_t nframes=s->samples;
     size_t framebuf_size = sizeof (jack_default_audio_sample_t) * nframes;
+    size_t fb_read;
 
     while (1)
     {
         /* read and process from ringbuffer has to go here. */
-        if (jack_ringbuffer_read_space (s->rb[0]) > framebuf_size)
+	fb_read=framebuf_size;
+        if (jack_ringbuffer_read_space (s->rb[0]) > fb_read)
         {
             if ((ib = input_alloc_buffer (mod)) == NULL)
             {
@@ -173,12 +175,12 @@ static int jack_read(input_module_t *mod)
             for (chn = 0; chn < (s->channels); chn++)
             {	
                 size_t len;
-                len = jack_ringbuffer_read (s->rb[chn], (char*)pcms[chn], framebuf_size);
-                if (len < framebuf_size)
-                    framebuf_size = len;
+                len = jack_ringbuffer_read (s->rb[chn], (char*)pcms[chn], fb_read);
+                if (len < fb_read)
+                    fb_read = len;
             }
 
-            ib->samples = framebuf_size/sizeof(jack_default_audio_sample_t);
+            ib->samples = fb_read/sizeof(jack_default_audio_sample_t);
             ib->samplerate = s->rate;
             ib->channels = s->channels;
 
@@ -234,7 +236,8 @@ int jack_init_module(input_module_t *mod)
 {
     im_jack_state *s;
     module_param_t *current;
-    char *clientname = "ices"; /* default clientname */
+    char *clientname;
+    char *connect;
     int channels, rate;
     unsigned int samples;
     unsigned sleep_time;
@@ -258,9 +261,10 @@ int jack_init_module(input_module_t *mod)
     channels = 2; 
     samples = 4096;
     sleep_time = 10000;
+    clientname = "ices";
+    connect = "";
 
     current = mod->module_params;
-
     while(current)
     {
         if(!strcmp(current->name, "channels"))
@@ -271,14 +275,16 @@ int jack_init_module(input_module_t *mod)
             mod->metadata_filename = current->value;
         else if(!strcmp(current->name, "sleep"))
             sleep_time = atoi (current->value);
-        else
+	else if(!strcmp(current->name, "connect")) 
+	    connect = current->value;
+	else
             LOG_WARN1("Unknown parameter %s for jack module", current->name);
 
         current = current->next;
     }
     s->channels = channels;
     s->clientname = clientname;
-
+    s->connect = connect;
     s->rate = rate;
     s->samples = samples;
     if (sleep_time > 0)
@@ -302,6 +308,30 @@ int jack_open_module(input_module_t *mod)
     int i,j;
     char port_name[32];
     size_t rb_size;
+    const char *con_ptr=s->connect;
+    const char *ind;
+    const char connect[16][32];
+    int con_ports=0;
+    int last=0;
+    jack_port_t *input_port;
+    const char *input_port_name;
+    const char *output_port_name;
+
+    // Find out which ports to connect to.
+    if(strcmp(s->connect, "")) {
+        while (!last && con_ports < 16) {
+            ind=index(con_ptr,',');
+            if (ind==NULL) {
+                ind=con_ptr+strlen(con_ptr);
+                last=-1;
+            }
+            strncpy((char *)connect[con_ports],con_ptr,ind-con_ptr);
+            strncpy((char *)connect[con_ports]+(ind-con_ptr),"\0",1);
+            //LOG_DEBUG1("Found port connect param: %s", connect[con_ports]);
+            con_ptr=ind+1;
+            con_ports++;
+        }
+    }
 
     if ((s->client = jack_client_new(s->clientname)) == 0) 
     {
@@ -316,7 +346,7 @@ int jack_open_module(input_module_t *mod)
     /* create the ringbuffers; one per channel, figures may need tweaking */
     rb_size = 2.0 * jack_get_sample_rate (s->client) * sizeof (jack_default_audio_sample_t);
     // why was with again(??)
-    /* rb_size = (size_t)((s->sleep / 2000.0) *
+    /* rb_size = (size_t)((s->sleep / 1000.0) *
         jack_get_buffer_size(s->client) * sizeof(jack_default_audio_sample_t));
      */
     LOG_DEBUG2("creating %d ringbuffers, one per channel, of "
@@ -349,7 +379,27 @@ int jack_open_module(input_module_t *mod)
         sprintf(port_name, "in_%d", i+1);
         s->jack_ports[i] = jack_port_register(s->client, port_name, 
                 JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput,0); 
-    }	
+	
+    }
+    
+    for (i = 0; i < con_ports ; i++)
+    {
+	int j=i%(s->channels);
+	
+	if ((input_port=jack_port_by_name(s->client, connect[i])) == 0)
+	{
+	    LOG_DEBUG1("Can't find port %s to connect to", connect[i]);
+	    goto fail;
+	}
+	input_port_name=jack_port_name(input_port);
+	output_port_name=jack_port_name(s->jack_ports[j]);
+	if (jack_connect(s->client, input_port_name, output_port_name))
+	{
+	    LOG_DEBUG1("Can't connect port: %s",connect[i]);
+	    goto fail;
+	}
+	LOG_INFO2("Connected port: %s to %s",input_port_name,output_port_name);
+    }
 
     s->newtrack = 1;
 
