@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.11 2001/12/19 01:34:26 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.12 2001/12/19 02:07:51 volsung Exp $
 
  ********************************************************************/
 
@@ -71,11 +71,11 @@ void buffer_thread_init (buf_t *buf)
   DEBUG("Enter buffer_thread_init");
 
   /* Block signals to this thread */
-  sigfillset (&set);
-  sigaddset (&set, SIGINT);
-  sigaddset (&set, SIGTSTP);
-  sigaddset (&set, SIGCONT);
-  if (pthread_sigmask (SIG_BLOCK, &set, NULL) != 0)
+  sigfillset(&set);
+  sigaddset(&set, SIGINT);
+  sigaddset(&set, SIGTSTP);
+  sigaddset(&set, SIGCONT);
+  if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0)
     DEBUG("pthread_sigmask failed");
 }
 
@@ -87,9 +87,10 @@ void buffer_thread_cleanup (void *arg)
   DEBUG("Enter buffer_thread_cleanup");
 
   /* Cleanup thread data structures */
-  pthread_mutex_destroy (&buf->mutex);
-  pthread_cond_destroy (&buf->playback_cond);
-  pthread_cond_destroy (&buf->write_cond);
+  pthread_mutex_unlock(&buf->mutex);
+  pthread_mutex_destroy(&buf->mutex);
+  pthread_cond_destroy(&buf->playback_cond);
+  pthread_cond_destroy(&buf->write_cond);
 }
 
 
@@ -365,9 +366,9 @@ buf_t *buffer_create (long size, long prebuffer,
   buf->write_arg = arg;
 
   /* Setup pthread variables */
-  pthread_mutex_init (&buf->mutex, NULL);
-  pthread_cond_init (&buf->write_cond, NULL);
-  pthread_cond_init (&buf->playback_cond, NULL);
+  pthread_mutex_init(&buf->mutex, NULL);
+  pthread_cond_init(&buf->write_cond, NULL);
+  pthread_cond_init(&buf->playback_cond, NULL);
   
   /* Correct for impossible chunk sizes */
   if (audio_chunk_size > size || audio_chunk_size == 0)
@@ -392,14 +393,14 @@ void buffer_reset (buf_t *buf)
   action_t *action;
 
   /* Cleanup pthread variables */
-  pthread_mutex_destroy (&buf->mutex);
-  pthread_cond_destroy (&buf->write_cond);
-  pthread_cond_destroy (&buf->playback_cond);
+  pthread_mutex_destroy(&buf->mutex);
+  pthread_cond_destroy(&buf->write_cond);
+  pthread_cond_destroy(&buf->playback_cond);
   
   /* Reinit pthread variables */
-  pthread_mutex_init (&buf->mutex, NULL);
-  pthread_cond_init (&buf->write_cond, NULL);
-  pthread_cond_init (&buf->playback_cond, NULL);
+  pthread_mutex_init(&buf->mutex, NULL);
+  pthread_cond_init(&buf->write_cond, NULL);
+  pthread_cond_init(&buf->playback_cond, NULL);
 
   /* Clear old actions */
   while (buf->actions != NULL) {
@@ -463,7 +464,7 @@ void buffer_thread_kill (buf_t *buf)
   /* Signal all the playback condition to wake stuff up */
   COND_SIGNAL(buf->playback_cond);
 
-  pthread_join (buf->thread, NULL);
+  pthread_join(buf->thread, NULL);
 
   buffer_thread_cleanup(buf);
 
