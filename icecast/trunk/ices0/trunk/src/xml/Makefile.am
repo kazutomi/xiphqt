@@ -2,10 +2,10 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-noinst_LIBRARIES = libshoutxml.a
+noinst_LIBRARIES = libicesxml.a
 noinst_HEADERS = parse.h
 
-libshoutxml_a_SOURCES = parse.c
+libicesxml_a_SOURCES = parse.c
 
 INCLUDES = -I.. 
 

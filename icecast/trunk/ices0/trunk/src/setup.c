@@ -27,7 +27,7 @@ static void ices_setup_parse_options (ices_config_t *ices_config);
 static void ices_setup_parse_defaults (ices_config_t *ices_config);
 static void ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile);
 static void ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc);
-static void ices_setup_activate_changes (ices_conn_t *conn, const ices_config_t *ices_config);
+static void ices_setup_activate_changes (shout_conn_t *conn, const ices_config_t *ices_config);
 static void ices_setup_usage ();
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize ();
@@ -38,10 +38,10 @@ void
 ices_setup_init ()
 {
 	ices_config_t *ices_config = ices_util_get_config ();
-	ices_conn_t *conn = ices_util_get_conn ();
+	shout_conn_t *conn = ices_util_get_conn ();
 	
 	/* Initialize the libices structure */
-	ices_init_connection (conn);
+	shout_init_connection (conn);
 	
 	/* Parse the options in the config file, and the command line */
 	ices_setup_parse_options (ices_config);
@@ -68,9 +68,9 @@ ices_setup_init ()
 void
 ices_setup_shutdown ()
 {
-	ices_conn_t *conn = ices_util_get_conn ();
+	shout_conn_t *conn = ices_util_get_conn ();
 
-	ices_disconnect (conn);
+	shout_disconnect (conn);
 
 	ices_playlist_shutdown ();
 
@@ -245,7 +245,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 }
 
 static void
-ices_setup_activate_changes (ices_conn_t *conn, const ices_config_t *ices_config)
+ices_setup_activate_changes (shout_conn_t *conn, const ices_config_t *ices_config)
 {
 	conn->port = ices_config->port;
 	conn->ip = ices_config->host;

@@ -31,7 +31,7 @@ int ices_argc;
 const char cnull[7] = "(null)";
 
 /* Public function definitions */
-ices_conn_t *
+shout_conn_t *
 ices_util_get_conn ()
 {
 	return &conn;

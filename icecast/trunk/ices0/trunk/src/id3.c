@@ -102,7 +102,7 @@ ices_id3_update_thread (void *arg)
 		sprintf (metastring, "%s", song);
 	else
 		sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
-	ret = ices_update_metadata (ices_util_get_conn (), metastring);
+	ret = shout_update_metadata (ices_util_get_conn (), metastring);
 
 	if (ret != 1)
 		ices_log ("Updating metadata on server failed.");
