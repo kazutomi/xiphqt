@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.21 2001/12/14 17:54:05 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.22 2001/12/16 00:31:41 volsung Exp $
 
  ********************************************************************/
 
@@ -409,6 +409,11 @@ void play (char *source_string)
     buffer_thread_start (audio_buffer);
   }
 
+  /* Skip over audio */
+  if (options.seekpos > 0.0) {
+    if (!format->seek(decoder, options.seekpos, DECODER_SEEK_START))
+      status_error("Could not skip %f seconds of audio.", options.seekpos);
+  }
 
   /* Main loop:  Iterates over all of the logical bitstreams in the file */
   while (!eof && !sig_request.exit) {

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: format.h,v 1.1.2.3 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: format.h,v 1.1.2.4 2001/12/16 00:31:41 volsung Exp $
 
  ********************************************************************/
 
@@ -52,6 +52,10 @@ typedef struct decoder_t {
   void *private;
 } decoder_t;
 
+/* whence constants */
+#define DECODER_SEEK_START 1
+#define DECODER_SEEK_CUR   2
+
 typedef struct format_t {
   char *name;
 
@@ -61,6 +65,7 @@ typedef struct format_t {
 		       decoder_callbacks_t *callbacks, void *callback_arg);
   int (* read) (decoder_t *decoder, void *ptr, int nbytes, int *eos, 
 		audio_format_t *audio_fmt);
+  int (* seek) (decoder_t *decoder, double offset, int whence);
   decoder_stats_t* (* statistics) (decoder_t *decoder);
   void (* cleanup) (decoder_t *decoder);
 } format_t;
