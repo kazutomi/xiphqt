@@ -1,11 +1,6 @@
 <html>
 <head>
-  <style type="text/css">
-    table.fielddef, table.fielddef td, 
-    table.fielddef th{border: 2px black solid; border-collapse: collapse;}
-    td.nodata    {background-color: rgb(80%, 80%, 80%)}
-    h4 {margin-top: 3em}
-  </style>
+  <link rel="stylesheet" type="text/css" href="style.css" />
   <title>Positron Documentation: Working with the Database</title>
 </head>
 
@@ -140,8 +135,7 @@ keys are 32 bit pointers to records in child databases which have only a
 primary field (also a null-terminated string).
 </p>
 
-<a name="audio"/>
-<h4>audio</h4>
+<h4 id="audio">audio</h4>
 
 <table class="fielddef">
   <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
@@ -157,8 +151,7 @@ primary field (also a null-terminated string).
   <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on Neuros filesystem.  Follows path conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
 </table>
 
-<a name="pcaudio"/>
-<h4>pcaudio</h4>
+<h4 id="pcaudio">pcaudio</h4>
 
 <table class="fielddef">
   <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
@@ -174,8 +167,7 @@ primary field (also a null-terminated string).
   <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on host PC filesystem.</td></tr>
 </table>
 
-<a name="unidedhisi">
-<h4>unidedhisi</h4>
+<h4 id="unidedhisi">unidedhisi</h4>
 
 <table class="fielddef">
   <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
@@ -185,8 +177,7 @@ primary field (also a null-terminated string).
       conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
 </table>
 
-<a name="idedhisi">
-<h4>idedhisi</h4>
+<h4 id="idedhisi">idedhisi</h4>
 
 <table class="fielddef">
   <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
@@ -204,8 +195,7 @@ primary field (also a null-terminated string).
       conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
 </table>
 
-<a name="failedhisi">
-<h4>failedhisi</h4>
+<h4 id="failedhisi">failedhisi</h4>
 
 <p>Field definitions are the same as <a href="#unidedhisi">unidedhisi</a>.</p>
 
