@@ -54,6 +54,7 @@ static int rpfile_lowest=0;
 static void queue_task(void (*f)(void));
 static void initialize();
 static int videocount=0;
+static int depthwarningflag;
 
 static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
   int x=0;
@@ -149,6 +150,7 @@ void FakeExposeRPPlay(void){
   event.window=rpplay_window;
   event.width=rpplay_width;
   event.height=rpplay_height;
+  logo_y=-1;
 
   XSendEvent(Xdisplay,(Window)rpplay_window,0,0,(XEvent *)&event);
 }
@@ -505,6 +507,8 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
   return(ret);
 }
 
+static char *workbuffer;
+static long worksize;
 
 int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	      int src_x,int src_y,
@@ -512,18 +516,69 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	      unsigned int d_width, 
 	      unsigned int d_height){
 
-  int ret;
+  int ret=0;
 
   if(snatch_active==1 && id==rpvideo_window){
     videocount++;
     if(videocount>5 && outfile_fd<0)OpenOutputFile();
-    if(outfile_fd>=0){
+    /* only do 24 bit zPixmaps for now */
 
+    if(image->format==2 && image->depth>16 && image->depth<=24){
+      if(outfile_fd>=0){
+	char cbuf[80];
+	int bpp=image->bytes_per_line/image->width;
+	long a,b,n=image->width*image->height*3;
+	int i,j,len;
+	
+	bigtime(&a,&b);
+	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,video_width,
+		    video_height,n);
+	gwrite(outfile_fd,cbuf,len);
+	
+	if(worksize<n){
+	  if(worksize==0)
+	    workbuffer=malloc(n);
+	  else
+	    workbuffer=realloc(workbuffer,n);
+	  worksize=n;
+	}
+	
+	if(image->byte_order){      
+	  char *work=workbuffer;
+	  char *ptr=image->data;
+	  for(i=0;i<image->height;i++){
+	    for(j=0;j<image->width*bpp;){
+	      j++;
+	      *work++=ptr[j++];
+	      *work++=ptr[j++];
+	      *work++=ptr[j++];
+	    }
+	    ptr+=image->bytes_per_line;
+	  }
+	}else{
+	  char *work=workbuffer;
+	  char *ptr=image->data;
+	  for(i=0;i<image->height;i++){
+	    for(j=0;j<image->width*bpp;j+=4){
+	      *work++=ptr[j+2];
+	      *work++=ptr[j+1];
+	      *work++=ptr[j];
+	    }
+	    ptr+=image->bytes_per_line;
+	  }
+	}
+	  	  
+	gwrite(outfile_fd,workbuffer,n);
 
+      }
+    }else{
+      if(!depthwarningflag)
+	fprintf(stderr,"**ERROR: Right now, Snatch only works with 17-24 bit ZPixmap\n"
+		"         based visuals packed into 8bpp 32 bit units.  This\n"
+		"         X server is not in a 24/32 bit mode. \n");
+      depthwarningflag=1;
+    }
 
-
-
-    }    
   }
 
   /* Subvert the Real sign on logo; paste the Snatch logo in.
@@ -536,160 +591,221 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
   if(id==rpplay_window){
     int width=image->width;
     int height=image->height;
-    int depth=image->depth;
     int endian=image->byte_order;
 
-    char *ptr=image->data;
-    long i,j,k;
-    
-    /* after a resize, look where to put the logo... */
-    if(logo_y==-1 && height==rpplay_height && width==rpplay_width){
-      int test;      
-
-      play_blackupper=42;
-      play_blacklower=-1;
-      play_blackleft=-1;
-      play_blackright=-1;
+    if(image->format==2 && image->depth>16 && image->depth<=24){
       
-      for(play_blackleft=20;play_blackleft>0;play_blackleft--)
-	if(ptr[play_blackupper*width*4+play_blackleft*4+1]!=0)break;
-      play_blackleft++;
-      for(play_blackright=width-20;play_blackright<width;play_blackright++)
-	if(ptr[play_blackupper*width*4+play_blackright*4+1]!=0)break;
-
-      if(play_blacklower==-1){
-	play_blacklower=42;
-	for(;play_blacklower<height;play_blacklower++)
-	  if(ptr[play_blacklower*width*4+81]!=0)break;
+      char *ptr=image->data;
+      long i,j,k;
+      
+      /* after a resize, look where to put the logo... */
+      if(logo_y==-1 && height==rpplay_height && width==rpplay_width){
+	int test;      
 	
-	if(play_blacklower==height)play_blacklower=-1;
-      }
-      
-      for(test=play_blackupper;test<height;test++)
-	if(ptr[test*width*4+(width/2*4)+1]!=0)break;
-      
-      if(test<height && test+snatchheight<play_blacklower){
-	logo_y=test;
+	play_blackupper=42;
+	play_blacklower=-1;
+	play_blackleft=-1;
+	play_blackright=-1;
 	
-	/* verify enough room to display... */
-	if(test<50){
-	  long blacklower;
+	for(play_blackleft=20;play_blackleft>0;play_blackleft--)
+	  if(ptr[play_blackupper*width*4+play_blackleft*4+1]!=0)break;
+	play_blackleft++;
+	for(play_blackright=width-20;play_blackright<width;play_blackright++)
+	  if(ptr[play_blackupper*width*4+play_blackright*4+1]!=0)break;
+	
+	if(play_blacklower==-1){
+	  play_blacklower=42;
+	  for(;play_blacklower<height;play_blacklower++)
+	    if(ptr[play_blacklower*width*4+81]!=0)break;
 	  
-	  for(blacklower=test;blacklower<height;blacklower++)
-	    if(ptr[blacklower*width*4+(20*4)+1]!=0)break;
-	  
-	  if(blacklower-test<snatchheight)logo_y=-1;
+	  if(play_blacklower==height)play_blacklower=-1;
 	}
-      }
-    }
-      
-    /* blank background */
-    {
-      unsigned char *bptr;
-      
-      if(snatch_active==1)
-	bptr=snatchppm;
-      else
-	bptr=waitppm;
-      
-      if(endian){
-	for(i=play_blackupper;i<play_blacklower;i++)
-	  for(j=play_blackleft;j<play_blackright;j++){
-	    ptr[i*width*4+j*4]=0x00;
-	    ptr[i*width*4+j*4+1]=bptr[0];
-	    ptr[i*width*4+j*4+2]=bptr[1];
-	    ptr[i*width*4+j*4+3]=bptr[2];
-	  }
-      }else{
-	for(i=play_blackupper;i<play_blacklower;i++)
-	  for(j=play_blackleft;j<play_blackright;j++){
-	    ptr[i*width*4+j*4+3]=0x00;
-	    ptr[i*width*4+j*4+2]=bptr[0];
-	    ptr[i*width*4+j*4+1]=bptr[1];
-	    ptr[i*width*4+j*4]=bptr[2];
-	  }
-      }
-    }
-      
-    /* paint logo */
-    if(logo_y!=-1){
-      unsigned char *logo;
-      int logowidth;
-      int logoheight;
-
-      switch(snatch_active){
-      case 0:
-	logo=realppm;
-	logowidth=realwidth;
-	logoheight=realheight;
-	break;
-      case 1:
-	logo=snatchppm;
-	logowidth=snatchwidth;
-	logoheight=snatchheight;
-	break;
-      case 2:
-	logo=waitppm;
-	logowidth=snatchwidth;
-	logoheight=snatchheight;
-	break;
-      }
-
-      for(i=0;i<logoheight;i++){
-	if(i+logo_y<height){
-	  char *snatch;
-	  char *real;
+	
+	for(test=play_blackupper;test<height;test++)
+	  if(ptr[test*width*4+(width/2*4)+1]!=0)break;
+	
+	if(test<height && test+snatchheight<play_blacklower){
+	  logo_y=test;
 	  
-	  real=ptr+width*4*(i+logo_y)+(rpplay_width-logowidth)*2;
-	  snatch=logo+logowidth*3*i;
-	  
-	  if(endian){
+	  /* verify enough room to display... */
+	  if(test<50){
+	    long blacklower;
 	    
-	    for(k=0,j=0;k<logowidth*3 && j<width*4;){
-	      real[++j]=snatch[k++];
-	      real[++j]=snatch[k++];
-	      real[++j]=snatch[k++];
-	      ++j;
-	    }
+	    for(blacklower=test;blacklower<height;blacklower++)
+	      if(ptr[blacklower*width*4+(20*4)+1]!=0)break;
 	    
-	  }else{
-	    for(k=0,j=0;k<logowidth*3 && j<width*4;j+=4){
-	      real[j+2]=snatch[k++];
-	      real[j+1]=snatch[k++];
-	      real[j]=snatch[k++];
-	    }
+	    if(blacklower-test<snatchheight)logo_y=-1;
 	  }
 	}
       }
+      
+      /* blank background */
+      if(x==0 && y==0 && d_width==rpplay_width && d_height==rpplay_height){
+	unsigned char *bptr;
+	
+	if(snatch_active==1)
+	  bptr=snatchppm;
+	else
+	  bptr=waitppm;
+	
+	if(endian){
+	  for(i=play_blackupper;i<play_blacklower;i++)
+	    for(j=play_blackleft;j<play_blackright;j++){
+	      ptr[i*width*4+j*4]=0x00;
+	      ptr[i*width*4+j*4+1]=bptr[0];
+	      ptr[i*width*4+j*4+2]=bptr[1];
+	      ptr[i*width*4+j*4+3]=bptr[2];
+	    }
+	}else{
+	  for(i=play_blackupper;i<play_blacklower;i++)
+	    for(j=play_blackleft;j<play_blackright;j++){
+	      ptr[i*width*4+j*4+3]=0x00;
+	      ptr[i*width*4+j*4+2]=bptr[0];
+	      ptr[i*width*4+j*4+1]=bptr[1];
+	      ptr[i*width*4+j*4]=bptr[2];
+	    }
+	}
+	
+	
+	/* paint logo */
+	if(logo_y!=-1){
+	  unsigned char *logo;
+	  int logowidth;
+	  int logoheight;
+	  
+	  switch(snatch_active){
+	  case 0:
+	    logo=realppm;
+	    logowidth=realwidth;
+	    logoheight=realheight;
+	    break;
+	  case 1:
+	    logo=snatchppm;
+	    logowidth=snatchwidth;
+	    logoheight=snatchheight;
+	    break;
+	  case 2:
+	    logo=waitppm;
+	    logowidth=snatchwidth;
+	    logoheight=snatchheight;
+	    break;
+	  }
+	  
+	  for(i=0;i<logoheight;i++){
+	    if(i+logo_y<height){
+	      char *snatch;
+	      char *real;
+	      
+	      real=ptr+width*4*(i+logo_y)+(rpplay_width-logowidth)/2*4;                                                                       /* not the same as *2 */
+	      snatch=logo+logowidth*3*i;
+	      
+	      if(endian){
+	      
+		for(k=0,j=0;k<logowidth*3 && j<width*4;){
+		  real[++j]=snatch[k++];
+		  real[++j]=snatch[k++];
+		  real[++j]=snatch[k++];
+		  ++j;
+		}
+		
+	      }else{
+		for(k=0,j=0;k<logowidth*3 && j<width*4;j+=4){
+		  real[j+2]=snatch[k++];
+		  real[j+1]=snatch[k++];
+		  real[j]=snatch[k++];
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }else{
+      if(!depthwarningflag)
+	fprintf(stderr,"**ERROR: Right now, Snatch only works with 17-24 bit ZPixmap\n"
+		"         based visuals packed into 8bpp 32 bit units.  This\n"
+		"         X server is not in a 24/32 bit mode. \n");
+      depthwarningflag=1;
     }
   }
 
-  ret=(*xlib_xputimage)(display,id,gc,image,src_x,src_y,x,y,d_width,d_height);
+  if(!fake_videop)
+    ret=(*xlib_xputimage)(display,id,gc,image,src_x,src_y,x,y,d_width,d_height);
 
   return(ret);
 }
- 
+
 int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 		 int src_x, int src_y, int dest_x, int dest_y,
 		 unsigned int width, unsigned int height,
 		 Bool send_event){
+  int ret=0;
 
-  int ret=(*xlib_xshmputimage)(display, id, gc, image, src_x, src_y,
-			       dest_x, dest_y, width, height, send_event);
+  if(!fake_videop)
+    ret=(*xlib_xshmputimage)(display, id, gc, image, src_x, src_y,
+			     dest_x, dest_y, width, height, send_event);
 
 
   if(snatch_active==1 && id==rpvideo_window){
     videocount++;
     if(videocount>5 && outfile_fd<0)OpenOutputFile();
-    if(outfile_fd>=0){
 
+    /* only do 24 bit zPixmaps for now */
+    if(image->format==2 && image->depth>16 && image->depth<=24){
+      if(outfile_fd>=0){
+	char cbuf[80];
+	int bpp=image->bytes_per_line/image->width;
+	long a,b,n=image->width*image->height*3;
+	int i,j,len;
+	
+	bigtime(&a,&b);
+	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,video_width,
+		    video_height,n);
+	gwrite(outfile_fd,cbuf,len);
+	
+	if(worksize<n){
+	  if(worksize==0)
+	    workbuffer=malloc(n);
+	  else
+	    workbuffer=realloc(workbuffer,n);
+	  worksize=n;
+	}
+	
+	if(image->byte_order){      
+	  char *work=workbuffer;
+	  char *ptr=image->data;
+	  for(i=0;i<image->height;i++){
+	    for(j=0;j<image->width*bpp;){
+	      j++;
+	      *work++=ptr[j++];
+	      *work++=ptr[j++];
+	      *work++=ptr[j++];
+	    }
+	    ptr+=image->bytes_per_line;
+	  }
+	}else{
+	  char *work=workbuffer;
+	  char *ptr=image->data;
+	  for(i=0;i<image->height;i++){
+	    for(j=0;j<image->width*bpp;j+=4){
+	      *work++=ptr[j+2];
+	      *work++=ptr[j+1];
+	      *work++=ptr[j];
+	    }
+	    ptr+=image->bytes_per_line;
+	  }
+	}
+	gwrite(outfile_fd,workbuffer,n);
 
-
-
-
+      }
+    }else{
+      if(!depthwarningflag)
+	fprintf(stderr,"**ERROR: Right now, Snatch only works with 17-24 bit ZPixmap\n"
+		"         based visuals packed into 8bpp 32 bit units.  This\n"
+		"         X server is not in a 24/32 bit mode. \n");
+      depthwarningflag=1;
     }
   }
-  
+
   return(ret);
 }
 

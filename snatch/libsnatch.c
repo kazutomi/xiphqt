@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
 #include <dlfcn.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -93,13 +94,9 @@ static int fake_videop=0;
 static void (*QueuedTask)(void);
 
 static int outfile_fd=-1;
-static FILE *outfile_file=NULL;
 
 static void CloseOutputFile();
 static void OpenOutputFile();
-
-#include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
-		    Oh and I'm lazy. */
 
 static char *audio_fmts[]={"unknown format",
 			  "8 bit mu-law",
@@ -125,6 +122,34 @@ static char *nstrdup(char *s){
   if(s)return strdup(s);
   return NULL;
 }
+
+static int gwrite(int fd, void *buf, int n){
+  while(n){
+    int ret=(*libc_write)(fd,buf,n);
+    if(ret<0){
+      if(errno==EAGAIN)
+	ret=0;
+      else
+	return(ret);
+    }
+    buf+=ret;
+    n-=ret;
+  }
+  return(0);
+}
+
+static void bigtime(long *seconds,long *micros){
+  static struct timeval   tp;
+    
+  (void)gettimeofday(&tp, (struct timezone *)NULL);
+  *seconds=tp.tv_sec;
+  *micros=tp.tv_usec;
+
+}
+
+#include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
+		    Oh and I'm lazy. */
+
 
 /* although RealPlayer is both multiprocess and multithreaded, we
 don't lock because we assume only one thread/process will be mucking
@@ -531,10 +556,15 @@ ssize_t write(int fd, const void *buf,size_t count){
     if(count>0 && snatch_active==1){
       if(outfile_fd<0)OpenOutputFile();
       if(outfile_fd>=0){ /* always be careful */
+	char cbuf[80];
+	long a,b;
+	int len;
 
-	  fprintf(outfile_file,"AUDIO %d %d %d %d:",audio_channels,
-		  audio_rate,audio_format,count);
-	  fwrite(buf,1,count,outfile_file);
+	bigtime(&a,&b);
+	len=sprintf(cbuf,"AUDIO %ld %ld %d %d %d %d:",a,b,audio_channels,
+		    audio_rate,audio_format,count);
+	gwrite(outfile_fd,cbuf,len);
+	gwrite(outfile_fd,(void *)buf,count);
 	
       }
     }
@@ -652,7 +682,6 @@ static void OpenOutputFile(){
   if(outfile_fd!=-2){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
-      outfile_file=stdout;
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
     }else{
       struct stat buf;
@@ -683,11 +712,14 @@ static void OpenOutputFile(){
 		    video_height);
 	  }
 	}else{
-	  sprintf(buf2,"%s/%s_%s%dHz_A.snatch",
-		  outpath,
-		  buf1,
-		  (audio_channels==1?"mono":"stereo"),
-		  audio_rate);
+	  if(audio_channels){
+	    sprintf(buf2,"%s/%s_%s%dHz_A.snatch",
+		    outpath,
+		    buf1,
+		    (audio_channels==1?"mono":"stereo"),
+		    audio_rate);
+	  }else
+	    return;
 	}
 	
 	outfile_fd=(*libc_open)(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
@@ -697,7 +729,6 @@ static void OpenOutputFile(){
 	  outfile_fd=-2;
 	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
-	  outfile_file=fdopen(outfile_fd,"w+");
 	}
 	
       }else{
@@ -708,7 +739,6 @@ static void OpenOutputFile(){
 	  outfile_fd=-2;
 	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
-	  outfile_file=fdopen(outfile_fd,"w+");
 	}
       }
     }
@@ -723,8 +753,7 @@ static void CloseOutputFile(){
 
     if(debug)fprintf(stderr,"    ...: Capture stopped.\n");
     if(outfile_fd!=STDOUT_FILENO)
-      fclose(outfile_file);
+      close(outfile_fd);
     outfile_fd=-1;
-    outfile_file=NULL;
   }
 }
