@@ -28,7 +28,6 @@ fi
 VERSION="$ICES_VERSION"
 
 AC_MSG_RESULT([Building ices $VERSION...])
-AM_INIT_AUTOMAKE(ices, $VERSION)
 
 dnl reasonable guesses for where stuff is installed
 if test "$prefix" = "NONE"
@@ -55,8 +54,6 @@ AC_SUBST(moddir)
 dnl -- Finally, actual autoconf stuff --
 
 AM_MAINTAINER_MODE
-AC_PROG_LIBTOOL
-AC_SUBST(LIBTOOL_DEPS)
 
 AC_ARG_PROGRAM
 
@@ -105,6 +102,12 @@ case $target in
     IRIX=yes
   ;;
 esac
+
+dnl -- Build system init --
+
+AM_INIT_AUTOMAKE(ices, $VERSION)
+AC_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
 
 dnl -- Compiler feature check --
 
