@@ -100,7 +100,7 @@ def run(config, neuros, args):
 
     if config.sort_database:
         print "\nSorting tracks..."
-        audio_db.pack(util.cmp_records)
+        audio_db.sort()
         
     print "Done!"
     neuros.close_db("audio")

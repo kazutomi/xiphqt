@@ -41,11 +41,12 @@ def _total_path_split(pathname):
     return path_parts
 
 def FAT_mangle_filename(filename):
-    """Creates a FAT-friendly filename.
+    """Creates a Neuros and FAT-friendly filename.
 
     Substitute replacement characters (usually '_') for characters in
     filename that are not allowed on FAT filesystems.  Double quotes are
-    replaced with single quotes."""
+    replaced with single quotes.  Also replaces characters that cause
+    problems with the Neuros firmware (like accented characters)."""
 
     # Keys are bad characters for FAT filesystems, and values are the
     # replacement
@@ -57,10 +58,18 @@ def FAT_mangle_filename(filename):
                      '<' : '_',
                      '>' : '_',
                      '|' : '_' }
+    
+    new_filename = ""
+    mangle_table_keys = mangle_table.keys()
+    for old_char in filename:
+        if ord(old_char) >= 0x7F:
+            new_char = "_"
+        elif old_char in mangle_table_keys:
+            new_char = mangle_table[old_char]
+        else:
+            new_char = old_char
 
-    new_filename = filename
-    for bad_char, replace_char in mangle_table.items():
-        new_filename = new_filename.replace(bad_char, replace_char)
+        new_filename += new_char
 
     return new_filename
 
