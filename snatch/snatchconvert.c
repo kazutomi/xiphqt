@@ -640,7 +640,6 @@ void yuvscale(unsigned char *src,int sw,int sh,
   int dyo=(dh-sh)/4,syo=0;
   
   /* dirt simple for now. No scaling, just centering */
-  memset(dst,1,dw*dh*3/2);
   
   if(dyo<0){
     syo= -dyo;
@@ -651,11 +650,25 @@ void yuvscale(unsigned char *src,int sw,int sh,
     dxo=0;
   }
 
+  for(y=0;y<dyo*2;y++){
+    unsigned char *dptr=dst+y*dw;
+    for(x=0;x<dw;x++)
+      *dptr++=0;
+  }
+
   for(y=0;y<sh && y<dh;y++){
     unsigned char *sptr=src+(y+syo*2)*sw+sxo*2;
-    unsigned char *dptr=dst+(y+dyo*2)*dw+dxo*2;
+    unsigned char *dptr=dst+(y+dyo*2)*dw;
+    for(x=0;x<dxo*2;x++)
+      *dptr++=0;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
+    for(;x<dw-dxo*2;x++)
+      *dptr++=0;
+  } 
+
+  for(;y<dh-dyo*2;y++){
+    unsigned char *dptr=dst+(y+dyo*2)*dw;
     for(x=0;x<dw;x++)
       *dptr++=0;
   }
@@ -667,23 +680,52 @@ void yuvscale(unsigned char *src,int sw,int sh,
   sh/=2;
   dh/=2;
 
-  for(y=0;y<sh && y<dh;y++){
-    unsigned char *sptr=src+(y+syo)*sw+sxo;
-    unsigned char *dptr=dst+(y+dyo)*dw+dxo;
-    for(x=0;x<sw && x<dw;x++)
-      *dptr++=*sptr++;
+  for(y=0;y<dyo;y++){
+    unsigned char *dptr=dst+y*dw;
     for(x=0;x<dw;x++)
       *dptr++=128;
   }
 
+  for(y=0;y<sh && y<dh;y++){
+    unsigned char *sptr=src+(y+syo)*sw+sxo;
+    unsigned char *dptr=dst+(y+dyo)*dw;
+    for(x=0;x<dxo;x++)
+      *dptr++=128;
+    for(x=0;x<sw && x<dw;x++)
+      *dptr++=*sptr++;
+    for(;x<dw-dxo;x++)
+      *dptr++=128;
+  }
+
+  for(;y<dh-dyo;y++){
+    unsigned char *dptr=dst+(y+dyo)*dw;
+    for(x=0;x<dw;x++)
+      *dptr++=128;
+  }
+
+
   src+=sw*sh;
   dst+=dw*dh;
 
+  for(y=0;y<dyo;y++){
+    unsigned char *dptr=dst+y*dw;
+    for(x=0;x<dw;x++)
+      *dptr++=128;
+  }
+
   for(y=0;y<sh && y<dh;y++){
     unsigned char *sptr=src+(y+syo)*sw+sxo;
-    unsigned char *dptr=dst+(y+dyo)*dw+dxo;
+    unsigned char *dptr=dst+(y+dyo)*dw;
+    for(x=0;x<dxo;x++)
+      *dptr++=128;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
+    for(;x<dw-dxo;x++)
+      *dptr++=128;
+  }
+
+  for(;y<dh-dyo;y++){
+    unsigned char *dptr=dst+(y+dyo)*dw;
     for(x=0;x<dw;x++)
       *dptr++=128;
   }
