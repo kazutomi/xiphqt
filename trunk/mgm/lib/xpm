@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 # -*-Perl-*-
 
 package MGM::Xpm;
@@ -11,18 +12,18 @@ sub rgb{
     my$val=shift;
 
     if($val=~m/#/){
-	$val=~m/\#(.)(.)(.)/ if(length($val)==4);
-	$val=~m/\#(..)(..)(..)/ if(length($val)==7);
-	$val=~m/\#(..)..(..)..(..)/ if(length($val)==13);
-	my$r=hex$1;
-	my$g=hex$2;
-	my$b=hex$3;
+       $val=~m/\#(.)(.)(.)/ if(length($val)==4);
+       $val=~m/\#(..)(..)(..)/ if(length($val)==7);
+       $val=~m/\#(..)..(..)..(..)/ if(length($val)==13);
+       my$r=hex$1;
+       my$g=hex$2;
+       my$b=hex$3;
        if(length($val)==3){$r*=16;$g*=16;$b*=16};
-	($r,$g,$b);
-    }else{
-	my($r,$g,$b)=$main::toplevel->rgb($val);
-	($r/256,$g/256,$b/256);
-    }
+       ($r,$g,$b);
+   }else{
+       my($r,$g,$b)=$main::toplevel->rgb($val);
+       ($r/256,$g/256,$b/256);
+   }
 }
 
 sub read{
@@ -30,30 +31,30 @@ sub read{
     $transp="#ffffff"if(!defined($transp));
     die "Couldn't open $file for reading: $!" unless open(XPM,"$file");
     $_=<XPM>;
-
+    
     if(m{/\* XPM \*/}){
 	$_=<XPM>;
 	$_=<XPM>;
 	m/^\"(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
 	if($4==1){
 	    my%xpm;
-	    my@grid;
+	    my$vector;
 	    my$width=$xpm{"width"}=$1;
 	    my$height=$xpm{"height"}=$2;
 	    my$colors=$3;
-
+	    
 	    my$entries;
 	    my$redentries;
 	    my$greenentries;
 	    my$blueentries;
 	    my$type='g'; # graymap until upgraded
-
+	    
 	    for(my$i=0;$i<$colors;$i++){
 		$_=<XPM>;m/^\"(.)\s+(\S)\s+([^\"\s]+)/;
 		$type='c' if($2 eq 'c');
 		$entries.=sprintf "\\%03o", ord $1;
 		$val=$3;
-
+		
 		$val=$transp if(ucfirst($val) eq 'None');
 		($red,$blue,$green)=MGM::Xpm::rgb($val);
 		
@@ -61,9 +62,9 @@ sub read{
 		$greenentries.=sprintf "\\%03o", $green;
 		$blueentries.=sprintf "\\%03o", $blue;
 	    }
-
+	    
 	    # read the image bits
-
+	    
 	    for(my$y=0;$y<$height;$y++){
 		my$red=<XPM>;
 		$red=substr $red, 1, $width;
@@ -78,18 +79,19 @@ sub read{
 		    my@redgrid = (unpack('C*',$red));
 		    my@greengrid = (unpack('C*',$green));
 		    my@bluegrid = (unpack('C*',$blue));
-		    $grid[$y] = [map{$redgrid[$_]*.3+
-					$greengrid[$_]*.5+
-					    $bluegrid[$_]*.2}(0..$#redgrid)];
+		    
+		    $vector .= pack 'C*', map{$redgrid[$_]*.3+
+						  $greengrid[$_]*.5+
+						      $bluegrid[$_]*.2}(0..$#redgrid);
 		    
 		}else{
 		    eval "\$red=~tr[$entries][$redentries];";
-		    $grid[$y] = [unpack('C*',$red)];
+		    $vector.=$red;
 		}
-
+		
 	    }
 	    
-	    $xpm{"gray"}=\@grid;
+	    $xpm{"gray"}=$vector;
 	    
 	    my$ref=\%xpm;
 	    bless($ref,"MGM::Xpm");
@@ -112,15 +114,14 @@ sub read{
 sub copy{
     my$xpm=shift;
     my%copy;
-
-
+    
+    
     $copy{"width"}=$xpm->{"width"};
     my$height=$copy{"height"}=$xpm->{"height"};
-
-
-    $copy{"gray"}= [ map {[@{$xpm->{"gray"}->[$_]}] }(0..$height-1) ]
-		   if (defined($xpm->{"gray"}));
-
+    
+    
+    $copy{"gray"}=$xpm->{"gray"};
+    
     my$ret=\%copy;
     bless $ret, "MGM::Xpm";
 }
@@ -129,7 +130,6 @@ sub write{
     my($xpm,$black,$white,$transp)=@_;
     # easier than reading, but harder to do efficiently
     
-    my$gray=$xpm->{"gray"};
     my$width=$xpm->{"width"};
     my$height=$xpm->{"height"};
     my$colors=0;
@@ -139,27 +139,26 @@ sub write{
     my$char=' ';
     my$buffer;
     my$out;
-
+    
     my($br,$bg,$bb)=&rgb($black);
     my($wr,$wg,$wb)=&rgb($white);
-
+    
     $wr=($wr-$br)/32;
     $wg=($wg-$bg)/32;
     $wb=($wb-$bb)/32;
     
     for(my$i=0;$i<$height;$i++){
-	my$gi=$gray->[$i];
+	my@g=unpack 'C*', substr $xpm->{"gray"}, $i*$width, $width;
 	$buffer.="\",\n\"";
-
+	
 	for(my$j=0;$j<$width;$j++){
-	    $buffer.=chr($gi->[$j]/8+65);
-	}
-
+	    $buffer.=chr($g[$j]/8+65);
+	}	
     }
-
+    
     $out="/* XPM */\nstatic char * mgm_xpm[] = {\n".
 	"\"$width $height 32 1";
-
+    
     foreach $key (0..31){
 	$c=chr($key+65);
 	$out.="\",\n\"$c  $type ";
@@ -172,11 +171,11 @@ sub write{
 	    my$b=$key*$wb+$bb;
 	    
 	    my$val=$hex[$r].$hex[$g].$hex[$b];
-
+	    
 	    $out.="#$val";
 	}
     }
-
+    
     $out.=$buffer."\"};\n";
     $out;
 }
@@ -184,16 +183,17 @@ sub write{
 sub new{
     my($width,$height,$val)=@_;
     
-    my($red,$green,$blue)=MGM::Xpm::rgb($val);
-    my$gray=$red*.3+$green*.5+$blue*.2;
-    my%xpm;
+    $width=int($width);
+    $height=int($height);
 
+    my($red,$green,$blue)=MGM::Xpm::rgb($val);
+    my$gray=chr($red*.3+$green*.5+$blue*.2);
+    my%xpm;
+    
     $xpm{"width"}=$width;
     $xpm{"height"}=$height;
-
-    my@v=map{$gray}(0..$width-1);
-    $xpm{"gray"}= [ map { [@v] }(0..$height-1) ];
-
+    $xpm{"gray"}= ($gray) x ($width*$height);
+    
     my$ret=\%xpm;
     bless $ret, "MGM::Xpm";
 }
@@ -210,10 +210,16 @@ sub height{
 
 sub merge{
     my($to,$tox,$toy,$from,$x,$y,$w,$h)=@_;
+
+    my$twidth=$to->{"width"};
+    my$fwidth=$from->{"width"};
+
+    $w=$twidth-$tox if($w+$tox>$twidth);
+    $w=$fwidth-$x if($w+$x>$fwidth);
     
     for(my$i=0;$i<$h;$i++){
-	splice @{$to->{"gray"}[$toy+$i]}, $tox, $w, 
-	@{$from->{"gray"}[$y+$i]}[$x..$x+$w-1];
+	substr($to->{"gray"}, $tox+($i+$toy)*$twidth, $w) =
+	    substr $from->{"gray"}, $x+($i+$y)*$fwidth, $w;
     }
     $to;
 }
@@ -223,13 +229,15 @@ sub rot90{
     
     $w=$xpm->width;
     $h=$xpm->height;
-
+    
     # build new grid
-    my@gray;
-    for(my$i=0;$i<$w;$i++){
-	$gray[$w-$i-1]=[map{@$_[$i]}@{$xpm->{"gray"}}[0..$h-1]];
+    my$gray;
+    for(my$i=$w-1;$i>=0;$i--){
+	for(my$j=0;$j<$h;$j++){
+	    $gray.=substr $xpm->{"gray"}, $j*$w+$i, 1;
+	}
     }
-    $xpm->{"gray"}=\@gray;
+    $xpm->{"gray"}=$gray;
     $xpm->{"width"}=$h;
     $xpm->{"height"}=$w;
     $xpm;
@@ -241,12 +249,12 @@ sub reduceonex{
     my$prev=0;
     my$iprev=0;
     my$oldval=$v->[0];
-
+    
     for(my$nx=0;$nx<$nw;$nx++){
 	my$x=$del*($nx+1);
 	my$ix=int($x);
 	$x-=$ix;
-
+	
 	my$val=$oldval*(1-$prev);
 	for(my$i=$iprev+1;$i<$ix;$i++){$val+=$v->[$i]};
 	$val+=($oldval=$v->[$ix])*$x if($x);
@@ -256,7 +264,6 @@ sub reduceonex{
 	$prev=$x;
 	$iprev=$ix;
     }
-    splice @$v, $nw-$w, $w-$nw;
 }
 
 sub enlargeonex{
@@ -268,7 +275,7 @@ sub enlargeonex{
     for(my$nx=$nw-1;$nx>=0;$nx--){
 	my$x=$del*($nx);
 	my$ix=int($x);
-
+	
 	if($ix==$iprev){
 	    $v->[$nx]=$v->[$ix];
 	}else{
@@ -286,57 +293,59 @@ sub reduceoney{
     my$del=$h/$nh;
     my$prev=0;
     my$iprev=0;
+    my@nv;
+    $#nv=$w;
     for(my$ny=0;$ny<$nh;$ny++){
 	my$y=$del*($ny+1);
 	my$iy=int($y);
-	my$nv=$vv->[$ny];
-	
+
 	# initial row 
 	my$idel=(1-$prev+$iprev)/$del;
-	my$v=$vv->[$iprev];
-	for(my$x=0;$x<$w;$x++){$nv->[$x]=$v->[$x]*$idel;}
+	my@v=unpack 'C*', substr $$vv, $iprev*$w, $w;
+	for(my$x=0;$x<$w;$x++){$nv[$x]=$v[$x]*$idel;}
 	#intevening rows
 	$iprev++;
 	while($iprev<$iy){
-	    my$v=$vv->[$iprev];
-	    for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]/$del;}
+	    @v=unpack 'C*', substr $$vv, $iprev*$w, $w;
+	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]/$del;}
 	    $iprev++;
 	}
 	# terminal row 
 	if($y<$h){
 	    $idel=($y-$iy)/$del;
-	    $v=$vv->[$iy];
-	    for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]*$idel;}
+	    @v=unpack 'C*', substr $$vv, $iy*$w, $w;
+	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel;}
 	    $iprev=$iy;
 	    $prev=$y;
 	}
+	substr($$vv, $ny*$w, $w)=pack 'C*', @nv[0..$w-1];
     }
-    splice @$vv, $nh-$h, $h-$nh;
 }
 
 sub enlargeoney{
     my($w,$h,$nh,$vv)=@_;
-    for(my$y=$h;$y<$nh;$y++){$vv->[$y]=[]};
     my$del=$h/$nh;
     my$prev=$h;
     my$iprev=$h-1;
+    my@nv;
+    $#nv=$w;
     for(my$ny=$nh-1;$ny>=0;$ny--){
 	my$y=$del*$ny;
 	my$iy=int($y);
 	
 	if($iprev==$iy){
-	    $vv->[$ny]= [@{$vv->[$iprev]}];
+	    substr($$vv, $ny*$w, $w)=
+		substr($$vv, $iprev*$w, $w);
 	}else{
-	    my$nv=$vv->[$ny];
-	    
 	    # initial row 
 	    my$idel=($prev-$iprev)/$del;
-	    my$v=$vv->[$iprev];
-	    for(my$x=0;$x<$w;$x++){$nv->[$x]=$v->[$x]*$idel;}
+	    @v=unpack 'C*', substr $$vv, $iprev*$w, $w;
+	    for(my$x=0;$x<$w;$x++){$nv[$x]=$v[$x]*$idel;}
 	    # terminal row 
 	    $idel=(1-$y+$iy)/$del;
-	    $v=$vv->[$iy];
-	    for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]*$idel;}
+	    @v=unpack 'C*', substr $$vv, $iy*$w, $w;
+	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel;}
+	    substr($$vv, $ny*$w, $w)=pack 'C*', @nv[0..$w-1];
 	}
 	$iprev=$iy;
 	$prev=$y;
@@ -345,44 +354,51 @@ sub enlargeoney{
 
 sub scale{
     my($xpm,$nw,$nh)=@_;
-    
+    $nw=int($nw);
+    $nh=int($nh);
     $w=$xpm->width;
     $h=$xpm->height;
-
     if($nw<$w){
 	for(my$y=0;$y<$h;$y++){
-	    &reduceonex($w,$nw,$xpm->{"gray"}->[$y]);
+	    my@temp=unpack 'C*', substr ($xpm->{"gray"}, $y*$w, $w);
+	    &reduceonex($w,$nw,\@temp);
+	    substr ($xpm->{"gray"}, $y*$nw, $nw) = pack 'C*', @temp[0..$nw-1]; 
 	}
 	$w=$nw;
 	$xpm->{"width"}=$w;
     }
     
     if($nh<$h){
-	&reduceoney($w,$h,$nh,$xpm->{"gray"});
+	&reduceoney($w,$h,$nh,\$xpm->{"gray"});
 	$h=$nh;
 	$xpm->{"height"}=$h;
     }
-
+    
     if($nw>$w){
-	for(my$y=0;$y<$h;$y++){
-	    &enlargeonex($w,$nw,$xpm->{"gray"}->[$y]);
+	substr($xpm->{"gray"}, $h*$w)= 'Xpm Xpm ' x ($h*($nw-$w)/8);
+	for(my$y=$h-1;$y>=0;$y--){
+	    my@temp=unpack 'C*', substr ($xpm->{"gray"}, $y*$w, $w);
+	    &enlargeonex($w,$nw,\@temp);
+	    substr ($xpm->{"gray"}, $y*$nw, $nw) = pack 'C*', @temp[0..$nw-1]; 
 	}
 	$w=$nw;
 	$xpm->{"width"}=$w;
     }
     
     if($nh>$h){
-	&enlargeoney($w,$h,$nh,$xpm->{"gray"});
+	substr($xpm->{"gray"}, $h*$w)= 'Xpm Xpm ' x ($w*($nh-$h)/8);
+	&enlargeoney($w,$h,$nh,\$xpm->{"gray"});
 	$h=$nh;
 	$xpm->{"height"}=$h;
     }
-
+    
     $xpm;
 }
 
 sub getpixel{
     my($xpm,$x,$y)=@_;
-    $xpm->{"gray"}->[$y][$x];
+    my$w=$xpm->{"width"};
+    ord (substr ($xpm->{"gray"}, $y*$w+$x, 1));
 }
 
 package MGM::Font;
@@ -468,6 +484,13 @@ sub maketext{
     $ret->rot90 if ($rot90);
     $ret;
 }
+
+#$xpm=MGM::Xpm::read("/home/xiphmont/SnotfishCVS/mgm/lib/helvetica.xpm","#ffffff");
+#$xpm->scale(200,31);
+#$xpm->rot90;
+#$m=MGM::Xpm::new(100,100,'#6542ee');
+#$m->merge(2,2,$xpm,4,4,50,50);
+#print $m->write('#161262','#ffffff','#ffffff');
 
 1;
 
