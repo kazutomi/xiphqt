@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.16 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.17 2001/12/12 04:29:35 volsung Exp $
 
  ********************************************************************/
 
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
   /* Setup buffer */ 
   if (options.buffer_size > 0) {
     audio_buffer = buffer_create(options.buffer_size,
-				 options.buffer_size * options.prebuffer,
+				 options.buffer_size * options.prebuffer / 100,
 				 audio_play_callback, &audio_play_arg,
 				 AUDIO_CHUNK_SIZE);
     if (audio_buffer == NULL) {

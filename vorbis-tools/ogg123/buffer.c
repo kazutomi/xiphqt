@@ -11,18 +11,10 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.7 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.8 2001/12/12 04:29:35 volsung Exp $
 
  ********************************************************************/
 
-/* buffer.c
- *  buffering code for ogg123. This is Unix-specific. Other OSes anyone?
- *
- * Thanks to Lee McLouchlin's buffer(1) for inspiration; no code from
- * that program is used in this buffer.
- */
-
-#define _GNU_SOURCE
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -38,7 +30,6 @@
 #define MIN(x,y)       ( (x) < (y) ? (x) : (y) )
 #define MIN3(x,y,z)    MIN(x,MIN(y,z))
 #define MIN4(w,x,y,z)  MIN( MIN(w,x), MIN(y,z) )
-
 
 /* Special debugging code.  THIS IS NOT PORTABLE! */
 #ifdef DEBUG_BUFFER
@@ -215,14 +206,20 @@ void *buffer_thread_func (void *arg)
 
     DEBUG("Ready to play");
     
-    /* Figure out how much we can play in the buffer */
+    UNLOCK_MUTEX(buf->mutex);
+
+    /* Don't need to lock buffer while running actions since position
+       won't change.  We clear out any actions before we compute the
+       dequeue size so we don't consider actions that need to
+       run right now.  */
+    execute_actions(buf, &buf->actions, buf->position);
+
+    LOCK_MUTEX(buf->mutex);
+
+    /* Need to be locked while we check things. */
     write_amount = compute_dequeue_size(buf, buf->audio_chunk_size);
 
     UNLOCK_MUTEX(buf->mutex);
-   
-    /* Don't need to lock buffer while running acitons since position
-       won't change */
-    execute_actions(buf, &buf->actions, buf->position);
  
     /* No need to lock mutex here because the other thread will
        NEVER reduce the number of bytes stored in the buffer */
@@ -237,7 +234,8 @@ void *buffer_thread_func (void *arg)
     buf->curfill -= write_amount;
     buf->position += write_amount;
     buf->start = (buf->start + write_amount) % buf->size;
-    DEBUG("Updated buffer fill, curfill = %ld", buf->curfill);
+    DEBUG("Updated buffer fill, curfill = %ld, position = %ld", buf->curfill,
+	  buf->position);
 
     /* If we've essentially emptied the buffer and prebuffering is enabled,
        we need to do another prebuffering session */
@@ -371,6 +369,7 @@ buf_t *buffer_create (long size, long prebuffer,
     audio_chunk_size = size / 2;
 
   buf->audio_chunk_size = audio_chunk_size;
+
   buf->prebuffer_size = prebuffer;
   buf->size = size;
 
@@ -577,7 +576,7 @@ void buffer_insert_action_at_end (buf_t *buf, action_func_t action_func,
   LOCK_MUTEX(buf->mutex);
 
   /* Stick after the last item in the buffer */
-  action->position = buf->position;
+  action->position = buf->position_end;
 
   in_order_add_action(&buf->actions, action, INSERT);
 
@@ -595,7 +594,7 @@ void buffer_append_action_at_end (buf_t *buf, action_func_t action_func,
   LOCK_MUTEX(buf->mutex);
 
   /* Stick after the last item in the buffer */
-  action->position = buf->position;
+  action->position = buf->position_end;
 
   in_order_add_action(&buf->actions, action, APPEND);
 
