@@ -77,18 +77,10 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Dialog
 //
 
-CONFIGURE DIALOGEX 0, 0, 258, 258
+CONFIGURE DIALOGEX 0, 0, 258, 282
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_NOPARENTNOTIFY
 CAPTION "On2 Compressor Settings"
@@ -112,8 +104,8 @@ BEGIN
     CONTROL         "Slider1",IDC_SLIDER_MAX,"msctls_trackbar32",WS_TABSTOP,
                     107,215,119,14
     EDITTEXT        IDC_EDIT_MAX,226,214,27,14,ES_CENTER | ES_NUMBER
-    DEFPUSHBUTTON   "OK",IDOK,3,240,58,14,WS_GROUP
-    PUSHBUTTON      "Cancel",IDCANCEL,198,240,58,14,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,1,266,58,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,196,266,58,14,WS_GROUP
     LTEXT           "Max # of Frames Between Keys",IDC_STATIC_MAX,115,206,
                     101,8,NOT WS_GROUP
     LTEXT           "% Difference Threshold ",IDC_STATIC_DIFF,115,162,76,8,
@@ -122,11 +114,21 @@ BEGIN
                     8,NOT WS_GROUP
     CONTROL         154,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_SUNKEN | WS_BORDER,1,2,255,126
-    CTEXT           "VP3 Codec - Version 3.2.1.0\nCopyright © 2001 On2 Technologies. All Rights Reserved.",
+    CTEXT           "VP3 Codec - Version 3.2.2.0\nCopyright © 2001 On2 Technologies. All Rights Reserved.",
                     IDC_STATIC,19,129,223,21
     GROUPBOX        "   Auto Key Frame Settings   ",IDC_STATIC,103,151,153,
                     84
     GROUPBOX        "   Settings   ",IDC_STATIC,4,151,98,84
+    EDITTEXT        IDC_QUALITY,68,244,27,14,ES_AUTOHSCROLL
+    LTEXT           "(0 high, 63 low)",IDC_STATIC,10,246,52,11
+    CONTROL         "High Detail",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON,108,
+                    246,51,10
+    CONTROL         "Normal",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,165,246,
+                    38,10
+    CONTROL         "Smooth",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,213,246,
+                    40,10
+    GROUPBOX        "  Sharpness  ",IDC_STATIC,103,235,153,27
+    GROUPBOX        " Lowest Allowed Quality ",IDC_STATIC,4,235,98,27
 END
 
 
@@ -137,8 +139,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,1,0
- PRODUCTVERSION 3,2,1,0
+ FILEVERSION 3,2,2,0
+ PRODUCTVERSION 3,2,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -156,14 +158,14 @@ BEGIN
             VALUE "Comments", "On2 VP3 Video Codec \0"
             VALUE "CompanyName", "On2.com\0"
             VALUE "FileDescription", "On2_VP3\0"
-            VALUE "FileVersion", "3, 2, 1, 0\0"
+            VALUE "FileVersion", "3, 2, 2, 0\0"
             VALUE "InternalName", "On2_VP3p\0"
             VALUE "LegalCopyright", "Copyright © 2000 On2.com\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "On2_VP3\0"
-            VALUE "ProductVersion", "3, 2, 1, 0\0"
+            VALUE "ProductVersion", "3, 2, 2, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END

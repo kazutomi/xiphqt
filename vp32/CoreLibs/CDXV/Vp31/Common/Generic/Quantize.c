@@ -61,7 +61,8 @@
 *****************************************************************************
 */
 #ifdef COMPDLL
-void init_quantizer ( PB_INSTANCE *pbi, UINT32 scale_factor, UINT8 QIndex );
+#include "compdll.h"
+void init_quantizer ( CP_INSTANCE *cpi, UINT32 scale_factor, UINT8 QIndex );
 #endif
 
 void init_dequantizer ( PB_INSTANCE *pbi, UINT32 scale_factor, UINT8 QIndex );
@@ -308,9 +309,11 @@ void UpdateQ( PB_INSTANCE *pbi, UINT32 NewQ )
  *  ERRORS        :     None.
  *
  ****************************************************************************/
-void UpdateQC( PB_INSTANCE *pbi, UINT32 NewQ )
+void UpdateQC( CP_INSTANCE *cpi, UINT32 NewQ )
 {  
     UINT32 qscale;
+
+	PB_INSTANCE *pbi = &cpi->pb;
 
     // Do bounds checking and convert to a float. 
     qscale = NewQ; 
@@ -329,7 +332,7 @@ void UpdateQC( PB_INSTANCE *pbi, UINT32 NewQ )
     }
 
     // Re-initialise the q tables for forward and reverse transforms.    
-    init_quantizer ( pbi, qscale, (UINT8) pbi->FrameQIndex );
+    init_quantizer ( cpi, qscale, (UINT8) pbi->FrameQIndex );
 	init_dequantizer ( pbi, qscale, (UINT8) pbi->FrameQIndex );
 }
 
@@ -354,7 +357,7 @@ void UpdateQC( PB_INSTANCE *pbi, UINT32 NewQ )
 ****************************************************************************
 */
 #define SHIFT16 (1<<16)
-void init_quantizer ( PB_INSTANCE *pbi, UINT32 scale_factor, UINT8 QIndex )
+void init_quantizer ( CP_INSTANCE *cpi, UINT32 scale_factor, UINT8 QIndex )
 {
     int i;                   // Loop counters
     double ZBinFactor;
@@ -363,7 +366,7 @@ void init_quantizer ( PB_INSTANCE *pbi, UINT32 scale_factor, UINT8 QIndex )
     double temp_fp_quant_coeffs;
     double temp_fp_quant_round;
     double temp_fp_ZeroBinSize;
-
+	PB_INSTANCE *pbi = &cpi->pb;
 	// Pointers to encoder/decoder specific tables
 	Q_LIST_ENTRY * Inter_coeffs;	 
 	Q_LIST_ENTRY * Y_coeffs;	 
@@ -383,17 +386,34 @@ void init_quantizer ( PB_INSTANCE *pbi, UINT32 scale_factor, UINT8 QIndex )
 	UV_coeffs = UV_coeffsV1;
 	DcScaleFactorTable = DcScaleFactorTableV1;
 	UVDcScaleFactorTable = DcScaleFactorTableV1;
-	if ( scale_factor <= 50 )
+	ZBinFactor = 0.9;
+
+	switch(cpi->Sharpness)
 	{
-		RoundingFactor = 0.476;
+	case 0:
+		ZBinFactor = 0.65;
+		if ( scale_factor <= 50 )
+			RoundingFactor = 0.499;
+		else
+			RoundingFactor = 0.46;
+		break;
+	case 1:
+		ZBinFactor = 0.75;
+		if ( scale_factor <= 50 )
+			RoundingFactor = 0.476;
+		else
+			RoundingFactor = 0.400;
+		break;
+
+	default:
 		ZBinFactor = 0.9;
+		if ( scale_factor <= 50 )
+			RoundingFactor = 0.476;
+		else
+			RoundingFactor = 0.333;
+		break;
 	}
-	else
-	{
-		RoundingFactor = 0.333;
-		ZBinFactor = 0.9;
-	}
-     
+			
     // Use fixed multiplier for intra Y DC
 	temp_fp_quant_coeffs = (double)(((UINT32)(DcScaleFactorTable[QIndex] * Y_coeffs[0])/100) << 2);
 	if ( temp_fp_quant_coeffs < MIN_LEGAL_QUANT_ENTRY * 2 )

@@ -214,6 +214,7 @@ BOOL CCONV StartEncoder( CP_INSTANCE **cpi , COMP_CONFIG * CompConfig )
 	(*cpi)->ForceKeyFrameEvery = CompConfig->ForceKeyFrameEvery;
 	(*cpi)->PreProcFilterLevel = CompConfig->NoiseSensitivity;
 	(*cpi)->AutoKeyFrameThreshold = CompConfig->AutoKeyFrameThreshold;
+	(*cpi)->Sharpness = CompConfig->Sharpness;
 
 	// Initialise Motion compensation
 	InitMotionCompensation(*cpi);
@@ -257,7 +258,8 @@ void CCONV ChangeCompressorSetting ( CP_INSTANCE *cpi, C_SETTING Setting, int Va
         break;
 
     case C_SET_FIXED_Q:
-        cpi->FixedQ = Value;
+		if ( (Value >= 0) && (Value < 64) )
+			cpi->FixedQ = cpi->pb.QThreshTable[63 - Value];
         break;
 
     case C_SET_FIRSTPASS_FILE:
@@ -298,6 +300,7 @@ void CCONV ChangeEncoderConfig ( CP_INSTANCE *cpi, COMP_CONFIG * CompConfig )
 	cpi->ForceKeyFrameEvery = CompConfig->ForceKeyFrameEvery;
 	cpi->PreProcFilterLevel = CompConfig->NoiseSensitivity;
 	cpi->AutoKeyFrameThreshold = CompConfig->AutoKeyFrameThreshold;
+	cpi->Sharpness = CompConfig->Sharpness;
 
     // Set target data rate. 
 	cpi->Configuration.TargetBandwidth = (CompConfig->TargetBitRate * 1024) / 8;

@@ -1,15 +1,3 @@
-//==========================================================================
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-//  KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
-//  PURPOSE.
-//
-//  Copyright (c) 1999 - 2001  On2 Technologies Inc. All Rights Reserved.
-//
-//--------------------------------------------------------------------------
-
-
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
 // Used by vp3vfw.rc
@@ -44,6 +32,10 @@
 #define IDC_STATIC_QUALITY              1058
 #define IDC_STATIC_QUALITY2             1059
 #define IDC_STATIC_DIFF3                1060
+#define IDC_QUALITY                     1066
+#define IDC_RADIO1                      1067
+#define IDC_RADIO2                      1068
+#define IDC_RADIO3                      1069
 
 // Next default values for new objects
 // 
@@ -51,7 +43,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1066
+#define _APS_NEXT_CONTROL_VALUE         1070
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

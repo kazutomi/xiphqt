@@ -36,10 +36,8 @@
 #include "type_aliases.h"
 #include "vfw_comp_interface.h"
 #include "resource.h"		// Must be the version resident in the pre-processor dll directory!!!
+#include "vpvfw.h"
 
-
-extern void 
-getCompConfigDefaultSettings(COMP_CONFIG *CompConfig);
 
 /****************************************************************************
 *  Module constants.
@@ -99,6 +97,16 @@ void InitControls(
     CheckDlgButton( hWndDlg, IDC_ALLOW_DROPPED_FRAMES_CHECK, (CompConfig->AllowDF) ? 1 : 0 );
     CheckDlgButton( hWndDlg, IDC_QUICK_COMPRESS_CHECK, (CompConfig->QuickCompress) ? 1 : 0 );
     CheckDlgButton( hWndDlg, IDC_AUTOKEYFRAME_CHECK, (CompConfig->AutoKeyFrameEnabled) ? 1 : 0 );
+	CheckDlgButton( hWndDlg, IDC_RADIO1, 0);
+	CheckDlgButton( hWndDlg, IDC_RADIO2, 0);
+	CheckDlgButton( hWndDlg, IDC_RADIO3, 0);
+
+	switch(CompConfig->Sharpness)
+	{
+	case 0:CheckDlgButton( hWndDlg, IDC_RADIO1, 1);break;
+	case 1:CheckDlgButton( hWndDlg, IDC_RADIO2, 1);break;
+	case 2:CheckDlgButton( hWndDlg, IDC_RADIO3, 1);break;
+	}
 
     /* Key Frame Difference Threshold */          
     SendMessage(GetDlgItem(hWndDlg, IDC_EDIT_DIFF), EM_LIMITTEXT, (WPARAM) 3, (LPARAM) 0); 
@@ -163,6 +171,10 @@ void InitControls(
                     MAX_KEYFRAMEDATATARGET,     // KEYFRAMEDATATARGET value in trackbar range 
                     CompConfig->KeyFrameDataTarget);  // current position 
 
+    /* QUALITY  */          
+    SendMessage(GetDlgItem(hWndDlg, IDC_QUALITY), EM_LIMITTEXT, (WPARAM) 3, (LPARAM) 0); 
+    SetDlgItemInt( hWndDlg, IDC_QUALITY, CompConfig->Quality, FALSE );
+
 
     //enable/disable auto key frame related controls
     EnableWindow(GetDlgItem(hWndDlg, IDC_EDIT_DIFF), CompConfig->AutoKeyFrameEnabled);
@@ -201,6 +213,7 @@ BOOL FAR PASCAL Config_ParamsDlgProc(   HWND   hWndDlg,
     INT32   TempKeyFrameDataTarget = 110;
     INT32   TempNoiseSensitivity = 1;
     INT32   TempQuality = 56;
+	INT32   TempSharpness = 1;
 
     switch(Message)
     {        
@@ -217,8 +230,9 @@ BOOL FAR PASCAL Config_ParamsDlgProc(   HWND   hWndDlg,
             TempForceKeyFrameEvery		    = CompConfig->ForceKeyFrameEvery;
             TempTargetBitRate               = CompConfig->TargetBitRate;
             TempKeyFrameDataTarget          = CompConfig->KeyFrameDataTarget;
-            TempNoiseSensitivity            = CompConfig -> NoiseSensitivity;
-            TempQuality                     = CompConfig ->Quality;
+            TempNoiseSensitivity            = CompConfig->NoiseSensitivity;
+            TempQuality                     = CompConfig->Quality;
+            TempSharpness                   = CompConfig->Sharpness;
 
             InitControls(hWndDlg, CompConfig);
 
@@ -344,7 +358,7 @@ BOOL FAR PASCAL Config_ParamsDlgProc(   HWND   hWndDlg,
                 case IDDEFAULT:
                     CompConfig = (COMP_CONFIG *)GetWindowLong(hWndDlg,GWL_USERDATA);
         
-                    getCompConfigDefaultSettings(CompConfig);
+					vfwCodec::getCompConfigDefaultSettings(*CompConfig);
         
                     InitControls(hWndDlg, CompConfig);
                     break;
@@ -402,7 +416,52 @@ BOOL FAR PASCAL Config_ParamsDlgProc(   HWND   hWndDlg,
                       }
                     }
                     break;
-                
+                case IDC_RADIO1:
+                case IDC_RADIO2:
+                case IDC_RADIO3:
+                    CompConfig = (COMP_CONFIG *)GetWindowLong(hWndDlg,GWL_USERDATA);
+                    if( HIWORD( wParam ) == BN_CLICKED )
+                    {
+                      switch (LOWORD(wParam))
+                      {
+	                      case IDC_RADIO1:
+		                      CompConfig->Sharpness = 0;
+		                      break;
+	                      case IDC_RADIO2:
+		                      CompConfig->Sharpness = 1;
+		                      break;
+	                      case IDC_RADIO3:
+		                      CompConfig->Sharpness = 2;
+		                      break;
+                      }
+                    }
+
+                case IDC_QUALITY:
+                    if (HIWORD(wParam) == EN_KILLFOCUS)
+					{
+						int editValue =  GetDlgItemInt(hWndDlg, LOWORD(wParam),  NULL, FALSE );
+						CompConfig = (COMP_CONFIG *)GetWindowLong(hWndDlg,GWL_USERDATA);
+						if((editValue < 0) || (editValue > 63))
+						{
+							char msg[256];
+							sprintf(msg,"Please enter a value between %d and %d.", 
+								0, 63);
+							MessageBox(hWndDlg, msg, "Configuration Input Error",
+								MB_ICONERROR);
+							
+							SetFocus((HWND) lParam);
+							
+							SendMessage(GetDlgItem(hWndDlg, LOWORD(wParam)), 
+								EM_SETSEL, (WPARAM) 0, (LPARAM) -1);
+							
+						}
+						else
+						{
+							CompConfig->Quality = editValue;
+						}
+					}
+					break;
+
                 case IDC_EDIT_NOISESENSITIVITY:
                 case IDC_EDIT_QUALITY:
                 case IDC_EDIT_TARGETBITRATE:
@@ -470,7 +529,6 @@ BOOL FAR PASCAL Config_ParamsDlgProc(   HWND   hWndDlg,
                                 hwndTrack = GetDlgItem(hWndDlg, IDC_SLIDER_KEYFRAMEDATATARGET);
                                 valueToChange = (int *)&CompConfig->KeyFrameDataTarget;
                             }
-
                             if((editValue < minValue) || (editValue > maxValue))
                             {
                                 char msg[256];
