@@ -14,8 +14,8 @@
  last mod: $Id$
 
  ********************************************************************/
-#ifndef _OGG_H
-#define _OGG_H
+#ifndef _OGG2_H
+#define _OGG2_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,151 +23,142 @@ extern "C" {
   
 #include <ogg2/os_types.h>
   
-struct ogg_buffer;
-struct ogg_reference;
-struct ogg_buffer_state;
-struct ogg_sync_state;
-struct ogg_stream_state;
-struct oggpack_buffer;
+struct ogg2_buffer;
+struct ogg2_reference;
+struct ogg2_buffer_state;
+struct ogg2_sync_state;
+struct ogg2_stream_state;
+struct ogg2pack_buffer;
 
-typedef struct ogg_buffer ogg_buffer;
-typedef struct ogg_reference ogg_reference;
-typedef struct ogg_buffer_state ogg_buffer_state;
-typedef struct ogg_sync_state ogg_sync_state;
-typedef struct ogg_stream_state ogg_stream_state;
-typedef struct oggpack_buffer oggpack_buffer;
+typedef struct ogg2_buffer ogg2_buffer;
+typedef struct ogg2_reference ogg2_reference;
+typedef struct ogg2_buffer_state ogg2_buffer_state;
+typedef struct ogg2_sync_state ogg2_sync_state;
+typedef struct ogg2_stream_state ogg2_stream_state;
+typedef struct ogg2pack_buffer ogg2pack_buffer;
 
 typedef struct {
-  ogg_reference *packet;
+  ogg2_reference *packet;
   long           bytes;
   long           b_o_s;
   long           e_o_s;
-  ogg_int64_t    granulepos;
+  ogg_int64_t    start_granule;
+  ogg_int64_t    end_granule;
   ogg_int64_t    packetno;     /* sequence number for decode; the framing
 				  knows where there's a hole in the data,
 				  but we need coupling so that the codec
 				  (which is in a seperate abstraction
 				  layer) also knows about the gap */
-} ogg_packet;
+} ogg2_packet;
 
 typedef struct {
-  ogg_reference *header;
+  ogg2_reference *header;
   int            header_len;
-  ogg_reference *body;
+  ogg2_reference *body;
   int            body_len;
-} ogg_page;
+} ogg2_page;
 
 /* Ogg BITSTREAM PRIMITIVES: bitstream ************************/
 
-extern ogg_buffer_state *ogg_buffer_create(void);
-extern int   oggpack_buffersize(void);
-extern void  oggpack_writeinit(oggpack_buffer *b,ogg_buffer_state *bs);
-extern ogg_reference *oggpack_writebuffer(oggpack_buffer *b);
-extern void  oggpack_writealign(oggpack_buffer *b);
-extern void  oggpack_writeclear(oggpack_buffer *b);
-extern void  oggpack_readinit(oggpack_buffer *b,ogg_reference *r);
-extern void  oggpack_write(oggpack_buffer *b,unsigned long value,int bits);
-extern int   oggpack_look(oggpack_buffer *b,int bits,unsigned long *ret);
-extern long  oggpack_look1(oggpack_buffer *b);
-extern void  oggpack_adv(oggpack_buffer *b,int bits);
-extern void  oggpack_adv1(oggpack_buffer *b);
-extern int   oggpack_read(oggpack_buffer *b,int bits,unsigned long *ret);
-extern long  oggpack_read1(oggpack_buffer *b);
-extern long  oggpack_bytes(oggpack_buffer *b);
-extern long  oggpack_bits(oggpack_buffer *b);
-extern int   oggpack_eop(oggpack_buffer *b);
+extern ogg2_buffer_state *ogg2_buffer_create(void);
+extern int   ogg2pack_buffersize(void);
+extern void  ogg2pack_writeinit(ogg2pack_buffer *b,ogg2_buffer_state *bs);
+extern ogg2_reference *ogg2pack_writebuffer(ogg2pack_buffer *b);
+extern void  ogg2pack_writealign(ogg2pack_buffer *b);
+extern void  ogg2pack_writeclear(ogg2pack_buffer *b);
+extern void  ogg2pack_readinit(ogg2pack_buffer *b,ogg2_reference *r);
+extern void  ogg2pack_write(ogg2pack_buffer *b,unsigned long value,int bits);
+extern int   ogg2pack_look(ogg2pack_buffer *b,int bits,unsigned long *ret);
+extern long  ogg2pack_look1(ogg2pack_buffer *b);
+extern void  ogg2pack_adv(ogg2pack_buffer *b,int bits);
+extern void  ogg2pack_adv1(ogg2pack_buffer *b);
+extern int   ogg2pack_read(ogg2pack_buffer *b,int bits,unsigned long *ret);
+extern long  ogg2pack_read1(ogg2pack_buffer *b);
+extern long  ogg2pack_bytes(ogg2pack_buffer *b);
+extern long  ogg2pack_bits(ogg2pack_buffer *b);
+extern int   ogg2pack_eop(ogg2pack_buffer *b);
 
-extern void  oggpackB_writeinit(oggpack_buffer *b,ogg_buffer_state *bs);
-extern ogg_reference *oggpackB_writebuffer(oggpack_buffer *b);
-extern void  oggpackB_writealign(oggpack_buffer *b);
-extern void  oggpackB_writeclear(oggpack_buffer *b);
-extern void  oggpackB_readinit(oggpack_buffer *b,ogg_reference *r);
-extern void  oggpackB_write(oggpack_buffer *b,unsigned long value,int bits);
-extern int   oggpackB_look(oggpack_buffer *b,int bits,unsigned long *ret);
-extern long  oggpackB_look1(oggpack_buffer *b);
-extern void  oggpackB_adv(oggpack_buffer *b,int bits);
-extern void  oggpackB_adv1(oggpack_buffer *b);
-extern int   oggpackB_read(oggpack_buffer *b,int bits,unsigned long *ret);
-extern long  oggpackB_read1(oggpack_buffer *b);
-extern long  oggpackB_bytes(oggpack_buffer *b);
-extern long  oggpackB_bits(oggpack_buffer *b);
-extern int   oggpackB_eop(oggpack_buffer *b);
+extern void  ogg2packB_writeinit(ogg2pack_buffer *b,ogg2_buffer_state *bs);
+extern ogg2_reference *ogg2packB_writebuffer(ogg2pack_buffer *b);
+extern void  ogg2packB_writealign(ogg2pack_buffer *b);
+extern void  ogg2packB_writeclear(ogg2pack_buffer *b);
+extern void  ogg2packB_readinit(ogg2pack_buffer *b,ogg2_reference *r);
+extern void  ogg2packB_write(ogg2pack_buffer *b,unsigned long value,int bits);
+extern int   ogg2packB_look(ogg2pack_buffer *b,int bits,unsigned long *ret);
+extern long  ogg2packB_look1(ogg2pack_buffer *b);
+extern void  ogg2packB_adv(ogg2pack_buffer *b,int bits);
+extern void  ogg2packB_adv1(ogg2pack_buffer *b);
+extern int   ogg2packB_read(ogg2pack_buffer *b,int bits,unsigned long *ret);
+extern long  ogg2packB_read1(ogg2pack_buffer *b);
+extern long  ogg2packB_bytes(ogg2pack_buffer *b);
+extern long  ogg2packB_bits(ogg2pack_buffer *b);
+extern int   ogg2packB_eop(ogg2pack_buffer *b);
 
 /* Ogg BITSTREAM PRIMITIVES: encoding **************************/
-extern long     ogg_sync_bufferout(ogg_sync_state *oy, unsigned char **buffer);
-extern int      ogg_sync_pagein(ogg_sync_state *oy,ogg_page *og);
-extern int      ogg_sync_read(ogg_sync_state *oy,long bytes);
+extern long     ogg2_sync_bufferout(ogg2_sync_state *oy, unsigned char **buffer);
+extern int      ogg2_sync_pagein(ogg2_sync_state *oy,ogg2_page *og);
+extern int      ogg2_sync_read(ogg2_sync_state *oy,long bytes);
 
-extern int      ogg_stream_packetin(ogg_stream_state *os, ogg_packet *op);
-extern int      ogg_stream_pageout(ogg_stream_state *os, ogg_page *og);
-extern int      ogg_stream_flush(ogg_stream_state *os, ogg_page *og);
+extern int      ogg2_stream_packetin(ogg2_stream_state *os, ogg2_packet *op);
+extern int      ogg2_stream_pageout(ogg2_stream_state *os, ogg2_page *og);
+extern int      ogg2_stream_flush(ogg2_stream_state *os, ogg2_page *og);
 
 /* Ogg BITSTREAM PRIMITIVES: decoding **************************/
 
-extern ogg_sync_state *ogg_sync_create(void);
-extern int      ogg_sync_destroy(ogg_sync_state *oy);
-extern int      ogg_sync_reset(ogg_sync_state *oy);
+extern ogg2_sync_state *ogg2_sync_create(void);
+extern int      ogg2_sync_destroy(ogg2_sync_state *oy);
+extern int      ogg2_sync_reset(ogg2_sync_state *oy);
 
-extern unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long size);
-extern int      ogg_sync_wrote(ogg_sync_state *oy, long bytes);
-extern long     ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og);
-extern int      ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og);
-extern int      ogg_stream_pagein(ogg_stream_state *os, ogg_page *og);
-extern int      ogg_stream_packetout(ogg_stream_state *os,ogg_packet *op);
-extern int      ogg_stream_packetpeek(ogg_stream_state *os,ogg_packet *op);
+extern unsigned char *ogg2_sync_bufferin(ogg2_sync_state *oy, long size);
+extern int      ogg2_sync_wrote(ogg2_sync_state *oy, long bytes);
+extern long     ogg2_sync_pageseek(ogg2_sync_state *oy,ogg2_page *og);
+extern int      ogg2_sync_pageout(ogg2_sync_state *oy, ogg2_page *og);
+extern int      ogg2_stream_pagein(ogg2_stream_state *os, ogg2_page *og);
+extern int      ogg2_stream_packetout(ogg2_stream_state *os,ogg2_packet *op);
+extern int      ogg2_stream_packetpeek(ogg2_stream_state *os,ogg2_packet *op);
 
 /* Ogg BITSTREAM PRIMITIVES: general ***************************/
 
-extern ogg_stream_state *ogg_stream_create(int serialno);
-extern int      ogg_stream_destroy(ogg_stream_state *os);
-extern int      ogg_stream_reset(ogg_stream_state *os);
-extern int      ogg_stream_reset_serialno(ogg_stream_state *os,int serialno);
-extern int      ogg_stream_eos(ogg_stream_state *os);
-extern int	ogg_stream_setmode(ogg_stream_state *os, int mode);
+extern ogg2_stream_state *ogg2_stream_create(int serialno);
+extern int      ogg2_stream_destroy(ogg2_stream_state *os);
+extern int      ogg2_stream_reset(ogg2_stream_state *os);
+extern int      ogg2_stream_reset_serialno(ogg2_stream_state *os,int serialno);
+extern int      ogg2_stream_eos(ogg2_stream_state *os);
+extern int	ogg2_stream_setdiscont(ogg2_stream_state *os);
 
-extern int      ogg_page_version(ogg_page *og);
-extern int      ogg_page_continued(ogg_page *og);
-extern int      ogg_page_bos(ogg_page *og);
-extern int      ogg_page_eos(ogg_page *og);
-extern ogg_int64_t  ogg_page_granulepos(ogg_page *og);
-extern ogg_uint32_t ogg_page_serialno(ogg_page *og);
-extern ogg_uint32_t ogg_page_pageno(ogg_page *og);
-extern int      ogg_page_packets(ogg_page *og);
+extern int      ogg2_page_version(ogg2_page *og);
+extern int      ogg2_page_continued(ogg2_page *og);
+extern int      ogg2_page_bos(ogg2_page *og);
+extern int      ogg2_page_eos(ogg2_page *og);
+extern ogg_int64_t  ogg2_page_granulepos(ogg2_page *og);
+extern ogg_uint32_t ogg2_page_serialno(ogg2_page *og);
+extern ogg_uint32_t ogg2_page_pageno(ogg2_page *og);
+extern int      ogg2_page_packets(ogg2_page *og);
 
-extern void     ogg_page_set_continued(ogg_page *og, int value);
-extern void     ogg_page_set_bos(ogg_page *og, int value);
-extern void     ogg_page_set_eos(ogg_page *og, int value);
-extern void     ogg_page_set_granulepos(ogg_page *og, ogg_int64_t value);
-extern void     ogg_page_set_serialno(ogg_page *og, ogg_uint32_t value);
-extern void     ogg_page_set_pageno(ogg_page *og, ogg_uint32_t value);
+extern void     ogg2_page_set_continued(ogg2_page *og, int value);
+extern void     ogg2_page_set_bos(ogg2_page *og, int value);
+extern void     ogg2_page_set_eos(ogg2_page *og, int value);
+extern void     ogg2_page_set_granulepos(ogg2_page *og, ogg_int64_t value);
+extern void     ogg2_page_set_serialno(ogg2_page *og, ogg_uint32_t value);
+extern void     ogg2_page_set_pageno(ogg2_page *og, ogg_uint32_t value);
 
-extern int      ogg_packet_release(ogg_packet *op);
-extern int      ogg_page_release(ogg_page *og);
-
-/* Ogg BITSTREAM PRIMITIVES: mode flags *****************************/
-
-#define	OGG_DISCONT	1
+extern int      ogg2_packet_release(ogg2_packet *op);
+extern int      ogg2_page_release(ogg2_page *og);
 
 /* Ogg BITSTREAM PRIMITIVES: return codes ***************************/
 
-#define  OGG_SUCCESS   0
+#define  OGG2_SUCCESS   0
 
-#define  OGG_HOLE     -10
-#define  OGG_SPAN     -11
-#define  OGG_EVERSION -12
-#define  OGG_ESERIAL  -13
-#define  OGG_EINVAL   -14
-#define  OGG_EEOS     -15
-#define  OGG_EMODE    -16
+#define  OGG2_HOLE     -10
+#define  OGG2_SPAN     -11
+#define  OGG2_EVERSION -12
+#define  OGG2_ESERIAL  -13
+#define  OGG2_EINVAL   -14
+#define  OGG2_EEOS     -15
+#define  OGG2_EMODE    -16
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* _OGG_H */
-
-
-
-
-
-
+#endif  /* _OGG2_H */

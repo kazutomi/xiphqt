@@ -22,7 +22,7 @@
 /* this is an internal abstraction, and it is not guarded from misuse
    or botching a fencepost. */
 
-static void _positionB(oggbyte_buffer *b,int pos){
+static void _positionB(ogg2byte_buffer *b,int pos){
   if(pos<b->pos){
     /* start at beginning, scan forward */
     b->ref=b->baseref;
@@ -32,7 +32,7 @@ static void _positionB(oggbyte_buffer *b,int pos){
   }
 }
 
-static void _positionF(oggbyte_buffer *b,int pos){
+static void _positionF(ogg2byte_buffer *b,int pos){
   /* scan forward for position */
   while(pos>=b->end){
     /* just seek forward */
@@ -43,7 +43,7 @@ static void _positionF(oggbyte_buffer *b,int pos){
   }
 }
 
-static void _positionFE(oggbyte_buffer *b,int pos){
+static void _positionFE(ogg2byte_buffer *b,int pos){
   /* scan forward for position */
   while(pos>=b->end){
     if(!b->ref->next){
@@ -58,7 +58,7 @@ static void _positionFE(oggbyte_buffer *b,int pos){
 	b->ref->length=b->ref->buffer->size-b->ref->begin;
 	/* extend the array and span */
 	b->pos+=b->ref->length;	
-	b->ref=ogg_buffer_extend(b->ref,OGGPACK_CHUNKSIZE);
+	b->ref=ogg2_buffer_extend(b->ref,OGG2PACK_CHUNKSIZE);
 	b->end=b->pos;
 	b->ptr=b->ref->buffer->data+b->ref->begin;
       }
@@ -74,12 +74,12 @@ static void _positionFE(oggbyte_buffer *b,int pos){
   }
 }
 
-int oggbyte_init(oggbyte_buffer *b,ogg_reference *or,ogg_buffer_state *bs){
+int ogg2byte_init(ogg2byte_buffer *b,ogg2_reference *or,ogg2_buffer_state *bs){
   memset(b,0,sizeof(*b));
     
   if(!or){
     if(!bs)return -1;
-    or=ogg_buffer_alloc(bs,OGGPACK_CHUNKSIZE);
+    or=ogg2_buffer_alloc(bs,OGG2PACK_CHUNKSIZE);
   }else{
     b->external=1;
   }
@@ -93,27 +93,27 @@ int oggbyte_init(oggbyte_buffer *b,ogg_reference *or,ogg_buffer_state *bs){
   return(0);
 }
 
-ogg_reference *oggbyte_return_and_reset(oggbyte_buffer *b){
+ogg2_reference *ogg2byte_return_and_reset(ogg2byte_buffer *b){
   if(!b->external){
-    ogg_reference *ret=b->baseref;
+    ogg2_reference *ret=b->baseref;
     memset(b,0,sizeof(*b));
     return(ret);
   }
   return(NULL);
 }
 
-void oggbyte_clear(oggbyte_buffer *b){
-  if(!b->external)ogg_buffer_release(b->baseref);
+void ogg2byte_clear(ogg2byte_buffer *b){
+  if(!b->external)ogg2_buffer_release(b->baseref);
   memset(b,0,sizeof(*b));
 }
 
-void oggbyte_set1(oggbyte_buffer *b,unsigned char val,int pos){
+void ogg2byte_set1(ogg2byte_buffer *b,unsigned char val,int pos){
   _positionB(b,pos);
   _positionFE(b,pos);
   b->ptr[pos-b->pos]=val;
 }
 
-void oggbyte_set2(oggbyte_buffer *b,int val,int pos){
+void ogg2byte_set2(ogg2byte_buffer *b,int val,int pos){
   _positionB(b,pos);
   _positionFE(b,pos);
   b->ptr[pos-b->pos]=val;
@@ -121,7 +121,7 @@ void oggbyte_set2(oggbyte_buffer *b,int val,int pos){
   b->ptr[pos-b->pos]=val>>8;
 }
 
-void oggbyte_set4(oggbyte_buffer *b,ogg_uint32_t val,int pos){
+void ogg2byte_set4(ogg2byte_buffer *b,ogg_uint32_t val,int pos){
   int i;
   _positionB(b,pos);
   for(i=0;i<4;i++){
@@ -132,7 +132,7 @@ void oggbyte_set4(oggbyte_buffer *b,ogg_uint32_t val,int pos){
   }
 }
 
-void oggbyte_set8(oggbyte_buffer *b,ogg_int64_t val,int pos){
+void ogg2byte_set8(ogg2byte_buffer *b,ogg_int64_t val,int pos){
   int i;
   _positionB(b,pos);
   for(i=0;i<8;i++){
@@ -143,13 +143,13 @@ void oggbyte_set8(oggbyte_buffer *b,ogg_int64_t val,int pos){
   }
 }
  
-unsigned char oggbyte_read1(oggbyte_buffer *b,int pos){
+unsigned char ogg2byte_read1(ogg2byte_buffer *b,int pos){
   _positionB(b,pos);
   _positionF(b,pos);
   return b->ptr[pos-b->pos];
 }
 
-int oggbyte_read2(oggbyte_buffer *b,int pos){
+int ogg2byte_read2(ogg2byte_buffer *b,int pos){
   int ret;
   _positionB(b,pos);
   _positionF(b,pos);
@@ -158,7 +158,7 @@ int oggbyte_read2(oggbyte_buffer *b,int pos){
   return ret|b->ptr[pos-b->pos]<<8;  
 }
 
-ogg_uint32_t oggbyte_read4(oggbyte_buffer *b,int pos){
+ogg_uint32_t ogg2byte_read4(ogg2byte_buffer *b,int pos){
   ogg_uint32_t ret;
   _positionB(b,pos);
   _positionF(b,pos);
@@ -172,7 +172,7 @@ ogg_uint32_t oggbyte_read4(oggbyte_buffer *b,int pos){
   return ret;
 }
 
-ogg_int64_t oggbyte_read8(oggbyte_buffer *b,int pos){
+ogg_int64_t ogg2byte_read8(ogg2byte_buffer *b,int pos){
   ogg_int64_t ret;
   unsigned char t[7];
   int i;
@@ -199,15 +199,15 @@ ogg_int64_t oggbyte_read8(oggbyte_buffer *b,int pos){
 
 unsigned char ref[TESTBYTES];
 unsigned char work[TESTBYTES];
-ogg_buffer_state *bs;
+ogg2_buffer_state *bs;
 
-void _read_linear_test1(ogg_reference *or){
-  oggbyte_buffer obb;
+void _read_linear_test1(ogg2_reference *or){
+  ogg2byte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0);
+  ogg2byte_init(&obb,or,0);
   for(j=0;j<TESTBYTES;j++){
-    unsigned char ret=oggbyte_read1(&obb,j);
+    unsigned char ret=ogg2byte_read1(&obb,j);
     if(ref[j]!=ret){
       fprintf(stderr,"\nERROR:  %02x != %02x, position %d\n\n",
 	      ref[j],ret,j);
@@ -216,14 +216,14 @@ void _read_linear_test1(ogg_reference *or){
   }
 }
 
-void _read_linear_test1b(ogg_reference *or){
-  oggbyte_buffer obb;
+void _read_linear_test1b(ogg2_reference *or){
+  ogg2byte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0);
+  ogg2byte_init(&obb,or,0);
   for(j=0;j<TESTBYTES;j++){
     if(work[j]){
-      unsigned char ret=oggbyte_read1(&obb,j);
+      unsigned char ret=ogg2byte_read1(&obb,j);
       if(ref[j]!=ret){
 	fprintf(stderr,"\nERROR:  %02x != %02x, position %d\n\n",
 		ref[j],ret,j);
@@ -233,13 +233,13 @@ void _read_linear_test1b(ogg_reference *or){
   }
 }
 
-void _read_linear_test2(ogg_reference *or){
-  oggbyte_buffer obb;
+void _read_linear_test2(ogg2_reference *or){
+  ogg2byte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0);
+  ogg2byte_init(&obb,or,0);
   for(j=0;j+1<TESTBYTES;j++){
-    int ret=oggbyte_read2(&obb,j);
+    int ret=ogg2byte_read2(&obb,j);
     if(ref[j]!=(ret&0xff) || ref[j+1]!=((ret>>8)&0xff)){
       fprintf(stderr,"\nERROR:  %02x%02x != %04x, position %d\n\n",
 	      ref[j+1],ref[j],ret,j);
@@ -248,14 +248,14 @@ void _read_linear_test2(ogg_reference *or){
   }
 }
 
-void _read_linear_test4(ogg_reference *or){
-  oggbyte_buffer obb;
+void _read_linear_test4(ogg2_reference *or){
+  ogg2byte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0);
+  ogg2byte_init(&obb,or,0);
 
   for(j=0;j+3<TESTBYTES;j++){
-    ogg_uint32_t ret=oggbyte_read4(&obb,j);
+    ogg_uint32_t ret=ogg2byte_read4(&obb,j);
     if(ref[j]!=(ret&0xff) ||
        ref[j+1]!=((ret>>8)&0xff) ||
        ref[j+2]!=((ret>>16)&0xff) ||
@@ -268,11 +268,11 @@ void _read_linear_test4(ogg_reference *or){
   }
 }
 
-void _read_linear_test8(ogg_reference *or){
-  oggbyte_buffer obb;
+void _read_linear_test8(ogg2_reference *or){
+  ogg2byte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0);
+  ogg2byte_init(&obb,or,0);
 
   for(j=0;j+7<TESTBYTES;j++){
     ogg_int64_t ret=ref[j+7];
@@ -284,9 +284,9 @@ void _read_linear_test8(ogg_reference *or){
     ret=(ret<<8)|ref[j+1];
     ret=(ret<<8)|ref[j];
     
-    if(ret!=oggbyte_read8(&obb,j)){
+    if(ret!=ogg2byte_read8(&obb,j)){
       int i;
-      ret=oggbyte_read8(&obb,j);
+      ret=ogg2byte_read8(&obb,j);
       fprintf(stderr,"\nERROR:  %02x%02x%02x%02x%02x%02x%02x%02x != ",
 	      ref[j+7],ref[j+6],ref[j+5],ref[j+4],
 	      ref[j+3],ref[j+2],ref[j+1],ref[j]);
@@ -303,18 +303,18 @@ void _read_linear_test8(ogg_reference *or){
   }
 }
 
-void _read_seek_test(ogg_reference *or){
-  oggbyte_buffer obb;
+void _read_seek_test(ogg2_reference *or){
+  ogg2byte_buffer obb;
   int i,j;
   int length=TESTBYTES;
   unsigned char *lref=ref;
 
-  oggbyte_init(&obb,or,0);
+  ogg2byte_init(&obb,or,0);
   
   for(i=0;i<TESTBYTES;i++){
     unsigned char ret;
     j=rand()%length;
-    ret=oggbyte_read1(&obb,j);
+    ret=ogg2byte_read1(&obb,j);
     if(lref[j]!=ret){
       fprintf(stderr,"\nERROR:  %02x != %02x, position %d\n\n",
 	      lref[j],ret,j);
@@ -325,7 +325,7 @@ void _read_seek_test(ogg_reference *or){
   for(i=0;i<TESTBYTES;i++){
     int ret;
     j=rand()%(length-1);
-    ret=oggbyte_read2(&obb,j);
+    ret=ogg2byte_read2(&obb,j);
     if(lref[j]!=(ret&0xff) || lref[j+1]!=((ret>>8)&0xff)){
       fprintf(stderr,"\nERROR:  %02x%02x != %04x, position %d\n\n",
 	      lref[j+1],lref[j],ret,j);
@@ -336,7 +336,7 @@ void _read_seek_test(ogg_reference *or){
   for(i=0;i<TESTBYTES;i++){
     ogg_uint32_t ret;
     j=rand()%(length-3);
-    ret=oggbyte_read4(&obb,j);
+    ret=ogg2byte_read4(&obb,j);
     if(lref[j]!=(ret&0xff) ||
        lref[j+1]!=((ret>>8)&0xff) ||
        lref[j+2]!=((ret>>16)&0xff) ||
@@ -360,9 +360,9 @@ void _read_seek_test(ogg_reference *or){
     ret=(ret<<8)|lref[j+1];
     ret=(ret<<8)|lref[j];
     
-    if(ret!=oggbyte_read8(&obb,j)){
+    if(ret!=ogg2byte_read8(&obb,j)){
       int i;
-      ret=oggbyte_read8(&obb,j);
+      ret=ogg2byte_read8(&obb,j);
       fprintf(stderr,"\nERROR:  %02x%02x%02x%02x%02x%02x%02x%02x != ",
 	      lref[j+7],lref[j+6],lref[j+5],lref[j+4],
 	      lref[j+3],lref[j+2],lref[j+1],lref[j]);
@@ -379,14 +379,14 @@ void _read_seek_test(ogg_reference *or){
   }
 }
 
-void _head_prep(ogg_reference *head){
+void _head_prep(ogg2_reference *head){
   int count=0;
   while(head){
     memset(head->buffer->data,0,head->buffer->size);
     count+=head->length;
 
     if(count>TESTBYTES/2+rand()%(TESTBYTES/4)){
-      ogg_buffer_release(head->next);
+      ogg2_buffer_release(head->next);
       head->next=0;
       break;
     }else{
@@ -395,90 +395,90 @@ void _head_prep(ogg_reference *head){
   }
 }
 
-void _write_linear_test(ogg_reference *tail){
-  oggbyte_buffer ob;
+void _write_linear_test(ogg2_reference *tail){
+  ogg2byte_buffer ob;
   int i;
 
   _head_prep(tail);
-  oggbyte_init(&ob,tail,0);
+  ogg2byte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i++)
-    oggbyte_set1(&ob,ref[i],i);
+    ogg2byte_set1(&ob,ref[i],i);
   _read_linear_test1(tail);
-  if(ogg_buffer_length(tail)!=TESTBYTES){
-    fprintf(stderr,"\nERROR: oggbyte_set1 extended incorrectly.\n\n");
+  if(ogg2_buffer_length(tail)!=TESTBYTES){
+    fprintf(stderr,"\nERROR: ogg2byte_set1 extended incorrectly.\n\n");
     exit(1);
   }
 
   _head_prep(tail);
 
-  oggbyte_init(&ob,tail,0);
+  ogg2byte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i+=2){
     unsigned int val=ref[i]|(ref[i+1]<<8);
-    oggbyte_set2(&ob,val,i);
+    ogg2byte_set2(&ob,val,i);
   }
   _read_linear_test1(tail);
-  if(ogg_buffer_length(tail)>TESTBYTES){
-    fprintf(stderr,"\nERROR: oggbyte_set2 extended incorrectly.\n\n");
+  if(ogg2_buffer_length(tail)>TESTBYTES){
+    fprintf(stderr,"\nERROR: ogg2byte_set2 extended incorrectly.\n\n");
     exit(1);
   }
 
   _head_prep(tail);
 
-  oggbyte_init(&ob,tail,0);
+  ogg2byte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i+=4){
     unsigned long val=ref[i+2]|(ref[i+3]<<8);
     val=(val<<16)|ref[i]|(ref[i+1]<<8);
-    oggbyte_set4(&ob,val,i);
+    ogg2byte_set4(&ob,val,i);
   }
   _read_linear_test1(tail);
-  if(ogg_buffer_length(tail)>TESTBYTES){
-    fprintf(stderr,"\nERROR: oggbyte_set4 extended incorrectly.\n\n");
+  if(ogg2_buffer_length(tail)>TESTBYTES){
+    fprintf(stderr,"\nERROR: ogg2byte_set4 extended incorrectly.\n\n");
     exit(1);
   }
 
   _head_prep(tail);
 
-  oggbyte_init(&ob,tail,0);
+  ogg2byte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i+=8){
     ogg_int64_t val=ref[i+6]|(ref[i+7]<<8);
     val=(val<<16)|ref[i+4]|(ref[i+5]<<8);
     val=(val<<16)|ref[i+2]|(ref[i+3]<<8);
     val=(val<<16)|ref[i]|(ref[i+1]<<8);
-    oggbyte_set8(&ob,val,i);
+    ogg2byte_set8(&ob,val,i);
   }
   _read_linear_test1(tail);
-  if(ogg_buffer_length(tail)>TESTBYTES){
-    fprintf(stderr,"\nERROR: oggbyte_set8 extended incorrectly.\n\n");
+  if(ogg2_buffer_length(tail)>TESTBYTES){
+    fprintf(stderr,"\nERROR: ogg2byte_set8 extended incorrectly.\n\n");
     exit(1);
   }
 
 }
 
 void _write_zero_test(void){
-  oggbyte_buffer ob;
+  ogg2byte_buffer ob;
   int i;
 
-  oggbyte_init(&ob,0,bs);
+  ogg2byte_init(&ob,0,bs);
   for(i=0;i<TESTBYTES;i++)
-    oggbyte_set1(&ob,ref[i],i);
+    ogg2byte_set1(&ob,ref[i],i);
   _read_linear_test1(ob.baseref);
-  if(ogg_buffer_length(ob.baseref)!=TESTBYTES){
-    fprintf(stderr,"\nERROR: oggbyte_set1 extended incorrectly.\n\n");
+  if(ogg2_buffer_length(ob.baseref)!=TESTBYTES){
+    fprintf(stderr,"\nERROR: ogg2byte_set1 extended incorrectly.\n\n");
     exit(1);
   }
 }
 
 void _write_seek_test(void){
-  oggbyte_buffer ob;
+  ogg2byte_buffer ob;
   int i;
 
   memset(work,0,TESTBYTES);
 
-  oggbyte_init(&ob,0,bs);
+  ogg2byte_init(&ob,0,bs);
 
   for(i=0;i<TESTBYTES;i++){
     int j=rand()%TESTBYTES;
-    oggbyte_set1(&ob,ref[j],j);
+    ogg2byte_set1(&ob,ref[j],j);
     work[j]=1;
   }
 
@@ -487,7 +487,7 @@ void _write_seek_test(void){
 
 int main(void){
   int i,j;
-  bs=ogg_buffer_create();
+  bs=ogg2_buffer_create();
 
   /* test all codepaths through randomly generated data set */
   fprintf(stderr,"\nRandomized testing of byte aligned access abstraction: \n");
@@ -501,8 +501,8 @@ int main(void){
     /* test basic reading using single synthetic reference 1,2,4,8 */
     fprintf(stderr,"\r\t loops left (%d),  basic read test... ",1000-i);
     {
-      ogg_buffer ob;
-      ogg_reference or;
+      ogg2_buffer ob;
+      ogg2_reference or;
 
       ob.data=ref;
       ob.size=TESTBYTES;
@@ -519,8 +519,8 @@ int main(void){
     /* test basic reading using multiple synthetic refs 1,2,4,8 */
     fprintf(stderr,"\r\t loops left (%d),  fragmented read test... ",1000-i);
     {
-      ogg_reference *tail=0;
-      ogg_reference *head=0;
+      ogg2_reference *tail=0;
+      ogg2_reference *head=0;
       long count=0;
       
       
@@ -532,9 +532,9 @@ int main(void){
 	if(length>TESTBYTES-count)length=TESTBYTES-count;
 
 	if(tail)
-	  head=ogg_buffer_extend(head,begin+length+pad);
+	  head=ogg2_buffer_extend(head,begin+length+pad);
 	else
-	  tail=head=ogg_buffer_alloc(bs,begin+length+pad);
+	  tail=head=ogg2_buffer_alloc(bs,begin+length+pad);
 
 	memcpy(head->buffer->data+begin,ref+count,length);
 	head->begin=begin;
@@ -555,7 +555,7 @@ int main(void){
       fprintf(stderr,"\r\t loops left (%d),  linear write test...       ",1000-i);      
       _write_linear_test(tail);
 
-      ogg_buffer_release(tail);
+      ogg2_buffer_release(tail);
     }    
     
     /* test writing, init blank reference */
@@ -570,7 +570,7 @@ int main(void){
 
   }
   fprintf(stderr,"\r\t all tests ok.                                              \n\n");
-  ogg_buffer_destroy(bs);
+  ogg2_buffer_destroy(bs);
   return 0;
 }
 
