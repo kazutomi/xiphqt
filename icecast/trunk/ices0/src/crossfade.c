@@ -97,6 +97,11 @@ static void cf_new_track(input_stream_t *source) {
   }
 
   NewTrack = FadeSamples;
+  if (source->samplerate != 44100) {
+    NewTrack *= source->samplerate/44100.0;
+    if (NewTrack > FadeSamples)
+      NewTrack = FadeSamples;
+  }
 }
 
 static int cf_process(int ilen, int16_t* il, int16_t* ir)
