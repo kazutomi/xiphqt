@@ -13,6 +13,8 @@
 
 #define BASEKEY "Software\\Xiphophorus\\Oggdrop"
 
+#define VORBIS_DEFAULT_QUALITY 75
+
 HANDLE event = NULL;
 int width = 120, height = 120;
 RECT bar1, bar2;
@@ -30,6 +32,31 @@ int numfiles;
 HWND g_hwnd;
 HWND qcwnd;
 int qcValue;
+int bitRate;
+
+
+static const char *bitRateCaption[] =
+{
+  "64",
+  "80",
+  "96",
+  "112",
+  "128",
+  "160",
+  "192",
+  "224",
+  "256",
+  "288",
+  "320",
+  "352",
+  0
+};
+
+typedef union
+{
+  int buflen;
+  char buf[16];
+} EBUF;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int animate = 0;
@@ -69,6 +96,12 @@ void set_quality_coefficient(int v)
 {
   encthread_setquality(v);
   write_setting("quality", v);
+}
+
+void set_bitrate(int v)
+{
+  encthread_setbitrate(v);
+  write_setting("bitrate", v);
 }
 
 void set_always_on_top(HWND hwnd, int v)
@@ -124,7 +157,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 	SetTimer(hwnd, 1, 80, NULL);
 
-  qcValue = read_setting("quality", 75);
+  qcValue = read_setting("quality", VORBIS_DEFAULT_QUALITY);
   set_quality_coefficient(qcValue);
 	set_always_on_top(hwnd, read_setting("always_on_top", 1));
 	set_logerr(hwnd, read_setting("logerr", 0));
@@ -314,7 +347,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 MAKEINTRESOURCE(IDD_QUALITY),   
                 hwnd, QCProc);
 
-        if (value != -1)
+        if (value == -2)
+          set_bitrate(bitRate);
+        else if (value != -1)
           set_quality_coefficient(value);
       }
       break;
@@ -338,11 +373,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
  /**
-  * Saved quality coefficient slider dialog procedure.
+  *  Encode parameters dialog procedures.
   */
 BOOL CALLBACK QCProc(HWND hwndDlg, UINT message, 
                      WPARAM wParam, LPARAM lParam) 
 {
+  char editBuf[16];
+  EBUF buf2;
+  int br, i, len;
+
   switch (message) 
   { 
   case WM_INITDIALOG: 
@@ -360,31 +399,153 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
 
     SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
         (WPARAM) TRUE,                   // redraw flag 
-        (LPARAM) read_setting("quality", 75)); 
-    break;
+        (LPARAM) read_setting("quality", VORBIS_DEFAULT_QUALITY));
+
+    SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETLIMITTEXT,
+        (WPARAM) 4, (LPARAM)0);
+
+    (void) sprintf(editBuf, "%02.1f", 
+        (float) ((float)read_setting("quality", VORBIS_DEFAULT_QUALITY)/10.0));
+
+    SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+        (WPARAM)0, (LPARAM)editBuf);
+
+    SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
+        (WPARAM)0, (LPARAM)-1);
+
+    (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                                     IDC_USEBITRATE,
+                                     read_setting("mode", IDC_USEQUALITY));
+
+    for (br=0; bitRateCaption[br] != 0; br++)
+    {
+      SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_ADDSTRING,
+          (WPARAM)0, (LPARAM) bitRateCaption[br]);
+
+      SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_SETITEMDATA, 
+          (WPARAM) br, (LPARAM) atoi(bitRateCaption[br]));
+    }
+
+    bitRate = read_setting("bitrate", 128);
+    (void) sprintf(editBuf, "%d", bitRate);
+    
+    for(br=0; bitRateCaption[br] != 0; br++)
+    {
+      if ( ! strcmp(bitRateCaption[br], editBuf) )
+      {
+        SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_SETCURSEL,
+            (WPARAM) br, (LPARAM) 0);
+        break;
+      }
+    }
+
+   break;
 
    case WM_HSCROLL:
 
     qcValue = (LONG)SendDlgItemMessage(hwndDlg, IDC_SLIDER1, 
                         TBM_GETPOS, (WPARAM)0, (LPARAM)0 );
+
+    (void) sprintf(editBuf, "%02.1f", (float)(((float)qcValue/10.0)));
+
+    SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+        (WPARAM)0, (LPARAM)editBuf);
+
+    (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                                     IDC_USEBITRATE,
+                                     IDC_USEQUALITY);
+
     break;
 
     case WM_CLOSE:
       EndDialog(hwndDlg, -1);
     break;
 
-
     case WM_COMMAND: 
       switch (LOWORD(wParam)) 
       { 
         case IDC_BUTTON1:
-        {
-          EndDialog(hwndDlg, qcValue);
+          if (IsDlgButtonChecked(hwndDlg, IDC_USEQUALITY) == BST_CHECKED)
+          {
+            write_setting("mode", IDC_USEQUALITY);
+            EndDialog(hwndDlg, qcValue);
+          }
+          else
+          {
+            write_setting("mode", IDC_USEBITRATE);
+            EndDialog(hwndDlg, -2); // use bitrate
+          }
           return TRUE;
-        }
+        
+        case IDC_BITRATE:
+          (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                                           IDC_USEBITRATE,
+                                           IDC_USEBITRATE);
+
+          if ((br = SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_GETCURSEL,
+                   (WPARAM) 0, (LPARAM) 0)) != LB_ERR)
+          {
+            bitRate = SendDlgItemMessage(hwndDlg, IDC_BITRATE, LB_GETITEMDATA,
+                   (WPARAM) br, (LPARAM) 0);
+          }
+
+          break;
+
+        case IDC_EDIT1:
+          (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                                     IDC_USEBITRATE,
+                                     IDC_USEQUALITY);
+
+          switch (HIWORD(wParam))
+          {
+           
+          case EN_UPDATE:
+            (void) memset(&buf2, 0, sizeof(buf2));
+            buf2.buflen = sizeof(buf2.buf);
+            len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
+              (WPARAM) 0, (LPARAM) buf2.buf);
+
+            for (i=0; i<len; i++)
+              if ( ! isdigit(buf2.buf[i]) && buf2.buf[i] != '.')
+              {
+                buf2.buf[i] = '\0';
+                SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+                  (WPARAM) 0, (LPARAM) buf2.buf);
+              }
+
+            
+            break;
+
+          case EN_CHANGE:
+            {
+              float v=0.0;
+
+            (void) memset(&buf2, 0, sizeof(buf2));
+            buf2.buflen = sizeof(buf2.buf);
+            len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
+              (WPARAM) 0, (LPARAM) buf2.buf);
+            //MessageBox(g_hwnd, buf2.buf, "Second", 0);
+
+            (void)sscanf(buf2.buf, "%f", &v); 
+
+            SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
+              (WPARAM) TRUE,                   // redraw flag 
+              (LPARAM)(int)(v*10.0f));
+            }
+
+            
+          default:
+            break;
+          }
+
         default: 
             break; 
-      } 
+      }
+      break; 
+
+
+      default:
+        break;
   } 
   return FALSE; 
 } 
