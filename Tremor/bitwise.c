@@ -85,7 +85,7 @@ long oggpack_look(oggpack_buffer *b,int bits){
 
   bits+=b->headbit;
 
-  if(bits >= b->headend*8){
+  if(bits >= b->headend<<3){
     int            end=b->headend;
     unsigned char *ptr=b->headptr;
     ogg_reference *head=b->head;
@@ -141,10 +141,9 @@ long oggpack_look(oggpack_buffer *b,int bits){
 /* limited to 32 at a time */
 void oggpack_adv(oggpack_buffer *b,int bits){
   bits+=b->headbit;
-  b->headend-=bits/8;
   b->headbit=bits&7;
   b->headptr+=bits/8;
-  _span(b);
+  if((b->headend-=bits/8)<1)_span(b);
 }
 
 /* spans forward and finds next byte.  Never halts */

@@ -274,7 +274,8 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
 
   v->sequence=vb->sequence;
   
-  {
+  if(vb->pcm){  /* no pcm to process if vorbis_synthesis_trackonly 
+                   was called on block */
     int n=ci->blocksizes[v->W]/2;
     int n0=ci->blocksizes[0]/2;
     int n1=ci->blocksizes[1]/2;
@@ -357,75 +358,75 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
 	ci->blocksizes[v->lW]/4+
 	ci->blocksizes[v->W]/4;
     }
+
+  }
     
-    /* track the frame number... This is for convenience, but also
-       making sure our last packet doesn't end with added padding.  If
-       the last packet is partial, the number of samples we'll have to
-       return will be past the vb->granulepos.
-       
-       This is not foolproof!  It will be confused if we begin
-       decoding at the last page after a seek or hole.  In that case,
-       we don't have a starting point to judge where the last frame
-       is.  For this reason, vorbisfile will always try to make sure
-       it reads the last two marked pages in proper sequence */
+  /* track the frame number... This is for convenience, but also
+     making sure our last packet doesn't end with added padding.  If
+     the last packet is partial, the number of samples we'll have to
+     return will be past the vb->granulepos.
+     
+     This is not foolproof!  It will be confused if we begin
+     decoding at the last page after a seek or hole.  In that case,
+     we don't have a starting point to judge where the last frame
+     is.  For this reason, vorbisfile will always try to make sure
+     it reads the last two marked pages in proper sequence */
+  
+  if(b->sample_count==-1){
+    b->sample_count=0;
+  }else{
+    b->sample_count+=ci->blocksizes[v->lW]/4+ci->blocksizes[v->W]/4;
+  }
     
-    if(b->sample_count==-1){
-      b->sample_count=0;
-    }else{
-      b->sample_count+=ci->blocksizes[v->lW]/4+ci->blocksizes[v->W]/4;
-    }
-    
-    if(v->granulepos==-1){
-      if(vb->granulepos!=-1){ /* only set if we have a position to set to */
-	
-	v->granulepos=vb->granulepos;
-	
-	/* is this a short page? */
-	if(b->sample_count>v->granulepos){
-	  /* corner case; if this is both the first and last audio page,
-	     then spec says the end is cut, not beginning */
-	  if(vb->eofflag){
-	    /* trim the end */
-	    /* no preceeding granulepos; assume we started at zero (we'd
-	       have to in a short single-page stream) */
-	    /* granulepos could be -1 due to a seek, but that would result
-	       in a long coun`t, not short count */
-	    
-	    v->pcm_current-=(b->sample_count-v->granulepos);
-	  }else{
-	    /* trim the beginning */
-	    v->pcm_returned+=(b->sample_count-v->granulepos);
-	    if(v->pcm_returned>v->pcm_current)
-	      v->pcm_returned=v->pcm_current;
-	  }
+  if(v->granulepos==-1){
+    if(vb->granulepos!=-1){ /* only set if we have a position to set to */
+      
+      v->granulepos=vb->granulepos;
+      
+      /* is this a short page? */
+      if(b->sample_count>v->granulepos){
+	/* corner case; if this is both the first and last audio page,
+	   then spec says the end is cut, not beginning */
+	if(vb->eofflag){
+	  /* trim the end */
+	  /* no preceeding granulepos; assume we started at zero (we'd
+	     have to in a short single-page stream) */
+	  /* granulepos could be -1 due to a seek, but that would result
+	     in a long coun`t, not short count */
 	  
+	  v->pcm_current-=(b->sample_count-v->granulepos);
+	}else{
+	  /* trim the beginning */
+	  v->pcm_returned+=(b->sample_count-v->granulepos);
+	  if(v->pcm_returned>v->pcm_current)
+	    v->pcm_returned=v->pcm_current;
 	}
 	
       }
-    }else{
-      v->granulepos+=ci->blocksizes[v->lW]/4+ci->blocksizes[v->W]/4;
-      if(vb->granulepos!=-1 && v->granulepos!=vb->granulepos){
-	
-	if(v->granulepos>vb->granulepos){
-	  long extra=v->granulepos-vb->granulepos;
-	  
-	  if(extra)
-	    if(vb->eofflag){
-	      /* partial last frame.  Strip the extra samples off */
-	      v->pcm_current-=extra;
-	    } /* else {Shouldn't happen *unless* the bitstream is out of
-		 spec.  Either way, believe the bitstream } */
-	} /* else {Shouldn't happen *unless* the bitstream is out of
-	     spec.  Either way, believe the bitstream } */
-	v->granulepos=vb->granulepos;
-      }
+      
     }
-    
-    /* Update, cleanup */
-    
-    if(vb->eofflag)v->eofflag=1;
+  }else{
+    v->granulepos+=ci->blocksizes[v->lW]/4+ci->blocksizes[v->W]/4;
+    if(vb->granulepos!=-1 && v->granulepos!=vb->granulepos){
+      
+      if(v->granulepos>vb->granulepos){
+	long extra=v->granulepos-vb->granulepos;
+	
+	if(extra)
+	  if(vb->eofflag){
+	    /* partial last frame.  Strip the extra samples off */
+	    v->pcm_current-=extra;
+	  } /* else {Shouldn't happen *unless* the bitstream is out of
+	       spec.  Either way, believe the bitstream } */
+      } /* else {Shouldn't happen *unless* the bitstream is out of
+	   spec.  Either way, believe the bitstream } */
+      v->granulepos=vb->granulepos;
+    }
   }
   
+  /* Update, cleanup */
+  
+  if(vb->eofflag)v->eofflag=1;
   return(0);
 }
 
