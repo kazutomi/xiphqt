@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.9 2003/06/22 02:04:24 brendan Exp $
+# $Id: configure.ac,v 1.10 2003/07/01 18:02:19 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -95,7 +95,7 @@ AC_SUBST(moddir)
 dnl -- Required extra libraries --
 
 XIPH_PATH_SHOUT(, [AC_MSG_ERROR([Could not find a usable libshout])])
-CFLAGS="$CFLAGS $SHOUT_CFLAGS"
+CFLAGS="$CFLAGS $SHOUT_CPPFLAGS $SHOUT_CFLAGS"
 LIBS="$LIBS $SHOUT_LIBS"
 
 dnl -- Optional features --
