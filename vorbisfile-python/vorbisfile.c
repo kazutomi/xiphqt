@@ -41,6 +41,7 @@ static int seek_func(void *datasource, ogg_int64_t offset, int whence)
 {
     PyObject *file, *seek, *result;
     PyObject *arglist;
+    int ret;
 
     file = (PyObject *)datasource;
     seek = PyObject_GetAttrString(file, "seek");
@@ -56,9 +57,10 @@ static int seek_func(void *datasource, ogg_int64_t offset, int whence)
 	return -1;
     }
 
+    ret = PyInt_AsLong(result);
     Py_DECREF(result);
 
-    return 0;
+    return ret;
 }
 
 static int close_func(void *datasource)
