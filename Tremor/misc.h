@@ -20,6 +20,11 @@
 #include "ivorbiscodec.h"
 #include "os_types.h"
 
+extern void *_vorbis_block_alloc(vorbis_block *vb,long bytes);
+extern void _vorbis_block_ripcord(vorbis_block *vb);
+extern void _analysis_output(char *base,int i,ogg_int32_t *v,int point,
+			     int n,int bark,int dB);
+
 #include "asm_arm.h"
   
 #ifndef _V_WIDE_MATH
