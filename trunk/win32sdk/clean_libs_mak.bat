@@ -1,5 +1,5 @@
-rem @echo off
-rem $Id: clean_libs_mak.bat,v 1.2 2001/10/20 17:30:24 cwolf Exp $
+@echo off
+rem $Id: clean_libs_mak.bat,v 1.3 2001/10/20 17:38:22 cwolf Exp $
 rem
 rem Deletes auto generated makefiles in ogg/win32 and vorbis/win32
 rem
