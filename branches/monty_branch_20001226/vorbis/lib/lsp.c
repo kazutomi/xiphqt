@@ -12,7 +12,7 @@
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.13 2000/12/21 21:04:39 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.13.2.1 2001/01/04 04:05:08 xiphmont Exp $
 
   The LSP generation code is taken (with minimal modification) from
   "On the Computation of the LSP Frequencies" by Joseph Rothweiler
@@ -200,9 +200,10 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 #else 
 
 /* old, nonoptimized but simple version for any poor sap who needs to
-   figure out what the hell this code does, or wants the other tiny
+   figure out what the hell this code does, or wants the other
    fraction of a dB precision */
 
+#include <stdio.h>
 /* side effect: changes *lsp to cosines of lsp */
 void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 			    float amp,float ampoffset){
@@ -210,18 +211,30 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
   float wdel=M_PI/ln;
   for(i=0;i<m;i++)lsp[i]=2.f*cos(lsp[i]);
 
+  fprintf(stderr,"m=%d ",m);
+
   i=0;
   while(i<n){
     int j,k=map[i];
     float p=.5f;
     float q=.5f;
     float w=2.f*cos(wdel*k);
-    for(j=0;j<m;j+=2){
+    for(j=1;j<m;j+=2){
+      q *= w-lsp[j-1];
       p *= w-lsp[j];
-      q *= w-lsp[j+1];
     }
-    p*=p*(2.f+w);
-    q*=q*(2.f-w);
+    if(j==m){
+      /* odd order filter; slightly assymetric */
+      /* the last coefficient */
+      q*=w-lsp[j-1];
+      p*=p*(4.f-w*w);
+      q*=q;
+    }else{
+      /* even order filter; still symmetric */
+      p*=p*(2.f-w);
+      q*=q*(2.f+w);
+    }
+
     q=fromdB(amp/sqrt(p+q)-ampoffset);
 
     curve[i]=q;
@@ -339,37 +352,48 @@ static void Newton_Raphson_Maehly(float *a,int ord,float *r){
 
 /* Convert lpc coefficients to lsp coefficients */
 void vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
-  int order2=m/2;
+  int order2=(m+1)>>1;
+  int g1_order,g2_order;
   float *g1=alloca(sizeof(float)*(order2+1));
   float *g2=alloca(sizeof(float)*(order2+1));
   float *g1r=alloca(sizeof(float)*(order2+1));
   float *g2r=alloca(sizeof(float)*(order2+1));
   int i;
 
+  /* even and odd are slightly different base cases */
+  g1_order=(m+1)>>1;
+  g2_order=(m)  >>1;
+
   /* Compute the lengths of the x polynomials. */
   /* Compute the first half of K & R F1 & F2 polynomials. */
   /* Compute half of the symmetric and antisymmetric polynomials. */
   /* Remove the roots at +1 and -1. */
   
-  g1[order2] = 1.f;
-  for(i=0;i<order2;i++) g1[order2-i-1] = lpc[i]+lpc[m-i-1];
-  g2[order2] = 1.f;
-  for(i=0;i<order2;i++) g2[order2-i-1] = lpc[i]-lpc[m-i-1];
+  g1[g1_order] = 1.f;
+  for(i=1;i<=g1_order;i++) g1[g1_order-i] = lpc[i-1]+lpc[m-i];
+  g2[g2_order] = 1.f;
+  for(i=1;i<=g2_order;i++) g2[g2_order-i] = lpc[i-1]-lpc[m-i];
   
-  for(i=0; i<order2;i++) g1[order2-i-1] -= g1[order2-i];
-  for(i=0; i<order2;i++) g2[order2-i-1] += g2[order2-i];
+  if(g1_order>g2_order){
+    for(i=2; i<=g2_order;i++) g2[g2_order-i] += g2[g2_order-i+2];
+  }else{
+    for(i=1; i<=g1_order;i++) g1[g1_order-i] -= g1[g1_order-i+1];
+    for(i=1; i<=g2_order;i++) g2[g2_order-i] += g2[g2_order-i+1];
+  }
 
   /* Convert into polynomials in cos(alpha) */
-  cheby(g1,order2);
-  cheby(g2,order2);
+  cheby(g1,g1_order);
+  cheby(g2,g2_order);
 
   /* Find the roots of the 2 even polynomials.*/
   
-  Newton_Raphson_Maehly(g1,order2,g1r);
-  Newton_Raphson_Maehly(g2,order2,g2r);
+  Newton_Raphson_Maehly(g1,g1_order,g1r);
+  Newton_Raphson_Maehly(g2,g2_order,g2r);
+
+  for(i=0;i<g1_order;i++)
+    lsp[i*2] = acos(g1r[i]);
+
+  for(i=0;i<g2_order;i++)
+    lsp[i*2+1] = acos(g2r[i]);
   
-  for(i=0;i<m;i+=2){
-    lsp[i] = acos(g1r[i/2]);
-    lsp[i+1] = acos(g2r[i/2]);
-  }
 }
