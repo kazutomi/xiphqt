@@ -1,0 +1,170 @@
+dnl Process this file with autoconf to produce a configure script
+
+dnl ------------------------------------------------
+dnl Initialization
+dnl ------------------------------------------------
+
+AC_INIT(oggenc/encode.c)
+AM_INIT_AUTOMAKE(vorbis-tools,1.0)
+
+dnl --------------------------------------------------  
+dnl Check for programs
+dnl --------------------------------------------------  
+
+dnl save $CFLAGS since AC_PROG_CC likes to insert "-g -O2"
+dnl if $CFLAGS is blank
+cflags_save="$CFLAGS"
+AC_PROG_CC
+CFLAGS="$cflags_save"
+
+AM_PROG_LIBTOOL
+
+ALL_LINGUAS="fr nl sv"
+AM_GNU_GETTEXT
+
+dnl --------------------------------------------------
+dnl Set build flags based on environment
+dnl --------------------------------------------------
+
+AC_CANONICAL_HOST
+
+casecflags_save="$CFLAGS"
+ldflags_save="$LDFLAGS"
+if test -z "$GCC"; then
+        case $host in
+        *-*-irix*)
+                DEBUG="-g -signed"
+                CFLAGS="-O2 -w -signed"
+                PROFILE="-p -g3 -O2 -signed"
+                ;;
+        sparc-sun-solaris*)
+                DEBUG="-v -g"
+                CFLAGS="-xO4 -fast -w -fsimple -native -xcg92"
+                PROFILE="-v -xpg -g -xO4 -fast -native -fsimple -xcg92 -Dsuncc"
+                ;;
+        *)
+                DEBUG="-g"
+                CFLAGS="-O"
+                PROFILE="-g -p"
+                ;;
+        esac
+else
+        case $host in
+        *-*-linux*)
+                DEBUG="-g -Wall -fsigned-char"
+                CFLAGS="-O20 -ffast-math -fsigned-char"
+                PROFILE="-Wall -W -pg -g -O20 -ffast-math -fsigned-char"
+                ;;
+        sparc-sun-*)
+                DEBUG="-g -Wall -fsigned-char -mv8"
+                CFLAGS="-O20 -ffast-math -fsigned-char -mv8"
+                PROFILE="-pg -g -O20 -fsigned-char -mv8"
+                ;;
+        *-*-darwin*)
+                DEBUG="-fno-common -g -Wall -fsigned-char"
+                CFLAGS="-fno-common -O4 -Wall -fsigned-char -ffast-math"
+                PROFILE="-fno-common -O4 -Wall -pg -g -fsigned-char -ffast-math"
+                ;;
+        *)
+                DEBUG="-g -Wall -fsigned-char"
+                CFLAGS="-O20 -fsigned-char"
+                PROFILE="-O20 -g -pg -fsigned-char"
+                ;;
+        esac
+fi
+CFLAGS="$CFLAGS $cflags_save"
+DEBUG="$DEBUG $cflags_save"
+PROFILE="$PROFILE $cflags_save"
+LDFLAGS="$LDFLAGS $ldflags_save"
+
+dnl --------------------------------------------------
+dnl Allow tools to be selectively built
+dnl --------------------------------------------------
+AC_ARG_ENABLE(ogg123, [  --disable-ogg123   Skip building ogg123], build_ogg123="$enableval", build_ogg123="yes")
+AC_ARG_ENABLE(oggdec, [  --disable-oggdec   Skip building oggdec], build_oggdec="$enableval", build_oggdec="yes")
+AC_ARG_ENABLE(oggenc, [  --disable-oggenc   Skip building oggenc], build_oggenc="$enableval", build_oggenc="yes")
+AC_ARG_ENABLE(ogginfo,[  --disable-ogginfo  Skip building ogginfo], build_ogginfo="$enableval", build_ogginfo="yes")
+AC_ARG_ENABLE(vcut,   [  --disable-vcut     Skip building vcut], build_vcut="$enableval", build_vcut="yes")
+AC_ARG_ENABLE(vorbiscomment, [  --disable-vorbiscomment   Skip building vorbiscomment], build_vorbiscomment="$enableval", build_vorbiscomment="yes")
+
+
+dnl --------------------------------------------------
+dnl Check for generally needed libraries
+dnl --------------------------------------------------
+
+XIPH_PATH_OGG(,AC_MSG_ERROR(Ogg needed!))
+XIPH_PATH_VORBIS(,AC_MSG_ERROR(Vorbis needed!))
+
+SHARE_LIBS='$(top_builddir)/share/libutf8.a $(top_builddir)/share/libgetopt.a'
+SHARE_CFLAGS='-I$(top_srcdir)/include'
+
+I18N_CFLAGS='-I$(top_srcdir)/intl'
+I18N_LIBS=$INTLLIBS
+
+SOCKET_LIBS=
+AC_CHECK_LIB(socket, socket, SOCKET_LIBS="-lsocket")
+AC_CHECK_LIB(nsl, gethostbyname, SOCKET_LIBS="-lnsl $SOCKET_LIBS")
+
+dnl --------------------------------------------------
+dnl Check for ogg123 critical libraries
+dnl --------------------------------------------------
+
+if test "x$build_ogg123" = xyes; then
+  AC_MSG_RESULT([checking for ogg123 requirements])
+  XIPH_PATH_AO(,build_ogg123=no; AC_MSG_WARN(libao missing))
+  AM_PATH_CURL(,build_ogg123=no; AC_MSG_WARN(libcurl missing))
+
+  ACX_PTHREAD(,build_ogg123=no; AC_MSG_WARN(POSIX threads missing))
+
+  if test "x$build_ogg123" != xyes; then
+    AC_MSG_WARN([Prerequisites for ogg123 not met, ogg123 will not be built])
+  fi
+fi
+ 
+dnl --------------------------------------------------
+dnl Check for library functions
+dnl --------------------------------------------------
+
+AC_FUNC_ALLOCA
+AM_ICONV
+AC_CHECK_FUNCS(atexit on_exit)
+AM_LANGINFO_CODESET
+
+dnl --------------------------------------------------
+dnl Work around FHS stupidity
+dnl --------------------------------------------------
+
+if test -z "$mandir"; then
+    if test "$prefix" = "/usr"; then
+        MANDIR='$(datadir)/man'
+    else
+        MANDIR='$(prefix)/man'
+    fi
+else
+    MANDIR=$mandir
+fi
+AC_SUBST(MANDIR)
+
+
+dnl --------------------------------------------------
+dnl Do substitutions
+dnl --------------------------------------------------
+
+AM_CONDITIONAL(BUILD_OGG123, test "x$build_ogg123" = xyes)
+AM_CONDITIONAL(BUILD_OGGDEC, test "x$build_oggdec" = xyes)
+AM_CONDITIONAL(BUILD_OGGENC, test "x$build_oggenc" = xyes)
+AM_CONDITIONAL(BUILD_OGGINFO, test "x$build_ogginfo" = xyes)
+AM_CONDITIONAL(BUILD_VCUT, test "x$build_vcut" = xyes)
+AM_CONDITIONAL(BUILD_VORBISCOMMENT, test "x$build_vorbiscomment" = xyes)
+
+AC_SUBST(DEBUG)
+AC_SUBST(PROFILE)
+AC_SUBST(SOCKET_LIBS)
+AC_SUBST(SHARE_CFLAGS)
+AC_SUBST(SHARE_LIBS)
+AC_SUBST(CURL_CFLAGS)
+AC_SUBST(CURL_LIBS)
+AC_SUBST(I18N_CFLAGS)
+AC_SUBST(I18N_LIBS)
+
+AC_OUTPUT(Makefile intl/Makefile po/Makefile.in include/Makefile share/Makefile win32/Makefile oggdec/Makefile oggenc/Makefile oggenc/man/Makefile ogg123/Makefile vorbiscomment/Makefile vcut/Makefile ogginfo/Makefile debian/Makefile)
