@@ -349,3 +349,19 @@ const char *theora_version_string(void){
 ogg_uint32_t theora_version_number(void){
   return (OC_VERSION_MAJOR<<16)+(OC_VERSION_MINOR<<8)+(OC_VERSION_SUB);
 }
+
+/*Determines the packet type.
+  Note that this correctly interprets a 0-byte packet as a video data packet.
+  Return: 1 for a header packet, 0 for a data packet.*/
+int theora_packet_isheader(ogg_packet *_op){
+  return _op->bytes>0?_op->packet[0]>>7:0;
+}
+
+/*Determines the frame type of a video data packet.
+  Note that this correctly interprets a 0-byte packet as a delta frame.
+  Return: 1 for a key frame, 0 for a delta frame, and -1 for a header
+           packet.*/
+int theora_packet_iskeyframe(ogg_packet *_op){
+  return _op->bytes<=0?0:_op->packet[0]&0x80?-1:!(_op->packet[0]&0x40);
+}
+

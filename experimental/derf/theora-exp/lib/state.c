@@ -1122,6 +1122,19 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
 
 
 
+ogg_int64_t theora_granule_frame(void *_encdec,ogg_int64_t _granpos){
+  oc_theora_state *state;
+  state=(oc_theora_state *)_encdec;
+  if(_granpos>=0){
+    ogg_int64_t iframe;
+    ogg_int64_t pframe;
+    iframe=_granpos>>state->info.keyframe_granule_shift;
+    pframe=_granpos-(iframe<<state->info.keyframe_granule_shift);
+    return iframe+pframe;
+  }
+  return -1;
+}
+
 double theora_granule_time(void *_encdec,ogg_int64_t _granpos){
   oc_theora_state *state;
   state=(oc_theora_state *)_encdec;
@@ -1133,5 +1146,5 @@ double theora_granule_time(void *_encdec,ogg_int64_t _granpos){
     return (iframe+pframe)*(
      (double)state->info.fps_denominator/state->info.fps_numerator);
   }
-  return(-1);
+  return -1;
 }

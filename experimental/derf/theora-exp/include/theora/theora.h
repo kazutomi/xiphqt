@@ -819,15 +819,41 @@ extern const char *theora_version_string(void);
  * \endcode
  * \return the version number.*/
 extern ogg_uint32_t theora_version_number(void);
+/**Converts a granule position to an absolute frame number.
+ * The granule position is interpreted in the context of a given
+ *  #theora_enc_ctx or #theora_dec_ctx handle (either will suffice).
+ * \param _encdec  A previously allocated #theora_enc_ctx or #theora_dec_ctx
+ *                  handle.
+ * \param _granpos The granule position to convert.
+ * \returns The absolute frame number corresponding to \a _granpos.
+ * \retval -1 The given granule position was invalid (i.e. negative).*/
+extern ogg_int64_t theora_granule_frame(void *_encdec,ogg_int64_t _granpos);
 /**Converts a granule position to an absolute time in seconds.
  * The granule position is interpreted in the context of a given
  *  #theora_enc_ctx or #theora_dec_ctx handle (either will suffice).
- * \param _encdec     A previously allocated #theora_enc_ctx or #theora_dec_ctx
- *                     handle.
+ * \param _encdec  A previously allocated #theora_enc_ctx or #theora_dec_ctx
+ *                  handle.
  * \param _granpos The granule position to convert.
  * \return The absolute time in seconds corresponding to \a _granpos.
- * \retval -1 The given granule position is invalid (ie. negative).*/
+ * \retval -1 The given granule position was invalid (i.e. negative).*/
 extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);
+/**Determines whether a Theora packet is a header or not.
+ * This function does no verification beyond checking the packet type bit, so
+ *  it should not be used for bitstream identification; use
+ *  theora_decode_headerin() for that.
+ * \param _op An <tt>ogg_packet</tt> containing encoded Theora data.
+ * \retval 1 The packet is a header packet
+ * \retval 0 The packet is a video data packet.*/
+extern int theora_packet_isheader(ogg_packet *_op);
+/**Determines whether a theora packet is a key frame or not.
+ * This function does no verification beyond checking the packet type and
+ *  key frame bits, so it should not be used for bitstream identification; use
+ *  theora_decode_headerin() for that.
+ * \param _op An <tt>ogg_packet</tt> containing encoded Theora data.
+ * \retval 1  The packet contains a key frame.
+ * \retval 0  The packet contains a delta frame.
+ * \retval -1 The packet is not a video data packet.*/
+extern int theora_packet_iskeyframe(ogg_packet *_op);
 /*@}*/
 
 
