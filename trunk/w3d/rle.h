@@ -21,10 +21,8 @@
 #define ENTROPY_CODER_BITSTREAM(coder)    ((coder)->bitcoder.bitstream)
 
 #define ENTROPY_CODER_MPS(coder)          ((coder)->mps)
-#define ENTROPY_CODER_RUNLENGTH(coder)    ((coder)->count)
-//#define ENTROPY_CODER_SKIP(coder,skip)    printf ("coder->count == %u ->", (coder)->count); (coder)->count -= skip; printf ("%u\n", (coder)->count);
-#define ENTROPY_CODER_SKIP(coder,skip)    (coder)->count -= skip
-
+#define ENTROPY_CODER_RUNLENGTH(coder)    ((coder)->count+1)
+#define ENTROPY_CODER_SKIP(coder,skip)    do { (coder)->count -= skip-1; } while (0)
 #endif
 
 
@@ -189,7 +187,6 @@ int rlecoder_read_bit (RLECoderState *s)
    s->count--;
    return (s->mps);
 }
-
 
 
 static inline

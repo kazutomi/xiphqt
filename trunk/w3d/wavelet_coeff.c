@@ -54,7 +54,42 @@ TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
 
 
 
-#if 0
+
+static inline
+uint32_t skip_0coeffs (Wavelet3DBuf* buf,
+                       ENTROPY_CODER s_stream [],
+                       ENTROPY_CODER i_stream [],
+                       uint32_t limit)
+{
+   int i;
+   uint32_t min = limit;
+
+   for (i=0; i<10; i++) {
+      if (ENTROPY_CODER_MPS(&s_stream[i]) == 0) {
+         uint32_t runlength = ENTROPY_CODER_RUNLENGTH(&s_stream[i]);
+         if (min > runlength)
+            min = runlength;
+         if (min <= 2)
+            return 0;
+      } else {
+         return 0;
+      }
+   }
+
+   if (min > limit)
+      min = limit;
+
+   for (i=0; i<10; i++) {
+      ENTROPY_CODER_SKIP(&s_stream[i], min);
+      ENTROPY_CODER_SKIP(&i_stream[i], min);
+   }
+
+   return min;
+}
+
+
+
+#if 1
 static inline
 void encode_quadrant (const Wavelet3DBuf* buf,
                       int level, int quadrant, uint32_t w, uint32_t h, uint32_t f,
@@ -112,23 +147,43 @@ void encode_coefficients (const Wavelet3DBuf* buf,
 static inline
 void decode_quadrant (Wavelet3DBuf* buf,
                       int level, int quadrant, uint32_t w, uint32_t h, uint32_t f,
-                      ENTROPY_CODER significand_bitstream [],
-                      ENTROPY_CODER insignificand_bitstream [])
+                      ENTROPY_CODER s_stream [],
+                      ENTROPY_CODER i_stream [])
 {
    uint32_t x, y, z;
 
-   for (z=0; z<f; z++) {
-      for (y=0; y<h; y++) {
-         for (x=0; x<w; x++) {
-            unsigned int index = buf->offset [level] [quadrant]
-                                   + z * buf->width * buf->height
-                                   + y * buf->width + x;
+   z = 0;
+   do {
+      y = 0;
+      do {
+         x = 0;
+         do {
+            uint32_t skip;
+            uint32_t index = buf->offset [level] [quadrant]
+                               + z * buf->width * buf->height
+                               + y * buf->width + x;
 
-            buf->data [index] = decode_coeff (significand_bitstream,
-                                              insignificand_bitstream);
-         }
-      }
-   }
+            buf->data [index] = decode_coeff (s_stream, i_stream);
+
+            skip = skip_0coeffs (buf, s_stream, i_stream,
+                                 (w-x-1)+(h-y-1)*w+(f-z-1)*w*h);
+            if (skip > 0) {
+               x += skip;
+               while (x >= w) {
+                  y++; x -= w;
+                  while (y >= h) {
+                     z++; y -= h;
+                     if (z >= f)
+                        return;
+                  }
+               }
+            } else
+               x++;
+         } while (x < w);
+         y++;
+      } while (y < h);
+      z++;
+   } while (z < f);
 }
 
 
@@ -175,36 +230,6 @@ void encode_coefficients (const Wavelet3DBuf* buf,
 }
 
 
-static inline
-uint32_t skip_0coeffs (Wavelet3DBuf* buf,
-                       ENTROPY_CODER s_stream [],
-                       ENTROPY_CODER i_stream [],
-                       uint32_t start)
-{
-   int i;
-   uint32_t min = ~0;
-
-   for (i=0; i<10; i++) {
-      if (ENTROPY_CODER_MPS(&s_stream[i]) != 0) {
-         return 0;
-      } else {
-         uint32_t runlength = ENTROPY_CODER_RUNLENGTH(&s_stream[i]);
-
-         if (min > runlength)
-            min = runlength;
-      }
-   }
-
-   if (min > 0 && min != ~0) {
-min = 0;
-      for (i=0; i<10; i++) {
-         ENTROPY_CODER_SKIP(&s_stream[i], min);
-         ENTROPY_CODER_SKIP(&i_stream[i], min);
-      }
-   }
-
-   return min;
-}
 
 
 static
@@ -212,18 +237,19 @@ void decode_coefficients (Wavelet3DBuf* buf,
                           ENTROPY_CODER s_stream [],
                           ENTROPY_CODER i_stream [])
 {
-   uint32_t i;
+   uint32_t i = 0;
 
-   for (i=0; i<buf->width*buf->height*buf->frames; i++) {
-#if 0
-      int skip = skip_0coeffs (buf, s_stream, i_stream, i);
+   while (i < buf->width*buf->height*buf->frames) {
+      int skip;
 
-      if (skip >= buf->width*buf->height*buf->frames - i)
-         return;
-
-      i += skip;
-#endif
       buf->data[i] = decode_coeff(s_stream, i_stream);
+
+      skip = skip_0coeffs (buf, s_stream, i_stream,
+                           buf->width*buf->height*buf->frames - i);
+      if (skip > 0)
+         i += skip;
+      else
+         i++;
    }
 }
 #endif
@@ -436,8 +462,8 @@ void wavelet_3d_buf_decode_coeff (Wavelet3DBuf* buf,
    uint32_t insignificand_limittab [10];
    int i;
 
-   for (i=0; i<buf->width*buf->height*buf->frames; i++)
-      buf->data[i] = 0xff;
+   memset (buf->data, 0,
+           buf->width * buf->height * buf->frames * sizeof(TYPE));
 
    bitstream = read_limittabs (bitstream,
                                significand_limittab, insignificand_limittab);
