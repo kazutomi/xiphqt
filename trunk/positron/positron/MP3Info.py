@@ -297,9 +297,6 @@ class MPEG:
         self.emphasis = ""
         self.length = 0
 
-
-        # First do a check to see if this is really an MPEG file.
-        #
         # The longest possible frame for any MPEG audio file
         # is 4609 bytes for a MPEG 2, Layer 1 256 kbps, 8000Hz with
         # a padding slot.  Add an extra 4 bytes to ensure we get the
@@ -310,12 +307,15 @@ class MPEG:
         # substring.
         #
         # We pick a location in the middle 50% of the file to
-        # do a header test.  If it passes, then we proceed with parsing
-        # (using much less restrictive searching)
+        # do a header test, and we require that we find three consecutive
+        # frame headers in a row, as calculated by their frame lengths.
+        # If it passes, then we proceed with parsing (using much less
+        # restrictive searching)
         test_pos = int(random.uniform(0.25,0.75) * self.filesize)
 
         offset, header = self._find_header(file, seeklimit=4616,
-                                           seekstart=test_pos)
+                                           seekstart=test_pos,
+                                           check_next_header=2)
         if offset == -1 or header is None:
             raise Error("Failed MPEG frame test.")
             
@@ -330,9 +330,9 @@ class MPEG:
             raise Error("MPEG header not valid")
 
         self._parse_xing(file, seeklimit, seekstart)
-    
+
     def _find_header(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT,
-                     seekstart=0, check_next_header=True):
+                     seekstart=0, check_next_header=1):
         amt = 5120  # Multiple of 512 is hopefully more efficient to read from
                     # disk, and size ensure the random test will only
                     # read once
@@ -340,7 +340,8 @@ class MPEG:
         read_more = False
 
         file.seek(seekstart, 0)
-        header = file.read(amt)
+        # Don't read more than we are allowed to see (size of header is 4)
+        header = file.read(min(amt,seeklimit+4))
         
         while curr_pos <= seeklimit:            
             # look for the sync byte
@@ -355,7 +356,7 @@ class MPEG:
             elif ord(header[offset+1]) & 0xE0 == 0xE0:
 
                 # Finish now if we should not check the next header
-                if not check_next_header:
+                if check_next_header == 0:
                     return seekstart+offset, header[offset:offset+4]
 
                 # We have a possible winner, test parse this header and
@@ -365,12 +366,20 @@ class MPEG:
                 self._parse_header(header[offset:offset+4])
                     
                 if self.valid:
+
+                    file_pos = file.tell()
+                    
                     next_off, next_header = \
                               self._find_header(file, seeklimit=0,
-                                                seekstart=seekstart+offset
-                                                        +self.framelength,
-                                                check_next_header=False)
+                                        seekstart=seekstart+offset
+                                                  +int(self.framelength),
+                                        check_next_header=check_next_header-1)
+
+                    # Move the file pointer back
+                    file.seek(file_pos,0)
+                    
                     if next_off != -1:
+#                        print file.name, seekstart, seeklimit, offset, self.framelength
                         return seekstart+offset, header[offset:offset+4]
                     else:
                         curr_pos = offset+2
@@ -449,6 +458,10 @@ class MPEG:
             self.length = int(round((self.filesize / self.framelength) * (self.samplesperframe / self.samplerate)))
         except ZeroDivisionError:
             return  # Division by zero means the header is bad
+
+        # More sanity checks
+        if self.framelength < 0 or self.length < 0:
+            return
         
         self.valid = 1
 
