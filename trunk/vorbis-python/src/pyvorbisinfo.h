@@ -26,5 +26,5 @@ PyObject *py_info_new(PyObject *, PyObject *, PyObject *);
 PyObject *py_comment_new_from_vc(vorbis_comment *vc, PyObject *parent);
 PyObject *py_comment_new(PyObject *, PyObject *);
 
-#endif // __PYVORBIS_INFO_H__
+#endif /* __PYVORBIS_INFO_H__ */
 

@@ -1,3 +1,11 @@
+6-01-2001  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* src/pyvorbisinfo.c  (py_comment_as_dict): Fixed call with args=NULL
+	ogg123.py works now
+
+	* src/*.h src/*.c: Changed to C-style comments
+
+	* test/ogg123.py: Removed stupid print statement
+
 5-14-2001  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* setup.py: Bumped to version 0.3
 

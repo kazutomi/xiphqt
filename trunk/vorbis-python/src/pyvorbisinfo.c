@@ -283,8 +283,9 @@ PyTypeObject py_vcomment_type = {
 
 
 
-// I store the parent since I don't think the vorbis_comment data will actually
-// stick around if we let the vorbis_file object get freed.
+/* I store the parent since I don't think the vorbis_comment data will
+   actually stick around if we let the vorbis_file object get
+   freed. */
 
 PyObject *
 py_comment_new_from_vc(vorbis_comment *vc, PyObject *parent)
@@ -335,7 +336,7 @@ py_vorbis_comment_dealloc(PyObject *self)
   py_vcomment *ovc_self = (py_vcomment *) self;
 
   if (ovc_self->parent)
-    Py_DECREF(ovc_self->parent); //parent will clear for us
+    Py_DECREF(ovc_self->parent); /* parent will clear for us */
   else
     vorbis_comment_clear(&ovc_self->vc); 
 
@@ -465,7 +466,7 @@ py_comment_items(PyObject *self, PyObject *args)
 
   while (PyDict_Next(dict, &curitem, &key, &val) > 0) {
     assert(PyList_Check(val));
-    //flatten out the list
+    /* flatten out the list */
     for (j = 0; j < PyList_Size(val); j++) {
       tuple = PyTuple_New(2);
 
@@ -500,7 +501,7 @@ py_comment_values(PyObject *self, PyObject *args)
 
   while (PyDict_Next (dict, &curitem, &key, &val)) {
     assert(PyList_Check(val));
-    //flatten out the list
+    /* flatten out the list */ 
     for (j = 0; j < PyList_Size(val); j++) {
       curval = PyList_GET_ITEM(val, j);
       PyList_Append(retlist, curval);
@@ -531,8 +532,8 @@ py_vorbis_comment_add_tag(PyObject *self, PyObject *args)
   py_vcomment *ovc_self = (py_vcomment *) self;
   char *comment, *tag;
 
-  // TODO: What will this store if it's unicode? I think UTF-16, want UTF-8.
-  // TODO: Learn Unicode!!
+  /* TODO: What will this store if it's unicode? I think UTF-16, want UTF-8.
+     TODO: Learn Unicode!! */
   if (!PyArg_ParseTuple(args, "ss", &comment, &tag))
     return NULL;
 
@@ -593,15 +594,16 @@ py_comment_as_dict(PyObject *self, PyObject *args)
 
   PyObject *retdict, *curlist, *item, *vendor_obj;
   
-  if (!PyArg_ParseTuple(args, ""))
+  /* This can be called with args=NULL as a helper function */
+  if (args != NULL && !PyArg_ParseTuple(args, ""))
     return NULL;
 
   comment = &ovc_self->vc;
   retdict = PyDict_New();
 
 
-  // If the vendor is set, set the key "VENDOR" to map to a 
-  // singleton list with the vendor value in it.
+  /* If the vendor is set, set the key "VENDOR" to map to a 
+     singleton list with the vendor value in it. */
 
   if (comment->vendor != NULL) {
     curlist = PyList_New(1);
@@ -612,9 +614,9 @@ py_comment_as_dict(PyObject *self, PyObject *args)
   } else 
     vendor_obj = NULL;
 
-  //These first few lines taken from the Perl bindings
+  /* These first few lines taken from the Perl bindings */
   for (i = 0; i < comment->comments; i++) {
-    //don't want to limit this, I guess
+    /* don't want to limit this, I guess */
     key = strdup(comment->user_comments[i]); 
     
     if ((val = strchr(key, '='))) {
@@ -631,15 +633,15 @@ py_comment_as_dict(PyObject *self, PyObject *args)
       if (!item)
 	goto error;
       
-      if (make_caps_key(key, keylen)) { // overwrites key
+      if (make_caps_key(key, keylen)) { /* overwrites key */
 	Py_DECREF(item);
 	goto error;
       }
 
-      // GetItem borrows a reference
+      /* GetItem borrows a reference */
       if ((curlist = PyDict_GetItemString(retdict, key))) {
 
-	// A list already exists for that key
+	/* A list already exists for that key */
 	if (PyList_Append(curlist, item) < 0) {
 	  Py_DECREF(item);
 	  goto error;
@@ -647,12 +649,12 @@ py_comment_as_dict(PyObject *self, PyObject *args)
 
       } else {
 
-	// Add a new list in that position
+	/* Add a new list in that position */
 	curlist = PyList_New(1);
 	PyList_SET_ITEM(curlist, 0, item);
 	Py_INCREF(item);
 
-	//this does not steal a reference
+	/* this does not steal a reference */
 	PyDict_SetItemString(retdict, key, curlist); 
 	Py_DECREF(curlist);
       }

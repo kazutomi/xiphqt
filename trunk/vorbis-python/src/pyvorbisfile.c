@@ -152,7 +152,7 @@ static PyMethodDef OggVorbis_File_methods[] = {
 };
 
 PyObject *
-py_file_new(PyObject *self, PyObject *args) //change to accept kwarg
+py_file_new(PyObject *self, PyObject *args) /* change to accept kwarg */
 { 
   PyObject *ret;
   
@@ -203,7 +203,7 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
 
   } else if (PyArg_ParseTuple(args, "O!|sl", &PyFile_Type, &fobject,
 			      &initial, &ibytes)) {
-    PyErr_Clear(); //clear first failure
+    PyErr_Clear(); /* clear first failure */
 
     file = PyFile_AsFile(fobject);
 
