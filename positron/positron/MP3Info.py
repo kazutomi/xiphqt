@@ -270,7 +270,7 @@ _mode_extensions = [
 
 _emphases = [ "none", "50/15 ms", "reserved", "CCIT J.17" ]
 
-_MP3_HEADER_SEEK_LIMIT = 102400
+_MP3_HEADER_SEEK_LIMIT = 4096
 
 class MPEG:
     def __init__(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT, seekstart=0):
@@ -437,10 +437,12 @@ class MP3Info:
             self.id3 = id3
 
         if id3v2.valid:
-            self.mpeg = MPEG(file, seekstart=id3v2.header_size)
+            # We'll be generous for files with ID3v2 tags.
+            self.mpeg = MPEG(file, seekstart=id3v2.header_size,
+                             seeklimit=10*_MP3_HEADER_SEEK_LIMIT)
         else:
-            # Header better be the first thing if there is no ID3v2
-            self.mpeg = MPEG(file, seeklimit=4)
+            # Header better be near the beginning if there is no ID3v2
+            self.mpeg = MPEG(file)
 
 
         if self.id3 is None:
