@@ -1,7 +1,7 @@
 /*
 	mngplay
 
-	$Date: 2003/06/20 18:21:05 $
+	$Date: 2003/06/20 18:34:17 $
 
 	Ralph Giles <giles@xiph.org>
 
@@ -127,10 +127,12 @@ mng_bool mymngprocessheader(mng_handle mng,
 	}
 
 	/* tell the mng decoder about our bit-depth choice */
-	/* FIXME: SDL wants BGRA on intel, ARGB on ppc. should detect */
-	mng_set_canvasstyle(mng, MNG_CANVAS_BGRA8);
+	/* SDL wants BGRA on intel, ARGB on ppc. */
+#ifdef WORDS_BIGENDIAN
 	mng_set_canvasstyle(mng, MNG_CANVAS_ARGB8);
-
+#else
+	mng_set_canvasstyle(mng, MNG_CANVAS_BGRA8);
+#endif
 	return MNG_TRUE;
 }
 
