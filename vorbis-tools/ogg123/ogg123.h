@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.12.2.1 2001/10/31 05:38:56 volsung Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12.2.2 2001/11/02 02:22:09 volsung Exp $
 
  ********************************************************************/
 
@@ -55,8 +55,9 @@ typedef struct ogg123_options_s {
      * stats[7] - input buffer status
      * stats[8] - output buffer fill %
      * stats[9] - output buffer status
+     * stats[10] - Null format string to mark end of array
      */
-    Stat_t stats[10];
+    Stat_t stats[11];
   } statOpts;
   InputOpts_t inputOpts;
   struct {
