@@ -6,6 +6,8 @@
 <!--#include virtual="/projects/audio/speex/SSI/leftside.inc"-->
 <!--#include virtual="/SSI/rightside.inc"-->
 <h1>Downloads</h1>
+
+<div class='contentitem' id='description'>
 <p>
 	Note that packaging information for Debian can be found on the 
 	<a href="packages.html">packages page</a>. If you’re interested in
@@ -16,42 +18,67 @@
 	<a href="http://rarewares.hydrogenaudio.org/others.html">Windows utilities</a>
 	such as SpeexDrop.
 </p>
+</div>
 
-<h2>Current Stable Release</h2>
-<h3 id='one.0.4'>1.0.4</h3>
-<p>
-This bugfix release fixes a multithreading bug and corrects an underflow problem that could slow decoding dramatically on x86 processors.
-</p>
+<div class='contentitem' id='downloads'>
+<ul id='newsitems'>
+	<li class='newsitem'>
+		<h3>Current Stable Release</h3>
+		<h4>1.0.4</h4>
+		<div class='itemdate'></div>
+		<div class='itemcontent'>
+			<p>
+			This bugfix release fixes a multithreading bug and corrects an underflow problem that could slow decoding dramatically on x86 processors.
 
-<ul>
-<li><a href="download/speex-1.0.4.tar.gz">Source Code</a></li>
-<li><a href="download/speex-1.0.4-1.i386.rpm">i386 RPM</a></li>
-<li><a href="download/speex-devel-1.0.4-1.i386.rpm">i386 Development RPM</a></li>
-<li><a href="download/speex-1.0.4-1.src.rpm">Source RPM</a></li>
-<li><a href="download/speex_win32_1.0.4_setup.exe">Windows binaries</a></li>
+			<ul>
+				<li><a href="download/speex-1.0.4.tar.gz">Source Code</a></li>
+				<li><a href="download/speex-1.0.4-1.i386.rpm">i386 RPM</a></li>
+				<li><a href="download/speex-devel-1.0.4-1.i386.rpm">i386 Development RPM</a></li>
+				<li><a href="download/speex-1.0.4-1.src.rpm">Source RPM</a></li>
+				<li><a href="download/speex_win32_1.0.4_setup.exe">Windows binaries</a></li>
+			</ul>
+			</p>
+		</div>	
+	</li>
+	<li class='newsitem'>
+		<h3>Current <strong style='font-style: italic;'>Unstable</strong> Release</h3>
+		<h4>1.1.6</h4>
+		<div class='itemdate'></div>
+		<div class='itemcontent'>
+			<p>
+			There are seven changes in this release.
+			<ul>
+				<li>Improved jitter buffer (now actually works)</li>
+				<li>Denoiser tuning</li>
+				<li>Improved echo canceller (please send feedback)</li>
+				<li>Support for Symbian OS</li>
+
+				<li>Gapless playback for speexenc/speexdec</li>
+				<li>Run-time identification of Speex version with a new speex_lib_ctl() call</li>
+				<li>Moved the includes to /usr/include/speex/</li>
+			</ul>
+
+			<ul>
+				<li><a href="download/speex-1.1.6.tar.gz">Source Code</a></li>
+				<li><a href="download/speex-1.1.6-1.i386.rpm">i386 RPM</a></li>
+				<li><a href="download/speex-devel-1.1.6-1.i386.rpm">i386 Development RPM</a></li>
+				<li><a href="download/speex-1.1.6-1.src.rpm">Source RPM</a></li>
+				<li><a href="download/speex_win32_1.1.6_setup.exe">Windows binaries</a></li>
+			</ul>
+			</p>
+		</div>	
+	</li>
+	<li class='newsitem'>
+		<h3>DirectShow Filters</h3>
+		<div class='itemdate'></div>
+		<div class='itemcontent'>
+			<p>
+			If you just want to listen to Speex files in Windows Media Player, get
+			<a href='http://www.illiminable.com/ogg/'>illiminable's DirectShow Filters</a> for Speex.
+			</p>
+		</div>	
+	</li>
 </ul>
-
-<h2>Current <strong style='font-style: italic;'>Unstable</strong> Release</h2>
-<h3 id='one.1.5'>1.1.5</h3>
-<p>
-The main change in this release is that the 1.1.5 <abbr title='application programming interface'>API</abbr> and
-<abbr title='application binary interface'>ABI</abbr> are now compatible with 1.0.<var>x</var>. The versions of the functions taking
-a <code>short*</code> now have an "_int" suffix, as in <code>speex_encode_int()</code>.
-</p>
-
-<ul>
-<li><a href="download/speex-1.1.5.tar.gz">Source Code</a></li>
-<li><a href="download/speex-1.1.5-1.i386.rpm">i386 RPM</a></li>
-<li><a href="download/speex-devel-1.1.5-1.i386.rpm">i386 Development RPM</a></li>
-<li><a href="download/speex-1.1.5-1.src.rpm">Source RPM</a></li>
-</ul>
-
-<h2>DirectShow Filters</h2>
-<p>
-If you just want to listen to Speex files in Windows Media Player, get
-<a href='http://www.illiminable.com/ogg/'>illiminable's DirectShow Filters</a> for Speex.
-</p>
-
 
 <p>Looking for something even older? Check our <a href='olddownload.html'>older downloads</a> page.</p>
 

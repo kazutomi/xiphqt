@@ -1,12 +1,14 @@
 ﻿<!--#include virtual="/SSI/topofhead.inc"-->
 <title>Xiph.org: Speex</title>
 <!--#include virtual="/projects/audio/speex/SSI/inhead.inc"-->
-<style type="text/css" media="screen">li#home { background: no-repeat url(/Images/logos/speex/20x35.png) left #88c24d; }</style>
+<style type="text/css" media="screen">li#home { background: #88c24d; }</style>
 <!--#include virtual="/SSI/topofbody.inc"-->
 <!--#include virtual="/projects/audio/speex/SSI/leftside.inc"-->
 <!--#include virtual="/SSI/rightside.inc"-->
 <h1 class="firstLine">Speex</h1>
 <h1 class="secondLine">a free codec for free speech</h1>
+
+<div class='contentitem' id='overview'>
 <h2>Overview</h2>
 <p>
 	Speex is an <a href="fsos.html">Open Source/Free Software</a>
@@ -22,6 +24,9 @@
 	<a href="http://www.xiph.org/licenses/bsd/speex/">Xiph.org variant of the
 	BSD license</a>.
 </p>
+</div>
+
+<div class='contentitem' id='technology'>
 <h2>The Technology</h2>
 <p>
 	Speex is based on <abbr title="Code-Excited Linear Prediction">CELP</abbr>
@@ -45,6 +50,9 @@
 	<abbr title="variable bitrate (operation)">VBR</abbr> mode; see our
 	<a href="comparison.html">comparison page</a> for more.
 </p>
+</div>
+
+<div class='contentitem' id='involved'>
 <h2>Getting Involved</h2>
 <p>
 	One of the simplest things you can do to get involved in Speex is by
@@ -67,25 +75,34 @@
 	<a href='http://xiph.org/ogg/vorbis/donate.html'>send us money</a>
 	so we can keep working on Speex.
 </p>
+</div>
 
+
+
+<div class='contentitem' id='headlines'>
 <h2>Headlines</h2>
-<ul id='headlines' class='news short'>
-<!--
-	<li>
-		<div class='title'>
-			<h3></h3>
-			<div></div>
-		</div>
-		<div class='content'>
-		</div>
+<ul id='newsitems'>
+	<li class='newsitem'>
+		<h3>Speex 1.1.6 Released</h3>
+		<div class='itemdate'>July 28, 2004</div>
+		<div class='itemcontent'>
+			<p>There are seven changes in this release.
+			<ul>
+				<li>Improved jitter buffer (now actually works)</li>
+				<li>Denoiser tuning</li>
+				<li>Improved echo canceller (please send feedback)</li>
+				<li>Support for Symbian OS</li>
+				<li>Gapless playback for speexenc/speexdec</li>
+				<li>Run-time identification of Speex version with a new speex_lib_ctl() call</li>
+				<li>Moved the includes to /usr/include/speex/</li>
+			</ul>
+			</p>
+		</div>	
 	</li>
--->
-	<li>
-		<div class='title'>
-			<h3>Speex 1.0.4 Released</h3>
-			<div>July 21, 2004</div>
-		</div>
-		<div class='content'>
+	<li class='newsitem'>
+		<h3>Speex 1.0.4 Released</h3>
+		<div class='itemdate'>July 21, 2004</div>
+		<div class='itemcontent'>
 			<p>
 			There are three changes in this release.
 			<ul>
@@ -93,59 +110,35 @@
 				<li>Pseudo-gapless playback (i.e. playback has the same number of samples)</li>
 				<li>Fixed a potential bug (unconfirmed) that might cause a segfault in special circumstances.</li>
 			</ul>
-			<br>
 			</p>
-		</div>
+		</div>	
 	</li>
-	<li>
-		<div class='title'>
-			<h3>Speex 1.1.5 Released</h3>
-			<div>April 21, 2004</div>
-		</div>
-		<div class='content'>
+	<li class='newsitem'>
+		<h3>Speex 1.1.5 Released</h3>
+		<div class='itemdate'>April 21, 2004</div>
+		<div class='itemcontent'>
 			<p>
 			The main change in this release is that the 1.1.5 <abbr title='application programming interface'>API</abbr> and
 			<abbr title='application binary interface'>ABI</abbr> are now compatible with 1.0.<var>x</var>. The versions of the functions taking
 			a <code>short*</code> now have an "_int" suffix, as in <code>speex_encode_int()</code>.
 			</p>
-		</div>
+		</div>	
 	</li>
-	<li>
-		<div class='title'>
-			<h3>Speex 1.1.4 Released</h3>
-			<div>January 20, 2004</div>
-		</div>
-		<div class='content'>
+	<li class='newsitem'>
+		<h3>Speex 1.1.4 Released</h3>
+		<div class='itemdate'>January 20, 2004</div>
+		<div class='itemcontent'>
 			<p>
 				Happy Belated New Year. This release has minor fixed-point improvements and a code cleanup.
 				The SSE code has been converted from inline assembly to SSE intrinsics, so it should now work on win32.
 				More functions have been written to use SSE.
 
 			</p>
-		</div>
-	</li>
-	<li>
-		<div class='title'>
-			<h3>Speex 1.1.3 Released</h3>
-			<div>December 2, 2003</div>
-		</div>
-		<div class='content'>
-<p>This unstable release brings more improvements to the fixed-point port. Many new functions have been converted and most modes now work in real-time. I encourage everyone to test this code by compiling with <kbd>--enable-fixed-point</kbd> and <kbd>--enable-fixed-point-debug</kbd> and report any error messages and send the (smallest possible) file which reproduces the problem.</p>
-		</div>
-	</li>
-	<li>
-		<div class='title'>
-			<h3>Speex 1.0.3 Released</h3>
-			<div>November 19, 2003</div>
-		</div>
-		<div class='content'>
-<p>
-In this bugfix release: a fix for a multithreading bug and a correction for an underflow problem that could slow decoding dramatically on x86 processors.
-</p>
-		</div>
+		</div>	
 	</li>
 </ul>
 <p class='readMoreNews'><a href='news.html'>Read more news…</a></p>
+</div>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->
 

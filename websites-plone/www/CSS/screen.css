@@ -1,5 +1,6 @@
 @import url(/CSS/screen-all.css);
 @import url(/CSS/screen-navbars.css);
+@import url(/CSS/screen-content.css);
 
 html, body {
 	margin: 0;
