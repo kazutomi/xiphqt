@@ -45,7 +45,7 @@ static const theora_huff_code OC_MV_CODES[2][63]={
     {0x01,3},{0x06,4},{0x08,4},{0x28,6},{0x2A,6},{0x2C,6},{0x2E,6},{0x60,7},
     {0x62,7},{0x64,7},{0x66,7},{0x68,7},{0x6A,7},{0x6C,7},{0x6E,7},{0xE0,8},
     {0xE2,8},{0xE4,8},{0xE6,8},{0xE8,8},{0xEA,8},{0xEC,8},{0xEE,8},{0xF0,8},
-    {0xF2,8},{0xF6,8},{0xF4,8},{0xF8,8},{0xFA,8},{0xFC,8},{0xFE,8}
+    {0xF2,8},{0xF4,8},{0xF6,8},{0xF8,8},{0xFA,8},{0xFC,8},{0xFE,8}
   },
   /*Scheme 2: (5 bit magnitude),(1 bit sign).
     This wastes a code word (0x01, negative zero), or a bit (0x00, positive
@@ -1935,7 +1935,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       char                  mbmv[2];
       int                   err[OC_NMODES][12];
       int                   bits[OC_NMODES];
-      int                   coded[12];
+      int                   coded[13];
       int                   frag_qii[12][2][2];
       int                   ncoded;
       int                   ncoded_luma;
@@ -1972,6 +1972,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       /*Count the number of coded blocks that are luma blocks, and replace the
          block MVs for not-coded blocks with (0,0).*/
       memcpy(bmvs[0],mbinfo->bmvs,sizeof(bmvs[0]));
+      /*Mark the end of the list so we don't go past it below.*/
+      coded[ncoded]=-1;
       for(mapi=ncoded_luma=0;mapi<4;mapi++){
         if(coded[ncoded_luma]==mapi)ncoded_luma++;
         else bmvs[0][mapi][0]=bmvs[0][mapi][1]=0;
