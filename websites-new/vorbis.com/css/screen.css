@@ -1,12 +1,11 @@
-@import url(xiphbar.css);
+@import url(/css/xiphbar.css);
 
 body {
 	margin: 0;
 	border: 0;
 	padding: 0 0 1.5em 0;
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	color: #333333;
-	background-color: #666666;
 }
 
 a {
@@ -19,8 +18,15 @@ a {
 	padding: 0 0 3em 0;
 	background-color: #FFFFFF;
 	height: 100%;
+	min-height: 600px;
+	bottom: 0;
 }
 
+.thepage {
+	margin-left: auto;
+	margin-right: auto;
+	width: 50em;
+}
 
 .logos {
 	padding: 72px 465px 0 0;
@@ -28,10 +34,10 @@ a {
 }
 
 .navbar ul {
-	color:#FF6600;
+	color:#FEAC0E;
 	margin: 0;
 	border: 0;
-	padding: 0;
+	padding: 20px 0 25px 0;
 	display: block;
 	text-align: center;
 	text-transform: uppercase;
@@ -40,100 +46,69 @@ a {
 .navbar li {
 	margin: 0;
 	border: 0;
-	padding: 0 10px 0 0;
+	padding: 0 16px 0 11px;
 	display: inline;
 	color: #FFCC66;
-	text-decoration: none;
-	font-family: Arial, Helvetica, sans-serif;
+	background: no-repeat url(/images/dot.png) right center;
 	font-size: .6em;
 }
 
 .navbar li a {
-	color: #FFCC66;
+	color: #3366CC;
 	text-decoration: none;
+	font-weight: bold;
 }
 
-
-
-.contenttable {
-	margin-left: auto;
-	margin-right: auto;
-	border-collapse: collapse;
-	width: 50em;
+#contact_ {
+	padding-right: 0;
+	background: none;
 }
 
-.leftside {
-	margin: 0;
-	border: 0;
-	border-right: 1px solid #9FC0D7;
-	padding: 1em 1em 1em 1em;
-	min-height: 15em;
+.banners {
+	width: 232px;
+	float: right;
+}
+
+.banners img {
+	display: block;
+	padding-top: 10px;
+}
+
+.content {
+	margin: 0 240px 0 0;
+	padding: 0 1em 0 1em;
 	vertical-align: top;
 }
 
-.leftside ul {
-	margin: 0;
-	padding: 0;
-	width: 120px;
-}
-
-.leftside li {
-	text-align: right;
+.content p {
 	font-size: .7em;
-	line-height: 1.4;
-	list-style: none;
+	line-height: 1.5;
 }
 
-.leftside li a {
+h1 {
+	font-size: .8em;
 	font-weight: bold;
-	color: #3366CC;
-	text-decoration: none;
-	line-height: 0;
+	color: #FF9900;
 }
 
-.leftspacer {
-	height: 10em;
+h2 {
+	font-size: .7em;
+	font-weight: bold;
+	color: #FF9900;
+}
+
+h3 {
+	font-size: .6em;
+	font-weight: bold;
+	color: #FF9900;
 }
 
 .copyright {
 	margin: 0;
 	border: 0;
-	border-right: 1px solid #9FC0D7;
-	padding: 1em;
-	min-height: 15em;
-	text-align: right;
+	padding: 4em 1em 1em 1em;
+	text-align: center;
 	font-size: .6em;
 	color: #999999;
-	vertical-align: bottom;
-}
-
-.content {
-	margin: 0;
-	padding: 1em 1em 0 1em;
-	vertical-align: top;
-}
-
-/* So that Gecko based browsers have the same starting paragraph position as IE */
-.content > :first-child {
-	margin-top: 0;
-}
-
-.content p {
-	font-size: .9em;
-	line-height: 1.5;
-}
-
-h1 {
-	font-size: 1.1em;
-	color: #FF9900;
-}
-
-h2 {
-	font-size: .9em;
-	color: #FF9900;
-}
-
-h3 {
-	font-size: .7em;
-	color: #FF9900;
+	clear: both;
 }

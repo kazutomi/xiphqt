@@ -1,0 +1,25 @@
+<div class="thepage">
+<div class="logos">
+	<img src="/images/logos/vorbisdotcom.png" alt="Vorbis dot com logo"/>
+</div>
+
+<div class="navbar">
+	<ul>
+		<li id="setup_"><a href="/setup/">Get Set Up</a></li>
+		<li id="faq_"><a href="/">FAQ</a></li>
+		<li id="donate_"><a href="/">Donate</a></li>
+		<li id="music_"><a href="/">Music</a></li>
+		<li id="musicsites_"><a href="/">Music Sites</a></li>
+		<li id="downloads_"><a href="/">3rd Party Software</a></li>
+		<li id="developers_"><a href="http://trac.xiph.org/cgi-bin/trac.cgi/">For Developers</a></li>
+		<li id="contact_"><a href="/">Contact</a></li>
+	</ul>
+</div>
+
+<div class="banners">
+	<img src="/images/banners/download_music.png" alt="Download music"/>
+	<img src="/images/banners/music_sites.png" alt="Music sites"/>
+	<img src="/images/banners/donate_today.png" alt="Donate today"/>
+</div>
+
+<div class="content">

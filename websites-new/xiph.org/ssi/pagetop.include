@@ -9,15 +9,15 @@
 <td class="leftside">
 <div>
 	<ul>
-		<li class="about_"><a href="/about/">About</a></li>
-		<li class="press_"><a href="/">Press</a></li>
-		<li class="donate_"><a href="/">Donate</a></li>
-		<li class="contact_"><a href="/">Contact</a></li>
-		<li class="wiki_"><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
-		<li class="downloads_"><a href="/">Downloads</a></li>
-		<li class="bugs_"><a href="http://trac.xiph.org/cgi-bin/trac.cgi/">Bugs</a></li>
-		<li class="documentation_"><a href="/">Documentation</a></li>
-		<li class="resources_"><a href="/">Resources by Project</a></li>
+		<li id="about_"><a href="/about/">About</a></li>
+		<li id="press_"><a href="/">Press</a></li>
+		<li id="donate_"><a href="/">Donate</a></li>
+		<li id="contact_"><a href="/">Contact</a></li>
+		<li id="wiki_"><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
+		<li id="downloads_"><a href="/">Downloads</a></li>
+		<li id="bugs_"><a href="http://trac.xiph.org/cgi-bin/trac.cgi/">Bugs</a></li>
+		<li id="documentation_"><a href="/">Documentation</a></li>
+		<li id="resources_"><a href="/">Resources by Project</a></li>
 	</ul>
 </div>
 </td>

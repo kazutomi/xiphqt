@@ -6,12 +6,12 @@
 	<div>
 	<img src="/images/logos/xiphbar.png" alt="Xiph logo"/>
 	<ul>
-		<li class="xiph_"><a href="http://www.xiph.org/">Xiph.org</a></li>
-		<li class="vorbis_"><a href="http://www.vorbis.com/">Vorbis.com</a></li>
-		<li class="theora_"><a href="http://www.theora.org/">Theora.org</a></li>
-		<li class="icecast"><a href="http://www.icecast.org/">Icecast.org</a></li>
-		<li class="speex_"><a href="http://www.speex.org/">Speex.org</a></li>
-		<li class="flac_"><a href="http://www.flac.org/">FLAC</a></li>
+		<li id="xiph_"><a href="http://www.xiph.org/">Xiph.org</a></li>
+		<li id="vorbis_"><a href="http://www.vorbis.com/">Vorbis.com</a></li>
+		<li id="theora_"><a href="http://www.theora.org/">Theora.org</a></li>
+		<li id="icecast"><a href="http://www.icecast.org/">Icecast.org</a></li>
+		<li id="speex_"><a href="http://www.speex.org/">Speex.org</a></li>
+		<li id="flac_"><a href="http://www.flac.org/">FLAC</a></li>
 	</ul>
 	</div>
 </div>
