@@ -1,7 +1,7 @@
 /* im_stdinpcm.c
  * - Raw PCM input from stdin
  *
- * $Id: im_stdinpcm.c,v 1.2.2.3 2002/02/08 12:54:08 msmith Exp $
+ * $Id: im_stdinpcm.c,v 1.2.2.4 2002/02/09 03:55:36 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -67,7 +67,7 @@ static int stdin_read(instance_t *instance, void *self,
 	stdinpcm_state *s = self;
     ref_buffer *rb;
 
-    rb = new_ref_buffer(MEDIA_PCM, NULL, 0);
+    rb = new_ref_buffer(MEDIA_PCM, NULL, 0, 1);
 
 	rb->buf = malloc(BUFSIZE);
 	result = fread(rb->buf, 1,BUFSIZE, stdin);
@@ -76,7 +76,8 @@ static int stdin_read(instance_t *instance, void *self,
     rb->rate = s->rate;
     rb->channels = s->channels;
     rb->subtype = SUBTYPE_PCM_LE_16;
-    rb->aux_data = s->rate*s->channels*2;
+    rb->aux_data[0] = s->rate*s->channels*2;
+    rb->aux_data_len = 1;
 
 	if(s->newtrack)
 	{

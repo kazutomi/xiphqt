@@ -1,7 +1,7 @@
 /* im_oss.c
  * - Raw PCM input from OSS devices
  *
- * $Id: im_oss.c,v 1.5.2.1 2002/02/07 09:11:11 msmith Exp $
+ * $Id: im_oss.c,v 1.5.2.2 2002/02/09 03:55:36 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -116,7 +116,7 @@ static int oss_read(instance_t *instance, void *self,
 	im_oss_state *s = self;
     ref_buffer *rb;
     
-    rb = new_ref_buffer(MEDIA_PCM, NULL, 0);
+    rb = new_ref_buffer(MEDIA_PCM, NULL, 0, 1);
     *out = rb;
 
 	rb->buf = malloc(BUFSIZE*2*s->channels);
@@ -126,6 +126,8 @@ static int oss_read(instance_t *instance, void *self,
     rb->subtype = SUBTYPE_PCM_LE_16;
     rb->channels = s->channels;
     rb->rate = s->rate;
+    rb->aux_data[0] = s->rate*s->channels*2;
+    rb->aux_data_len = 1;
 
 	if(s->newtrack)
 	{

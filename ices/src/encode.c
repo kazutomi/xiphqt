@@ -1,7 +1,7 @@
 /* encode.c
  * - runtime encoding of PCM data.
  *
- * $Id: encode.c,v 1.6.2.3 2002/02/08 12:54:08 msmith Exp $
+ * $Id: encode.c,v 1.6.2.4 2002/02/09 03:55:36 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -70,14 +70,24 @@ static void encode_finish(encoder_state *s)
 
 }
 
-static void append_page(ref_buffer *buf, ogg_page *page)
+static ref_buffer *append_page(ref_buffer *buf, ogg_page *page, int *aux_avail)
 {
     int old = buf->len;
     buf->len += page->header_len + page->body_len;
     buf->buf = realloc(buf->buf, buf->len);
     memcpy(buf->buf + old, page->header, page->header_len);
     memcpy(buf->buf + old + page->header_len, page->body, page->body_len);
-    buf->aux_data = -1;
+    if(*aux_avail < 2) {
+        *aux_avail += 8;
+        buf = realloc(buf, sizeof(ref_buffer) + 
+                (buf->aux_data_len + *aux_avail)*sizeof(int));
+    }
+
+    buf->aux_data[buf->aux_data_len++] = page->header_len;
+    buf->aux_data[buf->aux_data_len++] = page->body_len;
+    *aux_avail -= 2;
+
+    return buf;
 }
 
 static int encode_flush(encoder_state *s, ogg_page *og)
@@ -263,6 +273,7 @@ static int encode_chunk(instance_t *instance, void *self,
 {
     encoder_state *enc = self;
     ogg_page page;
+    int aux_avail;
 
     *out = NULL;
 
@@ -270,9 +281,11 @@ static int encode_chunk(instance_t *instance, void *self,
         if(enc->initialised) {
             encode_finish(enc);
             while(encode_flush(enc, &page) > 0) {
-                if(*out == NULL)
-                    *out = new_ref_buffer(MEDIA_VORBIS, NULL, 0);
-                append_page(*out, &page);
+                if(*out == NULL) {
+                    *out = new_ref_buffer(MEDIA_VORBIS, NULL, 0, 4);
+                    aux_avail = 4;
+                }
+                *out = append_page(*out, &page, &aux_avail);
             }
             /* FIXME: rewrite the below func. 
             encode_clear(enc);
@@ -295,9 +308,11 @@ static int encode_chunk(instance_t *instance, void *self,
     }
 
     while(encode_dataout(enc, &page) > 0) {
-        if(*out == NULL)
-            *out = new_ref_buffer(MEDIA_VORBIS, NULL, 0);
-        append_page(*out, &page);
+        if(*out == NULL) {
+            *out = new_ref_buffer(MEDIA_VORBIS, NULL, 0, 4);
+            aux_avail = 4;
+        }
+        *out = append_page(*out, &page, &aux_avail);
     }
 
     release_buffer(in);

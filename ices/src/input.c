@@ -2,7 +2,7 @@
  *  - Main producer control loop. Fetches data from input modules, and controls
  *    submission of these to the instance threads. Timing control happens here.
  *
- * $Id: input.c,v 1.12.2.3 2002/02/08 12:54:08 msmith Exp $
+ * $Id: input.c,v 1.12.2.4 2002/02/09 03:55:36 msmith Exp $
  * 
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -68,16 +68,16 @@ static int _calculate_pcm_sleep(ref_buffer *buf, timing_control *control)
 	if(control->starttime == 0)
 		control->starttime = timing_get_time();
 
-	control->senttime += ((double)buf->len * 1000000.)/((double)buf->aux_data);
+	control->senttime += ((double)buf->len * 1000000.)/
+        ((double)buf->aux_data[0]);
 
     return 0;
 }
 
-static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
+static int _calculate_ogg_sleep_page(timing_control *control, ogg_page *og)
 {
 	/* Largely copied from shout_send(), without the sending happening.*/
 	ogg_stream_state os;
-	ogg_page og;
 	ogg_packet op;
 	vorbis_info vi;
 	vorbis_comment vc;
@@ -85,14 +85,9 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 	if(control->starttime == 0)
 		control->starttime = timing_get_time();
 
-	og.header_len = buf->aux_data;
-	og.body_len = buf->len - buf->aux_data;
-	og.header = buf->buf;
-	og.body = buf->buf + og.header_len;
-
-	if(control->serialno != ogg_page_serialno(&og)) {
-        LOG_DEBUG1("New ogg stream, serial %d", ogg_page_serialno(&og));
-		control->serialno = ogg_page_serialno(&og);
+	if(control->serialno != ogg_page_serialno(og)) {
+        LOG_DEBUG1("New ogg stream, serial %d", ogg_page_serialno(og));
+		control->serialno = ogg_page_serialno(og);
 
 		control->oldsamples = 0;
 
@@ -100,7 +95,7 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 		vorbis_info_init(&vi);
 		vorbis_comment_init(&vc);
 
-        if(ogg_stream_pagein(&os, &og) < 0) {
+        if(ogg_stream_pagein(&os, og) < 0) {
             LOG_ERROR0("Error submitting page to libogg");
             goto fail;
         }
@@ -127,8 +122,8 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 		ogg_stream_clear(&os);
 	}
 
-	control->samples = ogg_page_granulepos(&og) - control->oldsamples;
-	control->oldsamples = ogg_page_granulepos(&og);
+	control->samples = ogg_page_granulepos(og) - control->oldsamples;
+	control->oldsamples = ogg_page_granulepos(og);
 
     if(control->samplerate) 
 	    control->senttime += ((double)control->samples * 1000000 / 
@@ -141,6 +136,23 @@ fail:
     vorbis_info_clear(&vi);
     ogg_stream_clear(&os);
     return -1;
+}
+
+static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
+{
+	ogg_page og;
+    int ret,i;
+
+    for(i=0; i < buf->aux_data_len; i += 2) {
+	    og.header_len = buf->aux_data[i];
+    	og.body_len = buf->aux_data[i+1];
+	    og.header = buf->buf;
+    	og.body = buf->buf + og.header_len;
+
+        if((ret = _calculate_ogg_sleep_page(control, &og)) < 0)
+            return ret;
+    }
+    return 0;
 }
 
 void input_flush_queue(buffer_queue *queue, int keep_critical)
