@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.23 2001/12/16 21:45:25 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.24 2001/12/16 22:56:56 volsung Exp $
 
  ********************************************************************/
 
@@ -521,7 +521,8 @@ void play (char *source_string)
   alarm(0);  
   format->cleanup(decoder);
   transport->close(source);
-  
+  status_reset_output_lock();  /* In case we were killed mid-output */
+
   status_message(1, "Done.");
   
   if (sig_request.exit)
