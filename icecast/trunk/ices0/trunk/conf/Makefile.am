@@ -2,9 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-all: 
+sysconf_DATA = ices.conf.dist
+mod_DATA = ices.py.dist ices.pm.dist
 
-etcdir = $(ICES_ETCDIR_INST)
-etc_DATA = ices.conf.dist
-
-EXTRA_DIST = $(etc_DATA)
+EXTRA_DIST = $(sysconf_DATA) $(mod_DATA)

@@ -2,9 +2,6 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-all: 
-
-docdir = $(ICES_DOCDIR)
 doc_DATA = icesmanual.html
 
 man_MANS = ices.1
