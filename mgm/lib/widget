@@ -17,10 +17,10 @@ sub drawborder{
 
     if($relief eq 'sunken' ||
        $relief eq 'groove'){
-	$w->createLine($width-1,0, 0,0, 0,$height-1, -capstyle=>projecting,
+	$w->createLine($width-1,0, 0,0, 0,$height-1, -capstyle=>'projecting',
 		       -fill=>$dim);
 	$w->createLine($width-1,0, $width-1,$height-1, 0,$height-1, 
-		       -capstyle=>projecting,-fill=>$lit);
+		       -capstyle=>'projecting',-fill=>$lit);
 
 	if($relief eq 'groove'){
 	    $z=1;
@@ -31,9 +31,9 @@ sub drawborder{
     }
     if($relief eq 'raised'){
 	$w->createLine($width-1,$z, $width-1,$height-1, $z,$height-1, 
-		       -capstyle=>projecting,-fill=>$dim);
-	$w->createLine($width-1,$z, $z,$z, $z,$height-1, -capstyle=>projecting,
-		       -fill=>$lit);
+		       -capstyle=>'projecting',-fill=>$dim);
+	$w->createLine($width-1,$z, $z,$z, $z,$height-1, 
+		       -capstyle=>'projecting',-fill=>$lit);
     }
 }
 
@@ -44,21 +44,22 @@ sub reliefhack{
     my$relief=$bar->{"litrelief"};
 
     if($relief eq 'sunken'){
-	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>projecting,
+	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>'projecting',
 			 -fill=>$bar->{"litdim"},-tags=>['newrelief']);
     }
 
     if($relief eq 'raised'){
-	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>projecting,
+	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>'projecting',
 			 -fill=>$bar->{"litlit"},-tags=>['newrelief']);
     }
 
     if($relief eq 'groove'){
-	$widget->createLine(0,$y-1,0,$y-2,$width-2,$y-2,-capstyle=>projecting,
-			 -fill=>$bar->{"litdim"},-tags=>['newrelief']);
+	$widget->createLine(0,$y-1,0,$y-2,$width-2,$y-2,
+			    -capstyle=>'projecting',
+			    -fill=>$bar->{"litdim"},-tags=>['newrelief']);
 	$widget->createLine(1,$y-1,$width-1,$y-1,$width-1,$y-2,
-			 -capstyle=>projecting,
-			 -fill=>$bar->{"litlit"},-tags=>['newrelief']);
+			    -capstyle=>'projecting',
+			    -fill=>$bar->{"litlit"},-tags=>['newrelief']);
     }
 
     $widget->delete('relief');
@@ -106,7 +107,7 @@ sub new{
     $below->{"dimlit"}=sprintf "#%02x%02x%02x", 
           &main::min($r+$lum*.7,255),&main::min($g+$lum*.7,255),
           &main::min($b+$lum*.7,255);
-    my($r,$g,$b)=$below->rgb($aback);
+    ($r,$g,$b)=$below->rgb($aback);
     $r/=256;
     $g/=256;
     $b/=256;
@@ -141,7 +142,7 @@ sub new{
 			   relief=>'flat')->
 			       place(-relx=>0,-rely=>0,
 				     -anchor=>'nw', 
-				     -bordermode=>outside);
+				     -bordermode=>'outside');
     
 	$below->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw');
 	$above->createImage($pad,$height-$pad,-image=>$unlittext,
@@ -171,8 +172,8 @@ sub new{
 			   height=>($height-2*$aborder),
 			   relief=>$arelief)->
 			       place(-relx=>0,-rely=>1.0,
-				     -anchor=>sw, 
-				     -bordermode=>outside);
+				     -anchor=>'sw', 
+				     -bordermode=>'outside');
 	
 	$above->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw');
 	$below->createImage($pad,$height-$pad,-image=>$unlittext,
@@ -181,7 +182,6 @@ sub new{
 		    $below->{"dimdim"},$below->{"dimlit"});
 	
     }
-    
     
     $below->{'setting'}=-1;
     $below;
@@ -277,7 +277,7 @@ sub promptsize{
 
 sub scalemod{
     my$scaleset=shift;
-    my$multiplier;
+    my$multiplier='';
     
     if($scaleset>512){
 	$scaleset/=1024;
@@ -297,34 +297,35 @@ sub scalemod{
 sub promptlabel{
     my($p,$scaleset,$prompt)=@_;
     my $orient=$main::orient;
-    my $multiplier;
+    my $mult;
 
-    ($scaleset,$multiplier)=&scalemod($scaleset);
+    ($scaleset,$mult)=&scalemod($scaleset);
     my$label;
 
     my($textw,$textl)=&promptsize("$mult$prompt",$scaleset);
 
     if($orient eq 'vertical'){
-	$label=$p->{"widget"}->Canvas(Name=>scalerange,
+	$label=$p->{"widget"}->Canvas(Name=>'scalerange',
 				      -borderwidth=>0,
 				      highlightthickness=>0,
 				      width=>$textw,
 				      height=>$textl,
 				      relief=>'flat')->
-					  place(-x=>0,-y=>2,-anchor=>'nw');
+					  place('-x'=>0,'-y'=>2,-anchor=>'nw');
 	$label->createImage(0,0,
 			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
 	$label->createImage(0,$prompts{"$mult$prompt"}->height,
 			    -image=>$numbers{"$scaleset"},-anchor=>'nw');
     }else{
-	$label=$p->{"widget"}->Canvas(Name=>scalerange,
+	$label=$p->{"widget"}->Canvas(Name=>'scalerange',
 				      -borderwidth=>0,
 				      highlightthickness=>0,
 				      width=>$textl,
 				      height=>$textw,
 				      relief=>'flat')->
 					  place(-relx=>1.0,
-						-x=>-2,-y=>0,-anchor=>'ne');
+						'-x'=>-2,'-y'=>0,
+						-anchor=>'ne');
 	$label->createImage($numbers{"$scaleset"}->width,0,
 			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
 	$label->createImage(0,0,
@@ -334,6 +335,7 @@ sub promptlabel{
 }
 
 sub new{
+    my$class=shift;
     my$p=shift;
 
     my %graph = ( 'num' => '1',
@@ -356,7 +358,7 @@ sub calcsize{
     my$barl=10;
     my$scalew=0;
     my$textl=0;
-    my$textwl=0;
+    my$textw=0;
 
     if (&main::moption($this,"scale") eq 'true'){
 	my($set,$mult)=&scalemod($scaleset);
@@ -407,9 +409,6 @@ sub drawit{
     my $height=$this->{"height"};
     my $width=$this->{"width"};
 
-    my($dummy,$dummy,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
-    $this->{"scalew"}=$scalew;
-
     my$widget=$this->{"widget"}=
 	$this->{"parent"}->Canvas(Name=>$name,
 				  -borderwidth=>0,
@@ -418,6 +417,9 @@ sub drawit{
 				  height=>$height,
 				  relief=>'flat');
     
+    my($dummy,$dummy,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
+    $this->{"scalew"}=$scalew;
+
     $this->{"numlabel"}=$this->promptlabel($rangesetting,$prompt);
  
     my $orient=$main::orient;
@@ -430,9 +432,9 @@ sub drawit{
 				-width=>$barwidth,
 				-height=>$height,
 				-borderwidth=>0)->
-				    place(-x=>$scalew,
-					  -y=>0,
-					  -anchor=>'nw');
+				    place('-x'=>$scalew,
+					  '-y'=>0,
+					  '-anchor'=>'nw');
 	
 	$barwidth/=$num;
 	$barwidth=int($barwidth);
@@ -441,8 +443,8 @@ sub drawit{
 	    $this->{"bar$i"}=$frame->
 	      MGM::Bar::new($barwidth-1,
 			    $height,
-			    $i)->place(-x=>$x,-y=>0,
-				       -anchor=>'nw');
+			    $i)->place('-x'=>$x,'-y'=>0,
+				       '-anchor'=>'nw');
 	    $x+=$barwidth;
 	}
     }else{
@@ -454,8 +456,8 @@ sub drawit{
 				-width=>$width,
 				-height=>$barwidth,
 				-borderwidth=>0)->
-				    place(-y=>$scalew,
-					  -x=>0,
+				    place('-y'=>$scalew,
+					  '-x'=>0,
 					  -anchor=>'nw');
 	
 	$barwidth/=$num;
@@ -465,7 +467,7 @@ sub drawit{
 	    $this->{"bar$i"}=$frame->
 	      MGM::Bar::new($width,
 			    $barwidth-1,
-			    $i)->place(-x=>0,-y=>$y,
+			    $i)->place('-x'=>0,'-y'=>$y,
 				       -anchor=>'nw');
 	    $y+=$barwidth;
 	}
@@ -489,7 +491,6 @@ sub configure{
 
     # The only strategy, currently, is to redraw ;-) 
     $this->drawit();
-    $this->{"scalethresh"}=&main::moption($this,"scalethresh");
 }
 
 sub drawvscale{
@@ -503,7 +504,7 @@ sub drawvscale{
 
     # build new scale 
     my$widget=$this->{"widget"};
-    my$color=$widget->optionGet("scalecolor","Scalecolor");
+    my$color=$widget->optionGet("scalecolor","");
     my$height=$this->{"height"};
     my$width=4;
     my$xo=$this->{"scalew"}-2;
@@ -608,12 +609,12 @@ sub set{
     my$metermax;
     my$length=$this->{"barlength"};
     my$widget=$this->{"widget"};
-    my$ethresh=$this->{"scalethresh"};
+    my$ethresh=$widget->optionGet("scalethresh","");
     my$scalep=0;
     my$scrollp=1;
 
-    $scalep=1 if ($widget->optionGet("scale","Scale") eq 'true');
-    $scroll=0 if ($widget->optionGet("scroll","Scroll") eq 'false');
+    $scalep=1 if ($widget->optionGet("scale","") eq 'true');
+    $scroll=0 if ($widget->optionGet("scroll","") eq 'false');
 
     # length is in barlength
     # current scale setting in rangecurrent
