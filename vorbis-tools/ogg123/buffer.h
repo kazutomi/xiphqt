@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.16.2.5 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16.2.6 2001/12/18 04:15:44 volsung Exp $
  
 ********************************************************************/
 
@@ -110,6 +110,7 @@ void buffer_submit_data (buf_t *buf, char *data, long nbytes);
 size_t buffer_get_data (buf_t *buf, char *data, long nbytes);
 
 void buffer_mark_eos (buf_t *buf);
+void buffer_abort_write (buf_t *buf);
 
 /* --- Action buffering functions --- */
 void buffer_action_now (buf_t *buf, action_func_t action_func, 

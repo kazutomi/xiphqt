@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.9 2001/12/12 15:52:24 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.10 2001/12/18 04:15:44 volsung Exp $
 
  ********************************************************************/
 
@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include "compat.h"
 #include "buffer.h"
 
 #define MIN(x,y)       ( (x) < (y) ? (x) : (y) )
@@ -75,7 +76,6 @@ void buffer_thread_init (buf_t *buf)
   sigaddset (&set, SIGCONT);
   if (pthread_sigmask (SIG_BLOCK, &set, NULL) != 0)
     DEBUG("pthread_sigmask failed");
-
 }
 
 
@@ -542,6 +542,15 @@ void buffer_mark_eos (buf_t *buf)
   buf->prebuffering = 0;
   COND_SIGNAL(buf->playback_cond);
   UNLOCK_MUTEX(buf->mutex);
+}
+
+void buffer_abort_write (buf_t *buf)
+{
+  DEBUG("buffer_mark_eos");
+
+  LOCK_MUTEX(buf->mutex);
+  COND_SIGNAL(buf->write_cond);
+  UNLOCK_MUTEX(buf->mutex);  
 }
 
 
