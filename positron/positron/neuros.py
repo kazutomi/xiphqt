@@ -71,7 +71,14 @@ def FAT_mangle_filename(filename):
 
         new_filename += new_char
 
+    # FAT filenames can't end with period
+    while new_filename.endswith('.'):
+        new_filename = new_filename[:-1]
+    
     return new_filename
+
+    #return new_filename.rstrip('.')  Replace above code w/ this after
+    #                                 Python 2.2.2 and later are required
 
 class Neuros:
 
