@@ -1,3 +1,6 @@
+2002-07-23  Andrew H. Chatham <andrew@andrewchatham.com>
+	* pyoggpackbuff.c: Removed *_huff functions (no longer in API).
+	
 2002-05-21  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* _oggmodule.c: Include another header
 	
