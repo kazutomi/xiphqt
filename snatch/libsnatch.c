@@ -231,7 +231,7 @@ void *backchannel_thread(void *dummy){
       if(ret==1){
 	if(length)buf=calloc(length+1,1);
 	if(length)ret=fread(buf,1,length,backchannel_fd);
-	if(length && ret==length)
+	if(length && (int)ret==length)
 	  switch(rq){
 	  case 'U':
 	    if(username)free(username);
@@ -589,7 +589,7 @@ int writev(int fd,const struct iovec *v,int n){
     if(ret<0 && count==0)return(ret);
     if(ret<0)return(count);
     count+=ret;
-    if(ret<v[i].iov_len)return(count);
+    if(ret<(int)(v[i].iov_len))return(count);
   }
   return(count);
 }
@@ -601,7 +601,7 @@ int readv(int fd,const struct iovec *v,int n){
     if(ret<0 && count==0)return(ret);
     if(ret<0)return(count);
     count+=ret;
-    if(ret<v[i].iov_len)return(count);
+    if(ret<(int)(v[i].iov_len))return(count);
   }
   return(count);
 }

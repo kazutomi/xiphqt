@@ -55,12 +55,18 @@ extern double begin_time;
 extern double end_time;
 
 static double framerates[]={
-  0., 23.976 ,24., 25., 29.970, 30., 50., 59.940, 60. };
+  0., 23.976, 24., 25., 29.970, 30., 50., 59.940, 60. };
 
 static void usage(FILE *f){
   fprintf(f,
-	  "snatch2yuv 20011115\n\n"
-	  "USAGE: snatch2yuv [options] < infile { > outfile, | nextutil }\n\n"
+	  "snatch2yuv 20020225\n"
+	  "snatch2yuv2 20020225\n\n"
+	  "snatch2yuv produces YUV4MPEG format files (used by, for example,\n"
+	  "mjpeg-tools 1.4). snatch2yuv2 produces YUV4MPEG2 format files (used\n"
+	  "by, eg, mjpeg-tools 1.6)\n\n"
+
+	  "USAGE: snatch2yuv  [options] < infile { > outfile, | nextutil }\n"
+	  "       snatch2yuv2 [options] < infile { > outfile, | nextutil }\n\n"
 	  "OPTIONS:\n"
 	  "  -b <N>    : skip first <N> seconds of input file\n"
 	  "  -f <N>    : output video in specific MPEG legal\n"
@@ -98,6 +104,9 @@ int main(int argc,char *argv[]){
   int noisy=1;
   int c;
   int graph=0;
+
+  int yuvtype=1;
+  if(!strcmp(argv[0],"snatch2yuv2"))yuvtype=2;
 
   ratecode=5;
   vidin_fps=30;
@@ -155,7 +164,7 @@ int main(int argc,char *argv[]){
 
 
   while(!done){
-    done=snatch_iterator(stdin,stdout,0,1);
+    done=snatch_iterator(stdin,stdout,0,yuvtype);
 
     if(noisy){
       long seconds=framesout/vidout_fps;

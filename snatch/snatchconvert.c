@@ -1053,6 +1053,16 @@ void WriteYuv(FILE *f,int w,int h,int fpscode){
   fprintf(f,"YUV4MPEG %d %d %d\n",w,h,fpscode);
 }
 
+static int frameratesn[]={
+  0,   24000,  24,  25,  30000,  30,  50,  60000,  60 };
+static int frameratesd[]={
+  0.,   1001,   1,   1,   1001,   1,   1,   1001,   1 };
+
+void WriteYuv2(FILE *f,int w,int h,int fpscode){
+  fprintf(f,"YUV4MPEG2 W%d H%d F%d:%d Ip A1:1\n",w,h,
+	  frameratesn[fpscode],frameratesd[fpscode]);
+}
+
 /* YV12 aka 4:2:0 planar */
 void YUVout(unsigned char *buf,FILE *f){
   fprintf(f,"FRAME\n");
@@ -1103,7 +1113,9 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 	if(!begun){
 	  if(process_audio)
 	    WriteWav(out,audbuf_channels,audbuf_rate,16);
-	  if(process_video)
+	  if(process_video==2)
+	    WriteYuv2(out,vidbuf_width,vidbuf_height,ratecode);
+	  if(process_video==1)
 	    WriteYuv(out,vidbuf_width,vidbuf_height,ratecode);
 	  begun=1;
 	}
