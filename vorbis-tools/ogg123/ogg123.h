@@ -21,6 +21,13 @@ typedef struct devices_s {
   struct devices_s *next_device;
 } devices_t;
 
+typedef nonbuf_shared_s
+{
+  char        is_seekable;
+  ogg_int64_t totalsamples;  /* if (!is_seekable) wholefile.samples=0 */
+  devices_t   *outdevices;   /* Streams to write to. */
+} nonbuf_shared_t;
+  
 typedef struct ogg123_options_s {
   char *read_file;            /* File to decode */
   char shuffle;               /* Should we shuffle playing? */
@@ -29,7 +36,6 @@ typedef struct ogg123_options_s {
   double seekpos;             /* Amount to seek by */
   FILE *instream;             /* Stream to read from. */
   char *default_device;       /* default device for playback */
-  devices_t *outdevices;      /* Streams to write to. */
   int buffer_size;            /* Size of the buffer in chunks. */
   int prebuffer;              /* number of chunks to prebuffer */
   int rate, channels;         /* playback params for opening audio devices */
