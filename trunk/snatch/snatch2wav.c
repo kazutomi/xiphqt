@@ -56,7 +56,7 @@ int main(){
   while(!done){
     done=snatch_iterator(stdin,stdout,1,0);
 
-    if(noisy){
+    if(noisy && audbuf_rate){
       long seconds=samplesout/audbuf_rate;
       long minutes=seconds/60;
       long hours;
