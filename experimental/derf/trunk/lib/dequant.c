@@ -4,6 +4,17 @@
 #include "dequant.h"
 
 
+static const unsigned char OC_VP31_LOOP_FILTER_LIMITS[64]={
+  30,25,20,20,15,15,14,14,
+  13,13,12,12,11,11,10,10,
+   9, 9, 8, 8, 7, 7, 7, 7,
+   6, 6, 6, 6, 5, 5, 5, 5,
+   4, 4, 4, 4, 3, 3, 3, 3,
+   2, 2, 2, 2, 2, 2, 2, 2,
+   0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0
+};
+
 
 void oc_quant_params_unpack(oggpack_buffer *_opb,
  theora_quant_info *_qinfo){
@@ -43,6 +54,8 @@ void oc_quant_params_unpack(oggpack_buffer *_opb,
     inter_base[1][x]=inter_base[0][x]=
      (unsigned char)oggpackB_read(_opb,8);
   }
+  memcpy(_qinfo->loop_filter_limits,OC_VP31_LOOP_FILTER_LIMITS,
+   sizeof(_qinfo->loop_filter_limits));
 }
 
 void oc_quant_params_clear(theora_quant_info *_qinfo){

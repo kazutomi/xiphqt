@@ -289,6 +289,8 @@ typedef struct{
   /*The dequantization tables.*/
   oc_quant_tables      *dequant_tables[2][3];
   oc_quant_tables       dequant_table_data[2][3];
+  /*Loop filter strength parameters.*/
+  unsigned char         loop_filter_limits[64];
 }oc_theora_state;
 
 
@@ -365,6 +367,7 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  const ogg_uint16_t _iquant[64]);
 void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
  int _nfragis[3],int _dst_frame,int _src_frame);
+void oc_state_loop_filter(oc_theora_state *_state,int _frame);
 #if defined(OC_DUMP_IMAGES)
 int oc_state_dump_frame(const oc_theora_state *_state,int _frame);
 #endif

@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.6 2004/03/03 14:53:04 derf Exp $
+  last mod: $Id: theora.h,v 1.7 2004/03/04 01:33:25 derf Exp $
 
  ********************************************************************/
 
@@ -218,6 +218,7 @@ typedef struct{
 typedef struct{
   ogg_uint16_t        ac_scale[64];
   ogg_uint16_t        dc_scale[64];
+  unsigned char       loop_filter_limits[64];
   theora_quant_ranges qi_ranges[2][3];
 }theora_quant_info;
 
@@ -270,7 +271,8 @@ extern int theora_decode_headerin(theora_info *_info,theora_comment *_tc,
  theora_setup_info **_setup,ogg_packet *_op);
 extern theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
  const theora_setup_info *_setup);
-extern int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op);
+extern int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
+ ogg_int64_t *_granpos);
 extern int theora_decode_ycbcr_out(theora_dec_ctx *_dec,
  theora_ycbcr_buffer _ycbcr);
 extern void theora_decode_free(theora_dec_ctx *_dec);

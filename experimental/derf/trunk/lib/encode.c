@@ -2243,6 +2243,8 @@ int theora_encode_set_quant_params(theora_enc_ctx *_enc,
   }
   oc_enquant_tables_init(_enc->state.dequant_tables,_enc->enquant_tables,
    _qinfo);
+  memcpy(_enc->state.loop_filter_limits,_qinfo->loop_filter_limits,
+   sizeof(_enc->state.loop_filter_limits));
   return 0;
 }
 
@@ -2311,6 +2313,7 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
          _enc->state.ref_frame_idx[OC_FRAME_SELF];
       }
     }
+    oc_state_loop_filter(&_enc->state,OC_FRAME_PREV);
 #if defined(OC_DUMP_IMAGES)
     oc_state_dump_frame(&_enc->state,OC_FRAME_PREV);
 #endif

@@ -840,6 +840,98 @@ void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
   }
 }
 
+static unsigned char oc_clamp255(int _x){
+  return (unsigned char)(((_x<0)-1)&(_x|-(_x>255)));
+}
+
+static void loop_filter_h(unsigned char *_pix,int _ystride,int *_bv){
+  int y;
+  _pix-=2;
+  for(y=0;y<8;y++){
+    int f;
+    f=_pix[0]-_pix[3]+3*(_pix[2]-_pix[1]);
+    f=*(_bv+(f+4>>3));
+    _pix[1]=oc_clamp255(_pix[1]+f);
+    _pix[2]=oc_clamp255(_pix[2]-f);
+    _pix+=_ystride;
+  }
+}
+
+static void loop_filter_v(unsigned char *_pix,int _ystride,int *_bv){
+  int y;
+  _pix-=_ystride*2;
+  for(y=0;y<8;y++){
+    int f;
+    f=_pix[0]-_pix[_ystride*3]+3*(_pix[_ystride*2]-_pix[_ystride]);
+    f=*(_bv+(f+4>>3));
+    _pix[_ystride]=oc_clamp255(_pix[_ystride]+f);
+    _pix[_ystride*2]=oc_clamp255(_pix[_ystride*2]-f);
+    _pix++;
+  }
+}
+
+void oc_state_loop_filter(oc_theora_state *_state,int _frame){
+  int bounding_values[512];
+  int flimit;
+  int framei;
+  int pli;
+  int i;
+  flimit=_state->loop_filter_limits[_state->qi];
+  if(flimit==0)return;
+  framei=_state->ref_frame_idx[_frame];
+  memset(bounding_values,0,sizeof(bounding_values));
+  for(i=0;i<flimit;i++){
+    bounding_values[256-i-flimit]=i-flimit;
+    bounding_values[256-i]=-i;
+    bounding_values[256+i]=i;
+    bounding_values[256+i+flimit]=flimit-i;
+  }
+  /*The following loops are constructed somewhat non-intuitively on purpose.
+    The main idea is: if a block boundary has at least one coded fragment on
+     it, the filter is applied to it.
+    However, the order that the filters are applied in matters, and VP3 chose
+     the somewhat strange ordering used below.*/
+  for(pli=0;pli<3;pli++){
+    theora_img_plane  *iplane;
+    oc_fragment_plane *fplane;
+    oc_fragment       *frag00;
+    oc_fragment       *frag0;
+    oc_fragment       *frag;
+    oc_fragment       *frag_end;
+    oc_fragment       *frag0_end;
+    iplane=_state->ref_frame_bufs[framei]+pli;
+    fplane=_state->fplanes+pli;
+    frag00=frag0=_state->frags+fplane->froffset;
+    frag0_end=frag0+fplane->nfrags;
+    while(frag0<frag0_end){
+      frag=frag0;
+      frag_end=frag+fplane->nhfrags;
+      while(frag<frag_end){
+        if(frag->coded){
+          if(frag>frag0){
+            loop_filter_h(frag->buffer[framei],iplane->stride,
+             bounding_values+256);
+          }
+          if(frag0>frag00){
+            loop_filter_v(frag->buffer[framei],iplane->stride,
+             bounding_values+256);
+          }
+          if(frag+1<frag_end&&!(frag+1)->coded){
+            loop_filter_h(frag->buffer[framei]+8,iplane->stride,
+             bounding_values+256);
+          }
+          if(frag+fplane->nhfrags<frag0_end&&!(frag+fplane->nhfrags)->coded){
+            loop_filter_v((frag+fplane->nhfrags)->buffer[framei],
+             iplane->stride,bounding_values+256);
+          }
+        }
+        frag++;
+      }
+      frag0+=fplane->nhfrags;
+    }
+  }
+}
+
 #if defined(OC_DUMP_IMAGES)
 int oc_state_dump_frame(const oc_theora_state *_state,int _frame){
   /*Dump a PNG of the reconstructed image.*/

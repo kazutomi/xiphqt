@@ -114,6 +114,8 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
    _dec->state.nfrags,sizeof(_dec->dct_tokens[0][0]));
   _dec->extra_bits=(ogg_uint16_t **)oc_calloc_2d(64,
    _dec->state.nfrags,sizeof(_dec->extra_bits[0][0]));
+  memcpy(_dec->state.loop_filter_limits,_setup->qinfo.loop_filter_limits,
+   sizeof(_dec->state.loop_filter_limits));
 }
 
 static void oc_dec_clear(oc_dec_ctx *_dec){
@@ -1016,7 +1018,8 @@ void theora_decode_free(theora_dec_ctx *_dec){
   }
 }
 
-int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
+int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
+ ogg_int64_t *_granpos){
   int ret;
   if(_dec==NULL||_op==NULL)return OC_FAULT;
   oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
@@ -1065,6 +1068,16 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
     oc_dec_mv_unpack_and_frag_modes_fill(_dec);
   }
   oc_dec_residual_tokens_unpack(_dec);
+  /*TODO: All of the rest of the operations -- reconstructing coded fragments,
+     copying (coded or uncoded) fragments and post-processing -- should be
+     pipelined.
+    i.e., after sufficient numbers of super-block rows are reconstructed, copy
+     back fragments, then after sufficient numbers of super-block rows are
+     complete, post-process.
+    This allows us to operate on the data while it is still in cache,
+     resulting in big performance improvements.
+    A application callback to allow it to process each super-block row as it
+     is decoded is also a good idea.*/
   oc_dec_frags_recon(_dec);
   /*Right now the reconstructed frame has only the coded blocks in it.
     We either need to copy all the other blocks into it, or copy the
@@ -1103,6 +1116,8 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
   }
+  /*Filter block edges.*/
+  oc_state_loop_filter(&_dec->state,OC_FRAME_PREV);
   /*Fill in the borders from the reconstructed version of the last encoded
      frame.*/
   if(_dec->state.ref_frame_idx[OC_FRAME_PREV]>=0){
@@ -1113,6 +1128,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
    (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
    (_dec->state.curframe_num-_dec->state.keyframe_num);
   _dec->state.curframe_num++;
+  if(_granpos!=NULL)*_granpos=_dec->state.granpos;
   return 0;
 }
 
