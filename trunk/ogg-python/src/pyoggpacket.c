@@ -1,3 +1,4 @@
+#include <pyogg/pyogg.h>
 #include "pyoggpacket.h"
 
 /************************************************************

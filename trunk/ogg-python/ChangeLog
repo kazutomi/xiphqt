@@ -1,3 +1,6 @@
+2002-05-21  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* _oggmodule.c: Include another header
+	
 2002-02-17  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* _oggmodule.c, pyoggsyncstate.c, pyoggstreamstate.c,
 	  pyoggpage.c, pyoggpacket.c, pyoggpackbuff.c:
