@@ -7,12 +7,12 @@
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: utility main for setting entropy encoding parameters
            for lattice codebooks
- last mod: $Id: latticetune.c,v 1.11 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: latticetune.c,v 1.7 2001/02/26 03:51:12 xiphmont Exp $
 
  ********************************************************************/
 
@@ -23,7 +23,7 @@
 #include <errno.h>
 #include "bookutil.h"
 
-static int strrcmp_i(char *s,char *cmp){
+static char *strrcmp_i(char *s,char *cmp){
   return(strncmp(s+strlen(s)-strlen(cmp),cmp,strlen(cmp)));
 }
 
@@ -106,21 +106,37 @@ int main(int argc,char *argv[]){
     }
   }
 
-  /* now we simply count already collated by-entry data */
-  if(!strrcmp_i(argv[0],"res0tune") || !strrcmp_i(argv[0],"res1tune")){
-
+  if(!strrcmp_i(argv[0],"restune")){
+    long step;
+    long lines=0;
+    long cols=-1;
+    float *vec;
     line=setup_line(in);
     while(line){
+      int code;
+      if(!(lines&0xfff))spinnit("codewords so far...",lines);
 
-      /* code:hits\n */
-      /* likely to have multiple listing for each code entry; must
-         accumulate */
-
-      char *pos=strchr(line,':');
-      if(pos){
-	long code=atol(line);
-	long val=atol(pos+1); 
-	hits[code]+=val;
+      if(cols==-1){
+	char *temp=line;
+	while(*temp==' ')temp++;
+	for(cols=0;*temp;cols++){
+	  while(*temp>32)temp++;
+	  while(*temp==' ')temp++;
+	}
+	vec=alloca(sizeof(float)*cols);
+	step=cols/dim;
+      }
+      
+      for(j=0;j<cols;j++)
+	if(get_line_value(in,vec+j)){
+	  fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
+	  exit(1);
+	}
+      
+      for(j=0;j<step;j++){
+	lines++;
+	code=_best(b,vec+j,step);
+      	hits[code]++;
       }
 
       line=setup_line(in);
@@ -134,29 +150,6 @@ int main(int argc,char *argv[]){
 
   c->lengthlist=lengths;
   write_codebook(stdout,name,c); 
-
-  {
-    long bins=_book_maptype1_quantvals(c);
-    long i,k,base=c->lengthlist[0];
-    for(i=0;i<entries;i++)
-      if(c->lengthlist[i]>base)base=c->lengthlist[i];
-    
-    for(j=0;j<entries;j++){
-      if(c->lengthlist[j]){
-	int indexdiv=1;
-	fprintf(stderr,"%4ld: ",j);
-	for(k=0;k<c->dim;k++){      
-	  int index= (j/indexdiv)%bins;
-	  fprintf(stderr,"%+3.1f,", c->quantlist[index]*_float32_unpack(c->q_delta)+
-		 _float32_unpack(c->q_min));
-	  indexdiv*=bins;
-	}
-	fprintf(stderr,"\t|");
-	for(k=0;k<base-c->lengthlist[j];k++)fprintf(stderr,"*");
-	fprintf(stderr,"\n");
-      }
-    }
-  }
   
   fprintf(stderr,"\r                                                     "
 	  "\nDone.\n");

@@ -7,34 +7,28 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os.h,v 1.33 2003/09/02 05:11:53 xiphmont Exp $
+ last mod: $Id: os.h,v 1.24 2001/02/26 03:50:42 xiphmont Exp $
 
  ********************************************************************/
 
 #include <math.h>
 #include <ogg/os_types.h>
 
-#include "misc.h"
-
 #ifndef _V_IFDEFJAIL_H_
 #  define _V_IFDEFJAIL_H_
 
 #  ifdef __GNUC__
-#    define STIN static __inline__
+#    define STIN static inline
 #  elif _WIN32
 #    define STIN static __inline
-#  else
-#    define STIN static
-#  endif
-
-#ifdef DJGPP
-#  define rint(x)   (floor((x)+0.5f))
+#else
+#  define STIN static
 #endif
 
 #ifndef M_PI
@@ -47,6 +41,26 @@
 #  define NO_FLOAT_MATH_LIB
 #  define FAST_HYPOT(a, b) sqrt((a)*(a) + (b)*(b))
 #endif
+
+#ifndef __GNUC__
+#  define NO_FLOAT_MATH_LIB
+#endif
+
+#ifdef DARWIN
+#  define NO_FLOAT_MATH_LIB
+#endif
+
+#ifndef NO_FLOAT_MATH_LIB
+#  define sqrt sqrtf
+#  define log logf
+#  define exp expf
+#  define pow powf
+#  define acos acosf
+#  define atan atanf
+#  define frexp frexpf
+#  define rint rintf
+#endif
+
 
 #ifndef FAST_HYPOT
 #  define FAST_HYPOT hypot
@@ -107,7 +121,7 @@ static inline int vorbis_ftoi(double f){  /* yes, double!  Otherwise,
 #endif
 
 
-#if defined(_WIN32) && !defined(__GNUC__) && !defined(__BORLANDC__)
+#if defined(_WIN32) && !defined(__GNUC__)
 #  define VORBIS_FPU_CONTROL
 
 typedef ogg_int16_t vorbis_fpu_control;
