@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: toplevel libwrit include
- last mod: $Id: writ.h,v 1.4 2003/08/19 06:19:17 arc Exp $
+ last mod: $Id: writ.h,v 1.5 2003/12/02 07:54:12 arc Exp $
 
  ********************************************************************/
 
@@ -30,45 +30,58 @@ typedef struct writ_langdef {
 } writ_langdef;
 
 
-typedef struct writ_info {
-  int           version;
-  
-  ogg_uint32_t  granulerate_numerator;
-  ogg_uint32_t  granulerate_denominator;
-  
+typedef struct writ_window {
+  ogg_uint16_t  location_x;
+  ogg_uint16_t  location_y;
+  ogg_uint16_t  location_width;
+  ogg_uint16_t  location_height;
+  int	        alignment_x; 		/* 0=left, 1=right, 2=center, 3=full */
+  int           alignment_y;		/* 0=top, 1=bottom, 2=middle, 3=full */
+} writ_window;
+
+
+typedef struct writ_wininfo {
   ogg_uint16_t  location_scale_x;
   ogg_uint16_t  location_scale_y;
+
+  int           num_windows;
+  writ_window  *windows;   
+} writ_wininfo;
+
+
+typedef struct writ_info {
+  int            subver;
+  int            subver_bytes;
   
-  int           num_languages;
-  writ_langdef *languages;
+  ogg_uint32_t   granulerate_numerator;
+  ogg_uint32_t   granulerate_denominator;
+  
+  int            num_languages;
+  writ_langdef  *languages;
+  
+  writ_wininfo  *window_info; /* Used with subversion 1+ only */
+  /* Future subversion structs go here */
 } writ_info;
 
 
+typedef struct writ_phrase {
+  ogg_int64_t    start;
+  ogg_uint32_t   duration;
+  char         **text;
+
+  int            win_id;
+  /* Future subversion fields go here */
+} writ_phrase;  
+
+
 typedef struct writ_state {
-  writ_info    *wi;
+  writ_info   *wi;
   
-  int          phrases_buffed;
-  writ_phrase  *phrase_buff;
+  int          num_phrases;
+  writ_phrase *phrase_buffer;
   
   ogg_int64_t granulepos;
 } writ_state;
 
 
-typedef struct writ_phrase {
-  ogg_int64_t   granulepos;
-  ogg_uint32_t  duration;
-  
-  ogg_uint16_t  location_x;
-  ogg_uint16_t  location_y;
-  ogg_uint16_t  location_width;
-  ogg_uint16_t  location_height;
-  
-  int	        alignment_x; 		/* 0=left, 1=right, 2=center, 3=full */
-  int           alignment_y;		/* 0=top, 1=bottom, 2=middle, 3=full */
-  
-  writ_text    *phrase;
-} writ_phrase;  
-
-
 extern int ilog(unsigned int v);	/* src/format.c */
-
