@@ -1,7 +1,7 @@
 /* parse.c
  * - Functions for xml file parsing
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +21,8 @@
 
 #include "definitions.h"
 
-#include <parser.h>
-#include <xmlmemory.h>
+#include <libxml/parser.h>
+#include <libxml/xmlmemory.h>
 
 /* Private function declarations */
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
