@@ -23,14 +23,13 @@
 
 #include <sys/types.h>
 #include "postfish.h"
+#include "mix.h"
 #include "mute.h"
 
-
-sig_atomic_t *mute_active;
 extern int input_ch;
+extern sig_atomic_t *mixpanel_active;
 
 int mute_load(void){
-  mute_active=calloc(input_ch,sizeof(*mute_active));
   return 0;
 }
 
@@ -43,7 +42,7 @@ time_linkage *mute_read(time_linkage *in){
   int i;
 
   for(i=0;i<input_ch;i++)
-    if(!mute_active[i])
+    if(mixpanel_active[i])
       val|= (1<<i);
 
   in->active=val;
