@@ -3,4 +3,5 @@ include COPYING
 graft scripts
 graft setupext
 graft doc
+graft debian
 global-exclude *.pyc
