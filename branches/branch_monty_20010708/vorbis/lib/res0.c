@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: residue backend 0, 1 and 2 implementation
- last mod: $Id: res0.c,v 1.32 2001/06/15 23:31:00 xiphmont Exp $
+ last mod: $Id: res0.c,v 1.32.2.1 2001/07/08 08:48:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -45,11 +45,9 @@ typedef struct {
   int         partvals;
   int       **decodemap;
 
-  /*long      resbits[32][32];
-  long      resbitsflat;
-  long      resvals[32];
+  long      postbits;
   long      phrasebits;
-  long      frames;*/
+  long      frames;
 
 } vorbis_look_residue0;
 
@@ -68,13 +66,19 @@ void res0_free_info(vorbis_info_residue *i){
 }
 
 void res0_free_look(vorbis_look_residue *i){
-  int j,k;
+  int j;
   if(i){
 
     vorbis_look_residue0 *look=(vorbis_look_residue0 *)i;
-    vorbis_info_residue0 *info=look->info;
 
-    /*fprintf(stderr,
+    fprintf(stderr,"residue bit usage %f:%f (%f total)\n",
+	    (float)look->phrasebits/look->frames,
+	    (float)look->postbits/look->frames,
+	    (float)(look->postbits+look->phrasebits)/look->frames);
+
+    /*vorbis_info_residue0 *info=look->info;
+
+    fprintf(stderr,
 	    "%ld frames encoded in %ld phrasebits and %ld residue bits "
 	    "(%g/frame) \n",look->frames,look->phrasebits,
 	    look->resbitsflat,
@@ -282,36 +286,24 @@ static int _testhack(float *vec,int n,vorbis_look_residue0 *look,
 		     int auxparts,int auxpartnum){
   vorbis_info_residue0 *info=look->info;
   int i,j=0;
-  float max,localmax=0.f;
+  float max=0.f;
   float temp[128];
-  float entropy[8];
+  float entropy=0.f;
 
   /* setup */
   for(i=0;i<n;i++)temp[i]=fabs(vec[i]);
 
-  /* handle case subgrp==1 outside */
   for(i=0;i<n;i++)
-    if(temp[i]>localmax)localmax=temp[i];
-  max=localmax;
+    if(temp[i]>max)max=temp[i];
 
   for(i=0;i<n;i++)temp[i]=rint(temp[i]);
-  
-  while(n){
-    entropy[j]=localmax;
-    n>>=1;
-    j++;
-    if(!n)break;
-    for(i=0;i<n;i++){
-      temp[i]=temp[i*2]+temp[i*2+1];
-    }
-    localmax=0.f;
-    for(i=0;i<n;i++)
-      if(temp[i]>localmax)localmax=temp[i];
-  }
+
+  for(i=0;i<n;i++)
+    entropy+=temp[i];
 
   for(i=0;i<auxparts-1;i++)
     if(auxpartnum<info->blimit[i] &&
-       entropy[info->subgrp[i]]<=info->entmax[i] &&
+       entropy<=info->entmax[i] &&
        max<=info->ampmax[i])
       break;
 
@@ -430,12 +422,28 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
   
   }
 
+#ifdef TRAIN_RES
+  {
+    FILE *of;
+    char buffer[80];
+  
+    for(i=0;i<ch;i++){
+      sprintf(buffer,"resaux_%d.vqd",vb->mode);
+      of=fopen(buffer,"a");
+      for(j=info->begin,l=0;j<info->end;j+=samples_per_partition,l++)
+	fprintf(of,"%d, ",partword[i][l]);
+      fprintf(of,"\n");
+      fclose(of);
+    }
+  }
+#endif
+      
   /* we code the partition words for each channel, then the residual
      words for a partition per channel until we've written all the
      residual words for that partition word.  Then write the next
      partition channel words... */
 
-  /*look->frames++;*/
+  look->frames++;
   for(s=0;s<look->stages;s++){
     for(i=info->begin,l=0;i<info->end;){
       
@@ -447,7 +455,7 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
 	  for(k=1;k<partitions_per_word;k++)
 	    val= val*possible_partitions+partword[j][l+k];
 	  ret=vorbis_book_encode(look->phrasebook,val,&vb->opb);
-	  /*look->phrasebits+=ret;*/
+	  look->phrasebits+=ret;
 	}
       }
       
@@ -461,8 +469,8 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
 	    if(statebook){
 	      int ret=encode(&vb->opb,in[j]+i,samples_per_partition,
 			     statebook,look);
-	      /*look->resbits[partword[j][l]][s]+=ret;
-		look->resbitsflat+=ret;*/
+	      /*look->resbits[partword[j][l]][s]+=ret;*/
+	      look->postbits+=ret;
 
 	    }
 	  }
@@ -617,7 +625,6 @@ int res2_inverse(vorbis_block *vb,vorbis_look_residue *vl,
   int partvals=n/samples_per_partition;
   int partwords=(partvals+partitions_per_word-1)/partitions_per_word;
   int **partword=_vorbis_block_alloc(vb,partwords*sizeof(int *));
-  int used;
   partvals=partwords*partitions_per_word;
 
   for(i=0;i<ch;i++)if(nonzero[i])break;

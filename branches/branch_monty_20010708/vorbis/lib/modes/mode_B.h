@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: predefined encoding modes
- last mod: $Id: mode_B.h,v 1.14 2001/05/27 06:44:05 xiphmont Exp $
+ last mod: $Id: mode_B.h,v 1.14.2.1 2001/07/08 08:48:07 xiphmont Exp $
 
  ********************************************************************/
 
@@ -48,13 +48,11 @@
 
 
 static vorbis_info_psy _psy_set_B0={
-  1,/*athp*/
-  1,/*decayp*/
+  ATH_Bark_dB_lineaggressive,
 
   -100.,
   -140.,
 
-  8,
 
   /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
   /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
@@ -135,13 +133,10 @@ static vorbis_info_psy _psy_set_B0={
 };
 
 static vorbis_info_psy _psy_set_B={
-  1,/*athp*/
-  1,/*decayp*/
+  ATH_Bark_dB_lineaggressive,
 
   -100.f,
   -140.f,
-
-  8,
 
   /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
   /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
@@ -300,15 +295,6 @@ codec_setup_info info_B={
   },
   /* psy */
   {&_psy_set_B0,&_psy_set_B},
-
-  /* thresh sample period, preecho clamp trigger threshhold, range, minenergy */
-  256, {26.f,26.f,26.f,30.f}, {-90.f,-90.f,-90.f,-90.f}, -90.f,
-  
-  -10., 
-
-  0,
 };
-
-#define PREDEF_INFO_MAX 0
 
 #endif

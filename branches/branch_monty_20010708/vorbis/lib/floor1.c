@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: floor backend 1 implementation
- last mod: $Id: floor1.c,v 1.10 2001/06/15 23:59:47 xiphmont Exp $
+ last mod: $Id: floor1.c,v 1.10.2.1 2001/07/08 08:48:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -43,6 +43,9 @@ typedef struct {
   int quant_q;
   vorbis_info_floor1 *vi;
 
+  long phrasebits;
+  long postbits;
+  long frames;
 } vorbis_look_floor1;
 
 typedef struct lsfit_acc{
@@ -80,6 +83,11 @@ static void floor1_free_info(vorbis_info_floor *i){
 static void floor1_free_look(vorbis_look_floor *i){
   vorbis_look_floor1 *look=(vorbis_look_floor1 *)i;
   if(i){
+    fprintf(stderr,"floor 1 bit usage %f:%f (%f total)\n",
+	    (float)look->phrasebits/look->frames,
+	    (float)look->postbits/look->frames,
+	    (float)(look->postbits+look->phrasebits)/look->frames);
+
     memset(look,0,sizeof(vorbis_look_floor1));
     free(i);
   }
@@ -620,7 +628,7 @@ static int floor1_forward(vorbis_block *vb,vorbis_look_floor *in,
   long i,j,k,l;
   vorbis_look_floor1 *look=(vorbis_look_floor1 *)in;
   vorbis_info_floor1 *info=look->vi;
-  long n=look->n;
+  long n=info->n;
   long posts=look->posts;
   long nonzero=0;
   lsfit_acc fits[VIF_POSIT+1];
@@ -879,6 +887,8 @@ static int floor1_forward(vorbis_block *vb,vorbis_look_floor *in,
     oggpack_write(&vb->opb,1,1);
 
     /* beginning/end post */
+    look->frames++;
+    look->postbits+=ilog(look->quant_q-1)*2;
     oggpack_write(&vb->opb,fit_valueA[0],ilog(look->quant_q-1));
     oggpack_write(&vb->opb,fit_valueA[1],ilog(look->quant_q-1));
 
@@ -928,7 +938,8 @@ static int floor1_forward(vorbis_block *vb,vorbis_look_floor *in,
 	  cshift+=csubbits;
 	}
 	/* write it */
-	vorbis_book_encode(books+info->class_book[class],cval,&vb->opb);
+	look->phrasebits+=
+	  vorbis_book_encode(books+info->class_book[class],cval,&vb->opb);
 
 #ifdef TRAIN_FLOOR1
 	{
@@ -946,7 +957,7 @@ static int floor1_forward(vorbis_block *vb,vorbis_look_floor *in,
       for(k=0;k<cdim;k++){
 	int book=info->class_subbook[class][bookas[k]];
 	if(book>=0){
-	  vorbis_book_encode(books+book,
+	  look->postbits+=vorbis_book_encode(books+book,
 			     fit_valueB[j+k],&vb->opb);
 
 #ifdef TRAIN_FLOOR1
@@ -982,7 +993,7 @@ static int floor1_forward(vorbis_block *vb,vorbis_look_floor *in,
 	  ly=hy;
 	}
       }
-      for(j=hx;j<look->n;j++)codedflr[j]=codedflr[j-1]; /* be certain */
+      for(j=lx;j<vb->pcmend/2;j++)codedflr[j]=codedflr[j-1]; /* be certain */
 
       /* use it to create residue vector.  Eliminate residue elements
          that were below the error training attenuation relative to
@@ -995,7 +1006,7 @@ static int floor1_forward(vorbis_block *vb,vorbis_look_floor *in,
 	  residue[j]=0.f;
 	else
 	  residue[j]=mdct[j]/codedflr[j];
-      for(j=n;j<look->n;j++)residue[j]=0.f;
+      for(j=n;j<vb->pcmend/2;j++)residue[j]=0.f;
 
     }    
 

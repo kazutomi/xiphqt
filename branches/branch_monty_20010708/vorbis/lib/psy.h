@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.21 2001/06/15 21:15:40 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.21.2.1 2001/07/08 08:48:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -29,12 +29,9 @@
 #define P_LEVELS 11
 typedef struct vorbis_info_psy{
   float  *ath;
-  int    decayp;
 
   float  ath_adjatt;
   float  ath_maxatt;
-
-  int   eighth_octave_lines;
 
   /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
   /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
@@ -60,6 +57,34 @@ typedef struct vorbis_info_psy{
 
 } vorbis_info_psy;
 
+typedef struct{
+  float     decaydBpms;
+  int       eighth_octave_lines;
+
+  /* for block long/short tuning; encode only */
+  int       envelopesa;
+  float     preecho_thresh[4];
+  float     postecho_thresh[4];
+  float     preecho_minenergy;
+
+  float     ampmax_att_per_sec;
+
+  /* delay caching... how many samples to keep around prior to our
+     current block to aid in analysis? */
+  int       delaycache;
+
+} vorbis_info_psy_global;
+
+typedef struct {
+  float   ampmax;
+  float **decay;
+  int     decaylines;
+  int     channels;
+
+  vorbis_info_psy_global *gi;
+} vorbis_look_psy_global;
+
+
 typedef struct {
   int n;
   struct vorbis_info_psy *vi;
@@ -77,10 +102,11 @@ typedef struct {
   long  shiftoc;
   int   eighth_octave_lines; /* power of two, please */
   int   total_octave_lines;  
-
+  long  rate; /* cache it */
 } vorbis_look_psy;
 
-extern void   _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,int n,long rate);
+extern void   _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,
+			   vorbis_info_psy_global *gi,int n,long rate);
 extern void   _vp_psy_clear(vorbis_look_psy *p);
 extern void  *_vi_psy_dup(void *source);
 
@@ -88,10 +114,15 @@ extern void   _vi_psy_free(vorbis_info_psy *i);
 extern vorbis_info_psy *_vi_psy_copy(vorbis_info_psy *i);
 
 extern float  _vp_compute_mask(vorbis_look_psy *p,
+			       vorbis_look_psy_global *g,
+			       int channel,
 			       float *fft, 
 			       float *mdct, 
-			       float *mask,
-			       float prev_maxamp);
+			       float *mask, 
+			       float specmax,
+			       int lastsize);
+
+
 extern float _vp_ampmax_decay(float amp,vorbis_dsp_state *vd);
 
 #endif

@@ -10,7 +10,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec_internal.h,v 1.8 2001/03/26 23:27:43 xiphmont Exp $
+ last mod: $Id: codec_internal.h,v 1.8.6.1 2001/07/08 08:48:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -39,6 +39,7 @@ typedef struct backend_lookup_state {
   float                 **window[2][2][2]; /* block, leadin, leadout, type */
   vorbis_look_transform **transform[2];    /* block, type */
   codebook               *fullbooks;
+  vorbis_look_psy_global *psy_g_look;
 
   /* backend lookups are tied to the mode, not the backend or naked mapping */
   int                     modebits;
@@ -51,9 +52,7 @@ typedef struct backend_lookup_state {
   unsigned char *header;
   unsigned char *header1;
   unsigned char *header2;
-
-  float ampmax;
-
+  
 } backend_lookup_state;
 
 /* mode ************************************************************/
@@ -83,7 +82,7 @@ typedef struct codec_setup_info {
   long blocksizes[2];
 
   /* modes are the primary means of supporting on-the-fly different
-     blocksizes, different channel mappings (LR or mid-side),
+     blocksizes, different channel mappings (LR or M/A),
      different residue backends, etc.  Each mode consists of a
      blocksize flag and a mapping (along with the mapping setup */
 
@@ -95,30 +94,22 @@ typedef struct codec_setup_info {
   int        books;
   int        psys;     /* encode only */
 
-  vorbis_info_mode    *mode_param[64];
-  int                  map_type[64];
-  vorbis_info_mapping *map_param[64];
-  int                  time_type[64];
-  vorbis_info_time    *time_param[64];
-  int                  floor_type[64];
-  vorbis_info_floor   *floor_param[64];
-  int                  residue_type[64];
-  vorbis_info_residue *residue_param[64];
-  static_codebook     *book_param[256];
-  vorbis_info_psy     *psy_param[64]; /* encode only */
-  
-  /* for block long/sort tuning; encode only */
-  int       envelopesa;
-  float     preecho_thresh[4];
-  float     postecho_thresh[4];
-  float     preecho_minenergy;
-
-  float     ampmax_att_per_sec;
-
-  /* delay caching... how many samples to keep around prior to our
-     current block to aid in analysis? */
-  int       delaycache;
+  vorbis_info_mode       *mode_param[64];
+  int                     map_type[64];
+  vorbis_info_mapping    *map_param[64];
+  int                     time_type[64];
+  vorbis_info_time       *time_param[64];
+  int                     floor_type[64];
+  vorbis_info_floor      *floor_param[64];
+  int                     residue_type[64];
+  vorbis_info_residue    *residue_param[64];
+  static_codebook        *book_param[256];
+  vorbis_info_psy        *psy_param[64]; /* encode only */
+  vorbis_info_psy_global *psy_g_param;
 
 } codec_setup_info;
+
+extern vorbis_look_psy_global *_vp_global_look(vorbis_info *vi);
+extern void _vp_global_free(vorbis_look_psy_global *look);
 
 #endif
