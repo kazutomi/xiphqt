@@ -509,7 +509,7 @@ void decode_vorbis_packet(ogg_packet *op)
 		int bout = (samples < convsize ? samples : convsize);
 
 		for (i = 0; i < device.vi.channels; i++) {
-			ogg_int16_t *ptr = convbuffer+1;
+			ogg_int16_t *ptr = convbuffer+i;
 			float *mono = pcm[i];
 
 			for (j = 0; j < bout; j++) {
