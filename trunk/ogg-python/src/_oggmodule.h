@@ -9,5 +9,6 @@ PyObject *Py_OggError;
 
 extern char py_ogg_stream_state_doc[];
 extern char py_oggpack_buffer_doc[];
+extern char py_ogg_sync_state_doc[];
 
 #endif /* __OGGMODULE_H__ */

@@ -13,4 +13,6 @@ typedef struct {
 
 extern PyTypeObject py_ogg_sync_state_type;
 
+PyObject *py_ogg_sync_state_new(PyObject *, PyObject *);
+
 #endif

@@ -1,4 +1,5 @@
 #include "pyoggsyncstate.h"
+#include "pyoggpage.h"
 #include "general.h"
 #include "_oggmodule.h"
 
@@ -6,18 +7,15 @@
 			    OggSyncState Object
  *****************************************************************/
 
-/* TODO : Actually add methods to this object and a way to create one! */
-
 char py_ogg_sync_state_doc[] = "";
 
 static void py_ogg_sync_state_dealloc(py_ogg_sync_state *);
 static PyObject* py_ogg_sync_state_getattr(PyObject *, char *);
 
-FDEF(ogg_sync_clear) "";
+FDEF(ogg_sync_clear) "Clear the contents of this object.";
 FDEF(ogg_sync_reset) "";
-FDEF(ogg_sync_wrote) "";
-FDEF(ogg_stream_pagein) "";
-FDEF(ogg_stream_packetout) "";
+FDEF(ogg_sync_wrote) "Tell how many bytes were written to the buffer.";
+FDEF(ogg_sync_pageseek) "Synchronize with the given OggPage.";
 
 PyTypeObject py_ogg_sync_state_type = {
   PyObject_HEAD_INIT(&PyType_Type)
@@ -48,17 +46,38 @@ PyTypeObject py_ogg_sync_state_type = {
   py_ogg_sync_state_doc
 };
 
+/*
+   TODO: Remove reset functions? Not useful in Python?
+*/
 static PyMethodDef py_ogg_sync_state_methods[] = {
   {"reset", py_ogg_sync_reset,
    METH_VARARGS, py_ogg_sync_reset_doc},
+  {"clear", py_ogg_sync_clear,
+   METH_VARARGS, py_ogg_sync_clear_doc},
   {"wrote", py_ogg_sync_wrote,
    METH_VARARGS, py_ogg_sync_wrote_doc},
+  {"pageseek", py_ogg_pageseek,
+   METH_VARARGS, py_ogg_pageseek_doc},
   {NULL, NULL}
 };
+
+PyObject *
+py_ogg_sync_state_new(PyObject *self, PyObject *args)
+{
+  py_ogg_sync_state *ret = PyObject_NEW(py_ogg_sync_state,
+					&py_ogg_sync_state_type);
+
+  if (ret == NULL) 
+    return NULL;
+
+  ogg_sync_init(PY_OGG_SYNC_STATE(ret));
+  return (PyObject *) ret;
+}
 
 static void 
 py_ogg_sync_state_dealloc(py_ogg_sync_state *self)
 {
+  ogg_sync_destroy(PY_OGG_SYNC_STATE(self));
   PyMem_DEL(self);
 }
 
@@ -78,6 +97,15 @@ py_ogg_sync_reset(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+py_ogg_sync_clear(PyObject *self, PyObject *args)
+{
+  int ret;
+  ret = ogg_sync_clear(PY_OGG_SYNC_STATE(self));
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject *
 py_ogg_sync_wrote(PyObject *self, PyObject *args)
 {
   long bytes;
@@ -86,6 +114,26 @@ py_ogg_sync_wrote(PyObject *self, PyObject *args)
     return NULL;
 
   ret = ogg_sync_wrote(PY_OGG_SYNC_STATE(self), bytes);
+  if (ret == -1) {
+    PyErr_SetString(Py_OggError, "Overflow of ogg_sync_state buffer.");
+    return NULL;
+  }
+
   Py_INCREF(Py_None);
   return Py_None;
+}
+
+static PyObject *
+py_ogg_sync_pageseek(PyObject *self, PyObject *args) 
+{
+  py_ogg_page *page;
+  int skipped;
+
+  if (!PyArg_ParseTuple(args, "O!", &py_ogg_page_type, &page))
+    return NULL;
+
+  skipped = ogg_sync_pageseek(PY_OGG_SYNC_STATE(self),
+			   PY_OGG_PAGE(page));
+
+  return skipped;
 }
