@@ -29,6 +29,7 @@ down.  This seems to be strongly dependent upon the kernel used:
   <li>2.4.21-17mdk (Shipped with Mandrake 9.1 PPC) - Works well</li>
   <li>2.4.20-benh10 - Works well</li>
   <li>2.4.20-gentoo-r3, 2.4.20-gentoo-r5 - Work well</li>
+  <li>2.6 kernels - Seem to work much better than 2.4</li>
 </ul>
 Of course, this list is hardly exhaustive.  Please send me more reports!
 <p>
@@ -127,6 +128,10 @@ consider while working with it from a UNIX system:
   PAI module, <em>not to the start of the PAI module itself</em>.
   This is mentioned in the spec, but it is somewhat counter-intuitive,
   so we mention it again here.</li>
+
+  <li>Recent firmwares (1.45 and newer) will <em>only</em> read the
+  contents of a changed MDB file if the isModified bit set.</li>
+ 
 </li>
 
 </body>
