@@ -19,7 +19,7 @@ body {
 
 
 
-.sites {
+.xiphbar ul {
 	margin: 0;
 	border: 0;
 	padding: .23em 12px .45em 0;
@@ -27,7 +27,7 @@ body {
 	text-transform: uppercase;
 }
 
-.sites li {
+.xiphbar li {
 	margin: 0;
 	border: 0;
 	padding: 0 10px 0 0;
@@ -35,7 +35,7 @@ body {
 	list-style: none;
 }
 
-.sites a {
+.xiphbar li a {
 	color: #FFCE67;
 	text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
