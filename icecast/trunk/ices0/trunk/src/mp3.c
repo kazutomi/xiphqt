@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.34 2003/07/03 13:06:22 brendan Exp $
+ * $Id: mp3.c,v 1.35 2003/07/06 18:26:47 brendan Exp $
  */
 
 #include "definitions.h"
@@ -504,9 +504,9 @@ static size_t mp3_frame_length(mp3_header_t* header) {
 
   if (header->layer == 1) {
     return (12000 * header->bitrate / header->samplerate + header->padding) * 4;
-  } else {
-    return 144000 * header->bitrate / (header->samplerate << header->version) + header->padding;
+  } else if (header->layer ==3 && header->version > 0) { 
+    return 72000 * header->bitrate / header->samplerate + header->padding;
   }
 
-  return 0;
+  return 144000 * header->bitrate / header->samplerate + header->padding;
 }
