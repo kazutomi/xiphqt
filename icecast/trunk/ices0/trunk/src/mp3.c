@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.29 2003/03/17 00:45:10 brendan Exp $
+ * $Id: mp3.c,v 1.30 2003/03/17 02:22:38 brendan Exp $
  */
 
 #include "definitions.h"
@@ -86,7 +86,7 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 #endif
 static int ices_mp3_close (input_stream_t* self);
 static int mp3_fill_buffer (input_stream_t* self, size_t len);
-static void mp3_trim_file (input_stream_t* self);
+static void mp3_trim_file (input_stream_t* self, mp3_header_t* header);
 static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header);
 static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header);
 static size_t mp3_frame_length(mp3_header_t* header);
@@ -113,11 +113,6 @@ static int ices_mp3_parse (input_stream_t* source)
   /* first check for ID3v2 */
   if (! strncmp ("ID3", mp3_data->buf, 3))
     ices_id3v2_parse (source);
-
-  /* adjust file size for short frames */
-#ifdef TRIM_FILE
-  mp3_trim_file (source);
-#endif
 
   /* ensure we have at least 4 bytes in the read buffer */
   if (!mp3_data->buf || mp3_data->len - mp3_data->pos < 4)
@@ -194,6 +189,11 @@ static int ices_mp3_parse (input_stream_t* source)
 
   if (off)
     ices_log_debug("Skipped %d bytes of garbage before MP3", off);
+
+#ifdef TRIM_FILE
+  /* adjust file size for short frames */
+  mp3_trim_file (source, &mh);
+#endif
 
   if (source->bitrate)
     ices_log_debug ("%s layer %s, %d kbps, %d Hz, %s", version_names[mh.version],
@@ -316,9 +316,9 @@ ices_mp3_close (input_stream_t* self)
 }
 
 /* trim short frame from end of file if necessary */
-static void mp3_trim_file (input_stream_t* self) {
+static void mp3_trim_file (input_stream_t* self, mp3_header_t* header) {
   char buf[MP3_BUFFER_SIZE];
-  mp3_header_t header;
+  mp3_header_t match;
   off_t cur, start, end;
   int framelen;
   int rlen, len;
@@ -346,7 +346,10 @@ static void mp3_trim_file (input_stream_t* self) {
 
     /* search buffer backwards looking for sync */
     for (len -= 4; len >= 0; len--) {
-      if (mp3_parse_frame (buf + len, &header) && (framelen = mp3_frame_length (&header))) {
+      if (mp3_parse_frame (buf + len, &match) && (framelen = mp3_frame_length (&match))
+          && header->version == match.version && header->layer == match.layer
+          && header->samplerate == match.samplerate
+          && (!self->bitrate || self->bitrate == match.bitrate)) {
         if (start + len + framelen < self->filesize) {
           self->filesize = start + len + framelen;
           ices_log_debug ("Trimmed file to %d bytes", self->filesize);
