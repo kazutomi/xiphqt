@@ -1,5 +1,5 @@
 rem @echo off
-rem $Id: mfmacro.bat,v 1.1 2001/09/13 19:55:00 cwolf Exp $
+rem $Id: mfmacro.bat,v 1.2 2001/09/14 01:26:30 cwolf Exp $
 rem Creates and installs VC macro for exporting makefiles from 
 rem the command line.
 rem
@@ -16,6 +16,18 @@ echo Sub ExportMakefile >> %macrofile%
 echo   Application.Visible = False >> %macrofile%
 echo   Documents.Open "%SRCROOT%\win32sdk\all.dsw",,True >> %macrofile%
 echo   set ActiveProject = Projects("all") >> %macrofile%
+echo   Application.ExecuteCommand "BuildProjectExport" >> %macrofile%
+echo   Documents.SaveAll True >> %macrofile%
+echo   Application.Quit >> %macrofile%
+echo end Sub >> %macrofile%
+echo ' >> %macrofile%
+echo 'This macro is for exporting makefiles for example projects >> %macrofile%
+echo 'from the command line. >> %macrofile%
+echo 'To invoke: msdev -ex ExportMakefile
+echo Sub ExportExampleMakefiles >> %macrofile%
+echo   Application.Visible = False >> %macrofile%
+echo   Documents.Open "%SRCROOT%\win32sdk\sdk\build\examples.dsw",,True >> %macrofile%
+echo   set ActiveProject = Projects("examples") >> %macrofile%
 echo   Application.ExecuteCommand "BuildProjectExport" >> %macrofile%
 echo   Documents.SaveAll True >> %macrofile%
 echo   Application.Quit >> %macrofile%
