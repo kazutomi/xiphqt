@@ -181,6 +181,9 @@ $toplevel->optionAdd("$Xname*Entry.disabledForeground",  "#c0c0c0",20);
 $toplevel->optionAdd("$Xname*Entry.relief",  "sunken",20);
 $toplevel->optionAdd("$Xname*Entry.borderWidth",  2,20);
 
+$toplevel->optionAdd("$Xname*ListBox.background",  "#ffffff",20);
+$toplevel->optionAdd("$Xname*ListBox.relief",  "sunken",20);
+$toplevel->optionAdd("$Xname*ListBox.borderWidth",  1,20);
 $toplevel->optionAdd("$Xname*ListFrame.background",  "#ffffff",20);
 $toplevel->optionAdd("$Xname*ListRowOdd.background",  "#dfffe7",20);
 $toplevel->optionAdd("$Xname*ListRowEven.background",  "#ffffff",20);
@@ -1092,7 +1095,7 @@ sub Timer{
 			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah7")->
 			      place(-x=>5,-y=>5,-relheight=>1.0,-relwidth=>1.0,
 				    -width=>-$timerw_delete->reqwidth()-15,
-				    -height=>-$timerw_quit->reqheight()-30,
+				    -height=>-10,
 				    -bordermode=>outside);
     
     $minwidth=500;
@@ -1213,23 +1216,29 @@ sub destroy{
 
 sub yview{
     my$this=shift;
-    
+    my$moveto_p=shift;
+    my$moveto=shift;
+
     my$paneheight=$this->{pane}->height();
     my$listheight=$this->{window}->height();
 
-    my$first=-$this->{window}->y()/$listheight;
-    my$second=(-$this->{window}->y()+$paneheight)/$listheight;
+    if($moveto_p=~/moveto/){
+	my$y=int($moveto*$listheight);
+	$y=$listheight-$paneheight if($y+$paneheight>$listheight);
+	$y=0 if($y<0);
 
-    print "$first $second\n";
-    ($first,$second);
-
+	$this->{window}->place(-y=>-$y);
+	$this->{scrollbar}->set($this->yview());
+    }else{
+	my$first=-$this->{window}->y()/$listheight;
+	my$second=(-$this->{window}->y()+$paneheight)/$listheight;
+    
+	($first,$second);
+    }
 }
 
 sub resize{
     my$this=shift;
-
-    print "resize\n";
-    
     $this->{scrollbar}->set($this->yview());
 }
 # eg
