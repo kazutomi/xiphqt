@@ -48,6 +48,7 @@ typedef struct
 	char *namefmt;
 	char *outfile;
 	int kbps;
+  float quality_coefficient;
 } oe_options;
 
 typedef struct
@@ -66,6 +67,7 @@ typedef struct
 	int channels;
 	long rate;
 	int bitrate;
+  float quality_coefficient;
 
 	FILE *out;
 	char *filename;

@@ -19,7 +19,7 @@ typedef struct enclist_tag {
 enclist_t *head = NULL;
 
 oe_options opt = {NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 
-		0, 0, NULL,NULL, 64}; /* Default values */
+		0, 0, NULL,NULL, 0, 1.0}; /* Default values */
 
 /* Define supported formats here */
 input_format formats[] = {
@@ -110,6 +110,16 @@ void encthread_setbitrate(int kbps)
 	opt.kbps = kbps;
 }
 
+void encthread_setquality(int quality)
+{
+  if (quality < 0)
+    quality = 1;
+  else if (quality > 100)
+    quality = 100;
+
+  opt.quality_coefficient = (float)(((float)quality)/100.0);
+}
+
 void _nothing_prog(char *fn, long total, long done, double time)
 {
 	// do nothing
@@ -159,6 +169,7 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			enc_opts.progress_update = _update;
 			enc_opts.end_encode = _nothing_end;
 			enc_opts.error = _error;
+      enc_opts.quality_coefficient = 1.0;
 
 			set_filename(in_file);
 
@@ -214,8 +225,9 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			enc_opts.out = out;
 			enc_opts.comments = &vc;
 			enc_opts.filename = out_fn;
-			/* enc_opts.bitrate = opt.kbps; /* defaulted at the start, so this is ok */
-			enc_opts.bitrate = opt.kbps * enc_opts.channels / 2; /* Olaf: Scale to match channel count */
+
+			//enc_opts.bitrate = opt.kbps * enc_opts.channels / 2; /* Olaf: Scale to match channel count */
+      enc_opts.quality_coefficient = opt.quality_coefficient;
 
 			if (!enc_opts.total_samples_per_channel)
 				enc_opts.progress_update = _nothing_prog;
@@ -237,12 +249,6 @@ DWORD WINAPI encode_thread(LPVOID arg)
 
 		Sleep(500);
 	} 
-
-	/* Olaf: We already reset these a few lines above
-	animate = 0;
-	totalfiles = 0;
-	numfiles = 0;
-	*/
 
 	DeleteCriticalSection(&mutex);
 

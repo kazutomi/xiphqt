@@ -2,6 +2,8 @@
 #include <shellapi.h>
 #include <string.h>
 #include <stdio.h>
+#include <commctrl.h>
+
 #include "resource.h"
 #include "encthread.h"
 #include "audio.h"
@@ -25,8 +27,15 @@ int encoding_done = 0;
 double file_complete;
 int totalfiles;
 int numfiles;
+HWND g_hwnd;
+HWND qcwnd;
+int qcValue;
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int animate = 0;
+
+BOOL CALLBACK QCProc(HWND hwndDlg, UINT message, 
+                     WPARAM wParam, LPARAM lParam) ;
 
 int get_base_key(HKEY* key)
 {
@@ -56,18 +65,10 @@ void write_setting(const char* name, int value)
 		RegSetValueEx(base_key, name, 0, REG_DWORD, (byte*)&value, sizeof(int));
 }
 
-void set_bitrate(int v)
+void set_quality_coefficient(int v)
 {
-	CheckMenuItem(menu, IDM_BITRATE64, v == 64 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE80, v == 80 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE96, v == 96 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE128, v == 128 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE160, v == 160 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE192, v == 192 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE256, v == 256 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(menu, IDM_BITRATE350, v == 350 ? MF_CHECKED : MF_UNCHECKED);
-	encthread_setbitrate(v);
-	write_setting("bitrate", v);
+  encthread_setquality(v);
+  write_setting("quality", v);
 }
 
 void set_always_on_top(HWND hwnd, int v)
@@ -90,7 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	HWND hwnd;
 	MSG msg;
 	WNDCLASS wndclass;
-    const int width = 120;
+  const int width = 120;
 	const int height = 120;
 	int x;
 	int y;
@@ -111,17 +112,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	RegisterClass(&wndclass);
 
 	x = max(min(read_setting("window_x", 64), GetSystemMetrics(SM_CXSCREEN) - width), 0);
-    y = max(min(read_setting("window_y", 64), GetSystemMetrics(SM_CYSCREEN) - height), 0);
+  y = max(min(read_setting("window_y", 64), GetSystemMetrics(SM_CYSCREEN) - height), 0);
 
-    hwnd = CreateWindow(szAppName, "OggDrop", WS_POPUP | WS_DLGFRAME, x, y,
-		width, height, NULL, NULL, hInstance, NULL);
+  hwnd = CreateWindow(szAppName, "OggDrop", WS_POPUP | WS_DLGFRAME, x, y,
+  width, height, NULL, NULL, hInstance, NULL);
+
+  g_hwnd = hwnd;
 
 	ShowWindow(hwnd, iCmdShow);
 	UpdateWindow(hwnd);
 
 	SetTimer(hwnd, 1, 80, NULL);
 
-	set_bitrate(read_setting("bitrate", 96));
+  qcValue = read_setting("quality", 75);
+  set_quality_coefficient(qcValue);
 	set_always_on_top(hwnd, read_setting("always_on_top", 1));
 	set_logerr(hwnd, read_setting("logerr", 0));
 	
@@ -183,7 +187,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message) {
 	case WM_CREATE:
 		menu = LoadMenu(hinst, MAKEINTRESOURCE(IDR_MENU1));
-		if (menu == NULL) MessageBox(hwnd, "ACK!", "ACK!", 0);
 		menu = GetSubMenu(menu, 0);
 
 		offscreen = CreateCompatibleDC(NULL);
@@ -216,8 +219,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		percomp = ((double)(totalfiles - numfiles) + 1 - (1 - file_complete)) / (double)totalfiles;
 
-		SetRect(&bar1, 0, height - 23, file_complete * width, height - 13);
-		SetRect(&bar2, 0, height - 12, percomp * width, height - 2);
+		SetRect(&bar1, 0, height - 23, (int)(file_complete * width), height - 13);
+		SetRect(&bar2, 0, height - 12, (int)(percomp * width), height - 2);
 
 		FillRect(offscreen, &bar1, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		FillRect(offscreen, &bar2, (HBRUSH)GetStockObject(BLACK_BRUSH));
@@ -225,7 +228,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		BitBlt(hdc, 0, 0, width, height, offscreen, 0, 0, SRCCOPY);
 
 		EndPaint(hwnd, &ps);
-		return 0;
+
+    return DefWindowProc(hwnd, message, wParam, lParam);
+		//return 0;
 
 	case WM_TIMER:
 		if (animate || frame) {
@@ -287,7 +292,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
+		switch (LOWORD(wParam)) 
+    {
+ 
 		case IDM_QUIT:
 			encoding_done = 1;
 			PostQuitMessage(0);
@@ -298,39 +305,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_LOGERR:
 			set_logerr(hwnd, ~GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND) & MF_CHECKED);
 			break;
-		case IDM_BITRATE64:
-			set_bitrate(64);
-			encthread_setbitrate(64);
-			break;
-		case IDM_BITRATE80:
-			set_bitrate(80);
-			encthread_setbitrate(80);
-			break;
-		case IDM_BITRATE96:
-			set_bitrate(96);
-			encthread_setbitrate(96);
-			break;
-		case IDM_BITRATE128:
-			set_bitrate(128);
-			encthread_setbitrate(128);
-			break;
-		case IDM_BITRATE160:
-			set_bitrate(160);
-			encthread_setbitrate(160);
-			break;
-		case IDM_BITRATE192:
-			set_bitrate(192);
-			encthread_setbitrate(192);
-			break;
-		case IDM_BITRATE256:
-			set_bitrate(256);
-			encthread_setbitrate(256);
-			break;
-		case IDM_BITRATE350:
-			set_bitrate(350);
-			encthread_setbitrate(350);
-			break;
-		}
+
+    case IDM_SAVEQUALITY:
+      {
+        int value = 
+          DialogBox(
+                hinst,  
+                MAKEINTRESOURCE(IDD_QUALITY),   
+                hwnd, QCProc);
+
+        if (value != -1)
+          set_quality_coefficient(value);
+      }
+      break;
+
+    } // LOWORD(wParam)
 		return 0;
 
 	case WM_DROPFILES:
@@ -347,3 +336,56 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	return DefWindowProc(hwnd, message, wParam, lParam);
 }
+
+ /**
+  * Saved quality coefficient slider dialog procedure.
+  */
+BOOL CALLBACK QCProc(HWND hwndDlg, UINT message, 
+                     WPARAM wParam, LPARAM lParam) 
+{
+  switch (message) 
+  { 
+  case WM_INITDIALOG: 
+ 
+    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETRANGE, 
+        (WPARAM) TRUE,                   // redraw flag 
+        (LPARAM) MAKELONG(0, 100));  // min. & max. positions 
+
+    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPAGESIZE, 
+        0, (LPARAM) 4);                  // new page size 
+ 
+    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETSEL, 
+        (WPARAM) FALSE,                  // redraw flag 
+        (LPARAM) MAKELONG(0, 100));
+
+    SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
+        (WPARAM) TRUE,                   // redraw flag 
+        (LPARAM) read_setting("quality", 75)); 
+    break;
+
+   case WM_HSCROLL:
+
+    qcValue = (LONG)SendDlgItemMessage(hwndDlg, IDC_SLIDER1, 
+                        TBM_GETPOS, (WPARAM)0, (LPARAM)0 );
+    break;
+
+    case WM_CLOSE:
+      EndDialog(hwndDlg, -1);
+    break;
+
+
+    case WM_COMMAND: 
+      switch (LOWORD(wParam)) 
+      { 
+        case IDC_BUTTON1:
+        {
+          EndDialog(hwndDlg, qcValue);
+          return TRUE;
+        }
+        default: 
+            break; 
+      } 
+  } 
+  return FALSE; 
+} 
+ 

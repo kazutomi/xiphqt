@@ -45,18 +45,18 @@ IDB_TF12                BITMAP  DISCARDABLE     "resource/twirlfish12.bmp"
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE
+1 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE
+2 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE
+3 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "\r\n"
     "\0"
@@ -70,21 +70,11 @@ END
 // Menu
 //
 
-IDR_MENU1 MENU DISCARDABLE
+IDR_MENU1 MENU DISCARDABLE 
 BEGIN
     POPUP "Menu"
     BEGIN
-        POPUP "&Bitrate"
-        BEGIN
-            MENUITEM "64 kbps",                     IDM_BITRATE64
-            MENUITEM "80 kbps",                     IDM_BITRATE80, CHECKED
-            MENUITEM "96 kbps",                     IDM_BITRATE96
-            MENUITEM "128 kbps",                    IDM_BITRATE128
-            MENUITEM "160 kbps",                    IDM_BITRATE160
-            MENUITEM "192 kbps",                    IDM_BITRATE192
-            MENUITEM "256 kbps",                    IDM_BITRATE256
-            MENUITEM "350 kbps",                    IDM_BITRATE350
-        END
+        MENUITEM "&Save Quality",               IDM_SAVEQUALITY
         POPUP "&Options"
         BEGIN
             MENUITEM "&Errors to log file",         IDM_LOGERR
@@ -105,6 +95,44 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON1               ICON    DISCARDABLE     "resource/fish.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_QUALITY DIALOG DISCARDABLE  0, 0, 150, 66
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Save Quality"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Quality Coeffcient",IDC_STATIC,47,7,56,8
+    CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | 
+                    TBS_BOTH | WS_TABSTOP,25,22,100,15
+    PUSHBUTTON      "Accept",IDC_BUTTON1,60,42,30,14
+    LTEXT           "0.01%",IDC_STATIC,16,14,20,8
+    LTEXT           "100%",IDC_STATIC,121,15,18,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_QUALITY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 142
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 59
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
