@@ -28,19 +28,20 @@ class PAI:
             raise Error("Invalid PAI signature")
 
     def get_module_pointers(self):
+        f = self.file
         pointers = []
 
-        pointer = FILE_HEADER_LEN
+        pointer = PAI.FILE_HEADER_LEN
 
         f.seek(to_offset(pointer))
         length_str = f.read(2)
         while length_str != "":
             pointers.append(pointer)
             
-            length = struct.unpack(">H", length_str)
+            (length,) = struct.unpack(">H", length_str)
             pointer += length
 
-            f.seek(to_offset(pointer))
+            f.seek(to_offset(pointer), 1)
             length_str = f.read(2)
 
         return pointers
@@ -96,12 +97,13 @@ class PAI:
         f.write(header)
 
         # Add entry   
-        entry_pointer = pointer + PAI.MODULE_HEADER_LEN + num_entries * 2
+        entry_pointer = pointer + PAI.MODULE_HEADER_LEN + (num_entries - 1) * 2
         packed_entry = struct.pack(">I", entry)
         
         f.seek(to_offset(entry_pointer))
         f.write(packed_entry)
-
+        f.flush()
+        
         if extended:
             return self.get_module_pointers()
         else:
@@ -178,7 +180,7 @@ class PAI:
         # Fix up header
         f.seek(to_offset(pointer))
         length = length + chunks * PAI.MIN_PAI_MODULE_LEN
-        (length_str,) = struct.pack(">H", length)
+        length_str = struct.pack(">H", length)
         f.write(length_str)
         f.flush()
 

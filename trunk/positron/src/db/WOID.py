@@ -133,7 +133,8 @@ class WOID:
                 sai_record = self.children[i-1]._add_record(child_record)
 
             pointer = sai_record[0] # MDB pointer to matching record in child db
-            child_pai_modules.append((self.children[i-1].pai, sai_record[1]))
+            if (sai_record[1] != 0):  # Don't update if PAI module pointer is zero
+                child_pai_modules.append((self.children[i-1].pai, sai_record[1]))
 
             mdb_record["keys"].append(pointer)
 
