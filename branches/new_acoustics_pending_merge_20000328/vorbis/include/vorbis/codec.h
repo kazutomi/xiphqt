@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec.h,v 1.10 2000/02/16 22:34:43 xiphmont Exp $
+ last mod: $Id: codec.h,v 1.10.2.1 2000/03/30 01:46:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -45,9 +45,28 @@ typedef struct {
 
 /* psychoacoustic setup ********************************************/
 typedef struct vorbis_info_psy{
-  double maskthresh[MAX_BARK];
-  double lrolldB;
-  double hrolldB;
+  double ath_att;
+  
+  double curveatt_250Hz[5];
+  double curveatt_500Hz[5];
+  double curveatt_1000Hz[5];
+  double curveatt_2000Hz[5];
+  double curveatt_4000Hz[5];
+  double curveatt_8000Hz[5];
+
+  double peakatt_250Hz[5];
+  double peakatt_500Hz[5];
+  double peakatt_1000Hz[5];
+  double peakatt_2000Hz[5];
+  double peakatt_4000Hz[5];
+  double peakatt_8000Hz[5];
+  double peakpre;
+  double peakpost;
+
+  double max_curve_dB;
+
+  double attack_coeff;
+  double decay_coeff;
 } vorbis_info_psy;
 
 /* vorbis_info contains all the setup information specific to the
