@@ -25,16 +25,16 @@
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
 
-icecast-src-avl -d src &avl
-icecast-src-log -d src &log
-icecast-src-net -d src &net
-icecast-src-httpp -d src &httpp
-icecast-src-thread -d src &thread
-icecast-src-timing -d src &timing
+src-avl -d src &avl
+src-log -d src &log
+src-net -d src &net
+src-httpp -d src &httpp
+src-thread -d src &thread
+src-timing -d src &timing
 
-icecast icecast &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-httpp &icecast-src-thread &icecast-src-timing
+icecast icecast &src-avl src-log src-net src-httpp src-thread src-timing
 
-ices ices &m4 &icecast-src-log &icecast-src-thread &icecast-src-timing
+ices ices &m4 src-avl src-log src-thread src-timing
 
-libshout libshout &m4 &icecast-src-avl &icecast-src-net &icecast-src-thread &icecast-src-httpp &icecast-src-timing
+libshout libshout &m4 src-avl src-net src-thread src-httpp src-timing
 
