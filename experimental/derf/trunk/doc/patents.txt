@@ -1,9 +1,44 @@
 MPEG2 US Patents on Interlacing:
 RE35,093  http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=RE35,093.WKU.&OS=PN/RE35,093&RS=PN/RE35,093
+
+Aside from hardware-oriented language that excludes this from covering a software
+ system, this patent is only a field-based system: block matching is actually
+ performed on an interpolated version of the even fields against other fields.
+Theora matches against both fields and frames.
+They also use MPEG VLC codes and MPEG quantization tables which Theora does not.
+
 5,426,464 http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=5,426,464.WKU.&OS=PN/5,426,464&RS=PN/5,426,464
+
+This patent covers the RFF flags.
+It also has significant hardware-oriented language that makes it unlikely to
+ apply to a software system.
+In addition, they simply sum up pixel differences and compare with a threshold to
+ determine whether or not to omit a field.
+ANYTHING more sophisticated (e.g., a block-wise maximum difference, or an
+ HVS-weighted difference) would avoid infringing on this patent.
+
 5,491,516 http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=5,491,516.WKU.&OS=PN/5,491,516&RS=PN/5,491,516
+
+This patent is a divisional application of the previous one.
+All of the same arguments apply.
+
 5,600,376 http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=5,600,376.WKU.&OS=PN/5,600,376&RS=PN/5,600,376
+
+This patent is a divisional application of the previous two.
+All of the same arguments apply.
+
 5,093,720 http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=5,093,720.WKU.&OS=PN/5,093,720&RS=PN/5,093,720
+
+Again heavily described in the langauge of hardware, this patent also utilizes a
+ full search for matching blocks, and although they attempt to cover the
+ distortion metrics of SAD, MSE, "minimum bits" and "minimum distortion", the
+ last two are meaningless.
+What is actually desired is "minimum bits for a given distortion", or
+ "minimum distortion for a given number of bits" or a combination of the two.
+Also, they again only consider field-based matches, while Theora also runs the
+ search over interleaved blocks, and don't appear to perform half-pel
+ interpolation.
+
 RE36,015  http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=RE36,015.WKU.&OS=PN/RE36,015&RS=PN/RE36,015
 RE36,507  http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=RE36,507.WKU.&OS=PN/RE36,507&RS=PN/RE36,507
 5,223,949 http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=5,223,949.WKU.&OS=PN/5,223,949&RS=PN/5,223,949

@@ -6,11 +6,10 @@
 #include "encint.h"
 #include "psych.h"
 
-/*This is where we attempt to model high-level vision processes, such as
-   object tracking and visual attention.*/
-
 /*Importance map calculations.
 
+  This is where we attempt to model high-level vision processes, such as
+   object tracking and visual attention.
   The importance map isolates "regions of interest" or areas of the image that
    are likely to draw viewer attention.
   Because the visual accuity of the fovea is so much higher than in a viewer's
@@ -112,18 +111,18 @@ enum{
   This removes the only adjustable parameter from Osberger's model.
   The BIC for a model is:
 
-  BIC(model)=log P(data|model)-1/2(model dimension)log(data sample count).
+  BIC(model)=log P(data|model)-
+   \lambda/2(model dimension)log(data sample count).
 
   Using a Gaussian distribution as the model, this reduces to
-   (1/2)(data sample count)log(variance)-log(data sample count).
-  The last term is typically weighted by a parameter \lambda to penalize small
-   samples, but that weighting is omitted here.
-  Instead, like Osberger, a minimal region size is enforced.
+   -(1/2)(data sample count)log(variance)-\lambda*log(data sample count).
+  We scale this by two to avoid the extra multiply.
+  The weight \lambda in the last term is traditionally introduced to
+   penalize small samples, but can also serve as a compensation for the large
+   variances found with data in the range 0..255.
+  Like Osberger, however, a strict minimal region size is enforced.
   The minimum size allows us to place a hard upper bound on the number of
    regions in order to allocate storage once ahead of time.
-  Unlike Osberger, instead of choosing the largest neighbor to merge small
-   regions with, we choose the merger that yields the largest BIC increase
-   (which may be negative).
 
   The variances are computed using a reduced-resolution table of sums.
   This table contains accumulated sums from the upper-left corner of the
@@ -158,8 +157,11 @@ enum{
   Once all the regions in a local block are established, all the pairs
    involving a local region that does not satisfy the minimum pixel size are
    placed on the heap, and merging continues until the heap is empty.
-  Thus, because small regions can only accumulate in a local block, the total
-   number of regions present at any one time can be reasonably bounded.
+  This is unlike Osberger, who simply merged small regions with their largest
+   neighbor.
+
+  Because small regions can only accumulate in a local block, the total number
+   of regions present at any one time can be reasonably bounded.
   Otherwise, the best bound available would be the number of pixels in the
    image.
   This also removes overhead early on required to deal with one pixel regions
@@ -182,6 +184,9 @@ enum{
    can be created, which allows us to allocate storage in advance.*/
 #define OC_SEG_REGION_SZ_MIN    (16)
 
+/*The weight to associate with the model cost, scaled by a factor of 2.*/
+#define OC_SEG_MODEL_WEIGHT     (2*16)
+
 
 
 typedef struct oc_seg_region       oc_seg_region;
@@ -193,11 +198,11 @@ typedef struct oc_seg_ctx          oc_seg_ctx;
 
 /*Called when the BIC factor of a candidate merge pair has been updated to
    add it to, remove it from, or update its position in the heap.
-  _seg:     The segmentation context.
-  _pair:    The pair that was updated.
-  _old_bic: The old BIC factor.*/
-typedef void (*OCSegPairReheapFunc)(oc_seg_ctx *_seg,oc_seg_pair *_pair,
- float _old_bic);
+  _seg:      The segmentation context.
+  _pair:     The pair that was updated.
+  _old_dbic: The old delta BIC factor.*/
+typedef void (*oc_seg_pair_reheap_func)(oc_seg_ctx *_seg,oc_seg_pair *_pair,
+ float _old_dbic);
 
 
 
@@ -252,45 +257,60 @@ struct oc_seg_pair{
 
 /*Buffers and tables needed to drive the segmentation process.*/
 struct oc_seg_ctx{
+  /*The global first moment table.*/
+  float                   **sumx;
+  /*The global second moment table.*/
+  float                   **sumx2;
+  /*The local first moment table.*/
+  float                   **local_sumx;
+  /*The local second moment table.*/
+  float                   **local_sumx2;
+  /*The region labels for each pixel.*/
+  int                     **labels;
   /*The minimum power of 2 greater than or equal to the image width and
      height.*/
-  int                   level_max;
-  /*The global first moment table.*/
-  float               **sumx;
-  /*The global second moment table.*/
-  float               **sumx2;
-  /*The local first moment table.*/
-  float               **local_sumx;
-  /*The local second moment table.*/
-  float               **local_sumx2;
-  /*The region labels for each pixel.*/
-  int                 **labels;
+  int                       level_max;
   /*The number of local regions in a local segmentation.
     This count starts at -2 and goes down as each region is added.*/
-  int                   nlocal_regions;
+  int                       nlocal_regions;
   /*The number of regions in the segmentation.*/
-  int                   nregions;
+  int                       nregions;
   /*The total number of regions allocated.*/
-  int                   cregions;
-  /*The list of regions.*/
-  oc_seg_region        *regions;
+  int                       cregions;
   /*The number of pairs in use.*/
-  int                   npairs;
+  int                       npairs;
   /*The size of the global heap.*/
-  int                   nheap;
+  int                       nheap;
+  /*The list of regions.*/
+  oc_seg_region            *regions;
+  /*The relabeling list used in the last step.*/
+  int                      *relabels;
   /*The storage for the neighbor lists for each region.*/
-  oc_seg_pair          *pairs;
+  oc_seg_pair              *pairs;
   /*The list of available pairs.*/
-  oc_seg_link          *free_pairs;
+  oc_seg_link              *free_pairs;
   /*The global merge heap.*/
-  oc_seg_pair         **heap;
+  oc_seg_pair             **heap;
   /*The reheaping function.*/
-  OCSegPairReheapFunc   reheap;
+  oc_seg_pair_reheap_func   reheap;
 };
 
 
 
 typedef struct oc_impmap_region   oc_impmap_region;
+
+
+
+/*Called to fill in the importance values for each of the chroma plane
+   fragments given the Y plane fragments' importances.
+  A different version of this function is called depending on the type of
+   chroma decimation active.
+  _frinfo:            The encoding fragment info array.
+  _map:               The fragment map for the current macro block.
+  _yfrag_imp_weights: The weight for each fragment in the Y plane.*/
+typedef void (*oc_impmap_chroma_frag_weight_func)(
+ oc_fragment_enc_info *_frinfo,oc_mb_map _map,
+ const float _yfrag_imp_weights[4]);
 
 
 
@@ -313,17 +333,32 @@ struct oc_impmap_ctx{
   /*Segmentation information for the Y plane.
     Some day we may also wish to segment the U and V planes, or derive a
      segmentation using all 3 planes at once.*/
-  oc_seg_ctx        seg;
+  oc_seg_ctx                         seg;
   /*The reciprocal of the maximum region size to count towards a region's
      importance.
     This cap prevents very large regions from dominating the scene.*/
-  float             inv_region_sz_max;
+  float                              inv_region_sz_max;
   /*The reciprocal of the maximum number of edge pixels required to consider a
      region completely in the background.
     This value is used when computing the foreground weight of a region.*/
-  float             inv_edge_sz_max;
+  float                              inv_edge_sz_max;
+  /*The horizontal offset used to convert from image buffer coordinates to
+     label buffer coordinates.*/
+  int                                offset_x;
+  /*The vertical offset used to convert from image buffer coordinates to label
+     buffer coordinates.*/
+  int                                offset_y;
+  /*The boundaries of each of the three piecewise sections of the importance
+     function for motion, pre-adjusted to half-pixels/frame.*/
+  float                              mot_limits[4];
+  /*The average importance from the previous frame.*/
+  float                              imp_avg;
   /*The per-region information gathered for the importance map.*/
-  oc_impmap_region *regions;
+  oc_impmap_region                  *regions;
+  /*The encoding context we're embedded in.*/
+  oc_enc_ctx                        *enc;
+  /*The function used to update chroma fragment importances.*/
+  oc_impmap_chroma_frag_weight_func  chroma_frag_weight;
 };
 
 
@@ -463,6 +498,25 @@ static float oc_seg_sum_region(const float **_sums,int _tx,int _ty,
    _sums[_ty+_theight][_tx]+_sums[_ty+_theight][_tx+_twidth];
 }
 
+/*Gets the region number for a given pixel label.
+  When a region is merged with another, its label becomes the other region
+   number (but not vice versa: the other region keeps its label as its own
+   region number).
+  However, if that other region should then merge later on, its label could
+   change.
+  Thus we must follow the labels until we find a region whose label is its
+   own region number.
+
+  This is the classic set membership problem, which can be very efficiently
+   solved by updating the region label each time a query is made to be the
+   most recent final answer.
+  This gives an amortized number of updates per query equal to the inverse
+   Ackerman's function: i.e., 4 or less for up to 4 billion regions, or very
+   nearly constant.
+
+  _seg:   The segmentation context.
+  _label: The pixel label to retrieve the region number for.
+  Return: The region number corresponding to the given label.*/
 static int oc_seg_get_label(oc_seg_ctx *_seg,int _label){
   oc_seg_region *reg;
   reg=_seg->regions+_label;
@@ -472,21 +526,40 @@ static int oc_seg_get_label(oc_seg_ctx *_seg,int _label){
   return _label;
 }
 
+/*Returns an unused region pair structure.
+  _seg: The segmentation context.
+  Return: An unused region pair structure.*/
 static oc_seg_pair *oc_seg_pair_alloc(oc_seg_ctx *_seg){
   oc_seg_pair *ret;
+  /*If there's any on the free_pairs list, use those.*/
   if(_seg->free_pairs!=NULL){
     ret=_seg->free_pairs->pair;
     _seg->free_pairs=_seg->free_pairs->next;
   }
+  /*Otherwise, pull one from the pre-allocated buffer of them.
+    It would simplify the code slightly to put these all on the free list when
+     we initially allocate them, but since we allocate a conservatively large
+     number, most of the time we won't need nearly that many.
+    Never touching the RAM means the pages won't ever actually be allocated by
+     some modern OSes.*/
   else ret=_seg->pairs+_seg->npairs++;
   return ret;
 }
 
+/*Free a region pair structure that is no longer in use.
+  _seg:  The segmentation context.
+  _pair: The pair to free.
+         This cannot be NULL.*/
 static void oc_seg_pair_free(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   _pair->links[0].next=_seg->free_pairs;
   _seg->free_pairs=_pair->links+0;
 }
 
+/*Move the pair at the given index up in the pair heap as far as necessary.
+  This should be called when a pair's dbic value decreases to maintain the
+   heap invariants.
+  _seg:   The segmentation context.
+  _heapi: The index of the pair to try moving up.*/
 static void oc_seg_pair_heap_up(oc_seg_ctx *_seg,int _heapi){
   oc_seg_pair **heap;
   int           p;
@@ -506,6 +579,11 @@ static void oc_seg_pair_heap_up(oc_seg_ctx *_seg,int _heapi){
   }
 }
 
+/*Move the pair at the given index down in the pair heap as far as necessary.
+  This should be called when a pair's dbic value increases to maintain the
+   heap invariants.
+  _seg:   The segmentation context.
+  _heapi: The index of the pair to try moving up.*/
 static void oc_seg_pair_heap_down(oc_seg_ctx *_seg,int _heapi){
   oc_seg_pair **heap;
   int           l;
@@ -530,6 +608,9 @@ static void oc_seg_pair_heap_down(oc_seg_ctx *_seg,int _heapi){
   }
 }
 
+/*Takes an unordered list of pairs in the heap array and arranages them into a
+   proper heap.
+  _seg: The segmentation context.*/
 static void oc_seg_pair_heapify(oc_seg_ctx *_seg){
   oc_seg_pair **heap;
   int           l;
@@ -558,26 +639,42 @@ static void oc_seg_pair_heapify(oc_seg_ctx *_seg){
   }
 }
 
+/*Adds a pair to the pair heap.
+  _seg:  The segmentation context.
+  _pair: The pair to add.*/
 static void oc_seg_pair_heap_add(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   _seg->heap[_seg->nheap]=_pair;
   _pair->heapi=_seg->nheap++;
   oc_seg_pair_heap_up(_seg,_pair->heapi);
 }
 
-static void oc_seg_pair_heap_delhead(oc_seg_ctx *_seg){
+/*Removes the head of the pair heap and returns it.
+  This does NOT reset the pair's heapi to -1.
+  The heap MUST not be empty when this is called.
+  _seg: The segmentation context.
+  Return: The pair that was at the top of the heap.*/
+static oc_seg_pair *oc_seg_pair_heap_delhead(oc_seg_ctx *_seg){
+  oc_seg_pair *ret;
+  ret=_seg->heap[0];
   if(--_seg->nheap>0){
     _seg->heap[0]=_seg->heap[_seg->nheap];
     _seg->heap[0]->heapi=0;
     oc_seg_pair_heap_down(_seg,0);
   }
+  return ret;
 }
 
+/*Removes a pair from its position in the heap, wherever it is.
+  If the pair is not in the heap, this does nothing.
+  This does NOT reset the pair's heap to -1.
+  _seg:  The segmentation context.
+  _pair: The pair to remove from the heap.*/
 static void oc_seg_pair_heap_del(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   int heapi;
   heapi=_pair->heapi;
   if(heapi>=0){
     _seg->nheap--;
-    if(_seg->nheap>0){
+    if(_seg->nheap>heapi){
       _seg->heap[heapi]=_seg->heap[_seg->nheap];
       _seg->heap[heapi]->heapi=heapi;
       if(_seg->heap[heapi]->dbic<_pair->dbic)oc_seg_pair_heap_up(_seg,heapi);
@@ -586,12 +683,20 @@ static void oc_seg_pair_heap_del(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   }
 }
 
+/*Adds, removes, or moves a pair in the pair heap after its dbic has changed.
+  This is the version of this function that does not force small regions to
+   keep their pairs in the heap.
+  _seg:      The segmentation context.
+  _pair:     The pair that was updated.
+  _old_dbic: The delta BIC value the pair used to have.
+             This is only used if the pair was in the heap previously and is
+              still in the heap to decide which direction to try to move it.*/
 static void oc_seg_pair_reheap(oc_seg_ctx *_seg,oc_seg_pair *_pair,
- float _old_bic){
+ float _old_dbic){
   /*Place this pair on the merge heap if necessary.*/
   if(_pair->dbic<=0){
     if(_pair->heapi<0)oc_seg_pair_heap_add(_seg,_pair);
-    else if(_old_bic<_pair->dbic)oc_seg_pair_heap_down(_seg,_pair->heapi);
+    else if(_old_dbic<_pair->dbic)oc_seg_pair_heap_down(_seg,_pair->heapi);
     else oc_seg_pair_heap_up(_seg,_pair->heapi);
   }
   else if(_pair->heapi>=0){
@@ -600,14 +705,22 @@ static void oc_seg_pair_reheap(oc_seg_ctx *_seg,oc_seg_pair *_pair,
   }
 }
 
+/*Adds, removes, or moves a pair in the pair heap after its dbic has changed.
+  This is the version of this function that froces small regions to keep their
+   pairs in the heap.
+  _seg:      The segmentation context.
+  _pair:     The pair that was updated.
+  _old_dbic: The delta BIC value the pair used to have.
+             This is only used if the pair was in the heap previously and is
+              still in the heap to decide which direction to try to move it.*/
 static void oc_seg_pair_reheap_small(oc_seg_ctx *_seg,oc_seg_pair *_pair,
- float _old_bic){
+ float _old_dbic){
   /*Place this pair on the merge heap if necessary.*/
   if(_pair->dbic<=0||
    (_seg->regions+_pair->links[0].regi)->npixels<OC_SEG_REGION_SZ_MIN||
    (_seg->regions+_pair->links[1].regi)->npixels<OC_SEG_REGION_SZ_MIN){
     if(_pair->heapi<0)oc_seg_pair_heap_add(_seg,_pair);
-    else if(_old_bic<_pair->dbic)oc_seg_pair_heap_down(_seg,_pair->heapi);
+    else if(_old_dbic<_pair->dbic)oc_seg_pair_heap_down(_seg,_pair->heapi);
     else oc_seg_pair_heap_up(_seg,_pair->heapi);
   }
   else if(_pair->heapi>=0){
@@ -616,12 +729,18 @@ static void oc_seg_pair_reheap_small(oc_seg_ctx *_seg,oc_seg_pair *_pair,
   }
 }
 
+/*Updates a pair's npixels, sumx, sumx2, bic and dbic fields, and its position
+   in the heap.
+  This is used after a pair is first created, and whenever one of its
+   constituent regions merges with another region.
+  _seg:  The segmentation context.
+  _pair: The pair to update.*/
 static void oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   oc_seg_region *reg0;
   oc_seg_region *reg1;
   float          area;
   float          var;
-  float          old_bic;
+  float          old_dbic;
   /*Compute the statistics of the merged region.*/
   reg0=_seg->regions+_pair->links[0].regi;
   reg1=_seg->regions+_pair->links[1].regi;
@@ -630,22 +749,37 @@ static void oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   _pair->sumx2=reg0->sumx2+reg1->sumx2;
   area=(float)_pair->npixels;
   var=(_pair->sumx2*area-_pair->sumx*_pair->sumx)/(area*area);
-  if(var>0)_pair->bic=0.5F*area*(float)log(var);
-  else _pair->bic=0;
-  old_bic=_pair->dbic;
-  _pair->dbic=_pair->bic-reg0->bic-reg1->bic-(float)log(area);
-  _seg->reheap(_seg,_pair,old_bic);
+  _pair->bic=var>0?area*OC_LOGF(var):0;
+  old_dbic=_pair->dbic;
+  _pair->dbic=_pair->bic-reg0->bic-reg1->bic-
+   OC_SEG_MODEL_WEIGHT*OC_LOGF(area);
+  _seg->reheap(_seg,_pair,old_dbic);
 }
 
+/*Creates a new pair between two regions if one does not already exist.
+  _seg:   The segmentation context.
+  _regi0: The region number of the first region.
+          If this pair is eventually merged, this will be the label of the
+           merged region.
+  _regi1: The region number of the second region.
+          For efficiency purposes, one desires this to have the smaller
+           number of neighbors.*/
 static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
   oc_seg_region *reg0;
   oc_seg_region *reg1;
   oc_seg_link   *link;
   oc_seg_pair   *pair;
+  /*Search the second region's neighbor list for the first region.*/
   reg1=_seg->regions+_regi1;
+  /*Quick rejection: it's at the head of the list.*/
   if(reg1->link.next->regi==_regi0)return;
+  /*Otherwise start searching from the second element of the list.*/
   for(link=reg1->link.next->next;link->pair!=NULL;link=link->next){
     if(link->regi==_regi0){
+      /*We found it.
+        Now move this link to the head of the list, so that if the next pixel
+         also comes from the same region (highly likely), we can do a fast
+         rejection.*/
       link->prev->next=link->next;
       link->next->prev=link->prev;
       link->next=reg1->link.next;
@@ -655,7 +789,7 @@ static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
       return;
     }
   }
-  /*Add the pair to the regions' lists.*/
+  /*Add a new pair to the regions' lists.*/
   reg0=_seg->regions+_regi0;
   pair=oc_seg_pair_alloc(_seg);
   pair->links[0].regi=_regi0;
@@ -671,14 +805,16 @@ static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
   reg0->link.next->prev=pair->links+1;
   reg0->link.next=pair->links+1;
   pair->heapi=-1;
+  /*Check to see if these regions can potentially be merged.*/
   oc_seg_pair_update(_seg,pair);
 }
 
 /*Merges the list of pairs in region _srci into the list in region _dsti,
    relabling _srci to _dsti.
-  After merging, any pairs that were already in region _dsti (after relabling)
-   are left in _srci's list.
-  The (_dsti,_srci) pair is discarded from both lists.
+  _srci's list is destructively modified, and should not be referenced any
+   further.
+  The (_dsti,_srci) pair should already be removed from both lists before
+   calling this function.
   _seg:  The segmentation context.
   _dsti: The destination region number.
   _srci: The source region number.*/
@@ -734,34 +870,44 @@ static void oc_seg_merge_pair_lists(oc_seg_ctx *_seg,int _dsti,int _srci){
   }
 }
 
+/*Performs pending merges until the pair heap is empty.
+  _seg: The segmentation context.*/
 static void oc_seg_merge(oc_seg_ctx *_seg){
-  /*Resolve all merge candidates.*/
+  /*While the heap is non-empty...*/
   while(_seg->nheap>0){
     oc_seg_pair   *pair;
     oc_seg_link   *link;
     oc_seg_region *reg[2];
+    int            regi[2];
     int            dst;
-    pair=_seg->heap[0];
-    /*We want to be sure we always prefer any global region over a local one,
-       but otherwise we use the inherent order of the pair, which is usually
-       a good one.*/
-    dst=pair->links[0].regi<0&&0<=pair->links[1].regi;
-    reg[0]=_seg->regions+pair->links[0].regi;
-    reg[1]=_seg->regions+pair->links[1].regi;
+    /*Take the head off the heap.*/
+    pair=oc_seg_pair_heap_delhead(_seg);
+    /*Remove this pair from each region's neighbor list, since we're about to
+       merge the two.*/
     pair->links[0].next->prev=pair->links[0].prev;
     pair->links[0].prev->next=pair->links[0].next;
     pair->links[1].next->prev=pair->links[1].prev;
     pair->links[1].prev->next=pair->links[1].next;
-    oc_seg_pair_heap_delhead(_seg);
-    oc_seg_merge_pair_lists(_seg,pair->links[dst].regi,
-     pair->links[1-dst].regi);
+    regi[0]=pair->links[0].regi;
+    regi[1]=pair->links[1].regi;
+    /*We want to be sure we always prefer any global region label over a local
+       one, but otherwise we use the inherent order of the pair, which is
+       usually a good one.*/
+    dst=regi[0]<0&&0<=regi[1];
+    /*Merge the two neighbor lists.*/
+    oc_seg_merge_pair_lists(_seg,regi[dst],regi[1-dst]);
+    reg[0]=_seg->regions+regi[dst];
+    reg[1]=_seg->regions+regi[1-dst];
+    /*Fill the new region with statistics from the merge.*/
+    reg[0]->npixels=pair->npixels;
+    reg[0]->sumx=pair->sumx;
+    reg[0]->sumx2=pair->sumx2;
+    reg[0]->bic=pair->bic;
+    reg[1]->link.regi=regi[0];
+    /*Finally free the pair.*/
     oc_seg_pair_free(_seg,pair);
-    reg[dst]->npixels=pair->npixels;
-    reg[dst]->sumx=pair->sumx;
-    reg[dst]->sumx2=pair->sumx2;
-    reg[dst]->bic=pair->bic;
-    reg[1-dst]->link.regi=reg[dst]->link.regi;
-    for(link=reg[dst]->link.next;link->pair!=NULL;link=link->next){
+    /*Now update all the pairs that involve the new merged region.*/
+    for(link=reg[0]->link.next;link->pair!=NULL;link=link->next){
       oc_seg_pair_update(_seg,link->pair);
     }
   }
@@ -780,9 +926,9 @@ static void oc_seg_merge(oc_seg_ctx *_seg){
   _area:   The area of the local region.
   _sumx:   The sum of the pixel values over the local region.
   _sumx2   The sum of the squared pixel values over the local region.
-  _var:    The variance of the local region.*/
+  _bic:    The BIC of the local region.*/
 static void oc_seg_merge_l(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
- int _height,int _area,float _sumx,float _sumx2,float _var){
+ int _height,int _area,float _sumx,float _sumx2,float _bic){
   oc_seg_region *reg;
   int            regi;
   int            xend;
@@ -801,16 +947,16 @@ static void oc_seg_merge_l(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   reg->npixels=_area;
   reg->sumx=_sumx;
   reg->sumx2=_sumx2;
-  reg->bic=_var>0?0.5F*_area*(float)log(_var):0;
+  reg->bic=_bic;
   /*Scan the left edge, if present, for adjacent regions.*/
   if(_x0>0)for(y=_y0;y<yend;y++){
-    oc_seg_create_pair(_seg,oc_seg_get_label(_seg,_seg->labels[y][_x0-1]),
-     regi);
+    oc_seg_create_pair(_seg,
+     oc_seg_get_label(_seg,_seg->labels[y][_x0-1]),regi);
   }
   /*Scan the top edge, if present, for adjacent regions.*/
   if(_y0>0)for(x=_x0;x<xend;x++){
-    oc_seg_create_pair(_seg,oc_seg_get_label(_seg,_seg->labels[_y0-1][x]),
-     regi);
+    oc_seg_create_pair(_seg,
+     oc_seg_get_label(_seg,_seg->labels[_y0-1][x]),regi);
   }
   /*Merge all mergeable regions.*/
   oc_seg_merge(_seg);
@@ -850,7 +996,8 @@ static void oc_seg_merge_s(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
     /*If this region was not already merged with another and is small...*/
     if(lreg->link.regi==lregi&&lreg->npixels<OC_SEG_REGION_SZ_MIN){
       /*Add its pairs to the merge heap, regardless of whether or not they're
-         beneficial.*/
+         beneficial.
+        Don't worry about heap structure for now.*/
       for(link=lreg->link.next;link->pair!=NULL;link=link->next){
         pair=link->pair;
         if(pair->heapi<0){
@@ -860,6 +1007,7 @@ static void oc_seg_merge_s(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
       }
     }
   }
+  /*Make a heap out of all the pairs all at once.*/
   oc_seg_pair_heapify(_seg);
   /*Step 2: Merge all the small regions.*/
   _seg->reheap=oc_seg_pair_reheap_small;
@@ -875,9 +1023,12 @@ static void oc_seg_merge_s(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
       reg=_seg->regions+regi;
       *&reg->link=*&lreg->link;
       reg->link.regi=regi;
+      reg->link.next->prev=&reg->link;
+      reg->link.prev->next=&reg->link;
       reg->npixels=lreg->npixels;
       reg->sumx=lreg->sumx;
       reg->sumx2=lreg->sumx2;
+      reg->bic=lreg->bic;
       lreg->link.regi=regi;
       /*Relabel the region in all of its merge pairs.*/
       for(link=reg->link.next;link->pair!=NULL;link=link->next){
@@ -897,7 +1048,7 @@ static void oc_seg_merge_s(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
 
 /*Attempts to merge a block that can't be split anymore with existing,
    neighboring regions.
-  If a successful candidate cannot be found, a new region is created.
+  If a successful candidate cannot be found, a new global region is created.
   _seg:    The segmentation context.
   _x0:     The X coordinate of the upper-left hand corner of the block.
   _y0:     The Y coordinate of the upper-left hand corner of the block.
@@ -906,9 +1057,9 @@ static void oc_seg_merge_s(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   _area:   The area of the block.
   _sumx:   The sum of the pixel values over the block.
   _sumx2   The sum of the squared pixel values over the block.
-  _var:    The variance of the block.*/
+  _bic:    The BIC of the block.*/
 static void oc_seg_merge_t(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
- int _height,int _area,float _sumx,float _sumx2,float _var){
+ int _height,int _area,float _sumx,float _sumx2,float _bic){
   oc_seg_region *reg;
   int            regi;
   int            xend;
@@ -927,16 +1078,16 @@ static void oc_seg_merge_t(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   reg->npixels=_area;
   reg->sumx=_sumx;
   reg->sumx2=_sumx2;
-  reg->bic=_var>0?0.5F*_area*(float)log(_var):0;
+  reg->bic=_bic;
   /*Scan the left edge, if present, for adjacent regions.*/
   if(_x0>0)for(y=_y0;y<yend;y++){
-    oc_seg_create_pair(_seg,oc_seg_get_label(_seg,_seg->labels[y][_x0-1]),
-     regi);
+    oc_seg_create_pair(_seg,
+     oc_seg_get_label(_seg,_seg->labels[y][_x0-1]),regi);
   }
   /*Scan the top edge, if present, for adjacent regions.*/
   if(_y0>0)for(x=_x0;x<xend;x++){
-    oc_seg_create_pair(_seg,oc_seg_get_label(_seg,_seg->labels[_y0-1][x]),
-     regi);
+    oc_seg_create_pair(_seg,
+     oc_seg_get_label(_seg,_seg->labels[_y0-1][x]),regi);
   }
   /*Merge all mergeable regions.*/
   oc_seg_merge(_seg);
@@ -962,15 +1113,15 @@ static void oc_seg_merge_t(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
-  _var:    The variance of the block.*/
+  _bic:    The BIC of the block.*/
 static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
- int _dx,int _dy,int _level,int _area,float _sumx,float _sumx2,float _var){
+ int _dx,int _dy,int _level,int _area,float _sumx,float _sumx2,float _bic){
   int size;
   if(_level>0){
-    float var[4];
     float sumx[4];
     float sumx2[4];
-    float bic;
+    float bic[4];
+    float dbic;
     int   dx[4];
     int   dy[4];
     int   area;
@@ -981,27 +1132,29 @@ static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
     size_2=1<<_level;
     dx[0]=dx[2]=dy[0]=dy[1]=0;
     dx[1]=dx[3]=dy[2]=dy[3]=size_2;
-    bic=_var>0?0.5F*_area*(float)log(_var):0;
+    dbic=_bic;
     for(i=0;i<4;i++){
+      float var;
       sumx[i]=oc_seg_sum_region(_seg->local_sumx,_dx+dx[i],_dy+dy[i],size_2,
        size_2);
       sumx2[i]=oc_seg_sum_region(_seg->local_sumx2,_dx+dx[i],_dy+dy[i],
        size_2,size_2);
-      var[i]=(sumx2[i]*area-sumx[i]*sumx[i])/(area*area);
-      if(var[i]>0)bic-=0.5F*area*(float)log(var[i]);
+      var=(sumx2[i]*area-sumx[i]*sumx[i])/(area*area);
+      bic[i]=var>0?area*OC_LOGF(var):0;
+      dbic-=bic[i];
     }
-    bic-=3*(float)log(_area);
-    if(bic>=0){
+    dbic-=3*OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+    if(dbic>=0){
       for(i=0;i<4;i++){
         oc_seg_splitmerge_il(_seg,_x0,_y0,_dx+dx[i],_dy+dy[i],_level,area,
-         sumx[i],sumx2[i],var[i]);
+         sumx[i],sumx2[i],bic[i]);
       }
       return;
     }
     _level++;
   }
   size=1<<_level;
-  oc_seg_merge_l(_seg,_x0+_dx,_y0+_dy,size,size,_area,_sumx,_sumx2,_var);
+  oc_seg_merge_l(_seg,_x0+_dx,_y0+_dy,size,size,_area,_sumx,_sumx2,_bic);
 }
 
 /*Recursive split-merge step.
@@ -1019,18 +1172,18 @@ static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
-  _var:    The variance of the block.*/
+  _bic:    The BIC of the block.*/
 static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
  int _x0,int _y0,int _dx,int _dy,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _var){
+ int _area,float _sumx,float _sumx2,float _bic){
   int size;
   size=1<<_level;
   if(_level>0){
-    float var[4];
     float sumx[4];
     float sumx2[4];
-    float bic;
-    float log_area;
+    float bic[4];
+    float dbic;
+    float model_cost;
     int   dx[4];
     int   dy[4];
     int   area[4];
@@ -1046,10 +1199,10 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
     b=(size>_width)|((size>_height)<<1)|
      ((size_2>_width)<<2)|((size_2>_height)<<3)|
      ((size_2==_width)<<4)|((size_2==_height)<<5);
-    log_area=(float)log(_area);
-    bic=_var>0?0.5F*_area*(float)log(_var):0;
-    bic+=log_area;
+    model_cost=OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+    dbic=_bic+model_cost;
     for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
+      float var;
       width[i]=(b&OC_SEG_BORDER_XMASKS[i])?_width-dx[i]:size;
       height[i]=(b&OC_SEG_BORDER_YMASKS[i])?_height-dy[i]:size;
       area[i]=width[i]*height[i];
@@ -1057,25 +1210,25 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
        size);
       sumx2[i]=oc_seg_sum_region(_seg->local_sumx2,_dx+dx[i],_dy+dy[i],size,
        size);
-      var[i]=(sumx2[i]*area[i]-sumx[i]*sumx[i])/(area[i]*area[i]);
-      if(var[i]>0)bic-=0.5F*area[i]*(float)log(var[i]);
-      bic-=log_area;
+      var=(sumx2[i]*area[i]-sumx[i]*sumx[i])/(area[i]*area[i]);
+      bic[i]=var>0?area[i]*OC_LOGF(var):0;
+      dbic-=bic[i]+model_cost;
     }
-    if(bic>=0){
+    if(dbic>=0){
       for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
         if(b&OC_SEG_BORDER_MASKS[i]){
           oc_seg_splitmerge_bl(_seg,_x0,_y0,_dx+dx[i],_dy+dy[i],
-           width[i],height[i],_level,area[i],sumx[i],sumx2[i],var[i]);
+           width[i],height[i],_level,area[i],sumx[i],sumx2[i],bic[i]);
         }
         else{
           oc_seg_splitmerge_il(_seg,_x0,_y0,_dx+dx[i],_dy+dy[i],
-           _level,area[i],sumx[i],sumx2[i],var[i]);
+           _level,area[i],sumx[i],sumx2[i],bic[i]);
         }
       }
       return;
     }
   }
-  oc_seg_merge_l(_seg,_x0+_dx,_y0+_dy,_width,_height,_area,_sumx,_sumx2,_var);
+  oc_seg_merge_l(_seg,_x0+_dx,_y0+_dy,_width,_height,_area,_sumx,_sumx2,_bic);
 }
 
 /*Recursive split-merge step.
@@ -1087,10 +1240,10 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
-  _var:    The variance of the block.
+  _bic:    The BIC of the block.
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
- int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _var,
+ int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
  const oc_img_plane *_plane){
   const unsigned char *ypix;
   int                  size;
@@ -1115,7 +1268,7 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
     ypix+=_plane->stride;
   }
   _seg->nlocal_regions=-2;
-  oc_seg_splitmerge_il(_seg,_x0,_y0,0,0,_level,_area,_sumx,_sumx2,_var);
+  oc_seg_splitmerge_il(_seg,_x0,_y0,0,0,_level,_area,_sumx,_sumx2,_bic);
   oc_seg_merge_s(_seg,_x0,_y0,size,size);
 }
 
@@ -1130,11 +1283,11 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
-  _var:    The variance of the block.
+  _bic:    The BIC of the block.
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _var,const oc_img_plane *_plane){
+ int _area,float _sumx,float _sumx2,float _bic,const oc_img_plane *_plane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
@@ -1169,7 +1322,7 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
   }
   _seg->nlocal_regions=-2;
   oc_seg_splitmerge_bl(_seg,_x0,_y0,0,0,_width,_height,_level,
-   _area,_sumx,_sumx2,_var);
+   _area,_sumx,_sumx2,_bic);
   oc_seg_merge_s(_seg,_x0,_y0,_width,_height);
 }
 
@@ -1182,15 +1335,15 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
-  _var:    The variance of the block.
+  _bic:    The BIC of the block.
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
- int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _var,
+ int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
  const oc_img_plane *_plane){
-  float var[4];
   float sumx[4];
   float sumx2[4];
-  float bic;
+  float bic[4];
+  float dbic;
   int   tdx[4];
   int   tdy[4];
   int   area;
@@ -1205,15 +1358,17 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
   tsize=1<<_level-OC_SEG_MOMENT_RES_LOG;
   tdx[0]=tdx[2]=tdy[0]=tdy[1]=0;
   tdx[1]=tdx[3]=tdy[2]=tdy[3]=tsize;
-  bic=_var>0?0.5F*_area*(float)log(_var):0;
+  dbic=_bic;
   for(i=0;i<4;i++){
+    float var;
     sumx[i]=oc_seg_sum_region(_seg->sumx,tx+tdx[i],ty+tdy[i],tsize,tsize);
     sumx2[i]=oc_seg_sum_region(_seg->sumx2,tx+tdx[i],ty+tdy[i],tsize,tsize);
-    var[i]=(sumx2[i]-sumx[i]*sumx[i]/area)/area;
-    if(var[i]>0)bic-=0.5F*area*(float)log(var[i]);
+    var=(sumx2[i]-sumx[i]*sumx[i]/area)/area;
+    bic[i]=var>0?area*OC_LOGF(var):0;
+    dbic-=bic[i];
   }
-  bic-=3*(float)log(_area);
-  if(bic>=0){
+  dbic-=3*OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+  if(dbic>=0){
     int dx[4];
     int dy[4];
     int size_2;
@@ -1222,18 +1377,18 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
     dx[1]=dx[3]=dy[2]=dy[3]=size_2;
     if(_level>OC_SEG_MOMENT_RES_LOG)for(i=0;i<4;i++){
       oc_seg_splitmerge_it(_seg,_x0+dx[i],_y0+dy[i],_level,area,
-       sumx[i],sumx2[i],var[i],_plane);
+       sumx[i],sumx2[i],bic[i],_plane);
     }
     else for(i=0;i<4;i++){
       oc_seg_splitmerge_is(_seg,_x0+dx[i],_y0+dy[i],_level,area,
-       sumx[i],sumx2[i],var[i],_plane);
+       sumx[i],sumx2[i],bic[i],_plane);
     }
   }
   else{
     int size;
     _level++;
     size=1<<_level;
-    oc_seg_merge_t(_seg,_x0,_y0,size,size,_area,_sumx,_sumx2,_var);
+    oc_seg_merge_t(_seg,_x0,_y0,size,size,_area,_sumx,_sumx2,_bic);
   }
 }
 
@@ -1248,16 +1403,16 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
-  _var:    The variance of the block.
+  _bic:    The BIC of the block.
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _var,const oc_img_plane *_plane){
-  float var[4];
+ int _area,float _sumx,float _sumx2,float _bic,const oc_img_plane *_plane){
   float sumx[4];
   float sumx2[4];
-  float bic;
-  float log_area;
+  float bic[4];
+  float dbic;
+  float model_cost;
   int   dx[4];
   int   dy[4];
   int   tdx[4];
@@ -1283,12 +1438,12 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
   b=(size>_width)|((size>_height)<<1)|
    ((size_2>_width)<<2)|((size_2>_height)<<3)|
    ((size_2==_width)<<4)|((size_2==_height)<<5);
-  log_area=(float)log(_area);
-  bic=_var>0?0.5F*_area*(float)log(_var):0;
-  bic+=log_area;
+  model_cost=OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+  dbic=_bic+model_cost;
   for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
-    int twidth;
-    int theight;
+    float var;
+    int   twidth;
+    int   theight;
     width[i]=(b&OC_SEG_BORDER_XMASKS[i])?_width-dx[i]:size_2;
     height[i]=(b&OC_SEG_BORDER_YMASKS[i])?_height-dy[i]:size_2;
     area[i]=width[i]*height[i];
@@ -1296,20 +1451,20 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
     theight=height[i]+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
     sumx[i]=oc_seg_sum_region(_seg->sumx,tx+tdx[i],ty+tdy[i],twidth,theight);
     sumx2[i]=oc_seg_sum_region(_seg->sumx2,tx+tdx[i],ty+tdy[i],twidth,theight);
-    var[i]=(sumx2[i]-sumx[i]*sumx[i]/area[i])/area[i];
-    if(var[i]>0)bic-=0.5F*area[i]*(float)log(var[i]);
-    bic-=log_area;
+    var=(sumx2[i]-sumx[i]*sumx[i]/area[i])/area[i];
+    bic[i]=var>0?area[i]*OC_LOGF(var):0;
+    dbic-=bic[i]+model_cost;
   }
-  if(bic>=0){
+  if(dbic>=0){
     if(_level>OC_SEG_MOMENT_RES_LOG){
       for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
         if(b&OC_SEG_BORDER_MASKS[i]){
           oc_seg_splitmerge_bt(_seg,_x0+dx[i],_y0+dy[i],width[i],height[i],
-           _level,area[i],sumx[i],sumx2[i],var[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
         }
         else{
           oc_seg_splitmerge_it(_seg,_x0+dx[i],_y0+dy[i],
-           _level,area[i],sumx[i],sumx2[i],var[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
         }
       }
     }
@@ -1317,16 +1472,16 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
       for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
         if(b&OC_SEG_BORDER_MASKS[i]){
           oc_seg_splitmerge_bs(_seg,_x0+dx[i],_y0+dy[i],width[i],height[i],
-           _level,area[i],sumx[i],sumx2[i],var[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
         }
         else{
           oc_seg_splitmerge_is(_seg,_x0+dx[i],_y0+dy[i],
-           _level,area[i],sumx[i],sumx2[i],var[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
         }
       }
     }
   }
-  else oc_seg_merge_t(_seg,_x0,_y0,_width,_height,_area,_sumx,_sumx2,_var);
+  else oc_seg_merge_t(_seg,_x0,_y0,_width,_height,_area,_sumx,_sumx2,_bic);
 }
 
 
@@ -1347,21 +1502,27 @@ static void oc_seg_init(oc_seg_ctx *_seg,int _width,int _height){
   /*Find the maximum recursion depth.*/
   for(level_max=0,size=1;size<_width||size<_height;size<<=1)level_max++;
   _seg->level_max=level_max;
-  /*Allocate space for the moment tables.*/
+  /*Allocate space for the moment tables.
+    We rely on the initial row and column being zeroed out.*/
   twidth=(_width+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG)+1;
   theight=(_height+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG)+1;
-  _seg->sumx=(float **)oc_alloc_2d(theight,twidth,sizeof(_seg->sumx[0][0]));
-  _seg->sumx2=(float **)oc_alloc_2d(theight,twidth,sizeof(_seg->sumx2[0][0]));
-  _seg->local_sumx=(float **)oc_alloc_2d(OC_SEG_MOMENT_RES+1,
-   OC_SEG_MOMENT_RES+1,sizeof(_seg->local_sumx[0][0]));
-  _seg->local_sumx2=(float **)oc_alloc_2d(OC_SEG_MOMENT_RES+1,
-   OC_SEG_MOMENT_RES+1,sizeof(_seg->local_sumx2[0][0]));
-  /*Zero out the initial row and column of each moment table.*/
+  _seg->sumx=(float **)oc_malloc_2d(theight,twidth,sizeof(_seg->sumx[0][0]));
+  _seg->sumx2=(float **)oc_malloc_2d(theight,twidth,
+   sizeof(_seg->sumx2[0][0]));
   for(x=0;x<twidth;x++)_seg->sumx[0][x]=_seg->sumx2[0][x]=0;
   for(y=1;y<theight;y++)_seg->sumx[y][0]=_seg->sumx2[y][0]=0;
-  for(x=0;x<=OC_SEG_MOMENT_RES;x++)_seg->local_sumx[0][x]=_seg->local_sumx2[0][x]=0;
-  for(y=1;y<=OC_SEG_MOMENT_RES;y++)_seg->local_sumx[y][0]=_seg->local_sumx2[y][0]=0;
-  _seg->labels=(int **)oc_alloc_2d(_height,_width,sizeof(_seg->labels[0][0]));
+  _seg->local_sumx=(float **)oc_malloc_2d(OC_SEG_MOMENT_RES+1,
+   OC_SEG_MOMENT_RES+1,sizeof(_seg->local_sumx[0][0]));
+  _seg->local_sumx2=(float **)oc_malloc_2d(OC_SEG_MOMENT_RES+1,
+   OC_SEG_MOMENT_RES+1,sizeof(_seg->local_sumx2[0][0]));
+  for(x=0;x<OC_SEG_MOMENT_RES+1;x++){
+    _seg->local_sumx[0][x]=_seg->local_sumx2[0][x]=0;
+  }
+  for(y=1;y<OC_SEG_MOMENT_RES+1;y++){
+    _seg->local_sumx[y][0]=_seg->local_sumx2[y][0]=0;
+  }
+  _seg->labels=(int **)oc_malloc_2d(_height,_width,
+   sizeof(_seg->labels[0][0]));
   /*Compute the maximum number of global regions in the segmentation:*/
   cregions=(_width*_height+OC_SEG_REGION_SZ_MIN-1)/OC_SEG_REGION_SZ_MIN;
   /*Compute the maximum number of pairs.
@@ -1382,6 +1543,7 @@ static void oc_seg_init(oc_seg_ctx *_seg,int _width,int _height){
     The extra 1 entry is there to account for the special label -1, which
      indicates no region.*/
   _seg->regions+=OC_SEG_NLOCAL_REGS+1;
+  _seg->relabels=(int *)_ogg_malloc(cregions*sizeof(_seg->relabels[0]));
   _seg->npairs=0;
   _seg->nheap=0;
   _seg->pairs=(oc_seg_pair *)_ogg_malloc(cpairs*sizeof(_seg->pairs[0]));
@@ -1399,6 +1561,7 @@ static void oc_seg_clear(oc_seg_ctx *_seg){
   oc_free_2d(_seg->local_sumx2);
   oc_free_2d(_seg->labels);
   _ogg_free(_seg->regions-OC_SEG_NLOCAL_REGS-1);
+  _ogg_free(_seg->relabels);
   _ogg_free(_seg->pairs);
   _ogg_free(_seg->heap);
 }
@@ -1411,6 +1574,7 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const oc_img_plane *_plane){
   float sumx;
   float sumx2;
   float var;
+  float bic;
   int   area;
   int   twidth;
   int   theight;
@@ -1428,13 +1592,14 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const oc_img_plane *_plane){
   sumx=oc_seg_sum_region(_seg->sumx,0,0,twidth,theight);
   sumx2=oc_seg_sum_region(_seg->sumx2,0,0,twidth,theight);
   var=(sumx2-sumx*sumx/area)/area;
+  bic=var>0?area*OC_LOGF(var):0;
   if(_seg->level_max>OC_SEG_MOMENT_RES_LOG){
     oc_seg_splitmerge_bt(_seg,0,0,_plane->width,_plane->height,
-     _seg->level_max,area,sumx,sumx2,var,_plane);
+     _seg->level_max,area,sumx,sumx2,bic,_plane);
   }
   else{
     oc_seg_splitmerge_bs(_seg,0,0,_plane->width,_plane->height,
-     _seg->level_max,area,sumx,sumx2,var,_plane);
+     _seg->level_max,area,sumx,sumx2,bic,_plane);
   }
   /*Make sure all the region labels are up to date.*/
   for(regi=0;regi<_seg->nregions;regi++)oc_seg_get_label(_seg,regi);
@@ -1448,158 +1613,140 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const oc_img_plane *_plane){
   _width:  The width of the image.
   _height: The height of the image.*/
 static void oc_impmap_scan(oc_impmap_ctx *_impmap,int _width,int _height){
-  oc_seg_region  *sregions;
-  int           **labels;
-  int             width_2;
-  int             height_2;
-  int             xend;
-  int             yend;
-  int             region;
-  int             neighbor;
-  int             x;
-  int             y;
+  oc_seg_region     *sregions;
+  oc_impmap_region  *iregions;
+  int              **labels;
+  int               *relabels;
+  int                width_2;
+  int                height_2;
+  int                xend;
+  int                yend;
+  int                nregions;
+  int                regi;
+  int                regj;
+  int                x;
+  int                y;
+  /*First: compact the list of regions.*/
+  nregions=_impmap->seg.nregions;
   sregions=_impmap->seg.regions;
+  relabels=_impmap->seg.relabels;
+  for(regi=regj=0;regi<nregions;regi++){
+    if(sregions[regi].link.regi==regi){
+      if(regi!=regj)*(sregions+regj)=*(sregions+regi);
+      relabels[regi]=regj++;
+    }
+    /*We may not know the final label of the region we were merged with:
+       save the old label.*/
+    else relabels[regi]=-1-sregions[regi].link.regi;
+  }
+  /*Go back and fix up the labels of any merged regions.*/
+  for(regi=0;regi<nregions;regi++){
+    if(relabels[regi]<0)relabels[regi]=relabels[-1-relabels[regi]];
+  }
+  nregions=_impmap->seg.nregions=regj;
+  /*And now update the neighbor lists.*/
+  for(regi=0;regi<nregions;regi++){
+    oc_seg_link *link;
+    link=&sregions[regi].link;
+    link->next->prev=link;
+    link->prev->next=link;
+    do{
+      link->regi=relabels[link->regi];
+      link=link->next;
+    }
+    while(link->pair!=NULL);
+  }
+  /*Second: Scan the image, gathering statistics and relabeling as we go.
+    We must be careful to relabel each pixel exactly once, because after
+     compacting, relabels[relabels[regi]]!=relabels[regi], so multiple
+     relabelings would be destructive.*/
   labels=_impmap->seg.labels;
+  iregions=_impmap->regions;
   /*Clear the region data.*/
-  memset(_impmap->regions,0,
-   sizeof(_impmap->regions[0])*_impmap->seg.nregions);
-  /*First: handle the corner(s).*/
-  region=sregions[labels[0][0]].link.regi;
-  _impmap->regions[region].nborder++;
-  _impmap->regions[region].nedge++;
+  memset(iregions,0,sizeof(iregions[0])*nregions);
+  /*Handle the corner(s):*/
+  regi=labels[0][0]=relabels[labels[0][0]];
+  iregions[regi].nborder++;
+  iregions[regi].nedge++;
   if(_width>1){
-    region=sregions[labels[0][_width-1]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=labels[0][_width-1]=relabels[labels[0][_width-1]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
   if(_height>1){
-    region=sregions[labels[_height-1][0]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=labels[_height-1][0]=relabels[labels[_height-1][0]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
   if(_width>1&&_height>1){
-    region=sregions[labels[_height-1][_width-1]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=labels[_height-1][_width-1]=relabels[labels[_height-1][_width-1]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
-  /*Second: Handle the interior edges.*/
+  /*Handle the interior edge(s):*/
   for(x=1;x<_width-2;x++){
-    region=sregions[labels[0][x]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=labels[0][x]=relabels[labels[0][x]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
   for(y=1;y<_height-2;y++){
-    region=sregions[labels[y][0]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=labels[y][0]=relabels[labels[y][0]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
+  /*Note: we DON'T store the new label for this edge.
+    See below.*/
   if(_height>1)for(x=1;x<_width-2;x++){
-    region=sregions[labels[_height-1][x]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=relabels[labels[_height-1][x]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
   if(_width>1)for(y=1;y<_height-2;y++){
-    region=sregions[labels[y][_width-1]].link.regi;
-    _impmap->regions[region].nborder++;
-    _impmap->regions[region].nedge++;
+    regi=labels[y][_width-1]=relabels[labels[y][_width-1]];
+    iregions[regi].nborder++;
+    iregions[regi].nedge++;
   }
-  /*Third: handle the interior.*/
+  /*Handle the interior:*/
+  /*In the interior, we visit a pixel and all four of its neighbors.
+    To make sure we only relabel each pixel once, we operate under the
+     invariant that the current pixel, and all of its neighbors except the
+     one below it have already been relabeled.
+    Thus we relabel the next row right before we traverse it.
+    That's why we skipped relabeling the last row above.
+    But first, we must relabel the first row of the interior, because that
+     was not done above.*/
+  if(_height>1)for(x=1;x<_width-2;x++)labels[1][x]=relabels[labels[1][x]];
+  /*Now we proceed with the main interior loop.*/
   for(y=1;y<_height-2;y++)for(x=1;x<_width-2;x++){
     int border;
-    region=sregions[labels[y][x]].link.regi;
-    neighbor=sregions[labels[y][x-1]].link.regi;
-    border=region^neighbor;
-    neighbor=sregions[labels[y][x+1]].link.regi;
-    border|=region^neighbor;
-    neighbor=sregions[labels[y-1][x]].link.regi;
-    border|=region^neighbor;
-    neighbor=sregions[labels[y+1][x]].link.regi;
-    border|=region^neighbor;
-    _impmap->regions[region].nborder+=!!border;
+    regi=labels[y][x];
+    border=regi^labels[y][x-1];
+    border|=regi^labels[y][x+1];
+    border|=regi^labels[y-1][x];
+    regj=labels[y+1][x]=relabels[labels[y+1][x]];
+    border|=regi^regj;
+    iregions[regi].nborder+=!!border;
   }
-  /*Fourth: Handle the central 25% of the image.*/
+  /*Fifth: Handle the central 25% of the image.*/
   width_2=_width>>1;
   height_2=_height>>1;
   xend=(width_2>>1)+width_2;
   yend=(height_2>>1)+height_2;
   for(y=height_2>>1;y<yend;y++)for(x=width_2>>1;x<xend;x++){
-    _impmap->regions[sregions[labels[y][x]].link.regi].ncenter++;
+    iregions[labels[y][x]].ncenter++;
   }
 }
 
-/*Computes the importance of a given motion vector.
-  _dx:         The horizontal motion, in half-pixels/frame.
-  _dy:         The vertical motion, in half-pixels/frame.
-  _mot_limits: The boundaries of each of the three piecewise sections of the
-                importance function, pre-adjusted to half-pixels/frame.*/
-static float oc_impmap_mot_weight(int _dx,int _dy,float _mot_limits[4]){
-  float mot;
-  /*This computation is perhaps too simple: In reality, it is motion which
-     deviates from the average (3D) motion that attracts attention.
-    Consider a camera that is moving straight forward.
-    The motion with the largest magnitudes is on the edge of the image, but
-     the most likely center of attention is the vanishing point in the center
-     of the image.
-    All of the motion in the image can be explained by one global motion of
-     the camera, and so none of it in particular draws attention.
-    However, the Theora codec does not currently have a form of global motion
-     compensation, and computing it just for this measurement is awfully
-     expensive.*/
-  mot=(float)sqrt(_dx*_dx+_dy*_dy);
-  if(mot<_mot_limits[0])return 0;
-  else if(mot<_mot_limits[1]){
-    return (mot-_mot_limits[0])/(_mot_limits[1]-_mot_limits[0]);
-  }
-  else if(mot<_mot_limits[2])return 1;
-  else if(mot<_mot_limits[3]){
-    return (_mot_limits[3]-mot)/(_mot_limits[3]-_mot_limits[2]);
-  }
-  else return 0;
-}
-
-
-oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
-  oc_impmap_ctx *impmap;
-  int            edge_sz;
-  int            width;
-  int            height;
-  width=_enc->state.info.frame_width;
-  height=_enc->state.info.frame_height;
-  impmap=(oc_impmap_ctx *)_ogg_malloc(sizeof(*impmap));
-  oc_seg_init(&impmap->seg,width,height);
-  impmap->inv_region_sz_max=100.0F/(width*height);
-  edge_sz=width>1?height>1?(width-2<<1)+(height<<1):width:height;
-  impmap->inv_edge_sz_max=2.0F/edge_sz;
-  /*Allocate space for the region stats and neighbor links.*/
-  impmap->regions=(oc_impmap_region *)_ogg_malloc(
-   impmap->seg.cregions*sizeof(impmap->regions[0]));
-  return impmap;
-}
-
-void oc_impmap_free(oc_impmap_ctx *_impmap){
-  if(_impmap!=NULL){
-    oc_seg_clear(&_impmap->seg);
-    _ogg_free(_impmap->regions);
-    _ogg_free(_impmap);
-  }
-}
-
-void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
- float _duration){
-  float weight_mins[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
-  float weight_maxs[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
-  float weight_scales[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
-  float imp_max;
-  float imp_scale;
-  float mot_limits[4];
+static void oc_impmap_regions_weight(oc_impmap_ctx *_impmap){
   oc_seg_region    *sreg;
   oc_impmap_region *ireg;
+  float             weight_mins[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
+  float             weight_maxs[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
+  float             weight_scales[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
+  float             imp_max;
+  float             imp_scale;
   int               regi;
   int               i;
-  /*Segment the Y plane.*/
-  oc_seg_plane(&_impmap->seg,&_img[0]);
-  /*Gather statistics over the segmentation.*/
-  oc_impmap_scan(_impmap,_img[0].width,_img[0].height);
   /*Compute the importance values for each region:*/
   for(i=0;i<OC_IMPMAP_NSEG_RESCALED_WEIGHTS;i++){
     weight_mins[i]=FLT_MAX;
@@ -1621,15 +1768,16 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
     }
     ireg->weights[OC_IMPMAP_WEIGHT_CONTRAST]=sreg->sumx/sreg->npixels;
     if(narea>0)ireg->weights[OC_IMPMAP_WEIGHT_CONTRAST]-=nsumx/narea;
+    /*Osberger does not specify using an absolute value, but it seems like
+       that is really what one wants.*/
+    ireg->weights[OC_IMPMAP_WEIGHT_CONTRAST]=
+     OC_FABSF(ireg->weights[OC_IMPMAP_WEIGHT_CONTRAST]);
     /*Size weight: measure the size of the region.*/
     ireg->weights[OC_IMPMAP_WEIGHT_SIZE]=
-     sreg->npixels*_impmap->inv_region_sz_max;
-    if(ireg->weights[OC_IMPMAP_WEIGHT_SIZE]>1){
-      ireg->weights[OC_IMPMAP_WEIGHT_SIZE]=1;
-    }
+     OC_MINF(sreg->npixels*_impmap->inv_region_sz_max,1);
     /*Shape weight: measure unusual (long/thin) shapes.*/
     ireg->weights[OC_IMPMAP_WEIGHT_SHAPE]=
-     (float)pow(ireg->nborder,1.75)/sreg->npixels;
+     OC_POWF(ireg->nborder,1.75F)/sreg->npixels;
     /*Location weight: weight regions in the image center.*/
     ireg->weights[OC_IMPMAP_WEIGHT_LOCATION]=
      ireg->ncenter/(float)sreg->npixels;
@@ -1637,13 +1785,10 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
       As per Osberger, this is defined as regions which do not intersect the
        border of the image.*/
     ireg->weights[OC_IMPMAP_WEIGHT_FOREGROUND]=
-     1-ireg->nedge*_impmap->inv_edge_sz_max;
-    if(ireg->weights[OC_IMPMAP_WEIGHT_FOREGROUND]<0){
-      ireg->weights[OC_IMPMAP_WEIGHT_FOREGROUND]=0;
-    }
+     OC_MAXF(1-ireg->nedge*_impmap->inv_edge_sz_max,0);
     for(i=0;i<OC_IMPMAP_NSEG_RESCALED_WEIGHTS;i++){
-      if(ireg->weights[i]>weight_maxs[i])weight_maxs[i]=ireg->weights[i];
-      if(ireg->weights[i]<weight_mins[i])weight_mins[i]=ireg->weights[i];
+      weight_maxs[i]=OC_MAXF(weight_maxs[i],ireg->weights[i]);
+      weight_mins[i]=OC_MINF(weight_mins[i],ireg->weights[i]);
     }
   }
   /*Rescale the weighting factors into the range [0,1] as necessary.*/
@@ -1664,7 +1809,7 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
     for(i=0;i<OC_IMPMAP_NSEG_WEIGHTS;i++){
       ireg->importance+=ireg->weights[i]*ireg->weights[i];
     }
-    if(ireg->importance>imp_max)imp_max=ireg->importance;
+    imp_max=OC_MAXF(imp_max,ireg->importance);
   }
   /*Rescale the regions' importances into the range [0,1].*/
   if(imp_max>0){
@@ -1673,9 +1818,235 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
       _impmap->regions[regi].importance*=imp_scale;
     }
   }
+}
+
+/*Computes the importance of a given motion vector.
+  _impmap: The importance map context.
+  _dx:     The horizontal motion, in half-pixels/frame.
+  _dy:     The vertical motion, in half-pixels/frame.*/
+static float oc_impmap_mot_weight(oc_impmap_ctx *_impmap,int _dx,int _dy){
+  float mot;
+  /*This computation is perhaps too simple: In reality, it is motion which
+     deviates from the average (3D) motion that attracts attention.
+    Consider a camera that is moving straight forward.
+    The motion with the largest magnitudes is on the edge of the image, but
+     the most likely center of attention is the vanishing point in the center
+     of the image.
+    All of the motion in the image can be explained by one global motion of
+     the camera, and so none of it in particular draws attention.
+    However, the Theora codec does not currently have a form of global motion
+     compensation, and computing it just for this measurement is awfully
+     expensive.*/
+  mot=OC_SQRTF(_dx*_dx+_dy*_dy);
+  if(mot<_impmap->mot_limits[0])return 0;
+  else if(mot<_impmap->mot_limits[1]){
+    return (mot-_impmap->mot_limits[0])/
+     (_impmap->mot_limits[1]-_impmap->mot_limits[0]);
+  }
+  else if(mot<_impmap->mot_limits[2])return 1;
+  else if(mot<_impmap->mot_limits[3]){
+    return (_impmap->mot_limits[3]-mot)/
+     (_impmap->mot_limits[3]-_impmap->mot_limits[2]);
+  }
+  else return 0;
+}
+
+static void oc_impmap_chroma_frag_weight00(oc_fragment_enc_info *_frinfo,
+ oc_mb_map _map,const float _yfrag_imp_weights[4]){
+  _frinfo[_map[1][0]].imp_weight=_yfrag_imp_weights[0];
+  _frinfo[_map[2][0]].imp_weight=_yfrag_imp_weights[0];
+  if(_map[1][1]>=0){
+    _frinfo[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
+    _frinfo[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
+  }
+  if(_map[1][2]>=0){
+    _frinfo[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
+    _frinfo[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
+  }
+  if(_map[1][3]>=0){
+    _frinfo[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
+    _frinfo[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
+  }
+}
+
+static void oc_impmap_chroma_frag_weight01(oc_fragment_enc_info *_frinfo,
+ oc_mb_map _map,const float _yfrag_imp_weights[4]){
+  float cfrag_imp_weight;
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[1]);
+  _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
+  if(_map[1][2]>=0){
+    cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]);
+    _frinfo[_map[1][2]].imp_weight=cfrag_imp_weight;
+    _frinfo[_map[2][2]].imp_weight=cfrag_imp_weight;
+  }
+}
+
+static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_frinfo,
+ oc_mb_map _map,const float _yfrag_imp_weights[4]){
+  float cfrag_imp_weight;
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[2]);
+  _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
+  if(_map[1][1]>=0){
+    cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[1],_yfrag_imp_weights[3]);
+    _frinfo[_map[1][1]].imp_weight=cfrag_imp_weight;
+    _frinfo[_map[2][1]].imp_weight=cfrag_imp_weight;
+  }
+}
+
+static void oc_impmap_chroma_frag_weight11(oc_fragment_enc_info *_frinfo,
+ oc_mb_map _map,const float _yfrag_imp_weights[4]){
+  float cfrag_imp_weight;
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],
+   OC_MAXF(_yfrag_imp_weights[1],OC_MAXF(_yfrag_imp_weights[2],
+   _yfrag_imp_weights[3])));
+  _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
+}
+
+/*A table of functions used to fill in the U,V plane fragment maps for a macro
+   block for each type of chrominance decimation.
+  The importance of a chroma fragment is taken as the maximum importance of
+   any co-located luma fragment.*/
+static const oc_impmap_chroma_frag_weight_func
+ OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[4]={
+  oc_impmap_chroma_frag_weight00,
+  oc_impmap_chroma_frag_weight01,
+  oc_impmap_chroma_frag_weight10,
+  oc_impmap_chroma_frag_weight11,
+};
+
+
+
+static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
+  oc_mb *mb;
+  float  ret;
+  mb=_impmap->enc->state.frarray.mbs+_mbi;
+  ret=0;
+  if(mb->mode>=0){
+    static const int FRAG_DX[4]={0,8,0,8};
+    static const int FRAG_DY[4]={0,0,8,8};
+    oc_mb_enc_info    *emb;
+    oc_impmap_region  *iregions;
+    int              **labels;
+    float              frag_imps[4];
+    float              frag_imp_weights[4];
+    float              mot_imp;
+    int                x0;
+    int                y0;
+    int                i;
+    emb=_impmap->enc->mbinfo+_mbi;
+    mot_imp=oc_impmap_mot_weight(_impmap,emb->mvs[OC_FRAME_PREV][0][0],
+     emb->mvs[OC_FRAME_PREV][0][1]);
+    iregions=_impmap->regions;
+    labels=_impmap->seg.labels;
+    x0=mb->x-_impmap->offset_x;
+    y0=mb->y-_impmap->offset_y;
+    for(i=0;i<4;i++){
+      oc_fragment *frag;
+      int          xend;
+      int          yend;
+      int          x;
+      int          y;
+      frag_imps[i]=0;
+      if(mb->map[0][i]<0)continue;
+      frag=_impmap->enc->state.frarray.frags+mb->map[0][i];
+      xend=x0+FRAG_DX[i]+8;
+      yend=y0+FRAG_DY[i]+8;
+      if(frag->border==NULL){
+        for(y=y0+FRAG_DY[i];y<yend;y++)for(x=x0+FRAG_DX[i];x<xend;x++){
+          float ireg_imp;
+          ireg_imp=iregions[labels[y][x]].importance;
+          frag_imps[i]=
+          frag_imps[i]=OC_MAXF(frag_imps[i],ireg_imp);
+        }
+      }
+      else{
+        oc_border_info *border;
+        ogg_int64_t     bit;
+        border=frag->border;
+        for(y=y0+FRAG_DY[i],bit=1;y<yend;y++){
+          for(x=x0+FRAG_DX[i];x<xend;x++,bit<<=1)if(border->mask&bit){
+            float ireg_imp;
+            ireg_imp=iregions[labels[y][x]].importance;
+            frag_imps[i]=OC_MAXF(frag_imps[i],ireg_imp);
+          }
+        }
+      }
+      frag_imps[i]+=mot_imp;
+      ret+=frag_imps[i];
+      frag_imp_weights[i]=
+       (2*frag_imps[i]+_impmap->imp_avg)/(frag_imps[i]+2*_impmap->imp_avg);
+      _impmap->enc->frinfo->imp_weight=frag_imp_weights[i];
+    }
+    (*_impmap->chroma_frag_weight)(_impmap->enc->frinfo,mb->map,
+     frag_imp_weights);
+  }
+  return ret;
+}
+
+oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
+  theora_info   *info;
+  oc_impmap_ctx *impmap;
+  int            edge_sz;
+  int            width;
+  int            height;
+  info=&_enc->state.info;
+  width=info->frame_width;
+  height=info->frame_height;
+  impmap=(oc_impmap_ctx *)_ogg_malloc(sizeof(*impmap));
+  oc_seg_init(&impmap->seg,width,height);
+  impmap->inv_region_sz_max=100.0F/(width*height);
+  edge_sz=width>1?height>1?(width-2<<1)+(height<<1):width:height;
+  impmap->inv_edge_sz_max=2.0F/edge_sz;
+  impmap->offset_x=info->offset_x;
+  impmap->offset_y=info->offset_y;
+  impmap->imp_avg=0.5F;
+  /*Allocate space for the region stats and neighbor links.*/
+  impmap->regions=(oc_impmap_region *)_ogg_malloc(
+   impmap->seg.cregions*sizeof(impmap->regions[0]));
+  impmap->enc=_enc;
+  impmap->chroma_frag_weight=OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[
+   info->chroma_y_decimated<<1|info->chroma_x_decimated];
+  return impmap;
+}
+
+void oc_impmap_free(oc_impmap_ctx *_impmap){
+  if(_impmap!=NULL){
+    oc_seg_clear(&_impmap->seg);
+    _ogg_free(_impmap->regions);
+    _ogg_free(_impmap);
+  }
+}
+
+void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
+  oc_img_plane      yplane;
+  float             imp_sum;
+  int               img_offset;
+  int               nmbs;
+  int               mbi;
+  /*Segment the Y plane.*/
+  /*TODO: Use the same oc_border_info structure as everyone else.
+    This would make future integration of an alpha mask easier.*/
+  img_offset=_impmap->enc->state.frarray.input[0].stride*
+   _impmap->enc->state.info.offset_y+_impmap->enc->state.info.offset_x;
+  yplane.data=_impmap->enc->state.frarray.input[0].data+img_offset;
+  yplane.width=_impmap->enc->state.info.frame_width;
+  yplane.height=_impmap->enc->state.info.frame_height;
+  yplane.stride=_impmap->enc->state.frarray.input[0].stride;
+  oc_seg_plane(&_impmap->seg,&yplane);
+  /*Gather statistics over the segmentation.*/
+  oc_impmap_scan(_impmap,yplane.width,yplane.height);
+  /*Compute weights for each segmented region.*/
+  oc_impmap_regions_weight(_impmap);
   /*Rescale motion limits from deg/sec to half-pixels/frame.*/
-  mot_limits[0]=2*OC_IMPMAP_MOT_MIN*OC_PIXELS_PER_DEGREE*_duration;
-  mot_limits[1]=2*OC_IMPMAP_MOT_P1*OC_PIXELS_PER_DEGREE*_duration;
-  mot_limits[2]=2*OC_IMPMAP_MOT_P2*OC_PIXELS_PER_DEGREE*_duration;
-  mot_limits[3]=2*OC_IMPMAP_MOT_MAX*OC_PIXELS_PER_DEGREE*_duration;
+  _impmap->mot_limits[0]=2*OC_IMPMAP_MOT_MIN*OC_PIXELS_PER_DEGREE*_duration;
+  _impmap->mot_limits[1]=2*OC_IMPMAP_MOT_P1*OC_PIXELS_PER_DEGREE*_duration;
+  _impmap->mot_limits[2]=2*OC_IMPMAP_MOT_P2*OC_PIXELS_PER_DEGREE*_duration;
+  _impmap->mot_limits[3]=2*OC_IMPMAP_MOT_MAX*OC_PIXELS_PER_DEGREE*_duration;
+  nmbs=_impmap->enc->state.frarray.nmbs;
+  imp_sum=0;
+  for(mbi=0;mbi<nmbs;mbi++)imp_sum+=oc_impmap_mb_weight(_impmap,mbi);
+  _impmap->imp_avg=imp_sum/_impmap->enc->state.frarray.frplanes[0].nfrags;
 }

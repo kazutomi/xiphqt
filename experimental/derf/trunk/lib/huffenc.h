@@ -4,22 +4,13 @@
 
 
 
-/*A Huffman code for a given token.*/
-typedef struct{
-  /*The bit pattern for the code.*/
-  ogg_uint32_t bits;
-  /*The number of bits in the code.*/
-  int          len;
-}oc_huff_code;
+extern const theora_huff_code
+ OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
 
 
 
-extern const oc_huff_code VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
-
-
-
-void oc_huff_pack_trees(oggpack_buffer *_opb,
- const oc_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]);
+int oc_huff_codes_pack(oggpack_buffer *_opb,
+ const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]);
 
 /*
 #define OC_DC_HUFF_OFFSET      (0)

@@ -93,23 +93,23 @@ Parameters: <EM>K<SUB>b</SUB></EM>, <EM>K<SUB>r</SUB></EM>
 <TR VALIGN="BOTTOM">
 <TD ALIGN="RIGHT">R'</TD>
 <TD>=</TD>
-<TD ALIGN="LEFT">Y'+2(1-<EM>K<SUB>r</SUB></EM>)P<SUB>r</SUB></TD>
+<TD ALIGN="LEFT">Y' + 2(1-<EM>K<SUB>r</SUB></EM>)P<SUB>r</SUB></TD>
 </TR>
 <TR VALIGN="BOTTOM">
 <TD ALIGN="RIGHT">G'</TD>
 <TD>=</TD>
 <TD ALIGN="LEFT">
-Y'+
- 2((1-<EM>K<SUB>b</SUB></EM>)<EM>K<SUB>b</SUB></EM>/
- (1-<EM>K<SUB>b</SUB></EM>-<EM>K<SUB>r</SUB></EM>))P<SUB>b</SUB>+
- 2((1-<EM>K<SUB>r</SUB></EM>)<EM>K<SUB>r</SUB></EM>/
+Y' +
+ 2((<EM>K<SUB>b</SUB></EM>-1)<EM>K<SUB>b</SUB></EM>/
+ (1-<EM>K<SUB>b</SUB></EM>-<EM>K<SUB>r</SUB></EM>))P<SUB>b</SUB> +
+ 2((<EM>K<SUB>r</SUB></EM>-1)<EM>K<SUB>r</SUB></EM>/
  (1-<EM>K<SUB>b</SUB></EM>-<EM>K<SUB>r</SUB></EM>))P<SUB>r</SUB>
 </TD>
 </TR>
 <TR VALIGN="BOTTOM">
 <TD ALIGN="RIGHT">B'</TD>
 <TD>=</TD>
-<TD ALIGN="LEFT">Y'+2(1-<EM>K<SUB>b</SUB></EM>)P<SUB>b</SUB></TD>
+<TD ALIGN="LEFT">Y' + 2(1-<EM>K<SUB>b</SUB></EM>)P<SUB>b</SUB></TD>
 </TR>
 </TABLE>
 </DD>
@@ -229,7 +229,7 @@ Parameters: <EM>&beta;</EM>, <EM>&alpha;</EM>, <EM>&delta;</EM>,
 This conversion maps a device-dependent linear RGB space to the
  device-independent linear CIE XYZ space.
 The parameters are the CIE chromaticity coordinates of the three primaries,
- red, green and blue, as well as the chromaticity coordinates of the white
+ red, green, and blue, as well as the chromaticity coordinates of the white
  point of the device.
 This is how hardware manufacturers and standards typically describe a
  particular RGB space.
@@ -335,7 +335,8 @@ This color space is used by broadcast television and DVDs in much of the
 This color space may also be used for System M/PAL (Brazil), with an
  appropriate conversion supplied by the encoder to compensate for the
  different gamma value.
-See the Rec 470BG section for an appropriate gamma value.
+See the Rec 470BG section for an appropriate gamma value to assume for M/PAL
+ input.
 </P>
 <P>
 In the US, studio monitors are adjusted to a D65 white point
@@ -711,7 +712,7 @@ Society of Motion Picture and Television Engineers, <I>Television &mdash;
 <DD>
 Society of Motion Picture and Television Engineers, <I>Television &mdash;
  Signal Parameters &mdash; 1125-Line High-Definition Production</I>.
- SMPTE 240M-1999.
+ SMPTE-240M, 1999.
 </DD>
 </DL>
 </BODY>

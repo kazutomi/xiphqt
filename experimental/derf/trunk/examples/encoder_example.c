@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.1 2003/09/08 14:49:19 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.2 2003/09/29 04:00:41 derf Exp $
 
  ********************************************************************/
 
@@ -350,7 +350,7 @@ int fetch_and_process_audio(FILE *audio,ogg_page *audiopage,
 
 int fetch_and_process_video(FILE *video,ogg_page *videopage,
                             ogg_stream_state *to,
-                            void *td,
+                            theora_enc_ctx *td,
                             int videoflag){
   /* You'll go to Hell for using static variables */
   static int          state=-1;
@@ -497,7 +497,7 @@ int main(int argc,char *argv[]){
   ogg_page         og; /* one Ogg bitstream page.  Vorbis packets are inside */
   ogg_packet       op; /* one raw packet of data for decode */
 
-  void            *td;
+  theora_enc_ctx  *td;
   theora_info      ti;
   theora_comment   tc;
 
@@ -539,7 +539,7 @@ int main(int argc,char *argv[]){
       break;;
 
     case 'a':
-      audio_q=atof(optarg)*.099;
+      audio_q=(float)(atof(optarg)*.099);
       if(audio_q<-.1 || audio_q>1){
         fprintf(stderr,"Illegal audio quality (choose -1 through 10)\n");
         exit(1);
@@ -548,7 +548,7 @@ int main(int argc,char *argv[]){
       break;
 
     case 'v':
-      video_q=rint(atof(optarg)*6.3);
+      video_q=(int)rint(atof(optarg)*6.3);
       if(video_q<0 || video_q>63){
         fprintf(stderr,"Illegal video quality (choose 0 through 10)\n");
         exit(1);
@@ -557,7 +557,7 @@ int main(int argc,char *argv[]){
       break;
 
     case 'A':
-      audio_r=atof(optarg)*1000;
+      audio_r=(int)(atof(optarg)*1000);
       if(audio_q<0){
         fprintf(stderr,"Illegal audio quality (choose > 0 please)\n");
         exit(1);
@@ -566,7 +566,7 @@ int main(int argc,char *argv[]){
       break;
 
     case 'V':
-      video_r=rint(atof(optarg)*1000);
+      video_r=(int)rint(atof(optarg)*1000);
       if(video_r<45000 || video_r>2000000){
         fprintf(stderr,"Illegal video bitrate (choose 45kbps through 2000kbps)\n");
         exit(1);
@@ -575,19 +575,19 @@ int main(int argc,char *argv[]){
      break;
 
     case 's':
-      video_an=rint(atof(optarg));
+      video_an=(int)rint(atof(optarg));
       break;
 
     case 'S':
-      video_ad=rint(atof(optarg));
+      video_ad=(int)rint(atof(optarg));
       break;
 
     case 'f':
-      video_hzn=rint(atof(optarg));
+      video_hzn=(int)rint(atof(optarg));
       break;
 
     case 'F':
-      video_hzd=rint(atof(optarg));
+      video_hzd=(int)rint(atof(optarg));
       break;
 
     default:
@@ -618,7 +618,7 @@ int main(int argc,char *argv[]){
   frame_x_offset=(video_x-frame_x)/2;
   frame_y_offset=(video_y-frame_y)/2;
 
-  /*theora_info_init(&ti);*/
+  theora_info_init(&ti);
   ti.width=video_x;
   ti.height=video_y;
   ti.frame_width=frame_x;
@@ -638,7 +638,7 @@ int main(int argc,char *argv[]){
   ti.keyframe_auto_p=1;
   ti.keyframe_frequency=64;
   ti.keyframe_frequency_force=64;
-  ti.keyframe_data_target_bitrate=video_r*1.5;
+  ti.keyframe_data_target_bitrate=(ogg_uint32_t)(video_r*1.5);
   ti.keyframe_auto_threshold=80;
   ti.keyframe_mindistance=8;
   ti.noise_sensitivity=1;
@@ -647,7 +647,7 @@ int main(int argc,char *argv[]){
   ti.chroma_y_decimated=1;
 
   td=theora_encode_alloc(&ti);
-  /*theora_info_clear(&ti);*/
+  theora_info_clear(&ti);
 
   /* initialize Vorbis too, assuming we have audio to compress. */
   if(audio){
@@ -669,22 +669,31 @@ int main(int argc,char *argv[]){
 
   /* write the bitstream header packets with proper page interleave */
 
+  theora_comment_init(&tc);
+
   /* first packet will get its own page automatically */
-  /*theora_encode_header(&td,&op);
+  if(theora_encode_flushheader(td,&tc,&op)<=0){
+    fprintf(stderr,"Internal Theora library error.\n");
+    exit(1);
+  }
   ogg_stream_packetin(&to,&op);
   if(ogg_stream_pageout(&to,&og)!=1){
     fprintf(stderr,"Internal Ogg library error.\n");
     exit(1);
   }
   fwrite(og.header,1,og.header_len,outfile);
-  fwrite(og.body,1,og.body_len,outfile);*/
+  fwrite(og.body,1,og.body_len,outfile);
 
   /* create the remaining theora headers */
-  /*theora_comment_init(&tc);
-  theora_encode_comment(&tc,&op);
-  ogg_stream_packetin(&to,&op);
-  theora_encode_tables(&td,&op);
-  ogg_stream_packetin(&to,&op);*/
+  for(;;){
+    ret=theora_encode_flushheader(td,&tc,&op);
+    if(ret<0){
+      fprintf(stderr,"Internal Theora library error.\n");
+      exit(1);
+    }
+    else if(!ret)break;
+    ogg_stream_packetin(&to,&op);
+  }
 
   if(audio){
     ogg_packet header;
@@ -784,15 +793,15 @@ int main(int argc,char *argv[]){
         timebase=audiotime;
       }
       {
-        int hundredths=timebase*100-(long)timebase*100;
+        int hundredths=(int)(timebase*100-(long)timebase*100);
         int seconds=(long)timebase%60;
         int minutes=((long)timebase/60)%60;
         int hours=(long)timebase/3600;
         
         if(audio_or_video)
-          vkbps=rint(video_bytesout*8./timebase*.001);
+          vkbps=(int)rint(video_bytesout*8./timebase*.001);
         else
-          akbps=rint(audio_bytesout*8./timebase*.001);
+          akbps=(int)rint(audio_bytesout*8./timebase*.001);
         
         fprintf(stderr,
                 "\r      %d:%02d:%02d.%02d audio: %dkbps video: %dkbps                 ",
@@ -813,7 +822,8 @@ int main(int argc,char *argv[]){
   }
   if(video){
     ogg_stream_clear(&to);
-    /*theora_clear(&td);*/
+    theora_encode_free(td);
+    theora_comment_clear(&tc);
   }
 
   if(outfile && outfile!=stdout)fclose(outfile);

@@ -1,8 +1,8 @@
 #if !defined(_huffman_H)
 # define _hufffman_H (1)
+# include "theora/theora.h"
+# include "ocintrin.h"
 
-#define OC_NHUFFMAN_TABLES       (80)
-#define OC_NDCT_TOKENS           (32)
 #define OC_NDCT_TOKEN_BITS       (5)
 
 #define OC_NDCT_EOB_TOKEN_MAX    (7)

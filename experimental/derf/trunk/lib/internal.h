@@ -2,7 +2,11 @@
 # define _internal_H (1)
 # include <stdlib.h>
 # include "theora/theora.h"
+# include "ocintrin.h"
 # include "huffman.h"
+
+/*This library's version.*/
+# define OC_VENDOR_STRING "derf's experimental encoder library " __DATE__
 
 /*Theora bitstream version.*/
 # define OC_VERSION_MAJOR (3)
@@ -112,6 +116,10 @@ typedef struct{
   /*The current macro block mode.
     A negative number indicates the macro block is invalid.*/
   int           mode;
+  /*The X location of the macro block's upper-left hand pixel.*/
+  int           x;
+  /*The Y location of the macro block's upper-right hand pixel.*/
+  int           y;
   /*The fragments that belong to this macro block in each color plane.
     Fragments are stored in image order (left to right then top to bottom).
     Fragments outside the encoded region have index -1.
@@ -191,20 +199,24 @@ typedef struct{
 typedef struct{
   /*The fragment plane descriptions.*/
   oc_fragment_plane  frplanes[3];
-  /*The list of fragments, indexed in image order.*/
-  oc_fragment       *frags;
   /*The total number of fragments in a single frame.*/
   int                nfrags;
-  /*The list of super blocks, indexed in image order.*/
-  oc_sb             *sbs;
+  /*The list of fragments, indexed in image order.*/
+  oc_fragment       *frags;
   /*The total number of super blocks in a single frame.*/
   int                nsbs;
+  /*The list of super blocks, indexed in image order.*/
+  oc_sb             *sbs;
+  /*The number of macro blocks in the X direction.*/
+  int                nhmbs;
+  /*The number of macro blocks in the Y direction.*/
+  int                nvmbs;
+  /*The total number of macro blocks.*/
+  int                nmbs;
   /*The list of macro blocks, indexed in super block order.
     That is, the macro block corresponding to the macro block mbi in super
      block sbi is (sbi<<2|mbi).*/
   oc_mb             *mbs;
-  /*The total number of macro blocks.*/
-  int                nmbs;
   /*The list of flags indicating which blocks are coded in all partially coded
      super blocks.*/
   int               *block_coded_flags;
@@ -235,6 +247,15 @@ typedef struct{
   oc_yuv_buffer         ref_frame_bufs[3];
   /*The storage for the reference frame buffers.*/
   unsigned char        *ref_frame_data;
+  /*The amount to shift the last keyframe over by when computing a composite
+     granule pos.*/
+  int                   keyframe_granule_shift;
+  /*The frame number of the last keyframe.*/
+  ogg_int64_t           keyframe_num;
+  /*The frame number of the current frame.*/
+  ogg_int64_t           curframe_num;
+  /*The granpos of the current frame.*/
+  ogg_int64_t           granpos;
 }oc_theora_state;
 
 
@@ -253,13 +274,14 @@ extern const int OC_MB_MAP[2][2];
 
 
 
-void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz);
+void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
 void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info);
 void oc_frarray_clear(oc_fragment_array *_frarray);
 void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
  oc_yuv_buffer _img);
+int oc_frarray_mbi_for_pos(oc_fragment_array *_frarray,int _mbx,int _mby);
 
 int oc_state_init(oc_theora_state *_state,theora_info *_info);
 void oc_state_clear(oc_theora_state *_state);

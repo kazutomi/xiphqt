@@ -60,8 +60,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
+# PROP Output_Dir "Debug_theora_static"
+# PROP Intermediate_Dir "Debug_theora_static"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /W4 /Gm /GX /ZI /Od /I "../../../xiph/ogg/include" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
@@ -89,7 +89,15 @@ SOURCE=..\..\lib\decode.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\encinfo.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\encode.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\enquant.c
 # End Source File
 # Begin Source File
 
@@ -121,6 +129,10 @@ SOURCE=..\..\lib\impmap.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\info.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\internal.c
 # End Source File
 # Begin Source File
@@ -141,11 +153,11 @@ SOURCE=..\..\lib\dct.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\lib\dctconst.h
+SOURCE=..\..\lib\encint.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\lib\encint.h
+SOURCE=..\..\lib\enquant.h
 # End Source File
 # Begin Source File
 
@@ -170,6 +182,10 @@ SOURCE=..\..\lib\idct.h
 # Begin Source File
 
 SOURCE=..\..\lib\internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\ocintrin.h
 # End Source File
 # Begin Source File
 

@@ -349,14 +349,15 @@ static void oc_mb_fill_cmapping00(oc_mb *_mb,
   _y:        The Y location of the upper-left hand fragment in the Y plane.*/
 static void oc_mb_fill_cmapping01(oc_mb *_mb,
  const oc_fragment_plane _frplanes[3],int _x,int _y){
+  int fragi;
   int i;
   _x>>=1;
+  fragi=_y*_frplanes[1].nhfrags+_x;
   for(i=0;i<2;i++){
-    int fragi;
     if(_y+i>=_frplanes[1].nvfrags)break;
-    fragi=(_y+i)*_frplanes[1].nhfrags+_x;
     _mb->map[1][i<<1]=fragi+_frplanes[1].froffset;
     _mb->map[2][i<<1]=fragi+_frplanes[2].froffset;
+    fragi+=_frplanes[1].nhfrags;
   }
 }
 
@@ -368,14 +369,15 @@ static void oc_mb_fill_cmapping01(oc_mb *_mb,
   _y:        The Y location of the upper-left hand fragment in the Y plane.*/
 static void oc_mb_fill_cmapping10(oc_mb *_mb,
  const oc_fragment_plane _frplanes[3],int _x,int _y){
+  int fragi;
   int j;
   _y>>=1;
+  fragi=_y*_frplanes[1].nhfrags+_x;
   for(j=0;j<2;j++){
-    int fragi;
     if(_x+j>=_frplanes[1].nhfrags)break;
-    fragi=_y*_frplanes[1].nhfrags+_x+j;
     _mb->map[1][j]=fragi+_frplanes[1].froffset;
     _mb->map[2][j]=fragi+_frplanes[2].froffset;
+    fragi++;
   }
 }
 
@@ -406,7 +408,7 @@ typedef void (*oc_mb_fill_cmapping_func)(oc_mb *_mb,
 
 /*A table of functions used to fill in the U,V plane fragment maps for a macro
    block for each type of chrominance decimation.*/
-static const oc_mb_fill_cmapping_func MB_FILL_CMAPPING_TABLE[4]={
+static const oc_mb_fill_cmapping_func OC_MB_FILL_CMAPPING_TABLE[4]={
   (oc_mb_fill_cmapping_func)oc_mb_fill_cmapping00,
   oc_mb_fill_cmapping01,
   oc_mb_fill_cmapping10,
@@ -425,7 +427,7 @@ static void oc_mb_create_mapping(oc_mb _mbs[],
   oc_mb                    *mb0;
   int                       y;
   mb0=_mbs;
-  mb_fill_cmapping=MB_FILL_CMAPPING_TABLE[_cvdec<<1|_chdec];
+  mb_fill_cmapping=OC_MB_FILL_CMAPPING_TABLE[_cvdec<<1|_chdec];
   /*Loop through the Y plane super blocks.*/
   for(y=0;y<_frplanes[0].nvfrags;y+=4){
     int x;
@@ -441,6 +443,8 @@ static void oc_mb_create_mapping(oc_mb _mbs[],
           mb=mb0+OC_MB_MAP[ymb][xmb];
           mbx=x|xmb<<1;
           mby=y|ymb<<1;
+          mb->x=mbx<<3;
+          mb->y=mby<<3;
           /*Initialize fragment indexes to -1.*/
           memset(mb->map,0xFF,sizeof(mb->map));
           /*Make sure this macro block is within the encoded region.*/
@@ -604,7 +608,7 @@ void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info){
   ysbs=yhsbs*yvsbs;
   csbs=chsbs*cvsbs;
   nsbs=ysbs+2*csbs;
-  nmbs=nsbs<<2;
+  nmbs=ysbs<<2;
   /*Initialize the fragment array.*/
   memset(_frarray,0,sizeof(*_frarray));
   _frarray->frplanes[0].nhfrags=yhfrags;
@@ -625,12 +629,14 @@ void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info){
   _frarray->frplanes[1].sboffset=ysbs;
   _frarray->frplanes[2].sboffset=ysbs+csbs;
   _frarray->frplanes[1].nsbs=_frarray->frplanes[2].nsbs=csbs;
-  _frarray->frags=_ogg_calloc(nfrags,sizeof(oc_fragment));
   _frarray->nfrags=nfrags;
-  _frarray->sbs=_ogg_calloc(nsbs,sizeof(oc_sb));
+  _frarray->frags=_ogg_calloc(nfrags,sizeof(oc_fragment));
   _frarray->nsbs=nsbs;
-  _frarray->mbs=_ogg_calloc(nmbs,sizeof(oc_mb));
+  _frarray->sbs=_ogg_calloc(nsbs,sizeof(oc_sb));
+  _frarray->nhmbs=yhsbs<<1;
+  _frarray->nvmbs=yvsbs<<1;
   _frarray->nmbs=nmbs;
+  _frarray->mbs=_ogg_calloc(nmbs,sizeof(oc_mb));
   _frarray->block_coded_flags=_ogg_calloc(nfrags,
    sizeof(_frarray->block_coded_flags[0]));
   /*Create the mapping from super blocks to fragments.*/
@@ -669,8 +675,8 @@ void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
      some updates.
     The other buffers do not change throughout the encoding process.*/
   if(_buf_idx==3){
-     if(memcmp(_frarray->input,_img,sizeof(_img))==0)return;
-     memcpy(_frarray->input,_img,sizeof(_img));
+     if(memcmp(_frarray->input,_img,sizeof(oc_yuv_buffer))==0)return;
+     memcpy(_frarray->input,_img,sizeof(oc_yuv_buffer));
   }
   for(pli=0;pli<3;pli++){
     oc_img_plane      *iplane;
@@ -695,3 +701,13 @@ void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
     }
   }
 }
+
+/*Returns the macro block index of the macro block in the given position.
+  _frarray: The fragment array the macro block is contained in.
+  _mbx:     The X coordinate of the macro block (in macro blocks, not pixels).
+  _mby:     The Y coordinate of the macro block (in macro blocks, not pixels).
+  Return: The index of the macro block in the given position.*/
+int oc_frarray_mbi_for_pos(oc_fragment_array *_frarray,int _mbx,int _mby){
+  return ((_mbx&~1)<<1)+(_mby&~1)*_frarray->nhmbs+OC_MB_MAP[_mby&1][_mbx&1];
+}
+

@@ -55,6 +55,12 @@ const int OC_MB_MAP[2][2]={{0,3},{1,2}};
 
 
 
+static int oc_ilog(unsigned _v){
+  int ret;
+  for(ret=0;_v;ret++)_v>>=1;
+  return ret;
+}
+
 /*Initializes the buffers used for reconstructed frames.
   These buffers are padded with 16 extra pixels on each side, to allow
    unrestricted motion vectors without special casing the boundary.
@@ -121,15 +127,34 @@ static void oc_state_ref_bufs_clear(oc_theora_state *_state){
 int oc_state_init(oc_theora_state *_state,theora_info *_info){
   /*First validate the parameters.*/
   if(_info==NULL)return OC_FAULT;
+  /*The width and height of the encoded frame must be multiples of 16.
+    They must also, when divided by 16, fit into a 16-bit unsigned integer.
+    The displayable frame offset coordinates must fit into an 8-bit unsigned
+     integer (only because we only write 8 bits to the bitstream: why?).
+    The displayable frame must fit inside the encoded frame.
+    The color space must be one known by the encoder.*/
   if((_info->width&0xF)||(_info->height&0xF)||
+   _info->width>=0x100000||_info->height>=0x100000||
+   _info->offset_x>255||_info->offset_y>255||
    _info->offset_x+_info->frame_width>_info->width||
-   _info->offset_y+_info->frame_height>_info->height){
+   _info->offset_y+_info->frame_height>_info->height||
+   _info->colorspace<0||_info->colorspace>=OC_CS_NSPACES){
     return OC_EINVAL;
   }
   memset(_state,0,sizeof(_state));
   memcpy(&_state->info,_info,sizeof(*_info));
   oc_frarray_init(&_state->frarray,_info);
   oc_state_ref_bufs_init(_state);
+  if(_info->keyframe_frequency_force==0){
+    _info->keyframe_frequency_force=0xFFFFFFFF;
+  }
+#if defined(OC_COMPOSITE_GRANPOS)
+  _state->keyframe_granule_shift=oc_ilog(_info->keyframe_frequency_force-1);
+#else
+  _state->keyframe_granule_shift=0;
+#endif
+  _state->keyframe_num=0;
+  _state->curframe_num=0;
   return 0;
 }
 
@@ -198,7 +223,7 @@ const int OC_DCT_TOKEN_EXTRA_BITS[OC_NDCT_TOKENS]={
   2,3
 };
 
-void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz){
+void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz){
   size_t  colsz;
   size_t  datsz;
   char   *ret;
@@ -223,3 +248,12 @@ void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz){
 void oc_free_2d(void **_ptr){
   _ogg_free(_ptr);
 }
+
+const char *theora_version_string(void){
+  return OC_VENDOR_STRING;
+}
+
+ogg_uint32_t theora_version_number(void){
+  return (OC_VERSION_MAJOR<<16)+(OC_VERSION_MINOR<<8)+(OC_VERSION_SUB);
+}
+

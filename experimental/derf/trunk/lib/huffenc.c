@@ -6,7 +6,7 @@
 
 
 /*The default Huffman codes used for VP3.1.*/
-const oc_huff_code VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]={
+const theora_huff_code OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]={
   {
     {0x002D, 6},{0x0026, 7},{0x0166, 9},{0x004E, 8},
     {0x02CE,10},{0x059E,11},{0x027D,11},{0x0008, 5},
@@ -841,26 +841,30 @@ static int huff_entry_cmp(const void *_c1,const void *_c2){
   Note that the codes MUST form a Huffman code, and not merely a prefix-free
    code, since the binary tree is assumed to be full.
   _opb:   The buffer to store the tree in.
-  _codes: The Huffman tables to pack.*/
-void oc_huff_trees_pack(oggpack_buffer *_opb,
- const oc_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]){
+  _codes: The Huffman tables to pack.
+  Return: 0 on success, or a negative value if one of the given huffman tables
+   does not form a complete, prefix-free code.*/
+int oc_huff_codes_pack(oggpack_buffer *_opb,
+ const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]){
   int i;
   for(i=0;i<OC_NHUFFMAN_TABLES;i++){
     oc_huff_entry entries[OC_NDCT_TOKENS];
     int           bpos;
     int           maxlen;
+    int           mask;
     int           j;
     /*First, find the maximum code length so we can align all the bit
        patterns.*/
     for(maxlen=_codes[i][0].len,j=1;j<OC_NDCT_TOKENS;j++){
-      if(_codes[i][j].len>maxlen)maxlen=_codes[i][j].len;
+      maxlen=OC_MAXI(_codes[i][j].len,maxlen);
     }
+    mask=(1<<maxlen)-1;
     /*Copy over the codes into our temporary workspace.
       The bit patterns are aligned, and the original entry each code is from
        is stored as well.*/
     for(j=0;j<OC_NDCT_TOKENS;j++){
       entries[j].shift=maxlen-_codes[i][j].len;
-      entries[j].bits=_codes[i][j].bits<<entries[j].shift;
+      entries[j].bits=_codes[i][j].bits<<entries[j].shift&mask;
       entries[j].token=j;
     }
     /*Sort the codes into ascending order.
@@ -870,15 +874,34 @@ void oc_huff_trees_pack(oggpack_buffer *_opb,
     bpos=maxlen;
     for(j=0;j<OC_NDCT_TOKENS;j++){
       int bit;
-      /*Descend into the tree, writing a bit for each branch.*/
-      for(;bpos>entries[j].shift;bpos--)oggpackB_write(_opb,0,1);
-      /*Mark this as a leaf node, and write its value.*/
-      oggpackB_write(_opb,1,1);
-      oggpackB_write(_opb,entries[j].token,5);
-      /*For each 1 branch we've descended, back up the tree until we reach a
-         0 branch.*/
-      bit=1<<bpos;
-      for(;entries[j].bits&bit;bpos++)bit<<=1;
+      /*If this code has any bits at all.*/
+      if(entries[j].shift<maxlen){
+        /*Descend into the tree, writing a bit for each branch.*/
+        for(;bpos>entries[j].shift;bpos--)oggpackB_write(_opb,0,1);
+        /*Mark this as a leaf node, and write its value.*/
+        oggpackB_write(_opb,1,1);
+        oggpackB_write(_opb,entries[j].token,5);
+        /*For each 1 branch we've descended, back up the tree until we reach a
+           0 branch.*/
+        bit=1<<bpos;
+        for(;entries[j].bits&bit;bpos++)bit<<=1;
+        /*Validate the code.*/
+        if(j+1<OC_NDCT_TOKENS){
+          mask=~(bit-1)<<1;
+          /*The next entry should have a 1 bit where we had a 0, and should
+             match our code above that bit.
+            This verifies both completeness and prefix-freeness
+             simultaneously.*/
+          if(!(entries[j+1].bits&bit)||
+           (entries[j].bits&mask)!=(entries[j+1].bits&mask)){
+            return OC_EINVAL;
+          }
+        }
+        /*If there are no more codes, we should have ascended back to the top
+           of the tree.*/
+        else if(bpos<maxlen)return OC_EINVAL;
+      }
     }
   }
+  return 0;
 }
