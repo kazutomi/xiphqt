@@ -39,6 +39,14 @@ static vorbis_info_residue0 _residue_44_high={
   {  .5,  1.5,  2.5,  3.5,  4.5,  8.5, 16.5, 71.5,157.5},
 };
 
+static static_bookblock _resbook_44s_n1={
+  {
+    {0},{0,0,&_44cn1_s_p1_0},{0,0,&_44cn1_s_p2_0},{0,0,&_44cn1_s_p3_0},
+    {0,0,&_44cn1_s_p4_0},{0,0,&_44cn1_s_p5_0},{0,0,&_44cn1_s_p6_0},
+    {&_44cn1_s_p7_0,&_44cn1_s_p7_1},{&_44cn1_s_p8_0,&_44cn1_s_p8_1},
+    {&_44cn1_s_p9_0,&_44cn1_s_p9_1,&_44cn1_s_p9_2}
+   }
+};
 static static_bookblock _resbook_44s_0={
   {
     {0},{0,0,&_44c0_s_p1_0},{0,0,&_44c0_s_p2_0},{0,0,&_44c0_s_p3_0},
@@ -47,28 +55,12 @@ static static_bookblock _resbook_44s_0={
     {&_44c0_s_p9_0,&_44c0_s_p9_1,&_44c0_s_p9_2}
    }
 };
-static static_bookblock _resbook_44sm_0={
-  {
-    {0},{0,0,&_44c0_sm_p1_0},{0,0,&_44c0_sm_p2_0},{0,0,&_44c0_sm_p3_0},
-    {0,0,&_44c0_sm_p4_0},{0,0,&_44c0_sm_p5_0},{0,0,&_44c0_sm_p6_0},
-    {&_44c0_sm_p7_0,&_44c0_sm_p7_1},{&_44c0_sm_p8_0,&_44c0_sm_p8_1},
-    {&_44c0_sm_p9_0,&_44c0_sm_p9_1,&_44c0_sm_p9_2}
-   }
-};
 static static_bookblock _resbook_44s_1={
   {
     {0},{0,0,&_44c1_s_p1_0},{0,0,&_44c1_s_p2_0},{0,0,&_44c1_s_p3_0},
     {0,0,&_44c1_s_p4_0},{0,0,&_44c1_s_p5_0},{0,0,&_44c1_s_p6_0},
     {&_44c1_s_p7_0,&_44c1_s_p7_1},{&_44c1_s_p8_0,&_44c1_s_p8_1},
     {&_44c1_s_p9_0,&_44c1_s_p9_1,&_44c1_s_p9_2}
-   }
-};
-static static_bookblock _resbook_44sm_1={
-  {
-    {0},{0,0,&_44c1_sm_p1_0},{0,0,&_44c1_sm_p2_0},{0,0,&_44c1_sm_p3_0},
-    {0,0,&_44c1_sm_p4_0},{0,0,&_44c1_sm_p5_0},{0,0,&_44c1_sm_p6_0},
-    {&_44c1_sm_p7_0,&_44c1_sm_p7_1},{&_44c1_sm_p8_0,&_44c1_sm_p8_1},
-    {&_44c1_sm_p9_0,&_44c1_sm_p9_1,&_44c1_sm_p9_2}
    }
 };
 static static_bookblock _resbook_44s_2={
@@ -148,23 +140,32 @@ static static_bookblock _resbook_44s_9={
    }
 };
 
-static vorbis_residue_template _res_44s_0[]={
+static vorbis_residue_template _res_44s_n1[]={
   {2,0,  &_residue_44_mid,
-   &_huff_book__44c0_s_short,&_huff_book__44c0_sm_short,
-   &_resbook_44s_0,&_resbook_44sm_0},
+   &_huff_book__44cn1_s_short,&_huff_book__44cn1_s_short,
+   &_resbook_44s_n1,&_resbook_44s_n1},
 
   {2,0,  &_residue_44_mid,
-   &_huff_book__44c0_s_long,&_huff_book__44c0_sm_long,
-   &_resbook_44s_0,&_resbook_44sm_0}
+   &_huff_book__44cn1_s_long,&_huff_book__44cn1_s_long,
+   &_resbook_44s_n1,&_resbook_44s_n1}
+};
+static vorbis_residue_template _res_44s_0[]={
+  {2,0,  &_residue_44_mid,
+   &_huff_book__44c0_s_short,&_huff_book__44c0_s_short,
+   &_resbook_44s_0,&_resbook_44s_0},
+
+  {2,0,  &_residue_44_mid,
+   &_huff_book__44c0_s_long,&_huff_book__44c0_s_long,
+   &_resbook_44s_0,&_resbook_44s_0}
 };
 static vorbis_residue_template _res_44s_1[]={
   {2,0,  &_residue_44_mid,
-   &_huff_book__44c1_s_short,&_huff_book__44c1_sm_short,
-   &_resbook_44s_1,&_resbook_44sm_1},
+   &_huff_book__44c1_s_short,&_huff_book__44c1_s_short,
+   &_resbook_44s_1,&_resbook_44s_1},
 
   {2,0,  &_residue_44_mid,
-   &_huff_book__44c1_s_long,&_huff_book__44c1_sm_long,
-   &_resbook_44s_1,&_resbook_44sm_1}
+   &_huff_book__44c1_s_long,&_huff_book__44c1_s_long,
+   &_resbook_44s_1,&_resbook_44s_1}
 };
 static vorbis_residue_template _res_44s_2[]={
   {2,0,  &_residue_44_mid,
@@ -240,7 +241,7 @@ static vorbis_residue_template _res_44s_9[]={
 };
 
 static vorbis_mapping_template _mapres_template_44_stereo[]={
-  { _map_nominal, _res_44s_0 }, /* -1 */
+  { _map_nominal, _res_44s_n1 }, /* -1 */
   { _map_nominal, _res_44s_0 }, /* 0 */
   { _map_nominal, _res_44s_1 }, /* 1 */
   { _map_nominal, _res_44s_2 }, /* 2 */

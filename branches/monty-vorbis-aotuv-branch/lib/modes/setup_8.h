@@ -23,7 +23,7 @@ static int blocksize_8[2]={
 };
 
 static int _floor_mapping_8[2]={
-  1,1,
+  6,6,
 };
 
 static double rate_mapping_8[3]={
