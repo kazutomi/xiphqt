@@ -482,7 +482,7 @@ class AtomNewsFormatter(NewsFormatter):
 				"<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n" \
 				"<modified>%s</modified>\n" % \
 					strftime(self.dateFormat, self.newsItems[0].dateModified)
-		ret +=	"<generator>Wrapup</generator>\n" \
+		ret +=	"<generator url='http://svn.xiph.org/websites-ngen/wrapup.py'>Wrapup</generator>\n" \
 				"<copyright>© %s Xiph.Org Foundation</copyright>\n" % time.gmtime()[0] + \
 				"<author><name>Xiph.Org Foundation</name></author>\n\n"
 
