@@ -1,5 +1,5 @@
 @echo off
-rem $Id: mfmacro.bat,v 1.5 2001/10/18 03:16:53 cwolf Exp $
+rem $Id: mfmacro.bat,v 1.6 2001/10/18 17:21:59 cwolf Exp $
 rem
 rem Creates and installs VC macro for exporting makefiles from 
 rem the command line.
@@ -38,8 +38,7 @@ echo   Application.Quit >> %macrofile%
 echo end Sub >> %macrofile%
 set macrofile=
 :enable
-call enableOggMacro.js
-call sleep.js 5
+execwait %SystemRoot%\system32\cscript.exe enableOggMacro.js
 goto done
 :notset
 echo Error SRCROOT not set

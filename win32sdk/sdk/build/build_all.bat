@@ -1,9 +1,21 @@
 @echo off
-rem $Id: build_all.bat,v 1.4 2001/10/18 03:18:56 cwolf Exp $
+rem $Id: build_all.bat,v 1.5 2001/10/18 17:22:00 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
-if ."%SDKHOME%"==."" goto notset
+rem Once the SDK is replocated, make sure that the
+rem SDKHOME environment variable is reset to reflect
+rem the new location.
+rem
+if ."%SDKHOME%"==."" (
+  set SDKHOME="%SRCROOT%\win32sdk\sdk"
+  if not exist execwait.exe copy "%SRCROOT%\win32sdk\execwait.exe" .
+)
+
+if not exist execwait.exe (
+  echo No "execwait.exe" -- was win32sdk\makesdk.bat run?
+  goto nolib
+)
 
 if not exist %SDKHOME%\lib\ogg.lib goto nolib
 
@@ -11,8 +23,7 @@ rem If one of the makefiles doesn't exist,
 rem assume they all need to be generated
 rem
 if not exist %SDKHOME%\build\examples.mak (
-  echo Must run "mkmak.bat" first...
-  goto done
+  call mkmak.bat
 )
 
 nmake /nologo /f encoder.mak CFG="encoder - Win32 Debug" %1
@@ -39,7 +50,7 @@ nmake /nologo /f vorbisfile_static.mak CFG="vorbisfile_static - Win32 Release" %
 goto done
 
 :nolib
-echo ***** SDK needs to be built first, run win32sdk\maksdk.bat
+echo ***** SDK needs to be built first, run win32sdk\makesdk.bat
 goto done
 
 :notset
