@@ -69,7 +69,7 @@ interpreter_perl_eval_function (char *functionname)
 	
 	retcount = perl_call_pv(functionname, G_SCALAR);
 	
-	retstr = ices_util_strdup (POPs);
+	retstr = ices_util_strdup (POPp);
 	
 	ices_log_debug ("perl [%s] returned %d values, last [%s]", functionname, retcount, retstr);
 	
