@@ -254,17 +254,25 @@ class WOID:
         # Add required null record
         self.sai.append((null_rec_pointer, 0))
 
-    def pack(self):
-        """Removes all deleted records in this database and child databases."""
+    def pack(self, cmpfunc=None):
+        """Removes all deleted records in this database and child databases.
+
+        If cmpfunc is not None, then it is used to sort the list of
+        records before they are put back into the database.  See
+        documentation about the sort() function for mutable sequence
+        types in the Python docs for details."""
 
         # Sure, we could be more clever about this, but barring memory
         # constraints, this seems to be the easiest approach, and not
         # that much slower.
-        records = self.get_records()
+        records = [r for r in self.get_records() if r != None]
         self.clear()
+        
+        if cmpfunc != None:
+            records.sort(cmpfunc)
+            
         for record in records:
-            if record != None: # Don't readd null record
-                self.add_record(record)
+            self.add_record(record)
 
     def close(self):
         self.mdb.close()

@@ -26,6 +26,8 @@ def recording_source(p):
         return "FM Radio"
     elif basename.startswith("mic"):
         return "Microphone"
+    else:
+        return None
 
 def hisi_source(p):
     basename = path.basename(p).lower()
@@ -80,7 +82,7 @@ def run(config, neuros, args):
         print "  %d found." % (len(filelist),)
 
         print "\nAdding music tracks to audio database..."
-        neuros.open_db("audio")
+        audio_db = neuros.open_db("audio")
         for track in rest:
             print "  "+path.basename(track)
             add_track(neuros, None, track)
@@ -90,6 +92,8 @@ def run(config, neuros, args):
             print "  "+path.basename(track)
             add_track(neuros, None, track,
                       recording=recording_source(track))
+        if config.sort_database:
+            audio_db.pack(util.cmp_records)
         neuros.close_db("audio")
 
         print "\nAdding HiSi clips to unidedhisi database..."

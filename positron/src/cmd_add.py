@@ -75,13 +75,17 @@ def run(config, neuros, args):
         (sourcename, targetname) = filelist[0]
         print "Adding %s to the Neuros..." % (sourcename,),
         add_track(neuros, sourcename, targetname)
-        print "  Done!"
+        print
     else:
         print "Adding %d tracks to the Neuros..." % (len(filelist),)
         for (sourcename, targetname) in filelist:
             print "  %s..." % (sourcename,)
             add_track(neuros, sourcename, targetname)
 
-        print "\nDone!"
+    if config.sort_database:
+        print "\nSorting tracks..."
+        audio_db.pack(util.cmp_records)
+        
+    print "Done!"
     neuros.close_db("audio")
     
