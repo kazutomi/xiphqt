@@ -132,6 +132,7 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
 
     /* 2 bytes/sample, 2 channels */
     vorbis_data->samples = len >> 2;
+    self->bytes_read = ov_raw_tell (vorbis_data->vf);
   }
 
   len = 0;
