@@ -1,7 +1,7 @@
 /* config.c
  * - config file reading code, plus default settings.
  *
- * $Id: config.c,v 1.6.2.3 2002/02/09 05:07:01 msmith Exp $
+ * $Id: config.c,v 1.6.2.4 2002/06/29 04:35:06 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -16,9 +16,8 @@
 #include <string.h>
 #include <time.h>
 
-/* these might need tweaking for other systems */
-#include <xmlmemory.h>
-#include <parser.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
 
 #include "thread.h"
 
@@ -81,6 +80,8 @@ void config_free_instance(instance_t *instance)
 void config_free_params(module_param_t *param)
 {
 	module_param_t *next;
+    if(!param)
+        return;
 	next = NULL;
 	do 
 	{
@@ -101,8 +102,8 @@ static process_chain_element *_parse_module(xmlDocPtr doc, xmlNodePtr node,
     int i = 0, foundmodule=0;
     module_param_t *param, *params=NULL;
     
-    if(node == NULL || xmlIsBlankNode(node)) {
-        fprintf(stderr, "Null or empty node in config read\n");
+    if(node == NULL) {
+        fprintf(stderr, "CONFIG ERROR: Null node in config read\n");
         return NULL;
     }
 
@@ -116,16 +117,17 @@ static process_chain_element *_parse_module(xmlDocPtr doc, xmlNodePtr node,
     }
 
     if(!foundmodule) {
-        fprintf(stderr, "Could not find module \"%s\"\n", modulename);
+        fprintf(stderr, "CONFIG ERROR: Could not find module \"%s\"\n", 
+                modulename);
         return NULL;
     }
 
-    fprintf(stderr, "Configuring module \"%s\"...\n", modulename);
+    fprintf(stderr, "CONFIG: Configuring module \"%s\"...\n", modulename);
 
     node = node->xmlChildrenNode;
 
-    if(node == NULL || xmlIsBlankNode(node)) {
-        fprintf(stderr, "Null or empty node in config read\n");
+    if(node == NULL) {
+        fprintf(stderr, "CONFIG ERROR: Null node in config read\n");
         return NULL;
     }
 
@@ -183,7 +185,8 @@ static int _parse_instance(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 		if (strcmp(node->name, "module") == 0) {
             chain = _parse_module(doc, node, chain);
             if(!chain) {
-                fprintf(stderr, "Couldn't create processing chain\n");
+                fprintf(stderr, 
+                        "CONFIG ERROR: Couldn't create processing chain\n");
                 return -1;
             }
         }
@@ -224,7 +227,8 @@ static int _parse_input(config_t *config, xmlDocPtr doc, xmlNodePtr node)
     config->input_chain = chain;
 
     if(!chain) {
-        fprintf(stderr, "Could not create input processing chain.\n");
+        fprintf(stderr, 
+                "CONFIG ERROR: Could not create input processing chain.\n");
         return -1;
     }
 
