@@ -30,10 +30,13 @@
 
 /* sample RTP Vorbis client */
 
+/* compile with: gcc -g -O2 -Wall -o vorbisrtp-client vorbisrtp-client.c */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <ctype.h>
 #include <unistd.h>
 #include <time.h>
 
