@@ -25,7 +25,7 @@ CFG=vpxblit - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
@@ -38,7 +38,7 @@ RSC=rc.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "..\..\..\Lib\Win32\Release"
-# PROP Intermediate_Dir "..\..\..\..\..\ObjectCode\vpxblit\Release"
+# PROP Intermediate_Dir "..\..\..\..\ObjectCode\vpxblit\Release"
 # PROP Target_Dir ""
 MTL=midl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
@@ -48,7 +48,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\..\..\Lib\Win32\Release\s_vpxblit.lib"
 
@@ -62,7 +62,7 @@ LIB32=xilink6.exe -lib
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "..\..\..\Lib\Win32\Debug"
-# PROP Intermediate_Dir "..\..\..\..\..\ObjectCode\vpxblit\Debug"
+# PROP Intermediate_Dir "..\..\..\..\ObjectCode\vpxblit\Debug"
 # PROP Target_Dir ""
 MTL=midl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
@@ -72,7 +72,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\..\..\Lib\Win32\Debug\s_vpxblit.lib"
 
@@ -95,7 +95,7 @@ SOURCE=.\wx86\bcc00.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcc00.asm
 InputName=bcc00
 
@@ -107,7 +107,7 @@ InputName=bcc00
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcc00.asm
 InputName=bcc00
 
@@ -126,7 +126,7 @@ SOURCE=.\wx86\bcc10.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcc10.asm
 InputName=bcc10
 
@@ -138,7 +138,7 @@ InputName=bcc10
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcc10.asm
 InputName=bcc10
 
@@ -157,7 +157,7 @@ SOURCE=.\wx86\bcf00.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcf00.asm
 InputName=bcf00
 
@@ -169,7 +169,7 @@ InputName=bcf00
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcf00.asm
 InputName=bcf00
 
@@ -188,7 +188,7 @@ SOURCE=.\wx86\bcf10.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcf10.asm
 InputName=bcf10
 
@@ -200,7 +200,7 @@ InputName=bcf10
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcf10.asm
 InputName=bcf10
 
@@ -219,7 +219,7 @@ SOURCE=.\wx86\bcs00.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcs00.asm
 InputName=bcs00
 
@@ -231,7 +231,7 @@ InputName=bcs00
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcs00.asm
 InputName=bcs00
 
@@ -250,7 +250,7 @@ SOURCE=.\wx86\bcs10.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcs10.asm
 InputName=bcs10
 
@@ -262,7 +262,7 @@ InputName=bcs10
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcs10.asm
 InputName=bcs10
 
@@ -281,7 +281,7 @@ SOURCE=.\wx86\bct00.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bct00.asm
 InputName=bct00
 
@@ -293,7 +293,7 @@ InputName=bct00
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bct00.asm
 InputName=bct00
 
@@ -312,7 +312,7 @@ SOURCE=.\wx86\bct10.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bct10.asm
 InputName=bct10
 
@@ -324,7 +324,7 @@ InputName=bct10
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bct10.asm
 InputName=bct10
 
@@ -343,7 +343,7 @@ SOURCE=.\wx86\bcy00.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\bcy00.asm
 InputName=bcy00
 
@@ -355,7 +355,7 @@ InputName=bcy00
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\bcy00.asm
 InputName=bcy00
 
@@ -374,7 +374,7 @@ SOURCE=.\wx86\const.asm
 !IF  "$(CFG)" == "vpxblit - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Release
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Release
 InputPath=.\wx86\const.asm
 InputName=const
 
@@ -386,7 +386,7 @@ InputName=const
 !ELSEIF  "$(CFG)" == "vpxblit - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\..\..\..\..\..\ObjectCode\vpxblit\Debug
+IntDir=.\..\..\..\..\ObjectCode\vpxblit\Debug
 InputPath=.\wx86\const.asm
 InputName=const
 
