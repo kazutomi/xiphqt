@@ -155,7 +155,7 @@ use strict;
 BEGIN {
     use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $AUTOLOAD);
 
-    $VERSION = '2.0';
+    $VERSION = '2.0.1';
 
     use Carp;
 
@@ -167,8 +167,9 @@ BEGIN {
     @ISA = qw(Exporter DynaLoader);
 
     ### Exporter stuff
-    @EXPORT = qw{SHOUT_FORMAT_VORBIS SHOUT_FORMAT_MP3
-        SHOUT_PROTOCOL_ICY SHOUT_PROTOCOL_XAUDIOCAST SHOUT_PROTOCOL_HTTP
+    @EXPORT = qw {
+	SHOUT_FORMAT_VORBIS SHOUT_FORMAT_MP3
+	SHOUT_PROTOCOL_ICY SHOUT_PROTOCOL_XAUDIOCAST SHOUT_PROTOCOL_HTTP
         SHOUT_AI_BITRATE SHOUT_AI_SAMPLERATE SHOUT_AI_QUALITY
         SHOUT_AI_CHANNELS
 	SHOUTERR_SUCCESS SHOUTERR_INSANE SHOUTERR_NOCONNECT SHOUTERR_NOLOGIN 
@@ -386,7 +387,7 @@ sub send ($$) {
 
 ### METHOD: sync( undef )
 ### Sleep until the connection is ready for more data. This function should be
-###		used only in conjuction with C<send_data()>, in order to send data 
+###		used only in conjuction with C<send()>, in order to send data 
 ###		at the correct speed to the icecast server.
 sub sync ($) {
     my $self = shift or croak "sync: Method called as function";
@@ -398,13 +399,12 @@ sub sync ($) {
 ### Tell how much time (in seconds and fraction of seconds) must be
 ### waited until more data can be sent. Use instead of sync() to
 ### allow you to do other things while waiting. 
-###		Used only in conjuction with C<send_data()>, in order to send data 
+###		Used only in conjuction with C<send()>, in order to send data 
 ###		at the correct speed to the icecast server.
 sub delay ($) {
     my $self = shift or croak "delay: Method called as function";
 
-    my $i=$self->shout_delay; 
-    $i/1000;
+    $self->shout_delay; 
 }
 
 ### METHOD: set_audio_info( key => val, key => val )
@@ -441,7 +441,7 @@ sub get_audio_info ($$) {
 sub connect ($) {
     my $self = shift or croak "connect: Method called as function";
 
-    $self->format(SHOUT_FORMAT_MP3());
+    $self->format(Shout::SHOUT_FORMAT_MP3());
 
     return $self->open();
 }
@@ -454,12 +454,12 @@ sub icy_compat ($$) {
 	my $compat = shift;
 
 	if ($compat) {
-	    $self->protocol(SHOUT_PROTOCOL_ICY()) ? 0 : 1;
+	    $self->protocol(Shout::SHOUT_PROTOCOL_ICY()) ? 0 : 1;
 	} else {
-	    $self->protocol(SHOUT_PROTOCOL_XAUDIOCAST()) ? 0 : 1;
+	    $self->protocol(Shout::SHOUT_PROTOCOL_XAUDIOCAST()) ? 0 : 1;
 	}
     } else {
-	return ($self->protocol == SHOUT_PROTOCOL_ICY()) ? 1 : 0;
+	return ($self->protocol == Shout::SHOUT_PROTOCOL_ICY()) ? 1 : 0;
     }
 }
 
@@ -470,9 +470,9 @@ sub bitrate ($$) {
     if (@_) {
 	my $br = shift or croak "bitrate: No parameter specified";
 
-	$self->set_audio_info(SHOUT_AI_BITRATE(), $br) ? 0 : 1;
+	$self->set_audio_info(Shout::SHOUT_AI_BITRATE(), $br) ? 0 : 1;
     } else {
-	return $self->get_audio_info(SHOUT_AI_BITRATE());
+	return $self->get_audio_info(Shout::SHOUT_AI_BITRATE());
     }
 }
 
@@ -526,71 +526,45 @@ sub updateMetadata ($$) {
 ### (PROXY) METHOD: AUTOLOAD( @args )
 ###	Provides a proxy for functions and methods which aren't explicitly defined.
 sub AUTOLOAD {
+    ( my $method = $AUTOLOAD ) =~ s/.*:://;
 
-    ( my $method = $AUTOLOAD ) =~ s{.*::}{};
-    croak "& not defined" if $method eq 'constant';
+    # Translate Shout 1.0 calls. This should probably be made optional.
+    if ( defined($CompatibilityMethods{$method}) ) {
+	$method = $CompatibilityMethods{$method};
+    }
 
-    ### If called as a method, check to see if we're doing translation for the
-    ### method called. If we are, build the name of the real method and call
-    ### it. If not, delegate this call to Autoloadeer
-    if (( ref $_[0] && UNIVERSAL::isa($_[0], __PACKAGE__) )) {
-	my $self = shift;
+    if (grep {$_ eq $method} @TranslatedMethods) {
+      NOSTRICT: {
+	  no strict 'refs';
 
-	# Translate Shout 1.0 calls. This should probably be made optional.
-	if ( defined($CompatibilityMethods{$method}) ) {
-	    $method = $CompatibilityMethods{$method};
-	}
+	  my $setMethod = "shout_set_$method";
+	  my $getMethod = "shout_get_$method";
 
-	### If the called method is one we're translating, build the wrapper
-	### method for it and jump to it
-	if ( grep { $_ eq $method } @TranslatedMethods ) {
+	  *$AUTOLOAD = sub ($$) {
+	      my $obj = shift;
+	      return $obj->$setMethod(@_) if @_;
+	      return $obj->$getMethod();
+	  };
+      }
 
-	    ### Turn off strict so we can do some reference trickery
-  	    NO_STRICT: {
-		no strict 'refs';
-
-		my $setMethod = "shout_set_$method";
-		my $getMethod = "shout_get_$method";
-
-		*$AUTOLOAD = sub ($$) {
-		    my $obj = shift;
-		    return $obj->$setMethod(@_) if @_;
-		    return $obj->$getMethod();
-		};
-	    }
-
-	    ### Stick the self-reference back on the stack and jump to the
-	    ### new method
-	    unshift @_, $self;
-	    goto &$AUTOLOAD;
-	} else {
-	    ### If the method's not one we're translating, delegate the call to
-	    ### Autoloader
-
-	    # This is of dubious utility. Kill it? - brendan
-
-	    $AutoLoader::AUTOLOAD = $AUTOLOAD;
-	    goto &AutoLoader::AUTOLOAD;
-	}
-    } else {
-	### If we were called as a function, try to fetch it from the XSUB
-
-	my $val = strconstant($method, @_ ? $_[0] : 0);
-	$val = constant($method, @_ ? $_[0] : 0) if $!;
-	croak "No such Shout constant '$method'" if $!;
-
-	### Bootstrap a natural constant if we managed to find a value for the
-	### one specified
-        NO_STRICT: {
-	    no strict 'refs';
-	    *$AUTOLOAD = sub { $val };
-	}
-
-	### Substitute a call to the new function for the current call
 	goto &$AUTOLOAD;
     }
 
-    confess "UNREACHED";
+    # Check for string or integer constants
+    my $val = strconstant($method, @_ ? $_[0] : 0);
+    if ($! != 0 && ($! =~ /Invalid/ || $!{EINVAL})) {
+	$val = constant($method, @_ ? $_[0] : 0);
+    }
+    if ($! == 0) {
+      NOSTRICT: {
+	  no strict 'refs';
+
+	  *$method = sub { $val };
+	  goto &$method;
+      }
+    }
+
+    croak "No such Shout constant '$method'";
 }
 
 ### Module return value indicates successful loading
@@ -671,7 +645,7 @@ Get/set the port to connect to on the target Icecast server.
 Get/set the connection's public flag. This flag, when set to true, indicates
 that the stream may be listed in the public directory servers.
 
-=item I<send_data( $data[, $length] )>
+=item I<send( $data[, $length] )>
 
 Send the specified data with the optional length to the Icecast
 server. Returns a true value on success, and returns the undefined value
@@ -689,7 +663,7 @@ Tell how much time (in seconds and fraction of seconds) must be
 waited until more data can be sent. Use instead of sync() to
 allow you to do other things while waiting. 
 
-=item I<setMetadata( $newMetadata )>
+=item I<set_metadata( $newMetadata )>
 
 Update the metadata for the connection. Returns a true value if the update
 succeeds, and the undefined value if it fails.
