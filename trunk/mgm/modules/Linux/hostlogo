@@ -1,0 +1,82 @@
+# -*-Perl-*-
+use Tk;
+
+package MGMmodule::hostlogo;
+$name="hostlogo";
+%module;
+
+$logo=$main::toplevel->
+    Pixmap(-file => "$main::libdir/fishframe.xpm");
+
+$logoframes=12;
+$logowidth=$logo->width/$logoframes;
+$logoheight=$logo->height;
+$hostname=`hostname`;
+chop$hostname;
+$hostname=~s{^([^\.]+).*}{$1};
+
+# use our font and find the labesize...
+my$testlabel=$main::toplevel->Label(Name=>$name,
+				    -text=>$hostname,
+				    -borderwidth=>0,
+				    -padx=>1,-pady=>1);
+
+$textheight=$testlabel->reqheight;
+$textwidth=$testlabel->reqwidth;
+$testlabel->destroy;
+undef $textlabel;
+
+sub module_construct{
+    my($this,$width,$height)=@_;
+
+
+    my$logopad=($width-$logowidth)/2;
+    my$textpad=($width-$textwidth)/2;
+    my$vpad=($height-$logoheight-$textheight)/3;
+
+    $widget=$main::toplevel->Canvas(Name=>$name,
+				    borderwidth=>0,
+				    highlightthickness=>0,
+				    width=>$width,height=>$height);
+    $logowidget=$widget->Canvas(Name=>$name,
+				borderwidth=>0,
+				highlightthickness=>0,
+				width=>$logowidth,height=>$logoheight)->
+				    place(-x=>$logopad,-y=>$vpad,-anchor=>'nw');
+    $logowidget->createImage(0,0,-image=>$logo,-anchor=>'ne',
+			     -tags=>["logo"]);
+    $widget->createText($textpad,$vpad*2+$logoheight,-text=>$hostname,
+			-anchor=>nw);
+    
+    $widget->repeat(80,\&twirlback);
+    $this->{"widget"}=$widget;
+}
+
+$counter=0;
+sub twirlback{
+    $counter++;
+    if($counter>=12){$counter=0;}
+ 
+    $math=$logowidth*$logoframes-$counter*$logowidth;
+    $logowidget->coords('logo',$math,0);
+}
+
+$minx=($logowidth>$textwidth?$logowidth:$textwidth);
+$requestx=$minx+8;
+$miny=$logoheight+$textheight;
+$requesty=$miny+12;
+
+$demand=0;
+
+$module{"mgm_module_name"}=$name;
+$module{"mgm_module_minx"}=$minx;
+$module{"mgm_module_miny"}=$miny;
+$module{"mgm_module_reqx"}=$requestx;
+$module{"mgm_module_reqy"}=$requesty;
+$module{"mgm_module_demand"}=$demand;
+$module{"mgm_module_construct"}=\&module_construct;
+
+$main::toplevel->optionAdd("$main::Xname.$name.font",             
+			   "-*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*",20);
+
+\%module;
