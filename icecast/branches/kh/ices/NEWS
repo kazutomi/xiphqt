@@ -1,3 +1,12 @@
+1.60
+----
+. Update om_shout to use the libshout 2.1 release, now that
+  non-blocking is in. the subtrees are also back in
+. update alsa driver, memory cleanup, period settings is now optional
+. update to jack driver
+. HUP now triggers log reopening, logsize still triggers as well
+. update to m4 macros and docs
+
 1.59
 ----
 . fix ALSA silence issue, stupid bug...a one-liner as well

@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([IceS], [2.0-kh59], [karl@xiph.org])
+AC_INIT([IceS], [2.0-kh60], [karl@xiph.org])
 AC_PREREQ(2.54)
 AC_CONFIG_SRCDIR(src/ices.c)
 
@@ -155,7 +155,7 @@ CFLAGS="$xt_ices_CFLAGS"
 XIPH_VAR_PREPEND([XIPH_LIBS],[$XML_LIBS])
 XIPH_VAR_APPEND([XIPH_CFLAGS],[$XML_CFLAGS])
 
-XIPH_PATH_SHOUT(,AC_MSG_ERROR([Need libshout-kh release]))
+XIPH_PATH_SHOUT(,AC_MSG_ERROR([Need libshout-2.1 release]))
 XIPH_VAR_APPEND([XIPH_CPPFLAGS], [$SHOUT_CPPFLAGS])
 XIPH_VAR_APPEND([XIPH_CFLAGS], [$SHOUT_CFLAGS])
 XIPH_VAR_PREPEND([XIPH_LIBS], [-lvorbisenc $SHOUT_LIBS])
@@ -184,4 +184,10 @@ AC_SUBST(PTHREAD_CFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(LDFLAGS)
 
-AC_OUTPUT(Makefile conf/Makefile debian/Makefile doc/Makefile src/Makefile src/log/Makefile)
+AC_OUTPUT(Makefile conf/Makefile debian/Makefile doc/Makefile
+          src/Makefile src/log/Makefile
+          src/timing/Makefile
+          src/thread/Makefile
+          src/avl/Makefile
+          )
+
