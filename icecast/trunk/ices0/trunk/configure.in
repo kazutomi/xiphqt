@@ -385,6 +385,9 @@ then
 
   PERLCFLAGS=`$PERL -MExtUtils::Embed -e ccopts`
   PERLLIBS=`$PERL -MExtUtils::Embed -e ldopts`
+
+  saved_CPPFLAGS="$CPPFLAGS"
+  saved_LIBS="$LIBS"
   CPPFLAGS="$CPPFLAGS $PERLCFLAGS"
   LIBS="$LIBS $PERLLIBS"
 
@@ -395,6 +398,9 @@ then
     have_perl="yes"
     PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_perl.o"
     AC_DEFINE(HAVE_LIBPERL, 1, [ Define if you have perl libraries ])
+  else
+    CPPFLAGS="$saved_CPPFLAGS"
+    LIBS="$saved_LIBS"
   fi
 fi
 
