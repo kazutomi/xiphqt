@@ -49,9 +49,10 @@ automake --add-missing
 echo "  autoconf"
 autoconf
 
-echo " running autogen.sh in libshout"
-cd libshout
-./autogen.sh "$@" && echo
-cd ..
+if -d libshout
+then
+  echo " running autogen.sh in libshout"
+  (cd libshout && ./autogen.sh "$@" && echo)
+fi
 
 $srcdir/configure "$@" && echo
