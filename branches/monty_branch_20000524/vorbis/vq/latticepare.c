@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility for paring low hit count cells from lattice codebook
- last mod: $Id: latticepare.c,v 1.2 2000/05/08 20:49:50 xiphmont Exp $
+ last mod: $Id: latticepare.c,v 1.2.2.1 2000/05/24 21:17:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -392,6 +392,10 @@ int main(int argc,char *argv[]){
          the second best */
       if(b->c->lengthlist[bestcell]>0){
 	long head=cellhead[bestcell];
+
+	fprintf(stderr,"\reliminating cell %d with a hit count of %d\n",
+		bestcell,cellcount[bestcell]);
+
 	b->c->lengthlist[bestcell]=0;
 	cellhead[bestcell]=-1;
 	while(head!=-1){
@@ -434,6 +438,9 @@ int main(int argc,char *argv[]){
 	}
       }
 
+      fprintf(stderr,"\reliminating cell %d with a dispersal error of %g\n"
+	      "     (%d hits)\n",bestcell,besterror,cellcount[bestcell]);
+
       /* disperse it.  move each point out, adding it (properly) to
          the second best */
       b->c->lengthlist[bestcell]=0;
@@ -447,6 +454,8 @@ int main(int argc,char *argv[]){
 	double firstmetric=_dist(dim,b->valuelist+dim*newentry,ppt);
 	double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
 	long next=membership[head];
+	cellcount[newentry]++;
+	cellcount[bestcell]--;
 	cellerror1[newentry]+=firstmetric;
 	cellerror2[newentry]+=secondmetric;
 

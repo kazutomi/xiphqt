@@ -12,23 +12,16 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec.h,v 1.15 2000/05/08 20:49:43 xiphmont Exp $
+ last mod: $Id: codec.h,v 1.15.2.1 2000/05/24 21:16:57 xiphmont Exp $
 
  ********************************************************************/
 
 #ifndef _vorbis_codec_h_
 #define _vorbis_codec_h_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* __cplusplus */
-
-
 #define MAX_BARK 27
 
 #include <sys/types.h>
-#include "os_types.h"
 #include "vorbis/codebook.h"
 #include "vorbis/internal.h"
 
@@ -62,6 +55,7 @@ typedef struct vorbis_info_psy{
   double ath_att;
 
   int tonemaskp;
+  double toneatt_125Hz[5];
   double toneatt_250Hz[5];
   double toneatt_500Hz[5];
   double toneatt_1000Hz[5];
@@ -69,7 +63,17 @@ typedef struct vorbis_info_psy{
   double toneatt_4000Hz[5];
   double toneatt_8000Hz[5];
 
+  int peakattp;
+  double peakatt_125Hz[5];
+  double peakatt_250Hz[5];
+  double peakatt_500Hz[5];
+  double peakatt_1000Hz[5];
+  double peakatt_2000Hz[5];
+  double peakatt_4000Hz[5];
+  double peakatt_8000Hz[5];
+
   int noisemaskp;
+  double noiseatt_125Hz[5];
   double noiseatt_250Hz[5];
   double noiseatt_500Hz[5];
   double noiseatt_1000Hz[5];
@@ -419,12 +423,6 @@ extern int      vorbis_synthesis(vorbis_block *vb,ogg_packet *op);
 extern int      vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb);
 extern int      vorbis_synthesis_pcmout(vorbis_dsp_state *v,double ***pcm);
 extern int      vorbis_synthesis_read(vorbis_dsp_state *v,int samples);
-
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
 
 #endif
 

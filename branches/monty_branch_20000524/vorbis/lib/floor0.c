@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: floor backend 0 implementation
- last mod: $Id: floor0.c,v 1.14 2000/05/08 20:49:48 xiphmont Exp $
+ last mod: $Id: floor0.c,v 1.14.2.1 2000/05/24 21:17:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -149,6 +149,7 @@ double _curve_to_lpc(double *curve,double *lpc,vorbis_look_floor0 *l,
   int mapped=l->ln;
   double *work=alloca(sizeof(double)*mapped);
   int i,j,last=0;
+  int bark=0;
 
   memset(work,0,sizeof(double)*mapped);
   
@@ -160,7 +161,7 @@ double _curve_to_lpc(double *curve,double *lpc,vorbis_look_floor0 *l,
      use the original curve for error and noise estimation */
   
   for(i=0;i<l->n;i++){
-    int bark=l->linearmap[i];
+    bark=l->linearmap[i];
     if(work[bark]<curve[i])work[bark]=curve[i];
     if(bark>last+1){
       /* If the bark scale is climbing rapidly, some bins may end up
@@ -181,6 +182,10 @@ double _curve_to_lpc(double *curve,double *lpc,vorbis_look_floor0 *l,
     last=bark;
   }
 
+  /* If we're over-ranged to avoid edge effects, fill in the end of spectrum gap */
+  for(i=bark+1;i<mapped;i++)
+    work[i]=work[i-1];
+  
 #if 0
     { /******************/
       FILE *of;
@@ -202,7 +207,8 @@ double _curve_to_lpc(double *curve,double *lpc,vorbis_look_floor0 *l,
 
 void _lpc_to_curve(double *curve,double *lpc,double amp,
 			  vorbis_look_floor0 *l,char *name,long frameno){
-  double *lcurve=alloca(sizeof(double)*(l->ln*2));
+  /* l->m+1 must be less than l->ln, but guard in case we get a bad stream */
+  double *lcurve=alloca(sizeof(double)*max(l->ln*2,l->m*2+2));
   int i;
 
   if(amp==0){
@@ -251,7 +257,7 @@ static int forward(vorbis_block *vb,vorbis_look_floor *i,
      ampbits bits */
  
   {
-    long maxval=(1<<info->ampbits)-1;
+    long maxval=(1L<<info->ampbits)-1;
     
     long val=rint(amp/info->ampdB*maxval);
 

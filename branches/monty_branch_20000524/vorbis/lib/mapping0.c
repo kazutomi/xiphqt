@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c,v 1.12 2000/05/08 20:49:49 xiphmont Exp $
+ last mod: $Id: mapping0.c,v 1.12.2.1 2000/05/24 21:17:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -233,7 +233,6 @@ static int forward(vorbis_block *vb,vorbis_look_mapping *l){
 
   {
     double *floor=_vorbis_block_alloc(vb,n*sizeof(double)/2);
-    double *mask=_vorbis_block_alloc(vb,n*sizeof(double)/2);
     
     for(i=0;i<vi->channels;i++){
       double *pcm=vb->pcm[i];
@@ -246,7 +245,7 @@ static int forward(vorbis_block *vb,vorbis_look_mapping *l){
 	memset(decay,0,n*sizeof(double)/2);
 
       /* perform psychoacoustics; do masking */
-      _vp_compute_mask(look->psy_look+submap,pcm,floor,mask,decay);
+      _vp_compute_mask(look->psy_look+submap,pcm,floor,decay);
  
       _analysis_output("mdct",seq,pcm,n/2,0,1);
       _analysis_output("lmdct",seq,pcm,n/2,0,0);
@@ -259,7 +258,7 @@ static int forward(vorbis_block *vb,vorbis_look_mapping *l){
       _analysis_output("floor",seq,floor,n/2,0,1);
 
       /* apply the floor, do optional noise levelling */
-      _vp_apply_floor(look->psy_look+submap,pcm,floor,mask);
+      _vp_apply_floor(look->psy_look+submap,pcm,floor);
       
       _analysis_output("res",seq++,pcm,n/2,0,0);
       
@@ -344,7 +343,7 @@ static int inverse(vorbis_block *vb,vorbis_look_mapping *l){
   /* only MDCT right now.... */
   for(i=0;i<vi->channels;i++){
     double *pcm=vb->pcm[i];
-    _analysis_output("out",seq++,pcm,n/2,0,0);
+    _analysis_output("out",seq+i,pcm,n/2,0,0);
     mdct_backward(vd->transform[vb->W][0],pcm,pcm);
   }
 
@@ -360,6 +359,7 @@ static int inverse(vorbis_block *vb,vorbis_look_mapping *l){
     else
       for(j=0;j<n;j++)
 	pcm[j]=0.;
+    _analysis_output("final",seq++,pcm,n,0,0);
   }
 	    
   /* now apply the decoded post-window time information */

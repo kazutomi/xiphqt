@@ -1,6 +1,6 @@
 # vorbis makefile configured for use with gcc on any platform
 
-# $Id: Makefile.in,v 1.26 2000/05/08 20:49:47 xiphmont Exp $
+# $Id: Makefile.in,v 1.26.2.1 2000/05/24 21:17:01 xiphmont Exp $
 
 ###############################################################################
 #                                                                             #
@@ -81,8 +81,7 @@ vorbisfile.a:	$(VF_LFILES)
 		$(AR) -r vorbisfile.a $^
 		$(RANLIB) vorbisfile.a
 
-psytune:	mdct.o psy.o lpc.o smallft.o window.o psytune.o floor0.o \
-		bitwise.o lsp.o codebook.o sharedbook.o
+psytune:	psytune.o libvorbis.a
 	        $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 
