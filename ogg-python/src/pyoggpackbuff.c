@@ -4,7 +4,7 @@
 
 /************************************************************
 			 OggPackBuffer Object
- ************************************************************/
+************************************************************/
 
 char py_oggpack_buffer_doc[] = "";
 
@@ -113,7 +113,7 @@ py_oggpack_buffer_new(PyObject *self, PyObject *args)
     return NULL;
 
   ret = (py_oggpack_buffer *) PyObject_NEW(py_oggpack_buffer,
-					   &py_oggpack_buffer_type);
+																					 &py_oggpack_buffer_type);
   if (ret == NULL)
     return NULL;
 
@@ -128,6 +128,8 @@ py_oggpack_reset(PyObject *self, PyObject *args)
     return NULL;
 
   oggpack_reset(PY_OGGPACK_BUFF(self));
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject *
@@ -135,8 +137,10 @@ py_oggpack_writeclear(PyObject *self, PyObject *args)
 {
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
-
+	
   oggpack_writeclear(PY_OGGPACK_BUFF(self));
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject *
@@ -306,7 +310,7 @@ py_oggpack_repr(PyObject *self)
   char buf[256];
 
   sprintf(buf, "<OggPackBuff, endbyte = %ld, endbit = %d at %p>", ob->endbyte,
-	  ob->endbit, self);
+					ob->endbit, self);
   return PyString_FromString(buf);
 }
 
