@@ -2,112 +2,14 @@
 use Tk;
 use Tk qw(exit); 
 use IPC::Open2;
+require "$libdir/xpm";
 
 # single bar graph pseudo-widget, built out of Tk canvases.
 
-package MGM::Text;
-
-# set up cropping limits
-
-my$data=qx{pbmtext -font $main::fontfile "_A|Wpqf_"};
-$test=&filter($data,"pnmfile");
-$test=~m/(\d*)\s*by\s*(\d*)/;
-my$width=$1;
-my$height=$2;
-
-my$test=&filter($data,"pnmcrop -top 2>/dev/null| pnmfile");
-$test=~m/(\d*)\s*by\s*(\d*)/;
-$topcrop=$height-$2-3;
-
-my$test=&filter($data,"pnmcrop -bottom 2>/dev/null| pnmfile");
-$test=~m/(\d*)\s*by\s*(\d*)/;
-$bottomcrop=$height-$2-1;
-
-my$test=&filter($data,"pnmcrop -left 2>/dev/null| pnmfile");
-$test=~m/(\d*)\s*by\s*(\d*)/;
-$leftcrop=$width-$1-1;
-
-my$test=&filter($data,"pnmcrop -right 2>/dev/null| pnmfile");
-$test=~m/(\d*)\s*by\s*(\d*)/;
-$rightcrop=$width-$1-1;
-
-sub filter{
-    my($data,$commandline)=@_;
-
-    die unless my$pid=IPC::Open2::open2(OUT,IN,$commandline);
-    print IN $data;
-	
-    my $out;
-    while(<OUT>){
-	$out=$out.$_;
-    }
-    close IN;
-    close OUT;
-    waitpid($pid,0);
-    $out;
-}
-
-sub maketext{
-    my($text)=@_;
-    
-    my$data=qx{pbmtext -font $main::fontfile \"$text\"};
-
-    # get width/height for cropping that does not vary the height
-
-    $test=&filter($data,"pnmfile");
-    $test=~m/(\d*)\s*by\s*(\d*)/;
-
-    my$width=$1-($leftcrop+$rightcrop);
-    my$height=$2-($topcrop+$bottomcrop);
-
-    $rawimages->{$text}=&filter($data,"pnmcut $leftcrop $topcrop $width $height|pnmdepth 255 2>/dev/null");
-}
-
-sub scaletext{
-    my($text,$stretch,$length,$height,$fore,$back,$dir,$nocache)=@_;
-    
-    if($height==0){
-	undef;
-    }else{
-	
-	&maketext($text) if(!defined($rawimages->{"$text"}));
-	my$data=$rawimages->{"$text"};
-
-	undef $rawimages->{"$text"} if(defined($nocache));
-	
-	$test=&filter($data,"pnmfile");
-	
-	$test=~m/(\d*)\s*by\s*(\d*)/;
-	$length=$height/$2*$1 if ($length<=0);
-	my$ratio=$stretch*$1/$2;
-	
-	my$command;
-	# will it be too long to fit with a preserved aspect ratio?
-	if($ratio > $length/$height){
-	    # yes.  Squash it
-	    $command="pgmtoppm \"$fore\"-\"$back\" ".
-		"| pnmscale -xsize $length -ysize $height|";
-	    
-	}else{
-	    # no.  preserve the ratio
-	    my$yscale=$height/$2;
-	    my$xscale=$yscale*$stretch;
-
-	    $command="pgmtoppm \"$fore\"-\"$back\" | ".
-		"pnmscale -yscale $yscale -xscale $xscale |";
-	}
-
-	$command=$command."pnmflip -r90 |" if($dir eq "vertical");
-	$command=$command."ppmtoxpm 2>/dev/null";
-		
-	$data=&filter($data,$command);
-	
-	eval{$main::toplevel->Pixmap('-data'=>"$data")};
-    }
-}
-
 package MGM::Bar;
 @ISA=("Tk::Canvas");
+
+$font=MGM::Font::new(MGM::Xpm::read($main::fontfile));
 
 sub drawborder{
     my($w,$width,$height,$relief,$dim,$lit)=@_;
@@ -214,13 +116,11 @@ sub new{
           &main::min($b+$lum*.7,255);
 
     if($orient eq 'vertical'){
-	$unlittext=MGM::Text::scaletext($label,$ratio,$height-($pad*2),
-					$width-($pad*2),$fore,$back,
-					"vertical");
-	$littext=MGM::Text::scaletext($label,$ratio,$height-($pad*2),
-				      $width-($pad*2),$afore,$aback,
-				      "vertical");
+	my$text=$font->maketext($label,$width-($pad*2),$height-($pad*2),
+			      $ratio,1,1);
 
+	$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back));
+	$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback));
 
 	$below->{"barlength"}=$height;
 	$below->{"litrelief"}=$arelief;
@@ -250,11 +150,10 @@ sub new{
 		    $below->{"dimdim"},$below->{"dimlit"});
 
     }else{
-	
-	$unlittext=MGM::Text::scaletext($label,$ratio,$width-($pad*2),
-					$height-($pad*2),$fore,$back);
-	$littext=MGM::Text::scaletext($label,$ratio,$width-($pad*2),
-				      $height-($pad*2),$afore,$aback);
+	my$text=$font->maketext($label,$height-($pad*2),$width-($pad*2),
+			      $ratio,0,1);
+	$unlittext=$toplevel->Pixmap(-data=>$text->write($fore,$back));
+	$littext=$toplevel->Pixmap(-data=>$text->write($afore,$aback));
 
 	$below->{"barlength"}=$width;
 	$below->configure(-borderwidth=>0,
@@ -321,8 +220,11 @@ sub cacheem{
     my$orient=$main::orient;
     while(my$num=shift){
 	if(!defined($numbers{$num})){	
-	    $numbers{$num}=
-		MGM::Text::scaletext($num,1.2,-1,$size,$fg,$bg,$orient,1);
+	    $numbers{$num}=$main::toplevel->
+		Pixmap(-data=>$MGM::Bar::font->
+		       maketext($num,$size,undef,1,
+				$orient eq 'vertical'?1:undef)->
+		       write($fg,$bg));
 	}
     }
 }
@@ -342,14 +244,22 @@ sub cacheprompt{
 	my$bg=$main::background;
 	my$orient=$main::orient;
 	
-	$prompts{"$prompt"}=
-	  MGM::Text::scaletext("$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
-	$prompts{"k$prompt"}=
-	  MGM::Text::scaletext("k$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
-	$prompts{"M$prompt"}=
-	    MGM::Text::scaletext("M$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
-	$prompts{"G$prompt"}=
-	  MGM::Text::scaletext("G$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
+	$prompts{"$prompt"}=$main::toplevel->Pixmap(-data=>
+	    $MGM::Bar::font->maketext("$prompt",$size,undef,1,
+				      $orient eq 'vertical'?1:undef)->
+					  write($fg,$bg));
+	$prompts{"k$prompt"}=$main::toplevel->Pixmap(-data=>
+	    $MGM::Bar::font->maketext("k$prompt",$size,undef,1,
+				      $orient eq 'vertical'?1:undef)->
+					  write($fg,$bg));
+	$prompts{"M$prompt"}=$main::toplevel->Pixmap(-data=>
+	    $MGM::Bar::font->maketext("M$prompt",$size,undef,1,
+				      $orient eq 'vertical'?1:undef)->
+					  write($fg,$bg));
+	$prompts{"G$prompt"}=$main::toplevel->Pixmap(-data=>
+	    $MGM::Bar::font->maketext("G$prompt",$size,undef,1,
+				      $orient eq 'vertical'?1:undef)->
+					  write($fg,$bg));
     }
 }
 
@@ -393,6 +303,8 @@ sub promptlabel{
     my$label;
 
     my($textw,$textl)=&promptsize("$mult$prompt",$scaleset);
+
+    print "prompt: $textl, $textw\n";
     if($orient eq 'vertical'){
 	$label=$p->{"widget"}->Canvas(Name=>scalerange,
 				      -borderwidth=>0,
@@ -403,8 +315,8 @@ sub promptlabel{
 					  place(-x=>0,-y=>2,-anchor=>'nw');
 	$label->createImage(0,0,
 			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
-	$label->createImage(0,$textl-1,
-			    -image=>$numbers{"$scaleset"},-anchor=>'sw');
+	$label->createImage(0,$prompts{"$mult$prompt"}->height,
+			    -image=>$numbers{"$scaleset"},-anchor=>'nw');
     }else{
 	$label=$p->{"widget"}->Canvas(Name=>scalerange,
 				      -borderwidth=>0,
@@ -414,8 +326,8 @@ sub promptlabel{
 				      relief=>'flat')->
 					  place(-relx=>1.0,
 						-x=>-2,-y=>0,-anchor=>'ne');
-	$label->createImage($textl-1,0,
-			    -image=>$prompts{"$mult$prompt"},-anchor=>'ne');
+	$label->createImage($numbers{"$scaleset"}->width,0,
+			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
 	$label->createImage(0,0,
 			    -image=>$numbers{"$scaleset"},-anchor=>'nw');
     }
@@ -427,8 +339,8 @@ sub new{
 
     my %graph = ( 'num' => '1',
 		  'fixed' => '0',
-		  'rangesetting'=> '1',
-		  'rangecurrent'=> '1' );
+		  'rangesetting'=> '4',
+		  'rangecurrent'=> '4' );
 
     my $ret=\%graph;
     bless $ret, 'MGM::Graph';
@@ -574,13 +486,11 @@ sub configure{
 	$val=shift;   
         if(!defined($val)){last;}
 	$this->{"$arg"}=$val;
-
-	print "$arg $val\n";
     }
 
     # The only strategy, currently, is to redraw ;-) 
-
     $this->drawit();
+    $this->{"scalethresh"}=&main::moption($this,"scalethresh");
 }
 
 sub drawvscale{
@@ -699,6 +609,7 @@ sub set{
     my$metermax;
     my$length=$this->{"barlength"};
     my$widget=$this->{"widget"};
+    my$ethresh=$this->{"scalethresh"};
     my$scalep=0;
     my$scrollp=1;
 
@@ -726,15 +637,16 @@ sub set{
 
     if(!$this->{"fixed"}){
 	my$flag=0;
-	while($metermax>$this->{"rangesetting"}){
+	if($metermax>$this->{"rangesetting"}){
 	    $this->{"rangesetting"}*=2;
 	    $this->{"rangediff"}=$this->{"rangesetting"}-$this->{"rangecurrent"};
 	    $flag=1;
 	}
 	
-	while($metermax*10<$this->{"rangesetting"}){
+	if($this->{"rangesetting"}>1 && 
+	   $metermax*$ethresh<$this->{"rangesetting"}){
 	    $this->{"rangesetting"}/=2;
-	    $this->{"rangesetting"}=1,last if($this->{"rangesetting"}<1);
+	    $this->{"rangesetting"}=1 if($this->{"rangesetting"}<1);
 	    $this->{"rangediff"}=$this->{"rangesetting"}-$this->{"rangecurrent"};
 	    $flag=1;
 	}
