@@ -1,7 +1,7 @@
-#include "pyoggsyncstate.h"
-#include "pyoggpage.h"
+#include "sync.h"
+#include "page.h"
 #include "general.h"
-#include "_ogg2module.h"
+#include "module.h"
 
 /*****************************************************************
 			    OggSyncState Object

@@ -40,13 +40,13 @@ ogg_include_dir = data['ogg_include_dir']
 ogg_lib_dir = data['ogg_lib_dir']
 ogg_libs = string.split(data['ogg_libs'])
 
-_ogg2module = Extension(name='ogg2',
+ogg2module = Extension(name='ogg2',
                        sources=['src/module.c',
                                 'src/packet.c',
-                                'src/streamstate.c',
+                                'src/stream.c',
                                 'src/page.c',
                                 'src/packbuff.c',
-                                'src/syncstate.c',
+                                'src/sync.c',
                                 'src/general.c'],
                        define_macros = [('VERSION_MAJOR', VERSION_MAJOR),
                                         ('VERSION_MINOR', VERSION_MINOR),
@@ -64,7 +64,7 @@ setup ( name = "pyogg",
         url = "NONEYET",
 
         headers = [],
-        packages = ['ogg2'],
-        package_dir = {'ogg2' : 'pysrc'},
-        ext_package = 'ogg2',
-        ext_modules = [_ogg2module] )
+#        packages = ['ogg2'],
+#        package_dir = {'ogg2' : 'pysrc'},
+        ext_package = '',
+        ext_modules = [ogg2module] )

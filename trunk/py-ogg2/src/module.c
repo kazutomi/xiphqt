@@ -1,13 +1,13 @@
 #include <ogg2/ogg.h>
 
 #include "general.h"
-#include "_ogg2module.h"
+#include "module.h"
 
-#include "pyoggstreamstate.h"
-#include "pyoggsyncstate.h"
-#include "pyoggpacket.h"
-#include "pyoggpackbuff.h"
-#include "pyoggpage.h"
+#include "stream.h"
+#include "sync.h"
+#include "packet.h"
+#include "packbuff.h"
+#include "page.h"
 
 static PyMethodDef Ogg_methods[] = {
   {"OggPackBuff", PyOggPackBuffer_New,

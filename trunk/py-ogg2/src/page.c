@@ -1,6 +1,6 @@
 #include "general.h"
-#include "_ogg2module.h"
-#include "pyoggpage.h"
+#include "module.h"
+#include "page.h"
 
 /*****************************************************************
 			    OggPage Object
