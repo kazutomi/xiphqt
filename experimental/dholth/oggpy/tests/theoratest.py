@@ -44,8 +44,6 @@ def test(ogg, imagewriter = None):
 
     numarray.Error.setMode(all="ignore")
 
-    # oggpy.sync.write = oggpy.sync_write # hack until the wrapper can do this itself
-    
     ti = theorapy.info()
     tc = theorapy.comment()
     td = theorapy.state()
@@ -72,7 +70,7 @@ def test(ogg, imagewriter = None):
         elif theora == 3:
             td.decode_init(ti)
             yield (ti, tc, td)
-            #
+            
             # print "This theora encoded by: ", tc.get_vendor()
             # print "Trying to decode with: ", theorapy.version_string(), theorapy.version_number()
             # for i in dir(ti):
@@ -89,7 +87,7 @@ def test(ogg, imagewriter = None):
             # for i in range(tc.size()):
             #     print tc.query_index(i)
             # print ":end comments"
-            #
+            
             theora += 1
            
         elif theora > 3:
