@@ -29,7 +29,7 @@
 extern "C" {
 
 extern size_t  fread_func  (void *ptr,size_t size,size_t nmemb, void *stream);
-extern int     fseek_func  (void *stream, ogg_int64_t offset, int whence);
+extern int     fseek_func  (void *stream, int64_t offset, int whence);
 extern int     fclose_func (void *stream);
 extern long    ftell_func  (void *stream);
 
