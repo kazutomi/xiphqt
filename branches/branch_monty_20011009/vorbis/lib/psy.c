@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: psychoacoustics not including preecho
- last mod: $Id: psy.c,v 1.56 2001/10/02 00:14:32 segher Exp $
+ last mod: $Id: psy.c,v 1.56.2.1 2001/10/11 15:41:44 xiphmont Exp $
 
  ********************************************************************/
 
@@ -310,9 +310,6 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,
   memcpy(p->tonecurves[16][8]+2,tone_8000_80dB_SL,sizeof(*p->tonecurves[16][8])*EHMER_MAX);
   memcpy(p->tonecurves[16][10]+2,tone_8000_100dB_SL,sizeof(*p->tonecurves[16][10])*EHMER_MAX);
 
-  /* value limit the tonal masking curves; the peakatt not only
-     optionally specifies maximum dynamic depth, but also [always]
-     limits the masking curves to a minimum depth */
   for(i=0;i<P_BANDS;i+=2)
     for(j=4;j<P_LEVELS;j+=2)
       for(k=2;k<EHMER_MAX+2;k++)
@@ -331,51 +328,6 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,
   /* set up the final curves */
   for(i=0;i<P_BANDS;i++)
     setup_curve(p->tonecurves[i],i,vi->toneatt->block[i]);
-
-  if(vi->curvelimitp){
-    /* value limit the tonal masking curves; the peakatt not only
-       optionally specifies maximum dynamic depth, but also [always]
-       limits the masking curves to a minimum depth  */
-    for(i=0;i<P_BANDS;i++)
-      for(j=0;j<P_LEVELS;j++){
-	for(k=2;k<EHMER_OFFSET+2+vi->curvelimitp;k++)
-	  if(p->tonecurves[i][j][k]> vi->peakatt->block[i][j])
-	    p->tonecurves[i][j][k]=  vi->peakatt->block[i][j];
-	  else
-	    break;
-      }
-  }
-
-  if(vi->tone_guard) /* we limit depth only optionally */
-    for(i=0;i<P_BANDS;i++)
-      for(j=0;j<P_LEVELS;j++)
-	if(p->tonecurves[i][j][EHMER_OFFSET+2]< vi->peakatt->block[i][j])
-	  p->tonecurves[i][j][EHMER_OFFSET+2]=  vi->peakatt->block[i][j];
-
-  /* but guarding is mandatory */
-  for(i=0;i<P_BANDS;i++)
-    for(j=0;j<P_LEVELS;j++)
-      if(p->tonecurves[i][j][EHMER_OFFSET+2]< vi->tone_guard)
-	  p->tonecurves[i][j][EHMER_OFFSET+2]=  vi->tone_guard;
-
-  /* set up rolling noise median */
-  for(i=0;i<n;i++){
-    float halfoc=toOC((i+.5)*rate/(2.*n))*2.;
-    int inthalfoc;
-    float del;
-    
-    if(halfoc<0)halfoc=0;
-    if(halfoc>=P_BANDS-1)halfoc=P_BANDS-1;
-    inthalfoc=(int)halfoc;
-    del=halfoc-inthalfoc;
-    p->noiseoffset[i]=
-      p->vi->noiseoff[inthalfoc]*(1.-del) + 
-      p->vi->noiseoff[inthalfoc+1]*del;
-  }
-
-  analysis_noisy=1;
-  _analysis_output("noiseoff",0,p->noiseoffset,n,1,0);
-  _analysis_output("noisethresh",0,p->noisethresh,n,1,0);
 
   for(i=0;i<P_LEVELS;i++)
     _analysis_output("curve_63Hz",i,p->tonecurves[0][i]+2,EHMER_MAX,0,0);
@@ -402,7 +354,7 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,
   for(i=0;i<P_LEVELS;i++)
     _analysis_output("curve_2.4kHz",i,p->tonecurves[11][i]+2,EHMER_MAX,0,0);
   for(i=0;i<P_LEVELS;i++)
-    _analysis_output("curve_4kHz",i,p->tonecurves[12][i]+2,EHMER_MAX,0,0);
+     _analysis_output("curve_4kHz",i,p->tonecurves[12][i]+2,EHMER_MAX,0,0);
   for(i=0;i<P_LEVELS;i++)
     _analysis_output("curve_5.6kHz",i,p->tonecurves[13][i]+2,EHMER_MAX,0,0);
   for(i=0;i<P_LEVELS;i++)
@@ -411,6 +363,156 @@ void _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,
     _analysis_output("curve_11.5kHz",i,p->tonecurves[15][i]+2,EHMER_MAX,0,0);
   for(i=0;i<P_LEVELS;i++)
     _analysis_output("curve_16kHz",i,p->tonecurves[16][i]+2,EHMER_MAX,0,0);
+
+  if(vi->curvelimitp){
+    /* value limit the tonal masking curves; the peakatt not only
+       optionally specifies maximum dynamic depth, but also
+       limits the masking curves to a minimum depth  */
+    for(i=0;i<P_BANDS;i++)
+      for(j=0;j<P_LEVELS;j++){
+	for(k=2;k<EHMER_OFFSET+2+vi->curvelimitp;k++)
+	  if(p->tonecurves[i][j][k]> vi->peakatt->block[i][j])
+	    p->tonecurves[i][j][k]=  vi->peakatt->block[i][j];
+	  else
+	    break;
+      }
+  }
+
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_63Hz",i,p->tonecurves[0][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_88Hz",i,p->tonecurves[1][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_125Hz",i,p->tonecurves[2][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_170Hz",i,p->tonecurves[3][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_250Hz",i,p->tonecurves[4][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_350Hz",i,p->tonecurves[5][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_500Hz",i,p->tonecurves[6][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_700Hz",i,p->tonecurves[7][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_1kHz",i,p->tonecurves[8][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_1.4Hz",i,p->tonecurves[9][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_2kHz",i,p->tonecurves[10][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_2.4kHz",i,p->tonecurves[11][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_4kHz",i,p->tonecurves[12][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_5.6kHz",i,p->tonecurves[13][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_8kHz",i,p->tonecurves[14][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_11.5kHz",i,p->tonecurves[15][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("licurve_16kHz",i,p->tonecurves[16][i]+2,EHMER_MAX,0,0);
+
+  if(vi->peakattp) /* we limit maximum depth only optionally */
+    for(i=0;i<P_BANDS;i++)
+      for(j=0;j<P_LEVELS;j++)
+	if(p->tonecurves[i][j][EHMER_OFFSET+2]< vi->peakatt->block[i][j])
+	  p->tonecurves[i][j][EHMER_OFFSET+2]=  vi->peakatt->block[i][j];
+
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_63Hz",i,p->tonecurves[0][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_88Hz",i,p->tonecurves[1][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_125Hz",i,p->tonecurves[2][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_170Hz",i,p->tonecurves[3][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_250Hz",i,p->tonecurves[4][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_350Hz",i,p->tonecurves[5][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_500Hz",i,p->tonecurves[6][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_700Hz",i,p->tonecurves[7][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_1kHz",i,p->tonecurves[8][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_1.4Hz",i,p->tonecurves[9][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_2kHz",i,p->tonecurves[10][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_2.4kHz",i,p->tonecurves[11][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_4kHz",i,p->tonecurves[12][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_5.6kHz",i,p->tonecurves[13][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_8kHz",i,p->tonecurves[14][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_11.5kHz",i,p->tonecurves[15][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("pcurve_16kHz",i,p->tonecurves[16][i]+2,EHMER_MAX,0,0);
+
+  /* but guarding is mandatory */
+  for(i=0;i<P_BANDS;i++)
+    for(j=0;j<P_LEVELS;j++)
+      if(p->tonecurves[i][j][EHMER_OFFSET+2]< vi->tone_guard)
+	  p->tonecurves[i][j][EHMER_OFFSET+2]=  vi->tone_guard;
+
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_63Hz",i,p->tonecurves[0][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_88Hz",i,p->tonecurves[1][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_125Hz",i,p->tonecurves[2][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_170Hz",i,p->tonecurves[3][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_250Hz",i,p->tonecurves[4][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_350Hz",i,p->tonecurves[5][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_500Hz",i,p->tonecurves[6][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_700Hz",i,p->tonecurves[7][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_1kHz",i,p->tonecurves[8][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_1.4Hz",i,p->tonecurves[9][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_2kHz",i,p->tonecurves[10][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_2.4kHz",i,p->tonecurves[11][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_4kHz",i,p->tonecurves[12][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_5.6kHz",i,p->tonecurves[13][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_8kHz",i,p->tonecurves[14][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_11.5kHz",i,p->tonecurves[15][i]+2,EHMER_MAX,0,0);
+  for(i=0;i<P_LEVELS;i++)
+    _analysis_output("fcurve_16kHz",i,p->tonecurves[16][i]+2,EHMER_MAX,0,0);
+
+  /* set up rolling noise median */
+  for(i=0;i<n;i++){
+    float halfoc=toOC((i+.5)*rate/(2.*n))*2.;
+    int inthalfoc;
+    float del;
+    
+    if(halfoc<0)halfoc=0;
+    if(halfoc>=P_BANDS-1)halfoc=P_BANDS-1;
+    inthalfoc=(int)halfoc;
+    del=halfoc-inthalfoc;
+    p->noiseoffset[i]=
+      p->vi->noiseoff[inthalfoc]*(1.-del) + 
+      p->vi->noiseoff[inthalfoc+1]*del;
+  }
+
+  analysis_noisy=1;
+  _analysis_output("noiseoff",0,p->noiseoffset,n,1,0);
+  _analysis_output("noisethresh",0,p->noisethresh,n,1,0);
   analysis_noisy=1;
 
 }
@@ -736,7 +838,6 @@ void _vp_compute_mask(vorbis_look_psy *p,
 
     for(i=0;i<n;i++)work[i]=logmdct[i]-logmask[i];
 
-    _analysis_output("medianmdct",seq,work,n,1,0);
     bark_noise_hybridmp(n,p->bark,work,logmask,0.,
 			p->vi->noisewindowfixed);
 
@@ -745,21 +846,12 @@ void _vp_compute_mask(vorbis_look_psy *p,
     /* work[i] holds the median line (.5), logmask holds the upper
        envelope line (1.) */
 
-    _analysis_output("median",seq,work,n,1,0);
-
-    _analysis_output("medianenvelope",seq,logmask,n,1,0);
-    for(i=0;i<n;i++)logmask[i]+=work[i];
-    _analysis_output("envelope",seq,logmask,n,1,0);
-    for(i=0;i<n;i++)logmask[i]-=work[i];
-
     for(i=0;i<n;i++){
       int dB=logmask[i]+.5;
       if(dB>=NOISE_COMPAND_LEVELS)dB=NOISE_COMPAND_LEVELS-1;
       logmask[i]= work[i]+p->vi->noisecompand[dB]+p->noiseoffset[i];
       if(logmask[i]>p->vi->noisemaxsupp)logmask[i]=p->vi->noisemaxsupp;
     }
-
-    _analysis_output("noise",seq,logmask,n,1,0);
 
   }else{
     for(i=0;i<n;i++)logmask[i]=NEGINF;
@@ -777,7 +869,7 @@ void _vp_compute_mask(vorbis_look_psy *p,
     }
   }
 
-  /* tone/peak masking */
+  /* tone masking */
   seed_loop(p,(const float ***)p->tonecurves,logfft,logmask,seed,global_specmax);
   max_seeds(p,g,channel,seed,logmask);
 
