@@ -29,12 +29,10 @@ sub module_instance{
     my$widget=$this->{"widget"};
     my$xpath=$this->{"xpath"};
 
-    $widget->optionAdd("$xpath.scalewidadj", 15,21);
-    $widget->optionAdd("$xpath.scalelenadj", 15,21); 
-    $widget->optionAdd("$xpath*font",             
-			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-
+    $widget->optionAdd("$xpath.scalewidadj", 60,21);
+    $widget->optionAdd("$xpath.scalelenadj", 60,21); 
     $widget->optionAdd("$xpath.scalejustify", 0,20);      
+    $widget->optionAdd("$xpath.borderwidth", 1,20);      
 
     # use our font and find the labelsize...
     my$testlabel=$this->{"widget"}->Label(-text=>$this->{"hostname"},

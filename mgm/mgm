@@ -38,8 +38,10 @@ $toplevel->optionAdd("$Xname.stack",            'horizontal',20);
 $toplevel->optionAdd("$Xname.bars",             'vertical',20);
 $toplevel->optionAdd("$Xname*textpad",          '1',20);
 $toplevel->optionAdd("$Xname*widgetpad",        '2',20);
+
 $toplevel->optionAdd("$Xname*font",    
-		     '-misc-fixed-*-*-*-*-8-*-*-*-*-*-*-*',20);
+		     '-*-helvetica-medium-r-*-*-8-*-*-*-*-*-*-*',20);
+
 $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
 $toplevel->optionAdd("$Xname*active",           'true',20);
@@ -411,7 +413,7 @@ sub build_and_run{
 		$mod->{"sequence"}=$i;
 		my$ret=eval{$mod->module_run};
 		if(!defined($ret)){
-		    print STDERR "Error eval()ing ->module_construct for ".
+		    print STDERR "Error eval()ing ->module_run for ".
 			($mod->{"name"}).": $@\n";
 		}else{
 		    $mod->{"widget"}=$ret; # must store the widget

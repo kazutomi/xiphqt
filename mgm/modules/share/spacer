@@ -27,16 +27,22 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.relief", 'sunken' ,21);
     $toplevel->optionAdd("$xpath.background",'#27536c' ,21);
     $toplevel->optionAdd("$xpath.borderwidth", 1 ,21);
-    $toplevel->optionAdd("$xpath.thickness", 2 ,21);
+    $toplevel->optionAdd("$xpath.thickness", 1 ,21);
     $toplevel->optionAdd("$xpath.scalewidadj", 20,21);
     $toplevel->optionAdd("$xpath.scalelenadj", 50,21);
     $toplevel->optionAdd("$xpath.scalejustify", 0,20);  #centered    
 
     $toplevel->optionAdd("$xpath.minx", 10,21);      # safe
     $toplevel->optionAdd("$xpath.miny", 10,21);      # safe
+
     $this->{"relief"}=$widget->optionGet("relief",'');
-    $this->{"border"}=$widget->optionGet("borderwidth",'');
-    $this->{"thick"}=$widget->optionGet("thickness",'');
+    my$border=$this->{"border"}=$widget->optionGet("borderwidth",'');
+    my$thick=$this->{"thick"}=$widget->optionGet("thickness",'');
+
+    $toplevel->optionAdd("$xpath.minx", $border*2+$thick,21);      # safe
+    $toplevel->optionAdd("$xpath.miny", $border*2+$thick,21);      # safe
+
+
 
     $this;
 }
@@ -57,6 +63,7 @@ sub module_run{
 			       width=>$width,
 			       height=>$height,
 			       borderwidth=>0,
+			       highlightthickness=>0,
 			       background=>$mainback);
 
     my$back=$widget->optionGet("background","");
@@ -68,7 +75,7 @@ sub module_run{
 		       relief=>$this->{"relief"},
 		       width=>$width,
 		       height=>$border*2+$thick,
-		       -background=>$back)->place('-x'=>0,'-y'=>$pad,
+		       background=>$back)->place('-x'=>0,'-y'=>$pad,
 						 -anchor=>'nw');
     }else{
 	my$pad=($width-$thick-$border*2)/2;
@@ -77,7 +84,7 @@ sub module_run{
 		       relief=>$this->{"relief"},
 		       width=>$border*2+$thick,
 		       height=>$height,
-		       -background=>$back)->place('-x'=>$pad,'-y'=>0,
+		       background=>$back)->place('-x'=>$pad,'-y'=>0,
 						 -anchor=>'nw');
     }
     $widget;
