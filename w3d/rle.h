@@ -17,7 +17,6 @@
 #define ENTROPY_DECODER_INIT(coder,bitstream,limit) \
    rlecoder_decoder_init(coder,bitstream,limit)
 #define ENTROPY_DECODER_DONE(coder)       /* nothing to do ... */
-#define ENTROPY_CODER_IS_EMPTY(coder)     bitcoder_is_empty(&(coder)->bitcoder)
 #define ENTROPY_CODER_BITSTREAM(coder)    ((coder)->bitcoder.bitstream)
 
 #endif
@@ -153,7 +152,7 @@ void rlecoder_write_bit (RLECoderState *s, int bit)
       huffmancoder_write (&s->bitcoder, bit ? 1 : 0);
    }
 
-   if ((bit & 1) == s->mps) {
+   if (s->mps == bit) {
       s->count++;
    } else {
 #ifdef RLE_HISTOGRAM
@@ -170,21 +169,18 @@ void rlecoder_write_bit (RLECoderState *s, int bit)
    }
 }
 
-
 static inline
 int rlecoder_read_bit (RLECoderState *s)
 {
-   if (s->mps == -1) {
-      s->mps = huffmancoder_read (&s->bitcoder);
-      s->count = huffmancoder_read (&s->bitcoder) + 1;
-   }
-
    if (s->count == 0) {
       s->count = huffmancoder_read (&s->bitcoder) + 1;
       s->mps = ~s->mps & 1;
+      if (bitcoder_is_empty(&s->bitcoder)) {
+         s->mps = 0;
+         s->count = ~0;
+      }
    }
    s->count--;
-
    return (s->mps);
 }
 
@@ -193,9 +189,9 @@ int rlecoder_read_bit (RLECoderState *s)
 static inline
 void rlecoder_encoder_init (RLECoderState *s, uint32_t limit)
 {
+   bitcoder_encoder_init (&s->bitcoder, limit);
    s->mps = -1;
    s->count = 0;
-   bitcoder_encoder_init (&s->bitcoder, limit);
 }
 
 
@@ -214,9 +210,13 @@ uint32_t rlecoder_encoder_flush (RLECoderState *s)
 static inline
 void rlecoder_decoder_init (RLECoderState *s, uint8_t *bitstream, uint32_t limit)
 {
-   s->mps = -1;
-   s->count = 0;
    bitcoder_decoder_init (&s->bitcoder, bitstream, limit);
+   s->mps = huffmancoder_read (&s->bitcoder);
+   s->count = huffmancoder_read (&s->bitcoder) + 1;
+   if (bitcoder_is_empty(&s->bitcoder)) {
+      s->mps = 0;
+      s->count = ~0;
+   }
 }
 
 

@@ -19,7 +19,6 @@
 #define ENTROPY_DECODER_INIT(coder,bitstream,limit) \
    bitcoder_decoder_init(coder,bitstream,limit)
 #define ENTROPY_DECODER_DONE(coder)       /* nothing to do ... */
-#define ENTROPY_CODER_IS_EMPTY(coder)     bitcoder_is_empty (coder)
 #define ENTROPY_CODER_BITSTREAM(coder)    (coder)->bitstream
 
 #endif
@@ -80,7 +79,10 @@ static inline
 int bitcoder_is_empty (BitCoderState *s)
 {
    if (!s->bitstream || s->byte_count >= s->limit)
+{
+printf ("bitcoder empty !!!\n");
       return 1;
+}
 
    return 0;
 }

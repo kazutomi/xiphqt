@@ -204,10 +204,10 @@ void inv_synthesize_4 (TYPE *x, const TYPE *s, const TYPE *d, int stride, int n)
 static inline
 void copyback_d (TYPE *x, const TYPE *d, int stride, int n)
 {
-   int i, k=n/2;
+   int i, j, k=n/2;
 
-   for (i=0; i<k; i++)
-      x [(n-k+i)*stride] = d[i];
+   for (i=n-k, j=0; i<n; i++, j++)
+      x [i*stride] = d[j];
 }
 
 

@@ -1,7 +1,17 @@
-- segfaults while destroying encoder stream
+Open bugs and stuff required to fix them:
 
-Here only the wavelet-related TODO's:
+ - there is something really wrong in the truncation table code 
+ - segfaults when bitstream limit is very high
+    (we better should check malloc return codes)
+ - there are strange errors accumulating over time ...
+    (probably incomplete initialisation)
+ - add the pnsr tools
+ - use Simon's pnm routines, support grayscale images, ppmdiff->pnmdiff
 
+
+Wavelet-related TODO's:
+
+ - implement truncation table setup
  - arithmetic binary entropy coders may be faster, simpler and more efficient;
     implement the ZP-Coder
  - oggetize the stream format
@@ -13,7 +23,7 @@ Here only the wavelet-related TODO's:
  - mmx/3dnow/sse/altivec
 
 
-other TODO's:
+Other:
 
  - think about a multiresolution multidimensional motion detection scheme
  - the wavelet codec could be used for still image compression too
