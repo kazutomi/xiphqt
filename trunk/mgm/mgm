@@ -3,16 +3,26 @@
 use Tk;
 use Tk qw(exit); 
 use IPC::Open2;
+use Config;
 use strict;
 use vars qw($basedir $moddir $libdir $fontfile $toplevel
 	    $orient $stack $background $foreground);
 
-$0="moaning-goat-meter"; # OK, this is evil.
+# find our install without hardwiring it.  What was the execution path?
+$basedir=$0;
+# find the real mgm, not a symlink
+while(defined(my$test=readlink($basedir))){$basedir=$test};
+# strip off the filename
+$basedir=~s/\/?([^\/]*)$//;
+$basedir="./"if($basedir eq "");
 
-$basedir="/home/xiphmont/SnotfishCVS/mgm";
+# assume the other schtuff we need is in the standard places.
+
 $moddir="$basedir/modules";
 $libdir="$basedir/lib";
 $fontfile="$libdir/helvetica2.xpm";
+
+$0="moaning-goat-meter"; # OK, this is evil.
 
 $|=1;
 
@@ -92,7 +102,7 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 #               3) draw modules, place and run
 
 &LoadModules($moddir,"share"); # module references
-&LoadModules($moddir,"$");   # platform specificmodule references
+&LoadModules($moddir,$Config{'osname'});   # platform specificmodule references
 
 &order_modules;        # extract how many to build
 &instance_modules;     # make copies of the references and build
