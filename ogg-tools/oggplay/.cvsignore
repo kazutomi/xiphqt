@@ -9,4 +9,6 @@ install-sh
 mkinstalldirs
 missing
 .deps
+.libs
 mngplay
+oggplay
