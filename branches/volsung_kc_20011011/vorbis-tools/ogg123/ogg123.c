@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.24 2001/12/16 22:56:56 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.25 2001/12/17 17:28:34 volsung Exp $
 
  ********************************************************************/
 
@@ -94,8 +94,10 @@ void signal_handler (int signo)
   switch (signo) {
   case SIGALRM:
     sig_request.ticks++;
-    if (sig_request.ticks < options.delay)
+    if (sig_request.ticks < options.delay) {
+      signal (SIGALRM, signal_handler);
       alarm(1);
+    }
     break;
 
   case SIGINT:
@@ -124,9 +126,6 @@ void signal_handler (int signo)
 
   case SIGCONT:
     break;  /* Don't need to do anything special to resume */
-
-  default:
-    psignal (signo, "Unknown signal caught");
   }
 }
 

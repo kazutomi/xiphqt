@@ -76,51 +76,6 @@ PROFILE="$PROFILE $cflags_save"
 LDFLAGS="$LDFLAGS $ldflags_save"
 
 dnl --------------------------------------------------
-dnl Check for pthreads (from Miod Vallat <miod@openbsd.org>)
-dnl --------------------------------------------------
- 
-AC_CACHE_CHECK(
-        [if compiler natively does POSIX threads],
-        ogg123_cv_gcc_pthread,
-        ac_save_CFLAGS=$CFLAGS
-        AC_LANG_SAVE
-        AC_LANG_C
-        AC_TRY_LINK([#include <pthread.h>],
-                [void *p = pthread_create;],
-                ogg123_cv_gcc_pthread=yes,
-                ogg123_cv_gcc_pthread=no
-        )
-        AC_LANG_RESTORE
-        CFLAGS=$ac_save_CFLAGS
-	
-        if test $ogg123_cv_gcc_pthread = no
-        then
-            CFLAGS="$CFLAGS -pthread"
-            AC_LANG_SAVE
-            AC_LANG_C
-            AC_TRY_LINK([#include <pthread.h>],
-                    [void *p = pthread_create;],
-                    ogg123_cv_gcc_pthread=flag,
-                    ogg123_cv_gcc_pthread=no
-            )
-            AC_LANG_RESTORE
-        fi
-)
-if test $ogg123_cv_gcc_pthread = yes
-then
-        THREAD_LIBS=""
-        THREAD_CFLAGS=""
-elif test $ogg123_cv_gcc_pthread = flag
-then
-        THREAD_LIBS=""
-        THREAD_CFLAGS="-pthread"
-else
-        dnl AC_CHECK_HEADERS(pthread.h) unreliable
-        AC_CHECK_LIB(pthread,pthread_create,THREAD_LIBS=-lpthread,
-             [AC_CHECK_LIB(c_r,pthread_create,THREAD_LIBS=-lc_r)])
-fi
-
-dnl --------------------------------------------------
 dnl Check for libraries
 dnl --------------------------------------------------
 
@@ -128,6 +83,8 @@ AM_PATH_OGG(,AC_MSG_ERROR(Ogg needed!))
 AM_PATH_VORBIS(,AC_MSG_ERROR(Vorbis needed!))
 AM_PATH_AO(,AC_MSG_ERROR(libao needed!))
 AM_PATH_CURL(,AC_MSG_ERROR(libcurl needed!))
+
+ACX_PTHREAD(,AC_MSG_ERROR(POSIX threads required!))
 
 SOCKET_LIBS=
 AC_CHECK_LIB(socket, socket, SOCKET_LIBS="-lsocket")
@@ -161,8 +118,6 @@ dnl --------------------------------------------------
 
 AC_SUBST(DEBUG)
 AC_SUBST(PROFILE)
-AC_SUBST(THREAD_LIBS)
-AC_SUBST(THREAD_CFLAGS)
 AC_SUBST(SOCKET_LIBS)
 AC_SUBST(SHARE_CFLAGS)
 AC_SUBST(SHARE_LIBS)
