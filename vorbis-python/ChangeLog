@@ -1,3 +1,6 @@
+2003-9-01   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* pyvorbisfile.c (py_ov_file_dealloc) Fix a file descriptor leak.
+	
 2003-5-31   Andrew H. Chatham <pyogg@andrewchatham.com>
 	* pyvorbisinfo.c (py_comment_subscript) Applied patch from Brian
 	Warner to fix a bug where I wasn't clearing the Python error

@@ -8,6 +8,7 @@ typedef struct {
   PyObject_HEAD
   OggVorbis_File *ovf;
   PyObject *py_file;
+  FILE *c_file;
 } py_vorbisfile;
 
 #define PY_VORBISFILE(x) (((py_vorbisfile *)x)->ovf)

@@ -181,8 +181,15 @@ py_ov_file_dealloc(PyObject *self)
   if (PY_VORBISFILE(self))
     ov_clear(PY_VORBISFILE(self));
 
-  /* If file was opened from a file object, decref it, so it can close */
-  Py_XDECREF(((py_vorbisfile *) self)->py_file);
+  py_vorbisfile *py_self = (py_vorbisfile *) self;
+  if (py_self->py_file) {
+    /* If file was opened from a file object, decref it, so it can
+       close */
+    Py_DECREF(py_self->py_file);
+  } else {
+    /* Otherwise, we opened the file and should close it. */
+    fclose(py_self->c_file);
+  }
 
   PyMem_DEL(self);
 }
@@ -248,6 +255,7 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
   
   retval = ov_open(file, self->ovf, initial, ibytes);
 
+  self->c_file = file;
   if (retval < 0) {
     if (fname != NULL)
       fclose(file);
@@ -261,7 +269,11 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
 
 }
 
-static char *read_kwlist[] = {"length", "bigendian", "word", "signed", NULL};
+static char *read_kwlist[] = {"length", 
+			      "bigendian", 
+			      "word", 
+			      "signed", 
+			      NULL};
 
 static int is_big_endian() {
   static int x = 0x1;
