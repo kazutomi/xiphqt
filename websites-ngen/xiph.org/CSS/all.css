@@ -70,7 +70,7 @@ p	{
 	margin: .125em 0;
 }
 
-code {
+code, kbd {
 	font: 100% Monaco, "Lucida Console", monospace;
 }
 
