@@ -23,3 +23,13 @@ A: Have a look in the skeleton files ices.pm for perl and ices.py for
 A: Code it yourself if you like it so much. Check src/interpreter/interpreter.c
    for details. We support python and perl, so adding another language can't
    be that hard.
+
+5. Reencoding, cool, hehe, cool, fire! Eeeh.. dammit, liblame, eeh.. where
+   do I get it?
+A: At the lame site at http://www.sulaco.org/mp3/
+
+6. What about libxml?
+A: At the libxml site at http://www.xmlsoft.org/
+
+7. Will ices run on windows?
+A: Yes, we're working on a port to win32.
