@@ -16,6 +16,7 @@
 
 import os
 from os import path
+from stat import *
 
 def trim_newline(s):
     "Returns s without a trailing newline if present."
@@ -47,6 +48,9 @@ def copy_file (src_filename, dest_filename):
 
     src.close()
     dest.close()
+
+    s = os.stat(src_filename)
+    os.utime(dest_filename, (s[ST_ATIME], s[ST_MTIME]))
 
 def recursive_delete(pathname):
     if path.isfile(pathname):
