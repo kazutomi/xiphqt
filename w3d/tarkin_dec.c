@@ -1,8 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <stdint.h>
+#include "w3dtypes.h"
 #include "mem.h"
 #include "tarkin.h"
 #include "pnm.h"
@@ -39,7 +38,7 @@ int main (int argc, char **argv)
       exit (-1);
    }
 
-   if ((fd = open (fname, O_RDONLY)) < 0) {
+   if ((fd = open (fname, O_RDONLY|O_BINARY)) < 0) {
       printf ("error opening '%s'\n", fname);
       exit (-1);
    }

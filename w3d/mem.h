@@ -1,7 +1,6 @@
 #ifndef __MEM_H
 #define __MEM_H
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

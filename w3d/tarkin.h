@@ -6,13 +6,13 @@
 #include <ogg/ogg.h>
 
 
-#define BUG(x...)                                                            \
+/*#define BUG(x...)                                                            \
    do {                                                                      \
       printf("BUG in %s (%s: line %i): ", __FUNCTION__, __FILE__, __LINE__); \
       printf(#x);                                                            \
       printf("\n");                                                          \
       exit (-1);                                                             \
-   } while (0);
+   } while (0);*/
 
 
 /* Theses determine what infos the packet comes with */

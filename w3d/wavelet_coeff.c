@@ -1,6 +1,7 @@
 #include "mem.h"
 #include "wavelet.h"
 #include "rle.h"
+#include "w3dtypes.h"
 
 
 #define GRAY_CODES 1
