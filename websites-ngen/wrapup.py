@@ -20,6 +20,7 @@
 #    3. This notice may not be removed or altered from any source distribution.
 
 import os, re, sys, glob, os.path
+import pdb
 MARKDOWN_COMMAND = "Markdown" # could also be "Markdown.pl"
 TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
 class MarkdownWrapper(object):
@@ -82,20 +83,19 @@ class MarkdownWrapper(object):
 		
 		# this if cascade is ugly, ugly, ugly, ugly. Suggestions, please.
 		
-		for filename in includerList:
-			filename = getParallelFile(self.sourceFilename, filename)
-			print filename
+		for baseFilename in includerList:
+			filename = getParallelFile(self.sourceFilename, baseFilename)
+#			if filename.endswith('aftermaintext.include'): pdb.runcall(getParentedFile, filename)
+			filename = getParentedFile(filename)
+			if not filename: continue
+			
+			print filename	
 			if os.path.isfile(filename):
 				contents = file(filename).read()
-				print contents
 				if filename.endswith('inhead.include'):			self.inHead			= contents
 				if filename.endswith('beforecontent.include'):	self.beforeContent	= contents
 				if filename.endswith('aftermaintext.include'):	self.afterMainText	= contents
 				if filename.endswith('aftercontent.include'):	self.afterContent 	= contents
-
-		print "self.inHead: ", self.inHead
-		
-		# todo: similarly to append, say, copyright.inc to afterMainTextBits
 
 	def renderToFile(self):
 		outfile = file(self.destFilename, "w")
@@ -140,6 +140,65 @@ def getParallelFile(where, what):
 		given f("/home/foo.txt", "bar.html"), returns "/home/bar.html".
 	"""
 	return os.path.join(os.path.split(where)[0], what)
+
+def hasTwoDirseps(path):
+	firstIndex = path.find(os.sep)
+	if firstIndex == -1: return False
+
+	secondIndex = path.find(os.sep, firstIndex+1)
+	if secondIndex == -1: return False
+
+	return True
+def getParentedFile(filename):
+	r"""
+	given a path to a file, say, /meals/breakfast/sausage/index.html, tries to return
+	the first valid file of:
+		/meals/breakfast/sausage/index.html
+		/meals/breakfast/index.html
+		/meals/index.html
+		/index.html
+	Or given .\meals\breakfast\eggs\index.html:
+		.\meals\breakfast\eggs\index.html
+		.\meals\breakfast\index.html
+		.\meals\index.html
+		.\index.html
+	Or even given cheeses\france\brie.html:
+		cheeses\france\brie.html
+		cheeses\brie.html
+		brie.html	
+
+	"""
+	while True:
+		# okay, we need to abort out on two conditions:
+		# 1) we found a valid path
+		# 2) we've gone as far as we can, and there is no valid path
+		if os.path.isfile(filename): return filename
+
+		# There is no parented file if there's only one separator in the path
+		if filename.find(os.sep) == -1:
+			return ""
+
+
+		# if the full string has two directory separators in it or more, then
+		# there are still intermediate directories to back up through.
+		# We need to chop out the thing just before the last dirsep,
+		# but end just before the penultimate dirsep.
+		if hasTwoDirseps(filename):
+			indexOfLastDirsep = filename.rfind(os.sep)
+			indexOfPenultimateDirsep = filename.rfind(os.sep, 0, indexOfLastDirsep)
+			filename = filename[:indexOfPenultimateDirsep] + filename[indexOfLastDirsep:]
+			if os.path.isfile(filename): return filename
+		elif filename.find(os.sep) > -1:
+			# If it has only one dirsep, then it's one of the following forms (modulo / vs. \)
+			#	* /foo.html
+			#	* ./foo.html
+			if os.path.isfile(filename): return filename
+			else: return ""
+		else:
+			if os.path.isfile(filename): return filename
+			else: return ""
+
+		
 
 if __name__ == '__main__':
 	for dirpath, dirnames, filenames in os.walk('xiph.org'):

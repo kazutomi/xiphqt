@@ -7,11 +7,7 @@ To Do
 *	After I've implemented that, I need a way for this sort of thing to "use whatever my
 	ancestors used", kinda like an OO derivation thing.
 
-*	Anyhow, for this out-of-band data thing: In it, I'd have stuff for:
-	*	Extra things to put in <head>
-	*	Extra things to put **before** `<div id='content'>`
-	*	Extra things to put **after**  `<div id='content'>`
-	* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
+* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
 	Maybe I could use PyYaml. Although that's probably serious overkill.
 
 *	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
@@ -30,16 +26,3 @@ For the News Things
 *	News items must be able to be placed in multiple categories; the oggenc that shipped with
 	the 1.0.1 release that could encode to vorbis from flac should be mentioned in both
 	the "vorbis" and "flac" sections.
-
-File Structure :
---------------
-
-	/
-	 inhead.include
-	 beforecontent.include
-	 content.markdown
-	 aftercontent.include
-
-	 						/vorbis/ (for example
-							 inhead.include (adding styles)
-

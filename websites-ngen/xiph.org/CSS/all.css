@@ -1,5 +1,5 @@
 html {
-	font: 80% "Helvetica Neue", Verdana, sans-serif;
+	font: 80% Verdana, sans-serif;
 	color: #000;
 	color: #122;
 
@@ -16,9 +16,9 @@ html {
 	background: #1e90ff; /* cornflower blue */
 	background: #556b2f; /* dark olive green */
 	background: #333;
-	background: #696969; /* dim gray */
 	background: #f5f5f5; /* white smoke */
 	background: #ffdead; /* navajo white */
+	background: #696969; /* dim gray */
 
 	margin: 0;
 	padding: 0;
@@ -33,6 +33,12 @@ h1 {
 	margin-top: 0;
 }
 
+h1, h2, h3, h4, h5, h6, ul#bignavbuttons strong {
+	font-family: "Palatino Linotype", Georgia, "Book Antiqua", serif;
+	font-weight: normal;
+	color: #088;
+
+}
 div#content {
 	margin: 0 1em 1em 19em;
 	padding: 0 .5em;
