@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39 2001/06/19 19:42:35 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.1 2001/06/22 03:55:36 kcarnold Exp $
 
  ********************************************************************/
 
@@ -122,6 +122,8 @@ int main(int argc, char **argv)
     opt.buffer_size = 0;
     opt.delay = 1;
 
+    atexit (buffer_cleanup);
+    signal (SIGINT, signal_quit);
     ao_initialize();
 
     while (-1 != (ret = getopt_long(argc, argv, "b:d:hl:k:o:qvVz",
@@ -226,8 +228,10 @@ int main(int argc, char **argv)
       opt.outdevices = current;
     }
 
-    if (buffer != NULL)
+    if (buffer != NULL) {
 	    buffer_shutdown(buffer);
+            buffer = NULL;
+    }
     
     ao_shutdown();
 
@@ -262,6 +266,12 @@ void signal_activate_skipfile(int ignored)
 {
   old_sig = signal(SIGINT,signal_skipfile);
 }
+
+void signal_quit(int ignored)
+{
+  exit(0);
+}
+
 
 
 void play_file(ogg123_options_t opt)
@@ -387,7 +397,7 @@ void play_file(ogg123_options_t opt)
 		exit(1);
 
 	if (opt.quiet < 1) {
-	    if (eos && opt.verbose) fprintf (stderr, "\r                                                      \r\n");
+	    if (eos && opt.verbose) fprintf (stderr, "\r                                                                          \r\n");
 	    for (i = 0; i < vc->comments; i++) {
 		char *cc = vc->user_comments[i];	/* current comment */
 		int i;
@@ -478,29 +488,43 @@ void play_file(ogg123_options_t opt)
 		      c_sec = u_pos - 60 * c_min;
 		      r_min = (long) (u_time - u_pos) / (long) 60;
 		      r_sec = (u_time - u_pos) - 60 * r_min;
-		      fprintf(stderr,
-			      "\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f   \r",
-			      c_min, c_sec, r_min, r_sec, t_min, t_sec,
-			      (float) ov_bitrate_instant(&vf) / 1000.0F);
+		      if (buffer)
+			fprintf(stderr,
+				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f, Buffer fill: %3.0f%%   \r",
+				c_min, c_sec, r_min, r_sec, t_min, t_sec,
+				(double) ov_bitrate_instant(&vf) / 1000.0F,
+				buffer_full(buffer)*100.0F);
+		      else
+			fprintf(stderr,
+				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f   \r",
+				c_min, c_sec, r_min, r_sec, t_min, t_sec,
+				(double) ov_bitrate_instant(&vf) / 1000.0F);
 		    } else {
 		      /* working around a bug in vorbisfile */
 		      u_pos = (double) ov_pcm_tell(&vf) / (double) vi->rate;
 		      c_min = (long) u_pos / (long) 60;
 		      c_sec = u_pos - 60 * c_min;
-		      fprintf(stderr,
-			      "\rTime: %02li:%05.2f, Bitrate: %.1f   \r",
-			      c_min, c_sec,
-			      (float) ov_bitrate_instant (&vf) / 1000.0F);
+		      if (buffer)
+			fprintf(stderr,
+				"\rTime: %02li:%05.2f, Bitrate: %.1f, Buffer fill: %3.0f%%   \r",
+				c_min, c_sec,
+				(float) ov_bitrate_instant (&vf) / 1000.0F,
+				buffer_full(buffer)*100.0F);
+		      else
+			fprintf(stderr,
+				"\rTime: %02li:%05.2f, Bitrate: %.1f   \r",
+				c_min, c_sec,
+				(float) ov_bitrate_instant (&vf) / 1000.0F);
 		    }
 		}
 	    }
 	}
     }
-
+    
     alarm(0);
     signal(SIGALRM,SIG_DFL);
     signal(SIGINT,old_sig);
-
+    
     ov_clear(&vf);
 
     if (opt.quiet < 1)
@@ -587,4 +611,23 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
     *buffer = fork_writer (opt->buffer_size, opt->outdevices);
   
     return 0;
+}
+
+double buffer_full (buf_t* buf) {
+  chunk_t *reader = buf->reader; /* thread safety... */
+  int chunks;
+
+  if (reader > buf->writer)
+    chunks = (reader - buf->writer);
+  else
+    chunks = (buf->end - reader) + (buf->writer - buf->buffer);
+  return (double) chunks / buf->size;
+}
+
+void buffer_cleanup (void) {
+  if (buffer) {
+    buffer_flush (buffer);
+    buffer_shutdown (buffer);
+    buffer = NULL;
+  }
 }

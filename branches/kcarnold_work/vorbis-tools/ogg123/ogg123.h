@@ -28,6 +28,7 @@ typedef struct ogg123_options_s {
   signed short int quiet;     /* Be quiet (no title) */
   double seekpos;             /* Amount to seek by */
   FILE *instream;             /* Stream to read from. */
+  char *default_device;       /* default device for playback */
   devices_t *outdevices;      /* Streams to write to. */
   int buffer_size;            /* Size of the buffer in chunks. */
   int rate, channels;         /* playback params for opening audio devices */
@@ -47,5 +48,8 @@ void play_file(ogg123_options_t opt);
 int get_tcp_socket(void); /* Will be going soon. */
 FILE *http_open(char *server, int port, char *path); /* ditto */
 int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t ** buffer);
+double buffer_full (buf_t* buffer);
+void buffer_cleanup (void);
+void signal_quit (int ignored);
 
 #endif /* !defined(__OGG123_H) */
