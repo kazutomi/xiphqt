@@ -99,6 +99,66 @@ int ogg_page_packets(ogg_page *og){
   return(count);
 }
 
+/*
+   These functions can be used to change some header values of an 
+   Ogg Page without having to decode and recompile the stream.  This can 
+   be very helpful for repairing broken streams, chaining streams which
+   have the same serialno, or intentionally creating broken streams
+   to test how your application will react to the erronious data.
+*/
+
+void ogg_page_set_continued(ogg_page *og, int value){
+  int b;
+  oggbyte_buffer ob;
+  oggbyte_init(&ob,og->header,0);
+  b=oggbyte_read1(&ob,5);
+  if(value)oggbyte_set1(&ob,b|0x01,5);
+  else oggbyte_set1(&ob,b&0xFE,5);
+  ogg_page_checksum_set(og);
+}
+
+void ogg_page_set_bos(ogg_page *og, int value){
+  int b;
+  oggbyte_buffer ob;
+  oggbyte_init(&ob,og->header,0);
+  b=oggbyte_read1(&ob,5);
+  if(value)oggbyte_set1(&ob,b|0x02,5);
+  else oggbyte_set1(&ob,b&0xFD,5);
+  ogg_page_checksum_set(og);
+}
+
+void ogg_page_set_eos(ogg_page *og, int value){
+  int b;
+  oggbyte_buffer ob;
+  oggbyte_init(&ob,og->header,0);
+  b=oggbyte_read1(&ob,5);
+  if(value)oggbyte_set1(&ob,b|0x04,5);
+  else oggbyte_set1(&ob,b&0xFB,5);
+  ogg_page_checksum_set(og);
+}
+
+void ogg_page_set_granulepos(ogg_page *og, ogg_int64_t value){
+  oggbyte_buffer ob;
+  oggbyte_init(&ob,og->header,0);
+  oggbyte_set8(&ob,value,6);
+  ogg_page_checksum_set(og);
+}
+
+void ogg_page_set_serialno(ogg_page *og, ogg_uint32_t value){
+  oggbyte_buffer ob;
+  oggbyte_init(&ob,og->header,0);
+  oggbyte_set4(&ob,value,14);
+  ogg_page_checksum_set(og);
+}
+
+void ogg_page_set_pageno(ogg_page *og, ogg_uint32_t value){
+  oggbyte_buffer ob;
+  oggbyte_init(&ob,og->header,0);
+  oggbyte_set4(&ob,value,18);
+  ogg_page_checksum_set(og);
+}
+
+
 /* Static CRC calculation table.  See older code in SVN for dead
    run-time initialization code. */
 

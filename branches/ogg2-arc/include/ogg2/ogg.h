@@ -134,6 +134,13 @@ extern ogg_uint32_t ogg_page_serialno(ogg_page *og);
 extern ogg_uint32_t ogg_page_pageno(ogg_page *og);
 extern int      ogg_page_packets(ogg_page *og);
 
+extern void     ogg_page_set_continued(ogg_page *og, int value);
+extern void     ogg_page_set_bos(ogg_page *og, int value);
+extern void     ogg_page_set_eos(ogg_page *og, int value);
+extern void     ogg_page_set_granulepos(ogg_page *og, ogg_int64_t value);
+extern void     ogg_page_set_serialno(ogg_page *og, ogg_uint32_t value);
+extern void     ogg_page_set_pageno(ogg_page *og, ogg_uint32_t value);
+
 extern int      ogg_packet_release(ogg_packet *op);
 extern int      ogg_page_release(ogg_page *og);
 
