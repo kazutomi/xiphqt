@@ -50,8 +50,20 @@ functions.</dd>
 0 for success</li>
 
 <li>
-Nonzero for failure</li>
-</blockquote>
+nonzero indicates failure, described by several error codes:</li>
+<ul>
+<li>OV_ENOSEEK - Bitstream is not seekable.
+</li>
+<li>OV_EINVAL - Invalid argument value.
+</li>
+<li>OV_EREAD - A read from media returned an error.
+</li>
+<li>OV_EFAULT - Internal logic fault; indicates a bug or heap/stack 
+		corruption.
+</li>
+<li>OV_EBADLINK - Invalid stream section supplied to libvorbis/libvorbisfile, or the requested link is corrupt. 
+</li>
+</ul></blockquote>
 <br><br>
 <hr noshade>
 <table border=0 width=100%>
