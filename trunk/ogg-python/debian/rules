@@ -12,8 +12,8 @@ configure: configure-stamp
 configure-stamp:
 	dh_testdir
 
-	python config_unix.py --prefix /usr
-	python setup.py config
+	python2.1 config_unix.py --prefix /usr
+	python2.1 setup.py config
 
 	touch configure-stamp
 
@@ -21,7 +21,7 @@ build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 
-	python setup.py build
+	python2.1 setup.py build
 
 	touch build-stamp
 
@@ -31,7 +31,8 @@ clean:
 	rm -f build-stamp configure-stamp
 
 	#if [ -f Setup ] ; then python setup.py clean --all ; fi
-	-python setup.py clean --all
+	-python2.1 setup.py clean --all
+	-rm Setup
 
 	dh_clean
 
@@ -41,7 +42,7 @@ install: build
 	dh_clean -k
 	dh_installdirs
 
-	python setup.py install --prefix $(CURDIR)/debian/pyogg/usr
+	python2.1 setup.py install --prefix $(CURDIR)/debian/python-pyogg/usr
 
 
 # Build architecture-independent files here.
@@ -54,8 +55,6 @@ binary-arch: build install
 	dh_testroot
 	dh_installdocs
 	dh_installexamples
-#	dh_installmanpages
-#	dh_undocumented
 	dh_installchangelogs ChangeLog
 	dh_link
 	dh_strip
