@@ -22,7 +22,7 @@ Tom Rosedale, Legal counsel ([Browne, Rosedale, & Lanouette LLP][brl]): <troseda
 ## IRC
 
 Xiph.org uses the [freenode][] <abbr title='Internet Relay Chat'>IRC</abbr> network for
-collaboration. We have three main channels—#vorbis, #theora, #speex, and #icecast.
+collaboration. We have four main channels—#vorbis, #theora, #speex, and #icecast.
 In addition, if you just want to come hang out, #vorbis-talk is available for all your
 off-topic needs.
 

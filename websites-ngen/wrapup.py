@@ -58,7 +58,7 @@ class MarkdownWrapper(object):
 									...included at the end of .mainText, but inside
 									<div id='content'>
 		
-		(no, I'm not going to bother with .afterMainTextInclude yet)	
+		.afterMainTextInclude	--	Like the above, but not inherited, and above it. I think.
 
 		.afterContentInherit	--	stuff to include after the content div
 			
@@ -214,6 +214,7 @@ def hasTwoDirseps(path):
 	if secondIndex == -1: return False
 
 	return True
+
 def getParentedFile(filename):
 	r"""
 	given a path to a file, say, /meals/breakfast/sausage/index.html, tries to return
@@ -236,14 +237,13 @@ def getParentedFile(filename):
 	"""
 	while True:
 		# okay, we need to abort out on two conditions:
-		# 1) we found a valid path
-		# 2) we've gone as far as we can, and there is no valid path
+		# 1) we found a valid path (return it)
+		# 2) we've gone as far as we can, and there is no valid path (return "")
 		if os.path.isfile(filename): return filename
 
 		# There is no parented file if there's only one separator in the path
 		if filename.find(os.sep) == -1:
 			return ""
-
 
 		# if the full string has two directory separators in it or more, then
 		# there are still intermediate directories to back up through.
@@ -264,6 +264,18 @@ def getParentedFile(filename):
 			if os.path.isfile(filename): return filename
 			else: return ""
 
+class NewsItem:
+	def __init__(self, post='', title='', author='', date=None, sections=None):
+		self.post = post
+		self.title = title
+		self.author = author
+		self.date = date
+		self.sections = sections
+	
+	def __str__(self):
+		return str(self.__dict__)
+		
+
 class NewsDispenser:
 	def __init__(self, optionsFile, printableDateFormat="%A, %B %d, %Y"):
 		"""Make a very simple list of news posts. This is not final code."""
@@ -273,50 +285,103 @@ class NewsDispenser:
 		self.printableDateFormat = printableDateFormat
 		FILENAME_DATE_FORMAT = "on%Y-%m-%dat%H%M"
 		
-		#                        Monday, January 1, 2100
-		self.datedAndOptionedPostList = [] # list of (date, options, post) tuples
+		self.newsItems = []
 		
 		# okay, now we want to go through the sections and associate each with their newspost.
 		for section in config.sections(): # section is string
+			ni = NewsItem()
 			l = []
-			l.append(time.strptime(section, FILENAME_DATE_FORMAT))
+			ni.date = time.strptime(section, FILENAME_DATE_FORMAT)
 			o = {}
 			for key, value in config.items(section):
 				if key == 'author': 
-					o['author'] = value
+					ni.author = value
 				if key == 'sections':
-					o['sections'] = value.split()
-			l.append(o)
+					ni.sections = value.split()
+				if key == 'title':
+					ni.title = value
 			filename = os.path.join('news', section + '.txt')
 			s = markdown(filename)
-			l.append(s)
-			self.datedAndOptionedPostList.append(tuple(l))
+			ni.post = s
+			self.newsItems.append(ni)
 	
-	def prettifyPost(self, post):
-		"""
-			Takes in a (date, options, post) tuple and make it look like a real HTML snippet.
-			Returns said snippet.
-		"""
-		(date, options, text) = post
-		ret = text[:]
-		ret += "<p>Posted %s by %s</p>" %  \
-			   (time.strftime(self.printableDateFormat, date), options['author'])
-		ret += "\n<hr>\n"
+	def dump(self):
+		return self.newsItems[:]
 
+class	NewsFormatter:
+	def __init__(self, newsItems):
+		pass
+	
+	def formatOne(self, newsItem):
+		pass
+
+	def formatAll(self):
+		"""
+			turns the news items into a formatted string, which is then returned.
+		"""
+		pass
+
+class	HTMLNewsFormatter(NewsFormatter):
+	""" This is just one HTML news formatter of possibly many, really."""
+	def __init__(self, newsItems, dateFormat="%A, %B %d, %Y"):
+		self.newsItems = newsItems
+		self.dateFormat = dateFormat
+	
+	def formatOne(self, newsItem):
+		ret =  "<h1>" + newsItem.title + "</h1>\n"
+		ret += newsItem.post[:]
+		ret += "<p>Posted %s by %s</p>" %  \
+			   (time.strftime(self.dateFormat, newsItem.date), newsItem.author)
+		ret += "\n<hr>\n\n"
+
+		return ret
+	
+	def formatAll(self):
+		ret = ''
+		for ni in self.newsItems:
+			ret += self.formatOne(ni)
 		return ret
 		
-	def dump(self):
-		return self.datedAndOptionedPostList[:]
-	def dumpPretty(self):
-		ret = ""
-		for post in self.datedAndOptionedPostList:
-			ret += self.prettifyPost(post)
+	
+
+class	AtomNewsFormatter(NewsFormatter):
+
+	# Tag URIs: http://www.taguri.org/ (used for atom:id)
+
+	def __init__(self, newsItems):
+		self.newsItems = newsItems
+		self.dateFormat = "%Y-%m-%dT%H:%M:%SZ" # lie and say it's at UTC (...Z)
+	
+	def formatOne(self, newsItem, index=0):
+		ret =  "<entry>\n"
+		ret += "<title>" + newsItem.title + "</title>\n"
+		# these next two lines are so wrong.
+		ret += "<issued>%s</issued>\n" % time.strftime(self.dateFormat, newsItem.date)
+		ret += "<modified>%s</modified>\n" % time.strftime(self.dateFormat, newsItem.date)
+		ret += "<id>tag:xiph.org,%s:%s</id>" % (time.strftime("%Y", newsItem.date), index)
+		ret += "<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n"
+		ret += "<content type='text/html' mode='escaped'><![CDATA["
+		ret += newsItem.post
+		ret += "]]></content>\n"
+		ret += "</entry>"
+		return ret
+	def formatAll(self):
+		ret = ''
+		ret +=	"<?xml version='1.0' encoding='utf-8'?>\n" \
+				"<feed version='0.3' xmlns='http://purl.org/atom/ns#'>\n" \
+				"	<title>Xiph.Org News</title>\n" \
+				"	<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n" \
+				"    <modified>2003-12-13T18:30:02Z</modified>\n"
+		ret +=	"<author><name>Xiph.Org Foundation</name></author>"
+
+		for index, newsItem in enumerate(self.newsItems):
+			ret += self.formatOne(newsItem, index) + "\n\n"
+		
+		ret += "</feed>"
 		return ret
 
-if __name__ == '__main__':
-#	print NewsDispenser(os.path.join('news', 'options.ini')).dumpPretty()
+def doSite():
 	for dirpath, dirnames, filenames in os.walk('xiph.org'):
-		# bug if more than one .markdown file in a directory
 		for filename in filter(lambda x: x.endswith(".markdown"), filenames):
 			srcPath = os.path.join(dirpath, filename)
 			destFile = os.path.splitext(filename)[0] + ".html"
@@ -329,3 +394,15 @@ if __name__ == '__main__':
 			mw.renderToFile()
 		if ".svn" in dirnames:
 			dirnames.remove('.svn') # don't transform things in .svn directories
+
+def doNews():
+	nd = NewsDispenser(os.path.join('news', 'options.ini'))
+	#print HTMLNewsFormatter(nd.dump()).formatAll()
+	s = AtomNewsFormatter(nd.dump()).formatAll()
+	fh = open('xiph.org\\atom.xml', 'w')
+	fh.write(s)
+	fh.close()
+	
+
+if __name__ == '__main__':
+	doSite()

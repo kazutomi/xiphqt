@@ -1,8 +1,6 @@
-# Speex 1.1.5 Released
 The main change in this release is that the 1.1.5
 <abbr title='application programming interface'>API</abbr> and
 <abbr title='application binary interface'>ABI</abbr> are now compatible with Speex
 1.0.<var>x</var>.
 The versions of the functions taking a `short*` now have an “_int” suffix, as in
 `speex_encode_int()`.
-
