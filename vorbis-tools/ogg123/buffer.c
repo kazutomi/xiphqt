@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.17 2001/08/22 16:42:30 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.18 2001/08/23 01:15:46 kcarnold Exp $
 
  ********************************************************************/
 
@@ -85,7 +85,7 @@ void SignalAll (buf_t *buf)
 
 void PthreadCleanup (void *arg)
 {
-#if 0 
+#ifdef DEBUG_BUFFER
   buf_t *buf = (buf_t*) arg;
 #endif
   
@@ -133,6 +133,7 @@ void* BufferFunc (void *arg)
       while (!(buf->Playing) || 
 	     (buf->StatMask & STAT_PREBUFFERING)) {
 	DEBUG1 ("waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
+	pthread_cond_signal (&buf->UnderflowCondition);
 	TIMEDWAIT (buf->DataReadyCondition, buf->SizeMutex, 1, 0);
       }
 
@@ -223,12 +224,13 @@ void* BufferFunc (void *arg)
 
       DEBUG0("writing chunk to output");
       /* unlock while playing sample */
+      buf->bufferWriting = 1;
       UNLOCK_MUTEX (buf->SizeMutex);
       DEBUG1("WriteThisTime=%d", WriteThisTime);
       buf->write_func (buf->writer, WriteThisTime, 1, buf->data, tmpEOS);
 
-      DEBUG0("incrementing pointer");
       LOCK_MUTEX (buf->SizeMutex);
+      buf->bufferWriting = 0;
       if (vbuf->curfill == 0)
 	{
 	  /* buffer was flushed while we were writing (and had the mutex unlocked)
@@ -423,6 +425,15 @@ long buffer_full (buf_t* buf) {
 void buffer_Pause (buf_t *buf)
 {
   buf->Playing = 0;
+}
+
+void buffer_WaitForPaused (buf_t *buf)
+{
+  buf->Playing = 0;
+  LOCK_MUTEX (buf->SizeMutex);
+  while (buf->bufferWriting)
+    TIMEDWAIT(buf->UnderflowCondition, buf->SizeMutex, 1, 0);
+  UNLOCK_MUTEX (buf->SizeMutex);
 }
 
 void buffer_Unpause (buf_t *buf)
