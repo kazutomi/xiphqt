@@ -393,6 +393,7 @@ then
   if test "$ac_cv_func_perl_construct" != "no"
   then
     have_perl="yes"
+    PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_perl.o"
     AC_DEFINE(HAVE_LIBPERL, 1, [ Define if you have perl libraries ])
   fi
 fi
@@ -449,6 +450,7 @@ then
       then
         AC_CHECK_LIB($lib, Py_Initialize, [
           LIBS="$LIBS -l$lib"
+          PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_python.o"
           have_python="yes"
           LIBM="-lm"
           LIBDL="-ldl"
@@ -500,11 +502,11 @@ dnl -- and finish up --
 
 LIBS="$LIBS $LIBM $LIBDL"
 AC_SUBST(ICES_OBJECTS)
-AC_SUBST(ICES_SUBDIRS)
+AC_SUBST(PLAYLIST_OBJECTS)
 
-AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile 
-  conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile
-  avl/Makefile log/Makefile src/interpreter/Makefile])
+AC_OUTPUT([Makefile src/Makefile src/playlist/Makefile
+  conf/Makefile conf/ices.conf.dist doc/Makefile
+  resolver/Makefile thread/Makefile avl/Makefile log/Makefile])
 
 AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
 AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])

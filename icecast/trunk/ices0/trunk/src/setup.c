@@ -72,9 +72,6 @@ ices_setup_initialize (void)
   /* Open logfiles */
   ices_log_initialize ();
 
-  /* Initialize the interpreters */
-  interpreter_initialize ();
-
   /* Initialize the thread library */
   thread_initialize ();
   ThreadsInitialised = 1;

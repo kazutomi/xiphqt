@@ -34,7 +34,7 @@ int
 ices_playlist_get_current_lineno (void)
 {
   if (ices_config.pm.get_lineno)
-    return ices_config.pm.get_lineno ();
+     return ices_config.pm.get_lineno ();
 
   return 0;
 }
@@ -73,14 +73,14 @@ ices_playlist_initialize (void)
       break;
     case ices_playlist_python_e:
 #ifdef HAVE_LIBPYTHON
-      rc = interpreter_playlist_python_initialize (&ices_config.pm);
+      rc = ices_playlist_python_initialize (&ices_config.pm);
 #else
       ices_log_error ("This binary has no support for embedded python");
 #endif
       break;
     case ices_playlist_perl_e:
 #ifdef HAVE_LIBPERL
-      rc = interpreter_playlist_perl_initialize (&ices_config.pm);
+      rc = ices_playlist_perl_initialize (&ices_config.pm);
 #else
       ices_log_error ("This binary has no support for embedded perl");
 #endif

@@ -110,16 +110,14 @@
 #include "stream.h"
 #include "log.h"
 #include "util.h"
-#include "playlist.h"
 #include "cue.h"
 #include "dj.h"
 #include "id3.h"
 #include "mp3.h"
 #include "signals.h"
 #include "reencode.h"
-#include "playlist_builtin/playlist_builtin.h"
-#include "interpreter/interpreter.h"
 #include "ices_config.h"
+#include "playlist/playlist.h"
 
 #define BUFSIZE 8192
 #define ICES_DEFAULT_HOST "127.0.0.1"

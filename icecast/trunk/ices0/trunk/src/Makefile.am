@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = @ICES_SUBDIRS@ playlist_builtin interpreter
+SUBDIRS = playlist
 
 if NEED_SHOUT
 SHOUT_LIBS = ../libshout/libices.la
@@ -11,19 +11,18 @@ endif
 
 bin_PROGRAMS = ices
 
-noinst_HEADERS = definitions.h setup.h log.h stream.h util.h playlist.h cue.h \
+noinst_HEADERS = definitions.h setup.h log.h stream.h util.h cue.h \
 	dj.h metadata.h in_vorbis.h mp3.h id3.h signals.h reencode.h \
 	icestypes.h
 
-ices_SOURCES = ices.c log.c setup.c stream.c util.c playlist.c dj.c mp3.c \
-	cue.c metadata.c id3.c signals.c
+ices_SOURCES = ices.c log.c setup.c stream.c util.c dj.c mp3.c cue.c \
+	metadata.c id3.c signals.c
 
 EXTRA_ices_SOURCES = in_vorbis.c reencode.c
 
-ices_LDADD = @ICES_OBJECTS@ playlist_builtin/libplaylist.a \
-	interpreter/libinterpreter.a ../resolver/libresolver.a \
-	../thread/libicethread.a ../avl/libiceavl.a \
-	../log/libicelog.a $(SHOUT_LIBS)
+ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a \
+	../resolver/libresolver.a ../thread/libicethread.a \
+	../avl/libiceavl.a ../log/libicelog.a $(SHOUT_LIBS)
 
 ices_DEPENDENCIES = @ICES_OBJECTS@
 

@@ -29,4 +29,12 @@ char* ices_playlist_get_metadata (void);
 int ices_playlist_initialize (void);
 void ices_playlist_shutdown (void);
 
+int ices_playlist_builtin_initialize (playlist_module_t* pm);
+#ifdef HAVE_LIBPYTHON
+int ices_playlist_python_initialize (playlist_module_t* pm);
+#endif
+#ifdef HAVE_LIBPERL
+int ices_playlist_perl_initialize (playlist_module_t* pm);
+#endif
+
 #endif

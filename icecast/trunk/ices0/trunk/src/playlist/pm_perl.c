@@ -1,6 +1,7 @@
-/* perl.c
- * - Interpreter functions for perl 
+/* playlist_perl.c
+ * - Interpreter functions for perl
  * Copyright (c) 2000 Chad Armstrong, Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,20 +19,106 @@
  *
  */
 
+#include "definitions.h"
+
 /* Stupid automake and STUPID perl */
 #ifdef PACKAGE
 #undef PACKAGE
 #endif
 
-#include <EXTERN.h> 
-#include <perl.h> 
+#include <EXTERN.h>
+#include <perl.h>
 
-static PerlInterpreter *my_perl;
+extern ices_config_t ices_config;
+
+static PerlInterpreter *my_perl = NULL;
 
 /* This is needed for dynamicly loading perl modules in the perl scripts.
  * E.g "use somemodule;"
  */
 extern void boot_DynaLoader ();
+
+/* -- local prototypes -- */
+static int playlist_perl_get_lineno (void);
+static char* playlist_perl_get_next (void);
+static char* playlist_perl_get_metadata (void);
+static void playlist_perl_shutdown (void);
+
+static int pl_perl_init_perl (void);
+static void pl_perl_shutdown_perl (void);
+static char* pl_perl_eval (const char* func);
+static void xs_init (void);
+
+int
+ices_playlist_perl_initialize (playlist_module_t* pm)
+{
+  char *str;
+  int ret = 0;
+
+  pm->get_next = playlist_perl_get_next;
+  pm->get_metadata = playlist_perl_get_metadata;
+  pm->get_lineno = playlist_perl_get_lineno;
+  pm->shutdown = playlist_perl_shutdown;
+
+  if (pl_perl_init_perl () < 0)
+    return 0;
+
+  str = pl_perl_eval ("ices_perl_initialize");
+  ret = atoi (str);	/* allocated in perl.c */
+  ices_util_free (str);	/* clean up after yourself! */
+		
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
+
+  return ret;
+}
+
+static int
+playlist_perl_get_lineno (void)
+{
+  char *str;
+  int ret = 0;
+
+  str = pl_perl_eval ("ices_perl_get_current_lineno");
+  ret = atoi (str); 	/* allocated in perl.c */
+  ices_util_free (str);	/* clean up after yourself! */
+
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pm failed");
+
+  return ret;
+}
+
+static char *
+playlist_perl_get_next (void)
+{
+  return pl_perl_eval ("ices_perl_get_next");
+  /* implied free(str), this is called higher up */
+}
+
+static char*
+playlist_perl_get_metadata (void)
+{
+  return pl_perl_eval ("ices_perl_get_metadata");
+}
+
+static void
+playlist_perl_shutdown (void)
+{
+  char *str;
+  int ret = 0;
+			                  
+  str = pl_perl_eval ("ices_perl_shutdown");
+  ret = atoi (str);
+  ices_util_free (str);
+
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
+
+  pl_perl_shutdown_perl ();
+
+  return;
+}
 
 static void
 xs_init (void)
@@ -41,14 +128,16 @@ xs_init (void)
 	newXS ("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
 }
 
-/* most of the following is almost ripped straight out of 'man perlcall' or 'man perlembed' 
+/* most of the following is almost ripped straight out of 'man perlcall'
+ * or 'man perlembed' 
  *
- * my_perl is left resident, and we do not reload the perl module file when it changes.
+ * my_perl is left resident, and we do not reload the perl module file
+ * when it changes.
  * shutdown() will clean up anything allocated at this point
  */
 
-static void
-interpreter_perl_initialize (void)
+static int
+pl_perl_init_perl (void)
 {
 	static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
 	static char module_space[255];
@@ -68,21 +157,22 @@ interpreter_perl_initialize (void)
 	ices_log_debug ("Importing Perl module %s", my_argv[1]);
 
 	if((my_perl = perl_alloc()) == NULL) {
-		ices_log_debug ("perl_alloc() error: (no memory!*");
-		ices_setup_shutdown();
-		return;
+		ices_log_debug ("perl_alloc() error: (no memory!)");
+		return -1;
 	}
 	perl_construct(my_perl);
 
 	if (perl_parse(my_perl, xs_init, 2, my_argv, NULL)) {
 		ices_log_debug ("perl_parse() error: parse problem");
-		ices_setup_shutdown();
+		return -1;
 	}
+
+	return 0;
 }
 
 /* cleanup time! */
 static void
-interpreter_perl_shutdown (void)
+pl_perl_shutdown_perl (void)
 {
 	if (my_perl != NULL){
 		perl_destruct(my_perl);
@@ -97,8 +187,8 @@ interpreter_perl_shutdown (void)
  *  able to handle getting return values from the
  *  embedded perl calls.
  */	
-void *
-interpreter_perl_eval_function (char *functionname)
+static char*
+pl_perl_eval (const char *functionname)
 {
 	int retcount = 0;
 	char *retstr = NULL;

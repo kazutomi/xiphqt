@@ -167,8 +167,7 @@ ices_stream_send_file (const char *file)
   bytes_read = 0;
 
   if (ices_stream_open_source (&source) < 0) {
-    ices_log_error ("Error sending %s", source.path);
-    return 0;
+    return -1;
   }
 
   if (! source.read) {
