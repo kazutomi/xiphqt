@@ -1,5 +1,6 @@
 html {
 	background: #b1cfa1;
+	background: rgb(98, 121, 49);
 }
 
 div#content {
@@ -45,6 +46,7 @@ div#sidebar a:visited {
 
 div#sidebar a:hover {
 	background: #c1dfb1;
+	background: rgb(146, 181, 72);
 }
 
 table#comparison {

@@ -1,0 +1,101 @@
+body {
+	padding-top: 2em;
+}
+
+div#content {
+	margin-right: 17em;
+}
+
+div#sidebar {
+	position: absolute;
+	top: 2em; /* This must match the padding-top of the body element. */
+	right: 1em;
+	width: 15em;
+	margin: 0;
+	padding: 0;
+}
+
+/*	the "bignavbuttons" thing was taken from www.adaptivepath.com.  */
+div#sidebar ul {
+	margin: 0 0 1.5em;
+	padding: 0;
+}
+
+div#sidebar li {
+	list-style-type: none;
+	margin: 0;
+	margin-bottom: 1em;
+	border: 1px solid gray;
+	background: white;
+	font-size: 90%;
+}
+
+div#sidebar strong {
+	display: block;
+	font-size: larger;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+div#sidebar a {
+	display: block;
+	padding: .25em;
+	text-decoration: none;
+	color: black;
+}
+
+div#sidebar a:link,
+div#sidebar a:visited {
+	color: black;
+}
+
+div#sidebar li a:hover {
+	color: black;
+}
+
+div#sidebar li.vorbis a:hover {
+	background: #b6cfbd;
+	background: rgb(37, 80, 112);
+	color: white;
+}
+
+div#sidebar li.speex a:hover {
+	background: #b1cfa1;
+	background: rgb(98, 121, 49);
+	color: white;
+}
+
+div#sidebar li.flac a:hover {
+	background: #ff9;		/* banana-ish */
+	background: #ddddc3;	/* a slightly darker version of what's on flac.sf.net */
+	background: #9c9;		/* background from flac.sf.net */
+	background: rgb(0, 64, 64);
+
+	color: white;
+
+
+}
+
+div#sidebar li.theora a:hover {
+	background: #bdb8cf;
+	background: rgb(119, 51, 70);	/* kinda looks like it's the color of pomegranate juice */
+	color: white;
+}
+
+div#sidebar li.icecast a:hover {
+	background: #bbb;
+}
+
+/*
+ *	This makes the sidebar buttons behave like full-size buttons instead of just working
+ *	when you hover your mouse pointer over the _text_ in IE/Windows
+ */
+.reset {
+	display: block;
+	clear: both;
+	margin: 0;
+	padding: 0;
+	height: 1px;
+	font-size: 1px;
+	line-height: 1px;
+}

@@ -1,7 +1,6 @@
 Speex
 =====
 
-## Overview
 Speex is an [Open Source/Free Software][osfs], patent-free audio compression format
 designed for speech. The Speex Project aims to lower the barrier of entry for voice
 applications by providing a free alternative to expensive proprietary speech codecs
@@ -31,7 +30,7 @@ Some of Speex’s features include:
 *	An in-progress fixed-point port
 
 Speex has a number of features that other codecs don’t such as intensity stereo encoding
-and a VBR mode; see our [comparison page][] for more.
+and a <abbr title='variable bitrate'>VBR</abbr> mode; see our [comparison page][] for more.
 
 	[comparison page]: ./compare/
 

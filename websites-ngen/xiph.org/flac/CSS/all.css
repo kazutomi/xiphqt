@@ -1,8 +1,9 @@
 html {
-	background: #9c9;
+	background: #9c9;				/* from flac.sf.net */
+	background: rgb(0, 64, 64);
 
 }
 
 div#content {
-	background: #eeeed4;
+	background: #eeeed4;	/* from flac.sf.net */
 }
