@@ -9,13 +9,14 @@
 
 package MGMmodule::netstat;
 use vars qw($xpath @if @keys $active $field $prompt @prev @bytes $widget 
-	    $graph $lastmod);
+	    $graph $lastmod $minscale);
 
 # class init
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xclass=$this->{"xclass"};
+    $minscale=2048;
 
     # is the helper up and running?
     if(!defined(%MGMmodule::helperST::net)){
@@ -26,15 +27,17 @@ sub module_init{
 	
 	# three possible different formats.  
 	my@test=split ' ', $MGMmodule::helperST::net{$keys[0]};
-	if($#test==9){
+
+	if($#test==10){
 	    $field=5;
-	    $prompt=' packets/s';
+	    $prompt=' pkts/s';
+	    $minscale=16;
 	}else{
 	    $field=($#test+1)/2;
 	    $prompt='B/s';
 	}
     }
-    $toplevel->optionAdd("$xclass.order",1,21);   
+    $toplevel->optionAdd("$xclass.order",20,21);   
     $this;
 }
 
@@ -49,9 +52,9 @@ sub module_instance{
     my$i=0;
     foreach my $key (@keys){
 	$toplevel->optionAdd("$xpath.bar.".($i*2).".label", "$key Rx",21);
-	$toplevel->optionAdd("$xpath.bar.".($i*2).".litbackground", '#00d',21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2).".litbackground", '#787cf8',21);
 	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".label", "$key Tx",21);
-	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".litbackground","#24f",21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".litbackground","#78b0f8",21);
 	$i++;
     }
 
@@ -74,7 +77,7 @@ sub module_run{
     
     $graph=MGM::Graph->new($this,num=>$active*2,
 			   prompt=>$prompt,
-			   minscale=>2048);
+			   minscale=>$minscale);
 
     $lastmod=-1;
     $widget=$graph->{"widget"};        # must return the widget

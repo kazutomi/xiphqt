@@ -20,7 +20,7 @@ sub module_init{
     unless (open(PROC,"</proc/loadavg")){
 	$toplevel->optionAdd("$xclass*active",'false',21);
     }
-    $toplevel->optionAdd("$xclass.order", 100,21);
+    $toplevel->optionAdd("$xclass.order", 2,21);
     $this;
 }
 

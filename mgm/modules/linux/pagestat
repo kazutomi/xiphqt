@@ -20,7 +20,7 @@ sub module_init{
     if(!defined($MGMmodule::helperST::proc{"swap"})){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
     } 
-    $toplevel->optionAdd("$xclass.order",1,21);   
+    $toplevel->optionAdd("$xclass.order",12,21);   
     $this;
 }
 
@@ -41,6 +41,7 @@ sub module_instance{
 			 '#ade774',21);
 
     $toplevel->optionAdd("$xpath.scalewidadj", 160,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
     $toplevel->optionAdd("$xpath.scalereturn", 120,21);
     
     # this relies on the above defaults

@@ -21,7 +21,7 @@ sub module_init{
     unless ($memtotal){
 	$toplevel->optionAdd("$xclass*active",'false',21);
     }
-    $toplevel->optionAdd("$xclass.order", 100,21);
+    $toplevel->optionAdd("$xclass.order", 101,21);
     $this;
 }
 
@@ -49,7 +49,8 @@ sub module_instance{
     # don't do it often.
     $toplevel->optionAdd("$xpath.scalerefresh",2000,21);      # 2s
     $toplevel->optionAdd("$xpath.scalewidadj", 80*$bars,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);        # shorter
+    $toplevel->optionAdd("$xpath.scalelenadj", 100,21);        # shorter
+    $toplevel->optionAdd("$xpath.bar*litbackground", "#e8d088",21); 
     $this;
 }
 

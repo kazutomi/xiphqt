@@ -26,7 +26,7 @@ sub module_init{
     if(!$numdisks){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
     } 
-    $toplevel->optionAdd("$xclass.order",1,21);   
+    $toplevel->optionAdd("$xclass.order",10,21);   
     $this;
 }
 

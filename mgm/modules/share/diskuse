@@ -44,8 +44,8 @@ sub module_instance{
 	shift @data;
     }
 
-    $toplevel->optionAdd("$xpath.scalewidadj", 75*$fs,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
+    $toplevel->optionAdd("$xpath.scalewidadj", 80*$fs,21);  # narrower
+    $toplevel->optionAdd("$xpath.bar*litbackground", "#e8d088",21); 
 
     my($minx,$miny)=&MGM::Graph::calcxysize($this,100,'% used',$fs);
 

@@ -25,7 +25,6 @@ sub module_instance{
 
     $toplevel->optionAdd("$xpath.relief", 'sunken' ,21);
     $toplevel->optionAdd("$xpath.ipad", 20 ,21);
-    $toplevel->optionAdd("$xpath.background",'black' ,21);
     $toplevel->optionAdd("$xpath.borderwidth", 1 ,21);
     $toplevel->optionAdd("$xpath.scalewidadj", 150,21);
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);
@@ -118,7 +117,7 @@ sub module_update{
 	my$A=$square/2*.8;
 	my$B=$A*sin($phi);
 	my$C=-$A*cos($phi);
-	my$base=.075;
+	my$base=.08;
 	my$b=$A*cos($phi)*$base;
 	my$c=$A*sin($phi)*$base;
 	my$cx=$width/2-1;

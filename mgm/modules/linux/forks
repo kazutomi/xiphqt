@@ -20,7 +20,7 @@ sub module_init{
     if(!defined($MGMmodule::helperST::proc{"processes"})){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
     } 
-    $toplevel->optionAdd("$xclass.order",1,21);   
+    $toplevel->optionAdd("$xclass.order",4,21);   
     $this;
 }
 
@@ -35,6 +35,7 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.bar.0.label", "forks",21);
     $toplevel->optionAdd("$xpath.scalereturn", 100,21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);  # shorter
     
     # this relies on the above defaults
 
