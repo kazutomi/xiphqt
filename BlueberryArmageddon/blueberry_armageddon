@@ -10,7 +10,7 @@ use Tk::Xrm;
 use Tk qw(exit); 
 use CDDB;
 
-$version="Blueberry Armageddon 20020401";
+$version="Blueberry Armageddon 20041015";
 $width=400;
 ($device)=@ARGV;
 
