@@ -15,6 +15,4 @@ def test():
         print x['hey'] # should fail
         assert(0)
     except KeyError: pass
-
-while 1:
-    test()
+test()

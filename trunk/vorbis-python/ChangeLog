@@ -1,3 +1,17 @@
+2002-09-12  Andrew H. Chatham <pyogg@andrewchatham.com>
+	* setup.py: Bumped to version 1.1 (may not release until I verify
+	another bug report)
+
+	
+	* pyvorbisinfo.c: (py_comment_new_empty) Made static and fixed the
+	case when using unicode strings with VorbisComment. Also now
+	capitalize the key for comments.
+	
+	* pyvorbisfile.c: Added patch so that passing in PyFile objects to
+	a VorbisFile object won't _necessarily_ crash and burn, though
+	it's still not a good idea. A much better way of doing this is the
+	next planned feature.
+	
 2002-07-23  Andrew H. Chatham <andrew@andrewchatham.com>
 	* README - documented new comment interface
 	* Bumped to 1.0 to match Vorbis
