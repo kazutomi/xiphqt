@@ -21,10 +21,11 @@ static void py_ao_dealloc(ao_Object *);
 static PyObject* py_ao_getattr(PyObject *, char *);
 
 static char py_ao_play_doc[] = 
-"Play the contents of a given audio buffer.\n\n"
-"Arguments:\n"\
-"buff : Buffer or string containing audio data\n"\
-"n : Number of bytes to play (defaults to len(buff))";
+"Play the contents of a given audio buffer.\n\
+\n\
+Arguments:\n\
+buff : Buffer or string containing audio data\n\
+n : Number of bytes to play (defaults to len(buff))";
 
 static PyObject *py_ao_play(PyObject *, PyObject *);
 
@@ -46,16 +47,31 @@ static char py_ao_is_big_endian_doc[] =
 static PyObject *py_ao_is_big_endian(PyObject *, PyObject *);
 
 static char py_ao_doc[] = 
-"AudioDevice(driverid, bits=16, rate=44100, channels=2, byte_format=1,\n"
-"            options=[], filename='', overwrite=0)\n"
-"OR\n"
-"AudioDevice(drivername, bits=16, rate=44100, channels=2, byte_format=1,\n"
-"            options=[], filename='', overwrite=0)\n\n"
-"An AudioDevice object is an interface to a sound device. You can either\n"
-"pass an id of a specific type of device or the name of that device type.\n"
-"If filename is passed, the module will try to open an output file as the\n"
-"audio device. In this case, overwrite indicates whether to overwrite an\n"
-"existing file\n";
+"AudioDevice(driverid, bits=16, rate=44100, channels=2, byte_format=1, options=[], filename='', overwrite=0)\n\
+OR\
+AudioDevice(drivername, bits=16, rate=44100, channels=2, byte_format=1, options=[], filename='', overwrite=0)\n\
+\n\
+An AudioDevice object is an interface to a sound device. You can either pass\n\
+an id of a specific type of device or the name of that device type.\n\
+If filename is passed, the module will try to open an output file as the\n\
+audio device. In this case, overwrite indicates whether to overwrite an\n\
+existing file\n";
+
+static PyObject *py_ao_default_driver_id(PyObject *self, PyObject *args);
+static char py_ao_default_driver_id_doc[] ="Returns the ID number of the default live output driver.\n\
+\n\
+If the configuration files specify a default driver, its ID is returned,\n\
+otherwise the library tries to pick a live output driver that will work\n\
+on the host platform.\n\
+\n\
+Return values:\n\
+    . a non-negative value is the ID number of the default driver\n\
+    . -1 indicates failure to find a usable audio output device\n\
+\n\
+Notes:\n\
+    If no default device is available, you may still use the \n\
+    null device to test your application.";
+
 
 static PyTypeObject ao_Type = {
   PyObject_HEAD_INIT(&PyType_Type)
@@ -103,6 +119,8 @@ struct PyMethodDef ao_methods[] = {
    METH_VARARGS, py_ao_driver_info_doc},
   {"is_big_endian", py_ao_is_big_endian, 
    METH_VARARGS, py_ao_is_big_endian_doc},
+  {"default_driver_id", py_ao_default_driver_id,
+   METH_NOARGS, py_ao_default_driver_id_doc},
   {NULL, NULL}
 };
 
