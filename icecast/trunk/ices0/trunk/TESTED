@@ -1,33 +1,22 @@
-Redhat Linux 6.1
-	Kernel 2.2.17-pre13 on a i686
-	glibc-2.1.2-13
-	gcc version egcs-2.91.66
-	python-1.5.2-13
-	perl 5.0 patchlevel 5 subversion 3
-	libxml version 1.0.0-2 (hmmmm...)
-	without lame support
-Redhat Linux 5.2
-	Kernel 2.2.15-mosix on a i586
-	glibc version 2.0.7-29
-	gcc version 2.8.1
-	perl 5.0 patchlevel 4 subversion 4
-	Without xml, lame and python
-SunOS 5.7
-	Kernel Generic_106541-02 on a sun4m SUNW,SPARCstation-20
-	gcc version 2.95.1
-	without xml, lame, python and perl.
-SunOS 5.7
-	Kernel Generic_106541-02 on a sun4m SUNW,SPARCstation-20
-	Sun WorkShop 6 2000/04/07 C 5.1
-	without xml, lame, python and perl
-SunOS 5.7
-	Kernel Generic_106541-08 sun4u sparc SUNW,Ultra-4
-	gcc version 2.8.0
-	    version 2.8.1
-	without xml, lame, python
-	Perl 5.0 patchlevel 3 subversion 0
-	     5.0 patchlevel 4 subversion 3
-	     5.0 patchlevel 5 subversion 3
-OpenBSD 2.7 i386
-	gcc version 2.95.1
-	Perl 5.0 version 6 subversion 0
+Since the autoconf system has been largely rewritten I've removed all the
+previously tested configurations. But it works on my systems:
+
+Debian Sid
+	Kernel 2.4.5-SMP on dual PIII
+	glibc 2.2.3
+	gcc 2.95.4
+	perl 5.6.1
+	python 2.0
+	libxml 2.3.10
+	lame 3.89alpha6
+	     3.88beta
+Solaris 8
+	Generic_108528-06 sun4u sparc SUNW,Sun-Blade-100
+	gcc 2.95.2
+	perl 5.6.1
+	no python
+	no libxml
+	no lame
+
+If you've successfully built and run it on other systems, please send details
+to me at <brendan@kublai.com>, and I'll update this list.

@@ -1,4 +1,5 @@
 AC_INIT(src/ices.c)
+AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SUBDIRS(libshout)
 
 ICES_MAJOR=0
@@ -6,24 +7,25 @@ ICES_MINOR=0
 ICES_MICRO=1
 
 dnl Check to see if ICES_SPECIAL is overridden on commandline
-if test -z "$ICES_SPECIAL"; then
-	ICES_SPECIAL=beta5
+if test -z "$ICES_SPECIAL"
+then
+  ICES_SPECIAL=beta5
 fi
 
 ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO
 
-if test "x$ICES_SPECIAL" = "xNONE"; then
-	ICES_VERSION=$ICES_VERSION_SMALL
+if test -z "$ICES_SPECIAL"
+then
+  ICES_VERSION=$ICES_VERSION_SMALL
 else
-	ICES_VERSION=$ICES_VERSION_SMALL.$ICES_SPECIAL
+  ICES_VERSION=$ICES_VERSION_SMALL.$ICES_SPECIAL
 fi
 
-ICES_PACKAGE=ices
 VERSION="$ICES_VERSION"
 
 echo "Building ices-$VERSION..."
 
-AM_INIT_AUTOMAKE($ICES_PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE(ices, $VERSION)
 AM_MAINTAINER_MODE
 AM_CONDITIONAL(FSSTD, test x$enable_fsstd = xyes)
 AC_SUBST(USE_FSSTD)
@@ -67,7 +69,6 @@ else
 	USE_FSSTD=no
 fi
 
-AM_CONFIG_HEADER(config.h)
 
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
@@ -91,8 +92,9 @@ AC_PROG_RANLIB
 dnl Checks for programs.
 AC_PROG_CC
 
-if test "$GCC" = yes; then
-	CFLAGS="$CFLAGS -Wall"
+if test "$GCC" = yes
+then
+  CFLAGS="$CFLAGS -Wall"
 fi
 
 AC_CHECK_PROG(UNAME,uname,uname)
@@ -100,6 +102,7 @@ AC_CHECK_PROG(GMAKE,gmake,gmake)
 AC_PROG_INSTALL
 
 dnl weird ass systems
+AC_CANONICAL_HOST
 AC_AIX
 AC_ISC_POSIX
 AC_MINIX
@@ -108,102 +111,43 @@ AC_MSG_CHECKING(your OS)
 system=`$UNAME`
 IRIX=no
 case $system in
-	Linux)
-		AC_DEFINE(LINUX)
-		AC_MSG_RESULT(Linux)
-	;;
-	SunOS)
-		if test x`uname -r | cut -d . -f 1` = "x5"; then
-			SYSV=1
-			SVR4=1
-			SOLARIS=1
-			AC_MSG_RESULT(Solaris)
-			AC_DEFINE(SYSV)
-			AC_DEFINE(SVR4)
-			AC_DEFINE(SOLARIS)
-		else
-			AC_MSG_RESULT(SunOS)
-		fi
-		if test "$CC" = cc; then
-			CFLAGS="$CFLAGS -mt"
-		fi
-	;;
-	HP-UX)
-		hpux=1
-		AC_DEFINE(hpux)
-		AC_MSG_RESULT(HP-UX)
-		CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
-		if test "$CC" = cc; then
-			CFLAGS="$CFLAGS -Aa"
-		fi
-	;;
-	IRIX)
-		IRIX=yes
-		AC_DEFINE(IRIX)
-		AC_MSG_RESULT(IRIX)
-	;;
-	*BSD*)
-		__SOMEBSD__=yes
-		AC_DEFINE(__SOMEBSD__)
-		AC_MSG_RESULT(Some BSD variant)
-		OLDCPPFLAGS=$CPPFLAGS
-		THREADCPPFLAGS="-pthread"
-		CPPFLAGS="$OLDCPPFLAGS $THREADCPPFLAGS"
-		AC_TRY_COMPILE([#include <pthread.h>],
-			       [pthread_t thread; ],	
-	       		       ,
-			       	CPPFLAGS="$OLDCPPFLAGS")
-		CPPFLAGS=$OLDCPPFLAGS
-	;;
-	*)
-		AC_MSG_RESULT($system)
-	;;
+  SunOS)
+    if test x`uname -r | cut -d . -f 1` = "x5"
+    then
+      AC_MSG_RESULT(Solaris)
+    else
+      AC_MSG_RESULT(SunOS)
+    fi
+    if test "$CC" = cc
+    then
+      CFLAGS="$CFLAGS -mt"
+    fi
+  ;;
+  HP-UX)
+    AC_MSG_RESULT(HP-UX)
+    CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
+    if test "$CC" = cc
+    then
+      CFLAGS="$CFLAGS -Aa"
+    fi
+  ;;
+  IRIX)
+    IRIX=yes
+    AC_MSG_RESULT(IRIX)
+  ;;
+  *)
+    AC_MSG_RESULT($system)
+  ;;
 esac
 
-if test ${IRIX} = yes; then
-	echo Skipping library tests because they confuse Irix.
+if test "$IRIX" = "yes"
+then
+  AC_MSG_WARN(Skipping library tests because they confuse Irix)
 else
-
-	
-
-  AC_CHECK_FUNCS(socket)
-
-  if test "$ac_cv_func_socket" = no; then
-    for lib in socket inet; do
-	if test "$HAVE_SOCKET" != 1; then
-		AC_CHECK_LIB($lib, socket,LIBS="$LIBS -l$lib";HAVE_SOCKET=1;AC_DEFINE(HAVE_SOCKET))
-	fi
-    done
-  fi
-  
-  AC_CHECK_FUNCS(connect)	
-
-  if test "$ac_cv_func_connect" = no; then
-    for lib in nsl; do
-	if test "$HAVE_CONNECT" != 1; then
-		AC_CHECK_LIB($lib, connect,LIBS="$LIBS -l$lib";HAVE_CONNECT=1;AC_DEFINE(HAVE_CONNECT))
-	fi
-    done
-  fi
-
-  AC_CHECK_FUNCS(gethostbyname)
-  if test "$ac_cv_func_gethostbyname" = no; then
-	for lib in dns nsl resolv; do
-	  if test "$HAVE_GETHOSTBYNAME" != 1; then
-	    AC_CHECK_LIB($lib, gethostbyname, LIBS="$LIBS -l$lib";HAVE_GETHOSTBYNAME=1;AC_DEFINE(HAVE_GETHOSTBYNAME))
-	  fi
-	done	
-  fi	
-
-  AC_CHECK_FUNCS(nanosleep)
-
-  if test "$ac_cv_func_nanosleep" = no; then
-        for lib in rt; do
-                AC_CHECK_LIB($lib, nanosleep,LIBS="$LIBS -l$lib";HAVE_NANOSLEEP=1;AC_DEFINE(HAVE_NANOSLEEP))
-        done
-  fi
-
-
+  dnl used by resolver/libresolv.a
+  AC_SEARCH_LIBS(gethostbyname, dns nsl resolv)
+  dnl used by thread/libicethread.a
+  AC_SEARCH_LIBS(nanosleep, rt)
 fi
 
 dnl Checks for header files.
@@ -219,20 +163,6 @@ AC_TYPE_SIGNAL
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_RETSIGTYPE
-
-AC_MSG_CHECKING([for unix98 socklen_t])
-AC_TRY_COMPILE([#include <sys/types.h>
-		#include <sys/socket.h>],
-	    [typedef socklen_t int; 
-	    int apan (void) {return 1;}],
-	AC_MSG_RESULT(yeah)
-	HAVE_SOCKLEN_T=yes,
-	AC_MSG_RESULT(nah)
-	HAVE_SOCKLEN_T=no)
-
-if test ${HAVE_SOCKLEN_T} = yes ;then 
-	AC_DEFINE(HAVE_SOCKLEN_T)		
-fi
 
 dnl Checks for library functions.
 AC_FUNC_STRFTIME
@@ -347,28 +277,23 @@ then
 fi
 
 AC_ARG_WITH(perl,
-[  --with-perl                 enable perl interpreter])
+[  --with-perl[=DIR]           enable perl interpreter [found in DIR]])
 
-AC_ARG_WITH(perl-includes,
-[  --with-perl-includes=DIR    perl include files are in DIR (look for perl.h)])
-
-AC_ARG_WITH(perl-libraries,
-[  --with-perl-libraries=DIR   perl libraries are in DIR (look for libperl.a)])
-
-if test -n "$with_perl_includes"
-then
-  CPPFLAGS="$CPPFLAGS -I$with_perl_includes"
-fi
-
-if test "$with_perl_libraries"
-then
-  LDFLAGS="$LDFLAGS -L$with_perl_libraries"
-fi
-
+PERL=perl
 if test "$with_perl" != "no"
 then
-  PERLCFLAGS=`perl -MExtUtils::Embed -e ccopts`
-  PERLLIBS=`perl -MExtUtils::Embed -e ldopts`
+  AC_CACHE_SAVE
+  if test -n "$with_perl" -a "$with_perl" != "yes"
+  then
+    $PERL="$with_perl/bin/perl"
+    if ! test -x "$PERL"
+    then
+      AC_MSG_ERROR([Perl not found in the specified location])
+    fi
+  fi
+
+  PERLCFLAGS=`$PERL -MExtUtils::Embed -e ccopts`
+  PERLLIBS=`$PERL -MExtUtils::Embed -e ldopts`
   CPPFLAGS="$CPPFLAGS $PERLCFLAGS"
   LIBS="$LIBS $PERLLIBS"
 
@@ -465,9 +390,8 @@ fi
 AC_CHECK_HEADERS([fcntl.h sys/types.h sys/socket.h sys/time.h sys/stat.h \
   unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h \
   libxml/parser.h gnome-xml/parser.h parser.h])
-AC_CHECK_FUNCS([gettimeofday strstr snprintf vsnprintf rename setpgid basename \
-  setsockopt umask inet_addr inet_aton inet_ntoa sigaction pthread_sigmask \
-  setlinebuf])
+AC_CHECK_FUNCS([snprintf vsnprintf setpgid inet_addr inet_aton inet_ntoa \
+  pthread_sigmask setlinebuf])
 
 LIBS="$LIBS $LIBM $LIBDL"
 AC_SUBST(ICES_OBJECTS)
@@ -479,10 +403,11 @@ AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile
 echo "Compiling with CPPFLAGS=$CPPFLAGS"
 echo "Linking with LDFLAGS=$LDFLAGS $LIBS"
 
-if test "$GMAKE"; then
-echo "Ok, everything seems ok. Now do 'gmake'."
-echo "You can then run 'gmake install' to install as you specified"
+if test "$GMAKE"
+then
+  echo "Ok, everything seems ok. Now do 'gmake'."
+  echo "You can then run 'gmake install' to install as you specified"
 else
-echo "Ok, everything seems ok. Now do 'make'."
-echo "You can then run 'make install' to install as you specified"
+  echo "Ok, everything seems ok. Now do 'make'."
+  echo "You can then run 'make install' to install as you specified"
 fi
