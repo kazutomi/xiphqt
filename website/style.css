@@ -1,0 +1,19 @@
+html {
+	font: 80% Verdana, Helvetica, sans-serif;
+}
+.brsmt {  border: #000000 solid; border-width: 2px 0px 0px 2px}
+.tl { border: #000000 solid; border-width: 0px 2px 2px 0px}
+.nutrition {  font-size: 280%; font-weight: bold; text-decoration: underline}
+a {  color: #003399; text-decoration: none}
+a:hover {  color: #286FFF; text-decoration: none}
+.menu {  font-size: 75%; padding-right: 5px; padding-left: 5px}
+.bl {
+	font-size: smaller;
+	border-color: black;
+	border-style: solid;
+	border-top-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 0px;
+	border-left-width: 0px;
+	color: white;
+}

@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 TRANSITIONAL//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>theora.org :: main</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+	@import url(style.css);
+</style>
+</head>
+<body bgcolor="#666699" text="#000000">
+<table width="500" border="0" cellspacing="0" cellpadding="2" align="center">
+  <tr> 
+    <td bgcolor="#000000"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td bgcolor="#EEEEEE" align="left"> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td valign="top" align="left"> 
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td width="50" height="50" bgcolor="#444466" class="tl">&nbsp; 
+                      </td>
+                      <td align="right" valign="top"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="tl">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td valign="bottom"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="tl">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="bottom">&nbsp; </td>
+                    </tr>
+                  </table>
+                </td>
+                <td valign="top" align="right"> 
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td class="nutrition" align="right"> 
+                        <!-- Title (HINT: Shorter is better.)
+-->theora.org<!-- Close Title -->
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td align="right"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <!-- Menu (HINT: Each item is inside a <td>.)-->
+                            <td class="menu"> <a href="http://www.theora.org">Home</a></td>
+                            <td class="menu"><a href="http://www.theora.org/theorafaq.html">FAQ</a></td>
+                            <td class="menu"><a href="http://www.theora.org/lists.html">Mailing Lists</a></td>
+                            <td class="menu"><a href="http://www.theora.org/cvs.html">CVS</a></td>
+                            <td class="menu"><a href="http://www.theora.org/contact.html">Contact</a></td>
+                            <td class="menu"><a href="http://www.xiph.org">Xiph.org</a></td>
+                            <!-- Close Menu -->
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr> 
+          <td bgcolor="#EEEEEE"> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td valign="top"> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="10">
+                    <tr> 
+                      <td> 
+                        <!-- Main Content -->
+<p><strong>[ June 9, 2003 - Theora alpha 2 release ]</strong></p>
+<p>
+The libtheora reference implementation has reached its 'alpha 2' milestone.
+A lot of bugs have been fixed and new features added, including all the
+planned changes to the bitsteams format.</p>
+<p>
+This is more of an internal milestone than a public release, but we are
+making a <a href="/files/libtheora-1.0alpha2.tar.gz">source tarball</a> available
+for convenience. Nevertheless we recommend using the <a href="cvs.html">cvs</a> version if possible. This release also requires cvs libogg and libvorbis to compile; you might try the <a href="http://www.xiph.org/ogg/vorbis/download/vorbis_nightly_cvs.tgz">cvs nightly tarball</a> if you don't
+already have these checked out. You will need to build and install the 'ogg' and 'vorbis' modules.
+
+<p><strong>[ May 8, 2003 - VP3 Legacy Codec binaries ]</strong></p>
+<p>
+Mauricio Piacentini has been maintaining the original VP32 sources upon which theora is
+based. He's pooling his efforts with Xiph a bit and has decided to keep his work in xiph.org
+cvs, in the 'vp32' module where the code was originally released. We hope this will help
+concentrate efforts related to theora and bring additional focus to both projects.
+<p>
+He is also making his binary builds for Quicktime 6 and Video for Windows available on
+this site. Please visit the <a href="http://www.xiph.org/~mauricio/">legacy VP3 page</a>
+for file links and complete information.
+
+<p><strong>[ May 7, 2003 - Status update ]</strong></p>
+<p>
+Things have been slow for some time, so we just wanted to say what's been happening. 
+Monty's been busy with unrelated contract work since finishing the zero-copy libogg,
+and no one has stepped up to act as maintainer in the meantime. We've been working
+on a <a href="http://wiki.xiph.org/TheoraTodo">wiki todo</a> for theora and for
+<a href="http://wiki.xiph.org/">xiph generally</a>. So feel free to look (and contribute)
+there.
+<p>
+<p><b>[ January 13th, 2003 - Test Suite ]</b></p>
+<p>
+We've posted a <a href="http://www.theora.org/test/test.zip">test suite</a> for your encoding pleasure.
+Feel free to post comments and questions to the Theora
+<a href="http://www.theora.org/lists.html">mailing lists.</a>
+<p><br>
+<b>[ December 16th, 2002 - Robot Roll Call ]</b><br>
+<p>
+The first part of Theora Alpha Two, the delicious Video Layer FAQ is now 
+available on the <a href="http://www.theora.org/theorafaq.html">FAQ</a> 
+page, written by Dan Miller. The second part is libogg hacking, the 
+results of which will be posted just a little after December 27th. Alpha 
+Two is really more of an informational release than a big downloadable 
+install-fest, so don't fire up the testbeds just yet.
+<p>
+Welcome to theora.org, the official website for Ogg Theora, a video
+codec and integration project maintained and supported by the <a
+href="http://www.xiph.org">Xiph.org Foundation</a> for the benefit of
+all humankind.
+<p>
+What is Theora? Theora will be a video codec that builds upon On2's VP3 
+codec. While <a href="http://www.vorbis.com">Ogg Vorbis</a> has reached 
+1.0, Theora is currently being integrated into the Ogg multimedia framework, as well as being optimized 
+from the VP3 codebase at its heart.  
+<p>
+Theora will be released in June of 2003, with three major milestones, the 
+first being released today, September 25th, 2002. Today's piece is 
+available for download in the 'theora' module of the Xiph.org <a 
+href="http://www.theora.org/cvs.html">CVS</a> repository, as 
+well as a UNIX tarball available <a 
+href="http://www.xiph.org/ogg/vorbis/download/theora_cvs_snapshot.tgz">here</a>. 
+<p>
+There's a lot of useful information under the hood, so please have a
+look around by using the navigation links at the top of the page. If
+there's anything you think that we need on this page, please <a
+href="http://www.theora.org/contact.html">contact us</a> and let us
+know what you'd like to
+see.
+<p>
+For the legal terms on the usage of the VP3 codec, please check out the
+<a href="http://www.theora.org/cvs.html">CVS</a> page. If you would like 
+to help sponsor the development of Theora and other open technologies from
+the Xiph.org Foundation, please consider a donation! More information is 
+available at <a 
+href="http://www.xiph.org/ogg/vorbis/donate.html">this link</a>.
+<p>
+Thanks for stopping by, and happy hacking!
+                        <!-- Close Content -->
+                      </td>
+                    </tr>
+                  </table>
+                  <table border="0" cellspacing="0" cellpadding="3">
+                    <tr> 
+                      <td class="bl" bgcolor="#777777" nowrap> 
+                        <!-- Copyright (HINT: This is for decoration.  You may change it to what you like.) -->
+                        <a
+href="http://www.opencontent.org">OpenContent</a> for the People. 
+                        <!-- Close Copyright -->
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td width="79" align="right" valign="bottom"> 
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td>&nbsp;</td>
+                      <td align="right"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="brsmt">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td valign="bottom"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="brsmt">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td width="50" height="50" bgcolor="#444466" class="brsmt">&nbsp; 
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<p align="center">
+Theora is a project of the
+<img src="http://xiph.org/white-xifish.png" alt="[xiph.org logo]"
+     align="middle">
+Xiph.org Foundation.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,397 @@
+<html>
+<head>
+<title>theora.org :: FAQ</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+.brsmt {  border: #000000 solid; border-width: 2px 0px 0px 2px}
+.tl { border: #000000 solid; border-width: 0px 2px 2px 0px}
+td {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 80%}
+.nutrition {  font-size: 280%; font-weight: bold; text-decoration: underline}
+a {  color: #003399; text-decoration: none}
+.menu {  font-size: 75%; padding-right: 5px; padding-left: 5px}
+a:hover {  color: #286FFF; text-decoration: none}
+.bl {  border-color: #000000 black; border-style: solid; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 0px; border-left-width: 0px; color: #FFFFFF; font-size: 70%}
+-->
+</style>
+</head>
+<body bgcolor="#666699" text="#000000">
+<table width="500" border="0" cellspacing="0" cellpadding="2" align="center">
+  <tr> 
+    <td bgcolor="#000000"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td bgcolor="#EEEEEE" align="left"> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td valign="top" align="left"> 
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td width="50" height="50" bgcolor="#444466" class="tl">&nbsp; 
+                      </td>
+                      <td align="right" valign="top"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="tl">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td valign="bottom"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="tl">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="bottom">&nbsp; </td>
+                    </tr>
+                  </table>
+                </td>
+                <td valign="top" align="right"> 
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td class="nutrition" align="right"> 
+                        <!-- Title (HINT: Shorter is better.)
+-->theora.org<!-- Close Title -->
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td align="right"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <!-- Menu (HINT: Each item is inside a <td>.)-->
+ <td class="menu"> <a
+href="http://www.theora.org">Home</a></td>
+                            <td class="menu"><a
+href="http://www.theora.org/theorafaq.html">FAQ</a></td>
+                            <td class="menu"><a
+href="http://www.theora.org/lists.html">Mailing Lists</a></td>
+                            <td class="menu"><a
+href="http://www.theora.org/cvs.html">CVS</a></td>
+                            <td class="menu"><a
+href="http://www.theora.org/contact.html">Contact</a></td>
+                            <td class="menu"><a
+href="http://www.xiph.org">Xiph.org</a></td>
+                            <!-- Close Menu -->
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr> 
+          <td bgcolor="#EEEEEE"> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td valign="top"> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="10">
+                    <tr> 
+                      <td> 
+                        <!-- Main Content -->
+<b>[ The Glorious Theora FAQ - Alpha Two Update ]</b><br>
+<p>
+There's more delicious Theora on the way, the first part of which is the 
+newest addition here, the Theora Video Layer FAQ, written by your pal and 
+mine, Dan Miller. --Ed
+<p>
+<b>[ Dan's Glorious Theora Video Layer FAQ ]</b>
+<p>
+<b>Q: Is the Theora bitstream identical to VP3?</b>
+<p>
+A: Yes and No.  Theora is a superset of VP3, so VP3 streams (with minor 
+syntactic modifications) can be made into Theora streams without 
+recompression (but not vice versa)
+<p>
+<b>Q: What can Theora do that VP3 couldn't do?</b>
+<p>
+A: The major change from VP3 to Theora is architectural.  VP3, like most 
+codecs of today, makes certain assumptions about the nature of the 
+material it compresses.  These assumptions take the form of fixed sets of 
+numeric values, such as quantization matrices, which control how different 
+frequency components of the signal are handled, and token frequency 
+tables, which control the efficiency of post-transform lossless coding.  
+In Theora, we have leveraged the intrinsic flexibility of the Ogg 
+multimedia framework to allow the encoder to modify these values 
+appropriately for the material.  This simple, powerful approach has 
+already been proven effective in Vorbis, and will allow for a longer cycle 
+of encoder optimization without requiring client-side updates.
+<p>
+<b>Q: How will I transition my old VP3 files to the new format?</b>
+<p>
+A: Because Theora is a 'superset' of VP3, tools can easily be created that 
+will allow VP3 files to be losslessly transcoded into Ogg Theora format 
+with no loss in quality.
+<p>
+<b>Q: Can I convert Ogg Theora files into VP3?</b>
+<p>
+A: Why would you want to do something stupid like that?  Are you nuts?
+<p>
+<b>Q: How will Ogg Theora interoperate with [insert your favorite media 
+architecture]?</b>
+<p>
+A: As the Ogg Vorbis format has gained acceptance, components have become 
+available to play Ogg files on practically all of the major media players.  
+We expect a similar if not superior level of support for Ogg Theora.  
+Developers wanted! (if you're interested, sign up for the 
+theora-codecs@xiph.org mailing list).
+<p>
+<b>Q: This is great.  When will it all be finished so I can use it right 
+now, like this minute?  Please?</b>
+<p>
+A: Ogg Theora was scheduled to go Beta (that means the bitstream is locked 
+down, and all features are represented) in March of 2003. Obviously, that's
+slipped. Alpha 2 is 
+going to be released shortly; but please remember that until Beta, there 
+is no promise that files you encode will be supported in the final release.
+<p>
+<b>Q: So who cares about a new Alpha release?</b>
+<p>
+A: We encourage and depend on the open-source developer community to get 
+involved early.  We release Alpha builds to give these hearty souls a 
+chance to see what's cooking, and perhaps to add some ingredients of their 
+own.  If you think you have the right stuff, please join the party at 
+www.theora.org/lists.
+<p>
+<b>[ The Glorious Theora FAQ - Supplemental ]</b><br>
+<p>
+Hoo-boy, ever since the release of Theora Alpha One, we've gotten a lot of 
+really great response, and we've got some more Frequently Asked Questions. 
+For right now, we're going to leave the most time-relevant questions up 
+here at the top of the FAQ page, and we'll sort them into the main 
+document as needed at a later time. Let's get started!
+<p>
+<b>Q: What is an Alpha Release?</b>
+<p>
+A: Typically when software is created at a software company, it goes 
+through a number of stages before it's released out to the world. You've 
+probably heard of 'beta-testing' before. That's when people take code that 
+has been deemed 'not quite ready' and are testing it out so that the 
+authors can fix bugs where necessary.
+<p>
+'Alpha' code is strictly for internal development <i>only</i>, which is to 
+say, 'No one sees this code, it's not even close to being done yet.' At 
+the Xiph.org Foundation, we release everything we do so that people can 
+help us move the codebase forward by reporting bugs and submitting 
+patches. So, even 'Alpha' code needs to get out to the world.
+<p>
+<b>Q: Is Theora Final?</b>
+<p>
+A: Nope. When it is, we'll let you know.
+<p>
+<b>Q: Is there any way to use Theora on Microsoft Windows at this 
+point?</b>
+<p>
+A: No. This is very early code, and we prefer Linux as our development 
+platform. It would be unwise (and it would give the wrong impression) to 
+package up the alpha code and port it to Windows, or anything other than 
+our development platform. It's just too early.
+<p>
+<b>Q: Can I use Theora to encode stuff right now?</b>
+<p>
+A: Yes, but we strongly, <b>strongly</b> recommend against it, for 
+<i>anything</i> but test-cases. This is not a full release in any sense of 
+the word, it is simply a milestone, and if you start encoding things right 
+away, there's a really good chance that it will break when you try to play 
+it with tools we release when the final version is released.
+<p>
+And Now, On To The Rest:
+<p>
+                        <b>[ The Glorious Theora FAQ ]</b><br>
+<p>
+<p>
+<b>Q: What is Theora?</b>
+<p>
+A: Theora is Xiph.Org's first publicly released video codec, intended
+for use within the Ogg's project's Ogg multimedia streaming system.
+Theora is derived directly from On2's VP3 codec; Currently the two are
+nearly identical, varying only in framing headers, but Theora will
+diverge and improve from the main VP3 development lineage as time
+progresses.
+<p>
+<b>Q: Who's in charge of Theora 
+development?</b> <p>
+A: The Xiph.org Foundation is the primary developer of Theora, but this
+is mainly an integration issue. The vp3 codec that serves as the base  of 
+Theora was written by a company called <a href="http://www.on2.com">On2 
+Technologies</a>. Xiph.org 
+will be 
+responsible for all aspects of the development. On2 will provide
+both monetary and technical support to Xiph.org throughout the project. On2
+is also providing the source code of their implementation of the VP3 codec
+as well as some of their video tools.
+<p>
+<b>Q: Isn't vp3 a patented technology?</b>
+<p>
+A: Yes, some portions of the vp3 codec are covered by patents. However,
+the Xiph.org Foundation has negotiated an irrevocable free license to
+the vp3 codec for any purpose imaginable on behalf of the public. It is
+legal to use vp3 in any way you see fit (unless, of course, you're doing
+something illegal with it in your particular jurisdiction). You are free
+to download vp3, use it free of charge, implement it in a for-sale
+product, implement it in a free product, make changes to the
+source and distribute those changes, or print the source code out and
+wallpaper your spare room with it.
+<p>
+For more information, check the VP3 Legal Terms on the <a
+href="http://www.theora.org/cvs.html">CVS</a> page.
+<p>
+<b>Q: What is the license for Theora?</b>
+<p>
+A: Theora (and all associated technologies released by the Xiph.org
+Foundation) is released to the public via a BSD-style license. It is
+completely free for commercial or noncommercial use. That means that
+commercial developers may independently write Theora software which is
+compatible with the specification for no charge and without restrictions of
+any kind.
+<p>
+<b>Q: What other video formats will Theora compete with?</b>
+<p>
+A: Given the quality and relatively low bitrate of Theora, it will be mostly
+competing with MPEG-4/DivX, Real, Windows Media, and other similar formats.
+<p>
+<b>Q: Is Theora identical to On2's VP3?</b>
+<p>
+A: Theora will be almost entirely based upon the VP3 codec designed by On2.
+However, Theora video data will be delivered inside of the Ogg container
+format (with Vorbis for audio), so Ogg Theora files will not be the same
+as VP3 files. There also may be quite a few performance advantages to 
+using Theora when 1.0 is complete; While our focus is integration, there 
+will certainly be a lot of optimization involved, as well.
+<p>
+<b>Q: What if Xiph.org and On2 decide to break off their agreement?</b>
+<p>
+A: Because Theora is an Open Source project, the source code will continue to
+be available and development will continue. Users will still be protected
+from the On2 patents.
+<p>
+<b>Q: What about Tarkin?</b>
+<p>
+A: Tarkin is essentially a proof-of-concept wavelet-based codec. Its
+experimental nature means it will not be ready for general use for some
+time. VP3 is a high-quality codec that can meet today's video needs now, so
+Xiph.org will be focusing its efforts on Theora for the near future.
+<p>
+<b>Q: When will Theora be done?</b>
+<p>
+A: We nominally expect to be finished by the end of 2003. VP3 is a very mature
+video codec, so most of our effort is going into the Theora project.
+<p>
+<b>Q: Why the name 'Theora?'</b>
+<p>
+A: Like other Xiph.org Foundation codec projects such as Vorbis or
+Tarkin, Theora is named after a fictional character. Theora Jones was the
+name of Edison Carter's 'controller' on the television series Max
+Headroom. She was played by Amanda Pays.
+<p>
+<b>Q: How can I help with development?</b>
+<p>
+A: Head on over to the <a href="http://www.theora.org/cvs.html">CVS</a>
+page to grab the codebase, and hack away! Post your contributions
+online, and tell us about it on the <a
+href="http://www.theora.org/lists.html">theora-dev</a> mailing list.
+<p>
+<b>Q: Who designed this website?</b>
+<p>
+A: This website is based on a design called 'Nutrition,' available for
+public download from <a href="http://www.oswd.org">Open Source Web
+Design</a>. The original author is known by the nickname of 'BrAInDeD-'.
+<p>
+<b>Q: Who is the webmaster of this site?</b>
+<p>
+A: That would be <a href="mailto:manuel@xiph.org">Manuel Lora</a>, the
+greatest webmaster on the face of the planet.
+<p>
+<b>Q: Who maintains The Glorious Theora FAQ?</b>
+<p>
+A: No one person at the moment. Send changes to the list if it needs them.
+It was originally written by Emmett Plant and Dan Miller.
+This FAQ wouldn't be here at all without
+the work of Slammin' Stan Seibert, to whom we are eternally grateful.
+<p>
+<b>Q: Okay, what the heck is the Xiph.org Foundation?</b>
+<p>
+A: The Xiph.org Foundation is a Delaware non-profit company devoted to
+producing, maintaining and supporting an open multimedia platform. Check
+out the Foundation's website at <a
+href="http://www.xiph.org">http://www.xiph.org</a>. You'll be glad you
+did! 
+<p>
+<b>Q: You guys are so great! How can I donate to these amazing
+projects?</b>
+<p>
+A: Wow, thanks! You can find more information on donating to the Xiph.org 
+Foundation by
+following <a href="http://www.xiph.org/ogg/vorbis/donate.html"> 
+this link</a>! Thanks in advance!
+<p>
+<b>Q: What music was listened to when this FAQ was first being
+written, back on June 8th?</b>
+<p>
+A: What a strange question. Emmett was listening to No Doubt's 'Rock
+Steady' album and Pink's 'Missundazstood,' and Manuel was
+listening to 'Who's Next,' by The Who.
+<p>
+<b>Q: When was this FAQ last updated?</b>
+<p>
+A: May 7, 2003. From London of all places.
+<p>
+<br>
+<p>
+<br>
+<p>
+                        <!-- Close Content -->
+                      </td>
+                    </tr>
+                  </table>
+                  <table border="0" cellspacing="0" cellpadding="3">
+                    <tr> 
+                      <td class="bl" bgcolor="#777777" nowrap> 
+                        <!-- Copyright (HINT: This is for decoration.  You may change it to what you like.) -->
+                        This is <a
+href="http://www.opencontent.org">OpenContent</a>. Go nuts. 
+                        <!-- Close Copyright -->
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td width="79" align="right" valign="bottom"> 
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td>&nbsp;</td>
+                      <td align="right"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="brsmt">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td valign="bottom"> 
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td bgcolor="#9898BA" width="25" height="25" class="brsmt">&nbsp;</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td width="50" height="50" bgcolor="#444466" class="brsmt">&nbsp; 
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
