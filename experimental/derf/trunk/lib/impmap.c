@@ -1855,18 +1855,12 @@ static void oc_impmap_chroma_frag_weight00(oc_fragment_enc_info *_frinfo,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
   _frinfo[_map[1][0]].imp_weight=_yfrag_imp_weights[0];
   _frinfo[_map[2][0]].imp_weight=_yfrag_imp_weights[0];
-  if(_map[1][1]>=0){
-    _frinfo[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
-    _frinfo[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
-  }
-  if(_map[1][2]>=0){
-    _frinfo[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
-    _frinfo[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
-  }
-  if(_map[1][3]>=0){
-    _frinfo[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
-    _frinfo[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
-  }
+  _frinfo[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
+  _frinfo[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
+  _frinfo[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
+  _frinfo[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
+  _frinfo[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
+  _frinfo[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
 }
 
 static void oc_impmap_chroma_frag_weight01(oc_fragment_enc_info *_frinfo,
@@ -1875,11 +1869,9 @@ static void oc_impmap_chroma_frag_weight01(oc_fragment_enc_info *_frinfo,
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[1]);
   _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
   _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
-  if(_map[1][2]>=0){
-    cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]);
-    _frinfo[_map[1][2]].imp_weight=cfrag_imp_weight;
-    _frinfo[_map[2][2]].imp_weight=cfrag_imp_weight;
-  }
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]);
+  _frinfo[_map[1][2]].imp_weight=cfrag_imp_weight;
+  _frinfo[_map[2][2]].imp_weight=cfrag_imp_weight;
 }
 
 static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_frinfo,
@@ -1888,11 +1880,9 @@ static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_frinfo,
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[2]);
   _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
   _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
-  if(_map[1][1]>=0){
-    cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[1],_yfrag_imp_weights[3]);
-    _frinfo[_map[1][1]].imp_weight=cfrag_imp_weight;
-    _frinfo[_map[2][1]].imp_weight=cfrag_imp_weight;
-  }
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[1],_yfrag_imp_weights[3]);
+  _frinfo[_map[1][1]].imp_weight=cfrag_imp_weight;
+  _frinfo[_map[2][1]].imp_weight=cfrag_imp_weight;
 }
 
 static void oc_impmap_chroma_frag_weight11(oc_fragment_enc_info *_frinfo,
@@ -1949,16 +1939,14 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
       int          yend;
       int          x;
       int          y;
-      frag_imps[i]=0;
-      if(mb->map[0][i]<0)continue;
       frag=_impmap->enc->state.frarray.frags+mb->map[0][i];
       xend=x0+FRAG_DX[i]+8;
       yend=y0+FRAG_DY[i]+8;
+      frag_imps[i]=0;
       if(frag->border==NULL){
         for(y=y0+FRAG_DY[i];y<yend;y++)for(x=x0+FRAG_DX[i];x<xend;x++){
           float ireg_imp;
           ireg_imp=iregions[labels[y][x]].importance;
-          frag_imps[i]=
           frag_imps[i]=OC_MAXF(frag_imps[i],ireg_imp);
         }
       }

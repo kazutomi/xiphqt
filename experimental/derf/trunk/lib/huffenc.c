@@ -843,7 +843,7 @@ static int huff_entry_cmp(const void *_c1,const void *_c2){
   _opb:   The buffer to store the tree in.
   _codes: The Huffman tables to pack.
   Return: 0 on success, or a negative value if one of the given huffman tables
-   does not form a complete, prefix-free code.*/
+   does not form a full, prefix-free code.*/
 int oc_huff_codes_pack(oggpack_buffer *_opb,
  const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]){
   int i;
@@ -890,8 +890,7 @@ int oc_huff_codes_pack(oggpack_buffer *_opb,
           mask=~(bit-1)<<1;
           /*The next entry should have a 1 bit where we had a 0, and should
              match our code above that bit.
-            This verifies both completeness and prefix-freeness
-             simultaneously.*/
+            This verifies both fullness and prefix-freeness simultaneously.*/
           if(!(entries[j+1].bits&bit)||
            (entries[j].bits&mask)!=(entries[j+1].bits&mask)){
             return OC_EINVAL;

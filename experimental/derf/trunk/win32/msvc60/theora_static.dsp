@@ -143,6 +143,14 @@ SOURCE=..\..\lib\mcenc.c
 
 SOURCE=..\..\lib\psych.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\quant.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\tokenize.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -190,6 +198,10 @@ SOURCE=..\..\lib\ocintrin.h
 # Begin Source File
 
 SOURCE=..\..\lib\psych.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\quant.h
 # End Source File
 # Begin Source File
 

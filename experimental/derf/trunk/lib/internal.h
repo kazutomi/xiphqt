@@ -4,6 +4,7 @@
 # include "theora/theora.h"
 # include "ocintrin.h"
 # include "huffman.h"
+# include "quant.h"
 
 /*This library's version.*/
 # define OC_VENDOR_STRING "derf's experimental encoder library " __DATE__
@@ -14,9 +15,9 @@
 # define OC_VERSION_SUB   (0)
 
 /*A keyframe.*/
-#define OC_INTER_FRAME (0)
+#define OC_INTRA_FRAME (0)
 /*A predicted frame.*/
-#define OC_INTRA_FRAME (1)
+#define OC_INTER_FRAME (1)
 /*A frame of unknown type (frame type decision has not yet been made).*/
 #define OC_UNKWN_FRAME (-1)
 
@@ -67,13 +68,6 @@
 /*Upper-right.*/
 #define OC_PUR (8)
 
-/*Divides an integer by a power of two, rounding towards 0.
-  _dividend: The integer to divide.
-  _shift:    The non-negative power of two to divide by.
-  _rmask:    (1<<_shift)-1*/
-#define OC_DIV_POW2(_dividend,_shift,_rmask) \
- ((_dividend)+(((_dividend)>>sizeof(_dividend)*8-1)&(_rmask))>>(_shift))
-
 
 
 /*A map from a super block to fragment numbers.*/
@@ -122,9 +116,8 @@ typedef struct{
   int           y;
   /*The fragments that belong to this macro block in each color plane.
     Fragments are stored in image order (left to right then top to bottom).
-    Fragments outside the encoded region have index -1.
-    When chroma components are decimated, the extra fragments are treated as
-     if they are outside the encoded region (e.g., their index is -1).*/
+    When chroma components are decimated, the extra fragments have an index of
+     -1.*/
   oc_mb_map     map;
 }oc_mb;
 
@@ -155,7 +148,9 @@ typedef struct{
      region of the frame.*/
   unsigned        invalid:1;
   /*The mode of the macroblock this fragment belongs to.*/
-  unsigned        mbmode;
+  unsigned        mbmode:6;
+  /*The prediction-corrected DC component.*/
+  int             dc:16;
   /*A pointer to the portion of an image covered by this fragment in several
      images.
     The first three are reconstructed frame buffers, while the last is the
@@ -256,6 +251,12 @@ typedef struct{
   ogg_int64_t           curframe_num;
   /*The granpos of the current frame.*/
   ogg_int64_t           granpos;
+  /*The type of the current frame.*/
+  int                   frame_type;
+  /*The quality index of the current frame.*/
+  int                   qi;
+  /*The dequantization tables for each quality index.*/
+  oc_quant_tables       dequant_tables[64];
 }oc_theora_state;
 
 
@@ -276,6 +277,9 @@ extern const int OC_MB_MAP[2][2];
 
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
+
+int oc_frag_pred_dc(const oc_fragment *_frag,
+ const oc_fragment_plane *_frplane,int _x,int _y,int _pred_last[3]);
 
 void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info);
 void oc_frarray_clear(oc_fragment_array *_frarray);

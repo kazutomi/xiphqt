@@ -4,21 +4,6 @@
 #include "enquant.h"
 
 
-/*Minimum scaled DC coefficient intra-frame quantizer value.*/
-#define OC_INTRA_DC_FQUANT_MIN (4<<2)
-/*Minimum scaled AC coefficient intra-frame quantizer value.*/
-#define OC_INTRA_AC_FQUANT_MIN (2<<2)
-/*Minimum scaled DC coefficient inter-frame quantizer value.*/
-#define OC_INTER_DC_FQUANT_MIN (8<<2)
-/*Minimum scaled AC coefficient inter-frame quantizer value.*/
-#define OC_INTER_AC_FQUANT_MIN (4<<2)
-/*Maximum scaled quantizer value.*/
-#define OC_FQUANT_MAX          (1024<<2)
-
-
-/*The amount to scale the inverse quantizer value by.*/
-#define OC_QUANT_SCALE               (0x10000)
-
 /*The default quantization parameters used by VP3.1.*/
 const theora_quant_info OC_VP31_QUANT_INFO={
   {
@@ -86,48 +71,16 @@ void oc_quant_params_pack(oggpack_buffer *_opb,
 }
 
 
-static void oc_enc_quant_init(ogg_uint16_t _luma_coeffs[64],
- ogg_uint16_t _chroma_coeffs[64],ogg_uint16_t _inter_coeffs[64],
- const theora_quant_info *_qinfo,int _qi){
+void oc_enquant_table_init(oc_quant_tables *_enquant,
+ const oc_quant_tables *_dequant){
   ogg_uint32_t q;
   int          ci;
-  /*In the original VP3.2 code, the rounding offset and the size of the dead
-     zone around 0 were controlled by a "sharpness" parameter.
-    The size of our dead zone is now controlled by the per-coefficient
-     quality thresholds returned by our HVS module.
-    We round down from a more accurate value when the quality of the
-     reconstruction does not fall below our threshold and it saves bits.
-    Hence, all of that VP3.2 code is gone from here, and the remaining
-     floating point code has been implemented as integer code with exact
-     precision.
-    I.e., (ogg_uint16_t)(1.0/q*OC_QUANT_SCALE+0.5) has become
-     (2*OC_QUANT_SCALE+q)/(q<<1).*/
-  /*Scale DC coefficients from the proper table.*/
-  /*Intra luma.*/
-  q=((ogg_uint32_t)_qinfo->dc_scale[_qi]*_qinfo->luma_coeffs[0]/100)<<2;
-  q=OC_CLAMPI(OC_INTRA_DC_FQUANT_MIN,q,OC_FQUANT_MAX);
-  _luma_coeffs[0]=(ogg_uint16_t)((2*OC_QUANT_SCALE+q)/(q<<1));
-  /*Intra chroma.*/
-  q=((ogg_uint32_t)_qinfo->dc_scale[_qi]*_qinfo->chroma_coeffs[0]/100)<<2;
-  q=OC_CLAMPI(OC_INTRA_DC_FQUANT_MIN,q,OC_FQUANT_MAX);
-  _chroma_coeffs[0]=(ogg_uint16_t)((2*OC_QUANT_SCALE+q)/(q<<1));
-  /*Inter.*/
-  q=((ogg_uint32_t)_qinfo->dc_scale[_qi]*_qinfo->inter_coeffs[0]/100)<<2;
-  q=OC_CLAMPI(OC_INTER_DC_FQUANT_MIN,q,OC_FQUANT_MAX);
-  _inter_coeffs[0]=(ogg_uint16_t)((2*OC_QUANT_SCALE+q)/(q<<1));
-  /*Now scale AC coefficients from the proper table.*/
-  for(ci=1;ci<64;ci++){
-    /*Intra luma.*/
-    q=((ogg_uint32_t)_qinfo->ac_scale[_qi]*_qinfo->luma_coeffs[ci]/100)<<2;
-    q=OC_CLAMPI(OC_INTRA_AC_FQUANT_MIN,q,OC_FQUANT_MAX);
-    _luma_coeffs[ci]=(ogg_uint16_t)((2*OC_QUANT_SCALE+q)/(q<<1));
-    /*Intra chroma.*/
-    q=((ogg_uint32_t)_qinfo->ac_scale[_qi]*_qinfo->chroma_coeffs[ci]/100)<<2;
-    q=OC_CLAMPI(OC_INTRA_AC_FQUANT_MIN,q,OC_FQUANT_MAX);
-    _chroma_coeffs[ci]=(ogg_uint16_t)((2*OC_QUANT_SCALE+q)/(q<<1));
-    /*Inter.*/
-    q=((ogg_uint32_t)_qinfo->ac_scale[_qi]*_qinfo->inter_coeffs[ci]/100)<<2;
-    q=OC_CLAMPI(OC_INTER_AC_FQUANT_MIN,q,OC_FQUANT_MAX);
-    _inter_coeffs[ci]=(ogg_uint16_t)((2*OC_QUANT_SCALE+q)/(q<<1));
+  for(ci=0;ci<64;ci++){
+    q=_dequant->intra_y[ci];
+    _enquant->intra_y[ci]=(ogg_uint16_t)((2*OC_FQUANT_SCALE+q)/(q<<1));
+    q=_dequant->intra_c[ci];
+    _enquant->intra_c[ci]=(ogg_uint16_t)((2*OC_FQUANT_SCALE+q)/(q<<1));
+    q=_dequant->inter[ci];
+    _enquant->inter[ci]=(ogg_uint16_t)((2*OC_FQUANT_SCALE+q)/(q<<1));
   }
 }

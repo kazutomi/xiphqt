@@ -40,7 +40,6 @@ static void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-#if 0
 /*Computes the predicted DC value for the given fragment.
   This requires that the fully decoded DC values be available for the left,
    upper-left, upper, and upper-right fragments (if they exist).
@@ -48,12 +47,12 @@ static void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
   _frplane:   The fragment plane the fragment belongs to.
   _x:         The x-coordinate of the fragment.
   _y:         The y-coordinate of the fragment.
-  _dc_last:   The last fully-decoded DC value for each predictor frame
+  _pred_last: The last fully-decoded DC value for each predictor frame
                (OC_FRAME_GOLD, OC_FRAME_PREV and OC_FRAME_SELF).
               This should be initialized to 0's for the first fragment in each
                color plane.
   Return: The predicted DC value for this fragment.*/
-static int oc_frag_pred_dc(const oc_fragment *_frag,
+int oc_frag_pred_dc(const oc_fragment *_frag,
  const oc_fragment_plane *_frplane,int _x,int _y,int _pred_last[3]){
   static const int PRED_SCALE[16][4]={
     /*0*/
@@ -110,20 +109,20 @@ static int oc_frag_pred_dc(const oc_fragment *_frag,
     0
   };
   /*Predictor fragments, left, up-left, up, up-right.*/
-  oc_fragment *predfr[4];
+  const oc_fragment *predfr[4];
   /*The frame used for prediction for this fragment.*/
-  int          pred_frame;
+  int                pred_frame;
   /*The boundary condition flags.*/
-  int          bc;
+  int                bc;
   /*DC predictor values: left, up-left, up, up-right, missing values skipped.*/
-  int          p[4];
+  int                p[4];
   /*Predictor count.*/
-  int          np;
+  int                np;
   /*Which predictor constants to use.*/
-  int          plfags;
+  int                pflags;
   /*The predicted DC value.*/
-  int          ret;
-  int          i;
+  int                ret;
+  int                i;
   pred_frame=OC_FRAME_FOR_MODE[_frag->mbmode];
   bc=(_x==0)+((_y==0)<<1)+((_x+1==_frplane->nhfrags)<<2);
   predfr[0]=_frag-1;
@@ -131,13 +130,13 @@ static int oc_frag_pred_dc(const oc_fragment *_frag,
   predfr[2]=predfr[1]+1;
   predfr[3]=predfr[2]+1;
   np=0;
-  wpc=0;
+  pflags=0;
   for(i=0;i<4;i++){
     int pflag;
     pflag=1<<i;
     if((BC_MASK[bc]&pflag)&&predfr[i]->coded&&
-     OC_FRAME_FOR_MODE[predfr->mbmode]==pred_frame){
-      /*p[np++]=<original DC coefficient>*/
+     OC_FRAME_FOR_MODE[predfr[i]->mbmode]==pred_frame){
+      p[np++]=predfr[i]->dc;
       pflags|=pflag;
     }
   }
@@ -154,4 +153,3 @@ static int oc_frag_pred_dc(const oc_fragment *_frag,
   }
   return ret;
 }
-#endif

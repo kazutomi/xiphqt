@@ -1,3 +1,4 @@
+#include <float.h>
 #include <math.h>
 #include <string.h>
 #include "encint.h"
@@ -1866,7 +1867,6 @@ struct oc_psych_ctx{
   oc_mask_block      **mask_groups;
   /*Individual CSF-weighted masking values over OC_MASK_WINDOW_SZ_MAX rows.*/
   oc_weight_block    **mask_weights;
-  oc_weight_block      weight_mins;
   /*The encoding context.*/
   oc_enc_ctx          *enc;
 };
@@ -1962,8 +1962,14 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   oc_fragment_plane    *fplane;
   oc_fragment          *frags;
   oc_fragment_enc_info *frinfo;
-  float                 scale;
+  oc_mask_block        *maskg_row;
+  oc_weight_block      *maskw_row;
+  ogg_int16_t          *coeff;
   float                *weight;
+  float                *weight_min;
+  float                *csf_offset;
+  float                 pscale;
+  float                 fscale;
   int                  *vsizes;
   int                  *hsizes;
   int                   vfilti;
@@ -1983,6 +1989,10 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   int                   i;
   int                   j;
   int                   k;
+  csf_offset=_psych->csf_offsets[_pli];
+  /*Initialize the minimum psychovisual weight array.*/
+  weight_min=_psych->enc->weight_mins[_pli];
+  for(i=0;i<64;i++)weight_min[i]=FLT_MAX;
   /*Select the filter sets we're going to use.*/
   vfilti=_pli<<1;
   hfilti=_pli>0?(_pli<<1)-1:0;
@@ -1997,15 +2007,13 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   frags=_psych->enc->state.frarray.frags;
   frinfo=_psych->enc->frinfo;
   stride=_psych->enc->state.frarray.input[_pli].stride;
-  scale=OC_YUV_SCALE[_psych->enc->state.info.colorspace][_pli];
+  pscale=OC_YUV_SCALE[_psych->enc->state.info.colorspace][_pli];
   /*Run each of the filters over the rows, with a suitable delay between
      each.*/
   fragy_end=fplane->nvfrags+vsize_max+OC_MASK_WINDOW_SZ_MAX-1;
   fragi_end=fplane->froffset+fplane->nfrags;
   dfragi=cfragi=mfragi=fplane->froffset;
   for(fragy=0;fragy<fplane->nvfrags;fragy++){
-    oc_mask_block   *maskg_row;
-    oc_weight_block *maskw_row;
     /*Perform DCTs.*/
     if(fragy<fplane->nvfrags){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,dfragi++){
@@ -2103,21 +2111,22 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
            of 0's in the inter DCT coefficients that, because of motion
            compensation, are not 0 in the intra DCT coefficients and thus
            need a valid weight.*/
-        /*The DC coefficient is not masked, just converted to a relative
-           weight.*/
-        frinfo[mfragi].weights[0]=scale*
-         (_psych->csf_offsets[_pli][0]+frinfo[mfragi].weights[0])/
-         (1+abs(frinfo[mfragi].dct_coeffs[0]));
+        coeff=frinfo[mfragi].dct_coeffs;
+        weight=frinfo[mfragi].weights;
+        /*Compute the scaling value for this fragment.*/
+        fscale=pscale*frinfo[mfragi].imp_weight/_psych->enc->qscale;
+        /*The DC coefficient is not masked.*/
+        frinfo[mfragi].weights[0]=(1+abs(coeff[0]))/
+         (fscale*(csf_offset[0]+weight[0]));
         /*The remaining coefficients are masked.*/
         for(i=1;i<64;i++){
           float mask;
           int   groupi;
           groupi=OC_MASK_GROUP[i];
           mask=group_sums[groupi]-maskw_row[fragx][i];
-          frinfo[mfragi].weights[i]=scale*
-           (_psych->csf_offsets[_pli][i]+frinfo[mfragi].weights[i])/
-           ((1+abs(frinfo[mfragi].dct_coeffs[i]))*
-           (1+OC_MASK_WEIGHTS[groupi]*mask));
+          frinfo[mfragi].weights[i]=
+           ((1+abs(coeff[i]))*(1+OC_MASK_WEIGHTS[groupi]*mask))/
+           (fscale*(csf_offset[i]+weight[i]));
         }
         /*Remove the parts of the group neighborhoods that are old.*/
         for(i=0;i<OC_MASK_NFULL_GROUPS;i++){

@@ -1,11 +1,7 @@
 #include <stdlib.h>
-#include <ogg/ogg.h>
 #include "dct.h"
 #include "fdct.h"
 #include "idct.h"
-
-/*Divides _x by 65536, truncating towards 0.*/
-#define OC_DIV2_16(_x) OC_DIV_POW2(_x,16,0xFFFF)
 
 /*Performs a forward 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 from the orthonormal version of the

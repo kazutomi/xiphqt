@@ -55,8 +55,12 @@ typedef struct{
      constant velocity and constant acceleration.
     Uninitialized MVs are (0,0).*/
   char          mvs[2][3][2];
+  /*Per-block motion vectors for this frame against the previous frame.*/
+  char          bmvs[4][2];
   /*Minimum motion estimation error from the analysis stage.*/
   int           aerror;
+  /*Minimum 4V motion estimation error from the analysis stage.*/
+  int           a4mverror;
   /*Minimum motion estimation error from the estimation stage.*/
   int           eerror;
 }oc_mb_enc_info;
@@ -68,27 +72,45 @@ typedef struct oc_psych_ctx  oc_psych_ctx;
 typedef struct theora_enc_ctx{
   /*Shared encoder/decoder state.*/
   oc_theora_state       state;
+  /*Whether or not packets are ready to be emitted.
+    This takes on negative values while there are remaining header packets to
+     be emitted, reaches 0 when the codec is ready for input, and goes to 1
+     when a frame has been processed and a data packet is ready.*/
+  int                   packet_state;
   /*Buffer in which to assemble packets.*/
   oggpack_buffer        opb;
   /*Encoder-specific fragment information.*/
   oc_fragment_enc_info *frinfo;
   /*Encoder-specific macro block information.*/
   oc_mb_enc_info       *mbinfo;
+  /*Minimum psychovisual weights for each coefficient in each plane.*/
+  float                 weight_mins[3][64];
   /*Context information used to perform motion estimation.*/
   oc_mcenc_ctx         *mcenc;
   /*Context information used to generate the importance map.*/
   oc_impmap_ctx        *impmap;
   /*Context information used to generate low-level perceptual weightings.*/
   oc_psych_ctx         *psych;
-  /*Whether or not packets are ready to be emitted.
-    This takes on negative values while there are remaining header packets to
-     be emitted, reaches 0 when the codec is ready for input, and goes to 1
-     when a frame has been processed and a data packet is ready.*/
-  int                   packet_state;
   /*The huffman tables in use.*/
   theora_huff_code      huff_codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+  /*The scale factor for the current quality setting.*/
+  float                 qscale;
   /*The quantization parameters in use.*/
   theora_quant_info     qinfo;
+  /*The quantization tables.*/
+  oc_quant_tables       enquant_tables[64];
+  /*The number of DCT tokens for each coefficient.*/
+  int                   ndct_tokens[64];
+  /*The offset of the first DCT token for each coefficient.*/
+  int                   dct_token_offs[64];
+  /*The DCT token lists.*/
+  unsigned char       **dct_tokens;
+  /*The number of extra bits entries for each coefficient.*/
+  int                   nextra_bits[64];
+  /*The offset of the first extra bits entry for each coefficient.*/
+  int                   extra_bits_offs[64];
+  /*The extra bits associated with DCT tokens.*/
+  ogg_uint16_t        **extra_bits;
 }oc_enc_ctx;
 
 void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
