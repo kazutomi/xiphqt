@@ -4,7 +4,7 @@ Snatch 20011112
  learned."
          --Bruce Ediger, bediger@teal.csn.org, in comp.os.linux.misc
 
-Although Snatch has a farily simple, friendly interface, some
+Although Snatch has a fairly simple, friendly interface, some
 documentation is in order.  As a wise man once remarked, "You'd be
 surprised."
 
@@ -337,7 +337,7 @@ Configuration panel.
 
 8) apply
 
-Same as 'ok', but doe snot close the Configuration panel.
+Same as 'ok', but does not close the Configuration panel.
 
 9) cancel
 
