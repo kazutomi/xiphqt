@@ -1,18 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: decode stream sync and memory management foundation code;
            takes in raw data, spits out packets
- last mod: $Id: sync.c,v 1.1.2.12 2003/03/29 00:07:32 xiphmont Exp $
+ last mod: $Id$
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -99,7 +99,7 @@ int ogg_page_packets(ogg_page *og){
   return(count);
 }
 
-/* Static CRC calculation table.  See older code in CVS for dead
+/* Static CRC calculation table.  See older code in SVN for dead
    run-time initialization code. */
 
 static ogg_uint32_t crc_lookup[256]={

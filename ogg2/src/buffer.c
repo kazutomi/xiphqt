@@ -1,17 +1,17 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.15 2003/07/18 04:45:21 xiphmont Exp $
+  last mod: $Id$
 
  ********************************************************************/
 

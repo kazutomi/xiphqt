@@ -1,17 +1,17 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: toplevel libogg include
- last mod: $Id: ogg.h,v 1.1.2.6 2003/07/21 20:32:32 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
 #ifndef _OGG_H
@@ -59,7 +59,8 @@ typedef struct {
 
 /* Ogg BITSTREAM PRIMITIVES: bitstream ************************/
 
-  extern int   oggpack_buffersize(void);
+extern ogg_buffer_state *ogg_buffer_create(void);
+extern int   oggpack_buffersize(void);
 extern void  oggpack_writeinit(oggpack_buffer *b,ogg_buffer_state *bs);
 extern ogg_reference *oggpack_writebuffer(oggpack_buffer *b);
 extern void  oggpack_writealign(oggpack_buffer *b);
@@ -117,13 +118,11 @@ extern int      ogg_stream_packetpeek(ogg_stream_state *os,ogg_packet *op);
 
 /* Ogg BITSTREAM PRIMITIVES: general ***************************/
 
-extern ogg_stream_state *ogg_stream_create(int serialno);
+extern ogg_stream_state *ogg_stream_create(int serialno, int mode);
 extern int      ogg_stream_destroy(ogg_stream_state *os);
 extern int      ogg_stream_reset(ogg_stream_state *os);
 extern int      ogg_stream_reset_serialno(ogg_stream_state *os,int serialno);
 extern int      ogg_stream_eos(ogg_stream_state *os);
-
-extern int      ogg_page_checksum_set(ogg_page *og);
 
 extern int      ogg_page_version(ogg_page *og);
 extern int      ogg_page_continued(ogg_page *og);
@@ -133,7 +132,6 @@ extern ogg_int64_t  ogg_page_granulepos(ogg_page *og);
 extern ogg_uint32_t ogg_page_serialno(ogg_page *og);
 extern ogg_uint32_t ogg_page_pageno(ogg_page *og);
 extern int      ogg_page_packets(ogg_page *og);
-extern int      ogg_page_getbuffer(ogg_page *og, unsigned char **buffer);
 
 extern int      ogg_packet_release(ogg_packet *op);
 extern int      ogg_page_release(ogg_page *og);
