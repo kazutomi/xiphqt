@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.3 2003/11/01 14:40:23 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.4 2003/11/02 20:36:14 derf Exp $
 
  ********************************************************************/
 
@@ -762,7 +762,7 @@ int main(int argc,char *argv[]){
       double audiotime=
         audioflag?vorbis_granule_time(&vd,ogg_page_granulepos(&audiopage)):-1;
       double videotime=
-        /*videoflag?theora_granule_time(&td,ogg_page_granulepos(&videopage)):*/-1;
+        videoflag?theora_granule_time(td,ogg_page_granulepos(&videopage)):-1;
 
       if(!audioflag){
         audio_or_video=1;

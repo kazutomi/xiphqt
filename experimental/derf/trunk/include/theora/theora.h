@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.1 2003/09/29 04:00:41 derf Exp $
+  last mod: $Id: theora.h,v 1.2 2003/11/02 20:36:14 derf Exp $
 
  ********************************************************************/
 
@@ -117,27 +117,64 @@ typedef struct{
 
 /*The quantization parameters.
   The quantizer for each coefficient is calculated as:
-    Q=MAX(MIN(qmin[i],scale[i]*coeff[i]/100),1024).
-  For Quality Index qi, scale[i] is dc_scale[qi] for i==0, and
-   ac_scale[qi] otherwise.
-  For the current encoder, ac_scale[qi] must be >= ac_scale[qi-1], and
-   dc_scale[qi] must be >= dc_scale[qi-1].
-  That is, scale values must be monotonically non-increasing as the quality
-   index increases.
-  This is not required by the decoder.
-  For intra frames, coeff[i] is either luma_coeffs[i] for the Y' plane or
-   chroma_coeffs[i] for the Cb and Cr planes.
-  For inter frames, coeff[i] is inter_coeffs[i].
-  For intra frames, qmin[i] is 4 for i==0, and 2 otherwise.
-  For inter frames, qmin[i] is 8 for i==0, and 4 otherwise.
+    Q=MAX(MIN(qmin[qti][ci!=0],scale[ci!=0][qi]*base[qti][pli][qi][ci]/100),
+     1024).
+  qti is the quantization type index: 0 for intra, 1 for inter.
+  ci!=0 is 0 for the DC coefficient and 1 for the AC coefficient.
+  qi is the quality index, ranging between 0 (low quality) and 63 (high
+   quality).
+  pli is the color plane index: 0 for Y', 1 for Cb, 2 for Cr.
+  ci is the DCT coefficient index.
   Coefficients indices correspond to the normal 2D DCT block ordering--
-   row-major with low frequencies first--NOT zig-zag order.*/
+   row-major with low frequencies first--NOT zig-zag order.
+
+  Minimum quantizers are constant, and are given by:
+  qmin[2][2]={4,2,8,4};
+
+  Parameters that can be stored in the bitstream are as follows:
+    The two scale matrices ac_scale and dc_scale.
+      scale={dc_scale,ac_scale}.
+    The base matrices for each qi, qti and pli (up to 384 in all).
+      In order to avoid storing a full 384 base matrices, only a sparse set of
+       matrices is stored, and the rest are linearly interpolated.
+      This is done as follows.
+      For each qti and pli, a series of n qi ranges is defined.
+      The size of each qi range can vary arbitrarily, but they must sum to 64.
+      Then, n+1 matrices are specified, one for each endpoint of the ranges.
+      For interpolation purposes, each range's endpoints are the first qi
+       value it contains and one past the last qi value it contains.
+      Thus, if the last range's size is 1, then matrix (n+1) is not needed and
+       is not stored in the bitstream.
+      Fractional values are rounded to the nearest integer, with ties rounded
+       up.
+
+      Base matrices are stored by reference, so if the same matrices are used
+       multiple times, they will only appear once in the bitstream.
+      The bitstream is also capable of omitting an entire set of ranges and
+       its associated matrices if they are the same as either the previous
+       set (index in row-major order) or if the inter set is the same as the
+       inter set.
+
+  For the current encoder, scale[ci!=0][qi] must be <= scale[ci!=0][qi-1] and
+   base[qti][pli][qi][ci] must be <= base[qti][pli][qi-1][ci].
+  These two conditions ensure that the actual quantizer for a given qti, pli
+   and ci does not increase as qi increases.
+  This is not required by the decoder.*/
+
+/*A single base matrix.*/
+typedef unsigned char theora_quant_base[64];
+
+/*A set of qi ranges.*/
 typedef struct{
-  ogg_uint16_t  ac_scale[64];
-  ogg_uint16_t  dc_scale[64];
-  unsigned char luma_coeffs[64];
-  unsigned char chroma_coeffs[64];
-  unsigned char inter_coeffs[64];
+  int                      nranges;
+  const int               *sizes;
+  const theora_quant_base *base_matrices;
+}theora_quant_ranges;
+
+typedef struct{
+  ogg_uint16_t        ac_scale[64];
+  ogg_uint16_t        dc_scale[64];
+  theora_quant_ranges qi_ranges[2][3];
 }theora_quant_info;
 
 
@@ -191,5 +228,8 @@ extern int theora_decode_packetin(theora_state *th,ogg_packet *op);
 extern int theora_decode_YUVout(theora_state *th,oc_yuv_buffer *yuv);
 extern double theora_granule_time(theora_state *th,ogg_int64_t granulepos);
 extern void theora_clear(theora_state *t);*/
+
+extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);
+
 
 #endif

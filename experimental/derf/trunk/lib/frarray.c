@@ -281,13 +281,13 @@ static void oc_sb_create_plane_mapping(oc_sb _sbs[],int _frag0,int _hfrags,
       int    jmax;
       int    mbi;
       int    i;
-      /*By default, set all fragment indices to -1.*/
-      memset(sb->map[0],0xFF,sizeof(sb->map));
       /*Figure out how many rows of blocks in this super block lie within the
          image.*/
       jmax=_hfrags-x;
       if(jmax>4)jmax=4;
       else if(jmax<=0)break;
+      /*By default, set all fragment indices to -1.*/
+      memset(sb->map[0],0xFF,sizeof(sb->map));
       /*Fill in the fragment map for this super block.*/
       xfrag=yfrag+x;
       for(i=0;i<imax;i++){

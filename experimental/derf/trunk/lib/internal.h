@@ -261,8 +261,9 @@ typedef struct{
   int                   frame_type;
   /*The quality index of the current frame.*/
   int                   qi;
-  /*The dequantization tables for each quality index.*/
-  oc_quant_tables       dequant_tables[64];
+  /*The dequantization tables.*/
+  oc_quant_tables      *dequant_tables[2][3];
+  oc_quant_tables       dequant_table_data[2][3];
 }oc_theora_state;
 
 
@@ -286,6 +287,8 @@ void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
 void oc_yuv_buffer_flip(oc_yuv_buffer _dst,const oc_yuv_buffer _src);
+
+int oc_dct_token_skip(int _token,int _extra_bits);
 
 void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
  const ogg_int16_t *_residue);

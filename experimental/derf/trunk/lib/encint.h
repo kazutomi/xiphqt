@@ -1,3 +1,4 @@
+#define OC_BITRATE_STATS (1)
 #include <limits.h>
 #if !defined(_encint_H)
 # define _encint_H (1)
@@ -6,6 +7,8 @@
 # include "fdct.h"
 # include "huffenc.h"
 # include "enquant.h"
+
+#define OC_1_LN2 (1.4426950408889634073F)
 
 #define OC_NTEST_MODES (1)
 
@@ -35,6 +38,8 @@ typedef struct{
   ogg_uint16_t    tols[64];
   /*The weight derived from the importance of this fragment.*/
   float           imp_weight;
+  /*The actual error encoded by the residual after mode selection.*/
+  int             eerror;
 }oc_fragment_enc_info;
 
 /*Macro block information specific to encoding.*/
@@ -97,11 +102,12 @@ typedef struct theora_enc_ctx{
   /*The quantization parameters in use.*/
   theora_quant_info     qinfo;
   /*The quantization tables.*/
-  oc_quant_tables       enquant_tables[64];
-  /*The number of DCT tokens for each coefficient.*/
-  int                   ndct_tokens[64];
+  oc_quant_tables      *enquant_tables[2][3];
+  oc_quant_tables       enqaunt_table_data[2][3];
   /*The offset of the first DCT token for each coefficient for each plane.*/
   int                   dct_token_offs[3][64];
+  /*The number of DCT tokens for each coefficient.*/
+  int                   ndct_tokens[64];
   /*The DCT token lists.*/
   unsigned char       **dct_tokens;
   /*The number of extra bits entries for each coefficient.*/
@@ -126,5 +132,10 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration);
 oc_psych_ctx *oc_psych_alloc(oc_enc_ctx *_enc);
 void oc_psych_free(oc_psych_ctx *_psych);
 void oc_psych_scan(oc_psych_ctx *_psych,float _contrast);
+
+#if defined(OC_BITRATE_STATS)
+void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]);
+#endif;
+
 
 #endif

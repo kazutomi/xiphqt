@@ -86,6 +86,8 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
 /*Select a quantizer for the given quality.*/
 static void oc_enc_quant_sel_quality(oc_enc_ctx *_enc,int _intra_only){
   unsigned qmax[2][3];
+  int      qti;
+  int      pli;
   int      qi;
   int      ci;
   /*This quantizer selection really bugs me.
@@ -93,30 +95,25 @@ static void oc_enc_quant_sel_quality(oc_enc_ctx *_enc,int _intra_only){
      no larger than twice the smallest allowable error for each coefficient.
     In reality, most fragments will not require such a small quantizer, but
      Theora only supports per-frame quantizer selection.*/
-  qmax[0][0]=OC_MAXI(2*_enc->tol_mins[0][0],OC_INTRA_DC_QUANT_MIN);
-  qmax[0][1]=OC_MAXI(2*_enc->tol_mins[1][0],OC_INTRA_DC_QUANT_MIN);
-  qmax[0][2]=OC_MAXI(2*_enc->tol_mins[2][0],OC_INTRA_DC_QUANT_MIN);
-  qmax[1][0]=OC_MAXI(2*_enc->tol_mins[0][0],OC_INTER_DC_QUANT_MIN);
-  qmax[1][1]=OC_MAXI(2*_enc->tol_mins[1][0],OC_INTER_DC_QUANT_MIN);
-  qmax[1][2]=OC_MAXI(2*_enc->tol_mins[2][0],OC_INTER_DC_QUANT_MIN);
+  for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
+    qmax[qti][pli]=OC_MAXI(2U*_enc->tol_mins[pli][0],OC_DC_QUANT_MIN[qti]);
+  }
   for(qi=ci=0;qi<63;qi++){
     for(;;){
-      if(_enc->state.dequant_tables[qi].intra_y[ci]>qmax[0][0]||
-       _enc->state.dequant_tables[qi].intra_c[ci]>qmax[0][1]||
-       _enc->state.dequant_tables[qi].intra_c[ci]>qmax[0][2]||
+      if(_enc->state.dequant_tables[0][0][0][qi][ci]>qmax[0][0]||
+       _enc->state.dequant_tables[0][1][0][qi][ci]>qmax[0][1]||
+       _enc->state.dequant_tables[0][2][0][qi][ci]>qmax[0][2]||
        !_intra_only&&(
-       _enc->state.dequant_tables[qi].inter[ci]>qmax[1][0]||
-       _enc->state.dequant_tables[qi].inter[ci]>qmax[1][1]||
-       _enc->state.dequant_tables[qi].inter[ci]>qmax[1][2])){
+       _enc->state.dequant_tables[1][0][0][qi][ci]>qmax[1][0]||
+       _enc->state.dequant_tables[1][1][0][qi][ci]>qmax[1][1]||
+       _enc->state.dequant_tables[1][2][0][qi][ci]>qmax[1][2])){
         break;
       }
       if(++ci>=64)break;
-      qmax[0][0]=OC_MAXI(2*_enc->tol_mins[0][ci],OC_INTRA_AC_QUANT_MIN);
-      qmax[0][1]=OC_MAXI(2*_enc->tol_mins[1][ci],OC_INTRA_AC_QUANT_MIN);
-      qmax[0][2]=OC_MAXI(2*_enc->tol_mins[2][ci],OC_INTRA_AC_QUANT_MIN);
-      qmax[1][0]=OC_MAXI(2*_enc->tol_mins[0][ci],OC_INTER_AC_QUANT_MIN);
-      qmax[1][1]=OC_MAXI(2*_enc->tol_mins[1][ci],OC_INTER_AC_QUANT_MIN);
-      qmax[1][2]=OC_MAXI(2*_enc->tol_mins[2][ci],OC_INTER_AC_QUANT_MIN);
+      for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
+        qmax[qti][pli]=
+         OC_MAXI(2U*_enc->tol_mins[pli][ci],OC_AC_QUANT_MIN[qti]);
+      }
     }
     if(ci==64)break;
   }
@@ -147,6 +144,20 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
   for(;frag<frag_end;frag++){
     frag->coded=1;
     frag->mbmode=OC_MODE_INTRA;
+#if defined(OC_BITRATE_STATS)
+    /*Compute the error function used for intra mode fragments.
+      This function can only use information known at mode decision time, and
+       so excludes the DC component.*/
+    {
+      oc_fragment_enc_info *frinfo;
+      int                   ci;
+      int                   eerror;
+      frinfo=_enc->frinfo+(frag-_enc->state.frarray.frags);
+      eerror=0;
+      for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
+      frinfo->eerror=eerror;
+    }
+#endif
   }
 }
 
@@ -169,66 +180,66 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
   frinfo=_enc->frinfo;
   for(pli=0;pli<3;pli++){
     oc_fragment_plane *fplane;
-    const ogg_uint16_t *fquant[2];
-    const ogg_uint16_t *iquant[2];
-    int                 pred_last[3];
-    int                 fragx;
-    int                 fragy;
+    unsigned           fquant;
+    unsigned           iquant;
+    int                pred_last[3];
+    int                fragx;
+    int                fragy;
     pred_last[OC_FRAME_GOLD]=0;
     pred_last[OC_FRAME_PREV]=0;
     pred_last[OC_FRAME_SELF]=0;
     fplane=_enc->state.frarray.frplanes+pli;
-    if(pli==0){
-      fquant[0]=_enc->enquant_tables[_enc->state.qi].intra_y;
-      iquant[0]=_enc->state.dequant_tables[_enc->state.qi].intra_y;
-    }
-    else{
-      fquant[0]=_enc->enquant_tables[_enc->state.qi].intra_c;
-      iquant[0]=_enc->state.dequant_tables[_enc->state.qi].intra_c;
-    }
-    fquant[1]=_enc->enquant_tables[_enc->state.qi].inter;
-    iquant[1]=_enc->state.dequant_tables[_enc->state.qi].inter;
     for(fragy=0;fragy<fplane->nvfrags;fragy++){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++,frinfo++){
         int qc_pred;
         int qc;
-        int c;
-        int c_abs;
-        int qti;
         if(!frag->coded)continue;
         qc_pred=oc_frag_pred_dc(frag,fplane,fragx,fragy,pred_last);
-        /*We now center the DC coefficient range around the predicted value
-           and perform token bits optimization based on the HVS-determined
-           tolerance range.
-          For more details, see oc_enc_frag_quant_tokenize().*/
-        qti=frag->mbmode!=OC_MODE_INTRA;
-        c=frinfo->dct_coeffs[0]-qc_pred*iquant[qti][0];
-        c_abs=abs(c);
-        if(c_abs<=frinfo->tols[0])qc=0;
+        /*Fragments outside the displayable region must still be coded in key
+           frames.
+          To minimize wasted bits, just use the predicted DC value.
+          TODO: We might do a better job in the lower-left hand corner by
+           propagating over the DC value of the first actually coded fragment,
+           but for the moment this is not done.*/
+        if(frag->invalid)qc=0;
         else{
-          int qc_max;
-          int qc_min;
-          int qc_offs;
-          int c_sign;
-          int c_min;
-          int c_recon;
-          int cati;
-          qc_max=(ogg_int32_t)c_abs*fquant[qti][0]+OC_FQUANT_ROUND>>
-           OC_FQUANT_SHIFT;
-          c_sign=c<0;
-          c_recon=(qc_max-1)*iquant[qti][0];
-          c_min=OC_MAXI(0,c_abs-frinfo->tols[0]);
-          for(qc_min=qc_max;c_recon>=c_min;qc_min--)c_recon-=iquant[qti][0];
-          if(qc_min<3+OC_NDCT_VAL_CAT2_SIZE)qc=qc_min;
+          int c;
+          int c_abs;
+          int qti;
+          /*We now center the DC coefficient range around the predicted value
+             and perform token bits optimization based on the HVS-determined
+             tolerance range.
+            For more details, see oc_enc_frag_quant_tokenize().*/
+          qti=frag->mbmode!=OC_MODE_INTRA;
+          iquant=_enc->state.dequant_tables[qti][pli][0][_enc->state.qi][0];
+          c=frinfo->dct_coeffs[0]-qc_pred*iquant;
+          c_abs=abs(c);
+          if(c_abs<=frinfo->tols[0])qc=0;
           else{
-            qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
-            for(cati=0;cati<5&&qc_min>=qc_offs+OC_DCT_VAL_CAT_SIZES[cati];
-             cati++){
-              qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
+            int qc_max;
+            int qc_min;
+            int qc_offs;
+            int c_sign;
+            int c_min;
+            int c_recon;
+            int cati;
+            fquant=_enc->enquant_tables[qti][pli][0][_enc->state.qi][0];
+            qc_max=(ogg_int32_t)c_abs*fquant+OC_FQUANT_ROUND>>OC_FQUANT_SHIFT;
+            c_sign=c<0;
+            c_recon=(qc_max-1)*iquant;
+            c_min=OC_MAXI(0,c_abs-frinfo->tols[0]);
+            for(qc_min=qc_max;c_recon>=c_min;qc_min--)c_recon-=iquant;
+            if(qc_min<3+OC_NDCT_VAL_CAT2_SIZE)qc=qc_min;
+            else{
+              qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
+              for(cati=0;cati<5&&qc_min>=qc_offs+OC_DCT_VAL_CAT_SIZES[cati];
+               cati++){
+                qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
+              }
+              qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
             }
-            qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
+            qc*=(-c_sign<<1)+1;
           }
-          qc*=(-c_sign<<1)+1;
         }
         pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc=qc+qc_pred;
         frinfo->dct_coeffs[0]=(ogg_int16_t)qc;
@@ -273,9 +284,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
             qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
           }
           _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
-           (unsigned char)(OC_DCT_VAL_CAT2+cati);
+           (unsigned char)(OC_DCT_VAL_CAT3+cati);
           _enc->extra_bits[0][_enc->nextra_bits[0]++]=
-           (ogg_uint16_t)((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc);
+           (ogg_uint16_t)((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc-qc_offs);
         }
       }
     }
@@ -435,7 +446,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
               qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
               _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc);
               _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
-               (unsigned char)(OC_DCT_VAL_CAT2+cati);
+               (unsigned char)(OC_DCT_VAL_CAT3+cati);
               _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=(ogg_uint16_t)
                ((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc-qc_offs);
             }
@@ -465,7 +476,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }break;
       case OC_DCT_REPEAT_RUN0_TOKEN:{
         ebi=_enc->nextra_bits[tli]-1;
-        if(_enc->extra_bits[tli][ebi]<4)_enc->extra_bits[tli][ebi]++;
+        if(_enc->extra_bits[tli][ebi]<3)_enc->extra_bits[tli][ebi]++;
         else{
           _enc->dct_tokens[tli][toki]++;
           _enc->extra_bits[tli][ebi]=0;
@@ -473,7 +484,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }break;
       case OC_DCT_REPEAT_RUN1_TOKEN:{
         ebi=_enc->nextra_bits[tli]-1;
-        if(_enc->extra_bits[tli][ebi]<8)_enc->extra_bits[tli][ebi]++;
+        if(_enc->extra_bits[tli][ebi]<7)_enc->extra_bits[tli][ebi]++;
         else{
           _enc->dct_tokens[tli][toki]++;
           _enc->extra_bits[tli][ebi]=0;
@@ -481,7 +492,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }break;
       case OC_DCT_REPEAT_RUN2_TOKEN:{
         ebi=_enc->nextra_bits[tli]-1;
-        if(_enc->extra_bits[tli][ebi]<16)_enc->extra_bits[tli][ebi]++;
+        if(_enc->extra_bits[tli][ebi]<15)_enc->extra_bits[tli][ebi]++;
         else{
           _enc->dct_tokens[tli][toki]++;
           /*Again stupid: we could encode runs up to 4127, but inexplicably
@@ -492,7 +503,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }break;
       case OC_DCT_REPEAT_RUN3_TOKEN:{
         ebi=_enc->nextra_bits[tli]-1;
-        if(_enc->extra_bits[tli][ebi]<4096){
+        if(_enc->extra_bits[tli][ebi]<4095){
           _enc->extra_bits[tli][ebi]++;
           break;
         }
@@ -521,23 +532,10 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
   sb=sb_end=_enc->state.frarray.sbs;
   for(pli=0;pli<3;pli++){
     oc_fragment_plane  *fplane;
-    const ogg_uint16_t *fquant[2];
-    const ogg_uint16_t *iquant[2];
     fplane=_enc->state.frarray.frplanes+pli;
     sb_end+=fplane->nsbs;
-    if(pli==0){
-      fquant[0]=_enc->enquant_tables[_enc->state.qi].intra_y;
-      iquant[0]=_enc->state.dequant_tables[_enc->state.qi].intra_y;
-    }
-    else{
-      fquant[0]=_enc->enquant_tables[_enc->state.qi].intra_c;
-      iquant[0]=_enc->state.dequant_tables[_enc->state.qi].intra_c;
-    }
-    fquant[1]=_enc->enquant_tables[_enc->state.qi].inter;
-    iquant[1]=_enc->state.dequant_tables[_enc->state.qi].inter;
-    for(zzi=0;zzi<64;zzi++){
-      _enc->dct_token_offs[pli][zzi]=_enc->ndct_tokens[zzi];
-    }
+    memcpy(_enc->dct_token_offs[pli],_enc->ndct_tokens,
+     sizeof(_enc->dct_token_offs[pli]));
     for(;sb<sb_end;sb++){
       int mbi;
       for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
@@ -551,10 +549,11 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
             int                   nnzc;
             qti=frag->mbmode!=OC_MODE_INTRA;
             frinfo=_enc->frinfo+sb->map[mbi][bi];
-            nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,fquant[qti],
-             iquant[qti]);
+            nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,
+             _enc->enquant_tables[qti][pli][0][_enc->state.qi],
+             _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
             oc_frag_recon(&_enc->state,frag,pli,frinfo->dct_coeffs,nnzc,
-             iquant[qti]);
+             _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
           }
         }
       }
@@ -611,80 +610,83 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
   }
 }
 
-static void oc_enc_pack_residual_tokens(oc_enc_ctx *_enc){
-  static const int OC_HUFF_LIST_MIN[5]={0,1,16,32,48};
-  static const int OC_HUFF_LIST_MAX[5]={1,16,32,48,64};
-  int hgi;
-  for(hgi=0;hgi<5;hgi++){
-    const theora_huff_code *huff_codes_y;
-    const theora_huff_code *huff_codes_c;
-    int                     token_counts_y[32];
-    int                     token_counts_c[32];
-    int                     huff_base;
-    int                     bits_y_min;
-    int                     bits_c_min;
-    int                     huffi_y;
-    int                     huffi_c;
-    int                     huffi;
-    int                     token;
-    int                     zzi;
-    int                     ti;
-    int                     ebi;
-    huff_base=hgi<<4;
-    /*Step 1: Select huffman tables for the token lists.*/
-    memset(token_counts_y,0,sizeof(token_counts_y));
-    memset(token_counts_c,0,sizeof(token_counts_c));
-    for(zzi=OC_HUFF_LIST_MIN[hgi];zzi<OC_HUFF_LIST_MAX[hgi];zzi++){
-      for(ti=_enc->dct_token_offs[0][zzi];ti<_enc->dct_token_offs[1][zzi];
-       ti++){
-        token_counts_y[_enc->dct_tokens[zzi][ti]]++;
-      }
-      /*Note: don't reset ti; dct_token_offs might be non-monotonic.*/
-      for(;ti<_enc->ndct_tokens[zzi];ti++){
-        token_counts_c[_enc->dct_tokens[zzi][ti]]++;
-      }
+/*Counts the tokens of each type used for the given range of coefficient
+   indices in zig-zag order.
+  _enc: The encoding context.
+  _zzi_start:      The first zig-zag index to include.
+  _zzi_end:        The first zig-zag index to not include.
+  _token_counts_y: Returns the token counts for the Y' plane.
+  _token_counts_c: Returns the token counts for the Cb and Cr planes.*/
+static void oc_enc_count_tokens(oc_enc_ctx *_enc,int _zzi_start,int _zzi_end,
+ int _token_counts_y[32],int _token_counts_c[32]){
+  int zzi;
+  int ti;
+  memset(_token_counts_y,0,sizeof(_token_counts_y[0])*32);
+  memset(_token_counts_c,0,sizeof(_token_counts_c[0])*32);
+  for(zzi=_zzi_start;zzi<_zzi_end;zzi++){
+    for(ti=_enc->dct_token_offs[0][zzi];ti<_enc->dct_token_offs[1][zzi];ti++){
+      _token_counts_y[_enc->dct_tokens[zzi][ti]]++;
     }
-    bits_y_min=bits_c_min=INT_MAX;
-    huffi_y=huffi_c=huff_base;
-    for(huffi=huff_base;huffi<huff_base+16;huffi++){
-      int bits_y;
-      int bits_c;
-      bits_y=bits_c=0;
-      for(token=0;token<32;token++){
-        bits_y+=token_counts_y[token]*_enc->huff_codes[huffi][token].len;
-        bits_c+=token_counts_c[token]*_enc->huff_codes[huffi][token].len;
-      }
-      if(bits_y<bits_y_min){
-        bits_y_min=bits_y;
-        huffi_y=huffi;
-      }
-      if(bits_c<bits_c_min){
-        bits_c_min=bits_c;
-        huffi_c=huffi;
-      }
+    /*Note: don't reset ti; dct_token_offs might be non-monotonic.*/
+    for(;ti<_enc->ndct_tokens[zzi];ti++){
+      _token_counts_c[_enc->dct_tokens[zzi][ti]]++;
     }
-    /*Step 2: Write the tokens using these tables.*/
-    oggpackB_write(&_enc->opb,huffi_y-huff_base,4);
-    oggpackB_write(&_enc->opb,huffi_c-huff_base,4);
-    huff_codes_y=_enc->huff_codes[huffi_y];
-    huff_codes_c=_enc->huff_codes[huffi_c];
-    for(zzi=OC_HUFF_LIST_MIN[hgi];zzi<OC_HUFF_LIST_MAX[hgi];zzi++){
-      ebi=_enc->extra_bits_offs[zzi];
-      for(ti=_enc->dct_token_offs[0][zzi];ti<_enc->dct_token_offs[1][zzi];
-       ti++){
-        token=_enc->dct_tokens[zzi][ti];
-        oggpackB_write(&_enc->opb,huff_codes_y[token].bits,
-         huff_codes_y[token].len);
-        if(OC_DCT_TOKEN_EXTRA_BITS[token]){
-          oggpackB_write(&_enc->opb,_enc->extra_bits[zzi][ebi++],
-           OC_DCT_TOKEN_EXTRA_BITS[token]);
-        }
-      }
+  }
+}
+
+/*Computes the number of bits used for each of the potential Huffman codes for
+   the given list of token counts.
+  The bits are added to whatever the current bit counts are.*/
+static void oc_enc_count_bits(oc_enc_ctx *_enc,int _hgi,const int _token_counts[32],
+ int _bit_counts[16]){
+  int huffi;
+  int huff_base;
+  int token;
+  huff_base=_hgi<<4;
+  for(huffi=huff_base;huffi<huff_base+16;huffi++){
+    for(token=0;token<32;token++){
+      _bit_counts[huffi-huff_base]+=
+       _token_counts[token]*_enc->huff_codes[huffi][token].len;
+    }
+  }
+}
+
+/*Returns the Huffman index using the fewest number of bits.*/
+static int oc_enc_select_huffi(int _bit_counts[16]){
+  int best_huffi;
+  int huffi;
+  best_huffi=0;
+  for(huffi=1;huffi<16;huffi++)if(_bit_counts[huffi]<_bit_counts[best_huffi]){
+    best_huffi=huffi;
+  }
+  return best_huffi;
+}
+
+/*Packs the DCT tokens for the given range of coefficient indices in zig-zag
+   order using the given Huffman tables.*/
+static void oc_enc_pack_huff_group(oc_enc_ctx *_enc,int _zzi_start,
+ int _zzi_end,int _huff_idxs[3]){
+  int zzi;
+  for(zzi=_zzi_start;zzi<_zzi_end;zzi++){
+    int pli;
+    int ti;
+    int ebi;
+    ti=_enc->dct_token_offs[0][zzi];
+    ebi=_enc->extra_bits_offs[zzi];
+    for(pli=0;pli<3;pli++){
+      const theora_huff_code *huff_codes;
+      int                     token;
+      int                     ti_end;
+      /*Step 2: Write the tokens using these tables.*/
+      huff_codes=_enc->huff_codes[_huff_idxs[pli]];
+      /*Note: dct_token_offs[3] is really the ndct_tokens table.
+        Yes, this seems like a horrible hack, yet it's strangely elegant.*/
+      ti_end=_enc->dct_token_offs[pli+1][zzi];
       /*Note: don't reset ti; dct_token_offs might be non-monotonic.*/
-      for(;ti<_enc->ndct_tokens[zzi];ti++){
+      for(;ti<ti_end;ti++){
         token=_enc->dct_tokens[zzi][ti];
-        oggpackB_write(&_enc->opb,huff_codes_c[token].bits,
-         huff_codes_c[token].len);
+        oggpackB_write(&_enc->opb,huff_codes[token].bits,
+         huff_codes[token].len);
         if(OC_DCT_TOKEN_EXTRA_BITS[token]){
           oggpackB_write(&_enc->opb,_enc->extra_bits[zzi][ebi++],
            OC_DCT_TOKEN_EXTRA_BITS[token]);
@@ -692,6 +694,56 @@ static void oc_enc_pack_residual_tokens(oc_enc_ctx *_enc){
       }
     }
   }
+}
+
+static void oc_enc_pack_residual_tokens(oc_enc_ctx *_enc){
+  static const int OC_HUFF_LIST_MIN[5]={0,1,6,15,28};
+  static const int OC_HUFF_LIST_MAX[5]={1,6,15,28,64};
+  int bits_y[16];
+  int bits_c[16];
+  int token_counts_y[32];
+  int token_counts_c[32];
+  int huff_idxs[5][3];
+  int huffi_y;
+  int huffi_c;
+  int hgi;
+  /*Step 1a: Select Huffman tables for the DC token list.*/
+  memset(bits_y,0,sizeof(bits_y));
+  memset(bits_c,0,sizeof(bits_c));
+  oc_enc_count_tokens(_enc,0,1,token_counts_y,token_counts_c);
+  oc_enc_count_bits(_enc,0,token_counts_y,bits_y);
+  oc_enc_count_bits(_enc,0,token_counts_c,bits_c);
+  huffi_y=oc_enc_select_huffi(bits_y);
+  huffi_c=oc_enc_select_huffi(bits_c);
+  huff_idxs[0][0]=huffi_y;
+  huff_idxs[0][1]=huff_idxs[0][2]=huffi_c;
+  /*Step 1b: Write the DC token list with the chosen tables.*/
+  oggpackB_write(&_enc->opb,huffi_y,4);
+  oggpackB_write(&_enc->opb,huffi_c,4);
+  oc_enc_pack_huff_group(_enc,0,1,huff_idxs[0]);
+  /*Step 2a: Select Huffman tables for the AC token lists.*/
+  memset(bits_y,0,sizeof(bits_y));
+  memset(bits_y,0,sizeof(bits_c));
+  for(hgi=1;hgi<5;hgi++){
+    oc_enc_count_tokens(_enc,OC_HUFF_LIST_MIN[hgi],OC_HUFF_LIST_MAX[hgi],
+     token_counts_y,token_counts_c);
+    oc_enc_count_bits(_enc,hgi,token_counts_y,bits_y);
+    oc_enc_count_bits(_enc,hgi,token_counts_c,bits_c);
+  }
+  huffi_y=oc_enc_select_huffi(bits_y);
+  huffi_c=oc_enc_select_huffi(bits_c);
+  /*Step 2b: Write the AC token lists using the chosen tables.*/
+  oggpackB_write(&_enc->opb,huffi_y,4);
+  oggpackB_write(&_enc->opb,huffi_c,4);
+  for(hgi=1;hgi<5;hgi++){
+    huff_idxs[hgi][0]=huffi_y+(hgi<<4);
+    huff_idxs[hgi][1]=huff_idxs[hgi][2]=huffi_c+(hgi<<4);
+    oc_enc_pack_huff_group(_enc,OC_HUFF_LIST_MIN[hgi],OC_HUFF_LIST_MAX[hgi],
+     huff_idxs[hgi]);
+  }
+#if defined(OC_BITRATE_STATS)
+  oc_bitrate_update_stats(_enc,huff_idxs);
+#endif
 }
 
 static int oc_enc_keyframe(oc_enc_ctx *_enc){
@@ -773,7 +825,21 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   _enc->psych=oc_psych_alloc(_enc);
   _enc->packet_state=OC_PACKET_INFO_HDR;
   /*TODO: Revisit qscale.*/
-  _enc->qscale=0.25F*(63-_info->quality);
+  /*Currently this is set so that a qi of 0 corresponds to distortions of 24
+     times the JND, and each increase by 16 halves that value.
+    This gives us fine discrimination at low qualities, yet effective rate
+     control at high qualities.
+    A qi of 63 is speical, however.
+    For this, the highest quality, we use one half of a JND for our threshold.
+    Due to the lower bounds placed on admissible quantizers, we will not
+     actually be able to achieve quality this good, but this should provide as
+     close to visually lossless quality as Theora is capable of.
+    Now that we have a more powerful way to specify quantization matrices, we
+     could lift the quantizer restrictions without breaking VP3.1
+     compatibility, but this would result in quantized coefficients that are
+     too large for the current bitstream to be able to store.*/
+  _enc->qscale=_info->quality>=63?0.5F:
+   1.5F*OC_POWF(2,0.0625F*(64-_info->quality));
   memcpy(_enc->huff_codes,OC_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
   theora_encode_set_quant_params(_enc,NULL);
   _enc->dct_tokens=(unsigned char **)oc_malloc_2d(64,
@@ -888,20 +954,44 @@ int theora_encode_set_huffman_codes(theora_enc_ctx *_enc,
 
 int theora_encode_set_quant_params(theora_enc_ctx *_enc,
  const theora_quant_info *_qinfo){
+  int qti;
+  int pli;
+  int qri;
   int qi;
+  int ci;
   if(_enc==NULL)return OC_FAULT;
   if(_enc->packet_state>OC_PACKET_SETUP_HDR)return OC_EINVAL;
   if(_qinfo==NULL)_qinfo=&OC_VP31_QUANT_INFO;
+  /*Verify that, for a given qti, pli and ci, the actual quantizer will never
+     increase as qi increases.
+    This is required for efficient quantizer selection.*/
   for(qi=64;qi-->1;){
     if(_qinfo->ac_scale[qi]>_qinfo->ac_scale[qi-1])return OC_EINVAL;
     if(_qinfo->dc_scale[qi]>_qinfo->dc_scale[qi-1])return OC_EINVAL;
   }
-  memcpy(&_enc->qinfo,_qinfo,sizeof(_enc->qinfo));
-  for(qi=0;qi<64;qi++){
-    oc_quant_tables_init(_enc->state.dequant_tables+qi,_qinfo,qi);
-    oc_enquant_table_init(_enc->enquant_tables+qi,
-     _enc->state.dequant_tables+qi);
+  for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
+    if(_qinfo->qi_ranges[qti][pli].nranges<=0)return OC_EINVAL;
+    for(qi=qri=0;qri<_qinfo->qi_ranges[qti][pli].nranges;qri++){
+      qi+=_qinfo->qi_ranges[qti][pli].sizes[qri];
+      if(qi<64||_qinfo->qi_ranges[qti][pli].sizes[qri]>1){
+        for(ci=0;ci<64;ci++){
+          if(_qinfo->qi_ranges[qti][pli].base_matrices[qri+1][ci]>
+           _qinfo->qi_ranges[qti][pli].base_matrices[qri][ci]){
+            return OC_EINVAL;
+          }
+        }
+      }
+    }
   }
+  /*TODO: Analyze for packing purposes instead of just doing a shallow copy.*/
+  memcpy(&_enc->qinfo,_qinfo,sizeof(_enc->qinfo));
+  for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
+    _enc->state.dequant_tables[qti][pli]=
+     _enc->state.dequant_table_data[qti]+pli;
+    _enc->enquant_tables[qti][pli]=_enc->enqaunt_table_data[qti]+pli;
+  }
+  oc_enquant_tables_init(_enc->state.dequant_tables,_enc->enquant_tables,
+   _qinfo);
   return 0;
 }
 
@@ -977,7 +1067,8 @@ int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _img){
     if(ret<0)return ret;
   }
   else{
-    ret=oc_enc_deltaframe(_enc);
+    /*ret=oc_enc_deltaframe(_enc);*/
+    ret=oc_enc_keyframe(_enc);
     if(ret<0)return ret;
   }
   /*Note: All buffer management, etc., that is done after a frame is encoded
@@ -988,7 +1079,7 @@ int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _img){
     Here we just update the granpos needed for the output packet and return.*/
   if(_enc->state.frame_type==OC_INTRA_FRAME){
     _enc->state.granpos=
-     _enc->state.keyframe_num+1<<_enc->state.keyframe_granule_shift;
+     _enc->state.curframe_num<<_enc->state.keyframe_granule_shift;
   }
   else{
     _enc->state.granpos=
@@ -1006,9 +1097,22 @@ int theora_encode_packetout(theora_enc_ctx *_enc,int _last,ogg_packet *_op){
   _op->b_o_s=0;
   _op->e_o_s=_last;
   _op->packetno=_enc->state.curframe_num;
-  /*_op->packetno=cpi->CurrentFrame;*/
-  /*_op->granulepos=t->granulepos;*/
+  _op->granulepos=_enc->state.granpos;
   if(_last)_enc->packet_state=OC_PACKET_DONE;
   else _enc->packet_state=OC_PACKET_EMPTY;
   return 1;
+}
+
+double theora_granule_time(void *_encdec,ogg_int64_t _granpos){
+  oc_theora_state *state;
+  state=(oc_theora_state *)_encdec;
+  if(_granpos>=0){
+    ogg_int64_t iframe;
+    ogg_int64_t pframe;
+    iframe=_granpos>>state->keyframe_granule_shift;
+    pframe=_granpos-(iframe<<state->keyframe_granule_shift);
+    return (iframe+pframe)*(
+     (double)state->info.fps_denominator/state->info.fps_numerator);
+  }
+  return(-1);
 }

@@ -41,15 +41,15 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       oggpackB_write(&_enc->opb,_enc->state.info.fps_denominator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.aspect_numerator,24);
       oggpackB_write(&_enc->opb,_enc->state.info.aspect_denominator,24);
+      oggpackB_write(&_enc->opb,_enc->state.info.colorspace,8);
+      oggpackB_write(&_enc->opb,_enc->state.info.target_bitrate,24);
+      oggpackB_write(&_enc->opb,_enc->state.info.quality,6);
 #if defined(OC_COMPOSITE_GRANPOS)
       /*Describe the limit between keyframes needed to decode granuleposes.*/
       oggpackB_write(&_enc->opb,_enc->state.keyframe_granule_shift,5);
 #else
       oggpackB_write(&_enc->opb,_enc->state.0,5);
 #endif
-      oggpackB_write(&_enc->opb,_enc->state.info.colorspace,8);
-      oggpackB_write(&_enc->opb,_enc->state.info.target_bitrate,24);
-      oggpackB_write(&_enc->opb,_enc->state.info.quality,6);
       _op->b_o_s=1;
     }break;
     /*Comment header.*/

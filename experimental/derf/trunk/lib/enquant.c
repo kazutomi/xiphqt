@@ -5,6 +5,74 @@
 
 
 /*The default quantization parameters used by VP3.1.*/
+static const int OC_VP31_RANGE_SIZES[1]={64};
+static const theora_quant_base OC_VP31_BASES_INTRA_Y[2]={
+  {
+     16, 11, 10, 16, 24,  40, 51, 61,
+     12, 12, 14, 19, 26,  58, 60, 55,
+     14, 13, 16, 24, 40,  57, 69, 56,
+     14, 17, 22, 29, 51,  87, 80, 62,
+     18, 22, 37, 58, 68, 109,103, 77,
+     24, 35, 55, 64, 81, 104,113, 92,
+     49, 64, 78, 87,103, 121,120,101,
+     72, 92, 95, 98,112, 100,103, 99
+  },
+  {
+     16, 11, 10, 16, 24,  40, 51, 61,
+     12, 12, 14, 19, 26,  58, 60, 55,
+     14, 13, 16, 24, 40,  57, 69, 56,
+     14, 17, 22, 29, 51,  87, 80, 62,
+     18, 22, 37, 58, 68, 109,103, 77,
+     24, 35, 55, 64, 81, 104,113, 92,
+     49, 64, 78, 87,103, 121,120,101,
+     72, 92, 95, 98,112, 100,103, 99
+  }
+};
+static const theora_quant_base OC_VP31_BASES_INTRA_C[2]={
+  {
+     17, 18, 24, 47, 99, 99, 99, 99,
+     18, 21, 26, 66, 99, 99, 99, 99,
+     24, 26, 56, 99, 99, 99, 99, 99,
+     47, 66, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99
+  },
+  {
+     17, 18, 24, 47, 99, 99, 99, 99,
+     18, 21, 26, 66, 99, 99, 99, 99,
+     24, 26, 56, 99, 99, 99, 99, 99,
+     47, 66, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99
+  }
+};
+static const theora_quant_base OC_VP31_BASES_INTER[2]={
+  {
+     16, 16, 16, 20, 24, 28, 32, 40,
+     16, 16, 20, 24, 28, 32, 40, 48,
+     16, 20, 24, 28, 32, 40, 48, 64,
+     20, 24, 28, 32, 40, 48, 64, 64,
+     24, 28, 32, 40, 48, 64, 64, 64,
+     28, 32, 40, 48, 64, 64, 64, 96,
+     32, 40, 48, 64, 64, 64, 96,128,
+     40, 48, 64, 64, 64, 96,128,128
+  },
+  {
+     16, 16, 16, 20, 24, 28, 32, 40,
+     16, 16, 20, 24, 28, 32, 40, 48,
+     16, 20, 24, 28, 32, 40, 48, 64,
+     20, 24, 28, 32, 40, 48, 64, 64,
+     24, 28, 32, 40, 48, 64, 64, 64,
+     28, 32, 40, 48, 64, 64, 64, 96,
+     32, 40, 48, 64, 64, 64, 96,128,
+     40, 48, 64, 64, 64, 96,128,128
+  }
+};
+
 const theora_quant_info OC_VP31_QUANT_INFO={
   {
     500,450,400,370,340,310,285,265,
@@ -27,34 +95,16 @@ const theora_quant_info OC_VP31_QUANT_INFO={
      20, 10, 10, 10, 10, 10, 10, 10
   },
   {
-     16, 11, 10, 16, 24,  40, 51, 61,
-     12, 12, 14, 19, 26,  58, 60, 55,
-     14, 13, 16, 24, 40,  57, 69, 56,
-     14, 17, 22, 29, 51,  87, 80, 62,
-     18, 22, 37, 58, 68, 109,103, 77,
-     24, 35, 55, 64, 81, 104,113, 92,
-     49, 64, 78, 87,103, 121,120,101,
-     72, 92, 95, 98,112, 100,103, 99
-  },
-  {
-     17, 18, 24, 47, 99, 99, 99, 99,
-     18, 21, 26, 66, 99, 99, 99, 99,
-     24, 26, 56, 99, 99, 99, 99, 99,
-     47, 66, 99, 99, 99, 99, 99, 99,
-     99, 99, 99, 99, 99, 99, 99, 99,
-     99, 99, 99, 99, 99, 99, 99, 99,
-     99, 99, 99, 99, 99, 99, 99, 99,
-     99, 99, 99, 99, 99, 99, 99, 99
-  },
-  {
-     16, 16, 16, 20, 24, 28, 32, 40,
-     16, 16, 20, 24, 28, 32, 40, 48,
-     16, 20, 24, 28, 32, 40, 48, 64,
-     20, 24, 28, 32, 40, 48, 64, 64,
-     24, 28, 32, 40, 48, 64, 64, 64,
-     28, 32, 40, 48, 64, 64, 64, 96,
-     32, 40, 48, 64, 64, 64, 96,128,
-     40, 48, 64, 64, 64, 96,128,128
+    {
+      {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTRA_Y},
+      {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTRA_C},
+      {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTRA_C}
+    },
+    {
+      {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTER},
+      {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTER},
+      {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTER}
+    }
   }
 };
 
@@ -63,24 +113,88 @@ const theora_quant_info OC_VP31_QUANT_INFO={
 void oc_quant_params_pack(oggpack_buffer *_opb,
  const theora_quant_info *_qinfo){
   int x;
+  /*TODO: Update for alpha 3.*/
   for(x=0;x<64;x++)oggpackB_write(_opb,_qinfo->ac_scale[x],16);
   for(x=0;x<64;x++)oggpackB_write(_opb,_qinfo->dc_scale[x],16);
-  for(x=0;x<64;x++)oggpackB_write(_opb,_qinfo->luma_coeffs[x],8);
-  for(x=0;x<64;x++)oggpackB_write(_opb,_qinfo->chroma_coeffs[x],8);
-  for(x=0;x<64;x++)oggpackB_write(_opb,_qinfo->inter_coeffs[x],8);
+  for(x=0;x<64;x++){
+    oggpackB_write(_opb,_qinfo->qi_ranges[0][0].base_matrices[0][x],8);
+  }
+  for(x=0;x<64;x++){
+    oggpackB_write(_opb,_qinfo->qi_ranges[0][1].base_matrices[0][x],8);
+  }
+  for(x=0;x<64;x++){
+    oggpackB_write(_opb,_qinfo->qi_ranges[1][0].base_matrices[0][x],8);
+  }
 }
 
 
-void oc_enquant_table_init(oc_quant_tables *_enquant,
- const oc_quant_tables *_dequant){
-  ogg_uint32_t q;
-  int          ci;
-  for(ci=0;ci<64;ci++){
-    q=_dequant->intra_y[ci];
-    _enquant->intra_y[ci]=(ogg_uint16_t)((2*OC_FQUANT_SCALE+q)/(q<<1));
-    q=_dequant->intra_c[ci];
-    _enquant->intra_c[ci]=(ogg_uint16_t)((2*OC_FQUANT_SCALE+q)/(q<<1));
-    q=_dequant->inter[ci];
-    _enquant->inter[ci]=(ogg_uint16_t)((2*OC_FQUANT_SCALE+q)/(q<<1));
+
+void oc_enquant_tables_init(oc_quant_tables *_dequant[2][3],
+ oc_quant_tables *_enquant[2][3],const theora_quant_info *_qinfo){
+  int          qti;
+  int          pli;
+  for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
+    int qi;
+    int qri;
+    /*These simple checks help us improve cache coherency later.*/
+    if(pli>0&&memcmp(_qinfo->qi_ranges[qti]+pli-1,
+     _qinfo->qi_ranges[qti]+pli,sizeof(_qinfo->qi_ranges[qti][pli]))==0){
+      _dequant[qti][pli]=_dequant[qti][pli-1];
+      _enquant[qti][pli]=_enquant[qti][pli-1];
+      continue;
+    }
+    if(qti>0&&memcmp(_qinfo->qi_ranges[qti-1]+pli,
+     _qinfo->qi_ranges[qti]+pli,sizeof(_qinfo->qi_ranges[qti][pli]))==0){
+      _dequant[qti][pli]=_dequant[qti-1][pli];
+      _enquant[qti][pli]=_enquant[qti-1][pli];
+      continue;
+    }
+    for(qi=qri=0;qri<_qinfo->qi_ranges[qti][pli].nranges;qri++){
+      theora_quant_base base;
+      ogg_uint32_t      q;
+      int               qi_start;
+      int               qi_end;
+      int               ci;
+      memcpy(base,_qinfo->qi_ranges[qti][pli].base_matrices[qri],
+       sizeof(base));
+      qi_start=qi;
+      qi_end=qi+_qinfo->qi_ranges[qti][pli].sizes[qri];
+      for(;;){
+        /*In the original VP3.2 code, the rounding offset and the size of the
+           dead zone around 0 were controlled by a "sharpness" parameter.
+          The size of our dead zone is now controlled by the per-coefficient
+           quality thresholds returned by our HVS module.
+          We round down from a more accurate value when the quality of the
+           reconstruction does not fall below our threshold and it saves bits.
+          Hence, all of that VP3.2 code is gone from here, and the remaining
+           floating point code has been implemented as integer code with exact
+           precision.
+          I.e., (ogg_uint16_t)(1.0/q*OC_QUANT_SCALE+0.5) has become
+           (2*OC_QUANT_SCALE+q)/(q<<1).*/
+        /*Scale DC the coefficient from the proper table.*/
+        q=((ogg_uint32_t)_qinfo->dc_scale[qi]*base[0]/100)<<2;
+        q=OC_CLAMPI(OC_DC_QUANT_MIN[qti],q,OC_QUANT_MAX);
+        _dequant[qti][pli][0][qi][0]=(ogg_uint16_t)q;
+        _enquant[qti][pli][0][qi][0]=(ogg_uint16_t)(
+         (2*OC_FQUANT_SCALE+q)/(q<<1));
+        /*Now scale AC coefficients from the proper table.*/
+        for(ci=1;ci<64;ci++){
+          q=((ogg_uint32_t)_qinfo->ac_scale[qi]*base[ci]/100)<<2;
+          q=OC_CLAMPI(OC_AC_QUANT_MIN[qti],q,OC_QUANT_MAX);
+          _dequant[qti][pli][0][qi][ci]=(ogg_uint16_t)q;
+          _enquant[qti][pli][0][qi][ci]=(ogg_uint16_t)(
+           (2*OC_FQUANT_SCALE+q)/(q<<1));
+        }
+        if(++qi>=qi_end)break;
+        /*Interpolate the next base matrix.*/
+        for(ci=0;ci<64;ci++){
+          base[ci]=(unsigned char)(
+           (2*((qi_end-qi)*_qinfo->qi_ranges[qti][pli].base_matrices[qri][ci]+
+           (qi-qi_start)*_qinfo->qi_ranges[qti][pli].base_matrices[qri+1][ci])
+           +_qinfo->qi_ranges[qti][pli].sizes[qri])/
+           (2*_qinfo->qi_ranges[qti][pli].sizes[qri]));
+        }
+      }
+    }
   }
 }

@@ -3,10 +3,6 @@
 #include <string.h>
 #include "encint.h"
 
-#if !defined(M_LN2)
-# define M_LN2 (0.69314718055994530942)
-#endif
-
 /*This is where we attempt to model low-level vision processes, such as
    sensitivities due to the way human eyes are constructed and how data flows
    through the early stages of the vision process.
@@ -1914,7 +1910,7 @@ static void oc_psych_csf_filters_interpolate(oc_psych_ctx *_psych,
     alpha=_contrast;
   }
   else if(_contrast<=64){
-    logc=OC_LOGF(_contrast)*(float)(1/M_LN2)+1;
+    logc=OC_LOGF(_contrast)*OC_1_LN2+1;
     logc0=OC_IFLOORF(logc);
     logc1=OC_ICEILF(logc);
     alpha=logc-logc0;

@@ -31,7 +31,7 @@
   Therefore we posit that a set of symmetric FIR filters exist which
    approximate the above process, and proceed to set up a numerical
    optimization problem to solve for their coefficients.
-  This is done by applying the above process set a set of simple cosine curves
+  This is done by applying the above process to a set of simple cosine curves
    with varying frequencies and phases, and evaluating what the proper output
    of the filters should be.
   A least-squares problem is then set up to find the filter coefficients which

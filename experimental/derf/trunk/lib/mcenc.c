@@ -308,6 +308,7 @@ static int oc_mcenc_ysad_check_mbcandidate_fullpel(oc_mcenc_ctx *_mcenc,
    _ref_idx,_block_err);
 }
 
+#if 0
 static int oc_mcenc_sad_check_bcandidate_fullpel(oc_mcenc_ctx *_mcenc,
  int _mbi,int _bi,int _dx,int _dy,int _pli,int _ref_idx){
   const oc_fragment_plane *fplane;
@@ -340,6 +341,7 @@ static int oc_mcenc_ysad_check_bcandidate_fullpel(oc_mcenc_ctx *_mcenc,
   return oc_mcenc_sad_check_bcandidate_fullpel(_mcenc,_mbi,_bi,_dx,_dy,0,
    _ref_idx);
 }
+#endif
 
 static int oc_mcenc_ysad_halfpel_mbrefine(oc_mcenc_ctx *_mcenc,
  int _mbi,int _vec[2],int _best_err,int _ref_idx){

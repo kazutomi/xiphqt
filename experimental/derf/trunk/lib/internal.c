@@ -162,7 +162,7 @@ int oc_state_init(oc_theora_state *_state,theora_info *_info){
   _state->keyframe_granule_shift=0;
 #endif
   _state->keyframe_num=0;
-  _state->curframe_num=0;
+  _state->curframe_num=-1;
   return 0;
 }
 
@@ -302,6 +302,104 @@ const int OC_DCT_TOKEN_EXTRA_BITS[OC_NDCT_TOKENS]={
   1,1,1,1,1,3,4,
   2,3
 };
+
+
+/*Determines the number of blocks or coefficients to be skipped for a given
+   token value.
+  _token:      The token value to skip.
+  _extra_bits: The extra bits attached to this token.
+  Return: A positive value indicates that number of coefficients are to be
+           skipped in the current block.
+          Otherwise, the negative of the return value indicates that number of
+           blocks are to be ended.*/
+typedef (*oc_token_skip_func)(int _token,int _extra_bits);
+
+/*Handles the end of block tokens.*/
+static int oc_token_skip_eob(int _token,int _extra_bits){
+  static const int NBLOCKS_ADJUST[OC_NDCT_EOB_TOKEN_MAX]={1,2,3,4,8,16,0};
+  return -_extra_bits-NBLOCKS_ADJUST[_token];
+}
+
+/*Handles the pure zero run tokens.*/
+static int oc_token_skip_zrl(int _token,int _extra_bits){
+  return _extra_bits+1;
+}
+
+/*Handles a normal coefficient value token.*/
+static int oc_token_skip_val(void){
+  return 1;
+}
+
+/*Handles a category 1A zero run/coefficient value combo token.*/
+static int oc_token_skip_run_cat1a(int _token){
+  return _token-OC_DCT_RUN_CAT1A+2;
+}
+
+/*Handles category 1b and 2 zero run/coefficient value combo tokens.*/
+static int oc_token_skip_run(int _token,int _extra_bits){
+  static const int NCOEFFS_ADJUST[OC_NDCT_RUN_MAX-OC_DCT_RUN_CAT1B]={
+    7,11,2,3
+  };
+  static const int NCOEFFS_MASK[OC_NDCT_RUN_MAX-OC_DCT_RUN_CAT1B]={
+    3,7,0,1
+  };
+  _token-=OC_DCT_RUN_CAT1B;
+  return (_extra_bits&NCOEFFS_MASK[_token])+NCOEFFS_ADJUST[_token];
+}
+
+/*A jump table for computing the number of coefficients or blocks to skip for
+   a given token value.
+  This reduces all the conditional branches, etc., needed to parse these token
+   values down to one indirect jump.*/
+static const oc_token_skip_func OC_TOKEN_SKIP_TABLE[OC_NDCT_TOKENS]={
+  oc_token_skip_eob,
+  oc_token_skip_eob,
+  oc_token_skip_eob,
+  oc_token_skip_eob,
+  oc_token_skip_eob,
+  oc_token_skip_eob,
+  oc_token_skip_eob,
+  oc_token_skip_zrl,
+  oc_token_skip_zrl,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_val,
+  (oc_token_skip_func)oc_token_skip_run_cat1a,
+  (oc_token_skip_func)oc_token_skip_run_cat1a,
+  (oc_token_skip_func)oc_token_skip_run_cat1a,
+  (oc_token_skip_func)oc_token_skip_run_cat1a,
+  (oc_token_skip_func)oc_token_skip_run_cat1a,
+  oc_token_skip_run,
+  oc_token_skip_run,
+  oc_token_skip_run,
+  oc_token_skip_run
+};
+
+/*Determines the number of blocks or coefficients to be skipped for a given
+   token value.
+  _token:      The token value to skip.
+  _extra_bits: The extra bits attached to this token.
+  Return: A positive value indicates that number of coefficients are to be
+           skipped in the current block.
+          Otherwise, the negative of the return value indicates that number of
+           blocks are to be ended.*/
+int oc_dct_token_skip(int _token,int _extra_bits){
+  return (*OC_TOKEN_SKIP_TABLE[_token])(_token,_extra_bits);
+}
+
+
+
 
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz){
   size_t  colsz;

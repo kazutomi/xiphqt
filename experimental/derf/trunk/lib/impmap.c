@@ -5,7 +5,7 @@
 #include <ogg/ogg.h>
 #include "encint.h"
 #include "psych.h"
-#define OC_DUMP_IMAGES (0)
+#define OC_DUMP_IMAGES (1)
 #if defined(OC_DUMP_IMAGES)
 # include <stdio.h>
 # include "png.h"
@@ -720,7 +720,7 @@ static void oc_seg_pair_reheap(oc_seg_ctx *_seg,oc_seg_pair *_pair,
 }
 
 /*Adds, removes, or moves a pair in the pair heap after its dbic has changed.
-  This is the version of this function that froces small regions to keep their
+  This is the version of this function that forces small regions to keep their
    pairs in the heap.
   _seg:      The segmentation context.
   _pair:     The pair that was updated.
@@ -749,7 +749,7 @@ static void oc_seg_pair_reheap_small(oc_seg_ctx *_seg,oc_seg_pair *_pair,
    constituent regions merges with another region.
   _seg:  The segmentation context.
   _pair: The pair to update.*/
-static void oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
+static float oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   oc_seg_region *reg0;
   oc_seg_region *reg1;
   float          area;
@@ -767,10 +767,22 @@ static void oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   old_dbic=_pair->dbic;
   _pair->dbic=_pair->bic-reg0->bic-reg1->bic-
    OC_SEG_MODEL_MERGE_WEIGHT*OC_LOGF(area);
-  _seg->reheap(_seg,_pair,old_dbic);
+  return old_dbic;
 }
 
+/*Updates a pair's npixels, sumx, sumx2, bic and dbic fields, and its position
+   in the heap.
+  This is used after a pair is first created, and whenever one of its
+   constituent regions merges with another region.
+  _seg:  The segmentation context.
+  _pair: The pair to update.*/
+static void oc_seg_pair_update_reheap(oc_seg_ctx *_seg,oc_seg_pair *_pair){
+  _seg->reheap(_seg,_pair,oc_seg_pair_update(_seg,_pair));
+}
+
+
 /*Creates a new pair between two regions if one does not already exist.
+  The pair is never added to the merge heap.
   _seg:   The segmentation context.
   _regi0: The region number of the first region.
           If this pair is eventually merged, this will be the label of the
@@ -778,7 +790,8 @@ static void oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   _regi1: The region number of the second region.
           For efficiency purposes, one desires this to have the smaller
            number of neighbors.*/
-static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
+static oc_seg_pair *oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,
+ int _regi1){
   oc_seg_region *reg0;
   oc_seg_region *reg1;
   oc_seg_link   *link;
@@ -786,7 +799,7 @@ static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
   /*Search the second region's neighbor list for the first region.*/
   reg1=_seg->regions+_regi1;
   /*Quick rejection: it's at the head of the list.*/
-  if(reg1->link.next->regi==_regi0)return;
+  if(reg1->link.next->regi==_regi0)return NULL;
   /*Otherwise start searching from the second element of the list.*/
   for(link=reg1->link.next->next;link->pair!=NULL;link=link->next){
     if(link->regi==_regi0){
@@ -800,7 +813,7 @@ static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
       link->prev=&reg1->link;
       link->next->prev=link;
       reg1->link.next=link;
-      return;
+      return NULL;
     }
   }
   /*Add a new pair to the regions' lists.*/
@@ -819,8 +832,23 @@ static void oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,int _regi1){
   reg0->link.next->prev=pair->links+1;
   reg0->link.next=pair->links+1;
   pair->heapi=-1;
+  return pair;
+}
+
+/*Creates a new pair between two regions if one does not already exist.
+  If possible, the pair is added to the merge heap.
+  _seg:   The segmentation context.
+  _regi0: The region number of the first region.
+          If this pair is eventually merged, this will be the label of the
+           merged region.
+  _regi1: The region number of the second region.
+          For efficiency purposes, one desires this to have the smaller
+           number of neighbors.*/
+static void oc_seg_create_pair_reheap(oc_seg_ctx *_seg,int _regi0,int _regi1){
+  oc_seg_pair *pair;
+  pair=oc_seg_create_pair(_seg,_regi0,_regi1);
   /*Check to see if these regions can potentially be merged.*/
-  oc_seg_pair_update(_seg,pair);
+  if(pair!=NULL)oc_seg_pair_update_reheap(_seg,pair);
 }
 
 /*Merges the list of pairs in region _srci into the list in region _dsti,
@@ -922,7 +950,7 @@ static void oc_seg_merge(oc_seg_ctx *_seg){
     oc_seg_pair_free(_seg,pair);
     /*Now update all the pairs that involve the new merged region.*/
     for(link=reg[0]->link.next;link->pair!=NULL;link=link->next){
-      oc_seg_pair_update(_seg,link->pair);
+      oc_seg_pair_update_reheap(_seg,link->pair);
     }
   }
 }
@@ -941,14 +969,16 @@ static void oc_seg_merge(oc_seg_ctx *_seg){
   _sumx:   The sum of the pixel values over the local region.
   _sumx2   The sum of the squared pixel values over the local region.
   _bic:    The BIC of the local region.*/
-static void oc_seg_merge_l(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
- int _height,int _area,float _sumx,float _sumx2,float _bic){
+static void oc_seg_merge_l(oc_seg_ctx *_seg,int _x0,int _y0,int _dx,int _dy,
+ int _width,int _height,int _area,float _sumx,float _sumx2,float _bic){
   oc_seg_region *reg;
   int            regi;
   int            xend;
   int            yend;
   int            x;
   int            y;
+  _x0+=_dx;
+  _y0+=_dy;
   xend=_x0+_width;
   yend=_y0+_height;
   /*Set up the region structure.*/
@@ -963,13 +993,13 @@ static void oc_seg_merge_l(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   reg->sumx2=_sumx2;
   reg->bic=_bic;
   /*Scan the left edge, if present, for adjacent regions.*/
-  if(_x0>0)for(y=_y0;y<yend;y++){
-    oc_seg_create_pair(_seg,
+  if(_dx>0)for(y=_y0;y<yend;y++){
+    oc_seg_create_pair_reheap(_seg,
      oc_seg_get_label(_seg,_seg->labels[y][_x0-1]),regi);
   }
   /*Scan the top edge, if present, for adjacent regions.*/
-  if(_y0>0)for(x=_x0;x<xend;x++){
-    oc_seg_create_pair(_seg,
+  if(_dy>0)for(x=_x0;x<xend;x++){
+    oc_seg_create_pair_reheap(_seg,
      oc_seg_get_label(_seg,_seg->labels[_y0-1][x]),regi);
   }
   /*Merge all mergeable regions.*/
@@ -1058,6 +1088,15 @@ static void oc_seg_merge_s(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   for(y=_y0;y<yend;y++)for(x=_x0;x<xend;x++){
     _seg->labels[y][x]=(_seg->regions+_seg->labels[y][x])->link.regi;
   }
+  /*Step 5: Create pairs with other global regions.*/
+  /*Scan the left edge, if present, for adjacent regions.*/
+  if(_x0>0)for(y=_y0;y<yend;y++){
+    oc_seg_create_pair(_seg,_seg->labels[y][_x0-1],_seg->labels[y][_x0]);
+  }
+  /*Scan the top edge, if present, for adjacent regions.*/
+  if(_y0>0)for(x=_x0;x<xend;x++){
+    oc_seg_create_pair(_seg,_seg->labels[_y0-1][x],_seg->labels[_y0][x]);
+  }
 }
 
 /*Attempts to merge a block that can't be split anymore with existing,
@@ -1103,6 +1142,7 @@ static void oc_seg_merge_t(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
     oc_seg_create_pair(_seg,
      oc_seg_get_label(_seg,_seg->labels[_y0-1][x]),regi);
   }
+#if 0
   /*Merge all mergeable regions.*/
   oc_seg_merge(_seg);
   /*If we merged away the region we just created, set it up for re-use.*/
@@ -1110,6 +1150,7 @@ static void oc_seg_merge_t(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
     _seg->nregions--;
     regi=oc_seg_get_label(_seg,regi);
   }
+#endif
   /*Fill the block with the new region label.*/
   for(y=_y0;y<yend;y++)for(x=_x0;x<xend;x++)_seg->labels[y][x]=regi;
 }
@@ -1168,7 +1209,7 @@ static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
     _level++;
   }
   size=1<<_level;
-  oc_seg_merge_l(_seg,_x0+_dx,_y0+_dy,size,size,_area,_sumx,_sumx2,_bic);
+  oc_seg_merge_l(_seg,_x0,_y0,_dx,_dy,size,size,_area,_sumx,_sumx2,_bic);
 }
 
 /*Recursive split-merge step.
@@ -1242,7 +1283,7 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
       return;
     }
   }
-  oc_seg_merge_l(_seg,_x0+_dx,_y0+_dy,_width,_height,_area,_sumx,_sumx2,_bic);
+  oc_seg_merge_l(_seg,_x0,_y0,_dx,_dy,_width,_height,_area,_sumx,_sumx2,_bic);
 }
 
 /*Recursive split-merge step.
@@ -1558,8 +1599,6 @@ static void oc_seg_init(oc_seg_ctx *_seg,int _width,int _height){
      indicates no region.*/
   _seg->regions+=OC_SEG_NLOCAL_REGS+1;
   _seg->relabels=(int *)_ogg_malloc(cregions*sizeof(_seg->relabels[0]));
-  _seg->npairs=0;
-  _seg->nheap=0;
   _seg->pairs=(oc_seg_pair *)_ogg_malloc(cpairs*sizeof(_seg->pairs[0]));
   _seg->free_pairs=NULL;
   _seg->heap=(oc_seg_pair **)_ogg_malloc(cpairs*sizeof(_seg->heap[0]));
@@ -1596,6 +1635,9 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const oc_img_plane *_plane){
   /*Build the moment tables.*/
   oc_seg_sum_moments(_seg,_plane);
   /*Perform the splitting and merging to produce the segmentation.*/
+  _seg->npairs=0;
+  _seg->free_pairs=NULL;
+  _seg->nheap=0;
   _seg->nregions=0;
   area=_plane->width*_plane->height;
   if(_seg->level_max>OC_SEG_MOMENT_RES_LOG){
@@ -1615,6 +1657,29 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const oc_img_plane *_plane){
     oc_seg_splitmerge_bs(_seg,0,0,_plane->width,_plane->height,
      _seg->level_max,area,sumx,sumx2,bic,_plane);
   }
+  /*Step 1: Add all the global region pairs to the heap.*/
+  for(regi=0;regi<_seg->nregions;regi++){
+    oc_seg_region *reg;
+    oc_seg_link   *link;
+    reg=_seg->regions+regi;
+    /*Add this region's pairs to the merge heap if necessary.
+      Don't worry about heap structure for now.*/
+    for(link=reg->link.next;link->pair!=NULL;link=link->next){
+      oc_seg_pair *pair;
+      pair=link->pair;
+      if(pair->links==link){
+        oc_seg_pair_update(_seg,pair);
+        if(pair->dbic<0){
+          pair->heapi=_seg->nheap++;
+          _seg->heap[pair->heapi]=pair;
+        }
+      }
+    }
+  }
+  /*Make a heap out of all the pairs all at once.*/
+  oc_seg_pair_heapify(_seg);
+  /*Step 2: Merge all the regions.*/
+  oc_seg_merge(_seg);
   /*Make sure all the region labels are up to date.*/
   for(regi=0;regi<_seg->nregions;regi++)oc_seg_get_label(_seg,regi);
 }
