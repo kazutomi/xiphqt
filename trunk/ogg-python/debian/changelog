@@ -1,3 +1,11 @@
+pyogg (0.3-1) unstable; urgency=low
+
+  * New upstream.
+  * Fixed versioned depends.
+  * Upstream removed dependency on libvorbis-dev (Closes: #89293)
+
+ -- Christopher L Cheney <ccheney@debian.org>  Sun, 17 Jun 2001 20:00:00 -0500
+
 pyogg (0.2-1) unstable; urgency=low
 
   * Initial Release.
