@@ -1,12 +1,16 @@
-rem @echo off
+@echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.5 2001/09/14 01:26:30 cwolf Exp $
+rem $Id: makesdk.bat,v 1.6 2001/09/14 03:16:13 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
 
 if ."%MSDEVDIR%"==."" goto msdevnotset
+
+rem Create and install MSVC macros, if needed
+call mfmacro.bat
+if errorlevel 1 goto ERROR
 
 rem If one of the makefiles doesn't exist, 
 rem assume they all need to be generated
@@ -87,7 +91,7 @@ rem --- copy examples into sdk
 
 echo Copying examples...
 
-xcopy /y %SRCROOT%\vorbis\examples\*.c %SRCROOT%\win32sdk\sdk\examples\vorbis
+xcopy /y %SRCROOT%\vorbis\examples\*.c %SRCROOT%\win32sdk\sdk\examples\vorbis > nul
 
 echo ... copied.
 
@@ -122,7 +126,7 @@ xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.lib %SRCROOT%\win32sd
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.pdb %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.dll %SRCROOT%\win32sdk\sdk\bin 
+xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Static_Release\vorbisfile_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR

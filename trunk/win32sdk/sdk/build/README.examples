@@ -1,0 +1,19 @@
+$Id: README.examples,v 1.1 2001/09/14 03:16:14 cwolf Exp $
+$Name:  $
+=======================================================================
+The SDKHOME directory must be set to where the SDK is rooted,
+including the "sdk" part of the path. 
+e.g. "c:\src\xiph\sdk"
+
+The sample programs in "SDKHOME\examples\vorbis"
+can be built by using this build environment.
+
+For an IDE build, the workspace "examples.dsw" can be loaded,
+then from the "build" menu, the "build" menu item will build
+all the example programs, both static and dynamic, debug and
+release versions.
+
+For a command line build, first run "mkmak.bat" to generate
+the makefiles, them run "build_all.bat"
+
+"clean_all.bat" will run all the clean targets.
