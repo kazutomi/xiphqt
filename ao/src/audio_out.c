@@ -204,6 +204,7 @@ driver_list* _load_static_drivers(driver_list **end)
 				break;
 
 			driver->next->functions = static_drivers[i];
+			driver->next->handle = NULL;
 			driver->next->next = NULL;
 			
 			driver = driver->next;
