@@ -198,7 +198,7 @@ ices_log_open_logfile (void)
   logfp = ices_util_fopen_for_writing (namespace);
 
   if (!logfp) {
-    ices_log_error ("Error while opening %s, error: %s",
+    ices_log_error ("Error while opening %s, error: %s", namespace,
 		    ices_util_strerror (errno, buf, 1024));
     return 0;
   }

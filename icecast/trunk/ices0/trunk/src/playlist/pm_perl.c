@@ -65,7 +65,7 @@ ices_playlist_perl_initialize (playlist_module_t* pm)
 
   str = pl_perl_eval ("ices_init");
   ret = atoi (str);	/* allocated in perl.c */
-  ices_util_free (str);	/* clean up after yourself! */
+  ices_util_free (str);
 		
   if (!ret) 
     ices_log_error ("Execution of 'ices_init' failed");
@@ -81,7 +81,7 @@ playlist_perl_get_lineno (void)
 
   str = pl_perl_eval ("ices_get_lineno");
   ret = atoi (str); 	/* allocated in perl.c */
-  ices_util_free (str);	/* clean up after yourself! */
+  ices_util_free (str);
 
   if (!ret) 
     ices_log_error ("Execution of 'ices_get_lineno' failed");
