@@ -24,7 +24,7 @@ static int oc_sb_quad_top_left_frag(const oc_sb *_sb,int _quadi){
 
 /*Fills in the mapping from block positions to fragment numbers for a single
    color plane.
-  This function also fills in the "valid" flag of each macro block in a super
+  This function also fills in the "valid" flag of each quadrant in a super
    block.
   _sbs:    The array of super blocks for the color plane.
   _frag0:  The index of the first fragment in the plane.
@@ -90,7 +90,7 @@ static void oc_sb_create_plane_mapping(oc_sb _sbs[],int _frag0,int _hfrags,
 }
 
 /*Fills in the Y plane fragment map for a macro block given the fragment
-   indices of its upper-left hand corder.
+   coordinates of its upper-left hand corner.
   _mb:     The macro block to fill.
   _fplane: The description of the Y plane.
   _x:      The X location of the upper-left hand fragment in the Y plane.
@@ -1011,6 +1011,11 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   y_stride=_state->ref_frame_bufs[framei][0].ystride;
   u_stride=_state->ref_frame_bufs[framei][1].ystride;
   v_stride=_state->ref_frame_bufs[framei][2].ystride;
+  /*Chroma up-sampling is just done with a box filter.
+    This is very likely what will actually be used in practice on a real
+     display, and also removes one more layer to search in for the source of
+     artifacts.
+    As an added bonus, it's dead simple.*/
   for(imgi=height;imgi-->0;){
     int dc;
     y=y_row;
