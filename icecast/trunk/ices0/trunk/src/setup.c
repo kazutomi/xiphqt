@@ -34,6 +34,7 @@ static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize ();
 static void ices_setup_run_mode_select (ices_config_t *ices_config);
 static int _ices_setup_shutting_down = 0;
+static void ices_setup_cleanup (ices_config_t *ices_config);
 
 /* Global function definitions */
 void
@@ -109,6 +110,10 @@ ices_setup_shutdown ()
 
 	thread_shutdown ();
 
+	ices_setup_cleanup (ices_util_get_config());
+	
+	ices_log ("Ices Exiting...");
+
 	ices_log_shutdown ();
 	
 	exit (1);
@@ -160,6 +165,46 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 }
 
 static void
+ices_setup_cleanup (ices_config_t *ices_config)
+{
+	if (ices_config->host)
+		ices_util_free (ices_config->host);
+
+	if (ices_config->mount)
+		ices_util_free (ices_config->mount);
+
+	if (ices_config->password)
+		ices_util_free (ices_config->password);
+
+	if (ices_config->name)
+		ices_util_free (ices_config->name);
+
+	if (ices_config->genre)
+		ices_util_free (ices_config->genre);
+
+	if (ices_config->description)
+		ices_util_free (ices_config->description);
+
+	if (ices_config->url)
+		ices_util_free (ices_config->url);
+
+	if (ices_config->dumpfile)
+		ices_util_free (ices_config->dumpfile);
+
+	if (ices_config->configfile)
+		ices_util_free (ices_config->configfile);
+
+	if (ices_config->playlist_file)
+		ices_util_free (ices_config->playlist_file);
+
+	if (ices_config->interpreter_file)
+		ices_util_free (ices_config->interpreter_file);
+
+	if (ices_config->base_directory)
+		ices_util_free (ices_config->base_directory);
+}
+
+static void
 ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile)
 {
 	int ret = ices_xml_parse_config_file (ices_config, configfile);
@@ -188,6 +233,8 @@ ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, ch
 			switch (s[1]) {
 				case 'c':
 					arg++;
+					if (ices_config->configfile)
+						ices_util_free (ices_config->configfile);
 					ices_config->configfile = ices_util_strdup (argv[arg]);
 					break;
 			}
@@ -228,26 +275,38 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'd':
 					arg++;
+					if (ices_config->description)
+						ices_util_free (ices_config->description);
 					ices_config->description = ices_util_strdup (argv[arg]);
 					break;
 				case 'D':
 					arg++;
+					if (ices_config->base_directory)
+						ices_util_free (ices_config->base_directory);
 					ices_config->base_directory = ices_util_strdup (argv[arg]);
 					break;
 				case 'F':
 					arg++;
+					if (ices_config->playlist_file)
+						ices_util_free (ices_config->playlist_file);
 					ices_config->playlist_file = ices_util_strdup (argv[arg]);
 					break;
 				case 'f':
 					arg++;
+					if (ices_config->dumpfile)
+						ices_util_free (ices_config->dumpfile);
 					ices_config->dumpfile = ices_util_strdup (argv[arg]);
 					break;
 				case 'g':
 					arg++;
+					if (ices_config->genre)
+						ices_util_free (ices_config->genre);
 					ices_config->genre = ices_util_strdup (argv[arg]);
 					break;
 				case 'h':
 					arg++;
+					if (ices_config->host)
+						ices_util_free (ices_config->host);
 					ices_config->host = ices_util_strdup (argv[arg]);
 					break;
 				case 'i':
@@ -255,18 +314,26 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'M':
 					arg++;
+					if (ices_config->interpreter_file)
+						ices_util_free (ices_config->interpreter_file);
 					ices_config->interpreter_file = ices_util_strdup (argv[arg]);
 					break;
 				case 'm':
 					arg++;
+					if (ices_config->mount)
+						ices_util_free (ices_config->mount);
 					ices_config->mount = ices_util_strdup (argv[arg]);
 					break;
 				case 'n':
 					arg++;
+					if (ices_config->name)
+						ices_util_free (ices_config->name);
 					ices_config->name = ices_util_strdup (argv[arg]);
 					break;
 				case 'P':
 					arg++;
+					if (ices_config->password)
+						ices_util_free (ices_config->password);
 					ices_config->password = ices_util_strdup (argv[arg]);
 					break;
 				case 'p':
@@ -300,6 +367,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'u':
 					arg++;
+					if (ices_config->url)
+						ices_util_free (ices_config->url);
 					ices_config->url = ices_util_strdup (argv[arg]);
 					break;
 				case 'v':

@@ -160,7 +160,7 @@ Lets first go through the things you can change in ices.
 	Command line option: -M <module>
 	Config file tag: Playlist/Module
 	Use this option to execute a different python or perl module than the default.
-	Default for python is ices.py and default for perl is ices.pl.
+	Default for python is ices.py and default for perl is ices.pm.
 
 How is it licensed?
 ~~~~~~~~~~~~~~~~~~~

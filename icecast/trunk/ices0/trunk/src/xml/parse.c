@@ -140,17 +140,41 @@ ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_co
 {
 	while (cur != NULL) {
 		if (strcmp (cur->name, "Name") == 0) {
+
+			if (ices_config->name)
+				ices_util_free (ices_config->name);
+
 			ices_config->name = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Genre") == 0) {
+
+			if (ices_config->genre)
+				ices_util_free (ices_config->genre);
+
 			ices_config->genre = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Description") == 0) {
+
+			if (ices_config->description)
+				ices_util_free (ices_config->description);
+
 			ices_config->description = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "URL") == 0) {
+
+			if (ices_config->url)
+				ices_util_free (ices_config->url);
+
 			ices_config->url = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Bitrate") == 0) {
+
 			ices_config->bitrate = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Public") == 0) {
+
 			ices_config->ispublic = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else {
 			ices_log ("Unknown Stream keyword: %s", cur->name);
 		}
@@ -164,21 +188,46 @@ ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_co
 {
 	while (cur != NULL) {
 		if (strcmp (cur->name, "Port") == 0) {
+
 			ices_config->port = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Hostname") == 0) {
+
+			if (ices_config->host)
+				ices_util_free (ices_config->host);
+
 			ices_config->host = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Mountpoint") == 0) {
+			
+			if (ices_config->mount)
+				ices_util_free (ices_config->mount);
+
 			ices_config->mount = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Password") == 0) {
+			
+			if (ices_config->password)
+				ices_util_free (ices_config->password);
+
 			ices_config->password = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Dumpfile") == 0) {
+			
+			if (ices_config->dumpfile)
+				ices_util_free (ices_config->dumpfile);
+
 			ices_config->dumpfile = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Protocol") == 0) {
+
 			unsigned char *str = xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1);
+
 			if (str && (str[0] == 'i' || str[0] == 'I'))
 				ices_config->header_protocol = icy_header_protocol_e;
 			else
 				ices_config->header_protocol = xaudiocast_header_protocol_e;
+
 		} else {
 			ices_log ("Unknown Server keyword: %s", cur->name);
 		}
@@ -192,12 +241,22 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices
 {
 	while (cur != NULL) {
 		if (strcmp (cur->name, "Background") == 0) {
+
 			ices_config->daemon = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Verbose") == 0) {
+			
 			ices_config->verbose = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Base_Directory") == 0) {
+			
+			if (ices_config->base_directory)
+				ices_util_free (ices_config->base_directory);
+			
 			ices_config->base_directory = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+			
 		} else if (strcmp (cur->name, "Reencode") == 0) {
+
 			int res = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 
 #ifndef HAVE_LIBLAME
@@ -210,7 +269,9 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices
 			ices_config->reencode = res;
 
 		} else {
+
 			ices_log ("Unknown Execution keyword: %s", cur->name);
+
 		}
 
 		cur = cur->next;
@@ -222,21 +283,37 @@ ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_
 {
 	while (cur != NULL) {
 		if (strcmp (cur->name, "Randomize") == 0) {
+
 			ices_config->randomize_playlist = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Type") == 0) {
 			unsigned char *str = xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1);
+
 			if (str && (strcmp (str, "python") == 0))
 				ices_config->playlist_type = ices_playlist_python_e;
 			else if (str && (strcmp (str, "perl") == 0))
 				ices_config->playlist_type = ices_playlist_perl_e;
 			else
 				ices_config->playlist_type = ices_playlist_builtin_e;
+			
 		} else if (strcmp (cur->name, "File") == 0) {
+
+			if (ices_config->playlist_file)
+				ices_util_free (ices_config->playlist_file);
+
 			ices_config->playlist_file = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else if (strcmp (cur->name, "Module") == 0) {
+
+			if (ices_config->interpreter_file)
+				ices_util_free (ices_config->interpreter_file);
+
 			ices_config->interpreter_file = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+
 		} else {
+
 			ices_log ("Unknown playlist keyword: %s", cur->name);
+
 		}
 
 		cur = cur->next;
