@@ -721,7 +721,6 @@ assign_tag(vorbis_comment *vcomment, const char *key, PyObject *tag)
       tag_buff[k] = toupper(key[k]);
     tag_buff[key_len] = '=';
     strncpy(tag_buff + key_len + 1, tag_str, sizeof(tag_buff) - key_len - 1);
-    printf("Tag is now \"%s\"", tag_buff);
     vorbis_comment_add(vcomment, tag_buff);
   }
   return 1;
