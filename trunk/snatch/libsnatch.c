@@ -130,8 +130,13 @@ static int gwrite(int fd, void *buf, int n){
     if(ret<0){
       if(errno==EAGAIN)
 	ret=0;
-      else
+      else{
+	fprintf(stderr,"**ERROR: Write error on capture file!\n"
+		"       : %s\n",strerror(errno));
+	CloseOutputFile(); /* if the error is the 2GB limit on Linux 2.2,
+			      this will result in a new file getting opened */
 	return(ret);
+      }
     }
     buf+=ret;
     n-=ret;
