@@ -23,4 +23,4 @@ void ices_setup_initialize (void);
 void ices_setup_shutdown (void);
 
 /* exported for the config parser */
-void ices_setup_parse_stream_defaults (ices_stream_config_t*);
+void ices_setup_parse_stream_defaults (ices_stream_t*);

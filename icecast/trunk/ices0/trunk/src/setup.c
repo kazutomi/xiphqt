@@ -52,7 +52,7 @@ static int ThreadsInitialised = 0;
 void
 ices_setup_initialize (void)
 {
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
   
   /* Setup signal handlers */
   ices_signals_setup ();
@@ -93,7 +93,7 @@ ices_setup_initialize (void)
 void
 ices_setup_shutdown (void)
 {
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
 
   /* Protection for multiple threads calling shutdown.
    * Remember that this is can be called from many places,
@@ -192,15 +192,14 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
   ices_config->pm.randomize = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
   ices_config->pm.playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
 
-  ices_config->streams =
-    (ices_stream_config_t*) malloc (sizeof (ices_stream_config_t));
+  ices_config->streams = (ices_stream_t*) malloc (sizeof (ices_stream_t));
 
   ices_setup_parse_stream_defaults (ices_config->streams);
 }
 
-/* Place hardcoded defaults into an ices_stream_config object */
+/* Place hardcoded defaults into an ices_stream_t object */
 void
-ices_setup_parse_stream_defaults (ices_stream_config_t* stream)
+ices_setup_parse_stream_defaults (ices_stream_t* stream)
 {
   stream->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
   stream->dumpfile = NULL;
@@ -218,13 +217,14 @@ ices_setup_parse_stream_defaults (ices_stream_config_t* stream)
 
   stream->encoder_state = NULL;
   stream->encoder_initialised = 0;
+  stream->connect_delay = 0;
 
   stream->next = NULL;
 }
 
-/* Frees ices_stream_config_t data (but not the object itself) */
+/* Frees ices_stream_t data (but not the object itself) */
 static void
-ices_setup_free_stream (ices_stream_config_t* stream)
+ices_setup_free_stream (ices_stream_t* stream)
 {
   ices_util_free (stream->mount);
   ices_util_free (stream->dumpfile);
@@ -239,7 +239,7 @@ ices_setup_free_stream (ices_stream_config_t* stream)
 static void
 ices_setup_free_all_allocations (ices_config_t *ices_config)
 {
-  ices_stream_config_t *stream, *next;
+  ices_stream_t *stream, *next;
 
   ices_util_free (ices_config->host);
   ices_util_free (ices_config->password);
@@ -328,7 +328,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 {
   int arg;
   char *s;
-  ices_stream_config_t* stream = ices_config->streams;
+  ices_stream_t* stream = ices_config->streams;
   /* each -m option creates a new stream, subsequent options are applied
    * to it. */
   int nstreams = 1;
@@ -403,7 +403,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  arg++;
 	  if (nstreams > 1) {
 	    stream->next =
-	      (ices_stream_config_t*) malloc (sizeof (ices_stream_config_t));
+	      (ices_stream_t*) malloc (sizeof (ices_stream_t));
 	    stream = stream->next;
 	    ices_setup_parse_stream_defaults (stream);
 	  }
@@ -477,7 +477,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 static void
 ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 {
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
   int streamno = 0;
 
   for (stream = ices_config->streams; stream; stream = stream->next) {

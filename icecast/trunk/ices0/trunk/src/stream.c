@@ -27,16 +27,22 @@
 #endif
 
 #include <resolver.h>
+#include <time.h>
 
 #define INPUT_BUFSIZ 4096
+/* sleep this long in ms when every stream has errors */
+#define ERROR_DELAY 1000
 
 extern ices_config_t ices_config;
 
 static volatile int finish_send = 0;
 
 /* Private function declarations */
-static int ices_stream_send_file (const char *file);
-static int ices_stream_open_source (input_stream_t* source);
+static int stream_connect (ices_stream_t* stream);
+static int stream_send_file (const char *file);
+static int stream_send_data (ices_stream_t* stream, unsigned char* buf,
+			     size_t len);
+static int stream_open_source (input_stream_t* source);
 
 /* Public function definitions */
 
@@ -45,9 +51,8 @@ static int ices_stream_open_source (input_stream_t* source);
 void
 ices_stream_loop (void)
 {
-  char namespace[1024];
   int consecutive_errors = 0;
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
 
   /* Check if user gave us a hostname */
   for (stream = ices_config.streams; stream; stream = stream->next) {
@@ -63,15 +68,9 @@ ices_stream_loop (void)
     }
   }
 
-  /* Tell libshout to connect to the server */
   for (stream = ices_config.streams; stream; stream = stream->next) {
-    if (!shout_connect (&stream->conn)) {
-      ices_log ("Failed connecting to server %s, error: %s", stream->conn.ip, shout_strerror(&stream->conn, stream->conn.error, namespace, 1024));
-      ices_setup_shutdown ();
-    }
+    stream_connect (stream);
   }
-	
-  ices_log ("Connected to server %s...", ices_config.streams->conn.ip);
 
   /* Foreeeever streams, I want to be forever streaming... */
   while (1) {
@@ -90,27 +89,10 @@ ices_stream_loop (void)
     }
 		
     /* If something goes on while transfering, we just go on */
-    if (ices_stream_send_file (file) < 0) {
-      ices_log ("Warning: Encountered error while transfering %s. [%s]", file, ices_log_get_error ());
+    if (stream_send_file (file) < 0) {
+      ices_log ("Encountered error while transfering %s: %s", file, ices_log_get_error ());
 
       consecutive_errors++;
-
-      /* Not the best interface - we have to search for the error */
-      /* Let's see if it was a libshout socket error */
-      for (stream = ices_config.streams; stream; stream = stream->next) {
-	if (stream->conn.error == SHOUTERR_SOCKET) {
-	  ices_log ("Libshout communication problem, trying to reconnect to server");
-				
-	  /* Make sure we disconnect */
-	  shout_disconnect (&stream->conn);
-
-	  /* Reconnect */
-	  if (!shout_connect (&stream->conn)) {
-	    ices_log ("Failed reconnecting to server %s, error: %i", stream->conn.ip, stream->conn.error);
-	    ices_setup_shutdown ();
-	  }
-	}
-      }
 
       /* This stops ices from entering a loop with 10-20 lines of output per
 	 second. Usually caused by a playlist handler that produces only
@@ -134,18 +116,26 @@ ices_stream_loop (void)
   /* Not reached */
 }
 
+/* set a flag to tell ices_stream_send_file to finish early */
+void
+ices_stream_next (void)
+{
+  finish_send = 1;
+}
+
 /* This function is called to stream a single file */
 static int
-ices_stream_send_file (const char *file)
+stream_send_file (const char *file)
 {
   input_stream_t source;
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
   unsigned char ibuf[INPUT_BUFSIZ];
   char namespace[1024];
   ssize_t len;
   ssize_t olen;
   int samples;
   int rc;
+  int do_sleep;
 #ifdef HAVE_LIBLAME
   int decode = 0;
   unsigned char buf[INPUT_BUFSIZ * 4];
@@ -161,7 +151,7 @@ ices_stream_send_file (const char *file)
   source.readpcm = NULL;
   source.close = NULL;
 
-  if (ices_stream_open_source (&source) < 0) {
+  if (stream_open_source (&source) < 0) {
     return -1;
   }
 
@@ -188,6 +178,8 @@ ices_stream_send_file (const char *file)
       }
 #endif
   }
+  for (stream = ices_config.streams; stream; stream = stream->next)
+    stream->errs = 0;
   
   ices_log ("Playing %s", source.path);
 
@@ -207,35 +199,50 @@ ices_stream_send_file (const char *file)
     }
 
     if (len > 0) {
-      olen = 0;
-      rc = 1;
-      for (stream = ices_config.streams; stream; stream = stream->next) {
-	/* don't reencode if the source is MP3 and the same bitrate */
-	if (!stream->reencode || (source.read &&
-	      (stream->bitrate == source.bitrate))) {
-	  rc = shout_send_data (&stream->conn, ibuf, len);
-	  shout_sleep (&stream->conn);
-	}
-#ifdef HAVE_LIBLAME
-	else {
-	  olen = ices_reencode_reencode_chunk (stream, samples, left, right,
-					       buf, sizeof (buf));
-	  if (olen == -1) {
-	    ices_log_debug ("Output buffer too small, skipping chunk");
-	  } else if (olen > 0) {
-	    rc = shout_send_data (&stream->conn, buf, olen);
-	    shout_sleep (&stream->conn);
+      do_sleep = 1;
+      while (do_sleep) {
+	rc = olen = 0;
+	for (stream = ices_config.streams; stream; stream = stream->next) {
+	  /* don't reencode if the source is MP3 and the same bitrate */
+	  if (!stream->reencode || (source.read &&
+				    (stream->bitrate == source.bitrate))) {
+	    rc = stream_send_data (stream, ibuf, len);
 	  }
-	}
+#ifdef HAVE_LIBLAME
+	  else {
+	    olen = ices_reencode_reencode_chunk (stream, samples, left, right,
+						 buf, sizeof (buf));
+	    if (olen == -1) {
+	      ices_log_debug ("Output buffer too small, skipping chunk");
+	    } else if (olen > 0) {
+	      rc = stream_send_data (stream, buf, olen);
+	    }
+	  }
 #endif
 
-	if (!rc) {
-	  ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
-	  source.close (&source);
-	  return -1;
+	  if (rc < 0) {
+	    if (stream->errs > 10) {
+	      ices_log ("Too many stream errors, giving up");
+	      source.close (&source);
+	      return -1;
+	    }
+	    ices_log ("Error during send: %s", ices_log_get_error ());
+	  } else {
+	    do_sleep = 0;
+	  }
+	  /* this is so if we have errors on every stream we pause before
+	   * attempting to reconnect */
+	  if (do_sleep) {
+	    struct timeval delay;
+	    delay.tv_sec = 0;
+	    delay.tv_usec = ERROR_DELAY * 1000;
+
+	    select (1, NULL, NULL, NULL, &delay);
+	  }
 	}
       }
     } else if (len == 0) {
+      ices_log_debug ("Done sending");
       finish_send = 1;
     } else {
       ices_log_error ("Read error: %s",
@@ -245,6 +252,7 @@ ices_stream_send_file (const char *file)
     }
 
     ices_cue_update (&source);
+
   }
 
 #ifdef HAVE_LIBLAME
@@ -265,7 +273,7 @@ ices_stream_send_file (const char *file)
 
 /* open up path, figure out what kind of input it is, and set up source */
 static int
-ices_stream_open_source (input_stream_t* source)
+stream_open_source (input_stream_t* source)
 {
   char buf[1024];
   size_t len;
@@ -313,9 +321,51 @@ err:
   return -1;
 }
 
-/* set a flag to tell ices_stream_send_file to finish early */
-void
-ices_stream_next (void)
+/* wrapper for shout_send_data, shout_sleep with error handling */
+static int
+stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 {
-  finish_send = 1;
+  char errbuf[1024];
+  int rc = -1;
+
+  if (! stream->conn.connected && stream->connect_delay <= time(NULL))
+    rc = stream_connect (stream);
+
+  if (stream->conn.connected) {
+    if ((rc = shout_send_data (&stream->conn, buf, len))) {
+      shout_sleep (&stream->conn);
+      stream->errs = 0;
+      rc = 0;
+    } else {
+      ices_log_error ("Libshout reported send error, disconnecting: %s",
+		      shout_strerror (&stream->conn, stream->conn.error,
+				      errbuf, 1024));
+      shout_disconnect (&stream->conn);
+      stream->errs++;
+      rc = -1;
+    }
+  }
+
+  return rc;
+}
+
+static int
+stream_connect (ices_stream_t* stream)
+{
+  char errbuf[1024];
+
+  if (shout_connect (&stream->conn)) {
+    ices_log ("Mounted on http://%s:%d/%s", stream->conn.ip, stream->conn.port,
+	      ices_util_nullcheck (stream->conn.mount));
+    return 0;
+  } else {
+    ices_log_error ("Mount failed on http://%s:%d/%s, error: %s",
+		    stream->conn.ip, stream->conn.port,
+		    ices_util_nullcheck (stream->conn.mount),
+		    shout_strerror (&stream->conn, stream->conn.error, errbuf,
+				    sizeof (errbuf)));
+    stream->connect_delay = time(NULL) + 1;
+    stream->errs++;
+    return -1;
+  }
 }

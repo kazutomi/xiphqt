@@ -37,7 +37,7 @@ static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_conf
 static void ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
-static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_stream_config_t *ices_stream_config);
+static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_stream_t *stream);
 static char* ices_xml_read_node (xmlDocPtr doc, xmlNodePtr node);
 
 /* Global function definitions */
@@ -72,7 +72,7 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 
   /* we support multiple stream nodes */
   int nstreams = 0;
-  ices_stream_config_t* stream = ices_config->streams;
+  ices_stream_t* stream = ices_config->streams;
 
   /* This does the actual parsing */
   if (!(doc = xmlParseFile (configfile))) {
@@ -127,8 +127,7 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
     } else if (strcmp (cur->name, "Stream") == 0) {
       /* first stream is preallocated */
       if (nstreams) {
-	stream->next =
-	  (ices_stream_config_t*)malloc (sizeof (ices_stream_config_t));
+	stream->next = (ices_stream_t*)malloc (sizeof (ices_stream_t));
 	stream = stream->next;
 	/* in case fields are omitted in the config file */
 	ices_setup_parse_stream_defaults (stream);
@@ -154,7 +153,7 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 /* Parse the stream specific configuration */
 void
 ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-			     ices_stream_config_t *stream)
+			     ices_stream_t *stream)
 {
   for (; cur; cur = cur->next) {
     if (cur->type == XML_COMMENT_NODE)

@@ -39,7 +39,7 @@ static void reencode_lame_init (void);
 void
 ices_reencode_initialize (void)
 {
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
 
   /* are any streams reencoding? */
   for (stream = ices_config.streams; stream; stream = stream->next)
@@ -75,7 +75,7 @@ ices_reencode_reset (void)
 void
 ices_reencode_shutdown (void)
 {
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
 
   for (stream = ices_config.streams; stream; stream = stream->next)
     if (stream->encoder_initialised)
@@ -94,7 +94,7 @@ ices_reencode_decode (unsigned char* buf, size_t blen, size_t olen,
 
 /* reencode buff, of len buflen, put max outlen reencoded bytes in outbuf */
 int
-ices_reencode_reencode_chunk (ices_stream_config_t* stream, int nsamples,
+ices_reencode_reencode_chunk (ices_stream_t* stream, int nsamples,
 			      int16_t* left, int16_t* right,
 			      unsigned char *outbuf, int outlen)
 {
@@ -108,7 +108,7 @@ ices_reencode_reencode_chunk (ices_stream_config_t* stream, int nsamples,
 
 /* At EOF of each file, flush the liblame buffers and get some extra candy */
 int
-ices_reencode_flush (ices_stream_config_t* stream, unsigned char *outbuf,
+ices_reencode_flush (ices_stream_t* stream, unsigned char *outbuf,
 		     int maxlen)
 {
   lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
@@ -135,7 +135,7 @@ ices_reencode_flush (ices_stream_config_t* stream, unsigned char *outbuf,
 static void
 reencode_lame_init ()
 {
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
   lame_global_flags* lame;
 
   if (! ices_config.reencode)

@@ -110,7 +110,7 @@ static void *
 metadata_thread (void *arg)
 {
   input_stream_t* source;
-  ices_stream_config_t* stream;
+  ices_stream_t* stream;
   char song[1024];
   char* playlist_metadata;
   char* metadata;

@@ -29,8 +29,10 @@ typedef enum {
   ices_playlist_perl_e
 } playlist_type_t;
 
-typedef struct ices_stream_config_St {
+typedef struct ices_stream_St {
   shout_conn_t conn;
+  time_t connect_delay;
+  int errs;
   void* encoder_state;
   int encoder_initialised;
 
@@ -48,8 +50,8 @@ typedef struct ices_stream_config_St {
   int out_samplerate;
   int out_numchannels;
 
-  struct ices_stream_config_St* next;
-} ices_stream_config_t;
+  struct ices_stream_St* next;
+} ices_stream_t;
 
 typedef struct {
   playlist_type_t playlist_type;
@@ -75,7 +77,7 @@ typedef struct {
   char *base_directory;
   FILE *logfile;
 
-  ices_stream_config_t* streams;
+  ices_stream_t* streams;
   playlist_module_t pm;
 } ices_config_t;
 

@@ -11,14 +11,13 @@ ices \- stream MP3 audio to an icecast server
 .\" Playlist options
 .RB [\| \-D
 .IR basedir \|]
-.RB [\| \-S
-.IR interpreter
-.RB [\|[\| \-F
-.IR playlist 
-.RB [\| \-r \|]\|]
-\||
+.RB [\| \-S\ builtin
+.RB [\| \-F
+.IR playlist \|]
+.RB [\| \-r \|]\|]\||[\| \-S
+.BR python \|| perl
 .RB [\| \-M
-.IR module \|]\|]\|]
+.IR module \|]\|]
 .\" Server options
 .RB [\| \-h
 .IR host \|]
