@@ -32,6 +32,8 @@ typedef enum {
 typedef struct {
    uint32_t width;
    uint32_t height;
+   uint32_t a_moments;
+   uint32_t s_moments;
    uint32_t frames_per_buf;
    uint32_t bitstream_len;              /*  for all color components, bytes */
    TarkinColorFormat format;
