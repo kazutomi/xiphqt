@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec.h,v 1.27 2000/08/23 10:27:14 xiphmont Exp $
+ last mod: $Id: codec.h,v 1.27.2.1 2000/08/31 08:05:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -26,7 +26,6 @@ extern "C"
 
 #define MAX_BARK 27
 
-#include <sys/types.h>
 #include "os_types.h"
 #include "vorbis/codebook.h"
 #include "vorbis/internal.h"
@@ -171,7 +170,7 @@ typedef struct {
 
 
   int     *lacing_vals;    /* The values that will go to the segment table */
-  int64_t *pcm_vals;      /* pcm_pos values for headers. Not compact
+  ogg_int64_t *pcm_vals;      /* pcm_pos values for headers. Not compact
 			     this way, but it is simple coupled to the
 			     lacing fifo */
   long    lacing_storage;
@@ -188,12 +187,12 @@ typedef struct {
 			     of a logical bitstream */
   long     serialno;
   int      pageno;
-  int64_t  packetno;      /* sequence number for decode; the framing
+  ogg_int64_t  packetno;      /* sequence number for decode; the framing
                              knows where there's a hole in the data,
                              but we need coupling so that the codec
                              (which is in a seperate abstraction
                              layer) also knows about the gap */
-  int64_t   pcmpos;
+  ogg_int64_t   pcmpos;
 
 } ogg_stream_state;
 
@@ -206,8 +205,8 @@ typedef struct {
   long  b_o_s;
   long  e_o_s;
 
-  int64_t  frameno;
-  int64_t  packetno;       /* sequence number for decode; the framing
+  ogg_int64_t  frameno;
+  ogg_int64_t  packetno;       /* sequence number for decode; the framing
                              knows where there's a hole in the data,
                              but we need coupling so that the codec
                              (which is in a seperate abstraction
@@ -248,13 +247,13 @@ typedef struct vorbis_dsp_state{
   long nW;
   long centerW;
 
-  int64_t frameno;
-  int64_t sequence;
+  ogg_int64_t frameno;
+  ogg_int64_t sequence;
 
-  int64_t glue_bits;
-  int64_t time_bits;
-  int64_t floor_bits;
-  int64_t res_bits;
+  ogg_int64_t glue_bits;
+  ogg_int64_t time_bits;
+  ogg_int64_t floor_bits;
+  ogg_int64_t res_bits;
 
   /* local lookup storage */
   void                   *ve; /* envelope lookup */    
@@ -296,8 +295,8 @@ typedef struct vorbis_block{
   int   mode;
 
   int eofflag;
-  int64_t frameno;
-  int64_t sequence;
+  ogg_int64_t frameno;
+  ogg_int64_t sequence;
   vorbis_dsp_state *vd; /* For read-only access of configuration */
 
   /* local storage to avoid remallocing; it's up to the mapping to
@@ -381,7 +380,7 @@ extern int      ogg_page_version(ogg_page *og);
 extern int      ogg_page_continued(ogg_page *og);
 extern int      ogg_page_bos(ogg_page *og);
 extern int      ogg_page_eos(ogg_page *og);
-extern int64_t  ogg_page_frameno(ogg_page *og);
+extern ogg_int64_t  ogg_page_frameno(ogg_page *og);
 extern int      ogg_page_serialno(ogg_page *og);
 extern int      ogg_page_pageno(ogg_page *og);
 
