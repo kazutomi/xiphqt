@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ao_interface.c,v 1.5.2.4 2001/08/11 02:55:37 kcarnold Exp $
+ last mod: $Id: ao_interface.c,v 1.5.2.5 2001/08/12 03:59:31 kcarnold Exp $
 
  ********************************************************************/
 
@@ -146,7 +146,7 @@ void free_audio_devices (devices_t *devices)
   }
 }
 
-void ao_atexit (int exitcode, void *arg)
+void ao_onexit (int exitcode, void *arg)
 {
   devices_t *devices = (devices_t *) arg;
 

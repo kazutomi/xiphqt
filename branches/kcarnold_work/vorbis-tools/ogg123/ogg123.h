@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.7 2001/08/10 16:33:40 kcarnold Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.8 2001/08/12 03:59:31 kcarnold Exp $
 
  ********************************************************************/
 
@@ -29,27 +29,28 @@
 #endif
 
 #include "ao_interface.h"
+#include "curl_interface.h"
 
 typedef struct ogg123_options_s {
   char *read_file;            /* File to decode */
   char shuffle;               /* Should we shuffle playing? */
-  signed short int verbose;   /* Verbose output if > 0, quiet if < 0 */
-  signed short int quiet;     /* Be quiet (no title) */
+  long int verbose;           /* Verbose output if > 0, quiet if < 0 */
+  long int quiet;             /* Be quiet (no title) */
   double seekpos;             /* Amount to seek by */
   FILE *instream;             /* Stream to read from. */
   char *default_device;       /* default device for playback */
   devices_t *outdevices;      /* Streams to write to. */
-  int buffer_size;            /* Size of the buffer in chunks. */
-  int prebuffer;              /* number of chunks to prebuffer */
+  long outbuffer_size;            /* Size of the buffer in chunks. */
+  float outprebuffer;              /* number of chunks to prebuffer */
   int rate, channels;         /* playback params for opening audio devices */
   int delay;                  /* delay for skip to next song */
   int nth;                    /* Play every nth chunk */
   int ntimes;                 /* Play every chunk n times */
-} ogg123_options_t;           /* Changed in 0.6 to be non-static */
+  InputOpts_t inputOpts;
+} ogg123_options_t;
 
 void usage(void);
-void play_file(ogg123_options_t opt);
-FILE *http_open(char *server, int port, char *path);
+void play_file(ogg123_options_t *opt);
 int open_audio_devices(ogg123_options_t *opt, int rate, int channels);
 void signal_quit (int ignored);
 void ogg123_onexit (int exitcode, void *arg);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.3 2001/08/11 16:04:22 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.4 2001/08/12 03:59:31 kcarnold Exp $
  
 ********************************************************************/
 
@@ -29,6 +29,8 @@ typedef struct InputOpts_s {
   /* Input buffer options */
   long BufferSize;
   long Prebuffer;
+
+  char *SaveStream;
   
   /* libcurl options */
   char *URL;
@@ -54,12 +56,14 @@ typedef struct StreamInputBufferData_s {
   CURL * CurlHandle;
 
   char EOS;
+  char ShuttingDown;
 
   size_t BytesRequested;
   unsigned char *WriteTarget;
   unsigned char *CurWritePtr;
   unsigned char ExcessData[VORBIS_CHUNKIN_SIZE];
   int ExcessDataSize;
+  FILE *SavedStream;
 } StreamInputBufferData_t;
 
 buf_t *InitStream (InputOpts_t inputOpts);
@@ -67,6 +71,6 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg);
 int StreamBufferSeek (void *arg, ogg_int64_t offset, int whence);
 int StreamBufferClose (void *arg);
 long StreamBufferTell (void *arg);
-void StreamBufferCleanup (buf_t *buf);
+void StreamInputCleanup (buf_t *buf);
 
 #endif /* __CURL_INTERFACE_H */
