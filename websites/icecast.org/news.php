@@ -4,6 +4,28 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Icecast Release 2.0.2</h3>
+<p>This patch release fixes an exploit found by Luigi Auriemma. We recommend that all
+users currently upgrade to this patch release.
+</p>
+<p>Download Icecast 2.0.2 from the <a href="download.php">Download page</a>.</p>
+
+<div class="poster">
+Posted September 24, 2004 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Icecast Release 2.0.1</h3>
 <p>This patch release fixes a overflow buffer which can cause server crashes under
 certain circumstances.  This release contains ONLY the fix for this issue.  We
