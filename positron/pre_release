@@ -1,0 +1,3 @@
+#!/bin/sh
+
+gzip -c doc/positron.1 > doc/positron.1.gz
