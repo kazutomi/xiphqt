@@ -1,4 +1,4 @@
-.TH "ices" "1" "June 2001" "ices 0.2.0" "Icecast media streaming system"
+.TH "ices" "1" "June 2001" "ices @VERSION@" "Icecast media streaming system"
 .SH NAME
 ices \- stream MP3 audio to an icecast server
 
@@ -260,13 +260,17 @@ Your module must at least define the
 .B ices_get_next
 function. All others are optional.
 
-.SH FILES
+.SH "SIGNAL HANDLING"
+Ices handles the following signals specially:
 .TP
-.I /etc/ices.conf
-ices configuration file
-
-.SH "SEE ALSO"
-.BR ices.conf (5)
+.B SIGINT
+Causes ices to perform a clean shutdown.
+.TP
+.B SIGHUP
+Causes ices to close and reopen the log file.
+.TP
+.B SIGUSR1
+Causes ices to skip to the next track in the playlist immediately.
 
 .SH AUTHORS
 ices was originally written by Alexander Haväng <eel@icecast.org>.

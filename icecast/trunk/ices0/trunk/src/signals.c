@@ -57,6 +57,7 @@ ices_signals_setup (void)
   signal (SIGIO, SIG_IGN);
   signal (SIGALRM, SIG_IGN);
   signal (SIGINT, ices_signals_int);
+  signal (SIGTERM, ices_signals_int);
   signal (SIGHUP, ices_signals_hup);
   signal (SIGUSR1, ices_signals_usr1);
 }
@@ -65,7 +66,7 @@ ices_signals_setup (void)
 static RETSIGTYPE
 ices_signals_int (const int sig)
 {
-	ices_log_debug ("Caught SIGINT, closing down...");
+	ices_log_debug ("Caught signal, shutting down...");
 	ices_setup_shutdown ();
 }
 			
@@ -94,6 +95,6 @@ ices_signals_usr1 (const int sig)
 {
   ices_log_debug ("Caught SIGUSR1, skipping to next track...");
   ices_stream_next ();
+#endif
 }
 
-#endif

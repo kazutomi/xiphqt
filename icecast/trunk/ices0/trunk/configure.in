@@ -6,23 +6,28 @@ ICES_MINOR=1
 ICES_MICRO=0
 
 dnl Check to see if ICES_SPECIAL is overridden on commandline
-if test -z "$ICES_SPECIAL"
-then
-  ICES_SPECIAL=""
-fi
+dnl if test -z "$ICES_SPECIAL"
+dnl then
+dnl  ICES_SPECIAL=""
+dnl fi
 
-ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO
+if test -n "$ICES_MICRO" -a "$ICES_MICRO" != "0"
+then
+  ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO
+else
+  ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR
+fi
 
 if test -z "$ICES_SPECIAL"
 then
   ICES_VERSION=$ICES_VERSION_SMALL
 else
-  ICES_VERSION=$ICES_VERSION_SMALL.$ICES_SPECIAL
+  ICES_VERSION=$ICES_VERSION_SMALL-$ICES_SPECIAL
 fi
 
 VERSION="$ICES_VERSION"
 
-AC_MSG_RESULT([Building ices-$VERSION...])
+AC_MSG_RESULT([Building ices $VERSION...])
 
 AM_INIT_AUTOMAKE(ices, $VERSION)
 AM_MAINTAINER_MODE
@@ -513,7 +518,7 @@ AC_SUBST(ICES_OBJECTS)
 AC_SUBST(PLAYLIST_OBJECTS)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist/Makefile
-  conf/Makefile conf/ices.conf.dist doc/Makefile
+  conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1
   resolver/Makefile thread/Makefile avl/Makefile log/Makefile])
 
 AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
