@@ -1148,7 +1148,7 @@ sub BuildListBox(){
     my@listarray;
     
     $daytrans={
-	'*',' ',
+	'*','*',
 	'0',"Sunday ",
 	'1',"Monday ",
 	'2',"Tuesday ",
@@ -1158,7 +1158,7 @@ sub BuildListBox(){
 	'6',"Saturday "};
 
     $monthtrans={
-	'*',' ',
+	'*','*',
 	'1',"January ",
 	'2',"February ",
 	'3',"March ",
@@ -1277,6 +1277,11 @@ sub Timer_Entry{
 
     my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
        $password,$outfile,$url)=SplitTimerEntry(shift);
+
+    my$duration_hour=int($duration/3600);
+    my$duration_minute=int(($duration-$duration_hour*3600+59)/60);
+    $duration_minute='00' if("$duration_minute" eq '0');
+
 
     my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime time;    
     $nowmonth++;
@@ -1431,10 +1436,6 @@ sub Timer_Entry{
     my$t=$tentry_shell->Label(-text=>"Duration:")->
 	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth()+5;
-
-    my$duration_hour=int($duration/3600);
-    my$duration_minute=int(($duration-$duration_hour*3600+59)/60);
-    $duration_minute='00' if("$duration_minute" eq '0');
 
     # duration hour
     my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$duration_hour,-justify=>right)->
