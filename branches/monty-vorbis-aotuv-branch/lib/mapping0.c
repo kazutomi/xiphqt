@@ -405,7 +405,9 @@ static int mapping0_forward(vorbis_block *vb){
 			 noise,
 			 tone,
 			 1,
-			 logmask);
+			 logmask,
+			 mdct,
+			 logmdct);
 
 #if 0
       if(vi->channels==2){
@@ -435,7 +437,9 @@ static int mapping0_forward(vorbis_block *vb){
 			   noise,
 			   tone,
 			   2,
-			   logmask);
+			   logmask,
+			   mdct,
+			   logmdct);
 
 #if 0
 	if(vi->channels==2){
@@ -456,7 +460,9 @@ static int mapping0_forward(vorbis_block *vb){
 			   noise,
 			   tone,
 			   0,
-			   logmask);
+			   logmask,
+			   mdct,
+			   logmdct);
 
 #if 0
 	if(vi->channels==2)
@@ -523,6 +529,11 @@ static int mapping0_forward(vorbis_block *vb){
 					psy_look,
 					info,
 					mag_memo);    
+
+      hf_reduction(&ci->psy_g_param,
+		   psy_look,
+		   info,
+		   mag_memo);
     }
 
     memset(sortindex,0,sizeof(*sortindex)*vi->channels);
