@@ -150,6 +150,7 @@ ices_stream_send_file (const char *file)
   unsigned char buf[INPUT_BUFSIZ * 4];
   char namespace[1024];
   ssize_t len;
+  size_t bytes_read;
   int rc;
 #ifdef HAVE_LIBLAME
   static int16_t left[INPUT_BUFSIZ * 30];
@@ -157,6 +158,7 @@ ices_stream_send_file (const char *file)
 #endif
 
   source.path = file;
+  bytes_read = 0;
 
   if (ices_stream_open_source (&source) < 0) {
     ices_log_error ("Error sending %s", source.path);
@@ -176,6 +178,8 @@ ices_stream_send_file (const char *file)
     } else
 #endif
       len = source.read (&source, buf, sizeof (buf));
+
+    bytes_read += len;
 
     if (len > 0) {
 
@@ -205,7 +209,7 @@ ices_stream_send_file (const char *file)
       return 0;
     }
 
-    ices_cue_update (&source, len);
+    ices_cue_update (&source, bytes_read);
     for (stream = ices_config.streams; stream; stream = stream->next)
       shout_sleep(&stream->conn);
   }
@@ -223,71 +227,6 @@ ices_stream_send_file (const char *file)
   return 1;
 }
 
-#if 0
-/* Stream file_bytes bytes from fd */
-static int
-ices_stream_fd_size (int fd, const char *file, int file_bytes)
-{
-  ices_stream_config_t* stream;
-  int read_bytes, ret = -1, orig_size = file_bytes;
-  int bitrate = ices_mp3_get_bitrate ();
-  unsigned char buff[4096];
-  char namespace[1024];
-
-  ices_log ("Streaming %d bytes from file %s", file_bytes, file);
-
-#ifdef HAVE_LIBLAME
-  ices_reencode_reset ();
-#endif
-
-  while (file_bytes >= 0) {
-    read_bytes = read (fd, buff, 4096);
-		
-    if (read_bytes > 0) {
-
-      file_bytes -= read_bytes;
-
-#ifdef HAVE_LIBLAME
-      if (ices_config.reencode)
-	ices_reencode_decode (buff, read_bytes);
-#endif
-      for (stream = ices_config.streams; stream; stream = stream->next) {
-	if (stream->reencode) {
-	  /* Users wants us to reencode to different
-	   * bitrate, this reencodes and sends the
-	   * reencoded buff to the server */
-	  ret = ices_stream_send_reencoded(stream, buff, read_bytes, file_bytes);
-	} else {
-	  /* Send read data as-is to the server */
-	  ret = shout_send_data (&stream->conn, buff, read_bytes);
-	}
-
-	if (!ret) {
-	  ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
-	  return 0;
-	}
-      }
-      
-    } else if (read_bytes == 0) 
-      return 1;
-    else {
-      ices_log_error ("Read error while reading %s: %s", file, ices_util_strerror (errno, namespace, 1024));
-      return 0;
-    }
-
-    /* Update cue file */
-    ices_cue_update (file, orig_size, bitrate, orig_size - file_bytes);
-    /* Give the libshout module a chance to sleep */
-    for (stream = ices_config.streams; stream; stream = stream->next)
-      shout_sleep(&stream->conn);
-  }
-
-  /* All is fine */
-  return 1;
-}
-
-#endif
-
 /* open up path, figure out what kind of input it is, and set up source */
 static int
 ices_stream_open_source (input_stream_t* source)
@@ -304,10 +243,9 @@ ices_stream_open_source (input_stream_t* source)
     return -1;
   }
 
-  if ((source->filesize = lseek (fd, SEEK_END, 0)) < 0)
+  if (lseek (fd, SEEK_SET, 0) == -1)
     source->canseek = 0;
   else {
-    lseek (fd, SEEK_SET, 0);
     source->canseek = 1;
   }
   ices_log_error ("Seek: %s", source->canseek ? "yes" : "no");
@@ -329,6 +267,7 @@ ices_stream_open_source (input_stream_t* source)
     ices_mp3_parse_file (source->path);
     ices_id3_parse_file (source->path, 0);
     source->bitrate = ices_mp3_get_bitrate ();
+    source->filesize = ices_util_fd_size (fd);
   }
 
   mp3_data = (ices_mp3_in_t*) malloc (sizeof (ices_mp3_in_t));
