@@ -3,6 +3,8 @@
 
 #define _GNU_SOURCE
 #define _REENTRANT
+#define _LARGEFILE_SOURCE 
+#define _LARGEFILE64_SOURCE
 
 #include <stdlib.h>
 #include <unistd.h>
