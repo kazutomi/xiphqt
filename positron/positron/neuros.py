@@ -39,6 +39,30 @@ def _total_path_split(pathname):
 
     return path_parts
 
+def FAT_mangle_filename(filename):
+    """Creates a FAT-friendly filename.
+
+    Substitute replacement characters (usually '_') for characters in
+    filename that are not allowed on FAT filesystems.  Double quotes are
+    replaced with single quotes."""
+
+    # Keys are bad characters for FAT filesystems, and values are the
+    # replacement
+    mangle_table = { '\\' : '_',
+                     ':' : '_',
+                     '*' : '_',
+                     '?' : '_',
+                     '"' : "'",
+                     '<' : '_',
+                     '>' : '_',
+                     '|' : '_' }
+
+    new_filename = filename
+    for bad_char, replace_char in mangle_table.items():
+        new_filename = new_filename.replace(bad_char, replace_char)
+
+    return new_filename
+
 class Neuros:
 
     DB_DIR = path.normcase("WOID_DB")
@@ -169,5 +193,16 @@ class Neuros:
             raise Error("Neuros path does not start with C:")
 
         hostpath_parts = self.mountpoint_parts + neurospath_parts[1:]
+
+        return path.join(*hostpath_parts)
+
+    def mangle_hostpath(self, hostpath):
+        if not self.is_valid_hostpath(hostpath):
+            raise Error("Host path not under Neuros mountpoint")
+
+        # Only mangle the parts after the mountpoint
+        hostpath_parts = _total_path_split(hostpath)[len(self.mountpoint_parts):]
+        hostpath_parts = self.mountpoint_parts + \
+                         map(FAT_mangle_filename, hostpath_parts)
 
         return path.join(*hostpath_parts)
