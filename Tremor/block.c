@@ -143,7 +143,7 @@ int vorbis_block_clear(vorbis_block *vb){
   return(0);
 }
 
-int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
+static int _vds_init(vorbis_dsp_state *v,vorbis_info *vi){
   int i;
   codec_setup_info *ci=(codec_setup_info *)vi->codec_setup;
   private_state *b=NULL;
@@ -180,11 +180,6 @@ int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
   v->lW=0; /* previous window size */
   v->W=0;  /* current window size */
 
-  /* all vector indexes */
-  v->centerW=ci->blocksizes[1]/2;
-
-  v->pcm_current=v->centerW;
-
   /* initialize all the mapping/backend lookups */
   b->mode=(vorbis_look_mapping **)_ogg_calloc(ci->modes,sizeof(*b->mode));
   for(i=0;i<ci->modes;i++){
@@ -193,11 +188,32 @@ int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
     b->mode[i]=_mapping_P[maptype]->look(v,ci->mode_param[i],
 					 ci->map_param[mapnum]);
   }
+  return(0);
+}
 
+int vorbis_synthesis_restart(vorbis_dsp_state *v){
+  vorbis_info *vi=v->vi;
+  codec_setup_info *ci;
+
+  if(!v->backend_state)return -1;
+  if(!vi)return -1;
+  ci=vi->codec_setup;
+  if(!ci)return -1;
+
+  v->centerW=ci->blocksizes[1]/2;
+  v->pcm_current=v->centerW;
+  
   v->pcm_returned=-1;
   v->granulepos=-1;
   v->sequence=-1;
   ((private_state *)(v->backend_state))->sample_count=-1;
+
+  return(0);
+}
+
+int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
+  _vds_init(v,vi);
+  vorbis_synthesis_restart(v);
 
   return(0);
 }
