@@ -11,7 +11,7 @@
 #define LOSHORT(l)           ((SHORT)(l))
 #define HISHORT(l)           ((SHORT)(((DWORD)(l) >> 16) & 0xFFFF))
 
-#define BASEKEY "Software\\Xiphophorus\\Oggdrop"
+#define BASEKEY "Software\\Xiph.Org\\Oggdrop"
 
 #define VORBIS_DEFAULT_QUALITY 40
 
@@ -74,7 +74,9 @@ int animate = 0;
 BOOL CALLBACK QCProc(HWND hwndDlg, UINT message, 
                      WPARAM wParam, LPARAM lParam) ;
 
-float qc2approxBitrate(int qcValue);
+
+float qc2approxBitrate(float qcValue, int rate, int channels);
+
 
 int get_base_key(HKEY* key)
 {
@@ -482,7 +484,7 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
 
 		  qcValue = read_setting("quality", VORBIS_DEFAULT_QUALITY);
 
-			nominalBitrate = qc2approxBitrate(qcValue);
+			nominalBitrate = qc2approxBitrate((float) qcValue, 44100, 2);
 	    (void) sprintf(editBuf, "%03.1fkbps", nominalBitrate/1000);
 
     	SendDlgItemMessage(hwndDlg, IDC_EDIT2, WM_SETTEXT,(WPARAM)0, (LPARAM)editBuf);
@@ -532,7 +534,7 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
 //    	SetFocus(GetDlgItem(hwndDlg, IDC_EDIT1));
 //    	SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,(WPARAM)0, (LPARAM)-1);
 
-			nominalBitrate = qc2approxBitrate(qcValue);
+			nominalBitrate = qc2approxBitrate((float) qcValue, 44100, 2);
 			(void) sprintf(editBuf, "%03.1fkbps", nominalBitrate/1000);
 
 			SendDlgItemMessage(hwndDlg, IDC_EDIT2, WM_SETTEXT,(WPARAM)0, (LPARAM)editBuf);
@@ -671,9 +673,25 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
 } 
 
 
-float qc2approxBitrate(int qcValue)
+float qc2approxBitrate(float qcValue, int rate, int channels)
 {
+#if 1  /* this is probably slower, but always portable/accurate. */
+    vorbis_info vi;
+    float br;
+
+    vorbis_info_init(&vi);
+    if(vorbis_encode_init_vbr(&vi, channels, rate, (float) (qcValue / 100.0))) 
+        return 128000.0; /* Mode setup failed: go with a default. */
+
+    br = (float)vi.bitrate_nominal;
+    vorbis_info_clear(&vi);
+
+    return br;
+
+#else   /* this is fast, but it wings it with incorrect results. */
+
   float approxBitrate;
+  double scale;
 
   if ( qcValue < 41)
   {
@@ -694,5 +712,9 @@ float qc2approxBitrate(int qcValue)
 	    ((((float)qcValue/10)-8)*32)+((((float)qcValue/10)-9)*116));
   }
 
+  if (approxBitrate < 64000.0)
+    approxBitrate = 64000.0;
+
   return approxBitrate;
+#endif
 }

@@ -219,8 +219,8 @@ long wav_read_stereo(void *in, float **buffer, int samples)
 
 	for(i = 0; i < bytes_read/4; i++)
 	{
-		buffer[0][i] = ((buf[i*4+1]<<8) | (((int)buf[i*4]) & 0xff))/32768.0;
-		buffer[1][i] = ((buf[i*4+3]<<8) | (((int)buf[i*4+2]) & 0xff))/32768.0;
+		buffer[0][i] = (float) (((buf[i*4+1]<<8) | (((int)buf[i*4]) & 0xff))/32768.0);
+		buffer[1][i] = (float) (((buf[i*4+3]<<8) | (((int)buf[i*4+2]) & 0xff))/32768.0);
 	}
 
 	return bytes_read/4;
@@ -234,8 +234,8 @@ long raw_read_stereo(void *in, float **buffer, int samples)
 
 	for(i=0;i<bytes_read/4; i++)
 	{
-		buffer[0][i] = ((buf[i*4+1]<<8) | (((int)buf[i*4]) & 0xff))/32768.0;
-		buffer[1][i] = ((buf[i*4+3]<<8) | (((int)buf[i*4+2]) & 0xff))/32768.0;
+		buffer[0][i] = (float) (((buf[i*4+1]<<8) | (((int)buf[i*4]) & 0xff))/32768.0);
+		buffer[1][i] = (float) (((buf[i*4+3]<<8) | (((int)buf[i*4+2]) & 0xff))/32768.0);
 	}
 
 	return bytes_read/4;
@@ -254,7 +254,7 @@ long wav_read_mono(void *in, float **buffer, int samples)
 
 
 	for(i=0;i<bytes_read/2; i++)
-		buffer[0][i] = ((buf[i*2+1]<<8) | (((int)buf[i*2]) & 0xff))/32768.0;
+		buffer[0][i] = (float) (((buf[i*2+1]<<8) | (((int)buf[i*2]) & 0xff))/32768.0);
 
 	return bytes_read/2;
 }
@@ -281,7 +281,7 @@ int raw_open(FILE *in, oe_enc_opt *opt)
  */
 void set_filename(const char *filename)
 {
-	_filename = filename;
+	_filename = (char *) filename;
 }
 
 /**
