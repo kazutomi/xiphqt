@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.51 2002/03/29 07:10:38 xiphmont Exp $
+ last mod: $Id: analysis.c,v 1.51.2.1 2002/05/07 23:47:12 xiphmont Exp $
 
  ********************************************************************/
 
@@ -64,6 +64,11 @@ int vorbis_analysis(vorbis_block *vb, ogg_packet *op){
     return(ret);
 
   if(op){
+    if(vorbis_bitrate_managed(vb))
+      /* The app is using a bitmanaged mode... but not using the
+         bitrate management interface. */
+      return(OV_EINVAL);
+    
     op->packet=oggpack_get_buffer(&vb->opb);
     op->bytes=oggpack_bytes(&vb->opb);
     op->b_o_s=0;
@@ -91,17 +96,17 @@ void _analysis_output_always(char *base,int i,float *v,int n,int bark,int dB,ogg
 	fprintf(of,"\n\n");
       else{
 	if(bark)
-	  fprintf(of,"%g ",toBARK(22050.f*j/n));
+	  fprintf(of,"%f ",toBARK(22050.f*j/n));
 	else
 	  if(off!=0)
-	    fprintf(of,"%g ",(double)(j+off)/44100.);
+	    fprintf(of,"%f ",(double)(j+off)/44100.);
 	  else
-	    fprintf(of,"%g ",(double)j);
+	    fprintf(of,"%f ",(double)j);
 
 	if(dB){
-	  fprintf(of,"%g\n",todB(v+j));
+	  fprintf(of,"%f\n",todB(v+j));
 	}else{
-	  fprintf(of,"%g\n",v[j]);
+	  fprintf(of,"%f\n",v[j]);
 	}
       }
     }
@@ -110,10 +115,16 @@ void _analysis_output_always(char *base,int i,float *v,int n,int bark,int dB,ogg
 }
 
 void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
-#ifdef ANALYSIS
-  if(analysis_noisy)_analysis_output_always(base,i,v,n,bark,dB);
-#endif
+  if(analysis_noisy)_analysis_output_always(base,i,v,n,bark,dB,0);
 }
+
+
+
+
+
+
+
+
 
 
 

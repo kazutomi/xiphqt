@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: registry for time, floor, res backends and channel mappings
- last mod: $Id: registry.c,v 1.13 2001/12/20 01:00:29 segher Exp $
+ last mod: $Id: registry.c,v 1.13.6.1 2002/05/07 23:47:14 xiphmont Exp $
 
  ********************************************************************/
 
@@ -25,17 +25,12 @@
 /* seems like major overkill now; the backend numbers will grow into
    the infrastructure soon enough */
 
-extern vorbis_func_time      time0_exportbundle;
 extern vorbis_func_floor     floor0_exportbundle;
 extern vorbis_func_floor     floor1_exportbundle;
 extern vorbis_func_residue   residue0_exportbundle;
 extern vorbis_func_residue   residue1_exportbundle;
 extern vorbis_func_residue   residue2_exportbundle;
 extern vorbis_func_mapping   mapping0_exportbundle;
-
-vorbis_func_time      *_time_P[]={
-  &time0_exportbundle,
-};
 
 vorbis_func_floor     *_floor_P[]={
   &floor0_exportbundle,

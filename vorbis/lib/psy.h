@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.28 2002/03/29 07:10:39 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.28.2.1 2002/05/07 23:47:14 xiphmont Exp $
 
  ********************************************************************/
 
@@ -30,23 +30,16 @@
 #define MAX_BARK 27
 #define P_BANDS 17
 #define P_LEVELS 11
+#define P_NOISECURVES 3
 
 typedef struct vp_couple{
-  int limit;        /* sample post */
-
-  int outofphase_redundant_flip_p;
-  float outofphase_requant_limit;
-
-  float amppost_point;
-  
-} vp_couple;
-
-typedef struct vp_couple_pass{  
   float granulem;
   float igranulem;
 
-  vp_couple couple_pass[8];
-} vp_couple_pass;
+  int limit;        /* sample post */
+  float amppost_point;
+  
+} vp_couple;
 
 typedef struct vp_attenblock{
   float block[P_BANDS][P_LEVELS];
@@ -75,12 +68,12 @@ typedef struct vorbis_info_psy{
   int   noisewindowlomin;
   int   noisewindowhimin;
   int   noisewindowfixed;
-  float noiseoff[P_BANDS];
+  float noiseoff[P_NOISECURVES][P_BANDS];
   float noisecompand[NOISE_COMPAND_LEVELS];
 
   float max_curve_dB;
 
-  vp_couple_pass couple_pass[8];
+  vp_couple couple_pass;
 
 } vorbis_info_psy;
 
@@ -113,8 +106,7 @@ typedef struct {
   struct vorbis_info_psy *vi;
 
   float ***tonecurves;
-  float *noisethresh;
-  float *noiseoffset;
+  float **noiseoffset;
 
   float *ath;
   long  *octave;             /* in n.ocshift format */
@@ -137,27 +129,51 @@ extern vorbis_info_psy *_vi_psy_copy(vorbis_info_psy *i);
 
 extern void _vp_remove_floor(vorbis_look_psy *p,
 			     float *mdct,
-			     float *codedflr,
+			     int *icodedflr,
 			     float *residue);
 
-extern void   _vp_compute_mask(vorbis_look_psy *p,
-			       float *fft, 
-			       float *mdct, 
-			       float *mask, 
-			       float global_specmax,
-			       float local_specmax,
-			       float bitrate_noise_offset);
+extern void _vp_noisemask(vorbis_look_psy *p,
+			  float *logmdct, 
+			  float *logmask);
 
-extern void _vp_quantize_couple(vorbis_look_psy *p,
-			 vorbis_info_mapping0 *vi,
-			 float **pcm,
-			 float **sofar,
-			 float **quantized,
-			 int   *nonzero,
-			 int   passno);
+extern void _vp_tonemask(vorbis_look_psy *p,
+			 float *logfft,
+			 float *logmask,
+			 float global_specmax,
+			 float local_specmax);
+
+extern void _vp_offset_and_mix(vorbis_look_psy *p,
+			       float *noise,
+			       float *tone,
+			       int offset_select,
+			       float *logmask);
 
 extern float _vp_ampmax_decay(float amp,vorbis_dsp_state *vd);
 
+extern float **_vp_quantize_couple_memo(vorbis_block *vb,
+					vorbis_look_psy *p,
+					vorbis_info_mapping0 *vi,
+					float **mdct);
+
+extern void _vp_quantize_couple(vorbis_look_psy *p,
+				vorbis_info_mapping0 *vi,
+				float **res,
+				float **mag_memo,
+				int   **ifloor,
+				int   *nonzero);
+
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
 
 

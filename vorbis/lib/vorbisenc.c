@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: simple programmatic interface for encoder mode setup
- last mod: $Id: vorbisenc.c,v 1.39 2002/03/24 21:04:01 xiphmont Exp $
+ last mod: $Id: vorbisenc.c,v 1.39.2.1 2002/05/07 23:47:15 xiphmont Exp $
 
  ********************************************************************/
 
@@ -37,8 +37,6 @@ typedef struct {
   vorbis_info_residue0 *res[2];
   static_codebook *book_aux[2];
   static_codebook *books_base[5][10][3];
-  static_codebook *books_stereo_backfill[5][10];
-  static_codebook *books_residue_backfill[5][10][2];
 } vorbis_residue_template;
 
 static double stereo_threshholds[]={0.0, 2.5, 4.5, 8.5, 16.5};
@@ -52,7 +50,6 @@ typedef struct vp_adjblock{
 #include "modes/floor_44.h"
 
 /* a few static coder conventions */
-static vorbis_info_time0 _time_dummy={0};
 static vorbis_info_mode _mode_set_short={0,0,0,0};
 static vorbis_info_mode _mode_set_long={1,0,0,1};
 
@@ -74,12 +71,6 @@ static int vorbis_encode_toplevel_setup(vorbis_info *vi,int small,int large,int 
     
     ci->blocksizes[0]=small;
     ci->blocksizes[1]=large;
-
-    /* time mapping hooks are unused in vorbis I */
-    ci->times=1;
-    ci->time_type[0]=0;
-    ci->time_param[0]=_ogg_calloc(1,sizeof(_time_dummy));
-    memcpy(ci->time_param[0],&_time_dummy,sizeof(_time_dummy));
 
     /* by convention, two modes: one for short, one for long blocks.
        short block mode uses mapping sero, long block uses mapping 1 */
@@ -315,8 +306,9 @@ static int vorbis_encode_peak_setup(vorbis_info *vi,double q,int block,
 
 static int vorbis_encode_noisebias_setup(vorbis_info *vi,double q,int block,
 					 double *suppress,
-					 int in[][17],int guard[33]){
-  int i,iq=q*10;
+					 int in[][P_NOISECURVES][17],
+					 int guard[33]){
+  int i,iq=q*10,j;
   double dq;
   codec_setup_info *ci=vi->codec_setup;
   vorbis_info_psy *p=ci->psy_param[block];
@@ -332,9 +324,11 @@ static int vorbis_encode_noisebias_setup(vorbis_info *vi,double q,int block,
   p->noisewindowlomin=guard[iq*3];
   p->noisewindowhimin=guard[iq*3+1];
   p->noisewindowfixed=guard[iq*3+2];
-  
-  for(i=0;i<P_BANDS;i++)
-    p->noiseoff[i]=in[iq][i]*(1.-dq)+in[iq+1][i]*dq;
+
+  for(j=0;j<P_NOISECURVES;j++)
+    for(i=0;i<P_BANDS;i++)
+      p->noiseoff[j][i]=in[iq][j][i]*(1.-dq)+in[iq+1][j][i]*dq;
+
   return(0);
 }
 
@@ -385,8 +379,6 @@ static int book_dup_or_new(codec_setup_info *ci,static_codebook *book){
 
 static int vorbis_encode_residue_setup(vorbis_info *vi,double q,int block,
 				       int coupled_p,
-				       int stereo_backfill_p,
-				       int residue_backfill_p,
 				       vorbis_residue_template *in,
 				       int point_dB,
 				       double point_kHz){
@@ -395,8 +387,6 @@ static int vorbis_encode_residue_setup(vorbis_info *vi,double q,int block,
   int n,k;
   int partition_position=0;
   int res_position=0;
-  int iterations=1;
-  int amplitude_select=0;
 
   codec_setup_info *ci=vi->codec_setup;
   vorbis_info_residue0 *r;
@@ -445,82 +435,19 @@ static int vorbis_encode_residue_setup(vorbis_info *vi,double q,int block,
       if(in[iq].books_base[point_dB][i][k])
 	r->secondstages[i]|=(1<<k);
   
-  ci->passlimit[0]=3;
-    
   if(coupled_p){
     vorbis_info_mapping0 *map=ci->map_param[block];
-
+    
     map->coupling_steps=1;
     map->coupling_mag[0]=0;
     map->coupling_ang[0]=1;
 
-    psy->couple_pass[0].granulem=1.;
-    psy->couple_pass[0].igranulem=1.;
+    psy->couple_pass.granulem=1.;
+    psy->couple_pass.igranulem=1.;
 
-    psy->couple_pass[0].couple_pass[0].limit=res_position;
-    psy->couple_pass[0].couple_pass[0].outofphase_redundant_flip_p=1;
-    psy->couple_pass[0].couple_pass[0].outofphase_requant_limit=9e10;
-    psy->couple_pass[0].couple_pass[0].amppost_point=0;
-    psy->couple_pass[0].couple_pass[1].limit=9999;
-    psy->couple_pass[0].couple_pass[1].outofphase_redundant_flip_p=1;
-    psy->couple_pass[0].couple_pass[1].outofphase_requant_limit=9e10;
-    psy->couple_pass[0].couple_pass[1].amppost_point=
-      stereo_threshholds[point_dB];
-    amplitude_select=point_dB;
+    psy->couple_pass.limit=res_position;
+    psy->couple_pass.amppost_point= stereo_threshholds[point_dB];
 
-    if(stereo_backfill_p && amplitude_select){
-      memcpy(psy->couple_pass+iterations,psy->couple_pass+iterations-1,
-	     sizeof(*psy->couple_pass));
-      psy->couple_pass[1].couple_pass[1].amppost_point=stereo_threshholds[amplitude_select-1];
-      ci->passlimit[1]=4;
-      for(i=0;i<r->partitions;i++)
-	if(in[iq].books_stereo_backfill[amplitude_select][i])
-	  r->secondstages[i]|=8;
-      amplitude_select=amplitude_select-1;
-      iterations++;
-    }
-    
-    if(residue_backfill_p){
-      memcpy(psy->couple_pass+iterations,psy->couple_pass+iterations-1,
-	     sizeof(*psy->couple_pass));
-      psy->couple_pass[iterations].granulem=.333333333;
-      psy->couple_pass[iterations].igranulem=3.;
-      psy->couple_pass[iterations].couple_pass[0].outofphase_requant_limit=1.;
-      psy->couple_pass[iterations].couple_pass[1].outofphase_requant_limit=1.;
-      for(i=0;i<r->partitions;i++)
-	if(in[iq].books_residue_backfill[amplitude_select][i][0])
-	  r->secondstages[i]|=(1<<(iterations+2));
-      ci->passlimit[iterations]=ci->passlimit[iterations-1]+1;
-      iterations++;
-      
-      memcpy(psy->couple_pass+iterations,psy->couple_pass+iterations-1,
-	     sizeof(*psy->couple_pass));
-      psy->couple_pass[iterations].granulem=.1111111111;
-      psy->couple_pass[iterations].igranulem=9.;
-      psy->couple_pass[iterations].couple_pass[0].outofphase_requant_limit=.3;
-      psy->couple_pass[iterations].couple_pass[1].outofphase_requant_limit=.3;
-      for(i=0;i<r->partitions;i++)
-	if(in[iq].books_residue_backfill[amplitude_select][i][1])
-	  r->secondstages[i]|=(1<<(iterations+2));
-      ci->passlimit[iterations]=ci->passlimit[iterations-1]+1;
-      iterations++;
-    }
-    ci->coupling_passes=iterations;
-
-  }else{
-
-    if(residue_backfill_p){
-      for(i=0;i<r->partitions;i++){
-	if(in[iq].books_residue_backfill[0][i][0])
-	  r->secondstages[i]|=8;
-	if(in[iq].books_residue_backfill[0][i][1])
-	  r->secondstages[i]|=16;
-      }
-      ci->passlimit[1]=4;
-      ci->passlimit[2]=5;
-      ci->coupling_passes=3;
-    }else
-      ci->coupling_passes=1;
   }
   
   memcpy(&ci->psy_param[block*2+1]->couple_pass,
@@ -538,21 +465,6 @@ static int vorbis_encode_residue_setup(vorbis_info *vi,double q,int block,
 	  int bookid=book_dup_or_new(ci,in[iq].books_base[point_dB][i][k]);
 	  r->booklist[booklist++]=bookid;
 	  ci->book_param[bookid]=in[iq].books_base[point_dB][i][k];
-	}
-      }
-      if(coupled_p && stereo_backfill_p && point_dB &&
-	 in[iq].books_stereo_backfill[point_dB][i]){
-	int bookid=book_dup_or_new(ci,in[iq].books_stereo_backfill[point_dB][i]);
-	r->booklist[booklist++]=bookid;
-	ci->book_param[bookid]=in[iq].books_stereo_backfill[point_dB][i];
-      }
-      if(residue_backfill_p){
-	for(k=0;k<2;k++){
-	  if(in[iq].books_residue_backfill[amplitude_select][i][k]){
-	    int bookid=book_dup_or_new(ci,in[iq].books_residue_backfill[amplitude_select][i][k]);
-	    r->booklist[booklist++]=bookid;
-	    ci->book_param[bookid]=in[iq].books_residue_backfill[amplitude_select][i][k];
-	  }
 	}
       }
     }
@@ -616,7 +528,7 @@ int vorbis_encode_setup_init(vorbis_info *vi){
 
   ret|=vorbis_encode_floor_setup(vi,hi->base_quality_short,0,
 				_floor_44_128_books,_floor_44_128,
-				0,1,1,2,2,2,2,2,2,2,2);
+				0,1,1,2,0,2,2,2,2,2,2);
   ret|=vorbis_encode_floor_setup(vi,hi->base_quality_long,1,
 				_floor_44_1024_books,_floor_44_1024,
 				0,0,0,0,0,0,0,0,0,0,0);
@@ -706,16 +618,12 @@ int vorbis_encode_setup_init(vorbis_info *vi){
     
     ret|=vorbis_encode_residue_setup(vi,hi->base_quality_short,0,
 				    1, /* coupled */
-				    hi->stereo_backfill_p,
-				    hi->residue_backfill_p, 
 				    _residue_template_44_stereo,
 				    hi->stereo_point_dB,
 				    hi->stereo_point_kHz[0]);
       
     ret|=vorbis_encode_residue_setup(vi,hi->base_quality_long,1,
 				    1, /* coupled */
-				    hi->stereo_backfill_p,
-				    hi->residue_backfill_p, 
 				    _residue_template_44_stereo,
 				    hi->stereo_point_dB,
 				    hi->stereo_point_kHz[1]);
@@ -725,8 +633,6 @@ int vorbis_encode_setup_init(vorbis_info *vi){
        coupling */
     ret|=vorbis_encode_residue_setup(vi,hi->base_quality_short,0,
 				    0, /* uncoupled */
-				    0,
-				    hi->residue_backfill_p, 
 				    _residue_template_44_uncoupled,
 				    0,
 				    hi->stereo_point_kHz[0]); /* just
@@ -735,8 +641,6 @@ int vorbis_encode_setup_init(vorbis_info *vi){
       
     ret|=vorbis_encode_residue_setup(vi,hi->base_quality_long,1,
 				    0, /* uncoupled */
-				    0,
-				    hi->residue_backfill_p, 
 				    _residue_template_44_uncoupled,
 				    0,
 				    hi->stereo_point_kHz[1]); /* just
@@ -857,14 +761,13 @@ int vorbis_encode_setup_vbr(vorbis_info *vi,
   hi->amplitude_track_dBpersec=-6.;
 
   hi->stereo_couple_p=1; /* only relevant if a two channel input */
-  hi->stereo_backfill_p=0;
-  hi->residue_backfill_p=0;
 
   /* set the ATH floaters */
   hi->ath_floating_dB=_psy_ath_floater[iq]*(1.-dq)+_psy_ath_floater[iq+1]*dq;
   hi->ath_absolute_dB=_psy_ath_abs[iq]*(1.-dq)+_psy_ath_abs[iq+1]*dq;
 
   /* set stereo dB and Hz */
+  /*iq=0;dq=0;*/
   hi->stereo_point_dB=_psy_stereo_point_dB_44[iq];
   hi->stereo_point_kHz[0]=_psy_stereo_point_kHz_44[0][iq]*(1.-dq)+
     _psy_stereo_point_kHz_44[0][iq+1]*dq;
@@ -947,10 +850,7 @@ int vorbis_encode_setup_managed(vorbis_info *vi,
     codec_setup_info *ci=vi->codec_setup;
     highlevel_encode_setup *hi=&ci->hi;
 
-    /* backfills */
-    hi->stereo_backfill_p=1;
-    hi->residue_backfill_p=1;
-
+#if 0
     /* no impulse blocks */
     hi->impulse_block_p=0;
     /* de-rate stereo */
@@ -971,7 +871,8 @@ int vorbis_encode_setup_managed(vorbis_info *vi,
     hi->blocktype[3].noise_bias_quality-=.05;
     if(hi->blocktype[3].noise_bias_quality<0.)
       hi->blocktype[3].noise_bias_quality=0.;
-   
+#endif
+
     /* initialize management.  Currently hardcoded for 44, but so is above. */
     memcpy(&ci->bi,&_bm_44_default,sizeof(ci->bi));
     ci->bi.queue_hardmin=min_bitrate;
@@ -979,9 +880,6 @@ int vorbis_encode_setup_managed(vorbis_info *vi,
     
     ci->bi.queue_avgmin=tnominal;
     ci->bi.queue_avgmax=tnominal;
-
-    /* adjust management */
-    ci->bi.avgfloat_noise_maxval=_bm_max_noise_offset[(int)approx_vbr];
 
   }
   vi->bitrate_nominal = nominal_bitrate;
