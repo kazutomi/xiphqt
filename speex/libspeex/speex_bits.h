@@ -40,6 +40,9 @@
 extern "C" {
 #endif
 
+/** Maximum size of the bit-stream (for fixed-size allocation) */
+#define MAX_BYTES_PER_FRAME 2000
+
 /** Bit-packing data structure representing (part of) a bit-stream. */
 typedef struct SpeexBits {
    char *bytes;   /**< "raw" data */
@@ -136,13 +139,6 @@ void speex_bits_advance(SpeexBits *bits, int n);
  * @param bits Bit-stream to operate on
  */
 int speex_bits_remaining(SpeexBits *bits);
-
-/** Insert a terminator so that the data can be sent as a packet while auto-detecting 
- * the number of frames in each packet 
- *
- * @param bits Bit-stream to operate on
- */
-void speex_bits_insert_terminator(SpeexBits *bits);
 
 #ifdef __cplusplus
 }

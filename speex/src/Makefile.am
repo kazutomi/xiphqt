@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in. -*-Makefile-*-
 
-# $Id: Makefile.am,v 1.11 2004/02/18 06:59:40 jm Exp $
+# $Id: Makefile.am,v 1.9 2003/02/08 19:31:05 jm Exp $
 
 # Disable automatic dependency tracking if using other tools than gcc and gmake
 #AUTOMAKE_OPTIONS = no-dependencies
@@ -18,11 +18,7 @@ noinst_HEADERS = wav_io.h
 bin_PROGRAMS = speexenc speexdec
 
 speexenc_SOURCES = speexenc.c wav_io.c
-speexenc_LDADD = $(top_builddir)/libspeex/libspeex.la \
-	$(OGG_LDFLAGS) $(OGG_LIBS) \
-	@LTLIBOBJS@
+speexenc_LDADD = $(top_srcdir)/libspeex/libspeex.la $(OGG_LDFLAGS) $(OGG_LIBS)
 
 speexdec_SOURCES = speexdec.c wav_io.c
-speexdec_LDADD = $(top_builddir)/libspeex/libspeex.la \
-	$(OGG_LDFLAGS) $(OGG_LIBS) \
-	@LTLIBOBJS@
+speexdec_LDADD = $(top_srcdir)/libspeex/libspeex.la $(OGG_LDFLAGS) $(OGG_LIBS)

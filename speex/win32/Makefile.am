@@ -5,4 +5,3 @@
 
 SUBDIRS = libspeex speexenc speexdec
 
-EXTRA_DIST = speex.iss speexlogo.bmp

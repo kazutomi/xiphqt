@@ -23,9 +23,9 @@ CFG=libspeex - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName "Perforce Project"
-# PROP Scc_LocalPath "..\.."
-CPP=cl.exe
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libspeex - Win32 Release"
@@ -42,13 +42,13 @@ RSC=rc.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /GX /Ox /Ot /Og /Oi /Ob2 /D inline=__inline /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /GX /Ox /Ot /Og /Oi /Oy /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -72,7 +72,7 @@ F90=df.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -175,19 +175,11 @@ SOURCE=..\..\libspeex\nb_celp.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\libspeex\preprocess.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\libspeex\quant_lsp.c
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\libspeex\sb_celp.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\libspeex\smallft.c
 # End Source File
 # Begin Source File
 
@@ -255,10 +247,6 @@ SOURCE=..\..\libspeex\sb_celp.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\libspeex\smallft.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\libspeex\speex.h
 # End Source File
 # Begin Source File
@@ -268,10 +256,6 @@ SOURCE=..\..\libspeex\speex_bits.h
 # Begin Source File
 
 SOURCE=..\..\libspeex\speex_callbacks.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\libspeex\speex_denoise.h
 # End Source File
 # Begin Source File
 

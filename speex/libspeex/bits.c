@@ -35,9 +35,6 @@
 #include "speex_bits.h"
 #include "misc.h"
 
-/** Maximum size of the bit-stream (for fixed-size allocation) */
-#define MAX_BYTES_PER_FRAME 2000
-
 void speex_bits_init(SpeexBits *bits)
 {
    int i;
@@ -139,9 +136,9 @@ void speex_bits_read_whole_bytes(SpeexBits *bits, char *bytes, int len)
 {
    int i,pos;
 
-   if (((bits->nbBits+7)>>3)+len > bits->buf_size)
+   if ((bits->nbBits>>3)+len+1 > bits->buf_size)
    {
-      /* Packet is larger than allocated buffer */
+      speex_warning_int("Packet if larger than allocated buffer: ", len);
       if (bits->owner)
       {
          char *tmp = (char*)speex_realloc(bits->bytes, (bits->nbBits>>3)+len+1);
@@ -169,17 +166,6 @@ void speex_bits_read_whole_bytes(SpeexBits *bits, char *bytes, int len)
 int speex_bits_write(SpeexBits *bits, char *bytes, int max_len)
 {
    int i;
-   int bytePtr, bitPtr, nbBits;
-   
-   /* Insert terminator, but save the data so we can put it back after */
-   bitPtr=bits->bitPtr;
-   bytePtr=bits->bytePtr;
-   nbBits=bits->nbBits;
-   speex_bits_insert_terminator(bits);
-   bits->bitPtr=bitPtr;
-   bits->bytePtr=bytePtr;
-   bits->nbBits=nbBits;
-
    if (max_len > ((bits->nbBits+7)>>3))
       max_len = ((bits->nbBits+7)>>3);
    for (i=0;i<max_len;i++)
@@ -355,12 +341,4 @@ int speex_bits_remaining(SpeexBits *bits)
 int speex_bits_nbytes(SpeexBits *bits)
 {
    return ((bits->nbBits+7)>>3);
-}
-
-void speex_bits_insert_terminator(SpeexBits *bits)
-{
-   if (bits->bitPtr<7)
-      speex_bits_pack(bits, 0, 1);
-   while (bits->bitPtr<7)
-      speex_bits_pack(bits, 1, 1);
 }

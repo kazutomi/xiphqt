@@ -34,9 +34,6 @@
 #include <unistd.h>
 #include <getopt.h>
 #endif
-#ifndef HAVE_GETOPT_LONG
-#include "getopt_win.h"
-#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -53,26 +50,12 @@
 #endif
 #include <math.h>
 
-#ifdef __MINGW32__
-#include "wave_out.c"
-#endif
-
 #ifdef HAVE_SYS_SOUNDCARD_H
 #include <sys/soundcard.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-
-#elif defined HAVE_SYS_AUDIOIO_H
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/audioio.h>
-#ifndef AUDIO_ENCODING_SLINEAR
-#define AUDIO_ENCODING_SLINEAR AUDIO_ENCODING_LINEAR /* Solaris */
-#endif
-
 #endif
 
 #include <string.h>
@@ -153,7 +136,7 @@ FILE *out_file_open(char *outFile, int rate, int *channels)
          exit(1);         
       }
 
-      format=AFMT_S16_NE;
+      format=AFMT_S16_LE;
       if (ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format)==-1)
       {
          perror("SNDCTL_DSP_SETFMT");
@@ -184,32 +167,6 @@ FILE *out_file_open(char *outFile, int rate, int *channels)
          exit(1);
       }
       fout = fdopen(audio_fd, "w");
-#elif defined HAVE_SYS_AUDIOIO_H
-      audio_info_t info;
-      int audio_fd;
-      
-      audio_fd = open("/dev/audio", O_WRONLY);
-      if (audio_fd<0)
-      {
-         perror("Cannot open /dev/audio");
-         exit(1);
-      }
-
-      AUDIO_INITINFO(&info);
-#ifdef AUMODE_PLAY    /* NetBSD/OpenBSD */
-      info.mode = AUMODE_PLAY;
-#endif
-      info.play.encoding = AUDIO_ENCODING_SLINEAR;
-      info.play.precision = 16;
-      info.play.sample_rate = rate;
-      info.play.channels = *channels;
-      
-      if (ioctl(audio_fd, AUDIO_SETINFO, &info) < 0)
-      {
-         perror ("AUDIO_SETINFO");
-         exit(1);
-      }
-      fout = fdopen(audio_fd, "w");
 #elif defined WIN32 || defined _WIN32
       {
          unsigned int speex_channels = *channels;
@@ -233,7 +190,11 @@ FILE *out_file_open(char *outFile, int rate, int *channels)
       }
       else 
       {
+#if defined WIN32 || defined _WIN32
          fout = fopen(outFile, "wb");
+#else
+         fout = fopen(outFile, "w");
+#endif
          if (!fout)
          {
             perror(outFile);
@@ -295,10 +256,10 @@ void version_short()
    printf ("Copyright (C) 2002-2003 Jean-Marc Valin\n");
 }
 
-static void *process_header(ogg_packet *op, int enh_enabled, int *frame_size, int *rate, int *nframes, int forceMode, int *channels, SpeexStereoState *stereo, int *extra_headers, int quiet)
+static void *process_header(ogg_packet *op, int enh_enabled, int *frame_size, int *rate, int *nframes, int forceMode, int *channels, SpeexStereoState *stereo, int *extra_headers)
 {
    void *st;
-   const SpeexMode *mode;
+   SpeexMode *mode;
    SpeexHeader *header;
    int modeID;
    SpeexCallback callback;
@@ -372,23 +333,20 @@ static void *process_header(ogg_packet *op, int enh_enabled, int *frame_size, in
    if (*channels==-1)
       *channels = header->nb_channels;
    
-   if (!quiet)
-   {
-      fprintf (stderr, "Decoding %d Hz audio using %s mode", 
-               *rate, mode->modeName);
+   fprintf (stderr, "Decoding %d Hz audio using %s mode", 
+            *rate, mode->modeName);
 
-      if (*channels==1)
-         fprintf (stderr, " (mono");
-      else
-         fprintf (stderr, " (stereo");
+   if (*channels==1)
+      fprintf (stderr, " (mono");
+   else
+      fprintf (stderr, " (stereo");
       
-      if (header->vbr)
-         fprintf (stderr, ", VBR)\n");
-      else
-         fprintf(stderr, ")\n");
-      /*fprintf (stderr, "Decoding %d Hz audio at %d bps using %s mode\n", 
-       *rate, mode->bitrate, mode->modeName);*/
-   }
+   if (header->vbr)
+      fprintf (stderr, ", VBR)\n");
+   else
+      fprintf(stderr, ")\n");
+   /*fprintf (stderr, "Decoding %d Hz audio at %d bps using %s mode\n", 
+    *rate, mode->bitrate, mode->modeName);*/
 
    *extra_headers = header->extra_headers;
 
@@ -403,17 +361,15 @@ int main(int argc, char **argv)
    char *inFile, *outFile;
    FILE *fin, *fout=NULL;
    short out[MAX_FRAME_SIZE];
-   short output[MAX_FRAME_SIZE];
+   float output[MAX_FRAME_SIZE];
    int frame_size=0;
    void *st=NULL;
    SpeexBits bits;
    int packet_count=0;
    int stream_init = 0;
-   int quiet = 0;
    struct option long_options[] =
    {
       {"help", no_argument, NULL, 0},
-      {"quiet", no_argument, NULL, 0},
       {"version", no_argument, NULL, 0},
       {"version-short", no_argument, NULL, 0},
       {"enh", no_argument, NULL, 0},
@@ -445,7 +401,6 @@ int main(int argc, char **argv)
    int channels=-1;
    int rate=0;
    int extra_headers;
-   int wav_format=0;
 
    enh_enabled = 1;
 
@@ -464,9 +419,6 @@ int main(int argc, char **argv)
          {
             usage();
             exit(0);
-         } else if (strcmp(long_options[option_index].name,"quiet")==0)
-         {
-            quiet = 1;
          } else if (strcmp(long_options[option_index].name,"version")==0)
          {
             version();
@@ -540,9 +492,6 @@ int main(int argc, char **argv)
       outFile=argv[optind+1];
    else
       outFile = "";
-   wav_format = strlen(outFile)>=4 && (
-                                       strcmp(outFile+strlen(outFile)-4,".wav")==0
-                                       || strcmp(inFile+strlen(inFile)-4,".WAV")==0);
    /*Open input file*/
    if (strcmp(inFile, "-")==0)
    {
@@ -553,7 +502,11 @@ int main(int argc, char **argv)
    }
    else 
    {
+#if defined WIN32 || defined _WIN32
       fin = fopen(inFile, "rb");
+#else
+      fin = fopen(inFile, "r");
+#endif
       if (!fin)
       {
          perror(inFile);
@@ -593,7 +546,7 @@ int main(int argc, char **argv)
             /*If first packet, process as Speex header*/
             if (packet_count==0)
             {
-               st = process_header(&op, enh_enabled, &frame_size, &rate, &nframes, forceMode, &channels, &stereo, &extra_headers, quiet);
+               st = process_header(&op, enh_enabled, &frame_size, &rate, &nframes, forceMode, &channels, &stereo, &extra_headers);
                if (!nframes)
                   nframes=1;
                if (!st)
@@ -602,8 +555,7 @@ int main(int argc, char **argv)
 
             } else if (packet_count==1)
             {
-               if (!quiet)
-                  print_comments((char*)op.packet, op.bytes);
+               print_comments((char*)op.packet, op.bytes);
             } else if (packet_count<=1+extra_headers)
             {
                /* Ignore extra headers */
@@ -619,7 +571,7 @@ int main(int argc, char **argv)
 
                /*Copy Ogg packet to Speex bitstream*/
                speex_bits_read_from(&bits, (char*)op.packet, op.bytes);
-               for (j=0;j!=nframes;j++)
+               for (j=0;j<nframes;j++)
                {
                   int ret;
                   /*Decode frame*/
@@ -627,9 +579,6 @@ int main(int argc, char **argv)
                      ret = speex_decode(st, &bits, output);
                   else
                      ret = speex_decode(st, NULL, output);
-
-                  /*for (i=0;i<frame_size*channels;i++)
-                    printf ("%d\n", (int)output[i]);*/
 
                   if (ret==-1)
                      break;
@@ -653,15 +602,17 @@ int main(int argc, char **argv)
                      fputc (ch, stderr);
                      fprintf (stderr, "Bitrate is use: %d bps     ", tmp);
                   }
-                  /*Convert to short and save to output file*/
-		  if (strlen(outFile)!=0)
+                  /*PCM saturation (just in case)*/
+                  for (i=0;i<frame_size*channels;i++)
                   {
-                     for (i=0;i<frame_size*channels;i++)
-                        out[i]=le_short(output[i]);
-		  } else {
-                     for (i=0;i<frame_size*channels;i++)
-                        out[i]=output[i];
-		  }
+                     if (output[i]>32000.0)
+                        output[i]=32000.0;
+                     else if (output[i]<-32000.0)
+                        output[i]=-32000.0;
+                  }
+                  /*Convert to short and save to output file*/
+                  for (i=0;i<frame_size*channels;i++)
+                     out[i]=(short)le_short((short)floor(.5+output[i]));
 #if defined WIN32 || defined _WIN32
                   if (strlen(outFile)==0)
                       WIN_Play_Samples (out, sizeof(short) * frame_size*channels);
@@ -680,7 +631,7 @@ int main(int argc, char **argv)
 
    }
 
-   if (wav_format)
+   if (strcmp(outFile+strlen(outFile)-4,".wav")==0 || strcmp(inFile+strlen(inFile)-4,".WAV")==0)
    {
       if (fseek(fout,4,SEEK_SET)==0)
       {
@@ -707,12 +658,11 @@ int main(int argc, char **argv)
       fprintf (stderr, "This doesn't look like a Speex file\n");
    }
    speex_bits_destroy(&bits);
-   if (stream_init)
-      ogg_stream_clear(&os);
    ogg_sync_clear(&oy);
+   ogg_stream_clear(&os);
 
 #if defined WIN32 || defined _WIN32
-   if (strlen(outFile)==0)
+   if (fout && strlen(outFile)==0)
       WIN_Audio_close ();
 #endif
 

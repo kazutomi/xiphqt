@@ -34,9 +34,6 @@
 #include <unistd.h>
 #include <getopt.h>
 #endif
-#ifndef HAVE_GETOPT_LONG
-#include "getopt_win.h"
-#endif
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -47,7 +44,6 @@
 #include "speex_header.h"
 #include "speex_stereo.h"
 #include "misc.h"
-#include "speex_preprocess.h"
 
 #if defined WIN32 || defined _WIN32
 #include "getopt_win.h"
@@ -75,7 +71,7 @@ int oe_write_page(ogg_page *page, FILE *fp)
 #define MAX_FRAME_BYTES 2000
 
 /* Convert input audio bits, endians and channels */
-static int read_samples(FILE *fin,int frame_size, int bits, int channels, int lsb, short * input, char *buff, int *size)
+static int read_samples(FILE *fin,int frame_size, int bits, int channels, int lsb, float * input, char *buff, int *size)
 {   
    unsigned char in[MAX_FRAME_BYTES*2];
    int i;
@@ -125,7 +121,6 @@ static int read_samples(FILE *fin,int frame_size, int bits, int channels, int ls
       }
    }
 
-   /* FIXME: This is probably redundent now */
    /* copy to float input buffer */
    for (i=0;i<frame_size*channels;i++)
    {
@@ -180,12 +175,10 @@ void usage()
    printf (" --dtx              Enable file-based discontinuous transmission (DTX)\n"); 
    printf (" --comp n           Set encoding complexity (0-10), default 3\n"); 
    printf (" --nframes n        Number of frames per Ogg packet (1-10), default 1\n"); 
-   printf (" --denoise          Denoise the input before encoding\n"); 
-   printf (" --agc              Apply adaptive gain control (AGC) before encoding\n"); 
    printf (" --comment          Add the given string as an extra comment. This may be\n");
-   printf ("                     used multiple times\n");
-   printf (" --author           Author of this track\n");
-   printf (" --title            Title for this track\n");
+   printf ("                     used multiple times.\n");
+   printf (" --author           Author of this track.\n");
+   printf (" --title            Title for this track.\n");
    printf (" -h, --help         This help\n"); 
    printf (" -v, --version      Version information\n"); 
    printf (" -V                 Verbose mode (show bit-rate)\n"); 
@@ -210,15 +203,14 @@ int main(int argc, char **argv)
    int option_index = 0;
    char *inFile, *outFile;
    FILE *fin, *fout;
-   short input[MAX_FRAME_SIZE];
+   float input[MAX_FRAME_SIZE];
    int frame_size;
-   int quiet=0;
    int vbr_enabled=0;
    int abr_enabled=0;
    int vad_enabled=0;
    int dtx_enabled=0;
    int nbBytes;
-   const SpeexMode *mode=NULL;
+   SpeexMode *mode=NULL;
    void *st;
    SpeexBits bits;
    char cbits[MAX_FRAME_BYTES];
@@ -235,10 +227,7 @@ int main(int argc, char **argv)
       {"bitrate", required_argument, NULL, 0},
       {"nframes", required_argument, NULL, 0},
       {"comp", required_argument, NULL, 0},
-      {"denoise", no_argument, NULL, 0},
-      {"agc", no_argument, NULL, 0},
       {"help", no_argument, NULL, 0},
-      {"quiet", no_argument, NULL, 0},
       {"le", no_argument, NULL, 0},
       {"be", no_argument, NULL, 0},
       {"8bit", no_argument, NULL, 0},
@@ -262,7 +251,7 @@ int main(int argc, char **argv)
    ogg_stream_state os;
    ogg_page 		 og;
    ogg_packet 		 op;
-   int bytes_written=0, ret, result;
+   int bytes_written, ret, result;
    int id=-1;
    SpeexHeader header;
    int nframes=1;
@@ -277,8 +266,6 @@ int main(int argc, char **argv)
    char first_bytes[12];
    int wave_input=0;
    int tmp;
-   SpeexPreprocessState *preprocess = NULL;
-   int denoise_enabled=0, agc_enabled=0;
 
    comment_init(&comments, &comments_length, vendor_string);
 
@@ -336,19 +323,10 @@ int main(int argc, char **argv)
          } else if (strcmp(long_options[option_index].name,"comp")==0)
          {
             complexity = atoi (optarg);
-         } else if (strcmp(long_options[option_index].name,"denoise")==0)
-         {
-            denoise_enabled=1;
-         } else if (strcmp(long_options[option_index].name,"agc")==0)
-         {
-            agc_enabled=1;
          } else if (strcmp(long_options[option_index].name,"help")==0)
          {
             usage();
             exit(0);
-         } else if (strcmp(long_options[option_index].name,"quiet")==0)
-         {
-            quiet = 1;
          } else if (strcmp(long_options[option_index].name,"version")==0)
          {
             version();
@@ -438,7 +416,11 @@ int main(int argc, char **argv)
    }
    else 
    {
+#if defined WIN32 || defined _WIN32
       fin = fopen(inFile, "rb");
+#else
+      fin = fopen(inFile, "r");
+#endif
       if (!fin)
       {
          perror(inFile);
@@ -520,9 +502,8 @@ int main(int argc, char **argv)
          rate=32000;
    }
 
-   if (!quiet)
-      if (rate!=8000 && rate!=16000 && rate!=32000)
-         fprintf (stderr, "Warning: Speex is only optimized for 8, 16 and 32 kHz. It will still work at %d Hz but your mileage may vary\n", rate); 
+   if (rate!=8000 && rate!=16000 && rate!=32000)
+      fprintf (stderr, "Warning: Speex is only optimized for 8, 16 and 32 kHz. It will still work at %d Hz but your mileage may vary\n", rate); 
 
    speex_init_header(&header, rate, 1, mode);
    header.frames_per_packet=nframes;
@@ -533,8 +514,7 @@ int main(int argc, char **argv)
       char *st_string="mono";
       if (chan==2)
          st_string="stereo";
-      if (!quiet)
-         fprintf (stderr, "Encoding %d Hz audio using %s mode (%s)\n", 
+      fprintf (stderr, "Encoding %d Hz audio using %s mode (%s)\n", 
                header.rate, mode->modeName, st_string);
    }
    /*fprintf (stderr, "Encoding %d Hz audio at %d bps using %s mode\n", 
@@ -552,7 +532,11 @@ int main(int argc, char **argv)
    }
    else 
    {
+#if defined WIN32 || defined _WIN32
       fout = fopen(outFile, "wb");
+#else
+      fout = fopen(outFile, "w");
+#endif
       if (!fout)
       {
          perror(outFile);
@@ -627,22 +611,15 @@ int main(int argc, char **argv)
       speex_encoder_ctl(st, SPEEX_SET_DTX, &tmp);
    if (dtx_enabled && !(vbr_enabled || abr_enabled || vad_enabled))
    {
-      fprintf (stderr, "Warning: --dtx is useless without --vad, --vbr or --abr\n");
-   } else if ((vbr_enabled || abr_enabled) && (vad_enabled))
+      fprintf (stderr, "Warning: --dtx is useless without --vad\n");
+   } else if ((vbr_enabled || abr_enabled) && (vad_enabled || dtx_enabled))
    {
-      fprintf (stderr, "Warning: --vad is already implied by --vbr or --abr\n");
+      fprintf (stderr, "Warning: --vad and --dtx are already implied by --vbr or --abr\n");
    }
 
    if (abr_enabled)
    {
       speex_encoder_ctl(st, SPEEX_SET_ABR, &abr_enabled);
-   }
-
-   if (denoise_enabled || agc_enabled)
-   {
-      preprocess = speex_preprocess_state_init(frame_size, rate);
-      speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DENOISE, &denoise_enabled);
-      speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_AGC, &agc_enabled);
    }
 
    speex_bits_init(&bits);
@@ -662,10 +639,6 @@ int main(int argc, char **argv)
       /*Encode current frame*/
       if (chan==2)
          speex_encode_stereo(input, frame_size, &bits);
-
-      if (preprocess)
-         speex_preprocess(preprocess, input, NULL);
-
       speex_encode(st, input, &bits);
       
       if (print_bitrate) {
@@ -675,13 +648,10 @@ int main(int argc, char **argv)
          fputc (ch, stderr);
          cumul_bits += tmp;
          enc_frames += 1;
-         if (!quiet)
-         {
-            if (vad_enabled || vbr_enabled || abr_enabled)
-               fprintf (stderr, "Bitrate is use: %d bps  (average %d bps)   ", tmp, (int)(cumul_bits/enc_frames));
-            else
-               fprintf (stderr, "Bitrate is use: %d bps     ", tmp);
-         }
+         if (vad_enabled || vbr_enabled || abr_enabled)
+            fprintf (stderr, "Bitrate is use: %d bps  (average %d bps)   ", tmp, (int)(cumul_bits/enc_frames));
+         else
+            fprintf (stderr, "Bitrate is use: %d bps     ", tmp);
          
       }
 
@@ -702,7 +672,6 @@ int main(int argc, char **argv)
 
       if ((id+1)%nframes!=0)
          continue;
-      speex_bits_insert_terminator(&bits);
       nbBytes = speex_bits_write(&bits, cbits, MAX_FRAME_BYTES);
       speex_bits_reset(&bits);
       op.packet = (unsigned char *)cbits;

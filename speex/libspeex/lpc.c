@@ -17,7 +17,7 @@
   Carsten Bormann
 
 
-   Code modified by Jean-Marc Valin
+   Code slightly modified by Jean-Marc Valin
 
    Speex License:
 
@@ -51,7 +51,7 @@
 
 
 
-/* LPC analysis
+/* LPC- and Reflection Coefficients
  *
  * The next two functions calculate linear prediction coefficients
  * and/or the related reflection coefficients from the first P_MAX+1
@@ -63,107 +63,43 @@
 
 #include "lpc.h"
 
-/* returns minimum mean square error    */
-spx_word32_t _spx_lpc(
-spx_coef_t       *lpc, /* out: [0...p-1] LPC coefficients      */
-const spx_word16_t *ac,  /* in:  [0...p] autocorrelation values  */
-int          p
-)
+float                      /* returns minimum mean square error    */
+wld(
+    float       * lpc, /*      [0...p-1] LPC coefficients      */
+    const float * ac,  /*  in: [0...p] autocorrelation values  */
+    float       * ref, /* out: [0...p-1] reflection coef's     */
+    int p
+    )
 {
-   int i, j;  
-   spx_word16_t r;
-   spx_word16_t error = ac[0];
+   int i, j;  float r, error = ac[0];
 
-   if (ac[0] == 0)
-   {
-      for (i = 0; i < p; i++)
-         lpc[i] = 0;
-      return 0;
-   }
+   if (ac[0] == 0) {
+      for (i = 0; i < p; i++) ref[i] = 0; return 0; }
 
    for (i = 0; i < p; i++) {
 
-      /* Sum up this iteration's reflection coefficient */
-      spx_word32_t rr = -SHL(ac[i + 1],13);
-      for (j = 0; j < i; j++) 
-         rr -= MULT16_16(lpc[j],ac[i - j]);
-#ifdef FIXED_POINT
-      r = DIV32_16(rr,error+16);
-#else
-      r = rr/(error+.003*ac[0]);
-#endif
-      /*  Update LPC coefficients and total error */
-      lpc[i] = r;
-      for (j = 0; j < i>>1; j++) 
-      {
-         spx_word16_t tmp  = lpc[j];
-         lpc[j]     += MULT16_16_Q13(r,lpc[i-1-j]);
-         lpc[i-1-j] += MULT16_16_Q13(r,tmp);
-      }
-      if (i & 1) 
-         lpc[j] += MULT16_16_Q13(lpc[j],r);
+      /* Sum up this iteration's reflection coefficient.
+       */
+      r = -ac[i + 1];
+      for (j = 0; j < i; j++) r -= lpc[j] * ac[i - j];
+      ref[i] = r /= error;
 
-      error -= MULT16_16_Q13(r,MULT16_16_Q13(error,r));
+      /*  Update LPC coefficients and total error.
+       */
+      lpc[i] = r;
+      for (j = 0; j < i/2; j++) {
+         float tmp  = lpc[j];
+         lpc[j]     += r * lpc[i-1-j];
+         lpc[i-1-j] += r * tmp;
+      }
+      if (i % 2) lpc[j] += lpc[j] * r;
+
+      error *= 1.0 - r * r;
    }
    return error;
 }
 
 
-#ifdef FIXED_POINT
-
-/* Compute the autocorrelation
- *                      ,--,
- *              ac(i) = >  x(n) * x(n-i)  for all n
- *                      `--'
- * for lags between 0 and lag-1, and x == 0 outside 0...n-1
- */
-
-void _spx_autocorr(
-const spx_word16_t *x,   /*  in: [0...n-1] samples x   */
-spx_word16_t       *ac,  /* out: [0...lag-1] ac values */
-int          lag, 
-int          n
-)
-{
-   spx_word32_t d;
-   int i, j;
-   spx_word32_t ac0=1;
-   int shift, ac_shift;
-   
-   for (j=0;j<n;j++)
-      ac0 += SHR(MULT16_16(x[j],x[j]),8);
-   ac0 += n;
-   shift = 8;
-   while (shift && ac0<0x40000000)
-   {
-      shift--;
-      ac0 <<= 1;
-   }
-   ac_shift = 18;
-   while (ac_shift && ac0<0x40000000)
-   {
-      ac_shift--;
-      ac0 <<= 1;
-   }
-   
-   
-   for (i=0;i<lag;i++)
-   {
-      d=0;
-      for (j=i;j<n;j++)
-      {
-         d += MULT16_16(x[j],x[j-i]) >> shift;
-      }
-      
-      ac[i] = d >> ac_shift;
-   }
-}
-
-
-#else
-
-
-
 /* Compute the autocorrelation
  *                      ,--,
  *              ac(i) = >  x(n) * x(n-i)  for all n
@@ -171,23 +107,13 @@ int          n
  * for lags between 0 and lag-1, and x == 0 outside 0...n-1
  */
 void _spx_autocorr(
-const spx_word16_t *x,   /*  in: [0...n-1] samples x   */
-float       *ac,  /* out: [0...lag-1] ac values */
-int          lag, 
-int          n
-)
+              const float * x,   /*  in: [0...n-1] samples x   */
+              float *ac,   /* out: [0...lag-1] ac values */
+              int lag, int   n)
 {
-   float d;
-   int i;
-   while (lag--) 
-   {
-      for (i = lag, d = 0; i < n; i++) 
-         d += x[i] * x[i-lag];
+   float d; int i;
+   while (lag--) {
+      for (i = lag, d = 0; i < n; i++) d += x[i] * x[i-lag];
       ac[lag] = d;
    }
-   ac[0] += 10;
 }
-
-#endif
-
-

@@ -36,10 +36,14 @@
 #define MISC_H
 
 #ifndef VERSION
-#define VERSION "speex-1.1"
+#define VERSION "speex-1.0"
 #endif
 
-#include "arch.h"
+/*Disable some warnings on VC++*/
+#ifdef _MSC_VER
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4305)
+#endif
 
 #ifndef RELEASE
 void print_vec(float *vec, int len, char *name);
@@ -70,7 +74,7 @@ void speex_warning(char *str);
 
 void speex_warning_int(char *str, int val);
 
-void speex_rand_vec(float std, spx_sig_t *data, int len);
+void speex_rand_vec(float std, float *data, int len);
 
 float speex_rand(float std);
 

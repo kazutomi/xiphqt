@@ -33,9 +33,6 @@
 
 #include <stdio.h>
 #include <windows.h>
-#ifdef __MINGW32__
-#include <mmsystem.h>
-#endif
 
 #define VERSION_STRING "\n 0.7.0\n"
 
