@@ -1,7 +1,7 @@
-libao - A Cross-platform Audio Library, Version 0.8.5
+libao - A Cross-platform Audio Library, Version 0.8.3
 
 Originally Copyright (C) Aaron Holtzman - May 1999
-Changes Copyright (C) Stan Seibert - July 2000-March 2004
+Changes Copyright (C) Stan Seibert - July 2000
 More Changes Copyright (C) Jack Moffitt - October 2000
 
 libao is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ supports:
    * OSS (Open Sound System)
    * ESD (ESounD or Enlighten Sound Daemon)
    * ALSA (Advanced Linux Sound Architecture)
-   * AIX
    * Solaris (untested)
    * IRIX (untested)
 

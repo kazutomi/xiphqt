@@ -46,7 +46,7 @@ static ao_info ao_alsa_info =
 	"Stan Seibert <volsung@asu.edu>",
 	"Outputs to the Advanced Linux Sound Architecture version 0.5.x.",
 	AO_FMT_NATIVE,
-	34,
+	30,
 	ao_alsa_options,
 	3
 };

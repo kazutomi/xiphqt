@@ -43,7 +43,7 @@ static ao_info ao_esd_info =
 	"Stan Seibert <volsung@asu.edu>",
 	"Outputs to the Enlightened Sound Daemon.",
 	AO_FMT_NATIVE,
-	40,
+	10,
 	ao_esd_options,
 	1
 };
@@ -61,17 +61,14 @@ int ao_plugin_test()
 	int sock;
 
 	/* don't wake up the beast while detecting */
-	putenv("ESD_NO_SPAWN=1"); 
+	setenv("ESD_NO_SPAWN", "1", 1); 
 	sock = esd_open_sound(NULL);
-	if (sock < 0)
+	if (sock < 0) 
 		return 0;
-	if (esd_get_standby_mode(sock) != ESM_RUNNING) {
+	else {
 		esd_close(sock);
-		return 0;
+		return 1;
 	}
-
-	esd_close(sock);
-	return 1;
 }
 
 

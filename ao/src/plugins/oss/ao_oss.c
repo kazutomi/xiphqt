@@ -59,7 +59,6 @@ static ao_info ao_oss_info =
 typedef struct ao_oss_internal {
 	char *dev;
 	int fd;
-	int buf_size;
 } ao_oss_internal;
 
 
@@ -106,7 +105,7 @@ int _open_default_oss_device (char **dev_path, int blocking)
 
 #ifdef BROKEN_OSS
 	/* Now have to remove the O_NONBLOCK flag if so instructed. */
-	if (fd >= 0 && blocking) {
+	if (fd > 0 && blocking) {
 		if (fcntl(fd, F_SETFL, 0) < 0) { /* Remove O_NONBLOCK */
 			/* If we can't go to blocking mode, we can't use
 			   this device */
@@ -269,17 +268,6 @@ int ao_plugin_open(ao_device *device, ao_sample_format *format)
 		goto ERR;
 	}
 
-	/* this calculates and sets the fragment size */
-	internal->buf_size = -1;
-	if ((ioctl(internal->fd,SNDCTL_DSP_GETBLKSIZE,
-				&(internal->buf_size)) < 0) ||
-			internal->buf_size<=0 )
-	{
-		fprintf(stderr, "libao - OSS cannot get buffer size for "
-				" device\n");
-		goto ERR;
-	}
-
 	return 1; /* Open successful */
 
  ERR:
@@ -293,23 +281,12 @@ int ao_plugin_open(ao_device *device, ao_sample_format *format)
 int ao_plugin_play(ao_device *device, const char *output_samples, 
 		uint_32 num_bytes)
 {
-	int ret;
-	int send;
 	ao_oss_internal *internal = (ao_oss_internal *) device->internal;
 
-	while(num_bytes > 0) {
-		send = num_bytes>internal->buf_size?
-			internal->buf_size:num_bytes;
-		ret = write(internal->fd, output_samples, send);
-
-		if (ret <= 0)
-			return 0;
-
-		num_bytes-=ret;
-		output_samples+=ret;
-	}
-
-	return 1;
+	if (write(internal->fd, output_samples, num_bytes) < 0)
+		return 0;
+	else
+		return 1;
 }
 
 

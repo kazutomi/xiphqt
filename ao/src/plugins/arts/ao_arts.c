@@ -39,11 +39,7 @@ static ao_info ao_arts_info =
 	"Rik Hemsley (rikkus) <rik@kde.org>",
 	"Outputs to the aRts soundserver.",
 	AO_FMT_NATIVE,
-#ifdef HAVE_ARTS_SUSPENDED
-	45,
-#else
-	15,
-#endif
+	10,
 	NULL,
 	0
 };
@@ -58,12 +54,6 @@ typedef struct ao_arts_internal
 int ao_plugin_test()
 {
 	if (arts_init() == 0) {
-#ifdef HAVE_ARTS_SUSPENDED
-		if (arts_suspended() == 1) {
-			arts_free();
-			return 0;
-		}
-#endif
 		arts_free();
 		return 1;
 	} else

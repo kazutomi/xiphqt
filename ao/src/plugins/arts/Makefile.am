@@ -5,11 +5,13 @@ AUTOMAKE_OPTIONS = foreign
 if HAVE_ARTS
 
 artsltlibs = libarts.la
+artsldflags = -export-dynamic -avoid-version
 artssources = ao_arts.c
 
 else
 
 artsltlibs =
+artsldflags =
 artssources =
 
 endif
@@ -19,7 +21,7 @@ INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @ARTS_CFLAGS@
 libdir = $(plugindir)
 lib_LTLIBRARIES = $(artsltlibs)
 
-libarts_la_LDFLAGS = @PLUGIN_LDFLAGS@
+libarts_la_LDFLAGS = $(artsldflags)
 libarts_la_LIBADD = @ARTS_LIBS@
 libarts_la_SOURCES = $(artssources)
 

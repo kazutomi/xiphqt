@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -63,18 +62,12 @@ extern ao_functions ao_null;
 extern ao_functions ao_wav;
 extern ao_functions ao_raw;
 extern ao_functions ao_au;
-#ifdef HAVE_SYS_AUDIO_H
-extern ao_functions ao_aixs;
-#endif
 
 static ao_functions *static_drivers[] = {
 	&ao_null, /* Must have at least one static driver! */
 	&ao_wav,
 	&ao_raw,
 	&ao_au,
-#ifdef HAVE_SYS_AUDIO_H
-	&ao_aixs,
-#endif
 	NULL /* End of list */
 };
 
@@ -120,32 +113,32 @@ static driver_list *_get_plugin(char *plugin_file)
 		}
 
 		dt->functions->test = dlsym(dt->handle, "ao_plugin_test");
-		if (!(dt->functions->test)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->driver_info = 
 		  dlsym(dt->handle, "ao_plugin_driver_info");
-		if (!(dt->functions->driver_info)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->device_init = 
 		  dlsym(dt->handle, "ao_plugin_device_init");
-		if (!(dt->functions->device_init )) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->set_option = 
 		  dlsym(dt->handle, "ao_plugin_set_option");
-		if (!(dt->functions->set_option)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->open = dlsym(dt->handle, "ao_plugin_open");
-		if (!(dt->functions->open)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->play = dlsym(dt->handle, "ao_plugin_play");
-		if (!(dt->functions->play)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->close = dlsym(dt->handle, "ao_plugin_close");
-		if (!(dt->functions->close)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->device_clear = 
 		  dlsym(dt->handle, "ao_plugin_device_clear");
-		if (!(dt->functions->device_clear)) goto failed;
+		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 
 	} else {
@@ -153,11 +146,6 @@ static driver_list *_get_plugin(char *plugin_file)
 	}
 
 	return dt;
-
- failed:
-	free(dt->functions);
-	free(dt);
-	return NULL;
 }
 
 
@@ -167,6 +155,7 @@ static int _find_default_driver_id (const char *name)
 {
 	int def_id;
 	int id;
+	int priority;
 	ao_info *info;
 	driver_list *driver = driver_head;
 
@@ -175,15 +164,16 @@ static int _find_default_driver_id (const char *name)
 		def_id = -1;
 		
 		id = 0;
+		priority = 0; /* This forces the null driver to be skipped */ 
 		while (driver != NULL) {
 
 			info = driver->functions->driver_info();
 
 			if ( info->type == AO_TYPE_LIVE && 
-			     info->priority > 0 && /* Skip static drivers */
+			     info->priority > priority &&
 			     driver->functions->test() ) {
+				priority = info->priority;
 				def_id = id; /* Found a usable driver */
-				break;
 			}
 
 			driver = driver->next;
@@ -238,7 +228,7 @@ static void _append_dynamic_drivers(driver_list *end)
 	struct dirent *plugin_dirent;
 	char *ext;
 	struct stat statbuf;
-	char fullpath[PATH_MAX];
+	char fullpath[FILENAME_MAX];
 	DIR *plugindir;
 	driver_list *plugin;
 	driver_list *driver = end;
@@ -247,7 +237,7 @@ static void _append_dynamic_drivers(driver_list *end)
 	plugindir = opendir(AO_PLUGIN_PATH);
 	if (plugindir != NULL) {
 		while ((plugin_dirent = readdir(plugindir)) != NULL) {
-			snprintf(fullpath, PATH_MAX, "%s/%s", 
+			snprintf(fullpath, FILENAME_MAX, "%s/%s", 
 				 AO_PLUGIN_PATH, plugin_dirent->d_name);
 			if (!stat(fullpath, &statbuf) && 
 			    S_ISREG(statbuf.st_mode) && 
@@ -268,29 +258,15 @@ static void _append_dynamic_drivers(driver_list *end)
 }
 
 
-/* Compare two drivers based on priority 
-   Used as compar function for qsort() in _make_info_table() */
-static int _compar_driver_priority (const driver_list **a, 
-				    const driver_list **b)
-{
-	return memcmp(&((*b)->functions->driver_info()->priority),
-		      &((*a)->functions->driver_info()->priority),
-		      sizeof(int));
-}
-
-
 /* Make a table of driver info structures for ao_driver_info_list(). */
-static ao_info ** _make_info_table (driver_list **head, int *driver_count)
+static ao_info ** _make_info_table (driver_list *head, int *driver_count)
 {
 	driver_list *list;
 	int i;
 	ao_info **table;
-	driver_list **drivers_table;
-
-	*driver_count = 0;
 
 	/* Count drivers */
-	list = *head;
+	list = head;
 	i = 0;
 	while (list != NULL) {
 		i++;
@@ -298,31 +274,15 @@ static ao_info ** _make_info_table (driver_list **head, int *driver_count)
 	}
 
 	
-	/* Sort driver_list */
-	drivers_table = (driver_list **) calloc(i, sizeof(driver_list *));
-	if (drivers_table == NULL)
-		return (ao_info **) NULL;
-	list = *head;
-	*driver_count = i;
-	for (i = 0; i < *driver_count; i++, list = list->next)
-		drivers_table[i] = list;
-	qsort(drivers_table, i, sizeof(driver_list *), 
-			(int(*)(const void *, const void *))
-			_compar_driver_priority);
-	*head = drivers_table[0];
-	for (i = 1; i < *driver_count; i++)
-		drivers_table[i-1]->next = drivers_table[i];
-	drivers_table[i-1]->next = NULL;
-
-
 	/* Alloc table */
 	table = (ao_info **) calloc(i, sizeof(ao_info *));
 	if (table != NULL) {
-		for (i = 0; i < *driver_count; i++)
-			table[i] = drivers_table[i]->functions->driver_info();
-	}
-
-	free(drivers_table);
+		*driver_count = i;
+		list = head;
+		for (i = 0; i < *driver_count; i++, list = list->next)
+			table[i] = list->functions->driver_info();
+	} else
+		*driver_count = 0;
 
 	return table;
 }
@@ -549,7 +509,7 @@ void ao_initialize(void)
 	}
 
 	/* Create the table of driver info structs */
-	info_table = _make_info_table(&driver_head, &driver_count);
+	info_table = _make_info_table(driver_head, &driver_count);
 }
 
 
@@ -670,9 +630,6 @@ int ao_play(ao_device *device, char* output_samples, uint_32 num_bytes)
 {
 	char *playback_buffer;
 
-	if (device == NULL)
-	  return 0;
-
 	if (device->swap_buffer != NULL) {
 		if (_realloc_swap_buffer(device, num_bytes)) {
 			_swap_samples(device->swap_buffer, 
@@ -691,22 +648,9 @@ int ao_close(ao_device *device)
 {
 	int result;
 
-	if (device == NULL)
-		result = 0;
-	else {
-		result = device->funcs->close(device);
-		device->funcs->device_clear(device);
-
-		if (device->file) {
-			fclose(device->file);
-			device->file = NULL;
-		}
-
-		if (device->swap_buffer != NULL)
-			free(device->swap_buffer);
-
-		free(device);
-	}
+	result = device->funcs->close(device);
+	device->funcs->device_clear(device);
+	free(device);
 
 	return result;
 }

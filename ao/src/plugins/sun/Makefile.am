@@ -5,11 +5,13 @@ AUTOMAKE_OPTIONS = foreign
 if HAVE_SUN_AUDIO
 
 sunltlibs = libsun.la
+sunldflags = -export-dynamic -avoid-version
 sunsources = ao_sun.c
 
 else
 
 sunltlibs =
+sunldflags =
 sunsources =
 
 endif
@@ -19,7 +21,7 @@ INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
 libdir = $(plugindir)
 lib_LTLIBRARIES = $(sunltlibs)
 
-libsun_la_LDFLAGS = @PLUGIN_LDFLAGS@
+libsun_la_LDFLAGS = $(sunldflags)
 libsun_la_SOURCES = $(sunsources)
 
 EXTRA_DIST = ao_sun.c
