@@ -68,8 +68,8 @@ signals_child (const int sig)
 {
   int stat;
 
-  signal (SIGCHLD, signals_child);
   wait (&stat);
+  signal (SIGCHLD, signals_child);
 }
 
 /* SIGINT, ok, let's be nice and just drop dead */
