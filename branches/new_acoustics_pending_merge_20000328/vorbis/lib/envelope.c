@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: PCM data envelope analysis and manipulation
- last mod: $Id: envelope.c,v 1.15 2000/02/07 20:03:16 xiphmont Exp $
+ last mod: $Id: envelope.c,v 1.15.4.1 2000/05/08 08:25:42 xiphmont Exp $
 
  Preecho calculation.
 
@@ -88,30 +88,6 @@ void _ve_envelope_deltas(vorbis_dsp_state *v){
       _ve_deltas(mult,pcm,dtotal-dcurr,v->ve.window,v->ve.winlen,&v->ve.mdct);
     }
     v->envelope_current=dtotal;
-
-#ifdef ANALYSIS
-    {
-      static int frameno=0;
-      FILE *out;
-      char buffer[80];
-      int j,k;
-      
-      sprintf(buffer,"delt%d.m",frameno);
-      out=fopen(buffer,"w+");
-      for(j=0;j<v->envelope_current;j++)
-	fprintf(out,"%d %g\n",j*vi->envelopesa+vi->envelopesa/2,v->multipliers[j]);
-      fclose(out);
-
-      sprintf(buffer,"deltpcm%d.m",frameno++);
-      out=fopen(buffer,"w+");
-      for(k=0;k<vi->channels;k++){
-	for(j=0;j<v->pcm_current;j++)
-	  fprintf(out,"%d %g\n",j,v->pcm[k][j]);
-	fprintf(out,"\n");
-      }
-      fclose(out);
-    }
-#endif
 
   }
 }
