@@ -18,7 +18,6 @@ int main (int argc, char **argv)
    uint8_t *rgb;
    int fd;
    TarkinStream *tarkin_stream;
-   uint32_t n_layers;
    int nread;
    int nheader = 0;
    ogg_sync_state oy;
@@ -71,7 +70,7 @@ int main (int argc, char **argv)
              } else {
 		tarkin_synthesis_packetin(tarkin_stream, &op);
 		while(tarkin_synthesis_frameout(tarkin_stream, &rgb, 0, &date)==0){
-		  layer = tarkin_stream->layer;
+                  layer = &tarkin_stream->layer->desc;
 	          snprintf(ofname, 11, layer->format == TARKIN_GRAYSCALE ? "out%03d.pgm" : "out%03d.ppm", frame);
                   printf ("write '%s' %dx%d\n", ofname, layer->width, layer->height);
                   write_pnm (ofname, rgb, layer->width, layer->height);
