@@ -395,16 +395,18 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             vorbheader -> reserved = 0;
             vorbheader -> pkts = 0;
 
-            packet = malloc (max_payload + 6);
+            framesize = max_payload;
 
-            makevorbisheader (packet, max_payload + 6, vorbheader);
+            packet = malloc (framesize + 6);
+
+            makevorbisheader (packet, framesize + 6, vorbheader);
             memcpy (packet + 5, &framesize, 1);
-            memmove (packet + 6, vorbdata, max_payload);
+            memcpy (packet + 6, vorbdata + position, framesize);
 
             /*  Swap RTP headers from host to network order  */
             RTPHeaders.sequence = htons (RTPHeaders.sequence);
 
-            sendrtp (&RTPHeaders, rtpsocket, &rtpsock, packet, max_payload + 6);
+            sendrtp (&RTPHeaders, rtpsocket, &rtpsock, packet, framesize + 6);
 
             /*  Swap headers back to host order  */
             RTPHeaders.sequence = ntohs (RTPHeaders.sequence);
@@ -470,7 +472,9 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             stacksize += (length + 1);
         }
 
-        if (length + stacksize > max_payload || stackcount > 15) {
+        /* todo: we also need to be able to flush this at end-of-stream */
+
+        if (length + stacksize > max_payload || stackcount >= 15) {
 
             /*  Set Vorbis header flags  */
             vorbheader -> continuation = 0;
@@ -604,7 +608,7 @@ int main (int argc, char **argv)
     unsigned int ttl  = 1;
 
     fprintf (stderr, "||---------------------------------------------------------------------------||\n");
-    fprintf (stderr, "||  Vorbis RTP Server (draft-kerr-avt-vorbis-rtp-04)\n");	  
+    fprintf (stderr, "||  Vorbis RTP Server (draft-ietf-avt-vorbis-rtp-00)\n");	  
 
 /*===========================================================================*/
 /*  Command-line args processing                                             */
