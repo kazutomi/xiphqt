@@ -1,17 +1,17 @@
 
 sub ices_perl_initialize {
-	print "help me! I'm falling!\n";
+	print "Perl subsystem Initializing:\n";
 }
 
 sub ices_perl_shutdown {
-	print "i'm melting!\n";
+	print "Perl subsystem shutting down:\n";
 }
 
 sub ices_perl_get_next {
-	print "trying to die\n";
-	return "/home/chad/music/04_beatles.mp3";
+	print "Perl subsystem quering for new track:\n";
+	return "/home/chad/music/A Perfect Circle - Reinholder.mp3";
 }
 
-sub ices_perl_get_lineno {
+sub ices_perl_get_current_lineno {
 	return 1;
 }
