@@ -4,7 +4,11 @@ AUTOMAKE_OPTIONS = foreign dist-zip
 
 SUBDIRS = lib include doc examples
 
-EXTRA_DIST = README COPYING todo.txt libvorbis.spec
+bin_SCRIPTS = vorbis-config
+m4datadir = $(datadir)/aclocal
+m4data_DATA = vorbis.m4
+
+EXTRA_DIST = README COPYING todo.txt libvorbis.spec vorbis.m4
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"
