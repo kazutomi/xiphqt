@@ -123,10 +123,16 @@ class Neuros:
         # Check and see if the mountpoint looks legit
         try:
             contents = os.listdir(self.mountpoint)
-            if Neuros.DB_DIR not in map(string.upper, contents):
+            for name in contents:
+                if name.upper() == Neuros.DB_DIR.upper():
+                    # Make sure to save the proper case of the mountpoint
+                    Neuros.DB_DIR = name
+                    break
+            else:
                 raise Error("The mountpoint %s does not appear to contain"
                             " a %s database directory."
                             % (mountpoint, Neuros.DB_DIR))
+            
         except OSError:
             raise Error("The mountpoint %s is not accessible."
                         "  Please check your permissions."
