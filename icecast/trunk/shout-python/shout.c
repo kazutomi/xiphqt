@@ -1,5 +1,5 @@
 /* shout.c: python bindings to libshout
- * Copyright (c) 2003 Brendan Cully <brendan@xiph.org>
+ * Copyright (c) 2003,5 Brendan Cully <brendan@xiph.org>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -16,7 +16,7 @@
  *  Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
  *  Boston, MA  02111-1307  USA.
  *
- * $Id: shout.c,v 1.3 2003/07/13 17:29:53 brendan Exp $
+ * $Id$
  */
 
 #include <Python.h>

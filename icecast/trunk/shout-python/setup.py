@@ -55,7 +55,7 @@ shout = Extension('shout', sources = ['shout.c'],
 setup (name = 'shout-python',
        version = ver,
        description = 'Bindings for libshout 2',
-       url = 'http://xiph.org/~brendan/shout-python/',
+       url = 'http://icecast.org/download.php',
        author = 'Brendan Cully',
        author_email = 'brendan@xiph.org',
        ext_modules = [shout])
