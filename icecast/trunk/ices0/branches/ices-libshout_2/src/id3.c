@@ -23,11 +23,6 @@
 #include "metadata.h"
 
 /* Local definitions */
-#define ID3V2_FLAG_UNSYNC (1<<7)
-#define ID3V2_FLAG_EXTHDR (1<<6)
-#define ID3V2_FLAG_EXPHDR (1<<5)
-#define ID3V2_FLAG_FOOTER (1<<4)
-
 typedef struct {
   unsigned char major_version;
   unsigned char minor_version;
@@ -40,11 +35,35 @@ typedef struct {
   unsigned int pos;
 } id3v2_tag;
 
+typedef struct {
+  size_t frame_len;
+  const char* artist_tag;
+  const char* title_tag;
+} id3v2_version_info;
+
+static id3v2_version_info vi[5] = {
+  {  6, "TP1", "TT2" },
+  {  6, "TP1", "TT2" },
+  {  6, "TP1", "TT2" },
+  { 10, "TPE1", "TIT2" },
+  { 10, "TPE1", "TIT2" }
+};
+
+#define ID3V2_FLAG_UNSYNC (1<<7)
+#define ID3V2_FLAG_EXTHDR (1<<6)
+#define ID3V2_FLAG_EXPHDR (1<<5)
+#define ID3V2_FLAG_FOOTER (1<<4)
+
+#define ID3V2_FRAME_LEN(tagp) (vi[(tagp)->major_version].frame_len)
+#define ID3V2_ARTIST_TAG(tagp) (vi[(tagp)->major_version].artist_tag)
+#define ID3V2_TITLE_TAG(tagp) (vi[(tagp)->major_version].title_tag)
+
 /* Private function declarations */
 static int id3v2_read_exthdr (input_stream_t* source, id3v2_tag* tag);
 ssize_t id3v2_read_frame (input_stream_t* source, id3v2_tag* tag);
 static int id3v2_skip_data (input_stream_t* source, id3v2_tag* tag, size_t len);
 static int id3v2_decode_synchsafe (unsigned char* synchsafe);
+static int id3v2_decode_synchsafe3 (unsigned char* synchsafe);
 
 /* Global function definitions */
 
@@ -126,24 +145,25 @@ ices_id3v2_parse (input_stream_t* source)
   tag.len = id3v2_decode_synchsafe (buf + 6);
   ices_log_debug ("ID3v2: version %d.%d. Tag size is %d bytes.",
                   tag.major_version, tag.minor_version, tag.len);
-  if (tag.minor_version > 4) {
-    ices_log_debug ("ID3v2: Tag version %d.%d greater than maximum supported (2.4), skipping");
+  if (tag.major_version > 4) {
+    ices_log_debug ("ID3v2: Version greater than maximum supported (4), skipping");
     id3v2_skip_data (source, &tag, tag.len);
 
     return;
   }
 
-  if ((tag.flags & ID3V2_FLAG_EXTHDR) && id3v2_read_exthdr (source, &tag) < 0) {
+  if ((tag.major_version > 2) &&
+      (tag.flags & ID3V2_FLAG_EXTHDR) && id3v2_read_exthdr (source, &tag) < 0) {
     ices_log ("Error reading ID3v2 extended header");
 
     return;
   }
 
   remaining = tag.len - tag.pos;
-  if (tag.flags & ID3V2_FLAG_FOOTER)
+  if ((tag.major_version > 3) && (tag.flags & ID3V2_FLAG_FOOTER))
     remaining -= 10;
 
-  while (remaining > 10 && (tag.artist == NULL || tag.title == NULL)) {
+  while (remaining > ID3V2_FRAME_LEN(&tag) && (tag.artist == NULL || tag.title == NULL)) {
     if ((rv = id3v2_read_frame (source, &tag)) < 0) {
       ices_log ("Error reading ID3v2 frames, skipping to end of ID3v2 tag");
       id3v2_skip_data (source, &tag, tag.len - tag.pos);
@@ -195,42 +215,54 @@ ssize_t
 id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
 {
   char hdr[10];
-  size_t len;
+  size_t len, len2;
+  ssize_t rlen;
   char* buf;
 
-  if (source->read (source, hdr, 10) != 10) {
+  if (source->read (source, hdr, ID3V2_FRAME_LEN(tag)) != ID3V2_FRAME_LEN(tag)) {
     ices_log ("Error reading ID3v2 frame");
 
     return -1;
   }
-  tag->pos += 10;
+  tag->pos += ID3V2_FRAME_LEN(tag);
 
   if (hdr[0] == '\0')
     return 0;
 
-  if ((len = id3v2_decode_synchsafe (hdr + 4)) > tag->len - tag->pos) {
+  if (tag->major_version < 3) {
+    len = id3v2_decode_synchsafe3 (hdr + 3);
+    hdr[3] = '\0';
+  } else {
+    len = id3v2_decode_synchsafe (hdr + 4);
+    hdr[4] = '\0';
+  }
+  if (len > tag->len - tag->pos) {
     ices_log ("Error parsing ID3v2 frame header: Frame too large (%d bytes)", len);
     
     return -1;
   }
-  hdr[4] = '\0';
 
   /* ices_log_debug("ID3v2: Frame type [%s] found, %d bytes", hdr, len); */
-  if (!strcmp (hdr, "TIT2") || !strcmp (hdr, "TPE1")) {
+  if (!strcmp (hdr, ID3V2_ARTIST_TAG(tag)) || !strcmp (hdr, ID3V2_TITLE_TAG(tag))) {
     if (! (buf = malloc(len))) {
       ices_log ("Error allocating memory while reading ID3v2 frame");
       
       return -1;
     }
-    if (source->read (source, buf, len) < 0) {
-      ices_log ("Error reading ID3v2 frame data");
+    len2 = len;
+    while (len2) {
+      if ((rlen = source->read (source, buf, len)) < 0) {
+        ices_log ("Error reading ID3v2 frame data");
+	free (buf);
       
-      return -1;
+        return -1;
+      }
+      tag->pos += rlen;
+      len2 -= rlen;
     }
-    tag->pos += len;
 
     /* skip encoding */
-    if (!strcmp (hdr, "TIT2")) {
+    if (!strcmp (hdr, ID3V2_TITLE_TAG(tag))) {
       ices_log_debug ("ID3v2: Title found: %s", buf + 1);
       tag->title = ices_util_strdup (buf + 1);
     } else {
@@ -242,7 +274,7 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
   } else if (id3v2_skip_data (source, tag, len))
     return -1;
 
-  return len + 10;
+  return len + ID3V2_FRAME_LEN(tag);
 }
 
 static int
@@ -282,6 +314,18 @@ id3v2_decode_synchsafe (unsigned char* synchsafe)
   res |= synchsafe[2] << 7;
   res |= synchsafe[1] << 14;
   res |= synchsafe[0] << 21;
+
+  return res;
+}
+
+static int
+id3v2_decode_synchsafe3 (unsigned char* synchsafe)
+{
+  int res;
+
+  res = synchsafe[2];
+  res |= synchsafe[1] << 7;
+  res |= synchsafe[0] << 14;
 
   return res;
 }
