@@ -29,7 +29,6 @@ class MarkdownWrapper(object):
 		.sourceFilename		-- the file containing markdown text
 		.destFilename		-- the output html file name
 		.doctype			-- self explanatory
-		.importables		-- a list of CSS files to @import
 		.inHeadBits			-- a list of strings to be included inside the head element
 		.beforeContentBits	-- stuff to include before the content div
 		.mainText			-- the text from .sourceFileName after it's been turned into HTML
@@ -46,8 +45,7 @@ class MarkdownWrapper(object):
 					   '"-//W3C//DTD HTML 4.01//EN" ' + \
 					   '"http://www.w3.org/TR/html4/strict.dtd">'
 		
-		self.importables = "/CSS/all.css".split()
-		
+		# Stuff .mainText with the contents of the file, after markdowning it.
 		self.mainText = ""
 		fh = os.popen(MARKDOWN_COMMAND + " " + sourceFilename)
 		try:
@@ -55,15 +53,20 @@ class MarkdownWrapper(object):
 		finally:
 			fh.close()
 
-		match = TITLE_REGEX.match(self.mainText)
 		self.title = "Untitled Document"
-		if match:
+		match = TITLE_REGEX.match(self.mainText)
+		if match:									#TODO: needs decent error handling
 			self.title = match.group(1)
 		
 		self.lang = 'en-US'
-	
+
 		self.afterMainTextBits = []
-		self.headBits = []
+		
+		self.inHeadBits = [
+			"<style type='text/css'>@import url(/CSS/all.css);</style>",
+			"<meta http=equiv='Content-type' content='text/html; charset=UTF-8'>"
+		]
+		
 		self.beforeContentBits = []
 		self.afterContentBits = []
 		
@@ -90,12 +93,9 @@ class MarkdownWrapper(object):
 		ret += self.doctype + '\n'
 		ret += "<html lang='" + self.lang + "'>\n"
 		ret += "<head>\n"
-		ret += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\n'
+		for bit in self.inHeadBits:
+			ret += bit + '\n'
 		ret += '<title>' + self.title + '</title>\n'
-		for importable in self.importables:
-			ret += "<style type='text/css'>@import url(" + importable + ");</style>\n"
-		for bit in self.headBits:
-			ret += bit
 		ret += "</head>\n"
 		ret += "<body>\n"
 		for bit in self.beforeContentBits:
@@ -129,7 +129,7 @@ def getParallelFile(where, what):
 
 if __name__ == '__main__':
 	for dirpath, dirnames, filenames in os.walk('.'):
-		for filename in filter(lambda x: x.endswith(".txt"), filenames):
+		for filename in filter(lambda x: x.endswith(".markdown"), filenames):
 			fullpath = os.path.join(dirpath, filename)
 			print fullpath
 			mw = MarkdownWrapper(fullpath)

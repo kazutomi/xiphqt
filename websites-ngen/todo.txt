@@ -3,15 +3,23 @@ To Do
 
 *	Add in a way to override parts of the generated webpage from a file parallel to the
 	.txt file that's being used as the source for the main body.
+	
 *	After I've implemented that, I need a way for this sort of thing to "use whatever my
 	ancestors used", kinda like an OO derivation thing.
+
 *	Anyhow, for this out-of-band data thing: In it, I'd have stuff for:
 	*	Extra things to put in <head>
 	*	Extra things to put **before** `<div id='content'>`
 	*	Extra things to put **after**  `<div id='content'>`
 	* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
 	Maybe I could use PyYaml. Although that's probably serious overkill.
+
 *	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
+
+*	Sell the Powers that Be on a hypothetical http://files.xiph.org/ so we
+	don't end up putting big, useless things like .rpms and source .tgz files and (gasp) .exe
+	files in the subversion repo, making it even more bloated and time-consuming to download.
+
 
 For the News Things
 ------------------
