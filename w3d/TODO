@@ -2,7 +2,6 @@
 Most important things:
 
  - the entropy coder, replace static huffman
- - oggetize the stream format (Jack? Help!)
  - clean up the pnsr tools
  - write docs and do some performance analysis, compare to other codecs
  - think about a multiresolution multidimensional motion flow detection scheme,

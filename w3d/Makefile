@@ -26,7 +26,7 @@ CFLAGS+= -DDBG_OGG
 
 LFLAGS = -g -lefence -logg
 
-OBJS = mem.o pnm.o wavelet.o wavelet_xform.o wavelet_coeff.o \
+OBJS = mem.o pnm.o huffman.o wavelet.o wavelet_xform.o wavelet_coeff.o \
 	yuv.o tarkin.o info.o
 
 TEST_TARGETS = _test_bitcoder _test_rle _test_huffman
@@ -67,3 +67,4 @@ test: .depend $(TEST_TARGETS)
 	sh tools/makedepend.sh -f.depend -- $(CFLAGS) -- $(SRCS) $(TEST_SRCS) tarkin_enc.c tarkin_dec.c
 
 -include .depend
+
