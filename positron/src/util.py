@@ -1,5 +1,15 @@
 import os
 
+def trim_newline(s):
+    "Returns s without a trailing newline if present."
+    if len(s) > 1:
+        if s[-1] == "\n":
+            return s[:-1]
+        else:
+            return s
+    else:
+        return s
+
 def copy_file (src_filename, dest_filename):
     """Copy a file from src_filename to dest_filename
 

@@ -11,6 +11,7 @@ import cmd_list
 import cmd_clear
 import cmd_pack
 import cmd_sync
+import cmd_config
 
 import ports
 
@@ -19,12 +20,14 @@ version = "Xiph.org Positron version 0.1"
 # Hash table of commands.  The first value in the tuple is the module
 # where the command is stored.  The second value is the order to
 # display commands in from usage()
-commands = { "add"  : (cmd_add,   1),
-             "sync" : (cmd_sync,  2),
-             "del"  : (cmd_del,   3),
-             "list" : (cmd_list,  4),
-             "clear": (cmd_clear, 5),
-             "pack" : (cmd_pack,  6) }
+# Note: "config" is not run using the normal command dispatcher
+commands = { "add"   : (cmd_add,    1),
+             "sync"  : (cmd_sync,   2),
+             "del"   : (cmd_del,    3),
+             "config": (cmd_config, 4),
+             "list"  : (cmd_list,   5),
+             "clear" : (cmd_clear,  6),
+             "pack"  : (cmd_pack,   7) }
 
 # For sorting according to the display order element in the tuple
 def cmp_func(a, b):
@@ -85,6 +88,13 @@ def main(argv):
         else:
             usage()
             sys.exit(0)
+    elif remaining[0] == "config":
+        # Config gets special treatment because everything might be screwed
+        # up until we run it
+        (cmd, display_order) = commands["config"]
+        cmd.run(config, None, remaining[1:])
+        sys.exit(0)
+        
 
     # Read configuration
     try:

@@ -2,6 +2,7 @@ import ports
 import shlex
 import os
 from os import path
+from util import trim_newline
 import ConfigParser
 
 class Error(Exception):
@@ -47,15 +48,6 @@ def strip_quotes(s):
     else:
         return s
 
-def trim_newline(s):
-    if len(s) > 1:
-        if s[-1] == "\n":
-            return s[:-1]
-        else:
-            return s
-    else:
-        return s
-
 
 class Config:
     def __init__(self):
@@ -80,10 +72,14 @@ class Config:
             "recordings" : path.join(self.config_dir, "recordings") }
 
     def create_new_config(self):
-        os.makedirs(self.config_dir)
+        if not path.exists:
+            os.makedirs(self.config_dir)
+        
         self.write_config_file()
-        self.clear_deleted()
-        self.clear_recordings()
+        if not path.exists(self.config_filenames["deleted"]):
+            self.clear_deleted()
+        if not path.exists(self.config_filenames["recordings"]):
+            self.clear_recordings()
 
     # --------- Config file methods ---------
 
@@ -120,7 +116,7 @@ class Config:
                 if token2 == "sync":
                     if src == None:
                         raise Error(tokenizer.error_leader()
-                                    +"sync block")
+                                    +"No src specified in sync block")
                     else:
                         self.syncdirs.append([src, dest])
                         break
@@ -191,14 +187,14 @@ class Config:
         # and know what the neuros_musicdir is
         for i in range(len(self.syncdirs)):
             if self.syncdirs[i][1] == None:
-                self.syncdirs[i][1] = neuros_musicdir
+                self.syncdirs[i][1] = self.neuros_musicdir
 
     def write_config_file(self):
         f = file(self.config_filenames["config"], "w")
 
-        if self.mountpoint != None:
+        if self.mountpoint != None and self.mountpoint != "":
             f.write("mountpoint=%s\n" % (quote_string(self.mountpoint),))
-        if self.recordingdir != None:
+        if self.recordingdir != None and self.recordingdir != "":
             f.write("recordingdir=%s\n" % (quote_string(self.recordingdir),))
         if self.neuros_musicdir != None:
             f.write("neuros_musicdir=%s\n"
