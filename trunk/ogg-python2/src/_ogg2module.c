@@ -23,13 +23,15 @@ static PyMethodDef Ogg_methods[] = {
 
 static char docstring[] = "";
 
+/* This stuff is useful to py-ogg2 submodules */
+
 static ogg2_module_info mi = {
   VERSION_MINOR,
   VERSION_MAJOR,
   &PyOggPacket_Type,
   &PyOggStreamState_Type,
   NULL,                          /* Will be PyOggError */
-  PyOggPacket_FromPacket,
+/*  PyOggPacket_Alloc, */
   arg_to_int64,
 };
 

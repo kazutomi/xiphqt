@@ -8,8 +8,8 @@ typedef struct {
 
 extern PyTypeObject PyOggPacket_Type;
 
-#define PyOggPacket_AsOggPacket(x) (((PyOggPacketObject *) (x))->packet)
+#define PyOggPacket_AsOggPacket(x) ( ((PyOggPacketObject *) (x))->packet )
 
-PyObject *PyOggPacket_FromPacket(ogg_packet *);
+PyOggPacketObject *PyOggPacket_Alloc(void);
 
 #endif /* PYOGGPACKET_H */
