@@ -67,15 +67,19 @@ include it with the bug report.
 <h2>Filesystem Problems</h2>
 
 <p>
-Another class of problem is when you see errors like "Input/Output
-Error," mount won't recognize the filesystem on your Neuros, you find
-that the files on your Neuros have been damaged or destroyed, and/or
-your Neuros freezes when reading certain files.  These symptoms
-suggest the filesystem on the Neuros has been corrupted in some way.
-Filesystem corruption is usually caused in the same way as database
-corruption, though it is generally less common.  Unfortunately, the
-best way to fix a corrupted file system is to format the Neuros and
-start over.
+Another class of problems generates errors like:
+<ul>
+  <li>Input/Output errors (visible using the dmesg program)</li>
+  <li>Linux thinks the filesystem is read-only.</li>
+  <li>mount won't recognize the filesystem on your Neuros.</li>
+  <li>Files on your Neuros have been damaged or destroyed.</li>
+  <li>The Neuros freezes when playing certain files.</li>
+</ul>
+These symptoms suggest the filesystem on the Neuros has been corrupted
+in some way.  Filesystem corruption is usually caused in the same way
+as database corruption, though it is generally less common.
+Unfortunately, the best way to fix a corrupted file system is to
+format the Neuros and start over.
 </p>
 
 <p>
