@@ -65,16 +65,16 @@ const int OC_MB_MAP[2][2]={{0,3},{1,2}};
 
 /*A list of the indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-const int OC_MB_MAP_IDXS[4][12]={
-  {0,1,2,3,4,5,6,7,8,9,10,11},
-  {0,1,2,3,4,6,8,10},
+const int OC_MB_MAP_IDXS[OC_PF_NFORMATS][12]={
+  {0,1,2,3,4,8},
   {0,1,2,3,4,5,8,9},
-  {0,1,2,3,4,8}
+  {0,1,2,3,4,6,8,10},
+  {0,1,2,3,4,5,6,7,8,9,10,11}
 };
 
 /*The number of indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-const int OC_MB_MAP_NIDXS[4]={12,8,8,6};
+const int OC_MB_MAP_NIDXS[OC_PF_NFORMATS]={6,8,8,12};
 
 /*The number of extra bits that are coded with each of the DCT tokens.
   Each DCT token has some fixed number of additional bits (possibly 0) stored
@@ -195,31 +195,16 @@ int oc_dct_token_skip(int _token,int _extra_bits){
 
 /*The function used to fill in the chroma plane motion vectors for a macro
    block when 4 different motion vectors are specified in the luma plane.
-  This version is for use with no chroma decimation.
+  This version is for use with chroma decimated in the X and Y directions.
   _cbmvs: The chroma block-level motion vectors to fill in.
-  _lmbmv: The luma macro-block level motion vector to fill in for use in
-           prediction.
   _lbmvs: The luma block-level motion vectors.*/
 static void oc_set_chroma_mvs00(char _cbmvs[4][2],const char _lbmvs[4][2]){
-  memcpy(_cbmvs,_lbmvs,4*sizeof(_lbmvs[0]));
-}
-
-/*The function used to fill in the chroma plane motion vectors for a macro
-   block when 4 different motion vectors are specified in the luma plane.
-  This version is for use with chroma decimated in the X direction.
-  _cbmvs: The chroma block-level motion vectors to fill in.
-  _lbmvs: The luma block-level motion vectors.*/
-static void oc_set_chroma_mvs01(char _cbmvs[4][2],const char _lbmvs[4][2]){
   int dx;
   int dy;
-  dx=_lbmvs[0][0]+_lbmvs[1][0];
-  dy=_lbmvs[0][1]+_lbmvs[1][1];
-  _cbmvs[0][0]=(char)OC_DIV_ROUND_POW2(dx,1,1);
-  _cbmvs[0][1]=(char)OC_DIV_ROUND_POW2(dy,1,1);
-  dx=_lbmvs[2][0]+_lbmvs[3][0];
-  dy=_lbmvs[2][1]+_lbmvs[3][1];
-  _cbmvs[2][0]=(char)OC_DIV_ROUND_POW2(dx,1,1);
-  _cbmvs[2][1]=(char)OC_DIV_ROUND_POW2(dy,1,1);
+  dx=_lbmvs[0][0]+_lbmvs[1][0]+_lbmvs[2][0]+_lbmvs[3][0];
+  dy=_lbmvs[0][1]+_lbmvs[1][1]+_lbmvs[2][1]+_lbmvs[3][1];
+  _cbmvs[0][0]=(char)OC_DIV_ROUND_POW2(dx,2,2);
+  _cbmvs[0][1]=(char)OC_DIV_ROUND_POW2(dy,2,2);
 }
 
 /*The function used to fill in the chroma plane motion vectors for a macro
@@ -227,7 +212,7 @@ static void oc_set_chroma_mvs01(char _cbmvs[4][2],const char _lbmvs[4][2]){
   This version is for use with chroma decimated in the Y direction.
   _cbmvs: The chroma block-level motion vectors to fill in.
   _lbmvs: The luma block-level motion vectors.*/
-static oc_set_chroma_mvs10(char _cbmvs[4][2],const char _lbmvs[4][2]){
+static oc_set_chroma_mvs01(char _cbmvs[4][2],const char _lbmvs[4][2]){
   int dx;
   int dy;
   dx=_lbmvs[0][0]+_lbmvs[2][0];
@@ -242,22 +227,37 @@ static oc_set_chroma_mvs10(char _cbmvs[4][2],const char _lbmvs[4][2]){
 
 /*The function used to fill in the chroma plane motion vectors for a macro
    block when 4 different motion vectors are specified in the luma plane.
-  This version is for use with chroma decimated in the X and Y directions.
+  This version is for use with chroma decimated in the X direction.
   _cbmvs: The chroma block-level motion vectors to fill in.
   _lbmvs: The luma block-level motion vectors.*/
-static void oc_set_chroma_mvs11(char _cbmvs[4][2],const char _lbmvs[4][2]){
+static void oc_set_chroma_mvs10(char _cbmvs[4][2],const char _lbmvs[4][2]){
   int dx;
   int dy;
-  dx=_lbmvs[0][0]+_lbmvs[1][0]+_lbmvs[2][0]+_lbmvs[3][0];
-  dy=_lbmvs[0][1]+_lbmvs[1][1]+_lbmvs[2][1]+_lbmvs[3][1];
-  _cbmvs[0][0]=(char)OC_DIV_ROUND_POW2(dx,2,2);
-  _cbmvs[0][1]=(char)OC_DIV_ROUND_POW2(dy,2,2);
+  dx=_lbmvs[0][0]+_lbmvs[1][0];
+  dy=_lbmvs[0][1]+_lbmvs[1][1];
+  _cbmvs[0][0]=(char)OC_DIV_ROUND_POW2(dx,1,1);
+  _cbmvs[0][1]=(char)OC_DIV_ROUND_POW2(dy,1,1);
+  dx=_lbmvs[2][0]+_lbmvs[3][0];
+  dy=_lbmvs[2][1]+_lbmvs[3][1];
+  _cbmvs[2][0]=(char)OC_DIV_ROUND_POW2(dx,1,1);
+  _cbmvs[2][1]=(char)OC_DIV_ROUND_POW2(dy,1,1);
+}
+
+/*The function used to fill in the chroma plane motion vectors for a macro
+   block when 4 different motion vectors are specified in the luma plane.
+  This version is for use with no chroma decimation.
+  _cbmvs: The chroma block-level motion vectors to fill in.
+  _lmbmv: The luma macro-block level motion vector to fill in for use in
+           prediction.
+  _lbmvs: The luma block-level motion vectors.*/
+static void oc_set_chroma_mvs11(char _cbmvs[4][2],const char _lbmvs[4][2]){
+  memcpy(_cbmvs,_lbmvs,4*sizeof(_lbmvs[0]));
 }
 
 /*A table of functions used to fill in the chroma plane motion vectors for a
    macro block when 4 different motion vectors are specified in the luma
    plane.*/
-const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[4]={
+const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[OC_PF_NFORMATS]={
   oc_set_chroma_mvs00,
   oc_set_chroma_mvs01,
   oc_set_chroma_mvs10,
@@ -267,22 +267,22 @@ const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[4]={
 
 
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz){
+  size_t  rowsz;
   size_t  colsz;
   size_t  datsz;
   char   *ret;
   colsz=_height*sizeof(void *);
-  datsz=_sz*_width*_height;
+  rowsz=_sz*_width;
+  datsz=rowsz*_height;
   /*Alloc array and row pointers.*/
   ret=(char *)_ogg_malloc(datsz+colsz);
   /*Initialize the array.*/
   if(ret!=NULL){
-    size_t   rowsz;
     size_t   i;
     void   **p;
     char    *datptr;
     p=(void **)ret;
     i=_height;
-    rowsz=_sz*_width;
     for(datptr=ret+colsz;i-->0;p++,datptr+=rowsz)*p=(void *)datptr;
   }
   return (void **)ret;
@@ -290,21 +290,21 @@ void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz){
 
 void **oc_calloc_2d(size_t _height,size_t _width,size_t _sz){
   size_t  colsz;
+  size_t  rowsz;
   size_t  datsz;
   char   *ret;
   colsz=_height*sizeof(void *);
-  datsz=_sz*_width*_height;
+  rowsz=_sz*_width;
+  datsz=rowsz*_height;
   /*Alloc array and row pointers.*/
   ret=(char *)_ogg_calloc(datsz+colsz,1);
   /*Initialize the array.*/
   if(ret!=NULL){
-    size_t   rowsz;
     size_t   i;
     void   **p;
     char    *datptr;
     p=(void **)ret;
     i=_height;
-    rowsz=_sz*_width;
     for(datptr=ret+colsz;i-->0;p++,datptr+=rowsz)*p=(void *)datptr;
   }
   return (void **)ret;
@@ -325,8 +325,8 @@ void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
   for(pli=0;pli<3;pli++){
     _dst[pli].width=_src[pli].width;
     _dst[pli].height=_src[pli].height;
-    _dst[pli].stride=-_src[pli].stride;
-    _dst[pli].data=_src[pli].data+(1-_dst[pli].height)*_dst[pli].stride;
+    _dst[pli].ystride=-_src[pli].ystride;
+    _dst[pli].data=_src[pli].data+(1-_dst[pli].height)*_dst[pli].ystride;
   }
 }
 

@@ -1954,8 +1954,8 @@ static void oc_psych_csf_filters_interpolate(oc_psych_ctx *_psych,
   int   i;
   int   j;
   int   k;
-  hdec=_psych->enc->state.info.chroma_x_decimated;
-  vdec=_psych->enc->state.info.chroma_y_decimated;
+  hdec=!(_psych->enc->state.info.pixel_fmt&1);
+  vdec=!(_psych->enc->state.info.pixel_fmt&2);
   /*Select a pair of CSF filters to interpolate over for the given contrast
      level.
     For contrasts in the range 0..1, we interpolate linearly.
@@ -2066,7 +2066,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   int                   hfilti;
   int                   filti;
   int                   vsize_max;
-  int                   stride;
+  int                   ystride;
   int                   fragx;
   int                   fragy;
   int                   fragy_end;
@@ -2096,7 +2096,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   fplane=_psych->enc->state.fplanes+_pli;
   frags=_psych->enc->state.frags;
   efrags=_psych->enc->frinfo;
-  stride=_psych->enc->state.input[_pli].stride;
+  ystride=_psych->enc->state.input[_pli].ystride;
   pscale=OC_YCbCr_SCALE[_psych->enc->state.info.colorspace][_pli];
   /*Clear out the mask group weights for the rows above the image.*/
   for(i=(OC_MASK_WINDOW_SZ_MAX-2<<1)-vsize_max;i<OC_MASK_WINDOW_SZ_MAX-1<<1;
@@ -2119,7 +2119,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,dfragi++){
         if(frags[dfragi].invalid)continue;
         oc_enc_frag_intra_fdct(_psych->enc,
-         frags+dfragi,efrags[dfragi].dct_coeffs,stride,OC_FRAME_IO);
+         frags+dfragi,efrags[dfragi].dct_coeffs,ystride,OC_FRAME_IO);
       }
     }
     /*After a vsize_max delay, perform CSF filtering.*/

@@ -176,8 +176,10 @@ typedef struct{
     Note the contrast with an invalid macro block, which is outside the coded
      frame, not just the displayable one.*/
   unsigned        invalid:1;
+  /*The quality index used for this fragment's AC coefficients.*/
+  unsigned        qi:6;
   /*The mode of the macroblock this fragment belongs to.*/
-  int             mbmode:6;
+  int             mbmode:8;
   /*The prediction-corrected DC component.*/
   int             dc:16;
   /*A pointer to the portion of an image covered by this fragment in several
@@ -223,10 +225,6 @@ typedef struct{
 typedef struct{
   /*The stream information.*/
   theora_info           info;
-  /*The chroma subsampling method.
-    The lowe-order bit indicates X-axis decimation, while the next bit
-     indicates Y-axis decimation.*/
-  int                   chroma_type;
   /*The fragment plane descriptions.*/
   oc_fragment_plane     fplanes[3];
   /*The total number of fragments in a single frame.*/
@@ -284,8 +282,10 @@ typedef struct{
   ogg_int64_t           granpos;
   /*The type of the current frame.*/
   int                   frame_type;
-  /*The quality index of the current frame.*/
-  int                   qi;
+  /*The quality indices of the current frame.*/
+  int                   qis[3];
+  /*The number of quality indices used in the current frame.*/
+  int                   nqis;
   /*The dequantization tables.*/
   oc_quant_tables      *dequant_tables[2][3];
   oc_quant_tables       dequant_table_data[2][3];
@@ -323,14 +323,14 @@ extern const int OC_FRAME_FOR_MODE[OC_NMODES];
 extern const int OC_MB_MAP[2][2];
 /*A list of the indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-extern const int OC_MB_MAP_IDXS[4][12];
+extern const int OC_MB_MAP_IDXS[OC_PF_NFORMATS][12];
 /*The number of indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-extern const int OC_MB_MAP_NIDXS[4];
+extern const int OC_MB_MAP_NIDXS[OC_PF_NFORMATS];
 /*A table of functions used to fill in the Cb,Cr plane motion vectors for a
    macro block when 4 different motion vectors are specified in the luma
    plane.*/
-extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[4];
+extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[OC_PF_NFORMATS];
 
 
 
@@ -363,8 +363,8 @@ int oc_state_mbi_for_pos(oc_theora_state *_state,int _mbx,int _mby);
 int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
  int *_offset1,int _dx,int _dy,int _ystride,int _pli);
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _ncoefs,
- const ogg_uint16_t _iquant[64]);
+ int _pli,ogg_int16_t _dct_coeffs[64],int _ncoefs,ogg_uint16_t _dc_iquant,
+ const ogg_uint16_t _ac_iquant[64]);
 void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
  int _nfragis[3],int _dst_frame,int _src_frame);
 void oc_state_loop_filter(oc_theora_state *_state,int _frame);

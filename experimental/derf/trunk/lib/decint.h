@@ -53,4 +53,33 @@ struct theora_dec_ctx{
   int                      pp_dc_scale[64];
 };
 
+/*Fix-ups for the libogg1 API, which returns -1 when there are insufficient bits
+   left in the packet as the value read.
+  This has two problems:
+  a) Cannot distinguish between reading 32 1 bits and failing to have sufficient
+   bits left in the packet.
+  b) Returns values that are outside the range [0..(1<<nbits)-1], which can crash
+   code that uses such values as indexes into arrays, etc.
+
+  We solve the first problem by doing two reads and combining the results.
+  We solve the second problem by masking out the result based on the sign bit of
+   the return value.
+  It's a little more work, but branchless, so it should not slow us down much.
+
+  The libogg2 API does not have these problems, and the definitions of the
+   functions below can be replaced by direct libogg2 calls.*/
+
+/*Read 32 bits.
+  *_ret is set to 0 on failure.
+  Return: 0 on success, or a negative value on failure.*/
+extern int theora_read32(oggpack_buffer *_opb,long *_ret);
+/*Read n bits, where N <= 31 for libogg1.
+  *_ret is set to 0 on failure.
+  Return: 0 on success, or a negative value on failure.*/
+extern int theora_read(oggpack_buffer *_opb,int _nbits,long *_ret);
+/*Read 1 bit,
+  *_ret is set to 0 on failure.
+  Return: 0 on success, or a negative value on failure.*/
+extern int theora_read1(oggpack_buffer *_opb,long *_ret);
+
 #endif

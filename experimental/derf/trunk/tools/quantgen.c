@@ -417,8 +417,8 @@ int main(void){
   /*The names of each pixel format.*/
   static const char *FORMAT_NAMES[4]={
     "4:4:4 subsampling",
-    "subsampling in the X direction",
     "4:2:2 subsampling",
+    "subsampling in the Y direction",
     "4:2:0 subsampling"
   };
   /*The names of each color plane.*/
@@ -528,17 +528,21 @@ int main(void){
     /*But we must keep the quantizer monotonic.*/
     if(qi<63){
       for(pci=0;pci<9;pci++){
-        while(base_matrices[pci][qi][0]*dc_scale[qi]<
-         base_matrices[pci][qi+1][0]*dc_scale[qi+1]){
+        while(base_matrices[pci][qi][0]<base_matrices[pci][qi+1][0]||
+         dc_scale[qi]<dc_scale[qi+1]){
           /*dc_scale[qi]++;*/
-          if(base_matrices[pci][qi][0]<255)base_matrices[pci][qi][0]++;
+          if(base_matrices[pci][qi][0]<255&&dc_scale[qi]>=dc_scale[qi+1]){
+            base_matrices[pci][qi][0]++;
+          }
           else dc_scale[qi]++;
         }
         for(ci=1;ci<64;ci++){
-          while(base_matrices[pci][qi][ci]*ac_scale[qi]<
-           base_matrices[pci][qi+1][ci]*ac_scale[qi+1]){
+          while(base_matrices[pci][qi][ci]<base_matrices[pci][qi+1][ci]||
+           ac_scale[qi]<ac_scale[qi+1]){
             /*ac_scale[qi]++;*/
-            if(base_matrices[pci][qi][ci]<255)base_matrices[pci][qi][ci]++;
+            if(base_matrices[pci][qi][ci]<255&&ac_scale[qi]>=ac_scale[qi+1]){
+              base_matrices[pci][qi][ci]++;
+            }
             else ac_scale[qi]++;
           }
         }
@@ -625,16 +629,9 @@ int main(void){
     if(pci<8)printf(",");
   }
   printf("\n};\n");
-  printf("\nstatic const theora_quant_info OC_DEF_QUANT_INFO[4]={");
+  printf("\nconst theora_quant_info OC_DEF_QUANT_INFO[4]={");
   for(pfi=0;pfi<4;pfi++){
     printf("\n  {");
-    printf("\n    {");
-    for(qi=0;qi<64;qi++){
-      if(!(qi&7))printf("\n      ");
-      printf("%4i",ac_scale[qi]);
-      if(qi<63)printf(",");
-    }
-    printf("\n    },");
     printf("\n    {");
     for(qi=0;qi<64;qi++){
       if(!(qi&7))printf("\n      ");
@@ -643,11 +640,37 @@ int main(void){
     }
     printf("\n    },");
     printf("\n    {");
+    for(qi=0;qi<64;qi++){
+      if(!(qi&7))printf("\n      ");
+      printf("%4i",ac_scale[qi]);
+      if(qi<63)printf(",");
+    }
+    printf("\n    },");
+    printf("\n    {");
+    /*There's really no obvious guidance on how to set the loop filter limits
+       from the VP3 source code.
+      Setting them to half the luma DC quantizer value is at least the obvious
+       choice, and that's what we do here.
+      This doesn't quite match what VP3 did: their values were larger for
+       larger quantizers, and smaller for smaller quantizers, but it matches
+       pretty closely for all intermediate quantizers.
+      This also doesn't take into account the minimum quantizer limits, because
+       those change depending on whether blocks are coded in intra or inter
+       mode, while the loop filter must span the boundaries of all different
+       block types.
+      Perhaps using the smaller of the limits is still appropriate, though.*/
+    for(qi=0;qi<64;qi++){
+      if(!(qi&7))printf("\n      ");
+      printf("%4i",(int)(qscales[qi]*fbase_matrices[0][qi][0]*0.5+0.5));
+      if(qi<63)printf(",");
+    }
+    printf("\n    },");
+    printf("\n    {");
     for(qti=0;qti<2;qti++){
        printf("\n      {");
        for(pli=0;pli<3;pli++){
-         printf("\n        {%i,OC_DEF_QRANGE_SIZES,QC_DEF_BASE_MATRICES[%i]}",
-          NQRANGES,pli==0?0:(pli-1<<2)+1+pfi);
+         printf("\n        {%i,OC_DEF_QRANGE_SIZES,OC_DEF_BASE_MATRICES[%i]}",
+          NQRANGES,pli==0?0:(pli-1<<2)+1+(~pfi&3));
          if(pli<2)printf(",");
        }
        printf("\n      }");

@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.8 2004/03/03 14:53:04 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.9 2004/03/15 22:17:32 derf Exp $
 
  ********************************************************************/
 
@@ -457,7 +457,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
 
       ycbcr[0].width=video_x;
       ycbcr[0].height=video_y;
-      ycbcr[0].stride=video_x;
+      ycbcr[0].ystride=video_x;
       ycbcr[0].data=yuvframe[0];
 
 #if defined(OC_444_MODE)
@@ -467,7 +467,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
 
         ycbcr[1].width=video_x;
         ycbcr[1].height=video_y;
-        ycbcr[1].stride=video_x;
+        ycbcr[1].ystride=video_x;
         ycbcr[1].data=upsamp_uvdata;
 
         for(e=0;e<video_y/2;e++){
@@ -530,7 +530,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
 
         ycbcr[2].width=video_x;
         ycbcr[2].height=video_y;
-        ycbcr[2].stride=video_x;
+        ycbcr[2].ystride=video_x;
         ycbcr[2].data=upsamp_uvdata+video_x*video_y;
 
         for(e=0;e<video_y/2;e++){
@@ -597,7 +597,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
         int croffset=cboffset+(video_x/2)*(video_y/2);
         ycbcr[1].width=video_x/2;
         ycbcr[1].height=video_y;
-        ycbcr[1].stride=video_x/2;
+        ycbcr[1].ystride=video_x/2;
         ycbcr[1].data=upsamp_uvdata;
 
         for(e=0;e<video_y/2;e++){
@@ -620,7 +620,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
 
         ycbcr[2].width=video_x/2;
         ycbcr[2].height=video_y;
-        ycbcr[2].stride=video_x/2;
+        ycbcr[2].ystride=video_x/2;
         ycbcr[2].data=upsamp_uvdata+video_y*(video_x/2);
 
         for(e=0;e<video_y/2;e++){
@@ -644,12 +644,12 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
 #else
       ycbcr[1].width=video_x/2;
       ycbcr[1].height=video_y/2;
-      ycbcr[1].stride=video_x/2;
+      ycbcr[1].ystride=video_x/2;
       ycbcr[1].data=yuvframe[0]+video_x*video_y;
 
       ycbcr[2].width=video_x/2;
       ycbcr[2].height=video_y/2;
-      ycbcr[2].stride=video_x/2;
+      ycbcr[2].ystride=video_x/2;
       ycbcr[2].data=yuvframe[0]+video_x*video_y*5/4;
 #endif
 
@@ -822,14 +822,11 @@ int main(int argc,char *argv[]){
   ti.pp_level=1;
 
 #if defined(OC_444_MODE)
-  ti.chroma_x_decimated=0;
-  ti.chroma_y_decimated=0;
+  ti.pixel_fmt=OC_PF_444;
 #elif defined(OC_422_MODE)
-  ti.chroma_x_decimated=1;
-  ti.chroma_y_decimated=0;
+  ti.pixel_fmt=OC_PF_422;
 #else
-  ti.chroma_x_decimated=1;
-  ti.chroma_y_decimated=1;
+  ti.pixel_fmt=OC_PF_420;
 #endif
 
   td=theora_encode_alloc(&ti);

@@ -10,8 +10,14 @@
 /*The amount to shift the resulting product by.*/
 #define OC_FQUANT_SHIFT (16)
 
+
+
 /*The default quantization parameters used by VP3.1.*/
 extern const theora_quant_info OC_VP31_QUANT_INFO;
+/*Our default quantization parameters.*/
+extern const theora_quant_info OC_DEF_QUANT_INFO[4];
+
+
 
 void oc_quant_params_pack(oggpack_buffer *_opb,
  const theora_quant_info *_qinfo);

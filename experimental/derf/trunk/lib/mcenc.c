@@ -178,8 +178,8 @@ static int oc_mcenc_sad_check_mbcandidate_fullpel(oc_mcenc_ctx *_mcenc,
   int                      bi;
   /*TODO: customize error function for speed/(quality+size) tradeoff.*/
   fplane=_mcenc->enc->state.fplanes+_pli;
-  cur_ystride=_mcenc->enc->state.input[_pli].stride;
-  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][_pli].stride;
+  cur_ystride=_mcenc->enc->state.input[_pli].ystride;
+  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][_pli].ystride;
   frags=_mcenc->enc->state.frags;
   mb_map=_mcenc->enc->state.mbs[_mbi].map[_pli];
   mvoffset=_dx+_dy*ref_ystride;
@@ -223,8 +223,8 @@ static int oc_mcenc_ysad_halfpel_mbrefine(oc_mcenc_ctx *_mcenc,
   int                      sitei;
   int                      err;
   fplane=_mcenc->enc->state.fplanes+0;
-  cur_ystride=_mcenc->enc->state.input[0].stride;
-  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][0].stride;
+  cur_ystride=_mcenc->enc->state.input[0].ystride;
+  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][0].ystride;
   frags=_mcenc->enc->state.frags;
   mb_map=_mcenc->enc->state.mbs[_mbi].map[0];
   mvoffset_base=_vec[0]+_vec[1]*ref_ystride;
@@ -277,8 +277,8 @@ static int oc_mcenc_ysad_halfpel_brefine(oc_mcenc_ctx *_mcenc,
   int                      sitei;
   int                      err;
   fplane=_mcenc->enc->state.fplanes+0;
-  cur_ystride=_mcenc->enc->state.input[0].stride;
-  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][0].stride;
+  cur_ystride=_mcenc->enc->state.input[0].ystride;
+  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][0].ystride;
   frag=_mcenc->enc->state.frags+_mcenc->enc->state.mbs[_mbi].map[0][_bi];
   if(frag->invalid)return _best_err;
   mvoffset_base=_vec[0]+_vec[1]*ref_ystride;

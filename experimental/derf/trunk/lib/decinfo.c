@@ -10,22 +10,30 @@
   _buf: The byte array to store the unpacked bytes in.
   _len: The number of octets to unpack.*/
 static void oc_unpack_octets(oggpack_buffer *_opb,char *_buf,size_t _len){
-  while(_len-->0)*_buf++=(char)oggpackB_read(_opb,8);
+  while(_len-->0){
+    long val;
+    theora_read(_opb,8,&val);
+    *_buf++=(char)val;
+  }
 }
 
 /*Unpacks a 32-bit integer encoded by octets in little-endian form.*/
 static long oc_unpack_length(oggpack_buffer *_opb){
   long ret[4];
   int  i;
-  for(i=0;i<4;i++)ret[i]=oggpackB_read(_opb,8);
+  for(i=0;i<4;i++)theora_read(_opb,8,ret+i);
   return ret[0]|ret[1]<<8|ret[2]<<16|ret[3]<<24;
 }
 
 static int oc_info_unpack(oggpack_buffer *_opb,theora_info *_info){
+  long val;
   /*Check the codec bitstream version.*/
-  _info->version_major=(unsigned char)oggpackB_read(_opb,8);
-  _info->version_minor=(unsigned char)oggpackB_read(_opb,8);
-  _info->version_subminor=(unsigned char)oggpackB_read(_opb,8);
+  theora_read(_opb,8,&val);
+  _info->version_major=(unsigned char)val;
+  theora_read(_opb,8,&val);
+  _info->version_minor=(unsigned char)val;
+  theora_read(_opb,8,&val);
+  _info->version_subminor=(unsigned char)val;
   if(_info->version_major>OC_VERSION_MAJOR||
    _info->version_major==OC_VERSION_MAJOR&&
    (_info->version_minor>OC_VERSION_MINOR||
@@ -34,31 +42,45 @@ static int oc_info_unpack(oggpack_buffer *_opb,theora_info *_info){
     return OC_VERSION;
   }
   /*Read the encoded frame description.*/
-  _info->width=oggpackB_read(_opb,16)<<4;
-  _info->height=oggpackB_read(_opb,16)<<4;
-  _info->frame_width=oggpackB_read(_opb,24);
-  _info->frame_height=oggpackB_read(_opb,24);
-  _info->offset_x=oggpackB_read(_opb,8);
+  theora_read(_opb,16,&val);
+  _info->width=(ogg_uint32_t)val<<4;
+  theora_read(_opb,16,&val);
+  _info->height=(ogg_uint32_t)val<<4;
+  theora_read(_opb,24,&val);
+  _info->frame_width=(ogg_uint32_t)val;
+  theora_read(_opb,24,&val);
+  _info->frame_height=(ogg_uint32_t)val;
+  theora_read(_opb,8,&val);
+  _info->offset_x=(ogg_uint32_t)val;
   /*Note: The sense of offset_y is inverted in what we pass back to the
      application compared to how it is stored in the bitstream.*/
-  _info->offset_y=_info->height-_info->frame_height-oggpackB_read(_opb,8);
-  _info->fps_numerator=oggpackB_read(_opb,32);
-  _info->fps_denominator=oggpackB_read(_opb,32);
+  theora_read(_opb,8,&val);
+  _info->offset_y=_info->height-_info->frame_height-(ogg_uint32_t)val;
+  theora_read32(_opb,&val);
+  _info->fps_numerator=(ogg_uint32_t)val;
+  theora_read32(_opb,&val);
+  _info->fps_denominator=(ogg_uint32_t)val;
   if(_info->width<=0||_info->height<=0||
    _info->frame_width+_info->offset_x>_info->width||
    _info->frame_height+_info->offset_y>_info->height||
    _info->fps_numerator<=0||_info->fps_denominator<=0){
     return OC_BADHEADER;
   }
-  _info->aspect_numerator=oggpackB_read(_opb,24);
-  _info->aspect_denominator=oggpackB_read(_opb,24);
-  _info->colorspace=oggpackB_read(_opb,8);
-  _info->target_bitrate=oggpackB_read(_opb,24);
-  _info->quality=oggpackB_read(_opb,6);
-  _info->keyframe_granule_shift=oggpackB_read(_opb,5);
-  _info->chroma_y_decimated=!oggpackB_read1(_opb);
-  _info->chroma_x_decimated=!oggpackB_read1(_opb);
-  if(oggpackB_read(_opb,3)!=0)return OC_BADHEADER;
+  theora_read(_opb,24,&val);
+  _info->aspect_numerator=(ogg_uint32_t)val;
+  theora_read(_opb,24,&val);
+  _info->aspect_denominator=(ogg_uint32_t)val;
+  theora_read(_opb,8,&val);
+  _info->colorspace=(theora_colorspace)val;
+  theora_read(_opb,24,&val);
+  _info->target_bitrate=(int)val;
+  theora_read(_opb,6,&val);
+  _info->quality=(int)val;
+  theora_read(_opb,5,&val);
+  _info->keyframe_granule_shift=(int)val;
+  theora_read(_opb,2,&val);
+  _info->pixel_fmt=(theora_pixel_fmt)val;
+  if(theora_read(_opb,3,&val)<0||val!=0)return OC_BADHEADER;
   return 0;
 }
 

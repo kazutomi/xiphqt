@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.7 2004/03/04 01:33:25 derf Exp $
+  last mod: $Id: theora.h,v 1.8 2004/03/15 22:17:32 derf Exp $
 
  ********************************************************************/
 
@@ -53,11 +53,27 @@ typedef enum{
   OC_CS_NSPACES
 }theora_colorspace;
 
+/*The currently defined pixel format tags.
+  TODO: Specify details of where chroma samples are placed.
+  Average luma position, a la JPEG, except in interlaced modes.*/
+typedef enum{
+  /*Chroma decimation by 2 in both the X and Y directions.*/
+  OC_PF_420,
+  /*Currently reserved.*/
+  OC_PF_RSVD,
+  /*Chroma decimation by 2 in the X direction.*/
+  OC_PF_422,
+  /*No chroma decimation.*/
+  OC_PF_444,
+  /*The total number of currently defined pixel formats.*/
+  OC_PF_NFORMATS
+}theora_pixel_fmt;
+
 /*A single color plane in an image.*/
 typedef struct{
   int            width;
   int            height;
-  int            stride;
+  int            ystride;
   unsigned char *data;
 }theora_img_plane;
 
@@ -80,10 +96,6 @@ typedef struct{
   ogg_uint32_t       width;
   /*The encoded height: must be a multiple of 16, and less than 1048576.*/
   ogg_uint32_t       height;
-  /*Whether or not chroma components are decimated in the x direction.*/
-  int                chroma_x_decimated;
-  /*Whether or not chroma components are decimated in the y direction.*/
-  int                chroma_y_decimated;
   /*The displayed width: must be no larger than width.*/
   ogg_uint32_t       frame_width;
   /*The displayed height: must be no larger than height.*/
@@ -105,6 +117,8 @@ typedef struct{
   ogg_uint32_t       aspect_denominator;
   /*The color space.*/
   theora_colorspace  colorspace;
+  /*The pixel format.*/
+  theora_pixel_fmt   pixel_fmt;
   /*The target bit-rate in bps.
     TODO: Current encoder does not support CBR mode, or anything like it.
     We also don't really know what nominal rate each quality level
@@ -216,8 +230,8 @@ typedef struct{
 
 /*The complete set of quantization parameters.*/
 typedef struct{
-  ogg_uint16_t        ac_scale[64];
   ogg_uint16_t        dc_scale[64];
+  ogg_uint16_t        ac_scale[64];
   unsigned char       loop_filter_limits[64];
   theora_quant_ranges qi_ranges[2][3];
 }theora_quant_info;

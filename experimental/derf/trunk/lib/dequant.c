@@ -2,74 +2,116 @@
 #include <string.h>
 #include <ogg/ogg.h>
 #include "dequant.h"
+#include "decint.h"
 
-
-static const unsigned char OC_VP31_LOOP_FILTER_LIMITS[64]={
-  30,25,20,20,15,15,14,14,
-  13,13,12,12,11,11,10,10,
-   9, 9, 8, 8, 7, 7, 7, 7,
-   6, 6, 6, 6, 5, 5, 5, 5,
-   4, 4, 4, 4, 3, 3, 3, 3,
-   2, 2, 2, 2, 2, 2, 2, 2,
-   0, 0, 0, 0, 0, 0, 0, 0,
-   0, 0, 0, 0, 0, 0, 0, 0
-};
 
 
 void oc_quant_params_unpack(oggpack_buffer *_opb,
  theora_quant_info *_qinfo){
-  theora_quant_base *intra_y_base;
-  theora_quant_base *intra_c_base;
-  theora_quant_base *inter_base;
-  int *sizes;
-  int  x;
-  /*TODO: Update for alpha 3.*/
-  for(x=0;x<64;x++)_qinfo->ac_scale[x]=(ogg_uint16_t)oggpackB_read(_opb,16);
-  for(x=0;x<64;x++)_qinfo->dc_scale[x]=(ogg_uint16_t)oggpackB_read(_opb,16);
-  _qinfo->qi_ranges[1][2].nranges=_qinfo->qi_ranges[0][2].nranges=
-   _qinfo->qi_ranges[1][1].nranges=_qinfo->qi_ranges[0][1].nranges=
-   _qinfo->qi_ranges[1][0].nranges=_qinfo->qi_ranges[0][0].nranges=1;
-  sizes=(int *)_ogg_malloc(sizeof(sizes[0]));
-  sizes[0]=63;
-  _qinfo->qi_ranges[1][2].sizes=_qinfo->qi_ranges[0][2].sizes=
-   _qinfo->qi_ranges[1][1].sizes=_qinfo->qi_ranges[0][1].sizes=
-   _qinfo->qi_ranges[1][0].sizes=_qinfo->qi_ranges[0][0].sizes=sizes;
-  intra_y_base=(theora_quant_base *)_ogg_malloc(2*sizeof(intra_y_base[0]));
-  _qinfo->qi_ranges[0][0].base_matrices=intra_y_base;
-  intra_c_base=(theora_quant_base *)_ogg_malloc(2*sizeof(intra_c_base[0]));
-  _qinfo->qi_ranges[0][2].base_matrices=_qinfo->qi_ranges[0][1].base_matrices=
-   intra_c_base;
-  inter_base=(theora_quant_base *)_ogg_malloc(2*sizeof(inter_base[0]));
-  _qinfo->qi_ranges[1][2].base_matrices=_qinfo->qi_ranges[1][1].base_matrices=
-   _qinfo->qi_ranges[1][0].base_matrices=inter_base;
-  for(x=0;x<64;x++){
-    intra_y_base[1][x]=intra_y_base[0][x]=
-     (unsigned char)oggpackB_read(_opb,8);
+  theora_quant_base *base_mats;
+  long               val;
+  int                nbase_mats;
+  int                sizes[64];
+  int                indices[64];
+  int                index_nbits;
+  int                bmi;
+  int                ci;
+  int                qti;
+  int                pli;
+  int                qri;
+  int                qi;
+  int                i;
+  for(qi=0;qi<64;qi++){
+    theora_read(_opb,7,&val);
+    _qinfo->loop_filter_limits[qi]=(unsigned char)val;
   }
-  for(x=0;x<64;x++){
-    intra_c_base[1][x]=intra_c_base[0][x]=
-     (unsigned char)oggpackB_read(_opb,8);
+  for(qi=0;qi<64;qi++){
+    theora_read(_opb,16,&val);
+    _qinfo->ac_scale[qi]=(ogg_uint16_t)val;
   }
-  for(x=0;x<64;x++){
-    inter_base[1][x]=inter_base[0][x]=
-     (unsigned char)oggpackB_read(_opb,8);
+  for(qi=0;qi<64;qi++){
+    theora_read(_opb,16,&val);
+    _qinfo->dc_scale[qi]=(ogg_uint16_t)val;
   }
-  memcpy(_qinfo->loop_filter_limits,OC_VP31_LOOP_FILTER_LIMITS,
-   sizeof(_qinfo->loop_filter_limits));
+  theora_read(_opb,9,&val);
+  nbase_mats=(int)val+1;
+  base_mats=_ogg_malloc(nbase_mats*sizeof(base_mats[0]));
+  for(bmi=0;bmi<nbase_mats;bmi++){
+    for(ci=0;ci<64;ci++){
+      theora_read(_opb,8,&val);
+      base_mats[bmi][ci]=(unsigned char)val;
+    }
+  }
+  index_nbits=oc_ilog(nbase_mats-1);
+  for(i=0;i<6;i++){
+    theora_quant_ranges *qranges;
+    theora_quant_base   *qrbms;
+    int                 *qrsizes;
+    qti=i/3;
+    pli=i%3;
+    qranges=_qinfo->qi_ranges[qti]+pli;
+    if(i>0){
+      theora_read1(_opb,&val);
+      if(!val){
+        int qtj;
+        int plj;
+        if(qti>0){
+          theora_read1(_opb,&val);
+          if(val){
+            qtj=qti-1;
+            plj=pli;
+          }
+          else{
+            qtj=(i-1)/3;
+            plj=(i-1)%3;
+          }
+        }
+        else{
+          qtj=(i-1)/3;
+          plj=(i-1)%3;
+        }
+        *qranges=*(_qinfo->qi_ranges[qtj]+plj);
+        continue;
+      }
+    }
+    theora_read(_opb,index_nbits,&val);
+    indices[0]=(int)val;
+    for(qi=qri=0;qi<63;){
+      theora_read(_opb,oc_ilog(63-qi),&val);
+      sizes[qri]=(int)val+1;
+      qi+=(int)val+1;
+      theora_read(_opb,index_nbits,&val);
+      indices[++qri]=(int)val;
+    }
+    qranges->nranges=qri;
+    qranges->sizes=qrsizes=_ogg_malloc(qri*sizeof(qrsizes[0]));
+    memcpy(qrsizes,sizes,qri*sizeof(qrsizes[0]));
+    qranges->base_matrices=qrbms=_ogg_malloc((qri+1)*sizeof(qrbms[0]));
+    do memcpy(qrbms[qri],base_mats[indices[qri]],sizeof(qrbms[qri]));
+    while(qri-->0);
+  }
+  _ogg_free(base_mats);
 }
 
 void oc_quant_params_clear(theora_quant_info *_qinfo){
-  int pli;
-  int qti;
-  for(pli=3;pli-->0;)for(qti=2;qti-->0;){
+  int i;
+  for(i=6;i-->0;){
+    int qti;
+    int pli;
+    qti=i/3;
+    pli=i%3;
     /*Clear any duplicate pointer references.*/
-    if(pli>0){
+    if(i>0){
+      int qtj;
+      int plj;
+      qtj=(i-1)/3;
+      plj=(i-1)%3;
       if(_qinfo->qi_ranges[qti][pli].sizes==
-       _qinfo->qi_ranges[qti][pli-1].sizes){
+       _qinfo->qi_ranges[qtj][plj].sizes){
         _qinfo->qi_ranges[qti][pli].sizes=NULL;
       }
       if(_qinfo->qi_ranges[qti][pli].base_matrices==
-       _qinfo->qi_ranges[qti][pli-1].base_matrices){
+       _qinfo->qi_ranges[qtj][plj].base_matrices){
         _qinfo->qi_ranges[qti][pli].base_matrices=NULL;
       }
     }

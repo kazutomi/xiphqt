@@ -145,26 +145,29 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
         }
         err_bin=efrag->eerror>>(frag->mbmode==OC_MODE_INTRA?8:6);
         err_bin=OC_MINI(15,err_bin);
-        OC_RES_BITRATE_ACCUM[frag->invalid?0:_enc->state.qi][pli][
-         frag->mbmode][err_bin]+=frag_bits;
-        OC_RES_BITRATE_SAMPLES[frag->invalid?0:_enc->state.qi][pli][
-         frag->mbmode][err_bin]++;
+        OC_RES_BITRATE_ACCUM[
+         frag->invalid?0:frag->qi][pli][frag->mbmode][err_bin]+=frag_bits;
+        OC_RES_BITRATE_SAMPLES[
+         frag->invalid?0:frag->qi][pli][frag->mbmode][err_bin]++;
       }
     }
   }
   /*Update the current bitrate statistics in use.*/
-  for(pli=0;pli<3;pli++){
-    int modei;
-    for(modei=0;modei<OC_NMODES;modei++){
-      int erri;
-      for(erri=0;erri<16;erri++){
-        int n;
-        n=OC_RES_BITRATE_SAMPLES[_enc->state.qi][pli][modei][erri];
-        if(!n)continue;
-        OC_RES_BITRATES[_enc->state.qi][pli][modei][erri]=(ogg_uint16_t)
-         OC_MINI(65535,
-         ((OC_RES_BITRATE_ACCUM[_enc->state.qi][pli][modei][erri]<<1)+n)/
-         (n<<1));
+  {
+    int qi;
+    for(qi=0;qi<64;qi++){
+      for(pli=0;pli<3;pli++){
+        int modei;
+        for(modei=0;modei<OC_NMODES;modei++){
+          int erri;
+          for(erri=0;erri<16;erri++){
+            int n;
+            n=OC_RES_BITRATE_SAMPLES[qi][pli][modei][erri];
+            if(!n)continue;
+            OC_RES_BITRATES[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
+             ((OC_RES_BITRATE_ACCUM[qi][pli][modei][erri]<<1)+n)/(n<<1));
+          }
+        }
       }
     }
   }

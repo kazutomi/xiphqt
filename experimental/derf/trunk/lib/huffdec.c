@@ -2,7 +2,7 @@
 #include <ogg/ogg.h>
 #include "theora/theora.h"
 #include "huffdec.h"
-
+#include "decint.h"
 
 
 /*The ANSI offsetof macro is broken on some platforms (e.g., older DECs).*/
@@ -59,8 +59,7 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   long          bits;
   /*Prevent infinite recursion.*/
   if(++_depth>32)return OC_BADHEADER;
-  bits=oggpackB_read1(_opb);
-  if(bits<0)return OC_BADHEADER;
+  if(theora_read1(_opb,&bits)<0)return OC_BADHEADER;
   /*Read an internal node:*/
   if(!bits){
     int ret;
@@ -74,8 +73,7 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   }
   /*Read a leaf node:*/
   else{
-    bits=oggpackB_read(_opb,OC_NDCT_TOKEN_BITS);
-    if(bits<0)return OC_BADHEADER;
+    if(theora_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return OC_BADHEADER;
     binode=oc_huff_node_alloc(0);
     binode->token=(unsigned char)bits;
   }
@@ -197,7 +195,7 @@ void oc_huff_trees_clear(oc_huff_node *_nodes[OC_NHUFFMAN_TABLES]){
 int oc_huff_token_decode(oggpack_buffer *_opb,const oc_huff_node *_node){
   long bits;
   while(_node->nbits!=0){
-    bits=oggpackB_read(_opb,_node->nbits)&(1<<_node->nbits)-1;
+    theora_read(_opb,_node->nbits,&bits);
     _node=_node->nodes[bits];
   }
   return _node->token;

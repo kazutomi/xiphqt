@@ -458,37 +458,37 @@ static void oc_seg_sum_moment_row(float *_xrow,float *_x2row,
    regions of the image during the split phase.
   The value at each position is the moment summed over the image
    region above and to the left.
-  _seg:   The image segmentation context.
-  _plane: The image plane to sum the moments over.
-          This should already be adjusted to cover only the visible
-           frame, and not the full encoded frame.*/
+  _seg:    The image segmentation context.
+  _iplane: The image plane to sum the moments over.
+           This should already be adjusted to cover only the visible
+            frame, and not the full encoded frame.*/
 static void oc_seg_sum_moments(oc_seg_ctx *_seg,
- const theora_img_plane *_plane){
+ const theora_img_plane *_iplane){
   const unsigned char *ypix;
   int                  ymax;
   int                  y;
   int                  i;
-  ypix=_plane->data;
-  ymax=_plane->height>>OC_SEG_MOMENT_RES_LOG;
+  ypix=_iplane->data;
+  ymax=_iplane->height>>OC_SEG_MOMENT_RES_LOG;
   for(y=1;y<=ymax;y++){
     oc_seg_sum_moment_row(_seg->sumx[y],_seg->sumx2[y],
-     _seg->sumx[y-1],_seg->sumx2[y-1],ypix,_plane->width);
-    ypix+=_plane->stride;
+     _seg->sumx[y-1],_seg->sumx2[y-1],ypix,_iplane->width);
+    ypix+=_iplane->ystride;
     for(i=1;i<OC_SEG_MOMENT_RES;i++){
       oc_seg_sum_moment_row(_seg->sumx[y],_seg->sumx2[y],
-       _seg->sumx[y],_seg->sumx2[y],ypix,_plane->width);
-      ypix+=_plane->stride;
+       _seg->sumx[y],_seg->sumx2[y],ypix,_iplane->width);
+      ypix+=_iplane->ystride;
     }
   }
-  i=_plane->height&OC_SEG_MOMENT_RES_MASK;
+  i=_iplane->height&OC_SEG_MOMENT_RES_MASK;
   if(i>0){
     oc_seg_sum_moment_row(_seg->sumx[y],_seg->sumx2[y],
-     _seg->sumx[y-1],_seg->sumx2[y-1],ypix,_plane->width);
-    ypix+=_plane->stride;
+     _seg->sumx[y-1],_seg->sumx2[y-1],ypix,_iplane->width);
+    ypix+=_iplane->ystride;
     while(--i>0){
       oc_seg_sum_moment_row(_seg->sumx[y],_seg->sumx2[y],
-       _seg->sumx[y],_seg->sumx2[y],ypix,_plane->width);
-      ypix+=_plane->stride;
+       _seg->sumx[y],_seg->sumx2[y],ypix,_iplane->width);
+      ypix+=_iplane->ystride;
     }
   }
 }
@@ -1287,25 +1287,25 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
 
 /*Recursive split-merge step.
   Version for interior regions with manual summing.
-  _seg:   The segmentation context.
-  _x0:    The X coordinate of the upper-left hand corner of the block.
-  _y0:    The Y coordinate of the upper-left hand corner of the block.
-  _level: The log base 2 of the block size.
+  _seg:    The segmentation context.
+  _x0:     The X coordinate of the upper-left hand corner of the block.
+  _y0:     The Y coordinate of the upper-left hand corner of the block.
+  _level:  The log base 2 of the block size.
   _area:   The area of the block in pixels^2.
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
   _bic:    The BIC of the block.
-  _plane:  The image plane the block is contained in.*/
+  _iplane: The image plane the block is contained in.*/
 static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_plane){
+ const theora_img_plane *_iplane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
   int                  x;
   size=1<<_level;
   /*Compute a pixel-level moment table for this local region.*/
-  ypix=_plane->data+_y0*_plane->stride+_x0;
+  ypix=_iplane->data+_y0*_iplane->ystride+_x0;
   for(y=1;y<=size;y++){
     const unsigned char *xpix;
     float                xsum;
@@ -1319,7 +1319,7 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
       _seg->local_sumx2[y][x]=_seg->local_sumx2[y-1][x]+x2sum;
       xpix++;
     }
-    ypix+=_plane->stride;
+    ypix+=_iplane->ystride;
   }
   _seg->nlocal_regions=-2;
   oc_seg_splitmerge_il(_seg,_x0,_y0,0,0,_level,_area,_sumx,_sumx2,_bic);
@@ -1328,28 +1328,28 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
 
 /*Recursive split-merge step.
   Version for border regions with manual summing.
-  _seg:   The segmentation context.
-  _x0:    The X coordinate of the upper-left hand corner of the block.
-  _y0:    The Y coordinate of the upper-left hand corner of the block.
-  _width:  The width of the block in pixels.
-  _height: The height of the block in pixels.
-  _level: The log base 2 of the block size.
-  _area:   The area of the block in pixels^2.
-  _sumx:   The sum of the pixel values over the block.
-  _sumx2:  The sum of the pixel values squared over the block.
-  _bic:    The BIC of the block.
-  _plane:  The image plane the block is contained in.*/
+  _seg:     The segmentation context.
+  _x0:      The X coordinate of the upper-left hand corner of the block.
+  _y0:      The Y coordinate of the upper-left hand corner of the block.
+  _width:   The width of the block in pixels.
+  _height:  The height of the block in pixels.
+  _level:   The log base 2 of the block size.
+  _area:    The area of the block in pixels^2.
+  _sumx:    The sum of the pixel values over the block.
+  _sumx2:   The sum of the pixel values squared over the block.
+  _bic:     The BIC of the block.
+  _iplane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_plane){
+ const theora_img_plane *_iplane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
   int                  x;
   size=1<<_level;
   /*Compute a pixel-level moment table for this local region.*/
-  ypix=_plane->data+_y0*_plane->stride+_x0;
+  ypix=_iplane->data+_y0*_iplane->ystride+_x0;
   for(y=1;y<=_height;y++){
     const unsigned char *xpix;
     float                xsum;
@@ -1367,7 +1367,7 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
       _seg->local_sumx[y][x]=_seg->local_sumx[y-1][x]+xsum;
       _seg->local_sumx2[y][x]=_seg->local_sumx2[y-1][x]+x2sum;
     }
-    ypix+=_plane->stride;
+    ypix+=_iplane->ystride;
   }
   for(;y<=size;y++){
     for(x=_width+1;x<=size;x++){
@@ -1383,18 +1383,18 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
 
 /*Recursive split-merge step.
   Version for interior regions with reduced resolution table lookups.
-  _seg:   The segmentation context.
-  _x0:    The X coordinate of the upper-left hand corner of the block.
-  _y0:    The Y coordinate of the upper-left hand corner of the block.
-  _level: The log base 2 of the block size.
-  _area:   The area of the block in pixels^2.
-  _sumx:   The sum of the pixel values over the block.
-  _sumx2:  The sum of the pixel values squared over the block.
-  _bic:    The BIC of the block.
-  _plane:  The image plane the block is contained in.*/
+  _seg:     The segmentation context.
+  _x0:      The X coordinate of the upper-left hand corner of the block.
+  _y0:      The Y coordinate of the upper-left hand corner of the block.
+  _level:   The log base 2 of the block size.
+  _area:    The area of the block in pixels^2.
+  _sumx:    The sum of the pixel values over the block.
+  _sumx2:   The sum of the pixel values squared over the block.
+  _bic:     The BIC of the block.
+  _iplane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_plane){
+ const theora_img_plane *_iplane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -1432,11 +1432,11 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
     dx[1]=dx[3]=dy[2]=dy[3]=size_2;
     if(_level>OC_SEG_MOMENT_RES_LOG)for(i=0;i<4;i++){
       oc_seg_splitmerge_it(_seg,_x0+dx[i],_y0+dy[i],_level,area,
-       sumx[i],sumx2[i],bic[i],_plane);
+       sumx[i],sumx2[i],bic[i],_iplane);
     }
     else for(i=0;i<4;i++){
       oc_seg_splitmerge_is(_seg,_x0+dx[i],_y0+dy[i],_level,area,
-       sumx[i],sumx2[i],bic[i],_plane);
+       sumx[i],sumx2[i],bic[i],_iplane);
     }
   }
   else{
@@ -1459,11 +1459,11 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
   _sumx:   The sum of the pixel values over the block.
   _sumx2:  The sum of the pixel values squared over the block.
   _bic:    The BIC of the block.
-  _plane:  The image plane the block is contained in.*/
+  _iplane: The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_plane){
+ const theora_img_plane *_iplane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -1518,11 +1518,11 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
       for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
         if(b&OC_SEG_BORDER_MASKS[i]){
           oc_seg_splitmerge_bt(_seg,_x0+dx[i],_y0+dy[i],width[i],height[i],
-           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_iplane);
         }
         else{
           oc_seg_splitmerge_it(_seg,_x0+dx[i],_y0+dy[i],
-           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_iplane);
         }
       }
     }
@@ -1530,11 +1530,11 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
       for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
         if(b&OC_SEG_BORDER_MASKS[i]){
           oc_seg_splitmerge_bs(_seg,_x0+dx[i],_y0+dy[i],width[i],height[i],
-           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_iplane);
         }
         else{
           oc_seg_splitmerge_is(_seg,_x0+dx[i],_y0+dy[i],
-           _level,area[i],sumx[i],sumx2[i],bic[i],_plane);
+           _level,area[i],sumx[i],sumx2[i],bic[i],_iplane);
         }
       }
     }
@@ -1624,9 +1624,9 @@ static void oc_seg_clear(oc_seg_ctx *_seg){
 
 
 /*Perform segmentation over the given image plane.
-  _seg:   The segmentation context.
-  _plane: The image plane to segment.*/
-static void oc_seg_plane(oc_seg_ctx *_seg,const theora_img_plane *_plane){
+  _seg:    The segmentation context.
+  _iplane: The image plane to segment.*/
+static void oc_seg_plane(oc_seg_ctx *_seg,const theora_img_plane *_iplane){
   float sumx;
   float sumx2;
   float var;
@@ -1636,16 +1636,16 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const theora_img_plane *_plane){
   int   theight;
   int   regi;
   /*Build the moment tables.*/
-  oc_seg_sum_moments(_seg,_plane);
+  oc_seg_sum_moments(_seg,_iplane);
   /*Perform the splitting and merging to produce the segmentation.*/
   _seg->npairs=0;
   _seg->free_pairs=NULL;
   _seg->nheap=0;
   _seg->nregions=0;
-  area=_plane->width*_plane->height;
+  area=_iplane->width*_iplane->height;
   if(_seg->level_max>OC_SEG_MOMENT_RES_LOG){
-    twidth=_plane->width+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
-    theight=_plane->height+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
+    twidth=_iplane->width+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
+    theight=_iplane->height+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
   }
   else twidth=theight=1;
   sumx=oc_seg_sum_region(_seg->sumx,0,0,twidth,theight);
@@ -1653,12 +1653,12 @@ static void oc_seg_plane(oc_seg_ctx *_seg,const theora_img_plane *_plane){
   var=(sumx2-sumx*sumx/area)/area;
   bic=var>0?area*OC_LOGF(var):0;
   if(_seg->level_max>OC_SEG_MOMENT_RES_LOG){
-    oc_seg_splitmerge_bt(_seg,0,0,_plane->width,_plane->height,
-     _seg->level_max,area,sumx,sumx2,bic,_plane);
+    oc_seg_splitmerge_bt(_seg,0,0,_iplane->width,_iplane->height,
+     _seg->level_max,area,sumx,sumx2,bic,_iplane);
   }
   else{
-    oc_seg_splitmerge_bs(_seg,0,0,_plane->width,_plane->height,
-     _seg->level_max,area,sumx,sumx2,bic,_plane);
+    oc_seg_splitmerge_bs(_seg,0,0,_iplane->width,_iplane->height,
+     _seg->level_max,area,sumx,sumx2,bic,_iplane);
   }
   /*Step 1: Add all the global region pairs to the heap.*/
   for(regi=0;regi<_seg->nregions;regi++){
@@ -1985,28 +1985,15 @@ static float oc_impmap_mot_weight(oc_impmap_ctx *_impmap,int _dx,int _dy){
 
 static void oc_impmap_chroma_frag_weight00(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
-  _efrag[_map[1][0]].imp_weight=_yfrag_imp_weights[0];
-  _efrag[_map[2][0]].imp_weight=_yfrag_imp_weights[0];
-  _efrag[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
-  _efrag[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
-  _efrag[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
-  _efrag[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
-  _efrag[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
-  _efrag[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
+  float cfrag_imp_weight;
+  cfrag_imp_weight=OC_MAXF(OC_MAXF(_yfrag_imp_weights[0],
+   _yfrag_imp_weights[1]),
+   OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]));
+  _efrag[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][0]].imp_weight=cfrag_imp_weight;
 }
 
 static void oc_impmap_chroma_frag_weight01(oc_fragment_enc_info *_efrag,
- oc_mb_map _map,const float _yfrag_imp_weights[4]){
-  float cfrag_imp_weight;
-  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[1]);
-  _efrag[_map[1][0]].imp_weight=cfrag_imp_weight;
-  _efrag[_map[2][0]].imp_weight=cfrag_imp_weight;
-  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]);
-  _efrag[_map[1][2]].imp_weight=cfrag_imp_weight;
-  _efrag[_map[2][2]].imp_weight=cfrag_imp_weight;
-}
-
-static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
   float cfrag_imp_weight;
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[2]);
@@ -2017,14 +2004,27 @@ static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_efrag,
   _efrag[_map[2][1]].imp_weight=cfrag_imp_weight;
 }
 
-static void oc_impmap_chroma_frag_weight11(oc_fragment_enc_info *_efrag,
+static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
   float cfrag_imp_weight;
-  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],
-   OC_MAXF(_yfrag_imp_weights[1],OC_MAXF(_yfrag_imp_weights[2],
-   _yfrag_imp_weights[3])));
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[1]);
   _efrag[_map[1][0]].imp_weight=cfrag_imp_weight;
   _efrag[_map[2][0]].imp_weight=cfrag_imp_weight;
+  cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]);
+  _efrag[_map[1][2]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][2]].imp_weight=cfrag_imp_weight;
+}
+
+static void oc_impmap_chroma_frag_weight11(oc_fragment_enc_info *_efrag,
+ oc_mb_map _map,const float _yfrag_imp_weights[4]){
+  _efrag[_map[1][0]].imp_weight=_yfrag_imp_weights[0];
+  _efrag[_map[2][0]].imp_weight=_yfrag_imp_weights[0];
+  _efrag[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
+  _efrag[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
+  _efrag[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
+  _efrag[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
+  _efrag[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
+  _efrag[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
 }
 
 /*A table of functions used to fill in the chroma plane fragment importance
@@ -2128,7 +2128,7 @@ oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
    impmap->seg.cregions*sizeof(impmap->regions[0]));
   impmap->enc=_enc;
   impmap->chroma_frag_weight=
-   OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[_enc->state.chroma_type];
+   OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[_enc->state.info.pixel_fmt];
   return impmap;
 }
 
@@ -2149,12 +2149,12 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   /*Segment the Y plane.*/
   /*TODO: Use the same oc_border_info structure as everyone else.
     This would make future integration of an alpha mask easier.*/
-  img_offset=_impmap->enc->state.input[0].stride*
+  img_offset=_impmap->enc->state.input[0].ystride*
    _impmap->enc->state.info.offset_y+_impmap->enc->state.info.offset_x;
   yplane.data=_impmap->enc->state.input[0].data+img_offset;
   yplane.width=_impmap->enc->state.info.frame_width;
   yplane.height=_impmap->enc->state.info.frame_height;
-  yplane.stride=_impmap->enc->state.input[0].stride;
+  yplane.ystride=_impmap->enc->state.input[0].ystride;
   oc_seg_plane(&_impmap->seg,&yplane);
   /*Gather statistics over the segmentation.*/
   oc_impmap_scan(_impmap,yplane.width,yplane.height);

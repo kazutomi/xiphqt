@@ -46,8 +46,7 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       oggpackB_write(&_enc->opb,_enc->state.info.target_bitrate,24);
       oggpackB_write(&_enc->opb,_enc->state.info.quality,6);
       oggpackB_write(&_enc->opb,_enc->state.info.keyframe_granule_shift,5);
-      oggpackB_write(&_enc->opb,!_enc->state.info.chroma_y_decimated,1);
-      oggpackB_write(&_enc->opb,!_enc->state.info.chroma_x_decimated,1);
+      oggpackB_write(&_enc->opb,_enc->state.info.pixel_fmt,2);
       /*Spare configuration bits.*/
       oggpackB_write(&_enc->opb,0,3);
       _op->b_o_s=1;

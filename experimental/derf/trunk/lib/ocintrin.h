@@ -22,8 +22,8 @@ static int oc_mini(int _a,int _b){
   _dividend: The integer to divide.
   _shift:    The non-negative power of two to divide by.
   _rmask:    (1<<_shift)-1*/
-#define OC_DIV_POW2(_dividend,_shift,_rmask) \
- ((_dividend)+(((_dividend)>>sizeof(_dividend)*8-1)&(_rmask))>>(_shift))
+#define OC_DIV_POW2(_dividend,_shift,_rmask)\
+  ((_dividend)+(((_dividend)>>sizeof(_dividend)*8-1)&(_rmask))>>(_shift))
 /*Divides _x by 65536, truncating towards 0.*/
 #define OC_DIV2_16(_x) OC_DIV_POW2(_x,16,0xFFFF)
 /*Divides _x by 2, truncating towards 0.*/
@@ -36,8 +36,8 @@ static int oc_mini(int _a,int _b){
    negative dividends first..
   When _rval is (1<<_shift-1), this is equivalent to division with rounding
    away from zero.*/
-#define OC_DIV_ROUND_POW2(_dividend,_shift,_rval) \
- ((_dividend)+((_dividend)>>sizeof(_dividend)*8-1)+(_rval)>>(_shift))
+#define OC_DIV_ROUND_POW2(_dividend,_shift,_rval)\
+  ((_dividend)+((_dividend)>>sizeof(_dividend)*8-1)+(_rval)>>(_shift))
 /*Swaps two integers _a and _b if _a>_b.*/
 #define OC_SORT2I(_a,_b)\
   if((_a)>(_b)){\
