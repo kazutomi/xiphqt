@@ -44,7 +44,6 @@ client_t *client_create(connection_t *con, http_parser_t *parser)
     client->parser = parser;
     client->refbuf = NULL;
     client->pos = 0;
-    client->burst_sent = 0;
 
     return client;
 }

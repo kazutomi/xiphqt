@@ -56,6 +56,11 @@ typedef struct source_tag
     int fallback_override;
     int no_mount;
 
+    /* per source burst handling for connecting clients */
+    unsigned burst_size;    /* trigger level for burst on connect */
+    unsigned burst_offset; 
+    refbuf_t *burst_point;
+
     unsigned queue_size;
     unsigned queue_size_limit;
 
@@ -66,7 +71,6 @@ typedef struct source_tag
     refbuf_t *stream_data;
     refbuf_t *stream_data_tail;
 
-    int burst_on_connect;
 } source_t;
 
 source_t *source_reserve (const char *mount);

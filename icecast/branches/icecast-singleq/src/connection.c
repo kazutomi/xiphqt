@@ -482,6 +482,7 @@ int connection_complete_source (source_t *source)
         /* set global settings first */
         source->queue_size_limit = config->queue_size_limit;
         source->timeout = config->source_timeout;
+        source->burst_size = config->burst_size;
 
         /* for relays, we don't yet have a client, however we do require one
          * to retrieve the stream from.  This is created here, quite late,

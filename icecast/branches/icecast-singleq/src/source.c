@@ -228,6 +228,10 @@ void source_clear_source (source_t *source)
     if (source->yp_public)
         yp_remove (source->mount);
 
+    source->burst_point = NULL;
+    source->burst_size = 0;
+    source->burst_offset = 0;
+    source->queue_size = 0;
     source->queue_size_limit = 0;
     source->listeners = 0;
     source->no_mount = 0;
@@ -248,8 +252,6 @@ void source_clear_source (source_t *source)
         refbuf_release (p);
     }
     source->stream_data_tail = NULL;
-
-    source->burst_on_connect = 1;
 }
 
 
@@ -426,8 +428,8 @@ static void send_to_listener (source_t *source, client_t *client, int deletion_e
     /* new users need somewhere to start from */
     if (client->refbuf == NULL)
     {
-        /* make clients start at the most recent data on the queue */
-        client->refbuf = source->stream_data_tail;
+        /* make clients start at the per source burst point on the queue */
+        client->refbuf = source->burst_point;
         if (client->refbuf == NULL)
            return;
     }
@@ -479,7 +481,6 @@ static void source_init (source_t *source)
     memset (listenurl, '\000', listen_url_size);
     snprintf (listenurl, listen_url_size, "http://%s:%d%s",
             config->hostname, config->port, source->mount);
-    source->burst_on_connect = config->burst_on_connect;
     config_release_config();
 
     /* maybe better in connection.c */
@@ -576,11 +577,23 @@ void source_main (source_t *source)
         {
             /* append buffer to the in-flight data queue,  */
             if (source->stream_data == NULL)
+            {
                 source->stream_data = refbuf;
+                source->burst_point = refbuf;
+            }
             if (source->stream_data_tail)
                 source->stream_data_tail->next = refbuf;
             source->stream_data_tail = refbuf;
             source->queue_size += refbuf->len;
+
+            /* new data on queue, so check the burst point */
+            source->burst_offset += refbuf->len;
+            if (source->burst_offset > source->burst_size)
+            {
+                source->burst_offset -= source->burst_point->len;
+                if (source->burst_point->next)
+                    source->burst_point = source->burst_point->next;
+            }
 
             /* save stream to file */
             if (source->dumpfile && source->format->write_buf_to_file)
@@ -668,6 +681,13 @@ void source_main (source_t *source)
             {
                 source->stream_data = to_go->next;
                 source->queue_size -= to_go->len;
+                /* make sure the burst point is not the refbuf we are
+                 * deleting, if so move on one  */
+                if (source->burst_point == to_go)
+                {
+                    source->burst_point = to_go->next;
+                    source->burst_offset -= to_go->len;
+                }
                 refbuf_release (to_go);
             }
             else
@@ -816,6 +836,9 @@ void source_apply_mount (source_t *source, mount_proxy *mountinfo)
         source->timeout = mountinfo->source_timeout;
         DEBUG1 ("source timeout to %u", source->timeout);
     }
+    if (mountinfo->burst_size > -1)
+        source->burst_size = mountinfo->burst_size;
+    DEBUG1 ("amount to burst on client connect set to %u", source->burst_size);
 }
 
 
