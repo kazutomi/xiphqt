@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: PCM data vector blocking, windowing and dis/reassembly
- last mod: $Id: block.c,v 1.27 2000/02/23 11:22:43 xiphmont Exp $
+ last mod: $Id: block.c,v 1.27.4.1 2000/04/04 07:08:44 xiphmont Exp $
 
  Handle windowing, overlap-add, etc of the PCM vectors.  This is made
  more amusing by Vorbis' current two allowed block sizes.
@@ -34,6 +34,7 @@
 #include "lpc.h"
 #include "bitwise.h"
 #include "registry.h"
+#include "sharedbook.h"
 #include "bookinternal.h"
 
 static int ilog2(unsigned int v){

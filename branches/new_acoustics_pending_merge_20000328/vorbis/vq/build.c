@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility main for building codebooks from training sets
- last mod: $Id: build.c,v 1.12 2000/02/16 16:18:34 xiphmont Exp $
+ last mod: $Id: build.c,v 1.12.4.1 2000/04/04 07:08:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -278,6 +278,7 @@ int main(int argc,char *argv[]){
   fprintf(out,"\t%ld, %ld\n};\n\n",c.encode_tree->aux,c.encode_tree->aux);
 
   fprintf(out,"static static_codebook _vq_book_%s = {\n",name);
+XXX
   fprintf(out,"\t%ld, %ld, %ld, %ld, %d, %d,\n",
 	  c.dim,c.entries,q.min,q.delta,q.quant,q.sequencep);
   fprintf(out,"\t_vq_quantlist_%s,\n",name);

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility functions for loading .vqh and .vqd files
- last mod: $Id: bookutil.c,v 1.12 2000/02/23 09:10:10 xiphmont Exp $
+ last mod: $Id: bookutil.c,v 1.12.4.1 2000/04/04 07:08:44 xiphmont Exp $
 
  ********************************************************************/
 
@@ -22,25 +22,8 @@
 #include <string.h>
 #include <errno.h>
 #include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "bookutil.h"
-
-void codebook_unquantize(codebook *b){
-  long j,k;
-  const static_codebook *c=b->c;
-  double mindel=float24_unpack(c->q_min);
-  double delta=float24_unpack(c->q_delta);
-  if(!b->valuelist)b->valuelist=malloc(sizeof(double)*c->entries*c->dim);
-  
-  for(j=0;j<c->entries;j++){
-    double last=0.;
-    for(k=0;k<c->dim;k++){
-      double val=c->quantlist[j*c->dim+k]*delta+last+mindel;
-      b->valuelist[j*c->dim+k]=val;
-      if(c->q_sequencep)last=val;
-
-    }
-  }
-}
 
 /* A few little utils for reading files */
 /* read a line.  Use global, persistent buffering */
@@ -207,9 +190,12 @@ codebook *codebook_load(char *filename){
 
   /* get the major important values */
   line=get_line(in);
-  if(sscanf(line,"%ld, %ld, %ld, %ld, %d, %d",
-	    &(c->dim),&(c->entries),&(c->q_min),&(c->q_delta),&(c->q_quant),
-	    &(c->q_sequencep))!=6){
+  if(sscanf(line,"%ld, %ld, %d, %ld, %ld, %d, %d, %d, %d, %lf, %lf",
+	    &(c->dim),&(c->entries),&(c->q_log),
+	    &(c->q_min),&(c->q_delta),&(c->q_quant),
+	    &(c->q_sequencep),
+	    &(c->q_zeroflag),&(c->q_negflag),
+	    &(c->q_encodebias),&(c->q_entropy))!=11){
     fprintf(stderr,"1: syntax in %s in line:\t %s",filename,line);
     exit(1);
   }
@@ -292,65 +278,11 @@ codebook *codebook_load(char *filename){
   fclose(in);
 
   /* unquantize the entries while we're at it */
-  codebook_unquantize(b);
+  b->valuelist=_book_unquantize(b->c);
+  b->logdist=_book_logdist(b->c,b->valuelist);
 
   /* don't need n and c */
   return(b);
-}
-
-int codebook_entry(codebook *b,double *val){
-  const static_codebook *c=b->c;
-  encode_aux *t=c->encode_tree;
-  double *n=alloca(c->dim*sizeof(double));
-  int ptr=0,k;
-
-  do{
-    double C=0.;
-    double *p=b->valuelist+t->p[ptr];
-    double *q=b->valuelist+t->q[ptr];
-    
-    for(k=0;k<c->dim;k++){
-      n[k]=p[k]-q[k];
-      C-=(p[k]+q[k])*n[k];
-    }
-    C/=2.;
-    
-    for(k=0;k<c->dim;k++)
-      C+=n[k]*val[k];
-    
-    if(C>0.) /* in A */
-      ptr=-t->ptr0[ptr];
-    else     /* in B */
-      ptr=-t->ptr1[ptr];
-  }while(ptr>0);
-
-  return(-ptr);
-}
-
-/* 24 bit float (not IEEE; nonnormalized mantissa +
-   biased exponent ): neeeeemm mmmmmmmm mmmmmmmm */
-
-long float24_pack(double val){
-  int sign=0;
-  long exp;
-  long mant;
-  if(val<0){
-    sign=0x800000;
-    val= -val;
-  }
-  exp= floor(log(val)/log(2));
-  mant=rint(ldexp(val,17-exp));
-  exp=(exp+VQ_FEXP_BIAS)<<18;
-
-  return(sign|exp|mant);
-}
-
-double float24_unpack(long val){
-  double mant=val&0x3ffff;
-  double sign=val&0x800000;
-  double exp =(val&0x7c0000)>>18;
-  if(sign)mant= -mant;
-  return(ldexp(mant,exp-17-VQ_FEXP_BIAS));
 }
 
 void spinnit(char *s,int n){
