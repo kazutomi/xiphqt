@@ -1,0 +1,160 @@
+1.29
+----
+. theora wasn't optional, allow building without it
+. minor tweaks to build
+
+1.28
+----
+. fix silly build error in the examples. was actually a header issue
+
+1.27
+----
+. Add multiple ogg codec handling, time vorbis and theora logical
+  streams. Stream unhandled but paged ogg codecs.
+
+1.26
+----
+. state all dependent libs, or else static linking fails
+
+1.25
+----
+. update sock code
+. don't stall in non blocking mode waiting for reply from server
+. re-sync timing fixups in vorbis and mp3 handlers
+
+1.24
+----
+. minor memory leak on shout_new plugged
+. update the avl code, nothing significant wrt libshout, just sync-up
+
+1.23
+----
+. signal mask wokaround on openbsd
+
+1.22
+----
+. re-sync withe CVS and the icecast updates of net
+
+1.21
+----
+. added missing prototypes added in v1.0 CVS
+. fixed incorrect error return in the format specific send.
+. changed sock_connected to use sock_set_error for sock_error usage
+. remove bad use of sock_recoverable
+. some prototype cleanups
+. updated net, sock_connected API change, async blocking connect fix
+. added write check to autoconf, got lost from m4 update
+. reset header size on close, else it can cause an accumulation of
+  headers to be sent on subsequent connections to the server, even
+  causing it to fill up and bomb out with a malloc error.
+
+1.20
+----
+. Username default was not set correctly and a subsequent check
+  was missing.
+. some minor code cleanups
+
+1.19
+----
+. Add missing metadata functions
+. update the thread code, to fix potential leaks
+
+1.18
+----
+. added timeout (5s) when reading headers in blocking mode
+. added function to alter timeout setting (in ms)
+. fixed stuffed m4 macro
+
+1.17
+----
+. updated m4 macros to work done in CVS.
+. updated subtrees to include fixes sent to CVS
+. Added shout_init, shout_shutdown from CVS to bring back CVS compatability
+
+1.16
+----
+. fix serial number 0 bug left from cvs
+. use send_oggpage in send_vorbis, utilises the writev and queueing
+  facilities.
+. fixed a couple of silly bugs for shout_sync
+
+1.15
+----
+. update autoconf scripts
+. fix build problems for some platforms
+
+1.14
+----
+. Merge shout_send_ogg into shout_send using new format type
+  SHOUT_FORMAT_VORBISPAGE. This also means no shout substructure created
+  but not used. modified shout_send slightly
+. removed the last users of unhandled short write in sock_write_bytes.
+. Added shout-config, matches up with CVS now
+. check for __VAR_ARGS__
+. clean up top level Makefile.am, refers to m4 directory
+. fix leaks in shout_set_metadata
+
+1.13
+----
+. rework xaudiocast and icy logins, now they can handle short writes.
+. altered code route, so that that each protocol requires a handler for
+  creating requests and a handler for parsing responses.
+. state a limit on the amount of bytes stored in the pending queue,
+  currently 64k but a setter could be used to alter
+. misc cleanups left out from previous release.
+
+1.12
+----
+. removed static array representing pending write queue, replaced
+  with linked list with byte counts.
+. much code removal, due to old pending array removal and state
+  information migration. Pending Write queue implemented as list
+  simplified code as well.
+. Add hack for building on OBSD wrt _XOPEN_SOURCE
+
+1.11
+----
+. big cleanup release, mainly relating to connection logic.
+. Add the notion of state to a shout_t to help at connection time.
+. fix a potential thread attribute bug introduce last time.
+. Get nearer to the CVS updates.
+. Drop ICE logins as per CVS.
+. Updated ogg and vorbis autoconf macro's to mroe recent ones
+
+1.10
+----
+. minor compiler warning cleanups
+. re-sync to recent CVS code, mainly tab removal but code updates as well
+. all threads to inherit scheduling attributes, mainly for realtime
+
+1.9
+- change build setup to more like what I and brendan have put in CVS
+  . put headers in config.h
+  . use XIPH_CFLAGS
+  . check for various pthread flags
+  . build exmaples directory
+- update external shout codes to match CVS 
+- deprecate the use of shout_set_bitrate, not sure if this is a good idea.
+- add shout-audio-info,  not nice at all but matches CVS.
+- update thread/avl/net/httpp to CVS.
+  . drops some of the unneeded -I flags.
+ 
+1.8
+- shout_close didn't free pending queue
+- only do so many non-blocking checks 60 for connection, 20 for header acceptance
+- REFUSED didn't have a pretty print message
+
+v1.7
+- fixed a couple of reuse after free cases and a pending write queue problem
+
+v1.6
+- changed mime header from x-ogg to ogg
+
+v1.5
+- make sure shout_close clear various flags.
+
+v1.4
+- Have a function for returning the version
+- writev support added.
+- non-blocking enabled on HTTP connections
+- sock uses newer posix calls for sockets, but falls back to ipv4 only
