@@ -117,6 +117,7 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
   F = (data[offset] & 0x40) >> 6;
   R = (data[offset] & 0x20) >> 5;
   pkts = (data[offset] & 0x1F);
+  offset++;
 
   fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d",
     ident, C, F, R);
@@ -129,17 +130,19 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
     fprintf(out, " frag cont.\n");
   else /* C == 1 && F == 1 */
     fprintf(out, " frag end\n");
-  offset++;
 
   for (i = 0; i < pkts; i++) {
-    length = data[offset++];
-    fprintf(out, "  data: %d bytes in block %d\n", length, i);
-    offset += length;
     if (offset >= len) {
       fprintf(stderr, "payload length overflow. corrupt packet?\n");
       return -1;
     }
+    length = data[offset++];
+    fprintf(out, "  data: %d bytes in block %d\n", length, i);
+    offset += length;
   }
+  if (len - offset > 0)
+    fprintf(out, "  %d unused bytes at the end of the packet!\n", 
+      len - offset);
 
   return 0;
 }

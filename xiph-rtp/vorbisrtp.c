@@ -364,9 +364,10 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
     const unsigned int max_payload = 256;
 
-    static int stacksize;
-    static int stackcount;
-    static unsigned char* framestack;
+    /* we accumulate short frames between calls */
+    static int stacksize = 0;
+    static int stackcount = 0;
+    static unsigned char* framestack = NULL;
 
 /*===========================================================================*/
 /*  Test Codebook Ident (used for debug)                                     */
@@ -467,7 +468,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             memcpy (framestack + (stacksize + 1), vorbdata, length);
             stackcount++;
             stacksize += (length + 1);
-        }  
+        }
 
         if (length + stacksize > max_payload || stackcount > 15) {
 
@@ -477,16 +478,16 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             vorbheader -> reserved = 0;
             vorbheader -> pkts = stackcount;
 
-            packet = malloc (stacksize + 6);
+            packet = malloc (stacksize + 5);
 
-            makevorbisheader (packet, stacksize + 6, vorbheader);
-            memmove (packet + 6, framestack, stacksize);
+            makevorbisheader (packet, stacksize + 5, vorbheader);
+            memcpy (packet + 5, framestack, stacksize);
 
             /*  Swap RTP headers from host to network order  */
             RTPHeaders.sequence = htons (RTPHeaders.sequence);
             RTPHeaders.timestamp = htonl (RTPHeaders.timestamp);
 
-            sendrtp (&RTPHeaders, rtpsocket, &rtpsock, packet, stacksize + 6);
+            sendrtp (&RTPHeaders, rtpsocket, &rtpsock, packet, stacksize + 5);
 
             /*  Swap headers back to host order  */
             RTPHeaders.sequence = htons (RTPHeaders.sequence);
