@@ -1,0 +1,55 @@
+Q: Does Snatch make perfect copies or grab the actual Real stream?
+
+a: No.
+
+Q: Does Snatch just take lots of fast screen captures?
+
+A: No.  Snatch watches events going to and from the X server and
+captures the appropriate video frames off the wire.  It will not grab
+at the wrong rate, hose the machine/X server or 'capture' frames that
+aren't actually displayed.
+
+Q: Can I capture with the RealPlayer window hidden or iconified?
+
+A: Yes.
+
+Q: When I selecting silent video playback, the RealPlayer window
+mostly stops responding and fills with garbage.  Can I fix this?
+
+A: No, it's intentional. 'Silent video' stops all X updates from going
+to the RealPlayer window; it's meant to squeeze any extra performance
+possible from a machine with slow graphics hardware or slow processor
+or both.  Remember that Snatch doesn't capture the Real stream, it
+captures the video RealPlayer sends to the display.  Any dropped
+frames due to poor machine performace will show up in the output as
+jerkiness.
+
+Although the video requires cycles to display, RealPlayer is also
+spewing lots of updates to the interface during playback (like the
+time display, scrolling info, etc).  For best performace, *everything*
+gets turned off.  In this mode, all interaction with RealPlayer should
+be made through the Snatch Robot.  Turning off silent video will bring
+the RealPlayer window back to life.
+
+Q: I begin playing/recording with audio playback set to silent, but
+changing the setting later has no effect until I start a new stream!  Why?
+
+A: Snatch doesn't currently try to set up the soundacard for playback
+after a stream starts because it originally faked successful returns
+to various sound API ioctl()s that might have failed (requiring
+RealPlayer to try an alternate setup) if actually submitted to the
+kernel.  Trying to emulate given settings with on the fly resampling
+is rather complex given the failry innocuous nature of this 'bug', and
+not bothering to fake through it correctly would just crash
+RealPlayer or garble the output.
+
+Q: I'm watching/recording video and switching between audio playback
+and silent playback. When I turn off silent record, the audio I hear
+is out of sync!  What gives?
+
+A: Right now, Snatch tracks audio sync only for the output file.  It
+doesn't try to re-sync the sound card if you reenable audio playback
+during operation.  The captured file *will be fine*.  I didn't go
+through the extra trouble mainly because on-the-fly resync would
+require extra memory, buffering, and I didn't know if anyone cared
+that much.

@@ -556,7 +556,7 @@ sub Robot_PlayFile{
 sub Robot_Stop{
     $last_timer_event=time();
     my $stopcode=join "",("Ks",pack ("S",4));
-    syswrite COMM_SOCK,$playcode;
+    syswrite COMM_SOCK,$stopcode;
 }
 
 sub Robot_Exit{
@@ -675,11 +675,12 @@ sub TimerWatch{
 	my$now=time();
 
 	if($TIMER_ENDTIMES[$#TIMER]<$now){
+	    Robot_Stop();
 	    Robot_Inactive();
 	}else{
 	    
 	    if($now>=$next_timer_event){
-		SetupTimerDispatch() ;
+		SetupTimerDispatch();
 	    }else{
 		my$waiting_seconds=$next_timer_event-$now;
 		
