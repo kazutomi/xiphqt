@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 # © 2004 Nathan Sharfi
 #
 # This software is provided 'as-is', without any express or implied warranty.
@@ -116,3 +117,7 @@ if __name__ == '__main__':
 			mw = MarkdownWrapper(fullpath)
 			mw.renderToFile()
 		print "-" * 40
+		if ".svn" in dirnames:
+			dirnames.remove('.svn') # don't transform things in .svn directories
+		if "news" in dirnames:
+			dirnames.remove('news') # ...or those news pages. Yet.
