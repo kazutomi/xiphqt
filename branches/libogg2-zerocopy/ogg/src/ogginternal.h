@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.3 2003/01/21 10:21:06 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.4 2003/02/10 18:05:46 xiphmont Exp $
 
  ********************************************************************/
 
@@ -28,9 +28,9 @@ struct ogg_buffer_state{
 };
 
 typedef struct{
-  ogg_buffer_reference *segment;
+  ogg_buffer           *segment;
   int                   cursor;
-} fragmented_cursor;
+} ogg_buffer_cursor;
 
 struct ogg_buffer {
   unsigned char     *data;
@@ -66,14 +66,15 @@ typedef struct ogg_packet_chain {
 } ogg_packet_chain;
 
 struct ogg_sync_state {
+  /* encode/decode mem management */
+  ogg_buffer_state     *bufferpool;
 
   /* stream buffers */
-  ogg_buffer *unused_fifo;
-  ogg_buffer *fifo_head;
-  ogg_buffer *fifo_tail;
-  ogg_buffer *fifo_returned;
-  int         fifo_returned_pos;
-  int         fifo_fill;
+  ogg_buffer           *fifo_head;
+  ogg_buffer           *fifo_tail;
+  
+  long                  fifo_cursor;
+  ogg_buffer_reference *returned;
 
   /* stream sync management */
   int         unsynced;

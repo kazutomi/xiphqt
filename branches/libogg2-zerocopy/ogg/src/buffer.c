@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.3 2003/01/21 10:21:06 xiphmont Exp $
+  last mod: $Id: buffer.c,v 1.1.2.4 2003/02/10 18:05:46 xiphmont Exp $
 
  ********************************************************************/
 
@@ -65,6 +65,7 @@ ogg_buffer *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes){
     bs->unused_pool=ret->next;
     ogg_mutex_unlock(&bs->mutex);
 
+    /* if the unused buffer is too small, grow it */
     if(ret->size<bytes){
       ret->data=_ogg_realloc(ret->data,bytes);
       ret->size=bytes;

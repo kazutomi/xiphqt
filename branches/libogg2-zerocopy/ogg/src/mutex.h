@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: #ifdef jail for basic thread mutexing
- last mod: $Id: mutex.h,v 1.1.2.4 2003/02/03 23:01:47 xiphmont Exp $
+ last mod: $Id: mutex.h,v 1.1.2.5 2003/02/10 18:05:46 xiphmont Exp $
 
  ********************************************************************/
 
@@ -36,11 +36,11 @@ typedef pthread_mutex_t ogg_mutex_t;
 
 #elif USE_NO_THREADS
 typedef int ogg_mutex_t;
-static void noop(void){return;}
-#define ogg_mutex_init(m) (noop())
-#define ogg_mutex_clear(m) (noop())
-#define ogg_mutex_lock(m) (noop())
-#define ogg_mutex_unlock(m) (noop())
+#define noop() do {} while(0)
+#define ogg_mutex_init(m) noop()
+#define ogg_mutex_clear(m) noop()
+#define ogg_mutex_lock(m) noop()
+#define ogg_mutex_unlock(m) noop()
 
 #else
 #error "configure proper threading wrappers for this platform, or compile with -DUSE_NO_THREADS to build without threading support."
