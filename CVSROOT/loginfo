@@ -29,4 +29,4 @@
 DEFAULT $CVSROOT/CVSROOT/log_accum.pl %s
 
 # notify irc/stats bot
-DEFAULT $CVSROOT/CVSROOT/ciabot_cvs.sh %{sVv}
+ALL $CVSROOT/CVSROOT/ciabot_cvs.sh %{sVv}
