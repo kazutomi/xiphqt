@@ -1,2 +1,2 @@
 # -*-Perl-*-
-do 'modules/share/clock';
+do "$main::moddir/share/clock";

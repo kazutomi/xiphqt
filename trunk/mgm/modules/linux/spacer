@@ -1,2 +1,2 @@
 # -*-Perl-*-
-do 'modules/share/spacer';
+do "$main::moddir/share/spacer";
