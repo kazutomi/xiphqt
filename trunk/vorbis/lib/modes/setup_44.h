@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: toplevel settings for 44.1/48kHz
- last mod: $Id: setup_44.h,v 1.5 2002/06/30 08:31:04 xiphmont Exp $
+ last mod: $Id: setup_44.h,v 1.6 2002/07/01 11:20:19 xiphmont Exp $
 
  ********************************************************************/
 
@@ -30,7 +30,7 @@ static double rate_mapping_44_stereo[11]={
 static double quality_mapping_44_stereo_low[2]={
   -.1,.0,
 };
-static double quality_mapping_44_stereo[11]={
+static double quality_mapping_44[11]={
   .0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1.0
 };
 
@@ -72,7 +72,7 @@ static int _floor_long_mapping_44_low[11]={
 ve_setup_data_template ve_setup_44_stereo={
   10,
   rate_mapping_44_stereo,
-  quality_mapping_44_stereo,
+  quality_mapping_44,
   2,
   40000,
   50000,
