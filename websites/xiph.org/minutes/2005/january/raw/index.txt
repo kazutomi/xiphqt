@@ -1,0 +1,416 @@
+[1/5/2005 6:00 AM] <xiphmont> So folks know, I can't be here past an hour:fifteen....
+[1/5/2005 6:00 AM] <illi> if it makes you all feel better... most of us aussies were here at 8am due to a slight misundestanding :)
+[1/5/2005 6:00 AM] <xiphmont> anyway, let's begin.
+[1/5/2005 6:00 AM] -->| Uraeus (~cschalle@213.170.47.91) has joined #xiphmeet
+[1/5/2005 6:00 AM] <xiphmont> Anyone got a logging bot ready to go?
+[1/5/2005 6:00 AM] <ozone> hey uraeus :)
+[1/5/2005 6:00 AM] <Uraeus> hey ozone 
+[1/5/2005 6:00 AM] <Atamido> I'm logging...
+[1/5/2005 6:01 AM] <xiphmont> OK
+[1/5/2005 6:01 AM] <Atamido> There are people that don't log?
+[1/5/2005 6:01 AM] -->| wtay (~wtay@213.170.47.91) has joined #xiphmeet
+[1/5/2005 6:01 AM] <xiphmont> I log, but not realtime.
+[1/5/2005 6:01 AM] <xiphmont> OK, we've begun.  Thanks for coming folks, I'm chairing the meeting today.
+[1/5/2005 6:01 AM] <xiphmont> Starting with libogg2.
+[1/5/2005 6:02 AM] <xiphmont> I've not yet gotten to reviewing/merging Arc's work.
+[1/5/2005 6:02 AM] <xiphmont> However, we'd discussed it in the past, and I doubt there will be any reason to delay the merge beyond my own lack of time at the moment.
+[1/5/2005 6:03 AM] <xiphmont> (and really, it's not 'lack of time' so much as 'many things to do, this is one'.  It has been a productive month)
+[1/5/2005 6:03 AM] <Arc> xiphmont: what does this mean for my other work with libogg2/OggStream
+[1/5/2005 6:03 AM] <xiphmont> Once that merge happens, there will need to be a libogg1 compatability layer built on top, and a discussion of moving the other Xiph projects to using it.
+[1/5/2005 6:04 AM] <xiphmont> Arc: in what sense?
+[1/5/2005 6:04 AM] <Arc> should I continue holding for merger or just expect that it'll be merged without major API changes needed?
+[1/5/2005 6:04 AM] -->| j^ (~j@host-84-9-75-95.bulldogdsl.com) has joined #xiphmeet
+[1/5/2005 6:05 AM] <xiphmont> If the API changes are what we discussed, they will be as is.
+[1/5/2005 6:05 AM] -->| karlH (~karl@82-38-34-147.cable.ubr02.brad.blueyonder.co.uk) has joined #xiphmeet
+[1/5/2005 6:05 AM] <Arc> cool.
+[1/5/2005 6:05 AM] <xiphmont> do you mean the namespace change?
+[1/5/2005 6:05 AM] <--| j^ has left #xiphmeet ("Client exiting")
+[1/5/2005 6:06 AM] <xiphmont> OK, anyway, we were in agreement on all the points we discussed.
+[1/5/2005 6:06 AM] <Arc> ok.
+[1/5/2005 6:06 AM] <Arc> the namespace change is no big deal.
+[1/5/2005 6:06 AM] <xiphmont> I don;t remember if the namespace changes were part of the current merge waiting to happen.
+[1/5/2005 6:06 AM] <xiphmont> If they're not, they'll be done shortly after.
+[1/5/2005 6:06 AM] <Arc> *nod*
+[1/5/2005 6:06 AM] <Arc> you or me doing it?
+[1/5/2005 6:06 AM] <Arc> i think i started but i dont remember where i started.
+[1/5/2005 6:06 AM] <xiphmont> The only discussion to have is browbeating others to moving toward libogg2 native :-)
+[1/5/2005 6:07 AM] <xiphmont> I'll do it.
+[1/5/2005 6:07 AM] <Arc> cool.
+[1/5/2005 6:07 AM] <Arc> (please give me a mapping file so i can appropriatly upgrade py-ogg2 - i need it for development)
+[1/5/2005 6:08 AM] <xiphmont> Libogg2 is both zero-copy and lower memory usage (substantially lower).  The usage is the same *except* who owns memory changes in several places.  Most code will only change one or two calls; the bitpacker works the same way.
+[1/5/2005 6:08 AM] <xiphmont> (This is meant for the other codec developers)
+[1/5/2005 6:08 AM] <Arc> well and some of the processes are different, too.
+[1/5/2005 6:08 AM] <xiphmont> Moving onto next project: I'm going to interject Postfish in here because it has seen some work and will be a major release in the next few months.
+[1/5/2005 6:09 AM] <xiphmont> Postfish has a new reverb this week; much nicer than the old SWH reverb it replaces.  It's based on Freeverb3 but adds predelay amd early-reflection control.
+[1/5/2005 6:09 AM] <xiphmont> Thats' a small thing.
+[1/5/2005 6:10 AM] <xiphmont> More importantly, I've begun the reorganization into postfish the app and libpostfish the programmatic library. 
+[1/5/2005 6:11 AM] <xiphmont> Among other things, the strict division will give multithreading support for free in the lib; the app will be able to scale to 32-way machines.
+[1/5/2005 6:11 AM] <Uraeus> sorry for the ignorance, but postfish is similar to beast/bse ?
+[1/5/2005 6:11 AM] <xiphmont> So, all you folks who sprung for a dual G5 can feel better about it :-)
+[1/5/2005 6:11 AM] <xiphmont> It has one or two things in common with Beast if I recall correctly.
+[1/5/2005 6:12 AM] <xiphmont> Beast is more about composition; Postfish is more about processing sound you already have.
+[1/5/2005 6:12 AM] <Uraeus> ok thnx
+[1/5/2005 6:13 AM] <xiphmont> Postfish is intended for complex inline filtering and/or mixdown of input audio.  It does no synthesis, sequencing, etc.
+[1/5/2005 6:14 AM] <xiphmont> OTOH, it has several unique restoration filters, and the implementation of the other filters are intended to be gold-standard grade.  
+[1/5/2005 6:15 AM] <thomasvs> the filters will be completely accessible from the lib ?
+[1/5/2005 6:15 AM] <xiphmont> In any case, it will also offer them as a programmatic library, and I look forward to apps like Audacity using that to add to the 'standard' effect it offers as well as replacing other filters it already has (like EQ0 with a version that actually works right.  And of course, having it available in a linear filtering package.
+[1/5/2005 6:16 AM] <xiphmont> All filters will be in the lib.  The application will be a GUI.
+[1/5/2005 6:16 AM] <thomasvs> did you ever write up some rationale as to for example why not use ladspa ?
+[1/5/2005 6:16 AM] <thomasvs> not ruffling feathers, just interested in knowing about your choice (outside the scope of the meeting)
+[1/5/2005 6:16 AM] <Arc> (ditto for jack)
+[1/5/2005 6:17 AM] <xiphmont> ladspa is a plugin architecture.  You could easily make ladspa plugins with libpostfish.
+[1/5/2005 6:17 AM] <xiphmont> And a beta tester is already jack-ifying Postfish.
+[1/5/2005 6:17 AM] <Arc> awesome.
+[1/5/2005 6:18 AM] <xiphmont> It's about the new filters and having a good UI that makes them easy to use.
+[1/5/2005 6:18 AM] <xiphmont> how the filters are wrapped is secondary.
+[1/5/2005 6:18 AM] <xiphmont> (it's not ladspa native as the ladspa api would be less efficient for massive multithreading)
+[1/5/2005 6:19 AM] <xiphmont> (as well as missing other things like 'what's your latency?')
+[1/5/2005 6:19 AM] <xiphmont> or at least, I've not seen any plugin use that API aspect if it does exist :-)
+[1/5/2005 6:19 AM] <xiphmont> OK, moving on...
+[1/5/2005 6:20 AM] <xiphmont> icecast.  Do we have Icecast folks in attendance?
+[1/5/2005 6:20 AM] <karlH> yeah
+[1/5/2005 6:20 AM] <xiphmont> Oh, Karl is here.
+[1/5/2005 6:20 AM] <xiphmont> go for it.
+[1/5/2005 6:20 AM] <karlH> icecast 2.2 was release just before christmas
+[1/5/2005 6:21 AM] <karlH> includes the theora and shoutcast DSP client support
+[1/5/2005 6:21 AM] <karlH> so now we are doing video, NSV and theora streams have been tested
+[1/5/2005 6:22 AM] * illi would like to know of a test theora stream to iron out some bugs he has
+[1/5/2005 6:23 AM] <karlH> I sure one can be set up, it's just a question on content
+[1/5/2005 6:23 AM] <thomasvs> illi: ours are still up, as always
+[1/5/2005 6:23 AM] <illi> test pattern is fine :)
+[1/5/2005 6:23 AM] <thomasvs> illi: if they're not, poke us
+[1/5/2005 6:23 AM] <illi> URI ?
+[1/5/2005 6:23 AM] <pem> I've got a link with some file streamed through icecast
+[1/5/2005 6:23 AM] <thomasvs> http://mirror.fluendo.com
+[1/5/2005 6:23 AM] <illi> i never saw them there before... ok !
+[1/5/2005 6:23 AM] <karlH> the YP server has been updated to handle the video streams
+[1/5/2005 6:24 AM] <illi> i'd also like some icecast ones too, as there is bound to be some differences
+[1/5/2005 6:24 AM] <thomasvs> illi: yeah, good idea. karlh ?
+[1/5/2005 6:24 AM] <pem> 217.195.20.1/video/shanecou.v196a56.ogg
+[1/5/2005 6:24 AM] <illi> How often is that up though ?
+[1/5/2005 6:24 AM] <Atamido> illi:  Any eta for a new release of the filters?
+[1/5/2005 6:25 AM] <karlH> easy enough to setup a stream, ezstream with the trunk of libshout can send static files
+[1/5/2005 6:25 AM] <illi> I'd guess end of feb is looking liekly... i'm kind of busy working, and i'd like to get theora streams and keyframe seeking in the next release
+[1/5/2005 6:25 AM] <illi> karlH : Run the install program and wha ? :)
+[1/5/2005 6:26 AM] <karlH> illi: new clients on icecast usually start at the keyframe, so that should be no problem
+[1/5/2005 6:27 AM] <illi> true... the current bug is it geets confused when it sees high granule pos starting a stream... it tries to wait for that time and blocks
+[1/5/2005 6:27 AM] <karlH> I can talk to you later about the ezstream side if you want
+[1/5/2005 6:27 AM] <thomasvs> illi: I think you should ignore that - the first granule pos is the start of the stream, no ?
+[1/5/2005 6:27 AM] <illi> unless you seek to it
+[1/5/2005 6:28 AM] <illi> ie it's not distinguishing between it seeking to x (knowing it's x) and it just getting x...
+[1/5/2005 6:28 AM] <illi> it's not that hard to fix... i just need steams to test on
+[1/5/2005 6:29 AM] <karlH> other than that, I see that oddsock is preparing another ezstream release, and I'm updating ices 2.0.1, which should be out today/tomorrow
+[1/5/2005 6:30 AM] <xiphmont> Anything else?
+[1/5/2005 6:30 AM] <karlH> the bug reports have been pretty thin on the ground, so we are taking that as good news
+[1/5/2005 6:30 AM] <karlH> nothing more I think, back to you
+[1/5/2005 6:30 AM] <xiphmont> OK then, Vorbis.
+[1/5/2005 6:31 AM] <xiphmont> Not too much news there; I need to get the Neuros code into SVN and, while I'm at it, apply a few patches to mainline Tremor, replace mainline Tremor with the lowmem version...
+[1/5/2005 6:32 AM] <ozone> xiphmont: is the lowmem version source-compatible with non-lowmem tremor?
+[1/5/2005 6:32 AM] <xiphmont> Also I'm officially doing some oggenc optimization work for Mercora.
+[1/5/2005 6:32 AM] <xiphmont> source compatable?  as in same API?  yes.
+[1/5/2005 6:32 AM] <ozone> great
+[1/5/2005 6:32 AM] <xiphmont> It has higher CPU complexity tho.
+[1/5/2005 6:32 AM] <xiphmont> OTOH, it uses 1/10th the memory.
+[1/5/2005 6:33 AM] <xiphmont> Some fun new thought problems have been panning out for Vorbis II too :-)  I realized I'd missed an obvious possibility is structuring codebook cascades.
+[1/5/2005 6:34 AM] <xiphmont> (in Vorbis I)
+[1/5/2005 6:34 AM] <xiphmont> Also, looking into parametric codebooks.
+[1/5/2005 6:34 AM] <Arc> what does that mean
+[1/5/2005 6:34 AM] <xiphmont> 'codebooks that are both more effective and use less memory'.
+[1/5/2005 6:34 AM] <ozone> xiphmont: hmm, how much more CPU?  a significant amount?  we're using tremor in a project at the moment, and we need all the CPU we can get
+[1/5/2005 6:35 AM] <ozone> i'll take it with you offline though, since it's a bit off-topic
+[1/5/2005 6:35 AM] <Arc> so VorbisI can be improved more than it's current implementation without breaking spec?
+[1/5/2005 6:35 AM] <xiphmont> ozone: I'm not going to kill the normal version.  CPU usage depends on the processor.  I've not actually measured the diff on x86.
+[1/5/2005 6:35 AM] <xiphmont> I should.
+[1/5/2005 6:35 AM] <xiphmont> Arc: no, this is an algorthmic change.
+[1/5/2005 6:35 AM] <Arc> ah ok
+[1/5/2005 6:35 AM] <xiphmont> ozone: actually, you should measure and let me know ;-)
+[1/5/2005 6:36 AM] <ozone> xiphmont: hehehe, sounds like a deal
+[1/5/2005 6:36 AM] <xiphmont> Oh, on the announcement side of thing, Aoyumi released a new AoTuV version.
+[1/5/2005 6:36 AM] <xiphmont> That's not Xiph.Org news, but folks might want to know.
+[1/5/2005 6:37 AM] <xiphmont> I'm done with Vorbis news.  Next: Theora.
+[1/5/2005 6:37 AM] <Arc> nice of them to release it under a free license
+[1/5/2005 6:38 AM] <xiphmont> thomasvs, others, anything new to announce?
+[1/5/2005 6:38 AM] <illi> yes
+[1/5/2005 6:38 AM] <xiphmont> (or derf, illi, no rillian today)
+[1/5/2005 6:38 AM] <xiphmont> illi: yes?
+[1/5/2005 6:39 AM] <illi> Ummm.. just mention ozone has ported a lot of my base libraries for max and unix... (C++)
+[1/5/2005 6:39 AM] <illi> also that we (mainly ozone) are working on server side seeking/recombination of ogg files
+[1/5/2005 6:39 AM] <illi> max = mac
+[1/5/2005 6:40 AM] <illi> Also... jsut my whats in store for this years...
+[1/5/2005 6:40 AM] <xiphmont> that counts, yes :-)
+[1/5/2005 6:40 AM] <thomasvs> xiphmont: well, source of our cortado applet has been released
+[1/5/2005 6:40 AM] <thomasvs> xiphmont: it has vorbis and theora, but not yet speex
+[1/5/2005 6:40 AM] <thomasvs> xiphmont: svn will be public too as soon as I get off my ass and move it
+[1/5/2005 6:40 AM] <ms-> Just a small mention that we've released the code we've been working on for scalable network servers BTW
+[1/5/2005 6:41 AM] <illi> basically this years agenda...
+[1/5/2005 6:41 AM] <ms-> Which is the project I was briefly alluding to before the meeting
+[1/5/2005 6:41 AM] <illi> keyframe seeking for theora...
+[1/5/2005 6:41 AM] <thomasvs> xiphmont: I was wondering, wrt theora, what the current status is re: getting mmx optimizations working well
+[1/5/2005 6:41 AM] <ozone> yeah, illi's windows stuff actually has a platform-neutral core
+[1/5/2005 6:41 AM] <illi> streaming of all codecs...
+[1/5/2005 6:41 AM] <ozone> there's a lot of useful tools he has which are valuable outside of the directshow filters themselves
+[1/5/2005 6:41 AM] <illi> handling chains (or die trying)
+[1/5/2005 6:41 AM] <thomasvs> (i'll wait a bit for illi and ozone first)
+[1/5/2005 6:42 AM] <ozone> e.g. an Ogg validation tool, a chain splitter
+[1/5/2005 6:42 AM] <ozone> (chain splitter == useful for listening to streaming vorbis radio; it'll split chains and rename them appropriately based on the filename)
+[1/5/2005 6:42 AM] <illi> dump tools, chain info yada yada
+[1/5/2005 6:42 AM] <ozone> based on the metadata in the radio stream, i mean
+[1/5/2005 6:42 AM] <ozone> yeah, those kind of things.
+[1/5/2005 6:42 AM] <xiphmont> thomasvs: mmx is not something I;d worked on.  Beyond the patch submitted to the list, I'm not aware of much/any MMX work going on... but rillian would know better.
+[1/5/2005 6:43 AM] <thomasvs> xiphmont: ok, will poke him again
+[1/5/2005 6:43 AM] <illi> also support vfw (video for windows) for theora so it can be used in the usual editing suites...
+[1/5/2005 6:43 AM] <ozone> probably the first significant addition to his set of tools is mod_oggchef, which is an apache 2 module that enables server-side seeking of ogg files via timed URLs
+[1/5/2005 6:43 AM] <ms-> Project is here: http://sourceforge.net/projects/kamaelia
+[1/5/2005 6:43 AM] <ms-> We'll be releasing the code we use to wrap vorbis up into something convenient to wrap as a submodule
+[1/5/2005 6:43 AM] <ozone> but anyway, if you're looking for alternative libraries to, say, libogg, and aren't afraid of C++, have a look at the oggdsf/unix directory in the xiph SVN trunk
+[1/5/2005 6:43 AM] <illi> and my big goal is to have installed base of 1mil + (hoping for 10... but we'll see by years end)
+[1/5/2005 6:44 AM] <thomasvs> illi: how do you measure achievement of that goal ?
+[1/5/2005 6:44 AM] <ozone> i'll post to ogg-dev about this soon.  that's all from me ...
+[1/5/2005 6:45 AM] <xiphmont> that was more than I expected to hear about with rillian absent, and it will take me years to demultiplex it all :-)
+[1/5/2005 6:45 AM] <illi> well obviously as there's no spyware... i can't be sure... but i do know how many people download them
+[1/5/2005 6:45 AM] <thomasvs> heh :)
+[1/5/2005 6:45 AM] <ozone> illi: obviously the solution is to add spyware, to enable an accurate count
+[1/5/2005 6:45 AM] <thomasvs> furthermore, on the GStreamer level, wim is hacking on his redesigned branch, focusing on ogg stuff first
+[1/5/2005 6:45 AM] <ms-> (BTW the purpose of having that code written in the first place was to allow us to test the streaming protocols test server we're writing)
+[1/5/2005 6:46 AM] <illi> hovering around 600-1500 per day (not including the spike at release times)
+[1/5/2005 6:46 AM] <thomasvs> theora video scrubbing is very zippy, chained oggs work fine.  I hope to keep ogg stuff as first class citizens
+[1/5/2005 6:46 AM] <xiphmont> thomasvs: ooh, nice.
+[1/5/2005 6:46 AM] <--| mhrd has left #xiphmeet
+[1/5/2005 6:47 AM] <xiphmont> Hm, no Jean-Marc.  Anyone else have Speex news?
+[1/5/2005 6:47 AM] <xiphmont> I have this: Work on the Speex parrot continues :-)
+[1/5/2005 6:47 AM] <xiphmont> And there is also a Flac Frog.
+[1/5/2005 6:47 AM] <illi> A vorbis vulture ?
+[1/5/2005 6:48 AM] * illi has no idea what parrot frog is !
+[1/5/2005 6:48 AM] <xiphmont> Anyway, I'll throw the floor open to speex news and flac news if folks have some, but Josh isn't here either, and I frankly don't blame him given the hour.
+[1/5/2005 6:48 AM] <xiphmont> Oh, we have a new fish too.  I'll get to show that around soon.
+[1/5/2005 6:48 AM] <Arc> cool
+[1/5/2005 6:48 AM] <Arc> do we have codec icons yet?
+[1/5/2005 6:48 AM] <Arc> (something for Writ, prehaps? hehe)
+[1/5/2005 6:49 AM] <xiphmont> Speex/flac.  Vorbis will still use the fish.
+[1/5/2005 6:49 AM] <xiphmont> No progress on Theora/Writ yet.
+[1/5/2005 6:49 AM] <Arc> ok.
+[1/5/2005 6:49 AM] <Arc> I have an update on Writ.
+[1/5/2005 6:49 AM] <illi> oh icons... it's clear now :)
+[1/5/2005 6:49 AM] <xiphmont> Melissa is still toying with the cat/TV idea for Theora, but hasn;t found one that works yet.
+[1/5/2005 6:49 AM] <Atamido> No racoon for Theora?
+[1/5/2005 6:49 AM] <xiphmont> it was a cat.
+[1/5/2005 6:49 AM] <Arc> Theora has always been a cat
+[1/5/2005 6:49 AM] <Atamido> o_O
+[1/5/2005 6:49 AM] <xiphmont> I suggested a cat trapped *in* a tv, but...
+[1/5/2005 6:49 AM] <Arc> the striped tail and weird eye made it look like a racoon
+[1/5/2005 6:50 AM] <ozone> what about a cat eating a TV?
+[1/5/2005 6:50 AM] <thomasvs> FWIW, we still use "the fish" for any xiph-related codec as an overlay
+[1/5/2005 6:50 AM] <ozone> that'd be appropriate for australia.  australian cats eat TVs all the time
+[1/5/2005 6:50 AM] <xiphmont> see, these things all do not scale down.
+[1/5/2005 6:50 AM] <thomasvs> would be nice to have some codec art finished sometime soon
+[1/5/2005 6:50 AM] <Arc> xiphmont: dont get animal welfare on us, for gods sakes
+[1/5/2005 6:50 AM] <xiphmont> thomasvs: the fish is finished.
+[1/5/2005 6:50 AM] <Arc> the last thing we need is the SPCA or PETA going after us
+[1/5/2005 6:50 AM] <xiphmont> and the fish will remain the overarching icon for all things xiph.
+[1/5/2005 6:51 AM] <ozone> where's your sense of adventure, arc
+[1/5/2005 6:51 AM] <illi> cat's a delicacy down here...
+[1/5/2005 6:51 AM] <Atamido> It's not like he's going to pick a cat being chopped in half for Theora, is he?
+[1/5/2005 6:51 AM] <Arc> ozone: I used to be a card carrying member of PETA. I know what they're capable of.  trust me, not what we want to deal with.
+[1/5/2005 6:51 AM] <xiphmont> ok, back on topic.
+[1/5/2005 6:51 AM] <xiphmont> Arc: writ
+[1/5/2005 6:51 AM] <Arc> Writ?
+[1/5/2005 6:52 AM] <Arc> Writ is done.  
+[1/5/2005 6:52 AM] <Atamido> People for the Eating of Tasty Animals?
+[1/5/2005 6:52 AM] <Arc> um, the problem is implementation
+[1/5/2005 6:52 AM] <xiphmont> spec/code?
+[1/5/2005 6:52 AM] <xiphmont> ah.
+[1/5/2005 6:52 AM] <Atamido> In the wiki, isn't it?
+[1/5/2005 6:52 AM] <Arc> see, that's the thing. i cant figure out how a library would be helpful
+[1/5/2005 6:52 AM] <Arc> the only helpful thing it could do is repeat long phrases
+[1/5/2005 6:52 AM] <Atamido> http://wiki.xiph.org/OggWrit
+[1/5/2005 6:52 AM] <Arc> Atamido: yes
+[1/5/2005 6:52 AM] <xiphmont> well, without code, the spec doesn't do much....
+[1/5/2005 6:52 AM] <Arc> there's example code in py-ogg2
+[1/5/2005 6:53 AM] <Arc> xiphmont: exactly. so I need help getting some media player to actually use it, or some encoder/muxer to work with it
+[1/5/2005 6:53 AM] <Arc> there, I am stuck.
+[1/5/2005 6:53 AM] <Atamido> Maybe a library would offer multiple interfaces, one for each language?
+[1/5/2005 6:53 AM] <xiphmont> Atamido: offline.
+[1/5/2005 6:54 AM] <xiphmont> Arc: research how other subtitle systems integrate with a player?
+[1/5/2005 6:54 AM] <Arc> so I'm sending out an advertisement. if anyone knows anyone who can work on the theora plugins for any media player, I need their help.
+[1/5/2005 6:54 AM] <xiphmont> I assume it's compartmentalized code elsewhere.
+[1/5/2005 6:54 AM] <Arc> I can help with this, but I dont have the time myself to learn media player stuff right now
+[1/5/2005 6:54 AM] <thomasvs> Arc: gst is waiting for you
+[1/5/2005 6:55 AM] <Arc> thomasvs: we'll talk after meet. thanks :-)
+[1/5/2005 6:55 AM] <Arc> thats it.
+[1/5/2005 6:55 AM] <xiphmont> Spiffy.
+[1/5/2005 6:56 AM] <xiphmont> I have only one last thing to discuss.
+[1/5/2005 6:56 AM] <xiphmont> (didn;t add to agenda, sorry)
+[1/5/2005 6:56 AM] <xiphmont> I have been considering dropping the codec projects back to officially making source-only releases.
+[1/5/2005 6:57 AM] <xiphmont> This has obvious benefits and liabilities.
+[1/5/2005 6:57 AM] <xiphmont> the biggest benefit is that we won't constantly be stalled on building/testing binaries.
+[1/5/2005 6:58 AM] <xiphmont> The liability is that binary downloads from the main xiph site would either lag source releases or mostly disappear.
+[1/5/2005 6:58 AM] <thomasvs> hm
+[1/5/2005 6:58 AM] <ozone> are there any measurements on how popular the binary downloads are?
+[1/5/2005 6:58 AM] <xiphmont> However, the codecs/libs today are mostly distributed bu distros and other apps.
+[1/5/2005 6:59 AM] <Atamido> Someone could do log analysis of the web server logs to see how big it is.
+[1/5/2005 6:59 AM] <xiphmont> I'm talking about the codecs cores, not things like Ogg DSF
+[1/5/2005 6:59 AM] <xiphmont> Unless illi had good reason it would make sense for that too.
+[1/5/2005 6:59 AM] <malcolm> Are you including things like the oggenc/flac executables?
+[1/5/2005 7:00 AM] <xiphmont> Possibly; most people either get those from distros or build from source.  
+[1/5/2005 7:00 AM] <illi> <xiphmont> Unless illi had good reason it would make sense for that too.     ?????
+[1/5/2005 7:00 AM] <xiphmont> But I don;t know exactly how vast that majority is.
+[1/5/2005 7:00 AM] <malcolm> True for Unix/Linux. Not true for Windows, I think.
+[1/5/2005 7:01 AM] <xiphmont> illi: forgive my grammar.
+[1/5/2005 7:01 AM] <xiphmont> malcolm: I agree.
+[1/5/2005 7:01 AM] <HackRip> I disagree & I know I am not alone Vorbis 1.1 was a mess & people use Hydrogen shitty _impulse_trigger build without even knowing it's not official ...
+[1/5/2005 7:01 AM] <xiphmont> However, Win users actually tend to use third party tools.
+[1/5/2005 7:01 AM] <illi> xiphmont: I couldn't parse it at all... have i like missed some lines or somethign ?
+[1/5/2005 7:01 AM] <malcolm> Speaking as a user of both, I don't need Linux binaries, but not providing Windows binaries would really be annoying.
+[1/5/2005 7:02 AM] <ozone> xiphmont: yes and no.  they currently use third-party tools because there's not much in the way of directshow support for ogg
+[1/5/2005 7:02 AM] <xiphmont> illi: "I'm not suggesting the same for the direct show filters, unless for some reason, illi thinks it would be a good idea to only release it as source'.  I don;t think you think that :-)
+[1/5/2005 7:02 AM] <ozone> i'd wager that illi's oggdsf stuff will be far more dominant soon, if it's not already
+[1/5/2005 7:02 AM] <Atamido> Building stuff on Windows is neither common, nor terribly easy.
+[1/5/2005 7:02 AM] <illi> Well... about 5000:1 binary to source
+[1/5/2005 7:03 AM] <malcolm> (Vorbis 1.1: is there even a windows build?)
+[1/5/2005 7:03 AM] <xiphmont> well, part of it is none of the core folks are Win maintainers.  1.1 is delayed because of Windows.  It's holding up all the other platforms too.
+[1/5/2005 7:03 AM] <Atamido> Not a lot of people have the DXSDK installed.
+[1/5/2005 7:03 AM] <xiphmont> So we can stall indefinitely, or keep doing what we do well; improving the source.
+[1/5/2005 7:03 AM] <illi> (and at 300 megs... phwoar!)
+[1/5/2005 7:03 AM] <ozone> xiphmont: i'm prepared to be the windows maintainer for vorbis/theora
+[1/5/2005 7:03 AM] <ozone> (and other codecs, if necessary)
+[1/5/2005 7:04 AM] <illi> atamido : Building stuff on windows is vastly easier... Right-click/build all
+[1/5/2005 7:04 AM] <xiphmont> ozone: much of the difficulty is that the win32 people we've had in the past were somewhat... high maintainence.  Either easily distracted, or unwilling to move forward without supervision.
+[1/5/2005 7:04 AM] <illi> atamido : But only if you distribute it in a form ammenable to that
+[1/5/2005 7:04 AM] <thomasvs> if linux binaries are still considered, I'd be more than happy to be doing redhat/fedora packages
+[1/5/2005 7:04 AM] <ozone> xiphmont: i'm up for it
+[1/5/2005 7:04 AM] <xiphmont> I don;t want a volunteer so much as a person raring to take that aspect of the project over and do it 'good 'n' hard'.
+[1/5/2005 7:04 AM] <pem> pem: I've made a FC3 package for ICecast still not avalaible on the website
+[1/5/2005 7:05 AM] <ozone> xiphmont: i'm nubile and raring.  what else is there to say? :)
+[1/5/2005 7:05 AM] <pem> I've also suggested to some Fedora mainteners to include icecast on the main repos
+[1/5/2005 7:05 AM] * thomasvs cheers on ozone
+[1/5/2005 7:06 AM] <xiphmont> OK, so... it's clear there's discussion to be had.  My desire is that we don't let the quagmire of release enineering sap what we actually used to do very well: hack on cool projects.  Releases have been sucking the life out of us.  That has to stop.  This was one proposed solution, so let's continue the discussion on the lists.
+[1/5/2005 7:06 AM] * HackRip wants Case as Win32 guy ... if ever you read the log Case ;)
+[1/5/2005 7:06 AM] <ozone> ok
+[1/5/2005 7:06 AM] <xiphmont> ozone: I will take you up on your offer!
+[1/5/2005 7:06 AM] <Atamido> illi:  You are assuming that people have something installed that _can_ build sources.
+[1/5/2005 7:06 AM] <xiphmont> Whoever grabs this and moves forward wins the football.
+[1/5/2005 7:07 AM] <ozone> xiphmont: sure.  i'll post to the vorbis & theora (dev) lists about it, then
+[1/5/2005 7:07 AM] <illi> ozone is the build masta !
+[1/5/2005 7:07 AM] * illi doesn't have the patience to maintain in two places
+[1/5/2005 7:07 AM] <xiphmont> ozone: There's more to say, we'll handle it later on.  I need to get a status dump from Rillian.
+[1/5/2005 7:07 AM] <ozone> xiphmont: ok, feel free to email me then
+[1/5/2005 7:07 AM] <ozone> illi: 3 places, you forget about mac os x :)
+[1/5/2005 7:08 AM] <xiphmont> ozone: as a start, do this tho: grab sources and build.  If it doesn;t build and test functional, begin determining why :-)
+[1/5/2005 7:08 AM] <Uraeus> ozone, macosx is kinda like bothering with supporting amiga with binaries, so he did not forget :)
+[1/5/2005 7:08 AM] <xiphmont> i think we at least pass that test right now, but II want someone to know *for sure* :-)
+[1/5/2005 7:08 AM] <illi> no i meant my own configuration  (ie fully integrated) and seperately... not platforms
+[1/5/2005 7:08 AM] <ozone> xiphmont: will do tonight
+[1/5/2005 7:09 AM] <xiphmont> thanks.
+[1/5/2005 7:09 AM] <ozone> Uraeus :P
+[1/5/2005 7:10 AM] <xiphmont> That point is now handled within the scope of the meeting.
+[1/5/2005 7:10 AM] <xiphmont> Any other items not on the agenda before we adjourn?
+[1/5/2005 7:11 AM] <pem> hep !
+[1/5/2005 7:11 AM] <philk> RTP status report
+[1/5/2005 7:11 AM] <pem> hum, RTP first
+[1/5/2005 7:11 AM] <xiphmont> yes, please.
+[1/5/2005 7:11 AM] <philk> Ok, An -04 update of the Vorbis draft has been sent to the IETF
+[1/5/2005 7:11 AM] <illi> ozone : you might want to start here... www.illiminable.com/th/XiphWinSDK.zip
+[1/5/2005 7:11 AM] <illi> save you mucho time
+[1/5/2005 7:12 AM] <illi> i tried maintaining two seperate tree for a while... but it shat me
+[1/5/2005 7:12 AM] <ozone> illi: cheers
+[1/5/2005 7:12 AM] <philk> Changes covered moving the config packets from RTCP to in-band as well as via SDP
+[1/5/2005 7:12 AM] <illi> (But it all builds, and the enc/dec tools)
+[1/5/2005 7:12 AM] <philk> Work is progressing on a reference Vorbis RTP server
+[1/5/2005 7:12 AM] <xiphmont> ozone: start with CVS, when that doesn;t work, look at illi's help ;-)
+[1/5/2005 7:12 AM] <illi> he'll just need to copy the vcproj files...
+[1/5/2005 7:13 AM] <xiphmont> philk: is working code a required part of the draft or just a good idea?
+[1/5/2005 7:13 AM] <ozone> xiphmont: that's the plan
+[1/5/2005 7:13 AM] <philk> I sent an update of the Speex I-D to the chaps a week or so ago, no word back
+[1/5/2005 7:13 AM] <xiphmont> the chaps being....
+[1/5/2005 7:13 AM] <philk> xiphmont: The code needs to be done at some point of the standardisation process, the earlier the better
+[1/5/2005 7:14 AM] <philk> The BBC have said they will make implementations :)
+[1/5/2005 7:14 AM] <xiphmont> OK, so it is a requirement
+[1/5/2005 7:14 AM] <xiphmont> :-)
+[1/5/2005 7:14 AM] <philk> Next on the list is the Theora draft
+[1/5/2005 7:14 AM] <philk> An initial version should be done by the end of the month
+[1/5/2005 7:15 AM] <xiphmont> Is the theora spec document providing the start?  I'm sure you've been over this with rillian...
+[1/5/2005 7:15 AM] <philk> Yup, i need to run through some of the finer points
+[1/5/2005 7:15 AM] <xiphmont> We're now at the point I must go...
+[1/5/2005 7:15 AM] <philk> Done
+[1/5/2005 7:16 AM] <xiphmont> was 'hem' an agenda item or a throat clearing noise?
+[1/5/2005 7:16 AM] <pem> :)
+[1/5/2005 7:16 AM] <pem> I just wanted to talk about the docs, mostly the icecast docs
+[1/5/2005 7:16 AM] <xiphmont> er, 'hep'
+[1/5/2005 7:16 AM] <pem> setting up a translation/help team or effort
+[1/5/2005 7:16 AM] *Atamido wanted to poke xiphmont about website stuff, but will wait until later?
+[1/5/2005 7:16 AM] <xiphmont> Ah yes!
+[1/5/2005 7:17 AM] <xiphmont> Atamido: yes.  I forwarded mail to you before the meeting
+[1/5/2005 7:17 AM] <pem> If you do not have more time, we could talk about that via mail
+[1/5/2005 7:17 AM] <xiphmont> pem: go ahead.  I need to leave the meeting tho.
+[1/5/2005 7:17 AM] <Atamido> xiphmont:  What email address?
+[1/5/2005 7:17 AM] <xiphmont> no,no, it was on the agenda.
+[1/5/2005 7:17 AM] <xiphmont> Atamido: apparently the wrong one.  Will resend in a bit.
+[1/5/2005 7:18 AM] <xiphmont> Anyway, folkss hould adjourn when the doc discussion is done.  I really must run.
+[1/5/2005 7:18 AM] <Atamido> Are there any plans for doc-translations for projects other than icecast and flac-russian?
+[1/5/2005 7:18 AM] <xiphmont> thanks for coming, I look forward to seeing the final log ;-)
+[1/5/2005 7:18 AM] |<-- xiphmont has left irc.freenode.net ("He travels fastest who travels alone")
+[1/5/2005 7:19 AM] <Atamido> Doh...
+[1/5/2005 7:19 AM] <pem> Atamido: it was one of my ideas
+[1/5/2005 7:19 AM] <Atamido> What is the global plan of your idea?
+[1/5/2005 7:19 AM] <pem> to launch an official translation team
+[1/5/2005 7:20 AM] <pem> and call for help
+[1/5/2005 7:20 AM] <pem> You can see it on the list
+[1/5/2005 7:20 AM] <HackRip> but he travels "alone" who travels fastest ...
+[1/5/2005 7:20 AM] <pem> Many users are willing to help
+[1/5/2005 7:20 AM] <pem> but are (so am I) unable to code
+[1/5/2005 7:20 AM] <pem> I'm a french guy
+[1/5/2005 7:20 AM] <pem> I'm sure that some users are german.
+[1/5/2005 7:20 AM] <pem> etc.
+[1/5/2005 7:20 AM] <Atamido> Then please don't make any docs in english.
+[1/5/2005 7:21 AM] <pem> A doc in english is good enough for coders
+[1/5/2005 7:21 AM] <Atamido> Is this a plan for translating all docs from all projects?
+[1/5/2005 7:21 AM] <pem> Yep
+[1/5/2005 7:21 AM] <pem> No that fast, but to begin
+[1/5/2005 7:21 AM] <Atamido> Any idea how to do the infrastructure?
+[1/5/2005 7:21 AM] <pem> I've been working as a translator for Kde
+[1/5/2005 7:21 AM] |<-- HackRip has left irc.freenode.net ()
+[1/5/2005 7:22 AM] <Atamido> Where are the docs put?
+[1/5/2005 7:22 AM] <pem> Working on KMail
+[1/5/2005 7:22 AM] <Atamido> How do you access a particular doc in another language?
+[1/5/2005 7:22 AM] <pem> At first we can simply begin on the Xiph wiki
+[1/5/2005 7:22 AM] <pem> list the docs
+[1/5/2005 7:22 AM] <pem> make a first roadmap
+[1/5/2005 7:23 AM] <pem> even if a soft is realesed in another version, most of the doc is still valuable
+[1/5/2005 7:23 AM] <pem> for me the infrastructure is not that important
+[1/5/2005 7:23 AM] <Atamido> An example of one way of doing the multilingual, look at the picture flags at the top of this page.  v
+[1/5/2005 7:23 AM] <Atamido> http://www.matroska.org/contact/index.html
+[1/5/2005 7:24 AM] <Atamido> Only translated pages are highlighted.
+[1/5/2005 7:24 AM] <pem> The most important point is that Xiph, or the icecast website, officialy calls for help
+[1/5/2005 7:24 AM] <pem> Yep.
+[1/5/2005 7:24 AM] <pem> Good idea
+[1/5/2005 7:24 AM] <Atamido> Well, if people can't easily access the translated pages, it is moot.
+[1/5/2005 7:25 AM] <pem> Yes, of course
+[1/5/2005 7:25 AM] <pem> But we first need to begin translating them
+[1/5/2005 7:25 AM] <pem> And we need to ask for some help
+[1/5/2005 7:25 AM] <Atamido> Spend a day figuring out where to put the and how to make them accessible before asking for help translating.
+[1/5/2005 7:25 AM] <Atamido> Otherwise you end up with some real messes.
+[1/5/2005 7:26 AM] <pem> :/
+[1/5/2005 7:26 AM] <pem> Sorry but a few seconds ago the meeting was up to finish without tallink about that point
+[1/5/2005 7:26 AM] <pem> I've already send a mail on the icecast mailing list without any response
+[1/5/2005 7:27 AM] <pem> I can make you a mail with the project
+[1/5/2005 7:27 AM] <pem> and how to begin, how to do it
+[1/5/2005 7:27 AM] <pem> I'm not sure at all that thinkink at "how will look the translated website" is the good way to start
+[1/5/2005 7:28 AM] <pem> Can you give me your email address?
+[1/5/2005 7:28 AM] <Atamido> Well, the website is relative close to being redone, so I don't think you could do a lot of that.
+[1/5/2005 7:29 AM] <Atamido> It is a question though if the plan is to have all of the webpages slowly translated to other languages, like the site linked above.
+[1/5/2005 7:29 AM] <Atamido> Or just the docs.
+[1/5/2005 7:29 AM] <Atamido> And where are the docs going to be put.
+[1/5/2005 7:30 AM] <Atamido> Are there plans to merge the docs to one central location?
+[1/5/2005 7:30 AM] <Atamido> If you plan on starting translations in the wiki, what page naming scheme do you want to use so people can find the translations?
+[1/5/2005 7:30 AM] <pem> Sorry but I must be in a bad mood but I've got the feeling you're not really interested
+[1/5/2005 7:30 AM] <Atamido> Little things like that.
+[1/5/2005 7:31 AM] <--| ozone has left #xiphmeet
+[1/5/2005 7:31 AM] <Atamido> No, I just don't want to have to clean up a bunch of pages after they are written.
+[1/5/2005 7:31 AM] <pem> I may look silly and stupid but I was not going to start translatid webpages naked on a field and them send them via email.
+[1/5/2005 7:31 AM] <--| karlH has left #xiphmeet ("Client Exiting")
+[1/5/2005 7:32 AM] <Atamido> How and where you translate is all up to you, I'm just concerned about how/where they are stored.
+[1/5/2005 7:32 AM] <pem> okay
+[1/5/2005 7:32 AM] <Atamido> I don't tend to wear pants inside my apartment, but I'm pretty firm on them in the field.
+[1/5/2005 7:33 AM] <Atamido> Anyway, either webmaster at xiph.org or atamido at gmail.com
+[1/5/2005 7:33 AM] <pem> Ok enough said, have a nice day.
+[1/5/2005 7:33 AM] <--| pem has left #xiphmeet
