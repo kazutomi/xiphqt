@@ -63,7 +63,7 @@ ices_playlist_get_metadata (void)
 int
 ices_playlist_initialize (void)
 {
-  int rc = 0;
+  int rc = -1;
 
   ices_log_debug ("Initializing playlist handler...");
 
@@ -90,7 +90,7 @@ ices_playlist_initialize (void)
       break;
   }
 
-  if (!rc) {
+  if (rc < 0) {
     ices_log ("Initialization of playlist handler failed. [%s]", ices_log_get_error ());
     ices_setup_shutdown ();
   }

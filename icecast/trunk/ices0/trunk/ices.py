@@ -4,14 +4,7 @@ import sys
 # This is just a skeleton, something for you to start with.
 # All these functions should exist in your module
 
-ices_module_version = "0.0.1"
-
 songnumber = -1
-
-# Function called from the python api just to verify that your file
-# is ok.  
-def testfunction ():
-	print 'ices module version', ices_module_version, 'initializing...'
 
 # Function called to get the next filename to stream. 
 # Should return a string.

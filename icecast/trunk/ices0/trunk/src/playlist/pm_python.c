@@ -25,9 +25,13 @@
 #endif
 #include <Python.h>
 
+#define PM_PYTHON_MAKE_THREADS 0
+
 extern ices_config_t ices_config;
 
+#if PM_PYTHON_MAKE_THREADS
 static PyThreadState *mainthreadstate = NULL;
+#endif
 static PyObject *ices_python_module;
 
 /* -- local prototypes -- */
@@ -39,15 +43,18 @@ static void playlist_python_shutdown (void);
 static int python_init (void);
 static void python_shutdown (void);
 static void python_setup_path (void);
+static PyObject* python_eval (char *functionname);
+#if PM_PYTHON_MAKE_THREADS
 static PyThreadState* python_init_thread (void);
 static void python_shutdown_thread (PyThreadState *threadstate);
-static PyObject* python_eval (char *functionname);
+#endif
 
 /* Call python function to inialize the python script */
 int
 ices_playlist_python_initialize (playlist_module_t* pm)
 {
   PyObject* res;
+  int rc = -1;
 
   pm->get_next = playlist_python_get_next;
   pm->get_metadata = playlist_python_get_metadata;
@@ -55,28 +62,34 @@ ices_playlist_python_initialize (playlist_module_t* pm)
   pm->shutdown = playlist_python_shutdown;
 
   if (python_init () < 0)
-    return 0;
+    return -1;
 
-  res = (PyObject*) python_eval ("ices_python_initialize");
+  res = python_eval ("ices_python_initialize");
 
   if (res && PyInt_Check (res))
-    return PyInt_AsLong (res);
+    rc = PyInt_AsLong (res);
+  else
+    ices_log_error ("ices_python_initialize failed");
+  
+  Py_XDECREF (res);
 
-  ices_log_error ("ices_python_initialize failed");
-  return 0;
+  return rc;
 }
 
 /* Call the python function to get the current line number */
 static int
 playlist_python_get_lineno (void)
 {
-  PyObject* res =
-    (PyObject*) python_eval ("ices_python_get_current_lineno");
+  int rc = 0;
+  PyObject* res = python_eval ("ices_python_get_current_lineno");
 
   if (res && PyInt_Check (res))
-    return PyInt_AsLong (res);
+    rc = PyInt_AsLong (res);
+  else
+    ices_log_error ("ices_python_get_current_lineno failed");
 
-  ices_log_error ("ices_python_get_current_lineno failed");
+  Py_XDECREF (res);
+
   return 0;
 }
 
@@ -84,25 +97,32 @@ playlist_python_get_lineno (void)
 static char *
 playlist_python_get_next (void)
 {
-  PyObject* res = (PyObject*) python_eval ("ices_python_get_next");
+  char* rc = NULL;
+  PyObject* res = python_eval ("ices_python_get_next");
 
   if (res && PyString_Check (res))
-    return ices_util_strdup (PyString_AsString (res));
-  ices_log_error ("ices_python_get_next failed");
+    rc = ices_util_strdup (PyString_AsString (res));
+  else
+    ices_log_error ("ices_python_get_next failed");
 
-  return NULL;
+  Py_XDECREF (res);
+
+  return rc;
 }
 
 static char*
 playlist_python_get_metadata (void)
 {
-  PyObject* res =
-    (PyObject*) python_eval ("ices_python_get_metadata");
+  char* rc = NULL;
+  PyObject* res = python_eval ("ices_python_get_metadata");
 
   if (res && PyString_Check (res))
-    return ices_util_strdup (PyString_AsString (res));
+    rc = ices_util_strdup (PyString_AsString (res));
+  else
+    ices_log_error ("ices_python_get_metadata failed");
 
-  ices_log_error ("ices_python_get_metadata failed");
+  Py_XDECREF (res);
+
   return NULL;
 }
 
@@ -110,13 +130,17 @@ playlist_python_get_metadata (void)
 static void
 playlist_python_shutdown (void)
 {
-  PyObject* res = (PyObject*) python_eval ("ices_python_shutdown");
+  PyObject* res = python_eval ("ices_python_shutdown");
 
-  if (!(res && PyInt_Check (res)))
+  if (! (res && PyInt_Check (res)))
     ices_log_error ("ices_python_shutdown failed");
+
+  Py_XDECREF (res);
 
   python_shutdown ();
 }
+
+/* -- Python interpreter management -- */
 
 /* Function to initialize the python interpreter */
 static int
@@ -129,10 +153,11 @@ python_init (void)
 	python_setup_path ();
 
 	/* Initialize the python structure and thread stuff */
-	PyEval_InitThreads ();
 	Py_Initialize ();
-	
+	PyEval_InitThreads ();
+#if PM_PYTHON_MAKE_THREADS
 	mainthreadstate = PyThreadState_Get ();
+#endif
 
 	/* If user specified a certain module to be loaded,
 	 * then obey */
@@ -148,11 +173,8 @@ python_init (void)
 	if (!(ices_python_module = PyImport_ImportModule (module_name))) {
 		ices_log ("Error: Could not import module %s", module_name);
 		PyErr_Print();
-	} else {
-		ices_log_debug ("Calling testfunction in %s python module", module_name);
-		PyObject_CallMethod (ices_python_module, "testfunction", NULL);
 	}
-	
+
 	PyEval_ReleaseLock ();
 
 	return 0;
@@ -193,34 +215,37 @@ python_shutdown (void)
 static PyObject*
 python_eval (char *functionname)
 {
-	PyObject *ret;
+  PyObject *ret;
+#if PM_PYTHON_MAKE_THREADS
+  /* Create a new python thread */
+  PyThreadState *threadstate = python_init_thread ();
+#endif
+  PyEval_AcquireLock ();
+#if PM_PYTHON_MAKE_THREADS
+  PyThreadState_Swap (threadstate);
+#endif
+  /* Reload the module (it might have changed) */
+  ices_python_module = PyImport_ReloadModule (ices_python_module);
 
-	/* Create a new python thread */
-	PyThreadState *threadstate = python_init_thread ();
+  ices_log_debug ("Interpreting [%s]", functionname);
 	
-	PyEval_AcquireLock ();
-	
-	PyThreadState_Swap (threadstate);
-	
-	/* Reload the module (it might have changed) */
-	ices_python_module = PyImport_ReloadModule (ices_python_module);
-	
-	ices_log_debug ("Interpreting [%s]", functionname);
-	
-	/* Call the python function */
-	ret = PyObject_CallMethod (ices_python_module, functionname, NULL);
+  /* Call the python function */
+  ret = PyObject_CallMethod (ices_python_module, functionname, NULL);
+  if (! ret)
+    PyErr_Print ();
+#if PM_PYTHON_MAKE_THREADS
+  PyThreadState_Swap (mainthreadstate);
+#endif
+  PyEval_ReleaseLock ();
 
-	PyThreadState_Swap (mainthreadstate);
-	
-	PyEval_ReleaseLock ();
-	
-	ices_log_debug ("Done interpreting [%s]", functionname);
-	
-	python_shutdown_thread (threadstate);
-
-	return ret;
+  ices_log_debug ("Done interpreting [%s]", functionname);
+#if PM_PYTHON_MAKE_THREADS
+  python_shutdown_thread (threadstate);
+#endif
+  return ret;
 }
 
+#if PM_PYTHON_MAKE_THREADS
 /* Startup a new python thread */
 static PyThreadState *
 python_init_thread (void)
@@ -250,3 +275,4 @@ python_shutdown_thread (PyThreadState *threadstate)
 
   PyEval_ReleaseLock ();
 }
+#endif
