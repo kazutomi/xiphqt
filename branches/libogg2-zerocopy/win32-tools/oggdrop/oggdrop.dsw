@@ -1,0 +1,155 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "all"=".\all.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name oggdrop
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name oggdrop_dynamic
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ogg_dynamic"="..\..\ogg\win32\ogg_dynamic.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ogg_static"="..\..\ogg\win32\ogg_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "oggdrop"=".\oggdrop.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbis_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbisenc_static
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "oggdrop_dynamic"=".\oggdrop_dynamic.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_dynamic
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbis_dynamic
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbisenc_dynamic
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vorbis_dynamic"="..\..\vorbis\win32\vorbis_dynamic.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_dynamic
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vorbis_static"="..\..\vorbis\win32\vorbis_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "vorbisenc_dynamic"="..\..\vorbis\win32\vorbisenc_dynamic.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vorbis_dynamic
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vorbisenc_static"="..\..\vorbis\win32\vorbisenc_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

@@ -1,0 +1,10 @@
+Debug
+Release
+*.plg
+*.ncb
+*.aps
+*.mak
+*.dep
+test.ogg
+Makefile.in
+Makefile

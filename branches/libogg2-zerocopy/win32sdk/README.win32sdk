@@ -1,0 +1,110 @@
+$Id: README.win32sdk,v 1.9 2001/10/20 21:31:39 cwolf Exp $
+$Name:  $
+
+win32sdk Readme, 13 September, 2001 Chris Wolf
+===========================================================================
+This is the win32 SDK for Ogg/Vorbis
+
+  This directory, "win32sdk", is not actually part of the SDK as such,
+  but is a staging area for building the SDK.  The complete SDK ends
+  up in a directory tree rooted in "sdk", under this directory.
+  The "sdk" directory tree, once prepared should then be relocatable
+  and usable by itself.
+
+PREREQUSITES
+
+  The SRCROOT environment variable must be set pointing to the 
+  root directory where each of the cvs modules are rooted.  The
+  cvs modules "ogg", "vorbis" and "win32sdk" (this module) are 
+  required for this build.
+
+  if an NMAKE (see below) build is going to be performed, then the 
+  Windows-Script-Host, %SYSTEMROOT%\system32\cscript.exe is 
+  required to export the make and dependency files, otherwise
+  this step will need to be performed maually.
+
+QUICK SUMMARY
+
+  1.) run makesdk.bat
+  2.) cd sdk\build
+  3.) run build_all.bat
+  4.) run run_tests.bat
+
+
+BUILD USING NMAKE
+
+  By default, the scripts will build using msdev workspaces and
+  project files.  In the case where the sdk may be moved to an
+  environment which does not have MSVC v6, the build may be
+  performed using NMAKE.  When the build is performed this way,
+  makefiles are generated, which should work in older versions
+  of MSVC.  In order to do this, set the environment
+  variable "USENMAKE" to "true" (actually, any value will work).
+
+  If Windows-script-host, "cscript.exe" is unavailable, then perform
+  the following manual steps:
+
+  1.) Invoke msdev and load "win32sdk\all.dsw"
+  2.) Perform the following menu navigation:
+
+      Project->Export Makefile
+      When the "Export Makefile(s)" dialog comes up, select all the 
+      checkboxes, then press the "Ok" button.
+
+  If there are nmake build problems, try the following three steps
+  before performing the build again.
+
+  1.) run clean_libs_mak.bat
+  2.) run mkmak.bat
+  3.) run clean_all.bat
+
+BUILDING
+
+  The following steps are optional. They are for building the libraries
+  in place. The purpose of this step is for libaray development under
+  win32.
+
+  IDE build:
+
+  Load the "all.dsw" workspace.  This workspace loads and manages the
+  the dependent library project files.  To perform a build, from the "build"
+  menu, select the "build" menu item.  This will build all the dependent
+  libaries, but not copy them.
+
+
+  N.B. Since unecessary MSVC ancillary files are not present upon initial
+       checkout, e.g. *.ncb, I've seen MSVC get unhandled exceptions upon
+       the first startup; subsequent sessions should then work.
+
+       Unlike prior versions of MSVC, workspaces (*.dsw) are 
+       used to manage groups of related projects.  There should never
+       be a reason to directly open project files (*.dsp).  The 
+       workspace keeps track of project dependencies and insures that
+       each project is build in the correct order.  If you attempt to 
+       open a project (*.dsp) file, then a corresponding workspace (*.dsw)
+       will be created, which is fine, if you only have a single project,
+       which is not the case with this module (win32sdk).  So the two
+       worspaces that are relevant here, are "all.dsw" and 
+       "sdk\build\examples.dsw"
+
+       
+INSTALLING
+
+  Once prepared, the tree rooted in "sdk" can be used to build
+  win32 applications based on Ogg/Vorbis.  See the README in 
+  sdk\build for further information.
+  
+OTHER SCRIPTS
+
+  clean_all.bat       - performs a make clean for each library target in
+                        ogg and vorbis.
+ 
+  clean_libs_mak.bat  - deletes the makefiles and their dependecy files
+                        (*.mak, *.dep) in ogg and vorbis
+
+  clean_dist.bat      - restores win32sdk to it's freshly checked out state,
+ 
+  mkmak.bat           - creates makefiles and dependency files in the ogg and
+                        vorbis modules.  Needs %SYSTEMROOT%\system32\cscript.exe
+
+  sdk\build\mkmak.bat - creates makefiles for the example programs

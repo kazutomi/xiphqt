@@ -1,0 +1,28 @@
+0.8.3 - July 2002
+- fix to ao.m4 macro
+- minor alsa09 plugin updates
+- fixes to irix plugin
+
+0.8.2 - December 2001
+- alsa09 plugin updated
+
+0.8.0 - August 2000
+- Major API rewrite.  Old apps and plugins will not work with this library!
+- Default driver detection now works.
+- /etc/libao.conf and ~/.libao config files now supported, see libao.conf man
+  page for details.
+- WAV files can now be piped to non-picky applications.  (Please don't
+  complain if this fails.  You shouldn't be using be using WAV for this
+  anyway.)
+- Various portability fixes for Solaris and *BSD.
+
+0.7.0 - June 2000
+- minor build fixes for different platforms
+
+0.6.0 - December 2000
+- slight api modification with ao_append_option()
+- fixed an option leak
+
+0.5.0 - November 2000
+- first official release under the Xiphophorus projects
+

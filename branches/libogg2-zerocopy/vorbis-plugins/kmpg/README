@@ -1,0 +1,45 @@
+
+How to build the vorbis plugin for kmpg/KDE2.0/mpeglib
+
+Two solutions:
+---------------
+
+1. You need KDE 2.0, then compile/install this plugin then play an ogg
+   file file mpeglibartsplay,noatun or kaiman or any other KDE 2.0 
+   arts compliant player
+
+2. You can download mpeglib.
+
+   http://mpeglib.sourceforge.net
+
+   compile/install mpeglib, then compile/install this plugin and 
+   type
+        yaf-voribis a.ogg
+
+
+INSTALLING THIS PLUGIN
+======================
+
+* Make sure the environment varialbe KDEDIR is set if you
+  are doing a KDE 2.0 build
+
+
+to build the vorbis plugin type:
+
+make
+
+
+Then install the library libvorbis_kmpg.so in a libray search path. 
+(eg: /usr/lib) then 
+
+/sbin/ldconfig
+
+Then type:
+
+yaf-vorbis /file/to/a.ogg        <--- executable is part of mpeglib
+
+In interactive mode you can type
+
+j 100 
+
+to jump to second 100

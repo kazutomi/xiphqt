@@ -1,0 +1,258 @@
+<title>  xiph.org: MGM manual </title>
+
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080">
+
+<p align=center><img src="mgm.gif"><br>
+<hr>
+
+<p align=center>
+[ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
+<hr>
+
+<h1>T.F.M. for Users</h1>
+<h2>caveat user</h2>
+
+MGM is targetted at the power user that despises safety-interlocks.
+Out of the box, it Just Works.  If you want to fiddle around with
+things (and I <em>know</em> you want to fiddle around with things),
+MGM is designed to let you try pretty much anything you want to with
+the X resources. It gives you all the rope you need to shoot yourself
+in the foot in any number of creative ways.  It's fairly easy to make
+the code fall over by doing overly silly things, so be warned; MGM is
+generally not going to say 'no'.<p>
+
+Thus, I don't want to hear any complaints about setting a negative
+window area and the darned thing trying to do it.  Bugs are a
+different matter, of course.  If you find a genuine case of "this
+should work, but it doesn't", fix it and submit a patch (or at least
+write <a href="mailto:mgm@xiph.org">mgm@xiph.org</a> about it). This
+documentation is also under source control.  Don't forget to patch
+bugs in the documentation.<p>
+
+<h2>beginning</h2>
+
+MGM is configured via X resources, like procmeter used to be.  As an
+example, my .Xresources entries for MGM look like this:
+
+<pre>
+mgm*background:		#222222
+mgm*textpad:		0
+mgm.Forks.active:	false
+mgm.Swapstat.active:	false
+mgm.Pagestat.active:	false
+mgm.Context.active:	false
+mgm.Phoon*background:	black
+mgm.Phoon*foreground:	white
+mgm.Clock*background:	black
+mgm.Clock*foreground:	white
+mgm.geometry:		450x62+1+1
+</pre>
+
+Resources can be set on the command line; for example, if given the following:
+
+<pre>
+mgm -background DimGray
+</pre>
+
+MGM parses the command line equivalent to <tt>mgm*background:
+DimGray</tt>.  Tk allows resource priority levels (a useful feature on
+which MGM relies).  Higher priorities take precedence over lower
+priorities (for details, see 'perldoc Tk::option'). Resources on the
+command line are given a resource priority of 80 (and thus generally
+take precedence over entries in .Xresources, which take precedence
+over built-in settings).<p>
+
+<h2>resource naming</h2>
+
+The MGM main window has a name of 'mgm' and a class of 'Mgm'. In the
+below examples, I use the window name to set resources. (Note that due
+to a Tk feature, specifically message passing between applications,
+all Tk MainWindows have a different name.  Thus, the first MGM started
+should be named 'mgm', the second 'mgm #2' and so on. However, Tk
+seems to have difficulty on some boxes and all but the first MGM end
+up being '#3'.)<p>
+
+A number of resources are global to all of MGM.  Most resources,
+however, are set by module.  Module resources may be set for all
+modules of a given type (the module class is the same as the module
+name capitalized.  Most of the entries in my .Xresources file above
+are by-Class entries).  Modules may also be configured by instance;
+modules are numbered from 0 to n-1 (left-to-right or top-to-bottom).
+For example, to set a blue background for module number three, one
+should use:
+
+<pre>
+mgm.3*background:   blue
+</pre>
+
+Most modules use bargraphs; individual bars are also addressable as:
+
+<pre>
+mgm*<em>Class</em>.bar.<em>number</em>
+</pre>
+
+or 
+
+<pre>
+mgm.<em>number</em>.bar.<em>number</em>
+</pre>
+
+<h2>resource lists</h2>
+
+<h3>Global resources</h3>
+
+The following resources are set once for the MGM main window and
+affect all of MGM. They should be set as
+"<tt>mgm.<em>resource</em></tt>".
+
+<ul>
+<li><a href=r-bars.html>bars</a>
+<li><a href=r-geometry.html>geometry</a>
+<li><a href=r-lendemand.html>lendemand</a>
+<li><a href=r-stack.html>stack</a>
+<li><a href=r-widdemand.html>widdemand</a>
+</ul>
+
+<h3>Instance resources</h3>
+
+The following resources are common to all modules and may be set at
+the main window for all modules by using
+"<tt>mgm*<em>resource</em></tt>".  They may also be set for individual
+module classes or module instance.  A number of modules use Xresources
+beyond the list below; these resources are discussed in the
+documentation for the relevant module.
+
+<ul>
+<li><a href=r-active.html>active</a>
+<li><a href=r-background.html>background</a>
+<li><a href=r-borderwidth.html>borderwidth</a>
+<li><a href=r-dimbackground.html>dimbackground</a>
+<li><a href=r-dimforeground.html>dimforeground</a>
+<li><a href=r-dimrelief.html>dimrelief</a>
+<li><a href=r-font.html>font</a>
+<li><a href=r-foreground.html>foreground</a>
+<li><a href=r-label.html>label</a>
+<li><a href=r-labelsize.html>labelsize</a>
+<li><a href=r-litbackground.html>litbackground</a>
+<li><a href=r-litforeground.html>litforeground</a>
+<li><a href=r-litrelief.html>litrelief</a>
+<li><a href=r-minx.html>minx</a>
+<li><a href=r-miny.html>miny</a>
+<li><a href=r-order.html>order</a>
+<li><a href=r-ratio.html>ratio</a>
+<li><a href=r-reconfig.html>reconfig</a>
+<li><a href=r-relief.html>relief</a>
+<li><a href=r-scale.html>scale</a>
+<li><a href=r-scalecolor.html>scalecolor</a>
+<li><a href=r-scalejustify.html>scalejustify</a>
+<li><a href=r-scalelenadj.html>scalelenadj</a>
+<li><a href=r-scalerefresh.html>scalerefresh</a>
+<li><a href=r-scalereturn.html>scalereturn</a>
+<li><a href=r-scalescroll.html>scalescroll</a>
+<li><a href=r-scalethresh.html>scalethresh</a>
+<li><a href=r-scalewidadj.html>scalewidadj</a>
+<li><a href=r-textpad.html>textpad</a>
+<li><a href=r-widgetpad.html>widgetpad</a>
+
+</ul>
+
+<h3>Module documentation</h3>
+
+A number of modules implement extra features or resources.
+Documentation for each module currently distributed with MGM appears
+below.
+
+<ul>
+<li><a href=m-battery.html>battery</a>
+<li><a href=m-biff.html>biff</a>
+<li><a href=m-clock.html>clock</a>
+<li><a href=m-context.html>context</a>
+<li><a href=m-cpustat.html>cpustat</a>
+<li><a href=m-diskstat.html>diskstat</a>
+<li><a href=m-diskuse.html>diskuse</a>
+<li><a href=m-forks.html>forks</a>
+<li><a href=m-hostlogo.html>hostlogo</a>
+<li><a href=m-loadav.html>loadav</a>
+<li><a href=m-memuse.html>memuse</a>
+<li><a href=m-netstat.html>netstat</a>
+<li><a href=m-pagestat.html>pagestat</a>
+<li><a href=m-phoon.html>phoon</a>
+<li><a href=m-spacer.html>spacer</a>
+<li><a href=m-swapstat.html>swapstat</a>
+</ul>
+
+<h2>A very few examples</h2>
+
+<h3>Vertical mode</h3>
+
+command line:<br>
+<tt>mgm -bars horizontal -stack vertical</tt><p>
+
+Xresources:
+<pre>
+mgm.bars:       horizontal
+mgm.stack:      vertical
+</pre>
+
+<h3>Single battery graph with a picture</h3>
+
+Xresources:
+<pre>
+mgm*active:                false
+mgm*Battery.active:        true
+mgm*Hostlogo.active:       true
+mgm*Hostlogo.label:        
+mgm*Hostlogo.logopixmap:   ~/battery.xpm
+mgm.bars:                  horizontal
+</pre>
+
+(of course, the picture actually has to exist)<p>
+
+<h2>Todo</h2>
+
+<h3>More modules</h3> 
+
+Other platforms still need the basic modules.  All platforms need more
+modules in general.<p>
+
+<h3>Module subclassing</h3> 
+
+Most modules use the same hooks; they should be subclassed from a
+general graphing module supertype.<p>
+
+<h3>Resources</h3>
+
+Quite a few settings remain hardwired for no terribly good reason (eg,
+scale labels, fixed/autoranging graphs, etc).  They should be
+generalized to resource settings.<p>
+
+<h3>Time graphs</h3>
+
+Right now, MGM only does instantaneous graphing with bargraphs (what I
+happen to like).  It should have time graphing ala
+procmeter and xload as well (note that there's some trickiness here).<p>
+
+<hr>
+<a href="http://www.xiph.org/">
+<img src="white-xifish.gif" align=left border=0>
+</a>
+<p>
+<font size=-2 color=#505050>
+
+MGM will not get your whites whiter or your colors brighter.  It will,
+however, sit there and look spiffy while sucking down a major
+honking wad of RAM.<p>
+
+MGM, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-1999 Xiphophorus. All rights reserved.<p>
+
+</body>
