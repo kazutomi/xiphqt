@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: maintain the info structure, info <-> header packets
- last mod: $Id: info.c,v 1.1 2001/11/07 21:19:02 holger Exp $
+ last mod: $Id: info.c,v 1.2 2001/11/10 04:12:51 giles Exp $
 
  ********************************************************************/
 
@@ -137,7 +137,7 @@ void tarkin_info_clear(TarkinInfo *vi){
 static int _tarkin_unpack_info(TarkinInfo *vi,oggpack_buffer *opb)
 {
 #ifdef DBG_OGG
-   printf("ogg: Decoding Info: ");
+   printf("dbg_ogg: Decoding Info: ");
 #endif
    vi->version=oggpack_read(opb,32);
    if(vi->version!=0)return(-TARKIN_VERSION);
@@ -151,7 +151,7 @@ static int _tarkin_unpack_info(TarkinInfo *vi,oggpack_buffer *opb)
    vi->bitrate_lower=oggpack_read(opb,32);
 
 #ifdef DBG_OGG
-   printf("n_layers %d, interleave: %d/%d.",
+   printf(" n_layers %d, interleave: %d/%d, ",
                   vi->n_layers, vi->inter.numerator, vi->inter.denominator);
 #endif
   
@@ -179,7 +179,7 @@ static int _tarkin_unpack_comment(TarkinComment *vc,oggpack_buffer *opb)
    int vendorlen=oggpack_read(opb,32);
 
 #ifdef DBG_OGG
-   printf("ogg: Decoding comment....");
+   printf("dbg_ogg: Decoding comment: ");
 #endif
    if(vendorlen<0)goto err_out;
    vc->vendor=_ogg_calloc(vendorlen+1,1);
@@ -200,7 +200,7 @@ static int _tarkin_unpack_comment(TarkinComment *vc,oggpack_buffer *opb)
    if(oggpack_read(opb,1)!=1)goto err_out; /* EOP check */
 
 #ifdef DBG_OGG
-   printf("Success\n");
+   printf("Success, read %d comments\n", vc->comments);
 #endif
    return(0);
  err_out:
@@ -214,11 +214,11 @@ static int _tarkin_unpack_comment(TarkinComment *vc,oggpack_buffer *opb)
 /*  the real encoding details are here, currently TarkinVideoLayerDesc. */
 static int _tarkin_unpack_layer_desc(TarkinInfo *vi,oggpack_buffer *opb){
   int i,j;
-  vi->layer = _ogg_calloc(vi->n_layers, (sizeof(*vi->layer)));
-  
+  vi->layer = CALLOC (vi->n_layers, (sizeof(*vi->layer)));
+  memset(vi->layer,0, vi->n_layers * sizeof(*vi->layer));
 
 #ifdef DBG_OGG
-  printf("ogg: Decoding layers desc....");
+  printf("ogg: Decoding layers description: ");
 #endif
   for(i=0;i<vi->n_layers;i++){
     TarkinVideoLayer *layer = vi->layer + i;
@@ -271,6 +271,13 @@ static int _tarkin_unpack_layer_desc(TarkinInfo *vi,oggpack_buffer *opb){
 
     vi->max_bitstream_len += layer->desc.bitstream_len
         + 2 * 10 * sizeof(uint32_t) * layer->n_comp;    // truncation tables 
+
+#ifdef DBG_OGG
+    printf("\n     layer%d: size %dx%dx%d, format %d, a_m %d, s_m %d, %d fpb\n",
+          i, layer->desc.width, layer->desc.height, layer->n_comp,
+	  layer->desc.format, layer->desc.a_moments, layer->desc.s_moments,
+	  layer->desc.frames_per_buf);
+#endif
   } /* for each layer */
   
   if(oggpack_read(opb,1)!=1)goto err_out; /* EOP check */
@@ -369,6 +376,10 @@ static int _tarkin_pack_info(oggpack_buffer *opb,TarkinInfo *vi){
 
   oggpack_write(opb,1,1);
 
+#ifdef DBG_OGG
+  printf("dbg_ogg: Putting out info, inter %d/%d, n_layers %d\n",
+               vi->inter.numerator,vi->inter.denominator,vi->n_layers);
+#endif
   return(0);
 }
 
@@ -400,6 +411,10 @@ static int _tarkin_pack_comment(oggpack_buffer *opb,TarkinComment *vc){
   }
   oggpack_write(opb,1,1);
 
+#ifdef DBG_OGG
+  printf("dbg_ogg: Putting out %d comments\n", vc->comments);
+#endif
+  
   return(0);
 }
  
@@ -407,6 +422,10 @@ static int _tarkin_pack_layer_desc(oggpack_buffer *opb,TarkinInfo *vi)
 {
   int i;
   TarkinVideoLayer *layer;
+
+#ifdef DBG_OGG
+  printf("dbg_ogg: Putting out layers description:\n");
+#endif
 
   oggpack_write(opb,0x05,8);
   _v_writestring(opb,"tarkin", 6);
@@ -420,13 +439,25 @@ static int _tarkin_pack_layer_desc(oggpack_buffer *opb,TarkinInfo *vi)
     oggpack_write(opb,layer->desc.frames_per_buf,32);
     oggpack_write(opb,layer->desc.bitstream_len,32);
     oggpack_write(opb,layer->desc.format,32);
+
+#ifdef DBG_OGG
+    printf("       res. %dx%d, format %d, a_m %d, s_m %d, fpb %d\n",
+              layer->desc.width, layer->desc.height, layer->desc.format,
+	      layer->desc.a_moments, layer->desc.s_moments, 
+	      layer->desc.frames_per_buf);
+#endif
+    
   }
   oggpack_write(opb,1,1);
 
+#ifdef DBG_OGG
+  printf("      wrote %ld bytes.\n", oggpack_bytes(opb));
+#endif
+  
   return(0);
 } 
 
-int TarkinCommentheader_out(TarkinComment *vc, ogg_packet *op)
+int tarkin_comment_header_out(TarkinComment *vc, ogg_packet *op)
 {
 
   oggpack_buffer opb;
