@@ -917,7 +917,6 @@ int ratecode;
 int video_timeahead;
 
 int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
-  int done=0;
   if(!header){
     if(read_snatch_header(in)){
 
@@ -984,121 +983,68 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 	    fprintf(stderr,"Audio/Video stream contained no video.\n");
 	  if(audbuf_head-audbuf_tail==0)
 	    fprintf(stderr,"Audio/Video stream contained no audio.\n");
-	  exit(1);
+	  return 1;
 	}
+      }
+      return 0;
+    }
+  }    
+
+  if(drain){
+    int i;
+    
+    /* write out all pending audio/video */
+    
+    if(video_p){
+      for(i=vidbuf_tail;i<vidbuf_head;i++){
+	int frames=(i+1<vidbuf_head)?
+	  vidbuf_frameno[i+1]-vidbuf_frameno[i]:
+	  1;
+	
+	framesout+=frames;
+	framesmissing+=(frames-1);
+	
+	if(process_video)
+	  while(frames--)
+	    YUVout(vidbuf[i],out);
       }
     }
     
-    if(synced){
-      if(drain){
-	int i;
-
-	/* write out all pending audio/video */
-	for(i=vidbuf_tail;i<vidbuf_head;i++){
-	  int frames=(i+1<vidbuf_head)?
-	    vidbuf_frameno[i+1]-vidbuf_frameno[i]:
-	    1;
-	  
-	  framesout+=frames;
-	  framesmissing+=(frames-1);
-	  
-	  if(process_video)
-	    while(frames--)
-	      YUVout(vidbuf[i],out);
-	}
-
-	{
-	  long samples=audbuf_head-audbuf_tail;
-	  samplesout+=samples/audbuf_channels;
-	  if(process_audio)
-	      fwrite(audbuf+audbuf_tail,2,samples,out);
-	}	    
-	done=1;
-	
-      }else{
-	/* write out heads in sync.  This is mostly to be sure that
-           the *lengths* end up compatible in the end. */
-	while(vidbuf_head-vidbuf_tail>video_timeahead){
-	  /* we have at least a video frame queued... but enough audio? */
-	  double endtime=
-	    (vidbuf_zerotime+(vidbuf_frameno[vidbuf_tail+1])/vidbuf_fps);
-
-	  long long endsamplepos=(endtime-audbuf_zerotime)*
-	    audbuf_rate*audbuf_channels;
-
-	  if(audbuf_samples<endsamplepos)break;
-	  
-	  /* write out samples */
-	  {
-	    long samples=
-	      ((audbuf_head-audbuf_tail-
-		audbuf_samples+endsamplepos)>>
-	      (audbuf_channels-1))<<
-	      (audbuf_channels-1);
-
-	    /* samples can't be negative because the first vid frame
-               in the queue will never bump back */
-	    
-	    if(process_audio)
-	      fwrite(audbuf+audbuf_tail,2,samples,out);
-	    samplesout+=samples/audbuf_channels;
-	    audbuf_tail+=samples;
-	      
-	    /* write frame(s) */
-	    {
-	      int frames= vidbuf_frameno[vidbuf_tail+1]-
-		vidbuf_frameno[vidbuf_tail];
-	      framesout+=frames;
-	      framesmissing+=(frames-1);
-
-	      if(process_video)
-		while(frames--)
-		  YUVout(vidbuf[vidbuf_tail],out);
-
-	      vidbuf_tail++;
-	    }
-	  }
-	}
-      }
-    }
-  }else{
     if(audio_p){
-      if(audbuf_head-audbuf_tail){
-	if(!synced)
-	  if(process_audio)
-	    WriteWav(out,audbuf_channels,audbuf_rate,16);
-	synced=1;
-	if(process_audio)
-	  fwrite(audbuf+audbuf_tail,2,audbuf_head-audbuf_tail,out);
-	samplesout+=(audbuf_head-audbuf_tail)/audbuf_channels;
-	audbuf_tail=audbuf_head;
-      }
-      if(drain)done=1;
+      long samples=audbuf_head-audbuf_tail;
+      samplesout+=samples/audbuf_channels;
+      if(process_audio)
+	fwrite(audbuf+audbuf_tail,2,samples,out);
     }
-    if(video_p){
-      if(vidbuf_head-vidbuf_tail){
-	if(!synced)
-	  if(process_video)
-	    WriteYuv(out,vidbuf_width,vidbuf_height,vidbuf_fps);
-	synced=1;
-	if(process_video)
+    return 1;
+  }
+  
+  if(video_p && process_video){
+    while(vidbuf_head-vidbuf_tail>video_timeahead){
+      int frames= vidbuf_frameno[vidbuf_tail+1]-
+	vidbuf_frameno[vidbuf_tail];
+      framesout+=frames;
+      framesmissing+=(frames-1);
+      
+      if(process_video)
+	while(frames--)
 	  YUVout(vidbuf[vidbuf_tail],out);
-	if(vidbuf_tail+1==vidbuf_head ||
-	   vidbuf_frameno[vidbuf_tail]+1<vidbuf_frameno[vidbuf_tail+1]){
-	  /* save the frame for a gap */
-	  vidbuf_frameno[vidbuf_tail]++;
-	  framesmissing++;
-	}else{
-	    /* chuck this frame; no gap to fill */
-	  vidbuf_tail++;
-	}
-	framesout++;
-      }
-      if(drain)done=1;
+      
+      vidbuf_tail++;
+    }
+  }
+  
+  if(audio_p && process_audio){
+    if(audbuf_head-audbuf_tail){
+      long samples=audbuf_head-audbuf_tail;
+      if(process_audio)
+	fwrite(audbuf+audbuf_tail,2,samples,out);
+      samplesout+=samples/audbuf_channels;
+      audbuf_tail+=samples;
     }
   }
 
-  return(done);
+  return(0);
 }
   
 
