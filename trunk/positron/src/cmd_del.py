@@ -1,10 +1,13 @@
-"""positron del: Removes files from the Neuros database and disk
+"""positron del:\tRemoves files from the database and disk
 
-  positron del [sources]
+  positron del [files or directories]
 
-     [sources] - A list of files or directories on the Neuros to remove
-     Note that only files referenced in the database will be removed, others
-     will not be affected.
+     [files or directories] - A list of files and/or directories on
+     the Neuros itself (ex: /mnt/neuros/music/rock) to be removed.
+     Both the file on disk and the database entries are deleted.
+
+Note that only files referenced in the database will be removed,
+others will not be affected.  Empty directories are also removed.
 """
 
 import os
@@ -13,9 +16,7 @@ from neuros import Neuros
 import db
 import util
 
-def usage():
-    print __doc__
-    
+
 def gen_filelist(neuros, pathname):
     filelist = []
     fullname = path.abspath(pathname)
@@ -64,13 +65,13 @@ def del_track(neuros, sourcename, sai_index):
     except db.util.Error, e:
         print "Error:", e
 
-def cmd_del(config, neuros, args):
+def run(config, neuros, args):
     audio_db = neuros.open_db("audio")
 
     filelist = []
 
     if len(args) == 0:
-        usage()
+        print __module__.__doc__
         return
 
     for arg in args:

@@ -1,10 +1,10 @@
-"""positron pack: Removes unused space from databases
+"""positron pack:\tRemoves unused space from databases
 
   positron pack
 
      Packs all databases.
 
-  positron pack [database names]
+  positron pack <database1> <database2> ...
 
      Packs all entries from a particular database.  Valid database names
      are: audio, pcaudio, unidedhisi, idedhisi, failedhisi
@@ -14,10 +14,8 @@ from neuros import Neuros
 import neuros as neuros_module
 import util
 
-def usage():
-    print __doc__
     
-def cmd_pack(config, neuros, args):
+def run(config, neuros, args):
     if len(args) == 0:
         args = ["audio", "unidedhisi", "idedhisi", "failedhisi"]
 
