@@ -20,6 +20,7 @@
 #define IDC_SLIDER1                     1000
 #define IDC_BUTTON1                     1001
 #define IDC_EDIT1                       1005
+#define IDC_EDIT2                       1007
 #define IDC_USEQUALITY                  1009
 #define IDC_USEBITRATE                  1014
 #define IDC_BITRATE                     1020
