@@ -79,7 +79,7 @@ def main(argv):
         exit_value = 0
     except neuros.Error, e:
         print "Error:", e
-        exit_val = 1
+        exit_value = 1
 
     sys.exit(exit_value)
 
