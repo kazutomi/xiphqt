@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.16.2.2 2001/10/17 16:58:14 volsung Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16.2.3 2001/11/21 22:57:23 volsung Exp $
  
 ********************************************************************/
 
@@ -68,6 +68,8 @@ typedef struct buf_s
 buf_t *buffer_create (long size, long prebuffer, void *data, 
 		      pWriteFunc write_func, void *initData, 
 		      pInitFunc init_func, int audio_chunk_size);
+
+void buffer_sync_reset (buf_t *buf);
 void buffer_destroy (buf_t *buf);
 
 /* --- Buffer thread control --- */
