@@ -85,7 +85,6 @@ static int cf_process(int ilen, int16_t* il, int16_t* ir)
     clen = ilen < (FadeSamples - flen) ? ilen : (FadeSamples - flen);
     if (FadeSamples - fpos < clen)
       clen = FadeSamples - fpos;
-    printf("Buffering %d samples (pos: %d)\n", clen, fpos);
     memcpy(FL + fpos, il + j, clen * 2);
     memcpy(FR + fpos, ir + j, clen * 2);
     fpos = (fpos + clen) % FadeSamples;
