@@ -6,6 +6,7 @@ Welcome to Xiph.Org!
 
 <!-- Communicate “How can we help you with our codecs?” as effectively as possible -->
 
+<!-- quoth mother: “what’s a codec?” -->
 
 Xiph.org develops multimedia codecs and related tools to ensure that the foundations of Internet
 multimedia remain free and open. By using our codecs, you can save money on software- and

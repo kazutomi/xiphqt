@@ -30,9 +30,9 @@ Behind the Scenes
 
 *	Prefer ## to -------- for second-level headings, unlike in this file and in todo.txt.
 
-*	Directories generally not shown to users should start with a capital letter.
-	Prime examples of this are /CSS/, /Error/, and /JS/. However, their subdirectories
-	should start with lowercase letters, like /CSS/sidebars/.
+*	Directories generally not shown to users should start with a capital letter, such as
+	/CSS/, /Error/, and /JS/. However, their subdirectories should start with lowercase letters,
+	like /CSS/sidebars/.
 
 *	Don’t have multiple files or directories that differ only by case; this will cause problems
 	on case-insensitive file systems like NTFS and HFS+.
@@ -44,6 +44,9 @@ Behind the Scenes
 	case-insensitively, which means that `[foo][]` and `[Foo][]` resolve to the same identifier
 	elsewhere in the page. To avoid getting caught by this snag, use lower case consistently
 	in the part with the actual URL in it (and the optional title attribute).
+
+*	Keep as much as possible in the top-level .htaccess file. As far as I can tell, the
+	ErrorDocument directive is the only thing that needs to go in sudirectories’ .htaccess files.
 
 
 Spelling, Grammar, Punctuation, and Terminology
@@ -78,7 +81,13 @@ URLs and Linkage
 	For more information, see the Apache 2 information at
 	<http://httpd.apache.org/docs-2.0/mod/mod_alias.html#redirect>.
 
-*	Redirect to <http://www.xiph.org/>, not <http://xiph.org/>.
+*	Always refer to <http://www.xiph.org/>, not <http://xiph.org/>.
+
+*	Avoid full URLs with the "http://www.xiph.org/" part in it as they won’t link to development
+	versions of the site when run on development machines.
+
+*	Always use full URLs in news posts as the snippet of HTML could be displayed
+	anywhere from /news/ to /vorbis/news/ to some user’s news aggregator application.
 
 *	Do not abbreviate directory names. For example, make URLs so they look like
 	“/vorbis/documentation/”, not “/vorbis/doc/”, with the exception of “/faq/”.

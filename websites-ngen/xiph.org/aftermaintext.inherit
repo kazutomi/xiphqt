@@ -3,6 +3,8 @@
 	   title='About us'>About</a> |
 	<a href='/press/'
 	   title='Read our press releases'>Press</a> |
+	<a href='/news/'
+	   title='Read what’s been happening'>News</a> |
 	<!-- 
 	<a href='/donate/'
 	   title='Give us money'>Donate</a> |
