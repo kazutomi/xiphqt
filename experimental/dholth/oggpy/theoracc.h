@@ -160,7 +160,7 @@ namespace ogg {
                         std::memcpy(y+i*this->y_width,
                                 this->y+crop_offset+this->y_stride*i,this->y_width);
                     }
-					if(this->uv_widht < this->y_widht)
+					if(this->uv_width < this->y_width)
 						crop_offset=theora_info.offset_x/2+this->y_stride*theora_info.offset_y/2;
                     for(i=0; i < this->uv_height; i++) {
                         std::memcpy(u+i * this->uv_width,
@@ -193,7 +193,7 @@ namespace ogg {
                         std::memcpy(y + i * this->y_width,
                                 this->y + crop_offset + this->y_stride * i, this->y_width);
                     }
-                    if(this->uv_widht < this->y_widht)
+                    if(this->uv_width < this->y_width)
 						crop_offset=theora_info.offset_x/2 + this->y_stride * theora_info.offset_y/2;
                     for(i=0; i < this->uv_height; i++) {
                         std::memcpy(u + i * this->uv_width, 
