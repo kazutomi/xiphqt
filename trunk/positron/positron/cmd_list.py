@@ -14,15 +14,15 @@
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-"""positron list:\tLists files in the database
+"""positron list:\tLists entries in the database
 
   positron list
 
-     Lists files in the audio database
+     Lists entries in the audio database
 
   positron list <database1> <database2> ...
 
-     Packs all entries from a particular database.  Valid database names
+     Lists all entries from a particular database.  Valid database names
      are: audio, pcaudio, unidedhisi, idedhisi, failedhisi
 """
 
