@@ -25,7 +25,10 @@ Python 2.0). Run config_unix.py first to generate a Setup file. Then
 run "python setup.py build" to build and then as root run "python
 setup.py install".  You may need to run config_unix.py with a
 "--prefix" option if you installed your ogg or vorbis libraries in a
-weird place.
+weird place. You can also pass --with-ogg-dir and --with-vorbis-dir
+arguments if they're installed separately. If you have problems with
+the configure script, check the output of conifg.log for specific
+errors.
 
 To decode, you'll basically want to create a VorbisFile object and
 read data from that.  You can then write the data to a sound
