@@ -3,13 +3,21 @@ Positron TODO List
 Bugs
 ----
 
+* Something is not correct in the adding of new entries to the child
+databases.  When navigating through the Artist menu on the Neuros (for
+example), the error "No records available" is shown.  Manual
+inspection of the child database files does not reveal the problem.
 
+* About 0.8% of my Ogg files are misidentified as MP3 files because
+the 11 sync bits are found sporadically in some Ogg files.  It looks
+like you have to first parse the id3v2 header if it exists, then look
+for the MPEG header right after it.
 
 Features
 --------
 
 * Proper detection of valid music file attributes (title, genre, time,
-etc) in MP3 and Ogg Vorbis files.
+etc) in Ogg Vorbis files.
 
 * General music format framework and API for both detecting music info
 and transcoding to a format the Neuros supports.  Needs to be
@@ -20,8 +28,6 @@ Spec Questions
 --------------
 
 (In reference to "WOID DB specification.doc")
-
-* What is the "bag delimiter" (pg. 8) used for?
 
 * What is the format for display data (pg. 7)?  It appears to be just
 an ASCII string in the actual databases I've looked at.  However, the
