@@ -528,8 +528,8 @@ void YUVout(XImage *image){
 
     pthread_mutex_unlock(&output_mutex);
     bigtime(&a,&b);
-    len=sprintf(cbuf,"YUV12 %ld %ld %d %d %ld:",a,b,image->width,
-		image->height,yuv_n);
+    len=sprintf(cbuf,"YUV12 %ld %ld %d %d %ld:",a,b,yuv_w,
+		yuv_h,yuv_n);
 	
     if(worksize<yuv_n){
       if(worksize==0)
@@ -545,7 +545,7 @@ void YUVout(XImage *image){
       unsigned char *u=workbuffer+yuv_w*yuv_h;
       unsigned char *v=u+yuv_w*yuv_h/4;
       unsigned char *ptr1=image->data;
-      char *ptr2=image->data+image->bytes_per_line;
+      unsigned char *ptr2=image->data+image->bytes_per_line;
       if(image->byte_order){      
 	
 	for(i=0;i<yuv_h;i+=2){
