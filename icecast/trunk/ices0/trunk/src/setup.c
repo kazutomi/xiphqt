@@ -582,27 +582,25 @@ ices_setup_run_mode_select (ices_config_t *ices_config)
 static void
 ices_setup_daemonize (void)
 {
-	int icespid = fork ();
-	
-	if (icespid == -1) {
-		ices_log ("ERROR: Cannot fork(), that means no daemon, sorry!");
-		return;
-	}
+  int icespid = fork ();
 
-	if (icespid != 0) {
-#ifdef HAVE_SETPGID
-		setpgid (icespid, icespid);
+  if (icespid == -1) {
+    ices_log ("ERROR: Cannot fork(), that means no daemon, sorry!");
+    return;
+  }
+
+  if (icespid != 0) {
+    /* Update the pidfile (so external applications know what pid
+       ices is running with. */
+    printf ("Into the land of the dreaded daemons we go... (pid: %d)\n", icespid);
+    ices_setup_shutdown ();
+  }
+#ifdef HAVE_SETSID
+  setsid ();
 #endif
-		/* Update the pidfile (so external applications know what pid
-		   ices is running with. */
-		printf ("Into the land of the dreaded daemons we go... (pid: %d)\n", icespid);
-		ices_setup_shutdown ();
-	}
-#ifdef HAVE_SETPGID
-	setpgid (0, 0);
-#endif
-	ices_log_daemonize ();
-	ices_setup_update_pidfile (getpid());
+
+  ices_log_daemonize ();
+  ices_setup_update_pidfile (getpid());
 }
 
 /* Update a file called ices.pid with the given process id */

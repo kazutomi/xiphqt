@@ -172,7 +172,7 @@ AC_TYPE_SIGNAL
 dnl -- System function check --
 
 AC_FUNC_STRFTIME
-AC_CHECK_FUNCS([vsnprintf setpgid inet_addr inet_aton setlinebuf])
+AC_CHECK_FUNCS([vsnprintf setsid inet_addr inet_aton setlinebuf])
 
 dnl -- Required extra libraries --
 
