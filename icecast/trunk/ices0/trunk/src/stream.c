@@ -319,7 +319,10 @@ stream_open_source (input_stream_t* source)
   source->bytes_read = 0;
   source->channels = 2;
 
-  if ((fd = open (source->path, O_RDONLY)) < 0) {
+  if (source->path[0] == '-' && source->path[1] == '\0') {
+    ices_log_debug("Reading audio from stdin");
+    fd = 0;
+  } else if ((fd = open (source->path, O_RDONLY)) < 0) {
     ices_util_strerror (errno, buf, sizeof (buf));
     ices_log_error ("Error opening: %s", buf);
 
