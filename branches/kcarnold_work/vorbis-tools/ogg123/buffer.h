@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.15 2001/08/22 16:42:31 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16 2001/08/23 01:15:46 kcarnold Exp $
  
 ********************************************************************/
 
@@ -55,6 +55,7 @@ typedef struct buf_s
   long curfill;      /* how much the buffer is currently filled */
   long prebuffer;    /* number of chunks to prebuffer */
   char eos;        /* set if reader is at end of stream */
+  char bufferWriting; /* set if buffer is busy writing data to output */
   chunk *reader;   /* Chunk the reader is busy with */
   chunk *writer;   /* Chunk the writer is busy with */
   chunk *end;      /* Last chunk in the buffer (for convenience) */
@@ -78,6 +79,7 @@ void buffer_WaitForEmpty (buf_t *buf);
 long buffer_full (buf_t *buf);
 
 void buffer_Pause (buf_t *buf);
+void buffer_WaitForPaused (buf_t *buf);
 void buffer_Unpause (buf_t *buf);
 char buffer_Paused (buf_t *buf);
 void buffer_KillBuffer (buf_t *buf, int signo);

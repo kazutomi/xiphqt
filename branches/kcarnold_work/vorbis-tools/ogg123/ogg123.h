@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.11 2001/08/22 16:42:31 kcarnold Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12 2001/08/23 01:15:46 kcarnold Exp $
 
  ********************************************************************/
 
@@ -64,6 +64,7 @@ typedef struct ogg123_options_s {
     long BufferSize;
     float Prebuffer;
     int rate, channels;         /* playback params for opening audio devices */
+    char devicesOpen;
     devices_t *devices;
     char *default_device;
   } outputOpts;

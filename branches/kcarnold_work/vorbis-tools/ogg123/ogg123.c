@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.22 2001/08/22 16:42:31 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.23 2001/08/23 01:15:46 kcarnold Exp $
 
  ********************************************************************/
 
@@ -245,15 +245,37 @@ void SetBuffersStats ()
 size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseos)
 {
   static ogg_int64_t cursample = 0;
+  static unsigned char RechunkBuffer[BUFFER_CHUNK_SIZE];
+  static int curBuffered = 0;
+  size_t origSize;
+  unsigned char *data = ptr;
+
+  size *= nmemb;
+  origSize = size;
   
   SetTime (Options.statOpts.stats, cursample);
   SetBuffersStats ();
   UpdateStats (Options.statOpts.stats);
   cursample += Options.playOpts.nth * size * nmemb / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
 
-  if (iseos)
+  /* don't actually write until we have a full chunk, or of course EOS */
+  while (size) {
+    int toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? BUFFER_CHUNK_SIZE - curBuffered : size;
+    memmove (RechunkBuffer + curBuffered, data, toChunkNow);
+    size -= toChunkNow;
+    data += toChunkNow;
+    curBuffered += toChunkNow;
+    if (curBuffered == BUFFER_CHUNK_SIZE) {
+      devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);
+      curBuffered = 0;
+    }
+  }
+  if (iseos) {
     cursample = 0;
-  return devices_write (ptr, size, nmemb, Options.outputOpts.devices);
+    devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);
+    curBuffered = 0;
+  }
+  return origSize;
 }
 /* /buffer interface */
 
@@ -568,15 +590,27 @@ void SigHandler (int signo)
       buffer_flush (Options.outputOpts.buffer);
     break;
   case SIGTSTP:
-    if (Options.outputOpts.buffer)
+    if (Options.outputOpts.buffer) {
       buffer_KillBuffer (Options.outputOpts.buffer, SIGSTOP);
-      /*      buffer_Pause (Options.outputOpts.buffer); */
+    }
     kill (getpid(), SIGSTOP);
+    /* buffer_Pause (Options.outputOpts.buffer);
+       buffer_WaitForPaused (Options.outputOpts.buffer);
+       }
+       if (Options.outputOpts.devicesOpen == 0) {
+       close_audio_devices (Options.outputOpts.devices);
+       Options.outputOpts.devicesOpen = 0;
+       }
+    */
+    /* open_audio_devices();
+       if (Options.outputOpts.buffer) {
+       buffer_Unpause (Options.outputOpts.buffer);
+       }
+    */
     break;
   case SIGCONT:
     if (Options.outputOpts.buffer)
       buffer_KillBuffer (Options.outputOpts.buffer, SIGCONT);
-      /* buffer_Unpause (Options.outputOpts.buffer); */
     break;
   default:
     psignal (signo, "Unknown signal caught");
@@ -732,7 +766,7 @@ void play_file()
 	    buffer_flush (Options.outputOpts.buffer);
 	  break;
 	}
-	
+
 	old_section = current_section;
 	ret =
 	  ov_read(&vf, convbuffer, sizeof(convbuffer), is_big_endian,
@@ -833,16 +867,17 @@ int open_audio_devices()
   devices_t *current;
   ao_sample_format format;
 
-  if(prevrate == Options.outputOpts.rate && prevchan == Options.outputOpts.channels)
+  if(prevrate == Options.outputOpts.rate && prevchan == Options.outputOpts.channels && Options.outputOpts.devicesOpen)
     return 0;
   
-  if(prevrate !=0 && prevchan!=0)
-	{
-	  if (Options.outputOpts.buffer)
-	    buffer_WaitForEmpty (Options.outputOpts.buffer);
-
-	  close_audio_devices (Options.outputOpts.devices);
-	}
+  if(prevrate !=0 && prevchan!=0 && Options.outputOpts.devicesOpen)
+    {
+      if (Options.outputOpts.buffer)
+	buffer_WaitForEmpty (Options.outputOpts.buffer);
+      
+      close_audio_devices (Options.outputOpts.devices);
+      Options.outputOpts.devicesOpen = 0;
+    }
   
   format.rate = prevrate = Options.outputOpts.rate;
   format.channels = prevchan = Options.outputOpts.channels;
@@ -905,6 +940,7 @@ int open_audio_devices()
     current = current->next_device;
   }
   
+  Options.outputOpts.devicesOpen = 1;
   return 0;
 }
 
@@ -921,4 +957,5 @@ void ogg123_onexit (int exitcode, void *arg)
   }
 
   ao_onexit (exitcode, Options.outputOpts.devices);
+  Options.outputOpts.devicesOpen = 0;
 }
