@@ -1,0 +1,555 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+    <title>The XSPF Playlist Format, version 0</title>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+body {
+font-family:    Verdana, Myriad Web, Syntax, sans-serif;
+font-size: 80%; 
+color: #555753; 
+
+}
+
+pre {  
+margin-left: 3em; 
+background-color: lightyellow;
+}
+
+h1 {
+text-align: center;
+}
+
+.example {
+background-color: lightyellow;
+font-family: courier, monospace;
+white-space: pre;
+color: #993300;
+}
+
+.example:before {
+content: "EXAMPLE: ";
+}
+
+.attributes:before {
+content: "ATTRIBUTES: ";
+}
+
+.elements:before {
+content: "ELEMENTS: ";
+}
+
+        /*]]>*/
+    </style>
+  </head>
+  <body>
+    <h1>The XSPF Playlist Format, version 0</h1>
+
+	<dl>
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+		<p>This document describes a playlist format named "XSPF", which
+		  stands for "XML Shareable Playlist Format". "XSPF" can be
+		  pronounced "spiff" or maybe "spliff."</p>
+		
+	  </dd>
+
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+		
+		<p>This is an informal document not associated with any standards
+		  body. It is intended to be clear and readable rather than
+		  conformant with existing standards for such documents.</p>
+
+		<p>This is the fourth draft of this document.  It is a major
+		  rewrite, and there are a number of areas where the result is
+		  rough.  This document assumes that your browser supports CSS
+		  reasonably well; versions of Internet Explorer older than
+		  version 6 don't.  Items marked like [[fixme: this]] are markers
+		  for work yet to be done.  See <a href="#Todo list">the todo
+			list</a> for more details about this document.</p>
+
+		<p>The home of our working group is <a href="http://xspf.org">http://xspf.org</a>. On
+		  IRC, we use #playlist on irc.freenode.net. There are perhaps six regular
+		  contributors, with another six commenting from time to time. Contributors came from
+		  two major audio software vendors, a major weblog aggregator, the W3C, and two
+		  significant .org sites related to music. We worked in the skunkworks style and were
+		  not sponsored by any organization or standards body. Our purpose was to engineer a
+		  high-quality design rather than to create normative requirements for
+		  interoperability.</p>
+
+		<p>This document is maintained by <a href="http://gonze.com">Lucas Gonze</a>.</p>
+		<p>Creation date of this document is Sunday, May 9, 2004.  The most recent edit is July 11, 2004.</p>
+
+		<a name="toc"/>	  <h2>Table of Contents</h2>
+	  <ol>
+<li ><ol>
+<li><a href="#Abstract">Abstract</a></li>
+<li><a href="#Publication status and authorship">Publication status and authorship</a></li>
+<li><a href="#Introduction">Introduction</a></li>
+<li><a href="#Example">Example</a></li>
+<li><a href="#Element definitions">Element definitions</a></li>
+<li ><ol>
+<li><a href="#xml">xml</a></li>
+<li class="attributes"><ol>
+<li><a href="#version">version</a></li>
+<li><a href="#encoding">encoding</a></li>
+</ol></li>
+<li class="elements"><ol>
+<li><a href="#playlist">playlist</a></li>
+<li class="attributes"><ol>
+<li><a href="#xmlns">xmlns</a></li>
+<li><a href="#version">version</a></li>
+</ol></li>
+<li class="elements"><ol>
+<li><a href="#title">title</a></li>
+<li><a href="#annotation">annotation</a></li>
+<li><a href="#creator">creator</a></li>
+<li><a href="#info">info</a></li>
+<li><a href="#location">location</a></li>
+<li><a href="#identifier">identifier</a></li>
+<li><a href="#image">image</a></li>
+<li><a href="#date">date</a></li>
+<li><a href="#license">license</a></li>
+<li><a href="#attribution">attribution</a></li>
+<li><a href="#link">link</a></li>
+<li class="attributes"><ol>
+<li><a href="#rel">rel</a></li>
+</ol></li>
+<li><a href="#meta">meta</a></li>
+<li class="attributes"><ol>
+<li><a href="#rel">rel</a></li>
+</ol></li>
+<li><a href="#trackList">trackList</a></li>
+<li class="elements"><ol>
+<li><a href="#track">track</a></li>
+<li class="elements"><ol>
+<li><a href="#location">location</a></li>
+<li><a href="#identifier">identifier</a></li>
+<li><a href="#info">info</a></li>
+<li><a href="#image">image</a></li>
+<li><a href="#annotation">annotation</a></li>
+<li><a href="#creator">creator</a></li>
+<li><a href="#title">title</a></li>
+<li><a href="#album">album</a></li>
+<li><a href="#trackNum">trackNum</a></li>
+<li><a href="#duration">duration</a></li>
+<li><a href="#link">link</a></li>
+<li class="attributes"><ol>
+<li><a href="#rel">rel</a></li>
+</ol></li>
+<li><a href="#meta">meta</a></li>
+<li class="attributes"><ol>
+<li><a href="#rel">rel</a></li>
+</ol></li>
+</ol></li>
+</ol></li>
+</ol></li>
+</ol></li>
+</ol></li>
+</ol></li>
+<li ><ol>
+<li><a href="#Recipes">Recipes</a></li>
+<li ><ol>
+<li><a href="#How do I set relative paths in an XSPF playlist, for example if I want to use it as a file manifest?">How do I set relative paths in an XSPF playlist, for example if I want to use it as a file manifest?</a></li>
+<li><a href="#How to I convert XSPF to M3U?">How to I convert XSPF to M3U?</a></li>
+<li><a href="#How to I convert XSPF to HTML?">How to I convert XSPF to HTML?</a></li>
+<li><a href="#How to I convert XSPF to SMIL?">How to I convert XSPF to SMIL?</a></li>
+<li><a href="#How to I convert XSPF to Soundblox?">How to I convert XSPF to Soundblox?</a></li>
+</ol></li>
+</ol></li>
+<li ><ol>
+<li><a href="#Design and architecture">Design and architecture</a></li>
+<li ><ol>
+<li><a href="#Usecases">Usecases</a></li>
+<li><a href="#Requirements">Requirements</a></li>
+<li><a href="#Features">Features</a></li>
+<li><a href="#Principles">Principles</a></li>
+<li ><ol>
+<li><a href="#Catalogs vs. [[fixme: ??]]">Catalogs vs. [[fixme: ??]]</a></li>
+<li><a href="#Fuzzy names">Fuzzy names</a></li>
+<li><a href="#Content resolvers">Content resolvers</a></li>
+</ol></li>
+</ol></li>
+</ol></li>
+<li ><ol>
+<li><a href="#Administrative">Administrative</a></li>
+<li ><ol>
+<li><a href="#Todo list">Todo list</a></li>
+<li><a href="#Validate">Validate</a></li>
+</ol></li>
+</ol></li>
+
+	  </ol>
+
+
+
+      </dd>
+
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+
+		<p>The genesis of this project came from the mutual recognition that the quality of
+		  playlist formats fell far below the normal standard for hypertext document types like
+		  HTML, RDF and Atom. Our goals were to create a playlist format that is all three of:</p>
+
+		<ol>
+		  <li>Open -- existing formats are either ad-hoc standards with no owner, like M3U,
+			or proprietary, like ASX.</li>
+		  <li>Portable -- you should be able to send a playlist sans
+			content to your friend, or open the same playlist with
+			different software on the same machine, and have it be
+			usable. Existing formats lack a number of features needed to
+			make this work well.</li>
+		  <li>Well made -- there is a glaring lack of craftsmanship to
+			existing formats.  For example, no dominant playlist format
+			declares a namespace.  And while there are independent efforts
+			to write a format with a high level of craftsmanship, the
+			Gnomoradio format for example, writing data formats is too
+			hard to succeed without a team.</li>
+		</ol>
+
+		<p>Over the course of our work we also realized that the format
+		  had to <em>scale down</em> well.  The dominant playlist format is M3U,
+		  which is just a flat listing of song paths, and many developers
+		  are satisfied enough to stick with it.  SMIL is all three of
+		  open, portable and well made, but is too complex for many needs;
+		  simple SMIL playlists are not simple to implement.  Similarly,
+		  RDF offered well made solutions to many problems we faced, but RDF
+		  tools are never trivial (as of this writing).  We went to great
+		  lengths to make trivial playlists trivial to implement.</p>
+
+      </dd>
+
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+		A very simple document looks like this: 
+		<p class="example">
+		  &lt;?xml version="1.0" encoding="UTF-8"?&gt; 
+		  &lt;playlist version="0" xmlns = "http://xspf.org/ns/0/"&gt;
+		  &lt;trackList&gt;
+          &lt;track&gt;&lt;location&gt;file:///mp3s/Yo+La+Tengo/And+Then+Nothing+Turned+Itself+Inside-Out&lt;/location&gt;&lt;/track&gt;
+          &lt;track&gt;&lt;location&gt;file:///mp3s/Yo+La+Tengo/Genius+%2B+Love+%3D+Yo+La+Tengo+%28Disc+2%29&lt;/location&gt;&lt;/track&gt;
+          &lt;track&gt;&lt;location&gt;file:///mp3s/Yo+La+Tengo/I+Can+Hear+The+Heart+Beating+As+One&lt;/location&gt;&lt;/track&gt;
+          &lt;track&gt;&lt;location&gt;file:///mp3s/Yo+La+Tengo/Nuclear+War&lt;/location&gt;&lt;/track&gt;
+          &lt;track&gt;&lt;location&gt;file:///mp3s/Yo+La+Tengo/Summer+Sun&lt;/location&gt;&lt;/track&gt;
+		  &lt;/trackList&gt; 
+		  &lt;/playlist&gt;</p>
+
+      </dd>
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+		<dl>
+		  <dt><a name=""/></dt>
+		  <dd>
+			<dl class="attributes">
+			  <dt><a name=""/></dt>
+			  <dd>1.0</dd>
+			  <dt><a name=""/></dt>
+			  <dd>utf-8</dd>
+			</dl>
+			<dl class="elements">
+			  <dt><a name=""/></dt>
+			  <dd>
+				<dl class="attributes">
+				  <dt><a name=""/></dt>
+				  <dd>http://xspf.org/ns/0/</dd>
+				  <dt><a name=""/></dt>
+				  <dd>0</dd>
+				</dl>
+				<dl class="elements">
+				  <dt><a name=""/></dt>
+				  <dd>A human-readable title for the playlist. xspf:playlist elements MAY
+					contain exactly one.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>A human-readable comment on the playlist in text/plain format.
+					xspf:playlist elements MAY contain exactly one.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>Human-readable name of the entity (author, authors, group, company,
+					etc) that authored the playlist. xspf:playlist elements MAY contain exactly
+					one.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>URI of a web page to find out more about this playlist. Likely to be
+					homepage of the author, and would be used to find out more about the author
+					and to find more playlists by the author. xspf:playlist elements MAY
+					contain exactly one.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>Source URI for this playlist. xspf:playlist elements MAY contain zero
+					or more location elements.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>Canonical ID for this playlist. Likely to be a hash or other
+					location-independent name. MUST be a legal URI. xspf:playlist elements MAY
+					contain zero or more identifier elements.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>URI of an image to display in the absence of a
+					//playlist/trackList/image element. xspf:playlist elements MAY contain
+					exactly one.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>ISO8601 creation date (not last-modified date) of the playlist.
+					xspf:playlist elements MAY contain exactly one.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>URI of a resource that describes the license under which this playlist
+					was released.</dd>
+				  <dt><a name=""/></dt>
+				  <dd>
+					<p>An ordered list of URIs. The purpose is to satisfy licenses allowing
+					  modification but requiring attribution. If you modify such a playlist,
+					  move its //playlist/location element or //playlist/identifier
+					  to the top of the items in the //playlist/attribution element.
+					  xspf:playlist elements MAY contain exactly one xspf:attribution
+					  element.</p>
+					<p class="example">&lt;attribution&gt;
+					  &lt;location&gt;http://snafu.com/modified_version_of_modified_version_of_original_playlist.xspf&lt;/location&gt;
+					  &lt;location&gt;http://bar.com/modified_version_of_original_playlist.xspf&lt;/location&gt;
+					  &lt;location&gt;http://foo.com/original_playlist.xspf&lt;/location&gt;
+					  &lt;/attribution&gt;</p>
+				  </dd>
+				  <dt><a name=""/></dt>
+				  <dd>
+					<p>The link element allows non-XSPF web resources to be included in XSPF
+					  documents without breaking XSPF validation.</p>
+					<p class="example">&lt;link rel="http://foaf.org/namespace/version1"&gt;http://socialnetwork.org/foaf/mary.rdfs&lt;/link&gt;</p>
+					<dl class="attributes">
+					  <dt><a name=""/></dt>
+					  <dd>URI of a resource type.</dd>
+					</dl>
+					<p>URI of a resource.</p>
+				  </dd>
+				  <dt><a name=""/></dt>
+				  <dd>
+					<p>The meta element allows non-XSPF metadata to be included in XSPF
+					  documents without breaking XSPF validation.</p>
+					<p class="example">&lt;meta rel="http://example.org/key"&gt;value&lt;/meta&gt;</p>
+					<dl class="attributes">
+					  <dt><a name=""/></dt>
+					  <dd>URI of a resource defining the metadata.</dd>
+					</dl>
+					<p>Value of the metadata element. MUST be valid text/plain, not
+					  XML.</p>
+				  </dd>
+				  <dt><a name=""/></dt>
+				  <dd>
+					<p>Ordered list of xspf:track elements to be rendered. xspf:track
+					  elements MUST be rendered in the order in which they appear, from top to
+					  bottom, unless a different ordering is otherwise indicated. If an
+					  xspf:track element cannot be rendered, a user-agent MUST skip to the next
+					  xspf:track element and MUST NOT interrupt the sequence.</p>
+					<dl class="elements">
+					  <dt><a name=""/></dt>
+					  <dd>
+						<dl class="elements">
+						  <dt><a name=""/></dt>
+						  <dd>URI of resource to be rendered. Probably an audio resource, but
+							MAY be any type of resource with a well-known duration, such as
+							video, a SMIL document, or an XSPF document. The duration of the
+							resource defined in this element defines the duration of rendering.
+							xspf:track elements MAY contain zero or more
+							location elements, but a user-agent MUST NOT render more than one
+							of the named resources.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>Canonical ID for this resource. Likely to be
+							a hash or other location-independent name,
+							such as a MusicBrainz identifier or isbn URN
+							(if there existed isbn numbers for audio).
+							MUST be a legal URI. xspf:playlist elements
+							MAY contain zero or more identifier
+							elements.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>URI of a place where this resource can be bought or more info
+							can be found.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>URI of an image to display for the duration of the track.
+							xspf:track elements MAY contain exactly
+							one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>A human-readable comment on the track in text/plain format.
+							xspf:track elements MAY contain exactly
+							one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>Human-readable name of the entity (author, authors, group,
+							company, etc) that authored the resource which defines the duration
+							of track rendering. This value is primarily for fuzzy lookups,
+							though a user-agent may display it. xspf:track
+							elements MAY contain exactly one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>Human-readable name of the track that authored the resource
+							which defines the duration of track rendering. This value is
+							primarily for fuzzy lookups, though a user-agent may display it.
+							xspf:track elements MAY contain exactly
+							one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>Human-readable name of the collection from which the resource
+							which defines the duration of track rendering comes. For a song
+							originally published as a part of a CD or LP, this would be the
+							title of the original release. This value is primarily for fuzzy
+							lookups, though a user-agent may display it.
+							xspf:track elements MAY contain exactly
+							one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>Integer with value greater than zero giving the ordinal
+							position of the media on the xspf:album. This value is primarily
+							for fuzzy lookups, though a user-agent may display it.
+							xspf:track elements MAY contain exactly
+							one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>Number giving the length of the media. This value is primarily
+							for fuzzy lookups, though a user-agent may display it. A user-agent
+							MUST NOT use this value to determine the rendering duration, since
+							the data will likely be low quality. The exact format of this value
+							is still under discussion. xspf:track elements
+							MAY contain exactly one.</dd>
+						  <dt><a name=""/></dt>
+						  <dd>
+							<p>The link element allows non-XSPF web
+							  resources to be included in
+							  xspf:track elements
+							  without breaking XSPF validation.</p>
+							<p class="example">&lt;link rel="http://foaf.org/namespace/version1"&gt;http://socialnetwork.org/foaf/mary.rdfs&lt;/link&gt;</p>
+							<dl class="attributes">
+							  <dt><a name=""/></dt>
+							  <dd>URI of a resource type.</dd>
+							</dl>
+							<p>URI of a resource.</p>
+						  </dd>
+						  <dt><a name=""/></dt>
+						  <dd>
+							<p>The meta element allows non-XSPF metadata
+							  to be included in
+							  xspf:track elements
+							  without breaking XSPF validation.</p>
+							<p class="example">&lt;meta rel="http://example.org/key"&gt;value&lt;/meta&gt;</p>
+							<dl class="attributes">
+							  <dt><a name=""/></dt>
+							  <dd>URI of a resource defining the metadata.</dd>
+							</dl>
+							<p>Value of the metadata element. MUST be valid text/plain, not
+							  XML.</p>
+						  </dd>
+						</dl>
+					  </dd>
+					</dl>
+				  </dd>
+				</dl>
+			  </dd>
+			</dl>
+		  </dd>
+		</dl>
+
+	  </dd>
+	</dl>
+	<dl>
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+
+		<dl>
+
+		  <dt><a name=""/>?</dt>
+		  <dd><p>See the <a href="http://www.w3.org/TR/xmlbase/">XML Base</a> specification or <a href="http://www.w3.org/TR/xmlbase/#RFC2396">IETF RFC 2396</a>:</p>
+
+			<blockquote><i>The rules for determining the base URI can be 
+				summarized as follows (highest priority to lowest):
+				<ol>
+				  <li>The base URI is embedded in the document's content.</li>
+				  <li>The base URI is that of the encapsulating entity (message, 
+					document, or none).</li>
+				  <li>The base URI is the URI used to retrieve the entity.</li>
+				  <li>The base URI is defined by the context of the application.</li>
+				</ol>
+			</i></blockquote>
+		  </dd>
+
+		  <dt><a name=""/>?</dt>
+		  <dd>Use the <a href="http://gonze.com/xspf/xspf2m3u.xsl">xspf2m3u.xsl</a> stylesheet.</dd>
+
+		  <dt><a name=""/>?</dt>
+		  <dd>Use the <a href="http://gonze.com/xspf/xspf2html.xsl">xspf2html.xsl</a> stylesheet.</dd>
+
+		  <dt><a name=""/>?</dt>
+		  <dd>Use the <a href="http://gonze.com/xspf/xspf2smil.xsl">xspf2smil.xsl</a> stylesheet.</dd>
+
+		  <dt><a name=""/>?</dt>
+		  <dd>Use the <a href="http://gonze.com/xspf/xspf2sblx.xsl">xspf2sblx.xsl</a> stylesheet.</dd>
+
+		</dl>
+
+	  </dd>
+	</dl>
+	<dl>
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+
+		<dl>
+
+		  <dt><a name=""/></dt>
+		  <dd></dd>
+
+		  <dt><a name=""/></dt>
+		  <dd>[[fixme: clean up and incorporate the requirements list from the wiki]]</dd>
+
+		  <dt><a name=""/></dt>
+		  <dd></dd>
+
+		  <dt><a name=""/></dt>
+		  <dd>
+
+			<dl>
+
+			  <dt>Catalogs vs. [[fixme: ??]]</dt>
+			  <dd></dd>
+
+			  <dt><a name=""/></dt>
+			  <dd></dd>
+
+			  <dt><a name=""/></dt>
+			  <dd></dd>
+
+			</dl>
+
+		  </dd>
+
+		</dl>
+
+	  </dd>
+	</dl>
+	<dl>
+	  <dt class="header2"><a name=""/></dt>
+	  <dd>
+
+
+		<dl>
+
+		  <dt><a name=""/></dt>
+		  <dd>
+			<ol>
+			  <li>Architectural notes on fuzzy search, catalogs, and content resolvers.</li>
+			  <li>Bug and issue list for XSPF.</li>
+			  <li>Contact address for bugs in this document and in XSPF.</li>
+			  <li>Spell check.</li>
+			  <li>Solicit feedback on formatting of this document.</li>
+			  <li>Section to tell developers why they should support XSPF.</li>
+			  <li>Names of WG contributors.</li>
+			</ol>
+		  </dd>
+
+		  <dt><a name=""/></dt>
+		  <dd>
+			<ol>
+			  <li><a href="http://validator.w3.org/check?uri=http%3A%2F%2Fgonze.com%2Fxspf%2Fxspf-draft-2.html">HTML</a></li>
+			  <li><a href="http://jigsaw.w3.org/css-validator/validator?uri=http://gonze.com/xspf/xspf-draft-2.html">CSS</a></li>
+			</ol>
+		  </dd>
+
+		</dl>
+	  </dd>
+	</dl>
+  </body>
+</html>
