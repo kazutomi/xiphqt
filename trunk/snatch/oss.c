@@ -106,6 +106,10 @@ static int oss_ioctl_hook(int fd,int rq,void *arg){
     ret=(*libc_ioctl)(fd,rq,arg);
     
   switch(rq){
+  case SNDCTL_DSP_RESET:
+    audio_timezero=0;
+    audio_samplepos=0;
+    break;
   case SNDCTL_DSP_SPEED:
     audio_rate=*(int *)arg;
     if(debug)
