@@ -83,7 +83,7 @@ static void _packet_flush(ogg_stream_state *os,int nextcomplete){
     else
       oggbyte_set8(obb,os->granulepos,6);
     os->b_o_s=1;
-    
+    os->packets=0;
     
     /* 32 bits of stream serial number */
     oggbyte_set4(obb,os->serialno,14);
@@ -202,7 +202,6 @@ int ogg_stream_pageout(ogg_stream_state *os, ogg_page *og){
     if(!os->header_tail)os->header_head=0;
     if(!os->body_tail)os->body_head=0;
   }
-  os->packets = 0; /* packets in current page, used for discontinuous */
   return 1;
 }
 
