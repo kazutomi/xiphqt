@@ -12,7 +12,7 @@ is reached.
 
 Here is how the current code works:
 
-First we grab N_FRAMES (defined in main.c) frames from a video4linux device.
+First we grab a block of N_FRAMES frames (defined in main.c) of .ppm files.
 Then each pixel becomes transformed into a YUV-alike colorspace. Take a look in
 yuv.c to see how it is done. Each component is then transformed into frequency
 space by applying the wavelet transform in x, y and frame direction. 
@@ -38,20 +38,14 @@ transform is done and the output image in .ppm format.
 
 You can call the test program like this:
 
-  $ ./main 20000 5000 5000 /dev/video1
+  $ ./main 20000 5000 5000 ../clips/
 
-which means: images are grabbed from '/dev/video1', the Y component bitstream
-is limited to 20000 Bytes, the U and V bitstreams to 5000 Bytes.
-The last argument may be omitted.
-
-Since video_device_grab_frame() uses a read() call to grab images, it may
-not work with some bttv drivers. Rewrite this function for mmap()'d access if
-you want. Or even better, write something to read frames from mpeg/quicktime/avi
-movies. And design a simple file format with multiplexed bitstreams. And write 
-a player. And ...
-Take a look in the TODO file.
+which means: images are grabbed from directory ../clips/0.ppm, ../clips/1.ppm,
+etc. The Y component bitstream is limited to 20000 Bytes, the U and V bitstreams
+to 5000 Bytes. If the last argument is omitted, frames are taken from current
+directory.
 
 Good Luck,
 
-- Holger Waechtler  <hwaechtler@users.sourceforge.net>
+- Holger  <hwaechtler@users.sourceforge.net>
 
