@@ -60,9 +60,9 @@ class OggStream :
       self.fd = open('test.writ.ogg','w')
       self.pn = 0
 
-   def packetin(self, packet, granulepos=0) :
+   def packetin(self, packet, end_granule=0) :
       packet.packetno = self.pn
-      packet.granulepos = granulepos
+      packet.end_granule = end_granule
       if self.pn == 0 :
          packet.bos = 1
       else :
