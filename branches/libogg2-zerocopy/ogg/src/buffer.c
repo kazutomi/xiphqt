@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.7 2003/03/16 23:31:48 xiphmont Exp $
+  last mod: $Id: buffer.c,v 1.1.2.8 2003/03/22 05:44:51 xiphmont Exp $
 
  ********************************************************************/
 
@@ -30,38 +30,59 @@
 /* management is here; actual production and consumption of data is
    found in the rest of the libogg code */
 
-void ogg_buffer_init(ogg_buffer_state *bs){
-  memset(bs,0,sizeof(*bs));
+ogg_buffer_state *ogg_buffer_create(void){
+  ogg_buffer_state *bs=_ogg_calloc(1,sizeof(*bs));
   ogg_mutex_init(&bs->mutex);
+  return bs;
 }
 
-void ogg_buffer_clear(ogg_buffer_state *bs){
-#ifdef OGGBUFFER_DEBUG
-  if(bs->outstanding_buffers!=0)
-    fprintf(stderr,"WARNING: Freeing ogg_buffer_state with buffers outstanding.\n");
-  if(bs->outstanding_references!=0)
-    fprintf(stderr,"WARNING: Freeing ogg_buffer_state with buffers outstanding.\n");
-#endif
+/* destruction is 'lazy'; there may be memory references outstanding,
+   and yanking the buffer state out from underneath would be
+   antisocial.  Dealloc what is currently unused and have
+   _release_one watch for the stragglers to come in.  When they do,
+   finish destruction. */
 
-  ogg_mutex_clear(&bs->mutex);
-  
-  while(bs->unused_buffers){
-    ogg_buffer *b=bs->unused_buffers;
-    bs->unused_buffers=b->ptr.next;
-    if(b->data)_ogg_free(b->data);
-    _ogg_free(b);
+/* call the helper while holding lock */
+static void _ogg_buffer_destroy(ogg_buffer_state *bs){
+  ogg_buffer *bt;
+  ogg_reference *rt;
+
+  if(bs->shutdown){
+    bt=bs->unused_buffers;
+    rt=bs->unused_references;
+
+    if(!bs->outstanding){
+      ogg_mutex_unlock(&bs->mutex);
+      ogg_mutex_clear(&bs->mutex);
+      _ogg_free(bs);
+    }else
+      ogg_mutex_unlock(&bs->mutex);
+
+    while(bt){
+      ogg_buffer *b=bt;
+      bt=b->ptr.next;
+      if(b->data)_ogg_free(b->data);
+      _ogg_free(b);
+    }
+    while(rt){
+      ogg_reference *r=rt;
+      rt=r->next;
+      _ogg_free(r);
+    }
   }
-  while(bs->unused_references){
-    ogg_reference *r=bs->unused_references;
-    bs->unused_references=r->next;
-    _ogg_free(r);
-  }
+}
+
+void ogg_buffer_destroy(ogg_buffer_state *bs){
+  ogg_mutex_lock(&bs->mutex);
+  bs->shutdown=1;
+  _ogg_buffer_destroy(bs);
 }
 
 static ogg_buffer *_fetch_buffer(ogg_buffer_state *bs,long bytes){
   ogg_buffer    *ob;
   ogg_mutex_lock(&bs->mutex);
-  
+  bs->outstanding++;
+
   /* do we have an unused buffer sitting in the pool? */
   if(bs->unused_buffers){
     ob=bs->unused_buffers;
@@ -81,14 +102,15 @@ static ogg_buffer *_fetch_buffer(ogg_buffer_state *bs,long bytes){
     ob->size=bytes;
   }
 
-  ob->ptr.owner=bs;
   ob->refcount=1;
+  ob->ptr.owner=bs;
   return ob;
 }
 
 static ogg_reference *_fetch_ref(ogg_buffer_state *bs){
   ogg_reference *or;
   ogg_mutex_lock(&bs->mutex);
+  bs->outstanding++;
 
   /* do we have an unused reference sitting in the pool? */
   if(bs->unused_references){
@@ -119,7 +141,7 @@ ogg_reference *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes){
 
 /* enlarge the data buffer in the current link */
 void ogg_buffer_realloc(ogg_reference *or,long bytes){
-  ogg_buffer    *ob=*or->buffer;
+  ogg_buffer    *ob=or->buffer;
   
   /* if the unused buffer is too small, grow it */
   if(ob->size<bytes){
@@ -197,8 +219,7 @@ void ogg_buffer_mark(ogg_reference *or){
 
 void ogg_buffer_release_one(ogg_reference *or){
   ogg_buffer *ob=or->buffer;
-  ogg_buffer_state *bs=or->buffer->ptr.owner;
-
+  ogg_buffer_state *bs=ob->ptr.owner;
   ogg_mutex_lock(&bs->mutex);
 
 #ifdef OGGBUFFER_DEBUG
@@ -208,15 +229,17 @@ void ogg_buffer_release_one(ogg_reference *or){
   
   ob->refcount--;
   if(ob->refcount==0){
-    /* release the fragment back to unused pool */
+    bs->outstanding--; /* for the returned buffer */
     ob->ptr.next=bs->unused_buffers;
     bs->unused_buffers=ob;
   }
-
+  
+  bs->outstanding--; /* for the returned reference */
   or->next=bs->unused_references;
   bs->unused_references=or;
 
-  ogg_mutex_unlock(&bs->mutex);
+  _ogg_buffer_destroy(bs); /* lazy cleanup (if needed) */
+
 }
 
 /* release the references, decrease the refcounts of buffers to which
@@ -264,7 +287,7 @@ ogg_reference *ogg_buffer_walk(ogg_reference *or){
   return(or);
 }
 
-/* *head is appened to the front end (head) of *tail; both continue to
+/* *head is appended to the front end (head) of *tail; both continue to
    be valid pointers, with *tail at the tail and *head at the head */
 ogg_reference *ogg_buffer_cat(ogg_reference *tail, ogg_reference *head){
   while(tail->next){
@@ -274,3 +297,11 @@ ogg_reference *ogg_buffer_cat(ogg_reference *tail, ogg_reference *head){
   return ogg_buffer_walk(head);
 }
 
+long ogg_buffer_length(ogg_reference *or){
+  int count=0;
+  while(or){
+    count+=or->length;
+    or=or->next;
+  }
+  return count;
+}

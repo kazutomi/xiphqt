@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: pack variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14.2.11 2003/03/16 23:31:48 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.12 2003/03/22 05:44:51 xiphmont Exp $
 
  ********************************************************************/
 
@@ -24,12 +24,6 @@
 #include <stdlib.h>
 #include "ogginternal.h"
 
-#ifdef _V_SELFTEST
-#define OGGPACK_CHUNKSIZE 4
-#else
-#define OGGPACK_CHUNKSIZE 128
-#endif
-
 static unsigned long mask[]=
 {0x00000000,0x00000001,0x00000003,0x00000007,0x0000000f,
  0x0000001f,0x0000003f,0x0000007f,0x000000ff,0x000001ff,
@@ -39,13 +33,14 @@ static unsigned long mask[]=
  0x01ffffff,0x03ffffff,0x07ffffff,0x0fffffff,0x1fffffff,
  0x3fffffff,0x7fffffff,0xffffffff };
 
-void oggpack_writeinit(oggpack_buffer *b,ogg_buffer_state *oy){
+void oggpack_writeinit(oggpack_buffer *b,ogg_buffer_state *bs){
   memset(b,0,sizeof(*b));
-  b->owner=oy;
+  b->owner=bs;
 }
 
-void oggpackB_writeinit(oggpack_buffer *b,ogg_buffer_state *oy){
-  oggpack_writeinit(b,oy);
+void oggpackB_writeinit(oggpack_buffer *b,ogg_buffer_state *bs){
+  oggpack_writeinit(b,bs);
+  b->owner=bs;
 }
 
 static void _oggpack_extend(oggpack_buffer *b){
@@ -660,7 +655,7 @@ static int ilog(unsigned int v){
       
 oggpack_buffer o;
 oggpack_buffer r;
-ogg_buffer_state bs;
+ogg_buffer_state *bs;
 ogg_reference *or;
 #define TESTWORDS 4096
 
@@ -686,7 +681,7 @@ void cliptest(unsigned long *b,int vals,int bits,int *comp,int compsize){
   long bytes,i,bitcount=0;
   ogg_reference *or;
 
-  oggpack_writeinit(&o,&bs);
+  oggpack_writeinit(&o,bs);
   for(i=0;i<vals;i++){
     oggpack_write(&o,b[i],bits?bits:ilog(b[i]));
     bitcount+=bits?bits:ilog(b[i]);
@@ -750,7 +745,7 @@ void cliptestB(unsigned long *b,int vals,int bits,int *comp,int compsize){
   long bytes,i;
   ogg_reference *or;
 
-  oggpackB_writeinit(&o,&bs);
+  oggpackB_writeinit(&o,bs);
   for(i=0;i<vals;i++)
     oggpackB_write(&o,b[i],bits?bits:ilog(b[i]));
   or=oggpackB_writebuffer(&o);
@@ -871,16 +866,6 @@ void msbverify(unsigned long *values,int *len,unsigned char *flat) {
     }
   }  
   
-
-}
-
-int bufferlength(ogg_reference *or){
-  int count=0;
-  while(or){
-    count+=or->length;
-    or=or->next;
-  }
-  return count;
 }
 
 void _end_verify(int count){
@@ -1076,7 +1061,7 @@ int main(void){
 
   /* Test read/write together */
   /* Later we test against pregenerated bitstreams */
-  ogg_buffer_init(&bs);
+  bs=ogg_buffer_create();
 
   fprintf(stderr,"\nSmall preclipped packing (LSb): ");
   cliptest(testbuffer1,test1size,0,one,onesize);
@@ -1093,7 +1078,7 @@ int main(void){
   fprintf(stderr,"\n32 bit preclipped packing (LSb): ");
 
   oggpack_writeclear(&o);
-  oggpack_writeinit(&o,&bs);
+  oggpack_writeinit(&o,bs);
   for(i=0;i<test2size;i++)
     oggpack_write(&o,large[i],32);
   or=oggpack_writebuffer(&o);
@@ -1126,7 +1111,7 @@ int main(void){
 
   fprintf(stderr,"\nTesting read past end (LSb): ");
   {
-    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{&bs}};
+    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{0}};
     ogg_reference lor={&lob,0,8,0};
 
     oggpack_readinit(&r,&lor);
@@ -1143,7 +1128,7 @@ int main(void){
     }
   }
   {
-    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{&bs}};
+    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{0}};
     ogg_reference lor={&lob,0,8,0};
     unsigned long test;
 
@@ -1188,7 +1173,7 @@ int main(void){
 
   fprintf(stderr,"\n32 bit preclipped packing (MSb): ");
 
-  oggpackB_writeinit(&o,&bs);
+  oggpackB_writeinit(&o,bs);
   for(i=0;i<test2size;i++)
     oggpackB_write(&o,large[i],32);
   or=oggpackB_writebuffer(&o);
@@ -1221,7 +1206,7 @@ int main(void){
 
   fprintf(stderr,"\nTesting read past end (MSb): ");
   {
-    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{&bs}};
+    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{0}};
     ogg_reference lor={&lob,0,8,0};
     unsigned long test;
 
@@ -1239,7 +1224,7 @@ int main(void){
     }
   }
   {
-    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{&bs}};
+    ogg_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{0}};
     ogg_reference lor={&lob,0,8,0};
     unsigned long test;
     oggpackB_readinit(&r,&lor);
@@ -1274,7 +1259,7 @@ int main(void){
     unsigned char flat[4*TESTWORDS]; /* max possible needed size */
 
     fprintf(stderr,"\rRandomized testing (LSb)... (%ld)   ",10000-i);
-    oggpack_writeinit(&o,&bs);
+    oggpack_writeinit(&o,bs);
 
     /* generate a list of words and lengths */
     /* write the required number of bits out to packbuffer */
@@ -1325,7 +1310,7 @@ int main(void){
 	if(or)
 	  orl=ogg_buffer_extend(orl,ilen+ibegin);
 	else
-	  or=orl=ogg_buffer_alloc(&bs,ilen+ibegin);
+	  or=orl=ogg_buffer_alloc(bs,ilen+ibegin);
 
 	memcpy(orl->buffer->data+ibegin,ptr,ilen);
        
@@ -1336,7 +1321,7 @@ int main(void){
 	ptr+=ilen;
       }
 
-      if(bufferlength(or)!=(bitcount+7)/8){
+      if(ogg_buffer_length(or)!=(bitcount+7)/8){
 	fprintf(stderr,"\nERROR: buffer length incorrect after build.\n");
 	exit(1);
       }
@@ -1356,7 +1341,7 @@ int main(void){
 	  bitcount+=len[j];
 	ogg_buffer_posttruncate(or,((bitcount+7)/8));
 
-	if((count=bufferlength(or))!=(bitcount+7)/8){
+	if((count=ogg_buffer_length(or))!=(bitcount+7)/8){
 	  fprintf(stderr,"\nERROR: buffer length incorrect after truncate.\n");
 	  exit(1);
 	}
@@ -1465,7 +1450,7 @@ int main(void){
     unsigned char flat[4*TESTWORDS]; /* max possible needed size */
 
     fprintf(stderr,"\rRandomized testing (MSb)... (%ld)   ",10000-i);
-    oggpackB_writeinit(&o,&bs);
+    oggpackB_writeinit(&o,bs);
 
     /* generate a list of words and lengths */
     /* write the required number of bits out to packbuffer */
@@ -1516,7 +1501,7 @@ int main(void){
 	if(or)
 	  orl=ogg_buffer_extend(orl,ilen+ibegin);
 	else
-	  or=orl=ogg_buffer_alloc(&bs,ilen+ibegin);
+	  or=orl=ogg_buffer_alloc(bs,ilen+ibegin);
 
 	memcpy(orl->buffer->data+ibegin,ptr,ilen);
        
@@ -1527,7 +1512,7 @@ int main(void){
 	ptr+=ilen;
       }
 
-      if(bufferlength(or)!=(bitcount+7)/8){
+      if(ogg_buffer_length(or)!=(bitcount+7)/8){
 	fprintf(stderr,"\nERROR: buffer length incorrect after build.\n");
 	exit(1);
       }
@@ -1547,7 +1532,7 @@ int main(void){
 	  bitcount+=len[j];
 	ogg_buffer_posttruncate(or,((bitcount+7)/8));
 
-	if((count=bufferlength(or))!=(bitcount+7)/8){
+	if((count=ogg_buffer_length(or))!=(bitcount+7)/8){
 	  fprintf(stderr,"\nERROR: buffer length incorrect after truncate.\n");
 	  exit(1);
 	}
@@ -1647,7 +1632,7 @@ int main(void){
   }
   fprintf(stderr,"\rRandomized testing (MSb)... ok.   \n");
 
-  ogg_buffer_clear(&bs);
+  ogg_buffer_destroy(bs);
   return(0);
 }  
 #endif  /* _V_SELFTEST */

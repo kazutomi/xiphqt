@@ -10,9 +10,9 @@
  *                                                                  *
  ********************************************************************
 
- function: code raw packets into framed Ogg stream and
-           decode Ogg streams back into raw packets
- last mod: $Id: stream.c,v 1.1.2.2 2003/03/15 01:26:09 xiphmont Exp $
+ function: code raw packets into framed Ogg logical stream and
+           decode Ogg logical streams back into raw packets
+ last mod: $Id: stream.c,v 1.1.2.3 2003/03/22 05:44:51 xiphmont Exp $
 
  ********************************************************************/
 
@@ -23,81 +23,171 @@
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 
-int ogg_stream_init(ogg_stream_state *os,int serialno){
-  if(os){
-    memset(os,0,sizeof(*os));
-    os->body_storage=16*1024;
-    os->body_data=_ogg_malloc(os->body_storage*sizeof(*os->body_data));
-
-    os->lacing_storage=1024;
-    os->lacing_vals=_ogg_malloc(os->lacing_storage*sizeof(*os->lacing_vals));
-    os->granule_vals=_ogg_malloc(os->lacing_storage*sizeof(*os->granule_vals));
-
-    os->serialno=serialno;
-
-    return(0);
-  }
-  return(-1);
+ogg_stream_state *ogg_stream_create(int serialno){
+  ogg_stream_state *os=_ogg_calloc(1,sizeof(*os));
+  os->watermark=4096;
+  os->serialno=serialno;
+  os->bufferpool=ogg_buffer_create();
+  return os;
 } 
 
-/* _clear does not free os, only the non-flat storage within */
-int ogg_stream_clear(ogg_stream_state *os){
+int ogg_stream_setfill(ogg_stream_state *os,int watermark){
   if(os){
-    if(os->body_data)_ogg_free(os->body_data);
-    if(os->lacing_vals)_ogg_free(os->lacing_vals);
-    if(os->granule_vals)_ogg_free(os->granule_vals);
+    if(watermark>65535)watermark=65535;
+    os->watermark=watermark;
+    return watermark;
+  }
+  return -1;
+} 
 
+static void _returned_release(ogg_stream_state *os){
+  ogg_buffer_release(os->returned);
+  os->returned=0;
+  ogg_buffer_release(os->returned_body);
+  os->returned_body=0;
+}
+
+/* _clear does not free os, only the non-flat storage within */
+void ogg_stream_destroy(ogg_stream_state *os){
+  if(os){
+
+    _returned_release(os);
+    ogg_buffer_release(os->header_tail);
+    ogg_buffer_release(os->body_tail);
+    ogg_buffer_destroy(os->bufferpool);
     memset(os,0,sizeof(*os));    
+
   }
   return(0);
 } 
 
+/* finish building a header then flush the current packet header and
+   body to the output buffer */
+static void _packet_flush(ogg_stream_state *os,int nextcomplete){
+  oggpack_buffer obp;
+  unsigned char ctemp;
+
+  if(os->lacing_fill){
+    /* construct the header in temp storage */
+    oggpack_writeinit(&opb,&os->bufferpool);
+    
+    oggpack_write(&opb,'O',8);
+    oggpack_write(&opb,'g',8);
+    oggpack_write(&opb,'g',8);
+    oggpack_write(&opb,'S',8);
+    
+    oggpack_write(&opb,0x00,8);   /* 4: stream structure version */
+     
+    ctemp=0x00;
+    if(os->continued)ctemp|=0x01; /* continued packet flag? */
+    if(os->b_o_s==0)ctemp|=0x02;  /* first page flag? */
+    if(os->e_o_s)ctemp|=0x04;     /* last page flag? */
+    oggpack_write(&opb,ctemp,8);  /* 5 */
+
+    os->b_o_s=1;
+    
+    /* 64 bits of PCM position */
+    {
+      ogg_int64_t granule_pos=os->granule_pos;
+      for(i=0;i<8;i++){
+	oggpack_write(&opb,(granule_pos&0xff),8);
+	granule_pos>>=8;
+      }
+    }
+    
+    /* 32 bits of stream serial number */
+    oggpack_write(&opb,os->serialno,32);
+    
+    /* 32 bits of page counter (we have both counter and page header
+       because this val can roll over) */
+    if(os->pageno==-1)os->pageno=0; /* because someone called
+				       stream_reset; this would be a
+				       strange thing to do in an
+				       encode stream, but it has
+				       plausible uses */
+    oggpack_write(&opb,os->pageno++,32);
+    
+    /* zero CRC for computation; filled in later */
+    oggpack_write(&opb,0,32);
+    
+    /* segment table size */
+    oggpack_write(&opb,os->lacing_fill,8);
+
+    /* concatenate header pieces, toss 'em on the fifo */
+    {
+      ogg_reference *header=oggpack_writebuffer(&opb);
+      ogg_buffer_cat(header,oggpack_writebuffer(&os->lacing));
+      
+
+
+    /* set pointers in the ogg_page struct */
+    og->header=os->header;
+    og->header_len=os->header_fill=vals+27;
+    og->body=os->body_data+os->body_returned;
+    og->body_len=bytes;
+    
+    /* advance the lacing data and set the body_returned pointer */
+    
+    os->lacing_fill-=vals;
+    memmove(os->lacing_vals,os->lacing_vals+vals,os->lacing_fill*sizeof(*os->lacing_vals));
+    memmove(os->granule_vals,os->granule_vals+vals,os->lacing_fill*sizeof(*os->granule_vals));
+    os->body_returned+=bytes;
+    
+    /* calculate the checksum */
+    
+    ogg_page_checksum_set(og);
+    
+  }
+
 /* submit data to the internal buffer of the framing engine */
 int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
-  int lacing_vals=op->bytes/255+1,i;
+  /* get sizing */
+  long bytes=ogg_buffer_length(op->packet);
+  long lacing_vals=bytes/255+1;
+  int  remainder=bytes%255;
+  int  i;
 
-  if(os->body_returned){
-    /* advance packet data according to the body_returned pointer. We
-       had to keep it around to return a pointer into the buffer last
-       call */
+  /* clear out previously returned pages if any */
+  _returned_release(os);
+
+  if(op->e_o_s)return -1;
+  
+  if(!lacing_fill)
+    ogg_buffer_writeinit(os->lacing,os->bufferpool);
+
+  /* concat packet data */
+  if(os->body_head)
+    os->body_head=ogg_buffer_cat(os->body_head,op->packet);
+  else
+    os->body_tail=os->body_head=op->packet;
+
+  /* add lacing vals, but finish/flush packet first if we hit a
+     watermark */
+  for(i=0;i<lacing_vals-1;i++){ /* handle the 255s first */
+    os->body_fill+=255;
+    os->lacing_fill++;
+    ogg_buffer_write(&os->lacing,255,8);
     
-    os->body_fill-=os->body_returned;
-    if(os->body_fill)
-      memmove(os->body_data,os->body_data+os->body_returned,
-	      os->body_fill);
-    os->body_returned=0;
+    if(os->body_fill>=os->watermark)_packet_flush(os,1);
+    if(os->lacing_fill==255)_packet_flush(os,1);
   }
- 
-  /* make sure we have the buffer storage */
-  _os_body_expand(os,op->bytes);
-  _os_lacing_expand(os,lacing_vals);
 
-  /* Copy in the submitted packet.  Yes, the copy is a waste; this is
-     the liability of overly clean abstraction for the time being.  It
-     will actually be fairly easy to eliminate the extra copy in the
-     future */
+  /* we know we'll finish this packet on this page; propogate
+     granulepos et al and then finish packet lacing */
 
-  memcpy(os->body_data+os->body_fill,op->packet,op->bytes);
-  os->body_fill+=op->bytes;
-
-  /* Store lacing vals for this packet */
-  for(i=0;i<lacing_vals-1;i++){
-    os->lacing_vals[os->lacing_fill+i]=255;
-    os->granule_vals[os->lacing_fill+i]=os->granulepos;
-  }
-  os->lacing_vals[os->lacing_fill+i]=(op->bytes)%255;
-  os->granulepos=os->granule_vals[os->lacing_fill+i]=op->granulepos;
-
-  /* flag the first segment as the beginning of the packet */
-  os->lacing_vals[os->lacing_fill]|= 0x100;
-
-  os->lacing_fill+=lacing_vals;
-
-  /* for the sake of completeness */
-  os->packetno++;
-
+  os->body_fill+=remainder;
+  os->lacing_fill++;
+  os->granulepos=op->granulepos;
+  os->packetno++;  /* for the sake of completeness */
   if(op->e_o_s)os->e_o_s=1;
 
+  ogg_buffer_write(&os->lacing,remainder,8);
+
+  if(os->e_o_s || 
+     os->body_fill>=os->watermark ||
+     !os->b_o_s ||
+     os->lacing_fill==255)_packet_flush(os,0);
+  
   return(0);
 }
 
