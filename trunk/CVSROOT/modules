@@ -36,4 +36,6 @@ icecast icecast &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-
 
 ices ices &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-thread &icecast-src-timing
 
+libshout libshout &icecast-src-avl &icecast-src-net &icecast-src-thread &icecast-src-httpp
+
 
