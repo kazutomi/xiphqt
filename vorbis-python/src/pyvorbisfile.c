@@ -1,6 +1,5 @@
 #include <stdio.h>
 #ifndef _WIN32
-#include <endian.h>
 #include <assert.h>
 #else
 #define LITTLE_ENDIAN 0
