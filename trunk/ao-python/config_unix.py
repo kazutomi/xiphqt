@@ -53,7 +53,7 @@ def find_ao(ao_prefix = '/usr/local', enable_aotest = 1):
         execute('rm -f conf.aotest', 0)
 
         try:
-            run_test(ao_test_program)
+            run_test(ao_test_program, "-I" + ao_include_dir)
             if not os.path.isfile('conf.aotest'):
                 raise RuntimeError, "Did not produce output"
             execute('rm conf.aotest', 0)

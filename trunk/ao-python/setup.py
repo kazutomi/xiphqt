@@ -38,7 +38,7 @@ ao_libs = string.split(data['ao_libs'])
 
 setup (# Distribution meta-data
         name = "pyao",
-        version = "0.0.2",
+        version = "0.8",
         description = "A wrapper for the ao library",
         author = "Andrew Chatham",
         author_email = "andrew.chatham@duke.edu",
