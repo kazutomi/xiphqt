@@ -626,12 +626,11 @@ sub ReadStderr{
 	    print STDERR "moving $outfile to $trackname\n";
 	    unlink $wavfile;
 
-	    $trackname=~s/\"/\\\"/g;
-	    die "could not move file!: $!" if `mv "$outfile" "$trackname"`;
-
 	    # add to unfiled list
-	    $trackname.='\n';
-	    `echo "$trackname" >> $unfiled;`;
+	    `echo "$trackname\n" >> $unfiled;`;
+
+	    $trackname=~s/([\"\$\`\\])/\\$1/g;
+	    die "could not move file!: $!" if `mv "$outfile" "$trackname"`;
 
 	    # unclick the rip button
 	    Recheck();
@@ -655,6 +654,10 @@ sub ReadStderr{
 	    $metaalbum=$album;
 	    $wavfile="/tmp/$$.wav";
 	    $outfile="/tmp/$$.ogg";
+
+	    $metatitle=~s/([\"\$\`\\])/\\$1/g;
+	    $metaartist=~s/([\"\$\`\\])/\\$1/g;
+	    $metaalbum=~s/([\"\$\`\\])/\\$1/g;
 
 	    $metatitle=~s/\"/\\\"/g;
 	    $metaartist=~s/\"/\\\"/g;
