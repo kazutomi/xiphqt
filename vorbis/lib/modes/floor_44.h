@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: key floor settings for 44.1/48kHz
- last mod: $Id: floor_44.h,v 1.2 2001/12/12 09:45:55 xiphmont Exp $
+ last mod: $Id: floor_44.h,v 1.2.4.1 2002/01/01 02:27:42 xiphmont Exp $
 
  ********************************************************************/
 
@@ -50,6 +50,19 @@
 #include "books/floor/line_128x19_2sub1.vqh"
 #include "books/floor/line_128x19_2sub2.vqh"
 #include "books/floor/line_128x19_2sub3.vqh"
+
+#include "books/floor/line_1024x19_class0.vqh"
+#include "books/floor/line_1024x19_class1.vqh"
+#include "books/floor/line_1024x19_class2.vqh"
+
+#include "books/floor/line_1024x19_0sub0.vqh"
+#include "books/floor/line_1024x19_0sub1.vqh"
+#include "books/floor/line_1024x19_1sub1.vqh"
+#include "books/floor/line_1024x19_1sub2.vqh"
+#include "books/floor/line_1024x19_1sub3.vqh"
+#include "books/floor/line_1024x19_2sub1.vqh"
+#include "books/floor/line_1024x19_2sub2.vqh"
+#include "books/floor/line_1024x19_2sub3.vqh"
 
 #include "books/floor/line_1024x31_class0.vqh"
 #include "books/floor/line_1024x31_class1.vqh"
@@ -110,6 +123,20 @@ static static_codebook **_floor_44_128_books[3]={
   _floor_44_128x19_books,
 };
 
+static static_codebook *_floor_44_1024x19_books[]={
+    &_huff_book_line_1024x19_class0,
+    &_huff_book_line_1024x19_class1,
+    &_huff_book_line_1024x19_class2,
+    
+    &_huff_book_line_1024x19_0sub0,
+    &_huff_book_line_1024x19_0sub1,
+    &_huff_book_line_1024x19_1sub1,  
+    &_huff_book_line_1024x19_1sub2,
+    &_huff_book_line_1024x19_1sub3, 
+    &_huff_book_line_1024x19_2sub1,
+    &_huff_book_line_1024x19_2sub2,
+    &_huff_book_line_1024x19_2sub3,
+};
 static static_codebook *_floor_44_1024x31_books[]={
     &_huff_book_line_1024x31_class0,
     &_huff_book_line_1024x31_class1,
@@ -128,7 +155,8 @@ static static_codebook *_floor_44_1024x31_books[]={
     &_huff_book_line_1024x31_3sub3,
 };
 
-static static_codebook **_floor_44_1024_books[1]={
+static static_codebook **_floor_44_1024_books[2]={
+  _floor_44_1024x19_books,
   _floor_44_1024x31_books
 };
 
@@ -168,7 +196,21 @@ static vorbis_info_floor1 _floor_44_128[3]={
   }
 };
 
-static vorbis_info_floor1 _floor_44_1024[1]={
+static vorbis_info_floor1 _floor_44_1024[2]={
+  {
+    6,{0,1,1, 2,2,2},{4,3,3},{1,2,2},{0,1,2},
+    {{3,4},{-1,5,6,7},{-1,8,9,10}},
+    2,{0,1024, 
+
+       32,112,211,387,
+
+       8,4,16, 64,48,88, 162,136,185, 282,243,329, 553,460,672},
+  
+    60,30,400,
+    20,8,1,18.,
+    20,600,
+    -1 /* lowpass */
+  },
   {
     10,{0,1,2,2,2,2,2, 3,3,3},{3,4,3,3},{1,1,2,2},{0,1,2,3},
     {{4,5},{6,7},{-1,8,9,10},{-1,11,12,13}},

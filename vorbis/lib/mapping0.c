@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c,v 1.43 2001/12/20 01:00:27 segher Exp $
+ last mod: $Id: mapping0.c,v 1.43.2.1 2002/01/01 02:27:23 xiphmont Exp $
 
  ********************************************************************/
 
@@ -419,10 +419,11 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
   /* partition based prequantization and channel coupling */
   /* Steps in prequant and coupling:
 
-     classify by |mag| across all pcm vectors 
-
      down-couple/down-quantize from perfect residue ->  quantized vector 
      
+     classify by |mag| of perfect res and |mag| of quant 
+         across all pcm vectors 
+
      do{ 
         encode quantized vector; add encoded values to 'so-far' vector
         more? [not yet at bitrate/not yet at target]
@@ -469,9 +470,9 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 
     /* initial down-quantized coupling */
     
+    /* this assumes all or nothing coupling right now.  it should pass
+       through any channels left uncoupled, but it doesn't do that now */
     if(info->coupling_steps==0){
-      /* this assumes all or nothing coupling right now.  it should pass
-	 through any channels left uncoupled, but it doesn't do that now */
       for(i=0;i<vi->channels;i++){
 	float *lpcm=pcm[i];
 	float *lqua=quantized[i];
@@ -490,7 +491,6 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 
     for(i=0;i<vi->channels;i++)
       _analysis_output("quant",seq+i,quantized[i],n/2,1,0);
-
   
     /* classify, by submap */
 
@@ -515,8 +515,13 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
       chcounter+=ch_in_bundle;
 
       classifications[i]=look->residue_func[i]->
-	class(vb,look->residue_look[i],pcmbundle[i],zerobundle[i],chbundle[i]);
+	class(vb,look->residue_look[i],pcmbundle[i],qbundle[i],
+	      zerobundle[i],chbundle[i]);
     }
+
+    for(i=0;i<vi->channels;i++)
+      _analysis_output("nquant",seq+i,quantized[i],n/2,1,0);
+  
 
     /* actual encoding loop; we pack all the iterations to collect
        management data */
@@ -534,6 +539,38 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 	
       }
       i++;
+
+#ifdef TRAIN_RES
+      /* this is sanity checking *highly specific* to current encoder
+         convention.  This is only to be enabled during training data
+         collection and testing */
+
+      /* first pass: normal unit-encode, second pass is stereo
+         backfill (unit encode), third pass is 1/3 encode, fourth is
+         1/9 encode. No submaps. */
+      for(j=0;j<vi->channels;j++){
+	int k;
+	for(k=0;k<n/2;k++){
+	  switch(i){
+	  case 1:case 2:
+	    if(fabs(quantized[j][k])>.5)
+	      fprintf(stderr,">>>%d+%d:%d/%d(%f) ",seq+j,i,j,k,quantized[j][k]);
+	    break;
+	  case 3:
+	    if(fabs(quantized[j][k])>.1667)
+	      fprintf(stderr,">>>%d+%d:%d/%d(%f) ",seq+j,i,j,k,quantized[j][k]);
+	    break;
+	  case 4:
+	    if(fabs(quantized[j][k])>.0556)
+	      fprintf(stderr,">>>%d+%d:%d/%d(%f) ",seq+j,i,j,k,quantized[j][k]);
+	    break;
+	  }
+	}
+      }
+
+
+#endif
+
 	
       if(i<quant_passes){
 	/* down-couple/down-quantize from perfect-'so-far' -> 
@@ -663,6 +700,7 @@ static int mapping0_inverse(vorbis_block *vb,vorbis_look_mapping *l){
     int submap=info->chmuxlist[i];
     look->floor_func[submap]->
       inverse2(vb,look->floor_look[submap],floormemo[i],pcm);
+    _analysis_output("final",seq++,pcm,n/2,1,1);
   }
 
   /* transform the PCM data; takes PCM vector, vb; modifies PCM vector */

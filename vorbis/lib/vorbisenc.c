@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: simple programmatic interface for encoder mode setup
- last mod: $Id: vorbisenc.c,v 1.33 2001/12/23 11:53:53 xiphmont Exp $
+ last mod: $Id: vorbisenc.c,v 1.33.2.1 2002/01/01 02:27:25 xiphmont Exp $
 
  ********************************************************************/
 
@@ -41,7 +41,7 @@ typedef struct {
   static_codebook *books_residue_backfill[5][10][2];
 } vorbis_residue_template;
 
-static double stereo_threshholds[]={0.0, 2.5, 4.5, 8.5, 16.5};
+static double stereo_threshholds[]={0.5, 2.5, 4.5, 8.5, 16.5};
 
 typedef struct vp_adjblock{
   int block[P_BANDS][P_LEVELS];
@@ -411,11 +411,7 @@ static int vorbis_encode_residue_setup(vorbis_info *vi,double q,int block,
   memcpy(r,in[iq].res[block],sizeof(*r));
   if(ci->residues<=block)ci->residues=block+1;
 
-  if(block){
-    r->grouping=32;
-  }else{
-    r->grouping=16;
-  }
+  r->grouping=32;
 
   /* for uncoupled, we use type 1, else type 2 */
   if(coupled_p){
@@ -614,12 +610,17 @@ int vorbis_encode_setup_init(vorbis_info *vi){
   codec_setup_info *ci=vi->codec_setup;
   highlevel_encode_setup *hi=&ci->hi;
 
+  if(!hi->impulse_block_p)
+    /* write over the impulse settings */
+    memcpy(&hi->blocktype[0],&hi->blocktype[1],sizeof(hi->blocktype[0]));
+
+
   ret|=vorbis_encode_floor_setup(vi,hi->base_quality_short,0,
-				_floor_44_128_books,_floor_44_128,
-				0,1,1,2,2,2,2,2,2,2,2);
+				 _floor_44_128_books,_floor_44_128,
+				 0,1,1,2,2,2,2,2,2,2,2);
   ret|=vorbis_encode_floor_setup(vi,hi->base_quality_long,1,
 				_floor_44_1024_books,_floor_44_1024,
-				0,0,0,0,0,0,0,0,0,0,0);
+				 0,0,1,1,1,1,1,1,1,1,1);
   
   ret|=vorbis_encode_global_psych_setup(vi,hi->trigger_quality,_psy_global_44,
 				       0., 1., 1.5, 2., 2., 2., 2., 2., 2., 2., 2.);
@@ -745,7 +746,9 @@ int vorbis_encode_setup_init(vorbis_info *vi){
   }
   ret|=vorbis_encode_lowpass_setup(vi,hi->lowpass_kHz[0],0);
   ret|=vorbis_encode_lowpass_setup(vi,hi->lowpass_kHz[1],1);
-    
+
+  hi->set_in_stone=1;
+
   if(ret)
     vorbis_info_clear(vi);
   return(ret);
@@ -876,6 +879,11 @@ int vorbis_encode_setup_vbr(vorbis_info *vi,
     hi->lowpass_kHz[1]=
     _psy_lowpass_44[iq]*(1.-dq)+_psy_lowpass_44[iq+1]*dq;
 
+  /* set a few bitrate management conventions, but don't enable
+     management */
+  ci->bi.avgfloat_initial=4.0;
+  ci->bi.avgfloat_minimum=2.3;
+
   /* set bitrate approximation */
   vi->bitrate_nominal=vbr_to_approx_bitrate(vi->channels,hi->stereo_couple_p,
 					    base_quality,vi->rate);
@@ -938,23 +946,26 @@ int vorbis_encode_setup_managed(vorbis_info *vi,
     return ret; 
   }
 
-  /* adjust to make management's life easier.  Use the ctl() interface
-     once it's implemented */
+  /* adjust to make management's life easier */
   {
-    codec_setup_info *ci=vi->codec_setup;
-    highlevel_encode_setup *hi=&ci->hi;
+    vectl_stereo_arg   stereo;
+    vectl_block_arg   block;
+    vectl_bitrate_arg bitrate;
 
-    /* backfills */
-    hi->stereo_backfill_p=1;
-    hi->residue_backfill_p=1;
+    vorbis_encode_ctl(vi,VECTL_BITRATE,0,&bitrate);
+    vorbis_encode_ctl(vi,VECTL_BLOCK,0,&block);
+    vorbis_encode_ctl(vi,VECTL_STEREO,0,&stereo);
 
-    /* no impulse blocks */
-    hi->impulse_block_p=0;
-    /* de-rate stereo */
-    if(hi->stereo_point_dB && hi->stereo_couple_p && channels==2){
-      hi->stereo_point_dB++;
-      if(hi->stereo_point_dB>3)hi->stereo_point_dB=3;
+    bitrate.stereo_backfill_p=1;
+    bitrate.residue_backfill_p=1;
+
+    block.impulse_block_p=0;
+
+    if(stereo.stereo_couple_p && channels==2){
+      stereo.stereo_point_dB_mode++;
+      if(stereo.stereo_point_dB_mode>3)stereo.stereo_point_dB_mode=3;
     }      
+
     /* slug the vbr noise setting*/
     hi->blocktype[0].noise_bias_quality-=.1;
     if(hi->blocktype[0].noise_bias_quality<0.)
@@ -1007,6 +1018,260 @@ int vorbis_encode_init(vorbis_info *vi,
   return(ret);
 }
 
-int vorbis_encode_ctl(vorbis_info *vi,int number,void *arg){
-  return(OV_EIMPL);
+int vorbis_encode_ctl(vorbis_info *vi,int number,int setp,void *arg){
+  codec_setup_info *ci=vi->codec_setup;
+  highlevel_encode_setup *hi=&ci->hi;
+
+  if(setp && hi->set_in_stone)return(OV_EINVAL);
+
+  switch(number){
+  case VECTL_BLOCK:
+    if(setp){
+      vectl_block_arg *varg=(vectl_block_arg *)arg;
+      if(!varg->short_block_p && !varg->long_block_p)return(OV_EINVAL);
+
+      hi->short_block_p=varg->short_block_p;
+      hi->long_block_p=varg->long_block_p;
+      hi->impulse_block_p=varg->impulse_block_p;
+    }else{
+      vectl_block_arg *varg=(vectl_block_arg *)arg;
+      
+      varg->short_block_p=hi->short_block_p;
+      varg->long_block_p=hi->long_block_p;
+      varg->impulse_block_p=hi->impulse_block_p;
+    }
+    break;
+
+  case VECTL_PSY_LOWPASS:
+    if(setp){
+      vectl_lowpass_arg *varg=(vectl_lowpass_arg *)arg;
+      hi->lowpass_kHz[0]=varg->short_lowpass_kHz;
+      hi->lowpass_kHz[1]=varg->long_lowpass_kHz;
+    }else{
+      vectl_lowpass_arg *varg=(vectl_lowpass_arg *)arg;
+      varg->short_lowpass_kHz=hi->lowpass_kHz[0];
+      varg->long_lowpass_kHz=hi->lowpass_kHz[1];
+    }
+    break;
+      
+  case VECTL_PSY_STEREO:
+    if(setp){
+      vectl_stereo_arg *varg=(vectl_stereo_arg *)arg;
+
+      if(varg->stereo_point_dB_mode<0)return(OV_EINVAL);
+      if(varg->stereo_point_dB_mode>3)return(OV_EINVAL);
+	
+      hi->stereo_point_kHz[0]=varg->stereo_point_kHz_short;
+      hi->stereo_point_kHz[1]=varg->stereo_point_kHz_long;
+      hi->stereo_point_dB=varg->stereo_point_dB_mode;
+      hi->stereo_couple_p=varg->stereo_couple_p;
+    }else{
+      vectl_stereo_arg *varg=(vectl_stereo_arg *)arg;
+
+      varg->stereo_point_kHz_short=hi->stereo_point_kHz[0];
+      varg->stereo_point_kHz_long=hi->stereo_point_kHz[1];
+      varg->stereo_point_dB_mode=hi->stereo_point_dB;
+      varg->stereo_couple_p=hi->stereo_couple_p;
+    }
+    break;
+
+  case VECTL_PSY_ATH:
+    {
+      vectl_ath_arg *varg=(vectl_ath_arg *)arg;
+      if(setp){
+	hi->ath_floating_dB=varg->ath_float_dB;
+	hi->ath_fixed_dB=varg->ath_fixed_dB;
+      }else{
+	varg->ath_float_dB=hi->ath_floating_dB;
+	varg->ath_fixed_dB=hi->ath_fixed_dB;
+      }
+    }
+    break;
+
+  case VECTL_PSY_AMPTRACK:
+    if(setp){
+      vectl_amp_arg *varg=(vectl_amp_arg *)arg;
+      hi->residue_backfill_p=varg->maxdB_track_decay;
+    }else{
+      vectl_amp_arg *varg=(vectl_amp_arg *)arg;
+      varg->maxdB_track_decay=hi->residue_backfill_p;
+    }
+    break;
+
+  case VECTL_PSY_MASK_Q:
+    if(setp){
+      int i;
+      vectl_mask_arg *varg=(vectl_mask_arg *)arg;
+
+      if(varg->trigger_q<0.)return(OV_EINVAL);
+      if(varg->trigger_q>1.)return(OV_EINVAL);
+      for(i=0;i<4;i++){
+	if(varg->tonemask_q[i]<0.)return(OV_EINVAL);
+	if(varg->tonemask_q[i]>1.)return(OV_EINVAL);
+	if(varg->tonepeak_q[i]<0.)return(OV_EINVAL);
+	if(varg->tonepeak_q[i]>1.)return(OV_EINVAL);
+	if(varg->noise_q[i]<0.)return(OV_EINVAL);
+	if(varg->noise_q[i]>1.)return(OV_EINVAL);
+      }
+
+      hi->trigger_quality=varg->trigger_q;
+      for(i=0;i<4;i++){
+	hi->blocktype[i].tone_mask_quality=varg->tonemask_q[i];
+	hi->blocktype[i].tone_peaklimit_quality=varg->tonepeak_q[i];
+	hi->blocktype[i].noise_bias_quality=varg->noise_q[i];
+	hi->blocktype[i].noise_compand_quality=varg->noise_q[i];
+      }
+    }else{
+      int i;
+      vectl_mask_arg *varg=(vectl_mask_arg *)arg;
+
+      varg->trigger_q=hi->trigger_quality;
+      for(i=0;i<4;i++){
+	varg->tonemask_q[i]=hi->blocktype[i].tone_mask_quality;
+	varg->tonepeak_q[i]=hi->blocktype[i].tone_peaklimit_quality;
+	varg->noise_q[i]=hi->blocktype[i].noise_bias_quality;
+	varg->noise_q[i]=hi->blocktype[i].noise_compand_quality;
+      }
+    }
+    break;
+
+  case VECTL_PSY_NOISENORM:
+    if(setp){
+      vectl_noisenorm_arg *varg=(vectl_noisenorm_arg *)arg;
+      if(varg->noise_normalize_weight<0.)return(OV_EINVAL);
+      if(varg->noise_normalize_weight>4.)return(OV_EINVAL);
+      if(varg->noise_normalize_thresh<0.)return(OV_EINVAL);
+      if(varg->noise_normalize_thresh>.5)return(OV_EINVAL);
+
+      hi->normalize_noise_p=varg->noise_normalize_p;
+      hi->normalize_noise_unit_weight=varg->noise_normalize_weight;
+      hi->normalize_noise_minimum_upgrade=varg->noise_normalize_thresh;
+    }else{
+      vectl_noisenorm_arg *varg=(vectl_noisenorm_arg *)arg;
+      hi->normalize_noise_p=varg->noise_normalize_p;
+      hi->normalize_noise_unit_weight=varg->noise_normalize_weight;
+      hi->normalize_noise_minimum_upgrade=varg->noise_normalize_thresh;
+    }
+    break;
+
+  case VECTL_BITRATE:
+    if(setp){
+      vectl_bitrate_arg *varg=(vectl_bitrate_arg *)arg;
+
+      if(varg->avg_min>0. && varg->avg_max>0. &&
+	 varg->avg_min>varg->avg_max)return(OV_EINVAL);
+      if(varg->avg_window_time>20)return(OV_EINVAL);
+      if(varg->avg_window_time>0. && varg->avg_window_time<.1)
+	return(OV_EINVAL);
+      if(varg->avg_window_center<0.)return(OV_EINVAL);
+      if(varg->avg_window_center>1.)return(OV_EINVAL);
+
+      if(varg->limit_min>0. && varg->limit_max>0. &&
+	 varg->limit_min>varg->limit_max)return(OV_EINVAL);
+      if(varg->limit_window_time>20)return(OV_EINVAL);
+      if(varg->limit_window_time>0. && varg->limit_window_time<.1)
+	return(OV_EINVAL);
+
+      if(varg->avg_slew_downmax>0.)return(OV_EINVAL);
+      if(varg->avg_slew_upmax<0.)return(OV_EINVAL);
+
+      ci->bi.queue_avg_time=hi->avg_window_time;
+      ci->bi.queue_avg_center=hi->avg_window_center;
+      ci->bi.queue_minmax_time=hi->limit_window_time;
+      ci->bi.queue_avgmin=hi->avg_min;
+      ci->bi.queue_avgmax=hi->avg_max;
+      ci->bi.queue_hardmin=hi->limit_min;
+      ci->bi.queue_hardmax=hi->limit_max;
+
+      ci->bi.avgfloat_initial=_bm_default.avgfloat_initial;
+      ci->bi.avgfloat_minimum=_bm_default.avgfloat_minimum;
+      ci->bi.avgfloat_downslew_max=hi->avg_slew_downmax;
+      ci->bi.avgfloat_upslew_max=hi->avg_slew_upmax;
+
+      if(hi->avg_noisetrack_p){
+	ci->bi.avgfloat_noise_lowtrigger=
+	  _bm_default.avgfloat_noise_lowtrigger;
+	ci->bi.avgfloat_noise_hightrigger=
+	  _bm_default.avgfloat_noise_hightrigger;
+	ci->bi.avgfloat_noise_minval=-6.;
+	ci->bi.avgfloat_noise_maxval=_bm_max_noise_offset[(int)approx_vbr];
+      }else{
+	ci->bi.avgfloat_noise_lowtrigger=-1.f;
+	ci->bi.avgfloat_noise_hightrigger=9999.f;
+	ci->bi.avgfloat_noise_minval=0.f;
+	ci->bi.avgfloat_noise_maxval=0.f;
+      }
+
+      hi->stereo_backfill_p=varg->stereo_backfill_p;
+      hi->residue_backfill_p=varg->residue_backfill_p;
+    }else{
+      vectl_bitrate_arg *varg=(vectl_bitrate_arg *)arg;
+
+      varg->stereo_backfill_p=hi->stereo_backfill_p;
+      varg->residue_backfill_p=hi->residue_backfill_p;
+      varg->avg_min=ci->bi.queue_avgmin;
+      varg->avg_max=ci->bi.queue_avgmax;
+      varg->avg_window_time=ci->bi.queue_avg_time;
+      varg->avg_window_center=ci->bi.queue_avg_center;
+      varg->avg_slew_downmax=ci->bi.avgfloat_downslew_max;
+      varg->avg_slew_upmax=ci->bi.avgfloat_upslew_max;
+
+      if(ci->bi.avgfloat_noise_minval!=0. || 
+	 ci->bi.avgfloat_noise_maxval!=0.)
+	varg->avg_noisetrack_p=1;
+      else
+	varg->avg_noisetrack_p=0;
+
+      varg->limit_min=ci->bi.queue_hardmin;
+      varg->limit_max=ci->bi.queue_hardmax;
+      varg->limit_window_time=ci->bi.queue_minmax_time;
+
+      varg->stereo_backfill_p=hi->stereo_backfill_p;
+      varg->residue_backfill_p=hi->residue_backfill_p;
+    }
+    break;
+
+  default:
+    return(OV_EIMPL);
+  }
+
+  /* update base_quality_short and base_quality_long */
+  {
+    double max_short=0.;
+    double max_long=0.;
+
+    if(hi->impulse_block_p){
+      if(max_short<hi->blocktype[0].tone_mask_quality)
+	max_short=hi->blocktype[0].tone_mask_quality;
+      if(max_short<hi->blocktype[0].tone_peaklimit_quality)
+	max_short=hi->blocktype[0].tone_peaklimit_quality;
+      if(max_short<hi->blocktype[0].noise_bias_quality)
+	max_short=hi->blocktype[0].noise_bias_quality;
+    }
+    if(max_short<hi->blocktype[1].tone_mask_quality)
+      max_short=hi->blocktype[1].tone_mask_quality;
+    if(max_short<hi->blocktype[1].tone_peaklimit_quality)
+      max_short=hi->blocktype[1].tone_peaklimit_quality;
+    if(max_short<hi->blocktype[1].noise_bias_quality)
+      max_short=hi->blocktype[1].noise_bias_quality;
+
+    if(max_long<hi->blocktype[2].tone_mask_quality)
+      max_long=hi->blocktype[2].tone_mask_quality;
+    if(max_long<hi->blocktype[2].tone_peaklimit_quality)
+      max_long=hi->blocktype[2].tone_peaklimit_quality;
+    if(max_long<hi->blocktype[2].noise_bias_quality)
+      max_long=hi->blocktype[2].noise_bias_quality;
+
+    if(max_long<hi->blocktype[3].tone_mask_quality)
+      max_long=hi->blocktype[3].tone_mask_quality;
+    if(max_long<hi->blocktype[3].tone_peaklimit_quality)
+      max_long=hi->blocktype[3].tone_peaklimit_quality;
+    if(max_long<hi->blocktype[3].noise_bias_quality)
+      max_long=hi->blocktype[3].noise_bias_quality;
+
+    hi->base_quality_long=max_long;
+    hi->base_quality_short=max_short;
+  }
+
+  return(0);
 }

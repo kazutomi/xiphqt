@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: residue backend 0, 1 and 2 implementation
- last mod: $Id: res0.c,v 1.44 2001/12/21 15:05:30 segher Exp $
+ last mod: $Id: res0.c,v 1.44.2.1 2002/01/01 02:27:24 xiphmont Exp $
 
  ********************************************************************/
 
@@ -30,6 +30,7 @@
 #include "codebook.h"
 #include "misc.h"
 #include "os.h"
+#include "psy.h"
 
 #ifdef TRAIN_RES
 #include <stdio.h>
@@ -56,11 +57,14 @@ typedef struct {
 
 #ifdef TRAIN_RES
   long      *training_data[8][64];
+  long       training_bits[8][64];
   float      training_max[8][64];
   float      training_min[8][64];
+  long      training_count[64];
   int       longp;
   float     tmin;
   float     tmax;
+
 #endif
 
 } vorbis_look_residue0;
@@ -85,12 +89,13 @@ void res0_free_look(vorbis_look_residue *i){
   if(i){
 
     vorbis_look_residue0 *look=(vorbis_look_residue0 *)i;
+    vorbis_info_residue0 *info=look->info;
 
 #ifdef TRAIN_RES
     {
       int j,k,l;
       for(j=0;j<look->parts;j++){
-	fprintf(stderr,"partition %d: ",j);
+	fprintf(stderr,"partition %d [%ld]: ",j,look->training_count[j]);
 	for(k=0;k<8;k++)
 	  if(look->training_data[k][j]){
 	    char buffer[80];
@@ -119,30 +124,25 @@ void res0_free_look(vorbis_look_residue *i){
 	    (float)look->phrasebits/look->frames,
 	    (float)look->postbits/look->frames,
 	    (float)(look->postbits+look->phrasebits)/look->frames);
+
+    for(j=0;j<look->parts;j++){
+      int k;
+       long acc=0;
+       fprintf(stderr,"\t[%d] == ",j);
+       for(k=0;k<look->stages;k++)
+	 if((info->secondstages[j]>>k)&1){
+	   fprintf(stderr,"%ld,",look->training_bits[k][j]);
+	   acc+=look->training_bits[k][j];
+	 }
+       
+       fprintf(stderr,":: (%ld vals) %1.2fbits/sample\n",
+	       look->training_count[j],
+	       (float)acc/look->training_count[j]);
+    }
+    fprintf(stderr,"\n");
 #endif
 
 
-    /*vorbis_info_residue0 *info=look->info;
-
-    fprintf(stderr,
-	    "%ld frames encoded in %ld phrasebits and %ld residue bits "
-	    "(%g/frame) \n",look->frames,look->phrasebits,
-	    look->resbitsflat,
-	    (look->phrasebits+look->resbitsflat)/(float)look->frames);
-    
-    for(j=0;j<look->parts;j++){
-      long acc=0;
-      fprintf(stderr,"\t[%d] == ",j);
-      for(k=0;k<look->stages;k++)
-	if((info->secondstages[j]>>k)&1){
-	  fprintf(stderr,"%ld,",look->resbits[j][k]);
-	  acc+=look->resbits[j][k];
-	}
-
-      fprintf(stderr,":: (%ld vals) %1.2fbits/sample\n",look->resvals[j],
-	      acc?(float)acc/(look->resvals[j]*info->grouping):0);
-    }
-    fprintf(stderr,"\n");*/
 
     for(j=0;j<look->parts;j++)
       if(look->partbooks[j])_ogg_free(look->partbooks[j]);
@@ -301,75 +301,44 @@ vorbis_look_residue *res0_look(vorbis_dsp_state *vd,vorbis_info_mode *vm,
   return(look);
 }
 
+/* almost the simplest possible subvector classification; by max
+   amplitude/position. Assumes forst pass is quantized to unit steps  */
 
-#if 0
-/* does not guard against invalid settings; eg, a subn of 16 and a
-   subgroup request of 32.  Max subn of 128 */
-static int _interleaved_testhack(float *vec,int n,vorbis_look_residue0 *look,
-				 int auxparts,int auxpartnum){
+/* broken out for specific encoding tasks */
+
+static int _testhack(float *vec,float *q,int n,
+		     vorbis_look_residue0 *look,
+		     int auxparts,int auxpartnum){
   vorbis_info_residue0 *info=look->info;
-  int i,j=0;
-  float max,localmax=0.f;
-  float temp[128];
-  float entropy[8];
+  int i;
+  float max=0.f;
 
-  /* setup */
-  for(i=0;i<n;i++)temp[i]=fabs(vec[i]);
-
-  /* handle case subgrp==1 outside */
   for(i=0;i<n;i++)
-    if(temp[i]>localmax)localmax=temp[i];
-  max=localmax;
-
-  for(i=0;i<n;i++)temp[i]=rint(temp[i]);
+    if(max<fabs(vec[i]))max=fabs(vec[i]);
   
-  while(1){
-    entropy[j]=localmax;
-    n>>=1;
-    if(!n)break;
-    j++;
-
-    for(i=0;i<n;i++){
-      temp[i]+=temp[i+n];
-    }
-    localmax=0.f;
-    for(i=0;i<n;i++)
-      if(temp[i]>localmax)localmax=temp[i];
-  }
-
   for(i=0;i<auxparts-1;i++)
     if(auxpartnum<info->blimit[i] &&
-       entropy[info->subgrp[i]]<=info->entmax[i] &&
        max<=info->ampmax[i])
       break;
 
   return(i);
 }
-#endif
 
-
-static int _testhack(float *vec,int n,vorbis_look_residue0 *look,
+static int _testhack_stereo_res2(float *vec,float *q,int n,
+		     vorbis_look_residue0 *look,
 		     int auxparts,int auxpartnum){
   vorbis_info_residue0 *info=look->info;
   int i;
   float max=0.f;
-  float temp[128];
-  float entropy=0.f;
 
-  /* setup */
-  for(i=0;i<n;i++)temp[i]=fabs(vec[i]);
-
-  for(i=0;i<n;i++)
-    if(temp[i]>max)max=temp[i];
-
-  for(i=0;i<n;i++)temp[i]=rint(temp[i]);
-
-  for(i=0;i<n;i++)
-    entropy+=temp[i];
-
+  for(i=0;i<n;i+=2){
+    if(max<fabs(vec[i]))max=fabs(vec[i]);
+    if(max<fabs(vec[i+1]))max=fabs(vec[i+1]);
+    if(max<fabs(q[i]))max=fabs(q[i]);
+  }
+  
   for(i=0;i<auxparts-1;i++)
     if(auxpartnum<info->blimit[i] &&
-       entropy<=info->entmax[i] &&
        max<=info->ampmax[i])
       break;
 
@@ -415,8 +384,9 @@ static int _encodepart(oggpack_buffer *opb,float *vec, int n,
 }
 
 static long **_01class(vorbis_block *vb,vorbis_look_residue *vl,
-		       float **in,int ch,
-		       int (*classify)(float *,int,vorbis_look_residue0 *,
+		       float **in,float **q,int ch,
+		       int (*classify)(float *,float *,int,
+				       vorbis_look_residue0 *,
 				       int,int)){
   long i,j;
   vorbis_look_residue0 *look=(vorbis_look_residue0 *)vl;
@@ -440,13 +410,16 @@ static long **_01class(vorbis_block *vb,vorbis_look_residue *vl,
   }
 
   for(i=0;i<partvals;i++){
-    for(j=0;j<ch;j++)
-      /* do the partition decision based on the 'entropy'
-         int the block */
+    for(j=0;j<ch;j++){
+
+      psy_normalize_noise(vb,q[j]+i*samples_per_partition+info->begin,
+			  samples_per_partition);
+      
       partword[j][i]=
 	classify(in[j]+i*samples_per_partition+info->begin,
+		 q[j]+i*samples_per_partition+info->begin,
 		 samples_per_partition,look,possible_partitions,i);
-  
+    }
   }
 
 #ifdef TRAIN_RES
@@ -471,10 +444,11 @@ static long **_01class(vorbis_block *vb,vorbis_look_residue *vl,
 }
 
 static long **_2class(vorbis_block *vb,vorbis_look_residue *vl,
-		       float **in,int ch,
-		       int (*classify)(float *,int,vorbis_look_residue0 *,
+		       float **in,float **q,int ch,
+		       int (*classify)(float *,float *,int,
+				       vorbis_look_residue0 *,
 				       int,int)){
-  long i,j,k,l;
+  long i,j,k,l,jj,ll;
   vorbis_look_residue0 *look=(vorbis_look_residue0 *)vl;
   vorbis_info_residue0 *info=look->info;
 
@@ -486,6 +460,7 @@ static long **_2class(vorbis_block *vb,vorbis_look_residue *vl,
   int partvals=n/samples_per_partition;
   long **partword=_vorbis_block_alloc(vb,sizeof(*partword));
   float *work=alloca(sizeof(*work)*samples_per_partition);
+  float *qwork=alloca(sizeof(*qwork)*samples_per_partition);
 
 #ifdef TRAIN_RES
   FILE *of;
@@ -495,9 +470,10 @@ static long **_2class(vorbis_block *vb,vorbis_look_residue *vl,
   partword[0]=_vorbis_block_alloc(vb,n*ch/samples_per_partition*sizeof(*partword[0]));
   memset(partword[0],0,n*ch/samples_per_partition*sizeof(*partword[0]));
 
-  for(i=0,j=0,k=0,l=info->begin;i<partvals;i++){
+  for(i=0,jj=j=0,k=0,ll=l=info->begin;i<partvals;i++){
     for(k=0;k<samples_per_partition;k++){
       work[k]=in[j][l];
+      qwork[k]=q[j][l];
       j++;
       if(j>=ch){
 	j=0;
@@ -505,11 +481,20 @@ static long **_2class(vorbis_block *vb,vorbis_look_residue *vl,
       }
     }
 
+    psy_normalize_noise(vb,qwork,samples_per_partition);
+
     partword[0][i]=
-      classify(work,samples_per_partition,look,possible_partitions,i);
+      classify(work,qwork,samples_per_partition,look,possible_partitions,i);
 
-
-  }  
+    for(k=0;k<samples_per_partition;k++){
+      q[jj][ll]=qwork[k];
+      jj++;
+      if(jj>=ch){
+	jj=0;
+	ll++;
+      }
+    }
+  }
 
 #ifdef TRAIN_RES
   look->longp=vb->W;
@@ -603,7 +588,13 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
 	  qptr[bin++]=oggpack_bits(&vb->opb);
 
 	for(j=0;j<ch;j++){
-	  if(s==0)resvals[partword[j][i]]+=samples_per_partition;
+	  if(s==0){
+
+#ifdef TRAIN_RES
+	    look->training_count[partword[j][i]]+=samples_per_partition;
+#endif
+	  }
+
 	  if(info->secondstages[partword[j][i]]&(1<<s)){
 	    codebook *statebook=look->partbooks[partword[j][i]][s];
 	    if(statebook){
@@ -627,8 +618,10 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
 	      ret=encode(&vb->opb,in[j]+offset,samples_per_partition,
 			 statebook,accumulator);
 
+#ifdef TRAIN_RES
 	      look->postbits+=ret;
-	      resbits[partword[j][i]]+=ret;
+	      look->training_bits[s][partword[j][i]]+=ret;
+#endif
 	    }
 	  }
 	}
@@ -713,7 +706,7 @@ static int _01inverse(vorbis_block *vb,vorbis_look_residue *vl,
 /* residue 0 and 1 are just slight variants of one another. 0 is
    interleaved, 1 is not */
 long **res0_class(vorbis_block *vb,vorbis_look_residue *vl,
-		  float **in,int *nonzero,int ch){
+		  float **in,float **q,int *nonzero,int ch){
   /* we encode only the nonzero parts of a bundle */
   int i,used=0;
   for(i=0;i<ch;i++)
@@ -721,7 +714,7 @@ long **res0_class(vorbis_block *vb,vorbis_look_residue *vl,
       in[used++]=in[i];
   if(used)
     /*return(_01class(vb,vl,in,used,_interleaved_testhack));*/
-    return(_01class(vb,vl,in,used,_testhack));
+    return(_01class(vb,vl,in,q,used,_testhack));
   else
     return(0);
 }
@@ -798,13 +791,13 @@ int res1_forward(vorbis_block *vb,vorbis_look_residue *vl,
 }
 
 long **res1_class(vorbis_block *vb,vorbis_look_residue *vl,
-		  float **in,int *nonzero,int ch){
+		  float **in,float **q,int *nonzero,int ch){
   int i,used=0;
   for(i=0;i<ch;i++)
     if(nonzero[i])
       in[used++]=in[i];
   if(used)
-    return(_01class(vb,vl,in,used,_testhack));
+    return(_01class(vb,vl,in,q,used,_testhack));
   else
     return(0);
 }
@@ -822,13 +815,13 @@ int res1_inverse(vorbis_block *vb,vorbis_look_residue *vl,
 }
 
 long **res2_class(vorbis_block *vb,vorbis_look_residue *vl,
-		  float **in,int *nonzero,int ch){
+		  float **in,float **q,int *nonzero,int ch){
   int i,used=0;
   for(i=0;i<ch;i++)
     if(nonzero[i])
       in[used++]=in[i];
   if(used)
-    return(_2class(vb,vl,in,used,_testhack));
+    return(_2class(vb,vl,in,q,used,_testhack_stereo_res2));
   else
     return(0);
 }
@@ -855,11 +848,14 @@ int res2_forward(vorbis_block *vb,vorbis_look_residue *vl,
   if(used){
     int ret=_01forward(vb,vl,&work,1,pass,partword,_encodepart,stats);
     /* update the sofar vector */
+    /* update the quantized pcm vector */
     for(i=0;i<ch;i++){
       float *pcm=in[i];
       float *sofar=out[i];
-      for(j=0,k=i;j<n;j++,k+=ch)
+      for(j=0,k=i;j<n;j++,k+=ch){
 	sofar[j]+=pcm[j]-work[k];
+	pcm[j]=work[k];
+      }
 
     }
     return(ret);
