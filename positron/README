@@ -11,12 +11,6 @@ See COPYING for software license.
 
 ---------------------------------------------------------------------
 
-WARNING: This is a beta release of positron!  It may corrupt the
-databases on your Neuros, requiring you to erase everything and start
-over.  USE AT YOUR OWN RISK.  (And make sure you look at the BACKING
-UP THE DATABASE section.)
-
-
 OVERVIEW
 
 Positron is a synchronization tool for the Neuros portable music
