@@ -48,6 +48,7 @@ void
 ices_setup_initialize (void)
 {
   ices_stream_t* stream;
+  ices_plugin_t* plugin;
   
   shout_init();
 
@@ -79,7 +80,16 @@ ices_setup_initialize (void)
 #ifdef HAVE_LIBLAME
   /* Initialize liblame for reeencoding */
   ices_reencode_initialize ();
+
+  while (ices_config.plugins && ices_config.plugins->init() < 0)
+    ices_config.plugins = ices_config.plugins->next;
+
+  for (plugin = ices_config.plugins; plugin->next; plugin = plugin->next)
+    if (plugin->next->init() < 0)
+      plugin->next = plugin->next->next;
 #endif
+
+  ices_log_debug("Startup complete\n");
 }
 
 /* Top level ices shutdown function.
@@ -88,6 +98,7 @@ void
 ices_setup_shutdown (void)
 {
   ices_stream_t* stream;
+  ices_plugin_t* plugin;
 
   /* Tell libshout to disconnect from server */
   for (stream = ices_config.streams; stream; stream = stream->next)
@@ -95,6 +106,9 @@ ices_setup_shutdown (void)
       shout_close (stream->conn);
 
 #ifdef HAVE_LIBLAME
+  for (plugin = ices_config.plugins; plugin; plugin = plugin->next)
+    plugin->shutdown();
+
   /* Order the reencoding engine to shutdown */
   ices_reencode_shutdown ();
 #endif
@@ -336,7 +350,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
         case 'C':
 	  arg++;
 	  if (atoi(argv[arg]) > 0)
-	    ices_config->plugin = crossfade_plugin(atoi(argv[arg]));
+	    /* TODO: stack plugins */
+	    ices_config->plugins = crossfade_plugin(atoi(argv[arg]));
         case 'c':
 	  arg++;
 	  break;

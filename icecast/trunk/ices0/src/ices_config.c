@@ -280,7 +280,8 @@ parse_playlist_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *
 	ices_util_strdup (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Crossfade") == 0) {
       if ((i = atoi (ices_xml_read_node (doc, cur))) > 0)
-	ices_config->plugin = crossfade_plugin(i);
+	/* TODO: stack plugins */
+	ices_config->plugins = crossfade_plugin(i);
     } else {
       ices_log ("Unknown playlist keyword: %s", cur->name);
     }

@@ -105,8 +105,10 @@ typedef struct _input_stream_t {
 typedef struct _ices_plugin {
   const char *name;
 
+  int (*init)(void);
   void (*new_track)(input_stream_t *source);
   int (*process)(int ilen, int16_t *il, int16_t *ir);
+  void (*shutdown)(void);
 
   struct _ices_plugin *next;
 } ices_plugin_t;
@@ -121,6 +123,6 @@ typedef struct {
 
   ices_stream_t* streams;
   playlist_module_t pm;
-  ices_plugin_t *plugin;
+  ices_plugin_t *plugins;
 } ices_config_t;
 #endif

@@ -164,10 +164,10 @@ stream_send (ices_config_t* config, input_stream_t* source)
 
   if (config->reencode) {
     ices_reencode_reset (source);
-    if (config->plugin) {
+    if (config->plugins) {
       decode = 1;
-      for (plugin = config->plugin; plugin; plugin = plugin->next)
-	config->plugin->new_track(source);
+      for (plugin = config->plugins; plugin; plugin = plugin->next)
+	plugin->new_track(source);
     } else
       for (stream = config->streams; stream; stream = stream->next)
 	if (stream->reencode && stream_needs_reencoding (source, stream)) {
@@ -208,7 +208,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 
 #ifdef HAVE_LIBLAME
     /* run output through plugin */
-    for (plugin = config->plugin; plugin; plugin = plugin->next)
+    for (plugin = config->plugins; plugin; plugin = plugin->next)
       if (samples)
 	samples = plugin->process(samples, left, right);
 #endif
@@ -228,7 +228,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
       for (stream = config->streams; stream; stream = stream->next) {
         /* don't reencode if the source is MP3 and the same bitrate */
 #ifdef HAVE_LIBLAME
-        if (stream->reencode && (config->plugin || stream_needs_reencoding (source, stream))) {
+        if (stream->reencode && (config->plugins || stream_needs_reencoding (source, stream))) {
           if (samples > 0) {
             /* for some reason we have to manually duplicate right from left to get
              * LAME to output stereo from a mono source */

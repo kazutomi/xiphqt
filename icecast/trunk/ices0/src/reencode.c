@@ -48,7 +48,7 @@ ices_reencode_initialize (void)
   if (! ices_config.reencode)
     return;
 
-  ices_log_debug ("Using LAME version %s\n", get_lame_version ());
+  ices_log_debug ("Using LAME version %s", get_lame_version ());
 }
 
 /* For each song, reset the liblame engine, otherwise it craps out if

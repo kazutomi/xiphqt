@@ -21,22 +21,26 @@
 
 #include "definitions.h"
 
+static int cf_init(void);
 static void cf_new_track(input_stream_t *source);
 static int cf_process(int ilen, int16_t* il, int16_t* ir);
+static void cf_shutdown(void);
 
 static ices_plugin_t Crossfader = {
   "crossfade",
 
+  cf_init,
   cf_new_track,
   cf_process,
+  cf_shutdown,
 
   NULL
 };
 
 static int FadeSamples;
-static int16_t* FL;
-static int16_t* FR;
-static int16_t* Swap;
+static int16_t* FL = NULL;
+static int16_t* FR = NULL;
+static int16_t* Swap = NULL;
 static int fpos = 0;
 static int flen = 0;
 
@@ -45,15 +49,28 @@ static int NewTrack = 0;
 /* public functions */
 ices_plugin_t *crossfade_plugin(int secs) {
   FadeSamples = secs * 44100;
-  FL = malloc(FadeSamples * 2);
-  FR = malloc(FadeSamples * 2);
-  Swap = malloc(FadeSamples *2);
-  ices_log_debug("Crossfading %d seconds between tracks", secs);
 
   return &Crossfader;
 }
 
 /* private functions */
+static int cf_init(void) {
+  if (!(FL = malloc(FadeSamples * 2)))
+    goto err;
+  if (!(FR = malloc(FadeSamples * 2)))
+    goto err;
+  if (!(Swap = malloc(FadeSamples * 2)))
+    goto err;
+
+  ices_log_debug("Crossfading %d seconds between tracks", FadeSamples / 44100);
+  return 0;
+
+  err:
+  ices_log_error("Crossfader could not allocate memory");
+  cf_shutdown();
+  return -1;
+}
+
 static void cf_new_track(input_stream_t *source) {
   static int skipnext = 0;
   static input_stream_t lasttrack;
@@ -132,4 +149,21 @@ static int cf_process(int ilen, int16_t* il, int16_t* ir)
   }
 
   return i;
+}
+
+static void cf_shutdown(void) {
+  if (FL) {
+    free(FL);
+    FL = NULL;
+  }
+  if (FR) {
+    free(FR);
+    FR = NULL;
+  }
+  if (Swap) {
+    free(Swap);
+    Swap = NULL;
+  }
+
+  ices_log_debug("Crossfader shutting down");
 }
