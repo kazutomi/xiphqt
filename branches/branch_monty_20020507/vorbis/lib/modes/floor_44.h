@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: key floor settings for 44.1/48kHz
- last mod: $Id: floor_44.h,v 1.2 2001/12/12 09:45:55 xiphmont Exp $
+ last mod: $Id: floor_44.h,v 1.2.8.1 2002/06/11 04:44:49 xiphmont Exp $
 
  ********************************************************************/
 
@@ -104,12 +104,6 @@ static static_codebook *_floor_44_128x19_books[]={
   &_huff_book_line_128x19_2sub3, 
 };
 
-static static_codebook **_floor_44_128_books[3]={
-  _floor_44_128x7_books,
-  _floor_44_128x9_books,
-  _floor_44_128x19_books,
-};
-
 static static_codebook *_floor_44_1024x31_books[]={
     &_huff_book_line_1024x31_class0,
     &_huff_book_line_1024x31_class1,
@@ -128,11 +122,14 @@ static static_codebook *_floor_44_1024x31_books[]={
     &_huff_book_line_1024x31_3sub3,
 };
 
-static static_codebook **_floor_44_1024_books[1]={
+static static_codebook **_floor_44_books[4]={
+  _floor_44_128x7_books,
+  _floor_44_128x9_books,
+  _floor_44_128x19_books,
   _floor_44_1024x31_books
 };
 
-static vorbis_info_floor1 _floor_44_128[3]={
+static vorbis_info_floor1 _floor_44[4]={
   {
     3,{0,1,2},{1,3,3},{0,2,2},{-1,0,1},
     {{2},{-1,3,4,5},{-1,6,7,8}},
@@ -165,10 +162,8 @@ static vorbis_info_floor1 _floor_44_128[3]={
     999,999,1,18.,
     8,70,
     -1 /* lowpass */
-  }
-};
+  },
 
-static vorbis_info_floor1 _floor_44_1024[1]={
   {
     10,{0,1,2,2,2,2,2, 3,3,3},{3,4,3,3},{1,1,2,2},{0,1,2,3},
     {{4,5},{6,7},{-1,8,9,10},{-1,11,12,13}},
