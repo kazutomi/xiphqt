@@ -544,11 +544,11 @@ void YUVout(XImage *image){
       unsigned char *y2=workbuffer+yuv_w;
       unsigned char *u=workbuffer+yuv_w*yuv_h;
       unsigned char *v=u+yuv_w*yuv_h/4;
-      unsigned char *ptr1=image->data;
-      unsigned char *ptr2=image->data+image->bytes_per_line;
       if(image->byte_order){      
 	
 	for(i=0;i<yuv_h;i+=2){
+	  unsigned char *ptr1=image->data+i*image->bytes_per_line;
+	  unsigned char *ptr2=ptr1+image->bytes_per_line;
 	  for(j=0;j<yuv_w;j+=2){
 	    long yval,uval,vval;
 	    
@@ -577,8 +577,6 @@ void YUVout(XImage *image){
 	    ptr1+=8;
 	    ptr2+=8;
 	  }
-	  ptr1+=image->bytes_per_line;
-	  ptr2+=image->bytes_per_line;
 	  y1+=yuv_w;
 	  y2+=yuv_w;
 
@@ -587,6 +585,8 @@ void YUVout(XImage *image){
       }else{
 
 	for(i=0;i<yuv_h;i+=2){
+	  unsigned char *ptr1=image->data+i*image->bytes_per_line;
+	  unsigned char *ptr2=ptr1+image->bytes_per_line;
 	  for(j=0;j<yuv_w;j+=2){
 	    long yval,uval,vval;
 	    
@@ -597,7 +597,7 @@ void YUVout(XImage *image){
 
 	    yval  = ptr1[6]*19595 + ptr1[5]*38470 + ptr1[4]*7471;
 	    uval += ptr1[4]*65536 - ptr1[6]*22117 - ptr1[5]*43419;
-	    vval += ptr1[5]*65536 - ptr1[5]*54878 - ptr1[4]*10658;
+	    vval += ptr1[6]*65536 - ptr1[5]*54878 - ptr1[4]*10658;
 	    *y1++ = yval>>16;
 
 	    yval  = ptr2[2]*19595 + ptr2[1]*38470 + ptr2[0]*7471;
@@ -607,7 +607,7 @@ void YUVout(XImage *image){
 
 	    yval  = ptr2[6]*19595 + ptr2[5]*38470 + ptr2[4]*7471;
 	    uval += ptr2[4]*65536 - ptr2[6]*22117 - ptr2[5]*43419;
-	    vval += ptr2[5]*65536 - ptr2[5]*54878 - ptr2[4]*10658;
+	    vval += ptr2[6]*65536 - ptr2[5]*54878 - ptr2[4]*10658;
 	    *y2++ = yval>>16;
 	    
 	    *u++  = (uval>>19)+128;
@@ -615,8 +615,6 @@ void YUVout(XImage *image){
 	    ptr1+=8;
 	    ptr2+=8;
 	  }
-	  ptr1+=image->bytes_per_line;
-	  ptr2+=image->bytes_per_line;
 	  y1+=yuv_w;
 	  y2+=yuv_w;
 
