@@ -2,7 +2,7 @@ AC_INIT(src/ices.c)
 AM_CONFIG_HEADER(config.h)
 
 ICES_MAJOR=0
-ICES_MINOR=1
+ICES_MINOR=2
 ICES_MICRO=0
 
 dnl Check to see if ICES_SPECIAL is overridden on commandline
