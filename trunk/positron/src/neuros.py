@@ -104,6 +104,7 @@ class Neuros:
         """Checks if a given path on the host is a subdirectory (or the root)
         of the Neuros mountpoint."""
         
+        hostpath = path.abspath(hostpath)
         hostpath_parts = _total_path_split(hostpath)
 
         return self.mountpoint_parts == \
