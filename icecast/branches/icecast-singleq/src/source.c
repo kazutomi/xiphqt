@@ -339,7 +339,9 @@ void source_move_clients (source_t *source, source_t *dest)
             client = (client_t *)(node->key);
             avl_delete (source->pending_tree, client, NULL);
 
-            /* TODO: reset client local format data?  */
+            /* switch client to different queue */
+            client->refbuf = dest->stream_data_tail;
+            client->pos = 0;
             avl_insert (dest->pending_tree, (void *)client);
         }
 
@@ -353,7 +355,9 @@ void source_move_clients (source_t *source, source_t *dest)
             client = (client_t *)(node->key);
             avl_delete (source->client_tree, client, NULL);
 
-            /* TODO: reset client local format data?  */
+            /* switch client to different queue */
+            client->refbuf = dest->stream_data_tail;
+            client->pos = 0;
             avl_insert (dest->pending_tree, (void *)client);
         }
         source->listeners = 0;
