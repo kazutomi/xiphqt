@@ -38,8 +38,14 @@
 #endif
 
 #define INPUT_BUFSIZ 4096
+#define OUTPUT_BUFSIZ 8192
 /* sleep this long in ms when every stream has errors */
 #define ERROR_DELAY 999
+
+typedef struct {
+  char* data;
+  size_t len;
+} buffer_t;
 
 static volatile int finish_send = 0;
 
@@ -62,11 +68,14 @@ ices_stream_loop (ices_config_t* config)
   int linenum_new = 0;
   input_stream_t source;
   ices_stream_t* stream;
+  int rc;
 
   for (stream = config->streams; stream; stream = stream->next)
     stream_connect (stream);
 
   while (1) {
+    ices_metadata_set (NULL, NULL);
+
     source.path = ices_playlist_get_next ();
     source.bytes_read = 0;
     source.filesize = 0;
@@ -123,8 +132,11 @@ ices_stream_loop (ices_config_t* config)
 	  continue;
 	}
 
+    rc = stream_send (config, &source);
+    source.close (&source);
+
     /* If something goes on while transfering, we just go on */
-    if (stream_send (config, &source) < 0) {
+    if (rc < 0) {
       ices_log ("Encountered error while transfering %s: %s", source.path, ices_log_get_error ());
 
       consecutive_errors++;
@@ -139,7 +151,6 @@ ices_stream_loop (ices_config_t* config)
     /* Free the dynamically allocated filename */
     ices_util_free (source.path);
   }
-  /* Not reached */
 }
 
 /* set a flag to tell stream_send to finish early */
@@ -163,19 +174,25 @@ stream_send (ices_config_t* config, input_stream_t* source)
   int do_sleep;
 #ifdef HAVE_LIBLAME
   int decode = 0;
-  unsigned char obuf[INPUT_BUFSIZ * 8];
+  buffer_t obuf;
   static int16_t left[INPUT_BUFSIZ * 30];
   static int16_t right[INPUT_BUFSIZ * 30];
 #endif
 
-
 #ifdef HAVE_LIBLAME
+  obuf.len = 0;
+
   if (config->reencode)
     /* only actually decode/reencode if the bitrate of the stream != source */
     for (stream = config->streams; stream; stream = stream->next)
       if (stream->bitrate != source->bitrate) {
 	decode = 1;
 	ices_reencode_reset (source);
+        if (!(obuf.data = malloc(OUTPUT_BUFSIZ))) {
+	  ices_log_error("Error allocating output buffer");
+	  return -1;
+	}
+	obuf.len = OUTPUT_BUFSIZ;
 	break;
       }
 #endif
@@ -213,23 +230,35 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	  }
 #ifdef HAVE_LIBLAME
 	  else {
-	    if (samples > 0)
-	      olen = ices_reencode (stream, samples, left, right, obuf,
-				    sizeof (obuf));
-	    if (olen == -1) {
-	      ices_log_debug ("Output buffer too small, skipping chunk");
-	    } else if (olen > 0) {
-	      shout_sync(stream->conn);
-	      rc = stream_send_data (stream, obuf, olen);
-	    }
+	    if (samples > 0) {
+	      while ((olen = ices_reencode (stream, samples, left, right, obuf.data,
+	          obuf.len)) == -1) {
+	        char* tmpbuf;
+
+                if (!(tmpbuf = realloc(obuf.data, obuf.len + OUTPUT_BUFSIZ))) {
+		  ices_log_error ("Error growing output buffer, aborting track");
+		  goto err;
+		}
+		obuf.data = tmpbuf;
+		obuf.len += OUTPUT_BUFSIZ;
+		ices_log_debug ("Grew output buffer to %d bytes", obuf.len);
+	      }
+
+	      if (olen < 0) {
+	        ices_log_error ("Reencoding error, aborting track");
+		goto err;
+              } else if (olen > 0) {
+                shout_sync(stream->conn);
+                rc = stream_send_data (stream, obuf.data, olen);
+              }
+            }
 	  }
 #endif
 
 	  if (rc < 0) {
 	    if (stream->errs > 10) {
 	      ices_log ("Too many stream errors, giving up");
-	      source->close (source);
-	      return -1;
+	      goto err;
 	    }
 	    ices_log ("Error during send: %s", ices_log_get_error ());
 	  } else {
@@ -252,8 +281,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
     } else {
       ices_log_error ("Read error: %s",
 		      ices_util_strerror (errno, namespace, 1024));
-      source->close (source);
-      return -1;
+      goto err;
     }
 
     ices_cue_update (source);
@@ -263,16 +291,20 @@ stream_send (ices_config_t* config, input_stream_t* source)
   for (stream = config->streams; stream; stream = stream->next)
     if (stream->reencode && (!source->read ||
 	(source->bitrate != stream->bitrate))) {
-      len = ices_reencode_flush (stream, obuf, sizeof (obuf));
+      len = ices_reencode_flush (stream, obuf.data, obuf.len);
       if (len > 0)
-	rc = shout_send (stream->conn, obuf, len);
+	rc = shout_send (stream->conn, obuf.data, len);
     }
+
+  free(obuf.data);
 #endif
 
-  source->close (source);
-  ices_metadata_set (NULL, NULL);
-
   return 0;
+err:
+#ifdef HAVE_LIBLAME
+  free(obuf.data);
+#endif
+  return -1;
 }
 
 /* open up path, figure out what kind of input it is, and set up source */
