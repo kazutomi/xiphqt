@@ -47,23 +47,20 @@ typedef struct {
   int pos;
 } ices_mp3_in_t;
 
-static unsigned int bitrates[3][3][15] =
+static unsigned int bitrates[2][3][15] =
 {
+  /* MPEG-1 */
   {
     {0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448},
     {0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384},
     {0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320}
   },
+  /* MPEG-2 LSF, MPEG-2.5 */
   {
     {0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
     {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
     {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160}
   },
-  {
-    {0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
-    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
-    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160}
-  }
 };
 
 static unsigned int s_freq[3][4] =
@@ -311,7 +308,10 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
     return 0;
 
   header->error_protection = !(buf[1] & 0x1);
-  header->bitrate = bitrates[header->version][header->layer-1][bitrate_idx];
+  if (header->version == 0)
+    header->bitrate = bitrates[0][header->layer-1][bitrate_idx];
+  else
+    header->bitrate = bitrates[1][header->layer-1][bitrate_idx];
   header->samplerate = s_freq[header->version][samplerate_idx];
   header->padding = (buf[2] >> 1) & 0x01;
   header->extension = buf[2] & 0x01;
