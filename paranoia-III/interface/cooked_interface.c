@@ -56,17 +56,6 @@ static int cooked_readtoc (cdrom_drive *d){
   return(--tracks);  /* without lead-out */
 }
 
-
-/* Set operating speed */
-static int cooked_setspeed(cdrom_drive *d, int speed)
-{
-  if(d->ioctl_fd!=-1)
-    return ioctl(d->ioctl_fd, CDROM_SELECT_SPEED, speed);
-  else
-    return 0;
-}
-
-
 /* read 'SectorBurst' adjacent sectors of audio sectors 
  * to Buffer '*p' beginning at sector 'lSector'
  */
@@ -97,26 +86,33 @@ static long cooked_read (cdrom_drive *d, void *p, long begin, long sectors){
 	  return(-300);  
 	}
       default:
+      case EIO:
+      case EINVAL:
 	if(sectors==1){
-	    
-
-	  /* *Could* be I/O or media error.  I think.  If we're at
-	     30 retries, we better skip this unhappy little
-	     sector. */
-	  if(retry_count>MAX_RETRIES-1){
-	    char b[256];
-	    sprintf(b,"010: Unable to access sector %ld: skipping...\n",
-		    begin);
-	    cderror(d,b);
-	    return(-10);
-	    
+	  if(errno==EIO){
+	    /* *Could* be I/O or media error.  I think.  If we're at
+	       30 retries, we better skip this unhappy little
+	       sector. */
+	    if(retry_count==MAX_RETRIES-1){
+	      /* OK, skip.  We need to make the scratch code pick
+		 up the blank sector tho. */
+	      char b[256];
+	      sprintf(b,"Unable to find sector %ld: skipping...\n",
+		      begin);
+	      cdmessage(d,b);
+	      memset(arg.buf,-1,CD_FRAMESIZE_RAW);
+	      err=0;
+	    }
+	    break;
 	  }
-	  break;
+	  /* OK, ok, bail. */
+	  cderror(d,"007: Unknown, unrecoverable error reading data\n");
+	  return(-7);
 	}
       }
-      if(retry_count>4)
+      if(retry_count>4==0)
 	if(sectors>1)
-	  sectors=sectors*3/4;
+	  sectors>>=1;
       retry_count++;
       if(retry_count>MAX_RETRIES){
 	cderror(d,"007: Unknown, unrecoverable error reading data\n");
@@ -136,8 +132,7 @@ static int Dummy (cdrom_drive *d,int Switch){
 
 static int verify_read_command(cdrom_drive *d){
   int i;
-  int16_t *buff=malloc(CD_FRAMESIZE_RAW);
-  int audioflag=0;
+  size16 *buff=malloc(CD_FRAMESIZE_RAW);
 
   cdmessage(d,"Verifying drive can read CDDA...\n");
 
@@ -148,7 +143,6 @@ static int verify_read_command(cdrom_drive *d){
       long firstsector=cdda_track_firstsector(d,i);
       long lastsector=cdda_track_lastsector(d,i);
       long sector=(firstsector+lastsector)>>1;
-      audioflag=1;
 
       if(d->read_audio(d,buff,sector,1)>0){
 	cdmessage(d,"\tExpected command set reads OK.\n");
@@ -161,11 +155,6 @@ static int verify_read_command(cdrom_drive *d){
  
   d->enable_cdda(d,0);
 
-  if(!audioflag){
-    cdmessage(d,"\tCould not find any audio tracks on this disk.\n");
-    return(-403);
-  }
-
   cdmessage(d,"\n\tUnable to read any data; "
 	    "drive probably not CDDA capable.\n");
   
@@ -173,20 +162,6 @@ static int verify_read_command(cdrom_drive *d){
 
   free(buff);
   return(-6);
-}
-
-#include "drive_exceptions.h"
-
-static void check_exceptions(cdrom_drive *d,exception *list){
-
-  int i=0;
-  while(list[i].model){
-    if(!strncmp(list[i].model,d->drive_model,strlen(list[i].model))){
-      if(list[i].bigendianp!=-1)d->bigendianp=list[i].bigendianp;
-      return;
-    }
-    i++;
-  }
 }
 
 /* set function pointers to use the ioctl routines */
@@ -236,16 +211,12 @@ int cooked_init_drive (cdrom_drive *d){
 		      way of determining other than this guess tho */
     d->bigendianp=0;
     d->is_atapi=1;
-
-    check_exceptions(d,atapi_list);
-
     break;
   default:
     d->nsectors=40; 
   }
   d->enable_cdda = Dummy;
   d->read_audio = cooked_read;
-  d->set_speed = cooked_setspeed;
   d->read_toc = cooked_readtoc;
   ret=d->tracks=d->read_toc(d);
   if(d->tracks<1)

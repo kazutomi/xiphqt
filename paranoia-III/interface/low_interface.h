@@ -22,35 +22,36 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
-#include <sys/time.h>
-#include <sys/types.h>
 
 #include <linux/major.h>
 #include <linux/version.h>
 
 /* some include file locations have changed with newer kernels */
 
-#ifdef SBPCD_H
+#if LINUX_VERSION_CODE < 0x20100
+
 #include <linux/sbpcd.h>
-#endif
-
-#ifdef UCDROM_H
 #include <linux/ucdrom.h>
+
 #endif
 
-#ifndef CDROMAUDIOBUFSIZ      
-#define CDROMAUDIOBUFSIZ        0x5382 /* set the audio buffer size */
+#if LINUX_VERSION_CODE > 0x10300 + 97
+/* easiest as many dists don't make proper symlinks */
+#include <linux/../scsi/sg.h>
+#include <linux/../scsi/scsi.h>
+#else /* old stuff */
+#include <linux/../../drivers/scsi/sg.h>
+#include <linux/../../drivers/scsi/scsi.h>
 #endif
-
-#include <scsi/sg.h>
-#include <scsi/scsi.h>
 
 #include <linux/cdrom.h>
 #include <linux/major.h>
 
 #include "cdda_interface.h"
 
-#define MAX_RETRIES 8
+#define MAX_RETRIES 32 /* There's a *reason* for this value.  Don't
+			  change it randomly without looking at what
+			  it's used for */
 #define MAX_BIG_BUFF_SIZE 65536
 #define MIN_BIG_BUFF_SIZE 4096
 #define SG_OFF sizeof(struct sg_header)
