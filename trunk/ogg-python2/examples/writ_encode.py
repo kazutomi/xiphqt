@@ -1,4 +1,11 @@
-#!/usr/local/bin/python
+'''
+  function: Ogg Writ reference encoder
+  last mod: $Id: writ_encode.py,v 1.3 2003/12/01 07:18:51 arc Exp $
+
+This is an example for how py-ogg2 can be used to rapidly design a new 
+Ogg codec or test an existing codec's specifications for accuracy.
+
+'''
 
 import ogg2
 import struct
@@ -59,8 +66,6 @@ bitx = ilog(sclx)
 bity = ilog(scly)
 totl = (bitx*2)+(bity*2)+4
 bitp = ((((totl-1)/8)+1)*8)-totl
-print totl
-print bitp
 
 langs=(('en','English'),('es','Spanish')) 
 
@@ -96,7 +101,6 @@ os.packetin(packet)
 page=os.flush()
 pn=1
 oy.pagein(page)
-oy.output(fd)
 
 bp = BitPacker()    
 # bp.reset()
