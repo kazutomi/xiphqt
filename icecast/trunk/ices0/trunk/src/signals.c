@@ -52,14 +52,31 @@ void
 ices_signals_setup (void)
 {
 #ifndef _WIN32
-  signal (SIGPIPE, SIG_IGN);
-  signal (SIGCHLD, signals_child);
-  signal (SIGIO, SIG_IGN);
-  signal (SIGALRM, SIG_IGN);
-  signal (SIGINT, signals_int);
-  signal (SIGTERM, signals_int);
-  signal (SIGHUP, signals_hup);
-  signal (SIGUSR1, signals_usr1);
+  struct sigaction sa;
+
+  sigemptyset (&sa.sa_mask);
+  sa.sa_flags = 0;
+
+  sa.sa_handler = SIG_IGN;
+  sigaction (SIGPIPE, &sa, NULL);
+  sigaction (SIGIO, &sa, NULL);
+  sigaction (SIGALRM, &sa, NULL);
+
+  sa.sa_handler = signals_int;
+  sigaction (SIGINT, &sa, NULL);
+  sigaction (SIGTERM, &sa, NULL);
+
+#ifdef SA_RESTART
+  sa.sa_flags = SA_RESTART;
+#endif
+  sa.sa_handler = signals_child;
+  sigaction (SIGCHLD, &sa, NULL);
+
+  sa.sa_handler = signals_hup;
+  sigaction (SIGHUP, &sa, NULL);
+
+  sa.sa_handler = signals_usr1;
+  sigaction (SIGUSR1, &sa, NULL);
 }
 
 /* Guess we fork()ed, let's take care of the dead process */
@@ -69,7 +86,6 @@ signals_child (const int sig)
   int stat;
 
   wait (&stat);
-  signal (SIGCHLD, signals_child);
 }
 
 /* SIGINT, ok, let's be nice and just drop dead */
@@ -92,7 +108,6 @@ signals_hup (const int sig)
 static RETSIGTYPE
 signals_usr1 (const int sig)
 {
-  signal (SIGUSR1, signals_usr1);
   ices_log_debug ("Caught SIGUSR1, skipping to next track...");
   ices_stream_next ();
 #endif
