@@ -50,7 +50,7 @@ class Neuros:
 
 
     def __init__(self, mountpoint):
-        self.mountpoint = mountpoint
+        self.mountpoint = path.abspath(mountpoint)
 
         # Check and see if the mountpoint looks legit
         dbpath = path.join(self.mountpoint, Neuros.DB_DIR)

@@ -199,17 +199,28 @@ class WOID:
         """Deletes record with index number sai_index."""
         (mdb_pointer, pai_pointer) = self.sai[sai_index]
 
-        record = self.mdb.read_record_at(mdb_pointer)
+        (record, next) = self.mdb.read_record_at(mdb_pointer)
         self.mdb.delete_record_at(mdb_pointer)
-        self.sai[sai_index][1] = 0  #Blank PAI pointer
-        self.pai.clear_module_at(pai_pointer)
+        sai_record = self.sai[sai_index]
+        sai_record[1] = 0  #Blank PAI pointer
+        self.sai[sai_index] = sai_record
+        if self.pai != None:
+            self.pai.clear_module_at(pai_pointer)
 
-        for i in len(record["keys"]):
+        for i in range(len(record["keys"])):
             for key in record["keys"][i]:
                 child_db = self.children[i]
                 child_index = child_db.sai.find(key)
+
+                if child_index == None:
+                    continue
+                
                 (child_mdb_pointer, child_pai_pointer) = \
-                                    child_db.sai[child_index] 
+                                    child_db.sai[child_index]
+
+                if child_pai_pointer == 0:
+                    continue
+                
                 child_db.pai.delete_entry_in_module_at(child_pai_pointer,
                                                        mdb_pointer)
                 (length, flags, num_entries) = \

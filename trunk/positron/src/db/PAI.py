@@ -52,7 +52,7 @@ class PAI:
         f = self.file
         pointer -= PAI.MODULE_HEADER_LEN
 
-        return _read_module_header(pointer)
+        return self._read_module_header(pointer)
 
     def _read_module_header(self, pointer):
         f = self.file
@@ -132,7 +132,7 @@ class PAI:
         f = self.file
         pointer -= PAI.MODULE_HEADER_LEN
 
-        (length, flag, num_entries) = _read_module_header(pointer)
+        (length, flag, num_entries) = self._read_module_header(pointer)
 
         # Find the word pointer to word *after* entry.  If entry
         # is last then we will be pointing at the terminating null

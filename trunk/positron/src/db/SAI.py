@@ -50,8 +50,8 @@ class SAI:
                 raise IndexError("Key out of bounds")
             
             self.file.seek(SAI.DATA_START + 8*key)
-            return struct.unpack(SAI.ENTRY_FORMAT,
-                                 self.file.read(SAI.ENTRY_SIZE))
+            return list(struct.unpack(SAI.ENTRY_FORMAT,
+                                      self.file.read(SAI.ENTRY_SIZE)))
             
     def __setitem__(self, key, value):
         if key is types.SliceType:
@@ -80,6 +80,13 @@ class SAI:
                 raise ValueError("Incorrect entry format: "+e.value)
 
             return entry
+
+    def find(self, key, field=0):
+        for i in range(self.num_entries):
+            if self[i][field] == key:
+                return i
+        else:
+            return None
         
     def append(self, value):
         entry = self._pack_entry(value) + "\x00"*8
