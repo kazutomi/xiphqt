@@ -39,7 +39,7 @@ Y &=& G + (U + V) / 4                                \nonumber\\
 
 You can understand this transform as reversible (1,2) - wavelet transform on a row
 of three data items. It is expanding (8 input bits require 9 output bits) because
-of the subtraction.
+of the subtraction -- but this doesn't matter since we need 16bit integers anyway.
 
 As usual we can generate the inverse transform by running the algorithm
 backwards and inverting all operations:
@@ -53,4 +53,15 @@ R &=& V + G                                          \nonumber\\
 
 If someone needs as 'exact YUV to this colorspace' transform he can simply 
 multiply the two transform matrices together.
+
+\subsection{ The Lxy Colorspace }
+
+I implemented an integer version of the Lxy colorspace as suggested on the
+tarkin-dev mailing list. It's not well tested and seems to be buggy due to
+roundoff errors.
+You can enable it by defining \verb|TARKIN_YUV_LXY| on top of file \verb|yuv.c|.
+
+Feel free to fix bugs and send patches.
+
+
 

@@ -18,7 +18,7 @@
 #define ENTROPY_DECODER_DONE(coder)       /* nothing to do ... */
 #define ENTROPY_CODER_BITSTREAM(coder)    (coder)->bitstream
 
-#define ENTROPY_CODER_MPS                 1
+#define ENTROPY_CODER_MPS(coder)          1
 #define ENTROPY_CODER_RUNLENGTH(coder)    0
 #define ENTROPY_CODER_SKIP(coder,skip)
 
@@ -74,6 +74,7 @@ uint32_t bitcoder_flush (BitCoderState *s)
       s->bitstream [s->byte_count++] = s->byte << (8 - s->bit_count);
 
 //printf ("%s: %i bytes written.\n", __FUNCTION__, s->byte_count);
+//printf ("%s: last bit %i\n", __FUNCTION__, s->bit_count);
    return s->byte_count;
 }
 

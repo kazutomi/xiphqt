@@ -11,3 +11,4 @@ $(TARGET):
 
 clean:
 	$(RM) $(TARGET) $(TARGET).gz $(TARGET:.ps=.dvi) *.log *.aux
+

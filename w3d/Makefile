@@ -1,8 +1,27 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O3 -Wall -DTYPE=int16_t -DRLECODER #-DDBG_XFORM -DDBG_MEMLEAKS
-LFLAGS = -g #-lefence
+CFLAGS = -g -O2 -Wall
+
+# use 16 bit signed integers as wavelet coefficients
+CFLAGS+= -DTYPE=int16_t
+
+# we'll actually use TYPE_BITS bits of type (e.g. 9 magnitude + 1 sign)
+CFLAGS+= -DTYPE_BITS=10
+
+# use the rle entropy coder
+CFLAGS+= -DRLECODER
+
+# simple malloc debugging
+CFLAGS+= -DDBG_MEMLEAKS
+
+# dump a lot debug images
+CFLAGS+= -DDBG_XFORM
+
+# disable assertions
+#CFLAGS+= -DNDEBUG
+
+LFLAGS = -g -lefence
 
 OBJS = mem.o pnm.o wavelet.o wavelet_xform.o wavelet_coeff.o \
 	yuv.o tarkin.o tarkin-io.o
@@ -27,9 +46,10 @@ tarkin_dec: $(OBJS) tarkin_dec.o
 
 clean:
 	$(RM) $(OBJS) $(TARGET) gmon.out core .depend .depend.bak rle.histogram
-	$(RM) *.ppm *.pgm
 	$(RM) $(TEST_TARGETS) $(TEST_OBJS)
 	$(RM) tarkin_enc tarkin_dec tarkin_enc.o tarkin_dec.o
+	$(RM) *.ppm *.pgm
+	$(RM) stream.tarkin
 
 
 test: .depend $(TEST_TARGETS)

@@ -37,12 +37,12 @@ int write_tarkin_header (int fd, TarkinStream *s)
    uint32_t n_layers = s->n_layers;
 
    if (write (fd, signature, 6) < 6)
-      return TARKIN_IO_ERROR;
+      return -TARKIN_IO_ERROR;
 
    CPU_TO_LE32(n_layers);
 
    if (write (fd, &n_layers, 4) < 4)
-      return TARKIN_IO_ERROR;
+      return -TARKIN_IO_ERROR;
 
    return TARKIN_OK;
 }
@@ -63,7 +63,7 @@ int write_layer_descs (int fd, TarkinStream *s)
       CPU_TO_LE32(layer.format);
 
       if (write (fd, &layer, sizeof(TarkinVideoLayer)) < sizeof(TarkinVideoLayer)) {
-         return TARKIN_IO_ERROR;
+         return -TARKIN_IO_ERROR;
       }
    }
 
@@ -88,13 +88,13 @@ int read_tarkin_header (int fd, TarkinStream *s)
    char signature [6];
 
    if (read (fd, signature, 6) < 6)
-      return TARKIN_IO_ERROR;
+      return -TARKIN_IO_ERROR;
 
    if (!strncmp(signature, "tarkin", 6) == 0)
-      return TARKIN_SIGNATURE_NOT_FOUND;
+      return -TARKIN_SIGNATURE_NOT_FOUND;
 
    if (read (fd, &s->n_layers, 4) < 4)
-      return TARKIN_IO_ERROR;
+      return -TARKIN_IO_ERROR;
 
    LE32_TO_CPU(s->n_layers);
 
@@ -109,7 +109,7 @@ int read_layer_descs (int fd, TarkinStream *s)
    for (i=0; i<s->n_layers; i++) {
       if (read (fd, &s->layer[i], sizeof(TarkinVideoLayer)) < sizeof(TarkinVideoLayer)) {
          tarkin_stream_destroy (s);
-         return TARKIN_IO_ERROR;
+         return -TARKIN_IO_ERROR;
       }
       LE32_TO_CPU(s->layer[i].width);
       LE32_TO_CPU(s->layer[i].height);

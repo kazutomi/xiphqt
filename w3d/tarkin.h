@@ -23,9 +23,11 @@ typedef enum {
 } TarkinColorFormat;
 
 typedef enum {
-   TARKIN_SIGNATURE_NOT_FOUND = -2,
-   TARKIN_IO_ERROR = -1,
-   TARKIN_OK = 0
+   TARKIN_OK = 0,
+   TARKIN_IO_ERROR,
+   TARKIN_SIGNATURE_NOT_FOUND,
+   TARKIN_INVALID_LAYER,
+   TARKIN_INVALID_COLOR_FORMAT
 } TarkinError;
 
 
@@ -62,20 +64,59 @@ typedef struct {
 } TarkinStream;
 
 
-extern TarkinStream* tarkin_stream_new (int fd);
-extern void tarkin_stream_destroy (TarkinStream *s);
+extern
+TarkinStream* tarkin_stream_new (int fd);
 
-extern int tarkin_stream_get_layer_desc (TarkinStream *s,
-                                         uint32_t layer_id,
-                                         TarkinVideoLayerDesc *desc);
-extern uint32_t tarkin_stream_read_header (TarkinStream *s);
-extern uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **buf);
+extern
+void tarkin_stream_destroy (TarkinStream *s);
 
-extern int tarkin_stream_write_layer_descs (TarkinStream *s,
-                                            uint32_t n_layers,
-                                            TarkinVideoLayerDesc desc []);
-extern uint32_t tarkin_stream_write_frame (TarkinStream *s, uint8_t **buf);
-extern void tarkin_stream_flush (TarkinStream *s);
+
+/**
+ *   Copy layer description of layer into desc
+ */
+extern
+TarkinError tarkin_stream_get_layer_desc (TarkinStream *s,
+                                          uint32_t layer_id,
+                                          TarkinVideoLayerDesc *desc);
+
+/**
+ *   Return value: number of layers, 0 on i/o error
+ */
+extern
+uint32_t tarkin_stream_read_header (TarkinStream *s);
+
+
+/**
+ *   Read all layers of the next frame to buf[0..n_layers]
+ *   returns the number of this frame on success, -1 on error
+ */
+extern
+uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **buf);
+
+
+/**
+ *   Setup file configuration by writing layer descriptions
+ *   Has to be done once after creating the stream
+ */
+extern
+TarkinError tarkin_stream_write_layer_descs (TarkinStream *s,
+                                             uint32_t n_layers,
+                                             TarkinVideoLayerDesc desc []);
+
+/**
+ *   Write a single frame. This means that content is copied into
+ *   a wavelet buffer. As soon this gets filled, the stream will be
+ *   flushed implicitly.
+ *   Each pointer in buf points to an layer imaged described by the
+ *   tarkin_stream_write_layer_descs() call
+ */
+extern
+uint32_t tarkin_stream_write_frame (TarkinStream *s, uint8_t **buf);
+
+
+extern
+void tarkin_stream_flush (TarkinStream *s);
+
 
 #endif
 

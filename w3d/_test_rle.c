@@ -78,8 +78,20 @@ int main ()
          ENTROPY_DECODER_INIT(&decoder, bitstream, count);
 
          for (i=0; i<limit; i++) {
-            int b = INPUT_BIT(&decoder);
+            int b;
+            int skip;
+
+            b = INPUT_BIT(&decoder);
             TEST(bit[i] == b);
+
+            skip = ENTROPY_CODER_RUNLENGTH(&decoder);
+            if (skip > 0 && ENTROPY_CODER_MPS(&decoder) == 0) {
+               int j;
+               for (j=0; j<skip; j++)
+                  TEST(bit[i+j] == 0);
+               ENTROPY_CODER_SKIP(&decoder, skip);
+               i += skip;
+            }
          }
       }
 
