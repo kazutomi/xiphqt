@@ -115,7 +115,7 @@ struct _ices_encoder_t {
   int (*new_source)(ices_stream_t* stream, input_stream_t* source);
   int (*encode)(ices_stream_t* stream, int samples, int16_t* left,
                 int16_t* right, unsigned char* out, size_t olen);
-  void (*shutdown)(void);
+  void (*shutdown)(ices_stream_t* stream);
 };
 
 typedef struct _ices_plugin {

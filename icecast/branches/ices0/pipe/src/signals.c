@@ -28,6 +28,8 @@
 #include <sys/types.h>
 #endif
 
+#include <sys/wait.h>
+
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
@@ -84,8 +86,17 @@ static RETSIGTYPE
 signals_child (const int sig)
 {
   int stat;
+  int pid;
 
-  wait (&stat);
+  pid = wait (&stat);
+  
+  if (WIFEXITED(stat)) {
+    if (WEXITSTATUS(stat))
+      ices_log_debug("Child %d exited with status %d", pid, WEXITSTATUS(stat));
+  } else if (WIFSIGNALED(stat))
+    ices_log_debug("Child %d received signal %d", pid, WTERMSIG(stat));
+  else
+    ices_log_debug("Child %d died (unknown cause)");
 }
 
 /* SIGINT, ok, let's be nice and just drop dead */

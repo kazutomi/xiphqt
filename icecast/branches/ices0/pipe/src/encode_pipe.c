@@ -23,6 +23,7 @@
 #endif
 
 #include "definitions.h"
+#include "pipe.h"
 
 #include <sys/select.h>
 #include <unistd.h>
@@ -33,8 +34,8 @@ static int pipe_init(ices_stream_t* stream);
 static int pipe_new_source(ices_stream_t* stream, input_stream_t* source);
 static int pipe_encode(ices_stream_t* stream, int samples, int16_t* left,
                        int16_t* right, unsigned char* out, size_t olen);
-
-static void pipe_shutdown(void);
+static void pipe_close(ices_stream_t* stream);
+static void pipe_shutdown(ices_stream_t* stream);
 
 static ices_encoder_t PipeEncoder = {
   pipe_init,
@@ -44,6 +45,7 @@ static ices_encoder_t PipeEncoder = {
 };
 
 typedef struct {
+  int pid;
   int rfd;
   int wfd;
   int16_t* buf;
@@ -72,65 +74,19 @@ static int pipe_init(ices_stream_t* stream) {
 
 static int pipe_new_source(ices_stream_t* stream, input_stream_t* source) {
   encoder_state_t* encoder;
-  int pin[2], pout[2];
-  int pid;
+  const char* cmd = "lame -b64 - -";
 
   encoder = (encoder_state_t*)stream->enc2_state;
-    
-  if (encoder->rfd) {
-    close(encoder->rfd);
-    close(encoder->wfd);
-    encoder->rfd = 0;
-    encoder->wfd = 0;
-  }
+
+  pipe_close(stream);
   if (encoder->blen) {
     free (encoder->buf);
     encoder->blen = 0;
   }
 
-  if (pipe (pin) == -1) {
-    ices_log_error("Error opening encoder read pipe");
-    return 0;
+  if ((encoder->pid = ices_pipe(cmd, &encoder->rfd, &encoder->wfd)) < 0) {
+    return -1;
   }
-  if (pipe (pout) == -1) {
-    ices_log_error("Error opening encoder write pipe");
-    return 0;
-  }
-  
-  if ((pid = fork()) == 0) {
-    if (dup2 (pout[0], STDIN_FILENO) < 0 || dup2(pin[1], STDOUT_FILENO) < 0)
-      _exit(127);
-    close(pin[0]);
-    close(pin[1]);
-    close(pout[0]);
-    close(pout[1]);
-    close(STDERR_FILENO);
-    
-    setsid();
-    
-    execl("/bin/sh", "sh", "-c", "lame -b64 - -", NULL);
-    _exit(127);
-  }
-  
-  if (pid < 0) {
-    close(pin[0]);
-    close(pin[1]);
-    close(pout[0]);
-    close(pout[1]);
-    ices_log_error("Error forking encoder");
-    return 0;
-  }
-  
-  close(pin[1]);
-  close(pout[0]);
-  
-  encoder->rfd = pin[0];
-  encoder->wfd = pout[1];
-
-  fcntl(encoder->rfd, F_SETFD, FD_CLOEXEC);
-  fcntl(encoder->wfd, F_SETFD, FD_CLOEXEC);
-
-  ices_log_debug("Encoder pipe opened");
 
   return 1;
 }
@@ -167,9 +123,13 @@ static int pipe_encode(ices_stream_t* stream, int samples, int16_t* left,
     select(FD_SETSIZE, &rfds, &wfds, NULL, NULL);
     if (FD_ISSET(encoder->wfd, &wfds)) {
       rc = write(encoder->wfd, ((char*)encoder->buf)+i, samples*4 - i);
-      if (rc > 0) {
-        i += rc;
+      if (rc < 0) {
+        ices_log_debug("error writing to pipe: %s", strerror(errno));
+        pipe_close(stream);
+        return -2;
       }
+
+      i += rc;
     }
 
     if (FD_ISSET(encoder->rfd, &rfds)) {
@@ -185,6 +145,31 @@ static int pipe_encode(ices_stream_t* stream, int samples, int16_t* left,
   return bytesread;
 }
 
-static void pipe_shutdown(void) {
+static void pipe_close(ices_stream_t* stream) {
+  encoder_state_t* encoder;
+  
+  encoder = (encoder_state_t*)stream->enc2_state;
+  
+  if (encoder->rfd) {
+    close(encoder->rfd);
+    close(encoder->wfd);
+    encoder->rfd = 0;
+    encoder->wfd = 0;
+  }
+}
+
+static void pipe_shutdown(ices_stream_t* stream) {
+  encoder_state_t* encoder;
+  
+  encoder = (encoder_state_t*)stream->enc2_state;
+
   ices_log_debug("Encoder pipe shutting down");
+
+  pipe_close(stream);
+  
+  if (encoder->blen)
+    free(encoder->buf);
+  
+  free(encoder);
+  stream->enc2_state = NULL;
 }

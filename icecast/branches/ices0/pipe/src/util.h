@@ -18,6 +18,8 @@
  *
  */
 
+#include <stdio.h>
+
 /* Public function declarations */
 char **ices_util_get_argv (void);
 int ices_util_get_argc (void);
