@@ -20,8 +20,8 @@ system.ini,drivers32,,"VIDC.VP31=vp31vfw.dll"
 HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.VP31,Description,,%Description%
 HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.VP31,Driver,,"vp31vfw.dll"
 HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.VP31,FriendlyName,,%Description%
-HKLM,SOFTWARE\On2 Technologies\"VFW Encoder/Decoder"\VP31,strPostProcessingLevel,,9 
-HKLM,SOFTWARE\On2 Technologies\"VFW Encoder/Decoder"\VP31,strSettings,,"300 56 110 0 1 1 90 8 120 2 0 "
+HKLM,SOFTWARE\ON2\"VFW Encoder/Decoder"\VP31,strPostProcessingLevel,,9 
+HKLM,SOFTWARE\ON2\"VFW Encoder/Decoder"\VP31,strSettings,,"300 56 110 0 1 1 90 8 120 2 0 "
 
 [DestinationDirs]
 DefaultDestDir=11	; windows\system

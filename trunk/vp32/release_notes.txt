@@ -1,0 +1,11 @@
+Release Notes:
+
+3.2.2.0 vfw codec
+
+- added 2 controls two configuration screen ( sharpness, and quality)
+  these allow control of the worst frame quality, and the level of  
+  sharpness allowed.
+
+- changed the behavior of the codec if datarate control is disabled  
+  in vfw.  Now uses a fixed quality set to what the worst frame quality 
+  is.
