@@ -19,7 +19,7 @@ individually add and delete tracks from a Neuros, as well as
 synchronize it with a directory tree of music.
 
 As far as your computer is concerned, a Neuros is just an external USB
-1 hard disk, following the USB Mass Storage standard.  You can copy
+hard disk, following the USB Mass Storage standard.  You can copy
 any sort of file, music or otherwise, onto the Neuros.  However, only files
 that are listed in a special database stored on the Neuros will be
 playable.  This is where positron is needed.  It will both physically
