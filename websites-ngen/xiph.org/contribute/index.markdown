@@ -86,3 +86,15 @@ If all else fails, you could [give us money][donate]. Your funds help keep Monty
 	[free software]:	http://www.gnu.org/philosophy/free-sw.html "Free as in freedom, mind you"
 	[VorbisGain]:		http://sjeng.org/vorbisgain.html
 	[donate]:			/donate/
+
+(the following was simply removed out of another file)
+
+Enhancing For Xiph
+------------------
+
+Assuming your audio player already supports Vorbis and FLAC, what can you do to enhance it
+further? Here are a number of corner cases that you could try…
+
+## Ensure that your application supports UTF-8 comments properly.
+Many older tagging standards did not specify an encoding; Vorbis-style comment headers do.
+Your ability to handle UTF-8 may be dependent on the libraries at your disposal

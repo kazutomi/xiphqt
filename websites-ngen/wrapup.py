@@ -22,8 +22,11 @@
 import os, re, sys, glob, os.path, time, datetime 
 import pdb
 from ConfigParser import SafeConfigParser
+
 MARKDOWN_COMMAND = "perl Markdown.pl" # could also be "perl Markdown.pl"
 TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
+LANGUAGE_EXTRACTOR = re.compile(r"^.*\.(.{2,5})\..*$") # anything from “.es.” to “.zh-TW.”
+
 class MarkdownWrapper(object):
 	"""
 	Important attributes:
@@ -63,7 +66,7 @@ class MarkdownWrapper(object):
 		.afterContentInherit	--	stuff to include after the content div
 			
 	"""
-	def __init__(self, sourceFilename, destFilename=None, lang=None):
+	def __init__(self, sourceFilename, destFilename=None):
 		self.sourceFilename = sourceFilename
 		if destFilename:
 			self.destFilename = destFilename
@@ -80,14 +83,19 @@ class MarkdownWrapper(object):
 		if match:									#TODO: needs decent error handling
 			self.title = "Xiph.Org: " + match.group(1)
 		
-		self.lang = lang
-		if self.lang == None: self.lang == 'en-US'
+		self.lang = 'en-US'
+		lm = LANGUAGE_EXTRACTOR.match(sourceFilename)
+		if lm:
+			self.lang = lm.group(1)
+			
 
 		self.inHeadInherit = ''
 		self.inHeadInclude = ''
 		
 		self.cssInherit = ''
 		self.cssInclude = ''
+		
+		self.langInclude = ''
 		
 		self.beforeContentInherit = ''
 		self.beforeContentInclude = ''
@@ -100,50 +108,77 @@ class MarkdownWrapper(object):
 
 		# Now we need to stuff these attributes from their respective files.
 		
-		inheritables = "inhead css beforecontent aftermaintext aftercontent".split()
+		prefixes = "inhead css beforecontent aftermaintext aftercontent".split()
+		inheritables = prefixes[:]
 		inheritables = [i + ".inherit" for i in inheritables]
 
-		includables =  "inhead css beforecontent aftermaintext aftercontent".split()
+		includables =  prefixes[:]
 		includables =  [i + ".include" for i in includables]
 		
 		# this if cascade is ugly, ugly, ugly, ugly. Suggestions, please.
-		
-		for baseFilename in inheritables:
+		def makeSearchers(baseList, ext):
+			ret = []
+			for base in baseList:
+				s = r"^.*" + base + r".*" + ext + r"$"
+				ret.append(re.compile(s))
+			return tuple(ret)
+				
+		languagedPrefixes = prefixes[:]
+		if self.lang != 'en-US':
+			languagedPrefixes = [x + r'\.' + self.lang + r'\.' for x in languagedPrefixes]
+		(INHEAD_INHERIT,
+		 CSS_INHERIT,
+		 BEFORECONTENT_INHERIT,
+		 AFTERMAINTEXT_INHERIT,
+		 AFTERCONTENT_INHERIT) = makeSearchers(languagedPrefixes, "inherit")
+		(INHEAD_INCLUDE,
+		 CSS_INCLUDE,
+		 BEFORECONTENT_INCLUDE,
+		 AFTERMAINTEXT_INCLUDE,
+		 AFTERCONTENT_INCLUDE) = makeSearchers(languagedPrefixes, "include")
+
+		for baseFilename in prefixes[:]:
+			if self.lang != 'en-US':
+				baseFilename += ".%s" % self.lang
+			baseFilename += ".inherit"
 			filename = getParallelFile(self.sourceFilename, baseFilename)
 			filename = getParentedFile(filename)
 			if not filename: continue
-			
 			if os.path.isfile(filename):
 				contents = file(filename).read()
-				if filename.endswith('inhead.inherit'):
+				if INHEAD_INHERIT.search(filename):
 					self.inHeadInherit = contents
-				if filename.endswith('css.inherit'):
+				if CSS_INHERIT.search(filename):
 					self.cssInherit = contents
-				if filename.endswith('beforecontent.inherit'):
+				if BEFORECONTENT_INHERIT.search(filename):
 					self.beforeContentInherit = contents
-				if filename.endswith('aftermaintext.inherit'):
+				if AFTERMAINTEXT_INHERIT.search(filename):
 					self.afterMainTextInherit = contents
-				if filename.endswith('aftercontent.inherit'):
+				if AFTERCONTENT_INHERIT.search(filename):
 					self.afterContentInherit = contents
+		for baseFilename in prefixes[:]:
+			if self.lang != 'en-US':
+				baseFilename += ".%s" % self.lang
+			baseFilename += ".include"
 
-		for baseFilename in includables:
 			filename = getParallelFile(self.sourceFilename, baseFilename)
 			# notice the complete lack of getParentedFile()
 			if not filename: continue
-			
 			if os.path.isfile(filename):
 				contents = file(filename).read()
-				if filename.endswith('inhead.include'):
+				if INHEAD_INCLUDE.search(filename):
 					self.inHeadInclude = contents
-				if filename.endswith('css.include'):
+				if CSS_INCLUDE.search(filename):
 					self.cssInclude = contents
-				if filename.endswith('beforecontent.include'):
+				if BEFORECONTENT_INCLUDE.search(filename):
 					self.beforeContentInclude = contents
-				if filename.endswith('aftermaintext.include'):
+				if AFTERMAINTEXT_INCLUDE.search(filename):
 					self.afterMainTextInclude = contents
-				if filename.endswith('aftercontent.include'):
+				if AFTERCONTENT_INCLUDE.search(filename):
 					self.afterMainTextInclude = contents
-
+		langFilename = getParallelFile(self.sourceFilename, "lang.include")
+		if langFilename and os.path.isfile(langFilename):
+			self.langInclude = file(langFilename).read()
 	def renderToFile(self):
 		outfile = file(self.destFilename, "w")
 		try:
@@ -166,6 +201,7 @@ class MarkdownWrapper(object):
 		ret +=	self.cssInclude
 		ret += "</head>\n"
 		ret += "<body>\n"
+		ret +=  self.langInclude
 		ret +=	self.beforeContentInherit
 		ret +=	self.beforeContentInclude
 		ret += 	"<div id='content'>\n"
@@ -177,6 +213,7 @@ class MarkdownWrapper(object):
 		ret += "</body>\n"
 		ret += "</html>\n"
 		return ret
+
 
 def markdown(filename):
 	"""Returns an HTML snippet from a filename in Markdown format."""
@@ -272,17 +309,16 @@ class NewsItem:
 		self.date = date
 		self.sections = sections
 	
-	def __str__(self):
-		return str(self.__dict__)
-		
+	def __cmp__(self, other):
+		return cmp(self.date)
+	
 
 class NewsDispenser:
-	def __init__(self, optionsFile, printableDateFormat="%A, %B %d, %Y"):
+	def __init__(self, optionsFile):
 		"""Make a very simple list of news posts. This is not final code."""
 		config = SafeConfigParser({'sections': 'general'})
 		config.read(os.path.join("news", "options.ini"))
 
-		self.printableDateFormat = printableDateFormat
 		FILENAME_DATE_FORMAT = "on%Y-%m-%dat%H%M"
 		
 		self.newsItems = []
@@ -290,9 +326,7 @@ class NewsDispenser:
 		# okay, now we want to go through the sections and associate each with their newspost.
 		for section in config.sections(): # section is string
 			ni = NewsItem()
-			l = []
 			ni.date = time.strptime(section, FILENAME_DATE_FORMAT)
-			o = {}
 			for key, value in config.items(section):
 				if key == 'author': 
 					ni.author = value
@@ -307,19 +341,16 @@ class NewsDispenser:
 	
 	def dump(self):
 		return self.newsItems[:]
+	
+	def getItems(startDate, endDate):
+		"""
+			Return news items from
+		"""
 
 class	NewsFormatter:
-	def __init__(self, newsItems):
-		pass
-	
-	def formatOne(self, newsItem):
-		pass
-
-	def formatAll(self):
-		"""
-			turns the news items into a formatted string, which is then returned.
-		"""
-		pass
+	def __init__(self, newsItems): pass
+	def formatOne(self, newsItem): pass
+	def formatAll(self): pass
 
 class	HTMLNewsFormatter(NewsFormatter):
 	""" This is just one HTML news formatter of possibly many, really."""
@@ -341,8 +372,6 @@ class	HTMLNewsFormatter(NewsFormatter):
 		for ni in self.newsItems:
 			ret += self.formatOne(ni)
 		return ret
-		
-	
 
 class	AtomNewsFormatter(NewsFormatter):
 
@@ -387,10 +416,7 @@ def doSite():
 			destFile = os.path.splitext(filename)[0] + ".html"
 			destPath = getParallelFile(srcPath, destFile)
 			print srcPath
-			
-			lang = 'en-US'
-			if ".es." in srcPath: lang = "es"
-			mw = MarkdownWrapper(srcPath, destPath, lang)
+			mw = MarkdownWrapper(srcPath, destPath)
 			mw.renderToFile()
 		if ".svn" in dirnames:
 			dirnames.remove('.svn') # don't transform things in .svn directories
@@ -402,7 +428,6 @@ def doNews():
 	fh = open('xiph.org\\atom.xml', 'w')
 	fh.write(s)
 	fh.close()
-	
 
 if __name__ == '__main__':
 	doSite()
