@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.2 2001/08/11 02:55:37 kcarnold Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.3 2001/08/11 16:04:22 kcarnold Exp $
  
 ********************************************************************/
 
@@ -19,31 +19,44 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <signal.h> /* for SIGTERM */
+#include <signal.h>		/* for SIGTERM */
 
+#define DEBUG_CURLINTERFACE
+
+#ifdef DEBUG_CURLINTERFACE
 #define debug(x, y...) do { fprintf (stderr, x , ## y); } while (0)
+#else
+#define debug(x, y...) do { } while (0)
+#endif
 
-size_t CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
+size_t
+CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
 {
   buf_t *buf = arg;
-  debug("CurlWriteFunction, submitting %d bytes.\n", size*nmemb);
+  debug ("CurlWriteFunction, submitting %d bytes.\n", size * nmemb);
   SubmitData (buf, ptr, size, nmemb);
-  return size*nmemb;
+  return size * nmemb;
 }
 
-size_t BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
+size_t
+BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
 {
   StreamInputBufferData_t *data = arg;
 
-  debug("buffer writing chunk of %d, %d bytes to go\n", size, data->BytesRequested);
+  debug ("buffer writing chunk of %d, %d bytes to go\n", size,
+	 data->BytesRequested);
 
   pthread_mutex_lock (&data->ReadDataMutex);
   while (data->BytesRequested == 0)
     pthread_cond_wait (&data->ReadRequestedCondition, &data->ReadDataMutex);
 
+  data->EOS = iseos;
+  if (iseos)
+    debug ("End of stream.\n");
+
   if (size <= data->BytesRequested)
     {
-      fprintf (stderr, "simply moving %d bytes in.\n", size);
+      debug ("simply moving %d bytes in.\n", size);
       memmove (data->CurWritePtr, ptr, size);
       data->CurWritePtr += size;
       data->BytesRequested -= size;
@@ -54,20 +67,17 @@ size_t BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
   else
     {
       /* There will be some excess data here. Write it, then block on needing more data. */
-      fprintf (stderr, "writing %d bytes, ", data->BytesRequested);
+      debug ("writing %d bytes, ", data->BytesRequested);
       memmove (data->CurWritePtr, ptr, data->BytesRequested);
       data->CurWritePtr += data->BytesRequested;
       size -= data->BytesRequested;
       ptr += data->BytesRequested;
       data->BytesRequested = 0;
-      fprintf (stderr, "saving %d bytes of excess data\n", size);
+      debug ("saving %d bytes of excess data\n", size);
       memmove (data->ExcessData, ptr, size);
       data->ExcessDataSize = size;
-      
+
       debug ("signalling successful read\n");
-      data->EOS = iseos;
-      if (iseos)
-	debug ("End of stream.\n");
       pthread_mutex_unlock (&data->ReadDataMutex);
       pthread_cond_signal (&data->ReadDoneCondition);
     }
@@ -76,7 +86,9 @@ size_t BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
   return size;
 }
 
-size_t BufferWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg, char iseos)
+size_t
+BufferWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg,
+		     char iseos)
 {
   size_t written = 0;
   while (nmemb > 0)
@@ -90,13 +102,16 @@ size_t BufferWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg, cha
   return written;
 }
 
-int CurlProgressFunction (void *arg, size_t dltotal, size_t dlnow, size_t ultotal, size_t ulnow)
+int
+CurlProgressFunction (void *arg, size_t dltotal, size_t dlnow, size_t ultotal,
+		      size_t ulnow)
 {
   debug ("curlprogressfunction\n");
   return 0;
 }
 
-void CurlSetopts (CURL* handle, buf_t *buf, InputOpts_t inputOpts)
+void
+CurlSetopts (CURL * handle, buf_t * buf, InputOpts_t inputOpts)
 {
   curl_easy_setopt (handle, CURLOPT_FILE, buf);
   curl_easy_setopt (handle, CURLOPT_WRITEFUNCTION, CurlWriteFunction);
@@ -111,7 +126,8 @@ void CurlSetopts (CURL* handle, buf_t *buf, InputOpts_t inputOpts)
   if (inputOpts.Netrc)
     curl_easy_setopt (handle, CURLOPT_NETRC, inputOpts.Netrc);
   if (inputOpts.FollowLocation)
-    curl_easy_setopt (handle, CURLOPT_FOLLOWLOCATION, inputOpts.FollowLocation);
+    curl_easy_setopt (handle, CURLOPT_FOLLOWLOCATION,
+		      inputOpts.FollowLocation);
   if (inputOpts.Referer)
     curl_easy_setopt (handle, CURLOPT_REFERER, inputOpts.Referer);
   if (inputOpts.UserAgent)
@@ -124,19 +140,23 @@ void CurlSetopts (CURL* handle, buf_t *buf, InputOpts_t inputOpts)
   curl_easy_setopt (handle, CURLOPT_PROGRESSDATA, buf);
 }
 
-void* CurlGo (void *arg)
+void *
+CurlGo (void *arg)
 {
   buf_t *buf = arg;
   StreamInputBufferData_t *data = buf->data;
   CURLcode ret;
-  fprintf (stderr, "CurlGo\n");
-  ret = curl_easy_perform ((CURL*) data->CurlHandle);
+  debug ("CurlGo\n");
+  ret = curl_easy_perform ((CURL *) data->CurlHandle);
   debug ("curl done.\n");
   buffer_MarkEOS (buf);
-  return (void*) ret;
+  curl_easy_cleanup (data->CurlHandle);
+  data->CurlHandle = 0;
+  return (void *) ret;
 }
 
-buf_t *InitStream (InputOpts_t inputOpts)
+buf_t *
+InitStream (InputOpts_t inputOpts)
 {
   StreamInputBufferData_t *data = malloc (sizeof (StreamInputBufferData_t));
   buf_t *buf;
@@ -147,7 +167,7 @@ buf_t *InitStream (InputOpts_t inputOpts)
   if (!data)
     {
       perror ("malloc");
-      exit(1);
+      exit (1);
     }
 
   debug (" init pthreads\n");
@@ -160,16 +180,18 @@ buf_t *InitStream (InputOpts_t inputOpts)
   if (!data->CurlHandle)
     {
       perror ("curl_easy_init");
-      exit(1);
+      exit (1);
     }
 
   debug (" start buffer\n");
-  buf = StartBuffer (inputOpts.BufferSize, inputOpts.Prebuffer, data, BufferWriteFunction, NULL, NULL);
+  buf =
+    StartBuffer (inputOpts.BufferSize, inputOpts.Prebuffer, data,
+		 BufferWriteFunction, NULL, NULL, VORBIS_CHUNKIN_SIZE);
 
   if (!buf)
     {
       perror ("StartBuffer");
-      exit(1);
+      exit (1);
     }
 
   debug (" set curl opts\n");
@@ -181,12 +203,13 @@ buf_t *InitStream (InputOpts_t inputOpts)
   return buf;
 }
 
-size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
+size_t
+StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 {
   StreamInputBufferData_t *data = arg;
   size_t ret;
 
-  ret = size *= nmemb; /* makes things simpler and run smoother */
+  ret = size *= nmemb;		/* makes things simpler and run smoother */
 
   debug ("StreamBufferRead %d bytes\n", ret);
 
@@ -198,7 +221,8 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
       memmove (ptr, data->ExcessData, size);
       data->ExcessDataSize -= size;
       if (size < data->ExcessDataSize)
-	memmove (data->ExcessData, data->ExcessData + size, data->ExcessDataSize);
+	memmove (data->ExcessData, data->ExcessData + size,
+		 data->ExcessDataSize);
       pthread_mutex_unlock (&data->ReadDataMutex);
     }
   else
@@ -217,18 +241,22 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 	}
       else
 	data->ExcessDataSize = 0;
-      
+
       data->BytesRequested = size;
       data->WriteTarget = data->CurWritePtr = ptr;
-      
+
       pthread_mutex_unlock (&data->ReadDataMutex);
       pthread_cond_signal (&data->ReadRequestedCondition);
       pthread_mutex_lock (&data->ReadDataMutex);
-      
-      while (data->BytesRequested > 0) {
-	debug ("Waiting for %d bytes of data to be read.\n", data->BytesRequested);
-	pthread_cond_wait (&data->ReadDoneCondition, &data->ReadDataMutex);
-      }
+
+      while (data->BytesRequested > 0 && !data->EOS)
+	{
+	  debug ("Waiting for %d bytes of data to be read.\n",
+		 data->BytesRequested);
+	  pthread_cond_wait (&data->ReadDoneCondition, &data->ReadDataMutex);
+	}
+      if (data->EOS)
+	ret -= data->BytesRequested;
       pthread_mutex_unlock (&data->ReadDataMutex);
     }
   debug ("buffer read done.\n");
@@ -236,27 +264,42 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 }
 
 /* These are no-ops for now. */
-int StreamBufferSeek (void *arg, ogg_int64_t offset, int whence)
+int
+StreamBufferSeek (void *arg, ogg_int64_t offset, int whence)
 {
   debug ("StreamBufferSeek\n");
   return -1;
 }
 
-int StreamBufferClose (void *arg)
+void StreamInputDataCleanup (StreamInputBufferData_t *data)
 {
-  buf_t *buf = arg;
-  StreamInputBufferData_t *data = buf->data;
+}
 
-  pthread_kill (data->CurlThread, SIGTERM);
-  pthread_join (data->CurlThread, NULL);
-  data->CurlThread = 0;
+int
+StreamBufferClose (void *arg)
+{
+  StreamInputBufferData_t *data = arg;
+
+  debug ("StreamBufferClose");
+  if (data)
+    {
+      pthread_kill (data->CurlThread, SIGTERM);
+      pthread_join (data->CurlThread, NULL);
+      memset (data, 0, sizeof(data));
+      free (data);
+    }
+  return 0;
+}
+
+long
+StreamBufferTell (void *arg)
+{
+  return 0;
+}
+
+void StreamInputCleanup (buf_t *buf)
+{ 
+  StreamInputDataCleanup (buf->data);
   buffer_flush (buf);
-  buffer_shutdown (buf);
-  return 0;
+  buffer_cleanup (buf);
 }
-
-long StreamBufferTell (void *arg)
-{
-  return 0;
-}
-
