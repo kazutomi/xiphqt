@@ -17,5 +17,6 @@ EXTRA_ices_SOURCES = ices_config.c in_vorbis.c reencode.c
 
 BUILT_SOURCES = $(ICES_OBJECTS)
 
-ices_CPPFLAGS = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\"
 ices_LDADD = $(ICES_OBJECTS) playlist/libplaylist.a
+
+AM_CPPFLAGS = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\"
