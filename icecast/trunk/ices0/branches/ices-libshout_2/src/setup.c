@@ -461,8 +461,9 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
   shout_t* conn;
   int streamno = 0;
   char useragent[64];
+  char bitrate[8];
 
-  snprintf(useragent, sizeof(useragent), "ices/" VERSION " (libshout/%s)",
+  snprintf(useragent, sizeof(useragent), "ices/" VERSION " libshout/%s",
     shout_version(NULL, NULL, NULL));
 
   for (stream = ices_config->streams; stream; stream = stream->next) {
@@ -484,7 +485,10 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     shout_set_url (conn, stream->url);
     shout_set_genre (conn, stream->genre);
     shout_set_description (conn, stream->description);
-    shout_set_bitrate (conn, stream->bitrate);
+
+    snprintf(bitrate, sizeof(bitrate), "%d", stream->bitrate);
+    shout_set_audio_info (conn, SHOUT_AI_BITRATE, bitrate);
+
     shout_set_public (conn, stream->ispublic);
     shout_set_mount (conn, stream->mount);
     shout_set_agent (conn, useragent);
@@ -497,7 +501,7 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     ices_log_debug ("Name: %s\tURL: %s", shout_get_name (conn), shout_get_url(conn));
     ices_log_debug ("Genre: %s\tDesc: %s", shout_get_genre (conn),
 		    shout_get_description (conn));
-    ices_log_debug ("Bitrate: %d\tPublic: %d", shout_get_bitrate (conn),
+    ices_log_debug ("Bitrate: %s\tPublic: %d", shout_get_audio_info (conn, SHOUT_AI_BITRATE),
 		    shout_get_public (conn));
     ices_log_debug ("Mount: %s\tDumpfile: %s",
 		    shout_get_mount (conn),
