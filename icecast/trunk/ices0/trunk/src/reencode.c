@@ -119,7 +119,7 @@ ices_reencode_flush (ices_stream_config_t* stream, unsigned char *outbuf,
 #else
   rc = lame_encode_flush (lame, (char*) outbuf, maxlen);
   lame_close (lame);
-  lame->encoder_initialised = 0;
+  stream->encoder_initialised = 0;
 #endif
 
   return rc;
