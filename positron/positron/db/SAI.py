@@ -18,6 +18,19 @@ import struct
 import types
 from util import *
 
+def cmp_sai_record(mdb, sai_record_a, sai_record_b):
+    (a,dummy) = mdb.read_record_at(sai_record_a[0])
+    (b,dummy) = mdb.read_record_at(sai_record_b[0])
+    
+    if a == None and b == None:
+        return 0
+    elif a == None:
+        return -1
+    elif b == None:
+        return 1
+    else:
+        return cmp(a["data"][0].lower(), b["data"][0].lower())
+
 class SAI:
     """Read and write a SAI file as if it were a list.
 
@@ -142,6 +155,18 @@ class SAI:
             if self[i][1] > threshold:
                 record[1] += offset
                 self[i] = record
+
+    def sort(self, cmpfunc):
+        """Sort the SAI entries based upon cmpfunc (as used in list.sort())."""
+
+        # Note we gotta do this the slighly long way because we're not
+        # exactly a python list.
+        mylist = [self[i] for i in range(len(self))]
+        
+        mylist.sort(cmpfunc)
+
+        for i in range(len(self)):
+            self[i] = mylist[i]
 
     def clear(self):
         self.file.truncate(SAI.DATA_START+8)
