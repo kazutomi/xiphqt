@@ -1,4 +1,4 @@
-@import url(/CSS/screen.css);
+@import url(screen.css);
 
 /*These properties are only for the main Xiph pages, not any of the project pages. */
 
@@ -15,10 +15,14 @@ div#navbar1 a#xiph {
 }
 
 div#navbar2 {
-	border-color: #2b4556;
+	border: 0px;
 	background: #819cc9;
 }
 
-div#navbar2 li:hover {
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) left #718CB9;
+div#navbar2 a:hover {
+	color: #EEEEEE;
+	background:  #617Ca9;
+	border: 3px solid #91acd9;
+	border-top: 3px solid #718CB9;
+	border-left: 3px solid #718CB9;
 }

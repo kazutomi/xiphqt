@@ -1,69 +1,77 @@
 /* The main navigation bar at the top of the page that lists the projects is navbar1*/
 
 div#navbar1 {
-	text-align: center;
-	padding: 10px;
+	margin: 0px;
+	border-width: 0px;
+	padding: 0px;
+	text-align: left;
+	border-bottom: 3px solid #000000;
 }
 
 div#navbar1 ul {
-	padding: 0px;
-	margin: 0px;
-	border-style: solid;
-	border-width: 3px;
-	-moz-border-radius: 10px;
-	background: url(/Images/nav1-background.png) left;
+	margin: 0 0 0 10px;
+	border-width: 0px;
+	padding: 0 0 0 40px;
+	background: no-repeat url(../images/35x20.png) left;
 }
 
 div#navbar1 li {
+	margin: 0px;
+	border-width: 0px;
+	padding: 0px;
 	list-style-type: none;
 	display: inline;
 }
 
 div#navbar1 a {
+	margin: 0px;
+	border-width: 0px;
+	padding: 5px;
+	line-height: 200%;
 	color: black;
-	line-height: 300%;
 	font-weight: bold;
 	text-decoration: none;
 	text-transform: lowercase;
-	padding: 5px 5px 5px 35px;
-	border-style: solid;
-	border-width: 3px;
-	-moz-border-radius: 10px;
 }
 
 
 /* The side navigation bar is navbar2*/
 
-div#navbar2 {
-	border-style: solid;
-	border-width: 3px;
-	border-left: none;
-	text-transform: lowercase;
+div#leftside {
+	width: 150px;
+	margin: 10px 0 0 0;
+	border-width: 0px;
+	padding: 0px;
 	text-align: left;
-	padding: 10px 0px 10px 0px;
-	margin: 0 10px 20px -3px;
-	-moz-border-radius-bottomright: 10px;
-	-moz-border-radius-topright: 10px;
+	background: #819cc9;
+}
+
+div#logo {
+	display: none;
+}
+
+div#navbar2 {
+	margin: 0px;
+	border-width: 0px;
+	padding: 0px;
+	border-style: solid;
+	border-width: 0px;
+	text-align: left;
 }
 
 div#navbar2 ul {
+	margin: 0px;
+	border-width: 0px;
 	padding: 0px;
-	margin: 0 0 0 -15px;
-	border: 0px;
 }
 
 div#navbar2 li {
 	list-style-type: none;
-	margin: 0px;
-	border: 0px;
+	margin: 6px;
+	border-width: 0px;
 	padding: 0px;
-	-moz-border-radius: 10px;
-	display: block;
 }
 
-div#navbar2 li:hover {
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) left #7089e4;
-}
 
 div#navbar2 abbr[title] { 
 	font-style: normal;
@@ -71,11 +79,16 @@ div#navbar2 abbr[title] {
 
 div#navbar2 a {
 	color: white;
-	padding: 3px 0px 3px 35px;
+	margin: 0px;
+	padding: 3px;
 	text-decoration: none;
 	text-transform: lowercase;
-	margin-right: 1.5em;
 	display: block;
+	width: 130px;
+	border: 3px solid #91acd9;
+	border-bottom: 3px solid #718CB9;
+	border-right: 3px solid #718CB9;
+	-moz-border-radius: 13px;
 }
 
 div#navbar2 li:hover {
@@ -87,16 +100,6 @@ div#navbar2 a:hover {
 
 /* These are the properties necessary to make the tabs have the fancy hover effects*/
 
-div#navbar1 a#xiph { background:  no-repeat url(/Images/logos/xiph/35x20.png) left; }
-div#navbar1 a#speex	{ background: no-repeat url(/Images/logos/speex/35x20.png) left; -moz-border-radius: 10px; }
-div#navbar1 a#theora	{ background: no-repeat url(/Images/logos/theora/35x20.png) left; -moz-border-radius: 10px; }
-div#navbar1 a#other { background:  no-repeat url(/Images/logos/xiph/35x20.png) left; }
-
-div#navbar1 a#xiph:hover	{ background:  no-repeat url(/Images/logos/xiph/35x20.png) top left #819cc9; }
-div#navbar1 a:hover			{ background: #aaaaaa; -moz-border-radius: 10px;  }
-div#navbar1 a#vorbis:hover	{ background: #aa75f4; -moz-border-radius: 10px; }
-div#navbar1 a#theora:hover	{ background: no-repeat url(/Images/logos/theora/35x20.png) left #F9AFAF; -moz-border-radius: 10px;  }
-div#navbar1 a#speex:hover	{ background: no-repeat url(/Images/logos/speex/35x20.png) left #99d25d; -moz-border-radius: 10px;  }
-div#navbar1 a#flac:hover	{ background: #ffff56; -moz-border-radius: 10px;  }
-div#navbar1 a#icecast:hover	{ background: #aaaaaa; -moz-border-radius: 10px;  }
-div#navbar1 a#other:hover	{ background:  no-repeat url(/Images/logos/xiph/35x20.png) left #8099f4; -moz-border-radius: 10px; }
+div#navbar1 a:hover	{
+	color:#006633;
+}

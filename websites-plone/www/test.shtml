@@ -1,13 +1,71 @@
-<!--#include virtual="/SSI/topofhead.inc"-->
-<title>Xiph.org: home</title>
-<!--#include virtual="/SSI/xiph/inhead.inc"-->
-<!--#include virtual="/SSI/topofbody.inc"-->
-<!--#include virtual="/SSI/xiph/leftside.inc"-->
-<!--#include virtual="/SSI/rightside.inc"-->
-
-  <h1>Welcome to Xiph.org</h1>
-  <p> The Xiph.org Foundation is a non-profit association dedicated to protecting the foundations of Internet multimedia from control by private interests. Our purpose is to support and develop free, open protocols and software to serve the public, developer and business markets. </p>
-  <p style='text-align: center;'> <a href='/map/'>Site map</a> </p>
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Xiph.org: home</title>
 
 
-<!--#include virtual="/SSI/bottomofbody.inc"-->
+<style type="text/css" media="screen">@import url(CSS/screen-xiph.css);</style></head>
+
+<body>
+
+<div id="thepage">
+
+<div id="label">Xiph's Open Media Technologies</div>
+
+<div id="navbar1">
+	<ul>
+		<li><a id="xiph" title="Xiph.org: Home of freedom" href="http://xiph.commo.de/" accesskey="0">xiph.org foundation</a></li>
+		<li><a id="vorbis" title="Vorbis: lossy audio compression." href="http://xiph.commo.de/projects/audio/vorbis/">vorbis</a></li>
+		<li><a id="speex" title="Speex: Free speech compression." href="http://xiph.commo.de/projects/audio/speex/">speex</a></li>
+		<li><a id="flac" title="FLAC: Free lossless audio compression." href="http://xiph.commo.de/projects/audio/flac/">flac</a></li>
+		<li><a id="theora" title="Theora: Video." href="http://xiph.commo.de/projects/video/theora/">theora</a></li>
+		<li><a id="icecast" title="Streaming audio." href="http://xiph.commo.de/projects/tools/icecast/">icecast</a></li>
+		<li><a id="other" title="Xiph.orgs other projects" href="http://xiph.commo.de/projects/other/">other</a></li>
+	</ul>
+</div>
+
+<div id="leftside">
+
+	<div id="logo">
+		<a title="return to the Xiph.org homepage" href="http://xiph.commo.de/">
+			<img src="Xiph.org%20%20home_files/112x112.png" alt="return to the Xiph.org homepage"></a>
+	</div>
+
+	<div id="navbar2">
+		<ul>
+			<li><a href="http://xiph.commo.de/" title="Return to the Xiph.org home page.">home</a></li>
+			<li><a href="http://xiph.commo.de/why/" title="Why we exist.">why</a></li>
+			<li><a href="http://xiph.commo.de/press/" title="Check up on our press releases.">press</a></li>
+			<li><a href="http://xiph.commo.de/mailinglists/" title="Sign up for a mailing list or peruse the archives.">mailing lists</a></li>
+			<li><a href="http://xiph.commo.de/contact/" title="Contact us.">contact</a></li>
+			<li><a href="http://xiph.commo.de/contribute/" title="Help us out.">contribute</a></li>
+			<li><a href="http://bugs.xiph.org/">bugs</a></li>
+			<li><a href="http://wiki.xiph.org/" title="Because were not the font of all knowledge.">wiki</a></li>
+		</ul>
+	</div>
+
+</div>
+
+
+<div id="rightside">
+
+<div id="content">
+
+<h1>Welcome to Xiph.org</h1>
+<h2>zĭf</h2>
+<p> The Xiph.org Foundation is a non-profit association dedicated to
+protecting the foundations of Internet multimedia from control by
+private interests. Our purpose is to support and develop free, open
+protocols and software to serve the public, developer and business
+markets. </p>
+<p style="text-align: center;"> <a href="http://xiph.commo.de/map/">Site map</a> </p>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="footer">
+	© 2004 Xiph.org Foundation
+</div>
+</body></html>
