@@ -126,8 +126,6 @@ int main(){
 
    *********************************************************************/
 
-  //ret = vorbis_encode_init(&vi,2,44100,-1,45000,-1);
-
   ret=vorbis_encode_init_vbr(&vi,2,44100,0.1);
 
   /* do not continue if setup failed; this can happen if we ask for a

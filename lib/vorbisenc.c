@@ -969,9 +969,9 @@ int vorbis_encode_setup_managed(vorbis_info *vi,
   hi->bitrate_min=min_bitrate;
   hi->bitrate_max=max_bitrate;
   hi->bitrate_av=tnominal;
-  hi->bitrate_av_damp=.75f; /* full range in no less than 3/4 second */
-  hi->bitrate_reservoir=nominal_bitrate;
-  hi->bitrate_reservoir_bias=.2; /* bias toward hoarding bits */
+  hi->bitrate_av_damp=1.5f; /* full range in no less than 1.5 second */
+  hi->bitrate_reservoir=nominal_bitrate*2;
+  hi->bitrate_reservoir_bias=.1; /* bias toward hoarding bits */
 
   return(ret);
 
