@@ -257,7 +257,7 @@ sub reduceonex{
 	
 	my$val=$oldval*(1-$prev);
 	for(my$i=$iprev+1;$i<$ix;$i++){$val+=$v->[$i]};
-	$val+=($oldval=$v->[$ix])*$x if($x);
+	$val+=($oldval=$v->[$ix])*$x if($ix<$w);
 	
 	$v->[$nx]=$val/$del;
 	
@@ -359,6 +359,7 @@ sub scale{
     $w=$xpm->width;
     $h=$xpm->height;
     if($nw<$w){
+
 	for(my$y=0;$y<$h;$y++){
 	    my@temp=unpack 'C*', substr ($xpm->{"gray"}, $y*$w, $w);
 	    &reduceonex($w,$nw,\@temp);

@@ -6,8 +6,13 @@ use IPC::Open2;
 
 $0="moaning-goat-meter"; # OK, this is evil.
 
-$moddir="/home/xiphmont/SnotfishCVS/mgm/modules";
-$libdir="/home/xiphmont/SnotfishCVS/mgm/lib";
+$basedir="/home/xiphmont/SnotfishCVS/mgm";
+$moddir="$basedir/modules";
+$libdir="$basedir/lib";
+
+
+# shut up!  
+$fontfile="$libdir/helvetica.xpm";
 $fontfile="$libdir/helvetica.xpm";
 
 $|=1;
@@ -238,11 +243,11 @@ sub geometries{
     }
     
     if($orient eq 'vertical'){
-	($minx,$miny,$minx+($wadj/100*$wdemand),$miny+($ladj/100*$ldemand),
-	 $ladj,$wadj);
+	($minx,$miny,int($minx+($wadj/100*$wdemand)),
+	 int($miny+($ladj/100*$ldemand)),$ladj,$wadj);
     }else{
-	($minx,$miny,$minx+($ladj/100*$ldemand),$miny+($wadj/100*$wdemand),
-	 $ladj,$wadj);
+	($minx,$miny,int($minx+($ladj/100*$ldemand)),
+	 int($miny+($wadj/100*$wdemand)),$ladj,$wadj);
     }
 }
 

@@ -2,31 +2,41 @@
 use Tk;
 
 package MGMmodule::loadav;
-$name="loadav";
-%module;
 
-$main::toplevel->optionAdd("$main::Xname.$name*refresh",        500,20);      
-$main::toplevel->optionAdd("$main::Xname.$name*scalethresh",    4,20);      
-$main::toplevel->optionAdd("$main::Xname.$name.bar.0.label","Load average",22);
-$main::toplevel->optionAdd("$main::Xname.$name.bar.1.label","Load (5min)",22);
-$main::toplevel->optionAdd("$main::Xname.$name.bar.2.label","Load (15min)",22);
+sub module_init{
+    my($this,$toplevel,$xpath)=@_;
 
-sub module_construct{
-    my($this,$width,$height)=@_;
-    
-    $graph=MGM::Graph::new($main::toplevel,num=>3,
-			   width=>$width,height=>$height,prompt=>' proc(s)',
-			   name=>$name);
-    
-    $widget=$graph->{"widget"};
-    my$refresh=$widget->optionGet("refresh","Refresh");
-    $widget->repeat($refresh,\&update);
-    
-    $this->{"graph"}=$graph;
-    $this->{"widget"}=$widget;
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,1,' proc(s)',3);
+
+    $toplevel->optionAdd("$xpath*refresh",     1000,21);      
+    $toplevel->optionAdd("$xpath*scalethresh", 4,21);      
+    $toplevel->optionAdd("$xpath.bar.0.label", "Load average",21);
+    $toplevel->optionAdd("$xpath.bar.1.label", "Load (5min)",21);
+    $toplevel->optionAdd("$xpath.bar.2.label", "Load (15min)",21);
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
+    $toplevel->optionAdd("$xpath.scalewidadj", 220,21);
+    $toplevel->optionAdd("$xpath.scalelenadj", 80,21);      
+    1;
 }
 
-sub update{ 
+sub module_name{
+    "loadav";
+}
+
+sub module_construct{
+    my($this,$toplevel,$width,$height)=@_;
+    
+    $graph=MGM::Graph->new($toplevel,num=>3,
+			   width=>$width,height=>$height,prompt=>' proc(s)',
+			   name=>$this->module_name); # don't forget name
+    
+    $widget=$graph->{"widget"};
+    $this->{"graph"}=$graph;   # internal data
+    $this->{"widget"}=$widget; # must store/return the widget
+}
+
+sub module_update{ 
     die "Couldn't open /proc/loadavg\n" unless open(PROC,"</proc/loadavg");
     while(<PROC>){
 	if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
@@ -36,13 +46,5 @@ sub update{
     close PROC;
 }
 
-($minx,$miny)=&MGM::Graph::calcxysize(\%module,1,' proc(s)',3);
+bless {};
 
-$module{"mgm_module_name"}=$name;
-$module{"mgm_module_minx"}=$minx;
-$module{"mgm_module_miny"}=$miny;
-$module{"mgm_module_wdemand"}=26;
-$module{"mgm_module_ldemand"}=40;
-$module{"mgm_module_construct"}=\&module_construct;
-
-\%module;
