@@ -12,17 +12,25 @@
  ********************************************************************
 
  function: function call to do simple data cascading
- last mod: $Id: cascade.c,v 1.2 2000/01/05 15:04:56 xiphmont Exp $
+ last mod: $Id: cascade.c,v 1.3 2000/01/06 13:57:12 xiphmont Exp $
 
  ********************************************************************/
 
-/* this one just outputs to stdout */
+/* this one outputs residue to stdout. */
 
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
 #include "bookutil.h"
+
+/* set up metrics */
+
+double count=0.;
 
 void process_preprocess(codebook *b,char *basename){
 }
 void process_postprocess(codebook *b,char *basename){
+  fprintf(stderr,"Done.                      \n");
 }
 
 void process_vector(codebook *b,double *a){
@@ -33,6 +41,8 @@ void process_vector(codebook *b,double *a){
   for(i=0;i<b->dim;i++)
     fprintf(stdout,"%f, ",a[i]-e[i]);
   fprintf(stdout,"\n");
+
+  if((long)(count++)%100)spinnit("working.... lines: ",count);
 }
 
 void process_usage(void){
