@@ -9,6 +9,7 @@ YP-CACHEGEN by oddsock
 #include <unistd.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include <iconv.h>
 #include "log.h"
 
 
@@ -22,38 +23,26 @@ MYSQL_RES	*result2;
 unsigned char*
 convert (unsigned char *in, char *encoding)
 {
-	unsigned char *out;
+	char *out, *pin, *pout;
         int ret,size,out_size,temp;
-        xmlCharEncodingHandlerPtr handler;
+	iconv_t	iconv_handle;
 
         size = (int)strlen(in)+1; 
         out_size = size*2-1; 
         out = malloc((size_t)out_size); 
 
+	pin = (char *)in;
+	pout = out;
+
         if (out) {
-                handler = xmlFindCharEncodingHandler(encoding);
-                
-                if (!handler) {
-                        free(out);
-                        out = NULL;
-                }
+		iconv_handle =  iconv_open("UTF-8", "ISO-8859-1");
         }
         if (out) {
-                temp=size-1;
-                ret = handler->input(out, &out_size, in, &temp);
-                if (ret || temp-size+1) {
-                        if (ret) {
-                                printf("conversion wasn't successful.\n");
-                        } else {
-                                printf("conversion wasn't successful. converted: %i octets.\n",temp);
-                        }
-                        free(out);
-                        out = NULL;
-                } else {
-                        out = realloc(out,out_size+1); 
-                        out[out_size]=0; /*null terminating out*/
-                        
-                }
+		size_t ret = iconv(iconv_handle, &pin, &size, &pout, &out_size);
+		if (ret == -1) {
+			printf("unable to convert (%s)", in);
+		}
+		iconv_close(iconv_handle);
         } else {
                 printf("no mem\n");
         }
@@ -73,7 +62,7 @@ int gen_cache(char *error)
         char    parent_id[255] = "";
 	char	*p1;
 	int	randomNumber = 0;
-	char *encoding = "ISO-8859-1";
+	char *encoding = "UTF-8";
 
 	xmlDocPtr doc;
 	xmlNodePtr rootNode;
@@ -141,6 +130,7 @@ int gen_cache(char *error)
 		}
 		mysql_free_result(result);
 	}
+	unlink("yp.xml");
 	xmlSaveFormatFileEnc("yp.xml", doc, encoding, 1);
 	return(SUCCESS);
 }
