@@ -29,7 +29,6 @@
 #include "cfgparse.h"
 #include "runner.h"
 #include "stream.h"
-#include "net/resolver.h"
 #include "signals.h"
 #include "thread/thread.h"
 #include "reencode.h"
@@ -185,9 +184,10 @@ static struct instance *_allocate_instance (void)
         return NULL;
 
     instance->resampleoutrate = DEFAULT_RESAMPLE;
-    instance->passthru = 0;
 
+    instance->encode_settings.passthru = 2;
     instance->encode_settings.quality = DEFAULT_QUALITY;
+    instance->encode_settings.nom_br = -1;
     instance->downmix = DEFAULT_DOWNMIX;
 
     instance->id = id++;
@@ -212,8 +212,8 @@ int parse_instance (xmlNodePtr node, void *arg)
             { "description",    get_xml_string,     &instance->output.description },
             { "url",            get_xml_string,     &instance->output.url },
             { "downmix",        get_xml_bool,       &instance->downmix },
-            { "passthru",       get_xml_bool,       &instance->passthru},
-            { "passthrough",    get_xml_bool,       &instance->passthru},
+            { "passthru",       get_xml_bool,       &instance->encode_settings.passthru},
+            { "passthrough",    get_xml_bool,       &instance->encode_settings.passthru},
             { "resample",       parse_resample,     &instance->resampleoutrate },
             { "encode",         parse_encode,       &instance->encode_settings },
             { "savestream",     parse_savefile,     &instance->output },
@@ -223,7 +223,6 @@ int parse_instance (xmlNodePtr node, void *arg)
         };
 
         /* config should be derived from runner */
-        xmlMemoryDump();
         if (ices_config->stream_name)
             instance->output.name = xmlStrdup (ices_config->stream_name);
         if (ices_config->stream_genre)
@@ -320,6 +319,7 @@ struct instance *instance_free (struct instance *instance)
     {
         next = instance->next;
         /* reencode_free (instance->reenc); */
+        free (instance->ops);
         free (instance);
     }
     return next;

@@ -335,6 +335,7 @@ static input_module_t *open_next_input_module (input_module_t *mod)
                 if (next_mod->open_module (next_mod) == 0)
                 {
                     next_mod->start = start;
+                    next_mod->failures = 0;
                     ices_config->next_track = 0;
                     return next_mod;
                 }

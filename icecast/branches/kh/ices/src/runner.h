@@ -34,7 +34,6 @@ struct instance
     struct codec_ops *ops;
 
     int downmix;
-    int passthru;
 
     struct output_state output;
 

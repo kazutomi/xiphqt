@@ -88,11 +88,6 @@ int encode_setup (struct encoder *s, struct encoder_settings *settings)
     long nom_br, max_br, min_br, rate, channels;
 
     /* do some sanity check */
-    if (settings->quality < -1)
-    {
-        LOG_WARN1 ("Quality setting of %f is too low, setting to -1.0", settings->quality);
-        settings->quality = -1.0;
-    }
     if (settings->quality > 10.0)
     {
         LOG_WARN1 ("Quality setting of %f is too high, setting to 10.0", settings->quality);
@@ -109,8 +104,8 @@ int encode_setup (struct encoder *s, struct encoder_settings *settings)
     if (settings->nom_br < 0 && min_br < 0 && max_br < 0)
         settings->managed = 0;
 
-    if (settings->managed == 0 && nom_br >= 0)
-        if (min_br >= 0 || max_br >= 0)
+    if (settings->managed == 0 && nom_br > 0)
+        if (min_br >= 0 || max_br > 0)
             settings->managed = 1;
 
     quality = settings->quality;
@@ -134,7 +129,7 @@ int encode_setup (struct encoder *s, struct encoder_settings *settings)
             if (nom_br < 0)
             {
                 LOG_INFO3 ("Encoder initialising in VBR mode: %d channel(s), "
-                        "%d Hz, quality %f", channels, rate, quality);
+                        "%d Hz, quality %.2f", channels, rate, quality);
                 if (min_br > 0 || max_br > 0)
                     LOG_WARN0 ("ignoring min/max bitrate, not supported in VBR "
                             "mode, use nominal-bitrate instead");
@@ -244,6 +239,8 @@ int parse_encode (xmlNodePtr node, void *x)
     struct encoder_settings *enc = x;
     struct cfg_tag encode_tags[] =
     {
+        { "passthru",        get_xml_bool,  &enc->passthru},
+        { "passthrough",     get_xml_bool,  &enc->passthru},
         { "nominal-bitrate", get_xml_int,   &enc->nom_br },
         { "quality",         get_xml_float, &enc->quality },
         { "minimum-bitrate", get_xml_int,   &enc->min_br },
@@ -255,6 +252,8 @@ int parse_encode (xmlNodePtr node, void *x)
     enc->min_br = -1;
     enc->max_br = -1;
     enc->nom_br = -1;
+    if (enc->passthru > 1) /* handle default setting */
+        enc->passthru = 0;
 
     return parse_xml_tags ("encode", node->xmlChildrenNode, encode_tags);
 }

@@ -24,6 +24,7 @@
 
 struct encoder_settings
 {
+    int passthru;
     int managed;
     int min_br;
     int max_br;

@@ -25,7 +25,6 @@
 #include <grp.h>
 #endif
 
-#include "net/resolver.h"
 #include "thread/thread.h"
 
 #include "cfgparse.h"

@@ -50,10 +50,9 @@ void signal_usr2_handler(int signum __attribute__((unused)))
 
 void signal_hup_handler(int signum __attribute__((unused)))
 {
-    LOG_INFO0("Flushing logs");
-    log_flush(ices_config->log_id);
+    log_reopen(ices_config->log_id);
 
-    ices_config->next_track = 1;
+    LOG_INFO0 ("logs reopened");
     signal(SIGHUP, signal_hup_handler);
 }
 
@@ -67,6 +66,7 @@ void signal_int_handler(int signum __attribute__((unused)))
 
 void signals_setup(void)
 {
+	signal(SIGHUP, signal_hup_handler);
 	signal(SIGINT, signal_int_handler);
 	signal(SIGTERM, signal_int_handler);
 	signal(SIGUSR1, signal_usr1_handler);

@@ -88,7 +88,6 @@ int get_xml_bool (xmlNodePtr node, void *x)
         else
             *(int*)x = strtol (str, NULL, 0)==0 ? 0 : 1;
     xmlFree (str);
-    xmlMemoryDump();
     return 0;
 }
 
@@ -100,7 +99,6 @@ int get_xml_int (xmlNodePtr node, void *x)
         return -1;
     *(int*)x = strtol(tmp, NULL, 0);
     xmlFree(tmp);
-    xmlMemoryDump();
     return 0;
 }
 
@@ -114,12 +112,9 @@ int get_xml_string (xmlNodePtr node, void *x)
     if (p)
     {
         dprintf ("freeing \"%s\" (%p) alloc \"%s\"\n", p, p, str);
-        xmlMemoryDump();
         xmlFree (p);
     }
     *(char **)x = str;
-    xmlMemoryDump();
-    // xmlMemoryStrdup (str);
     return 0;
 }
 
@@ -390,6 +385,9 @@ void config_shutdown(void)
 
     if (ices_config->stream_description != DEFAULT_STREAM_DESCRIPTION) 
         xmlFree (ices_config->stream_description);
+
+    if (ices_config->stream_url) 
+        xmlFree (ices_config->stream_url);
 
     if (ices_config->user)
         xmlFree (ices_config->user);

@@ -231,7 +231,8 @@ void flush_ogg_packets (struct instance *stream)
     downmix_clear (s->downmix);
     resample_clear (s->resamp);
     free (s);
-    stream->ops->data = NULL;
+    free (stream->ops);
+    stream->ops = NULL;
 }
 
 
@@ -391,7 +392,7 @@ static int reencode_vorbis_packet (struct instance *stream, input_buffer *buffer
 
 static int process_ogg_init (struct instance *stream, input_buffer *buffer)
 {
-    if (stream->passthru)
+    if (stream->encode_settings.passthru)
         stream->ops = &passthru_ptks_ops;
     else
     {
