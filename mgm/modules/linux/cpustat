@@ -21,7 +21,7 @@ sub module_init{
     # at least want to mark the single bar as SMP under 2.0
 
     $numcpus=0;
-    $statcpus=0;
+    $statcpus=1;
     if(defined($MGMmodule::helperST::proc{"cpu"}) &&
 	       open(PROC,"</proc/cpuinfo")){
 	while(<PROC>){
@@ -35,6 +35,7 @@ sub module_init{
     }else{
 	$this->{"toplevel"}->optionAdd("$xclass.active",0,21);
     }
+
     $this->{"toplevel"}->optionAdd("$xclass.order",     1,21);      
     $this;
 }
