@@ -35,6 +35,9 @@
 /* compile with:
    gcc -o oggfilter oggfilter.c `pkg-config --cflags oggz` \
      `pkg-config --libs oggz`
+
+   you will need libogg 1.1(.x) from http://xiph.org/
+   and liboggz (tested with 0.8.3) from http://annodex.net/
  */
 
 #include <stdio.h>
