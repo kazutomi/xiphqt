@@ -13,7 +13,7 @@ static int oc_tagcompare(const char *_s1,const char *_s2,int _n){
   for(c=0;c<_n;c++){
     if(toupper(_s1[c])!=toupper(_s2[c]))return !0;
   }
-  return 0;
+  return _s1[c]!='=';
 }
 
 
@@ -62,60 +62,42 @@ void theora_comment_add_tag(theora_comment *_tc,char *_tag,char *_val){
 }
 
 char *theora_comment_query(theora_comment *_tc,char *_tag,int _count){
-  long  i;
-  int   found;
-  int   tag_len;
-  char *full_tag;
+  long i;
+  int  found;
+  int  tag_len;
   /*+1 for the '=' we append.*/
   tag_len=strlen(_tag)+1;
-  full_tag=_ogg_malloc(tag_len+1);
-  memcpy(full_tag,_tag,tag_len-1);
-  full_tag[tag_len-1]='=';
-  full_tag[tag_len]='\0';
   found=0;
   for(i=0;i<_tc->comments;i++){
-    if(!oc_tagcompare(_tc->user_comments[i],full_tag,tag_len)){
-      if(_count==found){
-        _ogg_free(full_tag);
-        /*We return a pointer to the data, not a copy.*/
-        return _tc->user_comments[i]+tag_len;
-      }
-      else found++;
+    if(!oc_tagcompare(_tc->user_comments[i],_tag,tag_len)){
+      /*We return a pointer to the data, not a copy.*/
+      if(_count==found++)return _tc->user_comments[i]+tag_len;
     }
   }
-  _ogg_free(full_tag);
   /*Didn't find anything.*/
   return NULL;
 }
 
 int theora_comment_query_count(theora_comment *_tc,char *_tag){
-  char *full_tag;
-  int   tag_len;
-  int   count;
-  int   i;
+  long i;
+  int  tag_len;
+  int  count;
   /*+1 for the '=' we append.*/
   tag_len=strlen(_tag)+1;
-  full_tag=_ogg_malloc(tag_len+1);
-  memcpy(full_tag,_tag,tag_len-1);
-  full_tag[tag_len-1]='=';
-  full_tag[tag_len]='\0';
   count=0;
   for(i=0;i<_tc->comments;i++){
-    if(!oc_tagcompare(_tc->user_comments[i],full_tag,tag_len))count++;
+    if(!oc_tagcompare(_tc->user_comments[i],_tag,tag_len))count++;
   }
-  _ogg_free(full_tag);
   return count;
 }
 
 void theora_comment_clear(theora_comment *_tc){
-  if(_tc){
+  if(_tc!=NULL){
     long i;
-    for(i=0;i<_tc->comments;i++){
-      if(_tc->user_comments[i])_ogg_free(_tc->user_comments[i]);
-    }
-    if(_tc->user_comments)_ogg_free(_tc->user_comments);
-    if(_tc->comment_lengths)_ogg_free(_tc->comment_lengths);
-    if(_tc->vendor)_ogg_free(_tc->vendor);
+    for(i=0;i<_tc->comments;i++)_ogg_free(_tc->user_comments[i]);
+    _ogg_free(_tc->user_comments);
+    _ogg_free(_tc->comment_lengths);
+    _ogg_free(_tc->vendor);
+    memset(_tc,0,sizeof(*_tc));
   }
-  memset(_tc,0,sizeof(*_tc));
 }
