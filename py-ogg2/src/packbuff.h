@@ -1,7 +1,7 @@
 #ifndef PYOGGPACKBUFF_H
 #define PYOGGPACKBUFF_H
 
-#include "pyoggpacket.h"
+#include "packet.h"
 
 typedef struct {
   PyObject_HEAD

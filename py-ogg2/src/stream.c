@@ -1,7 +1,7 @@
-#include "_ogg2module.h"
-#include "pyoggstreamstate.h"
-#include "pyoggpacket.h"
-#include "pyoggpage.h"
+#include "module.h"
+#include "stream.h"
+#include "packet.h"
+#include "page.h"
 #include "general.h"
 
 /*****************************************************************

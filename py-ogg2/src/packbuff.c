@@ -1,7 +1,7 @@
-#include "pyoggpackbuff.h"
-#include "pyoggpacket.h"
+#include "packbuff.h"
+#include "packet.h"
 #include "general.h"
-#include "_ogg2module.h"
+#include "module.h"
 
 /************************************************************
 			 OggPackBuffer Object
