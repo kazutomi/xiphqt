@@ -3,18 +3,19 @@ Positron TODO List
 Bugs
 ----
 
-* Something is not correct in the adding of new entries to the child
-databases.  When navigating through the Artist menu on the Neuros (for
-example), the error "No records available" is shown.  Manual
-inspection of the child database files does not reveal the problem.
+* Find some.  :)
 
-* About 0.8% of my Ogg files are misidentified as MP3 files because
-the 11 sync bits are found sporadically in some Ogg files.  It looks
-like you have to first parse the id3v2 header if it exists, then look
-for the MPEG header right after it.
 
 Features
 --------
+
+* sync, config command
+
+* persistent delete listing so that files removed with "positron del"
+  are not put back on the next sync.
+
+* Sorting entries in the database after an add operation (modify pack
+  to permit sorting, and use that at the end of a batch of updates)
 
 * Proper detection of valid music file attributes (title, genre, time,
 etc) in Ogg Vorbis files.
@@ -23,6 +24,7 @@ etc) in Ogg Vorbis files.
 and transcoding to a format the Neuros supports.  Needs to be
 flexible enough to support firmware that only does MP3 as well as
 firmware that can do both MP3 and Ogg.
+
 
 Spec Questions
 --------------
@@ -35,24 +37,6 @@ special handling (prefixing the string with its size) makes me think
 that what I'm seeing is just a special case and I might see more
 complicated data structures there in the future.
 
-* At the bottom of page 7, "Access Keys" states that each key entry is
-16 bits (presumably a record number).  In actual databases, however,
-I'm seeing a 32 bit number that looks like a pointer directly to the
-start of the record in the child database.  Is this the correct way to
-interpret the field?
-
-* Where is the escaper character used?  Is it only in the Primary Data
-field?  In the Extra Fields?  Should I not look for it when reading
-fixed width fields (like the access keys or the time and size extra
-fields)?
-
-* The definition of the "Size" extra key (pg. 12) states that it is
-the size in bytes, whereas in actual databases, it appears to be in
-kilobytes.
-
-* Is the meaning of the "Recordings" field (pg. 12) the name of the
-source of recording?  In practice, it appears to be either "FM Radio"
-or "Microphone".
 
 
 USB Issues
