@@ -122,10 +122,12 @@ def run(config, neuros, args):
                 print "Copying 1 new track."
             else:
                 print "Copying %d new tracks."% (len(filelist),)
-                
+
+            i = 1
             for sourcename, targetname, metadata in filelist:
                 basename = path.basename(sourcename)
-                print "    %s..." % (basename,)
+                print "    %d. %s..." % (i, basename)
+                i += 1
                 add_track(neuros, sourcename, targetname, metadata)
 
 
@@ -148,19 +150,22 @@ def run(config, neuros, args):
                 print "Copying %d new recordings to host." \
                       % (len(new_recordings),)
 
+            i = 1
             for neuros_trackname in new_recordings:
                 sourcename = neuros.neurospath_to_hostpath(neuros_trackname)
                 basename = path.basename(sourcename)
                 targetname = path.join(config.recordingdir, basename)
 
-                print "    %s..." % (basename,)
+                print "    %d. %s..." % (i, basename)
+                i += 1
                 util.copy_file(sourcename, targetname)
                 config.add_recording(neuros_trackname.lower())
 
     # Only pack when necessary
     if audio_db.count_deleted() > 0:
-        print "  Packing audio database."
+        print "  Packing audio database...",
         audio_db.pack()
+        print " Done."
         
     neuros.close_db("audio")
     
