@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: floor backend 0 implementation
- last mod: $Id: floor0.c,v 1.11 2000/02/23 11:22:44 xiphmont Exp $
+ last mod: $Id: floor0.c,v 1.11.2.1 2000/03/29 03:49:28 xiphmont Exp $
 
  ********************************************************************/
 
@@ -160,6 +160,14 @@ static int forward(vorbis_block *vb,vorbis_look_floor *i,
     }
 #endif
 
+#ifdef ANALYSIS
+    vorbis_lsp_to_lpc(out,out,look->m); 
+    vorbis_lpc_to_curve(out,out,amp,&look->lpclook);
+    _analysis_output("floor0_pre",vb->sequence,out,look->n);
+    memcpy(out,work,sizeof(double)*look->m);
+#endif
+
+
     /* code the spectral envelope, and keep track of the actual
        quantized values; we don't want creeping error as each block is
        nailed to the last quantized value of the previous block. */
@@ -191,6 +199,7 @@ static int forward(vorbis_block *vb,vorbis_look_floor *i,
     /* take the coefficients back to a spectral envelope curve */
     vorbis_lsp_to_lpc(out,out,look->m); 
     vorbis_lpc_to_curve(out,out,amp,&look->lpclook);
+    _analysis_output("floor0_post",vb->sequence,out,look->n);
     fprintf(stderr,"Encoded %ld LSP coefficients in %ld bits\n",look->m,bits);
     return(1);
   }
@@ -198,6 +207,7 @@ static int forward(vorbis_block *vb,vorbis_look_floor *i,
   fprintf(stderr,"Encoded %ld LSP coefficients in %ld bits\n",look->m,bits);
 
   memset(out,0,sizeof(double)*look->n);
+  _analysis_output("floor0_post",vb->sequence,out,look->n);
   return(0);
 }
 
