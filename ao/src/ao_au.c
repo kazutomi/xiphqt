@@ -31,7 +31,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <ao/ao.h>
-#include <ao/plugin.h>
 
 #define AUDIO_FILE_MAGIC ((uint_32)0x2e736e64)  /* ".snd" */
 
@@ -52,7 +51,7 @@
 	*((buf)+2) = (unsigned char)(((x)>>8)&0xff);\
 	*((buf)+3) = (unsigned char)((x)&0xff);
 
-typedef struct Audio_filehdr {
+typedef struct {
 	uint_32 magic; /* magic number */
 	uint_32 hdr_size; /* offset of the data */
 	uint_32 data_size; /* length of data (optional) */
@@ -62,131 +61,171 @@ typedef struct Audio_filehdr {
 	char info[4]; /* optional text information */
 } Audio_filehdr;
 
-static ao_info ao_au_info =
+static ao_info_t ao_au_info =
 {
-	AO_TYPE_FILE,
 	"AU file output",
 	"au",
 	"Wil Mahan <wtm2@duke.edu>",
-	"Sends output to a .au file",
-	AO_FMT_BIG,
-	0,
-	NULL, /* No options */
-	0
+	"Sends output to a .au file"
 };
 
-typedef struct ao_au_internal
+typedef struct ao_au_internal_s
 {
+	char *output_file;
+	int fd;
+	int byte_swap;
+	char *swap_buffer;
+	int buffer_size;
 	Audio_filehdr au; 		
-} ao_au_internal;
+} ao_au_internal_t;
 
 
-static int ao_au_test()
+static void ao_au_parse_options(ao_au_internal_t *state, ao_option_t *options)
 {
-	return 1; /* File driver always works */
+	state->output_file = NULL;
+
+	while (options) {
+		if (!strcmp(options->key, "file"))
+			state->output_file = strdup(options->value);
+
+		options = options->next;
+	}
+
+	if (state->output_file == NULL)
+		state->output_file = strdup("output.au");
 }
 
-
-static ao_info *ao_au_driver_info(void)
+static ao_internal_t *ao_au_open(uint_32 bits, uint_32 rate, uint_32 channels, ao_option_t *options)
 {
-	return &ao_au_info;
-}
-
-
-static int ao_au_device_init(ao_device *device)
-{
-	ao_au_internal *internal;
-
-	internal = (ao_au_internal *) malloc(sizeof(ao_au_internal));
-
-	if (internal == NULL)	
-		return 0; /* Could not initialize device memory */
-	
-	memset(&(internal->au), 0, sizeof(internal->au));
-	
-	device->internal = internal;
-
-	return 1; /* Memory alloc successful */
-}
-
-
-static int ao_au_set_option(ao_device *device, const char *key, 
-			    const char *value)
-{
-	return 1; /* No options! */
-}
-
-
-static int ao_au_open(ao_device *device, ao_sample_format *format)
-{
-	ao_au_internal *internal = (ao_au_internal *) device->internal;
+	ao_au_internal_t *state;
 	unsigned char buf[AU_HEADER_LEN];
+	int i;
+
+	state = malloc(sizeof(ao_au_internal_t));
+	if (state == NULL) {
+		fprintf(stderr, "ao_au: Could not allocate state memory.\n");
+		goto ERR;
+	}
+	state->output_file = NULL;
+
+	/* Grab options here */
+	ao_au_parse_options(state, options);
 
 	/* The AU format is big-endian */
-	device->driver_byte_format = AO_FMT_BIG;
+	state->byte_swap = (bits == 16) && (!ao_is_big_endian());
 		
+	if (state->byte_swap) {
+		state->buffer_size = DEFAULT_SWAP_BUFFER_SIZE;
+		state->swap_buffer = calloc(sizeof(char), state->buffer_size);
+	       
+		if (state->swap_buffer == NULL) {
+			fprintf(stderr, "ao_au: Could not allocate byte-swapping buffer.\n");
+			goto ERR;
+		}
+	}
+
+	/* Set up output file */
+	if (strncmp(state->output_file, "-", 2) == 0)
+		state->fd = STDOUT_FILENO;
+	else
+		state->fd = open(state->output_file,
+			O_WRONLY | O_TRUNC | O_CREAT, 0644);
+
+	if(state->fd < 0) {
+		fprintf(stderr,"%s: Opening audio output %s\n", strerror(errno), state->output_file);
+		goto ERR;
+	}
+
+	/* Write a zeroed au header first */
+	memset(&(state->au), 0, sizeof(state->au));
+
 	/* Fill out the header */
-	internal->au.magic = AUDIO_FILE_MAGIC;
-	internal->au.channels = format->channels;
-	if (format->bits == 8)
-		internal->au.encoding = AUDIO_FILE_ENCODING_LINEAR_8;
-	else if (format->bits == 16)
-		internal->au.encoding = AUDIO_FILE_ENCODING_LINEAR_16;
+	state->au.magic = AUDIO_FILE_MAGIC;
+	state->au.channels = channels;
+	if (bits == 8)
+		state->au.encoding = AUDIO_FILE_ENCODING_LINEAR_8;
+	else if (bits == 16)
+		state->au.encoding = AUDIO_FILE_ENCODING_LINEAR_16;
 	else {
 		/* Only 8 and 16 bits are supported at present. */
-		return 0;
+		fprintf(stderr,"ao_au: unsupported number of bits");
 	}	
-	internal->au.sample_rate = format->rate;
-	internal->au.hdr_size = AU_HEADER_LEN;
+	state->au.sample_rate = rate;
+	state->au.hdr_size = AU_HEADER_LEN;
 
 	/* From the AU specification:  "When audio files are passed
 	 * through pipes, the 'data_size' field may not be known in
 	 * advance.  In such cases, the 'data_size' should be set
 	 * to AUDIO_UNKNOWN_SIZE."
 	 */
-	internal->au.data_size = AUDIO_UNKNOWN_SIZE;
+	state->au.data_size = AUDIO_UNKNOWN_SIZE;
 	/* strncpy(state->au.info, "OGG ", 4); */
 
 	/* Write the header in big-endian order */
-	WRITE_U32(buf, internal->au.magic);
-	WRITE_U32(buf + 4, internal->au.hdr_size);
-	WRITE_U32(buf + 8, internal->au.data_size);
-	WRITE_U32(buf + 12, internal->au.encoding);
-	WRITE_U32(buf + 16, internal->au.sample_rate);
-	WRITE_U32(buf + 20, internal->au.channels);
-	strncpy (buf + 24, internal->au.info, 4);
+	WRITE_U32(buf, state->au.magic);
+	WRITE_U32(buf + 4, state->au.hdr_size);
+	WRITE_U32(buf + 8, state->au.data_size);
+	WRITE_U32(buf + 12, state->au.encoding);
+	WRITE_U32(buf + 16, state->au.sample_rate);
+	WRITE_U32(buf + 20, state->au.channels);
+	strncpy (buf + 24, state->au.info, 4);
 
-	if (fwrite(buf, sizeof(char), AU_HEADER_LEN, device->file) 
-	    != AU_HEADER_LEN) {
-		return 0; /* Error writing header */
+	if (write(state->fd, buf, AU_HEADER_LEN) != AU_HEADER_LEN) {
+		fprintf(stderr,"ao_au: writing header: %s\n", strerror(errno));
+		goto ERR;
 	}
 
-	return 1;
+	return state;
+
+ERR:
+	if(state->fd >= 0) { close(state->fd); }
+	return NULL;
 }
 
 
 /*
  * play the sample to the already opened file descriptor
  */
-static int ao_au_play(ao_device *device, const char *output_samples, 
-		       uint_32 num_bytes)
+static void ao_au_play(ao_internal_t *state, void *output_samples, uint_32 num_bytes)
 {
-	if (fwrite(output_samples, sizeof(char), num_bytes, 
-		   device->file) < num_bytes)
-		return 0;
-	else
-		return 1;
+	int i;
+	ao_au_internal_t *s = (ao_au_internal_t *)state;
+
+	/* Swap all of the bytes if things are not big-endian */
+	if (s->byte_swap) {
+		/* Resize buffer larger if needed */
+		if (num_bytes > s->buffer_size) {
+			s->swap_buffer = realloc(s->swap_buffer, sizeof(char)*num_bytes);
+			if (s->swap_buffer == NULL) {
+				fprintf(stderr, "ao_au: Could not resize swap buffer.\n");
+				return;
+			} else {
+				s->buffer_size = num_bytes;
+			}
+		}
+
+		/* Swap the bytes into the swap buffer (so we don't
+		 mess up the output_samples buffer) */
+		for(i = 0; i < num_bytes; i+=2) {
+			s->swap_buffer[i]   = ((char *) output_samples)[i+1];
+			s->swap_buffer[i+1] = ((char *) output_samples)[i];
+		}
+
+		write(s->fd, s->swap_buffer, num_bytes);
+	} else {
+		/* Otherwise just write the output buffer directly */
+		write(s->fd, output_samples, num_bytes);
+	}
 }
 
-static int ao_au_close(ao_device *device)
+static void ao_au_close(ao_internal_t *state)
 {
-	ao_au_internal *internal = (ao_au_internal *) device->internal;
-
+	ao_au_internal_t *s = (ao_au_internal_t *)state; 
         off_t size;
 	unsigned char buf[4];
 
 	/* Try to find the total file length, including header */
-	size = ftell(device->file);
+	size = lseek(s->fd, 0, SEEK_CUR);
 
 	/* It's not a problem if the lseek() fails; the AU
 	 * format does not require a file length.  This is
@@ -194,40 +233,48 @@ static int ao_au_close(ao_device *device)
 	 * pipes).
 	 */
 	if (size > 0) {
-		internal->au.data_size = size - AU_HEADER_LEN;
+		s->au.data_size = size - AU_HEADER_LEN;
 
 		/* Rewind the file */
-		if (fseek(device->file, 8 /* offset of data_size */,
+		if (lseek(s->fd, 8 /* offset of data_size */,
 					SEEK_SET) < 0)
 		{
-			return 1; /* Seek failed; that's okay  */
+			fprintf(stderr,"ao_au: rewind failed\n");
+			goto ERR;
 		}
 
 		/* Fill in the file length */
-		WRITE_U32 (buf, internal->au.data_size);
-		if (fwrite(buf, sizeof(char), 4, device->file) < 4) {
-			return 1; /* Header write failed; that's okay */
+		WRITE_U32 (buf, s->au.data_size);
+		if (write(s->fd, buf, 4) < 4) {
+			fprintf(stderr,"ao_au: header write failed\n");
+			goto ERR;
 		}
 	}
 
-	return 1;
+ERR:
+	close(s->fd);
+	free(s->output_file);
+	if (s->byte_swap)
+		free(s->swap_buffer);
+	free(s);
 }
 
-
-static void ao_au_device_clear(ao_device *device)
+static int ao_au_get_latency(ao_internal_t *state)
 {
-	ao_au_internal *internal = (ao_au_internal *) device->internal;
-
-	free(internal);
+	return 0;
 }
 
-ao_functions ao_au = {
-	ao_au_test,
-	ao_au_driver_info,
-	ao_au_device_init,
-	ao_au_set_option,
-	ao_au_open,
-	ao_au_play,
-	ao_au_close,
-	ao_au_device_clear
+static ao_info_t *ao_au_get_driver_info(void)
+{
+	return &ao_au_info;
+}
+
+ao_functions_t ao_au =
+{
+        ao_au_get_driver_info,
+        ao_au_open,
+        ao_au_play,
+        ao_au_close,
+	ao_au_get_latency
 };
+

@@ -2,18 +2,18 @@ Source: libao
 Section: libs
 Priority: optional
 Maintainer: Christopher L Cheney <ccheney@debian.org>
-Build-Depends: debhelper (>> 3.0.0), libarts-dev, libasound1-dev, libesd0-dev
-Standards-Version: 3.5.6.0
+Build-Depends: debhelper (>> 3.0.0), libarts-dev, libasound1-dev [!m68k], libesd0-dev
+Standards-Version: 3.5.5.0
 
 Package: libao-dev
 Architecture: any
 Section: devel
-Depends: libao2 (= ${Source-Version}), libc6-dev
+Depends: libao0 (= ${Source-Version}), libc6-dev
 Description: Cross Platform Audio Output Library Development
  The libao-devel package contains the header files and documentation
  needed to develop applications with libao.
 
-Package: libao2
+Package: libao0
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}

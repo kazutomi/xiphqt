@@ -4,6 +4,6 @@ AUTOMAKE_OPTIONS = foreign
 
 docdir = $(datadir)/doc/$(PACKAGE)-$(VERSION)
 
-doc_DATA = *.html ao_example.c style.css
+doc_DATA = API USAGE DRIVERS WANTED
 
 EXTRA_DIST = $(doc_DATA)

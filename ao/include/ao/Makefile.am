@@ -4,5 +4,4 @@ AUTOMAKE_OPTIONS = foreign
 
 includedir = $(prefix)/include/ao
 
-include_HEADERS = ao.h os_types.h plugin.h
-
+include_HEADERS = ao.h os_types.h
