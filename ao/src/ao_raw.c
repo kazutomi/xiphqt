@@ -38,6 +38,7 @@ static ao_info ao_raw_info =
 	"Stan Seibert <indigo@aztec.asu.edu>",
 	"Writes raw audio samples to a file",
 	AO_FMT_NATIVE,
+	0,
 	ao_raw_options,
 	1
 };

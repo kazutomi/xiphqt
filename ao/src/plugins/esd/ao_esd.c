@@ -43,6 +43,7 @@ static ao_info ao_esd_info =
 	"Stan Seibert <volsung@asu.edu>",
 	"Outputs to the Enlightened Sound Daemon.",
 	AO_FMT_NATIVE,
+	10,
 	ao_esd_options,
 	1
 };
