@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.29 2001/09/24 18:44:46 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30 2001/09/24 21:11:34 volsung Exp $
 
  ********************************************************************/
 
@@ -245,10 +245,11 @@ void SetBuffersStats ()
 
 void Ogg123UpdateStats (void)
 {
-  pthread_mutex_lock(&stats_lock);
-  SetBuffersStats ();
-  UpdateStats (Options.statOpts.stats);
-  pthread_mutex_unlock(&stats_lock);
+  if (pthread_mutex_trylock(&stats_lock) == 0) {
+    SetBuffersStats ();
+    UpdateStats (Options.statOpts.stats);
+    pthread_mutex_unlock(&stats_lock);
+  }
 }
 
 /* /status interface */
