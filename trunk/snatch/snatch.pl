@@ -678,35 +678,37 @@ sub TimerWatch{
 	    Robot_Inactive();
 	}else{
 	    
-	    SetupTimerDispatch() if($now>=$next_timer_event);
-
-	    my$waiting_seconds=$next_timer_event-$now;
-	    
-	    my$waiting_minutes=int($waiting_seconds/60);
-	    $waiting_seconds-=$waiting_minutes*60;
-	    
-	    my$waiting_hours=int($waiting_minutes/60);
-	    $waiting_minutes-=$waiting_hours*60;
-	    
-	    my$waiting_days=int($waiting_hours/24);
-	    $waiting_hours-=$waiting_days*24;
-	    my$prompt;
-	    
-	    if($waiting_days){
-		$prompt=$waiting_days."d $waiting_hours:$waiting_minutes";
-	    }elsif($waiting_hours){
-		$prompt=$waiting_days."$waiting_hours:$waiting_minutes";
+	    if($now>=$next_timer_event){
+		SetupTimerDispatch() ;
 	    }else{
-		$prompt=$waiting_minutes."m ".$waiting_seconds."s";
-	    }
-	    
-	    if($recording_active){
-		Status("Timer recording [$prompt]");
-	    }else{
-		if($recording_pending){
-		    Status("Starting record...");
+		my$waiting_seconds=$next_timer_event-$now;
+		
+		my$waiting_minutes=int($waiting_seconds/60);
+		$waiting_seconds-=$waiting_minutes*60;
+		
+		my$waiting_hours=int($waiting_minutes/60);
+		$waiting_minutes-=$waiting_hours*60;
+		
+		my$waiting_days=int($waiting_hours/24);
+		$waiting_hours-=$waiting_days*24;
+		my$prompt;
+		
+		if($waiting_days){
+		    $prompt=$waiting_days."d $waiting_hours:$waiting_minutes";
+		}elsif($waiting_hours){
+		    $prompt=$waiting_days."$waiting_hours:$waiting_minutes";
 		}else{
-		    Status("Timer wait [$prompt]");
+		    $prompt=$waiting_minutes."m ".$waiting_seconds."s";
+		}
+		
+		if($recording_active){
+		    Status("Timer recording [$prompt]");
+		}else{
+		    if($recording_pending){
+			Status("Starting record...");
+		    }else{
+			Status("Timer wait [$prompt]");
+		    }
 		}
 	    }
 	}
