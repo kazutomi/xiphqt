@@ -20,6 +20,11 @@
 #
 # This software is maintained by Vivake (vivakeATomniscia.org) and is available at:
 #     http://www.omniscia.org/~vivake/python/MP3Info.py
+#
+# May 2003 - Various changes for more robust MP3 detection.
+#            Includes looking for all 11 sync bits and limits on how far
+#            to look for sync bits depending on presence of ID3v2 headers.
+#              Stan Seibert <volsung@xiph.org>
 
 import struct
 import string
