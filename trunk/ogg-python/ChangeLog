@@ -1,3 +1,14 @@
+2001-05-14  Andrew Chatham <andrew.chatham@duke.edu>
+	* setup.py : Bumped  to version 0.3
+
+	* src/general.c (arg_to_64): Changed to arg_to_int64. Removed
+	DECREF and changed calling convention and return value. Also
+	moved to <pyogg/pyogg.h> so it can be shared with vorbis-python
+
+	* src/general.h: Fixed preprocessor warnings
+
+	* src/pyoggpacket.c (py_ogg_packet_setattr): Changed to arg_to_int64
+
 2001-05-01  Mike Coleman  <mkc@mathdogs.com>
 	* test/oggtail.py: new script to show off some of ogg module
 	
