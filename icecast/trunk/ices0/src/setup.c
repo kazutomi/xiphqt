@@ -84,7 +84,7 @@ ices_setup_initialize (void)
   while (ices_config.plugins && ices_config.plugins->init() < 0)
     ices_config.plugins = ices_config.plugins->next;
 
-  for (plugin = ices_config.plugins; plugin->next; plugin = plugin->next)
+  for (plugin = ices_config.plugins; plugin && plugin->next; plugin = plugin->next)
     if (plugin->next->init() < 0)
       plugin->next = plugin->next->next;
 #endif
