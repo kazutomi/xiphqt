@@ -181,25 +181,34 @@ ices_log_string (char *format, char *string)
 static int
 ices_log_open_logfile (void)
 {
-	char namespace[1024], errorspace[1024];
-	char *filename;
-	FILE *logfp;
+  char namespace[1024], buf[1024];
+  char *filename;
+  FILE *logfp;
 
-	filename = ices_util_get_random_filename (namespace, "log");
-	
-	logfp = ices_util_fopen_for_writing (filename);
+  filename = ices_util_get_random_filename (buf, "log");
 
-	if (!logfp) {
-		ices_log_error ("Error while opening %s, error: %s", ices_util_strerror (errno, errorspace, 1024));
-		return 0;
-	}
+  if (! ices_config.base_directory) {
+    ices_log_error ("Base directory is invalid");
+    return 0;
+  }
 
-	ices_config.logfile = logfp;
+  snprintf (namespace, sizeof (namespace), "%s/%s",
+	    ices_config.base_directory, filename);
+
+  logfp = ices_util_fopen_for_writing (namespace);
+
+  if (!logfp) {
+    ices_log_error ("Error while opening %s, error: %s",
+		    ices_util_strerror (errno, buf, 1024));
+    return 0;
+  }
+
+  ices_config.logfile = logfp;
 #ifdef HAVE_SETLINEBUF
-	setlinebuf (ices_config.logfile);
+  setlinebuf (ices_config.logfile);
 #endif
 
-	return 1;
+  return 1;
 }
 
 /* Close ices' logfile */

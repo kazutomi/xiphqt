@@ -50,7 +50,7 @@
 		<!-- This directory specifies where ices should put
 		     the logfile, internal playlist (if randomizing),
 		     cue file and pid file (if daemonizing). -->
-		<ices:Base_Directory>/tmp</ices:Base_Directory>
+		<ices:BaseDirectory>/tmp</ices:BaseDirectory>
 
 		<!-- If this is set to 1, and ices is compiled with
 		     liblame support, ices will reencode the stream

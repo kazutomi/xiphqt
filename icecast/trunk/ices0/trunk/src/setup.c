@@ -554,12 +554,22 @@ ices_setup_daemonize (void)
 static void
 ices_setup_update_pidfile (int icespid)
 {
-	FILE *pidfd = ices_util_fopen_for_writing ("ices.pid");
+  char buf[1024];
+  FILE* pidfd;
+
+  if (! ices_config.base_directory) {
+    ices_log_error ("Base directory is invalid");
+    return;
+  }
+
+  snprintf (buf, sizeof (buf), "%s/ices.pid", ices_config.base_directory);
+
+  pidfd = ices_util_fopen_for_writing (buf);
 	
-	if (pidfd) {
-		fprintf (pidfd, "%d", icespid);
-		ices_util_fclose (pidfd);
-	}
+  if (pidfd) {
+    fprintf (pidfd, "%d", icespid);
+    ices_util_fclose (pidfd);
+  }
 }
 
 		

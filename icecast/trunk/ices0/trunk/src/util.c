@@ -83,9 +83,10 @@ ices_util_open_for_reading (const char *file)
 FILE *
 ices_util_fopen_for_reading (const char *file) 
 {
-	if (file)
-		return fopen (file, "r");
-	return NULL;
+  if (! (file && *file))
+    return NULL;
+
+  return fopen (file, "r");
 }
 
 /* fOpen file for writing, in the base directory, unless
@@ -93,31 +94,10 @@ ices_util_fopen_for_reading (const char *file)
 FILE *
 ices_util_fopen_for_writing (const char *file)
 {
-	char namespace[2048];
+  if (!file)
+    return NULL;
 
-	if (!file)
-		return NULL;
-
-	if (!ices_config.base_directory) {
-		ices_log ("Ices Base Directory is NULL!");
-		return NULL;
-	}
-
-	if (!ices_util_directory_exists (ices_config.base_directory)) {
-		ices_log ("Ices base directory [%s] does not exist, trying to create", ices_config.base_directory);
-		if (ices_util_directory_create (ices_config.base_directory)) {
-			ices_log ("Could not create directory [%s]");
-			return NULL;
-		}
-	}
-	
-	if (file[0] != '/' && file[0] != '\\') {
-		sprintf (namespace, "%s/file", ices_config.base_directory);
-	} else {
-		strncpy (namespace, file, 2048);
-	}
-	
-	return fopen (namespace, "w");
+  return fopen (file, "w");
 }
 
 /* Wrapper function around fclose */
@@ -172,7 +152,7 @@ ices_util_get_random_filename (char *namespace, char *type)
 #ifdef _WIN32
 	doooh();
 #else
-	sprintf (namespace, "/tmp/ices.%s.%d", type, (int)getpid ());
+	sprintf (namespace, "ices.%s.%d", type, (int)getpid ());
 	return namespace;
 #endif
 }

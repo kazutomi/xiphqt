@@ -20,6 +20,8 @@
 
 #include "definitions.h"
 
+extern ices_config_t ices_config;
+
 char *ices_cue_filename = NULL;
 
 /* Syntax of cue file
@@ -79,12 +81,23 @@ ices_cue_set_filename (const char *filename)
 const char *
 ices_cue_get_filename (void)
 {
-	static char filespace[1024];
+  static char filespace[1024];
+  char buf[1024];
 
-	if (ices_cue_filename)
-		return ices_cue_filename;
+  if (ices_cue_filename)
+    return ices_cue_filename;
 
-	return ices_util_get_random_filename (filespace, "cue");
+  if (! ices_config.base_directory) {
+    ices_log_error ("Base directory is invalid");
+    return NULL;
+  }
+
+  ices_util_get_random_filename (buf, "cue");
+
+  snprintf (filespace, sizeof (filespace), "%s/%s", ices_config.base_directory,
+	    buf);
+
+  return filespace;
 }
 
 

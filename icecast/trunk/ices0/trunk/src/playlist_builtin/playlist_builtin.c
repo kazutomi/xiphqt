@@ -24,6 +24,8 @@ int lineno;
 #include <definitions.h>
 #include "rand.h"
 
+extern ices_config_t ices_config;
+
 /* Private function declarations */
 static void playlist_builtin_shuffle_playlist (void);
 static int playlist_builtin_verify_playlist (ices_config_t *ices_config);
@@ -123,26 +125,35 @@ ices_playlist_builtin_shutdown (ices_config_t *ices_config)
 static void
 playlist_builtin_shuffle_playlist (void)
 {
-	char *newname, namespace[1024];
-	FILE *old, *new;
+  char *newname, namespace[1024], buf[1024];
+  FILE *old, *new;
 
-	old = ices_util_fopen_for_reading (playlist_file);
-	newname = ices_util_get_random_filename (namespace, "playlist");
-	new = ices_util_fopen_for_writing (newname);
+  if (! ices_config.base_directory) {
+    ices_log_error ("Base directory is invalid");
+    return;
+  }
 
-	if (!old || !new) {
-		ices_log ("ERROR: Error opening playlist [%s] or playlist random [%s] file", playlist_file, newname);
-		return;
-	}
+  old = ices_util_fopen_for_reading (playlist_file);
+  newname = ices_util_get_random_filename (buf, "playlist");
+  snprintf (namespace, sizeof (namespace), "%s/%s",
+	    ices_config.base_directory, buf);
+  new = ices_util_fopen_for_writing (namespace);
+
+  if (!old || !new) {
+    ices_log ("ERROR: Error opening playlist [%s] or playlist random [%s] file",
+	      playlist_file, namespace);
+    return;
+  }
 		
-	rand_file (old, new);
+  rand_file (old, new);
 
-	ices_util_fclose (new);
-	ices_util_fclose (old);
+  ices_util_fclose (new);
+  ices_util_fclose (old);
 
-	ices_log_debug ("Randomized playlist [%s] is now in [%s]", playlist_file, newname);
+  ices_log_debug ("Randomized playlist [%s] is now in [%s]", playlist_file,
+		  namespace);
 
-	strncpy (playlist_file, newname, 1024);
+  strncpy (playlist_file, namespace, 1024);
 }
 
 /* Verify that the user specified playlist actually exists */
