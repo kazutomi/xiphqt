@@ -49,14 +49,6 @@
 # define _GNU_SOURCE
 #endif
 
-#ifndef _THREAD_SAFE
-# define _THREAD_SAFE
-#endif
-
-#ifndef _REENTRANT
-# define _REENTRANT
-#endif
-
 #ifndef __USE_POSIX
 # define __USE_POSIX
 #endif
