@@ -313,7 +313,7 @@ print $nav_text;
 </td>
 <td class="streamtd" valign=top align=right>
 <b>Search</b><br>
-<form method=GET action=streamlist.php>
+<form method=GET action=index.php>
 Genre<br><select style="font-size:8pt" name=sgenre>
 <option>
 <option value="Alternative">Alternative
