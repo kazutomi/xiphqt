@@ -121,7 +121,7 @@ sub copy{
     $copy{"gray"}= [ map {[@{$xpm->{"gray"}->[$_]}] }(0..$height-1) ]
 		   if (defined($xpm->{"gray"}));
 
-    $ret=\%copy;
+    my$ret=\%copy;
     bless $ret, "MGM::Xpm";
 }
 
@@ -194,7 +194,7 @@ sub new{
     my@v=map{$gray}(0..$width-1);
     $xpm{"gray"}= [ map { [@v] }(0..$height-1) ];
 
-    $ret=\%xpm;
+    my$ret=\%xpm;
     bless $ret, "MGM::Xpm";
 }
 
@@ -237,7 +237,7 @@ sub rot90{
 
 sub reduceonex{
     my($w,$nw,$v)=@_;
-    my$del=$w/$nw;
+    my$del=$w/($nw?$nw:1);
     my$prev=0;
     my$iprev=0;
     my$oldval=$v->[0];
@@ -421,6 +421,8 @@ sub textsize{
     }
 }   
 
+my%textcache;
+
 sub maketext{
     my($font,$text,$height,$widthlimit,$stretch,$rot90,$cache)=@_;
 
@@ -434,6 +436,7 @@ sub maketext{
 
 	# make a pixmap frame
 	$bigtext=MGM::Xpm::new($bigw+2,$bigh+2,'#ffffff');
+	$textcache{$text}=$bigtext if(defined($cache));
 	
 	# paste in characters
 	my$pos=$bigw+1;
@@ -444,7 +447,6 @@ sub maketext{
 			    $w,$bigh);
 	}
 
-	$textcache{$text}=$bigtext if(defined($cache));
     }else{
 	$bigtext=$textcache{$text};
 	$bigw=$bigtext->width;
@@ -457,10 +459,7 @@ sub maketext{
     $width=$widthlimit if (defined($widthlimit) && $width>$widthlimit);
     my$ret=$bigtext->copy;
 
-    print "making: ($height,$width)\n";
     $ret->scale($width,$height);
-
-    print "result: (".($ret->height).",".($ret->width).")\n";
 
     $ret->rot90 if ($rot90);
     $ret;

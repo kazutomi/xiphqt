@@ -94,7 +94,7 @@ sub new{
     $aborder=2 if ($arelief eq 'groove');
     $aborder=1 if ($arelief eq 'sunken');
     $aborder=1 if ($arelief eq 'raised');
-
+    
     bless $below,"MGM::Bar";
 
     my($r,$g,$b)=$below->rgb($back);
@@ -118,9 +118,9 @@ sub new{
     if($orient eq 'vertical'){
 	my$text=$font->maketext($label,$width-($pad*2),$height-($pad*2),
 			      $ratio,1,1);
-
-	$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back));
-	$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback));
+	
+	my$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back));
+	my$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback));
 
 	$below->{"barlength"}=$height;
 	$below->{"litrelief"}=$arelief;
@@ -152,8 +152,8 @@ sub new{
     }else{
 	my$text=$font->maketext($label,$height-($pad*2),$width-($pad*2),
 			      $ratio,0,1);
-	$unlittext=$toplevel->Pixmap(-data=>$text->write($fore,$back));
-	$littext=$toplevel->Pixmap(-data=>$text->write($afore,$aback));
+	my$unlittext=$toplevel->Pixmap(-data=>$text->write($fore,$back));
+	my$littext=$toplevel->Pixmap(-data=>$text->write($afore,$aback));
 
 	$below->{"barlength"}=$width;
 	$below->configure(-borderwidth=>0,
@@ -304,7 +304,6 @@ sub promptlabel{
 
     my($textw,$textl)=&promptsize("$mult$prompt",$scaleset);
 
-    print "prompt: $textl, $textw\n";
     if($orient eq 'vertical'){
 	$label=$p->{"widget"}->Canvas(Name=>scalerange,
 				      -borderwidth=>0,

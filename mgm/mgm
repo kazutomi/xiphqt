@@ -8,26 +8,27 @@ $0="moaning-goat-meter"; # OK, this is evil.
 
 $moddir="/home/xiphmont/SnotfishCVS/mgm/modules";
 $libdir="/home/xiphmont/SnotfishCVS/mgm/lib";
-$fontfile="$libdir/helvetica24.bdf";
+$fontfile="$libdir/helvetica.xpm";
 
-require "$libdir/widget";
 $|=1;
 
 $toplevel=new MainWindow();
 $Xname=$toplevel->Class;
+require "$libdir/widget";
 
 $toplevel->optionAdd("$Xname*background",  '#202020',20);
 $toplevel->optionAdd("$Xname*foreground",  '#a0a0a0',20);
 
-$toplevel->optionAdd("$Xname.stack",       'vertical',20);
-$toplevel->optionAdd("$Xname.bars",        'horizontal',20);
+$toplevel->optionAdd("$Xname.stack",       'horizontal',20);
+$toplevel->optionAdd("$Xname.bars",        'vertical',20);
 $toplevel->optionAdd("$Xname*textpad",     '1',20);
 $toplevel->optionAdd("$Xname*widgetpad",   '2',20);
 $toplevel->optionAdd("$Xname*font",    
 		     '-misc-fixed-*-*-*-*-8-*-*-*-*-*-*-*',20);
-$toplevel->optionAdd("$Xname*labelsize",   '8',20);
+$toplevel->optionAdd("$Xname*labelsize",   '9',20);
 
 $toplevel->optionAdd("$Xname*scale",            'true',20);
+$toplevel->optionAdd("$Xname*scalethresh",      '10',20);
 $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
 $toplevel->optionAdd("$Xname*refresh",          '100',20);
 
@@ -37,7 +38,7 @@ $toplevel->optionAdd("$Xname*bar*dimrelief",           'flat',21);
 $toplevel->optionAdd("$Xname*bar*litrelief",           'raised',21);
 
 $toplevel->optionAdd("$Xname*bar*label",            "fill in",21);
-$toplevel->optionAdd("$Xname*bar*ratio",            '1.5',21);
+$toplevel->optionAdd("$Xname*bar*ratio",            '1.2',21);
 
 # suck in command line resources
 while(my $arg=shift @ARGV){
@@ -126,67 +127,75 @@ sub LoadModules{
 sub LoadModule{
     my($path,$filename)=@_;
 
-    my$script=`cat $path/$filename`;
-    my $moduleref= eval $script;
+    if(open(PL,"$path/$filename")){
 
-    if(defined($moduleref)){
-	
-	# The hash returned is just a string/function bundle; it contains the 
-	# following keys:
-	#    mgm_module_name         => string containing module name
-	#    mgm_module_construct    => build the bar
-	
-	# Be certain we've not already loaded this plugin.
+	undef $/;    
+	my$script=<PL>;
+	close FH;
+	$/="\n";    
 
-	if(!defined($name=$moduleref->{$test="mgm_module_name"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
+	my $moduleref= eval $script;
 
-	$name=$moduleref->{"mgm_module_name"};
+	if(defined($moduleref)){
+	    
+	    # The hash returned is just a string/function bundle; it contains the 
+	    # following keys:
+	    #    mgm_module_name         => string containing module name
+	    #    mgm_module_construct    => build the bar
+	    
+	    # Be certain we've not already loaded this plugin.
+	    
+	    if(!defined($name=$moduleref->{$test="mgm_module_name"})){
+		print STDERR 
+		    "Module plugin $filename doesn't define $test.\n";
+		return 0;
+	    }
+	    
+	    $name=$moduleref->{"mgm_module_name"};
+	    
+	    if(defined($modules{$name})){
+		print STDERR
+		    "Module $name already loaded.\n";
+		return(0);
+	    }
+	    
+	    if(!defined($moduleref->{$test="mgm_module_minx"})){
+		print STDERR 
+		    "Module plugin $filename doesn't define $test.\n";
+		return 0;
+	    }
+	    if(!defined($moduleref->{$test="mgm_module_miny"})){
+		print STDERR 
+		    "Module plugin $filename doesn't define $test.\n";
+		return 0;
+	    }
+	    if(!defined($moduleref->{$test="mgm_module_ldemand"})){
+		print STDERR 
+		    "Module plugin $filename doesn't define $test.\n";
+		return 0;
+	    }
+	    if(!defined($moduleref->{$test="mgm_module_wdemand"})){
+		print STDERR 
+		    "Module plugin $filename doesn't define $test.\n";
+		return 0;
+	    }
+	    if(!defined($moduleref->{$test="mgm_module_construct"})){
+		print STDERR 
+		    "Module plugin $filename doesn't define $test.\n";
+		return 0;
+	    }
+	    $modules{$name}=$moduleref;
 	
-	if(defined($modules{$name})){
-	    print STDERR
-		"Module $name already loaded.\n";
-	    return(0);
+	    # set default module options
+	    $toplevel->optionAdd("$Xname.$name.name",             "$name",19);
+	    $toplevel->optionAdd("$Xname.$name.active",           "true",19);
+	    
+	    1;
+	}else{
+	    print "Error loading module $path/$filename: $@\n";
 	}
-	
-	if(!defined($moduleref->{$test="mgm_module_minx"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
-	if(!defined($moduleref->{$test="mgm_module_miny"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
-	if(!defined($moduleref->{$test="mgm_module_ldemand"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
-	if(!defined($moduleref->{$test="mgm_module_wdemand"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
-	if(!defined($moduleref->{$test="mgm_module_construct"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
-	$modules{$name}=$moduleref;
-	
-	# set default module options
-	$toplevel->optionAdd("$Xname.$name.name",             "$name",19);
-	$toplevel->optionAdd("$Xname.$name.active",           "true",19);
-
-	1;
     }else{
-	$@=$script if(!defined($@));
-	print "Error loading module $path/$filename: $@\n";
+	print "Error opening module $path/$filename: $!\n";
     }
 }
 
@@ -248,22 +257,16 @@ sub build_and_run{
 	my $mod=$modules{$key};
 	my $order=&moption($mod,"order");
 	
-	print $order;
-
 	if(defined($order) && !defined($ordered{$order})){
 	    $ordered{$order}=$mod;
-
-	    print "module $mod->{mgm_module_name} is order $order\n";
 	}else{
 	    push @remaining, $mod;
-	    print "module $mod->{mgm_module_name} is not ordered; pushing\n";
 	}
     }
 
     for(my$i=0;$i<$count;$i++){
 	if(!defined($ordered{$i})){
 	    $ordered{$i}=shift @remaining;
-	    print "module $mod->{mgm_module_name} in slot $i\n";
 	}
     }
 	
