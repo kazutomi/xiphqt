@@ -7,12 +7,12 @@
  *  This file is part of snatch2yuv, a component of the "MJPEG tools"
  *  suite of open source tools for MJPEG and MPEG processing.
  *	
- *  snatch2wav is free software; you can redistribute it and/or modify
+ *  snatch2yuv is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
  *   
- *  snatch2wav is distributed in the hope that it will be useful,
+ *  snatch2yuv is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -58,7 +58,7 @@ static double framerates[]={
 static void usage(FILE *f){
   fprintf(f,
 	  "snatch2yuv 20011115\n\n"
-	  "USAGE: snatch2wav [options] < infile { > outfile, | nextutil }\n\n"
+	  "USAGE: snatch2yuv [options] < infile { > outfile, | nextutil }\n\n"
 	  "OPTIONS:\n"
 	  "  -b <N>    : skip first <N> seconds of input file\n"
 	  "  -f <N>    : output video in specific MPEG legal\n"
