@@ -32,6 +32,7 @@
 import struct
 import string
 import random
+import re
 
 def _from_synch_safe(synchsafe):
     if isinstance(synchsafe, type(1)):
@@ -512,6 +513,9 @@ class MPEG:
             self._parse_xing(file, 0, seeklimit)
         
 class MP3Info:
+
+    num_regex = re.compile("\d+")
+    
     def __init__(self, file):
         self.valid = 0
 
@@ -562,9 +566,14 @@ class MP3Info:
             elif tag == 'TCO' or tag == 'TCON':
                 self.genre = self.id3.tags[tag]
                 if self.genre and self.genre[0] == '(' and self.genre[-1] == ')':
-                    try:
-                        self.genre = _genres[int(self.genre[1:-1])]
-                    except IndexError:
+                    genres = self.num_regex.findall(self.genre)
+                    if len(genres) > 0:
+                        try:
+                            # Force to single valued even if multiple
+                            self.genre = _genres[int(genres[0])]
+                        except IndexError:
+                            self.genre = ""
+                    else:
                         self.genre = ""
             elif tag == 'TEN' or tag == 'TENC':
                 self.encoder = self.id3.tags[tag]
