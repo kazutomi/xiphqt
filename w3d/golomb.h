@@ -6,28 +6,6 @@
 
 
 static inline
-void write_number_unary (BitCoderState *b, unsigned int x)
-{
-   while (x--)
-      bitcoder_write_bit (b, 1);
-
-   bitcoder_write_bit (b, 0);
-}
-
-
-static inline
-unsigned int read_number_unary (BitCoderState *b)
-{
-   unsigned int x = 0;
-
-   while (bitcoder_read_bit (b))
-      x++;
-
-   return x;
-}
-
-
-static inline
 void write_number_binary (BitCoderState *b, unsigned int x, int bits)
 {
    while (bits) {
@@ -70,38 +48,30 @@ void golomb_write_number (BitCoderState *b, unsigned int x, int bits)
 
    assert (x > 0);
 
-   q = (x - 1) >> bits;
+
+   while ((q = (x - 1) >> bits) > 0) {
+      bitcoder_write_bit (b, 1);   /* fast temporary adaption, write  */ 
+      bits++;                      /* unary representation of q       */
+   };
+
+   bitcoder_write_bit (b, 0);
+
    r = x - 1 - (q << bits); 
 
-   if (q >= 15) {
-      if (x > 0xffff) {
-         write_number_unary (b, 16);
-         write_number_binary (b, x, 32);
-      } else {
-         write_number_unary (b, 15);
-         write_number_binary (b, x, 16);
-      }
-   } else {
-      write_number_unary (b, q);
-      write_number_binary (b, r, bits);
-   }
+   write_number_binary (b, r, bits);
 }
 
 
 static inline
 unsigned int golomb_read_number (BitCoderState *b, int bits)
 {
-   unsigned int q, r, x;
+   unsigned int q = 0, r, x;
 
-   q = read_number_unary (b);
-   if (q == 15)
-      x = read_number_binary (b, 16);
-   else if (q == 16)
-      x = read_number_binary (b, 32);
-   else {
-      r = read_number_binary (b, bits);
-      x = (q << bits) + r + 1;
-   }
+   while (bitcoder_read_bit (b) != 0)
+      bits++;
+
+   r = read_number_binary (b, bits);
+   x = (q << bits) + r + 1;
 
    return x;
 }

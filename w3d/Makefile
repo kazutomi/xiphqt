@@ -1,7 +1,7 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -pg -O2 -Wall -I../ogg/ogg/include
+CFLAGS = -g -O0 -Wall -I../ogg/ogg/include
 
 # use 16 bit signed integers as wavelet coefficients
 CFLAGS+= -DTYPE=int16_t
@@ -24,7 +24,7 @@ CFLAGS+= -DRLECODER
 # disable assertions
 #CFLAGS+= -DNDEBUG
 
-LFLAGS = -pg -lefence -logg -L../ogg/ogg/src/.libs
+LFLAGS = -g -lefence -logg -L../ogg/ogg/src/.libs
 
 OBJS = mem.o pnm.o wavelet.o wavelet_xform.o wavelet_coeff.o \
 	yuv.o tarkin.o info.o
