@@ -21,11 +21,10 @@ ices_SOURCES = ices.c log.c setup.c stream.c util.c mp3.c cue.c metadata.c \
 EXTRA_ices_SOURCES = ices_config.c in_vorbis.c reencode.c
 
 ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a \
-	../resolver/libresolver.a ../thread/libicethread.a \
-	../avl/libiceavl.a ../log/libicelog.a $(SHOUT_LIBS)
+	../resolver/libresolver.a ../log/libicelog.a $(SHOUT_LIBS)
 
 ices_DEPENDENCIES = $(ices_LDADD)
 
 INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\" \
-	-I$(top_srcdir)/resolver -I$(top_srcdir)/thread $(SHOUT_INCLUDES)
+	-I$(top_srcdir)/resolver $(SHOUT_INCLUDES)
 

@@ -1,5 +1,5 @@
 /* metadata.c
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,54 +19,32 @@
 
 #include "definitions.h"
 
-#include <thread.h>
+#define INITDELAY 3000000
 
 extern ices_config_t ices_config;
 
 static char* Artist = NULL;
 static char* Title = NULL;
-static mutex_t Metadata_mtx;
-static int Delay = 3000000;
-static int MetadataInit = 0;
 
 /* Private function declarations */
-static void *metadata_thread (void *arg);
-static char *metadata_clean_filename (const char* path, char *buf,
-					   size_t len);
+static char* metadata_clean_filename (const char* path, char* buf,
+				      size_t len);
+static void metadata_update (input_stream_t* source, int delay);
+
 /* Global function definitions */
-
-void
-ices_metadata_init (void)
-{
-  thread_create_mutex (&Metadata_mtx);
-  MetadataInit = 1;
-}
-
-void
-ices_metadata_shutdown (void)
-{
-  if (MetadataInit)
-    thread_destroy_mutex (&Metadata_mtx);
-}
 
 void
 ices_metadata_get (char* artist, size_t alen, char* title, size_t tlen)
 {
-  thread_lock_mutex (&Metadata_mtx);
-
   if (Artist)
     snprintf (artist, alen, "%s", Artist);
   if (Title)
     snprintf (title, tlen, "%s", Title);
-
-  thread_unlock_mutex (&Metadata_mtx);
 }
 
 void
 ices_metadata_set (const char* artist, const char* title)
 {
-  thread_lock_mutex (&Metadata_mtx);
-
   ices_util_free (Artist);
   Artist = NULL;
   ices_util_free (Title);
@@ -76,54 +54,47 @@ ices_metadata_set (const char* artist, const char* title)
     Artist = ices_util_strdup (artist);
   if (title && *title)
     Title = ices_util_strdup (title);
-
-  thread_unlock_mutex (&Metadata_mtx);
 }
 
-/* Spawn a new thread to update metadata on server. Should be
- * very low overhead */
-void
-ices_metadata_update (input_stream_t* source)
-{
-  static int first = 1;
-
-  if (first) {
-    ices_log_debug ("Initially delaying metadata update...");
-    Delay = 3000000;
-    first = 0;
-  } else {
-    Delay = 1000;
-  }
-
-  if (thread_create ("Metadata Updater", metadata_thread, source) == -1) {
-    ices_log ("Error: Could not create metadata update thread!");
-  }
-}
-
-/* Function used by the updating thread to update metadata on server.
+/* Update metadata on server via fork.
  * It also does the job of cleaning up the song title to something the
  * world likes.
  * Note that the very first metadata update is delayed, because if we
  * try to update our new info to the server and the server has not yet
- * accepted us as a source, the information is lost */
-static void *
-metadata_thread (void *arg)
+ * accepted us as a source, the information is lost. */
+void
+ices_metadata_update (input_stream_t* source)
 {
-  input_stream_t* source;
+  static int delay = INITDELAY;
+  pid_t child;
+
+  if (delay)
+    ices_log_debug ("Initially delaying metadata update...");
+
+  if ((child = fork()) == 0) {
+    metadata_update (source, delay);
+    _exit (0);
+  }
+
+  if (child == -1)
+    ices_log_debug ("Metadata update failed: fork");
+
+  delay = 0;
+}
+
+static void
+metadata_update (input_stream_t* source, int delay)
+{
   ices_stream_t* stream;
   char song[1024];
   char* playlist_metadata;
   char* metadata;
   int rc;
 
-  if (Delay)
-    thread_sleep (Delay);
-
-  source = (input_stream_t*) arg;
+  if (delay)
+    usleep (delay);
 
   if (! (playlist_metadata = ices_playlist_get_metadata ())) {
-    thread_lock_mutex (&Metadata_mtx);
-
     if (Title) {
       if (Artist)
 	snprintf (song, sizeof (song), "%s - %s", Artist, Title);
@@ -132,8 +103,6 @@ metadata_thread (void *arg)
     } else
       metadata_clean_filename (source->path, song, sizeof (song));
     
-    thread_unlock_mutex (&Metadata_mtx);
-
     metadata = song;
   } else
     metadata = playlist_metadata;
@@ -148,9 +117,6 @@ metadata_thread (void *arg)
   }
 
   ices_util_free (playlist_metadata);
-
-  thread_exit (0);
-  return NULL;
 }
 
 /* Cleanup a filename so it looks more like a song name */

@@ -1,5 +1,5 @@
 /* metadata.h
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,8 +18,6 @@
  */
 
 /* Public function declarations */
-void ices_metadata_init (void);
-void ices_metadata_shutdown (void);
 void ices_metadata_get (char* artist, size_t alen, char* title, size_t tlen);
 void ices_metadata_set (const char* artist, const char* title);
 void ices_metadata_update (input_stream_t* source);

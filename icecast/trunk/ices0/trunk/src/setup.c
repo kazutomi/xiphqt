@@ -1,6 +1,7 @@
 /* setup.c
  * - Functions for initialization in ices
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2002 Brendan Cully <brendan@icecast.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +22,6 @@
 #include "definitions.h"
 #include "metadata.h"
 
-#include <thread.h>
-
 /* Local function declarations */
 static void ices_setup_parse_options (ices_config_t *ices_config);
 static void ices_setup_parse_defaults (ices_config_t *ices_config);
@@ -36,12 +35,9 @@ static void ices_setup_usage (void);
 static void ices_setup_version (void);
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize (void);
-static int  ices_setup_shutting_down = 0;
 static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 
 extern ices_config_t ices_config;
-
-static int ThreadsInitialised = 0;
 
 /* Global function definitions */
 
@@ -72,14 +68,8 @@ ices_setup_initialize (void)
   /* Open logfiles */
   ices_log_initialize ();
 
-  /* Initialize the thread library */
-  thread_initialize ();
-  ThreadsInitialised = 1;
-
   /* Initialize the playlist handler */
   ices_playlist_initialize ();
-
-  ices_metadata_init ();
 
 #ifdef HAVE_LIBLAME
   /* Initialize liblame for reeencoding */
@@ -94,22 +84,6 @@ ices_setup_shutdown (void)
 {
   ices_stream_t* stream;
 
-  /* Protection for multiple threads calling shutdown.
-   * Remember that this is can be called from many places,
-   * including the SIGING signal handler */
-  if (ThreadsInitialised) {
-    thread_library_lock ();
-
-    if (ices_setup_shutting_down) {
-      thread_library_unlock ();
-      return;
-    }
-
-    ices_setup_shutting_down = 1;
-
-    thread_library_unlock ();
-  }
-
   /* Tell libshout to disconnect from server */
   for (stream = ices_config.streams; stream; stream = stream->next)
     shout_disconnect (&stream->conn);
@@ -122,13 +96,8 @@ ices_setup_shutdown (void)
   /* Tell the playlist module to shutdown and cleanup */
   ices_playlist_shutdown ();
 
-  ices_metadata_shutdown ();
-
   /* Cleanup the cue file (the cue module has no init yet) */
   ices_cue_shutdown ();
-
-  /* Shutdown the thread library */
-  thread_shutdown ();
 
   /* Make sure we're not leaving any memory allocated around when
    * we exit. This makes it easier to find memory leaks, and 
@@ -155,19 +124,19 @@ ices_setup_shutdown (void)
 static void
 ices_setup_parse_options (ices_config_t *ices_config)
 {
-	/* Get default values for the settings */
-	ices_setup_parse_defaults (ices_config);
+  /* Get default values for the settings */
+  ices_setup_parse_defaults (ices_config);
 
-	/* Look for given configfile on the commandline */
-	ices_setup_parse_command_line_for_new_configfile (ices_config, ices_util_get_argv(), ices_util_get_argc ());
+  /* Look for given configfile on the commandline */
+  ices_setup_parse_command_line_for_new_configfile (ices_config, ices_util_get_argv(), ices_util_get_argc ());
 
 #ifdef HAVE_LIBXML
-	/* Parse the configfile */
-	ices_setup_parse_config_file (ices_config, ices_config->configfile);
+  /* Parse the configfile */
+  ices_setup_parse_config_file (ices_config, ices_config->configfile);
 #endif
 	
-	/* Parse the commandline */
-	ices_setup_parse_command_line (ices_config, ices_util_get_argv(), ices_util_get_argc());
+  /* Parse the commandline */
+  ices_setup_parse_command_line (ices_config, ices_util_get_argv(), ices_util_get_argc());
 }
 
 /* Function for placing hardcoded defaults in the 

@@ -21,7 +21,6 @@
 #include "definitions.h"
 
 #include <string.h>
-#include <thread.h>
 
 extern ices_config_t ices_config;
 
@@ -297,9 +296,7 @@ ices_util_file_time (unsigned int bitrate, unsigned int filesize, char *buf)
 const char *
 ices_util_strerror (int error, char *namespace, int maxsize)
 {
-	thread_library_lock ();
 	strncpy (namespace, strerror (error), maxsize);
-	thread_library_unlock ();
 	return namespace;
 }
 

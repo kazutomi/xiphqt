@@ -119,44 +119,7 @@ then
 else
   dnl used by resolver/libresolv.a
   AC_SEARCH_LIBS(gethostbyname, dns nsl resolv)
-  dnl used by thread/libicethread.a
-  AC_SEARCH_LIBS(nanosleep, rt)
 fi
-
-THREADLIBS="no"
-
-AC_CHECK_FUNCS(pthread_create, THREADLIBS="")
-
-if test -z "$THREADLIBS"
-then
-  AC_MSG_CHECKING(if the system thread library works)
-  AC_TRY_RUN([
-int main() {
-  return !pthread_equal(pthread_self(), pthread_self());
-}
-  ],
-    AC_MSG_RESULT(yes),
-    AC_MSG_RESULT(no);THREADLIBS="no",
-    AC_MSG_RESULT(crosscompiling so no);THREADLIBS="no")
-fi
-
-if test "$THREADLIBS" = "no"
-then
-  for lib in pthread c_r dce pthreads; do
-    AC_CHECK_LIB($lib,pthread_create,THREADLIBS="-l$lib")
-    if test $THREADLIBS != "no"; then
-      break
-    fi
-  done
-fi
-  
-if test "$THREADLIBS" = "no"
-then
-  AC_MSG_ERROR([Your system doesn't seem to support posix threads. Ices needs posix threads to compile.]) 
-fi
-
-LIBS="$LIBS $THREADLIBS"
-CPPFLAGS="$CPPFLAGS $THREADCPPFLAGS"
 
 dnl -- System header check --
 
@@ -488,7 +451,7 @@ AC_SUBST(PLAYLIST_OBJECTS)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist/Makefile
   conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1
-  resolver/Makefile thread/Makefile avl/Makefile log/Makefile])
+  resolver/Makefile log/Makefile])
 
 AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
 AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])

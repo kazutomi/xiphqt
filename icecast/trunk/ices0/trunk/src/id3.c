@@ -1,7 +1,7 @@
 /* id3.c
  * - Functions for id3 tags in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully <brendan@icecast.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +21,6 @@
 
 #include "definitions.h"
 #include "metadata.h"
-
-#include <thread.h>
 
 extern ices_config_t ices_config;
 
