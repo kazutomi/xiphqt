@@ -99,6 +99,18 @@ div#locations {
 	margin-top: 1em;
 }
 
+div#languages {
+	position: absolute;
+	top: 0;
+	right: 0;
+	text-transform: lowercase;
+	color: #aaa;
+	background: #f5f5f5; /* white smoke */
+	border-bottom: 1px solid gray;
+	border-left: 1px solid gray;
+	padding: 0 .125em .125em .25em;
+}
+
 div#copyright {
 	border-top: 1px solid #aaa;
 	margin: 1em 2em 0;

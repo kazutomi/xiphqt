@@ -96,13 +96,14 @@ class MarkdownWrapper(object):
 		self.afterMainTextInclude = ''
 		
 		self.afterContentInherit  = ''
+		self.afterContentInclude  = ''
 
 		# Now we need to stuff these attributes from their respective files.
 		
 		inheritables = "inhead css beforecontent aftermaintext aftercontent".split()
 		inheritables = [i + ".inherit" for i in inheritables]
 
-		includables =  "inhead css beforecontent aftermaintext".split()
+		includables =  "inhead css beforecontent aftermaintext aftercontent".split()
 		includables =  [i + ".include" for i in includables]
 		
 		# this if cascade is ugly, ugly, ugly, ugly. Suggestions, please.
@@ -140,6 +141,8 @@ class MarkdownWrapper(object):
 					self.beforeContentInclude = contents
 				if filename.endswith('aftermaintext.include'):
 					self.afterMainTextInclude = contents
+				if filename.endswith('aftercontent.include'):
+					self.afterMainTextInclude = contents
 
 	def renderToFile(self):
 		outfile = file(self.destFilename, "w")
@@ -167,8 +170,8 @@ class MarkdownWrapper(object):
 		ret +=	self.beforeContentInclude
 		ret += 	"<div id='content'>\n"
 		ret +=	self.mainText
-		ret +=	self.afterMainTextInherit
 		ret +=	self.afterMainTextInclude
+		ret +=	self.afterMainTextInherit
 		ret +=	"</div>\n"
 		ret +=	self.afterContentInherit
 		ret += "</body>\n"
