@@ -44,6 +44,8 @@ long           buftemphead;
 long           buftemptail;
 long           buftempsize;
 
+long  fpsgraph[61];
+
 /* audio resampling ripped from sox and simplified */
 /*
  * July 5, 1991
@@ -391,6 +393,9 @@ static int read_snatch_header(FILE *f){
   video_p=0;
   if(buffer[6]=='A')audio_p=1;
   if(buffer[7]=='V')video_p=1;
+
+
+  memset(fpsgraph,0,sizeof(fpsgraph));
   return(1);
 }
 
@@ -712,7 +717,8 @@ int        vidbuf_tail;
 int        vidbuf_size;
 int        vidbuf_height;
 int        vidbuf_width;
-double     vidbuf_fps;
+double     vidin_fps;
+double     vidout_fps;
 			 
 int scale_width;
 int scale_height;
@@ -721,6 +727,8 @@ long long framesin=0;
 long long framesout=0;
 long long framesmissing=0;
 long long framesdiscarded=0;
+
+double last_t=-1;
       
 static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   char *s=buffer+6;
@@ -756,6 +764,16 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   if(t<begin_time)return(length);
   if(t>end_time)return(0);
 
+  if(last_t!=-1){
+    double del_t=t-last_t;
+    if(del_t>0){
+      int val=ceil(1./(t-last_t));
+      if(val>0 && val<61)
+	fpsgraph[val]++;
+    }
+  }
+  last_t=t;
+
   /* video sync is fundamentally different from audio. We assume that
      frames never appear early; an frame that seems early in context
      of the previous frame is due backlogged framebuffer catching up
@@ -765,7 +783,7 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
     vidbuf_zerotime=t;
   }else{
     double ideal=(double)vidbuf_frames;
-    double actual=(t-vidbuf_zerotime)*vidbuf_fps;
+    double actual=(t-vidbuf_zerotime)*vidin_fps;
     double drift=actual-ideal;
     int i;
 
@@ -1004,9 +1022,9 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 	if(time_dif>0){
 	  /* audio started first; prestretch video, then repad with
 	     audio */
-	  frames=ceil(time_dif*vidbuf_fps);
-	  time_dif-=(frames/vidbuf_fps);
-	  vidbuf_zerotime-=(frames/vidbuf_fps);
+	  frames=ceil(time_dif*vidin_fps);
+	  time_dif-=(frames/vidin_fps);
+	  vidbuf_zerotime-=(frames/vidin_fps);
 	  for(i=vidbuf_tail+1;i<vidbuf_head;i++)
 	    vidbuf_frameno[i]+=frames;
 	  framesmissing+=frames;
@@ -1040,15 +1058,20 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
     
     if(video_p){
       for(i=vidbuf_tail;i<vidbuf_head;i++){
-	int frames=(i+1<vidbuf_head)?
-	  vidbuf_frameno[i+1]-vidbuf_frameno[i]:
+	int oframes=(i+1<vidbuf_head)?
+	  vidbuf_frameno[i+1]*vidout_fps/vidin_fps-
+	  vidbuf_frameno[i]  *vidout_fps/vidin_fps:
+	  vidout_fps/vidin_fps;
+	int iframes=(i+1<vidbuf_head)?
+	  vidbuf_frameno[i+1]-
+	  vidbuf_frameno[i]  :
 	  1;
 	
-	framesout+=frames;
-	framesmissing+=(frames-1);
+	framesout+=oframes;
+	framesmissing+=iframes-1;
 	
 	if(process_video)
-	  while(frames--)
+	  while(oframes--)
 	    YUVout(vidbuf[i],out);
       }
     }
@@ -1064,13 +1087,17 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
   
   if(video_p && process_video){
     while(vidbuf_head-vidbuf_tail>video_timeahead){
-      int frames= vidbuf_frameno[vidbuf_tail+1]-
-	vidbuf_frameno[vidbuf_tail];
-      framesout+=frames;
-      framesmissing+=(frames-1);
+      int oframes= 
+	vidbuf_frameno[vidbuf_tail+1]*vidout_fps/vidin_fps-
+	vidbuf_frameno[vidbuf_tail]  *vidout_fps/vidin_fps;
+      int iframes= 
+	vidbuf_frameno[vidbuf_tail+1]-
+	vidbuf_frameno[vidbuf_tail]  ;
+      framesout+=oframes;
+      framesmissing+=iframes-1;
       
       if(process_video)
-	while(frames--)
+	while(oframes--)
 	  YUVout(vidbuf[vidbuf_tail],out);
       
       vidbuf_tail++;
