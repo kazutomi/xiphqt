@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.33 2003/07/03 04:41:32 brendan Exp $
+ * $Id: mp3.c,v 1.34 2003/07/03 13:06:22 brendan Exp $
  */
 
 #include "definitions.h"
@@ -29,19 +29,19 @@
 #define MP3_BUFFER_SIZE 4096
 
 typedef struct {
-  int version;
-  int layer;
-  int error_protection;
-  int bitrate;
-  int samplerate;
-  int padding;
-  int extension;
-  int mode;
-  int mode_ext;
-  int copyright;
-  int original;
-  int emphasis;
-  int channels;
+  unsigned int version;
+  unsigned int layer;
+  unsigned int error_protection;
+  unsigned int bitrate;
+  unsigned int samplerate;
+  unsigned int padding;
+  unsigned int extension;
+  unsigned int mode;
+  unsigned int mode_ext;
+  unsigned int copyright;
+  unsigned int original;
+  unsigned int emphasis;
+  unsigned int channels;
 } mp3_header_t;
 
 typedef struct {
