@@ -130,6 +130,48 @@
    <p>
     The parameters are the same as the OSS and ALSA modules.
    </p>
+
+   <h2>Jack</h2>
+   <pre>
+	&lt;module&gt;jack&lt;/module&gt;
+	&lt;param name="channels"&gt;2&lt;/param&gt;
+	&lt;param name="clientname"&gt;ices&lt;/param&gt;
+	&lt;param name="metadatafilename"&gt;/home/ices/metadata&lt;/param&gt;
+   </pre>
+   <p>
+    This module is for live input from <a href="jackit.sf.net">JACK</a>, a low-latency audio server, written for POSIX conformant operating systems such as GNU/Linux and Apple's OS X.
+   </p>
+   <p>
+    The following can be used to configure the module
+   </p>
+   <h4>channels</h4>
+   <div class=indentedbox>
+    The number of channels to record. This is typically 2 for stereo or 1 for mono. <br />
+This is also the number of jack ports, that will be available
+to other jack clients
+   </div>
+   <h4>clientname</h4>
+   <div class=indentedbox>
+	The name ices registers as at the jack server.
+   </div>
+   <h4>metadatafilename</h4>
+   <div class=indentedbox>
+    <p>
+     The name of the file to open and read the metadata tags from, with this
+     parameter missing standard input is read. Using a file is often the better
+     approach. When using the file access the procedure is usually to populate
+     the file contents then send a SIGUSR1 to the IceS process.
+    </p>
+    <p>
+     The format of the file itself is a simple one comment per line format,
+     below is a trivial example of the file, other tags can be used but players
+     tend to only look for artist and title for displaying. The data must be in 
+     UTF-8 (this is not checked by ices, however).
+    </p>
+   </div>
+
+
+
    <h2>StdinPCM</h2>
    <pre>
         &lt;module&gt;stdinpcm&lt;/module&gt;
