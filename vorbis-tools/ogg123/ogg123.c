@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.10 2001/11/23 05:15:29 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.11 2001/12/07 20:47:39 jack Exp $
 
  ********************************************************************/
 
@@ -40,6 +40,7 @@
 /* take buffer out of the data segment, not the stack */
 #define BUFFER_CHUNK_SIZE 4096
 unsigned char convbuffer[BUFFER_CHUNK_SIZE];
+unsigned char convbuffer2[BUFFER_CHUNK_SIZE];
 int convsize = BUFFER_CHUNK_SIZE;
 
 /* take big options structure from the data segment */
@@ -713,6 +714,10 @@ void PlayFile()
   double realseekpos = Options.playOpts.seekpos;
   int nthc = 0, ntimesc = 0;
   long bitrate;
+  int mono2stereo = 0;
+  ogg_int16_t *src, *dest;
+  int c;
+  int count;
   ov_callbacks VorbisfileCallbacks;
   
   /* Setup callbacks and data structures for HTTP stream or file */
@@ -788,6 +793,11 @@ void PlayFile()
     vi = ov_info(&vf, -1);
     Options.outputOpts.rate = vi->rate;
     Options.outputOpts.channels = vi->channels;
+
+    if (Options.outputOpts.channels == 1) {
+	    mono2stereo = 1;
+	    Options.outputOpts.channels = 2;
+    }
 
     /* Open audio device before we read and output comments.  We have
        to do this inside the loop in order to deal with chained
@@ -889,9 +899,15 @@ void PlayFile()
 
 	/* Read another block of audio data */
 	old_section = current_section;
-	ret =
-	  ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
-		  2, 1, &current_section);
+	if (mono2stereo)
+	  ret =
+	    ov_read(&vf, (char *) convbuffer, sizeof(convbuffer) / 2, is_big_endian,
+		    2, 1, &current_section);
+        else
+	  ret =
+	    ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
+		    2, 1, &current_section);
+
 	if (ret == 0) 
 	  {
 	    /* End of file */
@@ -933,18 +949,36 @@ void PlayFile()
 	   as needed */
 	if (ret > 0)
 	  {
+	    if (mono2stereo) {
+	      count = sizeof(convbuffer) / 4;
+	      src = (ogg_int16_t *)convbuffer;
+	      dest = (ogg_int16_t *)convbuffer2;
+	      for (c = 0; c < count; c++) {
+		*dest++ = *src;
+		*dest++ = *src++;
+	      }
+	      memcpy(convbuffer, convbuffer2, sizeof(convbuffer));
+	    }
+
 	    do
 	      {
 		if (nthc-- == 0) 
 		  {
 		    if (Options.outputOpts.buffer)
 		      {
-			buffer_submit_data (Options.outputOpts.buffer, 
-					    convbuffer, ret, 1);
+		        if (mono2stereo)
+			  buffer_submit_data (Options.outputOpts.buffer, 
+				       	      convbuffer, ret*2, 1);
+			else
+			  buffer_submit_data (Options.outputOpts.buffer, 
+				       	      convbuffer, ret, 1);
 			UpdateStats();
 		      }
 		    else
-		      OutBufferWrite (convbuffer, ret, 1, &Options, 0);
+		      if (mono2stereo)
+		        OutBufferWrite (convbuffer, ret*2, 1, &Options, 0);
+                      else
+			OutBufferWrite (convbuffer, ret, 1, &Options, 0);
 		    
 		    nthc = Options.playOpts.nth - 1;
 		  }
