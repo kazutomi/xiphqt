@@ -64,6 +64,52 @@ probably want to zip up your <tt>WOID_DB</tt> subdirectory on the Neuros and
 include it with the bug report.
 </p>
 
+<h2>Filesystem Problems</h2>
+
+<p>
+Another class of problem is when you see errors like "Input/Output
+Error," mount won't recognize the filesystem on your Neuros, you find
+that the files on your Neuros have been damaged or destroyed, and/or
+your Neuros freezes when reading certain files.  These symptoms
+suggest the filesystem on the Neuros has been corrupted in some way.
+Filesystem corruption is usually caused in the same way as database
+corruption, though it is generally less common.  Unfortunately, the
+best way to fix a corrupted file system is to format the Neuros and
+start over.
+</p>
+
+<p>
+WARNING: The following operation erases the contents of your Neuros
+and should only be attempted as a last resort.
+</p>
+
+<ul>
+  <li>Disconnect the USB cable between your Neuros and your computer.</li>
+
+  <li>Turn off your Neuros.</li>
+
+  <li>Press and hold the 1, 5, and Play buttons.  You should press the
+   Play button slightly before the other two.</li>
+
+  <li>When "SAFE MODE" menu appears, release the buttons and select 
+  "Format Hard Disk" if you have the hard disk model or select 
+  "Format NAND Disk" if you have the flash memory model.</li>
+
+  <li>When the format finishes, select "Exit," and the Neuros will 
+  continue its normal boot sequence, and tell you it is creating 
+  databases.</li>
+
+  <li>Connect your Neuros back to the USB port on your computer.
+  Mount the disk, and run <tt>positron rebuild</tt>.  It is important
+  that you do this immediately after formating because the Neuros
+  firmware produces several incorrect databases after a format
+  operation.  The <a href="commands.html#rebuild">rebuild</a> command
+  corrects this problem.</li>
+
+  <li>Your Neuros is now ready for normal use again.</li>
+</ul>
+
+
 <h2>Music File Detection Problems</h2>
 
 <p>
