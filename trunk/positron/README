@@ -142,10 +142,13 @@ We strongly encourage bug reports and feature requests.  You can contact
 us in one of the following ways:
 
 * To report bugs use Bugzilla at http://bugs.xiph.org. We prefer bug
-  reports to be filed this way.
+  reports to be filed this way.  Please file them against the 'positron' 
+  product.
 * Mailing list: http://www.xiph.org/archives.  Look for the positron list.
-* IRC: #positron on irc.xiph.org.
-
+* IRC: #positron on irc.xiph.org.  You are also wecome to join #vorbis 
+  for general talk about the Xiph.org Foundation projects.
+* Email: You may contact the author directly at volsung@xiph.org, but
+  please only do this as a last resort.
 
 ACKNOWLEDGEMENTS
 
