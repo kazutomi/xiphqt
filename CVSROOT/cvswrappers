@@ -29,6 +29,7 @@
 *.png -k 'b'
 *.au -k 'b'
 *.opt -k 'b'
+*.ogg -k 'b'
 *.wav -k 'b'
 *.ico -k 'b'
 *.class -k 'b'
