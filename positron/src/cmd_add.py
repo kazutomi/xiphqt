@@ -41,7 +41,7 @@ def gen_filelist(neuros, prefix, suffix, target_prefix):
         
         if path.isfile(fullname):
             if not mp3file.detect(fullname):
-                print "Skipping %s.  Not a recognized music format." \
+                print "Skipping %s.  Not a recognized audio format." \
                       % (fullname,)
             elif neuros.is_valid_hostpath(fullname):
                 # Don't need to copy files already on the Neuros
@@ -136,9 +136,9 @@ def cmd_add(config, neuros, args):
     else:
         print "Adding %d tracks to the Neuros..." % (len(filelist),)
         for (sourcename, targetname) in filelist:
-            print "  %s..." % (sourcename),
+            print "  %s..." % (sourcename)
             add_track(neuros, sourcename, targetname)
-            print "  Done!"
 
+        print "\nDone!"
     neuros.close_db("audio")
     
