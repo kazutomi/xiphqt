@@ -19,6 +19,7 @@
 '''
 
 from general import *
+from workbox import *
 from sandbox import *
 from infobox import *
 
@@ -99,36 +100,29 @@ class MainFrame(wxFrame):
     return
 
   def OnNewWindow(self, evt):
-    self.winCount = self.winCount + 1
-    win = wxPanel(self.mainWin.projectWin, -1)
-    self.mainWin.projectWin.AddPage(win, 'Untitled %d' % self.winCount)
-    #win = wxMDIChildFrame(self.mainWin.projectWin, -1, "Untitled %d" % self.winCount)
-    #canvas = MyCanvas(win)
-    #win.Show(True)
+    self.mainWin.workWin.NewProject()
 
   def OnExit(self, evt):
     self.Close(True)
 
+class MyCanvas(wxScrolledWindow):
+  def __init__(self, win):
+    wxScrolledWindow.__init__(self, win)
+    self.SetBackgroundColour('White')
 
 class MainWindow(wxSplitterWindow):
   def __init__(self, parent):
     wxSplitterWindow.__init__(self, parent, -1)
 
-    # Project Window
-    self.projectWin = ProjectPanel(self)
+    # Work Window
+    self.workWin = WorkPanel(self)
 
     # Bottom Window
     self.bottomWin = BottomWindow(self)
 
     self.SetMinimumPaneSize(5)
-    #self.SplitHorizontally(self.sandboxWin, self.projectWin, 100)
-    #self.SplitVertically(self.projectWin, self.sandboxWin, 100)
-    self.SplitHorizontally(self.projectWin, self.bottomWin, 250)
+    self.SplitHorizontally(self.workWin, self.bottomWin, 200)
 
-
-class ProjectPanel(wxNotebook):
-  def __init__(self, parent):
-    wxNotebook.__init__(self, parent, -1, style=wxNB_BOTTOM)
 
 class BottomWindow(wxSplitterWindow):
   def __init__(self, parent):
@@ -141,7 +135,7 @@ class BottomWindow(wxSplitterWindow):
     self.infoboxWin = InfoboxPanel(self)
 
     self.SetMinimumPaneSize(5)
-    self.SplitVertically(self.sandboxWin, self.infoboxWin, 150)
+    self.SplitVertically(self.sandboxWin, self.infoboxWin, 250)
  
 
 
