@@ -189,7 +189,7 @@ PyOggStreamState_Pagein(PyObject *self, PyObject *args)
   PyOggPageObject *page;
   
   if (!PyArg_ParseTuple(args, "O!", &PyOggPage_Type,
-			(PyObject *) page))
+			(PyObject *) &page))
     return NULL;
   
   ret = ogg_stream_pagein(PyOggStreamState_AsOggStreamState(self), 

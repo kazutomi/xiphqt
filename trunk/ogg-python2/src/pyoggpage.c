@@ -46,14 +46,10 @@ PyTypeObject PyOggPage_Type = {
 
 static PyMethodDef PyOggPage_methods[] = {
   {"__len__", PyOggPage_Size, METH_VARARGS, NULL},
-/*  {"__getattr__", PyOggPage_Getattr, METH_VARARGS, NULL},
-  {"__setattr__", PyOggPage_Setattr, METH_VARARGS, NULL}, */
-  {"bos", NULL, NULL, "The BOS (Beginning-Of-Stream) flag."},
-  {"body", NULL, NULL, NULL},
+  {"bos", NULL, NULL, NULL},
   {"continued", NULL, NULL, NULL},
   {"eos", NULL, NULL, NULL},
   {"granulepos", NULL, NULL, NULL},
-  {"header", NULL, NULL, NULL},
   {"packets", NULL, NULL, NULL},
   {"pageno", NULL, NULL, NULL},
   {"serialno", NULL, NULL, NULL},
@@ -105,39 +101,12 @@ static PyObject*
 PyOggPage_Getattr(PyObject *self, char *name) {
   ogg_page *page = PyOggPage_AsOggPage(self);
 
-  if (strcmp(name, "body") == 0) 
-    return PyString_FromStringAndSize((char *) page->body, page->body_len);
-
-  if (strcmp(name, "bos") == 0) {
-    if (ogg_page_bos(page)) {
-      Py_INCREF(Py_True);
-      return Py_True;
-    }
-    else {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-  }
-  if (strcmp(name, "continued") == 0) {
-    if (ogg_page_continued(page)) {
-      Py_INCREF(Py_True);
-      return Py_True;
-    }
-    else {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-  }
-  if (strcmp(name, "eos") == 0) {
-    if (ogg_page_eos(page)) {
-      Py_INCREF(Py_True);
-      return Py_True;
-    }
-    else {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-  }
+  if (strcmp(name, "bos") == 0) 
+    return Py_TrueFalse(ogg_page_bos(page));
+  if (strcmp(name, "continued") == 0) 
+    return Py_TrueFalse(ogg_page_continued(page));
+  if (strcmp(name, "eos") == 0) 
+    return Py_TrueFalse(ogg_page_eos(page));
   if (strcmp(name, "granulepos") == 0)
     return PyLong_FromLongLong(ogg_page_granulepos(page));
   if (strcmp(name, "packets") == 0) 
@@ -150,6 +119,8 @@ PyOggPage_Getattr(PyObject *self, char *name) {
     return PyInt_FromLong(ogg_page_version(page));
   return Py_FindMethod(PyOggPage_methods, self, name);
 }
+
+/* These are all horribly broken. Needs to be upgraded for libogg2. */
 
 static int
 PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
@@ -278,7 +249,7 @@ PyOggPage_Repr(PyObject *self)
   char *cont = ogg_page_continued(PyOggPage_AsOggPage(self)) ? "CONT, " : "";
   sprintf(buf, "<OggPage, %s%s%spageno = %ld, granulepos = %lld,"
 	  " packets = %d, serialno = %d, version = %d," 
-          " head length = %ld, body length = %ld, at %p>",
+          " head length = %ld, body length = %ld, at %p (%p)>",
 	  cont, bos, eos, ogg_page_pageno(PyOggPage_AsOggPage(self)),
           ogg_page_granulepos(PyOggPage_AsOggPage(self)),
 	  ogg_page_packets(PyOggPage_AsOggPage(self)),
@@ -286,6 +257,6 @@ PyOggPage_Repr(PyObject *self)
           ogg_page_version(PyOggPage_AsOggPage(self)), 
           PyOggPage_AsOggPage(self)->header_len, 
           PyOggPage_AsOggPage(self)->body_len,
-          PyOggPage_AsOggPage(self)); 
+          self, PyOggPage_AsOggPage(self)); 
   return PyString_FromString(buf);
 }

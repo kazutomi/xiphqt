@@ -107,7 +107,7 @@ PyOggSyncState_Pagein(PyObject *self, PyObject *args)
   PyOggPageObject *page;
 
   if (!PyArg_ParseTuple(args, "O!", &PyOggPage_Type,
-                        (PyObject *) page))
+                        (PyObject *) &page))
     return NULL;
   
   ret = ogg_sync_pagein(PyOggSyncState_AsOggSyncState(self),
@@ -163,12 +163,15 @@ PyOggSyncState_Output(PyObject *self, PyObject *args)
 
   if (!PyArg_ParseTuple(args, "O!|i", &PyFile_Type, &pyfile, &ask_bytes))
     return NULL;
-  
-  fp = PyFile_AsFile(pyfile);
+
+  if ( ask_bytes < 0 ) ask_bytes = 4096;
+    fp = PyFile_AsFile(pyfile);
   
   got_bytes = ogg_sync_bufferout(PyOggSyncState_AsOggSyncState(self),
                                  &ogg_buffer);
-  if ( ask_bytes < 0 || got_bytes < ask_bytes ) ask_bytes = got_bytes;
+
+  if ( got_bytes == 0 ) return PyInt_FromLong(0);    
+  if ( got_bytes < ask_bytes ) ask_bytes = got_bytes;
   fwrite(ogg_buffer, 1, ask_bytes, fp);
 
   ret = ogg_sync_read(PyOggSyncState_AsOggSyncState(self), ask_bytes);
@@ -241,8 +244,7 @@ PyOggSyncState_Input(PyObject *self, PyObject *args)
   ret = ogg_sync_wrote(PyOggSyncState_AsOggSyncState(self),
                        bytes);
   if ( ret == OGG_SUCCESS ) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return PyLong_FromLong(bytes);
   }
   PyErr_SetString(PyOggError, "Unknown error from ogg_sync_wrote.");
   return NULL;
