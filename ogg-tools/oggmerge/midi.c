@@ -435,7 +435,7 @@ static void _packet_write_data(midi_state_t *midistate, unsigned char *data, uns
 
 static int _process_data(midi_state_t *midistate)
 {
-	char *buf;
+	unsigned char *buf;
 	unsigned short rawtime;
 	unsigned char smtpe;
 	int frames;
@@ -689,7 +689,7 @@ static int _process_data(midi_state_t *midistate)
 			// need to catch tempo changes here
 			if (midistate->metatype == 0x51) {
 				// 0x51 has 0x03 length
-				midistate->tempo = (buf[0] << 16) | (buf[1] << 8) | buf[2];
+				midistate->tempo = ((buf[0] << 16) | (buf[1] << 8) | buf[2]);
 			}
 			free(buf);
 			midistate->length = 0;
