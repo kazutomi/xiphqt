@@ -1,10 +1,22 @@
 /* shout.c: python bindings to libshout
  * Copyright (c) 2003 Brendan Cully <brendan@xiph.org>
  *
- * This code is licensed under the GNU LGPL. See COPYING in the source
- * distribution for details.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
  *
- * $Id: shout.c,v 1.2 2003/07/09 21:56:43 brendan Exp $
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public
+ *  License along with this library; if not, write to the 
+ *  Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
+ *  Boston, MA  02111-1307  USA.
+ *
+ * $Id: shout.c,v 1.3 2003/07/13 17:29:53 brendan Exp $
  */
 
 #include <Python.h>
