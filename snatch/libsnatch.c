@@ -687,7 +687,6 @@ int ioctl(int fd,unsigned long int rq, ...){
 	  fprintf(stderr,"    ...: Audio output buffer size requested; faking 64k\n");
 	ret=0;
       }
-      CloseOutputFile();
       break;
     case SNDCTL_DSP_GETODELAY: /* Must reject the ODELAY if we're not going to track 
 				  audio bytes and timing! */
@@ -698,7 +697,6 @@ int ioctl(int fd,unsigned long int rq, ...){
 	*(int *)arg=0;
 	ret=-1;
       }
-      CloseOutputFile();
       break;
     }
     
