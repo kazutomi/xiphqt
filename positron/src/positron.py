@@ -71,6 +71,9 @@ def main(argv):
             usage()
         elif remaining[0] == "add":
             cmd_add(config, myNeuros, remaining[1:])
+        else:
+            print remaining[0], "is not a valid command."
+            usage()
 
         exit_value = 0
     except neuros.Error, e:
