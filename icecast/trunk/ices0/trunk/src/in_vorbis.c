@@ -21,7 +21,24 @@
 
 #include "in_vorbis.h"
 
+#include <string.h>
+
 #include <vorbis/vorbisfile.h>
+
+/* -- data structures -- */
+typedef struct {
+  OggVorbis_File* vf;
+  int16_t buf[2048];
+  size_t samples;
+  int offset;
+} ices_vorbis_in_t;
+
+/* -- static prototypes -- */
+static int ices_vorbis_readpcm (input_stream_t* self, size_t len,
+				int16_t* left, int16_t* right);
+static int ices_vorbis_close (input_stream_t* self);
+static int ices_vorbis_get_metadata (input_stream_t* self, char* buf,
+				     size_t len);
 
 /* try to open a vorbis file for decoding. Returns:
  *   0: success
@@ -84,11 +101,14 @@ ices_vorbis_open (input_stream_t* self)
   self->read = NULL;
   self->readpcm= ices_vorbis_readpcm;
   self->close = ices_vorbis_close;
+  self->get_metadata = ices_vorbis_get_metadata;
+
+  self->bitrate = ov_bitrate (vf, -1) / 1000;
 
   return 0;
 }
 
-int
+static int
 ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
 		     int16_t* right)
 {
@@ -126,13 +146,47 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
   return len;
 }
 
-int ices_vorbis_close (input_stream_t* self)
+static int
+ices_vorbis_close (input_stream_t* self)
 {
   ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
 
   ov_clear (vorbis_data->vf);
   free (vorbis_data->vf);
   free (vorbis_data);
+
+  return 0;
+}
+
+static int
+ices_vorbis_get_metadata (input_stream_t* self, char* buf, size_t len)
+{
+  ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
+  vorbis_comment* comment;
+  char* key;
+  char* artist = NULL;
+  char* title = NULL;
+  int i;
+
+  if (! (comment = ov_comment (vorbis_data->vf, -1)))
+    return -1;
+
+  for (i = 0; i < comment->comments; i++) {
+    key = comment->user_comments[i];
+    ices_log_debug ("Vorbis comment found: %s", key);
+    if (! strncasecmp ("artist", key, 6))
+      artist = key+7;
+    else if (! strncasecmp ("title", key, 5))
+      title = key+6;
+  }
+
+  if (! title)
+    return -1;
+
+  if (artist)
+    snprintf (buf, len, "%s - %s", artist, title);
+  else
+    snprintf (buf, len, "%s", title);
 
   return 0;
 }

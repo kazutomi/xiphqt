@@ -35,3 +35,4 @@ ssize_t ices_mp3_read (input_stream_t* self, void* buf, size_t len);
 ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
 			  int16_t* right);
 int ices_mp3_close (input_stream_t* self);
+int ices_mp3_get_metadata (input_stream_t* self, char* buf, size_t len);

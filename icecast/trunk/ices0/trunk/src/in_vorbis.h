@@ -26,16 +26,6 @@
 
 #include <vorbis/vorbisfile.h>
 
-typedef struct {
-  OggVorbis_File* vf;
-  int16_t buf[2048];
-  size_t samples;
-  int offset;
-} ices_vorbis_in_t;
-
 int ices_vorbis_open (input_stream_t* self);
-int ices_vorbis_readpcm (input_stream_t* self, size_t len, int16_t* left,
-			 int16_t* right);
-ssize_t ices_vorbis_close (input_stream_t* self);
 
 #endif

@@ -89,5 +89,6 @@ typedef struct _input_stream_t {
   ssize_t (*readpcm)(struct _input_stream_t* self, size_t len, int16_t* left,
 		     int16_t* right);
   int (*close)(struct _input_stream_t* self);
+  int (*get_metadata)(struct _input_stream_t* self, char* buf, size_t len);
 } input_stream_t;
 #endif

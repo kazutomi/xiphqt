@@ -1,6 +1,7 @@
 /* stream.c
  * - Functions for streaming in ices
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,6 +20,7 @@
  */
 
 #include "definitions.h"
+#include "metadata.h"
 
 #ifdef HAVE_LIBVORBISFILE
 #include "in_vorbis.h"
@@ -165,6 +167,8 @@ ices_stream_send_file (const char *file)
     return 0;
   }
 
+  ices_metadata_set (&source);
+
 #ifdef HAVE_LIBLAME
   ices_reencode_reset ();
 #endif
@@ -247,6 +251,7 @@ ices_stream_open_source (input_stream_t* source)
     source->canseek = 0;
   else {
     source->canseek = 1;
+    source->filesize = ices_util_fd_size (fd);
   }
   ices_log_error ("Seek: %s", source->canseek ? "yes" : "no");
 
@@ -265,9 +270,7 @@ ices_stream_open_source (input_stream_t* source)
   /* let's hope it's MP3 */
   if (source->canseek) {
     ices_mp3_parse_file (source->path);
-    ices_id3_parse_file (source->path, 0);
     source->bitrate = ices_mp3_get_bitrate ();
-    source->filesize = ices_util_fd_size (fd);
   }
 
   mp3_data = (ices_mp3_in_t*) malloc (sizeof (ices_mp3_in_t));
@@ -280,6 +283,7 @@ ices_stream_open_source (input_stream_t* source)
 #ifdef HAVE_LIBLAME
   source->readpcm = ices_mp3_readpcm;
 #endif
+  source->get_metadata = ices_mp3_get_metadata;
   source->close = ices_mp3_close;
 
   return 0;

@@ -24,18 +24,14 @@
 
 extern ices_config_t ices_config;
 
-static char *ices_id3_filename = NULL;
 static char *ices_id3_song = NULL;
 static char *ices_id3_artist = NULL;
 static char *ices_id3_genre = NULL;
 static int ices_id3_file_size = -1;
 static mutex_t id3_mutex;
 static int id3_is_initialized = 0;
-extern ices_config_t ices_config;
 
 /* Private function declarations */
-static void ices_id3_update_metadata (const char *filename, int file_bytes);
-void *ices_id3_update_thread (void *arg);
 static int ices_id3_parse (const char *filename, int file_bytes);
 static void ices_id3_cleanup (void);
 static char *ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize);
@@ -77,8 +73,6 @@ ices_id3_parse_file (const char *filename, int file_bytes)
 	/* Give the go-ahead to external modules to get id3 info */
 	thread_unlock_mutex (&id3_mutex);
 
-	/* Update metadata on server, in a spawned new thread */
-	ices_id3_update_metadata (filename, file_bytes);
 	return file_bytes;
 }
 
@@ -135,89 +129,7 @@ ices_id3_get_genre (char *namespace, int maxlen)
 	return namespace;
 }
 
-/* Return the id3 module file name, if found. */
-char *
-ices_id3_get_filename (char *namespace, int maxlen)
-{
-	thread_lock_mutex (&id3_mutex);
-
-	if (ices_id3_filename) {
-		strncpy (namespace, ices_util_nullcheck (ices_id3_filename), maxlen);
-	} else {
-		namespace[0] = '\0';
-		namespace = NULL;
-	}
-	
-	thread_unlock_mutex (&id3_mutex);
-	
-	return namespace;
-}
-
 /* Private function definitions */
-
-/* Spawn a new thread to update metadata on server. Should be
- * very low overhead */
-static void
-ices_id3_update_metadata (const char *filename, int file_bytes)
-{
-  static int first = 1;
-  static int delay = 0;
-
-  if (first) {
-    ices_log_debug ("Initially delaying metadata update...");
-    delay = 3000000;
-  } else
-    delay = 0;
-
-  if (thread_create ("Metadata Update Thread", ices_id3_update_thread, &delay) == -1) {
-    ices_log ("Error: Could not create metadata update thread!");
-  }
-
-}
-
-/* Function used by the updating thread to update metadata on server.
- * It also does the job of cleaning up the song title to something the
- * world likes.
- * Note that the very first metadata update is delayed, because if we
- * try to update our new info to the server and the server has not yet
- * accepted us as a source, the information is lost */
-void *
-ices_id3_update_thread (void *arg)
-{
-  ices_stream_config_t* stream;
-  int ret;
-  char metastring[1024], song[2048], artistspace[1024], titlespace[1024],
-    filespace[1024];
-  char *id3_artist = ices_id3_get_artist (artistspace, 1024);
-  char *id3_song = ices_id3_get_title (titlespace, 1024);
-  const char *filename = ices_id3_get_filename (filespace, 1024);
-	
-  if (*((int*)arg))
-    thread_sleep (*((int*)arg));
-
-  if (id3_artist) {
-    sprintf (song, "%s - %s", id3_artist, id3_song ? id3_song : filename);
-  } else {
-    sprintf (song, "%s", (id3_song != NULL) ? id3_song : ices_id3_filename_cleanup (filename, metastring, 1024));
-  }
-	
-  if (ices_config.header_protocol == icy_header_protocol_e)
-    sprintf (metastring, "%s", song);
-  else
-    sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
-
-  for (stream = ices_config.streams; stream; stream = stream->next) {
-    ret = shout_update_metadata (&stream->conn, metastring);
-	
-    if (ret != 1)
-      ices_log ("Updating metadata on server failed.");
-    else
-      ices_log ("Updated metadata on server to: %s", song);
-  }
-	
-  thread_exit (0);
-  return 0;
-}
 
 /* Function that does the id3 tag parsing of a file */
 static int
@@ -231,7 +143,6 @@ ices_id3_parse (const char *filename, int file_bytes)
 	char namespace[1024];
 
 	ices_id3_file_size = file_bytes;
-	ices_id3_filename = ices_util_strdup (filename);
 
 	if (!(temp = ices_util_fopen_for_reading (filename))) {
 		ices_log ("Error while opening file %s for id3 tag parsing. Error: %s", filename, ices_util_strerror (errno, namespace, 1024));
@@ -302,40 +213,5 @@ ices_id3_cleanup (void)
 		ices_util_free (ices_id3_genre);
 		ices_id3_genre = NULL;
 	}
-
-	if (ices_id3_filename) {
-		ices_util_free (ices_id3_filename);
-		ices_id3_filename = NULL;
-	}
 }
 
-/* Cleanup a filename so it looks more like a song name */
-static char *
-ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize)
-{
-	char *ptr =NULL;
-
-	ices_log_debug ("Filename before cleanup: [%s]", ices_util_nullcheck (oldname));
-
-	if (!oldname || !namespace) {
-		ices_log ("ERROR: Polluted strings sent to filename cleanup.");
-		return NULL;
-	}
-
-	/* Find last slash */
-	ptr = strrchr (oldname, '/');
-
-	if (ptr && strlen (ptr) > 0) {
-		strncpy (namespace, ptr + 1, maxsize);
-	} else {
-		strncpy (namespace, oldname, maxsize);
-	}
-		    
-	if ((ptr = strrchr (namespace, '.'))) {
-		*ptr = '\0';
-	}
-
-	ices_log_debug ("Filename cleaned up from [%s] to [%s]", ices_util_nullcheck (oldname), 
-								 ices_util_nullcheck (namespace));
-	return namespace;
-}

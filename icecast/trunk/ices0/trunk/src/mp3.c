@@ -233,3 +233,24 @@ ices_mp3_close (input_stream_t* self)
 
   return close (fd);
 }
+
+int
+ices_mp3_get_metadata (input_stream_t* self, char* buf, size_t len)
+{
+  char artist[1024];
+  char title[1024];
+  
+  ices_id3_parse_file (self->path, 0);
+  ices_id3_get_artist (artist, sizeof (artist));
+  ices_id3_get_title (title, sizeof (title));
+
+  if (! *title)
+    return -1;
+
+  if (*artist)
+    snprintf (buf, len, "%s - %s", artist, title);
+  else
+    snprintf (buf, len, "%s", artist);
+
+  return 0;
+}
