@@ -1,0 +1,198 @@
+<title>Xiph.Org: Subversion</title>
+
+<!--#include file="xiphtop.include" -->
+
+    Xiph.Org read-only Subversion access
+
+<!--#include file="xiphmid.include" -->
+
+<p>
+Xiph.Org development projects are available to the public at large through
+read-only remote Subversion access of the developers' live source repositories.
+This access gives external contributers access to all the infomation, code and
+history available to our own core developers.</p>
+
+<p>
+<a href="http://svn.xiph.org">Browse the source repository</a> through the web.
+</p>
+
+<h2>What is Subversion?</h2>
+
+<p>
+<a href="http://subversion.tigris.org">Subversion</a> is a version control
+system that is a replacement for CVS. If you want to know more about
+Subversion, we suggest you read the
+<a href="http://svnbook.red-bean.com">Subversion Book</a> or the
+<a href="http://subversion.tigris.org/project_faq.html">FAQ</a>. </p>
+
+<h2>Accessing Subversion at Xiph.Org</h2>
+
+<p>
+These instructions assume that Subversion is already installed and generally
+configured on your host. Note that the anonymous Subversion access
+offered here is read-only; the repository will not accept anonymous commits.
+</p>
+                                                                                
+<p>
+To checkout a module:
+</p>
+
+<pre>
+svn co svn co http://svn.xiph.org/<var>module</var>
+</pre>
+
+<p>
+This command creates a subdirectory and downloads the code from the
+repository in the new directory. See below for a list of modules.
+</p>
+                                                                                
+<p>
+To update a module:
+</p>
+
+<pre>
+svn update <var>module</var>
+</pre>
+
+<p>
+This command updates your repository to the newest revision.
+</p>
+
+<h2>Modules</h2>
+
+<table>
+<tr>
+    <td>icecast</td>
+    <td>Icecast streaming server (<a
+            href="http://www.icecast.org">http://www.icecast.org</a>)</td>
+    </tr><tr>
+    <td>websites </td>
+    <td>Code for xiph.org and theora.org</td>
+    </tr><tr>
+    <td>websites-ngen </td>
+    <td>Next generation of our websites</td>
+    </tr><tr>
+    <td>trunk/BlueberryArmageddon </td>
+    <td>A CD ripper, written in Perl. ??? </td>
+    </tr><tr>
+    <td>trunk/MTG</td>
+    <td>???</td>
+    </tr><tr>
+    <td>trunk/Tremor </td>
+    <td>The source code to the integer-only Ogg Vorbis decode library named
+        'Tremor'.</td>
+    </tr><tr>
+    <td>trunk/ao</td>
+    <td>The source code to libao, used by some vorbis utilities.</td>
+    </tr><tr>
+    <td>trunk/ao-python</td>
+    <td>Python bindings to libao.</td>
+    </tr><tr>
+    <td>trunk/cdparanoia</td>
+    <td>The source code to cdparanoia and Paranoia-III.</td>
+    </tr><tr>
+    <td>trunk/dryice</td>
+    <td>Source code for DryIce, a live Ogg stream source client.</td>
+    </tr><tr>
+    <td>trunk/ezstream</td>
+    <td>Source code of ezstream, a Win32 command line utility to stream mp3 or
+    </td></tr><tr>
+    <td>trunk/ffmpeg2theora</td>
+    <td>The source of a video converter from MPEG to theora. ???</td>
+    </tr><tr>
+    <td>trunk/greenremote</td>
+    <td>???</td>
+    </tr><tr>
+    <td>trunk/masktest</td>
+    <td>The source code to a package that collects masking data from a user by
+        running listening experiments.</td>
+    </tr><tr>
+    <td>trunk/mgm</td>
+    <td>The source code to MGM, a status/load meter package written in Perl.</td>
+    </tr><tr>
+    <td>trunk/ogg</td>
+    <td>The source code to libogg.</td>
+    </tr><tr>
+    <td>trunk/ogg-python</td>
+    <td>Python bindings for libogg.</td>
+    </tr><tr>
+    <td>trunk/ogg-tools</td>
+    <td>The source code to various command line utilities for other types of Ogg
+        files.</td>
+    </tr><tr>
+    <td>trunk/ogg2</td>
+    <td>The source code to libogg2</td>
+    </tr><tr>
+    </tr><tr>
+    <td>trunk/py-ogg2</td>
+    <td>Python bindings for libogg2</td>
+    </tr><tr>
+    <td>trunk/oggds</td>
+    <td>Source code of the OggVorbis DirectShow filter collection</td>
+    </tr><tr>
+    <td>trunk/oggdsf</td>
+    <td>illiminable Ogg Directshow Filters for Speex, Vorbis, Theora and FLAC</td>
+    </tr><tr>
+    <td>trunk/positron</td>
+    <td>Positron is a synchronization tool for the Neuros portable music
+        player.</td>
+    </tr><tr>
+    <td>trunk/postfish</td>
+    <td>The Postfish is a digital audio post-processing, restoration, filtering
+        and mixdown tool.</td>
+    </tr><tr>
+    <td>trunk/shout-perl</td>
+    <td>Perl bindings for libshout.</td>
+    </tr><tr>
+    <td>trunk/shout-python</td>
+    <td>Python bindings for libshout.</td>
+    </tr><tr>
+    <td>trunk/snatch</td>
+    <td>Source code of snatch, a RealPlayer output recorder.</td>
+    </tr><tr>
+    <td>trunk/speex</td>
+    <td>The source code to the Speex low-bitrate voice-only audio codec.</td>
+    </tr><tr>
+    <td>trunk/tarkin</td>
+    <td>The source code to the original Tarkin video CODEC source experiment.</td>
+    </tr><tr>
+    <td>trunk/theora</td>
+    <td>The source code to the Theora video CODEC project.</td>
+    </tr><tr>
+    <td>trunk/theora-tools</td>
+    <td>The source code to various command line OggTheora utilities</td>
+    </tr><tr>
+    <td>trunk/vorbis</td>
+    <td>The source code to libvorbis, libvorbisfile, libvorbisenc and example
+        code.</td>
+    </tr><tr>
+    <td>trunk/vorbis-plugins</td>
+    <td>The source code to a few OggVorbis player plugins.</td>
+    </tr><tr>
+    <td>trunk/vorbis-python</td>
+    <td>Python bindings for libvorbis, libvorbisfile and libvorbisenc.</td>
+    </tr><tr>
+    <td>trunk/vorbis-tools</td>
+    <td>The source code to various command line OggVorbis utilities.</td>
+    </tr><tr>
+    <td>trunk/vorbose</td>
+    <td>???</td>
+    </tr><tr>
+    <td>trunk/vp32</td>
+    <td>The source code to ON2's VP3.2 video codec.</td>
+    </tr><tr>
+    <td>trunk/w3d</td>
+    <td>The source code to another Tarkin video CODEC source experiment.</td>
+    </tr><tr>
+    <td>trunk/win32-tools</td>
+    <td>Source code for Windows Ogg tools.</td>
+    </tr><tr>
+    <td>trunk/win32sdk</td>
+    <td>Source code for Windows Ogg development SDK.</td>
+    </tr><tr>
+    <td>trunk/writ</td>
+    <td>Source code of OggWrit, a format for encoding subtitles. ???</td>
+    </tr>
+</table>
+
+<!--#include file="xiphbottom.include" -->
