@@ -217,36 +217,37 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
       return NULL;
     }
 
-  } else if (PyArg_ParseTuple(args, "O!|sl", &PyFile_Type, &fobject,
-                              &initial, &ibytes)) {
+  } else {
     PyErr_Clear(); /* clear first failure */
+    if (PyArg_ParseTuple(args, "O!|sl", &PyFile_Type, &fobject,
+			 &initial, &ibytes)) {
+      
+      fname = NULL;
+      file = PyFile_AsFile(fobject);
+      if (!file) 
+	return NULL;
 
-    fname = NULL;
-    file = PyFile_AsFile(fobject);
-    if (file) {
       /* We have to duplicate the file descriptor, since both Python
-         and vorbisfile will want to close it. Don't use the file
-         after you pass it in, or much evil will occur. 
-
-         Really, you shouldn't be passing in files anymore, but in the
-         interest of backwards compatibility it'll stay.
+	 and vorbisfile will want to close it. Don't use the file
+	 after you pass it in, or much evil will occur. 
+	 
+	 Really, you shouldn't be passing in files anymore, but in the
+	 interest of backwards compatibility it'll stay.
       */
       int orig_fd, new_fd;
       orig_fd = fileno(file);
       new_fd = dup(orig_fd);
       file = fdopen(new_fd, "r");
       if (!file) {
-        PyErr_SetString(PyExc_IOError, "Could not duplicate file.");
-        return NULL;
+	PyErr_SetString(PyExc_IOError, "Could not duplicate file.");
+	return NULL;
       }
     } else {
+      PyErr_Clear(); /* clear first failure */
+      PyErr_SetString(PyExc_TypeError, 
+		      "Argument 1 is not a filename or file object");
       return NULL;
     }
-
-  } else {
-    PyErr_SetString(PyExc_TypeError, 
-                    "Argument 1 is not a filename or file object");
-    return NULL;
   }
 
   self->ovf = (OggVorbis_File*) malloc(sizeof(OggVorbis_File));
@@ -457,7 +458,7 @@ py_ov_raw_seek(PyObject *self, PyObject *args)
   int val;
   long pos;
 
-  if(!PyArg_ParseTuple(args, "l", &pos)) 
+  if (!PyArg_ParseTuple(args, "l", &pos)) 
     return NULL;
 
   val = ov_raw_seek(ov_self->ovf, pos);
@@ -472,7 +473,7 @@ py_ov_pcm_seek(PyObject *self, PyObject *args)
   int val;
   ogg_int64_t pos;
 
-  if(!PyArg_ParseTuple(args, "O", &longobj))
+  if (!PyArg_ParseTuple(args, "O", &longobj))
     return NULL;
  
   if (!modinfo->arg_to_int64(longobj, &pos))
@@ -490,7 +491,7 @@ py_ov_pcm_seek_page(PyObject *self, PyObject *args)
   PyObject *longobj;
   ogg_int64_t pos;
 
-  if(!PyArg_ParseTuple(args, "O", &longobj)) 
+  if (!PyArg_ParseTuple(args, "O", &longobj)) 
     return NULL;
 
   if (!modinfo->arg_to_int64(longobj, &pos))
@@ -507,7 +508,7 @@ py_ov_time_seek(PyObject *self, PyObject *args)
   int val;
   double pos;
 
-  if(!PyArg_ParseTuple(args, "d", &pos)) 
+  if (!PyArg_ParseTuple(args, "d", &pos)) 
     return NULL;
 
   val = ov_time_seek(ov_self->ovf, pos);
@@ -521,7 +522,7 @@ py_ov_time_seek_page(PyObject *self, PyObject *args)
   int val;
   double pos;
 
-  if(!PyArg_ParseTuple(args, "d", &pos)) 
+  if (!PyArg_ParseTuple(args, "d", &pos)) 
     return NULL;
 
   val = ov_time_seek_page(ov_self->ovf, pos);
