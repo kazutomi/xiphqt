@@ -31,13 +31,13 @@ sub module_instance{
     $xpath=$this->{"xpath"};
 
     # modify defaults
-    $toplevel->optionAdd("$xpath.order",100,21); # status group
+    $toplevel->optionAdd("$xpath.order",200,21); # status group
     $toplevel->optionAdd("$xpath.scalerefresh",10000,21); # 10s
     $toplevel->optionAdd("$xpath.scalereturn" ,1,21);     # don't need hyst
     $toplevel->optionAdd("$xpath*label", "battery",21);
     $toplevel->optionAdd("$xpath*lowlabel", "battery low",21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);  # shorter
+    $toplevel->optionAdd("$xpath.scalelenadj", 100,21);  # shorter
 
     my$fg=&main::moption($this,"litforeground");
     $toplevel->optionAdd("$xpath*midforeground", $fg,21);
