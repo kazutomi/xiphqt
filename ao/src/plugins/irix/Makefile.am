@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-if HAVE_IRIX_AUDIO
+if HAVE_IRIX
 
 irixltlibs = libirix.la
 irixldflags = -export-dynamic -avoid-version

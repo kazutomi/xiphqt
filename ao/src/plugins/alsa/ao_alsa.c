@@ -252,7 +252,7 @@ int plugin_play(ao_device *device, const char *output_samples,
 		internal->buf_end += copy_len;
 
 		if(internal->buf_end == internal->buf_size)
-			ok = ao_alsa_write_buffer(internal);
+			ok = _alsa_write_buffer(internal);
 	}
 
 	return ok;
@@ -265,7 +265,7 @@ int plugin_close(ao_device *device)
 	int result;
 
 	/* Clear buffer */
-	result = _ao_alsa_write_buffer(internal);
+	result = _alsa_write_buffer(internal);
 	snd_pcm_close(internal->pcm_handle);
 	free(internal->buf);
 
