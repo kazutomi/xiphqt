@@ -4,7 +4,7 @@ RM = rm -rf
 CFLAGS = -g -O0 -Wall
 LFLAGS = 
 
-SRCS = coder.c main.c videodev.c wavelet.c yuv.c
+SRCS = coder.c main.c wavelet.c yuv.c
 OBJS = $(SRCS:.c=.o)
 TARGET = main
 
