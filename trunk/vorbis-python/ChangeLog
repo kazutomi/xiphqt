@@ -1,3 +1,8 @@
+2002-05-21  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* pyvorbisinfo.c: Don't crash if comments are not valid UTF-8
+
+	* vorbismodule.c: Include some more headers
+	
 2002-02-17  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* pyvorbisfile.c: (py_ov_open): Fixed fd leak pointed out by
 	Harald Meland. Also correctly incref file objects passed in to

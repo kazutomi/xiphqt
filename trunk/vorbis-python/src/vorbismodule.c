@@ -2,6 +2,11 @@
 #include <stdio.h>
 
 #include "vorbismodule.h"
+
+#include "pyvorbiscodec.h"
+#include "pyvorbisfile.h"
+#include "pyvorbisinfo.h"
+
 #include "general.h"
 
 static PyMethodDef Vorbis_methods[] = {
