@@ -41,8 +41,6 @@
 #define MODULE "input-jack/"
 #include "logging.h"
 
-#define DEFAULT_RB_SIZE 32*1024
-
 int jack_callback_process (jack_nframes_t nframes, void *arg)
 {
     int chn; 
@@ -316,13 +314,16 @@ int jack_open_module(input_module_t *mod)
     s->jack_ports =(jack_port_t **)malloc(sizeof (jack_port_t *) * (s->channels));
 
     /* create the ringbuffers; one per channel, figures may need tweaking */
-    rb_size = (size_t)((s->sleep / 2000.0) *
+    rb_size = 2.0 * jack_get_sample_rate (s->client) * sizeof (jack_default_audio_sample_t);
+    // why was with again(??)
+    /* rb_size = (size_t)((s->sleep / 2000.0) *
         jack_get_buffer_size(s->client) * sizeof(jack_default_audio_sample_t));
+     */
     LOG_DEBUG2("creating %d ringbuffers, one per channel, of "
             "%d bytes each", s->channels, rb_size);
     s->rb =(jack_ringbuffer_t **)malloc(sizeof (jack_ringbuffer_t *) * (s->channels));
     for(i=0;i<s->channels;i++){
-        s->rb[i]=jack_ringbuffer_create(DEFAULT_RB_SIZE);
+        s->rb[i]=jack_ringbuffer_create(rb_size);
     }
 
     /* start the callback process */
