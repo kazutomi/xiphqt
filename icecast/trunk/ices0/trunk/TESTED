@@ -32,6 +32,9 @@ SunOS 5.7
 	Perl 5.0 patchlevel 3 subversion 0
 	     5.0 patchlevel 4 subversion 3
 	     5.0 patchlevel 5 subversion 3
-FreeBSD 4.0-RELEASE
+FreeBSD 4.0-RELEASE i386
 	gcc version 2.95.2
 	Perl 5.0 patchlevel 5 subversion 3
+OpenBSD 2.7 i386
+	gcc version 2.95.1
+	Perl 5.0 version 6 subversion 0
