@@ -18,7 +18,7 @@ sub rgb{
        my$r=hex$1;
        my$g=hex$2;
        my$b=hex$3;
-       if(length($val)==3){$r*=16;$g*=16;$b*=16};
+       if(length($val)==4){$r*=16;$g*=16;$b*=16};
        ($r,$g,$b);
    }else{
        my($r,$g,$b)=$main::toplevel->rgb($val);
