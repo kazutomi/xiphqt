@@ -171,7 +171,7 @@ ices_flac_close (input_stream_t* self)
   FLAC__stream_decoder_delete(flac_data->decoder);
   free (flac_data);
 
-  return 0;
+  return close(self->fd);
 }
 
 /* -- callbacks -- */
