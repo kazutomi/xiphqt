@@ -110,6 +110,23 @@ class SAI:
         self.file.seek(8)
         self.file.write(struct.pack(">H", self.num_entries))
 
+    def shift_pai(self, threshold, offset):
+        """Locates all entries with PAI pointer greater than threshold and shifts them by offset.
+
+        Use this function if a PAI module is extended, thus invalidating all
+        of the PAI module pointers in a database (though in a predictable way).
+        Let threshold be the pointer to the module that was extended, and
+        offset be the length of the extension in words."""
+
+        for i in range(len(self)):
+            # Gotta do things this way because we can't assign to individual
+            # elements of each SAI record.  Gotta write the whole things as
+            # a block
+            record = self[i]
+            if self[i][1] > threshold:
+                record[1] += offset
+                self[i] = record
+
     def clear(self):
         self.file.truncate(SAI.DATA_START+8)
         self.file.seek(8)

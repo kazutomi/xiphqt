@@ -187,7 +187,7 @@ class WOID:
                 # MDB pointer to matching record in child db
                 pointer = sai_record[0]
                 if (sai_record[1] != 0):  # Don't update if PAI module pointer is zero
-                    child_pai_modules.append((self.children[i-1].pai, sai_record[1]))
+                    child_pai_modules.append((i-1, sai_record[1]))
 
                 bag.append(pointer)
                 
@@ -204,9 +204,15 @@ class WOID:
         new_sai_record = (mdb_pointer, pai_pointer) 
         self.sai.append(new_sai_record)
 
-        # Now we update the child PAI files with back pointers
-        for child_pai, child_pai_module_ptr in child_pai_modules:
-            child_pai.add_entry_to_module_at(child_pai_module_ptr, mdb_pointer)
+        # Now we update the child PAI files with back pointers and
+        # keep SAI file in sync if an offset occured
+        for index, child_pai_module_ptr in child_pai_modules:
+            child_pai = self.children[index].pai
+            offset = child_pai.add_entry_to_module_at(child_pai_module_ptr,
+                                                      mdb_pointer)
+            if offset > 0:
+                child_sai = self.children[index].sai
+                child_sai.shift_pai(child_pai_module_ptr, offset)
 
         return new_sai_record
 

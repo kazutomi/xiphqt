@@ -90,13 +90,12 @@ class PAI:
         # num_entries * 32 bit word pointers, and empty space
         if (length - PAI.MODULE_HEADER_LEN - PAI.MODULE_FOOTER_LEN
             - num_entries * 2) == 0:
-            extended = True
-            self.extend_module_at(pointer, 1)
+            extension_offset = self.extend_module_at(pointer, 1)
 
             # Reread header
             (length, flag, num_entries) = self._read_module_header(pointer)
         else:
-            extended = False
+            extension_offset = 0
 
 
         # Update part of header
@@ -114,10 +113,7 @@ class PAI:
         f.write(packed_entry)
         f.flush()
         
-        if extended:
-            return self.get_module_pointers()
-        else:
-            return None
+        return extension_offset
         
     def delete_entry_in_module_at(self, pointer, entry):
         """Searches through module and erases the give entry.
@@ -235,6 +231,8 @@ class PAI:
         length_str = struct.pack(">H", length)
         f.write(length_str)
         f.flush()
+
+        return chunks * PAI.MIN_PAI_MODULE_LEN
 
     def clear_module_at(self, pointer):
         f = self.file
