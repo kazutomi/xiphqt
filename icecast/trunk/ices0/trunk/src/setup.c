@@ -339,7 +339,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
     s = argv[arg];
 
     if (s[0] == '-') {
-      if ((strchr ("RriVvBHN", s[1]) == NULL) && arg >= (argc - 1)) {
+      if ((strchr ("RriVvB", s[1]) == NULL) && arg >= (argc - 1)) {
 	ices_log ("Option %c requires an argument!\n", s[1]);
 	ices_setup_usage ();
 	ices_setup_shutdown ();
