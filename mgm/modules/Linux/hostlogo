@@ -7,31 +7,28 @@
 use Tk;
 package MGMmodule::hostlogo;
 
-# this is called once to init the class; construct is called per-instance
+# called once to initialize the module.  The xpath here is a Class.
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
-    my$xpath=$this->{"xpath"};
+    my$xclass=$this->{"xclass"};
 
-    my$logo=$this->{"logo"}=
-	$toplevel->Pixmap(-file => "$main::libdir/fishframe.xpm");
-    my$logoframes=$this->{"logoframes"}=12;
-    my$logowidth=$this->{"logowidth"}=$logo->width/12;
-    my$logoheight=$this->{"logoheight"}=$logo->height;
     my$hostname=`hostname`;
     chop$hostname;
     $hostname=~s{^([^\.]+).*}{$1};
     $this->{"hostname"}=$hostname;
-    
-    $toplevel->optionAdd("$xpath.scalewidadj", 5,21);
-    $toplevel->optionAdd("$xpath.scalelenadj", 10,21); 
-    $toplevel->optionAdd("$xpath*font",             
-			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-    $toplevel->optionAdd("$xpath*scalerefresh",        80,20);
-    $toplevel->optionAdd("$xpath.order",               0,20);
+    $toplevel->optionAdd("$xclass.order",               0,20);
+    $this;
+}
+
+# called to build an instance.  The xpath here is a name path.
+sub module_instance{
+    my$this=shift;
+    my$widget=$this->{"widget"};
+    my$xpath=$this->{"xpath"};
 
     # use our font and find the labelsize...
-    my$testlabel=$this->{"widget"}->Label(-text=>$hostname,
+    my$testlabel=$this->{"widget"}->Label(-text=>$this->{"hostname"},
 					 -borderwidth=>0,
 					 -padx=>1,-pady=>1);
     
@@ -39,21 +36,35 @@ sub module_init{
     my$textwidth=$this->{"textwidth"}=$testlabel->reqwidth;
     $testlabel->destroy;
 
+    # load the logo in the instance init in case the user has selected
+    # something different per instance
+
+    # not completely implemented
+    my$logofile=$widget->optionGet("logopixmap","");
+    $logofile="$main::libdir/fishframe.xpm" if(!defined($logofile));
+    my$logo=$this->{"logo"}=$widget->Pixmap(-file => $logofile);
+    my$logoframes=$this->{"logoframes"}=12;
+    my$logowidth=$this->{"logowidth"}=$logo->width/12;
+    my$logoheight=$this->{"logoheight"}=$logo->height;
+    
     my$minx=($logowidth>$textwidth?$logowidth:$textwidth);
     my$miny=$logoheight+$textheight;
 
-    $toplevel->optionAdd("$xpath.minx", $minx,21);      
-    $toplevel->optionAdd("$xpath.miny", $miny,21);      
-    # center the widget      
-    $toplevel->optionAdd("$xpath.scalejustify", 0,20);      
-    1;
+    $widget->optionAdd("$xpath.minx", $minx,21);      
+    $widget->optionAdd("$xpath.miny", $miny,21);      
+    $widget->optionAdd("$xpath.scalewidadj", 5,21);
+    $widget->optionAdd("$xpath.scalelenadj", 10,21); 
+    $widget->optionAdd("$xpath*font",             
+			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
+    $widget->optionAdd("$xpath*scalerefresh",        80,20);
+
+    $widget->optionAdd("$xpath.scalejustify", 0,20);      
+
+    $this;
 }
 
-sub module_construct{
-    my$this=shift;  # a class reference
-    %module=%$this; # build an independant instance
-    $this=\%module; #
-    bless $this;    #
+sub module_run{
+    my$this=shift;
 
     my$width=$this->{"width"};
     my$height=$this->{"height"};
@@ -68,6 +79,7 @@ sub module_construct{
     my$vpad=($height-$logoheight-$textheight)/2;
 
     my$widget=$toplevel->Frame(-class=>$this->{"name"},
+			       Name=>$this->{"sequence"},
 			       borderwidth=>0,
 			       highlightthickness=>0,
 			       width=>$width,height=>$height);
@@ -87,7 +99,6 @@ sub module_construct{
 			     -anchor=>'nw');
     $this->{"counter"}=0;
     $this->{"widget"}=$widget;
-    $this;
 }
 
 sub module_update{

@@ -6,6 +6,20 @@ package MGMmodule::battery;
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+
+    my$test=$this->read_proc;
+    if(!defined($test)){
+	$toplevel->optionAdd("$xclass.active",        'false',21);      
+    }
+    $toplevel->optionAdd("$xclass.order",100,21);      
+    $this;
+}
+
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
     my$xpath=$this->{"xpath"};
 
     # modify defaults
@@ -18,25 +32,19 @@ sub module_init{
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);  # shorter
 
     my$fg=&main::moption($this,"litforeground");
-
+    $toplevel->optionAdd("$xpath*midforeground", $fg,21);
     $toplevel->optionAdd("$xpath*litbackground", '#60c060',21);
     $toplevel->optionAdd("$xpath*midbackground", '#d0d060',21);
     $toplevel->optionAdd("$xpath*lowbackground", '#ff4040',21);
-    $toplevel->optionAdd("$xpath*midforeground", $fg,21);
     $toplevel->optionAdd("$xpath*lowforeground", '#ffffff',21);
 
     my($minx,$miny)=&MGM::Graph::calcxysize($this,100,'%',1);
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);      
-    
-    $this->module_update;
-    if(!$this->{"active"}){
-	$toplevel->optionAdd("$xpath.active",        'false',21);      
-    }
-    1;
+    $this;
 }
 
-sub module_construct{
+sub module_run{
     my$this=shift;
     
     my$graph=MGM::Graph->new($this,num=>1,fixed=>1,rangesetting=>100,
@@ -50,64 +58,66 @@ sub module_construct{
     $graph->{"widget"};        # must return the widget
 }
 
+sub read_proc{
+    my$this=shift;
+    my$percent;
+    if(open(PROC,"</proc/apm")){
+	$_=<PROC>;
+	if(m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+([^ \%]+)\%/){
+	    $percent=$1;
+	}
+	close PROC;
+    }
+    $percent;
+}
+
 sub module_update{ 
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xpath=$this->{"xpath"};
     my$graph=$this->{"graph"};
     
-    if(open(PROC,"</proc/apm")){
-	$_=<PROC>;
-	if(m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+([^ \%]+)\%/){
-	    
-	    if(defined($graph)){
-		# apm, for some reason, seems to occasionally return -1.
-		# guard against that
-		if($1>=0){
-		    if($1<30){
-			# below 30%, it would be nice to unfix the scale so 
-			#the  user can see
-		    
-			if($1<8){
-			    if($this->{"state"}!=2){
-				$graph->
-				    barconfigure(0,'aforeXr'=>'lowforeground',
-						 'abackXr'=>'lowbackground',
-						 'labelXr'=>'lowlabel');
-				$graph->configure(fixed=>0,rangesetting=>8);
-				$this->{"state"}=2;
-			    }
-			}else{
-			    if($this->{"state"}!=1){
-				$graph->
-				    barconfigure(0,'aforeXr'=>'midforeground',
-						 'abackXr'=>'midbackground',
-						 'labelXr'=>'label');
-				$graph->configure(fixed=>0,rangesetting=>32);
-				$this->{"state"}=1;
-			    }
-			}
-		    }else{
-			if($this->{"state"}!=0){
-			    $graph->
-				barconfigure(0,'aforeXr'=>'litforeground',
-					     'abackXr'=>'litbackground',
-					     'labelXr'=>'label');
-			    $graph->configure(fixed=>1,rangesetting=>100);
-			    $this->{"state"}=0;
-			}
+    my$percent=$this->read_proc;
+    if(defined($percent)){
+	# apm, for some reason, seems to occasionally return -1.
+	# guard against that
+	if($percent>=0){
+	    if($percent<30){
+		# below 30%, it would be nice to unfix the scale so 
+		#the  user can see
+		
+		if($percent<8){
+		    if($this->{"state"}!=2){
+			$graph->
+			    barconfigure(0,'aforeXr'=>'lowforeground',
+					 'abackXr'=>'lowbackground',
+					 'labelXr'=>'lowlabel');
+			$graph->configure(fixed=>0,rangesetting=>8);
+			$this->{"state"}=2;
 		    }
-		    $graph->set($1);
+		}else{
+		    if($this->{"state"}!=1){
+			$graph->
+			    barconfigure(0,'aforeXr'=>'midforeground',
+					 'abackXr'=>'midbackground',
+					 'labelXr'=>'label');
+			$graph->configure(fixed=>0,rangesetting=>32);
+			$this->{"state"}=1;
+		    }
+		}
+	    }else{
+		if($this->{"state"}!=0){
+		    $graph->
+			barconfigure(0,'aforeXr'=>'litforeground',
+				     'abackXr'=>'litbackground',
+					     'labelXr'=>'label');
+		    $graph->configure(fixed=>1,rangesetting=>100);
+		    $this->{"state"}=0;
 		}
 	    }
-	    $this->{"active"}=1;
-	}else{
-	    $this->{"active"}=0;
+	    $graph->set($percent);
 	}
-	close PROC;
-    }else{
-	$this->{"active"}=0;
-    }    
+    }
 }
 
 bless {};

@@ -5,9 +5,38 @@
 use Tk;
 
 package MGMmodule::biff;
-use vars qw($graph $maildrop $lastmod);
 
 sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+    my$maildrop=$this->{"widget"}->optionGet("maildrop","");
+
+    if(!defined($maildrop)){
+	my$name=getpwuid($<);
+	if(!defined($name)){
+	    print "Couldn't get username when looking for maildrop.\n";
+	    $toplevel->optionAdd("$xclass.active", 0,21);
+	    1;
+	}else{
+	    if(-r "/var/spool/mail/"){
+		$maildrop="/var/spool/mail/$name";
+	    }else{
+		if(-r "/var/mail/"){
+		    $maildrop="/var/mail/$name";
+		}else{
+		    print "Couldn't find maildrop directory\n";
+		    $toplevel->optionAdd("$xclass.active", 0,21);
+		}
+	    }
+	}
+    }
+    $this->{"maildrop"}=$maildrop;
+    $this;
+}
+
+sub module_instance{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xpath=$this->{"xpath"};
@@ -25,55 +54,36 @@ sub module_init{
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);      
 
-    $maildrop=$this->{"widget"}->optionGet("maildrop","");
-
-    if(!defined($maildrop)){
-	my$name=getpwuid($<);
-	if(!defined($name)){
-	    print "Couldn't get username when looking for maildrop.\n";
-	    $toplevel->optionAdd("$xpath.active", 0,21);
-	    1;
-	}else{
-	    if(-r "/var/spool/mail/"){
-		$maildrop="/var/spool/mail/$name";
-	    }else{
-		if(-r "/var/mail/"){
-		    $maildrop="/var/mail/$name";
-		}else{
-		    print "Couldn't find maildrop directory\n";
-		    $toplevel->optionAdd("$xpath.active", 0,21);
-		}
-	    }
-	}
-    }
-    1;
+    $this->{"lastmod"}=0;
+    $this;
 }
 
-sub module_construct{
+sub module_run{
     my$this=shift;
     
-    $graph=MGM::Graph->new($this,num=>1,prompt=>' messages',minscale=>4);
+    $this->{"graph"}=MGM::Graph->new($this,num=>1,prompt=>' messages',
+				     minscale=>4);
     $this->module_update;
-    $graph->{"widget"};        # must return the widget
+    $this->{"graph"}{"widget"};        # must return the widget
 }
 
-$lastmod=0;
 sub module_update{ 
+    my$this=shift;
     my$count=0;
-    my$modtime=(stat $maildrop)[9];
+    my$modtime=(stat $this->{"maildrop"})[9];
     if(defined($modtime)){
-	if($modtime!=$lastmod){
-	    if (open(PROC,"<$maildrop")){
+	if($modtime!=$this->{"lastmod"}){
+	    if (open(PROC,"<$this->{maildrop}")){
 		while(<PROC>){
 		    $count++ if(m/^From /);
 		}
 		close PROC;
 	    }
-	    $lastmod=$modtime;
-	    $graph->set($count);
+	    $this->{"lastmod"}=$modtime;
 	}
+	$this->{"graph"}->set($count);
     }else{
-	$graph->set(0);
+	$this->{"graph"}->set(0);
     }
 }
 

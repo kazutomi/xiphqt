@@ -5,13 +5,22 @@
 use Tk;
 
 package MGMmodule::loadav;
-use vars qw($graph);
 
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
-    my$xpath=$this->{"xpath"};
+    my$xclass=$this->{"xclass"};
 
+    unless (open(PROC,"</proc/loadavg")){
+	$toplevel->optionAdd("$xclass*active",'false',21);
+    }
+    $this;
+}
+
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xpath=$this->{"xpath"};
     # modify defaults
     $toplevel->optionAdd("$xpath*scalerefresh",1000,21); # slower
     $toplevel->optionAdd("$xpath.bar.0.label", "Load average",21);
@@ -23,25 +32,27 @@ sub module_init{
     my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' proc(s)',3);
 
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
-    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
-    1;
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);          
+    $this;
 }
 
-sub module_construct{
+sub module_run{
     my$this=shift;
     
-    $graph=MGM::Graph->new($this,num=>3,prompt=>' proc(s)');
-    $graph->{"widget"};        # must return the widget
+    $this->{"graph"}=MGM::Graph->new($this,num=>3,prompt=>' proc(s)');
+    $this->{"graph"}{"widget"};        # must return the widget
 }
 
 sub module_update{ 
-    die "Couldn't open /proc/loadavg\n" unless open(PROC,"</proc/loadavg");
-    while(<PROC>){
-	if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
-	    $graph->set($1,$2,$3);
+    my$this=shift;
+    if(open(PROC,"</proc/loadavg")){
+	while(<PROC>){
+	    if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
+		$this->{"graph"}->set($1,$2,$3);
+	    }
 	}
+	close PROC;
     }
-    close PROC;
 }
 
 bless {};
