@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: bark scale utility
- last mod: $Id: barkmel.c,v 1.12 2002/07/11 06:40:48 xiphmont Exp $
+ last mod: $Id: barkmel.c,v 1.5 2001/02/26 03:50:41 xiphmont Exp $
 
  ********************************************************************/
 
@@ -51,13 +51,9 @@ int main(){
 
 
   }
-  {
-    float i;
-    int j;
-    for(i=0.,j=0;i<28;i+=1,j++){
-      fprintf(stderr,"(%d) bark=%f %gHz (%d of 128)\n",
-              j,i,fromBARK(i),(int)(fromBARK(i)/22050.*128.));
-    }
+  for(i=0;i<28;i++){
+    fprintf(stderr,"bark=%d %gHz\n",
+	    i,fromBARK(i));
   }
   return(0);
 }

@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: simple example decoder
- last mod: $Id: decoder_example.c,v 1.27 2002/07/12 15:07:52 giles Exp $
+ last mod: $Id: decoder_example.c,v 1.19 2001/03/26 23:27:42 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,16 +31,14 @@
 #include <fcntl.h>
 #endif
 
-#if defined(__MACOS__) && defined(__MWERKS__)
+#if defined(macintosh) && defined(__MWERKS__)
 #include <console.h>      /* CodeWarrior's Mac "command-line" support */
 #endif
 
 ogg_int16_t convbuffer[4096]; /* take 8k out of the data segment, not the stack */
 int convsize=4096;
 
-extern void _VDBG_dump(void);
-
-int main(){
+int main(int argc, char **argv){
   ogg_sync_state   oy; /* sync and verify incoming physical bitstream */
   ogg_stream_state os; /* take physical pages, weld into a logical
 			  stream of packets */
@@ -64,12 +62,9 @@ int main(){
 #endif
 
 #if defined(macintosh) && defined(__MWERKS__)
-  {
-    int argc;
-    char **argv;
-    argc=ccommand(&argv); /* get a "command line" from the Mac user */
-                     /* this also lets the user set stdin and stdout */
-  }
+
+  argc = ccommand(&argv); /* get a "command line" from the Mac user */
+                          /* this also lets the user set stdin and stdout */
 #endif
 
   /********** Decode setup ************/
@@ -258,7 +253,7 @@ int main(){
 		      clipflag=1;
 		    }
 		    *ptr=val;
-		    ptr+=vi.channels;
+		    ptr+=2;
 		  }
 		}
 		
@@ -305,3 +300,4 @@ int main(){
   fprintf(stderr,"Done.\n");
   return(0);
 }
+

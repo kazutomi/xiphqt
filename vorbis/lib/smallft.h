@@ -5,15 +5,15 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: fft transform
- last mod: $Id: smallft.h,v 1.12 2002/07/11 06:40:50 xiphmont Exp $
+ last mod: $Id: smallft.h,v 1.10 2001/02/26 03:50:43 xiphmont Exp $
 
- ********************************************************************/
+********************************************************************/
 
 #ifndef _V_SMFT_H_
 #define _V_SMFT_H_

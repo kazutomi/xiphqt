@@ -7,11 +7,11 @@
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: train a VQ codebook 
- last mod: $Id: vqgen.c,v 1.41 2002/10/11 07:44:28 xiphmont Exp $
+ last mod: $Id: vqgen.c,v 1.39 2001/02/26 03:51:13 xiphmont Exp $
 
  ********************************************************************/
 
@@ -83,7 +83,8 @@ void _vqgen_seed(vqgen *v){
 int directdsort(const void *a, const void *b){
   float av=*((float *)a);
   float bv=*((float *)b);
-  return (av<bv)-(av>bv);
+  if(av>bv)return(-1);
+  return(1);
 }
 
 void vqgen_cellmetric(vqgen *v){
