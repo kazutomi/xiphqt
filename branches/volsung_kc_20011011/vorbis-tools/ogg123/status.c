@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.2 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.3 2001/12/09 03:45:26 volsung Exp $
 
  ********************************************************************/
 
@@ -144,6 +144,19 @@ void print_statistics_line (stat_t stats[])
   }
 
   last_line_len = len;
+}
+
+
+void vstatus_print_nolock (const char *fmt, va_list ap)
+{
+  if (last_line_len != 0)
+    fputc ('\n', stderr);
+
+  vfprintf (stderr, fmt, ap);
+
+  fputc ('\n', stderr);
+
+  last_line_len = 0;
 }
 
 
@@ -335,7 +348,6 @@ void status_print_statistics (stat_t *stats)
 }
 
 
-
 void status_message (int verbosity, const char *fmt, ...)
 {
   va_list ap;
@@ -345,19 +357,24 @@ void status_message (int verbosity, const char *fmt, ...)
 
   pthread_mutex_lock(&output_lock);
 
-  if (last_line_len != 0)
-    fputc ('\n', stderr);
-
   va_start (ap, fmt);
-  vfprintf (stderr, fmt, ap);
+  vstatus_print_nolock(fmt, ap);
   va_end (ap);
 
-  fputc ('\n', stderr);
+  pthread_mutex_unlock(&output_lock);
+}
 
-  last_line_len = 0;
+
+void vstatus_message (int verbosity, const char *fmt, va_list ap)
+{
+  if (verbosity > max_verbosity)
+    return;
+
+  pthread_mutex_lock(&output_lock);
+
+  vstatus_print_nolock(fmt, ap);
 
   pthread_mutex_unlock(&output_lock);
-
 }
 
 
@@ -367,15 +384,19 @@ void status_error (const char *fmt, ...)
 
   pthread_mutex_lock(&output_lock);
 
-  fputc ('\n', stderr);
-
   va_start (ap, fmt);
-  vfprintf (stderr, fmt, ap);
+  vstatus_print_nolock (fmt, ap);
   va_end (ap);
 
-  fputc ('\n', stderr);
+  pthread_mutex_unlock(&output_lock);
+}
 
-  last_line_len = 0;
+
+void vstatus_error (const char *fmt, va_list ap)
+{
+  pthread_mutex_lock(&output_lock);
+
+  vstatus_print_nolock (fmt, ap);
 
   pthread_mutex_unlock(&output_lock);
 }

@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.12 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.13 2001/12/09 03:45:26 volsung Exp $
 
  ********************************************************************/
 
@@ -144,13 +144,33 @@ void options_init (ogg123_options_t *opts)
   opts->devices = NULL;
 }
 
+/* ----------------------------- callbacks ------------------------------ */
+
+void decoder_error_callback (void *arg, int severity, char *message, ...)
+{
+  va_list ap;
+
+  va_start(ap, message);
+  vstatus_error(message, ap);
+  va_end(ap);
+}
+
+void decoder_metadata_callback (void *arg, int verbosity, char *message, ...)
+{
+  va_list ap;
+
+  va_start(ap, message);
+  vstatus_message(verbosity, message, ap);
+  va_end(ap);
+}
+
+
 /* --------------------------- main code -------------------------------- */
 
 
 
 int main(int argc, char **argv)
 {
-  int ret;
   int optind;
 
   ao_initialize();
@@ -228,7 +248,9 @@ void play (char *source_string)
   format_t *format;
   data_source_t *source;
   decoder_t *decoder;
-
+  decoder_callbacks_t decoder_callbacks = { &decoder_error_callback,
+					    &decoder_metadata_callback };
+  
   /* Preserve between calls so we only open the audio device when we 
      have to */
   static audio_format_t old_audio_fmt = { 0, 0, 0, 0, 0 };
@@ -261,7 +283,8 @@ void play (char *source_string)
     return;
   }
   
-  if ( (decoder = format->init(source, &new_audio_fmt, NULL, NULL)) == NULL ) {
+  if ( (decoder = format->init(source, &new_audio_fmt, &decoder_callbacks, 
+			       NULL)) == NULL ) {
     status_error("Error opening %s using the %s module."
 		 "  The file may be corrupted.\n", source_string,
 		 format->name);
@@ -288,7 +311,6 @@ void play (char *source_string)
 
   /* Main loop:  Iterates over all of the logical bitstreams in the file */
   while (!eof && !sig_request.exit) {
-    int i;
     
     /* Loop through data within a logical bitstream */
     eos = 0;    
