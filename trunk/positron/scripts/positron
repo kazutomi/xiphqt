@@ -151,17 +151,28 @@ def main(argv):
 
     try:
         
-	# Another special case since "rebuild" can be called when there
-	# is no db dir present.  Creating the dir before creating the
-        # Neuros object will ensure that no exceptions are thrown.
-        if remaining[0] == "rebuild":
-            dbdir = path.join(config.mountpoint, Neuros.DB_DIR)
-            if not path.exists(dbdir):
+        dbdir = path.join(config.mountpoint, Neuros.DB_DIR)
+        if not path.exists(dbdir):
+            if remaining[0] == "rebuild":
+                # Another special case since "rebuild" can be called when there
+                # is no db dir present.  Creating the dir before creating the
+                # Neuros object will ensure that no exceptions are thrown.
                 os.mkdir(dbdir)
-            elif not path.isdir(dbdir):
-                print "Error: There is file called %s where the database directory" % (dbdir,)
-                print "must go.  Please remove it and rerun 'positron rebuild'."
+            else:
+                print "Error: No Neuros database directory is present at %s." \
+                      % (dbdir,)
+                print "To correct this: "
+                print "1) Verify your Neuros is mounted at %s." \
+                      % (config.mountpoint,)
+                print "2) If it is mounted there, but there is no %s directory,"\
+                      % (dbdir)
+                print "   run 'positron rebuild' to generate a new database."
                 sys.exit(1)
+                
+        elif not path.isdir(dbdir):
+            print "Error: There is file called %s where the database directory" % (dbdir,)
+            print "must go.  Please remove it and rerun 'positron rebuild'."
+            sys.exit(1)
 
         myNeuros = Neuros(config.mountpoint)
 
