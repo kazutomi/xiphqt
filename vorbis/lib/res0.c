@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: residue backend 0 implementation
- last mod: $Id: res0.c,v 1.26 2001/02/26 03:50:43 xiphmont Exp $
+ last mod: $Id: res0.c,v 1.26.2.1 2001/03/28 03:11:06 segher Exp $
 
  ********************************************************************/
 
@@ -235,10 +235,45 @@ static int _encodepart(oggpack_buffer *opb,float *vec, int n,
   return(bits);
 }
 
+static int fast_decodepart(oggpack_buffer *opb,float *vec,int n,codebook *book){
+  int dim=book->dim;
+  int step=n/dim;
+
+  long *entry=alloca(sizeof(long)*step);
+  float **t=alloca(sizeof(float *)*step);
+  int i,j,o;
+
+  for(i=0;i<step;i++){
+    entry[i]=vorbis_book_decode(book,opb);
+    if(entry[i]==-1)return(-1);
+    t[i]=book->valuelist+entry[i]*dim;
+  }
+
+  for(i=0,o=0;i<dim;i++){
+    for (j=0;j<step-3;j+=4,o+=4){
+      vec[o]*=t[j][i];
+      vec[o+1]*=t[j+1][i];
+      vec[o+2]*=t[j+2][i];
+      vec[o+3]*=t[j+3][i];
+    }
+    for (;j<step;j++,o++)
+      vec[o]*=t[j][i];
+  }
+
+  return(0);
+}
+
 static int _decodepart(oggpack_buffer *opb,float *work,float *vec, int n,
 		       int stages, codebook **books){
   int i;
   
+  if(stages==0){
+    memset(vec,0,sizeof(float)*n);
+    return 0;
+  }
+  if(stages==1)
+    return fast_decodepart(opb,vec,n,books[0]);
+
   memset(work,0,sizeof(float)*n);
   if(stages){
     int dim=books[0]->dim;
