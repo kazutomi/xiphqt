@@ -41,7 +41,7 @@ install: build
 	dh_clean -k
 	dh_installdirs
 
-	python setup.py install --prefix $(CURDIR)/debian/ogg-python/usr
+	python setup.py install --prefix $(CURDIR)/debian/pyogg/usr
 
 
 # Build architecture-independent files here.

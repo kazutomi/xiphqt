@@ -1,11 +1,11 @@
-Source: ogg-python
+Source: pyogg
 Section: interpreters
 Priority: optional
 Maintainer: Christopher L Cheney <ccheney@debian.org>
 Build-Depends: debhelper (>> 2.0.0), libogg-dev (>> 1.0beta4), python-base, python-distutils
 Standards-Version: 3.5.2.0
 
-Package: ogg-python
+Package: pyogg
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: A Python interface to the Ogg library
