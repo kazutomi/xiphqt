@@ -33,6 +33,12 @@ extern ices_config_t ices_config;
 
 static PerlInterpreter *my_perl = NULL;
 
+static const char* pl_init_hook;
+static const char* pl_shutdown_hook;
+static const char* pl_get_next_hook;
+static const char* pl_get_metadata_hook;
+static const char* pl_get_lineno_hook;
+
 /* This is needed for dynamicly loading perl modules in the perl scripts.
  * E.g "use somemodule;"
  */
@@ -47,13 +53,15 @@ static void playlist_perl_shutdown (void);
 static int pl_perl_init_perl (void);
 static void pl_perl_shutdown_perl (void);
 static char* pl_perl_eval (const char* func);
+static const char* pl_find_func (const char*);
+
 static void xs_init (void);
 
 int
 ices_playlist_perl_initialize (playlist_module_t* pm)
 {
   char *str;
-  int ret = 0;
+  int ret = -1;
 
   pm->get_next = playlist_perl_get_next;
   pm->get_metadata = playlist_perl_get_metadata;
@@ -61,13 +69,14 @@ ices_playlist_perl_initialize (playlist_module_t* pm)
   pm->shutdown = playlist_perl_shutdown;
 
   if (pl_perl_init_perl () < 0)
-    return 0;
+    return -1;
 
-  str = pl_perl_eval ("ices_init");
-  ret = atoi (str);	/* allocated in perl.c */
-  ices_util_free (str);
-		
-  if (!ret) 
+  if (pl_init_hook && (str = pl_perl_eval (pl_init_hook))) {
+    ret = atoi (str);
+    ices_util_free (str);
+  }
+
+  if (ret <= 0) 
     ices_log_error ("Execution of 'ices_init' failed");
 
   return ret;
@@ -79,12 +88,10 @@ playlist_perl_get_lineno (void)
   char *str;
   int ret = 0;
 
-  str = pl_perl_eval ("ices_get_lineno");
-  ret = atoi (str); 	/* allocated in perl.c */
-  ices_util_free (str);
-
-  if (!ret) 
-    ices_log_error ("Execution of 'ices_get_lineno' failed");
+  if (pl_get_lineno_hook && (str = pl_perl_eval (pl_get_lineno_hook))) {
+    ret = atoi (str); 	/* allocated in perl.c */
+    ices_util_free (str);
+  }
 
   return ret;
 }
@@ -92,28 +99,26 @@ playlist_perl_get_lineno (void)
 static char *
 playlist_perl_get_next (void)
 {
-  return pl_perl_eval ("ices_get_next");
-  /* implied free(str), this is called higher up */
+  if (pl_get_next_hook)
+    return pl_perl_eval (pl_get_next_hook);
+
+  return NULL;
 }
 
 static char*
 playlist_perl_get_metadata (void)
 {
-  return pl_perl_eval ("ices_get_metadata");
+  if (pl_get_metadata_hook)
+    return pl_perl_eval (pl_get_metadata_hook);
+
+  return NULL;
 }
 
 static void
 playlist_perl_shutdown (void)
 {
-  char *str;
-  int ret = 0;
-			                  
-  str = pl_perl_eval ("ices_shutdown");
-  ret = atoi (str);
-  ices_util_free (str);
-
-  if (!ret) 
-    ices_log_error ("Execution of 'ices_shutdown' failed");
+  if (pl_shutdown_hook)
+    pl_perl_eval (pl_shutdown_hook);
 
   pl_perl_shutdown_perl ();
 
@@ -139,28 +144,45 @@ xs_init (void)
 static int
 pl_perl_init_perl (void)
 {
-	static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
-	static char module_space[255];
+  static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
+  static char module_space[255];
 
-	strncpy (module_space, ices_config.pm.module, 251);
-	module_space[251] = '\0'; /* Just to make sure */
-	strcat (module_space, ".pm");
-	my_argv[1] = module_space;
+  strncpy (module_space, ices_config.pm.module, 251);
+  module_space[251] = '\0'; /* Just to make sure */
+  strcat (module_space, ".pm");
+  my_argv[1] = module_space;
 
-	ices_log_debug ("Importing Perl module %s", my_argv[1]);
+  ices_log_debug ("Importing Perl module %s", my_argv[1]);
 
-	if((my_perl = perl_alloc()) == NULL) {
-		ices_log_debug ("perl_alloc() error: (no memory!)");
-		return -1;
-	}
-	perl_construct(my_perl);
+  if((my_perl = perl_alloc()) == NULL) {
+    ices_log_debug ("perl_alloc() error: (no memory!)");
+    return -1;
+  }
 
-	if (perl_parse(my_perl, xs_init, 2, my_argv, NULL)) {
-		ices_log_debug ("perl_parse() error: parse problem");
-		return -1;
-	}
+  perl_construct(my_perl);
 
-	return 0;
+  if (perl_parse(my_perl, xs_init, 2, my_argv, NULL)) {
+    ices_log_debug ("perl_parse() error: parse problem");
+    return -1;
+  }
+
+  if (!(pl_init_hook = pl_find_func ("ices_init")))
+    pl_init_hook = pl_find_func ("ices_perl_initialize");
+  if (!(pl_shutdown_hook = pl_find_func ("ices_shutdown")))
+    pl_shutdown_hook = pl_find_func ("ices_perl_shutdown");
+  if (!(pl_get_next_hook = pl_find_func ("ices_get_next")))
+    pl_get_next_hook = pl_find_func ("ices_perl_get_next");
+  if (!(pl_get_metadata_hook = pl_find_func ("ices_get_metadata")))
+    pl_get_metadata_hook = pl_find_func ("ices_perl_get_metadata");
+  if (!(pl_get_lineno_hook = pl_find_func ("ices_get_lineno")))
+    pl_get_lineno_hook = pl_find_func ("ices_perl_get_current_lineno");
+
+  if (! pl_get_next_hook) {
+    ices_log_error ("The playlist module must define at least the ices_get_next method");
+    return -1;
+  }
+
+  return 0;
 }
 
 /* cleanup time! */
@@ -218,4 +240,15 @@ pl_perl_eval (const char *functionname)
 	ices_log_debug ("Done interpreting [%s]", functionname);
 	
 	return retstr;
+}
+
+static const char*
+pl_find_func (const char* func)
+{
+  if (hv_exists (PL_defstash, func, strlen (func))) {
+    ices_log_debug ("Found method: %s", func);
+    return func;
+  }
+
+  return NULL;
 }
