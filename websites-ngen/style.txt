@@ -1,0 +1,18 @@
+A www.xiph.org style guide
+==========================
+
+*	Four-column tabs for indentation.
+*	Due to cross-platform and build restrictions, we can’t use symlinks or hard links.
+	Instead, use HTTP redirects in .htaccess files. For more information, see the Apache 2
+	information on the Redirect directive at
+	<http://httpd.apache.org/docs-2.0/mod/mod_alias.html#redirect>.
+*	Use UTF-8. In particular, use proper apostrophes and quotes (U+2018–U+201E) and
+	en and em dashes.
+*	For em dashes, in English, leave no space between the dash and the words—like this.
+*	For the love of all that’s holy, leave no space between a question mark and its
+	preceding sentence.
+
+Open Questions
+--------------
+*	Tone: How should we write? I’d like to display a visible sense of humor on the site.
+
