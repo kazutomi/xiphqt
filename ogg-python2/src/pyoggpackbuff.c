@@ -88,10 +88,37 @@ static PyMethodDef PyOggPackBuffer_methods[] = {
   {NULL, NULL}  
 };
 
+
+PyObject *
+PyOggPackBuffer_New(PyObject *self, PyObject *args) 
+{
+  PyOggPacketObject *packetobj;
+  PyOggPackBufferObject *ret;
+
+  packetobj = NULL;
+
+  if ( !PyArg_ParseTuple(args, "|O!", &PyOggPacket_Type,
+                         (PyObject *) &packetobj) ) return NULL;
+
+  ret = (PyOggPackBufferObject *) PyObject_NEW(PyOggPackBufferObject,
+                                               &PyOggPackBuffer_Type);
+  if (ret == NULL) return NULL;
+  ret->buffer = PyMem_Malloc(oggpack_buffersize());
+
+  if ( packetobj ) { 
+    oggpack_readinit(ret->buffer, PyOggPacket_AsOggPacket(packetobj)->packet);
+    return (PyObject *)ret;
+  } 
+  oggpack_writeinit(ret->buffer, ogg_buffer_create());
+  return (PyObject *)ret;
+}
+
+
 static void
 PyOggPackBuffer_Dealloc(PyObject *self)
 {
   oggpack_writeclear(PyOggPackBuffer_AsOggPackBuffer(self));
+  PyMem_Free(PyOggPackBuffer_AsOggPackBuffer(self));
   PyObject_DEL(self);
 }
 
@@ -101,34 +128,6 @@ PyOggPackBuffer_Getattr(PyObject *self, char *name)
   return Py_FindMethod(PyOggPackBuffer_methods, self, name);
 }
 
-PyObject *
-PyOggPackBuffer_New(PyObject *self, PyObject *args) 
-{
-  PyOggPackBufferObject *ret;
-  oggpack_buffer *buffer;
-  ogg_buffer_state *buffstate;
-
-  if (!PyArg_ParseTuple(args, "")) 
-    return NULL;
-
-  ret = (PyOggPackBufferObject *) PyObject_NEW(PyOggPackBufferObject,
-                                               &PyOggPackBuffer_type);
-  if (ret == NULL)
-    return NULL;
-
-  oggpack_writeinit(buffer, buffstate);
-  return (PyObject *)ret;
-  }
-
-  if (PyArg_ParseTuple(args, "O!", &PyOggPacket_Type,
-                       (PyObject *) &packetobj)) {
-    oggpack_readinit(&ret->ob, packetobj->op.packet,
-                     packetobj->op.bytes);
-    return (PyObject *)ret;
-  }
-
-    return NULL;
-}
 
 static PyObject *
 PyOggPackBuffer_Reset(PyObject *self, PyObject *args)
@@ -136,7 +135,10 @@ PyOggPackBuffer_Reset(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
+/* I believe this needs to, now, return the current buffer for a new
+   one through one of the init functions.  
   oggpack_reset(PyOggPackBuffer_AsOggPackBuffer(self));
+*/
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -154,8 +156,10 @@ PyOggPackBuffer_Look(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  ret = oggpack_look(PyOggPackBuffer_AsOggPackBuffer(self), bits);
-  return PyLong_FromLong(ret);
+  if ( oggpack_look(PyOggPackBuffer_AsOggPackBuffer(self), bits, &ret) )
+    return PyLong_FromLong(ret);
+  PyErr_SetString(PyExc_ValueError, "I DONT KNOW! PyOggPackBuffer_Look");
+  return NULL;
 }
 
 static PyObject *
@@ -228,9 +232,10 @@ PyOggPackBuffer_Read(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  ret = oggpack_read(PyOggPackBuffer_AsOggPackBuffer(self),  bits);
-
-  return PyInt_FromLong(ret);
+  if ( oggpack_read(PyOggPackBuffer_AsOggPackBuffer(self), bits, &ret) )
+    return PyInt_FromLong(ret);
+  PyErr_SetString(PyExc_ValueError, "I DONT KNOW! PyOggPackBuffer_Read");
+  return NULL;
 }
 
 static PyObject *
@@ -273,19 +278,23 @@ PyOggPackBuffer_Adv1(PyObject *self, PyObject *args)
 static PyObject *
 PyOggPackBuffer_Export(PyObject *self, PyObject *args)
 {
-  ogg_packet op;
+  ogg_packet *op;
+  PyOggPacketObject *packetobj;
 
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
-  op.packet = oggpack_get_buffer(PyOggPackBuffer_AsOggPackBuffer(self));
-  op.bytes = oggpack_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
-  op.b_o_s = 0;
-  op.e_o_s = 0;
-  op.granulepos = 0;
-  op.packetno = 0;
+  packetobj = PyOggPacket_Alloc();
+  op = packetobj->packet;
 
-  return py_ogg_packet_from_packet(&op);
+  op->packet = oggpack_writebuffer(PyOggPackBuffer_AsOggPackBuffer(self));
+  op->bytes = oggpack_bytes(PyOggPackBuffer_AsOggPackBuffer(self));
+  op->b_o_s = 0;
+  op->e_o_s = 0;
+  op->granulepos = 0;
+  op->packetno = 0;
+
+  return (PyObject *) packetobj;
 }
   
 
@@ -295,8 +304,7 @@ PyOggPackBuffer_Repr(PyObject *self)
   oggpack_buffer *ob = PyOggPackBuffer_AsOggPackBuffer(self);
   char buf[256];
 
-  sprintf(buf, "<OggPackBuff, endbyte = %ld, endbit = %d at %p>", ob->endbyte,
-					ob->endbit, self);
+  sprintf(buf, "<OggPackBuff at %p>", self);
   return PyString_FromString(buf);
 }
 
