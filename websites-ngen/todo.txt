@@ -1,14 +1,11 @@
 To Do
 =====
 
-*	Add in a way to override parts of the generated webpage from a file parallel to the
-	.txt file that's being used as the source for the main body.
-	
-*	After I've implemented that, I need a way for this sort of thing to "use whatever my
-	ancestors used", kinda like an OO derivation thing.
+*	News.
 
-* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
-	Maybe I could use PyYaml. Although that's probably serious overkill.
+*	A software directory.
+
+*	Breadcrumbs.
 
 *	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
 

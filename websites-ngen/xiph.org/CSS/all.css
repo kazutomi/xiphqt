@@ -14,7 +14,6 @@ html {
 	background: #6495ed; /* cornflower blue */
 	background: #1e90ff; /* cornflower blue */
 	background: #556b2f; /* dark olive green */
-	background: #333;
 	background: #f5f5f5; /* white smoke */
 	background: #ffdead; /* navajo white */
 	background: #696969; /* dim gray */
@@ -31,18 +30,43 @@ body {
 	padding: 50px 0 0; /* the 50px here must match the 50px of the sidebar div. */
 }
 
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Palatino Linotype", Georgia, "Book Antiqua", serif;
+	font-weight: normal;
+	color: #088;
+	margin: .25em 0 .125em;
+}
+
 h1 {
 	margin-top: 0;
 	padding-top: .25em;
 	font-size: 225%;
 }
 
-h1, h2, h3, h4, h5, h6 {
-	font-family: "Palatino Linotype", Georgia, "Book Antiqua", serif;
-	font-weight: normal;
-	color: #088;
+h2 {
+	margin-bottom: .125em;
+	padding-bottom: 0;
+	font-size: 200%;
+}
 
+h3 {
+	font-size: 180%;
+}
 
+h4 {
+	font-size: 160%;
+}
+
+h5 {
+	font-size: 140%;
+}
+
+h6 {
+	font-size: 125%;
+}
+
+p	{
+	margin: .125em 0;
 }
 
 div#content {
@@ -127,8 +151,16 @@ ul#bignavbuttons li.icecast a:hover {
 	background: #ccc;
 }
 
-div#footer {
+div#locations {
+	text-align: center;
+	text-transform: lowercase;
+	color: #aaa;
+	margin-top: 1em;
+}
+
+div#copyright {
 	border-top: 1px solid #aaa;
+	margin: 1em 2em 0;
 	padding: .25em 0 1em;
 	text-align: center;
 }
