@@ -74,7 +74,7 @@ IDR_MENU1 MENU DISCARDABLE
 BEGIN
     POPUP "Menu"
     BEGIN
-        MENUITEM "&Save Quality",               IDM_SAVEQUALITY
+        MENUITEM "&Encode Parameters",          IDM_SAVEQUALITY
         POPUP "&Options"
         BEGIN
             MENUITEM "&Errors to log file",         IDM_LOGERR
@@ -101,17 +101,23 @@ IDI_ICON1               ICON    DISCARDABLE     "resource/fish.ico"
 // Dialog
 //
 
-IDD_QUALITY DIALOG DISCARDABLE  0, 0, 150, 66
+IDD_QUALITY DIALOG DISCARDABLE  0, 0, 230, 119
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Save Quality"
+CAPTION "Encode Parameters"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Quality Coeffcient",IDC_STATIC,47,7,56,8
     CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | 
-                    TBS_BOTH | WS_TABSTOP,25,22,100,15
-    PUSHBUTTON      "Accept",IDC_BUTTON1,60,42,30,14
-    LTEXT           "0.01%",IDC_STATIC,16,14,20,8
-    LTEXT           "100%",IDC_STATIC,121,15,18,8
+                    TBS_BOTH | WS_TABSTOP,49,14,115,24
+    PUSHBUTTON      "Accept",IDC_BUTTON1,95,90,30,14
+    EDITTEXT        IDC_EDIT1,15,19,31,14,ES_WANTRETURN
+    GROUPBOX        "Quality",IDC_STATIC,7,7,209,33
+    CONTROL         "Select",IDC_USEQUALITY,"Button",BS_AUTORADIOBUTTON,175,
+                    20,36,10
+    GROUPBOX        "Bit Rate",IDC_STATIC,7,43,209,40
+    CONTROL         "Select",IDC_USEBITRATE,"Button",BS_AUTORADIOBUTTON,175,
+                    58,36,10
+    LISTBOX         IDC_BITRATE,15,52,48,27,LBS_NOINTEGRALHEIGHT | 
+                    LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -126,9 +132,9 @@ BEGIN
     IDD_QUALITY, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 142
+        RIGHTMARGIN, 225
         TOPMARGIN, 7
-        BOTTOMMARGIN, 59
+        BOTTOMMARGIN, 112
     END
 END
 #endif    // APSTUDIO_INVOKED
