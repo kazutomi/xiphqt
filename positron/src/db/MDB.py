@@ -1,6 +1,86 @@
 import struct
 from util import *
 
+def _unpack_fields(f):
+    """Parses a record in file object f into fields.
+
+    16-bit words are read starting at the current position of f and
+    escape codes are handled, as well as bag and field delimiters.
+
+    Returns a list with one element for each field.  An element will be
+    a list of strings of bytes (since fields can have multiple values)."""
+
+    fields = []
+    current_bag = []
+    current_item = ""
+    escape_mode = False
+
+    word = f.read(2)
+    while word != "":
+        if escape_mode:
+            current_item += word
+            escape_mode = False
+        else:
+            if word == Special.ESCAPER:
+                escape_mode = True
+            elif word == Special.FIELD_DELIM or word == Special.END_OF_RECORD:
+                current_bag.append(current_item)
+                fields.append(current_bag)
+                current_bag = []
+                current_item = ""
+
+                if word == Special.END_OF_RECORD:
+                    break
+            else:
+                current_item += word
+
+        word = f.read(2)
+    else:
+        raise Error("Premature EOF while reading record.")
+
+    # Special handled the empty record for easy ID with len(record) == 0:
+    if len(fields) == 1 and fields[0] == [""]:
+        fields = []
+
+    return fields
+
+def _escape_string(str):
+    """Scans str for special characters and escapes them"""
+
+    escape_mode = False
+    new = ""
+
+    for i in range(0, len(str), 2):
+        word = str[i:i+2]
+        if new in (Special.FIELD_DELIM, Special.END_OF_RECORD,
+                   Special.BAG_DELIM, Special.ESCAPER):
+            new += Special.ESCAPER
+        new += word
+
+    return new
+
+def _pack_fields(fields):
+    """Packs a list of fields using the MDB format.
+
+    fields should have the same structure as returned by _unpack_fields().
+
+    Returns a string with the packed data."""
+
+    str = ""
+
+    for field in fields:
+        for item in field:
+            str += _escape_string(item)
+
+            if len(field) > 1:
+                str += Special.BAG_DELIM
+
+        if len(fields) > 1:
+            str += Special.FIELD_DELIM
+
+    str += Special.END_OF_RECORD
+    return str
+
 class MDB:
 
     def __init__(self):
@@ -36,18 +116,7 @@ class MDB:
                                   - self.header["NumOfKeys"]):
             raise Error("Number of format strings does not equal number of extra info fields.")
 
-        try:
-            new_extra_format = []
-            for fmt in extra_format:
-                if fmt == "z":
-                    new_extra_format.append((fmt, None))
-                else:
-                    new_extra_format.append((fmt, struct.calcsize(fmt)))
-        except struct.error, e:
-            # Catch improper format strings
-            raise Error(e.value)
-
-        self.extra_format = new_extra_format
+        self.extra_format = extra_format
 
     def find_next_item(self, pointer):
         """Finds the word pointer to the record in the database after the given pointer.
@@ -83,7 +152,7 @@ class MDB:
 
 
     def read_record_at(self, pointer):
-        """Returns a tuple with the record at pointer and a pointer to the.next record.
+        """Returns a tuple with the record at pointer and a pointer to the next record.
 
         The first element in the tuple is a dict with the record
         contents.  The second element is the pointer to the next
@@ -111,68 +180,41 @@ class MDB:
         else:
             record["isDeleted"] = False
 
+        fields = _unpack_fields(f)
+
+        # Special empty record
+        if len(fields) == 0:
+            return (None, to_pointer(f.tell()))
+
         # Read primary field
-        (record["data"], delim) = fread_escaped_string(f)
+        record["data"] = map(trim_string, fields[0])
 
-        if delim == Special.END_OF_RECORD:
-            if record["data"] == "":
-                # Special empty record
-                return (None, to_pointer(f.tell()))
-            else:
-                # Degenerate case for child databases
-                record["keys"] = ()
-                record["extra"] = ()
-                return (record, to_pointer(f.tell()))
-
-        # Read access keys (field delimiter followed by word pointer)
-        # Need to account for having already read first delimiter
-        pattern = ">" + "2sI" * (self.header["NumOfKeys"]-1)
-        size_required = struct.calcsize(pattern)
-        data = struct.unpack(pattern, delim + f.read(size_required-2))
-
-        # Split field delimeters and record keys apart.
-        # In Python 2.3, I can just do:
-        # delims = data[::2]
-        # record["keys"] = list(data[1::2])
-        delims = []
+        # Read access keys
         record["keys"] = []
-        for i in range(len(data)):
-            if i % 2 == 0:
-                delims.append(data[i])
-            else:
-                record["keys"].append(data[i])
-
-        # Check field delimeters
-        for i in range(len(delims)):
-            if delims[i] != Special.FIELD_DELIM:
-                raise Error("Field delimeter not found after field %d" %(i,))
+        for i in range(1, self.header["NumOfKeys"]):
+            values = [struct.unpack(">I", item)[0]
+                      for item in fields[i]]
+            record["keys"].append(values)
 
         # Read extra fields
         record["extra"] = []
-        i = self.header["NumOfKeys"]-1
-        need_delim = True
-        for fmt, size in self.extra_format:
-            if need_delim:
-                word = f.read(2)
-            if word != Special.FIELD_DELIM:
-                raise Error("Field delimiter not found after field %d" %(i,))
+        i = self.header["NumOfKeys"]
+        for fmt in self.extra_format:
+            values = []
+            for item in fields[i]:
+                if fmt == "z":
+                    value = trim_string(item)
+                else:
+                    (value, ) = struct.unpack(fmt, item)
 
-            if fmt == "z":
-                (value, word) = fread_escaped_string(f)
-                need_delim = False  # Already got the next field delimiter
-            else:
-                (value, ) = struct.unpack(fmt, f.read(size))
-                need_delim = True
+                values.append(value)
 
-            record["extra"].append(value)
+            record["extra"].append(values)
 
             i += 1
 
-        # Finally, make sure we are at the end of the record
-        if need_delim:
-            word = f.read(2)
-        if word != Special.END_OF_RECORD:
-            raise Error("End of record delimiter not found.")
+        if i != self.header["NumOfFieldsPerRecord"]:
+            raise Error("Incorrect number of fields in record.")
 
         return (record, to_pointer(f.tell()))
 
@@ -206,25 +248,24 @@ class MDB:
         The record should be formatted in the same way as the return value from
         read_record_at()."""
 
-        new = ""
-
         # Record flag
         flags = 0x8000
         if record["isDeleted"]:
             flags |= 0x0001
 
-        new += struct.pack(">H", flags)
+        new = struct.pack(">H", flags)
 
+        fields = []
         # Primary Record Data
-        new += escape_string(record["data"])
+        fields.append(map(term_string, record["data"]))
 
         # Access Keys
         if len(record["keys"]) != self.header["NumOfKeys"]-1:
             raise Error("Incorrect number of access keys in record")
 
         for key in record["keys"]:
-            new += Special.FIELD_DELIM
-            new += struct.pack(">I", key)
+            values = [struct.pack(">I", item) for item in key]
+            fields.append(values)
 
         # Extra Info Fields
         if len(record["extra"]) != (self.header["NumOfFieldsPerRecord"]
@@ -232,14 +273,18 @@ class MDB:
             raise Error("Incorrect number of extra info fields in record")
 
         for i in range(len(record["extra"])):
-            new += Special.FIELD_DELIM
-            if self.extra_format[i][0] == "z":
-                new += escape_string(record["extra"][i])
-            else:
-                new += struct.pack(self.extra_format[i][0], record["extra"][i])
+            values = []
+            for item in record["extra"][i]:
+                if self.extra_format[i] == "z":
+                    values.append(term_string(item))
+                else:
+                    values.append(struct.pack(self.extra_format[i], item))
 
-        # End record
-        new += Special.END_OF_RECORD
+            fields.append(values)
+                    
+
+        # Pack record
+        new += _pack_fields(fields)
 
         # Write to disk
         self.file.seek(0,2)
