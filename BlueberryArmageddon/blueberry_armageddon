@@ -390,29 +390,63 @@ sub Rescan{
 	my@temp=@{$discs[0]};
       
 	if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
-	    Status("Album Loaded; no CDDB entry");
-	    for(my$i=1;$i<=$tracks;$i++){
-		$trackname[$i]="";
-	    }
-	    $artist="";
-	    $album="";
-	}else{
-	    my ($genre, $cddb_id, $title) = @{$discs[0]};
-	    $title=~/(.+)\s\/\s(.+)/;
-	    $artist=$1;
-	    $album=$2;
-	    $artist=~s/\//:/g;
-	    $album=~s/\//:/g;
-	    my $disc_info     = $cddb->get_disc_details($genre, $cddb_id);
 
-	    for(my$i=0;$i<$tracks;$i++){
-		$trackname[$i+1]=$disc_info->{"ttitles"}[$i];
-		$trackname[$i+1]=~s/\//:/g;
-	    }
+	    # CDDB protocol is stupidly designed in many ways, but one
+	    # of the biggest is that matching depends on the offset of
+	    # the first track... which is neither deterministic from
+	    # CDROM drive to CDROM drive, nor a well defined concept
+	    # in the RedBook spec.  Even worse, it appears that much
+	    # CDROM software always reports it as MSF 0 2 0 regardless
+	    # of what it is, and thus CDDB often has the offset for
+	    # the whole disc fucked up.
+	    
+	    # retry with 1 0 2 0
+	    
+	    $toc[0]="1 0 2 0";
+	    
+	    # perform cddb query
+	    $cddb->DESTROY();
+	    $cddb = new CDDB() or die $!;
+	    Status("Requerying database");
+	    $toplevel->update();
+	    @discs = $cddb->get_discs_by_toc(@toc);
+	    
+	    @temp=@{$discs[0]};
+	    
+	    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
 
-	    Recheck();
-	    Status("Album Loaded");
+
+		Status("Album Loaded; no CDDB entry");
+		for(my$i=1;$i<=$tracks;$i++){
+		    $trackname[$i]="";
+		}
+		$artist="";
+		$album="";
+
+		$cddb->DESTROY();
+		
+		AlbumUpdate();
+		$window_go->configure(-state=>"normal");
+		$window_check->configure(-state=>"normal");
+		return;
+	    }
 	}
+
+	my ($genre, $cddb_id, $title) = @{$discs[0]};
+	$title=~/(.+)\s\/\s(.+)/;
+	$artist=$1;
+	$album=$2;
+	$artist=~s/\//:/g;
+	$album=~s/\//:/g;
+	my $disc_info     = $cddb->get_disc_details($genre, $cddb_id);
+	
+	for(my$i=0;$i<$tracks;$i++){
+	    $trackname[$i+1]=$disc_info->{"ttitles"}[$i];
+		$trackname[$i+1]=~s/\//:/g;
+	}
+	
+	Recheck();
+	Status("Album Loaded");
 	$cddb->DESTROY();
 
 	AlbumUpdate();
