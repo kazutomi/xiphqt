@@ -30,9 +30,9 @@
 
 #define INPUT_BUFSIZ 4096
 
-/* -- local types -- */
-
 extern ices_config_t ices_config;
+
+static volatile int finish_send = 0;
 
 /* Private function declarations */
 static int ices_stream_send_file (const char *file);
@@ -175,8 +175,9 @@ ices_stream_send_file (const char *file)
 #endif
   
   ices_log ("Streaming from %s until EOF..", source.path);
-	
-  while (1) {
+
+  finish_send = 0;
+  while (! finish_send) {
 #ifdef HAVE_LIBLAME
     if (ices_config.reencode || source.type != ICES_INPUT_MP3) {
       len = source.readpcm (&source, sizeof (left), left, right);
@@ -210,8 +211,7 @@ ices_stream_send_file (const char *file)
       }
 			
     } else if (len == 0) {
-      source.close (&source);
-      return 1;
+      finish_send = 1;
     } else {
       ices_log_error ("Read error while reading %s: %s", source.path,
 		      ices_util_strerror (errno, namespace, 1024));
@@ -282,4 +282,11 @@ ices_stream_open_source (input_stream_t* source)
 err:
   close (fd);
   return -1;
+}
+
+/* set a flag to tell ices_stream_send_file to finish early */
+void
+ices_stream_next (void)
+{
+  finish_send = 1;
 }

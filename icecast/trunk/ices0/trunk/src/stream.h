@@ -20,3 +20,4 @@
 
 /* Public function declarations */
 void ices_stream_loop (void);
+void ices_stream_next (void);

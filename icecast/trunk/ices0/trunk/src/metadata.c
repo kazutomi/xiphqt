@@ -41,8 +41,10 @@ ices_metadata_set (input_stream_t* source)
   if (first) {
     ices_log_debug ("Initially delaying metadata update...");
     delay = 3000000;
-  } else
+    first = 0;
+  } else {
     delay = 0;
+  }
 
   if (thread_create ("Metadata Update Thread", ices_metadata_thread, source) == -1) {
     ices_log ("Error: Could not create metadata update thread!");
