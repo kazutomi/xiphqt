@@ -322,6 +322,12 @@ static void lebuffer_sample(short v,int nofakep){
 #endif
 }
 
+static void rebuffer_sample(long pos,int nofakep){
+  short v=0;
+  if(nofakep)v=audbuf[audbuf_head+pos];
+  buffer_sample(v,nofakep);
+}
+
 static int convert_input(unsigned char *buf,int fmt,int *v){
   switch(fmt){
   case 4:
@@ -391,23 +397,23 @@ static int read_snatch_header(FILE *f){
 int read_snatch_frame_helper(FILE *f,long length,int verify){
   long toread=length-buftemphead+buftemptail+5;
 
-  if(toread+buftemphead+1>buftempsize){
-    if(buftemp)
-      buftemp=realloc(buftemp,(toread+buftemphead+1)*sizeof(*buftemp));
-    else
-      buftemp=malloc((toread+buftemphead+1)*sizeof(*buftemp));
-    buftempsize+=toread+1;
+  if(toread>0){
+    if(toread+buftemphead>buftempsize){
+      if(buftemp)
+	buftemp=realloc(buftemp,(toread+buftemphead)*sizeof(*buftemp));
+      else
+	buftemp=malloc((toread+buftemphead)*sizeof(*buftemp));
+      buftempsize+=toread;
+    }
+    
+    if((long)fread(buftemp+buftemphead,1,toread,f)!=toread)return(0);
+    buftemphead+=toread;
   }
 
-  if((long)fread(buftemp+buftemphead,1,toread,f)!=toread)return(0);
-  buftemphead+=toread;
-
-  buftemp[buftemphead]='\0';
-  
   if(verify){
-    if(strstr(buftemp+buftemphead-5,"AUDIO"))return(1);
-    if(strstr(buftemp+buftemphead-5,"VIDEO"))return(1);
-    if(strstr(buftemp+buftemphead-5,"YUV12"))return(1);
+    if(!strncmp(buftemp+buftemptail+length,"AUDIO",5))return(1);
+    if(!strncmp(buftemp+buftemptail+length,"VIDEO",5))return(1);
+    if(!strncmp(buftemp+buftemptail+length,"YUV12",5))return(1);
     return(0);
   }else{
     return(1);
@@ -469,14 +475,14 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
        roundoff error does *not* creep frame to frame) */
     if(audbuf_channels>1){
       for(i=actualpos-nextsamplepos-12;i>0;i-=2){
-	buffer_sample(audbuf[audbuf_head-2],track_or_process);
-	buffer_sample(audbuf[audbuf_head-2],track_or_process);
+	rebuffer_sample(-2,track_or_process);
+	rebuffer_sample(-2,track_or_process);
 	samplesmissing++;
 	//fprintf(stderr,".");
       }
     }else{
       for(i=actualpos-nextsamplepos-12;i>0;i--){
-	buffer_sample(audbuf[audbuf_head-1],track_or_process);	
+	rebuffer_sample(-1,track_or_process);	
 	samplesmissing++;
 	//fprintf(stderr,".");
       }
