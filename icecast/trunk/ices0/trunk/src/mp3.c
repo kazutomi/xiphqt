@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.28 2003/03/16 22:21:49 brendan Exp $
+ * $Id: mp3.c,v 1.29 2003/03/17 00:45:10 brendan Exp $
  */
 
 #include "definitions.h"
@@ -98,7 +98,6 @@ static size_t mp3_frame_length(mp3_header_t* header);
 static int ices_mp3_parse (input_stream_t* source)
 {
   ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
-  unsigned char *buffer;
   mp3_header_t mh;
   size_t len, framelen;
   int rc = 0;
@@ -116,7 +115,9 @@ static int ices_mp3_parse (input_stream_t* source)
     ices_id3v2_parse (source);
 
   /* adjust file size for short frames */
+#ifdef TRIM_FILE
   mp3_trim_file (source);
+#endif
 
   /* ensure we have at least 4 bytes in the read buffer */
   if (!mp3_data->buf || mp3_data->len - mp3_data->pos < 4)
@@ -127,12 +128,13 @@ static int ices_mp3_parse (input_stream_t* source)
   }
 
   /* seek past garbage if necessary */
-  buffer = mp3_data->buf;
   do {
     len = mp3_data->len - mp3_data->pos;
 
     /* copy remaining bytes to front, refill buffer without malloc/free */
     if (len < 4) {
+      char* buffer = mp3_data->buf;
+
       memcpy (buffer, buffer + mp3_data->pos, len);
       /* make read fetch from source instead of buffer */
       mp3_data->buf = NULL;
@@ -146,7 +148,7 @@ static int ices_mp3_parse (input_stream_t* source)
     /* we must be able to read at least 4 bytes of header */
     while (mp3_data->len - mp3_data->pos >= 4) {
       /* don't bother with free bit rate MP3s - they are so rare that a parse error is more likely */
-      if ((rc = mp3_parse_frame(buffer + mp3_data->pos, &mh))
+      if ((rc = mp3_parse_frame(mp3_data->buf + mp3_data->pos, &mh))
           && (framelen = mp3_frame_length (&mh))) {
         mp3_header_t next_header;
 
@@ -161,8 +163,6 @@ static int ices_mp3_parse (input_stream_t* source)
         /* check next frame if possible */
         if (mp3_fill_buffer (source, framelen + 4) <= 0)
           break;
-        /* note: take care with aliasing buffer/mp3_data->buf */
-        buffer = mp3_data->buf;
 
         /* if we can't find the second frame, we assume the first frame was junk */
         if ((rc = mp3_parse_frame(mp3_data->buf + mp3_data->pos + framelen, &next_header))) {
@@ -317,16 +317,51 @@ ices_mp3_close (input_stream_t* self)
 
 /* trim short frame from end of file if necessary */
 static void mp3_trim_file (input_stream_t* self) {
-#if 0
   char buf[MP3_BUFFER_SIZE];
-  off_t cur;
-  int rc = 0;
+  mp3_header_t header;
+  off_t cur, start, end;
+  int framelen;
+  int rlen, len;
 
   if (! self->filesize)
     return;
+
   cur = lseek (self->fd, 0, SEEK_CUR);
-  while (!rc) {}
-#endif
+  end = self->filesize;
+  while (end > cur) {
+    start = end - sizeof(buf);
+    if (start < cur)
+      start = cur;
+
+    /* load buffer */
+    lseek (self->fd, start, SEEK_SET);
+    for (len = 0; start + len < end; len += rlen) {
+      if ((rlen = read (self->fd, buf + len, end - (start + len))) <= 0) {
+        ices_log_debug ("Error reading MP3 while trimming end");
+        lseek (self->fd, cur, SEEK_SET);
+        return;
+      }
+    }
+    end = start;
+
+    /* search buffer backwards looking for sync */
+    for (len -= 4; len >= 0; len--) {
+      if (mp3_parse_frame (buf + len, &header) && (framelen = mp3_frame_length (&header))) {
+        if (start + len + framelen < self->filesize) {
+          self->filesize = start + len + framelen;
+          ices_log_debug ("Trimmed file to %d bytes", self->filesize);
+        } else if (start + len + framelen > self->filesize) {
+          ices_log_debug ("Trimmed short frame (%d bytes missing) at offset %d",
+            (int)(start + len + framelen) - self->filesize, (int)start + len);
+          self->filesize = start + len;
+        }
+
+        lseek (self->fd, cur, SEEK_SET);
+        return;
+      }
+    }
+  }
+  lseek (self->fd, cur, SEEK_SET);
 }
 
 /* make sure source buffer has at least len bytes.
