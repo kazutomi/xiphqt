@@ -28,7 +28,7 @@ AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run 
     OGG_CFLAGS="-I$ogg_includes"
   elif test "x$ogg_prefix" != "x" ; then
     OGG_CFLAGS="-I$ogg_prefix/include"
-  elif test "$prefix" != "xNONE"; then
+  elif test "x$prefix" != "xNONE"; then
     OGG_CFLAGS="-I$prefix/include"
   fi
 
@@ -437,7 +437,7 @@ AC_ARG_ENABLE(curltest, [  --disable-curltest       Do not try to compile and ru
     CURL_CFLAGS="-I$curl_includes"
   elif test "x$curl_prefix" != "x" ; then
     CURL_CFLAGS="-I$curl_prefix/include"
-  elif test "$prefix" != "xNONE"; then
+  elif test "x$prefix" != "xNONE"; then
     CURL_CFLAGS="-I$prefix/include"
   fi
 
