@@ -27,4 +27,7 @@ int arg_to_int64(PyObject *longobj, ogg_int64_t *val);
 int arg_to_int32(PyObject *intobj, ogg_int32_t *val);
 PyObject * Py_TrueFalse(int value);
 
+/* This is temporary, until libogg2 is more complete */
+ogg_buffer_state *ogg_buffer_create(void);
+
 #endif // __PYOGG_H__
