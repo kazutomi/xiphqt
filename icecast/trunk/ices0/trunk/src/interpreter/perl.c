@@ -19,6 +19,7 @@
  */
 #include <EXTERN.h>
 #include <perl.h>
+#include "definitions.h"
 
 static PerlInterpreter *my_perl;
 
@@ -29,7 +30,6 @@ interpreter_perl_init ()
 	
 	ices_log_debug ("Importing Perl module...");
 
-	char *args[] = { NULL };
 	if((my_perl = perl_alloc()) == NULL) {
 		ices_log_debug ("perl_alloc() error: (no memory!*");
 		return;
@@ -39,26 +39,6 @@ interpreter_perl_init ()
 	if (perl_parse(my_perl, NULL, 2, my_argv, NULL)) {
 		ices_log_debug ("perl_parse() error: parse problem");
 	}
-}
-
-static void
-interpreter_perl_setup_path ()
-{
-	char *perlpath = getenv ("PERLPATH");
-	char newpath[1024];
-
-	if (perlpath && (strlen (perlpath) > 900)) {
-		ices_log ("Environment variable PERLPATH is too long, please rectify!");
-		exit (0);
-	}
-
-	if (perlpath) {
-		sprintf (newpath, "%s:%s:.", perlpath, ICES_MODULEDIR);
-	} else {
-		sprintf (newpath, "%s:.", ICES_MODULEDIR);
-	}
-
-	putenv (newpath);
 }
 
 static void
