@@ -103,7 +103,7 @@ scramble (FILE *fp, FILE *out)
 	n = size;
 	
 	while (n > 1) {
-		int d = (int)(((double) rand() / RAND_MAX) * n);
+		int d = (int)((double)size * rand() / (RAND_MAX + 1.0));
 		char *temp = table[d];
 		table[d] = table[n-1];
 		table[n-1] = temp;
