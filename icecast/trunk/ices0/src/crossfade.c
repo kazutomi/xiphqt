@@ -16,13 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * $Id$
  */
 
 #include "definitions.h"
 #include "plugin.h"
 
 static void cf_new_track(void);
-static int cf_process(int ilen, int16_t* il, int16_t* ir, int16_t* ol, int16_t* or);
+static int cf_process(int ilen, int16_t* il, int16_t* ir);
 
 static ices_plugin_t Crossfader = {
   "crossfade",
@@ -31,7 +32,7 @@ static ices_plugin_t Crossfader = {
 };
 
 static int NewTrack = 0;
-static int FadeSecs = 4;
+static int FadeSecs = 3;
 static int FadeSamples;
 static int16_t* FL;
 static int16_t* FR;
@@ -51,10 +52,11 @@ static void cf_new_track(void) {
   NewTrack = FadeSamples;
 }
 
-static int cf_process(int ilen, int16_t* il, int16_t* ir, int16_t* ol, int16_t* or)
+static int cf_process(int ilen, int16_t* il, int16_t* ir)
 {
   int i, j;
   float weight;
+  int16_t swap;
 
   i = 0;
   /* if the buffer is not full, don't attempt to crossfade, just fill it */
@@ -63,12 +65,10 @@ static int cf_process(int ilen, int16_t* il, int16_t* ir, int16_t* ol, int16_t* 
 
   while (ilen && NewTrack > 0) {
     weight = (float)NewTrack / FadeSamples;
-    
-    ol[i] = FL[fpos] * weight + il[i] * (1 - weight);
-    or[i] = FR[fpos] * weight + ir[i] * (1 - weight);
+    il[i] = FL[fpos] * weight + il[i] * (1 - weight);
+    ir[i] = FR[fpos] * weight + ir[i] * (1 - weight);
     i++;
-    fpos++;
-    fpos = fpos % FadeSamples;
+    fpos = (fpos + 1) % FadeSamples;
     ilen--;
     NewTrack--;
     if (!NewTrack)
@@ -80,21 +80,21 @@ static int cf_process(int ilen, int16_t* il, int16_t* ir, int16_t* ol, int16_t* 
     FL[fpos] = il[j];
     FR[fpos] = ir[j];
     j++;
-    fpos++;
-    fpos = fpos % FadeSamples;
+    fpos = (fpos + 1) % FadeSamples;
     flen++;
     ilen--;
   }
 
   while (ilen) {
-    ol[i] = FL[fpos];
-    or[i] = FR[fpos];
-    FL[fpos] = il[j];
-    FR[fpos] = ir[j];
+    swap = il[j];
+    il[i] = FL[fpos];
+    FL[fpos] = swap;
+    swap = ir[j];
+    ir[i] = FR[fpos];
+    FR[fpos] = swap;
     i++;
     j++;
-    fpos++;
-    fpos = fpos % FadeSamples;
+    fpos = (fpos + 1) % FadeSamples;
     ilen--;
   }
 

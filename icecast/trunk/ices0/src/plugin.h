@@ -24,7 +24,7 @@
 typedef struct {
   const char *name;
   void (*new_track)(void);
-  int (*process)(int ilen, int16_t *il, int16_t *ir, int16_t *ol, int16_t *or);
+  int (*process)(int ilen, int16_t *il, int16_t *ir);
 } ices_plugin_t;
 
 ices_plugin_t *crossfade_plugin(void);

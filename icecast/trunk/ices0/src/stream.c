@@ -153,9 +153,6 @@ stream_send (ices_config_t* config, input_stream_t* source)
   /* worst case decode: 22050 Hz at 8kbs = 44.1 samples/byte */
   static int16_t left[INPUT_BUFSIZ * 45];
   static int16_t right[INPUT_BUFSIZ * 45];
-  static int16_t ol[INPUT_BUFSIZ * 45];
-  static int16_t or[INPUT_BUFSIZ * 45];
-  int i;
   static int16_t* rightp;
 #endif
 
@@ -209,11 +206,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 #ifdef HAVE_LIBLAME
     /* run output through plugin */
     if (samples && config->plugin) {
-      samples = config->plugin->process(samples, left, right, ol, or);
-      for (i = 0; i < samples; i++) {
-	left[i] = ol[i];
-	right[i] = or[i];
-      }
+      samples = config->plugin->process(samples, left, right);
     }
 #endif
 
@@ -225,7 +218,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
       ices_log_error ("Read error: %s", ices_util_strerror (errno, namespace, 1024));
       goto err;
     }
-    
+
     do_sleep = 1;
     while (do_sleep) {
       rc = olen = 0;
@@ -265,9 +258,9 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	            ices_log_debug ("Grew output buffer to %d bytes", obuf.len);
 	          } else
 	            ices_log_debug ("%d byte output buffer is too small", obuf.len);
-            } else if (olen > 0) {
-              rc = stream_send_data (stream, obuf.data, olen);
-            }
+		} else if (olen > 0) {
+		  rc = stream_send_data (stream, obuf.data, olen);
+		}
           }
         } else
 #endif
@@ -301,7 +294,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
     if (stream->reencode && stream_needs_reencoding (source, stream)) {
       len = ices_reencode_flush (stream, obuf.data, obuf.len);
       if (len > 0)
-        rc = shout_send (stream->conn, obuf.data, len);
+        rc = stream_send_data (stream, obuf.data, len);
     }
 
   if (obuf.data)
