@@ -25,6 +25,8 @@ require "$libdir/widget";
 
 $toplevel->optionAdd("$Xname*background",       '#202020',20);
 $toplevel->optionAdd("$Xname*foreground",       '#a0a0a0',20);
+$toplevel->optionAdd("$Xname*borderwidth",      0,10);
+$toplevel->optionAdd("$Xname*relief",           'flat',10);
 
 # adj of 100% result in config demand of 50 pixels
 $toplevel->optionAdd("$Xname.lendemand",         '25',20); 
@@ -85,7 +87,13 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 #               2) make module instances, extract geometry
 #               3) draw modules, place and run
 
-&LoadModules($moddir); # module references
+&LoadModules($moddir,"share"); # module references
+my$platform=`uname`;
+chop($platform);       
+&LoadModules($moddir,$platform); # module references
+
+
+
 &order_modules;        # extract how many to build
 &instance_modules;     # make copies of the references and build
                        # complete instances
@@ -126,16 +134,13 @@ sub min{
 # load the modules
 
 sub LoadModules{
-    my($prefix)=@_;
+    my($prefix,$dir)=@_;
     
     $prefix=~s{/\s*$}{}; # strip trailing slash
-    my$platform=`uname`;
-    chop($platform);       
 
     # get the filenames in $prefix/<platform>
-    my $searchdir="$prefix/$platform";
+    my $searchdir="$prefix/$dir";
     if(opendir(D,$searchdir)){
-
         my$file;
         while(defined($file=readdir(D))){
             if(substr($file,0,1) ne '.'){
@@ -148,6 +153,7 @@ sub LoadModules{
     }else{
         print STDERR "Unable to open plugin directory $searchdir: $!\n";
     }
+
 }
 
 sub LoadModule{
@@ -274,28 +280,31 @@ sub geometries{
     foreach my $key (@ordered){
 	my $mod=$instances{$key};
 
-	my $active=&moption($mod,"active");
-	my $pad=&moption($mod,"widgetpad");
-
-	if($active eq 'true'){
-	    if($stack eq $orient){
-		$wadj=&max($wadj,&moption($mod,"scalewidadj"));
-		$ladj+=&moption($mod,"scalelenadj");
-	    }else{
-		$ladj=&max($ladj,&moption($mod,"scalelenadj"));
-		$wadj+=&moption($mod,"scalewidadj"); 
-	    }
-
-	    if($stack eq 'vertical'){
-		my$tempx=&moption($mod,'minx')+$pad*2;
-		$minx=$tempx if ($minx<$tempx);
-		$miny+=&moption($mod,'miny');
-		$miny+=$pad;
-	    }else{
-		my$tempy=&moption($mod,'miny')+$pad*2;
-		$miny=$tempy if ($miny<$tempy);
-		$minx+=&moption($mod,'minx');
-		$minx+=$pad;
+	if(defined($mod)){
+	    
+	    my $active=&moption($mod,"active");
+	    my $pad=&moption($mod,"widgetpad");
+	    
+	    if($active eq 'true'){
+		if($stack eq $orient){
+		    $wadj=&max($wadj,&moption($mod,"scalewidadj"));
+		    $ladj+=&moption($mod,"scalelenadj");
+		}else{
+		    $ladj=&max($ladj,&moption($mod,"scalelenadj"));
+		    $wadj+=&moption($mod,"scalewidadj"); 
+		}
+		
+		if($stack eq 'vertical'){
+		    my$tempx=&moption($mod,'minx')+$pad*2;
+		    $minx=$tempx if ($minx<$tempx);
+		    $miny+=&moption($mod,'miny');
+		    $miny+=$pad;
+		}else{
+		    my$tempy=&moption($mod,'miny')+$pad*2;
+		    $miny=$tempy if ($miny<$tempy);
+		    $minx+=&moption($mod,'minx');
+		    $minx+=$pad;
+		}
 	    }
 	}
     }
@@ -397,7 +406,9 @@ sub build_and_run{
 		    $mod->{"widget"}=$ret; # must store the widget
 		    $ret->place('-x'=>$x,'-y'=>$y,-anchor=>'nw');
 		    my$refresh=$ret->optionGet("scalerefresh","");
-		    $ret->repeat($refresh,sub{$mod->module_update});
+		    $ret->repeat($refresh,sub{$mod->module_update})
+			if($refresh);
+
 
 		}
 	    }

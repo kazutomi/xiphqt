@@ -304,7 +304,7 @@ sub reduceoney{
 	# initial row 
 	my$idel=(1-$prev+$iprev)/$del;
 	my@v=unpack 'C*', substr $$vv, $iprev*$w, $w;
-	for(my$x=0;$x<$w;$x++){$nv[$x]=$v[$x]*$idel;}
+	for(my$x=0;$x<$w;$x++){$nv[$x]=$v[$x]*$idel+.5;}
 	#intevening rows
 	$iprev++;
 	while($iprev<$iy){
@@ -314,8 +314,10 @@ sub reduceoney{
 	}
 	# terminal row 
 	$idel=($y-$iy)/$del;
-	@v=unpack 'C*', substr $$vv, $iy*$w, $w;
-	for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel+.5;}
+	if($idel>.0001){
+	    @v=unpack 'C*', substr $$vv, $iy*$w, $w;
+	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel;}
+	}
 	$iprev=$iy;
 	$prev=$y;
 
