@@ -17,8 +17,8 @@
         <description>A short description of your stream</description>
 
 		<!-- input module -->
-        <!-- This example uses the 'oss' module. It takes input from the -->
-        <!-- oss audio device (i.e. line-in), and processes it for live -->
+        <!-- This example uses the 'jack' module. It takes input from the -->
+        <!-- jack ports and processes it for live -->
         <!-- encoding. If metadatafilename is set then at start and on USR1 -->
         <!-- the file is read and the comments are added into the stream -->
 		<input>
