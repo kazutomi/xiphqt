@@ -41,8 +41,8 @@ typedef struct mp3_headerSt
 } mp3_header_t;
 
 typedef struct {
-  unsigned char buf[4096];
-  ssize_t len;
+  unsigned char* buf;
+  size_t len;
   int pos;
 } ices_mp3_in_t;
 
@@ -82,7 +82,7 @@ static int ices_mp3_mode = -1;
 static int ices_mp3_channels = -1;
 
 /* -- static prototypes -- */
-static int ices_mp3_parse_file (const char* buf, size_t len);
+static int ices_mp3_parse (input_stream_t* source);
 static ssize_t ices_mp3_read (input_stream_t* self, void* buf, size_t len);
 #ifdef HAVE_LIBLAME
 static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
@@ -124,27 +124,46 @@ ices_mp3_get_channels (void)
 /* Parse mp3 file for header information; bitrate, channels, mode, sample_rate.
  */
 int
-ices_mp3_parse_file (const char *buf, size_t len)
+ices_mp3_parse (input_stream_t* source)
 {
-  const unsigned char *buffer;
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
+  unsigned char *buffer;
   unsigned short temp;
   mp3_header_t mh;
-	
-  len -= 4;
-  buffer = buf;
+  size_t len;
+  int rc = 1;
 
   /* Ogg/Vorbis often contains bits that almost look like MP3 headers */
-  if (! strncmp ("OggS", buf, 4))
-    return -1;
+  if (! strncmp ("OggS", mp3_data->buf, 4))
+    return 1;
+
+  /* first check for ID3v2 */
+  if (! strncmp ("ID3", mp3_data->buf, 3)) {
+    ices_id3v2_parse (source);
+    /* We're committed now. If we don't find an MP3 header the file is
+     * garbage */
+    rc = -1;
+  }
+
+  len = mp3_data->len;
+  buffer = mp3_data->buf;
+
+  /* ID3v2 may have consumed the buffer */
+  if (! len) {
+    buffer = (unsigned char*) malloc (1024);
+    len = source->read (source, buffer, 1024);
+    mp3_data->buf = buffer;
+    mp3_data->len = len;
+  }
 
   do {
     temp = ((buffer[0] << 4) & 0xFF0) | ((buffer[1] >> 4) & 0xE);
     buffer++;
     len--;
-  } while ((temp != 0xFFE) && (len > 0));
+  } while ((temp != 0xFFE) && (len-4 > 0));
 
   if (temp != 0xFFE)
-    return -1;
+    return rc;
 
   buffer--;
   switch ((buffer[1] >> 3 & 0x3)) {
@@ -158,7 +177,7 @@ ices_mp3_parse_file (const char *buf, size_t len)
       mh.version = 2;
       break;
     default:
-      return -1;
+      return rc;
       break;
   }
 
@@ -178,7 +197,7 @@ ices_mp3_parse_file (const char *buf, size_t len)
   /* sanity check */
   ices_mp3_bitrate = bitrates[mh.version][mh.lay -1][mh.bitrate_index];
   if (! ices_mp3_bitrate)
-    return -1;
+    return rc;
 
   ices_log_debug ("Layer: %s\t\tVersion: %s\tFrequency: %d", layer_names[mh.lay - 1], version_names[mh.version], s_freq[mh.version][mh.sampling_frequency]);
   ices_log_debug ("Bitrate: %d kbit/s\tPadding: %d\tMode: %s", ices_mp3_bitrate, mh.padding, mode_names[mh.mode]);
@@ -199,19 +218,21 @@ int
 ices_mp3_open (input_stream_t* self, const char* buf, size_t len)
 {
   ices_mp3_in_t* mp3_data;
+  int rc;
 
-  if (!len || ices_mp3_parse_file (buf, len) < 0)
-    return 1;
+  if (!len)
+    return -1;
 
-  self->bitrate = ices_mp3_get_bitrate ();
-
-  if (! (mp3_data = (ices_mp3_in_t*) malloc (sizeof (ices_mp3_in_t)))) {
+  if (! ((mp3_data = (ices_mp3_in_t*) malloc (sizeof (ices_mp3_in_t))) &&
+	 (mp3_data->buf = (unsigned char*) malloc (len))))
+  {
     ices_log_error ("Malloc failed in ices_mp3_open");
     return -1;
   }
 
   memcpy (mp3_data->buf, buf, len);
   mp3_data->len = len;
+  mp3_data->pos = 0;
 
   self->type = ICES_INPUT_MP3;
   self->data = mp3_data;
@@ -225,6 +246,16 @@ ices_mp3_open (input_stream_t* self, const char* buf, size_t len)
   self->get_metadata = ices_mp3_get_metadata;
   self->close = ices_mp3_close;
 
+  ices_id3_parse (self);
+
+  if ((rc = ices_mp3_parse (self))) {
+    free (mp3_data->buf);
+    free (mp3_data);
+    return rc;
+  }
+
+  self->bitrate = ices_mp3_get_bitrate ();
+
   return 0;
 }
 
@@ -233,23 +264,33 @@ static ssize_t
 ices_mp3_read (input_stream_t* self, void* buf, size_t len)
 {
   ices_mp3_in_t* mp3_data = self->data;
-  int rlen;
+  int rlen = 0;
 
   if (mp3_data->len) {
     if (mp3_data->len > len) {
       rlen = len;
-      memcpy (buf, mp3_data->buf, len);
+      memcpy (buf, mp3_data->buf + mp3_data->pos, len);
       mp3_data->len -= len;
+      mp3_data->pos += len;
     } else {
       rlen = mp3_data->len;
       memcpy (buf, mp3_data->buf, mp3_data->len);
       mp3_data->len = 0;
+      mp3_data->pos = 0;
+      free (mp3_data->buf);
+      mp3_data->buf = NULL;
     }
-
-    return rlen;
+  } else {
+    /* we don't just use EOF because we'd like to avoid the ID3 tag */
+    if (self->canseek && (self->filesize - self->bytes_read) < len)
+      len = self->filesize - self->bytes_read;
+    if (len)
+      rlen = read (self->fd, buf, len);
   }
 
-  return read (self->fd, buf, len);
+  self->bytes_read += rlen;
+
+  return rlen;
 }
 
 #ifdef HAVE_LIBLAME
@@ -275,6 +316,9 @@ ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
 static int
 ices_mp3_close (input_stream_t* self)
 {
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) self->data;
+
+  ices_util_free (mp3_data->buf);
   free (self->data);
 
   return close (self->fd);
@@ -286,10 +330,6 @@ ices_mp3_get_metadata (input_stream_t* self, char* buf, size_t len)
   char artist[1024];
   char title[1024];
 
-  if (! self->canseek)
-    return -1;
-
-  ices_id3_parse_file (self->path, 0);
   ices_id3_get_artist (artist, sizeof (artist));
   ices_id3_get_title (title, sizeof (title));
 
