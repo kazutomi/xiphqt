@@ -17,3 +17,5 @@ commitinfo moo3
 cvs_acls.pl moo4
 log_accum.pl moo5
 mailto moo6
+ciabot_cvs.sh Moo! It's the CIA!
+
