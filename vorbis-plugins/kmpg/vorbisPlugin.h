@@ -23,8 +23,6 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 
-
-
 /**
    callbacks from vorbisfile
 */
@@ -53,19 +51,19 @@ class VorbisPlugin : public DecoderPlugin {
   char* pcmout;           // temporay pcm buffer
   int last_section;
   int current_section;
- 
+  int lshutdown; 
 
  public:
   VorbisPlugin();
   ~VorbisPlugin();
 
   void decoder_loop();
-  int seek(int second);
+  int seek_impl(int second);
   void config(char* key, char* value);
  
  private:
   int processVorbis(vorbis_info* vi,vorbis_comment* comment);
-  int getSongLength(OggVorbis_File* vf);
+  int getTotalLength();
   int init();
 
 };
