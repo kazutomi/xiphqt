@@ -84,10 +84,9 @@ void wavelet_3d_buf_destroy (Wavelet3DBuf* buf)
 static inline
 TYPE __fwd_xform__ (TYPE *data, int stride, int n)
 {
-   TYPE *_d = (TYPE*) malloc (sizeof(TYPE) * n/2);
+   TYPE *d = (TYPE*) malloc (sizeof(TYPE) * n/2);
    TYPE *x = data;
    TYPE *s = data;
-   TYPE *d = _d;
    TYPE min = ~0;
    TYPE max = 0;
    int i, k=n/2;
@@ -116,7 +115,7 @@ TYPE __fwd_xform__ (TYPE *data, int stride, int n)
          min = d [i];
    }
 
-   free (_d);
+   free (d);
 
    return (max | ~min);   
 }
@@ -126,17 +125,14 @@ static inline
 void __inv_xform__ (TYPE *data, int stride, int n)
 {
    int i, k=n/2;
-   TYPE *_s = (TYPE*) malloc (sizeof(TYPE) * k+1);
-   TYPE *_d = (TYPE*) malloc (sizeof(TYPE) * k);
+   TYPE *s = (TYPE*) malloc (sizeof(TYPE) * (k+1));
+   TYPE *d = (TYPE*) malloc (sizeof(TYPE) * k);
    TYPE *x = data;
-   TYPE *d = _d;
-   TYPE *s = _s;
-
 
    for (i=0; i<k+1; i++)
       s [i] = x [i*stride];
 
-   for (i=0; i<n-k; i++)
+   for (i=0; i<n/2; i++)
       d [i] = x [(n-k+i)*stride];
 
    x [0] = s[0] - (d[0] >> 1);
@@ -153,8 +149,8 @@ void __inv_xform__ (TYPE *data, int stride, int n)
    if (!(n & 1))                                /*  n is even   */
       x [(n-1)*stride] = d[k-1] + x[(n-2)*stride];
 
-   free (_s);
-   free (_d);
+   free (s);
+   free (d);
 }
 
 
