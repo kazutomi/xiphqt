@@ -352,6 +352,7 @@ sub trim_glob{
 
 sub ThrowRealPlayer{
     $recording_active=0;
+    $recording_pending=0;
     $SIG{CHLD}='IGNORE';
 
     Status("Starting RealPlayer...");
@@ -565,7 +566,6 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
-    $timer_entry_active=0;
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback) && !recording_active){
@@ -588,7 +588,6 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
-    $timer_entry_active=0;
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback)){
@@ -612,7 +611,6 @@ sub Robot_Inactive{
 sub Robot_Timer{
     $last_timer_event=0;
     $next_timer_event=0;
-    $timer_entry_active=0;
     send_string("O","");
     send_string("L","");
     syswrite COMM_SOCK,'T';
@@ -630,7 +628,7 @@ sub DoTimedEntry{
     my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
        $password,$outfile,$url)=SplitTimerEntry($line);
 
-    $timer_entry_active=1;
+    $recording_pending=1;
     $last_timer_event=$start;
     $next_timer_event=$start+$duration-1; # the -1 is important; makes sure contiguous
                                           # but nonoverlapping events don't interfere
@@ -693,11 +691,15 @@ sub TimerWatch{
 	}else{
 	    $prompt=$waiting_minutes."m ".$waiting_seconds."s";
 	}
-	
+
 	if($recording_active){
 	    Status("Timer recording [$prompt]");
 	}else{
-	    Status("Timer wait [$prompt]");
+	    if($recording_pending){
+		Status("Starting record...");
+	    }else{
+		Status("Timer wait [$prompt]");
+	    }
 	}
 	
 	SetupTimerDispatch() if($now>=$next_timer_event);
@@ -724,7 +726,11 @@ sub TimerWatch{
 	    
 	    Status("Recording [$prompt]");
 	}else{
-	    Status("Ready/waiting to record");
+	    if($recording_pending){
+		Status("Starting record...");		
+	    }else{
+		Status("Ready/waiting to record");
+	    }
 	    $timer_callback->cancel();
 	    undef $timer_callback;
 	}
@@ -1025,6 +1031,7 @@ sub ReadStderr{
 
     if($scalar=~/Capturing/){
 	$recording_active=time();
+	$recording_pending=0;
 	if(!defined($timer_callback)){
 	    $timer_callback=$toplevel->repeat(1000,[sub{main::TimerWatch();}]);
 	}
@@ -1032,6 +1039,7 @@ sub ReadStderr{
 
     if($scalar=~/Capture stopped/){
 	$recording_active=0;
+	$recording_pending=0;
     }
 
     print $scalar if($CONFIG{DEBUG} eq 'yes');
@@ -1052,7 +1060,8 @@ sub ButtonPressConfig(){
 
     if(defined($tentry)){
 
-	if($mode=~/^active/ || ($mode=~/timer/ && $timer_entry_active==1)){
+	if($mode=~/^active/ || ($mode=~/timer/ && ($recording_active ||
+						   $recording_pending))){
 	    $tentry_test->configure(-state=>disabled);
 	}else{
 	    $tentry_test->configure(-state=>normal);
@@ -1717,7 +1726,7 @@ sub Timer_Entry{
 	place(-relx=>1.0,-x=>-10,-y=>$y,-height=>$tentry_silent->reqheight,-anchor=>'ne',
 	      -bordermode=>outside);
 
-    if($mode=~/^active/ || ($mode=~/timer/ && $timer_entry_active==1)){
+    if($mode=~/^active/ || ($mode=~/timer/ && ($recording_active || $recording_pending))){
 	$tentry_test->configure(-state=>disabled);
     }
 
