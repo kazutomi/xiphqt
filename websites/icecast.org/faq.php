@@ -1,4 +1,4 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <h2>FAQ</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -117,6 +117,6 @@ We maintain a list of Icecast-compatible audio players <a href="3rdparty.php">he
 
 <br>
 <br>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>
 
 

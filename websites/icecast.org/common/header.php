@@ -3,7 +3,7 @@
 <html>
 <head>
 <title>Icecast.org</title>
-<link rel="stylesheet" type="text/css" href="style.css" />
+<link rel="stylesheet" type="text/css" href="common/style.css" />
 </head>
 <body bgcolor="black">
 <table width="100%" border=0 cellpadding=0 cellspacing=0 >

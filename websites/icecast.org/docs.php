@@ -1,4 +1,4 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <h2>Documenation and Information</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -33,4 +33,4 @@
 </div>
 </div>
 <br><br>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>

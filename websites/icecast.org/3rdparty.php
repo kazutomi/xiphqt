@@ -1,4 +1,4 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <h2>3rd Party Applications</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -71,6 +71,6 @@
 </div>
 
 <br><br>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>
 
 

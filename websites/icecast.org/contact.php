@@ -1,4 +1,4 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <h2>Contacts</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -34,6 +34,6 @@ team@icecast.org
 </div>
 
 <br><br>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>
 
 

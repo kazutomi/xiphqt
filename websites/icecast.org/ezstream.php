@@ -1,4 +1,4 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <h2>ezstream</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -100,6 +100,6 @@ file to suit your needs..The following is an example config file :
 <br><br>
 
 <br><br>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>
 
 

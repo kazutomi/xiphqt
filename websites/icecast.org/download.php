@@ -1,4 +1,4 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <h2>Download</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -106,6 +106,6 @@ We still provide download links to builds and utilities that we no longer suppor
 </div>
 </div>
 <br><br>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>
 
 

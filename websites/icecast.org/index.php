@@ -1,3 +1,3 @@
-<? include "header.php"; ?>
+<? include "common/header.php"; ?>
 <? include "news.php"; ?>
-<? include "footer.php"; ?>
+<? include "common/footer.php"; ?>
