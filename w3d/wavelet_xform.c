@@ -261,7 +261,7 @@ void fwd_xform (TYPE *scratchbuf, TYPE *data, int stride, int n,
    assert (a_moments == 1 || a_moments == 2 || a_moments == 4);
    assert (s_moments == 1 || s_moments == 2 || s_moments == 4);
 
-   /*  XXX FIXME: Ugly hack to workaround   */
+   /*  XXX FIXME: Ugly hack to work around  */
    /*             the short-row bug in high */
    /*             order xform functions     */
    if (n < 9)
@@ -287,7 +287,7 @@ void inv_xform (TYPE *scratchbuf, TYPE *data, int stride, int n,
    assert (a_moments == 1 || a_moments == 2 || a_moments == 4);
    assert (s_moments == 1 || s_moments == 2 || s_moments == 4);
 
-   /*  XXX FIXME: Ugly hack to workaround   */
+   /*  XXX FIXME: Ugly hack to work around  */
    /*             the short-row bug in high */
    /*             order xform functions     */
    if (n < 9)

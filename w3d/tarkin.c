@@ -381,6 +381,7 @@ TarkinError tarkin_synthesis_frameout(TarkinStream *s,
    layer->color_inv_xform (layer->waveletbuf, *frame,
                               s->current_frame_in_buf);
    s->current_frame_in_buf++;
+   s->current_frame++;
 
    if (s->current_frame_in_buf == s->frames_per_buf)
       s->current_frame_in_buf=0;
