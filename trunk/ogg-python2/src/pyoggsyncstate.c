@@ -139,14 +139,17 @@ PyOggSyncState_Read(PyObject *self, PyObject *args)
                                  &ogg_buffer);
   if ( got_bytes < ask_bytes ) ask_bytes = got_bytes;
 
+
   pybufferobj = PyBuffer_New(ask_bytes);
   PyObject_AsWriteBuffer(pybufferobj, (void **) &pybuffer, &got_bytes);
   if ( got_bytes < ask_bytes ) ask_bytes = got_bytes;
+  if ( got_bytes == 0 ) return pybufferobj; /* If 0, return it now */
   memcpy(pybuffer, ogg_buffer, ask_bytes);
  
   ret = ogg_sync_read(PyOggSyncState_AsOggSyncState(self), ask_bytes);
   if (ret == OGG_SUCCESS) return pybufferobj;
 
+  Py_DECREF(pybufferobj);
   PyErr_SetString(PyOggError, "Unknown return from ogg_sync_read.");
   return NULL;
 }
