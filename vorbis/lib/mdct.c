@@ -13,7 +13,7 @@
 
  function: normalized modified discrete cosine transform
            power of two length transform only [16 <= n ]
- last mod: $Id: mdct.c,v 1.17 2000/10/12 03:12:53 xiphmont Exp $
+ last mod: $Id: mdct.c,v 1.17.2.1 2000/10/19 21:56:40 jack Exp $
 
  Algorithm adapted from _The use of multirate filter banks for coding
  of high quality digital audio_, by T. Sporer, K. Brandenburg and
@@ -108,21 +108,17 @@ static float *_mdct_kernel(float *x, float *w,
     float *w2=w+n4;
     float *A=init->trig+n2;
 
-    for(i=0;i<n4;){
-      float x0=*xA - *xB;
-      float x1;
+    float x0,x1;
+    i=0;
+    do{
+      x0=*xA - *xB;
       w2[i]=    *xA++ + *xB++;
-
-
       x1=       *xA - *xB;
       A-=4;
-
       w[i++]=   x0 * A[0] + x1 * A[1];
       w[i]=     x1 * A[0] - x0 * A[1];
-
       w2[i++]=  *xA++ + *xB++;
-
-    }
+    }while(i<n4);
   }
 
   /* step 3 */
@@ -141,21 +137,60 @@ static float *_mdct_kernel(float *x, float *w,
 	int w2=w1-(k0>>1);
 	float AEv= A[0],wA;
 	float AOv= A[1],wB;
+        int blah=1;
 	wbase-=2;
 
 	k0++;
-	for(s=0;s<(2<<i);s++){
+        blah--;
+        if(blah>0){
+          s=2<<blah;
+          s>>=1;
+          do{
 	  wB     =w[w1]   -w[w2];
 	  x[w1]  =w[w1]   +w[w2];
-
 	  wA     =w[++w1] -w[++w2];
 	  x[w1]  =w[w1]   +w[w2];
-
 	  x[w2]  =wA*AEv  - wB*AOv;
 	  x[w2-1]=wB*AEv  + wA*AOv;
-
 	  w1-=k0;
 	  w2-=k0;
+	  wB     =w[w1]   -w[w2];
+	  x[w1]  =w[w1]   +w[w2];
+	  wA     =w[++w1] -w[++w2];
+	  x[w1]  =w[w1]   +w[w2];
+	  x[w2]  =wA*AEv  - wB*AOv;
+	  x[w2-1]=wB*AEv  + wA*AOv;
+	  w1-=k0;
+	  w2-=k0;
+	  wB     =w[w1]   -w[w2];
+	  x[w1]  =w[w1]   +w[w2];
+	  wA     =w[++w1] -w[++w2];
+	  x[w1]  =w[w1]   +w[w2];
+	  x[w2]  =wA*AEv  - wB*AOv;
+	  x[w2-1]=wB*AEv  + wA*AOv;
+	  w1-=k0;
+	  w2-=k0;
+	  wB     =w[w1]   -w[w2];
+	  x[w1]  =w[w1]   +w[w2];
+	  wA     =w[++w1] -w[++w2];
+	  x[w1]  =w[w1]   +w[w2];
+	  x[w2]  =wA*AEv  - wB*AOv;
+	  x[w2-1]=wB*AEv  + wA*AOv;
+	  w1-=k0;
+	  w2-=k0;
+          }while(--s);
+        }else{
+          s=2<<i;
+          do{
+          wB     =w[w1]   -w[w2];
+          x[w1]  =w[w1]   +w[w2];
+          wA     =w[++w1] -w[++w2];
+          x[w1]  =w[w1]   +w[w2];
+          x[w2]  =wA*AEv  - wB*AOv;
+          x[w2-1]=wB*AEv  + wA*AOv;
+          w1-=k0;
+          w2-=k0;
+          }while(--s);
 	}
 	k0--;
 
@@ -174,7 +209,8 @@ static float *_mdct_kernel(float *x, float *w,
     int *bit=init->bitrev;
     float *x1=x;
     float *x2=x+n2-1;
-    for(i=0;i<n8;i++){
+    i=n8-1;
+    do{
       int t1=*bit++;
       int t2=*bit++;
 
@@ -192,7 +228,7 @@ static float *_mdct_kernel(float *x, float *w,
       *x2--=(-wD+wBCO-wACE)*.5;
       *x1++=( wD+wBCO-wACE)*.5; 
       *x2--=( wC-wACO-wBCE)*.5;
-    }
+    }while(i--);
   }
   return(x);
 }
