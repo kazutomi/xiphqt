@@ -33,6 +33,7 @@
 #include "eq.h"
 
 extern sig_atomic_t eq_active;
+extern sig_atomic_t eq_visible;
 extern int input_ch;
 extern int input_size;
 extern int input_rate;
@@ -43,7 +44,7 @@ typedef struct {
   int number;
 } bar;
 
-bar bars[freqs];
+static bar bars[freqs];
 
 static void slider_change(GtkWidget *w,gpointer in){
   char buffer[80];
@@ -68,6 +69,7 @@ void eqpanel_create(postfish_mainpanel *mp,
 
   subpanel_generic *panel=subpanel_create(mp,windowbutton,activebutton,
 					  &eq_active,
+					  &eq_visible,
 					  "_Equalization filter"," [e] ");
   
   GtkWidget *slidertable=gtk_table_new(freqs,3,0);
@@ -104,7 +106,7 @@ void eqpanel_create(postfish_mainpanel *mp,
 static double **peakfeed=0;
 static double **rmsfeed=0;
 
-void eqpanel_feedback(void){
+void eqpanel_feedback(int displayit){
   int i;
   if(!peakfeed){
     peakfeed=malloc(sizeof(*peakfeed)*freqs);
@@ -116,10 +118,10 @@ void eqpanel_feedback(void){
     }
   }
   
-  if(pull_eq_feedback(peakfeed,rmsfeed))
-    for(i=0;i<freqs;i++)
-      multibar_set(MULTIBAR(bars[i].slider),rmsfeed[i],peakfeed[i],input_ch);
-
+  if(pull_eq_feedback(peakfeed,rmsfeed)==1)
+    if(displayit && eq_visible)
+      for(i=0;i<freqs;i++)
+	multibar_set(MULTIBAR(bars[i].slider),rmsfeed[i],peakfeed[i],input_ch);
 }
 
 void eqpanel_reset(void){
