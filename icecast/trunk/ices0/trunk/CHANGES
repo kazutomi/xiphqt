@@ -1,3 +1,12 @@
+- 0.0.2		2001-06-15
+	- Reencoder updated to new LAME API of 3.88.
+	- new option --with-xmlconfig when building to locate xml libraries
+	- configure looks for python 2
+	- new commandline option -V for version/feature info
+	- cue file song length field now correct
+	- BaseDirectory configuration option works
+	- support for using an installed libshout
+	- fixes to metadata update (first song metadata now set)
 - 0.0.1b5	2000-08-29
 	- Perl module now supports dynamic loading of modules (e.g "use Socket")
 	- Ices now exits after 10 consecutive filename or other errors. (Removes spamming problems)
