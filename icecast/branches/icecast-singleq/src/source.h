@@ -55,10 +55,17 @@ typedef struct source_tag
     struct auth_tag *authenticator;
     int fallback_override;
     int no_mount;
+
+    unsigned queue_size;
     unsigned queue_size_limit;
+
     unsigned timeout;  /* source timeout in seconds */
-    refbuf_queue_t *queue;
-    mutex_t queue_mutex;
+    time_t last_read;
+    int short_delay;
+
+    refbuf_t *stream_data;
+    refbuf_t *stream_data_tail;
+
     int burst_on_connect;
 } source_t;
 

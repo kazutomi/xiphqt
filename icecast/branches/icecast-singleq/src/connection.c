@@ -465,9 +465,8 @@ int connection_complete_source (source_t *source)
                     "for icecast 1.x relays. Assuming content is mp3.");
             format_type = FORMAT_TYPE_MP3;
         }
-        source->format = format_get_plugin (format_type, source->mount, source->parser);
 
-        if (source->format == NULL)
+        if (format_get_plugin (format_type, source) < 0)
         {
             global_unlock();
             config_release_config();
@@ -960,8 +959,7 @@ static void _handle_get_request(connection_t *con,
         global.clients++;
         global_unlock();
                         
-        client->format_data = source->format->create_client_data(
-                source->format, source, client);
+        source->format->create_client_data (source, client);
 
         source->format->client_send_headers(source->format, source, client);
                         

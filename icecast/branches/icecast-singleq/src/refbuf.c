@@ -38,9 +38,22 @@ refbuf_t *refbuf_new(unsigned long size)
     refbuf_t *refbuf;
 
     refbuf = (refbuf_t *)malloc(sizeof(refbuf_t));
-    refbuf->data = (void *)malloc(size);
+    if (refbuf == NULL)
+        return NULL;
+    refbuf->data = NULL;
+    if (size)
+    {
+        refbuf->data = malloc (size);
+        if (refbuf->data == NULL)
+        {
+            free (refbuf);
+            return NULL;
+        }
+    }
     refbuf->len = size;
     refbuf->_count = 1;
+    refbuf->next = NULL;
+    refbuf->associated = NULL;
 
     return refbuf;
 }
@@ -54,7 +67,14 @@ void refbuf_release(refbuf_t *self)
 {
     self->_count--;
     if (self->_count == 0) {
-        free(self->data);
+        while (self->associated)
+        {
+            refbuf_t *ref = self->associated;
+            self->associated = ref->next;
+            refbuf_release (ref);
+        }
+        if (self->len)
+            free(self->data);
         free(self);
         return;
     }

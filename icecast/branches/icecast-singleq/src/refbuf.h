@@ -22,6 +22,8 @@ typedef struct _refbuf_tag
 {
     char *data;
     long len;
+    struct _refbuf_tag *associated;
+    struct _refbuf_tag *next;
 
     unsigned long _count;
 } refbuf_t;
@@ -52,11 +54,4 @@ int refbuf_queue_length(refbuf_queue_t **queue);
 refbuf_t * refbuf_queue_get(refbuf_queue_t **queue, int item);
 
 #endif  /* __REFBUF_H__ */
-
-
-
-
-
-
-
 
