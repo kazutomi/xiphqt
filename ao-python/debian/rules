@@ -12,8 +12,8 @@ configure: configure-stamp
 configure-stamp:
 	dh_testdir
 	
-	python config_unix.py --prefix /usr
-	python setup.py config
+	python2.1 config_unix.py --prefix /usr
+	python2.1 setup.py config
 
 	touch configure-stamp
 
@@ -21,7 +21,7 @@ build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 
-	python setup.py build
+	python2.1 setup.py build
 
 	touch build-stamp
 
@@ -32,7 +32,8 @@ clean:
 
 	# Add here commands to clean up after the build process.
 	#-$(MAKE) clean
-	-python setup.py clean --all
+	-python2.1 setup.py clean --all
+	-rm Setup
 
 	dh_clean
 
@@ -42,7 +43,7 @@ install: build
 	dh_clean -k
 	dh_installdirs
 
-	python setup.py install --prefix $(CURDIR)/debian/pyao/usr
+	python2.1 setup.py install --prefix $(CURDIR)/debian/python-pyao/usr
 
 
 # Build architecture-independent files here.
@@ -55,15 +56,11 @@ binary-arch: build install
 	dh_testroot
 	dh_installdocs
 	dh_installexamples
-#	dh_installmanpages
-#	dh_undocumented
 	dh_installchangelogs ChangeLog
 	dh_link
 	dh_strip
 	dh_compress
 	dh_fixperms
-	# You may want to make some executables suid here.
-#	dh_suidregister
 	dh_makeshlibs -V
 	dh_installdeb
 	dh_shlibdeps
