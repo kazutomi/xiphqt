@@ -24,7 +24,7 @@ ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a \
 	../resolver/libresolver.a ../thread/libicethread.a \
 	../avl/libiceavl.a ../log/libicelog.a $(SHOUT_LIBS)
 
-ices_DEPENDENCIES = @ICES_OBJECTS@
+ices_DEPENDENCIES = $(ices_LDADD)
 
 INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\" \
 	-I$(top_srcdir)/resolver -I$(top_srcdir)/thread $(SHOUT_INCLUDES)
