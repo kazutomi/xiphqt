@@ -167,6 +167,7 @@ extern unsigned char     oggbyte_read1(oggbyte_buffer *b,int pos);
 extern int               oggbyte_read2(oggbyte_buffer *b,int pos);
 extern ogg_uint32_t      oggbyte_read4(oggbyte_buffer *b,int pos);
 extern ogg_int64_t       oggbyte_read8(oggbyte_buffer *b,int pos);
+extern int               ogg_page_checksum_set(ogg_page *og);
 
 #ifdef _V_SELFTEST
 #define OGGPACK_CHUNKSIZE 3
