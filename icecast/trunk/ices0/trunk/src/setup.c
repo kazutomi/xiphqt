@@ -64,6 +64,11 @@ ices_setup_init ()
 
 	/* Initialize id3 stuff */
 	ices_id3_initialize ();
+
+#ifdef HAVE_LIBLAME
+	/* Initialize liblame for reeencoding */
+	ices_reencode_initialize ();
+#endif
 	
 	/* Go into daemon mode if requested */
 	ices_setup_run_mode_select (ices_config);
@@ -75,6 +80,10 @@ ices_setup_shutdown ()
 	shout_conn_t *conn = ices_util_get_conn ();
 
 	shout_disconnect (conn);
+
+#ifdef HAVE_LIBLAME
+	ices_reencode_shutdown ();
+#endif
 
 	ices_playlist_shutdown ();
 
@@ -125,6 +134,7 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 	ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
 	ices_config->playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
 	ices_config->verbose = ICES_DEFAULT_VERBOSE;
+	ices_config->reencode = ICES_DEFAULT_REENCODE;
 }
 
 static void
@@ -177,7 +187,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 		
                 if (s[0] == '-') {
 			
-			if ((strchr ("rivBzx", s[1]) == NULL) && arg >= (argc - 1)) {
+			if ((strchr ("RrivBzx", s[1]) == NULL) && arg >= (argc - 1)) {
 				ices_log ("Option %c requires an argument!\n", s[1]);
 				ices_setup_usage ();
 				exit (1);
@@ -240,6 +250,14 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 				case 'p':
 					arg++;
 					ices_config->port = atoi (argv[arg]);
+					break;
+				case 'R':
+#ifdef HAVE_LIBLAME
+					ices_config->reencode = 1;
+#else
+					ices_log ("Support for reencoding with liblame was not found. You can't reencode this.");
+					ices_setup_shutdown ();
+#endif
 					break;
 				case 'r':
 					ices_config->randomize_playlist = 1;

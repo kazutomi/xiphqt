@@ -103,6 +103,8 @@ ices_stream_send_file (const char *file)
 			break;
 	}
 
+	ices_mp3_parse_file (file);
+
 	/* Check for id3 tag
 	 * Send metadata to server
 	 * Return file size excluding id3 tag */
@@ -123,13 +125,23 @@ ices_stream_send_file (const char *file)
 static int
 ices_stream_fd_size (int fd, const char *file, int file_bytes)
 {
-	int read_bytes, ret;
+	int read_bytes, ret = -1;
 	unsigned char buff[4096];
 	int orig_size = file_bytes;
-	int bitrate = ices_mp3_get_bitrate (file);
+	int bitrate = ices_mp3_get_bitrate ();
 	char namespace[1024];
+	ices_config_t *ices_config = ices_util_get_config ();
 
 	ices_log ("Streaming %d bytes from file %s", file_bytes, file);
+
+#ifdef HAVE_LIBLAME
+	if (ices_config->reencode) {
+		ices_reencode_set_channels (ices_mp3_get_channels ());
+		ices_reencode_set_mode (ices_mp3_get_mode ());
+		ices_reencode_set_sample_rate (ices_mp3_get_sample_rate ());
+		ices_reencode_reset ();
+	}
+#endif
 
 	while (file_bytes >= 0) {
 		read_bytes = read (fd, buff, 4096);
@@ -138,7 +150,26 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
 
 			file_bytes -= read_bytes;
 
-			ret = shout_send_data (&conn, buff, read_bytes);
+			if (ices_config->reencode) {
+#ifdef HAVE_LIBLAME
+				unsigned char reencode_buff[7200];
+				int len = ices_reencode_reencode_chunk (buff, read_bytes, reencode_buff, 7200);
+				
+				if (len > 0)
+					ret = shout_send_data (&conn, reencode_buff, len);
+				else
+					continue;
+				
+				if (file_bytes <= 0) {
+					len = ices_reencode_flush (reencode_buff, 7200);
+					if (len > 0)
+						ret = shout_send_data (&conn, reencode_buff, len);
+				}
+#endif
+				
+			} else {
+				ret = shout_send_data (&conn, buff, read_bytes);
+			}
 
 			if (!ret) {
 				ices_log_error ("Libshout reported send error: %i...", conn.error);

@@ -85,7 +85,7 @@ ices_log_get_error ()
 }
 
 void
-_log (char *type, int level, char *fmt, ...)
+thread_log (char *type, int level, char *fmt, ...)
 {
 	char buff[BUFSIZE];
 	va_list ap;

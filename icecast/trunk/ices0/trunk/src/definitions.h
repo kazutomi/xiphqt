@@ -114,6 +114,7 @@ typedef struct ices_config_St {
 	int post_dj;
 	int playlist_type;
 	int verbose;
+	int reencode;
 	char *dumpfile;
 	char *configfile;
 	char *playlist_file;
@@ -131,6 +132,7 @@ typedef struct ices_config_St {
 #include "id3.h"
 #include "mp3.h"
 #include "signals.h"
+#include "reencode.h"
 #include "playlist_builtin/playlist_builtin.h"
 #include "interpreter/interpreter.h"
 #include "xml/parse.h"
@@ -156,3 +158,4 @@ typedef struct ices_config_St {
 #define ICES_DEFAULT_BASE_DIRECTORY "/tmp"
 #define ICES_DEFAULT_PLAYLIST_TYPE ices_playlist_builtin_e;
 #define ICES_DEFAULT_VERBOSE 0
+#define ICES_DEFAULT_REENCODE 0

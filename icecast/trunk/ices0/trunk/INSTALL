@@ -35,6 +35,11 @@ want this enabled.
 Don't forget to run ldconfig after you've installed
 libshout on elf systems.
 
+For reencoding, you'll need libmp3lame, and the --with-lame* options
+in configure. That works fine for me most of the time, but I wouldn't
+exactly call it stable.
+
+
 Check the ./configure --help options for this.
 
 Good luck :)

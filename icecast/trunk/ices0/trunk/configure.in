@@ -92,7 +92,7 @@ dnl Checks for programs.
 AC_PROG_CC
 
 if test "$GCC" = yes; then
-	CFLAGS="$CFLAGS -Wall"
+	CFLAGS="$CFLAGS -Wall -ansi -pedantic"
 fi
 
 AC_CHECK_PROG(UNAME,uname,uname)
@@ -267,6 +267,40 @@ AC_TRY_COMPILE([#include <pthread.h>],
 	       [pthread_t thread; ],	
 	       ,
 	       CPPFLAGS="$OLDCPPFLAGS")
+
+AC_ARG_WITH(lame,
+[  --with-lame[=ARG]	enable support for reencoding using lame [ARG=yes]])
+
+AC_ARG_WITH(lame-includes,
+[  --with-lame-includes=DIR Directory to find lame.h])
+
+AC_ARG_WITH(lame-libraries,
+[  --with-python-libraries=DIR Directory to find lame library])
+
+if test "$with_lame_includes"; then
+	if test -f "$with_lame_includes/lame.h"; then
+		CPPFLAGS="$CPPFLAGS -I$with_lame_includes"
+	else
+		AC_MSG_ERROR("lame.h is not where you told me it should be. No that is just plain rude.")
+	fi
+		
+fi
+
+if test "$with_lame_libraries"; then
+	LIBS="$LIBS -L$with_lame_libraries"
+fi
+
+if test "x$with_lame" = "xyes"; then
+	AC_CHECK_LIB(m, log)
+	AC_CHECK_FUNCS(lame_decode)
+        if test "$ac_cv_func_lame_decode" = no; then
+                for lib in mp3lame; do
+                        if test "$HAVE_LIBLAME" != 1; then
+                                AC_CHECK_LIB($lib, lame_decode,LIBS="$LIBS -l$lib";HAVE_LIBLAME=1;AC_DEFINE(HAVE_LIBLAME))
+                        fi
+                done
+        fi
+fi
 
 AC_ARG_WITH(python,
 [  --with-python[=ARG]        enable usage of the python interpreter [ARG=yes]])

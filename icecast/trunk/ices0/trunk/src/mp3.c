@@ -69,9 +69,38 @@ static char *mode_names[5] = {"stereo", "j-stereo", "dual-ch", "single-ch", "mul
 static char *layer_names[3] = {"I", "II", "III"};
 static char *version_names[3] = {"MPEG-1", "MPEG-2 LSF", "MPEG-2.5"};
 
+static int ices_mp3_bitrate = -1;
+static int ices_mp3_sample_rate = -1;
+static int ices_mp3_mode = -1;
+static int ices_mp3_channels = -1;
+
+int
+ices_mp3_get_bitrate ()
+{
+	return ices_mp3_bitrate;
+}
+
+int
+ices_mp3_get_sample_rate ()
+{
+	return ices_mp3_sample_rate;
+}
+
+int
+ices_mp3_get_mode ()
+{
+	return ices_mp3_mode;
+}
+
+int
+ices_mp3_get_channels ()
+{
+	return ices_mp3_channels;
+}
+
 /* Global function definitions */
 int
-ices_mp3_get_bitrate (const char *filename)
+ices_mp3_parse_file (const char *filename)
 {
 	FILE *file;
 	unsigned char buff[1024];
@@ -143,9 +172,17 @@ ices_mp3_get_bitrate (const char *filename)
 		ices_log_debug ("Error Protection: %d\tEmphasis: %d\tStereo: %d", mh.error_protection, mh.emphasis, mh.stereo);
 		ices_util_fclose (file);
 
-		return bitrates[mh.version][mh.lay - 1][mh.bitrate_index];
+		ices_mp3_bitrate = bitrates[mh.version][mh.lay -1][mh.bitrate_index];
+		ices_mp3_mode = mh.mode;
+		ices_mp3_sample_rate = s_freq[mh.version][mh.sampling_frequency];
+		if (mh.mode == 3)
+			ices_mp3_channels = 1;
+		else
+			ices_mp3_channels = 2;
+		return 1;
 	}
 }
 
 
 			
+
