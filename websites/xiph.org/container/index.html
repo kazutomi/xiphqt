@@ -1,0 +1,178 @@
+<title>  xiph.org: Media Container Formats </title>
+
+<!--#include file="oggtop.include" -->
+
+Media Container Formats
+
+<!--#include virtual="/xiphmid.include" -->
+<style>
+<!--
+.shift {margin-left: 15px;
+-->
+</style>
+
+<p>
+If you google the web for open-source media container formats, you will
+find Ogg, OGM, Matroska, MCF etc .. which are ready to compete with
+AVI, ASF, MOV, MP4, RM etc. Confusing! isn't it? This document aims at
+providing information about all these terms in simple language. If you
+don't know much about multimedia technology, and want to know about open
+source alternatives, this document is best place to start with. 
+</p>
+
+<a name="what"></a>
+<h2>What is a Container?</h2>
+<div class="shift">
+	<p>
+	 In video terminology container or container format means a "wrapper"
+	format, which doesn't define what compression formats (in other words, what
+	codecs) the video file within a specific container format includes, but
+	rather defines how the video, audio and other possible data is stored
+	within the container. 
+	</p>
+	<h3>Explaination</h3>
+	<p>
+	 A compression formate is a algorithm used to compress audio/video data.
+	MP3 is a popular audio compression format. Simmiliarly, DivX, MPEG-4 etc
+	are common video compression formats. <a
+	href="http://en.wikipedia.org/wiki/Codec">Codec</a> (abbreivation of
+	"<b>Co</b>der/<b>Dec</b>oder"), is a program that understands compression
+	format, and is capable of performing transformations on data stream.
+	Basically it is a piece of software or a driver that adds a support for
+	certain video/audio format for your operating system.
+	</p>
+	<p>
+	Many multimedia data streams need to contain both audio and video data,
+	and often some form of metadata that permits synchronization of the audio
+	and video. Each of these three pieces of data may be handled by different
+	programs, processes, or hardware; but for the multimedia data stream to be
+	useful in stored or transmitted form, they must be encapsulated together.
+	Container is way of "wrapping" audio, video streams with metadata in a 
+	single file.
+	</p>
+</div>
+
+<a name="proprietary"></a>
+<h2>What are common proprietary container formats?</h2>
+<div class="shift">
+<b>AVI:</b>  AVI (Audio Video Interleaved) is one of the most commonly
+            used container formats. It was developed by Microsoft in
+            early 90's.	
+<br>
+<b>ASF:</b> Advanced Streaming Format (or ASF, later renamed into Advanced
+	   Systems Format) is Microsoft's proprietary digital audio/digital 
+	   video wrapper, especially meant for streaming.
+<br>
+<b>MOV/Quicktime:</b> QuickTime is a digital video technology developed
+	   and produced by Apple Computer. In 1998, the ISO approved the
+	   QuickTime file format as the basis of the MPEG-4 standard, with 
+           supporters noting that it was a good "life-cycle" format, well-suited 
+           to capture, editing, archiving, distribution, and playback (as 
+	   opposed to the simple file-as-stream approach of MPEG-1 and MPEG-2, 
+	   which are poorly suited to editing).
+<br>
+<b>Real Media:</b> This was developed by Real Networks as media streaming
+	  solution.
+<br>
+</div>
+
+<a name="open-containers"></a>
+<h2>What open source container formats are available?</h2>
+<div class="shift">
+	<a name="ogg-container">
+	<h2>Ogg</h2>
+	<p>
+	Ogg Media Container is developed by <a href="http://www.xiph.org/">
+	Xiph</a>. The Ogg bitstream is defined in RFC 3533 and its MIME
+	media type (application/ogg) in RFC 3534. 
+	This formate was designed with main aim of media streaming (which 
+	does not mean it is not good for other kind of uses). More
+	information about ogg can be found <a
+	href="http://www.xiph.org/ogg/doc/">here</a> (probably outdated).
+	</p>
+	<p>
+	<b>Creation of Ogg files</b>: To create audio-only-vorbis files,
+	you can use <a href="http://www.vorbis.com">oggenc</a> (provided by
+	libogg). You can also encode Ogg containing video (presently only MNG video is 
+	supported) and audio(Vorbis) using command line utility <a
+	href="http://svn.xiph.org/trunk/oggtools/">oggmerge</a>. libogg can
+	be used to encode theora-video + vorbis-audio in Ogg.
+	</p>
+
+	<a name="ogm-container">
+	<h2>OGM</h2>
+	<p>
+	Once upon a time, a young named named Tobias created DirectShow
+	filters for the Ogg Multimedia Format. You can use them to encode
+	video into the Ogg format, as well as play Ogg Vorbis files on programs
+	like Windows Media Player. The problem is that the DirectShow
+	filters are an extension to the Ogg Multimedia Framework that lies outside
+	of the Ogg specification. So, while it is certainly useful, it's not really
+	'Ogg.' As it is important to maintain control of the specification in
+	these matters <b>Xiph does not support OGM. OGM and Ogg are not same.</b>
+	</p>
+	<p>
+	Please read <a href="ogm.html">more about OGM</a> to know more
+	about OGMs.
+	</p>
+
+	<a name="matroska-container">
+	<h2>Matroska</h2>
+	<p>
+	</p>
+
+	<a name="mcf-container">
+	<h2>MCF</h2>
+	<p>
+	</p>
+	
+</div>
+
+
+<a name="ogg-vs-matroska"></a>
+<h2>Ogg Vs Matroska?</h2>
+<div class="shift">
+
+</div>
+
+<a name="ogg-vs-ogm"></a>
+<h2>Ogg Vs Ogm?</h2>
+<div class="shift">
+ Read <a href="ogm.html">more about OGM</a>.
+</div>
+
+<a name="extension"></a>
+<h2>What file extensions to use with Ogg?</h2>
+<div class="shift">
+
+</div>
+
+<a name="subtitle"></a>
+<h2>What about subtitles in Ogg?</h2>
+<div class="shift">
+(i don't know much, may be someone who knows can update it).
+</div>
+
+<a name="more-about-ogg"></a>
+<h2>Tell me more about Ogg?</h2>
+<div class="shift">
+
+</div>
+
+<a name="codecs"></a>
+<h2>What compression formats are available open source?</h2>
+<div class="shift">
+
+</div>
+
+<br>
+<!--
+This document is written by <a href="http://www.cse.iitb.ac.in/nilesh/">
+Nilesh Bansal</a> &lt;nilesh AT iitb DOT ac DOT in&gt;.
+-->
+7th July, 2004
+<br>
+PS: Please ignore spelling/grammatical mistakes, as I am not good at
+english.
+
+<!--#include virtual="/xiphbottom.include" -->
