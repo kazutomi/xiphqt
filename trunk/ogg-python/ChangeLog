@@ -1,3 +1,9 @@
+2001-08-30  Andrew H. Chatham <andrew.chatham@duke.edu>
+
+	* include/pyogg/pyogg.h, src/_oggmodule.c:
+	Pass a copy of the implementation of arg_to_int64 so it can be shared
+	by the Vorbis module.
+	
 2001-05-14  Andrew Chatham <andrew.chatham@duke.edu>
 	* setup.py : Bumped  to version 0.3
 
