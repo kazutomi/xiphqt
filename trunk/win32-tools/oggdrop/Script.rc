@@ -108,8 +108,8 @@ FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | 
                     TBS_BOTH | WS_TABSTOP,45,39,115,24
-    PUSHBUTTON      "Accept",IDC_BUTTON1,99,81,30,14
-    EDITTEXT        IDC_EDIT1,13,44,25,14,ES_WANTRETURN
+    DEFPUSHBUTTON   "Accept",IDC_BUTTON1,99,81,30,14
+    EDITTEXT        IDC_EDIT1,13,44,25,14,ES_MULTILINE
     GROUPBOX        "Quality",IDC_STATIC,7,31,161,40
     CONTROL         "Quality Setting",IDC_USEQUALITY,"Button",
                     BS_AUTORADIOBUTTON,15,17,61,10

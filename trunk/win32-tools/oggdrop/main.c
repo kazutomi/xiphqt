@@ -372,6 +372,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
+int sliding=FALSE;
+
  /**
   *  Encode parameters dialog procedures.
   */
@@ -386,6 +388,8 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
   { 
   case WM_INITDIALOG: 
  
+    sliding = FALSE;
+
     SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETRANGE, 
         (WPARAM) TRUE,                   // redraw flag 
         (LPARAM) MAKELONG(0, 100));  // min. & max. positions 
@@ -410,8 +414,10 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
     SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
         (WPARAM)0, (LPARAM)editBuf);
 
+    SetFocus(GetDlgItem(hwndDlg, IDC_EDIT1));
+
     SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
-        (WPARAM)0, (LPARAM)-1);
+                  (WPARAM)0, (LPARAM)-1);
 
     (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
                                      IDC_USEBITRATE,
@@ -443,6 +449,8 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
 
    case WM_HSCROLL:
 
+    sliding = TRUE;
+
     qcValue = (LONG)SendDlgItemMessage(hwndDlg, IDC_SLIDER1, 
                         TBM_GETPOS, (WPARAM)0, (LPARAM)0 );
 
@@ -454,7 +462,7 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
     (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
                                      IDC_USEBITRATE,
                                      IDC_USEQUALITY);
-
+    
     break;
 
     case WM_CLOSE:
@@ -500,38 +508,61 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
           {
            
           case EN_UPDATE:
-            (void) memset(&buf2, 0, sizeof(buf2));
+          {
+
             buf2.buflen = sizeof(buf2.buf);
+
             len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
               (WPARAM) 0, (LPARAM) buf2.buf);
 
+            buf2.buf[len] = '\0';
+
             for (i=0; i<len; i++)
+            {
               if ( ! isdigit(buf2.buf[i]) && buf2.buf[i] != '.')
               {
                 buf2.buf[i] = '\0';
                 SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
                   (WPARAM) 0, (LPARAM) buf2.buf);
               }
+            }
+            
+            if ( atof(buf2.buf) > 10.0f )
+            {
+              SendDlgItemMessage(hwndDlg, IDC_EDIT1, WM_SETTEXT,
+                  (WPARAM) 0, (LPARAM) "10.0");
 
+              SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
+                  (WPARAM)0, (LPARAM)-1);
+            }
+
+          }
             
             break;
 
           case EN_CHANGE:
+            if ( ! sliding )
             {
               float v=0.0;
 
-            (void) memset(&buf2, 0, sizeof(buf2));
-            buf2.buflen = sizeof(buf2.buf);
-            len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
+              buf2.buflen = sizeof(buf2.buf);
+              len = SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_GETLINE,
               (WPARAM) 0, (LPARAM) buf2.buf);
-            //MessageBox(g_hwnd, buf2.buf, "Second", 0);
 
-            (void)sscanf(buf2.buf, "%f", &v); 
+              buf2.buf[len] = '\0';
+            
+              v = (float)atof(buf2.buf);
 
-            SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
-              (WPARAM) TRUE,                   // redraw flag 
-              (LPARAM)(int)(v*10.0f));
+              qcValue = (int)(v*10.0f);
+
+              //MessageBox(g_hwnd, buf2.buf, "Second", 0);
+
+              SendDlgItemMessage(hwndDlg, IDC_SLIDER1, TBM_SETPOS, 
+                (WPARAM) TRUE,                   // redraw flag 
+                (LPARAM)(int)(v*10.0f));
             }
+            else
+              sliding = FALSE;
 
             
           default:
