@@ -1,4 +1,8 @@
 2002-09-12  Andrew H. Chatham <pyogg@andrewchatham.com>
+	* pyvorbisinfo.c: (assign_tag) Removed a printf I accidentally
+	left in there.
+	
+2002-09-12  Andrew H. Chatham <pyogg@andrewchatham.com>
 	* setup.py: Bumped to version 1.1 (may not release until I verify
 	another bug report)
 
