@@ -101,7 +101,6 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 #               2) make module instances, extract geometry
 #               3) draw modules, place and run
 
-&LoadModules($moddir,"share"); # module references
 &LoadModules($moddir,$Config{'osname'});   # platform specificmodule references
 
 &order_modules;        # extract how many to build
@@ -310,11 +309,11 @@ sub geometries{
 	    
 	    if($active eq 'true'){
 		if($stack eq $orient){
-		    $wadj=&max($wadj,&moption($mod,"scalewidadj"));
-		    $ladj+=&moption($mod,"scalelenadj");
+		    $wadj=&max(1,&max($wadj,&moption($mod,"scalewidadj")));
+		    $ladj+=&max(1,&moption($mod,"scalelenadj"));
 		}else{
-		    $ladj=&max($ladj,&moption($mod,"scalelenadj"));
-		    $wadj+=&moption($mod,"scalewidadj"); 
+		    $ladj=&max(1,&max($ladj,&moption($mod,"scalelenadj")));
+		    $wadj+=&max(1,&moption($mod,"scalewidadj")); 
 		}
 		
 		if($stack eq 'vertical'){

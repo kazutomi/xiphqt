@@ -49,7 +49,8 @@ sub new{
     # we're not as flat as we like to think 
     my$this=bless {};
     
-    my$below=$this->{"below"}=$p->Canvas(Name=>"$num");
+    my$below=$this->{"below"}=$p->Canvas(Name=>$num);
+
     my$above=$this->{"above"}=$below->Canvas()->place(-relx=>0,-rely=>0,
 						      -anchor=>'nw', 
 						      -bordermode=>'outside');
@@ -109,9 +110,9 @@ sub drawit{
     my $ratio=$below->optionGet('ratio','');
     
     my$border=0;
-    $border=2 if ($relief eq 'groove');
-    $border=1 if ($relief eq 'sunken');
-    $border=1 if ($relief eq 'raised');
+#    $border=2 if ($relief eq 'groove');
+#    $border=1 if ($relief eq 'sunken');
+#    $border=1 if ($relief eq 'raised');
 
     my$aborder=0;
     $aborder=2 if ($arelief eq 'groove');

@@ -7,6 +7,10 @@
 # less artificial load on the machine than doing everything through
 # the object hash)
 
+
+# todo: go back to using disk id numbers as reported rather than
+# trying to make a contiguous numbering
+
 package MGMmodule::diskstat;
 use vars qw($xpath @rsectors @wsectors @prevr @prevw $widget $graph 
 	    $numdisks $lastmod);
