@@ -2,7 +2,7 @@
  *  - Main producer control loop. Fetches data from input modules, and controls
  *    submission of these to the instance threads. Timing control happens here.
  *
- * $Id: input.c,v 1.12.2.2 2002/02/08 11:14:03 msmith Exp $
+ * $Id: input.c,v 1.12.2.3 2002/02/08 12:54:08 msmith Exp $
  * 
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -97,17 +97,18 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 		control->oldsamples = 0;
 
 		ogg_stream_init(&os, control->serialno);
-        if(ogg_stream_pagein(&os, &og)) {
+		vorbis_info_init(&vi);
+		vorbis_comment_init(&vc);
+
+        if(ogg_stream_pagein(&os, &og) < 0) {
             LOG_ERROR0("Error submitting page to libogg");
             goto fail;
         }
-        if(ogg_stream_packetout(&os, &op)) {
+        if(ogg_stream_packetout(&os, &op) < 0) {
             LOG_ERROR0("Error retrieving packet from libogg");
             goto fail;
         }
 
-		vorbis_info_init(&vi);
-		vorbis_comment_init(&vc);
 
 		if(vorbis_synthesis_headerin(&vi, &vc, &op) < 0) 
         {
@@ -331,9 +332,8 @@ void input_loop(void)
 		 * from here */
 		if(ret < 0)
 		{
-			ices_config->shutdown = 1;
+			ices_config->shutdown = shutdown = 1;
 			thread_cond_broadcast(&ices_config->queue_cond);
-			release_buffer(outchunk);
 			continue;
 		}
 
