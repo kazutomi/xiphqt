@@ -2,9 +2,12 @@
 
 div#navbar1 {
 	text-align: center;
+	padding: 10px;
 }
 
 div#navbar1 ul {
+	padding: 0px;
+	margin: 0px;
 }
 
 div#navbar1 li {
@@ -14,9 +17,11 @@ div#navbar1 li {
 
 div#navbar1 a {
 	color: black;
+	line-height: 300%;
 	font-weight: bold;
 	text-decoration: none;
 	text-transform: lowercase;
+	padding: 5px 5px 5px 35px;
 	border-style: solid;
 	border-width: 3px;
 	-moz-border-radius: 10px;
@@ -79,12 +84,12 @@ div#navbar2 a:hover {
 /* These are the properties necessary to make the tabs have the fancy hover effects*/
 
 div#navbar1 a#xiph {
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) top left; 
+	background:  no-repeat url(/Images/logos/xiph/35x20.png) left; 
 }
 
 
 div#navbar1 a#xiph:hover {
-	background:  no-repeat url(/Images/logos/xiph/35x20.png) top left #819cc9; 
+	background:  no-repeat url(/Images/logos/xiph/35x20.png) left #819cc9; 
 }
 div#navbar1 a:hover		{ background: #aaaaaa; -moz-border-radius: 10px;  }
 div#navbar1 a#vorbis:hover	{ background: #aa75f4; -moz-border-radius: 10px; }
