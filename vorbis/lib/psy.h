@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.24 2001/09/11 05:06:57 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.24.2.1 2001/10/09 04:34:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -84,7 +84,6 @@ typedef struct vorbis_info_psy{
 
   float max_curve_dB;
 
-  int coupling_passes;
   vp_couple_pass *couple_pass;
 
 } vorbis_info_psy;

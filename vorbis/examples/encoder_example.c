@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: simple example encoder
- last mod: $Id: encoder_example.c,v 1.27 2001/09/19 01:17:00 cwolf Exp $
+ last mod: $Id: encoder_example.c,v 1.27.2.1 2001/10/09 04:34:44 xiphmont Exp $
 
  ********************************************************************/
 
@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <math.h>
 #include <vorbis/vorbisenc.h>

@@ -10,7 +10,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec_internal.h,v 1.9 2001/08/13 01:36:56 xiphmont Exp $
+ last mod: $Id: codec_internal.h,v 1.9.4.1 2001/10/09 04:34:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -65,7 +65,24 @@ typedef struct backend_lookup_state {
   unsigned char *header;
   unsigned char *header1;
   unsigned char *header2;
+
+  /* encode side bitrate tracking */
+  ogg_uint32_t  *bitrate_queue;
+  ogg_uint32_t  *bitrate_queue_eighths;
+  int            bitrate_queue_size;
+  int            bitrate_queue_head;
+  int            bitrate_eighths;
+
+  long   bitrate_boundbitacc;
+  long   bitrate_boundsampleacc;
+  long   bitrate_boundtail;
   
+  long   *bitrate_avgbitacc;
+  long   bitrate_avgsampleacc;
+  long   bitrate_avgtail;
+
+  double bitrate_floatinglimit;
+
 } backend_lookup_state;
 
 /* vorbis_info contains all the setup information specific to the
@@ -104,9 +121,24 @@ typedef struct codec_setup_info {
   int                     residue_type[64];
   vorbis_info_residue    *residue_param[64];
   static_codebook        *book_param[256];
+
   vorbis_info_psy        *psy_param[64]; /* encode only */
   vorbis_info_psy_global *psy_g_param;
 
+  /* detailed bitrate management setup */
+  double bitrate_floatinglimit_initial; /* set by mode */
+  double bitrate_bound_queuetime;
+  double bitrate_avg_queuetime;
+
+  double bitrate_absolute_max;
+  double bitrate_absolute_min;
+  double bitrate_queue_max;
+  double bitrate_queue_min;
+  double bitrate_queue_upperavg;
+  double bitrate_queue_loweravg;
+
+  int    passlimit[32];     /* iteration limit per couple/quant pass */
+  int    coupling_passes;
 } codec_setup_info;
 
 extern vorbis_look_psy_global *_vp_global_look(vorbis_info *vi);
