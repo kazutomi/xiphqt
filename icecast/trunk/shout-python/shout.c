@@ -60,11 +60,13 @@ static PyObject* pshoutobj_close(ShoutObject* self);
 static PyObject* pshoutobj_send(ShoutObject* self, PyObject* args);
 static PyObject* pshoutobj_sync(ShoutObject* self);
 static PyObject* pshoutobj_delay(ShoutObject* self);
+static PyObject* pshoutobj_queuelen(ShoutObject* self);
 static PyObject* pshoutobj_set_metadata(ShoutObject* self, PyObject* args);
 
 /* -- attr prototypes -- */
 static int pshoutobj_set_str(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v);
 static int pshoutobj_set_int(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v);
+static int pshoutobj_set_bool(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v);
 static int pshoutobj_set_proto(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v);
 static int pshoutobj_set_fmt(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v);
 static int pshoutobj_set_audio_info(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v);
@@ -84,6 +86,7 @@ static char docstring[] = "Shout library v2 interface\n\n"
   "            sync() - sleep until server needs more data. This is equal to\n"
   "                     the time it takes to play data sent since last sync\n"
   "           delay() - return milliseconds to wait before sending more data\n"
+  "        queuelen() - return number of bytes on the nonblocking write queue\n"
   "set_metadata(dict) - update stream metadata on server (current known key is\n"
   "                     \"song\". Not currently supported for ogg.\n\n"
   "Attributes:\n"
@@ -94,6 +97,7 @@ static char docstring[] = "Shout library v2 interface\n\n"
   "      mount - mount point on server (relative URL, eg \"/stream.ogg\")\n"
   "   protocol - server protocol: \"http\" (the default) for icecast 2,\n"
   "              \"xaudiocast\" for icecast 1, or \"icy\" for shoutcast\n"
+  "nonblocking - use nonblocking send\n"
   "     format - audio format: \"ogg\" (the default) or \"mp3\"\n"
   "       name - stream name\n"
   "        url - stream web page\n"
@@ -150,6 +154,7 @@ static ShoutObjectAttr ShoutObjectAttrs[] = {
   { "agent",       (pshout_set_shout)shout_set_agent, pshoutobj_set_str },
   { "format",      (pshout_set_shout)shout_set_format, pshoutobj_set_fmt },
   { "protocol",    (pshout_set_shout)shout_set_protocol, pshoutobj_set_proto },
+  { "nonblocking", (pshout_set_shout)shout_set_nonblocking, pshoutobj_set_bool },
   { "mount",       (pshout_set_shout)shout_set_mount, pshoutobj_set_str },
   { "name",        (pshout_set_shout)shout_set_name, pshoutobj_set_str },
   { "url",         (pshout_set_shout)shout_set_url, pshoutobj_set_str },
@@ -186,6 +191,8 @@ static PyMethodDef ShoutObjectMethods[] = {
     "Sleep for time required to play previously sent audio data." },
   { "delay", (PyCFunction)pshoutobj_delay, METH_NOARGS,
     "Return amount of time in milliseconds to wait before sending more data." },
+  { "queuelen", (PyCFunction)pshoutobj_queuelen, METH_NOARGS,
+    "Return the number of bytes currently on the write queue for nonblocking send" },
   { "set_metadata", (PyCFunction)pshoutobj_set_metadata, METH_VARARGS,
     "Update stream metadata on server (takes a dictionary argument. Current keys are: \"song\"" },
 
@@ -197,6 +204,7 @@ static PyMethodDef ShoutObjectMethods[] = {
   { "agent", NULL, 0, NULL },
   { "format", NULL, 0, NULL },
   { "protocol", NULL, 0, NULL },
+  { "nonblocking", NULL, 0, NULL },
   { "mount", NULL, 0, NULL },
   { "name", NULL, 0, NULL },
   { "url", NULL, 0, NULL },
@@ -231,6 +239,7 @@ void initshout(void) {
   PyModule_AddIntConstant(mod, "SHOUTERR_CONNECTED", SHOUTERR_CONNECTED);
   PyModule_AddIntConstant(mod, "SHOUTERR_UNCONNECTED", SHOUTERR_UNCONNECTED);
   PyModule_AddIntConstant(mod, "SHOUTERR_UNSUPPORTED", SHOUTERR_UNSUPPORTED);
+  PyModule_AddIntConstant(mod, "SHOUTERR_BUSY", SHOUTERR_BUSY);
 
   PyModule_AddStringConstant(mod, "SHOUT_AI_BITRATE", SHOUT_AI_BITRATE);
   PyModule_AddStringConstant(mod, "SHOUT_AI_SAMPLERATE", SHOUT_AI_SAMPLERATE);
@@ -295,6 +304,7 @@ static void pshoutobj_initattrs(PyObject* self) {
   pshoutobj_setattr(self, "dumpfile", Py_BuildValue(""));  
   pshoutobj_setattr(self, "agent", Py_BuildValue("s", shout_get_agent(conn)));
   pshoutobj_setattr(self, "protocol", Py_BuildValue(""));
+  pshoutobj_setattr(self, "nonblocking", shout_get_nonblocking(conn) ? Py_True : Py_False);
   pshoutobj_setattr(self, "format", Py_BuildValue(""));
 
   val = shout_get_protocol(conn);
@@ -398,6 +408,10 @@ static PyObject* pshoutobj_delay(ShoutObject* self) {
   return Py_BuildValue("i", shout_delay(self->conn));
 }
 
+static PyObject* pshoutobj_queuelen(ShoutObject* self) {
+  return Py_BuildValue("i", shout_queuelen(self->conn));
+}
+
 static PyObject* pshoutobj_set_metadata(ShoutObject* self, PyObject* args) {
   shout_metadata_t* metadata;
   PyObject* dict;
@@ -476,6 +490,20 @@ static int pshoutobj_set_int(ShoutObjectAttr* attr, ShoutObject* self, PyObject*
   }
   
   val = PyLong_AsLong(v);
+  set_shout = (pshout_set_shout_int)attr->set_shout;
+  return set_shout(self->conn, val);
+}
+
+static int pshoutobj_set_bool(ShoutObjectAttr* attr, ShoutObject* self, PyObject* v) {
+  long val;
+  pshout_set_shout_int set_shout;
+
+  if (!PyBool_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "Boolean argument required");
+    return -1;
+  }
+
+  val = (v == Py_True) ? 1 : 0;
   set_shout = (pshout_set_shout_int)attr->set_shout;
   return set_shout(self->conn, val);
 }
