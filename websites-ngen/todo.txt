@@ -2,39 +2,34 @@ To Do
 =====
 
 *	Implement some of the ideas on <http://wiki.xiph.org/SXSW2004Ideas>.
-	Specifically, try having the huge buttons on the left be for
-	"developers", "music fans", "artists".
 
 *	Make the front page look less like a blog page and more like a proper introduction.
+	Communicate what we can do for the user.
 
-*	Make a new essay (series) for /about/.
+*	Make a new essay (series) for /about/. Or do something other than an essay.
 
-*	News. Filterable. And in Atom.
+*	Fix the Atom compliance bugs. Make sure that there’s no way someone could accidentally
+	screw up the id element.
+
+*	What sorts of things should go in Ogg Traffic? The news feed(s)? Press releases?
+	I’d say that PRs and OTs should be announced in the news feeds, but should the OTs
+	be distributed over the news items?
 
 *	A software directory.
 
 *	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
 
-*	A BOM snipper.
-
-*	A way to have the title element and the first h1 element differ.
-	I guess it’s time to have the per-html-file .ini doodad after all.
-
-*	A way to re-do different .include and .inherit files based on language
-	to go with our language-based thingy.
-
-*	Move /help/ to /contribute/.
-
-*	Communicate that we want to attract--**and retain**--Windows and application developers
-	(for QC purposes)
+*	Communicate that we want to attract—**and retain**—Windows developers.
+	Also, since we’re mantaining python bindings, why not .NET ones, too? The little VB.NET shop
+	seems to be right up our alley.
 
 Open Questions
 --------------
 
-How can we communicate--in ten words or less--why...
+How can we communicate—in ten words or less—why…
 
 *	J. Random User should re-rip his CD collection in Vorbis or FLAC?
-*	M. Squeakyvoice should post samples of her work in Vorbis?
+*	Ms. Squeakyvoice should post samples of her work in Vorbis?
 
 I suppose there are two levels of benefits that one can get when he moves to Xiph stuff:
 
@@ -53,30 +48,23 @@ I suppose there are two levels of benefits that one can get when he moves to Xip
 What Must Be Done Before Shipping
 ---------------------------------
 
-* news, including a project-specific news dribble on each project page 
-* /about/ (and a new one, please; the current one is dated)
+* /news/, /vorbis/news/, /flac/news/, /speex/news/…
+* /about/			(and a new one, please; the current one is dated)
 * /donate/
 * /subversion/
 * /contact/
-* /ogg/ (not much, just spec stuff)
-* /vorbis/ (both from xiph.org and vorbis.com)
+* /ogg/				(not much, just spec stuff)
+* /vorbis/			(both from xiph.org and vorbis.com)
 * /speex/
-* mailing list archives
-
-* /paranoia/ (possibly with much less filler than it has)  
-* /mgm/
+* /lists/			(mailing lists)
+* /paranoia/		(possibly with much less filler than it has)
+* Documentation for the CMS I’ve cobbled together.
 
 What May Or May Not Be Done Before Shipping
 -------------------------------------------
-* /icecast/ (we'd need to bring oddsock/karl/mike back into the fold and retrofit their
-             directory thingy onto our stuff)
-* /flac/	(I cringe to think of how we could get Josh and his mystery men integrated
-             into the rest of the team)
-* /theora/   (shouldn't be too difficult, though)
-* /glossary/ (helpful, but we're currently doing without)
-* /vorbis/sample/ (listen to a sample Ogg Vorbis stream in a couple of bitrates)
 
-Documentation, So Others Can Write To The Web Site
---------------------------------------------------
-* Get Ed and Josh and their cohorts in a room together and teach them the basics of
-  markdown+wrapup. 
+* /icecast/			(We’d need to train oddsock/Karl/Mike on how to use this system)
+* /flac/			(Again, more training for Josh and the Russian guy)
+* /theora/
+* /glossary/		(helpful, but we’re currently doing without)
+* /vorbis/sample/	(listen to a sample Ogg Vorbis stream in a couple of bitrates)
