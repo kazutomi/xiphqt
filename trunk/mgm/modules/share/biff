@@ -9,7 +9,7 @@
 
 use Tk;
 package MGMmodule::biff;
-use vars qw($maildrop $xpath $graph $widget $lastmod);
+use vars qw($maildrop $xpath $graph $widget $lastmod $mailcount);
 
 sub module_init{
     my$this=shift;
@@ -55,11 +55,12 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
     $toplevel->optionAdd("$xpath.bar.0.litbackground", '#cccccc',21);
     
-    my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' messages',1);
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' msgs',1);
 
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);      
 
+    $mailcount=0;
     $lastmod=0;
     $this;
 }
@@ -67,7 +68,7 @@ sub module_instance{
 sub module_run{
     my$this=shift;
     
-    $graph=MGM::Graph->new($this,num=>1,prompt=>' messages',
+    $graph=MGM::Graph->new($this,num=>1,prompt=>' msgs',
 				     minscale=>4);
     $this->module_update;
     $widget=$graph->{"widget"};        # must return the widget
@@ -75,19 +76,19 @@ sub module_run{
 
 sub module_update{ 
     my$this=shift;
-    my$count=0;
     my$modtime=(stat $maildrop)[9];
     if(defined($modtime)){
 	if($modtime!=$lastmod){
+	    $mailcount=0;
 	    if (open(PROC,"<$maildrop")){
 		while(<PROC>){
-		    $count++ if(m/^From /);
+		    $mailcount++ if(m/^From /);
 		}
 		close PROC;
 	    }
 	    $lastmod=$modtime;
 	}
-	$graph->set($count);
+	$graph->set($mailcount);
     }else{
 	$graph->set(0);
     }

@@ -29,7 +29,7 @@ sub module_instance{
     my$widget=$this->{"widget"};
     my$xpath=$this->{"xpath"};
 
-    $widget->optionAdd("$xpath.scalewidadj", 60,21);
+    $widget->optionAdd("$xpath.scalewidadj", 100,21);
     $widget->optionAdd("$xpath.scalelenadj", 60,21); 
     $widget->optionAdd("$xpath.scalejustify", 0,20);      
     $widget->optionAdd("$xpath.borderwidth", 1,20);      
