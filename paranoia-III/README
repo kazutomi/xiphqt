@@ -1,7 +1,7 @@
 cdparanoia release III alpha 9 README
-[March 19, 1998, updated March 27, 2001]
+[March 19, 1998, updated October 21, 1998]
 
-Monty <monty@xiph.org>
+Monty <xiphmont@mit.edu>
 
 This CDDA reader distribution ('cdparanoia') reads audio from the
 CDROM directly as data, with no analog step between, and writes the
@@ -10,7 +10,22 @@ data to a file or pipe as .wav, .aifc or as raw 16 bit linear PCM.
 These are installation notes; for lots of other cdparanoia related
 information, see:
 
-http://www.xiph.org/paranoia/
+http://www.mit.edu/afs/sipb/user/xiphmont/cdparanoia/index.html
+
+WARNING: (Danger! Danger!)
+==========================
+
+This is a *prerelease* of the new cdparanoia package; due to the huge
+pool of hardware out there and the newness of the software, this
+package is probably kinda buggy yet.  If you use this prerelease and
+have any sort of trouble, PLEASE let me know.  Contact information is
+at the end of this file.
+
+In addition, this software is alpha for a reason; although the code
+itself is high-quality and robust, the structure of the code and
+especially the setup of the library interfaces will continue to shift.
+The progress output and library interfaces will not be set in stone
+until this software reaches beta.
 
 Requirements
 ============
@@ -27,15 +42,15 @@ Requirements
    2d. SCSI cdrom support (optional)
    2e. kernel support for the generic SCSI interface and proper device 
 	(/dev/sg?) files in /dev. Most distributions already have the 
-	/dev/sg? files.  devfs [supported] sets this up automagically.
+	/dev/sg? files.
 
    For SCSI CDROM drives:
    2f. SCSI cdrom support (optional)
    2g. kernel support for the generic SCSI interface and proper device 
 	(/dev/sg?) files in /dev. Most distributions already have the 
-	/dev/sg? files.  devfs [supported] sets this up automagically.
+	/dev/sg? files.
 
-3. A Linux 2.2.x, 2.3.x or 2.4.x kernel 
+3. A Linux 2.0.x or 2.1.x kernel
 
 ATAPI drives may be used either with the native IDE cdrom driver, or
 with IDE-SCSI host adaptor emulation.  Both work, but the SCSI
@@ -43,11 +58,12 @@ emulation mode works much better for CDDA extraction.  Cdparanoia may
 also be able to identify and use unusual drives that report 'CDDA
 incapable' in native ATAPI mode.
 
+Also, although a stock SCSI setup may work, performance will be
+better if linux/include/scsi/sg.h defines SG_BIG_BUFF to 65536.
+
 /proc filesystem support is no longer needed, although you'll
 certainly want to have it for other packages.  Cdparanoia does not
 require threading, IPC or sound card support.
-
-Devfs is fully supported as of 9.8, with or without devfsd.
 
 Compiling cdparanoia
 ==================
@@ -57,13 +73,7 @@ To build the cdparanoia utility:
 	./configure
 	make all
 	
-This will compile cdparanoia and the shared paranoia libs; make
-install (as root) will install it. Don't forget to run ldconfig;
-unlike previous releases, this version uses shared paranoia libs; you
-can still build the static version as follows:
-
-	./configure
-	make all STATIC=TRUE
+This will compile cdparanoia; make install (as root) will install it.
 
 Unlike cdda2wav and readcdda, cdparanoia is smart enough to find CDROM
 drives and the appropriate interfaces automatically; if you have only
@@ -77,22 +87,16 @@ To build the cdda_interface.a and cdda_paranoia.a libraries:
 	./configure
 	make lib
 
-The .so shared libraries can be built as follows:
-
-	./configure
-	make slib
-
-Other build notes (such as building and using a debugging version of
+Other build notes (such as building and using a debuggin version of
 cdparanoia to aid me in tracking down any trouble) can be found on the
 Cdparanoia web site at the URL given above.
 
 Additional installation notes
 =============================
 
-Most Linux setups already have performed the steps described below,
-and devfs also provides all the necessary device entries
-automatically.  The list is useful for doublechecking on a non-devfs
-install. (originally taken from Heiko's cdda2wav README)
+Most Linux setups already have performed the steps described below.
+The list is useful for doublechecking. (originally taken from Heiko's 
+cdda2wav README)
 
 (for SCSI devices)
 
@@ -161,8 +165,8 @@ install. (originally taken from Heiko's cdda2wav README)
   *without* IDE CDROM drive (ATAPI) support.  If native ATAPI support is
   enabled, the kernel will always choose to use the native ATAPI driver.
 
-"Missing Features:
-==================
+Missing Features (compared to cdda2wav)
+=======================================
 
 Specifically, 'cdparanoia' will not play to sound cards, do MD5
 signatures, do rate reduction, or generally make use of the maximum
@@ -178,9 +182,15 @@ lots o' stuff on the website.
 Contacts
 ========
 
-I can be contacted at monty@xiph.org.  The main distribution site
+The author of the original cdda2wav package is Heiko Eissfeldt; he can
+be contacted about cdda2wav at heiko@colossus.escape.de.  The 'common
+ancestry' of cdda2wav and cdparanoia diverged long ago, however; the
+no longer likely have any code whatsoever in common.  Don;t bug Heiko
+with Cdparanoia problems.
+
+I can be contacted at xiphmont@mit.edu.  The main distribution site
 for cdparanoia (and the original Paranoia patches to cdda2wav) is
-http://www.xiph.org/paranoia/
+http://www.mit.edu/afs/sipb/user/xiphmont/cdparanoia/
 
 Happy hunting.  Be nice to copyrights.
 

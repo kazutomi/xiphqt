@@ -24,8 +24,6 @@ typedef struct exception {
 static exception atapi_list[]={
   {"SAMSUNG SCR-830 REV 2.09 2.09 ", 1,   0,         Dummy,scsi_read_mmc2,0},
   {"Memorex CR-622",                 1,   0,         Dummy,          NULL,0},
-  {"SONY CD-ROM CDU-561",            0,   0,         Dummy,          NULL,0},
-  {"Chinon CD-ROM CDS-525",          0,   0,         Dummy,          NULL,0},
   {NULL,0,0,NULL,NULL,0}};
 
 /* list of drives that affect MMC default settings */
@@ -33,9 +31,6 @@ static exception atapi_list[]={
 static exception mmc_list[]={
   {"SAMSUNG SCR-830 REV 2.09 2.09 ", 1,   0,         Dummy,scsi_read_mmc2,0},
   {"Memorex CR-622",                 1,   0,         Dummy,          NULL,0},
-  {"SONY CD-ROM CDU-561",            0,   0,         Dummy,          NULL,0},
-  {"Chinon CD-ROM CDS-525",          0,   0,         Dummy,          NULL,0},
-  {"KENWOOD CD-ROM UCR",          -1,   0,            NULL,scsi_read_D8,  0},
   {NULL,0,0,NULL,NULL,0}};
 
 /* list of drives that affect SCSI default settings */
@@ -53,7 +48,6 @@ static exception scsi_list[]={
   {"PLASMON",                     -1,   0,scsi_enable_cdda,scsi_read_28,  1},
   {"GRUNDIG CDR100IPW",           -1,   0,scsi_enable_cdda,scsi_read_28,  1},
   {"MITSUMI CD-R ",               -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"KENWOOD CD-ROM UCR",          -1,   0,            NULL,scsi_read_D8,  0},
 
   {"YAMAHA",                      -1,   0,scsi_enable_cdda,        NULL,  0},
 
@@ -61,10 +55,6 @@ static exception scsi_list[]={
   {"SONY",                        -1,   0,            NULL,        NULL,  0},
 
   {"NEC",                         -1,   0,           NULL,scsi_read_D4_10,0},
-
-  /* the 7501 locks up if hit with the 10 byte version from the
-     autoprobe first */
-  {"MATSHITA CD-R   CW-7501",     -1,   0,           NULL,scsi_read_D4_12,-1},
 
   {NULL,0,0,NULL,NULL,0}};
 
