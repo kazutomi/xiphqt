@@ -16,7 +16,7 @@ int main(int argc, const char **argv)
 
     FILE * f = fopen("outfile.vp3", "wb");
     
-    char * buffer = malloc(32768);
+    char * buffer;
     int olength;
     int length;
     avi_t *avifile;
@@ -33,6 +33,7 @@ int main(int argc, const char **argv)
     double fps_numerator, fps_denominator;
 
     avifile = AVI_open_input_file("vp31.avi", 1);
+    buffer = malloc(AVI_max_video_chunk(avifile));
     frames = AVI_video_frames(avifile);
     framew = AVI_video_width(avifile);
     frameh = AVI_video_height(avifile);
