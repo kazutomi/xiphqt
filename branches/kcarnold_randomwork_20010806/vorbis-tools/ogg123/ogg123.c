@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.5 2001/06/24 01:24:56 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.5.2.1 2001/08/06 18:40:33 kcarnold Exp $
 
  ********************************************************************/
 
@@ -37,6 +37,8 @@
 char convbuffer[4096];		/* take 8k out of the data segment, not the stack */
 int convsize = 4096;
 buf_t * buffer = NULL;
+nonbuf_shared_t global_shared;  /* used when no buffer */
+nonbuf_shared_t * shared_data = &global_shared;
 
 static char skipfile_requested;
 static void (*old_sig)(int);
@@ -347,7 +349,7 @@ void play_file(ogg123_options_t opt)
 		    "User-Agent: ogg123\r\n"
 		    "Host: %s\r\n\r\n\r\n", path, server);
 
-		fflush(opt.instream); /* Make sure these are all actually sent */
+	    fflush(opt.instream); /* Make sure these are all actually sent */
 
 	    /* Dump headers */
 	    {
@@ -626,8 +628,12 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
     current = current->next_device;
   }
   
-  if (opt->buffer_size)
+  if (opt->buffer_size) {
     *buffer = fork_writer (opt->buffer_size, opt->outdevices, opt->prebuffer);
+    shared_data = &(buffer->nonbuf_shared);
+  }
+
+  shared_data->
   
     return 0;
 }

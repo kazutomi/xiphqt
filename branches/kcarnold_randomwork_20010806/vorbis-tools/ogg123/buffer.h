@@ -7,14 +7,21 @@
 
 #include <sys/types.h>
 
+/* We use chunks to make things easier. Quite possibly this is wasting
+   at least two integers for every 4096 bytes, but it beats the
+   horrificly involved calculations involved with interleaved channels
+   and instantaneous bitrate information in a circular buffer. */
 typedef struct chunk_s
 {
+  ogg_int64_t sample; /* sample number of starting sample */
+  double bitrate;     /* instantaneous bitrate at sample */
   long len; /* Length of the chunk (for if we only got partial data) */
   char data[4096]; /* Data. 4096 is the chunk size we request from libvorbis. */
 } chunk_t;
 
 typedef struct buf_s
 {
+  nonbuf_shared_t nonbuf_shared; /* other shared data */
   char status;       /* Status. See STAT_* below. */
   int fds[2];        /* Pipe file descriptors. */
   long size;         /* buffer size, for reference */
