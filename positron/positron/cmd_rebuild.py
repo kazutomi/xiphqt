@@ -56,10 +56,10 @@ def hisi_source(p):
         return "FM "+str[:-1]+"."+str[-1:]
     
 def test_recording(neuros, s):
-    return neuros.hostpath_to_neurospath(s).lower().startswith("c:/woid_record")
+    return neuros.hostpath_to_neurospath(s[0]).lower().startswith("c:/woid_record")
 
 def test_hisi(neuros, s):
-    return neuros.hostpath_to_neurospath(s).lower().startswith("c:/woid_hisi")
+    return neuros.hostpath_to_neurospath(s[0]).lower().startswith("c:/woid_hisi")
 
 
 def list_split(list, test_func):
@@ -85,8 +85,9 @@ def run(config, neuros, args):
 
         print "\nFinding existing audio files on the Neuros..."
         # Now we need to find all the files to readd them to the database.
-        filelist = [item[1] for item in
+        filelist = [item[1:] for item in
                     gen_filelist(neuros,"",neuros.mountpoint,"",
+                                 config.supported_music_types(),
                                  silent=True)]
 
         test_rec_func = lambda s: test_recording(neuros, s)
@@ -99,14 +100,14 @@ def run(config, neuros, args):
 
         print "\nAdding music tracks to audio database..."
         audio_db = neuros.open_db("audio")
-        for track in rest:
+        for track,metadata in rest:
             print "  "+path.basename(track)
-            add_track(neuros, None, track)
+            add_track(neuros, None, track, metadata)
 
         print "\nAdding recordings to audio database..."
-        for track in recordings:
+        for track,metadata in recordings:
             print "  "+path.basename(track)
-            add_track(neuros, None, track,
+            add_track(neuros, None, track, metadata,
                       recording=recording_source(track))
         if config.sort_database:
             audio_db.sort()
@@ -114,7 +115,7 @@ def run(config, neuros, args):
 
         print "\nAdding HiSi clips to unidedhisi database..."
         unidedhisi_db = neuros.open_db("unidedhisi")
-        for track in hisi:
+        for track,metadata in hisi:
             basename = path.basename(track)
             print "  "+basename
             record = (basename, hisi_source(track),
