@@ -269,7 +269,7 @@ ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, int read_by
 	int len = ices_reencode_reencode_chunk (buff, read_bytes, reencode_buff, 7200);
 	
 	if (len > 0)
-		ret = shout_send_data (&conn, reencode_buff, len);
+		ret = shout_send_data (conn, reencode_buff, len);
 	else
 		return 0;
 	
@@ -277,7 +277,7 @@ ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, int read_by
 	if (file_bytes <= 0) {
 		len = ices_reencode_flush (reencode_buff, 7200);
 		if (len > 0)
-			ret = shout_send_data (&conn, reencode_buff, len);
+			ret = shout_send_data (conn, reencode_buff, len);
 	}
 #endif
 	return ret;
