@@ -418,9 +418,21 @@ ogg-theora-microhowto</a> and <a href="http://www.annodex.net/anx_theora.html">t
 You can use libogg, to wrap theora video with vorbis audio in Ogg
 file.
 </p>
-A user-friendly way to convert .dv and .avi format video into Ogg Theora format is 
+<p>A user-friendly way to convert .dv and .avi format video into Ogg Theora format is 
 with ffmpeg2theora.  It can be found at: <a href="http://www.v2v.cc/~j/ffmpeg2theora/"> 
 http://www.v2v.cc/~j/ffmpeg2theora/</a>
+</p>
+<p>A way to both stream and encode theora format video is with videolan (VLC).  <br>
+Example for streaming the video4linux device in ogg theora/vorbis: 
+</p>
+<p>vlc v4l:/dev/video:input=3:norm=pal:size=384x288 --sout  \ <br>
+'#transcode{vcodec=theora,vb=300,acodec=vorb,ab=96}:std{access=http,mux=ogg,url=server.example.org:8000}'
+</p>
+<p>Or, replace "v4l:/dev/video:input=3:norm=pal:size=384x288" with a filename if 
+you want to transcode.
+</p>
+For more on the vlc syntax, see: <br>
+<a href="http://videolan.org/doc/videolan-howto/en/ch09.html">http://videolan.org/doc/videolan-howto/en/ch09.html</a>
 </div>
 <br>
 <br>
