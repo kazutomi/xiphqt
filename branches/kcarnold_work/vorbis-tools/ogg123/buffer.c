@@ -248,16 +248,18 @@ void buffer_flush (buf_t *buf)
 
 void buffer_shutdown (buf_t *buf)
 {
-  struct timeval tv;
+  /*  struct timeval tv;*/
 
   DEBUG0("shutdown buffer");
   buf->status |= STAT_SHUTDOWN;
   while (buf->status != 0)
     {
       DEBUG0("waiting on reader to quit");
-      tv.tv_sec = 1;
+      /*      tv.tv_sec = 1;
       tv.tv_usec = 0;
-      select (0, NULL, NULL, NULL, &tv);
+      select (0, NULL, NULL, NULL, &tv);*/
+
+      pause();
     } 
 #ifndef HAVE_SMMAP
   /* Deallocate the shared memory segment. */
