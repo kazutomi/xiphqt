@@ -82,8 +82,14 @@ ices_reencode_reset (input_stream_t* source)
     if (! stream->reencode)
       continue;
 
-    if (stream->encoder_state)
-      lame_close ((lame_global_flags*)stream->encoder_state);
+    /* only reset encoder if audio format changes */
+    lame = (lame_global_flags*)stream->encoder_state;
+    if (lame) {
+      if (lame_get_in_samplerate (lame) == source->samplerate)
+	continue;
+
+      lame_close (lame);
+    }
 
     if (! (stream->encoder_state = lame_init ())) {
       ices_log ("LAME: error resetting encoder.");
@@ -159,7 +165,7 @@ ices_reencode_flush (ices_stream_t* stream, unsigned char *outbuf,
   lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
   int rc;
 
-  rc = lame_encode_flush (lame, (char *)outbuf, maxlen);
+  rc = lame_encode_flush_nogap (lame, (char *)outbuf, maxlen);
 
   return rc;
 }

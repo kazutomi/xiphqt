@@ -1,3 +1,5 @@
+	* Crossfader added.
+	* Tested with LAME 3.96
 0.3     2003-07-13
 	* Updated to libshout2, which brings icecast2 compatibility.
 	* ices will now attempt to trim junk and short frames from MP3 files,
