@@ -1,3 +1,9 @@
+2001-01-31  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* setup.py, config_unix.py, setup.cfg: Went back to an older way
+	of configuring things, which seems to be the only maintainable way
+	to do it until distutils has better configuration
+	support. "./setup.py bdist_rpm" should work fine now.
+	
 2001-01-21  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* src/aomodule.c (dict_to_options): Size checking removed; no
 	longer necessary
