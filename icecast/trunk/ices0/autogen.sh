@@ -40,6 +40,7 @@ fi
 
 echo "Generating configuration files for ices, please wait...."
 
+libtoolize --automake
 ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
 echo "  aclocal $ACLOCAL_FLAGS"
 aclocal $ACLOCAL_FLAGS
