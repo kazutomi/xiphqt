@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: file_transport.c,v 1.1.2.1 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: file_transport.c,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -23,6 +23,7 @@
 
 typedef struct file_private_t {
   FILE *fp;
+  data_source_stats_t stats;
 } file_private_t;
 
 
@@ -47,6 +48,10 @@ data_source_t* file_open (char *source_string)
     source->source_string = strdup(source_string);
     source->transport = &file_transport;
     source->private = private;
+    
+    private->stats.transfer_rate = 0;
+    private->stats.bytes_read = 0;
+    private->stats.input_buffer_used = 0;
   } else {
     fprintf(stderr, "Error: Out of memory.\n");
     exit(1);
@@ -92,8 +97,14 @@ int file_read (data_source_t *source, void *ptr, size_t size, size_t nmemb)
 {
   file_private_t *private = source->private;
   FILE *fp = private->fp;
+  int bytes_read;
 
-  return fread(ptr, size, nmemb, fp);
+  bytes_read = fread(ptr, size, nmemb, fp);
+
+  if (bytes_read > 0)
+    private->stats.bytes_read += bytes_read;
+
+  return bytes_read;
 }
 
 
@@ -103,6 +114,14 @@ int file_seek (data_source_t *source, long offset, int whence)
   FILE *fp = private->fp;
 
   return fseek(fp, offset, whence);  
+}
+
+
+data_source_stats_t * file_statistics (data_source_t *source)
+{
+  file_private_t *private = source->private;
+
+  return malloc_data_source_stats(&private->stats);
 }
 
 
@@ -135,6 +154,7 @@ transport_t file_transport = {
   &file_peek,
   &file_read,
   &file_seek,
+  &file_statistics,
   &file_tell,
   &file_close
 };

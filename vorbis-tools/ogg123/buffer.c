@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.6 2001/12/08 23:59:24 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.7 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -121,9 +121,17 @@ action_t *malloc_action (action_func_t action_func, void *action_arg)
 }
 
 
-void in_order_append_action (action_t **action_list, action_t *action)
+/* insert = 1:  Make this action the first action associated with this position
+   insert = 0:  Make this action the last action associated with this position
+*/
+#define INSERT 1
+#define APPEND 0
+void in_order_add_action (action_t **action_list, action_t *action, int insert)
 {
-  while (*action_list != NULL && (*action_list)->position <= action->position)
+  insert = insert > 0 ? 1 : 0;  /* Clamp in case caller messed up */
+
+  while (*action_list != NULL && 
+	 (*action_list)->position <= (action->position + insert))
     action_list = &((*action_list)->next);
 
   action->next = *action_list;
@@ -246,6 +254,8 @@ void *buffer_thread_func (void *arg)
   
   pthread_cleanup_pop(1);
   DEBUG("exiting buffer_thread_func");
+
+  return 0;
 }
 
 
@@ -305,6 +315,21 @@ void submit_data_chunk (buf_t *buf, char *data, size_t size)
   }
 
   DEBUG("Exit submit_data_chunk");
+}
+
+
+buffer_stats_t *malloc_buffer_stats ()
+{
+  buffer_stats_t *new_stats;
+
+  new_stats = malloc(sizeof(buffer_stats_t));
+
+  if (new_stats == NULL) {
+    fprintf(stderr, "Error: Could not allocate memory in malloc_buffer_stats()\n");
+    exit(1);
+  }
+
+  return new_stats;
 }
 
 
@@ -542,8 +567,8 @@ void buffer_action_now (buf_t *buf, action_func_t action_func,
 }
 
 
-void buffer_action_at_end (buf_t *buf, action_func_t action_func, 
-			   void *action_arg)
+void buffer_insert_action_at_end (buf_t *buf, action_func_t action_func, 
+				  void *action_arg)
 {
   action_t *action;
 
@@ -554,14 +579,32 @@ void buffer_action_at_end (buf_t *buf, action_func_t action_func,
   /* Stick after the last item in the buffer */
   action->position = buf->position;
 
-  in_order_append_action(&buf->actions, action);
+  in_order_add_action(&buf->actions, action, INSERT);
 
   UNLOCK_MUTEX(buf->mutex);
 }
 
 
-void buffer_action_at (buf_t *buf, action_func_t action_func, 
-		       void *action_arg, ogg_int64_t position)
+void buffer_append_action_at_end (buf_t *buf, action_func_t action_func, 
+				  void *action_arg)
+{
+  action_t *action;
+
+  action = malloc_action(action_func, action_arg);
+
+  LOCK_MUTEX(buf->mutex);
+
+  /* Stick after the last item in the buffer */
+  action->position = buf->position;
+
+  in_order_add_action(&buf->actions, action, APPEND);
+
+  UNLOCK_MUTEX(buf->mutex);
+}
+
+
+void buffer_insert_action_at (buf_t *buf, action_func_t action_func, 
+			      void *action_arg, ogg_int64_t position)
 {
   action_t *action;
 
@@ -571,7 +614,24 @@ void buffer_action_at (buf_t *buf, action_func_t action_func,
   
   action->position = position;
 
-  in_order_append_action(&buf->actions, action);
+  in_order_add_action(&buf->actions, action, INSERT);
+
+  UNLOCK_MUTEX(buf->mutex);  
+}
+
+
+void buffer_append_action_at (buf_t *buf, action_func_t action_func, 
+			      void *action_arg, ogg_int64_t position)
+{
+  action_t *action;
+
+  action = malloc_action(action_func, action_arg);
+
+  LOCK_MUTEX(buf->mutex);
+  
+  action->position = position;
+
+  in_order_add_action(&buf->actions, action, APPEND);
 
   UNLOCK_MUTEX(buf->mutex);  
 }
@@ -604,3 +664,25 @@ long buffer_full (buf_t *buf)
 {
   return buf->curfill;
 }
+
+
+buffer_stats_t *buffer_statistics (buf_t *buf)
+{
+  buffer_stats_t *stats;
+  
+  LOCK_MUTEX(buf->mutex);
+
+  stats = malloc_buffer_stats();
+
+  stats->size = buf->size;
+  stats->fill = (double) buf->curfill / (double) buf->size;
+  stats->prebuffering = buf->prebuffering;
+  stats->paused = buf->paused;
+  stats->eos = buf->eos;
+
+  UNLOCK_MUTEX(buf->mutex);
+
+  return stats;
+}
+
+    

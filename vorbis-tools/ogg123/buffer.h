@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.16.2.4 2001/12/08 23:59:24 volsung Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16.2.5 2001/12/11 05:29:08 volsung Exp $
  
 ********************************************************************/
 
@@ -81,6 +81,15 @@ typedef struct action_t {
 } action_t;
 
 
+typedef struct buffer_stats_t {
+  long size;
+  double fill;
+  int prebuffering;
+  int paused;
+  int eos;
+} buffer_stats_t;
+
+
 /* --- Buffer allocation --- */
 
 buf_t *buffer_create (long size, long prebuffer,
@@ -105,13 +114,18 @@ void buffer_mark_eos (buf_t *buf);
 /* --- Action buffering functions --- */
 void buffer_action_now (buf_t *buf, action_func_t action_func, 
 			void *action_arg);
-void buffer_action_at_end (buf_t *buf, action_func_t action_func, 
-			   void *action_arg);
-void buffer_action_at (buf_t *buf, action_func_t action_func, 
-		       void *action_arg, ogg_int64_t position);
+void buffer_insert_action_at_end (buf_t *buf, action_func_t action_func, 
+				  void *action_arg);
+void buffer_append_action_at_end (buf_t *buf, action_func_t action_func, 
+				  void *action_arg);
+void buffer_insert_action_at (buf_t *buf, action_func_t action_func, 
+			      void *action_arg, ogg_int64_t position);
+void buffer_append_action_at (buf_t *buf, action_func_t action_func, 
+			      void *action_arg, ogg_int64_t position);
 
 /* --- Buffer status functions --- */
 void buffer_wait_for_empty (buf_t *buf);
 long buffer_full (buf_t *buf);
+buffer_stats_t *buffer_statistics (buf_t *buf);
 
 #endif /* __BUFFER_H__ */

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: audio.c,v 1.1.2.2 2001/12/09 03:45:26 volsung Exp $
+ last mod: $Id: audio.c,v 1.1.2.3 2001/12/11 05:29:08 volsung Exp $
 
  ********************************************************************/
 
@@ -127,8 +127,6 @@ int audio_play_callback (void *ptr, int nbytes, int eos, void *arg)
 
   ret = audio_devices_write(play_arg->devices, ptr, nbytes);
 
-  status_print_statistics(play_arg->stats);
-
   return ret ? nbytes : 0;
 }
 
@@ -157,9 +155,9 @@ void audio_reopen_callback (buf_t *buf, void *arg)
   while (current != NULL) {
     ao_info *info = ao_driver_info(current->driver_id);
     
-    status_message(1, "\nDevice:   %s", info->name);
-    status_message(1, "Author:   %s", info->author);
-    status_message(1, "Comments: %s\n", info->comment);
+    status_message(2, "\nDevice:   %s", info->name);
+    status_message(2, "Author:   %s", info->author);
+    status_message(2, "Comments: %s\n", info->comment);
     
     if (current->filename == NULL)
       current->device = ao_open_live(current->driver_id, &format,

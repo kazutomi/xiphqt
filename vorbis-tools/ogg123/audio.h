@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: audio.h,v 1.1.2.1 2001/12/08 23:59:24 volsung Exp $
+ last mod: $Id: audio.h,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
  
 ********************************************************************/
 
@@ -39,7 +39,7 @@ typedef struct audio_device_t {
 /* Structures used by callbacks */
 
 typedef struct audio_play_arg_t {
-  stat_t *stats;
+  stat_format_t *stat_format;
   audio_device_t *devices;
 } audio_play_arg_t;
 
