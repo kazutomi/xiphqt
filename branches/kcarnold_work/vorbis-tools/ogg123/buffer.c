@@ -37,7 +37,7 @@ void signal_handler (int sig)
 }
 
 /* Initialize the buffer structure. */
-void buffer_init (buf_t *buf, long size)
+void buffer_init (buf_t *buf, long size, long prebuffer)
 {
   DEBUG0("buffer init");
   memset (buf, 0, sizeof(*buf));
@@ -45,6 +45,9 @@ void buffer_init (buf_t *buf, long size)
   buf->reader = buf->writer = buf->buffer;
   buf->end = buf->buffer + (size - 1);
   buf->size = size;
+  buf->prebuffer = prebuffer;
+  if (prebuffer > 0)
+    buf->status |= STAT_PREBUFFER;
 }
 
 /* Main write loop. No semaphores. No deadlock. No problem. I hope. */
@@ -52,15 +55,22 @@ void writer_main (volatile buf_t *buf, devices_t *d)
 {
   devices_t *d1;
   signal (SIGINT, SIG_IGN);
+  signal (SIGUSR1, signal_handler);
 
   DEBUG0("r: writer_main");
   while (! (buf->status & STAT_SHUTDOWN && buf->reader == buf->writer))
     {
-      /* Writer just waits on reader to be done with buf_write.
+      /* Writer just waits on reader to be done with submit_chunk
        * Reader must ensure that we don't deadlock. */
+
+      /* prebuffering */
+      while (buf->status & STAT_PREBUFFER)
+	pause();
 
       if (buf->reader == buf->writer) {
 	/* this won't deadlock, right...? */
+	if (! (buf->status & STAT_FLUSH)) /* likely unnecessary */
+	  buf->status |= STAT_UNDERFLOW;
 	DEBUG0("alerting writer");
 	write (buf->fds[1], "1", sizeof(int)); /* This identifier could hold a lot
 						* more detail in the future. */
@@ -114,7 +124,7 @@ void writer_main (volatile buf_t *buf, devices_t *d)
  * to the buffer structure that is shared. Just pass this straight to
  * submit_chunk and all will be happy. */
 
-buf_t *fork_writer (long size, devices_t *d)
+buf_t *fork_writer (long size, devices_t *d, long prebuffer)
 {
   int childpid;
   buf_t *buf;
@@ -164,7 +174,7 @@ buf_t *fork_writer (long size, devices_t *d)
   setvbuf (debugfile, NULL, _IONBF, 0);
 #endif
 
-  buffer_init (buf, size);
+  buffer_init (buf, size, prebuffer);
   
   /* Create a pipe for communication between the two processes. Unlike
    * the first incarnation of an ogg123 buffer, the data is not transferred
@@ -238,6 +248,16 @@ void submit_chunk (buf_t *buf, chunk_t chunk)
     buf->reader = buf->buffer;
   else
     buf->reader++;
+
+  if (buf->status & STAT_PREBUFFER && buffer_full(buf) >= buf->prebuffer) {
+    buf->status &= ~STAT_PREBUFFER;
+    kill (buf->readerpid, SIGUSR1);
+  }
+  else if (buf->status & STAT_UNDERFLOW) {
+    buf->status |= STAT_PREBUFFER;
+    buf->status &= ~STAT_UNDERFLOW;
+    kill (buf->readerpid, SIGUSR1);
+  }
   DEBUG0("submit_chunk exit");
 }
 
@@ -253,6 +273,7 @@ void buffer_shutdown (buf_t *buf)
 
   DEBUG0("shutdown buffer");
   buf->status |= STAT_SHUTDOWN;
+  buf->status &= ~STAT_PREBUFFER;
   while (buf->status != 0)
     {
       DEBUG0("waiting on reader to quit");

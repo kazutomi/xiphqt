@@ -31,6 +31,7 @@ typedef struct ogg123_options_s {
   char *default_device;       /* default device for playback */
   devices_t *outdevices;      /* Streams to write to. */
   int buffer_size;            /* Size of the buffer in chunks. */
+  int prebuffer;              /* number of chunks to prebuffer */
   int rate, channels;         /* playback params for opening audio devices */
   int delay;                  /* delay for skip to next song */
   int nth;                    /* Play every nth chunk */
