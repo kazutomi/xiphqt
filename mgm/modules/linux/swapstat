@@ -8,7 +8,7 @@
 # the object hash)
 
 package MGMmodule::swapstat;
-use vars qw($xpath $pagei $pageo $previ $prevo $widget $graph $lastmod);
+use vars qw($xpath $swapi $swapo $previ $prevo $widget $graph $lastmod $kernel $active);
 
 # class init
 sub module_init{
@@ -16,11 +16,24 @@ sub module_init{
     my$toplevel=$this->{"toplevel"};
     my$xclass=$this->{"xclass"};
 
-    # is the helper up and running?
-    if(!defined($MGMmodule::helperST::proc{"swap"})){
+    my$active=0;
+
+    # 2.6-ish
+    if(defined(%MGMmodule::helperST::vm26)){
+	$active=1;
+    }else{
+	# else use the helper (2.4-ish)
+	if(defined($MGMmodule::helperST::proc{"swap"})){
+	    $active=1;
+	}
+    }
+
+    if(!$active){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
+	$MGMmodule::helperST::vm_active=0;
     } 
-    $toplevel->optionAdd("$xclass.order",11,21);   
+
+    $toplevel->optionAdd("$xclass.order",12,21);   
     $this;
 }
 
@@ -47,7 +60,7 @@ sub module_instance{
     # this relies on the above defaults
 
     my($minx,$miny)=MGM::Graph::calcxysize($this,1024*1024*512,
-					   ' pages/s',2);
+					   'pages/s',2);
     
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);      
@@ -67,8 +80,14 @@ sub module_run{
 }
 
 sub read_proc{
-    # now uses the 00helper to save on opens 
-    ($pagei,$pageo)=split ' ',$MGMmodule::helperST::proc{"swap"};
+    
+    if(defined($MGMmodule::helperST::proc{"swap"})){
+	# now uses the 00helper to save on opens 
+	($swapi,$swapo)=split ' ',$MGMmodule::helperST::proc{"swap"};
+    }else{	
+	$swapi=$MGMmodule::helperST::vm26{"pswpin"};
+	$swapo=$MGMmodule::helperST::vm26{"pswpout"};
+    }
 }
 
 sub module_update{ 
@@ -80,8 +99,8 @@ sub module_update{
 
 	$this->read_proc;
 	if(defined($previ)){
-	    my$r=($pagei-$previ)/($time-$lastmod)*100;
-	    my$w=($pageo-$prevo)/($time-$lastmod)*100;
+	    my$r=($swapi-$previ)/($time-$lastmod)*100*1024;
+	    my$w=($swapo-$prevo)/($time-$lastmod)*100*1024;
 	    
 	    # don't be clever and only call set if values change; set must
 	    # be called each refresh period or the graph will get
@@ -90,8 +109,8 @@ sub module_update{
 	    $graph->set($r,$w);
 	}
 	
-	$previ=$pagei;
-	$prevo=$pageo;
+	$previ=$swapi;
+	$prevo=$swapo;
 	$lastmod=$time;
     }
 }
