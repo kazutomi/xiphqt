@@ -77,7 +77,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	} else {
 		OggDataBuffer testOggBuff;
 		OggCallbackRego* locCBRego = new OggCallbackRego(&pageCB);
-		const BUFF_SIZE = 10000;
+		const BUFF_SIZE = 8092;
 		testOggBuff.registerPageCallback(locCBRego);
 
 		fstream testFile;
