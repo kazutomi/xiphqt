@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: PCM data envelope analysis and manipulation
- last mod: $Id: envelope.c,v 1.19 2000/06/18 12:33:47 xiphmont Exp $
+ last mod: $Id: envelope.c,v 1.19.2.1 2000/06/23 08:36:36 xiphmont Exp $
 
  Preecho calculation.
 
@@ -104,9 +104,9 @@ static void _ve_deltas(double *deltas,double *pcm,int n,double *window,
       double max=0;  
       _analysis_output("Dcache",frameno*1000+frameno2,cache,samples_per,0,0);
       for(i=samples_per/10;i<samples_per;i++){
-	double val=out[i+samples_per]-cache[i];
+	double val=fabs(out[i+samples_per]-cache[i]);
 	cache[i]=out[i+samples_per];
-	if(val>0)max+=val;
+	max+=val;
       }
       max/=samples_per;
       if(deltas[j]<max)deltas[j]=max;

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility for paring low hit count cells from lattice codebook
- last mod: $Id: latticepare.c,v 1.3 2000/06/14 01:38:32 xiphmont Exp $
+ last mod: $Id: latticepare.c,v 1.3.2.1 2000/06/23 08:36:36 xiphmont Exp $
 
  ********************************************************************/
 
@@ -27,6 +27,7 @@
 #include "bookutil.h"
 #include "vqgen.h"
 #include "vqsplit.h"
+#include "../lib/os.h"
 
 /* Lattice codebooks have two strengths: important fetaures that are
    poorly modelled by global error minimization training (eg, strong
@@ -140,6 +141,31 @@ static double _heuristic(codebook *b,double *ppt,int secondbest){
 static int longsort(const void *a, const void *b){
   return **(long **)b-**(long **)a;
 }
+
+static int _partialbest(codebook *book, double *a, int step){
+  encode_aux_threshmatch *tt=book->c->thresh_tree;
+  int dim=book->dim;
+  int k,o;
+  int index=0;
+  /* find the quant val of each scalar */
+  for(k=0,o=step*(dim-1);k<dim;k++,o-=step){
+    int i;
+    /* linear search the quant list for now; it's small and although
+       with > 8 entries, it would be faster to bisect, this would be
+       a misplaced optimization for now */
+    for(i=0;i<tt->threshvals-1;i++)
+      if(a[o]<tt->quantthresh[i])break;
+    
+    index=(index*tt->quantvals)+tt->quantmap[i];
+  }
+  /* regular lattices are easy :-) */
+  if(book->c->lengthlist[index]>0) /* is this unused?  If so, we'll
+				      use a decision tree after all
+				      and fall through*/
+    return(index);
+  return(-1);
+}
+
 
 void usage(void){
   fprintf(stderr,"Ogg/Vorbis lattice codebook paring utility\n\n"
@@ -493,7 +519,7 @@ int main(int argc,char *argv[]){
     pointindex=malloc(points*sizeof(long));
     /* make a point index of fall-through points */
     for(i=0;i<points;i++){
-      int best=_best(b,pointlist+i*dim,1);
+      int best=_partialbest(b,pointlist+i*dim,1);
       if(best==-1)
 	pointindex[indexedpoints++]=i;
       spinnit("finding orphaned points... ",points-i);
