@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20011110";
+$version="Snatch 20011111";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
@@ -28,8 +28,8 @@ my $comm_ready=0;
 my $mode='active';
 
 # default config
-$CONFIG{'REALPLAYER'}='{realplay,~/RealPlayer8/realplay}';
-$CONFIG{'LIBSNATCH'}='{~/snatch/libsnatch.so}';
+$CONFIG{'REALPLAYER'}='{realplay,~/RealPlayer8/realplay,/usr/bin/realplay,/usr/local/bin/realplay}';
+$CONFIG{'LIBSNATCH'}='{/usr/local/lib/libsnatch.so,/usr/lib/libsnatch.so,~/snatch/libsnatch.so,~/.snatch/libsnatch.so}';
 $CONFIG{'OUTPUT_PATH'}=$HOME;
 $CONFIG{'AUDIO_DEVICE'}="/dev/dsp*";
 $CONFIG{'AUDIO_MUTE'}='no';
@@ -673,6 +673,9 @@ sub SetupTimerDispatch{
 sub TimerWatch{
     if($mode=~/timer/){
 	my$now=time();
+
+	Robot_Inactive() if($now>$next_timer_event);
+
 	my$waiting_seconds=$next_timer_event-$now;
 	
 	my$waiting_minutes=int($waiting_seconds/60);
