@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: residue backend 0 implementation
- last mod: $Id: res0.c,v 1.23 2000/12/21 21:04:41 xiphmont Exp $
+ last mod: $Id: res0.c,v 1.23.2.1 2001/01/09 19:13:15 xiphmont Exp $
 
  ********************************************************************/
 
@@ -32,7 +32,6 @@
 #include "codebook.h"
 #include "misc.h"
 #include "os.h"
-#include "bitbuffer.h"
 
 typedef struct {
   vorbis_info_residue0 *info;
@@ -107,13 +106,12 @@ vorbis_info_residue *res0_unpack(vorbis_info *vi,oggpack_buffer *opb){
   info->groupbook=oggpack_read(opb,8);
   for(j=0;j<info->partitions;j++){
     int cascade=info->secondstages[j]=oggpack_read(opb,4);
-    if(cascade>1)goto errout; /* temporary!  when cascading gets
-                                 reworked and actually used, we don't
-                                 want old code to DTWT */
     acc+=cascade;
   }
-  for(j=0;j<acc;j++)
+  for(j=0;j<acc;j++){
     info->booklist[j]=oggpack_read(opb,8);
+    if(info->booklist[j]==255)info->booklist[j]=-1;
+  }
 
   if(info->groupbook>=ci->books)goto errout;
   for(j=0;j<acc;j++)
@@ -230,7 +228,7 @@ static int _encodepart(vorbis_bitbuffer *vbb,float *vec, int n,
 	fclose(f);
       }
 #endif
-      bits+=vorbis_book_bufencode(books[j],entry,vbb);
+      bits+=vorbis_book_encode(books[j],entry,vbb);
     }
   }
   return(bits);
@@ -255,7 +253,7 @@ static int _decodepart(oggpack_buffer *opb,float *work,float *vec, int n,
 }
 
 int res0_forward(vorbis_block *vb,vorbis_look_residue *vl,
-	    float **in,int ch,vorbis_bitbuffer *vbb){
+	    float **in,int ch){
   long i,j,k,l;
   vorbis_look_residue0 *look=(vorbis_look_residue0 *)vl;
   vorbis_info_residue0 *info=look->info;
@@ -307,13 +305,13 @@ int res0_forward(vorbis_block *vb,vorbis_look_residue *vl,
       long val=partword[j][l];
       for(k=1;k<partitions_per_word;k++)
 	val= val*possible_partitions+partword[j][l+k];
-      phrasebits+=vorbis_book_bufencode(look->phrasebook,val,vbb);
+      phrasebits+=vorbis_book_encode(look->phrasebook,val,vbb);
     }
     /* now we encode interleaved residual values for the partitions */
     for(k=0;k<partitions_per_word;k++,l++,i+=samples_per_partition)
       for(j=0;j<ch;j++){
 	/*resbits[partword[j][l]]+=*/
-	resbitsT+=_encodepart(vbb,in[j]+i,samples_per_partition,
+	resbitsT+=_encodepart(&vb->opb,in[j]+i,samples_per_partition,
 			      info->secondstages[partword[j][l]],
 			      look->partbooks[partword[j][l]],look->map,partword[j][l]);
 	resvals[partword[j][l]]+=samples_per_partition;
