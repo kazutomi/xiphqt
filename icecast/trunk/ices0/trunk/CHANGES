@@ -7,6 +7,8 @@
 	- Oh yeah, there's a man page.
 	- ices can decode ogg vorbis files and reencode them as MP3
 	- New ices_get_metadata function added for playlist scripts.
+	- Better recovery from transient network problems.
+	- SIGUSR1 causes ices to jump to the next track
 - 0.1.0		2001-06-15
 	- Reencoder updated to new LAME API of 3.88.
 	- new option --with-xmlconfig when building to locate xml libraries
