@@ -1,10 +1,20 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
+rem
+rem $Id: makesdk.bat,v 1.4 2001/09/13 19:55:00 cwolf Exp $
+rem
 
-if .%SRCROOT%==. set SRCROOT=i:\xiph
+if ."%SRCROOT%"==."" goto notset
 
-rem --- prepare directory
+if ."%MSDEVDIR%"==."" goto msdevnotset
 
+rem If one of the makefiles doesn't exist, 
+rem assume they all need to be generated
+rem
+if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
+  msdev -ex ExportMakefile
+)
+  
 rd /s /q sdk > nul
 md sdk
 md sdk\include
@@ -84,137 +94,70 @@ xcopy %SRCROOT%\vorbis\examples\*.c %SRCROOT%\win32sdk\sdk\examples\vorbis
 
 echo ... copied.
 
-rem --- build and copy ogg
+rem --- build all
+echo Building libraries...
+call build_all.bat
+if errorlevel 1 goto ERROR
 
-echo Building ogg...
-cd %SRCROOT%\ogg\win32
-call build_ogg_static.bat > nul
-echo ... static release built ...
 xcopy %SRCROOT%\ogg\win32\Static_Release\ogg_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static release copied ...
-call build_ogg_static_debug.bat > nul
-echo ... static debug built ...
 xcopy %SRCROOT%\ogg\win32\Static_Debug\ogg_static_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static debug copied ...
-call build_ogg_dynamic.bat > nul
-echo ... dynamic release built ...
 xcopy %SRCROOT%\ogg\win32\Dynamic_Release\ogg.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\ogg\win32\Dynamic_Release\ogg.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic release copied ...
-call build_ogg_dynamic_debug.bat > nul
-echo ... dynamic debug built ...
 xcopy %SRCROOT%\ogg\win32\Dynamic_Debug\ogg_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\ogg\win32\Dynamic_Debug\ogg_d.pdb %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\ogg\win32\Dynamic_Debug\ogg_d.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic debug copied ...
-echo ... ogg building done.
-
-rem --- build and copy vorbis
-
-echo Building vorbis...
-cd %SRCROOT%\vorbis\win32
-call build_vorbis_static.bat > nul
-echo ... static release built ...
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Static_Release\vorbis_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static release copied ...
-call build_vorbis_static_debug.bat > nul
-echo ... static debug built ...
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Static_Debug\vorbis_static_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static debug copied ...
-call build_vorbis_dynamic.bat > nul
-echo ... dynamic release built ...
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Release\vorbis.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Release\vorbis.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic release copied ...
-call build_vorbis_dynamic_debug.bat > nul
-echo ... dynamic debug built ...
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.pdb %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic debug copied ...
-echo ... vorbis building done.
-
-rem --- build and copy vorbisfile
-
-echo Building vorbisfile...
-cd %SRCROOT%\vorbis\win32
-call build_vorbisfile_static.bat > nul
-echo ... static release built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Static_Release\vorbisfile_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static release copied ...
-call build_vorbisfile_static_debug.bat > nul
-echo ... static debug built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Static_Debug\vorbisfile_static_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static debug copied ...
-call build_vorbisfile_dynamic.bat > nul
-echo ... dynamic release built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Dynamic_Release\vorbisfile.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Dynamic_Release\vorbisfile.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic release copied ...
-call build_vorbisfile_dynamic_debug.bat > nul
-echo ... dynamic debug built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Dynamic_Debug\vorbisfile_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Dynamic_Debug\vorbisfile_d.pdb %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Dynamic_Debug\vorbisfile_d.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic debug copied ...
-echo ... vorbisfile building done.
-
-rem --- build and copy vorbisenc
-
-echo Building vorbisenc...
-cd %SRCROOT%\vorbis\win32
-call build_vorbisenc_static.bat > nul
-echo ... static release built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Static_Release\vorbisenc_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static release copied ...
-call build_vorbisenc_static_debug.bat > nul
-echo ... static debug built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Static_Debug\vorbisenc_static_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-echo ... static debug copied ...
-call build_vorbisenc_dynamic.bat > nul
-echo ... dynamic release built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Dynamic_Release\vorbisenc.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Dynamic_Release\vorbisenc.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic release copied ...
-call build_vorbisenc_dynamic_debug.bat > nul
-echo ... dynamic debug built ...
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Dynamic_Debug\vorbisenc_d.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Dynamic_Debug\vorbisenc_d.pdb %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisEnc_Dynamic_Debug\vorbisenc_d.dll %SRCROOT%\win32sdk\sdk\bin > nul
 if errorlevel 1 goto ERROR
-echo ... dynamic debug copied ...
-echo ... vorbisenc building done.
-
-rem -- finished
 
 goto DONE
+
 :ERROR
 
 cd %SRCROOT%\win32sdk
@@ -223,8 +166,17 @@ echo.
 echo Some error(s) occurred. Fix it.
 goto EXIT
 
+:notset
+echo ***** Error: must set SRCROOT
+goto exit
+
 :DONE
 cd %SRCROOT%\win32sdk
 echo All done.
+goto exit
+
+:msdevnotset
+echo ***** Error: must set MSDEVDIR
+goto exit
 
 :EXIT
