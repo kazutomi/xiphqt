@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: maintain the info structure, info <-> header packets
- last mod: $Id: info.c,v 1.31 2000/10/12 03:12:52 xiphmont Exp $
+ last mod: $Id: info.c,v 1.31.2.1 2000/10/14 03:14:06 xiphmont Exp $
 
  ********************************************************************/
 
@@ -190,7 +190,7 @@ void vorbis_info_clear(vorbis_info *vi){
 
 static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   vi->version=oggpack_read(opb,32);
-  if(vi->version!=0)return(-1);
+  if(vi->version!=0)return(OV_EVERSION);
 
   vi->channels=oggpack_read(opb,8);
   vi->rate=oggpack_read(opb,32);
@@ -212,7 +212,7 @@ static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   return(0);
  err_out:
   vorbis_info_clear(vi);
-  return(-1);
+  return(OV_EBADHEADER);
 }
 
 static int _vorbis_unpack_comment(vorbis_comment *vc,oggpack_buffer *opb){
@@ -238,7 +238,7 @@ static int _vorbis_unpack_comment(vorbis_comment *vc,oggpack_buffer *opb){
   return(0);
  err_out:
   vorbis_comment_clear(vc);
-  return(-1);
+  return(OV_EBADHEADER);
 }
 
 /* all of the real encoding details are here.  The modes, books,
@@ -318,7 +318,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
   return(0);
  err_out:
   vorbis_info_clear(vi);
-  return(-1);
+  return(OV_EBADHEADER);
 }
 
 /* The Vorbis header is in three packets; the initial small packet in
@@ -341,17 +341,17 @@ int vorbis_synthesis_headerin(vorbis_info *vi,vorbis_comment *vc,ogg_packet *op)
       _v_readstring(&opb,buffer,6);
       if(memcmp(buffer,"vorbis",6)){
 	/* not a vorbis header */
-	return(-1);
+	return(OV_ENOTVORBIS);
       }
       switch(packtype){
       case 0x01: /* least significant *bit* is read first */
 	if(!op->b_o_s){
 	  /* Not the initial packet */
-	  return(-1);
+	  return(OV_EBADHEADER);
 	}
 	if(vi->rate!=0){
 	  /* previously initialized info header */
-	  return(-1);
+	  return(OV_EBADHEADER);
 	}
 
 	return(_vorbis_unpack_info(vi,&opb));
@@ -359,7 +359,7 @@ int vorbis_synthesis_headerin(vorbis_info *vi,vorbis_comment *vc,ogg_packet *op)
       case 0x03: /* least significant *bit* is read first */
 	if(vi->rate==0){
 	  /* um... we didn't get the initial header */
-	  return(-1);
+	  return(OV_EBADHEADER);
 	}
 
 	return(_vorbis_unpack_comment(vc,&opb));
@@ -367,19 +367,19 @@ int vorbis_synthesis_headerin(vorbis_info *vi,vorbis_comment *vc,ogg_packet *op)
       case 0x05: /* least significant *bit* is read first */
 	if(vi->rate==0 || vc->vendor==NULL){
 	  /* um... we didn;t get the initial header or comments yet */
-	  return(-1);
+	  return(OV_EBADHEADER);
 	}
 
 	return(_vorbis_unpack_books(vi,&opb));
 
       default:
 	/* Not a valid vorbis header type */
-	return(-1);
+	return(OV_EBADHEADER);
 	break;
       }
     }
   }
-  return(-1);
+  return(OV_EBADHEADER);
 }
 
 /* pack side **********************************************************/
@@ -553,6 +553,6 @@ int vorbis_analysis_headerout(vorbis_dsp_state *v,
   v->header=NULL;
   v->header1=NULL;
   v->header2=NULL;
-  return(-1);
+  return(OV_EIMPL);
 }
 
