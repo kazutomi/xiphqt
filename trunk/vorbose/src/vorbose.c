@@ -61,6 +61,7 @@ int packetinfo_p=0;
 int streaminfo_p=0;
 int truncpacket_p=0;
 int warn_p=0;
+int syncp=1;
 
 int get_data(){
   unsigned char *buf;
@@ -163,7 +164,6 @@ int main(int argc,char *argv[]){
   int c,long_option_index;
   int eof=0;
   int vorbiscount=0;
-  int syncp=1;
 
   /* get options */
   while((c=getopt_long(argc,argv,optstring,options,&long_option_index))!=EOF){
@@ -244,12 +244,16 @@ int main(int argc,char *argv[]){
 	    case 1:
 	      if((streaminfo_p || warn_p || headerinfo_p) && syncp)
 		printf("WARN stream: next packet is not a valid Vorbis I "
-		       "comment header as expected.\n\n");
+		       "comment header as expected.\n"
+		       "             Stream is not decodable as "
+		       "Vorbis I.\n\n");
 	      break;
 	    case 2:
 	      if((streaminfo_p || warn_p || headerinfo_p) && syncp)
 		printf("WARN stream: next packet is not a valid Vorbis I "
-		       "setup header as expected.\n\n");
+		       "setup header as expected.\n"
+		       "             Stream is not decodable as "
+		       "Vorbis I.\n\n");
 	      
 	      break;
 	    }
@@ -291,8 +295,8 @@ int main(int argc,char *argv[]){
 	  /* initial header pages phase has ended */
 	  if(streaminfo_p || headerinfo_p){
 	    printf("info stream: All identification header pages parsed.\n"
-		   "             %d logical streams muxed in this link.\n\n",
-		   initialphase);
+		   "             %d logical stream%s muxed in this link.\n\n",
+		   initialphase,(initialphase==1?"":"s"));
 	    if(initialphase>1 && (warn_p || streaminfo_p))
 	      printf("WARN stream: A 'Vorbis I audio stream' must contain uninterleaved\n"
 		     "             Vorbis I logical streams only.  This is a legal\n"

@@ -7,6 +7,7 @@
 extern int codebook_p;
 extern int headerinfo_p;
 extern int warn_p;
+extern int syncp;
 
 /* Header packing/unpacking ********************************************/
 
@@ -25,6 +26,8 @@ static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   oggpack_read(opb,32,&bitrate_upper);
   oggpack_read(opb,32,&bitrate_nominal);
   oggpack_read(opb,32,&bitrate_lower);
+
+  vi->channels=channels;
 
   oggpack_read(opb,4,&ret);
   vi->blocksizes[0]=1<<ret;
@@ -194,7 +197,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("info header: Floors: %d\n\n",vi->floors);
   for(i=0;i<vi->floors;i++){
     if(headerinfo_p)
-      printf("info header: Parsing floor %d\n",i);
+      printf("info header: Parsing floor %d ",i);
     if(floor_info_unpack(vi,opb,vi->floor_param+i)){
       if(warn_p || headerinfo_p)
 	printf("WARN header: Invalid floor; Vorbis stream not decodable.\n");
@@ -204,34 +207,55 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
   if(headerinfo_p)
     printf("\n");
   
-#if 0
   /* residue backend settings */
   oggpack_read(opb,6,&ret);
   vi->residues=ret+1;
-  for(i=0;i<vi->residues;i++)
-    if(res_unpack(vi->residue_param+i,vi,opb,print))goto err_out;
+  if(headerinfo_p)
+    printf("info header: Residues: %d\n\n",vi->residues);
+  for(i=0;i<vi->residues;i++){
+    if(headerinfo_p)
+      printf("info header: Parsing residue %d ",i);
+    if(res_unpack(vi->residue_param+i,vi,opb)){
+      if(warn_p || headerinfo_p)
+	printf("WARN header: Invalid residue; Vorbis stream not decodable.\n");
+      goto err_out;
+    }
+  }
+  if(headerinfo_p)
+    printf("\n");
 
   /* map backend settings */
   oggpack_read(opb,6,&ret);
   vi->maps=ret+1;
+  if(headerinfo_p)
+    printf("info header: Mappings: %d\n\n",vi->maps);
   for(i=0;i<vi->maps;i++){
-    oggpack_read(opb,16,&ret);
-    if(ret!=0){
+    if(headerinfo_p)
+      printf("info header: Parsing mapping %d ",i);
+    if(mapping_info_unpack(vi->map_param+i,vi,opb)){
       if(headerinfo_p || warn_p)
-	printf("WARN header: Map %d is an illegal type (%lu).\n\n",
+	printf("\nWARN header: Map %d is an illegal type (%lu).\n\n",
 	       i,ret);
       goto err_out;
     }
-    if(mapping_info_unpack(vi->map_param+i,vi,opb,print))goto err_out;
   }
+  if(headerinfo_p)
+    printf("\n");
   
   /* mode settings */
   oggpack_read(opb,6,&ret);
   vi->modes=ret+1;
+  if(headerinfo_p)
+    printf("info header: Modes: %d\n\n",vi->modes);
   for(i=0;i<vi->modes;i++){
+    if(headerinfo_p)
+      printf("info header: Parsing mode %d\n",i);
     oggpack_read(opb,1,&ret);
     if(oggpack_eop(opb))goto eop;
     vi->mode_param[i].blockflag=ret;
+    if(headerinfo_p)
+      printf("             block size flag: %lu (%d)\n",
+	     ret,vi->blocksizes[ret]);
 
     oggpack_read(opb,16,&ret);
     if(ret){
@@ -240,6 +264,9 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
 	       i,ret);
       goto err_out;
     }
+    if(headerinfo_p)
+      printf("             window type    : 0 (Vorbis window)\n");
+
     oggpack_read(opb,16,&ret);
     if(ret){
       if(headerinfo_p || warn_p)
@@ -247,6 +274,9 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
 	       i,ret);
       goto err_out;
     }
+    if(headerinfo_p)
+      printf("             transform type : 0 (MDCT)\n");
+
     oggpack_read(opb,8,&ret);
     vi->mode_param[i].mapping=ret;
     if(vi->mode_param[i].mapping>=vi->maps){
@@ -256,8 +286,13 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
 	       i,ret,vi->maps-1);
       goto err_out;
     }
+    if(headerinfo_p)
+      printf("             mapping        : %lu\n"
+	     "             ---------------\n",ret);
   }
-#endif
+  if(headerinfo_p)
+    printf("\n");
+
   
   if(oggpack_eop(opb))goto eop;
   
@@ -293,10 +328,11 @@ int vorbis_info_headerin(vorbis_info *vi,ogg_packet *op){
 	 temp[4]!='i' ||
 	 temp[5]!='s'){
 	/* not a vorbis header */
-	if(headerinfo_p || warn_p)
-	  printf("WARN header: Expecting a Vorbis stream header, got\n"
-		 "             some other packet type instead. Stream is not\n"
-		 "             decodable as Vorbis I.\n\n");
+	if(syncp)
+	  if(headerinfo_p || warn_p)
+	    printf("WARN header: Expecting a Vorbis stream header, got\n"
+		   "             some other packet type instead. Stream is not\n"
+		   "             decodable as Vorbis I.\n\n");
 	return(-1);
       }
       switch(packtype){
