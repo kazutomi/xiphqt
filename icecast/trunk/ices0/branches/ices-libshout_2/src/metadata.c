@@ -1,5 +1,5 @@
 /* metadata.c
- * Copyright (c) 2001-2 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -65,6 +65,7 @@ ices_metadata_set (const char* artist, const char* title)
 void
 ices_metadata_update (input_stream_t* source)
 {
+#if 0
   static int delay = INITDELAY;
   pid_t child;
 
@@ -80,8 +81,10 @@ ices_metadata_update (input_stream_t* source)
     ices_log_debug ("Metadata update failed: fork");
 
   delay = 0;
+#endif
 }
 
+#if 0
 static void
 metadata_update (input_stream_t* source, int delay)
 {
@@ -118,6 +121,7 @@ metadata_update (input_stream_t* source, int delay)
 
   ices_util_free (playlist_metadata);
 }
+#endif
 
 /* Cleanup a filename so it looks more like a song name */
 static char *

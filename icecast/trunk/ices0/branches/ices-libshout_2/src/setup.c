@@ -1,7 +1,7 @@
 /* setup.c
  * - Functions for initialization in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2002 Brendan Cully <brendan@icecast.org>
+ * Copyright (c) 2002-3 Brendan Cully <brendan@icecast.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,7 +35,7 @@ static void ices_setup_usage (void);
 static void ices_setup_version (void);
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize (void);
-static void ices_setup_free_all_allocations (ices_config_t *ices_config);
+static void ices_free_all (ices_config_t *ices_config);
 
 extern ices_config_t ices_config;
 
@@ -60,7 +60,10 @@ ices_setup_initialize (void)
 
   /* Initialize the libshout structure */
   for (stream = ices_config.streams; stream; stream = stream->next) {
-    shout_init_connection (&stream->conn);
+    if (!(stream->conn = shout_new ())) {
+      ices_log ("Could not create shout interface");
+      ices_setup_shutdown ();
+    }
   }
 
   ices_setup_activate_libshout_changes (&ices_config);
@@ -86,7 +89,8 @@ ices_setup_shutdown (void)
 
   /* Tell libshout to disconnect from server */
   for (stream = ices_config.streams; stream; stream = stream->next)
-    shout_disconnect (&stream->conn);
+    if (stream->conn)
+      shout_close (stream->conn);
 
 #ifdef HAVE_LIBLAME
   /* Order the reencoding engine to shutdown */
@@ -102,9 +106,9 @@ ices_setup_shutdown (void)
   /* Make sure we're not leaving any memory allocated around when
    * we exit. This makes it easier to find memory leaks, and 
    * some systems actually don't clean up that well */
-  ices_setup_free_all_allocations (&ices_config);
+  ices_free_all (&ices_config);
 	
-  /* Let the log and console know we wen't down ok */
+  /* Let the log and console know we went down ok */
   ices_log ("Ices Exiting...");
 
   /* Close logfiles */
@@ -166,6 +170,7 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 void
 ices_setup_parse_stream_defaults (ices_stream_t* stream)
 {
+  stream->conn = NULL;
   stream->host = ices_util_strdup (ICES_DEFAULT_HOST);
   stream->port = ICES_DEFAULT_PORT;
   stream->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
@@ -196,6 +201,8 @@ ices_setup_parse_stream_defaults (ices_stream_t* stream)
 static void
 ices_setup_free_stream (ices_stream_t* stream)
 {
+  if (stream->conn)
+    shout_free (stream->conn);
   ices_util_free (stream->host);
   ices_util_free (stream->password);
 
@@ -210,7 +217,7 @@ ices_setup_free_stream (ices_stream_t* stream)
 
 /* Function to free() all allocated memory when ices shuts down. */
 static void
-ices_setup_free_all_allocations (ices_config_t *ices_config)
+ices_free_all (ices_config_t *ices_config)
 {
   ices_stream_t *stream, *next;
 
@@ -451,35 +458,48 @@ static void
 ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 {
   ices_stream_t* stream;
+  shout_t* conn;
   int streamno = 0;
 
   for (stream = ices_config->streams; stream; stream = stream->next) {
-    stream->conn.ip = stream->host;
-    stream->conn.port = stream->port;
-    stream->conn.password = stream->password;
-    stream->conn.icy_compat = stream->header_protocol == icy_header_protocol_e;
+    conn = stream->conn;
+
+    shout_set_host (conn, stream->host);
+    shout_set_port (conn, stream->port);
+    shout_set_password (conn, stream->password);
+    if (stream->header_protocol == icy_header_protocol_e)
+      shout_set_protocol(conn, SHOUT_PROTOCOL_ICY);
+    else
+      shout_set_protocol(conn, SHOUT_PROTOCOL_XAUDIOCAST);
+/*  TODO: Not yet supported in libshout2 */
+#if 0
     stream->conn.dumpfile = stream->dumpfile;
-    stream->conn.name = stream->name;
-    stream->conn.url = stream->url;
-    stream->conn.genre = stream->genre;
-    stream->conn.description = stream->description;
-    stream->conn.bitrate = stream->bitrate;
-    stream->conn.ispublic = stream->ispublic;
-    stream->conn.mount = stream->mount;
+#endif
+    shout_set_name (conn, stream->name);
+    shout_set_url (conn, stream->url);
+    shout_set_genre (conn, stream->genre);
+    shout_set_description (conn, stream->description);
+    shout_set_bitrate (conn, stream->bitrate);
+    shout_set_public (conn, stream->ispublic);
+    shout_set_mount (conn, stream->mount);
 
     ices_log_debug ("Sending following information to libshout:");
     ices_log_debug ("Stream: %d", streamno);
-    ices_log_debug ("Host: %s\tPort: %d", stream->conn.ip, stream->conn.port);
-    ices_log_debug ("Password: %s\tIcy Compat: %d", stream->conn.password,
-		    stream->conn.icy_compat);
-    ices_log_debug ("Name: %s\tURL: %s", stream->conn.name, stream->conn.url);
-    ices_log_debug ("Genre: %s\tDesc: %s", stream->conn.genre,
-		    stream->conn.description);
-    ices_log_debug ("Bitrate: %d\tPublic: %d", stream->conn.bitrate,
-		    stream->conn.ispublic);
+    ices_log_debug ("Host: %s\tPort: %d", shout_get_host (conn), shout_get_port (conn));
+    ices_log_debug ("Password: %s\tIcy Compat: %d", shout_get_password (conn),
+		    (shout_get_protocol(conn) == SHOUT_PROTOCOL_ICY) ? 1 : 0);
+    ices_log_debug ("Name: %s\tURL: %s", shout_get_name (conn), shout_get_url(conn));
+    ices_log_debug ("Genre: %s\tDesc: %s", shout_get_genre (conn),
+		    shout_get_description (conn));
+    ices_log_debug ("Bitrate: %d\tPublic: %d", shout_get_bitrate (conn),
+		    shout_get_public (conn));
     ices_log_debug ("Mount: %s\tDumpfile: %s",
-		    ices_util_nullcheck (stream->conn.mount),
+		    shout_get_mount (conn),
+#if 0
 		    ices_util_nullcheck (stream->conn.dumpfile));
+#else
+                    "Not supported in libshout2");
+#endif
 
     streamno++;
   }

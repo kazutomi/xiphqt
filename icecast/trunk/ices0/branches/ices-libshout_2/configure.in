@@ -55,11 +55,10 @@ AC_SUBST(moddir)
 dnl -- Finally, actual autoconf stuff --
 
 AM_MAINTAINER_MODE
-AM_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
 AC_ARG_PROGRAM
-AC_PROG_RANLIB
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -156,8 +155,8 @@ then
   ])
   if test "$have_libshout" != "no"
   then
-    dnl shout_strerror was introduced later so it serves as a version check.
-    AC_CHECK_LIB(shout, shout_strerror, [
+    dnl shout_new was introduced in libshout2 so it serves as a version check.
+    AC_CHECK_LIB(shout, shout_new, [
       have_libshout="yes"
       LIBS="$LIBS -lshout"
     ])
@@ -256,6 +255,7 @@ then
     AC_MSG_RESULT([Could not find a valid LAME library, reencoding disabled])
   fi
 fi
+AM_CONDITIONAL(USE_LAME, test "$have_LAME" == "yes")
 
 AC_ARG_WITH(vorbis,
 [  --with-vorbis[=DIR]         support for vorbis using libvorbisfile [in DIR]])

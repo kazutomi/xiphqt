@@ -31,7 +31,7 @@ typedef enum {
 } playlist_type_t;
 
 typedef struct ices_stream_St {
-  shout_conn_t conn;
+  shout_t* conn;
   time_t connect_delay;
   int errs;
   void* encoder_state;

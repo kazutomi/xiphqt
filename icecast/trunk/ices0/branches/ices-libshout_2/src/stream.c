@@ -1,7 +1,7 @@
 /* stream.c
  * - Functions for streaming in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-2 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -65,22 +65,6 @@ ices_stream_loop (void)
   input_stream_t source;
   ices_stream_t* stream;
 
-  /* Resolve hostname if necessary */
-  for (stream = ices_config.streams; stream; stream = stream->next) {
-    if (!isdigit ((int)(stream->conn.ip[strlen (stream->conn.ip) - 1]))) {
-      char ip[1024];
-
-      ip[0] = '\0';
-      ices_util_getip (stream->conn.ip, ip, 1024);
-      if (ip[0] == '\0') {
-	ices_log ("Could not resolve server name.");
-	ices_setup_shutdown ();
-      }
-      ices_util_free (stream->conn.ip);
-      stream->conn.ip = ices_util_strdup(ip);
-    }
-  }
-
   for (stream = ices_config.streams; stream; stream = stream->next) {
     stream_connect (stream);
   }
@@ -101,13 +85,13 @@ ices_stream_loop (void)
 
     /* we quit if we're told not to loop and the the new line num is lower than the old */
     if ( !ices_config.pm.loop_playlist && ( linenum_new < linenum_old ) ) {
-      ices_log ("Info: next playlist line number less than previous.  Looping disabled.  Quiting.");
+      ices_log ("Info: next playlist line number less than previous and looping disabled: quitting.");
       ices_setup_shutdown ();
     }
 
     /* We quit if the playlist handler gives us a NULL filename */
     if (!source.path) {
-      ices_log ("Warning: ices_file_get_next() gave me an error, this is not good. [%s]", ices_log_get_error ());
+      ices_log ("Warning: ices_file_get_next() returned an error: %s", ices_log_get_error ());
       ices_setup_shutdown ();
     }
 
@@ -276,7 +260,7 @@ stream_send (input_stream_t* source)
 	(source->bitrate != stream->bitrate))) {
       len = ices_reencode_flush (stream, obuf, sizeof (obuf));
       if (len > 0)
-	rc = shout_send_data (&stream->conn, obuf, len);
+	rc = shout_send (stream->conn, obuf, len);
     }
 #endif
 
@@ -340,22 +324,21 @@ err:
 static int
 stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 {
-  char errbuf[1024];
   int rc = -1;
 
-  if (! stream->conn.connected && stream->connect_delay <= time(NULL))
+  if ((shout_get_connected (stream->conn) == SHOUTERR_UNCONNECTED) &&
+      stream->connect_delay <= time(NULL))
     rc = stream_connect (stream);
 
-  if (stream->conn.connected) {
-    if ((rc = shout_send_data (&stream->conn, buf, len))) {
-      shout_sleep (&stream->conn);
+  if (shout_get_connected (stream->conn)) {
+    if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
+      shout_sync (stream->conn);
       stream->errs = 0;
       rc = 0;
     } else {
       ices_log_error ("Libshout reported send error, disconnecting: %s",
-		      shout_strerror (&stream->conn, stream->conn.error,
-				      errbuf, 1024));
-      shout_disconnect (&stream->conn);
+		      shout_get_error (stream->conn));
+      shout_close (stream->conn);
       stream->errs++;
       rc = -1;
     }
@@ -367,23 +350,23 @@ stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 static int
 stream_connect (ices_stream_t* stream)
 {
-  char errbuf[1024];
+  const char* mount = shout_get_mount (stream->conn);
 
-  if (shout_connect (&stream->conn)) {
-    ices_log ("Mounted on http://%s:%d%s%s", stream->conn.ip,
-	      stream->conn.port,
-	      (stream->conn.mount && stream->conn.mount[0] == '/') ? "" : "/",
-	      ices_util_nullcheck (stream->conn.mount));
-    return 0;
-  } else {
+  if (shout_open (stream->conn) != SHOUTERR_SUCCESS) {
     ices_log_error ("Mount failed on http://%s:%d%s%s, error: %s",
-		    stream->conn.ip, stream->conn.port,
-		    (stream->conn.mount && stream->conn.mount[0] == '/') ? "" : "/",
-		    ices_util_nullcheck (stream->conn.mount),
-		    shout_strerror (&stream->conn, stream->conn.error, errbuf,
-				    sizeof (errbuf)));
+		    shout_get_host (stream->conn), shout_get_port (stream->conn),
+                    shout_get_port (stream->conn),
+		    (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
+		    shout_get_error (stream->conn);
     stream->connect_delay = time(NULL) + 1;
     stream->errs++;
+
     return -1;
   }
+
+  ices_log ("Mounted on http://%s:%d%s%s", shout_get_host (stream->conn),
+            shout_get_port (stream->conn),
+            (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
+
+  return 0;
 }
