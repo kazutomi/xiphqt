@@ -67,23 +67,87 @@ int isourfile(char *fn)
 	return 0; 
 } 
 
+size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
+{
+	HANDLE file = (HANDLE)datasource;
+	unsigned long bytesread;
+
+	if(ReadFile(file, ptr, (unsigned long)(size*nmemb), &bytesread, NULL))
+	{
+		return bytesread/size;
+	}
+	else
+		return 0; /* It failed */
+}
+
+int seek_func(void *datasource, long offset, int whence)
+{ /* Note that we still need stdio.h even though we don't use stdio, 
+   * in order to get appropriate definitions for SEEK_SET, etc.
+   */
+	HANDLE file = (HANDLE)datasource;
+	int seek_type;
+	unsigned long retval;
+
+	switch(whence)
+	{
+		case SEEK_SET:
+			seek_type = FILE_BEGIN;
+			break;
+		case SEEK_CUR:
+			seek_type = FILE_CURRENT;
+			break;
+		case SEEK_END:
+			seek_type = FILE_END;
+			break;
+	}
+
+	/* On failure, SetFilePointer returns 0xFFFFFFFF, which is (int)-1 */
+	
+	retval=SetFilePointer(file, offset, NULL, seek_type);
+
+	if(retval == 0xFFFFFFFF)
+		return -1;
+	else
+		return 0; /* Exactly mimic stdio return values */
+}
+
+int close_func(void *datasource)
+{
+	HANDLE file = (HANDLE)datasource;
+
+	return (CloseHandle(file)?0:EOF); /* Return value meaning is inverted from fclose() */
+}
+
+long tell_func(void *datasource)
+{
+	HANDLE file = (HANDLE)datasource;
+
+	return (long)SetFilePointer(file, 0, NULL, FILE_CURRENT); /* This returns the right number */
+}
+
+
 int play(char *fn) 
 { 
 	int maxlatency;
-	FILE *stream;
+	HANDLE stream;
 	vorbis_info *vi = NULL;
+	ov_callbacks callbacks = {read_func, seek_func, close_func, tell_func};
 
-	stream = fopen(fn, "rb");
-	if (stream == NULL)
+	stream = CreateFile(fn, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (stream == INVALID_HANDLE_VALUE)
+	{	
 		return -1;
+	}
 
 	EnterCriticalSection(&if_mutex);
-	if (ov_open(stream, &input_file, NULL, 0) < 0) {
+	if (ov_open_callbacks(stream, &input_file, NULL, 0, callbacks) < 0) {
 		LeaveCriticalSection(&if_mutex);
-		fclose(stream);
+		CloseHandle(stream);
 		return 1;
 	}
-	
+
 	file_length = (int)ov_time_total(&input_file, -1) * 1000;
 	
 	strcpy(lastfn, fn);
@@ -218,13 +282,19 @@ char *generate_title(vorbis_comment *comment)
 
 void getfileinfo(char *filename, char *title, int *length_in_ms)
 {
-	FILE *stream;
+	HANDLE stream;
 	OggVorbis_File vf;
 	vorbis_comment *comment;
+	ov_callbacks callbacks = {read_func, seek_func, close_func, tell_func};
+
 
 	if (filename != NULL && filename[0] != 0) {
-		if ((stream = fopen(filename, "rb")) == NULL)
-				return;
+
+		stream = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		if(stream == INVALID_HANDLE_VALUE)
+			return;
 
 		// The ov_open() function performs full stream detection and machine
 		// initialization.  If it returns 0, the stream *is* Vorbis and we're
@@ -232,8 +302,8 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 		
 		EnterCriticalSection(&if_mutex);
 
-		if (ov_open(stream, &vf, NULL, 0) < 0) {
-			fclose(stream);
+		if (ov_open_callbacks(stream, &vf, NULL, 0, callbacks) < 0) {
+			CloseHandle(stream);
 			LeaveCriticalSection(&if_mutex);
 			return;
 		}
