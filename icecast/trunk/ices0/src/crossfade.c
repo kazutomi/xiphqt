@@ -59,7 +59,7 @@ static void cf_new_track(void) {
 
 static int cf_process(int ilen, int16_t* il, int16_t* ir)
 {
-  int i, j;
+  int i, j, clen;
   float weight;
   int16_t swap;
 
@@ -82,12 +82,16 @@ static int cf_process(int ilen, int16_t* il, int16_t* ir)
 
   j = i;
   while (ilen && flen < FadeSamples) {
-    FL[fpos] = il[j];
-    FR[fpos] = ir[j];
-    j++;
-    fpos = (fpos + 1) % FadeSamples;
-    flen++;
-    ilen--;
+    clen = ilen < (FadeSamples - flen) ? ilen : (FadeSamples - flen);
+    if (FadeSamples - fpos < clen)
+      clen = FadeSamples - fpos;
+    printf("Buffering %d samples (pos: %d)\n", clen, fpos);
+    memcpy(FL + fpos, il + j, clen * 2);
+    memcpy(FR + fpos, ir + j, clen * 2);
+    fpos = (fpos + clen) % FadeSamples;
+    j += clen;
+    flen += clen;
+    ilen -= clen;
   }
 
   while (ilen) {
