@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.26 2001/12/18 04:15:45 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.27 2001/12/18 15:49:05 volsung Exp $
 
  ********************************************************************/
 
@@ -224,6 +224,24 @@ void display_statistics (stat_format_t *stat_format,
     }
     free(buffer_stats);
     
+  } else
+    print_statistics_action(NULL, pstats_arg);
+}
+
+
+void display_statistics_quick (stat_format_t *stat_format,
+			       buf_t *audio_buffer, 
+			       data_source_t *source,
+			       decoder_t *decoder)
+{
+  print_statistics_arg_t *pstats_arg;
+
+  pstats_arg = new_print_statistics_arg(stat_format,
+					source->transport->statistics(source),
+					decoder->format->statistics(decoder));
+
+  if (audio_buffer) {
+    print_statistics_action(audio_buffer, pstats_arg);
   } else
     print_statistics_action(NULL, pstats_arg);
 }
@@ -505,9 +523,6 @@ void play (char *source_string)
   
   /* Done playing this logical bitstream.  Clean up house. */
 
-  /* Print final stats */
-  display_statistics(stat_format, audio_buffer, source, decoder); 
-
   if (audio_buffer) {
     
     if (!sig_request.exit && !sig_request.skipfile) {
@@ -517,6 +532,10 @@ void play (char *source_string)
 
     buffer_thread_kill(audio_buffer);
   }
+
+  /* Print final stats */
+  display_statistics_quick(stat_format, audio_buffer, source, decoder); 
+   
   
   alarm(0);  
   format->cleanup(decoder);
