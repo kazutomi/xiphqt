@@ -296,7 +296,6 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
       return 0;
     default:
       return 0;
-      break;
   }
 
   bitrate_idx = (buf[2] >> 4) & 0xF;
@@ -304,7 +303,7 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
   header->mode = (buf[3] >> 6) & 0x3;
   header->layer = 4 - ((buf[1] >> 1) & 0x3);
 
-  if ((bitrate_idx == 0xF) || (samplerate_idx == 0x3) || (header->layer == 0))
+  if ((bitrate_idx == 0xF) || (samplerate_idx == 0x3) || (header->layer == 4))
     return 0;
 
   header->error_protection = !(buf[1] & 0x1);
