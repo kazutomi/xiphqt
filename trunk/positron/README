@@ -37,8 +37,8 @@ INSTALLATION
 First, you need to install positron on your computer.  You can do this
 by installing the binary packages in the usual way:
 
-For RPM based systems   : rpm -ivh positron*.rpm
-For Debian based systems: 
+For RPM-based systems   : rpm -ivh positron*.rpm
+For Debian-based systems: 
    Add the following lines to your /etc/apt/sources.list:
       deb http://i.cantcode.com/~jack/debian unstable main contrib
       deb-src http://i.cantcode.com/~jack/debian unstable main contrib
