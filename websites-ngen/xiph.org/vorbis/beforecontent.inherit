@@ -1,0 +1,14 @@
+<!-- Working around faithfully reproduced whitespace-sensitive bugs -->
+<div id='sidebar'>
+<ul
+><li><a href='/'>Xiph.Org Home</a></li
+><li><a href='/vorbis/'>Vorbis Home</a></li
+><li><a href='/vorbis/news/'>News</a></li
+><li><a href='/vorbis/compare/'>Compare</a></li
+><li><a href='/vorbis/samples/'>Samples</a></li
+><li><a href='/vorbis/download/'>Download</a></li
+><li><a href='/vorbis/doc/'>Documentation</a></li
+><li><a href='/vorbis/roadmap/'>Roadmap</a></li
+><li><a href='/vorbis/users/'>Users</a></li></ul>
+</div>
+
