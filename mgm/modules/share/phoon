@@ -138,7 +138,7 @@ sub module_update{
 	my$x=int(($width-$localxpm->width)/2+.5);
 	
 	my$localpm=$widget->
-	    Pixmap(-data=>$localxpm->
+	    Pixmap($widget->PathName.".moon",-data=>$localxpm->
 		   write($this->{"background"},$this->{"foreground"},16));
 	
 	$widget->delete("moon");

@@ -1,12 +1,11 @@
 # -*-Perl-*-
 use Tk;
-use Tk qw(exit); 
-use IPC::Open2;
 require "$libdir/xpm";
 
 # single bar graph pseudo-widget, built out of Tk canvases.
 
 package MGM::Bar;
+use vars qw($font);
 @ISA=("Tk::Canvas");
 
 $font=MGM::Font::new(MGM::Xpm::read($main::fontfile));
@@ -125,8 +124,10 @@ sub drawit{
 	my$text=$font->maketext($label,$width-($pad*2),$height-($pad*2),
 			      $ratio,1,1);
 	
-	my$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back,32));
-	my$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback,32));
+	my$unlittext=$below->Pixmap($below->PathName.".unlittext",
+				    -data=>$text->write($fore,$back,32));
+	my$littext=$below->Pixmap($below->PathName.".littext",
+				  -data=>$text->write($afore,$aback,32));
 
 	$below->{"barlength"}=$height;
 	$below->{"litrelief"}=$arelief;
@@ -172,8 +173,10 @@ sub drawit{
     }else{
 	my$text=$font->maketext($label,$height-($pad*2),$width-($pad*2),
 			      $ratio,0,1);
-	my$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back,32));
-	my$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback,32));
+	my$unlittext=$below->Pixmap($below->PathName.".unlittext",
+				    -data=>$text->write($fore,$back,32));
+	my$littext=$below->Pixmap($below->PathName.".littext",
+				  -data=>$text->write($afore,$aback,32));
 
 	$below->{"barlength"}=$width;
 	$below->{"cfborder"}=$aborder;
@@ -200,7 +203,7 @@ sub drawit{
 		    $below->{"dimdim"},$below->{"dimlit"});
 	
     }
-    
+
     $below->{'setting'}=-1;
     $below;
 }
@@ -222,10 +225,9 @@ sub set{
 
 package MGM::Graph;
 @ISA=("Tk::Canvas");
+use vars qw(%numbers %prompts);
 
 # all the labels are the same size/color, but we have to do this after the toplevel is created so we have the size/color resources
-
-my%numbers;
 
 sub cacheem{
     my$size=$main::toplevel->optionGet("labelsize","");
@@ -233,7 +235,7 @@ sub cacheem{
     my$bg=$main::background;
     my$orient=$main::orient;
     while(my$num=shift){
-	if(!defined($numbers{$num})){	
+	if(!defined($numbers{$num})){
 	    $numbers{$num}=$main::toplevel->
 		Pixmap(-data=>$MGM::Bar::font->
 		       maketext($num,$size,undef,1,

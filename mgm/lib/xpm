@@ -386,7 +386,7 @@ sub scale{
 	$h=$nh;
 	$xpm->{"height"}=$h;
     }
-    
+
     $xpm;
 }
 
