@@ -80,7 +80,7 @@ class PAI:
         if (length - PAI.MODULE_HEADER_LEN - PAI.MODULE_FOOTER_LEN
             - num_entries * 2) == 0:
             extended = True
-            self.extend_module_at(self, pointer, 1)
+            self.extend_module_at(pointer, 1)
 
             # Reread header
             (length, flag, num_entries) = self._read_module_header(pointer)
