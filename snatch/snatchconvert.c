@@ -980,7 +980,7 @@ static int read_snatch_frame(FILE *f,int wa,int wv){
     if(!read_snatch_frame_helper(f,2048,0))return(0);
 
     {
-      unsigned char *poss=strchr(buftemp,':');
+      unsigned char *poss=memchr(buftemp,':',buftemphead);
       int pos=-1;
       if(poss)pos=poss-buftemp;
       if(poss){
