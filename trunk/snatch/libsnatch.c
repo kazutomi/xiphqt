@@ -528,7 +528,6 @@ ssize_t write(int fd, const void *buf,size_t count){
        the current sample buffer will begin playing, not when it
        is queued */
     
-    fprintf(stderr,"Queue is at T%+f\n",stime-now);
     if(stime<now){
       /* queue starved; player will need to skip or stretch.  Advance
 	 the absolute position to maintain sync.  Note that this is
