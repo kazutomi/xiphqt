@@ -12,7 +12,8 @@ void usage (char *progname)
            "usage: %s <in.ppm> <out.ppm>\n"
            "\n"
            "        where <in.ppm> is the input filename template\n"
-           "        and <out.ppm> is a template like image%%03d.ppm\n"
+           "        and <out.ppm> is the output filename template"
+           " (e.g. image%%03d.ppm)\n"
            "\n", progname);
    exit (-1);
 }
@@ -93,10 +94,11 @@ int main (int argc, char **argv)
    else if (h == 486) {
    } else {
       printf ("\n"
-              "could not determine wheter odd scanlines come temporally\n"
-              "earlier or later. Input files should have height 525 or 625 !\n"
+              "Could not determine whether odd scanlines come temporally "
+              "earlier or later.\n"
+              "Input files should have height 576 (625 scanlines) " "or 486 (525 scanlines) !\n"
               "\n"
-              "assume odd lines first.\n"
+              "Assume odd scanlines first.\n"
               "\n");
    }
 
