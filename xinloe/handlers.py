@@ -23,8 +23,6 @@ class GenCodec:
     self.name = ''
     self.desc = ''
     self.icon = ''
-    self.b = 0
-    self.q = 0
     self.length = 0
     self.bytes = 0
     self.version = 0
@@ -85,6 +83,12 @@ class Theora(GenCodec):
         self.version = str(ord(header[7])) + '.' + \
                        str(ord(header[8])) + '.' + \
                        str(ord(header[9])) 
+        self.framerate = 0
+
+  def PageIn(self, page):
+    self.bytes = self.bytes + len(page)
+    if self.framerate > 0 :
+      self.length = int((page.granulepos>>self.keyshift) / self.framerate)
 
 class Speex(GenCodec):
   def __init__(self, header):
@@ -146,10 +150,16 @@ class Writ(GenCodec):
             (ord(header[9])*65536) + (ord(header[10])*16777216)
         d = ord(header[11]) + (ord(header[12])*256) + \
             (ord(header[13])*65536) + (ord(header[14])*16777216)
-        self.framerate = float(n)/float(d)
+        self.granulerate = float(n)/float(d)
       else :
         self.name = 'Writ (Unsupported Version)'
         self.version = str(ord(header[5]))
+        self.granulerate = 0
+
+  def PageIn(self, page):
+    self.bytes = self.bytes + len(page)
+    if self.granulerate > 0 :
+      self.length = int(page.granulepos / self.granulerate)
 
 codecs = (Vorbis, Theora, Speex, FLAC, Writ, GenCodec)
 
