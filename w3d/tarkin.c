@@ -44,13 +44,8 @@ void tarkin_stream_destroy (TarkinStream *s)
    if (s->layer)
       free(s->layer);
 
-/**
- *   XXX FIXME HACK Alert: segfault when doin' this right ...
- *                         somewhere is something really wrong ...
- *                         perhaps in merge_bitstreams() ???
- */
-//   if (s->bitstream);
-//      free(s->bitstream);
+   if (s->bitstream);
+      free(s->bitstream);
 
    free(s);
 }
@@ -107,10 +102,9 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
                                                     desc[i].frames_per_buf);
 
       layer->bitstream_len = layer->desc.bitrate / (8 * layer->n_comp);
-
-      if (layer->bitstream_len > max_bitstream_len)
-         max_bitstream_len = layer->bitstream_len;
-
+      max_bitstream_len += layer->bitstream_len * layer->n_comp
+          + 5000
+          + 2 * 9 * sizeof(uint32_t) * layer->n_comp;    // truncation tables 
    }
 
    if ((err = write_tarkin_header(s->fd, s)) != TARKIN_OK)
@@ -139,7 +133,7 @@ void tarkin_stream_flush (TarkinStream *s)
          wavelet_3d_buf_fwd_xform (layer->waveletbuf[j], 2, 2);
          bitstream_len = wavelet_3d_buf_encode_coeff (layer->waveletbuf[j],
                                                       s->bitstream,
-                                                      layer->desc.bitrate/8);
+                                                      layer->bitstream_len);
          write_tarkin_bitstream (s->fd, s->bitstream, bitstream_len);
       }
    }
@@ -224,9 +218,9 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
       }
 
       layer->bitstream_len = layer->desc.bitrate / (8 * layer->n_comp);
-
-      if (layer->bitstream_len > max_bitstream_len)
-         max_bitstream_len = layer->bitstream_len;
+      max_bitstream_len += layer->bitstream_len * layer->n_comp
+          + 5000
+          + 2 * 9 * sizeof(uint32_t) * layer->n_comp;
    }
 
    s->bitstream = (uint8_t*) malloc (max_bitstream_len);
