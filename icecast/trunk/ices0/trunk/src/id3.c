@@ -106,7 +106,7 @@ ices_id3v1_parse (input_stream_t* source)
 
     while (song_name[strlen (song_name) - 1] == ' ')
       song_name[strlen (song_name) - 1] = '\0';
-    ices_log_debug ("ID3v1 song: %s", song_name);
+    ices_log_debug ("ID3v1: Title: %s", song_name);
 
     if (read (source->fd, artist, 30) != 30) {
       ices_log ("Error reading ID3v1 artist");
@@ -115,7 +115,7 @@ ices_id3v1_parse (input_stream_t* source)
 
     while (artist[strlen (artist) - 1] == '\040')
       artist[strlen (artist) - 1] = '\0';
-    ices_log_debug ("ID3v1 artist: %s", artist);
+    ices_log_debug ("ID3v1: Artist: %s", artist);
 
     ices_metadata_set (artist, song_name);
   }
@@ -186,7 +186,7 @@ ices_id3v2_parse (input_stream_t* source)
 
   remaining = tag.len - tag.pos;
   if (remaining) {
-    ices_log_debug ("Skipping %d bytes to end of tag", remaining);
+    ices_log_debug ("ID3v2: Skipping %d bytes to end of tag", remaining);
 
     id3v2_skip_data (source, &tag, remaining);
   }
