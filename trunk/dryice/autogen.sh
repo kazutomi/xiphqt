@@ -38,7 +38,7 @@ if test -r Makefile.am; then
     AC_PROGS="$ACLOCAL $AC_PROGS"
     for am in $AM_PROGS; do
       ($am --version > /dev/null 2>&1) 2>/dev/null || continue
-      ver=`$am --version | head -1 | $VERSIONGREP`
+      ver=`$am --version | head -n 1 | $VERSIONGREP`
       AWK_RES=`echo $ver $AM_NEEDED | awk '{ if ( $1 >= $2 ) print "yes"; else print "no" }'`
       if test "$AWK_RES" = "yes"; then
         AUTOMAKE=$am
@@ -48,7 +48,7 @@ if test -r Makefile.am; then
     done
     for ac in $AC_PROGS; do
       ($ac --version > /dev/null 2>&1) 2>/dev/null || continue
-      ver=`$ac --version < /dev/null | head -1 | $VERSIONGREP`
+      ver=`$ac --version < /dev/null | head -n 1 | $VERSIONGREP`
       AWK_RES=`echo $ver $AM_NEEDED | awk '{ if ( $1 >= $2 ) print "yes"; else print "no" }'`
       if test "$AWK_RES" = "yes"; then
         ACLOCAL=$ac
