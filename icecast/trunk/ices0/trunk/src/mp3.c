@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.22 2003/03/12 12:12:58 brendan Exp $
+ * $Id: mp3.c,v 1.23 2003/03/13 23:06:14 brendan Exp $
  */
 
 #include "definitions.h"
@@ -114,7 +114,7 @@ static int ices_mp3_parse (input_stream_t* source)
     ices_id3v2_parse (source);
 
   /* refill buffer if ID3v2 parsing consumed it */
-  if (!mp3_data->len) {
+  if (!mp3_data->buf) {
     buffer = (unsigned char*) malloc (MP3_BUFFER_SIZE);
     len = source->read (source, buffer, MP3_BUFFER_SIZE);
     mp3_data->buf = buffer;
