@@ -9,6 +9,11 @@
 #include "packbuff.h"
 #include "page.h"
 
+PyObject *PyOgg_Error;
+PyObject *PyOggPage_Error;
+PyObject *PyOggPacket_Error;
+
+
 static PyMethodDef Ogg_methods[] = {
   {"OggPackBuff", PyOggPackBuffer_New,
    METH_VARARGS, PyOggPackBuffer_Doc},
