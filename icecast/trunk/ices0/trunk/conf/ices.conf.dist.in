@@ -59,6 +59,9 @@
 		<ices:Reencode>0</ices:Reencode>
 	</ices:Execution>
 	<ices:Stream>
+		<!-- The name of the mountpoint on the icecast server -->
+		<ices:Mountpoint>ices</ices:Mountpoint>
+
 		<!-- The name of you stream, not the name of the song! -->
 		<ices:Name>Cool ices default name from XML</ices:Name>
 

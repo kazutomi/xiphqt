@@ -283,7 +283,7 @@ ices_mp3_read (input_stream_t* self, void* buf, size_t len)
     }
   } else {
     /* we don't just use EOF because we'd like to avoid the ID3 tag */
-    if (self->canseek && (self->filesize - self->bytes_read) < len)
+    if (self->canseek && self->filesize - self->bytes_read < len)
       len = self->filesize - self->bytes_read;
     if (len)
       rlen = read (self->fd, buf, len);

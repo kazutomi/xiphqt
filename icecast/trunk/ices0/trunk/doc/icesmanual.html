@@ -16,8 +16,9 @@
 	 <ol type=1>
 		<li> <a href="#features_cue">Cue file </a></li>
 		<li> <a href="#features_signals">Signal Handling </a></li>
+		<li> <a href="#features_reencoding">Reencoding</a></li>
+	        <li> <a href="#features_multistream">Multiple streams</a></li>
 		<li> <a href="#features_playlists">Playlist Handling </a></li>
-		<li> <a href="#features_reencoding">Reencoding </a></li>
 	</ol>
     </li>	
     <li> <a href="#section_configuring"> Configuring </a>
@@ -67,64 +68,109 @@ this document, and throughout all the documentation in the streaming system.
 	<ol type=1>
 	<li> <a name="features_cue">Cue file</a>
 	<p>
-		The cue file holds information on the file that ices is currently feeding
-		to the server. This is neat for you people out there who like running scripts.
-		I myself, use the cue file in a tcl script, running from a eggdrop bot, on irc.
-		That way I can ask the bot what song is currently playing, how long it is, how
-		much of it has been played, and get information about the next songs on the
-		playlist.<br>
-		The file currently has the following lines, (in this order).<br>
-		<ul>
-			<li>filename</li>
-			<li>size (in bytes)</li>
-			<li>bitrate (in kbits/s)</li>
-			<li>minutes:seconds (total song length)</li>
-			<li>percent played (i.e 25, no %-sign)</li>
-			<li>playlist line index (i.e 3, if we're playing the 4:th line in the internal
-			    playlist. Logical, huh? ) Also, for you scripting people, when ices
-			    starts, it writes its process id to the file ices.pid.</li>
-		        <li>ID3 Artist</li>
-			<li>ID3 Title</li>
-		</ul>
+The cue file holds information on the file that ices is currently feeding
+to the server. This is neat for you people out there who like running scripts.
+I myself, use the cue file in a tcl script, running from a eggdrop bot, on irc.
+That way I can ask the bot what song is currently playing, how long it is, how
+much of it has been played, and get information about the next songs on the
+playlist.<br>
+The file currently has the following lines, (in this order).<br>
+	<ul>
+		<li>filename</li>
+		<li>size (in bytes)</li>
+		<li>bitrate (in kbits/s)</li>
+		<li>minutes:seconds (total song length)</li>
+		<li>percent played (i.e 25, no %-sign)</li>
+		<li>playlist line index (i.e 3, if we're playing the 4:th line in the internal
+		    playlist. Logical, huh? ) Also, for you scripting people, when ices
+		    starts, it writes its process id to the file ices.pid.</li>
+	        <li>ID3 Artist</li>
+		<li>ID3 Title</li>
+	</ul>
 	</p>
 	</li>
 
 	<li> <a name="features_signals">Signal handling</a>
-		<p>
-			<ul>
-				<li>Sending SIGINT to ices will make it exit.</li>
-				<li>Sending SIGHUP to ices will make it close and reopen the logfile.</li>
-			</ul>
-		</p>
+	<p>
+	<ul>
+          <li>Sending SIGINT to ices will make it exit.</li>
+	  <li>Sending SIGHUP to ices will make it close and reopen the
+			logfile.</li>
+          <li>Sending SIGUSR1 to ices will make it skip to the next track.</li>
+	</ul>
+	</p>
 	</li>
 
 	<li> <a name="features_reencoding">Reencoding </a>
-		<p>
-			If compiled with support for reencoding using liblame, and you supply the -R command line option or set the Execution/Reencode to 1 in the XML config
-			file, then ices will start reencoding your files on the fly to the bitrate you specified with the -b option or the Stream/Bitrate tag.<br>
-			The sample rate, number of channels, etc, will be chosen on the fly by lame itself, unless you specify something using the -H and -N options.<br>
-			If you want to change it, I suggest you add support for this to ices and mail me a patch.<br>
-			I think you should be fine with whatever lame chooses though.<br>
-			Also, please make sure that your files are ok before you start reencoding them with ices. This is because the mpglib part of lame (what does the decoding) is
-			rather unstable and will call exit(0) when errors are encountered. <br>
-			This will make ices exit, which is kinda bad :)<br>
-			I've only tested this with lame 3.86.1, and your mileage my vary.
-		</p>
+	<p>
+If compiled with support for reencoding using liblame, and you supply
+the -R command line option or set the Stream/Reencode to 1 in the
+XML config file, then ices will start reencoding your files on the fly
+to the bitrate you specified with the -b option or the Stream/Bitrate
+tag.
+<br>
+If you are reencoding and ices was compiled with vorbis support, you
+may also reencode Ogg Vorbis files as MP3 on the fly. This gives you
+the opportunity to convert your source files to Ogg Vorbis at your
+convenience while still supporting as many listeners as possible.
+<br>
+The sample rate, number of channels, etc, will be chosen on the fly by
+lame itself, unless you specify something using the -H and -N options.
+<br>
+If you want to change it, I suggest you add support for this to ices
+and mail me a patch.
+<br>
+I think you should be fine with whatever lame chooses though.
+<br>
+Also, please make sure that your files are ok before you start
+reencoding them with ices. This is because the mpglib part of lame
+(what does the decoding) is rather unstable and will call exit(0) when
+errors are encountered.
+<br>
+This will make ices exit, which is kinda bad :)
+	</p>
 	</li>
 
+	<li> <a name="features_multistream">Multiple streams</a>
+        <p>
+You can feed the same playlist simultaneously to different
+mountpoints, by specifying multiple <tt>Stream</tt> sections in the
+config file or passing multiple <tt>-m</tt>options on the command
+line. This is especially useful in conjunction with reencoding because
+you can stream the same music at a high bitrate for broadband
+listeners and simultaneously at a low bitrate for POTS listeners.
+	</p>
+
 	<li> <a name="features_playlists">Playlist handling</a>
-		<p>
+	<p>
 About 96% of all emails I got about shout was people asking me to add small
 changes to shout playlist handling to suit their specific needs.
 This is course is not how I want to spend my life :)
 Shout had a feature to call an external program with a system() call, before
 each song, and that could possibly modify the playlist.
 This was rather ugly, but did the trick.
-In ices, we take this a step further an include scripting support inside the
+In ices, we take this a step further and include scripting support inside the
 program. You can write your own playlist handler in perl or python, whatever
 you prefer.
-Your script module has to define 5 functions; test, init, shutdown, get_next,
-and get_current_lineno.
+<br>
+Your script module has to define at least a function named
+<tt>ices_get_next</tt>, which should return a path to a file or FIFO
+containing MP3 data.
+<br>
+In addition you may define the functions <tt>ices_init</tt> and 
+<tt>ices_shutdown</tt> which will be called by ices once before asking
+for the first song and before shutting down, respectively.
+<br>
+You may also define <tt>ices_get_lineno</tt>, which specifies the line
+number of the current track in the cue file. If you don't use the cue
+file it is safe to omit this function.
+<br>
+Finally you can define <tt>ices_get_metadata</tt> to return a string
+you want to use for title streaming. Ices will call this function once
+per track after calling <tt>ices_get_next</tt>. If this function is
+not defined or returns null, ices will use whatever it can get out of
+the file itself, either tags or the file name.
+<br>
 I suggest you take a look in the distributed module files and just expand on
 that.
 		</p>
@@ -175,10 +221,15 @@ some options have been renamed.
 		</ul>
 	      </p>
 	     </li>
+Note that each time you specify a mount point with <tt>-m</tt> you are
+creating a new stream, and subsequent stream options will apply only
+to it.
              <li> <a name="configure_configurationfile"> Configuration file (icec.conf) </a> 
 		<p>
-			Here's a sample configuration file. It's the same as the ices.conf.dist that is included
-			in the ices distribution.
+Here's a sample configuration file. It's the same as the
+ices.conf.dist that is included in the ices distribution.
+You can specify multiple stream sections with different mountpoints,
+names, and reencoding options.
 		<pre>
 
 			&lt;?xml version="1.0"?&gt;
@@ -199,9 +250,6 @@ some options have been renamed.
 				&lt;ices:Background&gt;0&lt;/ices:Background&gt;
 				&lt;ices:Verbose&gt;1&lt;/ices:Verbose&gt;
 				&lt;ices:Base_Directory&gt;/tmp&lt;/ices:Base_Directory&gt;
-				&lt;ices:Reencode&gt;0&lt;/ices:Reencode&gt;
-				&lt;ices:Samplerate&gt;-1&lt;/ices:Samplerate&gt;
-				&lt;ices:Channels&gt;-1&lt;/ices:Channels&gt;
 			&lt;/ices:Execution&gt;
 			&lt;ices:Stream&gt;
 				&lt;ices:Name&gt;Cool ices default name from XML&lt;/ices:Name&gt;
@@ -210,6 +258,9 @@ some options have been renamed.
 				&lt;ices:URL&gt;Cool ices URL from XML&lt;/ices:URL&gt;
 				&lt;ices:Bitrate&gt;128&lt;/ices:Bitrate&gt;
 				&lt;ices:Public&gt;1&lt;/ices:Public&gt;
+				&lt;ices:Reencode&gt;0&lt;/ices:Reencode&gt;
+				&lt;ices:Samplerate&gt;-1&lt;/ices:Samplerate&gt;
+				&lt;ices:Channels&gt;-1&lt;/ices:Channels&gt;
 			&lt;/ices:Stream&gt;
 			&lt;/ices:Configuration&gt;
 		</pre>
@@ -267,29 +318,11 @@ some options have been renamed.
 				You need write permissions in this directory. The default is /tmp
 			</li>
 
-			<li> Execution Reencode <br>
-				Command line option: -R (turns reencoding on) <br>
-				Config file tag: Execution/Reencode <br>
-				When you turn this option on, ices (if compiled with libmp3lame support) will reencode your mp3 files 
-				on the fly to whatever bitrate you specify with the Stream Bitrate option.<br>
-				PLEASE note that if your files are corrupt, this might crash ices because the library used to decode (mpglib) is not very stable.
-				I suggest you check your files with mp3check or some other mp3 verification program before you add them to your playlist.
-				Just popping them into your favourite player and checking the sound is definately not enough.<br>
-				For legal reasons, this option is not available on the binary distributions.  
-			</li>
-
-			<li> Execution Samplerate <br>
-				Command line option: -H &lt;samplerate&gt; <br>
-				Config file tag: Execution/Samplerate <br>
-				Use this to force liblame reencoding to output mp3 data with this samplerate.
-			</li>
-
-			<li> Execution Channels <br>
-				Command line option: -N &lt;number of channel&gt; <br>
-				Config file tag: Execution/Channels <br>
-				Use this to force liblame reencoding to output mp3 data with this many channels.
-			</li>
-
+		      <li> Stream Mountpoint <br>
+Command line option: -m &lt;mountpoint&gt;<br>
+Config file tag: Stream/Mountpoint<br>
+This is the mountpoint of the stream on the icecast server, if using
+the x-audiocast protocol.
 			<li> Stream Name <br>
 				Command line option: -n &lt;stream name&gt; <br>
 				Config file tag: Stream/Name<br>
@@ -329,12 +362,38 @@ some options have been renamed.
 				This regulates whether the icecast server will display your stream on a directory server. Default is 1 (yes). <br>
 			</li>
 
+			<li> Stream Reencode <br>
+			Command line option: -R (turns reencoding on) <br>
+			Config file tag: Stream/Reencode <br>
+			When you turn this option on, ices (if compiled with libmp3lame support) will reencode your mp3 files 
+			on the fly to whatever bitrate you specify
+		      with the Stream Bitrate option, unless
+		      the file bitrate is the same as the
+		      stream bitrate.<br>
+			PLEASE note that if your files are corrupt, this might crash ices because the library used to decode (mpglib) is not very stable.
+			I suggest you check your files with mp3check or some other mp3 verification program before you add them to your playlist.
+			Just popping them into your favourite player and checking the sound is definitely not enough.<br>
+			For legal reasons, this option is not available on the binary distributions.  
+			</li>
+
+			<li> Stream Samplerate <br>
+				Command line option: -H &lt;samplerate&gt; <br>
+				Config file tag: Stream/Samplerate <br>
+				Use this to force reencoding to output mp3 data with this samplerate.
+			</li>
+
+			<li> Stream Channels <br>
+				Command line option: -N &lt;number of channel&gt; <br>
+				Config file tag: Stream/Channels <br>
+				Use this to force reencoding to output mp3 data with this many channels.
+			</li>
+
 			<li> Playlist File <br>
 				Command line option: -F &lt;file&gt; <br>
 				Config file tag: Playlist/File <br>
 				This is the file where ices originally looks for files to play. <br>
 				When using playlist modules in perl or python, this argument
-				is passed to the playlist handler.
+				is ignored.
 			</li>
 
 			<li> Playlist Randomize <br>
@@ -348,9 +407,11 @@ some options have been renamed.
 				Command line option: -S &lt;perl|python|builtin&gt; <br>
 				Config file tag: Playlist/Type <br>
 				By default, ices using a builtin playlist handler. It handles randomization and not
-				much more. Most people want sophisticated playlist handlers that interface databases
-				and keeps track of god knows what. ices handles embedded python and embedded perl,
-				so now you can write your own modules, without modifying ices, that does just about
+				much more. Most people want
+			      sophisticated playlist handlers that
+			      interface with databases
+				and keep track of god knows what. ices handles embedded python and embedded perl,
+				so now you can write your own modules, without modifying ices, that do just about
 				anything. Use this option to change the playlist handler type from builtin (default),
 				to python or perl.
 			</li>
@@ -386,7 +447,7 @@ some options have been renamed.
 
 <p align=right> This document is written by Alexander Haväng [eel@icecast.org].<br>
 <!-- hhmts start -->
-Last modified: Thu Aug 24 13:01:27 PDT 2000
+Last modified: Sat Jun 23 18:44:50 EDT 2001
 <!-- hhmts end -->
 </p>
 
