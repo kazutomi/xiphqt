@@ -23,8 +23,6 @@ static PyMethodDef Ogg_methods[] = {
 
 static char docstring[] = "";
 
-/* This stuff is useful to py-ogg2 submodules */
-
 void
 init_ogg2(void)
 {
@@ -51,8 +49,11 @@ init_ogg2(void)
   PyDict_SetItemString(dict, "OggPacketError", PyOggPacket_Error);
   Py_INCREF(PyOggPacket_Error);
 
-  PyDict_SetItemString(dict, "__doc__", PyString_FromString(docstring));
-  PyDict_SetItemString(dict, "__version__", PyString_FromString("2.0-pre_20040224"));
+  PyModule_AddStringConstant(module, "__doc__", docstring);
+  PyModule_AddStringConstant(module, "__version__", "2.0-pre_20040721");
+
+  PyModule_AddIntConstant(module, "Ogg_Cont", OGG_CONT);
+  PyModule_AddIntConstant(module, "Ogg_Discont", OGG_DISCONT);
 
   if (PyErr_Occurred())
     PyErr_SetString(PyExc_ImportError, "_ogg2: init failed");

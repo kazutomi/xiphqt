@@ -55,6 +55,7 @@ class BitPacker :
 class OggStream :
    def __init__(self) :
       self.os = ogg2.OggStreamState(random.randrange(2**24))
+      self.os.setmode(ogg2.Ogg_Discont)
       self.oy = ogg2.OggSyncState()
       self.fd = open('test.writ.ogg','w')
       self.pn = 0
