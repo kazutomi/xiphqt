@@ -21,7 +21,7 @@ class QueueElement
 {
 	friend class Queue;
 
-	public:
+ public:
 	QueueElement(void *data) 
 	{
 		m_data = data;

@@ -15,6 +15,7 @@
  ********************************************************************/
 
 #include <string.h>
+#include <stdio.h>
 
 #include "queue.h"
 
@@ -23,10 +24,10 @@ void Queue::Add(void *data)
 	QueueElement *p;
 	QueueElement *e = new QueueElement(data);
 
-	if (m_elements == NULL) {
-		m_elements = e;
+	if (m_queue == NULL) {
+		m_queue = e;
 	} else {
-		p = m_elements;
+		p = m_queue;
 		while (p->m_next != NULL) p = p->m_next;
 		p->m_next = e;
 	}
@@ -36,13 +37,12 @@ void *Queue::Remove()
 {
 	void *data;
 
-	if (m_elements == NULL) return NULL;
+	if (m_queue == NULL) return NULL;
 
-	QueueElement *e = m_elements;
+	QueueElement *e = m_queue;
 	data = e->m_data;
+	m_queue = m_queue->m_next;
 	delete e;
-
-	m_elements = m_elements->m_next;
 
 	return data;
 }
