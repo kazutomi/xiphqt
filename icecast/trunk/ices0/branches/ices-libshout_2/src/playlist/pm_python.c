@@ -1,7 +1,7 @@
 /* playlist_python.c
  * - Interpreter functions for python
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-2 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,8 +25,6 @@
 #endif
 #include <Python.h>
 
-#define PM_PYTHON_MAKE_THREADS 0
-
 extern ices_config_t ices_config;
 
 static PyObject *python_module;
@@ -37,10 +35,6 @@ static char* pl_shutdown_hook;
 static char* pl_get_next_hook;
 static char* pl_get_metadata_hook;
 static char* pl_get_lineno_hook;
-
-#if PM_PYTHON_MAKE_THREADS
-static PyThreadState *mainthreadstate = NULL;
-#endif
 
 /* -- local prototypes -- */
 static int playlist_python_get_lineno (void);
@@ -53,10 +47,6 @@ static int python_init (void);
 static void python_shutdown (void);
 static int python_setup_path (void);
 static PyObject* python_eval (char *functionname);
-#if PM_PYTHON_MAKE_THREADS
-static PyThreadState* python_init_thread (void);
-static void python_shutdown_thread (PyThreadState *threadstate);
-#endif
 static char* python_find_attr (PyObject* module, char* f1, char* f2);
 
 /* Call python function to initialize the python script */
@@ -147,15 +137,12 @@ playlist_python_reload (void)
 {
   PyObject* new_module;
 
-  PyEval_AcquireLock ();
   if (!(new_module = PyImport_ReloadModule (python_module))) {
-    PyEval_ReleaseLock ();
     ices_log_error ("Playlist module reload failed");
     PyErr_Print ();
     
     return -1;
   }
-  PyEval_ReleaseLock ();
 
   python_module = new_module;
   ices_log_debug("Playlist module reloaded");
@@ -190,12 +177,7 @@ python_init (void)
   if (python_setup_path () < 0)
     return -1;
 
-  /* Initialize the python structure and thread stuff */
   Py_Initialize ();
-  PyEval_InitThreads ();
-#if PM_PYTHON_MAKE_THREADS
-  mainthreadstate = PyThreadState_Get ();
-#endif
 
   ices_log_debug ("Importing %s.py module...", ices_config.pm.module);
 
@@ -217,8 +199,6 @@ python_init (void)
 					   "ices_python_get_metadata");
   pl_get_lineno_hook = python_find_attr (python_module, "ices_get_lineno",
 					 "ices_python_get_current_lineno");
-
-  PyEval_ReleaseLock ();
 
   if (! pl_get_next_hook) {
     ices_log_error ("The playlist module must define at least the ices_get_next method");
@@ -253,24 +233,14 @@ python_setup_path (void)
 static void
 python_shutdown (void)
 {
-  PyEval_AcquireLock ();
   Py_Finalize ();
   ices_util_free (python_path);
 }
 
-/* Evaluate the python function in a new thread */
 static PyObject*
 python_eval (char *functionname)
 {
   PyObject *ret;
-#if PM_PYTHON_MAKE_THREADS
-  /* Create a new python thread */
-  PyThreadState *threadstate = python_init_thread ();
-#endif
-  PyEval_AcquireLock ();
-#if PM_PYTHON_MAKE_THREADS
-  PyThreadState_Swap (threadstate);
-#endif
 
   ices_log_debug ("Interpreting [%s]", functionname);
 	
@@ -278,49 +248,10 @@ python_eval (char *functionname)
   ret = PyObject_CallMethod (python_module, functionname, NULL);
   if (! ret)
     PyErr_Print ();
-#if PM_PYTHON_MAKE_THREADS
-  PyThreadState_Swap (mainthreadstate);
-#endif
-  PyEval_ReleaseLock ();
 
   ices_log_debug ("Done interpreting [%s]", functionname);
-#if PM_PYTHON_MAKE_THREADS
-  python_shutdown_thread (threadstate);
-#endif
   return ret;
 }
-
-#if PM_PYTHON_MAKE_THREADS
-/* Startup a new python thread */
-static PyThreadState *
-python_init_thread (void)
-{
-  PyInterpreterState *maininterpreterstate = NULL;
-  PyThreadState *newthreadstate;
-
-  PyEval_AcquireLock ();
-
-  maininterpreterstate = mainthreadstate->interp;
-  newthreadstate = PyThreadState_New (maininterpreterstate);
-
-  PyEval_ReleaseLock ();
-
-  return newthreadstate;
-}
-
-/* Shutdown the thread */
-static void
-python_shutdown_thread (PyThreadState *threadstate)
-{
-  PyEval_AcquireLock ();
-
-  PyThreadState_Clear (threadstate);
-
-  PyThreadState_Delete (threadstate);
-
-  PyEval_ReleaseLock ();
-}
-#endif
 
 static char*
 python_find_attr (PyObject* module, char* f1, char* f2)
