@@ -19,7 +19,7 @@
  */
 
 /* Public function declarations */
-void ices_cue_update (input_stream_t* source, const int bytes_played);
+void ices_cue_update (input_stream_t* source);
 void ices_cue_shutdown (void);
 void ices_cue_set_filename (const char *filename);
 void ices_cue_set_lineno (int lineno);
