@@ -31,3 +31,15 @@ arg_to_int32(PyObject *intobj, ogg_int32_t *val)
   }
   return 1;
 }
+
+PyObject *
+Py_TrueFalse(int value)
+{
+  if (value) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}

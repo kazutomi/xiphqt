@@ -24,5 +24,7 @@ typedef struct {
   Returns 0 on failure (a Python error will be set)
 */
 int arg_to_int64(PyObject *longobj, ogg_int64_t *val);
+int arg_to_int32(PyObject *intobj, ogg_int32_t *val);
+PyObject * Py_TrueFalse(int value);
 
 #endif // __PYOGG_H__
