@@ -362,6 +362,8 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
     unsigned char framesize;
     unsigned char *packet;
 
+    const unsigned int max_payload = 256;
+
     static int stacksize;
     static int stackcount;
     static unsigned char* framestack;
@@ -373,7 +375,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 /*    vorbheader -> cbident = htonl (0xc0deb00c); */
 
 /*===========================================================================*/
-/*  Set sleeptime value (todo: this should use the granulepos)                                                     */
+/*  Set sleeptime value (todo: this should use the granulepos)               */
 /*===========================================================================*/
 
     sleeptime = ((1 / (float) bitrate) * 1000000);
@@ -382,32 +384,32 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 /*  Frame fragmentation                                                      */
 /*===========================================================================*/
 
-    if (length > 256) {
+    if (length > max_payload) {
         cont = 0;
         frag = 1;
-        while (length > 256) {        
+        while (length > max_payload) {        
             /*  Set Vorbis header flags  */
             vorbheader -> continuation = cont;
             vorbheader -> fragment = frag;
             vorbheader -> reserved = 0;
             vorbheader -> pkts = 0;
 
-            packet = malloc (262);
+            packet = malloc (max_payload + 6);
 
-            makevorbisheader (packet, 262, vorbheader);
+            makevorbisheader (packet, max_payload + 6, vorbheader);
             memcpy (packet + 5, &framesize, 1);
-            memmove (packet + 6, vorbdata, 256);
+            memmove (packet + 6, vorbdata, max_payload);
 
             /*  Swap RTP headers from host to network order  */
             RTPHeaders.sequence = htons (RTPHeaders.sequence);
 
-            sendrtp (&RTPHeaders, rtpsocket, &rtpsock, packet, 262);
+            sendrtp (&RTPHeaders, rtpsocket, &rtpsock, packet, max_payload + 6);
 
             /*  Swap headers back to host order  */
             RTPHeaders.sequence = ntohs (RTPHeaders.sequence);
 
-            length -= 256;
-            position += 256;
+            length -= max_payload;
+            position += max_payload;
             cont = 1;
             frag = 0;
 
@@ -456,8 +458,8 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 /*  Frame packing.  Used only for type 0 packets (raw Vorbis data)           */
 /*===========================================================================*/
 
-    if (length < 256 && type == 0) {
-        if (length + stacksize < 256 && stackcount < 15) {
+    if (length < max_payload && type == 0) {
+        if (length + stacksize < max_payload && stackcount < 15) {
 
             framestack = realloc (framestack, (stacksize + (length + 1)));
 
@@ -467,7 +469,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             stacksize += (length + 1);
         }  
 
-        if (length + stacksize > 256 || stackcount > 15) {
+        if (length + stacksize > max_payload || stackcount > 15) {
 
             /*  Set Vorbis header flags  */
             vorbheader -> continuation = 0;
@@ -509,10 +511,10 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
     } 
 
 /*===========================================================================*/
-/*  Send header packets (under 256 octets) - No Packing                      */
+/*  Send header packets (under max_payload octets) - No Packing              */
 /*===========================================================================*/
 
-    else if (length < 256) {
+    else if (length < max_payload) {
 
         /*  Set Vorbis header flags  */
         vorbheader -> continuation = 0;
