@@ -22,7 +22,9 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#ifndef WIN32
 #include <sys/wait.h>
+#endif
 
 #include "auth.h"
 #include "source.h"

@@ -18,7 +18,9 @@
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
 
+#ifndef WIN32
 #include <aio.h>
+#endif
 
 #include "connection.h"
 #include "refbuf.h"

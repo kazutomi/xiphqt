@@ -45,6 +45,7 @@
 #ifdef WIN32
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
+#define snprintf _snprintf
 #endif
 
 format_type_t format_get_type(char *contenttype)

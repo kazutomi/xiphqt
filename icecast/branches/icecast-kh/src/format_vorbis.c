@@ -792,6 +792,6 @@ static void write_vorbis_to_file (struct source_tag *source, refbuf_t *refbuf)
 void format_ogg_initialise (void)
 {
     next_rebuild_serialno = 1;
-    thread_mutex_create (&serial_lock);
+    thread_mutex_create ("serial", &serial_lock);
 }
 

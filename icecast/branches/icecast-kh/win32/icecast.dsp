@@ -101,6 +101,14 @@ SOURCE=..\src\auth.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\auth_htpasswd.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\auth_url.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\avl\avl.c
 # End Source File
 # Begin Source File
@@ -161,11 +169,11 @@ SOURCE=..\src\format_mp3.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\format_vorbis.c
+SOURCE=..\src\format_ogg.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\format_vorbis.h
+SOURCE=..\src\format_ogg.h
 # End Source File
 # Begin Source File
 
@@ -174,14 +182,6 @@ SOURCE=..\src\fserve.c
 # Begin Source File
 
 SOURCE=..\src\fserve.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\geturl.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\geturl.h
 # End Source File
 # Begin Source File
 
@@ -319,6 +319,18 @@ SOURCE=..\src\yp.h
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\src\auth_cmd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\auth_htpasswd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\auth_url.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\src\timing\timing.h

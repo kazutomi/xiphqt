@@ -113,8 +113,13 @@ auth_t *auth_get_authenticator(char *type, config_options_t *options)
     else
 #endif
     if(!strcmp(type, "command")) {
+#ifdef WIN32
+        ERROR1("Authenticator type: \"%s\" not supported on win32 platform", type);
+        return NULL;
+#else
         auth = auth_get_cmd_auth(options);
         auth->type = strdup(type);
+#endif
     }
     else if(!strcmp(type, "htpasswd")) {
         auth = auth_get_htpasswd_auth(options);
