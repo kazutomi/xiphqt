@@ -25,11 +25,6 @@ def test(ogg, outfile=file("decode.raw", "w")):
     vb = vorbispy.block()
     vc = vorbispy.comment()
 
-    audio = oss.open_audio()
-    audio.stereo(1)
-    audio.format(oss.AFMT_S16_LE)
-    audio.speed(44100)
-
     while 1:
         buffer = ogg.read(BUFSIZE)
         oy.write(buffer)
@@ -78,6 +73,15 @@ def test(ogg, outfile=file("decode.raw", "w")):
 
         print >> sys.stderr, vorbispy.get_comments(vc)
 
+        channels = vi.get_channels()
+        rate     = vi.get_rate()
+
+        audio = oss.open_audio()
+        if channels >= 2:
+            audio.stereo(1)
+        audio.format(oss.AFMT_S16_LE)
+        audio.speed(rate)
+        
         vd.synthesis_init(vi)
         vd.block_init(vb)
 
@@ -103,11 +107,11 @@ def test(ogg, outfile=file("decode.raw", "w")):
                             while samples != None:
                                 samples *= 32767;
                                 wav = samples.astype('Int16')
-                                
-                                interleaved = numarray.zeros(samples.shape[1]*2, numarray.Int16)
 
-                                interleaved[0::2] = wav[0]
-                                interleaved[1::2] = wav[1]
+                                interleaved = numarray.zeros(samples.shape[1]*channels, numarray.Int16)
+                                
+                                for i in range(channels):
+                                    interleaved[i::channels] = wav[i]
                                 
                                 # interleaved.tofile(outfile)
                                 audio.write(interleaved.tostring())
