@@ -67,7 +67,7 @@ possible for access keys; just use a pointer to the null record in the
 child database.
 </p>
 
-<h3>File Format</h3>
+<h3>File Layout</h3>
 
 <p>
 Each root database is stored in a directory whose name is the same as
@@ -101,22 +101,54 @@ audio/recordings.pai
 audio/recordings.sai
 </pre>
 
+
+<h3 id="dataformat">Data Packing</h3>
+
 <p>
-All database files are treated as a sequence of 16-bit words.  A
-"pointer" is a word offset in a file.  So a pointer with value 0
-refers to bytes 0 and 1 in the file, and a pointer with value 22
-refers to bytes 44 and 45.  Null-terminated strings are padded with an
-extra null byte if they do not end on a word boundary and are
-terminated with a null word (0x0000).  Integers (including pointers)
-and bitfields are always stored in big-endian format.
+Because of the nature of the DSP used in the Neuros, all database
+files are treated as a sequence of 16-bit words.  This creates some
+packing issues that need to be considered when storing data in
+database files.  This is handled in the following way for the 5 major
+types of data:
+
+<dl>
+  
+  <dt>Bit-fields</dt><dd>Bit-fields are usually 16 bits and are stored
+  in big-endian byte order.</dd>
+  
+  <dt>Integers</dt><dd>Integers are 16 or 32 bits and also stored in
+  big-endian byte order.</dd>
+
+  <dt>Pointers</dt><dd>Pointers are 32 bit integers that point to
+  offsets in a file, rather than memory locations.  However, unlike
+  the pointers most programmers are used to, these pointers point at
+  16-bit words rather than bytes.  So a pointer with value 0 refers to
+  bytes 0 and 1 in a file, and a pointer with value 22 refers to
+  bytes 44 and 45.</dd>
+
+  <dt>Null-terminated strings</dt><dd>These a similar to C-style strings.  
+  First, the string is null-padded at the end to make it end on a word 
+  boundary.  Then it is terminated with a null word, 0x0000.  
+  Example: "foo" (0x66,0x6f,0x6f) would be coded as 0x66,0x6f,0x6f,0x00,0x00,0x00.  
+  Data of this type is refered to as <em>sz</em> in the tables.</dd>
+
+  <dt>Display data</dt><dd>This appears to be similar in use to a
+  string, but with the ability to include some sort of binary data.
+  For this reason, display data is made by again padding the string
+  (or whatever data) out to a word boundary with nulls, but then
+  prepending a word with the data length in words, excluding the
+  length word itself.  Example: "foo" would be coded as 0x00,0x02,0x66,0x6f,0x6f,0x00.
+  Data of this type is refered to as <em>dd</em> in the tables.</dd>
+</dl>
 </p>
 
-<a name="dbfiles"/>
+<h3 id="dbfiles">File Formats</h3>
 <ul>
   <li><a href="mdb.html">MDB File Format</a></li>
   <li><a href="sai.html">SAI File Format</a></li>
   <li><a href="pai.html">PAI File Format</a></li>
 </ul>
+
 
 <h3>Standard Database Field Definitions</h3>
 

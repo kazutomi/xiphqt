@@ -29,11 +29,11 @@ location of the <em id="caveat">first entry within the module</em>.  See the
 <tr><td>4</td><td>1</td><td>Number of entries (N)</td></tr>
 <tr><td>5</td><td>3</td><td>Reserved (zero by default) </td></tr>
 <tr><td>8</td><td>4</td><td>0x00000000, 0x00000000 (looks like an empty record)</td></tr>
-<tr><td>12</td><td>2</td><td>MDB pointer for record 0</td></tr>
-<tr><td>14</td><td>2</td><td>PAI pointer for record 0</td></tr>
+<tr><td>12</td><td>2</td><td>MDB pointer for record 1</td></tr>
+<tr><td>14</td><td>2</td><td>PAI pointer for record 1</td></tr>
 <tr><td>...</td><td>...</td><td>...</td></tr>
-<tr><td>12+4*i</td><td>2</td><td>MDB pointer for record i</td></tr>
-<tr><td>14+4*i</td><td>2</td><td>PAI pointer for record i</td></tr>
+<tr><td>12+4*(i-1)</td><td>2</td><td>MDB pointer for record i</td></tr>
+<tr><td>14+4*(i-1)</td><td>2</td><td>PAI pointer for record i</td></tr>
 <tr><td>...</td><td>...</td><td>...</td></tr>
 <tr><td>12+4*(N-1)</td><td>2</td><td>MDB pointer for record N</td></tr>
 <tr><td>14+4*(N-1)</td><td>2</td><td>PAI pointer for record N</td></tr>
