@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: residue backend 0, 1 and 2 implementation
- last mod: $Id: res0.c,v 1.37 2001/10/02 00:14:32 segher Exp $
+ last mod: $Id: res0.c,v 1.37.2.1 2001/10/09 04:34:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -48,6 +48,8 @@ typedef struct {
   long      postbits;
   long      phrasebits;
   long      frames;
+
+  int       qoffsets[8];
 
 } vorbis_look_residue0;
 
@@ -191,7 +193,7 @@ vorbis_info_residue *res0_unpack(vorbis_info *vi,oggpack_buffer *opb){
   return(NULL);
 }
 
-vorbis_look_residue *res0_look (vorbis_dsp_state *vd,vorbis_info_mode *vm,
+vorbis_look_residue *res0_look(vorbis_dsp_state *vd,vorbis_info_mode *vm,
 			  vorbis_info_residue *vr){
   vorbis_info_residue0 *info=(vorbis_info_residue0 *)vr;
   vorbis_look_residue0 *look=_ogg_calloc(1,sizeof(*look));
@@ -234,6 +236,15 @@ vorbis_look_residue *res0_look (vorbis_dsp_state *vd,vorbis_info_mode *vm,
       mult/=look->parts;
       look->decodemap[j][k]=deco;
     }
+  }
+
+  {
+    int samples_per_partition=info->grouping;
+    int n=info->end-info->begin,i;
+    int partvals=n/samples_per_partition;
+
+    for(i=0;i<8;i++)
+      look->qoffsets[i]=partvals*(i+1)/8;
   }
 
   return(look);
@@ -477,10 +488,16 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
 		      float **in,int ch,
 		      int pass,long **partword,
 		      int (*encode)(oggpack_buffer *,float *,int,
-				    codebook *,vorbis_look_residue0 *)){
+				    codebook *,vorbis_look_residue0 *),
+		      double passlimit,ogg_uint32_t *stats){
   long i,j,k,s;
   vorbis_look_residue0 *look=(vorbis_look_residue0 *)vl;
   vorbis_info_residue0 *info=look->info;
+
+  vorbis_dsp_state      *vd=vb->vd;
+  vorbis_info           *vi=vd->vi;
+  codec_setup_info      *ci=vi->codec_setup;
+
 
   /* move all this setup out later */
   int samples_per_partition=info->grouping;
@@ -491,6 +508,18 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
   int partvals=n/samples_per_partition;
   long resbits[128];
   long resvals[128];
+
+  long wholepasses;
+  long partialpass;
+  int stoppos=0;
+
+  if((int)passlimit<ci->passlimit[pass]){
+    wholepasses=passlimit;
+    partialpass=rint((passlimit-wholepasses)*partvals);
+  }else{
+    wholepasses=ci->passlimit[pass];
+    partialpass=0;
+  }
 
 #ifdef TRAIN_RES
   FILE *of;
@@ -515,9 +544,18 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
      residual words for that partition word.  Then write the next
      partition channel words... */
 
-  for(s=(pass==0?0:info->passlimit[pass-1]);s<info->passlimit[pass];s++){
+  for(s=(pass==0?0:ci->passlimit[pass-1]);s<ci->passlimit[pass];s++){
+    int eighth=0;
+    ogg_uint32_t *qptr=NULL;
+    if(stats)qptr=stats+s*8;
+
     for(i=0;i<partvals;){
-      
+
+      if(!stoppos && 
+	 s>=wholepasses && 
+	 i>=partialpass)
+	stoppos=oggpack_bytes(&vb->opb);
+
       /* first we encode a partition codeword for each channel */
       if(s==0){
 	for(j=0;j<ch;j++){
@@ -543,6 +581,11 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
       /* now we encode interleaved residual values for the partitions */
       for(k=0;k<partitions_per_word && i<partvals;k++,i++){
 	long offset=i*samples_per_partition+info->begin;
+
+	if(!stoppos && 
+	   s>=wholepasses && 
+	   i>=partialpass)
+	    stoppos=oggpack_bytes(&vb->opb);
 	
 	for(j=0;j<ch;j++){
 	  if(s==0)resvals[partword[j][i]]+=samples_per_partition;
@@ -556,6 +599,12 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
 	    }
 	  }
 	}
+
+	if(qptr)while(i>=look->qoffsets[eighth])
+	  qptr[eighth++]=oggpack_bits(&vb->opb);
+	
+
+
       }
     }
   }
@@ -572,7 +621,7 @@ static int _01forward(vorbis_block *vb,vorbis_look_residue *vl,
     
     fprintf(stderr,":: %ld:%1.2g\n",total,(double)totalbits/total);
     }*/
-  return(0);
+  return(stoppos);
 }
 
 /* a truncated packet here just means 'stop working'; it's not an error */
@@ -650,7 +699,7 @@ long **res0_class(vorbis_block *vb,vorbis_look_residue *vl,
 
 int res0_forward(vorbis_block *vb,vorbis_look_residue *vl,
 		 float **in,float **out,int *nonzero,int ch,
-		 int pass, long **partword){
+		 int pass, long **partword,double passlimit,ogg_uint32_t *stats){
   /* we encode only the nonzero parts of a bundle */
   int i,j,used=0,n=vb->pcmend/2;
   for(i=0;i<ch;i++)
@@ -661,7 +710,7 @@ int res0_forward(vorbis_block *vb,vorbis_look_residue *vl,
     }
   if(used){
     int ret=_01forward(vb,vl,in,used,pass,partword,
-		      _interleaved_encodepart);
+		      _interleaved_encodepart,passlimit,stats);
     used=0;
     for(i=0;i<ch;i++)
       if(nonzero[i]){
@@ -688,7 +737,7 @@ int res0_inverse(vorbis_block *vb,vorbis_look_residue *vl,
 
 int res1_forward(vorbis_block *vb,vorbis_look_residue *vl,
 		 float **in,float **out,int *nonzero,int ch,
-		 int pass, long **partword){
+		 int pass, long **partword, double passlimit,ogg_uint32_t *stats){
   int i,j,used=0,n=vb->pcmend/2;
   for(i=0;i<ch;i++)
     if(nonzero[i]){
@@ -698,7 +747,7 @@ int res1_forward(vorbis_block *vb,vorbis_look_residue *vl,
     }
 
   if(used){
-    int ret=_01forward(vb,vl,in,used,pass,partword,_encodepart);
+    int ret=_01forward(vb,vl,in,used,pass,partword,_encodepart,passlimit,stats);
     used=0;
     for(i=0;i<ch;i++)
       if(nonzero[i]){
@@ -752,7 +801,7 @@ long **res2_class(vorbis_block *vb,vorbis_look_residue *vl,
 
 int res2_forward(vorbis_block *vb,vorbis_look_residue *vl,
 		 float **in,float **out,int *nonzero,int ch,
-		 int pass,long **partword){
+		 int pass,long **partword,double passlimit, ogg_uint32_t *stats){
   long i,j,k,n=vb->pcmend/2,used=0;
 
   /* don't duplicate the code; use a working vector hack for now and
@@ -767,7 +816,7 @@ int res2_forward(vorbis_block *vb,vorbis_look_residue *vl,
   }
   
   if(used){
-    int ret=_01forward(vb,vl,&work,1,pass,partword,_encodepart);
+    int ret=_01forward(vb,vl,&work,1,pass,partword,_encodepart,passlimit,stats);
     /* update the sofar vector */
     for(i=0;i<ch;i++){
       float *pcm=in[i];

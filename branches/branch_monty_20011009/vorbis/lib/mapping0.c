@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c,v 1.37 2001/10/02 00:14:31 segher Exp $
+ last mod: $Id: mapping0.c,v 1.37.2.1 2001/10/09 04:34:45 xiphmont Exp $
 
  ********************************************************************/
 
@@ -281,6 +281,37 @@ static vorbis_info_mapping *mapping0_unpack(vorbis_info *vi,oggpack_buffer *opb)
 #include "psy.h"
 #include "scales.h"
 
+static double floater_interpolate(backend_lookup_state *b,vorbis_info *vi,
+				  double desired_rate){
+  int eighth=b->bitrate_floatinglimit*8-1.;
+  double lobitrate;
+  double hibitrate;
+
+  lobitrate=(double)(eighth==0?0.:
+		     b->bitrate_avgbitacc[eighth-1])/b->bitrate_avgsampleacc*vi->rate;
+  while(lobitrate>desired_rate && eighth>0){
+    eighth--;
+    lobitrate=(double)(eighth==0?0.:
+		       b->bitrate_avgbitacc[eighth-1])/b->bitrate_avgsampleacc*vi->rate;
+  }
+
+  hibitrate=(eighth>=b->bitrate_eighths?b->bitrate_avgbitacc[b->bitrate_eighths-1]:
+	     (double)b->bitrate_avgbitacc[eighth])/b->bitrate_avgsampleacc*vi->rate;
+  while(hibitrate<desired_rate && eighth<b->bitrate_eighths){
+    eighth++;
+    if(eighth<b->bitrate_eighths)
+      hibitrate=(double)b->bitrate_avgbitacc[eighth]/b->bitrate_avgsampleacc*vi->rate;
+  }
+
+  /* interpolate */
+  if(eighth==b->bitrate_eighths){
+    return eighth/8.;
+  }else{
+    double delta=(desired_rate-lobitrate)/(hibitrate-lobitrate);
+    return (eighth+delta)/8.;
+  }
+}
+
 /* no time mapping implementation for now */
 static long seq=0;
 static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
@@ -461,9 +492,11 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
     int     *chbundle=alloca(sizeof(*chbundle)*info->submaps);
     int      chcounter=0;
 
+    long  maxbits,minbits;
+
     /* play a little loose with this abstraction */
-    int   quant_passes=look->psy_look[blocktype]->vi->coupling_passes;
-    int   stopflag=0;
+    int   quant_passes=ci->coupling_passes;
+    int   stopflag=0,stoppos=0;
 
     for(i=0;i<vi->channels;i++){
       quantized[i]=pcm[i]+n/2;
@@ -525,27 +558,87 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 	class(vb,look->residue_look[i],pcmbundle[i],zerobundle[i],chbundle[i]);
     }
 
-    /* actual encoding loop */
+    /* basic bitrate fitting algorithm:  
+       determine a current-packet maximum size from the bound queue and 
+                 point maximums
+       determine a current-packet minimum size from the bound queue and 
+                 point minimums
+       determine a desired packet size:
+         if there's a requested average, get that from the floater
+	 else, use the bits sunk by a single iteration (bounded by min/max)
+    */
+    {
+      long period_samples=b->bitrate_boundsampleacc+ci->blocksizes[vb->W]/2;
+      long maxbits_period=ci->bitrate_queue_max/vi->rate*period_samples;
+      long minbits_period=ci->bitrate_queue_min/vi->rate*period_samples;
+      long maxbits_absolute=ci->bitrate_absolute_max/vi->rate*
+	ci->blocksizes[vb->W]/2;
+      long minbits_absolute=ci->bitrate_absolute_min/vi->rate*
+	ci->blocksizes[vb->W]/2;
+
+      maxbits=min(maxbits_period-b->bitrate_boundbitacc,maxbits_absolute);
+      minbits=max(minbits_period-b->bitrate_boundbitacc,minbits_absolute);
+      if(maxbits<0)maxbits=0;
+      if(maxbits)minbits=min(minbits,maxbits);
+    }
+
+    /* actual encoding loop; if we have a desired stopping point, pack
+       slightly past it so that the end of the packet is not
+       uninitialized data that could pollute the decoded audio on the
+       decode side.  We want to truncate at a clean byte boundary */
     for(i=0;!stopflag;){
 
       /* perform residue encoding of this pass's quantized residue
          vector, according residue mapping */
     
-      for(j=0;j<info->submaps;j++)
-	look->residue_func[j]->
-	  forward(vb,look->residue_look[j],
-		  pcmbundle[j],sobundle[j],zerobundle[j],chbundle[j],
-		  i,classifications[j]);
-      i++;
-      
-      /* bitrate management decision hook; the following if() is where
-         we tell progressive encoding to halt, right now it just
-         avoids falling off the edge */
-      if(i>=quant_passes /* || yadda yadda */)stopflag=1;
+      for(j=0;j<info->submaps;j++){
+	ogg_uint32_t *queueptr=b->bitrate_queue_eighths;
+	if(queueptr)queueptr+=b->bitrate_queue_head*b->bitrate_eighths;
 
-      if(!stopflag){
-	/* down-couple/down-quantize from perfect-'so-far' -> 
-	   new quantized vector */
+	if(stoppos){
+	  look->residue_func[j]->
+	    forward(vb,look->residue_look[j],
+		    pcmbundle[j],sobundle[j],zerobundle[j],chbundle[j],
+		    i,classifications[j],b->bitrate_floatinglimit,queueptr);
+	  
+	}else{
+	  stoppos=look->residue_func[j]->
+	    forward(vb,look->residue_look[j],
+		    pcmbundle[j],sobundle[j],zerobundle[j],chbundle[j],
+		    i,classifications[j],b->bitrate_floatinglimit,queueptr);
+	}
+	i++;
+      }
+      
+      /* bitrate management.... deciding when it's time to stop. */
+      if(i<quant_passes){
+	if(b->bitrate_eighths==0){ /* average bitrate always runs
+                                      encode to the bitter end in
+                                      order to collect statistics */
+	  
+	  long current_bytes=oggpack_bits(&vb->opb)/8;
+	  
+	  if(maxbits && current_bytes>maxbits/8){
+	    /* maxbits trumps all... */
+	    stoppos=maxbits/8;
+	    stopflag=1;
+	  }else{
+	    if(current_bytes>(minbits+7)/8){
+	      if(ci->passlimit[i-1]>=b->bitrate_floatinglimit){ 
+		if(!stoppos)stoppos=current_bytes;
+		if(stoppos<current_bytes)
+		  stopflag=1;
+	      }
+	    }
+	  }
+	}
+      }else
+	stopflag=1;
+      
+      /* down-couple/down-quantize from perfect-'so-far' -> 
+	 new quantized vector */
+      if(!stoppos){ /* only do this if we're doing a real iteration
+                       and not padding */
 	if(info->coupling_steps==0){
 	  /* this assumes all or nothing coupling right now.  it should pass
 	     through any channels left uncoupled, but it doesn't do that now */
@@ -566,11 +659,95 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 			      i);
 	}
       }
+
+      /* truncate the packet according to stoppos */
+      if(!stoppos)stoppos=oggpack_bytes(&vb->opb);
+      if(minbits && stoppos*8<minbits)stoppos=(minbits+7)/8;
+      if(maxbits && stoppos*8>maxbits)stoppos=maxbits/8;
+      if(stoppos>oggpack_bytes(&vb->opb))stoppos=oggpack_bytes(&vb->opb);
+      vb->opb.endbyte=stoppos;
+      vb->opb.endbit=0;
+  
       /* steady as she goes */
     }
     seq+=vi->channels;
+
+    fprintf(stderr,"Bitrate: cav %d, cmin %ld, cmax %ld, float %.1f,"
+	    " this %ld\n",
+	    (int)((double)b->bitrate_boundbitacc*vi->rate/b->bitrate_boundsampleacc),
+	    minbits,maxbits,b->bitrate_floatinglimit,
+	    oggpack_bytes(&vb->opb)*8);
+    fprintf(stderr,"\thead:%d, boundtail:%ld(%ld), avtail:%ld(%ld)\n",
+	    b->bitrate_queue_head,b->bitrate_boundtail,b->bitrate_boundsampleacc,
+	    b->bitrate_avgtail,b->bitrate_avgsampleacc);
+    
+    /* track bitrate*/
+    /* update boundary accumulators */
+    while(b->bitrate_boundsampleacc>ci->bitrate_bound_queuetime*vi->rate){
+      int samples=ci->blocksizes[0]>>1;
+      if(b->bitrate_queue[b->bitrate_boundtail]&0x80000000UL)
+	samples=ci->blocksizes[1]>>1;
+      b->bitrate_boundsampleacc-=samples;
+      b->bitrate_boundbitacc-=
+	b->bitrate_queue[b->bitrate_boundtail]&0x7fffffffUL;
+      b->bitrate_boundtail++;
+      if(b->bitrate_boundtail>=b->bitrate_queue_size)b->bitrate_boundtail=0;
+    }
+    
+    /* update moving average accumulators */
+    while(b->bitrate_avgsampleacc>ci->bitrate_avg_queuetime*vi->rate){
+      int samples=ci->blocksizes[0]>>1;
+      if(b->bitrate_queue[b->bitrate_avgtail]&0x80000000UL)
+	samples=ci->blocksizes[1]>>1;
+      b->bitrate_avgsampleacc-=samples;
+      for(i=0;i<b->bitrate_eighths;i++)
+	b->bitrate_avgbitacc[i]-=
+	  b->bitrate_queue_eighths[b->bitrate_avgtail*b->bitrate_eighths+i];
+      b->bitrate_avgtail++;
+      if(b->bitrate_avgtail>=b->bitrate_queue_size)b->bitrate_avgtail=0;
+    }
+    
+    /* update queue head */
+    {
+      int bits=oggpack_bytes(&vb->opb)*8;
+
+      if(bits>32){ /* (avoid pushing the floater too far in digital silence) */
+
+	/* boundaries */
+	b->bitrate_queue[b->bitrate_queue_head]=bits;
+	if(vb->W)b->bitrate_queue[b->bitrate_queue_head]|=0x80000000UL;
+	b->bitrate_boundbitacc+=bits;
+	b->bitrate_boundsampleacc+=ci->blocksizes[vb->W]>>1;
+
+	/* eighths */
+	if(b->bitrate_eighths){
+	  for(i=0;i<b->bitrate_eighths;i++)
+	    b->bitrate_avgbitacc[i]+=
+	      b->bitrate_queue_eighths[b->bitrate_queue_head*b->bitrate_eighths+i];
+	  b->bitrate_avgsampleacc+=ci->blocksizes[vb->W]>>1;
+	}
+
+	b->bitrate_queue_head++;
+	if(b->bitrate_queue_head>=b->bitrate_queue_size)b->bitrate_queue_head=0;
+		
+	/* adjust the floater to offset bitrate above/below desired average */
+	/* look for the eighth settings in recent history that bracket
+           the desired bitrate, and interpolate twixt them for the
+           flaoter setting we want */
+
+	if(b->bitrate_eighths>0){
+	  double upper=floater_interpolate(b,vi,ci->bitrate_queue_upperavg);
+	  double lower=floater_interpolate(b,vi,ci->bitrate_queue_loweravg);
+	  b->bitrate_floatinglimit=ci->bitrate_floatinglimit_initial;
+	  if(upper>0 && upper<b->bitrate_floatinglimit)
+	    b->bitrate_floatinglimit=upper;
+	  if(lower>b->bitrate_floatinglimit)
+	    b->bitrate_floatinglimit=lower;
+	} 
+      }
+    }
   }
-  
+    
   look->lastframe=vb->sequence;
   return(0);
 }

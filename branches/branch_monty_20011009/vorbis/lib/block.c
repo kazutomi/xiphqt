@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: PCM data vector blocking, windowing and dis/reassembly
- last mod: $Id: block.c,v 1.50 2001/10/02 00:14:30 segher Exp $
+ last mod: $Id: block.c,v 1.50.2.1 2001/10/09 04:34:45 xiphmont Exp $
 
  Handle windowing, overlap-add, etc of the PCM vectors.  This is made
  more amusing by Vorbis' current two allowed block sizes.
@@ -267,6 +267,27 @@ int vorbis_analysis_init(vorbis_dsp_state *v,vorbis_info *vi){
   /* Initialize the envelope state storage */
   b->ve=_ogg_calloc(1,sizeof(*b->ve));
   _ve_envelope_init(b->ve,vi);
+
+  /* compute bitrate tracking setup, allocate circular packet size queue */
+  {
+    codec_setup_info *ci=vi->codec_setup;
+    /* first find the max possible needed queue size */
+    long maxpackets=(max(ci->bitrate_bound_queuetime,
+		     ci->bitrate_avg_queuetime)*
+      vi->rate+(ci->blocksizes[0]-1))/ci->blocksizes[0]+1;
+    long eighths=8*ci->passlimit[ci->coupling_passes-1];
+    if(ci->bitrate_queue_loweravg<=0. && ci->bitrate_queue_upperavg<=0.)eighths=0;
+
+    b->bitrate_queue_size=maxpackets;
+    b->bitrate_eighths=eighths;
+    b->bitrate_queue=_ogg_malloc(maxpackets*sizeof(*b->bitrate_queue));
+    if(eighths){
+      b->bitrate_queue_eighths=_ogg_malloc(maxpackets*eighths*sizeof(*b->bitrate_queue));
+      b->bitrate_avgbitacc=_ogg_malloc(eighths*sizeof(*b->bitrate_avgbitacc));
+    }
+    b->bitrate_floatinglimit=ci->bitrate_floatinglimit_initial;
+  }
+
   return(0);
 }
 
@@ -307,6 +328,9 @@ void vorbis_dsp_clear(vorbis_dsp_state *v){
 	_ogg_free(b->transform[1]);
       }
       if(b->psy_g_look)_vp_global_free(b->psy_g_look);
+      if(b->bitrate_queue)_ogg_free(b->bitrate_queue);
+      if(b->bitrate_queue_eighths)_ogg_free(b->bitrate_queue_eighths);
+      if(b->bitrate_avgbitacc)_ogg_free(b->bitrate_avgbitacc);
       
     }
     
