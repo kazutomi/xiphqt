@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.4 2003/03/13 20:32:55 brendan Exp $
+# $Id: configure.ac,v 1.5 2003/03/13 20:51:36 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -279,6 +279,8 @@ then
       LIBS="$LIBS -lmp3lame"
       LIBM="-lm"
       AC_DEFINE(HAVE_LIBLAME, 1, [Define if you have the LAME MP3 library])
+      
+      AC_CHECK_FUNCS([lame_decode_exit])
       ], [have_LAME="no"], -lm)
   fi
 fi
