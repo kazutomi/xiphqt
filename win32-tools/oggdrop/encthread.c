@@ -223,6 +223,8 @@ DWORD WINAPI encode_thread(LPVOID arg)
 
 			if (out_fn) free(out_fn);
 			formats[j].close_func(enc_opts.readdata);
+			fclose(in);
+			fclose(out);
 
 			numfiles--;
 		} /* Finished this file, loop around to next... */
