@@ -11,14 +11,15 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: file_transport.c,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: file_transport.c,v 1.1.2.3 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
-#include "transport.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "transport.h"
 
 
 typedef struct file_private_t {
@@ -35,7 +36,7 @@ int file_can_transport (char *source_string)
   return 1;  /* The file transport is tested last, so always try it */
 }
 
-data_source_t* file_open (char *source_string)
+data_source_t* file_open (char *source_string, ogg123_options_t *ogg123_opts)
 {
   data_source_t *source;
   file_private_t *private;

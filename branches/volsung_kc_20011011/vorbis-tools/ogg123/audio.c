@@ -11,17 +11,26 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: audio.c,v 1.1.2.3 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: audio.c,v 1.1.2.4 2001/12/11 18:46:22 volsung Exp $
 
  ********************************************************************/
-
-#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
 
 #include "audio.h"
+
+
+int audio_format_equal (audio_format_t *a, audio_format_t *b)
+{
+  return 
+    a->big_endian    == b->big_endian    &&
+    a->word_size     == b->word_size     &&
+    a->signed_sample == b->signed_sample &&
+    a->rate          == b->rate          &&
+    a->channels      == b->channels;
+}
 
 
 audio_device_t *append_audio_device(audio_device_t *devices_list,
@@ -117,123 +126,4 @@ void ao_onexit (void *arg)
   free_audio_devices (devices);
 
   ao_shutdown();
-}
-
-
-int audio_play_callback (void *ptr, int nbytes, int eos, void *arg)
-{
-  audio_play_arg_t *play_arg = (audio_play_arg_t *) arg;
-  int ret;
-
-  ret = audio_devices_write(play_arg->devices, ptr, nbytes);
-
-  return ret ? nbytes : 0;
-}
-
-void audio_reopen_callback (buf_t *buf, void *arg)
-{
-  audio_reopen_arg_t *reopen_arg = (audio_reopen_arg_t *) arg;
-  audio_device_t *current;
-  ao_sample_format format;
-
-  /* We DO NOT want to get cancelled part way through this and have our
-     audio devices in an unknown state */
-  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-
-
-  close_audio_devices (reopen_arg->devices);
-  
-  /* Record audio device settings and open the devices */
-  format.rate = reopen_arg->format->rate;
-  format.channels = reopen_arg->format->channels;
-  format.bits = reopen_arg->format->word_size * 8;
-  format.byte_format = reopen_arg->format->big_endian ? 
-    AO_FMT_BIG : AO_FMT_LITTLE;
-
-  current = reopen_arg->devices;
-
-  while (current != NULL) {
-    ao_info *info = ao_driver_info(current->driver_id);
-    
-    status_message(2, "\nDevice:   %s", info->name);
-    status_message(2, "Author:   %s", info->author);
-    status_message(2, "Comments: %s\n", info->comment);
-    
-    if (current->filename == NULL)
-      current->device = ao_open_live(current->driver_id, &format,
-				     current->options);
-    else
-      current->device = ao_open_file(current->driver_id, current->filename,
-				     0, &format, current->options);
-    
-    /* Report errors */
-    if (current->device == NULL) {
-      switch (errno) {
-      case AO_ENODRIVER:
-        status_error("Error: Device not available.\n");
-	break;
-      case AO_ENOTLIVE:
-	status_error("Error: %s requires an output filename to be specified with -f.\n", info->short_name);
-	break;
-      case AO_EBADOPTION:
-	status_error("Error: Unsupported option value to %s device.\n",
-		     info->short_name);
-	break;
-      case AO_EOPENDEVICE:
-	status_error("Error: Cannot open device %s.\n",
-		     info->short_name);
-	break;
-      case AO_EFAIL:
-	status_error("Error: Device failure.\n");
-	break;
-      case AO_ENOTFILE:
-	status_error("Error: An output file cannot be given for %s device.\n", info->short_name);
-	break;
-      case AO_EOPENFILE:
-	status_error("Error: Cannot open file %s for writing.\n",
-		     current->filename);
-	break;
-      case AO_EFILEEXISTS:
-	status_error("Error: File %s already exists.\n", current->filename);
-	break;
-      default:
-	status_error("Error: This error should never happen.  Panic!\n");
-	break;
-      }
-	 
-      /* We cannot recover from any of these errors */
-      exit(1);      
-    }
-    
-    current = current->next_device;
-  }
-
-  /* Cleanup argument */
-  free(reopen_arg->format);
-  free(reopen_arg);
-  
-  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);  
-}
-
-
-audio_reopen_arg_t *new_audio_reopen_arg (audio_device_t *devices,
-					  audio_format_t *fmt)
-{
-  audio_reopen_arg_t *arg;
-
-  if ( (arg = malloc(sizeof(audio_reopen_arg_t))) == NULL ) {
-    status_error("Error: Out of memory in new_audio_reopen_arg().\n");
-    exit(1);
-  }  
-  
-  if ( (arg->format = malloc(sizeof(audio_format_t))) == NULL ) {
-    status_error("Error: Out of memory in new_audio_reopen_arg().\n");
-    exit(1);
-  }  
-  
-  arg->devices = devices;
-  /* Copy format in case fmt is recycled later */
-  audio_format_copy(arg->format, fmt);
-
-  return arg;
 }

@@ -11,23 +11,16 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: format.h,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: format.h,v 1.1.2.3 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
 #ifndef __FORMAT_H__
 #define __FORMAT_H__
 
+#include "audio.h"
 #include "transport.h"
-
-
-typedef struct audio_format_t {
-  int big_endian;
-  int word_size;
-  int signed_sample;
-  int rate;
-  int channels;
-} audio_format_t;
+#include "ogg123.h"
 
 
 typedef struct decoder_stats_t {
@@ -63,7 +56,8 @@ typedef struct format_t {
   char *name;
 
   int (* can_decode) (data_source_t *source);
-  decoder_t* (* init) (data_source_t *source, audio_format_t *audio_fmt,
+  decoder_t* (* init) (data_source_t *source, ogg123_options_t *ogg123_opts,
+		       audio_format_t *audio_fmt,
 		       decoder_callbacks_t *callbacks, void *callback_arg);
   int (* read) (decoder_t *decoder, void *ptr, int nbytes, int *eos, 
 		audio_format_t *audio_fmt);
@@ -73,8 +67,6 @@ typedef struct format_t {
 
 format_t *get_format_by_name (char *name);
 format_t *select_format (data_source_t *source);
-int audio_format_equal (audio_format_t *a, audio_format_t *b);
-void audio_format_copy  (audio_format_t *source, audio_format_t *dest);
 
 decoder_stats_t *malloc_decoder_stats (decoder_stats_t *to_copy);
 

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.4.2.4 2001/12/11 05:29:09 volsung Exp $
+ last mod: $Id: status.h,v 1.1.2.4.2.5 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -43,13 +43,6 @@ typedef struct {
 } stat_format_t;
 
 
-typedef struct print_statistics_arg_t {
-  stat_format_t *stat_format;
-  data_source_stats_t *transport_statistics;
-  decoder_stats_t *decoder_statistics;
-} print_statistics_arg_t;
-
-
 /* Status options:
  * stats[0] - currently playing file / stream
  * stats[1] - current playback time
@@ -78,9 +71,4 @@ void vstatus_message (int verbosity, const char *fmt, va_list ap);
 void status_error (const char *fmt, ...);
 void vstatus_error (const char *fmt, va_list);
 
-void print_statistics_callback (buf_t *buf, void *arg);
-print_statistics_arg_t *new_print_statistics_arg (
-			       stat_format_t *stat_format,
-			       data_source_stats_t *transport_statistics,
-			       decoder_stats_t *decoder_statistics);
 #endif /* __STATUS_H__ */
