@@ -12,6 +12,10 @@
 	We haven’t played with all of these plugins, so don’t blame us if any
 	of them eat your computer. Okay?
 </p>
+</div>
+
+
+<div class='contentitem' id='applications'>
 <h2>Applications</h2>
 <dl class="appList">
 	<dt><a href="http://www.asteriskpbx.org/">Asterisk</a></dt>
@@ -89,7 +93,10 @@
 	<dd>Windows builds of speexenc, speexdec, and speexdrop</dd>
 
 </dl>
+</div>
 
+
+<div class='contentitem' id='plugins'>
 <h2>Player Plugins &amp; Code Examples</h2>
 <dl class="appList">
 	<dt><a href='http://www.openacm.org/'>OpenACM Codec</a></dt>
@@ -121,7 +128,10 @@
 	<dt><a href="download/Speex_Delphi_Demo.zip">An Encoder written in Delphi</a></dt>
 	<dd>Smallish Delphi example written by John Villar</dd>
 </dl>
+</div>
 
+
+<div class='contentitem' id='implementations'>
 <h2>Other Implementations &amp; Language Bindings</h2>
 <dl class="appList">
 	<dt><a href="download/jspeex.zip">Jspeex</a>, Java bindings to the C-based libspeex</dt>
@@ -137,6 +147,7 @@
 	<dt><a href="download/PySpeex.tar.gz">PySpeex</a></dt>
 	<dd>Python bindings by David McNab</dd>
 </dl>
+</div>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->
 

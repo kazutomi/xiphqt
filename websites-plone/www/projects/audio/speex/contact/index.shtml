@@ -7,6 +7,8 @@
 <!--#include virtual="/SSI/rightside.inc"-->
 
 <h1>Contact</h1>
+
+<div class='contentitem' id='devlist'>
 <h2 id="ml">The Speex Development List</h2>
 <p>
 	The <a href="mailto:speex-dev@xiph.org">speex-dev@xiph.org</a>
@@ -26,10 +28,15 @@
 	The list is archived along with the rest of the
 	<a href="http://www.xiph.org/archives/">xiph.org mailing list archives</a>.
 </p>
+</div>
+
+
+<div class='contentitem' id='email'>
 <h2>E-mail</h2>
 <p>
 Have a question about this website? Send an e-mail to
 <a href="mailto:webmaster@speex.org">webmaster@speex.org</a>.
 </p>
+</div>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->

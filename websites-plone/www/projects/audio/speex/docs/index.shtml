@@ -7,11 +7,17 @@
 <!--#include virtual="/SSI/rightside.inc"-->
 
 <h1>Documentation</h1>
+
+<div class='contentitem' id='faq'>
 <p>
 	Have a look at the
 	<a href="/faq/"><abbr title="Frequently Asked Questions">FAQ</abbr></a>
 	if you’re not quite sure what Speex is, or what it can do.
 </p>
+</div>
+
+
+<div class='contentitem' id='manual'>
 <h2>Manual</h2>
 <p>
 	The Speex manual provides an introduction to Speex and
@@ -28,7 +34,10 @@
 	<li><a href="manual2/">HTML (online)</a></li>
 	<li><a href="manual.tar.gz">HTML (tarball)</a></li>
 </ul>
+</div>
 
+
+<div class='contentitem' id='apireference'>
 <h2><abbr title="Application Programming Interface">API</abbr> Reference</h2>
 <p>
 	The Speex <abbr title="Application Programming Interface">API</abbr>
@@ -40,7 +49,10 @@
 	<li><a href="API/refman/">HTML (online)</a></li>
 	<li><a href="API/refman.tar.gz">HTML (tarball)</a></li>
 </ul>
+</div>
 
+
+<div class='contentitem' id='standards'>
 <h2>Standards</h2>
 <p>
 	There are efforts underway to make Speex an
@@ -48,7 +60,7 @@
 	A draft of “<a href="drafts/draft-herlein-speex-rtp-profile-02.txt"><abbr title="Realtime Protocol">RTP</abbr> Payload
 	Format for the Speex Codec</a>” is available.
 </p>
-
+</div
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->
 

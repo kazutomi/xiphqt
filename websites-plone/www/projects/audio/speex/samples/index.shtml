@@ -7,6 +7,9 @@
 <!--#include virtual="/SSI/rightside.inc"-->
 
 <h1>Speex Samples (version 1.0)</h1>
+
+
+<div class='contentitem' id='narrowband'>
 <h2>Narrowband</h2>
  These samples are coded using narrowband Speex mode (more bit-rates available)<br>
  <br>
@@ -26,6 +29,10 @@
 <a href="audio/samples/female_speex_8_vbr.wav">coded 8 kbps VBR</a> &nbsp; <a
  href="audio/samples/female_speex_11.wav">coded 11 kbps</a> &nbsp; <a
  href="audio/samples/female_speex_15.wav">coded 15 kbps</a><br>
+</div>
+
+
+<div class='contentitem' id='wideband'>
 <h2>Wideband</h2>
  This sample is coded using wideband Speex mode (more bit-rates available)<br>
  <br>
@@ -37,5 +44,7 @@
 <a href="audio/samples/wb_male_speex_18_vbr.wav">coded 18 kbps VBR</a> &nbsp; 
 <a href="audio/samples/wb_male_speex_21.wav">coded 21 kbps</a> &nbsp; 
 <a href="audio/samples/wb_male_speex_28.wav">coded 28 kbps</a><br>
+</div>
+
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->

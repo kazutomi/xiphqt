@@ -8,6 +8,10 @@
 
 
 <h1>Roadmap</h1>
+</div>
+
+
+<div class='contentitem' id='doing'>
 <h2>What We’re Doing</h2>
 <p>
 	We’re implementing and debugging new features such as a denoiser,
@@ -15,6 +19,10 @@
 	a new <acronym title='voice activity detector'>VAD</acronym> and writing
 	a fixed-point version of the Speex libraries. 
 </p>
+</div>
+
+
+<div class='contentitem' id='help'>
 <h2>How You Can Help</h2>
 <p>
 	Consider…
@@ -30,6 +38,7 @@
 	</li>
 	<li>helping finish our fixed-point version of the Speex libraries</li>
 </ul>
+</div>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->
 

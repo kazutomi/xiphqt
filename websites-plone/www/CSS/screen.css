@@ -20,6 +20,18 @@ div#logo {
 div#label {
 	text-align: center;
 	font-size: 200%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+#label img {
+	text-align: center;
+	font-size: 100%;
+	margin: 0px;
+	padding: 0;
+	border: 0px;
+	vertical-align: bottom;
 }
 
 div#thepage {
@@ -40,11 +52,6 @@ div#leftside {
 
 div#rightside {
 	padding: 20px;
-
-}
-
-div.pinchedIn, .sectionSpecific {
-	margin: 0;
 
 }
 

@@ -1,5 +1,22 @@
 @import url(/CSS/screen.css);
 
+/* This is just some example CSS to show what is possible to change in the individual projects.
+.contentitem {
+	position: relative;
+	float: left;
+	width: 28%;
+	border: solid #119035;
+	background:  #99d25d;
+	-moz-border-radius: 10px;
+	padding: 1%;
+	margin: 1%;
+}
+
+#headlines {
+	width: 95%;
+}
+*/
+
 html, body {
 	background-color: #99d25d;
 }

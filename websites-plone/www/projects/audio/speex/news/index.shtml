@@ -8,6 +8,8 @@
 
 <h1>News</h1>
 
+
+<div class='contentitem' id='news'>
 <!--
 
 
@@ -482,5 +484,6 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
         </p>
     </div>
         </div>
+</div>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->
