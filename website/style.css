@@ -1,9 +1,10 @@
 html {
-	font: 80% Verdana, Helvetica, sans-serif;
+	font-family: Verdana, Helvetica, sans-serif;
 }
 .brsmt {  border: #000000 solid; border-width: 2px 0px 0px 2px}
 .tl { border: #000000 solid; border-width: 0px 2px 2px 0px}
 .nutrition {  font-size: 280%; font-weight: bold; text-decoration: underline}
+.td { font-size: 80% }
 a {  color: #003399; text-decoration: none}
 a:hover {  color: #286FFF; text-decoration: none}
 .menu {  font-size: 75%; padding-right: 5px; padding-left: 5px}
