@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20011116";
+$version="Snatch 20011125";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
@@ -339,10 +339,10 @@ sub trim_glob{
 	$pattern=~s/^(\s+).*//;
 	$pattern=~s/(\s+)$//;
 	
-	my@result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE);
+	my@result=File::Glob::glob($pattern,GLOB_TILDE|GLOB_BRACE);
 
 	if(!defined($result[0])){
-	    @result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE|GLOB_NOCHECK);
+	    @result=File::Glob::glob($pattern,GLOB_TILDE|GLOB_BRACE|GLOB_NOCHECK);
 	}
 	$result[0];
 

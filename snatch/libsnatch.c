@@ -633,7 +633,7 @@ static void OpenOutputFile(){
       outfile_fd=STDOUT_FILENO;
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
 
-      if(videocount){
+      if(videocount || output_video_p){
 	output_video_p=1;
 	if(audio_channels){
 	  output_audio_p=1;
@@ -662,7 +662,7 @@ static void OpenOutputFile(){
 	nows=time(NULL);
 	now=localtime(&nows);
 	strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
-	if(videocount){
+	if(videocount || output_video_p){
 	  if(audio_channels){
 	    sprintf(buf2,"%s/%s_%s%dHz_%dx%d_AV.snatch",
 		    outpath,
@@ -699,7 +699,7 @@ static void OpenOutputFile(){
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
 	}
 	
-	if(videocount){
+	if(videocount || output_video_p){
 	  output_video_p=1;
 	  if(audio_channels){
 	    output_audio_p=1;
@@ -725,7 +725,7 @@ static void OpenOutputFile(){
 	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
 	  
-	  if(videocount){
+	  if(videocount || output_video_p){
 	    output_video_p=1;
 	    if(audio_channels){
 	      output_audio_p=1;
