@@ -17,7 +17,7 @@
 
 /* the 'ogg2pack_xxx functions are 'LSb' endian; if we write a word but
    read individual bits, then we'll read the lsb first */
-/* the 'oggpackB_xxx functions are 'MSb' endian; if we write a word but
+/* the 'ogg2packB_xxx functions are 'MSb' endian; if we write a word but
    read individual bits, then we'll read the msb first */
 
 #include <string.h>
@@ -42,7 +42,7 @@ void ogg2pack_writeinit(ogg2pack_buffer *b,ogg2_buffer_state *bs){
   b->owner=bs;
 }
 
-void oggpackB_writeinit(ogg2pack_buffer *b,ogg2_buffer_state *bs){
+void ogg2packB_writeinit(ogg2pack_buffer *b,ogg2_buffer_state *bs){
   ogg2pack_writeinit(b,bs);
   b->owner=bs;
 }
@@ -105,7 +105,7 @@ void ogg2pack_write(ogg2pack_buffer *b,unsigned long value,int bits){
 }
 
 /* Takes only up to 32 bits. */
-void oggpackB_write(ogg2pack_buffer *b,unsigned long value,int bits){
+void ogg2packB_write(ogg2pack_buffer *b,unsigned long value,int bits){
 
   value=(value&mask[bits])<<(32-bits); 
   bits+=b->headbit;
@@ -152,10 +152,10 @@ void ogg2pack_writealign(ogg2pack_buffer *b){
     ogg2pack_write(b,0,bits);
 }
 
-void oggpackB_writealign(ogg2pack_buffer *b){
+void ogg2packB_writealign(ogg2pack_buffer *b){
   int bits=8-b->headbit;
   if(bits<8)
-    oggpackB_write(b,0,bits);
+    ogg2packB_write(b,0,bits);
 }
 
 ogg2_reference *ogg2pack_writebuffer(ogg2pack_buffer *b){
@@ -166,7 +166,7 @@ ogg2_reference *ogg2pack_writebuffer(ogg2pack_buffer *b){
   return(b->tail);
 }
 
-ogg2_reference *oggpackB_writebuffer(ogg2pack_buffer *b){
+ogg2_reference *ogg2packB_writebuffer(ogg2pack_buffer *b){
   return ogg2pack_writebuffer(b);
 }
 
@@ -176,7 +176,7 @@ void ogg2pack_writeclear(ogg2pack_buffer *b){
   memset(b,0,sizeof(*b));
 }
 
-void oggpackB_writeclear(ogg2pack_buffer *b){
+void ogg2packB_writeclear(ogg2pack_buffer *b){
   ogg2pack_writeclear(b);
 }
 
@@ -220,7 +220,7 @@ void ogg2pack_readinit(ogg2pack_buffer *b,ogg2_reference *r){
   _span(b);
 }
 
-void oggpackB_readinit(ogg2pack_buffer *b,ogg2_reference *r){
+void ogg2packB_readinit(ogg2pack_buffer *b,ogg2_reference *r){
   ogg2pack_readinit(b,r);
 }
 
@@ -291,7 +291,7 @@ int ogg2pack_look(ogg2pack_buffer *b,int bits,unsigned long *ret){
 }
 
 /* Read in bits without advancing the bitptr; bits <= 32 */
-int oggpackB_look(ogg2pack_buffer *b,int bits,unsigned long *ret){
+int ogg2packB_look(ogg2pack_buffer *b,int bits,unsigned long *ret){
   int m=32-bits;
 
   bits+=b->headbit;
@@ -353,7 +353,7 @@ long ogg2pack_look1(ogg2pack_buffer *b){
   return (b->headptr[0]>>b->headbit)&1;
 }
 
-long oggpackB_look1(ogg2pack_buffer *b){
+long ogg2packB_look1(ogg2pack_buffer *b){
   if(b->headend<1)return -1;
   return (b->headptr[0]>>(7-b->headbit))&1;
 }
@@ -367,7 +367,7 @@ void ogg2pack_adv(ogg2pack_buffer *b,int bits){
   _span(b);
 }
 
-void oggpackB_adv(ogg2pack_buffer *b,int bits){
+void ogg2packB_adv(ogg2pack_buffer *b,int bits){
   ogg2pack_adv(b,bits);
 }
 
@@ -406,7 +406,7 @@ void ogg2pack_adv1(ogg2pack_buffer *b){
   }
 }
 
-void oggpackB_adv1(ogg2pack_buffer *b){
+void ogg2packB_adv1(ogg2pack_buffer *b){
   ogg2pack_adv1(b);
 }
 
@@ -499,7 +499,7 @@ int ogg2pack_read(ogg2pack_buffer *b,int bits,unsigned long *ret){
 }
 
 /* bits <= 32 */
-int oggpackB_read(ogg2pack_buffer *b,int bits,unsigned long *ret){
+int ogg2packB_read(ogg2pack_buffer *b,int bits,unsigned long *ret){
   long m=32-bits;
   
   bits+=b->headbit;
@@ -600,7 +600,7 @@ long ogg2pack_read1(ogg2pack_buffer *b){
   return ret&1;
 }
 
-long oggpackB_read1(ogg2pack_buffer *b){
+long ogg2packB_read1(ogg2pack_buffer *b){
   long ret;
 
   if(b->headend<2){
@@ -633,11 +633,11 @@ long ogg2pack_bits(ogg2pack_buffer *b){
 	 b->headbit);
 }
 
-long oggpackB_bytes(ogg2pack_buffer *b){
+long ogg2packB_bytes(ogg2pack_buffer *b){
   return ogg2pack_bytes(b);
 }
 
-long oggpackB_bits(ogg2pack_buffer *b){
+long ogg2packB_bits(ogg2pack_buffer *b){
   return ogg2pack_bits(b);
 }
 
@@ -645,7 +645,7 @@ int ogg2pack_eop(ogg2pack_buffer *b){
   return(b->headend<0?-1:0);
 }  
 
-int oggpackB_eop(ogg2pack_buffer *b){
+int ogg2packB_eop(ogg2pack_buffer *b){
   return ogg2pack_eop(b);
 }  
 
@@ -756,39 +756,39 @@ void cliptestB(unsigned long *b,int vals,int bits,int *comp,int compsize){
   long bytes,i;
   ogg2_reference *or;
 
-  oggpackB_writeinit(&o,bs);
+  ogg2packB_writeinit(&o,bs);
   for(i=0;i<vals;i++)
-    oggpackB_write(&o,b[i],bits?bits:ilog(b[i]));
-  or=oggpackB_writebuffer(&o);
-  bytes=oggpackB_bytes(&o);
+    ogg2packB_write(&o,b[i],bits?bits:ilog(b[i]));
+  or=ogg2packB_writebuffer(&o);
+  bytes=ogg2packB_bytes(&o);
   if(bytes!=compsize)report("wrong number of bytes!\n");
   for(i=0;i<bytes;i++)if(getbyte(or,i)!=comp[i]){
     for(i=0;i<bytes;i++)fprintf(stderr,"%x %x\n",getbyte(or,i),(int)comp[i]);
     report("wrote incorrect value!\n");
   }
-  oggpackB_readinit(&r,or);
+  ogg2packB_readinit(&r,or);
   for(i=0;i<vals;i++){
     unsigned long test;
     int tbit=bits?bits:ilog(b[i]);
-    if(oggpackB_look(&r,tbit,&test))
+    if(ogg2packB_look(&r,tbit,&test))
       report("out of data!\n");
     if(test!=(b[i]&mask[tbit]))
       report("looked at incorrect value!\n");
     if(tbit==1)
-      if(oggpackB_look1(&r)!=(int)(b[i]&mask[tbit]))
+      if(ogg2packB_look1(&r)!=(int)(b[i]&mask[tbit]))
 	report("looked at single bit incorrect value!\n");
     if(tbit==1){
-      if(oggpackB_read1(&r)!=(int)(b[i]&mask[tbit]))
+      if(ogg2packB_read1(&r)!=(int)(b[i]&mask[tbit]))
 	report("read incorrect single bit value!\n");
     }else{
-      if(oggpackB_read(&r,tbit,&test))
+      if(ogg2packB_read(&r,tbit,&test))
 	report("premature end of data when reading!\n");
       if(test!=(b[i]&mask[tbit]))
 	report("read incorrect value!\n");
     }
   }
-  if(oggpackB_bytes(&r)!=bytes)report("leftover bytes after read!\n");
-  oggpackB_writeclear(&o);
+  if(ogg2packB_bytes(&r)!=bytes)report("leftover bytes after read!\n");
+  ogg2packB_writeclear(&o);
 }
 
 int flatten (unsigned char *flat){
@@ -946,27 +946,27 @@ void _end_verify3(int count){
   int i;
 
   /* are the proper number of bits left over? */
-  int leftover=count*8-oggpackB_bits(&o);
+  int leftover=count*8-ogg2packB_bits(&o);
   if(leftover>7)
     report("\nERROR: too many bits reported left over.\n");
   
   /* does reading to exactly byte alignment *not* trip EOF? */
-  if(oggpackB_read(&o,leftover,&temp))
+  if(ogg2packB_read(&o,leftover,&temp))
     report("\nERROR: read to but not past exact end tripped EOF.\n");
-  if(oggpackB_bits(&o)!=count*8)
+  if(ogg2packB_bits(&o)!=count*8)
     report("\nERROR: read to but not past exact end reported bad bitcount.\n");
   
   /* does EOF trip properly after a single additional bit? */
-  if(!oggpackB_read(&o,1,&temp))
+  if(!ogg2packB_read(&o,1,&temp))
     report("\nERROR: read past exact end did not trip EOF.\n");
-  if(oggpackB_bits(&o)!=count*8)
+  if(ogg2packB_bits(&o)!=count*8)
     report("\nERROR: read past exact end reported bad bitcount.\n");
   
   /* does EOF stay set over additional bit reads? */
   for(i=0;i<=32;i++){
-    if(!oggpackB_read(&o,i,&temp))
+    if(!ogg2packB_read(&o,i,&temp))
       report("\nERROR: EOF did not stay set on stream.\n");
-    if(oggpackB_bits(&o)!=count*8)
+    if(ogg2packB_bits(&o)!=count*8)
       report("\nERROR: read past exact end reported bad bitcount.\n");
   }
 }	
@@ -975,32 +975,32 @@ void _end_verify4(int count){
   int i;
 
   /* are the proper number of bits left over? */
-  int leftover=count*8-oggpackB_bits(&o);
+  int leftover=count*8-ogg2packB_bits(&o);
   if(leftover>7)
     report("\nERROR: too many bits reported left over.\n");
   
   /* does reading to exactly byte alignment *not* trip EOF? */
   for(i=0;i<leftover;i++){
-    oggpackB_adv1(&o);
+    ogg2packB_adv1(&o);
     if(o.headend<0)
       report("\nERROR: read to but not past exact end tripped EOF.\n");
   }
-  if(oggpackB_bits(&o)!=count*8)
+  if(ogg2packB_bits(&o)!=count*8)
     report("\nERROR: read to but not past exact end reported bad bitcount.\n");
   
   /* does EOF trip properly after a single additional bit? */
-  oggpackB_adv1(&o);
+  ogg2packB_adv1(&o);
   if(o.headend>=0)
     report("\nERROR: read past exact end did not trip EOF.\n");
-  if(oggpackB_bits(&o)!=count*8)
+  if(ogg2packB_bits(&o)!=count*8)
     report("\nERROR: read past exact end reported bad bitcount.\n");
   
   /* does EOF stay set over additional bit reads? */
   for(i=0;i<=32;i++){
-    oggpackB_adv1(&o);
+    ogg2packB_adv1(&o);
     if(o.headend>=0)
       report("\nERROR: EOF did not stay set on stream.\n");
-    if(oggpackB_bits(&o)!=count*8)
+    if(ogg2packB_bits(&o)!=count*8)
       report("\nERROR: read past exact end reported bad bitcount.\n");
   }
 }	
@@ -1184,23 +1184,23 @@ int main(void){
 
   fprintf(stderr,"\n32 bit preclipped packing (MSb): ");
 
-  oggpackB_writeinit(&o,bs);
+  ogg2packB_writeinit(&o,bs);
   for(i=0;i<test2size;i++)
-    oggpackB_write(&o,large[i],32);
-  or=oggpackB_writebuffer(&o);
-  bytes=oggpackB_bytes(&o);
-  oggpackB_readinit(&r,or);
+    ogg2packB_write(&o,large[i],32);
+  or=ogg2packB_writebuffer(&o);
+  bytes=ogg2packB_bytes(&o);
+  ogg2packB_readinit(&r,or);
   for(i=0;i<test2size;i++){
     unsigned long test;
-    if(oggpackB_look(&r,32,&test)==-1)report("out of data. failed!");
+    if(ogg2packB_look(&r,32,&test)==-1)report("out of data. failed!");
     if(test!=large[i]){
       fprintf(stderr,"%ld != %ld (%lx!=%lx):",test,large[i],
 	      test,large[i]);
       report("read incorrect value!\n");
     }
-    oggpackB_adv(&r,32);
+    ogg2packB_adv(&r,32);
   }
-  if(oggpackB_bytes(&r)!=bytes)report("leftover bytes after read!\n");
+  if(ogg2packB_bytes(&r)!=bytes)report("leftover bytes after read!\n");
   fprintf(stderr,"ok.");
 
   fprintf(stderr,"\nSmall unclipped packing (MSb): ");
@@ -1221,15 +1221,15 @@ int main(void){
     ogg2_reference lor={&lob,0,8,0,1};
     unsigned long test;
 
-    oggpackB_readinit(&r,&lor);
+    ogg2packB_readinit(&r,&lor);
     for(i=0;i<64;i++){
-      if(oggpackB_read(&r,1,&test)){
+      if(ogg2packB_read(&r,1,&test)){
 	fprintf(stderr,"failed; got -1 prematurely.\n");
 	exit(1);
       }
     }
-    if(oggpackB_look(&r,1,&test)!=-1 ||
-       oggpackB_read(&r,1,&test)!=-1){
+    if(ogg2packB_look(&r,1,&test)!=-1 ||
+       ogg2packB_read(&r,1,&test)!=-1){
       fprintf(stderr,"failed; read past end without -1.\n");
       exit(1);
     }
@@ -1238,28 +1238,28 @@ int main(void){
     ogg2_buffer lob={"\0\0\0\0\0\0\0\0",8,0,{0}};
     ogg2_reference lor={&lob,0,8,0,1};
     unsigned long test;
-    oggpackB_readinit(&r,&lor);
+    ogg2packB_readinit(&r,&lor);
 
-    if(oggpackB_read(&r,30,&test)!=0 || oggpackB_read(&r,16,&test)!=0){
+    if(ogg2packB_read(&r,30,&test)!=0 || ogg2packB_read(&r,16,&test)!=0){
       fprintf(stderr,"failed 2; got -1 prematurely.\n");
       exit(1);
     }
     
-    if(oggpackB_look(&r,18,&test)!=0){
+    if(ogg2packB_look(&r,18,&test)!=0){
       fprintf(stderr,"failed 3; got -1 prematurely.\n");
       exit(1);
     }
-    if(oggpackB_look(&r,19,&test)!=-1){
+    if(ogg2packB_look(&r,19,&test)!=-1){
       fprintf(stderr,"failed 4; read past end without -1.\n");
       exit(1);
     }
-    if(oggpackB_look(&r,32,&test)!=-1){
+    if(ogg2packB_look(&r,32,&test)!=-1){
       fprintf(stderr,"failed 5; read past end without -1.\n");
       exit(1);
     }
     fprintf(stderr,"ok.\n\n");
   }
-  oggpackB_writeclear(&o);
+  ogg2packB_writeclear(&o);
 
   /* now the scary shit: randomized testing */
 
@@ -1461,7 +1461,7 @@ int main(void){
     unsigned char flat[4*TESTWORDS]; /* max possible needed size */
 
     fprintf(stderr,"\rRandomized testing (MSb)... (%ld)   ",10000-i);
-    oggpackB_writeinit(&o,bs);
+    ogg2packB_writeinit(&o,bs);
 
     /* generate a list of words and lengths */
     /* write the required number of bits out to packbuffer */
@@ -1469,17 +1469,17 @@ int main(void){
       values[j]=rand();
       len[j]=(rand()%33);
 
-      oggpackB_write(&o,values[j],len[j]);
+      ogg2packB_write(&o,values[j],len[j]);
 
       bitcount+=len[j];
-      if(oggpackB_bits(&o)!=bitcount){
+      if(ogg2packB_bits(&o)!=bitcount){
 	fprintf(stderr,"\nERROR: Write bitcounter %d != %ld!\n",
-		bitcount,oggpackB_bits(&o));
+		bitcount,ogg2packB_bits(&o));
 	exit(1);
       }
-      if(oggpackB_bytes(&o)!=(bitcount+7)/8){
+      if(ogg2packB_bytes(&o)!=(bitcount+7)/8){
 	fprintf(stderr,"\nERROR: Write bytecounter %d != %ld!\n",
-		(bitcount+7)/8,oggpackB_bytes(&o));
+		(bitcount+7)/8,ogg2packB_bytes(&o));
 	exit(1);
       }
       
@@ -1491,7 +1491,7 @@ int main(void){
       fprintf(stderr,"\nERROR: flattened write buffer incorrect length\n");
       exit(1);
     }
-    oggpackB_writeclear(&o);
+    ogg2packB_writeclear(&o);
 
     /* verify against original list */
     msbverify(values,len,flat);
@@ -1553,28 +1553,28 @@ int main(void){
 	  exit(1);
 	}
 	
-	oggpackB_readinit(&o,or);
+	ogg2packB_readinit(&o,or);
 
 	/* verify bit count */
-	if(oggpackB_bits(&o)!=0){
+	if(ogg2packB_bits(&o)!=0){
 	  fprintf(stderr,"\nERROR: Read bitcounter not zero!\n");
 	  exit(1);
 	}
-	if(oggpackB_bytes(&o)!=0){
+	if(ogg2packB_bytes(&o)!=0){
 	  fprintf(stderr,"\nERROR: Read bytecounter not zero!\n");
 	  exit(1);
 	}
 
 	bitcount=bitoffset;
-	oggpackB_read(&o,bitoffset,&temp);
+	ogg2packB_read(&o,bitoffset,&temp);
 
 	/* read and compare to original list */
 	for(j=begin;j<begin+ilen;j++){
 	  int ret;
 	  if(len[j]==1 && rand()%1)
-	    temp=ret=oggpackB_read1(&o);
+	    temp=ret=ogg2packB_read1(&o);
 	  else
-	    ret=oggpackB_read(&o,len[j],&temp);
+	    ret=ogg2packB_read(&o,len[j],&temp);
 	  if(ret<0){
 	    fprintf(stderr,"\nERROR: End of stream too soon! word: %d,%d\n",
 		    j-begin,ilen);
@@ -1586,14 +1586,14 @@ int main(void){
 	    exit(1);
 	  }
 	  bitcount+=len[j];
-	  if(oggpackB_bits(&o)!=bitcount){
+	  if(ogg2packB_bits(&o)!=bitcount){
 	    fprintf(stderr,"\nERROR: Read bitcounter %d != %ld!\n",
-		    bitcount,oggpackB_bits(&o));
+		    bitcount,ogg2packB_bits(&o));
 	    exit(1);
 	  }
-	  if(oggpackB_bytes(&o)!=(bitcount+7)/8){
+	  if(ogg2packB_bytes(&o)!=(bitcount+7)/8){
 	    fprintf(stderr,"\nERROR: Read bytecounter %d != %ld!\n",
-		    (bitcount+7)/8,oggpackB_bytes(&o));
+		    (bitcount+7)/8,ogg2packB_bytes(&o));
 	    exit(1);
 	  }
 	  
@@ -1601,17 +1601,17 @@ int main(void){
 	_end_verify3(count);
 
 	/* look/adv version */
-	oggpackB_readinit(&o,or);
+	ogg2packB_readinit(&o,or);
 	bitcount=bitoffset;
-	oggpackB_adv(&o,bitoffset);
+	ogg2packB_adv(&o,bitoffset);
 
 	/* read and compare to original list */
 	for(j=begin;j<begin+ilen;j++){
 	  int ret;
 	  if(len[j]==1 && rand()%1)
-	    temp=ret=oggpackB_look1(&o);
+	    temp=ret=ogg2packB_look1(&o);
 	  else
-	    ret=oggpackB_look(&o,len[j],&temp);
+	    ret=ogg2packB_look(&o,len[j],&temp);
 
 	  if(ret<0){
 	    fprintf(stderr,"\nERROR: End of stream too soon! word: %d\n",
@@ -1624,18 +1624,18 @@ int main(void){
 	    exit(1);
 	  }
 	  if(len[j]==1 && rand()%1)
-	    oggpackB_adv1(&o);
+	    ogg2packB_adv1(&o);
 	  else
-	    oggpackB_adv(&o,len[j]);
+	    ogg2packB_adv(&o,len[j]);
 	  bitcount+=len[j];
-	  if(oggpackB_bits(&o)!=bitcount){
+	  if(ogg2packB_bits(&o)!=bitcount){
 	    fprintf(stderr,"\nERROR: Look/Adv bitcounter %d != %ld!\n",
-		    bitcount,oggpackB_bits(&o));
+		    bitcount,ogg2packB_bits(&o));
 	    exit(1);
 	  }
-	  if(oggpackB_bytes(&o)!=(bitcount+7)/8){
+	  if(ogg2packB_bytes(&o)!=(bitcount+7)/8){
 	    fprintf(stderr,"\nERROR: Look/Adv bytecounter %d != %ld!\n",
-		    (bitcount+7)/8,oggpackB_bytes(&o));
+		    (bitcount+7)/8,ogg2packB_bytes(&o));
 	    exit(1);
 	  }
 	  
