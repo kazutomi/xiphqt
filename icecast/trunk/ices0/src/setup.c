@@ -1,7 +1,7 @@
 /* setup.c
  * - Functions for initialization in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2002-3 Brendan Cully <brendan@xiph.org>
+ * Copyright (c) 2002-4 Brendan Cully <brendan@xiph.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -79,6 +79,9 @@ ices_setup_initialize (void)
 #ifdef HAVE_LIBLAME
   /* Initialize liblame for reeencoding */
   ices_reencode_initialize ();
+  /*
+  ices_config.plugin = crossfade_plugin();
+  */
 #endif
 }
 

@@ -1,7 +1,7 @@
 /* stream.c
  * - Functions for streaming in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-3 Brendan Cully
+ * Copyright (c) 2001-4 Brendan Cully <brendan@xiph.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -153,6 +153,9 @@ stream_send (ices_config_t* config, input_stream_t* source)
   /* worst case decode: 22050 Hz at 8kbs = 44.1 samples/byte */
   static int16_t left[INPUT_BUFSIZ * 45];
   static int16_t right[INPUT_BUFSIZ * 45];
+  static int16_t ol[INPUT_BUFSIZ * 45];
+  static int16_t or[INPUT_BUFSIZ * 45];
+  int i;
   static int16_t* rightp;
 #endif
 
@@ -162,11 +165,15 @@ stream_send (ices_config_t* config, input_stream_t* source)
 
   if (config->reencode) {
     ices_reencode_reset (source);
-    for (stream = config->streams; stream; stream = stream->next)
-      if (stream->reencode && stream_needs_reencoding (source, stream)) {
-        decode = 1;
-        break;
-      }
+    if (config->plugin) {
+      decode = 1;
+      config->plugin->new_track();
+    } else
+      for (stream = config->streams; stream; stream = stream->next)
+	if (stream->reencode && stream_needs_reencoding (source, stream)) {
+	  decode = 1;
+	  break;
+	}
   }
 
   if (decode) {
@@ -199,6 +206,17 @@ stream_send (ices_config_t* config, input_stream_t* source)
 #endif
     }
 
+#ifdef HAVE_LIBLAME
+    /* run output through plugin */
+    if (samples && config->plugin) {
+      samples = config->plugin->process(samples, left, right, ol, or);
+      for (i = 0; i < samples; i++) {
+	left[i] = ol[i];
+	right[i] = or[i];
+      }
+    }
+#endif
+
     if (len == 0) {
       ices_log_debug ("Done sending");
       break;
@@ -214,7 +232,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
       for (stream = config->streams; stream; stream = stream->next) {
         /* don't reencode if the source is MP3 and the same bitrate */
 #ifdef HAVE_LIBLAME
-        if (stream->reencode && stream_needs_reencoding (source, stream)) {
+        if (stream->reencode && (config->plugin || stream_needs_reencoding (source, stream))) {
           if (samples > 0) {
             /* for some reason we have to manually duplicate right from left to get
              * LAME to output stereo from a mono source */
