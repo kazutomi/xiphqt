@@ -264,7 +264,8 @@ Ices handles the following signals specially:
 Causes ices to perform a clean shutdown.
 .TP
 .B SIGHUP
-Causes ices to close and reopen the log file.
+Causes ices to close and reopen the log file and the playlist. It will also
+reload and restart the playlist script if you're using one.
 .TP
 .B SIGUSR1
 Causes ices to skip to the next track in the playlist immediately.
