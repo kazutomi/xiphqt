@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!-- Please note that all the Configuration Keywords are case sensitive! -->
+<ices:Configuration xmlns:ices="http://www.icecast.org/projects/ices">
+	<ices:Playlist>
+		<!-- This is the filename used as a playlist when using
+		     the builtin playlist handler. If you are choose to
+		     randomize the playlist, then the internal one will
+		     be in ices.playlist.$pid in the specified base
+		     directory -->
+		<ices:File>apan.txt</ices:File>
+
+		<!-- Set this to 0 if you don't want to randomize your
+		     playlist, and to 1 if you do. -->
+		<ices:Randomize>1</ices:Randomize>
+
+		<!-- Either builtin, perl, or python. Chooses what
+		     playlist module to use. See README.playlist -->
+		<ices:Type>builtin</ices:Type>
+
+		<!-- Module name to pass to the playlist handler if using
+		     perl or python. If you use the builtin playlist
+		     handler then this is ignored -->
+		<ices:Module>ices</ices:Module>
+	</ices:Playlist>
+	<ices:Server>
+		<!-- Hostname or ip of the icecast server you want to
+		     connect to -->
+		<ices:Hostname>localhost</ices:Hostname>
+
+		<!-- Port of the same -->
+		<ices:Port>8000</ices:Port>
+
+		<!-- Encoder password on the icecast server -->
+		<ices:Password>letmein</ices:Password>
+
+		<!-- Header protocol to use when communicating with
+		     the server. Use xaudiocast except when you can't,
+		     then use icy -->
+		<ices:Protocol>xaudiocast</ices:Protocol>
+	</ices:Server>
+	<ices:Execution>
+		<!-- Set this to 1 if you want ices to launch in the
+		     background as a daemon -->
+		<ices:Background>0</ices:Background>
+
+		<!-- Set this to 1 if you want to see more verbose 
+		     output from ices -->
+		<ices:Verbose>0</ices:Verbose>
+		
+		<!-- This directory specifies where ices should put
+		     the logfile, internal playlist (if randomizing),
+		     cue file and pid file (if daemonizing). -->
+		<ices:BaseDirectory>/tmp</ices:BaseDirectory>
+
+		<!-- If this is set to 1, and ices is compiled with
+		     liblame support, ices will reencode the stream
+		     on the fly to the bitrate specified with the
+		     Stream/Bitrate option -->
+		<ices:Reencode>0</ices:Reencode>
+	</ices:Execution>
+	<ices:Stream>
+		<!-- The name of you stream, not the name of the song! -->
+		<ices:Name>Cool ices default name from XML</ices:Name>
+
+		<!-- Genre of your stream, be it rock or pop or whatever -->
+		<ices:Genre>Cool ices genre from XML</ices:Genre>
+
+		<!-- Longer description of your stream -->
+		<ices:Description>Cool ices description from XML</ices:Description>
+		<!-- URL to a page describing your stream -->
+		<ices:URL>Cool ices URL from XML</ices:URL>
+	
+		<!-- Stream bitrate, used to specify bitrate if reencoding,
+		     otherwize just used for display on yp and on the
+		     server. Try to keep it accurate -->
+		<ices:Bitrate>128</ices:Bitrate>
+
+		<!-- 0 if you don't want the icecast server to publicate
+		     your stream on the yp server, 1 if you do -->
+		<ices:Public>1</ices:Public>
+	</ices:Stream>
+</ices:Configuration>

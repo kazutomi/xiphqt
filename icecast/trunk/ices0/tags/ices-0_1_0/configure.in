@@ -1,0 +1,470 @@
+AC_INIT(src/ices.c)
+AM_CONFIG_HEADER(config.h)
+
+ICES_MAJOR=0
+ICES_MINOR=1
+ICES_MICRO=0
+
+dnl Check to see if ICES_SPECIAL is overridden on commandline
+if test -z "$ICES_SPECIAL"
+then
+  ICES_SPECIAL=""
+fi
+
+ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO
+
+if test -z "$ICES_SPECIAL"
+then
+  ICES_VERSION=$ICES_VERSION_SMALL
+else
+  ICES_VERSION=$ICES_VERSION_SMALL.$ICES_SPECIAL
+fi
+
+VERSION="$ICES_VERSION"
+
+AC_MSG_RESULT([Building ices-$VERSION...])
+
+AM_INIT_AUTOMAKE(ices, $VERSION)
+AM_MAINTAINER_MODE
+AM_CONDITIONAL(FSSTD, test x$enable_fsstd = xyes)
+AC_SUBST(USE_FSSTD)
+
+AM_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
+
+dnl reasonable guesses for where stuff is installed
+if test "$prefix" = "NONE"
+then
+  prefix="/usr/local/icecast"
+fi
+
+AC_ARG_ENABLE(fsstd, [  --enable-fsstd              install files following FSSTD [default=no]], , enable_fsstd=no)
+
+if test "x$enable_fsstd" = "xyes"; then
+	ICES_BINDIR=/usr/bin
+	ICES_SBINDIR=/usr/sbin
+	ICES_ETCDIR=/etc/icecast
+	ICES_ETCDIR_INST=/etc/icecast
+	ICES_MODULE_DIR=/usr/share/icecast/modules
+	ICES_SHAREDIR=/usr/share/icecast
+	ICES_LOGDIR=/var/log/icecast
+	ICES_LOGDIR_INST=/var/log/icecast
+	ICES_DOCDIR=/usr/doc/ices-${ICES_VERSION_SMALL}
+	USE_FSSTD=yes
+else
+	ICES_BINDIR=${prefix}/bin
+	ICES_SBINDIR=${prefix}/bin
+	ICES_ETCDIR=conf
+	ICES_ETCDIR_INST=${prefix}/conf
+	ICES_MODULEDIR=${prefix}/modules
+	ICES_SHAREDIR=${prefix}
+	ICES_LOGDIR=logs
+	ICES_LOGDIR_INST=${prefix}/logs
+	ICES_TEMPLATEDIR=templates
+	ICES_TEMPLATEDIR_INST=${prefix}/templates
+	ICES_STATICDIR=static
+	ICES_STATICDIR_INST=${prefix}/static
+	ICES_DOCDIR=${prefix}/doc
+	USE_FSSTD=no
+fi
+
+
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(VERSION)
+
+AC_SUBST(ICES_BINDIR)
+AC_SUBST(ICES_SBINDIR)
+AC_SUBST(ICES_ETCDIR_INST)
+AC_SUBST(ICES_LOGDIR_INST)
+AC_SUBST(ICES_DOCDIR)
+
+AC_DEFINE_UNQUOTED(ICES_ETCDIR, "$ICES_ETCDIR")
+AC_SUBST(ICES_ETCDIR)
+AC_DEFINE_UNQUOTED(ICES_LOGDIR, "$ICES_LOGDIR")
+AC_SUBST(ICES_LOGDIR)
+AC_DEFINE_UNQUOTED(ICES_MODULEDIR, "$ICES_MODULEDIR")
+AC_SUBST(ICES_MODULEDIR)
+
+AC_ARG_PROGRAM
+AC_PROG_RANLIB
+
+dnl Checks for programs.
+AC_PROG_CC
+
+if test "$GCC" = yes
+then
+  CFLAGS="$CFLAGS -Wall"
+fi
+
+AC_CHECK_PROG(UNAME,uname,uname)
+AC_CHECK_PROG(GMAKE,gmake,gmake)
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
+dnl -- System check --
+
+AC_CANONICAL_HOST
+AC_AIX
+AC_ISC_POSIX
+AC_MINIX
+
+IRIX=no
+case $target in
+  *solaris*)
+    if test "$CC" = cc
+    then
+      CFLAGS="$CFLAGS -mt"
+    fi
+  ;;
+  *sunos*)
+    if test "$CC" = cc
+    then
+      CFLAGS="$CFLAGS -mt"
+    fi
+  ;;
+  *hpux*)
+    CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
+    if test "$CC" = cc
+    then
+      CFLAGS="$CFLAGS -Aa"
+    fi
+  ;;
+  *irix*)
+    IRIX=yes
+  ;;
+esac
+
+dnl -- Compiler feature check --
+
+AC_C_CONST
+
+dnl -- System library check --
+
+if test "$IRIX" = "yes"
+then
+  AC_MSG_WARN(Skipping library tests because they confuse Irix)
+else
+  dnl used by resolver/libresolv.a
+  AC_SEARCH_LIBS(gethostbyname, dns nsl resolv)
+  dnl used by thread/libicethread.a
+  AC_SEARCH_LIBS(nanosleep, rt)
+fi
+
+THREADLIBS="no"
+
+AC_CHECK_FUNCS(pthread_create, THREADLIBS="")
+
+if test -z "$THREADLIBS"
+then
+  AC_MSG_CHECKING(if the system thread library works)
+  AC_TRY_RUN([
+int main() {
+  return !pthread_equal(pthread_self(), pthread_self());
+}
+  ],
+    AC_MSG_RESULT(yes),
+    AC_MSG_RESULT(no);THREADLIBS="no",
+    AC_MSG_RESULT(crosscompiling so no);THREADLIBS="no")
+fi
+
+if test "$THREADLIBS" = "no"
+then
+  for lib in pthread c_r dce pthreads; do
+    AC_CHECK_LIB($lib,pthread_create,THREADLIBS="-l$lib")
+    if test $THREADLIBS != "no"; then
+      break
+    fi
+  done
+fi
+  
+if test "$THREADLIBS" = "no"
+then
+  AC_MSG_ERROR([Your system doesn't seem to support posix threads. Ices needs posix threads to compile.]) 
+fi
+
+LIBS="$LIBS $THREADLIBS"
+CPPFLAGS="$CPPFLAGS $THREADCPPFLAGS"
+
+dnl -- System header check --
+
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([fcntl.h sys/types.h sys/socket.h sys/stat.h unistd.h \
+  signal.h sys/signal.h errno.h])
+
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SIGNAL
+
+dnl -- System function check --
+
+AC_FUNC_STRFTIME
+AC_CHECK_FUNCS([vsnprintf setpgid inet_addr inet_aton setlinebuf])
+
+dnl -- Required extra libraries --
+
+AC_ARG_WITH(libshout,
+[  --with-libshout[=DIR]       use installed libshout [in DIR]])
+
+have_libshout="no"
+if test "$with_libshout" != "no"
+then
+  if test -n "$with_libshout" -a "$with_libshout" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_libshout/include"
+    LDFLAGS="$LDFLAGS -L$with_libshout/lib"
+  fi
+
+  AC_CHECK_HEADER(shout/shout.h, [
+    AC_DEFINE(HAVE_SHOUT_SHOUT_H, 1, [ Define if you have <shout/shout.h ])
+    have_libshout="maybe"
+  ])
+  if test "$have_libshout" != "no"
+  then
+    AC_CHECK_LIB(shout, shout_init_connection, [
+      have_libshout="yes"
+      LIBS="$LIBS -lshout"
+    ])
+  fi
+
+  if test "$have_libshout" != "yes"
+  then
+    if test -n "$with_libshout"
+    then
+      AC_MSG_ERROR([Could not find an installed shout library])
+    else
+      AC_MSG_RESULT([Installed libshout not found, using builtin])
+    fi
+  fi
+fi
+
+if test "$have_libshout" != "yes"
+then
+  libshout="libshout"
+fi
+AC_CONFIG_SUBDIRS($libshout)
+AM_CONDITIONAL(NEED_SHOUT, test "$have_libshout" != "yes")
+
+dnl -- Optional features --
+
+AC_ARG_WITH(lame,
+[  --with-lame[=DIR]           enable support for reencoding with lame [in DIR]])
+
+AC_ARG_WITH(lame-includes,
+[  --with-lame-includes=DIR    directory to find lame.h])
+
+AC_ARG_WITH(lame-libraries,
+[  --with-lame-libraries=DIR   directory to find lame library])
+
+if test "$with_lame_includes"
+then
+  if test -f "$with_lame_includes/lame.h"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_lame_includes"
+  else
+    AC_MSG_ERROR("lame.h is not where you told me it should be. No that is just plain rude.")
+  fi
+fi
+
+if test "$with_lame_libraries"
+then
+  LIBS="$LIBS -L$with_lame_libraries"
+fi
+
+if test "$with_lame" != "no"
+then
+  AC_CACHE_SAVE
+  if test -n "$with_lame" -a "$with_lame" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_lame/include"
+    LDFLAGS="$LDFLAGS -L$with_lame/lib"
+  fi
+
+  have_LAME="no"
+  AC_CHECK_HEADER(lame/lame.h, [
+    have_LAME="maybe",
+    AC_DEFINE(HAVE_LAME_LAME_H, 1, [ Use <lame/lame.h> instead of <lame.h> ])
+    ],
+    AC_CHECK_HEADER(lame.h, [
+      have_LAME="maybe"]))
+
+  if test "$have_LAME" != "no"
+  then
+    dnl lame_init_old only exists in the NEW API - we don't actually use it.
+    AC_CHECK_LIB(mp3lame, lame_init_old, [
+      have_LAME="yes"
+      LIBS="$LIBS -lmp3lame"
+      ICES_OBJECTS="$ICES_OBJECTS reencode.o"
+      LIBM="-lm"
+      AC_DEFINE(HAVE_LIBLAME, 1, [ Define if you have the LAME MP3 library ])
+      ],, -lm)
+  fi
+
+  dnl lame_encode_flush_nogap was added at the same time that lame was made
+  dnl to handle calls to lame_encode_buffer following a flush, so we use
+  dnl this as a flag to see whether we have to reset the LAME engine between
+  dnl songs.
+  if test "$have_LAME" = "yes"
+  then
+  AC_CHECK_LIB(mp3lame, lame_encode_flush_nogap, [
+    AC_DEFINE(HAVE_LAME_NOGAP, 1, [ Define if libmp3lame has lame_encode_flush_nogap ])],, -lm)
+  fi
+fi
+
+if test "$with_lame" != "no" -a "$have_LAME" != "yes"
+then
+  if test -n "$with_lame"
+  then
+    AC_MSG_ERROR([Could not find a valid LAME library installation])
+  else
+    AC_MSG_RESULT([Could not find a valid LAME library, reencoding disabled])
+  fi
+fi
+
+AC_ARG_WITH(perl,
+[  --with-perl[=DIR]           enable perl interpreter [found in DIR]])
+
+PERL=perl
+if test "$with_perl" != "no"
+then
+  AC_CACHE_SAVE
+  if test -n "$with_perl" -a "$with_perl" != "yes"
+  then
+    $PERL="$with_perl/bin/perl"
+    if ! test -x "$PERL"
+    then
+      AC_MSG_ERROR([Perl not found in the specified location])
+    fi
+  fi
+
+  PERLCFLAGS=`$PERL -MExtUtils::Embed -e ccopts`
+  PERLLIBS=`$PERL -MExtUtils::Embed -e ldopts`
+  CPPFLAGS="$CPPFLAGS $PERLCFLAGS"
+  LIBS="$LIBS $PERLLIBS"
+
+  have_perl="no"
+  AC_CHECK_FUNCS(perl_construct)
+  if test "$ac_cv_func_perl_construct" != "no"
+  then
+    have_perl="yes"
+    AC_DEFINE(HAVE_LIBPERL, 1, [ Define if you have perl libraries ])
+  fi
+fi
+
+if test "$with_perl" != "no" -a "$have_perl" != "yes"
+then
+  if test -n "$with_perl"
+  then
+    AC_MSG_ERROR([Could not find perl libraries])
+  else
+    AC_MSG_RESULT([Could not find perl libraries, perl scripting disabled])
+  fi
+fi
+
+AC_ARG_WITH(python,
+[  --with-python[=DIR]         enable python interpreter [in DIR]])
+
+use_python=$withval
+
+AC_ARG_WITH(python-includes,
+[  --with-python-includes=DIR  python include files are in DIR])
+AC_ARG_WITH(python-libraries,
+[  --with-python-libraries=DIR python libraries are in DIR])
+
+if test -n "$with_python_includes"
+then
+  CPPFLAGS="$CPPFLAGS -I$with_python_includes"
+fi
+
+if test -n "$with_python_libraries"
+then
+  LDFLAGS="$LDFLAGS -L$with_python_libraries"
+fi
+
+if test "$with_python" != "no"
+then
+  AC_CACHE_SAVE
+  if test -n "$with_python" -a "$with_python" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_python/include"
+    LDFLAGS="$LDFLAGS -L$with_python/lib"
+  fi
+
+  have_python="no"
+  AC_CHECK_HEADER(Python.h, [
+    have_python="maybe",
+    AC_DEFINE(HAVE_PYTHON_H, 1, [ Define if you have Python.h ])])
+
+  if test "$have_python" != "no"
+  then
+    for lib in python python2.0 python1.6 python1.5
+    do
+      if test "$have_python" != "yes"
+      then
+        AC_CHECK_LIB($lib, Py_Initialize, [
+          LIBS="$LIBS -l$lib"
+          have_python="yes"
+          LIBM="-lm"
+          LIBDL="-ldl"
+          AC_DEFINE(HAVE_LIBPYTHON, 1, [ Define if you have the python library ])],,-lm -ldl)
+      fi
+    done
+  fi
+fi
+
+if test "$with_python" != "no" -a "$have_python" != "yes"
+then
+  if test -n "$with_python"
+  then
+    AC_MSG_ERROR([Could not find the python library])
+  else
+    AC_MSG_RESULT([Could not find the python library, python scripting disabled])
+  fi
+fi
+
+AC_ARG_WITH(xmlconfig,
+[  --with-xml-config=PATH      Use xml-config in PATH to find libxml ])
+
+if test "$with_xmlconfig" != "no"
+then
+  if test -n "$with_xmlconfig" -a "$with_xmlconfig" != "yes"
+  then
+    XMLCONFIG="$with_xmlconfig"
+    if ! test -x "$XMLCONFIG"
+    then
+      AC_MSG_ERROR([$with_xmlconfig is not a program])
+    fi
+  else
+    AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
+  fi
+
+  if test -n "$XMLCONFIG"
+  then
+    AC_DEFINE(HAVE_LIBXML, 1, [ Define if you have the GNOME XML library ])
+    LIBS="$LIBS `$XMLCONFIG --libs`"
+    CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
+    AC_CHECK_HEADERS([libxml/parser.h gnome-xml/parser.h parser.h])
+  else
+    AC_MSG_RESULT([Compiling without libxml support - no configfiles])
+  fi
+fi
+
+dnl -- and finish up --
+
+LIBS="$LIBS $LIBM $LIBDL"
+AC_SUBST(ICES_OBJECTS)
+
+AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile 
+  conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile
+  avl/Makefile log/Makefile src/interpreter/Makefile src/xml/Makefile])
+
+AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
+AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])
+
+if test "$GMAKE"
+then
+  AC_MSG_RESULT([Configuration complete. Now run 'gmake'.])
+  AC_MSG_RESULT([You can then run 'gmake install' to install ices])
+else
+  AC_MSG_RESULT([Configuration complete. Now run 'make'.])
+  AC_MSG_RESULT([You can then run 'make install' to install ices])
+fi
