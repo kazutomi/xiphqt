@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
-$pkgconfig = 'IPKG_CONFIG_PATH=${PKG_CONFIG_PATH:-/usr/local/lib/pkgconfig} pkg-config';
+$pkgconfig = 'PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-/usr/local/lib/pkgconfig} pkg-config';
 if (system("$pkgconfig --exists shout") == 0) {
   $ccflags = `$pkgconfig --cflags shout`;
   $libs = `$pkgconfig --libs shout`;
