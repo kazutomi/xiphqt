@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.2 2001/06/23 00:17:43 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.3 2001/06/23 00:28:17 kcarnold Exp $
 
  ********************************************************************/
 
@@ -503,7 +503,7 @@ void play_file(ogg123_options_t opt)
 				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f, Buffer fill: %3.0f%%   \r",
 				c_min, c_sec, r_min, r_sec, t_min, t_sec,
 				(double) ov_bitrate_instant(&vf) / 1000.0F,
-				buffer_full(buffer)*100.0F);
+				(double) buffer_full(buffer) / (double) buffer->size * 100.0F);
 		      else
 			fprintf(stderr,
 				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f   \r",
@@ -519,7 +519,7 @@ void play_file(ogg123_options_t opt)
 				"\rTime: %02li:%05.2f, Bitrate: %.1f, Buffer fill: %3.0f%%   \r",
 				c_min, c_sec,
 				(float) ov_bitrate_instant (&vf) / 1000.0F,
-				buffer_full(buffer)*100.0F);
+				(double) buffer_full(buffer) / (double) buffer->size * 100.0F);
 		      else
 			fprintf(stderr,
 				"\rTime: %02li:%05.2f, Bitrate: %.1f   \r",
@@ -623,15 +623,13 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
     return 0;
 }
 
-double buffer_full (buf_t* buf) {
+long buffer_full (buf_t* buf) {
   chunk_t *reader = buf->reader; /* thread safety... */
-  int chunks;
 
   if (reader > buf->writer)
-    chunks = (reader - buf->writer);
+    return (reader - buf->writer + 1);
   else
-    chunks = (buf->end - reader) + (buf->writer - buf->buffer);
-  return (double) chunks / buf->size;
+    return (buf->end - reader) + (buf->writer - buf->buffer) + 2;
 }
 
 void buffer_cleanup (void) {
