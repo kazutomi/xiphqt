@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: floor backend 0 implementation
- last mod: $Id: floor0.c,v 1.43 2001/06/15 23:31:00 xiphmont Exp $
+ last mod: $Id: floor0.c,v 1.43.2.1 2001/07/08 08:48:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -42,6 +42,8 @@ typedef struct {
   lpc_lookup lpclook;
   float *lsp_look;
 
+  long bits;
+  long frames;
 } vorbis_look_floor0;
 
 /* infrastructure for finding fit */
@@ -86,6 +88,10 @@ static void floor0_free_info(vorbis_info_floor *i){
 static void floor0_free_look(vorbis_look_floor *i){
   vorbis_look_floor0 *look=(vorbis_look_floor0 *)i;
   if(i){
+
+    fprintf(stderr,"floor 0 bit usage %f\n",
+	    (float)look->bits/look->frames);
+
     if(look->linearmap)_ogg_free(look->linearmap);
     if(look->lsp_look)_ogg_free(look->lsp_look);
     lpc_clear(&look->lpclook);
@@ -313,6 +319,8 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *in,
   }
 
   oggpack_write(&vb->opb,val,info->ampbits);
+  look->bits+=info->ampbits+1;
+  look->frames++;
 
   if(val){
     float *lspwork=alloca(look->m*sizeof(float));
@@ -342,7 +350,7 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *in,
 
     b=be->fullbooks+info->books[booknum];
     oggpack_write(&vb->opb,booknum,_ilog(info->numbooks));
-
+    look->bits+=_ilog(info->numbooks);
 
 #ifdef TRAIN_LSP
     {
@@ -366,7 +374,7 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *in,
 
     for(j=0;j<look->m;j+=b->dim){
       int entry=_f0_fit(b,codedflr,lspwork,j);
-      bits+=vorbis_book_encode(b,entry,&vb->opb);
+      look->bits+=vorbis_book_encode(b,entry,&vb->opb);
 
 #ifdef TRAIN_LSP
       fprintf(ef,"%d,\n",entry);
@@ -381,6 +389,8 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *in,
     _analysis_output("lsp2",seq-1,lspwork,look->m,0,0);
 
     /* take the coefficients back to a spectral envelope curve */
+    for(j=0;j<look->n;j++)
+      codedflr[j]=1.f;
     vorbis_lsp_to_curve(codedflr,look->linearmap,look->n,look->ln,
 			lspwork,look->m,amp,info->ampdB);
 

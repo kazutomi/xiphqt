@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: basic shared codebook operations
- last mod: $Id: sharedbook.c,v 1.16 2001/02/26 03:50:43 xiphmont Exp $
+ last mod: $Id: sharedbook.c,v 1.16.6.1 2001/07/08 08:48:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -396,7 +396,7 @@ int _best(codebook *book, float *a, int step){
     for(k=0,o=step*(dim-1);k<dim;k++,o-=step){
       int i;
       /* linear search the quant list for now; it's small and although
-	 with > 8 entries, it would be faster to bisect, this would be
+	 with > ~8 entries, it would be faster to bisect, this would be
 	 a misplaced optimization for now */
       for(i=0;i<tt->threshvals-1;i++)
 	if(a[o]<tt->quantthresh[i])break;

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c,v 1.33 2001/06/17 22:25:50 xiphmont Exp $
+ last mod: $Id: mapping0.c,v 1.33.2.1 2001/07/08 08:48:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -133,6 +133,7 @@ static vorbis_look_mapping *mapping0_look(vorbis_dsp_state *vd,vorbis_info_mode 
     if(ci->psys && vd->analysisp){
       int psynum=info->psysubmap[i];
       _vp_psy_init(look->psy_look+i,ci->psy_param[psynum],
+		   ci->psy_g_param,
 		   ci->blocksizes[vm->blockflag]/2,vi->rate);
     }
   }
@@ -259,6 +260,7 @@ static long seq=0;
 static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
   vorbis_dsp_state      *vd=vb->vd;
   vorbis_info           *vi=vd->vi;
+  codec_setup_info      *ci=vi->codec_setup;
   backend_lookup_state  *b=vb->vd->backend_state;
   vorbis_look_mapping0  *look=(vorbis_look_mapping0 *)l;
   vorbis_info_mapping0  *info=look->map;
@@ -311,18 +313,21 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
       logfft[(j+1)>>1]=todB(&temp);
     }
 
-    _analysis_output("fft",seq,logfft,n/2,0,0);
-    _analysis_output("mdct",seq,logmdct,n/2,0,0);
+    _analysis_output("fft",seq,logfft,n/2,1,0);
+    _analysis_output("mdct",seq,logmdct,n/2,1,0);
 
     /* perform psychoacoustics; do masking */
     ret=_vp_compute_mask(look->psy_look+submap,
+			 b->psy_g_look,
+			 i,
 			 logfft, /* -> logmax */
 			 logmdct,
 			 logmask,
-			 vbi->ampmax);
+			 vbi->ampmax,
+			 ci->blocksizes[vb->lW]/2);
     if(ret>newmax)newmax=ret;
 
-    _analysis_output("mask",seq,logmask,n/2,0,0);
+    _analysis_output("mask",seq,logmask,n/2,1,0);
     
     /* perform floor encoding */
     nonzero[i]=look->floor_func[submap]->
@@ -338,8 +343,8 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
       if(fabs(vb->pcm[i][j]>200))
       fprintf(stderr,"%ld ",seq);*/
     
-    _analysis_output("res",seq-vi->channels+j,vb->pcm[i],n,0,0);
-    _analysis_output("codedflr",seq++,codedflr,n/2,0,1);
+    _analysis_output("res",seq,vb->pcm[i],n,1,0);
+    _analysis_output("codedflr",seq++,codedflr,n/2,1,1);
       
   }
 
@@ -393,16 +398,23 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 	  ang=B-A;
 	}
 	
-	/*if(fabs(mag)<3.5f)
-	  ang=rint(ang/(mag*2.f))*mag*2.f;*/
-	
-	/*if(fabs(mag)<1.5)
-	ang=0;
-      
-	if(j>(n*3/16))
-	  ang=0;
-	
-	  if(ang>=fabs(mag*2))ang=-fabs(mag*2);*/
+	if(j>12){
+	  
+	  if(j>=n*3/64){
+
+	    if(j>=n*3/32){
+	      ang=0;
+	    }else{
+	      ang=rint(ang/rint(mag))*rint(mag);
+	      //if(fabs(mag)<2.5)
+	      //ang=0;
+	    }
+	  }
+	}
+
+
+
+	if(ang>=fabs(mag*2))ang=-fabs(mag*2);
 	
 	pcmM[j]=mag;
 	pcmA[j]=ang;
@@ -535,7 +547,7 @@ static int mapping0_inverse(vorbis_block *vb,vorbis_look_mapping *l){
   /* only MDCT right now.... */
   for(i=0;i<vi->channels;i++){
     float *pcm=vb->pcm[i];
-    _analysis_output("out",seq+i,pcm,n/2,0,1);
+    _analysis_output("out",seq+i,pcm,n/2,1,1);
     mdct_backward(b->transform[vb->W][0],pcm,pcm);
   }
 

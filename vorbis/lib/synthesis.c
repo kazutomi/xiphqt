@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: single-block PCM synthesis
- last mod: $Id: synthesis.c,v 1.22 2001/05/27 06:44:01 xiphmont Exp $
+ last mod: $Id: synthesis.c,v 1.22.2.1 2001/07/08 08:48:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -75,7 +75,7 @@ int vorbis_synthesis(vorbis_block *vb,ogg_packet *op){
 long vorbis_packet_blocksize(vorbis_info *vi,ogg_packet *op){
   codec_setup_info     *ci=vi->codec_setup;
   oggpack_buffer       opb;
-  int                  type,mode,i;
+  int                  mode;
  
   oggpack_readinit(&opb,op->packet,op->bytes);
 

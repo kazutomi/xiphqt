@@ -12,7 +12,7 @@
 
  function: libvorbis backend and mapping structures; needed for 
            static mode headers
- last mod: $Id: backends.h,v 1.9 2001/06/15 23:31:00 xiphmont Exp $
+ last mod: $Id: backends.h,v 1.9.2.1 2001/07/08 08:48:01 xiphmont Exp $
 
  ********************************************************************/
 
@@ -113,6 +113,8 @@ typedef struct{
   float twofitatten;
   int   unusedminsize;
   int   unusedmin_n;
+
+  int   n;
 
 } vorbis_info_floor1;
 
