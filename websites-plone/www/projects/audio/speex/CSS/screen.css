@@ -29,12 +29,12 @@ div#navbar1 a#speex {
 	padding: 0px 7px 6px 35px;
 	font-weight: bold;
 	font-style: italic;
-	background:  no-repeat url(/Images/logos/speex/35x20.png) top left #99d25d;
+	background:  no-repeat url(/Images/logos/speex/35x20.png) left #99d25d;
 	border-top: solid #99d25d;
 }
 
 div#navbar1 a#speex:hover {
-	background:  no-repeat url(/Images/logos/speex/35x20.png) top left #99d25d;
+	background:  no-repeat url(/Images/logos/speex/35x20.png) left #99d25d;
 }
 
 div#navbar2 {

@@ -9,7 +9,7 @@
 <h1>News</h1>
 
 
-<div class='contentitem' id='news'>
+<div class='contentitem' id='newspage'>
 <!--
 
 
@@ -29,7 +29,7 @@
 		<h3>Speex 1.1.6 Released</h3>
 		<div class='itemdate'>July 28, 2004</div>
 		<div class='itemcontent'>
-			<p>There are seven changes in this release.
+			<p>There are seven changes in this release.</p>
 			<ul>
 				<li>Improved jitter buffer (now actually works)</li>
 				<li>Denoiser tuning</li>
@@ -39,21 +39,18 @@
 				<li>Run-time identification of Speex version with a new speex_lib_ctl() call</li>
 				<li>Moved the includes to /usr/include/speex/</li>
 			</ul>
-			</p>
 		</div>	
 	</li>
 	<li class='newsitem'>
 		<h3>Speex 1.0.4 Released</h3>
 		<div class='itemdate'>July 21, 2004</div>
 		<div class='itemcontent'>
-			<p>
-			There are three changes in this release.
+			<p>There are three changes in this release.</p>
 			<ul>
 				<li>Headers are now in /usr/include/speex/ (but a copy is still in /usr/include for compat reasons).</li>
 				<li>Pseudo-gapless playback (i.e. playback has the same number of samples)</li>
 				<li>Fixed a potential bug (unconfirmed) that might cause a segfault in special circumstances.</li>
 			</ul>
-			</p>
 		</div>	
 	</li>
 	<li class='newsitem'>
@@ -88,14 +85,12 @@
 			<div class='meta'>July 21, 2004</div>
 		</div>
 		<div class='content'>
-			<p>
-			There are three changes in this release.
+			<p>There are three changes in this release.</p>
 			<ul>
 				<li>Headers are now in /usr/include/speex/ (but a copy is still in /usr/include for compat reasons).</li>
 				<li>Pseudo-gapless playback (i.e. playback has the same number of samples)</li>
 				<li>Fixed a potential bug (unconfirmed) that might cause a segfault in special circumstances.</li>
 			</ul>
-			</p>
 		</div>
 	</div>
 	<div class='newsitem'>
@@ -204,7 +199,7 @@ with other software)
 </li>
 </ul>
 <p>
-Please test this release and report bugs. If you’re developing a
+Please test this release and report bugs. If you're developing a
 <abbr>VoIP</abbr> application, you are encouraged to try out these new features
 which will help increase the quality of the speech transmitted.
 </p>
@@ -217,7 +212,7 @@ which will help increase the quality of the speech transmitted.
           </div>
           <div class="hlcontent">
         <p>
-			It’s official; Speex has reached the 1.0 milestone. In addition to
+			It's official; Speex has reached the 1.0 milestone. In addition to
 			some minor cosmetic fixes, the bitstream format has been frozen.
         </p>
 		<p>
@@ -236,7 +231,7 @@ which will help increase the quality of the speech transmitted.
 			Just some more bugfixes and tuning are in this release;
 			If no bugs are found, this may be rebranded Speex 1.0.
         </p>
-		<p><em>If  there’s anything that doesn’t work, <strong>now</strong> is your last good time to report a bug.</em></p>
+		<p><em>If  there's anything that doesn't work, <strong>now</strong> is your last good time to report a bug.</em></p>
     </div>
         </div>
         <div class="newsitem">
@@ -265,7 +260,7 @@ which will help increase the quality of the speech transmitted.
 		<p>From the <a href="download.html">Download</a> page:</p>
 		<blockquote>
 	<p>
-		This is Release Candidate 1 for Speex 1.0. The only new feature (yes, <span title="Jean-Marc Valin">I</span> know beta4 was supposed to be feature-complete) is a very low bitrate (3.95 <abbr title="kilobits per second">kbps</abbr>) mode for narrowband. This release also fixes a number of bugs, including  a fix for low-bitrate wideband encoding—however, this fix adds high-frequency noise during the decoding of beta4 and earlier data. Finally, the WAV handling is more robust and handles undocumented extensions better.
+		This is Release Candidate 1 for Speex 1.0. The only new feature (yes, <span title="Jean-Marc Valin">I</span> know beta4 was supposed to be feature-complete) is a very low bitrate (3.95 <abbr title="kilobits per second">kbps</abbr>) mode for narrowband. This release also fixes a number of bugs, including a fix for low-bitrate wideband encoding, however, this fix adds high-frequency noise during the decoding of beta4 and earlier data. Finally, the WAV handling is more robust and handles undocumented extensions better.
 	</p>
 
 	<p>
@@ -285,7 +280,7 @@ which will help increase the quality of the speech transmitted.
             This is the 4th beta and probably the last before we start putting out release candidates. This release adds a number of quality improvements and some new features; first, the quality of the variable bitrate (VBR) mode has been greatly improved, especially for wideband. Also, some improvements were made to the packetloss concealment code in order to reduce artifacts caused by lost packets. There has been improvements to the 2.15 kbps mode, which now sounds a bit better. The last quality improvement is in the perceptual enhancement which is now good enough to be enabled by default in speexdec (but not by default in libspeex for now).
         </p>
         <p>
-One of the new features in this release is a VAD (Voice Activity Detection) mode that conserves bandwidth when there’s no speech, and even when VBR isn’t enabled.  VAD is coupled with DTX (Discontinuous Transmission), a feature that can completely stop data transmission when the noise is constant (in which case, comfort noise generation is turned on). The last new feature in this release is an ABR (Average Bitrate) option, which uses VBR with a quality that’s adjusted to meet a certain target (average) bitrate.
+One of the new features in this release is a VAD (Voice Activity Detection) mode that conserves bandwidth when there's no speech, and even when VBR isn't enabled.  VAD is coupled with DTX (Discontinuous Transmission), a feature that can completely stop data transmission when the noise is constant (in which case, comfort noise generation is turned on). The last new feature in this release is an ABR (Average Bitrate) option, which uses VBR with a quality that's adjusted to meet a certain target (average) bitrate.
         </p>
     </div>
         </div>
@@ -328,8 +323,8 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
             <a href="standards.html">Standards</a> page and the
             Windows binaries are on the <a href="download.html">Download</a>
             page. Finally, since Speex was added to
-            <a href="http://www.debian.org/">Debian</a>’s packaging
-            system, we’ve put up a
+            <a href="http://www.debian.org/">Debian</a>'s packaging
+            system, we've put up a
             <a href="packages.html">packages</a> page with information
             about Speex in other package repositories.
         </p>
@@ -344,7 +339,7 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
         <p>
             This is the third beta for Speex, implementing what should be the
             last new features before 1.0. These new features are a new
-            “ultra-wideband” mode for encoding at 32kHz
+            "ultra-wideband" mode for encoding at 32kHz
             (up to 48kHz) and an intensity stereo mode. Both of these are
             implemented to preserve backward and forward compatibility
             with other releases. This means that it is now possible to
@@ -402,12 +397,12 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
         <div class="newsitem">
           <div class="hlheader">
             <div class="title">New site redesign</div>
-            <div class="meta">October 11–22, 2002</div>
+            <div class="meta">October 11-22, 2002</div>
           </div>
           <div class="hlcontent">
         <p>
             The old site had a bug that
-            <abbr title="Internet Explorer">IE</abbr> 6 didn’t
+            <abbr title="Internet Explorer">IE</abbr> 6 didn't
             interpret the same way as other browsers, which prompted a total
             rewrite of the site. Now, speex.org uses the latest
             <a href="http://www.webstandards.org">web standards</a>,
@@ -440,8 +435,8 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
             <a href="download.html">download page</a> as source and
             pre-compiled binaries. The
             <abbr title="application programming interface">API</abbr>
-            and bitstream are in “soft freeze”,
-            and there’s new support for vorbiscomment. Enjoy!
+            and bitstream are in "soft freeze",
+            and there's new support for vorbiscomment. Enjoy!
         </p>
     </div>
         </div>
@@ -454,7 +449,7 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
         <p>
             Speex 0.8.1 released. This release fixes a bug in the new 0.8
             API (<code>speex_mode_query()</code>). Users of speexenc and
-            speexdec don’t need to upgrade, but users of libspeex
+            speexdec don't need to upgrade, but users of libspeex
             (either directly or through another application) should.
         </p>
     </div>
@@ -467,7 +462,7 @@ One of the new features in this release is a VAD (Voice Activity Detection) mode
           <div class="hlcontent">
         <p>
             Speex 0.8.0 released. The <code>speex_decode()</code> function no
-            longer uses the “lost” parameter.
+            longer uses the "lost" parameter.
             Applications will need to be updated. 
         </p>
     </div>

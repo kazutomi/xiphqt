@@ -87,7 +87,7 @@
 		<h3>Speex 1.1.6 Released</h3>
 		<div class='itemdate'>July 28, 2004</div>
 		<div class='itemcontent'>
-			<p>There are seven changes in this release.
+			<p>There are seven changes in this release.</p>
 			<ul>
 				<li>Improved jitter buffer (now actually works)</li>
 				<li>Denoiser tuning</li>
@@ -97,21 +97,18 @@
 				<li>Run-time identification of Speex version with a new speex_lib_ctl() call</li>
 				<li>Moved the includes to /usr/include/speex/</li>
 			</ul>
-			</p>
 		</div>	
 	</li>
 	<li class='newsitem'>
 		<h3>Speex 1.0.4 Released</h3>
 		<div class='itemdate'>July 21, 2004</div>
 		<div class='itemcontent'>
-			<p>
-			There are three changes in this release.
+			<p>There are three changes in this release.</p>
 			<ul>
 				<li>Headers are now in /usr/include/speex/ (but a copy is still in /usr/include for compat reasons).</li>
 				<li>Pseudo-gapless playback (i.e. playback has the same number of samples)</li>
 				<li>Fixed a potential bug (unconfirmed) that might cause a segfault in special circumstances.</li>
 			</ul>
-			</p>
 		</div>	
 	</li>
 	<li class='newsitem'>

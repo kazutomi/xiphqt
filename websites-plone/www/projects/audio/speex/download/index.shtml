@@ -29,7 +29,7 @@
 		<div class='itemcontent'>
 			<p>
 			This bugfix release fixes a multithreading bug and corrects an underflow problem that could slow decoding dramatically on x86 processors.
-
+			</p>
 			<ul>
 				<li><a href="download/speex-1.0.4.tar.gz">Source Code</a></li>
 				<li><a href="download/speex-1.0.4-1.i386.rpm">i386 RPM</a></li>
@@ -37,7 +37,6 @@
 				<li><a href="download/speex-1.0.4-1.src.rpm">Source RPM</a></li>
 				<li><a href="download/speex_win32_1.0.4_setup.exe">Windows binaries</a></li>
 			</ul>
-			</p>
 		</div>	
 	</li>
 	<li class='newsitem'>
@@ -47,6 +46,7 @@
 		<div class='itemcontent'>
 			<p>
 			There are seven changes in this release.
+			</p>
 			<ul>
 				<li>Improved jitter buffer (now actually works)</li>
 				<li>Denoiser tuning</li>
@@ -65,7 +65,6 @@
 				<li><a href="download/speex-1.1.6-1.src.rpm">Source RPM</a></li>
 				<li><a href="download/speex_win32_1.1.6_setup.exe">Windows binaries</a></li>
 			</ul>
-			</p>
 		</div>	
 	</li>
 	<li class='newsitem'>
