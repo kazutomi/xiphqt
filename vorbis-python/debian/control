@@ -2,8 +2,8 @@ Source: pyvorbis
 Section: interpreters
 Priority: optional
 Maintainer: Christopher L Cheney <ccheney@debian.org>
-Build-Depends: debhelper (>> 2.0.0), libvorbis-dev (>> 1.0beta4), pyogg (>> 0.2), python-base, python-distutils
-Standards-Version: 3.5.2.0
+Build-Depends: debhelper (>> 3.0.0), libvorbis-dev (>> 1.0rc1), pyogg (>> 0.3), python-base, python-distutils
+Standards-Version: 3.5.5.0
 
 Package: pyvorbis
 Architecture: any
