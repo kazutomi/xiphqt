@@ -121,9 +121,6 @@ metadata_update (input_stream_t* source, int delay)
     return;
   }
 
-
-  ices_util_free (playlist_metadata);
-
   for (stream = ices_config.streams; stream; stream = stream->next) {
     rc = shout_set_metadata (stream->conn, metadata);
 	
@@ -133,6 +130,7 @@ metadata_update (input_stream_t* source, int delay)
       ices_log_debug ("Updated metadata on %s to: %s", stream->mount, value);
   }
 
+  ices_util_free (playlist_metadata);
   shout_metadata_free (metadata);
 }
 
