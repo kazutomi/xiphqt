@@ -1,0 +1,5 @@
+* Make the scripting engines, and vorbis and MP3 reencoding, run-time linkable
+* Support reencoding of VBR files
+* Improved error handling
+
+$Id: TODO,v 1.2 2003/03/05 18:20:12 brendan Exp $
