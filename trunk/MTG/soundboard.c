@@ -2,7 +2,12 @@
 
    make Esc behavior correct in editing menus by using temp cue/tag storage
    tag list menu
-   proper locking around edit to prevent playback problems
+   sane arrow keying
+   autocompletion
+   logarhythmic fades
+   proper printing out of file loading issues
+   abstracted output
+   allow sample name/tag change in edit menus
 */
 #define _REENTRANT 1
 #include <stdlib.h>
@@ -30,7 +35,7 @@ static char *tempdir="/tmp/beaverphonic/";
 static char *lockfile="/tmp/beaverphonic/lock";
 //static char *installdir="/usr/local/beaverphonic/";
 static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
-#define VERSION "20020128.0"
+#define VERSION "20020203.0"
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
 
@@ -87,7 +92,8 @@ int mgetch(){
 
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
-#define MAX_CHANNELS 2
+#define MAX_OUPUT_CHANNELS 2
+#define MAX_INPUT_CHANNELS 2
 #define CHANNEL_LABEL_LENGTH 50
 int playback_bufsize=0;
 
@@ -97,11 +103,11 @@ typedef struct {
   /* real stuff not here yet */
 } outchannel;
   
-static outchannel channel_list[MAX_CHANNELS]={
+static outchannel channel_list[MAX_OUPUT_CHANNELS]={
   {"offstage left",0},
   {"offstage right",0},
 };
-static int channel_count=MAX_CHANNELS;
+static int channel_count=MAX_OUPUT_CHANNELS;
 
 /******** label abstraction code; use this for all alloced strings
           that need to be saved to config file (shared or not) */
@@ -237,9 +243,9 @@ typedef struct {
   double master_vol_target;
   double master_vol_slew;
 
-  double outvol_current[2][MAX_CHANNELS];
-  double outvol_target[2][MAX_CHANNELS];
-  double outvol_slew[2][MAX_CHANNELS];
+  double outvol_current[MAX_INPUT_CHANNELS][MAX_OUPUT_CHANNELS];
+  double outvol_target[MAX_INPUT_CHANNELS][MAX_OUPUT_CHANNELS];
+  double outvol_slew[MAX_INPUT_CHANNELS][MAX_OUPUT_CHANNELS];
 
 } tag;
 
@@ -264,11 +270,13 @@ int new_tag_number(){
 static void _alloc_tag_if_needed(int number){
   if(number>=tag_count){
     int prev=tag_count;
+    pthread_mutex_lock(&master_mutex);
     tag_count=number+1;
     tag_list=m_realloc(tag_list,sizeof(*tag_list)*tag_count);
     active_list=m_realloc(active_list,sizeof(*active_list)*tag_count);
     
     memset(tag_list+prev,0,sizeof(*tag_list)*(tag_count-prev));
+    pthread_mutex_unlock(&master_mutex);
   }
 }
 
@@ -373,6 +381,15 @@ int load_sample(tag *t,const char *path){
 }
 
 int unload_sample(tag *t){
+  /* is this sample currently playing back? */
+  pthread_mutex_lock(&master_mutex);
+  if(t->activep){
+    int i;
+    for(i=0;i<active_count;i++)
+      if(active_list[i]==t)_playback_remove(i);
+  }
+  pthread_mutex_unlock(&master_mutex);
+
   /* unmap */
   if(t->basemap)
     munmap(t->basemap,
@@ -408,10 +425,15 @@ void release_tag(int number){
   if(number>=tag_count)return;
   tag_list[number].refcount--;
   if(tag_list[number].refcount==0){
-    if(tag_list[number].basemap)
-      unload_sample(tag_list+number);
-    release_label(tag_list[number].sample_path);
-    release_label(tag_list[number].sample_desc);
+    tag *t=tag_list+number;
+
+    if(t->basemap)
+      unload_sample(t); /* <- locked here; this gets it off the play
+                           list and eliminates any playback thread
+                           interdependancies; it can't get back on
+                           active play list if we're here */
+    release_label(t->sample_path);
+    release_label(t->sample_desc);
   }
   if(tag_list[number].refcount<0)
     tag_list[number].refcount=0;
@@ -471,7 +493,7 @@ typedef struct {
   int  vol_master;
   long vol_ms;
   
-  int  outvol[2][MAX_CHANNELS];
+  int  outvol[MAX_INPUT_CHANNELS][MAX_OUPUT_CHANNELS];
 } mix;
 
 typedef struct {
@@ -492,23 +514,28 @@ void add_cue(int n,cue c){
   int i;
 
   if(cue_count==cue_storage){
+    pthread_mutex_lock(&master_mutex);
     cue_storage++;
     cue_storage*=2;
     cue_list=m_realloc(cue_list,cue_storage*sizeof(*cue_list));
+    pthread_mutex_unlock(&master_mutex);
   }
 
   /* copy insert */
+  pthread_mutex_lock(&master_mutex);
   if(cue_count-n)
     memmove(cue_list+n+1,cue_list+n,sizeof(*cue_list)*(cue_count-n));
   cue_count++;
 
   cue_list[n]=c;
+  pthread_mutex_unlock(&master_mutex);
 }
 
 /* inefficient.  delete one, shift-copy list, delete one, shift-copy
    list, delete one, gaaaah.  Not worth optimizing */
 static void _delete_cue_helper(int n){
   if(n>=0 && n<cue_count){
+    pthread_mutex_lock(&master_mutex);
     release_label(cue_list[n].label);
     release_label(cue_list[n].cue_text);
     release_label(cue_list[n].cue_desc);
@@ -516,6 +543,7 @@ static void _delete_cue_helper(int n){
     cue_count--;
     if(n<cue_count)
       memmove(cue_list+n,cue_list+n+1,sizeof(*cue_list)*(cue_count-n));
+    pthread_mutex_unlock(&master_mutex);
   }
 }
 
@@ -563,10 +591,10 @@ int save_cue(FILE *f,int n){
 	    c->tag,c->tag_create_p,
 	    c->mix.vol_master,
 	    c->mix.vol_ms,
-	    MAX_CHANNELS,
-	    2);
+	    MAX_OUPUT_CHANNELS,
+	    MAX_INPUT_CHANNELS);
     
-    for(i=0;i<MAX_CHANNELS;i++)
+    for(i=0;i<MAX_OUPUT_CHANNELS;i++)
       fprintf(f,"<%d %d>",c->mix.outvol[0][i],c->mix.outvol[1][i]);
     count=fprintf(f,"\n");
     if(count<1)return(-1);
@@ -620,7 +648,7 @@ int load_cue(FILE *f){
 	addnlstr("LOAD ERROR (CUE): parse error looking for value.",80,' ');
 	return(-1);
       }
-      if(j<2)
+      if(j<MAX_INPUT_CHANNELS)
 	c.mix.outvol[j][i]=v;
     }
     count=fscanf(f,"%c",&ch);
@@ -739,6 +767,7 @@ static inline void _playback_add(int tagnum,int cuenum){
   int j,k;
 
   if(t->activep)return;
+  if(!t->basemap)return;
   t->activep=1;
   refresh();
 
@@ -761,7 +790,7 @@ static inline void _playback_add(int tagnum,int cuenum){
   t->master_vol_target=c->mix.vol_master;
   t->master_vol_slew=_slew_ms(c->mix.vol_ms,0,c->mix.vol_master);
   			   
-  for(j=0;j<MAX_CHANNELS;j++)
+  for(j=0;j<MAX_OUPUT_CHANNELS;j++)
     for(k=0;k<t->channels;k++){
       t->outvol_current[k][j]=0;
       t->outvol_target[k][j]=c->mix.outvol[k][j];
@@ -782,7 +811,7 @@ static inline void _playback_mix(int i,int cuenum){
   t->master_vol_slew=_slew_ms(c->mix.vol_ms,t->master_vol_current,
 			   c->mix.vol_master);
   			   
-  for(j=0;j<MAX_CHANNELS;j++)
+  for(j=0;j<MAX_OUPUT_CHANNELS;j++)
     for(k=0;k<t->channels;k++){
       t->outvol_target[k][j]=c->mix.outvol[k][j];
       t->outvol_slew[k][j]=_slew_ms(c->mix.vol_ms,t->outvol_current[k][j],
@@ -792,7 +821,7 @@ static inline void _playback_mix(int i,int cuenum){
 
 static inline void _next_sample(int16 *out){
   int i,j,k;
-  int staging[MAX_CHANNELS];
+  int staging[MAX_OUPUT_CHANNELS];
 
   memset(staging,0,sizeof(staging));
 
@@ -818,7 +847,7 @@ static inline void _next_sample(int16 *out){
       }
 
       /* output split and mix */
-      for(k=0;k<MAX_CHANNELS;k++){
+      for(k=0;k<MAX_OUPUT_CHANNELS;k++){
 	staging[k]+=value*t->outvol_current[j][k]*main_master_volume*.0001;
 	
 	t->outvol_current[j][k]+=t->outvol_slew[j][k];
@@ -870,7 +899,7 @@ static inline void _next_sample(int16 *out){
   }
 
   /* declipping, conversion */
-  for(i=0;i<MAX_CHANNELS;i++){
+  for(i=0;i<MAX_OUPUT_CHANNELS;i++){
     if(channel_list[i].peak<fabs(staging[i]))
       channel_list[i].peak=fabs(staging[i]);
     if(staging[i]>32767.){
@@ -1220,6 +1249,7 @@ int form_handle_char(form *f,int c){
     break;
   default:
     if(f->edit){
+      pthread_mutex_lock(&master_mutex);
       switch(ff->type){
       case FORM_YESNO:
 	{
@@ -1346,6 +1376,8 @@ int form_handle_char(form *f,int c){
 	ret=c;
 	break;
       }
+      pthread_mutex_unlock(&master_mutex);
+
     }else{
       ret=c;
     }
@@ -1358,7 +1390,7 @@ int form_handle_char(form *f,int c){
 void main_update_master(int n,int y){
   if(menu==MENU_MAIN){
     char buf[4];
-    if(n>100)n=100;
+    if(n>300)n=300;
     if(n<0)n=0;
 
     pthread_mutex_lock(&master_mutex);
@@ -1406,11 +1438,11 @@ void main_update_playbuffer(int y){
 }
 
 #define todB_nn(x)   ((x)==0.f?-400.f:log((x))*8.6858896f)
-static int clip[MAX_CHANNELS];
+static int clip[MAX_OUPUT_CHANNELS];
 void main_update_outchannel_levels(int y){
   int i,j;
   if(menu==MENU_MAIN){
-    for(i=0;i<MAX_CHANNELS;i++){
+    for(i=0;i<MAX_OUPUT_CHANNELS;i++){
       int val;
       char buf[11];
       pthread_mutex_lock(&master_mutex);
@@ -1449,7 +1481,7 @@ void main_update_outchannel_labels(int y){
   int i;
   char buf[80];
   if(menu==MENU_MAIN){
-    for(i=0;i<MAX_CHANNELS;i++){
+    for(i=0;i<MAX_OUPUT_CHANNELS;i++){
       move(y+i+1,4);
       sprintf(buf,"%2d: -Inf[          ]+0dB ",i);
       addstr(buf);
@@ -1529,7 +1561,8 @@ void main_update_tags(int y){
       for(i=0;i<active_count;i++){
 	int loop;
 	int ms;
-	char buf[8];
+	char buf[20];
+	int vol=active_list[i]->master_vol_current;
 	label_number path;
 	
 	move(y+i,14);
@@ -1538,11 +1571,11 @@ void main_update_tags(int y){
 	path=active_list[i]->sample_desc;
 	
 	if(loop)
-	  sprintf(buf,"[loop] ");
+	  snprintf(buf,20,"[loop %3d%%] ",vol);
 	else
-	  sprintf(buf,"[%3ds] ",(ms+500)/1000);
+	  snprintf(buf,20,"[%3ds %3d%%] ",(ms+500)/1000,vol);
 	addstr(buf);
-	addnlstr(label_text(path),55,' ');
+	addnlstr(label_text(path),60,' ');
       }
     }else{
       addstr("             ");
@@ -1550,7 +1583,7 @@ void main_update_tags(int y){
 
     for(i=active_count;i<last_tags;i++){
       move(y+i,14);
-      addnlstr("",55,' ');
+      addnlstr("",60,' ');
     }
 
     last_tags=active_count;
@@ -1577,7 +1610,7 @@ void move_next_cue(){
       if(cue_list[cue_list_number].tag==-1)break;
     cue_list_position++;
   }
-  main_update_cues(10+MAX_CHANNELS);
+  main_update_cues(10+MAX_OUPUT_CHANNELS);
 }
 
 void move_prev_cue(){
@@ -1586,7 +1619,7 @@ void move_prev_cue(){
       if(cue_list[cue_list_number].tag==-1)break;
     cue_list_position--;
   }
-  main_update_cues(10+MAX_CHANNELS);
+  main_update_cues(10+MAX_OUPUT_CHANNELS);
 }
 
 int save_top_level(char *fn){
@@ -1634,15 +1667,15 @@ int main_menu(){
   attroff(A_BOLD);
   update_editable();
 
-  mvvline(3,2,0,MAX_CHANNELS+5);
-  mvvline(3,77,0,MAX_CHANNELS+5);
+  mvvline(3,2,0,MAX_OUPUT_CHANNELS+5);
+  mvvline(3,77,0,MAX_OUPUT_CHANNELS+5);
   mvhline(2,2,0,76);
   mvhline(7,2,0,76);
-  mvhline(8+MAX_CHANNELS,2,0,76);
+  mvhline(8+MAX_OUPUT_CHANNELS,2,0,76);
   mvaddch(2,2,ACS_ULCORNER);
   mvaddch(2,77,ACS_URCORNER);
-  mvaddch(8+MAX_CHANNELS,2,ACS_LLCORNER);
-  mvaddch(8+MAX_CHANNELS,77,ACS_LRCORNER);
+  mvaddch(8+MAX_OUPUT_CHANNELS,2,ACS_LLCORNER);
+  mvaddch(8+MAX_OUPUT_CHANNELS,77,ACS_LRCORNER);
 
   mvaddch(7,2,ACS_LTEE);
   mvaddch(7,77,ACS_RTEE);
@@ -1650,15 +1683,15 @@ int main_menu(){
   move(2,7);
   addstr(" output ");
 
-  mvhline(9+MAX_CHANNELS,0,0,80);
-  mvhline(18+MAX_CHANNELS,0,0,80);
+  mvhline(9+MAX_OUPUT_CHANNELS,0,0,80);
+  mvhline(18+MAX_OUPUT_CHANNELS,0,0,80);
 
   main_update_master(main_master_volume,5);
   main_update_playbuffer(4);
   main_update_outchannel_labels(7);
 
-  main_update_cues(10+MAX_CHANNELS);
-  main_update_tags(19+MAX_CHANNELS);
+  main_update_cues(10+MAX_OUPUT_CHANNELS);
+  main_update_tags(19+MAX_OUPUT_CHANNELS);
   curs_set(0);
 
   refresh();
@@ -1711,7 +1744,7 @@ int main_menu(){
 	if(ch=='y'){
 	  unsaved=1;
 	  delete_cue_bank(cue_list_number);
-	  main_update_cues(10+MAX_CHANNELS);
+	  main_update_cues(10+MAX_OUPUT_CHANNELS);
 	}
 	move(0,0);
 	addstr("MTG Beaverphonic build "VERSION": ");
@@ -1762,7 +1795,7 @@ int main_menu(){
 	editable=1;
       update_editable();
     case 0:
-      main_update_tags(19+MAX_CHANNELS);
+      main_update_tags(19+MAX_OUPUT_CHANNELS);
       main_update_playbuffer(4);
       main_update_outchannel_labels(7);
       break;
@@ -1925,7 +1958,7 @@ void edit_sample_menu(int n){
   mvaddstr(10,2,"loop                      crosslap       ms");
   mvaddstr(11,2,"volume master        % fade       /      ms");
   
-  form_init(&f,7+MAX_CHANNELS*t->channels);
+  form_init(&f,7+MAX_OUPUT_CHANNELS*t->channels);
   strcpy(tdesc,label_text(t->sample_desc));
 
   field_add(&f,FORM_GENERIC,18,7,59,tdesc);
@@ -1953,13 +1986,13 @@ void edit_sample_menu(int n){
   addstr(buf);
 
   mvhline(13,3,0,74);
-  mvhline(14+MAX_CHANNELS,3,0,74);
-  mvvline(14,2,0,MAX_CHANNELS);
-  mvvline(14,77,0,MAX_CHANNELS);
+  mvhline(14+MAX_OUPUT_CHANNELS,3,0,74);
+  mvvline(14,2,0,MAX_OUPUT_CHANNELS);
+  mvvline(14,77,0,MAX_OUPUT_CHANNELS);
   mvaddch(13,2,ACS_ULCORNER);
   mvaddch(13,77,ACS_URCORNER);
-  mvaddch(14+MAX_CHANNELS,2,ACS_LLCORNER);
-  mvaddch(14+MAX_CHANNELS,77,ACS_LRCORNER);
+  mvaddch(14+MAX_OUPUT_CHANNELS,2,ACS_LLCORNER);
+  mvaddch(14+MAX_OUPUT_CHANNELS,77,ACS_LRCORNER);
   
   if(t->channels==2){
     mvaddstr(13,5," L ");
@@ -1972,15 +2005,15 @@ void edit_sample_menu(int n){
     }
   }
 
-  for(i=0;i<MAX_CHANNELS;i++){
-    for(j=0;j<t->channels && j<2;j++)
+  for(i=0;i<MAX_OUPUT_CHANNELS;i++){
+    for(j=0;j<t->channels && j<MAX_INPUT_CHANNELS;j++)
       field_add(&f,FORM_PERCENTAGE,4+j*5,14+i,5,&c->mix.outvol[j][i]);
     sprintf(buf,"%% ->%2d ",i);
     mvaddstr(14+i,4+t->channels*5,buf);
     addnlstr(channel_list[i].label,76-11-t->channels*5,' ');
   }
 
-  field_add(&f,FORM_BUTTON,61,17+MAX_CHANNELS,16,"ACCEPT CHANGES");
+  field_add(&f,FORM_BUTTON,61,17+MAX_OUPUT_CHANNELS,16,"ACCEPT CHANGES");
 
 
 #if 0
@@ -2046,7 +2079,7 @@ void edit_mix_menu(int n){
   
   mvaddstr(10,2,"volume master        % fade       ms");
   
-  form_init(&f,3+MAX_CHANNELS*t->channels);
+  form_init(&f,3+MAX_OUPUT_CHANNELS*t->channels);
   strcpy(tdesc,label_text(t->sample_desc));
 
   field_add(&f,FORM_PERCENTAGE,18,10,5,&c->mix.vol_master);
@@ -2069,13 +2102,13 @@ void edit_mix_menu(int n){
   addstr(buf);
 
   mvhline(12,3,0,74);
-  mvhline(13+MAX_CHANNELS,3,0,74);
-  mvvline(13,2,0,MAX_CHANNELS);
-  mvvline(13,77,0,MAX_CHANNELS);
+  mvhline(13+MAX_OUPUT_CHANNELS,3,0,74);
+  mvvline(13,2,0,MAX_OUPUT_CHANNELS);
+  mvvline(13,77,0,MAX_OUPUT_CHANNELS);
   mvaddch(12,2,ACS_ULCORNER);
   mvaddch(12,77,ACS_URCORNER);
-  mvaddch(13+MAX_CHANNELS,2,ACS_LLCORNER);
-  mvaddch(13+MAX_CHANNELS,77,ACS_LRCORNER);
+  mvaddch(13+MAX_OUPUT_CHANNELS,2,ACS_LLCORNER);
+  mvaddch(13+MAX_OUPUT_CHANNELS,77,ACS_LRCORNER);
   
   if(t->channels==2){
     mvaddstr(12,5," L ");
@@ -2088,15 +2121,15 @@ void edit_mix_menu(int n){
     }
   }
 
-  for(i=0;i<MAX_CHANNELS;i++){
-    for(j=0;j<t->channels && j<2;j++)
+  for(i=0;i<MAX_OUPUT_CHANNELS;i++){
+    for(j=0;j<t->channels && j<MAX_INPUT_CHANNELS;j++)
       field_add(&f,FORM_PERCENTAGE,4+j*5,13+i,5,&c->mix.outvol[j][i]);
     sprintf(buf,"%% ->%2d ",i);
     mvaddstr(13+i,4+t->channels*5,buf);
     addnlstr(channel_list[i].label,76-11-t->channels*5,' ');
   }
 
-  field_add(&f,FORM_BUTTON,61,16+MAX_CHANNELS,16,"ACCEPT CHANGES");
+  field_add(&f,FORM_BUTTON,61,16+MAX_OUPUT_CHANNELS,16,"ACCEPT CHANGES");
 
 
 #if 0
@@ -2444,7 +2477,6 @@ int main_loop(){
       menu=menu_output();
       break;
     case MENU_EDIT:
-      halt_playback();
       menu=edit_cue_menu();
       break;
     }
