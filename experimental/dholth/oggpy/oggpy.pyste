@@ -1,7 +1,11 @@
+declaration_code('#include "oggcc.h"')
+
 oggpy = AllFromHeader("oggcc.h")
 
-exclude(oggpy.sync_state.data)
-exclude(oggpy.sync_state.buffer)
+exclude(oggpy.sync.data)
+exclude(oggpy.sync.buffer)
 exclude(oggpy.packet.data)
 exclude(oggpy.page.data)
 exclude(oggpy.stream.data)
+exclude(oggpy.dsp.analysis_buffer)
+exclude(oggpy.comment.comment_query)

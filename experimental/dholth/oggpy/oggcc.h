@@ -75,19 +75,19 @@ namespace ogg {
       public:
         vorbis_block data;
 
-        int analysis ( vorbis_block *vb , ogg_packet *op )  {
+        int analysis ( ogg_packet *op )  {
           return vorbis_analysis ( &this->data, op );  }
         
-        int bitrate_addblock ( vorbis_block *vb )  {
+        int bitrate_addblock ( )  {
           return vorbis_bitrate_addblock ( &this->data ); }
         
-        int block_clear ( vorbis_block *vb )  {
+        int block_clear ( )  {
           return vorbis_block_clear ( &this->data ); }
         
-        int synthesis ( vorbis_block *vb, ogg_packet *op )  {
+        int synthesis ( ogg_packet *op )  {
           return vorbis_synthesis ( &this->data, op ); }
         
-        int synthesis_trackonly ( vorbis_block *vb, ogg_packet *op )  {
+        int synthesis_trackonly ( ogg_packet *op )  {
           return vorbis_synthesis_trackonly ( &this->data, op ); }
     };
 
@@ -96,25 +96,25 @@ namespace ogg {
       public:
         vorbis_comment data;
 
-        char *comment_query ( vorbis_comment *vc, char *tag , int count )  {
+        char *query ( char *tag , int count )  {
           return vorbis_comment_query ( &this->data, tag, count ); }
 
-        int comment_query_count ( vorbis_comment *vc, char *tag )  {
+        int query_count ( char *tag )  {
           return vorbis_comment_query_count ( &this->data, tag ); }
 
-        int commentheader_out ( vorbis_comment *vc, ogg_packet *op )  {
+        int header_out ( ogg_packet *op )  {
           return vorbis_commentheader_out ( &this->data, op ); }
 
-        void comment_add ( vorbis_comment *vc, char *comment )  {
+        void add ( char *comment )  {
           vorbis_comment_add ( &this->data, comment ); }
 
-        void comment_add_tag ( vorbis_comment *vc, char *tag , char *contents )  {
+        void add_tag ( char *tag , char *contents )  {
           vorbis_comment_add_tag ( &this->data, tag, contents ); }
 
-        void comment_clear ( vorbis_comment *vc )  {
+        void clear ( )  {
           vorbis_comment_clear ( &this->data ); }
 
-        void comment_init ( vorbis_comment *vc )  {
+        void init ( )  {
           vorbis_comment_init ( &this->data ); }
     };
 
@@ -123,49 +123,49 @@ namespace ogg {
       public:
         vorbis_dsp_state data;
 
-        double granule_time ( vorbis_dsp_state *v, ogg_int64_t granulepos )  {
+        double granule_time ( ogg_int64_t granulepos )  {
           return vorbis_granule_time ( &this->data, granulepos ); }
 
-        float **analysis_buffer ( vorbis_dsp_state *v, int vals )  {
+        float **analysis_buffer ( int vals )  {
           return vorbis_analysis_buffer ( &this->data, vals ); }
 
-        int analysis_blockout ( vorbis_dsp_state *v, vorbis_block *vb )  {
+        int analysis_blockout ( vorbis_block *vb )  {
           return vorbis_analysis_blockout ( &this->data, vb ); }
 
-        int analysis_headerout ( vorbis_dsp_state *v, vorbis_comment *vc , ogg_packet *op , ogg_packet *op_comm , ogg_packet *op_code )  {
+        int analysis_headerout ( vorbis_comment *vc , ogg_packet *op , ogg_packet *op_comm , ogg_packet *op_code )  {
           return vorbis_analysis_headerout ( &this->data, vc , op , op_comm , op_code ); }
 
-        int analysis_init ( vorbis_dsp_state *v, vorbis_info *vi )  {
+        int analysis_init ( vorbis_info *vi )  {
           return vorbis_analysis_init ( &this->data, vi ); }
 
-        int analysis_wrote ( vorbis_dsp_state *v, int vals )  {
+        int analysis_wrote ( int vals )  {
           return vorbis_analysis_wrote ( &this->data, vals ); }
 
-        int bitrate_flushpacket ( vorbis_dsp_state *vd, ogg_packet *op )  {
+        int bitrate_flushpacket ( ogg_packet *op )  {
           return vorbis_bitrate_flushpacket ( &this->data, op ); }
 
-        int block_init ( vorbis_dsp_state *v, vorbis_block *vb )  {
+        int block_init ( vorbis_block *vb )  {
           return vorbis_block_init ( &this->data, vb ); }
 
-        int synthesis_blockin ( vorbis_dsp_state *v, vorbis_block *vb )  {
+        int synthesis_blockin ( vorbis_block *vb )  {
           return vorbis_synthesis_blockin ( &this->data, vb ); }
 
-        int synthesis_init ( vorbis_dsp_state *v, vorbis_info *vi )  {
+        int synthesis_init ( vorbis_info *vi )  {
           return vorbis_synthesis_init ( &this->data, vi ); }
 
-        int synthesis_lapout ( vorbis_dsp_state *v, float ***pcm )  {
+        int synthesis_lapout ( float ***pcm )  {
           return vorbis_synthesis_lapout ( &this->data, pcm ); }
 
-        int synthesis_pcmout ( vorbis_dsp_state *v, float ***pcm )  {
+        int synthesis_pcmout ( float ***pcm )  {
           return vorbis_synthesis_pcmout ( &this->data, pcm ); }
 
-        int synthesis_read ( vorbis_dsp_state *v, int samples )  {
+        int synthesis_read ( int samples )  {
           return vorbis_synthesis_read ( &this->data, samples ); }
 
-        int synthesis_restart ( vorbis_dsp_state *v )  {
+        int synthesis_restart ( )  {
           return vorbis_synthesis_restart ( &this->data ); }
 
-        void dsp_clear ( vorbis_dsp_state *v )  {
+        void dsp_clear ( )  {
           vorbis_dsp_clear ( &this->data ); }
     };
 
