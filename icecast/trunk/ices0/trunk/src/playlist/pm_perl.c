@@ -142,17 +142,10 @@ pl_perl_init_perl (void)
 	static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
 	static char module_space[255];
 
-	/* User might have specified a different module, other than
-	   ices.pm */
-	if (ices_config.pm.module) {
-		strncpy (module_space, ices_config.pm.module, 251);
-		module_space[251] = '\0'; /* Just to make sure */
-		strcat (module_space, ".pm");
-		my_argv[1] = module_space;
-	} else {
-		strcpy (module_space, "ices.pm");
-		my_argv[1] = module_space;
-	}
+	strncpy (module_space, ices_config.pm.module, 251);
+	module_space[251] = '\0'; /* Just to make sure */
+	strcat (module_space, ".pm");
+	my_argv[1] = module_space;
 
 	ices_log_debug ("Importing Perl module %s", my_argv[1]);
 

@@ -184,15 +184,13 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
   ices_config->dumpfile = NULL; /* No dumpfile by default */
   ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
   ices_config->daemon = ICES_DEFAULT_DAEMON;
-  ices_config->pre_dj = ICES_DEFAULT_PRE_DJ;
-  ices_config->post_dj = ICES_DEFAULT_POST_DJ;
   ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
   ices_config->verbose = ICES_DEFAULT_VERBOSE;
   ices_config->reencode = 0;
 
   ices_config->pm.playlist_file =
     ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
-  ices_config->pm.module = NULL; /* Default to the hardcoded default */
+  ices_config->pm.module = ices_util_strdup (ICES_DEFAULT_MODULE);
   ices_config->pm.randomize = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
   ices_config->pm.playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
 
@@ -326,154 +324,154 @@ ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, ch
 
 /* This function parses the command line options */
 static void
-ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc)
+ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
+			       int argc)
 {
-	int arg;
-	char *s;
+  int arg;
+  char *s;
+  ices_stream_config_t* stream = ices_config->streams;
+  /* each -m option creates a new stream, subsequent options are applied
+   * to it. */
+  int nstreams = 1;
 
-        arg = 1;
-	
-        while (arg < argc) {
-                s = argv[arg];
-		
-                if (s[0] == '-') {
-			
-			if ((strchr ("RriVvBzxHN", s[1]) == NULL) && arg >= (argc - 1)) {
-				ices_log ("Option %c requires an argument!\n", s[1]);
-				ices_setup_usage ();
-				ices_setup_shutdown ();
-				return;
-			}
-			
-			switch (s[1]) {
-				case 'B':
-					ices_config->daemon = 1;
-					break;
-				case 'b':
-					arg++;
-					ices_config->streams->bitrate = atoi (argv[arg]);
-					break;
-				case 'c':
-					arg++;
-					break;
-				case 'd':
-					arg++;
-					ices_util_free (ices_config->streams->description);
-					ices_config->streams->description = ices_util_strdup (argv[arg]);
-					break;
-				case 'D':
-					arg++;
-					if (ices_config->base_directory)
-						ices_util_free (ices_config->base_directory);
-					ices_config->base_directory = ices_util_strdup (argv[arg]);
-					break;
-				case 'F':
-					arg++;
-					ices_util_free (ices_config->pm.playlist_file);
-					ices_config->pm.playlist_file = ices_util_strdup (argv[arg]);
-					break;
-				case 'f':
-					arg++;
-					if (ices_config->dumpfile)
-						ices_util_free (ices_config->dumpfile);
-					ices_config->dumpfile = ices_util_strdup (argv[arg]);
-					break;
-				case 'g':
-					arg++;
-					ices_util_free (ices_config->streams->genre);
-					ices_config->streams->genre = ices_util_strdup (argv[arg]);
-					break;
-				case 'h':
-					arg++;
-					if (ices_config->host)
-						ices_util_free (ices_config->host);
-					ices_config->host = ices_util_strdup (argv[arg]);
-					break;
-				case 'H':
-					arg++;
-					ices_config->streams->out_samplerate = atoi (argv[arg]);
-					break;
-				case 'i':
-					ices_config->header_protocol = icy_header_protocol_e;
-					break;
-				case 'M':
-					arg++;
-					ices_util_free (ices_config->pm.module);
-					ices_config->pm.module = ices_util_strdup (argv[arg]);
-					break;
-				case 'm':
-					arg++;
-					ices_util_free (ices_config->streams->mount);
-					ices_config->streams->mount = ices_util_strdup (argv[arg]);
-					break;
-				case 'N':
-					arg++;
-					ices_config->streams->out_numchannels = atoi (argv[arg]);
-					break;
-				case 'n':
-					arg++;
-					ices_util_free (ices_config->streams->name);
-					ices_config->streams->name = ices_util_strdup (argv[arg]);
-					break;
-				case 'P':
-					arg++;
-					if (ices_config->password)
-						ices_util_free (ices_config->password);
-					ices_config->password = ices_util_strdup (argv[arg]);
-					break;
-				case 'p':
-					arg++;
-					ices_config->port = atoi (argv[arg]);
-					break;
-				case 'R':
+  arg = 1;
+
+  while (arg < argc) {
+    s = argv[arg];
+
+    if (s[0] == '-') {
+      if ((strchr ("RriVvBHN", s[1]) == NULL) && arg >= (argc - 1)) {
+	ices_log ("Option %c requires an argument!\n", s[1]);
+	ices_setup_usage ();
+	ices_setup_shutdown ();
+	return;
+      }
+
+      switch (s[1]) {
+        case 'B':
+	  ices_config->daemon = 1;
+	  break;
+        case 'b':
+	  arg++;
+	  stream->bitrate = atoi (argv[arg]);
+	  break;
+        case 'c':
+	  arg++;
+	  break;
+        case 'd':
+	  arg++;
+	  ices_util_free (stream->description);
+	  stream->description = ices_util_strdup (argv[arg]);
+	  break;
+        case 'D':
+	  arg++;
+	  ices_util_free (ices_config->base_directory);
+	  ices_config->base_directory = ices_util_strdup (argv[arg]);
+	  break;
+        case 'F':
+	  arg++;
+	  ices_util_free (ices_config->pm.playlist_file);
+	  ices_config->pm.playlist_file = ices_util_strdup (argv[arg]);
+	  break;
+        case 'f':
+	  arg++;
+	  ices_util_free (ices_config->dumpfile);
+	  ices_config->dumpfile = ices_util_strdup (argv[arg]);
+	  break;
+        case 'g':
+	  arg++;
+	  ices_util_free (stream->genre);
+	  stream->genre = ices_util_strdup (argv[arg]);
+	  break;
+        case 'h':
+	  arg++;
+	  ices_util_free (ices_config->host);
+	  ices_config->host = ices_util_strdup (argv[arg]);
+	  break;
+        case 'H':
+	  arg++;
+	  stream->out_samplerate = atoi (argv[arg]);
+	  break;
+        case 'i':
+	  ices_config->header_protocol = icy_header_protocol_e;
+	  break;
+        case 'M':
+	  arg++;
+	  ices_util_free (ices_config->pm.module);
+	  ices_config->pm.module = ices_util_strdup (argv[arg]);
+	  break;
+        case 'm':
+	  arg++;
+	  if (nstreams > 1) {
+	    stream->next =
+	      (ices_stream_config_t*) malloc (sizeof (ices_stream_config_t));
+	    stream = stream->next;
+	    ices_setup_parse_stream_defaults (stream);
+	  }
+	  ices_util_free (stream->mount);
+	  stream->mount = ices_util_strdup (argv[arg]);
+	  nstreams++;
+	  break;
+        case 'N':
+	  arg++;
+	  stream->out_numchannels = atoi (argv[arg]);
+	  break;
+        case 'n':
+	  arg++;
+	  ices_util_free (stream->name);
+	  stream->name = ices_util_strdup (argv[arg]);
+	  break;
+        case 'P':
+	  arg++;
+	  ices_util_free (ices_config->password);
+	  ices_config->password = ices_util_strdup (argv[arg]);
+	  break;
+        case 'p':
+	  arg++;
+	  ices_config->port = atoi (argv[arg]);
+	  break;
+        case 'R':
 #ifdef HAVE_LIBLAME
-					ices_config->streams->reencode = 1;
+	  stream->reencode = 1;
 #else
-					ices_log ("Support for reencoding with liblame was not found. You can't reencode this.");
-					ices_setup_shutdown ();
+	  ices_log ("This ices wasn't compiled with reencoding support");
+	  ices_setup_shutdown ();
 #endif
-					break;
-				case 'r':
-					ices_config->pm.randomize = 1;
-					break;
-				case 'S':
-					arg++;
-
-					if (strcmp (argv[arg], "python") == 0)
-						ices_config->pm.playlist_type = ices_playlist_python_e;
-					else if (strcmp (argv[arg], "perl") == 0)
-						ices_config->pm.playlist_type = ices_playlist_perl_e;
-					else 
-						ices_config->pm.playlist_type = ices_playlist_builtin_e;
-					break;
-				case 's':
-					arg++;
-					ices_config->streams->ispublic = 0;
-					break;
-				case 'u':
-					arg++;
-					ices_util_free (ices_config->streams->url);
-					ices_config->streams->url = ices_util_strdup (argv[arg]);
-					break;
-			        case 'V':
-				  ices_setup_version ();
-				  exit (0);
-				case 'v':
-					ices_config->verbose = 1;
-					break;
-				case 'z':
-					ices_config->pre_dj = 1;
-					break;
-				case 'x':
-					ices_config->post_dj = 1;
-					break;
-				default:
-					ices_setup_usage ();
-					break;
-			}
-		}
-		arg++;
-	}
+	  break;
+        case 'r':
+	  ices_config->pm.randomize = 1;
+	  break;
+        case 'S':
+	  arg++;
+	  if (strcmp (argv[arg], "python") == 0)
+	    ices_config->pm.playlist_type = ices_playlist_python_e;
+	  else if (strcmp (argv[arg], "perl") == 0)
+	    ices_config->pm.playlist_type = ices_playlist_perl_e;
+	  else 
+	    ices_config->pm.playlist_type = ices_playlist_builtin_e;
+	  break;
+        case 's':
+	  arg++;
+	  stream->ispublic = 0;
+	  break;
+        case 'u':
+	  arg++;
+	  ices_util_free (stream->url);
+	  stream->url = ices_util_strdup (argv[arg]);
+	  break;
+        case 'V':
+	  ices_setup_version ();
+	  exit (0);
+        case 'v':
+	  ices_config->verbose = 1;
+	  break;
+        default:
+	  ices_setup_usage ();
+	  break;
+      }
+    }
+    arg++;
+  }
 }
 
 /* This function takes all the new configuration and copies it to the

@@ -146,38 +146,28 @@ playlist_python_shutdown (void)
 static int
 python_init (void)
 {
-	char *module_name;
+  /* For some reason, python refuses to look in the
+   * current directory for modules */
+  python_setup_path ();
 
-	/* For some reason, python refuses to look in the
-	 * current directory for modules */
-	python_setup_path ();
-
-	/* Initialize the python structure and thread stuff */
-	Py_Initialize ();
-	PyEval_InitThreads ();
+  /* Initialize the python structure and thread stuff */
+  Py_Initialize ();
+  PyEval_InitThreads ();
 #if PM_PYTHON_MAKE_THREADS
-	mainthreadstate = PyThreadState_Get ();
+  mainthreadstate = PyThreadState_Get ();
 #endif
 
-	/* If user specified a certain module to be loaded,
-	 * then obey */
-	if (ices_config.pm.module) {
-		module_name = ices_config.pm.module;
-	} else {
-		module_name = "ices";
-	}
+  ices_log_debug ("Importing %s.py module...", ices_config.pm.module);
 
-	ices_log_debug ("Importing %s.py module...", module_name);
+  /* Call the python api code to import the module */
+  if (!(ices_python_module = PyImport_ImportModule (ices_config.pm.module))) {
+    ices_log ("Error: Could not import module %s", ices_config.pm.module);
+    PyErr_Print();
+  }
 
-	/* Call the python api code to import the module */
-	if (!(ices_python_module = PyImport_ImportModule (module_name))) {
-		ices_log ("Error: Could not import module %s", module_name);
-		PyErr_Print();
-	}
+  PyEval_ReleaseLock ();
 
-	PyEval_ReleaseLock ();
-
-	return 0;
+  return 0;
 }
 
 /* Force the python interpreter to look in our module path

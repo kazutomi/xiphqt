@@ -68,8 +68,6 @@ typedef struct {
   char *password;
   header_protocol_t header_protocol;
   int daemon;
-  int pre_dj;
-  int post_dj;
   int verbose;
   int reencode;
   char *dumpfile;
