@@ -1,0 +1,25 @@
+/*These properties are only for the main Xiph pages, not any of the project pages. */
+
+html, body {
+	background-color: #819cc9;
+}
+
+div#thepage {
+	border-color: #2b4556;
+}
+
+div#navbar1 a#xiph {
+	padding: 0px 3px 6px 35px;
+	font-weight: bold;
+	background:  no-repeat url(/Images/logos/xiph/20x35.png) top left #819cc9;
+	border-top: solid #819cc9;
+}
+
+div#navbar2 {
+	border-color: #2b4556;
+	background: #819cc9;
+}
+
+div#navbar2 a:hover {
+	background:  no-repeat url(/Images/logos/xiph/20x35.png) left;
+}

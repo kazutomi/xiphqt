@@ -1,0 +1,26 @@
+@import url(/CSS/screen.css);
+
+html, body {
+	background-color: #ffff56;
+	margin: 0;
+	padding: 0;
+}
+
+div#thepage {
+	border-color: #ffcf00;
+}
+
+div#navbar1 a#flac {
+	font-weight: bold;
+	background: #ffff56;
+	border-top: solid #ffff56;
+}
+
+div#navbar2 {
+	border-color: #ffcf00;
+	background: #ffff56;
+}
+
+div#navbar2 a{
+	color: #000000;
+}

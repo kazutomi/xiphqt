@@ -35,8 +35,8 @@
 				</li>
 				<li>
 					If you know a standards body that needs audio compression, suggest a
-					Xiph codec like <a href='/vorbis/'>Vorbis</a>,
-					<a href='/flac/'>FLAC</a>, or <a href='/speex/'>Speex</a>.
+					Xiph codec like <a href='/projects/audio/vorbis/'>Vorbis</a>,
+					<a href='/flac/'>FLAC</a>, or <a href='/projects/audio/speex/'>Speex</a>.
 				</li>
 				<li>
 					Write (or improve) a plugin for your favorite codec in your favorite

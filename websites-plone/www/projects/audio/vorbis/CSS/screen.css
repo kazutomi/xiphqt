@@ -1,0 +1,20 @@
+@import url(/CSS/screen.css);
+
+html, body {
+	background-color: #aa75f4;
+}
+
+div#thepage {
+	border-color: #8653ee;
+}
+
+div#navbar1 a#vorbis {
+	font-weight: bold;
+	background: #aa75f4;
+	border-top: solid #aa75f4;
+}
+
+div#navbar2 {
+	border-color: #8653ee;
+	background: #aa75f4;
+}

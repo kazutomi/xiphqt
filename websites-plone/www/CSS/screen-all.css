@@ -1,0 +1,8 @@
+.hidden {
+	display: none;
+}
+
+.invisible, .skipper, .questionable /* for things that maybe shouldn't be there */ {
+	display: none;
+}
+

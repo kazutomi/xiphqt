@@ -1,0 +1,108 @@
+﻿<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: Vorbis</title>
+<!--#include virtual="/projects/audio/vorbis/SSI/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/audio/vorbis/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+			<h1>Ogg Vorbis: Open, Free Audio Compression</h1>
+			<p>
+				Ogg Vorbis is a non-proprietary, patent-and-royalty–free,
+				general-purpose compressed audio format for mid- to
+				high-quality audio and music at variable bitrates from 16
+				to 128 <abbr title='kilobits per second'>kbps</abbr> per
+				channel.
+			</p>
+			<p>
+				This places Vorbis in the same class as
+				<abbr title='Moving Pictures Experts Group'>MPEG</abbr>-4
+				(<abbr>AAC</abbr>) and above
+				<abbr title='MPEG-1, Audio Layer 3'>MP3</abbr> and
+				<abbr title='Windows Media Audio'>WMA</abbr>.
+			</p>
+
+			<h2>Learn More</h2>
+			<ul>
+				<li>Read <a href='why/'>why you should use Vorbis</a>.</li>
+			</ul>
+
+			<h2>Vorbis Stuff</h2>
+			<h3 id='libraries'>Libraries</h3>
+			<dl>
+				<dt>libvorbis</dt>
+				<dd>
+					libvorbis is the core Ogg stream/Vorbis engine.
+				</dd>
+				<dt>libvorbisenc</dt>
+				<dd>
+					libvorbisenc is an encoder setup library that provides easy encoder setup
+					and encapsulates setup details to preserve binary compatability between
+					library releases.
+				</dd>
+				<dt>libvorbisfile</dt>
+				<dd>
+					vorbisfile is an ANSI C convenience library intended to simplify most
+					applications and provide example code for functions such as seeking and
+					error recovery.
+				</dd>
+			</dl>
+
+			<h3 id='tools'>Vorbis Tools</h3>
+			<dl>
+				<dt>oggenc</dt>
+				<dd>
+					Ogg Vorbis command-line encoder with bitrate/quality level configuration
+					and comment tagging.
+				</dd>
+				<dt>ogg123</dt>
+				<dd>	
+					Standard Ogg Vorbis command-line decoder/player.
+				</dd>
+				<dt>ogginfo/vorbiscomment</dt>
+				<dd>
+					Standard Ogg Vorbis information query and comment modification utilities.
+				</dd>
+				<dt>vcut</dt>
+				<dd>
+					vcut splits an Ogg Vorbis file into two files with sample-level accuracy.
+				</dd>
+				<dt>oggdec</dt>
+				<dd>
+					oggdec decodes an Ogg Vorbis file to either a WAV file or raw PCM.
+				</dd>
+				<dt>oggdrop</dt>
+				<dd>
+					Graphical drag-and-drop encoder for Windows.
+				</dd>
+			</dl>
+
+			<h2 id='distributionTerms'>Distribution Terms in Plain English</h2>
+			<p>
+				Anyone may freely use and distribute the Ogg and Vorbis specifications, whether
+				in a private, public, or corporate capacity. The specification is fully open to
+				the public to be used for any purpose. However, Xiph.org
+				reserves the right to set the Ogg Vorbis specification and certify
+				specification compliance.
+			</p>
+			<p>
+				Xiph.org’s Vorbis software libraries (libvorbis, libvorbisenc, and libvorbisfile)
+				are distributed under a <a href='/licenses/bsd/'>BSD-like license</a>; these
+				libraries may be used by any application, open or proprietary, linked or
+				incorporated in whole, so long as acknowledgement is made to Xiph.org Foundation
+				when using our codec source in whole or in derived works. See the <tt>COPYING</tt>
+				file in the source for all the details.
+			</p>
+			<p>
+				All other portions of Xiph.org’s reference Vorbis software are distributed
+				under the GNU
+				<a href='http://www.gnu.org/copyleft/lesser.html'><abbr
+				title='Lesser General Public License'>LGPL</abbr></a>.
+			</p>
+			<p>
+				Because the specification is open, third parties are welcome (and encouraged)
+				to implement third-party Vorbis software under other licenses using Xiph.org’s
+				reference source as an authoritative reference.
+			</p>
+				
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

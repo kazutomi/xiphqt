@@ -1,0 +1,20 @@
+@import url(/CSS/screen.css);
+
+html, body {
+	background-color: #F9AFAF;
+}
+
+div#thepage {
+	border-color: #ef0e0e;
+}
+
+div#navbar1 a#theora {
+	font-weight: bold;
+	background: #F9AFAF;
+	border-top: solid #F9AFAF;
+}
+
+div#navbar2 {
+	border-color: #ef0e0e;
+	background: #F9AFAF;
+}

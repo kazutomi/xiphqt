@@ -1,0 +1,7 @@
+.hidden {
+	speak: none;
+}
+
+.invisible, .skipper, .questionable /* for things that maybe shouldn't be there */ {
+	speak: none;
+}

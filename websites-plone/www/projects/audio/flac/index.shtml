@@ -1,0 +1,14 @@
+<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: FLAC</title>
+<!--#include virtual="/projects/audio/flac/SSI/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/audio/flac/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+			<h1>FLAC</h1>
+			<p>
+				This is a stub. See
+				<a href='http://flac.sourceforge.net/'>http://flac.sourceforge.net/</a>.
+			</p>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

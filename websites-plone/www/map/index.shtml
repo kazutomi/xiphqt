@@ -24,9 +24,9 @@
 			</ul>
 			<h2>Audio Compression Codecs</h2>
 			<ul>
-				<li><a href='/vorbis/'>Vorbis</a>, general-purpose lossy audio compression</li>
+				<li><a href='/projects/audio/vorbis/'>Vorbis</a>, general-purpose lossy audio compression</li>
 				<li><a href='/flac/'>FLAC</a>, lossless audio compression</li>
-				<li><a href='/speex/'>Speex</a>, voice compression</li>
+				<li><a href='/projects/audio/speex/'>Speex</a>, voice compression</li>
 			</ul>
 			<h2>Other Projects</h2>
 			<ul>
@@ -37,7 +37,7 @@
 				<li><a href='/icecast/'>Icecast</a>, a streaming audio server</li>
 				<li><a href='/theora/'>Theora</a>, a video compression codec</li>
 				<li><a href='/ogg/'>Ogg</a>, a multimedia container format</li>
-				<li><a href='/paranoia/'>Paranoia</a>, a CD ripper and library</li>
+				<li><a href='/projects/audio/paranoia/'>Paranoia</a>, a CD ripper and library</li>
 				<li><a href='/mgm/'>MGM</a>, a load and status meter written in Perl</li>
 			</ul>
 

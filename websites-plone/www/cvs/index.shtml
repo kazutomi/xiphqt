@@ -89,7 +89,7 @@
 					<tr>
 						<td>speex</td>
 						<td>
-							Source code to the <a href='/speex/'>Speex</a>
+							Source code to the <a href='/projects/audio/speex/'>Speex</a>
 							low-bitrate voice-only audio codec.
 						</td>
 					</tr>

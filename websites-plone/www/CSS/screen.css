@@ -1,114 +1,60 @@
+@import url(/CSS/screen-all.css);
+@import url(/CSS/screen-navbars.css);
+
 html, body {
 	margin: 0;
 	padding: 0;
 }
 
 html {
-	/*
-	background: white url(/Images/logos/xiph/112x112.png) 0% .5em no-repeat scroll;
-	*/
 	background: white;
 	color: black;
 	font: 80%  Verdana, "Bitstream Vera Sans",  Helvetica, sans-serif;
 }
 
-div#tabs {
-	border-collapse: collapse;
-	margin-top: 1em;
-	padding: .5em 0 0;
-	text-align: left;
-	white-space: nowrap;
+div#logo {
+	margin: 10px 0 0 5px;
 }
 
-div#tabs span { /* keep links separated by more than just whitespace
-				   mad props to stopdesign on http://www.adaptivepath.com/
-				   for this li'l trick */
-	display: none;
+div#label {
+	text-align: center;
+	font-size: 700%;
+	margin-bottom: 20px;
 }
 
-div#tabs a {
-	border: 1px solid #484848;
-	border-bottom: none;
-	color: black;
-	text-decoration: none;
-	padding: 0 .9em;
-	height: 1.2em;
-	margin-right: .2em;
-	text-transform: lowercase;
+div#thepage {
+	position: relative;
+	float: left;
+	left: 2%;
+	background-color: #FFFFFF;
+	border: 3px solid #000000;
+	padding: 0;
+	margin: 20px 0 0 0;
+	width: 96%;
+	-moz-border-radius: 10px;
 }
 
-div#tabs a#xiph		{ border-color: #2b4556; margin-left: 2em; }
-div#tabs a#vorbis	{ border-color: #8653ee; }
-div#tabs a#theora	{ border-color: #ef0e0e; }
-div#tabs a#speex	{ border-color: #119035; }
-div#tabs a#flac		{ border-color: #ffcf00; }
-
-div#tabs a:hover {
-	background: #aaa;
+div#leftside {
+	float: left;
 }
 
-div#tabs a#xiph:hover {
-	background: #819cc9;
-	border-color: #2b4566;
-}
+div#rightside {
+	padding: 20px;
 
-div#tabs a#vorbis:hover	{
-	background: #aa75f4;
-	border-color: #8653ee;
-}
-div#tabs a#theora:hover	{
-	background: #e44;
-	border-color: #ef0e0e;
-}
-
-div#tabs a#speex:hover	{
-	background: #99d25d;
-	border-color: #119035;
-}
-
-div#tabs a#flac:hover	{
-	background: #ffff56;
-	border-color: #ffcf00;
-}
-
-div#navbar {
-	border-top: none;
-	border-bottom: 1px solid #2b4566; /* color varies */
-	background: #819cc9; /* varies */
-	color: black;
-	text-transform: lowercase;
-	text-align: left;
-	padding-left: 3em;
-}
-div#navbar abbr[title] { /* because KHTML's defaults are ugly  */
-	font-style: normal;
-}
-
-div#navbar a {
-	color: white;
-	text-decoration: none;
-	margin-right: 1.5em;
-}
-
-#navbar span {
-	display: none; /*	lynx users need something besides whitespace
-						between links, but the rest of us don't */
 }
 
 div.pinchedIn, .sectionSpecific {
-	margin: 0 1em 0 112px;
+	margin: 0;
 
-}
-
-.sectionSpecific {
-	border: 1px solid #666;
-	border-top: none;
-	background: #eee;
-	margin-bottom: 1em;
 }
 
 #content {
-	padding: 0 1em;
+	display: table-cell;
+	border: 1px solid #666;
+	background: #eee;
+	margin: 0 20px 0 20px;
+	padding: 5px;
+	-moz-border-radius: 10px;
 }
 
 div.left {
@@ -125,8 +71,10 @@ div.bottom {
 }
 
 #footer {
+	position: relative;
+	float: left;
+	width: 100%;
 	text-align: center;
-	border-top: 1px solid #444;
 	margin-bottom: 1em;
 }
 
@@ -149,8 +97,4 @@ p+p {
 
 img { border: none; }
 
-div#logo {
-	position: absolute;
-	top: 2px;
-	left: 0;
-}
+

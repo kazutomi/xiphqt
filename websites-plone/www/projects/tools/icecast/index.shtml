@@ -1,0 +1,96 @@
+﻿<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: Icecast</title>
+<!--#include virtual="/projects/tools/icecast/SSI/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/tools/icecast/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+			<h1>Icecast: Open, Free, <em>Streaming</em> Audio</h1>
+			<p>
+				Icecast is an audio broadcasting system that streams music in the
+				<a href='http://www.vorbis.com/'>Ogg Vorbis</a> format.
+			</p>
+			<p>
+				Have more questions? Have a look at the
+				<a href='/projects/tools/icecast/faq/'>
+					<abbr title='Frequently Asked Questions'>FAQ</abbr>
+				</a>.
+			</p>
+			<h2>News</h2>
+			<ol class='news short'>
+				<li>
+					<div class='header'>
+						<h3 class='title'>IceS 0.3 released</h3>
+						<h4 class='meta'>2003-07-13</h4>
+					</div>
+					<div class='content'>
+						<p>
+							IceS 0.3 has been <a href='/projects/tools/icecast/download/'>released</a>. This
+							release requires libshout 2.0. Among the new features are Icecast 2
+							compatibility, ID3v2 support, much improved stability, and VBR support.
+							All users of IceS 0.2.3 or earlier are strongly encouraged to upgrade.
+						</p>
+					</div>
+				</li>
+				<li>
+					<div class='header'>
+						<h3 class='title'>libshout 2.0 released</h3>
+						<h4 class='meta'>2003-07-13</h4>
+					</div>
+					<div class='content'>
+						<p>
+							At long last, libshout 2.0 has been
+							<a href='/projects/tools/icecast/download/'>released</a>. This release features Vorbis,
+							Icecast 2 and IPv6 support, as well as bug fixes. It is not
+							API-compatible with libshout 1.0.
+						</p>
+					</div>
+				</li>
+				<li>
+					<div class='header'>
+						<h3 class='title'>Icecast 1 resuscitated</h3>
+						<h4 class='meta'>2003-02-12</h4>
+					</div>
+					<div class='content'>
+						<p>
+							We’ve re-added the deprecated, unsupported Icecast 1 to the
+							<a href='/projects/tools/icecast/download/'>download page</a> since people ask for it.
+							We’ve also added a <a href='/projects/tools/icecast/contact/'>contact page</a> to point
+							out how you can best get in touch with real humans in case this Web site
+							doesn’t give you all the answers.
+						</p>
+					</div>
+				</li>
+				<li>
+					<div class='header'>
+						<h3 class='title'>Icecast.org relaunched</h3>
+						<h4 class='meta'>2003-01-22</h4>
+					</div>
+					<div class='content'>
+						<p>
+							After months of no apparent activity, icecast.org has finally been
+							updated. Since the old site abused markup somewhat (like using
+							<code>&lt;table&gt;</code>s for layout), we redesigned with a
+							<code>&lt;table&gt;</code>-free
+							<abbr title='Cascading Style Sheets'>CSS</abbr> layout adorned with the
+							occasional <abbr title='Portable Network Graphics'>PNG</abbr> image.
+						</p>
+						<p>
+							Some of the older stuff will gradually make it back online—the
+							patent-encumbered <abbr title='Graphics Interchange Format'>GIF</abbr>
+							images will not.
+						</p>
+						<p>
+							We redid the Icecast logo in
+							<a href='http://www.w3.org/TR/SVG/'>
+								<abbr title='Scalable Vector Graphics'>SVG</abbr>
+							</a>
+							and then generated PNGs to use on the site. If you’d like a
+							<em>pristine</em> copy of the Icecast logo, grab
+							<a href='/Images/logos/icecast/cauldron.svg'>cauldron.svg</a>.
+						</p>
+					</div>
+				</li>
+			</ol>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

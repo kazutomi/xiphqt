@@ -1,0 +1,13 @@
+<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: Other</title>
+<!--#include virtual="/projects/other/SSI/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/other/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+			<h1>Other Xiph Projects</h1>
+			<p>
+				Here you will find all of the other projects that Xiph is working on.  Some are actively being worked on, some are in alpha stages, and others have been put on the back burner until higher priority projects are finished.
+			</p>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

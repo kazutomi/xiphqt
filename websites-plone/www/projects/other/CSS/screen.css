@@ -1,0 +1,23 @@
+@import url(/CSS/screen.css);
+
+html, body {
+	background-color: #8099f4;
+	margin: 0;
+	padding: 0;
+}
+
+div#thepage {
+	border-color: #0035ff;
+}
+
+div#navbar1 a#other {
+	font-weight: bold;
+	background: #8099f4;
+	border-top: solid #8099f4;
+}
+
+div#navbar2 {
+	border-color: #0035ff;
+	background: #8099f4;
+}
+

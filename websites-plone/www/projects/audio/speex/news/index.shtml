@@ -1,0 +1,33 @@
+<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: Speex News</title>
+<!--#include virtual="/projects/audio/speex/SSI/inhead.inc"-->
+<style type="text/css" media="screen">li#news { background-color: #88c24d; }</style>
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/audio/speex/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+
+
+			<h1>Speex News</h1>
+
+			<!-- Bwahaha! tables for layout purposes! In XHTML! -->
+
+			<table class='newsentry'>
+				<thead>
+					<tr>
+						<th>Speex 1.1.1 Released</th>
+						<th>January 5, 2003</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan='2'>
+							This is the latest release of Speex. In this release, we've improved
+							portability to non-POSIX operating systems and finished up the
+							FPU-free version. Please test it.
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

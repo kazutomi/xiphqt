@@ -1,0 +1,16 @@
+<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: Theora</title>
+<!--#include virtual="/projects/video/theora/SSI/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/video/theora/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+			<h1>Theora</h1>
+			<p>
+				This is a stub. See
+				<a href='http://www.theora.org/'>http://www.theora.org/</a>.
+			</p>
+		</div>
+	</div>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

@@ -1,0 +1,20 @@
+@import url(/CSS/screen.css);
+
+html, body {
+	background-color: #aaaaaa;
+}
+
+div#thepage {
+	border-color: #484848;
+}
+
+div#navbar1 a#icecast {
+	font-weight: bold;
+	background: #aaaaaa;
+	border-top: solid #aaaaaa;
+}
+
+div#navbar2 {
+	border-color: #484848;
+	background: #aaaaaa;
+}
