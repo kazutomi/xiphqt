@@ -83,7 +83,7 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
   unsigned int timestamp, ssrc;
   unsigned int ident;
   int C,F,R,pkts;
-  int i, offset;
+  int i, offset, length;
 
   /* parse RTP header */
   V = (data[0] & 0xc0) >> 6;
@@ -96,9 +96,10 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
   timestamp = ntohl(((unsigned int *)data)[1]);
   ssrc = ntohl(((unsigned int *)data)[2]);
 
-  fprintf(out, "RTP packet V:%d P:%d X:%d M:%d PT:%d   seq %d\n",
-    V, P, X, M, PT, sequence);
-  fprintf(out, " timestamp: %u\n", timestamp);
+  fprintf(out, "RTP packet V:%d P:%d X:%d M:%d PT:%d",
+    V, P, X, M, PT);
+  fprintf(out, "   seq %d", sequence);
+  fprintf(out, "   timestamp: %u\n", timestamp);
   fprintf(out, " ssrc: 0x%08x\n", ssrc);
   if (CC) 
     for (i = 0; i < CC; i++)
@@ -117,8 +118,28 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
   R = (data[offset] & 0x20) >> 5;
   pkts = (data[offset] & 0x1F);
 
-  fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d   packets: %d\n",
-    ident, C, F, R, pkts);
+  fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d",
+    ident, C, F, R);
+  fprintf(out, "   packets:");
+  if (C == 0 && F == 0)
+    fprintf(out, " %d\n", pkts);
+  else if (C == 0 && F == 1)
+    fprintf(out, " frag start\n");
+  else if (C == 1 && F == 0) 
+    fprintf(out, " frag cont.\n");
+  else /* C == 1 && F == 1 */
+    fprintf(out, " frag end\n");
+  offset++;
+
+  for (i = 0; i < pkts; i++) {
+    length = data[offset++];
+    fprintf(out, "  data: %d bytes in block %d\n", length, i);
+    offset += length;
+    if (offset >= len) {
+      fprintf(stderr, "payload length overflow. corrupt packet?\n");
+      return -1;
+    }
+  }
 
   return 0;
 }
