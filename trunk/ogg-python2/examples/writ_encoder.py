@@ -1,6 +1,6 @@
 '''
   function: Ogg Writ reference encoder
-  last mod: $Id: writ_encode.py,v 1.3 2003/12/01 07:18:51 arc Exp $
+  last mod: $Id: writ_encoder.py,v 1.1 2003/12/01 07:21:05 arc Exp $
 
 This is an example for how py-ogg2 can be used to rapidly design a new 
 Ogg codec or test an existing codec's specifications for accuracy.
