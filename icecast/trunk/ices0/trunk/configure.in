@@ -322,28 +322,27 @@ if test "$with_perl_includes"; then
 	CPPFLAGS="$CPPFLAGS -I$with_perl_includes"
 elif test "$with_perl"; then
 	COREDIR=`perl -MConfig -e 'print $Config{archlib}'`/CORE
-	EXTRAFLAGS=`perl -MConfig -e 'print $Config{ccflags}'`
-	CPPFLAGS="$CPPFLAGS -I$COREDIR $EXTRAFLAGS"
+	EMBEDFLAGS=`perl -MExtUtils::Embed -e ccopts`  
+	CPPFLAGS="${CPPFLAGS} -I${COREDIR} ${EMBEDFLAGS} ${EXTRAFLAGS}"
 fi
 
 if test "$with_perl_libraries"; then
 	LIBS="$LIBS -L$with_perl_libraries"
 elif test "$with_perl"; then
 	COREDIR=`perl -MConfig -e 'print $Config{archlib}'`/CORE
-	EXTRALIBS=`perl -MConfig -e 'print $Config{libs}'`
-	LIBS="$LIBS -L$COREDIR $EXTRALIBS"
+	EMBEDFLAGS=`perl -MExtUtils::Embed -e ldopts`  
+	LIBS="$LIBS -L$COREDIR $EXTRALIBS $EMBEDFLAGS"
 fi
 
 if test "$with_perl"; then
 dnl I can't say for sure what libs we need for perl, let's hope this works
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_FUNCS(perl_construct)
-        if test "$ac_cv_func_perl_construct" = no; then
-                for lib in perl; do
-                        if test "$HAVE_LIBPERL" != 1; then
-                                AC_CHECK_LIB($lib, perl_construct, LIBS="$LIBS -l$lib";HAVE_LIBPERL=1;AC_DEFINE(HAVE_LIBPERL))
-                        fi
-                done
+        if test "$ac_cv_func_perl_construct" != no; then
+			HAVE_LIBPERL=1
+			AC_DEFINE(HAVE_LIBPERL)
+	else
+		echo "You requested perl support, but there was a problem with your perl libraries."
         fi
 fi
 

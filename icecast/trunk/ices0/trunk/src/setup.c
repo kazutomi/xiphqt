@@ -284,6 +284,10 @@ ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, ch
 					if (ices_config->configfile)
 						ices_util_free (ices_config->configfile);
 					ices_config->configfile = ices_util_strdup (argv[arg]);
+#ifndef HAVE_LIBXML
+					ices_log ("You have no libxml support. The config file you just specified cannot be used.");
+					ices_setup_shutdown ();
+#endif
 					break;
 			}
 		}

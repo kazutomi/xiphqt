@@ -1,4 +1,24 @@
+///////////////////////////////////////////////////////////////////////////
 1. What should the ices playlist file look like?
+2. The icecast server tells me the password is wrong, but I have
+   the correct password in my ices.conf file! What am I doing wrong?
+3. I want to write a perl or python playlist handler for ices, but
+   I don't know where to start.
+4. Why don't you support embedded TCL?
+5. Reencoding, cool, hehe, cool, fire! Eeeh.. dammit, liblame, eeh.. where
+   do I get it?
+6. What about libxml?
+7. Will ices run on windows?
+8. When compiling ices with lame support, I get link errors on some
+   termcap functions like tgetret(), what's wrong?
+9. Ices refuses to accept my configuration file, it says something about
+   XML not accepting the namespace, what's wrong?
+10. Where does ices look for its playlist file and configuration file?
+--------------------------------------------------------------------------
+
+1. What should the ices playlist file look like?
+A: Have a look in the skeleton files ices.pm for perl and ices.py for
+
 A: For the builtin playlist handler (the default), the playlist file
    is very simple. One file per line, and nothing else.
    E.g:
@@ -46,3 +66,12 @@ A: There are different ways to compile the libmp3lame.a file, and ices
    XML not accepting the namespace, what's wrong?
 A: Simply put, you've got a too old version of libxml.
    Get a new one from http://www.xmlsoft.org/.
+
+10. Where does ices look for its playlist file and configuration file?
+A: Ices by default will look for playlist.txt in the current directory, and
+   ices.conf in the ETCDIR (usually /usr/local/icecast/etc or /etc/icecast).
+   You can change the playlist file with the -F command line option, or the
+   playlist file keyword in the configfile. 
+   Please note that if you don't have libxml support then you have no support 
+   for config files, and anything you specify in the config file will be discarded!
+   You can specify a specific configuration file with the -c option.

@@ -28,6 +28,19 @@
 
 static PerlInterpreter *my_perl;
 
+/* This is needed for dynamicly loading perl modules in the perl scripts.
+ * E.g "use somemodule;"
+ */
+extern void boot_DynaLoader ();
+
+static void
+xs_init ()
+{
+	char *file = __FILE__;
+	printf ("Including dynaloader\n");
+	newXS ("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
+}
+
 /* most of the following is almost ripped straight out of 'man perlcall' or 'man perlembed' 
  *
  * my_perl is left resident, and we do not reload the perl module file when it changes.
@@ -44,6 +57,7 @@ interpreter_perl_initialize ()
 	   ices.pm */
 	if (ices_config.interpreter_file) {
 		strncpy (module_space, ices_config.interpreter_file, 251);
+		module_space[251] = '\0'; /* Just to make sure */
 		strcat (module_space, ".pm");
 		my_argv[1] = module_space;
 	} else {
@@ -60,7 +74,7 @@ interpreter_perl_initialize ()
 	}
 	perl_construct(my_perl);
 
-	if (perl_parse(my_perl, NULL, 2, my_argv, NULL)) {
+	if (perl_parse(my_perl, xs_init, 2, my_argv, NULL)) {
 		ices_log_debug ("perl_parse() error: parse problem");
 		ices_setup_shutdown();
 	}

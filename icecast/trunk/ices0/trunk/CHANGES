@@ -1,3 +1,9 @@
+- 0.0.1b5	2000-08-29
+	- Perl module now supports dynamic loading of modules (e.g "use Socket")
+	- Ices now exits after 10 consecutive filename or other errors. (Removes spamming problems)
+- 0.0.1b4	2000-08-24
+	- New options to change sample rate and number of channels
+	  when reencoding.
 - 0.0.1b3	2000-08-08
 	- Reencoding fixes, commented config file and README.playlist
 	- Changed perl module to use user specified module

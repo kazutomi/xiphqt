@@ -39,6 +39,7 @@ void
 ices_stream_loop ()
 {
 	char namespace[1024];
+	int consecutive_errors = 0;
 
 	/* Check if user gave us a hostname */
 	if (!isdigit ((int)(conn.ip[strlen (conn.ip) - 1]))) {
@@ -84,6 +85,9 @@ ices_stream_loop ()
 		/* If something goes on while transfering, we just go on */
 		if (!ices_stream_send_file (file)) {
 			ices_log ("Warning: Encountered error while transfering %s. [%s]", file, ices_log_get_error ());
+
+			consecutive_errors++;
+
 			/* Let's see if it was a libshout socket error */
 			if (conn.error == SHOUTERR_SOCKET) {
 				ices_log ("Libshout communication problem, trying to reconnect to server");
@@ -98,8 +102,20 @@ ices_stream_loop ()
 				}
 			}
 			
+			/* This stops ices from entering a loop with 10-20 lines of output per
+			   second. Usually caused by a playlist handler that produces only
+			   invalid file names. */
+			if (consecutive_errors > 10) {
+				ices_log ("Exiting after 10 consecutive errors.");
+				ices_util_free (file);
+				ices_setup_shutdown ();
+			}
+
 			ices_util_free (file);
 			continue;
+		} else {
+			/* Reset the consecutive error counter */
+			consecutive_errors = 0;
 		}
 		
 		/* Run the post DJ program/script
