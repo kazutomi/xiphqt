@@ -22,7 +22,7 @@
 import os, re, sys, glob, os.path, time, datetime 
 import pdb
 from ConfigParser import SafeConfigParser
-MARKDOWN_COMMAND = "Markdown" # could also be "Markdown.pl"
+MARKDOWN_COMMAND = "Markdown.pl" # could also be "perl Markdown.pl"
 TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
 class MarkdownWrapper(object):
 	"""

@@ -1,6 +1,12 @@
 To Do
 =====
 
+*	Implement some of the ideas on <http://wiki.xiph.org/SXSW2004Ideas>. Specifically, try having the huge buttons
+	on the left be for "developers", "music fans", "artists".
+
+*	Realize that / will be _really_ weird, and that maybe it'd be nice to have that "inherit" from a common base
+	instead of it *being* the common base. Change things accordingly. Not sure how.
+
 *	News. Getting there.
 
 *	A software directory.
@@ -8,6 +14,11 @@ To Do
 *	Breadcrumbs.
 
 *	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
+
+*	A BOM snipper.
+
+*	A way to have the title element and the first h1 element differ.
+	I guess it’s time to have the per-html-file .ini doodad after all.
 
 *	Sell the Powers that Be on a hypothetical http://files.xiph.org/ so we
 	don't end up putting big, useless things like .rpms and source .tgz files and (gasp) .exe
