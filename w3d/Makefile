@@ -16,7 +16,7 @@ CFLAGS+= -DRLECODER
 #CFLAGS+= -DDBG_MEMLEAKS
 
 # dump a lot debug images
-#CFLAGS+= -DDBG_XFORM
+CFLAGS+= -DDBG_XFORM
 
 # dump ogg packet infos
 #CFLAGS+= -DDBG_OGG
