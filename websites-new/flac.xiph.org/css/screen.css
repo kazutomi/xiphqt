@@ -1,0 +1,162 @@
+@import url(/css/xiphbar.css);
+
+body {
+	margin: 0;
+	border: 0;
+	padding: 0 0 1.5em 0;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	color: #333333;
+}
+
+a {
+	color: #3366CC;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+img {
+	border: 0;
+}
+
+#bodyborder {
+	margin: 0;
+	border: 0;
+	padding: 0 0 3em 0;
+	background-color: #FFFFFF;
+	height: 100%;
+	min-height: 600px;
+	bottom: 0;
+}
+
+#thepage {
+	margin-left: auto;
+	margin-right: auto;
+	width: 50em;
+}
+
+#logos {
+	padding: 72px 465px 0 0;
+	text-align: center;
+}
+
+#navbar ul {
+	margin: 0;
+	border: 0;
+	padding: 20px 0 25px 0;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+#navbar li {
+	margin: 0;
+	border: 0;
+	padding: 0 16px 0 11px;
+	display: inline;
+	color: #FFCC66;
+	background: no-repeat url(/images/dot.png) right center;
+	font-size: .6em;
+}
+
+#navbar li a {
+	color: #3366CC;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+#navbar li a:hover {
+	text-decoration: underline;
+}
+
+#navbar #developers_ {
+	padding-right: 0;
+	background: none ;
+}
+
+#banners {
+	width: 232px;
+	float: right;
+	display: none;
+}
+
+#banners img {
+	display: block;
+	padding-top: 10px;
+}
+
+#content {
+	margin: 0 0 0 0;
+	padding: 0 1em 0 1em;
+	vertical-align: top;
+	font-size: .7em;
+	line-height: 1.5;
+}
+
+h1 {
+	font-size: 1.14em;
+	font-weight: bold;
+	color: #FF9900;
+}
+
+h2 {
+	font-size: 1em;
+	font-weight: bold;
+	color: #FF9900;
+}
+
+h3 {
+	font-size: .86em;
+	font-weight: bold;
+	color: #FF9900;
+}
+
+#copyright {
+	margin: 0;
+	border: 0;
+	padding: 4em 1em 1em 1em;
+	text-align: center;
+	font-size: .6em;
+	color: #999999;
+	clear: both;
+}
+
+.navbar {
+	margin: 0;
+	padding: 20px 0 25px 0;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.navbar li {
+	padding: 0 16px 0 11px;
+	display: inline;
+	color: #FFCC66;
+	background: no-repeat url(/images/dot.png) right center;
+	font-size: .86em
+}
+
+.navbar li a {
+	color: #3366CC;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.newslist {
+	margin: 0 0 2em 0;
+	padding: 0;
+}
+
+.newslist li {
+	margin-bottom: .5em;
+	list-style: none;
+	line-height: 1.4;
+	color: #FEAC0E;
+}
+
+.newslist a {
+	color: #3366CC;
+	text-decoration: none;
+	font-weight: normal;
+}
+

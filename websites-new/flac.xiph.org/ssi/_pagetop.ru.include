@@ -1,0 +1,24 @@
+﻿<div id="thepage">
+<div id="logos">
+	<a href="http://flac.xiph.org/"><img src="/images/logos/logo131.png" alt="FLAC - Logo"/></a>
+</div>
+
+<div id="navbar">
+	<ul>
+		<li id="home_"><a href="/">начало</a></li>
+		<li id="faq_"><a href="/faq/">Faq</a></li>
+		<li id="news_"><a href="/news/">новости</a></li>
+		<li id="download_"><a href="/download/">файлы</a></li>
+		<li id="features_"><a href="/features/">характеристики</a></li>
+		<li id="goals_"><a href="/goals/">цели</a></li>
+		<li id="links_"><a href="/links/">ссылки</a></li>
+		<li id="developers_"><a href="/developers/">разработка</a></li>
+	</ul>
+</div>
+
+<div id="banners">
+	<!-- Visualize a banner here. <img src="/images/banners/try_it.png" alt="Try it out!"/> -->
+</div>
+
+<div id="main">
+<div id="content">
