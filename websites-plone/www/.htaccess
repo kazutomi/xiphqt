@@ -28,5 +28,3 @@ RedirectPermanent /libao/ http://www.xiph.org/ao/
 RedirectPermanent /libogg/ http://www.xiph.org/ogg/
 RedirectPermanent /FLAC/ http://www.xiph.org/flac/
 RedirectPermanent /QA/ http://www.xiph.org/qa/
-
-Options +Includes
