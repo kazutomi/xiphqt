@@ -12,7 +12,7 @@
 typedef struct chunk_s
 {
   long len; /* Length of the chunk (for if we only got partial data) */
-  char data[BUFFER_CHUNK_SIZE]; 
+  unsigned char data[BUFFER_CHUNK_SIZE]; 
 } chunk_t;
 
 typedef struct buf_s
@@ -20,6 +20,7 @@ typedef struct buf_s
   char status;       /* Status. See STAT_* below. */
   int fds[2];        /* Pipe file descriptors. */
   long size;         /* buffer size, for reference */
+  long curfill;      /* how much the buffer is currently filled */
   long prebuffer;    /* number of chunks to prebuffer */
   pid_t readerpid;   /* PID of reader process */
   pid_t writerpid;   /* PID of writer process */

@@ -5,8 +5,6 @@
  * that program is used in this buffer.
  */
 
-/* #define DEBUG_BUFFER */
-
 #include <sys/types.h>
 #if HAVE_SMMAP
 #include <sys/mman.h>
@@ -22,6 +20,8 @@
 
 #include "ogg123.h"
 #include "buffer.h"
+
+#undef DEBUG_BUFFER
 
 #ifdef DEBUG_BUFFER
 FILE *debugfile;
@@ -46,6 +46,7 @@ void buffer_init (buf_t *buf, long size, long prebuffer)
   buf->end = buf->buffer + (size - 1);
   buf->size = size;
   buf->prebuffer = prebuffer;
+  buf->curfill = 0;
   if (prebuffer > 0)
     buf->status |= STAT_PREBUFFER;
 }
@@ -58,39 +59,42 @@ void writer_main (volatile buf_t *buf, devices_t *d)
   signal (SIGUSR1, signal_handler);
 
   DEBUG0("r: writer_main");
-  while (! (buf->status & STAT_SHUTDOWN && buf->reader == buf->writer))
+  while (! (buf->status & STAT_SHUTDOWN && buf->curfill == 0))
     {
       /* Writer just waits on reader to be done with submit_chunk
        * Reader must ensure that we don't deadlock. */
 
       /* prebuffering */
+    prebuffer:
       while (buf->status & STAT_PREBUFFER)
 	pause();
 
-      if (buf->reader == buf->writer) {
-	/* this won't deadlock, right...? */
+      if (buf->curfill == 0) {
 	if (! (buf->status & STAT_FLUSH)) /* likely unnecessary */
 	  buf->status |= STAT_UNDERFLOW;
 	DEBUG0("alerting writer");
-	write (buf->fds[1], "1", sizeof(int)); /* This identifier could hold a lot
-						* more detail in the future. */
+	kill (buf->readerpid, SIGUSR1);
       }
 
       if (buf->status & STAT_FLUSH) {
       flush:
 	DEBUG0("r: buffer flush");
+	buf->curfill = 0;
 	buf->reader = buf->writer;
 	buf->status &= ~STAT_FLUSH;
 	DEBUG1("buf->status = %d", buf->status);
-	write (buf->fds[1], "F", sizeof(int));
+	kill (buf->readerpid, SIGUSR1);
       }
 
-      while (buf->reader == buf->writer && !(buf->status & STAT_SHUTDOWN)
-	     && !(buf->status & STAT_FLUSH))
-	DEBUG1("looping on buffer underflow, status is %d", buf->status);
+      if (buf->curfill == 0 && !(buf->status & STAT_SHUTDOWN)
+	  && !(buf->status & STAT_FLUSH)) {
+	buf->status |= STAT_PREBUFFER;
+	goto prebuffer;
+      }
+	/*	DEBUG1("looping on buffer underflow, status is %d", buf->status);*/
 
       if (buf->status & STAT_FLUSH)
-	goto flush; /* eeew... */
+	goto flush;
 
       if (buf->reader == buf->writer)
 	break;
@@ -110,11 +114,14 @@ void writer_main (volatile buf_t *buf, devices_t *d)
 	buf->writer = buf->buffer;
       else
 	buf->writer++;
+      buf->curfill--;
+      if (buf->curfill + 1 == buf->size)
+	kill (buf->readerpid, SIGUSR1);
    }
   DEBUG0("r: shutting down buffer");
   buf->status = 0;
   write (buf->fds[1], "2", sizeof(int));
-  kill (buf->writerpid, SIGHUP);
+  kill (buf->writerpid, SIGUSR1);
   DEBUG0("r: exiting");
   _exit(0);
 }
@@ -190,9 +197,10 @@ buf_t *fork_writer (long size, devices_t *d, long prebuffer)
   fcntl (buf->fds[1], F_SETFL, O_NONBLOCK);
 
   fflush (stdout);
-  /* buffer flushes stderr, but stderr is unbuffered (*duh*!) */
 
-  signal (SIGHUP, signal_handler);
+  signal (SIGUSR1, signal_handler);
+
+  buf->readerpid = getpid();
 
   childpid = fork();
   
@@ -204,12 +212,12 @@ buf_t *fork_writer (long size, devices_t *d, long prebuffer)
 
   if (childpid == 0)
     {
+      buf->writerpid = getpid();
       writer_main (buf, d);
       return NULL;
     }
   else {
-    buf->writerpid = getpid();
-    buf->readerpid = childpid;
+    buf->writerpid = childpid;
     return buf;
   }
 }
@@ -224,8 +232,7 @@ void submit_chunk (buf_t *buf, chunk_t chunk)
 
   DEBUG0("submit_chunk");
   /* Wait wait, don't step on my sample! */
-  while (!((buf->reader != buf->end && buf->reader + 1 != buf->writer) ||
-	   (buf->reader == buf->end && buf->writer != buf->buffer)))
+  while (buf->curfill == buf->size)
     {
       /* buffer overflow (yikes! no actually it's a GOOD thing) */
       int ret;
@@ -248,15 +255,16 @@ void submit_chunk (buf_t *buf, chunk_t chunk)
     buf->reader = buf->buffer;
   else
     buf->reader++;
+  buf->curfill++;
 
   if (buf->status & STAT_PREBUFFER && buffer_full(buf) >= buf->prebuffer) {
     buf->status &= ~STAT_PREBUFFER;
-    kill (buf->readerpid, SIGUSR1);
+    kill (buf->writerpid, SIGUSR1);
   }
   else if (buf->status & STAT_UNDERFLOW) {
     buf->status |= STAT_PREBUFFER;
     buf->status &= ~STAT_UNDERFLOW;
-    kill (buf->readerpid, SIGUSR1);
+    kill (buf->writerpid, SIGUSR1);
   }
   DEBUG0("submit_chunk exit");
 }
@@ -269,18 +277,12 @@ void buffer_flush (buf_t *buf)
 
 void buffer_shutdown (buf_t *buf)
 {
-  /*  struct timeval tv;*/
-
   DEBUG0("shutdown buffer");
   buf->status |= STAT_SHUTDOWN;
   buf->status &= ~STAT_PREBUFFER;
   while (buf->status != 0)
     {
       DEBUG0("waiting on reader to quit");
-      /*      tv.tv_sec = 1;
-      tv.tv_usec = 0;
-      select (0, NULL, NULL, NULL, &tv);*/
-
       pause();
     } 
 #ifndef HAVE_SMMAP
@@ -291,20 +293,15 @@ void buffer_shutdown (buf_t *buf)
 }
 
 long buffer_full (buf_t* buf) {
-  chunk_t *reader = buf->reader; /* thread safety... */
-
-  if (reader > buf->writer)
-    return (reader - buf->writer + 1);
-  else
-    return (buf->end - reader) + (buf->writer - buf->buffer) + 2;
+  return buf->curfill;
 }
 
 void buffer_cleanup (buf_t *buf) {
   if (buf) {
-    if (buf->readerpid)
-      kill (buf->readerpid, SIGTERM);
+    if (buf->writerpid)
+      kill (buf->writerpid, SIGTERM);
     wait (0);
-    buf->readerpid = 0;
+    buf->writerpid = 0;
 #ifndef HAVE_SMMAP
     shmdt(buf);
 #endif
