@@ -113,13 +113,13 @@ For the purposes of a few examples in this document, we will assume that Theora
 
 The specification for embedding Theora into an Ogg transport stream is 
 given in
- Appendix~REF.
+ Appendix~\ref{app:oggencapsulation}.
 
 \subsubsection{Codec Setup and Probability Model}
 
 Theora's heritage is the proprietary commerical codec VP3, and it retains
- a fair amount of inflexibility when compared to Vorbis, the first 
-Xiph.org codec.
+ a fair amount of inflexibility when compared to Vorbis\cite{vorbis}, 
+ the first Xiph.org codec.
 However, to provide additional scope for encoder improvement,
 Theora adopts some of the configurable aspects of decoder setup that 
 are present in Vorbis.
@@ -508,6 +508,148 @@ Reading to the end of the packet, but not past the end, so that an
  condition.
 Reading a zero bit integer after a previous read sets the `end-of-packet'
  condition shall fail, also returning `end-of-packet'.
+
+\appendix
+
+\section{Ogg Bitstream Encapsulation}
+\label{app:oggencapsulation}
+
+\subsection{Overview}
+
+This document specifies the embedding or encapsulation of Theora packets 
+ in an Ogg transport stream.
+
+Ogg is a stream oriented wrapper for coded, linear time-based data. It 
+ provides syncronization, multiplexing, framing, error detection and 
+ seeking landmarks for the decoder and complements the raw packet format 
+ used by the Theora codec.
+
+This document assumes familiarity with the details of the Ogg standard.
+An overview of the Ogg transport stream format is given in 
+ \cite{oggstream} and a detailed description is given in \cite{oggframe} 
+ and \cite{rfc3533}.
+While Theora packets can be embedded in a wide variety of media 
+ containers and streaming mechanisms, the Xiph.org Foundation 
+ recommends Ogg as the native format for Theora video in file-oriented 
+ storage and transmission contexts.
+
+\subsubsection{MIME type}
+
+The correct MIME type of any Ogg file is {\tt application/ogg}. 
+Outside of an encapsulation, the mime type {\tt video/x-theora} may 
+be used to refer specifically to the Theora compressed video stream. 
+
+\subsection{Embedding in a logical bitstream}
+
+Ogg separates a {\em logical bitstream} consisting of the framing of 
+ a particular sequence of packets and complete within itself from 
+ the {\em physical bitstream} which may consist either of a single 
+ logical bitstream or a number of logical bitstreams multiplexed 
+ together.
+This section specifies the embedding of Theora packets in a logical Ogg 
+ bitstream. The mapping of Ogg Theora logical bitstreams into a 
+ multiplexed physical Ogg stream is described in the next section.
+
+\subsubsection{Headers}
+
+The initial info header packet appears by itself in a single Ogg page. 
+This page defines the start of the logical stream and must have 
+ the `beginning of stream' flag set.
+
+The second and third header packets (metadata comments and decoder 
+ setup data) can together span one or more Ogg pages.
+If there are additional non-normative header packets, they must be 
+ included in this sequence of pages as well.
+The metadata header packet must begin the second Ogg page in the logical
+ bitstream, and there must be a page break between the last header
+ packet and the first frame data packet.
+
+These two page break requirements facilitate stream identification and 
+simplify header acquisition for seeking and live streaming applications.
+
+All header pages must have their granule position field set to zero.
+%TODO: or -1?
+
+\subsubsection{Frame data}
+
+The first frame data packet in a logical bitstream must begin a fresh page. 
+All other data packets are placed one at a time into Ogg pages 
+until the end of the stream.
+Packets can span pages and multiple packets can be placed within any
+ one page.
+The last page in the logical bitstream must have its `end of stream' 
+ flag set.
+
+Frame data pages must be marked with a granule index corresponding to 
+ the display time of the last frame/packet that finishes in that page.
+
+{\bf Note:}
+This scheme is still under discussion. It has also been 
+ proposed that pages be labeled with a granule corresponding to the 
+ first frame that begins on that page.
+This simplifies seeking and mux, but is different from the published 
+ definition of the Ogg granule field.
+This document will be updated when the issue is settled.
+
+%TODO: \subsubsection{Granule position}
+
+\subsection{Multiplexed stream mapping}
+
+Applications supporting Ogg Theora I must support Theora bitstreams 
+ multiplexed with compressed audio data in the Vorbis I and Speex 
+ formats, and should support Ogg-encapsulated MNG graphics for overlays.
+ % and the Writ format for text-based titling.
+
+Multiple audio and video bitstreams may be multiplexed together.
+How playback of multiple/alternate streams is handled is up to the 
+ application.
+Some conventions based on included metadata aide interoperability
+ in this respect.
+%TODO: describe multiple vs. alternate streams, language mapping
+% and reference metadata descriptions.
+
+\subsubsection{Chained streams}
+
+Ogg Theora decoders and playback applications must support both grouped 
+ streams (multiplexed concurrent logical streams) and chained streams 
+ (sequential concatenation of independent physical bitstreams).
+
+The number and codec data types of multiplexed streams and the decoder 
+ parameters for those stream types that re-occur can all change at a 
+ chaining boundary.
+A playback application must be prepared to handle such changes and 
+ should do so smoothly with the minimum possible visible disruption.
+The specification of grouped streams below applies independently to each 
+ segment of a chained bitstream.
+
+\subsubsection{Grouped streams}
+
+At the beginning of a multiplexed stream, the `beginning of stream' 
+ pages for each logical bitstream will be grouped together.
+Within these, the first page to occur must be the Theora page.
+This facilitates identification of Ogg Theora files among other 
+ Ogg-encapsulated content.
+A playback application must nevertheless handle streams where this 
+ arrangement is not correct. 
+
+If there is more than one Theora logical stream, the first page should 
+ be from the primary stream.
+That is, the best choice for the stream a generic player should begin
+ displaying without special user direction.
+If there is more than one audio stream, or of any other stream 
+ type, the identification page of the primary stream of that type
+ must be placed before the others.
+
+After the `beginning of stream' pages, the header pages of each of 
+ the logical streams should be grouped together before any data pages 
+ occur.
+
+After all the header pages have been placed, 
+ the data pages are multiplexed together.
+They should be placed in the stream in increasing order by the playback
+ time equivalents of their granule fields. This facilitates seeking 
+ while limiting the buffering requirements of the playback 
+ demultiplexer.
 
 \bibliography{spec}
 
