@@ -15,7 +15,17 @@
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+import os
+from glob import glob
+from os.path import isfile
+
 from distutils.core import setup
+from setupext import install_data_ext
+
+docdirbase = 'share/doc/positron'
+manpagebase = 'share/man/man1'
+docfiles = filter(isfile, glob('doc/*.html'))
+examfiles = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
       version="1.0b1",
@@ -26,7 +36,10 @@ setup(name="positron",
       author_email="volsung@xiph.org",
       url="http://www.neurosaudio.com/",
       packages=['positron', 'positron.db', 'positron.db.new'],
-      scripts=['scripts/positron']
+      scripts=['scripts/positron'],
+      cmdclass = {'install_data': install_data_ext},
+      data_files = [('data', docdirbase, docfiles),
+                    ('data', os.path.join(docdirbase, 'examples'), examfiles)]
       )
 
 
