@@ -4,7 +4,8 @@
 
 #define RLE_HISTOGRAM 1
 
-
+#define X1(x) x    /* to be removed: select a coefficient transmission method */
+#define X2(x)
 
 static inline
 void bitcoder_write_bit (BitCoderState *s, int bit)
@@ -263,15 +264,14 @@ void bit_print (TYPE byte)
 do {                                                                          \
    int i, j, k;                                                               \
                                                                               \
-   for (k=0; k<f; k++) {                                                      \
-      TYPE *frame = waveletbuf->data + offset +                               \
-                        k * waveletbuf->width * waveletbuf->height;           \
+   for (j=0; j<h; j++) {                                                      \
+      TYPE *row = waveletbuf->data + offset + j * waveletbuf->width;          \
                                                                               \
-      for (j=0; j<h; j++) {                                                   \
-         TYPE *row = frame + j * waveletbuf->width;                           \
+      for (k=0; k<f; k++) {                                                   \
+         TYPE *frame = row + k * waveletbuf->width * waveletbuf->height;      \
                                                                               \
          for (i=0; i<w; i++) {                                                \
-            TYPE coeff = row [i];                                             \
+            TYPE coeff = frame [i];                                           \
             TYPE tmp = (coeff & (1 << (8*sizeof(TYPE)-1))) ? ~coeff : coeff;  \
                                                                               \
             if (c.rlecoder.bitcoder.byte_count >= c.rlecoder.bitcoder.limit)  \
@@ -297,11 +297,11 @@ do {                                                                          \
 do {                                                                          \
    int i, j, k;                                                               \
                                                                               \
-   for (k=0; k<f; k++) {                                                      \
-      TYPE *frame = waveletbuf->data + offset + k * width * height;           \
+   for (j=0; j<h; j++) {                                                      \
+      TYPE *row = waveletbuf->data + offset + j * width;                      \
                                                                               \
-      for (j=0; j<h; j++) {                                                   \
-         TYPE *coeff = frame + j * width;                                     \
+      for (k=0; k<f; k++) {                                                   \
+         TYPE *coeff = row + k * width * height;                              \
                                                                               \
          for (i=0; i<w; i++) {                                                \
             if (mask == 1 && coeff[i] == 0) {                                 \
@@ -366,10 +366,11 @@ size_t encode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t limit)
             int  height = waveletbuf->height;
             int  w = waveletbuf->w [level];
             int  h = waveletbuf->h [level];
-            int  f = waveletbuf->f [level];
+X1(         int  f = waveletbuf->f [level];)
             int  w1 = waveletbuf->w [level+1] - w;
             int  h1 = waveletbuf->h [level+1] - h;
-            int  f1 = waveletbuf->f [level+1] - f;
+X1(         int  f1 = waveletbuf->f [level+1] - f;)
+X2(         int  f = waveletbuf->frames;)
 
             if (c.rlecoder.bitcoder.byte_count >= c.rlecoder.bitcoder.limit)
                return  rlecoder_done (&c.rlecoder);
@@ -377,12 +378,12 @@ size_t encode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t limit)
             if (level == 1)        ENCODE (0,w,h,f);
             if (w1 > 0)            ENCODE (w,w1,h,f);
             if (h1 > 0)            ENCODE (h*width,w,h1,f);
-            if (f1 > 0)            ENCODE (f*width*height,w,h,f1);
+X1(         if (f1 > 0)            ENCODE (f*width*height,w,h,f1);)
             if (w1 > 0 && h1 > 0)  ENCODE (h*width+w,w1,h1,f);
-            if (w1 > 0 && f1 > 0)  ENCODE (f*width*height+w,w,h,f1);
-            if (h1 > 0 && f1 > 0)  ENCODE (f*width*height+h*width,w,h1,f1);
-            if (w1 > 0 && h1 > 0 && f1 > 0)
-                                   ENCODE (f*width*height+h*width+w,w1,h1,f1);
+X1(         if (w1 > 0 && f1 > 0)  ENCODE (f*width*height+w,w,h,f1);)
+X1(         if (h1 > 0 && f1 > 0)  ENCODE (f*width*height+h*width,w,h1,f1);)
+X1(         if (w1 > 0 && h1 > 0 && f1 > 0))
+X1(                                ENCODE (f*width*height+h*width+w,w1,h1,f1);)
          }
       }
    }
@@ -421,10 +422,11 @@ void decode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t count)
          {                                  /*  skip leading empty bitplanes */
             int  w = waveletbuf->w [level];
             int  h = waveletbuf->h [level];
-            int  f = waveletbuf->f [level];
+X1(         int  f = waveletbuf->f [level];)
             int  w1 = waveletbuf->w [level+1] - w;
             int  h1 = waveletbuf->h [level+1] - h;
-            int  f1 = waveletbuf->f [level+1] - f;
+X1(         int  f1 = waveletbuf->f [level+1] - f;)
+X2(         int  f = waveletbuf->frames;)
 
             if (c.rlecoder.bitcoder.byte_count >= c.rlecoder.bitcoder.limit)
                return;
@@ -432,12 +434,12 @@ void decode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t count)
             if (level == 1)        DECODE (0,w,h,f);
             if (w1 > 0)            DECODE (w,w1,h,f);
             if (h1 > 0)            DECODE (h*width,w,h1,f);
-            if (f1 > 0)            DECODE (f*width*height,w,h,f1);
+X1(         if (f1 > 0)            DECODE (f*width*height,w,h,f1);)
             if (w1 > 0 && h1 > 0)  DECODE (h*width+w,w1,h1,f);
-            if (w1 > 0 && f1 > 0)  DECODE (f*width*height+w,w,h,f1);
-            if (h1 > 0 && f1 > 0)  DECODE (f*width*height+h*width,w,h1,f1);
-            if (w1 > 0 && h1 > 0 && f1 > 0)
-                                   DECODE (f*width*height+h*width+w,w1,h1,f1);
+X1(         if (w1 > 0 && f1 > 0)  DECODE (f*width*height+w,w,h,f1);)
+X1(         if (h1 > 0 && f1 > 0)  DECODE (f*width*height+h*width,w,h1,f1);)
+X1(         if (w1 > 0 && h1 > 0 && f1 > 0))
+X1(                                DECODE (f*width*height+h*width+w,w1,h1,f1);)
          }
       }
    }
