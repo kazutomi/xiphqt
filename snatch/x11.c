@@ -1,5 +1,5 @@
 /* X11 layer of subversion library to intercept RealPlayer socket and
-   device I/O. --Monty 20011101 */
+   device I/O. --20011101 */
 
 #include <stdio.h>
 #include <errno.h>
