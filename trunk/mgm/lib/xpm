@@ -143,32 +143,34 @@ sub write{
     my($br,$bg,$bb)=&rgb($black);
     my($wr,$wg,$wb)=&rgb($white);
     
-    $wr=($wr-$br)/32;
-    $wg=($wg-$bg)/32;
-    $wb=($wb-$bb)/32;
+    $wr=$wr-$br;
+    $wg=$wg-$bg;
+    $wb=$wb-$bb;
     
     for(my$i=0;$i<$height;$i++){
 	my@g=unpack 'C*', substr $xpm->{"gray"}, $i*$width, $width;
 	$buffer.="\",\n\"";
 	
 	for(my$j=0;$j<$width;$j++){
-	    $buffer.=chr($g[$j]/8+65);
+	    print chr($g[$j]*(16/255)+65) ." ";
+
+	    $buffer.=chr(int($g[$j]*(16/255))+65);
 	}	
     }
     
     $out="/* XPM */\nstatic char * mgm_xpm[] = {\n".
-	"\"$width $height 33 1";
+	"\"$width $height 17 1";
     
-    foreach $key (0..32){
+    foreach $key (0..16){
 	$c=chr($key+65);
 	$out.="\",\n\"$c  $type ";
 	if("#$key" eq 'transp'){
 	    $out.="None\",\n";
 	}else{
 	    
-	    my$r=$key*$wr+$br;
-	    my$g=$key*$wg+$bg;
-	    my$b=$key*$wb+$bb;
+	    my$r=($key/16)*$wr+$br;
+	    my$g=($key/16)*$wg+$bg;
+	    my$b=($key/16)*$wb+$bb;
 	    
 	    my$val=$hex[$r].$hex[$g].$hex[$b];
 	    
@@ -257,9 +259,10 @@ sub reduceonex{
 	
 	my$val=$oldval*(1-$prev);
 	for(my$i=$iprev+1;$i<$ix;$i++){$val+=$v->[$i]};
-	$val+=($oldval=$v->[$ix])*$x if($ix<$w);
+	$oldval=$v->[$ix];
+	$val+=$oldval*$x if($x>.0001);
 	
-	$v->[$nx]=$val/$del;
+	$v->[$nx]=$val/$del+.5;
 	
 	$prev=$x;
 	$iprev=$ix;
@@ -281,7 +284,7 @@ sub enlargeonex{
 	}else{
 	    my$val=$oldval*($prev-$iprev);
 	    $val+=($oldval=$v->[$ix])*(1-$x+$ix);
-	    $v->[$nx]=$val/$del;
+	    $v->[$nx]=$val/$del+.5;
 	}
 	$prev=$x;
 	$iprev=$ix;
@@ -311,13 +314,12 @@ sub reduceoney{
 	    $iprev++;
 	}
 	# terminal row 
-	if($y<$h){
-	    $idel=($y-$iy)/$del;
-	    @v=unpack 'C*', substr $$vv, $iy*$w, $w;
-	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel;}
-	    $iprev=$iy;
-	    $prev=$y;
-	}
+	$idel=($y-$iy)/$del;
+	@v=unpack 'C*', substr $$vv, $iy*$w, $w;
+	for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel+.5;}
+	$iprev=$iy;
+	$prev=$y;
+
 	substr($$vv, $ny*$w, $w)=pack 'C*', @nv[0..$w-1];
     }
 }
@@ -344,7 +346,7 @@ sub enlargeoney{
 	    # terminal row 
 	    $idel=(1-$y+$iy)/$del;
 	    @v=unpack 'C*', substr $$vv, $iy*$w, $w;
-	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel;}
+	    for(my$x=0;$x<$w;$x++){$nv[$x]+=$v[$x]*$idel+.5;}
 	    substr($$vv, $ny*$w, $w)=pack 'C*', @nv[0..$w-1];
 	}
 	$iprev=$iy;
