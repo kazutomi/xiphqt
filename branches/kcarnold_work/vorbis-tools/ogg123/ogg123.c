@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.19 2001/08/13 20:07:03 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.20 2001/08/13 20:41:51 kcarnold Exp $
 
  ********************************************************************/
 
@@ -200,7 +200,7 @@ void SetBufferStats (buf_t *buf, char *strbuf)
     cur += sprintf (cur, "%sPrebuffering", sep);
     sep = comma;
   }
-  if (!buf->StatMask & STAT_PLAYING) {
+  if (!buf->Playing) {
     cur += sprintf (cur, "%sPaused", sep);
     sep = comma;
   }
@@ -338,7 +338,9 @@ int main(int argc, char **argv)
   Options.playOpts.ntimes = 1;
 
   on_exit (ogg123_onexit, &Options);
-  signal (SIGINT, signal_quit);
+  signal (SIGINT, SigHandler);
+  signal (SIGTSTP, SigHandler);
+  signal (SIGCONT, SigHandler);
   ao_initialize();
   
   InitOgg123Stats (Options.statOpts.stats);
@@ -542,7 +544,7 @@ void signal_skipfile(int which_signal)
    * and blow away existing "output.wav" file.
    */
 
-  signal (SIGINT, signal_quit);
+  signal (SIGINT, SigHandler);
 }
 
 void signal_activate_skipfile(int ignored)
@@ -550,11 +552,26 @@ void signal_activate_skipfile(int ignored)
   signal(SIGINT,signal_skipfile);
 }
 
-void signal_quit(int ignored)
+void SigHandler (int signo)
 {
-  exit_requested = 1;
-  if (Options.outputOpts.buffer)
-    buffer_flush (Options.outputOpts.buffer);
+  switch (signo) {
+  case SIGINT:
+    exit_requested = 1;
+    if (Options.outputOpts.buffer)
+      buffer_flush (Options.outputOpts.buffer);
+    break;
+  case SIGTSTP:
+    if (Options.outputOpts.buffer)
+      buffer_Pause (Options.outputOpts.buffer);
+    kill (getpid(), SIGSTOP);
+    break;
+  case SIGCONT:
+    if (Options.outputOpts.buffer)
+      buffer_Unpause (Options.outputOpts.buffer);
+    break;
+  default:
+    psignal (signo, "Unknown signal caught");
+  }
 }
 
 #if 0
@@ -787,7 +804,7 @@ void play_file()
     
     alarm(0);
     signal(SIGALRM,SIG_DFL);
-    signal(SIGINT,signal_quit);
+    signal(SIGINT,SigHandler);
     
     ov_clear(&vf);
     

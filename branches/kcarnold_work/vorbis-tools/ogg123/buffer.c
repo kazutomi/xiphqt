@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.14 2001/08/13 01:48:38 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.15 2001/08/13 20:41:51 kcarnold Exp $
 
  ********************************************************************/
 
@@ -49,6 +49,7 @@ FILE *debugfile;
 
 #define LOCK_MUTEX(mutex) do { DEBUG1("Locking mutex %s.", #mutex); pthread_mutex_lock (&(mutex)); } while (0)
 #define UNLOCK_MUTEX(mutex) do { DEBUG1("Unlocking mutex %s", #mutex); pthread_mutex_unlock(&(mutex)); } while (0) 
+#define TIMEDWAIT(cond, mutex, sec, nsec) do { struct timeval now; struct timespec timeout; gettimeofday(&now, NULL); timeout.tv_sec = now.tv_sec + sec; timeout.tv_nsec = now.tv_usec * 1000 + nsec; pthread_cond_timedwait (&(cond), &(mutex), &timeout); } while (0)
 
 void Prebuffer (buf_t * buf)
 {
@@ -78,7 +79,9 @@ void SignalAll (buf_t *buf)
 
 void PthreadCleanup (void *arg)
 {
+#if 0 
   buf_t *buf = (buf_t*) arg;
+#endif
   
   DEBUG0("PthreadCleanup");
 #if 0
@@ -121,10 +124,10 @@ void* BufferFunc (void *arg)
     {
       LOCK_MUTEX (buf->SizeMutex);
     checkPlaying:
-      while (!(buf->StatMask & STAT_PLAYING) ||
+      while (!(buf->Playing) || 
 	     (buf->StatMask & STAT_PREBUFFERING)) {
 	DEBUG1 ("waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
-	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
+	TIMEDWAIT (buf->DataReadyCondition, buf->SizeMutex, 1, 0);
       }
 
       DUMP_BUFFER_INFO(buf);
@@ -166,7 +169,7 @@ void* BufferFunc (void *arg)
 	  pthread_exit (NULL);
 	}
 	DEBUG0 ("waiting on data ready");
-	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
+	TIMEDWAIT (buf->DataReadyCondition, buf->SizeMutex, 1, 0);
 	goto checkPlaying;
       }
 
@@ -298,7 +301,7 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
   buf->size = size;
   buf->prebuffer = prebuffer;
   Prebuffer (buf);
-  buf->StatMask |= STAT_PLAYING;
+  buf->Playing = 1;
   buf->ReaderActive = buf->WriterActive = 1;
 
   /* pthreads initialization */
@@ -323,7 +326,7 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
   /* wait on buffer overflow or ack for eos */
   while (buf->curfill + size > buf->size || buf->eos) {
     UnPrebuffer (buf);
-    pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
+    TIMEDWAIT (buf->DataReadyCondition, buf->SizeMutex, 1, 0);
   }
 
   DEBUG0("writing chunk into buffer");
@@ -394,7 +397,7 @@ void buffer_WaitForEmpty (buf_t *buf)
   DEBUG0("signalled all");
   LOCK_MUTEX(buf->SizeMutex);
   while (buf->curfill > 0)
-    pthread_cond_wait (&buf->UnderflowCondition, &buf->SizeMutex);
+    TIMEDWAIT(buf->UnderflowCondition, buf->SizeMutex, 1, 0);
   DEBUG0("done waiting");
   UNLOCK_MUTEX (buf->SizeMutex);
   DEBUG0("buffer empty");
@@ -413,22 +416,19 @@ long buffer_full (buf_t* buf) {
 
 void buffer_Pause (buf_t *buf)
 {
-  LOCK_MUTEX (buf->StatMutex);
-  buf->StatMask &= ~STAT_PLAYING;
-  UNLOCK_MUTEX (buf->StatMutex);
+  buf->Playing = 0;
 }
 
 void buffer_Unpause (buf_t *buf)
 {
-  LOCK_MUTEX (buf->StatMutex);
-  buf->StatMask |= STAT_PLAYING;
-  UNLOCK_MUTEX (buf->StatMutex);
-  pthread_cond_signal (&buf->DataReadyCondition);
+  buf->Playing = 1;
+  /* can't signal here; this can be called from sighandler :( */
+  /* pthread_cond_signal (&buf->DataReadyCondition); */
 }
 
 char buffer_Paused (buf_t *buf)
 {
-  return (char) !(buf->StatMask & STAT_PLAYING);
+  return (char) !(buf->Playing);
 }
 
 void buffer_MarkEOS (buf_t *buf)

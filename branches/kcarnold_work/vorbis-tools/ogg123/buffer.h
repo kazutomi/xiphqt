@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.12 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.13 2001/08/13 20:41:51 kcarnold Exp $
  
 ********************************************************************/
 
@@ -43,9 +43,11 @@ typedef struct buf_s
   pthread_cond_t OverflowCondition;  /* signalled on buffer overflow */
   pthread_cond_t DataReadyCondition; /* signalled when data is ready and it wasn't before */
   
-  /* the buffer itself */
   char StatMask;
-  char FlushPending; /* must be separate from statmask */
+  /* And the stats that can't be in statmask: */
+  char FlushPending;
+  char Playing;
+
   char ReaderActive;
   char WriterActive;
   int OptimalWriteSize; /* optimal size to write out in chunks of, if possible. */
@@ -60,8 +62,7 @@ typedef struct buf_s
 } buf_t;
 
 #define STAT_PREBUFFERING 1
-#define STAT_PLAYING 2
-#define STAT_INACTIVE 4
+#define STAT_INACTIVE 2
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
 		    pWriteFunc write_func, void *initData, 

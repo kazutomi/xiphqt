@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.9 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.10 2001/08/13 20:41:52 kcarnold Exp $
 
  ********************************************************************/
 
@@ -73,7 +73,7 @@ typedef struct ogg123_options_s {
 void usage(void);
 void play_file();
 int open_audio_devices();
-void signal_quit (int ignored);
+void SigHandler (int ignored);
 void ogg123_onexit (int exitcode, void *arg);
 
 #endif /* !defined(__OGG123_H) */
