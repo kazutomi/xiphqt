@@ -519,7 +519,10 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 
   if(snatch_active==1 && id==rpvideo_window){
     videocount++;
+
+    pthread_mutex_lock(&output_mutex);
     if(videocount>5 && outfile_fd<0)OpenOutputFile();
+    pthread_mutex_unlock(&output_mutex);
     /* only do 24 bit zPixmaps for now */
 
     if(image->format==2 && image->depth>16 && image->depth<=24){
@@ -749,7 +752,10 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 
   if(snatch_active==1 && id==rpvideo_window){
     videocount++;
+
+    pthread_mutex_lock(&output_mutex);
     if(videocount>5 && outfile_fd<0)OpenOutputFile();
+    pthread_mutex_unlock(&output_mutex);
 
     /* only do 24 bit zPixmaps for now */
     if(image->format==2 && image->depth>16 && image->depth<=24){
