@@ -242,7 +242,7 @@ ices_mp3_read (input_stream_t* self, void* buf, size_t len)
       mp3_data->pos += len;
     } else {
       rlen = mp3_data->len;
-      memcpy (buf, mp3_data->buf, mp3_data->len);
+      memcpy (buf, mp3_data->buf + mp3_data->pos, mp3_data->len);
       mp3_data->len = 0;
       mp3_data->pos = 0;
       free (mp3_data->buf);
