@@ -105,6 +105,7 @@ class MarkdownWrapper(object):
 		ret += self.doctype + '\n'
 		ret += "<html lang='" + self.lang + "'>\n"
 		ret += "<head>\n"
+		ret += "<meta http-equiv='Content-type' content='text/html; charset=UTF-8'>\n"
 		ret += self.inHead
 		ret += '<title>' + self.title + '</title>\n'
 		ret += "</head>\n"
