@@ -5,6 +5,8 @@
  * that program is used in this buffer.
  */
 
+/* #define DEBUG_BUFFER */
+
 #include <sys/types.h>
 #if HAVE_SMMAP
 #include <sys/mman.h>
@@ -12,6 +14,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h> /* for fork and pipe*/
 #include <fcntl.h>
@@ -20,12 +23,31 @@
 #include "ogg123.h"
 #include "buffer.h"
 
-/* Initialize the buffer structure. */
-void buffer_init (buf_t *buf, long size)
+#ifdef DEBUG_BUFFER
+FILE *debugfile;
+#define DEBUG0(x) do { fprintf (debugfile, x "\n" ); } while (0)
+#define DEBUG1(x, y) do { fprintf (debugfile, x "\n" , y); } while (0)
+#else
+#define DEBUG0(x)
+#define DEBUG1(x, y)
+#endif
+
+void signal_handler (int sig)
 {
+}
+
+/* Initialize the buffer structure. */
+void buffer_init (buf_t *buf, long size, long prebuffer)
+{
+  DEBUG0("buffer init");
+  memset (buf, 0, sizeof(*buf));
   buf->status = 0;
   buf->reader = buf->writer = buf->buffer;
   buf->end = buf->buffer + (size - 1);
+  buf->size = size;
+  buf->prebuffer = prebuffer;
+  if (prebuffer > 0)
+    buf->status |= STAT_PREBUFFER;
 }
 
 /* Main write loop. No semaphores. No deadlock. No problem. I hope. */
@@ -33,25 +55,48 @@ void writer_main (volatile buf_t *buf, devices_t *d)
 {
   devices_t *d1;
   signal (SIGINT, SIG_IGN);
+  signal (SIGUSR1, signal_handler);
 
+  DEBUG0("r: writer_main");
   while (! (buf->status & STAT_SHUTDOWN && buf->reader == buf->writer))
     {
-      /* Writer just waits on reader to be done with buf_write.
+      /* Writer just waits on reader to be done with submit_chunk
        * Reader must ensure that we don't deadlock. */
 
-      write (buf->fds[1], "1", 1); /* This identifier could hold a lot
-				    * more detail in the future. */
+      /* prebuffering */
+      while (buf->status & STAT_PREBUFFER)
+	pause();
 
-      if (buf->status & STAT_FLUSH) {
-	buf->reader = buf->writer;
-	buf->status &= ~STAT_FLUSH;
+      if (buf->reader == buf->writer) {
+	/* this won't deadlock, right...? */
+	if (! (buf->status & STAT_FLUSH)) /* likely unnecessary */
+	  buf->status |= STAT_UNDERFLOW;
+	DEBUG0("alerting writer");
+	write (buf->fds[1], "1", sizeof(int)); /* This identifier could hold a lot
+						* more detail in the future. */
       }
 
-      while (buf->reader == buf->writer && !(buf->status & STAT_SHUTDOWN));
+      if (buf->status & STAT_FLUSH) {
+      flush:
+	DEBUG0("r: buffer flush");
+	buf->reader = buf->writer;
+	buf->status &= ~STAT_FLUSH;
+	DEBUG1("buf->status = %d", buf->status);
+	write (buf->fds[1], "F", sizeof(int));
+      }
 
-      if (buf->reader == buf->writer) break;
+      while (buf->reader == buf->writer && !(buf->status & STAT_SHUTDOWN)
+	     && !(buf->status & STAT_FLUSH))
+	DEBUG1("looping on buffer underflow, status is %d", buf->status);
+
+      if (buf->status & STAT_FLUSH)
+	goto flush; /* eeew... */
+
+      if (buf->reader == buf->writer)
+	break;
 
       /* devices_write (buf->writer->data, buf->writer->len, d); */
+      DEBUG0("writing chunk");
       {
 	d1 = d;
 	while (d1 != NULL) {
@@ -60,13 +105,17 @@ void writer_main (volatile buf_t *buf, devices_t *d)
 	}
       }
 
+      DEBUG0("incrementing pointer");
       if (buf->writer == buf->end)
 	buf->writer = buf->buffer;
       else
 	buf->writer++;
    }
+  DEBUG0("r: shutting down buffer");
   buf->status = 0;
-  write (buf->fds[1], "2", 1);
+  write (buf->fds[1], "2", sizeof(int));
+  kill (buf->writerpid, SIGHUP);
+  DEBUG0("r: exiting");
   _exit(0);
 }
 
@@ -75,7 +124,7 @@ void writer_main (volatile buf_t *buf, devices_t *d)
  * to the buffer structure that is shared. Just pass this straight to
  * submit_chunk and all will be happy. */
 
-buf_t *fork_writer (long size, devices_t *d)
+buf_t *fork_writer (long size, devices_t *d, long prebuffer)
 {
   int childpid;
   buf_t *buf;
@@ -120,7 +169,12 @@ buf_t *fork_writer (long size, devices_t *d)
   shmctl(shmid, IPC_RMID, 0);
 #endif /* HAVE_SMMAP */
 
-  buffer_init (buf, size);
+#ifdef DEBUG_BUFFER
+  debugfile = fopen ("/tmp/bufferdebug", "w"); /* file can be a pipe */
+  setvbuf (debugfile, NULL, _IONBF, 0);
+#endif
+
+  buffer_init (buf, size, prebuffer);
   
   /* Create a pipe for communication between the two processes. Unlike
    * the first incarnation of an ogg123 buffer, the data is not transferred
@@ -132,12 +186,14 @@ buf_t *fork_writer (long size, devices_t *d)
       exit (1);
     }
 
-  fcntl (buf->fds[1], F_SETFL, O_NONBLOCK);
   /* write should never block; read should always block. */
+  fcntl (buf->fds[1], F_SETFL, O_NONBLOCK);
 
   fflush (stdout);
   /* buffer flushes stderr, but stderr is unbuffered (*duh*!) */
-  
+
+  signal (SIGHUP, signal_handler);
+
   childpid = fork();
   
   if (childpid == -1)
@@ -151,8 +207,11 @@ buf_t *fork_writer (long size, devices_t *d)
       writer_main (buf, d);
       return NULL;
     }
-  else
+  else {
+    buf->writerpid = getpid();
+    buf->readerpid = childpid;
     return buf;
+  }
 }
 
 void submit_chunk (buf_t *buf, chunk_t chunk)
@@ -163,6 +222,7 @@ void submit_chunk (buf_t *buf, chunk_t chunk)
   FD_ZERO(&set);
   FD_SET(buf->fds[0], &set);
 
+  DEBUG0("submit_chunk");
   /* Wait wait, don't step on my sample! */
   while (!((buf->reader != buf->end && buf->reader + 1 != buf->writer) ||
 	   (buf->reader == buf->end && buf->writer != buf->buffer)))
@@ -171,40 +231,82 @@ void submit_chunk (buf_t *buf, chunk_t chunk)
       int ret;
       char t;
       
+      DEBUG0("w: looping on buffer overflow");
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       ret = select (buf->fds[0]+1, &set, NULL, NULL, &tv);
       
-      while (ret-- > 0)
-	read (buf->fds[0], &t, 1);
+      DEBUG1("w: select returned %d", ret);
+      if (ret > 0)
+	read (buf->fds[0], &t, sizeof(int));
     }
 	      
+  DEBUG0("writing chunk");
   *(buf->reader) = chunk;
   /* do this atomically */
   if (buf->reader == buf->end)
     buf->reader = buf->buffer;
   else
     buf->reader++;
+
+  if (buf->status & STAT_PREBUFFER && buffer_full(buf) >= buf->prebuffer) {
+    buf->status &= ~STAT_PREBUFFER;
+    kill (buf->readerpid, SIGUSR1);
+  }
+  else if (buf->status & STAT_UNDERFLOW) {
+    buf->status |= STAT_PREBUFFER;
+    buf->status &= ~STAT_UNDERFLOW;
+    kill (buf->readerpid, SIGUSR1);
+  }
+  DEBUG0("submit_chunk exit");
 }
 
 void buffer_flush (buf_t *buf)
 {
+  DEBUG0("flush buffer");
   buf->status |= STAT_FLUSH;
 }
 
 void buffer_shutdown (buf_t *buf)
 {
-  struct timeval tv;
+  /*  struct timeval tv;*/
 
+  DEBUG0("shutdown buffer");
   buf->status |= STAT_SHUTDOWN;
+  buf->status &= ~STAT_PREBUFFER;
   while (buf->status != 0)
     {
-      tv.tv_sec = 1;
+      DEBUG0("waiting on reader to quit");
+      /*      tv.tv_sec = 1;
       tv.tv_usec = 0;
-      select (0, NULL, NULL, NULL, &tv);
+      select (0, NULL, NULL, NULL, &tv);*/
+
+      pause();
     } 
 #ifndef HAVE_SMMAP
   /* Deallocate the shared memory segment. */
   shmdt(buf);
 #endif /* HAVE_SMMAP */
+  DEBUG0("buffer done.");
+}
+
+long buffer_full (buf_t* buf) {
+  chunk_t *reader = buf->reader; /* thread safety... */
+
+  if (reader > buf->writer)
+    return (reader - buf->writer + 1);
+  else
+    return (buf->end - reader) + (buf->writer - buf->buffer) + 2;
+}
+
+void buffer_cleanup (buf_t *buf) {
+  if (buf) {
+    if (buf->readerpid)
+      kill (buf->readerpid, SIGTERM);
+    wait (0);
+    buf->readerpid = 0;
+#ifndef HAVE_SMMAP
+    shmdt(buf);
+#endif
+  }
 }
