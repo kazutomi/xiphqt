@@ -6,177 +6,191 @@
 /*Performs an inverse 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 relative to the orthonormal version of
    the transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).
   _x: The input coefficients.
       The first 8 entries are used (e.g., from a row of an 8x8 block).*/
 static void idct8(ogg_int16_t *_y,const ogg_int16_t _x[8]){
-  int t[8];
-  int r;
-  /*6-1 rotation by 7pi/16.*/
-  t[6]=(int)(OC_C7S1*_x[1]>>16)-(int)(OC_C1S7*_x[7]>>16);
-  t[1]=(int)(OC_C1S7*_x[1]>>16)+(int)(OC_C7S1*_x[7]>>16);
-  /*4-7 rotation by 3pi/16.*/
-  t[4]=(int)(OC_C3S5*_x[5]>>16)-(int)(OC_C5S3*_x[3]>>16);
-  t[7]=(int)(OC_C5S3*_x[5]>>16)+(int)(OC_C3S5*_x[3]>>16);
-  /*7-1 reverse butterfly.*/
-  r=t[1]-t[7];
-  t[7]+=t[1];
-  t[1]=r*OC_C4S4>>16;
-  /*4-6 reverse butterfly.*/
-  r=t[6]-t[4];
-  t[4]+=t[6];
-  t[6]=r*OC_C4S4>>16;
-  /*5-3 rotation by pi/4.*/
-  t[5]=(int)(OC_C4S4*(_x[0]-_x[4])>>16);
-  t[3]=(int)(OC_C4S4*(_x[0]+_x[4])>>16);
-  /*2-0 rotation by 3pi/8.*/
-  t[2]=(int)(OC_C6S2*_x[2]>>16)-(int)(OC_C2S6*_x[6]>>16);
-  t[0]=(int)(OC_C2S6*_x[2]>>16)+(int)(OC_C6S2*_x[6]>>16);
-  /*1-5 reverse butterfly.*/
-  r=t[5]+t[1];
-  t[5]-=t[1];
-  t[1]=r;
-  /*0-3 reverse butterfly.*/
-  r=t[3]-t[0];
-  t[0]+=t[3];
-  t[3]=r;
-  /*2-6 reverse butterfly.*/
-  r=t[6]-t[2];
-  t[2]+=t[6];
-  t[6]=r;
-  /*0-7 butterfly (first half).*/
-  _y[0<<3]=(ogg_int16_t)(t[0]+t[7]);
+  ogg_int32_t t[8];
+  ogg_int32_t r;
+  /*Stage 1:*/
+  /*0-1 butterfly.*/
+  t[0]=OC_C4S4*(_x[0]+(ogg_int32_t)_x[4])>>16;
+  t[1]=OC_C4S4*(_x[0]-(ogg_int32_t)_x[4])>>16;
+  /*2-3 rotation by 6pi/16.*/
+  t[2]=(OC_C6S2*_x[2]>>16)-(OC_C2S6*_x[6]>>16);
+  t[3]=(OC_C2S6*_x[2]>>16)+(OC_C6S2*_x[6]>>16);
+  /*4-7 rotation by 7pi/16.*/
+  t[4]=(OC_C7S1*_x[1]>>16)-(OC_C1S7*_x[7]>>16);
+  /*5-6 rotation by 3pi/16.*/
+  t[5]=(OC_C3S5*_x[5]>>16)-(OC_C5S3*_x[3]>>16);
+  t[6]=(OC_C5S3*_x[5]>>16)+(OC_C3S5*_x[3]>>16);
+  t[7]=(OC_C1S7*_x[1]>>16)+(OC_C7S1*_x[7]>>16);
+  /*Stage 2:*/
+  /*4-5 butterfly.*/
+  r=t[4]+t[5];
+  t[5]=OC_C4S4*(t[4]-t[5])>>16;
+  t[4]=r;
+  /*7-6 butterfly.*/
+  r=t[7]+t[6];
+  t[6]=OC_C4S4*(t[7]-t[6])>>16;
+  t[7]=r;
+  /*Stage 3:*/
+  /*0-3 butterfly.*/
+  r=t[0]+t[3];
+  t[3]=t[0]-t[3];
+  t[0]=r;
   /*1-2 butterfly.*/
-  _y[1<<3]=(ogg_int16_t)(t[1]+t[2]);
-  _y[2<<3]=(ogg_int16_t)(t[1]-t[2]);
+  r=t[1]+t[2];
+  t[2]=t[1]-t[2];
+  t[1]=r;
+  /*6-5 butterfly.*/
+  r=t[6]+t[5];
+  t[5]=t[6]-t[5];
+  t[6]=r;
+  /*Stage 4:*/
+  /*0-7 butterfly.*/
+  _y[0<<3]=(ogg_int16_t)(t[0]+t[7]);
+  /*1-6 butterfly.*/
+  _y[1<<3]=(ogg_int16_t)(t[1]+t[6]);
+  /*2-5 butterfly.*/
+  _y[2<<3]=(ogg_int16_t)(t[2]+t[5]);
   /*3-4 butterfly.*/
   _y[3<<3]=(ogg_int16_t)(t[3]+t[4]);
   _y[4<<3]=(ogg_int16_t)(t[3]-t[4]);
-  /*5-6 butterfly.*/
-  _y[5<<3]=(ogg_int16_t)(t[5]+t[6]);
-  _y[6<<3]=(ogg_int16_t)(t[5]-t[6]);
-  /*0-7 butterfly (second half).*/
+  _y[5<<3]=(ogg_int16_t)(t[2]-t[5]);
+  _y[6<<3]=(ogg_int16_t)(t[1]-t[6]);
   _y[7<<3]=(ogg_int16_t)(t[0]-t[7]);
 }
 
 /*Performs an inverse 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 relative to the orthonormal version of
    the transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).
   _x: The input coefficients.
       Only the first 4 entries are used.
       The other 4 are assumed to be 0.*/
-static void idct8_4(ogg_int16_t *_y,const ogg_int16_t _x[4]){
-  int t[8];
-  int r;
-  t[6]=(int)(OC_C7S1*_x[1]>>16);
-  t[1]=(int)(OC_C1S7*_x[1]>>16);
-  t[4]=-(int)(OC_C5S3*_x[3]>>16);
-  t[7]=(int)(OC_C3S5*_x[3]>>16);
-  r=t[1]-t[7];
-  t[7]+=t[1];
-  t[1]=r*OC_C4S4>>16;
-  r=t[6]-t[4];
-  t[4]+=t[6];
-  t[6]=r*OC_C4S4>>16;
-  t[3]=t[5]=(int)(OC_C4S4*_x[0]>>16);
-  t[2]=(int)(OC_C6S2*_x[2]>>16);
-  t[0]=(int)(OC_C2S6*_x[2]>>16);
-  t[5]-=t[1];
-  t[1]+=t[3];
-  r=t[3]-t[0];
-  t[0]+=t[3];
-  t[3]=r;
-  r=t[6]-t[2];
-  t[2]+=t[6];
+static void idct8_4(ogg_int16_t *_y,const ogg_int16_t _x[8]){
+  ogg_int32_t t[8];
+  ogg_int32_t r;
+  /*Stage 1:*/
+  t[0]=OC_C4S4*_x[0]>>16;
+  t[2]=OC_C6S2*_x[2]>>16;
+  t[3]=OC_C2S6*_x[2]>>16;
+  t[4]=OC_C7S1*_x[1]>>16;
+  t[5]=-(OC_C5S3*_x[3]>>16);
+  t[6]=OC_C3S5*_x[3]>>16;
+  t[7]=OC_C1S7*_x[1]>>16;
+  /*Stage 2:*/
+  r=t[4]+t[5];
+  t[5]=OC_C4S4*(t[4]-t[5])>>16;
+  t[4]=r;
+  r=t[7]+t[6];
+  t[6]=OC_C4S4*(t[7]-t[6])>>16;
+  t[7]=r;
+  /*Stage 3:*/
+  t[1]=t[0]+t[2];
+  t[2]=t[0]-t[2];
+  r=t[0]+t[3];
+  t[3]=t[0]-t[3];
+  t[0]=r;
+  r=t[6]+t[5];
+  t[5]=t[6]-t[5];
   t[6]=r;
+  /*Stage 4:*/
   _y[0<<3]=(ogg_int16_t)(t[0]+t[7]);
-  _y[1<<3]=(ogg_int16_t)(t[1]+t[2]);
-  _y[2<<3]=(ogg_int16_t)(t[1]-t[2]);
+  _y[1<<3]=(ogg_int16_t)(t[1]+t[6]);
+  _y[2<<3]=(ogg_int16_t)(t[2]+t[5]);
   _y[3<<3]=(ogg_int16_t)(t[3]+t[4]);
   _y[4<<3]=(ogg_int16_t)(t[3]-t[4]);
-  _y[5<<3]=(ogg_int16_t)(t[5]+t[6]);
-  _y[6<<3]=(ogg_int16_t)(t[5]-t[6]);
+  _y[5<<3]=(ogg_int16_t)(t[2]-t[5]);
+  _y[6<<3]=(ogg_int16_t)(t[1]-t[6]);
   _y[7<<3]=(ogg_int16_t)(t[0]-t[7]);
 }
 
 /*Performs an inverse 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 relative to the orthonormal version of
    the transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).
   _x: The input coefficients.
       Only the first 3 entries are used.
       The other 5 are assumed to be 0.*/
-static void idct8_3(ogg_int16_t *_y,const ogg_int16_t _x[3]){
-  int t[8];
-  int r;
-  t[4]=t[6]=(int)(OC_C7S1*_x[1]>>16);
-  t[7]=t[1]=(int)(OC_C1S7*_x[1]>>16);
-  t[1]=t[1]*OC_C4S4>>16;
-  t[6]=t[6]*OC_C4S4>>16;
-  t[3]=t[5]=(int)(OC_C4S4*_x[0]>>16);
-  t[2]=(int)(OC_C6S2*_x[2]>>16);
-  t[0]=(int)(OC_C2S6*_x[2]>>16);
-  t[5]-=t[1];
-  t[1]+=t[3];
-  r=t[3]-t[0];
-  t[0]+=t[3];
-  t[3]=r;
-  r=t[6]-t[2];
-  t[2]+=t[6];
+static void idct8_3(ogg_int16_t *_y,const ogg_int16_t _x[8]){
+  ogg_int32_t t[8];
+  ogg_int32_t r;
+  /*Stage 1:*/
+  t[0]=OC_C4S4*_x[0]>>16;
+  t[2]=OC_C6S2*_x[2]>>16;
+  t[3]=OC_C2S6*_x[2]>>16;
+  t[4]=OC_C7S1*_x[1]>>16;
+  t[7]=OC_C1S7*_x[1]>>16;
+  /*Stage 2:*/
+  t[5]=OC_C4S4*t[4]>>16;
+  t[6]=OC_C4S4*t[7]>>16;
+  /*Stage 3:*/
+  t[1]=t[0]+t[2];
+  t[2]=t[0]-t[2];
+  r=t[0]+t[3];
+  t[3]=t[0]-t[3];
+  t[0]=r;
+  r=t[6]+t[5];
+  t[5]=t[6]-t[5];
   t[6]=r;
+  /*Stage 4:*/
   _y[0<<3]=(ogg_int16_t)(t[0]+t[7]);
-  _y[1<<3]=(ogg_int16_t)(t[1]+t[2]);
-  _y[2<<3]=(ogg_int16_t)(t[1]-t[2]);
+  _y[1<<3]=(ogg_int16_t)(t[1]+t[6]);
+  _y[2<<3]=(ogg_int16_t)(t[2]+t[5]);
   _y[3<<3]=(ogg_int16_t)(t[3]+t[4]);
   _y[4<<3]=(ogg_int16_t)(t[3]-t[4]);
-  _y[5<<3]=(ogg_int16_t)(t[5]+t[6]);
-  _y[6<<3]=(ogg_int16_t)(t[5]-t[6]);
+  _y[5<<3]=(ogg_int16_t)(t[2]-t[5]);
+  _y[6<<3]=(ogg_int16_t)(t[1]-t[6]);
   _y[7<<3]=(ogg_int16_t)(t[0]-t[7]);
 }
+
 
 /*Performs an inverse 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 relative to the orthonormal version of
    the transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).
   _x: The input coefficients.
       Only the first 2 entries are used.
       The other 6 are assumed to be 0.*/
-static void idct8_2(ogg_int16_t *_y,const ogg_int16_t _x[3]){
-  int t[8];
-  t[4]=t[6]=(int)(OC_C7S1*_x[1]>>16);
-  t[7]=t[1]=(int)(OC_C1S7*_x[1]>>16);
-  t[1]=t[1]*OC_C4S4>>16;
-  t[6]=t[6]*OC_C4S4>>16;
-  t[3]=t[5]=(int)(OC_C4S4*_x[0]>>16);
-  t[5]-=t[1];
-  t[1]+=t[3];
-  _y[0<<3]=(ogg_int16_t)(t[3]+t[7]);
-  _y[1<<3]=(ogg_int16_t)(t[1]+t[6]);
-  _y[2<<3]=(ogg_int16_t)(t[1]-t[6]);
-  _y[3<<3]=(ogg_int16_t)(t[3]+t[4]);
-  _y[4<<3]=(ogg_int16_t)(t[3]-t[4]);
-  _y[5<<3]=(ogg_int16_t)(t[5]+t[6]);
-  _y[6<<3]=(ogg_int16_t)(t[5]-t[6]);
-  _y[7<<3]=(ogg_int16_t)(t[3]-t[7]);
+static void idct8_2(ogg_int16_t *_y,const ogg_int16_t _x[8]){
+  ogg_int32_t t[8];
+  ogg_int32_t r;
+  /*Stage 1:*/
+  t[0]=OC_C4S4*_x[0]>>16;
+  t[4]=OC_C7S1*_x[1]>>16;
+  t[7]=OC_C1S7*_x[1]>>16;
+  /*Stage 2:*/
+  t[5]=OC_C4S4*t[4]>>16;
+  t[6]=OC_C4S4*t[7]>>16;
+  /*Stage 3:*/
+  r=t[6]+t[5];
+  t[5]=t[6]-t[5];
+  t[6]=r;
+  /*Stage 4:*/
+  _y[0<<3]=(ogg_int16_t)(t[0]+t[7]);
+  _y[1<<3]=(ogg_int16_t)(t[0]+t[6]);
+  _y[2<<3]=(ogg_int16_t)(t[0]+t[5]);
+  _y[3<<3]=(ogg_int16_t)(t[0]+t[4]);
+  _y[4<<3]=(ogg_int16_t)(t[0]-t[4]);
+  _y[5<<3]=(ogg_int16_t)(t[0]-t[5]);
+  _y[6<<3]=(ogg_int16_t)(t[0]-t[6]);
+  _y[7<<3]=(ogg_int16_t)(t[0]-t[7]);
 }
+
 
 /*Performs an inverse 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 relative to the orthonormal version of
    the transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).
@@ -191,7 +205,6 @@ static void idct8_1(ogg_int16_t *_y,const ogg_int16_t _x[1]){
 /*Performs an inverse 8x8 Type-II DCT transform.
   The input is assumed to be scaled by a factor of 4 relative to orthonormal
    version of the transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients. */
@@ -220,7 +233,6 @@ void oc_idct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
    0  0  0  0  0  0  0  0
    0  0  0  0  0  0  0  0
    0  0  0  0  0  0  0  0
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients. */

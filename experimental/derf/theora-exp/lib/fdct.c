@@ -65,47 +65,62 @@ static const float OC_IDCT_MATRIX[8][8]={
 /*Performs a forward 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 from the orthonormal version of the
    transform.
-  TODO: What is the maximum dynamic range of the input? output?
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).
   _x: The input coefficients.
       The first 8 entries are used (e.g., from a row of an 8x8 block).*/
 static void fdct8(ogg_int16_t *_y,const ogg_int16_t _x[8]){
-  int t[8];
-  int u;
-  int v;
-  t[0]=(int)_x[0]+_x[7];
-  t[1]=(int)_x[1]+_x[2];
-  t[2]=(int)_x[3]+_x[4];
-  t[3]=(int)_x[5]+_x[6];
-  t[4]=(int)_x[5]-_x[6];
-  t[5]=(int)_x[3]-_x[4];
-  t[6]=(int)_x[1]-_x[2];
-  t[7]=(int)_x[0]-_x[7];
-  /*Butterflies for ouputs 0 and 4.*/
-  u=t[0]+t[2];
-  v=t[1]+t[3];
-  _y[0<<3]=(ogg_int16_t)OC_DIV2_16(OC_C4S4*(u+v));
-  _y[4<<3]=(ogg_int16_t)OC_DIV2_16(OC_C4S4*(u-v));
-  /*Apply rotation for outputs 2 and 6.*/
-  u=t[0]-t[2];
-  v=t[6]-t[4];
-  _y[2<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C2S6*u)+OC_DIV2_16(OC_C6S2*v));
-  _y[6<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C6S2*u)-OC_DIV2_16(OC_C2S6*v));
-  /*Compute some common terms.*/
-  t[3]=OC_DIV2_16(OC_C4S4*(t[1]-t[3]));
-  t[4]=-OC_DIV2_16(OC_C4S4*(t[6]+t[4]));
-  /*Apply rotation for outputs 1 and 7.*/
-  u=t[7]+t[3];
-  v=t[4]-t[5];
-  _y[1<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C1S7*u)-OC_DIV2_16(OC_C7S1*v));
-  _y[7<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C7S1*u)+OC_DIV2_16(OC_C1S7*v));
-  /*Apply rotation for outputs 3 and 5.*/
-  u=t[7]-t[3];
-  v=t[4]+t[5];
-  _y[3<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C3S5*u)-OC_DIV2_16(OC_C5S3*v));
-  _y[5<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C5S3*u)+OC_DIV2_16(OC_C3S5*v));
+  ogg_int32_t t[9];
+  ogg_int32_t r;
+  /*Stage 1:*/
+  /*0-7 butterfly.*/
+  t[0]=_x[0]+(ogg_int32_t)_x[7];
+  /*1-6 butterfly.*/
+  t[1]=_x[1]+(ogg_int32_t)_x[6];
+  /*2-5 butterfly.*/
+  t[2]=_x[2]+(ogg_int32_t)_x[5];
+  /*3-4 butterfly.*/
+  t[3]=_x[3]+(ogg_int32_t)_x[4];
+  t[4]=_x[3]-(ogg_int32_t)_x[4];
+  t[5]=_x[2]-(ogg_int32_t)_x[5];
+  t[6]=_x[1]-(ogg_int32_t)_x[6];
+  t[7]=_x[0]-(ogg_int32_t)_x[7];
+  /*Stage 2:*/
+  /*0-3 butterfly.*/
+  r=t[0]+t[3];
+  t[3]=t[0]-t[3];
+  t[0]=r;
+  /*1-2 butterfly.*/
+  r=t[1]+t[2];
+  t[2]=t[1]-t[2];
+  t[1]=r;
+  /*6-5 butterfly.*/
+  r=t[6]-t[5];
+  t[6]=OC_DIV2_16(OC_C4S4*(t[6]+t[5]));
+  t[5]=OC_DIV2_16(OC_C4S4*r);
+  /*Stage 3:*/
+  /*4-5 butterfly.*/
+  r=t[4]+t[5];
+  t[5]=t[4]-t[5];
+  t[4]=r;
+  /*7-6 butterfly.*/
+  r=t[7]+t[6];
+  t[6]=t[7]-t[6];
+  t[7]=r;
+  /*0-1 butterfly.*/
+  _y[0<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C4S4*(t[0]+t[1])));
+  _y[4<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C4S4*(t[0]-t[1])));
+  /*3-2 rotation by 6pi/16*/
+  _y[2<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C2S6*t[3])+OC_DIV2_16(OC_C6S2*t[2]));
+  _y[6<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C6S2*t[3])-OC_DIV2_16(OC_C2S6*t[2]));
+  /*Stage 4:*/
+  /*7-4 rotation by 7pi/16*/
+  _y[1<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C1S7*t[7])+OC_DIV2_16(OC_C7S1*t[4]));
+  /*6-5 rotation by 3pi/16*/
+  _y[5<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C5S3*t[6])+OC_DIV2_16(OC_C3S5*t[5]));
+  _y[3<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C3S5*t[6])-OC_DIV2_16(OC_C5S3*t[5]));
+  _y[7<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C7S1*t[7])-OC_DIV2_16(OC_C1S7*t[4]));
 }
 
 /*Performs a forward 8x8 Type-II DCT transform.
@@ -193,7 +208,7 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
    manner by starting with only the DC coefficient and adding the basis
    function which minimizes the approximation error at each step.
   Let G(i,j) be the coefficient of the ith pixel in the jth basis function in
-   the 2D iDCT, c(j) the DCT coefficients in the current approxmation, A the
+   the 2D iDCT, c(j) the DCT coefficients in the current approximation, A the
    set of non-padding pixels, f(i) the pixel values, and
    r(i)=f(i)-G(i,:) c(:) the reconstruction error in pixel i.
   Then the metric to minimize is
@@ -204,11 +219,11 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   It avoids ill-conditioning by stopping the iteration when the residual
    energy or the change in residual energy falls below a threshold.
   The coefficients which minimize the residual at each stage can be computed
-   by formulating the least squares solution G^T G c = G^T p.
+   by formulating the least squares solution G^T G c(:) = G^T f(:).
   Because G^T G is Hermitian, this can be solved by finding the Cholesky
    decomposition L such that L L^T = G^T G and L is lower-triangular.
-  Then c = L^-T L^-1 G^T p, where the multiplication by L^-T and L^-1 can be
-   done by forward and backward substitution.
+  Then c(:) = L^-T L^-1 G^T f(:), where the multiplication by L^-T and L^-1 can
+   be done by forward and backward substitution.
 
   Unfortunately, this method now depends on the actual pixel values.
   While it has the advantage of actually working, the other methods above
@@ -228,8 +243,8 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
    is added to the Cholesky decompositing L L^T of G^T G.
   This row only depends on the previous rows of G, and does not change as more
    rows are added to G.
-  When computing c from p, division by a diagonal element of L is performed
-   twice, once during forward substitution and once during backward
+  When computing c(:) from f(:), division by a diagonal element of L is
+   performed twice, once during forward substitution and once during backward
    substitution.
   These are the only divisions in this computation.
   Thus it is small values of these diagonal elements which lead to the
@@ -251,9 +266,9 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
    DCT.
 
   Once the set of basis functions has been selected, the linear system
-   p' = G' (L^-T L^-1) G^T p is solved, where p' is the vector of extrapolated
-   pixel values, and G' is the portion of the 2D iDCT basis functions used in
-   G that corresponds to these pixels.
+   f'(:) = G' (L^-T L^-1) G^T f(:) is solved, where f'(:) is the vector of
+   extrapolated pixel values, and G' is the portion of the 2D iDCT basis
+   functions used in G that corresponds to these pixels.
   This results in a simple m by n matrix, where m is the number of padding
    pixels and n is the number of non-padding pixels.
   The entries of this matrix are scaled down by a power of two to ensure their
