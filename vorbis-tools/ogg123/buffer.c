@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.1 2001/10/14 05:42:51 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.2 2001/10/15 05:56:55 volsung Exp $
 
  ********************************************************************/
 
@@ -74,7 +74,12 @@ void _buffer_thread_init (buf_t *buf)
 
   /* Block signals to this thread */
   sigfillset (&set);
-  //pthread_sigmask (SIG_SETMASK, &set, NULL);
+  sigaddset (&set, SIGINT);
+  sigaddset (&set, SIGTSTP);
+  sigaddset (&set, SIGCONT);
+  if (pthread_sigmask (SIG_BLOCK, &set, NULL) != 0)
+    DEBUG("pthread_sigmask failed");
+      
   
   /* Run the initialization function, if there is one */
   if (buf->init_func) 
@@ -194,6 +199,7 @@ void _submit_data_chunk (buf_t *buf, chunk *data, size_t size)
 
 	  memmove (buf->buffer + buf_write_pos, data, write_size);
 	  buf->curfill += write_size;
+	  data += write_size;
 	  size -= write_size;
 	  DEBUG("writing chunk into buffer, curfill = %ld", buf->curfill);
 	}
@@ -316,6 +322,10 @@ void buffer_thread_kill    (buf_t *buf)
 
   /* End thread */
   pthread_cancel (buf->thread);
+  
+  /* Signal all the playback condition to wake stuff up */
+  COND_SIGNAL(buf->playback_cond);
+
   pthread_join (buf->thread, NULL);
 
   _buffer_thread_cleanup(buf);
