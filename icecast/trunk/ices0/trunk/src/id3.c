@@ -80,6 +80,7 @@ ices_id3v1_parse (input_stream_t* source)
     return;
 
   buffer[30] = '\0';
+  title[30] = '\0';
   pos = lseek (source->fd, 0, SEEK_CUR);
 
   lseek (source->fd, -128, SEEK_END);
