@@ -1,0 +1,4 @@
+# -*-Perl-*-
+my$ret=do "$main::moddir/share/diskuse";
+die ($@) unless (defined($ret));
+$ret;
