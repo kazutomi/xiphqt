@@ -342,7 +342,7 @@ int makevorbisheader (unsigned char *packet, int length, struct VorbisBitfields 
 {
     if (length < 5) return -1;
 
-    ((unsigned int *)packet)[0] = vorbheader->cbident;
+    ((unsigned int *)packet)[0] = htonl(vorbheader->cbident);
     packet[4] = (vorbheader -> continuation) << 7;
     packet[4] |= (vorbheader -> fragment) << 6;
     packet[4] |= (vorbheader -> reserved) << 5;
