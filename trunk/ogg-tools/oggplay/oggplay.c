@@ -3,7 +3,7 @@
 
 	a testbed player for ogg multimedia
 
-	$Date: 2001/08/25 22:22:31 $
+	$Date: 2001/09/03 19:11:33 $
 
 	Ralph Giles <giles@thaumas.net>
 
@@ -134,14 +134,51 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 	if (stuff->og_last && stuff->op_last) {
 		fprintf(stderr, "found packet %ld from last time\n",
 			stuff->op_last->packetno);
-			copybytes = MIN(byteswanted, stuff->op_last->bytes - stuff->op_bytes);
-			fprintf(stderr, "  submitting %d bytes to the mng decoder\n", copybytes);
+		copybytes = MIN(byteswanted, stuff->op_last->bytes - stuff->op_bytes);
+		fprintf(stderr, "  submitting %d bytes to the mng decoder\n", copybytes);
 
-			/* copy it into the mng decode buffer */
-			memcpy(buffer, stuff->op_last->packet, copybytes);
-			*bytesread += copybytes;
+		/* copy it into the mng decode buffer */
+		memcpy(buffer, stuff->op_last->packet, copybytes);
+		*bytesread += copybytes;
+
+		stuff->op_last = NULL;
+
+		/* are we done? */
+		if (*bytesread >= byteswanted)
+			return MNG_TRUE;
 	}
 
+	/* we still need more data, so look for more packets in the saved page */
+	if (stuff->og_last) {
+	while (ogg_stream_packetout(stuff->os, op) > 0) {
+		fprintf(stderr, "  got packet %ld\n", op->packetno);
+		
+		/* copy it into the mng decode buffer */
+		copybytes = MIN(byteswanted - *bytesread, stuff->op_last->bytes - stuff->op_bytes);
+		fprintf(stderr, "  submitting %d bytes to the mng decoder\n", copybytes);
+                memcpy(buffer + (*bytesread), op->packet, copybytes);
+                *bytesread += copybytes;
+
+		/* are we done? */
+                if (*bytesread >= byteswanted) {
+			/* save any state */
+			if (copybytes < op->bytes) {
+                                stuff->op_last = op;
+                                stuff->op_bytes = copybytes;
+                                fprintf(stderr, "saving state: %d bytes left in packet number %ld\n",
+					op->bytes-copybytes, op->packetno);
+			} 
+			return MNG_TRUE;
+		}
+	}
+	/* end of any stored data */
+	fprintf(stderr, " end of page %ld\n", ogg_page_pageno(stuff->og_last));
+	stuff->og_last = NULL;
+        stuff->op_last = NULL;
+        stuff->op_bytes= 0;   
+        free(op);
+	free(og);
+	}
 
 	/* get a decoding buffer */
 	buf = ogg_sync_buffer(stuff->oy, byteswanted+4096);
