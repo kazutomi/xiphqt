@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.6 2001/08/30 23:32:09 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.7 2001/08/30 23:38:41 kcarnold Exp $
 
  ********************************************************************/
 
@@ -243,7 +243,6 @@ ParseCode ParseFile (Option_t opts[], char *filename, int (*errfunc) (void *, Pa
 	line[readoffset] = (unsigned char) thischar;
       readoffset++;
     }
-    fprintf (stderr, "Read line: %s\n", line);
     pcode = ParseLine (opts, line);
     if (pcode != parse_ok)
       if (!errfunc (arg, pcode, lineno, filename, line)) {
