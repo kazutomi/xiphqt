@@ -502,7 +502,7 @@ ices_setup_usage ()
 	ices_log ("\t-S <perl|python|builtin>");
 	ices_log ("\t-u <stream url>");
 	ices_log ("\t-H <reencoded sample rate>");
-	ices_log ("\t-N <reencoded number of channels>"):
+	ices_log ("\t-N <reencoded number of channels>");
 }
 
 /* This function makes ices run in the selected way.
