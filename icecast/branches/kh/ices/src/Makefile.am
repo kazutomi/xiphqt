@@ -9,7 +9,7 @@ AM_CFLAGS = @XIPH_CFLAGS@
 AM_CPPFLAGS = @XIPH_CPPFLAGS@
 CFLAGS= -g -O20
 
-EXTRA_DIST = thread net timing avl
+EXTRA_DIST = thread net timing
 EXTRA_ices_SOURCES = im_oss.c im_sun.c im_alsa.c
 
 if HAVE_OSS_AUDIO
