@@ -5,6 +5,7 @@
 #include "p_block.h"
 #include "../interface/cdda_interface.h"
 #include "cdda_paranoia.h"
+#include "isort.h"
 
 linked_list *new_list(void *(*newp)(void),void (*freep)(void *)){
   linked_list *ret=calloc(1,sizeof(linked_list));
@@ -83,13 +84,11 @@ static c_block *i_cblock_constructor(cdrom_paranoia *p){
   return(ret);
 }
 
-void i_cblock_destructor(c_block *c){
-  if(c){
-    if(c->vector)free(c->vector);
-    if(c->flags)free(c->flags);
-    c->e=NULL;
-    free(c);
-  }
+static void i_cblock_destructor(c_block *c){
+  if(c->vector)isort_free(c->vector);
+  if(c->flags)free(c->flags);
+  c->e=NULL;
+  free(c);
 }
 
 c_block *new_c_block(cdrom_paranoia *p){
@@ -132,7 +131,6 @@ v_fragment *new_v_fragment(cdrom_paranoia *p,c_block *one,
 
   b->one=one;
   b->begin=begin;
-  b->vector=one->vector+begin-one->begin;
   b->size=end-begin;
   b->lastsector=last;
 
@@ -168,9 +166,8 @@ c_block *c_prev(c_block *c){
 }
 
 v_fragment *v_first(cdrom_paranoia *p){
-  if(p->fragments->head){
+  if(p->fragments->head)
     return(p->fragments->head->ptr);
-  }
   return(NULL);
 }
 
@@ -202,83 +199,13 @@ void recover_cache(cdrom_paranoia *p){
 
 }
 
-int16_t *v_buffer(v_fragment *v){
-  if(!v->one)return(NULL);
-  if(!cv(v->one))return(NULL);
-  return(v->vector);
+size16 *v_buffer(v_fragment *v){
+  size16 *buffer=isort_buffer(v->one->vector);
+  long begin=isort_begin(v->one->vector);
+    
+  if(!buffer)return(NULL);
+  return(buffer+v->begin-begin);
 }
-
-/* alloc a c_block not on a cache list */
-c_block *c_alloc(int16_t *vector,long begin,long size){
-  c_block *c=calloc(1,sizeof(c_block));
-  c->vector=vector;
-  c->begin=begin;
-  c->size=size;
-  return(c);
-}
-
-void c_set(c_block *v,long begin){
-  v->begin=begin;
-}
-
-/* pos here is vector position from zero */
-void c_insert(c_block *v,long pos,int16_t *b,long size){
-  int vs=cs(v);
-  if(pos<0 || pos>vs)return;
-
-  if(v->vector)
-    v->vector=realloc(v->vector,sizeof(int16_t)*(size+vs));
-  else
-    v->vector=malloc(sizeof(int16_t)*size);
-  
-  if(pos<vs)memmove(v->vector+pos+size,v->vector+pos,
-		       (vs-pos)*sizeof(int16_t));
-  memcpy(v->vector+pos,b,size*sizeof(int16_t));
-
-  v->size+=size;
-}
-
-void c_remove(c_block *v,long cutpos,long cutsize){
-  int vs=cs(v);
-  if(cutpos<0 || cutpos>vs)return;
-  if(cutpos+cutsize>vs)cutsize=vs-cutpos;
-  if(cutsize<0)cutsize=vs-cutpos;
-  if(cutsize<1)return;
-
-  memmove(v->vector+cutpos,v->vector+cutpos+cutsize,
-            (vs-cutpos-cutsize)*sizeof(int16_t));
-  
-  v->size-=cutsize;
-}
-
-void c_overwrite(c_block *v,long pos,int16_t *b,long size){
-  int vs=cs(v);
-
-  if(pos<0)return;
-  if(pos+size>vs)size=vs-pos;
-
-  memcpy(v->vector+pos,b,size*sizeof(int16_t));
-}
-
-void c_append(c_block *v, int16_t *vector, long size){
-  int vs=cs(v);
-
-  /* update the vector */
-  if(v->vector)
-    v->vector=realloc(v->vector,sizeof(int16_t)*(size+vs));
-  else
-    v->vector=malloc(sizeof(int16_t)*size);
-  memcpy(v->vector+vs,vector,sizeof(int16_t)*size);
-
-  v->size+=size;
-}
-
-void c_removef(c_block *v, long cut){
-  c_remove(v,0,cut);
-  v->begin+=cut;
-}
-
-
 
 /**** Initialization *************************************************/
 
@@ -310,10 +237,9 @@ cdrom_paranoia *paranoia_init(cdrom_drive *d){
   p->fragments=new_list((void *)&i_vfragment_constructor,
 			(void *)&i_v_fragment_destructor);
 
-  p->readahead=150;
-  p->sortcache=sort_alloc(p->readahead*CD_FRAMEWORDS);
   p->d=d;
-  p->dynoverlap=MAX_SECTOR_OVERLAP*CD_FRAMEWORDS;
+  p->readahead=150;
+  p->dynoverlap=512;
   p->cache_limit=JIGGLE_MODULO;
   p->enable=PARANOIA_MODE_FULL;
   p->cursor=cdda_disc_firstsector(d);
@@ -325,3 +251,68 @@ cdrom_paranoia *paranoia_init(cdrom_drive *d){
   return(p);
 }
 
+#ifdef TEST
+
+#undef TEST
+#include "isort.c"
+
+typedef struct dummyel{
+  int foo;
+} dummyel;
+
+dummyel *new_dummy(){
+  return(calloc(1,sizeof(dummyel)));
+}
+
+int main(){
+  linked_list *tl;
+  linked_element *one,*two,*three,*four;
+
+  tl=new_list((void *)&new_dummy,&free);
+  one=new_elem(tl);
+  two=new_elem(tl);
+  three=new_elem(tl);
+  four=new_elem(tl);
+
+  if(tl->head!=four){
+    printf("linked lists: failed test 1\n");
+    return(1);
+  }
+  if(tl->tail!=one){
+    printf("linked lists: failed test 2\n");
+    return(1);
+  }
+  if(tl->active!=4){
+    printf("linked lists: failed test 3\n");
+    return(1);
+  }
+
+  free_elem(one,1);
+  free_elem(four,1);
+
+  if(tl->head!=three){
+    printf("linked lists: failed test 4\n");
+    return(1);
+  }
+  if(tl->tail!=two){
+    printf("linked lists: failed test 5\n");
+    return(1);
+  }
+
+
+  if(tl->active!=2){
+    printf("linked lists: failed test 6\n");
+    return(1);
+  }
+  one=new_elem(tl);
+  if(tl->active!=3){
+    printf("linked lists: failed test 7\n");
+    return(1);
+  }
+
+  free_list(tl,1);
+
+  return(0);
+}
+
+#endif
