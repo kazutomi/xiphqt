@@ -12,11 +12,17 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os_types.h,v 1.1.2.1 2000/11/04 06:17:22 xiphmont Exp $
+ last mod: $Id: os_types.h,v 1.1.2.2 2000/11/04 06:43:28 xiphmont Exp $
 
  ********************************************************************/
 #ifndef _OS_TYPES_H
 #define _OS_TYPES_H
+
+/* make it easy on the folks that want to compile the libs with a
+   different malloc than stdlib */
+#define _ogg_malloc malloc
+#define _ogg_calloc calloc
+#define _ogg_realloc realloc
 
 #ifdef _WIN32 
 #  ifndef __GNUC__
