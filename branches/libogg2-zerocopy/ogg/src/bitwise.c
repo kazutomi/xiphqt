@@ -5,18 +5,20 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
   function: packing variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14 2002/09/15 23:48:03 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.1 2002/12/31 01:18:02 xiphmont Exp $
 
  ********************************************************************/
 
-/* We're 'LSb' endian; if we write a word but read individual bits,
-   then we'll read the lsb first */
+/* the 'oggpack_xxx functions are 'LSb' endian; if we write a word but
+   read individual bits, then we'll read the lsb first */
+/* the 'oggpackB_xxx functions are 'MSb' endian; if we write a word but
+   read individual bits, then we'll read the msb first */
 
 #include <string.h>
 #include <stdlib.h>
