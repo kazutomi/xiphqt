@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec.h,v 1.21 2000/07/12 09:36:17 xiphmont Exp $
+ last mod: $Id: codec.h,v 1.21.2.1 2000/07/29 13:27:57 xiphmont Exp $
 
  ********************************************************************/
 
@@ -55,11 +55,12 @@ typedef struct vorbis_info_psy{
   int    athp;
   int    decayp;
   int    smoothp;
-  int    noisefitp;
-  int    noisefit_subblock;
-  double noisefit_threshdB;
 
-  double ath_att;
+  int    noisecullp;
+  double noisecull_barkwidth;
+
+  double ath_adjatt;
+  double ath_maxatt;
 
   int tonemaskp;
   double toneatt_125Hz[5];
@@ -92,6 +93,7 @@ typedef struct vorbis_info_psy{
 
   double attack_coeff;
   double decay_coeff;
+
 } vorbis_info_psy;
 
 /* vorbis_info contains all the setup information specific to the
@@ -158,7 +160,7 @@ typedef struct vorbis_info{
   int        envelopesa;
   double     preecho_thresh;
   double     preecho_clamp;
-
+  double     preecho_minenergy;
 } vorbis_info;
  
 /* ogg_page is used to encapsulate the data in one Ogg bitstream page *****/
