@@ -167,7 +167,7 @@ int oc_sad8_halfpel_border(const unsigned char *_cur,int _cur_stride,
 static int oc_pack_run(oggpack_buffer *_opb,int _value,const int _val_min[],
  const int _code_prefix[],const int _code_nbits[]){
   int i;
-  for(i=0;_value<_val_min[i+1];i++);
+  for(i=0;_value>=_val_min[i+1];i++);
   oggpackB_write(_opb,_code_prefix[i]+(_value-_val_min[i]),_code_nbits[i]);
   return _code_nbits[i];
 }
@@ -802,6 +802,7 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
           c_abs=abs(c);
           if(c_abs<=frinfo->tols[0])qc=0;
           else{
+            int qc_signed[2];
             int qc_max;
             int qc_min;
             int qc_offs;
@@ -824,7 +825,9 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
               }
               qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
             }
-            qc*=(-c_sign<<1)+1;
+            qc_signed[0]=qc;
+            qc_signed[1]=-qc;
+            qc=qc_signed[c_sign];
           }
         }
         pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc=qc+qc_pred;
@@ -1506,7 +1509,7 @@ static int oc_enc_pack_partial_sb_flags(oc_enc_ctx *_enc){
   flag=_enc->state.sbs[0].coded_partially;
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
   ret=1;
-  for(sbi=0;sbi<_enc->state.nsbs;sbi++){
+  for(sbi=0;sbi<_enc->state.nsbs;){
     for(run_count=0;sbi<_enc->state.nsbs;sbi++){
       if(_enc->state.sbs[sbi].coded_partially!=flag)break;
       run_count++;
@@ -1556,7 +1559,7 @@ static int oc_enc_pack_coded_sb_flags(oc_enc_ctx *_enc){
   flag=_enc->state.sbs[sbi].coded_fully;
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
   ret=1;
-  for(sbi=0;sbi<_enc->state.nsbs;sbi++){
+  for(sbi=0;sbi<_enc->state.nsbs;){
     for(run_count=0;sbi<_enc->state.nsbs;sbi++){
       if(_enc->state.sbs[sbi].coded_partially)continue;
       if(_enc->state.sbs[sbi].coded_fully!=flag)break;
@@ -1600,7 +1603,7 @@ static int oc_enc_pack_coded_block_flags(oc_enc_ctx *_enc){
   flag=_enc->state.block_coded_flags[0];
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
   ret=1;
-  for(bli=0;bli<_enc->state.nblock_coded_flags;bli++){
+  for(bli=0;bli<_enc->state.nblock_coded_flags;){
     for(run_count=0;bli<_enc->state.nblock_coded_flags;bli++){
       if(_enc->state.block_coded_flags[bli]!=flag)break;
       run_count++;
@@ -1734,7 +1737,6 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   int                     intra_bits;
   int                     inter_bits;
   nmbs=_enc->state.nmbs;
-  frag=_enc->state.frags;
   set_chroma_mvs=OC_SET_CHROMA_MVS_TABLE[_enc->state.chroma_type];
   oc_mode_scheme_chooser_reset(&_enc->mode_scheme_chooser);
   memset(last_mv,0,sizeof(last_mv));
@@ -1765,7 +1767,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       for(mapii=0;mapii<OC_MB_MAP_NIDXS[_enc->state.chroma_type];mapii++){
         mapi=OC_MB_MAP_IDXS[_enc->state.chroma_type][mapii];
         fragi=mb->map[mapi>>2][mapi&3];
-        if(fragi>=0&&frag[fragi].coded)break;
+        if(fragi>=0&&_enc->state.frags[fragi].coded)break;
       }
       /*If we don't find any, mark this MB not coded and move on.*/
       if(mapii>=OC_MB_MAP_NIDXS[_enc->state.chroma_type]){
@@ -1781,7 +1783,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       for(mapii++;mapii<OC_MB_MAP_NIDXS[_enc->state.chroma_type];mapii++){
         mapi=OC_MB_MAP_IDXS[_enc->state.chroma_type][mapii];
         fragi=mb->map[mapi>>2][mapi&3];
-        if(fragi>=0&&frag[fragi].coded)coded[ncoded++]=mapi;
+        if(fragi>=0&&_enc->state.frags[fragi].coded)coded[ncoded++]=mapi;
       }
       /*Compute the chroma MVs for the 4MV mode.*/
       /*TODO: Handle the case when less than 4 luma blocks are being coded.*/
@@ -2071,8 +2073,6 @@ static void oc_enc_pack_mb_modes(oc_enc_ctx *_enc){
   int                    *coded_mbi;
   int                    *coded_mbi_end;
   int                     scheme;
-  coded_mbi=_enc->state.coded_mbis;
-  coded_mbi_end=coded_mbi+_enc->state.ncoded_mbis;
   scheme=_enc->mode_scheme_chooser.scheme_list[0];
   oggpackB_write(&_enc->opb,scheme,3);
   if(scheme==0){
@@ -2087,6 +2087,8 @@ static void oc_enc_pack_mb_modes(oc_enc_ctx *_enc){
   }
   codes=_enc->mode_scheme_chooser.mode_codes[scheme];
   mode_ranks=_enc->mode_scheme_chooser.mode_ranks[scheme];
+  coded_mbi=_enc->state.coded_mbis;
+  coded_mbi_end=coded_mbi+_enc->state.ncoded_mbis;
   for(;coded_mbi<coded_mbi_end;coded_mbi++){
     const theora_huff_code *code;
     oc_mb                  *mb;
