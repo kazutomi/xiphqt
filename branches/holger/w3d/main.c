@@ -6,7 +6,7 @@
 #include "yuv.h"
 
 
-#define  N_FRAMES  4
+#define  N_FRAMES  1
 
 
 int read_ppm_info (char *prefix, int *w, int *h)
