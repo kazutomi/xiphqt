@@ -90,7 +90,7 @@ def test(ogg, imagewriter = None):
             
             theora += 1
            
-        elif theora > 3:
+        if theora > 3:
             # print theora
             theora += 1
             assert(td.decode_packetin(op) == 0)
@@ -101,8 +101,8 @@ def test(ogg, imagewriter = None):
 
             yield yuv
             
-        else:
-            break
+        #else:
+        #    break
 
 
 if __name__ == "__main__":

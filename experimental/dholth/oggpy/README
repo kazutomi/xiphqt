@@ -1,32 +1,48 @@
 What's this?
 ============
 
-If you've downloaded this, you're probably wondering two things - what's
-it for, and why doesn't it compile?
+This is oggpy.  It's a capable wrapper that will let you manipulate ogg,
+vorbis, and theora from your Python code.
+
+
+Motivation
+==========
 
 I wrote this wrapper because I was frustrated with the official ogg/vorbis
-wrapper and to teach myself about Boost.Python.  When encoding the
+wrapper and to teach myself about Boost.Python.  When encoding, the
 official ogg/vorbis Python wrapper could only write its output to a file.
 No tostring() method.  Well, mine has a tostring() method, and it's
 written in a more concise and understandable way thanks to the magic
-of Boost.Python.  Ideally, by combining this wrapper and shoutpy, it will
-be possible to write a program like ices (re-encode and stream ogg/vorbis)
-in Python.
+of Boost.Python.
 
-Incidentally, there's a separately usable C++ wrapper here too.
+By combining this wrapper and shoutpy, it's possible to write a
+reencoding source for icecast. An almost-working example is given in
+tests/reencode.py
 
-This is a very early release.  By downloading this software, you're
+Incidentally there's a separately usable C++ wrapper here too.
+
+This is still an early release.  By downloading this software, you're
 participating in the receiving end of the 'release early, release often'
-open source philosophy.
+open source philosophy, so I'd very much appreciate your feedback.
 
-Send your feedback to dholth@fastmail.fm.
+Send feedback to dholth@fastmail.fm.
 
-Thanks,
+Thanks, I hope you enjoy this wrapper.
 
-Daniel Holth
+- Daniel Holth
+
 
 Compiling
 =========
+
+If you're using gentoo, you will want to emerge the following packages first:
+	boost libogg libvorbis
+	ACCEPT_KEYWORDS=~x86 emerge theora (to manipulate theora streams)
+	pygame (to display theora)
+
+Then use setup.py build as normal.
+
+Hopefully I'll figure out an ebuild for this.
 
 To compile this software, use setup.py.
 	
@@ -39,9 +55,8 @@ Compile:
 (Possibly):
 	python setup.py install
 
-Basic necessities will include editing setup.py to point to your
-Boost.Python include directory, and possibly removing theora
-support.
+If Python is having trouble finding your libraries, edit config.py .
+For example, Boost.Python has a number of different library names.
 
 Boost.Python 1.31 or CVS is necessary; 1.30 won't work because it lacks
 a str:: constructor used in vorbispy_wrappers.cc

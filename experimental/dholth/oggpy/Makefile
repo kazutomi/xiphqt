@@ -15,7 +15,7 @@ vorbispy.cpp: vorbispy_wrappers.h oggcc.h vorbiscc.h vorbispy.pyste
 
 theorapy.cpp: oggcc.cc oggcc.h theoracc.h theorapy.pyste
 	pyste --module=theorapy --out=theorapy.cpp -I. \
-	-I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I$(HOME)/include/theora  theorapy.pyste
+	-I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I/usr/include/  theorapy.pyste
 
 module: theorapy.cpp oggpy.cpp vorbispy.cpp
 	python ./setup.py build

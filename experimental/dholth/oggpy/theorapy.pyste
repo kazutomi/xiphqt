@@ -5,5 +5,5 @@ exclude(theorapy.comment.get_data)
 exclude(theorapy.state.get_data)
 exclude(theorapy.yuv_image.get_data)
 
-Enum("theora_colorspace", "theora.h")
+Enum("theora_colorspace", "theora/theora.h")
 # Enum("ogg::theora::theora_errors", "theoracc.h")

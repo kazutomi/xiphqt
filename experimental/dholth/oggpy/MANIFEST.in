@@ -4,3 +4,4 @@ include tests/*.py
 include tests/encode.py
 include tests/oggtext.py
 include tests/test.py
+include config.py
