@@ -521,7 +521,7 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
     videocount++;
 
     pthread_mutex_lock(&output_mutex);
-    if(outfile_fd<0)OpenOutputFile();
+    if(outfile_fd<0 && videocount>5)OpenOutputFile();
     pthread_mutex_unlock(&output_mutex);
     /* only do 24 bit zPixmaps for now */
 
@@ -754,7 +754,7 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
     videocount++;
 
     pthread_mutex_lock(&output_mutex);
-    if(outfile_fd<0)OpenOutputFile();
+    if(outfile_fd<0 && videocount>5)OpenOutputFile();
     pthread_mutex_unlock(&output_mutex);
 
     /* only do 24 bit zPixmaps for now */
