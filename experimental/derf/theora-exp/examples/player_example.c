@@ -327,13 +327,14 @@ static void open_video(void){
 }
 
 static void video_write(void){
+  static const int planemap[3] = {0,2,1};
   int pli;
   int wscale, hscale;
   int i;
   theora_ycbcr_buffer ycbcr;
   int crop_offset;
+
   theora_decode_ycbcr_out(td,ycbcr);
-  int planemap[] = {0,2,1};
 
   /* Lock SDL_yuv_overlay */
   if ( SDL_MUSTLOCK(screen) ) {

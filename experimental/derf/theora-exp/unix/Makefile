@@ -17,14 +17,15 @@ MAKEDEPEND = gcc -MM
 # The location of include files.
 # Modify these to point to your Ogg and Vorbis include directories if they are
 #  not installed in a standard location.
-CINCLUDE = -I/usr/include/SDL -D_REENTRANT
+CINCLUDE = `sdl-config --cflags` -D_REENTRANT
 # Extra compilation flags.
 # You may get speed increases by including flags such as -O2 or -O3 or
 #  -ffast-math, or additional flags, depending on your system and compiler.
 # The -g flag will generally include debugging information.
 CFLAGS = -g
 # Libraries to link with, and the location of library files.
-LIBS = -logg -lvorbis -lvorbisenc
+# Add -lpng -lz if you want to enable OC_DUMP_IMAGES.
+LIBS = -logg -lvorbis -lvorbisenc `sdl-config --libs`
 
 # ANYTHING BELOW THIS LINE PROBABLY DOES NOT NEED EDITING
 CINCLUDE := -I../include ${CINCLUDE}
@@ -81,17 +82,6 @@ enquant.h \
 fdct.h \
 huffenc.h \
 psych.h \
-
-LIBTHEORAENC_CSOURCES = \
-bitrate.c \
-encinfo.c \
-encode.c \
-enquant.c \
-fdct.c \
-huffenc.c \
-impmap.c \
-mcenc.c \
-psych.c \
 
 DUMP_VIDEO_CSOURCES = dump_video.c
 ENCODER_EXAMPLE_CSOURCES = encoder_example.c
@@ -174,6 +164,9 @@ ${PLAYER_EXAMPLE_TARGET}: ${PLAYER_EXAMPLE_OBJS} ${LIBTHEORABASE_TARGET} \
 clean:
 	-rm ${ALL_OBJS} ${ALL_DEPS} ${ALL_TARGETS}
 	-rmdir ${WORKDIR}
+
+# Make everything depend on changes in the Makefile
+${ALL_OBJS} ${ALL_DEPS} ${ALL_TARGETS} : Makefile
 
 # Specify which targets are phony for GNU make
 .PHONY : all clean
