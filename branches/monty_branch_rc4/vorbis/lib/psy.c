@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: psychoacoustics not including preecho
- last mod: $Id: psy.c,v 1.64 2001/12/22 09:40:39 xiphmont Exp $
+ last mod: $Id: psy.c,v 1.64.2.1 2001/12/27 08:09:33 xiphmont Exp $
 
  ********************************************************************/
 
@@ -923,7 +923,7 @@ static void couple_point(float A, float B, float fA, float fB,
     }
     
     corr=origmag/FAST_HYPOT(fmag*fA,fmag*fB);
-    *mag=rint(*mag*corr*igranule)*granule; 
+    *mag*=corr;
     *ang=0.f;
 
   }else{
@@ -970,7 +970,7 @@ void _vp_quantize_couple(vorbis_look_psy *p,
 	vp_couple *part=info->couple_pass[passno].couple_pass+k;
 	float rqlimit=part->outofphase_requant_limit;
 	int flip_p=part->outofphase_redundant_flip_p;
-    
+
 	for(;j<part->limit && j<p->n;j++){
 	  /* partition by partition; k is our by-location partition
 	     class counter */
@@ -1006,3 +1006,52 @@ void _vp_quantize_couple(vorbis_look_psy *p,
     }
   }
 }
+
+static int apsort(const void *a, const void *b){
+  if(fabs(**(float **)a)>fabs(**(float **)b))return -1;
+  return 1;
+}
+
+void psy_normalize_noise(vorbis_block *vb,float *pcm,int n){
+  /* sort in ascending order */
+  int i;
+  float **index=alloca(n*sizeof(*index));
+  float acc=0,qacc=0;
+  
+  for(i=0;i<n;i++)index[i]=pcm+i;
+  qsort(index,n,sizeof(*index),apsort);
+
+  for(i=0;i<n;i++)acc+=fabs(pcm[i]);
+  for(i=0;i<n;i++){
+    float qval=rint(*index[i]);
+
+    if(qval!=0.f){
+      qacc+=fabs(qval);
+    }else{
+      if(fabs(*index[i])<.1f)break;
+      if(*index[i]<0){
+	qacc+=1.f;
+	*index[i]= -1.;
+      }else{
+	qacc+=1.f;
+	*index[i]=1.;
+      }
+      if(qacc>acc)break;
+    }
+
+  }
+  for(;i<n;i++){
+    *index[i]=0.;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+

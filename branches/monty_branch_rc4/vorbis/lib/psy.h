@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.27 2001/12/20 01:00:29 segher Exp $
+ last mod: $Id: psy.h,v 1.27.2.1 2001/12/27 08:09:33 xiphmont Exp $
 
  ********************************************************************/
 
@@ -155,7 +155,10 @@ extern void _vp_quantize_couple(vorbis_look_psy *p,
 			 int   passno);
 
 extern float _vp_ampmax_decay(float amp,vorbis_dsp_state *vd);
+extern void psy_normalize_noise(vorbis_block *vb,float *pcm,int n);
 
 #endif
+
+
 
 
