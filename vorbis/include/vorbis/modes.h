@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: predefined encoding modes
- last mod: $Id: modes.h,v 1.9 2000/02/23 11:42:00 xiphmont Exp $
+ last mod: $Id: modes.h,v 1.9.2.1 2000/03/30 01:46:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -29,6 +29,7 @@
 #include "vorbis/book/resshort8aux.vqh"
 #include "vorbis/book/reslong8aux.vqh"
 
+#include "vorbis/book/resX_0.vqh"
 #include "vorbis/book/resX_1.vqh"
 
 #include "vorbis/book/res128_0a.vqh"
@@ -52,16 +53,22 @@
 /* a good set of rolloffs for nigh-transparent masking */
 static vorbis_info_psy _psy_set0={
   { -20, -20, -14, -14, -14, -14, -14, -14, -14, -14,
-    -14, -14, -16, -16, -16, -16, -18, -18, -16, -16,
-    -12, -10, -6, -3, -2, -1, -0}, 16,8
+    -14, -14, -16, -16, -16, -16, -18,  0., -16, -16,
+    -12, -10, -6, -3, -1, -1, -0}, 0., (8./1024), 10,4
 };
+
+/*static vorbis_info_psy _psy_set0={
+  { -20, -20, -14, -14, -14, -14, -14, -14, -14, -14,
+    -14, -14, -16, -16, -16, -16, -18, -18, -16, -16,
+    -12, -10, -6, -3, -1, -1, -0}, 0., (8./1024), 10,4
+    };*/
 
 /* with GNUisms, this could be short and readable. Oh well */
 static vorbis_info_time0 _time_set0={0};
 static vorbis_info_floor0 _floor_set0={20, 44100,  64, 12,140, 1, {0} };
 static vorbis_info_floor0 _floor_set1={32, 44100, 256, 12,140, 1, {1} };
-static vorbis_info_residue0 _residue_set0={0, 128, 8,4,2,{0,1,1,1},{4,6,6}};
-static vorbis_info_residue0 _residue_set1={0,1024, 8,4,3,{0,1,1,1},{5,6,6}};
+static vorbis_info_residue0 _residue_set0={0, 128, 8,4,2,{0,1,1,1},{6,6,6}};
+static vorbis_info_residue0 _residue_set1={0,1024, 8,4,3,{0,1,1,1},{6,6,6}};
 static vorbis_info_mapping0 _mapping_set0={1, {0,0}, {0}, {0}, {0}, {0}};
 static vorbis_info_mapping0 _mapping_set1={1, {0,0}, {0}, {1}, {1}, {0}};
 static vorbis_info_mode _mode_set0={0,0,0,0};
@@ -104,7 +111,7 @@ vorbis_info info_A={
    &_vq_book_res1024_0c8x4,/* 9 */
 #endif
 
-   &_vq_book_resX_1,
+   &_vq_book_resX_0,
 
   },
   /* psy */
