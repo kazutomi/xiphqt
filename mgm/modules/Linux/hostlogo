@@ -5,6 +5,10 @@ package MGMmodule::hostlogo;
 $name="hostlogo";
 %module;
 
+$main::toplevel->optionAdd("$main::Xname.$name*font",             
+			   "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
+$main::toplevel->optionAdd("$main::Xname.$name*refresh",        80,20);      
+
 $logo=$main::toplevel->
     Pixmap(-file => "$main::libdir/fishframe.xpm");
 
@@ -29,15 +33,14 @@ undef $textlabel;
 sub module_construct{
     my($this,$width,$height)=@_;
 
-
     my$logopad=($width-$logowidth)/2;
     my$textpad=($width-$textwidth)/2;
     my$vpad=($height-$logoheight-$textheight)/3;
 
-    $widget=$main::toplevel->Canvas(Name=>$name,
-				    borderwidth=>0,
-				    highlightthickness=>0,
-				    width=>$width,height=>$height);
+    $widget=$main::toplevel->Frame(Name=>$name,
+				   borderwidth=>0,
+				   highlightthickness=>0,
+				   width=>$width,height=>$height);
     $logowidget=$widget->Canvas(Name=>$name,
 				borderwidth=>0,
 				highlightthickness=>0,
@@ -45,10 +48,16 @@ sub module_construct{
 				    place(-x=>$logopad,-y=>$vpad,-anchor=>'nw');
     $logowidget->createImage(0,0,-image=>$logo,-anchor=>'ne',
 			     -tags=>["logo"]);
-    $widget->createText($textpad,$vpad*2+$logoheight,-text=>$hostname,
-			-anchor=>nw);
+
+    $widget->Label(-text=>$hostname,
+		   -borderwidth=>0,
+		   -padx=>1,-pady=>1)->
+		       place(-x=>$textpad,-y=>$vpad*2+$logoheight,
+			     -anchor=>'nw');
     
-    $widget->repeat(80,\&twirlback);
+    my$refresh=$widget->optionGet("refresh","Refresh");
+    $widget->repeat($refresh,\&twirlback);
+
     $this->{"widget"}=$widget;
 }
 
@@ -75,8 +84,5 @@ $module{"mgm_module_reqx"}=$requestx;
 $module{"mgm_module_reqy"}=$requesty;
 $module{"mgm_module_demand"}=$demand;
 $module{"mgm_module_construct"}=\&module_construct;
-
-$main::toplevel->optionAdd("$main::Xname.$name.font",             
-			   "-*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*",20);
 
 \%module;
