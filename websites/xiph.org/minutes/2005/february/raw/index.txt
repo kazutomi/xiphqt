@@ -1,0 +1,468 @@
+[19:00:33] <xiphmont> meeting starting now.
+[19:00:45] <xiphmont> Good evening folks, welcome to the Xiph Monthly Meeting.
+[19:01:17] <xiphmont> First agenda item: XSPF.org
+[19:02:12] <xiphmont> Essentially, a new playlist format.  Not a huge deal in many ways, but it's time we move on, and its being proposed by a bunch of old media player hackers, some of whom qualify as 'Forces of Nature"
+[19:02:20] --> oddsock (~oddsock@c-67-175-231-7.client.comcast.net) has joined #xiphmeet
+[19:02:27] <xiphmont> I think they'll pull it off.  According to Ralph, they asked to be under Xiph.
+[19:02:33] <xiphmont> I'm all for it.
+[19:02:54] <xiphmont> I'm not sure who else knew about it, so I'm not sure if there's any discussion to be had here right now.
+[19:03:14] <xiphmont> If someone perks up and wants to come back, we'll do that.
+[19:03:22] <xiphmont> Otherwise, on to SXSW...
+[19:03:23] <MikeS> I saw it mentioned (by you, I think, on the agenda) a day or so ago.
+[19:03:31] <xiphmont> right
+[19:03:41] <MikeS> If they're interested, I don't see any reason not to have them under the umbrella. 
+[19:03:48] <xiphmont> Right, I don't either.
+[19:03:53] <xiphmont> And I have faith in the people involved.
+[19:04:21] <MikeS> (I don't - I only spent about 30 seconds looking - understand the point of the format, and I have no idea who the people are, but I assume you've looked at that)
+[19:04:27] <MikeS> So, on to SXSW!
+[19:04:28] <xiphmont> yeah
+[19:04:45] <xiphmont> SXSW: a minimum of Ralph and I are going.  Atamido will be there too (he lives there)
+[19:04:52] <xiphmont> We're still trying to convince Jack.
+[19:05:16] <xiphmont> Others who want to come will be paying their own way, but if you're interested, it's not too late to coordinate with the larger group.
+[19:05:39] <xiphmont> We're hoping to party some with Stan too, but he has a conflict.
+[19:06:03] <MikeS> Maybe it'd be useful to mention dates? (I can't come regardless, but if anyone else can...)
+[19:06:08] <GShang> A guy has streamed stuff from there the last two years, have you/do you plan to link up with him?
+[19:06:28] <GShang> ah.
+[19:06:29] <MikeS> (of March, I think)
+[19:06:30] <xiphmont> We're hoping to be doing the streaming for SXSW this year!
+[19:06:36] <xiphmont> of March, yes.
+[19:06:54] <MikeS> Unfortunately, I think one international flight in March is all my budget will stretch to
+[19:07:10] <xiphmont> rather, folks normally pay for the privilege; we've agreed to handle it unless someone else throws money at SXSW for the bragging rights.
+[19:07:56] <xiphmont> Anything else to say right now?
+[19:08:03] <xiphmont> Othersie onto website.
+[19:08:06] <xiphmont> and logos
+[19:08:16] <xiphmont> But first, I'm putting boiling water on for tea.
+[19:08:45] <MikeS> I'll add something in here briefly, then, that's not on the agenda.
+[19:09:41] <MikeS> Currently, the mailing lists are set up to not accept mail from non-subscribers. Which means the moderators get a lot of moderation requests (mostly spam, maybe 2-3 legit messages a day). I do a lot of this, but there are a lot of lists I rarely, if ever, look at. Also, I'll be unable to do it at all after the end of March. 
+[19:09:54] <Arc> (I think this is a cool project, we should open a dialog with these spiffy folx)
+[19:09:54] <MikeS> So, is anyone willing to volunteer for this?
+[19:10:35] <xiphmont> MikeS: attendance is low tonight, so that question may not be answered now.  But we will keep that call out.
+[19:10:47] <jmspeex> MikeS: Can't we auto-filter?
+[19:10:59] <xiphmont> jmspeex: it's a bit iffy
+[19:11:02] <waterplay7g> How about moving the lists over to a sign up forum?
+[19:11:03] <jmspeex> Even if it's not 100% effective, that would (I think) be better than now.
+[19:11:19] <xiphmont> waterplay7g: it's sign-up now.
+[19:11:28] <xiphmont> people post from non-signed up accounts.
+[19:11:30] <jmspeex> xiphmont: I thought the "reply to be whitelisted" worked good.
+[19:11:46] <xiphmont> jmspeex: too many spambots were successfully forging from whitelisted people.
+[19:11:52] <MikeS> jmspeex: we don't really want to: the lack of spam getting to the lists is good. It's a very small amount of work, but it needs someone to do it.
+[19:11:56] <xiphmont> It worked well for a long time, but was breaking down in the end.
+[19:12:19] --> J_Bullet (~jbullet@213.137.0.116) has joined #xiphmeet
+[19:12:29] <MikeS> Particularly the lists I don't do (I regularly do both vorbis lists, both icecast lists, the ogg-dev list, and the tremor list.)
+[19:12:36] <xiphmont> a repeat: "apologies to people confused by the title; I forgot to ask for ops and Rillian and jack aren't around."
+[19:12:38] <GShang> I'd be happy to do a couple of the lists I'm on, say the Icecast lists, but I wouldn't want to do them all.
+[19:12:45] <xiphmont> "the title is old"
+[19:12:56] <jmspeex> xiphmont: Would it be possible to auto-accept messages which have certain keywords in the subject?
+[19:13:25] <xiphmont> jmspeex: it's *possible* to do almost anything.
+[19:13:26] <jmspeex> e.g. accept everything that has "fixed-point" or "Re: [Speex-dev]..."
+[19:13:26] <MikeS> I think waterplay7g might have been asking for a "web forum" type thing. I don't think we want that as a replacement for the lists (though possibly, longer term, as an addition to them?)
+[19:13:52] <waterplay7g> yup thats what i was thinking.
+[19:13:55] <xiphmont> Emmett suggested it multiple times.  The problem is it requires even more administrative supervision.
+[19:14:04] <MikeS> jmspeex: I've accidently, in the past, let through spam because of only looking at the subject line, and I'm smarter than a computer :)
+[19:14:14] <oddsock> web forums are generally preferable to users, but at the cost of increased maintenance by the forum admins
+[19:14:38] <GShang> Not preferable to this user, for what it's worth, and I'd think most blind people would be in the same boat.
+[19:14:50] <MikeS> oddsock: depends on the users. I know I'm on several mailing lists (as a pure user) where I help people out, and ask for help - and I wouldn't do that with a forum
+[19:15:09] <J_Bullet> depends on the user
+[19:15:14] --> vanguardist (~vanguardi@209.173.159.67) has joined #xiphmeet
+[19:15:15] <oddsock> yep, well, I know that I've been asked repeatedly from icecast users..
+[19:15:15] <jmspeex> xiphmont: Can we have a web form that posts to the list or do spammers use those too?
+[19:15:21] <vanguardist> hi! (i forgot it was today)
+[19:15:39] <J_Bullet> younger computer users seem to find web forums more inviting/less intimidating
+[19:16:27] <illi> i agree forums are more approachable... but mailing lists also have their advantages
+[19:16:47] <MikeS> Anyway, this is getting off topic a bit. We're definately NOT replacing the lists. We could consider adding a web forum, if we have someone willing to do the (substantial) amount of admin work that would likely require
+[19:17:00] --> m0rbidini (~bleh@a212-113-184-49.netcabo.pt) has joined #xiphmeet
+[19:17:21] <MikeS> If people who are interested in doing this could write up a proposal (details of what software, where it would run, who would admin it), maybe add that to next month's agenda?
+[19:17:36] <J_Bullet> well I would be able to give some time to admining a forum, I have admined a phpbb forum before (about 400 users)
+[19:17:55] <Arc> what about if the web forums were the same as the lists?
+[19:18:01] <Arc> so that they were interchangeable
+[19:18:10] <MikeS> GShang: thanks for offering to do the icecast lists. I'll contact you offline about that at some point (I'm fine with them for now, but I won't have regular web access after the end of march for some months)
+[19:18:15] <illi> i agree, we don't just want to split the information into 2 lpaces
+[19:18:16] <J_Bullet> Arc: I think that's not easy to do, but possible
+[19:18:27] <Arc> some software supports it
+[19:18:47] <xiphmont> OK, we wanderd.
+[19:19:02] <xiphmont> back to agenda having heard no new input
+[19:19:16] <xiphmont> (and really, the mailing lists should be offline discussion... it does need to be talked about)
+[19:19:24] <xiphmont> Website and logo work:
+[19:19:38] <xiphmont> Melissa has a deadline tonight to get me the latest drop of work
+[19:19:39] * adiabatic rubs his hands in anticipation
+[19:19:48] <xiphmont> I was hoping it would be pre-meeting, no such luck.
+[19:19:53] <xiphmont> But
+[19:19:53] <waterplay7g> I've got some ideas about logos and website design
+[19:20:13] <xiphmont> she's shown be a prototype of the first cat logo for theora that works.
+[19:20:18] <xiphmont> s/be/me/
+[19:20:28] <Arc> is it online?
+[19:20:41] <xiphmont> waterplay7g: we've hired a professional graphic designer to work on logos, branding and website.
+[19:20:46] <oddsock> what projects have logos ?
+[19:20:48] <waterplay7g> cool
+[19:20:50] <xiphmont> Arc: No, I was hoping to have it today pre-meeting.
+[19:20:57] <xiphmont> But it should still be here tongiht.
+[19:21:01] <Arc> ok
+[19:21:05] <Arc> id love to see it.
+[19:21:11] <xiphmont> I can forward the revous drop if folks haven't seen it.
+[19:21:16] <xiphmont> previous
+[19:21:19] <xiphmont> Logos:
+[19:21:20] <MikeS> sure, that'd be good
+[19:21:23] <Arc> please do
+[19:21:36] <adiabatic> I'd like to see the previous drop. And this one. Where do I sign up to see it?
+[19:21:40] <jmspeex> xiphmont: Still a parrot for Speex or did that change?
+[19:21:42] <xiphmont> right now we have Xiph, Vorbis, FLAC, Speex and the new theora in progress.
+[19:21:54] <illi> excellent can't wait :)
+[19:21:56] <xiphmont> jmspeex: no, there was unanimous praise for the last parrot she sent.
+[19:22:14] <Arc> heh, what about Writ?
+[19:22:17] <xiphmont> adiabatic: I'll have you Cc;ed on the next drop.
+[19:22:24] <xiphmont> Writ: Not yet, working on it.
+[19:22:31] <xiphmont> ...but she's aware of Write.
+[19:22:34] <xiphmont> Writ
+[19:22:37] <Arc> cool :-)
+[19:22:48] <Arc> i can make some suggestions out of meeting.
+[19:23:00] <oddsock> icecast's current logo was like one of the first of her logos...is it legal for us to be using it ?
+[19:23:12] <xiphmont> Oh!
+[19:23:18] <xiphmont> Yes, Icecast is still the igloo.
+[19:23:27] <xiphmont> She's going to use it pretty much as-is.
+[19:23:39] <oddsock> ok..perfect :)
+[19:23:45] <xiphmont> oddsock: the icecast logo was originally by Emily.
+[19:23:51] <Arc> is she working on icons?
+[19:23:54] <xiphmont> Yes.
+[19:24:02] <xiphmont> I'll Cc: you on next drop as well.
+[19:24:08] <MikeS> So, we have a plan for logos/branding/etc. What about actual content for the websites? xiph.org is generally ok, but somewhat outdated. vorbis.com is a disaster from both usability and content perspectives.
+[19:24:21] <Arc> i made a set of small icons for Xinloe, they're in svn. would love to replace them by something made by an artist
+[19:24:24] <xiphmont> we're getting close to completion (as in, we're already working on web templates with the logos) so they can see wider distribution.
+[19:24:47] <adiabatic> who's working on the web templates, and in what sort of templating system, incidentally?
+[19:24:48] <xiphmont> MikeS: website structure and content is organized at this point.
+[19:24:56] <ginger> wasn't there a new website design up a few months ago?
+[19:25:05] <MikeS> xiphmont: ok. 
+[19:25:14] <xiphmont> We're going for minimal replacement structure that we can blow the content back into.  Trying to avoid the old-style explosion in page number.
+[19:25:15] <oddsock> is it safe to assume that the new templates will be used only by the projects that have the new logos ?
+[19:25:27] <xiphmont> oddsock: need not be.
+[19:25:31] ginger GShang 
+[19:25:47] <xiphmont> ginger: the 'new web design' has been waiting for logo work to get mostly finished.
+[19:26:16] <ginger> so, is it still the same proposal, just with better logos?
+[19:26:22] <xiphmont> Not quite.
+[19:26:43] <ginger> do you have the link to a preview?
+[19:26:51] <xiphmont> What jack had suggested was more a new look and CSS.  What we're after is more a structural retooling that happens to feature the new logos and branding.
+[19:26:59] * ginger lost the link
+[19:27:12] <xiphmont> ginger: only PDFs here right now.  It's not been finished enough to show widely.
+[19:27:27] <ginger> oh, so I must have seen something else
+[19:27:29] <xiphmont> oddsock: I am suspecting it will be 'marathon panic conversion' :-)
+[19:27:45] <oddsock> is there someone heading the effort ?
+[19:27:51] <ginger> there was something cutely designed a while back, but that seems to have died, right?
+[19:28:11] <xiphmont> Atamido had a number of pages he was playing with, all very overcomplicated.
+[19:28:15] * ginger kinda liked that structure
+[19:28:19] <xiphmont> Jack had a very simple design.
+[19:28:27] <xiphmont> (I liked Jack's simple design)
+[19:28:28] <ginger> ok, all good
+[19:28:39] <xiphmont> I'm ownign the logo/website task.
+[19:28:51] <xiphmont> Melissa Breglio (our designer) is doing most of the work.
+[19:29:30] <adiabatic> Question.
+[19:29:35] --> philk (~philk@spr1-brmb2-6-0-cust215.bagu.broadband.ntl.com) has joined #xiphmeet
+[19:29:52] <ginger> hi phil :)
+[19:29:53] <adiabatic> Is she also doing work to put it into some sort of templating system, or is that something being done by not-Melissa?
+[19:30:03] <philk> hi all, sorry for being late
+[19:30:16] <xiphmont> She is also making Web CSS templates, yes.
+[19:30:37] <waterplay7g> Is her website www.mbreglio.com?
+[19:30:39] <adiabatic> I was thinking of something along the lines of SSI, not CSS.
+[19:30:42] <xiphmont> yes
+[19:31:06] <xiphmont> adiabatic: both
+[19:31:12] <adiabatic> Ah.
+[19:31:15] <adiabatic> Gotcha.
+[19:31:52] <xiphmont> waterplay7g: the design we're getting is lessy busy/cleaner than most of the corporate sites featured on her demo page.
+[19:32:56] <xiphmont> Anyway, I will get the latest drop (which should be here tonight barring complications) out to folks who requested it.
+[19:33:43] <xiphmont> OK, moving ion unless folks are just feeling quiet to bait me.
+[19:33:50] <xiphmont> Project updates
+[19:33:53] <xiphmont> Ogg
+[19:34:00] <xiphmont> Arc: yes, I'm a dorkus.
+[19:34:25] <xiphmont> And that's all there is to say.  Well, three jobs this month.  Non-paying work is low on the priority list right now.
+[19:34:30] <ginger> maybe it's worth mentioning here that I started writing an Ogg Skeleton wiki page
+[19:34:36] <xiphmont> Ah, yes!
+[19:35:13] <xiphmont> Is this specifically elated to Annodex?
+[19:35:16] <xiphmont> related
+[19:35:17] <adiabatic> http://wiki.xiph.org/index.php/OggSkeleton (incidentally)
+[19:35:43] <ginger> well, it's the logical bitstream that provides an abstraction over the codecs
+[19:35:52] --> HackRip (Fennryl@ip-7.net-81-220-227.henin.rev.numericable.fr) has joined #xiphmeet
+[19:36:22] <xiphmont> yes, we'd talked about that before but in the context of Annodex and Ogg.  Is this coming out of that work?
+[19:36:27] <ginger> it makes it possible to "slice and dice" ogg files without having to decode or even needing to understand any codecs
+[19:36:52] <ginger> we needed that to allow us to do temporal cut-outs from Annodex files, yes
+[19:37:04] <xiphmont> right
+[19:37:13] <xiphmont> I thought it seemed very familiar :-)
+[19:37:14] <ginger> but it is generic enough to add onto Ogg without needing CMML or anything else
+[19:37:35] <ginger> it's essentially what we discussed last year, yes :)
+[19:38:07] <ginger> it also allows attaching some meta information such as video frame size or audio sampling rate to the log bitstreams
+[19:38:59] <xiphmont> Moving on?
+[19:39:02] <xiphmont> Vorbis.
+[19:39:08] <xiphmont> (unless somebody screams ;-)
+[19:39:18] <xiphmont> Work continues for Mercora.
+[19:39:28] <jmspeex> What's that?
+[19:39:32] <adiabatic> Who're they, incidentally?
+[19:39:39] <xiphmont> A few new press releases showed up on the Vorbis lists, although we'd seen FineArch before
+[19:39:51] <MikeS> They're who you're doing encoder-optimisation work for?
+[19:39:53] <xiphmont> Mercora is a company selling legit p2p service
+[19:40:02] <MikeS> I don't think the FineArch press release went to the lists, did it?
+[19:40:08] <xiphmont> And they're moving to using Vorbis under the covers.
+[19:40:11] <MikeS> Maybe it did and I missed it there
+[19:40:17] <xiphmont> MikeS: Let me check
+[19:40:33] <MikeS> (The one I read was directly to msmith@xiph.org)
+[19:40:38] <xiphmont> Anyway, they want a Vorbis encoder closer in speed to WMA encode, and they're paying for it.
+[19:41:05] <GShang> So are these optimisations or a new encoder?
+[19:41:07] <xiphmont> Ah, FineArch does seem to have sent it directly to individuals.
+[19:41:09] <MikeS> What's the (current) performance difference between mainline libvorbis and wma (factor of 2? 5? 10?)
+[19:41:12] <adiabatic> Will those changes make it back into the reference encoder?
+[19:41:27] <xiphmont> GShang: it's optimizations that require some serious multching of the current libvorbis.
+[19:41:37] <MikeS> My understanding is that they will, but only after a period of time (i.e. they're paying for it exclusively for some time period)
+[19:42:00] <xiphmont> adiabatic: right now, no.  This is a work for hire.  They said they intend to give it back in the future, naturally, they don;t have to if they don't want to.
+[19:42:00] <MikeS> after that, it gets relicensed, and incorporated into libvorbis. Is this right, Monty?
+[19:42:09] <MikeS> oh, so I wasn't quite right
+[19:42:33] <xiphmont> Oh, if and when they decide to give it back, we'll release it.  But much of the work opts toward speed over quality.
+[19:42:49] <xiphmont> It won;t be a huge quality hit, but it will be not quite as high quality as reference.
+[19:42:49] <GShang> ah,  so it's not just a speed-up.
+[19:42:56] <xiphmont> And it's for low bitrate only.
+[19:43:00] <oddsock> is there any peeling in that work ?
+[19:43:03] <xiphmont> No.
+[19:43:56] <xiphmont> ...and I continue to play with groundwork toward Vorbis II.
+[19:44:20] <xiphmont> Mostly fun/crazy ideas right now that I don;t expect to work as is, but I do expect to give insight.
+[19:44:27] <xiphmont> Like non-periodic sampling, etc :-)
+[19:44:43] <xiphmont> On to Speex I think
+[19:44:51] <xiphmont> jmspeex: you have anything to report?
+[19:45:42] <jmspeex> Yes
+[19:45:55] <xiphmont> 'kay, go forth.
+[19:46:03] <xiphmont> er, speak forth.
+[19:46:07] <jmspeex> Just got a contract to get it to work on an ARM 72 MHz
+[19:46:36] <jmspeex> That'll likely require some ARM assembly as well as algorithmic improvements/approximations.
+[19:47:23] <ginger> I can hook you up to our ARM specialist :)
+[19:47:24] <jmspeex> Also, I just got a post-doc position at CSIRO with Silvia. 
+[19:47:34] <jmspeex> ginger: cool
+[19:47:43] <philk> great!
+[19:47:44] <xiphmont> ARM assembly is like living on cream though.  It's sooo nice.
+[19:47:48] <ginger> he sometimes lingers on #annodex
+[19:47:53] <jmspeex> I made sure I'll be allowed to continue working on Speex.
+[19:47:53] <xiphmont> Yay, CSIRO!
+[19:48:19] <ginger> :)
+[19:48:27] <xiphmont> So, more speex or onto theora?
+[19:48:42] <xiphmont> (FWIW, the suggested Theora logo is a cat playing with a reel of film)
+[19:48:43] <philk> jmspeex, how does the RTP I-D look?
+[19:48:47] * ginger won't comment on the process ...
+[19:48:56] <jmspeex> philk: It looked OK the last time you sent it.
+[19:49:06] <jmspeex> philk: did you re-submit?
+[19:49:15] <philk> ok, i'll submit it to the ieft later
+[19:49:33] <derf_> Not much Theora progress to report.
+[19:49:42] <jmspeex> After, we can start cleaning it up. There are things that should go (e.g. post-filter switch).
+[19:50:10] <derf_> I'm mostly busy with conference deadlines this month and next month.
+[19:50:31] <derf_> Over the winter break I did do some initial work on a next-generation video codec.
+[19:50:53] <xiphmont> Is Josh here for a FLAC update?  I don't think he is.
+[19:50:58] <derf_> Mostly ideas stage at this point, much like Vorbis II.
+[19:51:02] <xiphmont> Yeah
+[19:51:22] <xiphmont> Well, Vorbis II has many definite things too, but I'm still entertaining pie-in-the-sky research in it for now as well.
+[19:51:45] <xiphmont> Moving on to Icecast.
+[19:51:48] <derf_> Pie-in-the-sky research is where the fun is.
+[19:51:53] <xiphmont> It is indeed.
+[19:52:01] <oddsock> icecast is moving along nicely...
+[19:52:14] <oddsock> our 2.2 release has been very well receieved
+[19:52:39] <oddsock> not much in the way of theora streaming going on, but a few are using it for NSV streaming
+[19:52:55] <oddsock> our stream directory tops out at about 600 active streams
+[19:53:03] <xiphmont> Ah, the irony of that.
+[19:53:04] <oddsock> which is a slow increase for us...
+[19:53:23] <oddsock> we got a serious boost in user-base by adding support for the shoutcast encoder
+[19:53:48] <oddsock> there are quite a few now moving over to icecast, not the burst I initally though, which is probably good, but slow and steady
+[19:53:53] <GShang> We had Theora streaming working for a conference last weke, but the sound sucked so we had to drop it. (vlc's fault)
+[19:54:16] <xiphmont> Well, I'll be working with y'all soon on streaming for SXSW...
+[19:54:32] <oddsock> we continue to add some of the features found in karls branch with the hope that eventually that branch goes away
+[19:54:45] <MikeS> Basically, we're getting many more users, but it isn't clear whether it's really a 'good thing' with respect to xiph.org's goals. We hope that using icecast will get some people to try out the alternatives (i.e. vorbis, theora), but I don't see any real evidence of that
+[19:55:04] <oddsock> most of the new features on tap for icecast will come from his branch
+[19:55:04] <MikeS> I'm not sure what, if anything, we should do about that.
+[19:55:45] <oddsock> well, I'd like to see icecast continue to be an open-streaming server, and not just a tool to showcase xiph codecs...although noone says it can't do both..
+[19:55:46] <illi> i think that boils down to existing media...
+[19:56:06] <illi> and you need to get in at the source... ie when it's first created...
+[19:56:27] <oddsock> but I'd be curious to know how people feel about adding support for non-free codcs such as AAC, etc...
+[19:56:31] <xiphmont> Icecaast should continue being Icecast on its own merits.
+[19:56:31] <GShang> I don't think there's a lot you can do in Icecast to help that situation, it's more of a codecs thing.
+[19:56:32] <illi> people just have a crapload of mp3's unfortunately
+[19:56:40] <xiphmont> It needs to support and work smoothly with Xiph codecs.
+[19:56:42] <MikeS> oddsock: right. I'm not suggesting ripping out mp3 support or anything. I'm more wondering how we can use icecast to try to get more people switching...
+[19:57:14] <xiphmont> But it should not be making life more difficult for users that have some reason to use other format.  Not as a matter of policy, anyway, sometimes it's unavoidable.
+[19:57:21] <oddsock> well, for instance, adding support for aacv2 doesn't encourage people to use vorbis...in some cases it might *discourage*
+[19:57:46] <GShang> Not sure where, but you could for example tout Vorbis' betterr performance at lower bitrates somewhere in the Icecast stuff (hey, no law against advertising in the docs)
+[19:57:51] <xiphmont> I don;t think we're strictly able to ship it as part of core.
+[19:58:31] <MikeS> xiphmont: is "it" in that sentence icecast? What is "core"?
+[19:58:33] <oddsock> well, the addition of aac and nsv was done without any knowledge of the codecs, so there isn't any problem with distribution of that code
+[19:58:37] <xiphmont> sorry.
+[19:58:57] <xiphmont> Are we, as a non-licensee of aacv2 patents, allowed to ship aacv2 functionality?
+[19:59:26] <oddsock> well, it's like apache, it can stream AAC, but doesn't know about the format itself
+[19:59:27] <MikeS> xiphmont: we're not. We're shipping something that can pass through aacv2 with no specific knowledge of it. In that sense, it's no different from apache.
+[19:59:37] <j^> as long as icecast does not decode aac
+[19:59:37] <xiphmont> If we can legally oofer the functionality, we should not withhold it as a matter of policy.
+[19:59:38] <xiphmont> OK.
+[19:59:42] <xiphmont> then that's fine.
+[19:59:52] <oddsock> ok, great...that's what I was looking for..
+[20:00:14] <oddsock> thats pretty much all for icecast...
+[20:00:38] <xiphmont> Out of order, because it makes more sense here.... Direct Show Filters:  Illi?
+[20:01:13] <illi> Not a great deal of new stuff... been busy working... but lots of bug fixes, memory leaks that kind of thing have been hapenning
+[20:01:32] <illi> new release should be in the next few days.... unless i decide to take my week holiday first
+[20:01:37] <xiphmont> s'fine, you need not have to announce a software revolution every month :-)
+[20:01:52] <illi> also oggchef has been coming along nicely thanks to andre
+[20:01:59] <ginger> but he has contributed to one!
+[20:02:17] <illi> still only focused on annodex... but ginger has some more info related to that i think she wants to talk about :)
+[20:02:28] <illi> that's all from me :)
+[20:02:39] <ginger> the DirectShow filters are being used in the Annodex Mozilla plugin we just released
+[20:02:46] <illi> no :)
+[20:02:55] <adiabatic> ginger: URL to plugin?
+[20:02:57] <illi> <cough> vlc is <cough>
+[20:03:06] <ginger> ups, sorry :)
+[20:03:19] <illi> hehe... but oggchef is serving the content :)
+[20:03:25] <adiabatic> Thanks.
+[20:03:38] <ginger> there you go, I knew the filters were in it somewhere ;)
+[20:03:48] <xiphmont> OK, popping back to Postfish
+[20:03:59] <illi> vlc is better for when it goes mac/linux
+[20:04:17] <xiphmont> libpostfish is underway; some progress this month.  (Not much happens for me in January because january contains a theater show)
+[20:04:49] <xiphmont> Postfish will be 1.0 before SXSW.  You heard it here first.  See, this is a word game:  I just have to put 1.0 on it before getting on a plane ;-)
+[20:05:03] <xiphmont> Paranoia is next, but I see no pjones.
+[20:05:24] <xiphmont> However, in related nes, Peter Jones now lives in Massachusetts a few miles from me.
+[20:05:36] <xiphmont> That is it for the agenda.
+[20:05:49] <xiphmont> Anything before I bang the [virtual] meeting gavel?
+[20:05:56] <waterplay7g> How about a marketing campaign to increase user base similar to what mozilla did to get people to use firefox?
+[20:06:01] <MikeS> Something (again, not on the agenda, sorry) I was thinking of a couple of days ago: currently, when something xiph.org-related goes wrong, I often have no idea who to ask about it. It'd be useful to have an "infrastructure@xiph.org" alias (or list) that goes to all the relevant people, so they can deal with issues that come up. Would that be possible?
+[20:06:02] <philk> RTP?
+[20:06:41] <adiabatic> How would that differ from webmaster@?
+[20:06:41] <philk> Shall I report?
+[20:06:56] <xiphmont> waterplay7g: great idea.  We need someone to run such a thing who knows how to do such a thing :-)
+[20:07:10] <waterplay7g> I'd be happy to do it.
+[20:07:10] <xiphmont> philk: you have the floor, then I'll come back to Mike.
+[20:07:17] <xiphmont> Then back to waterplay7g
+[20:07:22] <philk> thanks, xiphmont
+[20:07:37] <philk> Just comminted to svn is an update to the Vorbis draft.
+[20:08:03] <MikeS> adiabatic: it's not specific to web stuff? Who gets webmaster@ ?
+[20:08:09] <philk> This version will be a full AVT WG document, so it's one step closer to RFC
+[20:08:15] <MikeS> (sorry, ignore me for the moment)
+[20:08:39] <philk> The feedback from the ietf was pisitive for the last version, and most if not all the nits have been fixed
+[20:08:56] <philk> An initial draft for Theora is also in svn
+[20:09:12] <xiphmont> (BTW, sorry for not having this on the agenda Phil)
+[20:09:26] <philk> most of it is based on Vorbis so ther shouldn't be too many issues
+[20:09:34] <philk> (xiphmont, no probs)
+[20:09:37] <ginger> congrats phil on moving it into the avt - that's a huge step forward
+[20:10:01] <philk> The core Theora spec is a little hazy, so a good read through by the Theora people would be welcomed!
+[20:10:07] <philk> Thanks ginger!
+[20:10:29] <philk> ginger, how are your annodex and cmml i-d's doing?
+[20:10:33] <derf_> philk: Give me a timetable you want it by, and I'll try to get to it by then.
+[20:10:47] <ginger> philk, working on it :)
+[20:10:51] <philk> I'd like to link to link to them but they seem to have expired
+[20:10:59] <philk> ginger, super!
+[20:11:12] <ginger> yeah, due back out middle last year :( sorry :(
+[20:11:18] <philk> derf_, I'd like to submit the Theora draft by early next week
+[20:11:59] <philk> for the speex draft i've found the switxh to fix the new page after every section, jm
+[20:12:09] <derf_> That soon, huh? Well, "try" will be the operative word, then.
+[20:12:23] <philk> and i spoke to Josh a few days ago about doing an I-D for FLAC, he seems up for it
+[20:12:57] <philk> derf_ if you can give it a quick once-over to check it isn;t totally garbled, this would be great
+[20:13:29] <philk> next to do is work on the implementations for Vorbis and Theora
+[20:13:39] <philk> ok, done.
+[20:14:06] <xiphmont> ok
+[20:14:10] <xiphmont> Back to Mike
+[20:14:23] <xiphmont> Hrm, hell, some part of me thinks that should be on the Wiki
+[20:14:43] <xiphmont> Although most of the 'waah, it doesn't work' contact addresses are Ralph.
+[20:15:14] <MikeS> The situation I was thinking of was this (from a couple of weeks ago): I tried using trac, it was badly broken, I had to hunt people down in here to find out who to contact.
+[20:15:51] <MikeS> (trac, by the way, is a major regression in functionality for bug tracking compared to bugzilla. Argh. Rant for another time, I suppose)
+[20:16:10] <MikeS> Just a list of contact addresses for each service on the wiki would be fine, I suppose.
+[20:16:42] <xiphmont> OK
+[20:16:50] <xiphmont> [hold on a sec, checking something]
+[20:17:12] <xiphmont> I... had no ide we'd moved.
+[20:17:29] <MikeS> moved what?
+[20:17:32] <xiphmont> To Trac
+[20:17:36] <xiphmont> Why did we?
+[20:18:10] <MikeS> Oh. For the other stuff, it's quite nice. For bug tracking, it's buggy, hard to use, and inflexible. I have NO IDEA why we moved.
+[20:18:32] <xiphmont> Who moved us?  Ralph?
+[20:18:45] <illi> probably for the other stuff more than the bug tracker
+[20:18:48] <GShang> Wasn't this discussed at a meeting several months ago?
+[20:19:09] <xiphmont> Perhaps, but I didn;t see it.
+[20:19:17] <xiphmont> OK, discussion for another time.
+[20:19:19] <MikeS> trac is being maintained/run by j^
+[20:19:25] <MikeS> I know nothing more than that.
+[20:19:55] <xiphmont> OK, s'fine
+[20:20:03] <MikeS> Anyway, getting back to my request: if someone who actually knows the answers could write up a wiki page with contact details, that'd be great.
+[20:20:03] <xiphmont> I'll find out more.
+[20:20:29] <xiphmont> waterplay7g: on to you and the 'media campaign'
+[20:20:45] <xiphmont> Part of the issue with a pro-Xiph campaign is that we don't write applications.
+[20:20:49] <xiphmont> we write infrastructure.
+[20:20:56] <adiabatic> Specifically, CD rippers.
+[20:21:06] <xiphmont> Now, raising awareness of this infrastructure is a good thing.
+[20:21:12] <waterplay7g> Ok, I was thinking it should be coordinated with the new website.
+[20:21:25] <xiphmont> That's a fine idea in theory :-)
+[20:21:34] <waterplay7g> hmm
+[20:21:37] <xiphmont> adiabatic: ...that hasn't seen a release since 1999 :-)
+[20:21:54] <xiphmont> if you have specific ideas, I'm interested in hearing them.
+[20:21:58] <MikeS> icecast? ;-)
+[20:22:02] <waterplay7g> we need to promote apps which use vorbis etc.
+[20:22:09] <ginger> ogg123? ;)
+[20:22:22] <xiphmont> The trouble we tend to have though is more finding people to own and implement non-coding tasks more than it is finding ideas themselves.
+[20:22:29] <xiphmont> icecast is infrastructure.
+[20:22:48] <waterplay7g> Why don't I write up some ideas and then email to someone?
+[20:22:51] <GShang> I'm not sure that us4ers think of it as infrastructure.
+[20:22:55] <xiphmont> waterplay7g: if you're up for it, I'm up for it and we should chat some more.
+[20:23:12] <waterplay7g> sounds good.
+[20:23:12] <adiabatic> xiphmont: considering how much it does all by itself, I'd consider (cd)paranoia as "infrastructure"... ;)
+[20:23:13] <xiphmont> GShang: tech geeks use it to get their streams out to users.
+[20:23:25] <GShang> And it's ultimately those who provide stream who dictate the format they'rein.
+[20:23:52] <xiphmont> If a non-programmer can grab it and use it like a solid appliance to get somethign done, it counts as an application.
+[20:25:13] <xiphmont> waterplay7g: Do youhave something you're ready to toss out now, or shall we take it to the mailing lists?
+[20:25:49] <waterplay7g> I'll take it to the mailing list but the last time I tried to join the vorbis list I couldn't
+[20:26:07] <GShang> Sounds like it's something for the advocacy list
+[20:26:20] <xiphmont> Oh?
+[20:26:28] <xiphmont> GShang: yeah, I think so too.
+[20:26:35] <xiphmont> What was the problem joining?
+[20:26:38] <MikeS> waterplay7g: you should be able to. If you can't, contact me through irc or at msmith@xiph.org, we don't need to discuss that further here, though.
+[20:26:45] <xiphmont> Right.
+[20:26:51] <waterplay7g> ok I'll post some info there when I have more definite ideas.
+[20:26:54] <xiphmont> OK, are we done?  The Gavel Hovers.
+[20:27:00] <illi> one more thing...
+[20:27:13] <ginger> just one more news from down under: the next Linux conference AU will be streaming talks and random interviews with theora using flumotion and the recordings of the talks will later be annodexed for search access
+[20:27:14] <MikeS> (or contact vorbis-owner@xiph.org)
+[20:27:18] <GShang> I've got a question about the bounties thing
+[20:27:25] <MikeS> ginger: cool. When's that?
+[20:27:29] <MikeS> GShang: go.
+[20:27:33] <ginger> in March
+[20:27:42] <ginger> linux.conf.au
+[20:27:44] <MikeS> ginger: where?
+[20:27:48] <ginger> Canberra
+[20:27:51] <MikeS> I suppose I can look at the website...
+[20:28:16] <MikeS> Ah, so by "March", you meant "April" :-)
+[20:28:25] <ginger> upsydingy
+[20:28:27] <MikeS> (which means I can't go)
+[20:28:43] <ginger> :(
+[20:29:08] <GShang> Unless I'm missing something, the bounties page on the wiki is still at initial idea stage, with no mechanisms in place to make any of it happen.  Is there any way people can donate to pots or offer to do tasks, and does anything need to be done to fascilitate this if not?
+[20:30:05] <xiphmont> To be perfectly honest, I don't know.  Ralph isn;t here and I think he was handling setting up the rules.
+[20:30:52] <GShang> It's just that they all look like worthwile goals, and I get the feeling that if we don't move foreard with it, they'll never get implemented.
+[20:31:29] <ginger> there's also no actual value named for each of them
+[20:31:31] * GShang particularly wants peeling for streaming
+[20:31:53] <philk> peeling is needed for RTP as well
+[20:32:11] <xiphmont> I'll contact Ralph about it.
+[20:32:26] <xiphmont> I'd elaborate, but I can;t.
+[20:32:34] <GShang> And I wouldn't mind tossing ina f ew dollars from time to time as bank balance allows in order to get it implemented.  But I can't right now.
+[20:32:48] <xiphmont> Rather, I'd guess but I don;t know enough to say :-()
+[20:32:59] <GShang> Cool, thanks.
+[20:33:00] <xiphmont> OK, I think we're done.  
+[20:33:02] <illi> Anyway... just  about the annodex browser... since ozone can't be here today... i should say a bit more about that... there's some test content on the site with the plugin... if you feel like some video surfing... mac and linux versions should be done within a month hopefully
+[20:33:15] <xiphmont> Oh oops
+[20:33:22] <xiphmont> illi did say 'one more thing'.
+[20:33:25] <xiphmont> earlier.
+[20:33:33] <xiphmont> ...and then proceeded to wait patiently.
+[20:33:39] <xiphmont> illi: is there more?
+[20:33:47] <MikeS> Xiphmont snatches the gavel back up just before it hits the desk... :-)
+[20:34:00] <illi> all the seeking is done server side... and the browser is quite nice at the moment... i'm sure he'd appreciate some feedback :)
+[20:34:23] <illi> that is all :)
+[20:34:26] <adiabatic> Handle the smug mac weenies™ before the smug linux weenies™.
+[20:34:31] <ginger> browser plugins is very solid indeed
+[20:35:08] <xiphmont> ok
+[20:35:12] <xiphmont> {BANG}
+[20:35:12] <illi> really lets you see what annodex is about when you can really do all that stuff we've been talking about :)
+[20:35:14] <ginger> up to andre - he's working like hell
+[20:35:26] <xiphmont> we're officially done, but continue to confer amongst yourselves.
+[20:35:32] <xiphmont> I'll post the log.
+[20:35:38] <ginger> sweet :)
+[20:35:46] <MikeS> Thanks for chairing, Monty.
+[20:36:32] <philk> cheers all..... time to turn in.
+[20:36:48] <ginger> time to start the work for the day!
+[20:36:50] <GShang> Ginger, so are they actually going to be streaming any presenntations from LCA, or just show off the format?
+[20:37:28] <ginger> sure! It's all about streaming the conference!
+[20:37:36] <GShang> Excellent!
+[20:37:46] <ginger> They actually recorded everything last year in speex and theora format and put it onto a DVD
+[20:38:05] <ginger> this year, live streaming is being trialled
+[20:38:18] <GShang> Now all we need is a Speex/theora compliant DVD player.
+[20:38:30] <ginger> and there will be some perls from interviews, too
+[20:38:54] <ginger> GShang, use your computer :)
+[20:39:13] <GShang> No DVD drive.  ah well.
