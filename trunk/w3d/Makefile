@@ -18,13 +18,16 @@ CFLAGS+= -DDBG_MEMLEAKS
 # dump a lot debug images
 CFLAGS+= -DDBG_XFORM
 
+# dump ogg packet infos
+CFLAGS+= -DDBG_OGG
+
 # disable assertions
 #CFLAGS+= -DNDEBUG
 
-LFLAGS = -g -lefence
+LFLAGS = -g -lefence -logg
 
 OBJS = mem.o pnm.o wavelet.o wavelet_xform.o wavelet_coeff.o \
-	yuv.o tarkin.o tarkin-io.o
+	yuv.o tarkin.o info.o
 
 TEST_TARGETS = _test_bitcoder _test_rle _test_huffman
 
@@ -49,7 +52,7 @@ clean:
 	$(RM) $(TEST_TARGETS) $(TEST_OBJS)
 	$(RM) tarkin_enc tarkin_dec tarkin_enc.o tarkin_dec.o
 	$(RM) *.ppm *.pgm
-	$(RM) stream.tarkin
+	$(RM) stream.ogg
 
 
 test: .depend $(TEST_TARGETS)

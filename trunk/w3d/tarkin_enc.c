@@ -25,7 +25,33 @@ void usage (const char *program_name)
    exit (-1);
 }
 
+TarkinError free_frame(void *s, void *ptr) {
+    FREE (ptr);
+    return(TARKIN_OK);
+}
 
+struct tarkin_enc {
+    ogg_stream_state os;
+    int fd;
+};
+
+TarkinError packet_out(void *stream, ogg_packet *op) {
+    ogg_page og;
+    TarkinStream *s = stream;
+    struct tarkin_enc *te = s->user_ptr;
+    ogg_stream_packetin(&te->os,op);
+    if(op->e_o_s){
+       ogg_stream_flush(&te->os, &og);
+       write(te->fd, og.header, og.header_len);
+       write(te->fd, og.body , og.body_len);
+    } else {   
+       while(ogg_stream_pageout(&te->os,&og)){
+          write(te->fd, og.header, og.header_len);
+          write(te->fd, og.body , og.body_len);
+       }
+    }   
+    return (TARKIN_OK);
+}
 
 int main (int argc, char **argv)
 {
@@ -33,10 +59,16 @@ int main (int argc, char **argv)
    char fname[256];
    uint32_t frame = 0;
    uint8_t *rgb;
-   int fd;
+   struct tarkin_enc te;
    TarkinStream *tarkin_stream;
    TarkinVideoLayerDesc layer [] = { { 0, 0, 1, 5000, TARKIN_RGB24 } };
-   int type;
+   int type,i;
+   TarkinComment tc;
+   TarkinInfo ti;
+   ogg_page         og;
+   ogg_packet       op[3];
+   TarkinTime date;
+   
 
    if (argc == 1) {
       layer[0].bitstream_len = 1000;
@@ -61,17 +93,36 @@ int main (int argc, char **argv)
 
    layer[0].format = (type == 3) ? TARKIN_RGB24 : TARKIN_GRAYSCALE;
 
-   rgb  = (uint8_t*) MALLOC (layer[0].width * layer[0].height * type);
 
-   if ((fd = open ("stream.tarkin", O_CREAT | O_RDWR | O_TRUNC, 0644)) < 0) {
-      printf ("error opening '%s' for writing !\n", "stream.tarkin");
+   if ((te.fd = open ("stream.ogg", O_CREAT | O_RDWR | O_TRUNC, 0644)) < 0) {
+      printf ("error opening '%s' for writing !\n", "stream.ogg");
       usage (argv[0]);
    }
 
-   tarkin_stream = tarkin_stream_new (fd);
-   tarkin_stream_write_layer_descs (tarkin_stream, 1, layer);
+   ogg_stream_init(&te.os,1);
+   tarkin_info_init(&ti);
+
+   ti.inter.numerator = 1;
+   ti.inter.denominator = 1;
+
+   tarkin_comment_init(&tc);
+   tarkin_comment_add_tag(&tc, "TITLE", "tarkin_enc produced file");
+   tarkin_comment_add_tag(&tc, "ARTIST", "C coders ;)");
+   tarkin_stream = tarkin_stream_new ();
+   tarkin_analysis_init(tarkin_stream, &ti, free_frame, packet_out,(void*)&te);
+   tarkin_analysis_add_layer(tarkin_stream, &layer[0]);
+   printf("n_layers: %d\n", tarkin_stream->n_layers);
+   tarkin_analysis_headerout(tarkin_stream, &tc, op, &op[1], &op[2]);
+   for(i=0;i<3;i++){
+      ogg_stream_packetin(&te.os, &op[i]);
+   }
+   ogg_stream_flush(&te.os,&og);
+   write(te.fd, og.header, og.header_len);
+   write(te.fd, og.body, og.body_len);
+	 
 
    do {
+      rgb  = (uint8_t*) MALLOC (layer[0].width * layer[0].height * type);
       snprintf (fname, 256, fmt, frame);
       printf ("read '");
       printf (fname, frame);
@@ -83,14 +134,17 @@ int main (int argc, char **argv)
          break;
       }
       printf ("\n");
-
-      tarkin_stream_write_frame (tarkin_stream, &rgb);
+      date.numerator = frame;
+      date.denominator = 1;
+      tarkin_analysis_framein (tarkin_stream, rgb, 0, &date);
       frame++;
    } while (1);
 
    FREE (rgb);
+   tarkin_analysis_framein (tarkin_stream, NULL, 0, NULL); /* EOS */
+   tarkin_comment_clear (&tc);
    tarkin_stream_destroy (tarkin_stream);
-   close (fd);
+   close (te.fd);
 
    return 0;
 }
