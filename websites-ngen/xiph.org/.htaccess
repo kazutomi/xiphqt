@@ -8,4 +8,4 @@ ErrorDocument 404 /Error/404/
 ErrorDocument 410 /Error/410/
 
 RewriteEngine On
-RewriteRule ^(.*)(es|de)$ $1index.$2.html
+RewriteRule ^(.*)(es|de|ko)$ $1index.$2.html

@@ -214,7 +214,7 @@ class MarkdownWrapper(object):
 				if AFTERMAINTEXT_INCLUDE.search(filename):
 					self.afterMainTextInclude = contents
 				if AFTERCONTENT_INCLUDE.search(filename):
-					self.afterMainTextInclude = contents
+					self.afterContentInclude = contents
 		langFilename = getParallelFile(self.sourceFilename, "lang.include")
 		if langFilename and os.path.isfile(langFilename):
 			self.langInclude = file(langFilename).read()
@@ -251,6 +251,7 @@ class MarkdownWrapper(object):
 		ret +=	self.afterMainTextInclude
 		ret +=	self.afterMainTextInherit
 		ret +=	"</div>\n"
+		ret +=	self.afterContentInclude
 		ret +=	self.afterContentInherit
 		ret += "</body>\n"
 		ret += "</html>\n"

@@ -11,10 +11,11 @@
 		
 		body {
 			background: #eee;
-			border: thin solid gray;
+			border: 1px solid gray;
+			margin: 1em 15em 1em 1em;
 			padding: 0 1em;
-			max-width: 50em;
 		}
+
 		kbd, code, tt {
 			font-family: 'Courier New', Monaco, 'Lucida Console', monospace;
 		}
@@ -32,115 +33,203 @@
 			margin: 0;
 			padding: 0 0 0 2em;
 		}
+
 		li {
 			margin: .5em 0;
 			padding: 0;
 		}
+		
+		ins {
+			color: blue;
+		}
+		
+		ul#toc {
+			margin: 0;
+			padding: 0;
+			position: fixed;
+			top: 1em;
+			right: 1em;
+			width: 13em;
+			background: #eee;
+			border-top: 1px solid gray;
+		}
+
+		ul#toc li {
+			font-size: smaller;
+			margin: 0;
+			list-style: none;
+			border: 1px solid gray;
+			border-top: none;
+		}
+		
+		ul#toc a {
+			display: block;
+			color: black;
+		
+		}
+
+		ul#toc a:link {
+			text-decoration: none;
+			color: black;
+		}
+
+		ul#toc a:visited {
+			color: black;
+			text-decoration: none;
+		}
+
+
+		ul#toc a:hover {
+			background: #ccc;
+		}
+			
+		
 	</style>
 </head>
 <body>
+<h1 id='top'>Wrapup Documentation</h1>
+<ul id='toc'>
+	<li><a href='#top'>Top</a></li>
+	<li><a href='#requirements'>Requirements</a></li>
+	<li><a href='#usage'>Usage</a></li>
+	<li><a href='#creation'>Creating</a></li>
+	<li><a href='#apacheSetup'>Apache Setup</a></li>
+	<li><a href='#inheritsAndIncludes'><tt>.inherit</tt> and <tt>.include</tt> files</a></li>
+	<li><a href='#multilingual'>Multilingual Concerns</a></li>
+</ul>
 
-<h1>Wrapup Documentation</h1>
+
 <h2 id='requirements'>Requirements</h2>
 <ul>
-<li>
-	<a href='http://www.python.org'>Python</a> 2.3.2, to run <tt>wrapup.py</tt>
-	(use earlier versions at your own risk)
-</li>
-<li>
-	<a href='http://www.perl.org/'>Perl</a> 5.6.1, to run Markdown
-	(<a href='http://www.activestate.com/Products/ActivePerl/'>ActivePerl</a> works fine)</li>
-<li><a href='http://httpd.apache.org/'>Apache</a> 2, to check your changes</li>
-<li><a href='http://www.daringfireball.net/projects/markdown/'>Markdown</a> 1.0b4 (included)</li>
+	<li>
+		<a href='http://www.python.org'>Python</a> 2.3.2, to run <tt>wrapup.py</tt>
+		(use earlier versions at your own risk)
+	</li>
+	<li>
+		<a href='http://www.perl.org/'>Perl</a> 5.6.1, to run Markdown
+		(<a href='http://www.activestate.com/Products/ActivePerl/'>ActivePerl</a> works fine)</li>
+	<li>
+		<a href='http://httpd.apache.org/'>Apache</a> 2, to check your changes
+	</li>
+	<li>
+		<a href='http://www.daringfireball.net/projects/markdown/'>Markdown</a> 1.0b4
+		(included)
+	</li>
+	<li>
+		A <strong>UTF-8-capable</strong> text editor, such as
+		Notepad (on Windows NT, 2000, and XP),
+		TextEdit (on OS X), or 
+		<a href='http://vim.sourceforge.net/'>Vim</a>
+		(on Windows NT/2000/XP, OS X, and most UNIX workalikes)
+		when compiled with multibyte support
+	</li>
 </ul>
 
 
 <h2 id='usage'>Usage</h2>
 <p>
-Simply run <kbd>wrapup.py</kbd> in the directory it’s in. If nothing failed, you should see
-a newly generated <tt>.html</tt> file for every <tt>.markdown</tt> file that isn’t in the news
-directory.
+	Simply run <kbd>wrapup.py</kbd> from its directory;
+	<tt>make.bat</tt> and the <tt>Makefile</tt> will also do this.
+	If nothing failed, you should see a newly generated <tt>.html</tt> file for every
+	<tt>.markdown</tt> file that isn’t in the news directory.
 </p>
 
-<h3 id='creation'>Creating</h3>
-<p>
-Suppose you want to create a new document. Here’s how:
-</p>
+
+<h2 id='creation'>Creating</h2>
+<p>Suppose you want to create a new document. Here’s how:</p>
 
 <ol>
-<li>
-Think of a good location to put it and what to call it. Don’t gloss over this step; what you
-write will, ideally, be available at that location forever.
-</li>
-<li>Create a directory for that location.</li>
-<li>Create and edit a file called <tt>index.markdown</tt> in that directory.</li>
-<li>When you want to see your edits, run <tt>wrapup.py</tt> from its directory.</li>
+	<li>
+		Think of a good location to put it and what to call it.
+		Don’t gloss over this step; what you write will—ideally—be available at that
+		location forever.
+	</li>
+	<li>Create a directory for that location.</li>
+	<li>
+		Create and edit a file called <tt>index.markdown</tt> in that directory.
+		You may want to keep an eye on the
+		<a href='http://www.daringfireball.net/projects/markdown/syntax'>Markdown Syntax</a>
+		page.
+	</li>
+	<li>When you want to see your edits, run <tt>wrapup.py</tt> from its directory.</li>
 </ol>
+
 
 <h2 id='apacheSetup'>Apache Setup</h2>
 <p>
-If you want to view your changes on your own computer, you’ll need to install
-<a href='http://httpd.apache.org/'>Apache</a>. In either the <code>&lt;Directory&gt;</code> or the
-<code>&lt;VirtualHost&gt;</code> blocks, put the following directives:
+	If you want to view your changes on your own computer, you’ll need to install
+	<a href='http://httpd.apache.org/'>Apache 2</a>. In either the <code>&lt;Directory&gt;</code>
+	or the <code>&lt;VirtualHost&gt;</code> blocks, put the following directives:
 </p>
-<pre><code>
-    Options Indexes Includes FollowSymLinks
+
+<pre><code>    Options Indexes Includes FollowSymLinks
     AllowOverride All
 </code></pre>
 
 <p>
-Ensure that <tt>mod_rewrite</tt> is on. The non-English versions of the site won’t work without
-it.
+	Ensure that <tt>mod_rewrite</tt> is on.
+	The non-English versions of the site won’t work without it.
 </p>
 
 
 <h2 id='inheritsAndIncludes'><tt>.inherit</tt> and <tt>.include</tt> files</h2>
 <p>
-Inherit and include files serve <em>very</em> similar purposes—they both reduce the amount of
-boilerplate that has to be typed in. Wrapup has five insertion points:
+	Inherit and include files serve <em>very</em> similar purposes—they both reduce the amount of
+	boilerplate that has to be typed in. Wrapup has five insertion points:
 </p>
 <ol>
-<li>
-	Inside the <code>head</code> element<br>
-	(<tt>inhead.inherit</tt> and <tt>inhead.include</tt>)
-</li>
-<li>
-	A CSS-specific inside-the-<code>head</code> element<br>
-	(<tt>css.inherit</tt> and <tt>css.include</tt>)
-</li>
-<li>
-	Before the main content <code>div</code>, suitable for menus<br>
-	(<tt>beforecontent.inherit</tt> and <tt>beforecontent.include</tt>)
-</li>
-<li>
-	After the text inside the main content <code>div</code><br>
-	(<tt>aftermaintext.inherit</tt> and <tt>aftermaintext.include</tt>)
-</li>
-<li>
-	After the main content <code>div</code><br>
-	(<tt>aftercontent.inherit</tt> and <tt>aftercontent.include</tt>)
-</li>
+	<li>
+		Inside the <code>head</code> element<br>
+		(<tt>inhead.inherit</tt> and <tt>inhead.include</tt>)
+	</li>
+	<li>
+		A CSS-specific inside-the-<code>head</code> element<br>
+		(<tt>css.inherit</tt> and <tt>css.include</tt>)
+	</li>
+	<li>
+		Before the main content <code>div</code>, suitable for menus<br>
+		(<tt>beforecontent.inherit</tt> and <tt>beforecontent.include</tt>)
+	</li>
+	<li>
+		After the text inside the main content <code>div</code><br>
+		(<tt>aftermaintext.inherit</tt> and <tt>aftermaintext.include</tt>)
+	</li>
+	<li>
+		After the main content <code>div</code><br>
+		(<tt>aftercontent.inherit</tt> and <tt>aftercontent.include</tt>)
+	</li>
 </ol>
 
 <p>
-Inherited files came first when I developed Wrapup; I then realized that there would be many things
-that I would want on the front page but not on its subpages. I then implemented <tt>.include</tt>
-files for uninherited, page-specific things.
+	<tt>.include</tt> files provide a way to insert content into the above locations in the
+	generated HTML document. <tt>.inherit</tt> files do that too, but they also will be included
+	in sub-pages. For example, <tt>/speex/beforecontent.inherit</tt> will be added into both
+	<tt>/speex/index.html</tt> and <tt>/speex/compare/index.html</tt>.
 </p>
 
 
 <h2 id='multilingual'>Multilingual Concerns</h2>
-<p>…<tt>index.es.html</tt>…<tt>/es</tt>…</p>
-
 <p>
-After working with wrapup and adding ways for multiple languages to be added without too much
-fuss, I discovered that I’d need to have ways for non-English languages to override my CSS
-includes as Verdana is a poor first choice for text in Korean. Additionally, other languages like
-German may need tweaked widths to cope with its exceptionally long words. Further, each language
-would need its own sidebar include and perhaps its own header includes.
+	Non-English languages are handled by duplicating everything, but with a language-specific
+	infix. For example, the Spanish-language counterpart to <tt>/index.markdown</tt> is
+	<tt>/index<ins>.es</ins>.markdown</tt>. Similar additions exist for <tt>.inherit</tt> and
+	<tt>.include</tt> files, such as <tt>css.ko.inherit</tt>.
 </p>
 <p>
-Given these constraints, each <tt>.inherit</tt> and <tt>.include</tt> set has language-specific infixes, such as
-<tt>css.es.include</tt> and <tt>aftermaintext.ko.inherit</tt>.
+	If you’re the first person to translate a page from English, you’ll need to edit a
+	<tt>lang.include</tt> file that has a |-separated list of all the available languages for
+	that page. If you don’t know what it’s supposed to look like, see
+	<tt>/lang.include</tt> for an example.
+</p>
+<p>
+	To refer to these pages from a Web browser, refer to, say, <tt>/speex/ja</tt> for the
+	Japanese version of <tt>/speex/</tt>; the little bit of <tt>mod_rewrite</tt> translates
+	that into the <tt>index.ja.html</tt> file that’s stored on disk.
+</p>
+<p>
+	<strong>If you’re adding a new language to the website for the first time</strong>,
+	be sure to add it to the list of languages in <tt>/.htaccess</tt> so <tt>mod_rewrite</tt>
+	will try to serve up your files.
+</p>
 </body>
 </html>

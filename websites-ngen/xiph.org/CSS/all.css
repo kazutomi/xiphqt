@@ -79,6 +79,10 @@ li p {
 	text-indent: 0;
 }
 
+p.skipper {
+	display: none;
+}
+
 code, kbd {
 	font: 100% Monaco, "Lucida Console", monospace;
 }

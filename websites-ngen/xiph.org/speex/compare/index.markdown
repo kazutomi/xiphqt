@@ -164,7 +164,6 @@ Codec Comparison
 
 <dl>
 	<dt><dfn id="multiRate">multi-rate</dfn></dt>
-
 	<dd>
 		Allows the codec to change bitrate
 		dynamically, at any moment
@@ -172,12 +171,10 @@ Codec Comparison
 
 	<dt><dfn id="embedded">embedded</dfn></dt>
 	<dd>
-		A codec that embeds narrowband
-		bitstreams in wideband bitstreams
+		A codec that embeds narrowband bitstreams in wideband bitstreams
 	</dd>
 
 	<dt><dfn id="vbr"><abbr title="variable bitrate">VBR</abbr></dfn></dt>
-
 	<dd>
 		Variable bitrate
 	</dd>
@@ -188,10 +185,9 @@ Codec Comparison
 	</dd>
 
 	<dt><dfn id="bitRobust">bit-robust</dfn></dt>
-
 	<dd>
-		Robust to corruption at the bit level,
-		as found on wireless networks
+		Robust to corruption at the bit level. Wireless networks often have noticeable
+		amounts of bit-level corruption.
 	</dd>
 </dl>
 
@@ -200,16 +196,14 @@ Codec Comparison
 <dl>
 	<dt>Speex</dt>
 	<dd>
-		Speex supports intensity stereo encoding
-		and 32 kHz sampling
+		Speex supports intensity stereo encoding and 32
+		<abbr title='kilohertz'>kHz</abbr> sampling
 	</dd>
 
 	<dt>iLBC</dt>
 	<dd>
-		iLBC frames are encoded completely
-		independently; while this provides better
-		quality when 10% (or more) of the packets
-		are being dropped, this makes the codec
+		iLBC frames are independent of each other; while this provides better
+		quality when 10% (or more) of the packets are dropped, this makes the codec
 		suboptimal for clean line conditions.
 	</dd>
 </dl>
