@@ -1,4 +1,4 @@
-# Configure paths for libogg
+# Configure paths for libogg2
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
 
@@ -9,9 +9,9 @@ AC_DEFUN(XIPH_PATH_OGG,
 [dnl 
 dnl Get the cflags and libraries
 dnl
-AC_ARG_WITH(ogg,[  --with-ogg=PFX   Prefix where libogg is installed (optional)], ogg_prefix="$withval", ogg_prefix="")
-AC_ARG_WITH(ogg-libraries,[  --with-ogg-libraries=DIR   Directory where libogg library is installed (optional)], ogg_libraries="$withval", ogg_libraries="")
-AC_ARG_WITH(ogg-includes,[  --with-ogg-includes=DIR   Directory where libogg header files are installed (optional)], ogg_includes="$withval", ogg_includes="")
+AC_ARG_WITH(ogg,[  --with-ogg=PFX   Prefix where libogg2 is installed (optional)], ogg_prefix="$withval", ogg_prefix="")
+AC_ARG_WITH(ogg-libraries,[  --with-ogg-libraries=DIR   Directory where libogg2 library is installed (optional)], ogg_libraries="$withval", ogg_libraries="")
+AC_ARG_WITH(ogg-includes,[  --with-ogg-includes=DIR   Directory where libogg2 header files are installed (optional)], ogg_includes="$withval", ogg_includes="")
 AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run a test Ogg program],, enable_oggtest=yes)
 
   if test "x$ogg_libraries" != "x" ; then
@@ -22,7 +22,7 @@ AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run 
     OGG_LIBS="-L$prefix/lib"
   fi
 
-  OGG_LIBS="$OGG_LIBS -logg"
+  OGG_LIBS="$OGG_LIBS -logg2"
 
   if test "x$ogg_includes" != "x" ; then
     OGG_CFLAGS="-I$ogg_includes"
@@ -32,7 +32,7 @@ AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run 
     OGG_CFLAGS="-I$prefix/include"
   fi
 
-  AC_MSG_CHECKING(for Ogg)
+  AC_MSG_CHECKING(for Ogg2)
   no_ogg=""
 
 
