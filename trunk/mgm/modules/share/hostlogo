@@ -99,7 +99,7 @@ sub module_run{
     my$textpad=($width-$textwidth)/2;
     my$vpad=($height-$logoheight-$textheight)/2;
 
-     my$widget=$toplevel->Frame(-class=>$this->{"name"},
+    my$widget=$toplevel->Frame(-class=>$this->{"name"},
 			       Name=>$this->{"sequence"},
 			       highlightthickness=>0,
 			       borderwidth=>$this->{"borderwidth"},
