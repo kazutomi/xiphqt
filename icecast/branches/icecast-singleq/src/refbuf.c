@@ -73,8 +73,7 @@ void refbuf_release(refbuf_t *self)
             self->associated = ref->next;
             refbuf_release (ref);
         }
-        if (self->len)
-            free(self->data);
+        free(self->data);
         free(self);
         return;
     }
