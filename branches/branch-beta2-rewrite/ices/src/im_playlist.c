@@ -1,7 +1,7 @@
 /* playlist.c
  * - Basic playlist functionality
  *
- * $Id: im_playlist.c,v 1.3.2.1 2002/02/07 09:11:11 msmith Exp $
+ * $Id: im_playlist.c,v 1.3.2.2 2002/02/09 03:55:36 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -159,11 +159,13 @@ static int playlist_read(instance_t *instance, void *self,
 		{
             void *buf = malloc(og.header_len + og.body_len);
             *out = new_ref_buffer(MEDIA_VORBIS, buf, 
-                    og.header_len + og.body_len);
+                    og.header_len + og.body_len, 2);
 
-			(*out)->aux_data = og.header_len;
             (*out)->channels = -1; /* We don't know yet, and it's unimportant */
             (*out)->rate = -1;
+            (*out)->aux_data[0] = og.header_len;
+            (*out)->aux_data[1] = og.body_len;
+            (*out)->aux_data_len = 2;
 
 			memcpy((*out)->buf, og.header, og.header_len);
 			memcpy((*out)->buf+og.header_len, og.body, og.body_len);
