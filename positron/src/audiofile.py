@@ -36,7 +36,7 @@ class MP3File(AudioFile):
     def detect(self, filename):
         try:
             f = file(filename, "rb")
-            m = MP3Info.MPEG(f)
+            m = MP3Info.MP3Info(f)
         except MP3Info.Error:
             f.close()
             return False
