@@ -66,7 +66,7 @@ div#navbar2 ul {
 
 div#navbar2 li {
 	list-style-type: none;
-	margin: 6px;
+	margin: 0px;
 	border-width: 0px;
 	padding: 0px;
 }
@@ -77,9 +77,10 @@ div#navbar2 abbr[title] {
 }
 
 div#navbar2 a {
-	color: white;
+	color: black;
 	margin: 0px;
 	padding: 3px;
+	padding-left: 6px;
 	text-decoration: none;
 	text-transform: lowercase;
 	font-weight: bold;
@@ -88,8 +89,8 @@ div#navbar2 a {
 	border: 3px solid #91acd9;
 	border-bottom: 3px solid #718CB9;
 	border-right: 3px solid #718CB9;
-	-moz-border-radius: 13px;
-	background: #000000;
+	-moz-border-radius: 7px;
+	background: #DDDDDD;
 }
 
 div#navbar2 li:hover {

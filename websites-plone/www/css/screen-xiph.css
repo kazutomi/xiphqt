@@ -14,8 +14,8 @@ div#navbar2 {
 }
 
 div#navbar2 a:hover {
-	color: #EEEEEE;
-	background:  #3C6484;
+	color: #000000;
+	background:  #CCCCCC;
 	border: 3px solid #91acd9;
 	border-top: 3px solid #718CB9;
 	border-left: 3px solid #718CB9;
