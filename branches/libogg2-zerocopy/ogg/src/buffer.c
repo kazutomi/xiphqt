@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.6 2003/03/15 01:26:09 xiphmont Exp $
+  last mod: $Id: buffer.c,v 1.1.2.7 2003/03/16 23:31:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -117,6 +117,17 @@ ogg_reference *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes){
   return or;
 }
 
+/* enlarge the data buffer in the current link */
+void ogg_buffer_realloc(ogg_reference *or,long bytes){
+  ogg_buffer    *ob=*or->buffer;
+  
+  /* if the unused buffer is too small, grow it */
+  if(ob->size<bytes){
+    ob->data=_ogg_realloc(ob->data,bytes);
+    ob->size=bytes;
+  }
+}
+
 /* duplicate a reference (pointing to the same actual buffer memory)
    and increment buffer refcount.  If the desired segment begins out
    of range, NULL is returned; if the desired segment is simply zero
@@ -184,7 +195,7 @@ void ogg_buffer_mark(ogg_reference *or){
   }
 }
 
-static void _release_one(ogg_reference *or){
+void ogg_buffer_release_one(ogg_reference *or){
   ogg_buffer *ob=or->buffer;
   ogg_buffer_state *bs=or->buffer->ptr.owner;
 
@@ -213,7 +224,7 @@ static void _release_one(ogg_reference *or){
 void ogg_buffer_release(ogg_reference *or){
   while(or){
     ogg_reference *next=or->next;
-    _release_one(or);
+    ogg_buffer_release_one(or);
     or=next;
   }
 }
@@ -223,7 +234,7 @@ ogg_reference *ogg_buffer_pretruncate(ogg_reference *or,long pos){
   while(or && pos>=or->length){
     ogg_reference *next=or->next;
     pos-=or->length;
-    _release_one(or);
+    ogg_buffer_release_one(or);
     or=next;
   }
   if (or) {
@@ -248,12 +259,18 @@ void ogg_buffer_posttruncate(ogg_reference *or,long pos){
   }
 }
 
+ogg_reference *ogg_buffer_walk(ogg_reference *or){
+  while(or->next)or=or->next;
+  return(or);
+}
+
 /* *head is appened to the front end (head) of *tail; both continue to
    be valid pointers, with *tail at the tail and *head at the head */
-void ogg_buffer_cat(ogg_reference *tail, ogg_reference *head){
+ogg_reference *ogg_buffer_cat(ogg_reference *tail, ogg_reference *head){
   while(tail->next){
     tail=tail->next;
   }
   tail->next=head;
+  return ogg_buffer_walk(head);
 }
 

@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: pack variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14.2.10 2003/03/15 13:06:49 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.11 2003/03/16 23:31:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -579,15 +579,49 @@ int oggpackB_read(oggpack_buffer *b,int bits,unsigned long *ret){
 }
 
 long oggpack_read1(oggpack_buffer *b){
-  unsigned long temp;
-  if(oggpack_read(b,1,&temp))return -1;
-  return temp;
+  long ret;
+
+  if(b->headend<2){
+    if (_halt_one(b)) return -1;
+
+    ret=b->headptr[0]>>b->headbit++;
+    b->headptr+=b->headbit/8;
+    b->headend-=b->headbit/8;
+    _span_one(b);
+    
+  }else{
+
+    ret=b->headptr[0]>>b->headbit++;
+    b->headptr+=b->headbit/8;
+    b->headend-=b->headbit/8;
+
+  }
+
+  b->headbit&=7;   
+  return ret&1;
 }
 
 long oggpackB_read1(oggpack_buffer *b){
-  unsigned long temp;
-  if(oggpackB_read(b,1,&temp))return -1;
-  return temp;
+  long ret;
+
+  if(b->headend<2){
+    if (_halt_one(b)) return -1;
+
+    ret=b->headptr[0]>>(7-b->headbit++);
+    b->headptr+=b->headbit/8;
+    b->headend-=b->headbit/8;
+    _span_one(b);
+    
+  }else{
+
+    ret=b->headptr[0]>>(7-b->headbit++);
+    b->headptr+=b->headbit/8;
+    b->headend-=b->headbit/8;
+
+  }
+
+  b->headbit&=7;   
+  return ret&1;
 }
 
 long oggpack_bytes(oggpack_buffer *b){

@@ -1,4 +1,4 @@
- /********************************************************************
+/********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
@@ -12,7 +12,7 @@
 
  function: decode stream sync and memory management foundation code;
            takes in raw data, spits out packets
- last mod: $Id: sync.c,v 1.1.2.2 2003/03/06 23:13:36 xiphmont Exp $
+ last mod: $Id: sync.c,v 1.1.2.3 2003/03/16 23:31:48 xiphmont Exp $
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -31,22 +31,19 @@
    handled by physical stream and centralized in the ogg_sync_state
    structure. */
 
-/* called only on decode side; refbeg is a refcounter */
-static void _obc_seek(ogg_buffer_cursor *obc,
-		     ogg_buffer *fb,
-		     int position){
-  obc->segment=fb;
-  obc->cursor=position;
-  while(obc->segment && obc->cursor>=obc->segment->used){
-    obc->cursor-=obc->segment->used;
+static void _obc_cond_span(ogg_buffer_cursor *obc){
+  while(obc->segment && obc->cursor>=obc->segment->length){
+    obc->cursor-=obc->segment->length;
     obc->segment=obc->segment->next;
   }
 }
 
-static void _obc_seekr(ogg_buffer_cursor *obc,
-		       ogg_buffer_reference  *fb,
-		       int position){
-  _obc_seek(obc,fb->buffer,position+fb->begin);
+
+static void _obc_seek(ogg_buffer_cursor *obc,
+		     ogg_reference *fb,
+		     int position){
+  obc->segment=fb;
+  obc->cursor=position;
 }
 
 static void _obc_span(ogg_buffer_cursor *obc){
@@ -57,23 +54,15 @@ static void _obc_span(ogg_buffer_cursor *obc){
 }
 
 static int _obc_get(ogg_buffer_cursor *obc){
+  _obc_cond_span(obc);
   if(!obc->segment)return -1;
-  if(obc->cursor>=obc->segment->used){
-    obc->cursor=0;
-    obc->segment=obc->segment->next;
-    if(!obc->segment)return -1;
-  }
-  return(obc->segment->data[obc->cursor++]);
+  return(obc->segment->buffer->data[obc->segment->begin+obc->cursor++]);
 }
 
 static void _obc_set(ogg_buffer_cursor *obc,unsigned char val){
+  _obc_cond_span(obc);
   if(!obc->segment)return;
-  if(obc->cursor>=obc->segment->used){
-    obc->cursor=0;
-    obc->segment=obc->segment->next;
-    if(!obc->segment)return;
-  }
-  obc->segment->data[obc->cursor++]=val;
+  obc->segment->buffer->data[obc->segment->begin+obc->cursor++]=val;
 }
 
 static ogg_int64_t _obc_get_int64(ogg_buffer_cursor *obc){
@@ -115,43 +104,43 @@ static ogg_uint32_t _obc_get_uint32(ogg_buffer_cursor *obc){
 
 int ogg_page_version(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,4);
+  _obc_seek(&obc,og->header,4);
   return(_obc_get(&obc));
 }
 
 int ogg_page_continued(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,5);
+  _obc_seek(&obc,og->header,5);
   return(_obc_get(&obc)&0x01);
 }
 
 int ogg_page_bos(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,5);
+  _obc_seek(&obc,og->header,5);
   return(_obc_get(&obc)&0x02);
 }
 
 int ogg_page_eos(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,5);
+  _obc_seek(&obc,og->header,5);
   return(_obc_get(&obc)&0x04);
 }
 
 ogg_int64_t ogg_page_granulepos(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,6);
+  _obc_seek(&obc,og->header,6);
   return _obc_get_int64(&obc);
 }
 
 ogg_uint32_t ogg_page_serialno(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,14);
+  _obc_seek(&obc,og->header,14);
   return _obc_get_uint32(&obc);
 }
  
 ogg_uint32_t ogg_page_pageno(ogg_page *og){
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,18);
+  _obc_seek(&obc,og->header,18);
   return _obc_get_uint32(&obc);
 }
 
@@ -178,7 +167,7 @@ int ogg_page_packets(ogg_page *og){
   int n;
   int count=0;
   ogg_buffer_cursor obc;
-  _obc_seekr(&obc,&og->header,26);
+  _obc_seek(&obc,og->header,26);
   
   n=_obc_get(&obc);
   for(i=0;i<n;i++)
@@ -270,10 +259,10 @@ static ogg_uint32_t crc_lookup[256]={
    Pages are returned (pointers into the buffer in ogg_sync_state)
    by ogg_sync_pageout().  */
 
-ogg_sync_state *ogg_sync_decode_create(void){
+ogg_sync_state *ogg_sync_create(void){
   ogg_sync_state *oy=_ogg_calloc(1,sizeof(*oy));
   memset(oy,0,sizeof(*oy));
-  ogg_buffer_init(&oy->bufferpool,1);
+  ogg_buffer_init(&oy->bufferpool);
   return oy;
 }
 
@@ -287,11 +276,17 @@ int ogg_sync_destroy(ogg_sync_state *oy){
   return 0;
 }
 
+static void _release_returned(ogg_sync_state *oy){
+  ogg_buffer_release(oy->returned_header);
+  ogg_buffer_release(oy->returned_body);
+  oy->returned_header=0;
+  oy->returned_body=0;
+}
+
 unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long bytes){
   /* release the 'held' reference (if any) previously returned by the
      sync */
-  ogg_reference_release(&oy->returned);
-  ogg_reference_clear(&oy->returned);
+  _release_returned(oy);
 
   /* [allocate and] expose a buffer for data submission.
 
@@ -306,30 +301,40 @@ unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long bytes){
          else
            allocate new fragment and expose it
   */
+
+  /* base case; fifo uninitialized */
   if(!oy->fifo_head){
     oy->fifo_head=oy->fifo_tail=ogg_buffer_alloc(&oy->bufferpool,bytes);
-    return oy->fifo_head->data;
+    return oy->fifo_head->buffer->data;
   }
   
-  if(oy->fifo_head->size-oy->fifo_head->used<bytes)
-    return oy->fifo_head->data+oy->fifo_head->used;
-  if(!oy->fifo_head->used){
-    ogg_buffer_realloc(&oy->bufferpool,oy->fifo_head,bytes);
-    return oy->fifo_head->data;
+  /* space left in current fragment case */
+  if(oy->fifo_head->buffer->size-
+     oy->fifo_head->length-
+     oy->fifo_head->begin >= bytes)
+    return oy->fifo_head->buffer->data+
+      oy->fifo_head->length+oy->fifo_head->begin;
+
+  /* current fragment is unused, but too small */
+  if(!oy->fifo_head->length){
+    ogg_buffer_realloc(oy->fifo_head,bytes);
+    return oy->fifo_head->buffer->data+oy->fifo_head->begin;
   }
   
+  /* current fragment used/full; get new fragment */
   {
-    ogg_buffer *new=ogg_buffer_alloc(&oy->bufferpool,bytes);
+    ogg_reference *new=ogg_buffer_alloc(&oy->bufferpool,bytes);
     oy->fifo_head->next=new;
     oy->fifo_head=new;
   }
-  return oy->fifo_head->data;
+  return oy->fifo_head->buffer->data;
 }
 
 int ogg_sync_wrote(ogg_sync_state *oy, long bytes){ 
   if(!oy->fifo_head)return -1;
-  if(oy->fifo_head->size-oy->fifo_head->used<bytes)return -1;
-  oy->fifo_head->used+=bytes;
+  if(oy->fifo_head->buffer->size-oy->fifo_head->length-oy->fifo_head->begin < 
+     bytes)return -1;
+  oy->fifo_head->length+=bytes;
   oy->fifo_fill+=bytes;
   return 0;
 }
@@ -348,8 +353,7 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   ogg_buffer_cursor page;
   long              bytes,ret=0;
 
-  ogg_reference_release(&oy->returned);
-  ogg_reference_clear(&oy->returned);
+  _release_returned(oy);
 
   bytes=oy->fifo_fill;
 
@@ -385,51 +389,34 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   /* The whole test page is buffered.  Set up the page struct and
      verify the checksum */
   {
+    /* set up page return */
+    ogg_reference *header=
+      ogg_buffer_dup(oy->fifo_tail,
+		     oy->fifo_cursor,
+		     oy->headerbytes);
+    ogg_reference *body=
+      ogg_buffer_dup(oy->fifo_tail,
+		     oy->fifo_cursor+oy->headerbytes,
+		     oy->bodybytes);
+
     /* Grab the checksum bytes */
     unsigned char chksum[4];    
-    _obc_seek(&page,oy->fifo_tail,
-	     oy->fifo_cursor+22);
+    _obc_seek(&page,header,22);
     chksum[0]=_obc_get(&page);
     chksum[1]=_obc_get(&page);
     chksum[2]=_obc_get(&page);
     chksum[3]=_obc_get(&page);
-    
-    /* set up page struct and recompute the checksum */
+
     {
-      ogg_buffer_reference *fb=&oy->returned;
+      ogg_page og;
+      og.header=header;
+      og.body=body;
 
-      /* set up return reference */
-      fb->buffer=oy->fifo_tail;
-      fb->begin=oy->fifo_cursor;
-      fb->length=oy->headerbytes+oy->bodybytes;
-      fb->owner=&oy->bufferpool;
-      while(fb->begin>=fb->buffer->used){
-	fb->begin-=fb->buffer->used;
-	fb->buffer=fb->buffer->next;
-      }
+      ogg_page_checksum_set(&og);
+    }
 
-      if(og){
-	/* set up page output */
-	og->header.buffer=fb->buffer;
-	og->header.begin=fb->begin;
-	og->header.length=oy->headerbytes;
-	og->header.owner=&oy->bufferpool;
-	og->body.buffer=fb->buffer;
-	og->body.begin=fb->begin+oy->headerbytes;
-	og->body.length=oy->bodybytes;
-	og->body.owner=&oy->bufferpool;
-	while(og->body.begin>=og->body.buffer->used){
-	  og->body.begin-=og->body.buffer->used;
-	  og->body.buffer=og->body.buffer->next;
-	}
-      }
-    }      
-    
-    ogg_page_checksum_set(og);
-    
     /* Compare checksums */
-    _obc_seekr(&page,&oy->returned,
-	      oy->fifo_cursor+22);
+    _obc_seek(&page,header,22);
     if(chksum[0]!=_obc_get(&page) ||
        chksum[1]!=_obc_get(&page) ||
        chksum[2]!=_obc_get(&page) ||
@@ -437,10 +424,9 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
 
       /* D'oh.  Mismatch! Corrupt page (or miscapture and not a page
 	 at all). replace the computed checksum with the one actually
-	 read in */
+	 read in; remember all the memory is common */
 
-      _obc_seekr(&page,&oy->returned,
-		oy->fifo_cursor+22);
+      _obc_seek(&page,header,22);
       _obc_set(&page,chksum[0]);
       _obc_set(&page,chksum[1]);
       _obc_set(&page,chksum[2]);
@@ -449,28 +435,20 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
       /* Bad checksum. Lose sync. */
       goto sync_fail;
     }
-  }
-  
-  /* yes, have a whole page all ready to go */
-  {
+
+    /* yes, have a whole page all ready to go */
+    if(og){
+      /* set up page output */
+      og->header=header;
+      og->body=body;
+    }
+
     ret=oy->headerbytes+oy->bodybytes;
     oy->unsynced=0;
     oy->headerbytes=0;
     oy->bodybytes=0;
-    
-    ogg_reference_mark(&oy->returned); /* claim the memory range for now */
     oy->fifo_cursor+=ret; /* advance the cursor past the page */
     
-    /* release any unneded fragments */
-    while(oy->fifo_tail && oy->fifo_cursor>=oy->fifo_tail->used){
-      ogg_buffer *temp=oy->fifo_tail;
-      
-      oy->fifo_tail=temp->next;
-      if(!oy->fifo_tail)oy->fifo_head=0;
-      oy->fifo_cursor-=temp->used;
-      
-      ogg_buffer_release(temp,&oy->bufferpool);
-    }
     goto sync_adv;
   }
   
@@ -479,30 +457,30 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   {
     oy->headerbytes=0;
     oy->bodybytes=0;
-    ogg_reference_clear(&oy->returned); /* ...if any; would happen on
-                                           CRC fail */
+    _release_returned(oy); /* would happen on CRC fail */
 
     _obc_seek(&page,oy->fifo_tail,oy->fifo_cursor+1);
+    _obc_cond_span(&page);
     ret--;
 
     /* search forward through fragments for possible capture */
     while(page.segment){
       /* invariant: fifo_cursor points to a position in fifo_tail */
-      unsigned char *next=memchr(page.segment->data+
-				 page.cursor,
-				 'O',
-				 page.segment->used-
-				 page.cursor);
+      unsigned char *now=page.segment->buffer->data+
+	page.segment->begin+
+	page.cursor;
+      unsigned char *next=
+	memchr(now, 'O', page.segment->length-page.cursor);
       
       if(next){
 	/* possible capture in this segment */
-	long bytes=next-page.segment->data-page.cursor;
+	long bytes=next-now;
 	page.cursor+=bytes;
 	ret-=bytes;
 	break;
       }else{
 	/* no capture.  advance to next segment */
-	ret-=page.segment->used-page.cursor;
+	ret-=page.segment->length-page.cursor;
 	_obc_span(&page);
       }
     }
@@ -510,14 +488,16 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   }
 
  sync_adv:
-  while(oy->fifo_tail && oy->fifo_cursor>=oy->fifo_tail->used){
-    ogg_buffer *temp=oy->fifo_tail;
+
+  /* release any unneded fragments */
+  while(oy->fifo_tail && oy->fifo_cursor>=oy->fifo_tail->length){
+    ogg_reference *temp=oy->fifo_tail;
     
     oy->fifo_tail=temp->next;
     if(!oy->fifo_tail)oy->fifo_head=0;
-    oy->fifo_cursor-=temp->used;
+    oy->fifo_cursor-=temp->length;
     
-    ogg_buffer_release(temp,&oy->bufferpool);
+    ogg_buffer_release_one(temp);
   }
 
  sync_out:
@@ -565,15 +545,9 @@ int ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og){
 
 /* clear things to an initial state.  Good to call, eg, before seeking */
 int ogg_sync_reset(ogg_sync_state *oy){
-  ogg_buffer *p=oy->fifo_tail;
-  ogg_buffer_state *bs=&oy->bufferpool;
-  while(p){
-    ogg_buffer *next=p->next;
-    ogg_buffer_release(p,bs);
-    p=next;
-  }
-  ogg_reference_release(&oy->returned);
-  ogg_reference_clear(&oy->returned);
+  _release_returned(oy);
+  ogg_buffer_release(oy->fifo_tail);
+  oy->fifo_tail=oy->fifo_head=0;
   oy->fifo_cursor=0;
 
   oy->unsynced=0;
@@ -587,46 +561,36 @@ int ogg_sync_reset(ogg_sync_state *oy){
 void ogg_page_checksum_set(ogg_page *og){
   if(og){
     ogg_buffer_cursor obc;
-    ogg_buffer_reference *fb;
-    ogg_buffer *buf;
+    ogg_reference *or;
     ogg_uint32_t crc_reg=0;
     int i,j;
-    int begin;
 
     /* safety; needed for API behavior, but not framing code */
-    _obc_seekr(&obc,&og->header,22);
+    _obc_seek(&obc,og->header,22);
     _obc_set(&obc,0);
     _obc_set(&obc,0);
     _obc_set(&obc,0);
     _obc_set(&obc,0);
 
-    fb=&og->header;
-    i=fb->length;
-    buf=fb->buffer;
-    while(i){
-      begin=(fb->owner->encode_decode_flag?0:buf->refbeg);
-      for(j=begin;
-	  j-begin<i && j<buf->used;
-	  j++)
-	crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^buf->data[j]];
-      i-=j-begin;
-      buf=buf->next;
+    or=og->header;
+    while(or->next){
+      unsigned char *data=or->buffer->data+or->begin;
+      for(j=0;j<or->length;j++)
+	crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^data[j]];
+      i-=j;
+      or=or->next;
+    }
+
+    or=og->body;
+    while(or->next){
+      unsigned char *data=or->buffer->data+or->begin;
+      for(j=0;j<or->length;j++)
+	crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^data[j]];
+      i-=j;
+      or=or->next;
     }
     
-    fb=&og->body;
-    i=fb->length;
-    buf=fb->buffer;
-    while(i){
-      begin=(fb->owner->encode_decode_flag?0:buf->refbeg);
-      for(j=begin;
-	  j-begin<i && j<buf->used;
-	  j++)
-	crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^buf->data[j]];
-      i-=j-begin;
-      buf=buf->next;
-    }
-    
-    _obc_seekr(&obc,&og->header,22);
+    _obc_seek(&obc,og->header,22);
     _obc_set(&obc,crc_reg);
     _obc_set(&obc,crc_reg>>8);
     _obc_set(&obc,crc_reg>>16);
@@ -640,83 +604,42 @@ void ogg_page_checksum_set(ogg_page *og){
 /* On encode side, the sync layer provides centralized memory
    management, buffering, and and abstraction to deal with fragmented
    linked buffers as an iteration over flat char buffers.
-   ogg_sync_destroy is as in decode. */
-
-ogg_sync_state *ogg_sync_encode_create(void){
-  ogg_sync_state *oy=_ogg_calloc(1,sizeof(*oy));
-  memset(oy,0,sizeof(*oy));
-  ogg_buffer_init(&oy->bufferpool,0);
-  return oy;
-}
-
-static void _ogg_sync_addref(ogg_sync_state *oy,ogg_buffer_reference *fb){
-  /* trim fragments off reference up to beginning */
-  while(fb->begin>=fb->buffer->used){
-    ogg_buffer *next=fb->buffer->next;
-    fb->begin-=fb->buffer->used-fb->buffer->refbeg;
-    ogg_buffer_release(fb->buffer,&oy->bufferpool);
-    fb->buffer=next;
-  }
-  /* pretruncate buffer if needed */
-  fb->buffer=ogg_buffer_pretruncate(fb->buffer,&oy->bufferpool,fb->begin);
-  /* add fragments to sync chain */
-  while(fb->length){
-    ogg_buffer *now=fb->buffer;
-    ogg_buffer *next=now->next;
-    fb->buffer=next;
-    now->next=0;
-
-    if(!oy->fifo_tail)oy->fifo_tail=now;
-    if(oy->fifo_head)oy->fifo_head->next=now;
-    oy->fifo_head=now;
-      
-    if(fb->length<=now->used-now->refbeg){
-      now->used=fb->length+now->refbeg;
-      break;
-    }
-    fb->length-=now->used-now->refbeg;
-  }
-  /* release unused fragments at end of buffer */
-  while(fb->buffer){
-    ogg_buffer *next=fb->buffer->next;
-    ogg_buffer_release(fb->buffer,&oy->bufferpool);
-    fb->buffer=next;
-  }
-  memcpy(fb,0,sizeof(*fb));
-}
+   ogg_sync_encode and ogg_sync_destroy are as in decode. */
 
 extern int ogg_sync_pagein(ogg_sync_state *oy,ogg_page *og){
   /* free up returned */
-  ogg_reference_release(&oy->returned);
-  ogg_reference_clear(&oy->returned);
+  _release_returned(oy);
 
   /* buffer new */
-  _ogg_sync_addref(oy,&og->header);
-  _ogg_sync_addref(oy,&og->body);
+  if(oy->fifo_head)
+    oy->fifo_head=ogg_buffer_cat(oy->fifo_head,og->header);
+  else
+    oy->fifo_head=ogg_buffer_walk(oy->fifo_tail=og->header);
+  oy->fifo_head=ogg_buffer_cat(oy->fifo_head,og->body);
   return(0);
 }
 
 extern long ogg_sync_bufferout(ogg_sync_state *oy, unsigned char **buffer){
-
-  /* free up returned */
-  ogg_reference_release(&oy->returned);
-  ogg_reference_clear(&oy->returned);
+  long ret=0;
 
   /* return next fragment */
-  if(!oy->fifo_tail){
-    *buffer=0;
-    return 0;
+
+  while(!ret){
+    _release_returned(oy);
+
+    if(!oy->fifo_tail){
+      _release_returned(oy);
+      *buffer=0;
+      return 0;
+    }
+
+    oy->returned_body=oy->fifo_tail;
+    oy->fifo_tail=oy->fifo_tail->next;
+    oy->returned_body->next=0;
+    *buffer=oy->returned_body->buffer->data+oy->returned_body->begin;
+    ret=oy->returned_body->length;
   }
 
-  {
-    ogg_buffer *ret=oy->fifo_tail;
-    oy->fifo_tail=ret->next;
-    if(!oy->fifo_tail)oy->fifo_head=0;
-    ret->next=0;
-    oy->returned.buffer=ret;
-    oy->returned.begin=0;
-    oy->returned.length=ret->used-ret->refbeg;
-    *buffer=ret->data+ret->refbeg;
-    return ret->used-ret->refbeg;
-  }
+  return(ret);
+
 }

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.6 2003/03/15 01:26:09 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.7 2003/03/16 23:31:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -78,7 +78,8 @@ struct ogg_sync_state {
   
   long              fifo_cursor;
   long              fifo_fill;
-  ogg_reference    *returned;
+  ogg_reference    *returned_header;
+  ogg_reference    *returned_body;
 
   /* stream sync management */
   int               unsynced;
@@ -116,12 +117,16 @@ struct ogg_stream_state {
 extern void           ogg_buffer_init(ogg_buffer_state *bs);
 extern void           ogg_buffer_clear(ogg_buffer_state *bs);
 extern ogg_reference *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes);
+extern void           ogg_buffer_realloc(ogg_reference *or,long bytes);
 extern ogg_reference *ogg_buffer_dup(ogg_reference *or,long begin,long length);
 extern ogg_reference *ogg_buffer_extend(ogg_reference *or,long bytes);
 extern void           ogg_buffer_mark(ogg_reference *or);
 extern void           ogg_buffer_release(ogg_reference *or);
+extern void           ogg_buffer_release_one(ogg_reference *or);
 extern ogg_reference *ogg_buffer_pretruncate(ogg_reference *or,long pos);
 extern void           ogg_buffer_posttruncate(ogg_reference *or,long pos);
-extern void           ogg_buffer_cat(ogg_reference *tail, ogg_reference *head);
+extern ogg_reference *ogg_buffer_cat(ogg_reference *tail, ogg_reference *head);
+extern ogg_reference *ogg_buffer_walk(ogg_reference *or);
 
 #endif
+
