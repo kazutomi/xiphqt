@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.4 2001/08/13 20:07:04 kcarnold Exp $
+ last mod: $Id: status.c,v 1.1.2.5 2001/08/22 04:16:15 kcarnold Exp $
 
  ********************************************************************/
 
@@ -74,6 +74,7 @@ void UpdateStats (Stat_t stats[])
       perror ("malloc");
       exit (1);
     }
+    *tmpbuf = '\0';
   }
   
   while (stats->formatstr != NULL)
