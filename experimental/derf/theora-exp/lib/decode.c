@@ -9,6 +9,25 @@
 
 
 
+/*No post-processing.*/
+#define OC_PP_LEVEL_DISABLED  (0)
+/*Keep track of DC qi for each block only.*/
+#define OC_PP_LEVEL_TRACKDCQI (1)
+/*Deblock the luma plane.*/
+#define OC_PP_LEVEL_DEBLOCKY  (2)
+/*Dering the luma plane.*/
+#define OC_PP_LEVEL_DERINGY   (3)
+/*Stronger luma plane deringing.*/
+#define OC_PP_LEVEL_SDERINGY  (4)
+/*Deblock the chroma planes.*/
+#define OC_PP_LEVEL_DEBLOCKC  (5)
+/*Dering the chroma planes.*/
+#define OC_PP_LEVEL_DERINGC   (6)
+/*Stronger chroma plane deringing.*/
+#define OC_PP_LEVEL_SDERINGC  (7)
+/*Maximum valid post-processing level.*/
+#define OC_PP_LEVEL_MAX       (7)
+
 /*Read 32 bits.
   *_ret is set to 0 on failure.
   Return: 0 on success, or a negative value on failure.*/
@@ -189,6 +208,7 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
    _dec->state.nfrags,sizeof(_dec->extra_bits[0][0]));
   memcpy(_dec->state.loop_filter_limits,_setup->qinfo.loop_filter_limits,
    sizeof(_dec->state.loop_filter_limits));
+  _dec->pp_level=OC_PP_LEVEL_DISABLED;
   _dec->dc_qis=NULL;
   _dec->variances=NULL;
   _dec->pp_frame_data=NULL;
@@ -1233,25 +1253,6 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
   }
 }
 
-/*No post-processing.*/
-#define OC_PP_LEVEL_DISABLED  (0)
-/*Keep track of DC qi for each block only.*/
-#define OC_PP_LEVEL_TRACKDCQI (1)
-/*Deblock the luma plane.*/
-#define OC_PP_LEVEL_DEBLOCKY  (2)
-/*Dering the luma plane.*/
-#define OC_PP_LEVEL_DERINGY   (3)
-/*Stronger luma plane deringing.*/
-#define OC_PP_LEVEL_SDERINGY  (4)
-/*Deblock the chroma planes.*/
-#define OC_PP_LEVEL_DEBLOCKC  (5)
-/*Dering the chroma planes.*/
-#define OC_PP_LEVEL_DERINGC   (6)
-/*Stronger chroma plane deringing.*/
-#define OC_PP_LEVEL_SDERINGC  (7)
-/*Maximum valid post-processing level.*/
-#define OC_PP_LEVEL_MAX       (7)
-
 /*Filter a horizontal block edge.*/
 static void oc_filter_hedge(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src,int _src_ystride,int _qstep,int _flimit,
@@ -1426,7 +1427,7 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
     src+=_ystride&-(!(_b&8)|by<8);
   }
   nsrc=dst;
-  psrc=src-!(_b&1);
+  psrc=dst-!(_b&1);
   for(bx=0;bx<9;bx++){
     src=nsrc;
     for(by=0;by<8;by++){

@@ -317,6 +317,7 @@ int main(int argc,char *argv[]){
   ogg_sync_clear(&oy);
 
   if(infile && infile!=stdin)fclose(infile);
+  if(outfile && outfile!=stdout)fclose(outfile);
 
   fprintf(stderr,
           "\r                                                              "
