@@ -121,7 +121,8 @@ int utf8_encode(char *from, char **to, const char *encoding)
 	from_p = from;
 	to_p = buffer;
 	
-	if(iconv(cd, &from_p, &from_left, &to_p, &to_left) == (size_t)-1)
+	if(iconv(cd, (const char **)(&from_p), &from_left, &to_p, 
+				&to_left) == (size_t)-1)
 	{
 		iconv_close(cd);
 		switch(errno)
