@@ -1,7 +1,7 @@
 /* stream.c
  * - Functions for streaming in ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,7 +26,6 @@
 #include "in_vorbis.h"
 #endif
 
-#include <resolver.h>
 #ifdef TIME_WITH_SYS_TIME
 #  include <sys/time.h>
 #  include <time.h>
@@ -64,17 +63,19 @@ ices_stream_loop (void)
   input_stream_t source;
   ices_stream_t* stream;
 
-  /* Check if user gave us a hostname */
+  /* Resolve hostname if necessary */
   for (stream = ices_config.streams; stream; stream = stream->next) {
     if (!isdigit ((int)(stream->conn.ip[strlen (stream->conn.ip) - 1]))) {
-      char hostbuff[1024];
+      char ip[1024];
 
-      /* Ok, he did, let's get the ip */
-      stream->conn.ip = resolver_getip (stream->conn.ip, hostbuff, 1024);
-      if (stream->conn.ip == NULL) {
-	ices_log ("Failed resolving servername.");
+      ip[0] = '\0';
+      ices_util_getip (stream->conn.ip, ip, 1024);
+      if (ip[0] == '\0') {
+	ices_log ("Could not resolve server name.");
 	ices_setup_shutdown ();
       }
+      ices_util_free (stream->conn.ip);
+      stream->conn.ip = ices_util_strdup(ip);
     }
   }
 
@@ -82,7 +83,6 @@ ices_stream_loop (void)
     stream_connect (stream);
   }
 
-  /* Foreeeever streams, I want to be forever streaming... */
   while (1) {
     source.path = ices_playlist_get_next ();
     source.bytes_read = 0;

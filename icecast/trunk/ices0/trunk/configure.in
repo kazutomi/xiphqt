@@ -117,7 +117,6 @@ if test "$IRIX" = "yes"
 then
   AC_MSG_WARN(Skipping library tests because they confuse Irix)
 else
-  dnl used by resolver/libresolv.a
   AC_SEARCH_LIBS(gethostbyname, dns nsl resolv)
 fi
 
@@ -450,8 +449,7 @@ AC_SUBST(ICES_OBJECTS)
 AC_SUBST(PLAYLIST_OBJECTS)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist/Makefile
-  conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1
-  resolver/Makefile log/Makefile])
+  conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1 log/Makefile])
 
 AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
 AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])

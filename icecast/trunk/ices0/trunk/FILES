@@ -1,83 +1,65 @@
-./FEATURES - Describes ices features
-./AUTHORS  - List ices and ices module authors
-./BUGS     - Current ices bugs
-./CHANGES  - Ices changelog
-./COPYING  - Licensing issues
-./FAQ      - Ices Frequently Asked Questions
-./Makefile.am - Top level makefile 
-./INSTALL  - Installation help
-./acconfig.h - extra autoconf defines
-./README   - Ices readme
-./TESTED   - Different system setups that ices has been tested on
-./TODO     - Stuff that is coming
-./conf     - Directory for ices configuration files
-./conf/ices.conf.dist.in - autoconf template for ices.conf
-./doc/icesmanual.html - Main ices manual
-./aclocal.m4 - extra autoconf macros
-./autogen.sh - Build script for CVS
-./configure.in - Main autoconf script
-./install-sh - autoconf install replacement
-./missing    - autoconf tool for missing stuff
-./mkinstalldirs - autoconf tool for creating directories
-./stamp-h.in - Magic files
-./src - Source directory
-./src/interpreter - Directory for the interpreter module
-./src/interpreter/Makefile.am - Makefile for the interpreter module
-./src/interpreter/interpreter.c - Top level interpreter api
-./src/interpreter/interpreter.h - Header file for interpreter api
-./src/interpreter/interpreter_playlist.c - Playlist interpreter api
-./src/interpreter/perl.c - Interpreter <-> perl api
-./src/interpreter/playlist_perl.c - Interpreter <-> perl playlist api
-./src/interpreter/playlist_python.c - Interpreter <-> python playlist api
-./src/interpreter/python.c - Interpreter <-> python api
-./src/Makefile.am - Top level source makefile
-./src/cue.c - File for handling the cuefile
-./src/cue.h - Header file for cue file manipulation
-./src/definitions.h - Top level ices defines and preprocessor directives
-./src/dj.c - File for dj handling (currently not used)
-./src/dj.h - Header file for dj handling
-./src/ices.c - Top level ices functions (main())
-./src/icestypes.h - Ices data type definitions
-./src/ices_config.c - configfile parser source
-./src/ices_config.h - Headerfile for configfile parser
-./src/id3.c - File for id3 tag parsing and metadata update
-./src/id3.h - Headerfile for id3 tag parsing and metadata update
-./src/log.c - File for ices logging
-./src/log.h - Header file for logging
-./src/mp3.c - File for mp3 header parsing
-./src/mp3.h - Header file for mp3 header parsing
-./src/playlist.c - Top level playlist handling functions
-./src/playlist.h - Header file for playlist management functions
-./src/reencode.c - File for reencoding mp3 chunks
-./src/reencode.h - Header file for reencoding handling
-./src/setup.c - Top level ices configuration handler
-./src/setup.h - Header file for configuration handling
-./src/signals.c - Signal handling in ices
-./src/signals.h - Header file for signal handling
-./src/stream.c - Stream interface for data sending
-./src/stream.h - Stream interface headers
-./src/util.c - Ices utilities
-./src/util.h - Header files for ices utilities
-./src/playlist_builtin - Directory for the builtin playlist handler
-./src/playlist_builtin/playlist_builtin.c - Builtin playlist handler
-./src/playlist_builtin/playlist_builtin.h - Header file for builtin playlist
-./src/playlist_builtin/rand.c - File randomization source
-./src/playlist_builtin/rand.h - Header file for file randomization
-./resolver - Directory for the dns resolver module
-./resolver/resolver.c - Resolver functions
-./resolver/resolver.h - Resolver headers
-./thread - Directory for the thread handling module
-./thread/avl - Directory for the avl tree handling
-./thread/avl/avl.c - Source file for avl tree implementation
-./thread/avl/avl.h - Header file for avl tree
-./thread/thread.c - Source file for thread management
-./thread/thread.h - Header file for thread management
-./libshout - Directory for libshout
-./ltmain.sh - libtool main file
-./ltconfig - libtool configuration
-./FILES - This file
-./README.old - Old ices readme
-./README.playlist - README for playlist management modules
-./ices.pm - Perl skeleton example code
-./ices.py - Python skeleton example code
-./acinclude.m4 - Extra m4 macros for autoconf
+FEATURES - Describes ices features
+AUTHORS  - List ices and ices module authors
+BUGS     - Current ices bugs
+CHANGES  - Ices changelog
+COPYING  - Licensing issues
+FAQ      - Ices Frequently Asked Questions
+Makefile.am - Top level makefile 
+INSTALL  - Installation help
+acconfig.h - extra autoconf defines
+README   - Ices readme
+TESTED   - Different system setups that ices has been tested on
+TODO     - Stuff that is coming
+conf     - Directory for ices configuration files
+conf/ices.conf.dist.in - autoconf template for ices.conf
+doc/icesmanual.html - Main ices manual
+aclocal.m4 - extra autoconf macros
+autogen.sh - Build script for CVS
+configure.in - Main autoconf script
+install-sh - autoconf install replacement
+missing    - autoconf tool for missing stuff
+mkinstalldirs - autoconf tool for creating directories
+stamp-h.in - Magic files
+src - Source directory
+src/Makefile.am - Top level source makefile
+src/cue.c - File for handling the cuefile
+src/cue.h - Header file for cue file manipulation
+src/definitions.h - Top level ices defines and preprocessor directives
+src/dj.c - File for dj handling (currently not used)
+src/dj.h - Header file for dj handling
+src/ices.c - Top level ices functions (main())
+src/icestypes.h - Ices data type definitions
+src/ices_config.c - configfile parser source
+src/ices_config.h - Headerfile for configfile parser
+src/id3.c - File for id3 tag parsing and metadata update
+src/id3.h - Headerfile for id3 tag parsing and metadata update
+src/log.c - File for ices logging
+src/log.h - Header file for logging
+src/mp3.c - File for mp3 header parsing
+src/mp3.h - Header file for mp3 header parsing
+src/playlist.c - Top level playlist handling functions
+src/playlist.h - Header file for playlist management functions
+src/reencode.c - File for reencoding mp3 chunks
+src/reencode.h - Header file for reencoding handling
+src/setup.c - Top level ices configuration handler
+src/setup.h - Header file for configuration handling
+src/signals.c - Signal handling in ices
+src/signals.h - Header file for signal handling
+src/stream.c - Stream interface for data sending
+src/stream.h - Stream interface headers
+src/util.c - Ices utilities
+src/util.h - Header files for ices utilities
+src/playlist_builtin - Directory for the builtin playlist handler
+src/playlist_builtin/playlist_builtin.c - Builtin playlist handler
+src/playlist_builtin/playlist_builtin.h - Header file for builtin playlist
+src/playlist_builtin/rand.c - File randomization source
+src/playlist_builtin/rand.h - Header file for file randomization
+libshout - Directory for libshout
+ltmain.sh - libtool main file
+ltconfig - libtool configuration
+FILES - This file
+README.old - Old ices readme
+README.playlist - README for playlist management modules
+ices.pm - Perl skeleton example code
+ices.py - Python skeleton example code
+acinclude.m4 - Extra m4 macros for autoconf

@@ -2,6 +2,6 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = @subdirs@ resolver log src conf doc
+SUBDIRS = @subdirs@ log src conf doc
 
 EXTRA_DIST = README FEATURES BUGS AUTHORS TODO INSTALL COPYING CHANGES FAQ TESTED README.playlist README.old FILES
