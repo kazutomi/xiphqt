@@ -850,10 +850,12 @@ static PyObject *ov_read_py(PyObject *self, PyObject *args)
     buffer = (char *)PyMem_Malloc(len);
     vf = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj);
     ret = ov_read(vf, buffer, len, bigendianp, word, sgned, &current_section);
-    if (ret > 0)
-	buffer = (char *)PyMem_Realloc(buffer, ret);
-
-    result = Py_BuildValue("(ls#i)", ret, buffer, ret, current_section);
+    if (ret >= 0) {
+	result = Py_BuildValue("(ls#i)", ret, buffer, ret, current_section);
+    } else {
+	result = Py_BuildValue("(ls#i)", ret, buffer, 0, current_section);
+    }
+    PyMem_Free(buffer);
     return result;
 }
 
