@@ -65,6 +65,9 @@ code, kbd, pre {
 * page-specific stuff *
 **********************/
 
+.firstLine {
+	border-bottom: 0px solid #000000;
+}
 
 .superImportant {
 	background: #faa;

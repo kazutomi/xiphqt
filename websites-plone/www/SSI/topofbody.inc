@@ -1,8 +1,7 @@
 
 </head>
-<body>
 
-<div id='thepage'>
+<body>
 
 <div id='navbar1'>
 	<ul>
@@ -16,5 +15,4 @@
 	</ul>
 </div>
 
-
-
+<div id='thepage'>

@@ -57,11 +57,8 @@ div#rightside {
 
 #content {
 	display: table-cell;
-	border: 1px solid #666;
-	background: #eee;
 	margin: 0 20px 0 20px;
-	padding: 5px;
-	-moz-border-radius: 10px;
+	padding: 0px;
 }
 
 div.left {
@@ -87,6 +84,7 @@ div.bottom {
 
 h1 {
 	margin: 0 0 .25em;
+	border-bottom: 3px solid #000000;
 }
 
 h2, h3, h4, h5, h6 {
@@ -104,4 +102,6 @@ p+p {
 
 img { border: none; }
 
-
+abbr {
+	border-width: 2px;
+}

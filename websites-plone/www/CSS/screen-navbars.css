@@ -1,38 +1,25 @@
 /* The main navigation bar at the top of the page that lists the projects is navbar1*/
 
 div#navbar1 {
-	margin: 0px;
-	padding: 0;
-	text-align: left;
-	white-space: nowrap;
+	text-align: center;
 }
 
 div#navbar1 ul {
-	padding: 0px;
-	margin: 0 0 0 2em;
-	border: 0px;
 }
 
 div#navbar1 li {
 	list-style-type: none;
-	display: inline; 
-	padding: 0px;
-	border-width: 0px;
-	margin: 0px;
+	display: inline;
 }
 
 div#navbar1 a {
-	border: 3px solid #484848;
-	border-top: none;
 	color: black;
 	font-weight: bold;
 	text-decoration: none;
-	padding: 0px 20px 6px 21px;
-	height: 1.2em;
-	margin-right: .2em;
 	text-transform: lowercase;
-	-moz-border-radius-bottomright: 10px;
-	-moz-border-radius-bottomleft: 10px;
+	border-style: solid;
+	border-width: 3px;
+	-moz-border-radius: 10px;
 }
 
 
@@ -45,7 +32,7 @@ div#navbar2 {
 	text-transform: lowercase;
 	text-align: left;
 	padding: 10px 0px 10px 0px;
-	margin: 0 20px 20px -3px;
+	margin: 0 10px 20px -3px;
 	-moz-border-radius-bottomright: 10px;
 	-moz-border-radius-topright: 10px;
 }
@@ -92,27 +79,17 @@ div#navbar2 a:hover {
 /* These are the properties necessary to make the tabs have the fancy hover effects*/
 
 div#navbar1 a#xiph {
-	border-color: #2b4556;
-	padding: 0px 3px 6px 35px;
-	font-weight: bold;
-	background:  no-repeat url(/Images/logos/xiph/20x35.png) top left; 
+	background:  no-repeat url(/Images/logos/xiph/35x20.png) top left; 
 }
-div#navbar1 a#vorbis	{ border-color: #8653ee; }
-div#navbar1 a#theora	{ border-color: #ef0e0e; }
-div#navbar1 a#speex	{ border-color: #119035; }
-div#navbar1 a#flac	{ border-color: #ffcf00; }
-div#navbar1 a#icecast	{ border-color: #484848; }
-div#navbar1 a#other	{ border-color: #0035ff; }
+
 
 div#navbar1 a#xiph:hover {
-	padding: 0px 3px 6px 35px;
-	font-weight: bold;
-	background:  no-repeat url(/Images/logos/xiph/20x35.png) top left #819cc9; 
+	background:  no-repeat url(/Images/logos/xiph/35x20.png) top left #819cc9; 
 }
-div#navbar1 a:hover		{ background: #aaaaaa; }
-div#navbar1 a#vorbis:hover	{ background: #aa75f4; }
-div#navbar1 a#theora:hover	{ background: #F9AFAF; }
-div#navbar1 a#speex:hover	{ background: #99d25d; }
-div#navbar1 a#flac:hover	{ background: #ffff56; }
-div#navbar1 a#icecast:hover	{ background: #aaaaaa; }
-div#navbar1 a#other:hover	{ background: #8099f4; }
+div#navbar1 a:hover		{ background: #aaaaaa; -moz-border-radius: 10px;  }
+div#navbar1 a#vorbis:hover	{ background: #aa75f4; -moz-border-radius: 10px; }
+div#navbar1 a#theora:hover	{ background: #F9AFAF; -moz-border-radius: 10px;  }
+div#navbar1 a#speex:hover	{ background: #99d25d; -moz-border-radius: 10px;  }
+div#navbar1 a#flac:hover	{ background: #ffff56; -moz-border-radius: 10px;  }
+div#navbar1 a#icecast:hover	{ background: #aaaaaa; -moz-border-radius: 10px;  }
+div#navbar1 a#other:hover	{ background: #8099f4; -moz-border-radius: 10px;  }
