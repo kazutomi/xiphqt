@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: predefined encoding modes
- last mod: $Id: mode_A.h,v 1.14 2001/02/26 03:51:10 xiphmont Exp $
+ last mod: $Id: mode_A.h,v 1.14.4.1 2001/04/29 22:21:06 xiphmont Exp $
 
  ********************************************************************/
 
@@ -132,7 +132,7 @@ static vorbis_info_psy _psy_set_A0={
             tight loop) */
   -22.,
 
-  -0., -.004   /* attack/decay control */
+  1,
 };
 
 static vorbis_info_psy _psy_set_A={
@@ -222,7 +222,7 @@ static vorbis_info_psy _psy_set_A={
             tight loop) */
   -28.,
 
-  -0.f, -.004f,   /* attack/decay control */
+  1,
 
 };
 

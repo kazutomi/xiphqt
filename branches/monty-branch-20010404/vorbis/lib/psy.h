@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.19 2001/02/26 03:50:43 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.19.4.1 2001/04/29 22:21:05 xiphmont Exp $
 
  ********************************************************************/
 
@@ -57,9 +57,7 @@ typedef struct vorbis_info_psy{
   float max_curve_dB;
   float bound_att_dB;
 
-  /* decay setup */
-  float attack_coeff;
-  float decay_coeff;
+  int floor_cullp;
 } vorbis_info_psy;
 
 typedef struct {
