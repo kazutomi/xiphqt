@@ -17,11 +17,39 @@
 [ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
 <hr>
 
-<h2>Soon my precious, soon...</h2>
+<h2>MGM download</h2>
 
-Until I get the tar melted down for the distribution package, a
-working copy can be checked out of <a
-href="http://www.xiph.org/cvs.html">CVS</a>.
+The current version of MGM for Linux, Solaris, and NetBSD (currently) is 1.1<p>
+
+<ul>
+<li>Full MGM distribution: <a href="mgm-1.1.tgz">mgm-1.1.tgz</a><p>
+<li><a href="http://www.xiph.org/cvs.html">CVS access</a><p>
+</ul>
+
+<h2>Installation: READ THIS DAGNABBIT!</h2>
+<h3>Requirements</h3>
+
+Perl 5 with the Tk module installed<p>
+
+<h3>Installing</h3>
+
+<ol>
+<li>Untar MGM where you want it to actually be installed.
+/usr/local/mgm is a very good place.<p>
+
+<li>Make a symlink from (for example) /usr/local/bin to the absolute
+path of the actual MGM script.  The symlink must point to the *full*
+*absolute* path.  The install relies on this.  In our example, with
+MGM installed in /usr/local/mgm:<p>
+
+<pre>
+ln -s /usr/local/mgm/mgm /usr/local/bin/mgm
+</pre>
+
+...will do nicely.<p>
+</ol>
+
+All done.  Don't forget to rehash any csh derivative shells.<p>
 
 <p>
 

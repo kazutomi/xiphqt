@@ -1,0 +1,28 @@
+Requirements *************
+
+Perl 5 with the Tk module installed
+
+Installation *************
+
+1) Untar MGM where you want it to actually be installed.
+/usr/local/mgm is a very good place.
+
+2) Make a symlink from (for example) /usr/local/bin to the absolute
+path of the actual MGM script.  The symlink must point to the *full*
+*absolute* path.  The install relies on this.  In our example, with
+MGM installed in /usr/local/mgm:
+
+ln -s /usr/local/mgm/mgm /usr/local/bin/mgm
+
+...will do nicely.
+
+All done.  Don't forget to rehash any csh derivative shells.
+
+Documentation ************
+
+Complete documentation can be found at http://www.xiph.org/mgm/.  A
+copy of the HTML documents, current as of this version of MGM, are
+also in the mgm/doc directory.
+
+Monty
+monty@xiph.org
