@@ -137,18 +137,28 @@ sub LoadModules{
     my($prefix,$dir)=@_;
     
     $prefix=~s{/\s*$}{}; # strip trailing slash
-
+	       
     # get the filenames in $prefix/<platform>
     my $searchdir="$prefix/$dir";
     if(opendir(D,$searchdir)){
         my$file;
+	my@files;
         while(defined($file=readdir(D))){
             if(substr($file,0,1) ne '.'){
-                print "Loading plugin $file\n";
-                &LoadModule($searchdir,$file);
-            }
-        }
+		if(substr($file,0) ne 'CVS'){
+		    push @files, $file;
+		}
+	    }
+	}
+
         closedir(D);
+
+        # sort/load the modules (we need deterministic load order, in
+        # this case alphabetical)
+	foreach $file (sort @files){
+	    print "loading module $file...\n"; 
+	    &LoadModule($searchdir,$file);
+	}
         
     }else{
         print STDERR "Unable to open plugin directory $searchdir: $!\n";
@@ -229,9 +239,9 @@ sub order_modules{
     @ordered= sort {my($A,$AA)=(split ' ',$a);
 		    my($B,$BB)=(split ' ',$b);
 		    if($A==$B){
-			  $AA>$BB;
+			  $AA <=> $BB
 		      }else{
-			  $A>$B;
+			  $A <=> $B
 		      }} keys %instances;
 }
 

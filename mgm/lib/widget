@@ -439,7 +439,7 @@ sub drawit{
 		       relief=>'flat');
 
     my $rangesetting=$this->{"rangesetting"};
-    my($dummy,$dummy,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
+    my($dummy,$dummy2,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
     $this->{"scalew"}=$scalew;
     $this->{"numlabel"}=$this->promptlabel($rangesetting,$prompt);
  

@@ -11,7 +11,7 @@
 
 
 package MGMmodule::helperST;
-use vars qw(%proc $lastmod);
+use vars qw(%proc %net $lastmod);
 
 sub module_init{
     my$this=shift;
@@ -34,13 +34,32 @@ sub module_instance{
 }
 
 sub module_update{
+    undef $/;
+    my$data;
+    my$netd;
     if(open(PROC,"/proc/stat")){
-	while(<PROC>){
-	    m/^(\S+)\s*(.*)/;
-	    $proc{$1}=$2;
+	if(open(NET,"/proc/net/dev")){
+	    $data=<PROC>;
+	    $netd=<NET>;
+	    close NET;
+	    close PROC;
+	    map{
+		if(m/^\s*([^:]+):\s*(.*)/){
+		    $net{$1}=$2;
+		}
+	    } split "\n", $netd;
+	}else{
+	    $data=<PROC>;
+	    close PROC;
 	}
-	close PROC;
     }
+    $/="\n";
+
+    map{
+	m/^(\S+)\s*(.*)/;
+	$proc{$1}=$2;
+    } split "\n", $data;
+
     # what a great hack
     $proc{"cpu"}=~m/(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
     $lastmod=$1+$2+$3+$4; # 100ths of a second
