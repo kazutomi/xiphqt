@@ -669,6 +669,20 @@ void print_comments(void)
 	fclose(fp);
 }
 
+void global_note_off(void)
+{
+	snd_seq_event_t ev;
+	int n, c;
+
+	snd_seq_ev_clear(&ev);
+	for (c = 0; c < 16; c++) {
+		for (n = 0; n < 128; n++) {
+			snd_seq_ev_set_noteoff(&ev, c, n, 127);
+			snd_seq_event_output_direct(device.seqhandle, &ev);
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	int err;
@@ -791,9 +805,12 @@ int main(int argc, char **argv)
 	// PLAYBACK :)
 	while (!eos && device.play.status) {
 		/* Pause if we're supposed to */
-		while (device.pause.status) {
-			usleep(10000);
-			update_status();
+		if (device.pause.status) {
+			while (device.pause.status) {
+				usleep(10000);
+				update_status();
+			}
+			global_note_off();
 		}
 
 		/* Handle fast foward */
@@ -880,6 +897,8 @@ int main(int argc, char **argv)
 	close_file();
 
 	if (use_status_files) close_status_files();
+
+	global_note_off();
 
 	snd_seq_stop_queue(device.seqhandle, device.q, 0);
 
