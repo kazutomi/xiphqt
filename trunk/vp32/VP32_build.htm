@@ -118,13 +118,14 @@ the QuickTime SDK ) <BR>
 
 <LI>You cannot build the VP3.2 libraries in Codewarrior 6.x.</LI>
 
-<LI>In Control Panels, Internet, Advanced, File&nbsp;Mappings:&nbsp;&nbsp;Need
-to add entries for .s and .ash file extensions mapping both to TEXT file
-type, CWIE&nbsp;Creator. </LI>
+<LI>In Control Panels, Internet, Advanced, File&nbsp;Mappings:&nbsp;&nbsp;May
+need to add entries for .s and .ash file extensions mapping both to TEXT
+file type, CWIE&nbsp;Creator. </LI>
 </UL>
 
 <P><FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
 for MacOS 9.1 and Below:</FONT> </P>
+
 <UL>
 <LI>Codewarrior 5.3</LI>
 
@@ -132,8 +133,8 @@ for MacOS 9.1 and Below:</FONT> </P>
 </UL>
 
 <P><BR>
-<FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
-for MacOS X:</FONT> </P>
+<FONT SIZE=+1>The Requirements for Building MacOS X On2 VP3.2 QuickTime
+Component:</FONT> </P>
 
 <UL>
 <LI>Codewarrior 6, patched to 6.2.</LI>
@@ -144,7 +145,8 @@ folder)</LI>
 </UL>
 
 <P><BR>
-<FONT SIZE=+1>Once the system has been configured :</FONT> </P>
+<FONT SIZE=+1>Once the system has been configured (MacOS 8.x/9.x):</FONT>
+</P>
 
 <UL>
 <LI>open the project \vp32\vp32.mcp using CodeWarrior</LI>
@@ -153,8 +155,21 @@ folder)</LI>
 
 <LI>open the project file \vp32\Codecs\quicktime\mac\VP3QTCodec.CW53.mcp</LI>
 
-<LI>select the quicktime codec and then build<BR>
+<LI>select the quicktime codec and then build</LI>
+
+<LI>Drag codec to Extensions folder, reboot(see Notes).<BR>
 </LI>
+</UL>
+
+<P><FONT SIZE=+1>Testing MacOS X QuickTime Codec:</FONT> </P>
+
+<UL>
+<LI>Login as root.</LI>
+
+<LI>Drag the component into /System/Library/Components</LI>
+
+<LI>Do NOT&nbsp;attempt to move the file using cp and/or mv in the terminal,
+cp and mv do not maintain resource forks.</LI>
 </UL>
 
 <P><B><FONT SIZE=+1>Notes: </FONT></B></P>
