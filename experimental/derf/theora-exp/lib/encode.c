@@ -2023,7 +2023,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
 #if defined(OC_BITRATE_STATS)
           efrag->eerror=err[OC_MODE_INTER_NOMV][mapi];
 #endif
-          efrag->qii=frag_qii[codedi][OC_INTER_FRAME][1];
+          efrag->qii=(unsigned char)frag_qii[codedi][OC_INTER_FRAME][1];
           frag->qi=qi;
         }
         intra_bits+=mbintrabits+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
@@ -2560,7 +2560,7 @@ int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
           OC_MINI(31,oc_ilog(keyframe_frequency_force-1)));
        }
        _enc->keyframe_frequency_force=OC_MINI(keyframe_frequency_force,
-        1<<_enc->state.info.keyframe_granule_shift);
+        1U<<_enc->state.info.keyframe_granule_shift);
        (*(ogg_uint32_t *)_buf)=_enc->keyframe_frequency_force;
        return 0;
     }break;

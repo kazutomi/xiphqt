@@ -304,7 +304,8 @@ typedef struct{
 }theora_huff_code;
 
 /*The Huffman tables used by VP3.*/
-const theora_huff_code OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+extern const theora_huff_code
+ OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
 
 /*The quantization parameters.
   The quantizer for each coefficient is calculated as:
@@ -369,7 +370,7 @@ typedef struct{
 }theora_quant_info;
 
 /*The quantization parameters used by VP3.*/
-const theora_quant_info OC_VP31_QUANT_INFO;
+extern const theora_quant_info OC_VP31_QUANT_INFO;
 
 /*The comment information.*/
 typedef struct theora_comment{

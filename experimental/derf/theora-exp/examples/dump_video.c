@@ -115,7 +115,7 @@ static void open_video(void){
     int yshift;
     xshift=pli!=0&&!(ti.pixel_fmt&1);
     yshift=pli!=0&&!(ti.pixel_fmt&2);
-    ycbcr[pli].data=(char *)malloc(
+    ycbcr[pli].data=(unsigned char *)malloc(
      (ti.frame_width>>xshift)*(ti.frame_height>>yshift)*sizeof(char));
     ycbcr[pli].ystride=ti.frame_width>>xshift;
     ycbcr[pli].width=ti.frame_width>>xshift;
