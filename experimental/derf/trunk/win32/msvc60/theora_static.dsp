@@ -89,7 +89,15 @@ SOURCE=..\..\lib\bitrate.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\decinfo.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\decode.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\dequant.c
 # End Source File
 # Begin Source File
 
@@ -162,6 +170,14 @@ SOURCE=..\..\lib\tokenize.c
 # Begin Source File
 
 SOURCE=..\..\lib\dct.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\decint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\dequant.h
 # End Source File
 # Begin Source File
 

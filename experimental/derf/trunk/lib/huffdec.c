@@ -57,8 +57,9 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
  oc_huff_node **_binode,int _depth){
   oc_huff_node *binode;
   long          bits;
+  /*Prevent infinite recursion.*/
   if(++_depth>32)return OC_BADHEADER;
-  bits=oggpackB_read(_opb,1);
+  bits=oggpackB_read1(_opb);
   if(bits<0)return OC_BADHEADER;
   /*Read an internal node:*/
   if(!bits){
@@ -94,7 +95,7 @@ static int oc_huff_tree_mindepth(oc_huff_node *_binode){
   if(_binode->nbits==0)return 0;
   depth0=oc_huff_tree_mindepth(_binode->nodes[0]);
   depth1=oc_huff_tree_mindepth(_binode->nodes[1]);
-  return (depth0<depth1?depth0:depth1)+1;
+  return OC_MINI(depth0,depth1)+1;
 }
 
 /*Fills the given nodes table with all the children in the sub-tree at the
@@ -177,7 +178,7 @@ int oc_huff_trees_unpack(oggpack_buffer *_opb,
   _dst: The array to store the copy in.
   _src: The array of trees to copy.*/
 void oc_huff_trees_copy(oc_huff_node *_dst[OC_NHUFFMAN_TABLES],
- const oc_huff_node *_src[OC_NHUFFMAN_TABLES]){
+ const oc_huff_node *const _src[OC_NHUFFMAN_TABLES]){
   int i;
   for(i=0;i<OC_NHUFFMAN_TABLES;i++)_dst[i]=oc_huff_tree_copy(_src[i]);
 }

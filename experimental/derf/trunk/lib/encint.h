@@ -20,20 +20,14 @@ typedef struct theora_enc_ctx         oc_enc_ctx;
 
 #define OC_1_LN2 (1.4426950408889634073F)
 
-#define OC_NTEST_MODES (1)
+/*Constants for the packet-out state machine specific to the encoder.*/
 
-/*Next packet to emit: Codec info header.*/
-#define OC_PACKET_INFO_HDR    (-3)
-/*Next packet to emit: Comment header.*/
-#define OC_PACKET_COMMENT_HDR (-2)
-/*Next packet to emit: Codec setup header.*/
-#define OC_PACKET_SETUP_HDR   (-1)
 /*Next packet to emit: Data packet, but none are ready yet.*/
-#define OC_PACKET_EMPTY       (0)
+#define OC_PACKET_EMPTY (0)
 /*Next packet to emit: Data packet, and one is ready.*/
-#define OC_PACKET_READY       (1)
-/*No more packets to emit.*/
-#define OC_PACKET_DONE        (INT_MAX)
+#define OC_PACKET_READY (1)
+
+
 
 /*Fragment information specific to encoding.*/
 struct oc_fragment_enc_info{
@@ -131,6 +125,13 @@ struct theora_enc_ctx{
   int                      packet_state;
   /*Buffer in which to assemble packets.*/
   oggpack_buffer           opb;
+  /*The list of flags indicating which blocks are coded in all partially coded
+     super blocks.*/
+  char                 *block_coded_flags;
+  /*The number of block coded flags in the list.
+    This is 16 times the number of super blocks with their partially coded
+     flag set.*/
+  int                   nblock_coded_flags;
   /*Special buffer used for the coded fragment flags.*/
   oggpack_buffer           opb_coded_flags;
   /*The estimated bit cost of the current frame.*/
@@ -169,7 +170,6 @@ struct theora_enc_ctx{
   int                      ndct_tokens[64];
   /*The DCT token lists.*/
   unsigned char          **dct_tokens;
-  int                    **dct_tok_fragi;
   /*The number of extra bits entries for each coefficient.*/
   int                      nextra_bits[64];
   /*The offset of the first extra bits entry for each coefficient.*/

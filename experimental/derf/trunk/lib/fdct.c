@@ -66,10 +66,6 @@ static const float OC_IDCT_MATRIX[8][8]={
   The output is scaled by a factor of 2 from the orthonormal version of the
    transform.
   TODO: What is the maximum dynamic range of the input? output?
-  TODO: Write a new version of this transform.
-  This one uses 16 multiplies, when we could get away with as little as 10,
-   and even reduce that to 8 by folding multiplies into the quantization
-   stage.
   _y: The buffer to store the result in.
       Data will be placed in every 8th entry (e.g., in a column of an 8x8
        block).

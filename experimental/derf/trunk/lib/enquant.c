@@ -5,7 +5,7 @@
 
 
 /*The default quantization parameters used by VP3.1.*/
-static const int OC_VP31_RANGE_SIZES[1]={64};
+static const int OC_VP31_RANGE_SIZES[1]={63};
 static const theora_quant_base OC_VP31_BASES_INTRA_Y[2]={
   {
      16, 11, 10, 16, 24,  40, 51, 61,
@@ -129,71 +129,37 @@ void oc_quant_params_pack(oggpack_buffer *_opb,
 
 
 
+/*See comments at oc_dequant_tables_init() for how the quantization tables'
+   storage should be initialized.*/
 void oc_enquant_tables_init(oc_quant_tables *_dequant[2][3],
  oc_quant_tables *_enquant[2][3],const theora_quant_info *_qinfo){
-  int          qti;
-  int          pli;
+  int qti;
+  int pli;
+  /*Initialize the dequantization tables first.*/
+  oc_dequant_tables_init(_dequant,_qinfo);
+  /*Derive the quantization tables directly from the dequantization tables.*/
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
     int qi;
-    int qri;
     /*These simple checks help us improve cache coherency later.*/
-    if(pli>0&&memcmp(_qinfo->qi_ranges[qti]+pli-1,
-     _qinfo->qi_ranges[qti]+pli,sizeof(_qinfo->qi_ranges[qti][pli]))==0){
-      _dequant[qti][pli]=_dequant[qti][pli-1];
+    if(pli>0&&_dequant[qti][pli]==_dequant[qti][pli-1]){
       _enquant[qti][pli]=_enquant[qti][pli-1];
       continue;
     }
-    if(qti>0&&memcmp(_qinfo->qi_ranges[qti-1]+pli,
-     _qinfo->qi_ranges[qti]+pli,sizeof(_qinfo->qi_ranges[qti][pli]))==0){
-      _dequant[qti][pli]=_dequant[qti-1][pli];
+    if(qti>0&&_dequant[qti][pli]==_dequant[qti-1][pli]){
       _enquant[qti][pli]=_enquant[qti-1][pli];
       continue;
     }
-    for(qi=qri=0;qri<_qinfo->qi_ranges[qti][pli].nranges;qri++){
-      theora_quant_base base;
-      ogg_uint32_t      q;
-      int               qi_start;
-      int               qi_end;
-      int               ci;
-      memcpy(base,_qinfo->qi_ranges[qti][pli].base_matrices[qri],
-       sizeof(base));
-      qi_start=qi;
-      qi_end=qi+_qinfo->qi_ranges[qti][pli].sizes[qri];
-      for(;;){
-        /*In the original VP3.2 code, the rounding offset and the size of the
-           dead zone around 0 were controlled by a "sharpness" parameter.
-          The size of our dead zone is now controlled by the per-coefficient
-           quality thresholds returned by our HVS module.
-          We round down from a more accurate value when the quality of the
-           reconstruction does not fall below our threshold and it saves bits.
-          Hence, all of that VP3.2 code is gone from here, and the remaining
-           floating point code has been implemented as integer code with exact
-           precision.
-          I.e., (ogg_uint16_t)(1.0/q*OC_QUANT_SCALE+0.5) has become
-           (2*OC_QUANT_SCALE+q)/(q<<1).*/
-        /*Scale DC the coefficient from the proper table.*/
-        q=((ogg_uint32_t)_qinfo->dc_scale[qi]*base[0]/100)<<2;
-        q=OC_CLAMPI(OC_DC_QUANT_MIN[qti],q,OC_QUANT_MAX);
-        _dequant[qti][pli][0][qi][0]=(ogg_uint16_t)q;
-        _enquant[qti][pli][0][qi][0]=(ogg_uint16_t)(
+    for(qi=0;qi<64;qi++){
+      int ci;
+      /*All of that VP3.2 floating point code has been implemented as integer
+         code with exact precision.
+        I.e., (ogg_uint16_t)(1.0/q*OC_FQUANT_SCALE+0.5) has become
+         (2*OC_FQUANT_SCALE+q)/(q<<1).*/
+      for(ci=0;ci<64;ci++){
+        ogg_uint32_t q;
+        q=_dequant[qti][pli][0][qi][ci];
+        _enquant[qti][pli][0][qi][ci]=(ogg_uint16_t)(
          (2*OC_FQUANT_SCALE+q)/(q<<1));
-        /*Now scale AC coefficients from the proper table.*/
-        for(ci=1;ci<64;ci++){
-          q=((ogg_uint32_t)_qinfo->ac_scale[qi]*base[ci]/100)<<2;
-          q=OC_CLAMPI(OC_AC_QUANT_MIN[qti],q,OC_QUANT_MAX);
-          _dequant[qti][pli][0][qi][ci]=(ogg_uint16_t)q;
-          _enquant[qti][pli][0][qi][ci]=(ogg_uint16_t)(
-           (2*OC_FQUANT_SCALE+q)/(q<<1));
-        }
-        if(++qi>=qi_end)break;
-        /*Interpolate the next base matrix.*/
-        for(ci=0;ci<64;ci++){
-          base[ci]=(unsigned char)(
-           (2*((qi_end-qi)*_qinfo->qi_ranges[qti][pli].base_matrices[qri][ci]+
-           (qi-qi_start)*_qinfo->qi_ranges[qti][pli].base_matrices[qri+1][ci])
-           +_qinfo->qi_ranges[qti][pli].sizes[qri])/
-           (2*_qinfo->qi_ranges[qti][pli].sizes[qri]));
-        }
       }
     }
   }

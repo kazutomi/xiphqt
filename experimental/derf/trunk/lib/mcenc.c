@@ -8,6 +8,8 @@ struct oc_mcenc_ctx{
   int         candidates[12][2];
   int         setb0;
   int         ncandidates;
+  ogg_int32_t mvapw1;
+  ogg_int32_t mvapw2;
 };
 
 /*The maximum Y plane SAD value for accepting the median predictor.*/
@@ -112,18 +114,17 @@ static void oc_mcenc_find_candidates(oc_mcenc_ctx *_mcenc,int _mbi,
     ncandidates=2;
   }
   /*Fill in set B: accelerated predictors for this and adjacent macro
-     blocks.
-    TODO: These are wrong for golden frame vectors, but "correct" vectors may
-     be ridiculously large.
-    Is it even worth using a set B for golden frames?*/
+     blocks.*/
   _mcenc->setb0=ncandidates;
   /*The first time through the loop use the current macro block.*/
   nemb=emb;
   for(i=0;;i++){
     _mcenc->candidates[ncandidates][0]=
-     (nemb->mvs[1][_which_frame][0]<<1)-nemb->mvs[2][_which_frame][0];
+     OC_DIV_ROUND_POW2(nemb->mvs[1][_which_frame][0]*_mcenc->mvapw1-
+     nemb->mvs[2][_which_frame][0]*_mcenc->mvapw2,16,0x8000);
     _mcenc->candidates[ncandidates][1]=
-     (nemb->mvs[1][_which_frame][1]<<1)-nemb->mvs[2][_which_frame][1];
+     OC_DIV_ROUND_POW2(nemb->mvs[1][_which_frame][1]*_mcenc->mvapw1-
+     nemb->mvs[2][_which_frame][1]*_mcenc->mvapw2,16,0x8000);
     _mcenc->candidates[ncandidates][0]=OC_CLAMPI(-31,
      _mcenc->candidates[ncandidates][0],31);
     _mcenc->candidates[ncandidates][1]=OC_CLAMPI(-31,
@@ -175,8 +176,8 @@ static int oc_mcenc_sad_check_mbcandidate_fullpel(oc_mcenc_ctx *_mcenc,
   int                      mvoffset;
   int                      err;
   int                      bi;
-  /*TODO: customize error function for speed/quality tradeoff.*/
-  fplane=_mcenc->enc->state.frplanes+_pli;
+  /*TODO: customize error function for speed/(quality+size) tradeoff.*/
+  fplane=_mcenc->enc->state.fplanes+_pli;
   cur_ystride=_mcenc->enc->state.input[_pli].stride;
   ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][_pli].stride;
   frags=_mcenc->enc->state.frags;
@@ -221,7 +222,7 @@ static int oc_mcenc_ysad_halfpel_mbrefine(oc_mcenc_ctx *_mcenc,
   int                      best_site;
   int                      sitei;
   int                      err;
-  fplane=_mcenc->enc->state.frplanes+0;
+  fplane=_mcenc->enc->state.fplanes+0;
   cur_ystride=_mcenc->enc->state.input[0].stride;
   ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][0].stride;
   frags=_mcenc->enc->state.frags;
@@ -275,7 +276,7 @@ static int oc_mcenc_ysad_halfpel_brefine(oc_mcenc_ctx *_mcenc,
   int                      best_site;
   int                      sitei;
   int                      err;
-  fplane=_mcenc->enc->state.frplanes+0;
+  fplane=_mcenc->enc->state.fplanes+0;
   cur_ystride=_mcenc->enc->state.input[0].stride;
   ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][0].stride;
   frag=_mcenc->enc->state.frags+_mcenc->enc->state.mbs[_mbi].map[0][_bi];
@@ -699,18 +700,26 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
 void oc_mcenc_analyze(oc_mcenc_ctx *_mcenc){
   oc_mb_enc_info *embs;
   oc_mb          *mbs;
+  ogg_int64_t     nframes;
   int             nmbs;
   int             mbi;
   /*If there is no previous frame, then skip motion analysis: Every vector has
      been initialized to (0,0).*/
   if(_mcenc->enc->state.ref_frame_idx[OC_FRAME_PREV]<0)return;
+  /*Set up the accelerated MV weights for previous frame prediction.*/
+  _mcenc->mvapw1=(ogg_int32_t)1<<17;
+  _mcenc->mvapw2=(ogg_int32_t)1<<16;
   mbs=_mcenc->enc->state.mbs;
   embs=_mcenc->enc->mbinfo;
-  nmbs=_mcenc->enc->state.frplanes[0].nsbs<<2;
+  nmbs=_mcenc->enc->state.fplanes[0].nsbs<<2;
   for(mbi=0;mbi<nmbs;mbi++)if(mbs[mbi].mode!=OC_MODE_INVALID){
     oc_mb_enc_info *emb;
     emb=embs+mbi;
     oc_mcenc_search(_mcenc,mbi,OC_FRAME_PREV,emb->bmvs,&emb->aerror,
      &emb->aerror4mv);
   }
+  /*Set up the accelerated MV weights for golden frame prediction.*/
+  nframes=_mcenc->enc->state.curframe_num-_mcenc->enc->state.keyframe_num;
+  _mcenc->mvapw1=(ogg_int32_t)(nframes!=1?(nframes<<17)/(nframes-1):0);
+  _mcenc->mvapw2=(ogg_int32_t)(nframes!=2?(nframes<<16)/(nframes-2):0);
 }

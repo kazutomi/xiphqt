@@ -20,15 +20,9 @@ static int oc_tagcompare(const char *_s1,const char *_s2,int _n){
 
 void theora_info_init(theora_info *_info){
   memset(_info,0,sizeof(*_info));
-  /*c->codec_setup=_ogg_calloc(1,sizeof(codec_setup_info));*/
 }
 
 void theora_info_clear(theora_info *_info){
-  /*codec_setup_info *ci=c->codec_setup;
-  if(ci){
-    ClearHuffmanTrees(ci->HuffRoot);
-    _ogg_free(ci);
-  }*/
   memset(_info,0,sizeof(*_info));
 }
 

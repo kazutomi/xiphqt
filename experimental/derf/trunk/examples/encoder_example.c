@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.6 2004/02/24 04:55:10 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.7 2004/03/01 01:49:34 derf Exp $
 
  ********************************************************************/
 
@@ -240,7 +240,7 @@ static void id_file(char *f){
         fprintf(stderr,"Incorrect YUV input file version; YUV4MPEG2 required.\n");
       }
 
-      ret=sscanf(buffer,"MPEG2 W%d H%d F%d:%d I%c A%d:%d",
+      ret=sscanf((char *)buffer,"MPEG2 W%d H%d F%d:%d I%c A%d:%d",
                  &frame_x,&frame_y,&tmp_video_hzn,&tmp_video_hzd,&interlace,
                  &tmp_video_an,&tmp_video_ad);
       if(ret<7){
@@ -353,10 +353,10 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
                             theora_enc_ctx *td,
                             int videoflag){
   /* You'll go to Hell for using static variables */
-  static int          state=-1;
-  static signed char *yuvframe[2];
-  signed char        *line;
-  static int          framenum;
+  static int            state=-1;
+  static unsigned char *yuvframe[2];
+  unsigned char        *line;
+  static int            framenum;
   theora_ycbcr_buffer ycbcr;
   ogg_packet          op;
   int i, e;
@@ -421,7 +421,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
             if(ret!=frame_x) break;
           line+=video_x;
         }
-        /* now get U plane*/
+        /* now get Cb plane*/
         line=yuvframe[i]+(video_x*video_y)
           +(video_x/2)*(frame_y_offset/2)+frame_x_offset/2;
         for(e=0;e<frame_y/2;e++){
@@ -429,7 +429,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
             if(ret!=frame_x/2) break;
           line+=video_x/2;
         }
-        /* and the V plane*/
+        /* and the Cr plane*/
         line=yuvframe[i]+(video_x*video_y*5/4)
                   +(video_x/2)*(frame_y_offset/2)+frame_x_offset/2;
         for(e=0;e<frame_y/2;e++){
@@ -474,7 +474,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       }
 
       {
-        signed char *temp=yuvframe[0];
+        unsigned char *temp=yuvframe[0];
         yuvframe[0]=yuvframe[1];
         yuvframe[1]=temp;
         state--;
@@ -631,14 +631,8 @@ int main(int argc,char *argv[]){
   ti.target_bitrate=video_r;
   ti.quality=video_q;
 
-  ti.dropframes_p=0;
-  ti.keyframe_auto_p=1;
-  ti.keyframe_frequency=64;
   ti.keyframe_frequency_force=64;
-  ti.keyframe_data_target_bitrate=(ogg_uint32_t)(video_r*1.5);
-  ti.keyframe_auto_threshold=80;
-  ti.keyframe_mindistance=8;
-  ti.noise_sensitivity=1;
+  ti.pp_level=1;
 
   ti.chroma_x_decimated=1;
   ti.chroma_y_decimated=1;
@@ -715,7 +709,7 @@ int main(int argc,char *argv[]){
   /* Flush the rest of our headers. This ensures
      the actual data in each stream will start
      on a new page, as per spec. */
-  while(1){
+  for(;;){
     int result = ogg_stream_flush(&to,&og);
       if(result<0){
         /* can't get here */
@@ -727,7 +721,7 @@ int main(int argc,char *argv[]){
     fwrite(og.body,1,og.body_len,outfile);
   }
   if(audio){
-    while(1){
+    for(;;){
       int result=ogg_stream_flush(&vo,&og);
       if(result<0){
         /* can't get here */
@@ -742,7 +736,7 @@ int main(int argc,char *argv[]){
 
   /* setup complete.  Raw processing loop */
   fprintf(stderr,"Compressing....\n");
-  while(1){
+  for(;;){
     ogg_page audiopage;
     ogg_page videopage;
 

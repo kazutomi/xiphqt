@@ -407,7 +407,7 @@ static void build_csf_tables(csf_filter_bank _filters[5][64],
   }
 }
 
-/*The resolution at which the base matrices are sampled over the range of QI
+/*The resolution at which the base matrices are sampled over the range of qi
    values.*/
 #define NQRANGES (3)
 
@@ -560,7 +560,7 @@ int main(void){
     fprintf(stderr,"\n\n");
   }
 #endif
-  /*Check to make sure that the coefficients always decrease as the QI rises.
+  /*Check to make sure that the coefficients always decrease as the qi rises.
     This is assumed by the current encoder.*/
 #if 0
   /*First check to make sure it is not a flaw in the computed matrices
@@ -611,7 +611,7 @@ int main(void){
     printf("\n  {");
     for(qri=0;qri<=NQRANGES;qri++){
       qi=QOFFS[qri];
-      printf("\n    /*QI=%i.*/",qi);
+      printf("\n    /*qi=%i.*/",qi);
       printf("\n    {");
       for(ci=0;ci<64;ci++){
          if(!(ci&7))printf("\n      ");

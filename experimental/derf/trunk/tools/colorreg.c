@@ -230,7 +230,7 @@ double dist2(double _a[3],double _b[3]){
   1.0 is probably a safe lower bound for video.*/
 #define JND     (1.0)
 
-/*Video is normally coded in some form of Y'CbCr color space.
+/*Video is normally coded in some form of YUV color space.
   What exactly the Y, U and V means vary from system to system.
   Y is usually a non-linear (gamma corrected) luminance value, denoted Y' to
    indicate the non-linearity.
@@ -241,7 +241,7 @@ double dist2(double _a[3],double _b[3]){
    difference of two non-linear values.
 
   The reason for decomposing video into a luminance channel and two chrominance
-   channels is that for natural imagery, there is very little correlation
+   channels is that, for natural imagery, there is very little correlation
    between the channels, which yields good compression.
   The reason for using non-linear values is due to the non-linear nature of
    the light receptors in human eyes, which makes Y'CbCr spaces nearly

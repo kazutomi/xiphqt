@@ -318,11 +318,11 @@ typedef struct oc_impmap_region   oc_impmap_region;
    fragments given the Y plane fragments' importances.
   A different version of this function is called depending on the type of
    chroma decimation active.
-  _frinfo:            The encoding fragment info array.
+  _efrag:             The encoding fragment info array.
   _map:               The fragment map for the current macro block.
   _yfrag_imp_weights: The weight for each fragment in the Y plane.*/
 typedef void (*oc_impmap_chroma_frag_weight_func)(
- oc_fragment_enc_info *_frinfo,oc_mb_map _map,
+ oc_fragment_enc_info *_efrag,oc_mb_map _map,
  const float _yfrag_imp_weights[4]);
 
 
@@ -344,7 +344,7 @@ struct oc_impmap_region{
 /*Importance map context information.*/
 struct oc_impmap_ctx{
   /*Segmentation information for the Y plane.
-    Some day we may also wish to segment the U and V planes, or derive a
+    Some day we may also wish to segment the chroma planes, or derive a
      segmentation using all 3 planes at once.*/
   oc_seg_ctx                         seg;
   /*The reciprocal of the maximum region size to count towards a region's
@@ -1983,52 +1983,52 @@ static float oc_impmap_mot_weight(oc_impmap_ctx *_impmap,int _dx,int _dy){
   else return 0;
 }
 
-static void oc_impmap_chroma_frag_weight00(oc_fragment_enc_info *_frinfo,
+static void oc_impmap_chroma_frag_weight00(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
-  _frinfo[_map[1][0]].imp_weight=_yfrag_imp_weights[0];
-  _frinfo[_map[2][0]].imp_weight=_yfrag_imp_weights[0];
-  _frinfo[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
-  _frinfo[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
-  _frinfo[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
-  _frinfo[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
-  _frinfo[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
-  _frinfo[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
+  _efrag[_map[1][0]].imp_weight=_yfrag_imp_weights[0];
+  _efrag[_map[2][0]].imp_weight=_yfrag_imp_weights[0];
+  _efrag[_map[1][1]].imp_weight=_yfrag_imp_weights[1];
+  _efrag[_map[2][1]].imp_weight=_yfrag_imp_weights[1];
+  _efrag[_map[1][2]].imp_weight=_yfrag_imp_weights[2];
+  _efrag[_map[2][2]].imp_weight=_yfrag_imp_weights[2];
+  _efrag[_map[1][3]].imp_weight=_yfrag_imp_weights[3];
+  _efrag[_map[2][3]].imp_weight=_yfrag_imp_weights[3];
 }
 
-static void oc_impmap_chroma_frag_weight01(oc_fragment_enc_info *_frinfo,
+static void oc_impmap_chroma_frag_weight01(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
   float cfrag_imp_weight;
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[1]);
-  _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
-  _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][0]].imp_weight=cfrag_imp_weight;
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[2],_yfrag_imp_weights[3]);
-  _frinfo[_map[1][2]].imp_weight=cfrag_imp_weight;
-  _frinfo[_map[2][2]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[1][2]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][2]].imp_weight=cfrag_imp_weight;
 }
 
-static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_frinfo,
+static void oc_impmap_chroma_frag_weight10(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
   float cfrag_imp_weight;
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],_yfrag_imp_weights[2]);
-  _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
-  _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][0]].imp_weight=cfrag_imp_weight;
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[1],_yfrag_imp_weights[3]);
-  _frinfo[_map[1][1]].imp_weight=cfrag_imp_weight;
-  _frinfo[_map[2][1]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[1][1]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][1]].imp_weight=cfrag_imp_weight;
 }
 
-static void oc_impmap_chroma_frag_weight11(oc_fragment_enc_info *_frinfo,
+static void oc_impmap_chroma_frag_weight11(oc_fragment_enc_info *_efrag,
  oc_mb_map _map,const float _yfrag_imp_weights[4]){
   float cfrag_imp_weight;
   cfrag_imp_weight=OC_MAXF(_yfrag_imp_weights[0],
    OC_MAXF(_yfrag_imp_weights[1],OC_MAXF(_yfrag_imp_weights[2],
    _yfrag_imp_weights[3])));
-  _frinfo[_map[1][0]].imp_weight=cfrag_imp_weight;
-  _frinfo[_map[2][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[1][0]].imp_weight=cfrag_imp_weight;
+  _efrag[_map[2][0]].imp_weight=cfrag_imp_weight;
 }
 
-/*A table of functions used to fill in the U,V plane fragment maps for a macro
-   block for each type of chrominance decimation.
+/*A table of functions used to fill in the chroma plane fragment importance
+   for a macro block for each type of chrominance decimation.
   The importance of a chroma fragment is taken as the maximum importance of
    any co-located luma fragment.*/
 static const oc_impmap_chroma_frag_weight_func
@@ -2067,16 +2067,17 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
     y0=mb->y-_impmap->offset_y;
     for(i=0;i<4;i++){
       oc_fragment          *frag;
-      oc_fragment_enc_info *frinfo;
+      oc_fragment_enc_info *efrag;
       int                   xend;
       int                   yend;
       int                   x;
       int                   y;
       frag=_impmap->enc->state.frags+mb->map[0][i];
-      frinfo=_impmap->enc->frinfo+mb->map[0][i];
+      efrag=_impmap->enc->frinfo+mb->map[0][i];
       xend=x0+FRAG_DX[i]+8;
       yend=y0+FRAG_DY[i]+8;
       frag_imps[i]=0;
+      if(frag->invalid)continue;
       if(frag->border==NULL){
         for(y=y0+FRAG_DY[i];y<yend;y++)for(x=x0+FRAG_DX[i];x<xend;x++){
           frag_imps[i]=OC_MAXF(frag_imps[i],
@@ -2096,7 +2097,7 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
       }
       frag_imps[i]+=mot_imp;
       ret+=frag_imps[i];
-      frinfo->imp_weight=frag_imp_weights[i]=
+      efrag->imp_weight=frag_imp_weights[i]=
        (2*frag_imps[i]+_impmap->imp_avg)/(frag_imps[i]+2*_impmap->imp_avg);
     }
     (*_impmap->chroma_frag_weight)(_impmap->enc->frinfo,mb->map,
@@ -2167,7 +2168,7 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   nmbs=_impmap->enc->state.nmbs;
   imp_sum=0;
   for(mbi=0;mbi<nmbs;mbi++)imp_sum+=oc_impmap_mb_weight(_impmap,mbi);
-  _impmap->imp_avg=imp_sum/_impmap->enc->state.frplanes[0].nfrags;
+  _impmap->imp_avg=imp_sum/_impmap->enc->state.fplanes[0].nfrags;
 #if defined(OC_DUMP_IMAGES)
   /*Dump a PNG of the importance maps.*/
   {
@@ -2184,7 +2185,7 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
       sprintf(fname,"%08iim%i.png",(int)_impmap->enc->state.curframe_num,pli);
       fp=fopen(fname,"wb");
       if(fp==NULL)return;
-      fplane=_impmap->enc->state.frplanes+pli;
+      fplane=_impmap->enc->state.fplanes+pli;
       image=(png_bytep *)oc_malloc_2d(fplane->nvfrags,fplane->nhfrags,
        sizeof(image[0][0]));
       png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);

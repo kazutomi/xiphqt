@@ -11,7 +11,7 @@
 static void oc_pack_octets(oggpack_buffer *_opb,const char *_buf,int _len){
   int i;
   for(i=0;i<_len;i++)oggpackB_write(_opb,*_buf++,8);
-};
+}
 
 
 
@@ -36,7 +36,8 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       oggpackB_write(&_enc->opb,_enc->state.info.frame_width,24);
       oggpackB_write(&_enc->opb,_enc->state.info.frame_height,24);
       oggpackB_write(&_enc->opb,_enc->state.info.offset_x,8);
-      oggpackB_write(&_enc->opb,_enc->state.info.offset_y,8);
+      oggpackB_write(&_enc->opb,_enc->state.info.height-
+       _enc->state.info.frame_height-_enc->state.info.offset_y,8);
       oggpackB_write(&_enc->opb,_enc->state.info.fps_numerator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.fps_denominator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.aspect_numerator,24);
@@ -44,12 +45,11 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       oggpackB_write(&_enc->opb,_enc->state.info.colorspace,8);
       oggpackB_write(&_enc->opb,_enc->state.info.target_bitrate,24);
       oggpackB_write(&_enc->opb,_enc->state.info.quality,6);
-#if defined(OC_COMPOSITE_GRANPOS)
-      /*Describe the limit between keyframes needed to decode granuleposes.*/
-      oggpackB_write(&_enc->opb,_enc->state.keyframe_granule_shift,5);
-#else
-      oggpackB_write(&_enc->opb,_enc->state.0,5);
-#endif
+      oggpackB_write(&_enc->opb,_enc->state.info.keyframe_granule_shift,5);
+      oggpackB_write(&_enc->opb,!_enc->state.info.chroma_y_decimated,1);
+      oggpackB_write(&_enc->opb,!_enc->state.info.chroma_x_decimated,1);
+      /*Spare configuration bits.*/
+      oggpackB_write(&_enc->opb,0,3);
       _op->b_o_s=1;
     }break;
     /*Comment header.*/

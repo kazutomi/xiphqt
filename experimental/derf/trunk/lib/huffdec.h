@@ -33,7 +33,7 @@ struct oc_huff_node{
 int oc_huff_trees_unpack(oggpack_buffer *_opb,
  oc_huff_node *_nodes[OC_NHUFFMAN_TABLES]);
 void oc_huff_trees_copy(oc_huff_node *_dst[OC_NHUFFMAN_TABLES],
- const oc_huff_node *_src[OC_NHUFFMAN_TABLES]);
+ const oc_huff_node *const _src[OC_NHUFFMAN_TABLES]);
 void oc_huff_trees_clear(oc_huff_node *_nodes[OC_NHUFFMAN_TABLES]);
 int oc_huff_token_decode(oggpack_buffer *_opb,const oc_huff_node *_node);
 

@@ -14,7 +14,7 @@
 /*The mode orderings for the various mode coding schemes.
   Scheme 0 uses a custom alphabet, which is not stored in this table.*/
 static const int OC_MODE_SCHEMES[7][OC_NMODES]={
-  /*Last Mv dominates.*/
+  /*Last MV dominates.*/
   /*L P M N I G GM 4*/
   {4,3,2,0,1,7,5,6},
   /*L P N M I G GM 4*/
@@ -164,7 +164,7 @@ int oc_sad8_halfpel_border(const unsigned char *_cur,int _cur_stride,
   _code_nbits:   The total number of bits in the bit pattern encoded for each
                  interval.
   Return: The number of bits written.*/
-static int oc_pack_run(oggpack_buffer *_opb,int _value,const int _val_min[],
+static int oc_run_pack(oggpack_buffer *_opb,int _value,const int _val_min[],
  const int _code_prefix[],const int _code_nbits[]){
   int i;
   for(i=0;_value>=_val_min[i+1];i++);
@@ -177,7 +177,7 @@ static int oc_pack_run(oggpack_buffer *_opb,int _value,const int _val_min[],
   _opb:   The buffer to write to.
   _value: The length of the run.
           This must be positive, and no more than 4129.*/
-static int oc_pack_sb_run(oggpack_buffer *_opb,int _value){
+static int oc_sb_run_pack(oggpack_buffer *_opb,int _value){
   /*Coding scheme:
        Codeword            Run Length
      0                       1
@@ -190,7 +190,7 @@ static int oc_pack_sb_run(oggpack_buffer *_opb,int _value){
   static const int VAL_MIN[8]={1,2,4,6,10,18,34,4130};
   static const int CODE_PREFIX[7]={0,4,0xC,0x38,0xF0,0x3E0,0x3F000};
   static const int CODE_NBITS[7]={1,3,4,6,8,10,18};
-  return oc_pack_run(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
+  return oc_run_pack(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
 }
 
 /*Writes the bit pattern for the run length of a block run to the given
@@ -198,7 +198,7 @@ static int oc_pack_sb_run(oggpack_buffer *_opb,int _value){
   _opb:   The buffer to write to.
   _value: The length of the run.
           This must be positive, and no more than 30.*/
-static int oc_pack_block_run(oggpack_buffer *_opb,int _value){
+static int oc_block_run_pack(oggpack_buffer *_opb,int _value){
   /*Coding scheme:
      Codeword             Run Length
      0x                      1-2
@@ -210,7 +210,7 @@ static int oc_pack_block_run(oggpack_buffer *_opb,int _value){
   static const int VAL_MIN[7]={1,3,5,7,11,15,31};
   static const int CODE_PREFIX[6]={0,4,0xC,0x38,0x78,0x1F0};
   static const int CODE_NBITS[6]={2,3,4,6,7,9};
-  return oc_pack_run(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
+  return oc_run_pack(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
 }
 
 
@@ -222,12 +222,25 @@ static int oc_pack_block_run(oggpack_buffer *_opb,int _value){
   There are 8 possible schemes.
   Schemes 0-6 use a highly unbalanced Huffman code to code each of the modes.
   The same set of Huffman codes is used for each of these 7 schemes, but the
-   code associated with each mode varies.
+   mode assigned to each code varies.
   Schemes 1-6 have a fixed mapping from Huffman code to MB mode, while scheme
    0 writes a custom mapping to the bitstream before all the modes.
   Finally, scheme 7 just encodes each mode directly in 3 bits.
   Be warned that the number assigned to each mode is slightly different in the
-   bitstream than in this implementation, so a translation needs to be done.*/
+   bitstream than in this implementation, so a translation needs to be done.
+   
+  Mode name:                 Source-code index;  Bit-stream index:
+  OC_MODE_INTRA              0                   1
+  OC_MODE_INTER_NOMV         1                   0
+  OC_MODE_INTER_MV           2                   2
+  OC_MODE_INTER_MV_LAST      3                   3
+  OC_MODE_INTER_MV_LAST2     4                   4
+  OC_MODE_INTER_MV_FOUR      5                   6
+  OC_MODE_GOLDEN_NOMV        6                   7
+  OC_MODE_GOLDEN_MV          7                   5
+  
+  The bit stream indices come from the constants assigned to each mode in the
+   original VP3 source.*/
 static void oc_mode_scheme_chooser_init(oc_mode_scheme_chooser *_chooser){
   int msi;
   _chooser->mode_ranks[0]=_chooser->scheme0_ranks;
@@ -480,10 +493,10 @@ static void oc_enc_frame_header_pack(oc_enc_ctx *_enc){
   oggpackB_write(&_enc->opb,0,1);
   /*Write out the frame type (I or P).*/
   oggpackB_write(&_enc->opb,_enc->state.frame_type,1);
-  /*Write out the current QI.*/
+  /*Write out the current qi.*/
   oggpackB_write(&_enc->opb,_enc->state.qi,6);
-  /*TODO: Support multiple QIs.
-    For now we mark the end of the QI list here.*/
+  /*TODO: Support multiple qi's.
+    For now we mark the end of the qi list here.*/
   oggpackB_write(&_enc->opb,0,1);
   if(_enc->state.frame_type==OC_INTRA_FRAME){
     /*Keyframes have 3 unused configuration bits, holdovers from VP3 days.
@@ -508,12 +521,8 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
   sb=sb_end=_enc->state.sbs;
   for(pli=0;pli<3;pli++){
     const oc_fragment_plane *fplane;
-    int                      ystride;
-    int                      prev_refi;
-    fplane=_enc->state.frplanes+pli;
+    fplane=_enc->state.fplanes+pli;
     sb_end+=fplane->nsbs;
-    prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
-    ystride=_enc->state.ref_frame_bufs[prev_refi][pli].stride;
     for(;sb<sb_end;sb++){
       int mbi;
       for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
@@ -532,13 +541,13 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
              so excludes the DC component.
             TODO: Separate this out somewhere more useful.*/
           {
-            oc_fragment_enc_info *frinfo;
+            oc_fragment_enc_info *efrag;
             int                   ci;
             int                   eerror;
-            frinfo=_enc->frinfo+fragi;
+            efrag=_enc->frinfo+fragi;
             eerror=0;
-            for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
-            frinfo->eerror=eerror;
+            for(ci=1;ci<64;ci++)eerror+=abs(efrag->dct_coeffs[ci]);
+            efrag->eerror=eerror;
           }
 #endif
         }
@@ -759,11 +768,11 @@ static const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
    occurs in image order, not in the Hilbert-curve order, unlike the rest of
    the encoding process.*/
 static void oc_enc_quant_dc(oc_enc_ctx *_enc){
-  oc_fragment_enc_info *frinfo;
+  oc_fragment_enc_info *efrag;
   oc_fragment          *frag;
   int                   pli;
   frag=_enc->state.frags;
-  frinfo=_enc->frinfo;
+  efrag=_enc->frinfo;
   for(pli=0;pli<3;pli++){
     oc_fragment_plane *fplane;
     unsigned           fquant;
@@ -774,9 +783,9 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
     pred_last[OC_FRAME_GOLD]=0;
     pred_last[OC_FRAME_PREV]=0;
     pred_last[OC_FRAME_SELF]=0;
-    fplane=_enc->state.frplanes+pli;
+    fplane=_enc->state.fplanes+pli;
     for(fragy=0;fragy<fplane->nvfrags;fragy++){
-      for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++,frinfo++){
+      for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++,efrag++){
         int qc_pred;
         int qc;
         if(!frag->coded)continue;
@@ -798,9 +807,9 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
             For more details, see oc_enc_frag_quant_tokenize().*/
           qti=frag->mbmode!=OC_MODE_INTRA;
           iquant=_enc->state.dequant_tables[qti][pli][0][_enc->state.qi][0];
-          c=frinfo->dct_coeffs[0]-qc_pred*iquant;
+          c=efrag->dct_coeffs[0]-qc_pred*iquant;
           c_abs=abs(c);
-          if(c_abs<=frinfo->tols[0])qc=0;
+          if(c_abs<=efrag->tols[0])qc=0;
           else{
             int qc_signed[2];
             int qc_max;
@@ -814,7 +823,7 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
             qc_max=(ogg_int32_t)c_abs*fquant+OC_FQUANT_ROUND>>OC_FQUANT_SHIFT;
             c_sign=c<0;
             c_recon=(qc_max-1)*iquant;
-            c_min=OC_MAXI(0,c_abs-frinfo->tols[0]);
+            c_min=OC_MAXI(0,c_abs-efrag->tols[0]);
             for(qc_min=qc_max;c_recon>=c_min;qc_min--)c_recon-=iquant;
             if(qc_min<3+OC_NDCT_VAL_CAT2_SIZE)qc=qc_min;
             else{
@@ -831,18 +840,18 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
           }
         }
         pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc=qc+qc_pred;
-        frinfo->dct_coeffs[0]=(ogg_int16_t)qc;
+        efrag->dct_coeffs[0]=(ogg_int16_t)qc;
       }
     }
   }
 }
 
 /*Quantize and tokenize the given fragment.
-  _frinfo: The encoder information for the fragment to quantize.
+  _efrag:  The encoder information for the fragment to quantize.
   _fquant: The forward quantization matrix to use.
   _iquant: The inverse quantization matrix to use.*/
 static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
- oc_fragment_enc_info *_frinfo,const ogg_uint16_t _fquant[64],
+ oc_fragment_enc_info *_efrag,const ogg_uint16_t _fquant[64],
  const ogg_uint16_t _iquant[64]){
   int zzi;
   int zrun;
@@ -853,10 +862,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
   int tli;
   /*The DC coefficient is already quantized (it had to be for DC prediction).
     Here we just tokenize it.*/
-  if(_frinfo->dct_coeffs[0]){
-    qc=abs(_frinfo->dct_coeffs[0]);
-    c_sign=_frinfo->dct_coeffs[0]<0;
-    _enc->dct_tok_fragi[0][_enc->ndct_tokens[0]]=_frinfo-_enc->frinfo;
+  if(_efrag->dct_coeffs[0]){
+    qc=abs(_efrag->dct_coeffs[0]);
+    c_sign=_efrag->dct_coeffs[0]<0;
     switch(qc){
       case 1:{
         _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
@@ -898,14 +906,14 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
     int c_recon;
     int ci;
     ci=OC_FZIG_ZAG[zzi];
-    c_abs=abs(_frinfo->dct_coeffs[ci]);
+    c_abs=abs(_efrag->dct_coeffs[ci]);
     /*Best case: we can encode this as a zero.*/
-    if(c_abs<=_frinfo->tols[ci]){
+    if(c_abs<=_efrag->tols[ci]){
       zrun++;
-      _frinfo->dct_coeffs[ci]=0;
+      _efrag->dct_coeffs[ci]=0;
     }
     else{
-      c_sign=_frinfo->dct_coeffs[ci]<0;
+      c_sign=_efrag->dct_coeffs[ci]<0;
       /*qc_max is the most accurate quantized value.
         This is the largest possible (absolute) value we will use.*/
       qc_max=(ogg_int32_t)c_abs*_fquant[ci]+OC_FQUANT_ROUND>>OC_FQUANT_SHIFT;
@@ -919,7 +927,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
         Is this faster?
         Who knows.*/
       c_recon=(qc_max-1)*_iquant[ci];
-      c_min=c_abs-_frinfo->tols[ci];
+      c_min=c_abs-_efrag->tols[ci];
       for(qc_min=qc_max;c_recon>=c_min;qc_min--)c_recon-=_iquant[ci];
       /*We now proceed to find a token that is as close to qc_max as possible,
          but does not use any more bits than would be required for qc_min.
@@ -930,7 +938,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
          tolerances; the quantizer value has a minimum it cannot go below).*/
       if(qc_min==0){
         zrun++;
-        _frinfo->dct_coeffs[ci]=0;
+        _efrag->dct_coeffs[ci]=0;
       }
       else{
         /*If we have an outstanding zero run, code it now.*/
@@ -938,8 +946,6 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
           /*The zero run tokens appear on the list for the first zero in the
              run.*/
           tli=zzi-zrun;
-          _enc->dct_tok_fragi[tli][_enc->ndct_tokens[tli]]=
-           _frinfo-_enc->frinfo;
           /*Second assumption: coding a combined run/value token always uses
              fewer bits than coding them separately.*/
           /*CAT1 run/value tokens: the value is 1.*/
@@ -964,7 +970,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
             }
             qc_signed[0]=1;
             qc_signed[1]=-1;
-            _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
+            _efrag->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             zrun=0;
             /*Skip coding the DCT value below.*/
             continue;
@@ -987,7 +993,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
             }
             qc_signed[0]=qc_min;
             qc_signed[1]=-qc_min;
-            _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
+            _efrag->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             zrun=0;
             /*Skip coding the DCT value below.*/
             continue;
@@ -1015,17 +1021,16 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
         }
         /*No zero run, or the run and the qc value are being coded
            separately.*/
-        _enc->dct_tok_fragi[zzi][_enc->ndct_tokens[zzi]]=_frinfo-_enc->frinfo;
         switch(qc_min){
           case 1:{
             _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
              (unsigned char)(OC_ONE_TOKEN+c_sign);
-            _frinfo->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<1)+1);
+            _efrag->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<1)+1);
           }break;
           case 2:{
             _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
              (unsigned char)(OC_TWO_TOKEN+c_sign);
-            _frinfo->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<2)+2);
+            _efrag->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<2)+2);
           }break;
           default:{
             if(qc_min-3<OC_NDCT_VAL_CAT2_SIZE){
@@ -1035,7 +1040,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
                (ogg_uint16_t)c_sign;
               qc_signed[0]=qc_min;
               qc_signed[1]=-qc_min;
-              _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
+              _efrag->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             }
             else{
               qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
@@ -1051,7 +1056,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
               qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
               qc_signed[0]=qc;
               qc_signed[1]=-qc;
-              _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
+              _efrag->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
               _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
                (unsigned char)(OC_DCT_VAL_CAT3+cati);
               _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=(ogg_uint16_t)
@@ -1119,7 +1124,6 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }
       /*Start a new EOB run.*/
       default:{
-        _enc->dct_tok_fragi[tli][_enc->ndct_tokens[tli]]=_frinfo-_enc->frinfo;
         _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=OC_DCT_EOB1_TOKEN;
       }
     }
@@ -1149,17 +1153,17 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
       fragi=*coded_fragi;
       frag=_enc->state.frags+fragi;
       if(frag->coded){
-        oc_fragment_enc_info *frinfo;
+        oc_fragment_enc_info *efrag;
         int                   qti;
         int                   nnzc;
         qti=frag->mbmode!=OC_MODE_INTRA;
-        frinfo=_enc->frinfo+fragi;
-        nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,
+        efrag=_enc->frinfo+fragi;
+        nnzc=oc_enc_frag_quant_tokenize(_enc,efrag,
          _enc->enquant_tables[qti][pli][0][_enc->state.qi],
          _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
         /*While we're here and things are in cache, reconstruct the quantized
            fragment.*/
-        oc_state_frag_recon(&_enc->state,frag,pli,frinfo->dct_coeffs,nnzc,
+        oc_state_frag_recon(&_enc->state,frag,pli,efrag->dct_coeffs,nnzc,
          _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
       }
     }
@@ -1301,13 +1305,15 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
     if(old_tok2>=OC_NDCT_EOB_TOKEN_MAX)continue;
     /*Search for a previous coefficient that has any tokens at all.*/
     old_tok1=OC_NDCT_EOB_TOKEN_MAX;
-    for(zzj=zzi;zzj-->0;){
+    zzj=zzi-1;
+    do{
       toki=_enc->ndct_tokens[zzj]-1;
       if(toki>=_enc->dct_token_offs[0][zzj]){
         old_tok1=_enc->dct_tokens[zzj][toki];
         break;
       }
     }
+    while(zzj-->0);
     /*Ensure its last token was an EOB run.*/
     if(old_tok1>=OC_NDCT_EOB_TOKEN_MAX)continue;
     /*Pull off the associated extra bits, if any, and decode the runs.*/
@@ -1427,7 +1433,7 @@ static void oc_enc_pack_huff_group(oc_enc_ctx *_enc,int _zzi_start,
   }
 }
 
-static void oc_enc_pack_residual_tokens(oc_enc_ctx *_enc){
+static void oc_enc_residual_tokens_pack(oc_enc_ctx *_enc){
   static const int OC_HUFF_LIST_MIN[5]={0,1,6,15,28};
   static const int OC_HUFF_LIST_MAX[5]={1,6,15,28,64};
   int bits_y[16];
@@ -1489,7 +1495,7 @@ static int oc_enc_keyframe(oc_enc_ctx *_enc){
   oc_enc_residual_tokenize(_enc);
   oggpackB_reset(&_enc->opb);
   oc_enc_frame_header_pack(_enc);
-  oc_enc_pack_residual_tokens(_enc);
+  oc_enc_residual_tokens_pack(_enc);
   /*Success: Mark the packet as ready to be flushed.*/
   _enc->packet_state=OC_PACKET_READY;
   return 0;
@@ -1503,17 +1509,20 @@ static int oc_enc_keyframe(oc_enc_ctx *_enc){
    each run.
   Return: The number of bits written.*/
 static int oc_enc_pack_partial_sb_flags(oc_enc_ctx *_enc){
-  unsigned flag;
-  int      run_count;
-  int      sbi;
-  int      ret;
+  oc_sb    *sb;
+  oc_sb    *sb_end;
+  unsigned  flag;
+  int       run_count;
+  int       ret;
   /*Write the list of partially coded super block flags.*/
   flag=_enc->state.sbs[0].coded_partially;
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
   ret=1;
-  for(sbi=0;sbi<_enc->state.nsbs;){
-    for(run_count=0;sbi<_enc->state.nsbs;sbi++){
-      if(_enc->state.sbs[sbi].coded_partially!=flag)break;
+  sb=_enc->state.sbs;
+  sb_end=sb+_enc->state.nsbs;
+  while(sb<sb_end){
+    for(run_count=0;sb<sb_end;sb++){
+      if(sb->coded_partially!=flag)break;
       run_count++;
     }
     /*The maximum run length we can encode is 4129.
@@ -1524,17 +1533,17 @@ static int oc_enc_pack_partial_sb_flags(oc_enc_ctx *_enc){
        invalid code for longer runs.*/
     /*First, encode runs until we have 4129 or fewer sbs left.*/
     while(run_count>4129){
-      ret+=oc_pack_sb_run(&_enc->opb_coded_flags,4129);
+      ret+=oc_sb_run_pack(&_enc->opb_coded_flags,4129);
       run_count-=4129;
       oggpackB_write(&_enc->opb_coded_flags,flag,1);
       ret++;
     }
     /*Encode the last run.*/
-    ret+=oc_pack_sb_run(&_enc->opb_coded_flags,run_count);
+    ret+=oc_sb_run_pack(&_enc->opb_coded_flags,run_count);
     flag=!flag;
     /*If there are more sbs to come, and we had a run of 4129 exactly,
        encode the flipped bit.*/
-    if(run_count==4129&&sbi+1<_enc->state.nsbs){
+    if(run_count==4129&&sb<sb_end){
       oggpackB_write(&_enc->opb_coded_flags,flag,1);
       ret++;
     }
@@ -1548,23 +1557,26 @@ static int oc_enc_pack_partial_sb_flags(oc_enc_ctx *_enc){
    each run.
   Return: The number of bits written.*/
 static int oc_enc_pack_coded_sb_flags(oc_enc_ctx *_enc){
-  unsigned flag;
-  int      run_count;
-  int      sbi;
-  int      ret;
+  oc_sb    *sb;
+  oc_sb    *sb_end;
+  unsigned  flag;
+  int       run_count;
+  int       ret;
   /*Write the list of coded/not coded super block flags.*/
   /*Skip partially coded super blocks: their flags have already been coded.*/
-  for(sbi=0;;sbi++){
-    if(sbi>=_enc->state.nsbs)return 0;
-    if(!_enc->state.sbs[sbi].coded_partially)break;
+  sb=_enc->state.sbs;
+  sb_end=sb+_enc->state.nsbs;
+  for(;;sb++){
+    if(sb>=sb_end)return 0;
+    if(sb->coded_partially)break;
   }
-  flag=_enc->state.sbs[sbi].coded_fully;
+  flag=sb->coded_fully;
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
   ret=1;
-  for(sbi=0;sbi<_enc->state.nsbs;){
-    for(run_count=0;sbi<_enc->state.nsbs;sbi++){
-      if(_enc->state.sbs[sbi].coded_partially)continue;
-      if(_enc->state.sbs[sbi].coded_fully!=flag)break;
+  while(sb<sb_end){
+    for(run_count=0;sb<sb_end;sb++){
+      if(sb->coded_partially)continue;
+      if(sb->coded_fully!=flag)break;
       run_count++;
     }
     /*The maximum run length we can encode is 4129.
@@ -1575,15 +1587,15 @@ static int oc_enc_pack_coded_sb_flags(oc_enc_ctx *_enc){
        invalid code for longer runs.*/
     /*First, encode runs until we have 4129 or fewer sbs left.*/
     while(run_count>4129){
-      ret+=oc_pack_sb_run(&_enc->opb_coded_flags,4129);
+      ret+=oc_sb_run_pack(&_enc->opb_coded_flags,4129);
       run_count-=4129;
       oggpackB_write(&_enc->opb_coded_flags,flag,1);
       ret++;
     }
     /*Encode the last run.*/
-    ret+=oc_pack_sb_run(&_enc->opb_coded_flags,run_count);
+    ret+=oc_sb_run_pack(&_enc->opb_coded_flags,run_count);
     flag=!flag;
-    if(run_count==4129&&sbi+1<_enc->state.nsbs){
+    if(run_count==4129&&sb<sb_end){
       oggpackB_write(&_enc->opb_coded_flags,flag,1);
       ret++;
     }
@@ -1601,13 +1613,13 @@ static int oc_enc_pack_coded_block_flags(oc_enc_ctx *_enc){
   int run_count;
   int bli;
   int ret;
-  if(_enc->state.nblock_coded_flags<=0)return 0;
-  flag=_enc->state.block_coded_flags[0];
+  if(_enc->nblock_coded_flags<=0)return 0;
+  flag=_enc->block_coded_flags[0];
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
   ret=1;
-  for(bli=0;bli<_enc->state.nblock_coded_flags;){
-    for(run_count=0;bli<_enc->state.nblock_coded_flags;bli++){
-      if(_enc->state.block_coded_flags[bli]!=flag)break;
+  for(bli=0;bli<_enc->nblock_coded_flags;){
+    for(run_count=0;bli<_enc->nblock_coded_flags;bli++){
+      if(_enc->block_coded_flags[bli]!=flag)break;
       run_count++;
     }
     /*Since each super block must have a mix of coded and not coded blocks to
@@ -1616,7 +1628,7 @@ static int oc_enc_pack_coded_block_flags(oc_enc_ctx *_enc){
        or its complement).
       This avoids the nastiness of the VLC not letting us encode runs long
        enough like above.*/
-    ret+=oc_pack_block_run(&_enc->opb_coded_flags,run_count);
+    ret+=oc_block_run_pack(&_enc->opb_coded_flags,run_count);
     flag=!flag;
   }
   return ret;
@@ -1638,15 +1650,14 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
   int    prev_ncoded_fragis;
   int    nuncoded_fragis;
   int    prev_nuncoded_fragis;
-  _enc->state.nblock_coded_flags=bli=0;
-  _enc->state.uncoded_fragis=_enc->state.coded_fragis+_enc->state.nfrags;
+  _enc->nblock_coded_flags=bli=0;
   prev_ncoded_fragis=ncoded_fragis=prev_nuncoded_fragis=nuncoded_fragis=0;
   sb=sb_end=_enc->state.sbs;
   for(pli=0;pli<3;pli++){
     const oc_fragment_plane *fplane;
     int                      ystride;
     int                      prev_refi;
-    fplane=_enc->state.frplanes+pli;
+    fplane=_enc->state.fplanes+pli;
     sb_end+=fplane->nsbs;
     prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
     ystride=_enc->state.ref_frame_bufs[prev_refi][pli].stride;
@@ -1667,7 +1678,7 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
             *(_enc->state.uncoded_fragis-++nuncoded_fragis)=fragi;
           }
           else{
-            oc_fragment_enc_info *frinfo;
+            oc_fragment_enc_info *efrag;
             ogg_int16_t           dct_buf[64];
             int                   ci;
             /*Check to see if the fragment can be skipped.
@@ -1676,9 +1687,9 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
               A single skipped fragment could take up to 34 bits to encode its
                location in the RLE scheme Theora uses */
             oc_enc_frag_intra_fdct(_enc,frag,dct_buf,ystride,prev_refi);
-            frinfo=_enc->frinfo+fragi;
+            efrag=_enc->frinfo+fragi;
             for(ci=0;ci<64;ci++){
-              if(abs(dct_buf[ci]-frinfo->dct_coeffs[ci])>frinfo->tols[ci])break;
+              if(abs(dct_buf[ci]-efrag->dct_coeffs[ci])>efrag->tols[ci])break;
             }
             if(ci>=64){
               frag->coded=0;
@@ -1692,19 +1703,19 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
           flag=frag->coded;
           sb->coded_fully&=flag;
           sb->coded_partially|=flag;
-          _enc->state.block_coded_flags[bli++]=flag;
+          _enc->block_coded_flags[bli++]=(char)flag;
         }
       }
       /*If this is a partially coded super block, keep the entries just added
          to the code block flag list.*/
       if(!sb->coded_fully&&sb->coded_partially){
-        _enc->state.nblock_coded_flags=bli;
+        _enc->nblock_coded_flags=bli;
       }
       /*Otherwise, discard these entries from the list, as they are
          implicit.*/
       else{
         sb->coded_partially=0;
-        bli=_enc->state.nblock_coded_flags;
+        bli=_enc->nblock_coded_flags;
       }
     }
     _enc->state.ncoded_fragis[pli]=ncoded_fragis-prev_ncoded_fragis;
@@ -1722,10 +1733,11 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
   Return: The frame type to encode with: OC_INTER_FRAME or OC_INTRA_FRAME.*/
 static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   oc_set_chroma_mvs_func  set_chroma_mvs;
-  oc_fragment_enc_info   *frinfo;
+  oc_fragment_enc_info   *efrag;
   oc_fragment            *frag;
   oc_mb                  *mb;
   oc_mb_enc_info         *mbinfo;
+  char                    last_mv[2][2];
   int                    *uncoded_fragi;
   int                    *uncoded_fragi_end;
   int                     pli;
@@ -1733,7 +1745,6 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   int                     fragi;
   int                     ci;
   int                     nmbs;
-  int                     last_mv[2][2];
   int                     mvbitsa;
   int                     mvbitsb;
   int                     intra_bits;
@@ -1744,19 +1755,19 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   memset(last_mv,0,sizeof(last_mv));
   mbinfo=_enc->mbinfo;
   mvbitsa=mvbitsb=0;
-  /*TODO: Plus 7 for each additional QI.*/
+  /*TODO: Plus 7 for each additional qi.*/
   intra_bits=12;
   inter_bits=9;
   _enc->state.ncoded_mbis=0;
   for(mbi=0;mbi<nmbs;mbi++){
     mb=_enc->state.mbs+mbi;
     if(mb->mode!=OC_MODE_INVALID){
-      oc_fragment_enc_info *frinfo;
+      oc_fragment_enc_info *efrag;
+      char                  cbmvs[4][2];
+      char                  mbmv[2];
       int                   err[OC_NMODES][12];
       int                   bits[OC_NMODES];
       int                   coded[12];
-      int                   cbmvs[4][2];
-      int                   mbmv[2];
       int                   ncoded;
       int                   mapii;
       int                   mapi;
@@ -1768,11 +1779,13 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       int                   bi;
       mbinfo=_enc->mbinfo+mbi;
       /*Search for at least one coded fragment.*/
-      for(mapii=0;mapii<OC_MB_MAP_NIDXS[_enc->state.chroma_type];mapii++){
+      mapii=0;
+      do{
         mapi=OC_MB_MAP_IDXS[_enc->state.chroma_type][mapii];
         fragi=mb->map[mapi>>2][mapi&3];
         if(fragi>=0&&_enc->state.frags[fragi].coded)break;
       }
+      while(++mapii<OC_MB_MAP_NIDXS[_enc->state.chroma_type]);
       /*If we don't find any, mark this MB not coded and move on.*/
       if(mapii>=OC_MB_MAP_NIDXS[_enc->state.chroma_type]){
         mb->mode=OC_MODE_NOT_CODED;
@@ -1802,14 +1815,14 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           pli=mapi>>2;
           fragi=mb->map[pli][mapi&3];
           frag=_enc->state.frags+fragi;
-          frinfo=_enc->frinfo+fragi;
+          efrag=_enc->frinfo+fragi;
           /*Set the MB mode and MV in the fragment.*/
           frag->mbmode=OC_MODE_INTER_NOMV;
           frag->mv[0]=frag->mv[1]=0;
           /*Calculate the bitrate estimates.*/
           err[OC_MODE_INTRA][mapi]=0;
           for(ci=1;ci<64;ci++){
-            err[OC_MODE_INTRA][mapi]+=abs(frinfo->dct_coeffs[ci]);
+            err[OC_MODE_INTRA][mapi]+=abs(efrag->dct_coeffs[ci]);
           }
           err[OC_MODE_INTER_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,0,0,pli,
            OC_FRAME_PREV);
@@ -1833,7 +1846,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           mbinfo->bmvs[mapi][0]=mbinfo->bmvs[mapi][1]=0;
         }
       }
-      (*set_chroma_mvs)(cbmvs,mbmv,mbinfo->bmvs);
+      (*set_chroma_mvs)(cbmvs,mbinfo->bmvs);
       /*Do a MV search against the golden frame.*/
       oc_mcenc_search_1mv(_enc->mcenc,mb-_enc->state.mbs,OC_FRAME_GOLD);
       /*We are now ready to do mode decision for this macro block.
@@ -1881,10 +1894,10 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         bi=mapi&3;
         fragi=mb->map[pli][bi];
         frag=_enc->state.frags+fragi;
-        frinfo=_enc->frinfo+fragi;
+        efrag=_enc->frinfo+fragi;
         err[OC_MODE_INTRA][mapi]=0;
         for(ci=1;ci<64;ci++){
-          err[OC_MODE_INTRA][mapi]+=abs(frinfo->dct_coeffs[ci]);
+          err[OC_MODE_INTRA][mapi]+=abs(efrag->dct_coeffs[ci]);
         }
         err[OC_MODE_INTER_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,0,0,pli,
          OC_FRAME_PREV);
@@ -1903,9 +1916,9 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           err[OC_MODE_INTER_MV_FOUR][mapi]=oc_enc_frag_sad(_enc,frag,
            cbmvs[bi][0],cbmvs[bi][1],pli,OC_FRAME_PREV);
         }
-        err[OC_MODE_INTER_GOLDEN_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,
+        err[OC_MODE_GOLDEN_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,
          0,0,pli,OC_FRAME_GOLD);
-        err[OC_MODE_INTER_GOLDEN_MV][mapi]=oc_enc_frag_sad(_enc,frag,
+        err[OC_MODE_GOLDEN_MV][mapi]=oc_enc_frag_sad(_enc,frag,
          mbinfo->mvs[0][OC_FRAME_GOLD][0],mbinfo->mvs[0][OC_FRAME_GOLD][1],
          pli,OC_FRAME_GOLD);
         /*Using these distortion values, estimate the number of bits needed to
@@ -1947,7 +1960,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
          simple, this can just be done inline.*/
       bits[OC_MODE_INTER_MV]+=OC_MINI(mvbitsa+mbpmvbitsa,mvbitsb+12)-
        OC_MINI(mvbitsa,mvbitsb);
-      bits[OC_MODE_INTER_GOLDEN_MV]+=OC_MINI(mvbitsa+mbgmvbitsa,mvbitsb+12)-
+      bits[OC_MODE_GOLDEN_MV]+=OC_MINI(mvbitsa+mbgmvbitsa,mvbitsb+12)-
        OC_MINI(mvbitsa,mvbitsb);
       /*TODO: Handle the case when less than 4 luma blocks are being coded.*/
       bits[OC_MODE_INTER_MV_FOUR]+=OC_MINI(mvbitsa+mb4mvbitsa,mvbitsb+48)-
@@ -1962,8 +1975,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       for(codedi=0;codedi<ncoded;codedi++){
         mapi=coded[codedi];
         fragi=mb->map[mapi>>2][mapi&3];
-        frinfo=_enc->frinfo+fragi;
-        frinfo->eerror=err[mb->mode][mapi];
+        efrag=_enc->frinfo+fragi;
+        efrag->eerror=err[mb->mode][mapi];
       }
 #endif
       inter_bits+=bits[mb->mode];
@@ -1990,6 +2003,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           last_mv[0][1]=mbmv[1];
         }break;
         case OC_MODE_INTER_MV_FOUR:{
+          /*TODO: Handle the case when less than 4 luma blocks are being
+             coded.*/
           mvbitsa+=mb4mvbitsa;
           mvbitsb+=48;
           last_mv[1][0]=last_mv[0][0];
@@ -1998,7 +2013,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           last_mv[0][0]=mbinfo->bmvs[3][0];
           last_mv[0][1]=mbinfo->bmvs[3][1];
         }break;
-        case OC_MODE_INTER_GOLDEN_MV:{
+        case OC_MODE_GOLDEN_MV:{
           mvbitsa+=mbgmvbitsa;
           mvbitsb+=12;
           mbmv[0]=mbinfo->mvs[0][OC_FRAME_GOLD][0];
@@ -2020,8 +2035,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
               frag->mv[1]=mbinfo->bmvs[bi][1];
             }
             else{
-              frag->mv[0]=(char)cbmvs[bi][0];
-              frag->mv[1]=(char)cbmvs[bi][1];
+              frag->mv[0]=cbmvs[bi][0];
+              frag->mv[1]=cbmvs[bi][1];
             }
           }
         }
@@ -2032,8 +2047,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
             fragi=mb->map[mapi>>2][mapi&3];
             frag=_enc->state.frags+fragi;
             frag->mbmode=mb->mode;
-            frag->mv[0]=(char)mbmv[0];
-            frag->mv[1]=(char)mbmv[1];
+            frag->mv[0]=mbmv[0];
+            frag->mv[1]=mbmv[1];
           }
         }
       }
@@ -2084,10 +2099,10 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       else{
         int eerror;
         eerror=0;
-        frinfo=_enc->frinfo+fragi;
-        for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
+        efrag=_enc->frinfo+fragi;
+        for(ci=1;ci<64;ci++)eerror+=abs(efrag->dct_coeffs[ci]);
 #if defined(OC_BITRATE_STATS)
-        frinfo->eerror=eerror;
+        efrag->eerror=eerror;
 #endif
         intra_bits+=OC_RES_BITRATES[_enc->state.qi][pli][
          OC_MODE_INTRA][OC_MINI(eerror>>8,15)];
@@ -2119,9 +2134,9 @@ static void oc_enc_do_inter_dcts(oc_enc_ctx *_enc){
       oc_fragment *frag;
       frag=_enc->state.frags+*coded_fragi;
       if(frag->mbmode!=OC_MODE_INTRA){
-        oc_fragment_enc_info *frinfo;
-        frinfo=_enc->frinfo+(frag-_enc->state.frags);
-        oc_enc_frag_inter_fdct(_enc,frag,frinfo->dct_coeffs,pli);
+        oc_fragment_enc_info *efrag;
+        efrag=_enc->frinfo+(frag-_enc->state.frags);
+        oc_enc_frag_inter_fdct(_enc,frag,efrag->dct_coeffs,pli);
       }
     }
   }
@@ -2141,11 +2156,11 @@ static void oc_enc_pack_mb_modes(oc_enc_ctx *_enc){
     /*The numbers associated with each mode in the stream are slightly
        different than what we use in the source.
       The lookup here converts between the two.*/
-    for(mi=0;mi<8;mi++){
+    for(mi=0;mi<OC_NMODES;mi++){
       ranks[OC_MODE_SCHEMES[6][mi]]=
        _enc->mode_scheme_chooser.scheme0_ranks[mi];
     }
-    for(mi=0;mi<8;mi++)oggpackB_write(&_enc->opb,ranks[mi],3);
+    for(mi=0;mi<OC_NMODES;mi++)oggpackB_write(&_enc->opb,ranks[mi],3);
   }
   codes=_enc->mode_scheme_chooser.mode_codes[scheme];
   mode_ranks=_enc->mode_scheme_chooser.mode_ranks[scheme];
@@ -2181,15 +2196,13 @@ static void oc_enc_pack_mvs(oc_enc_ctx *_enc){
     mbi=*coded_mbi;
     mb=_enc->state.mbs+mbi;
     switch(mb->mode){
-      case OC_MODE_INTER_MV:{
+      case OC_MODE_INTER_MV:
+      case OC_MODE_GOLDEN_MV:{
+        int which_frame;
+        which_frame=OC_FRAME_FOR_MODE[mb->mode];
         mbinfo=_enc->mbinfo+mbi;
-        oc_enc_pack_mv(_enc,mbinfo->mvs[0][OC_FRAME_PREV][0],
-         mbinfo->mvs[0][OC_FRAME_PREV][1]);
-      }break;
-      case OC_MODE_INTER_GOLDEN_MV:{
-        mbinfo=_enc->mbinfo+mbi;
-        oc_enc_pack_mv(_enc,mbinfo->mvs[0][OC_FRAME_GOLD][0],
-         mbinfo->mvs[0][OC_FRAME_GOLD][1]);
+        oc_enc_pack_mv(_enc,mbinfo->mvs[0][which_frame][0],
+         mbinfo->mvs[0][which_frame][1]);
       }break;
       case OC_MODE_INTER_MV_FOUR:{
         int bi;
@@ -2219,59 +2232,53 @@ static int oc_enc_deltaframe(oc_enc_ctx *_enc){
     oc_enc_pack_mvs(_enc);
   }
   /*Pack the quantized DCT coefficients.*/
-  oc_enc_pack_residual_tokens(_enc);
+  oc_enc_residual_tokens_pack(_enc);
   /*Success: Mark the packet as ready to be flushed.*/
   _enc->packet_state=OC_PACKET_READY;
   return 0;
 }
 
 
-static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
+static int oc_enc_init(oc_enc_ctx *_enc,const theora_info *_info){
   int bii;
   int ret;
-  _info->frame_width-=6;
-  _info->frame_height-=10;
-  _info->offset_x+=3;
-  _info->offset_y+=5;
+  /*Initialize the shared encoder/decoder state.*/
   ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
-  oggpackB_writeinit(&_enc->opb);
-  oggpackB_writeinit(&_enc->opb_coded_flags);
-  _enc->frinfo=_ogg_calloc(_enc->state.nfrags,
-   sizeof(_enc->frinfo[0]));
-  _enc->mbinfo=_ogg_calloc(_enc->state.nmbs,sizeof(_enc->mbinfo[0]));
-  oc_enc_init_mbinfo(_enc);
+  _enc->block_coded_flags=_ogg_calloc(_enc->state.nfrags,
+   sizeof(_enc->block_coded_flags[0]));
+  /*Compute the matrices needed to extend the frame into the border regions.*/
   for(bii=0;bii<_enc->state.nborders;bii++){
     oc_border_enc_info_init(_enc->border_info+bii,_enc->state.borders+bii);
   }
+  /*Initialize our packet buffers.*/
+  oggpackB_writeinit(&_enc->opb);
+  oggpackB_writeinit(&_enc->opb_coded_flags);
+  /*Allocate and initialize storage for encoder-specific fragment and macro
+     block storage, as well as DCT token storage.*/
+  _enc->frinfo=_ogg_calloc(_enc->state.nfrags,
+   sizeof(_enc->frinfo[0]));
+  _enc->mbinfo=_ogg_calloc(_enc->state.nmbs,sizeof(_enc->mbinfo[0]));
+  _enc->dct_tokens=(unsigned char **)oc_malloc_2d(64,
+   _enc->state.nfrags,sizeof(_enc->dct_tokens[0][0]));
+  _enc->extra_bits=(ogg_uint16_t **)oc_malloc_2d(64,
+   _enc->state.nfrags,sizeof(_enc->extra_bits[0][0]));
+  oc_enc_init_mbinfo(_enc);
+  /*Do one-time mode scheme chooser initialization.*/
   oc_mode_scheme_chooser_init(&_enc->mode_scheme_chooser);
+  /*Map the qi to a multiple of JND values.*/
+  _enc->qscale=_info->quality>=63?0.5F:
+   1.5F*OC_POWF(2,0.0625F*(64-_info->quality));
+  /*Initialize the motion compensation, high-level importance map, and
+     low-level psychovisual model plug-ins.*/
   _enc->mcenc=oc_mcenc_alloc(_enc);
   _enc->impmap=oc_impmap_alloc(_enc);
   _enc->psych=oc_psych_alloc(_enc);
+  /*Reset the packet-out state machine.*/
   _enc->packet_state=OC_PACKET_INFO_HDR;
-  /*TODO: Revisit qscale.*/
-  /*Currently this is set so that a QI of 0 corresponds to distortions of 24
-     times the JND, and each increase by 16 halves that value.
-    This gives us fine discrimination at low qualities, yet effective rate
-     control at high qualities.
-    The QI value 63 is special, however.
-    For this, the highest quality, we use one half of a JND for our threshold.
-    Due to the lower bounds placed on admissible quantizers, we will not
-     actually be able to achieve quality this good, but this should provide as
-     close to visually lossless quality as Theora is capable of.
-    We could lift the quantizer restrictions without breaking VP3.1
-     compatibility, but this would result in quantized coefficients that are
-     too large for the current bitstream to be able to store.*/
-  _enc->qscale=_info->quality>=63?0.5F:
-   1.5F*OC_POWF(2,0.0625F*(64-_info->quality));
+  /*Set the Huffman codes and quantization parameters to the defaults.*/
   memcpy(_enc->huff_codes,OC_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
   theora_encode_set_quant_params(_enc,NULL);
-  _enc->dct_tokens=(unsigned char **)oc_malloc_2d(64,
-   _enc->state.nfrags,sizeof(_enc->dct_tokens[0][0]));
-  _enc->dct_tok_fragi=(int **)oc_malloc_2d(64,
-   _enc->state.nfrags,sizeof(_enc->dct_tok_fragi[0][0]));
-  _enc->extra_bits=(ogg_uint16_t **)oc_malloc_2d(64,
-   _enc->state.nfrags,sizeof(_enc->extra_bits[0][0]));
   return 0;
 }
 
@@ -2279,17 +2286,17 @@ static void oc_enc_clear(oc_enc_ctx *_enc){
   oc_psych_free(_enc->psych);
   oc_impmap_free(_enc->impmap);
   oc_mcenc_free(_enc->mcenc);
+  oc_free_2d(_enc->extra_bits);
+  oc_free_2d(_enc->dct_tokens);
   _ogg_free(_enc->mbinfo);
   _ogg_free(_enc->frinfo);
-  oc_free_2d(_enc->dct_tokens);
-  oc_free_2d(_enc->dct_tok_fragi);
-  oc_free_2d(_enc->extra_bits);
+  _ogg_free(_enc->block_coded_flags);
   oc_state_clear(&_enc->state);
 }
 
 
 
-theora_enc_ctx *theora_encode_alloc(theora_info *_info){
+theora_enc_ctx *theora_encode_alloc(const theora_info *_info){
   oc_enc_ctx *enc;
   if(_info==NULL)return NULL;
   enc=_ogg_malloc(sizeof(*enc));
@@ -2340,15 +2347,14 @@ int theora_encode_set_quant_params(theora_enc_ctx *_enc,
     if(_qinfo->qi_ranges[qti][pli].nranges<=0)return OC_EINVAL;
     for(qi=qri=0;qri<_qinfo->qi_ranges[qti][pli].nranges;qri++){
       qi+=_qinfo->qi_ranges[qti][pli].sizes[qri];
-      if(qi<64||_qinfo->qi_ranges[qti][pli].sizes[qri]>1){
-        for(ci=0;ci<64;ci++){
-          if(_qinfo->qi_ranges[qti][pli].base_matrices[qri+1][ci]>
-           _qinfo->qi_ranges[qti][pli].base_matrices[qri][ci]){
-            return OC_EINVAL;
-          }
+      for(ci=0;ci<64;ci++){
+        if(_qinfo->qi_ranges[qti][pli].base_matrices[qri+1][ci]>
+         _qinfo->qi_ranges[qti][pli].base_matrices[qri][ci]){
+          return OC_EINVAL;
         }
       }
     }
+    if(qi!=63)return OC_EINVAL;
   }
   /*TODO: Analyze for packing purposes instead of just doing a shallow copy.*/
   memcpy(&_enc->qinfo,_qinfo,sizeof(_enc->qinfo));
@@ -2435,7 +2441,7 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
    rfi==_enc->state.ref_frame_idx[OC_FRAME_PREV];rfi++);
   _enc->state.ref_frame_idx[OC_FRAME_SELF]=rfi;
   /*Move the motion vector predictors back a frame.*/
-  for(mbi=_enc->state.frplanes[0].nsbs<<2;mbi-->0;){
+  for(mbi=_enc->state.fplanes[0].nsbs<<2;mbi-->0;){
     oc_mb_enc_info *emb;
     emb=_enc->mbinfo+mbi;
     memmove(emb->mvs+1,emb->mvs,2*sizeof(emb->mvs[0]));
@@ -2469,11 +2475,11 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
     Here we just update the granpos needed for the output packet and return.*/
   if(_enc->state.frame_type==OC_INTRA_FRAME){
     _enc->state.granpos=
-     _enc->state.curframe_num<<_enc->state.keyframe_granule_shift;
+     _enc->state.curframe_num<<_enc->state.info.keyframe_granule_shift;
   }
   else{
     _enc->state.granpos=
-     (_enc->state.keyframe_num<<_enc->state.keyframe_granule_shift)+
+     (_enc->state.keyframe_num<<_enc->state.info.keyframe_granule_shift)+
      (_enc->state.curframe_num-_enc->state.keyframe_num);
   }
   return 0;
@@ -2491,18 +2497,4 @@ int theora_encode_packetout(theora_enc_ctx *_enc,int _last,ogg_packet *_op){
   if(_last)_enc->packet_state=OC_PACKET_DONE;
   else _enc->packet_state=OC_PACKET_EMPTY;
   return 1;
-}
-
-double theora_granule_time(void *_encdec,ogg_int64_t _granpos){
-  oc_theora_state *state;
-  state=(oc_theora_state *)_encdec;
-  if(_granpos>=0){
-    ogg_int64_t iframe;
-    ogg_int64_t pframe;
-    iframe=_granpos>>state->keyframe_granule_shift;
-    pframe=_granpos-(iframe<<state->keyframe_granule_shift);
-    return (iframe+pframe)*(
-     (double)state->info.fps_denominator/state->info.fps_numerator);
-  }
-  return(-1);
 }

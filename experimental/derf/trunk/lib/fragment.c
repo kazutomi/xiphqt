@@ -44,7 +44,7 @@ void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
   This requires that the fully decoded DC values be available for the left,
    upper-left, upper, and upper-right fragments (if they exist).
   _frag:      The fragment to predict the DC value for.
-  _frplane:   The fragment plane the fragment belongs to.
+  _fplane:    The fragment plane the fragment belongs to.
   _x:         The x-coordinate of the fragment.
   _y:         The y-coordinate of the fragment.
   _pred_last: The last fully-decoded DC value for each predictor frame
@@ -53,7 +53,7 @@ void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
                color plane.
   Return: The predicted DC value for this fragment.*/
 int oc_frag_pred_dc(const oc_fragment *_frag,
- const oc_fragment_plane *_frplane,int _x,int _y,int _pred_last[3]){
+ const oc_fragment_plane *_fplane,int _x,int _y,int _pred_last[3]){
   static const int PRED_SCALE[16][4]={
     /*0*/
     {0,0,0,0},
@@ -125,9 +125,9 @@ int oc_frag_pred_dc(const oc_fragment *_frag,
   int                ret;
   int                i;
   pred_frame=OC_FRAME_FOR_MODE[_frag->mbmode];
-  bc=(_x==0)+((_y==0)<<1)+((_x+1==_frplane->nhfrags)<<2);
+  bc=(_x==0)+((_y==0)<<1)+((_x+1==_fplane->nhfrags)<<2);
   predfr[0]=_frag-1;
-  predfr[1]=_frag-_frplane->nhfrags-1;
+  predfr[1]=_frag-_fplane->nhfrags-1;
   predfr[2]=predfr[1]+1;
   predfr[3]=predfr[2]+1;
   np=0;

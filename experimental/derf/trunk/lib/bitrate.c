@@ -109,10 +109,10 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
       fragi=*coded_fragi;
       frag=_enc->state.frags+fragi;
       if(frag->coded){
-        oc_fragment_enc_info *frinfo;
+        oc_fragment_enc_info *efrag;
         ogg_uint32_t          frag_bits;
         int                   err_bin;
-        frinfo=_enc->frinfo+fragi;
+        efrag=_enc->frinfo+fragi;
         frag_bits=0;
         for(zzi=0;zzi<64;){
           if(eob_runs[zzi]){
@@ -143,7 +143,7 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
             zzi+=skip;
           }
         }
-        err_bin=frinfo->eerror>>(frag->mbmode==OC_MODE_INTRA?8:6);
+        err_bin=efrag->eerror>>(frag->mbmode==OC_MODE_INTRA?8:6);
         err_bin=OC_MINI(15,err_bin);
         OC_RES_BITRATE_ACCUM[frag->invalid?0:_enc->state.qi][pli][
          frag->mbmode][err_bin]+=frag_bits;
@@ -185,6 +185,18 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+
+
+/*\rho domain rate-distortion analysis, after He \cite{He2001}
+  TODO: Is this worth the speed hit?
+
+  @PHDTHESIS{He2001,
+    author="Zhihai He",
+    title="\rho-Domain Rate-Distortion Analysis and Rate-Control for Visual
+     Coding and Communication",
+    school="University of California at Santa Barbara",
+    year=2001
+  }*/
 
 
 /*256*(A(\rho), B(\rho) and C(\rho)) for \rho=0/64..64/64, where
@@ -236,18 +248,18 @@ int oc_enc_intra_bits_est(oc_enc_ctx *_enc,int _mbi,int *_nc_bits){
   iquant=_enc->state.dequant_tables[_enc->state.qi].intra_y;
   bits=nc_bits=0;
   for(bi=0;bi<4;bi++){
-    oc_fragment_enc_info *frinfo;
+    oc_fragment_enc_info *efrag;
     ogg_int32_t           frag_bits;
     int                   zzi;
     int                   zrun;
-    frinfo=_enc->frinfo+mb->map[0][bi];
+    efrag=_enc->frinfo+mb->map[0][bi];
     q_nz=q_z=rho=zrun=0;
     for(zzi=0;zzi<64;zzi++){
       int c_abs;
       int ci;
       ci=OC_FZIG_ZAG[zzi];
-      c_abs=abs(frinfo->dct_coeffs[ci]);
-      if(c_abs<=OC_MAXI(frinfo->tols[ci],iquant[ci]>>1)){
+      c_abs=abs(efrag->dct_coeffs[ci]);
+      if(c_abs<=OC_MAXI(efrag->tols[ci],iquant[ci]>>1)){
         zrun++;
         rho++;
       }

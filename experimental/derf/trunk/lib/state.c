@@ -87,106 +87,106 @@ static void oc_sb_create_plane_mapping(oc_sb _sbs[],int _frag0,int _hfrags,
 
 /*Fills in the Y plane fragment map for a macro block given the fragment
    indices of its upper-left hand corder.
-  _mb:      The macro block to fill.
-  _frplane: The description of the Y plane.
-  _x:        The X location of the upper-left hand fragment in the Y plane.
-  _y:        The Y location of the upper-left hand fragment in the Y plane.*/
-static void oc_mb_fill_ymapping(oc_mb *_mb,const oc_fragment_plane *_frplane,
+  _mb:     The macro block to fill.
+  _fplane: The description of the Y plane.
+  _x:      The X location of the upper-left hand fragment in the Y plane.
+  _y:      The Y location of the upper-left hand fragment in the Y plane.*/
+static void oc_mb_fill_ymapping(oc_mb *_mb,const oc_fragment_plane *_fplane,
  int _x,int _y){
   int i;
   for(i=0;i<2;i++){
     int j;
-    if(_y+i>=_frplane->nvfrags)break;
+    if(_y+i>=_fplane->nvfrags)break;
     for(j=0;j<2;j++){
-      if(_x+j>=_frplane->nhfrags)break;
-      _mb->map[0][i<<1|j]=(_y+i)*_frplane->nhfrags+_x+j;
+      if(_x+j>=_fplane->nhfrags)break;
+      _mb->map[0][i<<1|j]=(_y+i)*_fplane->nhfrags+_x+j;
     }
   }
 }
 
-/*Fills in the U,V plane fragment maps for a macro block.
+/*Fills in the chroma plane fragment maps for a macro block.
   This version is for use with no chroma decimation.
   This uses the already filled-in Y plane values.
-  _mb:       The macro block to fill.
-  _frplanes: The descriptions of the fragment planes.*/
+  _mb:      The macro block to fill.
+  _fplanes: The descriptions of the fragment planes.*/
 static void oc_mb_fill_cmapping00(oc_mb *_mb,
- const oc_fragment_plane _frplanes[3]){
+ const oc_fragment_plane _fplanes[3]){
   int k;
   for(k=0;k<4;k++){
     if(_mb->map[0][k]>=0){
-      _mb->map[1][k]=_mb->map[0][k]+_frplanes[1].froffset;
-      _mb->map[2][k]=_mb->map[0][k]+_frplanes[2].froffset;
+      _mb->map[1][k]=_mb->map[0][k]+_fplanes[1].froffset;
+      _mb->map[2][k]=_mb->map[0][k]+_fplanes[2].froffset;
     }
   }
 }
 
-/*Fills in the U,V plane fragment maps for a macro block.
+/*Fills in the chroma plane fragment maps for a macro block.
   This version is for use with chroma decimated in the X direction.
-  _mb:       The macro block to fill.
-  _frplanes: The descriptions of the fragment planes.
-  _x:        The X location of the upper-left hand fragment in the Y plane.
-  _y:        The Y location of the upper-left hand fragment in the Y plane.*/
+  _mb:      The macro block to fill.
+  _fplanes: The descriptions of the fragment planes.
+  _x:       The X location of the upper-left hand fragment in the Y plane.
+  _y:       The Y location of the upper-left hand fragment in the Y plane.*/
 static void oc_mb_fill_cmapping01(oc_mb *_mb,
- const oc_fragment_plane _frplanes[3],int _x,int _y){
+ const oc_fragment_plane _fplanes[3],int _x,int _y){
   int fragi;
   int i;
   _x>>=1;
-  fragi=_y*_frplanes[1].nhfrags+_x;
+  fragi=_y*_fplanes[1].nhfrags+_x;
   for(i=0;i<2;i++){
-    if(_y+i>=_frplanes[1].nvfrags)break;
-    _mb->map[1][i<<1]=fragi+_frplanes[1].froffset;
-    _mb->map[2][i<<1]=fragi+_frplanes[2].froffset;
-    fragi+=_frplanes[1].nhfrags;
+    if(_y+i>=_fplanes[1].nvfrags)break;
+    _mb->map[1][i<<1]=fragi+_fplanes[1].froffset;
+    _mb->map[2][i<<1]=fragi+_fplanes[2].froffset;
+    fragi+=_fplanes[1].nhfrags;
   }
 }
 
-/*Fills in the U,V plane fragment maps for a macro block.
+/*Fills in the chroma plane fragment maps for a macro block.
   This version is for use with chroma decimated in the Y direction.
-  _mb:       The macro block to fill.
-  _frplanes: The descriptions of the fragment planes.
-  _x:        The X location of the upper-left hand fragment in the Y plane.
-  _y:        The Y location of the upper-left hand fragment in the Y plane.*/
+  _mb:      The macro block to fill.
+  _fplanes: The descriptions of the fragment planes.
+  _x:       The X location of the upper-left hand fragment in the Y plane.
+  _y:       The Y location of the upper-left hand fragment in the Y plane.*/
 static void oc_mb_fill_cmapping10(oc_mb *_mb,
- const oc_fragment_plane _frplanes[3],int _x,int _y){
+ const oc_fragment_plane _fplanes[3],int _x,int _y){
   int fragi;
   int j;
   _y>>=1;
-  fragi=_y*_frplanes[1].nhfrags+_x;
+  fragi=_y*_fplanes[1].nhfrags+_x;
   for(j=0;j<2;j++){
-    if(_x+j>=_frplanes[1].nhfrags)break;
-    _mb->map[1][j]=fragi+_frplanes[1].froffset;
-    _mb->map[2][j]=fragi+_frplanes[2].froffset;
+    if(_x+j>=_fplanes[1].nhfrags)break;
+    _mb->map[1][j]=fragi+_fplanes[1].froffset;
+    _mb->map[2][j]=fragi+_fplanes[2].froffset;
     fragi++;
   }
 }
 
-/*Fills in the U,V plane fragment maps for a macro block.
+/*Fills in the chroma plane fragment maps for a macro block.
   This version is for use with chroma decimated in the X and Y directions.
-  _mb:       The macro block to fill.
-  _frplanes: The descriptions of the fragment planes.
-  _x:        The X location of the upper-left hand fragment in the Y plane.
-  _y:        The Y location of the upper-left hand fragment in the Y plane.*/
+  _mb:      The macro block to fill.
+  _fplanes: The descriptions of the fragment planes.
+  _x:       The X location of the upper-left hand fragment in the Y plane.
+  _y:       The Y location of the upper-left hand fragment in the Y plane.*/
 static void oc_mb_fill_cmapping11(oc_mb *_mb,
- const oc_fragment_plane _frplanes[3],int _x,int _y){
+ const oc_fragment_plane _fplanes[3],int _x,int _y){
   int fragi;
   _x>>=1;
   _y>>=1;
-  fragi=_y*_frplanes[1].nhfrags+_x;
-  _mb->map[1][0]=fragi+_frplanes[1].froffset;
-  _mb->map[2][0]=fragi+_frplanes[2].froffset;
+  fragi=_y*_fplanes[1].nhfrags+_x;
+  _mb->map[1][0]=fragi+_fplanes[1].froffset;
+  _mb->map[2][0]=fragi+_fplanes[2].froffset;
 }
 
-/*The function type used to fill in the U,V plane fragment maps for a macro
-   block.
-  _mb:       The macro block to fill.
-  _frplanes: The descriptions of the fragment planes.
-  _x:        The X location of the upper-left hand fragment in the Y plane.
-  _y:        The Y location of the upper-left hand fragment in the Y plane.*/
+/*The function type used to fill in the chroma plane fragment maps for a
+   macro block.
+  _mb:      The macro block to fill.
+  _fplanes: The descriptions of the fragment planes.
+  _x:       The X location of the upper-left hand fragment in the Y plane.
+  _y:       The Y location of the upper-left hand fragment in the Y plane.*/
 typedef void (*oc_mb_fill_cmapping_func)(oc_mb *_mb,
- const oc_fragment_plane _frplanes[3],int _xfrag0,int _yfrag0);
+ const oc_fragment_plane _fplanes[3],int _xfrag0,int _yfrag0);
 
-/*A table of functions used to fill in the U,V plane fragment maps for a macro
-   block for each type of chrominance decimation.*/
+/*A table of functions used to fill in the chroma plane fragment maps for a
+   macro block for each type of chrominance decimation.*/
 static const oc_mb_fill_cmapping_func OC_MB_FILL_CMAPPING_TABLE[4]={
   (oc_mb_fill_cmapping_func)oc_mb_fill_cmapping00,
   oc_mb_fill_cmapping01,
@@ -196,20 +196,20 @@ static const oc_mb_fill_cmapping_func OC_MB_FILL_CMAPPING_TABLE[4]={
 
 /*Fills in the mapping from macro blocks to their corresponding fragment
    numbers in each plane.
-  _mbs:      The array of macro blocks.
-  _frplanes: The descriptions of the fragment planes.
-  _ctype:    The chroma decimation type.*/
+  _mbs:     The array of macro blocks.
+  _fplanes: The descriptions of the fragment planes.
+  _ctype:   The chroma decimation type.*/
 static void oc_mb_create_mapping(oc_mb _mbs[],
- const oc_fragment_plane _frplanes[3],int _ctype){
+ const oc_fragment_plane _fplanes[3],int _ctype){
   oc_mb_fill_cmapping_func  mb_fill_cmapping;
   oc_mb                    *mb0;
   int                       y;
   mb0=_mbs;
   mb_fill_cmapping=OC_MB_FILL_CMAPPING_TABLE[_ctype];
   /*Loop through the Y plane super blocks.*/
-  for(y=0;y<_frplanes[0].nvfrags;y+=4){
+  for(y=0;y<_fplanes[0].nvfrags;y+=4){
     int x;
-    for(x=0;x<_frplanes[0].nhfrags;x+=4,mb0+=4){
+    for(x=0;x<_fplanes[0].nhfrags;x+=4,mb0+=4){
       int ymb;
       /*Loop through the macro blocks in each super block in display order.*/
       for(ymb=0;ymb<2;ymb++){
@@ -226,14 +226,14 @@ static void oc_mb_create_mapping(oc_mb _mbs[],
           /*Initialize fragment indexes to -1.*/
           memset(mb->map,0xFF,sizeof(mb->map));
           /*Make sure this macro block is within the encoded region.*/
-          if(mbx>=_frplanes[0].nhfrags||mby>=_frplanes[0].nvfrags){
+          if(mbx>=_fplanes[0].nhfrags||mby>=_fplanes[0].nvfrags){
             mb->mode=OC_MODE_INVALID;
             continue;
           }
           /*Fill in the fragment indices for the Y plane.*/
-          oc_mb_fill_ymapping(mb,_frplanes,mbx,mby);
-          /*Fill in the fragment indices for the U,V planes.*/
-          (*mb_fill_cmapping)(mb,_frplanes,mbx,mby);
+          oc_mb_fill_ymapping(mb,_fplanes,mbx,mby);
+          /*Fill in the fragment indices for the chroma planes.*/
+          (*mb_fill_cmapping)(mb,_fplanes,mbx,mby);
         }
       }
     }
@@ -268,7 +268,7 @@ static void oc_state_border_init(oc_theora_state *_state){
   _state->nborders=0;
   yfrag_end=frag=_state->frags;
   for(pli=0;pli<3;pli++){
-    fplane=_state->frplanes+pli;
+    fplane=_state->fplanes+pli;
     crop=crop_rects+pli;
     /*Set up the cropping rectangle for this plane.*/
     crop->x0=_state->info.offset_x;
@@ -369,24 +369,24 @@ static void oc_state_frarray_init(oc_theora_state *_state){
   nsbs=ysbs+2*csbs;
   nmbs=ysbs<<2;
   /*Initialize the fragment array.*/
-  _state->frplanes[0].nhfrags=yhfrags;
-  _state->frplanes[0].nvfrags=yvfrags;
-  _state->frplanes[0].froffset=0;
-  _state->frplanes[0].nfrags=yfrags;
-  _state->frplanes[0].nhsbs=yhsbs;
-  _state->frplanes[0].nvsbs=yvsbs;
-  _state->frplanes[0].sboffset=0;
-  _state->frplanes[0].nsbs=ysbs;
-  _state->frplanes[1].nhfrags=_state->frplanes[2].nhfrags=chfrags;
-  _state->frplanes[1].nvfrags=_state->frplanes[2].nvfrags=cvfrags;
-  _state->frplanes[1].froffset=yfrags;
-  _state->frplanes[2].froffset=yfrags+cfrags;
-  _state->frplanes[1].nfrags=_state->frplanes[2].nfrags=cfrags;
-  _state->frplanes[1].nhsbs=_state->frplanes[2].nhsbs=chsbs;
-  _state->frplanes[1].nvsbs=_state->frplanes[2].nvsbs=cvsbs;
-  _state->frplanes[1].sboffset=ysbs;
-  _state->frplanes[2].sboffset=ysbs+csbs;
-  _state->frplanes[1].nsbs=_state->frplanes[2].nsbs=csbs;
+  _state->fplanes[0].nhfrags=yhfrags;
+  _state->fplanes[0].nvfrags=yvfrags;
+  _state->fplanes[0].froffset=0;
+  _state->fplanes[0].nfrags=yfrags;
+  _state->fplanes[0].nhsbs=yhsbs;
+  _state->fplanes[0].nvsbs=yvsbs;
+  _state->fplanes[0].sboffset=0;
+  _state->fplanes[0].nsbs=ysbs;
+  _state->fplanes[1].nhfrags=_state->fplanes[2].nhfrags=chfrags;
+  _state->fplanes[1].nvfrags=_state->fplanes[2].nvfrags=cvfrags;
+  _state->fplanes[1].froffset=yfrags;
+  _state->fplanes[2].froffset=yfrags+cfrags;
+  _state->fplanes[1].nfrags=_state->fplanes[2].nfrags=cfrags;
+  _state->fplanes[1].nhsbs=_state->fplanes[2].nhsbs=chsbs;
+  _state->fplanes[1].nvsbs=_state->fplanes[2].nvsbs=cvsbs;
+  _state->fplanes[1].sboffset=ysbs;
+  _state->fplanes[2].sboffset=ysbs+csbs;
+  _state->fplanes[1].nsbs=_state->fplanes[2].nsbs=csbs;
   _state->nfrags=nfrags;
   _state->frags=_ogg_calloc(nfrags,sizeof(oc_fragment));
   _state->nsbs=nsbs;
@@ -395,20 +395,18 @@ static void oc_state_frarray_init(oc_theora_state *_state){
   _state->nvmbs=yvsbs<<1;
   _state->nmbs=nmbs;
   _state->mbs=_ogg_calloc(nmbs,sizeof(oc_mb));
-  _state->block_coded_flags=_ogg_calloc(nfrags,
-   sizeof(_state->block_coded_flags[0]));
   _state->coded_fragis=_ogg_malloc(nfrags*sizeof(_state->coded_fragis[0]));
   _state->uncoded_fragis=_state->coded_fragis+nfrags;
   _state->coded_mbis=_ogg_malloc(nmbs*sizeof(_state->coded_mbis[0]));
   /*Create the mapping from super blocks to fragments.*/
   for(pli=0;pli<3;pli++){
     oc_fragment_plane *fplane;
-    fplane=_state->frplanes+pli;
+    fplane=_state->fplanes+pli;
     oc_sb_create_plane_mapping(_state->sbs+fplane->sboffset,
      fplane->froffset,fplane->nhfrags,fplane->nvfrags);
   }
   /*Create the mapping from macro blocks to fragments.*/
-  oc_mb_create_mapping(_state->mbs,_state->frplanes,_state->chroma_type);
+  oc_mb_create_mapping(_state->mbs,_state->fplanes,_state->chroma_type);
   /*Initialize the invalid and border fields of each fragment.*/
   oc_state_border_init(_state);
 }
@@ -416,7 +414,6 @@ static void oc_state_frarray_init(oc_theora_state *_state){
 static void oc_state_frarray_clear(oc_theora_state *_state){
   _ogg_free(_state->coded_mbis);
   _ogg_free(_state->coded_fragis);
-  _ogg_free(_state->block_coded_flags);
   _ogg_free(_state->mbs);
   _ogg_free(_state->sbs);
   _ogg_free(_state->frags);
@@ -491,20 +488,24 @@ static void oc_state_ref_bufs_clear(oc_theora_state *_state){
   _ogg_free(_state->ref_frame_data);
 }
 
-int oc_state_init(oc_theora_state *_state,theora_info *_info){
+int oc_state_init(oc_theora_state *_state,const theora_info *_info){
   /*First validate the parameters.*/
   if(_info==NULL)return OC_FAULT;
   /*The width and height of the encoded frame must be multiples of 16.
     They must also, when divided by 16, fit into a 16-bit unsigned integer.
     The displayable frame offset coordinates must fit into an 8-bit unsigned
-     integer (only because we only write 8 bits to the bitstream: why?).
+     integer.
+    Note that the offset Y in the API is specified on the opposite side from
+     how it is specified in the bitstream, because the Y axis is flipped in
+     the bitstream.
     The displayable frame must fit inside the encoded frame.
     The color space must be one known by the encoder.*/
   if((_info->width&0xF)||(_info->height&0xF)||
    _info->width>=0x100000||_info->height>=0x100000||
-   _info->offset_x>255||_info->offset_y>255||
    _info->offset_x+_info->frame_width>_info->width||
    _info->offset_y+_info->frame_height>_info->height||
+   _info->offset_x>255||
+   _info->height-_info->frame_height-_info->offset_y>255||
    _info->colorspace<0||_info->colorspace>=OC_CS_NSPACES){
     return OC_EINVAL;
   }
@@ -515,17 +516,18 @@ int oc_state_init(oc_theora_state *_state,theora_info *_info){
   _state->info.chroma_y_decimated=!!_state->info.chroma_y_decimated;
   _state->chroma_type=_state->info.chroma_y_decimated<<1|
    _state->info.chroma_x_decimated;
+  /*Invert the sense of offset_y to match Theora's right-handed coordinate
+     system.*/
+  _state->info.offset_y=_info->height-_info->frame_height-_info->offset_y;
   _state->frame_type=OC_UNKWN_FRAME;
   oc_state_frarray_init(_state);
   oc_state_ref_bufs_init(_state);
+  /*Convert the keyframe frequency force to a granule shift.*/
   if(_info->keyframe_frequency_force==0){
-    _info->keyframe_frequency_force=0xFFFFFFFF;
+    _state->info.keyframe_frequency_force=0x7FFFFFFF;
   }
-#if defined(OC_COMPOSITE_GRANPOS)
-  _state->keyframe_granule_shift=oc_ilog(_info->keyframe_frequency_force-1);
-#else
-  _state->keyframe_granule_shift=0;
-#endif
+  _state->info.keyframe_granule_shift=oc_ilog(
+   _state->info.keyframe_frequency_force-1);
   _state->keyframe_num=0;
   _state->curframe_num=-1;
   return 0;
@@ -614,7 +616,7 @@ void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
     oc_fragment       *yfrag_end;
     unsigned char     *ypix;
     iplane=&_img[pli];
-    fplane=&_state->frplanes[pli];
+    fplane=&_state->fplanes[pli];
     ypix=iplane->data;
     frag=_state->frags+fplane->froffset;
     yfrag_end=frag+fplane->nfrags;
@@ -762,10 +764,10 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
       for(;zzi<10;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
       oc_idct8x8_10(res_buf,dct_buf);
     }
-    /*else{*/
+    else{
       for(;zzi<64;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
       oc_idct8x8(res_buf,dct_buf);
-    /*}*/
+    }
   }
   /*Fill in the target buffer.*/
   dst_framei=_state->ref_frame_idx[OC_FRAME_SELF];
@@ -831,4 +833,20 @@ void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
       }
     }
   }
+}
+
+
+
+double theora_granule_time(void *_encdec,ogg_int64_t _granpos){
+  oc_theora_state *state;
+  state=(oc_theora_state *)_encdec;
+  if(_granpos>=0){
+    ogg_int64_t iframe;
+    ogg_int64_t pframe;
+    iframe=_granpos>>state->info.keyframe_granule_shift;
+    pframe=_granpos-(iframe<<state->info.keyframe_granule_shift);
+    return (iframe+pframe)*(
+     (double)state->info.fps_denominator/state->info.fps_numerator);
+  }
+  return(-1);
 }

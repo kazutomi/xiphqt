@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.4 2004/02/15 00:54:07 derf Exp $
+  last mod: $Id: theora.h,v 1.5 2004/03/01 01:49:34 derf Exp $
 
  ********************************************************************/
 
@@ -19,26 +19,31 @@
 # define _O_THEORA_H_ (1)
 # include <ogg/ogg.h>
 
-/*Use a composite (absolute key frame/relative delta frame) granule pos.*/
-#define OC_COMPOSITE_GRANPOS (1)
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-typedef struct{
-  int            width;
-  int            height;
-  int            stride;
-  unsigned char *data;
-}theora_img_plane;
 
-/*Note: The term YUV often used to describe a colorspace is ambiguous.
-  The exact parameters of the RGB<->YUV conversion process aside, in many
-   contexts the U and V channels actually have opposite meanings.
-  To avoid this confusion, we are explicit: the name of the color channels is
-   Y'CbCr, and they appear in that order, always.
-  The prime symbol denotes that the Y channel is non-linear.
-  Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
-typedef theora_img_plane theora_ycbcr_buffer[3];
 
-/*See doc/color.html for exact details on the meaning of each of these color
+/*Possible error codes.*/
+/*An invalid pointer was provided.*/
+#define OC_FAULT     (-1)
+/*An invalid argument was provided.*/
+#define OC_EINVAL    (-10)
+/*The contents of the header were incomplete, invalid, or unexpected.*/
+#define OC_BADHEADER (-20)
+/*The header does not belong to a Theora stream.*/
+#define OC_NOTFORMAT (-21)
+/*The bitstream version is too high.*/
+#define OC_VERSION   (-22)
+/*The specified function is not implemented.*/
+#define OC_IMPL      (-23)
+/*There were errors in the video data packet.*/
+#define OC_BADPACKET (-24)
+
+
+/*The currently defined color space tags.
+  See doc/color.html for exact details on the meaning of each of these color
    spaces.*/
 typedef enum{
   OC_CS_UNSPECIFIED,
@@ -48,7 +53,26 @@ typedef enum{
   OC_CS_NSPACES
 }theora_colorspace;
 
+/*A single color plane in an image.*/
 typedef struct{
+  int            width;
+  int            height;
+  int            stride;
+  unsigned char *data;
+}theora_img_plane;
+
+/*A complete image buffer.
+  Note: The term YUV often used to describe a colorspace is ambiguous.
+  The exact parameters of the RGB<->YUV conversion process aside, in many
+   contexts the U and V channels actually have opposite meanings.
+  To avoid this confusion, we are explicit: the name of the color channels is
+   Y'CbCr, and they appear in that order, always.
+  The prime symbol denotes that the Y channel is non-linear.
+  Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
+typedef theora_img_plane theora_ycbcr_buffer[3];
+
+typedef struct{
+  /*Bitstream version information.*/
   unsigned char      version_major;
   unsigned char      version_minor;
   unsigned char      version_subminor;
@@ -65,37 +89,52 @@ typedef struct{
   /*The displayed height: must be no larger than height.*/
   ogg_uint32_t       frame_height;
   /*The x offset of the displayed frame: must be no larger than
-     width-frame_width.*/
+     width-frame_width or 255, whichever is smaller.*/
   ogg_uint32_t       offset_x;
   /*The y offset of the displayed frame: must be no larger than
-     height-frame_height.*/
+     height-frame_height, and height-frame_height-offset_y must be no larger
+     than 255.*/
   ogg_uint32_t       offset_y;
+  /*The frame rate, as a fraction.
+    If either is 0, the frame rate is undefined.*/
   ogg_uint32_t       fps_numerator;
   ogg_uint32_t       fps_denominator;
   /*The aspect ratio of the pixels.
     If either value is zero, 1:1 is assumed.*/
   ogg_uint32_t       aspect_numerator;
   ogg_uint32_t       aspect_denominator;
+  /*The color space.*/
   theora_colorspace  colorspace;
+  /*The target bit-rate in bps.
+    TODO: Current encoder does not support CBR mode, or anything like it.
+    We also don't really know what nominal rate each quality level
+     corresponds to yet.*/
+  int                target_bitrate;
+  /*Currently this is set so that a qi of 0 corresponds to distortions of 24
+     times the JND, and each increase by 16 halves that value.
+    This gives us fine discrimination at low qualities, yet effective rate
+     control at high qualities.
+    The qi value 63 is special, however.
+    For this, the highest quality, we use one half of a JND for our threshold.
+    Due to the lower bounds placed on allowable quantizers in Theora, we will
+     not actually be able to achieve quality this good, but this should
+     provide as close to visually lossless quality as Theora is capable of.
+    We could lift the quantizer restrictions without breaking VP3.1
+     compatibility, but this would result in quantized coefficients that are
+     too large for the current bitstream to be able to store.
+    We'd have to redesign the token syntax to store these large coefficients,
+     which would make transcoding complex.*/
+  int                quality;
+  /*The amount to shift to extract the last keyframe number from the granule
+     position.*/
+  int                keyframe_granule_shift;
+/*TODO: This doesn't belong here.
+  It is control data, not informational data.
+  We should create a generic ioctl-like interface that can be used to set
+   these implementation-specific things.*/
   /*Also used for decode init to get granpos shift correct.*/
   ogg_uint32_t       keyframe_frequency_force;
-  /*TODO: Units?*/
-  int                target_bitrate;
-  /*TODO: Quantify.*/
-  int                quality;
-  /*Information stored from the codec setup header.*/
-  void              *codec_setup;
-
-/*TODO: None of these really belong here.
-  They are control data, not informational data.*/
-  /*TODO: What do these control?*/
-  int            dropframes_p;
-  int            keyframe_auto_p;
-  ogg_uint32_t   keyframe_frequency;
-  ogg_uint32_t   keyframe_data_target_bitrate;
-  ogg_int32_t    keyframe_auto_threshold;
-  ogg_uint32_t   keyframe_mindistance;
-  ogg_int32_t    noise_sensitivity;
+  int                pp_level;
 }theora_info;
 
 #define OC_NHUFFMAN_TABLES (80)
@@ -108,7 +147,10 @@ typedef struct{
    but the current encoder is not optimized to take advantage of this.
   If there is not at least one table with a code for every token in each of
    the five groups of 16 tables, then the encoder may fail to encode certain
-   frames.*/
+   frames.
+  The complete table in the first group of 16 does not have to be in the same
+   place as the complete table in the other groups, but the complete tables in
+   the remaining four groups must all be in the same place.*/
 typedef struct{
   /*The bit pattern for the code, with the LSbit of the pattern aligned in
      the LSbit of the word.*/
@@ -126,13 +168,13 @@ typedef struct{
   ci!=0 is 0 for the DC coefficient and 1 for the AC coefficient.
   qi is the quality index, ranging between 0 (low quality) and 63 (high
    quality).
-  pli is the color plane index: 0 for Y', 1 for Cr, 2 for Cb.
+  pli is the color plane index: 0 for Y', 1 for Cb, 2 for Cr.
   ci is the DCT coefficient index.
-  Coefficients indices correspond to the normal 2D DCT block ordering--
+  Coefficient indices correspond to the normal 2D DCT block ordering--
    row-major with low frequencies first--NOT zig-zag order.
 
   Minimum quantizers are constant, and are given by:
-  qmin[2][2]={4,2,8,4};
+  qmin[2][2]={{4,2},{8,4}};
 
   Parameters that can be stored in the bitstream are as follows:
     The two scale matrices ac_scale and dc_scale.
@@ -153,7 +195,7 @@ typedef struct{
        multiple times, they will only appear once in the bitstream.
       The bitstream is also capable of omitting an entire set of ranges and
        its associated matrices if they are the same as either the previous
-       set (index in row-major order) or if the inter set is the same as the
+       set (indexed in row-major order) or if the inter set is the same as the
        inter set.
 
   For the current encoder, scale[ci!=0][qi] must be <= scale[ci!=0][qi-1] and
@@ -172,14 +214,14 @@ typedef struct{
   const theora_quant_base *base_matrices;
 }theora_quant_ranges;
 
-/*The set of quantization parameters.*/
+/*The complete set of quantization parameters.*/
 typedef struct{
   ogg_uint16_t        ac_scale[64];
   ogg_uint16_t        dc_scale[64];
   theora_quant_ranges qi_ranges[2][3];
 }theora_quant_info;
 
-
+/*The comment information.*/
 typedef struct theora_comment{
   char **user_comments;
   int   *comment_lengths;
@@ -187,21 +229,21 @@ typedef struct theora_comment{
   char  *vendor;
 }theora_comment;
 
-#define OC_FAULT     (-1)
-#define OC_EINVAL    (-10)
-#define OC_BADHEADER (-20)
-#define OC_NOTFORMAT (-21)
-#define OC_VERSION   (-22)
-#define OC_IMPL      (-23)
-#define OC_BADPACKET (-24)
-
-typedef struct theora_enc_ctx theora_enc_ctx;
+/*These contents of the following structures are not publicly defined by this
+   API.
+  Referring to their internals directly is unsupported, and may break without
+   warning.*/
+typedef struct theora_enc_ctx    theora_enc_ctx;
+typedef struct theora_dec_ctx    theora_dec_ctx;
+typedef struct theora_setup_info theora_setup_info;
 
 extern const char *theora_version_string(void);
 extern ogg_uint32_t theora_version_number(void);
 
 extern void theora_info_init(theora_info *_info);
 extern void theora_info_clear(theora_info *_info);
+
+extern void theora_setup_free(theora_setup_info *_setup);
 
 extern void theora_comment_init(theora_comment *_tc);
 extern void theora_comment_add(theora_comment *_tc, char *_comment);
@@ -210,28 +252,34 @@ extern char *theora_comment_query(theora_comment *_tc,char *_tag,int _count);
 extern int theora_comment_query_count(theora_comment *_tc,char *_tag);
 extern void theora_comment_clear(theora_comment *_tc);
 
-extern theora_enc_ctx *theora_encode_alloc(theora_info *_info);
+extern theora_enc_ctx *theora_encode_alloc(const theora_info *_info);
 extern int theora_encode_set_huffman_codes(theora_enc_ctx *_enc,
  const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]);
 extern int theora_encode_set_quant_params(theora_enc_ctx *_enc,
  const theora_quant_info *_qinfo);
 extern int theora_encode_flushheader(theora_enc_ctx *_enc,
  theora_comment *_comments,ogg_packet *_op);
-extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _ycbcr);
+extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
+ theora_ycbcr_buffer _ycbcr);
 extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
  ogg_packet *_op);
 extern void theora_encode_free(theora_enc_ctx *_enc);
 
-/*
-extern int theora_decode_header(theora_info *ci, theora_comment *cc,
-                                ogg_packet *op);
-extern int theora_decode_init(theora_state *th, theora_info *c);
-extern int theora_decode_packetin(theora_state *th,ogg_packet *op);
-extern int theora_decode_YUVout(theora_state *th,oc_yuv_buffer *yuv);
-extern double theora_granule_time(theora_state *th,ogg_int64_t granulepos);
-extern void theora_clear(theora_state *t);*/
+
+extern int theora_decode_header(theora_info *_info,theora_comment *_tc,
+ theora_setup_info **_setup,ogg_packet *_op);
+extern theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
+ const theora_setup_info *_setup);
+extern int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op);
+extern int theora_decode_ycbcr_out(theora_dec_ctx *_dec,
+ theora_ycbcr_buffer _ycbcr);
+extern void theora_decode_free(theora_dec_ctx *_dec);
 
 extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);
 
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

@@ -1984,19 +1984,19 @@ static void oc_psych_csf_filters_interpolate(oc_psych_ctx *_psych,
       /*Horizontal and vertical Y filter.*/
       _psych->csf_filters[0][i][j]=OC_CSF_FILTERS[0][logc0][i][j]+
        alpha*(OC_CSF_FILTERS[0][logc1][i][j]-OC_CSF_FILTERS[0][logc0][i][j]);
-      /*Horizontal U filter.*/
+      /*Horizontal Cb filter.*/
       _psych->csf_filters[1][i][j]=OC_CSF_FILTERS[1+hdec][logc0][i][j]+
        alpha*(OC_CSF_FILTERS[1+hdec][logc1][i][j]-
        OC_CSF_FILTERS[1+hdec][logc0][i][j]);
-      /*Vertical U filter.*/
+      /*Vertical Cb filter.*/
       _psych->csf_filters[2][i][j]=OC_CSF_FILTERS[1+vdec][logc0][i][j]+
        alpha*(OC_CSF_FILTERS[1+vdec][logc1][i][j]-
        OC_CSF_FILTERS[1+vdec][logc0][i][j]);
-      /*Horizontal V filter.*/
+      /*Horizontal Cr filter.*/
       _psych->csf_filters[3][i][j]=OC_CSF_FILTERS[3+hdec][logc0][i][j]+
        alpha*(OC_CSF_FILTERS[3+hdec][logc1][i][j]-
        OC_CSF_FILTERS[3+hdec][logc0][i][j]);
-      /*Vertical V filter.*/
+      /*Vertical Cr filter.*/
       _psych->csf_filters[4][i][j]=OC_CSF_FILTERS[3+vdec][logc0][i][j]+
        alpha*(OC_CSF_FILTERS[3+vdec][logc1][i][j]-
        OC_CSF_FILTERS[3+vdec][logc0][i][j]);
@@ -2048,7 +2048,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   oc_csf_filter        *hfilters;
   oc_fragment_plane    *fplane;
   oc_fragment          *frags;
-  oc_fragment_enc_info *frinfo;
+  oc_fragment_enc_info *efrags;
   oc_mask_block        *maskg_row;
   oc_weight_block      *maskw_row;
   oc_weight_block      *csfw_row;
@@ -2093,9 +2093,9 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   /*Find the number of rows we have to perform DCTs in advance.*/
   vsize_max=0;
   for(i=0;i<8;i++)if(vsizes[i]>vsize_max)vsize_max=vsizes[i];
-  fplane=_psych->enc->state.frplanes+_pli;
+  fplane=_psych->enc->state.fplanes+_pli;
   frags=_psych->enc->state.frags;
-  frinfo=_psych->enc->frinfo;
+  efrags=_psych->enc->frinfo;
   stride=_psych->enc->state.input[_pli].stride;
   pscale=OC_YCbCr_SCALE[_psych->enc->state.info.colorspace][_pli];
   /*Clear out the mask group weights for the rows above the image.*/
@@ -2111,11 +2111,15 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   dfragi=cfragi=mfragi=fplane->froffset;
   for(fragy=0;fragy<fragy_end;fragy++){
     /*Perform DCTs.*/
+    /*TODO: Move this out of here.
+      Yes, this is the first place it's needed, but it's needed in other
+       places too and conceptually does not belong to the psychovisual
+       model.*/
     if(fragy<fplane->nvfrags){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,dfragi++){
         if(frags[dfragi].invalid)continue;
         oc_enc_frag_intra_fdct(_psych->enc,
-         frags+dfragi,frinfo[dfragi].dct_coeffs,stride,OC_FRAME_IO);
+         frags+dfragi,efrags[dfragi].dct_coeffs,stride,OC_FRAME_IO);
       }
     }
     /*After a vsize_max delay, perform CSF filtering.*/
@@ -2127,15 +2131,15 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
         csfw=_psych->csf_row[fragx+OC_CSF_FILTER_SZ_MAX-1];
         for(i=0;i<64;i++){
           filti=i>>3;
-          csfw[i]=vfilters[filti][0]*frinfo[chfragi].dct_coeffs[i];
+          csfw[i]=vfilters[filti][0]*efrags[chfragi].dct_coeffs[i];
           fragi_off=fplane->nhfrags;
           for(j=vsizes[filti];j>0;j--){
             int coeffs;
             int cvfragi;
             cvfragi=chfragi-fragi_off;
-            coeffs=cvfragi>=fplane->froffset?frinfo[cvfragi].dct_coeffs[i]:0;
+            coeffs=cvfragi>=fplane->froffset?efrags[cvfragi].dct_coeffs[i]:0;
             cvfragi=chfragi+fragi_off;
-            if(cvfragi<fragi_end)coeffs+=frinfo[cvfragi].dct_coeffs[i];
+            if(cvfragi<fragi_end)coeffs+=efrags[cvfragi].dct_coeffs[i];
             csfw[i]+=0.5F*vfilters[filti][j]*coeffs;
             fragi_off+=fplane->nhfrags;
           }
@@ -2219,26 +2223,26 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
           The DC coefficient has a different offset added than the others,
            because the pixel values have 128 subtracted from them before the
            DCT is performed, which offsets the DC coefficient by 4096.*/
-        coeff=frinfo[mfragi].dct_coeffs;
+        coeff=efrags[mfragi].dct_coeffs;
         csfw=_psych->csf_weights[0][fragx];
         maskw=maskw_row[fragx];
         /*Compute the scaling value for this fragment.*/
-        fscale=pscale*frinfo[mfragi].imp_weight/_psych->enc->qscale;
+        fscale=pscale*efrags[mfragi].imp_weight/_psych->enc->qscale;
         /*The DC coefficient is not masked.*/
-        frinfo[mfragi].tols[0]=(ogg_uint16_t)OC_MINI(65535,(int)(
+        efrags[mfragi].tols[0]=(ogg_uint16_t)OC_MINI(65535,(int)(
          (OC_CSF_DC_SHIFT+abs(coeff[0]))/(fscale*(csf_offset[0]+csfw[0]))));
-        tol_min[0]=(ogg_uint16_t)OC_MINI(tol_min[0],frinfo[mfragi].tols[0]);
+        tol_min[0]=(ogg_uint16_t)OC_MINI(tol_min[0],efrags[mfragi].tols[0]);
         /*The remaining coefficients are masked.*/
         for(i=1;i<64;i++){
           float mask;
           int   groupi;
           groupi=OC_MASK_GROUP[i];
           mask=group_sums[groupi]-maskw[i];
-          frinfo[mfragi].tols[i]=(ogg_uint16_t)OC_MINI(65535,(int)(
+          efrags[mfragi].tols[i]=(ogg_uint16_t)OC_MINI(65535,(int)(
            ((OC_CSF_NOISE_LEVEL+abs(coeff[i]))/**
            (1+OC_MASK_WEIGHTS[groupi]*mask)*/)/
            (fscale*(csf_offset[i]+csfw[i]))));
-          tol_min[i]=(ogg_uint16_t)OC_MINI(tol_min[i],frinfo[mfragi].tols[i]);
+          tol_min[i]=(ogg_uint16_t)OC_MINI(tol_min[i],efrags[mfragi].tols[i]);
         }
         /*Remove the parts of the group neighborhoods that are old.*/
         for(i=0;i<OC_MASK_NFULL_GROUPS;i++){
@@ -2273,7 +2277,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
 oc_psych_ctx *oc_psych_alloc(oc_enc_ctx *_enc){
   oc_psych_ctx *psych;
   int           nhfrags;
-  nhfrags=_enc->state.frplanes[0].nhfrags;
+  nhfrags=_enc->state.fplanes[0].nhfrags;
   psych=(oc_psych_ctx *)_ogg_malloc(sizeof(*psych));
   psych->csf_row=(oc_weight_block *)_ogg_calloc(
    (nhfrags+(OC_CSF_FILTER_SZ_MAX-1<<1)),sizeof(psych->csf_row[0]));
