@@ -8,8 +8,6 @@ static size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
     char *str;
     size_t strsize;
 
-    printf("DEBUG: called read_func\n");
-
     file = (PyObject *)datasource;
     read = PyObject_GetAttrString(file, "read");
 
@@ -34,8 +32,6 @@ static size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
     str = PyString_AsString(result);
     memcpy(ptr, (void *)str, strsize);
 
-    printf("DEBUG: read %d bytes\n", strsize);
-
     Py_DECREF(result);
 
     return strsize;
@@ -45,8 +41,6 @@ static int seek_func(void *datasource, ogg_int64_t offset, int whence)
 {
     PyObject *file, *seek, *result;
     PyObject *arglist;
-
-    printf("DEBUG: called seek_fun %lld, %d\n", offset, whence);
 
     file = (PyObject *)datasource;
     seek = PyObject_GetAttrString(file, "seek");
@@ -72,8 +66,6 @@ static int close_func(void *datasource)
     PyObject *file, *close;
     PyObject *result;
 
-    printf("DEBUG: called close_func\n");
-
     file = (PyObject *)datasource;
     close = PyObject_GetAttrString(file, "close");
     
@@ -90,8 +82,6 @@ static long tell_func(void *datasource)
     PyObject *file, *tell;
     PyObject *result;
     long ret;
-
-    printf("DEBUG: called tell_func\n");
 
     file = (PyObject *)datasource;
     tell = PyObject_GetAttrString(file, "tell");
@@ -113,8 +103,6 @@ static long tell_func(void *datasource)
 	return -1;
     }
 
-    printf("DEBUG: tell_func returning %ld\n", ret);
-
     return ret;
 }
 
@@ -134,8 +122,6 @@ static PyObject *ov_open_py(PyObject *self, PyObject *args)
     OggVorbis_File *vf;
     int ret;
     
-    printf("DEBUG: in ov_open_py()\n");
-
     if (!PyArg_ParseTuple(args, "O", &file)) {
 	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
 	return NULL;
@@ -145,8 +131,6 @@ static PyObject *ov_open_py(PyObject *self, PyObject *args)
 	PyErr_SetString(PyExc_TypeError, "Expected a file object");
 	return NULL;
     }
-
-    printf("DEBUG: got a python file object\n");
 
     /* setup callback functions */
     callbacks.read_func = read_func;
@@ -159,14 +143,12 @@ static PyObject *ov_open_py(PyObject *self, PyObject *args)
     Py_INCREF(file);
     ret = ov_open_callbacks((void *)file, vf, NULL, 0, callbacks);
     if (ret != 0) {
-	printf("DEBUG: ov_open() returned %d\n", ret);
 	/* FIXME: implement error handling */
 	PyErr_SetString(PyExc_StandardError, "ov_open failed");
 	PyMem_Free((void *)vf);
 	return NULL;
     }
 
-    /* return a SWIGable result */
     result = PyCObject_FromVoidPtr((void *)vf, vf_destroy);
 
     return result;
@@ -174,7 +156,65 @@ static PyObject *ov_open_py(PyObject *self, PyObject *args)
 
 static PyObject *ov_test_py(PyObject *self, PyObject *args)
 {
-    return NULL;
+    PyObject *file, *read, *seek, *close, *tell;
+    PyObject *result;
+    ov_callbacks callbacks;
+    OggVorbis_File *vf;
+    int ret;
+    
+    if (!PyArg_ParseTuple(args, "O", &file)) {
+	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
+	return NULL;
+    }
+
+    if (!PyFile_Check(file)) {
+	PyErr_SetString(PyExc_TypeError, "Expected a file object");
+	return NULL;
+    }
+
+    /* setup callback functions */
+    callbacks.read_func = read_func;
+    callbacks.seek_func = seek_func;
+    callbacks.tell_func = tell_func;
+    callbacks.close_func = close_func;
+
+
+    vf = (OggVorbis_File *)PyMem_Malloc(sizeof(OggVorbis_File));
+    Py_INCREF(file);
+    ret = ov_test_callbacks((void *)file, vf, NULL, 0, callbacks);
+    if (ret != 0) {
+	/* FIXME: implement error handling */
+	PyErr_SetString(PyExc_StandardError, "ov_test failed");
+	PyMem_Free((void *)vf);
+	return NULL;
+    }
+
+    result = PyCObject_FromVoidPtr((void *)vf, vf_destroy);
+
+    return result;
+}
+
+static PyObject *ov_test_open_py(PyObject *self, PyObject *args)
+{
+    PyObject *cobj, *result;
+    int ret;
+    OggVorbis_File *vf;
+
+    if (!PyArg_ParseTuple(args, "O", &cobj)) {
+	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
+	return NULL;
+    }
+
+    if (!PyCObject_Check(cobj)) {
+	PyErr_SetString(PyExc_TypeError, "Expected a vorbisfile object");
+	return NULL;
+    }
+
+    vf = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj);
+    ret = ov_test_open(vf);
+
+    result = Py_BuildValue("i", ret);
+    return result;
 }
 
 static PyObject *ov_clear_py(PyObject *self, PyObject *args)
@@ -855,10 +895,10 @@ static PyObject *ov_halfrate_p_py(PyObject *self, PyObject *args)
 static PyMethodDef vorbisfileMethods[] = {
     {"ov_open", ov_open_py, METH_VARARGS, 
      "Open an Ogg Vorbis file"},
-    //{"ov_test", ov_test_py, METH_VARARGS,
-    // "Test an Ogg Vorbis file"},
-    //{"ov_test_open", ov_test_open, METH_VARARGS,
-    // "Open an Ogg Vorbis file after testing"},
+    {"ov_test", ov_test_py, METH_VARARGS,
+     "Test an Ogg Vorbis file"},
+    {"ov_test_open", ov_test_open_py, METH_VARARGS,
+     "Open an Ogg Vorbis file after testing"},
     {"ov_clear", ov_clear_py, METH_VARARGS, 
      "Clear a vorbisfile object"},
     {"ov_bitrate", ov_bitrate_py, METH_VARARGS, 
@@ -922,5 +962,5 @@ static PyMethodDef vorbisfileMethods[] = {
 
 PyMODINIT_FUNC init_vorbisfile(void)
 {
-    (void)Py_InitModule("_vorbisfile", vorbisfileMethods);
+    Py_InitModule("_vorbisfile", vorbisfileMethods);
 }
