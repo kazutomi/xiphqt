@@ -17,6 +17,7 @@ extern vector signed short vp3_vConst1;
 
 void bct00av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 {
+	register vector unsigned int alpha = (vector unsigned int)(0xff000000, 0xff000000, 0xff000000, 0xff000000);
 
 	/* only use this loop if the dest starts on a 16byte boundary and the pitch is a multiple of 16 */
 	if((!((unsigned long)_ptrScreen & 0xf)) && !(thisPitch & 0xf))
@@ -152,12 +153,13 @@ void bct00av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 //			lvsr		v10,r3,r26									//store alignment vector
 			vsubshs		v14,v14,v12									//almost second g's
 //			vperm		v21,v21,v21,v10
+			vor         v21,v21,alpha
 
 			vsubshs		v14,v14,v11									//second g's
 			vmrglh		v20,v8,v20									//0 r g b 0 r g b 0 r g b 0 r g b
 
-
 			stvx 		v21,r3,r26
+			vor         v20,v20,alpha
 //			vperm		v20,v20,v20,v10
 			addi		r26,r26,16
 			
@@ -176,11 +178,13 @@ void bct00av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			vmrghh		v12,v11,v14									//0 r g b 0 r g b 0 r g b 0 r g b
 			
 			vmrglh		v11,v11,v14									//0 r g b 0 r g b 0 r g b 0 r g b
+			vor         v12,v12,alpha
 //			lvsr		v10,r3,r26									//store alignment vector
 
 //			vperm		v12,v12,v12,v10
 			
 			stvx 		v12,r3,r26
+			vor         v11,v11,alpha
 //			vperm		v11,v11,v11,v10
 			addi		r26,r26,16
 
@@ -341,6 +345,7 @@ void bct00av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			vperm		v21,v21,v21,v10
 
 			vsubshs		v14,v14,v11									//second g's
+			vor         v21,v21,alpha
 			vmrglh		v20,v8,v20									//0 r g b 0 r g b 0 r g b 0 r g b
 
 
@@ -351,6 +356,8 @@ void bct00av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			stvewx		v21,r3,r26									//pixel 1
 			vpkshus		v15,v15,v15									//8 r's
 			addi		r26,r26,4
+			
+			vor         v20,v20,alpha
 			
 			stvewx		v21,r3,r26									//pixel 2
 			vpkshus		v16,v16,v16									//8 b's
@@ -379,11 +386,14 @@ void bct00av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			lvsr		v10,r3,r26									//store alignment vector
 			vperm		v12,v12,v12,v10
 			
+			vor         v12,v12,alpha
+			
 			stvewx		v12,r3,r26									//pixel 8
 			vperm		v11,v11,v11,v10
 			addi		r26,r26,4
 
 			stvewx		v12,r3,r26									//pixel 9
+			vor         v11,v11,alpha
 			addi		r26,r26,4
 			
 			stvewx		v12,r3,r26									//pixel 10
