@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.8 2001/11/21 22:57:23 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.9 2001/11/21 23:25:08 volsung Exp $
 
  ********************************************************************/
 
@@ -287,22 +287,19 @@ void UpdateStats (void)
 size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg,
 		      char iseos)
 {
-  static ogg_int64_t cursample = 0;
   size_t origSize;
 
   origSize = size;
   size *= nmemb;
   
-  cursample += Options.playOpts.nth * size / Options.outputOpts.channels / 2 
+  Options.outputOpts.cursample += 
+    Options.playOpts.nth * size / Options.outputOpts.channels / 2 
     / Options.playOpts.ntimes; /* locked to 16-bit */
 
   devices_write (ptr, size, 1, Options.outputOpts.devices);
 
-  SetTime (Options.statOpts.stats, cursample);
+  SetTime (Options.statOpts.stats, Options.outputOpts.cursample);
   UpdateStats();
-
-  if (iseos)
-    cursample = 0;
 
   return origSize;
 }
@@ -849,6 +846,9 @@ void PlayFile()
     else
       Options.inputOpts.seekable = 0;
     
+
+    /* Reset the sample counter */
+    Options.outputOpts.cursample = 0;
 
     /* Start the audio playback thread before we begin sending data */    
     if (Options.outputOpts.buffer) {
