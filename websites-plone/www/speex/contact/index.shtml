@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/speex/SSI/inhead.inc"-->
+    <title>Xiph.org: Speex</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/speex/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Contact</h1>
+			<h2 id="ml">The Speex Development List</h2>
+			<p>
+				The <a href="mailto:speex-dev@xiph.org">speex-dev@xiph.org</a>
+				mailing list is intended for Speex developers
+				to coordinate development of the Speex specification and software
+				libraries. Please restrict discussion on the speex-dev lists to
+				those topics.
+			</p>
+			<h3>To Subscribe</h3>
+			<p>
+				Send a message containing only “subscribe” <strong>in the body</strong> to
+				<a href="mailto:speex-dev-request@xiph.org">speex-dev-request@xiph.org</a>.
+				Do not send subscription requests directly to the main list; they
+				will be silently ignored.
+			</p>
+			<p>
+				The list is archived along with the rest of the
+				<a href="http://www.xiph.org/archives/">xiph.org mailing list archives</a>.
+			</p>
+			<h2>E-mail</h2>
+			<p>
+			Have a question about this website? Send an e-mail to
+			<a href="mailto:webmaster@xiph.org">webmaster@xiph.org</a>.
+			</p>
+		</div>
+	</div>
+
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+
+</html>

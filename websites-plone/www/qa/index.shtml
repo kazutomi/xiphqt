@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: Quality Assurance</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Xiph.org <abbr class='suppressNotification' title='Quality Assurance'>QA</abbr></h1>
+			<p>
+				The Xiph.org Foundation produces open formats; applications that use these formats
+				are another matter. Depending on what your application does (play audio, rip CDs),
+				there are a number of steps that you can take to keep your app from complicating
+				the lives of your users. This corner of Xiph.org is dedicated to guiding
+				application authors to create better software that uses open multimedia
+				formats.
+			</p>
+			<p>
+				This page is loosely modeled after the
+				<a href='http://www.w3.org/QA/'><abbr title='World Wide Web Consortium'
+				>W3C</abbr> <abbr>QA</abbr></a> section of their site. Functionally, this
+				section of Xiph.org is a corner for us to share best practices in implementing
+				our codecs into your applications.
+			</p>
+
+			<h2>Issues for Encoding Tools</h2>
+			<p>
+				Encoders are often the first experience a new user can have using Ogg Vorbis or
+				FLAC; further, in the case of lossy codecs, bad compression settings can have a
+				needlessly detrimental effect on the music collection generated. As such, we
+				offer these guidelines for ripper authors:
+			</p>
+
+			<h3>Encourage users to use quality settings instead of bitrate management</h3>
+			<p>
+				If nothing else, a one-line blurb such as “Setting bitrate explicitly may
+				result in lower-quality files” may be sufficient.
+			</p>
+			<p>
+			</p>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/speex/SSI/inhead.inc"-->
+    <title>Xiph.org: Speex</title>
+</head>
+
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/speex/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Downloads</h1>
+			<p>
+				Note that packaging information for Debian can be found on the 
+				<a href="packages.html">packages page</a>. If you’re interested in
+				anonymous CVS access, please see the
+				<a href='/cvs/'>Xiph.org CVS Access</a> page.
+				In addition, <a href='http://rarewares.hydrogenaudio.org/'>RareWares</a>
+				maintains useful
+				<a href='http://rarewares.hydrogenaudio.org/others.html'>Windows utilities</a>
+				such as SpeexDrop.
+			</p>
+
+			<h2>Index</h2>
+			<ul>
+				<li><a href="#releases">Releases</a></li>
+				<li><a href="#rcs">Release Candidates</a></li>
+				<li><a href="#betas">Betas</a></li>
+				<li><a href="#older">Older Releases</a></li>
+			</ul>
+			<h2>Releases</h2>
+			<h3 id='one.0.1'>1.0.1</h3>
+			<p>
+			This release fixes several minor bugs that were found in version 1.0 as well
+			as a major bug in the wideband encoding. This makes files encoded with 1.0
+			play  with lower quality on 1.0.1 decoders.
+			Upgrading to 1.0.1 is highly recommended, especially for wideband users.
+			As such, reencode wideband files using a 1.0.1 encoder if you can.
+			</p>
+
+			<ul>
+			<li><a href="download/speex-1.0.1.tar.gz">Source Code</a></li>
+			<li><a href="download/speex-1.0.1-1.i586.rpm">i586 RPM</a></li>
+			<li><a href="download/speex-devel-1.0.1-1.i586.rpm">i586 Development RPM</a></li>
+			<li><a href="download/speex-1.0.1-1.src.rpm">Source RPM</a></li>
+			<li><a href="download/speexbundle-1.0.1.zip">Windows binaries</a> built by John Edwards</li>
+			</ul>
+			<h3 id="one.0">1.0</h3>
+			<p>
+			It’s official; Speex has reached the 1.0 milestone. In addition to
+			some minor cosmetic fixes, the bitstream format has been frozen.
+			</p>
+			<p>
+			For a bit more information, read the
+			<a href="http://www.xiph.org/press/2003/nonprofitspeex1/">press release</a>.
+			</p>
+			<ul>
+			<li><a href="download/speex-1.0.tar.gz">Source Code</a></li>
+			<li><a href="download/speex-1.0-1.i386.rpm">i386 RPM</a></li>
+			<li><a href="download/speex-devel-1.0-1.i386.rpm">i386 Development RPM</a></li>
+			<li><a href="download/speex-1.0-1.src.rpm">Source RPM</a></li>
+			<li><a href="download/speexbundle-1.0.zip">Windows binaries</a> built by John Edwards</li>
+
+			</ul>
+			<h2 id="rcs">Release Candidates</h2>
+			<h3 id="rc3"><abbr title="Release Candidate">RC</abbr>3</h3>
+			<p>
+			No release notes blather this time around; just bugfixes and tuning.
+			If no bugs are found in this, it’s quite likely that this will be 
+			rebranded 1.0 and released as such.
+			</p>
+			<ul>
+			<li><a href="download/speex-1.0rc3.tar.gz">Source Code</a></li>
+			<li><a href="download/speex-1.0rc3-1.i386.rpm">i386 RPM</a></li>
+			<li><a href="download/speex-devel-1.0rc3-1.i386.rpm">i386 Development RPM</a></li>
+			<li><a href="download/speex-1.0rc3-1.src.rpm">Source RPM</a></li>
+
+
+			</ul>
+			<h3 id="rc2"><abbr title="Release Candidate">RC</abbr>2</h3>
+			<p>
+			This is the second <abbr title="Release Candidate">RC</abbr> for Speex. It fixes some minor
+			bugs and reduces the binary size somewhat as the codebooks were converted from
+			<code>float</code> values to <code>char</code>s. As a result of this, files encoded with
+			earlier versions will have a slight increase in noise (typically less than 1 <abbr
+			title="decibel">dB</abbr>) when decoded with the newer decoder.
+			</p>
+			<p>As with the last release, you are encouraged to test it, beat on it, and report bugs. If you
+			want to know how you can make 1.0 better, have a look at the <a href="todo.html">Roadmap</a>
+			page.
+			</p>
+			<ul>
+			<li><a href="download/speex-1.0rc2.tar.gz">Source Code (447k)</a></li>
+			<li><a href="download/speex-1.0rc2-1.i386.rpm">i386 RPM (269k)</a></li>
+			<li><a href="download/speex-devel-1.0rc2-1.i386.rpm">i386 Development RPM (56k)</a></li>
+			<li><a href="download/speex-1.0rc2-1.src.rpm">Source RPM (450k)</a></li>
+			<li><a href="download/speexbundle-1.0RC2.zip">Windows binaries (287k)</a> built by John
+			Edwards</li>
+
+			</ul>
+			<h3 id="rc1"><abbr title="Release Candidate">RC</abbr>1</h3>
+			<p>
+			This is Release Candidate 1 for Speex 1.0. The only new feature (yes, <span title="Jean-Marc
+			Valin">I</span> know beta4 was supposed to be feature-complete) is a very low bitrate (3.95
+			<abbr title="kilobits per second">kbps</abbr>) mode for narrowband. This release also fixes a
+			number of bugs, including  a fix for low-bitrate wideband encoding—however, this fix adds
+			high-frequency noise during the decoding of beta4 and earlier data. Finally, the WAV handling
+			is more robust and handles undocumented extensions better.
+			</p>
+			<p>
+			The goal is to release <abbr title="Release Candidate">RC</abbr>2 in early February, and if all
+			goes well (no major bugs are found), release 1.0 before March. For more details, including how
+			you can make 1.0 better, see the <a href="todo.html">Roadmap</a>.	
+			</p>
+			<ul>
+			<li><a href="download/speex-1.0rc1.tar.gz">Source Code (481k)</a></li>
+			<li><a href="download/speex-1.0rc1-1.i386.rpm">i386 RPM (299k)</a></li>
+			<li><a href="download/speex-devel-1.0rc1-1.i386.rpm">i386 Development RPM (87k)</a></li>
+			<li><a href="download/speex-1.0rc1-1.src.rpm">Source RPM (481k)</a></li>
+			<li><a href="download/speexbundle-1.0RC1.zip">Windows binaries (346k)</a> built by John
+			Edwards</li>
+
+			</ul>
+			<h2 id="betas">Beta Releases</h2>
+			<h3 id="beta4">Speex Beta 4</h3>
+			<p>
+			This is the 4th beta and probably the last before we start putting out release candidates. This
+			release adds a number of quality improvements and some new features; first, the quality of the
+			variable bitrate (VBR) mode has been greatly improved, especially for wideband. Also, some
+			improvements were made to the packetloss concealment code in order to reduce artifacts caused
+			by lost packets. There has been improvements to the 2.15 kbps mode, which now sounds a bit
+			better. The last quality improvement is in the perceptual enhancement which is now good enough
+			to be enabled by default in speexdec (but not by default in libspeex for now).  
+			</p>
+			<p>
+			One of the new features in this release is a VAD (Voice Activity Detection) mode that conserves
+			bandwidth when there’s no speech, and even when VBR isn’t enabled.  VAD is coupled with DTX
+			(Discontinuous Transmission), a feature that can completely stop data transmission when the
+			noise is constant (in which case, comfort noise generation is turned on). The last new feature
+			in this release is an ABR (Average Bitrate) option, which uses VBR with a quality that’s
+			adjusted to meet a certain target (average) bitrate.
+			</p>
+			<ul>
+			<li><a href="download/speex-1.0beta4.tar.gz">Source Code (470k)</a></li>
+			<li><a href="download/speex-1.0beta4-1.i386.rpm">i386 RPM (288k)</a></li>
+			<li><a href="download/speex-devel-1.0beta4-1.i386.rpm">i386 Development RPM (82k)</a></li>
+			<li><a href="download/speex-1.0beta4-1.src.rpm">Source RPM (473k)</a></li>
+			<li><a href="download/speexbundle-1.0b4.zip">Windows binaries (338k)</a> built by John
+			Edwards</li>
+			</ul>
+			<h3 id="beta3">Speex Beta 3</h3>
+			<p class="releasenotes">
+			This is the third beta for Speex, implementing what should be the
+			last new features before 1.0. These new features are a new
+			“ultra-wideband” mode for encoding at 32kHz
+			(up to 48kHz) and an intensity stereo mode. Both of these are
+			implemented to preserve backward and forward compatibility
+			with other releases. This means that it is now possible to
+			encode almost any wave file using Speex. Most of the work left
+			for 1.0 is now quality improvements regarding VBR,
+			perceptual enhancement and packet loss concealment.
+			</p>
+			<ul>
+			<li><a href="download/speex-1.0beta3.tar.gz">Source Code (462k)</a></li>
+			<li><a href="download/speex-1.0beta3-1.i386.rpm">i386 RPM (280k)</a></li>
+			<li><a href="download/speex-devel-1.0beta3-1.i386.rpm">i386 development RPM (78k)</a></li>
+			<li><a href="download/speex-1.0beta3-1.src.rpm">Source RPM (452k)</a></li>
+			<li><a href="download/speexbundle-1.0b3.zip">Windows binaries (300k)</a> built by John
+			Edwards</li>
+			</ul>
+			<h3 id="beta2">Speex Beta 2</h3>
+			<p class="releasenotes">
+			This second beta release brings many, many optimizations to the
+			encoder and decoder. In some cases, the speedup is on the order
+			of 50% to 100%.  As part of the optimizations, some sections of
+			Speex have been written in assembly with
+			<abbr title="streaming SIMD extensions">SSE</abbr>
+			instructions which can be enabled with the <code>_USE_SSE</code>
+			flag when compiling with <a href="http://gcc.gnu.org/">GCC</a>.
+			Finally, the code has received a major cleanup.
+			</p>
+			<ul>
+			<li><a href="download/Speex-1.0beta2.tar.gz">Source Code (448k)</a></li>
+			<li><a href="download/Speex-1.0beta2-1.i386.rpm">i386 RPM (270k)</a></li>
+			<li><a href="download/Speex-devel-1.0beta2-1.i386.rpm">i386 development RPM (75k)</a></li>
+			<li><a href="download/Speex-1.0beta2-1.src.rpm">Source RPM (452k)</a></li>
+			<li><a href="download/speex-1.0b2.zip">Windows binaries (271k)</a> built by John Edwards</li>
+			</ul>
+			<h3 id="beta1">Speex Beta 1</h3>
+			<p class="releasenotes">
+			This is the first beta release of Speex and also the first release under
+			the new BSD license. The API and bit-stream are currently in
+			“soft-freeze” meaning that they will not change unless there’s a very
+			good reason for it. The Ogg file-based bit-stream now includes the same
+			comment formatting as vorbis. Other than that, some bugs (that made the
+			encoder crash) were fixed.
+			</p>
+			<ul>
+			<li><a href="download/Speex-1.0beta1-1.i386.rpm">RPM (271K)</a></li>
+			<li><a href="download/Speex-1.0beta1-1.src.rpm">Source RPM (451K)</a></li>
+			<li><a href="download/Speex-1.0beta1.tar.gz">Source Code (448K)</a></li>
+			<li><a href="download/Speex-devel-1.0beta1-1.i386.rpm">Development RPM (77K)</a></li>
+			</ul>
+			<h2 id="older">Older Releases</h2>
+			<ul>
+			<li><a href="download/Speex-0.8.1.tar.gz">Speex-0.8.1.tar.gz</a></li>
+			<li><a href="download/Speex-0.8.0.tar.gz">Speex-0.8.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.7.0.tar.gz">Speex-0.7.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.6.0.tar.gz">Speex-0.6.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.5.0.tar.gz">Speex-0.5.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.4.0.tar.gz">Speex-0.4.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.3.0.tar.gz">Speex-0.3.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.2.0.tar.gz">Speex-0.2.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.1.3.tar.gz">Speex-0.1.3.tar.gz</a></li>
+			<li><a href="download/Speex-0.1.2.tar.gz">Speex-0.1.2.tar.gz</a></li>
+			<li><a href="download/Speex-0.1.1.tar.gz">Speex-0.1.1.tar.gz</a></li>
+			<li><a href="download/Speex-0.1.0.tar.gz">Speex-0.1.0.tar.gz</a></li>
+			<li><a href="download/Speex-0.0.3.tar.gz">Speex-0.0.3.tar.gz</a></li>
+			<li><a href="download/Speex-0.0.2.tar.gz">Speex-0.0.2.tar.gz</a></li>
+			<li><a href="download/Speex-0.0.1.tar.gz">Speex-0.0.1.tar.gz</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+
+</html>

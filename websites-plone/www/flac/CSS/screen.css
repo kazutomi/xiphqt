@@ -1,0 +1,19 @@
+div#tabs a#flac {
+	font-weight: bold;
+	border-bottom: 1px solid  #ffff56; 
+	background: #ffff56;
+}
+
+div#tabs a#flac:hover {
+	border-bottom: 1px solid  #ffff56; 
+}
+
+
+div#navbar {
+	background: #ffff56;
+	border-top: 1px solid #ffcf80;
+	border-color: #ffcf80;
+}
+div#navbar a {
+	color: black;
+}

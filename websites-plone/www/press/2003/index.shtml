@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: about us</title>
+	<style type='text/css'>
+		ol.releases li {
+			list-style-type: none;
+		}
+	</style>
+</head>
+
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Xiph.Org Press Releases: 2003</h1>
+			<p>
+				This page is an entry point to all of our press releases
+				that were released in 2003; they&#x2019;re
+				sorted by date.
+			</p>
+			<ol class='releases'>
+				<li>
+					April 17:
+					<a href='ceo/'>Emmett Plant Exits as Xiph.Org CEO</a>
+				</li>
+
+				<li>
+					March 24:
+					<a href='nonprofitspeex1/'>Speex Goes 1.0;
+					Xiph.Org Now a 501(c)3 Non-Profit Organization</a>
+				</li>
+
+				<li>
+					January 29:
+					<a href='flac/'><abbr title='Free Lossless Audio Codec'>FLAC</abbr>
+					Joins Xiph.Org</a>
+				</li>
+			</ol>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

@@ -1,0 +1,18 @@
+div#tabs a#icecast {
+	background: #aaa;
+	border-bottom: 1px solid #aaa;
+	font-weight: bold;
+}
+div#tabs a#icecast:hover {
+	border-bottom: 1px solid #aaa;
+}
+
+div#navbar {
+	background: #aaa;
+	border-color: #484848;
+	border-top: 1px solid #484848;
+}
+
+div#navbar a {
+	color: black;
+}

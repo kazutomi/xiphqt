@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: Theora: FAQ</title>
+	<style type='text/css'>
+		dl.faq dt {
+			font-weight: bold;
+			margin-top: 1em;
+		}
+		dl.faq dd {
+			margin: 0 1em;
+			padding-left: 0;
+		}
+
+		dl.faq dt:before {
+			content: "Q: ";
+		}
+
+		dl.faq dd:before {
+			content: "A: ";
+		}
+	</style>
+</head>
+
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>The Glorious Theora FAQ</h1>
+			
+			<dl class='faq'>
+				<dt>What is Theora?</dt>
+				<dd>
+					Theora is Xiph.org's first publicly released video codec, intended for use
+					within the Ogg's project's Ogg multimedia streaming system. Theora is
+					derived directly from <a href='http://www.on2.com/'>On2</a>'s VP3 codec;
+					Currently the two are nearly
+					identical, varying only in framing headers, but Theora will diverge and
+					improve from the main VP3 development lineage as time progresses. 
+				</dd>
+				<dt>Isn't VP3 a patented technology?</dt>
+				<dd>
+					Yes, some portions of the vp3 codec are covered by patents. However, the
+					Xiph.org Foundation has negotiated an irrevocable free license to the vp3
+					codec for any purpose imaginable on behalf of the public. It is legal to
+					use vp3 in any way you see fit (unless, of course, you're doing something
+					illegal with it in your particular jurisdiction). You are free to download
+					vp3, use it free of charge, implement it in a for-sale product, implement
+					it in a free product, make changes to the source and distribute those
+					changes, or print the source code out and wallpaper your spare room with
+					it. Still not convinced? See the <a href='#fixme'>legal terms</a>.
+				</dd>
+				<dt>What is the license for Theora?</dt>
+				<dd>
+					Theora (and all associated technologies released by the Xiph.org
+					Foundation) is released to the public via a BSD-style license. It is
+					completely free for commercial or noncommercial use. That means that
+					commercial developers may independently write Theora software which is
+					compatible with the specification for no charge and without restrictions of
+					any kind.
+				</dd>
+				<dt>Is Theora identical to On2's VP3?</dt>
+				<dd>
+					Theora will be almost entirely based upon the VP3 codec designed by On2.
+					However, Theora video data will be delivered inside of the Ogg container
+					format (with Vorbis for audio), so Ogg Theora files will not be the same as
+					VP3 files. There also may be quite a few performance advantages to  using
+					Theora when 1.0 is complete; While our focus is integration, there  will
+					certainly be a lot of optimization involved, as well.
+				</dd>
+			</dl>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

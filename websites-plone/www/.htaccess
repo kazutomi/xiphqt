@@ -1,0 +1,30 @@
+AddDefaultCharset UTF-8
+# All the redirects from the old pages to the new.
+
+RedirectPermanent /cvs.html http://www.xiph.org/cvs/
+RedirectPermanent /about.html http://www.xiph.org/about/us/
+RedirectPermanent /xiphname.html http://www.xiph.org/about/nomenclature/
+
+
+RedirectPermanent /archives/ http://www.xiph.org/mailinglists/
+RedirectPermanent /ogg/vorbis/ http://www.xiph.org/vorbis/
+RedirectPermanent /ogg/vorbis/index.html http://www.xiph.org/vorbis/
+RedirectPermanent /ogg/vorbis/donate.html http://www.xiph.org/donate/
+
+Redirect temp /flac/faq/ http://www.xiph.org/flac/doc/faq/
+Redirect temp /icecast/faq/ http://www.xiph.org/icecast/doc/faq/
+Redirect temp /ogg/faq/ http://www.xiph.org/ogg/doc/faq/
+Redirect temp /speex/faq/ http://www.xiph.org/speex/doc/faq/
+Redirect temp /vorbis/faq/ http://www.xiph.org/vorbis/doc/faq/
+
+
+
+# Stuff I've moved around and don't want to crawl through to fix
+RedirectPermanent /about/us/ http://www.xiph.org/about/why/
+
+# Intelligent yet Wrong Guesses
+RedirectPermanent /bugs/ http://bugs.xiph.org/
+RedirectPermanent /libao/ http://www.xiph.org/ao/
+RedirectPermanent /libogg/ http://www.xiph.org/ogg/
+RedirectPermanent /FLAC/ http://www.xiph.org/flac/
+RedirectPermanent /QA/ http://www.xiph.org/qa/

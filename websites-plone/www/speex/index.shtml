@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/speex/SSI/inhead.inc"-->
+    <title>Xiph.org: Speex</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/speex/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Speex: A free codec for free speech</h1>
+			<h2>Overview</h2>
+			<p>
+				Speex is an <a href="/speex/fsos/">Open Source/Free Software</a>
+				patent-free audio compression format designed for speech.
+				The Speex Project aims to lower the barrier of entry for voice applications
+				by providing a free alternative to expensive proprietary speech codecs.
+				Moreover, Speex is well-adapted to Internet applications and provides
+				useful features that are not present in most other codecs.
+
+				Finally, Speex is part of the
+				<a href="http://www.gnu.org/"><abbr title="GNU’s Not Unix">GNU</abbr>
+				Project</a> and is available under the
+				<a href="http://www.xiph.org/licenses/bsd/speex/">Xiph.org variant of the
+				BSD license</a>.
+			</p>
+			<h2>The Technology</h2>
+
+			<p>
+				Speex is based on <abbr title="Code-Excited Linear Prediction">CELP</abbr>
+				and is designed to compress voice at bitrates
+				ranging from 2 to 44 <abbr title="kilobits per second">kbps</abbr>.
+				Some of Speex’s features include:
+			</p>
+			<ul>
+				<li>
+					Narrowband (8 kHz), wideband (16 kHz), and ultra-wideband (32 kHz)
+					compression in the same bitstream
+				</li>
+				<li>Intensity stereo encoding</li>
+				<li>Packet loss concealment</li>
+				<li title="Speex uses more bits for more difficult-to-encode audio, and less bits for less">Variable bitrate operation (VBR)</li>
+				<li title="Speex can detect if someone is speaking or not, and adjust itself accordingly">Voice Activity Detection (VAD)</li>
+				<li title="Speex can stop sending data if it thinks that’s okay (such as when there is no voice data)">Discontinuous Transmission (DTX)</li>
+			</ul>
+			<p>
+				Note that Speex has a number of features that aren’t in other codecs
+				such as intensity stereo encoding, integration of multiple sampling rates
+				in the same bitstream, and a
+				<abbr title="variable bitrate (operation)">VBR</abbr> mode; see our
+				<a href="comparison.html">comparison page</a> for more.
+
+			</p>
+			<h2>Getting Involved</h2>
+			<p>
+				One of the simplest things you can do to get involved in Speex is by
+				using it in your application; Speex is well-suited to handle
+				<abbr title="Voice over IP">VoIP</abbr>, internet audio streaming,
+				data archival (like voice mail), and audio books.
+				Currently, <a href="http://www.linphone.org/">LinPhone</a>,
+				<a href="http://www.openh323.org/">OpenH323</a>, and
+				<a href="http://www.gnomemeeting.org/">GnomeMeeting</a> are some of the
+				projects currently using Speex. For a list of projects with
+				Speex support, visit our 
+				<a href="projects.html">Plug-ins &amp; Software</a> page.
+
+			</p>
+			<p> 
+				If you are interested in participating
+				in the project, have a look at our
+				<a href="todo.html">roadmap</a>, contact the Project Lead,
+				<a href="http://www.xiph.org/~jm/">Jean-Marc Valin</a>, or
+				<a href="vmail.html">join our mailing list</a>.
+			</p>
+		</div>
+	</div>
+
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+
+</html>

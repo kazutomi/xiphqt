@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: home</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Welcome to Xiph.org</h1>
+			<p>
+				The Xiph.org Foundation is a non-profit association dedicated to protecting
+				the foundations of Internet multimedia from control by private interests. Our
+				purpose is to support and develop free, open protocols and software to serve the
+				public, developer and business markets.
+			</p>
+			<p style='text-align: center;'>
+				<a href='/map/'>Site map</a>
+			</p>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

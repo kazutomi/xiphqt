@@ -1,0 +1,10 @@
+=====================
+An Example News Story
+=====================
+
+This is an example news story which will be processed by reST, turned
+into an XHTML fragment, and then displayed on a news page.
+
+This is a new paragraph with a link_.
+
+.. _link: http://www.xiph.org/

@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: Contact</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Xiph.org: Contact Information</h1>
+			<p>
+				We are:
+			</p>
+			<dl class='people'>
+				<dt>
+					Christopher Montgomery
+					&lt;<a href='mailto:monty@xiph.org'>monty@xiph.org</a>&gt;
+				</dt>
+				<dd>Founder and Lead Programmer</dd>
+
+				<dt>
+					Jack Moffitt
+					&lt;<a href='mailto:jack@xiph.org'>jack@xiph.org</a>&gt;
+				</dt>
+				<dd>Executive Contact</dd>
+				
+				<dt>
+					Manuel Lora
+					&lt;<a href='mailto:manuel@xiph.org'>manuel@xiph.org</a>&gt;
+				</dt>
+				<dd>Project Manager</dd>
+
+				<dt>
+					Nathan Sharfi
+					&lt;<a href='mailto:comatoast@xiph.org'>comatoast@xiph.org</a>&gt;
+				</dt>
+				<dd>Head Webmaster</dd>
+
+				<dt>
+					Tom Rosedale
+					&lt;<a href='mailto:trosedale@brllegal.com'>trosedale@brllegal.com</a>&gt;
+				</dt>
+				<dd>
+					Legal Counsel
+					(<a href='http://www.brllegal.com/'>Browne, Rosedale, &amp; Lanouette LLP</a>)
+				</dd>
+
+			</dl>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

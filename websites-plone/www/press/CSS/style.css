@@ -1,0 +1,23 @@
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	background: white url(/images/xiph-fish-grayed.png) top right no-repeat;
+}
+p {
+	text-align: justify;
+}
+
+.visitUs {
+	margin: 1em;
+	padding-top: .25em;
+	border-top: 1px solid black;
+
+}
+
+.pressInquiries {
+	margin-left: 2em;
+	margin-right: 2em;
+}

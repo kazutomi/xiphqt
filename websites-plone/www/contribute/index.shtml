@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: Contribute</title>
+	<style type='text/css'>
+		#content li {
+			margin: .1em 0;
+		}
+	</style>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Contribute to Xiph.org</h1>
+			<p>
+				You’d like to help us? Great! Here’s a non-exhaustive list of things that need
+				doing:
+			</p>
+			<h2 id='general'>General Stuff</h2>
+			<ul>
+				<li>Add in support for one or more Xiph codecs into your application.</li>
+				<li>
+					<em>Improve</em> codec support in an application you wrote.
+					There are a number of fancy things you can do with Vorbis-style comments;
+					some ideas are available on our
+					<a href='/qa/'><abbr title='Quality Assurance'>QA</abbr></a>
+					page.
+				</li>
+				<li>
+					If you know a standards body that needs audio compression, suggest a
+					Xiph codec like <a href='/vorbis/'>Vorbis</a>,
+					<a href='/flac/'>FLAC</a>, or <a href='/speex/'>Speex</a>.
+				</li>
+				<li>
+					Write (or improve) a plugin for your favorite codec in your favorite
+					audio player.
+				</li>
+			</ul>
+			
+			<h2 id='vorbis'>Vorbis Stuff</h2>
+			<ul>
+				<li>Document the reference encoder.</li>
+				<li>
+					Write a free, open-source fixed-point encoder for processors without
+					<abbr title='Floating-point unit'>FPU</abbr>s.
+				</li>
+			</ul>
+
+			<h2 id='flac'>FLAC Stuff</h2>
+			<ul>
+				<li>Modify the Winamp plugin for FLAC so it supports UTF-8.</li>
+				<li>Complain about the sorry state of liboggflac.</li>
+				<li>
+					Write a tool to transcode from native FLAC to Ogg FLAC.
+					Extra kudos if your tool handles the return trip.
+				</li>
+
+			</ul>
+
+
+			<h2 id='speex'>Speex Stuff</h2>
+			<ul>
+				<li>
+					Write a free, open-source fixed-point encoder for processors without
+					<abbr title='Floating-point unit'>FPU</abbr>s.
+				</li>
+			</ul>
+			
+
+				
+
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

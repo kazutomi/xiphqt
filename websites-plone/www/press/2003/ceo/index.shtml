@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+					  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/press/SSI/inhead.inc"-->
+	<title>Emmett Plant Exits as Xiph.Org CEO</title>
+	<link rel='up' href='../' />
+	<link rel='prev' href='../nonprofitspeex1/' />
+</head>
+<body>
+<p class='breadcrumbs'>
+	<span>
+		<a href='http://www.xiph.org/'>Xiph.Org</a>:
+		<a href='/press/'>press</a>:
+		<a href='../'>2003</a>:
+		April 17
+	</span>
+</p>
+<div id='content'>
+<h1>Emmett Plant Exits as Xiph.Org <abbr title='Chief Executive Officer'>CEO</abbr></h1>
+<p>
+The Xiph.Org Foundation today announced the termination of its contracting
+relationship with Emmett Plant.  He served as acting CEO since May 2002,
+working to build relationships with certain strategic partners in order
+to further the Foundation's efforts.</p>
+
+<p>
+The Foundation is a publicly supported non-profit corporation that was
+recently granted a favorable advance ruling on 501(c)(3) exemption by the
+<abbr title='Internal Revenue Service'>IRS</abbr>.
+In accordance with this ruling, the Foundation will enter a new phase of
+planning and operation.  Xiph.Org will be focusing its financial efforts
+in order to develop public funding sources and will be announcing several
+initiatives toward that end in the next few months.</p>
+
+<p>
+The Foundation provides a home for a collection of open source
+multimedia-related projects.  The Foundation’s purpose is to support and
+develop free, open protocols and superior software to serve the public,
+developers and business markets.
+</p>
+
+<!--#include virtual="/press/SSI/contact.inc"-->
+</div> <!-- #content -->
+
+</body>
+</html>

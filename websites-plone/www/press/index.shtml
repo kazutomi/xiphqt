@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: about us</title>
+	<style type='text/css'>
+		dl.releasesByYear,
+		dl.releasesByYear ol,
+		dl.releasesByYear li {
+			margin-left: 0;
+			padding-left: 0;
+		}
+		dl.releasesByYear li {
+			list-style-type: none;
+		}
+	</style>
+</head>
+
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Xiph.org Press Releases</h1>
+			<p>
+				This page is an entry point to all of our press releases. They&#x2019;re
+				organized by the year of release.
+			</p>
+
+			<dl class='releasesByYear'>
+				<dt><a href='2003/'>2003</a></dt>
+				<dd>
+					<ol>
+
+						<li>
+						April 17:
+							<a href='2003/ceo/'>Emmett Plant Exits as Xiph.Org CEO</a>
+						</li>
+
+						<li>
+							March 24:
+							<a href='2003/nonprofitspeex1/'>Speex Goes 1.0;
+							Xiph.Org Now a 501(c)3 Non-Profit Organization</a>
+						</li>
+
+						<li>
+							January 29:
+							<a href='2003/flac/'><abbr title='Free Lossless Audio Codec'>FLAC</abbr>
+							Joins Xiph.Org</a>
+						</li>
+					</ol>
+				</dd>
+			</dl>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

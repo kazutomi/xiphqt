@@ -1,0 +1,20 @@
+div#tabs a#theora, div#navbar {
+	background: #e44;
+}
+div#tabs a#theora {
+	border-bottom: 1px solid #ef0e0e;
+	font-weight: bold;
+}
+div#tabs a#theora:hover {
+	border-bottom: 1px solid #ef0e0e;
+}
+
+div#navbar {
+	border-color: #de1919;
+	border-top: 1px solid #de1919;
+}
+
+div#navbar a {
+	color: black;
+}
+

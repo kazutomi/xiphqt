@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: donate</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Donate to Xiph.org</h1>
+			<p>
+				Want to support open multimedia formats? Great!
+				One of the easiest ways to help support Xiph is through PayPal.
+			</p>
+			<div style='text-align: center;'>
+				<a href='https://secure.paypal.com/xclick/business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.xiph.org'><img
+				alt='PayPal' title='Donate to Xiph.org via PayPal'
+				src='http://www.paypal.com/images/lgo/logo3.gif' /></a>
+			</div>
+			<p>
+				You can also send a check or money order to:
+			</p>
+			<address style='margin-left: 2.0em;'>
+				Xiph.org Foundation<br />
+				c/o Jack Moffitt, Treasurer <br />
+				1408 Adams St. NE <br />
+				Albuquerque, NM 87110 <br />
+			</address>
+			<p>
+				Note that as of March 24, 2003, Xiph.org is a 501(c)(3) Non-Profit
+				Organization according to the IRS, so donations to Xiph.org are
+				tax-deductible. If you have any further questions, please contact Jack
+				Moffitt at <a href='mailto:jack@xiph.org'>jack@xiph.org</a>.
+			</p>
+			<p>
+				Further, <a href='http://www.cafeshops.com/cp/store.aspx?s=oggwear'>Xiph
+				merchandise</a> is on sale from
+				<a href='http://www.cafeshops.com/'>Cafeshops</a>; the margin from the sales
+				help support the Xiph.org Foundation. 
+			</p>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

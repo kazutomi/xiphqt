@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: Site Map</title>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Xiph.org Map</h1>
+			<p>
+				Here’s a map of all our pages in case you get lost:
+			</p>
+			<h2>About Xiph.org</h2>
+			<ul>
+				<li><a href='/nomenclature/'>Xiph.org Names and Logos</a></li>
+				<li><a href='/why/'>Why Xiph.org exists</a></li>
+			</ul>
+			<h2>Audio Compression Codecs</h2>
+			<ul>
+				<li><a href='/vorbis/'>Vorbis</a>, general-purpose lossy audio compression</li>
+				<li><a href='/flac/'>FLAC</a>, lossless audio compression</li>
+				<li><a href='/speex/'>Speex</a>, voice compression</li>
+			</ul>
+			<h2>Other Projects</h2>
+			<ul>
+				<li>
+					<a href='/qa/'>Quality Assurance</a>,
+					making sure our stuff is well-implemented
+				</li>
+				<li><a href='/icecast/'>Icecast</a>, a streaming audio server</li>
+				<li><a href='/theora/'>Theora</a>, a video compression codec</li>
+				<li><a href='/ogg/'>Ogg</a>, a multimedia container format</li>
+				<li><a href='/paranoia/'>Paranoia</a>, a CD ripper and library</li>
+				<li><a href='/mgm/'>MGM</a>, a load and status meter written in Perl</li>
+			</ul>
+
+			<h2>Contributing to Xiph.org</h2>
+			<ul>
+				<li><a href='/contribute/'>Getting Started</a></li>
+				<li><a href='/cvs/'>CVS Access</a></li>
+				<li><a href='/donate/'>Donate</a></li>
+			</ul>
+
+			<h2>Administrative Stuff</h2>
+			<ul>
+				<li><a href='/press/'>Press releases</a></li>
+				<li><a href='/contact/'>Contact information</a></li>
+			</ul>
+
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: Names and Logos</title>
+	<style type='text/css'>
+		img.logo {	
+			float: right;
+		}
+
+		span.genusSpecies,
+		span.letter, /* [CMS 15] */
+		span.book {
+			font-style: italic;
+		}
+/*
+		#startOfOgg, #startOfVorbis, #startOfTheora, #startOfParanoia {
+			margin-top: 1.5em;
+			padding-top: .5em;
+			border-top: 1px solid #333;
+		}*/
+	</style>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h1>Xiph.org Names and Logos</h1>
+			<!-- "startOf" prefix because 'ogg', &c. are already id attributes -->
+			<!-- oh, and I don't want to add extra divs to contain things if I can get away
+				 with it.
+			-->
+			<h2>Xiph</h2>
+			<p id='startOfXiph'>
+				<img class='logo' alt='' width='56' height='56'
+					 src='/Images/logos/xiph/112x112.png' />
+				<span class='genusSpecies'>Xiphophorus helleri</span> is a small aquarium fish
+				(the common Swordtail). What's special about it?  Not much, really.  The
+				Xiph.org logo doesn't even look anything like a real swordtail, but it's a logo
+				that's been in use a long time.
+			</p>
+			<p>
+				What the name <strong>does</strong> have is the requisite
+				<span class='letter'>X</span> for a technology-related organization. That it's
+				impossible to spell is an added bonus.
+			</p>
+			<h2>Ogg</h2>
+			<p id='startOfOgg'>
+				An <dfn>ogg</dfn> is a tactical maneuver from Netrek that has entered into
+				common usage in a wider sense. From the definition:
+			</p>
+			<blockquote cite='http://catb.org/~esr/jargon/html/O/ogg.html'>
+				<p>
+					To do anything forcefully, possibly without consideration of the drain on
+					future resources. "I guess I'd better go ogg the problem set that's due
+					tomorrow." "Whoops! I looked down at the map for a sec and almost ogged that
+					oncoming car." 
+				</p>
+			</blockquote>
+			<p>
+				Ogg became a project when most personal computers were i386s and the i486 was
+				new. Some of the algorithms considered would require a 486; while the
+				software ogged the music, there wasn't much processor left for anything else. 
+			</p>
+			<p>
+				These days, Ogg refers to the multimedia container format; there wasn't a good
+				reason to have "Ogg" refer to both a container format <em>and</em> a project.
+			</p>
+			<p>
+				Incidentally, Ogg is not named after Nanny Ogg, the character from the Terry
+				Pratchett book <span class='book'>Wyrd Sisters</span>.
+			</p>
+
+			<h2>Vorbis</h2>
+			<p id='startOfVorbis'>
+				Unlike Ogg, Vorbis <em>is</em> named after the Terry Pratchett
+				character from the book <span class='book'>Small Gods</span>. The name holds
+				some significance, but it's an indirect, uninteresting story. Vorbis is the current
+				general-purpose audio compression codec that was started after Fraunhofer
+				<a href='/about/us/#fraunhofer'>issued its Letter of Infringement to free MP3
+				encoder efforts</a>, and is intended to go head-to-head with AAC and MPC.
+			</p>
+			
+			<h2>Theora</h2>
+			<p id='startOfTheora'>
+				Theora is named after Theora Jones, Edison Carter's controller on the
+				Max Headroom television series. Incidentally, she was played by Amanda Pays.
+			</p>
+
+			<h2>cdparanoia</h2>
+			<p id='startOfParanoia'>
+				<img class='logo' src='/Images/logos/paranoia/55x50.png' alt='' />
+				cdparanoia is the error correcting compact disc digital audio extraction
+				(CDDA DAE) tool currently built with Paranoia III.
+			</p>
+			<p>
+				The name should be somewhat self-explanatory to anyone who's had difficulty
+				getting accurate audio from compact discs; the logo is a bit weirder. Dubbed
+				The All-Seeing Laser Playback Head of Omniscience, it's a takeoff of the
+				eye-and-pyramid symbol of wisdom.  Think you've seen it before and can't quite
+				place where?  Look on the back of a US one dollar bill. 
+			</p>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+    <title>Xiph.org: home</title>
+	<style type='text/css'>
+		table {
+			margin: 1em 1em;
+		}
+
+		td:first-child {
+			text-align: right;
+			padding-right: .5em;
+			vertical-align: top;
+		}
+	</style>
+</head>
+<body>
+	<!--#include virtual="/SSI/topofbody.inc"-->
+	<div class='pinchedIn'>
+		<!--#include virtual="/SSI/tabs.inc"-->
+	</div>
+	<div class='sectionSpecific'>
+		<!--#include virtual="/SSI/navbar.inc"-->
+		<div id='content'>
+			<h2>Modules</h2>
+			<table>
+				<thead class='invisible'>
+					<tr>
+						<th>Module name</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>ao</td>
+						<td>
+							Source code to <a href='/ao/'>libao</a>, used by some vorbis utilities.
+						</td>
+					</tr>
+					<tr>
+						<td>ao-python</td>
+						<td>Python bindings to libao.</td>
+					</tr>
+					<tr>
+						<td>icecast</td>
+						<td>The <a href='/icecast/'>icecast2</a> streaming audio server.</td>
+					</tr>
+					<tr>
+						<td>ices</td>
+						<td>An audio source client to the icecast2 server.</td>
+					</tr>
+					<tr>
+						<td>libshout</td>
+						<td>A library for communicating with an icecast server.</td>
+					</tr>
+					<tr>
+						<td>masktest</td>
+						<td>Source code to a package that collects masking data from a user by
+						running listening experiments.</td>
+					</tr>
+					<tr>
+						<td>mgm</td>
+						<td>
+							<a title='Moaning Goat Meter' href='/mgm/'>MGM</a>
+							is a status/load meter written in Perl.
+						</td>
+					</tr>
+					<tr>
+						<td>ogg</td>
+						<td>Source code to <a href='/ogg/'>libogg</a>.</td>
+					</tr>
+					<tr>
+						<td>ogg-python</td>
+						<td>Python bindings for libogg.</td>
+					</tr>
+					<tr>
+						<td>ogg-tools</td>
+						<td>
+							Source code to various command line utilities for other types of
+							Ogg files.
+						</td>
+					</tr>
+					<tr>
+						<td>paranoia-III</td>
+						<td>Source code to cdparanoia and Paranoia III.</td>
+					</tr>
+					<tr>
+						<td>speex</td>
+						<td>
+							Source code to the <a href='/speex/'>Speex</a>
+							low-bitrate voice-only audio codec.
+						</td>
+					</tr>
+					<tr>
+						<td>tarkin</td>
+						<td>Source code to Tarkin, an experimental video codec.</td>
+					</tr>
+					<tr>
+						<td>theora</td>
+						<td>Source code to <a href='/theora/'>Theora</a>, a video codec.</td>
+					</tr>
+					<tr>
+						<td title='Yes, Virginia, it is capitalized'>Tremor</td>
+						<td>Source code to Tremor, the integer-only Ogg Vorbis decode library.</td>
+					</tr>
+					<tr>
+						<td>vp32</td>
+						<td>Source code to ON2's VP3.2 video codec.</td>
+					</tr>
+					<tr>
+						<td>vorbis</td>
+						<td>Source code to libvorbis, libvorbisfile, libvorbisenc, and example code.</td>
+					</tr>
+					<tr>
+						<td>vorbis-plugins</td>
+						<td>
+							Source code to a few Ogg Vorbis player plugins:
+							<ul>
+								<li>Winamp 2 (though Winamp 2 bundles a better plugin)</li>
+								<li>kmpg (a KDE 2.0 media player)</li>
+								<li>RealPlayer 8</li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<td>vorbis-python</td>
+						<td>Python bindings for libvorbis, libvorbisfile and libvorbisenc.</td>
+					</tr>
+					<tr>
+						<td>vorbis-tools</td>
+						<td>
+							Source code to various command-line Ogg Vorbis utilities, including
+							ogg123, oggdec, oggenc, ogginfo, vcut, and vorbiscomment.
+						</td>
+					</tr>
+					<tr>
+						<td>w3d</td>
+						<td>Source code to another Tarkin experiment.</td>
+					</tr>
+					<tr>
+						<td>win32-tools</td>
+						<td>Source code for Windows-specific tools, including oggdrop.</td>
+					</tr>
+					<tr>
+						<td>win32sdk</td>
+						<td>The Windows development SDK.</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>The following helper libraries are used by icecast and related programs:</p>
+			<table>
+				<thead class='invisible'>
+					<tr>
+						<th>Module name</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>avl</td>
+						<td>AVL tree library.</td>
+					</tr>
+					<tr>
+						<td>httpp</td>
+						<td>A simple HTTP parser library.</td>
+					</tr>
+					<tr>
+						<td>log</td>
+						<td>A thread-safe logging library.</td>
+					</tr>
+					<tr>
+						<td>net</td>
+						<td>A thread-safe name resolving library.</td>
+					</tr>
+					<tr>
+						<td>thread</td>
+						<td>a cross-platform thread and synchronization library.</td>
+					</tr>
+					<tr>
+						<td>timing</td>
+						<td>A cross-platform timing library.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!--#include virtual="/SSI/bottomofbody.inc"-->
+</body>
+</html>

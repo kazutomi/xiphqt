@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+					  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/press/SSI/inhead.inc"-->
+	<title>Speex Goes 1.0; Xiph.Org now a 501(c)(3) Non-Profit Organization</title>
+	<link rel='up' href='../' />
+	<link rel='prev' href='../flac/' />
+	<link rel='next' href='../ceo/' />
+	<meta name='author' content='Emmett Plant'/>
+</head>
+<body>
+<p class='breadcrumbs'>
+	<span>
+		<a href='http://www.xiph.org/'>Xiph.Org</a>:
+		<a href='/press/'>press</a>:
+		<a href='../'>2003</a>:
+		March 24
+	</span>
+</p>
+<div id='content'>
+<h1>Speex reaches 1.0; Xiph.Org now a 501(c)(3) Non-Profit Organization</h1>
+<h2>Speex reaches 1.0</h2>
+<p>
+After a year of development, Speex has finally hit the big-time and gone to version 
+1.0. Speex is a <abbr title='Code Excited Linear Prediction'>CELP</abbr>-based free and open
+audio compression codec specifically tuned to 
+compress human speech at bitrates ranging from 2 to 44 kbps. The bitstream and
+<abbr title='Application Programming Interface'>API</abbr> are now officially frozen.
+</p>
+
+<p>
+Here&#x2019;s a feature list for Speex 1.0:
+</p>
+<ul>
+<li>Narrowband (8 kHz), wideband (16 kHz), and ultra-wideband (32 kHz) compression in 
+the same bitstream</li>
+<li>Intensity stereo encoding</li>
+<li>Packet loss concealment</li>
+<li title="Speex uses more bits for more difficult-to-encode audio, and less 
+bits for less">Variable bitrate operation (VBR)</li>
+
+<li title="Speex can detect if someone is speaking or not, and adjust itself 
+accordingly">Voice Activity Detection (VAD)</li>
+<li title="Speex can stop sending data if it thinks it&#2019;s okay (such as when 
+there is no voice data)">Discontinuous Transmission (DTX)</li>
+</ul>
+<p>
+There&#x2019;s a lot of information on Speex over at
+<a href="http://www.speex.org/">Speex.org</a>, including a page of 
+<a href='http://www.speex.org/audio/samples/'>samples</a> for 
+you to try out.
+</p>
+<p>
+I&#x2019;d like to take this opportunity to thank Jean-Marc Valin and the rest of the Speex
+team for delivering such a fantastic product to the world. As patent-encumbered and expensive 
+voice-compression products continue to invade the
+<abbr title='Voice over IP'>VoIP</abbr> industry, we&#x2019;re 
+incredibly proud to help them bring a free and open standard to the masses.
+</p>
+<h2>We&#x2019;re Legal!</h2>
+<p>
+After about a million pages of 
+documentation, a billion phonecalls and endless amounts of patience, the Xiph.Org 
+Foundation has been recognized by the IRS as a 501(c)(3) Non-Profit Organization.
+</p>
+<p>
+If you live in the United States, donations to Xiph are now tax-deductible. That means 
+that you&#x2019;ll be able to <a href="http://www.xiph.org/ogg/vorbis/donate.html">kick us a few 
+bucks</a>, write it off on your taxes, and help us keep 
+delivering really cool technology to the universe. Not a bad deal, eh? Also, a lot of 
+companies match donations to 501(c)(3) organizations, so if you&#x2019;re going to donate, drop 
+a message to your company&#x2019;s accounting department.
+</p>
+<p>
+If you can’t donate, that’s okay, too. In most of the Western world, there&#x2019;s a recession going on, and that makes it tough for people to donate to cool things they care about. If you&#x2019;d like to help out, just let people know about our technology.  We rely on clever folks like you to introduce our tech to their friends and associates.  Maybe one of your friends will like our stuff, win the lottery, and donate to our cause.  Maybe they won&#x2019;t.  Either way, you&#x2019;ll be sharing free best-of-class technology, and your friends will consider you a brilliant and helpful citizen of Earth. See? We all win.
+</p>
+<p>
+Many thanks to all of our supporters. We couldn&#x2019;t do it without 
+you, and we hope you&#x2019;ll keep giving open multimedia a fair shake. We promise to do our 
+best to make it worth the effort.
+</p>
+
+<!--#include virtual="/press/SSI/contact.inc"-->
+</div> <!-- #content -->
+
+</body>
+</html>
