@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility main for building codebooks from training sets
- last mod: $Id: build.c,v 1.15 2000/10/12 03:13:01 xiphmont Exp $
+ last mod: $Id: build.c,v 1.15.2.1 2000/10/31 08:25:17 xiphmont Exp $
 
  ********************************************************************/
 
@@ -152,7 +152,7 @@ int main(int argc,char *argv[]){
     float a;
     for(k=0;k<dim;k++){
       line=rline(in,out);
-      sscanf(line,"%lf",&a);
+      sscanf(line,"%f",&a);
       v.entrylist[i]=a;
       quantlist[i++]=rint(a);
     }
@@ -172,7 +172,7 @@ int main(int argc,char *argv[]){
       for(k=0;k<dim+aux;k++){
 	line=rline(in,out);
 	if(!line)break;
-	sscanf(line,"%lf",b+k);
+	sscanf(line,"%f",b+k);
       }
       if(feof(in))break;
       vqgen_addpoint(&v,b,NULL);

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: metrics and quantization code for LSP VQ codebooks
- last mod: $Id: lspdata.c,v 1.13 2000/10/12 03:13:02 xiphmont Exp $
+ last mod: $Id: lspdata.c,v 1.13.2.1 2000/10/31 08:25:17 xiphmont Exp $
 
  ********************************************************************/
 
@@ -117,11 +117,8 @@ float vqext_metric(vqgen *v,float *e, float *p){
   return sqrt(acc/v->elements);
 }
 
-/* Data files are line-vectors, starting with zero.  If we want to
-   train on a subvector starting in the middle, we need to adjust the
-   data as if it was starting at zero.  we also need to add the 'aux'
-   value, which is an extra point at the end so we have leading and
-   trailing space */
+/* Data files are line-vectors, now just deltas.  The codebook entries
+   want to be monotonically increasing, so we adjust */
 
 /* assume vqext_aux==1 */
 void vqext_addpoint_adj(vqgen *v,float *b,int start,int dim,int cols,int num){
@@ -129,12 +126,13 @@ void vqext_addpoint_adj(vqgen *v,float *b,int start,int dim,int cols,int num){
   float base=0;
   int i;
 
-  if(start>0)base=b[start-1];
-  for(i=0;i<dim;i++)a[i]=b[i+start]-base;
+  for(i=0;i<dim;i++)
+    base=a[i]=b[i+start]+base;
+
   if(start+dim+1>cols) /* +aux */
-    a[i]=a[i-1];
+    a[i]=M_PI;
   else
-    a[i]=b[i+start]-base;
+    a[i]=b[i+start]+base;
   
   vqgen_addpoint(v,a,a+dim);
 }
