@@ -17,7 +17,7 @@ typedef struct enclist_tag {
 enclist_t *head = NULL;
 
 oe_options opt = {NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 
-		0, 0, NULL,NULL, 128}; /* Default values */
+		0, 0, NULL,NULL, 64}; /* Default values */
 
 /* Define supported formats here */
 input_format formats[] = {
