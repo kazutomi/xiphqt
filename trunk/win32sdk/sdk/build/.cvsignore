@@ -5,3 +5,5 @@ Release
 *.aps
 *.mak
 *.dep
+out.ogg
+out.pcm
