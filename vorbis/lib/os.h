@@ -14,10 +14,11 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os.h,v 1.5 2000/05/08 20:49:49 xiphmont Exp $
+ last mod: $Id: os.h,v 1.5.2.1 2000/05/24 21:17:01 xiphmont Exp $
 
  ********************************************************************/
 
+#include <math.h>
 #ifndef _V_IFDEFJAIL_H_
 #define _V_IFDEFJAIL_H_
 

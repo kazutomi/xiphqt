@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: residue backend 0 implementation
- last mod: $Id: res0.c,v 1.12 2000/05/08 20:49:49 xiphmont Exp $
+ last mod: $Id: res0.c,v 1.12.2.1 2000/05/24 21:17:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -151,18 +151,43 @@ vorbis_look_residue *look (vorbis_dsp_state *vd,vorbis_info_mode *vm,
   return(look);
 }
 
-/* classify by max quantized amplitude only */
+
+/* does not guard against invalid settings; eg, a subn of 16 and a
+   subgroup request of 32.  Max subn of 128 */
 static int _testhack(double *vec,int n,vorbis_look_residue0 *look){
   vorbis_info_residue0 *info=look->info;
-  double max=0.;
-  int i;
-  
+  int i,j=0;
+  double max,localmax=0.;
+  double temp[128];
+  double entropy[8];
+
+  /* setup */
+  for(i=0;i<n;i++)temp[i]=fabs(rint(vec[i]));
+
+  /* handle case subgrp==1 outside */
   for(i=0;i<n;i++)
-    if(fabs(vec[i])>max)max=fabs(vec[i]);
+    if(temp[i]>localmax)localmax=temp[i];
+  max=localmax;
   
+  while(1){
+    entropy[j]=localmax;
+    n>>=1;
+    j++;
+
+    if(n<=0)break;
+    for(i=0;i<n;i++){
+      temp[i]+=temp[i+n];
+    }
+    localmax=0.;
+    for(i=0;i<n;i++)
+      if(temp[i]>localmax)localmax=temp[i];
+  }
+
   for(i=0;i<look->parts-1;i++)
-    if(max>=info->ampmax[i])
+    if(entropy[info->subgrp[j]]<=info->entmax[j] &&
+       max<=info->ampmax[j])
       break;
+
   return(i);
 }
 
