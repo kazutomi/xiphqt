@@ -34,7 +34,6 @@ OggVorbis_File input_file; // input file handle
 
 int killDecodeThread=0;					// the kill switch for the decode thread
 HANDLE thread_handle=INVALID_HANDLE_VALUE;	// the handle to the decode thread
-CRITICAL_SECTION if_mutex;  // handle to input_file mutex
 
 void DecodeThread(void *b); // the decode thread procedure
 
@@ -52,12 +51,12 @@ void about(HWND hwndParent)
 
 void init() 
 {
-	InitializeCriticalSection(&if_mutex);
+
 }
 
 void quit() 
 { 
-	DeleteCriticalSection(&if_mutex);
+
 }
 
 int isourfile(char *fn) 
@@ -142,9 +141,7 @@ int play(char *fn)
 		return -1;
 	}
 
-	EnterCriticalSection(&if_mutex);
 	if (ov_open_callbacks(stream, &input_file, NULL, 0, callbacks) < 0) {
-		LeaveCriticalSection(&if_mutex);
 		CloseHandle(stream);
 		return 1;
 	}
@@ -160,21 +157,27 @@ int play(char *fn)
 	samplerate = vi->rate;
 	num_channels = vi->channels;
 	bitrate = ov_bitrate(&input_file, -1);
-	LeaveCriticalSection(&if_mutex);
+
+	if(num_channels > 2) /* We can't handle this */
+	{
+		ov_clear(&input_file);
+		return 1;
+	}
 
 	// allocate the sample buffer - it's twice as big as we apparently need,
 	// because mod.dsp_dosamples() may use up to twice as much space. 
 	sample_buffer = malloc(576 * num_channels * 2 * 2 ); 
 	
 	if (sample_buffer == NULL)
+	{
+		ov_clear(&input_file);
 		return 1;
+	}
 
 	maxlatency = mod.outMod->Open(samplerate, num_channels, 16, -1, -1);
 	if (maxlatency < 0) {
 		// error opening device
-		EnterCriticalSection(&if_mutex);
 		ov_clear(&input_file);
-		LeaveCriticalSection(&if_mutex);
 		return 1;
 	}
 	
@@ -220,9 +223,10 @@ void stop()
 			MessageBox(mod.hMainWindow, "error asking thread to die!\n", "error killing decode thread", 0);
 			TerminateThread(thread_handle, 0);
 		}
-
+		ov_clear(&input_file);
 		CloseHandle(thread_handle);
 		thread_handle = INVALID_HANDLE_VALUE;
+
 	}
 
 	// deallocate sample buffer
@@ -263,7 +267,7 @@ int infoDlg(char *fn, HWND hwnd)
 	return 0;
 }
 
-char *generate_title(vorbis_comment *comment)
+char *generate_title(vorbis_comment *comment, char *fn)
 {/* Later, extend this to be configurable like the mp3 player */
 	char *title = NULL;
 	char buff[1024];
@@ -291,7 +295,7 @@ char *generate_title(vorbis_comment *comment)
 			_snprintf(buff, 1024, "Unknown track (encoded by %s)", comment->vendor);
 
 	} else {
-		_snprintf(buff, 1024, "Unknown track (encoded by %s)", comment->vendor);
+		_snprintf(buff, 1024, "%s (no title)", fn);
 	}
 
 	title = strdup(buff);
@@ -319,11 +323,9 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 		// initialization.  If it returns 0, the stream *is* Vorbis and we're
 		// fully ready to decode.
 		
-		EnterCriticalSection(&if_mutex);
 
 		if (ov_open_callbacks(stream, &vf, NULL, 0, callbacks) < 0) {
 			CloseHandle(stream);
-			LeaveCriticalSection(&if_mutex);
 			return;
 		}
 
@@ -333,7 +335,7 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 		comment = ov_comment(&vf, -1);
 		if(comment)
 		{
-			char *gen_title = generate_title(comment);
+			char *gen_title = generate_title(comment, filename);
 			if(gen_title)
 			{
 				strcpy(title, gen_title);
@@ -348,14 +350,16 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 	
 		ov_clear(&vf);
 		
-		LeaveCriticalSection(&if_mutex);
 	} else {
-		EnterCriticalSection(&if_mutex);
+		/* This is the only section of code which uses vorbisfile calls 
+		   in one thread whilst the main playback thread is running. 
+		   Technically, we should protect it with critical sections, but
+		   these two calls appear to be safe on win32/x86 */
 
 		comment = ov_comment(&input_file, -1);
 		if(comment)
 		{
-			char *gen_title = generate_title(comment);
+			char *gen_title = generate_title(comment, lastfn);
 			if(gen_title)
 			{
 				strcpy(title, gen_title);
@@ -367,15 +371,12 @@ void getfileinfo(char *filename, char *title, int *length_in_ms)
 
 		*length_in_ms = (int)ov_time_total(&input_file, -1) * 1000;
 
-		LeaveCriticalSection(&if_mutex);
 	}
 }
 
 void eq_set(int on, char data[10], int preamp) 
 { 
-	// most plug-ins can't even do an EQ anyhow.. I'm working on writing
-	// a generic PCM EQ, but it looks like it'll be a little too CPU 
-	// consuming to be useful :)
+	/* Waiting on appropriate libvorbis API additions. */
 }
 
 
@@ -389,11 +390,7 @@ int get_576_samples(char *buf)
 {
 	int ret;
 
-	EnterCriticalSection(&if_mutex);
-
 	ret = ov_read(&input_file, buf, 576 * num_channels * 2, 0, 2, 1, &current_section);
-
-	LeaveCriticalSection(&if_mutex);
 
 	return ret;
 }
@@ -407,13 +404,12 @@ void DecodeThread(void *b)
 	while (!*((int *)b)) {
 		if (seek_needed != -1) {
 			decode_pos_ms = (double)seek_needed;// - (seek_needed % 1000);
+			lastupdate = decode_pos_ms;
 			seek_needed = -1;
 			eos = 0;
 			mod.outMod->Flush((long)decode_pos_ms);
 
-			EnterCriticalSection(&if_mutex);
 			ov_time_seek(&input_file, decode_pos_ms / 1000);
-			LeaveCriticalSection(&if_mutex);
 		}
 
 		if (eos) {
@@ -444,10 +440,8 @@ void DecodeThread(void *b)
 				/* Update current bitrate (not currently implemented), and set sync (if lost) */
 				if(lostsync || (decode_pos_ms - lastupdate > 500))
 				{
-					EnterCriticalSection(&if_mutex);
 					bitrate = ov_bitrate_instant(&input_file);
 					mod.SetInfo(bitrate / 1000, samplerate / 1000, num_channels, 1);
-					LeaveCriticalSection(&if_mutex);
 					lostsync = 0;
 					lastupdate = decode_pos_ms;
 				}
