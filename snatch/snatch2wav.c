@@ -73,7 +73,7 @@ int main(int argc,char *argv[]){
   int c;
 
   video_timeahead=2; /* absolute minimum for sync to work */
-  vidbuf_fps=1000;   /* not critical in audio, but must still be set */
+  vidbuf_fps=30;     /* not critical in audio, but must still be set */
 
   while((c=getopt(argc,argv,optstring))!=EOF){
     switch(c){
