@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.18 2001/08/13 17:31:46 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.19 2001/08/13 20:07:03 kcarnold Exp $
 
  ********************************************************************/
 
@@ -732,8 +732,11 @@ void play_file()
 
 	  do {
 	    if (nthc-- == 0) {
-	      if (Options.outputOpts.buffer)
+	      if (Options.outputOpts.buffer) {
 		SubmitData (Options.outputOpts.buffer, convbuffer, ret, 1);
+		SetBuffersStats ();
+		UpdateStats (Options.statOpts.stats);
+	      }
 	      else
 		OutBufferWrite (convbuffer, ret, 1, &Options, 0);
 	      nthc = Options.playOpts.nth - 1;
