@@ -110,6 +110,8 @@
 #include "ices_config.h"
 #include "playlist/playlist.h"
 
+ices_plugin_t *crossfade_plugin(int secs);
+
 #define BUFSIZE 8192
 #define ICES_DEFAULT_HOST "127.0.0.1"
 #define ICES_DEFAULT_PORT 8000
