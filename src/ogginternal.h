@@ -124,6 +124,7 @@ struct ogg_stream_state {
   unsigned int   watermark;
   oggbyte_buffer header_build;
   int            continued;
+  int            packets;
 
   /* decode-side state data */
   int            holeflag;

@@ -77,7 +77,7 @@ static void _packet_flush(ogg_stream_state *os,int nextcomplete){
     if(os->e_o_s)ctemp|=0x04;     /* last page flag? */
     oggbyte_set1(obb,ctemp,5);
 
-    /* 64 bits of PCM position */
+    /* 64 bits of granule position */
     if(!os->b_o_s)
       oggbyte_set8(obb,0,6);
     else
@@ -91,10 +91,10 @@ static void _packet_flush(ogg_stream_state *os,int nextcomplete){
     /* 32 bits of page counter (we have both counter and page header
        because this val can roll over) */
     if(os->pageno==-1)os->pageno=0; /* because someone called
-				       stream_reset; this would be a
-				       strange thing to do in an
-				       encode stream, but it has
-				       plausible uses */
+                                       stream_reset; this would be a
+                                       strange thing to do in an
+                                       encode stream, but it has
+                                       plausible uses */
     oggbyte_set4(obb,os->pageno++,18);
     
     /* CRC filled in later */
@@ -152,8 +152,9 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
      granulepos et al and then finish packet lacing */
   
   os->body_fill+=remainder;
-  os->granulepos=op->granulepos;
+  if(!os->mode||!os->packets)os->granulepos=op->granulepos;
   os->packetno++;  /* for the sake of completeness */
+  os->packets++;   /* packets in current page, used for discontinuous */
   if(op->e_o_s)os->e_o_s=1;
   oggbyte_set1(&os->header_build,remainder,27+os->lacing_fill++);
 
@@ -201,7 +202,7 @@ int ogg_stream_pageout(ogg_stream_state *os, ogg_page *og){
     if(!os->header_tail)os->header_head=0;
     if(!os->body_tail)os->body_head=0;
   }
-  
+  os->packets = 0; /* packets in current page, used for discontinuous */
   return 1;
 }
 
@@ -412,6 +413,7 @@ int ogg_stream_reset(ogg_stream_state *os){
   os->body_fill=0;
   os->lacing_fill=0;
   oggbyte_clear(&os->header_build);
+  os->packets=0;
 
   os->holeflag=0;
   os->spanflag=0;
