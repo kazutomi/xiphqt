@@ -27,7 +27,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XShm.h>
 
-static pthread_mutex_t output_mutex=PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t output_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
