@@ -42,7 +42,7 @@ int fseek_func(void *stream, long offset, int whence) {
     return ret;
   }   
   cout << "hm, strange call"<<endl;
-  return EBADF;
+  return -1;
 }
 
 
@@ -68,13 +68,14 @@ VorbisPlugin::VorbisPlugin() {
   
 
   timeDummy=new TimeStamp();
-
+  pcmout=new char[4096];
   lnoLength=false;
 }
 
 
 VorbisPlugin::~VorbisPlugin() {
   delete timeDummy;
+  delete pcmout;
 }
 
 
@@ -84,7 +85,7 @@ void VorbisPlugin::config(char* key, char* value) {
   if (strcmp(key,"-c")==0) {
     lnoLength=true;
   }
-  PlayerPlugin::config(key,value);
+  DecoderPlugin::config(key,value);
 }
 
 
@@ -108,15 +109,61 @@ int VorbisPlugin::init() {
   return true;
 }
 
+
+// called by decoder thread
+int VorbisPlugin::processVorbis(vorbis_info* vi,vorbis_comment* comment) {
+
+  // decode
+  int ret;
+  int current_section=-1; /* A vorbis physical bitstream may
+			     consist of many logical sections
+			     (information for each of which may be
+			     fetched from the vf structure).  This
+			     value is filled in by ov_read to alert
+			     us what section we're currently
+			     decoding in case we need to change
+			     playback settings at a section
+			     boundary */
+  ret=ov_read(&vf,pcmout,sizeof(pcmout),0,2,1,&current_section);
+  switch(ret){
+  case 0:
+    /* EOF */
+    cout << "eof got"<<endl;
+    lDecoderLoop=false;
+    break;
+  case -1:
+    /* error in the stream.  Not a problem, just reporting it in
+       case we (the app) cares.  In this case, we don't. */
+    break;  
+  default:
+    if(current_section!=last_section){
+      vi=ov_info(&vf,-1); /* The info struct is different in each
+			     section.  vf holds them all for the
+			     given bitstream.  This requests the
+			     current one */
+      
+      double timeoffset=ov_time_tell(&vf);
+      
+      comment = ov_comment(&vf, -1);
+      if(comment) {
+	cout << "we have a comment"<<endl;
+      }
+    }  
+      last_section=current_section;
+      output->audioPlay(timeDummy,timeDummy,pcmout,ret);
+      break;
+    }
+  return true;
+}
+
+
 void VorbisPlugin::decoder_loop() {
-  int lInit=false;
   vorbis_info *vi=NULL;
   vorbis_comment *comment;
-  char pcmout[4096];
-  int last_section=0;
-  int current_section=0;
+  last_section=0;
+  current_section=0;
        
-  lfirst=true;
+
 
   if (input == NULL) {
     cout << "VorbisPlugin::decoder_loop input is NULL"<<endl;
@@ -126,72 +173,44 @@ void VorbisPlugin::decoder_loop() {
     cout << "VorbisPlugin::decoder_loop output is NULL"<<endl;
     exit(0);
   }
+  // init audio stream
+  output->audioInit();
 
   /********** Decode setup ************/
-  
-  init();
-
-  vi=ov_info(&vf,-1);
-
-  if (lnoLength==false) {
-    pluginInfo->setLength(getSongLength(&vf));
-    output->writeInfo(pluginInfo);
-  }
-  output->audioSetup(vi->rate,vi->channels-1,1,0,16);
-
-
+  cout << "decoder_loop"<<endl;
   // start decoding
-  while(lDecoderLoop && lCreatorLoop) {
-    if (pthread_mutex_trylock(&decoderChangeMut) == EBUSY) {
-      pthread_cond_wait(&decoderCond,&decoderMut);
-      continue;
-    }
-    pthread_mutex_unlock(&decoderChangeMut);
-    if (!lDecode) {
-      pthread_cond_wait(&decoderCond,&decoderMut);
-    }
-    // decode
-    int ret;
-    int current_section=-1; /* A vorbis physical bitstream may
-			       consist of many logical sections
-			       (information for each of which may be
-			       fetched from the vf structure).  This
-			       value is filled in by ov_read to alert
-			       us what section we're currently
-			       decoding in case we need to change
-			       playback settings at a section
-			       boundary */
-    ret=ov_read(&vf,pcmout,sizeof(pcmout),0,2,1,&current_section);
-    switch(ret){
-     case 0:
-       /* EOF */
-       cout << "eof got"<<endl;
-       lDecoderLoop=false;
-       break;
-     case -1:
-       /* error in the stream.  Not a problem, just reporting it in
-          case we (the app) cares.  In this case, we don't. */
-       break;  
-    default:
-      if(current_section!=last_section){
-	vi=ov_info(&vf,-1); /* The info struct is different in each
-			       section.  vf holds them all for the
-			       given bitstream.  This requests the
-			       current one */
-	
-	double timeoffset=ov_time_tell(&vf);
-	
-	comment = ov_comment(&vf, -1);
-	if(comment) {
-	  cout << "we have a comment"<<endl;
-	}
-      }  
-      last_section=current_section;
-      output->audioPlay(timeDummy,timeDummy,pcmout,ret);
+
+  while(runCheck()) {
+
+    switch(streamState) {
+    case _STREAM_STATE_FIRST_INIT :
+      cout << "_STREAM_STATE_FIRST_INIT"<<endl;
+      if (init()== false) {
+	// total failure. exit decoding
+	lDecoderLoop=false;
+	break;
+      }	
+      // now init stream
+      vi=ov_info(&vf,-1);
+      if (lnoLength==false) {
+	pluginInfo->setLength(getSongLength(&vf));
+	output->writeInfo(pluginInfo);
+      }
+      output->audioSetup(vi->rate,vi->channels-1,1,0,16);
+      lhasLength=true;
+      setStreamState(_STREAM_STATE_PLAY);
+      cout << "vorbis firstInitialize [END] ********"<<endl;
       break;
+    case _STREAM_STATE_INIT :
+    case _STREAM_STATE_PLAY :
+      processVorbis(vi,comment);
+      break;
+    default:
+      cout << "unknown stream state vorbis decoder:"<<streamState<<endl;
     }
   }
-  leof=true;
+  cout << "**** vorbis  Plugin exit"<<endl;
+
   ov_clear(&vf); /* ov_clear closes the stream if its open.  Safe to
 		    call on an uninitialized structure as long as
 		    we've zeroed it */
@@ -199,13 +218,10 @@ void VorbisPlugin::decoder_loop() {
 
   cout << "audioFlush -s"<<endl;
   output->audioFlush();
-  output->audioClose();
   cout << "audioFlush -e"<<endl;
-  pthread_mutex_unlock(&decoderMut);
-
 }
 
-// splay can seek in streams
+// vorbis can seek in streams
 int VorbisPlugin::seek(int second) {
   decoderLock();
   // small hack.
