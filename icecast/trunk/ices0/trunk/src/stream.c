@@ -37,6 +37,8 @@ static int ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, 
 void
 ices_stream_loop ()
 {
+	char namespace[1024];
+
 	/* Check if user gave us a hostname */
 	if (!isdigit ((int)(conn.ip[strlen (conn.ip) - 1]))) {
 		char hostbuff[1024];
@@ -51,7 +53,7 @@ ices_stream_loop ()
 
 	/* Tell libshout to connect to the server */
 	if (!shout_connect (&conn)) {
-		ices_log ("Failed connecting to server %s, error: %i\n", conn.ip, conn.error);
+		ices_log ("Failed connecting to server %s, error: %s", conn.ip, shout_strerror(&conn, conn.error, namespace, 1024));
 		ices_setup_shutdown ();
 	}
 	
@@ -81,6 +83,20 @@ ices_stream_loop ()
 		/* If something goes on while transfering, we just go on */
 		if (!ices_stream_send_file (file)) {
 			ices_log ("Warning: Encountered error while transfering %s. [%s]", file, ices_log_get_error ());
+			/* Let's see if it was a libshout socket error */
+			if (conn.error == SHOUTERR_SOCKET) {
+				ices_log ("Libshout communication problem, trying to reconnect to server");
+				
+				/* Make sure we disconnect */
+				shout_disconnect (&conn);
+				
+				/* Reconnect */
+				if (!shout_connect (&conn)) {
+					ices_log ("Failed reconnecting to server %s, error: %i", conn.ip, conn.error);
+					ices_setup_shutdown ();
+				}
+			}
+			
 			ices_util_free (file);
 			continue;
 		}
@@ -201,7 +217,7 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
 			}
 
 			if (!ret) {
-				ices_log_error ("Libshout reported send error: %i...", conn.error);
+				ices_log_error ("Libshout reported send error: %s", shout_strerror (&conn, conn.error, namespace, 1024));
 				return 0;
 			}
 			
@@ -243,7 +259,7 @@ ices_stream_fd_until_eof (int fd, const char *file)
                         ret = shout_send_data (&conn, buff, read_bytes);
 			
                         if (!ret) {
-                                ices_log_error ("Libshout reported send error:%i...", conn.error);
+                                ices_log_error ("Libshout reported send error: %s", shout_strerror (&conn, conn.error, namespace, 1024));
                                 break;
                         }
 			
@@ -265,8 +281,8 @@ ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, int read_by
 {
 	int ret = 1;
 #ifdef HAVE_LIBLAME
-	unsigned char reencode_buff[7200];
-	int len = ices_reencode_reencode_chunk (buff, read_bytes, reencode_buff, 7200);
+	unsigned char reencode_buff[15000];
+	int len = ices_reencode_reencode_chunk (buff, read_bytes, reencode_buff, 15000);
 	
 	if (len > 0)
 		ret = shout_send_data (conn, reencode_buff, len);
@@ -275,7 +291,7 @@ ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, int read_by
 	
 	/* Flush and send remains if file is up */
 	if (file_bytes <= 0) {
-		len = ices_reencode_flush (reencode_buff, 7200);
+		len = ices_reencode_flush (reencode_buff, 15000);
 		if (len > 0)
 			ret = shout_send_data (conn, reencode_buff, len);
 	}
