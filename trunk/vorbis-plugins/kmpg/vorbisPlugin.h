@@ -59,7 +59,7 @@ class VorbisPlugin : public DecoderPlugin {
 
   void decoder_loop();
   int seek_impl(int second);
-  void config(char* key, char* value);
+  void config(char* key, char* value,void* user_data);
  
  private:
   int processVorbis(vorbis_info* vi,vorbis_comment* comment);

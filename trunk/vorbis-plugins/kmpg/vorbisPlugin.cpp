@@ -42,7 +42,6 @@ int fseek_func(void *stream, int64_t offset, int whence) {
 
 int fclose_func (void *stream) {
   InputStream* input=(InputStream*) stream;
-  printf("fclose_func called:%8x\n",stream);
 
   // its handled different in kmpg
   // we close the stream if the decoder signals eof.
@@ -53,7 +52,6 @@ int fclose_func (void *stream) {
 
 long ftell_func  (void *stream) {
   InputStream* input=(InputStream*) stream;
-  printf("ftell_func called:%8x\n",stream);
   return input->getBytePosition();
 }
 
@@ -76,12 +74,12 @@ VorbisPlugin::~VorbisPlugin() {
 
 
 // here we can config our decoder with special flags
-void VorbisPlugin::config(char* key, char* value) {
+void VorbisPlugin::config(char* key, char* value,void* user_data) {
 
   if (strcmp(key,"-c")==0) {
     lnoLength=true;
   }
-  DecoderPlugin::config(key,value);
+  DecoderPlugin::config(key,value,user_data);
 }
 
 
@@ -170,14 +168,12 @@ void VorbisPlugin::decoder_loop() {
   output->audioInit();
 
   /********** Decode setup ************/
-  cout << "decoder_loop"<<endl;
   // start decoding
   lshutdown=false;
   while(runCheck()) {
 
     switch(streamState) {
     case _STREAM_STATE_FIRST_INIT :
-      cout << "_STREAM_STATE_FIRST_INIT"<<endl;
       if (init()== false) {
 	// total failure. exit decoding
 	lDecoderLoop=false;
@@ -192,7 +188,6 @@ void VorbisPlugin::decoder_loop() {
       output->audioSetup(vi->rate,vi->channels-1,1,0,16);
       lhasLength=true;
       setStreamState(_STREAM_STATE_PLAY);
-      cout << "vorbis firstInitialize [END] ********"<<endl;
       break;
     case _STREAM_STATE_INIT :
     case _STREAM_STATE_PLAY :
@@ -206,16 +201,13 @@ void VorbisPlugin::decoder_loop() {
       cout << "unknown stream state vorbis decoder:"<<streamState<<endl;
     }
   }
-  cout << "**** vorbis  Plugin exit"<<endl;
   lshutdown=true;
   ov_clear(&vf); /* ov_clear closes the stream if its open.  Safe to
 		    call on an uninitialized structure as long as
 		    we've zeroed it */
   
 
-  cout << "audioFlush -s"<<endl;
   output->audioFlush();
-  cout << "audioFlush -e"<<endl;
 }
 
 // vorbis can seek in streams
@@ -235,7 +227,7 @@ int VorbisPlugin::getTotalLength() {
   /* Retrieve the length in second*/
   shutdownLock();
   if (lshutdown==false) {
-      back = ov_time_total(&vf, -1);
+      back = (int) ov_time_total(&vf, -1);
   }
   shutdownUnlock();
   
