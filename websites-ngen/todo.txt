@@ -1,7 +1,7 @@
 To Do
 =====
 
-*	News.
+*	News. Getting there.
 
 *	A software directory.
 
@@ -20,6 +20,3 @@ For the News Things
 *	The news things should be able to be placed in multiple categories. Such categories would
 	include, but not be limited to "vorbis", "flac", "speex", "theora", "icecast",
 	"organizational", and the like.
-*	News items must be able to be placed in multiple categories; the oggenc that shipped with
-	the 1.0.1 release that could encode to vorbis from flac should be mentioned in both
-	the "vorbis" and "flac" sections.

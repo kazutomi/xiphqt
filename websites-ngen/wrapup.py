@@ -19,8 +19,9 @@
 #
 #    3. This notice may not be removed or altered from any source distribution.
 
-import os, re, sys, glob, os.path
+import os, re, sys, glob, os.path, time, datetime 
 import pdb
+from ConfigParser import SafeConfigParser
 MARKDOWN_COMMAND = "Markdown" # could also be "Markdown.pl"
 TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
 class MarkdownWrapper(object):
@@ -46,13 +47,7 @@ class MarkdownWrapper(object):
 					   '"-//W3C//DTD HTML 4.01//EN" ' + \
 					   '"http://www.w3.org/TR/html4/strict.dtd">'
 		
-		# Stuff .mainText with the contents of the file, after markdowning it.
-		self.mainText = ""
-		fh = os.popen(MARKDOWN_COMMAND + " " + sourceFilename)
-		try:
-			self.mainText = fh.read()
-		finally:
-			fh.close()
+		self.mainText = markdown(sourceFilename)
 
 		self.title = "Untitled Document"
 		match = TITLE_REGEX.match(self.mainText)
@@ -89,7 +84,6 @@ class MarkdownWrapper(object):
 			filename = getParentedFile(filename)
 			if not filename: continue
 			
-			print filename	
 			if os.path.isfile(filename):
 				contents = file(filename).read()
 				if filename.endswith('inhead.include'):			self.inHead			= contents
@@ -125,15 +119,15 @@ class MarkdownWrapper(object):
 		ret += "</html>\n"
 		return ret
 
-def makeReadableDate(isoDate):
-	"""Gets "January 4, 1982" from "1982-01-04"."""
-	year = isoDate[0:4]
-	month = isoDate[5:7]
-	day = isoDate[-2:]
-	if day.startswith('0'): day = day[-1]
-	months = """Nothing January February March April May June
-				July August September October November December""".split()
-	return "%s %s, %s" % (months[int(month)], day, year)
+def markdown(filename):
+	"""Returns an HTML snippet from a filename in Markdown format."""
+	ret = ""
+	fh = os.popen(MARKDOWN_COMMAND + ' ' + filename)
+	try:
+		ret = fh.read()
+	finally:
+		fh.close()
+	return ret
 
 def getParallelFile(where, what):
 	"""
@@ -198,9 +192,59 @@ def getParentedFile(filename):
 			if os.path.isfile(filename): return filename
 			else: return ""
 
+class NewsDispenser:
+	def __init__(self, optionsFile, printableDateFormat="%A, %B %d, %Y"):
+		"""Make a very simple list of news posts. This is not final code."""
+		config = SafeConfigParser({'sections': 'general'})
+		config.read(os.path.join("news", "options.ini"))
+
+		self.printableDateFormat = printableDateFormat
+		FILENAME_DATE_FORMAT = "on%Y-%m-%dat%H%M"
 		
+		#                        Monday, January 1, 2100
+		self.datedAndOptionedPostList = [] # list of (date, options, post) tuples
+		
+		# okay, now we want to go through the sections and associate each with their newspost.
+		for section in config.sections(): # section is string
+			l = []
+			l.append(time.strptime(section, FILENAME_DATE_FORMAT))
+			o = {}
+			for key, value in config.items(section):
+				if key == 'author': 
+					o['author'] = value
+				if key == 'sections':
+					o['sections'] = value.split()
+			l.append(o)
+			filename = os.path.join('news', section + '.txt')
+			s = markdown(filename)
+			l.append(s)
+			self.datedAndOptionedPostList.append(tuple(l))
+	
+	def prettifyPost(self, post):
+		"""
+			Takes in a (date, options, post) tuple and make it look like a real HTML snippet.
+			Returns said snippet.
+		"""
+		(date, options, text) = post
+		ret = text[:]
+		ret += "<p>Posted %s by %s</p>" %  \
+			   (time.strftime(self.printableDateFormat, date), options['author'])
+		ret += "\n<hr>\n"
+
+		return ret
+		
+	def dump(self):
+		"""You will rot in the Hot Place if you modify the contents of this return value."""
+		return self.datedAndOptionedPostList
+	def dumpPretty(self):
+		ret = ""
+		for post in self.datedAndOptionedPostList:
+			ret += self.prettifyPost(post)
+		return ret
 
 if __name__ == '__main__':
+	n = NewsDispenser(os.path.join('news', 'options.ini'))
+	print n.dumpPretty()
 	for dirpath, dirnames, filenames in os.walk('xiph.org'):
 		# bug if more than one .markdown file in a directory
 		for filename in filter(lambda x: x.endswith(".markdown"), filenames):
