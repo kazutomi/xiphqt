@@ -21,7 +21,6 @@ $playrip='cdparanoia -vZd $device $playstatus $pipe';
 $play='play -t wav $pipe ';
 
 $trackbase="/media/audio/albums";
-$unfiled="/media/audio/unfiled";
 $suffix=".ogg";
 
 if($#ARGV<0){
@@ -628,9 +627,6 @@ sub ReadStderr{
 	    my$trackname=Track_Path($ripstatus);
 	    print STDERR "moving $outfile to $trackname\n";
 	    unlink $wavfile;
-
-	    # add to unfiled list
-	    `echo "$trackname\n" >> $unfiled;`;
 
 	    $trackname=~s/([\"\$\`\\])/\\$1/g;
 	    die "could not move file!: $!" if `mv "$outfile" "$trackname"`;
