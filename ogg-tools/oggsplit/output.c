@@ -16,9 +16,15 @@
 #include "output.h"
 #include "common.h"
 
-int output_ctrl_init(output_ctrl_t *oc, char *filename)
+/* outdir given on command line */
+extern char *outdir;
+
+int output_ctrl_init(output_ctrl_t *oc, char *pathname)
 {
-  int fnlen, i;
+  int pathname_len, i;
+  /* indexes in pathname where basname begs ends ends.*/
+  int bnb=-1, bne=-1;
+  int basename_len;
 
   /* Begin with 8 (output_t *):s
    * We are using an array of (output_t *) instead of just output_t since the
@@ -34,18 +40,47 @@ int output_ctrl_init(output_ctrl_t *oc, char *filename)
   oc->basename=NULL;
   oc->suffix=NULL;
 
-  fnlen=strlen(filename);
-  for(i=fnlen-1; i>fnlen-6; i--){
-    if(filename[i]=='.'){
-      oc->basename=xmalloc(i+1);
-      strncpy(oc->basename, filename, i+1);
-      oc->basename[i]='\0';
-      oc->suffix=xstrdup(&filename[i]);
+  pathname_len=strlen(pathname);
+
+  /* calc bnb */
+  for(i=pathname_len; i>0; i--){
+    if(pathname[i-1]=='/'){
+      bnb=i;
+      break;
+    }
+  }
+  if(bnb==-1)bnb=0;
+
+  /* calc bne */
+  for(i=pathname_len-1; i>pathname_len-6 && i>bnb; i--){
+    if(pathname[i]=='.'){
+      bne=i;
+      break;
     }
   }
 
-  if(oc->basename==NULL)oc->basename=xstrdup(filename);
-  if(oc->suffix==NULL)oc->suffix=xstrdup(".ogg");
+  if(bne==-1)
+    basename_len=pathname_len-bnb;
+  else
+    basename_len=bne-bnb;
+
+  if(outdir!=NULL){
+    int outdirlen=strlen(outdir);
+    oc->basename=xmalloc(outdirlen+basename_len+2);
+    strcpy(oc->basename, outdir);
+    oc->basename[outdirlen]='/';
+    strncpy(&oc->basename[outdirlen+1], &pathname[bnb], basename_len);
+    oc->basename[outdirlen+basename_len+2]='\0';
+  }else{
+    oc->basename=xmalloc(basename_len+1);
+    strncpy(oc->basename, &pathname[bnb], basename_len);
+    oc->basename[basename_len]='\0';
+  }
+
+  if(bne==-1)
+    oc->suffix=xstrdup(".ogg");
+  else
+    oc->suffix=xstrdup(&pathname[bne]);
 
   return 1;
 }

@@ -1,4 +1,7 @@
+-*- text -*-
+
 oggsplit (0.1.1)
+  * moved all output filename calculation to one place and tidied it up.
   * changed how the output filenames are calculated. Now any suffix of
     length 4 or less is stripped out and used (might be good for .spx).
   * output files are now placed in CWD by default, instead of the same dir
