@@ -92,7 +92,7 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 #               3) draw modules, place and run
 
 &LoadModules($moddir,"share"); # module references
-&LoadModules($moddir,"$");   # platform specificmodule references
+&LoadModules($moddir,"$");   # platform specificmodule references
 
 &order_modules;        # extract how many to build
 &instance_modules;     # make copies of the references and build
