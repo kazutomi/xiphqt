@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.1.2.2 2003/03/04 06:05:06 brendan Exp $
+# $Id: configure.ac,v 1.1.2.3 2003/03/04 06:10:14 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -334,49 +334,6 @@ then
     AC_MSG_RESULT([Could not find perl libraries, perl scripting disabled])
   fi
 fi
-
-m4_if([
-have_python="no"
-if test "$with_python" != "no"
-then
-  if test -n "$with_python" -a "$with_python" != "yes"
-  then
-    CPPFLAGS="$CPPFLAGS -I$with_python/include"
-    LDFLAGS="$LDFLAGS -L$with_python/lib"
-  fi
-
-  AC_CHECK_HEADER(Python.h, [
-    have_python="maybe",
-    AC_DEFINE(HAVE_PYTHON_H, 1, [Define if you have Python.h])])
-
-  if test "$have_python" != "no"
-  then
-    for lib in python python2.2 python2.1 python2.0 python1.6 python1.5
-    do
-      if test "$have_python" != "yes"
-      then
-        AC_CHECK_LIB($lib, Py_Initialize, [
-          LIBS="$LIBS -l$lib"
-          PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_python.o"
-          have_python="yes"
-          LIBM="-lm"
-          LIBDL="-ldl"
-          AC_DEFINE(HAVE_LIBPYTHON, 1, [Define if you have the python library])],[have_python="no"],-lm -ldl)
-      fi
-    done
-  fi
-fi
-
-if test "$with_python" != "no" -a "$have_python" != "yes"
-then
-  if test -n "$with_python"
-  then
-    AC_MSG_ERROR([Could not find the python library])
-  else
-    AC_MSG_RESULT([Could not find the python library, python scripting disabled])
-  fi
-fi
-])
 
 AC_ARG_WITH(xml-config,
   [  --with-xml-config=PATH  use xml-config in PATH to find libxml ])
