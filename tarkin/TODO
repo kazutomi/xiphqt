@@ -1,0 +1,34 @@
+=== Must Haves ===
+
+* Add codebook to compress vector magnitudes
+
+* Add code to remove effects of zero-stuffing (padding frame boundries to fit inside ^2 constraints)
+
+* Add color handling (HSB)
+
+* Create framework for block transport
+
+* Link with bzip2 library to globally compress file
+
+* Allow import from other video types for encoder (avi, mpeg, mov, etc)
+
+* Speed up encoder and decoder blocks
+
+* Create player programs (X, Java, winxx)
+
+
+
+=== Possibilities ===
+
+* Experiment with alternate wavelet functions (How well would a 2 coeff DWT work?)
+  Idea: perhaps it'll reduce DWT calculation time and increase edge sharpness
+
+* Experiment with alternate vector packing formats (Try full 3d packing rather than z-layered 2d)
+  Idea: Will 3d packing produce better overall packing? Run some tests to see if the additional 
+        overhead and bits/vector of a 3rd dimension in vector counts are offset by not having as
+        many 'layers' in calculation (4 as opposed to 16)
+
+* Experiment with 'chunking' variety of video stream (32x32xz or 64x64xz blocks). 
+  Idea: Reduced edge effects and faster conversion time might be acheived if smaller blocks are
+        used. Also possible is more efficient representation of video due to smaller possible
+        areas where motion might occur (and less motion in the smaller areas to represent)
