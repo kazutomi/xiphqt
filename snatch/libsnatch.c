@@ -91,7 +91,8 @@ static void (*QueuedTask)(void);
 
 static int outfile_fd=-1;
 
-static void CloseOutputFile();
+static void TempCloseOutputFile();
+static void CloseOutputFile(int preserve);
 static void OpenOutputFile();
 
 static char *audio_fmts[]={"unknown format",
@@ -122,7 +123,7 @@ static int gwrite(int fd, void *buf, int n){
 	else{
 	  fprintf(stderr,"**ERROR: Write error on capture file!\n"
 		  "       : %s\n",strerror(errno));
-	  CloseOutputFile(1); /* if the error is the 2GB limit on Linux 2.2,
+	  TempCloseOutputFile(); /* if the error is the 2GB limit on Linux 2.2,
 				this will result in a new file getting opened */
 	  return(ret);
 	}
@@ -759,6 +760,17 @@ static void CloseOutputFile(int preserve){
       output_audio_p=0;
       output_video_p=0;
     }
+  }
+  pthread_mutex_unlock(&output_mutex);
+}
+
+static void TempCloseOutputFile(void){
+  pthread_mutex_lock(&output_mutex);
+  if(outfile_fd>=0){
+    if(debug)fprintf(stderr,"    ...: Capture file closed; trying to continue...\n");
+    if(outfile_fd!=STDOUT_FILENO)
+      close(outfile_fd);
+    outfile_fd=-1;
   }
   pthread_mutex_unlock(&output_mutex);
 }
