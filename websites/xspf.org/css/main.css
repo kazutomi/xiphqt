@@ -1,0 +1,93 @@
+body              {
+                   background-image: url(/images/gray-bg.png); 
+                   font-family: tahoma, verdana, ariel, helvetica; 
+                  }
+p, ul, ol         {
+                   font-size: 10pt; 
+                  }
+h1                {
+                   font-size: 14pt; 
+                   font-weight: bold; 
+                  }
+a                 {
+                   color: #780D0D; 
+                   text-decoration: none;
+                   font-weight: bold; 
+                  }
+a:hover           {
+                   text-decoration: underline;
+                  }
+a:visited         {
+                   font-weight: normal; 
+                  }
+.main             { 
+                   padding: 1em 1.5em 1em 1.5em; 
+                  }
+#container        { 
+                   margin: 0 5% 0 5%; 
+                   border-style: solid; 
+                   border-width: 1px; 
+                   background-color: white;  
+                  } 
+#title            { 
+                   padding: 13px 10px 10px 10px; 
+                   background-color: #A11414; 
+                   background-image: url(/images/xspf-logo-3.png);
+                   background-repeat: no-repeat;
+                   border-style: solid; 
+                   border-width: 0 0 1px 0;  
+                   height: 20px;
+                  } 
+#menu             { 
+                   padding: 5px; 
+                   background-color: #780D0D; 
+                   color: white; 
+                   border-style: solid; 
+                   border-width: 0 0 1px 0; 
+                   border-color: black;  
+                  } 
+#menu a           {
+                   color: #FFFFFF; 
+		   font-weight: normal;
+                   text-decoration: none;
+                  }
+#menu a:hover     {
+                   text-decoration: underline;
+                  }
+#menu a:visited   {
+                   color: #bbbbbb; 
+                  }
+.menuItem         { 
+                   padding-right: 5px; 
+                   color: white; 
+                  } 
+.selectedMenuItem { 
+                   font-weight: bold; 
+                  }
+.indented         {
+                   margin: 0 5em 0 3em;
+                  }
+.footer           {        
+                   text-align: right; 
+                   margin: 3em 3em 0 0; 
+                   font-weight: bold;
+                  }
+.image            {
+                   float: right; 
+                   margin: 0 1.5em 1.5em 1.5em; 
+                   padding: 4px; 
+                   border-style: solid; 
+                   border-width: 1px;     
+                  }
+.links            {
+                   padding: 5px; 
+                   border-style: solid; 
+                   border-width: 1px;
+                  }
+.notice           { 
+                   border-width: 2px; 
+                   border-style: dotted; 
+                   border-color: red; 
+                   margin: 2em; 
+                   padding: 2em; 
+                  }
