@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.c,v 1.1.2.4 2001/08/23 01:52:55 kcarnold Exp $
+ last mod: $Id: options.c,v 1.1.2.5 2001/08/30 02:06:24 kcarnold Exp $
 
  ********************************************************************/
 
@@ -85,6 +85,11 @@ ParseCode ParseLine (Option_t opts[], char *line)
   /* skip leading whitespace */
   while (line[0] == ' ')
     line++;
+
+  /* remove comments */
+  equals = strchr (line, '#');
+  if (equals)
+    *equals = '\0';
 
   /* return if only whitespace on line */
   if (!line[0] || line[0] == '#')
