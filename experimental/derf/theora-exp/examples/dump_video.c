@@ -84,16 +84,60 @@ static void sigint_handler (int signal) {
   got_sigint = 1;
 }
 
-static void open_video(void){
+static theora_ycbcr_buffer ycbcr;
 
+static void stripe_decoded(theora_ycbcr_buffer _dst,theora_ycbcr_buffer _src,
+ int _fragy0,int _fragy_end){
+  int pli;
+  for(pli=0;pli<3;pli++){
+    int yshift;
+    int y_end;
+    int y;
+    yshift=pli!=0&&!(ti.pixel_fmt&2);
+    y_end=_fragy_end<<3-yshift;
+    for(y=_fragy0<<3-yshift;y<y_end;y++){
+      memcpy(_dst[pli].data+y*_dst[pli].ystride,
+       _src[pli].data+y*_src[pli].ystride,_src[pli].width);
+    }
+  }
+}
+
+static void open_video(void){
+  theora_stripe_callback cb;
+  int                    pli;
+  /*Here we allocate a buffer so we can use the striped decode feature.
+    There's no real reason to do this in this application, because we want to
+     write to the file top-down, but the frame gets decoded bottom up, so we
+     have to bufer it all anyway.
+    But this illustrates how the API works.*/
+  for(pli=0;pli<3;pli++){
+    int xshift;
+    int yshift;
+    xshift=pli!=0&&!(ti.pixel_fmt&1);
+    yshift=pli!=0&&!(ti.pixel_fmt&2);
+    ycbcr[pli].data=(char *)malloc(
+     (ti.frame_width>>xshift)*(ti.frame_height>>yshift)*sizeof(char));
+    ycbcr[pli].ystride=ti.frame_width>>xshift;
+    ycbcr[pli].width=ti.frame_width>>xshift;
+    ycbcr[pli].height=ti.frame_height>>yshift;
+  }
+  /*Similarly, since ycbcr is a global, there's no real reason to pass it as
+     the context.
+    In a more object-oriented decoder, we could pass the "this" pointer
+     instead (though in C++ platform-dependent calling convention differences
+     prevent us from using a real member function pointer).*/
+  cb.ctx=ycbcr;
+  cb.stripe_decoded=(theora_stripe_decoded_func)stripe_decoded;
+  theora_decode_ctl(td,OC_DECCTL_SET_STRIPE_CB,&cb,sizeof(cb));
 }
 
 static void video_write(void){
   int pli;
   int i;
 
+  /*Uncomment the following to do normal, non-striped decoding.
   theora_ycbcr_buffer ycbcr;
-  theora_decode_ycbcr_out(td,ycbcr);
+  theora_decode_ycbcr_out(td,ycbcr);*/
 
   for(pli=0;pli<3;pli++){
     for(i=0;i<ycbcr[pli].height;i++){
@@ -251,7 +295,7 @@ int main(int argc,char *argv[]){
   /* and now we have it all.  initialize decoders */
   if(theora_p){
     td=theora_decode_alloc(&ti,ts);
-    fprintf(stderr,"Ogg logical stream %x is Theora %dx%d %.02f fps video\nEncoded frame content is %dx%d with %dx%d offset\n",
+    fprintf(stderr,"Ogg logical stream %lx is Theora %dx%d %.02f fps video\nEncoded frame content is %dx%d with %dx%d offset\n",
             to.serialno,ti.frame_width,ti.frame_height,
             (double)ti.fps_numerator/ti.fps_denominator,
             ti.pic_width, ti.pic_height, ti.pic_x, ti.pic_y);
@@ -296,7 +340,7 @@ int main(int argc,char *argv[]){
 
     if(!videobuf_ready ){
       /* no data yet for somebody.  Grab another page */
-      int ret=buffer_data(infile,&oy);
+      buffer_data(infile,&oy);
       while(ogg_sync_pageout(&oy,&og)>0){
         queue_page(&og);
       }

@@ -2207,7 +2207,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
           group_sums[i]=_psych->mask_groups[o][mfragj][i]+
            _psych->mask_groups[o-1][mfragj][i]+
            _psych->mask_groups[o+1][mfragj][i]+
-           _psych->mask_groups[o][mfragj-1][i];
+           _psych->mask_groups[o][mfragj-1][i]+
            _psych->mask_groups[o][mfragj+1][i];
         }
         /*Mask the coefficients in this block.*/

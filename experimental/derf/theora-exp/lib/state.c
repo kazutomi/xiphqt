@@ -844,40 +844,36 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
 
 /*Copies the fragments specified by the lists of fragment indices from one
    frame to another.
-  _fragis:    A pointer to a list of fragment indices for each color plane.
-  _nfragis:   The number of fragment indices to copy in each list.
+  _fragis:    A pointer to a list of fragment indices.
+  _nfragis:   The number of fragment indices to copy.
   _dst_frame: The reference frame to copy to.
-  _src_frame: The reference frame to copy from.*/
-void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
- int _nfragis[3],int _dst_frame,int _src_frame){
-  int dst_framei;
-  int dst_ystride;
-  int src_framei;
-  int src_ystride;
-  int pli;
+  _src_frame: The reference frame to copy from.
+  _pli:       The color plane the fragments lie in.*/
+void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
+ int _nfragis,int _dst_frame,int _src_frame,int _pli){
+  const int *fragi;
+  const int *fragi_end;
+  int        dst_framei;
+  int        dst_ystride;
+  int        src_framei;
+  int        src_ystride;
   dst_framei=_state->ref_frame_idx[_dst_frame];
   src_framei=_state->ref_frame_idx[_src_frame];
-  for(pli=0;pli<3;pli++){
-    const int *fragi;
-    const int *fragi_end;
-    dst_ystride=_state->ref_frame_bufs[dst_framei][pli].ystride;
-    src_ystride=_state->ref_frame_bufs[src_framei][pli].ystride;
-    fragi=_fragis[pli];
-    fragi_end=fragi+_nfragis[pli];
-    for(;fragi<fragi_end;fragi++){
-      oc_fragment  *frag;
-      unsigned char *dst;
-      unsigned char *src;
-      int            j;
-      int            i;
-      frag=_state->frags+*fragi;
-      dst=frag->buffer[dst_framei];
-      src=frag->buffer[src_framei];
-      for(j=0;j<8;j++){
-        for(i=0;i<8;i++)dst[i]=src[i];
-        dst+=dst_ystride;
-        src+=src_ystride;
-      }
+  dst_ystride=_state->ref_frame_bufs[dst_framei][_pli].ystride;
+  src_ystride=_state->ref_frame_bufs[src_framei][_pli].ystride;
+  fragi_end=_fragis+_nfragis;
+  for(fragi=_fragis;fragi<fragi_end;fragi++){
+    oc_fragment   *frag;
+    unsigned char *dst;
+    unsigned char *src;
+    int            j;
+    frag=_state->frags+*fragi;
+    dst=frag->buffer[dst_framei];
+    src=frag->buffer[src_framei];
+    for(j=0;j<8;j++){
+      memcpy(dst,src,sizeof(dst[0])*8);
+      dst+=dst_ystride;
+      src+=src_ystride;
     }
   }
 }
@@ -913,8 +909,7 @@ static void loop_filter_v(unsigned char *_pix,int _ystride,int *_bv){
        The total array size should be 512, but this pointer should point to the
          256th entry, as that is more convenient for the filter functions.
   Return: 0 on success, or a non-zero value if no filtering need be applied.*/
-int oc_state_loop_filter_init(oc_theora_state *_state,
- int *_bv){
+int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv){
   int flimit;
   int i;
   flimit=_state->loop_filter_limits[_state->qis[0]];
@@ -989,7 +984,6 @@ void oc_state_loop_filter(oc_theora_state *_state,int _frame){
   int bounding_values[512];
   int framei;
   int pli;
-  int i;
   framei=_state->ref_frame_idx[_frame];
   if(oc_state_loop_filter_init(_state,bounding_values+256))return;
   for(pli=0;pli<3;pli++){

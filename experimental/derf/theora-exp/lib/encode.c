@@ -1452,10 +1452,8 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
     if(old_tok1>=OC_NDCT_EOB_TOKEN_MAX)continue;
     /*Pull off the associated extra bits, if any, and decode the runs.*/
     ebi=_enc->nextra_bits[zzj];
-    old_eb1=OC_DCT_TOKEN_EXTRA_BITS[old_tok1]?
-     _enc->extra_bits[zzj][--ebi]:0;
-    old_eb2=OC_DCT_TOKEN_EXTRA_BITS[old_tok2]?
-     old_eb2=_enc->extra_bits[zzi][0]:0;
+    old_eb1=OC_DCT_TOKEN_EXTRA_BITS[old_tok1]?_enc->extra_bits[zzj][--ebi]:0;
+    old_eb2=OC_DCT_TOKEN_EXTRA_BITS[old_tok2]?_enc->extra_bits[zzi][0]:0;
     runl=OC_EOB_OFFS[old_tok1]+old_eb1+OC_EOB_OFFS[old_tok2]+old_eb2;
     /*We can't possibly combine these into one run.
       It might be possible to split them more optimally, but we'll just leave
@@ -2271,7 +2269,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
     _enc->mv_scheme=0;
     inter_bits+=mvbitsa;
   }
-   _enc->mode_scheme_chooser.scheme_bits[
+  inter_bits+=_enc->mode_scheme_chooser.scheme_bits[
    _enc->mode_scheme_chooser.scheme_list[0]];
   /*The easiest way to count the bits needed for coded/not coded fragments is
      to code them.
@@ -2610,6 +2608,7 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
       int *plfragis[3];
       int  ncoded;
       int  nuncoded;
+      int  pli;
       ncoded=_enc->state.ncoded_fragis[0]+_enc->state.ncoded_fragis[1]+
        _enc->state.ncoded_fragis[2];
       nuncoded=_enc->state.nfrags-ncoded;
@@ -2619,8 +2618,10 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
         plfragis[0]=_enc->state.coded_fragis;
         plfragis[1]=plfragis[0]+_enc->state.ncoded_fragis[0];
         plfragis[2]=plfragis[1]+_enc->state.ncoded_fragis[1];
-        oc_state_frag_copy(&_enc->state,plfragis,_enc->state.ncoded_fragis,
-         OC_FRAME_PREV,OC_FRAME_SELF);
+        for(pli=0;pli<3;pli++){
+          oc_state_frag_copy(&_enc->state,plfragis[pli],
+           _enc->state.ncoded_fragis[pli],OC_FRAME_PREV,OC_FRAME_SELF,pli);
+        }
         _enc->state.ref_frame_idx[OC_FRAME_SELF]=
          _enc->state.ref_frame_idx[OC_FRAME_PREV];
       }
@@ -2628,8 +2629,10 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
         plfragis[0]=_enc->state.uncoded_fragis-_enc->state.nuncoded_fragis[0];
         plfragis[1]=plfragis[0]-_enc->state.nuncoded_fragis[1];
         plfragis[2]=plfragis[1]-_enc->state.nuncoded_fragis[2];
-        oc_state_frag_copy(&_enc->state,plfragis,_enc->state.nuncoded_fragis,
-         OC_FRAME_SELF,OC_FRAME_PREV);
+        for(pli=0;pli<3;pli++){
+          oc_state_frag_copy(&_enc->state,plfragis[pli],
+           _enc->state.nuncoded_fragis[pli],OC_FRAME_SELF,OC_FRAME_PREV,pli);
+        }
         _enc->state.ref_frame_idx[OC_FRAME_PREV]=
          _enc->state.ref_frame_idx[OC_FRAME_SELF];
       }

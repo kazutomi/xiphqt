@@ -69,7 +69,7 @@ typedef enum{
   OC_PF_NFORMATS
 }theora_pixel_fmt;
 
-/*theora_enc_ctl codes.
+/*theora_encode_ctl codes.
   By convention, these are even, to distinguish them from decoder control
    codes.
   Keep any experimental or vendor-specific values above 0x8000.*/
@@ -118,7 +118,7 @@ typedef enum{
           OC_IMPL:   Not supported by this implementation.*/
 #define OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
 
-/*theora_dec_ctl codes.
+/*theora_decode_ctl codes.
   By convention, these are odd, to distinguish them from encoder control codes.
   Keep any experimental or vendor-specific values above 0x8000.*/
 
@@ -148,6 +148,16 @@ typedef enum{
           OC_EINVAL: _buf_sz is not sizeof(ogg_int64_t), or the granpos is
                       negative.*/
 #define OC_DECCTL_SET_GRANPOS (5)
+/*Sets the striped decode callback function.
+  If set, this function will be called as each piece of a frame is fully
+   decoded.
+  You can pass in a theora_stripe_callback struct with stripe_decoded set to
+   NULL to disable the callbacks at any point.
+
+  arg: [in]  theora_stripe_callback: The callback parameters.
+  Return: OC_FAULT:  _dec_ctx or _buf is NULL.
+          OC_EINVAL: _buf_sz is not sizeof(theora_stripe_callback).*/
+#define OC_DECCTL_SET_STRIPE_CB (7)
 
 /*A single color plane in an image.*/
 typedef struct{
@@ -166,6 +176,43 @@ typedef struct{
   The prime symbol denotes that the Y channel is non-linear.
   Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
 typedef theora_img_plane theora_ycbcr_buffer[3];
+
+/*A callback function for striped decoded.
+  This is a function pointer to an application-provided function that gets
+   called each time a section of the image is fully decoded.
+  This allows the application to process the section immediately, while it is
+   still in cache.
+  Note that the frame is decoded bottom to top, so _yfrag0 will steadily
+   decrease with each call until it reaches 0, at which point the full frame is
+   decoded.
+  The number of fragment rows made available in each call depends on the pixel
+   format and the number of post-processing filters enabled, and may not even
+   be constant for the entire frame.
+  If a non-NULL _granpos pointer is passed to theora_decode_packetin(), the
+   granule position for the frame will be stored in it before the first
+   callback is made.
+  If an entire frame is dropped (a 0-byte packet), then no callbacks will be
+   made at all for that frame.
+  _ctx:       An application-provided context pointer.
+  _buf:       The image buffer for the decoded frame.
+  _yfrag0:    The Y coordinate of the first row of 8x8 fragments decoded.
+              Multiply this by 8 to obtain the pixel row number in the luma
+               plane.
+              If the chroma planes are subsampled in the Y direction, this will
+               always be divisible by two.
+  _yfrag_end: The Y coordinate of the first row of 8x8 fragments past the
+               newly decoded section.
+              If the chroma planes are subsampled in the Y direction, this will
+               always be divisible by two.
+              I.e., this section contains fragment rows
+               _yfrag0..._yfrag_end-1.*/
+typedef void (*theora_stripe_decoded_func)(void *_ctx,theora_ycbcr_buffer _buf,
+ int _yfrag0,int _yfrag_end);
+
+typedef struct{
+  void                       *ctx;
+  theora_stripe_decoded_func  stripe_decoded;
+}theora_stripe_callback;
 
 typedef struct{
   /*Bitstream version information.*/

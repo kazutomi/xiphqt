@@ -570,7 +570,7 @@ int main(int argc,char *argv[]){
   /* and now we have it all.  initialize decoders */
   if(theora_p){
     td=theora_decode_alloc(&ti,ts);
-    printf("Ogg logical stream %x is Theora %dx%d %.02f fps video\n",
+    printf("Ogg logical stream %lx is Theora %dx%d %.02f fps video\n",
            to.serialno,ti.frame_width,ti.frame_height, 
            (double)ti.fps_numerator/ti.fps_denominator);
     if(ti.frame_width!=ti.pic_width || ti.frame_height!=ti.pic_height)
@@ -578,10 +578,10 @@ int main(int argc,char *argv[]){
            ti.pic_width, ti.pic_height, ti.pic_x, ti.pic_y);
     report_colorspace(&ti);
     dump_comments(&tc);
-    theora_decoder_ctl(td,OC_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
+    theora_decode_ctl(td,OC_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
      sizeof(pp_level_max));
     pp_level=pp_level_max;
-    theora_decoder_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
+    theora_decode_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
     pp_inc=0;
   }else{
     /* tear down the partial theora setup */
@@ -593,7 +593,7 @@ int main(int argc,char *argv[]){
   if(vorbis_p){
     vorbis_synthesis_init(&vd,&vi);
     vorbis_block_init(&vd,&vb);
-    fprintf(stderr,"Ogg logical stream %x is Vorbis %d channel %d Hz audio.\n",
+    fprintf(stderr,"Ogg logical stream %lx is Vorbis %d channel %ld Hz audio.\n",
             vo.serialno,vi.channels,vi.rate);
   }else{
     /* tear down the partial vorbis setup */
@@ -662,7 +662,7 @@ int main(int argc,char *argv[]){
 
         if(pp_inc){
           pp_level+=pp_inc;
-          theora_decoder_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,
+          theora_decode_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,
            sizeof(pp_level));
           pp_inc=0;
         }
@@ -673,7 +673,7 @@ int main(int argc,char *argv[]){
            page and compute the correct granulepos for the first packet after
            a seek or a gap.*/
         if(op.granulepos>=0){
-          theora_decoder_ctl(td,OC_DECCTL_SET_GRANPOS,&op.granulepos,
+          theora_decode_ctl(td,OC_DECCTL_SET_GRANPOS,&op.granulepos,
            sizeof(op.granulepos));
         }
         if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
@@ -688,7 +688,7 @@ int main(int argc,char *argv[]){
           if(videobuf_time>=get_time())
             videobuf_ready=1;
           /*If we are too slow, reduce the pp level.*/
-          else pp_inc=pp_level>0?pp_inc=-1:0;
+          else pp_inc=pp_level>0?-1:0;
         }
 
       }else
@@ -699,7 +699,7 @@ int main(int argc,char *argv[]){
 
     if(!videobuf_ready || !audiobuf_ready){
       /* no data yet for somebody.  Grab another page */
-      int ret=buffer_data(infile,&oy);
+      buffer_data(infile,&oy);
       while(ogg_sync_pageout(&oy,&og)>0){
         queue_page(&og);
       }

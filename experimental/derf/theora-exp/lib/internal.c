@@ -107,7 +107,7 @@ int oc_ilog(unsigned _v){
            skipped in the current block.
           Otherwise, the negative of the return value indicates that number of
            blocks are to be ended.*/
-typedef (*oc_token_skip_func)(int _token,int _extra_bits);
+typedef int (*oc_token_skip_func)(int _token,int _extra_bits);
 
 /*Handles the simple end of block tokens.*/
 static int oc_token_skip_eob(int _token,int _extra_bits){

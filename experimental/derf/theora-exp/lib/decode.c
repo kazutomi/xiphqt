@@ -212,6 +212,8 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
   _dec->dc_qis=NULL;
   _dec->variances=NULL;
   _dec->pp_frame_data=NULL;
+  _dec->stripe_cb.ctx=NULL;
+  _dec->stripe_cb.stripe_decoded=NULL;
 }
 
 static void oc_dec_clear(oc_dec_ctx *_dec){
@@ -1290,9 +1292,10 @@ typedef struct{
   int *uncoded_fragis[3];
   int  fragy0[3];
   int  fragy_end[3];
+  int  ncoded_fragis[3];
+  int  nuncoded_fragis[3];
   int  pred_last[3][3];
   int  mcu_nvfrags;
-  int  cur_fragy;
   int  loop_filter;
   int  pp_level;
 }oc_dec_pipeline_state;
@@ -1308,7 +1311,6 @@ static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
   /*If chroma is sub-sampled in the vertical direction, we have to decode two
      super block rows of Y' for each super block row of Cb and Cr.*/
   _pipe->mcu_nvfrags=4<<!(_dec->state.info.pixel_fmt&2);
-  _pipe->cur_fragy=0;
   /*Initialize the token and extra bits indices for each plane and
      coefficient.*/
   memset(_pipe->ti[0],0,sizeof(_pipe->ti[0]));
@@ -1347,103 +1349,107 @@ static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
   }
 }
 
+/*Undo the DC prediction in a single plane of an MCU (one or two super block
+   rows).
+  As a side effect, the number of coded and uncoded fragments in this plane of
+   the MCU is also computed.*/
+static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
+ oc_dec_pipeline_state *_pipe,int _pli){
+  /*Undo the DC prediction.*/
+  oc_fragment_plane *fplane;
+  oc_fragment       *frag;
+  int               *pred_last;
+  int                ncoded_fragis;
+  int                fragx;
+  int                fragy;
+  int                fragy0;
+  int                fragy_end;
+  /*Compute the first and last fragment row of the current MCU for this
+     plane.*/
+  fplane=_dec->state.fplanes+_pli;
+  fragy0=_pipe->fragy0[_pli];
+  fragy_end=_pipe->fragy_end[_pli];
+  frag=_dec->state.frags+fplane->froffset+(fragy0*fplane->nhfrags);
+  ncoded_fragis=0;
+  pred_last=_pipe->pred_last[_pli];
+  for(fragy=fragy0;fragy<fragy_end;fragy++){
+    for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++){
+      if(!frag->coded)continue;
+      pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc+=
+       oc_frag_pred_dc(frag,fplane,fragx,fragy,pred_last);
+      ncoded_fragis++;
+    }
+  }
+  _pipe->ncoded_fragis[_pli]=ncoded_fragis;
+  /*Also save the number of uncoded fragments so we know how many to copy.*/
+  _pipe->nuncoded_fragis[_pli]=
+   (fragy_end-fragy0)*fplane->nhfrags-ncoded_fragis;
+}
+
 /*Reconstructs all coded fragments in a single MCU (one or two super block
    rows).
   This requires that each coded fragment have a proper macro block mode and
-   motion vector (if not in INTRA mode), and have it's raw DC value decoded.
+   motion vector (if not in INTRA mode), and have it's DC value decoded, with
+   the DC prediction process reversed, and the number of coded and uncoded
+   fragments in this plane of the MCU be counted.
   The token lists for each color plane and coefficient should also be filled
    in, along with initial token offsets, extra bits offsets, and EOB run
    counts.*/
-static void oc_dec_frags_recon_mcu(oc_dec_ctx *_dec,
- oc_dec_pipeline_state *_pipe){
-  oc_fragment *frag;
-  int          ncoded_fragis[3];
-  int          nuncoded_fragis[3];
-  int          pli;
-  /*First, undo the DC prediction.*/
-  for(pli=0;pli<3;pli++){
-    oc_fragment_plane *fplane;
-    int               *pred_last;
-    int                fragx;
-    int                fragy;
-    int                fragy0;
-    int                fragy_end;
-    int                frag_shift;
-    fplane=_dec->state.fplanes+pli;
-    /*Compute the first and last fragment row of the current MCU for this
-       plane.*/
-    frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
-    _pipe->fragy0[pli]=fragy0=_pipe->cur_fragy>>frag_shift;
-    _pipe->fragy_end[pli]=fragy_end=
-     OC_MINI(fragy0+(_pipe->mcu_nvfrags>>frag_shift),fplane->nvfrags);
-    ncoded_fragis[pli]=0;
-    pred_last=_pipe->pred_last[pli];
-    frag=_dec->state.frags+fplane->froffset+(fragy0*fplane->nhfrags);
-    for(fragy=fragy0;fragy<fragy_end;fragy++){
-      for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++){
-        if(!frag->coded)continue;
-        pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc+=
-         oc_frag_pred_dc(frag,fplane,fragx,fragy,pred_last);
-        ncoded_fragis[pli]++;
+static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
+ oc_dec_pipeline_state *_pipe,int _pli){
+  /*Decode the AC coefficients.*/
+  int *ti;
+  int *ebi;
+  int *eob_runs;
+  int *coded_fragi;
+  int *coded_fragi_end;
+  ti=_pipe->ti[_pli];
+  ebi=_pipe->ebi[_pli];
+  eob_runs=_pipe->eob_runs[_pli];
+  coded_fragi_end=coded_fragi=_pipe->coded_fragis[_pli];
+  coded_fragi_end+=_pipe->ncoded_fragis[_pli];
+  for(;coded_fragi<coded_fragi_end;coded_fragi++){
+    oc_fragment    *frag;
+    oc_quant_table *iquants;
+    /*This array is made one bigger than necessary so that an invalid zero
+       run cannot cause a buffer overflow.
+      The inverse zig-zag mapping sends all out of range indices to the last
+       entry of this array, where they are ignored.*/
+    ogg_int16_t    dct_coeffs[65];
+    int            fragi;
+    int            zzi;
+    int            last_zzi;
+    fragi=*coded_fragi;
+    frag=_dec->state.frags+fragi;
+    for(zzi=0;zzi<64;){
+      int token;
+      int eb;
+      last_zzi=zzi;
+      if(eob_runs[zzi]){
+        eob_runs[zzi]--;
+        break;
+      }
+      else{
+        int ebflag;
+        token=_dec->dct_tokens[zzi][ti[zzi]++];
+        ebflag=OC_DCT_TOKEN_EXTRA_BITS[token]!=0;
+        eb=_dec->extra_bits[zzi][ebi[zzi]]&-ebflag;
+        ebi[zzi]+=ebflag;
+        if(token<OC_NDCT_EOB_TOKEN_MAX){
+          eob_runs[zzi]=-oc_dct_token_skip(token,eb);
+        }
+        else oc_dct_token_expand(token,eb,dct_coeffs,&zzi);
       }
     }
-    /*Also save the number of uncoded fragments so we know how many to copy.*/
-    nuncoded_fragis[pli]=(fragy_end-fragy0)*fplane->nhfrags-ncoded_fragis[pli];
+    /*TODO: zzi should be exactly 64 here.
+      If it's not, we should report some kind of warning.*/
+    zzi=OC_MINI(zzi,64);
+    dct_coeffs[0]=(ogg_int16_t)frag->dc;
+    iquants=_dec->state.dequant_tables[frag->mbmode!=OC_MODE_INTRA][_pli];
+    oc_state_frag_recon(&_dec->state,frag,_pli,dct_coeffs,last_zzi,zzi,
+     iquants[_dec->state.qis[0]][0],iquants[frag->qi]);
   }
-  /*Now decode the rest of the coefficients.*/
-  for(pli=0;pli<3;pli++){
-    int *ti;
-    int *ebi;
-    int *eob_runs;
-    int *coded_fragi;
-    int *coded_fragi_end;
-    ti=_pipe->ti[pli];
-    ebi=_pipe->ebi[pli];
-    eob_runs=_pipe->eob_runs[pli];
-    coded_fragi_end=coded_fragi=_pipe->coded_fragis[pli];
-    coded_fragi_end+=ncoded_fragis[pli];
-    for(;coded_fragi<coded_fragi_end;coded_fragi++){
-      oc_quant_table  *iquants;
-      /*This array is made one bigger than necessary so that an invalid zero
-         run cannot cause a buffer overflow.
-        The inverse zig-zag mapping sends all out of range indices to the last
-         entry of this array, where they are ignored.*/
-      ogg_int16_t      dct_coeffs[65];
-      int              fragi;
-      int              zzi;
-      int              last_zzi;
-      fragi=*coded_fragi;
-      frag=_dec->state.frags+fragi;
-      for(zzi=0;zzi<64;){
-        int token;
-        int eb;
-        last_zzi=zzi;
-        if(eob_runs[zzi]){
-          eob_runs[zzi]--;
-          break;
-        }
-        else{
-          int ebflag;
-          token=_dec->dct_tokens[zzi][ti[zzi]++];
-          ebflag=OC_DCT_TOKEN_EXTRA_BITS[token]!=0;
-          eb=_dec->extra_bits[zzi][ebi[zzi]]&-ebflag;
-          ebi[zzi]+=ebflag;
-          if(token<OC_NDCT_EOB_TOKEN_MAX){
-            eob_runs[zzi]=-oc_dct_token_skip(token,eb);
-          }
-          else oc_dct_token_expand(token,eb,dct_coeffs,&zzi);
-        }
-      }
-      /*TODO: zzi should be exactly 64 here.
-        If it's not, we should report some kind of warning.*/
-      zzi=OC_MINI(zzi,64);
-      dct_coeffs[0]=(ogg_int16_t)frag->dc;
-      iquants=_dec->state.dequant_tables[frag->mbmode!=OC_MODE_INTRA][pli];
-      oc_state_frag_recon(&_dec->state,frag,pli,dct_coeffs,last_zzi,zzi,
-       iquants[_dec->state.qis[0]][0],iquants[frag->qi]);
-    }
-    _pipe->coded_fragis[pli]=coded_fragi;
-  }
+  _pipe->coded_fragis[_pli]=coded_fragi;
   /*Right now the reconstructed MCU has only the coded blocks in it.*/
   /*TODO: We make the decision here to always copy the uncoded blocks into it
      from the reference frame.
@@ -1455,9 +1461,9 @@ static void oc_dec_frags_recon_mcu(oc_dec_ctx *_dec,
      code, and the hard case (high bitrate, high resolution) is handled
      correctly.*/
   /*Copy the uncoded blocks from the previous reference frame.*/
-  for(pli=0;pli<3;pli++)_pipe->uncoded_fragis[pli]-=nuncoded_fragis[pli];
-  oc_state_frag_copy(&_dec->state,_pipe->uncoded_fragis,nuncoded_fragis,
-   OC_FRAME_SELF,OC_FRAME_PREV);
+  _pipe->uncoded_fragis[_pli]-=_pipe->nuncoded_fragis[_pli];
+  oc_state_frag_copy(&_dec->state,_pipe->uncoded_fragis[_pli],
+   _pipe->nuncoded_fragis[_pli],OC_FRAME_SELF,OC_FRAME_PREV,_pli);
 }
 
 /*Filter a horizontal block edge.*/
@@ -1552,58 +1558,79 @@ static void oc_filter_vedge(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-static void oc_dec_deblock_plane(oc_dec_ctx *_dec,int _pli,
- theora_img_plane *_dst,theora_img_plane *_src){
+static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,
+ theora_img_plane *_dst,theora_img_plane *_src,int _pli,int _fragy0,
+ int _fragy_end){
   oc_fragment_plane   *fplane;
   int                 *variance;
   unsigned char       *dc_qi;
   unsigned char       *dst;
   const unsigned char *src;
+  int                  notstart;
+  int                  notdone;
+  int                  froffset;
   int                  flimit;
   int                  qstep;
+  int                  y_end;
   int                  y;
   int                  x;
   _dst+=_pli;
   _src+=_pli;
-  dst=_dst->data;
-  src=_src->data;
   fplane=_dec->state.fplanes+_pli;
-  variance=_dec->variances+fplane->froffset;
-  dc_qi=_dec->dc_qis+fplane->froffset;
-  memset(variance,0,fplane->nfrags*sizeof(variance[0]));
-  for(y=0;y<4;y++){
+  froffset=fplane->froffset+_fragy0*fplane->nhfrags;
+  variance=_dec->variances+froffset;
+  dc_qi=_dec->dc_qis+froffset;
+  notstart=_fragy0>0;
+  notdone=_fragy_end<fplane->nvfrags;
+  /*We want to clear an extra row of variances, except at the end.*/
+  memset(variance+notstart*fplane->nhfrags,0,
+   (_fragy_end+notdone-_fragy0-notstart)*fplane->nhfrags*sizeof(variance[0]));
+  /*Except for the first time, we want to point to the middle of the row.*/
+  y=(_fragy0<<3)+(notstart<<2);
+  dst=_dst->data+y*_dst->ystride;
+  src=_src->data+y*_src->ystride;
+  for(;y<4;y++){
     memcpy(dst,src,_dst->width*sizeof(dst[0]));
     dst+=_dst->ystride;
     src+=_src->ystride;
   }
-  for(;y<_dst->height-8;y+=8){
-    for(x=0;x<_dst->width;x+=8){
+  /*We also want to skip the last row in the frame for this loop.*/
+  y_end=_fragy_end-!notdone<<3;
+  for(;y<y_end;y+=8){
+    qstep=_dec->pp_dc_scale[*dc_qi];
+    flimit=(qstep*3)>>2;
+    oc_filter_hedge(dst,_dst->ystride,src-_src->ystride,_src->ystride,
+     qstep,flimit,variance,variance+fplane->nhfrags);
+    variance++;
+    dc_qi++;
+    for(x=8;x<_dst->width;x+=8){
       qstep=_dec->pp_dc_scale[*dc_qi];
       flimit=(qstep*3)>>2;
       oc_filter_hedge(dst+x,_dst->ystride,src+x-_src->ystride,_src->ystride,
-       qstep,flimit,variance,variance+fplane->nvfrags);
-      if(x>0){
-        oc_filter_vedge(dst+x-(_dst->ystride<<2)-4,_dst->ystride,
-         qstep,flimit,variance-1);
-      }
+       qstep,flimit,variance,variance+fplane->nhfrags);
+      oc_filter_vedge(dst+x-(_dst->ystride<<2)-4,_dst->ystride,
+       qstep,flimit,variance-1);
       variance++;
       dc_qi++;
     }
     dst+=_dst->ystride<<3;
     src+=_src->ystride<<3;
   }
-  for(;y<_dst->height;y++){
-    memcpy(dst,src,_dst->width*sizeof(dst[0]));
-    dst+=_dst->ystride;
-    src+=_src->ystride;
-  }
-  /*Filter the last row of vertical block edges.*/
-  dc_qi++;
-  for(x=8;x<_dst->width;x+=8){
-    qstep=_dec->pp_dc_scale[*dc_qi++];
-    flimit=(qstep*3)>>2;
-    oc_filter_vedge(dst+x-(_dst->ystride<<3)-4,_dst->ystride,
-     qstep,flimit,variance++);
+  /*And finally, handle the last row in the frame, if it's in the range.*/
+  if(!notdone){
+    for(;y<_dst->height;y++){
+      memcpy(dst,src,_dst->width*sizeof(dst[0]));
+      dst+=_dst->ystride;
+      src+=_src->ystride;
+    }
+    /*Filter the last row of vertical block edges.*/
+    dc_qi++;
+    for(x=8;x<_dst->width;x+=8){
+      qstep=_dec->pp_dc_scale[*dc_qi++];
+      flimit=(qstep*3)>>2;
+      oc_filter_vedge(dst+x-(_dst->ystride<<3)-4,_dst->ystride,
+       qstep,flimit,variance++);
+    }
   }
 }
 
@@ -1730,26 +1757,30 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
 #define OC_DERING_THRESH3 (5*OC_DERING_THRESH1)
 #define OC_DERING_THRESH4 (10*OC_DERING_THRESH1)
 
-static void oc_dec_dering_plane(oc_dec_ctx *_dec,int _pli,
- theora_img_plane *_img){
+static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,theora_img_plane *_img,
+ int _pli,int _fragy0,int _fragy_end){
   theora_img_plane  *iplane;
   oc_fragment_plane *fplane;
   oc_fragment       *frag;
   int               *variance;
-  unsigned char     *dc_qi;
   unsigned char     *idata;
   int                sthresh;
   int                strong;
+  int                froffset;
+  int                y_end;
   int                y;
   int                x;
   iplane=_img+_pli;
   fplane=_dec->state.fplanes+_pli;
-  variance=_dec->variances+fplane->froffset;
-  frag=_dec->state.frags+fplane->froffset;
+  froffset=fplane->froffset+_fragy0*fplane->nhfrags;
+  variance=_dec->variances+froffset;
+  frag=_dec->state.frags+froffset;
   strong=_dec->pp_level>=(_pli?OC_PP_LEVEL_SDERINGC:OC_PP_LEVEL_SDERINGY);
   sthresh=_pli?OC_DERING_THRESH4:OC_DERING_THRESH3;
-  idata=iplane->data;
-  for(y=0;y<iplane->height;y+=8){
+  y=_fragy0<<3;
+  idata=iplane->data+y*iplane->ystride;
+  y_end=_fragy_end<<3;
+  for(;y<y_end;y+=8){
     for(x=0;x<iplane->width;x+=8){
       int b;
       int qi;
@@ -1785,26 +1816,6 @@ static void oc_dec_dering_plane(oc_dec_ctx *_dec,int _pli,
   }
 }
 
-static void oc_dec_postprocess(oc_dec_ctx *_dec,int _pp_level){
-  /*pp_level 1: Stop after updating DC quantization indices.*/
-  if(_pp_level<=OC_PP_LEVEL_TRACKDCQI)return;
-  /*Perform de-blocking in the Y plane.*/
-  oc_dec_deblock_plane(_dec,0,_dec->pp_frame_buf,
-   _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
-  if(_pp_level>=OC_PP_LEVEL_DERINGY){
-    oc_dec_dering_plane(_dec,0,_dec->pp_frame_buf);
-  }
-  /*If we're not processing chroma, return.*/
-  if(_pp_level<OC_PP_LEVEL_DEBLOCKC)return;
-  oc_dec_deblock_plane(_dec,1,_dec->pp_frame_buf,
-   _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
-  oc_dec_deblock_plane(_dec,2,_dec->pp_frame_buf,
-   _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
-  if(_pp_level<=OC_PP_LEVEL_DEBLOCKC)return;
-  oc_dec_dering_plane(_dec,1,_dec->pp_frame_buf);
-  oc_dec_dering_plane(_dec,2,_dec->pp_frame_buf);
-}
-
 
 
 theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
@@ -1824,7 +1835,7 @@ void theora_decode_free(theora_dec_ctx *_dec){
   }
 }
 
-int theora_decoder_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
+int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
  size_t _buf_sz){
   switch(_req){
     case OC_DECCTL_GET_PPLEVEL_MAX:{
@@ -1855,6 +1866,15 @@ int theora_decoder_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
        (granpos&(1<<_dec->state.info.keyframe_granule_shift)-1);
       return 0;
     }break;
+    case OC_DECCTL_SET_STRIPE_CB:{
+      theora_stripe_callback *cb;
+      if(_dec==NULL||_buf==NULL)return OC_FAULT;
+      if(_buf_sz!=sizeof(theora_stripe_callback))return OC_EINVAL;
+      cb=(theora_stripe_callback *)_buf;
+      _dec->stripe_cb.ctx=cb->ctx;
+      _dec->stripe_cb.stripe_decoded=cb->stripe_decoded;
+      return 0;
+    }break;
     default:return OC_IMPL;
   }
 }
@@ -1868,8 +1888,11 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     Only proceed if we have a non-empty packet.*/
   if(_op->bytes!=0){
     oc_dec_pipeline_state pipe;
+    theora_ycbcr_buffer   stripe_buf;
+    int                   stripe_fragy;
     int                   refi;
     int                   pli;
+    int                   notstart;
     int                   notdone;
     oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
     ret=oc_dec_frame_header_unpack(_dec);
@@ -1917,26 +1940,60 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     }
     oc_dec_block_qis_unpack(_dec);
     oc_dec_residual_tokens_unpack(_dec);
-    /*TODO: All of the rest of the operations -- reconstructing coded
-       fragments, copying (coded or uncoded) fragments and post-processing --
+    /*Update granule position.
+      This must be done before the striped decode callbacks so that the
+       application knows what to do with the frame data.*/
+    _dec->state.granpos=
+     (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
+     (_dec->state.curframe_num-_dec->state.keyframe_num);
+    _dec->state.curframe_num++;
+    if(_granpos!=NULL)*_granpos=_dec->state.granpos;
+    /*All of the rest of the operations -- DC prediction reversal,
+       reconstructing coded fragments, copying uncoded fragments, loop
+       filtering, extending borders, and out-of-loop and post-processing --
        should be pipelined.
-      i.e., after sufficient numbers of super-block rows are reconstructed,
-       copy back fragments, then after sufficient numbers of super-block rows
-       are complete, post-process.
-      This allows us to operate on the data while it is still in cache,
-       resulting in big performance improvements.
-      An application callback to allow it to process each super-block row as it
-       is decoded is also a good idea.*/
+      I.e., DC prediction reversal, reconstruction, and uncoded fragment
+       copying are done for one or two super block rows, then loop filtering is
+       run as far as it can, then bordering copying, then post-processing.
+      For 4:2:0 video a Minimum Codable Unit or MCU contains two luma super
+       block rows, and one chroma.
+      Otherwise, an MCU consists of one super block row from each plane.
+      Inside each MCU, we perform all of the steps on one color plane before
+       moving on to the next.
+      After reconstruction, the additional filtering stages introduce a delay
+       since they need some pixels from the next fragment row.
+      Thus the actual number of decoded rows available is slightly smaller for
+       the first MCU, and slightly larger for the last.
+
+      This entire process allows us to operate on the data while it is still in
+       cache, resulting in big performance improvements.
+      An application callback allows further application processing (blitting
+       to video memory, color conversion, etc.) to also use the data while it's
+       in cache.*/
     oc_dec_pipeline_init(_dec,&pipe);
-    do{
-      int notstart;
-      int sdelay;
-      int edelay;
-      oc_dec_frags_recon_mcu(_dec,&pipe);
-      notstart=pipe.cur_fragy>0;
-      pipe.cur_fragy+=pipe.mcu_nvfrags;
-      notdone=pipe.cur_fragy<_dec->state.fplanes[0].nvfrags;
+    oc_ycbcr_buffer_flip(stripe_buf,_dec->pp_frame_buf);
+    notstart=0;
+    notdone=1;
+    for(stripe_fragy=notstart=0;notdone;stripe_fragy+=pipe.mcu_nvfrags){
+      int avail_fragy0;
+      int avail_fragy_end;
+      avail_fragy0=avail_fragy_end=_dec->state.fplanes[0].nvfrags;
+      notdone=stripe_fragy+pipe.mcu_nvfrags<avail_fragy_end;
       for(pli=0;pli<3;pli++){
+        oc_fragment_plane *fplane;
+        int                frag_shift;
+        int                pp_offset;
+        int                sdelay;
+        int                edelay;
+        fplane=_dec->state.fplanes+pli;
+        /*Compute the first and last fragment row of the current MCU for this
+           plane.*/
+        frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
+        pipe.fragy0[pli]=stripe_fragy>>frag_shift;
+        pipe.fragy_end[pli]=OC_MINI(fplane->nvfrags,
+         pipe.fragy0[pli]+(pipe.mcu_nvfrags>>frag_shift));
+        oc_dec_dc_unpredict_mcu_plane(_dec,&pipe,pli);
+        oc_dec_frags_recon_mcu_plane(_dec,&pipe,pli);
         sdelay=edelay=0;
         if(pipe.loop_filter){
           sdelay+=notstart;
@@ -1947,20 +2004,49 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
         /*To fill the borders, we have an additional two pixel delay, since a
            fragment in the next row could filter its top edge, using two pixels
            from a fragment in this row.
-          But there's no reason to delay a full fragment.*/
+          But there's no reason to delay a full fragment between the two.*/
         oc_state_borders_fill_rows(&_dec->state,refi,pli,
          (pipe.fragy0[pli]-sdelay<<3)-(sdelay<<1),
          (pipe.fragy_end[pli]-edelay<<3)-(edelay<<1));
+        sdelay+=notstart;
+        edelay+=notdone;
+        /*Out-of-loop post-processing.*/
+        pp_offset=3*(pli!=0);
+        if(pipe.pp_level>=OC_PP_LEVEL_DEBLOCKY+pp_offset){
+          /*Perform de-blocking in the Y plane.*/
+          oc_dec_deblock_frag_rows(_dec,_dec->pp_frame_buf,
+           _dec->state.ref_frame_bufs[refi],pli,
+           pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
+          if(pipe.pp_level>=OC_PP_LEVEL_DERINGY+pp_offset){
+            sdelay+=notstart;
+            edelay+=notdone;
+            oc_dec_dering_frag_rows(_dec,_dec->pp_frame_buf,pli,
+             pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
+          }
+        }
+        /*Compute the intersection of the available rows in all planes.
+          If chroma is sub-sampled, the effect of each of its delays is
+           doubled, but luma might have more post-processing filters enabled
+           than chroma, so we don't know up front which one is the limiting
+           factor.*/
+        avail_fragy0=OC_MINI(avail_fragy0,pipe.fragy0[pli]-sdelay<<frag_shift);
+        avail_fragy_end=OC_MINI(avail_fragy_end,
+         pipe.fragy_end[pli]-edelay<<frag_shift);
       }
-      /*TODO: Out-of-loop post-processing.*/
+      if(_dec->stripe_cb.stripe_decoded!=NULL){
+        /*Make the callback, ensuring we flip the sense of the "start" and
+           "end" of the available region upside down.*/
+        (*_dec->stripe_cb.stripe_decoded)(_dec->stripe_cb.ctx,stripe_buf,
+         _dec->state.fplanes[0].nvfrags-avail_fragy_end,
+         _dec->state.fplanes[0].nvfrags-avail_fragy0);
+      }
+      notstart=1;
     }
-    while(notdone);
     /*Finish filling in the reference frame borders.*/
     for(pli=0;pli<3;pli++)oc_state_borders_fill_caps(&_dec->state,refi,pli);
     /*Update the reference frame indices.*/
     if(_dec->state.frame_type==OC_INTRA_FRAME){
       /*The new frame becomes both the previous and gold reference frames.*/
-      _dec->state.keyframe_num=_dec->state.curframe_num;
       _dec->state.ref_frame_idx[OC_FRAME_GOLD]=
        _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
@@ -1970,17 +2056,15 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
       _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
-    /*Perform out-of-loop post-processing, if enabled.*/
-    if(pipe.pp_level>OC_PP_LEVEL_TRACKDCQI){
-      oc_dec_postprocess(_dec,pipe.pp_level);
-    }
   }
-  /*Update granule position.*/
-  _dec->state.granpos=
-   (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
-   (_dec->state.curframe_num-_dec->state.keyframe_num);
-  _dec->state.curframe_num++;
-  if(_granpos!=NULL)*_granpos=_dec->state.granpos;
+  else{
+    /*Just update the granule position and return.*/
+    _dec->state.granpos=
+     (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
+     (_dec->state.curframe_num-_dec->state.keyframe_num);
+    _dec->state.curframe_num++;
+    if(_granpos!=NULL)*_granpos=_dec->state.granpos;
+  }
   return 0;
 }
 

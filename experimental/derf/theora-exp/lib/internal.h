@@ -356,6 +356,9 @@ int oc_frag_pred_dc(const oc_fragment *_frag,
 
 int oc_state_init(oc_theora_state *_state,const theora_info *_info);
 void oc_state_clear(oc_theora_state *_state);
+void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
+ int _y0,int _yend);
+void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli);
 void oc_state_borders_fill(oc_theora_state *_state,int _refi);
 void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
  theora_ycbcr_buffer _img);
@@ -365,9 +368,12 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
-void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
- int _nfragis[3],int _dst_frame,int _src_frame);
+void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
+ int _nfragis,int _dst_frame,int _src_frame,int _pli);
+int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv);
 void oc_state_loop_filter(oc_theora_state *_state,int _frame);
+void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
+ int _refi,int _pli,int _fragy0,int _fragy_end);
 #if defined(OC_DUMP_IMAGES)
 int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
  const char *_suf);

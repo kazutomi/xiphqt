@@ -70,6 +70,8 @@ struct theora_dec_ctx{
   int                      pp_frame_has_chroma;
   /*The buffer used for the post-processed frame.*/
   theora_ycbcr_buffer      pp_frame_buf;
+  /*The striped decode callback function.*/
+  theora_stripe_callback   stripe_cb;
 };
 
 /*Fix-ups for the libogg1 API, which returns -1 when there are insufficient

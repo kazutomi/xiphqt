@@ -921,7 +921,6 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
   /* You'll go to Hell for using static variables */
   static int                 state=-1;
   static unsigned char      *yuvframe[3];
-  static int                 framenum;
   static theora_ycbcr_buffer ycbcr;
   ogg_packet                 op;
   int                        pic_sz;
@@ -930,7 +929,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
   int                        c_w;
   int                        c_h;
   int                        c_sz;
-  int i, e;
+  int                        i;
 
   pic_sz=pic_w*pic_h;
   frame_c_w=frame_w/dst_c_dec_h;
