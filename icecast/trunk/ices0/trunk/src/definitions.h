@@ -22,9 +22,11 @@
 #define _ICES_DEFINITIONS_H
 
 #ifdef _WIN32
-#include <win32config.h>
-#elif defined(HAVE_CONFIG_H)
-#include <config.h>
+# include <win32config.h>
+#else
+# ifdef HAVE_CONFIG_H
+#  include <config.h>
+# endif
 #endif
 
 #ifndef __USE_MISC
