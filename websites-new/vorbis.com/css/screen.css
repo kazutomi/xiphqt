@@ -97,6 +97,11 @@ img {
 	line-height: 1.5;
 }
 
+.content ul {
+	font-size: .7em;
+	line-height: 1.5;
+}
+
 h1 {
 	font-size: .8em;
 	font-weight: bold;
