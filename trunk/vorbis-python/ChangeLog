@@ -1,3 +1,14 @@
+2001-01-21  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* pyvorbisinfo.c: Comment objects now store pointers to the
+	comment structures, not the structure itself. Helps with dealloc.
+	* pyvorbisinfo.c (write_comments), (py_comment_append_to),
+	(py_comment_write_to): Added
+	* pyvorbisinfo.c (py_comment_assign): Catch del on a comment
+	object. Returns not implemented exception for now
+	* README: Explain how to use comments
+	* vcedit.h Copied in from vorbiscomment
+	* vcedit.c: Copied in from vorbiscomment
+	
 2001-12-09  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* config_unix.py: Better logging and finer-grained path arguments
 	
