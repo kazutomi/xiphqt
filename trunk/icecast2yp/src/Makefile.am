@@ -12,8 +12,8 @@ yp_cachegen_SOURCES = yp_cachegen.c log.c yp_routines.c
 yp_clean_SOURCES = yp_clean.c log.c yp_routines.c
 yp_random_SOURCES = yp_random.c log.c yp_routines.c
     
-CFLAGS = @CFLAGS@ @MYSQL_CFLAGS@ @XML_CFLAGS@ -I${prefix}/include
-CPPFLAGS = @CPPFLAGS@ @MYSQL_CFLAGS@ @XML_CFLAGS@ -I${prefix}/include
+CFLAGS = @CFLAGS@ @MYSQL_CFLAGS@ @XML_CPPFLAGS@ -I${prefix}/include
+CPPFLAGS = @CPPFLAGS@ @MYSQL_CFLAGS@ @XML_CPPFLAGS@ -I${prefix}/include
 LIBS = @LIBS@ @MYSQL_LIBS@ @XML_LIBS@ -L${prefix}/lib
 
 
