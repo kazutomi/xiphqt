@@ -1,9 +1,9 @@
 /* encode.h
  * - encoding functions
  *
- * $Id: encode.h,v 1.3 2002/01/28 00:19:15 msmith Exp $
+ * $Id: encode.h,v 1.3.2.1 2002/02/07 09:11:11 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -18,7 +18,19 @@
 #include <vorbis/codec.h>
 
 typedef struct {
+    int initialised;
+
+    int managed;
+    int min_br;
+    int nom_br;
+    int max_br;
+    double quality;
+    double max_page_time;
+
+    int serial;
+    
 	ogg_stream_state os;
+    vorbis_comment vc;
 	vorbis_block vb;
 	vorbis_dsp_state vd;
 	vorbis_info vi;
@@ -29,15 +41,7 @@ typedef struct {
 	int in_header;
 } encoder_state;
 
-encoder_state *encode_initialise(int channels, int rate, int managed,
-    int min_br, int nom_br, int max_br, float quality,
-	int serial, vorbis_comment *vc);
-void encode_clear(encoder_state *s);
-void encode_data_float(encoder_state *s, float **pcm, int samples);
-void encode_data(encoder_state *s, signed char *buf, int bytes, int bigendian);
-int encode_dataout(encoder_state *s, ogg_page *og);
-void encode_finish(encoder_state *s);
-int encode_flush(encoder_state *s, ogg_page *og);
+int encode_open_module(process_chain_element *mod, module_param_t *params);
 
 #endif
 

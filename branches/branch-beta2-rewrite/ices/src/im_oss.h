@@ -1,9 +1,9 @@
 /* im_oss.h
  * - read pcm data from oss devices
  *
- * $Id: im_oss.h,v 1.2 2001/09/25 12:04:21 msmith Exp $
+ * $Id: im_oss.h,v 1.2.2.1 2002/02/07 09:11:11 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -14,7 +14,7 @@
 #ifndef __IM_OSS_H__
 #define __IM_OSS_H__
 
-#include "inputmodule.h"
+#include "config.h"
 #include "thread.h"
 #include <ogg/ogg.h>
 
@@ -29,6 +29,6 @@ typedef struct
 	mutex_t metadatalock;
 } im_oss_state; 
 
-input_module_t *oss_open_module(module_param_t *params);
+int oss_open_module(process_chain_element *mod, module_param_t *params);
 
 #endif  /* __IM_OSS_H__ */

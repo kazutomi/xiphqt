@@ -1,9 +1,9 @@
 /* playlist_basic.h
  * - Simple unscripted playlist
  *
- * $Id: playlist_basic.h,v 1.3 2001/09/28 10:16:54 msmith Exp $
+ * $Id: playlist_basic.h,v 1.3.2.1 2002/02/07 09:11:12 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute

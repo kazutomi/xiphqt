@@ -1,9 +1,9 @@
 /* playlist_basic.c
  * - Simple built-in unscripted playlist
  *
- * $Id: playlist_basic.c,v 1.5 2001/11/10 05:07:17 msmith Exp $
+ * $Id: playlist_basic.c,v 1.5.2.1 2002/02/07 09:11:12 msmith Exp $
  *
- * Copyright (c) 2001 Michael Smith <msmith@labyrinth.net.au>
+ * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
  * This program is distributed under the terms of the GNU General
  * Public License, version 2. You may use, modify, and redistribute
@@ -20,7 +20,6 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "inputmodule.h"
 #include "im_playlist.h"
 #include "playlist_basic.h"
 
@@ -50,6 +49,8 @@ static int load_playlist(basic_playlist *data)
 	struct stat st;
 	char buf[1024];
 	int buflen;
+
+    LOG_DEBUG1("Opening playlist file %s", data->file);
 
 	if(stat(data->file, &st)) 
 	{
@@ -175,7 +176,7 @@ int playlist_basic_initialise(module_param_t *params, playlist_state_t *pl)
 		if (!strcmp(params->name, "file")) 
 		{
 			if (data->file) free(data->file);
-			data->file = params->value;
+			data->file = strdup(params->value);
 		} 
 		else if (!strcmp(params->name, "random")) 
 			data->random = atoi(params->value);

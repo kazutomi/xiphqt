@@ -20,13 +20,15 @@ SUBDIRS = avl thread net log timing
 
 bin_PROGRAMS = ices
 
-noinst_HEADERS = config.h input.h inputmodule.h im_playlist.h signals.h stream.h reencode.h encode.h playlist_basic.h logging.h im_stdinpcm.h $(ossheaders) $(sunheaders) event.h stream_shared.h metadata.h
-ices_SOURCES = input.c config.c stream.c ices.c signals.c im_playlist.c reencode.c encode.c playlist_basic.c im_stdinpcm.c $(osssources) $(sunsources) stream_shared.c savefile.c metadata.c stream_rewrite.c
+#noinst_HEADERS = config.h input.h im_playlist.h signals.h stream.h reencode.h encode.h playlist_basic.h logging.h im_stdinpcm.h $(ossheaders) $(sunheaders) event.h stream_shared.h metadata.h process.h
+#ices_SOURCES = input.c config.c stream.c ices.c signals.c im_playlist.c reencode.c encode.c playlist_basic.c im_stdinpcm.c $(osssources) $(sunsources) stream_shared.c savefile.c metadata.c stream_rewrite.c process.c
+noinst_HEADERS = config.h input.h im_playlist.h signals.h stream.h encode.h playlist_basic.h logging.h process.h $(ossheaders) im_stdinpcm.h
+ices_SOURCES = input.c config.c stream.c ices.c signals.c im_playlist.c encode.c playlist_basic.c process.c output.c $(osssources) im_stdinpcm.c
 
 ices_LDADD = net/libicenet.la thread/libicethread.la log/libicelog.la\
 	avl/libiceavl.la timing/libicetiming.la
 
-LIBS = @LIBS@ -lpthread @SOCKET_LIBS@ @XML_LIBS@ @OGG_LIBS@ @VORBIS_LIBS@\
+LIBS = @LIBS@ -lpthread -lefence @SOCKET_LIBS@ @XML_LIBS@ @OGG_LIBS@ @VORBIS_LIBS@\
        @VORBISENC_LIBS@ @SHOUT_LIBS@
 
 CFLAGS = @CFLAGS@ @XML_CFLAGS@ @OGG_CFLAGS@ @VORBIS_CFLAGS@ @SHOUT_CFLAGS@
