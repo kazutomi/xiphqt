@@ -1,0 +1,23 @@
+
+mobile_cif:
+
+        4:1:1
+        yuv in separate planes
+        CIF (352x288) 
+        300 frames
+        30 frames/sec (10 seconds)
+         
+
+mobile_cif was obtained by downsampling the Mobile
+CCIR601 sequence from the MPEG4 CD-Rom using the
+mpeg4_filter. 
+
+The information from the original sequence in the 
+CD_Rom is the following:
+
+Sequence name:	Mobile and Calendar
+Field rate:	60 Hz
+Luminance:	720 x 480
+Chrominance:	360 x 480
+Num of frames:	300 (10 seconds)
+
