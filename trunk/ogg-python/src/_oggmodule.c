@@ -4,6 +4,7 @@
 #include "_oggmodule.h"
 
 #include "pyoggstreamstate.h"
+#include "pyoggsyncstate.h"
 #include "pyoggpacket.h"
 #include "pyoggpackbuff.h"
 
