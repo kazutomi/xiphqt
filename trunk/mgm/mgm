@@ -7,7 +7,6 @@ use strict;
 use vars qw($basedir $moddir $libdir $fontfile $toplevel
 	    $orient $stack $background $foreground);
 
-
 $0="moaning-goat-meter"; # OK, this is evil.
 
 $basedir="/home/xiphmont/SnotfishCVS/mgm";
@@ -25,7 +24,6 @@ my@ordered;
 
 my$Xname=$toplevel->Class;
 require "$libdir/widget";
-require "$libdir/sched";
 
 $toplevel->optionAdd("$Xname*background",       '#202020',20);
 $toplevel->optionAdd("$Xname*foreground",       '#a0a0a0',20);
@@ -94,7 +92,7 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 #               3) draw modules, place and run
 
 &LoadModules($moddir,"share"); # module references
-&LoadModules($moddir,"$");   # platform specificmodule references
+&LoadModules($moddir,"$");   # platform specificmodule references
 
 &order_modules;        # extract how many to build
 &instance_modules;     # make copies of the references and build
