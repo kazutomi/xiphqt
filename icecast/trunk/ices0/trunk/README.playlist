@@ -3,7 +3,7 @@ Ices Playlist Management
 
 Often the built-in playlist capabilities of ices are not enough. Luckily,
 ices can also be controlled by a perl or python script. Some ideas for
-scripts: toproduce fancier metadata, call out to a database, insert
+scripts: to produce fancier metadata, call out to a database, insert
 station IDs every half an hour...
 
 The impatient should be able to figure out what they need to do by
