@@ -57,11 +57,6 @@ ices_playlist_builtin_initialize (playlist_module_t* pm)
     return -1;
   }
 
-  if (pm->randomize) {
-    ices_log_debug ("Randomizing playlist...");
-    playlist_builtin_shuffle_playlist ();
-  }
-
   lineno = 0;
   return 1;
 }
@@ -72,34 +67,18 @@ playlist_builtin_get_next (void)
   char *out;
   static int level = 0;
   struct stat st;
-  FILE* tmpfp;
 
   /* If the original playlist has changed on disk (and we are not
    * randomising) reload it. */
-  if ((!fp || (!ices_config.pm.randomize &&
-	       (stat (ices_config.pm.playlist_file, &st) == 0) &&
+  if ((!fp || ((stat (ices_config.pm.playlist_file, &st) == 0) &&
 	       (st.st_mtime > playlist_modtime))) &&
       !playlist_builtin_reopen_playlist (&ices_config.pm))
     return NULL;
 
   if (feof (fp)) {
     lineno = 0;
-    /* might as well rererandomize here (and pick up any changes) */
-    if (ices_config.pm.randomize) {
-      ices_log_debug ("Reshuffling playlist");
-      tmpfp = fp;
-      if (playlist_builtin_open_playlist(&ices_config.pm)) {
-	playlist_builtin_shuffle_playlist();
-	ices_util_fclose(tmpfp);
-      } else {
-	ices_log_debug("Reshuffling failed, rewinding old list");
-	fp = tmpfp;
-	rewind(fp);
-      }
-    } else {
-      ices_log_debug ("Reached end of playlist, rewinding");
-      rewind (fp);
-    }
+    ices_log_debug ("Reached end of playlist, rewinding");
+    rewind (fp);
   }
 
   if (! (out = ices_util_read_line (fp)))
@@ -170,6 +149,7 @@ playlist_builtin_shuffle_playlist (void)
   ices_util_fclose (fp);
 
   fp = new;
+  lineno = 0;
   rewind (fp);
 }
 
@@ -178,23 +158,32 @@ static int
 playlist_builtin_open_playlist (playlist_module_t* pm)
 {
   struct stat st;
+  FILE* tmpfp;
 
   if (!pm->playlist_file || !pm->playlist_file[0]) {
     ices_log_error ("Playlist file is not set!");
     return 0;
   }
 
-  fp = ices_util_fopen_for_reading (pm->playlist_file);
+  tmpfp = ices_util_fopen_for_reading (pm->playlist_file);
 
-  if (fp) {
-    if (stat (pm->playlist_file, &st) == 0)
-      playlist_modtime = st.st_mtime;
-
-    return 1;
-  } else {
+  if (!tmpfp) {
     ices_log_error ("Could not open playlist file: %s", pm->playlist_file);
+
     return 0;
   }
+
+  fp = tmpfp;
+
+  if (stat (pm->playlist_file, &st) == 0)
+    playlist_modtime = st.st_mtime;
+
+  if (pm->randomize) {
+    ices_log_debug ("Randomizing playlist");
+    playlist_builtin_shuffle_playlist ();
+  }
+
+  return 1;
 }
 
 static int
@@ -232,7 +221,7 @@ playlist_builtin_line_skip (int lineno, FILE* fp)
   char buf[1024];
 
   for (i = lineno; i > 0;) {
-    if (! fgets (buf, 1024, fp))
+    if (! fgets (buf, sizeof(buf), fp))
       return 0;
     if (strchr (buf, '\n'))
       i--;
