@@ -5,7 +5,11 @@ from distutils.core import setup, Extension
 import os
 import sys
 
-ver = '0.0.2'
+ver = '0.0.3'
+
+# write default shout.pc path into environment if PKG_CONFIG_PATH is unset
+if not os.environ.has_key('PKG_CONFIG_PATH'):
+  os.environ['PKG_CONFIG_PATH'] = '/usr/local/lib/pkgconfig'
 
 # Find shout compiler/linker flag via pkgconfig or shout-config
 if os.system('pkg-config --exists shout 2> /dev/null') == 0:
