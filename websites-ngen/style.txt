@@ -21,6 +21,8 @@ Behind the Scenes
 	have the heading on the second line, and that looks ugly. Your call as to whether to use
 	-----style h2 headings, though. I recommend against.
 
+*	Directories generally not shown to users should start with a capital letter.
+	Prime examples of this are the */CSS/ directories and /Error/.
 
 
 Spelling, Grammar, and Punctuation

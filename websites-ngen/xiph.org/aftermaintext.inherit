@@ -1,8 +1,12 @@
 <div id='locations'>
 	<a href='/about/'
 	   title='About us'>About</a> |
+	<!-- 
 	<a href='/donate/'
 	   title='Give us money'>Donate</a> |
+	-->
+	<a href='/contribute/'
+	   title='See how you can help us out'>Contribute</a> |
 	<a href='/codecs/'
 	   title='Our multimedia codecs'>Codecs</a> |
 	<a href='/tools/'

@@ -75,6 +75,10 @@ h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
 	text-indent: 0;
 }
 
+li p {
+	text-indent: 0;
+}
+
 code, kbd {
 	font: 100% Monaco, "Lucida Console", monospace;
 }

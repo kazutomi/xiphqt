@@ -4,5 +4,8 @@ DirectoryIndex index.html index.xhtml index.shtml index.markdown index.txt
 # good guess, but not good enough
 Redirect permanent /svn/ http://www.xiph.org/subversion/ 
 
+ErrorDocument 404 /Error/404/
+ErrorDocument 410 /Error/410/
+
 RewriteEngine On
 RewriteRule ^(.*)(es|de)$ $1index.$2.html

@@ -23,6 +23,11 @@ To Do
 *	A way to re-do different .include and .inherit files based on language
 	to go with our language-based thingy.
 
+*	Move /help/ to /contribute/.
+
+*	Communicate that we want to attract--**and retain**--Windows and application developers
+	(for QC purposes)
+
 Open Questions
 --------------
 
@@ -41,8 +46,9 @@ I suppose there are two levels of benefits that one can get when he moves to Xip
 		at the expense of storage space
 
 *	Things that only work with an MP3/Shorten/AAC/APE-free environment
-	*	reduced patent liability risk
-	*	
+	*	reduced patent liability risk (maybe)
+	*	Vorbis-style comments rule supreme
+	*	Ease of down-transcoding with stock tools (rather important on unix)
 
 What Must Be Done Before Shipping
 ---------------------------------
