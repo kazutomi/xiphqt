@@ -364,12 +364,15 @@ stream_connect (ices_stream_t* stream)
   char errbuf[1024];
 
   if (shout_connect (&stream->conn)) {
-    ices_log ("Mounted on http://%s:%d%s", stream->conn.ip, stream->conn.port,
+    ices_log ("Mounted on http://%s:%d%s%s", stream->conn.ip,
+	      stream->conn.port,
+	      (stream->conn.mount && stream->conn.mount[0] == '/') ? "" : "/",
 	      ices_util_nullcheck (stream->conn.mount));
     return 0;
   } else {
-    ices_log_error ("Mount failed on http://%s:%d%s, error: %s",
+    ices_log_error ("Mount failed on http://%s:%d%s%s, error: %s",
 		    stream->conn.ip, stream->conn.port,
+		    (stream->conn.mount && stream->conn.mount[0] == '/') ? "" : "/",
 		    ices_util_nullcheck (stream->conn.mount),
 		    shout_strerror (&stream->conn, stream->conn.error, errbuf,
 				    sizeof (errbuf)));
