@@ -1,5 +1,7 @@
 #include <windows.h>
 #include <time.h>
+#include <string.h>
+
 #include "audio.h"
 #include "encode.h"
 
@@ -53,8 +55,6 @@ void encthread_addfile(char *file)
 
 	if (file == NULL) return;
 
-	EnterCriticalSection(&mutex);
-
 	// create entry
 	filename = strdup(file);
 	entry = (enclist_t *)malloc(sizeof(enclist_t));
@@ -62,20 +62,20 @@ void encthread_addfile(char *file)
 	entry->filename = filename;
 	entry->next = NULL;
 
+	EnterCriticalSection(&mutex);
+
 	// insert entry
 	if (head == NULL) {
 		head = entry;
-		numfiles++;
-		totalfiles++;
 	} else {
 		node = head;
 		while (node->next != NULL)
 			node = node->next;
 
 		node->next = entry;
-		numfiles++;
-		totalfiles++;
 	}
+	numfiles++;
+	totalfiles++;
 
 	LeaveCriticalSection(&mutex);
 }
@@ -175,7 +175,7 @@ DWORD WINAPI encode_thread(LPVOID arg)
 				char *start, *end;
 
 				start = in_file;
-				end = rindex(in_file, '.');
+				end = strrchr(in_file, '.');
 				end = end?end:(start + strlen(in_file)+1);
 			
 				out_fn = (char *)malloc(end - start + 5);
@@ -185,6 +185,7 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			}
 
 			/* Now, we need to select an input audio format */
+
 			while (formats[j].open_func) {
 				if (formats[j].open_func(in, &enc_opts)) {
 					foundformat = 1;
@@ -211,8 +212,8 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			enc_opts.out = out;
 			enc_opts.comments = &vc;
 			enc_opts.filename = out_fn;
-			enc_opts.bitrate = opt.kbps; /* defaulted at the start, so this is ok */
-
+			/* enc_opts.bitrate = opt.kbps; /* defaulted at the start, so this is ok */
+			enc_opts.bitrate = opt.kbps * enc_opts.channels / 2; /* Olaf: Scale to match channel count */
 
 			if (!enc_opts.total_samples_per_channel)
 				enc_opts.progress_update = _nothing_prog;
@@ -235,9 +236,11 @@ DWORD WINAPI encode_thread(LPVOID arg)
 		Sleep(500);
 	} 
 
+	/* Olaf: We already reset these a few lines above
 	animate = 0;
 	totalfiles = 0;
 	numfiles = 0;
+	*/
 
 	DeleteCriticalSection(&mutex);
 
