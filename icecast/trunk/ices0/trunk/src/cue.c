@@ -36,8 +36,6 @@ static int ices_cue_lineno = 0;
  * songname
  */
 
-static int ices_cue_get_lineno ();
-
 /* Global function definitions */
 
 /* Update the cue file with a set of variables */
