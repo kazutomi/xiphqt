@@ -11,81 +11,89 @@ $libdir="/home/xiphmont/SnotfishCVS/mgm/lib";
 $fontfile="$libdir/helvetica24.bdf";
 
 require "$libdir/widget";
-
 $|=1;
-&doit(@ARGV);
 
-&{$modules{"hostlogo"}->{"mgm_module_construct"}}($modules{"hostlogo"},$reqx,$reqy)->
-    place(-x=>0,-y=>0,-anchor=>'nw');
+$toplevel=new MainWindow();
+$Xname=$toplevel->Class;
 
-Tk::MainLoop();
+$toplevel->optionAdd("$Xname*background",  '#202020',20);
+$toplevel->optionAdd("$Xname*foreground",  '#a0a0a0',20);
 
-# toplevel setup
+$toplevel->optionAdd("$Xname.stack",       'vertical',20);
+$toplevel->optionAdd("$Xname.bars",        'horizontal',20);
+$toplevel->optionAdd("$Xname*textpad",     '1',20);
+$toplevel->optionAdd("$Xname*widgetpad",   '2',20);
+$toplevel->optionAdd("$Xname*font",    
+		     '-misc-fixed-*-*-*-*-8-*-*-*-*-*-*-*',20);
+$toplevel->optionAdd("$Xname*labelsize",   '8',20);
 
-sub doit{
-    # load the modules 
+$toplevel->optionAdd("$Xname*scale",            'true',20);
+$toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
+$toplevel->optionAdd("$Xname*refresh",          '100',20);
 
-    $toplevel=new MainWindow();
-    $Xname=$toplevel->Class;
+$toplevel->optionAdd("$Xname*bar*dimbackground",       '#313656',21);
+$toplevel->optionAdd("$Xname*bar*litbackground",       '#74ade7',21);
+$toplevel->optionAdd("$Xname*bar*dimrelief",           'flat',21);
+$toplevel->optionAdd("$Xname*bar*litrelief",           'raised',21);
 
-    $toplevel->optionAdd("$Xname*background",  '#202020',20);
-    $toplevel->optionAdd("$Xname*foreground",  '#a0a0a0',20);
+$toplevel->optionAdd("$Xname*bar*label",            "fill in",21);
+$toplevel->optionAdd("$Xname*bar*ratio",            '1.5',21);
 
-    $toplevel->optionAdd("$Xname.stack",       'horizontal',20);
-    $toplevel->optionAdd("$Xname.bars",        'vertical',20);
-    $toplevel->optionAdd("$Xname.pad",         '1',20);
-    $toplevel->optionAdd("$Xname*font",    
-			 '-misc-fixed-*-*-*-*-8-*-*-*-*-*-*-*',20);
-
-    $toplevel->optionAdd("$Xname*active",           'true',20);
-    $toplevel->optionAdd("$Xname*scale",            'true',20);
-    $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
-    $toplevel->optionAdd("$Xname*refresh",          '1000',20);
-
-    $toplevel->optionAdd("$Xname*bar*dimbackground",       '#313656',21);
-    $toplevel->optionAdd("$Xname*bar*litbackground",       '#74ade7',21);
-    $toplevel->optionAdd("$Xname*bar*dimrelief",           'flat',21);
-    $toplevel->optionAdd("$Xname*bar*litrelief",           'raised',21);
-
-    $toplevel->optionAdd("$Xname*bar*label",            "fill in",21);
-    $toplevel->optionAdd("$Xname*bar*ratio",            '1.5',21);
-
-
-    # suck in command line resources
-    while(my $arg=shift){
-	$arg=~s{-(\S*)$}{$1};
-
-	if($arg){
-	    $val=shift;
-	    $toplevel->optionAdd("$Xname*$arg",  "$val",80);
-	}
+# suck in command line resources
+while(my $arg=shift @ARGV){
+    $arg=~s/-(\S*)$/$1/;
+	    
+    if($arg){
+	$val=shift;
+	$toplevel->optionAdd("$Xname*$arg",  "$val",80);
     }
-    
-    $orient=$toplevel->optionGet("bars","Bars");
-    $stack=$toplevel->optionGet("stack","Stack");
-    $background=$toplevel->optionGet("background","Background");
-    $foreground=$toplevel->optionGet("foreground","Foreground");
+}
 
-    $toplevel->optionAdd("$Xname*bar*dimforeground",  "$background",20);
-    $toplevel->optionAdd("$Xname*bar*litforeground", "$background",20);
+$orient=$toplevel->optionGet("bars","Bars");
+$stack=$toplevel->optionGet("stack","Stack");
 
+$background=$toplevel->optionGet("background","Background");
+$foreground=$toplevel->optionGet("foreground","Foreground");
 
-	
-    $toplevel->configure('-background'=>"$background",'-foreground'
-			 =>"$foreground");
-	
-    &LoadModules($moddir);
+$toplevel->optionAdd("$Xname*bar*dimforeground",  "$background",20);
+$toplevel->optionAdd("$Xname*bar*litforeground", "$background",20);
 
-    # set up desired/min geometry, add a default geometry setting
-	
-    ($minx,$miny,$reqx,$reqy)=&geometries;
-    $toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
-	
-    my $geometry=$toplevel->optionGet("geometry","Geometry");
-    $toplevel->geometry($geometry);
+$toplevel->configure('-background'=>"$background",'-foreground'
+		     =>"$foreground");
 
+&LoadModules($moddir);
 
-    $toplevel->resizable(TRUE,TRUE);
+# set up desired/min geometry, add a default geometry setting
+
+($minx,$miny,$reqx,$reqy,$ldemand,$wdemand)=&geometries;
+$toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
+
+my $geometry=$toplevel->optionGet("geometry","Geometry");
+$toplevel->geometry($geometry);
+$toplevel->minsize($minx,$miny);
+$toplevel->resizable(TRUE,TRUE);
+$geometry=~m{(\d*)x(\d*)};
+$actualx=$1;
+$actualy=$2;
+
+$toplevel->bind('MainWindow','<Configure>',[\&resize,Ev('w'),Ev('h')]);
+
+# all set.  Build the widgets and start the timers 
+&build_and_run;
+ Tk::MainLoop();
+
+sub max{
+    my$val=shift;
+
+    while(my$test=shift){$val=$test if $test>$val}
+    $val;
+}
+
+sub min{
+    my$val=shift;
+
+    while(my$test=shift){$val=$test if $test<$val}
+    $val;
 }
 
 # load the modules
@@ -118,8 +126,9 @@ sub LoadModules{
 sub LoadModule{
     my($path,$filename)=@_;
 
-    my $moduleref= eval {do "$path/$filename";};
-    
+    my$script=`cat $path/$filename`;
+    my $moduleref= eval $script;
+
     if(defined($moduleref)){
 	
 	# The hash returned is just a string/function bundle; it contains the 
@@ -153,17 +162,12 @@ sub LoadModule{
 		"Module plugin $filename doesn't define $test.\n";
 	    return 0;
 	}
-	if(!defined($moduleref->{$test="mgm_module_reqx"})){
+	if(!defined($moduleref->{$test="mgm_module_ldemand"})){
 	    print STDERR 
 		"Module plugin $filename doesn't define $test.\n";
 	    return 0;
 	}
-	if(!defined($moduleref->{$test="mgm_module_reqy"})){
-	    print STDERR 
-		"Module plugin $filename doesn't define $test.\n";
-	    return 0;
-	}
-	if(!defined($moduleref->{$test="mgm_module_demand"})){
+	if(!defined($moduleref->{$test="mgm_module_wdemand"})){
 	    print STDERR 
 		"Module plugin $filename doesn't define $test.\n";
 	    return 0;
@@ -175,13 +179,14 @@ sub LoadModule{
 	}
 	$modules{$name}=$moduleref;
 	
-	
 	# set default module options
 	$toplevel->optionAdd("$Xname.$name.name",             "$name",19);
 	$toplevel->optionAdd("$Xname.$name.active",           "true",19);
+
 	1;
     }else{
-	print "Error loading module $path/$filename: $!\n";
+	$@=$script if(!defined($@));
+	print "Error loading module $path/$filename: $@\n";
     }
 }
 
@@ -190,39 +195,183 @@ sub geometries{
 
     my$minx=0;
     my$miny=0;
-    my$reqx=0;
-    my$reqy=0;
+    my$ldemand=0;
+    my$wdemand=0;
 
     while(my$key=pop(@modlist)){
 
 	my $mod=$modules{$key};
-	my $name=$mod->{"mgm_module_name"};
-	my $Name=ucfirst $name;
-	my $active=$toplevel->optionGet("active","$Name.Active");
 
-	print "$name=$active\n";
+	my $active=&moption($mod,"active");
+	my $pad=&moption($mod,"widgetpad");
+
 	if($active eq 'true'){
+	    if($stack eq $orient){
+		$wdemand=&max($wdemand,$mod->{"mgm_module_wdemand"});
+		$ldemand+=$mod->{"mgm_module_ldemand"} 
+	    }else{
+		$ldemand=&max($ldemand,$mod->{"mgm_module_ldemand"});
+		$wdemand+=$mod->{"mgm_module_wdemand"} 
+	    }
+
 	    if($stack eq 'vertical'){
 		$minx=$mod->{"mgm_module_minx"}if
 		    ($minx<$mod->{"mgm_module_minx"});
-		$reqx=$mod->{"mgm_module_reqx"}if
-		    ($reqx<$mod->{"mgm_module_reqx"});
 		$miny+=$mod->{"mgm_module_miny"};
-		$reqy+=$mod->{"mgm_module_reqy"};
+		$minx+=$pad*2;
+		$miny+=$pad;
 	    }else{
 		$miny=$mod->{"mgm_module_miny"}if
 		    ($miny<$mod->{"mgm_module_miny"});
-		$reqy=$mod->{"mgm_module_reqy"}if
-		    ($reqy<$mod->{"mgm_module_reqy"});
 		$minx+=$mod->{"mgm_module_minx"};
-		$reqx+=$mod->{"mgm_module_reqx"};
+		$miny+=$pad*2;
+		$minx+=$pad;
 	    }
 	}
     }
 
-    ($minx,$miny,$reqx+2,$reqy+2);
+    if($orient eq 'vertical'){
+	($minx,$miny,$minx+$wdemand,$miny+$ldemand,$ldemand,$wdemand);
+    }else{
+	($minx,$miny,$minx+$ldemand,$miny+$wdemand,$ldemand,$wdemand);
+    }
 }
 
+sub build_and_run{
+    # Build the order-of-appearance list 
+    my%ordered;
+    my@remaining;
+    my$count=%modules+1;
+    my@modlist=keys %modules;
+    
+    while(my$key=pop(@modlist)){
+	my $mod=$modules{$key};
+	my $order=&moption($mod,"order");
+	
+	print $order;
 
+	if(defined($order) && !defined($ordered{$order})){
+	    $ordered{$order}=$mod;
 
+	    print "module $mod->{mgm_module_name} is order $order\n";
+	}else{
+	    push @remaining, $mod;
+	    print "module $mod->{mgm_module_name} is not ordered; pushing\n";
+	}
+    }
 
+    for(my$i=0;$i<$count;$i++){
+	if(!defined($ordered{$i})){
+	    $ordered{$i}=shift @remaining;
+	    print "module $mod->{mgm_module_name} in slot $i\n";
+	}
+    }
+	
+    # calculate demand/sizes
+
+    my$extra;
+    if($stack eq 'vertical'){
+	$extra=$actualy-$miny;
+    }else{
+	$extra=$actualx-$minx;
+    }
+
+    my$demand;
+    if($stack eq $orient){
+	$demand=$ldemand;
+    }else{
+	$demand=$wdemand;
+    }
+
+    my$extradel=0;
+    $extradel=$extra/$demand if($demand>0);
+
+    # build the widgets in order
+
+    my$sofar=0;
+    my$pos=($extra-$extradel*$demand)/2;
+    for(my$i=0;$sofar<$count;$i++){
+	my $mod=$ordered{$i};
+	if(defined($mod)){
+	    $sofar++;
+
+	    my $active=&moption($mod,"active");
+	    my $pad=&moption($mod,"widgetpad");
+	    if($active eq 'true'){
+		my$x;
+		my$y;
+		my$width;
+		my$height;
+		my$localdemand;
+		if($stack eq $orient){
+		    $localdemand=$mod->{"mgm_module_ldemand"};
+		}else{
+		    $localdemand=$mod->{"mgm_module_wdemand"};
+		}
+		if($stack eq 'vertical'){
+		    $x=$pad;
+		    $width=$actualx-$pad*2;
+		    $y=$pos+$pad/2;
+		    $height=$mod->{"mgm_module_miny"}+
+			$extradel*$localdemand;
+		    $pos+=$height+$pad;
+		}else{
+		    $y=$pad;
+		    $height=$actualy-$pad*2;
+		    $x=$pos+$pad/2;
+		    $width=$mod->{"mgm_module_minx"}+
+			$extradel*$localdemand;
+		    $pos+=$width+$pad;
+		}
+
+		# build it
+		&{$mod->{"mgm_module_construct"}}($mod,$width,$height)->
+		    place(-x=>$x,-y=>$y,-anchor=>'nw');
+
+	    }
+	}
+    }
+}
+
+sub resize{
+    my($toplevel,$width,$height)=@_;
+
+    if($width!=$actualx || $height!=$actualy){
+
+	# destroy old widgets
+	my@modlist=keys %modules;	
+	while(my$key=pop(@modlist)){
+	    my $mod=$modules{$key};
+	    $mod->{"widget"}->destroy if(defined($mod->{"widget"}));
+	    undef $mod->{"widget"};
+	}
+
+	# set size;
+	$actualx=$width;
+	$actualy=$height;
+
+	#create a new crop
+	&build_and_run;
+    }
+}
+
+sub moption{
+    my($mod,$option)=@_;
+    my$flag;
+    my$ret;
+
+    # dummy; Tk doesn't let us look up resources for windows that don't exist.
+    if(!defined($mod->{"widget"})){
+	my$name=$mod->{"mgm_module_name"};
+	$mod->{"widget"}=$main::toplevel->Label(Name=>$name); 
+	$flag=1;
+    }
+
+    $ret=$mod->{"widget"}->optionGet($option,"");
+
+    if($flag){
+	$mod->{"widget"}->destroy;
+	undef $mod->{"widget"};
+    }
+    $ret;
+}
