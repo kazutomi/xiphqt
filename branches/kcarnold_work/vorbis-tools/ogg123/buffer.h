@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.6 2001/08/10 16:33:40 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.7 2001/08/10 20:48:06 kcarnold Exp $
  
 ********************************************************************/
 
@@ -22,20 +22,13 @@
 
 #include <pthread.h>
 
-/* 4096 is the chunk size we request from libvorbis. */
-#define BUFFER_CHUNK_SIZE 4096
-
-typedef struct chunk_s
-{
-  long len; /* Length of the chunk (for if we only got partial data) */
-  unsigned char data[BUFFER_CHUNK_SIZE]; 
-} chunk_t;
+typedef unsigned char chunk; /* sizeof (chunk) must be 1; if you need otherwise it's not hard to fix */
 
 typedef struct buf_s
 {
   /* generic buffer interface */
   void * data;
-  size_t (*write_func) (void *ptr, size_t size, size_t nmemb, void * d);
+  size_t (*write_func) (chunk *ptr, size_t size, size_t nmemb, void * d);
   
   /* pthreads variables */
   pthread_t BufferThread;
@@ -50,10 +43,10 @@ typedef struct buf_s
   long size;         /* buffer size, for reference */
   long curfill;      /* how much the buffer is currently filled */
   long prebuffer;    /* number of chunks to prebuffer */
-  chunk_t *reader;   /* Chunk the reader is busy with */
-  chunk_t *writer;   /* Chunk the writer is busy with */
-  chunk_t *end;      /* Last chunk in the buffer (for convenience) */
-  chunk_t buffer[1]; /* The buffer itself. It's more than one chunk. */
+  chunk *reader;   /* Chunk the reader is busy with */
+  chunk *writer;   /* Chunk the writer is busy with */
+  chunk *end;      /* Last chunk in the buffer (for convenience) */
+  chunk buffer[1]; /* The buffer itself. It's more than one chunk. */
 } buf_t;
 
 #define STAT_PREBUFFERING 1
@@ -62,14 +55,15 @@ typedef struct buf_s
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
 		    size_t (*write_func) (void *, size_t, size_t, void *));
-void submit_chunk (buf_t *buf, chunk_t chunk);
+void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb);
 void buffer_shutdown (buf_t *buf);
 void buffer_cleanup (buf_t *buf);
 void buffer_flush (buf_t *buf);
 void buffer_WaitForEmpty (buf_t *buf);
 long buffer_full (buf_t *buf);
 
+void buffer_Pause (buf_t *buf);
+void buffer_Unpause (buf_t *buf);
+char buffer_Paused (buf_t *buf);
+
 #endif /* !defined (__BUFFER_H) */
-
-
-

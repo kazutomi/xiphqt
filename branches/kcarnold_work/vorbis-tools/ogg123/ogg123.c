@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.8 2001/08/10 16:33:40 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.9 2001/08/10 20:48:06 kcarnold Exp $
 
  ********************************************************************/
 
@@ -35,6 +35,7 @@
 #include "buffer.h"
 
 /* take buffer out of the data segment, not the stack */
+#define BUFFER_CHUNK_SIZE 4096
 char convbuffer[BUFFER_CHUNK_SIZE];
 int convsize = BUFFER_CHUNK_SIZE;
 buf_t * InBuffer = NULL;
@@ -146,7 +147,7 @@ int main(int argc, char **argv)
 		    "Internal error: long option given when none expected.\n");
 	    exit(1);
 	case 'b':
-	  opt.buffer_size = atoi(optarg) / (BUFFER_CHUNK_SIZE / 1024);
+	  opt.buffer_size = atoi(optarg) * 1024;
 	  break;
 	case 'd':
 	    temp_driver_id = ao_driver_id(optarg);
@@ -249,14 +250,15 @@ int main(int argc, char **argv)
     
     if (opt.shuffle) {
 	int i;
+	int range = argc - optind;
 	
-	srand(time(NULL));
+	srandom(time(NULL));
 
 	for (i = optind; i < argc; i++) {
-		int j = optind + (int) ((double)(argc - i)*(double)rand()/(RAND_MAX+1.0));
-		char *temp = argv[i];
-		argv[i] = argv[j];
-		argv[j] = temp;
+	  int j = optind + random() % range;
+	  char *temp = argv[i];
+	  argv[i] = argv[j];
+	  argv[j] = temp;
 	}
     }
 
@@ -503,13 +505,7 @@ void play_file(ogg123_options_t opt)
 		do {
 		  if (nthc-- == 0) {
 		    if (OutBuffer)
-		      {
-			chunk_t chunk;
-			chunk.len = ret;
-			memcpy (chunk.data, convbuffer, ret);
-			
-			submit_chunk (OutBuffer, chunk);
-		      }
+			SubmitData (OutBuffer, convbuffer, ret, 1);
 		    else
 		      devices_write(convbuffer, ret, 1, opt.outdevices);
 		    nthc = opt.nth - 1;
