@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.24 2003/03/15 18:38:25 brendan Exp $
+ * $Id: mp3.c,v 1.25 2003/03/15 20:58:54 brendan Exp $
  */
 
 #include "definitions.h"
@@ -302,7 +302,7 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
       break;
     case 0:
       header->version = 2;
-      return 0;
+      break;
     default:
       return 0;
   }
@@ -346,9 +346,22 @@ static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
     return -1;
 
   cur = lseek(source->fd, 0, SEEK_CUR);
-  offset = mp3_data->len - mp3_data->pos;
   /* check for VBR tag */
-  lseek(source->fd, 36 - offset, SEEK_CUR);
+  /* Tag offset varies (but FhG VBRI is always MPEG1 Layer III 160 kbps stereo) */
+  if (header->version == 0) {
+    if (header->channels == 1)
+      offset = 21;
+    else
+      offset = 36;
+  } else {
+    if (header->channels == 1)
+      offset = 13;
+    else
+      offset = 21;
+  }
+
+  offset -= mp3_data->len - mp3_data->pos;
+  lseek(source->fd, offset, SEEK_CUR);
   if (read(source->fd, buf, 4) == 4) {
     if (!strncmp("VBRI", buf, 4) || !strncmp("Xing", buf, 4)) {
       ices_log_debug("VBR tag found");
@@ -362,6 +375,7 @@ static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
   }
 
   /* otherwise check next frame if possible */
+  offset = mp3_data->len - mp3_data->pos;
   lseek(source->fd, cur, SEEK_SET);
   if ((framelen = mp3_frame_length(header))) {
     ices_log_debug("Frame length expected: %d bytes", framelen);
