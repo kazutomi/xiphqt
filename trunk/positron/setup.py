@@ -29,9 +29,10 @@ examfiles = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
       version="1.0b1",
-      #summary="Positron synchronization software for the Neuros Audio Computer",
-      #platform=["POSIX"],
-      #license="BSD",
+      description="A synchronization manager for the Neuros Audio Computer",
+      long_description="positron is the synchronization manager for the Neuros Audio Computer.\nIt supports adding, removing, and syncing files to/from the Neuros\ndevice.",
+      platform=["POSIX"],
+      license="BSD",
       author="Stan Seibert",
       author_email="volsung@xiph.org",
       url="http://www.neurosaudio.com/",
