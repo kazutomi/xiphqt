@@ -17,18 +17,19 @@
 
 "Utility module for adding files to the Neuros.  Used by cmd_sync and cmd_add."
 
+import sys
 import os
 from os import path
 import audiofile
 from neuros import Neuros
 import util
 
-
 def gen_filelist(neuros, prefix, suffix, target_prefix,
-                 allowed_types, silent=False):
+                 allowed_types, silent=False, status=True):
     filelist = []
     fullname = path.join(prefix, suffix)
-
+    clearline =  "\r"+" "*70+"\r"
+    
     if path.isdir(fullname):
         files = [path.join(suffix,name) for name in os.listdir(fullname)]
     else:
@@ -57,6 +58,13 @@ def gen_filelist(neuros, prefix, suffix, target_prefix,
                     filelist.append((fullname, targetname, metadata))
                     
         elif path.isdir(fullname):
+            if status:
+                sys.stderr.write(clearline)
+                status = "Scanning %s" % (fullname,)
+                if len(status) > 70:
+                    status = status[:67] + "..." 
+                sys.stderr.write(status+"\r")
+                    
             filelist.extend(gen_filelist(neuros, prefix, name, target_prefix,
                                          allowed_types, silent))
         else:
