@@ -28,14 +28,40 @@ class MarkdownWrapper(object):
 	"""
 	Important attributes:
 	
-		.sourceFilename		-- the file containing markdown text
-		.destFilename		-- the output html file name
-		.doctype			-- self explanatory
-		.inHead				-- a list of strings to be included inside the head element
-		.beforeContent		-- stuff to include before the content div
-		.mainText			-- the text from .sourceFileName after it's been turned into HTML
-		.afterMainText		-- comes just after .mainText, but inside the content div
-		.afterContent		-- stuff to include after the content div
+		.sourceFilename			--	the file containing markdown text
+		
+		.destFilename			--	the output html file name
+		
+		.doctype				--	self explanatory
+		
+		.inHeadInherit			--	An inherited	string from inhead.inherit
+									...to be included inside the head element
+		
+		.inHeadInclude			--	An uninherited	string from inhead.include
+									...to be included right after .inHeadInherit
+		
+		.cssInherit				--	An inherited	string from css.inherit
+									...to be included inside the head element
+		
+		.cssInclude				--	An uninherited	string from css.include
+									...to be included right after .cssInherit
+		
+		.beforeContentInherit	--	An inherited	string from beforecontent.inherit.
+									...to be included right before the content div
+		
+		.beforeContentInclude	--	An uninherited string from beforecontent.include.
+									...to be included right before the content div
+		
+		.mainText				--	the text from .sourceFileName after it's been turned into HTML
+		
+		.afterMainTextInherit	--	An inherited	string from aftermaintext.inherit
+									...included at the end of .mainText, but inside
+									<div id='content'>
+		
+		(no, I'm not going to bother with .afterMainTextInclude yet)	
+
+		.afterContentInherit	--	stuff to include after the content div
+			
 	"""
 	def __init__(self, sourceFilename, destFilename=None):
 		self.sourceFilename = sourceFilename
@@ -56,40 +82,63 @@ class MarkdownWrapper(object):
 		
 		self.lang = 'en-US'
 
-		self.afterMainText = ''
+		self.inHeadInherit = ''
+		self.inHeadInclude = ''
 		
-		self.inHead = ''
+		self.cssInherit = ''
+		self.cssInclude = ''
 		
-		self.beforeContent = ''
-		self.afterContent  = ''
+		self.beforeContentInherit = ''
+		self.beforeContentInclude = ''
 		
+		self.afterMainTextInherit = ''
+		self.afterMainTextInclude = ''
+		
+		self.afterContentInherit  = ''
 
-		# Now we need to, generally, load in data to attributes based on file name.
-		# In particular
-
-		# 	inhead.include			# 	.inHead
-		#	beforecontent.include	#	.beforeContent
-		#	maintext.markdown		#	.mainText		# NOTE: not in includerList
-		#	aftermaintext.include	#	.afterMainText
-		#	aftercontent.include	#	.afterContent
+		# Now we need to stuff these attributes from their respective files.
 		
-		includerList = "inhead beforecontent aftermaintext aftercontent".split()
-		includerList = [ i + ".include" for i in includerList]
+		inheritables = "inhead css beforecontent aftermaintext aftercontent".split()
+		inheritables = [i + ".inherit" for i in inheritables]
+
+		includables =  "inhead css beforecontent aftermaintext".split()
+		includables =  [i + ".include" for i in includables]
 		
 		# this if cascade is ugly, ugly, ugly, ugly. Suggestions, please.
 		
-		for baseFilename in includerList:
+		for baseFilename in inheritables:
 			filename = getParallelFile(self.sourceFilename, baseFilename)
-#			if filename.endswith('aftermaintext.include'): pdb.runcall(getParentedFile, filename)
 			filename = getParentedFile(filename)
 			if not filename: continue
 			
 			if os.path.isfile(filename):
 				contents = file(filename).read()
-				if filename.endswith('inhead.include'):			self.inHead			= contents
-				if filename.endswith('beforecontent.include'):	self.beforeContent	= contents
-				if filename.endswith('aftermaintext.include'):	self.afterMainText	= contents
-				if filename.endswith('aftercontent.include'):	self.afterContent 	= contents
+				if filename.endswith('inhead.inherit'):
+					self.inHeadInherit = contents
+				if filename.endswith('css.inherit'):
+					self.cssInherit = contents
+				if filename.endswith('beforecontent.inherit'):
+					self.beforeContentInherit = contents
+				if filename.endswith('aftermaintext.inherit'):
+					self.afterMainTextInherit = contents
+				if filename.endswith('aftercontent.inherit'):
+					self.afterContentInherit = contents
+
+		for baseFilename in includables:
+			filename = getParallelFile(self.sourceFilename, baseFilename)
+			# notice the complete lack of getParentedFile()
+			if not filename: continue
+			
+			if os.path.isfile(filename):
+				contents = file(filename).read()
+				if filename.endswith('inhead.include'):
+					self.inHeadInclude = contents
+				if filename.endswith('css.include'):
+					self.cssInclude = contents
+				if filename.endswith('beforecontent.include'):
+					self.beforeContentInclude = contents
+				if filename.endswith('aftermaintext.include'):
+					self.afterMainTextInclude = contents
 
 	def renderToFile(self):
 		outfile = file(self.destFilename, "w")
@@ -105,17 +154,22 @@ class MarkdownWrapper(object):
 		ret += self.doctype + '\n'
 		ret += "<html lang='" + self.lang + "'>\n"
 		ret += "<head>\n"
-		ret += "<meta http-equiv='Content-type' content='text/html; charset=UTF-8'>\n"
-		ret += self.inHead
-		ret += '<title>' + self.title + '</title>\n'
+		ret +=	"<meta http-equiv='Content-type' content='text/html; charset=UTF-8'>\n"
+		ret +=	self.inHeadInherit
+		ret +=	self.inHeadInclude
+		ret +=	'<title>' + self.title + '</title>\n'
+		ret +=	self.cssInherit
+		ret +=	self.cssInclude
 		ret += "</head>\n"
 		ret += "<body>\n"
-		ret += self.beforeContent
-		ret += "<div id='content'>\n"
-		ret += self.mainText
-		ret += self.afterMainText
-		ret += "</div>\n"
-		ret += self.afterContent
+		ret +=	self.beforeContentInherit
+		ret +=	self.beforeContentInclude
+		ret += 	"<div id='content'>\n"
+		ret +=	self.mainText
+		ret +=	self.afterMainTextInherit
+		ret +=	self.afterMainTextInclude
+		ret +=	"</div>\n"
+		ret +=	self.afterContentInherit
 		ret += "</body>\n"
 		ret += "</html>\n"
 		return ret
@@ -244,8 +298,7 @@ class NewsDispenser:
 		return ret
 
 if __name__ == '__main__':
-	n = NewsDispenser(os.path.join('news', 'options.ini'))
-	print n.dumpPretty()
+#	print NewsDispenser(os.path.join('news', 'options.ini')).dumpPretty()
 	for dirpath, dirnames, filenames in os.walk('xiph.org'):
 		# bug if more than one .markdown file in a directory
 		for filename in filter(lambda x: x.endswith(".markdown"), filenames):
@@ -255,6 +308,5 @@ if __name__ == '__main__':
 
 			mw = MarkdownWrapper(srcPath, destPath)
 			mw.renderToFile()
-		print "-" * 40
 		if ".svn" in dirnames:
 			dirnames.remove('.svn') # don't transform things in .svn directories
