@@ -188,6 +188,18 @@ For the format defined in this specification, these are `3', `2', and
  `0', respectively, in reference to Theora's origin as
  a successor to the VP3.1 format.
 
+\subsubsection{Metadata}
+
+Following the global configuration fields is a metadata section.
+This consists of a {\em vendor string} identifying the producing encoder 
+ implementation and a series of {\em tag, value} pairs holding a 
+ human-readable description of the encoded content.
+The format of the metadata section is the same as that used in the 
+ Vorbis I and Speex codecs.
+
+A complete description of how the metadata is decoded appears in 
+Section~REF, along with a suggested set of tags.
+
 \subsubsection{Quantization Matrices}
 
 Theora allows up to 384 different quantization matrices to be defined, one for
