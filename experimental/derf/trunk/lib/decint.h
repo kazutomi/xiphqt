@@ -47,6 +47,10 @@ struct theora_dec_ctx{
   ogg_uint16_t           **extra_bits;
   /*The number of outstanding EOB runs at the start of each coefficient.*/
   int                      eob_runs[64];
+  /*The out-of-loop post-processing level.*/
+  int                      pp_level;
+  /*The DC scale used for out-of-loop deblocking.*/
+  int                      pp_dc_scale[64];
 };
 
 #endif

@@ -146,7 +146,7 @@ void oc_enquant_tables_init(oc_quant_tables *_dequant[2][3],
   int qti;
   int pli;
   /*Initialize the dequantization tables first.*/
-  oc_dequant_tables_init(_dequant,_qinfo);
+  oc_dequant_tables_init(_dequant,NULL,_qinfo);
   /*Derive the quantization tables directly from the dequantization tables.*/
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
     int qi;

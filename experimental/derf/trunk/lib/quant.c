@@ -24,7 +24,7 @@ unsigned OC_AC_QUANT_MIN[2]={2<<2,4<<2};
    matrices being used for the current frame, and to recalculate these as the
    qi values change between frames (this is what VP3 did).*/
 void oc_dequant_tables_init(oc_quant_tables *_dequant[2][3],
- const theora_quant_info *_qinfo){
+ int _pp_dc_scale[64],const theora_quant_info *_qinfo){
   int          qti;
   int          pli;
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
@@ -53,6 +53,7 @@ void oc_dequant_tables_init(oc_quant_tables *_dequant[2][3],
       if(qri==_qinfo->qi_ranges[qti][pli].nranges)qi_end=qi+1;
       else qi_end=qi+_qinfo->qi_ranges[qti][pli].sizes[qri];
       for(;;){
+        ogg_uint32_t qfac;
         /*In the original VP3.2 code, the rounding offset and the size of the
            dead zone around 0 were controlled by a "sharpness" parameter.
           The size of our dead zone is now controlled by the per-coefficient
@@ -63,7 +64,9 @@ void oc_dequant_tables_init(oc_quant_tables *_dequant[2][3],
            floating point code has been implemented as equivalent integer code
            with exact precision.*/
         /*Scale DC the coefficient from the proper table.*/
-        q=((ogg_uint32_t)_qinfo->dc_scale[qi]*base[0]/100)<<2;
+        qfac=(ogg_uint32_t)_qinfo->dc_scale[qi]*base[0];
+        if(_pp_dc_scale!=NULL)_pp_dc_scale[qi]=(int)(qfac/160);
+        q=(qfac/100)<<2;
         q=OC_CLAMPI(OC_DC_QUANT_MIN[qti],q,OC_QUANT_MAX);
         _dequant[qti][pli][0][qi][0]=(ogg_uint16_t)q;
         /*Now scale AC coefficients from the proper table.*/

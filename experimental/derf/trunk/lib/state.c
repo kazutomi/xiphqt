@@ -297,13 +297,13 @@ static void oc_state_border_init(oc_theora_state *_state){
            displayable region.*/
         /*Note the special checks for an empty cropping rectangle.
           This guarantees that if we count a fragment as straddling the
-           border, at least one pixel in the fragment will be inside the
-           displayable region.*/
+           border below, at least one pixel in the fragment will be inside
+           the displayable region.*/
         if(x+8<=crop->x0||crop->xf<=x||y+8<=crop->y0||crop->yf<=y||
          crop->x0>=crop->xf||crop->y0>=crop->yf){
           frag->invalid=1;
         }
-        /*Otherwise, check to see if it overlaps the border.*/
+        /*Otherwise, check to see if it straddles the border.*/
         else if(x<crop->x0&&crop->x0<x+8||x<crop->xf&&crop->xf<x+8||
          y<crop->y0&&crop->y0<y+8||y<crop->yf&&crop->yf<y+8){
           ogg_int64_t mask;
@@ -320,7 +320,8 @@ static void oc_state_border_init(oc_theora_state *_state){
             }
           }
           /*Search the fragment array for border info with the same pattern.
-            In general, there will be at most 8 different patterns.*/
+            In general, there will be at most 8 different patterns (per
+            plane).*/
           for(i=0;;i++){
             if(i>=_state->nborders){
               _state->nborders++;
@@ -617,22 +618,22 @@ void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
     theora_img_plane  *iplane;
     oc_fragment_plane *fplane;
     oc_fragment       *frag;
-    oc_fragment       *yfrag_end;
-    unsigned char     *ypix;
+    oc_fragment       *vfrag_end;
+    unsigned char     *vpix;
     iplane=&_img[pli];
     fplane=&_state->fplanes[pli];
-    ypix=iplane->data;
+    vpix=iplane->data;
     frag=_state->frags+fplane->froffset;
-    yfrag_end=frag+fplane->nfrags;
-    while(frag<yfrag_end){
-      oc_fragment   *xfrag_end;
-      unsigned char *xpix;
-      xpix=ypix;
-      for(xfrag_end=frag+fplane->nhfrags;frag<xfrag_end;frag++){
-        frag->buffer[_buf_idx]=xpix;
-        xpix+=8;
+    vfrag_end=frag+fplane->nfrags;
+    while(frag<vfrag_end){
+      oc_fragment   *hfrag_end;
+      unsigned char *hpix;
+      hpix=vpix;
+      for(hfrag_end=frag+fplane->nhfrags;frag<hfrag_end;frag++){
+        frag->buffer[_buf_idx]=hpix;
+        hpix+=8;
       }
-      ypix+=iplane->stride<<3;
+      vpix+=iplane->stride<<3;
     }
   }
 }
@@ -681,7 +682,7 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
     No third or fourth offsets are computed, even if both components have
      non-zero fractional parts.
     The second offset is computed by dividing (not shifting) by the
-     appropriate amount, always rounding _away_ from zero.*/
+     appropriate amount, always truncating _away_ from zero.*/
   /*These two variables decide whether we are in half- or quarter-pixel
      precision in each component.*/
   xtype=_state->info.chroma_x_decimated&!!_pli;

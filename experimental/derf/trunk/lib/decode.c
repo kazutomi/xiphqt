@@ -109,7 +109,8 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
     _dec->state.dequant_tables[qti][pli]=
      _dec->state.dequant_table_data[qti]+pli;
   }
-  oc_dequant_tables_init(_dec->state.dequant_tables,&_setup->qinfo);
+  oc_dequant_tables_init(_dec->state.dequant_tables,_dec->pp_dc_scale,
+   &_setup->qinfo);
   _dec->dct_tokens=(unsigned char **)oc_calloc_2d(64,
    _dec->state.nfrags,sizeof(_dec->dct_tokens[0][0]));
   _dec->extra_bits=(ogg_uint16_t **)oc_calloc_2d(64,
