@@ -6,4 +6,4 @@
 <script type="text/javascript"></script>
 <link rel="icon" href="/images/logos/xiph.ico" type="image/x-icon"/>
 <link rel="shortcut icon" href="/images/logos/xiph.ico" type="image/x-icon"/>
-<link href="/css/screen.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" title="Default 50em Width" media="screen" href="/css/screen.css" type="text/css"/>
