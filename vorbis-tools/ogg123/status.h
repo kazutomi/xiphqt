@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.4 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: status.h,v 1.1.2.4.2.1 2001/10/31 05:38:56 volsung Exp $
 
  ********************************************************************/
 
@@ -41,8 +41,9 @@ typedef struct {
   } arg;
 } Stat_t;
 
-void UpdateStats (Stat_t stats[]);
-void ShowMessage (int prio, char keepStatusLine, char addNewline, const char *fmt, ...);
+void PrintStatsLine (Stat_t stats[]);
+void ShowMessage (int prio, char keepStatusLine, char addNewline, 
+		  const char *fmt, ...);
 void Error (const char *fmt, ...);
 void SetPriority (int prio);
 

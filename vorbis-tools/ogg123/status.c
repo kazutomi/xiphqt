@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.1 2001/10/31 05:38:56 volsung Exp $
 
  ********************************************************************/
 
@@ -65,7 +65,7 @@ int AppendString (int len, const char *fmt, ...) {
   return 0; /* makes dumb compilers happy */
 }
 
-void UpdateStats (Stat_t stats[])
+void PrintStatsLine (Stat_t stats[])
 {
   int len = 0, left;
   
