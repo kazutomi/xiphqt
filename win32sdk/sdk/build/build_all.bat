@@ -1,5 +1,5 @@
 @echo off
-rem $Id: build_all.bat,v 1.2 2001/09/14 03:16:14 cwolf Exp $
+rem $Id: build_all.bat,v 1.3 2001/09/15 07:25:36 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
@@ -7,8 +7,15 @@ if ."%SDKHOME%"==."" goto notset
 
 if not exist %SDKHOME%\lib\ogg.lib goto nolib
 
+rem If one of the makefiles doesn't exist,
+rem assume they all need to be generated
+rem
+if not exist %SDKHOME%\build\examples.mak (
+  echo Must run "mkmak.bat" first...
+  exit 0
+)
+
 nmake /nologo /f encoder.mak CFG="encoder - Win32 Debug" %1
-exit
 nmake /nologo /f encoder.mak CFG="encoder - Win32 Release" %1
 nmake /nologo /f encoder_static.mak CFG="encoder_static - Win32 Debug" %1
 nmake /nologo /f encoder_static.mak CFG="encoder_static - Win32 Release" %1
@@ -32,7 +39,7 @@ nmake /nologo /f vorbisfile_static.mak CFG="vorbisfile_static - Win32 Release" %
 goto normal
 
 :nolib
-echo ***** SDK needs to be built first 
+echo ***** SDK needs to be built first, run win32sdk\maksdk.bat
 exit
 
 :notset
