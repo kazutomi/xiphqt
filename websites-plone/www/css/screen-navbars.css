@@ -82,13 +82,14 @@ div#navbar2 a {
 	padding: 3px;
 	text-decoration: none;
 	text-transform: lowercase;
+	font-weight: bold;
 	display: block;
 	width: 130px;
 	border: 3px solid #91acd9;
 	border-bottom: 3px solid #718CB9;
 	border-right: 3px solid #718CB9;
 	-moz-border-radius: 13px;
-	background: #819cc9;
+	background: #000000;
 }
 
 div#navbar2 li:hover {

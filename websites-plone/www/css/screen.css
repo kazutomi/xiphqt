@@ -6,7 +6,7 @@ html, body {
 	margin: 0;
 	border: 0;
 	padding: 0px;
-	background: url(/images/layout/lightfish-blue.png) #819cc9;
+	background: #DDDDDD;
 	color: black;
 	font: Verdana, "Bitstream Vera Sans",  Helvetica, sans-serif;
 }
@@ -23,23 +23,22 @@ div#label {
 	text-align: center;
 	font-size: 250%;
 	margin: 0;
-	padding: 0px 0 0px 0;
+	padding: 5px 0 5px 0;
 	border: 0;
-	background: #000000;
+	background: no-repeat url(/images/layout/xiph_squares.gif) left #FFFFFF;
 	border: 3px solid #000000;
 	-moz-border-radius-topleft: 10px;
-	-moz-border-radius-topright: 10px; 
+	-moz-border-radius-topright: 10px;
+	text-transform: lowercase;
 }
 
 #label2 {
-	position: absolute;
-	margin: 40px 0px 0px 0px;
+	margin: 0px 0px 0px 0px;
 	padding: 0px;
 	top: 0px;
 	left: 0px;
 	border: 0px solid #00FF00;
 	text-align: center;
-	width: 100%;
 	min-width: 565px;
 }
 

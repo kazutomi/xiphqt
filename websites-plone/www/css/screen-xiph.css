@@ -3,7 +3,6 @@
 /*These properties are only for the main Xiph pages, not any of the project pages. */
 
 html, body {
-	background-color: #819cc9;
 }
 
 div#navbar1 a#xiph {
@@ -16,7 +15,7 @@ div#navbar2 {
 
 div#navbar2 a:hover {
 	color: #EEEEEE;
-	background:  #617Ca9;
+	background:  #3C6484;
 	border: 3px solid #91acd9;
 	border-top: 3px solid #718CB9;
 	border-left: 3px solid #718CB9;
