@@ -1,5 +1,5 @@
 @echo off
-rem $Id: mkmak.bat,v 1.4 2001/10/18 17:22:00 cwolf Exp $
+rem $Id: mkmak.bat,v 1.5 2001/10/20 21:12:37 cwolf Exp $
 rem
 rem
 if ."%SDKHOME%"==."" goto notset
@@ -9,7 +9,7 @@ rem assume they all need to be generated
 rem
 if not exist %SDKHOME%\build\examples.mak (
    echo Generating makefiles, please wait...
-   execwait msdev -ex ExportExampleMakefiles
+   execwait %SystemRoot%\system32\cscript.exe //nologo exportmf.js
    echo Done.
 )
 goto done
