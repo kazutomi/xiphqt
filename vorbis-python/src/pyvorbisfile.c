@@ -272,7 +272,7 @@ py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
   int length, word, sgned, bitstream;
   int bigendianp;
 
-  bigendianp = (__BYTE_ORDER == __BIG_ENDIAN);
+  bigendianp = (BYTE_ORDER == BIG_ENDIAN);
   length = 4096;
   word = 2;
   sgned = 1;

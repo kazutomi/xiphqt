@@ -1,3 +1,8 @@
+2002-09-24  Andrew H. Chatham <pyogg@andrewchatham.com>
+	* Changes from Neil Blakey-Milner
+	* setup.py - fixed regular expression
+	* pyvorbisfile.c: Used more portable endian-test code.
+	
 2002-09-12  Andrew H. Chatham <pyogg@andrewchatham.com>
 	* pyvorbisinfo.c: (assign_tag) Removed a printf I accidentally
 	left in there.

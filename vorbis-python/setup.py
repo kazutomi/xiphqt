@@ -20,7 +20,7 @@ these bindings. Import of ogg._ogg failed.'''
 
 def get_setup():
     data = {}
-    r = re.compile(r'(\S+)\s*?=\s*?(.+)')
+    r = re.compile(r'(\S+)\s*?=\s*(.+)')
     
     if not os.path.isfile('Setup'):
         print "No 'Setup' file. Perhaps you need to run the configure script."
