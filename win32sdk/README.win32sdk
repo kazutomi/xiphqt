@@ -1,0 +1,60 @@
+$Id: README.win32sdk,v 1.1 2001/09/14 03:16:13 cwolf Exp $
+$Name:  $
+
+win32sdk Readme, 13 September, 2001 Chris Wolf
+===========================================================================
+This is the win32 SDK for Ogg/Vorbis
+
+  This directory, "win32sdk", is not actually part of the SDK as such,
+  but is a staging area for building the SDK.  The complete SDK ends
+  up in a directory tree rooted in "sdk", under this directory.
+  The "sdk" directory tree, once prepared should then be relocatable
+  and usable by itself.
+
+PREREQUSITES
+
+  The SRCROOT environment variable must be set pointing to the 
+  root directory where each of the cvs modules are rooted.  The
+  cvs modules "ogg", "vorbis" and "win32sdk" (this module) are 
+  required for this build.
+
+  The script "mkmak.bat" must be run at least once to generate 
+  the makefiles.
+  
+  It will:
+  1.) create and install MSVC macros which allow performing an
+      export of project makefiles and associated depenency files.
+      The macro will then be invoked to generate the makefiles.
+  
+BUILDING
+
+  To prepare the sdk for use, run "mkmak.bat", followed by "makesdk.bat".
+
+  This script will:
+
+	1.) create "include", "lib", "bin", "doc" and "examples" 
+      directories and copy the required files from the cvs modules.
+
+  2.) Using nmake, build the static and dynamic (DLL) libraries 
+      and copy them to the sdk\lib directory.
+
+  Note that the makefiles are generated from the IDE, and are thus a
+  reflection of the workspace and project file states.  It is strongly
+  recommended to make changes via the IDE and export the makefiles,
+  rather than tweaking the makefiles directly.
+
+
+  IDE build:
+
+  Load the "all.dsw" workspace.  This workspace loads and manages the
+  the dependent project files.  To perform a build, from the "build"
+  menu, select the "build" menu item.  This will build all the dependent
+  libaries, but not copy them.
+
+  The command line script, "build_all.bat" can also be invoked for
+  this purpose.
+
+INSTALLING
+  Once prepared, the tree rooted in "sdk" can be used to build
+  win32 applications based on Ogg/Vorbis.  See the README in 
+  sdk\examples for further information.
