@@ -1,3 +1,16 @@
+pyao (0.8-2) unstable; urgency=low
+
+  * minor update
+
+ -- Christopher L Cheney <ccheney@debian.org>  Thu, 22 Aug 2002 16:00:00 -0500
+
+pyao (0.8-1) unstable; urgency=high
+
+  * New upstream. (Closes: #108608, #117234)
+  * Updated package to be Debian Python Policy compliant.
+
+ -- Christopher L Cheney <ccheney@debian.org>  Sat, 24 Nov 2001 00:40:39 -0600
+
 pyao (0.0.2-3) unstable; urgency=low
 
   *  Fixed versioned depends.
