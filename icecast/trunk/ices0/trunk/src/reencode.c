@@ -94,15 +94,11 @@ ices_reencode_decode (unsigned char* buf, size_t blen, size_t olen,
 
 /* reencode buff, of len buflen, put max outlen reencoded bytes in outbuf */
 int
-ices_reencode_reencode_chunk (ices_stream_t* stream, int nsamples,
-			      int16_t* left, int16_t* right,
-			      unsigned char *outbuf, int outlen)
+ices_reencode (ices_stream_t* stream, int nsamples, int16_t* left,
+	       int16_t* right, unsigned char *outbuf, int outlen)
 {
   lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
 
-  if (nsamples <= 0)
-    return nsamples;
-  
   return lame_encode_buffer (lame, left, right, nsamples, outbuf, outlen);
 }
 
@@ -118,7 +114,7 @@ ices_reencode_flush (ices_stream_t* stream, unsigned char *outbuf,
   /* nogap will cause problems if the next track isn't being reencoded */
 #  if 0
   rc = lame_encode_flush_nogap (lame, (char *)outbuf, maxlen);
-#else
+#  else
   rc = lame_encode_flush (lame, (char *)outbuf, maxlen);
 #  endif
 #else

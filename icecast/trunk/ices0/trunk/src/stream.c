@@ -48,7 +48,7 @@ static volatile int finish_send = 0;
 
 /* Private function declarations */
 static int stream_connect (ices_stream_t* stream);
-static int stream_send_file (const char *file);
+static int stream_send (input_stream_t* source);
 static int stream_send_data (ices_stream_t* stream, unsigned char* buf,
 			     size_t len);
 static int stream_open_source (input_stream_t* source);
@@ -61,6 +61,7 @@ void
 ices_stream_loop (void)
 {
   int consecutive_errors = 0;
+  input_stream_t source;
   ices_stream_t* stream;
 
   /* Check if user gave us a hostname */
@@ -90,15 +91,36 @@ ices_stream_loop (void)
      * further down in the loop */
     file = ices_playlist_get_next ();
     ices_cue_set_lineno (ices_playlist_get_current_lineno ());
-		
+
     /* We quit if the playlist handler gives us a NULL filename */
     if (!file) {
       ices_log ("Warning: ices_file_get_next() gave me an error, this is not good. [%s]", ices_log_get_error ());
       ices_setup_shutdown ();
     }
 		
+    source.path = file;
+    source.bytes_read = 0;
+    source.filesize = 0;
+
+    source.read = NULL;
+    source.readpcm = NULL;
+    source.close = NULL;
+
+    if (stream_open_source (&source) < 0)
+      consecutive_errors++;
+
+    if (!source.read)
+      for (stream = ices_config.streams; stream; stream = stream->next)
+	if (!stream->reencode) {
+	  ices_log ("Cannot play %s without reencoding", file);
+	  source.close (&source);
+	  ices_util_free (file);
+	  consecutive_errors ++;
+	  continue;
+	}
+
     /* If something goes on while transfering, we just go on */
-    if (stream_send_file (file) < 0) {
+    if (stream_send (&source) < 0) {
       ices_log ("Encountered error while transfering %s: %s", file, ices_log_get_error ());
 
       consecutive_errors++;
@@ -125,7 +147,7 @@ ices_stream_loop (void)
   /* Not reached */
 }
 
-/* set a flag to tell ices_stream_send_file to finish early */
+/* set a flag to tell stream_send to finish early */
 void
 ices_stream_next (void)
 {
@@ -134,9 +156,8 @@ ices_stream_next (void)
 
 /* This function is called to stream a single file */
 static int
-stream_send_file (const char *file)
+stream_send (input_stream_t* source)
 {
-  input_stream_t source;
   ices_stream_t* stream;
   unsigned char ibuf[INPUT_BUFSIZ];
   char namespace[1024];
@@ -147,63 +168,39 @@ stream_send_file (const char *file)
   int do_sleep;
 #ifdef HAVE_LIBLAME
   int decode = 0;
-  unsigned char buf[INPUT_BUFSIZ * 4];
+  unsigned char obuf[INPUT_BUFSIZ * 8];
   static int16_t left[INPUT_BUFSIZ * 30];
   static int16_t right[INPUT_BUFSIZ * 30];
 #endif
 
-  source.path = file;
-  source.bytes_read = 0;
-  source.filesize = 0;
 
-  source.read = NULL;
-  source.readpcm = NULL;
-  source.close = NULL;
-
-  if (stream_open_source (&source) < 0) {
-    return -1;
-  }
-
-  if (! source.read) {
-    if (! source.readpcm) {
-      ices_log_error ("No read method implemented for %s", source.path);
-      source.close (&source);
-      return -1;
-    }
-    for (stream = ices_config.streams; stream; stream = stream->next) {
-      if (! (stream->reencode)) {
-	ices_log_error ("Cannot play without reencoding");
-	source.close (&source);
-	return -1;
-      }
-    }
 #ifdef HAVE_LIBLAME
-  } else if (ices_config.reencode) {
+  if (ices_config.reencode)
     /* only actually decode/reencode if the bitrate of the stream != source */
     for (stream = ices_config.streams; stream; stream = stream->next)
-      if (stream->bitrate != source.bitrate) {
+      if (stream->bitrate != source->bitrate) {
 	decode = 1;
 	ices_reencode_reset ();
       }
 #endif
-  }
+
   for (stream = ices_config.streams; stream; stream = stream->next)
     stream->errs = 0;
   
-  ices_log ("Playing %s", source.path);
+  ices_log ("Playing %s", source->path);
 
-  ices_metadata_update (&source);
+  ices_metadata_update (source);
 
   finish_send = 0;
   while (! finish_send) {
     len = samples = 0;
-    if (source.read) {
-      len = source.read (&source, ibuf, sizeof (ibuf));
+    if (source->read) {
+      len = source->read (source, ibuf, sizeof (ibuf));
 #ifdef HAVE_LIBLAME
       if (decode)
 	samples = ices_reencode_decode (ibuf, len, sizeof (left), left, right);
-    } else if (source.readpcm) {
-      len = samples = source.readpcm (&source, sizeof (left), left, right);
+    } else if (source->readpcm) {
+      len = samples = source->readpcm (source, sizeof (left), left, right);
 #endif
     }
 
@@ -213,18 +210,19 @@ stream_send_file (const char *file)
 	rc = olen = 0;
 	for (stream = ices_config.streams; stream; stream = stream->next) {
 	  /* don't reencode if the source is MP3 and the same bitrate */
-	  if (!stream->reencode || (source.read &&
-				    (stream->bitrate == source.bitrate))) {
+	  if (!stream->reencode || (source->read &&
+				    (stream->bitrate == source->bitrate))) {
 	    rc = stream_send_data (stream, ibuf, len);
 	  }
 #ifdef HAVE_LIBLAME
 	  else {
-	    olen = ices_reencode_reencode_chunk (stream, samples, left, right,
-						 buf, sizeof (buf));
+	    if (samples > 0)
+	      olen = ices_reencode (stream, samples, left, right, obuf,
+				    sizeof (obuf));
 	    if (olen == -1) {
 	      ices_log_debug ("Output buffer too small, skipping chunk");
 	    } else if (olen > 0) {
-	      rc = stream_send_data (stream, buf, olen);
+	      rc = stream_send_data (stream, obuf, olen);
 	    }
 	  }
 #endif
@@ -232,7 +230,7 @@ stream_send_file (const char *file)
 	  if (rc < 0) {
 	    if (stream->errs > 10) {
 	      ices_log ("Too many stream errors, giving up");
-	      source.close (&source);
+	      source->close (source);
 	      return -1;
 	    }
 	    ices_log ("Error during send: %s", ices_log_get_error ());
@@ -256,25 +254,24 @@ stream_send_file (const char *file)
     } else {
       ices_log_error ("Read error: %s",
 		      ices_util_strerror (errno, namespace, 1024));
-      source.close (&source);
+      source->close (source);
       return -1;
     }
 
-    ices_cue_update (&source);
-
+    ices_cue_update (source);
   }
 
 #ifdef HAVE_LIBLAME
   for (stream = ices_config.streams; stream; stream = stream->next)
-    if (stream->reencode && (!source.read ||
-	(source.bitrate != stream->bitrate))) {
-      len = ices_reencode_flush (stream, buf, sizeof (buf));
+    if (stream->reencode && (!source->read ||
+	(source->bitrate != stream->bitrate))) {
+      len = ices_reencode_flush (stream, obuf, sizeof (obuf));
       if (len > 0)
-	rc = shout_send_data (&stream->conn, buf, len);
+	rc = shout_send_data (&stream->conn, obuf, len);
     }
 #endif
 
-  source.close (&source);
+  source->close (source);
   ices_metadata_set (NULL, NULL);
 
   return 0;
