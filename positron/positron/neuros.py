@@ -19,6 +19,7 @@ import db.new
 import os
 from os import path
 import util
+import ports
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -67,6 +68,12 @@ class Neuros:
 
     DB_DIR = path.normcase("WOID_DB")
 
+    # Constants for describing the type of Neuros
+    TYPE_UNKNOWN = 0
+    TYPE_FLASH   = 1
+    TYPE_HD      = 2
+
+
     db_formats = {
         "audio"      : { "no_flatten"   : (1, ),
                          "extra_format" : (">I",">I","z"),
@@ -110,6 +117,26 @@ class Neuros:
         self.db = {}
         for db_name in self.db_formats.keys():
             self.db[db_name] = None
+
+        # Figure out what kind of Neuros this is
+        (self.neuros_type, self.neuros_size) = self._detect_neuros_type(self.mountpoint)
+
+
+    def _detect_neuros_type(self, mountpoint):
+
+        # There is no direct way to determine the type of Neuros
+        # (either flash or HD) so we have to infer it from the size of
+        # the volumes connected to the system.
+        
+        size = ports.filesystem_size(mountpoint)
+
+        if size == None:
+            return (Neuros.TYPE_UNKNOWN, -1)
+        elif size < 2147483648:  # Use 2 GB as an arbitrary size cutoff
+            return (Neuros.TYPE_FLASH, size)
+        else:
+            return (Neuros.TYPE_HD, size)
+
 
     def open_db(self, name):
 
@@ -174,23 +201,34 @@ class Neuros:
         return self.mountpoint_parts == \
                hostpath_parts[:len(self.mountpoint_parts)]
 
-    def hostpath_to_neurospath(self, hostpath):
+    def hostpath_to_neurospath(self, hostpath, neuros_type = None):
         if not self.is_valid_hostpath(hostpath):
             raise Error("Host path not under Neuros mountpoint")
 
         # Get the path parts, but prune off the mountpoint
         hostpath_parts = _total_path_split(hostpath)[len(self.mountpoint_parts):]
 
-        hostpath_parts.insert(0,"C:")
+        if neuros_type == None:
+            neuros_type = self.neuros_type
 
+        if neuros_type == Neuros.TYPE_HD:
+            drive_letter = "C:"
+        elif neuros_type == Neuros.TYPE_FLASH:
+            drive_letter = "D:"
+        else:
+            # Assume HD
+            drive_letter = "C:"
+        
+        hostpath_parts.insert(0, drive_letter)
         # Now join it all with forward slashes to get the Neuros path
         return "/".join(hostpath_parts)
 
     def neurospath_to_hostpath(self, neurospath):
         neurospath_parts = neurospath.split("/")
 
-        if len(neurospath_parts) < 1 or neurospath_parts[0].lower() != "c:":
-            raise Error("Neuros path does not start with C:")
+        if len(neurospath_parts) < 1 \
+               or neurospath_parts[0].lower() not in ("c:", "d:"):
+            raise Error("Neuros path does not start with C: or D:")
 
         hostpath_parts = self.mountpoint_parts + neurospath_parts[1:]
 
