@@ -10,8 +10,8 @@ device = 'esd'
 SIZE = 4096
 
 vf = ogg.vorbis.VorbisFile(filename)
-id = ao.driver_id(device)
-ao = ao.AudioDevice(id)
+id = ao.get_driver_id(device)
+ao = ao.Ao(id)
 
 while 1:
     (buff, bytes, bit) = vf.read(SIZE)

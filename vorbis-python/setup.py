@@ -6,8 +6,8 @@ import os, re, sys, string
 from distutils.core import setup
 from distutils.extension import Extension
 
-VERSION_MAJOR = 1
-VERSION_MINOR = 4
+VERSION_MAJOR = 0
+VERSION_MINOR = 2
 pyvorbis_version = str(VERSION_MAJOR) + '.' + str(VERSION_MINOR)
 
 try:
@@ -20,7 +20,7 @@ these bindings. Import of ogg._ogg failed.'''
 
 def get_setup():
     data = {}
-    r = re.compile(r'(\S+)\s*?=\s*(.+)')
+    r = re.compile(r'(\S+)\s*?=\s*?(.+)')
     
     if not os.path.isfile('Setup'):
         print "No 'Setup' file. Perhaps you need to run the configure script."
@@ -48,15 +48,13 @@ vorbis_libs = string.split(data['vorbis_libs'])
 ogg_include_dir = data['ogg_include_dir']
 ogg_lib_dir = data['ogg_lib_dir']
 
-vorbismodule = Extension(name='vorbis',
+vorbismodule = Extension(name='vorbismodule',
                          sources=['src/vorbismodule.c',
                                   'src/pyvorbisfile.c',
                                   'src/pyvorbiscodec.c',
                                   'src/pyvorbisinfo.c',
-                                  'src/vcedit.c',
                                   'src/general.c'],
-                         define_macros = [('VERSION', '"%s"' %
-                                           pyvorbis_version)],
+                         define_macros = [('VERSION', '"%s"' % pyvorbis_version)],
                          include_dirs=[vorbis_include_dir,
                                        ogg_include_dir],
                          library_dirs=[vorbis_lib_dir,

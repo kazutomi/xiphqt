@@ -3,28 +3,14 @@
 import string
 import os
 import sys
-import exceptions
-
-log_name = 'config.log'
-if os.path.isfile(log_name):
-    os.unlink(log_name)
-
-def write_log(msg):
-    log_file = open(log_name, 'a')
-    log_file.write(msg)
-    log_file.write('\n')
-    log_file.close()
-
-def exit(code=0):
-    sys.exit(code)
 
 def msg_checking(msg):
     print "Checking", msg, "...",
 
-def execute(cmd):
-    write_log("Execute: %s" % cmd)
-    full_cmd = '%s 1>>%s 2>&1' % (cmd, log_name)
-    return os.system(full_cmd)
+def execute(cmd, display = 0):
+    if display:
+        print cmd
+    return os.system(cmd)
 
 def run_test(input, flags = ''):
     try:
@@ -33,10 +19,9 @@ def run_test(input, flags = ''):
         f.close()
         compile_cmd = '%s -o _temp _temp.c %s' % (os.environ.get('CC', 'cc'),
                                                   flags)
-        write_log("executing test: %s" % compile_cmd)
         if not execute(compile_cmd):
             execute('./_temp')
-                
+
     finally:
         execute('rm -f _temp.c _temp')
     
@@ -63,13 +48,13 @@ def find_ogg(ogg_prefix = '/usr/local', enable_oggtest = 1):
     msg_checking('for Ogg')
 
     if enable_oggtest:
-        execute('rm -f conf.oggtest')
+        execute('rm -f conf.oggtest', 0)
 
         try:
-            run_test(ogg_test_program, flags="-I" + ogg_include_dir)
+            run_test(ogg_test_program)
             if not os.path.isfile('conf.oggtest'):
                 raise RuntimeError, "Did not produce output"
-            execute('rm conf.oggtest')
+            execute('rm conf.oggtest', 0)
             
         except:
             print "test program failed"
@@ -95,15 +80,9 @@ int main ()
 }
 '''
 
-def find_vorbis(ogg_data,
-                vorbis_prefix = '/usr/local',
-                enable_vorbistest = 1):
+def find_vorbis(vorbis_prefix = '/usr/local', enable_vorbistest = 1):
     """A rough translation of vorbis.m4"""
 
-    ogg_libs = ogg_data['ogg_libs']
-    ogg_lib_dir = ogg_data['ogg_lib_dir']
-    ogg_include_dir = ogg_data['ogg_include_dir']
-    
     vorbis_include_dir = vorbis_prefix + '/include'
     vorbis_lib_dir = vorbis_prefix + '/lib'
     vorbis_libs = 'vorbis vorbisfile vorbisenc'
@@ -111,15 +90,13 @@ def find_vorbis(ogg_data,
     msg_checking('for Vorbis')
 
     if enable_vorbistest:
-        execute('rm -f conf.vorbistest')
+        execute('rm -f conf.vorbistest', 0)
 
         try:
-            run_test(vorbis_test_program,
-                     flags = "-I%s -I%s" % (vorbis_include_dir,
-                                            ogg_include_dir))
+            run_test(vorbis_test_program)
             if not os.path.isfile('conf.vorbistest'):
                 raise RuntimeError, "Did not produce output"
-            execute('rm conf.vorbistest')
+            execute('rm conf.vorbistest', 0)
             
         except:
             print "test program failed"
@@ -140,54 +117,38 @@ def write_data(data):
             
 def print_help():
     print '''%s
-    --prefix                  Give the prefix in which vorbis was installed.
-    --with-ogg-dir [dir]      Give the directory for ogg files
-                                (separated by a space)
-    --with-vorbis-dir [dir]   Give the directory for vorbis files''' % sys.argv[0]
-    exit()
+    --prefix      Give the prefix in which vorbis was installed.''' % sys.argv[0]
+    sys.exit(0)
 
 def parse_args():
-    def arg_check(data, argv, pos, arg_type, key):
-        "Register an command line arg which takes an argument"
-        if len(argv) == pos:
-            print arg_type, "needs an argument"
-            exit(1)
-        data[key] = argv[pos]
-        
     data = {}
     argv = sys.argv
     for pos in range(len(argv)):
         if argv[pos] == '--help':
             print_help()
-        if argv[pos] == '--with-ogg-dir':
-            pos = pos + 1
-            arg_check(data, argv, pos, "Ogg dir", 'ogg_prefix')
-        if argv[pos] == '--with-vorbis-dir':
-            pos = pos + 1
-            arg_check(data, argv, pos, "Vorbis dir", 'vorbis_prefix')
         if argv[pos] == '--prefix':
             pos = pos + 1
-            arg_check(data, argv, pos, "Prefix", 'prefix')
+            if len(argv) == pos:
+                print "Prefix needs an argument"
+                sys.exit(1)
+            data['prefix'] = argv[pos]
 
     return data
     
 def main():
     args = parse_args()
     prefix = args.get('prefix', '/usr/local')
-    vorbis_prefix = args.get('vorbis_prefix', prefix)
-    ogg_prefix = args.get('ogg_prefix', prefix)
 
-    data = find_ogg(ogg_prefix = ogg_prefix)
+    data = find_vorbis(vorbis_prefix = prefix)
     if not data:
         print "Config failure"
-        exit(1)
+        sys.exit(1)
 
-    vorbis_data = find_vorbis(ogg_data = data,
-                              vorbis_prefix = vorbis_prefix)
-    if not vorbis_data:
+    ogg_data = find_ogg(ogg_prefix = prefix)
+    if not ogg_data:
         print "Config failure"
-        exit(1)
-    data.update(vorbis_data)
+        sys.exit(1)
+    data.update(ogg_data)
     
     write_data(data)
 

@@ -1,4 +1,3 @@
-#include <pyogg/pyogg.h>
 #include "pyoggpacket.h"
 
 /************************************************************
@@ -7,25 +6,23 @@
 
 char py_ogg_packet_doc[] = "";
 
-static void py_ogg_packet_dealloc(PyObject *);
+static void py_ogg_packet_dealloc(py_ogg_packet *);
 static PyObject* py_ogg_packet_getattr(PyObject *, char *);
-static int py_ogg_packet_setattr(PyObject *, char *, PyObject *);
-static PyObject *py_ogg_packet_repr(PyObject *self);
 
 PyTypeObject py_ogg_packet_type = {
-  PyObject_HEAD_INIT(NULL)
+  PyObject_HEAD_INIT(&PyType_Type)
   0,
   "OggPacket",
   sizeof(py_ogg_packet),
   0,
   
   /* Standard Methods */
-  /* (destructor) */ py_ogg_packet_dealloc,
-  /* (printfunc) */ 0,
-  /* (getattrfunc) */ py_ogg_packet_getattr,
-  /* (setattrfunc) */ py_ogg_packet_setattr,
-  /* (cmpfunc) */ 0,
-  /* (reprfunc) */ py_ogg_packet_repr,
+  (destructor) py_ogg_packet_dealloc,
+  (printfunc) 0,
+  (getattrfunc) py_ogg_packet_getattr,
+  (setattrfunc) 0,
+  (cmpfunc) 0,
+  (reprfunc) 0,
   
   /* Type Categories */
   0, /* as number */
@@ -58,7 +55,7 @@ py_ogg_packet_from_packet(ogg_packet *op)
 }
 
 static void
-py_ogg_packet_dealloc(PyObject *self)
+py_ogg_packet_dealloc(py_ogg_packet *self)
 {
   PyMem_DEL(self);
 }
@@ -66,37 +63,6 @@ py_ogg_packet_dealloc(PyObject *self)
 static PyObject*
 py_ogg_packet_getattr(PyObject *self, char *name)
 {
-  if (strcmp(name, "granulepos") == 0)
-    return PyLong_FromLongLong(PY_OGG_PACKET(self)->granulepos);
   return Py_FindMethod(py_ogg_packet_methods, self, name);
-}
-
-static int
-py_ogg_packet_setattr(PyObject *self, char *name, PyObject *value)
-{
-  ogg_int64_t v;
-
-  if (strcmp(name, "granulepos") == 0) {
-    if (!arg_to_int64(value, &v))
-      return -1;
-    PY_OGG_PACKET(self)->granulepos = v;
-    return 0;
-  }
-
-  return -1;
-}
-
-static PyObject *
-py_ogg_packet_repr(PyObject *self)
-{
-  ogg_packet *op = PY_OGG_PACKET(self);
-  char buf[256];
-  char *bos = op->b_o_s ? "BOS " : "";
-  char *eos = op->e_o_s ? "EOS " : "";
-
-  sprintf(buf, "<OggPacket, %s%spacketno = %lld, granulepos = %lld,"
-	  " length = %ld at %p>", bos, eos, op->packetno,
-	  op->granulepos, op->bytes, self);
-  return PyString_FromString(buf);
 }
 

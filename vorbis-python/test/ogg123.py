@@ -98,8 +98,8 @@ class AOPlayer(Player):
     def __init__(self, id=None):
         import ao
         if id is None:
-            id = ao.driver_id('esd')
-        self.dev = ao.AudioDevice(id)
+            id = ao.get_driver_id('esd')
+        self.dev = ao.Ao(id)
 
     def write(self, buff, bytes):
         self.dev.play(buff, bytes)
@@ -202,12 +202,11 @@ def main():
     myplayer = choices[modchoice]() # Either AOPlayer or LADPlayer
     if verbose:
         print "Module choice: %s" % modchoice
-
+    
     for file in args:
         if verbose:
             print "Playing %s" % file
             print
-
         myplayer.play(file)
         
 if __name__ == '__main__':

@@ -1,6 +1,5 @@
-include ChangeLog README COPYING AUTHORS NEWS setup.py config_unix.py prebuild.sh MANIFEST MANIFEST.in
+include ChangeLog README COPYING AUTHORS NEWS setup.py config_unix.py prebuild.sh
 recursive-include src/ *.c *.h *.py
 recursive-include test/ *.py 
 recursive-include include/ *.h
-recursive-include debian/ *
-prune debian/CVS
+recursive-include debian

@@ -10,13 +10,13 @@ import string
 from distutils.core import setup
 from distutils.extension import Extension
 
-VERSION_MAJOR = 1
-VERSION_MINOR = 4
+VERSION_MAJOR = 0
+VERSION_MINOR = 2
 pyogg_version = str(VERSION_MAJOR) + "." + str(VERSION_MINOR)
 
 def get_setup():
     data = {}
-    r = re.compile(r'(\S+)\s*?=\s*(.+)')
+    r = re.compile(r'(\S+)\s*?=\s*?(.+)')
     
     if not os.path.isfile('Setup'):
         print "No 'Setup' file. Perhaps you need to run the configure script."
@@ -40,7 +40,7 @@ ogg_include_dir = data['ogg_include_dir']
 ogg_lib_dir = data['ogg_lib_dir']
 ogg_libs = string.split(data['ogg_libs'])
 
-_oggmodule = Extension(name='_ogg',
+_oggmodule = Extension(name='_oggmodule',
                        sources=['src/_oggmodule.c',
                                 'src/pyoggpacket.c',
                                 'src/pyoggstreamstate.c',
@@ -54,7 +54,7 @@ _oggmodule = Extension(name='_ogg',
                        
                        include_dirs=[ogg_include_dir, 'include'],
                        library_dirs=[ogg_lib_dir],
-                       libraries=ogg_libs)
+                       libraries=['ogg'])
 
 setup ( name = "pyogg",
         version = pyogg_version,

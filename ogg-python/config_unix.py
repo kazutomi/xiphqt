@@ -53,7 +53,7 @@ def find_ogg(ogg_prefix = '/usr/local', enable_oggtest = 1):
         execute('rm -f conf.oggtest', 0)
 
         try:
-            run_test(ogg_test_program, flags="-I" + ogg_include_dir)
+            run_test(ogg_test_program)
             if not os.path.isfile('conf.oggtest'):
                 raise RuntimeError, "Did not produce output"
             execute('rm conf.oggtest', 0)

@@ -1,11 +1,6 @@
 #include <stdio.h>
-#ifndef _WIN32
+#include <endian.h>
 #include <assert.h>
-#else
-#define LITTLE_ENDIAN 0
-#define BIG_ENDIAN 1
-#define BYTE_ORDER LITTLE_ENDIAN     
-#endif
 
 #include "general.h"
 #include "vorbismodule.h"
@@ -13,14 +8,14 @@
 #include "pyvorbisinfo.h"
 
 /*  
-*********************************************************
-VorbisFile Object methods 
-*********************************************************
+   *********************************************************
+                        VorbisFile Object methods 
+   *********************************************************
 */
 
 char py_vorbisfile_doc[] = "";
 
-static void py_ov_file_dealloc(PyObject *);
+static void py_ov_file_dealloc(py_vorbisfile *);
 
 static PyObject *py_ov_open(py_vorbisfile *, PyObject *);
 
@@ -37,30 +32,27 @@ length is the number of bytes to read\n\
 
 static PyObject *py_ov_read(PyObject *, PyObject *, PyObject *);
 
-FDEF(ov_streams) "Returns the number of logical streams in this VorbisFile";
+FDEF(ov_streams) "Returns the streams value for this VorbisFile";
 FDEF(ov_seekable) "Returns whether this VorbisFile is seekable.";
-FDEF(ov_bitrate) \
-"x.bitrate(stream_idx=-1):\n\n\
-Returns the bitrate of this VorbisFile";
+FDEF(ov_bitrate) "Returns the bitrate of this VorbisFile.";
 
 FDEF(ov_serialnumber) \
-"x.serialnumber(stream_idx=-1):\n\n\
-Returns the serialnumber of this VorbisFile.";
+"x.serialnumber(link):\n\n\
+Returns the serialnumber of this VorbisFile. What's link do?";
 
 FDEF(ov_bitrate_instant) \
-     "Returns the bitrate_instant value for this VorbisFile.";
+"Returns the bitrate_instant value for this VorbisFile.";
 
-FDEF(ov_raw_total) \
-"x.raw_total(stream_idx=-1):\n\n\
-Returns the raw_total value for this VorbisFile.";
+FDEF(ov_raw_total) "x.raw_total(i):\n\n\
+Returns the raw_total value for this VorbisFile. What's i?";
 
 FDEF(ov_pcm_total) \
-"x.pcm_total(stream_idx=-1):\n\n\
-Returns the pcm_total value for this VorbisFile.";
+"x.pcm_total(i):\n\n\
+Returns the pcm_total value for this VorbisFile. What's i?";
 
 FDEF(ov_time_total) \
-"x.time_total(stream_idx=-1):\n\n\
-Returns the time_total value for this VorbisFile.";
+"x.time_total(i):\n\n\
+Returns the time_total value for this VorbisFile. What's i?";
 
 FDEF(ov_raw_seek) "x.raw_seek(pos):\n\nSeeks to raw position pos.";
 FDEF(ov_pcm_seek) "x.pcm_seek(pos):\n\nSeeks to pcm position pos.";
@@ -73,8 +65,7 @@ FDEF(ov_time_tell) "Returns the time position.";
 FDEF(ov_info) "Return an info object for this file";
 
 FDEF(ov_comment) \
-"x.comment(stream_idx=-1)\n\n\
-Returns a dictionary of lists for the comments in this file.\n\
+"Returns a dictionary of lists for the comments in this file.\n\
 All values are stored in uppercase, since values should be case-insensitive.";
 
 static PyObject *py_ov_file_getattr(PyObject *, char *name);
@@ -89,19 +80,19 @@ either an open, readable file object or a filename string.\n\
 The most useful method for a VorbisFile object is \"read\".";
 
 PyTypeObject py_vorbisfile_type = {
-  PyObject_HEAD_INIT(NULL)
+  PyObject_HEAD_INIT(&PyType_Type)
   0,
   "VorbisFile",
   sizeof(py_vorbisfile),
   0,
 
   /* Standard Methods */
-  /* destructor */ py_ov_file_dealloc,
-  /* printfunc */ 0,
-  /* getattrfunc */ py_ov_file_getattr,
-  /* setattrfunc */ 0,
-  /* cmpfunc */ 0,
-  /* reprfunc */ 0,
+  (destructor) py_ov_file_dealloc,
+  (printfunc) 0,
+  (getattrfunc) py_ov_file_getattr,
+  (setattrfunc) 0,
+  (cmpfunc) 0,
+  (reprfunc) 0,
   
   /* Type Categories */
   0, /* as number */
@@ -135,7 +126,7 @@ static PyMethodDef OggVorbis_File_methods[] = {
    METH_VARARGS, py_ov_serialnumber_doc},
   {"bitrate_instant",  py_ov_bitrate_instant,  
    METH_VARARGS, py_ov_bitrate_instant_doc},
-  {"raw_total",  py_ov_raw_total,
+  {"raw_total",  py_ov_raw_total,  
    METH_VARARGS, py_ov_raw_total_doc},
   {"pcm_total",  py_ov_pcm_total,  
    METH_VARARGS, py_ov_pcm_total_doc},
@@ -161,7 +152,7 @@ static PyMethodDef OggVorbis_File_methods[] = {
 };
 
 PyObject *
-py_file_new(PyObject *self, PyObject *args) /* change to accept kwarg */
+py_file_new(PyObject *self, PyObject *args) //change to accept kwarg
 { 
   PyObject *ret;
   
@@ -180,20 +171,10 @@ py_file_new(PyObject *self, PyObject *args) /* change to accept kwarg */
 }
 
 static void
-py_ov_file_dealloc(PyObject *self)
+py_ov_file_dealloc(py_vorbisfile *self)
 {
-  if (PY_VORBISFILE(self))
-    ov_clear(PY_VORBISFILE(self));
-
-  py_vorbisfile *py_self = (py_vorbisfile *) self;
-  if (py_self->py_file) {
-    /* If file was opened from a file object, decref it, so it can
-       close */
-    Py_DECREF(py_self->py_file);
-  } else {
-    /* Otherwise, we opened the file and should close it. */
-    fclose(py_self->c_file);
-  }
+  if (self->ovf) 
+    ov_clear(self->ovf);
 
   PyMem_DEL(self);
 }
@@ -212,8 +193,7 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
   
   if (PyArg_ParseTuple(args, "s|sl", &fname, &initial, &ibytes)) {
 
-    file = fopen(fname, "rb");
-    fobject = NULL;
+    file = fopen(fname, "r");
 
     if (file == NULL) {
       snprintf(errmsg, MSG_SIZE, "Could not open file: %s", fname);
@@ -221,70 +201,37 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
       return NULL;
     }
 
-  } else {
-    PyErr_Clear(); /* clear first failure */
-    if (PyArg_ParseTuple(args, "O!|sl", &PyFile_Type, &fobject,
-			 &initial, &ibytes)) {
-      
-      fname = NULL;
-      file = PyFile_AsFile(fobject);
-      if (!file) 
-	return NULL;
+  } else if (PyArg_ParseTuple(args, "O!|sl", &PyFile_Type, &fobject,
+			      &initial, &ibytes)) {
+    PyErr_Clear(); //clear first failure
 
-      /* We have to duplicate the file descriptor, since both Python
-	 and vorbisfile will want to close it. Don't use the file
-	 after you pass it in, or much evil will occur. 
-	 
-	 Really, you shouldn't be passing in files anymore, but in the
-	 interest of backwards compatibility it'll stay.
-      */
-      int orig_fd, new_fd;
-      orig_fd = fileno(file);
-      new_fd = dup(orig_fd);
-      file = fdopen(new_fd, "r");
-      if (!file) {
-	PyErr_SetString(PyExc_IOError, "Could not duplicate file.");
-	return NULL;
-      }
-    } else {
-      PyErr_Clear(); /* clear first failure */
-      PyErr_SetString(PyExc_TypeError, 
-		      "Argument 1 is not a filename or file object");
+    file = PyFile_AsFile(fobject);
+
+    if (file == NULL) 
       return NULL;
-    }
+
+  } else {
+    PyErr_SetString(PyExc_TypeError, 
+		    "Argument 1 is not a filename or file object");
+    return NULL;
   }
 
   self->ovf = (OggVorbis_File*) malloc(sizeof(OggVorbis_File));
-  self->py_file = fobject;
-  Py_XINCREF(fobject); /* Prevent the file from being closed */
   
   retval = ov_open(file, self->ovf, initial, ibytes);
 
-  self->c_file = file;
-  if (retval < 0) {
-    if (fname != NULL)
-      fclose(file);
-    Py_XDECREF(self->py_file);
-
+  if (retval < 0)
     return v_error_from_code(retval, "Error opening file: ");
-  }
 
   Py_INCREF(Py_None);
   return Py_None;
 
 }
 
-static char *read_kwlist[] = {"length", 
-			      "bigendian", 
-			      "word", 
-			      "signed", 
-			      NULL};
+/*
+*/
 
-static int is_big_endian() {
-  static int x = 0x1;
-  char x_as_char = *(char *) &x;
-  return x_as_char == 0x1 ? 0 : 1;
-}
+static char *read_kwlist[] = {"length", "bigendian", "word", "signed", NULL};
 
 static PyObject *
 py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
@@ -300,14 +247,13 @@ py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
   int length, word, sgned, bitstream;
   int bigendianp;
 
-  // Default to host order
-  bigendianp = is_big_endian();
+  bigendianp = (__BYTE_ORDER == __BIG_ENDIAN);
   length = 4096;
   word = 2;
   sgned = 1;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwdict, "|llll", read_kwlist,
-                                   &length, &bigendianp, &word, &sgned))
+				   &length, &bigendianp, &word, &sgned))
     return NULL;
 
   buffobj = PyBuffer_New(length);
@@ -322,14 +268,14 @@ py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
   Py_DECREF(tuple);
 
   Py_BEGIN_ALLOW_THREADS
-    retval = ov_read(ov_self->ovf, buff, length, 
-                     bigendianp, word, sgned, &bitstream);
+  retval = ov_read(ov_self->ovf, buff, length, 
+		   bigendianp, word, sgned, &bitstream);
   Py_END_ALLOW_THREADS
 
-    if (retval < 0) {
-      Py_DECREF(buffobj);
-      return v_error_from_code(retval, "Error reading file: ");
-    }
+  if (retval < 0) {
+    Py_DECREF(buffobj);
+    return v_error_from_code(retval, "Error reading file: ");
+  }
 
   retobj = Py_BuildValue("Oii", buffobj, retval, bitstream);
   Py_DECREF(buffobj);
@@ -340,12 +286,7 @@ static PyObject *
 py_ov_streams(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
-  long val;
-  
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  val = ov_streams(ov_self->ovf);
+  long val = ov_streams(ov_self->ovf);
   return PyInt_FromLong(val);
 }
 
@@ -353,12 +294,7 @@ static PyObject *
 py_ov_seekable(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
-  long val;
-  
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  val = ov_seekable(ov_self->ovf);
+  long val = ov_seekable(ov_self->ovf);
   return PyInt_FromLong(val);
 }
 
@@ -367,12 +303,12 @@ py_ov_bitrate(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   long val;
-  int stream_idx = -1;
+  int i;
   
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx))
+  if (!PyArg_ParseTuple(args, "i", &i)) 
     return NULL;
 
-  val = ov_bitrate(ov_self->ovf, stream_idx);
+  val = ov_bitrate(ov_self->ovf, i);
   if (val < 0)
     return v_error_from_code(val, "Error getting bitrate: ");
   return PyInt_FromLong(val);
@@ -383,12 +319,12 @@ py_ov_serialnumber(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   long val;
-  int stream_idx = -1;
+  int i;
   
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx)) 
+  if (!PyArg_ParseTuple(args, "i", &i)) 
     return NULL;
 
-  val = ov_serialnumber(ov_self->ovf, stream_idx);
+  val = ov_serialnumber(ov_self->ovf, i);
   return PyInt_FromLong(val);
 }
 
@@ -396,12 +332,7 @@ static PyObject *
 py_ov_bitrate_instant(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
-  long val;
-
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  val = ov_bitrate_instant(ov_self->ovf);
+  long val = ov_bitrate_instant(ov_self->ovf);
   if (val < 0)
     return v_error_from_code(val, "Error getting bitrate_instant: ");
   return PyInt_FromLong(val);
@@ -412,12 +343,12 @@ py_ov_raw_total(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   ogg_int64_t val;
-  int stream_idx = -1;
+  int i;
 
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx)) 
+  if(!PyArg_ParseTuple(args, "i", &i)) 
     return NULL;
 
-  val = ov_raw_total(ov_self->ovf, stream_idx);
+  val = ov_raw_total(ov_self->ovf, i);
   if (val < 0)
     return v_error_from_code(val, "Error in ov_raw_total: ");
   return PyLong_FromLongLong(val);
@@ -428,12 +359,12 @@ py_ov_pcm_total(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   ogg_int64_t val;
-  int stream_idx = -1;
+  int i;
 
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx)) 
+  if (!PyArg_ParseTuple(args, "i", &i)) 
     return NULL;
 
-  val = ov_pcm_total(ov_self->ovf, stream_idx);
+  val = ov_pcm_total(ov_self->ovf, i);
   if (val < 0)
     return v_error_from_code(val, "Error in ov_pcm_total: ");
   return PyLong_FromLongLong(val);
@@ -444,12 +375,12 @@ py_ov_time_total(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   double val;
-  int stream_idx = -1;
+  int i;
 
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx))
+  if (!PyArg_ParseTuple(args, "i", &i)) 
     return NULL;
 
-  val = ov_time_total(ov_self->ovf, stream_idx);
+  val = ov_time_total(ov_self->ovf, i);
   if (val < 0)
     return v_error_from_code(val, "Error in ov_time_total: ");
   return PyFloat_FromDouble(val);
@@ -462,7 +393,7 @@ py_ov_raw_seek(PyObject *self, PyObject *args)
   int val;
   long pos;
 
-  if (!PyArg_ParseTuple(args, "l", &pos)) 
+  if(!PyArg_ParseTuple(args, "l", &pos)) 
     return NULL;
 
   val = ov_raw_seek(ov_self->ovf, pos);
@@ -477,10 +408,12 @@ py_ov_pcm_seek(PyObject *self, PyObject *args)
   int val;
   ogg_int64_t pos;
 
-  if (!PyArg_ParseTuple(args, "O", &longobj))
+  if(!PyArg_ParseTuple(args, "O", &longobj))
     return NULL;
  
-  if (!modinfo->arg_to_int64(longobj, &pos))
+  pos = arg_to_64(longobj);
+
+  if (PyErr_Occurred()) 
     return NULL;
 
   val = ov_pcm_seek(ov_self->ovf, pos);
@@ -495,10 +428,12 @@ py_ov_pcm_seek_page(PyObject *self, PyObject *args)
   PyObject *longobj;
   ogg_int64_t pos;
 
-  if (!PyArg_ParseTuple(args, "O", &longobj)) 
+  if(!PyArg_ParseTuple(args, "O", &longobj)) 
     return NULL;
 
-  if (!modinfo->arg_to_int64(longobj, &pos))
+  pos = arg_to_64(longobj);
+
+  if (PyErr_Occurred())
     return NULL;
 
   val = ov_pcm_seek_page(ov_self->ovf, pos);
@@ -512,7 +447,7 @@ py_ov_time_seek(PyObject *self, PyObject *args)
   int val;
   double pos;
 
-  if (!PyArg_ParseTuple(args, "d", &pos)) 
+  if(!PyArg_ParseTuple(args, "d", &pos)) 
     return NULL;
 
   val = ov_time_seek(ov_self->ovf, pos);
@@ -526,7 +461,7 @@ py_ov_time_seek_page(PyObject *self, PyObject *args)
   int val;
   double pos;
 
-  if (!PyArg_ParseTuple(args, "d", &pos)) 
+  if(!PyArg_ParseTuple(args, "d", &pos)) 
     return NULL;
 
   val = ov_time_seek_page(ov_self->ovf, pos);
@@ -539,9 +474,6 @@ py_ov_raw_tell(PyObject *self, PyObject *args)
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   ogg_int64_t val;
 
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-
   val = ov_raw_tell(ov_self->ovf);
   return PyLong_FromLongLong(val);
 }
@@ -551,9 +483,6 @@ py_ov_pcm_tell(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   ogg_int64_t val;
-  
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
 
   val = ov_pcm_tell(ov_self->ovf);
   return PyLong_FromLongLong(val);
@@ -564,9 +493,6 @@ py_ov_time_tell(PyObject *self, PyObject *args)
 {
   py_vorbisfile * ov_self = (py_vorbisfile *) self;
   double val;
-  
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
 
   val = ov_time_tell(ov_self->ovf);
   return PyFloat_FromDouble(val);
@@ -576,13 +502,13 @@ static PyObject*
 py_ov_info(PyObject *self, PyObject *args)
 {
   py_vorbisfile *ov_self = (py_vorbisfile *) self;
-  int stream_idx = -1;
+  int link = -1;
   vorbis_info *vi;
 
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx))
+  if (!PyArg_ParseTuple(args, "|i", &link))
     return NULL;
 
-  vi = ov_info(ov_self->ovf, stream_idx);
+  vi = ov_info(ov_self->ovf, link);
   if (!vi) {
     PyErr_SetString(PyExc_RuntimeError, "Couldn't get info for VorbisFile.");
     return NULL;
@@ -598,12 +524,12 @@ py_ov_comment(PyObject *self, PyObject *args)
   py_vorbisfile *ov_self = (py_vorbisfile *) self;
   vorbis_comment *comments;
 
-  int stream_idx = -1;
+  int link = -1;
   
-  if (!PyArg_ParseTuple(args, "|i", &stream_idx))
+  if (!PyArg_ParseTuple(args, "|i", &link))
     return NULL;
 
-  comments = ov_comment(ov_self->ovf, stream_idx);
+  comments = ov_comment(ov_self->ovf, link);
   if (!comments) {
     PyErr_SetString(PyExc_RuntimeError, "Couldn't get comments");
     return NULL;

@@ -1,4 +1,4 @@
-#include "pyoggpackbuff.h"
+#include "pyoggpack.h"
 #include "general.h"
 #include "_oggmodule.h"
 

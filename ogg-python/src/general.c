@@ -1,5 +1,4 @@
 #include "general.h"
-#include <pyogg/pyogg.h>
 #include <ogg/ogg.h>
 
 /*
@@ -9,18 +8,22 @@
  */
 
 /* Simple function to turn an object into an ogg_int64_t. Returns 0 on
- * an error. Does not DECREF the argument */
+ * an error, so you need to use PyErr_Occurred() after calling it.  It
+ * DECREFS the argument in the function. */
 
-int
-arg_to_int64(PyObject *longobj, ogg_int64_t *val)
+ogg_int64_t
+arg_to_64(PyObject *longobj)
 {
+  ogg_int64_t val = 0;
+
   if(PyLong_Check(longobj))
-    *val = PyLong_AsLongLong(longobj);
+    val = PyLong_AsLongLong(longobj);
   else if (PyInt_Check(longobj))
-    *val = PyInt_AsLong(longobj);
+    val = PyInt_AsLong(longobj);
   else {
+    Py_DECREF(longobj);
     PyErr_SetString(PyExc_TypeError, "Argument must be int or long");
-    return 0;
   }
-  return 1;
+  Py_DECREF(longobj);
+  return val;
 }

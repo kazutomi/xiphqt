@@ -8,7 +8,7 @@ import array
 class WaveReader:
     def __init__(self, filename):
         self.filename = filename
-        self._f = open(filename, 'rb')
+        self._f = open(filename)
         self._read_header()
 
     def _read_header(self):
@@ -82,7 +82,7 @@ class NumericWaveReader(WaveReader):
 
 
 def main():
-    vi = ogg.vorbis.VorbisInfo(quality=0.1)
+    vi = ogg.vorbis.VorbisInfo(nominal_bitrate=150000)
     vc = ogg.vorbis.VorbisComment()
 
     vd = vi.analysis_init()
@@ -95,7 +95,7 @@ def main():
     os.packetin(header_com)
     os.packetin(header_code)
     
-    fout = open('out.ogg', 'wb')
+    fout = open('out.ogg', 'w')
     inwav = WaveReader('in.wav')
 
     og = os.flush()
@@ -106,18 +106,15 @@ def main():
     packets = 0
     samples = 0
     
-    eos = 0
-    while not eos:
+    while 1:
         #returns a tuple of strings representing arrays of floats
         channel_data = inwav.read_stereo(2048)
-        if not channel_data:
-            print "No data"
-            vd.write(None) # didn't read any data
-        else:
-            apply(vd.write, channel_data) 
+        if not channel_data: break # didn't read any data
+        apply(vd.write, channel_data) 
 
-            samples = samples + len(channel_data[0]) / 4
+        samples = samples + len(channel_data[0]) / 2
 
+        eos = 0
         vb = vd.blockout()
         while vb:
             packets = packets + 1
@@ -128,19 +125,15 @@ def main():
             if packets % 10 == 0: 
                 print "%0.2f" % (100.0 * samples / inwav.samples)
             
-            vb.analysis()
-            vb.addblock()
-            
-            op = vd.bitrate_flushpacket()
-            while op:
-                os.packetin(op)
-                while not eos:
-                    og = os.pageout()
-                    if not og:
-                        break
-                    og.writeout(fout)
-                    eos = og.eos()
-                op = vd.bitrate_flushpacket()
+            op = vb.analysis()
+            os.packetin(op)
+        
+            while not eos:
+                og = os.pageout()
+                if not og:
+                    break
+                og.writeout(fout)
+                eos = og.eos()
             
             vb = vd.blockout()
     

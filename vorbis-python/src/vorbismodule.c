@@ -2,11 +2,6 @@
 #include <stdio.h>
 
 #include "vorbismodule.h"
-
-#include "pyvorbiscodec.h"
-#include "pyvorbisfile.h"
-#include "pyvorbisinfo.h"
-
 #include "general.h"
 
 static PyMethodDef Vorbis_methods[] = {
@@ -83,12 +78,6 @@ initvorbis(void)
 {
   PyObject *module, *dict;
 
-  py_dsp_type.ob_type = &PyType_Type;
-  py_block_type.ob_type = &PyType_Type;
-  py_vorbisfile_type.ob_type = &PyType_Type;
-  py_vinfo_type.ob_type = &PyType_Type;
-  py_vcomment_type.ob_type = &PyType_Type;
-
   module = Py_InitModule("ogg.vorbis", Vorbis_methods);
   dict = PyModule_GetDict(module);
   
@@ -106,7 +95,7 @@ initvorbis(void)
 		       PyString_FromString(docstring));
 
   PyDict_SetItemString(dict, "__version__", 
-		       PyString_FromString("1.2"));
+		       PyString_FromString(VERSION));
 
   if (PyErr_Occurred())
     PyErr_SetString(PyExc_ImportError, 
