@@ -7,7 +7,4 @@ noinst_HEADERS = parse.h
 
 libicesxml_a_SOURCES = parse.c
 
-INCLUDES = -I.. -I$(top_srcdir)/libshout
-
-
-
+INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/libshout

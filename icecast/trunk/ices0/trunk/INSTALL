@@ -28,11 +28,7 @@ like this:
 
 cvs co ices
 cd ices
-cvs co resolver thread
-cd thread
-cvs co avl
-cd ..
-cvs co libshout
+cvs co resolver thread avl log libshout
 
 ./autogen.sh
 make

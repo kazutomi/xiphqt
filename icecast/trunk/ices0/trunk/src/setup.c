@@ -39,6 +39,8 @@ static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 extern shout_conn_t conn;
 extern ices_config_t ices_config;
 
+static int ThreadsInitialised = 0;
+
 /* Global function definitions */
 
 /* Top level initialization function for ices.
@@ -70,6 +72,7 @@ ices_setup_initialize (void)
 
 	/* Initialize the thread library */
 	thread_initialize ();
+	ThreadsInitialised = 1;
 
 	/* Initialize the playlist handler */
 	ices_playlist_initialize ();
@@ -92,11 +95,13 @@ ices_setup_shutdown (void)
 	/* Protection for multiple threads calling shutdown.
 	 * Remember that this is can be called from many places,
 	 * including the SIGING signal handler */
-	if (thread_is_initialized ()) {
+	if (ThreadsInitialised) {
 		thread_library_lock ();
 
-		if (ices_setup_shutting_down)
-			return;
+		if (ices_setup_shutting_down) {
+		  thread_library_unlock ();
+		  return;
+		}
 
 		ices_setup_shutting_down = 1;
 

@@ -419,7 +419,10 @@ fi
 AC_CHECK_HEADERS(fcntl.h sys/types.h sys/socket.h sys/time.h sys/stat.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h libxml/parser.h gnome-xml/parser.h parser.h)
 AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename setsockopt umask inet_addr inet_aton inet_ntoa sigaction pthread_sigmask setlinebuf)
 
-AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])
+AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile
+	conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile
+	thread/Makefile avl/Makefile log/Makefile src/interpreter/Makefile
+	src/xml/Makefile])
 
 
 echo "Compiling with CPPFLAGS=$CPPFLAGS"

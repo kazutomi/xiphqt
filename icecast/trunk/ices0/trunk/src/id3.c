@@ -65,7 +65,7 @@ int
 ices_id3_parse_file (const char *filename, int file_bytes)
 {
 	/* Make sure no one gets old/corrupt information */
-	thread_mutex_lock (&id3_mutex);
+	thread_lock_mutex (&id3_mutex);
 
 	/* Cleanup the previous information */
 	ices_id3_cleanup ();
@@ -76,7 +76,7 @@ ices_id3_parse_file (const char *filename, int file_bytes)
 		file_bytes -= 128;
 
 	/* Give the go-ahead to external modules to get id3 info */
-	thread_mutex_unlock (&id3_mutex);
+	thread_unlock_mutex (&id3_mutex);
 
 	/* Update metadata on server, in a spawned new thread */
 	ices_id3_update_metadata (filename, file_bytes);
@@ -87,7 +87,7 @@ ices_id3_parse_file (const char *filename, int file_bytes)
 char *
 ices_id3_get_artist (char *namespace, int maxlen)
 {
-	thread_mutex_lock (&id3_mutex);
+	thread_lock_mutex (&id3_mutex);
 
 	if (ices_id3_artist) {
 		strncpy (namespace, ices_util_nullcheck (ices_id3_artist), maxlen);
@@ -96,7 +96,7 @@ ices_id3_get_artist (char *namespace, int maxlen)
 		namespace = NULL;
 	}
 
-	thread_mutex_unlock (&id3_mutex);
+	thread_unlock_mutex (&id3_mutex);
 	
 	return namespace;
 }
@@ -105,7 +105,7 @@ ices_id3_get_artist (char *namespace, int maxlen)
 char *
 ices_id3_get_title (char *namespace, int maxlen)
 {
-	thread_mutex_lock (&id3_mutex);
+	thread_lock_mutex (&id3_mutex);
 
 	if (ices_id3_song) {
 		strncpy (namespace, ices_util_nullcheck (ices_id3_song), maxlen);
@@ -114,7 +114,7 @@ ices_id3_get_title (char *namespace, int maxlen)
 		namespace = NULL;
 	}
 
-	thread_mutex_unlock (&id3_mutex);
+	thread_unlock_mutex (&id3_mutex);
 	return namespace;
 }
 
@@ -122,7 +122,7 @@ ices_id3_get_title (char *namespace, int maxlen)
 char *
 ices_id3_get_genre (char *namespace, int maxlen)
 {
-	thread_mutex_lock (&id3_mutex);
+	thread_lock_mutex (&id3_mutex);
 
 	if (ices_id3_genre) {
 		strncpy (namespace, ices_util_nullcheck (ices_id3_genre), maxlen);
@@ -131,7 +131,7 @@ ices_id3_get_genre (char *namespace, int maxlen)
 		namespace = NULL;
 	}
 
-	thread_mutex_unlock (&id3_mutex);
+	thread_unlock_mutex (&id3_mutex);
 
 	return namespace;
 }
@@ -140,7 +140,7 @@ ices_id3_get_genre (char *namespace, int maxlen)
 char *
 ices_id3_get_filename (char *namespace, int maxlen)
 {
-	thread_mutex_lock (&id3_mutex);
+	thread_lock_mutex (&id3_mutex);
 
 	if (ices_id3_filename) {
 		strncpy (namespace, ices_util_nullcheck (ices_id3_filename), maxlen);
@@ -149,7 +149,7 @@ ices_id3_get_filename (char *namespace, int maxlen)
 		namespace = NULL;
 	}
 	
-	thread_mutex_unlock (&id3_mutex);
+	thread_unlock_mutex (&id3_mutex);
 	
 	return namespace;
 }
