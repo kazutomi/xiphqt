@@ -4,12 +4,12 @@ body {
 	padding: 0;
 }
 
-.xiphbar {
+#xiphbar {
 	background-color: #666666;
 	min-height: 29px;
 }
 
-.xiphbar div {
+#xiphbar div {
 	width: 50em;
 	margin-left: auto;
 	margin-right: auto;
@@ -17,15 +17,17 @@ body {
 }
 
 
-.xiphbar img {
+#xiphbar img {
 	margin: 0 0 0 0;
 	border: 0;
 	padding: .4em 0 0 12px;
 	float: left;
 	text-transform: lowercase;
+	width: 231;
+	height: 17px;
 }
 
-.xiphbar ul {
+#xiphbar ul {
 	margin: 0;
 	border: 0;
 	padding: .23em 12px .45em 0;
@@ -33,7 +35,7 @@ body {
 	text-transform: uppercase;
 }
 
-.xiphbar li {
+#xiphbar li {
 	margin: 0;
 	border: 0;
 	padding: 0 10px 0 0;
@@ -41,9 +43,13 @@ body {
 	list-style: none;
 }
 
-.xiphbar li a {
+#xiphbar li a {
 	color: #FFCC66;
 	text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
+}
+
+#xiphbar li a:hover {
+	color: #FFE6B3;
 }

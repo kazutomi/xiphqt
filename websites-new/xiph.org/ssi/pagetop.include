@@ -1,10 +1,10 @@
 
-<div class="thepage">
-<div class="logos">
+<div id="thepage">
+<div id="logos">
 	<img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/>
 </div>
 
-<div class="navbar">
+<div id="navbar">
 	<ul>
 		<li id="about_"><a href="/about/">About</a></li>
 		<li id="press_"><a href="/">Press</a></li>
@@ -18,9 +18,9 @@
 	</ul>
 </div>
 
-<div class="banners">
+<div id="banners">
 	<!-- Visualize a banner here. <img src="/images/banners/try_it.png" alt="Try it out!"/> -->
 </div>
 
-<div class="main">
-<div class="content">
+<div id="main">
+<div id="content">

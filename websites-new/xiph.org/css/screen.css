@@ -13,7 +13,7 @@ a {
 	color: #064C84;
 }
 
-.bodyborder {
+#bodyborder {
 	margin: 0;
 	border: 0;
 	padding: 0 0 3em 0;
@@ -21,18 +21,18 @@ a {
 	height: 100%;
 }
 
-.thepage {
+#thepage {
 	margin-left: auto;
 	margin-right: auto;
 	width: 50em;
 }
 
-.logos {
+#logos {
 	padding: 72px 465px 0 0;
 	text-align: center;
 }
 
-.navbar {
+#navbar {
 	margin: 0;
 	border: 0;
 	padding: 1em;
@@ -41,27 +41,27 @@ a {
 	vertical-align: top;
 }
 
-.navbar ul {
+#navbar ul {
 	margin: 0;
 	padding: 0;
 	width: 8em;
 }
 
-.navbar li {
+#navbar li {
 	text-align: right;
 	font-size: .7em;
 	line-height: 1.4;
 	list-style: none;
 }
 
-.navbar li a {
+#navbar li a {
 	font-weight: bold;
 	color: #3366CC;
 	text-decoration: none;
 	line-height: 0;
 }
 
-.navbar li a:hover {
+#navbar li a:hover {
 	text-decoration: underline;
 }
 
@@ -73,7 +73,7 @@ a {
 	padding-bottom: 1.3em;
 }
 
-.copyright {
+#copyright {
 	margin: 0;
 	border: 0;
 	padding: 3em 1em 1em 1em;
@@ -83,42 +83,44 @@ a {
 	text-align: center;
 }
 
-.banners {
+#banners {
 	display:none;
 }
 
-.main {
+#main {
 	margin-left: 10em;
 }
 
-.content {
+#content {
 	margin: 0;
 	padding: 1em;
 	vertical-align: top;
 	border-left: 1px solid #9FC0D7;
+	font-size: .75em;
 }
 
 /* So that Gecko based browsers have the same starting paragraph position as IE */
-.content > :first-child {
+#content > :first-child {
 	margin-top: 0;
 }
 
-.content p {
-	font-size: .9em;
+#content p {
 	line-height: 1.5;
 }
 
 h1 {
-	font-size: 1.1em;
+	font-size: 1.2em;
 	color: #FF9900;
 }
 
 h2 {
-	font-size: .9em;
+	font-size: 1em;
 	color: #FF9900;
 }
 
 h3 {
-	font-size: .7em;
+	font-size: .94em;
 	color: #FF9900;
 }
+
+
