@@ -167,6 +167,8 @@ reencode_lame_init ()
     if (lame_init_params (lame) < 0) {
       ices_log ("Error setting LAME parameters. Check bitrate, channels, and "
 		"sample rate.");
+      lame_close (lame);
+      ices_setup_shutdown ();
     }
 
     stream->encoder_initialised = 1;
