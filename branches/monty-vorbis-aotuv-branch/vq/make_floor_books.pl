@@ -88,6 +88,11 @@ while($line=<F>){
 	print ">>> $command\n";
 	die "Couldn't remove temporary output file.\n\tcommand:$command\n" 
 	    if syst($command);
+
+	$command="rm -f $datafile.tmp";
+	print ">>> $command\n";
+	die "Couldn't remove temporary output file.\n\tcommand:$command\n" 
+	    if syst($command);
 	next;
     }
 
