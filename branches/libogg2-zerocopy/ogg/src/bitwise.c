@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: pack variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14.2.9 2003/03/15 01:26:09 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.10 2003/03/15 13:06:49 xiphmont Exp $
 
  ********************************************************************/
 
@@ -202,7 +202,7 @@ static void _span(oggpack_buffer *b){
     }else{
       /* we've either met the end of decode, or gone past it. halt
          only if we're past */
-      if(b->headend<0)
+      if(b->headend<0 || b->headbit)
 	/* read has fallen off the end */
 	_adv_halt(b);
 
@@ -372,14 +372,6 @@ void oggpackB_adv(oggpack_buffer *b,int bits){
   oggpack_adv(b,bits);
 }
 
-void oggpack_adv1(oggpack_buffer *b){
-  oggpack_adv(b,1);
-}
-
-void oggpackB_adv1(oggpack_buffer *b){
-  oggpack_adv1(b);
-}
-
 /* spans forward and finds next byte.  Never halts */
 static void _span_one(oggpack_buffer *b){
   while(b->headend<1){
@@ -391,6 +383,32 @@ static void _span_one(oggpack_buffer *b){
     }else
       break;
   }
+}
+
+void oggpack_adv1(oggpack_buffer *b){
+  if(b->headend<2){
+    if(b->headend<1){
+      _adv_halt(b);
+    }else{
+      if(++b->headbit>7){
+	b->headend--;
+	b->headptr++;
+	b->headbit=0;
+
+	_span_one(b);
+      }
+    }
+  }else{
+    if(++b->headbit>7){
+      b->headend--;
+      b->headptr++;
+      b->headbit=0;
+    }
+  }
+}
+
+void oggpackB_adv1(oggpack_buffer *b){
+  oggpack_adv1(b);
 }
 
 static int _halt_one(oggpack_buffer *b){
@@ -831,6 +849,132 @@ int bufferlength(ogg_reference *or){
   return count;
 }
 
+void _end_verify(int count){
+  unsigned long temp;
+  int i;
+
+  /* are the proper number of bits left over? */
+  int leftover=count*8-oggpack_bits(&o);
+  if(leftover>7)
+    report("\nERROR: too many bits reported left over.\n");
+  
+  /* does reading to exactly byte alignment *not* trip EOF? */
+  if(oggpack_read(&o,leftover,&temp))
+    report("\nERROR: read to but not past exact end tripped EOF.\n");
+  if(oggpack_bits(&o)!=count*8)
+    report("\nERROR: read to but not past exact end reported bad bitcount.\n");
+
+  /* does EOF trip properly after a single additional bit? */
+  if(!oggpack_read(&o,1,&temp))
+    report("\nERROR: read past exact end did not trip EOF.\n");
+  if(oggpack_bits(&o)!=count*8)
+    report("\nERROR: read past exact end reported bad bitcount.\n");
+  
+  /* does EOF stay set over additional bit reads? */
+  for(i=0;i<=32;i++){
+    if(!oggpack_read(&o,i,&temp))
+      report("\nERROR: EOF did not stay set on stream.\n");
+    if(oggpack_bits(&o)!=count*8)
+      report("\nERROR: read past exact end reported bad bitcount.\n");
+  }
+}	
+
+void _end_verify2(int count){
+  int i;
+
+  /* are the proper number of bits left over? */
+  int leftover=count*8-oggpack_bits(&o);
+  if(leftover>7)
+    report("\nERROR: too many bits reported left over.\n");
+  
+  /* does reading to exactly byte alignment *not* trip EOF? */
+  oggpack_adv(&o,leftover);
+  if(o.headend!=0)
+    report("\nERROR: read to but not past exact end tripped EOF.\n");
+  if(oggpack_bits(&o)!=count*8)
+    report("\nERROR: read to but not past exact end reported bad bitcount.\n");
+  
+  /* does EOF trip properly after a single additional bit? */
+  oggpack_adv(&o,1);
+  if(o.headend>=0)
+    report("\nERROR: read past exact end did not trip EOF.\n");
+  if(oggpack_bits(&o)!=count*8)
+    report("\nERROR: read past exact end reported bad bitcount.\n");
+  
+  /* does EOF stay set over additional bit reads? */
+  for(i=0;i<=32;i++){
+    oggpack_adv(&o,i);
+    if(o.headend>=0)
+      report("\nERROR: EOF did not stay set on stream.\n");
+    if(oggpack_bits(&o)!=count*8)
+      report("\nERROR: read past exact end reported bad bitcount.\n");
+  }
+}	
+
+void _end_verify3(int count){
+  unsigned long temp;
+  int i;
+
+  /* are the proper number of bits left over? */
+  int leftover=count*8-oggpackB_bits(&o);
+  if(leftover>7)
+    report("\nERROR: too many bits reported left over.\n");
+  
+  /* does reading to exactly byte alignment *not* trip EOF? */
+  if(oggpackB_read(&o,leftover,&temp))
+    report("\nERROR: read to but not past exact end tripped EOF.\n");
+  if(oggpackB_bits(&o)!=count*8)
+    report("\nERROR: read to but not past exact end reported bad bitcount.\n");
+  
+  /* does EOF trip properly after a single additional bit? */
+  if(!oggpackB_read(&o,1,&temp))
+    report("\nERROR: read past exact end did not trip EOF.\n");
+  if(oggpackB_bits(&o)!=count*8)
+    report("\nERROR: read past exact end reported bad bitcount.\n");
+  
+  /* does EOF stay set over additional bit reads? */
+  for(i=0;i<=32;i++){
+    if(!oggpackB_read(&o,i,&temp))
+      report("\nERROR: EOF did not stay set on stream.\n");
+    if(oggpackB_bits(&o)!=count*8)
+      report("\nERROR: read past exact end reported bad bitcount.\n");
+  }
+}	
+
+void _end_verify4(int count){
+  int i;
+
+  /* are the proper number of bits left over? */
+  int leftover=count*8-oggpackB_bits(&o);
+  if(leftover>7)
+    report("\nERROR: too many bits reported left over.\n");
+  
+  /* does reading to exactly byte alignment *not* trip EOF? */
+  for(i=0;i<leftover;i++){
+    oggpackB_adv1(&o);
+    if(o.headend<0)
+      report("\nERROR: read to but not past exact end tripped EOF.\n");
+  }
+  if(oggpackB_bits(&o)!=count*8)
+    report("\nERROR: read to but not past exact end reported bad bitcount.\n");
+  
+  /* does EOF trip properly after a single additional bit? */
+  oggpackB_adv1(&o);
+  if(o.headend>=0)
+    report("\nERROR: read past exact end did not trip EOF.\n");
+  if(oggpackB_bits(&o)!=count*8)
+    report("\nERROR: read past exact end reported bad bitcount.\n");
+  
+  /* does EOF stay set over additional bit reads? */
+  for(i=0;i<=32;i++){
+    oggpackB_adv1(&o);
+    if(o.headend>=0)
+      report("\nERROR: EOF did not stay set on stream.\n");
+    if(oggpackB_bits(&o)!=count*8)
+      report("\nERROR: read past exact end reported bad bitcount.\n");
+  }
+}	
+
 int main(void){
   long bytes,i;
   static unsigned long testbuffer1[]=
@@ -1090,7 +1234,7 @@ int main(void){
   /* now the scary shit: randomized testing */
 
   for(i=0;i<10000;i++){
-    int j,count2=0,bitcount=0;
+    int j,count=0,count2=0,bitcount=0;
     unsigned long values[TESTWORDS];
     int len[TESTWORDS];
     unsigned char flat[4*TESTWORDS]; /* max possible needed size */
@@ -1178,7 +1322,7 @@ int main(void){
 	  bitcount+=len[j];
 	ogg_buffer_posttruncate(or,((bitcount+7)/8));
 
-	if(bufferlength(or)!=(bitcount+7)/8){
+	if((count=bufferlength(or))!=(bitcount+7)/8){
 	  fprintf(stderr,"\nERROR: buffer length incorrect after truncate.\n");
 	  exit(1);
 	}
@@ -1228,12 +1372,8 @@ int main(void){
 	  }
 	  
 	}
-	/* are we on our last byte as predicted? */
-	if(!oggpack_read(&o,8,&temp)){
-	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
-	    exit(1);
-	}	
-
+	_end_verify(count);
+	
 	/* look/adv version */
 	oggpack_readinit(&o,or);
 	bitcount=bitoffset;
@@ -1274,11 +1414,7 @@ int main(void){
 	  }
 	  
 	}
-	/* are we on our last byte as predicted? */
-	if(!oggpack_read(&o,8,&temp)){
-	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
-	    exit(1);
-	}	
+	_end_verify2(count);
 
       }
       ogg_buffer_release(or);
@@ -1289,7 +1425,7 @@ int main(void){
   /* cut & paste: lazy bastahd alert */
 
   for(i=0;i<10000;i++){
-    int j,count2=0,bitcount=0;
+    int j,count,count2=0,bitcount=0;
     unsigned long values[TESTWORDS];
     int len[TESTWORDS];
     unsigned char flat[4*TESTWORDS]; /* max possible needed size */
@@ -1377,7 +1513,7 @@ int main(void){
 	  bitcount+=len[j];
 	ogg_buffer_posttruncate(or,((bitcount+7)/8));
 
-	if(bufferlength(or)!=(bitcount+7)/8){
+	if((count=bufferlength(or))!=(bitcount+7)/8){
 	  fprintf(stderr,"\nERROR: buffer length incorrect after truncate.\n");
 	  exit(1);
 	}
@@ -1427,11 +1563,7 @@ int main(void){
 	  }
 	  
 	}
-	/* are we on our last byte as predicted? */
-	if(!oggpackB_read(&o,8,&temp)){
-	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
-	    exit(1);
-	}	
+	_end_verify3(count);
 
 	/* look/adv version */
 	oggpackB_readinit(&o,or);
@@ -1473,11 +1605,7 @@ int main(void){
 	  }
 	  
 	}
-	/* are we on our last byte as predicted? */
-	if(!oggpackB_read(&o,8,&temp)){
-	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
-	    exit(1);
-	}	
+	_end_verify4(count);
 
       }
       ogg_buffer_release(or);
