@@ -93,9 +93,13 @@ static int oc_comment_unpack(oggpack_buffer *_opb,theora_comment *_tc){
   oc_unpack_octets(_opb,_tc->vendor,len);
   _tc->vendor[len]='\0';
   /*Read the user comments.*/
-  _tc->comments=oggpackB_read(_opb,32);
+  _tc->comments=oc_unpack_length(_opb);
   if(_tc->comments>=0){
     int i;
+    _tc->comment_lengths=(int *)_ogg_malloc(
+     _tc->comments*sizeof(_tc->comment_lengths[0]));
+    _tc->user_comments=(char *)_ogg_malloc(
+     _tc->comments*sizeof(_tc->user_comments[0]));
     for(i=0;i<_tc->comments;i++){
       len=oc_unpack_length(_opb);
       if(len<0)return OC_BADHEADER;
@@ -105,7 +109,7 @@ static int oc_comment_unpack(oggpack_buffer *_opb,theora_comment *_tc){
       _tc->user_comments[i][len]='\0';
     }
   }
-  return oggpackB_read(_opb,0)<0?OC_BADHEADER:0;
+  return theora_read(_opb,0,&len)<0?OC_BADHEADER:0;
 }
 
 static int oc_setup_unpack(oggpack_buffer *_opb,theora_setup_info *_setup){
@@ -125,10 +129,12 @@ static void oc_setup_clear(theora_setup_info *_setup){
 static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
  theora_comment *_tc,theora_setup_info **_setup,ogg_packet *_op){
   char buffer[6];
+  long val;
   int  packtype;
   int  ret;
   /*Check to make sure this is the info header.*/
-  packtype=(int)oggpackB_read(_opb,8);
+  theora_read(_opb,8,&val);
+  packtype=(int)val;
   /*Check the codec string.*/
   oc_unpack_octets(_opb,buffer,6);
   if(memcmp(buffer,"theora",6)!=0)return OC_NOTFORMAT;
