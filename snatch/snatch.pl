@@ -117,7 +117,10 @@ if(-e $configfile){
 if(-e $historyfile){
     die $! unless open HFILE, $historyfile;
     while(<HFILE>){
-	push @TIMER, $_;
+	chomp;
+	if(length){
+	    push @TIMER, $_;
+	}
     }
     close HFILE;
 }
@@ -127,6 +130,7 @@ my $toplevel=new MainWindow(-class=>'Snatch');
 my $Xname=$toplevel->Class;
 
 $toplevel->optionAdd("$Xname.background",  "#8e3740",20);
+$toplevel->optionAdd("$Xname*highlightBackground",  "#d38080",20);
 $toplevel->optionAdd("$Xname.Panel.background",  "#8e3740",20);
 $toplevel->optionAdd("$Xname.Panel.foreground",  "#d0d0d0",20);
 $toplevel->optionAdd("$Xname.Panel.font",
@@ -185,8 +189,13 @@ $toplevel->optionAdd("$Xname*ListBox.background",  "#ffffff",20);
 $toplevel->optionAdd("$Xname*ListBox.relief",  "sunken",20);
 $toplevel->optionAdd("$Xname*ListBox.borderWidth",  1,20);
 $toplevel->optionAdd("$Xname*ListFrame.background",  "#ffffff",20);
+
 $toplevel->optionAdd("$Xname*ListRowOdd.background",  "#dfffe7",20);
 $toplevel->optionAdd("$Xname*ListRowEven.background",  "#ffffff",20);
+$toplevel->optionAdd("$Xname*OldListRowOdd.background",  "#dfffe7",20);
+$toplevel->optionAdd("$Xname*OldListRowEven.background",  "#ffffff",20);
+$toplevel->optionAdd("$Xname*OldListRowOdd.foreground",  "#aaa0a0",20);
+$toplevel->optionAdd("$Xname*OldListRowEven.foreground",  "#aaa0a0",20);
 
 $toplevel->optionAdd("$Xname*Scrollbar*background",  "#f0d0b0",20);
 $toplevel->optionAdd("$Xname*Scrollbar*foreground",  '#000000',20);
@@ -399,6 +408,7 @@ sub ThrowRealPlayer{
     Robot_Active() if($mode eq 'active');
     Robot_Timer() if($mode eq 'timer');
     Robot_Inactive() if($mode eq 'inactive');
+    TestOutpath();
 
 }
 
@@ -600,32 +610,35 @@ sub Robot_Video{
 sub SplitTimerEntry{
     my($line)=@_;
 
-    $line=~/^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\d+):(\d+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(.*)/;
-    my $year=$1;
-    my $month=$2;
-    my $day=$3;
-    my $dayofweek=$4;
-    my $hour=$5;
-    my $minute=$6;
-    my $duration=$7;
-
-    my $audio=$8;
-    my $video=$9;
-
-    my $fields=$10;
-    
-    my $username;
-    my $password;
-    my $outfile;
-    my $url;
-
-    ($username,$fields)=LengthParse($fields);
-    ($password,$fields)=LengthParse($fields);
-    ($outfile,$fields)=LengthParse($fields);
-    ($url,$fields)=LengthParse($fields);
-
-    ($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
-     $password,$outfile,$url);
+    if($line=~/^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\d+):(\d+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(.*)/){
+	my $year=$1;
+	my $month=$2;
+	my $day=$3;
+	my $dayofweek=$4;
+	my $hour=$5;
+	my $minute=$6;
+	my $duration=$7;
+	
+	my $audio=$8;
+	my $video=$9;
+	
+	my $fields=$10;
+	
+	my $username;
+	my $password;
+	my $outfile;
+	my $url;
+	
+	($username,$fields)=LengthParse($fields);
+	($password,$fields)=LengthParse($fields);
+	($outfile,$fields)=LengthParse($fields);
+	($url,$fields)=LengthParse($fields);
+	
+	($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+	 $password,$outfile,$url);
+    }else{
+	undef;
+    }
 }
 
 sub LengthParse{
@@ -721,10 +734,10 @@ sub TimerWhen{
 	    if($twday != $dayofweek){return $try};
 	}
 	
-	if($start>$now || $end>$now){
-	    if($try==-1 || $start<$try){
-		return $start;
-	    }
+	if($try==-1 ||
+	   ($start<$try && $end>$now) ||
+	   ($start>$try && $end<$now)){
+	    return $start;
 	}
     }
     $try;
@@ -737,17 +750,6 @@ sub max{
     }
     $val;
 }
-
-sub sortsub{
-    my($a,$b)=@_;
-    return $TIMER_TIMES[$a]-$TIMER_TIMES[$b];
-}
-
-sub TimerSort{
-    $count=0;
-    @TIMER_TIMES=(map {TimerWhen(-1,(SplitTimerEntry($_)))} @TIMER);
-    @TIMER_SORTED=sort sortsub, (map {$count++} @TIMER);
-}    
 
 sub Status{
     $window_status->configure(text=>shift @_);
@@ -785,7 +787,7 @@ sub Alert{
 		  -in=>$modal_message);
 
     $width+=20;
-    $height=$modal_message->reqheight()+$modal_detail->reqheight()+25;
+    $height=$modal_message->reqheight()+$modal_detail->reqheight()+30;
 
     my$xx=$toplevel->rootx();
     my$yy=$toplevel->rooty();
@@ -852,12 +854,6 @@ sub ButtonConfig{
     }
     ButtonPressConfig();
 }
-
-sub TimerSort{
-    $count=0;
-    @TIMER_TIMES=(map {TimerWhen(-1,(SplitTimerEntry($_)))} @TIMER);
-    @TIMER_SORTED=sort sortsub, (map {$count++} @TIMER);
-}    
 
 sub Setup{
     %TEMPCONF=%CONFIG;
@@ -994,6 +990,8 @@ sub Setup{
 	SaveConfig();
 	
 	ThrowRealPlayer() if(!$comm_ready);
+	Status("Configuration successful");
+	TestOutpath();
     }]);
 
     $setup_apply->configure(-command=>[sub{
@@ -1002,6 +1000,8 @@ sub Setup{
 	SaveConfig();
 	
 	ThrowRealPlayer() if(!$comm_ready);
+	Status("Configuration successful");
+	TestOutpath();
     }]);
     
     $setup_cancel->configure(-command=>[sub{
@@ -1012,6 +1012,19 @@ sub Setup{
 
     $setup_stdout->configure(-command=>[sub{Setup_Stdout();}]);
 
+}
+
+sub TestOutpath(){
+    if($CONFIG{OUTPUT_PATH} ne '-'){
+	if(!-W $CONFIG{OUTPUT_PATH}){
+	    Status("Bad output path");
+	    Alert("Selected output path isn't writable!",
+		  "The output path currently set on the configuration panel either does not exist,".
+		  " or is inaccessible due to permissions.  Please set a usable path to prevent ".
+		  "recording failure.");
+	    return;
+	}
+    }
 }
 
 sub Setup_Debug{
@@ -1056,6 +1069,7 @@ sub Timer{
 		   place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
     
     $timerw_quit->configure(-command=>[sub{
+	undef $listbox;
 	$timerw->destroy();
 	$window_timerbar->configure(state=>'normal');
 	$window_timerbar->configure(relief=>'raised');
@@ -1075,38 +1089,152 @@ sub Timer{
 	    place(-x=>-5,-relx=>1.0,-y=>-$timerw_quit->reqheight()-25,
 		  -rely=>1.0,-anchor=>'se');
 
-    $timerw_edit=$timerw_shell->
-	Button(Name=>"edit",text=>"edit",-state=>disabled)->
+    $timerw_duplicate=$timerw_shell->
+	Button(Name=>"edit",text=>"copy",-state=>disabled)->
 	    place(-x=>0,-y=>-25,-relwidth=>1.0,-anchor=>'sw',
 		  -in=>$timerw_delete,-bordermode=>outside);
+    $timerw_edit=$timerw_shell->
+	Button(Name=>"edit",text=>"edit",-state=>disabled)->
+	    place(-x=>0,-y=>-5,-relwidth=>1.0,-anchor=>'sw',
+		  -in=>$timerw_duplicate,-bordermode=>outside);
     $timerw_add=$timerw_shell->
 	Button(Name=>"add",text=>"add")->
 	    place(-x=>0,-y=>-5,-relwidth=>1.0,-anchor=>'sw',
 		  -in=>$timerw_edit,-bordermode=>outside);
 
-    $listbox=Snatch::ListBox::new($timerw_shell,7,
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah1",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah2",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah3",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah4",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah5",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah6",
-			  "2001","Dec","12","Tues","12:00","2 hours","rtsp://blah7")->
-			      place(-x=>5,-y=>5,-relheight=>1.0,-relwidth=>1.0,
-				    -width=>-$timerw_delete->reqwidth()-15,
-				    -height=>-10,
-				    -bordermode=>outside);
+    $listbox=BuildListBox();
     
     $minwidth=500;
-    $minheight=$timerw_add->reqheight()*3+$timerw_quit->reqheight()+110;
+    $minheight=$timerw_add->reqheight()*4+$timerw_quit->reqheight()+115;
     
     $timerw->minsize($minwidth,$minheight);
     $timerw->geometry(($minwidth+20)."x".$minheight);
-    
-    $timerw->update();
+
+    $timerw_add->configure(-command,[sub{Timer_Add();}]);
+    $timerw_edit->configure(-command,[sub{Timer_Edit();}]);
+    $timerw_delete->configure(-command,[sub{Timer_Delete();}]);
+    $timerw_duplicate->configure(-command,[sub{Timer_Copy();}]);
+
 }
 
+sub BuildListBox(){
+    $listbox->destroy() if(defined($listbox));
+
+    # assemble the sorted timer elements we're actually interested into an array for listbox
+    TimerSort();
+    my$n=$#TIMER;
+    my@listarray;
+    
+    $daytrans={
+	'*',' ',
+	'0',"Sunday ",
+	'1',"Monday ",
+	'2',"Tuesday ",
+	'3',"Wednesday ",
+	'4',"Thursday ",
+	'5',"Friday ",
+	'6',"Saturday "};
+
+    $monthtrans={
+	'*',' ',
+	'1',"January ",
+	'2',"February ",
+	'3',"March ",
+	'4',"April ",
+	'5',"May ",
+	'6',"June ",
+	'7',"July ",
+	'8',"August ",
+	'9',"September ",
+	'10',"October ",
+	"11","November ",
+	"12","December "};
+    
+    for(my$i=0;$i<=$n;$i++){
+	my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+	   $password,$outfile,$url)=SplitTimerEntry($TIMER[$TIMER_SORTED[$i]]);
+	my$start=$TIMER_TIMES[$TIMER_SORTED[$i]];
+	#also need the end...
+	my$end=$TIMER_TIMES[$TIMER_SORTED[$i]]+$duration;
+	my$now=time();
+	my$emph='';
+	if($end<$now){
+	    $emph='Old';
+	}
+	
+	my$dur_hours=int($duration/3600);
+	$duration-=$dur_hours*3600;
+	my$dur_minutes=int($duration/60);
+	$duration-=$dur_minutes*60;
+	
+	if($dur_hours==0){
+	    $dur_hours='';
+	}else{
+	    $dur_hours.=":";
+	}
+	$dur_minutes='00' if($dur_minutes==0);
+	
+	push @listarray, "$emph","$year ",$monthtrans->{$month},"$day ",
+	$daytrans->{$dayofweek},"$hour:$minute ",
+	"$dur_hours$dur_minutes ",$url;
+
+    }
+    $listbox=Snatch::ListBox::new($timerw_shell,7,@listarray)->
+	place(-x=>5,-y=>5,-relheight=>1.0,-relwidth=>1.0,
+	      -width=>-$timerw_delete->reqwidth()-15,
+	      -height=>-10,
+	      -bordermode=>outside);
+    
+    $listbox->callback(\&Timer_Highlight);
+    $listbox;
+}
+
+sub TimerSort{
+    $count=0;
+    @TIMER_TIMES=(map {TimerWhen(-1,(SplitTimerEntry($_)))} @TIMER);
+    @TIMER_SORTED=sort {$TIMER_TIMES[$a]-$TIMER_TIMES[$b]} (map {$count++} @TIMER);
+}    
+
+sub Timer_Highlight{
+    $timerw_edit->configure(-state=>normal);
+    $timerw_delete->configure(-state=>normal);
+    $timerw_duplicate->configure(-state=>normal);
+    $timer_row=shift;
+}
+
+sub Timer_Delete{
+    # which real (not sorted) row of the timer array is this?
+    my$actual_row=$TIMER_SORTED[$timer_row];
+
+    splice @TIMER,$actual_row,1;
+    SaveHistory();
+    $timerw_edit->configure(-state=>disabled);
+    $timerw_delete->configure(-state=>disabled);
+    $timerw_duplicate->configure(-state=>disabled);
+    BuildListBox();
+}
+
+sub Timer_Add{
+    my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime($now);    
+    $nowmonth+=1;
+    Timer_Entry(-1,"$nowyear $nowmonth $nowday * $nowhour:$nowminute 3600 FAKEA FAKEV 0: 0: ".
+	       length($CONFIG{OUTPUT_PATH}).":$CONFIG{OUTPUT_PATH} 0:");
+}
+
+sub Timer_Edit{
+    Timer_Entry($TIMER_SORTED[$timer_row],$TIMER[$TIMER_SORTED[$timer_row]]);
+}
+    
+sub Timer_Copy{
+    Timer_Entry(-1,$TIMER[$TIMER_SORTED[$timer_row]]);
+}
+    
+sub Timer_Entry{
+    my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+       $password,$outfile,$url)=SplitTimerEntry(@_);
+    
+
+}
 package Snatch::ListBox;
 
 sub new{
@@ -1139,17 +1267,20 @@ sub new{
 	my @widgetrow=();
 	$textrows[$listbox{rows}]=\@textrow;
 	$widgetrows[$listbox{rows}]=\@widgetrow;
+	my$emphasis=shift;
 
 	for(my$j=0;$j<$cols;$j++){
 	    my$temp=shift;
 	    if(defined($temp)){
 		$textrow[$j]=$temp;
 		if($listbox{rows} % 2){
-		    $widgetrow[$j]=$listbox{window}->
-			Label(-class=>'ListRowEven',text=>$temp);
+		    my$w=$widgetrow[$j]=$listbox{window}->
+			Label(-class=>$emphasis.'ListRowEven',text=>$temp);
+		    $w->bind('<ButtonPress>',[$this=>highlight,$listbox{rows}]);
 		}else{
-		    $widgetrow[$j]=$listbox{window}->
-			Label(-class=>'ListRowOdd',text=>$temp);
+		    my$w=$widgetrow[$j]=$listbox{window}->
+			Label(-class=>$emphasis.'ListRowOdd',text=>$temp);
+		    $w->bind('<ButtonPress>',[$this=>highlight,$listbox{rows}]);
 		}
 	    }else{
 		$done=1;
@@ -1181,7 +1312,7 @@ sub new{
 			  -x=>$x,-y=>$y);
 		$y+=$maxheight+3;
 	    }
-	    $x+=$maxwidth[$j]+1;
+	    $x+=$maxwidth[$j];
 	}else{
 	    for(my$i=0;$i<$listbox{rows};$i++){
 		$widgetrows[$i][$j]->configure(-anchor=>w);
@@ -1190,11 +1321,10 @@ sub new{
 			  -width=>-$x,-x=>$x,-y=>$y);
 		$y+=$maxheight+3;
 	    }
-	    $x+=$maxwidth[$j]+1;
+	    $x+=$maxwidth[$j];
 	}
     }
 
-    #$frame->bind('syncscrollbar','<Configure>',[\$this->resize,Ev('w'),Ev('h')]);
     $pane->bind('<Configure>',[sub{$this->resize();}]);
     $listbox{window}->configure(-height=>$y);
     $scrollbar->configure(-command=>[yview=>$this]);
@@ -1211,7 +1341,6 @@ sub place{
 sub destroy{
     my$this=shift;
     $this->{frame}->destroy();
-    undef $$this;
 }
 
 sub yview{
@@ -1241,9 +1370,32 @@ sub resize{
     my$this=shift;
     $this->{scrollbar}->set($this->yview());
 }
-# eg
-# 2001 11 05 1 12:25 300000 FAKEA FAKEV length:USERNAME length:PASSWORD length:FILE length:URL
 
+sub highlight{
+    my$this=shift;
+    my$row=shift;
+    
+    if(defined($this->{'highlight'})){
+	for(my$i=0;$i<$this->{'cols'};$i++){
+	    my$b=$this->{'widgetrows'}[$this->{'highlight'}][$i]->optionGet("background","");
+	    $this->{'widgetrows'}[$this->{'highlight'}][$i]->configure(-background=>$b);
+	}
+    }
+    
+    $this->{'highlight'}=$row;
+    for(my$i=0;$i<$this->{'cols'};$i++){
+	my$b=$this->{'widgetrows'}[$row][$i]->optionGet("highlightBackground","");
+	$this->{'widgetrows'}[$row][$i]->configure(-background=>$b);
+    }
+    
+    if(defined($this->{'callback'})){
+	$this->{'callback'}($row);
+    }
+    
+}
 
-
+sub callback{
+    $this=shift;
+    $this->{'callback'}=shift;
+}
 
