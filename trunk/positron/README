@@ -80,18 +80,18 @@ your particular distribution, but here are some general hints:
   command should show the Neuros being recognized by the USB subsystem
   and the assignment of a SCSI device (like "sda", for example).
 
-* Create a directory to mount your Neuros under, like "/neuros"
+* Create a directory to mount your Neuros under, like "/mnt/neuros"
 
 * Now you can edit your /etc/fstab file and add a line like:
 
-/dev/sda1 /neuros vfat user,noauto,umask=0	0 0
+/dev/sda1 /mnt/neuros vfat user,noauto,umask=0	0 0
 
 This is assuming that the Neuros was registered as "sda" when it was
 discovered by the kernel.  You may have to adjust it.  The Neuros
 filesystem, however, is always on partition 1.
 
-* Test your setup by running "mount /neuros" as a normal user.
-  You should be able to go browse around the contents of /neuros.
+* Test your setup by running "mount /mnt/neuros" as a normal user.
+  You should be able to go browse around the contents of /mnt/neuros.
   (There will be something there, even if your Neuros is brand new and
   "empty".)
 
