@@ -51,6 +51,7 @@ dnl -- Compiler feature check --
 
 AC_C_CONST
 AC_C_BIGENDIAN
+AC_C_INLINE
 
 dnl -- System header check --
 

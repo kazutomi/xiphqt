@@ -58,6 +58,8 @@ static void
 flac_error_cb(const FLAC__StreamDecoder* decoder,
 	      FLAC__StreamDecoderErrorStatus status, void* client_data);
 
+static inline int16_t scale16(int sample, int bps);
+
 /* try to open a FLAC file for decoding. Returns:
  *   0: success
  *   1: not a FLAC file
@@ -214,9 +216,10 @@ flac_write_cb(const FLAC__StreamDecoder* decoder, const FLAC__Frame* frame,
   int i;
 
   for (i = 0; i < frame->header.blocksize; i++) {
-    flac_data->left[i] = buffer[0][i];
-    if (self->channels > 1)
-      flac_data->right[i] = buffer[1][i];
+    flac_data->left[i] = scale16(buffer[0][i], frame->header.bits_per_sample);
+    if (self->channels > 1) {
+      flac_data->right[i] = scale16(buffer[1][i], frame->header.bits_per_sample);
+    }
   }
   if (self->channels == 1)
     memcpy(flac_data->right, flac_data->left, frame->header.blocksize << 1);
@@ -233,8 +236,8 @@ flac_metadata_cb(const FLAC__StreamDecoder* decoder,
   input_stream_t* self = (input_stream_t*)client_data;
   flac_in_t* flac_data = (flac_in_t*)self->data;
   FLAC__StreamMetadata_VorbisComment_Entry* comment;
-  char* artist = NULL;
-  char* title = NULL;
+  char *artist = NULL;
+  char *title = NULL;
   int i;
 
   switch(metadata->type) {
@@ -248,13 +251,20 @@ flac_metadata_cb(const FLAC__StreamDecoder* decoder,
     for (i = 0; i < metadata->data.vorbis_comment.num_comments; i++) {
       comment = metadata->data.vorbis_comment.comments + i;
 
-      if (!strncasecmp("artist", comment->entry, 6))
-	artist = comment->entry + 7;
-      else if (!strncasecmp("title", comment->entry, 5))
-	title = comment->entry + 6;
-
-      ices_metadata_set(artist, title);
+      if (comment->length >= 6 && !strncasecmp("artist", comment->entry, 6)) {
+	if ((artist = malloc(comment->length - 6)))
+	  snprintf(artist, comment->length - 6, "%s", comment->entry + 7);
+      } else if (comment->length >= 5 && !strncasecmp("title", comment->entry, 5)) {
+	if ((title = malloc(comment->length - 5)))
+	  snprintf(title, comment->length - 5, "%s", comment->entry + 6);
+      }
     }
+    
+    ices_metadata_set(artist, title);
+    if (artist)
+      free(artist);
+    if (title)
+      free(title);
     break;
   default:
     ices_log_debug("Ignoring unknown FLAC metadata type");
@@ -278,4 +288,13 @@ flac_error_cb(const FLAC__StreamDecoder* decoder,
   default:
     ices_log_error("Unspecified error decoding FLAC stream");
   }
+}
+
+/* -- utility -- */
+static inline int16_t scale16(int sample, int bps) {
+  if (bps == 16)
+    return sample;
+  if (bps < 16)
+    return sample << (16 - bps);
+  return sample >> (bps - 16);
 }
