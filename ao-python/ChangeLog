@@ -1,3 +1,12 @@
+2001-08-30  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* aomodule.[ch] Updated to work with the updated ao API.
+	  Not entirely sure the way of dealing with files is perfect,
+	  but it should be serviceable.
+
+	* aomodule.[ch] Changed some of the function names so that they
+	  look more like their C counterparts (getting rid of get_ 
+	  in function names, for example)
+	
 2001-02-18  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* README: Fixed incorrect config instructions
 	
