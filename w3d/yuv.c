@@ -11,7 +11,7 @@ void rgb2yuv (uint8 *rgb, int16 *y, int16 *u, int16 *v, uint32 count, uint32 str
 */
    for (; count; count--, rgb+=stride, y++, u++, v++) {
       *u = rgb [0] - rgb [1];
-      *v = rgb [1] - rgb [2];
+      *v = rgb [2] - rgb [1];
       *y = rgb [1] + ((*u + *v) >> 2);
    }
 }
@@ -33,7 +33,7 @@ void yuv2rgb (int16 *y, int16 *u, int16 *v, uint8 *rgb, uint32 count, uint32 str
 */
    for (; count; count--, rgb+=stride, y++, u++, v++) {
       rgb [1] = CLAMP(*y - ((*u + *v) >> 2));
-      rgb [2] = CLAMP(rgb [1] - *v);
+      rgb [2] = CLAMP(*v + rgb [1]);
       rgb [0] = CLAMP(*u + rgb [1]);
    }
 }
