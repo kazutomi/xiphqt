@@ -27,6 +27,12 @@ void final_statistics_null(char *fn, double time, int rate, long total_samples,
 		long bytes);
 void encode_error(char *errmsg);
 
+typedef enum
+{
+  OE_MODE_QUALITY,
+  OE_MODE_BITRATE
+} OE_MODE;
+
 typedef struct
 {
 	char **title;
@@ -49,7 +55,10 @@ typedef struct
 	char *outfile;
 	int kbps;
   float quality_coefficient;
+  OE_MODE oeMode;
 } oe_options;
+
+
 
 typedef struct
 {
@@ -68,6 +77,7 @@ typedef struct
 	long rate;
 	int bitrate;
   float quality_coefficient;
+  OE_MODE oeMode;
 
 	FILE *out;
 	char *filename;
