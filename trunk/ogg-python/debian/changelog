@@ -2,7 +2,7 @@ pyogg (0.2-1) unstable; urgency=low
 
   * Initial Release.
 
- -- Christopher L Cheney <ccheney@debian.org>  Sun, 18 Feb 2001 18:20:43 -0600
+ -- Christopher L Cheney <ccheney@debian.org>  Mon, 26 Feb 2001 08:00:00 -0600
 
 Local variables:
 mode: debian-changelog
