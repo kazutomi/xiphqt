@@ -9,8 +9,12 @@ noinst_HEADERS = playlist.h pm_builtin.h rand.h
 
 libplaylist_a_SOURCES = playlist.c pm_builtin.c rand.c
 
-libplaylist_a_LIBADD = @PLAYLIST_OBJECTS@
+if USE_PYTHON
+libplaylist_a_SOURCES += pm_python.c
+endif
 
-libplaylist_a_DEPENDENCIES = @PLAYLIST_OBJECTS@
+if USE_PERL
+libplaylist_a_SOURCES += pm_perl.c
+endif
 
 EXTRA_DIST = pm_perl.c pm_python.c

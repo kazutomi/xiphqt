@@ -13,10 +13,18 @@ noinst_HEADERS = icestypes.h definitions.h setup.h log.h stream.h util.h \
 ices_SOURCES = ices.c log.c setup.c stream.c util.c mp3.c cue.c metadata.c \
 	id3.c signals.c
 
-EXTRA_ices_SOURCES = ices_config.c in_vorbis.c reencode.c
+if USE_XML
+ices_SOURCES += ices_config.c
+endif
 
-BUILT_SOURCES = $(ICES_OBJECTS)
+if USE_LAME
+ices_SOURCES += reencode.c
+endif
 
-ices_LDADD = $(ICES_OBJECTS) playlist/libplaylist.a
+if USE_VORBIS
+ices_SOURCES += in_vorbis.c
+endif
+
+ices_LDADD = playlist/libplaylist.a
 
 AM_CPPFLAGS = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\"
