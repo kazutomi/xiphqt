@@ -1,4 +1,4 @@
-$Id: README.win32sdk,v 1.6 2001/10/18 17:21:59 cwolf Exp $
+$Id: README.win32sdk,v 1.7 2001/10/18 17:52:07 cwolf Exp $
 $Name:  $
 
 win32sdk Readme, 13 September, 2001 Chris Wolf
@@ -60,7 +60,7 @@ BUILDING
        open a project (*.dsp) file, then a corresponding workspace (*.dsw)
        will be created, which is fine, if you only have a single project,
        which is not the case with this module (win32sdk).  So the two
-       worspaces that are relavant here, are "all.dsw" and 
+       worspaces that are relevant here, are "all.dsw" and 
        "sdk\build\examples.dsw"
 
        
