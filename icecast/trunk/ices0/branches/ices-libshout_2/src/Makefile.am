@@ -20,10 +20,8 @@ ices_SOURCES = ices.c log.c setup.c stream.c util.c mp3.c cue.c metadata.c \
 
 EXTRA_ices_SOURCES = ices_config.c in_vorbis.c reencode.c
 
-ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a $(SHOUT_LIBS)
+BUILT_SOURCES = $(ICES_OBJECTS)
 
-ices_DEPENDENCIES = $(ices_LDADD)
+ices_LDADD = $(ICES_OBJECTS) playlist/libplaylist.a $(SHOUT_LIBS)
 
-INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\" \
-	$(SHOUT_INCLUDES)
-
+INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\" $(SHOUT_INCLUDES)
