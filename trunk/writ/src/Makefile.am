@@ -6,7 +6,7 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include
 
 lib_LTLIBRARIES = libwrit.la
 
-libwrit_la_SOURCES = format.c 
+libwrit_la_SOURCES = format.c encode.c
 libwrit_la_LDFLAGS = -no-undefined -version-info @LIB_CURRENT@:@LIB_REVISION@:@LIB_AGE@
 
 debug:

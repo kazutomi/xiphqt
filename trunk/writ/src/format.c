@@ -1,17 +1,17 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE Ogg Writ SOFTWARE CODEC SOURCE CODE.    *
+ * THIS FILE IS PART OF THE OggWrit SOFTWARE CODEC SOURCE CODE.     *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Ogg Writ SOURCE CODE IS (C) COPYRIGHT 2003                   *
+ * THE OggWrit SOURCE CODE IS (C) COPYRIGHT 2003                    *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
- format: Writ data formatting
- last mod: $Id: format.c,v 1.2 2003/08/17 08:34:49 arc Exp $
+ format.c: Writ formatting functions
+ last mod: $Id: format.c,v 1.3 2003/12/09 06:38:44 arc Exp $
 
  ********************************************************************/
 
@@ -27,6 +27,3 @@ static int ilog(unsigned int v) {
   return(ret);
 }
 
-/* this is undocumented in libogg, and very needed here
-void oggpack_writealign(oggpack_buffer *b);
-*/
