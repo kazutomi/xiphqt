@@ -1,0 +1,10 @@
+ - design file/stream format and find a cool name for this codec
+ - write avitow3d/quicktimetow3d/player/recorder (a libsndfile/libaudiofile alike video library would be great !)
+ - tune coefficient transmission order in coder.c
+ - (4,4) - Wavelets
+ - arithmetic binary entropy coders may be faster, simpler and more efficient
+ - profile
+ - rewrite wavelet xform code, the current implementation forces cache misses
+ - skip first empty bitplanes, we could save a per-level min/max value
+ - introduce fast paths in coefficient decoder if (mps == 0)
+ - mmx/3dnow/sse/altivec
