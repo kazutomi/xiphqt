@@ -204,20 +204,6 @@ ices_util_is_regular_file (int fd)
 	return 0;
 }
 
-/* Return the size of the file pointed to by fd */
-int 
-ices_util_fd_size (int fd)
-{
-	struct stat st;
-
-	if (fstat (fd, &st) == -1) {
-		ices_log_error ("ERROR: Could not stat file");
-		return -1;
-	}
-
-	return st.st_size;
-}
-
 /* Make sure directory exists and is a directory */
 int 
 ices_util_directory_exists (const char *name)
@@ -258,9 +244,12 @@ ices_util_nullcheck (const char *string)
 
 /* Wrapper function for percentage */
 double
-ices_util_percent (int this, int of_that)
+ices_util_percent (int num, int den)
 {
-	return (double)((double)this / (double) of_that) * 100.0;
+  if (! den)
+    return 0;
+
+  return (double)((double)num / (double)den) * 100.0;
 }
 
 /* Given bitrate and filesize, report the length of the given file
@@ -272,8 +261,10 @@ ices_util_file_time (unsigned int bitrate, unsigned int filesize, char *buf)
 	unsigned long int days, hours, minutes, nseconds, remains;
 	unsigned long int seconds;
 
-	if (!bitrate)
-	  return NULL;
+	if (!bitrate) {
+      sprintf (buf, "0:0:0:0");
+	  return buf;
+    }
 
 	/* << 7 == 1024 (bits->kbits) / 8 (bits->bytes) */
 	seconds = filesize / ((bitrate * 1000) >> 3);
@@ -309,13 +300,6 @@ ices_util_free (void *ptr)
 {
 	if (ptr)
 		free (ptr);
-}
-
-/* Wrapper function around close */
-void
-ices_util_close (int fd)
-{
-	close (fd);
 }
 
 /* Verify that file exists, and is readable */

@@ -32,7 +32,6 @@ char *ices_util_read_line (FILE *fp);
 char *ices_util_get_random_filename (char *namespace, char *type);
 int ices_util_remove (const char *filename);
 int ices_util_get_random (void);
-int ices_util_fd_size (int fd);
 int ices_util_is_regular_file (int fd);
 int ices_util_directory_create (const char *filename);
 int ices_util_directory_exists (const char *filename);
@@ -42,5 +41,4 @@ char *ices_util_file_time (unsigned int bitrate, unsigned int filesize,
 			   char *namespace);
 const char *ices_util_strerror (int error, char *namespace, int maxsize);
 void ices_util_free (void *ptr);
-void ices_util_close (int fd);
 int ices_util_verify_file (const char *filename);
