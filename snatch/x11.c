@@ -150,7 +150,6 @@ void FakeExposeRPPlay(void){
   event.window=rpplay_window;
   event.width=rpplay_width;
   event.height=rpplay_height;
-  logo_y=-1;
 
   XSendEvent(Xdisplay,(Window)rpplay_window,0,0,(XEvent *)&event);
 }
@@ -601,7 +600,6 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
       /* after a resize, look where to put the logo... */
       if(logo_y==-1 && height==rpplay_height && width==rpplay_width){
 	int test;      
-	
 	play_blackupper=42;
 	play_blacklower=-1;
 	play_blackleft=-1;
@@ -634,7 +632,9 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	    for(blacklower=test;blacklower<height;blacklower++)
 	      if(ptr[blacklower*width*4+(20*4)+1]!=0)break;
 	    
-	    if(blacklower-test<snatchheight)logo_y=-1;
+	    if(blacklower-test<snatchheight){
+	      logo_y=-1;
+	    }
 	  }
 	}
       }
@@ -642,7 +642,7 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
       /* blank background */
       if(x==0 && y==0 && d_width==rpplay_width && d_height==rpplay_height){
 	unsigned char *bptr;
-	
+
 	if(snatch_active==1)
 	  bptr=snatchppm;
 	else
