@@ -1,6 +1,6 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
- * Copyright (C) 1998, 2002 Monty monty@xiph.org
+ * Copyright (C) 1998 Monty xiphmont@mit.edu
  *
  * CDROM communication common to all interface methods is done here 
  * (mostly ioctl stuff, but not ioctls specific to the 'cooked'
@@ -55,7 +55,7 @@ int data_bigendianp(cdrom_drive *d){
   float *a=calloc(1024,sizeof(float));
   float *b=calloc(1024,sizeof(float));
   long readsectors=5;
-  int16_t *buff=malloc(readsectors*CD_FRAMESIZE_RAW);
+  size16 *buff=malloc(readsectors*CD_FRAMESIZE_RAW);
 
   /* look at the starts of the audio tracks */
   /* if real silence, tool in until some static is found */
@@ -96,9 +96,6 @@ int data_bigendianp(cdrom_drive *d){
 	  firstsector+=readsectors;
 	}else{
 	  d->enable_cdda(d,0);
-	  free(a);
-	  free(b);
-	  free(buff);
 	  return(-1);
 	}
       }
@@ -168,7 +165,7 @@ int data_bigendianp(cdrom_drive *d){
 /************************************************************************/
 /* Here we fix up a couple of things that will never happen.  yeah,
    right.  The multisession stuff is from Hannu's code; it assumes it
-   knows the leadoud/leadin size. */
+   knows the leasoud/leadin size. */
 
 int FixupTOC(cdrom_drive *d,int tracks){
   struct cdrom_multisession ms_str;
@@ -223,8 +220,7 @@ int FixupTOC(cdrom_drive *d,int tracks){
       /* adjust end of last audio track to be in the first session */
       for (j = tracks-1; j >= 0; j--) {
 	if (j > 0 && !IS_AUDIO(d,j) && IS_AUDIO(d,j-1)) {
-	  if ((d->disc_toc[j].dwStartSector > ms_str.addr.lba - 11400) &&
-	      (ms_str.addr.lba - 11400 > d->disc_toc[j-1].dwStartSector))
+	  if (d->disc_toc[j].dwStartSector > ms_str.addr.lba - 11400) 
 	    d->disc_toc[j].dwStartSector = ms_str.addr.lba - 11400;
 	  break;
 	}

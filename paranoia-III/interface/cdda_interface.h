@@ -1,6 +1,6 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
- * Copyright (C) 2001 Xiph.org
+ * Copyright (C) 1998 Monty xiphmont@mit.edu
  * and Heiko Eissfeldt heiko@escape.colossus.de
  *
  * Toplevel interface header; applications include this
@@ -26,7 +26,7 @@
 typedef struct TOC {	/* structure of table of contents */
   unsigned char bFlags;
   unsigned char bTrack;
-  int32_t dwStartSector;
+  size32 dwStartSector;
 } TOC;
 
 /* interface types */
@@ -39,6 +39,8 @@ typedef struct TOC {	/* structure of table of contents */
 #define CDDA_MESSAGE_LOGIT 2
 
 /* cdrom access function pointer */
+
+void SetupInterface( unsigned char *int_name );
 
 typedef struct cdrom_drive{
 
@@ -73,7 +75,6 @@ typedef struct cdrom_drive{
   int  (*read_toc)     (struct cdrom_drive *d);
   long (*read_audio)   (struct cdrom_drive *d, void *p, long begin, 
 		       long sectors);
-  int  (*set_speed)    (struct cdrom_drive *d, int speed);
   int error_retry;
   int report_all;
 
@@ -118,7 +119,6 @@ extern cdrom_drive *cdda_identify_test(const char *filename,
 
 /******** Drive oriented functions */
 
-extern int cdda_speed_set(cdrom_drive *d, int speed);
 extern void cdda_verbose_set(cdrom_drive *d,int err_action, int mes_action);
 extern char *cdda_messages(cdrom_drive *d);
 extern char *cdda_errors(cdrom_drive *d);

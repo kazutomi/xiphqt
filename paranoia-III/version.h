@@ -1,13 +1,13 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
  * 
- * cdda_paranoia generation III release 9.8
- * Copyright (C) 2001 Monty monty@xiph.org, xiphmont@mit.edu
+ * cdda_paranoia generation III prerelease alpha 9.5
+ * Copyright (C) 1999 Monty xiphmont@mit.edu
  *
  ******************************************************************/
 
 
-#define VERSION "cdparanoia III release 9.8 (March 23, 2001)\n"\
-                "(C) 2001 Monty <monty@xiph.org> and Xiphophorus\n\n"\
-		"Report bugs to paranoia@xiph.org\n"\
-		"http://www.xiph.org/paranoia/\n"
+#define VERSION "cdparanoia III alpha prerelease 9.5 (March 24, 1999)\n"\
+                "(C) 1999 Monty <xiphmont@mit.edu>\n\n"\
+		"This is PRERELEASE software!  Report bugs to xiphmont@mit.edu\n"\
+		"http://www.mit.edu/afs/sipb/user/xiphmont/cdparanoia/index.html\n"
