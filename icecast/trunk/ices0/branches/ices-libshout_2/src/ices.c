@@ -37,7 +37,7 @@ main (int argc, char **argv)
 	ices_setup_initialize ();
 	
 	/* Connect to server and keep streaming all the good stuff */
-	ices_stream_loop ();
+	ices_stream_loop (&ices_config);
 	
 	/* Not reached */
 	return 0;

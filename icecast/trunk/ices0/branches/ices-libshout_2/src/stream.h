@@ -19,5 +19,5 @@
  */
 
 /* Public function declarations */
-void ices_stream_loop (void);
+void ices_stream_loop (ices_config_t* config);
 void ices_stream_next (void);

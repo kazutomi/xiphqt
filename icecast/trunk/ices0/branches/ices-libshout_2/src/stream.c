@@ -41,13 +41,11 @@
 /* sleep this long in ms when every stream has errors */
 #define ERROR_DELAY 999
 
-extern ices_config_t ices_config;
-
 static volatile int finish_send = 0;
 
 /* Private function declarations */
 static int stream_connect (ices_stream_t* stream);
-static int stream_send (input_stream_t* source);
+static int stream_send (ices_config_t* config, input_stream_t* source);
 static int stream_send_data (ices_stream_t* stream, unsigned char* buf,
 			     size_t len);
 static int stream_open_source (input_stream_t* source);
@@ -57,7 +55,7 @@ static int stream_open_source (input_stream_t* source);
 /* Top level streaming function, called once from main() to
  * connect to server and start streaming */
 void
-ices_stream_loop (void)
+ices_stream_loop (ices_config_t* config)
 {
   int consecutive_errors = 0;
   int linenum_old = 0;
@@ -65,7 +63,7 @@ ices_stream_loop (void)
   input_stream_t source;
   ices_stream_t* stream;
 
-  for (stream = ices_config.streams; stream; stream = stream->next)
+  for (stream = config->streams; stream; stream = stream->next)
     stream_connect (stream);
 
   while (1) {
@@ -83,7 +81,7 @@ ices_stream_loop (void)
     ices_cue_set_lineno (linenum_new);
 
     /* we quit if we're told not to loop and the the new line num is lower than the old */
-    if ( !ices_config.pm.loop_playlist && ( linenum_new < linenum_old ) ) {
+    if ( !config->pm.loop_playlist && ( linenum_new < linenum_old ) ) {
       ices_log ("Info: next playlist line number less than previous and looping disabled: quitting.");
       ices_setup_shutdown ();
     }
@@ -111,7 +109,7 @@ ices_stream_loop (void)
     }
 
     if (!source.read)
-      for (stream = ices_config.streams; stream; stream = stream->next)
+      for (stream = config->streams; stream; stream = stream->next)
 	if (!stream->reencode) {
 	  ices_log ("Cannot play %s without reencoding", source.path);
 	  source.close (&source);
@@ -121,7 +119,7 @@ ices_stream_loop (void)
 	}
 
     /* If something goes on while transfering, we just go on */
-    if (stream_send (&source) < 0) {
+    if (stream_send (config, &source) < 0) {
       ices_log ("Encountered error while transfering %s: %s", source.path, ices_log_get_error ());
 
       consecutive_errors++;
@@ -148,7 +146,7 @@ ices_stream_next (void)
 
 /* This function is called to stream a single file */
 static int
-stream_send (input_stream_t* source)
+stream_send (ices_config_t* config, input_stream_t* source)
 {
   ices_stream_t* stream;
   unsigned char ibuf[INPUT_BUFSIZ];
@@ -167,16 +165,16 @@ stream_send (input_stream_t* source)
 
 
 #ifdef HAVE_LIBLAME
-  if (ices_config.reencode)
+  if (config->reencode)
     /* only actually decode/reencode if the bitrate of the stream != source */
-    for (stream = ices_config.streams; stream; stream = stream->next)
+    for (stream = config->streams; stream; stream = stream->next)
       if (stream->bitrate != source->bitrate) {
 	decode = 1;
 	ices_reencode_reset ();
       }
 #endif
 
-  for (stream = ices_config.streams; stream; stream = stream->next)
+  for (stream = config->streams; stream; stream = stream->next)
     stream->errs = 0;
   
   ices_log ("Playing %s", source->path);
@@ -200,7 +198,7 @@ stream_send (input_stream_t* source)
       do_sleep = 1;
       while (do_sleep) {
 	rc = olen = 0;
-	for (stream = ices_config.streams; stream; stream = stream->next) {
+	for (stream = config->streams; stream; stream = stream->next) {
 	  /* don't reencode if the source is MP3 and the same bitrate */
 	  if (!stream->reencode || (source->read &&
 				    (stream->bitrate == source->bitrate))) {
@@ -254,7 +252,7 @@ stream_send (input_stream_t* source)
   }
 
 #ifdef HAVE_LIBLAME
-  for (stream = ices_config.streams; stream; stream = stream->next)
+  for (stream = config->streams; stream; stream = stream->next)
     if (stream->reencode && (!source->read ||
 	(source->bitrate != stream->bitrate))) {
       len = ices_reencode_flush (stream, obuf, sizeof (obuf));

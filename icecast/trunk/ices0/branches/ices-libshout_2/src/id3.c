@@ -202,7 +202,7 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
   len = id3v2_decode_synchsafe (hdr + 4);
   hdr[4] = '\0';
 
-  ices_log_debug("ID3v2: Frame type [%s] found, %d bytes", hdr, len);
+/*  ices_log_debug("ID3v2: Frame type [%s] found, %d bytes", hdr, len); */
   if (!strcmp (hdr, "TIT2") || !strcmp (hdr, "TPE1")) {
     if (! (buf = malloc(len))) {
       ices_log ("Error allocating memory while reading ID3v2 frame");
