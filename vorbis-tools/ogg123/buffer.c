@@ -1,3 +1,20 @@
+/********************************************************************
+ *                                                                  *
+ * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS BEFORE DISTRIBUTING.                     *
+ *                                                                  *
+ * THE Ogg123 SOURCE CODE IS (C) COPYRIGHT 2000-2001                *
+ * by Kenneth C. Arnold <ogg@arnoldnet.net> AND OTHER CONTRIBUTORS  *
+ * http://www.xiph.org/                                             *
+ *                                                                  *
+ ********************************************************************
+
+ last mod: $Id: buffer.c,v 1.7.2.6 2001/08/10 16:33:40 kcarnold Exp $
+
+ ********************************************************************/
+
 /* buffer.c
  *  buffering code for ogg123. This is Unix-specific. Other OSes anyone?
  *
@@ -32,263 +49,198 @@ FILE *debugfile;
 #define DEBUG1(x, y)
 #endif
 
-void signal_handler (int sig)
+#define LOCK_MUTEX(mutex) do { DEBUG1("Locking mutex %s.", #mutex); pthread_mutex_lock (&(mutex)); } while (0)
+#define UNLOCK_MUTEX(mutex) do { DEBUG1("Unlocking mutex %s", #mutex); pthread_mutex_unlock(&(mutex)); } while (0) 
+
+void Prebuffer (buf_t * buf)
 {
+  if (buf->prebuffer > 0)
+    {
+      LOCK_MUTEX (buf->StatMutex);
+      buf->StatMask |= STAT_PREBUFFERING;
+      UNLOCK_MUTEX (buf->StatMutex);
+    }
 }
 
-/* Initialize the buffer structure. */
-void buffer_init (buf_t *buf, long size, long prebuffer)
+void PthreadCleanup (void *arg)
 {
+  buf_t *buf = (buf_t*) arg;
+  
+  DEBUG0("PthreadCleanup");
+  UNLOCK_MUTEX (buf->SizeMutex);
+  UNLOCK_MUTEX (buf->StatMutex);
+
+  /* kludge to get around pthreads vs. signal handling */
+  pthread_cond_broadcast (&buf->DataReadyCondition);
+  pthread_cond_broadcast (&buf->UnderflowCondition);
+  pthread_cond_broadcast (&buf->OverflowCondition);
+  UNLOCK_MUTEX (buf->SizeMutex);
+  UNLOCK_MUTEX (buf->StatMutex);
+}
+
+void* BufferFunc (void *arg)
+{
+  sigset_t set;
+  buf_t *buf = (buf_t*) arg;
+  volatile buf_t *vbuf = (volatile buf_t*) buf; /* optimizers... grr */
+
+  DEBUG0("r: BufferFunc");
+  sigfillset (&set);
+  pthread_sigmask (SIG_SETMASK, &set, NULL);
+
+  pthread_cleanup_push (PthreadCleanup, buf);
+  while (1)
+    {
+      /* don't touch the size unless we ask you to. */
+      LOCK_MUTEX (buf->SizeMutex);
+
+      /* paused? Remember to signal DataReady when unpaused. */
+    checkPlaying:
+      while (!(buf->StatMask & STAT_PLAYING) ||
+	     (buf->StatMask & STAT_PREBUFFERING)) {
+	DEBUG1 ("r: waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
+	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
+      }
+
+      if (buf->curfill == 0) {
+	UNLOCK_MUTEX (buf->SizeMutex);
+	DEBUG0 ("r: signalling buffer underflow");
+	pthread_cond_signal (&buf->UnderflowCondition);
+	LOCK_MUTEX (buf->SizeMutex);
+	Prebuffer (buf);
+	DEBUG0 ("r: waiting on data ready");
+	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
+	goto checkPlaying;
+      }
+
+      /* unlock while playing sample */
+      UNLOCK_MUTEX (buf->SizeMutex);
+
+      DEBUG0("writing chunk");
+      buf->write_func (buf->writer->data, buf->writer->len, 1, buf->data);
+
+      DEBUG0("incrementing pointer");
+      LOCK_MUTEX (buf->SizeMutex);
+      if (vbuf->writer == vbuf->end)
+	vbuf->writer = vbuf->buffer;
+      else
+	vbuf->writer++;
+      vbuf->curfill--;
+      UNLOCK_MUTEX (buf->SizeMutex);
+
+      /* slight abuse of the DataReady condition, but makes sense. */
+      DEBUG0 ("r: signalling buffer no longer full");
+      if (buf->curfill + 1 == buf->size)
+	pthread_cond_signal (&buf->DataReadyCondition);
+   }
+  /* should never get here */
+  pthread_cleanup_pop(1);
+  DEBUG0("r: exiting");
+}
+
+buf_t *StartBuffer (long size, long prebuffer, void *data, 
+		    size_t (*write_func) (void *, size_t, size_t, void *))
+{
+  buf_t *buf = malloc (sizeof(buf_t) + sizeof (chunk_t) * (size - 1));
+
+  if (buf == NULL)
+    {
+      perror ("malloc");
+      exit (1);
+    }
+
+  /* we no longer need those hacked-up shared memory things! yippee! */
+
+#ifdef DEBUG_BUFFER
+  debugfile = fopen ("/tmp/bufferdebug", "w");
+  setvbuf (debugfile, NULL, _IONBF, 0);
+#endif
+
+  /* Initialize the buffer structure. */
   DEBUG0("buffer init");
   memset (buf, 0, sizeof(*buf));
-  buf->status = 0;
+
+  buf->data = data;
+  buf->write_func = write_func;
+
   buf->reader = buf->writer = buf->buffer;
   buf->end = buf->buffer + (size - 1);
   buf->size = size;
   buf->prebuffer = prebuffer;
-  buf->curfill = 0;
-  if (prebuffer > 0)
-    buf->status |= STAT_PREBUFFER;
-}
+  Prebuffer (buf);
+  buf->StatMask |= STAT_PLAYING;
 
-/* Main write loop. No semaphores. No deadlock. No problem. I hope. */
-void writer_main (volatile buf_t *buf, devices_t *d)
-{
-  devices_t *d1;
-  signal (SIGINT, SIG_IGN);
-  signal (SIGUSR1, signal_handler);
-
-  DEBUG0("r: writer_main");
-  while (! (buf->status & STAT_SHUTDOWN && buf->curfill == 0))
-    {
-      /* Writer just waits on reader to be done with submit_chunk
-       * Reader must ensure that we don't deadlock. */
-
-      /* prebuffering */
-    prebuffer:
-      while (buf->status & STAT_PREBUFFER)
-	pause();
-
-      if (buf->curfill == 0) {
-	if (! (buf->status & STAT_FLUSH)) /* likely unnecessary */
-	  buf->status |= STAT_UNDERFLOW;
-	DEBUG0("alerting writer");
-	kill (buf->readerpid, SIGUSR1);
-      }
-
-      if (buf->status & STAT_FLUSH) {
-      flush:
-	DEBUG0("r: buffer flush");
-	buf->curfill = 0;
-	buf->reader = buf->writer;
-	buf->status &= ~STAT_FLUSH;
-	DEBUG1("buf->status = %d", buf->status);
-	kill (buf->readerpid, SIGUSR1);
-      }
-
-      if (buf->curfill == 0 && !(buf->status & STAT_SHUTDOWN)
-	  && !(buf->status & STAT_FLUSH)) {
-	buf->status |= STAT_PREBUFFER;
-	goto prebuffer;
-      }
-	/*	DEBUG1("looping on buffer underflow, status is %d", buf->status);*/
-
-      if (buf->status & STAT_FLUSH)
-	goto flush;
-
-      if (buf->reader == buf->writer)
-	break;
-
-      /* devices_write (buf->writer->data, buf->writer->len, d); */
-      DEBUG0("writing chunk");
-      {
-	d1 = d;
-	while (d1 != NULL) {
-	  ao_play(d1->device, buf->writer->data, buf->writer->len);
-	  d1 = d1->next_device;
-	}
-      }
-
-      DEBUG0("incrementing pointer");
-      if (buf->writer == buf->end)
-	buf->writer = buf->buffer;
-      else
-	buf->writer++;
-      buf->curfill--;
-      if (buf->curfill + 1 == buf->size)
-	kill (buf->readerpid, SIGUSR1);
-   }
-  DEBUG0("r: shutting down buffer");
-  buf->status = 0;
-  write (buf->fds[1], "2", sizeof(int));
-  kill (buf->writerpid, SIGUSR1);
-  DEBUG0("r: exiting");
-  _exit(0);
-}
-
-/* fork_writer is called to create the writer process. This creates
- * the shared memory segment of 'size' chunks, and returns a pointer
- * to the buffer structure that is shared. Just pass this straight to
- * submit_chunk and all will be happy. */
-
-buf_t *fork_writer (long size, devices_t *d, long prebuffer)
-{
-  int childpid;
-  buf_t *buf;
-
-#if HAVE_SMMAP
-  int fd;
-
-  if ((fd = open("/dev/zero", O_RDWR)) < 0)
-    {
-      perror ("cannot open /dev/zero");
-      exit (1);
-    }
-  if ((buf = (buf_t *) mmap (0, sizeof(buf_t) + sizeof (chunk_t) * (size - 1),
-                             PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) == MAP_FAILED)
-    {
-      perror("mmap");
-      exit(1);
-    }
-  close(fd);
-#else
-  /* Get the shared memory segment. */
-  int shmid = shmget (IPC_PRIVATE,
-			  sizeof(buf_t) + sizeof (chunk_t) * (size - 1),
-			  IPC_CREAT|SHM_R|SHM_W);
-
-  if (shmid == -1)
-    {
-      perror ("shmget");
-      exit (1);
-    }
+  /* pthreads initialization */
+  pthread_mutex_init (&buf->SizeMutex, NULL);
+  pthread_cond_init (&buf->UnderflowCondition, NULL);
+  pthread_cond_init (&buf->OverflowCondition, NULL);
   
-  /* Attach the segment to us (and our kids). Get and store the pointer. */
-  buf = (buf_t *) shmat (shmid, 0, 0);
-  
-  if (buf == NULL)
-    {
-      perror ("shmat");
-      exit (1);
-    }
+  pthread_create(&buf->BufferThread, NULL, BufferFunc, buf);
 
-  /* Remove segment after last process detaches it or terminates. */
-  shmctl(shmid, IPC_RMID, 0);
-#endif /* HAVE_SMMAP */
-
-#ifdef DEBUG_BUFFER
-  debugfile = fopen ("/tmp/bufferdebug", "w"); /* file can be a pipe */
-  setvbuf (debugfile, NULL, _IONBF, 0);
-#endif
-
-  buffer_init (buf, size, prebuffer);
-  
-  /* Create a pipe for communication between the two processes. Unlike
-   * the first incarnation of an ogg123 buffer, the data is not transferred
-   * over this channel, only occasional "WAKE UP!"'s. */
-
-  if (pipe (buf->fds))
-    {
-      perror ("pipe");
-      exit (1);
-    }
-
-  /* write should never block; read should always block. */
-  fcntl (buf->fds[1], F_SETFL, O_NONBLOCK);
-
-  fflush (stdout);
-
-  signal (SIGUSR1, signal_handler);
-
-  buf->readerpid = getpid();
-
-  childpid = fork();
-  
-  if (childpid == -1)
-    {
-      perror ("fork");
-      exit (1);
-    }
-
-  if (childpid == 0)
-    {
-      buf->writerpid = getpid();
-      writer_main (buf, d);
-      return NULL;
-    }
-  else {
-    buf->writerpid = childpid;
-    return buf;
-  }
+  return buf;
 }
 
 void submit_chunk (buf_t *buf, chunk_t chunk)
 {
-  struct timeval tv;
-  static fd_set set;
-
-  FD_ZERO(&set);
-  FD_SET(buf->fds[0], &set);
-
   DEBUG0("submit_chunk");
-  /* Wait wait, don't step on my sample! */
-  while (buf->curfill == buf->size)
-    {
-      /* buffer overflow (yikes! no actually it's a GOOD thing) */
-      int ret;
-      char t;
-      
-      DEBUG0("w: looping on buffer overflow");
-      tv.tv_sec = 1;
-      tv.tv_usec = 0;
-      ret = select (buf->fds[0]+1, &set, NULL, NULL, &tv);
-      
-      DEBUG1("w: select returned %d", ret);
-      if (ret > 0)
-	read (buf->fds[0], &t, sizeof(int));
-    }
-	      
+  LOCK_MUTEX (buf->SizeMutex);
+  /* wait on buffer overflow */
+  while (buf->curfill == buf->size && buf->StatMask & STAT_PLAYING)
+    pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
+
   DEBUG0("writing chunk");
   *(buf->reader) = chunk;
-  /* do this atomically */
   if (buf->reader == buf->end)
     buf->reader = buf->buffer;
   else
     buf->reader++;
   buf->curfill++;
 
-  if (buf->status & STAT_PREBUFFER && buffer_full(buf) >= buf->prebuffer) {
-    buf->status &= ~STAT_PREBUFFER;
-    kill (buf->writerpid, SIGUSR1);
+  UNLOCK_MUTEX (buf->SizeMutex);
+
+  if ((buf->StatMask & STAT_PREBUFFERING)
+      && buffer_full(buf) >= buf->prebuffer) {
+    DEBUG0("prebuffering done, starting writer");
+    LOCK_MUTEX (buf->StatMutex);
+    buf->StatMask &= ~STAT_PREBUFFERING;
+    UNLOCK_MUTEX (buf->StatMutex);
+    pthread_cond_signal (&buf->DataReadyCondition);
   }
-  else if (buf->status & STAT_UNDERFLOW) {
-    buf->status |= STAT_PREBUFFER;
-    buf->status &= ~STAT_UNDERFLOW;
-    kill (buf->writerpid, SIGUSR1);
-  }
+  else if (buf->curfill == 1)
+    pthread_cond_signal (&buf->DataReadyCondition);
+
   DEBUG0("submit_chunk exit");
 }
 
 void buffer_flush (buf_t *buf)
 {
   DEBUG0("flush buffer");
-  buf->status |= STAT_FLUSH;
+  LOCK_MUTEX (buf->SizeMutex);
+  buf->curfill = 0;
+  buf->reader = buf->writer;
+  UNLOCK_MUTEX (buf->SizeMutex);
+  Prebuffer (buf);
+}
+
+void buffer_WaitForEmpty (buf_t *buf)
+{
+  DEBUG0("waiting for empty");
+  LOCK_MUTEX (buf->SizeMutex);
+  while (buf->curfill > 0)
+    pthread_cond_wait (&buf->UnderflowCondition, &buf->SizeMutex);
+  UNLOCK_MUTEX (buf->SizeMutex);
+  Prebuffer (buf);
 }
 
 void buffer_shutdown (buf_t *buf)
 {
   DEBUG0("shutdown buffer");
-  buf->status |= STAT_SHUTDOWN;
-  buf->status &= ~STAT_PREBUFFER;
-  while (buf->status != 0)
-    {
-      DEBUG0("waiting on reader to quit");
-      pause();
-    } 
-#ifndef HAVE_SMMAP
-  /* Deallocate the shared memory segment. */
-  shmdt(buf);
-#endif /* HAVE_SMMAP */
+  if (buf && buf->BufferThread) {
+    buffer_WaitForEmpty (buf);
+    pthread_cancel (buf->BufferThread);
+    pthread_join (buf->BufferThread, NULL);
+    buf->BufferThread = 0;
+  }
   DEBUG0("buffer done.");
 }
 
@@ -298,12 +250,8 @@ long buffer_full (buf_t* buf) {
 
 void buffer_cleanup (buf_t *buf) {
   if (buf) {
-    if (buf->writerpid)
-      kill (buf->writerpid, SIGTERM);
-    wait (0);
-    buf->writerpid = 0;
-#ifndef HAVE_SMMAP
-    shmdt(buf);
-#endif
+    buffer_shutdown (buf);
+    PthreadCleanup (buf);
+    free (buf);
   }
 }
