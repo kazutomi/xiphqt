@@ -1,0 +1,92 @@
+dnl Process this file with autoconf to produce a configure script
+
+dnl ------------------------------------------------
+dnl Initialization
+dnl ------------------------------------------------
+
+AC_INIT(oggenc/encode.c)
+AM_INIT_AUTOMAKE(vorbis-tools,1.0rc2)
+
+dnl --------------------------------------------------  
+dnl Check for programs
+dnl --------------------------------------------------  
+
+dnl save $CFLAGS since AC_PROG_CC likes to insert "-g -O2"
+dnl if $CFLAGS is blank
+cflags_save="$CFLAGS"
+AC_PROG_CC
+CFLAGS="$cflags_save"
+
+AM_PROG_LIBTOOL
+
+dnl --------------------------------------------------  
+dnl Additional arguments
+dnl --------------------------------------------------  
+
+AC_ARG_WITH(ogg, [  --with-ogg=DIR          Set where the Ogg library is located]) 
+AC_ARG_WITH(vorbis, [  --with-vorbis=DIR          Set where the Vorbis library is located]) 
+
+dnl --------------------------------------------------
+dnl Set build flags based on environment
+dnl --------------------------------------------------
+
+AC_CANONICAL_HOST
+
+case $host in 
+       *-*-darwin*)
+                DEBUG="-DDARWIN -Wall -g -O0 -fsigned-char"
+                CFLAGS="-DDARWIN -Wall -g -O4 -ffast-math -fsigned-char"
+                PROFILE="-DDARWIN -Wall -g -pg -O4 -ffast-math -fsigned-char";;
+esac
+
+
+dnl --------------------------------------------------
+dnl Check for headers
+dnl --------------------------------------------------
+
+dnl none
+
+dnl --------------------------------------------------
+dnl Check for typedefs, structures, etc
+dnl --------------------------------------------------
+
+dnl none
+
+dnl --------------------------------------------------
+dnl Check for libraries
+dnl --------------------------------------------------
+
+AM_PATH_OGG(,AC_MSG_ERROR(Ogg needed!))
+AM_PATH_VORBIS(,AC_MSG_ERROR(Vorbis needed!))
+AM_PATH_AO(,AC_MSG_ERROR(libao needed!))
+SOCKET_LIBS=
+AC_CHECK_LIB(socket, socket, SOCKET_LIBS="-lsocket")
+AC_CHECK_LIB(nsl, gethostbyname, SOCKET_LIBS="-lnsl $SOCKET_LIBS")
+
+dnl --------------------------------------------------
+dnl Check for library functions
+dnl --------------------------------------------------
+
+AM_ICONV
+AC_FUNC_SMMAP
+
+dnl --------------------------------------------------
+dnl Work around FHS stupidity
+dnl --------------------------------------------------
+
+if test "$prefix" = "/usr"; then
+    MANDIR='$(datadir)/man'
+else
+    MANDIR='$(prefix)/man'
+fi
+AC_SUBST(MANDIR)
+
+dnl --------------------------------------------------
+dnl Do substitutions
+dnl --------------------------------------------------
+
+AC_SUBST(DEBUG)
+AC_SUBST(PROFILE)
+AC_SUBST(SOCKET_LIBS)
+
+AC_OUTPUT(Makefile oggenc/Makefile oggenc/man/Makefile ogg123/Makefile vorbiscomment/Makefile vcut/Makefile ogginfo/Makefile debian/Makefile)
