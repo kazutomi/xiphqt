@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include <vorbis/vorbisenc.h>
 #include "encode.h"
@@ -19,7 +20,8 @@
 
 #define READSIZE 1024
 
-extern int nominalBitrate;
+extern float nominalBitrate;
+extern char  approxBRCaption[];
 
 int oe_write_page(ogg_page *page, FILE *fp);
 
@@ -58,6 +60,11 @@ int oe_encode(oe_enc_opt *opt)
       vorbis_info_clear(&vi);
       return 1;
     }
+    else
+    {
+      (void) strcpy(approxBRCaption, "Bitrate");
+      nominalBitrate = (float)opt->bitrate*1000;
+    }
   }
 	else
   {
@@ -69,7 +76,10 @@ int oe_encode(oe_enc_opt *opt)
       return 1;
     }
     else
-      nominalBitrate = vi.bitrate_nominal;
+    {
+      (void) strcpy(approxBRCaption, "Nominal Bitrate");
+      nominalBitrate = (float)vi.bitrate_nominal;
+    }
   }
 
 	/* Now, set up the analysis engine, stream encoder, and other
@@ -130,12 +140,11 @@ int oe_encode(oe_enc_opt *opt)
 		{
 			samplesdone += samples_read;
 
-			/* Call progress update every 10 pages */
-			if(packetsdone>=10)
+			/* Call progress update every 10 samples */			
+      if (samplesdone % 10 == 0)
 			{
 				double time;
 
-				packetsdone = 0;
 				time = timer_time(timer);
 
 				opt->progress_update(opt->filename, opt->total_samples_per_channel, 
@@ -187,6 +196,14 @@ int oe_encode(oe_enc_opt *opt)
 			}
 		}
 	}
+
+  if (nominalBitrate <= 0.0)
+  {
+    nominalBitrate = (float)(8.0*((double)bytes_written
+    / ((double)samplesdone/(double)opt->rate)));
+
+    (void) strcpy(approxBRCaption, "Average Bitrate");
+  }
 
 	/* Cleanup time */
 cleanup:

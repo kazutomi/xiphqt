@@ -98,7 +98,7 @@ int wav_open(FILE *in, oe_enc_opt *opt)
 	if(!find_chunk(in, "fmt ", &len))
 		return 0; /* EOF */
 
-	/* dunamic allocation, since "fmt" chunk can be any length */
+	/* dynamic allocation, since "fmt" chunk can be any length */
 	buf = malloc(len);
 
 	if(len<16) 
