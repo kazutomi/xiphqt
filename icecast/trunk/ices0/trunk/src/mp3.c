@@ -148,7 +148,7 @@ ices_mp3_parse (input_stream_t* source)
   }
 
   len = mp3_data->len;
-  buffer = mp3_data->buf;
+  buffer = mp3_data->buf + mp3_data->pos;
 
   /* ID3v2 may have consumed the buffer */
   if (! len) {
@@ -156,6 +156,7 @@ ices_mp3_parse (input_stream_t* source)
     len = source->read (source, buffer, 1024);
     mp3_data->buf = buffer;
     mp3_data->len = len;
+    mp3_data->pos = 0;
   }
 
   do {
@@ -164,8 +165,10 @@ ices_mp3_parse (input_stream_t* source)
     len--;
   } while ((temp != 0xFFE) && (len-4 > 0));
 
-  if (temp != 0xFFE)
+  if (temp != 0xFFE) {
+    ices_log_error ("Couldn't find synch");
     return rc;
+  }
 
   buffer--;
   switch ((buffer[1] >> 3 & 0x3)) {
@@ -198,8 +201,10 @@ ices_mp3_parse (input_stream_t* source)
 
   /* sanity check */
   ices_mp3_bitrate = bitrates[mh.version][mh.lay -1][mh.bitrate_index];
-  if (! ices_mp3_bitrate)
+  if (! ices_mp3_bitrate) {
+    ices_log_error ("Bitrate is 0");
     return rc;
+  }
 
   ices_log_debug ("Layer: %s\t\tVersion: %s\tFrequency: %d", layer_names[mh.lay - 1], version_names[mh.version], s_freq[mh.version][mh.sampling_frequency]);
   ices_log_debug ("Bitrate: %d kbit/s\tPadding: %d\tMode: %s", ices_mp3_bitrate, mh.padding, mode_names[mh.mode]);
