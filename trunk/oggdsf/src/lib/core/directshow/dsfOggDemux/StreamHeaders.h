@@ -57,6 +57,7 @@ public:
 		SPEEX = 2,
 		FLAC = 3,
 		THEORA = 4,
+		OGG_FLAC_1_0 = 5,
 		CMML = 20,
 		FFDSHOW_VIDEO = 100
 	};
