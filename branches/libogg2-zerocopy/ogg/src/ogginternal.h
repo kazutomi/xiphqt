@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.8 2003/03/22 05:44:51 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.9 2003/03/23 23:40:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -64,14 +64,14 @@ struct oggpack_buffer {
 
 typedef struct oggbyte_buffer {
   ogg_reference *baseref;
-  long           basepos;
 
-  ogg_reference *headref;
-  unsigned char *headptr;
-  long           headpos;
-  long           headend;
+  ogg_reference *ref;
+  unsigned char *ptr;
+  long           pos;
+  long           end;
 
   ogg_buffer_state *owner; /* if it's to be extensible; encode side */
+  int               external; /* did baseref come from outside? */ 
 } oggbyte_buffer;
 
 struct ogg_sync_state {
@@ -82,7 +82,6 @@ struct ogg_sync_state {
   ogg_reference    *fifo_head;
   ogg_reference    *fifo_tail;
   
-  long              fifo_cursor;
   long              fifo_fill;
   ogg_reference    *returned_header;
   ogg_reference    *returned_body;
@@ -105,7 +104,7 @@ struct ogg_stream_state {
   long           body_fill;
 
   /* encode-side header build */
-  oggpack_buffer    lacing;
+  oggbyte_buffer    header_build;
   int               lacing_fill;
 
   ogg_reference *returned;
@@ -143,9 +142,12 @@ extern void           ogg_buffer_posttruncate(ogg_reference *or,long pos);
 extern ogg_reference *ogg_buffer_cat(ogg_reference *tail, ogg_reference *head);
 extern ogg_reference *ogg_buffer_walk(ogg_reference *or);
 extern long           ogg_buffer_length(ogg_reference *or);
+extern ogg_reference *ogg_buffer_split(ogg_reference *or,long pos);
 
 extern  int           oggbyte_init(oggbyte_buffer *b,ogg_reference *or,
-				   long base,ogg_buffer_state *bs);
+				   ogg_buffer_state *bs);
+extern void           oggbyte_clear(oggbyte_buffer *b);
+extern ogg_reference *oggbyte_return_and_reset(oggbyte_buffer *b);
 extern void           oggbyte_set1(oggbyte_buffer *b,unsigned char val,
 				   int pos);
 extern void           oggbyte_set2(oggbyte_buffer *b,int val,int pos);
@@ -163,6 +165,7 @@ extern ogg_int64_t    oggbyte_read8(oggbyte_buffer *b,int pos);
 #endif
 
 #endif
+
 
 
 

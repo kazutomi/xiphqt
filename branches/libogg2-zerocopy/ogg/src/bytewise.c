@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: byte-aligned access; array-like abstraction over buffers
-  last mod: $Id: bytewise.c,v 1.1.2.3 2003/03/22 08:11:26 xiphmont Exp $
+  last mod: $Id: bytewise.c,v 1.1.2.4 2003/03/23 23:40:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -23,92 +23,102 @@
    or botching a fencepost. */
 
 static void _positionB(oggbyte_buffer *b,int pos){
-  if(pos<b->headpos){
+  if(pos<b->pos){
     /* start at beginning, scan forward */
-    b->headref=b->baseref;
-    b->headpos=b->basepos;
-    b->headend=b->headpos+b->headref->length;
-    b->headptr=b->headref->buffer->data+b->headref->begin;
+    b->ref=b->baseref;
+    b->pos=0;
+    b->end=b->pos+b->ref->length;
+    b->ptr=b->ref->buffer->data+b->ref->begin;
   }
 }
 
 static void _positionF(oggbyte_buffer *b,int pos){
   /* scan forward for position */
-  while(pos>=b->headend){
+  while(pos>=b->end){
     /* just seek forward */
-    b->headpos+=b->headref->length;
-    b->headref=b->headref->next;
-    b->headend=b->headref->length+b->headpos;
-    b->headptr=b->headref->buffer->data+b->headref->begin;
+    b->pos+=b->ref->length;
+    b->ref=b->ref->next;
+    b->end=b->ref->length+b->pos;
+    b->ptr=b->ref->buffer->data+b->ref->begin;
   }
 }
 
 static void _positionFE(oggbyte_buffer *b,int pos){
   /* scan forward for position */
-  while(pos>=b->headend){
-    if(!b->headref->next){
+  while(pos>=b->end){
+    if(!b->ref->next){
       /* perhaps just need to extend length field... */
-      if(pos-b->headpos < b->headref->buffer->size-b->headref->begin){
+      if(pos-b->pos < b->ref->buffer->size-b->ref->begin){
 
 	/* yes, there's space here */
-	b->headref->length=pos-b->headpos+1;
-	b->headend=b->headpos+b->headref->length;
+	b->ref->length=pos-b->pos+1;
+	b->end=b->pos+b->ref->length;
 
       }else{
-	b->headref->length=b->headref->buffer->size-b->headref->begin;
+	b->ref->length=b->ref->buffer->size-b->ref->begin;
 	/* extend the array and span */
-	b->headpos+=b->headref->length;	
-	b->headref=ogg_buffer_extend(b->headref,OGGPACK_CHUNKSIZE);
-	b->headend=b->headpos;
-	b->headptr=b->headref->buffer->data+b->headref->begin;
+	b->pos+=b->ref->length;	
+	b->ref=ogg_buffer_extend(b->ref,OGGPACK_CHUNKSIZE);
+	b->end=b->pos;
+	b->ptr=b->ref->buffer->data+b->ref->begin;
       }
 
     }else{
 
       /* just seek forward */
-      b->headpos+=b->headref->length;
-      b->headref=b->headref->next;
-      b->headend=b->headref->length+b->headpos;
-      b->headptr=b->headref->buffer->data+b->headref->begin;
+      b->pos+=b->ref->length;
+      b->ref=b->ref->next;
+      b->end=b->ref->length+b->pos;
+      b->ptr=b->ref->buffer->data+b->ref->begin;
     }
   }
 }
 
-int oggbyte_init(oggbyte_buffer *b,ogg_reference *or,long base,
-			ogg_buffer_state *bs){
+int oggbyte_init(oggbyte_buffer *b,ogg_reference *or,ogg_buffer_state *bs){
   memset(b,0,sizeof(*b));
     
   if(!or){
-    if(base || !bs)return -1;
+    if(!bs)return -1;
     or=ogg_buffer_alloc(bs,OGGPACK_CHUNKSIZE);
+  }else{
+    b->external=1;
   }
 
-  /* cheat and use the _position code */
   b->owner=bs;
-  b->baseref=or;
-  b->basepos=0;
-  b->headpos=base+1; /* force _position to scan from beginning */
-  _positionB(b,base);
-  _positionFE(b,base);
-  b->baseref=b->headref;
-  b->headpos=b->basepos=b->headpos-base;
-  b->headend-=base;
+  b->ref=b->baseref=or;
+  b->pos=0;
+  b->end=b->ref->length;
+  b->ptr=b->ref->buffer->data+b->ref->begin;
   
   return(0);
+}
+
+ogg_reference *oggbyte_return_and_reset(oggbyte_buffer *b){
+  if(b->external){
+    ogg_reference *ret=b->baseref;
+    oggbyte_init(b,0,b->owner);
+    return(ret);
+  }
+  return(NULL);
+}
+
+void oggbyte_clear(oggbyte_buffer *b){
+  if(!b->external)ogg_buffer_release(b->baseref);
+  memset(b,0,sizeof(*b));
 }
 
 void oggbyte_set1(oggbyte_buffer *b,unsigned char val,int pos){
   _positionB(b,pos);
   _positionFE(b,pos);
-  b->headptr[pos-b->headpos]=val;
+  b->ptr[pos-b->pos]=val;
 }
 
 void oggbyte_set2(oggbyte_buffer *b,int val,int pos){
   _positionB(b,pos);
   _positionFE(b,pos);
-  b->headptr[pos-b->headpos]=val;
+  b->ptr[pos-b->pos]=val;
   _positionFE(b,++pos);
-  b->headptr[pos-b->headpos]=val>>8;
+  b->ptr[pos-b->pos]=val>>8;
 }
 
 void oggbyte_set4(oggbyte_buffer *b,ogg_uint32_t val,int pos){
@@ -116,7 +126,7 @@ void oggbyte_set4(oggbyte_buffer *b,ogg_uint32_t val,int pos){
   _positionB(b,pos);
   for(i=0;i<4;i++){
     _positionFE(b,pos);
-    b->headptr[pos-b->headpos]=val;
+    b->ptr[pos-b->pos]=val;
     val>>=8;
     ++pos;
   }
@@ -127,7 +137,7 @@ void oggbyte_set8(oggbyte_buffer *b,ogg_int64_t val,int pos){
   _positionB(b,pos);
   for(i=0;i<8;i++){
     _positionFE(b,pos);
-    b->headptr[pos-b->headpos]=val;
+    b->ptr[pos-b->pos]=val;
     val>>=8;
     ++pos;
   }
@@ -136,29 +146,29 @@ void oggbyte_set8(oggbyte_buffer *b,ogg_int64_t val,int pos){
 unsigned char oggbyte_read1(oggbyte_buffer *b,int pos){
   _positionB(b,pos);
   _positionF(b,pos);
-  return b->headptr[pos-b->headpos];
+  return b->ptr[pos-b->pos];
 }
 
 int oggbyte_read2(oggbyte_buffer *b,int pos){
   int ret;
   _positionB(b,pos);
   _positionF(b,pos);
-  ret=b->headptr[pos-b->headpos];
+  ret=b->ptr[pos-b->pos];
   _positionF(b,++pos);
-  return ret|b->headptr[pos-b->headpos]<<8;  
+  return ret|b->ptr[pos-b->pos]<<8;  
 }
 
 ogg_uint32_t oggbyte_read4(oggbyte_buffer *b,int pos){
   ogg_uint32_t ret;
   _positionB(b,pos);
   _positionF(b,pos);
-  ret=b->headptr[pos-b->headpos];
+  ret=b->ptr[pos-b->pos];
   _positionF(b,++pos);
-  ret|=b->headptr[pos-b->headpos]<<8;
+  ret|=b->ptr[pos-b->pos]<<8;
   _positionF(b,++pos);
-  ret|=b->headptr[pos-b->headpos]<<16;
+  ret|=b->ptr[pos-b->pos]<<16;
   _positionF(b,++pos);
-  ret|=b->headptr[pos-b->headpos]<<24;
+  ret|=b->ptr[pos-b->pos]<<24;
   return ret;
 }
 
@@ -169,11 +179,11 @@ ogg_int64_t oggbyte_read8(oggbyte_buffer *b,int pos){
   _positionB(b,pos);
   for(i=0;i<7;i++){
     _positionF(b,pos);
-    t[i]=b->headptr[pos++ -b->headpos];
+    t[i]=b->ptr[pos++ -b->pos];
   }
 
   _positionF(b,pos);
-  ret=b->headptr[pos-b->headpos];
+  ret=b->ptr[pos-b->pos];
 
   for(i=6;i>=0;--i)
     ret= ret<<8 | t[i];
@@ -191,16 +201,16 @@ unsigned char ref[TESTBYTES];
 unsigned char work[TESTBYTES];
 ogg_buffer_state *bs;
 
-void _read_linear_test1(ogg_reference *or,int begin){
+void _read_linear_test1(ogg_reference *or){
   oggbyte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0,0);
-  for(j=0;j<TESTBYTES-begin;j++){
-    unsigned char ret=oggbyte_read1(&obb,j+begin);
+  oggbyte_init(&obb,or,0);
+  for(j=0;j<TESTBYTES;j++){
+    unsigned char ret=oggbyte_read1(&obb,j);
     if(ref[j]!=ret){
       fprintf(stderr,"\nERROR:  %02x != %02x, position %d\n\n",
-	      ref[j],ret,j+begin);
+	      ref[j],ret,j);
       exit(1);
     }
   }
@@ -210,7 +220,7 @@ void _read_linear_test1b(ogg_reference *or){
   oggbyte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0,0);
+  oggbyte_init(&obb,or,0);
   for(j=0;j<TESTBYTES;j++){
     if(work[j]){
       unsigned char ret=oggbyte_read1(&obb,j);
@@ -227,7 +237,7 @@ void _read_linear_test2(ogg_reference *or){
   oggbyte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0,0);
+  oggbyte_init(&obb,or,0);
   for(j=0;j+1<TESTBYTES;j++){
     int ret=oggbyte_read2(&obb,j);
     if(ref[j]!=(ret&0xff) || ref[j+1]!=((ret>>8)&0xff)){
@@ -242,7 +252,7 @@ void _read_linear_test4(ogg_reference *or){
   oggbyte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0,0);
+  oggbyte_init(&obb,or,0);
 
   for(j=0;j+3<TESTBYTES;j++){
     ogg_uint32_t ret=oggbyte_read4(&obb,j);
@@ -262,7 +272,7 @@ void _read_linear_test8(ogg_reference *or){
   oggbyte_buffer obb;
   int j;
 
-  oggbyte_init(&obb,or,0,0);
+  oggbyte_init(&obb,or,0);
 
   for(j=0;j+7<TESTBYTES;j++){
     ogg_int64_t ret=ref[j+7];
@@ -295,11 +305,11 @@ void _read_linear_test8(ogg_reference *or){
 
 void _read_seek_test(ogg_reference *or){
   oggbyte_buffer obb;
-  int i,j,begin=rand()%(TESTBYTES-7);
-  int length=TESTBYTES-begin;
-  unsigned char *lref=ref+begin;
+  int i,j;
+  int length=TESTBYTES;
+  unsigned char *lref=ref;
 
-  oggbyte_init(&obb,or,begin,0);
+  oggbyte_init(&obb,or,0);
   
   for(i=0;i<TESTBYTES;i++){
     unsigned char ret;
@@ -390,10 +400,10 @@ void _write_linear_test(ogg_reference *tail){
   int i;
 
   _head_prep(tail);
-  oggbyte_init(&ob,tail,0,0);
+  oggbyte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i++)
     oggbyte_set1(&ob,ref[i],i);
-  _read_linear_test1(tail,0);
+  _read_linear_test1(tail);
   if(ogg_buffer_length(tail)!=TESTBYTES){
     fprintf(stderr,"\nERROR: oggbyte_set1 extended incorrectly.\n\n");
     exit(1);
@@ -401,12 +411,12 @@ void _write_linear_test(ogg_reference *tail){
 
   _head_prep(tail);
 
-  oggbyte_init(&ob,tail,0,0);
+  oggbyte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i+=2){
     unsigned int val=ref[i]|(ref[i+1]<<8);
     oggbyte_set2(&ob,val,i);
   }
-  _read_linear_test1(tail,0);
+  _read_linear_test1(tail);
   if(ogg_buffer_length(tail)>TESTBYTES){
     fprintf(stderr,"\nERROR: oggbyte_set2 extended incorrectly.\n\n");
     exit(1);
@@ -414,13 +424,13 @@ void _write_linear_test(ogg_reference *tail){
 
   _head_prep(tail);
 
-  oggbyte_init(&ob,tail,0,0);
+  oggbyte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i+=4){
     unsigned long val=ref[i+2]|(ref[i+3]<<8);
     val=(val<<16)|ref[i]|(ref[i+1]<<8);
     oggbyte_set4(&ob,val,i);
   }
-  _read_linear_test1(tail,0);
+  _read_linear_test1(tail);
   if(ogg_buffer_length(tail)>TESTBYTES){
     fprintf(stderr,"\nERROR: oggbyte_set4 extended incorrectly.\n\n");
     exit(1);
@@ -428,7 +438,7 @@ void _write_linear_test(ogg_reference *tail){
 
   _head_prep(tail);
 
-  oggbyte_init(&ob,tail,0,0);
+  oggbyte_init(&ob,tail,0);
   for(i=0;i<TESTBYTES;i+=8){
     ogg_int64_t val=ref[i+6]|(ref[i+7]<<8);
     val=(val<<16)|ref[i+4]|(ref[i+5]<<8);
@@ -436,7 +446,7 @@ void _write_linear_test(ogg_reference *tail){
     val=(val<<16)|ref[i]|(ref[i+1]<<8);
     oggbyte_set8(&ob,val,i);
   }
-  _read_linear_test1(tail,0);
+  _read_linear_test1(tail);
   if(ogg_buffer_length(tail)>TESTBYTES){
     fprintf(stderr,"\nERROR: oggbyte_set8 extended incorrectly.\n\n");
     exit(1);
@@ -448,33 +458,14 @@ void _write_zero_test(void){
   oggbyte_buffer ob;
   int i;
 
-  oggbyte_init(&ob,0,0,bs);
+  oggbyte_init(&ob,0,bs);
   for(i=0;i<TESTBYTES;i++)
     oggbyte_set1(&ob,ref[i],i);
-  _read_linear_test1(ob.baseref,0);
+  _read_linear_test1(ob.baseref);
   if(ogg_buffer_length(ob.baseref)!=TESTBYTES){
     fprintf(stderr,"\nERROR: oggbyte_set1 extended incorrectly.\n\n");
     exit(1);
   }
-}
-
-void _write_offset_test(void){
-  oggbyte_buffer ob;
-  int i;
-  int begin=rand()%(TESTBYTES/2);
-  ogg_reference *or=ogg_buffer_alloc(bs,0);
-
-  oggbyte_init(&ob,or,begin,bs);
-  for(i=0;i<TESTBYTES-begin;i++)
-    oggbyte_set1(&ob,ref[i],i);
-  
-  _read_linear_test1(or,begin);
-  if(ogg_buffer_length(or)!=TESTBYTES){
-    fprintf(stderr,"\nERROR: oggbyte_set1 extended incorrectly.\n\n");
-    exit(1);
-  }
-
-  ogg_buffer_release(or);
 }
 
 void _write_seek_test(void){
@@ -483,7 +474,7 @@ void _write_seek_test(void){
 
   memset(work,0,TESTBYTES);
 
-  oggbyte_init(&ob,0,0,bs);
+  oggbyte_init(&ob,0,bs);
 
   for(i=0;i<TESTBYTES;i++){
     int j=rand()%TESTBYTES;
@@ -519,7 +510,7 @@ int main(void){
       or.begin=0;
       or.length=TESTBYTES;
 
-      _read_linear_test1(&or,0);
+      _read_linear_test1(&or);
       _read_linear_test2(&or);
       _read_linear_test4(&or);
       _read_linear_test8(&or);
@@ -552,7 +543,7 @@ int main(void){
 	count+=length;
       }
 
-      _read_linear_test1(tail,0);
+      _read_linear_test1(tail);
       _read_linear_test2(tail);
       _read_linear_test4(tail);
       _read_linear_test8(tail);
@@ -567,15 +558,11 @@ int main(void){
       ogg_buffer_release(tail);
     }    
     
-    /* test writing, init at offset zero in blank reference */
+    /* test writing, init blank reference */
     fprintf(stderr,"\r\t loops left (%d),  zero-start write test...   ",1000-i);      
     _write_zero_test();
     
-    /* test writing, init at random offset in small ref */
-    fprintf(stderr,"\r\t loops left (%d),  random-start write test...   ",1000-i);      
-    _write_offset_test();
-
-    /* random writing, init at random offset in blank ref */
+    /* random writing, init blank ref */
     fprintf(stderr,"\r\t loops left (%d),  random-offset write test...   ",1000-i);      
     
     _write_seek_test();

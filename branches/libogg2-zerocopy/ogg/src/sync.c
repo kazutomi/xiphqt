@@ -12,7 +12,7 @@
 
  function: decode stream sync and memory management foundation code;
            takes in raw data, spits out packets
- last mod: $Id: sync.c,v 1.1.2.4 2003/03/22 05:44:51 xiphmont Exp $
+ last mod: $Id: sync.c,v 1.1.2.5 2003/03/23 23:40:58 xiphmont Exp $
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -33,43 +33,43 @@
 
 int ogg_page_version(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read1(&ob,4);
 }
 
 int ogg_page_continued(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read1(&ob,5)&0x01;
 }
 
 int ogg_page_bos(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read1(&ob,5)&0x02;
 }
 
 int ogg_page_eos(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read1(&ob,5)&0x04;
 }
 
 ogg_int64_t ogg_page_granulepos(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read8(&ob,6);
 }
 
 ogg_uint32_t ogg_page_serialno(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read4(&ob,14);
 }
  
 ogg_uint32_t ogg_page_pageno(ogg_page *og){
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
   return oggbyte_read4(&ob,18);
 }
 
@@ -95,7 +95,7 @@ int ogg_page_packets(ogg_page *og){
   int n;
   int count=0;
   oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0,0);
+  oggbyte_init(&ob,og->header,0);
 
   n=oggbyte_read1(&ob,26);
   for(i=0;i<n;i++)
@@ -267,6 +267,23 @@ int ogg_sync_wrote(ogg_sync_state *oy, long bytes){
   return 0;
 }
 
+static ogg_uint32_t _checksum(ogg_reference *or, int bytes){
+  ogg_uint32_t crc_reg=0;
+  int j,post;
+
+  while(or->next){
+    unsigned char *data=or->buffer->data+or->begin;
+    post=(bytes<or->length?bytes:or->length);
+    for(j=0;j<post;++j)
+      crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^data[j]];
+    bytes-=j;
+    or=or->next;
+  }
+
+  return crc_reg;
+}
+
+
 /* sync the stream.  This is meant to be useful for finding page
    boundaries.
 
@@ -275,7 +292,7 @@ int ogg_sync_wrote(ogg_sync_state *oy, long bytes){
    0) page not ready; more data (no bytes skipped)
    n) page synced at current location; page length n bytes
    
-*/
+8*/
 
 long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   oggbyte_buffer page;
@@ -284,7 +301,7 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   _release_returned(oy);
 
   bytes=oy->fifo_fill;
-  oggbyte_init(&page,oy->fifo_tail,oy->fifo_cursor,0);
+  oggbyte_init(&page,oy->fifo_tail,0);
 
   if(oy->headerbytes==0){
     if(bytes<27)goto sync_out; /* not enough for even a minimal header */
@@ -307,107 +324,73 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   }
   
   if(oy->bodybytes+oy->headerbytes>bytes)goto sync_out;
-  
-  /* The whole test page is buffered.  Set up the page struct and
-     verify the checksum */
+
+  /* we have what appears to be a complete page; last test: verify
+     checksum */
   {
-    /* set up page return */
-    ogg_reference *header=
-      ogg_buffer_dup(oy->fifo_tail,
-		     oy->fifo_cursor,
-		     oy->headerbytes);
-    ogg_reference *body=
-      ogg_buffer_dup(oy->fifo_tail,
-		     oy->fifo_cursor+oy->headerbytes,
-		     oy->bodybytes);
-
-    /* Grab the checksum bytes; remember all memory is common access */
     ogg_uint32_t chksum=oggbyte_read4(&page,22);
-
-    {
-      ogg_page og;
-      og.header=header;
-      og.body=body;
-
-      ogg_page_checksum_set(&og);
-    }
+    oggbyte_set4(&page,0,22);
 
     /* Compare checksums; memory continues to be common access */
-    if(chksum!=oggbyte_read4(&page,22)){
-
+    if(chksum!=_checksum(oy->fifo_tail,oy->bodybytes+oy->headerbytes)){
+      
       /* D'oh.  Mismatch! Corrupt page (or miscapture and not a page
 	 at all). replace the computed checksum with the one actually
 	 read in; remember all the memory is common access */
-
+      
       oggbyte_set4(&page,chksum,22);
       goto sync_fail;
     }
-
-    /* yes, have a whole page all ready to go */
-    if(og){
-      /* set up page output */
-      og->header=header;
-      og->body=body;
-    }
-
-    ret=oy->headerbytes+oy->bodybytes;
-    oy->unsynced=0;
-    oy->headerbytes=0;
-    oy->bodybytes=0;
-    oy->fifo_cursor+=ret; /* advance the cursor past the page */
-    
-    /* release any unneded fragments */
-    while(oy->fifo_tail && oy->fifo_cursor>=oy->fifo_tail->length){
-      ogg_reference *temp=oy->fifo_tail;
-      
-      oy->fifo_tail=temp->next;
-      if(!oy->fifo_tail)oy->fifo_head=0;
-      oy->fifo_cursor-=temp->length;
-      
-      ogg_buffer_release_one(temp);
-    }
   }
+
+  /* We have a page.  Set up page return. */
+  if(og){
+    /* set up page output */
+    oy->returned_header=og->header=oy->fifo_tail;
+    oy->fifo_tail=ogg_buffer_split(oy->fifo_tail,oy->headerbytes);
+    oy->returned_body=og->body=oy->fifo_tail;
+    oy->fifo_tail=ogg_buffer_split(oy->fifo_tail,oy->bodybytes);
+  }else{
+    /* simply advance */
+    oy->fifo_tail=
+      ogg_buffer_split(oy->fifo_tail,oy->headerbytes+oy->bodybytes);      
+  }
+  
+  ret=oy->headerbytes+oy->bodybytes;
+  oy->unsynced=0;
+  oy->headerbytes=0;
+  oy->bodybytes=0;
+  if(!oy->fifo_tail)oy->fifo_head=0;
+
   return ret;
   
  sync_fail:
 
-  {
-    oy->headerbytes=0;
-    oy->bodybytes=0;
-    _release_returned(oy); /* would happen on CRC fail */
-
-    oy->fifo_cursor++;
-    ret--;
-    
-    /* search forward through fragments for possible capture */
-    while(oy->fifo_tail){
-      /* invariant: fifo_cursor points to a position in fifo_tail */
-      unsigned char *now=oy->fifo_tail->buffer->data+
-	oy->fifo_tail->begin+
-	oy->fifo_cursor;
-      unsigned char *next=
-	memchr(now, 'O', oy->fifo_tail->length-oy->fifo_cursor);
+  oy->headerbytes=0;
+  oy->bodybytes=0;
+  oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,1);
+  ret--;
+  
+  /* search forward through fragments for possible capture */
+  while(oy->fifo_tail){
+    /* invariant: fifo_cursor points to a position in fifo_tail */
+    unsigned char *now=oy->fifo_tail->buffer->data+oy->fifo_tail->begin;
+    unsigned char *next=memchr(now, 'O', oy->fifo_tail->length);
       
-      if(next){
-	/* possible capture in this segment */
-	long bytes=next-now;
-	oy->fifo_cursor+=bytes;
-	ret-=bytes;
-	break;
-      }else{
-	/* no capture.  advance to next segment */
-	ogg_reference *temp=oy->fifo_tail;    
-
-	ret-=temp->length-oy->fifo_cursor;
-	oy->fifo_cursor=0;
-
-	oy->fifo_tail=temp->next;
-	if(!oy->fifo_tail)oy->fifo_head=0;
-	ogg_buffer_release_one(temp);
-
-      }
+    if(next){
+      /* possible capture in this segment */
+      long bytes=next-now;
+      oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,bytes);
+      ret-=bytes;
+      break;
+    }else{
+      /* no capture.  advance to next segment */
+      long bytes=oy->fifo_tail->length;
+      ret-=bytes;
+      oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,bytes);
     }
   }
+  if(!oy->fifo_tail)oy->fifo_head=0;
 
  sync_out:
   return(ret);
@@ -457,7 +440,6 @@ int ogg_sync_reset(ogg_sync_state *oy){
   _release_returned(oy);
   ogg_buffer_release(oy->fifo_tail);
   oy->fifo_tail=oy->fifo_head=0;
-  oy->fifo_cursor=0;
 
   oy->unsynced=0;
   oy->headerbytes=0;
@@ -472,10 +454,10 @@ void ogg_page_checksum_set(ogg_page *og){
     oggbyte_buffer ob;
     ogg_reference *or;
     ogg_uint32_t crc_reg=0;
-    int i,j;
+    int j;
 
     /* safety; needed for API behavior, but not framing code */
-    oggbyte_init(&ob,og->header,0,0);
+    oggbyte_init(&ob,og->header,0);
     oggbyte_set4(&ob,0,22);
 
     or=og->header;
@@ -483,7 +465,6 @@ void ogg_page_checksum_set(ogg_page *og){
       unsigned char *data=or->buffer->data+or->begin;
       for(j=0;j<or->length;j++)
 	crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^data[j]];
-      i-=j;
       or=or->next;
     }
 
@@ -492,7 +473,6 @@ void ogg_page_checksum_set(ogg_page *og){
       unsigned char *data=or->buffer->data+or->begin;
       for(j=0;j<or->length;j++)
 	crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)&0xff)^data[j]];
-      i-=j;
       or=or->next;
     }
     

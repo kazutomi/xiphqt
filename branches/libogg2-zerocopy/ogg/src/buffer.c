@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: centralized fragment buffer management
-  last mod: $Id: buffer.c,v 1.1.2.8 2003/03/22 05:44:51 xiphmont Exp $
+  last mod: $Id: buffer.c,v 1.1.2.9 2003/03/23 23:40:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -186,6 +186,74 @@ ogg_reference *ogg_buffer_dup(ogg_reference *or,long begin,long length){
   return ret;
 }
 
+static void _ogg_buffer_mark_one(ogg_reference *or){
+  ogg_buffer_state *bs=or->buffer->ptr.owner;
+  ogg_mutex_lock(&bs->mutex); /* lock now in case someone is mixing
+				 pools */
+  
+#ifdef OGGBUFFER_DEBUG
+  if(or->buffer->refcount==0)
+    fprintf(stderr,"WARNING: marking buffer fragment with refcount of zero!\n");
+#endif
+  
+  or->buffer->refcount++;
+  ogg_mutex_unlock(&bs->mutex);
+}
+
+/* split a reference into two references; on return the passed in
+   pointer points to the first segment (pos of zero disallowed).
+   pointer to the beginning of the secrond reference is returned.  If
+   pos is at or past the end of the passed in segment, returns NULL */
+ogg_reference *ogg_buffer_split(ogg_reference *or,long pos){
+
+  /* walk past any preceeding fragments to one of:
+     a) the exact boundary that seps two fragments
+     b) the fragment that needs split somewhere in the middle */
+  
+  while(or && pos>or->length){
+    pos-=or->length;
+    or=or->next;
+  }
+
+  if(pos>=or->length){
+    /* exact split, or off the end */
+    if(or->next){
+
+      /* a split */
+      ogg_reference *ret=or->next;
+      or->next=0;
+      return ret;
+
+    }else{
+
+      /* off or at the end */
+      return NULL;
+
+    }
+  }else{
+
+    /* split within a fragment */
+    long lengthA=pos;
+    long beginB=or->begin+pos;
+    long lengthB=or->length-pos;
+
+    /* make a new reference to head the second piece */
+    ogg_reference *ret=_fetch_ref(or->buffer->ptr.owner);
+
+    ret->buffer=or->buffer;
+    ret->begin=beginB;
+    ret->length=lengthB;
+    ret->next=or->next;
+    _ogg_buffer_mark_one(ret);
+
+    /* update the first piece */
+    or->next=0;
+    or->length=lengthA;
+
+    return ret;
+  }
+}
+
 /* add a new fragment link to the end of a chain; return ptr to the new link */
 ogg_reference *ogg_buffer_extend(ogg_reference *or,long bytes){
   if(or){
@@ -201,18 +269,7 @@ ogg_reference *ogg_buffer_extend(ogg_reference *or,long bytes){
 /* increase the refcount of the buffers to which the reference points */
 void ogg_buffer_mark(ogg_reference *or){
   while(or){
-    ogg_buffer_state *bs=or->buffer->ptr.owner;
-    ogg_mutex_lock(&bs->mutex); /* lock now in case someone is mixing
-				   pools */
-
-#ifdef OGGBUFFER_DEBUG
-    if(or->buffer->refcount==0)
-      fprintf(stderr,"WARNING: marking buffer fragment with refcount of zero!\n");
-#endif
-
-    or->buffer->refcount++;
-    ogg_mutex_unlock(&bs->mutex);
-
+    _ogg_buffer_mark_one(or);
     or=or->next;
   }
 }

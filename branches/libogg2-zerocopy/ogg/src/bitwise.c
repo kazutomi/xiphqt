@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: pack variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14.2.12 2003/03/22 05:44:51 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.13 2003/03/23 23:40:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -1526,7 +1526,13 @@ int main(void){
 
 	for(j=0;j<begin;j++)
 	  bitcount+=len[j];
-	or=ogg_buffer_pretruncate(or,bitcount/8);
+	/* also exercise the split code */
+	{
+	  ogg_reference *temp=or;
+	  or=ogg_buffer_split(or,bitcount/8);
+	  ogg_buffer_release(temp);
+	}
+
 	bitoffset=bitcount%=8;
 	for(;j<begin+ilen;j++)
 	  bitcount+=len[j];
