@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.2 2003/03/05 16:26:30 brendan Exp $
+# $Id: configure.ac,v 1.3 2003/03/08 23:55:58 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -56,18 +56,6 @@ AC_MINIX
 
 IRIX=no
 case $host in
-  *solaris*)
-    if test "$CC" = cc
-    then
-      CFLAGS="$CFLAGS -mt"
-    fi
-  ;;
-  *sunos*)
-    if test "$CC" = cc
-    then
-      CFLAGS="$CFLAGS -mt"
-    fi
-  ;;
   *hpux*)
     CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
     if test "$CC" = cc
@@ -118,47 +106,44 @@ AC_SUBST(LIBTOOL_DEPS)
 
 dnl -- Required extra libraries --
 
-AC_ARG_WITH(libshout,
-  [[  --with-libshout[=DIR]   use installed libshout [in DIR]]])
+AC_ARG_WITH([shout-config],
+  [[  --with-shout-config[=DIR]   use shout-config in PATH to find libshout]])
 
 have_libshout="no"
-if test "$with_libshout" != "no"
+if test "$with_shout_config" != "no"
 then
-  if test -n "$with_libshout" -a "$with_libshout" != "yes"
+  if test -n "$with_shout_config" -a "$with_shout_config" != "yes"
   then
-    CPPFLAGS="$CPPFLAGS -I$with_libshout/include"
-    LDFLAGS="$LDFLAGS -L$with_libshout/lib"
+    SHOUTCONFIG="$with_shout_config"
   fi
+  AC_PATH_PROG(SHOUTCONFIG, [shout-config])
 
-  AC_CHECK_HEADER(shout/shout.h, [
-    AC_DEFINE(HAVE_SHOUT_SHOUT_H, 1, [Define if you have <shout/shout.h>])
-    have_libshout="maybe"
+  if test -x "$SHOUTCONFIG"
+  then
+    LIBS="$LIBS `$SHOUTCONFIG --libs`"
+    CFLAGS="$CFLAGS `$SHOUTCONFIG --cflags`"
+  elif test -n "$with_shout_config"
+  then
+    AC_MSG_ERROR([Could not run shout-config])
+  fi
+fi
+
+AC_CHECK_HEADER([shout/shout.h], [
+  AC_DEFINE(HAVE_SHOUT_SHOUT_H, 1, [Define if you have <shout/shout.h>])
+  have_libshout="maybe"
   ])
-  if test "$have_libshout" != "no"
-  then
-    dnl shout_new was introduced in libshout2 so it serves as a version check.
-    AC_CHECK_LIB(shout, shout_new, [
-      have_libshout="yes"
-      LIBS="$LIBS -lshout"
-    ])
-  fi
-
-  if test "$have_libshout" != "yes"
-  then
-    if test -n "$with_libshout"
-    then
-      AC_MSG_ERROR([Could not find a usable installed libshout])
-    else
-      AC_MSG_RESULT([Installed libshout not found, using builtin])
-    fi
-  fi
-fi
-
-if test "$have_libshout" != "yes"
+if test "$have_libshout" != "no"
 then
-  AC_CONFIG_SUBDIRS([libshout])
+  dnl shout_new was introduced in libshout2 so it serves as a version check.
+  AC_CHECK_LIB([shout], [shout_new], [
+    have_libshout="yes"
+    if test -z "$SHOUTCONFIG"
+    then
+      LIBS="$LIBS -lshout"
+    fi
+  ],
+  [AC_MSG_ERROR([Could not find a usable installed libshout])])
 fi
-AM_CONDITIONAL(NEED_SHOUT, test "$have_libshout" != "yes")
 
 dnl -- Optional features --
 AC_CACHE_SAVE
@@ -174,7 +159,7 @@ then
     XMLCONFIG="$with_xml_config"
     if ! test -x "$XMLCONFIG"
     then
-      AC_MSG_ERROR([$with_xmlconfig cannot be run])
+      AC_MSG_ERROR([$with_xml_config cannot be run])
     fi
   else
     AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
@@ -363,15 +348,9 @@ AC_SUBST(PLAYLIST_OBJECTS)
 
 AC_OUTPUT
 
-AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
-AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])
+AC_MSG_RESULT([Compiling with: $CPPFLAGS $CFLAGS])
+AC_MSG_RESULT([Linking with: $LDFLAGS $LIBS])
 AC_MSG_RESULT([Features:])
-if test "$have_libshout" != "yes"
-then
-  AC_MSG_RESULT([  libshout: builtin])
-else
-  AC_MSG_RESULT([  libshout: system])
-fi
 AC_MSG_RESULT([  LAME    : $have_LAME])
 AC_MSG_RESULT([  Vorbis  : $have_vorbis])
 AC_MSG_RESULT([  Perl    : $have_perl])

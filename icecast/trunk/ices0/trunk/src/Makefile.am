@@ -4,11 +4,6 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = playlist
 
-if NEED_SHOUT
-SHOUT_LIBS = ../libshout/libices.la
-SHOUT_INCLUDES = -I$(top_srcdir)/libshout
-endif
-
 bin_PROGRAMS = ices
 
 noinst_HEADERS = icestypes.h definitions.h setup.h log.h stream.h util.h \
@@ -22,6 +17,6 @@ EXTRA_ices_SOURCES = ices_config.c in_vorbis.c reencode.c
 
 BUILT_SOURCES = $(ICES_OBJECTS)
 
-ices_LDADD = $(ICES_OBJECTS) playlist/libplaylist.a $(SHOUT_LIBS)
+ices_LDADD = $(ICES_OBJECTS) playlist/libplaylist.a
 
-INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\" $(SHOUT_INCLUDES)
+ices_CPPFLAGS = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\"
