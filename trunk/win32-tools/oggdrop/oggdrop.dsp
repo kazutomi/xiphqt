@@ -113,10 +113,6 @@ SOURCE=.\main.c
 
 SOURCE=.\oe_win32.c
 # End Source File
-# Begin Source File
-
-SOURCE=.\tb.c
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
