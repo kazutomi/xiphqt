@@ -38,7 +38,6 @@ int ogg_stream_setmode(ogg_stream_state *os, int mode){
       os->mode=mode;
       return OGG_SUCCESS;
     }
-    else printf("Error, pageno==%d, packets==%d\n", os->pageno, os->packets);
   }
   return OGG_EMODE;
 }
@@ -143,6 +142,10 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
   if(!os->lacing_fill)
     oggbyte_init(&os->header_build,0,os->bufferpool);
 
+  /* for discontinuous mode */
+  if(os->mode&&!os->packets)os->granulepos=op->granulepos;
+  os->packets++;   
+
   /* concat packet data */
   if(os->body_head)
     os->body_head=ogg_buffer_cat(os->body_head,op->packet);
@@ -163,9 +166,8 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
      granulepos et al and then finish packet lacing */
   
   os->body_fill+=remainder;
-  if(!os->mode||!os->packets)os->granulepos=op->granulepos;
+  if(!os->mode)os->granulepos=op->granulepos;
   os->packetno++;  /* for the sake of completeness */
-  os->packets++;   /* packets in current page, used for discontinuous */
   if(op->e_o_s)os->e_o_s=1;
   oggbyte_set1(&os->header_build,remainder,27+os->lacing_fill++);
 
