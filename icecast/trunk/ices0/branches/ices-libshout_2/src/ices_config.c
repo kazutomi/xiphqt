@@ -1,7 +1,7 @@
 /* parse.c
  * - Functions for xml file parsing
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-2 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -214,8 +214,13 @@ parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       ices_config->password = ices_util_strdup (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Protocol") == 0) {
       unsigned char *str = ices_xml_read_node (doc, cur);
-      if (str && (str[0] == 'i' || str[0] == 'I'))
+
+      if (str && (strcasecmp(str, "icy") == 0))
 	ices_config->header_protocol = icy_header_protocol_e;
+      else if (str && (strcasecmp(str, "ice") == 0))
+	ices_config->header_protocol = ice_header_protocol_e;
+      else if (str && (strcasecmp(str, "http") == 0))
+	ices_config->header_protocol = http_header_protocol_e;
       else
 	ices_config->header_protocol = xaudiocast_header_protocol_e;
     } else {

@@ -241,29 +241,29 @@ ices_free_all (ices_config_t *ices_config)
 static void
 ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile)
 {
-	char namespace[1024];
-	const char *realname = NULL;
-	int ret;
+  char namespace[1024];
+  const char *realname = NULL;
+  int ret;
 
-	if (ices_util_verify_file (configfile)) {
-		realname = configfile;
-	} else {
-		sprintf (namespace, "%s/%s", ICES_ETCDIR, configfile);
-		if (ices_util_verify_file (namespace))
-			realname = &namespace[0];
-	}
+  if (ices_util_verify_file (configfile)) {
+    realname = configfile;
+  } else {
+    sprintf (namespace, "%s/%s", ICES_ETCDIR, configfile);
+    if (ices_util_verify_file (namespace))
+      realname = &namespace[0];
+  }
 	
-	if (realname) {
-		ret = ices_xml_parse_config_file (ices_config, realname);
+  if (realname) {
+    ret = ices_xml_parse_config_file (ices_config, realname);
 
-		if (ret == -1) {
-			/* ret == -1 means we have no libxml support */
-			ices_log_debug ("%s", ices_log_get_error ());
-		} else if (ret == 0) {
-			/* A real error */
-			ices_log ("%s", ices_log_get_error ());
-		}
-	}
+    if (ret == -1) {
+      /* ret == -1 means we have no libxml support */
+      ices_log_debug ("%s", ices_log_get_error ());
+    } else if (ret == 0) {
+      /* A real error */
+      ices_log ("%s", ices_log_get_error ());
+    }
+  }
 }
 #endif
 
@@ -470,6 +470,10 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     shout_set_format (conn, SHOUT_FORMAT_MP3);
     if (stream->header_protocol == icy_header_protocol_e)
       shout_set_protocol(conn, SHOUT_PROTOCOL_ICY);
+    else if (stream->header_protocol == ice_header_protocol_e)
+      shout_set_protocol(conn, SHOUT_PROTOCOL_ICE);
+    else if (stream->header_protocol == http_header_protocol_e)
+      shout_set_protocol(conn, SHOUT_PROTOCOL_HTTP);
     else
       shout_set_protocol(conn, SHOUT_PROTOCOL_XAUDIOCAST);
 /*  TODO: Not yet supported in libshout2 */

@@ -1,7 +1,7 @@
 /* icestypes.h
  * - Datatypes for ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-2 Brendan Cully <brendan@icecast.org>
+ * Copyright (c) 2001-3 Brendan Cully <brendan@icecast.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,7 +22,12 @@
 #ifndef _ICES_ICESTYPES_H
 #define _ICES_ICESTYPES_H
 
-typedef enum {icy_header_protocol_e = 0, xaudiocast_header_protocol_e = 1} header_protocol_t;
+typedef enum {
+  icy_header_protocol_e,
+  xaudiocast_header_protocol_e,
+  ice_header_protocol_e,
+  http_header_protocol_e
+} header_protocol_t;
 
 typedef enum {
   ices_playlist_builtin_e,
