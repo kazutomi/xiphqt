@@ -14,11 +14,19 @@ Trying It Out
 Run wrapup.py right in the directory it's in. If nothing failed, you should see a new .html
 file for every .markdown file.
 
-Assumptions
------------
+Apache Setup
+------------
 
-All URLs are to be in the style of /foo/bar/, for reasons described on [Slash Forward][].
-I may break this for content-negotiated language-specific variants (say, for /foo/bar/es for
-"/foo/bar/ in Spanish"), but this is the way it's set up now.
+I try to keep as much configuration stuff in the .htaccess file as I possibly can
+(running apachectl is a pain), but there are a couple of things you need to have in the main
+httpd.conf or wherever you store your apache setup:
 
-	[Slash Forward]: http://www.alistapart.com/articles/slashforward/
+	<?>
+		# The following may be okay without Includes. You also might be able to chuck Indexes,
+		# but I never do that.
+		# FollowSymLinks is an absolute must for the non-English versions, since mod_rewrite
+		# needs it as a security check or something.
+		Options Indexes Includes FollowSymLinks
+
+		AllowOverride All
+	</?>
