@@ -22,7 +22,7 @@ def ices_python_get_next ():
 # This function, if defined, returns the string you'd like used
 # as metadata (ie for title streaming) for the current song. You may
 # return null to indicate that the file comment should be used.
-def ices_python_get_metadata ()
+def ices_python_get_metadata ():
         return 'Artist - Title (Label, Year)'
 
 # Function called to initialize your python environment.
