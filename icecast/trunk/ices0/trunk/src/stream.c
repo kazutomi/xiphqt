@@ -147,6 +147,7 @@ ices_stream_send_file (const char *file)
   int samples;
   int rc;
 #ifdef HAVE_LIBLAME
+  int decode = 0;
   unsigned char buf[INPUT_BUFSIZ * 4];
   static int16_t left[INPUT_BUFSIZ * 30];
   static int16_t right[INPUT_BUFSIZ * 30];
@@ -177,11 +178,16 @@ ices_stream_send_file (const char *file)
 	return -1;
       }
     }
-  }
-
 #ifdef HAVE_LIBLAME
-  ices_reencode_reset ();
+  } else if (ices_config.reencode) {
+    /* only actually decode/reencode if the bitrate of the stream != source */
+    for (stream = ices_config.streams; stream; stream = stream->next)
+      if (stream->bitrate != source.bitrate) {
+	decode = 1;
+	ices_reencode_reset ();
+      }
 #endif
+  }
   
   ices_log ("Playing %s", source.path);
 
@@ -193,7 +199,7 @@ ices_stream_send_file (const char *file)
     if (source.read) {
       len = source.read (&source, ibuf, sizeof (ibuf));
 #ifdef HAVE_LIBLAME
-      if (ices_config.reencode)
+      if (decode)
 	samples = ices_reencode_decode (ibuf, len, sizeof (left), left, right);
     } else if (source.readpcm) {
       len = samples = source.readpcm (&source, sizeof (left), left, right);
