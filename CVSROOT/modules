@@ -32,5 +32,5 @@ icecast-src-httpp -d src &httpp
 icecast-src-thread -d src &thread
 icecast-src-timing -d src &timing
 
-icecast-all icecast &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-httpp &icecast-src-thread &icecast-src-timing
+icecast icecast &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-httpp &icecast-src-thread &icecast-src-timing
 
