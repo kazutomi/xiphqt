@@ -1,4 +1,4 @@
-Version 1.0b? (June ?, 2003):
+Version 1.0 (June 19, 2003):
 	* Ogg Vorbis support added.  (Turned off by default)  Requires 
 	vorbis and ogg python modules by Andrew Chatham.  
 	THIS DOES NOT MAKE YOUR NEUROS PLAY OGG VORBIS FILES.  
