@@ -49,7 +49,7 @@
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
-int dump_packet(unsigned char *data, const int len, FILE *out)
+int dump_packet_raw(unsigned char *data, const int len, FILE *out)
 {
   int i, j, n;
 
@@ -69,6 +69,53 @@ int dump_packet(unsigned char *data, const int len, FILE *out)
     fprintf(out, "\n");
     i += 16;
   }
+
+  return 0;
+}
+
+int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
+{
+  int V,P,X,CC,M,PT;
+  unsigned short sequence;
+  unsigned int timestamp, ssrc;
+  unsigned int ident;
+  int C,F,R,pkts;
+  int i, offset;
+
+  /* parse RTP header */
+  V = (data[0] & 0xc0) >> 6;
+  P = (data[0] & 0x40) >> 5;
+  X = (data[0] & 0x20) >> 4;
+  CC = (data[0] & 0x0f);
+  M = (data[1] & 0x80) >> 7;
+  PT = (data[1] & 0x7F);
+  sequence = ntohs(((unsigned short *)data)[1]);
+  timestamp = ntohl(((unsigned int *)data)[1]);
+  ssrc = ntohl(((unsigned int *)data)[2]);
+
+  fprintf(out, "RTP packet V:%d P:%d X:%d M:%d PT:%d   seq %d\n",
+    V, P, X, M, PT, sequence);
+  fprintf(out, " timestamp: %u\n", timestamp);
+  fprintf(out, " ssrc: 0x%08x\n", ssrc);
+  if (CC) 
+    for (i = 0; i < CC; i++)
+      fprintf(out, " csrc: 0x%08x\n", ntohl(((unsigned int *)data)[3+i]));
+  else
+    fprintf(out, " no csrc\n");
+
+  /* offset to payload header */
+  offset = (3 + CC) * 4;
+
+  /* parse Vorbis payload header */
+  ident = ntohl(((unsigned int *)data)[3+CC]);
+  offset += 4;
+  C = (data[offset] & 0x80) >> 7;
+  F = (data[offset] & 0x40) >> 6;
+  R = (data[offset] & 0x20) >> 5;
+  pkts = (data[offset] & 0x1F);
+
+  fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d   %d packets\n",
+    ident, C, F, R, pkts);
 
   return 0;
 }
@@ -128,7 +175,8 @@ int main(int argc, char *argv[])
   while (1) {
     ret = recvfrom(RTPSocket, data, MAX_PACKET, 0, NULL, 0);
     fprintf(stderr, "read %d bytes of data\n", ret);
-    dump_packet(data, ret, stdout);
+    dump_packet_rtp(data, ret, stdout);
+    dump_packet_raw(data, ret, stdout);
   }
 
   return 0;
