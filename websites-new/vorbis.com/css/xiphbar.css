@@ -23,6 +23,8 @@ body {
 	padding: .4em 0 0 12px;
 	float: left;
 	text-transform: lowercase;
+	width: 231;
+	height: 17px;
 }
 
 #xiphbar ul {
@@ -46,4 +48,8 @@ body {
 	text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
+}
+
+#xiphbar li a:hover {
+	color: #FFE6B3;
 }

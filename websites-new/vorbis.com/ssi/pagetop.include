@@ -1,6 +1,6 @@
 <div id="thepage">
 <div id="logos">
-	<img src="/images/logos/vorbisdotcom.png" alt="Vorbis dot com logo"/>
+	<a href="http://www.vorbis.com/"><img src="/images/logos/vorbisdotcom.png" alt="Vorbis dot com logo"/></a>
 </div>
 
 <div id="navbar">
@@ -17,9 +17,9 @@
 </div>
 
 <div id="banners">
-	<img src="/images/banners/download_music.png" alt="Download music"/>
-	<img src="/images/banners/music_sites.png" alt="Music sites"/>
-	<img src="/images/banners/donate_today.png" alt="Donate today"/>
+	<a href="#"><img src="/images/banners/download_music.png" alt="Download music"/></a>
+	<a href="#"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
+	<a href="http://www.xiph.org/donate/"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
 </div>
 
 <div id="main">
