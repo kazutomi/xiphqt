@@ -157,6 +157,7 @@ int main(int argc, char **argv)
 	filelist_t *file, *winner;
 	unsigned long bytes;
 	int serialno;
+	int first_pages = 1;
 	ogg_page *page;
 	char buf[BUFSIZE];
 
@@ -266,6 +267,44 @@ int main(int argc, char **argv)
 			}
 
 			file = file->next;
+		}
+
+		/* Step 1.5: Write out the first page of each stream
+		** because headers must come together before any
+		** non-header pages.
+		*/
+		if (first_pages) {
+			first_pages = 0;
+			file = params.input;
+			while (file) {
+				if (file->page == NULL) {
+					fprintf(stderr, "Error: File %s didn't produce a header page.\n", file->name);
+					return 1;
+				}
+
+				page = file->page->og;
+
+				bytes = fwrite(page->header, 1, page->header_len, params.out);
+				if (bytes != page->header_len) {
+					fprintf(stderr, "Error: Output error writing to %s.\n", params.outfile);
+					return 1;
+				}
+				bytes = fwrite(page->body, 1, page->body_len, params.out);
+				if (bytes != page->body_len) {
+					fprintf(stderr, "Error: Output error writing to %s.\n", params.outfile);
+					return 1;
+				}
+			
+				free(page->header);
+				free(page->body);
+				free(page);
+				free(file->page);
+				file->page = NULL;
+
+				file = file->next;
+			}
+
+			continue;
 		}
 
 		/* Step 2: Pick the page with the lowest timestamp and 
