@@ -118,11 +118,12 @@ extern int      ogg_stream_packetpeek(ogg_stream_state *os,ogg_packet *op);
 
 /* Ogg BITSTREAM PRIMITIVES: general ***************************/
 
-extern ogg_stream_state *ogg_stream_create(int serialno, int mode);
+extern ogg_stream_state *ogg_stream_create(int serialno);
 extern int      ogg_stream_destroy(ogg_stream_state *os);
 extern int      ogg_stream_reset(ogg_stream_state *os);
 extern int      ogg_stream_reset_serialno(ogg_stream_state *os,int serialno);
 extern int      ogg_stream_eos(ogg_stream_state *os);
+extern int	ogg_stream_setmode(ogg_stream_state *os, int mode);
 
 extern int      ogg_page_version(ogg_page *og);
 extern int      ogg_page_continued(ogg_page *og);
@@ -138,6 +139,11 @@ extern int      ogg_page_release(ogg_page *og);
 
 /* Ogg BITSTREAM PRIMITIVES: return codes ***************************/
 
+#define	OGG_CONT	0
+#define	OGG_DISCONT	1
+
+/* Ogg BITSTREAM PRIMITIVES: return codes ***************************/
+
 #define  OGG_SUCCESS   0
 
 #define  OGG_HOLE     -10
@@ -146,7 +152,7 @@ extern int      ogg_page_release(ogg_page *og);
 #define  OGG_ESERIAL  -13
 #define  OGG_EINVAL   -14
 #define  OGG_EEOS     -15
-
+#define  OGG_EMODE    -16
 
 #ifdef __cplusplus
 }

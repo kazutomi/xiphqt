@@ -23,14 +23,25 @@
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 
-ogg_stream_state *ogg_stream_create(int serialno, int mode){
+ogg_stream_state *ogg_stream_create(int serialno){
   ogg_stream_state *os=_ogg_calloc(1,sizeof(*os));
   os->watermark=4096;
   os->serialno=serialno;
-  os->mode=mode;
   os->bufferpool=ogg_buffer_create();
   return os;
 } 
+
+int ogg_stream_setmode(ogg_stream_state *os, int mode){
+  /* (Dis)cont mode must be known and set before Page 1 is processed */
+  if(mode==0||mode==1){
+    if(os->pageno==0||(os->pageno==1&&os->packets==0)){
+      os->mode=mode;
+      return OGG_SUCCESS;
+    }
+    else printf("Error, pageno==%d, packets==%d\n", os->pageno, os->packets);
+  }
+  return OGG_EMODE;
+}
 
 int ogg_stream_setfill(ogg_stream_state *os,int watermark){
   if(os){
