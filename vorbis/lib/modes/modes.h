@@ -11,26 +11,18 @@
  *                                                                  *
  ********************************************************************
 
- function: registry for time, floor, res backends and channel mappings
- last mod: $Id: registry.h,v 1.2.14.1 2000/11/03 10:05:48 xiphmont Exp $
+ function: predefined encoding modes
+ last mod: $Id: modes.h,v 1.1.2.1 2000/11/03 10:06:06 xiphmont Exp $
 
  ********************************************************************/
 
-#ifndef _V_REG_H_
-#define _V_REG_H_
+#ifndef _V_MODES_H_
+#define _V_MODES_H_
 
-#include "backends.h"
-
-#define VI_TRANSFORMB 1
-#define VI_WINDOWB 1
-#define VI_TIMEB 1
-#define VI_FLOORB 1
-#define VI_RESB 1
-#define VI_MAPB 1
-
-extern vorbis_func_time      *_time_P[];
-extern vorbis_func_floor     *_floor_P[];
-extern vorbis_func_residue   *_residue_P[];
-extern vorbis_func_mapping   *_mapping_P[];
+#include "modes/mode_A.h"
+#include "modes/mode_B.h"
+#include "modes/mode_C.h"
+#include "modes/mode_D.h"
+#include "modes/mode_E.h"
 
 #endif

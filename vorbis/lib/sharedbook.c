@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: basic shared codebook operations
- last mod: $Id: sharedbook.c,v 1.9 2000/10/12 03:12:54 xiphmont Exp $
+ last mod: $Id: sharedbook.c,v 1.9.2.1 2000/11/03 10:05:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -22,9 +22,8 @@
 #include <ogg/ogg.h>
 #include "os.h"
 #include "vorbis/codec.h"
-#include "vorbis/codebook.h"
+#include "codebook.h"
 #include "scales.h"
-#include "sharedbook.h"
 
 /**** pack/unpack helpers ******************************************/
 int _ilog(unsigned int v){
@@ -281,23 +280,33 @@ float *_book_unquantize(const static_codebook *b){
 }
 
 void vorbis_staticbook_clear(static_codebook *b){
-  if(b->quantlist)free(b->quantlist);
-  if(b->lengthlist)free(b->lengthlist);
-  if(b->nearest_tree){
-    free(b->nearest_tree->ptr0);
-    free(b->nearest_tree->ptr1);
-    free(b->nearest_tree->p);
-    free(b->nearest_tree->q);
-    memset(b->nearest_tree,0,sizeof(encode_aux_nearestmatch));
-    free(b->nearest_tree);
+  if(b->allocedp){
+    if(b->quantlist)free(b->quantlist);
+    if(b->lengthlist)free(b->lengthlist);
+    if(b->nearest_tree){
+      free(b->nearest_tree->ptr0);
+      free(b->nearest_tree->ptr1);
+      free(b->nearest_tree->p);
+      free(b->nearest_tree->q);
+      memset(b->nearest_tree,0,sizeof(encode_aux_nearestmatch));
+      free(b->nearest_tree);
+    }
+    if(b->thresh_tree){
+      free(b->thresh_tree->quantthresh);
+      free(b->thresh_tree->quantmap);
+      memset(b->thresh_tree,0,sizeof(encode_aux_threshmatch));
+      free(b->thresh_tree);
+    }
+
+    memset(b,0,sizeof(static_codebook));
   }
-  if(b->thresh_tree){
-    free(b->thresh_tree->quantthresh);
-    free(b->thresh_tree->quantmap);
-    memset(b->thresh_tree,0,sizeof(encode_aux_threshmatch));
-    free(b->thresh_tree);
+}
+
+void vorbis_staticbook_destroy(static_codebook *b){
+  if(b->allocedp){
+    vorbis_staticbook_clear(b);
+    free(b);
   }
-  memset(b,0,sizeof(static_codebook));
 }
 
 void vorbis_book_clear(codebook *b){
