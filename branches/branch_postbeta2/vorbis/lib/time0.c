@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: time backend 0 (dummy)
- last mod: $Id: time0.c,v 1.5 2000/03/10 13:21:18 xiphmont Exp $
+ last mod: $Id: time0.c,v 1.5.8.1 2000/08/31 09:00:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -37,11 +37,11 @@ static void free_info(vorbis_info_time *i){
 static void free_look(vorbis_look_time *i){
 }
 static int forward(vorbis_block *vb,vorbis_look_time *i,
-		    double *in,double *out){
+		    float *in,float *out){
   return(0);
 }
 static int inverse(vorbis_block *vb,vorbis_look_time *i,
-		    double *in,double *out){
+		    float *in,float *out){
   return(0);
 }
 

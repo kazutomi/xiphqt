@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: single-block PCM synthesis
- last mod: $Id: synthesis.c,v 1.17 2000/07/07 00:53:10 xiphmont Exp $
+ last mod: $Id: synthesis.c,v 1.17.4.1 2000/08/31 09:00:02 xiphmont Exp $
 
  ********************************************************************/
 
@@ -61,9 +61,9 @@ int vorbis_synthesis(vorbis_block *vb,ogg_packet *op){
 
   /* alloc pcm passback storage */
   vb->pcmend=vi->blocksizes[vb->W];
-  vb->pcm=_vorbis_block_alloc(vb,sizeof(double *)*vi->channels);
+  vb->pcm=_vorbis_block_alloc(vb,sizeof(float *)*vi->channels);
   for(i=0;i<vi->channels;i++)
-    vb->pcm[i]=_vorbis_block_alloc(vb,vb->pcmend*sizeof(double));
+    vb->pcm[i]=_vorbis_block_alloc(vb,vb->pcmend*sizeof(float));
 
   /* unpack_header enforces range checking */
   type=vi->map_type[vi->mode_param[mode]->mapping];

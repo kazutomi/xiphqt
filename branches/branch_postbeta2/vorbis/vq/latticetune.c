@@ -13,7 +13,7 @@
 
  function: utility main for setting entropy encoding parameters
            for lattice codebooks
- last mod: $Id: latticetune.c,v 1.2 2000/08/15 09:09:44 xiphmont Exp $
+ last mod: $Id: latticetune.c,v 1.2.2.1 2000/08/31 09:00:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -109,7 +109,7 @@ int main(int argc,char *argv[]){
     long step;
     long lines=0;
     long cols=-1;
-    double *vec;
+    float *vec;
     line=setup_line(in);
     while(line){
       int code;
@@ -122,7 +122,7 @@ int main(int argc,char *argv[]){
 	  while(*temp>32)temp++;
 	  while(*temp==' ')temp++;
 	}
-	vec=alloca(sizeof(double)*cols);
+	vec=alloca(sizeof(float)*cols);
 	step=cols/dim;
       }
       
