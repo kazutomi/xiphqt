@@ -5,7 +5,6 @@
 #include <ogg/ogg.h>
 #include "encint.h"
 #include "psych.h"
-#define OC_DUMP_IMAGES (1)
 #if defined(OC_DUMP_IMAGES)
 # include <stdio.h>
 # include "png.h"
@@ -464,7 +463,7 @@ static void oc_seg_sum_moment_row(float *_xrow,float *_x2row,
           This should already be adjusted to cover only the visible
            frame, and not the full encoded frame.*/
 static void oc_seg_sum_moments(oc_seg_ctx *_seg,
- const oc_img_plane *_plane){
+ const theora_img_plane *_plane){
   const unsigned char *ypix;
   int                  ymax;
   int                  y;
@@ -1299,7 +1298,7 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
- const oc_img_plane *_plane){
+ const theora_img_plane *_plane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
@@ -1342,7 +1341,8 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _bic,const oc_img_plane *_plane){
+ int _area,float _sumx,float _sumx2,float _bic,
+ const theora_img_plane *_plane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
@@ -1394,7 +1394,7 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
- const oc_img_plane *_plane){
+ const theora_img_plane *_plane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -1462,7 +1462,8 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
   _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _bic,const oc_img_plane *_plane){
+ int _area,float _sumx,float _sumx2,float _bic,
+ const theora_img_plane *_plane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -1625,7 +1626,7 @@ static void oc_seg_clear(oc_seg_ctx *_seg){
 /*Perform segmentation over the given image plane.
   _seg:   The segmentation context.
   _plane: The image plane to segment.*/
-static void oc_seg_plane(oc_seg_ctx *_seg,const oc_img_plane *_plane){
+static void oc_seg_plane(oc_seg_ctx *_seg,const theora_img_plane *_plane){
   float sumx;
   float sumx2;
   float var;
@@ -1824,7 +1825,7 @@ static void oc_impmap_scan(oc_impmap_ctx *_impmap,int _width,int _height){
     png_infop     info;
     png_bytep    *image;
     FILE         *fp;
-    char  fname[16];
+    char          fname[16];
     sprintf(fname,"%08iseg.png",_impmap->enc->state.curframe_num);
     fp=fopen(fname,"wb");
     if(fp==NULL)return;
@@ -2139,11 +2140,11 @@ void oc_impmap_free(oc_impmap_ctx *_impmap){
 }
 
 void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
-  oc_img_plane      yplane;
-  float             imp_sum;
-  int               img_offset;
-  int               nmbs;
-  int               mbi;
+  theora_img_plane yplane;
+  float            imp_sum;
+  int              img_offset;
+  int              nmbs;
+  int              mbi;
   /*Segment the Y plane.*/
   /*TODO: Use the same oc_border_info structure as everyone else.
     This would make future integration of an alpha mask easier.*/
@@ -2167,4 +2168,62 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   imp_sum=0;
   for(mbi=0;mbi<nmbs;mbi++)imp_sum+=oc_impmap_mb_weight(_impmap,mbi);
   _impmap->imp_avg=imp_sum/_impmap->enc->state.frarray.frplanes[0].nfrags;
+#if defined(OC_DUMP_IMAGES)
+  /*Dump a PNG of the importance maps.*/
+  {
+    int pli;
+    for(pli=0;pli<3;pli++){
+      oc_fragment_plane *fplane;
+      png_structp        png;
+      png_infop          info;
+      png_bytep         *image;
+      FILE              *fp;
+      char               fname[16];
+      int                x;
+      int                y;
+      sprintf(fname,"%08iim%i.png",(int)_impmap->enc->state.curframe_num,pli);
+      fp=fopen(fname,"wb");
+      if(fp==NULL)return;
+      fplane=_impmap->enc->state.frarray.frplanes+pli;
+      image=(png_bytep *)oc_malloc_2d(fplane->nvfrags,fplane->nhfrags,
+       sizeof(image[0][0]));
+      png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
+      if(png==NULL){
+        oc_free_2d(image);
+        fclose(fp);
+        return;
+      }
+      info=png_create_info_struct(png);
+      if(info==NULL){
+        png_destroy_write_struct(&png,NULL);
+        oc_free_2d(image);
+        fclose(fp);
+        return;
+      }
+      if(setjmp(png_jmpbuf(png))){
+        png_destroy_write_struct(&png,&info);
+        oc_free_2d(image);
+        fclose(fp);
+        return;
+      }
+      for(y=0;y<fplane->nvfrags;y++)for(x=0;x<fplane->nhfrags;x++){
+        float imp;
+        imp=(_impmap->enc->frinfo+fplane->froffset+
+         (fplane->nvfrags-1-y)*fplane->nhfrags+x)->imp_weight;
+        image[y][x]=(unsigned char)(imp*64+128.5F);
+      }
+      png_init_io(png,fp);
+      png_set_compression_level(png,Z_BEST_COMPRESSION);
+      png_set_IHDR(png,info,fplane->nhfrags,fplane->nvfrags,8,
+       PNG_COLOR_TYPE_GRAY,PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,
+       PNG_FILTER_TYPE_DEFAULT);
+      png_set_rows(png,info,image);
+      png_write_png(png,info,PNG_TRANSFORM_IDENTITY,NULL);
+      png_write_end(png,info);
+      png_destroy_write_struct(&png,&info);
+      oc_free_2d(image);
+      fclose(fp);
+    }
+  }
+#endif
 }

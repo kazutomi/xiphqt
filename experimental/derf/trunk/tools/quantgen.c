@@ -30,6 +30,31 @@
   The Theora DCT function scales its ouput by 2 in each dimension.*/
 #define DCT_SCALE (2.0)
 
+/*The relative sensitivity to changes in each color channel.
+  This is derived by making small changes in each color channel individually
+   and measuring the distance to the new color in L*a*b space.
+  A linear regression with an intercept of 0 was then fit to the measured
+   distances.
+  These are the slopes of the fit lines.
+  See colorreg.c for details.
+  
+  These values depend on the particular color space one is using, but we'd like
+   to derive generic quantization matrices.
+  Therefore we use the geometric average over all color spaces.
+  Minor mismatches in the fit of the matrices to actual CSF curves will not
+   harm the encoder, since it uses adaptive thresholding and amplitude
+   reduction based on per-coefficient sensitivity measurements.*/
+const float OC_YCbCr_SCALE[3]={
+  0.62660577006129702908501F,
+  1.33082085846485050021660F,1.08759046924374083944404F
+  /*JND values:
+  1.59589976310332425729864F,
+  0.75141593523980064237395F,0.91946373959616699828994F
+  */
+};
+
+
+
 /*Allocates a 2-dimesional array of the given size.
   _height: The number of columns.
   _row:    The number of rows.
@@ -120,14 +145,13 @@ static void find_csf_filters(csf_filter_bank _filters,csf_func _csf,
   double  atb[8];
   double  x[8];
   double  y[8];
-  int     ips;
   int     row;
   int     f;
   int     p;
   int     c;
   int     i;
-  int     j;
-  int     k;
+  memset(ata,0,sizeof(ata));
+  memset(atb,0,sizeof(atb));
   /*Find the response of each coefficient for each frequency and phase, and
      the expected response of CSF-sensitive coefficients.*/
   for(row=f=0;f<NFREQS;f++){
@@ -273,13 +297,21 @@ struct csf_ctx{
 /*The exponent parameter in the supra-threshold model.
   Values between 0.4 and 0.6 are reasonable.*/
 #define CONTRAST_EXP (0.5)
+/*The scale parameter of the contrast level.
+  Cannon does not report values for this parameter, and it would differ for us
+   anyway since we do not use Michelson contrast
+   ((L_max-L_min)/(L_max+L_min)).
+  It must be sufficiently small so that physical contrast does not actually
+   decrease as perceptual contrast increases.*/
+#define CONTRAST_SCALE (1.0/64)
 
 /*The main contrast-dependent CSF function.*/
 static double csf(csf_ctx *_ctx,double _f){
   double f;
+  double s0;
   f=_f*_ctx->fmax;
-  return _ctx->scale/(pow(_ctx->contrast,1.0/CONTRAST_EXP)+
-   1.0/_ctx->c0csf(_ctx->c0csf_ctx,f));
+  s0=_ctx->c0csf(_ctx->c0csf_ctx,f);
+  return _ctx->scale/(_ctx->contrast+1/s0);
 }
 
 /*This is the Nyquist frequency for a 90 dpi screen viewed from 50 cm out.
@@ -294,40 +326,40 @@ static void build_csf_tables(csf_filter_bank _filters[5][64],
       (csf_func)csfl,
       &Y_CTX,
       FREQUENCY_MAX,
-      3.74695975597140362
+      3.74695975597140362,
     },
     {
       (csf_func)csfc,
       &CR_CTX,
       FREQUENCY_MAX,
-      0
+      0,
     },
     {
       (csf_func)csfc,
       &CR_CTX,
       0.5*FREQUENCY_MAX,
-      0
+      0,
     },
     {
       (csf_func)csfc,
       &CB_CTX,
       FREQUENCY_MAX,
-      0
+      0,
     },
     {
       (csf_func)csfc,
       &CB_CTX,
       0.5*FREQUENCY_MAX,
-      0
+      0,
     }
   };
   int chi;
   int qi;
   for(chi=0;chi<5;chi++){
     for(qi=0;qi<64;qi++){
-      csf_ctxs[chi].contrast=_qscale[64];
+      csf_ctxs[chi].contrast=pow(_qscale[qi]*CONTRAST_SCALE,1.0/CONTRAST_EXP);
       /*Find the normalization constant for this contrast level.*/
-      csf_ctxs[chi].scale=pow(_qscale[qi],1.0/CONTRAST_EXP)+
+      csf_ctxs[chi].scale=csf_ctxs[chi].contrast+
        1/csf_ctxs[chi].c0csf(csf_ctxs[chi].c0csf_ctx,csf_ctxs[chi].peakf);
       find_csf_filters(_filters[chi][qi],(csf_func)csf,csf_ctxs+chi);
     }
@@ -335,43 +367,240 @@ static void build_csf_tables(csf_filter_bank _filters[5][64],
 }
 
 int main(void){
-  /*The names of each channel: these get inserted as comments in the generated
-     code.*/
-  static const char *CHANNEL_NAMES[5]={
-    "Y channel filters.",
-    "Cr channel filters at full resolution.",
-    "Cr channel filters at half resolution.",
-    "Cb channel filters at full resolution.",
-    "Cb channel filters at half resolution."
+#define              NQRANGES (9)
+  static const int   QSIZES[NQRANGES]={7,8,8,8,8,8,8,7,1};
+  static const int   QOFFS[NQRANGES+1]={0,7,15,23,31,39,47,55,62,63};
+  /*The names of each pixel format.*/
+  static const char *FORMAT_NAMES[4]={
+    "4:4:4 subsampling",
+    "subsampling in the X direction",
+    "4:2:2 subsampling",
+    "4:2:0 subsampling"
   };
-  int i;
-  int j;
-  int k;
-  csf_filter_bank filters[5][8];
+  /*The names of each color plane.*/
+  static const char *CHANNEL_NAMES[3]={
+    "Y'",
+    "Cb",
+    "Cr"
+  };
+  csf_filter_bank filters[5][64];
+  double          fbase_matrices[9][64][64];
+  unsigned char   base_matrices[9][64][64];
+  int             ac_scale[64];
+  int             dc_scale[64];
+  double          qscales[64];
+  double          bscale[NQRANGES+1][2];
+  double          bmax[NQRANGES+1][2];
+  double          bmin[NQRANGES+1][2];
+  int             pci;
+  int             pfi;
+  int             qti;
+  int             pli;
+  int             chx;
+  int             chy;
+  int             qri;
+  int             qi;
+  int             ci;
+  for(qi=0;qi<64;qi++){
+    qscales[qi]=qi>=63?1:1.5*pow(2,0.0625*(64-qi));
+    ac_scale[qi]=65535;
+    dc_scale[qi]=65535;
+  }
   /*Compute all the CSF filters.*/
-  build_csf_tables(filters);
-  /*Dump the generated tables as C code for inclusion in lib/psych.c.*/
-  printf("static const oc_csf_filter_bank OC_CSF_FILTERS[5][8]={");
-  for(i=0;i<5;i++){
-    printf("\n  /*%s*/",CHANNEL_NAMES[i]);
+  build_csf_tables(filters,qscales);
+  /*Build the base matrices.*/
+  for(pci=0;pci<9;pci++){
+    if(pci==0)chx=chy=pli=pfi=0;
+    else{
+       pli=(pci-1>>2)+1;
+       pfi=pci-1&3;
+       chx=(pli<<1)-1+(pfi&1);
+       chy=(pli<<1)-1+(pfi>>1);
+    }
+    for(qi=0;qi<64;qi++)for(ci=0;ci<64;ci++){
+      fbase_matrices[pci][qi][ci]=
+       1/(OC_YCbCr_SCALE[pli]*DCT_SCALE*DCT_SCALE*
+       filters[chx][qi][ci&7]*filters[chy][qi][ci>>3]);
+    }
+  }
+  /*Scale the base matrices to be in the range of a single byte.*/
+  for(qri=0;qri<=NQRANGES;qri++){
+    qi=QOFFS[qri];
+    bmax[qri][0]=bmax[qri][1]=1;
+    bmin[qri][0]=bmin[qri][1]=65536*256;
+    for(pci=0;pci<9;pci++)for(ci=0;ci<64;ci++){
+      if(fbase_matrices[pci][qi][ci]>bmax[qri][ci!=0]){
+        bmax[qri][ci!=0]=fbase_matrices[pci][qi][ci];
+      }
+      if(fbase_matrices[pci][qi][ci]<bmin[qri][ci!=0]){
+        bmin[qri][ci!=0]=fbase_matrices[pci][qi][ci];
+      }
+    }
+    for(ci=0;ci<2;ci++){
+      double scale;
+      scale=bmin[qri][ci]*qscales[qi]*100;
+      if(scale>255/bmax[qri][ci])scale=255/bmax[qri][ci];
+      bscale[qri][ci]=scale;
+    }
+  }
+  /*Quantize the base matrices to integers at our sample points.*/
+  for(pci=0;pci<9;pci++){
+    for(qri=0;qri<=NQRANGES;qri++){
+      qi=QOFFS[qri];
+      for(ci=0;ci<64;ci++){
+        base_matrices[pci][qi][ci]=(unsigned char)(
+         fbase_matrices[pci][qi][ci]*bscale[qri][ci!=0]+0.5);
+      }
+    }
+  }
+  /*Interpolate the remaining base matrices.*/
+  for(pci=0;pci<9;pci++){
+    for(qri=0;qri<NQRANGES;qri++){
+      for(qi=QOFFS[qri]+1;qi<QOFFS[qri+1];qi++)for(ci=0;ci<64;ci++){
+        base_matrices[pci][qi][ci]=(unsigned char)(
+         (2*((QOFFS[qri+1]-qi)*base_matrices[pci][QOFFS[qri]][ci]+
+         (qi-QOFFS[qri])*base_matrices[pci][QOFFS[qri+1]][ci])+QSIZES[qri])/
+         (2*QSIZES[qri]));
+      }
+    }
+  }
+  /*Select scale factors for every matrix.*/
+  for(qi=64;qi-->0;){
+    /*In general, we want to slightly underestimate the scale factor, so we
+       take the minimum scale factor over all color channels and coefficients.*/
+    for(pci=0;pci<9;pci++){
+      int scale;
+      scale=(int)(fbase_matrices[pci][qi][0]*qscales[qi]*100/
+       base_matrices[pci][qi][0]);
+      if(scale<1)scale=1;
+      if(scale<dc_scale[qi])dc_scale[qi]=scale;
+      for(ci=1;ci<64;ci++){
+        scale=(int)(fbase_matrices[pci][qi][ci]*qscales[qi]*100/
+         base_matrices[pci][qi][ci]);
+        if(scale<1)scale=1;
+        if(scale<ac_scale[qi])ac_scale[qi]=scale;
+      }
+    }
+    /*But we must keep the quantizer monotonic.*/
+    if(qi<63){
+      for(pci=0;pci<9;pci++){
+        while(base_matrices[pci][qi][0]*dc_scale[qi]<
+         base_matrices[pci][qi+1][0]*dc_scale[qi+1]){
+          /*dc_scale[qi]++;*/
+          if(base_matrices[pci][qi][0]<255)base_matrices[pci][qi][0]++;
+          else dc_scale[qi]++;
+        }
+        for(ci=1;ci<64;ci++){
+          while(base_matrices[pci][qi][ci]*ac_scale[qi]<
+           base_matrices[pci][qi+1][ci]*ac_scale[qi+1]){
+            /*ac_scale[qi]++;*/
+            if(base_matrices[pci][qi][ci]<255)base_matrices[pci][qi][ci]++;
+            else ac_scale[qi]++;
+          }
+        }
+      }
+    }
+  }
+  for(pci=0;pci<9;pci++)for(ci=0;ci<64;ci++){
+    fprintf(stderr,"[%i][%i]=",pci,ci);
+    for(qi=0;qi<64;qi++){
+      if(!(qi&3))fprintf(stderr,"\n  ");
+      fprintf(stderr,"%3i-%5.2lf",
+       (base_matrices[pci][qi][ci]*(ci==0?dc_scale[qi]:ac_scale[qi])/100),
+       fbase_matrices[pci][qi][ci]*qscales[qi]);
+      if(qi<63)fprintf(stderr,",");
+    }
+    fprintf(stderr,"\n\n");
+  }
+  for(pci=0;pci<9;pci++)for(qi=0;qi<63;qi++)for(ci=0;ci<64;ci++){
+    if(fbase_matrices[pci][qi][ci]*qscales[qi]<
+     fbase_matrices[pci][qi+1][ci]*qscales[qi+1]){
+      fprintf(stderr,"Monotonicity failure: [%i][%i][%i]-[%i][%i][%i]: %lf\n",
+       pci,qi,ci,pci,qi+1,ci,
+       fbase_matrices[pci][qi+1][ci]*qscales[qi+1]-
+       fbase_matrices[pci][qi][ci]*qscales[qi]);
+    }
+  }
+  for(pci=0;pci<9;pci++)for(qi=0;qi<63;qi++){
+    if(base_matrices[pci][qi][0]*dc_scale[qi]<
+     base_matrices[pci][qi+1][0]*dc_scale[qi+1]){
+      fprintf(stderr,"Monotonicity failure: [%i][%i][0]-[%i][%i][0]\n",
+       pci,qi,pci,qi+1);
+    }
+    for(ci=1;ci<64;ci++){
+      if(base_matrices[pci][qi][ci]*ac_scale[qi]<
+       base_matrices[pci][qi+1][ci]*ac_scale[qi+1]){
+        fprintf(stderr,"Monotonicity failure: [%i][%i][%i]-[%i][%i][%i]\n",
+         pci,qi,ci,pci,qi+1,ci);
+      }
+    }
+  }
+  /*Dump the generated tables as C code.*/
+  printf("static const int OC_DEF_QRANGE_SIZES[%i]={",NQRANGES);
+  for(qri=0;qri<NQRANGES;qri++){
+    printf("%i",QSIZES[qri]);
+    if(qri+1<NQRANGES)printf(",");
+  }
+  printf("};\n");
+  printf("\nstatic const theora_quant_base OC_DEF_BASE_MATRICES[9][%i]={",
+   NQRANGES+1);
+  for(pci=0;pci<9;pci++){
+    if(pci==0)chx=chy=pli=pfi=0;
+    else{
+       pli=(pci-1>>2)+1;
+       pfi=pci-1&3;
+       chx=(pli<<1)-1+(pfi&1);
+       chy=(pli<<1)-1+(pfi>>1);
+    }
+    printf("\n  /*%s matrices, %s.*/",CHANNEL_NAMES[pli],FORMAT_NAMES[pfi]);
     printf("\n  {");
-    for(j=0;j<8;j++){
-      printf("\n    /*Contrast level %g filters.*/",CONTRASTS[j]);
+    for(qri=0;qri<=NQRANGES;qri++){
+      qi=QOFFS[qri];
+      printf("\n    /*QI=%i.*/",qi);
       printf("\n    {");
-      for(k=0;k<8;k++){
-        printf("\n      {");
-        printf("\n        %+28.25fF,%+28.25fF,",filters[i][j][k][0],
-         filters[i][j][k][1]);
-        printf("\n        %+28.25fF,%+28.25fF",filters[i][j][k][2],
-         filters[i][j][k][3]);
-        printf("\n      }");
-        if(k+1<8)printf(",");
+      for(ci=0;ci<64;ci++){
+         if(!(ci&7))printf("\n      ");
+         printf("%3i",base_matrices[pci][qi][ci]);
+         if(ci<63)printf(",");
       }
       printf("\n    }");
-      if(j+1<8)printf(",");
+      if(qri<NQRANGES)printf(",");
     }
     printf("\n  }");
-    if(i+1<5)printf(",");
+    if(pci<8)printf(",");
+  }
+  printf("\n};\n");
+  printf("\nstatic const theora_quant_info OC_DEF_QUANT_INFO[4]={");
+  for(pfi=0;pfi<4;pfi++){
+    printf("\n  {");
+    printf("\n    {");
+    for(qi=0;qi<64;qi++){
+      if(!(qi&7))printf("\n      ");
+      printf("%4i",ac_scale[qi]);
+      if(qi<63)printf(",");
+    }
+    printf("\n    },");
+    printf("\n    {");
+    for(qi=0;qi<64;qi++){
+      if(!(qi&7))printf("\n      ");
+      printf("%4i",dc_scale[qi]);
+      if(qi<63)printf(",");
+    }
+    printf("\n    },");
+    printf("\n    {");
+    for(qti=0;qti<2;qti++){
+       printf("\n      {");
+       for(pli=0;pli<3;pli++){
+         printf("\n        {%i,OC_DEF_QRANGE_SIZES,QC_DEF_BASE_MATRICES[%i]}",
+          NQRANGES,pli==0?0:(pli-1<<2)+1+pfi);
+         if(pli<2)printf(",");
+       }
+       printf("\n      }");
+       if(qti<1)printf(",");
+    }
+    printf("\n    }");
+    printf("\n  }");
+    if(pfi<3)printf(",");
   }
   printf("\n};");
   return 0;

@@ -651,17 +651,17 @@ void oc_frarray_clear(oc_fragment_array *_frarray){
              while the last corresponds to the input image.
   _img:     The image buffer to fill the fragments with.*/
 void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
- oc_yuv_buffer _img){
+ theora_ycbcr_buffer _img){
   int pli;
   /*Special handling for the input image to give us the opportunity to skip
      some updates.
     The other buffers do not change throughout the encoding process.*/
   if(_buf_idx==OC_FRAME_IO){
-     if(memcmp(_frarray->input,_img,sizeof(oc_yuv_buffer))==0)return;
-     memcpy(_frarray->input,_img,sizeof(oc_yuv_buffer));
+     if(memcmp(_frarray->input,_img,sizeof(theora_ycbcr_buffer))==0)return;
+     memcpy(_frarray->input,_img,sizeof(theora_ycbcr_buffer));
   }
   for(pli=0;pli<3;pli++){
-    oc_img_plane      *iplane;
+    theora_img_plane  *iplane;
     oc_fragment_plane *frplane;
     oc_fragment       *frag;
     oc_fragment       *yfrag_end;

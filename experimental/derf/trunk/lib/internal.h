@@ -199,41 +199,41 @@ typedef struct{
 /*The fragment array.*/
 typedef struct{
   /*The fragment plane descriptions.*/
-  oc_fragment_plane  frplanes[3];
+  oc_fragment_plane    frplanes[3];
   /*The total number of fragments in a single frame.*/
-  int                nfrags;
+  int                  nfrags;
   /*The list of fragments, indexed in image order.*/
-  oc_fragment       *frags;
+  oc_fragment         *frags;
   /*The total number of super blocks in a single frame.*/
-  int                nsbs;
+  int                  nsbs;
   /*The list of super blocks, indexed in image order.*/
-  oc_sb             *sbs;
+  oc_sb               *sbs;
   /*The number of macro blocks in the X direction.*/
-  int                nhmbs;
+  int                  nhmbs;
   /*The number of macro blocks in the Y direction.*/
-  int                nvmbs;
+  int                  nvmbs;
   /*The total number of macro blocks.*/
-  int                nmbs;
+  int                  nmbs;
   /*The list of macro blocks, indexed in super block order.
     That is, the macro block corresponding to the macro block mbi in super
      block sbi is (sbi<<2|mbi).*/
-  oc_mb             *mbs;
+  oc_mb               *mbs;
   /*The list of flags indicating which blocks are coded in all partially coded
      super blocks.*/
-  int               *block_coded_flags;
+  int                 *block_coded_flags;
   /*The number of block coded flags in the list.
     This is 16 times the number of super blocks with their partially coded
      flag set.*/
-  int                nblock_coded_flags;
+  int                  nblock_coded_flags;
   /*A copy of the image data used to fill the input pointers in each fragment.
     If the data pointers or strides change, these input pointers must be
      re-populated.*/
-  oc_yuv_buffer      input;
+  theora_ycbcr_buffer  input;
   /*The number of unique border patterns.*/
-  int                nborders;
+  int                  nborders;
   /*The storage for the border info for all border fragments.
     This data is pointed to from the appropriate fragments.*/
-  oc_border_info     borders[16];
+  oc_border_info       borders[16];
 }oc_fragment_array;
 
 
@@ -247,7 +247,7 @@ typedef struct{
   /*The index of the buffers being used for each OC_FRAME_* reference frame.*/
   int                   ref_frame_idx[3];
   /*The actual buffers used for the previously decoded frames.*/
-  oc_yuv_buffer         ref_frame_bufs[3];
+  theora_ycbcr_buffer   ref_frame_bufs[3];
   /*The storage for the reference frame buffers.*/
   unsigned char        *ref_frame_data;
   /*The amount to shift the last keyframe over by when computing a composite
@@ -288,7 +288,8 @@ int oc_ilog(unsigned _v);
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
-void oc_yuv_buffer_flip(oc_yuv_buffer _dst,const oc_yuv_buffer _src);
+void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
+ const theora_ycbcr_buffer _src);
 
 int oc_dct_token_skip(int _token,int _extra_bits);
 
@@ -305,7 +306,7 @@ int oc_frag_pred_dc(const oc_fragment *_frag,
 void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info);
 void oc_frarray_clear(oc_fragment_array *_frarray);
 void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
- oc_yuv_buffer _img);
+ theora_ycbcr_buffer _img);
 int oc_frarray_mbi_for_pos(oc_fragment_array *_frarray,int _mbx,int _mby);
 
 int oc_state_init(oc_theora_state *_state,theora_info *_info);

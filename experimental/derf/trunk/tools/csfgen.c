@@ -437,9 +437,9 @@ static double csf(csf_ctx *_ctx,double _f){
    1.0/_ctx->c0csf(_ctx->c0csf_ctx,f));
 }
 
-/*This is the Nyquist frequency for a 90 dpi screen viewed from 50 cm out.
+/*This is the Nyquist frequency for a 45 dpi screen viewed from 50 cm out.
   This is assumed to be the closest reasonable viewing distance.*/
-#define FREQUENCY_MAX (15.4609862434702964)
+#define FREQUENCY_MAX (7.558704385696589)
 
 /*The various contrast levels for which we will compute filters.*/
 static const double CONTRASTS[8]={0,1,2,4,8,16,32,64};

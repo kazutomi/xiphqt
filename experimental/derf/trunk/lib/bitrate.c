@@ -36,21 +36,23 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
   memcpy(ebi,_enc->extra_bits_offs,sizeof(ebi));
   /*Set up for EOB runs that span coefficient boundaries.*/
   for(zzi=1;zzi<64;zzi++)if(ti[zzi]){
+    int zzj;
     /*Find the portion of the EOB run that used to be in this coefficient.*/
     token=_enc->dct_tokens[zzi][0];
     eb=OC_DCT_TOKEN_EXTRA_BITS[token]?_enc->extra_bits[zzi][0]:0;
     skip=-oc_dct_token_skip(token,eb);
     /*Find the portion of the EOB run that is now in the previous
        coefficient.*/
-    token=_enc->dct_tokens[zzi-1][_enc->ndct_tokens[zzi-1]-1];
+    for(zzj=zzi-1;_enc->ndct_tokens[zzj]<=_enc->dct_token_offs[0][zzj];zzj--);
+    token=_enc->dct_tokens[zzj][_enc->ndct_tokens[zzj]-1];
     eb=OC_DCT_TOKEN_EXTRA_BITS[token]?
-     _enc->extra_bits[zzi-1][_enc->nextra_bits[zzi-1]-1]:0;
+     _enc->extra_bits[zzj][_enc->nextra_bits[zzj]-1]:0;
     eob_runs[zzi]=-oc_dct_token_skip(token,eb);
     /*Find the Huffman group index and the color plane index where the EOB
        run was actually coded.*/
     hgi=OC_HUFF_GROUP_IDXS[zzi];
     for(pli=0;pli<2;pli++){
-      if(_enc->dct_token_offs[pli+1][zzi-1]>=_enc->ndct_tokens[zzi-1])break;
+      if(_enc->dct_token_offs[pli+1][zzj]>=_enc->ndct_tokens[zzj])break;
     }
     /*Compute the bits that will be left to be distributed when we start this
        coefficient.*/

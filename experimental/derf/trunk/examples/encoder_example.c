@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.4 2003/11/02 20:36:14 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.5 2003/12/17 21:31:44 derf Exp $
 
  ********************************************************************/
 
@@ -84,7 +84,7 @@ int video_an=-1;
 int video_ad=-1;
 
 int video_r=-1;
-int video_q=16;
+int video_q=48;
 
 static void usage(void){
   fprintf(stderr,
@@ -356,7 +356,8 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
   static int          state=-1;
   static signed char *yuvframe[2];
   signed char        *line;
-  oc_yuv_buffer       yuv;
+  static int          framenum;
+  theora_ycbcr_buffer ycbcr;
   ogg_packet          op;
   int i, e;
 
@@ -449,23 +450,23 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
          for compression and pull out the packet */
 
       {
-        yuv[0].width=video_x;
-        yuv[0].height=video_y;
-        yuv[0].stride=video_x;
-        yuv[0].data=yuvframe[0];
+        ycbcr[0].width=video_x;
+        ycbcr[0].height=video_y;
+        ycbcr[0].stride=video_x;
+        ycbcr[0].data=yuvframe[0];
 
-        yuv[1].width=video_x/2;
-        yuv[1].height=video_y/2;
-        yuv[1].stride=video_x/2;
-        yuv[1].data=yuvframe[0]+video_x*video_y;
+        ycbcr[1].width=video_x/2;
+        ycbcr[1].height=video_y/2;
+        ycbcr[1].stride=video_x/2;
+        ycbcr[1].data=yuvframe[0]+video_x*video_y;
 
-        yuv[2].width=video_x/2;
-        yuv[2].height=video_y/2;
-        yuv[2].stride=video_x/2;
-        yuv[2].data=yuvframe[0]+video_x*video_y*5/4;
+        ycbcr[2].width=video_x/2;
+        ycbcr[2].height=video_y/2;
+        ycbcr[2].stride=video_x/2;
+        ycbcr[2].data=yuvframe[0]+video_x*video_y*5/4;
       }
 
-      theora_encode_yuv_in(td,yuv);
+      theora_encode_ycbcr_in(td,ycbcr);
 
       /* if there's only one frame, it's the last in the stream */
       while(theora_encode_packetout(td,state<2,&op)){

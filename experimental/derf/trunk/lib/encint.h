@@ -79,10 +79,9 @@ struct oc_mb_enc_info{
 };
 
 struct oc_border_enc_info{
-  ogg_int16_t   **fill_matrix;
-  ogg_int16_t     cs[64];
   unsigned char   pi[64];
-  int             scale;
+  int             shift;
+  ogg_int16_t   **ext_matrix;
 };
 
 struct theora_enc_ctx{
@@ -125,6 +124,7 @@ struct theora_enc_ctx{
   int                    ndct_tokens[64];
   /*The DCT token lists.*/
   unsigned char        **dct_tokens;
+  int                  **dct_tok_fragi;
   /*The number of extra bits entries for each coefficient.*/
   int                    nextra_bits[64];
   /*The offset of the first extra bits entry for each coefficient.*/

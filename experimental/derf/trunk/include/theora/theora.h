@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.2 2003/11/02 20:36:14 derf Exp $
+  last mod: $Id: theora.h,v 1.3 2003/12/17 21:31:44 derf Exp $
 
  ********************************************************************/
 
@@ -27,10 +27,19 @@ typedef struct{
   int            height;
   int            stride;
   unsigned char *data;
-}oc_img_plane;
+}theora_img_plane;
 
-typedef oc_img_plane oc_yuv_buffer[3];
+/*Note: The term YUV often used to describe a colorspace is ambiguous.
+  The exact parameters of the RGB<->YUV conversion process aside, in many
+   contexts the U and V channels actually have opposite meanings.
+  To avoid this confusion, we are explicit: the name of the color channels is
+   Y'CbCr, and they appear in that order, always.
+  The prime symbol denotes that the Y channel is non-linear.
+  Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
+typedef theora_img_plane theora_ycbcr_buffer[3];
 
+/*See doc/color.html for exact details on the meaning of each of these color
+   spaces.*/
 typedef enum{
   OC_CS_UNSPECIFIED,
   OC_CS_ITU_REC_470M,
@@ -123,7 +132,7 @@ typedef struct{
   ci!=0 is 0 for the DC coefficient and 1 for the AC coefficient.
   qi is the quality index, ranging between 0 (low quality) and 63 (high
    quality).
-  pli is the color plane index: 0 for Y', 1 for Cb, 2 for Cr.
+  pli is the color plane index: 0 for Y', 1 for Cr, 2 for Cb.
   ci is the DCT coefficient index.
   Coefficients indices correspond to the normal 2D DCT block ordering--
    row-major with low frequencies first--NOT zig-zag order.
@@ -139,14 +148,12 @@ typedef struct{
        matrices is stored, and the rest are linearly interpolated.
       This is done as follows.
       For each qti and pli, a series of n qi ranges is defined.
-      The size of each qi range can vary arbitrarily, but they must sum to 64.
+      The size of each qi range can vary arbitrarily, but they must sum to 63.
       Then, n+1 matrices are specified, one for each endpoint of the ranges.
       For interpolation purposes, each range's endpoints are the first qi
        value it contains and one past the last qi value it contains.
-      Thus, if the last range's size is 1, then matrix (n+1) is not needed and
-       is not stored in the bitstream.
       Fractional values are rounded to the nearest integer, with ties rounded
-       up.
+       away from zero.
 
       Base matrices are stored by reference, so if the same matrices are used
        multiple times, they will only appear once in the bitstream.
@@ -171,6 +178,7 @@ typedef struct{
   const theora_quant_base *base_matrices;
 }theora_quant_ranges;
 
+/*The set of quantization parameters.*/
 typedef struct{
   ogg_uint16_t        ac_scale[64];
   ogg_uint16_t        dc_scale[64];
@@ -215,7 +223,7 @@ extern int theora_encode_set_quant_params(theora_enc_ctx *_enc,
  const theora_quant_info *_qinfo);
 extern int theora_encode_flushheader(theora_enc_ctx *_enc,
  theora_comment *_comments,ogg_packet *_op);
-extern int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _yuv);
+extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _ycbcr);
 extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
  ogg_packet *_op);
 extern void theora_encode_free(theora_enc_ctx *_enc);

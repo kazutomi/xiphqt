@@ -4,10 +4,10 @@
 #include <math.h>
 
 typedef struct{
-  /*The YUV values corresponding to pure black.*/
-  double yuv_offset[3];
-  /*The extent of each YUV value.*/
-  double yuv_scale[3];
+  /*The Y'CbCr values corresponding to pure black.*/
+  double ycbcr_offset[3];
+  /*The extent of each Y'CbCr value.*/
+  double ycbcr_scale[3];
   /*The coefficients of R'G'B's contribution to Y'.*/
   double ypbpr_coeffs[3];
   /*Output device gamma.*/
@@ -170,21 +170,21 @@ void xyz2lab(double _lab[3],const double _xyz[3],double _x_white,
   _lab[2]=200*(y3r-pow(z,1.0/3));
 }
 
-/*Converts colors from some YUV space into the perceptually uniform L*a*b.
+/*Converts colors from some Y'CbCr space into the perceptually uniform L*a*b.
   Unforunately, due to the way these spaces are defined in the various
    standards, this requires going through a lot of intermediate color
    spaces.*/
-int yuv2lab(const colorspace *_cs,double _lab[3],const double _yuv[3]){
+int ycbcr2lab(const colorspace *_cs,double _lab[3],const double _ycbcr[3]){
   double ypbpr[3];
   double rgb[3];
   double xyz[3];
   int    i;
   /*Convert Y'CbCr to Y'PbPr.*/
   for(i=0;i<3;i++){
-    ypbpr[i]=(_yuv[i]-_cs->yuv_offset[i])/_cs->yuv_scale[i];
+    ypbpr[i]=(_ycbcr[i]-_cs->ycbcr_offset[i])/_cs->ycbcr_scale[i];
   }
-  ypbpr[1]*=(1-_cs->ypbpr_coeffs[2]);
-  ypbpr[2]*=(1-_cs->ypbpr_coeffs[0]);
+  ypbpr[1]*=2*(1-_cs->ypbpr_coeffs[2]);
+  ypbpr[2]*=2*(1-_cs->ypbpr_coeffs[0]);
   /*Convert Y'PbPr to non-linear R'G'B'.*/
   rgb[0]=ypbpr[0]+ypbpr[2];
   rgb[1]=ypbpr[0]-(ypbpr[1]*_cs->ypbpr_coeffs[2]+
@@ -230,7 +230,7 @@ double dist2(double _a[3],double _b[3]){
   1.0 is probably a safe lower bound for video.*/
 #define JND     (1.0)
 
-/*Video is normally coded in some form of YUV color space.
+/*Video is normally coded in some form of Y'CbCr color space.
   What exactly the Y, U and V means vary from system to system.
   Y is usually a non-linear (gamma corrected) luminance value, denoted Y' to
    indicate the non-linearity.
@@ -244,11 +244,11 @@ double dist2(double _a[3],double _b[3]){
    channels is that for natural imagery, there is very little correlation
    between the channels, which yields good compression.
   The reason for using non-linear values is due to the non-linear nature of
-   the light receptors in human eyes, which makes YUV spaces nearly
+   the light receptors in human eyes, which makes Y'CbCr spaces nearly
    perceptually uniform in each channel.
 
   The goal of this program is to compute the relative importance of each
-   individual channel in the various YUV spaces, as well as locate the
+   individual channel in the various Y'CbCr spaces, as well as locate the
    Just Noticeable Difference (JND) value for each channel.
   This is accomplished by converting to the device-independent and perceptually
    uniform CIE L*a*b color space, and measuring color distances there.
@@ -257,7 +257,7 @@ double dist2(double _a[3],double _b[3]){
    an offset and a slope to apply to each color channel such that the JND
    value is 1.
   This is an approximation to a perceptually uniform distance metric for the
-   YUV space.
+   Y'CbCr space.
   Finally, equation is inverted and the JND value for each channel is
    computed.*/
 int main(int _argc,char **_argv){
@@ -265,12 +265,12 @@ int main(int _argc,char **_argv){
   static double *de[3];
   static double *dc[3];
   colorspace *cs;
-  double      yuv0[3];
-  double      yuva[3];
-  double      yuvb[3];
-  double      yuv_jnd1[3];
-  double      yuvs[3];
-  double      yuv_jnd2[3];
+  double      ycbcr0[3];
+  double      ycbcra[3];
+  double      ycbcrb[3];
+  double      ycbcr_jnd1[3];
+  double      ycbcrs[3];
+  double      ycbcr_jnd2[3];
   int         nsamps[3];
   int         csamps[3];
   int         c;
@@ -289,23 +289,24 @@ int main(int _argc,char **_argv){
     exit(-1);
   }
   cs_fill_rgb2xyz(cs);
-  /*Sample the color difference in L*a*b space over the range of YUV values.*/
+  /*Sample the color difference in L*a*b space over the range of Y'CbCr
+     values.*/
   nsamps[0]=nsamps[1]=nsamps[2]=0;
   csamps[0]=csamps[1]=csamps[2]=0;
-  for(yuv0[0]=0;yuv0[0]<256;yuv0[0]+=RES1){
-    for(yuv0[1]=0;yuv0[1]<256;yuv0[1]+=RES1){
-      for(yuv0[2]=0;yuv0[2]<256;yuv0[2]+=RES1){
+  for(ycbcr0[0]=0;ycbcr0[0]<256;ycbcr0[0]+=RES1){
+    for(ycbcr0[1]=0;ycbcr0[1]<256;ycbcr0[1]+=RES1){
+      for(ycbcr0[2]=0;ycbcr0[2]<256;ycbcr0[2]+=RES1){
         double lab0[3];
-        double yuv1[3];
-        if(yuv2lab(cs,lab0,yuv0)<0)continue;
+        double ycbcr1[3];
+        if(ycbcr2lab(cs,lab0,ycbcr0)<0)continue;
         for(c=0;c<3;c++){
-          yuv1[NEXT[c]]=yuv0[NEXT[c]];
-          yuv1[NEXT[NEXT[c]]]=yuv0[NEXT[NEXT[c]]];
-          yuv1[c]=yuv0[c]-RANGE;
-          if(yuv1[c]<0)yuv1[c]=0;
-          for(;yuv1[c]<256&&yuv1[c]<=yuv0[c]+RANGE;yuv1[c]+=RES2){
+          ycbcr1[NEXT[c]]=ycbcr0[NEXT[c]];
+          ycbcr1[NEXT[NEXT[c]]]=ycbcr0[NEXT[NEXT[c]]];
+          ycbcr1[c]=ycbcr0[c]-RANGE;
+          if(ycbcr1[c]<0)ycbcr1[c]=0;
+          for(;ycbcr1[c]<256&&ycbcr1[c]<=ycbcr0[c]+RANGE;ycbcr1[c]+=RES2){
             double lab1[3];
-            if(yuv2lab(cs,lab1,yuv1)<0)continue;
+            if(ycbcr2lab(cs,lab1,ycbcr1)<0)continue;
             if(nsamps[c]>=csamps[c]){
               double *nde;
               double *ndc;
@@ -322,7 +323,7 @@ int main(int _argc,char **_argv){
               csamps[c]=ncsamps;
             }
             de[c][nsamps[c]]=dist2(lab0,lab1)/JND;
-            dc[c][nsamps[c]]=fabs(yuv0[c]-yuv1[c]);
+            dc[c][nsamps[c]]=fabs(ycbcr0[c]-ycbcr1[c]);
             /*printf("(%lf,%lf)\n",dc[c][nsamps[c]],de[c][nsamps[c]]);*/
             nsamps[c]++;
           }
@@ -346,30 +347,32 @@ int main(int _argc,char **_argv){
       xysum+=dc[c][i]*de[c][i];
     }
     d=nsamps[c]*x2sum-xsum*xsum;
-    yuva[c]=(x2sum*ysum-xsum*xysum)/d;
-    yuvs[c]=xysum/x2sum;
-    yuv_jnd2[c]=1/yuvs[c];
-    if(yuva[c]<0){
-      yuva[c]=0;
-      yuvb[c]=yuvs[c];
+    ycbcra[c]=(x2sum*ysum-xsum*xysum)/d;
+    ycbcrs[c]=xysum/x2sum;
+    ycbcr_jnd2[c]=1/ycbcrs[c];
+    if(ycbcra[c]<0){
+      ycbcra[c]=0;
+      ycbcrb[c]=ycbcrs[c];
     }
-    else yuvb[c]=(nsamps[c]*xysum-xsum*ysum)/d;
-    yuv_jnd1[c]=(1-yuva[c])/yuvb[c];
+    else ycbcrb[c]=(nsamps[c]*xysum-xsum*ysum)/d;
+    ycbcr_jnd1[c]=(1-ycbcra[c])/ycbcrb[c];
   }
   /*Print the non-0-intercept regressions.*/
   /*Print the offsets.*/
-  printf("{%0.23lf,%0.23lf,%0.23lf}\n",yuva[0],yuva[1],yuva[2]);
+  printf("{%0.23lf,%0.23lf,%0.23lf}\n",ycbcra[0],ycbcra[1],ycbcra[2]);
   /*And the slopes.*/
-  printf("{%0.23lf,%0.23lf,%0.23lf}\n",yuvb[0],yuvb[1],yuvb[2]);
+  printf("{%0.23lf,%0.23lf,%0.23lf}\n",ycbcrb[0],ycbcrb[1],ycbcrb[2]);
   printf("\n");
   /*Print the JND values.*/
-  printf("{%0.23lf,%0.23lf,%0.23lf}\n",yuv_jnd1[0],yuv_jnd1[1],yuv_jnd1[2]);
+  printf("{%0.23lf,%0.23lf,%0.23lf}\n",ycbcr_jnd1[0],ycbcr_jnd1[1],
+   ycbcr_jnd1[2]);
   printf("\n\n");
   /*Print the 0-intercept regressions.*/
   /*Print the slopes of the 0-intercept regressions.*/
-  printf("{%0.23lf,%0.23lf,%0.23lf}\n",yuvs[0],yuvs[1],yuvs[2]);
+  printf("{%0.23lf,%0.23lf,%0.23lf}\n",ycbcrs[0],ycbcrs[1],ycbcrs[2]);
   printf("\n");
   /*Print the JND values.*/
-  printf("{%0.23lf,%0.23lf,%0.23lf}\n",yuv_jnd2[0],yuv_jnd2[1],yuv_jnd2[2]);
+  printf("{%0.23lf,%0.23lf,%0.23lf}\n",ycbcr_jnd2[0],ycbcr_jnd2[1],
+   ycbcr_jnd2[2]);
   return 0;
 }

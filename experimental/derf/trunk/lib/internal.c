@@ -92,7 +92,7 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
   coffset=(info->chroma_x_decimated?OC_UMV_PADDING>>1:OC_UMV_PADDING)+
    (info->chroma_y_decimated?OC_UMV_PADDING>>1:OC_UMV_PADDING)*chstride;
   _state->ref_frame_data=ref_frame_data=_ogg_malloc(3*(yplane_sz+2*cplane_sz));
-  /*Set up the width, height and stride for the YUV buffers.*/
+  /*Set up the width, height and stride for the image buffers.*/
   _state->ref_frame_bufs[0][0].width=info->width;
   _state->ref_frame_bufs[0][0].height=info->height;
   _state->ref_frame_bufs[0][0].stride=yhstride;
@@ -106,7 +106,7 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
    sizeof(_state->ref_frame_bufs[0]));
   memcpy(_state->ref_frame_bufs[2],_state->ref_frame_bufs[0],
    sizeof(_state->ref_frame_bufs[0]));
-  /*Set up the data pointers for the YUV buffers.*/
+  /*Set up the data pointers for the image buffers.*/
   for(rfi=0;rfi<3;rfi++){
     _state->ref_frame_bufs[rfi][0].data=ref_frame_data+yoffset;
     ref_frame_data+=yplane_sz;
@@ -115,7 +115,7 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
     _state->ref_frame_bufs[rfi][2].data=ref_frame_data+coffset;
     ref_frame_data+=cplane_sz;
     /*Flip the buffer upside down.*/
-    oc_yuv_buffer_flip(_state->ref_frame_bufs[rfi],
+    oc_ycbcr_buffer_flip(_state->ref_frame_bufs[rfi],
      _state->ref_frame_bufs[rfi]);
     /*Initialize the fragment pointers into this buffer.*/
     oc_frarray_fill_buffer_ptrs(&_state->frarray,rfi,
@@ -176,7 +176,7 @@ void oc_state_clear(oc_theora_state *_state){
   _iplane:   The image plane to fill the borders of.
   _hpadding: The amount of padding on each side in the horizontal direction.
   _vpadding: The amount of padding on each side in the vertical direction.*/
-static void oc_iplane_borders_fill(oc_img_plane *_iplane,
+static void oc_iplane_borders_fill(theora_img_plane *_iplane,
  int _hpadding,int _vpadding){
   unsigned char *apix;
   unsigned char *bpix;
@@ -254,10 +254,10 @@ void oc_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,int _pli,
       for(;zzi<10;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
       oc_idct8x8_10(res_buf,dct_buf);
     }
-    else{
+    /*else{*/
       for(;zzi<64;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
       oc_idct8x8(res_buf,dct_buf);
-    }
+    /*}*/
   }
   /*Fill in the target buffer.*/
   dst_framei=_state->ref_frame_idx[OC_FRAME_SELF];
@@ -427,18 +427,19 @@ void oc_free_2d(void **_ptr){
   _ogg_free(_ptr);
 }
 
-/*Fills in a YUV buffer with a pointer to the image data in the first buffer,
-   but with the opposite vertical orientation.
+/*Fills in a Y'CbCr buffer with a pointer to the image data in the first
+   buffer, but with the opposite vertical orientation.
   _dst: The destination buffer.
         This can be the same as _src.
   _src: The source buffer.*/
-void oc_yuv_buffer_flip(oc_yuv_buffer _dst,const oc_yuv_buffer _src){
+void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
+ const theora_ycbcr_buffer _src){
   int pli;
   for(pli=0;pli<3;pli++){
     _dst[pli].width=_src[pli].width;
     _dst[pli].height=_src[pli].height;
-    _dst[pli].data=_src[pli].data+(_src[pli].height-1)*_src[pli].stride;
     _dst[pli].stride=-_src[pli].stride;
+    _dst[pli].data=_src[pli].data+(1-_dst[pli].height)*_dst[pli].stride;
   }
 }
 

@@ -33,11 +33,10 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       /*Describe the encoded frame.*/
       oggpackB_write(&_enc->opb,_enc->state.info.width>>4,16);
       oggpackB_write(&_enc->opb,_enc->state.info.height>>4,16);
-      /*OFFSETS ADDED FOR TESTING PURPOSES.*/
-      oggpackB_write(&_enc->opb,_enc->state.info.frame_width+8,24);
-      oggpackB_write(&_enc->opb,_enc->state.info.frame_height+8,24);
-      oggpackB_write(&_enc->opb,_enc->state.info.offset_x-4,8);
-      oggpackB_write(&_enc->opb,_enc->state.info.offset_y-4,8);
+      oggpackB_write(&_enc->opb,_enc->state.info.frame_width,24);
+      oggpackB_write(&_enc->opb,_enc->state.info.frame_height,24);
+      oggpackB_write(&_enc->opb,_enc->state.info.offset_x,8);
+      oggpackB_write(&_enc->opb,_enc->state.info.offset_y,8);
       oggpackB_write(&_enc->opb,_enc->state.info.fps_numerator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.fps_denominator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.aspect_numerator,24);

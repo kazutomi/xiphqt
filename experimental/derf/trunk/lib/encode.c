@@ -4,6 +4,11 @@
 #include <ogg/ogg.h>
 #include "encint.h"
 #include "fdct.h"
+#if defined(OC_DUMP_IMAGES)
+# include <stdio.h>
+# include "png.h"
+#endif
+
 
 
 /*Initializes the macro block neighbor lists.
@@ -263,6 +268,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
   if(_frinfo->dct_coeffs[0]){
     qc=abs(_frinfo->dct_coeffs[0]);
     c_sign=_frinfo->dct_coeffs[0]<0;
+    _enc->dct_tok_fragi[0][_enc->ndct_tokens[0]]=_frinfo-_enc->frinfo;
     switch(qc){
       case 1:{
         _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
@@ -342,6 +348,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
           /*The zero run tokens appear on the list for the first zero in the
              run.*/
           tli=zzi-zrun;
+          _enc->dct_tok_fragi[tli][_enc->ndct_tokens[tli]]=_frinfo-_enc->frinfo;
           /*Second assumption: coding a combined run/value token always uses
              fewer bits than coding them separately.*/
           /*CAT1 run/value tokens: the value is 1.*/
@@ -413,6 +420,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
         }
         /*No zero run, or the run and the qc value are being coded
            separately.*/
+        _enc->dct_tok_fragi[zzi][_enc->ndct_tokens[zzi]]=_frinfo-_enc->frinfo;
         switch(qc_min){
           case 1:{
             _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
@@ -511,6 +519,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }
       /*Start a new EOB run.*/
       default:{
+        _enc->dct_tok_fragi[tli][_enc->ndct_tokens[tli]]=_frinfo-_enc->frinfo;
         _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=OC_DCT_EOB1_TOKEN;
       }
     }
@@ -559,6 +568,121 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
       }
     }
   }
+#if defined(OC_DUMP_IMAGES)
+  /*Dump a PNG of the reconstructed image.*/
+  {
+    png_structp    png;
+    png_infop      info;
+    png_bytep     *image;
+    FILE          *fp;
+    char           fname[16];
+    unsigned char *y_row;
+    unsigned char *u_row;
+    unsigned char *v_row;
+    unsigned char *y;
+    unsigned char *u;
+    unsigned char *v;
+    int            y_stride;
+    int            u_stride;
+    int            v_stride;
+    int            framei;
+    int            width;
+    int            height;
+    int            imgi;
+    int            imgj;
+    width=_enc->state.info.width;
+    height=_enc->state.info.height;
+    sprintf(fname,"%08irec.png",_enc->state.curframe_num);
+    fp=fopen(fname,"wb");
+    if(fp==NULL)return;
+    image=(png_bytep *)oc_malloc_2d(height,6*width,sizeof(image[0][0]));
+    png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
+    if(png==NULL){
+      oc_free_2d(image);
+      fclose(fp);
+      return;
+    }
+    info=png_create_info_struct(png);
+    if(info==NULL){
+      png_destroy_write_struct(&png,NULL);
+      oc_free_2d(image);
+      fclose(fp);
+      return;
+    }
+    if(setjmp(png_jmpbuf(png))){
+      png_destroy_write_struct(&png,&info);
+      oc_free_2d(image);
+      fclose(fp);
+      return;
+    }
+    framei=_enc->state.ref_frame_idx[OC_FRAME_SELF];
+    y_row=_enc->state.ref_frame_bufs[framei][0].data;
+    u_row=_enc->state.ref_frame_bufs[framei][1].data;
+    v_row=_enc->state.ref_frame_bufs[framei][2].data;
+    y_stride=_enc->state.ref_frame_bufs[framei][0].stride;
+    u_stride=_enc->state.ref_frame_bufs[framei][1].stride;
+    v_stride=_enc->state.ref_frame_bufs[framei][2].stride;
+    for(imgi=height;imgi-->0;){
+      int dc;
+      y=y_row;
+      u=u_row;
+      v=v_row;
+      for(imgj=0;imgj<6*width;){
+        float    yval;
+        float    uval;
+        float    vval;
+        unsigned rval;
+        unsigned gval;
+        unsigned bval;
+        yval=(*y-16)*(1.0F/219);
+        uval=(*u-128)*(2*(1-0.114F)/224);
+        vval=(*v-128)*(2*(1-0.299F)/224);
+        rval=OC_CLAMPI(0,(int)(65535*(yval+vval)+0.5F),65535);
+        gval=OC_CLAMPI(0,(int)(65535*(
+         yval-uval*(0.114F/0.587F)-vval*(0.299F/0.587F))+0.5F),65535);
+        bval=OC_CLAMPI(0,(int)(65535*(yval+uval)+0.5F),65535);
+        image[imgi][imgj++]=(unsigned char)(rval>>8);
+        image[imgi][imgj++]=(unsigned char)(rval&0xFF);
+        image[imgi][imgj++]=(unsigned char)(gval>>8);
+        image[imgi][imgj++]=(unsigned char)(gval&0xFF);
+        image[imgi][imgj++]=(unsigned char)(bval>>8);
+        image[imgi][imgj++]=(unsigned char)(bval&0xFF);
+        dc=y-y_row&1;
+        y++;
+        u+=dc;
+        v+=dc;
+      }
+      dc=-(height-1-imgi&1);
+      y_row+=y_stride;
+      u_row+=dc&u_stride;
+      v_row+=dc&v_stride;
+    }
+    png_init_io(png,fp);
+    png_set_compression_level(png,Z_BEST_COMPRESSION);
+    png_set_IHDR(png,info,width,height,16,PNG_COLOR_TYPE_RGB,
+     PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,PNG_FILTER_TYPE_DEFAULT);
+    switch(_enc->state.info.colorspace){
+      case OC_CS_ITU_REC_470M:{
+        png_set_gAMA(png,info,2.2);
+        png_set_cHRM_fixed(png,info,31006,31616,
+         67000,32000,21000,71000,14000,8000);
+      }break;
+      case OC_CS_ITU_REC_470BG:{
+        png_set_gAMA(png,info,2.67);
+        png_set_cHRM_fixed(png,info,31271,32902,
+         64000,33000,29000,60000,15000,6000);
+      }break;
+    }
+    png_set_pHYs(png,info,_enc->state.info.aspect_numerator,
+     _enc->state.info.aspect_denominator,0);
+    png_set_rows(png,info,image);
+    png_write_png(png,info,PNG_TRANSFORM_IDENTITY,NULL);
+    png_write_end(png,info);
+    png_destroy_write_struct(&png,&info);
+    oc_free_2d(image);
+    fclose(fp);
+  }
+#endif
   /*Merge the final EOB run of one coefficient list with the start of the
      next, if possible.*/
   for(zzi=1;zzi<64;zzi++){
@@ -570,21 +694,29 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
     int old_eb2;
     int new_tok;
     int toki;
+    int zzj;
     int ebi;
     int runl;
-    /*Verify that we have tokens for each coefficient and that the previous
-       coefficient ends with an EOB token while this coefficient begins with
-       one.*/
-    toki=_enc->ndct_tokens[zzi-1]-1;
-    if(toki<0||_enc->ndct_tokens[zzi]<=0)continue;
-    old_tok1=_enc->dct_tokens[zzi-1][toki];
-    if(old_tok1>=OC_NDCT_EOB_TOKEN_MAX)continue;
+    /*Make sure this coefficient has tokens at all.*/
+    if(_enc->ndct_tokens[zzi]<=0)continue;
+    /*Ensure the first token is an EOB run.*/
     old_tok2=_enc->dct_tokens[zzi][0];
     if(old_tok2>=OC_NDCT_EOB_TOKEN_MAX)continue;
+    /*Search for a previous coefficient that has any tokens at all.*/
+    old_tok1=OC_NDCT_EOB_TOKEN_MAX;
+    for(zzj=zzi;zzj-->0;){
+      toki=_enc->ndct_tokens[zzj]-1;
+      if(toki>=_enc->dct_token_offs[0][zzj]){
+        old_tok1=_enc->dct_tokens[zzj][toki];
+        break;
+      }
+    }
+    /*Ensure its last token was an EOB run.*/
+    if(old_tok1>=OC_NDCT_EOB_TOKEN_MAX)continue;
     /*Pull off the associated extra bits, if any, and decode the runs.*/
-    ebi=_enc->nextra_bits[zzi-1];
+    ebi=_enc->nextra_bits[zzj];
     old_eb1=OC_DCT_TOKEN_EXTRA_BITS[old_tok1]?
-     _enc->extra_bits[zzi-1][--ebi]:0;
+     _enc->extra_bits[zzj][--ebi]:0;
     old_eb2=OC_DCT_TOKEN_EXTRA_BITS[old_tok2]?
      old_eb2=_enc->extra_bits[zzi][0]:0;
     runl=OC_EOB_OFFS[old_tok1]+old_eb1+OC_EOB_OFFS[old_tok2]+old_eb2;
@@ -595,13 +727,13 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
     /*We CAN combine them into one run.*/
     for(new_tok=OC_DCT_EOB1_TOKEN;
      runl-OC_EOB_OFFS[new_tok]>=OC_EOB_RANGE[new_tok];new_tok++);
-    _enc->dct_tokens[zzi-1][toki]=(unsigned char)new_tok;
+    _enc->dct_tokens[zzj][toki]=(unsigned char)new_tok;
     /*Update the two token lists.*/
     if(OC_DCT_TOKEN_EXTRA_BITS[new_tok]){
-      _enc->extra_bits[zzi-1][ebi++]=(ogg_uint16_t)(
+      _enc->extra_bits[zzj][ebi++]=(ogg_uint16_t)(
        runl-OC_EOB_OFFS[new_tok]);
     }
-    _enc->nextra_bits[zzi-1]=ebi;
+    _enc->nextra_bits[zzj]=ebi;
     _enc->dct_token_offs[0][zzi]++;
     /*Note: We don't bother to update the offsets for planes 1 and 2 if
        planes 0 or 1 don't have any tokens.
@@ -814,11 +946,10 @@ static int oc_enc_deltaframe(oc_enc_ctx *_enc){
 static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   int bii;
   int ret;
-  /*FOR TESTING PURPOSES.*/
-  _info->frame_width-=8;
-  _info->frame_height-=8;
-  _info->offset_x+=4;
-  _info->offset_y+=4;
+  _info->frame_width-=6;
+  _info->frame_height-=10;
+  _info->offset_x+=3;
+  _info->offset_y+=5;
   ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
   oggpackB_writeinit(&_enc->opb);
@@ -826,7 +957,6 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
    sizeof(_enc->frinfo[0]));
   _enc->mbinfo=_ogg_calloc(_enc->state.frarray.nmbs,sizeof(_enc->mbinfo[0]));
   oc_enc_init_mbinfo(_enc);
-  memset(_enc->border_info,0,sizeof(_enc->border_info));
   for(bii=0;bii<_enc->state.frarray.nborders;bii++){
     oc_border_enc_info_init(_enc->border_info+bii,
      _enc->state.frarray.borders+bii);
@@ -855,6 +985,8 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   theora_encode_set_quant_params(_enc,NULL);
   _enc->dct_tokens=(unsigned char **)oc_malloc_2d(64,
    _enc->state.frarray.nfrags,sizeof(_enc->dct_tokens[0][0]));
+  _enc->dct_tok_fragi=(int **)oc_malloc_2d(64,
+   _enc->state.frarray.nfrags,sizeof(_enc->dct_tok_fragi[0][0]));
   _enc->extra_bits=(ogg_uint16_t **)oc_malloc_2d(64,
    _enc->state.frarray.nfrags,sizeof(_enc->extra_bits[0][0]));
   return 0;
@@ -866,6 +998,9 @@ static void oc_enc_clear(oc_enc_ctx *_enc){
   oc_mcenc_free(_enc->mcenc);
   _ogg_free(_enc->mbinfo);
   _ogg_free(_enc->frinfo);
+  oc_free_2d(_enc->dct_tokens);
+  oc_free_2d(_enc->dct_tok_fragi);
+  oc_free_2d(_enc->extra_bits);
   oc_state_clear(&_enc->state);
 }
 
@@ -1009,13 +1144,13 @@ int theora_encode_set_quant_params(theora_enc_ctx *_enc,
 }
 
 
-int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _img){
-  oc_yuv_buffer img;
-  int           cwidth;
-  int           cheight;
-  int           ret;
-  int           rfi;
-  int           mbi;
+int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
+  theora_ycbcr_buffer img;
+  int                 cwidth;
+  int                 cheight;
+  int                 ret;
+  int                 rfi;
+  int                 mbi;
   /*Step 1: validate parameters.*/
   if(_enc==NULL||_img==NULL)return OC_FAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return OC_EINVAL;
@@ -1032,7 +1167,7 @@ int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _img){
     return OC_EINVAL;
   }
   /*Flip the input buffer upside down.*/
-  oc_yuv_buffer_flip(img,_img);
+  oc_ycbcr_buffer_flip(img,_img);
   /*Step 2: Update state.*/
   if(_enc->state.ref_frame_idx[OC_FRAME_SELF]>=0){
     /*Fill in the borders from the reconstructed version of the last encoded

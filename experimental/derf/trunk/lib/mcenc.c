@@ -15,10 +15,10 @@ struct oc_mcenc_ctx{
 #define OC_YSAD_THRESH1            (256)
 /*The amount to right shift the minimum error by when inflating it for
    computing the second maximum Y plane SAD threshold.*/
-#define OC_YSAD_THRESH2_SCALE_BITS  (3)
+#define OC_YSAD_THRESH2_SCALE_BITS (3)
 /*The amount to add to the second maximum Y plane threshold when inflating
    it.*/
-#define OC_YSAD_THRESH2_OFFSET      (128)
+#define OC_YSAD_THRESH2_OFFSET     (128)
 
 /*The vector offsets in the X direction for each search site in the square
    pattern.*/
@@ -257,7 +257,7 @@ static int oc_sad16_halfpel(const oc_fragment *_frags,const int _fragis[4],
     }*/
     ysign=_dy>>6;
     o[0]=mvoffset1;
-    o[1]=mvoffset1+(ref_iplane->stride&-1-ysign)-(ref_iplane->stride&ysign);
+    o[1]=mvoffset1+(ref_iplane->stride&~ysign)-(ref_iplane->stride&ysign);
     mvoffset1=o[yfrac];
     err=oc_sad16_2(frags,mb->map[_pli],cur_iplane->stride,ref_iplane->stride,
      mvoffset0,mvoffset1,_ref_idx);
