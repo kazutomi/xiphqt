@@ -43,7 +43,7 @@ class CMMLSourcePin
 {
 public:
 
-		DECLARE_IUNKNOWN
+	DECLARE_IUNKNOWN
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 
 	CMMLSourcePin(	TCHAR* inObjectName, 
@@ -52,7 +52,7 @@ public:
 										StreamHeaders* inHeaderSource, 
 										CMediaType* inMediaType,
 										wstring inPinName);
-	~CMMLSourcePin(void);
+	virtual ~CMMLSourcePin(void);
 
 	//Implements IStreamBuilder to force the pin tothe cmml filter
 	STDMETHODIMP Render(IPin* inOutputPin, IGraphBuilder* inGraphBuilder);
