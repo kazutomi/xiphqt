@@ -340,11 +340,13 @@ sub new{
     my$class=shift;
     my$p=shift;
 
-    my %graph = ( 'name' => $p->{"name"},
+    my %graph = ( 'width'=> $p->{"width"},
+		  'height'=> $p->{"height"},
+		  'name' => $p->{"name"},
+		  'rangesetting'=>1,
+		  'rangecurrent'=>1,
 		  'num' => '1',
-		  'fixed' => '0',
-		  'rangesetting'=> '4',
-		  'rangecurrent'=> '4');
+		  'fixed' => '0');
 
     my $ret=\%graph;
     bless $ret, 'MGM::Graph';
@@ -396,35 +398,49 @@ sub calcxysize{
 sub drawit{
     my$this=shift;
     
-    undef $this->{"widget"};
-    undef $this->{"numlabel"};
-
-    for(my$i=0;$i<$this->{"num"};$i++){
-	undef $this->{"bar$i"};
-    }
-
     # a 'graph' consists of a scale, and <n> bars under central control
 
     my $name=$this->{"name"};
     my $num=$this->{"num"};
     my $prompt=$this->{"prompt"};
-    my $rangesetting=$this->{"rangesetting"};
     my $fixed=$this->{"fixed"};
 
     my $height=$this->{"height"};
     my $width=$this->{"width"};
+    my $widget;
 
-    my$widget=$this->{"widget"}=
-	$this->{"parent"}->Canvas(Name=>$name,
-				  -borderwidth=>0,
-				  highlightthickness=>0,
-				  width=>$width,
-				  height=>$height,
-				  relief=>'flat');
-    
+    if(defined($this->{"widget"})){
+	# don't destroy the toplevel canvas if we're already built; the
+	# cause is a configure event and we can't re-place ourselves
+
+	$this->{"barframe"}->destroy; 
+	$this->{"numlabel"}->destroy; 
+	undef $this->{"barframe"};
+	undef $this->{"numlabel"};
+	
+	for(my$i=0;$i<$this->{"num"};$i++){
+	    undef $this->{"bar$i"};
+	}
+	$widget=$this->{"widget"};
+    }else{
+	$widget=$this->{"widget"}=
+	    $this->{"parent"}->Canvas(Name=>$name);
+    }
+
+    $widget->configure(-borderwidth=>0,
+		       highlightthickness=>0,
+		       width=>$width,
+		       height=>$height,
+		       relief=>'flat');
+
+    if(!defined($this->{"rangesetting"})){
+	$this->{"rangesetting"}=$widget->optionGet("minscale","");
+	$this->{"rangecurrent"}=$widget->optionGet("minscale","");
+    }
+
+    my $rangesetting=$this->{"rangesetting"};
     my($dummy,$dummy,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
     $this->{"scalew"}=$scalew;
-
     $this->{"numlabel"}=$this->promptlabel($rangesetting,$prompt);
  
     my $orient=$main::orient;
@@ -433,13 +449,14 @@ sub drawit{
 
 	$this->{"barlength"}=$height;
 	my$barwidth=$width-$scalew;
-	my$frame=$widget->Frame(Name=>'bar',
-				-width=>$barwidth,
-				-height=>$height,
-				-borderwidth=>0)->
-				    place('-x'=>$scalew,
-					  '-y'=>0,
-					  '-anchor'=>'nw');
+	my$frame=$this->{"barframe"}=
+	    $widget->Frame(Name=>'bar',
+			   -width=>$barwidth,
+			   -height=>$height,
+			   -borderwidth=>0)->
+			       place('-x'=>$scalew,
+				     '-y'=>0,
+				     '-anchor'=>'nw');
 	
 	$barwidth/=$num;
 	$barwidth=int($barwidth);
@@ -457,13 +474,14 @@ sub drawit{
 
 	$this->{"barlength"}=$width;
 	my$barwidth=$height-$scalew;
-	my$frame=$widget->Frame(Name=>'bar',
-				-width=>$width,
-				-height=>$barwidth,
-				-borderwidth=>0)->
-				    place('-y'=>$scalew,
-					  '-x'=>0,
-					  -anchor=>'nw');
+	my$frame=$this->{"barframe"}=
+	    $widget->Frame(Name=>'bar',
+			   -width=>$width,
+			   -height=>$barwidth,
+			   -borderwidth=>0)->
+			       place('-y'=>$scalew,
+				     '-x'=>0,
+				     -anchor=>'nw');
 	
 	$barwidth/=$num;
 	$barwidth=int($barwidth);
@@ -488,12 +506,23 @@ sub place{
 sub configure{
     my$this=shift;
     my ($arg,$val);
-    while($arg=shift){
+    while(defined($arg=shift)){
 	$val=shift;   
 
         if(!defined($val)){last;}
 	$this->{"$arg"}=$val;
     }
+
+    # enforce power of two dynamic ranging
+    if($this->{"fixed"}==0){
+	my$i=1;
+	while($i<$this->{"rangesetting"}){
+	    $i*=2;
+	}
+	$this->{"rangesetting"}=$i;
+    }
+    $this->{"rangediff"}=$this->{"rangesetting"}-
+	$this->{"rangecurrent"};
 
     # The only strategy, currently, is to redraw ;-) 
     $this->drawit();
@@ -641,14 +670,15 @@ sub set{
 	$metermax=$this->{"metermax"};
     }
 
+    my$flag=0;
     if(!$this->{"fixed"}){
     # scale hysteresis
 	my$ethresh=$widget->optionGet("scalethresh","");
+	my$minscale=$widget->optionGet("minscale","");
 	my$scalereturn=$widget->optionGet("scalereturn","");
 	my$scaletimer=$this->{"scaletimer"}+1;
 	my$scalemax=$this->{"scalemax"};
 
-	my$flag=0;
 	while($metermax>$this->{"rangesetting"}){
 	    $this->{"rangesetting"}*=2;
 	    $scaletimer=0; # reset the timer
@@ -664,18 +694,19 @@ sub set{
 	    # we have. compare against the largest value in the past
 	    # hysteresis period
 	    
-	    if($this->{"rangesetting"}>1 && 
+	    if($this->{"rangesetting"}/2>=$minscale && 
 		  $scalemax*$ethresh<$this->{"rangesetting"}){
 		
 		$this->{"rangesetting"}/=2;
-		$this->{"rangesetting"}=1 if($this->{"rangesetting"}<1);
 		$flag=1;
 	    }
 	    
 	    $scaletimer=0; # reset the timer
 	    $scalemax=0;	    
 	}
-
+	$scalemax=$metermax if($scalemax<$metermax);
+	$this->{"scaletimer"}=$scaletimer;
+	$this->{"scalemax"}=$scalemax;
 	if($flag){
 	    my$val=int($this->{'rangesetting'});
 	    
@@ -684,9 +715,6 @@ sub set{
 	    $this->{"rangediff"}=$this->{"rangesetting"}-
 		$this->{"rangecurrent"};
 	}
-	$scalemax=$metermax if($scalemax<$metermax);
-	$this->{"scaletimer"}=$scaletimer;
-	$this->{"scalemax"}=$scalemax;
     }
 
     if($this->{"rangecurrent"}!=$this->{"rangesetting"}){

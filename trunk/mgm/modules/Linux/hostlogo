@@ -9,7 +9,9 @@ use Tk;
 package MGMmodule::hostlogo;
 
 sub module_init{
-    my($this,$toplevel,$xpath)=@_;
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xpath=$this->{"xpath"};
 
     my$logo=$this->{"logo"}=
 	$toplevel->Pixmap(-file => "$main::libdir/fishframe.xpm");
@@ -48,7 +50,11 @@ sub module_init{
 }
 
 sub module_construct{
-    my($this,$toplevel,$width,$height)=@_;
+    my$this=shift;
+
+    my$width=$this->{"width"};
+    my$height=$this->{"height"};
+    my$toplevel=$this->{"toplevel"};
 
     my$logowidth=$this->{"logowidth"};
     my$textwidth=$this->{"textwidth"};

@@ -25,7 +25,7 @@ $toplevel->optionAdd("$Xname*background",       '#202020',20);
 $toplevel->optionAdd("$Xname*foreground",       '#a0a0a0',20);
 
 # adj of 100% result in config demand of 50 pixels
-$toplevel->optionAdd("$Xname.lendemand",         '50',20); 
+$toplevel->optionAdd("$Xname.lendemand",         '25',20); 
 # adj of 100% result in config demand of 12 pixels per bar
 $toplevel->optionAdd("$Xname.widdemand",         '12',20); 
 
@@ -38,6 +38,7 @@ $toplevel->optionAdd("$Xname*font",
 $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
 $toplevel->optionAdd("$Xname*scale",            'true',20);
+$toplevel->optionAdd("$Xname*minscale",         '1',20); 
 $toplevel->optionAdd("$Xname*scalejustify",     '1',20);
 $toplevel->optionAdd("$Xname*scalethresh",      '4',20);
 $toplevel->optionAdd("$Xname*scalelenadj",      '100',20);
@@ -162,6 +163,7 @@ sub LoadModule{
 	    
 	    my$name=$moduleref->{"name"}=(split /::/, ref $moduleref)[-1];
 	    $moduleref->{"toplevel"}=$toplevel;
+	    $moduleref->{"xpath"}="$Xname.$name";
 	    
 	    if(!defined($name)){
 		print STDERR 
@@ -184,7 +186,7 @@ sub LoadModule{
 	    $toplevel->optionAdd("$Xname.$name.name",   "$name",19);
 	    $toplevel->optionAdd("$Xname.$name.active", "true",19);
 	    
-	    my$ret=eval {$moduleref->module_init($toplevel,"$Xname.$name")};
+	    my$ret=eval {$moduleref->module_init};
 	    if(!defined($ret)){
 		print STDERR "Error eval()ing ->module_init for $name:".
 		    "$@\n";
@@ -219,10 +221,10 @@ sub geometries{
 
 	if($active eq 'true'){
 	    if($stack eq $orient){
-		$wadj=&moption($mod,"scalewidadj");
+		$wadj=&max($wadj,&moption($mod,"scalewidadj"));
 		$ladj+=&moption($mod,"scalelenadj");
 	    }else{
-		$ladj=&max($ldemand,&moption($mod,"scalelenadj"));
+		$ladj=&max($ladj,&moption($mod,"scalelenadj"));
 		$wadj+=&moption($mod,"scalewidadj"); 
 	    }
 
@@ -348,7 +350,12 @@ sub build_and_run{
 		undef $mod->{"widget"};
 
 		# build it
-		my$ret=eval{$mod->module_construct($toplevel,$width,$height)};
+
+		# these are controlled by us and needed in the object anyway,
+		# so we set them
+		$mod->{"width"}=$width;
+		$mod->{"height"}=$height;
+		my$ret=eval{$mod->module_construct};
 		if(!defined($ret)){
 		    print STDERR "Error eval()ing ->module_construct for ".
 			($mod->{"name"}).": $@\n";
