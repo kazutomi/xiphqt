@@ -1,6 +1,7 @@
 pyvorbis (0.3-1) unstable; urgency=low
 
   * New upstream.
+  * Fixed versioned depends.
 
  -- Christopher L Cheney <ccheney@debian.org>  Sun, 17 Jun 2001 20:00:00 -0500
 
