@@ -255,7 +255,6 @@ then
     AC_MSG_RESULT([Could not find a valid LAME library, reencoding disabled])
   fi
 fi
-AM_CONDITIONAL(USE_LAME, test "$have_LAME" == "yes")
 
 AC_ARG_WITH(vorbis,
 [  --with-vorbis[=DIR]         support for vorbis using libvorbisfile [in DIR]])
