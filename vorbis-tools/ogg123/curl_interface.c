@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.3 2001/08/11 16:04:22 kcarnold Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.4 2001/08/12 03:59:31 kcarnold Exp $
  
 ********************************************************************/
 
@@ -19,7 +19,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <signal.h>		/* for SIGTERM */
+#include <string.h> /* for memmove */
+#include <signal.h>		/* for SIGINT */
 
 #define DEBUG_CURLINTERFACE
 
@@ -47,7 +48,7 @@ BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
 	 data->BytesRequested);
 
   pthread_mutex_lock (&data->ReadDataMutex);
-  while (data->BytesRequested == 0)
+  while (data->BytesRequested == 0 && !data->ShuttingDown)
     pthread_cond_wait (&data->ReadRequestedCondition, &data->ReadDataMutex);
 
   data->EOS = iseos;
@@ -158,7 +159,7 @@ CurlGo (void *arg)
 buf_t *
 InitStream (InputOpts_t inputOpts)
 {
-  StreamInputBufferData_t *data = malloc (sizeof (StreamInputBufferData_t));
+  StreamInputBufferData_t *data = calloc (1, sizeof (StreamInputBufferData_t));
   buf_t *buf;
 
   debug ("InitStream\n");
@@ -197,6 +198,10 @@ InitStream (InputOpts_t inputOpts)
   debug (" set curl opts\n");
   CurlSetopts (data->CurlHandle, buf, inputOpts);
 
+  debug (" init saving stream\n");
+  if (inputOpts.SaveStream)
+    data->SavedStream = fopen (inputOpts.SaveStream, "wb");
+
   pthread_create (&data->CurlThread, NULL, CurlGo, buf);
 
   debug ("returning.\n");
@@ -204,7 +209,7 @@ InitStream (InputOpts_t inputOpts)
 }
 
 size_t
-StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
+_StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 {
   StreamInputBufferData_t *data = arg;
   size_t ret;
@@ -263,6 +268,15 @@ StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
   return ret;
 }
 
+size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
+{
+  StreamInputBufferData_t *data = arg;
+  size_t ret = _StreamBufferRead (ptr, size, nmemb, arg);
+  if (data->SavedStream)
+    fwrite (ptr, ret, 1, data->SavedStream);
+  return ret;
+}
+
 /* These are no-ops for now. */
 int
 StreamBufferSeek (void *arg, ogg_int64_t offset, int whence)
@@ -271,20 +285,19 @@ StreamBufferSeek (void *arg, ogg_int64_t offset, int whence)
   return -1;
 }
 
-void StreamInputDataCleanup (StreamInputBufferData_t *data)
-{
-}
-
 int
 StreamBufferClose (void *arg)
 {
   StreamInputBufferData_t *data = arg;
 
-  debug ("StreamBufferClose");
+  debug ("StreamBufferClose\n");
   if (data)
     {
       pthread_kill (data->CurlThread, SIGTERM);
       pthread_join (data->CurlThread, NULL);
+      data->ShuttingDown = 1;
+      data->BytesRequested = 0;
+      pthread_cond_signal (&data->ReadRequestedCondition);
       memset (data, 0, sizeof(data));
       free (data);
     }
@@ -299,7 +312,8 @@ StreamBufferTell (void *arg)
 
 void StreamInputCleanup (buf_t *buf)
 { 
-  StreamInputDataCleanup (buf->data);
+  StreamBufferClose (buf->data);
+  buf->data = 0;
   buffer_flush (buf);
   buffer_cleanup (buf);
 }
