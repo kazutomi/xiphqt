@@ -43,7 +43,7 @@ ices_metadata_set (input_stream_t* source)
     delay = 3000000;
     first = 0;
   } else {
-    delay = 0;
+    delay = 1000;
   }
 
   if (thread_create ("Metadata Update Thread", ices_metadata_thread, source) == -1) {
@@ -82,9 +82,9 @@ ices_metadata_thread (void *arg)
     rc = shout_update_metadata (&stream->conn, song);
 	
     if (rc != 1)
-      ices_log ("Updating metadata on %s failed.", stream->mount);
+      ices_log_error ("Updating metadata on %s failed.", stream->mount);
     else
-      ices_log ("Updated metadata on %s to: %s", stream->mount, song);
+      ices_log_debug ("Updated metadata on %s to: %s", stream->mount, song);
   }
 	
   thread_exit (0);
