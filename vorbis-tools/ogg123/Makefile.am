@@ -9,10 +9,10 @@ mandir = @MANDIR@
 man_MANS = ogg123.1
 
 INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@ @AO_CFLAGS@ @CURL_CFLAGS@ \
-           @THREAD_CFLAGS@ @SHARE_CFLAGS@
+           @PTHREAD_CFLAGS@ @SHARE_CFLAGS@
 
 ogg123_LDADD = @VORBISFILE_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ @AO_LIBS@ \
-               @SOCKET_LIBS@ @SHARE_LIBS@ @CURL_LIBS@ @THREAD_LIBS@
+               @SOCKET_LIBS@ @SHARE_LIBS@ @CURL_LIBS@ @PTHREAD_LIBS@
 ogg123_DEPENDENCIES = @SHARE_LIBS@
 ogg123_SOURCES = audio.c buffer.c callbacks.c \
                  cfgfile_options.c cmdline_options.c \
