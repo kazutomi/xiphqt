@@ -390,13 +390,6 @@ static void y4m_convert_42xpaldv_42xjpeg(unsigned char *_dst,
       tmp+=c_w;
       _aux+=c_w;
     }
-    /*For actual interlaced material, this would have to be done separately on
-       each field, and the shift amounts would be different.
-      C_r moves down 1/8, C_b up 3/8 in the top field, and C_r moves down 3/8,
-       C_b up 1/8 in the bottom field.
-      The corresponding filters are:
-       Down 1/8 (reverse order for up): [3 -11 125 15 -4 0]/128
-       Down 3/8 (reverse order for up): [4 -19 98 56 -13 2]/128*/
     switch(pli){
       case 1:{
         tmp-=c_sz;
@@ -428,7 +421,7 @@ static void y4m_convert_42xpaldv_42xjpeg(unsigned char *_dst,
       case 2:{
         tmp-=c_sz;
         /*Slide C_r down a quarter-pel.
-          This is the same as the horizonal filter.*/
+          This is the same as the horizontal filter.*/
         for(x=0;x<c_w;x++){
           for(y=0;y<OC_MINI(c_h,2);y++){
             _dst[y*c_w]=OC_CLAMPI(0,4*tmp[0]-17*tmp[OC_MAXI(y-1,0)*c_w]+
@@ -451,6 +444,13 @@ static void y4m_convert_42xpaldv_42xjpeg(unsigned char *_dst,
         }
       }break;
     }
+    /*For actual interlaced material, this would have to be done separately on
+       each field, and the shift amounts would be different.
+      C_r moves down 1/8, C_b up 3/8 in the top field, and C_r moves down 3/8,
+       C_b up 1/8 in the bottom field.
+      The corresponding filters would be:
+       Down 1/8 (reverse order for up): [3 -11 125 15 -4 0]/128
+       Down 3/8 (reverse order for up): [4 -19 98 56 -13 2]/128*/
   }
 }
 

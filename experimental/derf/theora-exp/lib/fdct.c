@@ -219,8 +219,6 @@ static const oc_extension_info OC_EXTENSION_INFO[OC_NSHAPES]={
 
 
 
-#include <stdio.h>
-
 /*Pads a single row of a partial block and then performs a forward Type-II DCT
    on the result.
   The output is scaled by a factor of 2 from the orthonormal version of the

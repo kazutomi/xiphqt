@@ -27,12 +27,9 @@ Currently missing features:
 
 Encoder:
 The encoder is highly experimental.
-It currently generates valid bitstreams using ALL of the decoder features
- supported above.
-However, it is also currently broken, producing pretty horrible quality files
- with high bitrates.
-This should be tracked down and fixed before too much longer, but it hasn't
- happened yet.
+It currently generates bitstreams using ALL of the decoder features supported
+ above.
+There are still a few outstanding bugs, and the HVS model is very experimental.
 
 Building:
 A simple GNU Makefile and MSVC++ 6 project files are provided.

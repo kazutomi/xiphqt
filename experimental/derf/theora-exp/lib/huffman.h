@@ -4,7 +4,7 @@
 # include "ocintrin.h"
 
 /*The range of valid quantized DCT coefficient values.
-  VP3 used 511, but the bitstream is capable of 580.*/
+  VP3 used 511 in the encoder, but the bitstream is capable of 580.*/
 #define OC_DCT_VAL_RANGE         (580)
 
 #define OC_NDCT_TOKEN_BITS       (5)
