@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.6 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.7 2001/12/12 15:52:25 volsung Exp $
 
  ********************************************************************/
 
@@ -229,9 +229,10 @@ stat_format_t *stat_format_create ()
   if (cur->arg.stringarg == NULL) {
     fprintf(stderr, "Memory allocation error in stats_init()\n");
     exit(1);
-  }
+  }  
+  write_time_string(cur->arg.stringarg, 0.0);
 
-    
+
   cur = stats + 2; /* remaining playback time (preformatted) */
   cur->verbosity = 1;
   cur->enabled = 1;
@@ -243,6 +244,7 @@ stat_format_t *stat_format_create ()
     fprintf(stderr, "Memory allocation error in stats_init()\n");
     exit(1);
   }
+  write_time_string(cur->arg.stringarg, 0.0);
 
 
   cur = stats + 3; /* total playback time (preformatted) */
@@ -256,6 +258,7 @@ stat_format_t *stat_format_create ()
     fprintf(stderr, "Memory allocation error in stats_init()\n");
     exit(1);
   }
+  write_time_string(cur->arg.stringarg, 0.0);
 
 
   cur = stats + 4; /* instantaneous bitrate */
@@ -357,7 +360,7 @@ void status_print_statistics (stat_format_t *stats,
      already doing output, we skip it. */
   if (pthread_mutex_trylock(&output_lock) == 0) {
 
-    if (decoder_statistics) {
+    if (decoder_statistics != NULL) {
       /* Current playback time */
       write_time_string(stats[1].arg.stringarg,
 			decoder_statistics->current_time);

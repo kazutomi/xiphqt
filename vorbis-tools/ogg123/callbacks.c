@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: callbacks.c,v 1.1.2.1 2001/12/11 18:46:22 volsung Exp $
+ last mod: $Id: callbacks.c,v 1.1.2.2 2001/12/12 15:52:25 volsung Exp $
 
  ********************************************************************/
 
@@ -56,11 +56,7 @@ void audio_reopen_callback (buf_t *buf, void *arg)
 
   while (current != NULL) {
     ao_info *info = ao_driver_info(current->driver_id);
-    
-    status_message(2, "\nDevice:   %s", info->name);
-    status_message(2, "Author:   %s", info->author);
-    status_message(2, "Comments: %s\n", info->comment);
-    
+        
     if (current->filename == NULL)
       current->device = ao_open_live(current->driver_id, &format,
 				     current->options);
@@ -86,7 +82,7 @@ void audio_reopen_callback (buf_t *buf, void *arg)
 		     info->short_name);
 	break;
       case AO_EFAIL:
-	status_error("Error: Device failure.\n");
+	status_error("Error: Device %s failure.\n", info->short_name);
 	break;
       case AO_ENOTFILE:
 	status_error("Error: An output file cannot be given for %s device.\n", info->short_name);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: audio.c,v 1.1.2.4 2001/12/11 18:46:22 volsung Exp $
+ last mod: $Id: audio.c,v 1.1.2.5 2001/12/12 15:52:24 volsung Exp $
 
  ********************************************************************/
 
@@ -59,9 +59,7 @@ audio_device_t *append_audio_device(audio_device_t *devices_list,
 
 int audio_devices_write(audio_device_t *d, void *ptr, int nbytes)
 {
-  audio_device_t *start = d;
 
-  d = start;
   while (d != NULL) {
     if (ao_play(d->device, ptr, nbytes) == 0)
       return 0; /* error occurred */
