@@ -21,3 +21,6 @@ a:hover { color: #286FFF; text-decoration: none }
 .xiphtag {
 	text-align: center;
 }
+.headline {
+	font-size: x-large; font-weight: bold;
+}
