@@ -554,6 +554,9 @@ ices_setup_version (void)
 #ifdef HAVE_LIBXML
   "libxml "
 #endif
+#ifdef HAVE_LIBVORBISFILE
+  "Vorbis "
+#endif
   "\n"
   "System configuration file: " ICES_ETCDIR "/ices.conf\n"
 #if defined (HAVE_LIBPERL) || defined (HAVE_LIBPYTHON)

@@ -40,7 +40,7 @@
     </Server>
 
     <!-- The name of the mountpoint on the icecast server -->
-    <Mountpoint>ices</Mountpoint>
+    <Mountpoint>/ices</Mountpoint>
     <!-- The name of the dumpfile on the server for your stream. DO NOT set
 	 this unless you know what you're doing.
     <Dumpfile>ices.dump</Dumpfile>
@@ -65,6 +65,9 @@
 	 ices will reencode the stream on the fly to the stream bitrate. -->
     <Reencode>0</Reencode>
     <!-- Number of channels to reencode to, 1 for mono or 2 for stereo -->
+    <!-- Sampe rate to reencode to in Hz. Leave out for LAME's best choice
+    <Samplerate>44100</Samplerate>
+    -->
     <Channels>2</Channels>
   </Stream>
 </ices:Configuration>

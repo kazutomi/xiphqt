@@ -37,6 +37,7 @@
 typedef struct {
   OggVorbis_File* vf;
   vorbis_info* info;
+  int link;
   int16_t buf[2048];
   size_t samples;
   int offset;
@@ -46,6 +47,7 @@ typedef struct {
 static int ices_vorbis_readpcm (input_stream_t* self, size_t len,
 				int16_t* left, int16_t* right);
 static int ices_vorbis_close (input_stream_t* self);
+static void in_vorbis_parse (input_stream_t* self);
 static void in_vorbis_set_metadata (ices_vorbis_in_t* vorbis_data);
 
 /* try to open a vorbis file for decoding. Returns:
@@ -115,18 +117,9 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
     return -1;
   }
 
-  self->bitrate = vorbis_data->info->bitrate_nominal / 1000;
-  if (! self->bitrate)
-    self->bitrate = ov_bitrate (vf, -1) / 1000;
-  self->samplerate = (unsigned int) vorbis_data->info->rate;
-  self->channels = vorbis_data->info->channels;
-
-  ices_log_debug("Ogg vorbis file found, version %d, %d kbps, %d channels, %ld Hz",
-                 vorbis_data->info->version, self->bitrate, vorbis_data->info->channels,
-		 self->samplerate);
-
   vorbis_data->vf = vf;
   vorbis_data->samples = 0;
+  vorbis_data->link = -1;
 
   self->type = ICES_INPUT_VORBIS;
   self->data = vorbis_data;
@@ -135,7 +128,7 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   self->readpcm = ices_vorbis_readpcm;
   self->close = ices_vorbis_close;
 
-  in_vorbis_set_metadata (vorbis_data);
+  in_vorbis_parse (self);
   
   return 0;
 }
@@ -145,7 +138,7 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
 		     int16_t* right)
 {
   ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
-  int pos;
+  int link;
   int len;
   int i;
 
@@ -154,13 +147,23 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
     vorbis_data->offset = 0;
     do {
       if ((len = ov_read (vorbis_data->vf, (char*) vorbis_data->buf,
-			  sizeof (vorbis_data->buf), ICES_OV_BE, SAMPLESIZE, 1, &pos)) <= 0) {
+			  sizeof (vorbis_data->buf), ICES_OV_BE, SAMPLESIZE, 1, &link)) <= 0) {
 	if (len == OV_HOLE) {
 	  ices_log_error ("Skipping bad vorbis data");
 	} else
 	  return len;
       }
     } while (len <= 0);
+
+    if (vorbis_data->link == -1)
+      vorbis_data->link = link;
+    else if (vorbis_data->link != link) {
+      vorbis_data->link = link;
+      ices_log_debug("New Ogg link found in bitstream");
+      in_vorbis_parse (self);
+      ices_reencode_reset (self);
+      ices_metadata_update (0);
+    }
 
     vorbis_data->samples = len / SAMPLESIZE;
     if (vorbis_data->info->channels > 1)
@@ -198,6 +201,22 @@ ices_vorbis_close (input_stream_t* self)
   free (vorbis_data);
 
   return 0;
+}
+
+static void in_vorbis_parse(input_stream_t* self) {
+  ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
+
+  vorbis_data->info = ov_info(vorbis_data->vf, vorbis_data->link);
+  self->bitrate = vorbis_data->info->bitrate_nominal / 1000;
+  if (! self->bitrate)
+    self->bitrate = ov_bitrate (vorbis_data->vf, vorbis_data->link) / 1000;
+  self->samplerate = (unsigned int) vorbis_data->info->rate;
+  self->channels = vorbis_data->info->channels;
+
+  ices_log_debug("Ogg vorbis file found, version %d, %d kbps, %d channels, %ld Hz",
+                 vorbis_data->info->version, self->bitrate, vorbis_data->info->channels,
+		 self->samplerate);
+  in_vorbis_set_metadata (vorbis_data);
 }
 
 static void
