@@ -1,0 +1,4 @@
+- Better VBR logic for choosing mode
+- VAD
+- Improve narrowband vocoder
+- High-band "pseudo-vocoder"
