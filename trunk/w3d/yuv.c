@@ -1,5 +1,7 @@
 #include "yuv.h"
 
+/*#define TARKIN_YUV_EXACT*/
+/*#define TARKIN_YUV_LXY*/
 
 
 static inline 
@@ -23,6 +25,12 @@ void rgb24_to_yuv (uint8_t *rgb, Wavelet3DBuf *yuv [], uint32_t frame)
       y [i] = ((int16_t)  77 * rgb [0] + 150 * rgb [1] +  29 * rgb [2]) / 256;
       u [i] = ((int16_t) -44 * rgb [0] -  87 * rgb [1] + 131 * rgb [2]) / 256;
       v [i] = ((int16_t) 131 * rgb [0] - 110 * rgb [1] -  21 * rgb [2]) / 256;
+   }
+#elif defined(TARKIN_YUV_LXY)
+   for (i=0; i<count; i++, rgb+=3) {
+      y [i] = ((int16_t)  54 * rgb [0] + 182 * rgb [1] +  18 * rgb [2]) / 256;
+      u [i] = rgb [0] - y [i];
+      v [i] = rgb [2] - y [i];
    }
 #else
    for (i=0; i<count; i++, rgb+=3) {
@@ -48,6 +56,12 @@ void yuv_to_rgb24 (Wavelet3DBuf *yuv [], uint8_t *rgb, uint32_t frame)
       rgb [1] = CLAMP(y [i] - 0.698 * v [i] - 0.336 * u [i]);
       rgb [2] = CLAMP(y [i] + 1.732 * u [i]);
    }
+#elif defined(TARKIN_YUV_LXY)
+   for (i=0; i<count; i++, rgb+=3) {
+      rgb [1] = CLAMP(y [i] - (76 * u [i] - 26 * v [i]) / 256);
+      rgb [0] = CLAMP(y [i] + u [i]);
+      rgb [2] = CLAMP(y [i] + v [i]);
+   }
 #else
    for (i=0; i<count; i++, rgb+=3) {
       rgb [1] = CLAMP(y [i] - (u [i] + v [i]) / 4);
@@ -72,6 +86,12 @@ void rgb32_to_yuv (uint8_t *rgb, Wavelet3DBuf *yuv [], uint32_t frame)
       u [i] = ((int16_t) -44 * rgb [0] -  87 * rgb [1] + 131 * rgb [2]) / 256;
       v [i] = ((int16_t) 131 * rgb [0] - 110 * rgb [1] -  21 * rgb [2]) / 256;
    }
+#elif defined(TARKIN_YUV_LXY)
+   for (i=0; i<count; i++, rgb+=4) {
+      y [i] = ((int16_t)  54 * rgb [0] + 182 * rgb [1] +  18 * rgb [2]) / 256;
+      u [i] = rgb [0] - y [i];
+      v [i] = rgb [2] - y [i];
+   }
 #else
    for (i=0; i<count; i++, rgb+=4) {
       v [i] = rgb [0] - rgb [1];
@@ -95,6 +115,12 @@ void yuv_to_rgb32 (Wavelet3DBuf *yuv [], uint8_t *rgb, uint32_t frame)
       rgb [0] = CLAMP(y [i] + 1.371 * v [i]);
       rgb [1] = CLAMP(y [i] - 0.698 * v [i] - 0.336 * u [i]);
       rgb [2] = CLAMP(y [i] + 1.732 * u [i]);
+   }
+#elif defined(TARKIN_YUV_LXY)
+   for (i=0; i<count; i++, rgb+=4) {
+      rgb [1] = CLAMP(y [i] - (76 * u [i] - 26 * v [i]) / 256);
+      rgb [0] = CLAMP(y [i] + u [i]);
+      rgb [2] = CLAMP(y [i] + v [i]);
    }
 #else
    for (i=0; i<count; i++, rgb+=4) {
@@ -122,6 +148,13 @@ void rgba_to_yuv (uint8_t *rgba, Wavelet3DBuf *yuva [], uint32_t frame)
       v [i] = ((int16_t) 131 * rgba [0] - 110 * rgba [1] -  21 * rgba [2]) / 256;
       a [i] = rgba [3];
    }
+#elif defined(TARKIN_YUV_LXY)
+   for (i=0; i<count; i++, rgba+=4) {
+      y [i] = ((int16_t)  54 * rgba [0] + 182 * rgba [1] +  18 * rgba [2]) / 256;
+      u [i] = rgba [0] - y [i];
+      v [i] = rgba [2] - y [i];
+      a [i] = rgba [3];
+   }
 #else
    for (i=0; i<count; i++, rgba+=4) {
       v [i] = rgba [0] - rgba [1];
@@ -147,6 +180,13 @@ void yuv_to_rgba (Wavelet3DBuf *yuva [], uint8_t *rgba, uint32_t frame)
       rgba [0] = CLAMP(y [i] + 1.371 * v [i]);
       rgba [1] = CLAMP(y [i] - 0.698 * v [i] - 0.336 * u [i]);
       rgba [2] = CLAMP(y [i] + 1.732 * u [i]);
+      rgba [3] = a [i];
+   }
+#elif defined(TARKIN_YUV_LXY)
+   for (i=0; i<count; i++, rgba+=4) {
+      rgba [1] = CLAMP(y [i] - (76 * u [i] - 26 * v [i]) / 256);
+      rgba [0] = CLAMP(y [i] + u [i]);
+      rgba [2] = CLAMP(y [i] + v [i]);
       rgba [3] = a [i];
    }
 #else

@@ -42,10 +42,10 @@ int main (int argc, char **argv)
 
    tarkin_stream_get_layer_desc (tarkin_stream, 0, &layer);
 
-   rgb  = MALLOC (layer.width * layer.height * 3);
+   rgb  = MALLOC (layer.width * layer.height * (layer.format == TARKIN_GRAYSCALE ? 1 : 3));
 
    while (tarkin_stream_read_frame (tarkin_stream, &rgb) != 0xffffffff) {
-      snprintf(ofname, 11, "out%03d.ppm", frame);
+      snprintf(ofname, 11, layer.format == TARKIN_GRAYSCALE ? "out%03d.pgm" : "out%03d.ppm", frame);
       printf ("write '%s'\n", ofname);
       write_pnm (ofname, rgb, layer.width, layer.height);
 

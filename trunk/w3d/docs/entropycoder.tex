@@ -1,8 +1,26 @@
 
 \section{ Entropy Coder }
+\label{entropy}
 
-For now we use a simple combined Runleght-Huffman-Coder. This is not very
-efficient and should be replaced for example by an arithmetic entropy coder.
+The coefficient scanner outputs two raw bitstreams for each bitplane which
+have some special properties which make them easy to compress.
+The more significand bitplanes of the coefficients are almost empty, thus
+the corresponding bitstreams have very long runs of $0$-bits. This makes
+them easy to compress using a Runlength Coder. The bitstreams describing
+the first significand bits of smaller coefficients have similiar properties
+but a bit shorter runs.
 
-Any Volunteers ?
+Runlengths are the written as pair of two codes into the new compressed stream:
+\verb|number of required bits| and 
+\verb|binary written runlength|. The first bit of runlength can be omitted; 
+it's always $1$. The number of bits required to code the runlength are huffman 
+coded. This is currently done with an ugly and pretty inefficient static 
+huffman coder, it should better done with an adaptive huffman coder or a 
+range coder. (Any Volunteers?)
+
+Insignificand bits (the bits of a coefficient after the first significand bit)
+are almost random, it doesn't makes sense to spend much energy on trying
+to compress them. But some of them -- especially for low frequency 
+coefficients -- need to be transmitted in order to prevent a DC offset or low 
+frequency color floating.
 

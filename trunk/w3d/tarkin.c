@@ -54,9 +54,9 @@ void tarkin_stream_destroy (TarkinStream *s)
 
 
 
-int tarkin_stream_write_layer_descs (TarkinStream *s,
-                                     uint32_t n_layers,
-                                     TarkinVideoLayerDesc desc [])
+TarkinError tarkin_stream_write_layer_descs (TarkinStream *s,
+                                             uint32_t n_layers,
+                                             TarkinVideoLayerDesc desc [])
 {
    TarkinError err;
    uint32_t max_bitstream_len = 0;
@@ -92,8 +92,7 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
          layer->color_inv_xform = yuv_to_rgba;
          break;
       default:
-         BUG("unknown color format");
-         break;
+         return -TARKIN_INVALID_COLOR_FORMAT;
       };
 
       layer->waveletbuf = (Wavelet3DBuf**) CALLOC (layer->n_comp,
@@ -104,18 +103,18 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
                                                     desc[i].frames_per_buf);
 
       max_bitstream_len += layer->desc.bitstream_len
-          + 5000
-          + 2 * 9 * sizeof(uint32_t) * layer->n_comp;    // truncation tables 
+          + 2 * 10 * sizeof(uint32_t) * layer->n_comp;    // truncation tables 
    }
 
    if ((err = write_tarkin_header(s->fd, s)) != TARKIN_OK)
       return err;
 
-   err = write_layer_descs(s->fd, s);
+   if ((err = write_layer_descs(s->fd, s)) != TARKIN_OK)
+      return err;
 
    s->bitstream = (uint8_t*) MALLOC (max_bitstream_len);
 
-   return err;
+   return TARKIN_OK;
 }
 
 
@@ -129,21 +128,33 @@ void tarkin_stream_flush (TarkinStream *s)
       TarkinVideoLayer *layer = &s->layer[i];
 
       for (j=0; j<layer->n_comp; j++) {
+         uint32_t comp_bitstream_len;
          uint32_t bitstream_len;
+
+        /**
+         *  implicit 6:1:1 subsampling
+         */
+         if (j == 0)
+            comp_bitstream_len = 6*layer->desc.bitstream_len/(layer->n_comp+5);
+         else
+            comp_bitstream_len = layer->desc.bitstream_len/(layer->n_comp+5);
+
+         wavelet_3d_buf_dump ("color-%d-%03d.pgm",
+                              s->current_frame, j,
+                              layer->waveletbuf[j], j == 0 ? 0 : 128);
 
          wavelet_3d_buf_fwd_xform (layer->waveletbuf[j],
                                    layer->desc.a_moments,
                                    layer->desc.s_moments);
 
          wavelet_3d_buf_dump ("coeff-%d-%03d.pgm",
-                              s->current_frame - s->current_frame_in_buf, j,
+                              s->current_frame, j,
                               layer->waveletbuf[j], 128);
 
          bitstream_len = wavelet_3d_buf_encode_coeff (layer->waveletbuf[j],
                                                       s->bitstream,
-                                                      j == 0 ?
-                                                      layer->desc.bitstream_len :
-                                                      layer->desc.bitstream_len/4);
+                                                      comp_bitstream_len);
+
          write_tarkin_bitstream (s->fd, s->bitstream, bitstream_len);
       }
    }
@@ -152,19 +163,13 @@ void tarkin_stream_flush (TarkinStream *s)
 
 uint32_t tarkin_stream_write_frame (TarkinStream *s, uint8_t **rgba)
 {
-   uint32_t i, j;
+   uint32_t i;
 
    for (i=0; i<s->n_layers; i++) {
       TarkinVideoLayer *layer = &s->layer[i];
 
       layer->color_fwd_xform (rgba[i], layer->waveletbuf,
                               s->current_frame_in_buf);
-
-      for (j=0; j<layer->n_comp; j++)
-         wavelet_3d_buf_dump ("color-%d-%03d.pgm",
-                              s->current_frame - s->current_frame_in_buf, j,
-                              layer->waveletbuf[j], j == 0 ? 0 : 128);
-
    }
 
    s->current_frame_in_buf++;
@@ -196,9 +201,6 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
 
    for (i=0; i<s->n_layers; i++) {
       TarkinVideoLayer *layer = &s->layer[i];
-
-      if (layer->desc.format != TARKIN_RGB24)
-         exit (-1);
 
       switch (layer->desc.format) {
       case TARKIN_GRAYSCALE:
@@ -236,8 +238,7 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
       }
 
       max_bitstream_len += layer->desc.bitstream_len
-          + 5000
-          + 2 * 9 * sizeof(uint32_t) * layer->n_comp;
+          + 2 * 10 * sizeof(uint32_t) * layer->n_comp;
    }
 
    s->bitstream = (uint8_t*) MALLOC (max_bitstream_len);
@@ -247,23 +248,19 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
 
 
 
-int tarkin_stream_get_layer_desc (TarkinStream *s,
-                                  uint32_t layer_id,
-                                  TarkinVideoLayerDesc *desc)
+TarkinError tarkin_stream_get_layer_desc (TarkinStream *s,
+                                          uint32_t layer_id,
+                                          TarkinVideoLayerDesc *desc)
 {
    if (layer_id > s->n_layers-1)
-      return -1;
+      return -TARKIN_INVALID_LAYER;
 
    memcpy (desc, &(s->layer[layer_id].desc), sizeof(TarkinVideoLayerDesc));
 
-   return 0;
+   return TARKIN_OK;
 }
 
 
-/**
- *   read all layers of the next frame to buf[0..n_layers]
- *   returns the number of this frame on success, -1 on error
- */
 uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **rgba)
 {
    uint32_t i, j;
@@ -292,7 +289,7 @@ uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **rgba)
                                       layer->desc.s_moments);
 
             wavelet_3d_buf_dump ("rcolor-%d-%03d.pgm",
-                                 s->current_frame - s->current_frame_in_buf, j,
+                                 s->current_frame, j,
                                  layer->waveletbuf[j], j == 0 ? 0 : 128);
          }
       }

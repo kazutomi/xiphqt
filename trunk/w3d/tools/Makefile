@@ -4,7 +4,7 @@ RM = rm -rf
 CFLAGS = -g -O0 -Wall -I.. -DTYPE=uint16_t
 LFLAGS = -g
 
-TARGETS = ppmdiff yuv2ppm deinterlace
+TARGETS = pnmdiff yuv2ppm deinterlace
 
 OBJS = $(TARGETS:=.o) ../pnm.o
 SRCS = $(OBJS:.o=.c)
@@ -12,8 +12,8 @@ SRCS = $(OBJS:.o=.c)
 
 all: $(OBJS) $(TARGETS)
 
-ppmdiff: ppmdiff.o ../pnm.o
-	$(CC) $(LFLAGS) ppmdiff.o ../pnm.o -o $@
+pnmdiff: pnmdiff.o ../pnm.o
+	$(CC) $(LFLAGS) pnmdiff.o ../pnm.o -o $@
 
 yuv2ppm: yuv2ppm.o ../pnm.o
 	$(CC) $(LFLAGS) yuv2ppm.o ../pnm.o -o $@

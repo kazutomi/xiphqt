@@ -23,8 +23,8 @@
 #define ENTROPY_CODER_EOS(coder)          ((coder)->bitcoder.eos)
 
 #define ENTROPY_CODER_MPS(coder)          ((coder)->mps)
-#define ENTROPY_CODER_RUNLENGTH(coder)    ((coder)->count+1)
-#define ENTROPY_CODER_SKIP(coder,skip)    do { (coder)->count -= skip-1; } while (0)
+#define ENTROPY_CODER_RUNLENGTH(coder)    ((coder)->count)
+#define ENTROPY_CODER_SKIP(coder,skip)    do { (coder)->count -= skip; } while (0)
 #endif
 
 

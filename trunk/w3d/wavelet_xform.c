@@ -261,6 +261,14 @@ void fwd_xform (TYPE *scratchbuf, TYPE *data, int stride, int n,
    assert (a_moments == 1 || a_moments == 2 || a_moments == 4);
    assert (s_moments == 1 || s_moments == 2 || s_moments == 4);
 
+   /*  XXX FIXME: Ugly hack to workaround   */
+   /*             the short-row bug in high */
+   /*             order xform functions     */
+   if (n < 9)
+      a_moments = s_moments = 2;
+   if (n < 5)
+      a_moments = s_moments = 1;
+
    fwd_analyze [a_moments] (x, d, stride, n);
    fwd_synthesize [s_moments] (x, s, d, stride, n);
    copyback_d (x, d, stride, n);
@@ -278,6 +286,14 @@ void inv_xform (TYPE *scratchbuf, TYPE *data, int stride, int n,
 
    assert (a_moments == 1 || a_moments == 2 || a_moments == 4);
    assert (s_moments == 1 || s_moments == 2 || s_moments == 4);
+
+   /*  XXX FIXME: Ugly hack to workaround   */
+   /*             the short-row bug in high */
+   /*             order xform functions     */
+   if (n < 9)
+      a_moments = s_moments = 2;
+   if (n < 5)
+      a_moments = s_moments = 1;
 
    copy_s_d (data, scratchbuf, stride, n);
    inv_synthesize [s_moments] (x, s, d, stride, n);

@@ -16,9 +16,11 @@ void usage (const char *program_name)
      "\n"
      "   input ppm filename format:  optional, \"%%i.ppm\" by default\n"
      "   bitrate:                    cut Y/U/V bitstream after limit bytes/frame\n"
-     "                               (something like 10000 makes sense here)\n" 
+     "                               (something like 3000 makes sense here)\n" 
      "   a_m, s_m:                   number of vanishing moments of the\n"
      "                               analysis/synthesis filter, (2,2) by default\n"
+     "\n" 
+     " The resulting stream.tarkin will have bitrate*frame+sizeof(header) bytes.\n" 
      "\n", program_name);
    exit (-1);
 }
@@ -52,8 +54,10 @@ int main (int argc, char **argv)
    snprintf (fname, 256, fmt, 0);
    type = read_pnm_header (fname, &layer[0].width, &layer[0].height);
 
-   if (type < 0)
+   if (type < 0) {
+      printf (" failed opening '%s' !!\n", fname);
       exit (-1);
+   }
 
    layer[0].format = (type == 3) ? TARKIN_RGB24 : TARKIN_GRAYSCALE;
 
