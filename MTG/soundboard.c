@@ -97,7 +97,7 @@ int mgetch(){
 
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
-#define MAX_OUTPUT_CHANNELS 4
+#define MAX_OUTPUT_CHANNELS 2
 #define MAX_FILECHANNELS 2
 #define CHANNEL_LABEL_LENGTH 50
 int playback_bufsize=0;
@@ -3016,7 +3016,7 @@ int main(int gratuitously,char *different[]){
     exit(1);
   }
 
-  playfd=fopen("/dev/dsp1","wb");
+  playfd=fopen("/dev/dsp","wb");
   if(!playfd){
     fprintf(stderr,"unable to open audio device for playback: %s.\n",strerror(errno));
     fprintf(stderr,"\nPress enter to continue\n");
