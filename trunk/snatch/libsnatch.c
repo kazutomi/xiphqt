@@ -710,7 +710,8 @@ int ioctl(int fd,unsigned long int rq, ...){
 	}
       }
       return(ret);
-    }
+    }else
+      if(fake_audiop)return(0);
   }
   return((*libc_ioctl)(fd,rq,arg));
 }

@@ -474,43 +474,48 @@ static void ChangeProperty(unsigned char *buf){
   }
 
   /* watch for the auth password window */
-  if(n>32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
-    if(rpauth_already>2){
-      fprintf(stderr,
-	      "**ERROR: Password not accepted.\n");
-      rpauth_shell=0;
-      rpauth_already=0;
-    }else{      
-      fprintf(stderr,
-	      "    ...: RealPlayer popped auth window.  Watching for username\n"
-	      "         password and ok button windows\n");
-      rpauth_shell=id;
-      rpauth_count=0;
-      rpauth_username=0;
-      rpauth_password=0;
-      rpauth_okbutton=0;
-      rpauth_already++;
+  if(username || password){
+    if(n>32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
+      if(rpauth_already>2){
+	fprintf(stderr,
+		"**ERROR: Password not accepted.\n");
+	rpauth_shell=0;
+	rpauth_already=0;
+      }else{      
+	fprintf(stderr,
+		"    ...: RealPlayer popped auth window.  Watching for username\n"
+		"         password and ok button windows\n");
+	rpauth_shell=id;
+	rpauth_count=0;
+	rpauth_username=0;
+	rpauth_password=0;
+	rpauth_okbutton=0;
+	rpauth_already++;
+      }
     }
   }
 
   /* watch for the open location window */
-  if(n>36 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",36)){
-    fprintf(stderr,
+  if(location){
+    if(n>36 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",36)){
+      fprintf(stderr,
 	    "    ...: RealPlayer popped open location dialog.  Watching for\n"
-	    "         dialog window tree...\n");
-    rploc_shell=id;
-    rploc_count=0;
-    rploc_entry=0;
-    rploc_clear=0;
-    rploc_ok=0;
+	      "         dialog window tree...\n");
+      rploc_shell=id;
+      rploc_count=0;
+      rploc_entry=0;
+      rploc_clear=0;
+      rploc_ok=0;
+    }
   }
-
-  /* watch for the open file window */
-  if(n>32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
-    fprintf(stderr,
-	    "    ...: RealPlayer popped open file dialog.\n");
-    rpfile_shell=id;
-    rpfile_main=0;
+  if(openfile){
+    /* watch for the open file window */
+    if(n>32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
+      fprintf(stderr,
+	      "    ...: RealPlayer popped open file dialog.\n");
+      rpfile_shell=id;
+      rpfile_main=0;
+    }
   }
 }
 
