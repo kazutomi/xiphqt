@@ -286,12 +286,13 @@ ices_util_percent (int this, int of_that)
  * by nice formatting in string buf.
  * Note: This only works ok with CBR */
 char *
-ices_util_file_time (int bitrate, int filesize, char *buf)
+ices_util_file_time (unsigned int bitrate, unsigned int filesize, char *buf)
 {
 	unsigned long int days, hours, minutes, nseconds, remains;
 	unsigned long int seconds;
 
-	 seconds = (double)((double)filesize / ((double)(bitrate * 1000) / 8.0));
+	/* << 7 == 1024 (bits->kbits) / 8 (bits->bytes) */
+	seconds = filesize / ((bitrate * 1000) >> 3);
 
 	if (!buf)
 		return NULL;

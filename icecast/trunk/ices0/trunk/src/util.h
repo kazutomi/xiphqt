@@ -38,7 +38,8 @@ int ices_util_directory_create (const char *filename);
 int ices_util_directory_exists (const char *filename);
 const char *ices_util_nullcheck (const char *string);
 double ices_util_percent (int this, int of_that);
-char *ices_util_file_time (int bitrate, int filesize, char *namespace);
+char *ices_util_file_time (unsigned int bitrate, unsigned int filesize,
+			   char *namespace);
 const char *ices_util_strerror (int error, char *namespace, int maxsize);
 void ices_util_free (void *ptr);
 void ices_util_close (int fd);
