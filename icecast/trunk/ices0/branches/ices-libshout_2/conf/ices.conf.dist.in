@@ -3,11 +3,11 @@
   <Playlist>
     <!-- This is the filename used as a playlist when using the builtin 
 	 playlist handler. -->
-    <File>apan.txt</File>
+    <File>playlist.txt</File>
     <!-- Set this to 0 if you don't want to randomize your playlist, and to
 	 1 if you do. -->
     <Randomize>1</Randomize>
-    <!-- Either builtin, perl, or python. -->
+    <!-- One of builtin, perl, or python. -->
     <Type>builtin</Type>
     <!-- Module name to pass to the playlist handler if using  perl or python.
 	 If you use the builtin playlist handler then this is ignored -->
@@ -34,8 +34,9 @@
       <!-- Encoder password on the icecast server -->
       <Password>letmein</Password>
       <!-- Header protocol to use when communicating with the server.
-           Use xaudiocast for icecast, or icy for shoutcast compatibility -->
-      <Protocol>xaudiocast</Protocol>
+           Shoutcast servers need "icy", icecast 1.x needs "xaudiocast", and
+	   icecast 2.x needs "http". -->
+      <Protocol>http</Protocol>
     </Server>
 
     <!-- The name of the mountpoint on the icecast server -->
@@ -45,16 +46,16 @@
     <Dumpfile>ices.dump</Dumpfile>
     -->
     <!-- The name of you stream, not the name of the song! -->
-    <Name>Cool ices default name from XML</Name>
+    <Name>Default stream</Name>
     <!-- Genre of your stream, be it rock or pop or whatever -->
-    <Genre>Cool ices genre from XML</Genre>
+    <Genre>Default genre</Genre>
     <!-- Longer description of your stream -->
-    <Description>Cool ices description from XML</Description>
+    <Description>Default description</Description>
     <!-- URL to a page describing your stream -->
-    <URL>Cool ices URL from XML</URL>
+    <URL>http://localhost/</URL>
     <!-- 0 if you don't want the icecast server to publish your stream on
 	 the yp server, 1 if you do -->
-    <Public>1</Public>
+    <Public>0</Public>
 
     <!-- Stream bitrate, used to specify bitrate if reencoding, otherwise
 	 just used for display on yp and on the server. Try to keep it
