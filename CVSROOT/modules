@@ -34,7 +34,7 @@ icecast-src-timing -d src &timing
 
 icecast icecast &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-httpp &icecast-src-thread &icecast-src-timing
 
-ices ices &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-thread &icecast-src-timing
+ices ices &m4 &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-thread &icecast-src-timing
 
 libshout libshout &m4 &icecast-src-avl &icecast-src-net &icecast-src-thread &icecast-src-httpp &icecast-src-timing
 
