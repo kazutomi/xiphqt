@@ -530,8 +530,8 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	int i,j,len;
 	
 	bigtime(&a,&b);
-	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,video_width,
-		    video_height,n);
+	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,image->width,
+		    image->height,n);
 	gwrite(outfile_fd,cbuf,len);
 	
 	if(worksize<n){
@@ -758,8 +758,8 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	int i,j,len;
 	
 	bigtime(&a,&b);
-	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,video_width,
-		    video_height,n);
+	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,image->width,
+		    image->height,n);
 	gwrite(outfile_fd,cbuf,len);
 	
 	if(worksize<n){
