@@ -23,7 +23,7 @@ extern void write_pnm (char *fname, uint8_t *buf, int w, int h);
 /**
  *   Write a int16_t buf into pgm file
  */
-extern void write_pgm16 (char *fname, int16_t *buf, int w, int h);
+extern void write_pgm16 (char *fname, int16_t *buf, int w, int h, int16_t offset);
 
 #endif
 

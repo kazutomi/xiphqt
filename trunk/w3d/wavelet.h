@@ -46,7 +46,8 @@ extern void wavelet_3d_buf_decode_coeff (Wavelet3DBuf* buf,
 extern void wavelet_3d_buf_dump (char *fmt,
                                  uint32_t first_frame_in_buf,
                                  uint32_t id,
-                                 Wavelet3DBuf* buf);
+                                 Wavelet3DBuf* buf,
+                                 int16_t offset);
 #else
 #define wavelet_3d_buf_dump(x...)
 #endif

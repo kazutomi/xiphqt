@@ -1,12 +1,12 @@
 #include "yuv.h"
 
+
+
 static inline 
 uint8_t CLAMP(int16_t x)
 {
    return  ((x > 255) ? 255 : (x < 0) ? 0 : x);
 }
-
-
 
 
 

@@ -56,7 +56,7 @@ int main ()
          ENTROPY_ENCODER_INIT(&encoder, limit);
 
          for (i=0; i<limit; i++) {
-            bit[i] = (rand() > RAND_MAX/20) ? 0 : 1;
+            bit[i] = (rand() > RAND_MAX/100) ? 0 : 1;  /* avg. runlength 100 */
             OUTPUT_BIT(&encoder, bit[i]);
          }
 
@@ -75,7 +75,7 @@ int main ()
          ENTROPY_CODER decoder;
          uint32_t i;
 
-         ENTROPY_DECODER_INIT(&decoder, bitstream, limit);
+         ENTROPY_DECODER_INIT(&decoder, bitstream, count);
 
          for (i=0; i<limit; i++) {
             int b = INPUT_BIT(&decoder);

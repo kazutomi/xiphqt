@@ -26,11 +26,12 @@
 
 
 typedef struct {
-   uint32_t  bit_count;          /*  number of valid bits in byte    */
+   int32_t  bit_count;           /*  number of valid bits in byte    */
    uint8_t   byte;               /*  buffer to save bits             */
    uint32_t  byte_count;         /*  number of bytes written         */
    uint8_t  *bitstream;
    uint32_t  limit;              /*  don't write more bytes to bitstream ... */
+   int       eos;                /*  end of stream reached           */
 } BitCoderState;
 
 
@@ -43,6 +44,7 @@ void bitcoder_encoder_init (BitCoderState *s, uint32_t limit)
    s->byte_count = 0;
    s->bitstream = (uint8_t*) MALLOC (limit);
    s->limit = limit;
+   s->eos = 0;
 }
 
 
@@ -56,11 +58,12 @@ void bitcoder_encoder_done (BitCoderState *s)
 static inline
 void bitcoder_decoder_init (BitCoderState *s, uint8_t *bitstream, uint32_t limit)
 {
-   s->bit_count = 0;
+   s->bit_count = -1;
    s->byte = 0;
    s->byte_count = 0;
    s->bitstream = bitstream;
    s->limit = limit;
+   s->eos = 0;
 }
 
 
@@ -75,18 +78,6 @@ uint32_t bitcoder_flush (BitCoderState *s)
 }
 
 
-static inline
-int bitcoder_is_empty (BitCoderState *s)
-{
-   if (!s->bitstream || s->byte_count >= s->limit)
-{
-//printf ("bitcoder empty !!!\n");
-      return 1;
-}
-
-   return 0;
-}
-
 
 static inline
 void bitcoder_write_bit (BitCoderState *s, int bit)
@@ -96,9 +87,13 @@ void bitcoder_write_bit (BitCoderState *s, int bit)
 
    s->bit_count++;
 
-   if (s->bit_count == 8 && s->byte_count < s->limit) {
-      s->bitstream [s->byte_count++] = s->byte;
-      s->bit_count = 0;
+   if (s->bit_count == 8) {
+      if (s->byte_count < s->limit) {
+         s->bitstream [s->byte_count++] = s->byte;
+         s->bit_count = 0;
+      } else {
+         s->eos = 1;
+      }
    }
 }
 
@@ -108,11 +103,19 @@ int bitcoder_read_bit (BitCoderState *s)
 {
    int ret;
 
-   if (s->bit_count == 0 && s->byte_count < s->limit) {
-      if (!s->bitstream)
+   if (s->bit_count <= 0) {
+      if (!s->bitstream) {
+         s->eos = 1;
          return 0;
+      }
 
-      s->byte = s->bitstream [s->byte_count++];
+      if (s->byte_count < s->limit) {
+         s->byte = s->bitstream [s->byte_count++];
+      } else {
+         s->eos = 1;
+         s->byte = 0;
+      }
+
       s->bit_count = 8;
    }
 

@@ -5,3 +5,7 @@ _test_rle
 rle.histogram
 tarkin_dec
 tarkin_enc
+*.pgm
+*.ppm
+stream.tarkin
+
