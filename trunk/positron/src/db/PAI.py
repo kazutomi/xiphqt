@@ -36,7 +36,7 @@ class PAI:
         f.seek(to_offset(pointer))
         length_str = f.read(2)
         while length_str != "":
-            pointers.append(pointer)
+            pointers.append(pointer + PAI.MODULE_HEADER_LEN)
             
             (length,) = struct.unpack(">H", length_str)
             pointer += length
@@ -57,8 +57,9 @@ class PAI:
 
     def read_module_at(self, pointer):
         f = self.file
+        pointer -= PAI.MODULE_HEADER_LEN
 
-        (length, flag, num_entries) = _read_module_header(pointer)
+        (length, flag, num_entries) = self._read_module_header(pointer)
 
         if flag & 0x0001 == 0x0001:
             return ([], pointer+length)
@@ -72,6 +73,7 @@ class PAI:
 
     def add_entry_to_module_at(self, pointer, entry):
         f = self.file
+        pointer -= PAI.MODULE_HEADER_LEN
 
         # Calculate empty space
         (length, flag, num_entries) = self._read_module_header(pointer)
@@ -111,6 +113,7 @@ class PAI:
         
     def delete_entry_in_module_at(self, pointer, entry_num):
         f = self.file
+        pointer = PAI.MODULE_HEADER_LEN
 
         (length, flag, num_entries) = _read_module_header(pointer)
 
@@ -137,6 +140,19 @@ class PAI:
     def append_module(self, entries):
         f = self.file
 
+        # "Empty" PAI files always have one empty module in them.
+        # This module is not associated with the mandatory null entry
+        # in the MDB, so we must "overwrite it" when adding a module
+        # for to an empty PAI.  In actuality, we just find it and
+        # return a pointer to it.
+        modules = self.get_module_pointers()
+        if len(modules) == 1 and len(self.read_module_at(modules[0])[0]) == 0:
+
+            for entry in entries:
+                self.add_entry_to_module_at(modules[0], entry)
+
+            return modules[0]
+
         #Compute header values
         num_entries = len(entries)
         if num_entries == 0:
@@ -161,11 +177,13 @@ class PAI:
         f.write(module)
         f.flush()
 
-        return position
+        return position + PAI.MODULE_HEADER_LEN
+
 
     def extend_module_at(self, pointer, chunks=1):
         f = self.file
-
+        pointer -= PAI.MODULE_HEADER_LEN
+        
         (length, flags, num_entries) = self._read_module_header(pointer)
 
         # Read everything after this module
@@ -187,6 +205,7 @@ class PAI:
 
     def set_empty_module_at(self, pointer, value=True):
         f = self.file
+        pointer -= PAI.MODULE_HEADER_LEN
 
         f.seek(to_offset(pointer+1))
         flags = struct.unpack(">H", f.read(2))
