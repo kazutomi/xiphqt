@@ -1,7 +1,7 @@
 /* config.c
  * - config file reading code, plus default settings.
  *
- * $Id: config.c,v 1.6.2.1 2002/02/07 09:11:10 msmith Exp $
+ * $Id: config.c,v 1.6.2.2 2002/02/08 11:14:03 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -257,10 +257,9 @@ static void _parse_root(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 	} while ((node = node->next));
 }
 
-void config_initialize(void)
+void config_initialise(void)
 {
 	ices_config = (config_t *)calloc(1, sizeof(config_t));
-	//_set_defaults(ices_config);
 	srand(time(NULL));
 }
 
