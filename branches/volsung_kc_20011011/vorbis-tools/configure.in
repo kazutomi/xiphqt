@@ -104,6 +104,8 @@ SOCKET_LIBS=
 AC_CHECK_HEADER(curl/curl.h, , AC_MSG_ERROR(libcurl headers needed!))
 AC_CHECK_HEADER(curl/easy.h, , AC_MSG_ERROR(libcurl headers needed!))
 AC_CHECK_LIB(curl, curl_easy_perform, , AC_MSG_ERROR(libcurl needed!))
+AC_CHECK_HEADER(pthread.h, , AC_MSG_ERROR(pthread header needed!))
+AC_CHECK_LIB(pthread, pthread_mutex_init, THREAD_LIBS="-lpthread", AC_MSG_ERROR(pthread library needed!))
 AC_CHECK_LIB(socket, socket, SOCKET_LIBS="-lsocket")
 AC_CHECK_LIB(nsl, gethostbyname, SOCKET_LIBS="-lnsl $SOCKET_LIBS")
 
@@ -112,6 +114,7 @@ dnl Check for library functions
 dnl --------------------------------------------------
 
 AC_FUNC_SMMAP
+AC_CHECK_FUNCS(atexit on_exit)
 
 dnl --------------------------------------------------
 dnl Work around FHS stupidity
@@ -125,6 +128,7 @@ dnl --------------------------------------------------
 
 AC_SUBST(DEBUG)
 AC_SUBST(PROFILE)
+AC_SUBST(THREAD_LIBS)
 AC_SUBST(SOCKET_LIBS)
 
 AC_OUTPUT(Makefile oggenc/Makefile oggenc/man/Makefile ogg123/Makefile vorbiscomment/Makefile ogginfo/Makefile debian/Makefile)
