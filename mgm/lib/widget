@@ -308,6 +308,7 @@ sub scalemod{
 	    }
 	}
     }
+    $scaleset=int($scaleset+.5);
     ($scaleset,$multiplier);
 }
 
