@@ -1,11 +1,9 @@
-#ifndef __TYPES_HEADER_INLUDE__
-#define __TYPES_HEADER_INLUDE__
+#ifndef __W3D_TYPES_H
+#define __W3D_TYPES_H
 
-#if !defined(_WIN32)  // These headers do not exists in VC6 either in BC5
-	#include <unistd.h>
-	#include <stdint.h>
-	#define O_BINARY        0
-#else
+#if defined(_WIN32)   /* The unistd.h and stdint.h headers do not  */
+                      /* exists in VC6 either in BC5               */
+
 	#define TYPE_BITS       10
 	#define __FUNCTION__    ""    // in Win this is not supported.
 
@@ -21,6 +19,17 @@
 
 	#define snprintf       _snprintf    // name confusion...
 	#define inline         __inline
+
+#else
+
+	#include <unistd.h>
+	#include <stdint.h>
+
+	#ifndef O_BINARY
+	#define O_BINARY        0
+	#endif
+
 #endif
 
-#endif  // __TYPES_HEADER_INLUDE__
+#endif  /* __W3D_TYPES_H */
+

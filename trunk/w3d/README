@@ -6,3 +6,5 @@ documentation can be found in the w3d/docs directory.
 For sample / test streams, see http://media.xiph.org/
 (and feel free to submit more streams if you have them).
 
+To get an idea how to build this stuff under Windows, read README.win32.
+
