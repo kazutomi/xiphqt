@@ -4,6 +4,114 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Icecast Release 2.2.0</h3>
+<p>On the heels of version 2.1.0, we are releasing 2.2.0 with some new key features.
+</p>
+<p>
+<font color=white size=4><b>New features for 2.2.0 (in no particular order)</b></font>
+<p>
+<font color=yellow>
+Theora Video support
+</font></br>
+Icecast now supports video streaming via theora.  Currently, we require the latest
+(alpha 4) version of libtheora.  This is an optional compile, so if you don't
+have theora then icecast will safely ignore it
+</br>
+</br>
+<font color=yellow>
+Shoutcast style source client support
+</font></br>
+Icecast now supports the connection protocol used by the Shoutcast DSP source
+client.  This is the same connection protocol used by their NSV encoding tools.
+This means that not only can you use the Shoutcast DSP to stream to icecast, but
+that you can also stream NSV via their tools.
+</br>
+</br>
+<font color=yellow>
+AAC is added as a supported streaming format
+</font></br>
+Not too many source clients support streaming in this format, but we support it.
+</br>
+</br>
+<font color=yellow>
+Cluster password
+</font></br>
+Now you can specify a cluster password as a <mount> option in the config. This
+will allow you to cluster multiple servers/mounts into a single listing on the
+stream directory.  Note that this is different than "grouping" which groups together
+streams coming from the same physical IP and with the same stream name.  Clusters
+are meant for relays of the same stream and will only be listed *once* in the stream
+directory.  When a listener tunes into a cluster, they will be served an m3u file
+with all the clusters for that stream.
+</br>
+</br>
+<font color=yellow>
+Playlist Log
+</font></br>
+This is an option setting that will create an audit trail of metadata that comes through
+icecast.  It is a single file that contains information for all mountpoints.
+</br>
+</br>
+<font color=yellow>
+Range Support for static files
+</font></br>
+We now support seeking in files served off the icecast fserve.
+</br>
+</br>
+<font color=yellow>
+Metadata Update via Admin
+</font></br>
+We now support metadata updates via the admin interface for both MP3 AND Ogg Vorbis
+streams.
+</br>
+</br>
+
+<font color=yellow>
+Per mount hidden stats and YP prevention
+</font></br>
+You many now indicate certains mounts to be excluded (i.e. hidden) from the main
+status.xsl page.  This is useful when using local private relays.  You can also
+override the YP setting (as in disable) on a per-mount basis.  Also useful for
+local private relays.
+</br>
+</br>
+<font color=yellow>
+Multiple example config files
+</font></br>
+We now have multiple config files for you to use as a base.  A "simple" one for
+quick-start, and a more detailed "advanced" one with all the features, as well
+as a "shoutcast compatable" one, which shows how you'd config for using the
+shoutcast DSP.
+</br>
+</br>
+<font color=yellow>
+Relay user/pass
+</font></br>
+You can now specify authentication used by a relay.  This is for the case where
+you have listener authentication enabled for a mountpoint, and want to connect
+a relay to it.
+</br>
+</br>
+</p>
+
+<p>Download Icecast 2.2.0 from the <a href="download.php">Download page</a>.</p>
+
+<div class="poster">
+Posted December 21, 2004 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Icecast Release 2.1.0</h3>
 <p>After about 8 months in development, version 2.1.0 of icecast has been released.
 </p>
