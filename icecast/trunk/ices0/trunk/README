@@ -144,7 +144,7 @@ projects/ices">
                         <ices:Execution>
                                 <ices:Background>0</ices:Background>
                                 <ices:Verbose>1</ices:Verbose>
-                                <ices:BaseDirectory>/tmp</ices:Base_Directory>
+                                <ices:BaseDirectory>/tmp</ices:BaseDirectory>
                                 <ices:Reencode>0</ices:Reencode>
                                 <ices:Samplerate>-1</ices:Samplerate>
                                 <ices:Channels>-1</ices:Channels>
@@ -199,7 +199,7 @@ L</ices:Description>
                  track info.
                o Execution Base Directory
                  Command line option: -D <directory>
-                 Config file tag: Execution/Base_directory
+                 Config file tag: Execution/BaseDirectory
                  ices uses this directory for cue files, log files and
                  temporary playlist files. You need write permissions in
                  this directory. The default is /tmp
