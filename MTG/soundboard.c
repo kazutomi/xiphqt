@@ -77,7 +77,7 @@ static char *tempdir="/tmp/beaverphonic/";
 static char *lockfile="/tmp/beaverphonic/lock";
 //static char *installdir="/usr/local/beaverphonic/";
 static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
-#define VERSION "$Id: soundboard.c,v 1.13 2003/10/02 17:11:58 xiphmont Exp $"
+#define VERSION "$Id: soundboard.c,v 1.14 2003/10/02 17:14:19 xiphmont Exp $"
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
 
@@ -990,6 +990,16 @@ void *record_thread(void *dummy){
   long totalsize;
   int ret;
   audio_buf_info info;
+
+  /* realtime schedule setup */
+  {
+    struct sched_param param;
+    param.sched_priority=89;
+    if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
+      fprintf(stderr,"Could not set realtime priority for playback; am I suid root?\n");
+      exit(1);
+    }
+  }
 
   ret=ioctl(fd,SNDCTL_DSP_SETFMT,&format);
   if(ret || format!=REC_SAMPLE_FMT){
