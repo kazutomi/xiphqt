@@ -9,7 +9,8 @@
 
 <div id="thepage">
 
-<div id="label"><img class="back" src="/images/layout/fire.jpg"/><div id='label2'>Xiph's Open Media Technologies</div>
+<div id="label">
+<div id='label2'><img src="images/layout/xiph-66x44.png" width="66" height="44" />Xiph <br/> <span style="color: #58585A;">Open Source Community</span></div>
 </div>
 
 <div id="navbar1">
