@@ -214,6 +214,9 @@ oc_psych_ctx *oc_psych_alloc(oc_enc_ctx *_enc);
 void oc_psych_free(oc_psych_ctx *_psych);
 void oc_psych_scan(oc_psych_ctx *_psych,float _contrast);
 
+/*The number of fractional bits in bitrate statistics.*/
+#define OC_BIT_SCALE (7)
+
 /*Estimated bits needed to code a residual given the: quality index, color
    plane, macro-block mode, and a SAD bin.
   SAD values for a block are divided by 256 for INTRA mode and 64 for INTER

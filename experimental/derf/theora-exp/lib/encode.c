@@ -76,7 +76,7 @@ static const theora_huff_code OC_MODE_CODESA[OC_NMODES]={
 };
 
 static const theora_huff_code OC_MODE_CODESB[OC_NMODES]={
-  {0x01,3},{0x00,3},{0x02,3},{0x03,3},{0x04,3},{0x07,3},{0x06,3},{0x05,3}
+  {0x00,3},{0x01,3},{0x02,3},{0x03,3},{0x04,3},{0x05,3},{0x06,3},{0x07,3}
 };
 
 
@@ -727,8 +727,9 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
           efrag=_enc->frinfo+fragi;
           best_qii=0;
           for(qii=1;qii<_enc->state.nqis;qii++){
-            if(_enc->state.qis[qii]<_enc->state.qis[best_qii]&&
-             efrag->qi_min[0]<=_enc->state.qis[qii]){
+            if(efrag->qi_min[0]<=_enc->state.qis[qii]&&
+             (_enc->state.qis[best_qii]<efrag->qi_min[0]||
+             _enc->state.qis[qii]<_enc->state.qis[best_qii])){
               best_qii=qii;
             }
           }
@@ -1986,8 +1987,9 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         for(fti=0;fti<2;fti++)for(qti=0;qti<=fti;qti++){
           best_qii=0;
           for(qii=1;qii<_enc->nqis[fti];qii++){
-            if(_enc->qis[fti][qii]<_enc->qis[fti][best_qii]&&
-             efrag->qi_min[qti]<=_enc->qis[fti][qii]){
+            if(efrag->qi_min[qti]<=_enc->qis[fti][qii]&&
+             (_enc->qis[fti][qii]<_enc->qis[fti][best_qii]||
+             _enc->qis[fti][best_qii]<efrag->qi_min[qti])){
               best_qii=qii;
             }
           }
@@ -2033,8 +2035,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           efrag->qii=frag_qii[codedi][OC_INTER_FRAME][1];
           frag->qi=qi;
         }
-        intra_bits+=mbintrabits+128>>8;
-        inter_bits+=bits[OC_MODE_INTER_NOMV]+128>>8;
+        intra_bits+=mbintrabits+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
+        inter_bits+=bits[OC_MODE_INTER_NOMV]+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
         continue;
       }
       /*Otherwise, add this to the coded MB list.*/
@@ -2126,7 +2128,9 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       }
       /*Bit costs are stored in the table with extra precision.
         Round them down to whole bits here.*/
-      for(modei=0;modei<OC_NMODES;modei++)bits[modei]=bits[modei]+128>>8;
+      for(modei=0;modei<OC_NMODES;modei++){
+        bits[modei]=bits[modei]+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
+      }
       /*Estimate the cost of coding the label for each mode.
         See comments at oc_mode_scheme_chooser_cost() for a description of the
          method.*/
@@ -2182,7 +2186,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         frag->qi=_enc->qis[OC_INTER_FRAME][efrag->qii];
       }
       inter_bits+=bits[mb->mode];
-      intra_bits+=mbintrabits+128>>8;
+      intra_bits+=mbintrabits+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
       oc_mode_scheme_chooser_update(&_enc->mode_scheme_chooser,mb->mode);
       switch(mb->mode){
         case OC_MODE_INTER_MV:{
@@ -2586,10 +2590,8 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
    _img[0].height!=(int)_enc->state.info.frame_height){
     return OC_EINVAL;
   }
-  cwidth=_enc->state.info.frame_width;
-  if(!(_enc->state.info.pixel_fmt&1))cwidth>>=1;
-  cheight=_enc->state.info.frame_height;
-  if(!(_enc->state.info.pixel_fmt&2))cheight>>=1;
+  cwidth=_enc->state.info.frame_width>>!(_enc->state.info.pixel_fmt&1);
+  cheight=_enc->state.info.frame_height>>!(_enc->state.info.pixel_fmt&2);
   if(_img[1].width!=cwidth||_img[2].width!=cwidth||
    _img[1].height!=cheight||_img[2].height!=cheight){
     return OC_EINVAL;

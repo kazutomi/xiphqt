@@ -5,8 +5,45 @@
 ogg_uint16_t OC_RES_BITRATES[64][3][OC_NMODES][16];
 
 #if defined(OC_BITRATE_STATS)
-static ogg_uint32_t OC_RES_BITRATE_ACCUM[64][3][OC_NMODES][16];
-static int          OC_RES_BITRATE_SAMPLES[64][3][OC_NMODES][16];
+static ogg_int64_t OC_RES_BITRATE_ACCUM[64][3][OC_NMODES][16];
+static int         OC_RES_BITRATE_SAMPLES[64][3][OC_NMODES][16];
+
+#include <stdio.h>
+
+void oc_bitrate_stats_read(void){
+  FILE *in;
+  in=fopen("modedec.stats","rb");
+  if(in==NULL)return;
+  fread(OC_RES_BITRATE_ACCUM,sizeof(OC_RES_BITRATE_ACCUM),1,in);
+  fread(OC_RES_BITRATE_SAMPLES,sizeof(OC_RES_BITRATE_SAMPLES),1,in);
+  /*Update the current bitrate statistics in use.*/
+  {
+    int qi;
+    for(qi=0;qi<64;qi++){
+      int pli;
+      for(pli=0;pli<3;pli++){
+        int modei;
+        for(modei=0;modei<OC_NMODES;modei++){
+          int erri;
+          for(erri=0;erri<16;erri++){
+            int n;
+            n=OC_RES_BITRATE_SAMPLES[qi][pli][modei][erri];
+            if(!n)continue;
+            OC_RES_BITRATES[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
+             ((OC_RES_BITRATE_ACCUM[qi][pli][modei][erri]<<1)+n)/(n<<1));
+          }
+        }
+      }
+    }
+  }
+}
+
+void oc_bitrate_stats_write(void){
+  FILE *out;
+  out=fopen("modedec.stats","wb");
+  fwrite(OC_RES_BITRATE_ACCUM,sizeof(OC_RES_BITRATE_ACCUM),1,out);
+  fwrite(OC_RES_BITRATE_SAMPLES,sizeof(OC_RES_BITRATE_SAMPLES),1,out);
+}
 
 void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
   static OC_HUFF_GROUP_IDXS[64]={
@@ -68,7 +105,7 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
         if(_enc->dct_token_offs[pli+1][zzj]>=_enc->ndct_tokens[zzj])break;
       }
       eob_bits[zzk]=OC_DCT_TOKEN_EXTRA_BITS[token]+
-       _enc->huff_codes[_huff_idxs[hgi][pli]][token].nbits<<8;
+       _enc->huff_codes[_huff_idxs[hgi][pli]][token].nbits<<OC_BIT_SCALE;
       /*Compute the bits that will be left to be distributed when we start
          each non-trivial coefficient spanned by the run after the one the run
          is started in.*/
@@ -135,11 +172,11 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
           if(skip<0){
             eob_runs[zzi]=-skip;
             eob_bits[zzi]=OC_DCT_TOKEN_EXTRA_BITS[token]+
-             _enc->huff_codes[_huff_idxs[hgi][pli]][token].nbits<<8;
+             _enc->huff_codes[_huff_idxs[hgi][pli]][token].nbits<<OC_BIT_SCALE;
           }
           else{
             frag_bits+=OC_DCT_TOKEN_EXTRA_BITS[token]+
-             _enc->huff_codes[_huff_idxs[hgi][pli]][token].nbits<<8;
+             _enc->huff_codes[_huff_idxs[hgi][pli]][token].nbits<<OC_BIT_SCALE;
             zzi+=skip;
           }
         }
