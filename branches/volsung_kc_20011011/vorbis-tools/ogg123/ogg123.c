@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.17 2001/12/12 04:29:35 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.18 2001/12/12 15:52:25 volsung Exp $
 
  ********************************************************************/
 
@@ -144,8 +144,57 @@ void options_init (ogg123_options_t *opts)
   opts->prebuffer = 0.0f;
   opts->default_device = NULL;
 
-  opts->status_freq = 4;
+  opts->status_freq = 10.0;
 }
+
+
+/* This function selects which statistics to display for our
+   particular configuration.  This does not have anything to do with
+   verbosity, but rather with which stats make sense to display. */
+void select_stats (stat_format_t *stats, ogg123_options_t *opts, 
+		   data_source_t *source, decoder_t *decoder, 
+		   buf_t *audio_buffer)
+{
+  data_source_stats_t *data_source_stats;
+
+  if (audio_buffer != NULL) {
+    /* Turn on output buffer stats */
+    stats[8].enabled = 1; /* Fill */
+    stats[9].enabled = 1; /* State */
+  } else {
+    stats[8].enabled = 0;
+    stats[9].enabled = 0;
+  }
+
+  data_source_stats = source->transport->statistics(source);
+  if (data_source_stats->input_buffer_used) {
+    /* Turn on input buffer stats */
+    stats[6].enabled = 1; /* Fill */
+    stats[7].enabled = 1; /* State */
+  } else {
+    stats[6].enabled = 0;
+    stats[7].enabled = 0;
+  }
+    
+  /* Put logic here to decide if this stream needs a total time display */
+}
+
+void print_audio_devices_info(audio_device_t *d)
+{
+  ao_info *info;
+
+  while (d != NULL) {
+    info = ao_driver_info(d->driver_id);
+    
+    status_message(2, "\nDevice:   %s", info->name);
+    status_message(2, "Author:   %s", info->author);
+    status_message(2, "Comments: %s\n", info->comment);
+
+    d = d->next_device;
+  }
+
+}
+
 
 /* ----------------------------- callbacks ------------------------------ */
 
@@ -187,8 +236,10 @@ int main(int argc, char **argv)
   audio_play_arg.devices = options.devices;
   audio_play_arg.stat_format = stat_format;
 
-
+  /* Don't use status_message until after this point! */
   status_set_verbosity(options.verbosity);
+
+  print_audio_devices_info(options.devices);
 
   /* Setup signal handlers and callbacks */
 
@@ -295,6 +346,9 @@ void play (char *source_string)
 		 format->name);
     return;
   }
+
+  /* Decide which statistics are valid */
+  select_stats(stat_format, &options, source, decoder, audio_buffer);
 
 
   /* Reset all of the signal flags and setup the timer */

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.8 2001/12/12 04:29:35 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.9 2001/12/12 15:52:24 volsung Exp $
 
  ********************************************************************/
 
@@ -674,7 +674,7 @@ buffer_stats_t *buffer_statistics (buf_t *buf)
   stats = malloc_buffer_stats();
 
   stats->size = buf->size;
-  stats->fill = (double) buf->curfill / (double) buf->size;
+  stats->fill = (double) buf->curfill / (double) buf->size * 100.0;
   stats->prebuffering = buf->prebuffering;
   stats->paused = buf->paused;
   stats->eos = buf->eos;

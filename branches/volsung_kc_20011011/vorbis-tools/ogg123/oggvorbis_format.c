@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.4 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.5 2001/12/12 15:52:25 volsung Exp $
 
  ********************************************************************/
 
@@ -45,18 +45,18 @@ struct {
   char *key;         /* includes the '=' for programming convenience */
   char *formatstr;   /* formatted output */
 } vorbis_comment_keys[] = {
-  {"ARTIST=", "Artist: %s\n"},
-  {"ALBUM=", "Album: %s\n"},
-  {"TITLE=", "Title: %s\n"},
-  {"VERSION=", "Version: %s\n"},
-  {"TRACKNUMBER=", "Track number: %s\n"},
-  {"ORGANIZATION=", "Organization: %s\n"},
-  {"GENRE=", "Genre: %s\n"},
-  {"DESCRIPTION=", "Description: %s\n"},
-  {"DATE=", "Date: %s\n"},
-  {"LOCATION=", "Location: %s\n"},
-  {"COPYRIGHT=", "Copyright %s\n"},
-  {NULL, "Comment: %s\n"}
+  {"ARTIST=", "Artist: %s"},
+  {"ALBUM=", "Album: %s"},
+  {"TITLE=", "Title: %s"},
+  {"VERSION=", "Version: %s"},
+  {"TRACKNUMBER=", "Track number: %s"},
+  {"ORGANIZATION=", "Organization: %s"},
+  {"GENRE=", "Genre: %s"},
+  {"DESCRIPTION=", "Description: %s"},
+  {"DATE=", "Date: %s"},
+  {"LOCATION=", "Location: %s"},
+  {"COPYRIGHT=", "Copyright %s"},
+  {NULL, "Comment: %s"}
 };
 
 
@@ -348,7 +348,7 @@ void print_stream_info (decoder_t *decoder)
 		      priv->vi->channels,
 		      priv->vi->rate);
   
-  cb->printf_metadata(decoder->callback_arg, 2,
+  cb->printf_metadata(decoder->callback_arg, 3,
 		      "Encoded by: %s", priv->vc->vendor);
 }
 

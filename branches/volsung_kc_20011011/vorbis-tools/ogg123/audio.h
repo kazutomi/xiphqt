@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: audio.h,v 1.1.2.3 2001/12/11 18:46:22 volsung Exp $
+ last mod: $Id: audio.h,v 1.1.2.4 2001/12/12 15:52:24 volsung Exp $
  
 ********************************************************************/
 
@@ -46,6 +46,7 @@ int audio_format_equal (audio_format_t *a, audio_format_t *b);
 audio_device_t *append_audio_device(audio_device_t *devices_list,
 				     int driver_id,
 				     ao_option *options, char *filename);
+void audio_devices_print_info(audio_device_t *d);
 int audio_devices_write(audio_device_t *d, void *ptr, int nbytes);
 int add_ao_option(ao_option **op_h, const char *optstring);
 void close_audio_devices (audio_device_t *devices);
