@@ -39,6 +39,6 @@ test: .depend $(TEST_TARGETS)
 .depend: $(SRCS) $(TEST_SRCS)
 	$(RM) .depend
 	touch .depend
-	sh makedepend -f.depend -- $(CFLAGS) -- $(SRCS) $(TEST_SRCS) tarkin_enc.c tarkin_dec.c
+	sh tools/makedepend -f.depend -- $(CFLAGS) -- $(SRCS) $(TEST_SRCS) tarkin_enc.c tarkin_dec.c
 
 -include .depend
