@@ -53,7 +53,6 @@
 /*****************************************************************************/
 
 #include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
 
 /*****************************************************************************/
 /*  Network includes                                                         */
@@ -83,8 +82,8 @@ struct VorbisBitfields {
     unsigned int cbident:32;
     int continuation:1;
     int fragment:1;
-    int type:2;
-    int pkts:4;
+    int reserved:1;
+    int pkts:5;
 } VorbisBitfields;
 
 /*****************************************************************************/
@@ -123,7 +122,12 @@ struct RTPHeaders {
 /*****************************************************************************/
 
 void progressmarker (int type);
+
 unsigned int crc32 (int length, unsigned char *crcdata);
+unsigned int crc32_init (void);
+unsigned int crc32_hash (unsigned int state, int length, unsigned char *crcdata);
+unsigned int crc32_fine (unsigned int state);
+
 int createsocket (struct RTPHeaders *RTPHeaders, struct sockaddr_in *sockAddr, char *addr, unsigned int port, unsigned char TTL);
 void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisBitfields *vorbheader, int type);
 int sendrtp (struct RTPHeaders *RTPHeaders, int fd, struct sockaddr_in *sockAddr, const void *data, int len);
@@ -135,23 +139,46 @@ void configpacket (struct VorbisConfig *Config, int bsz0, int bsz1, vorbis_info 
 
 unsigned int crc32 (int length, unsigned char *crcdata) 
 {
+    unsigned int crc, state;
+    
+    state = crc32_init();
+    state = crc32_hash(state, length, crcdata);
+    crc = crc32_fine(state);
+    
+    return crc;
+}
+
+unsigned int crc32_init (void)
+{
+    unsigned int state = 0xFFFFFFFF;
+    return state;
+}
+
+unsigned int crc32_hash (unsigned int state, int length, unsigned char *crcdata)
+{
+    unsigned int byte, mask;
     int index, loop;
-    unsigned int byte, crc, mask;
-
+    
     index = 0;
-    crc = 0xFFFFFFFF;
-
+   
     while (index < length) {
         byte = crcdata [index];
-        crc = crc ^ byte;
+        state = state ^ byte;
 
         for (loop = 7; loop >= 0; loop--) {
-            mask = -(crc & 1);
-            crc = (crc >> 1) ^ (0xEDB88320 & mask);
+            mask = -(state & 1);
+            state = (state >> 1) ^ (0xEDB88320 & mask);
         }
         index++;
     }
-    return ~crc;
+    
+    return state;
+}
+
+unsigned int crc32_fine (unsigned int state)
+{
+    unsigned int crc = ~state;
+    return crc;
 }
 
 /*****************************************************************************/
@@ -334,7 +361,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             /*  Set Vorbis header flags  */
             vorbheader -> continuation = 1;
             vorbheader -> fragment = frag;
-            vorbheader -> type = type;
+            vorbheader -> reserved = 0;
             vorbheader -> pkts = 0;
 
             packet = malloc (262);
@@ -365,7 +392,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
         /*  Set Vorbis header flags  */
         vorbheader -> continuation = 1;
         vorbheader -> fragment = 1;
-        vorbheader -> type = type;
+        vorbheader -> reserved = 0;
         vorbheader -> pkts = 0;
 
         framesize = (unsigned char) length;
@@ -416,7 +443,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
             /*  Set Vorbis header flags  */
             vorbheader -> continuation = 1;
             vorbheader -> fragment = 1;
-            vorbheader -> type = type;
+            vorbheader -> reserved = 0;
             vorbheader -> pkts = stackcount;
 
             packet = malloc (stacksize + 6);
@@ -461,7 +488,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
         /*  Set Vorbis header flags  */
         vorbheader -> continuation = 0;
         vorbheader -> fragment = 1;
-        vorbheader -> type = type;
+        vorbheader -> reserved = 0;
         vorbheader -> pkts = 1;
 
         framesize = (unsigned char) length;
@@ -527,7 +554,9 @@ int main (int argc, char **argv)
     vorbis_comment vc;
     vorbis_dsp_state vd;
     vorbis_block vb;
-  
+
+    unsigned int crc_state;
+    
     char *buffer;
     int  bytes;
 
@@ -647,6 +676,9 @@ int main (int argc, char **argv)
         exit (1);
     }
     
+    crc_state = crc32_init ();
+    crc_state = crc32_hash (crc_state, op.bytes, op.packet);
+    
     if (vorbis_synthesis_headerin (&vi, &vc, &op) < 0) { 
         fprintf (stderr, "||  This Ogg bitstream does not contain Vorbis audio data.\n");
         exit (1);
@@ -675,6 +707,8 @@ int main (int argc, char **argv)
                         exit (1);
     	            }
 
+                    if (i == 1) crc_state = crc32_hash (crc_state, op.bytes, op.packet);
+
                     vorbis_synthesis_headerin (&vi, &vc, &op);
                     i++;
                 }
@@ -692,6 +726,8 @@ int main (int argc, char **argv)
         ogg_sync_wrote (&oy, bytes);
     }
 
+    VorbisBitfields.cbident = crc32_fine (crc_state);
+    
     convsize = 4096 / vi.channels;
     vorbis_synthesis_init (&vd, &vi);
     vorbis_block_init (&vd, &vb);
@@ -709,6 +745,7 @@ int main (int argc, char **argv)
     fprintf (stdout, "||  Bitstream is %d channel, %ldHz\n", vi.channels, vi.rate);
     fprintf (stdout, "||  Encoded by: %s\n", vc.vendor);
     fprintf (stdout, "||  Bitrates: min=%ld - nom=%ld - max=%ld\n", vi.bitrate_lower, vi.bitrate_nominal, vi.bitrate_upper);
+    fprintf (stdout, "||  Decode setup ident is 0x%08x\n", VorbisBitfields.cbident);
     fprintf (stdout, "||\n");
     fprintf (stdout, "||---------------------------------------------------------------------------||\n");
     fprintf (stdout, "||  Processing\n||  ");
@@ -771,7 +808,7 @@ int main (int argc, char **argv)
   
     vorbis_block_clear (&vb);
     vorbis_dsp_clear (&vd);
-	vorbis_comment_clear (&vc);
+    vorbis_comment_clear (&vc);
     vorbis_info_clear (&vi);
 
     ogg_sync_clear (&oy);
