@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: build a VQ codebook and the encoding decision 'tree'
- last mod: $Id: vqsplit.c,v 1.26 2001/12/20 01:00:40 segher Exp $
+ last mod: $Id: vqsplit.c,v 1.18 2000/02/23 09:10:13 xiphmont Exp $
 
  ********************************************************************/
 
@@ -66,39 +67,18 @@ int iascsort(const void *a,const void *b){
   return(av-bv);
 }
 
-static float _Ndist(int el,float *a, float *b){
-  int i;
-  float acc=0.f;
-  for(i=0;i<el;i++){
-    float val=(a[i]-b[i]);
-    acc+=val*val;
-  }
-  return sqrt(acc);
-}
-
-#define _Npoint(i) (pointlist+dim*(i))
-#define _Nnow(i) (entrylist+dim*(i))
-
+/* grab it from vqgen.c */
+extern double _dist(vqgen *v,double *a, double *b);
 
 /* goes through the split, but just counts it and returns a metric*/
-int vqsp_count(float *entrylist,float *pointlist,int dim,
-	       long *membership,long *reventry,
-	       long *entryindex,long entries, 
-	       long *pointindex,long points,int splitp,
-	       long *entryA,long *entryB,
-	       long besti,long bestj,
-	       long *entriesA,long *entriesB,long *entriesC){
-  long i,j;
+void vqsp_count(vqgen *v,long *membership,
+		long *entryindex,long entries, 
+		long *pointindex,long points,
+		long *entryA,long *entryB,
+		double *n, double c,
+		long *entriesA,long *entriesB,long *entriesC){
+  long i,j,k;
   long A=0,B=0,C=0;
-  long pointsA=0;
-  long pointsB=0;
-  long *temppointsA=NULL;
-  long *temppointsB=NULL;
-  
-  if(splitp){
-    temppointsA=_ogg_malloc(points*sizeof(long));
-    temppointsB=_ogg_malloc(points*sizeof(long));
-  }
 
   memset(entryA,0,sizeof(long)*entries);
   memset(entryB,0,sizeof(long)*entries);
@@ -107,29 +87,17 @@ int vqsp_count(float *entrylist,float *pointlist,int dim,
      both? */
 
   for(i=0;i<points;i++){
-    float *ppt=_Npoint(pointindex[i]);
-    long   firstentry=membership[pointindex[i]];
+    double *ppt=_point(v,pointindex[i]);
+    long   firstentry=membership[i];
+    double position=-c;
 
-    if(firstentry==besti){
-      entryA[reventry[firstentry]]=1;
-      if(splitp)temppointsA[pointsA++]=pointindex[i];
-      continue;
-    }
-    if(firstentry==bestj){
-      entryB[reventry[firstentry]]=1;
-      if(splitp)temppointsB[pointsB++]=pointindex[i];
-      continue;
-    }
-    {
-      float distA=_Ndist(dim,ppt,_Nnow(besti));
-      float distB=_Ndist(dim,ppt,_Nnow(bestj));
-      if(distA<distB){
-	entryA[reventry[firstentry]]=1;
-	if(splitp)temppointsA[pointsA++]=pointindex[i];
-      }else{
-	entryB[reventry[firstentry]]=1;
-	if(splitp)temppointsB[pointsB++]=pointindex[i];
-      }
+    if(!entryA[firstentry] || !entryB[firstentry]){
+      for(k=0;k<v->elements;k++)
+      position+=ppt[k]*n[k];
+      if(position>0.)
+	entryA[firstentry]=1;
+      else
+	entryB[firstentry]=1;
     }
   }
 
@@ -145,23 +113,24 @@ int vqsp_count(float *entrylist,float *pointlist,int dim,
   *entriesA=A;
   *entriesB=B;
   *entriesC=C;
-  if(splitp){
-    memcpy(pointindex,temppointsA,sizeof(long)*pointsA);
-    memcpy(pointindex+pointsA,temppointsB,sizeof(long)*pointsB);
-    free(temppointsA);
-    free(temppointsB);
-  }
-  return(pointsA);
 }
 
-int lp_split(float *pointlist,long totalpoints,
-	     codebook *b,
+void pq_in_out(vqgen *v,double *n,double *c,double *p,double *q){
+  int k;
+  *c=0.;
+  for(k=0;k<v->elements;k++){
+    double center=(p[k]+q[k])/2.;
+    n[k]=(center-q[k])*2.;
+    *c+=center*n[k];
+  }
+}
+
+int lp_split(vqgen *v,codebook *b,
 	     long *entryindex,long entries, 
 	     long *pointindex,long points,
-	     long *membership,long *reventry,
 	     long depth, long *pointsofar){
 
-  encode_aux_nearestmatch *t=b->c->nearest_tree;
+  encode_aux *t=b->c->encode_tree;
 
   /* The encoder, regardless of book, will be using a straight
      euclidian distance-to-point metric to determine closest point.
@@ -169,26 +138,50 @@ int lp_split(float *pointlist,long totalpoints,
      codebook set spacing and distribution using special metrics and
      even a midpoint division won't disturb the basic properties) */
 
-  int dim=b->dim;
-  float *entrylist=b->valuelist;
   long ret;
-  long *entryA=_ogg_calloc(entries,sizeof(long));
-  long *entryB=_ogg_calloc(entries,sizeof(long));
+  double *n=alloca(sizeof(double)*v->elements);
+  double c;
+  long *entryA=calloc(entries,sizeof(long));
+  long *entryB=calloc(entries,sizeof(long));
   long entriesA=0;
   long entriesB=0;
   long entriesC=0;
   long pointsA=0;
   long i,j,k;
 
+  long *membership=malloc(sizeof(long)*points);
+
   long   besti=-1;
   long   bestj=-1;
-  
-  char spinbuf[80];
-  sprintf(spinbuf,"splitting [%ld left]... ",totalpoints-*pointsofar);
 
-  /* one reverse index needed */
-  for(i=0;i<b->entries;i++)reventry[i]=-1;
-  for(i=0;i<entries;i++)reventry[entryindex[i]]=i;
+  char spinbuf[80];
+  sprintf(spinbuf,"splitting [%ld left]... ",v->points-*pointsofar);
+
+  if(depth==22 && points==9 && entries==2 && *pointsofar==252935){
+    fprintf(stderr,"HERE\n");
+
+  }
+
+  
+  /* which cells do points belong to?  Do this before n^2 best pair chooser. */
+
+  for(i=0;i<points;i++){
+    double *ppt=_point(v,pointindex[i]);
+    long   firstentry=0;
+    double firstmetric=_dist(v,_now(v,entryindex[0]),ppt);
+    
+    if(points*entries>64*1024)spinnit(spinbuf,entries);
+
+    for(j=1;j<entries;j++){
+      double thismetric=_dist(v,_now(v,entryindex[j]),ppt);
+      if(thismetric<=firstmetric){ /* Not <; on the line goes to higher number */
+	firstmetric=thismetric;
+	firstentry=j;
+      }
+    }
+    
+    membership[i]=firstentry;
+  }
 
   /* We need to find the dividing hyperplane. find the median of each
      axis as the centerpoint and the normal facing farthest point */
@@ -196,19 +189,19 @@ int lp_split(float *pointlist,long totalpoints,
   /* more than one way to do this part.  For small sets, we can brute
      force it. */
 
-  if(entries<8 || (float)points*entries*entries<16.f*1024*1024){
+  if(entries<8 || (double)points*entries*entries<16.*1024*1024){
     /* try every pair possibility */
-    float best=0;
-    float this;
+    double best=0;
+    double this;
     for(i=0;i<entries-1;i++){
       for(j=i+1;j<entries;j++){
 	spinnit(spinbuf,entries-i);
-	vqsp_count(b->valuelist,pointlist,dim,
-		   membership,reventry,
+	pq_in_out(v,n,&c,_now(v,entryindex[i]),_now(v,entryindex[j]));
+	vqsp_count(v,membership,
 		   entryindex,entries, 
-		   pointindex,points,0,
+		   pointindex,points,
 		   entryA,entryB,
-		   entryindex[i],entryindex[j],
+		   n, c, 
 		   &entriesA,&entriesB,&entriesC);
 	this=(entriesA-entriesC)*(entriesB-entriesC);
 
@@ -228,20 +221,20 @@ int lp_split(float *pointlist,long totalpoints,
       }
     }
   }else{
-    float *p=alloca(dim*sizeof(float));
-    float *q=alloca(dim*sizeof(float));
-    float best=0.f;
+    double *p=alloca(v->elements*sizeof(double));
+    double *q=alloca(v->elements*sizeof(double));
+    double best=0.;
     
     /* try COG/normal and furthest pairs */
     /* meanpoint */
     /* eventually, we want to select the closest entry and figure n/c
        from p/q (because storing n/c is too large */
-    for(k=0;k<dim;k++){
+    for(k=0;k<v->elements;k++){
       spinnit(spinbuf,entries);
       
-      p[k]=0.f;
+      p[k]=0.;
       for(j=0;j<entries;j++)
-	p[k]+=b->valuelist[entryindex[j]*dim+k];
+	p[k]+=v->entrylist[entryindex[j]*v->elements+k];
       p[k]/=entries;
 
     }
@@ -251,18 +244,18 @@ int lp_split(float *pointlist,long totalpoints,
        center */
 
     for(i=0;i<entries;i++){
-      float *ppi=_Nnow(entryindex[i]);
-      float ref_best=0.f;
-      float ref_j=-1;
-      float this;
+      double *ppi=_now(v,entryindex[i]);
+      double ref_best=0.;
+      double ref_j=-1;
+      double this;
       spinnit(spinbuf,entries-i);
       
-      for(k=0;k<dim;k++)
+      for(k=0;k<v->elements;k++)
 	q[k]=2*p[k]-ppi[k];
 
       for(j=0;j<entries;j++){
 	if(j!=i){
-	  float this=_Ndist(dim,q,_Nnow(entryindex[j]));
+	  double this=_dist(v,q,_now(v,entryindex[j]));
 	  if(ref_j==-1 || this<=ref_best){ /* <=, not <; very important */
 	    ref_best=this;
 	    ref_j=entryindex[j];
@@ -270,12 +263,12 @@ int lp_split(float *pointlist,long totalpoints,
 	}
       }
 
-      vqsp_count(b->valuelist,pointlist,dim,
-		 membership,reventry,
+      pq_in_out(v,n,&c,ppi,_now(v,ref_j));
+      vqsp_count(v,membership,
 		 entryindex,entries, 
-		 pointindex,points,0,
+		 pointindex,points,
 		 entryA,entryB,
-		 entryindex[i],ref_j,
+		 n, c, 
 		 &entriesA,&entriesB,&entriesC);
       this=(entriesA-entriesC)*(entriesB-entriesC);
 
@@ -304,13 +297,44 @@ int lp_split(float *pointlist,long totalpoints,
   /* find cells enclosing points */
   /* count A/B points */
 
-  pointsA=vqsp_count(b->valuelist,pointlist,dim,
-		     membership,reventry,
-		     entryindex,entries, 
-		     pointindex,points,1,
-		     entryA,entryB,
-		     besti,bestj,
-		     &entriesA,&entriesB,&entriesC);
+  pq_in_out(v,n,&c,_now(v,besti),_now(v,bestj));
+  vqsp_count(v,membership,
+	     entryindex,entries, 
+	     pointindex,points,
+	     entryA,entryB,
+	     n, c,
+	     &entriesA,&entriesB,&entriesC);
+
+  free(membership);
+
+  /* the point index is split, so we do an Order n rearrangement into
+     A first/B last and just pass it on */
+  {
+    long Aptr=0;
+    long Bptr=points-1;
+    while(Aptr<=Bptr){
+      while(Aptr<=Bptr){
+	double position=-c;
+	for(k=0;k<v->elements;k++)
+	  position+=_point(v,pointindex[Aptr])[k]*n[k];
+	if(position<=0.)break; /* not in A */
+	Aptr++;
+      }
+      while(Aptr<=Bptr){
+	double position=-c;
+	for(k=0;k<v->elements;k++)
+	  position+=_point(v,pointindex[Bptr])[k]*n[k];
+	if(position>0.)break; /* not in B */
+	Bptr--;
+      }
+      if(Aptr<Bptr){
+	long temp=pointindex[Aptr];
+	pointindex[Aptr]=pointindex[Bptr];
+	pointindex[Bptr]=temp;
+      }
+      pointsA=Aptr;
+    }
+  }
 
   /*  fprintf(stderr,"split: total=%ld depth=%ld set A=%ld:%ld:%ld=B\n",
       entries,depth,entriesA-entriesC,entriesC,entriesB-entriesC);*/
@@ -318,10 +342,10 @@ int lp_split(float *pointlist,long totalpoints,
     long thisaux=t->aux++;
     if(t->aux>=t->alloc){
       t->alloc*=2;
-      t->ptr0=_ogg_realloc(t->ptr0,sizeof(long)*t->alloc);
-      t->ptr1=_ogg_realloc(t->ptr1,sizeof(long)*t->alloc);
-      t->p=_ogg_realloc(t->p,sizeof(long)*t->alloc);
-      t->q=_ogg_realloc(t->q,sizeof(long)*t->alloc);
+      t->ptr0=realloc(t->ptr0,sizeof(long)*t->alloc);
+      t->ptr1=realloc(t->ptr1,sizeof(long)*t->alloc);
+      t->p=realloc(t->p,sizeof(long)*t->alloc);
+      t->q=realloc(t->q,sizeof(long)*t->alloc);
     }
     
     t->p[thisaux]=besti;
@@ -333,8 +357,7 @@ int lp_split(float *pointlist,long totalpoints,
       *pointsofar+=pointsA;
     }else{
       t->ptr0[thisaux]= -t->aux;
-      ret=lp_split(pointlist,totalpoints,b,entryA,entriesA,pointindex,pointsA,
-		   membership,reventry,depth+1,pointsofar); 
+      ret=lp_split(v,b,entryA,entriesA,pointindex,pointsA,depth+1,pointsofar); 
     }
     if(entriesB==1){
       ret++;
@@ -342,8 +365,7 @@ int lp_split(float *pointlist,long totalpoints,
       *pointsofar+=points-pointsA;
     }else{
       t->ptr1[thisaux]= -t->aux;
-      ret+=lp_split(pointlist,totalpoints,b,entryB,entriesB,pointindex+pointsA,
-		    points-pointsA,membership,reventry,
+      ret+=lp_split(v,b,entryB,entriesB,pointindex+pointsA,points-pointsA,
 		    depth+1,pointsofar); 
     }
   }
@@ -352,7 +374,7 @@ int lp_split(float *pointlist,long totalpoints,
   return(ret);
 }
 
-static int _node_eq(encode_aux_nearestmatch *v, long a, long b){
+static int _node_eq(encode_aux *v, long a, long b){
   long    Aptr0=v->ptr0[a];
   long    Aptr1=v->ptr1[a];
   long    Bptr0=v->ptr0[b];
@@ -371,13 +393,12 @@ static int _node_eq(encode_aux_nearestmatch *v, long a, long b){
 void vqsp_book(vqgen *v, codebook *b, long *quantlist){
   long i,j;
   static_codebook *c=(static_codebook *)b->c;
-  encode_aux_nearestmatch *t;
+  encode_aux *t;
 
   memset(b,0,sizeof(codebook));
   memset(c,0,sizeof(static_codebook));
   b->c=c;
-  t=c->nearest_tree=_ogg_calloc(1,sizeof(encode_aux_nearestmatch));
-  c->maptype=2;
+  t=c->encode_tree=calloc(1,sizeof(encode_aux));
 
   /* make sure there are no duplicate entries and that every 
      entry has points */
@@ -385,10 +406,10 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
   for(i=0;i<v->entries;){
     /* duplicate? if so, eliminate */
     for(j=0;j<i;j++){
-      if(_Ndist(v->elements,_now(v,i),_now(v,j))==0.f){
+      if(_dist(v,_now(v,i),_now(v,j))==0.){
 	fprintf(stderr,"found a duplicate entry!  removing...\n");
 	v->entries--;
-	memcpy(_now(v,i),_now(v,v->entries),sizeof(float)*v->elements);
+	memcpy(_now(v,i),_now(v,v->entries),sizeof(double)*v->elements);
 	memcpy(quantlist+i*v->elements,quantlist+v->entries*v->elements,
 	       sizeof(long)*v->elements);
 	break;
@@ -398,16 +419,16 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
   }
 
   {
-    v->assigned=_ogg_calloc(v->entries,sizeof(long));
+    v->assigned=calloc(v->entries,sizeof(long));
     for(i=0;i<v->points;i++){
-      float *ppt=_point(v,i);
-      float firstmetric=_Ndist(v->elements,_now(v,0),ppt);
+      double *ppt=_point(v,i);
+      double firstmetric=_dist(v,_now(v,0),ppt);
       long   firstentry=0;
 
       if(!(i&0xff))spinnit("checking... ",v->points-i);
 
       for(j=0;j<v->entries;j++){
-	float thismetric=_Ndist(v->elements,_now(v,j),ppt);
+	double thismetric=_dist(v,_now(v,j),ppt);
 	if(thismetric<firstmetric){
 	  firstmetric=thismetric;
 	  firstentry=j;
@@ -421,7 +442,7 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
       if(v->assigned[j]==0){
 	fprintf(stderr,"found an unused entry!  removing...\n");
 	v->entries--;
-	memcpy(_now(v,j),_now(v,v->entries),sizeof(float)*v->elements);
+	memcpy(_now(v,j),_now(v,v->entries),sizeof(double)*v->elements);
 	v->assigned[j]=v->assigned[v->elements];
 	memcpy(quantlist+j*v->elements,quantlist+v->entries*v->elements,
 	       sizeof(long)*v->elements);
@@ -434,59 +455,28 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
   fprintf(stderr,"Building a book with %ld unique entries...\n",v->entries);
 
   {
-    long *entryindex=_ogg_malloc(v->entries*sizeof(long *));
-    long *pointindex=_ogg_malloc(v->points*sizeof(long));
-    long *membership=_ogg_malloc(v->points*sizeof(long));
-    long *reventry=_ogg_malloc(v->entries*sizeof(long));
+    long *entryindex=malloc(v->entries*sizeof(long *));
+    long *pointindex=malloc(v->points*sizeof(long));
     long pointssofar=0;
       
     for(i=0;i<v->entries;i++)entryindex[i]=i;
     for(i=0;i<v->points;i++)pointindex[i]=i;
 
     t->alloc=4096;
-    t->ptr0=_ogg_malloc(sizeof(long)*t->alloc);
-    t->ptr1=_ogg_malloc(sizeof(long)*t->alloc);
-    t->p=_ogg_malloc(sizeof(long)*t->alloc);
-    t->q=_ogg_malloc(sizeof(long)*t->alloc);
+    t->ptr0=malloc(sizeof(long)*t->alloc);
+    t->ptr1=malloc(sizeof(long)*t->alloc);
+    t->p=malloc(sizeof(long)*t->alloc);
+    t->q=malloc(sizeof(long)*t->alloc);
     t->aux=0;
     c->dim=v->elements;
     c->entries=v->entries;
-    c->lengthlist=_ogg_calloc(c->entries,sizeof(long));
-    b->valuelist=v->entrylist; /* temporary; replaced later */
-    b->dim=c->dim;
-    b->entries=c->entries;
-
-    for(i=0;i<v->points;i++)membership[i]=-1;
-    for(i=0;i<v->points;i++){
-      float *ppt=_point(v,i);
-      long   firstentry=0;
-      float firstmetric=_Ndist(v->elements,_now(v,0),ppt);
+    c->lengthlist=calloc(c->entries,sizeof(long));
     
-      if(!(i&0xff))spinnit("assigning... ",v->points-i);
-
-      for(j=1;j<v->entries;j++){
-	if(v->assigned[j]!=-1){
-	  float thismetric=_Ndist(v->elements,_now(v,j),ppt);
-	  if(thismetric<=firstmetric){
-	    firstmetric=thismetric;
-	    firstentry=j;
-	  }
-	}
-      }
-      
-      membership[i]=firstentry;
-    }
-
     fprintf(stderr,"Leaves added: %d              \n",
-	    lp_split(v->pointlist,v->points,
-		     b,entryindex,v->entries,
-		     pointindex,v->points,
-		     membership,reventry,
-		     0,&pointssofar));
+	    lp_split(v,b,entryindex,v->entries,
+		     pointindex,v->points,0,&pointssofar));
       
     free(pointindex);
-    free(membership);
-    free(reventry);
     
     fprintf(stderr,"Paring/rerouting redundant branches... ");
     
@@ -544,18 +534,16 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
   /* run all training points through the decision tree to get a final
      probability count */
   {
-    long *probability=_ogg_malloc(c->entries*sizeof(long));
+    long *probability=malloc(c->entries*sizeof(long));
     for(i=0;i<c->entries;i++)probability[i]=1; /* trivial guard */
-    b->dim=c->dim;
+    b->valuelist=v->entrylist; /* temporary for vqenc_entry; replaced later */
 
     /* sigh.  A necessary hack */
     for(i=0;i<t->aux;i++)t->p[i]*=c->dim;
     for(i=0;i<t->aux;i++)t->q[i]*=c->dim;
     
     for(i=0;i<v->points;i++){
-      /* we use the linear matcher regardless becuase the trainer
-         doesn't convert log to linear */
-      int ret=_best(b,v->pointlist+i*v->elements,1);
+      int ret=codebook_entry(b,v->pointlist+i*v->elements);
       probability[ret]++;
       if(!(i&0xff))spinnit("counting hits... ",v->points-i);
     }
@@ -571,8 +559,8 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
      assignment and packing to do it now) */
   {
     long *wordlen=c->lengthlist;
-    long *index=_ogg_malloc(c->entries*sizeof(long));
-    long *revindex=_ogg_malloc(c->entries*sizeof(long));
+    long *index=malloc(c->entries*sizeof(long));
+    long *revindex=malloc(c->entries*sizeof(long));
     int k;
     for(i=0;i<c->entries;i++)index[i]=i;
     isortvals=c->lengthlist;
@@ -592,9 +580,9 @@ void vqsp_book(vqgen *v, codebook *b, long *quantlist){
     free(revindex);
 
     /* map lengthlist and vallist with index */
-    c->lengthlist=_ogg_calloc(c->entries,sizeof(long));
-    b->valuelist=_ogg_malloc(sizeof(float)*c->entries*c->dim);
-    c->quantlist=_ogg_malloc(sizeof(long)*c->entries*c->dim);
+    c->lengthlist=calloc(c->entries,sizeof(long));
+    b->valuelist=malloc(sizeof(double)*c->entries*c->dim);
+    c->quantlist=malloc(sizeof(long)*c->entries*c->dim);
     for(i=0;i<c->entries;i++){
       long e=index[i];
       for(k=0;k<c->dim;k++){

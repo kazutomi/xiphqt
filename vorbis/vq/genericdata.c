@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: generic euclidian distance metric for VQ codebooks
- last mod: $Id: genericdata.c,v 1.11 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: genericdata.c,v 1.4 2000/02/21 01:12:55 xiphmont Exp $
 
  ********************************************************************/
 
@@ -30,23 +31,23 @@ void vqext_quantize(vqgen *v,quant_meta *q){
   vqgen_quantize(v,q);
 }
 
-float *vqext_weight(vqgen *v,float *p){
+double *vqext_weight(vqgen *v,double *p){
   /*noop*/
   return(p);
 }
 
                             /* candidate,actual */
-float vqext_metric(vqgen *v,float *e, float *p){
+double vqext_metric(vqgen *v,double *e, double *p){
   int i;
-  float acc=0.f;
+  double acc=0.;
   for(i=0;i<v->elements;i++){
-    float val=p[i]-e[i];
+    double val=p[i]-e[i];
     acc+=val*val;
   }
   return sqrt(acc/v->elements);
 }
 
-void vqext_addpoint_adj(vqgen *v,float *b,int start,int dim,int cols,int num){
+void vqext_addpoint_adj(vqgen *v,double *b,int start,int dim,int cols){
   vqgen_addpoint(v,b+start,NULL);
 }
 

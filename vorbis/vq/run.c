@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility main for loading and operating on codebooks
- last mod: $Id: run.c,v 1.15 2001/12/20 01:00:40 segher Exp $
+ last mod: $Id: run.c,v 1.9 2000/02/23 09:10:11 xiphmont Exp $
 
  ********************************************************************/
 
@@ -28,8 +29,7 @@
 #include "bookutil.h"
 
 /* command line:
-   utilname [-i] +|* input_book.vqh [+|* input_book.vqh] 
-            input_data.vqd [input_data.vqd]
+   utilname input_book.vqh input_data.vqd [input_data.vqd]
 
    produces output data on stdout
    (may also take input data from stdin)
@@ -38,17 +38,16 @@
 
 extern void process_preprocess(codebook **b,char *basename);
 extern void process_postprocess(codebook **b,char *basename);
-extern void process_vector(codebook **b,int *addmul, int inter,float *a,int n);
+extern void process_vector(codebook **b,double *a);
 extern void process_usage(void);
 
 int main(int argc,char *argv[]){
   char *basename;
-  codebook **b=_ogg_calloc(1,sizeof(codebook *));
-  int *addmul=_ogg_calloc(1,sizeof(int));
+  double *a=NULL;
+  codebook **b=calloc(1,sizeof(codebook *));
   int books=0;
   int input=0;
-  int interleave=0;
-  int j;
+
   int start=0;
   int num=-1;
   argv++;
@@ -75,11 +74,6 @@ int main(int argc,char *argv[]){
 	}
 	argv+=2;
       }
-      if(argv[0][1]=='i'){
-	/* interleave */
-	interleave=1;
-	argv+=1;
-      }
     }else{
       /* input file.  What kind? */
       char *dot;
@@ -93,18 +87,11 @@ int main(int argc,char *argv[]){
 
       /* codebook */
       if(!strcmp(ext,"vqh")){
-	int multp=0;
 	if(input){
 	  fprintf(stderr,"specify all input data (.vqd) files following\n"
 		  "codebook header (.vqh) files\n");
 	  exit(1);
 	}
-	/* is it additive or multiplicative? */
-	if(name[0]=='*'){
-	  multp=1;
-	  name++;
-	}
-	if(name[0]=='+')name++;
 
 	basename=strrchr(name,'/');
 	if(basename)
@@ -114,19 +101,14 @@ int main(int argc,char *argv[]){
 	dot=strrchr(basename,'.');
 	if(dot)*dot='\0';
 
-	b=_ogg_realloc(b,sizeof(codebook *)*(books+2));
-	b[books]=codebook_load(name);
-	addmul=_ogg_realloc(addmul,sizeof(int)*(books+1));
-	addmul[books++]=multp;
+	b=realloc(b,sizeof(codebook *)*(books+2));
+	b[books++]=codebook_load(name);
 	b[books]=NULL;
+	if(!a)a=malloc(sizeof(double)*b[books-1]->c->dim);
       }
 
       /* data file */
       if(!strcmp(ext,"vqd")){
-	int cols;
-	long lines=0;
-	char *line;
-	float *vec;
 	FILE *in=fopen(name,"r");
 	if(!in){
 	  fprintf(stderr,"Could not open input file %s\n",name);
@@ -139,29 +121,10 @@ int main(int argc,char *argv[]){
 	}
 
 	reset_next_value();
-	line=setup_line(in);
-	/* count cols before we start reading */
-	{
-	  char *temp=line;
-	  while(*temp==' ')temp++;
-	  for(cols=0;*temp;cols++){
-	    while(*temp>32)temp++;
-	    while(*temp==' ')temp++;
-	  }
-	}
-	vec=alloca(cols*sizeof(float));
-	while(line){
-	  lines++;
-	  for(j=0;j<cols;j++)
-	    if(get_line_value(in,vec+j)){
-	      fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
-	      exit(1);
-	    }
-	  /* ignores -s for now */
-	  process_vector(b,addmul,interleave,vec,cols);
 
-	  line=setup_line(in);
-	}
+	while(get_vector(*b,in,start,num,a)!=-1)
+	  process_vector(b,a);
+
 	fclose(in);
       }
     }
@@ -175,38 +138,14 @@ int main(int argc,char *argv[]){
       exit(1);
     }
     if((S_IFIFO|S_IFREG|S_IFSOCK)&st.st_mode){
-      int cols;
-      char *line;
-      long lines=0;
-      float *vec;
       if(!input){
 	process_preprocess(b,basename);
 	input++;
       }
       
-      line=setup_line(stdin);
-      /* count cols before we start reading */
-      {
-	char *temp=line;
-	while(*temp==' ')temp++;
-	for(cols=0;*temp;cols++){
-	  while(*temp>32)temp++;
-	  while(*temp==' ')temp++;
-	}
-      }
-      vec=alloca(cols*sizeof(float));
-      while(line){
-	lines++;
-	for(j=0;j<cols;j++)
-	  if(get_line_value(stdin,vec+j)){
-	    fprintf(stderr,"Too few columns on line %ld in data file\n",lines);
-	    exit(1);
-	  }
-	/* ignores -s for now */
-	process_vector(b,addmul,interleave,vec,cols);
-	
-	line=setup_line(stdin);
-      }
+      reset_next_value();
+      while(get_vector(*b,stdin,start,num,a)!=-1)
+	process_vector(b,a);
     }
   }
 
