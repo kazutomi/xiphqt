@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.4 2001/10/17 19:15:26 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.5 2001/10/31 05:38:55 volsung Exp $
 
  ********************************************************************/
 
@@ -45,9 +45,9 @@ int convsize = BUFFER_CHUNK_SIZE;
 /* take big options structure from the data segment */
 ogg123_options_t Options;
 
-char skipfile_requested;
-char exit_requested;
-char pause_requested;
+
+/* Flags set by the signal handler to control the threads */
+signal_request_t sig_request = {0, 0, 0};
 
 pthread_mutex_t stats_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -91,8 +91,11 @@ struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-/* configuration interface */
-int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, const char *filename, char *line)
+
+/* ------------------------ configuration interface ----------------------- */
+
+int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, 
+		       const char *filename, char *line)
 {
   if (pcode == parse_syserr)
     {
@@ -102,7 +105,8 @@ int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, const char *filenam
     }
   else
     {
-      Error ("=== Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), lineno, filename, line);
+      Error ("=== Parse error: %s on line %d of %s (%s)\n", ParseErr(pcode), 
+	     lineno, filename, line);
       return 0;
     }
 }
@@ -126,38 +130,57 @@ void ReadStdConfigs (Option_t opts[])
     ReadConfig (opts, filename);
   }
 }
-/* /configuration interface */
 
-/* status interface */
+/* ---------------------------- status interface -----------------------  */
+
 /* string temporary data (from the data segment) */
 char TwentyBytes1[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 char TwentyBytes2[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 char TwentyBytes3[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-void InitOgg123Stats (Stat_t stats[])
+void InitStats (Stat_t stats[])
 {
   Stat_t *cur;
 
   cur = &stats[0]; /* currently playing file / stream */
-  cur->prio = 3; cur->enabled = 0; cur->formatstr = "File: %s"; cur->type = stat_stringarg;
+  cur->prio = 3; cur->enabled = 0; cur->formatstr = "File: %s"; 
+  cur->type = stat_stringarg;
+  
   cur = &stats[1]; /* current playback time (preformatted) */
-  cur->prio = 1; cur->enabled = 1; cur->formatstr = "Time: %s"; cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes1;
+  cur->prio = 1; cur->enabled = 1; cur->formatstr = "Time: %s"; 
+  cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes1;
+
   cur = &stats[2]; /* remaining playback time (preformatted) */
-  cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s"; cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes2;
+  cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s";
+  cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes2;
+
   cur = &stats[3]; /* total playback time (preformatted) */
-  cur->prio = 1; cur->enabled = 0; cur->formatstr = "of %s"; cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes3;
+  cur->prio = 1; cur->enabled = 0; cur->formatstr = "of %s";
+  cur->type = stat_stringarg; cur->arg.stringarg = TwentyBytes3;
+
   cur = &stats[4]; /* instantaneous bitrate */
-  cur->prio = 2; cur->enabled = 1; cur->formatstr = "Bitrate: %5.1f"; cur->type = stat_doublearg;
+  cur->prio = 2; cur->enabled = 1; cur->formatstr = "Bitrate: %5.1f";
+  cur->type = stat_doublearg;
+
   cur = &stats[5]; /* average bitrate (not yet implemented) */
-  cur->prio = 2; cur->enabled = 0; cur->formatstr = "Avg bitrate: %5.1f"; cur->type = stat_doublearg;
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = "Avg bitrate: %5.1f";
+  cur->type = stat_doublearg;
+
   cur = &stats[6]; /* input buffer fill % */
-  cur->prio = 2; cur->enabled = 0; cur->formatstr = " Input Buffer %5.1f%%"; cur->type = stat_doublearg;
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = " Input Buffer %5.1f%%";
+  cur->type = stat_doublearg;
+
   cur = &stats[7]; /* input buffer status */
-  cur->prio = 2; cur->enabled = 0; cur->formatstr = "(%s)"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = "(%s)";
+  cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+
   cur = &stats[8]; /* output buffer fill % */
-  cur->prio = 2; cur->enabled = 0; cur->formatstr = " Output Buffer %5.1f%%"; cur->type = stat_doublearg;
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = " Output Buffer %5.1f%%"; 
+  cur->type = stat_doublearg;
+
   cur = &stats[9]; /* output buffer status */
-  cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s"; cur->type = stat_stringarg; cur->arg.stringarg = NULL;
+  cur->prio = 1; cur->enabled = 0; cur->formatstr = "%s";
+  cur->type = stat_stringarg; cur->arg.stringarg = NULL;
 }
 
 void SetTime (Stat_t stats[], ogg_int64_t sample)
@@ -190,7 +213,7 @@ void SetTime (Stat_t stats[], ogg_int64_t sample)
   sprintf (stats[1].arg.stringarg, "%02li:%05.2f", c_min, c_sec);
 }
 
-void SetBufferStats (buf_t *buf, char *strbuf)
+void SetStateString (buf_t *buf, char *strbuf)
 {
   char *cur = strbuf;
   char *comma = ", ";
@@ -212,43 +235,53 @@ void SetBufferStats (buf_t *buf, char *strbuf)
     cur += sprintf (cur, ")");
 }
 
-void SetBuffersStats ()
+
+void UpdateStats (void)
 {
   char strbuf[80];
   Stat_t *stats = Options.statOpts.stats;
 
-  memset (strbuf, 0, 80);
-  if (Options.inputOpts.data) {
-    SetBufferStats (Options.inputOpts.data->buf, strbuf);
-    stats[6].arg.doublearg = (double) buffer_full(Options.inputOpts.data->buf) / (double) Options.inputOpts.data->buf->size * 100.0f;
-  }
-  if (stats[7].arg.stringarg)
-    free (stats[7].arg.stringarg);
-  stats[7].arg.stringarg = strdup (strbuf);
+  /* Updating stats is not critical.  If another thread is already doing it,
+     we skip it. */
+  if (pthread_mutex_trylock(&stats_lock) == 0)
+    {
+      memset (strbuf, 0, 80);
+      if (Options.inputOpts.data) {
+	SetStateString (Options.inputOpts.data->buf, strbuf);
+	stats[6].arg.doublearg = 
+	  (double) buffer_full(Options.inputOpts.data->buf)
+	  / (double) Options.inputOpts.data->buf->size * 100.0f;
+      }
 
-  memset (strbuf, 0, 80);
-  if (Options.outputOpts.buffer) {
-    SetBufferStats (Options.outputOpts.buffer, strbuf);
-    stats[8].arg.doublearg = (double) buffer_full(Options.outputOpts.buffer) / (double) Options.outputOpts.buffer->size * 100.0f;
-  }
-  if (stats[9].arg.stringarg)
-    free (stats[9].arg.stringarg);
-  stats[9].arg.stringarg = strdup (strbuf);
+      if (stats[7].arg.stringarg)
+	free (stats[7].arg.stringarg);
+      stats[7].arg.stringarg = strdup (strbuf);
+      
+      memset (strbuf, 0, 80);
+      if (Options.outputOpts.buffer)
+	{
+	  SetStateString (Options.outputOpts.buffer, strbuf);
+	  stats[8].arg.doublearg =
+	    (double) buffer_full(Options.outputOpts.buffer) 
+	    / (double) Options.outputOpts.buffer->size * 100.0f;
+	}
+
+      if (stats[9].arg.stringarg)
+	free (stats[9].arg.stringarg);
+      stats[9].arg.stringarg = strdup (strbuf);
+      
+      PrintStatsLine (Options.statOpts.stats);
+    }
+
+  pthread_mutex_unlock(&stats_lock);
 }
 
-void Ogg123UpdateStats (void)
-{
-  if (pthread_mutex_trylock(&stats_lock) == 0) {
-    SetBuffersStats ();
-    UpdateStats (Options.statOpts.stats);
-    pthread_mutex_unlock(&stats_lock);
-  }
-}
 
-/* /status interface */
+/* ------------------------ buffer interface ---------------------------- */
 
-/* buffer interface */
-size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseos)
+
+size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg,
+		      char iseos)
 {
   static ogg_int64_t cursample = 0;
   static unsigned char RechunkBuffer[BUFFER_CHUNK_SIZE];
@@ -260,8 +293,9 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   size *= nmemb;
   
   SetTime (Options.statOpts.stats, cursample);
-  Ogg123UpdateStats();
-  cursample += Options.playOpts.nth * size / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
+  UpdateStats();
+  cursample += Options.playOpts.nth * size / Options.outputOpts.channels / 2 
+    / Options.playOpts.ntimes; /* locked to 16-bit */
   //  fprintf(stderr, "nmemb = %d, size = %d, cursample = %lld\n", nmemb, size,
   //  cursample);
 
@@ -271,13 +305,15 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   else
     /* don't actually write until we have a full chunk, or of course EOS */
     while (size) {
-      size_t toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? BUFFER_CHUNK_SIZE - curBuffered : size;
+      size_t toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? 
+	BUFFER_CHUNK_SIZE - curBuffered : size;
       memmove (RechunkBuffer + curBuffered, data, toChunkNow);
       size -= toChunkNow;
       data += toChunkNow;
       curBuffered += toChunkNow;
       if (curBuffered == BUFFER_CHUNK_SIZE) {
-	devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);
+	devices_write (RechunkBuffer, curBuffered, 1, 
+		       Options.outputOpts.devices);
 	curBuffered = 0;
       }
     }
@@ -289,7 +325,74 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   }
   return origSize;
 }
-/* /buffer interface */
+
+
+/* ---------------------- signal handler functions ---------------------- */
+
+
+/* Two signal handlers, one for SIGINT, and the second for
+ * SIGALRM.  They are de/activated on an as-needed basis by the
+ * player to allow the user to stop ogg123 or skip songs.
+ */
+void SignalSkipfile(int which_signal)
+{
+  sig_request.skipfile = 1;
+
+  /* libao, when writing wav's, traps SIGINT so it correctly
+   * closes things down in the event of an interrupt.  We
+   * honour this.   libao will re-raise SIGINT once it cleans
+   * up properly, causing the application to exit.  This is 
+   * desired since we would otherwise re-open output.wav 
+   * and blow away existing "output.wav" file.
+   */
+
+  signal (SIGINT, SigHandler);
+}
+
+void SignalActivateSkipfile(int ignored)
+{
+  signal(SIGINT,SignalSkipfile);
+}
+
+void SigHandler (int signo)
+{
+  switch (signo) {
+  case SIGINT:
+    sig_request.exit = 1;
+  case SIGTSTP:
+    sig_request.pause = 1;
+    /* buffer_Pause (Options.outputOpts.buffer);
+       buffer_WaitForPaused (Options.outputOpts.buffer);
+       }
+       if (Options.outputOpts.devicesOpen == 0) {
+       close_audio_devices (Options.outputOpts.devices);
+       Options.outputOpts.devicesOpen = 0;
+       }
+    */
+    /* open_audio_devices();
+       if (Options.outputOpts.buffer) {
+       buffer_Unpause (Options.outputOpts.buffer);
+       }
+    */
+    break;
+  case SIGCONT:
+    break;
+  default:
+    psignal (signo, "Unknown signal caught");
+  }
+}
+
+/* ------------------Miscellaneous Helper Functions --------------------- */
+
+int IsURL (char *str)
+{
+  int tmp;
+
+  tmp = strchr(str, ':') - str;
+  return tmp < 10 && tmp + 2 < strlen(str) && !strncmp(str + tmp, "://", 3);
+}
+
+/* --------------------------- Main code -------------------------------- */
 
 
 void usage(void)
@@ -336,6 +439,7 @@ void usage(void)
 	 "  -l, --delay=s  set s (default 1). If s=-1, disable song skip.\n");
 }
 
+
 #define INIT(type, value) type type##_##value = value
 char char_n = 'n';
 float float_50f = 50.0f;
@@ -343,6 +447,7 @@ float float_0f = 0.0f;
 INIT(int, 10000);
 INIT(int, 1);
 INIT(int, 0);
+
 
 int main(int argc, char **argv)
 {
@@ -353,6 +458,8 @@ int main(int argc, char **argv)
   ao_info *info;
   int temp_driver_id = -1;
   devices_t *current;
+
+  /* Initialization */
 
   /* *INDENT-OFF* */
   Option_t opts[] = {
@@ -374,26 +481,35 @@ int main(int argc, char **argv)
   Options.playOpts.ntimes = 1;
   Options.statOpts.verbose = 1;
 
-  on_exit (ogg123_onexit, &Options);
+
+
+  on_exit (OnExit, &Options);
   signal (SIGINT, SigHandler);
   signal (SIGTSTP, SigHandler);
   signal (SIGCONT, SigHandler);
   ao_initialize();
-  
-  InitOgg123Stats (Options.statOpts.stats);
 
+  
+  InitStats (Options.statOpts.stats);
   InitOpts(opts);
+
   ReadStdConfigs (opts);
 
-    while (-1 != (ret = getopt_long(argc, argv, "b:c::d:f:hl:k:o:p:qvVx:y:z",
-				    long_options, &option_index))) {
-	switch (ret) {
+  /* Parse command line options */
+  
+  while (-1 != (ret = getopt_long(argc, argv, "b:c::d:f:hl:k:o:p:qvVx:y:z",
+				  long_options, &option_index)))
+    {
+      switch (ret) 
+	{
 	case 0:
 	  Error ("Internal error: long option given when none expected.\n");
 	  exit(1);
+
 	case 'b':
-	  Options.outputOpts.BufferSize = atoi(optarg);
+	  Options.outputOpts.BufferSize = atoi(optarg) * 1024;
 	  break;
+
 	case 'c':
 	  if (optarg)
 	    {
@@ -404,231 +520,213 @@ int main(int argc, char **argv)
 		       "=== Option was: %s\n", ParseErr (pcode), optarg);
 	      free (tmp);
 	    }
-	  else {
-	    /* not using the status interface here */
-	    fprintf (stdout, "Available options:\n");
-	    DescribeOptions (opts, stdout);
-	    exit (0);
-	  }
+	  else
+	    {
+	      /* not using the status interface here */
+	      fprintf (stdout, "Available options:\n");
+	      DescribeOptions (opts, stdout);
+	      exit (0);
+	    }
 	  break;
+	  
 	case 'd':
 	    temp_driver_id = ao_driver_id(optarg);
-	    if (temp_driver_id < 0) {
+	    if (temp_driver_id < 0)
+	      {
 		Error ("=== No such device %s.\n", optarg);
 		exit(1);
-	    }
+	      }
 	    current = append_device(Options.outputOpts.devices,
 				    temp_driver_id, 
 				    NULL, NULL);
 	    if(Options.outputOpts.devices == NULL)
-		    Options.outputOpts.devices = current;
+	      Options.outputOpts.devices = current;
 	    current_options = &current->options;
 	    break;
+	    
 	case 'f':
-	  if (temp_driver_id >= 0) {
-	    info = ao_driver_info(temp_driver_id);
-	    if (info->type == AO_TYPE_FILE) {
-	      free(current->filename);
-	      current->filename = strdup(optarg);
-	    } else {
-	      Error ("=== Driver %s is not a file output driver.\n",
-		     info->short_name);
-	      exit(1);
+	  if (temp_driver_id >= 0)
+	    {
+	      info = ao_driver_info(temp_driver_id);
+	      if (info->type == AO_TYPE_FILE)
+		{
+		  free(current->filename);
+		  current->filename = strdup(optarg);
+		}
+	      else
+		{
+		  Error ("=== Driver %s is not a file output driver.\n",
+			 info->short_name);
+		  exit(1);
+		}
 	    }
-	  } else {
-	    Error ("=== Cannot specify output file without specifying a driver.\n");
-	    exit (1);
-	  }
+	  else
+	    {
+	      Error ("=== Cannot specify output file without specifying a driver.\n");
+	      exit (1);
+	    }
 	  break;
+
 	case 'k':
 	    Options.playOpts.seekpos = atof(optarg);
 	    break;
+
 	case 'l':
 	    Options.playOpts.delay = atoi(optarg);
 	    break;
+
 	case 'o':
-	    if (optarg && !add_option(current_options, optarg)) {
+	    if (optarg && !add_option(current_options, optarg))
+	      {
 		Error ("=== Incorrect option format: %s.\n", optarg);
 		exit(1);
-	    }
+	      }
 	    break;
+
 	case 'h':
 	    usage();
 	    exit(0);
+	    break;
+
 	case 'p':
 	  Options.outputOpts.Prebuffer = atof (optarg);
-	  if (Options.outputOpts.Prebuffer < 0.0f || Options.outputOpts.Prebuffer > 100.0f)
+	  if (Options.outputOpts.Prebuffer < 0.0f || 
+	      Options.outputOpts.Prebuffer > 100.0f)
 	    {
-	      Error ("--- Prebuffer value invalid. Range is 0-100, using nearest value.\n");
-	      Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer < 0.0f ? 0.0f : 100.0f;
+	      Error ("--- Prebuffer value invalid. Range is 0-100.\n");
+	      Options.outputOpts.Prebuffer = 
+		Options.outputOpts.Prebuffer < 0.0f ? 0.0f : 100.0f;
 	    }
 	  break;
+
 	case 'q':
 	  Options.statOpts.verbose = 0;
 	  break;
+
 	case 'v':
 	  Options.statOpts.verbose++;
 	  break;
+
 	case 'V':
 	  Error ("Ogg123 from " PACKAGE " " VERSION "\n");
 	  exit(0);
+	  break;
+
 	case 'x':
 	  Options.playOpts.nth = atoi (optarg);
-	  if (Options.playOpts.nth == 0) {
-	    Error ("--- Cannot play every 0th chunk!\n");
-	    Options.playOpts.nth = 1;
-	  }
+	  if (Options.playOpts.nth == 0)
+	    {
+	      Error ("--- Cannot play every 0th chunk!\n");
+	      Options.playOpts.nth = 1;
+	    }
 	  break;
+	  
 	case 'y':
 	  Options.playOpts.ntimes = atoi (optarg);
-	  if (Options.playOpts.ntimes == 0) {
-	    Error ("--- Cannot play every chunk 0 times.\n"
-		   "--- To do a test decode, use the null output driver.\n");
-	    Options.playOpts.ntimes = 1;
-	  }
+	  if (Options.playOpts.ntimes == 0)
+	    {
+	      Error ("--- Cannot play every chunk 0 times.\n"
+		     "--- To do a test decode, use the null output driver.\n");
+	      Options.playOpts.ntimes = 1;
+	    }
 	  break;
+
 	case 'z':
-	    Options.playOpts.shuffle = 1;
-	    break;
+	  Options.playOpts.shuffle = 1;
+	  break;
+
 	case '?':
-	    break;
+	  break;
+
 	default:
-	    usage();
-	    exit(1);
+	  usage();
+	  exit(1);
 	}
     }
-
-    if (optind == argc) {
-	usage();
-	exit(1);
+  
+  /* Do we have anything left to play? */
+  if (optind == argc)
+    {
+      usage();
+      exit(1);
     }
-
-    SetPriority (Options.statOpts.verbose);
-
-    /* Add last device to device list or use the default device */
-    if (temp_driver_id < 0) {
-      if (Options.outputOpts.default_device) {
-	temp_driver_id = ao_driver_id (Options.outputOpts.default_device);
-	if (temp_driver_id < 0)
-	  Error ("--- Driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
-      }
+  
+  SetPriority (Options.statOpts.verbose);
+  
+  /* Add last device to device list or use the default device */
+  if (temp_driver_id < 0)
+    {
+      /* First try config file setting */
+      if (Options.outputOpts.default_device)
+	{
+	  temp_driver_id = ao_driver_id (Options.outputOpts.default_device);
+	  if (temp_driver_id < 0)
+	    Error ("--- Driver %s specified in configuration file invalid.\n",
+		   Options.outputOpts.default_device);
+	}
       
-      if (temp_driver_id < 0) {
+      /* Then try libao autodetect */
+      if (temp_driver_id < 0)
 	temp_driver_id = ao_default_driver_id();
-      }
-      
-      if (temp_driver_id < 0) {
-	Error ("=== Could not load default driver and no driver specified in config file. Exiting.\n");
-	exit(1);
-      }
 
-      Options.outputOpts.devices = append_device(Options.outputOpts.devices, temp_driver_id, 
-						 temp_options, NULL);
-    }
-
-    Options.inputOpts.BufferSize *= 1024;
-
-    if (Options.outputOpts.BufferSize)
-      {
-	Options.outputOpts.BufferSize *= 1024;
-	Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer * 
-	  (float) Options.outputOpts.BufferSize / 100.0f;
-	Options.outputOpts.buffer = buffer_create(Options.outputOpts.BufferSize, (int) Options.outputOpts.Prebuffer, NULL, (pWriteFunc) OutBufferWrite, NULL, NULL, 4096);
-	Options.statOpts.stats[8].enabled = 1;
-	Options.statOpts.stats[9].enabled = 1;
-      }
-    
-    if (Options.playOpts.shuffle == 'n' || Options.playOpts.shuffle == 'N')
-      Options.playOpts.shuffle = 0;
-    else if (Options.playOpts.shuffle == 'y' || Options.playOpts.shuffle == 'Y')
-      Options.playOpts.shuffle = 1;
-
-    if (Options.playOpts.shuffle) {
-	int i;
-	int range = argc - optind;
-	
-	srandom(time(NULL));
-
-	for (i = optind; i < argc; i++) {
-	  int j = optind + random() % range;
-	  char *temp = argv[i];
-	  argv[i] = argv[j];
-	  argv[j] = temp;
+      /* Finally, give up */
+      if (temp_driver_id < 0)
+	{
+	  Error ("=== Could not load default driver and no driver specified in config file. Exiting.\n");
+	  exit(1);
 	}
     }
 
-    while (optind < argc) {
-	Options.playOpts.read_file = argv[optind];
-	play_file();
-	optind++;
+  Options.outputOpts.devices = append_device(Options.outputOpts.devices,
+					     temp_driver_id, temp_options, 
+					     NULL);
+
+  /* Setup buffer */ 
+  if (Options.outputOpts.BufferSize)
+    {
+      Options.outputOpts.Prebuffer = Options.outputOpts.Prebuffer * 
+	(float) Options.outputOpts.BufferSize / 100.0f;
+      Options.outputOpts.buffer = buffer_create(Options.outputOpts.BufferSize, (int) Options.outputOpts.Prebuffer, NULL, (pWriteFunc) OutBufferWrite, NULL, NULL, 4096);
+      Options.statOpts.stats[8].enabled = 1;
+      Options.statOpts.stats[9].enabled = 1;
+    }
+  
+  /* Shuffle playlist */
+  if (Options.playOpts.shuffle == 'n' || Options.playOpts.shuffle == 'N')
+    Options.playOpts.shuffle = 0;
+  else if (Options.playOpts.shuffle == 'y' || Options.playOpts.shuffle == 'Y')
+    Options.playOpts.shuffle = 1;
+
+  if (Options.playOpts.shuffle)
+    {
+      int i;
+      int range = argc - optind;
+      
+      srandom(time(NULL));
+      
+      for (i = optind; i < argc; i++) {
+	int j = optind + random() % range;
+	char *temp = argv[i];
+	argv[i] = argv[j];
+	argv[j] = temp;
+      }
     }
 
+
+  /* Play the files/streams */
+
+  while (optind < argc)
+    {
+      Options.playOpts.read_file = argv[optind];
+      PlayFile();
+      optind++;
+    }
+  
     exit (0);
 }
 
-/* Two signal handlers, one for SIGINT, and the second for
- * SIGALRM.  They are de/activated on an as-needed basis by the
- * player to allow the user to stop ogg123 or skip songs.
- */
 
-void signal_skipfile(int which_signal)
-{
-  skipfile_requested = 1;
-
-  /* libao, when writing wav's, traps SIGINT so it correctly
-   * closes things down in the event of an interrupt.  We
-   * honour this.   libao will re-raise SIGINT once it cleans
-   * up properly, causing the application to exit.  This is 
-   * desired since we would otherwise re-open output.wav 
-   * and blow away existing "output.wav" file.
-   */
-
-  signal (SIGINT, SigHandler);
-}
-
-void signal_activate_skipfile(int ignored)
-{
-  signal(SIGINT,signal_skipfile);
-}
-
-void SigHandler (int signo)
-{
-  switch (signo) {
-  case SIGINT:
-    exit_requested = 1;
-  case SIGTSTP:
-    pause_requested = 1;
-    /* buffer_Pause (Options.outputOpts.buffer);
-       buffer_WaitForPaused (Options.outputOpts.buffer);
-       }
-       if (Options.outputOpts.devicesOpen == 0) {
-       close_audio_devices (Options.outputOpts.devices);
-       Options.outputOpts.devicesOpen = 0;
-       }
-    */
-    /* open_audio_devices();
-       if (Options.outputOpts.buffer) {
-       buffer_Unpause (Options.outputOpts.buffer);
-       }
-    */
-    break;
-  case SIGCONT:
-    break;
-  default:
-    psignal (signo, "Unknown signal caught");
-  }
-}
-
-#if 0
-/* from vorbisfile.c */
-static int _fseek64_wrap(FILE *f,ogg_int64_t off,int whence)
-{
-  if(f==NULL)return(-1);
-  return fseek(f,(int)off,whence);
-}
-#endif
-
-void play_file()
+void PlayFile()
 {
   OggVorbis_File vf;
   int current_section = -1, eof = 0, eos = 0, ret;
@@ -636,13 +734,11 @@ void play_file()
   int is_big_endian = ao_is_big_endian();
   double realseekpos = Options.playOpts.seekpos;
   int nthc = 0, ntimesc = 0;
-  int tmp;
-  ov_callbacks VorbisfileCallbacks;
+    ov_callbacks VorbisfileCallbacks;
   
-  tmp = strchr(Options.playOpts.read_file, ':') - Options.playOpts.read_file;
-  if (tmp < 10 && tmp + 2 < strlen(Options.playOpts.read_file) && !strncmp(Options.playOpts.read_file + tmp, "://", 3))
+  /* Setup callbacks and data structures for HTTP stream or file */
+  if (IsURL(Options.playOpts.read_file))
     {
-      /* let's call this a URL. */
       ShowMessage (1, 0, 1, "Stream: %s", Options.playOpts.read_file);
       VorbisfileCallbacks.read_func = StreamBufferRead;
       VorbisfileCallbacks.seek_func = StreamBufferSeek;
@@ -661,30 +757,32 @@ void play_file()
   else
     {
       FILE *InStream;
-#if 0
-      VorbisfileCallbacks.read_func = fread;
-      VorbisfileCallbacks.seek_func = _fseek64_wrap;
-      VorbisfileCallbacks.close_func = fclose;
-      VorbisfileCallbacks.tell_func = ftell;
-#endif
+
       if (strcmp(Options.playOpts.read_file, "-"))
 	{
+
 	  ShowMessage (1, 0, 1, "File: %s", Options.playOpts.read_file);
 	  /* Open the file. */
-	  if ((InStream = fopen(Options.playOpts.read_file, "rb")) == NULL) {
-	    perror ("=== Error opening input file");
-	    return;
-	  }
+	  if ((InStream = fopen(Options.playOpts.read_file, "rb")) == NULL)
+	    {
+	      perror ("=== Error opening input file");
+	      return;
+	    }
+	  
 	}
       else
 	{
+
 	  ShowMessage (1, 0, 1, "-=( Standard Input )=- ");
 	  InStream = stdin;
+
 	}
-      if ((ov_open (InStream, &vf, NULL, 0)) < 0) {
-	Error ("=== Input not an Ogg Vorbis audio stream.\n");
-	return;
-      }
+
+      if ((ov_open (InStream, &vf, NULL, 0)) < 0)
+	{
+	  Error ("=== Input not an Ogg Vorbis audio stream.\n");
+	  return;
+	}
     }
   
   /* Setup so that pressing ^C in the first second of playback
@@ -692,51 +790,67 @@ void play_file()
    * the song.  This functionality is similar to mpg123's abilities. */
   
   if (Options.playOpts.delay > 0) {
-    skipfile_requested = 0;
-    signal(SIGALRM,signal_activate_skipfile);
+    sig_request.skipfile = 0;
+    signal(SIGALRM, SignalActivateSkipfile);
     alarm(Options.playOpts.delay);
   }
   
-  exit_requested = 0;
-  pause_requested = 0;
-  
-  while (!eof && !exit_requested) {
+  sig_request.exit = 0;
+  sig_request.pause = 0;
+
+  /* Main loop:  Iterates over all of the logical bitstreams in the file */
+  while (!eof && !sig_request.exit) {
     int i;
-    vorbis_comment *vc = ov_comment(&vf, -1);
-    vorbis_info *vi = ov_info(&vf, -1);
+    vorbis_comment *vc;
+    vorbis_info *vi;
     
+    /* Read header info */
+    vc = ov_comment(&vf, -1);
+    vi = ov_info(&vf, -1);
     Options.outputOpts.rate = vi->rate;
     Options.outputOpts.channels = vi->channels;
-    if(open_audio_devices() < 0)
+
+    /* Open audio device before we read and output comments.  We have
+       to do this inside the loop in order to deal with chained
+       bitstreams with different sample rates */
+    if(OpenAudioDevices() < 0)
       exit(1);
     
-    for (i = 0; i < vc->comments; i++) {
-      char *cc = vc->user_comments[i];	/* current comment */
-      int j;
-      
-      for (j = 0; ogg_comment_keys[j].key != NULL; j++)
-	if (!strncasecmp
-	    (ogg_comment_keys[j].key, cc,
-	     strlen(ogg_comment_keys[j].key))) {
-	  ShowMessage (1, 0, 1, ogg_comment_keys[j].formatstr,
-		       cc + strlen(ogg_comment_keys[j].key));
-	  break;
-	}
-      if (ogg_comment_keys[j].key == NULL)
-	ShowMessage (1, 0, 1, "Unrecognized comment: '%s'", cc);
-    }
+    /* Read and display comments */
+    for (i = 0; i < vc->comments; i++)
+      {
+	char *cc = vc->user_comments[i];	/* current comment */
+	int j;
+	
+	for (j = 0; ogg_comment_keys[j].key != NULL; j++)
+	  if ( !strncasecmp (ogg_comment_keys[j].key, cc,
+			     strlen(ogg_comment_keys[j].key)) )
+	    {
+	      ShowMessage (1, 0, 1, ogg_comment_keys[j].formatstr,
+			   cc + strlen(ogg_comment_keys[j].key));
+	      break;
+	    }
+	
+	if (ogg_comment_keys[j].key == NULL)
+	  ShowMessage (1, 0, 1, "Unrecognized comment: '%s'", cc);
+      }
     
     ShowMessage (3, 0, 1, "Version is %d", vi->version);
-    ShowMessage (3, 0, 1, "Bitrate Hints: upper=%ld nominal=%ld lower=%ld window=%ld",
-		 vi->bitrate_upper, vi->bitrate_nominal, vi->bitrate_lower, vi->bitrate_window);
+    ShowMessage (3, 0, 1, 
+		 "Bitrate Hints: upper=%ld nominal=%ld lower=%ld window=%ld",
+		 vi->bitrate_upper, vi->bitrate_nominal, vi->bitrate_lower,
+		 vi->bitrate_window);
     ShowMessage (2, 0, 1, "Bitstream is %d channel, %ldHz",
 		 vi->channels, vi->rate);
     ShowMessage (2, 0, 1, "Encoded by: %s", vc->vendor);
     
+
+    /* If we're seekable, then setup stats accordingly */
     if (ov_seekable (&vf)) {
       if ((realseekpos > ov_time_total(&vf, -1)) || (realseekpos < 0))
-	/* If we're out of range set it to right before the end. If we set it
-	 * right to the end when we seek it will go to the beginning of the song */
+	/* If we're out of range set it to right before the end. If we
+	 * set it right to the end when we seek it will go to the
+	 * beginning of the song */
 	realseekpos = ov_time_total(&vf, -1) - 0.01;
       
 	Options.inputOpts.seekable = 1;
@@ -753,85 +867,111 @@ void play_file()
     else
       Options.inputOpts.seekable = 0;
     
-    /* Ready to start sending data to the audio playback thread */
-    
+
+    /* Start the audio playback thread before we begin sending data */    
     if (Options.outputOpts.buffer)
       buffer_thread_start (Options.outputOpts.buffer);
     
-    eos = 0;
-    
-    while (!eos && !exit_requested) {
-      
-      if (skipfile_requested) {
-	eof = eos = 1;
-	signal(SIGALRM,signal_activate_skipfile);
-	  alarm(Options.playOpts.delay);
-	  break;
-      }
 
-      if (pause_requested) {
-	buffer_thread_pause (Options.outputOpts.buffer);
-	kill (getpid(), SIGSTOP); /* We stall here */
-	
-	/* Done pausing */
-	buffer_thread_unpause (Options.outputOpts.buffer);
-	pause_requested = 0;
-      }
-      
-      
-      old_section = current_section;
-      ret =
-	ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
+    /* Loop through data within a logical bitstream */
+    eos = 0;    
+    while (!eos && !sig_request.exit)
+      {
+
+	/* Check signals */
+	if (sig_request.skipfile) 
+	  {
+	    eof = eos = 1;
+	    signal(SIGALRM, SignalActivateSkipfile);
+	    alarm(Options.playOpts.delay);
+	    break;
+	  }
+
+	if (sig_request.pause)
+	  {
+	    buffer_thread_pause (Options.outputOpts.buffer);
+	    kill (getpid(), SIGSTOP); /* We block here until we unpause */
+
+	    /* Done pausing */
+	    buffer_thread_unpause (Options.outputOpts.buffer);
+	    sig_request.pause = 0;
+	  }
+
+
+	/* Read another block of audio data */
+	old_section = current_section;
+	ret =
+	  ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
 		  2, 1, &current_section);
-      if (ret == 0) {
-	/* End of file */
-	eof = eos = 1;
-      } else if (ret == OV_HOLE) {
-	if (Options.statOpts.verbose > 1) 
-	  /* we should be able to resync silently; if not there are 
-	     bigger problems. */
-	  Error ("--- Hole in the stream; probably harmless\n");
-      } else if (ret < 0) {
-	/* Stream error */
-	Error ("=== Vorbis library reported a stream error.\n");
-      } else {
-	/* did we enter a new logical bitstream */
-	if (old_section != current_section && old_section != -1)
-	  eos = 1;
-	
-	Options.statOpts.stats[4].arg.doublearg = (double) ov_bitrate_instant (&vf) / 1000.0f;
-	
-	do {
-	  if (nthc-- == 0) {
-	    if (Options.outputOpts.buffer) {
-	      buffer_submit_data (Options.outputOpts.buffer, 
-				  convbuffer, ret, 1);
-	      Ogg123UpdateStats();
+	if (ret == 0) 
+	  {
+	    /* End of file */
+	    eof = eos = 1;
+	  }
+	else if (ret == OV_HOLE)
+	  {
+	    if (Options.statOpts.verbose > 1) 
+	      /* we should be able to resync silently; if not there are 
+		 bigger problems. */
+	      Error ("--- Hole in the stream; probably harmless\n");
+	  } 
+	else if (ret < 0) 
+	  {
+	    /* Stream error */
+	    Error ("=== Vorbis library reported a stream error.\n");
+	  } 
+	else 
+	  {
+	    /* did we enter a new logical bitstream */
+	    if (old_section != current_section && old_section != -1)
+	      eos = 1;
+	  }
+
+
+	/* Update bitrate display */
+	Options.statOpts.stats[4].arg.doublearg = 
+	  (double) ov_bitrate_instant (&vf) / 1000.0f;
+
+
+	/* Write audio data block to output, skipping or repeating chunks
+	   as needed */
+	do
+	  {
+	    if (nthc-- == 0) 
+	      {
+		if (Options.outputOpts.buffer)
+		  {
+		    buffer_submit_data (Options.outputOpts.buffer, 
+					convbuffer, ret, 1);
+		    UpdateStats();
+		  }
+		else
+		  OutBufferWrite (convbuffer, ret, 1, &Options, 0);
+		
+		nthc = Options.playOpts.nth - 1;
 	      }
-	    else
-	      OutBufferWrite (convbuffer, ret, 1, &Options, 0);
-	    nthc = Options.playOpts.nth - 1;
-	    }
-	} while (++ntimesc < Options.playOpts.ntimes);
+	  } 
+	while (++ntimesc < Options.playOpts.ntimes);
+
 	ntimesc = 0;
 	
+      } /* End of data loop */
+    
+    /* Done playing this logical bitstream.  Now we cleanup output buffer. */
+    if (Options.outputOpts.buffer)
+      {
+	if (!sig_request.exit && !sig_request.skipfile)
+	  {
+	    buffer_mark_eos (Options.outputOpts.buffer);
+	    buffer_wait_for_empty (Options.outputOpts.buffer);
+	  }
+	
+	buffer_thread_kill (Options.outputOpts.buffer);
       }
-    }
     
-    /* Done playing this logical bitstream.  Now we cleanup. */
-    if (Options.outputOpts.buffer) {
-      fprintf(stderr, "exit requested = %d", exit_requested);
-      
-      if (!exit_requested && !skipfile_requested) {
-	buffer_mark_eos (Options.outputOpts.buffer);
-	buffer_wait_for_empty (Options.outputOpts.buffer);
-      }
-      
-      buffer_thread_kill (Options.outputOpts.buffer);
-    }
+  } /* End of logical bitstream loop */
     
-  }
-    
+  /* Clean up signals and vorbisfile structures */
   alarm(0);
   signal(SIGALRM,SIG_DFL);
   signal(SIGINT,SigHandler);
@@ -840,101 +980,119 @@ void play_file()
   
   ShowMessage (1, 1, 1, "Done.");
   
-  if (exit_requested)
+  if (sig_request.exit)
     exit (0);
 }
 
-int open_audio_devices()
+
+int OpenAudioDevices()
 {
   static int prevrate=0, prevchan=0;
   devices_t *current;
   ao_sample_format format;
 
-  if(prevrate == Options.outputOpts.rate && prevchan == Options.outputOpts.channels && Options.outputOpts.devicesOpen)
-    return 0;
-  
-  if(prevrate !=0 && prevchan!=0 && Options.outputOpts.devicesOpen)
+  /* Don't close and reopen devices unless necessary */
+  if (Options.outputOpts.devicesOpen)
     {
-      close_audio_devices (Options.outputOpts.devices);
-      Options.outputOpts.devicesOpen = 0;
+      if(prevrate == Options.outputOpts.rate && 
+	 prevchan == Options.outputOpts.channels)
+	{
+	  return 0;
+	}
+      else
+	{
+	  close_audio_devices (Options.outputOpts.devices);
+	  Options.outputOpts.devicesOpen = 0;
+	}
     }
   
+  /* Record audio device settings and open the devices */
   format.rate = prevrate = Options.outputOpts.rate;
   format.channels = prevchan = Options.outputOpts.channels;
   format.bits = 16;
   format.byte_format = AO_FMT_NATIVE;
 
   current = Options.outputOpts.devices;
-  while (current != NULL) {
-    ao_info *info = ao_driver_info(current->driver_id);
-    
-    if (Options.statOpts.verbose > 0) {
-      ShowMessage (1, 0, 1, "Device:   %s", info->name);
-      ShowMessage (1, 0, 1, "Author:   %s", info->author);
-      ShowMessage (1, 0, 1, "Comments: %s\n", info->comment);
-    }
-    
-    if (current->filename == NULL)
-      current->device = ao_open_live(current->driver_id, &format,
-				     current->options);
-    else
-      current->device = ao_open_file(current->driver_id, current->filename,
-				     0, &format, current->options);
+  while (current != NULL)
+    {
+      ao_info *info = ao_driver_info(current->driver_id);
+      
+      if (Options.statOpts.verbose > 0)
+	{
+	  ShowMessage (1, 0, 1, "Device:   %s", info->name);
+	  ShowMessage (1, 0, 1, "Author:   %s", info->author);
+	  ShowMessage (1, 0, 1, "Comments: %s\n", info->comment);
+	}
+      
+      if (current->filename == NULL)
+	current->device = ao_open_live(current->driver_id, &format,
+				       current->options);
+      else
+	current->device = ao_open_file(current->driver_id, current->filename,
+				       0, &format, current->options);
+      
+      /* Report errors */
+      if (current->device == NULL)
+	{
+	  switch (errno)
+	    {
+	    case AO_ENODRIVER:
+	      Error ("Error: Device not available.\n");
+	      break;
+	    case AO_ENOTLIVE:
+	      Error ("Error: %s requires an output filename to be specified with -f.\n", info->short_name);
+	      break;
+	    case AO_EBADOPTION:
+	      Error ("Error: Unsupported option value to %s device.\n",
+		     info->short_name);
+	      break;
+	    case AO_EOPENDEVICE:
+	      Error ("Error: Cannot open device %s.\n",
+		     info->short_name);
+	      break;
+	    case AO_EFAIL:
+	      Error ("Error: Device failure.\n");
+	      break;
+	    case AO_ENOTFILE:
+	      Error ("Error: An output file cannot be given for %s device.\n", info->short_name);
+	      break;
+	    case AO_EOPENFILE:
+	      Error ("Error: Cannot open file %s for writing.\n",
+		     current->filename);
+	      break;
+	    case AO_EFILEEXISTS:
+	      Error ("Error: File %s already exists.\n", current->filename);
+	      break;
+	    default:
+	      Error ("Error: This error should never happen.  Panic!\n");
+	      break;
+	    }
+	 
+	  /* We cannot recover from any of these errors */
+	  return -1;
+	}
 
-    if (current->device == NULL) {
-      switch (errno) {
-      case AO_ENODRIVER:
-	Error ("Error: Device not available.\n");
-	break;
-      case AO_ENOTLIVE:
-	Error ("Error: %s requires an output filename to be specified with -f.\n", info->short_name);
-	break;
-      case AO_EBADOPTION:
-	Error ("Error: Unsupported option value to %s device.\n",
-		info->short_name);
-	break;
-      case AO_EOPENDEVICE:
-	Error ("Error: Cannot open device %s.\n",
-		info->short_name);
-	break;
-      case AO_EFAIL:
-	Error ("Error: Device failure.\n");
-	break;
-      case AO_ENOTFILE:
-	Error ("Error: An output file cannot be given for %s device.\n", info->short_name);
-	break;
-      case AO_EOPENFILE:
-	Error ("Error: Cannot open file %s for writing.\n",
-		current->filename);
-	break;
-      case AO_EFILEEXISTS:
-	Error ("Error: File %s already exists.\n", current->filename);
-	break;
-      default:
-	Error ("Error: This error should never happen.  Panic!\n");
-	break;
-      }
-	
-      return -1;
+      current = current->next_device;
     }
-    current = current->next_device;
-  }
   
   Options.outputOpts.devicesOpen = 1;
   return 0;
 }
 
-void ogg123_onexit (int exitcode, void *arg)
+
+void OnExit (int exitcode, void *arg)
 {
-  if (Options.inputOpts.data) {
-    StreamCleanup (Options.inputOpts.data);
-    Options.inputOpts.data = NULL;
-  }
+  if (Options.inputOpts.data)
+    {
+      StreamCleanup (Options.inputOpts.data);
+      Options.inputOpts.data = NULL;
+    }
       
-  if (Options.outputOpts.buffer) {
-    buffer_destroy (Options.outputOpts.buffer);
-    Options.outputOpts.buffer = NULL;
-  }
+  if (Options.outputOpts.buffer)
+    {
+      buffer_destroy (Options.outputOpts.buffer);
+      Options.outputOpts.buffer = NULL;
+    }
 
   ao_onexit (exitcode, Options.outputOpts.devices);
   Options.outputOpts.devicesOpen = 0;

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.6.2.2 2001/10/17 16:58:14 volsung Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.6.2.3 2001/10/31 05:38:55 volsung Exp $
  
 ********************************************************************/
 
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h> /* for memmove */
 #include <signal.h>		/* for SIGINT */
+#include "ogg123.h"
 
 #undef DEBUG_CURLINTERFACE
 
@@ -31,33 +32,35 @@
 #endif
 
 /* we only need one function from ogg123 itself. */
-extern void Ogg123UpdateStats(void);
-/* and one flag. */
-extern char exit_requested;
+extern void UpdateStats(void);
 
-size_t
-CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
+/* and one flag. */
+extern signal_request_t sig_request;
+
+size_t CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
 {
   buf_t *buf = arg;
   debug ("CurlWriteFunction, submitting %d bytes.\n", size * nmemb);
-  if (exit_requested)
+
+  if (sig_request.exit)
     exit(0);
+
   buffer_submit_data (buf, ptr, size, nmemb);
-  Ogg123UpdateStats();
+  UpdateStats();
+
   return size * nmemb;
 }
 
 
-int
-CurlProgressFunction (void *arg, size_t dltotal, size_t dlnow, size_t ultotal,
-		      size_t ulnow)
+int CurlProgressFunction (void *arg, size_t dltotal, size_t dlnow,
+			  size_t ultotal, size_t ulnow)
 {
   debug ("curlprogressfunction\n");
   return 0;
 }
 
-void
-CurlSetopts (CURL * handle, buf_t * buf, InputOpts_t inputOpts)
+
+void CurlSetopts (CURL * handle, buf_t * buf, InputOpts_t inputOpts)
 {
   curl_easy_setopt (handle, CURLOPT_FILE, buf);
   curl_easy_setopt (handle, CURLOPT_WRITEFUNCTION, CurlWriteFunction);
@@ -86,8 +89,8 @@ CurlSetopts (CURL * handle, buf_t * buf, InputOpts_t inputOpts)
   curl_easy_setopt (handle, CURLOPT_PROGRESSDATA, buf);
 }
 
-void *
-CurlGo (void *arg)
+
+void *CurlGo (void *arg)
 {
   StreamInputBufferData_t *data = (StreamInputBufferData_t *) arg;
   CURLcode ret;
@@ -104,11 +107,11 @@ CurlGo (void *arg)
   return (void *) ret;
 }
 
-StreamInputBufferData_t *
-InitStream (InputOpts_t inputOpts)
+
+StreamInputBufferData_t *InitStream (InputOpts_t inputOpts)
 {
   StreamInputBufferData_t *data = malloc (sizeof (StreamInputBufferData_t));
-
+  
   debug ("InitStream\n");
   debug (" Allocated data\n");
 
@@ -155,10 +158,12 @@ InitStream (InputOpts_t inputOpts)
   return data;
 }
 
+
 void StreamCleanup (StreamInputBufferData_t *data)
 {
   free (data);
 }
+
 
 /* --------------- vorbisfile callbacks --------------- */
 
@@ -177,15 +182,14 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 }
 
 /* These are no-ops for now. */
-int
-StreamBufferSeek (void *arg, ogg_int64_t offset, int whence)
+int StreamBufferSeek (void *arg, ogg_int64_t offset, int whence)
 {
   debug ("StreamBufferSeek\n");
   return -1;
 }
 
-int
-StreamBufferClose (void *arg)
+
+int StreamBufferClose (void *arg)
 {
   StreamInputBufferData_t *data = arg;
 
@@ -203,8 +207,8 @@ StreamBufferClose (void *arg)
   return 0;
 }
 
-long
-StreamBufferTell (void *arg)
+
+long StreamBufferTell (void *arg)
 {
   return 0;
 }
