@@ -18,17 +18,9 @@
 
 '''
 
-from wxPython.wx import *
-import wx
-import time
+from general import *
 from sandbox import *
 from infobox import *
-from images import geticon
-
-def geticon(name, size=1):
-  sizes=('16x16','22x22','32x32')
-  f = 'icons/%s/%s.png' % (sizes[size], name)
-  return wxImage(f, wxBITMAP_TYPE_PNG).ConvertToBitmap()
 
 class MainFrame(wxFrame):
   def __init__(self):
