@@ -1,7 +1,7 @@
 /* encode.c
  * - runtime encoding of PCM data.
  *
- * $Id: encode.c,v 1.6.2.1 2002/02/07 09:11:10 msmith Exp $
+ * $Id: encode.c,v 1.6.2.2 2002/02/08 11:14:03 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -319,18 +319,28 @@ int encode_open_module(process_chain_element *mod, module_param_t *params)
     mod->priv_data = enc;
 
     enc->managed = 0;
-    enc->quality = 0.3;
+    enc->quality = 3.0;
 
     enc->nom_br = 128000;
     enc->min_br = enc->max_br = -1;
     enc->max_page_time = 2.0; /* Seconds */
+    enc->serial = rand(); /* Start off at some random point */
 
     while(params) {
 
         if(!strcmp(params->name, "quality")) {
-            /* FIXME: Ensure this is bounded to [0,10] */
             enc->managed = 0;
-            enc->quality = atof(params->value) * 0.1;
+            enc->quality = atof(params->value);
+            if(enc->quality < 0.0) {
+                LOG_WARN1("Cannot have quality value of %f, setting to 0",
+                        enc->quality);
+                enc->quality = 0.0;
+            }
+            else if(enc->quality > 10.0) {
+                LOG_WARN1("Cannot have quality value of %f, setting to 10",
+                        enc->quality);
+                enc->quality = 10.0;
+            }
         }
         else if(!strcmp(params->name, "nominal-bitrate")) {
             enc->managed = 1;

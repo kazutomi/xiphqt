@@ -1,7 +1,7 @@
 /* im_stdinpcm.c
  * - Raw PCM input from stdin
  *
- * $Id: im_stdinpcm.c,v 1.2.2.1 2002/02/07 09:11:11 msmith Exp $
+ * $Id: im_stdinpcm.c,v 1.2.2.2 2002/02/08 11:14:03 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -85,7 +85,7 @@ static int stdin_read(instance_t *instance, void *self,
 
 	if(rb->len <= 0)
 	{
-		LOG_INFO0("Reached EOF, no more data available\n");
+		LOG_INFO0("Reached EOF, no more data available");
 		release_buffer(rb);
 		return -1;
 	}

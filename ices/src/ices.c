@@ -1,7 +1,7 @@
 /* ices.c
  * - Main startup, thread launching, and cleanup code.
  *
- * $Id: ices.c,v 1.4.2.1 2002/02/07 09:11:11 msmith Exp $
+ * $Id: ices.c,v 1.4.2.2 2002/02/08 11:14:03 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 	log_initialize();
 	thread_initialize();
 	resolver_initialize();
-	config_initialize();
+	config_initialise();
 
 	signals_setup();
 

@@ -2,7 +2,7 @@
  *  - Main producer control loop. Fetches data from input modules, and controls
  *    submission of these to the instance threads. Timing control happens here.
  *
- * $Id: input.c,v 1.12.2.1 2002/02/07 09:11:11 msmith Exp $
+ * $Id: input.c,v 1.12.2.2 2002/02/08 11:14:03 msmith Exp $
  * 
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -81,7 +81,6 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 	ogg_packet op;
 	vorbis_info vi;
 	vorbis_comment vc;
-    int ret = 0;
 
 	if(control->starttime == 0)
 		control->starttime = timing_get_time();
@@ -92,13 +91,20 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 	og.body = buf->buf + og.header_len;
 
 	if(control->serialno != ogg_page_serialno(&og)) {
+        LOG_DEBUG1("New ogg stream, serial %d", ogg_page_serialno(&og));
 		control->serialno = ogg_page_serialno(&og);
 
 		control->oldsamples = 0;
 
 		ogg_stream_init(&os, control->serialno);
-		ogg_stream_pagein(&os, &og);
-		ogg_stream_packetout(&os, &op);
+        if(ogg_stream_pagein(&os, &og)) {
+            LOG_ERROR0("Error submitting page to libogg");
+            goto fail;
+        }
+        if(ogg_stream_packetout(&os, &op)) {
+            LOG_ERROR0("Error retrieving packet from libogg");
+            goto fail;
+        }
 
 		vorbis_info_init(&vi);
 		vorbis_comment_init(&vc);
@@ -108,7 +114,7 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
             LOG_ERROR0("Timing control: can't determine sample rate for input, "
                        "not vorbis.");
             control->samplerate = 0;
-            ret = -1;
+            goto fail;
         }
         else {
 		    control->samplerate = vi.rate;
@@ -127,7 +133,13 @@ static int _calculate_ogg_sleep(ref_buffer *buf, timing_control *control)
 	    control->senttime += ((double)control->samples * 1000000 / 
 		    	(double)control->samplerate);
 
-    return ret;
+    return 0;
+
+fail:
+    vorbis_comment_clear(&vc);
+    vorbis_info_clear(&vi);
+    ogg_stream_clear(&os);
+    return -1;
 }
 
 void input_flush_queue(buffer_queue *queue, int keep_critical)
@@ -202,6 +214,9 @@ void input_loop(void)
     process_chain_element *chain;
 	int shutdown = 0;
     int valid_stream = 1;
+
+    control->serialno = -1; /* FIXME: Ideally, we should use a flag here - this
+                               is otherwise a valid serial number */
 
 	thread_cond_create(&ices_config->queue_cond);
 	thread_cond_create(&ices_config->event_pending_cond);

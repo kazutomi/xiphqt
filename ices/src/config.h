@@ -1,7 +1,7 @@
 /* config.h
  * - configuration, and global structures built from config
  *
- * $Id: config.h,v 1.10.2.1 2002/02/07 09:11:10 msmith Exp $
+ * $Id: config.h,v 1.10.2.2 2002/02/08 11:14:03 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -52,7 +52,7 @@ typedef struct _config_tag
 
 extern config_t *ices_config;
 
-void config_initialize(void);
+void config_initialise(void);
 void config_shutdown(void);
 
 int config_read(const char *filename);
