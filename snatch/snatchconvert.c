@@ -36,17 +36,11 @@ int audio_p;
 int video_p;
 
 double begin_time=0.;
-double last_time=-1.;
-double fudge_time=0.;
 double end_time=1e90;
 double global_zerotime=0.;
 
 unsigned char *buftemp;
-long           buftemphead;
-long           buftemptail;
 long           buftempsize;
-
-long  fpsgraph[61];
 
 /* audio resampling ripped from sox and simplified */
 /*
@@ -326,12 +320,6 @@ static void lebuffer_sample(short v,int nofakep){
 #endif
 }
 
-static void rebuffer_sample(long pos,int nofakep){
-  short v=0;
-  if(nofakep)v=audbuf[audbuf_head+pos];
-  buffer_sample(v,nofakep);
-}
-
 static int convert_input(unsigned char *buf,int fmt,int *v){
   switch(fmt){
   case 4:
@@ -371,21 +359,7 @@ static void pre_buffer_audio(long samples,int nofakep){
   }
 }
 
-static double snip_gap_cleanly(double now,int audio){
-  /* fudge the clock to zip through most/all of the gap or overlap */
-  
-  if(audio || !audio_p){
-    if(last_time!=-1){
-      if(last_time+2.<now){
-	fudge_time-=now-last_time-1.;
-      }
-      if(last_time>now)
-	fudge_time+=last_time-now;
-    }
-    last_time=now;
-  }
-  return(now+fudge_time);
-}
+
 
 /************************ snatch parsing *********************/
 
@@ -409,36 +383,7 @@ static int read_snatch_header(FILE *f){
   video_p=0;
   if(buffer[6]=='A')audio_p=1;
   if(buffer[7]=='V')video_p=1;
-
-
-  memset(fpsgraph,0,sizeof(fpsgraph));
   return(1);
-}
-
-int read_snatch_frame_helper(FILE *f,long length,int verify){
-  long toread=length-buftemphead+buftemptail+5;
-
-  if(toread>0){
-    if(toread+buftemphead>buftempsize){
-      if(buftemp)
-	buftemp=realloc(buftemp,(toread+buftemphead)*sizeof(*buftemp));
-      else
-	buftemp=malloc((toread+buftemphead)*sizeof(*buftemp));
-      buftempsize+=toread;
-    }
-    
-    if((long)fread(buftemp+buftemphead,1,toread,f)!=toread)return(-1);
-    buftemphead+=toread;
-  }
-
-  if(verify){
-    if(!strncmp(buftemp+buftemptail+length,"AUDIO",5))return(length);
-    if(!strncmp(buftemp+buftemptail+length,"VIDEO",5))return(length);
-    if(!strncmp(buftemp+buftemptail+length,"YUV12",5))return(length);
-    return(0);
-  }else{
-    return(length);
-  }
 }
 
 resample_t resampler[2];
@@ -470,8 +415,21 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   if(!s)return(0);
   length=atoi(s);
 
-  if((ret=read_snatch_frame_helper(f,length,1))!=length)
-    return(ret);
+  if(length>buftempsize){
+    if(buftemp)
+      buftemp=realloc(buftemp,length*sizeof(*buftemp));
+    else
+      buftemp=malloc(length*sizeof(*buftemp));
+    buftempsize=length;
+  }
+
+  if(track_or_process){
+    ret=fread(buftemp,1,length,f);
+    if(ret<length)return(0);
+  }else{
+    ret=fseek(f,length,SEEK_CUR);
+    if(ret)return(0);
+  }
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -479,25 +437,9 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     end_time+=t;
   }
 
-  if(audbuf_rate==0)audbuf_rate=ra;
-  if(audbuf_channels==0)audbuf_channels=ch;
-  
-  if(t<begin_time){
-    int bps=1;
-    switch(fmt){
-    case 5:case 6:case 8:case 9:
-      bps=2;
-      break;
-    }
-    samplesin+=length/(ch*bps);
-    return(length);
-  }
+  if(t<begin_time)return(1);
+  if(t>end_time)return(1);
 
-  if(t>end_time)
-    return(-1);
-
-  /* do we have a large capture gap (eg>2s)? */
-  t=snip_gap_cleanly(t,1);
 
   if(audbuf_zerotime==0){
     audbuf_zerotime=t;
@@ -505,47 +447,44 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   }else{
     long long actualpos=(t-audbuf_zerotime)*audbuf_rate*audbuf_channels+.5;
     long i;
-
-    /* we do not nail conversion to a realtime clock when only audio
-       has been captured; Snatch may have faked the audio interface,
-       which decoupled playback from any clock */
-
-    if(video_p){
     
-      //fprintf(stderr,"audio sample jitter: %ld [%ld:%ld]\n",
-      //(long)(nextsamplepos-actualpos),(long)nextsamplepos,(long)actualpos);
-      
-      /* hold last sample through any gap, assuming a bit of
-	 hysteresis.  That also holds us through roundoff error (the
-	 roundoff error does *not* creep frame to frame) */
-      if(audbuf_channels>1){
-	for(i=actualpos-nextsamplepos-12;i>0;i-=2){
-	  rebuffer_sample(-2,track_or_process);
-	  rebuffer_sample(-2,track_or_process);
-	  samplesmissing++;
-	  //fprintf(stderr,".");
-	}
-      }else{
-	for(i=actualpos-nextsamplepos-12;i>0;i--){
-	  rebuffer_sample(-1,track_or_process);	
-	  samplesmissing++;
-	  //fprintf(stderr,".");
-	}
+    //fprintf(stderr,"audio sample jitter: %ld [%ld:%ld]\n",
+    //(long)(nextsamplepos-actualpos),(long)nextsamplepos,(long)actualpos);
+
+    /* hold last sample through any gap, assuming a bit of
+       hysteresis.  That also holds us through roundoff error (the
+       roundoff error does *not* creep frame to frame) */
+    if(audbuf_channels>1){
+      for(i=actualpos-nextsamplepos-12;i>0;i-=2){
+	buffer_sample(audbuf[audbuf_head-2],track_or_process);
+	buffer_sample(audbuf[audbuf_head-2],track_or_process);
+	samplesmissing++;
+	//fprintf(stderr,".");
       }
-      
-      /* discard samples if we're way too far ahead; only likely to
-	 happen due to a fault or misuse of splicing */
-      if(nextsamplepos-actualpos>12){
-	/* if we're so far ahead more than 10% of the frame must
-	   disappear, just discard, else compact things a bit by
-	   dropping samples */
-	
-	fprintf(stderr,"audio sync got way ahead; this case not currently handled\n");
-	exit(1);
-	
+    }else{
+      for(i=actualpos-nextsamplepos-12;i>0;i--){
+	buffer_sample(audbuf[audbuf_head-1],track_or_process);	
+	samplesmissing++;
+	//fprintf(stderr,".");
       }
     }
+
+    /* discard samples if we're way too far ahead; only likely to
+       happen due to a fault or misuse of splicing */
+    if(nextsamplepos-actualpos>12){
+      /* if we're so far ahead more than 10% of the frame must
+         disappear, just discard, else compact things a bit by
+         dropping samples */
+
+      fprintf(stderr,"audio sync got way ahead; this case not currently handled\n");
+      exit(1);
+
+      
+    }
   }
+  
+  if(audbuf_rate==0)audbuf_rate=ra;
+  if(audbuf_channels==0)audbuf_channels=ch;
   
   if(audbuf_rate!=ra && resampler[0].input_rate!=ra){
     /* set up resampling */
@@ -561,12 +500,12 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     double left,right;
     
     for(i=0;i<n;){
-      i+=convert_input(buftemp+buftemptail+i,fmt,&ileft);
+      i+=convert_input(buftemp+i,fmt,&ileft);
       samplesin++;
       left=ileft*3.0517578e-5;
       
       if(ch>1){
-	i+=convert_input(buftemp+buftemptail+i,fmt,&iright);
+	i+=convert_input(buftemp+i,fmt,&iright);
 	right=iright*3.0517578e-5;
       }
       
@@ -618,9 +557,9 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
     
     for(i=0;i<n;){
       samplesin++;
-      i+=convert_input(buftemp+buftemptail+i,fmt,&left);
+      i+=convert_input(buftemp+i,fmt,&left);
       if(ch>1)
-	i+=convert_input(buftemp+buftemptail+i,fmt,&right);
+	i+=convert_input(buftemp+i,fmt,&right);
       
       lebuffer_sample(left,track_or_process);
       if(audbuf_channels>1){
@@ -632,7 +571,7 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
       }
     }
   }
-  return(length);
+  return(1);
 }
 
 /*********************** video manipulation ***********************/
@@ -646,6 +585,7 @@ void yuvscale(unsigned char *src,int sw,int sh,
   int dyo=(dh-sh)/4,syo=0;
   
   /* dirt simple for now. No scaling, just centering */
+  memset(dst,0,dw*dh*3/2);
   
   if(dyo<0){
     syo= -dyo;
@@ -656,27 +596,11 @@ void yuvscale(unsigned char *src,int sw,int sh,
     dxo=0;
   }
 
-  for(y=0;y<dyo*2;y++){
-    unsigned char *dptr=dst+y*dw;
-    for(x=0;x<dw;x++)
-      *dptr++=0;
-  }
-
   for(y=0;y<sh && y<dh;y++){
     unsigned char *sptr=src+(y+syo*2)*sw+sxo*2;
-    unsigned char *dptr=dst+(y+dyo*2)*dw;
-    for(x=0;x<dxo*2;x++)
-      *dptr++=0;
+    unsigned char *dptr=dst+(y+dyo*2)*dw+dxo*2;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
-    for(;x<dw-dxo*2;x++)
-      *dptr++=0;
-  } 
-
-  for(;y<dh-dyo*2;y++){
-    unsigned char *dptr=dst+(y+dyo*2)*dw;
-    for(x=0;x<dw;x++)
-      *dptr++=0;
   }
 
   src+=sw*sh;
@@ -686,54 +610,21 @@ void yuvscale(unsigned char *src,int sw,int sh,
   sh/=2;
   dh/=2;
 
-  for(y=0;y<dyo;y++){
-    unsigned char *dptr=dst+y*dw;
-    for(x=0;x<dw;x++)
-      *dptr++=128;
-  }
-
   for(y=0;y<sh && y<dh;y++){
     unsigned char *sptr=src+(y+syo)*sw+sxo;
-    unsigned char *dptr=dst+(y+dyo)*dw;
-    for(x=0;x<dxo;x++)
-      *dptr++=128;
+    unsigned char *dptr=dst+(y+dyo)*dw+dxo;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
-    for(;x<dw-dxo;x++)
-      *dptr++=128;
   }
-
-  for(;y<dh-dyo;y++){
-    unsigned char *dptr=dst+(y+dyo)*dw;
-    for(x=0;x<dw;x++)
-      *dptr++=128;
-  }
-
 
   src+=sw*sh;
   dst+=dw*dh;
 
-  for(y=0;y<dyo;y++){
-    unsigned char *dptr=dst+y*dw;
-    for(x=0;x<dw;x++)
-      *dptr++=128;
-  }
-
   for(y=0;y<sh && y<dh;y++){
     unsigned char *sptr=src+(y+syo)*sw+sxo;
-    unsigned char *dptr=dst+(y+dyo)*dw;
-    for(x=0;x<dxo;x++)
-      *dptr++=128;
+    unsigned char *dptr=dst+(y+dyo)*dw+dxo;
     for(x=0;x<sw && x<dw;x++)
       *dptr++=*sptr++;
-    for(;x<dw-dxo;x++)
-      *dptr++=128;
-  }
-
-  for(;y<dh-dyo;y++){
-    unsigned char *dptr=dst+(y+dyo)*dw;
-    for(x=0;x<dw;x++)
-      *dptr++=128;
   }
 
 }
@@ -792,6 +683,7 @@ void rgbscale(unsigned char *rgb,int sw,int sh,
 
 }
 
+
 unsigned char     **vidbuf;
 long long *vidbuf_frameno;
 double     vidbuf_zerotime;
@@ -801,8 +693,7 @@ int        vidbuf_tail;
 int        vidbuf_size;
 int        vidbuf_height;
 int        vidbuf_width;
-double     vidin_fps;
-double     vidout_fps;
+double     vidbuf_fps;
 			 
 int scale_width;
 int scale_height;
@@ -811,8 +702,6 @@ long long framesin=0;
 long long framesout=0;
 long long framesmissing=0;
 long long framesdiscarded=0;
-
-double video_last_time=-1;
       
 static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   char *s=buffer+6;
@@ -837,8 +726,20 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   if(!s)return(0);
   length=atoi(s);
 
-  if((ret=read_snatch_frame_helper(f,length,1))!=length)
-    return(ret);
+  if(length>buftempsize){
+    if(buftemp)
+      buftemp=realloc(buftemp,length*sizeof(*buftemp));
+    else
+      buftemp=malloc(length*sizeof(*buftemp));
+    buftempsize=length;
+  }
+  if(notfakep){
+    ret=fread(buftemp,1,length,f);
+    if(ret<length)return(0);
+  }else{
+    ret=fseek(f,length,SEEK_CUR);
+    if(ret)return(0);
+  }
 
   if(global_zerotime==0){
     global_zerotime=t;
@@ -846,22 +747,8 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
     end_time+=t;
   }
 
-  if(t<begin_time)return(length);
-  if(t>end_time)
-    return(-1);
-
-  /* do we have a large capture gap (eg>2s)? */
-  t=snip_gap_cleanly(t,0);
-
-  if(video_last_time!=-1){
-    double del_t=t-video_last_time;
-    if(del_t>0){
-      int val=ceil(1./(t-video_last_time));
-      if(val>0 && val<61)
-	fpsgraph[val]++;
-    }
-  }
-  video_last_time=t;
+  if(t<begin_time)return(1);
+  if(t>end_time)return(1);
 
   /* video sync is fundamentally different from audio. We assume that
      frames never appear early; an frame that seems early in context
@@ -872,7 +759,7 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
     vidbuf_zerotime=t;
   }else{
     double ideal=(double)vidbuf_frames;
-    double actual=(t-vidbuf_zerotime)*vidin_fps;
+    double actual=(t-vidbuf_zerotime)*vidbuf_fps;
     double drift=actual-ideal;
     int i;
 
@@ -900,7 +787,7 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
 	/* no room to bump back.  Discard the 'early' frame 
 	   in order to reclaim sync, even if destructively. */
 	framesdiscarded++;
-	return(length);
+	return(1);
       }
     }
 
@@ -951,80 +838,51 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep,int yuvp){
   /* scale image into buffer */
   if(notfakep){
     if(yuvp)
-      yuvscale(buftemp+buftemptail,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
+      yuvscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
 	       scale_width,scale_height);
     else
-      rgbscale(buftemp+buftemptail,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
+      rgbscale(buftemp,w,h,vidbuf[vidbuf_head],vidbuf_width,vidbuf_height,
 	       scale_width,scale_height);
   }
   /* finally any needed invasive blanking */
 
   vidbuf_head++;
-  return(length);
+  return(1);
 }
 
-
-static char *strrstr(char *string,char *test){
-  char *ret=NULL;
-  char *temp;
-  while((temp=strstr(string,test))){
-    ret=temp;
-    string=temp+1;
-  }
-  return ret;
-}
-
-/* more complicated than it used to be; we need to check framing */
 static int read_snatch_frame(FILE *f,int wa,int wv){
-  while(!feof(f)){
-    if(buftemptail){
-      memmove(buftemp,buftemp+buftemptail,buftemphead-buftemptail);
-      buftemphead-=buftemptail;
-      buftemptail=0;
-    }
+  char buffer[130];
+  char *ptr=buffer;
+  while(1){
+    int c=getc(f);
+    if(c==EOF)return(0);
+    *ptr++=c;
+    if(c==':')break;
+    if(ptr>=buffer+130)return(0);
+  }
+  *ptr='\0';
 
-    if(!read_snatch_frame_helper(f,2048,0))return(0);
+  if(!strncmp(buffer,"AUDIO",5)){
+    /* buffer or just track the audio, doing automatic resampling to
+       keep the same parameters start to end. */
+    return process_audio_frame(buffer, f, wa);
 
-    {
-      unsigned char *poss=memchr(buftemp,':',buftemphead);
-      int pos=-1;
-      if(poss)pos=poss-buftemp;
-      if(poss){
-	char *audio,*video,*yuv12;
-	int ret=0;
-	buftemp[pos]='\0';
-	
-	/* search *backwards* from the colon */
-	audio=strrstr(buftemp,"AUDIO");
-	video=strrstr(buftemp,"VIDEO");
-	yuv12=strrstr(buftemp,"YUV12");
+  }else {
+    if(!strncmp(buffer,"VIDEO",5)){
+      framesin++;
+      return process_video_frame(buffer, f, wv,0);
 
-	buftemptail=pos+1;
-
-	if(audio || video || yuv12){
-	  if(audio)
-	    ret=process_audio_frame(audio, f, wa);
-	  else if(video){
-	    ret=process_video_frame(video, f, wv,0);
-	    framesin++;
-	  }else{
-	    ret=process_video_frame(yuv12, f, wv,1);
-	    framesin++;
-	  }
-
-	  if(ret<0)return(0);
-	  if(ret>0){
-	    buftemptail+=ret;
-	    return(ret);
-	  }
-	}
-       
+    }else{
+      if(!strncmp(buffer,"YUV12",5)){
+	framesin++;
+	return process_video_frame(buffer, f, wv,1);
       }else{
-	buftemptail=buftemphead-130;
+	
+	fprintf(stderr,"Garbage/unknown frame type\n");
+	return(0);
       }
     }
   }
-  return(0);
 }
 
 /* writes a wav header without the length set.  This is also the 32
@@ -1040,7 +898,6 @@ void PutNumLE(long num,FILE *f,int bytes){
     i++;
   }
 }
-
 void WriteWav(FILE *f,long channels,long rate,long bits){
   fprintf(f,"RIFF");
   PutNumLE(0x7fffffffUL,f,4);
@@ -1060,23 +917,12 @@ void WriteYuv(FILE *f,int w,int h,int fpscode){
   fprintf(f,"YUV4MPEG %d %d %d\n",w,h,fpscode);
 }
 
-static int frameratesn[]={
-  0,   24000,  24,  25,  30000,  30,  50,  60000,  60 };
-static int frameratesd[]={
-  0.,   1001,   1,   1,   1001,   1,   1,   1001,   1 };
-
-void WriteYuv2(FILE *f,int w,int h,int fpscode){
-  fprintf(f,"YUV4MPEG2 W%d H%d F%d:%d Ip A1:1\n",w,h,
-	  frameratesn[fpscode],frameratesd[fpscode]);
-}
-
 /* YV12 aka 4:2:0 planar */
 void YUVout(unsigned char *buf,FILE *f){
   fprintf(f,"FRAME\n");
   fwrite(buf,1,vidbuf_width*vidbuf_height*3/2,f);
 }
 
-static int begun;
 static int synced;
 static int drain;
 static int header;
@@ -1089,11 +935,11 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 
       if(process_audio && !audio_p){
 	fprintf(stderr,"No audio in this stream\n");
-	exit(1);
+	return(1);
       }
       if(process_video && !video_p){
 	fprintf(stderr,"No video in this stream\n");
-	exit(1);
+	return(1);
       }
 
       header=1;
@@ -1105,7 +951,7 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
   if(!drain){
     int ret=read_snatch_frame(in,process_audio,process_video);
     
-    if(ret==0)drain=1;
+    if(ret==0 && feof(in))drain=1;
   }
   
   if(audio_p && video_p){
@@ -1117,25 +963,20 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
 	long samples=0;
 	int i;
 
-	if(!begun){
-	  if(process_audio)
-	    WriteWav(out,audbuf_channels,audbuf_rate,16);
-	  if(process_video==2)
-	    WriteYuv2(out,vidbuf_width,vidbuf_height,ratecode);
-	  if(process_video==1)
-	    WriteYuv(out,vidbuf_width,vidbuf_height,ratecode);
-	  begun=1;
-	}
-
+	if(process_audio)
+	  WriteWav(out,audbuf_channels,audbuf_rate,16);
+	if(process_video)
+	  WriteYuv(out,vidbuf_width,vidbuf_height,ratecode);
+	
 	/* we don't write frames/samples here; we queue new ones out
            ahead until everything's even */
 
 	if(time_dif>0){
 	  /* audio started first; prestretch video, then repad with
 	     audio */
-	  frames=ceil(time_dif*vidin_fps);
-	  time_dif-=(frames/vidin_fps);
-	  vidbuf_zerotime-=(frames/vidin_fps);
+	  frames=ceil(time_dif*vidbuf_fps);
+	  time_dif-=(frames/vidbuf_fps);
+	  vidbuf_zerotime-=(frames/vidbuf_fps);
 	  for(i=vidbuf_tail+1;i<vidbuf_head;i++)
 	    vidbuf_frameno[i]+=frames;
 	  framesmissing+=frames;
@@ -1160,17 +1001,7 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
       }
       return 0;
     }
-  }else{
-    if(!begun){
-      if(process_audio)
-	WriteWav(out,audbuf_channels,audbuf_rate,16);
-      if(process_video==2)
-	WriteYuv2(out,vidbuf_width,vidbuf_height,ratecode);
-      if(process_video==1)
-	WriteYuv(out,vidbuf_width,vidbuf_height,ratecode);
-      begun=1;
-    }
-  }
+  }    
 
   if(drain){
     int i;
@@ -1179,20 +1010,15 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
     
     if(video_p){
       for(i=vidbuf_tail;i<vidbuf_head;i++){
-	int oframes=(i+1<vidbuf_head)?
-	  vidbuf_frameno[i+1]*vidout_fps/vidin_fps-
-	  vidbuf_frameno[i]  *vidout_fps/vidin_fps:
-	  vidout_fps/vidin_fps;
-	int iframes=(i+1<vidbuf_head)?
-	  vidbuf_frameno[i+1]-
-	  vidbuf_frameno[i]  :
+	int frames=(i+1<vidbuf_head)?
+	  vidbuf_frameno[i+1]-vidbuf_frameno[i]:
 	  1;
 	
-	framesout+=oframes;
-	framesmissing+=iframes-1;
+	framesout+=frames;
+	framesmissing+=(frames-1);
 	
 	if(process_video)
-	  while(oframes--)
+	  while(frames--)
 	    YUVout(vidbuf[i],out);
       }
     }
@@ -1205,20 +1031,16 @@ int snatch_iterator(FILE *in,FILE *out,int process_audio,int process_video){
     }
     return 1;
   }
-
+  
   if(video_p && process_video){
     while(vidbuf_head-vidbuf_tail>video_timeahead){
-      int oframes= 
-	vidbuf_frameno[vidbuf_tail+1]*vidout_fps/vidin_fps-
-	vidbuf_frameno[vidbuf_tail]  *vidout_fps/vidin_fps;
-      int iframes= 
-	vidbuf_frameno[vidbuf_tail+1]-
-	vidbuf_frameno[vidbuf_tail]  ;
-      framesout+=oframes;
-      framesmissing+=iframes-1;
+      int frames= vidbuf_frameno[vidbuf_tail+1]-
+	vidbuf_frameno[vidbuf_tail];
+      framesout+=frames;
+      framesmissing+=(frames-1);
       
       if(process_video)
-	while(oframes--)
+	while(frames--)
 	  YUVout(vidbuf[vidbuf_tail],out);
       
       vidbuf_tail++;

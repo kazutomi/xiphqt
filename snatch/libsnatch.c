@@ -91,8 +91,7 @@ static void (*QueuedTask)(void);
 
 static int outfile_fd=-1;
 
-static void TempCloseOutputFile();
-static void CloseOutputFile(int preserve);
+static void CloseOutputFile();
 static void OpenOutputFile();
 
 static char *audio_fmts[]={"unknown format",
@@ -123,7 +122,7 @@ static int gwrite(int fd, void *buf, int n){
 	else{
 	  fprintf(stderr,"**ERROR: Write error on capture file!\n"
 		  "       : %s\n",strerror(errno));
-	  TempCloseOutputFile(); /* if the error is the 2GB limit on Linux 2.2,
+	  CloseOutputFile(1); /* if the error is the 2GB limit on Linux 2.2,
 				this will result in a new file getting opened */
 	  return(ret);
 	}
@@ -232,7 +231,7 @@ void *backchannel_thread(void *dummy){
       if(ret==1){
 	if(length)buf=calloc(length+1,1);
 	if(length)ret=fread(buf,1,length,backchannel_fd);
-	if(length && (int)ret==length)
+	if(length && ret==length)
 	  switch(rq){
 	  case 'U':
 	    if(username)free(username);
@@ -590,7 +589,7 @@ int writev(int fd,const struct iovec *v,int n){
     if(ret<0 && count==0)return(ret);
     if(ret<0)return(count);
     count+=ret;
-    if(ret<(int)(v[i].iov_len))return(count);
+    if(ret<v[i].iov_len)return(count);
   }
   return(count);
 }
@@ -602,7 +601,7 @@ int readv(int fd,const struct iovec *v,int n){
     if(ret<0 && count==0)return(ret);
     if(ret<0)return(count);
     count+=ret;
-    if(ret<(int)(v[i].iov_len))return(count);
+    if(ret<v[i].iov_len)return(count);
   }
   return(count);
 }
@@ -634,7 +633,7 @@ static void OpenOutputFile(){
       outfile_fd=STDOUT_FILENO;
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
 
-      if(videocount || output_video_p){
+      if(videocount){
 	output_video_p=1;
 	if(audio_channels){
 	  output_audio_p=1;
@@ -663,7 +662,7 @@ static void OpenOutputFile(){
 	nows=time(NULL);
 	now=localtime(&nows);
 	strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
-	if(videocount || output_video_p){
+	if(videocount){
 	  if(audio_channels){
 	    sprintf(buf2,"%s/%s_%s%dHz_%dx%d_AV.snatch",
 		    outpath,
@@ -700,7 +699,7 @@ static void OpenOutputFile(){
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
 	}
 	
-	if(videocount || output_video_p){
+	if(videocount){
 	  output_video_p=1;
 	  if(audio_channels){
 	    output_audio_p=1;
@@ -726,7 +725,7 @@ static void OpenOutputFile(){
 	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
 	  
-	  if(videocount || output_video_p){
+	  if(videocount){
 	    output_video_p=1;
 	    if(audio_channels){
 	      output_audio_p=1;
@@ -760,17 +759,6 @@ static void CloseOutputFile(int preserve){
       output_audio_p=0;
       output_video_p=0;
     }
-  }
-  pthread_mutex_unlock(&output_mutex);
-}
-
-static void TempCloseOutputFile(void){
-  pthread_mutex_lock(&output_mutex);
-  if(outfile_fd>=0){
-    if(debug)fprintf(stderr,"    ...: Capture file closed; trying to continue...\n");
-    if(outfile_fd!=STDOUT_FILENO)
-      close(outfile_fd);
-    outfile_fd=-1;
   }
   pthread_mutex_unlock(&output_mutex);
 }

@@ -1,4 +1,4 @@
-Snatch 20020510
+Snatch 20011114
 
 "The only intuitive interface is the nipple. After that, it's all 
  learned."
@@ -34,9 +34,11 @@ necessary for useful capturing.  Five minutes of 240x180 video at
 15fps will eat about a gigabyte of disk space.
 
 Once saved to disk, the output can be transcoded into any other
-format.  MPEG video is a popular choice, and a convenient front end
-for the 'mjpeg' tools suite is in progress.  More about that once the
-filters are done.
+format.  MPEG video is a popular choice, and a convenient filter set
+for the 'mjpeg' tools suite is available.  
+
+<<<****>>> See README-MJPEG for easy directions and pre-patched
+software for encoding Snatch directly to MPEG1/2.
 
 ****************************** SETUP ******************************
 

@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20020510";
+$version="Snatch 20011116";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
@@ -339,10 +339,10 @@ sub trim_glob{
 	$pattern=~s/^(\s+).*//;
 	$pattern=~s/(\s+)$//;
 	
-	my@result=File::Glob::glob($pattern,GLOB_TILDE|GLOB_BRACE);
+	my@result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE);
 
 	if(!defined($result[0])){
-	    @result=File::Glob::glob($pattern,GLOB_TILDE|GLOB_BRACE|GLOB_NOCHECK);
+	    @result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE|GLOB_NOCHECK);
 	}
 	$result[0];
 
@@ -372,9 +372,8 @@ sub ThrowRealPlayer{
     $ENV{"SNATCH_DEBUG"}=1;
     $ENV{"LD_PRELOAD"}=$glob;
     $ENV{"SNATCH_COMM_SOCKET"}=$backchannel_socket;
-    
-    $glob=trim_glob("$CONFIG{'REALPLAYER'}");
 
+    $glob=trim_glob("$CONFIG{'REALPLAYER'}");
     if(GLOB_ERROR || !defined($glob)){
 	Status("Failed to find RealPlayer!");
 	Alert("Failed to find RealPlayer!",
@@ -541,7 +540,6 @@ sub Robot_PlayLoc{
     
     syswrite COMM_SOCK,$stopcode;
 
-    $recording_pending=1;
     send_string("P",$password);
     send_string("U",$username);
     send_string("L",$loc);
@@ -557,15 +555,14 @@ sub Robot_PlayFile{
     my $opencode=join "",("Ko",pack ("S",4));
 
     syswrite COMM_SOCK,$stopcode;
-    $recording_pending=1;
     send_string("O",$openfile);
     syswrite COMM_SOCK,$opencode;
 }
 
 sub Robot_Stop{
+    $last_timer_event=time();
     my $stopcode=join "",("Ks",pack ("S",4));
     syswrite COMM_SOCK,$stopcode;
-    $recording_pending=0;
 }
 
 sub Robot_Exit{
@@ -575,8 +572,8 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
-    $next_timer_start=0;
-    $next_timer_end=0;
+    $last_timer_event=0;
+    $next_timer_event=0;
     if(defined($timer_callback) && !recording_active){
 	$timer_callback->cancel();
 	undef $timer_callback;
@@ -597,9 +594,8 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
-    $next_timer_start=0;
-    $next_timer_end=0;
-    $mode='inactive';
+    $last_timer_event=0;
+    $next_timer_event=0;
     if(defined($timer_callback)){
 	$timer_callback->cancel();
 	undef $timer_callback;
@@ -614,12 +610,13 @@ sub Robot_Inactive{
     Robot_Audio($CONFIG{"AUDIO_MUTE"});
     Robot_Video($CONFIG{"VIDEO_MUTE"});
     Status("Recording off");
+    $mode='inactive';
     ButtonPressConfig();
 }
 
 sub Robot_Timer{
-    $next_timer_start=0;
-    $next_timer_end=0;
+    $last_timer_event=0;
+    $next_timer_event=0;
     send_string("O","");
     send_string("L","");
     syswrite COMM_SOCK,'T';
@@ -637,6 +634,11 @@ sub DoTimedEntry{
     my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
        $password,$outfile,$url)=SplitTimerEntry($line);
 
+    $recording_pending=1;
+    $last_timer_event=$start;
+    $next_timer_event=$start+$duration-1; # the -1 is important; makes sure contiguous
+                                          # but nonoverlapping events don't interfere
+
     syswrite COMM_SOCK,'A';    
     send_string("F",$outfile);
     Robot_Audio($audio);
@@ -651,26 +653,23 @@ sub DoTimedEntry{
 }
 
 sub SetupTimerDispatch{
-    ListBoxUpdate();
+    TimerSort();
     my$now=time();
     my@TIMETEMP=@TIMER_TIMES;
     my@ENDTIMETEMP=@TIMER_ENDTIMES;
-    $next_timer_start=0;
-    $next_timer_end=0;
+    $next_timer_event=0;
 
     foreach my$line (@TIMER){
 	my$start=shift @TIMETEMP;
 	my$end=shift @ENDTIMETEMP;
 
-	if($start<=$now && $end>$now){    
+	if($start>$last_timer_event && $start<=$now && $end>$now){    
 	    Robot_Stop();
-	    $next_timer_start=$start;
-	    $next_timer_end=$end;
 	    DoTimedEntry($start,$line);
 	    return;
 	}else{
-	    $next_timer_start=$start if(($next_timer_start==0 || 
-					$start<$next_timer_start) && $start>$now);
+	    $next_timer_event=$start if(($next_timer_event==0 || 
+					$start<$next_timer_event) && $start>$now);
 	}
     }
     # nothing happening now
@@ -682,25 +681,16 @@ sub TimerWatch{
     if($mode=~/timer/){
 	my$now=time();
 
-	if($TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<=$now){
-	    Robot_Inactive();
+	if($TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<$now){
 	    Robot_Stop();
-	    ListBoxUpdate();
+	    Robot_Inactive();
 	    ButtonConfig();
 	}else{
 	    
-	    my $next;
-	    if($recording_active || $recording_pending){
-		$next=$next_timer_end;
-	    }else{
-		$next=$next_timer_start;
-	    }
-	    
-	    if($now>=$next){
+	    if($now>=$next_timer_event){
 		SetupTimerDispatch();
 	    }else{
-
-		my$waiting_seconds=$next-$now;
+		my$waiting_seconds=$next_timer_event-$now;
 		
 		my$waiting_minutes=int($waiting_seconds/60);
 		$waiting_seconds-=$waiting_minutes*60;
@@ -958,9 +948,9 @@ sub TimerWhen{
 	    }
 	}
 
-	if($etry<=$now){
+	if($etry<$now){
 	    # current guess entirely preceeds now; prefer any guess in the future
-	    return ($start,$end) if($start>=$try);
+	    return ($start,$end) if($start>$try);
 	}
 
 	if($try>$now){
@@ -1084,11 +1074,6 @@ sub ReadStderr{
 	if($line=~/Capture stopped/){
 	    $recording_active=0;
 	    $recording_pending=0;
-
-	    if($mode=~/timer/){
-		SetupTimerDispatch();
-	    }
-
 	}
 
 	if($line=~/Capturing/){
@@ -1472,21 +1457,6 @@ sub BuildListBox(){
     $listbox;
 }
 
-sub ListBoxUpdate{
-    TimerSort();
-    ButtonConfig();
-    if(defined($timerw)){
-	BuildListBox();
-	
-	$timerw_add->configure(-state=>normal);
-	if(defined($timer_row)){
-	    $timerw_edit->configure(-state=>normal);
-	    $timerw_duplicate->configure(-state=>normal);
-	    $timerw_delete->configure(-state=>normal);
-	}
-    }
-}
-
 sub CheckTimerOverlap{
     my$rows=($#TIMER)+1;
 
@@ -1505,9 +1475,10 @@ sub CheckTimerOverlap{
 		if(($start1>=$start2 && $start1<$end2)||
 		   ($start2>=$start1 && $start2<$end1)){
 		    Alert("Some timer entries currently overlap!",
-			  "When multiple entries overlap, recording of one program will not be ".
-			  "interrupted to record the next; that is, if program B is scheduled to ".
-			  " begin during program A, recording B will wait until A ends.\n",
+			  "When multiple entries overlap, start and stop events are processed ".
+			  "in order; that is, if program B is scheduled to begin during program ".
+			  "A, program B will interrupt the recording of program A.  Should A ".
+			  "continue past the ending point of B, recording program A will resume.\n",
 			  $timerw);
 		    return;
 		}
@@ -1573,7 +1544,7 @@ sub Timer_Add{
     $nowmonth+=1;
     $nowyear+=1900;
     Timer_Entry(-1,"$nowyear $nowmonth $nowday * $nowhour:$nowmin 3600 yes yes 0: 0: ".
-	       "0: 0:");
+	       length($CONFIG{OUTPUT_PATH}).":$CONFIG{OUTPUT_PATH} 0:");
 }
 
 sub Timer_Edit{
@@ -1588,7 +1559,7 @@ sub Timer_Entry{
     my$row=shift;
 
     my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
-       $password,$dummy,$url)=SplitTimerEntry(shift);
+       $password,$outfile,$url)=SplitTimerEntry(shift);
 
     my$duration_hour=int($duration/3600);
     my$duration_minute=int(($duration-$duration_hour*3600+59)/60);
@@ -1634,11 +1605,11 @@ sub Timer_Entry{
 		  " far enough in the past it will never trigger anyway).  Please correct the".
 		  ' date specification before proceeding, or file a bug report'.
 		  " if the date is correct and the code is wrong.\n",$tentry);
-	}else{
+	}elsif(TestOutpath($outfile,$tentry)){
 	    $outfile=trim_glob($outfile);
 	    my$entry="$year $month $day $dayofweek $hour:$minute $duration $audio $video ".
 		length($username).":$username ".length($password).":$password ".
-		    "0: ".length($url).":$url";
+		    length($outfile).":$outfile ".length($url).":$url";
 	    
 	    if($row<0){
 		push @TIMER, $entry;
@@ -1831,7 +1802,15 @@ sub Timer_Entry{
     nonmomentary(\$tentry_audio,\$audio);
     nonmomentary(\$tentry_video,\$video);
     nonmomentary(\$tentry_video,\$video);
-    $y+=$tentry_video->reqheight()+10;
+    $y+=$tentry_video->reqheight()+5;
+
+    $t=$tentry_outlabel=$tentry_shell->Label(-text=>"output path")->
+	place(-x=>5,-y=>$y,-bordermode=>outside);
+    my$tentry_out=$tentry_shell->Entry(-textvariable=>\$outfile,-width=>2048)->
+	place(-y=>$y,-x=>10+$t->reqwidth,-height=>$t->reqheight,-bordermode=>outside,
+	      -relwidth=>1.0,-width=>-20-$t->reqwidth());
+
+    $y+=$tentry_outlabel->reqheight()+10;
 
     $tentry_message=$tentry_shell->
 	Message(-text=>"Any field in the date specification may be set to the wildcard * (asterisk); ".
@@ -1843,7 +1822,9 @@ sub Timer_Entry{
 		"play audio ".
 		"or display video.  This is useful both to increase performance and eliminate ".
 		"the possibility timed record will fail due to audio device conflicts with other ".
-		"applications.",
+		"applications.\n\nOutput path may be a directory [Snatch create a new ".
+		"file for each record request], ".
+		"a filename [record will append to that file], or - (dash) indicating standard out.",
 		-width=>$reqwidth-30-$tentry_shell->cget(borderwidth)*2,
 		-anchor=>w,-class=>AlertDetail)->
 		    place(-x=>5,-y=>$y,-relwidth=>1.0,-width=>-10,-bordermode=>outside);

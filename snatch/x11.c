@@ -14,16 +14,16 @@ static unsigned long rpshell_window=0;
 static unsigned long rpmain_window=0;
 static unsigned long rpmenu_window=0;
 static unsigned long rpplay_window=0;
-static long rpplay_width=0;
-static long rpplay_height=0;
+static unsigned long rpplay_width=0;
+static unsigned long rpplay_height=0;
 
-static long logo_y=-1;
-static long logo_prev=-1;
+static unsigned long logo_y=-1;
+static unsigned long logo_prev=-1;
 
-static long play_blackleft=-1;
-static long play_blackright=-1;
-static long play_blackupper=-1;
-static long play_blacklower=-1;
+static unsigned long play_blackleft=-1;
+static unsigned long play_blackright=-1;
+static unsigned long play_blackupper=-1;
+static unsigned long play_blacklower=-1;
 
 static unsigned long rpvideo_window=0;
 static int video_width=-1;
@@ -108,7 +108,7 @@ static void FakeKeycode(int keycode, int modmask, unsigned long window){
 static void FakeKeySym(int keysym, int modmask, unsigned long window){
   KeyCode c=XKeysymToKeycode(Xdisplay,keysym);
 
-  if((int)XKeycodeToKeysym(Xdisplay,c,0)==keysym){
+  if(XKeycodeToKeysym(Xdisplay,c,0)==keysym){
     FakeKeycode(c,modmask,window);
   }else{
     FakeKeycode(c,1|modmask,window);
@@ -463,8 +463,7 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
 
   /* watch for the auth password window */
   if(username || password){
-
-    if(n>=32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
+    if(n>32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
       if(rpauth_already>2){
 	fprintf(stderr,
 		"**ERROR: Password not accepted.\n");
@@ -486,7 +485,7 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
 
   /* watch for the open location window */
   if(location){
-    if(n>=40 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",40)){
+    if(n>36 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",36)){
       fprintf(stderr,
 	    "    ...: RealPlayer popped open location dialog.  Watching for\n"
 	      "         dialog window tree...\n");
@@ -499,7 +498,7 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
   }
   if(openfile){
     /* watch for the open file window */
-    if(n>=32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
+    if(n>32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
       fprintf(stderr,
 	      "    ...: RealPlayer popped open file dialog.\n");
       rpfile_shell=id;
@@ -509,36 +508,29 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
   return(ret);
 }
 
-/* hash the image: Real (for some reason) sometimes blits at >> the
-   encoded video framerate [it's not interlaced, so not sure why], so
-   there are lotsa dupes.  Hash to see if the frame actually changed.
-   Again, CPU overhead is likely more than made up for in bandwidth
-   savings */
-
-static char *workbuffer;
-static long worksize;
-
 /* yes, it's additional CPU load where we don't want any, but the
    savings in required disk bandwidth is more than worth it (YUV 2:4:0
    is half the size) */
 
+static char *workbuffer;
+static long worksize;
 void YUVout(XImage *image){
   pthread_mutex_lock(&output_mutex);
   if(outfile_fd>=0){
     char cbuf[80];
     int i,j,len;	
-    
+
     long yuv_w=(image->width>>1)<<1; /* must be even for yuv12 */
     long yuv_h=(image->height>>1)<<1; /* must be even for yuv12 */
     long yuv_n=yuv_w*yuv_h*3/2;
-    
+
     long a,b;
-    
+
     pthread_mutex_unlock(&output_mutex);
     bigtime(&a,&b);
     len=sprintf(cbuf,"YUV12 %ld %ld %d %d %ld:",a,b,yuv_w,
 		yuv_h,yuv_n);
-    
+	
     if(worksize<yuv_n){
       if(worksize==0)
 	workbuffer=malloc(yuv_n);
@@ -564,17 +556,17 @@ void YUVout(XImage *image){
 	    uval  = ptr1[3]*65536 - ptr1[1]*22117 - ptr1[2]*43419;
 	    vval  = ptr1[1]*65536 - ptr1[2]*54878 - ptr1[3]*10658;
 	    *y1++ = yval>>16;
-	    
+
 	    yval  = ptr1[5]*19595 + ptr1[6]*38470 + ptr1[7]*7471;
 	    uval += ptr1[7]*65536 - ptr1[5]*22117 - ptr1[6]*43419;
 	    vval += ptr1[5]*65536 - ptr1[6]*54878 - ptr1[7]*10658;
 	    *y1++ = yval>>16;
-	    
+
 	    yval  = ptr2[1]*19595 + ptr2[2]*38470 + ptr2[3]*7471;
 	    uval += ptr2[3]*65536 - ptr2[1]*22117 - ptr2[2]*43419;
 	    vval += ptr2[1]*65536 - ptr2[2]*54878 - ptr2[3]*10658;
 	    *y2++ = yval>>16;
-	    
+
 	    yval  = ptr2[5]*19595 + ptr2[6]*38470 + ptr2[7]*7471;
 	    uval += ptr2[7]*65536 - ptr2[5]*22117 - ptr2[6]*43419;
 	    vval += ptr2[5]*65536 - ptr2[6]*54878 - ptr2[7]*10658;
@@ -587,11 +579,11 @@ void YUVout(XImage *image){
 	  }
 	  y1+=yuv_w;
 	  y2+=yuv_w;
-	  
+
 	}
-	
+
       }else{
-	
+
 	for(i=0;i<yuv_h;i+=2){
 	  unsigned char *ptr1=image->data+i*image->bytes_per_line;
 	  unsigned char *ptr2=ptr1+image->bytes_per_line;
@@ -602,17 +594,17 @@ void YUVout(XImage *image){
 	    uval  = ptr1[0]*65536 - ptr1[2]*22117 - ptr1[1]*43419;
 	    vval  = ptr1[2]*65536 - ptr1[1]*54878 - ptr1[0]*10658;
 	    *y1++ = yval>>16;
-	    
+
 	    yval  = ptr1[6]*19595 + ptr1[5]*38470 + ptr1[4]*7471;
 	    uval += ptr1[4]*65536 - ptr1[6]*22117 - ptr1[5]*43419;
 	    vval += ptr1[6]*65536 - ptr1[5]*54878 - ptr1[4]*10658;
 	    *y1++ = yval>>16;
-	    
+
 	    yval  = ptr2[2]*19595 + ptr2[1]*38470 + ptr2[0]*7471;
 	    uval += ptr2[0]*65536 - ptr2[2]*22117 - ptr2[1]*43419;
 	    vval += ptr2[2]*65536 - ptr2[1]*54878 - ptr2[0]*10658;
 	    *y2++ = yval>>16;
-	    
+
 	    yval  = ptr2[6]*19595 + ptr2[5]*38470 + ptr2[4]*7471;
 	    uval += ptr2[4]*65536 - ptr2[6]*22117 - ptr2[5]*43419;
 	    vval += ptr2[6]*65536 - ptr2[5]*54878 - ptr2[4]*10658;
@@ -625,7 +617,7 @@ void YUVout(XImage *image){
 	  }
 	  y1+=yuv_w;
 	  y2+=yuv_w;
-	  
+
 	}
       }
     }
@@ -732,8 +724,7 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
       }
       
       /* blank background */
-      if(x==0 && y==0 && (int)d_width==rpplay_width && 
-	 (int)d_height==rpplay_height){
+      if(x==0 && y==0 && d_width==rpplay_width && d_height==rpplay_height){
 	unsigned char *bptr;
 
 	if(snatch_active==1)
@@ -762,9 +753,9 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	
 	/* paint logo */
 	if(logo_y!=-1){
-	  unsigned char *logo=NULL;
-	  int logowidth=-1;
-	  int logoheight=-1;
+	  unsigned char *logo;
+	  int logowidth;
+	  int logoheight;
 	  
 	  switch(snatch_active){
 	  case 0:

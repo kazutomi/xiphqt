@@ -1,41 +1,31 @@
-Snatch 20020225
+Snatch 20011114
 
-Converting Snatch capture files to MPEG audio/video with mjpeg-tools
+Converting Snatch capture files to MPEG audio/video with MJPEG-1.4.1
 
 ****************************** ABOUT ******************************
 
-mjpeg-tools is a nice little collection of MPEG audio and video
-utilities that work out of the box.  The output quality is very nice,
-and the tool set is intelligently arranged.
+mjpegtools-1.4.1 is a nice little collection of MPEG audio and video
+utilities that, for the most part, work out of the box.  The output
+quality is very nice, and the tool set is intelligently arranged.
 
-The various tools in the mjpeg-tools trade video in YUV4MPEG[2] format
-and audio as WAV.  Snatch support for mjpeg-tools consists of three
-conversion utilities, snatch2wav, snatch2yuv and snatch2yuv2
-(Naturally, these utilities will work with any application accepting
-these formats).
-
-The conversion utilities are tested to work with
-mjpeg-tools-1.4 through 1.6.0-beta2.  Note that newer versions of
-mjpeg-tools use YUV4MPEG2 format (produced by snatch2yuv2) while 1.4
-uses the original YUV4MEG (produced by snatch2yuv).  1.6.0 compiled
-cleanly here for Debian/x86 and Debian/PPC.  1.4.1 requires some
-hacking to correct a few [very minor] problems.  If you don't have
-either yet, go for 1.6.0.
+The various tools in the mjpeg-tools trade video in YUV format and
+audio as WAV.  Snatch support for mjpegtools consists of two
+conversion utilities, snatch2wav and snatch2yuv (naturally, these
+utilities need not be used only with mjpegtools.
 
 Converting a snatch capture file to MPEG video using mjpeg is done in
 three steps: encode audio to MPEG-1 layer 2 audio using snatch2wav and
-mp2enc or toolame (.mp2), encode the video to MPEG-1/2 video using
-snatch2yuv[2] and mpeg2enc and then multiplexing the audio/video into
-a complete MPEG video stream with mplex.  All of these tools [except
-toolame] are included in the mjpeg-tools and Snatch packages.
+mp2enc(.mp2), encode the video to MPEG-1/2 video using snatch2yuv and
+mpeg2enc and then multiplexing the audio/video into a complete MPEG
+video stream with mplex.  All of these tools are included in the package.
 
 ***************************** INSTALL *****************************
 
-The official home of mjpeg-tools is http://mjpeg.sourceforge.net/ 
-Note that the older, official mjpegtools-1.4.1 has a few annoying
-build and option parsing bugs.  I've patched the bugs I've found, as
-well as added the Snatch conversion utility source to my own
-distribution of the mjpeg-tools source:
+The official home of mjpegtools is http://mjpeg.sourceforge.net/ Note
+that the official mjpegtools-1.4.1 has a few annoying build and option
+parsing bugs.  I've patched the bugs I've found, as well as added the
+Snatch conversion utility source to my own distribution of the
+mjpegtools source:
 
 A patch against stock mjpegtools-1.4.1 can be found at: 
 http://www.mit.edu/afs/athena/user/x/i/xiphmont/Public/Snatch/mjpegtools-1.4.1-snatchpatch.diff
@@ -43,13 +33,12 @@ http://www.mit.edu/afs/athena/user/x/i/xiphmont/Public/Snatch/mjpegtools-1.4.1-s
 The complete source with patch already applied is at:
 http://www.mit.edu/afs/athena/user/x/i/xiphmont/Public/Snatch/mjpegtools-1.4.1-snatch.tgz
 
-Unless there's a reason to use the older 1.4 release, 1.6 is
-recommended.  1.6 requires no patch, and the Makefile included with
-Snatch builds and installs the Snatch conversion utilities (as they're
-not included with the official 1.6 source).
+If you just want the utilities, the source files 'snatchconvert.c',
+'snatch2yuv.c' and 'snatch2wav.c' are included in the main
+distribution.  They build/work fine without mjpegtools.
 
 When building mjpeg-tools, pay attention to the INSTALL document in
-the mjpeg-tools tarball.  Things will probably go wrong if you don't
+the mjpegtools tarball.  Things will probably go wrong if you don't
 read it.
 
 One trick wrt Debian and installing quicktime4linux through dpkg/apt;
@@ -61,9 +50,9 @@ like:
 
 ****************************** USAGE ******************************
 
-Once installed, snatch2wav and snatch2yuv[2] work just like the other
+Once installed, snatch2wav and snatch2yuv work just like the other
 mjpeg 'xxxx2wav' and 'xxx2yuv' tools.  The command line options are
-different, but snatch2wav -h and snatch2yuv[2] -h will give a clear
+different, but snatch2wav -h and snatch2yuv -h will give a clear
 summary.
 
 The basic idea:
@@ -72,7 +61,7 @@ Encode an .mp2 audio file from the Snatch capture file using
 snatch2wav < capture.snatch | mp2enc -o temp.mp2
 
 Encode an .m1v video file from the Snatch capture file using 
-snatch2yuv < capture.snatch | mpeg2enc -o temp.m1v
+snatch2yuv -f fpscode < capture.snatch | mpeg2enc -a 1 -f fpscode -o temp.mp2
 
 Multiplex them into one movie file:
 mplex temp.mp2 temp.m1v -o output.mpeg
@@ -87,35 +76,22 @@ Some notes before we get onto examples:
    merely letterbox/crop.  That's OK, mpeg2enc will encode practically
    any frame size.
 
-   However, many MPEG _players_ require that video width be a multiple
-   of 8 and RealPlayer, for God Knows What Reason, often decodes, for
-   example, 240x180 video into a screen resolution of, say, 238x180
-   for no good reason.  You may need to use -s with snatch2yuv[2] to
-   force a multiple of eight size for maximum compatibility with
-   various MPEG players.
+2) snatch2yuv does not autosense frame rate.  Real frame rates are
+   going to be weird, non-MPEG ones for the most part, so choosing an
+   even multiple of the Real frame rate is the best bet.  Eg, if the
+   Real stream was 15fps, select '30fps' when using snatch2yuv; it
+   will do the pullup/pulldown automatically. see snatch2yuv -h for a 
+   list of frame rates/
 
-2) snatch2yuv does not autosense frame rate.  RealVideo frame rates
-   are going to be weird, non-MPEG ones for the most part...  but the
-   oddest thing about RealPlayer8 is that it doesn't display at the
-   encoded frame rate!  RP8 seems to blast frames to the screen at
-   ~30fps regardless of what the encoded video actually wants.
-   snatch2yuv[2] defaults to 30fps, so you shouldn't need to frob frame
-   rate (but you can if you want to).
+   snatch2yuv will stuff the capture data into any frame rate the user
+   selects; choosing the wrong one will work, it will just be jerky
+   and not smooth.
 
 3) audio/video sync is Just Not A Concern.  Snatch records timing data
    in the capture file; snatch2wav pays attention to the video timing
-   when extracting audio and snatch2yuv[2] watches the audio when
+   when extracting audio and snatch2yuv watches the audio when
    extracting video.  The separated audio and video will always be in
    sync unless explicitly requested otherwise.
-
-   However, A/V sync can be a problem in the resulting MPEG file if
-   you use VBR encoding and an Easily Confused Player.  For example,
-   the only *NIX player I've seen that pays any attention to sync with
-   VBR MPEG video is MPlayer (and MPlayer does an excellent job).
-   Others (like the ubiquitous Xine) have serious trouble even playing
-   VBR, let alone keeping sync solid.  This, obviously, is not a bug
-   in Snatch.  The sync is perfect in the .snatch file, and
-   snatch2yuv/snatch2wav will produce synchronized output.
 
 4) It's possible a capture file will contain different sampling rates
    or mixed frame sizes/rates; this can happen if the window is
@@ -130,77 +106,32 @@ Some notes before we get onto examples:
    snatch2yuv, similarly, forces all output to the same frame rate and
    frame size.
 
-5) If a capture is momentarily interrupted (congestion, or an old
-   Linux machine using a 2.2 kernel that only allows 2GB files)
-   resulting in the capture going into multiple .snatch files, the
-   files can be strung back together in sequence with cat and piped
-   into the conversion utilities.  Catting and processing in one batch
-   eliminates any additional audio/video dropout or padding at the
-   boundaries that would be caused by the conversion utilities having
-   to invent or discard frames to keep the beginning and ending output
-   in sync (an odd but necessary thing about players... although the
-   audio and video are _played_ in sync, they're not produced that
-   way.  Audio usually runs several seconds ahead of video because of
-   hardware buffering.  This would show up if you independently
-   processed multiple .snatch files comprising one program.  The output
-   would sill be in sync, but the beginning of each file would begin
-   with video for several seconds before audio started and end with
-   audio for several seconds after video stopped).
+Now for a real example:
 
-   If a gap within or between two files is greater than two
-   seconds, the conversion utils will snip most of the gap out
-   (intentionally leaving a bit), else the splice will be seamless.
+snatch2wav < 20011115_22:00:10_mono22050Hz_320x240_AV.snatch | \
+	   mp2enc -m -b 128 -o temp.mp2
 
-   Note that the conversion utilities are counting absolute seconds
-   when using the -b and -n options; gaps and interruptions are
-   counted time.  That is, if splicing back together, say, a one hour
-   segment of a live program that lost five minutes in the middle due
-   to a momentary network outage, "snatch2yuv2 -n 3600" will produce
-   video for the one hour program, without the five minute gap in the
-   middle, for a total of 55 minutes of actual video.  Naturally,
-   snatch2wav will still produce audio exactly matching the video.
+snatch2yuv -f 5 < 20011115_22:00:10_mono22050Hz_320x240_AV.snatch | \
+	   mpeg2enc -a 1 -f 5 -b 576 -o temp.m1v
 
-Now for a real example.  I've captured a 240x180 (which RP8 actually
-displays at 238x180), mono 22050Hz file using Snatch.  Because
-RealPlayer actually displays at 30fps, the .snatch file is already at
-30fps, which is both the default rate assumed by snatch2yuv and a
-legal MPEG1/2 video frame rate (even had it been captured at 10 or
-15fps, which is a more likely native RealVideo frame rate, it would
-need to be upsampled to 30fps for MPEG encoding).  I, personally,
-would use (assuming mjpeg-tools-1.6.0):
-
-snatch2wav < 20011115_22:00:10_mono22050Hz_238x180_AV.snatch | \
-	   mp2enc -m -b 64 -o temp.mp2
-
-snatch2yuv2 -s 240x180 < 20011115_22:00:10_mono22050Hz_238x180_AV.snatch | \
-	   mpeg2enc -q 8 -b 576 -f 3 -B 64 -o temp.m1v
-
-mplex temp.mp2 temp.m1v -r 640 -f 3 -V -o out.mpeg
+mplex temp.mp2 temp.m1v -o out.mpeg
 
 The first line instructs snatch2wav to convert the audio from the
 .snatch file into standard RIFF WAV (but without the length tag set.
-That won't be an issue here).  mp2enc then turns that WAV into a 64
-kbps mono mpeg layer 2 file.  These options can vary (and are not
-actually necessary at all).  I'll note that toolame produces
-considerably higher quality output than mp2enc.  It's worth getting.
+That won't be an issue here).  mp2enc then turns that WAV into a 128
+kbps mono mpeg2 file.  These options can vary (and are not actually
+necessary at all).
 
 The second line instructs snatch2yuv to convert the video from the
 capture file into YUV 4:2:0 (also called YV12), the format preferred
-by mpeg2enc.  The -s argument to snatch2yuv2 forces an output frame
-width that's a multiple of eight for maximum MPEG player
-compatibility.  mpeg2enc then produces an output video in MPEG format
-consisting of square pixels (no option necessary, this is forced by
-snatch2yuv2) 30fps (also set in the YUV4MPEG2 header produced by
-snatch2yuv2), at a variable bitrate quality level 8 (-q 8) not to
-exceed 576kbps for the video (-b 576).  -f 3 requests a generic MPEG 2
-output file, and -B 64 lets the encoder know ahead of time that a
-64kbps audio stream will also be multiplexed in later on.  The -B is
-not strictly necessary.
+by mpeg2enc.  The frame rate here is 'MPEG frame rate # 5', which
+equals 30fps.  In this case, the input was 15fps, so snatch2yuv is
+doing an automatic pullup.  mpeg2enc then produces an output video in
+MPEG format consisting of square pixels (-a 1) 30fps (-f 5 , the
+number given to -f should match the one given to snatch2yuv unless
+you're doing something deliberately odd), 576kbps (-b 576).
 
 The third line mixes the audio and video files into the final stream.
--r sets the peak output bitrate of the output stream (add the peak -b
-bitrates for audio and video), -f 3 selects MPEG 2, and -V is
-required when muxing VBR streams.
 
 ****************************** MORE *******************************
 
