@@ -37,7 +37,7 @@ char py_vinfo_doc[] =
 Information is stored as attributes.";
 
 PyTypeObject py_vinfo_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "VorbisInfo",
   sizeof(py_vinfo),
@@ -285,7 +285,7 @@ be two separate tuples in items() for 'Artist' and two strings for 'Artist'\n\
 in value().";
 
 PyTypeObject py_vcomment_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "VorbisComment",
   sizeof(py_vcomment),

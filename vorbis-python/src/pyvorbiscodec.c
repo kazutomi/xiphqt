@@ -35,7 +35,7 @@ static PyObject *py_dsp_getattr(PyObject *, char*);
 char py_dsp_doc[] = "";
 
 PyTypeObject py_dsp_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "VorbisDSPState",
   sizeof(py_dsp),
@@ -405,7 +405,7 @@ FDEF(vorbis_bitrate_addblock) "?";
 char py_block_doc[] = "";
 
 PyTypeObject py_block_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "VorbisBlock",
   sizeof(py_block),
