@@ -5,6 +5,8 @@
 
 #include "ogg123.h"
 
+#include <sys/types.h>
+
 typedef struct chunk_s
 {
   long len; /* Length of the chunk (for if we only got partial data) */
@@ -15,6 +17,9 @@ typedef struct buf_s
 {
   char status;       /* Status. See STAT_* below. */
   int fds[2];        /* Pipe file descriptors. */
+  long size;         /* buffer size, for reference */
+  pid_t readerpid;   /* PID of reader process */
+  pid_t writerpid;   /* PID of writer process */
   chunk_t *reader;   /* Chunk the reader is busy with */
   chunk_t *writer;   /* Chunk the writer is busy with */
   chunk_t *end;      /* Last chunk in the buffer (for convenience) */
