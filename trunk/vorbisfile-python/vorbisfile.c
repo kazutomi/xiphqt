@@ -790,7 +790,7 @@ static PyObject *ov_comment_py(PyObject *self, PyObject *args)
 
 static PyObject *ov_read_float_py(PyObject *self, PyObject *args)
 {
-    PyObject *cobj, *result, **channel, *list;
+    PyObject *cobj, *result, *channel[255], *list;
     long ret;
     int current_section, samples, channels, i, j;
     float **pcm_channels;
@@ -815,7 +815,6 @@ static PyObject *ov_read_float_py(PyObject *self, PyObject *args)
 	for (i=0; i<channels; i++) {
 	    channel[i] = PyList_New(ret);
 	    PyList_SetItem(list, i, channel[i]);
-
 	    for (j=0; j<ret; j++) {
 		PyList_SetItem(channel[i], j, 
 			       PyFloat_FromDouble(pcm_channels[i][j]));
