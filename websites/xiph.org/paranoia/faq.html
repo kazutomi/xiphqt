@@ -1,0 +1,905 @@
+<title>  CDDA Paranoia Frequently Asked Questions </title>
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+<body bgcolor="#ffffff" link="#4b8b8b" vlink="#208b8b">
+
+<!-- topbanner table ************************************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%"><tr>
+<td bgcolor="#ffffff" valign=top align=right width=433 rowspan=3><a 
+href="logo.jpeg"><img src=parabanner2.gif 
+alt="The Laser Playback Head of Omniscience" 
+width=433 height=72 border=0></a></td>
+<td width="100%" bgcolor="#ffffff" valign=top height=35><img border=0 
+src=bannerspace1.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#2a2a2c" valign=top height=20><img 
+src=bannerspace2.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#ffffff" valign=top><img src=bannerspace3.gif 
+alt=""></td>
+</tr>
+</table>
+<!-- topbanner table done ******************************************** -->
+
+
+
+<!-- main body (with sidemenu) table ********************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td valign=top width=132 bgcolor="#ad9164"><img 
+src=bartop.gif border=0 width=132 height=18 
+  alt=""><a href="index.html"><img 
+src=cdbar.gif border=0 width=132 height=18 
+  alt=""></a><a href="news.html"><img 
+src=news.gif border=0 width=132 height=18 
+  alt=""></a><a href="faq.html"><img 
+src=faq.gif border=0 width=132 height=18 
+  alt=""></a><a href="down.html"><img 
+src=cddown.gif border=0 width=132 height=18 
+  alt=""></a><a href="links.html"><img 
+src=resource.gif border=0 width=132 height=18 
+  alt=""></a><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""><img 
+src=bartop.gif border=0 width=132 height=18 alt=""><a href="doc.html"><img 
+src=document.gif border=0 width=132 height=18 
+  alt=""></a><br>&nbsp;<br><a href="manual.html"><img 
+src=manual.gif border=0 width=132 height=18 
+  alt=""></a><a href="prog.html"><img 
+src=prog.gif border=0 width=132 height=18 
+  alt=""></a><a href="trouble.html"><img 
+src=trouble.gif border=0 width=132 height=18 
+  alt=""></a><a href="tech.html"><img 
+src=tech.gif border=0 width=132 height=18 
+  alt=""></a><a href="bugs.html"><img 
+src=bug.gif border=0 width=132 height=18 alt="">
+</td>
+
+<td rowspan=2><img src=sidespacer4.gif width=18 alt=""></td>
+
+<td valign=top width="100%" rowspan=2>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<center>
+    <H1><font color="#6b6b6b">paranoia:</font> 
+        <font color="#000000">F.A.Q.</font></h1>
+
+<strong>"Suspicion Breeds Confidence!"</strong><br><em>--Brazil</em>
+
+<p>
+
+[ <a href="index.html">home</a> |
+<a href="news.html">news</a> |
+<a href="faq.html">faq</a> |
+<a href="down.html">download/cvs</a> |
+<a href="links.html">links/resources</a> |
+<a href="doc.html">documentation</a> ]
+</center>
+<hr>
+
+<p align=left>
+August 25, 1999
+<p align=left>
+<!-- body or table of contents -->
+
+For those new to Paranoia and cdparanoia, this is the best, first
+place to look for information and answers to your questions.
+
+<p>
+Questions about errors and problems with Paranoia/cdparanoia aren't
+here; look at the <a href="trouble.html">troubleshooting page</a>.<p>
+
+And yes, dammit, it's y2k compliant.  Now I don't want to hear any
+more about it.<p>
+
+<p>
+<h1>Table of Contents:</h1>
+<p>
+<ol>
+<li>Questions about the Paranoia and cdparanoia projects
+  <ol>
+  <li><a href="#cdparanoia">What is cdparanoia?</a>
+  <li><a href="#usecdparanoia">Why use cdparanoia?</a>
+  <li><a href="#paranoia">What is Paranoia?</a>
+  <li><a href="#portable">Is cdparanoia / Paranoia portable?</a>
+  <li><a href="#history">What is Paranoia's history?</a>
+  <li><a href="#history">Is cdparanoia/Paranoia related to cdda2wav?</a> 
+  <li><a href="#versions">What are the differences between Paranoia II, III and IV?</a>
+  <li><a href="#maillist">Are there cdparanoia mailing lists for users or developers?</a>
+  <li><a href="#devstatus">What is Paranoia IV's current development status?</a>
+  <li><a href="#merge">Will cdparanoia, and cdda2wav or xcdroast merge anytime in the future?</a>
+  </ol>
+<li>Questions about using Paranoia and cdparanoia
+  <ol>
+  <li><a href="#req">Requirements to run cdparanoia (as of alpha 3)</a>
+  <li><a href="#supp">Does Cdparanoia support ATAPI drives?  SCSI Emulation? Parallel port drives?</a>
+  <li><a href="#play">I can play audio CDs perfectly; why is reading the CD into a file so difficult and prone to errors?</a>
+  <li><a href="#analog">Does cdparanoia lose quality from the CD recording?</a>
+  <li><a href="#toc">Can cdparanoia detect pregaps? Can it remove the two second gaps between tracks</a>
+  <li><a href="#gimme">Why don't you implement CDDB?  A GUI?  Four million other features I want?</a>
+  <li><a href="#progbar">The progress meter: What is that weird bargraph during ripping?</a>
+  <li><a href="#corr">Do symbols in the progress bar mean a bad rip?</a>
+  <li><a href="#ok">How can I tell if my drive would be OK with regular cdda2wav?</a>
+  <li><a href="#bigbuff">(Linux only) What is the biggest value of SG_BIG_BUFF I can use?</a>
+  <li><a href="#diff">Why do the binary files from two reads differ when compared?</a>
+  <li><a href="#cdr">Why does CDParanoia rip files off into WAV format (and other sample formats) but not CDDA format?</a>
+
+  </ol>
+</ol>
+<p>
+
+<!-- body complete.  cleanup table -->
+</font>
+</td>
+</tr>
+<tr>
+<td valign=bottom bgcolor="#ad9164" width=132><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""></td>
+</tr>
+</table>
+<!-- main body (with sidemenu) table done **************************** -->
+
+
+<!-- main body (no sidemenu table) *********************************** -->
+<table width=100% border=0 cellspacing=0 cellpadding=0>
+<tr>
+<td bgcolor="#ffffff" width=10><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" width=30><img src=sidespacer2.gif alt=""></td>
+<td width=100%><hr>
+
+<table width=100% border=0 cellspacing=0 cellpadding=10><tr><td width=100%>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<!-- body  -->
+
+<h1>Questions about the Paranoia and cdparanoia projects</h1>
+
+<a name=cdparanoia>
+<h2>What is cdparanoia?</h2>
+
+Cdparanoia is a Compact Disc Digital Audio (CDDA) extraction tool,
+commonly known on the net as a 'ripper'.  The application is built on
+top of the Paranoia library, which is doing the real work (the
+Paranoia source is included in the cdparanoia source distribution).
+Like the original cdda2wav, cdparanoia package reads audio from the
+CDROM directly as data, with no analog step between, and writes the
+data to a file or pipe in WAV, AIFC or raw 16 bit linear PCM.<p>
+
+Cdparanoia is a bit different than most other CDDA extration tools.
+It contains few-to-no 'extra' features, concentrating only on the
+ripping process and knowing as much as possible about the hardware
+performing it.  Cdparanoia will read correct, rock-solid audio data
+from inexpensive drives prone to misalignment, frame jitter and loss
+of streaming during atomic reads.  Cdparanoia will also read and
+repair data from CDs that have been damaged in some way.<p>
+
+At the same time, however, cdparanoia turns out to be easy to use and
+administrate; It has no compile time configuration, happily
+autodetecting the CDROM, its type, its interface and other aspects of
+the ripping process at runtime.  A single binary can serve the
+diverse hardware of the do-it-yourself computer laboratory from
+Hell...<p>
+
+<hr>
+<a name=usecdparanoia>
+<h2>Why use cdparanoia?</h2>
+
+All CDROM drives are not created equal.  You'll need cdparanoia if
+yours is a little less equal than others-- or maybe you just keep your
+CD collection in a box of full of gravel.  Jewel cases are for wimps;
+you know what I'm talking about.<p>
+
+Unfortunately, cdda2wav and readcdda cannot work properly with a large
+number of CDROM drives in the desktop world today.  The most common
+problem is sporadic or regular clicks and pops in the read sample,
+regardless of 'nsector' or 'overlap' settings.  Cdda2wav also cannot
+do anything about scratches (and they can cause cdda2wav to break).
+Cdparanoia is also smarter about probing CDDA support from SCSI and
+IDE-SCSI drives; many drives that do not work at all with cdda2wav,
+readcdda, tosha, etc, will work just fine with cdparanoia.<p>
+
+<em>Update Note</em> The most recent release of cdda2wav, just
+announced today, adds more error correcting abilities.<p>
+
+<hr>
+<a name=paranoia>
+<h2>What is Paranoia?</h2>
+
+Paranoia is a library project that provides a platform independent,
+unified, robust interface for packet-command based devices.  In the
+case of CDROM drives for example, handling and programming cdrom
+drives becomes identical whether on Solaris or Linux, or if the Linux
+drive is SCSI, ATAPI or on the parallel port.  In this way, Paranoia
+is similar to Joerg Schilling's SCG library.<p>
+
+In addition to device/platform unification, the library provides tools
+for automatically identifying devices, and intelligent
+handling/correction of errors at all levels of the interface. On top
+of a generic low-level packet command layer, Paranoia implements
+high-level error-correcting interfaces for tasks such as CDDA where
+broken or vastly non-standard devices are the rule, rather than the
+exception.<p>
+
+The Paranoia libraries are incomplete; the first release for use will
+be Paranoia IV, to be bundled with cdparanoia alpha release 10.
+Programming documentation for Paranoia IV will appear shortly on the
+<a href="doc.html">documentation page</a> as <a
+href="prog.html">Programming with Paranoia IV</a>.  Programmers
+interested in contributing to Paranoia IV should read the heading <a
+href="#devstatus">Paranoia IV development information</a>.<p>
+
+<hr>
+<a name=portable>
+<h2>Is cdparanoia / Paranoia portable?</h2>
+
+Paranoia III is Linux only (although it runs on all the flavors of linux
+with a 2.0 or later kernel.  It is not only for x86).<p>
+
+Paranoia IV (cdparanoia alpha 10 and later) is a port to other UNIX
+flavors and uses a substantially revised infrastructure. NetBSD and
+Solaris will be first; others will be added as time and outside
+assistance allow.<p>
+
+Suggestions on the proper way to handle each OS's native configuration
+idioms are welcome. I want Rhapsody cdparanoia to look just like other
+Rhapsody apps just as much as I want Linux cdparanoia to look like a
+Linux app.<p>
+
+<hr>
+<a name=history>
+<h2>What is Paranoia's history?</h2> 
+<h2>Is cdparanoia/Paranoia related to cdda2wav?</h2> 
+
+Paranoia I/II and cdparanoia began life as a
+set of patches to Heiko Eissfeldt's '<a
+href="ftp://ftp.gwdg.de/pub/linux/misc/cdda2wav/">cdda2wav</a>'
+application.  Cdparanoia gained its own life as a rewrite of cdda2wav
+in January of 1998 as "Paranoia III".  Paranoia III proved to have an
+inadequate structure for extention and use on other platforms, so
+Paranoia IV began to take form in fall of 1998.<p>
+
+Modern Paranoia no longer has any relation to cdda2wav aside from
+general cooperation in sharing details between the two projects.  In
+fact, cdda2wav itself doesn't look much like the cdda2wav of a year or
+two ago.<p>
+
+<hr>
+<a name=versions>
+<h2>What are the differences between Paranoia II, III and IV?</h2>
+Paranoia I and II were a set of patches to Heiko Eissfeldt's cdda2wav
+0.8.  These patches did nothing more than add some error checks to the
+standard cdda2wav.  They were inefficient and only worked with some
+drives.<p>
+
+Paranoia III was the first version to be written seperately from
+cdda2wav in the form of a standalone library.  It was not terribly
+portable, however, and the API proved to be inadequate for extension.<p>
+
+Paranoia IV is the upcoming new generation of CDDA Paranoia.  It is
+both portable and more capable than Paranoia III.<p>
+
+<hr>
+<a name=maillist>
+<h2>Are there cdparanoia mailing lists for users or developers?</h2>
+Yes.  In addition to the mailing lists below, read-only CVS access to
+Paranoia II and IV will be availble from <a
+href="http://www.xiph.org">xiph.org</a> soon (Paranoia is not yet
+under CVS).
+
+<h3>
+Mailing list for Paranoia and Cdparanoia users (paranoia@xiph.org)
+</h3>
+
+Assuming that the email preferences in your web browser are set up
+correctly, you can use the following button to subscribe:
+
+    <form enctype=text/plain action="mailto:majordomo@xiph.org">
+    <b>
+    <input type=hidden name="# Paranoia user list" value="
+subscribe paranoia">
+    <input type=submit value="Subscribe to the Paranoia mailing list">
+    </b>
+    </form>
+
+The traditional way to join: send a message containing only the
+one-word line 'subscribe' in the body to <a
+href="mailto:paranoia-request@xiph.org">paranoia-request@xiph.org</a>. Do
+not send subscription requests directly to the main list.  The list
+server at xiph.org should respond fairly quickly with a welcome
+message.<p>
+
+
+<h3>
+Mailing list for Paranoia IV developers: paranoia-dev@xiph.org
+</h3>
+
+The developers list is intended for focused development discussion
+amongst the core Paranoia development team and outside groups
+developing their own applications using Paranoia.  Of course, anyone
+is welcome to read.<p>
+
+Assuming
+that the email preferences in your web browser are set up correctly,
+you can just use the following button to subscribe:
+
+    <form enctype=text/plain action="mailto:majordomo@xiph.org">
+    <b>
+    <input type=hidden name="# Paranoia user list" value="
+subscribe paranoia-dev">
+    <input type=submit value="Subscribe to the Paranoia developers mailing list">
+    </b>
+    </form><p>
+
+Tradiitonal method: send a message containing only the one-word line
+'subscribe' in the body to <a
+href="mailto:paranoia-dev-request@xiph.org">paranoia-dev-request@xiph.org</a>.
+Do not send subscription requests directly to the main list.
+
+<h3>
+List for general CDROM tools
+</h3>
+
+There's also a general mailing list for those using/developing CDDA
+extraction and CD writing tools (cdwrite@other.debian.org).  
+
+The following form submission button should set up the submission email automatically if the email features of your web browser are properly configured:
+
+    <form enctype=text/plain action="mailto:other-cdwrite-request@lists.debian.org">
+    <b>
+    <input type=hidden name="# Cdwrite list" value="
+subscribe cdwrite">
+    <input type=submit value="Subscribe to the cdwrite mailing list">
+    </b>
+    </form><p>
+
+Otherwise, subscribe by sending mail to <a
+href="mailto:other-cdwrite-request@lists.debian.org">other-cdwrite-request@lists.debian.org</a>
+containing only the word <strong>subscribe</strong> in the body.  Do
+not send subscription requests directly to the main list.<p>
+
+<hr>
+<a name=devstatus>
+<h2>What is Paranoia IV's current development status?</h2>
+
+Paranoia IV code will soon be available for internal evaluation,
+testing and development work to the developers involved in the
+Paranoia project; read-only CVS access should also be available soon.
+A public release does not yet set for any firm date.<p>
+
+Those interested in contributing to the development of Paranoia, or
+who wich to contribute to porting to other platforms, please <a
+href="mailto:monty@xiph.org">contact us</a>.  Paranoia IV prerelease
+code will be available to porters soon; I prefer to be in contact with
+those porting to other platforms so that Paranoia development has
+consistent quality across platforms.<p>
+
+At the moment, volunteers have contacted me for most major platforms,
+but more help is still welcome on every OS.<p>
+
+<hr>
+<a name=merge>
+<h2>Will cdparanoia, and cdda2wav or xcdroast merge anytime in the future?</h2>
+
+Probably not beyond the point it already has.  Versions of XCDRoast
+(and other GUI frontends; see the <a href=links.html>links page</a>)
+that make use of cdparanoia already exist.<p>
+
+Although the cdrecord/cdda2wav and Paranoia projects cooperate,
+they're likely to remain seperate as the former is committed to Joerg
+Schilling's libscg (part of the <a
+href="http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/cdrecord.html">cdrecord
+package</a>), just as cdparanoia is committed to using Paranoia IV.<p>
+
+
+
+<hr>
+<h1>Questions about using Paranoia and cdparanoia</h1>
+<a name=req>
+<h2>
+Requirements to run cdparanoia (as of alpha 3)
+</h2>
+
+<ol>
+<li>A CDDA capable CDROM drive</li>
+<li> Linux 2.0, 2.1 or 2.2 
+<ol>
+   <li>kernel support for the particular CDROM in use</li>
+   <li>kernel support for the generic SCSI interface (if using a SCSI 
+   CDROM drive) and proper device (/dev/sg?) files (get them
+   with the MAKEDEV script) in /dev. Most distributions 
+   already have the /dev/sg? files.</li>
+   </ol>
+</ol>
+
+The cdparanoia binary will likely work with Linux 1.2 and 1.3, but I
+do not actively support kernels older than 2.0 I do know for a fact
+that the source will not build on kernel installs older than 2.0, but
+the problems are mostly related to the ever-changing locations of
+proprietary cdrom include files.<p>
+
+Also, although a stock SCSI setup will work, performance will be
+better if linux/include/scsi/sg.h defines SG_BIG_BUFF to 65536 (it
+can't be bigger).  Recent kernels (2.0.x+?) already set it to 32768;
+that's OK.  Cdparanoia will tell you how big your generic SCSI buffer
+is.<p>
+
+Unlike cdda2wav, cdparanoia does not require threading, IPC or
+(optionally) sound card support.  /proc filesystem support is no
+longer required (but encouraged!), and /dev/sr? or /dev/scd? devices
+are not required for SCSI, although they do add functionality if
+present.<p>
+
+<hr>
+<a name=supp>
+<h2>
+Does Cdparanoia support ATAPI drives?  SCSI Emulation? Parallel port drives?  
+</h2>
+
+Alpha 9 supports the full ATAPI, IDE-SCSI and SCSI generic interfaces
+under Linux.<p>
+
+Note that the native ATAPI driver is supported, but that IDE-SCSI
+emulation works better with ATAPI drives.  This is an issue of
+control; the emulation interface gives cdparanoia complete control
+over the drive whereas the native ATAPI driver insists on hiding the
+device under an abstraction layer with poor error handling
+capabilities.  Note also that a number of ATAPI drives that do not
+work at all with the ATAPI driver (error 006: Could not read audio)
+*will* work with IDE-SCSI emulation.<p>
+
+Parallel port based CDROM (paride) drives are not yet supported;
+support for these drives in Linux will appear in alpha release 10
+(Paranoia IV).
+<p>
+
+<hr>
+<a name=play>
+<h2>I can play audio CDs perfectly; why is reading the CD into a file so difficult and prone to errors?  It's just the same thing.</h2>
+
+Unfortunately, it isn't that easy.<p>
+
+The audio CD is not a random access format.  It can only be played
+from some starting point in sequence until it is done, like a vinyl
+LP.  Unlike a data CD, there are no synchronization or positioning
+headers in the audio data (a CD, audio or data, uses 2352 byte
+sectors.  In a data CD, 304 bytes of each sector is used for header,
+sync and error correction.  An audio CD uses all 2352 bytes for data).
+The audio CD *does* have a continuous fragmented subchannel, but this
+is only good for seeking +/-1 second (or 75 sectors or ~176kB) of the
+desired area, as per the SCSI spec.<p>
+
+When the CD is being played as audio, it is not only moving at 1x, the
+drive is keeping the media data rate (the spin speed) exactly locked
+to playback speed.  Pick up a portable CD player while it's playing
+and rotate it 90 degrees.  Chances are it will skip; you disturbed
+this delicate balance.  In addition, a player is never distracted from
+what it's doing... it has nothing else taking up its time.  Now add a
+non-realtime, (relatively) high-latency, multitasking kernel into the
+mess; it's like picking up the player and constantly shaking it.<p>
+
+CDROM drives generally assume that any sort of DAE will be linear and
+throw a readahead buffer at the task.  However, the OS is reading the
+data as broken up, seperated read requests.  The drive is doing
+readahead buffering and attempting to store additional data as it
+comes in off media while it waits for the OS to get around to reading
+previous blocks.  Seeing as how, at 36x, data is coming in at
+6.2MB/second, and each read is only 13 sectors or ~30k (due to DMA
+restrictions), one has to get off 208 read requests a second, minimum
+without any interruption, to avoid skipping. A single swap to disc or
+flush of filesystem cache by the OS will generally result in loss of
+streaming, assuming the drive is working flawlessly.  Oh, and
+virtually no PC on earth has that kind of I/O throughput; a Sun
+Enterprise server might, but a PC does not.  Most don't come within a
+factor of five, assuming perfect realtime behavior.<p>
+
+To keep piling on the difficulties, faster drives are often prone to
+vibration and alignment problems; some are total fiascos.  They lose
+streaming *constantly* even without being interrupted.  Philips
+determined 15 years ago that the CD could only be spun up to 50-60x
+until the physical CD (made of polycarbonate) would deform from
+centripetal force badly enough to become unreadable.  Today's players
+are pushing physics to the limit.  Few do so terribly reliably.<p>
+
+<em>Note that CD 'playback speed' is an excellent example of advertisers
+making numbers lie for them.  A 36x cdrom is generally not spinning at
+36x a normal drive's speed.  As a 1x drive is adjusting velocity
+depending on the access's distance from the hub, a 36x drive is
+probably using a constant angular velocity across the whole surface
+such that it gets 36x <strong>max</strong> at the edge. Thus it's
+actually spinning slower, assuming the '36x' isn't a complete lie, as
+it is on some drives.</em><p>
+
+Because audio discs have no headers in the data to assist in picking
+up where things got lost, most drives will just guess.<p>
+
+This doesn't even *begin* to get into stupid firmware bugs.  Even
+Plextors have occasionally had DAE bugs (although in every case,
+Plextor has fixed the bug *and* replaced/repaired drives for free).
+Cheaper drives are often complete basket cases.<p>
+
+<h3>Rant Update (for those in the know):</h3>
+
+Several folks, through personal mail and on Usenet, have pointed out
+that audio discs do place absolute positioning information for (at
+least) nine out of every ten sectors into the Q subchannel, and that
+my original statement of +/-75 sectors above is wrong.  I admit to it
+being misleading, so I'll try to clarify.<p>
+
+The positioning data certainly is in subchannel Q; the point is moot 
+however, for a couple of reasons.<p>
+
+<ol>
+<li>The SCSI and ATAPI specs (there are a couple of each, pick one)
+don't give any way to retrieve the subchannel from a desired sector.
+The READ SUB-CHANNEL command will hand you Q all right, you just don't
+have any idea where exactly that Q came from.  The command was
+intended for getting rough positioning information from audio discs
+that are paused or playing. This is audio; missing by several sectors
+is a tiny fraction of a second.<p>
+
+<li>Older CDROM drives tended not to expect 'READ SUB-CHANNEL' unless
+the drive was playing audio; calling it during data reads could crash
+the drive and lock up the system.  I had one of these drives (Apple
+803i, actually a repackaged Sony CD-8003).<p>
+
+<li>MMC-2 *does* give a way to retrieve the Q subchannel along with
+user data in the READ CD command.  Although the drive is required to
+recognize the fetaure, it is allowed to simply return zeroes
+(effectively leaving the feature unimplemented).  Guess how many
+drives actually implement this feature: not many.<p>
+
+<li>Assuming you *can* get back the subchannel, most CDROM drives seem
+to understand audio discs primarily at the "little frame" level; thus
+sector-level structures aren't reliable.  One might get a reassembled
+subQ, but if the read began in the middle of a sector (or dropped a
+little frame in the middle; many do), the subQ is likely corrupt and
+useless.<p>
+</ol>
+
+As reassembling uncorrupted frames is easy without the subchannel, and
+corrupted reads likely result in a corrupted subchannel too,
+cdparanoia treats the subchannel as more trouble than it's worth
+(during verification).<p>
+
+At least one other package (Exact Audio Copy for Win32) manages to use
+the subchannel to enhance the Table of Contents information.  I don't
+know if this only works on MMC-2 drives that support returning Q with
+READ CD, but I think I'm going to revisit using the subchannel for
+extra TOC information.<p>
+
+<hr>
+<a name=analog>
+<h2>Does cdparanoia lose quality from the CD recording? Does it just
+re-record the analog signal played from the CDROM drive?</h2> No to
+both.  Cdparanoia (and all other true CD digital audio extraction
+tools) reads the values off the CDROM in digital form.  The data never
+comes anywhere near the soundcard, and does not pass through any
+conversion to analog first.
+
+<hr>
+<a name=toc>
+<h2>Can cdparanoia detect pregaps? Can it remove the two second gaps between tracks</h2>
+
+Not yet.  This feature is slated to appear in a release of alpha 10
+(Paranoia IV).<p>
+
+<hr>
+<a name=gimme>
+<h2>Why don't you implement CDDB?  A GUI?  Four million other features I want?
+</h2>
+
+Too many features spoil the broth.  "Software is not perfect when
+there is nothing left to add, but rather when there is nothing
+extraneous left to take away."  The goal of cdparanoia is perfect,
+rock-solid audio from every capable cdrom on every platform.  As this
+goal has not yet been met, I'm uninterested in adding unrelated
+capability to the core engine.<p>
+
+Several GUIs that incorporate cdparanoia already exist; I'm in the
+process of compiling a list (see the <a href="links.html">links
+page</a>).  Other software that implements new features by wrapping
+around cdpar anoia (like CDDB lookup) also exist.<p>
+
+'Cdparanoia' will not play to sound cards (you can always pipe the
+output to a WAV player), do MD5 signatures, read CD catalog or serial
+numbers (this *is* a feature I plan to add), search indexes, do rate
+reduction (use Sox, Ogg or a million others), or generally make use of
+the maximum speed available from a CDROM drive.<p>  
+
+If your CDROM drive is *not* prone to jitter and you don't have
+scratched discs to worry about, you might want to look at the original
+<a href="ftp://ftp.gwdg.de/pub/linux/misc/cdda2wav/">cdda2wav</a> for
+features cdparanoia does not have.  Keep in mind however that even the
+really good drives do occasionally stumble.  I know of at least one
+cdparanoia user who insists on using full paranoia with his Plextor
+UltraPlex because it once botched a single sector from a rip; he'd already
+burned the track to several CD-Rs before noticing...<p>
+
+<hr>
+<a name=progbar>
+<h2>The progress meter: What is that weird bargraph during ripping?</h2>
+
+It's a progress/status indicator.  There's a completion bargraph, a
+number indicating the last sector number completely verified of the
+read currently happening, an overlap indicator, a gratuitous smilie,
+and a heartbeat indicator to show if the process is still alive, hung,
+or spinning.<p>
+
+The bargraph also marks points during the read with characters to
+indicate where various 'paranoia' features were tripped into action.<p>
+
+<img src="progbar.gif">
+
+<dl>
+<dt>A <dd>progress bargraph
+<dt>B <dd>sector counter
+<dt>C <dd>overlap indicator
+<dt>D <dd>smilie (gratuitous)
+<dt>E <dd>heartbeat
+</dl>
+
+<h3>The bargraph</h3>
+
+Different bargraph characters indicate different things occurred
+during that part of the read.  The letters are heirarchical; for
+example if a trasport error occurs in the same sector as jitter, the
+bargraph will print 'e' instead of '-'.<p>
+
+<center>
+<table border=1 align=center>
+<th>
+Legend of characters
+</th>
+<tr>
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>-</tt
+></font></td><td ID=whitetable>
+
+ A hyphen indicates that two blocks overlapped properly, but they were
+skewed (frame jitter).  This case is completely corrected by Paranoia and is not
+ a cause for concern.
+</td></tr>
+
+
+<tr><td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>+
+</tt></font></td><td ID=whitetable>
+ A plus indicates not only frame jitter, but an unreported,
+uncorrected loss of streaming in the middle of an atomic read
+operation.  That is, the drive lost its place while reading data, and
+restarted in some random incorrect location without alerting the
+kernel.  This case is also corrected by Paranoia.  </td></tr>
+
+<tr><td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>e
+</tt></font></td><td ID=whitetable>
+ An 'e' indicates that a transport level SCSI or ATAPI error was caught and 
+corrected.  Paranoia will completely repair such an error without audible defects.
+</td></tr>
+
+<tr><td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>X
+</tt></font></td><td ID=whitetable>
+ An "X" indicates a scratch was caught and corrected.  Cdparanoia wil interpolate 
+over any missing/corrupt samples.
+</td></tr>
+
+<tr><td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>*
+</tt></font></td><td ID=whitetable>
+ An asterisk indicates a scratch and jitter both occurred in this general area of 
+the read. Cdparanoia wil interpolate over any missing/corrupt samples.
+</td></tr>
+
+<tr><td ID=whitetable width=100 align=center bgcolor=#efe3ca><font
+size=+2><tt>!</tt></font></td><td ID=whitetable> A ! indicates that
+a read error got through the stage one of error correction and was
+caught by stage two.  Many '!' are a cause for concern; it means that
+the drive is making continuous silent errors that look identical on
+each re-read, a condition that can't always be detected.  Although the
+presence of a '!' means the error was corrected, it also means that
+similar errors are probably passing by unnoticed.  Upcoming releases
+of cdparanoia will address this issue.
+</td></tr>
+
+<tr><td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>V
+</tt></font></td><td ID=whitetable>
+ A V indicates a skip that could not be repaired or a sector totally obliterated
+ on the medium (hard read error).  A 'V' marker generally results in some audible 
+defect in the sample.
+</td></tr>
+
+</table>
+</center><p>
+
+<h3>The smilie</h3>
+
+The smilie is actually relevant.  It makes different faces depending
+on the current errors it's correcting.<p>
+
+<center>
+<table border=1 align=center>
+<th>
+Legend of smilies
+</th>
+<tr>
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>:-)</
+tt></font></td><td ID=whitetable>
+Normal operation.  No errors to report; if any jitter is present, it's small.
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>:-|</
+tt></font></td><td ID=whitetable>
+Normal operation, but average jitter is quite large.
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>:-P</
+tt></font></td><td ID=whitetable>
+A rift was found in the middle of an atomically read block; in other words, the 
+drive lost streaming in the middle of a read and did not abort, alert the kernel, or restart in the proper location.  The drive silently continued reading in some random location.
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>:-/</
+tt></font></td><td ID=whitetable>
+The read appears to be drifting; cdparanoia is shifting all of its reads to make
+ up for it.
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font
+size=+2><tt>8-|</tt></font></td><td ID=whitetable> Two matching
+vectors were found to disagree even after first stage verification;
+this is an indication that the drive is reliably dropping/adding bytes
+at consistent locations.  Because the verification algorithm is
+partially based on rereading and comparing vectors, if two vectors
+read incorrectly but identically, cdparanoia may never detect the
+problem.  This smilie indicates that such a situation *was* detected;
+other instances may be slipping through.  </td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font
+size=+2><tt>:-0</tt></font></td><td ID=whitetable> Transport or drive
+error.  This is normally not a cause for concern; cdparanoia can
+repair just about any error that it actually detects.  For more
+information about these errors, run cdparanoia with the -v option.
+Any all all errors and a description will dump to stderr.
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font size=+2><tt>:-(</
+tt></font></td><td ID=whitetable>
+Cdparanoia detected a scratch.
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font
+size=+2><tt>;-(</tt></font></td><td ID=whitetable> Cdparanoia gave up
+trying to repair a sector; it could not read consistent enough
+information from the drive to do so.  At this point cdparanoia will
+make the best guess it has available and continue (a <tt>V</tt>
+appears in the bargraph at this point).  This often results in an
+audible defect.
+
+</td></tr><tr>
+
+<td ID=whitetable width=100 align=center bgcolor=#efe3ca><font
+size=+2><tt>:^D</tt></font></td><td ID=whitetable> Cdparanoia displays
+this smilie both when finished reading a track and also if no error
+correction mechanism has been tripped so far reading a new track.
+
+</td></tr><tr>
+
+
+</table>
+</center><p>
+
+<hr>
+<a name=corr>
+<h2>Do symbols in the progress bar mean a bad rip?</h2> ' ', '-', and
+'+' symbols in the progress bar are harmless; the resulting audio file
+should have no defects.  '!' indicates that cdparanoia is uncertain
+about having caught all errors; a few are likely harmless, lots
+indicate a problem.  'V' indicates an error that definately got
+through, probably an audible error (unless it happened in silence at
+the edges due to a known bug).
+
+<p>
+<hr>
+<a name=ok>
+<h2>How can I tell if my drive would be OK with regular cdda2wav?</h2>
+
+
+Easy.  Run cdparanoia; if the progress meter never shows any
+characters but the little arrow going across the screen, the CDROM
+drive is probably one of the (currently) few drives that can read a
+pristine stream of data off an audio disc regardless of circumstances.
+This drive will work quite well with cdda2wav (or cdparanoia using the
+'-Z' option)<p>
+
+A drive that results in a bargraph of all hyphens would *likely* work
+OK with cdda2wav, but it's less certain. <p>
+
+Any other characters in the bargraph (colons, semicolons,
+pluses, Xs, etc..) indicate that a fixups had to be performed at that
+point during the read; that read would have failed or 'popped' using
+cdda2wav.<p>
+
+<hr>
+<a name=bigbuff>
+<h2>(Linux only) What is the biggest value of SG_BIG_BUFF I can use?</h2>
+
+65536 (64 kilobytes).  Some motherboards can use 128kB DMA, but
+attempting to use 128kB DMA on a machine that can't do it will crash
+the machine.  Cdparanoia will not use larger than 64kB requests.<p>
+
+<hr>
+<a name=diff>
+<h2>Why do the binary files from two reads differ when compared?</h2>
+
+The problem is the beginning point of the read.  Cdparanoia enforces
+consistency from whatever the drive considers to be the starting point
+of the data, and the drive is returning a slightly different beginning
+point each time.  The beginning point should not vary by much, and if
+this shift is accounted for when comparing the files, they should
+indeed turn out to be the same (aside from errors duly reported during
+the read; scratch correction or any reported skips will very likely
+also result in different files).<p>
+
+<hr>
+<a name=cdr>
+<h2>Why do CDParanoia, CDDA2WAV et al. rip files off into WAV
+format (and other sample formats) but not CDDA format?</h2>
+
+WAV and AIFC are simply convenient formats that include enough header
+information such that multipurpose audio software can uniquely
+identify the form of the data in the sample.  In raw form, mulaw, SND
+and CDDA look exactly alike to a program like xplay, and are very
+likely to blow your ears (and stereo) out when played!  Header formats
+are more versatile and safer.  By default, cdparanoia and cdda2wav
+write WAV files.<p>
+
+That said, cdparanoia (and cdda2wav) <em>will</em> write raw,
+headerless formats if explicitly told to.  Cdparanoia writes
+headerless, signed 16 bit, 44.1kHz stero files in little endian format
+(LSB first) when given the -r option, and the same in big endian (MSB)
+format when given -R.  All files written by cdparanoia are a multiple
+of 2352 bytes long (minus the header, if any) as required by cd writer
+software.<p>
+
+<!-- body done -->
+</font>
+</td></tr></table>
+</td>
+</tr>
+</table>
+<!-- main body (no sidemenu table) done ****************************** -->
+
+
+<!-- bottom banner table ********************************************* -->
+
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td colspan=3 align=left><img src=bottomA.gif alt=""></td>
+
+</tr><tr>
+
+<td><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
+<td bgcolor="#2a2a2c" align=center valign=center width=100%>
+  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+    border=0></a></td>
+    <td valign=center>
+    <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>
+
+    <a href=../xiphname.html>Cdparanoia</a> and the <a
+    href=../xiphname.html>Laser-Playback-Head-of-Omniscience logo</a> are
+    trademarks (tm) of <a href="/index.html">Xiph.Org</a>.  These pages
+    are copyright (C) 1994-2002 Xiph.Org.  All rights reserved.<br>
+
+    <a href="mailto:webmaster@xiph.org">Comments and
+    questions</a> about this web site are welcome.
+    </font>
+  </td></tr></table>
+</td></tr>
+</table>
+</body>

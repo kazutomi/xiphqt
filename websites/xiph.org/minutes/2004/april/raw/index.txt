@@ -1,0 +1,368 @@
+--- Log opened Wed Apr 07 19:59:32 2004
+19:59 -!- xiphmeet_log [~giles@motherfish-II.xiph.org] has joined #xiphmeet
+19:59 -!- Topic for #xiphmeet: Xiph.org April MonthlyMeeting. Agenda at http://wiki.xiph.org/MonthlyMeeting200404. Live log at http://xiph.org/~giles/xiphmeet.log for those of us starting late.
+19:59 -!- Topic set by rillian [] [Wed Apr  7 19:55:53 2004]
+19:59 [Users #xiphmeet]
+19:59 [ adiabatic] [ dev0    ] [ Misirlou ] [ purple_haese] [ xiphmeet_log] 
+19:59 [ DanielWH ] [ j^      ] [ Odin-    ] [ rillian     ] [ xiphmont    ] 
+19:59 [ derf_    ] [ kjoonlee] [ OggZealot] [ volsung_    ] 
+19:59 -!- Irssi: #xiphmeet: Total of 14 nicks [0 ops, 0 halfops, 0 voices, 14 normal]
+19:59 -!- Channel #xiphmeet created Wed Mar 24 00:25:38 2004
+19:59 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+20:00 -!- xiph [~xiphmont@HOTASS-7.MIT.EDU] has joined #xiphmeet
+20:00 -!- xiphmont [~xiphmont@HOTASS-7.MIT.EDU] has quit [Remote closed the connection]
+20:00 < xiph> I *hate* xchat.
+20:00 < xiph> ntpd updates my clock and xchat says "OMG!  No pings for whole minutes!"
+20:00 -!- xiph is now known as xiphmont
+20:01 < rillian> you're not supposed to use ntpdate without the slew option. lots of things have that problem
+20:01 < rillian> Shall we start?
+20:01 < xiphmont> that would work if the sleep clock on the G4 wasn't broken :-)
+20:01 < rillian> First item is SXSW report
+20:01 < rillian> how'd that go?
+20:02 < xiphmont> Is vanguardist expected?
+20:02 < volsung_> He's been idle for 5 hours.
+20:02 < volsung_> I'll sub for him.
+20:02  * volsung_ assumes xiph will go first.  :)
+20:03 < rillian> volsung_, maybe you should go first
+20:03 < volsung_> Okey.  SXSW was very successful, I think.
+20:03 -!- xiph [~xiphmont@HOTASS-8.MIT.EDU] has joined #xiphmeet
+20:03 < volsung_> Monty went out and worked the other booths much of the time.
+20:03 -!- J_Bullet [~jbullet@213.106.98.148] has joined #xiphmeet
+20:03 < volsung_> I'll let him explain who he talked to.
+20:04 < xiph> All the iMacs set up as listening stations were supposedly Ogg enabled through iTunes and whatever plugin; I never once got any one of them to work (iTunes plugin needs work)
+20:04 < xiph> Dammit
+20:04 < xiph> OK, what did folks see and what did folks not see?  IRC is sucking donkeys through a straw tonight.
+20:04 < volsung_> But for the most part, there were a lot of interested indie labels.
+20:04 < rillian> nothing you posted showed up
+20:04 < xiph> Dammit
+20:04 < xiph> [20:02:19] <xiphmont> Is vanguardist expected?
+20:04 < xiph> [20:02:33] <xiphmont> [he and Stan were the most fired up by it it seems :-]
+20:04 < xiph> [20:03:05] <xiphmont> SXSW went more or less as expected.  I talked to most of the booths on the floor.  Doppler and his crew pulled off the streaming.
+20:04 < xiph> [20:03:24] <xiphmont> Two things stuck in my mind though:
+20:04 < xiph> [20:04:02] <xiph> All the iMacs set up as listening stations were supposedly Ogg enabled through iTunes and whatever plugin; I never once got any one of them to work (iTunes plugin needs work)
+20:05 < volsung_> Oh yeah, Creative Commons and Magnatune were very awesome.
+20:05 < rillian> volsung_, so our target audience actually showed interest? that's great.
+20:05 < xiph> Folks were generally very happy to see us there.
+20:05 < volsung_> We need to make sure to keep in contact with those two orgs especially.
+20:05 < rillian> we've been wondering where the labels were
+20:06 < xiph> Magnatune, CC and w3k were very happy to meet us and talk :-)
+20:06 < volsung_> Most of the labels we saw had never heard of us, so I think we're at the beginning of infecting that mindshare.
+20:06 < purple_haese> w3k?
+20:06 < xiph> Well, there were just as many indies there trying desperately to figure out who they had to sleep with to get the bigger labels to notice them.
+20:07 -!- J_Bullet [~jbullet@213.106.98.148] has left #xiphmeet []
+20:07 < xiph> Yes, awareness of who we are was very low there.
+20:07 < volsung_> Oh yeah, and big props go out to doppler for scoring us the booth and passes.
+20:07 -!- EvilOverlord [~jbullet@213.106.98.148] has joined #xiphmeet
+20:07 < volsung_> Anyway, the link on the agenda points to the stuff Manuel and I thought of after the meeting was over.
+20:08 < xiph> BTW, stan, stickers and stuff made it back to me OK
+20:08 < rillian> xiph: what was the second thing that struck you?
+20:08 < volsung_> Mostly the strong need for Xiph.org to have an obvious "orientation" area for interested people.
+20:09 < xiph> rillian: that the WiMP plugin was similarly crippled when I tried it :-)
+20:09 < volsung_> Manuel and I have been sketching a mockup of such pages that we'll check-in once we clean it up.
+20:10 < rillian> I like the things you came up with as well
+20:10 < rillian> volsung_, you said you're also working on a demo cd?
+20:10 < volsung_> yeah, Manuel and I figured we'd want something like that again in the future.
+20:10 < volsung_> So we hooked up with CC and Magnatune to come up with some interesting content.
+20:11 < volsung_> John Buckmann (magnatune) was all about us putting ogg versions of the demo CDs he was handing out onto a Xiph.org CD.
+20:11 < rillian> found any video we could include?
+20:11 < volsung_> Actually yes.
+20:11 < volsung_> While I was at a film panel, I saw a guy was releasing his 90 min film under a CC license.
+20:12 < volsung_> See http://fourthwall.creativecommons.org
+20:12 < volsung_> It's not publically up yet since he hasn't figured out how to do that.
+20:12 < volsung_> But we emailed him and he uploaded the 19 GB DV file onto my computer.
+20:12 < volsung_> So I now have it, and I'm trying to figure out what to do with it.  :)
+20:12 < rillian> oh, you have it already! excellent
+20:12 < volsung_> Yeah, he was very responsive.
+20:13 < rillian> I'd appreciate it if you could push a copy to motherfish so I can play with it
+20:13 < volsung_> 'k.
+20:13 < volsung_> Do we have the disk space?
+20:13 < rillian> yes
+20:13 < volsung_> Alright, my asymmetric cable modem cap means it will finish sometime by the next meeting.  :)
+20:14 < rillian> you could also dump it to a couple of tapes and mail me a copy :)
+20:14 < volsung_> heh.  Upload will be easier.  :)
+20:14 < volsung_> I have no DV hardware.
+20:14 < rillian> Anyway, sounds good
+20:14 < EvilOverlord> if I may interject, when you say he hasn't figured it out, do you mean what format to put the video in?
+20:14 < purple_haese> Snail-Mail a harddisk with the file ;)
+20:14 < volsung_> EvilOverlord: Yeah, I got the impression he was still evaluating how to put this much data online.
+20:15 < EvilOverlord> volsung_: isn't Xvid+ogg the obvious choice?
+20:15 < volsung_> Especially since one of his goals is to put the raw footage up to so people can make derived works.
+20:15 < volsung_> EvilOverlord: Not necessarily.
+20:15 -!- MikeS [~msmith@CPE-144-137-40-253.vic.bigpond.net.au] has joined #xiphmeet
+20:15 < volsung_> EvilOverlord: Certainly wasn't the first I thought of.  :)
+20:15 < EvilOverlord> volsung_: oh okay
+20:15 < rillian> Next item is the website revision
+20:15 < MikeS> Sorry I'm late; forgot about the effects of the end of daylight saving.
+20:16 < rillian> we've already touched on the stan and manuel's ideas
+20:16 < rillian> Nathan has also requested a separate meeting about this since he couldn't make this one
+20:16 < rillian> xiph: you were also working on a rewrite. anything new there?
+20:16 < purple_haese> Speaking of Demo content: Mike Oldfield is using Ogg for his Music Virtual Reality "games." Maybe he'd be willing to release a bit of material from those games for a Xiph demo.
+20:17 < xiph> rillian: no, nothing new.  Sorry.
+20:17 < purple_haese> I hereby volunteer trying to ask him about it, although it's probably going to be like calling Elvis :)
+20:17 < xiph> Rather...
+20:17 < xiph> several people said "But we have new stuff to put up / have ideas, don't stomp on them" and I became unfocused.
+20:18 < volsung_> rillian: Are we officially going to be putting website development into svn?
+20:18 < rillian> yes
+20:18 < rillian> nathan's point about passwords in php source might need to be addressed for some sites
+20:19 < rillian> but I think that's what we should do for xiph.org
+20:19 -!- xiphmont [~xiphmont@HOTASS-7.MIT.EDU] has quit [Read error: 113 (No route to host)]
+20:19 < volsung_> Manuel and I are focusing on content for the website, so if someone comes up with a non-ugly template (with all the CSS evil), we'll be more than happy to plug into it, with tweaks.
+20:19 -!- xiph is now known as xiphmont
+20:19 < rillian> that sounds like a good division
+20:20 < rillian> though of course monty should work with you on text if he wants :)
+20:20 < volsung_> I know Nathan is the resident CSS Nazi.  :)
+20:20 < rillian> I look forward to seeing test.xiph.org
+20:20 < volsung_> Ah, also on website, we need to replace all CVS docs with SVN docs.
+20:20 < xiphmont> Well, I want to actually do as little as possible personally on that front ;-)
+20:20 < xiphmont> yes
+20:21 < volsung_> There are a few people still checking cvs thinking they are getting latest code.
+20:21 < rillian> it's not on the agenda, but now might be a good time to talk about repository layout
+20:21 < rillian> since that's sort of what we were waiting for with the website updates
+20:21 < purple_haese> Sorry to rewind the discussion a bit: Are there any comments about my Mike Oldfield suggestion, like Go For It or Don't Bother?
+20:21 < rillian> I originally thought per-project directories would be simplest
+20:22 < volsung_> purple_haese: I'm not familiar with what he has.  If you do the footwork, we'll make the space.
+20:22 < rillian> but now I think that only makes sense for icecast
+20:22 < volsung_> rillian: per project means?
+20:22 < rillian> purple_haese, certainly it would be great to have stuff from him.
+20:22 < purple_haese> volsung_: He's probably most famous for Tubular Bells. I'll see how approachable he is.
+20:22 < MikeS> Yes, SVN docs are important. Even our developers don't know how to set things up properly.
+20:22 < rillian>  /theora/trunk instead of /trunk/theora
+20:23 < volsung_> Which is per project?  :)
+20:23 < rillian> the first, like theora is now
+20:23 < volsung_> Ah.  'k.
+20:23 < rillian> If no one has an opinion, I'll move theora back under trunk with all the other codecs
+20:23 < rillian> and we'll leave it at that
+20:23 < volsung_> Yeah.
+20:24 < volsung_> I think that is the easiest to deal with.
+20:24 < rillian> ok, good.
+20:24 < volsung_> Especially given the huge number of projects we have.
+20:24 < rillian> Next item is release schedule
+20:24 < rillian> theora a3 went out
+20:24 < rillian> as did a new libao
+20:25 < volsung_> And positron.
+20:25 < rillian> *nod*
+20:25 < rillian> we have libogg 1.1.1 gated by a bug monty needs to fix
+20:25 < volsung_> (With another on the way by the end of the month.  It seems I disagree with DI's database usage again.)
+20:25 < rillian> and libvorbis 1.0.2 ready to go
+20:25 < rillian> vorbis-tools 1.0.2 needs some build system work, iirc
+20:26 < xiphmont> "The neverending build system development" :-)
+20:26 < MikeS> Yes (1.0.1 vorbis-tools was a significant backwards step from 1.0 in terms of buildability on most systems)
+20:26 < rillian> I think I  might be the only "release team" member here, so I'm happy to leave it at that
+20:26 < rillian> (or we can discuss build issues)
+20:26 < volsung_> libogg and libvorbis both have the line-ending fixes for the Win32 project files now, right?
+20:26 < rillian> yes
+20:27 < rillian> we should probably apply the 'native' line ending flag to the source files, although that's not critical like it is for the MSVC project files
+20:28 < rillian> Ok. next item
+20:28 < xiphmont> well, we did in CVS...
+20:28 < volsung_> Oh yeah, who's going to write the SVN page?
+20:28 < rillian> the first person to get to it?
+20:29  * rillian will if there are no volunteers
+20:29 < xiphmont> I'm still being lame about mailsystem....  I could add that to lthe list.
+20:29 < xiphmont> Despite not having used SVN yet :-)
+20:29 < xiphmont> "learning experience"
+20:29 < volsung_> Oh yeah, are we all moved to mailman now?
+20:29 < rillian> xiphmont: I'd rather you fix the libogg bug and write OggFile
+20:30 < rillian> volsung_, right.
+20:30 < rillian> we're moving to mailman
+20:30 < rillian> as the better known of the evils
+20:30 < volsung_> How much does that impact the mailing list pages?
+20:30 < rillian> announce and commits lists have already moved
+20:30 < rillian> the rest will move when I get a change to integration the archive pages and spam filter
+20:30 < rillian> s/change/chance/
+20:31 < volsung_> Are you still hand-approving commits posts?
+20:31 < rillian> yes
+20:31 < volsung_> Any solution in sight?  Or just not worth it now?
+20:31 < rillian> it's easy enough to fix
+20:32 < rillian> though getting upstream to unbreak it might take longer
+20:32 < rillian> It's just not been worth it so far
+20:32 < rillian> The next item really needs some discussion,
+20:33 < rillian> which is what to do about granulepos
+20:33 < xiphmont> Ah, right, I did not mail out final proposal.
+20:33 < xiphmont> There is a final proposal:
+20:33 < xiphmont> a) yes, we're (generally) moving to start time because it results in more efficient buffering.
+20:33 < xiphmont> b) we're using a reserved flag (currently mandated to be zero) to flag a page sorted by start time.
+20:34 < rillian> (for those who haven't been following this, the ogg spec says page timestamps are the last time decodable with a page. for various reasons, it's been proposed that we change that to first time)
+20:34 < xiphmont> c) Codecs that make use of a start-time-sorted page and also use end-of-stream short packets must be able to determine when packets on an ending page are short.
+20:35 < DanielWH> every page gets flagged?
+20:35 < xiphmont> As for start/end?  Yes, it's the most generic, strightforward way to declare it.
+20:35 < xiphmont> *because*
+20:36 < rillian> xiphmont, do you mean flag a page that records start time, instead of sorts by?
+20:36 < xiphmont> rillian: they;'re the same thing
+20:36 < xiphmont> and yes, that needs to be stated clearly.
+20:36 < rillian> absolutely not
+20:37 < rillian> the page spec shouldn't assume the multiplexed stream mapping
+20:37 < xiphmont> there are two cases: records/sorts by start time and records/sorts by end time.
+20:37 < xiphmont> what do you mean?
+20:38 < rillian> I mean it's possible to screw up the sort order without screwing up the granulepos fields
+20:38 < rillian> those are different layers of the spec
+20:38 < xiphmont> no, they're both ogg-level.
+20:38 < xiphmont> Ogg itself is thin but monolithic, layer-wise
+20:38 < DanielWH> 1x3x9?
+20:39 < DanielWH> sorry.
+20:39 < rillian> I really disagree there
+20:39 < rillian> interleave is a mapping issue, not an ogg issue
+20:40 < DanielWH> what's the demultiplexer supposed to do?  when it gets a stream with rillianora in it will it have to demultiplex differently
+20:40 < rillian> but then, you've still not convinced me that forcing a sort order is necessary
+20:40 < xiphmont> we either have implicit or explicit sort order, yes?
+20:41 < xiphmont> With implicit, it;s locked and you can;t mix.  acolwell had some interesting possible uses for mixing sort order within a single stream... so long as its declared, it doesn;t bother seeking any.
+20:41 < rillian> I'm just saying the flag should have nothing to do with the sort order
+20:41 < rillian> through of course the sort order can depend on the flag
+20:42 < xiphmont> If you don;t know if a granpos is beginning or ending, you can't seek accurately.
+20:42 < rillian> xiphmont, I don't follow your implicit vs. explicit terms
+20:43 < xiphmont> You either have to explicitly flag how pages are sorted, or you have to know some other way through inferred knowledge not in the stream itself (implicit)
+20:44 -!- j^ [~j@pD9E36759.dip.t-dialin.net] has quit [Read error: 110 (Connection timed out)]
+20:44 < rillian> or, the sorting can be implicit while the starttime/endtime status of the granulepos is explicit
+20:45 < rillian> anyway, the proposal for the flag sounds like a good idea. we can argue about the definition later
+20:45 < xiphmont> we've already established that if granpos == beginning of page, you have to sort it by that.
+20:45 < xiphmont> if granpos is not monotonically increasing, then the search alg no longer works.
+20:45 < rillian> no one's been able to convince me of that
+20:46 < rillian> so we'll use start time for all our new codecs?
+20:46 < xiphmont> How do you bisection search a partially unsorted list?
+20:46 < rillian> what about vorbis in theora streams?
+20:46 < xiphmont> rillian: we'll encourage it.
+20:46 < MikeS> "Everything works either way, but please do this, it's more efficient".
+20:46 < xiphmont> vorbis I has to be by end time becasue Vorbis I defined it that way.
+20:47 < rillian> Vorbis I is defined to only work in degenerate streams
+20:47 < xiphmont> Current thinking is that in Theora it still has to be by end time because demuxing will otherwise produce invalid Vorbis I streams
+20:47 < rillian> if we have a flag we could change that
+20:47 < rillian> ok, that I'll buy
+20:47 < xiphmont> My worry is that the default state of the current tools would be broken... but I'm not actually feeling adamant about it like I was in earlier discussions.
+20:48 < xiphmont> pages are ordered by granpos regardless of whether it's start or end time.
+20:48 -!- Parn [~lodoss@148.Red-217-126-33.pooles.rima-tde.net] has joined #xiphmeet
+20:49 < xiphmont> mixing start/end sorted pages in a stream, at worst, just results in buffering that requires more space thna is theoretically optimal.
+20:49 < xiphmont> nothing breaks.
+20:50 < rillian> my point has always been that if the ordering isn't perfect, you lose some seeking resolution, and again buffering is less optimal, but there's still no reason it should break
+20:50 < rillian> thus it's also in the category mike mentioned
+20:51 < xiphmont> No, you really do fuck the bisection search.
+20:51 < rillian> no
+20:52 < xiphmont> The simple three-line version no longer works.
+20:52 < DanielWH> they're always sorted by time when you're multiplexing, right?
+20:52 < xiphmont> You need something that tolerates the inherent fencepost errors, etc...
+20:53 < xiphmont> I do not see any value to suddenly unsorting the multiplexing, or using some implicit, fuzzy sorting information.
+20:53 < rillian> you still need to find the start of all the streams for the bit you want to play
+20:53 < xiphmont> rillian: no, you don;t./
+20:53 -!- volsung_ [~volsung@sirius.hep.utexas.edu] has quit ["Time to leave."]
+20:53 < xiphmont> you only find a requested point in time.
+20:54 < xiphmont> (simplest case)
+20:54 < xiphmont> ...and the more complex cases are built out of 'seek to point in time'.
+20:54 < rillian> so for theora,
+20:55 < rillian> theora pages have start times
+20:55 < rillian> vorbis pages have end times
+20:55 < xiphmont> When my point in time is scattered throughout a small section of file....
+20:55 < xiphmont> yes.
+20:55 < adiabatic> Incidentally, I'm here.
+20:55 < rillian> you sort by time equivalent of the granulepos, regardless of whether it's start or end?
+20:55 < rillian> hi adi
+20:55 < xiphmont> yes.
+20:56 < rillian> so your 3 line bisection search find the page with the greatest granulepos before the time you request
+20:57 < xiphmont> Most efficient case is if everything is start time.  Second most efficient is everything end time. Mixing is least efficient but works fine.
+20:57 < rillian> you scan forward to find a video page
+20:57 < rillian> you see calculate where the last keyframe was
+20:57 < rillian> you seek *there*
+20:57 < xiphmont> if we bother with keyframe seekage, yes :-)
+20:57 < xiphmont> (*we* will; most other app developers probably will not)
+20:58 < rillian> and you start decoding, until you have what you need to start playback at the requested seek point
+20:58 < xiphmont> yes
+20:59 < xiphmont> btw, as a clarification of: "find the page with the greatest granulepos before the time you request"
+20:59 < rillian> anyway, in general you need to back up anyway
+21:00 < xiphmont> if it's start-sorted, you begin with that page.  If it's end-sorted, you begin right after it.  And that's the only modification to the seeking we have now.
+21:00 < rillian> if you're doing it wrong, yeah
+21:00 < xiphmont> Backing up is not what I'm arguing against.  I'm arguiong that "seek to point in time" must be well defined and uniquely defined.
+21:01 < DanielWH> so I'm seeking to frame 500.  associated with frame 500 are captions, beginning on frame 450, sound, beginning between 459 and 500, and simulator yaw beginning at frame 486.
+21:01 < rillian> what I don't like is that if you do it right, you have to handle the broken streams anyway. you're specing something that's only helpful if you don't do things right
+21:01 < xiphmont> If the stream is broken it works and you get the wrong answer.
+21:01 < xiphmont> If the stream is not broken, it works and you get the right answer.
+21:01 < xiphmont> rather,
+21:01 < xiphmont> If the stream is broken it works and you get the wrong answer or an error.
+21:02 < DanielWH> so I suppose I want to seek to the earliest of all the codecs in the stream before video frame 500.
+21:02 < xiphmont> DanielWH: there are no bare frames.  Frames are in pages, and that's a different layer that we're discussing now.
+21:03 < xiphmont> Seeking is an operation ont he stream.  If you want an operation of bits within the stream, that's harder and it should be.
+21:04 < DanielWH> okay so you just want to make sure I can find theora's page with granulepos = x among a theora+vorbis stream, and if I can (in 3 lines) then all is well.
+21:04 < xiphmont> DanielWH: granpos x == time y, seek to time y, done.
+21:04 < rillian> xiphmont, somehow, when you move the line instead of the thing it's on the wrong side of it, I can agree with you :)
+21:04 < xiphmont> did I braino an earlier statement?
+21:05 < xiphmont> [looks back]
+21:05 < DanielWH> so then after ogg's taken me to theora page 500, my application has to do something at a higher level to find the captions that are still being displayed on 500 in continuous playback (but are in the stream between theora pages 490 and 491).
+21:06 < rillian> DanielWH, yup.
+21:06 < DanielWH> no worries then.
+21:06 < xiphmont> DanielWH: yes, captions are a discontinuous type.
+21:06 < DanielWH> but you want to make sure ogg's seeking algorithm can use vorbis granulepos and theora granulepos to help it seek to theora 500
+21:06 < DanielWH> hence the flags.
+21:07 < rillian> xiphmont, I feel like we're arguing about an ogg api rather than an format specification
+21:07 < xiphmont> rillian: hm, we might be.  I'mwondering where confusion set in, because we did agree at the point I set the 'current plan'.
+21:08 < DanielWH> don't mind me.
+21:08 < xiphmont> Anyway, this has been beyond scope of meeting for a while now.
+21:08 < xiphmont> I have to go forage food soon; we should move on.
+21:08 < rillian> ok. thanks for stating the proposal
+21:09 < rillian> that's the main thing I wanted out
+21:09 < rillian> Project status reports
+21:09 < xiphmont> Yeah, that it's not in a formal doc already is unforgivable.  I really can only think about one thing at a time in depth, and that wasn't it recently.
+21:09 < rillian> as discussed last time, we have funding from fluendo.com to work on the theora spec
+21:09 < xiphmont> "Yay!"
+21:09 < rillian> derf's been writing
+21:09 < xiphmont> rather, "Yeeeehaw!"
+21:09 < rillian> and we have a good start
+21:09 < adiabatic> "Huzzah!"
+21:10 < rillian> alpha 3 was releasedd
+21:10 < rillian> I've been working on OggMNG again
+21:11 < rillian> acolwell build plugins for realplayer 10 that have gotten a few hundred downloads
+21:11 < rillian> and we made ./ with the release (thanks Arc)
+21:11 < rillian> so things are going pretty well
+21:11 < rillian> MikeS, how's ice* coming along?
+21:12 < xiphmont> We may have put a few folks into a stupor with the granpos thing.
+21:12 < rillian> quite
+21:13 < xiphmont> [Is mike hooked up to an SNMP-aware zapper device?]
+21:13 < rillian> we've already covered some of the other projects
+21:13 < xiphmont> Yes, I already have Vorbis 1.0.3 mapped out, we might call it 1.1.
+21:13 < rillian> jm isn't here, but I've not seem much new with speex; mostly adopter questions
+21:14 < DanielWH> last I checked MikeS was doing fine getting ice* and shout* to do theora + timing via theora instead of just vorbis.
+21:14 < rillian> xiphmont, what's the plan for 1.0.3?
+21:14 < DanielWH> sorry I mean KarlH I think
+21:14 < rillian> DanielWH, great! I'm glad he's involved with that
+21:14 < xiphmont> fixing noise normalization (well, making it more sophisticated) and generalizing stereo coupling.
+21:15 < rillian> DanielWH: oh, yes, that I knew about
+21:15 < rillian> xiphmont, so this would support channel coupling in 5.1 audio?
+21:15 < xiphmont> yes.
+21:16 < xiphmont> I've only played a bit; I'm still putting it behing the mux spec and OggFiel API
+21:16 < purple_haese> xiphmont: Did you get a chance to read the paper about the cause of the HF boost?
+21:16 < xiphmont> purple_haese: yes, had a long discussion with him.
+21:16 < purple_haese> Good. I
+21:16 < rillian> what about doing a lowpass .1 only mode in the meantime?
+21:16 < purple_haese> ugh
+21:16 < purple_haese> I'm glad he's being listened to.
+21:16 < xiphmont> rillian: hee hee hee
+21:17 < purple_haese> I was worried cause there were no follow-ups on the list.
+21:17 < purple_haese> Can the long discussion be summarized in a nutshell?
+21:18 < xiphmont> No.  But I have logs.
+21:18 < xiphmont> Bug me for them offline.
+21:18 < rillian> Shall we move on to the last item?
+21:18 < xiphmont> "We have a call tomorrow.  That is all."
+21:19 < xiphmont> I need that doc from Peter.
+21:19 < rillian> heh
+21:19 < xiphmont> S'about it.
+21:19 < MikeS> Sorry, was off doing something else. 
+21:19 < rillian> We're still pursuing the creation of a 'Xiph Forum' standards body with ieee-isto.org
+21:19 < rillian> your jobs, as evangenlists
+21:19 < MikeS> ice* are currently fairly stagnant, but working well. 
+21:20 < rillian> is to remind/convince the desktop linux people
+21:20 < rillian> that they should be pushing our codecs as hard as they can
+21:20 < rillian> particularly, gnome, kde, and freedesktop.org
+21:20 < rillian> because this will encourage the people with money to support our work
+21:21 < adiabatic> Would here and now be a good place to brainstorm about such things? In particular, defaulting to Ogg Vorbis or flac when encoding.
+21:21 < xiphmont> I think I must be off...
+21:21 < xiphmont> Anything left for me?
+21:21 < rillian> nope. I think we can be done.
+21:21 < MikeS> I think one crucial thing that we really need to push harder on (which Monty mentioned earlier) is player support for the "big 3" - real, qt, wmp. I think the real part is looking good. The other two - much less so. 
+21:22 < purple_haese> By the way... are there any plans to "encourage" game publishers to show Xiph their "appreciation"?
+21:22 -!- xiphmont [~xiphmont@HOTASS-8.MIT.EDU] has quit ["He travels fastest who travels alone"]
+21:22 < MikeS> There's a guy working on a new set of dshow filters - perhaps we should work with him, get his stuff into SVN if he's interested? Or perhaps one of the other existing projects is better.
+21:22 < rillian> purple_haese, not that I'm away
+21:22 < rillian> aware
+21:23 < rillian> MikeS, yes. if we can them them to maintain their stuff in our repository that would be wonderful
+21:23 < rillian> Ok, I move we adjourn to informal discussion
+21:23 < MikeS> ok.
+21:24 < purple_haese> Seconded.
+21:24 < rillian> Ok. Thanks everyone for coming
+21:24 < rillian> and for your contributions
+21:24 < rillian> logs will be posted
+--- Log closed Wed Apr 07 21:24:33 2004

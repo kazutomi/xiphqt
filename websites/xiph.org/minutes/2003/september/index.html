@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>Minutes of the Xiph.org Monthly Meeting for September 2003</title>
+<meta name="author" content="Carsten Haese" />
+<meta name="date" content="September 16, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="minutes-of-the-xiph-org-monthly-meeting-for-september-2003">
+<h1 class="title">Minutes of the Xiph.org Monthly Meeting for September 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>September 16, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#introduction" id="id1" name="id1">1   Introduction</a></li>
+<li><a class="reference" href="#status-updates" id="id2" name="id2">2   Status Updates</a></li>
+<li><a class="reference" href="#theora-updates" id="id3" name="id3">3   Theora Updates</a></li>
+<li><a class="reference" href="#theora-demo-page" id="id4" name="id4">4   Theora Demo Page</a></li>
+<li><a class="reference" href="#subtitle-stream-format" id="id5" name="id5">5   Subtitle Stream Format</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1" name="introduction">1   Introduction</a></h1>
+<p>The monthly meeting for September 2003 took place on
+September 7, 2003, at midnight UTC
+in the IRC channel <tt class="literal"><span class="pre">#xiphmeet</span></tt> on <tt class="literal"><span class="pre">irc.xiph.org</span></tt>. The
+following people were present, in alphabetical order:</p>
+<ul class="simple">
+<li>Active Participants (IRC nicknames in parentheses)<ul>
+<li>Arc, Ogg Writ developer (Arc)</li>
+<li>Ralph Giles, Theora project leader and Xiph.org sysadmin (rillian)</li>
+<li>Carsten Haese, Ogg Traffic Editor, Secretary (purple)</li>
+<li>Manuel Lora (vanguardist)</li>
+<li>Jack Moffit, Executive Director (jack)</li>
+<li>Nathan Sharfi, Webmaster (adiabatic/primer)</li>
+<li>Timothy Terriberry, Theora developer (derf)</li>
+</ul>
+</li>
+<li>Observers (IRC nicknames)<ul>
+<li>Aram1</li>
+</ul>
+</li>
+</ul>
+<p>The meeting was moderated by Jack Moffitt and Ralph Giles.</p>
+</div>
+<div class="section" id="status-updates">
+<h1><a class="toc-backref" href="#id2" name="status-updates">2   Status Updates</a></h1>
+<p>Jack and Ralph are working on getting Windows and Mac OS builds of the Vorbis
+1.0.1 bugfix release going. Monty has finished his work on 1.0.1 and has moved on
+to wrapping up some loose contracts, after which he will work on OggFile.</p>
+</div>
+<div class="section" id="theora-updates">
+<h1><a class="toc-backref" href="#id3" name="theora-updates">3   Theora Updates</a></h1>
+<p>Ralph has accepted the position as the project leader for Theora. This means
+that any complaints, compliments, or offers to help regarding Theora should be
+directed at him.</p>
+<p>Timothy has begun work on an experimental HVS (Human Visual System) tuned Theora
+encoder. It's coming along, but has some ways to go before being useful.</p>
+<p>Dan Miller is still busy working on the Python specification and reference
+implementation. Since this must be done before Theora can be released, any help
+would be greatly appreciated.</p>
+<p>Another open item is whether Theora needs a flip bit to allow for lossless
+transcoding from VP3. The jury, i.e. Mauricio Piacentini, is still out on this
+one. He thinks it should be possible to achieve without a flip bit, and he is
+working on a transcoder implementation to test his theory.</p>
+</div>
+<div class="section" id="theora-demo-page">
+<h1><a class="toc-backref" href="#id4" name="theora-demo-page">4   Theora Demo Page</a></h1>
+<p>Following the Theora updates there was a brief discussion about a Theora
+demo page that would showcase Theora once it is released. This demo page would
+contain sample clips and links to applications, preferably compact, that can
+play Theora video.</p>
+<p>Regarding content, Arc offered to provide clips from interviews with different
+free software developers talking about their projects. Offers or ideas for
+additional possibilities are welcome.</p>
+<p>Regarding players, one strong contender is Mauricio's 'splayer' example player.
+Since it is portable, it would only need a minimal GUI to be made into a
+lightweight downloadable player. While projects like xine and mplayer already
+support Theora, they aren't small downloads, and it is not known whether they
+actually run on Windows.</p>
+</div>
+<div class="section" id="subtitle-stream-format">
+<h1><a class="toc-backref" href="#id5" name="subtitle-stream-format">5   Subtitle Stream Format</a></h1>
+<p>Arc is developing a subtitle format with the working title Ogg Writ. The
+specification can be found at <a class="reference" href="http://wiki.xiph.org/OggWrit">http://wiki.xiph.org/OggWrit</a>. Arc has a working
+reference implementation of a raw stream encoder and decoder, but it hasn't
+been tied to the Ogg framework for technical reasons. The first reason is
+that Ogg needs to be extended to handle discontinuous streams. The second reason
+is that Arc is waiting for Monty to finish the OggFile library.</p>
+<hr />
+<p>Meeting Minutes for the September 2003 Monthly Meeting</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080" color="#000000" background="inback.jpg">
+
+<!-- open space formatting ************************************* -->
+<!-- tricky: table formatting always is. *********************** -->
+
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+<tr>
+
+  <!-- big fish ************************************************ -->
+  <td valign=center align=center width=85%>
+    <img src=xifish.gif width=112 height=112 alt=" "><br>
+    <img src=xiphword.gif width=300 height=41 alt="Xiph.Org: home"><br>
+
+    <font size=+2 face="Verdana, Arial, Helvetica">
+    building a new era of Open multimedia
+  </td>
+
+
+  <!-- spacer ************************************************** -->
+  <td><img src=spacer13.gif width=13 height=13 alt=" "></td>
+
+  <!-- side menu *********************************************** -->
+  <td valign=center align=right>
+      <!-- right hand tan blocks ************* -->
+      <img src=spacer32.gif width=32 height=32 alt=" "><br>
+
+      <table border=0 bgcolor=#46463c cellpadding=1 cellspacing=0 width="100%">
+	<tr><td>
+
+      <table border=0 bgcolor=#e8e0c0 cellpadding=5 cellspacing=0 width="100%">
+	
+         <tr><td valign=top>
+      	         <a href="about.html">
+	         <img src=small-grey-xiph.gif
+                 border=0 width=42 height=43 alt=" "></a></td>
+             <td valign=center align=center width="100%">
+		 <font face="Verdana, Arial, Helvetica">
+                 <img src=spacer6.gif width=6 height=6 alt=""><br>
+      	         <a href="about.html">
+			About&nbsp;Xiph.Org</a><br>
+      	         <a href="press/">Press Releases</a><br>
+
+                 <img src=spacer6.gif width=6 height=6 alt=""><br>
+		</font>
+             </td>
+	     <td><img src=spacer6.gif width=6 height=6></td>
+         </tr>
+      </table>
+
+      </td></tr>
+      </table>
+
+      <img src=spacer1.gif width=1 height=1 alt=" ">
+
+      <table border=0 bgcolor=#46463c cellpadding=1 cellspacing=0 width="100%">
+	<tr><td>
+
+      <table border=0 cellpadding=5 cellspacing=0 width="100%" 
+              bgcolor=#e8e0c0>
+
+         <tr><td valign=top align=center>
+		<a href="http://www.icecast.org/">
+		<img border=0 src=small-grey-icecast.png
+              width=37 height=37 alt=" "></a></td>
+             <td valign=center align=center width="100%">
+    	        <font face="Verdana, Arial, Helvetica">
+		<a href="http://www.icecast.org/">
+                        Icecast</a><br></td>
+	     <td><img src=spacer6.gif width=6 height=6></td></tr>
+		</font>
+
+         <tr><td valign=top align=center>
+		<a href="ogg/">
+		<img src=small-grey-ogg.png border=0
+              width=41 height=57 alt=" "></a></td>
+             <td valign=center align=center width="100%">
+    	        <font face="Verdana, Arial, Helvetica">
+		<a href="ogg/">
+                        Ogg&nbsp;project</a><br>
+	        <a href="ogg/vorbis/">
+                	Ogg&nbsp;Vorbis</a></td>
+		<td><img src=spacer6.gif width=6 height=6></td></tr>
+		</font>
+
+         <tr><td valign=top align=center>
+                <a href="paranoia/">
+	<img src=small-grey-eye.png border=0
+              width=41 height=39 alt=" "></a></td>
+             <td valign=center align=center width="100%">
+                <font face="Verdana, Arial, Helvetica">
+                <a href="paranoia/">
+                        Paranoia&nbsp;IV</a><br>
+		<a href="paranoia/">
+	                cdparanoia</a></td>
+	     <td><img src=spacer6.gif width=6 height=6></td></tr>
+		</font>
+
+         <tr><td valign=top align=center>
+		<a href="mgm/">
+	      <img src=small-grey-mgm.png border=0
+              width=39 height=35 alt=" "></a></td>
+             <td valign=center align=center width="100%">
+                <font face="Verdana, Arial, Helvetica">
+		<a href="mgm/">
+                       MGM</a></td>
+		</font>
+	     <td><img src=spacer6.gif width=6 height=6></td></tr>
+      </table>
+      </td></tr>
+      </table>
+
+      <br><img src=spacer32.gif width=32 height=32 alt=" "><br>
+
+      <!-- /right hand tan blocks ************* -->
+  </td>
+</tr>
+</table>
+
+
+
+
+
+
+

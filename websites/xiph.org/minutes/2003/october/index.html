@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.9: http://docutils.sourceforge.net/" />
+<title>Minutes of the Xiph.org Monthly Meeting for October 2003</title>
+<meta name="author" content="Carsten Haese" />
+<meta name="date" content="October 14, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="minutes-of-the-xiph-org-monthly-meeting-for-october-2003">
+<h1 class="title">Minutes of the Xiph.org Monthly Meeting for October 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>October 14, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#introduction" id="id1" name="id1">1   Introduction</a></li>
+<li><a class="reference" href="#organizational-update" id="id2" name="id2">2   Organizational Update</a></li>
+<li><a class="reference" href="#mailing-list-reorganization" id="id3" name="id3">3   Mailing List Reorganization</a></li>
+<li><a class="reference" href="#patent-free-definition" id="id4" name="id4">4   Patent-Free Definition</a></li>
+<li><a class="reference" href="#libao-release" id="id5" name="id5">5   libao Release</a></li>
+<li><a class="reference" href="#migration-from-cvs-to-subversion" id="id6" name="id6">6   Migration from CVS to Subversion</a></li>
+<li><a class="reference" href="#vorbis-1-0-1-status-update" id="id7" name="id7">7   Vorbis 1.0.1 Status Update</a><ul class="auto-toc">
+<li><a class="reference" href="#windows" id="id8" name="id8">7.1   Windows</a></li>
+<li><a class="reference" href="#unix-like-platforms" id="id9" name="id9">7.2   Unix-like Platforms</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#speex-update" id="id10" name="id10">8   Speex Update</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1" name="introduction">1   Introduction</a></h1>
+<p>The monthly meeting for October 2003 took place on
+October 5, 2003, at 21:00 UTC in the IRC channel <tt class="literal"><span class="pre">#xiphmeet</span></tt> on
+<tt class="literal"><span class="pre">irc.freenode.net</span></tt>. The
+following people were present, in alphabetical order:</p>
+<ul class="simple">
+<li>Active Participants (IRC nicknames in parentheses)<ul>
+<li>Ralph Giles (rillian)</li>
+<li>Carsten Haese (purple_haese)</li>
+<li>Karl Heyes (karlH)</li>
+<li>Manuel Lora (vanguardist)</li>
+<li>Patrick Mahoney (pfm_)</li>
+<li>Jack Moffitt (jack)</li>
+<li>Monty (xiphmont)</li>
+<li>Stan Seibert (volsung)</li>
+<li>Nathan Sharfi (adiabatic)</li>
+<li>Timothy Terriberry (derf_)</li>
+<li>Jean-Marc Valin (jmspeex)</li>
+<li>Alexander Winston (fedora)</li>
+</ul>
+</li>
+<li>Observers (IRC nicknames)<ul>
+<li>Aram1</li>
+<li>Arc</li>
+<li>JensRex</li>
+<li>JohnV</li>
+<li>KriTip</li>
+<li>mackstann</li>
+<li>maxx`</li>
+<li>menno</li>
+<li>ob1</li>
+<li>PsyQ</li>
+<li>radu</li>
+<li>rpop</li>
+<li>shank_</li>
+<li>SwiftBiscuit</li>
+<li>tangent3</li>
+<li>thread</li>
+<li>utu</li>
+<li>Volcano</li>
+</ul>
+</li>
+</ul>
+<p>The meeting was moderated by Jack Moffitt.</p>
+</div>
+<div class="section" id="organizational-update">
+<h1><a class="toc-backref" href="#id2" name="organizational-update">2   Organizational Update</a></h1>
+<p>Jack kicked off the meeting with the organizational update. He reported that
+Patrick is still looking for a fundraiser to attract donations. Patrick
+explained that the position is hard to fill, but he has at least one
+promising prospect.</p>
+<p>Additional funding would go to expanded operations, more programmers and the
+like, as well as for performing patent searches on Xiph's new codecs such as
+Speex, Flac, and Theora.</p>
+</div>
+<div class="section" id="mailing-list-reorganization">
+<h1><a class="toc-backref" href="#id3" name="mailing-list-reorganization">3   Mailing List Reorganization</a></h1>
+<p>Everybody agreed to restructure the mailing lists as follows: The inactive
+something-announce mailing lists for sub-projects such as cdparanoia will
+be retired and replaced with an all-encompassing <a class="reference" href="mailto:announce&#64;xiph.org">announce&#64;xiph.org</a> mailing
+list. The vorbis-faq mailing list will be retired as well.</p>
+</div>
+<div class="section" id="patent-free-definition">
+<h1><a class="toc-backref" href="#id4" name="patent-free-definition">4   Patent-Free Definition</a></h1>
+<p>There was wide concensus that Xiph.org needs to have some sort of statement
+on the web page that clarifies what exactly we mean when we say that
+Ogg Vorbis, for example, is patent free.</p>
+<p>Since patents are a legal matter, this statement will be prepared with the
+assistance of Xiph.org's lawyer. Because of the need for legal consultation,
+no official statement could be made during the meeting, much to the
+disappointment of several observers who came to the meeting hoping for a more
+immediate resolution. An official statement will be issued in due course, after
+the necessary legal consultation.</p>
+<p>As Timothy explained, Xiph.org is unlikely to be able to address concerns
+regarding specific patents, since only patent lawyers are qualified to determine
+the scope of a patent. Also, since patent opinions that were made for Xiph are
+confidential (presumably because they are legal advice given under the privilege
+of an attorney-client relationship), the only way that a business that's
+interested in Vorbis can be reasonably sure that it is not infringing is by
+paying for a patent opinion themselves, which according to Jack is still
+cheaper than the patent licensing fees of competing codecs.</p>
+</div>
+<div class="section" id="libao-release">
+<h1><a class="toc-backref" href="#id5" name="libao-release">5   libao Release</a></h1>
+<p>With the patent discussion being as complete as it could be in the context of
+this meeting, the discussion was moved on to the release of <a class="reference" href="http://www.xiph.org/ao/">libao 0.8.4</a>.
+Stan had requested to uncouple this release from the stalled Vorbis 1.0.1
+release since libao is independent from Vorbis. Everybody agreed that this is a
+good idea and Stan was given the green light to proceed with the release.</p>
+<p>Ralph asked about the possibility to phase out libao and replacing it with
+<a class="reference" href="http://www.portaudio.com">portaudio</a>. Stan will look into it and decide if it is a viable alternative.</p>
+</div>
+<div class="section" id="migration-from-cvs-to-subversion">
+<h1><a class="toc-backref" href="#id6" name="migration-from-cvs-to-subversion">6   Migration from CVS to Subversion</a></h1>
+<p>Ralph briefly mentioned that we are still intending to move from
+CVS to Subversion. The switch will happen when the cvs2svn export-import
+program works reliably.</p>
+</div>
+<div class="section" id="vorbis-1-0-1-status-update">
+<h1><a class="toc-backref" href="#id7" name="vorbis-1-0-1-status-update">7   Vorbis 1.0.1 Status Update</a></h1>
+<div class="section" id="windows">
+<h2><a class="toc-backref" href="#id8" name="windows">7.1   Windows</a></h2>
+<p>Ralph reported that thanks to a series of patches by John Edwards, the Win32
+build of the Vorbis 1.0.1 release is almost complete. There was, however,
+some confusion about which binaries we should publish. Apparently, the DLLs
+need to be specific to whichever compiler is used to compile the 
+application. It was agreed that we should provide binaries for Visual Studio
+.NET and Visual C++ 6.</p>
+</div>
+<div class="section" id="unix-like-platforms">
+<h2><a class="toc-backref" href="#id9" name="unix-like-platforms">7.2   Unix-like Platforms</a></h2>
+<p>Jack asked about reported build problems on SunOS, HPUX, and IRIX. Unfortunately,
+nobody responded, so the build status on these platforms is still undetermined.
+On FreeBSD, maxx reported build problems that he was trying to resolve. For
+Red Hat systems, shank volunteered to build RPMs.</p>
+</div>
+</div>
+<div class="section" id="speex-update">
+<h1><a class="toc-backref" href="#id10" name="speex-update">8   Speex Update</a></h1>
+<p>For the last agenda item for the meeting, Jean-Marc took over to present an
+update on Speex. He informed us that he has made it his top priority to
+write a fixed-point port of Speex for embedded devices. This port would
+encompass both the decoder and the encoder.</p>
+<p>Jean-Marc asked for suggestions for how he can get funding for this work.
+Suggestions included asking VoIP equipment manufacturers to see if they'd
+be interested, asking for donations that would go towards this project,
+or even setting up a license fee. The license fee would be a one-time fee,
+which would be more competitive than the per-device fees that are customary 
+for competing voice codecs.</p>
+<hr />
+<p>Meeting Minutes for the October 2003 Monthly Meeting</p>
+</div>
+</div>
+</body>
+</html>

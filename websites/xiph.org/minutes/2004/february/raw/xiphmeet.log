@@ -1,0 +1,450 @@
+--- Log opened Thu Feb 05 00:58:43 2004
+00:58 --- Pladask!pladask@storgata.molde.org has joined: #xiphmeet
+00:58 --- Irssi: #xiphmeet: 14 nicks (@/0 +/0  -/0)
+00:58 --- Irssi: Join to #xiphmeet was synced in 2 secs
+00:59 --- thomasvs!~thomas@54.Red-81-38-179.pooles.rima-tde.net has joined: #xiphmeet
+00:59  <thomasvs> hi
+01:00  <rillian> hi thomasvs
+01:00 * thomasvs wipes feet and listens
+01:00  <rillian> Pladask: do we have a log?
+01:00 --- doppler!~doppler@66-90-244-117.dyn.grandenetworks.net has joined: #xiphmeet
+01:01  <Pladask> http://storgata.molde.org/~pladask/xiphmeet.log
+01:01 * doppler checks in, representing sxsw conference
+01:01 --- Company!~Company@p50819226.dip.t-dialin.net has joined: #xiphmeet
+01:01  <rillian> excellent. Hi doppler
+01:02 --- irc.freenode.net changed the topic of #xiphmeet to: Xiph.org February MonthlyMeeting. See http://wiki.xiph.org/MonthlyMeeting200402 for the agenda. Live log at http://storgata.molde.org/~pladask/xiphmeet.log
+01:03 --- Kato!peacef@gaspoda.pod.cvut.cz has joined: #xiphmeet
+01:03 --- oddsock!~oddsock@c-67-167-212-53.client.comcast.net has joined: #xiphmeet
+01:03 --- MikeS!~msmith@CPE-144-137-45-216.vic.bigpond.net.au has joined: #xiphmeet
+01:03  <rillian> hello icecast folks :)
+01:03  <oddsock> hola non-icecast folks
+01:03  <rillian> heh
+01:03  <MikeS> oops. I didn't realise it was 11am already.
+01:03  <xiphmont> OK, so, we're on.
+01:04  <rillian> Ok, shall we start?
+01:04  <rillian> Thanks everyone for coming
+01:04  <xiphmont> Am I running this one or do you want to, Ralph?
+01:04  <rillian> this is our Montly 'organizational' meeting for xiph.org
+01:04  <xiphmont> That answers the question I think :-)
+01:04  <rillian> xiphmont: you're welcome to chair if you like
+01:04 --- nenolod!~nenolod@adsl-67-66-225-52.dsl.tulsok.swbell.net has joined: #xiphmeet
+01:05  <xiphmont> That's fine, just wanted to give you an out if you felt off today.
+01:05  <rillian> jetlag monster doesn't seem to be eating the current hour :)
+01:05  <rillian> So, first item on the agenda:
+01:05  <rillian> Theora and OggFile
+01:05  <rillian> these being generally our highest priority projects
+01:06  <xiphmont> Yes.
+01:06  <xiphmont> My update:
+01:06  <xiphmont> OggFile: docs are in progress.  whan I have a first draft it will be posted.
+01:06  <xiphmont> Theora: I no longer believe it should wait for Oggfile.  We should make a full release when Ralph calls it ready.
+01:06  <rillian> I agree
+01:06  <xiphmont> To you, Ralph.
+01:07  <rillian> for my part, I've done no new work on theora
+01:07  <rillian> been busy moving and with family stuff
+01:07  <derf_> I fixed up the supra-threshold quantization matrices that were holding up the show last time in my experimental encoder.
+01:07  <derf_> But I haven't gotten to the rest of the show yet.
+01:07  <xiphmont> (I've had a theatre show myself.  I just turned down requests to be in/work on the next two shows, so no more distraction from that_
+01:08  <rillian> xiphmont: glad you'll have more time
+01:08  <rillian> I should also be free from now on
+01:08  <rillian> xiphmont: any guess when we'll see your documentation?
+01:09  <xiphmont> If I don;t have a complete draft of continuous/discontinuous in a week, I'll post a draft for comments.
+01:09  <rillian> ok, great
+01:09  <xiphmont> (along with metaheader_
+01:09  <xiphmont> )
+01:09  <rillian> (eww :)
+01:10  <xiphmont> I'm not wedded to it.
+01:10  <rillian> todo for theora is the same
+01:10  <rillian> if anyone knows a technical writer than can help with constructing a spec from the reference implementation, please send them our way
+01:10  <xiphmont> Do we have a spec from Dan and modifications in progress for Theora changes yet?
+01:10  <xiphmont> Ah, that answers that.
+01:10  <derf_> Yeah, I'd hate to see the progress on our low-priority projects.
+01:11  <rillian> we may have a little bit of funding for that work if that helps anyone be interested :)
+01:11  <rillian> Ok, I think that does it.
+01:11  <xiphmont> actually, low priority stuff has gotten more attention that warranted.
+01:11  <xiphmont> than
+01:11  <Arc> rillian I volunteered to continue Dan's python doc implementation, but I need some major hand-holding from someone that knows Theora
+01:11  <rillian> not on the agenda, but can the icecast folks give an update on the recent release(s)
+01:11  <oddsock> sure
+01:12  <rillian> Arc: ok, lets work on it together then
+01:12  <oddsock> our release has gone very smoothly, no major bugs found so far
+01:12  <oddsock> we are moving on to bigger and better things too..with hopefully another release soon on the horizon
+01:12  <rillian> icecast 1.1, you mean?
+01:12 --- Irssi: #xiphmeet: 21 nicks (@/0 +/0  -/0)
+01:12  <rillian> what are the major new features?
+01:13  <oddsock> yes, 1.1...
+01:13  <xiphmont> I actually have a segue on that topic toward Helix discussion when we get to it.
+01:13  <MikeS> KarlH is also doing ices2 betas, they seem good/stable, and 2.0 should be released fairly soon.
+01:13  <MikeS> 2.1, not 1.1...
+01:13  <oddsock> the major features are Client authorization and burst-on-connect
+01:13  <rillian> er, 2.1, sorry
+01:13  <oddsock> MikeS: yes, 2.1 :)
+01:13  <MikeS> and fallbacks that do useful things (which allows much more complex setups to work sanely)
+01:14  <xiphmont> oddsock: does ICY give you a way to determine client prebuffer size?
+01:14  <oddsock> xiphmont: not currently...
+01:14  <xiphmont> And your answer implies that you are planning to extend?
+01:15  <xiphmont> (because prebuffer burst on connect makes no sense unless you know)
+01:15  <xiphmont> well, less sense.
+01:15  <oddsock> well, there was a grand vision to try to determine that dynamically in conjunction with something like peeling
+01:16  <xiphmont> I suppose you could, but that will be far less robust than just having the client tell you.
+01:16  <oddsock> well, our approach for the burst on connect is to have it config file specifiable, which allows for tweaking depending on your bitrate that your sending..
+01:16  <MikeS> xiphmont: our protocol is not ICY in icecast2, it's HTTP. We could add some optional nonstandard headers, though.
+01:16  <xiphmont> Ahhh.. Didn;t know ICY got dumped.
+01:16  <oddsock> the problemm, is that we cannot control what the clients send as a general rule..
+01:17  <xiphmont> I run with different buffer sizes depending on how bad the net is being that night.
+01:17  <MikeS> xiphmont: well, ICY was more or less HTTP anyway. The reasons for using 'real' HTTP seemed good, given that ICY gave the clients nothing extra over it.
+01:17  <Arc> why couldnt you just, by default, assume an average value?
+01:17  <oddsock> Arc: that is what we are essentially doing...
+01:17  <oddsock> although Karl could probably desribe the approach in more detail
+01:17  <Arc> if its too high it'll just lag behind a little more time-wise, if it's too small it'll still help get started sooner.
+01:18  <xiphmont> because if you burst too much, the client won't swallow it.  If you burst too little, you wait anyway.
+01:18  <MikeS> but yes, defining some headers and reading them when present to set this would make sense. We could throw an implementation into a couple of clients, and ask some of the others (like the winamp people, but I don't hold much hope there...) to add something as well
+01:18  <xiphmont> OK, this has become technical and should go offline.
+01:18  <oddsock> :)
+01:18  <xiphmont> Sorry, my fault, I started it.
+01:18  <rillian> 's alright
+01:18  <rillian> So, next item
+01:19  <rillian> monty: tell us about real, and specifically helix
+01:19  <Arc>  
+01:20  <xiphmont> To start.... I was asked explicitly by Real, "So... given the Helix streaming server and the fact we're allying closely, are you still going to continue Icecast?"
+01:20  <vanguardist> O_o
+01:20  <xiphmont> (The answer was "Hell, yeah" in case anyone was worried)
+01:20  <rillian> of course
+01:21  <thomasvs> xiphmont: out of curiosity, how closely are you allying ?
+01:21  <xiphmont> Different niche, different intended application, and code diversity is good regardless.
+01:21  <xiphmont> thomasvs: not clear yet, but we've committed to contributing to Helix across the board.
+01:22  <xiphmont> Helix is intended to be the foundation of all of the next generation of Real's products.  It already is a substantial part of it.
+01:22  <thomasvs> xiphmont: where contributing means "making sure all xiph codecs have good support in helix" ?
+01:22  <thomasvs> xiphmont: or more than that ?
+01:22  <xiphmont> For one thing, Ogg in the Helix player now means it will be standard in the next version of all the Real player platforms.
+01:22  <xiphmont> thomasvs: it mostly means that.
+01:22  <volsung> xiphmont: Is this like a Mozilla->Netscape relationship?
+01:23  <MikeS> helix/real and icecast are very, very different. icecast doesn't scale big, but is meant to be fairly easy to set up and use for simple things. And it does that fairly well.
+01:23  <rillian> for those who haven't heard, real has given us some funding and is working on integrating the vorbis and theora in their Helix player.
+01:23  <xiphmont> Somewhat... but it's more 'the core technology is now a commodity'.  Real the company continues and Helix is the code foundation for which Real sells services.
+01:23  <MikeS> err.. sorry, I'm a bit behind, looks like that was covered already.
+01:24  <MikeS> We (icecast) definately have no intention of competing in the real/helix space - it's just too big a task for us. 
+01:24  <xiphmont> For example the current Real Helix player will be the next normal RealPlayer when it's finished.
+01:25  <rillian> and that's a very good thing for vorbis support
+01:25  <Arc> MikeS, plans are still on to add Theora support to Icecast, right?
+01:25  <rillian> Arc: yes
+01:25  <rillian> Any other questions wrt real or helix?
+01:26  <xiphmont> Anyway, the relationship with the Helix group is quite good right now, and getting into bed to an extenmt with Helix and RedHat is likely in the works.  
+01:26  <xiphmont> (Don;t worry; I'm still going to be a Debian user)
+01:26  <volsung> Red Hat?
+01:26  <volsung> It's a threesome now?
+01:26  <xiphmont> Yes.  RedHat considers media a priority for completing the Desktop.
+01:27  <volsung> Nice.
+01:27  <xiphmont> ...and IBM is likely to come to that party too.
+01:27  <rillian> excellent
+01:27  <MikeS> Arc: there are no specific plans to do so. There are general plans to support whatever formats people want. Adding theora support would not be difficult - the vast majority of the complexity for doing that is in the source client.
+01:27  <derf_> Very interesting, given IBM's normal stance on patents.
+01:28  <xiphmont> Anyway, I'm done here.
+01:28  <rillian> Next item: Vorbis 1.0.2
+01:28  <rillian> what's on the todo list there
+01:28  <rillian> as far as I know:
+01:28  <xiphmont> OK.  We've let release machinery gather dust between releases for the past year.
+01:28  <MikeS> derf_: IBM's normal stance on patents appears (in recent times) to be "We'll get as many of them as possible, but for open source stuff we're happy to license them freely" (as far as I can tell)
+01:28  <xiphmont> I want to get back into release early/often.
+01:29  <rillian> static linking doesn't work on macosx anymore, so we have to not try doing that
+01:29  <xiphmont> ...that partially means getting a release team together... and having them working most of the the time.
+01:29  <xiphmont> It's mostly about build system and making sure it actually works.
+01:29  <rillian> xiphmont: are your cbr changes done?
+01:29  <xiphmont> Yes.
+01:29  <xiphmont> Have been since beginning of the year.
+01:30  <rillian> anything else that needs to go in, aside from the packaging?
+01:30  <vanguardist> did this cbr addition imply a tweak to oggenc or its docs?
+01:30  <thomasvs> xiphmont: if you guys need help on build system/maintenance, let me know
+01:30  <MikeS> vanguardist: yes, and yes. 
+01:30  <xiphmont> I tweaked the manpages.
+01:30  <MikeS> Monty did both.
+01:30  <xiphmont> Yes
+01:30  <rillian> would be nice to get the libogg bugcount down, but that can happen independently
+01:30  <rillian> thomasvs: do you have something that works on win32? that's our major weakness
+01:30  <xiphmont> We don;t need in-house builds for all subminor releases, but it can't hur t if the volunteers are there.
+01:30  <vanguardist> there were also issues with freebsd and flac
+01:30  <MikeS> thomasvs: we'd LOVE some help - getting autotools to work reliably across a wide range of systems really requires a guru, and we don't have one who has time to do anywhere near enough.
+01:31  <xiphmont> releases consist of:
+01:31  <Company> are you considering using pkgconfig for ogg, vorbis and so on?
+01:31  <rillian> vanguardist: right
+01:31  <xiphmont> build system testing
+01:31  <thomasvs> rillian: sadly, win32 isn't in my skillset 
+01:31  <xiphmont> packaging (Win32, MacOSX, Linux Debian/RedHat)
+01:31  <MikeS> rillian: well... win32 is just done completely seperately. Our autotools build system is pretty broken in 1.0.1, by all reports...
+01:31  <xiphmont> webpage updates.
+01:31  <thomasvs> MikeS: I've gotten to know a huge bit of autotools, so willing to look at it, for sure
+01:31  <MikeS> Company: I believe we already do, in 1.0.1
+01:31  <xiphmont> OK
+01:32  <vanguardist> oddsock handled win32 last time around and it seemed fairly successful :)
+01:32  <oddsock> yes, but not terribly repeatable and automatable
+01:32  <purple_haese> oddsock and Case
+01:32  <MikeS> thomasvs: thanks. We can take detailed discussion of this offline (i.e. not in the meeting), but we'd very much appreciate that.
+01:32  <xiphmont> Some amount of organization is needed for this.  And we need a release engineer at the top that own the process and makes sure it doesn;t stall.
+01:32  <Company> MikeS: oh right, cool
+01:32 * Company will post a patch to add it to theora then
+01:32  <xiphmont> Jack was release engineer; I can take that over, but I'm missing much of the cross-platform chops he has.
+01:32  <MikeS> I've heard a couple of bugs with the win32 project files in cvs. mostly "it doesnt' build out-of-the-box" variations.
+01:33  <oddsock> I'd like to suggest that whoever has responsibility there also consider icecast as well
+01:33  <xiphmont> we still have the 'dynamic libs just don't work when linked' problem in win32.
+01:33  <oddsock> since we are all under the same umbrella
+01:33  <MikeS> Company: pkgconfig doesn't add anything particularly useful for us in ogg and vorbis, but it doesn't hurt either. 
+01:33  <xiphmont> Release Engineer requires some real work.
+01:33  <xiphmont> Jack was ideal.
+01:33  <rillian> yes. he was.
+01:33  <vanguardist> heh
+01:34  <Misirlou> Did he turn into a hippie? What happened?
+01:34  <rillian> well, am I elected then?
+01:34  <Company> MikeS: gstreamer's configure looks much nicer and simpler with pkgconfig... ;)
+01:34  <volsung> Left us for Hungary.
+01:34  <xiphmont> He's studying math in Hungary.
+01:34  <volsung> (For a semester)
+01:34  <volsung> He's mainly studying Hungarian right now.  :)
+01:34  <rillian> oddsock and karlH have done a fine job on icecast, I think
+01:34  <xiphmont> I agree.
+01:34  <rillian> and I'm happy to continue doing theora
+01:35  <xiphmont> I don;t mind splitting RE for icecast/ogg so long as there communication between the groups and a person definately owns the release process for each.
+01:35  <xiphmont> But we need a crossplatform release team, because we have work to keep them busy now.
+01:35  <rillian> I'd be willing to take responsibility for ogg as well, since that's so relevent to the vorbis work
+01:36  <jmspeex> Speaking of Win32 builds, would be nice to have someone taking care of Speex.
+01:36  <xiphmont> I'm happy to hand it off... and I think you'll be better at it too.
+01:36  <rillian> ok. it's just vorbis that feels like an 'extra' thing
+01:36  <oddsock> jmspeex: I suppose that would be me then :)
+01:36  <xiphmont> Yes, I want active RE for all projects.
+01:36  <rillian> oddsock: do you want to work together as a release team for all the xiph stuff?
+01:37  <jmspeex> oddsock: That would be nice. The Win32 projects for 1.1.x are completely outdated.
+01:37  <oddsock> rillian: work together is fine... work alone...umm..no :)
+01:37  <rillian> well, I think monty's right that having a team is really what we need
+01:37  <xiphmont> OK, that takes RE off my plate... and brings up Web Site.  Boy is xiph out of date.
+01:37  <rillian> none of us cover all the important platforms
+01:38  <xiphmont> You're taking RE, I will own making the website not suck in the next month.
+01:38  <xiphmont> I may not do the work (although I'll probably be doing copy), but I will own the update.
+01:38  <rillian> jmspeex: btw, is 1.1.x stable or still under active development? I noticed the apis aren't compatible
+01:39  <xiphmont> Ogg/Vorbis-wise, I want to see a subminor release (at least) roughly monthly this year, getting back to the original schedule.
+01:39  <jmspeex> rillian: 1.1.x is the unstable branch (will become 1.2) and is still under development. I broke the API only to remove all float's from it (so that the fixed-point version can have the same API as the float version)
+01:39  <rillian> jmspeex: ok, thanks
+01:39  <xiphmont> And although "It's nice to want things" I know I can keep up on the dev side of that ;-)
+01:40  <rillian> xiphmont: ok, you're in charge of the website still
+01:40  <rillian> that's not on the agenda this time
+01:40  <rillian> do we want to talk about it?
+01:40  <xiphmont> No.
+01:40  <rillian> jack, adiabatic and I all worked on this a bit last year
+01:40  <xiphmont> I know what's wrong with it.
+01:40  <jmspeex> rillian: However, I consider 1.1.x to be quite usable. 
+01:40  <xiphmont> Vorbis.com is not out of date, it's just... a bit too hard to navigate.
+01:41  <MikeS> I have another thing to mention about icecast when we've finished this topic, by the way
+01:41  <xiphmont> Xiph.Org has, over the past six years, become impossibly tangled.
+01:41  <rillian> but basically we came up with "none of us have the artistic talent, or a volunteer with same, to do a competent redesign"
+01:41  <rillian> just updating the content is the current framework would be fine though :)
+01:41  <xiphmont> Yes, but I have a graphic designer here who's offered to do it if I write copy.
+01:41  <xiphmont> She did our SCALE flyers.
+01:41  <xiphmont> So, a look update is not extra work on me.
+01:42  <Arc> she the same as designed the Ogg logos for hardware players?
+01:42  <rillian> xiphmont: aha. I'll look forward to seeing that then
+01:42  <xiphmont> She offered; I did not ask for it yet.  I dropped that ball (making a note)
+01:42  <rillian> is this to be a unified website for all the codecs?
+01:42  <Misirlou> What happened of the new Web site that adiabatic and jack worked on?
+01:42  <rillian> or just xiph.org as an organization
+01:42  <xiphmont> Misirlou: that was icecast I thought
+01:43  <MikeS> There is a new icecast website, it was not adiabatic/jack's work. Mostly oddsock.
+01:44  <oddsock> I asked adiabatic about the new site before I did the icecast one..
+01:44  <rillian> indeed
+01:44  <xiphmont> Eh, we'll have unified elements, but not unified websites.
+01:44  <xiphmont> I expect.
+01:44  <oddsock> and I got the impression that it was going to be a LONG time
+01:44  <rillian> ok. I'll keep theora.org on the todo list then
+01:44  <oddsock> and I got tired on manually editing the files, so I wrote what I did..
+01:44  <xiphmont> I'm more concerned about function.  Functionally, current site sucks.
+01:44  <rillian> Ok. so to sumarize this thread:
+01:44  <xiphmont> (xiph.org)
+01:45  <xiphmont> icecast looks/works pretty damned well right now.
+01:45  <rillian> monty would like to return to a monthy release schedule for the ogg vorbis code
+01:45  <oddsock> thanks! :)
+01:45  <rillian> oddsock, rillian, and whoever else can reliably contribute will try and work as a release team
+01:45  <MikeS> There are some details of the icecast website that could do with some 'tuning', but it's 99% there (and it's WAY better than the previous one)
+01:45  <rillian> to hammer out the cross-platform issues
+01:45  <rillian> and handle all the xiph.org project releases
+01:46  <Misirlou> Here it is (took me awhile to remember it): <http://www.cantcode.com/>
+01:46  <rillian> monty will work on a revamp of www.xiph.org
+01:46  <xiphmont> yah.
+01:47  <rillian> Ok.
+01:47  <rillian> Vorbis 1.1
+01:47  <rillian> what are the goals for this?
+01:47  <xiphmont> Heh
+01:47  <Misirlou> Is the revamp going to be based off of that?
+01:47  <xiphmont> I think priomary goal right now is to KEEP PEOPLE FROM OBSESSING OVER THE SIGNIFICANCE OF TOTALLY ARBITRARY NUMBERINGS FOR RELEASES.
+01:47  <xiphmont> :-)
+01:48  <vanguardist> *gasp*
+01:48  <rillian> hehe
+01:48  <rillian> sounds good
+01:48  <rillian> Next item then
+01:48  <rillian> Vorbis II
+01:48  <xiphmont> OK, so, the only significant change in my thinking was that 1.1 would include, possibly, a minor spec change but a change nonetheless.
+01:49  <rillian> a poster asks if that could delay adoption
+01:49  <xiphmont> Then I thought, "Well, hell, if I'm goign to change spec, we might as well just get on with Vorbis II and quit pussyfooting".
+01:49  <rillian> I think the answer is 'no, that's why we're willing to break backward compatibility"
+01:50  <xiphmont> Basically.
+01:50  <rillian> I agree we should change it or don't
+01:50  <rillian> But oggfile first, eh?
+01:50  <xiphmont> yeah
+01:50  <rillian> Ok, SXSW
+01:50  <rillian> a bunch of us are going
+01:50  <MikeS> Was the intent with the spec changes a) additions only, b) removal of obsolete features only, or c) both?
+01:50  <rillian> vanguardist: want to tell us what we'll be doing there?
+01:51  <Arc> what is SXSW?
+01:51  <xiphmont> the original change I wanted was an addition.
+01:51  <vanguardist> South by Southwest is a film/interactive/music festival held annually in Austin.
+01:51  <xiphmont> in Vorbis II I want c)
+01:51  <MikeS> ok
+01:51  <jmspeex> xiphmont: So in the end, what are you going to do?
+01:52  <rillian> http://www.themusic.com.au/sxsw/show.html
+01:52  <rillian> (not sure if that's the official website)
+01:52  <xiphmont> I will do what makes the most sense at the time.
+01:52  <vanguardist> no, it's www.sxsw.com
+01:52  <rillian> aha
+01:52  <xiphmont> For now, several new features/improvements require no spec change; I will continue with them in VI.
+01:53  <Misirlou> Vorbis 6, or Vorbis I? :)
+01:53  <vanguardist> Well, we have a booth for the music festival :)
+01:53  <xiphmont> VorbisI
+01:53  <xiphmont> OK, SXSW
+01:54  <volsung> Uh, I guess I'll explain some of what's going on.  :)
+01:55  <volsung> Since no one is saying anything.
+01:55  <volsung> The current plan is to have a Xiph.org booth at the trade show part of SXSW that runs Thurs-Sat during the week of the show.
+01:55  <volsung> The SXSW crew seem to be really enthusiastic about us coming.
+01:56  <vanguardist> doppler has been very helpful btw
+01:56  <volsung> vanguardist has been working up a budget and looking at paperwork stuff.
+01:56 --- thomasvs is now known as thomasvz
+01:56  <vanguardist> The paperwork is mostly done. The booth has been reserved and is ready to go for setup all day Wednesday and until noonish on Thursday.
+01:57  <volsung> So far the crew will be: Monty, vanguardist, pfm (I think), and me.
+01:57  <volsung> Anyone else I missed?
+01:57  <xiphmont> dates for the purposes of the log?
+01:57  <vanguardist> They do want a thirty word description of the company/organization as well as possible art for their brochures. This has been sent to xiphmont.
+01:57  <xiphmont> yes, I saw it.
+01:57 * volsung fires up iCal.
+01:57  <vanguardist> (btw, they need that stuff quickly)
+01:57  <xiphmont> I had to do that online and haven't been online until now for the meeting.
+01:58  <xiphmont> Will be done tonight
+01:58  <doppler> xiphmont: plus i'm adding 'special event' scheduling to that app here in a bit, btw
+01:58  <vanguardist> alright
+01:58  <volsung> Trade show runs Thur, March 18 through Sat, March 20.
+01:58  <vanguardist> the dates are 18th-20th
+01:58  <vanguardist> thought there might be some stuff on sunday 21st
+01:58  <vanguardist> but the expo part is done saturday
+01:58  <doppler> not tradeshow-related on sunday. just barbeque and softball
+01:58  <volsung> The plan would be to setup Thursday morning before 11am, and teardown at 4 pm Saturday.
+01:59  <vanguardist> doppler: thanks :)
+01:59  <xiphmont> w00t!
+01:59  <vanguardist> hhmm bbq...
+01:59  <Misirlou> Barbeque . . . I'm hungry.
+01:59  <MikeS> ok, can I mention something else on icecast now? 
+01:59  <rillian> doppler: and you're arranging webcasting?
+01:59  <volsung> It looks like we'll have two iBooks and a Powerbook at the booth, so hopfully we can do some demos.
+01:59  <vanguardist> heh
+02:00  <MikeS> "No really, it works on non-mac systems as well!"
+02:00  <doppler> my pet project at sxsw is utilizing ices/icecast to broadcast live from up to ten music venues.
+02:00  <volsung> I'm planning to bring an "autonomous power source" sufficient to drive that in case no power is available.
+02:00  <rillian> doppler: in vorbis, I hope?
+02:00  <xiphmont> ...macs, all running Linux
+02:00  <vanguardist> volsung: will we need radiation protection?
+02:00  <volsung> vanguardist: No Mr. Fusion.  Sorry.
+02:00  <doppler> last year, we barely pulled it off, and still got /.ed. recorded over 14,000 hits to the streams in just over 3 hours.
+02:00  <vanguardist> fair nuff
+02:01  <doppler> this year, we're using donated PCs running linux, and less wi-fi and more landline to connect the ices boxen to the server.
+02:02  <volsung> doppler mentioned to me that we'll be needing some sort of fallback mechanism/load balancing for the server part of this setup.
+02:02  <volsung> I saw mention of fallback stuff in the icecast 2.1 discussion earlier.  Will that be stable by March?
+02:03  <MikeS> the fallbacks stuff (there was some in 2.0, but it was hard to use usefully) should be stable now, but I'm not sure why that's relevant.
+02:03  <doppler> this year, sxsw is going to press regarding this project, and we'd like to see it come off with as few failures as possible :)
+02:04  <xiphmont> Anything more for SXSW?
+02:04  <doppler> ya. you owe me a beer :)
+02:05  <Misirlou> ha :)
+02:05 * doppler heads out to nuclear taco night
+02:05  <rillian> Ok. MikeS had another issue?
+02:05  <MikeS> yeah
+02:05  <vanguardist> rillian: are you going?
+02:05  <doppler> i'm over on #sxsw irc.distributed.net if anyone's got questions.
+02:05  <rillian> vanguardist: I'm not. sorry.
+02:05  <rillian> doppler: thanks
+02:05 --- doppler!~doppler@66-90-244-117.dyn.grandenetworks.net has quit: "in transit"
+02:05  <MikeS> Ok, someone contacted us (team@icecast.org) yesterday or today, interested in getting us to do some (paid) development for some icecast customisation.
+02:05  <vanguardist> (ok. pfm mentioned that he might want to go)
+02:06 --- Irssi: #xiphmeet: 20 nicks (@/0 +/0  -/0)
+02:06  <MikeS> Significant changes involved - it sounds like he wants icecast to be able to do video streaming over an ad-hoc wireless net. 
+02:06  <MikeS> So, we have to decide if any of us a) is interested, and b) has the time to do this. 
+02:06  <xiphmont> BTW, I have an off-agenda item.
+02:07  <xiphmont> (Don;t close the meeting until that :-)
+02:07  <rillian> xiphmont: ok
+02:07  <MikeS> It sounds like he might have fairly substantial funding. 
+02:07  <rillian> MikeS: what stream format? would the work be open source?
+02:07  <MikeS> (we had a brief irc conversation yesterday, I asked him to send us stuff via email, I only read the email midway through this meeting, so I'm not sure of all the details).
+02:08 --- Garf!giancarlo@d51A4DB66.kabel.telenet.be has quit: "Meep!"
+02:08  <MikeS> rillian: To Be Determined, I guess. I don't think think the video format was decided on, we might be able to get some theora stuff there? Open source: icecast is GPL, so that would be a requirement on our side, we'd obviously have to clear that with these guys - the discussion hasn't gone anywhere yet. 
+02:09  <rillian> ok. so you're looking for bodies at this stage
+02:09  <rillian> anyone here interested in particular?
+02:09  <MikeS> well, this came up sort of mid-way through the meeting, so I don't really know. I thought it was worth bringing up as a potential source of funding for some people here to do a bit of work.
+02:10  <Arc> interested in what? I'm totally confused as to what is being discussed
+02:10  <rillian> doing paid customization work on icecast
+02:10  <Arc> to get theora support in it?
+02:10  <MikeS> Arc: some paid work on icecast, to make it able to do some video streaming stuff in a wireless/adhoc network
+02:10  <MikeS> possibly using theora - no details yet
+02:11  <xiphmont> It sounds like gathering requirements is first step.
+02:11  <Arc> I may be interested.  I was looking to do this a few months ago, and am familiar enough with libtheora's api...
+02:11  <Misirlou> Ad-hoc mode as opposed to infrastructure mode in 802.11x?
+02:11  <MikeS> Right. I didn't want to leave this for another month to discuss, though - so I thought I'd mention it briefly.
+02:11  <MikeS> Misirlou: roughly, yes. Apparently not 802.11x, though.
+02:12  <Misirlou> Ahh, I see.
+02:12  <rillian> Ok. perhaps that discussion can continue in icecast
+02:12  <rillian> MikeS: thanks for letting us know
+02:12  <rillian> funding opportunities are always good
+02:12  <MikeS> ok. Monty, you had something?
+02:12  <xiphmont> Yes.
+02:12  <rillian> especially if we can keep the code open
+02:12  <rillian> xiphmont: go ahead
+02:13  <xiphmont> The "Xiph as a standards body" discussion is still open.  This mostly only means anything to folks within Xiph.
+02:13  <xiphmont> I still own the task and I'm still researching after letting it sit most of last year.
+02:13  <rillian> anything new?
+02:14  <xiphmont> Basically a ping from Brett McDowell.
+02:14  <xiphmont> I've had my fist convincing data that if we throw a standards body forum 'party' several attendees will show up.  But I need to now make explicit pings about it.
+02:15  <xiphmont> That's all.
+02:15  <jmspeex> xiphmont: not sure I'm following here.
+02:16  <xiphmont> There's discussion about formind a standards body around Ogg in the IEEE-ISTO.
+02:16  <rillian> the general idea monty's talking about is that, since what we really do is design multimedia standards
+02:16  <rillian> we could form a traditional 'standards body'
+02:16  <derf_> As long as no one has to pay money to get copies of our "standards"...
+02:17  <rillian> selling 'committee memberships' as a way of achieving funding commitments from large organizations that want to support our work
+02:17  <Arc> what would this look like as far as Xiph's relationship to IEEE
+02:17  <xiphmont> It involves no change to the distribution of Ogg.
+02:17  <jmspeex> xiphmont: And Xiph.org would be the main org in it? (sort of like competition for MPEG?)
+02:17  <derf_> Excellent.
+02:17  <Arc> correct me if I'm wrong, but isnt the IEEE like the premier org which has helped corps push their patented ideas as industry standards?
+02:18  <xiphmont> That's what the vast majority of 'standards' bodies do.
+02:18 --- Prentice!~kjoonlee@218.155.76.135 has joined: #xiphmeet
+02:18  <rillian> that doesn't mean we can't reverse the polarity
+02:18  <jmspeex> I'm pretty sure this could be interesting on the patent front: we could say that those who are members of the org need to let us know of patents they own when we're designing something new.
+02:18  <Arc> xiphmont, so what would "Ogg in the IEEE-ISTO" look like...
+02:19  <xiphmont> That's not set.
+02:19  <xiphmont> However it ends up, it consists of giving up some control; I do believe that to be a good thing nearly across the board.
+02:19  <jmspeex> Arc: I think IEEE is better than most orgs like that (like ITU, MPEG, ...)
+02:20  <rillian> (ISO)
+02:20  <rillian> Ok. as a final item,
+02:20  <rillian> purple_haese would like to pass on the ogg traffic job
+02:20  <rillian> if anyone's interested in taking over, please get in contact with him
+02:21  <rillian> That's everything on the agenda
+02:21 --- hafree!hafree@smoothbeats.com has joined: #xiphmeet
+02:21  <rillian> so I propose we close the meeting
+02:21  <hafree> yay just in time.
+02:22  <rillian> Ok. Meeting adjourned!
+02:22  <Misirlou> heh
+02:22  <rillian> Thanks everyone for coming
+02:22  <rillian> hope we see you again next month
+02:22  <Arc> Wednesday again?
+02:22  <rillian> we now return the channel to informal discussion
+02:22  <rillian> Arc: that's the default
+02:22  <rillian> given that no time is good for everybody, it's been suggested we move it around a bit
+02:23  <Arc> cool. I'll be less likely to have to attend from a streaming machine at a live show :-P
+02:23  <xiphmont> we could do that.
+02:23  <Misirlou> The next Wednesday is 2004-03-03.
+02:23  <xiphmont> I do like Wed. Night.
+02:23  <rillian> we could also vary the time
+02:24  <derf_> Just as long as it's not Tuesdays.
+02:24  <rillian> this seems to be the best in terms of global attendence
+02:24  <rillian> but given that not everyone makes it every time anyway...
+02:24  <Misirlou> Well, the next Wednesday is actually seven days from now, but please don't hurt me. :)
+02:25  <xiphmont> Unlike the stereotypical hacker, my weekend nights are usually packed.

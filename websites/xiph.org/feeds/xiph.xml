@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<rss version="2.0"> 
+<channel> 
+<title>Xiph.Org Project News</title>
+<description>The Latest News from Xiph.Org</description>
+<link>http://www.xiph.org/</link>
+
+<item>
+<category>Ogg Traffic</category>
+<title>Ogg Traffic for June 24, 2003</title>
+<link>http://www.vorbis.com/ot/20030624.html</link>
+<description>Neuros, Theora, Speex, and more</description>
+</item>
+
+<item>
+<category>Ogg Traffic</category>
+<title>Ogg Traffic for June 3, 2003</title>
+<link>http://www.vorbis.com/ot/20030603.html</link>
+<description>Lots of little updates all across the board: NeuRosetta, Positron, Speex, Icecast, and Theora</description>
+</item>
+
+<item>
+<category>Ogg Traffic</category>
+<title>Ogg Traffic for May 14, 2003</title>
+<link>http://www.vorbis.com/ot/20030513.html</link>
+<description>Special anniversary edition of Ogg Traffic; May monthly meeting.</description>
+</item>
+
+<item>
+<category>Ogg Traffic</category>
+<title>Ogg Traffic for April 29, 2003</title>
+<link>http://www.vorbis.com/ot/20030429.html</link>
+<description>Tremor memory usage goes down, appending one Ogg file to another, and RSS.</description>
+</item>
+
+<item>
+<category>Ogg Traffic</category>
+<title>Ogg Traffic for April 15, 2003</title>
+<link>http://www.vorbis.com/ot/20030415.html</link>
+</item>
+
+<item>
+<category>Speex</category>
+<category>Press Releases</category>
+<title>Speex Goes 1.0; Xiph.Org now a 501(c)3 Non-Profit Organization</title>
+<link>http://www.xiph.org/press/2003/nonprofitspeex1/</link>
+</item>
+
+</channel>
+</rss>

@@ -1,0 +1,518 @@
+<title>  CDDA Paranoia Troubleshooting </title>
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+<body bgcolor="#ffffff" link="#4b8b8b" vlink="#208b8b">
+
+<!-- topbanner table ************************************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%"><tr>
+<td bgcolor="#ffffff" valign=top align=right width=433 rowspan=3><a 
+href="logo.jpeg"><img src=parabanner2.gif 
+alt="The Laser Playback Head of Omniscience" 
+width=433 height=72 border=0></a></td>
+<td width="100%" bgcolor="#ffffff" valign=top height=35><img border=0 
+src=bannerspace1.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#2a2a2c" valign=top height=20><img 
+src=bannerspace2.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#ffffff" valign=top><img src=bannerspace3.gif 
+alt=""></td>
+</tr>
+</table>
+<!-- topbanner table done ******************************************** -->
+
+
+
+<!-- main body (with sidemenu) table ********************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td valign=top width=132 bgcolor="#ad9164"><img 
+src=bartop.gif border=0 width=132 height=18 
+  alt=""><a href="index.html"><img 
+src=cdbar.gif border=0 width=132 height=18 
+  alt=""></a><a href="news.html"><img 
+src=news.gif border=0 width=132 height=18 
+  alt=""></a><a href="faq.html"><img 
+src=faq.gif border=0 width=132 height=18 
+  alt=""></a><a href="down.html"><img 
+src=cddown.gif border=0 width=132 height=18 
+  alt=""></a><a href="links.html"><img 
+src=resource.gif border=0 width=132 height=18 
+  alt=""></a><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""><img 
+src=bartop.gif border=0 width=132 height=18 alt=""><a href="doc.html"><img 
+src=document.gif border=0 width=132 height=18 
+  alt=""></a><br>&nbsp;<br><a href="manual.html"><img 
+src=manual.gif border=0 width=132 height=18 
+  alt=""></a><a href="prog.html"><img 
+src=prog.gif border=0 width=132 height=18 
+  alt=""></a><a href="trouble.html"><img 
+src=trouble.gif border=0 width=132 height=18 
+  alt=""></a><a href="tech.html"><img 
+src=tech.gif border=0 width=132 height=18 
+  alt=""></a><a href="bugs.html"><img 
+src=bug.gif border=0 width=132 height=18 alt="">
+</td>
+
+<td rowspan=2><img src=sidespacer4.gif width=18 alt=""></td>
+
+<td valign=top width="100%" rowspan=2>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<center>
+    <H1><font color="#6b6b6b">paranoia:</font> 
+        <font color="#000000">troubleshooting</font></h1>
+
+<strong>"You keep saying that word.  I do not think it means what you think it 
+means."</strong><br>--Inigo Montoya, <em>The Princess Bride</em>
+
+<p>
+
+[ <a href="index.html">home</a> |
+<a href="news.html">news</a> |
+<a href="faq.html">faq</a> |
+<a href="down.html">download/cvs</a> |
+<a href="links.html">links/resources</a> |
+<a href="doc.html">documentation</a> ]
+</center>
+<hr>
+
+<p align=left>
+December 14, 1999
+<p align=left>
+<!-- body or table of contents -->
+
+
+This document describes common problems using cdparanoia.  Note that
+"troubleshooting" addresses examples of system setup or 'pilot error'.
+Bugs in Paranoia are documented elsewhere (on the <a
+href="bugs.html">bugs page</a>).
+
+<h1>Table of contents</h1>
+<ol>
+
+<li><a href="#ldso">"./cdparanoia: error in loading shared libraries..."</a><p>
+
+<li><a href="#gendev">Cdparanoia says "could not find generic device to match SCSI cdrom device"</a><p>
+<li><a href="#noise">Cdparanoia produces a .WAV file, but it's garbage when I play it back.</a><p>
+<li><a href="#underrun">(Linux) My ATAPI drive is *very* slow and /var/log/messages contains hundreds of "data underrun" messages</a><p>
+<li><a href="#eightsec">(Linux) My ATAPI performance is poor; cdparanoia is slower than cdda2wav</a><p>
+<li><a href="#exslow">Extraction is very slow; the CDROM is accessed only occasionally and CPU usage is 100%</a><p>
+<li><a href="#repslow">Extraction is very slow; the CDROM is accessed continuously, but cdparanoia makes no apparent (or very slow) progress</a><p>
+<li><a href="#tocoff">Cdparanoia doesn't get the track beginning and end exactly correct</a><p>
+<li><a href="#first">I can't rip the first track; I get timeout errors.  Ripping later tracks works fine.</a><p>
+<li><a href="#tao">Ripping across track boundaries of a TAO disc causes lots of errors</a><p>
+<li><a href="#last">When ripping the last track on a disc, the rip stops and I
+get "packet command error" messages.</a><p>
+<li><a href="#access">Cdparanoia says "could not find cdrom drive accessible to user"</a><p>
+<li><a href="#longfind">Finding my CDROM drive takes a long time!</a><p>
+<li><a href="#bigbuff">(Linux) I get an error about not having SG_BIG_BUFF defined in my kernel</a><p>
+<li><a href="#emu">(Linux) I'm trying to use an ATAPI drive with SCSI emulation (or a SCSI MMC drive), and I get a file full of zeroes (silence)!</a><p>
+<li><a href="#unable">My ATAPI CDROM drive reports 'unable to read any data'!</a><p>
+<li><a href="#noemu">(Linux) I'm trying to use SCSI emulation, but my ATAPI cdrom drive is still using the IDE ATAPI kernel driver</a><p>
+<li><a href="#useemu">(Linux) How do I use my ATAPI drive through IDE-SCSI hostadapter emulation?</a><p>
+<li><a href="#term">My SCSI drive is unable to read some tracks, occasionally locks
+up, or just behaves strangely in general</a><p>
+<li>
+<a href="#sbpcd">(Linux) Sbpcd interface drives work poorly or not at all!</a><p>
+
+</ol>
+
+
+<!-- body complete.  cleanup table -->
+</font>
+</td>
+</tr>
+<tr>
+<td valign=bottom bgcolor="#ad9164" width=132><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""></td>
+</tr>
+</table>
+<!-- main body (with sidemenu) table done **************************** -->
+
+<!-- main body (no sidemenu table) *********************************** -->
+<table width=100% border=0 cellspacing=0 cellpadding=0>
+<tr>
+<td bgcolor="#ffffff" width=10><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" width=30><img src=sidespacer2.gif alt=""></td>
+<td width=100%><hr>
+
+<table width=100% border=0 cellspacing=0 cellpadding=10><tr><td width=100%>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<!-- body  -->
+
+<a name="ldso"><h2>Running cdparanoia results in: "./cdparanoia: error in loading shared libraries: libcdda_interface.so.0: cannot
+open shared object file: No such file or directory"</h2>
+
+These days, cdparanoia builds as an app and two shared libraries.
+Make install does not try to patch /etc/ld.so.conf or run ldconfig,
+just for safety's sake (screwing up isn't likely, but it can render a
+machine unusable).<p>
+
+First, make sure that /usr/local/lib/ (or whever you actually
+installed the shared libs; /usr/local/lib/ is the default for a build
+from source) has an entry is /etc/ld.so.conf.  Second, run 'ldconfig'.
+Now your system knows about the shared libs.<p>
+
+<a name="gendev">
+<h2>Cdparanoia says "could not find generic device to match SCSI cdrom device"</h2>
+
+This error means exactly what it says; the generic SCSI devices are
+missing, unusable or have permissions set to deny access by users.
+First, a bit of explanation...<p>
+
+Cdparanoia doesn't actually use the 'normal' SCSI cdrom device,
+typically /dev/scd* or /dev/sr*; it uses (and requires) a generic SCSI
+device (typically /dev/sg*) to access a drive's audio extraction
+features.  Cdparanoia does accept the CDROM device name because users
+are used to this device specifying a cdrom drive, but only uses the
+CDROM device name to map to a matching generic SCSI device.<p>
+
+If cdparanoia can't get to a working set of generic devices, it can't
+use a SCSI drive.  Before sending mail, check that:
+
+<ol>
+<li>The kernel has generic SCSI support compiled in (or the generic
+module available).  Generic SCSI support does *not* mean only SCSI or
+SCSI CDROM.<p>
+
+<li>Those using ATAPI CDROM drives with IDE-SCSI emulation must *not*
+have ATAPI CDROM support included.  ATAPI IDE-SCSI emulation users
+must have all the appropriate SCSI support selected.<p>
+
+<li>The generic SCSI devices (/dev/sg*) must exist and be accessible.
+Check that permissions on the device entries allow user or group  read *and*
+write access (it's safest to grant user or group access only to the device
+matching the cdrom).<p>
+
+</ol><p>
+
+<hr>
+<a name=noise>
+<h2>Cdparanoia produces a .WAV file, but it's garbage when I play it back.</h2>
+
+Make sure you're using a WAV player that can play CD quality data.  So
+far, every case of a 'garbage' .WAV file has been due to a bad player.
+Note particularly that the 'play' utility packaged with RedHat is
+incapable of playing CD quality WAV files.<p>
+
+Splay, aplay and Ogg (at the very least) can play CD quality audio correctly.<p>
+ 
+<hr>
+<a name=underrun>
+<h2>(Linux) My ATAPI drive is *very* slow and /var/log/messages contains 
+hundreds of "data underrun" messages</h2>
+
+Due to a bug (either in the kernel or the CDROM itself), the CDROM
+drive is returning too little data for a given request.  The ATAPI
+driver, then tries to repeat the request (and likely gets the same
+error again).<p>
+
+The solution (aside from fixing Linux) is to use your ATAPI drive with
+<a href="#useemu">IDE-SCSI hotadapter emulation</a>.<p>
+
+<hr>
+<a name=eightsec>
+<h2>My ATAPI performance is slow; cdparanoia is slower on my ATAPI drive than cdda2wav.</h2>
+
+The Linux ATAPI ioctl()-based kernel drivel only reads 8 sectors from
+an audio CD at a time.  If you tell it to read more than eight, it
+will divide the request up into 8-sector chunks.  Alignment and jitter
+errors are most likely to happen on those boundaries.  Cdparanois is
+aware of this, and thus only requests 8 sectors at a time when using
+the ATAPI interface.<p>
+
+The kernel overhead involved in each request is farily high, so this
+is inefficient; however, the goal is to be correct, not fast.
+cdparanoia is slower on ATAPI drives than, for example, cdda2wav
+because it's being more careful (cdda2wav makes larger requests and
+doesn't track boundaries).<p>
+
+If you're concerned about performance, use the SG driver and <a
+name=underrun>IDE-SCSI hostadapter emulation</a>.  SG is superior to
+the ATAPI interface for several additional reasons.. However, if you
+absolutely *must* use the ATAPI interface, the following
+kernel/cdparanoia mods will help you out.<p>
+
+<ol>
+<li>
+In linux/drivers/block/ide-cdrom.h, increase the value of
+CDROM_NBLOCKS_BUFFER from 8 to a larger value (eg, 16).  Rebuild the
+kernel.  <li>In cdparanoia/interface/cooked_interface.c, change the
+value of d->nsectors on line 205 to the same value you used int he
+kernel.
+</ul>
+
+
+
+<p>
+<hr>
+<a name=exslow>
+<h2>Extraction is very slow; the CDROM is accessed only occasionally 
+and CPU usage is 100%</h2>
+
+Most likely, your using a drive that suffers from fragmentation with
+an older version of cdparanoia.  Upgrade to the latest release.<p>
+
+<hr>
+<a name=repslow>
+<h2>Extraction is very slow; the CDROM is accessed continuously, but cdparanoia makes no apparent (or very slow) progress</h2>
+
+I recently discovered the existence of drives with a bimodal jitter
+pattern (just before the release of alpha 9.4).  Essentially, these
+drives jitter in two different patterns; one is a constant amount of
+slight jitter followed by periods of very large jitter.  The current
+automatically adjusting overlap code in cdparanoia will choose too
+small an overlap value for these drives to function.<p>
+
+For these drives, I've temporarily provided a switch (-o) to force the
+overlap setting to a specific value.  If your drive exhibits this
+behavior, try forcing the overlap to a specific value. You'll likely
+have to experiment to find the best choice; try ten or so to begin.<p>
+
+As before, the next release will update the algorithm to address this
+newly discovered problem.<p>
+
+<hr>
+<a name=tocoff>
+<h2>Cdparanoia doesn't get the track beginning and end exactly correct</h2>
+
+This can happen for two reasons; one is the drive's/discs fault (discussed
+here) and the other is bug when using -B; that one is discussed on the
+<a href=bugs.html>bugs page</a>.<p>
+
+Drives are not required to be able to seek exactly to any position;
+they simply must be able to hit within one second.  Add to this the
+fact that the disc itself is premitted to be off by a bit as well, and
+you can well land well too early or too late.<p>
+
+The good news is that such discs and CDROM drives are rare.  I've not
+been able to reproduce reports of drive models with this problem
+myself, and all the untested reports are currently by Toshiba drive
+owners. More news on this subject as I get it; new TOC code to appear
+at some point in alpha 10 might provide a good workaround for this
+problem.<p>
+
+<hr>
+<a name=first>
+<h2>I can't rip the first track; I get timeout errors.  Ripping later
+tracks works fine.</h2>
+
+Alpha release 9.4 added a patch by Andreas Mueller that allows
+cdparanoia to read the pregap of track one.  Because cdparanoia likes
+to begin reading a track early (to get additional information in case
+an error happens on a track boundary), this means that cdparanoia
+normally begins reading track one a few sectors early (although it
+does not output this data).  After discussion, the developers involved
+and myself decided this patch wouldn't cause trouble.<p>
+
+Unfortunately, it turns out a small fraction of drives are totally
+incapable of reading the track one pregap (mostly NEC and Toshiba
+drives).  9.3 does not have this problem; use this older version
+should your drive have track one trouble with 9.4.  The next release
+will avoid this drive limitation.<p>
+
+<hr>
+<a name=tao>
+<h2>Ripping across track boundaries of a TAO disc causes lots of errors</h2>
+
+TAO discs place a total of seven physically unreadable sectors between
+tracks; it's not an issue of 'a new kind of sector that old drives
+can't read'; the seven sectors really don't physically exist.
+Most drives either ignore these sectors on TAO discs, or just return a
+harmless error along the lines of "hey, I saw unreadable sectors".
+Some drives react very poorly to these sectors.<p>
+
+Cdparanoia will eventually include workarounds for these drives.<p>
+
+<hr>
+<a name=last>
+<h2>(Linux) When ripping the last track on a disc, the rip stops and I
+get "packet command error" messages.</h2>
+
+Most likely, the session ended just before the TOC said it would, or
+the drive's positioning isn't exactly correct and it's managing to
+read a bit too far.<p>
+
+The problem would not be serious except that the Linux ATAPI driver
+then tells the drive to retry.... and gets the same error which
+triggers a retry, etc.  In this case, the solution, as above, is to
+use the drive with IDE-SCSI hostadapter emulation.  The errors will
+become harmless.<p>
+
+Also, discs with sectors in the gaps between tracks marked as non-audio
+are becoming more common.  Some cdrom drives complain about it.  Is
+this another really lame attempt at copy protection?  Gotta wonder....<p>
+
+<hr>
+<a name=access>
+<h2>Cdparanoia says "could not find cdrom drive accessible to user"</h2>
+
+First, get more information about the problem by running cdparanoia
+with the -v option; this will show every place that cdparanoia is
+looking for the drive and the result of searching in each place.
+Chances are the problem is one of two things:<p>
+
+<ul><li>Permission denied: a CDROM device must be readable, and a
+generic SCSI device must be readable and writable by the user for
+cdparanoia to work.  <li>No such file or device: Support for the CDROM
+(or generic SCSI if a SCSI drive) is not built into the kernel.</ul><p>
+
+<hr>
+<a name=longfind>
+<h2>Finding my CDROM drive takes a long time!</h2>
+
+Run cdparanoia with the -v option; look for the CDROM device it finds.
+Make a symlink from /dev/cdrom (where cdparanoia checks first) to the
+real device name of the CDROM drive.  Things should become much faster.<p>
+<hr>
+<a name=bigbuff>
+<h2>(Linux) I get an error about not having SG_BIG_BUFF defined in my kernel</h2>
+
+This was a common problem in Linux distributions until recently.
+Without the big buffer for generic SCSI reads, cdparanoia can only
+read a single sector from a SCSI cdrom at a time.  This is too small
+for cdparanoia to function.<p>
+
+To add the big buffer, add the line:<p>
+
+<pre>#define SG_BIG_BUFF 65536</pre><p>
+
+To the end of linux/src/include/scsi/sg.h just before the last #endif,
+then rebuild and install the new kernel.<p>
+<hr>
+<a name=emu>
+<h2>(Linux) I'm trying to use an ATAPI drive with SCSI emulation (or a SCSI MMC drive), and I get a file full of zeroes (silence)!</h2>
+
+You are using an old version of cdparanoia that doesn;t know when a
+packet command has been rejected (this is actually hard to do under
+Linux).  Use alpha 6 or later.
+<hr>
+<a name=unable>
+<h2>My ATAPI CDROM drive reports 'unable to read any data'!</h2>
+
+Chances are that the drive is not capable of reading audio discs.  To
+be certain, try using the drive under Linux IDE-SCSI emulation rather
+than with the native ATAPI driver.  The emulation is more flexible,
+and cdparanoia will be able to try more possible read techniques.<p>
+
+Note that a few Matsushita drives (and Panasonics which are made by
+Matsushita) that certainly *are* CDDA capable are currently not
+working with cdparanoia.  I'm trying to get technical information from
+Matsushita to correct the problem.<p>
+<hr>
+<a name=noemu>
+<h2>(Linux) I'm trying to use SCSI emulation, but my ATAPI cdrom drive is
+still using the IDE ATAPI kernel driver</h2>
+
+Follow the directions in the next section *exactly*.<p>
+<hr>
+
+<a name=useemu>
+<h2>(Linux) How do I use my ATAPI drive through IDE-SCSI hostadapter
+emulation?</h2>
+
+To use the SCSI emulation with an ATAPI cdrom, the kernel must be
+configured <strong>with</strong> SCSI support, generic SCSI device
+support and IDE-SCSI emulation, and <em>without</em> ATAPI (IDE) CDROM
+drive support.  If the kernel includes native ATAPI (IDE CDROM drive)
+support, then the kernel will always use it over the emulation
+interface.<p>
+<hr>
+
+<a name=term>
+<h2>My SCSI drive is unable to read some tracks, occasionally locks
+up, or just behaves strangely in general</h2>
+
+Check your termination!  All sorts of incredibly weird errors happen
+on SCSI chains without (or with too much!) termination.  Real examples
+of termination troubles include users whose drives would work under
+windows but not Linux (the windows driver was turning on active
+termination; the Linux driver was not) all the way to a user whose
+computer would crash every time he tried to rip track seven of a
+particular disc (and he's already checked termination twice!)<p>
+
+As Dave Barry would say, "I'm not making this up."<p>
+
+<hr>
+<a name=sbpcd><h2>(Linux) Sbpcd interface drives work poorly or not at all!</h2></a>
+
+Stig Landro &lt;slandroe@online.no&gt; submits the following explanation and kernel patch:
+
+<blockquote>
+cdparanoia will not work with the sbpcd.o module that comes with the
+2.0.x kernels. It hangs when checking the endianness of the data. The
+problem is that the sbpcd module that comes with the kernel can not read
+more than 1 sector correctly, at least not with my type of drive. I
+looked into this problem some time ago and managed to get good results
+with your paranoia patch to cdda2wav and some small modifications of the
+sbpcd.c module, fixing some timing and syncronization problems. Using
+the same modified sbpcd module, cdparanoia III seemes to work fine,
+although slow. I think the reason is that only 8 sectors are read at a
+time. With cdda2wav(paranoiaII) I use 75 sectors as default, and it is a
+factor 2-3 faster. There are still some remaining problems with the
+sbpcd.c module though, but since this interface is getting obsolete, I
+guess noone bothers to fix them:
+<p> 
+1) I must load the module manually (not automatically with kerneld)
+otherwise all data (at least in the first invocation of cdparanoia)
+seems to be set to 0.
+<p> 
+2) It does not handle a CD change properly (does not affect cdparanoia).
+<p>
+I include my sbpcd.c patch below, which at least is working reasonably
+well on my system (100 MHz Cyrix 586 cpu & Panasonic CR563 drive).
+</blockquote>
+
+<a href="patch.html">SBPCD patch</a><p>
+
+
+
+<!-- body done -->
+</font>
+</td></tr></table>
+</td>
+</tr>
+</table>
+<!-- main body (no sidemenu table) done ****************************** -->
+
+
+<!-- bottom banner table ********************************************* -->
+
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td colspan=3 align=left><img src=bottomA.gif alt=""></td>
+
+</tr><tr>
+
+<td><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
+<td bgcolor="#2a2a2c" align=center valign=center width=100%>
+  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+    border=0></a></td>
+    <td valign=center>
+    <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>
+
+    <a href=../xiphname.html>Cdparanoia</a> and the <a
+    href=../xiphname.html>Laser-Playback-Head-of-Omniscience logo</a> are
+    trademarks (tm) of <a href="/index.html">Xiphophorus</a>.  These pages
+    are copyright (C) 1994-1999 Xiphophorus.  All rights reserved.<br>
+
+    <a href="mailto:webmaster@xiph.org">Comments and
+    questions</a> about this web site are welcome.
+    </font>
+  </td></tr></table>
+</td></tr>
+</table>
+</body>

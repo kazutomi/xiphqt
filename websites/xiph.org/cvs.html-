@@ -1,0 +1,169 @@
+<title>  Xiph.Org: naming </title>
+
+<!--#include file="xiphtop.include" -->
+
+    Xiph.Org read-only CVS access
+
+<!--#include file="xiphmid.include" -->
+
+Xiph.Org development projects are available to the public at large
+through read-only remote CVS access of the developers' live source
+repositories.  This access gives external contributers access to all
+the infomation, code and history available to our own core developers.
+
+<h2>Accessing CVS at Xiph.Org</h2>
+
+These instructions assume that CVS is already installed and generally
+configured on your host.  Note that the anonymous CVS access offered
+here is read-only; the repository will not accept anonymous commits.<p>
+
+Access to Xiph.Org can be handled basically two ways:<p>
+
+<h3>Using the CVSROOT environment variable</h3>
+
+Set CVSROOT in your environment to:
+<pre>
+
+:pserver:anoncvs@xiph.org:/usr/local/cvsroot
+
+</pre>
+
+Log into the CVS repository using:
+<pre>
+cvs login
+</pre>
+When prompted for a password, reply <tt>anoncvs</tt>.<p>
+
+Then access modules using the typical:
+<pre>
+cvs -z 1 co <i>module</i>
+</pre>
+...substituting the specific desired module for <tt><i>module</i></tt>.
+
+The undesireable part of this strategy is its global nature
+(personally, I use several seperate CVS servers daily).
+
+<h3>Using <tt> cvs -d</tt></h3>
+
+Alternately, use the -d option to locally configure a specific module
+checkout. For Xiph.Org, the command line (needed only with <tt>cvs
+login</tt> and <tt>cvs checkout</tt> would read:
+
+<pre>
+cvs -d :pserver:anoncvs@xiph.org:/usr/local/cvsroot login
+</pre>
+(as above, when prompted for a password, use <tt>anoncvs</tt>).
+<pre>
+cvs -d :pserver:anoncvs@xiph.org:/usr/local/cvsroot -z 9 co <i>module</i>
+</pre>
+...substituting the specific desired module for <tt><i>module</i></tt>.
+
+In both cases, once you've got the repository checked out, neither -d
+nor the environment variable are required; the repository location is
+stored with the checkout.  <tt>cvs update </tt> will sync your local
+copy with the repository. See the CVS manual for additional
+information on how to use CVS. (Besides downloads of recent versions
+of CVS Cyclic Software also has a <a
+href="http://www.cvshome.org/cyclic/cvs/doc-blandy.html">reasonably simple
+introduction to CVS</a>.)<p>
+
+(Thanks to Cygnus for the basis of this page)<p>
+
+<h2>Modules</h2>
+
+<dl>
+<dt>ao<dd>
+The source code to libao, used by some vorbis utilities.
+
+<dt>ao-python<dd>
+Python bindings to libao.
+
+<dt>icecast<dd>
+The icecast2 streaming audio server.
+
+<dt>ices<dd>
+An audio source client to the icecast2 server.
+
+<dt>libshout<dd>
+A library for communicating with an icecast server.
+
+<dt>masktest<dd>
+The source code to a package that collects masking data from a user by running listening experiments.
+
+<dt>mgm<dd>
+The source code to MGM, a status/load meter package written in Perl.
+
+<dt>ogg<dd>
+The source code to libogg.
+
+<dt>ogg-python<dd>
+Python bindings for libogg.
+
+<dt>ogg-tools<dd>
+The source code to various command line utilities for other types of Ogg files.
+
+<dt>paranoia-III<dd>
+The source code to cdparanoia and Paranoia-III.
+
+<dt>speex<dd>
+The source code to the Speex low-bitrate voice-only audio codec.
+
+<dt>tarkin<dd>
+The source code to the original Tarkin video CODEC source experiment.
+
+<dt>theora<dd>
+The source code to the Theora video CODEC project.
+
+<dt>Tremor<dd>
+The source code to the integer-only Ogg Vorbis decode library named 'Tremor'.
+
+<dt>vp32<dd>
+The source code to ON2's VP3.2 video codec.
+
+<dt>vorbis<dd>
+The source code to libvorbis, libvorbisfile, libvorbisenc and example code.
+
+<dt>vorbis-plugins<dd>
+The source code to a few OggVorbis player plugins.
+
+<dt>vorbis-python<dd>
+Python bindings for libvorbis, libvorbisfile and libvorbisenc.
+
+<dt>vorbis-tools<dd>
+The source code to various command line OggVorbis utilities.
+
+<dt>w3d<dd>
+The source code to another Tarkin video CODEC source experiment.
+
+<dt>win32-tools<dd>
+Source code for Windows Ogg tools.
+
+<dt>win32sdk<dd>
+Source code for Windows Ogg development SDK.
+</dl>
+
+<p>The following helper libraries are used by icecast and related programs:</p>
+
+<dl>
+<dt>avl<dd>
+AVL tree library.
+
+<dt>httpp<dd>
+A simple http parser library.
+
+<dt>log<dd>
+A thread-safe logging library.
+
+<dt>net<dd>
+A thread-safe name resolving library.
+
+<dt>thread<dd>
+A cross platform thread and synchronization library
+
+<dt>timing<dd>
+A cross platform timing library.
+
+</dl>
+
+
+<!--#include file="xiphbottom.include" -->

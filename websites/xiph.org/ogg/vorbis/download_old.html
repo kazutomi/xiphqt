@@ -1,0 +1,55 @@
+<title>  xiph.org: Ogg Vorbis Download</title>
+
+<!--#include file="oggtop.include" -->
+
+    The Ogg Vorbis CODEC download page
+
+<!--#include file="xiphmid.include" -->
+
+<em>December 31, 2001</em><p>
+
+<h2>Release status</h2>
+
+The current encoding tools, decoding tools and libraries are at 1.0
+release candidate 3.  This release candidate is missing only bitrate
+tuning for non-44.1kHz sampling modes.  These modes will appear
+shortly in rc4, which is the final scheduled update before the
+official 1.0 final release.  <p>
+
+Prebuilt encoder and player
+plugin binaries, packages, libraries and utilities for Linux, Windows
+and BeOS are
+available for download from the <a
+href="http://www.vorbis.com/download.psp">Ogg Vorbis demo site
+download directory.</a>.
+<p>
+
+Full developer-ready distributions may be checked out from the live <a
+href=/cvs.html>xiph.org CVS repository</a> (module names 'ogg' for
+libogg, 'vorbis' for libvorbis, libvorbisfile and libvorbisenc, 'ao'
+for libao, used by ogg123, 'vorbis-plugins' for the xmms, winamp and
+kmpg player plugin sources and 'vorbis-tools' for the vorbis command
+line utilities). Official rc3 source tarballs and <a
+href="download/vorbis_nightly_cvs.tgz"> a nightly CVS snapshot
+containing all five modules, unix and non-unix SDKs</a> are available
+in the local <a href="download/">vorbis download directory</a>.
+
+<h2>State of CVS</h2>
+
+The bitstream format for Vorbis 1.0 was frozen Monday, May 8th 2000.
+All bitstreams encoded since will remain compatible with all future
+releases of Vorbis.<p>
+
+The code in CVS is now all at 1.0 final release or 1.0 release candidate
+3; The encoder will see one more scheduled release candidate (adding
+official support for non-44.1kHz modes) before 1.0 final.<p>
+
+The CVS mainline is suitable for designing, building and
+integrating Vorbis into applications.  It may be used to build
+production bitstreams at this point.<p>
+
+If you wish to contribute to the Ogg Vorbis codec, please contact us
+via the <a href=mail.html>developer mailing list</a>.
+
+<!--#include file="xiphbottom.include" -->
+

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>Minutes of the Xiph.org Monthly Meeting for June 2003</title>
+<meta name="author" content="Carsten Haese" />
+<meta name="date" content="June 14, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="minutes-of-the-xiph-org-monthly-meeting-for-june-2003">
+<h1 class="title">Minutes of the Xiph.org Monthly Meeting for June 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>June 14, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#introduction" id="id1" name="id1">1   Introduction</a></li>
+<li><a class="reference" href="#organizational-status" id="id2" name="id2">2   Organizational Status</a></li>
+<li><a class="reference" href="#project-updates" id="id3" name="id3">3   Project Updates</a><ul class="auto-toc">
+<li><a class="reference" href="#positron-and-neurosetta" id="id4" name="id4">3.1   Positron and Neurosetta</a></li>
+<li><a class="reference" href="#theora" id="id5" name="id5">3.2   Theora</a></li>
+<li><a class="reference" href="#realplayer-plugin" id="id6" name="id6">3.3   RealPlayer Plugin</a></li>
+<li><a class="reference" href="#icecast" id="id7" name="id7">3.4   Icecast</a></li>
+<li><a class="reference" href="#theora-revisited" id="id8" name="id8">3.5   Theora Revisited</a></li>
+<li><a class="reference" href="#auratus-repeater" id="id9" name="id9">3.6   Auratus/Repeater</a></li>
+<li><a class="reference" href="#standardization-efforts" id="id10" name="id10">3.7   Standardization Efforts</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#funding-ideas" id="id11" name="id11">4   Funding Ideas</a></li>
+<li><a class="reference" href="#suggested-new-logos" id="id12" name="id12">5   Suggested New Logos</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1" name="introduction">1   Introduction</a></h1>
+<p>The monthly meeting for June 2003 took place on June 8, 2003, at midnight UTC
+in the IRC channel <tt class="literal"><span class="pre">#xiphmeet</span></tt> on <tt class="literal"><span class="pre">irc.xiph.org</span></tt>. The
+following people were present, in alphabetical order:</p>
+<ul class="simple">
+<li>Active Participants (IRC nicknames in parentheses)<ul>
+<li>Brendan Cully, Icecast developer (brendan)</li>
+<li>Ralph Giles, Theora developer and Xiph.org sysadmin (rillian)</li>
+<li>Carsten Haese, Ogg Traffic Editor, Secretary (purple)</li>
+<li>Phil Kerr, Author of the Vorbis RTP I-D (philkerr)</li>
+<li>Dan Miller, Theora developer (danx0r)</li>
+<li>Jack Moffit, Executive Director (jack)</li>
+<li>Monty, Technical Director and lead developer (xiphmont)</li>
+<li>Silvia Pfeiffer, Author of the <tt class="literal"><span class="pre">application/ogg</span></tt> RFC (silvia)</li>
+<li>Mauricio Piacentini, Theora developer (mau)</li>
+<li>Sheryl Seibert, Graphic Designer (princessilea)</li>
+<li>Stan Seibert, libao, ogg123, and Positron developer (volsung)</li>
+<li>Nathan Sharfi, Webmaster (adiabatic)</li>
+<li>Mike Smith, vorbis-tools and Icecast developer (Mike)</li>
+<li>Timothy Terriberry, Theora developer (derf)</li>
+<li>Jean-Marc Valin, Speex developer (jmspeex)</li>
+<li>Ed Zaleski, Icecast developer (oddsock)</li>
+</ul>
+</li>
+<li>Observer (IRC nickname only)<ul>
+<li>Aram</li>
+</ul>
+</li>
+</ul>
+<p>The meeting was moderated by Jack Moffit.</p>
+</div>
+<div class="section" id="organizational-status">
+<h1><a class="toc-backref" href="#id2" name="organizational-status">2   Organizational Status</a></h1>
+<p>Jack started off by giving a brief update on Xiph.org's organizational status.
+Our accountant Emily Katt is working on our taxes, and she should have a clear
+picture how consulting revenue from contract work figures into the taxes.</p>
+<p>Also, Xiph's board of directors will meet on June 15. The board meeting will
+be mostly about financial and legal matters. Minutes will be made available
+if possible.</p>
+</div>
+<div class="section" id="project-updates">
+<h1><a class="toc-backref" href="#id3" name="project-updates">3   Project Updates</a></h1>
+<div class="section" id="positron-and-neurosetta">
+<h2><a class="toc-backref" href="#id4" name="positron-and-neurosetta">3.1   Positron and Neurosetta</a></h2>
+<p>Monty is finishing up the Neurosetta project, but there was another last-minute
+surprise. The compiler that he has to work with is not doing a good job, so he
+is finding himself writing a lot of assembly by hand, which is extra work and
+delays the project. The decoder is feature-complete and functional, but it is
+not working in real time yet.</p>
+<p>On the Positron side, things look better. Stan has made 2 beta releases, and
+most bugs have been fixed. The remaining can either not be reproduced or are
+kernel-related. Once uploading of Ogg Vorbis files is supported, Positron
+will be ready for a 1.0 release.</p>
+</div>
+<div class="section" id="theora">
+<h2><a class="toc-backref" href="#id5" name="theora">3.2   Theora</a></h2>
+<p>Ralph introduced the Theora development team, which consists of Dan, 
+Mauricio, Timothy, and himself. The alpha 2 release is imminent, and the
+bitstream format has changed since alpha 1 to accomodate comment and codebook
+headers, a colorspace indicator, and a cropping rectangle for encoding
+arbitrary frame sizes.</p>
+</div>
+<div class="section" id="realplayer-plugin">
+<h2><a class="toc-backref" href="#id6" name="realplayer-plugin">3.3   RealPlayer Plugin</a></h2>
+<p>Jack is working on building binaries of the RealPlayer Vorbis plugin so that
+users can test the plugin without having to build it. File based playback
+is working, streaming is not working yet.</p>
+</div>
+<div class="section" id="icecast">
+<h2><a class="toc-backref" href="#id7" name="icecast">3.4   Icecast</a></h2>
+<p>Mike informed us about the current status of Icecast. Icecast itself is still
+in need of autotools work, which Jack is possibly going to look into. Ed has
+recently revamped the web administration interface. The new interface works
+well, but is in need of stylistic improvements.</p>
+<p>Mike also mentioned an announcement on the icecast mailing list by a group of
+French students that have done some independent work on icecast. Among technical
+changes of as-of-yet undetermined merit, they have worked on documentation,
+which should definitely be integrated into the Icecast project.</p>
+<p>Brendan is pushing for a release of libshout, which is mostly complete, except
+for some testing and documentation.</p>
+</div>
+<div class="section" id="theora-revisited">
+<h2><a class="toc-backref" href="#id8" name="theora-revisited">3.5   Theora Revisited</a></h2>
+<p>Dan joined the meeting in progress and gave us a status update on his side of
+Theora development. Most recently, he was working on restructuring the format
+of the codebook headers to a compressed Huffman tree representation, which
+was merged into the main code by Mauricio and Timothy.</p>
+<p>Dan's other project is the Theora bitstream specification, which is still in
+its infancy. He hopes to get it to a point where others can help out and
+contribute by the end of June.</p>
+<p>Regarding the release schedule and future bitstream changes, the general
+consensus was to release alpha 2 with the current bitstream format as soon
+as possible, and if further format changes are necessary, an alpha 3
+release would incorporate those changes before the format is frozen for
+the beta 1 release.</p>
+</div>
+<div class="section" id="auratus-repeater">
+<h2><a class="toc-backref" href="#id9" name="auratus-repeater">3.6   Auratus/Repeater</a></h2>
+<p>Manuel introduced Auratus, Xiph.org's repository for music where artists can
+sign up and upload music that they wish to release under open licenses such as
+the Open Audio License or some Creative Commons licenses. Repeater is an
+Icecast server that will eventually stream tracks from Auratus.</p>
+<p>The web programming for Auratus is done, but there are some legal issues that
+need to be clarified before Auratus can go live. The procedure for how artists
+will sign up for Auratus is not entirely clear, and the plan is to discuss this
+with the lawyer at the meeting of the board of directors.</p>
+</div>
+<div class="section" id="standardization-efforts">
+<h2><a class="toc-backref" href="#id10" name="standardization-efforts">3.7   Standardization Efforts</a></h2>
+<p>Silvia reminded us that the Ogg encapsulation format and its corresponding
+MIME type have reached RFC status, and that the story has even made Slashdot.
+She received some feedback about the RFC, which she forwarded on to the
+vorbis-dev mailing list.</p>
+<p>Phil Kerr reported that he sent an updated draft of the Vorbis-over-RTP
+specification to the vorbis-dev mailing list. There are only a few open areas
+left, and he hopes to move it to AVT WG status before the next meeting. He
+also has begun work on the Internet Draft for the Vorbis bitstream format,
+which should essentially become an RFC version of the Vorbis specification.
+And, finally, Phil agreed to take over the Speex-RTP draft.</p>
+<p>The fact that the RFC efforts are moving full steam ahead prompted a brief
+discussion about how Xiph.org's specifications and the RFC's will coexist.
+The concensus was that the Xiph.org specifications will be the official
+specifications, and they will be published through the IETF in RFC form.</p>
+<p>It was also decided that it's best not to push for IETF standards track, 
+because Xiph.org would have to give up control of the format specifications,
+and the IETF is more concerned with protocols than formats anyway.</p>
+</div>
+</div>
+<div class="section" id="funding-ideas">
+<h1><a class="toc-backref" href="#id11" name="funding-ideas">4   Funding Ideas</a></h1>
+<p>Jack reported that he was contacted by the <a class="reference" href="http://www.ieee-isto.org">IEEE-ISTO</a>, which provided a
+follow-up to Dan's suggestion from last month's meeting that Xiph.org could get
+funding by becoming a standards body in its own right. The idea is basically
+that a Xiph Forum would be founded, and interested companies would pay a
+certain sum to become forum members. The amount of influence and control that
+the members would get is still open for discussion, but it was agreed by the
+Xiph board members and the meeting participants that this is a good idea in
+general.</p>
+<p>Jack will contact several companies that might be interested, like e.g.
+RealNetworks, BBC, and larger game companies, to discuss what kind of involvement
+these companies would expect in such a forum. Nathan pointed out that the most
+important requirement for this forum would be to keep a strict Royalty Free
+policy.</p>
+</div>
+<div class="section" id="suggested-new-logos">
+<h1><a class="toc-backref" href="#id12" name="suggested-new-logos">5   Suggested New Logos</a></h1>
+<p>In the last segment of the meeting, Stan presented the work of his sister Sheryl,
+who volunteered to make up some logos for the individual codecs. The logos were
+designed to reflect the style of the beloved Xiph logo fish, and the collage
+of initial attempts can be found at <a class="reference" href="http://www.public.asu.edu/~fuchsia/logo.jpg">http://www.public.asu.edu/~fuchsia/logo.jpg</a>.</p>
+<p><em>[Note: Current versions of the logos can be found at
+http://www.rightbrainemporium.com/artwork/artpages/xiph.html.]</em></p>
+<p>Before the meeting was adjourned, an informal discussion about the logos
+took place. There were many suggestions for improvements, but the overall
+reaction was very positive.</p>
+</div>
+</div>
+</body>
+</html>

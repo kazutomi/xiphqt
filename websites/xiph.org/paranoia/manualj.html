@@ -1,0 +1,506 @@
+<title>  CDDA Paranoia User Manual </title>
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+<HTML>
+<HEAD>
+ <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=EUC-JP">
+<HEAD>
+</HTML>
+
+<body bgcolor="#ffffff" link="#4b8b8b" vlink="#208b8b">
+
+<!-- topbanner table ************************************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%"><tr>
+<td bgcolor="#ffffff" valign=top align=right width=433 rowspan=3><a 
+href="logo.jpeg"><img src=parabanner2.gif 
+alt="The Laser Playback Head of Omniscience" 
+width=433 height=72 border=0></a></td>
+<td width="100%" bgcolor="#ffffff" valign=top height=35><img border=0 
+src=bannerspace1.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#2a2a2c" valign=top height=20><img 
+src=bannerspace2.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#ffffff" valign=top><img src=bannerspace3.gif 
+alt=""></td>
+</tr>
+</table>
+<!-- topbanner table done ******************************************** -->
+
+
+
+<!-- main body (with sidemenu) table ********************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td valign=top width=132 bgcolor="#ad9164"><img 
+src=bartop.gif border=0 width=132 height=18 
+  alt=""><a href="index.html"><img 
+src=cdbar.gif border=0 width=132 height=18 
+  alt=""></a><a href="news.html"><img 
+src=news.gif border=0 width=132 height=18 
+  alt=""></a><a href="faq.html"><img 
+src=faq.gif border=0 width=132 height=18 
+  alt=""></a><a href="down.html"><img 
+src=cddown.gif border=0 width=132 height=18 
+  alt=""></a><a href="links.html"><img 
+src=resource.gif border=0 width=132 height=18 
+  alt=""></a><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""><img 
+src=bartop.gif border=0 width=132 height=18 alt=""><a href="doc.html"><img 
+src=document.gif border=0 width=132 height=18 
+  alt=""></a><br>&nbsp;<br><a href="manual.html"><img 
+src=manual.gif border=0 width=132 height=18 
+  alt=""></a><a href="prog.html"><img 
+src=prog.gif border=0 width=132 height=18 
+  alt=""></a><a href="trouble.html"><img 
+src=trouble.gif border=0 width=132 height=18 
+  alt=""></a><a href="tech.html"><img 
+src=tech.gif border=0 width=132 height=18 
+  alt=""></a><a href="bugs.html"><img 
+src=bug.gif border=0 width=132 height=18 alt="">
+</td>
+
+<td rowspan=2><img src=sidespacer4.gif width=18 alt=""></td>
+
+<td valign=top width="100%" rowspan=2>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<center>
+    <H1><font color="#6b6b6b">paranoia:</font> 
+        <font color="#000000">cdparanoia user manual (Japanese)</font></h1>
+
+<strong>"Now *there's* something you don't see every day."</strong><br><em>
+--Peter Venkman</em>
+
+<p>
+
+[ <a href="index.html">home</a> |
+<a href="news.html">news</a> |
+<a href="faq.html">faq</a> |
+<a href="down.html">download/cvs</a> |
+<a href="links.html">links/resources</a> |
+<a href="doc.html">documentation</a> ]
+</center>
+<hr>
+
+<p align=left>
+October 1, 1999
+<p align=center>
+<!-- body or table of contents -->
+
+<font color="#000080">
+<pre>
+
+CDPARANOIA(1)                                       CDPARANOIA(1)
+
+
+名前
+       cdparanoia (Paranoia release III) - オーディオ CD 読み取り
+       ユーティリティ。特別なデータ照合機能を持つ。
+
+日付
+       バージョンIII リリースα9.6 (17 Aug 1999)
+
+書式
+       cdparanoia [options] span [outfile]
+
+説明
+       cdparanoia は CD-DA 機能を持つ CD-ROM ドライブからオーディ
+       オ トラックを取り出します。このデータは WAV, AIFF, AIFF-C,
+       raw 形式でファイルにセーブすることや、標準出力に送ることが
+       できます。ほとんどの ATAPI, SCSI, メーカー独自の CD-ROM ド
+       ライブがサポートされています。 cdparanoia は対象のドライブ
+       が CD-DA 機能を持っているかどうかを判別できます。
+
+       単純な読み取りだけでなく、 cdparanoia は特別に頑健なデータ
+       照合機能、同期機能、エラー処理機能、破損データの再構成機能
+       を持っています。
+
+オプション
+       -v --verbose
+              自 動検出と読み取りの処理について、ばかばかしいほど
+              冗長な表示を行います。設定やデバッグの際に 便 利 で
+              す。
+
+
+       -q --quiet
+              読 み取り処理の途中に、進行状況やエラー情報を全く表
+              示しません。
+
+
+       -e --stderr-progress
+              進行状況を(ラッパスクリプトのために)標準エラー出 力
+              に出力します。
+
+
+       -V --version
+              プログラムのバージョンを表示して終了します。
+
+
+       -Q --query
+              CD-ROM ドライブの自動検出を行い、CD-ROM の TOC の問
+              い合わせと表示を行い、終了します。
+
+
+       -s --search-for-drive
+              たとえ /dev/cdrom のリンクが存在していて も、CD-ROM
+              ドライブの完全な検索を行います。
+
+
+       -h --help
+              cdparanoia の使い方とオプションを簡単な説明を出力し
+              ます。
+
+
+       -p --output-raw
+              ヘッダ無しのデータをホストのバイト順で、インタリ ー
+              ブ処理を施したサンプル音声を含む raw 形式の 16 ビッ
+              ト PCM データとして出力します。バイト順としてリトル
+              エ ンディアンあるいはビッグエンディアンを指定するに
+              は、後述の -r または -R オプションを使って く だ さ
+              い。
+
+
+       -r --output-raw-little-endian
+              ヘッダ無しのデータを LSB first のバイト順で、インタ
+              リーブ処理を施したサンプル音声を含む raw 形式の  16
+              ビット PCM データとして出力します。
+
+
+       -R --output-raw-big-endian
+              ヘッダ無しのデータを MSB first のバイト順で、インタ
+              リーブ処理を施したサンプル音声を含む raw 形式の  16
+              ビット PCM データとして出力します。
+
+
+       -w --output-wav
+              データを Micro$oft の RIFF WAV 形式で出力します(WAV
+              データのバイト順は必ず LSB first である点に注意)。
+
+
+       -f --output-aiff
+              データを Apple の AIFF 形式で出力します(AIFC データ
+              のバイト順は必ず MSB first である点に注意)。
+
+
+       -a --output-aifc
+              デ ー タ を 無 圧 縮 の Apple AIFF-C 形式で出力しま
+              す(AIFF-C データのバイト順は必ず MSB first である点
+              に注意)。
+
+
+       -B --batch
+              cdda2wav  形式のバッチ出力を行います。cdparanoia は
+              出力をトラック境界で複数ファイルに分割します。出 力
+              ファ イルのファイル名の先頭部分は、'track(番号)' と
+              なります。
+
+
+       -c --force-cdrom-little-endian
+              一部の CD-ROM は間違ったエンディアンを報告します(あ
+              るいはエンディアンに関する情報を全く報告しません)。
+              そのため、cdparanoia がエンディアンを間違えることが
+              あ ります。ドライブをリトルエンディアンのデバイスと
+              して cdparanoia に扱わせるには、 -c オプションを 使
+              います。
+
+
+       -C --force-cdrom-big-endian
+              前 のオプションの逆で、デバイスをビッグエンディアン
+              のデバイスとして cdparanoia に扱わせます。
+
+
+       -n --force-default-sectors n
+              インタフェースのバックエンドが行う最小単位の読み 取
+              り を、 1 回の読み取りごとに n セクタとします。この
+              数は問題を起こすおそれがあります。カーネルは多く の
+              場 合、 読み取り要求を最小単位の読み取り(cdparanoia
+              による自動処理はこれに対応しています)複数個に分割す
+              る か、制限された大きさの範囲でしか読み取りを許可し
+              ません。 普通はこのオプションを使うべきではありませ
+              ん。
+
+
+       -d --force-cdrom-device device
+              イ ンタフェースのバックエンドによる読み取りを、最初
+              に見つけた読み取り可能な CD-ROM ドライブではな く、
+              指 定した device から行うようにします。このオプショ
+              ンでは、利用可能である任意のインタフェ ー ス(ATAPI,
+              SCSI, メーカー独自)を持つデバイスを指定することがで
+              きます。
+
+
+       -g --force-generic-device device
+              このオプションは、SCSI CD-ROM と汎用デバイスの設 定
+              を 明示的に別々に制御したい時に -d オプションと組み
+              合わせて使います。このオプションが役立つの は、SCSI
+              の設定が標準と異なる場合だけです。
+
+
+       -S --force-read-speed number
+              CD ドライブからの読み込み速度を設定するには、このオ
+              プションを明示的に使ってください(ドライブが対応して
+              いる場合)。このオプションを用いると、ディスクが遅い
+              場合やメモリが少ない場合に起こるアンダーランを減 ら
+              すことができます。
+
+
+       -Z --disable-paranoia
+              データ照合と訂正機能を無効にします。-Z オプションを
+              用いると、cdparanoia はオーバーラップの設定が 0  で
+              あ る cdda2wav と全く同じようにデータの読み取りを行
+              います。このオプションを指定すると -W , -X , -Y  オ
+              プションも有効になりますが、 -Z -W -X -Y と全く同じ
+              では ありません。なぜなら、 -W から -Z までの オ プ
+              ショ ンにより照合のレベルが階層的に変わるからです。
+              実際に有効になるのは最後に指定したオプションだけ で
+              す。
+
+
+       -Y --disable-extra-paranoia
+              読 み取ったデータの中間におけるデータ照合を行いませ
+              ん。つまり、データの読み取り境界におけるオ ー バ ー
+              ラップ部分のチェックしか行いません。
+
+
+       -X --disable-scratch-detection
+              照 合の途中では傷の探査も行わず、傷に対して頑健な同
+              期処理も行いません。 -X オプションを指定した場 合、
+              傷 ついた CD を与えると cdparanoia は読み取りの失敗
+              を起こします。
+
+
+       -W --disable-scratch-repair
+              傷を検出し、同期を保つ処理を行います。ただし壊れ た
+              デ ータの修復は行いません。ログファイルの出力を行う
+              と( -i オプション)、全ての傷のフレーム位置 が ロ グ
+              ファイルに出力されます。
+
+
+出力される顔文字
+         :-)  正常動作。ジッタは少ないか、全くない
+
+         :-|  正常動作。ジッタは許容範囲
+
+         :-/  読み取りでドリフトが発生
+
+         :-P  最 小単位の読み取り操作において、報告されていない損
+              失がストリーミングにある
+
+         8-|  繰り返して読み取りを行ったが、同じ位置で問題が起 き
+              た。修正は困難である
+
+         :-0  SCSI/ATAPI のデータ転送エラー
+
+         :-(  傷が検出された
+
+         ;-(  データの訂正をあきらめた
+
+         :^D  読み取り終了
+
+
+進行表示の意味
+       <スペース>
+              訂正は不要
+
+          -   ジッタの訂正が必要
+
+          +   報 告されていない損失がストリーミングにある。あるい
+              は別のエラーが読み取り時に発生した
+
+          !   ステージ 1 訂正の後にエラーが見つかった。読み取りを
+              複数回繰り返しても同じエラーが発生し、cdparanoia は
+              そのエラーをうまく検出できない。
+
+          e   SCSI/ATAPI のデータ転送エラー(訂正済み)
+
+          V   訂正できないエラー/データのスキップ
+
+
+引き数 'span'
+       引き数 span は、読み取りを行うトラックまたはトラックの一部
+       を指定します。この引き数は必ず必要です。 注意: span が単な
+       る数字でなければ、シェルが引き数 span を展開してしまわない
+       ようにクォートするのが普通でしょう。
+
+       引き数 span は、単なるトラック番号か、オフセットとスパンの
+       組合せの指定となります。オフセットとスパンの組合せを指定す
+       る方法は、だいたい以下のようになります:
+
+       1[ww:xx:yy.zz]-2[aa:bb:cc.dd]
+
+       ここで 1 と 2 はトラック番号です。角括弧の中の数値は、指定
+       されたトラックにおける、より細か い オ フ セッ ト 指 定 で
+       す。[aa:bb:cc.dd]  は「時間/分/秒/セクタ」の形式です。値が
+       0 であるフィールドは指定しなくても構い ま せ ん。 つ ま り
+       [::20], [:20], [20], [20.] 等は 20 秒と解釈され、 [10:] は
+       10 秒と解釈され、[.30] は 30 セクタと解釈されます(75 セ ク
+       タで 1 秒です)。
+
+       オ フセットを 1 つしか指定しなければ、これは開始位置のオフ
+       セットを表し、吸い出しはそのトラックの終わりまで行わ れ ま
+       す。オフセットが 1 つだけあり、その前後にハイフン(-)がある
+       場合には、省略されているオフセットはディスクの先頭あるいは
+       末尾として解釈されます。例を以下に示します:
+
+
+       1:[20.35]
+              ト ラック 1 の 20 秒、35 セクタの位置から、トラック
+              1 の末尾までを吸い出します。
+
+       1:[20.35]-
+              1[20.35] の位置からディスクの末尾までを吸い出 し ま
+              す。
+
+       -2     ディスクの先頭からトラック 2 まで(トラック 2 も含み
+              ます)を吸い出します。
+
+       -2:[30.35]
+              ディスクの先頭から 2:[30.35] の位置まで吸い出 し ま
+              す。
+
+       2-4    ト ラック 2 の先頭からトラック 4 の末尾までを吸い出
+              します。
+
+       繰り返しになりますが、角括弧および単語の先頭にあるハイフン
+       は 必 ずクォートして、シェルに展開されないようにしてくださ
+       い。
+
+
+指定例
+       クォートも含めた指定例をいくつか示します:
+
+       ドライブの調査だけを徹底的に行い、自動検出の結果を全て報告
+              します:
+
+              cdparanoia -vsQ
+
+       ディスク全体を吸い出します。それぞれのトラックは別々のファ
+              イル に します:
+
+              cdparanoia -B "1-"
+
+       トラック 1 の時刻 0:30.12 から時刻 1:10.00 までを吸い出し
+              ます:
+
+              cdparanoia "1[:30.12]-1[1:10]"
+
+       トラック 1 の時刻 0:30.12 から 1 分間のデータを吸い出しま
+              す:
+
+              cdparanoia "1[:30.12]-[1:00]"
+
+
+出力
+       出力ファイルを指定する引き数は省略可能です。指定されていな
+       け れば、 cdparanoia はサンプル音声を cdda.wav, cdda.aifc,
+       cdda.raw のいずれかに出力します。どのファイルに出力され る
+       の か は、 オプション -w, -a, -r,-R のうちいずれを使うかに
+       よって決まります(何も指定しなければ -w がデフォル ト 値 で
+       す)。出力ファイルを指定する引き数が - ならば、出力は標準出
+       力に対して行われます。どのデータ形式でもパイプに送ることが
+       できます。
+
+
+謝辞
+       cdparanoia  の 基 と なっ た の は  Heiko  Eissfeldt  さん
+       (heiko@colossus.escape.de)が作成した 'cdda2wav' パッケージ
+       で あ り、 以 前 は  cdparanoia のインタフェースの大部分は
+       cdda2wav からもらってきたものでした。cdda2wav  が な け れ
+       ば、cdparanoia が作られることはなかったでしょう。
+
+       Joerg Schilling さんが作成した汎用 SCSI データ転送ライブラ
+       リから、SCSI の専門知識を多く学ばせていただきました。
+
+
+作者
+       Monty <monty@xiph.org>
+
+       cdparanoia のホームページは以下の場所にあります:
+
+                     http://www.xiph.org/paranoia/
+
+
+
+
+</pre>
+</font>
+
+
+
+
+<!-- body complete.  cleanup table -->
+</font>
+</td>
+</tr>
+<tr>
+<td valign=bottom bgcolor="#ad9164" width=132><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""></td>
+</tr>
+</table>
+<!-- main body (with sidemenu) table done **************************** -->
+
+
+<!-- main body (no sidemenu table) *********************************** -->
+<table width=100% border=0 cellspacing=0 cellpadding=0>
+<tr>
+<td bgcolor="#ffffff" width=10><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" width=30><img src=sidespacer2.gif alt=""></td>
+<td width=100%><hr>
+
+<table width=100% border=0 cellspacing=0 cellpadding=10><tr><td width=100%>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<!-- body  -->
+
+
+
+
+<!-- body done -->
+</font>
+</td></tr></table>
+</td>
+</tr>
+</table>
+<!-- main body (no sidemenu table) done ****************************** -->
+
+
+<!-- bottom banner table ********************************************* -->
+
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td colspan=3 align=left><img src=bottomA.gif alt=""></td>
+
+</tr><tr>
+
+<td><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
+<td bgcolor="#2a2a2c" align=center valign=center width=100%>
+  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+    border=0></a></td>
+    <td valign=center>
+    <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>
+
+    <a href=../xiphname.html>Cdparanoia</a> and the <a
+    href=../xiphname.html>Laser-Playback-Head-of-Omniscience logo</a> are
+    trademarks (tm) of <a href="/index.html">Xiphophorus</a>.  These pages
+    are copyright (C) 1994-1999 Xiphophorus.  All rights reserved.<br>
+
+    <a href="mailto:webmaster@xiph.org">Comments and
+    questions</a> about this web site are welcome.
+    </font>
+  </td></tr></table>
+</td></tr>
+</table>
+</body>
+

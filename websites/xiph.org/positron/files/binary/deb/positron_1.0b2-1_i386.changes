@@ -1,0 +1,21 @@
+Format: 1.7
+Date: Wed, 28 May 2003 15:50:00 -0600
+Source: positron
+Binary: positron
+Architecture: source all
+Version: 1.0b2-1
+Distribution: unstable
+Urgency: low
+Maintainer: Jack Moffitt <jack@xiph.org>
+Changed-By: Jack Moffitt <jack@xiph.org>
+Description: 
+ positron   - A synchronization manager for the Neuros Audio Computer
+Changes: 
+ positron (1.0b2-1) unstable; urgency=low
+ .
+   * New Upstream Release.
+Files: 
+ af55f455c968191469b30291a03af299 364 sound optional positron_1.0b2-1.dsc
+ 4ac173bba5b312b06d80466d491f27e8 83025 sound optional positron_1.0b2.orig.tar.gz
+ 071e315917f29366bd72c69b22e4170a 20 sound optional positron_1.0b2-1.diff.gz
+ 02edeb244b8671e62e3ef848ce847603 128208 sound optional positron_1.0b2-1_all.deb

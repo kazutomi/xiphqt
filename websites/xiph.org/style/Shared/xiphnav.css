@@ -1,0 +1,47 @@
+/******************************************************************************
+
+	This file styles the bar that goes across the top of all Xiph.Org
+	pages.
+	
+	The style that comes from this was first (to my knowledge) at
+	http://alistapart.com/stories/practicalcss/ in the
+	"Splitting the Difference" section.
+
+******************************************************************************/
+
+/* This effect doesn't work at all if all content is pinched in a bit. */
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+div#xiphnav {
+    font-family: Verdana, sans-serif;
+	font-weight: normal;
+    padding:    .25em;
+    margin-bottom:  .5em;
+    border-bottom:  1px solid #000;
+    color: #000;
+    background: #aaa;
+}
+div#xiphnav a {
+    text-decoration: none;
+	font-weight: normal;
+    color: #000;
+}
+
+div#xiphnav span.left {
+    text-transform: uppercase;
+    float:      left;
+    text-align: left;
+    width: 60%;
+}
+div#xiphnav span.right {
+    float: right;
+    text-align: right;
+    width: 39%;
+}
+div#xiphnav div.spacer {
+    clear: both;
+}
+

@@ -1,0 +1,382 @@
+--- Log opened Sat Dec 06 18:49:08 2003
+18:49 < jack> live log at http://xiph.org/~jack/200312.txt
+18:58 < adiabatic> bkm: hi, who're you?
+18:58 -!- purple_haese [~carsten@64.246.99.200] has joined #xiphmeet
+18:58 < purple_haese> Hiya
+18:59 -!- brendan [~brendan@coleridge.kublai.com] has joined #xiphmeet
+18:59 < bkm> hello, I am Brett McDowell, I work for IEEE-ISTO, and I met with Monty and Jack earlier this summer to talk Xiph and  "standards"
+19:00 < purple_haese> Cool, thanks for introducing yourself.
+19:00 -!- rillian changed the topic of #xiphmeet to: Xiph.org meeting and conference channel. http://xiph.org/~jack/200312.txt
+19:00 -!- xiphmont [~xiphmont@h004005a8a3c2.ne.client2.attbi.com] has joined #xiphmeet
+19:00 < rillian> hi xiphmont
+19:00 < xiphmont> hi
+19:01 < rillian> was Mike going to make it?
+19:01 < rillian> jean-marc said he wouldn't be here until (maybe) the end
+19:02 < purple_haese> What about our icecast ninja Ed?
+19:02 < brendan> I think Mike said it would depend on how late he was out last night. Looks like he had a good time.
+19:02 < purple_haese> Looks like brendan will represent icecast tonight, then.
+19:03 -!- derf_ [~lomeando@planetmath.cc.vt.edu] has joined #xiphmeet
+19:03 < brendan> that's a shame
+19:03 < rillian> :)
+19:03 < rillian> Ok, let's get the ball rolling
+19:03 -!- crwl [~crawlie@adsl-37.58-DynIP.ssp.fi] has joined #xiphmeet
+19:03 < rillian> jack will be studying in europe next year
+19:03 < rillian> and has asked me to take over chairing the meetings
+19:04 < rillian> purple_haese is our secretary
+19:04 < rillian> and as usual there's a live log for those who join later (see topic for url)
+19:04 < rillian> First item on the agenda is a report from SCALE
+19:04 < rillian> the Southern California Linux Expo
+19:04 < rillian> xiphmont: do you want to give that?
+19:05 < xiphmont> Sure.  Pipe in with things I miss.
+19:05 < xiphmont> Like at most shows I was horribly sleep depped (although for a chnage I caught up byt the end) so some of it is a bit fuzzy.
+19:05 < xiphmont> The good bits:  The talk was OK.  I thought I sucked, others thought it went well, which is typical par for the course.
+19:06 -!- karlH [~karl@82-38-34-147.cable.ubr02.brad.blueyonder.co.uk] has joined #xiphmeet
+19:06 < xiphmont> We re-established some communication with Real, and they've kicked us some end of year cash which I believe is earmarked toward Theora work and integration with Helix: both very good things.
+19:07 < volsung> URL to speex files of talk?
+19:07 < xiphmont> I personally wouldn't mind working much more closely with Helix over the next year or two.  I still don't trust Real in general as having parallel goals, but there are enough people in Helix that seem to be on the same path.
+19:07 < rillian> http://xiph.org/~vanguardist/monty_scale1.spx and _scale2.spx
+19:07 < rillian> (probably not a permanent url)
+19:08 < rillian> we also have a video tape so a theora version will be available
+19:08 < volsung> Awesome.
+19:08 < xiphmont> Also, I pitched IBM (who claimed to have an EBO group evalling open media right now) and gave materials for them to pass up the exec chain.
+19:08 < xiphmont> Novell was there... but they seemed a little lost.
+19:08 < purple_haese> EBO?
+19:09 < xiphmont> 4front was there and... well, that was a weird meeting ;-)
+19:09 < xiphmont> "Emerging Business Opportunity"
+19:09 < purple_haese> Thanks
+19:09 < xiphmont> I didn't see Sun, but I didn't expect them to be there... still I hoped.
+19:10 < brendan> what's the story with 4front?
+19:10 -!- ChristianHJW [~christian@p5091DEE6.dip.t-dialin.net] has joined #xiphmeet
+19:10 < xiphmont> In any case, the one solid result of SCALE was that Real (well, Helix) is still very interested in cooperation.  
+19:10 < derf_> xiphmont: Were those the same materials you were going to give me to look over but never did?
+19:10 < xiphmont> In the past, we've both talked alot about it without doing much.  
+19:10 < ChristianHJW> evening
+19:10 < xiphmont> derf_: Yep.
+19:11 < ChristianHJW> i leave if you dont want me here
+19:11 < derf_> Okay. I assumed they were for SCALE, but since I never heard anything...
+19:11 < rillian> ChristianHJW: anyone is welcome
+19:11 < purple_haese> ChristianHJW: No problem, this is an open meetinh
+19:11 < purple_haese> g
+19:11 < xiphmont> derf_: it turned out to be high-level enough there weren't many detils to fact-check ;-)
+19:11 < derf_> Excellent.
+19:12 < xiphmont> Real kicked in... $6k I think toward theora/Helix/integration/etc
+19:12 < xiphmont> DI paid up with respect to Neurosetta ($5k)
+19:12 -!- Pamel [~Pamel@cs6625200-148.austin.rr.com] has joined #xiphmeet
+19:12 < rillian> (for those who missed the lead up, we were at socallinuxexpo.org two weeks ago. Monty gave an invited talk and a number of the core people attended. we did a booth which was quite successful)
+19:12 < xiphmont> ....and it looks like rillian has some additional leads wrt Theora funding on a similar small scale.
+19:13 < rillian> leads yes
+19:13 < xiphmont> Yes, we did a good booth job this time around.  The materials and other stuff worked out.  Good practice toward the next big show.
+19:13 < purple_haese> Live IRC log is in the topic, for people who missed the beginning.
+19:13 < rillian> xiphmont: you're also going to linuxworld in NY next month?
+19:13 < xiphmont> So, we have funds to continue for a few more months at current rate.
+19:13 < xiphmont> rillian: yes.
+19:13 < derf_> Thanks to Arc for staying up all night working on the video.
+19:14 < xiphmont> I've peen invited to a panel
+19:14 < rillian> yes, we ran a theora demo that included an interview Arc had done with monty
+19:14 < rillian> next time we should bring a bigger screen :)
+19:14 < xiphmont> Currently the plan is that I continue full-time for another month or two and we also pay rillian for theora and OggFile work.
+19:15 < xiphmont> (that is, ralph has signed up for theora, but he's also unwittingly going to get swept up into OggFile whether he realizes it or not.  First adopter!  ha ha ha!)
+19:15 < rillian> :)
+19:16 < rillian> Sounds like that brings us to the next item, which is the usual progress reports
+19:16 < xiphmont> That mostly sums up direct results of SCALE so far.  I'd hope that information trickles through IBM, but I'm not sure I expect it to result in contact, just to plant the seed of our meme.
+19:17 < xiphmont> OK.  I have two more items as well, but SCALE unrtelated.
+19:17 < rillian> Ok
+19:17 < xiphmont> First is Chinese AVS.
+19:17 < rillian> ah, good point
+19:17 < xiphmont> As it turns out Ogg *is* one of the candidate systems.
+19:17 < brendan> oh, cool
+19:17 < adiabatic> um, AVS?
+19:17 < ChristianHJW> for EVD ?
+19:17 -!- alex_here [~chatzilla@alexnoe.csn.tu-chemnitz.de] has joined #xiphmeet
+19:17 < xiphmont> Specifically, Vorbis is being evalled as one of the audio formats and vp3 is one of the video candidates.
+19:18 < rillian> that's *very* good news
+19:18 -!- vanguardist [~vanguardi@motherfish-II.xiph.org] has joined #xiphmeet
+19:18 < ChristianHJW> AVS = EVD ?
+19:18 < vanguardist> hi
+19:18 < xiphmont> Looking at their bullet list of feature requirements... it's not clear the management of the spec effort is really up to date on what they're doing.
+19:18 < rillian> though of course it would be nice if they used ogg and theora too
+19:18 < xiphmont> ChristianHJW: yes
+19:18 < ChristianHJW> :)
+19:18 < Pamel> I understood that vp6 was also a video canidate?  
+19:18 < xiphmont> Well, the problem appears to be something of a cargo-cult envy of the western commercial systems.
+19:18 < brendan> they don't have any DRM req?
+19:18 < derf_> rillian: It would help if we'd finished Theora.
+19:18 < xiphmont> Pamel: yes
+19:19 < Pamel> Is there likely to be more than one video type allowed?
+19:19 < ChristianHJW> i thought they had agreed on VP6 for video ?
+19:19 < xiphmont> Pamel: I do not know
+19:19 < Pamel> Okay.
+19:19 < xiphmont> The contact so far has been exclusively about Vorbis.
+19:19 < xiphmont> ...and Vorbis does not meet all bullet-list requirements.  However, their requirements are... somewhat nonsensical.
+19:19 < purple_haese> What does AVS stand for? AV = audio/video? S=?
+19:19  * ChristianHJW thinks that would be great
+19:19 < Pamel> Does this mean that they will likely require full 5.1 channel coupling in Vobis?
+19:20 < rillian> "audio video coding standard" http://www.avs.org.cn/
+19:20 < xiphmont> "Audio Video Standard"
+19:20 < purple_haese> Thanks.
+19:20 < ChristianHJW> no, we push them for ambisonics :)
+19:21 < rillian> yes, they have asked for a 5.1 mode
+19:21 < xiphmont> they do not rrequire coupling or 5.1 under 384kbps... but they require it be true CBR with every frame the same size.  why? "Because it's for broadcast".  "Broadcast doesn't require fixed rate, just maximim rate." "You don't understand, it's for broadcast."
+19:21  * adiabatic sighs
+19:21 < Pamel> Ouch.
+19:21 < ChristianHJW> the idea behind ambisonics is brilliant, and modern DSPs could handle it well, so it could be adapted to the speaker setup
+19:21 < purple_haese> Well, we can do CBR. Just pad frames to the required size.
+19:21 < xiphmont> So they don't want to consider vorbis unless I add an encoder feature that intentionally pads out frames with blank data to make them all the same size.
+19:21 < Pamel> You could pad packets like other formats do.
+19:22 < xiphmont> Yes.
+19:22 < xiphmont> And I plan to do so.
+19:22 < rillian> incidentally, we don't have any contacts working in 5.1. if you know anyone mixing audio or soundtracks in that format who could share samples with us for tuning, we're really appreciate being put in touch
+19:22 < xiphmont> And add a big encoder warning "WARNING: IDIOT MODE ENABLED"
+19:22 < rillian> xiphmont: at least that's easy
+19:22 < adiabatic> EDOOFUS.
+19:22  * adiabatic snickers
+19:22 < derf_> With a Chinese translation, of course.
+19:22 < xiphmont> ..but seriously, having hashed things out, I feel it is *not* in our best interests to be adopted or work toward being in AVS at this time.
+19:23 < alex_here> they want AVI compatible vorbis frames???
+19:23 < ChristianHJW> xiphmont : do it, but negotiate that VBR find its way in the specs also. In reality, CBR will then never be used, like MP2 in DVD ;) ....
+19:23 < xiphmont> I think there is value to be had in seeking a relationship witht he committe and contribute to what they come up with or future work.
+19:23 < Pamel> rillian:  I have 5.1 Vorbis sample if you like.
+19:23 < rillian> Pamel: we need uncompressed 5.1 masters
+19:23 < Pamel> I have that too.
+19:24  * ChristianHJW will be in China again early January
+19:24 < rillian> excellent
+19:24 < Pamel> Its the 5.1 AC3 speaker test converted to Vobis.
+19:24 < xiphmont> What I think they will end up doing (but haven't yet) is tearing the casing off what they adopt and tinker with it anyway.  So... what I'm saying is that I want them to adopt vorbis as a system they can reassemble into what they really want.
+19:24 < Pamel> Well, not a master really.
+19:24 < rillian> Pamel: that doesn't qualify as uncompressed. we can transcode too :)
+19:24 < Pamel> But I don't think there is any real loss of quality.
+19:24 < xiphmont> We need original, not transcoded.
+19:25 < Pamel> I could make 6 seperate waves and then encode them as audio.
+19:25 < Pamel> err... Vorbis.
+19:25 < xiphmont> Pamel: the noise estimation metrics will end up being dominated by the quantization noise of the previous compression, and tonal estimation can go haywire form it.
+19:25 < purple_haese> Well, transcoding from AC3 is going to be a real-world case, but I can appreciate that you want to tune the encoder from masters.
+19:26 < xiphmont> Anyway, I'm going to deliver 5.1 coupling and the CBR padding.  Neither is trivial, but both can be done without serious reworking of anything in the current encoding.
+19:26 < Pamel> Xiphmont:  I meant I could record 6 seperate audio files from my mic.
+19:26 < xiphmont> Pamel: So can I.  *shrug*
+19:26 < xiphmont> well, N seperate mics ;-)
+19:27 < xiphmont> Anyway, back to topic, I'll continue conversing with those folks and track what it is they think they want.
+19:27  * ChristianHJW jumps up and down ..... 5.1 coupling in Vorbis, good-bye Nero and HE-AAC for 1 CD rips with true DD ...
+19:27 < xiphmont> I think the right thing to do is demonstrate some competency and just let things work themselves out.
+19:27 < rillian> and I'm very glad you have a contact now
+19:28 < xiphmont> This has influenced my thinking about Vorbis II timing... specifically, that I wish to neglect VOrbis 1.1, get OggFile out the door with theora 1.0 and then launch into Vorbis II ASAP.  I have my worklist for VII.  The big reason... we're about to be very widely adopted.  Vorbis I is insufficiently friendly for hardware.
+19:29 < xiphmont> 80% of the hardware requirements for Vorbis I are stuff we don't use anymore... and will likely never use.  The baggage must be dropped.
+19:29 < rillian> but you wanted to also add incompatible new stuff, I thought?
+19:30 < xiphmont> Vorbis II needs to be a bit more collaborative... I especially want to farm out the Ambisonics suport to our in-house surround nuts who have already been working with it for > a year.
+19:30 < xiphmont> rillian: yes.
+19:30 < xiphmont> Vorbis II is not intended to be compatable with Vorbis I.
+19:30 < volsung> We have in-house surround nuts?
+19:30 < volsung> Greg?
+19:30 < xiphmont> And Mike IIRC.
+19:30 < volsung> Ah, didn't know about Mike.
+19:31 < xiphmont> Anyway, my blocking scheme is too simple to scale below our current low-bitrate.  The frame size at the lowest rates is dominated by housekeeping and overcoming the transfer function of the window.
+19:32 < xiphmont> Anyway, that's just technical.  I've become convinced we need to rev incompatably in the next few years and really, sooner is better than later.  Right now, Vorbis is the oldest of the modern audio codecs.
+19:33 < rillian> Too bad really, the lesson of jpeg is that one shouldn't really bother
+19:33 < xiphmont> I thought not needin to ever rev was a virtue... but AAC and WMA have demonstrated that no one cares if performance increases justify the rev.  The performance will justify the revision, so there's no reason to bend over backward to keep things the way they are.
+19:33 < xiphmont> Jpeg was uncommonly well designed :-)
+19:34 < xiphmont> ...it's also doing something a little different.
+19:34 < xiphmont> reagrdless, it's up for discussion, but my feeling has become we should rev.
+19:34 < rillian> AAC and WMA are also designed for closed environments where archival isn't a priority
+19:34 < rillian> but we should move on
+19:34 < rillian> Release reports:
+19:34 < rillian> we finally got ogg 1.1 and vorbis 1.0.1 out the door
+19:35 < xiphmont> yay :-)
+19:35 < rillian> thanks to everyone who helped with that
+19:35 < volsung> woo!
+19:35 < vanguardist> heh
+19:35 < rillian> especially the windows people
+19:35 < xiphmont> yes.
+19:35 < vanguardist> props to Mr. Ed
+19:35 < rillian> there is unfortunately a build problem on macos
+19:35 < purple_haese> Oddsock, John Edwards, and Case.
+19:35 < rillian> and a few other glitches in the tools
+19:35 < rillian> so we'll probably do a 1.0.2 soonish
+19:36 < xiphmont> I should certainly hope so
+19:36 < purple_haese> Should we try to set a date? *duck* :)
+19:36 < xiphmont> I have new lib bugs to tackle myself.
+19:36 < rillian> jean-marc has been working on the fix-point port of speex
+19:36 < rillian> purple_haese: january?
+19:36 < vanguardist> There was also an Icecast beta release
+19:36 < rillian> and it now does realtime playback on arm-based pdas
+19:37 < rillian> brendan: do you want to tell us about the icecast betas?
+19:37 < purple_haese> rillian: Are you sure you mean playback, not encoding?
+19:37 < brendan> now that Karl's here, I nominate karl
+19:37 < rillian> purple_haese: sorry, I believe both now work in realtime
+19:37 < brendan> I've only been spectating
+19:37 < rillian> karlH?
+19:38 < xiphmont> [one more point on my agenda :-]
+19:38 < rillian> xiphmont: hang on
+19:38 < rillian> brendan: looks like it's you
+19:38 < karlH> well icecast beta 2 is out now, it fixes a few issues, but on the whole looks to be going very well
+19:38 < xiphmont> [s'fine, just giving a heads-up]
+19:38 < brendan> of course the announcement of beta feature freeze prompted a wave of new feature patches :)
+19:39 < karlH> naturally
+19:39 < xiphmont> Always does.,
+19:39 < rillian> 2.1 should be easy then :)
+19:39 < Pamel> I had issues with icecast not being able to show that a client had disconnected.
+19:39  * xiphmont is back (gone 24:05:44)
+19:40 < brendan> yeah, and there haven't been any serious issues with 2.0 that I know of. Apparently there's something going on in the AVL lib under windows though...
+19:40 < karlH> I've been working on what will going into 2.1, so I'm filtering some of these features
+19:40 < karlH> the avl lib stuff was just fixes
+19:40 < purple_haese> What would be necessary for Speex streaming in Icecast?
+19:41 < brendan> the avl patch I saw changed an assert to a nop. No word on why the assert was failing
+19:42 < karlH> speex may go into maybe 2.2 but we'll have to see
+19:42 < purple_haese> And eventually people are gonna ask about Theora :)
+19:42 < rillian> karlH: we'll hopefully get around to doing a theora patch for you soon too
+19:43 < karlH> it depends on how quick the current 2.1 things are wanted
+19:43 < rillian> Ok, is there a target for 2.0?
+19:43 < karlH> rillian: sounds good, I've restructured the ogg handling to it better
+19:44 < karlH> as for 2.0 I'me not sure, I'll have to discuss with oddsock and mike
+19:44 < rillian> *nod*
+19:44 < brendan> (it'll be very soon though)
+19:45 < rillian> on other fronts, Arc Riley has been working on a subtitle format
+19:45 < rillian> which is really starting to look nice
+19:45 < rillian> the work-in-progress is documented at http://wiki.xiph.org/OggWrit
+19:45 < purple_haese> (And jack still needs to suggest as alternative name for it ?:)
+19:45 < rillian> in support of that he's done a fresh set of python bindings for libogg2
+19:46 < rillian> and is working on porting theora to libogg2
+19:46 < rillian> so that's helped flush out some issues
+19:46 < volsung> Ah, I gotta bail and go meet someone for dinner.  I don't think there's anything on the agenda for me, correct?
+19:46 < rillian> volsung: correct
+19:46  * volsung runs off.
+19:46 < rillian> logos are on the agenda if you want to send in princessilea
+19:47 < volsung> rillian: I haven't been able to find her all day.  :(
+19:47 < rillian> Any other project report/release news?
+19:47 < purple_haese> rillian: You tell us. Theora? ;)
+19:47 < xiphmont> Oh, yes, SCALE related
+19:47 < xiphmont> you reminded me of logo stuff
+19:48 < rillian> yes, I forgot theora
+19:48 < xiphmont> Melissa (who did our graphic design for SCALE) was willing to make an Ogg wordmark.
+19:48 < vanguardist> wordmark?
+19:48 < rillian> derf and I worked out some bitstream changes that leave more room for future encoder improvements.
+19:48 < rillian> my implementing those is what's been holding up alpha 3
+19:48 < rillian> that's almost done
+19:49 < bkm> sorry for being new... is your logo re-work near completion or in the early stages?
+19:49 < rillian> Mike Melanson reports he's starting to work on the vp3 spec again too, which brings us closer to a theora spec.
+19:49 < xiphmont> wordmark: a small, B&W logo incorporating a word.  Think 'the silscreen logos that appear on hardwasre players'
+19:50 < vanguardist> k
+19:50 < rillian> xiphmont: something we could use as a certification mark then?
+19:50 < xiphmont> rillian: yes
+19:50 < rillian> ah, very good
+19:50 < Pamel> Wise.
+19:50 < xiphmont> bkm: I had assumed the wordmark would be something related to logowork we already have.  That is not necessarily true, but it's my impression.
+19:51 < bkm> ah... ok
+19:51 < xiphmont> ...now that hardware manufacturers are just making things up ;-)
+19:51 < Pamel> Matroska has been working on the specificaly for a long time.  Its hard to get a good one.
+19:51 < purple_haese> Certification is voluntary, isn't it?
+19:51 < xiphmont> yes, well, that's why we have people with actual art training and practice loking at the problem ;-)
+19:52 < xiphmont> Certification is voluntary, but I think we'd take a dim view on ourtright fraud.
+19:52 < rillian> our feeling is that certification would be fairly loose, yes
+19:52 < purple_haese> So we should have two wordmarks, one for certified implementation, and one for non-certified.
+19:52 < rillian> more an enforcement effort against those how are using it improperly
+19:52 < rillian> 'if you implementation works, you have our permission to use this mark'
+19:52 < Pamel> You may want to slap it on a picture like this to compare logos.  http://www.faireal.net/matroska/mkv_dvd.jpg
+19:53 < bkm> is your lawyer in the loop regarding the certification mark activity?
+19:53 < adiabatic> Pamel: the Matroska project has three logos?
+19:53 < xiphmont> bkm: not at the moment.  The worry right now is more having a graphic that doesn't suck.
+19:53 < xiphmont> Because, frankly, user submissions universally suck.  (sorry folks, you're engineers)
+19:54 < purple_haese> Speaking of lawyer, and pardon me for jumping off agenda here, what's the status on the patent-free definition?
+19:54 < Pamel> adiabatic:  Those were the three competing ideas.  Its been narrowed down to the doll in the middle, but the final design hasn't been decided on.
+19:54 < adiabatic> Pamel: Shame. I like the leftmost one.
+19:54 < bkm> well there are legal considerations that can go in during requirements phase... before much art work is made.  Just something to think about... or ask me about later ;)
+19:55 < xiphmont> bkm: will do
+19:55 < rillian> Ok, I think that covers the logo item on the agenda
+19:56 < rillian> xiphmont: you said you had another item?
+19:56 < xiphmont> yes.  a tangent
+19:56 < xiphmont> So, an odd but in retrospect logical thing happened with audacity recently.  
+19:57 < xiphmont> Someone's been hocking Audacity CDs on eBay, which in itself isn't a problem.
+19:57 < xiphmont> What the audacity folk objected to was that he changed the name and logo and took credit for it.
+19:58 < xiphmont> (He wasn't strictly violating the GPL as he also provideds ource and said it was open source software, etc... but it was a copyright violation)
+19:58 < rillian> wierd
+19:58 < vanguardist> luxuriousity?
+19:58 < xiphmont> Anyway, he agreed to stop changing the label and everyone was happy.  But the interesting bit:
+19:58 < xiphmont> Yes, Luxuriosity
+19:58 < xiphmont> He sold ~ 5000 CDs at $15 this year.  
+19:59 < bkm> on that note: is Audacity (or any other name under the Xiph umbrella) actually "registered" trademarks?
+19:59 < brendan> ?!
+19:59 < vanguardist> not bad
+19:59 < adiabatic> ka-ching.
+19:59 < xiphmont> I'm suggesting nothing specific at this moment.  But let us contemplate upon this fact for next month.
+19:59 < vanguardist> i should have thought about that.... :)
+19:59 < xiphmont> bkm: none are registered.  It is something else we've debated for a long time.
+20:00 < bkm> ok
+20:00 < brendan> hello ogg brendan
+20:00 < xiphmont> Audacity was also not registered.
+20:00 < rillian> xiphmont: did this person have additional packaging or sales skill?
+20:00 < xiphmont> brendan: wrong lesson.  try again.
+20:00 < brendan> :)
+20:00 < xiphmont> rillian: not as far as I was able to see.
+20:01 < xiphmont> granted, he was also targtting Windows users.
+20:01 < rillian> very interesting indeed.
+20:01 < rillian> and audacity is an end-user application
+20:01 < xiphmont> Now, the only subterfuge was the name change.  He did not conceal you could go download it for free (didn't exactly call attention to it either, but it was not hidden)
+20:01 < rillian> Ok, that brings us to the end of our agenda
+20:01 < xiphmont> yes, it is an end-user application.
+20:02 -!- oddsock [oddsock@ip-66-175-204-70.idcnet.com] has joined #xiphmeet
+20:02 < rillian> Anyone have any quick items
+20:02 < rillian> purple_haese: you asked about the patent statement
+20:02 < rillian> xiphmont: do you know if anything's happened with that?
+20:02 < xiphmont> with Audacity?  They told him "bad.  No biscuit.  Put our name back." and he did.
+20:03 < rillian> with the patent statement
+20:03 < xiphmont> Oh, sorry.
+20:03 < xiphmont> No.  We've not met with tom.  I'm wondering if it can be an agenda item whena Jack, PFM and I meet up here in a week.
+20:04 < xiphmont> For one thing it's a difficult subject to approach or even muse on without a lawyer or three present.
+20:04 < xiphmont> We just don't have the know-how int he the core.
+20:04 < rillian> xiphmont: if you can bring it up, that sounds good
+20:05 < rillian> jack: you too :)
+20:05 < xiphmont> (I've reserved my car BTW, see you guys there ;-)
+20:05 < rillian> Josh wanted to mention re the replaygain thread
+20:05 < xiphmont> Ah!
+20:05 < xiphmont> OK, bring it on
+20:05 < rillian> that the stuff in flac is based on wavgain
+20:06 < xiphmont> in an ideal world and if both functioned properly, they'd be the same damned thing.
+20:06 < rillian> for whatever that's worth
+20:06 < xiphmont> ...but that's just me.
+20:06 < adiabatic> the snag is that wavgain is GPLd.
+20:06 < xiphmont> and replaygain is BSD?
+20:06 < xiphmont> Honestly, all the math is published.  the concept is simple.
+20:07 < adiabatic> garf's vorbisgain is lgpld.
+20:07 < xiphmont> Sorry, I know I'm glossing and making light of it.  I just dislike getting caught in the middle of interoperability quibbles.
+20:08 < xiphmont> well, only the code can be BSD or GPL.
+20:08 < xiphmont> or whatever.
+20:08 < xiphmont> BIJAB
+20:08 -!- xiphmont [~xiphmont@h004005a8a3c2.ne.client2.attbi.com] has quit ["He travels fastest who travels alone"]
+20:08 < rillian> Any other items?
+20:08 < rillian> questions?
+20:08 < bkm> question for the chair (rillian):  do these meetings usually last 1 hour... is that the general plan?
+20:09 < rillian> they've varied
+20:09 < adiabatic> bkm: they last as long as they need to, generally. The first few were a couple hours long. We've been able to do meetings in 25 minutes.
+20:09 < rillian> we try to quit after 60-90 minutes
+20:09 < bkm> thanks
+20:09 < oddsock> just a quicky on icecast2, we are shooting for a 2.0 release before the end of the year
+20:09 < purple_haese> Well, according to the wiki, "We aim to keep the meeting at two hours in length.
+20:09 < purple_haese> "
+20:10 < rillian> emphasis on the 'try' then :)
+20:10 < rillian> but it really depends on the agenda and how much discussion we had
+20:10 < oddsock> I wanted to see abuot putting up a press release, but I'n not sure is that is appropriate..
+20:10 -!- xiphmont [~xiphmont@h004005a8a3c2.ne.client2.attbi.com] has joined #xiphmeet
+20:10 < xiphmont> back
+20:11 < rillian> oddsock: we can talk about it after the meeting
+20:11 < rillian> xiphmont: do you have anything else?
+20:11 < oddsock> okie
+20:11 < xiphmont> i'm set.
+20:11 < adiabatic> xiphmont: The other thing that Josh wanted to know about was possible inclusion in postfish.
+20:11 < xiphmont> Oh, cool
+20:11 < adiabatic> (of the replaygain synthesis code in flac)
+20:11 < xiphmont> The answer would be yes, absolutely.
+20:11 < xiphmont> sure, an obvious use.
+20:12 < xiphmont> Postfish is still stalled on declip; I just noticed an algebraic possibilityin QR decomposition that might yet get me N^2 interframe complexity ;-)
+20:12 < rillian> uh-oh :)
+20:12 < purple_haese> As opposed to N^3?
+20:13 < derf_> xiphmont: I'd be interested to see that.
+20:13 < rillian> Ok, sounds like we're done.
+20:13 < rillian> the next meeting with be at the same time
+20:13 < rillian> 0 GMT between Jan 3rd and 4th
+20:13 < rillian> hope to see you there
+20:13 < rillian> and thanks to everyone for coming
+20:14 < rillian> it's been a good show
+20:14 < xiphmont> thnaks rillian
+20:14 < xiphmont> purple_haese: derf_: yes
+20:14 < rillian> we'll adjurn to informal discussion now. hang around and say what you like
+20:14 < vanguardist> can I say "m00"?
+20:14 < bkm> does that mean the web log is turned off?
+--- Log closed Sat Dec 06 20:14:50 2003

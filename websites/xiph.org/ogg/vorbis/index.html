@@ -1,0 +1,135 @@
+<title>xiph.org: Ogg Vorbis</title>
+
+<!--#include file="oggtop.include" -->
+
+    <img src=/ogg/images/vorbisword2.gif><br>The Ogg Vorbis CODEC project
+
+<!--#include file="xiphmid.include" -->
+
+<p>Ogg Vorbis is a fully open, non-proprietary,
+patent-and-royalty-free, general-purpose compressed audio format for
+mid to high quality (8kHz-48.0kHz, 16+ bit, polyphonic) audio and music at
+fixed and variable bitrates from 16 to 128 kbps/channel.  This places
+Vorbis in the same competitive class as audio representations such as
+MPEG-4 (AAC), and similar to, but higher performance than MPEG-1/2 audio
+layer 3, MPEG-4 audio (TwinVQ), WMA and PAC.<p>
+
+Vorbis is the first of a planned family of Ogg multimedia coding
+formats being developed as part of Xiph.org's <a
+href=../index.html>Ogg multimedia project</a>.
+
+<h1>Vorbis Home Table of Contents</h1>
+<ul>
+<li><a href="http://www.vorbis.com/">Vorbis home page</a>
+<li><a href="http://www.vorbis.com/faq.psp">Frequently Asked Questions</a>
+<li><a href="download.html">Source Download/CVS</a>
+<li><a href="mail.html">Mailing lists and mail archives</a>
+<li><a href="docs.html">Documentation</a>
+<li><a href="http://bugs.xiph.org">Bug reports</a>
+</ul>
+
+<h1>News</h1>
+
+<h2>"Tremor" integer-only codec now under BSD license</h2>
+
+The "Tremor" decoder library, an integer-only, fully Ogg Vorbis
+compliant software decoder library is now available under a totally
+free BSD-like free software license.  <a
+href="download.html">Download</a> complete source code as a <a
+href="download/tremor_cvs_snapshot.tgz">a tar.gz format archive</a>, or
+check out module 'Tremor' from <a href="/cvs.html">Xiph.Org
+CVS</a>.<p>
+
+Discussion of Tremor is welcomed on the <a
+href="/archives/tremor/masterindex.html">Tremor mailing list</a>,
+tremor@xiph.org.<p>
+
+<h2>Release update</h2> 
+
+<b>We made it!  Ogg Vorbis has hit 1.0!</b>
+
+Get your official downloads from <a
+href="http://www.vorbis.com/download.psp">http://www.vorbis.com/download.psp</a>
+or peruse 1.0's mid and low bitrate quality on our <a
+href="listen.html">codec comparison page with downloadable test
+samples</a>. CVS is tagged as 'vorbis1_0_public_release' in <a
+href="/cvs.html">CVS</a></b>. <p>
+
+ This is a full release of a 1.0 encoder, decoder and tool set.  The
+ encoder, decoder and tools now implement all Vorbis 1.0 specification
+ features including low-bitrate, cascading and channel coupling.<p>
+
+<h2>Donations</h2>
+If you would like to make a donation to help support Xiph.Org's
+continued development of Ogg and Vorbis, we'd appreciate you <a href="donate.html">visiting our donations page</a>.<p>
+
+
+<h1>State of Vorbis</h1>
+The current state of the Vorbis software library and tools:
+<dl>
+<dt><b>libvorbis</b><dd>
+<br>libVorbis is the core Ogg stream / Vorbis engine. <br><em>Status: Full release.</em><p>
+
+<dt><b>libvorbisenc</b><dd>
+<br>libVorbisenc is an encoder setup library that provides easy
+encoder setup and encapsulates setup details to preserve binary compatability between library releases.<br><em>Status: Full release.</em><p>
+
+<dt><b>libvorbisfile</b><dd>
+<br>vorbisfile is an ANSI C convenience library intended to simplify most
+applications and provide example code for functions such as seeking and error recovery.<br><em>Status: Full release.</em><p>
+
+<dt><b>code examples</b><dd>
+<br>Example code that illustrates a simple encoder, decoder and file structure extractor.<br><em>Status: Full release.</em><p>
+
+<dt><b>OggEnc (vorbis tools)</b><dd>
+<br>Standard Ogg Vorbis command line encoder providing multiple bitrate encoding and comment tagging. <br><em>Status: Full release.</em><p>
+
+<dt><b>Ogg123 (vorbis tools)</b><dd>
+<br>Standard Ogg Vorbis command line decoder/player. <br><em>Status: Full release.</em><p>
+
+<dt><b>Ogginfo/Vorbiscomment (vorbis tools)</b><dd>
+<br>Standard Ogg Vorbis information query and comment modification utilities. <br><em>Status: Full release.</em><p>
+
+<dt><b>Vcut (vorbis tools)</b><dd>
+<br>vcut splits an Ogg file into two files with sample-level accuracy.
+<br><em>Status: Full release.</em><p>
+
+<dt><b>Oggdec (vorbis tools)</b><dd>
+<br>oggdec decodes an Ogg Vorbis file to either a WAV file or raw PCM.
+<br><em>Status: Full release.</em><p>
+
+<dt><b>Oggdrop (vorbis tools)</b><dd>
+<br>Graphical drag-and-drop encoder for the Win32 desktop. <br><em>Status: Full release.</em><p>
+
+<dt><b>documentation</b><dd>
+<br>Documents covering the complete Vorbis specification as well as the programming APIs for xiph.org's own libogg/libvorbis/libvorbisfile/libvorbisenc. <br><em>Status: Full release</em> 
+
+</dl>
+
+<h1>Distribution Terms in Plain English</h1>
+
+Anyone may freely use and distribute the Ogg and Vorbis
+specifications, whether in a private, public or corporate capacity.
+The specification is fully open to the public to be used for any
+purpose.  However, Xiph.org and the Ogg project (xiph.org) reserve
+the right to set the Ogg/Vorbis specification and certify
+specification compliance.<p>
+
+Xiph.org's Vorbis software libraries (libvorbis and vorbisfile) are
+distributed under a BSD-like license; these libraries may be used by
+any application, Open or proprietary, linked or incorporated in whole,
+so long as acknowledgement is made to Xiph.org Foundation when using our codec
+source in whole or in derived works.  See the file 'COPYING' in the
+source for all the details.<p>
+
+All other portions of xiph.org's reference Vorbis software are
+distributed under the (GNU) Library General Public License (LGPL).<p>
+
+Because the specification is open, third parties are welcome (and
+encouraged) to implement third party Vorbis software under other
+licenses using xiph.org's reference source as an authoritative
+reference.<p>
+
+<!--#include file="xiphbottom.include" -->
+
+

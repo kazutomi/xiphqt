@@ -1,0 +1,754 @@
+--- Log opened Sat Jun 07 19:44:33 2003
+19:44 <@jack> logging started
+19:45 <@jack> live log at http://xiph.org/~jack/200306.txt
+19:45 <@adiabatic> ooh, live.
+19:45 <@adiabatic> hi, mom!
+19:46 -!- jack changed the topic of #xiphmeet to: Welcome to the second MonthlyMeeting.  Agenda at http://wiki.xiph.org/MonthlyMeeting200306.  Live log at http://xiph.org/~jack/200306.txt
+19:46 <@adiabatic> *cough* +=, not =
+19:47 <@adiabatic> are we there yet?
+19:48 <@jack> ?
+19:48 <@adiabatic> nevermind
+19:54 -!- oddsock [~oddsock@xiph-IOHDOCKIPK.client.attbi.com] has joined #xiphmeet
+19:54 <@adiabatic> oddsock: hey
+19:55 < vanguardist> Mr. Sock
+19:55  * oddsock waves
+19:56  * oddsock puts on his "one size too small" vorbis tee
+19:56 -!- volsung [~volsung@xiph-HDHBFK.austin.rr.com] has joined #xiphmeet
+19:57 -!- princessilea [~princessi@xiph-IOINBIAGB.ots.utexas.edu] has joined #xiphmeet
+19:57 < vanguardist> oohh, too bad my ogg shirts are dirty
+19:57 < vanguardist> maybe for the next meeting :)
+20:00 -!- derf [~lomeando@xiph-EOLEFH.cc.vt.edu] has joined #xiphmeet
+20:00 <@jack> welcome derf
+20:00 [Users #xiphmeet]
+20:00 [@adiabatic] [ derf] [ oddsock ] [ princessilea] [ vanguardist] 
+20:00 [@jack     ] [ mau ] [ philkerr] [ rillian     ] [ volsung    ] 
+20:00 -!- Irssi: #xiphmeet: Total of 10 nicks [2 ops, 0 halfops, 0 voices, 8 normal]
+20:00 < derf> Hello, jack.
+20:00 -!- brendan [~brendan@xiph-IIIMNIFPPL.nyc.rr.com] has joined #xiphmeet
+20:01 < vanguardist> they're dropping (in) like flieds
+20:01 < vanguardist> flies
+20:01 < brendan> hi
+20:01 <@jack> hola.
+20:01 <@jack> we'll wait a few more minutes in case there are any last minute arrivals.
+20:02 < vanguardist> is xiphmonty coming? :)
+20:02 <@jack> just told him to join :)
+20:02 -!- purple [carsten@Ogg.Traffic.Editor.Xiph] has joined #xiphmeet
+20:03 < purple> Hiya. Sorry I'm late.
+20:03 < volsung> You still have several seconds.  :)
+20:03 <@jack> no prob.  will you be acting as secretary again for us? :)
+20:03 <@jack> (please :)
+20:03 < purple> Sure.
+20:03  * vanguardist wonders if he should turn on the webcam for such a formal occasion
+20:04 -!- Aram [~chatzilla@xiph-IAHLNLFAAA.hvc.rr.com] has joined #xiphmeet
+20:04 < rillian> ooh, chatzilla :)
+20:05 <@jack> as soon as monty figures out how to use the irc client he's go we can begin :0
+20:06 [Users #xiphmeet]
+20:06 [@adiabatic] [ brendan] [ oddsock     ] [ purple     ] [ volsung] 
+20:06 [@jack     ] [ derf   ] [ philkerr    ] [ rillian    ] 
+20:06 [ Aram     ] [ mau    ] [ princessilea] [ vanguardist] 
+20:06 -!- Irssi: #xiphmeet: Total of 13 nicks [2 ops, 0 halfops, 0 voices, 11 normal]
+20:06 <@adiabatic> he on mIRC?
+20:06 <@adiabatic> /join #xiphmeet
+20:06 <@jack> i was being sarcastic :)
+20:06 < vanguardist> heh
+20:06 <@adiabatic> if he needs to use multiple net...oh.
+20:06 <@jack> i think his mom called him right before 6 :)
+20:07 < vanguardist> :)
+20:07 <@adiabatic> right, it's always the parents' fault.
+20:07 <@adiabatic> Of course.
+20:07 < vanguardist> "hey chris! my mp3's won't play, what's going on!?"
+20:07 <@jack> hahah
+20:08 < vanguardist> webcam is unplugged, oh well, it's your loss :)
+20:09 -!- pfe010 [~pfe010@xiph-LDLN.nsw.cmis.CSIRO.AU] has joined #xiphmeet
+20:09 -!- xiphmont [xiphmont@Green.Hacker.Xiph] has joined #xiphmeet
+20:09 < xiphmont> "oops"
+20:09 <@jack> ok, we can start :)
+20:10 <@jack> welcome to the second monthly meeting :)
+20:10 <@jack> first off, just a quick update on xiph.org's organizational status, etc
+20:10 <@jack> two things
+20:10 <@jack> one) emily is getting our taxes done, and we should have some clear answers on how consulting revenue is calculated into that in a few weeks
+20:11 <@jack> so hopefully we can book it all as tax empempt and keep doing that.
+20:11 < xiphmont> yay
+20:11 <@adiabatic> consulting revenue from what?
+20:11 <@adiabatic> DI stuff?
+20:11 <@jack> for example, yes
+20:12 <@jack> second) our annual board meeitn gis the week of june 15th
+20:12 < xiphmont> yay
+20:12 <@jack> at least 4 of the board members will be at monty's house during that time
+20:12 <@jack> meeting with the lawyer, etc
+20:12 <@jack> our agenda will mostly be financial in nature i suspect
+20:13 <@adiabatic> yay money.
+20:13 <@jack> and a lot of what we will disucss here today about that will probably get used in our board meeting
+20:13 <@jack> we'll also try to get some definitive answer on what to do about patent searches for the new codecs, etc
+20:13 <@jack> is there any other high level issue that needs to be discussed there?
+20:14 <@jack> (also, i will try to make some minutes available afterwards)
+20:14 < xiphmont> well, we'll be doing lots of tech discussion too I expect.
+20:14 < xiphmont> But that's unofficial.  just inevitable.
+20:14 <@adiabatic> he
+20:14 <@adiabatic> heh*
+20:15 <@jack> ok, sounds like our agenda is good for that then.
+20:15 <@jack> on to the project updates
+20:15 <@jack> right now our biggest project is the DI work
+20:15 <@jack> i'll let monty fill us in on his stuff
+20:15 <@jack> and then stan can tell us what's going on with positron
+20:15 < xiphmont> The project is being a minor deathmarch ;-)
+20:16 < mau> any updates on theora after that?
+20:16 < xiphmont> The lastest surprise was that the 'optimizing compiler' is surprisingly poor and has no inline asm support.
+20:16 <@jack> mau: yes. next on teh list after DI :)
+20:16 < mau> cool
+20:16 < xiphmont> So, I'm writing much assembly by hand.
+20:16 < xiphmont> spent the first half of the week learning the chip.
+20:17 < xiphmont> Nearly done with the asm mdct.
+20:17 <@jack> (monty spent a week onsite in Chicago too)
+20:17 < xiphmont> 1.5 weeks.
+20:17  * oddsock lives in Chicago :)
+20:17 <@jack> we have non-realtime, non-integrated playback on the neuros now correct?
+20:18 <@jack> oddsock: i totally forgot.  and monty spent the weekend totally bored.  
+20:19 < rillian> xiphmont: how much does that leave?
+20:19 -!- pfe010 is now known as silvia
+20:21 <@jack> monty?
+20:22 < xiphmont> a4gh
+20:22 < xiphmont> wrong window
+20:22 < xiphmont> I show up in IRC, I get pounced inother windows :-)
+20:22 < xiphmont> Playback works correctly.
+20:22 < xiphmont> It is not yet realtime.
+20:22 < xiphmont> Actually, it may be at this point; I have an asm agenda which I'm pursuing to completion.
+20:23 < xiphmont> the MDCT is about 10x faster than the compiled version at this point
+20:23 < xiphmont> that's how bad the compiler is :-)
+20:23 < vanguardist> hehe
+20:23 < xiphmont> (GCC normally beats me)
+20:23 -!- Mike [msmith@xiph-HHICNL.lowrp1.vic.optusnet.com.au] has joined #xiphmeet
+20:23 <@adiabatic> tsk, tsk, tsk.
+20:23 < Mike> Sorry I'm late.
+20:23 < xiphmont> But yes, the implementation is feature complete.  It also needs to see one memory optimization and integration.
+20:24 <@adiabatic> Mike: don't worry, Jack's log (in the topic) is live.
+20:24 <@jack> xiphmont: how long until we're passed off to DI?
+20:24 < xiphmont> the mem opt and realtime.
+20:25 < xiphmont> Then we've passed off.  However, that relies on htem to release a working integration.
+20:25 <@jack> so a week? :)
+20:25 < xiphmont> roughly.
+20:25 < xiphmont> that's known work minus any surprises.
+20:26 <@jack> great
+20:26 <@jack> sounds like we're near the end of the tunnel
+20:26 <@jack> and just under 2 months behind schedule :)
+20:27 <@jack> stan, how fares positron?
+20:27 < volsung> Since the last meeting, we've had 2 beta releases of positron, and I'm ready to do a final 1.0 release this week if jack is ready.
+20:27 < volsung> See http://wiki.xiph.org/PositronTodo for my longer term roadmap.
+20:27 <@jack> um, it doens't support vorbis yet does it? :)
+20:27 < volsung> As it stands positron does basic syncing, adding, deleting, and stuff.
+20:27 < volsung> Do you want that in 1.0?
+20:28 < vanguardist> it also sorts! :)
+20:28 < volsung> I wanted to shove something finalized for people given the current Neuros capabilities now.
+20:28 <@jack> i'd think so, but i suppose it doesn't matter :)
+20:28 <@adiabatic> I sure as hell do.
+20:28 <@jack> it's not 'delivered' until it does vorbis
+20:28 < volsung> And bump the Vorbis stuff into 1.1, to synchronize with the theoretical firmware release.
+20:29 <@jack> let's ask DI what they'd prefer
+20:29 < volsung> 'k.
+20:29 <@jack> how's the feedback so far?
+20:29 < volsung> Bugs have trickled of.
+20:29 < volsung> off.
+20:29 -!- danx0r [davesum99@xiph-I.sub-166-154-129.myvzw.com] has joined #xiphmeet
+20:29 < danx0r> ho
+20:29 < volsung> Most bug reports I've seen lately are unconfirmable, or related to Linux kernel issues.
+20:29 < volsung> Which is going to be a problem for a while.
+20:30 < volsung> I've seen kernel (or Neuros USB bugs for all I know) eat two people's filesystems.
+20:30 <@jack> ouch.
+20:30 <@jack> that's not good.
+20:30 < volsung> It's not very common.
+20:30 <@jack> the neuros filesystem or the main one?
+20:30 < volsung> Neuros.
+20:30 < vanguardist> There were some issues regarding the latest beta firmware that were less stable under linux
+20:30 < volsung> Both cases it wasn't catestrophic, but required reformatting the device.
+20:31 <@jack> ok
+20:31 <@jack> sounds good then.
+20:31 < volsung> The might have been fixable with a fsck, but I didn't want to find out something bad would happen.
+20:31 <@jack> i'm glad we're almost done
+20:31 <@jack> but logistically
+20:32 <@jack> and because i want to see oggs on my neuros :)
+20:32 <@jack> s/but/both/
+20:32 < vanguardist> (on a side note, it would be interesting to test what will "soon" be 2.6 with positron and see if that helps with usb issues)
+20:32 < purple> I want a neuros :)
+20:32 < volsung> If DI wants Vorbis support (presumably with some kind of switch to disable it) in 1.0, we can get that out by the end of the week.
+20:32 <@jack> vanguardist: are you volunteerin? :)
+20:32 < volsung> If we stagger the releases, I can push out 1.0 real soon now.
+20:32 < volsung> Like tomorrow.  :)
+20:32 < vanguardist> jack: are you volunteering me?
+20:32 <@jack> vanguardist: yes :)
+20:33 < vanguardist> no
+20:33 <@jack> ok, which of the theora guys wants to give us an update?
+20:33 <@jack> oh first
+20:33 <@jack> we should introduce mau
+20:33 < vanguardist> jack: "i'll see what I can do" :)
+20:33  * rillian waves
+20:33 [Users #xiphmeet]
+20:33 [@adiabatic] [ danx0r] [ oddsock     ] [ rillian    ] [ xiphmont] 
+20:33 [@jack     ] [ derf  ] [ philkerr    ] [ silvia     ] 
+20:33 [ Aram     ] [ mau   ] [ princessilea] [ vanguardist] 
+20:33 [ brendan  ] [ Mike  ] [ purple      ] [ volsung    ] 
+20:33 -!- Irssi: #xiphmeet: Total of 17 nicks [2 ops, 0 halfops, 0 voices, 15 normal]
+20:33 <@jack> and derf
+20:33 < xiphmont> Hell, I need sync for testing :-0
+20:34 < rillian> so mau and derf have been contributing to theora
+20:34 < mau> rillian is prob the best guy to summarize the status
+20:34 < rillian> mau had been maintaining the 'legacy' vp3 code for quicktime and vfw
+20:35 < rillian> and we were apparently convincing in getting him interested in theora :)
+20:35 < rillian> he's done a lot of work with windows support
+20:35 <@jack> that's great news
+20:35 < rillian> and helped with the recent header revisions
+20:35 < rillian> derf has been in #theora for some time
+20:35 < rillian> mostly debating arcana with Dan :)
+20:36 < rillian> and knows a lot about video compression in general
+20:36 < rillian> As the agenda says, we've made good progress in the last month
+20:36 < rillian> things were idle for quite a while after monty started the DI work
+20:37 < rillian> but I think we've pulled together a team that can make a reasonable go at stewardship
+20:37 < rillian> As for current status, we're working up to an alpha 2 release
+20:37 < rillian> We've made some bitstream changes since alpha 1
+20:37 < rillian> adding a comment and codebook header
+20:38 < rillian> a crop rect for arbitrary-framesize encoding
+20:38 < rillian> and a colorspace flag
+20:38 < rillian> derf is working on an api simplification to make the header parsing more like the way vorbis does it
+20:38 < rillian> and there's a little cleanup to do
+20:38 < derf> And don't forget the huffman tables and the quant tables.
+20:38 < rillian> and then we're ready for release
+20:39 < rillian> derf: right, those are more efficiently packed than our first draft at a codebook header
+20:39 < danx0r> the huff & quant tbls are in mau's release
+20:39 < mau> actually checked in, but derf is reorganizing it to be more clean
+20:40 < mau> the initialization, i mean
+20:40 < danx0r> ok
+20:40 <@jack> so is this enough for ongoing maintanence or should i continue to seek funding for a fulltime person?
+20:40 < rillian> derf: any idea when that will be ready to check in?
+20:40 < danx0r> right -- my code was retarded
+20:40 < mau> not as much as mine, fixed by rillian :)
+20:40 < derf> rillian: It would've been ready today except that it doesn't work.
+20:40 < derf> I still need to track down what I screwed up.
+20:41 < mau> hum... prob same problem I found while trying to clean up
+20:41 < rillian> jack: I feel like we can get a 1.0 out in a reasonable amount of time with the current setup
+20:41 < rillian> one of us might evolve into someone who could use funding
+20:41 <@jack> our funding from on2 will end real soon now.
+20:41 <@jack> and they are not planning to renew.
+20:41 <@jack> ok
+20:42 <@jack> so at least it's not as urgent.
+20:42 < rillian> and derf has volunteered to take any theora-related contract work that might appear
+20:42 < rillian> I agree
+20:42 <@jack> derf: please contact me post-meeting sometime about the timeframe you are availalbe
+20:42 < derf> At least for the duration of the summer... I have yet to see what kind of time I will have this fall.
+20:42 < rillian> right
+20:42 < mau> I am definately not interested in funding, but IMO it would help if someone like derf could be funded to help full time
+20:42 <@jack> we have some work pending a developer if you'd like to take it.
+20:42 < mau> not sure if he can
+20:43 < rillian> In the medium term, the next big piece is the spec.
+20:43 < rillian> danx0r: how's that going?
+20:43 <@jack> do you guys need anything from teh other volunteers?
+20:43 < mau> actually no one has tested seeking, etc...
+20:43 < rillian> we still need good tools
+20:43 < danx0r> sorry -- dealing with a toddler right now --
+20:44 < danx0r> can we discuss in 10 min?
+20:44 < rillian> danx0r: we'll come back to you then
+20:44 <@jack> ok
+20:45 <@jack> jeanmarc may be by later but he's out at dinner at the moment.
+20:45 < rillian> We've had contibuters add suppose to ffmpeg, xine, and mplayer
+20:45 <@jack> i believe his work for epic on speex is progressing well
+20:45 < rillian> support
+20:45 < derf> xine uses ffmpeg
+20:45 <@jack> oops... didn't mean to interrupt :)
+20:46 < rillian> someone could also start on api docs, with the caveat that they'll need to be updated some
+20:46 < rillian> those are the major needs I can think of
+20:46 -!- mau [~mauricio@xiph-HPHBCP.virtua.com.br] has quit [Ping timeout: 180 seconds]
+20:47 < rillian> jack: 'salright. that's all I have to say at this point.
+20:47 <@jack> ok
+20:47 <@jack> who wants to give the icecast update?
+20:48 < brendan> Mike does :)
+20:49 <@jack> while we wait for him to finish breakfast? i'll give the update on teh realnetworks stuff
+20:49 <@jack> i'm still having buld problems, but i'm pretty close to having binaries built for people to test of the current code
+20:49 < Mike> I just finished breakfast, as it happens
+20:49 <@jack> i'll post those to the helix list hopefully this week sometime.
+20:50 < oddsock> jack: streaming ?
+20:50 <@jack> ah, ok, so go ahead mike :)
+20:50 <@jack> oddsock: streaming doens't work yet.  or half works.
+20:50 < Mike> ok, so the major work done recently is oddsock's revamping of the admin interface. it's now nice and graphical.
+20:50 -!- mau [~mauricio@xiph-HPHBCP.virtua.com.br] has joined #xiphmeet
+20:51 < oddsock> and need of major styleage
+20:51 < Mike> Brendan's been pushing towards a release of libshout, we should have that done in the next couple of weeks, I think (comments, Brendan?)
+20:51 < Mike> Yes, if there are any people with graphical design skills that want to have a go at the admin stylesheets... 
+20:51 < brendan> It doesn't have docs, but otherwise it just needs shaking I think
+20:51 <@adiabatic> Mike: You have my sheet, right?
+20:51 < Mike> icecast is still sitting around waiting for autofoo.
+20:52 < brendan> I believe the curl bit is settled?
+20:52 < Mike> adiabatic: no (I meant XSL stylesheets, by the way, if that was unclear)
+20:52 < oddsock> Karl has been working on that no ?
+20:52 < brendan> should just be install stuff now...
+20:52 < Mike> brendan: I think so.
+20:52 <@adiabatic> Mike: it wasn't quite clear, but since I've made one XSL sheet before...
+20:53 <@jack> i will probably dive into autofoo soon as well
+20:53 < oddsock> adiabatic: if you want to take a whack at it, I can show you what is where...
+20:53 <@jack> after my trip to boston i'm free for the rest of summer.
+20:53 < Mike> Basically, none of us have big chunks of free time at the moment to be doing major new work on icecast, and we've been avoiding doing the niggling details stopping a release.
+20:53 <@jack> (as in will be home all the time instead of travelling all the time)
+20:53 < Mike> jack: great.
+20:54 < danx0r> back
+20:55 <@jack> mike: what's this new batch of code that showed up on the mailing list today?
+20:55 < Mike> I'm going to try and make time soon, but I don't know when I'll be able to (work + finding a new place to live taking all my time...)
+20:55 < Mike> jack: oh, right, I guess I should mention that.
+20:56 < Mike> So, there's a group of french students who have been independently (in a different cvs tree) working on a bunch of things for icecast. Basically 3 major parts: 1) documentation, which we _definately_ want to re-integrate. 2) some sort of admin stuff, apparently that runs seperately from icecast. Not sure what the use is.
+20:57 <@adiabatic> They're probably more interested in usability than you are.
+20:57 < Mike> 3) they've apparently (I haven't yet looked at the code) re-designed the streaming core. What they said about that didn't make a lot of sense, though.
+20:57 < vanguardist> I am subscribed to that list, but haven't been able to follow it closely
+20:57 -!- danx0r [davesum99@xiph-I.sub-166-154-129.myvzw.com] has quit [Ping timeout: 180 seconds]
+20:57 < vanguardist> since it's in french :)
+20:57 < brendan> actually I think with prebuffering a single stream for all mp3 clients could work...
+20:57 < oddsock> Mike: wasn't there another documentation effort ? what is the status of that ?
+20:58 < Mike> oddsock: that's the one, I think. 
+20:58 -!- danx0r [davesum99@xiph-HP.sub-166-154-129.myvzw.com] has joined #xiphmeet
+20:58 < Mike> brendan: meh. It _could_, but you add a LOT of latency.
+20:58 < danx0r> back (again -- for real)
+20:58 < brendan> well, it depends
+20:59 < Mike> (and frankly, in that part of the code icecast is I/O bound, the extra work for copying stuff around is kinda trivial in comparison)
+20:59 < oddsock> Mike: http://quasi.ksl.com/icecast/ that is what I was referring to..
+20:59 < Mike> Anyway, that's getting a bit technical, so... I think that's about it for the icecast updates. Jack, back to you?
+20:59 < brendan> true
+20:59 <@jack> danx0r: you had some stuff earlier?
+21:00 < Mike> oddsock: ah. I didn't know about that.
+21:00 < danx0r> well...
+21:00 < danx0r> just to say, the spec is still in its infancy I'm afraid
+21:00 <@jack> ah
+21:00 < danx0r> I spent my time slice getting the header thing working
+21:00 <@jack> ok
+21:01 <@jack> well i'm sure that the extra theora people will increase motivation all around
+21:01 < danx0r> what is our proposed schedule for alpha 2 and beta?
+21:01 < mau> yup, schedules please :)
+21:01 < rillian> danx0r: alpha 2 is as soon as derf finishes his patch, more or less
+21:01 < rillian> beta is as soon as we have a draft spec
+21:01 <@jack> so alpha 2 by middle of the month?
+21:01 < mau> and bitstream is frozen,right?
+21:01 < rillian> jack: yes
+21:02 < mau> any chance of my duration flag getting in for progressive download clients?
+21:02 < mau> please?
+21:02 < derf> If the idea of alpha 2 is to have a cut at a stable bitstream, we'll need to know if the non-decimated chorma and interlacing support jack was talking about is going to be done.
+21:02 < rillian> there is that
+21:02 < derf> Because that will (obviously) need bitstream changes.
+21:02 < rillian> my inclination would be to release alpha 2
+21:03 < rillian> and do an alpha 3 if we work out what (incompatible) changes are needed to do that
+21:03 < danx0r> derf -- one could imagine a scenario where the addition of new chroma & interlace modes doesn't break old bitstreams
+21:03 < xiphmont> yes
+21:03 < rillian> s/what/that/
+21:03 < xiphmont> given the BBC work to be done
+21:03 < xiphmont> I think we need to have an alpha 3.
+21:03 < xiphmont> We should have a list of things to be done before we have a deadline :-)
+21:04 < danx0r> but can't we get a stable bitstream into production sooner rather than later, and add the new modes down the line?
+21:04 < rillian> yes as well
+21:04 < rillian> danx0r: so is there anything we can do to help you with the spec?
+21:04 < danx0r> rillian -- I should get to a stable point, then release what I have for review
+21:05 < rillian> that would be good, even if it's only a little bit
+21:05 < danx0r> right now I have the headers and the huffman stuff, and am starting to work on the dequant & DCT (keyframe only so far)
+21:05 < danx0r> if I can get to keyframes, I would be willing to share
+21:06 < rillian> can you estimate how long that will take?
+21:06 < mau> xiphmont: was that yes for a duration flag, or for alpha 3?
+21:06 < danx0r> rillian -- I think I can get there before end of June
+21:06 < danx0r> I have some time allotted 
+21:07 < rillian> excellent
+21:07 < rillian> which probably means beta 1 in august
+21:08 < danx0r> now on this alpha 3 question -- I strongly recommend that we come up with a scheme where future features can be added without disenfranchising every bitstream encoded prior
+21:08 < mau> would be excellent, but I am all for releasing alpha2 soon, if only for psychological reasons
+21:08 <@jack> i agree with mau.
+21:08 <@jack> we need to show the outside world we're not dead.
+21:08 < danx0r> right -- we need something out there we can live with
+21:08 < danx0r> I agree too
+21:08 <@jack> but bitstream stability needs to be addressed.
+21:09 < danx0r> then there needs to be a commitment to backwards compatibility starting with the A2 bitstream - ?
+21:09 <@jack> so you guys should discuss that sometime efore the next meeting and let us know :)
+21:09 < rillian> I would say b1 bitstream
+21:09 < xiphmont> I can't speak to the issue, mau.  I don;t even know what you propse.
+21:09 <@jack> i second rillian
+21:09 < rillian> what jack said :)
+21:09 < mau> me too, b1
+21:09 < xiphmont> I've been submerged in this contract for nearly a year.
+21:09 < danx0r> ie, A2 and later bitstreams will be supported within the Theora 1.X family
+21:09 < rillian> mau: no, you can't have it. sorry. :)
+21:09 < mau> guess you will force me to use icecast for streaming?
+21:09 < danx0r> ok, but if B1 = august, I think we're all experienced enough to realize we have to freeze now
+21:10 < danx0r> and add features with backwards compatibility
+21:10 < danx0r> (sorry mau)
+21:10 <@jack> let's discuss the timelines out of band :)
+21:11 < danx0r> we could add another header packet later, with extra parameters, and make sure today's players check for > 0x82 and ignore rather than crash
+21:11 <@jack> we need to move on
+21:11 < danx0r> or a revision number at least, so they gracefully bow out
+21:11 <@jack> has anyone heard from Josh?
+21:11 -!- derf [~lomeando@xiph-EOLEFH.cc.vt.edu] has quit [Ping timeout: 180 seconds]
+21:11 <@jack> do we have an update for FLAC or the website transition?
+21:11 < danx0r> we should have a theora meeting later to follow up on this
+21:11 <@adiabatic> No.
+21:12 <@jack> danx0r: agreed.
+21:12 < danx0r> ok.
+21:12 <@jack> ok.
+21:12 <@adiabatic> jack: I saw that the front page of the new flac.net breaks horribly on ie5
+21:12 <@jack> on to auratus/repeater
+21:12 <@jack> auratus is awaiting lawyering
+21:12 <@jack> that will get done by the board meeting at the latest, but hopefully sooner.
+21:12 -!- rillian [giles@3B06CEC.E1BA14BD.575C6C2A.IP] has quit [Ping timeout: 180 seconds]
+21:12 <@adiabatic> I might move it back to a zippy-fast table layout from an all-CSS design (as opposed to the older grotesque table layout)
+21:13 <@jack> trelane is absent again, so i don't know what hte status of repeater is
+21:13 < vanguardist> there is no status :)
+21:13 < volsung> vanguardist?
+21:13 <@jack> i told trelane some time ago that there was no reason not to start streaming
+21:13 < vanguardist> the plan is to feed repeater all of auratus
+21:13 <@jack> so i dunno if he's collecting content yet or not.
+21:13 < vanguardist> and then have other stuff that trelane wanted to do 
+21:13 <@jack> i think scott manley will let us use his Radio DMZ sets too
+21:14 <@jack> any other things there?
+21:14 < vanguardist> yes
+21:15 < vanguardist> in terms of lawyering, see what is the extent of agreemets wrt fax/mail or even email
+21:15 < vanguardist> what is enforceable, etc
+21:15 <@jack> my hope is that we can do it all by web/email and don't need signed/faxed agreements.
+21:15 -!- rillian [giles@3B06CEC.E1BA14BD.575C6C2A.IP] has joined #xiphmeet
+21:15 <@jack> but we'll hav eto see what the lawyer says.
+21:15 < oddsock> without sounding too ignorant, what is auratus ?
+21:15 -!- derf [~lomeando@xiph-EOLEFHILJC.cc.vt.edu] has joined #xiphmeet
+21:15 < rillian> jack: I'd also like to hear a status update from the standards people
+21:15 <@jack> vanguardist can explain the project
+21:15 < vanguardist> and how can xiph.org be protected if, for example, an artist decides to EFF a track that is owned by a label
+21:16 <@jack> rillian: ok, we'll do that as soon as we finish with auratus
+21:17 < vanguardist> oddsock: auratus is a place (similar to mp3.com) but cooler of course, and with vorbis, where artists can sign up and freely upload tracks
+21:17 < philkerr> An -02 update of the Vorbis RTP I-D was sent to the Vorb-dev list on Thursday
+21:17 < vanguardist> oddsock: the idea is to use an open audio licese and/or a combination of licenses that are offered via creative commons
+21:18 < vanguardist> oddsock: then we can have that music go into the Repeater stream
+21:18 < vanguardist> and we're all happy :)
+21:19 < vanguardist> what jack mentioned early about trelane was that he wanted to have some of his own content, and find people to DJ, etc.
+21:19 <@jack> ok
+21:19 < vanguardist> so that's about it on that one
+21:19 <@jack> philkerr: that's good news
+21:19 < vanguardist> (please find bugs by checking out the url that adiabatic mentioned)
+21:19 < Mike> philkerr: what's the timeline there? What else needs to be done now?
+21:19 <@jack> did we get any feedback on the Ogg RFC?
+21:19 < silvia> Haven't you read slashdot?
+21:20 <@jack> also, jeanmarc wanted me to mention that we probably need a new maintainer for the speex rtp draft
+21:20 <@jack> silvia: not if i can help it :)
+21:20 < philkerr> There are a few minor nits due to moving the IANA section but I want to move it to AVT WG status before the next meeting
+21:21 < silvia> The Ogg RFC was on slashdot when it came out. I got several emails of people wanting to use Ogg for non-a/v stuff, but weren't satisfied with constraints. I've forwarded most to the vorbis maillist.
+21:21 <@adiabatic> The Ogg RFC also made it to Ars Technica, too.
+21:21 < philkerr> Open areas are peeling and best MTU size/detection
+21:22 <@adiabatic> They do halfway decent journalism there.
+21:22 < silvia> Yeah, we should have made a press release. Maybe an idea for the next RFC.
+21:22 < rillian> silvia: yes. I think we decided they didn't really want Ogg per se
+21:22 <@jack> we can still do a press release.
+21:22 <@jack> it's never too late for press :)
+21:22 < Mike> silvia: yeah. I think the consensus there was "well, that might be nice, but that's not what ogg is actually _for_".
+21:23 < rillian> I've also updated the bugs against redhat and apache to use the new mimetype, but neither has responded
+21:23 <@jack> philkerr: could you look at the speex rtp draft as well?
+21:23 < silvia> Mike: yes and as they are free to fix up their own versions, that doesn't really bother us, I guess.
+21:23 <@jack> rillian: i saw a mass bug file in debian for that.  so we should be good to go there.
+21:23 < philkerr> Work has started on the Vorbis I-D.  This is a normative write-up of the existing docs so I may get in touch with ppl over areas.  Timescale hopefully end of the month.
+21:23 < philkerr> jack: will do
+21:23 <@jack> philkerr: awesome :)
+21:24 < Mike> philkerr: cool. working from the cvs docs? The 1.0 release docs had some problems that have been picked up since.
+21:24 <@jack> any other standards news?
+21:24 < Mike> philkerr: we're all more than happy to help out with problem areas, anyway.
+21:24 < philkerr> Mike:  from the 1.0, I'll switch and merge
+21:25 < vanguardist> msg jack :(
+21:25 < philkerr> Mike: cool, thanks!
+21:25 < vanguardist> ooops
+21:25 < silvia> phil: will you be in Vienna? I'm going to be there (next IETF meeting)
+21:25 <@jack> adiabatic: is the ogg rfc linked form xiph.org?
+21:25 <@adiabatic> xiph.org? probably not, lemme check...
+21:25 -!- vanguardist [vanguardis@Special.Forces.Xiph] has left #xiphmeet [brb i hope]
+21:26 <@jack> ok
+21:26 <@adiabatic> jack: URL of RFC?
+21:26 < philkerr> I hope so.  I've spoken to Colin Perkins about going.  I may have to go "cap in hand" to the EU again for travel.  I'll have an answer later this week (and drop you a note)
+21:26 < Mike> philkerr: ok. well, it's also been rewritten in docbook, if that's more convenient for you (or maybe that was prior to 1.0? I don't think it was, but I can't remember for sure)
+21:26 <@jack> adiabatic: ask silvia :)
+21:26 <@adiabatic> silvia?
+21:26 < philkerr> Mike, even better :)
+21:26 -!- jmspeex [~jmspeex@xiph-HBHFBOGCOG.64-202-24.mtl.mc.videotron.ca] has joined #xiphmeet
+21:27 <@jack> hey jeanmarc
+21:27 < silvia> url: http://www.ietf.org/rfc/rfc3533.txt and rfc3534.txt
+21:27 < jmspeex> hi everyone
+21:27 <@jack> philkerr: has agreed to look at the speex rtp draft
+21:27 < jmspeex> good
+21:27 <@jack> s/://
+21:27 < rillian> I guess this begs the question of what should happen to the current docs when we have an rcf version
+21:27 <@jack> ours are still the official ones
+21:27 <@jack> remember these aren't standards track rfcs
+21:28 < jmspeex> can anyone post the logs?
+21:28 <@jack> i'm not sure if they actually point back to us or not
+21:28 < Mike> rillian: we'll have both. we'll presumably also point to the RFCs in the main vorbis docs as well, though.
+21:28 < Mike> jmspeex: see topic
+21:28 < rillian> so we keep our own upstream, and the I-D are generated (if manually) from them
+21:28 <@jack> jmspeex: http://xiph.org/~jack/200306.txt
+21:28 < philkerr> Jack: Should we push for standards track?
+21:28 < silvia> the docs point back at xiph.org, but not at the specs pages themselves
+21:28 -!- vanguardist [vanguardis@Special.Forces.Xiph] has joined #xiphmeet
+21:28 <@jack> philkerr: when i discussed this with the IETF originally they seemed reluctant to do so.
+21:28 < Mike> philkerr: what's the difference? What are the advantages/disadvantages?
+21:29 <@jack> besides, we'd be giving control tothe IETF, and i'm not sure that's what we want.
+21:29 < philkerr> Jack: ok
+21:29 <@jack> basically teh thought was the IETF is set up for protocols not file formats
+21:29 <@jack> and they didn't have the experience in the area
+21:29 < silvia> we're using the IETF as publication body for our specs - that's all; we control what's up there
+21:29 <@jack> but they wanted to help us get some legitimacy
+21:30 < vanguardist> jack: in what way would we be giving control to the IETF?
+21:30 <@adiabatic> out-of-sequence nomenclature question: on www.xiph.org/ogg/, it reads "Ogg is the umbrella for a group of several related multimedia..."
+21:30 <@jack> vanguardist: IETF standards are agreed upon by the working groups.
+21:30 < silvia> however, as they are rfcs, their specs should be fairly stable (as is the case for ogg)
+21:30 <@adiabatic> Should Ogg-as-vague-umbrella-term-like-".NET" be dropped?
+21:30 <@jack> adiabatic: good question.  let's save that for next monthly meeting.
+21:31 <@jack> this is a good spot to transition to the funding item
+21:31 <@jack> because it's related
+21:31 < vanguardist> jack: sure, but isn't that the problem that mpeg has been having as a "standard"? :) to what point is legitimacy justified over the real possibility of lost control
+21:31  * adiabatic mutters "let's not" under his breath
+21:31 < silvia> jack: only if the submissions come from wrking groups; not if they come from outside
+21:31 < vanguardist> if the end result would be questionable and possible undesirable
+21:31 <@jack> last time, dan mentioned reorganizing ourselves more like mpeg
+21:31 <@jack> with member companies contributing
+21:31 <@jack> and acting more like a standards orgs ourself
+21:32 < danx0r> um, it's a dream I guess
+21:32 < danx0r> but it would be cool
+21:32 <@jack> a few weeks later, i got a call for the IEEE-ISTO
+21:32 <@jack> they basically help companies do that very thing.
+21:32 <@jack> so quite a bit of discussion has happened in this area
+21:32 < danx0r> cool!
+21:33 <@jack> the basic idea goes something like this:
+21:33 <@jack> there would be a new Xiph Forum
+21:33 < silvia> i think xiph is a standards body essentially; just that we use IETF for publication of our documents (and I mean that in  the nicest possible way)
+21:33 <@jack> companies would pay some yearly fee to join teh board, like $50k/r
+21:33 < danx0r> hmm... like a standards body for standards bodies?
+21:33 <@adiabatic> I've mulled over a bunch of ideas that the W3C tends to do especially in the field of encouraging implementer compliance (CHIPS is one example W3C note that i'm adapting), but getting me to write essays is not the easiest of tasks
+21:33 <@jack> this would give us a budget and resources
+21:34 < silvia> W3C is using the IETf in the same way - just developing their URI std newly at W3C and then  publishin g it at IETF
+21:34 < vanguardist> what active interest would a board member have from a tech point of view?
+21:34 <@jack> monty and pfm (ie, the other active board members) said this sounded promising enough to persue
+21:34 <@jack> vanguardist: i'm not sure.
+21:34 <@jack> we'd probably ahve to give up some control in certain areas
+21:35 <@jack> but it's not clear yet how much or what that would be.
+21:35 <@jack> we're still in the early discussions.
+21:35 < xiphmont> [yes, I agree with Jack here]
+21:35 <@adiabatic> I'm considering justifying a move to more "you should use less sucky metadata"-type works for the purposes of, say, categorization and enabling the commons 'n all that stuff.
+21:35 <@jack> i thought good first people to contact about this would include RealNetworks, BBC, and one of the larger gamecompanies
+21:36 <@jack> so far i've contacted realnetworks and received a positive response.
+21:36 <@jack> i have a conf call with them wednesday to talk about how this forum would work and ifthey would join, etc.
+21:36 <@jack> i'd like to get a feel of what everyone things about this
+21:36 < silvia> re metadata: it's time we announced our latest work, I guess; check out http://www.annodex.net/
+21:37 <@jack> we'd basically be positioning ourselves to take MPEG head on
+21:37 < vanguardist> jack: how about if a real person joins xiph and a xiph person joins real's board :)
+21:37 <@jack> heh
+21:37 <@adiabatic> silvia: p:hover { color: red; } /* really lame */
+21:37 <@jack> severarl companies have sort of been involved with us in this way already
+21:37 <@jack> specifically on2
+21:37 < silvia> We've developed a bitstream format based on ogg that multiplexes metadata together with any number of logical media bitreams - ask me for more details if you care
+21:38 < silvia> adiabatic: this is our first shot - will get better soon, promised
+21:38 < rillian> silvia: so it's a metadata format?
+21:38 < Mike> silvia: hmm... looks interesting, I'll have to read it in detail later.
+21:39 <@jack> the next steps would be to contact a few more companies, and see if we can come up with the needed resources to get the thing started
+21:39 < jmspeex> Am I the only one to think that having companies be part of the org could have some dangers (see JDEC/RAMBUS)
+21:39 < silvia> yes, it's metadata and hyperlinks together and is integrated with the web
+21:39 < rillian> cool
+21:39 <@jack> jmspeex: no, it's a big change and the board and i have reservations as well
+21:39 <@jack> but it might be that the positive benefits outweigh the negatives.
+21:40 <@jack> it seems the most promising funding model
+21:40 <@jack> the goal would be to get a multimillion $ budget.
+21:40 < silvia> re membership: i believe it can work, if you're careful abut it
+21:40 < jmspeex> I'm not opposed BTW, I just have the same concerns you seem to have too.
+21:40 <@jack> ok
+21:40 <@jack> i'll proceed with talks for now
+21:41 <@jack> and i'll ahve more info next month.
+21:41 <@jack> the other thing that's a aprt of this
+21:41 <@jack> is we need to start drafting a budget
+21:41 <@jack> because we'll need to figure out what our cuget needs our for the standards forum if it happens
+21:41 <@jack> and we have some peoople who are requesting money now
+21:41 <@jack> and we don't really have any budget in place now
+21:41 <@adiabatic> might want to ask Tim Berners-Lee how the W3C became the org that it is today. Especially if it's something specific related to why the w3c doesn't do much in the way of having individuals sign up.
+21:42 <@jack> it's essentially 100% allocated to paying overhead (very little) and paying monty's salary.
+21:43 <@jack> adiabatic: please feel free to contact him :)
+21:43 < silvia> W3C got funding from MIT afaik
+21:43 < danx0r> the key is to get the right mix of membership perks and independence
+21:43 <@jack> danx0r: yes
+21:43 <@adiabatic> Ask for gobs of money and promise nothing.
+21:43 < danx0r> the pitch has to be -- how much do you get from MPEG today?  well this is free and open
+21:43  * adiabatic ducks
+21:43 <@jack> danx0r: so we need to figure out what we are willing to give up, and what these comapnies are willing to give up
+21:43 < danx0r> adiabatic -- exactly.  You're right.  then negotiate from there
+21:43 <@jack> i think we can arrange it fairly well for ourselves
+21:44 < danx0r> jack -- yes, as in all negotiations
+21:44 <@jack> :)
+21:44 <@jack> real is a good place to start, since they aren't inside the MPEG crowd
+21:44 <@adiabatic> As long as you can keep an RF policy, then everything should be fine.
+21:44 <@jack> we'll see how they respond this week
+21:44 < danx0r> first difference between this and MPEG: absolute commitment on the part of member organizations to a patent-free policy
+21:44 <@jack> does anyone have contacts at a largish game company higher up? :)
+21:45 <@jack> if so, let me know privately.
+21:45 <@adiabatic> ...in fact, we should draft one if we're going after corporate funding. They might accidentally introduce patent-encumbered processes.
+21:45 < jmspeex> Real also has some of the most "closed" codecs.
+21:45 <@jack> adiabatic: we won't be doing anything that isn't RF.  that's already for certain :)
+21:45 < Mike> jack: talk to slothy? His company isn't big, but he might have contacts? Also, jmspeex<->EPIC, obviously.
+21:45 < jmspeex> what?
+21:46 <@jack> real obvisouly won't open those codecs
+21:46 < Mike> jmspeex: contacts at game companies
+21:46 <@jack> but they are already supporting us
+21:46 <@jack> and i htink it's in their best interest to play in the opne
+21:46 <@jack> (obviously they seem to agree..  ie, helix)
+21:46 < jmspeex> I don't see why they'd help push open codecs since the bread and butter comes from proprietary stuff
+21:46 <@adiabatic> jack: what safeguards will you have to make sure that this will continue to be the case?
+21:46 <@jack> their bread comes from server licensing.
+21:47 <@jack> and since their giving that away for free now, i'm not sure what their plan is :)
+21:47 < jmspeex> but if the codec is open everyone can sell servers
+21:47 <@jack> adiabatic: if we can't safeguard it, we won't do it.
+21:48 <@jack> that's all contracts and lawyers, and i can't give you any details because we haven't gotten that far.
+21:48 <@jack> so far, everyone understands that the intent is RF or nothing.
+21:48 < jmspeex> RF==?
+21:48 <@jack> Royalty Free
+21:48 <@adiabatic> Royalty Free.
+21:48 <@adiabatic> (as in the W3C patent policy)
+21:49 <@jack> ok, re budget, if anyone has budget request, please email them to me
+21:49 <@jack> as i'll be putting together a preliminary budget
+21:50  * adiabatic nudges volsung
+21:50 < jmspeex> I think one of the important things to do is find big companies that really have an interest in open-standards (i.e. like IBM is for Linux).
+21:50 <@jack> jmspeex: yep.  if you have ideas, please let me know outside of the meeting.  
+21:51 <@jack> jmspeex: i chose real to contact first since i'm friends with their main open standards guy :)
+21:51 <@jack> it was an easy conversation to have.
+21:51 <@jack> ok
+21:51 <@jack> we've got about 20 minutes left
+21:51 < jmspeex> Having Real could be nice, but I don't think they can be fully trusted...
+21:52 <@jack> stan's got something for us
+21:52 < volsung> 'k.
+21:52 < volsung> jack mentioned at one point Xiph.org was looking for an art person.  I thought a neat starting project would be to work up some logos for the codecs so we could have some visual brand recognition.  (Things to slap on "about" boxes, real boxes, etc.)
+21:53 < volsung> So I talked to my sister (she's princessilea in the channel) who is an art student, and asked if she would workup some logos based off the style of the fish (which we all seem to like).  We tried to make them relate *somehow* to each of the codecs, but some of them are a stretch.  So the other hope is at least they are memorable.  :)
+21:53 < xiphmont> we've only ever had one logo stick.  the fish
+21:53 < volsung> (Yes, this is cut and paste.  I don't type 200 wpm.)
+21:53 <@jack> awesome :)
+21:53 < xiphmont> A logo for everything is overload.
+21:53 <@adiabatic> I've been complaining (or at least muttering under my breath) about the lack of art quality on speex.org and icecast.org.
+21:53 < volsung> I think they are pretty neat, but I'm biased: http://www.public.asu.edu/~fuchsia/logo.jpg
+21:54 < volsung> I'll let you guys guess which logo is which codec (Xiph fish doesn't count).  :)
+21:54 <@jack> which codecs do they correspond to?
+21:54 < jmspeex> I think there should be one "main" logo and variations for each codec.
+21:54 < vanguardist> heh
+21:54 <@adiabatic> Snake for Vorbis.
+21:54 <@jack> parot == speex
+21:54 < volsung> (Note that these are sample renderings.  The originals are vector-based Illustrator files.)
+21:54 < volsung> jack: Yup.  :0
+21:54 <@adiabatic> I dunno about the rat.
+21:54 < vanguardist> haha
+21:54 <@adiabatic> Or the sheep.
+21:54 <@adiabatic> or the electocuted cat.
+21:55 < volsung> Okay, I'll explain the rest so we don't sit here too long.
+21:55 <@adiabatic> princessilea: no offense
+21:55 < volsung> Ogg is the hamster.
+21:55 <@jack> my first impression is "CUTE!"
+21:55 < vanguardist> jack: i've been saying that for a while :)
+21:55 < xiphmont> It would be big in Japan.
+21:55 <@jack> i never thought of doing something in the fish style
+21:55 < volsung> The sheep is FLAC (think cloning here).
+21:55 <@adiabatic> princessilea: good stuff
+21:55 < Mike> xiphmont: heh. yes, I can see that.
+21:55 <@adiabatic> volsung: hah
+21:55 < xiphmont> The fish needs a few tweaks.  But, yes, cute.
+21:56 <@jack> i think the idea has promise
+21:56 < volsung> So anyway, we thought we'd pitch that out for you guys to chew on.
+21:56 <@jack> if no one objects, i'lll present this to the board
+21:56 < vanguardist> I like how they all have crazy FishMonty eyes
+21:56 < jmspeex> I like the parrot
+21:56 < oddsock> is this only  codecs ? or things like icecast too ?
+21:56 <@adiabatic> go for it.
+21:56 < volsung> She is also available for more art work (though would prefer some work for hire if possible).
+21:56 <@jack> the parrot is awesome
+21:56 < vanguardist> the sheep looks stoned
+21:56 < vanguardist> must be all that cloning :)
+21:57 <@jack> the others aren't nearly as obvious , but perhaps we can think of something to help that
+21:57 <@jack> the style is quite good :)
+21:57 < brendan> the hamster looks paranoid
+21:57 < rillian> I love the seep
+21:57 <@adiabatic> yeah...run the sheep one by Josh.
+21:57 < volsung> oddsock: Other projects are possibilities, but this is just a sample.
+21:57 < volsung> jack: At some point, we decided make them fit was insane.
+21:57 <@adiabatic> I'd suggest a honey ant for Ogg, but...
+21:57 < xiphmont> ?
+21:58 <@jack> is she available for other work?
+21:58 < oddsock> this is all a bit o-rielly-esque
+21:58 <@adiabatic> xiphmont: living Tupperware containers.
+21:58 < volsung> princessilea: Are you?  :)
+21:58 < rillian> volsung: also, fwiw. the xiph fish is on a 4-panelled diamond, not a two like the others have been done
+21:58 < princessilea> jack: yes
+21:58 <@jack> can she do web designs?  does seh have an online portfolio we can ogle?
+21:58 <@jack> shall i stop adressing her in the third person? :)
+21:58 < volsung> jack: Heh.  I'm working on that.
+21:58 < volsung> I just got the webserver set up this morning.
+21:58 <@jack> good
+21:59 <@adiabatic> volsung: oh, she does web work, too?
+21:59 <@jack> we do have need for web work
+21:59 < princessilea> jack: I'm pretty new to computer art actually, so I don't have experience in web design
+21:59 <@jack> graphic work rather
+21:59 <@jack> adiabatic does a good job with the rest 
+21:59 < vanguardist> move over jimmac
+21:59 < princessilea> jack: but I can do lots in photoshop and illustrator as graphic design for pages
+21:59 < vanguardist> here comes leia
+21:59 <@adiabatic> princessilea: I highly recommend "Designing with Web Standards" by Jeffrey Zeldman, btw.
+21:59 <@jack> princessilea: it may not matter too much if you have some help.
+22:00 <@adiabatic> If you do get into that sort of stuff.
+22:00 <@jack> ok, i'l show your stuff to the board
+22:00 < vanguardist> i actually have a project for princessilea :)
+22:00 <@jack> if you have some time later i'd like to discuss other stuff with you as well
+22:00 < princessilea> jack: sure
+22:01 <@jack> and hopefully i can get some budget approval to hire you if it all works out.
+22:01 < oddsock> what IS that rat eating..
+22:01 < vanguardist> a file
+22:01 < volsung> A file folder.
+22:01 < vanguardist> it's ogg :)
+22:01 < princessilea> oddsock: its a folder
+22:01 <@jack> this is the best start we have on graphics, so i propose we run with it if possible :)
+22:01 < volsung> oddsock: This was the inspiration: http://www.rightbrainemporium.com/hamster.jpg
+22:01 <@adiabatic> princessilea: what's the cat, again?
+22:02 <@adiabatic> (er...for which project?)
+22:02 < volsung> It's Theora, I think.
+22:02 < volsung> (that was totally random, actually)
+22:02 <@adiabatic> cat-sleeping-on-warm-TV?
+22:02 <@adiabatic> yeah, that is random...
+22:03 < princessilea> adiabatic: we ran out of ideas on that one
+22:03 <@adiabatic> I can empathize.
+22:03 <@jack> heheh :)
+22:03 <@jack> ok
+22:03 <@jack> i think everyone likes them :)
+22:03 <@jack> great job
+22:04 <@jack> that's far better than anyone's done in the past
+22:04 < princessilea> thanks
+22:04 < silvia> excellent!
+22:04 < oddsock> yes, great job
+22:04 <@jack> (although emily's logos are very cute too)
+22:04 <@adiabatic> jack: url?
+22:04 <@jack> don't have one handy.
+22:04 < silvia> there are also some nice Australian animals btw
+22:04 <@jack> the icecast igloo was hers
+22:04 <@jack> it would fit in this style easily i think
+22:04 <@adiabatic> yeah.
+22:04 <@jack> so i'd suggest throwing it on the diamond and using that
+22:05 <@adiabatic> princessilea: yeah, we need an igloo.
+22:05 < oddsock> a penguin
+22:05 <@adiabatic> In SVG.
+22:05 <@adiabatic> You have Illustrator?
+22:05 < jmspeex> Do you really want to keep the diamond?
+22:05 <@jack> i'll get princessilea the illustrator files for all the stuff i have
+22:05 < Mike> silvia: by the way, where in .au do you live?
+22:05 <@jack> jmspeex: we use the fish with and without the diamond
+22:05 <@jack> but typically with
+22:05 <@adiabatic> silvia: if you can suggest a proper animal for any of the projects...
+22:05 < Mike> jmspeex: it helps give it a distinct visual style.
+22:06 <@adiabatic> silvia: although the only things that come to mind are dropbears, indestructible toads, koalas, and kangaroos...
+22:06 <@jack> i suggest we adjourn on this happy note (it's been 2 hours)
+22:07 < silvia> possum wombat etc. etc. ;)
+22:07 <@jack> any seconds?
+22:07 < oddsock> good job jack on the meeting
+22:07 < volsung> I second.
+22:07 < volsung> :)
+22:07 <@jack> ok
+22:07 <@jack> next meeting July 5th
+22:07 < silvia> great meeting!
+22:07 <@jack> thanks everyone for coming
+22:07 < xiphmont> yay
+22:07 < Mike> july 5 is a friday, isn't it?
+22:07 <@jack> logs will be posted shortly, and minutes int he next week
+22:07 < jmspeex> 5th is a saterday
+22:08 <@jack> mike: it would be the morning of the sixth for you
+22:08 < jmspeex> s/saterday/saturday/
+22:08 < Mike> oops. ok.
+22:08 < Mike> ok, thanks all.
+22:08 < philkerr> jeanmarc:  I'll email you re speex rtp
+22:08 < jmspeex> OK
+--- Log closed Sat Jun 07 22:08:47 2003

@@ -1,0 +1,164 @@
+%!PS
+%%Creator: Jewel Box Labeler v0.1 Copyright (C) 1998 Jacob Langford
+%%EndComments
+
+/back_cover_dim { 391 333 } def
+/spine_dim { 333 16 } def
+/front_cover_dim { 340 340 } def
+
+/rect_path { % x y -> path
+   /y exch def /x exch def
+   newpath 0 0 moveto x 0 lineto 
+   x y lineto 0 y lineto closepath 
+} def
+
+/front_cover_path { front_cover_dim rect_path } def
+/back_cover_path { back_cover_dim rect_path } def
+/spine_path { spine_dim rect_path } def
+
+/rel_text_left { % x y rxl ry family size text -> rxr text
+   /text exch def /size exch def /family exch def
+   /ry exch def /rxl exch def 
+   /y exch def /x exch def
+    
+   family findfont size scalefont setfont
+   text stringwidth pop x div rxl add
+
+   x rxl mul y ry mul moveto
+   text
+} def
+
+/rel_text_right { % x y rxr ry family size text -> rxl text
+   /text exch def /size exch def /family exch def
+   /ry exch def /rxr exch def 
+   /y exch def /x exch def
+    
+   family findfont size scalefont setfont
+   text stringwidth pop x div neg rxr add dup 
+   
+   x mul y ry mul moveto
+   text
+} def
+
+/rel_text_centered { % x y rxl rxr ry family size text -> text
+   /text exch def /size exch def /family exch def
+   /ry exch def /rxr exch def /rxl exch def
+   /y exch def /x exch def
+
+   family findfont size scalefont setfont
+   rxr rxl sub 
+   text stringwidth pop x div sub 2 div rxl add
+   x mul y ry mul moveto
+   text
+} def
+
+/set_spine_text_left { % rxl ry family size text -> rxr text
+   spine_dim 7 2 roll rel_text_left
+} def
+
+/set_back_cover_text_left { % rxl ry family size text -> rxr text
+   back_cover_dim 7 2 roll rel_text_left
+} def
+
+/set_front_cover_text_left { % rxl ry family size text -> rxr text
+   front_cover_dim 7 2 roll rel_text_left
+} def
+
+/set_spine_text_right { % rxr ry family size text -> rxl text
+   spine_dim 7 2 roll rel_text_right
+} def
+
+/set_back_cover_text_right { % rxr ry family size text -> rxl text
+   back_cover_dim 7 2 roll rel_text_right
+} def
+
+/set_front_cover_text_right { % rxr ry family size text -> rxl text
+   front_cover_dim 7 2 roll rel_text_right
+} def
+
+/set_spine_text_centered { % rxl rxr ry family size text -> text
+   spine_dim 8 2 roll rel_text_centered
+} def
+
+/set_back_cover_text_centered { % rxl rxr ry family size text -> text
+   back_cover_dim 8 2 roll rel_text_centered
+} def
+
+/set_front_cover_text_centered { % rxl rxr ry family size text -> text
+   front_cover_dim 8 2 roll rel_text_centered
+} def
+
+
+/fill_rectangle { % x y vspace text
+   /text exch def /vspace exch def
+   /y exch def /x exch def
+   0 y moveto 
+   {  
+      {pop pop currentpoint pop x gt 
+         {currentpoint vspace sub exch pop 0 exch moveto} if
+      } text kshow
+      currentpoint exch pop 0 lt 
+   {exit} if } loop
+} def
+
+/fill_front_cover { % rxo ryo rxs rys angle family size text 
+   /text exch def /size exch def /family exch def /angle exch def
+   /rys exch def /rxs exch def /ryo exch def /rxo exch def
+   front_cover_dim /y exch def /x exch def
+
+   gsave front_cover_path clip
+     x rxo mul neg y ryo mul neg translate angle rotate
+     family findfont size scalefont setfont
+     x rxs mul y rys mul size text fill_rectangle
+   grestore
+} def
+
+
+
+
+
+% Set coordinates for front cover
+   100 375 translate
+   gsave front_cover_path clip
+   .90 setgray
+   0 0.5 1.3 1.5 15 /Times-Bold 65 
+      (  ) fill_front_cover
+   0.0 setgray front_cover_path 2 setlinewidth stroke
+   0 1 0.65 /Helvetica-Bold 30
+      () set_front_cover_text_centered show
+   0 1 0.55 /Helvetica-Bold 20
+      () set_front_cover_text_centered show
+
+   grestore
+
+
+
+% Set coordinates for back cover
+   0 -350 translate
+   gsave back_cover_path clip
+   
+   0.80 setgray
+
+   0.02 0.50 /Helvetica-Bold 200
+      ()
+      set_back_cover_text_left show pop
+
+   0.98 0.05 /Helvetica-Bold 200
+      ()
+      set_back_cover_text_right show pop
+
+   0.0 setgray
+
+   0.05 0.06 /Helvetica-Bold 08
+      (Proudly labeled with free, open-source software, 1998.) 
+      set_back_cover_text_left show pop
+   0.05 0.04 /Helvetica-Bold 08
+      (Distribution of disc contents may be restricted by copyright law.) 
+      set_back_cover_text_left show pop
+   0.95 0.04 /Helvetica-Bold 08
+      (Total running time 0:0.) 
+      set_back_cover_text_right show pop
+
+   %draw_back_frame
+   back_cover_path 2 setlinewidth stroke
+

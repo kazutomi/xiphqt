@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.9: http://docutils.sourceforge.net/" />
+<title>Minutes of the Xiph.org Monthly Meeting for July 2003</title>
+<meta name="author" content="Carsten Haese" />
+<meta name="date" content="July 7, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="minutes-of-the-xiph-org-monthly-meeting-for-july-2003">
+<h1 class="title">Minutes of the Xiph.org Monthly Meeting for July 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>July 7, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#introduction" id="id1" name="id1">1   Introduction</a></li>
+<li><a class="reference" href="#theora-update" id="id2" name="id2">2   Theora Update</a></li>
+<li><a class="reference" href="#xiph-org-update" id="id3" name="id3">3   Xiph.Org Update</a></li>
+<li><a class="reference" href="#system-administration" id="id4" name="id4">4   System Administration</a></li>
+<li><a class="reference" href="#website-overhaul" id="id5" name="id5">5   Website Overhaul</a></li>
+<li><a class="reference" href="#upcoming-releases" id="id6" name="id6">6   Upcoming Releases</a><ul class="auto-toc">
+<li><a class="reference" href="#icecast" id="id7" name="id7">6.1   Icecast</a></li>
+<li><a class="reference" href="#vorbis" id="id8" name="id8">6.2   Vorbis</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#branding-trademark-issues" id="id9" name="id9">7   Branding/Trademark Issues</a></li>
+<li><a class="reference" href="#standardization" id="id10" name="id10">8   Standardization</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1" name="introduction">1   Introduction</a></h1>
+<p>The monthly meeting for July 2003 took place on July 5, 2003, at midnight UTC
+in the IRC channel <tt class="literal"><span class="pre">#xiphmeet</span></tt> on <tt class="literal"><span class="pre">irc.xiph.org</span></tt>. The
+following people were present, in alphabetical order:</p>
+<ul class="simple">
+<li>Active Participants (IRC nicknames in parentheses)<ul>
+<li>Brendan Cully, Icecast developer (brendan)</li>
+<li>Ralph Giles, Theora developer and Xiph.org sysadmin (rillian)</li>
+<li>Carsten Haese, Ogg Traffic Editor, Secretary (purple)</li>
+<li>Dan Miller, Theora developer (danx0r)</li>
+<li>Jack Moffit, Executive Director (jack)</li>
+<li>Mauricio Piacentini, Theora developer (mau)</li>
+<li>Sheryl Seibert, Graphic Designer (princessilea)</li>
+<li>Stan Seibert, libao, ogg123, and Positron developer (volsung)</li>
+<li>Nathan Sharfi, Webmaster (adiabatic)</li>
+<li>Jean-Marc Valin, Speex developer (jmspeex)</li>
+<li>Alexander Winston, Webmaster (whitestar)</li>
+</ul>
+</li>
+<li>Observers (IRC nicknames)<ul>
+<li>foolip</li>
+<li>juhovh</li>
+<li>lunalosit</li>
+<li>Teach</li>
+</ul>
+</li>
+</ul>
+<p>The meeting was moderated by Jack Moffit.</p>
+</div>
+<div class="section" id="theora-update">
+<h1><a class="toc-backref" href="#id2" name="theora-update">2   Theora Update</a></h1>
+<p>Since Dan had a scheduling conflict, the Theora part was pulled to the top
+of the agenda. Therefore, Dan started off the meeting with an update on his
+work to write the Theora bitstream specification. The beginnings are checked
+into CVS and are also available via FTP from ftp.vp3.com. With the help
+of Mauricio, Ralph has started a Wiki version which is available at
+<a class="reference" href="http://wiki.xiph.org/TheoraSpec">http://wiki.xiph.org/TheoraSpec</a>.</p>
+<p>Dan's expected date for completing the spec is mid September, unless there are
+people willing to help him. Mike Melanson, who is very active on the theora
+mailing lists, was suggested as an obvious candidate.</p>
+<p>One open item that needs to be resolved is the fact that VP3 is encoded
+upside-down, whereas Theora is not. This needs to be addressed so that existing
+VP3 streams can be converted into Theora streams in the future. This may be
+done by including an orientation flag into the Theora stream.</p>
+<p>Regarding the question of further bitsream changes, it was decided that 
+interlacing would be implemented in a new revision of the stream format.</p>
+</div>
+<div class="section" id="xiph-org-update">
+<h1><a class="toc-backref" href="#id3" name="xiph-org-update">3   Xiph.Org Update</a></h1>
+<p>Jack took us back to the beginning of the agenda with an update about the
+Xiph.org Organizational status. He was present at the Xiph.org board meeting
+on June 16th, 2003, together with 3 other Xiph.org board members, their
+lawyer, and an advisor. <a class="reference" href="http://wiki.xiph.org/BoardMeeting200306">Minutes of the board meeting</a> are available.</p>
+<p>Jack then gave us a brief contract status update. Monty's Neuros firmware
+implementation is moving along, and the first beta for Ogg Vorbis playback
+was released recently. There are a few outstanding known problems, but those
+will be taken care of in the next few weeks.</p>
+</div>
+<div class="section" id="system-administration">
+<h1><a class="toc-backref" href="#id4" name="system-administration">4   System Administration</a></h1>
+<p>Jack reported that he, Monty, and Ralph have agreed to migrate the Xiph
+CVS repository to <a class="reference" href="http://subversion.tigris.org/">Subversion</a>. Initial skepticism was quickly overcome, and
+there was a broad consensus that this move will be a good thing. The move
+will happen once the cvs2svn export-import script properly supports
+branches and tags.</p>
+<p>Since Subversion depends on Apache 2, it was decided to migrate the web server
+to Apache 2, instead of maintaining two server instance.</p>
+</div>
+<div class="section" id="website-overhaul">
+<h1><a class="toc-backref" href="#id5" name="website-overhaul">5   Website Overhaul</a></h1>
+<p>Next up, Nathan presented the proposed design for the unified Xiph.org
+websites. Zope will be used for the content management system; Plone doesn't
+seem ready for prime time yet.</p>
+</div>
+<div class="section" id="upcoming-releases">
+<h1><a class="toc-backref" href="#id6" name="upcoming-releases">6   Upcoming Releases</a></h1>
+<div class="section" id="icecast">
+<h2><a class="toc-backref" href="#id7" name="icecast">6.1   Icecast</a></h2>
+<p>Brendan has been pushing to get a release of libshout2 out of the way. As he put
+it, it is currently in perpetual &quot;just one more beta&quot; stage. He is also working
+on perl and python bindings which are very close being done. The sticking point
+is documentation, and Brendan would appreciate if he could get some help with
+that.</p>
+</div>
+<div class="section" id="vorbis">
+<h2><a class="toc-backref" href="#id8" name="vorbis">6.2   Vorbis</a></h2>
+<p>Since Monty was absent, Jack relayed Monty's list of near-term goals that he
+will work on once the Neuros contract is completed. One is the oggfile API
+which will provide a vorbisfile-like API for multiplexing and demultiplexing
+Ogg files. Next up is a Vorbis 1.0.1 bugfix release, backporting some Tremor
+changes to the reference implementation, including the libogg2-zerocopy 
+memory management, splitting decoding into its own library.</p>
+<p>Finally, Monty is planning to make a Vorbis 1.1 AAC+SBR killer release. The
+exact plans are not known, but Vorbis 1.1 is going to include encoder tweaks
+to be more competitive in the low bitrate arena. There is also a possibility
+that some of Garf's high bitrate tuning will be incorporated.</p>
+</div>
+</div>
+<div class="section" id="branding-trademark-issues">
+<h1><a class="toc-backref" href="#id9" name="branding-trademark-issues">7   Branding/Trademark Issues</a></h1>
+<p>In the last part of the meeting, the branding issues surrounding Ogg were
+discussed. It was decided that OggSquish will be dropped, as it is no longer 
+in use. Also, Ogg as the name for the multimedia umbrella project will be
+dropped in favor of the Xiph project. This leaves Ogg unambiguously as the
+container format that the Xiph project employs.</p>
+<p>The discussion then moved towards acceptable use policies for Xiph logos. On
+one hand, there is the desire not to allow inferior products to create a
+bad impression of Xiph technology. On the other hand, nobody has really the
+time to define and enforce strict quality guidelines. As a compromise, it was
+decided that the logos shall be usable with only minimal restrictions that
+are to be determined, and that the logos shall not imply quality. A few
+possibilities for logos that don't imply quality were pointed out by foolip and
+Jack.</p>
+</div>
+<div class="section" id="standardization">
+<h1><a class="toc-backref" href="#id10" name="standardization">8   Standardization</a></h1>
+<p>Before the meeting adjourned, Jack squeezed in a small update from Phil Kerr.
+The draft specifications for the Speex RTP payload and Vorbis-over-RTP are
+scheduled to be discussed at the next IETF meeting in Vienna. The Vorbis
+bitstream specification didn't make it, but Phil is confident that it will
+be ready for the following IETF meeting.</p>
+<hr />
+<p>Meeting Minutes for the July 2003 Monthly Meeting</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1254 @@
+--- Log opened Sat May 03 19:25:00 2003
+19:25 <@jack> testing logging
+19:30 <@jack> testing 1 2 3
+19:37 -!- mode/#xiphmeet [-k +o] by jack
+19:38 -!- xiphmont [~xiphmont@xiph-DBDNHN.MIT.EDU] has joined #xiphmeet
+19:38 -!- Topic for #xiphmeet: Welcome to the MonthlyMeeting.  Next Meeting @ 0:00 GMT between May 3 and May 4.  Please see http://wiki.xiph.org/MonthlyMeeting200305 and http://wiki.xiph.org/MeetingEtiquette
+19:38 -!- Topic set by jack [jack@xiph-MBDGFD.xiph.org] [Sat May  3 11:23:33 2003]
+19:39 -!- silvia [~silvia@xiph-IOIABG.dialup.nsw.CSIRO.AU] has joined #xiphmeet
+19:39 -!- jack changed the topic of #xiphmeet to: Welcome to the MonthlyMeeting.  Realtime log is at http://xiph.org/~jack/200305.txt.  Agenda at http://wiki.xiph.org/MonthlyMeeting200305.  Please read http://wiki.xiph.org/MeetingEtiquette.
+19:40 -!- volsung [~volsung@xiph-IIHPNO.ots.utexas.edu] has joined #xiphmeet
+19:40 -!- mode/#xiphmeet [+o volsung] by ChanServ
+19:41 -!- NewNick [~FromMirc@CF79792.42FC64BA.31E9B4F0.IP] has joined #xiphmeet
+19:43 <@jack> NewNick: if you're joe, you might want to type "/nick joe"
+19:45 -!- NewNick is now known as joe
+19:45 < joe> thanks
+19:50 -!- silvia [~silvia@xiph-IOIABG.dialup.nsw.CSIRO.AU] has quit [Ping timeout: 180 seconds]
+19:51 -!- pfm [~pfm@xiph-IOHLOL.pbc.adelphia.net] has quit [Ping timeout: 181 seconds]
+19:51 -!- monty [~xiphmont@xiph-DBDNHN.MIT.EDU] has joined #xiphmeet
+19:51 -!- mode/#xiphmeet [+o monty] by ChanServ
+19:51 <@monty> Gr.
+19:51 -!- xiphmont [~xiphmont@xiph-DBDNHN.MIT.EDU] has quit [Ping timeout: 180 seconds]
+19:51 -!- silvia [~silvia@xiph-IOIABG.dialup.nsw.CSIRO.AU] has joined #xiphmeet
+19:52 <@monty> And now Verio decides to suck.
+19:52 -!- monty is now known as xiphmont
+19:52 -!- adiabatic [~comatoast@xiph-HBIKOH.tstonramp.com] has joined #xiphmeet
+19:53 < adiabatic> joe...?
+19:53 <@jack> joe is joe born from Digital Innovations
+19:53 < adiabatic> Ah.
+19:53 < adiabatic> Hi.
+19:53 -!- Topic for #xiphmeet: Welcome to the MonthlyMeeting.  Realtime log is at http://xiph.org/~jack/200305.txt.  Agenda at http://wiki.xiph.org/MonthlyMeeting200305.  Please read http://wiki.xiph.org/MeetingEtiquette.
+19:53 -!- Topic set by jack [jack@xiph-MBDGFD.xiph.org] [Sat May  3 19:39:21 2003]
+19:53 [Users #xiphmeet]
+19:53 [@jack] [@volsung] [@xiphmont] [ adiabatic] [ joe] [ silvia] 
+19:53 -!- Irssi: #xiphmeet: Total of 6 nicks [3 ops, 0 halfops, 0 voices, 3 normal]
+19:53 -!- jmspeex [~jmspeex@xiph-IMHHKO.10-203-24.mtl.mc.videotron.ca] has joined #xiphmeet
+19:54 -!- Mike [msmith@xiph-HHICNL.lowrp1.vic.optusnet.com.au] has joined #xiphmeet
+19:54 -!- philkerr [~Snak@xiph-IEHPFJ.dsl.pipex.com] has joined #xiphmeet
+19:55 [Users #xiphmeet]
+19:55 [@jack   ] [@xiphmont ] [ jmspeex] [ Mike    ] [ silvia] 
+19:55 [@volsung] [ adiabatic] [ joe    ] [ philkerr] 
+19:55 -!- Irssi: #xiphmeet: Total of 9 nicks [3 ops, 0 halfops, 0 voices, 6 normal]
+19:55 <@xiphmont> I'm still seeing nasty busts of packet loss.
+19:55 < adiabatic> phil: hi
+19:55 <@xiphmont> bursts even.
+19:55 <@jack> let's hope it doesn't interfere.
+19:56 -!- MonkeyMan [MonkeyMan@xiph-HDHFFH.client.comcast.net] has joined #xiphmeet
+19:58 [Users #xiphmeet]
+19:58 [@jack   ] [@xiphmont ] [ jmspeex] [ Mike     ] [ philkerr] 
+19:58 [@volsung] [ adiabatic] [ joe    ] [ MonkeyMan] [ silvia  ] 
+19:58 -!- Irssi: #xiphmeet: Total of 10 nicks [3 ops, 0 halfops, 0 voices, 7 normal]
+19:58 <@jack> missing a few people still
+19:59 <@volsung> Anyone have Manuel's phone number?
+19:59 <@jack> i do
+19:59 <@volsung> jack: You should give it a buzz, just in case he forgot.
+19:59 < adiabatic> I don't. Shouldn't I?
+19:59 -!- Alereon [Alereon@some.guy.from.help.on.efnet.xiph] has joined #xiphmeet
+20:00 -!- oddsock_ [~oddsock@xiph-IOHDOC.client.attbi.com] has joined #xiphmeet
+20:01 -!- oddsock_ is now known as oddsock
+20:01 <@jack> no answer from manuel.
+20:01 <@jack> missing dan and ralph as well
+20:01 < silvia> anyone know is Linus is joining?
+20:02 <@jack> i didn't hear back from him.
+20:02 < jmspeex> I think segher might join at 0100
+20:02 < silvia> no worries - I know about rfc statuses :)
+20:02 <@jack> good :)
+20:03 -!- danx0r [~davesum99@25576820.8D34AABD.1F30F6AA.IP] has joined #xiphmeet
+20:03 <@jack> there's dan.
+20:03 -!- MonkeyMan [MonkeyMan@xiph-HDHFFH.client.comcast.net] has quit [Read error: 104 (Connection reset by peer)]
+20:03 < danx0r> hi
+20:03 <@jack> i'll wait a few more minutes in case there are some stragglers :)
+20:03 < adiabatic> jack: uh, josh
+20:03 < adiabatic> ...coalson.
+20:04 -!- purple [carsten@Ogg.Traffic.Editor.Xiph] has joined #xiphmeet
+20:04 <@jack> adiabatic: i invited him and he said he was coming
+20:04 < adiabatic> did anyone even noti...good.
+20:04 < purple> Hiya. I hope I didn't miss much.
+20:04 < adiabatic> you missed part of the waiting game.
+20:04 < purple> Figured :)
+20:04 < Mike> purple: according to my timestamps, you were 6 seconds early.
+20:05 <@xiphmont> late according to Xiph Standard Time.  But not much.
+20:05 < adiabatic> Mike: your clock is off.
+20:05 < adiabatic> By about...four minutes or so.
+20:05 < Alereon> heh, its 5:05pm PDT by my clock
+20:05 <@xiphmont> (MF is a stratum 3 ntp server)
+20:05 < Alereon> which is synchronized regularly:)
+20:05 < Mike> adiabatic: probably.
+20:05 < adiabatic> (yay NTP!)
+20:06 < purple> Anyway, I guess I'll go into lurk and log mode.
+20:06 <@xiphmont> yes, let's start as I have a time constraint
+20:06 <@jack> while we're waiting, does anyone want to volutneer to be the secretary?
+20:06  * volsung points at purple.
+20:06 <@volsung> He already does OT.  :)
+20:06  * adiabatic looks at purple
+20:06 <@jack> purple: up for it?
+20:06 < purple> let me just double check that my log is capturing this.
+20:06 < adiabatic> I'm logging.
+20:07 < danx0r> jack, could we have a quick introduction or would that be too time consuming?
+20:07 -!- comajelly [~boingo@xiph-IOIMOB.tstonramp.com] has joined #xiphmeet
+20:07 <@jack> danx0r: I think it's a good idea.
+20:07 [Users #xiphmeet]
+20:07 [@jack    ] [ adiabatic] [ danx0r ] [ Mike    ] [ purple] 
+20:07 [@volsung ] [ Alereon  ] [ jmspeex] [ oddsock ] [ silvia] 
+20:07 [@xiphmont] [ comajelly] [ joe    ] [ philkerr] 
+20:07 -!- Irssi: #xiphmeet: Total of 14 nicks [3 ops, 0 halfops, 0 voices, 11 normal]
+20:07 <@jack> I'm Jack Moffitt, Executive Directory of the Xiph.org Foundation
+20:07 < comajelly> ...and I'm logging, too.
+20:07 <@jack> Director, even.
+20:08 < danx0r> should we all just intro?
+20:08 <@jack> yes
+20:08 <@xiphmont> I'm Monty, Tech director and lead of the Ogg and Vorbis projects.
+20:08 < oddsock> Ed Zaleski - icecast2 developer
+20:08 < purple> Carsten Haese, Ogg Traffic Editor
+20:08 < joe> head of Neuros at DI
+20:08 <@volsung> Stan Seibert - libao, ogg123 and positron developer
+20:08  * danx0r is dan miller, originally from On2, one of the developers of VP3-->Theora
+20:08 < adiabatic> Nathan Sharfi, webmaster and designer of icecast.org and speex.org.
+20:09 < Mike> Mike Smith - vorbis-tools, icecast developer. Misc. other stuff too.
+20:09 < comajelly> Also Nathan Sharfi.
+20:09 < jmspeex> Jean-Marc Valin, author of Speex (speech codec)
+20:09 < philkerr> Phil Kerr - Vorbis RTP I-D
+20:09 < silvia> Silvia Pfeiffer - did the Ogg RFC to push MIME type application/ogg; CSIRO (nat. research institution Australia)
+20:09 <@jack> i believe that's everyone
+20:09 <@jack> wecome to the first Monthly Meeting :)
+20:10 <@jack> let's start from the top
+20:10 <@jack> I first wante dto give a brief overview of how the foundatoin is organized
+20:10 < danx0r> sorry could you URL the agenda again
+20:10 < adiabatic> danx0r: /topic #xiphmeet
+20:10 <@jack> http://wiki.xiph.org/MonthlyMeeting200305
+20:10 < danx0r> thanx
+20:10 <@jack> We are a Delaware corporation and now recognized as a tax exempt 501c3 entity
+20:11 <@jack> We have 5 board members
+20:11 <@jack> Monty, Patrick Mahoney, Jon Callaghan, Mike Person, and me
+20:11 <@jack> we are the top of the food chain so to speak
+20:12 <@jack> many of you don't know who Jon, Mike, and Pat are
+20:12 <@jack> and that's because they are less active
+20:12 <@jack> the board is setup to prevent any disputes really
+20:12 <@jack> and in teh future, the board will probably not have a very active role unless matters of financial concerns come up, or if there are disputes
+20:13 <@jack> Monty and I currently run the organization
+20:13 <@jack> we've divided efforts in the past between tech work, and administrative work
+20:13 < adiabatic> jack: I hate to interrupt, but could you make this channel both private and secret now? I'm about to increase my visibility in #vorbis in a minute and I do not want to attract attention to this channel
+20:13 -!- mode/#xiphmeet [+sp] by jack
+20:14 <@jack> and we'll be doing that again now that emmett is gone
+20:14 <@jack> We're open to future discussion of organizational change
+20:14 <@jack> but tha'st the story as it is now.
+20:15 <@jack> we were recently granted advance ruling on our 501c3 application
+20:15 <@jack> which makes us a tax exempt organization
+20:15 <@jack> this has several implications on how we conduct ourselves
+20:15 < danx0r> jack can you explain the implications of 501 -- I thought xiph was already a non-profit
+20:15 <@jack> ah
+20:16 <@jack> we were incorporated as a not-for-profit
+20:16 <@jack> 501c3 gives us tax exemption with the IRS.
+20:16 <@jack> basically they've ruled we are exmpt now, and are still processing parts of the application
+20:16 <@jack> we fully expect they will approve it, since they already gave us the advance ruling
+20:17 <@jack> there are several implications:
+20:17 <@jack> - we have to receive a large chunk of our funding from public support
+20:17 <@jack> donations, sponsorships, and the like
+20:17 <@jack> the number is about 50%
+20:17 <@jack> teh rest of our income can come from contracts and other things
+20:18 <@jack> so there is a balance that must be struck
+20:18 <@jack> some of you have heard me harp on this before
+20:18 <@jack> adn thereason is that currently, we are way off balance.
+20:18 <@jack> right now about 90% of our income comes from contract work
+20:19 <@jack> and only about 10% from public support
+20:19 < oddsock> jack: how do you define membership in xiph ? i.e. who are it's members ?
+20:19 <@jack> so we will have to work this year to get these numbers back in balance.
+20:19 <@jack> oddosck: good question
+20:19 <@jack> as i said, there are teh 5 board members
+20:19 <@jack> we originally trie dto set up an advisory board as well
+20:19 <@jack> but i think it's safe to say that doesn't really exist anymore.
+20:20 <@jack> monty is the only person currently employed by Xiph.org
+20:20 -!- pfm [pfm@xiph-HHHJNF.ipt.aol.com] has joined #xiphmeet
+20:20 <@jack> and he's empoyed fulltime on a contracting basis
+20:20 <@jack> pfm == Patrick Mahoney, one of our board members
+20:20 < danx0r> does anyone else get paid for work?  IE Segher?
+20:21 <@jack> both monty and i have executive positions.  there are no other formal relationships at this time.
+20:21 <@jack> some contracts get handled by people other than monty
+20:21 < jmspeex> danx0r: I do but not from Xiph
+20:21 <@jack> and in those cases, we pay the peoople who do the work.
+20:21 <@jack> in the past, i have been paid
+20:22 <@jack> and currently both Jean-Marc and Stan are getting paid for contract related work they are doing.
+20:22 < danx0r> ok I'm just trying to get a picture of the size of the budget
+20:22 < oddsock> jack: so you do you have a list of people who are members of xiph ? or is it more casual than that.. ?
+20:22 <@jack> oddsock: it's more causual than that at the moment.
+20:22 <@jack> one of our goals here today is to come up with a semi-authoritative list of active volutneers
+20:23 <@jack> danx0r: ok.. so we've seen that our financial situation is off balance
+20:23 <@jack> i dont' have teh report from the bookkeper yet, but i can fill in the gaps a little bit
+20:23 < danx0r> just ballpark is fine 
+20:23 <@xiphmont> (BTW, Emily Katt is bookkeeper)
+20:23 <@jack> i think the number is about $80k over the last year.
+20:24 <@jack> we have funds to continue at our current pace for a year into the future
+20:24 <@jack> assuming very pessimistic income levels
+20:24 <@jack> so for our current standing, we are looking great
+20:24 < pfm> with current receivables i think the foundation has taken in @$100k since inception
+20:24 <@jack> thansk patrick
+20:24 < danx0r> inception being when?
+20:24 < pfm> 9/10/1
+20:25 < danx0r> heh interesting date
+20:25 < pfm> sept 10, 2001
+20:25 < pfm> yeah
+20:25 < pfm> ominous
+20:25 <@jack> so you can probalby guess that means our public support levels are around $10k
+20:25 <@jack> so we clearly need to work on that.
+20:26 <@jack> and that will be discussed in depth a bit later
+20:26 <@jack> our legal sitaution looks good as well
+20:26 < Mike> What are the major avenues to public funding, other than asking for donations from our users, etc.?
+20:26 < jmspeex> jack: Can't future contracts be all between companies and developers and not go through Xiph? That would help the balance a lot.
+20:26 < Mike> (ok, later)
+20:26 <@jack> jmspeex: yes. as with your contract, we are starting to do that now
+20:26 < silvia> could some of the contracts be done with companies that instead of pay just donate?
+20:26 <@jack> because honestly, we have little choice.
+20:27 <@jack> silvia: it's not clear that would work in general
+20:27 <@jack> because donations cannot have strings attached
+20:27 <@jack> you can't donation if and only if we complete some deliverable
+20:27 < joe> FWIW, that's not a problem for your work with us.
+20:27 < Mike> otherwise... well, it's a payment rather than a donation. 
+20:27 <@jack> exactly,mike
+20:27 <@jack> i've yet to discuss this heavily with our lawyer
+20:28 <@jack> and there may be some way to restructure these things
+20:28 <@jack> ok, just a second, we need to take a jump ahead
+20:28 < pfm> i think so too.  our legal is good at creative contracts too.
+20:28 <@jack> because monty is time limited.
+20:29 <@jack> let's come back to this in a sec, and get monty's items out of the way first
+20:29 <@jack> first of all, monty, give us a progress update on your current contract work
+20:29 <@xiphmont> Ok
+20:30 <@xiphmont> Current contract work consists right now entirely of the Neuros deliverable.
+20:30 <@xiphmont> There is pending contract work fro MCS Logic to develop and perform official Vorbis certification.
+20:30 < Mike> They're the koreans?
+20:31 <@xiphmont> They're one set of Koreans.
+20:31 <@xiphmont> MCS doesn;t move forward until Neuros has a working code port.
+20:31 <@jack> MCS doesn't make any products themselves do they?
+20:31 <@xiphmont> Right now:  the neuros work has completed the memory reductions in Tremor and the libogg2 zero-copy and buffering.
+20:32 <@xiphmont> AFAIK, MCS makes components for other manufacturers.
+20:32 < danx0r> xiphmont -- do you count On2 as a contract with outstanding deliverables?
+20:33 <@xiphmont> This past week I was surpirsed by one expected thing:  The only compiler for the TI chip in use by Neruos has no 8 bit type support whatsoever; I'm currently eliminating all byte-aligned access in this version of tremor.
+20:33 <@xiphmont> danx0r: Yes; the On2 deliverables are Theora and Ogg related; they do not concern Vorbis.
+20:34 <@xiphmont> However, Theora also does not continue in my schedule until after neuros.
+20:34 <@xiphmont> To some extent, we're committed to the overbooking and scheduling order Emmett set up.
+20:34 < danx0r> understood
+20:34 < pfm> is it fair to ask if you should/are going to finish neuros?  based on the ... that
+20:35 <@jack> danx0r: a substantial part of hte libogg2 work was completed
+20:35 <@xiphmont> the libogg2 work is complete and deployed, at least in Tremor.
+20:35 <@xiphmont> OggFile is not complete.
+20:35 < silvia> what aside from the metadata stuff is missing in theora?
+20:36 <@xiphmont> The current plan is to finish Neuros.
+20:37 <@xiphmont> I was frankly feeling doomed earlier this week (with respect to any reasonable delivery date).  Continuing with the work has the 8 bit->16 bit access going better than the initial pessimistic estimate.
+20:37 <@jack> this brings up a good pint about the tradeoffs of contract work
+20:37 < pfm> great.
+20:37 <@jack> much of hte contract work that we do has little bearing on our prime mission
+20:37 <@xiphmont> Right now, I hope to have the current known issues with the Tremor->Neuros port demonstrable on Friday.
+20:37 <@jack> and we must always consider the opportunity costs of such projects
+20:37 <@xiphmont> That is assuming no addiitonal unexpected issues.
+20:37 <@jack> we think the neuros work will be great, but it's also been harder than expected.
+20:38 <@xiphmont> Much of the work was useful to the larger mission; we've been past that point for about a month.
+20:38 <@xiphmont> libogg2 should have happened later, but it's useful to OggFile.
+20:39 <@xiphmont> The Tremor memory reduction was also quite useful, but not high on th epriority list except for the Neuros contract.
+20:39 <@jack> xiphmont: where does theora stand? (as silva asked)
+20:39 <@xiphmont> I have not touched the theora codec since alpha release last fall.
+20:40 <@xiphmont> OggFile is still in design/spec.
+20:40 <@jack> ok, what is in our 'deliverable' list then?
+20:40 <@jack> besides OggFile :)
+20:40 <@xiphmont> We can make a final release of codec, but we're still missing any infrastructure to tie the together that isn;t hardwired to that specific combination of codecs.
+20:40 <@xiphmont> For me:
+20:40 <@xiphmont> Neuros.
+20:41 <@xiphmont> Vorobis I bitstream certification program
+20:41 < danx0r> I have done some work on Theora that has not been incorporated yet (bitstream header stuff)
+20:41 <@xiphmont> then on to Theora.
+20:41 <@xiphmont> Oh, also we need a Vorbis bugfix release.
+20:41 <@xiphmont> Just today another Solaris engineer reported new bugs that have been fixed for nine months.
+20:41 < danx0r> xiphmont -- can you briefly outline the plan re: bitstream certification
+20:42 < danx0r> that will be a relevant issue for Theora eventually
+20:42 < danx0r> ie the basic approach should be similar
+20:42 <@xiphmont> yes: it will be based on a collection of engineered bitstreams.  Certification will be verifying via spectrogram analysis of output.
+20:42 < danx0r> this is for playback only?
+20:42 <@xiphmont> because, eg, for MDC, their chip takes Vorbis bitstreams and produces analog audio output.
+20:43 <@xiphmont> any encoder that produces valid bitstreams is valid.
+20:43 < danx0r> so there are reference bitstreams that produce output; verify that output is within tolerance
+20:43 < jmspeex> xiphmont: any future plans for Vorbis? (after Neuros, cert, Theora, ...)
+20:43 < Mike> There are two main holdups on a vorbis bugfix release: a) there's one or two bugs Monty needs to fix. Probably not hard, but Monty's too busy with the other contracts at the moment, b) we need a _wide_ range of developers over many platforms to do builds and testing (this is particularly a problem on win32)
+20:43 < danx0r> the reference bitstreams hopefully exercise various decoder components
+20:43 <@xiphmont> jmspeex: yes.  Several big things; we are fast approaching a need to leapfrog AAC again.
+20:44 < joe> I appoligize, I have a prior comitment, do you need anything from me before I go?
+20:44 <@xiphmont> danx0r: forgive me, but 'duh' :-)
+20:44 <@jack> joe: not unless you want to describe what's going on at neuros re: xiph
+20:44 < danx0r> np -- I like to state the obvious
+20:44 < joe> ok.  a lot, I don't know where to start
+20:44 <@jack> joe: if you have to run i';l summarize what i know for the rest of the group
+20:45 < joe> to be honest, you probably know as much as I do.
+20:45 <@jack> ok.. then feel free to take off.  i'll send an email with the minutes 
+20:45 < joe> and nothing is private
+20:46 <@jack> xiphmont: do you need to take off now?
+20:46 < joe> not sure if we've publically announced about Emmett, but that's basically official
+20:46 <@xiphmont> not quite yet.  Soon.
+20:46 <@jack> ok
+20:46 < oddsock> jack: how long is this meeting expected to run ?
+20:46 <@jack> oddsock: another 1:15 
+20:47 <@jack> we may go a little over for this first one
+20:47 <@jack> ok, the other contractual thing going on is Real Networks
+20:48 <@jack> we were asked to develop the playback plugins for their RealPlayer/Helix architecture
+20:48 < pfm> well i know they paid - was it good for them? 
+20:48 <@jack> that's looking good
+20:48 <@jack> some work got done last year, and then the project stalled
+20:48 -!- PeterH [~Peter@xiph-HHHJNJ.sympatico.ca] has joined #xiphmeet
+20:48 <@jack> i'll be completing this work this summer
+20:48 < danx0r> heh (real networks = stall)
+20:48 < adiabatic> PeterH: hi, you're, um, kinda late...who are you?
+20:48 <@jack> adn those plugins shouldu go into the autoupdate servers
+20:48 < pfm> under a new deal?  or as good faith on old deal?
+20:49 <@jack> good faith on the old deal
+20:49 <@jack> honestly real dropped the ball as much as we did
+20:49 < pfm> say it aint so
+20:49 <@jack> so no hard feelings.
+20:49 < pfm> :)
+20:49 < danx0r> note -- auto-update thing at Real usually requires a 'certification process' that can be onerous
+20:49 < danx0r> we did it at On2
+20:49 <@jack> danx0r: real has agreed to pay for that
+20:50 <@jack> and they have qa staff waiting for the plugins.
+20:50 < danx0r> ok good
+20:50 <@jack> that was all arranged previously.
+20:50 <@xiphmont> am I taken care of?
+20:50 <@jack> in the meantime, real has completed encoder plugins themselves
+20:50 <@jack> xiphmont: i think so
+20:50 <@xiphmont> As in, anything else from me?
+20:50 < danx0r> well it's in Xiph's interest to do it IMNSHO
+20:50 <@jack> yes
+20:50 <@jack> real is interested in theora as well
+20:50 <@xiphmont> OK.  I'm dropping out and downing the wireless on this box; It's embarrassing to get attacked while it's running a show.
+20:51 <@jack> i won't be surprised if we get hired to do plugins for that too
+20:51 <@xiphmont> Mail me logs.  Later all.
+20:51 < danx0r> hah -- real interested in Theora-- that's rich
+20:51 < danx0r> but great
+20:51 -!- xiphmont [~xiphmont@xiph-DBDNHN.MIT.EDU] has quit [Client Exit: He travels fastest who travels alone]
+20:51 <@jack> well, they _are_ :)
+20:51 <@jack> i'm not kididng :)
+20:51 <@jack> we'll see what happenes.
+20:51 < danx0r> no it's fine -- OT discussion
+20:51 <@jack> they've bitten off a lot of open source candy bar
+20:51 < adiabatic> jack: check your /msg buffer
+20:51 < danx0r> actually I think it's great
+20:52 < adiabatic> (are you even aware of them?)
+20:52 <@jack> ok
+20:52 <@jack> that takes care of our obligations
+20:52 <@jack> i'll give a quick summary of the neuros side of things before we move on
+20:52 <@jack> theya re baiscally ramping up their release and press engines
+20:52 <@jack> and are quite excited about us being finished.
+20:53 <@jack> i forgot to mention Positron, which si the part that Stan is working on
+20:53 <@jack> stan, why don't you give us a quick update on the status
+20:53 <@volsung> Okay.  I've been checking preliminary code into a private CVS repository for a little over a week now.
+20:54 <@volsung> Database code is shaping up, even with the expected delay in trying to understand the specs.
+20:54 < danx0r> can someone _briefly_ outline Positron?
+20:54 <@volsung> The current utility will upload a list of files into the Neuros, and set up the database to play them.
+20:54 <@volsung> Ah, I can do that.
+20:54 <@volsung> :)
+20:54 <@jack> i'll be jumping in to help stan with htis.
+20:54  * volsung got ahead of himself.
+20:55 <@volsung> Positron is a command line utility to control the Neuros.
+20:55 <@volsung> Because the Neuros uses the USB Mass Storage protocol, all of this is done through file manipulations on the device.
+20:56 <@volsung> So to put audio tracks on it, you just copy them using the usual OS methods, and then update a database on the disk to reflect the changes.
+20:56 <@jack> it is effectively the sync manager for linux
+20:56 -!- Bruns [Bruns@Sosdg.Xiph] has joined #xiphmeet
+20:56 <@jack> and part of our deliverable
+20:56 < adiabatic> Brian Bruns, IRC operator.
+20:56 < oddsock> any win32 plans for the Neuros ?
+20:56  * Bruns smiles
+20:56 <@jack> win32 is already handled by Neuros
+20:56 < adiabatic> oddsock: DI has one already in C#.
+20:57 <@volsung> Positron is currently being done in Python, so aside from various OS issues, it should be portable anywhere Python runs and USB Mass storage is supported by the OS.
+20:57 <@jack> our deliverable is for linux only, but we hope to quickly provide osx support as well
+20:57  * danx0r LOVES Python! Yay!
+20:57 < danx0r> sorry
+20:57  * oddsock was hoping to secure a neuros for himself... :(
+20:57 <@jack> thanks stan... back to the agenda :)
+20:57 <@jack> administrative isues:
+20:57 <@jack> we hired a bookkeeper
+20:58 <@jack> her name is EmilyKatt and she's currently doing our taxes
+20:58 <@jack> we'll have a financial report hopefully before the next meeting from her
+20:58 < pfm> our annual figures will be published on the site, at minimum
+20:58 < pfm> she will kick out monthly figures too
+20:58 <@jack> we've appointed Ralph Giles as teh main sysadmin
+20:59 < danx0r> so is the intention to make xiph.org completely transparent financially?
+20:59 <@jack> and monty is stepping down from his efforts there.
+20:59 < danx0r> is that a 501 req?
+20:59 <@jack> danx0r: as transparent as we can.
+20:59 < pfm> yes, but with a time lag
+20:59 < pfm> ie last quarter
+20:59 < pfm> not todays balance
+20:59 < danx0r> there are potential issues with that I would think -- you've discussed this with your legal counsel I presume
+20:59 < pfm> yep
+21:00 < danx0r> (having just spent a few years running a public company...)
+21:00 < pfm> our legal is an ipo / securities pro
+21:00 <@jack> Tom Rosedale is our currently attorney
+21:00 <@jack> http://www.brllegal.com
+21:00 < danx0r> ok I guess this is usual for non-prof world
+21:01 <@jack> pardon my spelling/grammar :)
+21:01 <@jack> we need some administrative help to fill in teh gaps
+21:01 <@jack> minimally, we need to appoint a bugmaster
+21:01 < Bruns> what type of administrative help?
+21:02 <@jack> someone to be responsible for maintaining bugzilla
+21:02 < Mike> I'd be happy to do that.
+21:02 <@jack> good.  :)
+21:02 <@jack> and if you misse d it efore, Ralph is the new sysadmin
+21:02 <@jack> so if anyone has questions about motherfish, things they need installed, etc, just ask him.
+21:03 < Mike> (if I get bugzilla administrative access. I asked for that before, and nobody could figure out how to do it)
+21:03 <@jack> email accounts, etc
+21:03 <@jack> mike: i'll take care of that.
+21:03 < Mike> Ralph is rillian on irc, for those that don't know. 
+21:03 <@jack> cartsten volunteered for secretary, so that fills our administrative gaps that i know of.
+21:03 <@jack> i'm sure we'll have more at the next meeting.
+21:03 < purple> Did he? /;)
+21:04 < pfm> i second that nomination
+21:04 <@jack> ok
+21:04 < adiabatic> pfm: you're only fourthing it.
+21:04 < pfm> :)
+21:04 < Mike> <giles@xiph.org> if people want to get into contact with him. Or is there a better alias to give out for sysadmin stuff?
+21:04 <@volsung> sysadmin@xiph.org?  :)
+21:04 < adiabatic> root@ ?
+21:04 <@jack> mike: we shoudl put that in the sysadmin todo
+21:04 <@jack> btw everyone probably knows about that wiki now
+21:04 < Mike> volsung: well, I don't know if that _exists_, which is why I was asking
+21:05 <@jack> we'll be using that for our organizational purposes as much as possible
+21:05 <@jack> teh sysadmin todo exists on teh wiki already
+21:05 < danx0r> rillian is not in evidence..
+21:05 < adiabatic> danx0r: Neither is Manuel. C'est la vie.
+21:05 <@jack> in the interest of time, i'll skip the volunteer rollcall and instead ask that everyone just fill out their current tasks on the wiki
+21:06 <@jack> maybe a short bit about yourself.
+21:06 <@jack> eventually we'll turn that into the master xiph.org about page
+21:06 < oddsock> are there any wiki guidelines anywhere ? I'm not wiki-knowledgable....
+21:07 < adiabatic> oddsock: the c2.com wiki probably has most of the etiquette things out there
+21:07 < adiabatic> (it's the first wiki)
+21:07 <@jack> if you don't mind, please email me your contact info if you think it appropriate.
+21:07 <@jack> (some of you have already)
+21:07 < danx0r> jack -- where should we put this info?  under xiphprojects?
+21:07 < adiabatic> Phone numbers 'n postal addresses would be nice, right?
+21:08 < adiabatic> danx0r: no...
+21:08 < danx0r> and bios under people I assume
+21:08 <@jack> http://wiki.xiph.org/XiphPeople
+21:08 < pfm> along with the gps points...
+21:08 < Bruns> careful about addresses
+21:08 < danx0r> ok
+21:08 < adiabatic> Bruns: mail addresses, (maybe) post info.
+21:08 <@jack> send physical addresses/numbers/more personal info like that to me in email
+21:08 < adiabatic> (mail-as-verb)
+21:08 < Bruns> yeah, thats what I mean
+21:08 <@jack> and i'll keep track of that.
+21:09 <@jack> we have been known to send people tshirts, etc in th past :)
+21:09 < Bruns> heh
+21:09 <@jack> ok.  on to the next topic
+21:09 <@jack> i want everyone to get a good idea of where we are
+21:09 < Mike> 'more personal info'? Well, I don't know what you want there, Jack, but you're not getting it :-)
+21:10 < pfm> heh
+21:10 <@jack> we've grown so much, it's become hard to keep it all in mind
+21:10 <@jack> so to start us off, i'd like jean-marc to introduce himself and tell us a little about speex
+21:10 <@jack> which is one of the new arrivals :)
+21:11 <@jack> hopefully he hasn't fallen asleep :)
+21:11 < jmspeex> Well, I'm currently a Ph.D. student working on mobile robotics (audio part). I started the Speex project ~ a year ago
+21:11 < jmspeex> jack: still awake :)
+21:11 < jmspeex> Speex is a codec specifically designed for speech, mostly for Voice over IP (VoIP).
+21:12 <@jack> what's the current state of the art, and how does speex compare?
+21:12 < jmspeex> It's meant to provide an OSS alternative to G.723.1, G.729, ACELP.xxx, and all other proprietary codecs.
+21:13 < jmspeex> http://www.xiph.org/~jm/PESQ.png
+21:13 < danx0r> G.72* are proprietary? I thought they were pretty much license free (shows what I know)
+21:13 < jmspeex> A guy just sent me a (very preliminary) evaluation using an automated quality evaluation tool on some german samples.
+21:14 < adiabatic> jmspeex: wow, so that's what you mean by "wide range of bitrates".
+21:14 < jmspeex> danx0r: some of them may be, but most are heavily patented (thing >$10k/year licensing fees).
+21:15 < jmspeex> basically, as it is now, it looks like Speex requires about 15-20% more bandwitch to equal the quality of AMR-NB (see fig), which is the state of the art...
+21:15 <@jack> cool
+21:16 < jmspeex> Main reasons for the gap: 1) Most of the clever techniques are patented so I can't use them 2) I'm not a 20 person speech coding group :)
+21:16 < adiabatic> what's "PESQ-MOS" in English, again?
+21:16 < jmspeex> MOS==Mean Opinion Score, the basic evaluation where people rate quality from 0-5.
+21:16 <@jack> speex has gotten some good attention
+21:17 <@jack> currently several game companies are starting to use it
+21:17 <@jack> and i suspect it won't be long before it's in widespread use in other areas.
+21:17 < jmspeex> PESQ is an automated tool that tries to evaluation what quality people would percieve, so it's not a real MOS test (though I'd like to do some in the future).
+21:17 < danx0r> btw http://www.eyenx.com/ this product uses Speex (and On2's VP5 video codec)
+21:17 < danx0r> worked like a charm
+21:18 <@jack> i believe quite a few of the voip open source projects have used speex as well.
+21:18 < adiabatic> Zippy.
+21:18 < jmspeex> The idea of Speex is not to be the best codec out there, but to provide a good solution that fits most people's needs and that doesn't cost so much that nobody can afford it.
+21:18 < adiabatic> yeah, GnomeMeeting.
+21:18 <@jack> we're lucky to have Jean-Marc on our side :)
+21:18 < Bruns> jack: talk was going on my group about adding speex to SpeakFreely
+21:18 < danx0r> what is the state of the speex-->Ogg mapping
+21:18 <@jack> danx0r: great question
+21:18 < jmspeex> Right now, the codecs we're "replacing" are things like u-law 64 kbps that people use because they can't afford expensive licenses.
+21:19 < Mike> danx0r: I believe it works, but has limited application support and is not the main format for speex usage.
+21:19 < Mike> jmspeex can presumably say more :-)
+21:19 < jmspeex> danx0r: Ogg is the native format for storing Speex data.
+21:19 <@jack> most applications are using rtp with speex, correct?
+21:19 < jmspeex> It's been that way since 0.1.0.
+21:20 < jmspeex> 50-50. 
+21:20 < jmspeex> Many people are using Speex to encode files too, e.g. the latest Linux conf in .au had the proceedings in Speex format.
+21:20 <@jack> so what's the current major todo list for speex?
+21:20 < pfm> cool
+21:21 < jmspeex> There are currently come limitations in the encoder and decoder (concatenation, ...) that should (hopefully) be solved with OggFile.
+21:21 < jmspeex> TODO:
+21:21 < jmspeex>     * Standardisation (IETF, MIME, ...)
+21:21 < jmspeex>     * Fixed point port of the code (both encoder and decoder)
+21:21 < jmspeex>     * Cleanup all the plugins/wrappers/bindings (find maintainers)
+21:21 < jmspeex>     * Get Speex on NetMeeting? to be compatible with GnomeMeeting?
+21:21 < jmspeex>     * Do some formal MOS testing (comparing with other codecs)
+21:21 < jmspeex>     * Find a good logo
+21:21 < Mike> oggenc's getting support for input from other formats (notably FLAC), I'd like to add speex to that, and then do multiple-output-format stuff so that oggenc can become more than just 'vorbisenc'. I can't build oggenc because of autotools problems, though, so that's going nowhere.
+21:22 < adiabatic> Why do Speex->Vorbis transcoding, again?
+21:22 <@jack> mike: great news
+21:22 < jmspeex> Mike: Speex input to oggenc would be useless (really don't want to transcode Speex->Vorbis), output maybe
+21:22 <@volsung> And ogg123 from CVS can play Ogg Vorbis, Ogg FLAC, FLAC, and Ogg Speex files.
+21:23 <@jack> i think mike meant output :)
+21:23 < jmspeex> Anyone would like to help with standardization?
+21:23 <@jack> let's talk about stnadarization in a bit
+21:23 < Mike> jmspeex: yes, speex input wouldn't be terribly useful, but I'd like it to be able to support a full matrix of input/output formats - i.e. anything it can write it should be able to read as well. 
+21:23 < adiabatic> also, the speex todo should be up-to-date (otherwise jmv hasn't kept me in the loop) at www.speex.org/todo.html
+21:23 <@jack> i'm sure we'll have a lot to discuss there 
+21:23 <@jack> josh coalson apparently couldn't make it
+21:23 < jmspeex> adiabatic: http://wiki.xiph.org/SpeexTodo
+21:23 <@jack> but FLAC is the toher new project
+21:24 < adiabatic> er, toher?
+21:24 <@jack> it's a lossless audio codec, i think aprtially inspired by monty's old squish code
+21:24 < oddsock> how about adding speex support to icecast ?
+21:24 < Mike> (but it's more or less irrelevent since it's unbuildable)
+21:24 < adiabatic> oddsock: that'd be swell.
+21:24 < jmspeex> oddsock: I've heard some people trying to bring Speex to icecast 1...
+21:24 < Mike> oddsock: not really high-priority, if you're doing live/streaming stuff with speex, RTP makes a LOT more sense. And there's application support, so...
+21:25 <@jack> i think it's safe to say a high priority is to bring all our codecs up to speed in all our tools
+21:25 <@jack> speex, flac, theora, etc.
+21:25 <@jack> it's abeen a while since we've been only vorbis, and it's about time our tools started to reflect that.
+21:25 < Mike> That said, if people are interested in it, it should be pretty easy to do (point of reference: initial mp3 support in icecast2 was a couple of hours work or less, maybe 100 lines of code)
+21:25 < jmspeex> One thing that I think would be really important is to either merge Speex+Vorbis or modify one of them to get speech+music, so it can be used for Internet radio
+21:26 < pfm> yes please.
+21:26 < adiabatic> jmv: I don't follow on what level you'd like to integrate the two...
+21:26 <@volsung> Question: Do we want oggenc to do just audio codecs?
+21:27 < adiabatic> volsung: I think that'd be a good idea for the time being.
+21:27 <@jack> volsung: good question.  let's ask that again in a few mins.
+21:27 < jmspeex> adiabatic: If the solution is to integrate the two, it would be a "super-codec" that can switch between Speex and Vorbis without glitches.
+21:27 < purple> One could probably have two simultaneous streams, with one hovering around 0bps when the other is in use.
+21:27 < Mike> Yes. It'd be a completely unrelated program with the same name if generalised to do things like video as well.
+21:27 < purple> I.e. vorbis and speex multiplexed
+21:28 <@jack> ok, certainly something to add to our long term goalls plan
+21:28 < oddsock> agreed...long term...
+21:28 < jmspeex> purple: Could be, but there are many complex issues here, including synchronization, codec memories, ... Most likely the solution would be an enhanced version of Vorbis.
+21:28 <@jack> ok
+21:28 <@jack> let's get the project statuses out of the way
+21:28 <@jack> voris needs a release and some minor bugfixes.
+21:28 < adiabatic> oddsock: unless you want to take up a donation plate and attract coders (or devote some of your time to it)
+21:29 <@jack> speex we just heard from
+21:29 < jmspeex> universal audio coding (ie music+speech) is a hot topic currently
+21:29 <@jack> let's hit icecast
+21:29 <@jack> where do we stnad currently?
+21:29 < Mike> ok.
+21:29 < danx0r> um, we're skipping Theora for now?
+21:30 < Mike> icecast is about 99% of the way to a 2.0 release. The stumbling blocks are mostly autotools-related.
+21:30 < Mike> There's a TODO list with the 2.0-critical items in cvs.
+21:30 <@jack> danx0r: no.  putting you at the end because yours will take longest :)
+21:30 < danx0r> heh
+21:30 < danx0r> ok
+21:30 <@jack> ok.  mp3 support works?  how about relaying?
+21:31 <@jack> what's teh status of the windows tools?
+21:31 < oddsock> jack: define windows tools ?
+21:32 <@jack> oddsock: windows ports of icecast, and your streaming tools that are related
+21:32 < Mike> jack: to my knowledge, mp3 support is in excellent shape. However, it's quite likely that shoutcast sources don't work (they're meant to, but I can't test it)
+21:32 < adiabatic> plugins for winamp 'n fb2k, &c.
+21:32 < Mike> relaying is fine.
+21:32 < oddsock> windows port of icecast2 is kept in lock step with cvs....
+21:32 <@jack> do we relay mp3 metadata in the shoutcast stle?
+21:32 <@jack> style
+21:32 < oddsock> no issues there
+21:32 < Mike> jack: yes.
+21:33 <@jack> great.
+21:33 < oddsock> jack: yes, and tested on my side
+21:33 <@jack> sounds like icecast is in great shape
+21:33 < Mike> (i.e. the metadata is inline when being relayed, though it will usually arrive asynchronously)
+21:33 <@jack> ok
+21:33 < adiabatic> The Windows tools were fiddly the last time I checked.
+21:33 <@jack> danx0r: give us the current scoop on theora
+21:33 <@jack> and mayb ea bit of history
+21:33 < danx0r> ok (deep breath)
+21:33 < danx0r> well -- On2 donated VP3 video codec to Xiph about a year ago
+21:34 < danx0r> VP3 was rechristened "Theora", with some very minor bit tweaking by Monty
+21:34 < danx0r> Monty did an Alpha mid/late last year -- 
+21:34 < danx0r> which consisted of cleaning the code and removing platform dependencies (ie optimizations)
+21:35 < danx0r> since then, I've done some hacking on the header logic -- we wanted to put some critical info into the bitstream header ala Vorbis
+21:35 < danx0r> some of that got checked in (thanks to Ralph G, I'm a CVS newbie)
+21:35 < danx0r> I did further work which remains unchecked-in
+21:35 < danx0r> then, rather suddenly, I left On2
+21:35 <@jack> just for everyone else's info, alpha 1 is relased, and includes a linux based player at least.   please check it out :)
+21:35 <@jack> ok
+21:35 < danx0r> yes, it is working
+21:36 <@jack> can you tell us how VP3 compares to the other codecs for video?
+21:36 < danx0r> VP3/Theora is roughly comparable to MPEG-4 in its original form
+21:36 < danx0r> in terms of datarate, complexity, etc
+21:37 < danx0r> frankly, IMNSHO Theora is suffering due to a lack of a true lead developer
+21:37 < danx0r> for the record, it was never my intention to fill that role, and it's not really possible personally
+21:38 < danx0r> Monty has done what he can, but we all know his situation
+21:38 < danx0r> and video isn't even his bag
+21:38 <@jack> danx0r: yes. i totally agree
+21:38 <@jack> and it should be one of our highest priorities to rectifiy that
+21:38 < danx0r> so this really devolves to another round of discussion re: funding and sponsorship, etc
+21:39 < danx0r> basically, I think if Xiph wants to get serious about video, there is no way around it -- you need another fulltime, paid programmer to focus on it
+21:39 <@jack> i agree.
+21:39 <@jack> we need another monty
+21:39 <@jack> we are lucky that theora is the only new project that needs a lead
+21:39 < danx0r> I won't even scare you with the number of man-hours that go into it at a co. like On2, much less MPEG -- we can be much more frugal and efficient
+21:39 <@jack> speex and flac came with brains attached.
+21:39 < danx0r> but it needs that role to be filled
+21:39 < adiabatic> danx0r: i++ // update counter
+21:40 < danx0r> heh
+21:40 <@jack> we'll discuss funding issues forthis a little later
+21:40 < danx0r> right -- so, in the meantime, I think we need to basically discuss a triage approach -- 
+21:40 <@jack> there are some ideas kicking around
+21:40 < danx0r> keeping it alive while we try to get the resources to 'do it right'
+21:40 <@jack> yes
+21:40 < jmspeex> I don't know where this one goes, but I think there's some integration to be done with all projects, not only at the tool level.
+21:40 < danx0r> One person I haven't mentioned -- Mauricio P-something
+21:41 < danx0r> he's done a lot of good work with the legacy VP3 codec, and he knows his way around the optimizations
+21:41 <@jack> jmspeex: what do you mean exactly?
+21:41 < danx0r> but it's all for naught unless someone can committ fully
+21:41 <@jack> yes
+21:41 <@jack> it's our biggest gap
+21:41 < silvia> if he's the right brain for theora - s he available?
+21:41 < Mike> jmspeex: I agree. There often seems to be almost no discussion or 'cross-pollination' between the various xiph projects. Each is standalone far more than it should be
+21:41 <@jack> i'm not sure if origianlly the intent was to have monty fill this role
+21:42 <@jack> or if any of us thought this far ahead.
+21:42 < jmspeex> I mean that currently, we have just a bunch of different projects, but they don't have much in common.
+21:42 < danx0r> silvia -- I have no idea.  He's spending some time on VP3.  He works at a game co. I think
+21:42 < jmspeex> API, code sharing, doc, ...
+21:42 <@jack> jmspeex: yes.  this is part of the short term goals
+21:42 < danx0r> jack -- not to go into too much history, but On2 did pay a substantial sum to hopefully get traction on Theora
+21:42 < danx0r> I'm not too clear on how that has evolved, but I get the feeling there are issues
+21:42 <@jack> and partially the ideas behind the website overhaular inline with that.
+21:42 < jmspeex> OK (website too, but I think it was on the list)
+21:43 <@jack> danx0r: yes.  we need to work those out
+21:43 < danx0r> it's all moot if we just don't have the resources though
+21:43 <@jack> you are still writing the spec document correct?
+21:43 < danx0r> yes, I am committed to the spec, but nothing more at this point
+21:43 <@jack> understood.
+21:44 < danx0r> and frankly I'm not such a great programmer, I'm more of an 'architect' -- you really need a codesmith
+21:44 <@jack> heh
+21:44 <@jack> thanks dan
+21:44 <@jack> before we get into our short term goals
+21:44 <@jack> let's get a status report from teh standardization team
+21:44 < silvia> guess that's a question for me
+21:44 < danx0r> not to sound too bleak -- Theora is a great product, and there seems to be interest in it (BBC, Real, AOL/TW...)
+21:45 < danx0r> well AOL is using VP3, but they could be convinced to go with Theora I'm sure
+21:45 < silvia> RFC3533 is well on its way (that the Ogg encapsulation format version 1) and out soon, if all goes well
+21:45 <@jack> great!
+21:46 < silvia> RFC3534 is the one that Linus did with the MIME type app for application/ogg and it too should be out soon
+21:46 < jmspeex> Speaking of AOL, I got a call from them about Speex a couple months ago. Didn't hear anything since then. jack: any news?
+21:46 <@jack> jmspeex: no.
+21:47 <@jack> what's the status of the Vorbis-over-RTP draft?
+21:47 < silvia> I've had a request last week from a a VRML/X3D standards writer on a rfc for vorbis as they'd like to get that as default format in there
+21:47 < silvia> anybody available for writing a vorbis rfc? 
+21:47 < philkerr> I'm investigating an addition for caching codebooks.
+21:48 <@jack> is the draft current?
+21:48 <@jack> ie, did we pull it out of it's exprired state?
+21:48 < philkerr> Yes, the draft is current.
+21:48 -!- pfm666 [~pfm@xiph-IOHLOL.pbc.adelphia.net] has joined #xiphmeet
+21:48 <@jack> jmspeex: who wrote the speex rtp draft?
+21:49 < philkerr> I emailed Colin Perking at the AVT to move things forward.
+21:49 < Mike> silvia: the spec documentation should be usable for an rfc without _too_ much difficulty, apart from asciification of the diagrams
+21:49 < jmspeex> jack: The draft was written by Greg Herlein
+21:49 < jmspeex> It was submitted to the IETF at the same time as 1.0 came out.
+21:50 <@jack> i don't suppose we can convince you to take a whack at a vorbis RFC can we? :)
+21:50 < jmspeex> I've had no news since then. Would anybody here would like to get involved?
+21:50 < jmspeex> I know nothing about all this standardization stuff.
+21:50 < philkerr> no probs.  We need it for work anyway :)
+21:50 < jmspeex> for work?
+21:51 < jmspeex> BTW, we need to apply for audio/speex too
+21:51 < silvia> i'm terribly busy with pushing for an extension of URIs to address temporal offsets in time-continuous data ala http://flim.org/video.theora#@npt=12.5
+21:51 < danx0r> how about a Theora RTP spec?
+21:51 < adiabatic> what about audio/vorbis and audio/flac?
+21:51 < danx0r> that would seem important
+21:51 -!- vanguardist [vanguardis@Special.Forces.Xiph] has joined #xiphmeet
+21:51 -!- mode/#xiphmeet [+o vanguardist] by ChanServ
+21:51 < philkerr> For our research we want to move Vorbis to RFC as the EU likes this
+21:51 <@vanguardist> i guess i'm late
+21:52 <@vanguardist> someone email me the log after it's all done
+21:52 -!- vanguardist [vanguardis@Special.Forces.Xiph] has left #xiphmeet []
+21:52 < pfm> and to sum up, vanguardist will be doing everything on the todo list
+21:52 < Mike> danx0r: need a _complete_ spec first, obviously. 
+21:52 < purple> We should follow up with the 2-3 people that implemented/are implementing vorbis decoders from spec to see what corrections are needed.
+21:52 < danx0r> Mike - yes, indeed
+21:52 < Mike> I think most of the vorbis spec corrections have been made, there aren't too many to go. 
+21:53 <@jack> so phil, you are vounteering for the vorbis RFC?
+21:53 < purple> There are some open questions in floor 0 header decode and curve computation.
+21:53 < philkerr> Yes
+21:53 < purple> Granted, it's floor0, so net terribly relevant, but it's still in spec :)
+21:54 < Mike> right.
+21:54 <@jack> yay
+21:54 <@jack> ok
+21:54 < Mike> philkerr: what's your research?
+21:54 <@jack> silvia sounds busy
+21:54 < silvia> i can help with the process if needed
+21:54 <@jack> so it sounds like we should ask linus to pick up the new mime types
+21:54 <@jack> i want to thank you three (silva, phil, and linus) for your great work
+21:54 < philkerr> Disemination of Operatic objects over DVB/IP
+21:55 <@jack> it means a lot to us, and wouldn't have gotten done without you guys
+21:55 < silvia> no worries - I will still be around ;)
+21:55 < philkerr> Glad to help out :)
+21:55 <@jack> i think a theora and apseex rpc are the next logical things :)
+21:55 <@jack> is there an official spec for speex yet?
+21:56 < danx0r> brb -- I have to re-log from another CPU
+21:56 -!- danx0r [~davesum99@25576820.8D34AABD.1F30F6AA.IP] has quit [Client Exit: ]
+21:56  * pfm has to leave the party he has been hiding from these past two hours. bbl
+21:56 < jmspeex> jack: what kind of spec? There's a manual and an RTP draft.
+21:56 -!- pfm [pfm@xiph-HHHJNF.ipt.aol.com] has left #xiphmeet []
+21:56 <@jack> jmspeex: bitstream spec
+21:57 <@jack> jmspeex: is there a document someone could take to implement speex themselves? :)
+21:57 < jmspeex> Part of the manual but it's not complete so that someone can write a speex implementation without looking at the code.
+21:57 <@jack> ok
+21:57 -!- danx0r [~danbmil99@25576820.8D34AABD.1F30F6AA.IP] has joined #xiphmeet
+21:58 <@jack> so before we consider a speex RFC, we'd need to finish that.
+21:58 <@jack> so both theora and speex are pending specs
+21:58 < jmspeex> really?
+21:58 <@jack> jmspeex: the RTP one is just a packetization stnadard
+21:58 < Mike> yes. 
+21:58 < jmspeex> I think a reference implementation is enough for IETF
+21:58 < danx0r> are these the RFC's that need to be in a text-only format?
+21:58 < Mike> jmspeex: not generally. 
+21:58 <@jack> jmspeex: a speex RFC would be to standardize the whole ball of wax.
+21:58 < Mike> danx0r: yep.
+21:59 <@jack> silvia: is the ogg rfc an informational rfc?
+21:59 < danx0r> ugh
+21:59 < silvia> if you want to register audio/speex as MIME type you require a specification that is accepted - RFC is one option
+21:59 <@jack> silvia: will the RTP RFC suffice for speex?
+22:00 <@jack> for a speex mimetype i mean
+22:00 < silvia> yes, ogg is an information rfc, but MIME type is an IETF standard
+22:01 <@jack> ok.  we've hit the two hour mark.  if there are no objections i'd like to propose we continue for a little while longer
+22:01 <@jack> and hit hte major point son the rest of the agenda.
+22:01 < silvia> jack: not sure if the IETF will accept the RTP speex one as enough for the MIME type - worth a try
+22:02 < adiabatic> Keep going.
+22:02 <@jack> ok
+22:02 <@jack> so let's talk about short term objectives
+22:02 < jmspeex> silvia: I think that + the manual + reference implementation should be enough, no?
+22:02 < silvia> i'll try to stick around
+22:02 <@jack> basically what i mean, is things we will complete in teh next 3 -4 months
+22:02 < philkerr> Silvia:  Colin advised rolling the MIME type and RTP docs together for Vorbis, so he may suggest the same
+22:03 < jmspeex> (perhaps I can re-package the manual)
+22:03 <@jack> first up on teh list is a set of new releases
+22:03 <@jack> mimimalling vorbis and icecast
+22:03 < silvia> jmspeex: it wasn't enough for ogg, but may be for speex as that has bitstream desc in the rtp spec
+22:03 <@jack> minimally
+22:03 < Mike> both vorbis and icecast need a volunteer for autotools work.
+22:03 <@jack> there are some current big glaring problems with autotools that need to be addressed
+22:04 <@jack> do we have a list of these?
+22:04 < oddsock> Mike: what autotools work needs to be done ?
+22:04 <@jack> other than mikes "nothingi bulds for me"
+22:04 < oddsock> I know of conditional inclusion of yp listings/CURL
+22:04 < Mike> oddsock: there's a heap of stuff for icecast, most of it is listed in the TODO file. There WILL be lots of new stuff for vorbis and vorbis-tools, once we add more format support.
+22:04 <@jack> ok
+22:05 <@volsung> Conditional compilation in general is throwing automake warnings.
+22:05 <@jack> what will be in the icecast release?
+22:05 < adiabatic> Mike: what can we do to make Icecast more usable?
+22:05 < Mike> adiabatic: docs.
+22:05 <@jack> i suggest minimally, icecast, ices2, ices1, yp, and the windows equivalents.
+22:05 < oddsock> adiabatic: UI front end
+22:05 < adiabatic> oddsock: any other suggestions other than documentation?
+22:05 < Mike> jack: basically what's in there at the moment, plus docs collated from the various external projects that have worked on partial documentation for icecast, if they're willing to allow that.
+22:05 <@jack> documentation is the big gap for the icecast stuff.
+22:06 < adiabatic> right, I can harp on Windows guys for silly UI oddities.
+22:06 < adiabatic> (although maybe "harp" isn't quite the proper word...)
+22:06 < Mike> brendan hasn't been around for a while, I'm not sure what the situation with ices0 is
+22:06 < oddsock> adiabatic: I have plans for a cross platform UI, but not for the 2.0 release
+22:06 <@jack> we need to contact brendan and let him know our release plans
+22:06 <@jack> mike: can you do that?
+22:06 < adiabatic> oddsock: cross what?
+22:06 < Mike> jack: yeah
+22:07 < oddsock> adiabatic: platform, win32/unix ala wxWindows
+22:07 <@jack> mike: thanks
+22:07 <@jack> ok
+22:07 <@jack> what about vorbis?
+22:07  * adiabatic nods
+22:07 <@jack> monty needs to fnish neuros before he can do anything
+22:07 < oddsock> do we have a release date for icecast2 ?
+22:07 <@jack> but there are several bugs only he can fix correct?
+22:07 <@jack> oddosck: let's go with end of summer for now
+22:07 < Mike> vorbis: there's at least one critical crash bug in vorbisfile that nobody else knows how to fix, Monty needs to do that.
+22:08 <@jack> and try for sooner.  how that/ :)
+22:08 < Mike> vorbis needs updated docs for all the new functions, etc.
+22:08 < oddsock> yes please
+22:08 < Mike> autoconf updates so that we check for the right _version_ of dependencies such as libogg.
+22:08 <@jack> is libogg2 part of this release?
+22:08 <@jack> it's currently on a branch
+22:08 < Mike> ogg - basically fine.
+22:08 < Mike> jack: no. Maybe 1.0.2?
+22:09 <@jack> ok.  i agree.
+22:09 <@jack> let's set a tentative date for end of summer as well
+22:09 <@jack> mike, you are the one with teh most overlap... are you good with those dates?
+22:09 < Mike> vorbis-tools: most of the i18n stuff is chronically broken, segher has been promising to fix that for over a year and hasn't, I don't know how to do any of that.
+22:09 < Mike> jack: yeah.
+22:09 < oddsock> jack, can we have a separate meeting to define the release criteria for icecast2 ? we were going to do that, but never did..
+22:09 <@jack> yes
+22:10 <@jack> ok
+22:10 < Mike> vorbis-tools: we have to decide whether we want other-formats in the 1.0.1 release (e.g. support for flac and speex in oggenc/oggdec/ogg123)
+22:10 <@jack> i think so.
+22:10 -!- pfm666 [~pfm@xiph-IOHLOL.pbc.adelphia.net] has quit [Read error: 104 (Connection reset by peer)]
+22:10 <@jack> is there any gating issue there?
+22:10 < silvia> i know how to do i19n after having fixed up sweep
+22:10 < Mike> Yes. It hasn't been done,
+22:11 <@jack> i thougth that ogg123 did speex and flac now?
+22:11 <@volsung> Yes, but oggdec does not.
+22:11 < adiabatic> that's one of three apps, and the question as posed also asked for oggdec support.
+22:12 <@volsung> The problem here is without some sort of unified codec API, we're going to be duplicating a lot of code between the utils.
+22:12 < Mike> silvia: sorry, I didn't really mean i18n, we already do that. I meant "full support for non-latin-1 character sets for getting data in/out of (e.g.) vorbis comment headers, including being cross platform"
+22:12 < adiabatic> And Speex->* support for oggenc seems fairly silly.
+22:12 < jmspeex> There's already been a debate on whether oggenc should encode other formats or just Vorbis (for bloat reasons)
+22:12 < jmspeex> adiabatic: completely silly!
+22:12 <@jack> ok
+22:12 < Mike> adiabatic: but easy (trivial even?) since *->speex support would be useful, and that would require most of the work, probably.
+22:13 <@jack> so how about we nix other codecs and concentrate on docs?
+22:13 <@jack> and i18n?
+22:13 <@jack> ok
+22:13 < Mike> I'm happy with that - 1.0.1 is meant to be a bugfix release, and it's AT LEAST 6 months overdue. It's a really, really serious problem.
+22:13 <@jack> so how baout we put speex output into oggenc
+22:14 <@jack> if that's trivial
+22:14 < adiabatic> jack: Not as a precondition for 1.01.
+22:14 <@jack> ok
+22:14 <@jack> that's finel.
+22:14 <@jack> let's get the bug fix release out then.
+22:14 < Mike> jack: no, it's far from trivial. oggenc doesn't do multiple output formats _at all_ at the moment.
+22:14 < adiabatic> Speex has plenty of command-line flags that don't need to be tweaked.
+22:14 < jmspeex> jack: probably non-trivial. Speex has command lines that are very different from Vorbis.
+22:14 < purple> In the Unix spirit of one tool for one job, I'd like to suggest renaming oggenc to vorbisenc, and not worry about multicodec output :)
+22:14 <@jack> but it hink our next release should be more comprehensive, agreed?
+22:14 <@jack> (next release after teh bugfix)
+22:15 < adiabatic> (command-line switches is the reason why I'm generally against multicodec *output*)
+22:15 < purple> (and oggdec to vorbisdec)
+22:15 <@jack> purple: that was suggested by ralph as well
+22:15 < Mike> oh, and vorbis-tools _really_ shouldn't require newer autotools than 1.0 did (at the moment, it does, that should be fixed)
+22:15 <@jack> Mike: um, release tarbals don't require any autotools. that point is moot.
+22:15 <@jack> unless i'm missing smoething
+22:16 < Mike> jack: given that it looks like we'll be taking about 12 months to do a completely trivial bugfix release, planning a 'more comprehensive release' seems rather premature
+22:16 <@jack> well, we do have aour old release engineer back :)
+22:16 < Mike> jack: yes, you're missing the fact that in reality, developers on anything but the core targetted platforms need autotools anyway, because it doesn't work nearly as well as promised.
+22:16 < Mike> true :)
+22:16  * volsung laughs.
+22:17 < Mike> Also, I cannot find ANY set of autotools versions that will build vorbis-tools currently.
+22:17 <@jack> mike: ok.  we have work to do.
+22:17 <@jack> so we need a meeting to decide what goes in icecast
+22:17 <@jack> and we've straightened out the 1.0.1 release
+22:18 <@jack> let's move on to the website overhaul
+22:18 < adiabatic> Okay.
+22:18 <@jack> do we all see the need for the webiste overhaul?
+22:18 <@jack> or should i explain it briefly?
+22:18 < adiabatic> Explain.
+22:18 < Mike> which website(s)?
+22:18 <@jack> ok
+22:19  * oddsock nods
+22:19 <@jack> right now we have lots of websites
+22:19 <@jack> and if you know about icecast
+22:19 <@jack> it's a giant step to get from there to speex
+22:19 <@jack> but we are all in teh same project really
+22:19 < adiabatic> jack: Bologna. There's the bar at the top of the page.
+22:19 <@jack> adiabatic: you know what i meant :)
+22:19 < adiabatic> No, I don't. Please, explain what the leap is.
+22:19 < Mike> I don't know what you meant.
+22:20 <@jack> we aren't integrated
+22:20 <@jack> peopel see one view of the project at a time
+22:20 <@jack> if you go to icecast.org you see only that pretty much
+22:20 < adiabatic> "the project"?
+22:20 < Mike> xiph
+22:20 <@jack> the project == Xiph.org
+22:20 < adiabatic> Thank you.
+22:20 <@jack> each of our websites is a mini-view
+22:21 <@jack> onto the big picture
+22:21 <@jack> to get a good look at everything that's gooing on, involves a _lot_ of browser
+22:21 <@jack> browsing
+22:21 <@jack> so what i'm suggesting, is that we organize our www presence better
+22:21 <@jack> and make it easier for ourselves to manipulate content and keep stuff up to date.
+22:22 <@jack> this is pretty crucial i think for us to get wider recognition
+22:22 <@jack> andpublic support
+22:22 < oddsock> do you want suggestions ?
+22:22 < adiabatic> I do.
+22:22 <@jack> the current ideas are in the wiki
+22:22 <@jack> and of course we want suggestions :)
+22:23 < silvia> sorry to interrupt - will have to go
+22:23 <@jack> silvia: thanks silvia :)
+22:23 < adiabatic> silvia: thanks for showing, see ya
+22:23 < oddsock> consolidated news page would be very helpful....with news from each project
+22:23 <@jack> yes
+22:23 < oddsock> also consolidated downloads
+22:23 < adiabatic> That would be very nice.
+22:23 <@jack> that too :)
+22:23 < silvia> should synchronise our standardisation efforts via the wiki i think - ciao
+22:23 <@jack> adiabatic: please put those on the wiki
+22:23 < philkerr> Silvia, bye
+22:24 -!- silvia [~silvia@xiph-IOIABG.dialup.nsw.CSIRO.AU] has left #xiphmeet []
+22:24 < oddsock> colsolidated documentation would be next
+22:24 <@jack> the current idea is to move the main views of each project from www.project.org to project.xiph.org
+22:24 <@jack> and to do the consolidation oddsock mentioned
+22:24 < adiabatic> Implementation questions.
+22:25 -!- jmspeex [~jmspeex@xiph-IMHHKO.10-203-24.mtl.mc.videotron.ca] has quit [Read error: 104 (Connection reset by peer)]
+22:25 <@jack> i initially proposed to move to zope/plone to do all this
+22:25 < adiabatic> 1) How are we going to get the FLAC guys to do this, given that they package up their website and ship it with their releases?
+22:25 < Mike> what about vorbis, which has the developer-targetted xiph.org/ogg/vorbis/, plus the public commercial face of vorbis.com
+22:25 <@jack> adiabatic: since josh isn't here, no idea.
+22:25 -!- segher [segher@51002F2.3932348F.72E9EB04.IP] has joined #xiphmeet
+22:25 < adiabatic> Right.
+22:25 < Mike> segher: hi. you've been volunteered to do _everything_
+22:25 <@jack> mike: xiph.org would become more public friendly
+22:25 < adiabatic> Mike: www.xiph.org would be completely changed.
+22:26 < oddsock> does each project have a particular branding ? (read logo)
+22:26 <@jack> and the developer stuff would just move to a subset of that
+22:26 <@jack> oddsock: some do some don't.  we need to make this consistent
+22:26 < adiabatic> oddsock: each project save for Speex has branding; logos are a different matter
+22:26 -!- jmspeex [~jmspeex@xiph-IMHHKO.10-203-24.mtl.mc.videotron.ca] has joined #xiphmeet
+22:26 < adiabatic> I've yet to see a *good* logo for Speex.
+22:26 <@jack> we want to emphasize the xiph brand so to speak
+22:26  * jmspeex curses are buggy video driver
+22:26 < jmspeex> adiabatic: That's on the TODO
+22:27 <@jack> the fish is preetty good.  the icecast igloo is good.
+22:27 < oddsock> jack: who defines the xiph brand ?
+22:27 < jmspeex> any artists out there?
+22:27 <@jack> the other logos are a little subpar
+22:27 < adiabatic> oddsock: no one person
+22:27 <@jack> xiph is all the projects  as a whole
+22:27 < jmspeex> (did I miss anything?)
+22:27 <@jack> and our goal
+22:27 <@jack> which is royalty free multimedia standards and implementation
+22:28 < segher> hi all
+22:28 <@jack> jmspeex: http://xiph.org/~jack/200305.txt to catch up
+22:28 < oddsock> well, clearly it's a multi-step process..so what are the basic steps
+22:28 < adiabatic> oddsock: get *good* artists.
+22:28 <@jack> step 1 is to figure out what this new thing would look like.
+22:28 <@jack> so far i think we've come up with some good ideas
+22:28 < adiabatic> jack: from what viewpoint?
+22:28 <@jack> high level.. how the data is organized, etc
+22:29 <@jack> i think step 2 is to start playing with the basics.  ie, get familiar with zope/plone and experiement
+22:29  * adiabatic coughs loudly
+22:29 <@jack> step 3 is probably to hire an aritst to flesh out our design needs
+22:30 < oddsock> yes, thats reasonable...
+22:30 < danx0r> pardon me for asking a 'devil's advocate' question, but -- considering all the tech work that needs to be done, is a complete www overhaul the best use of everyone's time and energy?
+22:30 <@jack> step 4 would be to combine those too and have a rough draft
+22:30 < adiabatic> danx0r: I can't code.
+22:30 <@jack> danx0r: what adiabatic said.
+22:30 < danx0r> well if it's mostly adiabatic then OK I guess
+22:30 <@jack> monty and stan and mike aren't going to be doing this ;)
+22:30 < danx0r> but these sorts of projects can take up lots of everyone's time with endless discussions...
+22:30 < danx0r> IMX
+22:30 < Mike> (and let's try to avoid the usability-disaster area which is vorbis.com. pretty is ok, but functional is much more important)
+22:31 <@jack> yes
+22:31 <@jack> we're agreed there mike.
+22:31 < adiabatic> Mike: I've had lethal overdoses of useit.com. That won't happen if I'm at the helm (unlike auratus)
+22:31 <@jack> baiscally, similar to what dan's saying
+22:31 <@jack> i wanted to test the water, get everyone' sinitial opinions
+22:31 < danx0r> I guess I'm just suggesting, maybe there should be an incremental approach -- changing one thing at a time, rather than the proverbial complete overhaul
+22:31 < adiabatic> s/let/near-let/
+22:31 <@jack> before we start moving forward on this.
+22:31 < adiabatic> My concerns.
+22:31 < Mike> adiabatic: heh. ok
+22:32 < adiabatic> I don't particularly care for an ultra-high level of abstraction.
+22:32 <@jack> danx0r: i think it can be done incrementally, sure
+22:32 < danx0r> I've just seen the "everything must go" approach spiral out of control -- seemingly an infinite number of times
+22:32 < adiabatic> Quite a few people maintain blogs by hand.
+22:32 <@jack> yes.  that's not what we want.
+22:32 < danx0r> KISS should be the design goal
+22:32 < danx0r> functionality over beauty!
+22:32 <@jack> well there's another design goal
+22:33 < adiabatic> I'll wait until I can get at least 90% of the floor...
+22:33 <@jack> ease of updating, etc
+22:33 < danx0r> simplicity over needless abstraction!
+22:33 < jmspeex> danx0r: I see it more as a consistency than a beauty issue.
+22:33 <@jack> people in the community are writing docs and posting them everywhere but on our sites
+22:33 <@jack> we are not doing a good job of harnessing the power of the community
+22:33  * adiabatic drums his fingers
+22:33 < danx0r> ok I'm done on this subject, I am emphatically *not* a web designer.  Do your thing folks
+22:33 <@jack> adiabatic: go ahead
+22:34 < adiabatic> Thank you, gentlemen.
+22:34 < adiabatic> Currently, my ideal is somewhere around where xiph.org/press/* is.
+22:34 < adiabatic> that is, pages with SSI (one include in <head>, one at the top of <body>, one at the bottom of <body>
+22:34 < adiabatic> )
+22:35 < adiabatic> That, and code conventions for manually-inserted breadcrumbs, <link rel='up'.../>, &c.
+22:35 <@jack> we nee dosmething where stupid people can contribute
+22:35 < adiabatic> Now, if we want to centralize somewhat, we have a couple options...
+22:35 <@jack> i think we can make these wishes agree
+22:36 < adiabatic> jack: We have the wiki for that.
+22:36  * oddsock looks at the agenda...
+22:36 < danx0r> yeah, even *I* can use the Wiki (sorta)
+22:36 < adiabatic> jack: I was about to get to the other side of the coin before you jumped in...
+22:38 < philkerr> For API documentation could you implement something in the style of the PHP docs, where people can leave comments
+22:38 <@volsung> Okay, I've gotta run for a while.  Unless this goes *way* over, you'll be done before I get back.
+22:39 < Mike> philkerr: I find that really irritating, and it means the online docs don't match the distributed-with-release docs. That sort of thing is ok IF it's seperate from the main API docs.
+22:40 < philkerr> Good point, a link at the bottom of the page?
+22:40 < adiabatic> So if we're going to get a more powerful (also read: more confusing and more of a hassle to update) CMS, then I'd like it to be able to take *some* of my hassles off my hands (afaict, news integration, RSS generation, *possibly* "stuff that uses our stuff" sections (but note that this is a lot of work for relatively little benefit) ...)
+22:40 < oddsock> I love that style of documenation...all good mysql examples (php too) come from user comments..
+22:40 < adiabatic> Plone, for me, seems too far out there for me to personally desire it.
+22:41 <@jack> i'll note here that plone/zope gives us the documentation ideas just discussed for free.
+22:41 <@jack> adiabatic: yes, you and i still need to hash this out
+22:41 <@jack> it sounds like everyone agrees that something will be good
+22:42 < adiabatic> Finally, I hold myself to very high standards of semantic markup and I'd expect the same of all stuff that goes on the website. This is why I am, in general, opposed to having just any yahoo post to anything other than wiki.xiph.org.
+22:42 < adiabatic> <-- perfectionist
+22:42 <@jack> adiabatic: understood.
+22:42 <@jack> ok
+22:42 <@jack> let's hit the last short term agenda item quick
+22:42 <@jack> which is client support
+22:42 <@jack> for this, i'd like for everyone to try and spend some time putting the current knowldge on this into the wiki
+22:42 < Mike> segher: since you weren't here when we were discussing it earlier - any chance of you finishing your UTF-8/conversion stuff for vorbis-tools soon?
+22:43 <@jack> specifically, here's what we lack knowledge of:
+22:43 <@jack> 1) directx plugins
+22:43 <@jack> 2) macosx/macos classic support
+22:43 <@jack> i think we could make some good goals for ourselves on this front if we only knew what was already done.
+22:43  * danx0r points again to Mauricio, who is not here (was he even invited?)
+22:44 <@jack> danx0r: can you make sure he gets the log/minutes?
+22:44 < segher> mike: you can have it tomorrow, if you like -- but i didn't do any autoconf stuff for it yet
+22:44 <@jack> and invite him to the next one?
+22:44 < Mike> segher: so is that a yes or a no to my actual question? 
+22:44 < danx0r> jack -- did he get an invite?
+22:44 < Mike> i.e. code we can use.
+22:44 <@jack> i never heard of him before today, danx0r :)
+22:44 < danx0r> heh
+22:44 < danx0r> that's rich
+22:45 <@jack> sorry :(
+22:45 < segher> mike: it is finished, and has been finished for a year or so.
+22:45 <@jack> that's one of hte points of this meeting, to determine who's who and such
+22:45 <@jack> i'm not surprised we missed someone.
+22:45 < segher> but a) only for unix with iconv, and b) no autoconf.
+22:45 < danx0r> then I assume you don't know about theora-codecs@xiph.org
+22:45 < Mike> segher: i.e. incomplete. 
+22:46  * oddsock never got invited
+22:46 <@jack> danx0r: no.  i'll go subscribe.
+22:46 <@jack> oddsock: you were via irc werne't you?
+22:46 <@jack> ipointed you at the wiki i'm sure :)
+22:46 < danx0r> please do.  I bugged Emmett endlessly until he set it up.
+22:46 < danx0r> right now it's about VP3 codecs, but all the issues will translate to Theora
+22:47 <@jack> ok.
+22:47 <@jack> so, let's hit long term goals for the last 15 minutes and call it a day
+22:47 < Mike> ok, so add "autoconf for segher's new iconf stuff" to the list of things we need to find a volunteer for.
+22:47 < segher> mike: not more incomplete than the current stuff.
+22:47 -!- Topic for #xiphmeet: Welcome to the MonthlyMeeting.  Realtime log is at http://xiph.org/~jack/200305.txt.  Agenda at http://wiki.xiph.org/MonthlyMeeting200305.  Please read http://wiki.xiph.org/MeetingEtiquette.
+22:47 -!- Topic set by jack [jack@xiph-MBDGFD.xiph.org] [Sat May  3 19:39:21 2003]
+22:47 [Users #xiphmeet]
+22:47 [@jack     ] [ Alereon  ] [ danx0r ] [ Mike   ] [ philkerr] 
+22:47 [@volsung  ] [ Bruns    ] [ jmspeex] [ oddsock] [ purple  ] 
+22:47 [ adiabatic] [ comajelly] [ joe    ] [ PeterH ] [ segher  ] 
+22:47 -!- Irssi: #xiphmeet: Total of 15 nicks [2 ops, 0 halfops, 0 voices, 13 normal]
+22:47 <@jack> trelane and manuel aren't here, so let's skip thenew projects
+22:47 <@jack> we already did standarization
+22:48 <@jack> that leave fundraising, staff, and theora
+22:48 <@jack> which are all integrally related.
+22:48 <@jack> we need a theora lead hacker
+22:48 <@jack> and we need a lot more money 
+22:49 <@jack> a basic strategy would be grants and coporate sponsorship, along with more strategic and lucrative contracts
+22:49 <@jack> dan has a some ideas in this area
+22:49 < danx0r> heh
+22:49 < danx0r> well...
+22:50 < danx0r> I guess I'm just thinking that organizations like MPEG, ISMA, M4IF, etc. -- your basic 'industry consortia' -- seem to be able to pick corporate pockets quite effectively, without promising anything specific other than 'involvement'
+22:50 < danx0r> so that sounds to me a bit like 'donations' -- but,
+22:50 < danx0r> in the OS world, information is freely available to begin with, so the paradigm of selling 'access' is not quite right
+22:51 < danx0r> more like selling 'legitimacy', or basically just shaming folks into paying something -- but putting some structure around it
+22:51 < adiabatic> Nevermind that we're leaving the possiblity that we're letting others freely grab us by the short hairs.
+22:51 < danx0r> adiabatic - how so
+22:52 < adiabatic> We might be steered by some corporate sponsor that's simply trying to run us into the ground.
+22:52 < danx0r> adiabatic -- the rules of engagement should make that impossible
+22:52 < adiabatic> On the OTHER hand...
+22:52 < adiabatic> Okay.
+22:52 < danx0r> no steering -- it should be very clear that a donation is just that, as Jack has explained
+22:52 < danx0r> however --
+22:53 < danx0r> perhaps it gets you a bit more -- involved in some specific ways...
+22:53 < danx0r> it's a tricky balance I know
+22:53 < jmspeex> I think we might want to set up "per project" pots.
+22:53 < danx0r> but non-profits the world over struggle with this
+22:53 < jmspeex> i.e. "I want to donate for project X"
+22:53 < danx0r> jmspeex -- not sure that model works
+22:54 < jmspeex> why not?
+22:54 < danx0r> the whole not-for-profit concept sort of implies we're all in it for common goals
+22:54 < purple> jmspeex: Unfortunately, that sentence is an oxymoron. You can't donate *for* something. You just donate.
+22:54 <@jack> jmspeex: the way to do that is to make a budget
+22:54 < danx0r> 'donating to project X' sounds to me suspiciously like contract work
+22:54 < danx0r> jack -- yes, exactly
+22:54 <@jack> and put speex int eh budget
+22:54  * adiabatic raises his index finger
+22:54 < danx0r> and, somehow, if you donate more, your budget items end up getting some priority
+22:54 <@jack> adiabatic: feel free to speak up :)
+22:55 < danx0r> but it's not a promise, it's just -- something that happens
+22:55 < adiabatic> I just hate butting in.
+22:55 < jmspeex> no. There are many orgs where you can say: "I want my money to go to X", where X is third world, homeless, ...
+22:55 < purple> Xiph can make a promise to implement X once enough money has come in, but the donors have no guarantee.
+22:55 < danx0r> jmspeex -- I think that would be a budget nightmare for a small org tho
+22:55 <@jack> jmspeex: officially the org can spend the money however they want.
+22:55 < danx0r> look I'm just trying to relate this to things I know
+22:55 < adiabatic> Remember when I put up a ransom to get FLAC input support in oggenc?
+22:55 < danx0r> On2, a very small company in the big picture,
+22:56 < danx0r> spent upwards of $25K a year with conference fees, travel, etc
+22:56 < adiabatic> mhm...
+22:56 < jmspeex> I say that because I've already been asked: "Can I make a donation that goes in a pot for a speex fixed-point"
+22:56 < danx0r> jmspeex -- well my suggestion again would be to try to avoid being that specific
+22:56 < adiabatic> right, issue-specific things like pots for fixed-point things 'n features
+22:56 < danx0r> the donation gets you a 'seat at the table'
+22:57 <@jack> jmspeex: ah
+22:57 <@jack> this does brin gup another method of funding
+22:57 < danx0r> to have influence over things like when a speex fixed-point will be done
+22:57 <@jack> which is something like bounties
+22:57 < adiabatic> danx0r: I don't want a seat at the table for feature X. I just want it done.
+22:57 <@jack> where we try and raise $x for a speific purpose.
+22:57 <@jack> one example, fixed point speex.
+22:57 < philkerr> I've got to go guys.  Cheers and thanks
+22:57 <@jack> a better example, a full time theora guy.
+22:57 <@jack> philkerr: thanks
+22:57 < adiabatic> Another example: FLAC support for oggenc.
+22:57 <@jack> exactly.
+22:57 < adiabatic> s/C/C input/
+22:58 <@jack> on interesting idea i hadwas to bounty bugs
+22:58 < jmspeex> Or: "Five $1k, get to decide which bug gets fixed"
+22:58 -!- philkerr [~Snak@xiph-IEHPFJ.dsl.pipex.com] has left #xiphmeet []
+22:58 <@jack> ie, developer x agrees to fix bug y if $500 get donated.
+22:58 <@jack> like a walkathon
+22:58 < danx0r> well...
+22:58 <@jack> honestly, we'd love to get to th point where we can pay everyone.
+22:58 < adiabatic> I'd recommend against that, because it leaves the possibility that you're trying to farm your own inadequacy.
+22:59 < danx0r> YMMV but for my money this is going to lead to undue hardship down the line, in the form of endless beaurocracy
+22:59 <@jack> danx0r: could be.
+22:59 < danx0r> here's my take:
+22:59 <@jack> th easy targets are teh big corps.
+22:59 <@jack> evenin this economy they still donate.
+22:59 < danx0r> there are many companies involved with MPEG who hate royalties and the companies that charge them
+22:59 < jmspeex> Some people may wish to donnate to "just Xiph", but most probably are interested in one specific project.
+22:59 <@jack> lots of these rich people and big compnaies have regular yearly donation schedules
+23:00 < danx0r> I think they will jump at the chance to fund an organization that can, if nothing else, 'keep MPEG honest'
+23:00 < jmspeex> Could we charge for use of trademark Vorbis/Speex/FLAC in non open-source applications?
+23:00 < danx0r> ie, what you are selling is, pressure on the patent-holders to be more reasonable
+23:00 < danx0r> or get out of the way while an alternative, open-source format takes over
+23:01 <@jack> yes
+23:01 <@jack> i think if we presented a good story, we could raise substantial $$
+23:01 < danx0r> I agree
+23:01 <@jack> we already know 'open standards' is worth more than 'open source'
+23:02 <@jack> even though they are for our purposes somewhat equivalent.
+23:02 < danx0r> well xiph's products *are* open standards as well as open-source implementations of those standards
+23:02 <@jack> our lawyer has suggested hiring an old investment banker on commission
+23:02 <@jack> to go out and drum up money from these people
+23:02 < danx0r> jack -- I would look for someone with non-prof fundraising exp
+23:03 <@jack> i would too :)
+23:03 -!- pfm [~pfm@xiph-IOHLOL.pbc.adelphia.net] has joined #xiphmeet
+23:03 < jmspeex> We could list those who befit the most from our products.
+23:03 <@jack> hey pfm, we are talking funding ideas.
+23:03 < pfm> cool, i drove home fast to catch the tail end of this
+23:03 < danx0r> I think the pitch is like this: We are fighting your enemies (the evil patent-holders).  The enemy of your enemy is your friend.  Pay up!
+23:03 < jmspeex> e.g. target games companies for Vorbis donations.
+23:04 <@jack> jmspeex: yes
+23:04 <@jack> but i think tha'ts a limited amount of money
+23:04 < jmspeex> We need to be able to really justify what they get by donating.
+23:04 <@jack> they are only so money of them
+23:04 <@jack> and only a few of them are really big
+23:04 <@jack> that said
+23:04 < adiabatic> Right. What will $1000 buy me?
+23:04 <@jack> we need to go say hi to iD and EA
+23:04 < jmspeex> e.g. We're working on a video codec, donate to make that happen faster.
+23:04 <@jack> and give themthe same line we gave epic
+23:05 <@jack> you saw how the epic guy bought the story quickly
+23:05 < purple> Well, game companies would pay for what they already got: Vorbis
+23:05 <@jack> i'm sure we can do that again.
+23:05 < adiabatic> jack: No, I didn't. Could you sum up?
+23:05 <@jack> ah
+23:05 <@jack> epic business guy was hestitant to pay jm for speex work
+23:05 <@jack> i just informed him that epic had been using vorbis for free for years
+23:06 <@jack> adn that they were paying for access to code that iddn't exist
+23:06 < danx0r> I think one issue that is not clear -- is xiph selling implementations, or developing open standards? 
+23:06 < Mike> yeah, big games companies could be a good approach for some money (not huge amounts, I suspect, but reasonable chunks of cash that will help us quite a bit)
+23:06 < danx0r> what is the core goal?
+23:06 <@jack> two emails later, the deal was done.
+23:06 < Mike> danx0r: I guess we're selling implementations so that we can get money to develop open standards - the latter being our core goal
+23:06 <@jack> we need upward of $40-50k minimum to bring on a new person fulltime.
+23:06 <@jack> per year.
+23:07 < adiabatic> Damn, that's huge.
+23:07 <@jack> so we have to double our current stuff.
+23:07 <@jack> adiabatic: it's not too big
+23:07 <@jack> but yes
+23:07 <@jack> these contracts we have no are not scratching the surface.
+23:07 < danx0r> again, IMNSHO, Xiph should try to  move away from implementations, and sell itself as the group that is defining the future standards we will all live by
+23:07 < danx0r> adiabatic -- $50K is nothing in the corporate world
+23:08 < danx0r> frankly, Xiph's budget is so small it is likely to scare away corporate funders --
+23:08 < jmspeex> Perhaps we should maintain a list of new stuff we'd like to add and see if a corp want to sponsor that (instead of going the other way round)
+23:08 < adiabatic> danx0r: right, but it's the whole "per annum" thing that makes me worry
+23:08 <@jack> we want to be getting donations > $10k on a regular basis
+23:08 < Mike> danx0r: the problem is that open/free standards are - by definition - free, so I'm not sure how that leads directly to any sort of income
+23:08 < danx0r> which is why I was a bit shocked to hear there will be complete transparency on money
+23:08 <@jack> yeah, you have a point.
+23:08 <@jack> but, we have good cred too
+23:09 < danx0r> Mike -- it's a circular argument: if the open standard is indeed a standard (ie used by many), its future direction has a huge effect on many parties
+23:09 <@jack> we are not a new face.
+23:09 < jmspeex> Mike: The idea is not to sell the implementation but to sell new features.
+23:09 < Mike> jmspeex: right
+23:09 < danx0r> and having an impact on that direction is important = worth $$$
+23:09 <@jack> or sell the promise of new features.
+23:09 < Mike> danx0r: yeah, I guess so. It's hard to get to that point, though.
+23:09 < danx0r> jmspeex -- yes, I agree -- but your example, a fixed-point implementation of speex, would be an implementation, not a feature, eh?
+23:09 < jmspeex> I sure IBM and Intel could give good donations.
+23:10 <@jack> it's not a simple story
+23:10 <@jack> and it needs work.
+23:10 < danx0r> Mike -- agreed, I'm not saying this is simple or easy
+23:10 < adiabatic> right, but why should IBM or Intel bother?
+23:10 <@jack> but we can craft one i think
+23:10 < danx0r> but you really are not set up to sell implementations anyway
+23:10 < jmspeex> danx0r: That would be a feature in that it benefits everyone.
+23:10 < danx0r> why be a non-prof if that's the case?
+23:11 < danx0r> might as well go for profit
+23:11 <@jack> the problem with for-profit
+23:11 <@jack> is that we become _competitors_
+23:11 < jmspeex> adiabatic: Intel sponsors everything that can run on their processor and that might justify the need for faster processors.
+23:11 <@jack> this is the path we chose (non-profit)
+23:11 < adiabatic> jmspeex: hmMMMmmm....
+23:12 <@jack> jmspeex: that's a good point.
+23:12 < jmspeex> danx0r: In a DSP port, only the company benefits. With a general fixed-point, everyone benefits. 
+23:12 < Mike> jmspeex: maybe we should write an "ultra-high-quality" version of vorbis and/or speex that just adds some busy-loops to the encoder core, and then ask Intel for money? 
+23:12 < jmspeex> adiabatic: Intel funds a large number of projects.
+23:12 < adiabatic> IBM new-school mainframes running Icecast: They'll Save You A Bundle.
+23:12 <@jack> i'd make the case that fixed point is limited benefit.
+23:13 <@jack> butthat's a minor detail
+23:13 < danx0r> jmspeex -- ok I get your point
+23:13 < jmspeex> jack: Huge benefit. 
+23:13 <@jack> i almost took a job workign with ibmto do icecast on S390s
+23:13 <@jack> jmspeex: you'll have to explain tome why sometime(not now)
+23:13 < adiabatic> jack: and you turned it down, or...?
+23:13 <@jack> yeah i didn't want to move to poughkeepsie
+23:13 < danx0r> the key to fundraising will of course be to identify the entities that have something to gain/lose
+23:13 < jmspeex> WiFi phone on your iPaq, audio book, ...
+23:14 <@jack> and it wasn't enough money.
+23:14 < danx0r> ie the natural 'stakeholders' in open formats
+23:14 < purple> One would think that content providers ought to be interested in open formats.
+23:14 <@jack> we'll be discussing this at length at our board meeting this summer
+23:14 < danx0r> I guess what's confusing me is how MPEG has so much involvement, and they don't implement anything at all
+23:14 <@jack> danx0r: yeah
+23:15 < pfm> next month
+23:15 <@jack> danx0r: it's pure bloat :)
+23:15 < danx0r> their approach is, we design the format, member companies do their own implementations
+23:15 < adiabatic> purple: That's debatable; Opsound, perhaps; BMI, no.
+23:15 < danx0r> jack -- maybe, but alot of money flows through those guys
+23:15 < adiabatic> s/perhaps/probably/
+23:15 < danx0r> 1% of their budget would do nicely for Xiph
+23:15 <@jack> danx0r: no kidding.
+23:15 <@jack> in any case, i think it's time to wrap up
+23:16 <@jack> we havea lot of ideas tothink about
+23:16 <@jack> and hopefully better ideas of what is goingon and where we should go from here
+23:16 < danx0r> jack -- thanks for putting this together
+23:16 < oddsock> yes...good job jack
+23:16 <@jack> next monthly meeting June 7.
+23:16 < danx0r> I have a much better idea of what I'm involved in :)
+23:17 <@jack> thanks everyone for coming
+23:17 < danx0r> is saturday the only day good for all?
+23:17 <@jack> let's be sure and get a little better turnout next month
+23:17 < adiabatic> June 7 for people in the US, anyway...
+23:17 < adiabatic> 8th for Mike.
+23:17 <@jack> adiabatic has already created the new agenda page
+23:17 <@jack> feell free to hack iit up :)
+23:17 < purple> So, I take it it's my job to compress the 80k log of this meeting into something resembling minutes?
+23:18 <@jack> purple: yes, please
+23:18 <@jack> and to post the irc log and the minutes on the MonthlyMeeting page
+23:18 <@jack> down at thebottom i created a little spot for them.
+23:18 < danx0r> where will these minutes be available (& when)
+23:18 < purple> I guess that'll replace this week's Ogg Traffic :)
+23:18 <@jack> purple: heh :)
+23:19 -!- pfm [~pfm@xiph-IOHLOL.pbc.adelphia.net] has left #xiphmeet []
+23:19 -!- oddsock [~oddsock@xiph-IOHDOC.client.attbi.com] has left #xiphmeet []
+23:20 -!- PeterH [~Peter@xiph-HHHJNJ.sympatico.ca] has quit [Client Exit: Client exiting]
+23:20 -!- jack changed the topic of #xiphmeet to: Next MonthlyMeeting June 7/8 0:00 GMT.  Proposed agenda at http://wiki.xiph.org/MonthlyMeeting200306
+23:20 <@jack> thanks everoyone.  
+23:20  * Bruns smiles
+--- Log closed Sat May 03 23:20:32 2003

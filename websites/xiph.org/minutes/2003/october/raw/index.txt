@@ -1,0 +1,401 @@
+--- Log opened Sun Oct 05 16:53:52 2003
+16:53 < xiphmont> Hi.
+16:54 < maxx`> i'm lurking, and hoping to make and appointment with someone who's proficient in autotools - i tried to import ices' system into vorbis-tools and thus fix its multiple breakages and now i'm stuck
+16:54 < adiabatic> That's one thing I never got on xiphnet--the fun names of MIT computers.
+16:54 < jack> realtime log at http://xiph.org/200310.txt
+16:54 < maxx`> i think in a 2-3 hrs session this can be finished entirely... and i have relatively much time these days, so i can adjust
+16:54 < rillian> maxx: I'm happy to help with that. my computer died this week, so I've not been around much
+16:54 -!- Aram1 [~Aram@24-161-24-176.hvc.rr.com] has joined #xiphmeet
+16:55 < jack> we'll begin in ~ 5 mins
+16:55 < purple_haese> And we'll end in 2 hours or less, I hope :)
+16:55 < rpop> no Garf
+16:55 < xiphmont> well, I'll get the power cord then.
+16:56 < maxx`> rillian: i would give out shells on my openbsd boxen for testing and coordinated work; most things work on some linux dists, but obsd is usually the reliable pointer to "something is b0rk3n" ;P
+16:56 < karlH> maxx`: oh no, not autotools again :)
+16:56 < Jan> garf seems not to be online
+16:56 < maxx`> karlH: yes :)
+16:57 < maxx`> i've gotten pretty far already, not all tools compile, yet, but some
+16:57 < maxx`> and the checks work better than before, at least, but i still have bugs that i need help with... but let's talk about that after the official thing here is over :)
+16:58 < karlH> ok
+16:58 -!- KriTip [~chatzilla@host81-132-89-120.in-addr.btopenworld.com] has joined #xiphmeet
+16:58 < Jan> jack: 404
+16:59 < jack> er, i meant http://xiph.org/~jack/200310.txt
+17:00 < rillian> shall we begin?
+17:01 < adiabatic> Fine by me.
+17:01 < xiphmont> OK
+17:01 < jack> ok
+17:02 < jack> i'll start with the organizational update
+17:02 -!- shank_ [~shank@pool-141-151-139-206.pitt.east.verizon.net] has joined #xiphmeet
+17:02 < jack> we're still looking for a fundraiser, pfm has been working on that since the board meeting in june
+17:02 < jack> pfm: how goes the effort?
+17:02 < pfm_> its a hard sell 
+17:03 < pfm_> especially in light of sco theatrix
+17:03 -!- thread [~thread@user-e86d8f.user.msu.edu] has joined #xiphmeet
+17:03 < pfm_> i have some hope in the form a headhunter in dc
+17:04 -!- utu [~utu@user-fba299.user.msu.edu] has joined #xiphmeet
+17:04 < jack> ok
+17:04 < xiphmont> I sometimes think we'd have been better off making no attempt whatsoever to play by IP rules.  Grrrr.
+17:04 < jack> we never would have made it into hardware or games
+17:04 < jack> just like divx and friends haven't
+17:04 < xiphmont> I suppose.
+17:04 < shank_> is the money for IP related stuff?
+17:05 < xiphmont> Although divx gave up an licensed.
+17:05 < jack> the money would be for expanded operations.  more programmers, etc
+17:05  * shank_ nods
+17:06 -!- PsyQ [~ddd@pD9E0E1DC.dip.t-dialin.net] has quit [Read error: 110 (Connection timed out)]
+17:06 < jack> that includes ip stuff, but i suspect any ip money would be spent on the other codecs
+17:06 < jack> to do the same analyses we've done for vorbis for speex, theora, flac, etc
+17:06 < jmspeex> I vote for that :)
+17:07 < jack> are there any organizational questions? or shall we move on?
+17:07 < purple_haese> Well, theora ought to be easy, since On2 should have prior research.
+17:07 -!- PsyQ [~ddd@pD9EB1893.dip.t-dialin.net] has joined #xiphmeet
+17:07 < rillian> jack: is there another board meeting planned?
+17:07 < purple_haese> I suppose the taxes for 2002 are finally in?
+17:08 < derf_> purple_haese: The questions are about all the new whiz-bang features people want in Theora: interlaced support, 4:4:4, 4:2:2 and 4:2:0 pixel formats, etc.
+17:08 < jack> rillian: for next year yes.
+17:08 < purple_haese> derf_: Oh, I see.
+17:08 < jack> purple_haese: that's a godo question.  i know they are finished, but i dind't confirm that they were mailed.  i'll do so.
+17:08 < jack> i believe the deadline is november, so we're in good shape.
+17:10 < jack> ok, let's get these quickies out of the way
+17:10 < jack> are there any objections to a announce@xiph.org type list?
+17:10 < xiphmont> no
+17:10 < rillian> seems like a good idea to me
+17:10 < jack> ok.  we need to set this up soon, i'm getting a few emails a week from press people wanting to stay up to date
+17:10 < shank_> seems like a must to me
+17:11 < jack> rillian: i assume that's on your plate
+17:11 < volsung> And to maintain balance in the Force, we can eliminate vorbis-faq.
+17:11 < jack> i agree
+17:11 < rillian> jack: yes. I'll take care of that
+17:11 < purple_haese> And announce@xiph.org will eliminate the xyz-announce lists, yes?
+17:11 < jack> should renewed interest appear in collaborative docs, let's use the wiki
+17:11 < jack> purple_haese: are there any xyz-announce lists?
+17:12 < purple_haese> None with any traffic :)
+17:12 < purple_haese> mgm-announnce, paranoia-announce,  etc.
+17:12 < jack> an.  those are old lists anyway
+17:12 < jack> i'm perfectly happy with removing them
+17:12 < rillian> xiphmont: should mgm, paranoia, etc remain semi-separate?
+17:13 < xiphmont> Probably not.
+17:13 < xiphmont> ...in that I hate having a million lists more than anything else.
+17:13 < rillian> that works :)
+17:14 < jack> ok. on to the patent-free definition
+17:14 < jack> several people have suggested we make some kind of IP statement to clarify what we mean
+17:14 < rillian> mostly to people who don't understand how patents work in america
+17:15 < jack> we'll probably need to run this by the lawyer
+17:15 < jmspeex> rillian: Well, at least we can explain them...
+17:15 < purple_haese> I'd like to see us say as much as we can possibly say without getting into legal problems.
+17:15 < rillian> agreed
+17:16 < jack> that's usually what we always do
+17:16 < jack> i'll talk to Tom and find out what's reasonable to say
+17:16 < jack> and i'll draft up something 
+17:16 < jmspeex> But we have to be able to point people to a text instead of always repeating the same things.
+17:17 < jack> jmspeex: i agree.  this is of the type of question as "what does xiph mean?"
+17:18 < jmspeex> I also think the statement should have two parts:
+17:18 < jmspeex> 1) explain what we mean about patent-free
+17:18 < ob1> Sorry to disturb you, but, did you have a position for the 'european' patent ???
+17:19 < jmspeex> 2) explain the patent systems and why we can't guaranty/indemnify
+17:19 < jack> that's a good question, but unfortunately i don't know enough about that situation to knkow if one is needed
+17:20 < jmspeex> (point 2 includes the fact that no company will offer strong patent guaranty either)
+17:20 < rillian> I'm not sure there's much difference in character with the eu system
+17:20 < jack> except for risky companies.
+17:20 < rillian> except that fewer patents are valid there
+17:21 < maxx`> a rough thing about european patents; we always had software patents, but it is difficult to get one (don't hold me on the numbers, but we don't have more than ~20.000 patents). the clause is that there has to be "an inventive step"
+17:21 < purple_haese> Is there any way we can appease the people that are worried that Vorbis infringes on the Edler patent on window switching, other than to say "We don't believe we infringe on it"?
+17:22 < maxx`> they made that a little less strict lately, iirc. MPEG and MP3 are probably valid patents in EU
+17:22 < derf_> Get an opinion from a lawyer.
+17:22 < jack> we couldn't release an opinion from teh lawyer.
+17:22 < PsyQ> Remark: most MPEG patents are co-registered in EU countries as well
+17:23 < jack> and the lawyer may not feel it's worth an opinion
+17:23 < rillian> jack: I think derf meant to tell them to get an opinion of their own
+17:23 < jack> it sounds like the latter is likely to be the case
+17:23 < jack> oh.  yeah, that will work.
+17:23 < jmspeex> jack: Can we "officially" say at least "our lawyer told us it was OK"?
+17:23 < jack> in general the patent opinion are cheaper than licensing the competition :)
+17:23 < purple_haese> What about a brief statement like "This patent talks about a,  but we are certain we do b"?
+17:24 < jack> that would be in monty's camp
+17:24 < derf_> purple_haese: The courts do not believe that anyone who is not a patent lawyer is qualified to determine the scope of any patent.
+17:24 < xiphmont> Well, I'd have to be the technical side of making such an opinion wit the lawyer.
+17:24 < purple_haese> It doesn't have to be elaborate, and it would be a clear sign of good will.
+17:24 < derf_> In fact, you're potentially liable for up to triple damages just for reading the thing without consulting your lawyer, for "willful infringement".
+17:25 < jack> derf ha sa point here.
+17:25 < purple_haese> Yikes.
+17:25 < PsyQ> derf: well, how is anyone who is not a lawyer qualified to call something "patent free"? :)
+17:25 < jack> let me ask the lawyer
+17:25 < jmspeex> derf_: single/triple damage doesn't change a thing in our case.
+17:25 < purple_haese> Well, then the best we can do, unfortunately, is to explain why we can't make specific statements about specific patents.
+17:26 < jmspeex> PsyQ: we define "patent-free". It's like free software, RMS decides what qualifies as "free software"
+17:26 < jack> purple_haese: that may be the case.  anyway, i'll send an email to tom and we'll figure out where to go from there.
+17:26 < xiphmont> yes, we need some sort of statement.
+17:27 < PsyQ> jmspeex: free software does not anything to do with "patent free", so I'd leave RMS out of this discussion :)
+17:27 < jack> ok..  stan, you had some changes to libao you wanted to discuss?
+17:27 < purple_haese> Businesses that are interested in Vorbis can always take the money they save on licensing and put part of it toward their own patent opinion, or buy some liability insurance :)
+17:28 < PsyQ> ok - so you defined "patent free" as ?  I guess free of your own patents?
+17:28 < jmspeex> PsyQ: What I mean is that when the FSF talks about "free software", they also define what they mean exactly by "free software". We should do the same with "patent-free".
+17:28 < volsung> Should I jump in now?  :)
+17:28 -!- mackstann [~death@12-217-123-219.client.mchsi.com] has joined #xiphmeet
+17:28 < JohnV> well.. I've gathered here the technical talk in HydrogenAudio regarding speculations whether US 5,214,742 can be avoided in a MDCT codec with window switching: http://www.hydrogenaudio.org/index.php?showtopic=13531
+17:28 < derf_> I think jack is subtlely hinting that it is time to move the discussion along.
+17:28 < PsyQ> I think "patent free" is a little bit misleading :)
+17:28 < purple_haese> PsyQ: An actual definition will be written outside this meeting, and posted on the website.
+17:29 < PsyQ> Ok
+17:29 < volsung> Okay, I wanted to desync libao from the standard vorbis/vorbis-tools/ogg release cycle.
+17:29 < volsung> And give it a home at http://www.xiph.org/libao/
+17:29 < volsung> There are now enough projects besides ogg123 using it that I think this makes sense.
+17:29 < xiphmont> JohnV: that patent is not about windows or window switching, it's about the specific method o deciding when to switch.
+17:30 < volsung> Any objections?
+17:30 < rillian> volsung: sounds good to me
+17:30 < purple_haese> volsung: I think that makes sense.
+17:30 < jack> volsung: i think that's perfectly fine.
+17:30 < jmspeex> speaking of ogg123, any idea when speex support will be widespread enough for me to "phase out" speexdec?
+17:30 < adiabatic> volsung: As a win32 and unix user, it sounds good to me.
+17:30 < volsung> I have the 0.8.4 release basically ready to go at http://www.xiph.org/~volsung/ao/
+17:30 < jack> but we should give it it's own webpage now 
+17:30 < rillian> volsung: have you tried to get any of the other forks to port to your version?
+17:31 < volsung> Forks?
+17:31 < JohnV> xiphmont: well, the question is, can it be avoided in a codec which does window switching..
+17:31 < rillian> there are several other libaos
+17:31 < volsung> I'm only aware of the people I originally forked from and libaio which I hope to integrate into libao.
+17:31 < jack> is libao still necessary now that portaudio exists?
+17:31 < volsung> No idea.
+17:31 < volsung> I've never looked at it.
+17:31 < shank_> what's portaudio?
+17:31 < rillian> that's another good point
+17:31 < purple_haese> JohnV: Yes, by using a different method for deciding when to switch.
+17:32 < jack> volsung: can you go inestigate?
+17:32 < volsung> Yes.
+17:32 < rillian> portaudio seems to work great, but it also seems to be unmaintained
+17:32 < jack> ok
+17:32 < volsung> So can I go carve out libao in the webpage folder?
+17:32 < jack> portaudio has a little better platform support than we do i believe
+17:32 < volsung> Oh and one more thing...
+17:32 < jack> volsung: www.xiph.org/ao would be fine
+17:32 < rillian> and playback timing feedback for sync
+17:32 < JohnV> purple_haese: does Vorbis use "different method"?
+17:32 < volsung> I wanted to ask for CVS access for shank to help with libao stuff.
+17:33 < purple_haese> JohnV: xiphmont seems to think so.
+17:33 < JohnV> seems to think so?
+17:33 < volsung> He's contributed a number of patches and I'm split to thin to do this all myself.
+17:33 < rillian> shank: if you're trustworthy, email an ssh key to giles@xiph.org and I'll set up an account :)
+17:33 < xiphmont> JohnV: IANAL
+17:33 < jack> volsung: rillian can hook you up with that.. shank will need to send his ssh keys
+17:33 < shank_> rillian: ok
+17:33 < volsung> shank_: Yay.  Welcome to CVS.  :)
+17:33 < shank_> :)
+17:34 < volsung> Okay, that's it for me.
+17:34 < rillian> speaking of CVS
+17:34 < rillian> we're still intending to switch to svn
+17:34 < rillian> and still waiting on a working repository conversion script
+17:34 < rillian> don't hold your breath
+17:34 < JohnV> xiphmont: but you base it on what exactly? You are not a lawyer but what is this thinking based on?
+17:35 < volsung> rillian: How close is svn to a 1.0 release?
+17:35 < Arc> jack, portaudio as in the macosx library?
+17:35 < jmspeex> rillian: will this still allow people who don't have svn to access the code?
+17:35 < rillian> Arc: it works on windows and linux too
+17:35 < jack> jmspeex: there will still be tarballs.
+17:35 < jack> and they can get the code from DAV i believe via http
+17:36 < rillian> yes
+17:36 < Arc> isn't it non-free?
+17:36 < jack> arc: i don't know.  that's why i asked :)
+17:36 < rillian> you can actually mount the repository on windows and macosx
+17:36 < purple_haese> JohnV: In cases you haven't noticed,  the meeting has moved away from the patent discussion. After consultation with the lawyer, we will disclose as much as we possibly can.
+17:36 < Arc> it's part of Apple's proprietary audio system, i really don't think it's free.  they probobally ported it to windows/linux just to run quicktime
+17:37 < rillian> Arc: that must be something different
+17:37 < volsung> FYI, I just looked at portaudio: It's BSD-like license.
+17:37 < jack> arc: that's something different
+17:37 < JohnV> well I indeed noticed...
+17:37 < rillian> http://www.portaudio.com/
+17:38 < volsung> Unfortunately, the libao platforms are not a superset or subset of it.
+17:38 < volsung> If it looks good, I'll see if we can port our code for platforms to it and deprecate libao.
+17:39 < xiphmont> As someone who doesn;t know what he's talking about.... a merger?
+17:39 < xiphmont> ;-)
+17:39 < volsung> But not for a while.
+17:39 < shank_> how well distributed is portaudio?
+17:40 < Arc> jack, is this the audio subsystem that's used in macosx?
+17:40 < volsung> Arc: No.
+17:40 < volsung> That's coreaudio.
+17:40 < jack> i've seen portaudio used in a lot of apps altely
+17:40 < shank_> how about distro's?
+17:40 < volsung> Anyway, I will check.  If good, we'll merge into the collective, if not, we'll carry on.
+17:40 < shank_> as a app dev, that's what i'm concerned with, but that will change if it reaches critical mass
+17:40 < xiphmont> Audacity uses it.
+17:41 < jack> it sems more sophisticated
+17:41 < jack> in any case, let's move on
+17:41 < Arc> volsung, thanks for clearing up my confusion :-)
+17:41 < jack> ok, shall we talk about the 1.0.1 release?
+17:41 < purple_haese> Yes, let's :)
+17:42 < volsung> Yes.
+17:42 < jack> are any of the win32 people here that have been posting for vorbis-dev?
+17:42 -!- Jan [~JanS@62.61.133.252.generic-hostname.arrownet.dk] has quit ["/me IST dead"]
+17:43 < jack> it seems that building releaseable dlls is a hard task these days
+17:43 < jack> i believe all the build quirks have been resolved, and it's only a question now of what to release for windows
+17:44 < rillian> we need to fix the ogg runtime linkage, but otherwise, yes
+17:44 < jack> oh, i thougth that had been fixed
+17:44 < rillian> John fixed it, but I've checked in his changes
+17:44 < xiphmont> I'm about ready to dust off the damned Windows machine, beg a copy of VS.Net and deal :-)
+17:44 < rillian> I've *not* checked in
+17:44 < purple_haese> So, what's the alternative? We ship source only, and let application developers ship whatever DLL version their app needs?
+17:45 < jack> we should ship source this time
+17:45 < jack> and i think at least VS.NET binaries
+17:45 < rillian> source and a couple of binaries sounded like the right thing to do
+17:45 < jack> (specifically these have been requested by Epic)
+17:45 < adiabatic> jack: VS.NET 2003?
+17:45 < jack> i think shipping vc6 libraries might be ncie too, but i can't build those myself
+17:45 < derf_> I can build them.
+17:45 < jack> xiphmont: i'm happy to send you a copy of vs.net.
+17:46 < derf_> xiphmont: Btw., did you ever fix bug 458?
+17:46 < jack> derf: ok.
+17:46 < derf_> Or were you waiting for me to do so?
+17:46 < jack> so other than the windows stuff, did we resolve the build issues on Sun, HPUX and Irix?
+17:46 < fedora> jack: You should probably send him /the/ copy.
+17:47 < jack> fedora: i may have more than one official one. i'll have to check.
+17:47 < jack> one was donated to us by Epic
+17:48 < xiphmont> 458?  looking
+17:48 < xiphmont> No, not yet.
+17:49 < xiphmont> today is my first day off from the last show :-)
+17:49 < xiphmont> No more theatre for a while.
+17:49 < adiabatic> Huzzah.
+17:49 < rillian> xiphmont: good run I hope?
+17:50 < rillian> jack: maxx claims vorbis-tools has trouble on openbsd
+17:50 < xiphmont> yes.
+17:50 < rillian> however, I think we should fix the issues minimally rather than redo everything as he seems to have suggested
+17:50 < rillian> this close to release
+17:50 < jack> i agree.
+17:51 < rillian> we'll work on that
+17:51 < jack> but let's get it fixed if we can.
+17:51 < jack> it sounds like windows is almost done.
+17:51 < jack> and other than those two things i don't know of anything that needs doing.
+17:51 < maxx`> i'll continue to work on it. if it's on-topic atm i can quickly explain the problems
+17:51 < rillian> John or derf can build the vc6 binaries and verify our package
+17:51 < rillian> maxx: we should leave it for later
+17:51 < maxx`> ok
+17:51 < rillian> we still need someone to do the .NET versions
+17:52 < jack> i'll do it
+17:52 < jack> i'd prefer derf to do the vc6 ones if we're to release them officially
+17:52 < purple_haese> Who's going to roll RPMs of 1.0.1?
+17:52 < jack> i usually do that but i have no rpm boxes anymore
+17:53 < purple_haese> Any takers? I have Redhat 7.3 at work, but I've never made an RPM before, so I'm not the best candidate :)
+17:53 -!- bond [~bond@u-122-163.adsl.univie.ac.at] has quit ["( www.nnscript.de :: NoNameScript 3.73 :: www.XLhost.de )"]
+17:53 < vanguardist> volsung? :)
+17:54 < jack> they should be made on at least 8 or 9
+17:54 < jack> for redhat anyway
+17:54 < jack> do we need to make separate mandrake ones?
+17:54 < fedora> Guys, I've told you, Red Hat is two words. ;)
+17:54 < jack> or is the src rpm enough for non-redhat systems?
+17:54 < jmspeex> jack: I could make mandrake builds if you want
+17:55 < volsung> I have a RedHat 9 install in vmware.
+17:55 < shank_> i have RH 9 and 8 and 7.3
+17:55 < jmspeex> I have Mandrake 9.1
+17:55 < volsung> However, this week will be busy, so if someone really wants to do the RPMS instead of me, I would defer to them.
+17:56 < purple_haese> shank_ volunteered himself :)
+17:56 < jack> ok.  shank: are you up for it?
+17:56 < shank_> i can try
+17:57 < jack> ok
+17:57 < fedora> It's something like rpm-build --rebuild tarball.tar.gz, IIRC.
+17:57 < shank_> i have a few rpm demi-gods that could help me out
+17:57 < jack> ok
+17:57 < jack> if worse comes to wrose, i can install redhat under vmware again
+17:57 < volsung> The hardest part will be making sure the spec files are up to date, and figuring out how to make them so if they are not.  :)
+17:58 < Arc> I could help the freebsd libvorbis port/package maintainer get it updated
+17:58 < jack> ok, jmspeex has some things to talk about with speex if we're ready to move on
+17:58 < jmspeex> OK, basically I decided the top priority for Speex is now to get a fixed-point version
+17:59 < adiabatic> jmspeex: de-, encode, or both?
+17:59 < jmspeex> adiabatic: both encoder and decoder
+17:59 < jmspeex> (main application is VoIP)
+17:59 < adiabatic> Ooh, the good stuff.
+17:59 < purple_haese> One quick thing: if any observers or non-regulars would like their real name mentioned in the meeting minutes, please drop me a quick note.
+17:59 < jmspeex> It seems that's it's harder than I thought to get someone to write it...
+18:00 < jmspeex> I started working on it, but it's a lot of work, so I'm looking at ways we could fund the work
+18:01 < jmspeex> also thinking that the primary use for it would be commercial.
+18:02 < jmspeex> One solution would be through dual licensing with the GPL (like Qt), but I'm open to other ideas.
+18:02 < adiabatic> Perhaps we could look into multiple companies who would be willing to fund joint development to release the thing under a BSD-style license.
+18:02 < adiabatic> cf. Apache.
+18:03 < jmspeex> What does Apache does exactly?
+18:04 < adiabatic> IIRC, Apache was started as a bunch of patches to the NCSA web server done by three programmers, each from a different company.
+18:04 < jmspeex> I mean in terms of funding?
+18:04 < adiabatic> Currently? I have no idea.
+18:05 < jmspeex> Any other ideas?
+18:06 < Arc> find a VoIP equipment manufacturer that's willing to fund you. *shrug*
+18:06 < rillian> the dual GPL thing is working well for mysql
+18:06 < rillian> but that's an after-the-fact thing
+18:06 < rillian> do you have buyers, or someone to do the selling for you?
+18:06 < jmspeex> what do you mean by "after-the-fact"?
+18:07 < jmspeex> none so far...
+18:07 < Arc> yea but mysql is not speex. I would imagine one of the big commercial attractions to speex is that it's available royalty-free
+18:07 < rillian> probably no one would pay you before you were finished
+18:07 < rillian> it is true a license fee could obviate the cost savings
+18:08 < rillian> you could still underbid of course
+18:08 < jack> a one time producation fee is not the same as a license though.
+18:08 < jack> wtf did i type
+18:08 < jmspeex> I'm also thinking about a donation system where it gets released as BSD once $X is met.
+18:08 < jack> production
+18:09 -!- mackstann [~death@12-217-123-219.client.mchsi.com] has left #xiphmeet []
+18:09 < rillian> jack: I guess I don't understand. what's the fee for if it's not a donation and not a license?
+18:09 < Arc> jmspeex, or you could move to Ithaca and not worry about having to earn an income anymore :-)
+18:10 < adiabatic> What's in Ithaca?
+18:10 < jack> rillian: aiui it's just funding to get the integer port written.
+18:10 < jmspeex> rillian: Actually, there are two kinds of licenses. Most current speech codecs have per-unit licenses. This would be one-time, no limit.
+18:10 < Arc> adaibatic, free housing for full-time volunteers
+18:11 < rillian> Arc: wow. courtesy of whom?
+18:11 < jack> arc: just housing?
+18:12 < rillian> jmspeex: ok, that's a serious advantage
+18:12 < Arc> local activists mostly. for the past year and a half ive been staying with this free software nut. housing, food, etc.. all i got to do is code free software
+18:12 < jmspeex> Also, we're probably talking 1-2 orders of magnitude smaller
+18:12 < jmspeex> How did Theora got written exactly?
+18:13 < purple_haese> What jmspeex reminds me... I know a business can't donate $x and say "Please do the following for us." But can we turn it around and say "As soon as we get a donation of $x, we will do ..."?
+18:13 < jmspeex> s/Theora/Tremor/
+18:13 < jack> it's a long story.
+18:13 < adiabatic> Arc: But who's paying for it?
+18:13 < jack> essentially it was written as part of a contract
+18:13 < jack> when we found out we weren't getting paid, we kept the code
+18:14 < jmspeex> oops...
+18:14 < jack> where is ithaca?
+18:14 < adiabatic> jack: New York.
+18:14 < Arc> adaibatic, the same kinds of people that keep major non-profits afloat, the kinds of people that dump a large chunk of their income into causes they believe in. 
+18:14 -!- menno [menno@cal16a041.student.utwente.nl] has quit ["hahaha"]
+18:14 < purple_haese> If we could, this would give businesses an incentive to pay for development up front through a donation,  and get the tax break. If they wait until aftfer it's done, they can't pay for it with a donation anymore.
+18:14 < jack> where in new york....  ?
+18:15 < fedora> Ithaca, NY, presumably...
+18:15 < Arc> 5 hours from NYC, south of syracuse. small city, more known for having Cornell U here
+18:16 < purple_haese> Does anybody have any thoughts on what I just said? :)
+18:16 < adiabatic> purple_haese: Sounds like a good idea.
+18:16 < volsung> purple_haese: They're still drooling over the free housing.  :)
+18:17 < pfm_> purple, your suggestion is valid.  iirc thats what collabnet was trying to do (right?)
+18:17 < purple_haese> No idea.
+18:17 < volsung> Should we move on to the last point (about CIA)?  :)
+18:17  * volsung wants dinner.
+18:17 < jmspeex> pfm_: think it would work in this case?
+18:18 < jack> what last point? 
+18:18 < jack> i thoguth speex was the last point :)
+18:18 < adiabatic> jack: refresh
+18:18 < Arc> jmspeex, talk to me after mtg about ways you can continue development that doesnt involve $
+18:18 < jack> um, we aren't supposed to cange the agenda during the meeting guys
+18:18 < pfm_> jmspeex, it could
+18:18 < purple_haese> The trick is IMHO to approach potential interested businesses, and let them know that we are looking for donations that would fund an FP speex port.
+18:19 < adiabatic> Can we at least get the bot out of the netherworld and into #vorbis?
+18:19 < shank_> yes, please
+18:21 -!- KriTip [~chatzilla@host81-132-89-120.in-addr.btopenworld.com] has quit ["ChatZilla 0.9.35 [Mozilla rv:1.5/20030925]"]
+18:21 -!- SwiftBiscuit [~me@host217-34-142-17.in-addr.btopenworld.com] has joined #xiphmeet
+18:22 < adiabatic> ...halooo...
+18:22 < rillian> adiabatic: if you mean CIA, we could try moving it to #vorbis if there's concensus that everyone wants to be there
+18:23 < adiabatic> well, there'd be more interested people to see what happens there.
+18:23 < rillian> having it do the proper thing and distribute messages to the proper sub-channels requires patching upstream
+18:23 < adiabatic> There's also the possibility of moving it into #vorbis-talk.
+18:24 < adiabatic> I'm more concerned with "move it from where it is", not where to move it.
+18:24 < rillian> but as jack says we're off the agenda. I suggest we discuss it later.
+18:24 < adiabatic> When, then?
+18:25 < jack> is there anything else presing or shall we adjourn?
+18:25 < jack> oh, monty: are you available first saturday in november?
+18:25 < adiabatic> I stuck it onto the agenda in the hopes that we could at least get it discussed relatively soon; since it's an IRC-only thing, I don't think it's worth waiting a month for
+18:27 < purple_haese> adiabatic: It could be discussed immediately after the meeting :)
+18:27 < adiabatic> Fine by me.
+18:27 < purple_haese> xiphmont: ping. Did you see jack's question?
+18:29 < jack> i'll ask him later then.
+18:29 < jack> let's adjourn
+18:29 < purple_haese> All righty.
+18:29 < rillian> thanks for coming everybody
+18:29 < jack> next meeting should be on Nov 1
+18:30 < jack> you may wear your costumes from teh night before if you wish :)
+18:30 < purple_haese> Heh.
+18:30 < jack> thanks everyone.. logs and minutes should be posted soon.  bye
+18:30 -!- rillian [~knoppix@82-68-11-25.dsl.in-addr.zen.co.uk] has left #xiphmeet ["cheers all"]
+18:30 < purple_haese> Minutes will be posted when I get around to writing them :)
+--- Log closed Sun Oct 05 18:31:17 2003

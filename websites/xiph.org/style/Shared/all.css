@@ -1,0 +1,25 @@
+.ahem {
+	speak: none;
+	display: none;
+}
+
+.hidden {
+	display: none;
+	speak: none;
+}
+
+.skipper {
+	display: none;
+}
+
+img { border: none; }
+
+/* for consistency's sake, let's all do it like Gecko */
+ul {
+	margin-left: 0;
+	padding-left: 40px;
+}
+li {
+	margin-left: 0;
+	padding-left: 0;
+}

@@ -1,0 +1,401 @@
+<title>  CDDA Paranoia Buglist </title>
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+<body bgcolor="#ffffff" link="#4b8b8b" vlink="#208b8b">
+
+<!-- topbanner table ************************************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%"><tr>
+<td bgcolor="#ffffff" valign=top align=right width=433 rowspan=3><a 
+href="logo.jpeg"><img src=parabanner2.gif 
+alt="The Laser Playback Head of Omniscience" 
+width=433 height=72 border=0></a></td>
+<td width="100%" bgcolor="#ffffff" valign=top height=35><img border=0 
+src=bannerspace1.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#2a2a2c" valign=top height=20><img 
+src=bannerspace2.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#ffffff" valign=top><img src=bannerspace3.gif 
+alt=""></td>
+</tr>
+</table>
+<!-- topbanner table done ******************************************** -->
+
+
+
+<!-- main body (with sidemenu) table ********************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td valign=top width=132 bgcolor="#ad9164"><img 
+src=bartop.gif border=0 width=132 height=18 
+  alt=""><a href="index.html"><img 
+src=cdbar.gif border=0 width=132 height=18 
+  alt=""></a><a href="news.html"><img 
+src=news.gif border=0 width=132 height=18 
+  alt=""></a><a href="faq.html"><img 
+src=faq.gif border=0 width=132 height=18 
+  alt=""></a><a href="down.html"><img 
+src=cddown.gif border=0 width=132 height=18 
+  alt=""></a><a href="links.html"><img 
+src=resource.gif border=0 width=132 height=18 
+  alt=""></a><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""><img 
+src=bartop.gif border=0 width=132 height=18 alt=""><a href="doc.html"><img 
+src=document.gif border=0 width=132 height=18 
+  alt=""></a><br>&nbsp;<br><a href="manual.html"><img 
+src=manual.gif border=0 width=132 height=18 
+  alt=""></a><a href="prog.html"><img 
+src=prog.gif border=0 width=132 height=18 
+  alt=""></a><a href="trouble.html"><img 
+src=trouble.gif border=0 width=132 height=18 
+  alt=""></a><a href="tech.html"><img 
+src=tech.gif border=0 width=132 height=18 
+  alt=""></a><a href="bugs.html"><img 
+src=bug.gif border=0 width=132 height=18 alt="">
+</td>
+
+<td rowspan=2><img src=sidespacer4.gif width=18 alt=""></td>
+
+<td valign=top width="100%" rowspan=2>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<center>
+    <H1><font color="#6b6b6b">paranoia:</font> 
+        <font color="#000000">buglist and history</font></h1>
+
+<strong>"You question the worthiness of my Code? I should kill you where you stand!"</strong><br><em>--Top ten reasons never to hire Klingon engineers</em>
+
+<p>
+
+[ <a href="index.html">home</a> |
+<a href="news.html">news</a> |
+<a href="faq.html">faq</a> |
+<a href="down.html">download</a> |
+<a href="links.html">links/resources</a> |
+<a href="doc.html">documentation</a> ]
+<hr>
+</center>
+
+<p align=left>
+March 27, 2001
+<p align=center>
+<!-- body or table of contents -->
+
+<h1>Known bugs/shortcomings in alpha 9.8</h1>
+
+A number of these items are simply bugs in particular drives that
+cdparanoia cannot yet correct or known limitations in the current
+verification algorithm used by cdparanoia.<p>
+
+If you don't see something described here that you're having trouble
+with, please also check the <a href="trouble.html">troubleshooting
+page</a> before <a href="mailto:paranoia-dev@xiph.org">sending mail</a>.<p>
+
+<ul>
+<li>Some drives that cause the 8-| smilie and '!' mark in the status bar (dropped/duplicated bytes found after first stage verification) will likely also click. The 8-| smilie indicates that the drive is making errors that are difficult to detect. 
+
+<li>Drives that exhibit bimodal overlap behavior will confuse Paranoia's current dynamic overlap management; see the troubleshooting page for a better description of this.
+</ul>
+
+
+<hr>
+
+<h1>Known bugs fixed from previous releases</h1>
+<h2>Bugs fixed since alpha 9.7</h2>
+
+<ul>
+<li>Running a new copy of cdparanoia when cdparanoia is already running may block until the previous run finishes (limitation because the current SG driver needs to be opened O_EXCL, which blocks the autodetect of other cdparanoia processes). 
+<li>Kenwood TruX drives read very slowly; they support more than one DAE read command, but all but one only read at ~1x.
+<li>Fixed segfault when a device isn't found.
+</ul>
+
+
+<h2>Bugs fixed since alpha 9.6</h2>
+<ul>
+<li>Due to an error in the autoscan code, cdparanoia
+could get itself stuck finding a cdrom drive if entries for both
+/dev/sga,b,c,d... and /dev/sg0,1,2,3... exist.
+<li>Fixed a large memory leak in the sorting code that affected the library interface.
+<li>The 'slide' bug is dead! Up to 9.6, verification algorithm could 'slide' during periods of total silence.  The problem with long vectors of zeroes is that there are no landmarks to lock onto and cdparanoia can currently match too early or too late.  Especially popped up with -B; now fixed.
+<li>The verification algorithm can accidentally flip channels on some drives.  The flip only happens during periods of silence (and persists for the length of the track). Fixed.
+<li>9.6 can continue reporting '-' in the status bar after a first bit of jitter, even if subsequent reads are correct relative to one another (as opposed to correct relative to the main data vector).  Fixed.
+</ul>
+
+<h2>Bugs fixed since alpha 9.5</h2>
+<ul>
+<li>9.5 attempted aggressive use of the new Linux 2.2 SG driver; a bit too aggressive it seems.  I backed out large DMA transfers, which were causing trouble (mostly very slow performance and lockups) on some systems.
+<li>Repaired a bounds error in the 9.5 SCSI buffering code.
+<li>-S was actually nonfunctional.
+</ul>
+<p>
+<h2>Bugs fixed since alpha 9.4</h2>
+
+<ul>
+<li>9.4 did not work with Doug Gilbert's new SG driver now appearing in some 2.2 kernels; reported 'writable when reading packet', and then died bue to changes in new-SG's select() behavior. 9.5 is aware of the new interface and behaves properly.
+<li>9.4 did not clear out 'unused' fields in the SG_header and could malfunction with variants of SG by Joerg Schilling and Heiko Eissfeldt (these variations use the 'unused' fields). 9.5 clears the fields.
+<li>9.4 had a signal bug that really did result in cdparanoia being unkillable after a transport error.  9.5 corrects the unkillable problem.
+<li>9.4 wrote invalid AIFF headers.  Fixed in 9.5.
+<li>A patch new to 9.4 required a drive to be able to read the track 1 pregap to access track 1.  It turns out a small number of of drives (most commony NEC, Yamaha and some Toshibas) cannot do this; 9.5 works around the problem.
+<li>9.4 misreports SONY CD-ROM CDU-561 1.7X as an ATAPI drive (rather, the drive returns incorrect Inquiry information).  9.5 has a blacklist entry to correct this behavior.
+<li>9.4 misreports Chinon CD-ROM CDS-525 V10 SCSI drive as ATAPI (as above, hangs system if you have a buggy controller/driver). 9.5 has a blacklist entry to correct this behavior.
+<li>9.4 may hang a Matsushita 7501 drive due to probing for a 10 byte 0xd4 read command before the 12 byte version the drive actually wants.  9.5 has a blacklist entry to correct this behavior.
+<li>9.4 installs some files chmod 600 instead of 644.  Corrected in 9.5.
+<li>9.4 opens output file as 660 instad of 666 (should follow the user's umask). Corrected in 9.5.
+<li>In the usage information:
+<pre>
+  C) extract from track 1, time 0:30.12 to 1:10.00:
+       cdparanoia "1[:30.12]1-[1:10]"
+</pre>
+The example should be:
+<pre>
+       cdparanoia "1[:30.12]-1[1:10]"
+</pre>
+Fixed in 9.5.
+
+
+</ul><p>
+
+<h2>Bugs fixed since alpha 9.3</h2>
+<ul>
+<li>-Y hung a little too easily. 
+<li>A bug in the second stage verification could possibly corrupt a bad read even worse (rather than fix it) if it got through stage one. 
+</ul><p>
+
+<h2>Bugs fixed since alpha 9.2</h2>
+<ul>
+<li>9.2 was very slow in high fragmentation cases (well, everything since alpha 6 has been). 
+<li>Fixed a segfault in cleanup that happens after extraction is over and the Paranoia is shutting down. 
+<li>The Toshiba XM5702B did not actually need any TOC offset to function properly. It was just misunderstood. 
+<li>More usage/manpage information added since 9.2 
+</ul><p>
+
+<h2>Bugs fixed since alpha 9.1</h2>
+<ul>
+<li>Fixed a segfault that could happen at the end of a rip with -Y.
+<li>-Y was not reporting jitter to the status bar.
+<li>A major performance bug (caused by a typo) could bring the first stage
+verifier to a screeching halt.  The bug did not result in bad data, but did
+make drives that lose streaming often *really* slow.
+<li>Made the first stage verifier much more strict about verifying across read boundaries; this also cleaned up some spurious '+' characters in the status bar.
+</ul><p>
+
+<h2>Bugs fixed since alpha 9</h2></a>
+<ul>
+<li>Panasonic CR-50x and 7501 drives are now supported.
+<li>Repaired a segfault when a drift compensation happens at the beginning of a rip.
+</ul><p>
+
+<h2>Bugs fixed since alpha 8</h2>
+<ul>
+<li>Discs that return '<em>really</em> illegal' table of contents
+parameters (eg, negative tracks, tracks with negative starting sector
+offsets) were unreadable.
+
+<li>Drives that require large overlap settings were *very* slow.
+
+<li>Transport errors were often incorrectly marked as "unable to write
+packet command to device."  The error was actually happening; cdparanoia
+was just reporting the wrong error type.
+
+<li>Occasional freezup during 'Attempting to autosense SG_BIG_BUFF' fixed.
+
+</ul><p>
+
+
+<h2>Bugs fixed since alpha 7</h2></a>
+<ul>
+<li>Segfault #1 (a bug in linux libc, not cdparanoia) libc 5 versions
+prior to 5.4.33 have a bug in the string handling functions that can
+cause a segfault during drive autosense.  If cdparanoia crashes before
+getting to the progress meter, you have a libc bug.  5.4.33+ and glibc
+2 (libc 6.x.x) appear to be safe.  The statically linked binary under 'download' is linked against a safe libc.
+A workaround exists in alpha 8.
+
+<li>Segfault #2: alpha 7 may segfault at the
+beginning of the read process if the drive is returning badly damaged
+data at the very beginning of the disc.  This can only happen at the
+beginning of track 1.  Alpha 8 repairs this fault.
+
+<li>Segfault #3 (a change in the linux kernel interface): Any
+cdparanoia executable built under kernel 2.0.33 or earlier may
+segfault under 2.0.34 using the ATAPI interface.  Note that simply
+upgrading the *kernel* and rebuilding will not fix the problem if the
+header files and symlinks have not also been updated; this especially
+affects Debian and RedHat users who have upgraded their kernel using a
+package without also keeping the headers in sync.  Alpha 8 has a
+workaround to this special little piece of Linux brokenness.
+
+<li>Premature bailing during a read (error 007: or 010:) if cdparanoia
+runs into an unaddressable sector.
+
+<li>Relative paths given to the 'file' argument are broken in general;
+fixed in alpha 8.
+
+<li>The bargraph reports too many overlap and fixup errors.  The bug
+is cosmetic: the data is sound. Alpha 8 fixes this bug.
+
+<li>The smilie will get stuck making a face if a fixup occurs, but no
+further fixups are needed for the rest of the disc.  Pretty much only
+Toshiba and Plextor users will see this :-) Alpha 8 fixes this bug.
+
+<li>There was no 'files too long in raw mode' bug.  The users
+reporting this were confused about command line argsuments.
+
+<li>Track At Once (TAO) discs get stuck at track boundaries.  This is
+due to the unreadable run-in and run-out blocks used by TAO.  A
+workaround is in testing.
+
+<li>(not a cdparanoia bug) end of disc errors using the Linux ATAPI
+driver: sorry, the driver seems to be responsible for this.  Using
+IDE-SCSI emulation will make these errors go away.
+</ul><p>
+
+<h2>Bugs fixed since alpha 6</h2>
+<ul>
+<li>It was possible to confuse the silence handling code,
+resulting in phantom rifts and accidental skips at the edges of total
+silence (usually at the beginning or end of a track).  This resulted in skips that the beginning or end of rips (usually a repeated section of audio).
+<li>The progress indicator was not properly cleared between track rips when using -B.
+<li>The length of .WAV and .AIFC files produced when using -B was the length of
+the total rip rather than the length of each respective track.
+<li>File output names for -B are changed from track1, track2... track99 to
+track01, track02... track99 for easier shell sorting when using with cdrecord.
+<li>Scsi read error detection code (due to overhead) was disabled after startup and autosense; Alpha 7 enables error detection code for all SCSI operations.
+<li>The occasional segfault.
+</ul>
+
+<h2>Bug fixes since alpha 5</h2>
+
+<ul>
+<li>fixed two autosensing bugs
+<li>fixed a build bug under Linux mid-2.1
+<li>added additional command check for some nonstandard ATAPI drives that 
+return the wrong sector size on a normal MMC-style read.
+</ul>
+
+<h2>Bug fixes since alpha 4</h2>
+<ul>
+<li>repaired another segfault condition during silence
+<li>improved IDE SCSI host adaptor emulation on newest kernels
+<li>repaired -Z and -Y (again)
+<li>repaired sector counter on progress bar
+</ul>
+
+<h2>Bug fixes since alpha 3</h2>
+<ul>
+<li> Corrected a segfault during portions of a track containing dead silence (all zeroes)
+<li> output with -V was missing a newline
+</ul>
+
+<h2>Bug fixes since alpha 2</h2>
+<ul>
+
+<li>MMC/SCSI-III support.
+
+<li>IDE-SCSI emulation support.
+
+<li>Sbpcd interface fixed.
+
+<li>A few models of drive caused Paranoia to bail without an error
+before the end of the read. This affected mostly (but not only) NEC,
+Hitachi and GoldStar drives.
+
+<li>Permissions on the output file set the x bit set.
+
+<li>Some SCSI drives got files full of all NULLs.
+
+<li>Help usage output went to stderr.
+
+<li>A few confusing error messages (006, for example, really means
+that the drive is probably not CDDA capable)
+
+<li>no 'make install'
+
+<li>some drives return invalid TOCs when a disc is not loaded
+
+<li>autoprobing for cdrom drives temporarily froze a machine
+that has built modules for drives it does not have (the Aztech driver
+was mostly at fault here).
+
+<li>audio session beginning offset was accidentally doubled, usually
+resulting in starting just after the beginning of a song, or grabbing
+a bit of the next track.  On a multisession disc, it could cause
+'invalid track' errors and/or the inability to read the disc at all.
+
+<li>Non-CDDA capable proprietary drives reported error 006 several
+thousand times before bailing.
+
+<li>Autoscan didn't end if /dev/cdrom exists but isn't accessible.
+
+<li>-Z broke the progress meter (it works, but the progress meter
+does not advance).
+
+<li>Autoprobing for a SCSI cdrom fails if its module isn't loaded.
+(This is actually some other Linux problem and still doesn't always work.)
+
+</ul>
+<p>
+
+<h2>Bug fixes since alpha 1</h2>
+<ul>
+<li>Upon closer inspection, CDROM drives actually were having that many atomic read botches.
+<li>Fixed a build bug under Linux 2.1
+<li>Check isatty() before printing status indicator
+<li>A few NEC drives report ready when they have no disc.
+</uL>
+<p>
+
+<!-- body complete.  cleanup table -->
+</font>
+</td>
+</tr>
+<tr>
+<td valign=bottom bgcolor="#ad9164" width=132><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""></td>
+</tr>
+</table>
+<!-- main body (with sidemenu) table done **************************** -->
+
+<!-- bottom banner table ********************************************* -->
+
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td colspan=3 align=left><img src=bottomA.gif alt=""></td>
+
+</tr><tr>
+
+<td><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
+<td bgcolor="#2a2a2c" align=center valign=center width=100%>
+  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+    border=0></a></td>
+    <td valign=center>
+    <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>
+
+    <a href=../xiphname.html>Cdparanoia</a> and the <a
+    href=../xiphname.html>Laser-Playback-Head-of-Omniscience logo</a> are
+    trademarks (tm) of <a href="/index.html">Xiphophorus</a>.  These pages
+    are copyright (C) 1994-1999 Xiphophorus.  All rights reserved.<br>
+
+    <a href="mailto:webmaster@xiph.org">Comments and
+    questions</a> about this web site are welcome.
+    </font>
+  </td></tr></table>
+</td></tr>
+</table>
+</body>
+
+
+
+

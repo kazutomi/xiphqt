@@ -1,0 +1,73 @@
+<head>
+<title>CDDA Paranoia Homepage: sbpcd patch</title>
+
+<body bgcolor=#d0c4aa>
+
+<font face="fixed" color="#000000" size=2>
+<pre>
+--- sbpcd.c.orig        Thu Oct 30 23:59:10 1997
++++ sbpcd.c     Sat Nov  8 20:11:27 1997
+@@ -827,11 +827,11 @@
+  */
+ static void sbp_sleep(u_int time)
+ {
+-       sti();
++       cli();
+        current->state = TASK_INTERRUPTIBLE;
+        current->timeout = jiffies + time;
+-       schedule();
+        sti();
++       schedule();
+ }
+ /*==========================================================================*/
+ #define RETURN_UP(rc) {up(&ioctl_read_sem); return(rc);}
+@@ -4377,9 +4377,9 @@
+                        response_count=0;
+                        i=cmd_out();
+                        if (i<0) msg(DBG_INF,"error giving READ AUDIO command: %0d\n", i);
+-                       sbp_sleep(0);
+                        msg(DBG_AUD,"read_audio: after giving \"read\" command.\n");
+-                       for (frame=1;frame<2 && !error_flag; frame++)
++                       p = D_S[d].aud_buf;
++                       for (frame=1;frame<=read_audio.nframes && !error_flag; frame++)
+                        {
+                                try=maxtim_data;
+                                for (timeout=jiffies+9*HZ; ; )
+@@ -4394,7 +4394,6 @@
+                                        if (try != 0 || timeout <= jiffies) break;
+                                        if (data_retrying == 0) data_waits++;
+                                        data_retrying = 1;
+-                                       sbp_sleep(1);
+                                        try = 1;
+                                }
+                                if (try==0)
+@@ -4412,13 +4411,14 @@
+                                }
+                                msg(DBG_AUD,"read_audio: before reading data.\n");
+                                error_flag=0;
+-                               p = D_S[d].aud_buf;
+                                if (sbpro_type==1) OUT(CDo_sel_i_d,1);
+-                               if (do_16bit) insw(CDi_data, p, read_audio.nframes*(CD_FRAMESIZE_RAW>>1));
+-                               else insb(CDi_data, p, read_audio.nframes*CD_FRAMESIZE_RAW);
++                               if (do_16bit) insw(CDi_data, p, (CD_FRAMESIZE_RAW>>1));
++                               else insb(CDi_data, p, CD_FRAMESIZE_RAW);
+                                if (sbpro_type==1) OUT(CDo_sel_i_d,0);
++                               p = (char*)p + CD_FRAMESIZE_RAW;
+                                data_retrying = 0;
+                        }
++                       schedule(); /* Possibly let some others in */
+                        msg(DBG_AUD,"read_audio: after reading data.\n");
+                        if (error_flag)    /* must have been spurious D_RDY or (ATTN&&!D_RDY) */
+                        {
+</pre>
+
+</font>
+</body>
+
+
+
+
+
+
+
+

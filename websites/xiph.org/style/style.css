@@ -1,0 +1,37 @@
+html {
+    font: 90% "Trebuchet MS", sans-serif;
+
+    color: black;
+/*    background: white url(/ogg/images/inback2.jpg);*/
+    background: white;
+}
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+h1 { font-size: 1.6em; }
+h2 { font-size: 1.4em; }
+
+a:link {
+	color: #208b8b;
+}
+a:visited {
+	color: #000080;
+}
+
+.breadcrumbs {
+	font-size: smaller;
+	margin: 0;
+	padding: 0;
+}
+.breadcrumbs span {
+	padding: 2px;
+	padding-left: 1em;
+	background: #e8e0c0;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+}
+#content {
+	margin: 1em;
+}

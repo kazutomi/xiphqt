@@ -1,0 +1,39 @@
+<title>  xiph.org: the Ogg project </title>
+
+<!--#include file="oggtop.include" -->
+
+    <img src=/ogg/images/oggword2.gif><br>The Ogg project homepage
+
+<!--#include file="xiphmid.include" -->
+
+<font color=#208080><tt>&lt;nohype&gt;</tt><p></font>
+
+OggSquish is a group of several related multimedia and signal
+processing projects; two are currently in active development for
+planned release.  Our goal is to protect essential tenets of
+Internet multimedia from corporate hostage-taking; Open Source is the
+net's greatest tool to keep everyone honest. See <a
+href="/about.html">About Xiphophorus</a> for
+details.<p>
+ 
+OggSquish is about research, source code and education. Along with our
+code, we offer the development community detailed documentation of our
+research and the resulting software. Our current development focuses
+on the <a href="vorbis/index.html">Vorbis</a> audio codec (now nearing
+initial release).  Research also includes work on future video and
+lossless audio coding.<p>
+
+<h1><a href="vorbis/index.html">Ogg Vorbis</a></h1>
+
+Currently, Ogg Vorbis is our primary effort: A patent-clear, fully
+open general purpose audio encoding format standard that rivals or
+surpasses the 'upcoming' generation of proprietary coders (AAC and
+TwinVQ, also known as VQF).  <p>
+
+Xiphophorus is currently actively developing libvorbis, an LGPLed source
+implementation of Vorbis as a library and a full featured
+encoder/player based on libvorbis.  See the <a href="vorbis/index.html">Ogg
+Vorbis homepage</a> for documentation, downloads and distribution
+terms.<p>
+
+<!--#include file="xiphbottom.include" -->

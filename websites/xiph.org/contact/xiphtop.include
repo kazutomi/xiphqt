@@ -1,0 +1,19 @@
+<!-- xiphtop include ******************************************* -->
+<table cellspacing=0 cellpadding=0 border=0>
+<tr>
+<td valign=top align=right width=84><a 
+  href="/"><img src=xiph-leftbar.gif alt="[fish logo]" 
+  border=0></a></td>
+<td valign=top><a href="/"><img src=xiph-midbar.gif 
+  alt="the Xiph.Org Foundation" border=0></a></td>
+<td valign=top align=left><img src=xiph-rightbar.gif alt=""></td>
+</tr>
+</table><table cellspacing=0 cellpadding=0 border=0>
+<tr>
+  <td width=1><img src=spacer1.gif alt=""></td>
+  <td width=1 bgcolor='#46463c'><img src=spacer1.gif alt=""></td>
+  <td width=7 bgcolor='#e8e0c0'><img src=spacer7.gif alt=""></td>
+  <td width=1 bgcolor='#46463c'><img src=spacer1.gif alt=""></td>
+  <td width=76><img src=spacer76.gif width=76 height=10 alt=""></td>
+  <td>
+<!-- *********************************************************** -->

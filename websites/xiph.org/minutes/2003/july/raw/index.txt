@@ -1,0 +1,626 @@
+--- Log opened Sat Jul 05 19:45:17 2003
+19:49 -!- lunalosit [lunalosity@xiph-HLIIKG.LSANCA54.covad.net] has joined #xiphmeet
+19:49 < rillian> hullo
+19:49 -!- jmspeex [~jmspeex@xiph-IMHHKO.10-203-24.mtl.mc.videotron.ca] has joined #xiphmeet
+19:50 < jmspeex> hi guys
+19:50 <@adiabatic> lunalosit: Oh, and you're the...lessee, you'd be the third (at least) Mike on this network.
+19:50 < jmspeex> I probably won't stay more than a couple minutes...
+19:51 < lunalosit> lol
+19:51 < lunalosit> 3 mikes
+19:51 <@adiabatic> Well, not simultaneously.
+19:52 <@adiabatic> Our main Mike is moving or something, and our new emergency backup Mike from Ireland...is probably off because he connects to the 'net and gets billed by the minute.
+19:52 < lunalosit> I visited Ireland last summer
+19:52 < lunalosit> and yeah, its by the minute, annoyingly enough
+19:53 -!- princessilea [~princessi@xiph-IOIOOE.ph.ph.cox.net] has joined #xiphmeet
+19:53 -!- volsung [~volsung@xiph-HDHBFK.austin.rr.com] has joined #xiphmeet
+19:53 < jack> public log: http://www.xiph.org/~jack/200307.txt
+19:55 -!- juhovh [juhovh@xiph-ECEECH.dial.kolumbus.fi] has joined #xiphmeet
+19:56 < rillian> jack: 403
+19:57 < jack> fixed.
+19:58 -!- brendan [~brendan@xiph-EMEMBMOCO.kublai.com] has joined #xiphmeet
+19:59 [Users #xiphmeet]
+19:59 [@adiabatic] [ jmspeex  ] [ mau         ] [ rillian] 
+19:59 [ brendan  ] [ juhovh   ] [ princessilea] [ volsung] 
+19:59 [ jack     ] [ lunalosit] [ purple      ] 
+19:59 -!- Irssi: #xiphmeet: Total of 11 nicks [1 ops, 0 halfops, 0 voices, 10 normal]
+19:59 -!- danx0r [~danbmil99@xiph-HPIGNO.pilosoft.com] has joined #xiphmeet
+19:59 < jack> we'll probably start a few minutes late today while we wait for people to remeber
+20:00 < jack> but i suspect it will be shorter than the 2 hours today
+20:00 < jmspeex> In case I leave early, my take on Speex vs. Ogg is that I prefer having Speex "separated" from Ogg since the primary use for Speex (VoIP) doesn't involve Ogg.
+20:00 < jmspeex> I don't have a strong opinion on ".spx" vs.".ogg" though (as long as everything's consistent)
+20:00 < danx0r> for the record, this is a tough time to meet if you live on the East Coast
+20:01 < danx0r> I'll have to leave soon and log back on around 9:15 or so
+20:01 < rillian> hi danx0r
+20:01 < danx0r> hi all
+20:02 < rillian> thanks for posting the spec!
+20:02 < rillian> it's in cvs now :)
+20:02 < danx0r> oh jeez
+20:02 < danx0r> it's really not ready, but whatever
+20:02 < volsung> We could always have a "Be nice to non-Americans" month and meet at 5 am CDT.
+20:02 < danx0r> I mean it has bugs -- it doesn't track the C code perfectly yet
+20:02 <@adiabatic> volsung: That would be a "Punish Californians" time.
+20:03 < danx0r> ok all times suck, but this is prime evening saturday night here
+20:03 < rillian> danx0r: that's fine. consider it incentive to use the repository :)
+20:03 < danx0r> rillian -- did you get a chance to look at it (the spec)
+20:03 < rillian> only just now
+20:03 < rillian> we got back from our saturday night out an hour ago :)
+20:03 < danx0r> heh
+20:03 < danx0r> well it's a start anyway
+20:04 < danx0r> it does track the headers and the entropy coding pretty well
+20:04 < rillian> yes. and beats the heck out of what I'd done in the wiki
+20:04 < purple> *This* is my Saturday night out ;)
+20:04 < rillian> that's the spirit!
+20:05 < danx0r> rillian -- what's on the wiki -- I don't see anything spec-like
+20:05 < rillian> TheoraSpec
+20:05 < rillian> just the first two headers, really
+20:05 < rillian> I wrote up the part of the code I'd read
+20:06 < danx0r> where is it?
+20:07 < rillian> http://wiki.xiph.org/TheoraSpec
+20:07 < danx0r> cool, I didn't know about this
+20:07 < danx0r> nothing on theora-dev -- so many ways to communicate
+20:07 < danx0r> but there's no link to it yet, eh?
+20:07 < rillian> yeah, that is a problem
+20:08 < rillian> I think I've mentioned it on #theora, but we've been missing each other
+20:08 < rillian> and it looks like I forgot to link to it in the wiki :(
+20:09 < danx0r> My take on bitpacking is that within a byte, Ogg and Theora are one
+20:09 < danx0r> and the same
+20:09 < danx0r> only byte ordering is different
+20:10 < danx0r> I use the same bitreader to parse the Ogg pages & such, it works as long as I do byte operations (nothing bigger)
+20:10 < rillian> that's a reasonable point of view
+20:10 < danx0r> Because you say that they're bit reversed, I think that's not exactly true
+20:10 < danx0r> they're byte reversed for fields that are longer than 8 bits
+20:11 < jack> ok, we might as well begin.
+20:11 < jack> unforutnatley it looks like monty forgot once again :)  and his cellphone seems to be broken/lost/out of batteries.
+20:11 < danx0r> jack -- can yu estimate when theora might be discussed I have a time problem
+20:11 < jack> we can discuss it now if you prefer
+20:12 < danx0r> well just a minute -- let me check with the cook
+20:13 -!- comajelly [~boingo@xiph-IOIMOB.tstonramp.com] has joined #xiphmeet
+20:13 -!- mode/#xiphmeet [+o comajelly] by ChanServ
+20:14 < jack> ok, i guess while dan is checking i'll mention a quick thing or two
+20:14 < danx0r> we can do 10-15 min now
+20:14 < jack> nevermind, go ahead dan :)
+20:15 < danx0r> oh Not much, just wanted to point to the spec thing I worked on --
+20:16 -!- foolip [philip@xiph-IIIAOF.telia.com] has joined #xiphmeet
+20:16 < danx0r> it needs alot of work, but I want to get as much feedback as possible now
+20:16 < volsung> Link?
+20:16 < danx0r> I think Rill put it up on CVS
+20:16 < jack> is the next release going to be another alpha, or the bitstream frozen beta?
+20:16 < danx0r> somewhere
+20:16 < jack> and do we have a general timeline for it yet?
+20:16 < danx0r> I'm tracking the A2 release
+20:16 < danx0r> is derf around?
+20:17 <@adiabatic> he's on #vorbis.
+20:17 <@adiabatic> Been idle a while.
+20:18 < danx0r> well my version is at ftp.vp3.com, user=vp3, password=vp3dev
+20:18 < rillian> I think we're still on the timeline we discussed last time
+20:18 < danx0r> but apparently it already got into CVS too
+20:19 < rillian> yes, it's in cvs
+20:19 < danx0r> that timeline being,
+20:19 < rillian> complete draft spec and next release in august
+20:19 < rillian> danx0r: do you think you can finish the spec by the end of july?
+20:19 < danx0r> ugh
+20:19 < danx0r> unlikely
+20:20 < danx0r> other work looms I'm afraid
+20:20 < volsung> danx0r: Do you want that username and password disseminated in the meeting minutes?
+20:20 < danx0r> I was hoping someone would volunteer to help
+20:20 < rillian> http://xiph.org/cgi-bin/viewcvs.cgi/*checkout*/theora/doc/spec.html?rev=1.1
+20:20 < danx0r> volsung -- sure, it's been around for years
+20:20 < volsung> Just checking.  :)
+20:20 < jack> viewcvs is back?
+20:20 < danx0r> whooee!!
+20:21 < rillian> the link hasn't been republished, so you have to remember the url :)
+20:21 < rillian> danx0r: ok, so you need help. hopefully we can do that
+20:21  * brendan is also excited
+20:21 < jack> so dan, what would be the timeline if you didn't get help?
+20:21 < danx0r> cool, our little secret then
+20:21 < danx0r> um, I was thnking mid-Sept
+20:21 < rillian> everyone's little secret
+20:21 < danx0r> it's just a ton of work
+20:21 < jack> ok, so not ohrribly different
+20:22 < rillian> as usual, it depends on issues and available time
+20:22 < jack> we'll be sure to let people know you would like assistance
+20:22 < danx0r> but honestly, things could intrude 
+20:22 < danx0r> it would be awesome if I could get that Melansen guy to help
+20:22 < rillian> re alpha3 verses beta1, we haven't found anything that would require an a3 release, but we'll less certain about it than last month
+20:23 < jack> did the 'vp3 encoded upside down' issue get resolved?
+20:23 < rillian> not really
+20:23 < rillian> I think we decided someone should write a transcoder to be sure
+20:24 < rillian> because none of us are sufficiently familiar with the vp3 code
+20:24 < jmspeex> sorry, gotta leave :( I'll try to be there next month!
+20:24 < rillian> however, I think a 'flip display' flag, should we decide to add one, needn't require another alpha release
+20:24 < jack> jmspeex: thanks for coming jean-marc
+20:25 < danx0r> rillian -- it does break the bits tho
+20:25 < danx0r> unfortunately
+20:25 < jack> that's fine as long as post-beta release it doesn't change again :)
+20:25 < danx0r> mau, did you get a chance to look at the upside-down problem?
+20:25 -!- jmspeex [~jmspeex@xiph-IMHHKO.10-203-24.mtl.mc.videotron.ca] has quit [Client Exit: Client exiting]
+20:25 < danx0r> you're the only person I know who is regularly fiddling with VP3 code
+20:26 < jack> i suppose the big question is can we do interlacing without breaking the bitstream, since that seems to be a big item on some people's minds
+20:26 < rillian> anyway, I agree with jack that the main point is we need to focus on helping complete the spec
+20:26 < danx0r> jack -- I think the decision was to let interlace be a new revision
+20:26 < jack> theora 1.1?
+20:26 < rillian> so new players to interlaced and progressive
+20:26 < danx0r> because old players can't possibly deal with it, or with high-res color
+20:27 < danx0r> new players will keep compat with 1.0
+20:27 < rillian> but old players reject interlaced streams
+20:27 < jack> ok
+20:27 < rillian> whether it's 1.0 or 1.1 is just a scheduling issue
+20:27 < danx0r> we (I) argued for a more flexible approach but it seemed to complicated to do now
+20:27 < jack> ok, any other theora issues?
+20:27 < danx0r> like mpeg1 and mpeg2 (very much so)
+20:27 < danx0r> well someone really has to look at VP3 about the upside-down
+20:28 < danx0r> if I'm still on the spec I won't have time
+20:28 < rillian> I think mau volunteered at some point
+20:28 < jack> i seem to recall that as well
+20:28 < danx0r> I thought so but he seems to be awol
+20:28 < danx0r> well I gotta eat, will try to check in later
+20:28 < jack> ok.. talk to you later
+20:29 -!- danx0r is now known as danx0r_afk
+20:29 < rillian> thanks for coming danx0r
+20:29 < rillian> re other issues
+20:29 < jack> ok, so we'll go back to the top of the agenda ;)
+20:29 -!- whitestar [~alexander@xiph-HLIOKG.va.client2.attbi.com] has joined #xiphmeet
+20:29 < danx0r_afk> np please someone read this thing and tell me if I'm on the right track
+20:29 < rillian> danx0r_afk: I will
+20:29 < rillian> jack: nm, I think that's enough for theora
+20:29 < jack> ok
+20:30 < jack> so on june 16th 4 of the board members and our lawyer
+20:30 < jack> and one of our advisors all met in boston for this year's board meeting
+20:30 < jack> pfm sent me hte minutes but i haven't posted them yet
+20:31 < volsung> Advisor?
+20:31 < jack> they'll probably be posted around the same time as the minutes for this meeting
+20:31 < jack> improtu advisor :)
+20:32 < jack> is uppose the few bigs "decisions" that came from it were:
+20:32 < jack> jean-marc will get the money to formally test speex
+20:32 < jack> we have some money to pay Sheryl for art
+20:32 -!- Teach [~mitchell@xiph-EKIACEOOGF.cable.mindspring.com] has joined #xiphmeet
+20:33 < jack> we talked a lot about fundraising ideas and legal stuff
+20:33 < jack> all of which will be in the minutes
+20:33 < jack> oh
+20:33 < jack> on eother thing
+20:33 < jack> i know i promised financial reports at some point in the past
+20:33 < jack> at the board meeting the lawyer talked us out of posting anything beyond the legal requirements
+20:33 < jack> for two reasons:
+20:33 < jack> a) if people see we have no money, it makes us a target
+20:34 < jack> b) if people see we have lots of money, it makes us a target
+20:34 < jack> i will of course answer pretty much any reasonable question privately
+20:34 < rillian> can you go over what information is required?
+20:35 < jack> we have to provide a very general report to the public to comply with 501c3 guidelines
+20:35 < jack> i'm not sure what those are, and our bookkeeper will find out and prepare the report
+20:35 < jack> taxes are still getting done
+20:35 < jack> so i assume it will come around the same time those get completed.
+20:36 < rillian> is there a timeline for that?
+20:36 < jack> we have filed an extension, but i don't remember when it was too.
+20:36 < jack> my guess is we have a few months more.
+20:37 < jack> our bookkeeper only works about 1-2 hours a week
+20:37 < jack> so that sort of stuff is slow, since we have to pay for it :)
+20:37 < rillian> the personal extension is to august 15th, not that that's relevent
+20:37 < jack> it's probably similar for us.
+20:37 < jack> ok, contract status
+20:38 < jack> we released beta1 of the neuros firmware
+20:38 < jack> which is fully functional (exept i think fro MyFi)
+20:38 < jack> just not optimized
+20:38 < jack> monty is finishing the optimization right now
+20:38 < jack> and we're hoping this won't take more than a week or two at most
+20:39 < jack> then we'll have monty back working on real code again
+20:39 < rillian> yay
+20:39 < purple> What about the Vorbis certification process?
+20:39 <@adiabatic> Any word from any of the DI squad when their doohickey will support Vorbis files?
+20:39 <@adiabatic> er, their sync manager for Windows
+20:40 < jack> oh
+20:40 < jack> unknown.
+20:40 < jack> i am pressing them on the usb issues currently
+20:40 < jack> which apparently are not very high on their current todo list
+20:40 < jack> which is unfortunate
+20:40 < volsung> Please continue to.
+20:40 < jack> but, they are trying to get that placed higher, as well as offering to pay someone to fix them
+20:40 < volsung> Those problems make Linux 50% usable, and OS X 100% unusable.
+20:41 < jack> so, if we know any kernsl usb guys who want to debug firmware, i'm happy to hook them up.
+20:41 <@adiabatic> volsung: so there's something wrong with the Neuros itself that makes it unusable on OS X?
+20:41 < jack> yes, it misresponds to several messages
+20:41 < volsung> Yes.  Another USB command they don't respond to makes the Neuros mount as read-only.
+20:41 < volsung> Linux is permissive and assumes read-write anyway.
+20:41 < volsung> OS X is not.
+20:42 < jack> volsung: there's a guy on advogato who does firewire kernel-type work on embedded devices.
+20:42 < jack> you shoudl contact him and see if he's interested
+20:42 < rillian> MichaelCrawford
+20:42 < jack> yep, that's him
+20:42 < volsung> 'k.  I'll ping him.
+20:43 < jack> or maybe post a nibble to the linux-usb list
+20:43 < jack> it sounds like DI is willing to fund the work if it's cheap
+20:43 < volsung> I'll contact the bug reporter who's been talking to them too.
+20:43 < jack> ok
+20:43 <@adiabatic> So there are problems with both the Neuros and Linux, or just the Neuros?
+20:43 < jack> that's about it for xiph.org proper stuff
+20:43 < jack> just the neuros it seems.
+20:44 < jack> i suspect the linux usb-storage driver is fairly bulletproof
+20:44 < purple> Still no news from iRiver, then?
+20:44 < jack> purple: not yet.
+20:44 < jack> the other guys are still fixing minor issues with beta file playback
+20:44 < jack> MCS Logic
+20:44 < volsung> adiabatic: I think older kernels have problems, but with the newest stuff I suspect things will be okay.
+20:44 < jack> but that seem to be going well
+20:44 < jack> ok, sysadmin stuff
+20:45 < jack> (we can probably continue detailed usb discussion in #vorbis if need be)
+20:45 < jack> ralph and i would like to switch from CVS to Subversion
+20:46 < jack> and monty has also agreed
+20:46 <@adiabatic> Oh, other sysadmin stuff.
+20:46 < volsung> I see you mentioned that direct import is possible.
+20:46 < brendan> for everything?
+20:46 < jack> it seems very good on win32 (better than cvs actually) and osx
+20:46 < rillian> there's a cvs2svn script
+20:46 < rillian> but it doesn't support branches yet
+20:46 < jack> yes, full import seems possible
+20:46 < brendan> can that script be run daily to gateway to a public repository?
+20:46 < Teach> adiabatic: look nice.  What's with the different colored mouseovers?
+20:47 < jack> right now branch and tag importing is nonfunctional, but there is a paid person working on it right now
+20:47 <@adiabatic> Teach: uhh...s'fancy?
+20:47 < jack> brendan: yes, the idea would be for everything
+20:47 < jack> are there any serious objections?
+20:47 < volsung> jack: Can we wait until that work is done?
+20:47 <@adiabatic> jack: Even web stuff?
+20:47 < jack> volsung: i think that's the plan.
+20:47 < brendan> yeah, I'm attached to branching
+20:47 < volsung> Especially since Monty has code living on a Tremor branch.
+20:47 < jack> subversion has better branching.
+20:48 < rillian> and libogg2
+20:48 < jack> only the cvs2svn script doesn't understand branching :)
+20:48 < brendan> and I think at least a readonly public CVS mirror is a good idea
+20:48 < brendan> ok
+20:48 < jack> one of hte reasons to switch is better and easier branching.
+20:48 < volsung> Timeframe for doing this?
+20:48 < rillian> at least a week
+20:49 < brendan> since on the icecast side most people's primary access to the code is via cvs
+20:49 < rillian> hopefully not more than a month
+20:49 < volsung> How do we switch in a week if the branch importing isn't working?
+20:49 < jack> brendan: nightly snapshots would be about the same
+20:49 < jack> brendan: but you have a point.  we can discuss when we get there
+20:49 < brendan> ok
+20:49 < jack> volsung: it's being actively developed right now
+20:50 < jack> volsung: afaik, kfogel is doing nothign but that at the moment :)
+20:50 < volsung> Is there a good doc like "SVN for CVS weenies"?
+20:50 < jack> so assumign we can import branches, and not alienate those who need repositor access ofr unreleased code, are there any objections?
+20:50 < jack> volsung: the svn book is quite good.  and overall it's quite similar to cvs.
+20:51 < brendan> not from me, but I'm in no position to comment on svn since I've never used it
+20:51 < jack> ok
+20:51 < rillian> http://svnbook.red-bean.com/ Appendix A
+20:51 < jack> my guess is that everyone will like it
+20:51 < jack> ok
+20:52 < brendan> any reason to switch before they do an official release?
+20:52 < jack> to participate in the community? :)
+20:52 < jack> to rid ourselves of the cvs problems :)
+20:52 < rillian> I've also been using it for over 6 months with no issues
+20:52 < rillian> it's really quite stable
+20:52 <@adiabatic> jack: Do you have a better reason, like "it's already better than CVS"? ;)
+20:53 < jack> the current version is quite good.
+20:53 < jack> it is already better than cvs.
+20:53 <@adiabatic> Carry on, then.
+20:53 < jack> like i said before, branches are a lot nicer
+20:53 < purple> svn is better than cvs because it is client/server from scratch afaik.
+20:53 < whitestar> Why is the Tremor module capitalized while none of the others are?
+20:53 < jack> whitestar: oversight?
+20:53 < purple> Whereas cvs has client/server grafted on as an afterthought.
+20:54 < jack> ok, so necessary for a move to subversion is a move to apache2.
+20:54 < jack> and that is already in progress
+20:54 < jack> so please, if you notice anything wonky let ralph or i know
+20:54 < volsung> svn requires apache?
+20:54 < volsung> apache2?
+20:54 <@adiabatic> volsung: Yes.
+20:54 < purple> Why is a move necessary? Couldn't it run on a separate server instance?
+20:54 < jack> all the current sites should have a :8082 counterpart which is the apache2 verison
+20:55 < jack> volsung: no.  well, not entirely.
+20:55 < brendan> I like purple's question :)
+20:55 < jack> volsung: there is a respositor access part that they built using apache
+20:55 < jack> but they have a standalone ssh server as well.
+20:55 < whitestar> A li'l "tremor/" -> "Tremor/" symlink wouldn't go unappreciated... :)
+20:55 < volsung> Will this obsolete viewcvs?
+20:55 < jack> volsung: no.  viewcvs now supports both svn and cvs.
+20:56 < jack> purple: why support two apaches when one will do?
+20:56 < rillian> I'd also like to mention that the debian packaging of apache2 is much nicer
+20:56 < brendan> is zope ready for apache2?
+20:56 < jack> it shouldn't make a big difference
+20:56 < rillian> so after the switch it will be easier to maintain things
+20:56 < jack> zope is it's own server, which is proxied via apache
+20:56 < brendan> php isn't quite
+20:56 < jack> that works fine in either version.
+20:56 < purple> jack: Understood, but if there are portions that don't like apache2, supporting two apaches might be the only option.
+20:56 < brendan> ok
+20:57 < jack> purple: yes, and if it comes to that, that will be fine.
+20:57 < jack> we're trying to see if we can just switch to apache2 wholly, and haven't run into any problems yet.
+20:58 < jack> ok
+20:58 < jack> next thing is website stuff
+20:58 < jack> sheryl, nathan and i have come up with some preliniary stuff 
+20:58 < jack> which is at the url nathan posted earlier.
+20:59 < jack> well, i see nathan has addes some new stuf
+20:59 < jack> http://i.cantcode.com/~jack/xiph/ was what he worked from
+21:00 < jack> if you guys have comments, suggestions, please come talk to us in #vorbis sometime
+21:00 <@adiabatic> What are you planning on using to factor out the repeated bits like sitewide and sectionwide navigation, and perhaps provide a bit of DB connectivity?
+21:00 < jack> otherwise, we'll keep pluggin away at it.
+21:00 < brendan> I'm mostly interested in the cms side
+21:01 < brendan> when is it coming up, and what are we doing in the meantime?
+21:01 < jack> the idea is to use zope
+21:01 < jack> plone doesn't seem quite ready enough
+21:01 <@adiabatic> brendan: I'm factoring out the common bits with SSI in my version.
+21:01 < jack> (i expect if we waited 6 months, it would be)
+21:01 < jack> i should have a basic zope version of what's there now next week
+21:02 <@adiabatic> jack: If you want a zipfile or whatever of what I have, let me know.
+21:02 < jack> adiabatic: ok
+21:02 < jack> anyone who wants a tour of zope let me know in #vorbis and i'll set you up with an account etc on the test server
+21:02 < jack> it's quite simple
+21:03 < brendan> meanwhile, any news or files go through adiabatic or jack? I'm asking because we should have a couple of  releases in the very near term
+21:03 < jack> brendan: i can hook you up with access to the current web stuff
+21:03 <@adiabatic> I've yet to find a decent doc on the creation, care, and feeding of Zope Objects and its more powerful abstraction mechanisms.
+21:03 < jack> you already have an account on mf i believe, which is al you really need
+21:04 < jack> news items need to go through purple, me, nathan, or manuel
+21:04 <@adiabatic> Basic stuff seems simple, but I'm more proficient with <!--#include virtual="foo"--> at the moment.
+21:04 < jack> adiabatic: ok.  give me until next week to brush up my zope before you ask me specific tech questions :)
+21:04 <@adiabatic> If you could give me a way to separate, say, one of those pages into slots...
+21:05 < jack> i think that's easy enough.
+21:05 < jack> ok
+21:05 < jack> releases
+21:05 < jack> it sounds like severla parts of icecast are ready to go now
+21:05 <@adiabatic> one for inside <head>, one inside <div id='content'>, and another way to vary the section stuff...I'd be in hog heaven.
+21:05 < brendan> several parts, but I'd say not icecast itself
+21:05 < jack> yes, that's what i gathered.
+21:06 < brendan> libshout 2 is in perpetual "just one more beta!" state
+21:06 < jack> libshout, Shout.pm, and pyshout right?
+21:06 < brendan> rillian's graciously doing the convenience lib stuff which will want beta 3, and I'm waiting to hear back from the guy who reported the Irix build problem
+21:06 < brendan> shout.pm is ready, pyshout I'm going to go over one more time but is close
+21:06 < jack> ok
+21:07 < brendan> and I want to push out ices 0.3 immediately after libshout 2
+21:07 < jack> when you're ready, let me know and i'll make sure you ahve web access
+21:07 < brendan> it's actually been ready the longest
+21:07 < brendan> I'm trying to do some libshout docs too, but would love help
+21:07 < brendan> I'm very new to docbook
+21:07 < jack> know docbook?
+21:07 < jack> ok, i can help with that bit, as can ralph
+21:08 < rillian> aye
+21:08 < brendan> I'm writing the docs in it now, but will want some editing
+21:08 < brendan> thanks
+21:08 < jack> i'll volunteer to read them over when a draft is done if you like
+21:08 < brendan> cool
+21:08 < jack> akos maroy would be a good second person to check them
+21:08 < purple> I know docbook,too, by the way.
+21:08 < jack> and/or oddsock
+21:08 [Users #xiphmeet]
+21:08 [@adiabatic] [ danx0r_afk] [ juhovh   ] [ princessilea] [ Teach    ] 
+21:08 [@comajelly] [ foolip    ] [ lunalosit] [ purple      ] [ volsung  ] 
+21:08 [ brendan  ] [ jack      ] [ mau      ] [ rillian     ] [ whitestar] 
+21:08 -!- Irssi: #xiphmeet: Total of 15 nicks [2 ops, 0 halfops, 0 voices, 13 normal]
+21:09 < jack> doesn't look like mike is here, so i'll assume we're still on some kind of end of summer schedule for icecast2 release ;)
+21:09 < brendan> ok. I'm just doing the API now but it should document the protocols and usage too.
+21:09 < jack> ok
+21:09 < jack> while i was in boston hanging with monty, we dicussed vorbis release stuff for a while
+21:10 < jack> here's a fairly unordered list of the deliverables for the near term
+21:10 < jack> oggfile
+21:10 < jack> vorbis 1.0.1 bugfix release (this is the end of summer stuff)
+21:11 < jack> backport tremor to reference, using libogg2-zerocopy and splitting decode into it's own lib
+21:11 < jack> vorbis 1.1 AAC+SBR killer release
+21:11 < Teach> :)
+21:11 < volsung> And incompatible with 1.0, I assume.
+21:11  * purple raises his eyebrows/.
+21:11 < jack> no
+21:11 < jack> 1.1 is fully compatible. just a new encoder :)
+21:11 < volsung> Ah.
+21:11 <@adiabatic> Spiffy.
+21:11 < whitestar> Sexy :)
+21:11 < purple> How are we going to kill AAC+SBR?
+21:12 < jack> monty has some ideas
+21:12 < brendan> whatever happened to peeling btw?
+21:12 < jack> he was testing aac+sbr files while i was in boston
+21:12 < jack> and said they were good, but not so good we couldn't beat it in the current bitstream :)
+21:12 < jack> brendan: i'm not sure.  i'll ask monty once he's done with the current contract work
+21:12 < volsung> Anyone know if the iTunes store is using plain AAC or AAC+SBR?
+21:12 < jack> segher (in the absence of monty) seems to be the peeling expert.
+21:13 < jack> plain aac afaik.
+21:13 < jack> aac+sbr just came out.
+21:13 < jack> it's called something weird
+21:13 < jack> like Ultra Low AAC
+21:13 <@adiabatic> MPC?
+21:13 <@adiabatic> AAC+?
+21:13 < jack> AAC+ is yet another variant ;)
+21:13 < jack> i don't yet have them all straight.
+21:13 < volsung> Whee!  Teh future.
+21:13 < jack> a fun link i found while investigating licensing:
+21:13 < jack> www.vialicensing.com
+21:13 <@adiabatic> Neither do I--hence the guessing.
+21:14 < jack> basically a dolby spinoff licenses all mpeg4 audio technologies except for MP3
+21:14 < purple> Is Vorbis 1.1 going into low bitrates only, or high bitrates, too, to 'convert' MPC fans?
+21:14 < jack> purple: dunno.  the primary goal is to improve onthe low side afaik.
+21:14 < jack> we'll see what monty actually does.
+21:15 < jack> knowing how perfectionist he is, i'd be surprised if it didn't improve across the board :)
+21:15 < purple> And/or incorporate some of Garf's tuning.
+21:15 <@adiabatic> It'd be nice to give the MPC and AAC fans in #foobar2000 a reason to convert back.
+21:15 <@adiabatic> Or at least be able to thumb our noses at them.
+21:15 < jack> incorporating garf's tuning is also on his agenda i know
+21:16 < volsung> purple: At least at low bitrates it is easier to tell if you've improved something.  You're not sitting there trying to decided if your cables are gold plated or not.  :)
+21:16 < jack> ok, in the interest of giving everyone a little break this holiday weekend
+21:16 < purple> volsung: True :)
+21:16 < Teach> I think I remember Monty saying a last time peeling was discussed in the mailing list a month or so ago that it was being moved up on his TODO list because people kept asking about it.
+21:16 < jack> i vote we move on to the last item :)
+21:16 < brendan> yay!
+21:16 < jack> which is branding/trademark
+21:16 <@adiabatic> I vote against.
+21:17 < volsung> Oh, not "Manuel got married"?  :)
+21:17 < jack> adiabatic: what would you like to discuss in the release section ?
+21:17 <@adiabatic> jack: You're skipping over my vocabulary winnowing requests.
+21:18 < jack> no
+21:18 < jack> that's part of branding.
+21:18 <@adiabatic> Specifically, I fail to see why we continue to have both Ogg-the-project and Ogg-the-container-format.
+21:18 <@adiabatic> Oh, okay. Carry on.
+21:18 < jack> all of the last three are branding issues really
+21:18 < jack> First of all, OggSquish can be dropped
+21:18 < jack> that's an easy one.
+21:18 <@adiabatic> Huzzah.
+21:18  * purple nods.
+21:18 < jack> i asked for that year ago, and we're just too lazy to do it.
+21:18 < Teach> I assume this also includes the "we want different file extensions" from the mailing list.
+21:19 <@adiabatic> Teach: No.
+21:19 < jack> teach: absolutely not.
+21:19 < Teach> I don't mean to suggest you'd do it.  Just that it falls under "branding".
+21:19 < jack> ok secondly
+21:19 < jack> there's the issue of strcutre on teh website
+21:19 < jack> ie ogg/vorbis
+21:19 < jack> ogg/theora
+21:20 < jack> we decide already that the codecs will be known independently off ogg
+21:20 <@adiabatic> jack: I suggest /ogg/, /vorbis/, /theora/, /flac/, /speex/.
+21:20 < jack> yes, that's the structure we agreed on
+21:20 <@adiabatic> Right
+21:20 <@adiabatic> .
+21:20 < jack> but also from a branding perspective, we should probably call them Vorbis, Speex, Theora, etc
+21:21 < jack> this is basically how it's working now
+21:21 < jack> at least in common usage
+21:21 < jack> ogg-the-project is probably a dead concept
+21:21 < jack> it's Xiph-the-project
+21:21 < jack> ogg-the-fileformat
+21:22 <@adiabatic> Excellent.
+21:22 < Teach> and vorbis-the-codec
+21:22 < jack> so i don't think there's much to haggle over there.
+21:22 < Teach> etc
+21:22 < jack> Teach: exactly
+21:22 <@adiabatic> jack: Agreed. However...
+21:22 < jack> some of hte codecs are more important than their file representation, like speex
+21:22 <@adiabatic> jack: We will have some confusion as long as we're mentioning "Vorbis" and the files are known as "oggs" or .ogg files.
+21:22 < jack> which is more commonly used raw than wrapped in ogg.
+21:23 <@adiabatic> Shall we discuss extensions in a month's time?
+21:23 < jack> adiabatic: maybe.
+21:23 < jack> i'm wary of discussing such a hot issue here.
+21:23 < jack> considering the two hour time limit.
+21:23 <@adiabatic> Don't blame you one bit.
+21:23 < rillian> logos and trademarks then?
+21:23 < jack> ok
+21:23 < jack> we're still working on logos
+21:24 < jack> the real issue is how to manage them once their done.
+21:24  * Teach doesn't have a desire to discuss extensions.  He was just curious if it was on the agenda.
+21:24 < jack> as i understand it, nathan wants some small hoop to jump through
+21:24 < jack> and most of us want zero hoop.
+21:24 < rillian> that's my understanding of the consensus
+21:24 < jack> there is probably a legal requirement of some hoop
+21:25 < jack> but it sounds like this can be made non intrusive.
+21:25 < jack> my current thoughts are something like this:
+21:25 <@adiabatic> Someone pointed out that Dolly didn't live a full life, which makes the sheep-as-FLAC logo a curious decision as Microsoft's use of "Start Me Up" for the Windows '95 theme song.
+21:25 < jack> a page that describes appropriate usage, along with a license that's granted as long as your usage fits the guidelines
+21:26 < jack> so we have the power to apply smackdown
+21:26 < volsung> Do we want some sort of certification logo?  If so, how do we distinguish it from the minimal-hoops logo?
+21:26 < jack> but we have an automatic way for people to use them and instructions on how
+21:26 < volsung> That should be "logo(s)"
+21:26 < jack> volsung: that's being discussed by the board
+21:27 < jack> i think that's in the minutes
+21:27 < jack> we're unsure at the present time
+21:27 < jack> if we do have one, it won't be just the fish :)
+21:27 < jack> it will at the very least have some official looking "CERTIFIED" thing on it :)
+21:28 <@adiabatic> In defense of small hoops for trademark and logo grants--I just don't want to see an ID3-tagging "OGG/vorbis" encoder bear our Seal 'o Quality.
+21:28 < jack> adiabatic: well, perhaps the thing to do is not make them a seal of quality
+21:28 < volsung> I think all "Seal 'o Quality" stuff should be saved for a certification program.
+21:28 < jack> and make a seal o' quality logo
+21:28 < jack> as a midway point between free-for-all and certification
+21:29 < jack> i do not have time to manage such a thing.
+21:29 < jack> but if someone else will do it, i don't see why we couldn't allow it
+21:29 -!- juhovh [juhovh@xiph-ECEECH.dial.kolumbus.fi] has quit [Client Exit: away]
+21:29 <@adiabatic> jack: We're letting them put our logo on their stuff--that, in my mind, is at least indicative of some sort of thumbs-up, if a small one.
+21:30 < jack> microsoft lets people put "made with frontpage" on their shitty websites
+21:30 < jack> there is precendent for this
+21:30 < jack> so perhaps it's not the logo by itself
+21:30 < jack> perhaps "pwoered by Xiph"
+21:30 < jack> or "uses Xiph media"
+21:30 < jack> or something similar
+21:30 <@adiabatic> On the other hand, I don't want to install all sorts of shitty Windows freeware and shareware on my machines for testing, so... :|
+21:30 < jack> (windows media has a similar logo system too)
+21:30 < jack> ok
+21:30 < jack> so the issue seems clear
+21:31 < jack> we need freely usable logos that don't imply quality :)
+21:31 < jack> can we agree on that? :)
+21:31 <@adiabatic> Well.
+21:31 <@adiabatic> I can, at the very least.
+21:31 < jack> along with a license/appropriate use page
+21:31 <@adiabatic> A couple things to check out...
+21:31 < foolip> Em. A while back (a year or so) I made a few fancy logos/buttons for vorbis. I can put them on a website if anyone cares.
+21:31 <@adiabatic> - Apple's "Made With a Mac" button guidelines
+21:32 < jack> adiabatic: can you make a wiki page for this discussion
+21:32 < jack> and post your links there?
+21:32 < Teach> license/appropriate use page for the freely useable logos
+21:32 < rillian> things like 'doesn't apply id3 tags to ogg files' can also be part of the license
+21:32 < Teach> ?
+21:32 < jack> along with example logos from others, etc?
+21:32 <@adiabatic> - Creative Commons' "Some Rights Reserved" license grant.
+21:32 <@adiabatic> jack: yeah.
+21:32 < jack> rillian: good point.
+21:32 < jack> you might also want to edit the wiki to reflect the consensus on structure of hte website too
+21:32 <@adiabatic> Ogg or FLAC files, but...whatever. Next?
+21:32 < jack> although i thought it already read that way.
+21:33 < jack> as for how we will ask reporters to reference our products, monty has some input on that
+21:33 < jack> so i don't know if we'll keep calling it Ogg Vorbis
+21:33 < jack> or just start calling it Vorbis
+21:33 < jack> or just call it Ogg
+21:33 <@adiabatic> But definitely not "Ogg/Vorbis", or "OGG" anything.
+21:33 < jack> yes
+21:33 < jack> there should be a page somehwere about that :)
+21:33 < Teach> Damn, and I just changed my intro to say "Ogg Vorbis" instead of just "Vorbis".
+21:33 < jack> probably multiple pages
+21:34 < jack> Teach: right now Ogg Vorbis is considered correct.
+21:34 <@adiabatic> jack: Just one with a couple <h2>s ought to suffice.
+21:34 < jack> i mean, we'll need one in the press section
+21:34 < jack> and one on the logo license page, etc
+21:34 < rillian> If we ever get directshow and quicktime plugins, vorbis will start to make a lot more sense
+21:34 <@adiabatic> say, x.o/scribbles/nomenclature/
+21:34 < jack> yes
+21:34 < foolip> http://62.20.159.133:8080/vorbis-support.png
+21:35 <@adiabatic> rillian: So we'd have Vorbis-in-QT instead of Vorbis-in-Ogg?
+21:35 < jack> i have a link like that too, jsut a sec
+21:35 <@adiabatic> foolip: Spiff.
+21:35 < foolip> http://62.20.159.133:8080/vorbis-encoded.png and http://62.20.159.133:8080/vorbis-superior.png also.
+21:35 <@adiabatic> May we?
+21:36 <@adiabatic> cool, twisted.web ;)
+21:36 < rillian> adiabatic: I don't see a reason not to
+21:36 < foolip> I'd be willing to give/license those to you under whatever terms you like, ig you like them.
+21:36 < jack> http://www.conduits.com/products/player/images/ogglogo.gif
+21:36 <@adiabatic> foolip: Just give them to us, and let us do whatever we want with them ;)
+21:37 < rillian> jack: that's quite nice
+21:37 <@adiabatic> jack: Not bad; the serif font's a bit old-school, though.
+21:37 < jack> conduits.com made that one
+21:38 < jack> it's a good start at a non-quality-implying logo i think
+21:38 < jack> modeled after microsofts logo for similar purposes.
+21:38 < jack> http://www.conduits.com/products/player/
+21:38 < jack> is tha tpage it appears on
+21:38 <@adiabatic> I prefer foolip's, though. It's sexier.
+21:38 <@adiabatic> It'd be a better base, at any rate.
+21:38 < foolip> I could assign copyright to you (xiph), or whatever, if, as I say, you'd actually use them
+21:38 <@adiabatic> foolip: I'd pop it on my website next to the eldred.cc thingy.
+21:39 < rillian> adiabatic: for the web maybe. conduit's would look better in print.
+21:39 <@adiabatic> (outside of my capacity as a Xiph person, anyhow)
+21:39 < jack> ok
+21:39 < jack> if there's nothing else, i motion to adjourn for this month
+21:39 < foolip> Regarding my logos, they could probably use some darkening up of the fish, and perhaps another font for the small text.
+21:40 < volsung> I will second the adjornment.
+21:40 < jack> next monthly meeting between august 2nd and 3rd.
+21:40 < volsung> adjournment.
+21:40  * volsung fires up m-w.com
+21:40 < danx0r_afk> jack -- is there any chance of a diff. time
+21:40 < jack> minutes for this and the board meeting should be posted son
+21:40 < danx0r_afk> earlier or somewhat later
+21:41 < jack> danx0r_afk: we can give you teh list of critical people
+21:41 < jack> and you can suggest alternatives.
+21:41 < jack> ralph and mike seem to the be the critical ones
+21:41 < jack> so .au and .uk
+21:41 < volsung> It would almost have to be earlier or ralph will have to be a vampire.
+21:41 < rillian> for the next meeting, I actually expect to be in north america
+21:41 < jack> oh
+21:41 < jack> before we quite
+21:42 < jack> i have an update from phil kerr
+21:42 < jack> the Speex and Vorbis RTP drafts are slotted for time at the upcoming ITEF meeting in vienna
+21:42 < jack> the Vorbis bitstream didn't quite make it, but it should make the next one
+21:43 < jack> new drafts of both RTP sepcs were submitted for the upcoming meeting
+21:43 < foolip> adiabatic: if you like, you can use any of those logos under some creative commons license. Of course you don't have to make a decision about it now, but perhaps I could put them somewhere "for your consideration"?
+21:43 < jack> there should be an -00 draft of vorbis bitstream soon though.
+21:43 < jack> phil says there just wasn't quite enough time
+21:43 < jack> but says that it should be accepted as an AVT working group item from the start
+21:44 < jack> so good progress on the standards front.
+21:44 < jack> and with that, i'll see you guys next month :)
+21:44 <@adiabatic> foolip: I'll wget the whole bunch and then you can decide what you want to do with them.
+21:44 < jack> thanks everyone for ocming
+21:44 < volsung> Whee!
+21:45 < brendan> thanks for having us
+21:45  * rillian waves goodnight
+21:45  * Teach feels important, getting to lurk in such a meeting.
+21:45 <@adiabatic> lunalosit: Thrill-a-minute, huh? ;)
+--- Log closed Sat Jul 05 21:46:40 2003

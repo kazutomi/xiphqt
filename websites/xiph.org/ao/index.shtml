@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/press/SSI/inhead.inc"-->
+	<style type='text/css'>
+		html {
+			background: white;
+			color: black;
+		}
+		h1 {
+			margin-bottom: .25em;
+		}
+		
+		h2 {
+			margin: .75em 0 .25em;
+		}
+
+		h3 {
+			font-weight: normal;
+			margin: .5em 0 .25em;
+		}
+		p {
+			margin: .125em 0;
+		}
+	</style>
+
+	<title>libao: a cross platform audio library</title>
+
+</head>
+<body>
+<p class='breadcrumbs'>
+	<span>
+	<a href='http://www.xiph.org/'>Xiph.Org</a>: libao
+	</span>
+</p>
+
+<div id='content'>
+<h1>libao: a cross platform audio library</h1>
+
+<p>
+Libao is a cross-platform audio library that allows programs to output
+audio using a simple API on a wide variety of platforms.  It currently
+supports:
+</p>
+<ul>
+  <li>Null output (handy for testing without a sound device)</li>
+  <li>WAV files</li>
+  <li>AU files</li>
+  <li>OSS (Open Sound System, used on Linux and FreeBSD</li>
+  <li>esd (ESounD or Enlighten Sound Daemon)</li>
+  <li>ALSA (Advanced Linux Sound Architecture)</li>
+  <li>AIX</li>
+  <li>Sun/NetBSD/OpenBSD</li>
+  <li>IRIX</li>
+  <li>NAS (Network Audio Server</li>
+</ul>
+<p>
+Please report bugs to Stan Seibert 
+&lt;<a href="mailto:volsung@xiph.org">volsung@xiph.org</a>&gt;.
+</p>
+
+
+<h2 id="release0.8.5">Release 0.8.5 - March 19, 2004</h2>
+<ul>
+	<li>Source code: <a href="src/libao-0.8.5.tar.gz">libao-0.8.5.tar.gz</a></li>
+	<li>RedHat 9: <a href="bin/redhat9/libao-0.8.5-3.rh90.i386.rpm">libao-0.8.5-3.rh90.i386.rpm</a></li>
+	<li>RedHat 9 Development: <a href="bin/redhat9/libao-devel-0.8.5-3.rh90.i386.rpm">libao-devel-0.8.5-3.rh90.i386.rpm</a></li>
+	<li>Fedora Core 1: <a href="bin/rhfc1/libao-0.8.5-3.rhfc1.i386.rpm">libao-0.8.5-3.rhfc1.i386.rpm</a></li>
+	<li>Fedora Core 1 Development: <a href="bin/rhfc1/libao-devel-0.8.5-3.rhfc1.i386.rpm">libao-devel-0.8.5-3.rhfc1.i386.rpm</a></li>
+</ul>
+
+<h3 id="changes0.8.5">Changelog</h3>
+<ul>
+<li><b>Support now for the ALSA 1.0 API</b></li>
+<li>ALSA mmap() mode can be enabled/disabled at runtime using "use_mmap" option.</li>
+<li>Patch to OSS plugin to fix skipping issues with some drivers (like emu10k1).</li>
+<li>Can build with --disable-esd option again</li>
+<li>Minor build fixes</li>
+</ul>
+
+<hr>
+
+<h2 id="release0.8.4">Release 0.8.4 - October 5, 2003</h2>
+<ul>
+	<li>Source code: <a href="src/libao-0.8.4.tar.gz">libao-0.8.4.tar.gz</a></li>
+</ul>
+<h3>RedHat 9</h3>
+<p>Note that the RedHat RPMS only have support for OSS, esd, and aRts
+compiled into them.  For other output devices, you will need to compile
+from source.</p>
+<ul>
+	<li>RPM: <a href="bin/redhat9/libao-0.8.4-1.i386.rpm">libao-0.8.4-1.i386.rpm</a></li>
+	<li>Devel RPM:<a href="bin/redhat9/libao-devel-0.8.4-1.i386.rpm">libao-devel-0.8.4-1.i386.rpm</a></li>
+	<li>Debug RPM:<a href="bin/redhat9/libao-debuginfo-0.8.4-1.i386.rpm">libao-debuginfo-0.8.4-1.i386.rpm</a></li>
+	<li>Source RPM:<a href="bin/redhat9/libao-0.8.4-1.src.rpm">libao-0.8.4-1.src.rpm</a></li>
+</ul>
+<h3>Debian unstable</h3>
+<ul>
+	<li><a href="bin/debian/libao2_0.8.4-1_i386.deb">libao2_0.8.4-1_i386.deb</a></li>
+	<li><a href="bin/debian/libao-dev_0.8.4-1_i386.deb">libao-dev_0.8.4-1_i386.deb</a></li>
+</ul>
+
+<h3 id="changes0.8.4">Changelog</h3>
+<ul>
+<li>Incorporated OS X patches from the Fink team.</li>
+<li>AIX output plugin by Stefan Tibus.</li>
+<li>Improvements in plugin detection code by David Walser, especially when ESD or aRts are present.</li>
+<li>NAS plugin from Antoine Mathys.</li>
+<li>Portability fixes for various platforms (including dlopen() bugs) including HP-UX and *BSD.</li>
+<li>Memory/resource leak fixes</li>
+<li>Significant fixes to ALSA 0.9.x plugin by Kevin Cody, Jr.  This should fix stuttering audio for mpg321 users.  The
+  --enable-alsa09-mmap option to ./configure turns on memory-mapped
+  I/O.  Note this is an experimental feature and causes some problems
+  with some sound card drivers and also users of the dmix software mixer.</li>
+</ul>
+
+</div> <!-- #content -->
+</body>
+</html>

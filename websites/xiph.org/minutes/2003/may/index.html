@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>Minutes of the Xiph.org Monthly Meeting for May 2003</title>
+<meta name="author" content="Carsten Haese" />
+<meta name="date" content="May 10, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="minutes-of-the-xiph-org-monthly-meeting-for-may-2003">
+<h1 class="title">Minutes of the Xiph.org Monthly Meeting for May 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>May 10, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#introduction" id="id1" name="id1">1   Introduction</a></li>
+<li><a class="reference" href="#organizational-status" id="id2" name="id2">2   Organizational Status</a></li>
+<li><a class="reference" href="#current-contract-work" id="id3" name="id3">3   Current Contract Work</a></li>
+<li><a class="reference" href="#neuros-and-positron" id="id4" name="id4">4   Neuros and Positron</a></li>
+<li><a class="reference" href="#administrative-issues" id="id5" name="id5">5   Administrative Issues</a></li>
+<li><a class="reference" href="#new-projects" id="id6" name="id6">6   New Projects</a><ul class="auto-toc">
+<li><a class="reference" href="#speex" id="id7" name="id7">6.1   Speex</a></li>
+<li><a class="reference" href="#flac" id="id8" name="id8">6.2   FLAC</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#project-status" id="id9" name="id9">7   Project Status</a><ul class="auto-toc">
+<li><a class="reference" href="#vorbis" id="id10" name="id10">7.1   Vorbis</a></li>
+<li><a class="reference" href="#icecast" id="id11" name="id11">7.2   Icecast</a></li>
+<li><a class="reference" href="#theora" id="id12" name="id12">7.3   Theora</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#standardization-efforts" id="id13" name="id13">8   Standardization Efforts</a></li>
+<li><a class="reference" href="#short-term-objectives" id="id14" name="id14">9   Short Term Objectives</a><ul class="auto-toc">
+<li><a class="reference" href="#new-releases" id="id15" name="id15">9.1   New Releases</a></li>
+<li><a class="reference" href="#website-overhaul" id="id16" name="id16">9.2   Website Overhaul</a></li>
+<li><a class="reference" href="#client-support" id="id17" name="id17">9.3   Client Support</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#long-term-issues" id="id18" name="id18">10   Long Term Issues</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1" name="introduction">1   Introduction</a></h1>
+<p>The monthly meeting for May 2003 took place on May 4, 2003, at midnight UTC
+in the IRC channel <tt class="literal"><span class="pre">#xiphmeet</span></tt> on <tt class="literal"><span class="pre">irc.xiph.org</span></tt>. The
+following people were present, in no particular order:</p>
+<ul class="simple">
+<li>Active Participants<ul>
+<li>Jack Moffit, Executive Director, Xiph.org</li>
+<li>Monty, Technical Director and lead of the Ogg and Vorbis projects, Xiph.org</li>
+<li>Patrick Mahoney, Board Member, Xiph.org</li>
+<li>Mike Smith, Xiph.org developer for vorbis-tools and icecast</li>
+<li>Stan Seibert, Xiph.org developer for libao, ogg123, and positron</li>
+<li>Jean-Marc Valin, Xiph.org developer for Speex</li>
+<li>Ed Zaleski, Xiph.org developer for icecast2</li>
+<li>Nathan Sharfi, Webmaster</li>
+<li>Dan Miller, VP3 (Theora) Developer, originally from On2</li>
+<li>Silvia Pfeiffer, Author of the <tt class="literal"><span class="pre">application/ogg</span></tt> RFC</li>
+<li>Phil Kerr, Author of the Vorbis RTP I-D</li>
+<li>Joe Born, Head of Neuros at Digital Innovations</li>
+<li>Brian Bruns, IRC Operator, Xiph.org</li>
+<li>Carsten Haese, Ogg Traffic Editor, Xiph.org</li>
+</ul>
+</li>
+<li>Observers (IRC nicknames)<ul>
+<li>Alereon</li>
+<li>PeterH</li>
+</ul>
+</li>
+</ul>
+<p>The meeting was moderated by Jack Moffit.</p>
+</div>
+<div class="section" id="organizational-status">
+<h1><a class="toc-backref" href="#id2" name="organizational-status">2   Organizational Status</a></h1>
+<p>Jack Moffit gave an introduction to Xiph.org's organizational status. 
+Xiph.org is a Delaware corporation and is now recognized as a tax exempt
+501(c)(3) entity. Xiph.org has 5 board members: Monty, Patrick Mahoney,
+Jon Callaghan, Mike Person, and Jack Moffit. The board is responsible for
+matters of financial concerns and to settle disputes. Monty and Jack currently
+run the organization.</p>
+<p>Since Xiph.org is a 501(c)(3) tax exempt entity, about half of Xiph's funding
+should come from public support, like donations and sponsorships. The other half
+can come from contract work and other income. Currently, about 90% of Xiph's
+income comes from contract work.</p>
+<p>Ed asked about how membership in Xiph.org is defined. The answer is that
+there is no formal definition beyond the board members, and Monty is currently
+Xiph.org's only employee. Informally, active volunteers seem to be considered
+members of Xiph.org.</p>
+<p>Dan asked about a rough idea of Xiph's current budget. Jack estimated that Xiph
+has funds to operate at current pace for a year into the future. Patrick added
+that Xiph has taken in about $100,000 since its inception in September 2001.</p>
+</div>
+<div class="section" id="current-contract-work">
+<h1><a class="toc-backref" href="#id3" name="current-contract-work">3   Current Contract Work</a></h1>
+<p>Monty and Jack reported about current and future contractual obligations.
+Currently, Monty is working full time on the Neuros firmware. There was a
+technical setback due to lack of any 8-bit type in the compiler for the
+processor that the Neuros uses, but Monty has the situation under control.</p>
+<p>All other contract work by Monty is currently on hold while he is working on
+the Neuros project. Outstanding contracts for Monty are:</p>
+<ul class="simple">
+<li>Develop and Perform official Vorbis decoder certification for MCS Logic</li>
+<li>Theora</li>
+</ul>
+<p>The other currently ongoing contract is with Real Networks to develop playback
+plugins for the RealPlayer/Helix architecture. It's looking good so far, but
+the project stalled last year after the initial work. Jack will complete the
+work this summer.</p>
+</div>
+<div class="section" id="neuros-and-positron">
+<h1><a class="toc-backref" href="#id4" name="neuros-and-positron">4   Neuros and Positron</a></h1>
+<p>Stan gave a brief introduction to Positron. Positron is part of the Neuros
+contract. It is a Neuros synchronization manager for Linux that copies songs
+from the host computer to the Neuros and updates the device's database.
+Positron is written in Python. While the contract calls for Linux only, we
+hope to provide is for MacOS X as well. Windows already has a synchronization
+manager.</p>
+</div>
+<div class="section" id="administrative-issues">
+<h1><a class="toc-backref" href="#id5" name="administrative-issues">5   Administrative Issues</a></h1>
+<p>Xiph.org's bookkeeper is Emily Katt. She is currently doing our taxes, and she
+will provide financial statements for future meetings.</p>
+<p>Ralph Giles will free up Monty by taking over as primary system administrator.
+Mike Smith volunteered to be the new Bugzilla maintainer. Carsten Haese
+volunteered for the position of Secretary.</p>
+<p>Jack asked all volunteers to email him with contact information, so that he
+can keep track of who does what and how to reach them.</p>
+</div>
+<div class="section" id="new-projects">
+<h1><a class="toc-backref" href="#id6" name="new-projects">6   New Projects</a></h1>
+<div class="section" id="speex">
+<h2><a class="toc-backref" href="#id7" name="speex">6.1   Speex</a></h2>
+<p>Jean-Marc Valin, principal author of Speex, gave a brief introduction to Speex.
+Speex is a codec specifically designed for speech, mostly for Voice over IP
+(VoIP) applications. It's meant to provide an open-source alternative to
+G.723.1, G.729, ACELP.xxx, and all other proprietary codecs.</p>
+<p>For being patent-free and being mostly developed by one programmer, Speex
+compares quite well to the state of the art. Speex needs about 15 to 20%
+more bandwidth than AMR-NB, the current state-of-the-art codec, to achieve
+the same quality. The compression ratio is therefore a little worse, but
+Speex is completely free. Since it is free, many game companies are becoming
+interested in it.</p>
+</div>
+<div class="section" id="flac">
+<h2><a class="toc-backref" href="#id8" name="flac">6.2   FLAC</a></h2>
+<p>The other new project that joined Xiph.org is FLAC. Unfortunately, Josh
+Coalson, FLAC's lead developer, could not attend the meeting.</p>
+</div>
+</div>
+<div class="section" id="project-status">
+<h1><a class="toc-backref" href="#id9" name="project-status">7   Project Status</a></h1>
+<div class="section" id="vorbis">
+<h2><a class="toc-backref" href="#id10" name="vorbis">7.1   Vorbis</a></h2>
+<p>Vorbis needs a bugfix release. A number of bugs are fixed in CVS, and a few
+new features have been added, like Speex and FLAC support in ogg123.</p>
+</div>
+<div class="section" id="icecast">
+<h2><a class="toc-backref" href="#id11" name="icecast">7.2   Icecast</a></h2>
+<p>Icecast is 99% of the way to a 2.0 release. Most issues are related to
+autotools problems. The Windows port is maintained by Ed, who keeps
+his binary releases in lock-step with CVS activity.</p>
+</div>
+<div class="section" id="theora">
+<h2><a class="toc-backref" href="#id12" name="theora">7.3   Theora</a></h2>
+<p>Dan Miller summarized the status of Theora. Theora is Xiph.org's implementation
+of the VP3 codec that On2 donated to Xiph. Unfortunately, Theora is suffering
+from the lack of a full-time lead developer. Monty has done what he can, but he
+is of course busy doing other things. Dan has done some work on encoding
+codebooks in a setup header packet, but he is unable to be Theora's lead
+developer. Everybody agrees that Theora needs a lead developer, and Dan
+suggested asking Mauricio Piacentini if he is willing to fill the gap.</p>
+</div>
+</div>
+<div class="section" id="standardization-efforts">
+<h1><a class="toc-backref" href="#id13" name="standardization-efforts">8   Standardization Efforts</a></h1>
+<p>Silvia Pfeiffer and Phil Kerr updated us on the current status on the
+standardization efforts. RFC3533 and RFC3534 for the Ogg encapsulation format
+and the <tt class="literal"><span class="pre">application/ogg</span></tt> MIME type are well on their way and should be out
+soon. The Vorbis-over-RTP draft is still being worked on: Phil is investigating
+an addition for caching codebooks. Phil also volunteered to write an internet
+draft for Vorbis.</p>
+<p>Jean-Marc mentioned the Speex RTP payload profile that was written by
+Greg Herlein, and pointed out that somebody needs to apply for an
+<tt class="literal"><span class="pre">audio/speex</span></tt> MIME type. And of course, <tt class="literal"><span class="pre">audio/vorbis</span></tt> and <tt class="literal"><span class="pre">audio/flac</span></tt>
+should also be applied for, as Nathan pointed out.</p>
+<p>There was a question about what kind of specification is necessary to apply
+for a MIME type. There is a specification for Speex, but it is not complete
+enough for an independent decoder implementation, and it's not an RFC.</p>
+</div>
+<div class="section" id="short-term-objectives">
+<h1><a class="toc-backref" href="#id14" name="short-term-objectives">9   Short Term Objectives</a></h1>
+<div class="section" id="new-releases">
+<h2><a class="toc-backref" href="#id15" name="new-releases">9.1   New Releases</a></h2>
+<p>Both Vorbis and Icecast are in need of new releases. The icecast release hinges
+mostly on documentation and on autotools issues. For documentation, it is
+planned to contact the authors of various unofficial and partial FAQ's and
+HOWTO's to see if their works can be combined into an official icecast
+documentation. The tentative target for the icecast release is the end of
+summer.</p>
+<p>On the Vorbis front, there are autotools issues, too. We are in need of an
+autotools wizard that can help us out. An update of the API is needed.
+There are also some bugs that only Monty knows how to fix, and since he is busy
+for the time being, the Vorbis new release is also slated for the end of summer.</p>
+<p>There was some discussion about whether it's desirable to integrate FLAC and
+Speex into oggenc and oggdec. The problem is that there is currently no unified
+codec API, which would result in a lot of code duplication. An alternative would
+be to stick with the philosophy of &quot;one tool for one task&quot; and rename oggenc
+and oggdec to vorbisenc and vorbisdec, respectively.</p>
+</div>
+<div class="section" id="website-overhaul">
+<h2><a class="toc-backref" href="#id16" name="website-overhaul">9.2   Website Overhaul</a></h2>
+<p>Currently, the web presence of Xiph.org is split into many different websites
+for each project. To learn what Xiph.org is about, one has to do a lot of
+browsing. This needs to be improved in order for Xiph.org to get wider
+recognition. There are some ideas in the Wiki at
+<a class="reference" href="http://wiki.xiph.org/WebsiteOverhaul">http://wiki.xiph.org/WebsiteOverhaul</a>, and some more ideas were mentioned:</p>
+<blockquote>
+<ul class="simple">
+<li>Consolidated news page with news from all projects</li>
+<li>Consolidated downloads</li>
+<li>www.xiph.org should become more public friendly, and each project would
+be at <em>project</em>.xiph.org</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="client-support">
+<h2><a class="toc-backref" href="#id17" name="client-support">9.3   Client Support</a></h2>
+<p>We don't have a clear picture of what works and doesn't work. Everybody that
+has a little bit of time is asked to contribute what they know to the Wiki.
+The biggest unknowns at the moment are DirectX plugins and MacOS (both
+classic and OS X) support.</p>
+</div>
+</div>
+<div class="section" id="long-term-issues">
+<h1><a class="toc-backref" href="#id18" name="long-term-issues">10   Long Term Issues</a></h1>
+<p>The long term issues of Theora and Fundraising are closely linked to each
+other: We need a Theora lead developer, and we need more money. Regarding
+fundraising, Dan pointed out that industry consortia like MPEG, ISMA, and
+MAIF get good money from corporate pockets simply by offering &quot;involvement.&quot;
+Since our stuff is free, we can't sell access, but we can offer &quot;legitimacy.&quot;</p>
+<p>Also, Xiph's free and open standards keep the MPEG patent holders from
+charging arbitrary licensing fees. There must be companies that see the
+value in this and who would prefer donating to Xiph over paying high
+patent licensing fees.</p>
+<p>Another possibility for fundraising is to have people make donations towards
+future developments. This is a tricky issue, though, because donations must
+not have any strings attached. Several options were mentioned, like setting
+up donation pots for specific features, or assigning bounties to certain
+future developments or bugfixes. However, these options need to be discussed
+with our lawyer to determine what procedures are allowable in the context
+of public funding and donations.</p>
+</div>
+</div>
+</body>
+</html>

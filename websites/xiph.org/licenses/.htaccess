@@ -1,0 +1,2 @@
+AddDefaultCharset UTF-8
+Redirect permanent licenses/gpl/ http://www.gnu.org/copyleft/gpl.html

@@ -1,0 +1,173 @@
+--- Log opened Sat Sep 06 20:03:49 2003
+20:04 < jack> live log at http://www.xiph.org/~jack/200309.txt
+20:05 -!- rillian changed the topic of #xiphmeet to: Monthly Meeting | live log at http://xiph.org/~jack/200309.txt
+20:05 < jack> we'll begin in a bit, we're running a little behind schedule
+20:08 < rillian> primer: who are you? I don't think we've met
+20:08 < rillian> looks like monty is in fact not available
+20:08 < rillian> so maybe this is it :P
+20:08 < purple> rillian: primer is adiabatic
+20:09 < purple> However, since we are on the topic of introductions...
+20:09 < purple> Aram1: Who are you? :)
+20:09 < Aram1> well
+20:10 < vanguardist> whitestar?
+20:10 < Aram1> I guess I'm an just unemployed programmer who has been lurking around for a while
+20:11 < purple> I wasn't asking for a justification for your being here, observers are welcome :)
+20:11 < purple> I just wanted to know for the sake of the meeting minutes.
+20:11 < rillian> Aram1: you were here last month too?
+20:12 < Aram1> no, I was at a few meetings a few months ago, but I have missed a couple lately
+20:12 < Aram1> usually I check the transcript, though
+20:13 < jack> derf, are you really there?
+20:13 < Aram1> its not as informative as being there live, though
+20:13 < derf> jack: Yes.
+20:14 < jack> ok
+20:14 < jack> since almost no one else is here, this will pretty much be a theora-only meeting
+20:14 < jack> http://wiki.xiph.org/MonthlyMeeting200309
+20:14 < jack> a small agenda just got posted
+20:15 < jack> ralph and i are getting windows and mac builds of vorbis 1.0.1 going
+20:15 < jack> and i think that is all that is left for the bugfix release
+20:15 < rillian> that's also my understanding
+20:15 < jack> as discussed last month, i asked ralph to be the theora project leader, and he has accepted
+20:16 < jack> so now hopefully we won't be headless
+20:16 < rillian> you can all blame me for the lack of progress
+20:17 < rillian> derf: how you're encoder coming?
+20:17 < derf> rillian: I'm actually debugging a piece of it as we speak.
+20:17 < derf> It's still got a ways to go before it's useful, though.
+20:17 < rillian> ok
+20:18 < rillian> I noticed dan stopped in, do you know what he's been up to?
+20:18 < derf> He didn't really say anything.
+20:18 < purple> Um. I seem to have missed something. What encoder?
+20:18 < rillian> derf?
+20:18 < derf> purple: Without any higher direction, I've taken to playing around with an experimental HVS-tuned Theora encoder.
+20:19 < rillian> derf: don't claim it's for lack of direction. I suggested you help complete the spec. :)
+20:19 < derf> i.e., it's a fun project, while waiting for Monty and Dan to catch up.
+20:19 < purple> HVS?
+20:19 < derf> Human Visual System.
+20:19 < rillian> but it is a good idea, and will help with future work
+20:19 < purple> Ah.
+20:20 < purple> So it's the visual equivalent of psychoacoustics.
+20:20 < derf> rillian: True... but given that I'd have to learn Python to continue Dan's work, or scrap Dan's work, I elected to do something that seemed more fun to me.
+20:20 < rillian> So anyway, the gating item at the moment is the completion of a spec
+20:21 < rillian> there's also the unresolved issue of whether we need a flip bit for vp3 compatibility
+20:21 < purple> I was just gonna ask about thr flip bit :)
+20:21 < purple> *the
+20:21 < derf> Yes. Maurice had tried to make a transcoder to test that out, but to my knowledge he never got it working.
+20:21 < rillian> yeah, that's the best way to do it because we'll find out all the differences :)
+20:22 < derf> I took a look at his code, and I couldn't see anything obviously wrong with it, but I didn't look very deep.
+20:22 < rillian> ah, so there is code. that's good. :)
+20:22 < rillian> anyway, we can talk about that in the theora channel
+20:22 -!- Arc [~arc@xiph-IOIMOJ.syr.east.verizon.net] has joined #xiphmeet
+20:22 < rillian> Hi Arc
+20:22 < Arc> hey
+20:22 < rillian> The other thing Jack and I wanted to talk about is a demo page for theora
+20:23 < rillian> I think we need to start asking people to try it out for video distribution
+20:23 < purple> Arc: Do you have a real name you want in the minutes, or do you want to be known as Arc?
+20:23 < Arc> my real name is Arc
+20:23 < rillian> or at least get some clips we can put up
+20:23 < purple> Arc: All righty.
+20:24 < rillian> we have the stuff at media.xiph.org, but not of it is actually all that interesting in and of itself
+20:24 < rillian> Arc has a project he's planning on releasing
+20:24 < rillian> does anyone have any suggestions for content?
+20:24 < Arc> well I have some video clips from different free software people talking abuot their projects, RMS, Monty, etc
+20:25 < Arc> it'd be no problem to encode some of it, ie, Monty explaining the ogg project and theora
+20:25 < rillian> that sounds good
+20:25 < rillian> Do we know any filmaker's who'd like to put a short online?
+20:25 < rillian> filmmakers
+20:26 < rillian> ok, keep your eye out and see what you can do
+20:26 < rillian> The other half is having a downloadable player
+20:26 < rillian> obviously we want plugins eventually
+20:27 < rillian> but I was thinking since the splayer example is actually portable
+20:29 < vanguardist> (hhhmm i might have stuff to encode)
+20:29 < rillian> that we should just hang a minimal gui on it and offer builds for windows and macos
+20:29 < rillian> vanguardist: cool
+20:29 < rillian> I'll ask mau if he's interested in helping with that
+20:29 < Arc> wasnt xine already doing alpha-2?
+20:29 < rillian> it's a little dodgy at this point obviously, because the format may not be frozen
+20:30 < rillian> Arc: if they've committed the patches that would be good for linux
+20:30 < rillian> does xine run on other platforms?
+20:31 < Arc> i dont know
+20:31 < rillian> ok. if there's an existing windows player that's fine
+20:31 < Arc> well its obviously not frozen, right? its not "compatable" with VP3
+20:31 < rillian> but splayer will probably be a smaller download.
+20:32 < derf> Arc: Lossless transcoding from VP3 is a design goal.
+20:32 < rillian> we can also add VP3 transcoding support in a later rev
+20:33 < Arc> yea and vp3 is inverted from theora, I read a long time ago that an inversion bit is needed to add support for lossless transcoding of vp3
+20:33 < rillian> Arc: I've not been convinced that's the case
+20:34 < rillian> Anyway, the third bit of news is we have a subtitle format spec
+20:34 < rillian> http://wiki.xiph.org/OggWrit
+20:34 < derf> It's not clear whether the VfW wrapper or the internal codec is doing the inversion Windows requires... no one's traced through the code enough.
+20:34 < rillian> It's a little more featureful than I would have chosen, but it also doesn't suck
+20:34 < rillian> derf, Arc: have you heard how the implementation's coming for OggWrit?
+20:36 < jack> OggWrit is a horrible name
+20:36 < jack> sounds like a court order
+20:36 < rillian> I added cvs accounts for Arc and foolip so they could check in the code in progress, but afaik they haven't
+20:36 < vanguardist> heh
+20:37  * rillian prods Arc
+20:37 < derf> Well, then you know as much as me... more even, since I don't actually subscribe to the CVS list.
+20:37 < purple> jack: Suggest something better :)
+20:37 < jack> i will, i'm just voicing my opinion now so that it won't come as a surprise later :)
+20:38 < rillian> Ok, so fwiw, people have been working on that
+20:39 < rillian> and for those who don't know, the ogg-tools cvs module has useful testbeds for experimenting with alternate substreams
+20:39 < rillian> That's all I have to say
+20:39 < rillian> jack: anything else?
+20:40 < jack> not really
+20:40 < purple> How about status updates?
+20:40 < jack> if no one else has anything i motion to adjourn :)
+20:40 < rillian> purple: good point
+20:41 < jack> status: it is my intention to play video games for several hours
+20:41 < purple> Monty's not here, but maybe someone (jack) knows what he's up to these days??
+20:41 < jack> monty finished the bugfixes for vorbis 1.0.1
+20:41 < jack> he's currently wrapping up loose contracts
+20:41 < jack> and then i believe he will begin work on OggFile
+20:41 < Arc> sorry guys, I'm kinda outside with a wifi stream box during a live preformance, children dancing around, and tabling etc
+20:42  * purple still can't believe he contibutes something minor but useful to Vorbis :)
+20:42 < purple> *contibuted
+20:42 < purple> gah
+20:42 < purple> Pay no attention to the man behind the curtain.
+20:42 < jack> what was that?
+20:42 < Arc> you want me to answer the previous question about Ogg Writ?
+20:42 < rillian> sure
+20:43 < purple> jack: I found and fixed a tuning flaw that made Vorbis do bad things to quiet content at low bitrates.
+20:43 < jack> nice :)
+20:43 < Arc> basically the implementation of Writ requires an extension of the Ogg spec for discontinuous bitstreams, and since Writ is of little use for anyone without other concurrent bitstreams, I'm starting off the bat using libogg2
+20:44 < purple> It wasn't hard to find, but I guess I was the first that bothered to look :)
+20:44 < jack> i'll get you a preent for secretaries day then :)
+20:44 < rillian> Arc: maybe you should fix your format then :)
+20:44 < jack> present
+20:44 < purple> Heh.
+20:44 < rillian> purple: your secretary work has been really valuable too. thanks a lot!
+20:44 < jack> it has indeed :)
+20:44 < purple> You're welcome.
+20:44 < Arc> i have a working (and verified with hex editor to match spec) set of python encoders/decoders, but I'm aiming to use libogg2/OggFile, and well it's kinda waiting on Monty's work on OggFile to get further along
+20:45 < derf> rillian: The problem occurs for any discontinuous bitstream.
+20:45 < rillian> Arc: any reason you haven't committed the code?
+20:45 < derf> IIRC, Monty said the same issues came up with MIDI in Ogg.
+20:45 < Arc> rillian, no monty and I (and I think derf, and others) had a long convo about this (discontinuous bitstreams), its not a big deal to make an extension to the spec I guess, so thats the direction its going in
+20:46 < jack> if you could write up a description of hte problem and the discussion on the wiki that would be nice
+20:46 < jack> most of us have no idea what you are talking about.
+20:46 < Arc> rillian, do you want me to commit the python code that uses my custom py-ogg (many patches beyond Andrews that makes it useable).. I'd have to throw my py-ogg into the writ cvs/etc in order for it to work for anyone
+20:46 < jack> have you run those patches by andrew?
+20:47 < Arc> i sent some of the initial ones to the libogg address he has, never got a reply
+20:48 -!- primer is now known as adiabatic
+20:48 < jack> arc, isn't his address in the pyogg module?
+20:48 < jack> at some university?
+20:49 < rillian> Arc: anyway, if your code needs a hacked py-ogg, and you can cleanly include it as a local python module, I'd be fine with that
+20:49 < rillian> but you should try an harmonize your fork with andrew's upstream
+20:49 < Arc> yea andrew's py-ogg is really ment for using py-vorbis it seems, you cant do anything useful with the bitpacker for instance, theres no "export to packet" function in it, no data exposed, etc
+20:49 < jack> andrewchatham.com
+20:50 < jack> andrew@andrewchatham.com is his person email
+20:51 < jack> http://www.andrewchatham.com/watermelon.jpg
+20:51 < Arc> well ill get ahold of him tonight then
+20:52 < Arc> i have to say its pretty nuts for me to attending a meeting like this, most extreme ive ever been
+20:53 < rillian> Ok, shall we adjourn then?
+20:53  * vanguardist gives rillian the gavel
+20:53  * jack seconds
+20:53  * purple thirds
+20:53  * rillian bangs three times
+20:53 < vanguardist> EOF
+20:53 -!- vanguardist [vanguardis@Special.Forces.Xiph] has left #xiphmeet [m00]
+20:53 < Arc> hey guys, you gotta check this out
+20:53 < Arc> http://liveradio.indymedia.org:8000/ithaca-hifi.ogg
+20:53 < purple> EOM :)
+20:54 < jack> please move back to the normal channels... log closing
+20:54 -!- jack [jack@xiph-MBDGFD.xiph.org] has left #xiphmeet []
+--- Log closed Sat Sep 06 20:54:30 2003

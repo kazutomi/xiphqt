@@ -1,0 +1,173 @@
+--- Log opened Sat Aug 02 19:38:23 2003
+20:05 < monty> Let's go.  I have two parties to attend.
+20:05 < jack> neither manuel or trelane are here, so i'll just begin by rehashing the agenda
+20:06 < jack> we decided that the indirectly related projects would not be official ones
+20:06 < jack> and we'll hand those off to manuel and trelane respectively i assume.
+20:06 < monty> OK
+20:06 < jack> i was waiting for manuel to get back from his vacation to tell everyone
+20:06 < jack> in the future, we're happy to assist new projects
+20:06 -!- princessilea [~princessi@xiph-HBHBBOCBCC.ph.ph.cox.net] has joined #xiphmeet
+20:06 < jack> but we hardly have the resources to support the official ones we have
+20:06 < jack> so it's hardly worth it to add more.
+20:07 < jack> unless they are directly pushing the core agenda.
+20:07 < jack> real plugins are looking much better.
+20:07 < jack> we have some streaming bugs to fix, i'm hung up on some problems in their sdk.
+20:07 < jack> they hardcoded everythign to the mp3 plugin, even though they have perfectly clean internal interfaces for the stuff.  
+20:08 < jack> so i'm trying to undo the hacks.
+20:08 <@adiabatic> Do you think you'll be able to rearchitect the SDK or get it rearchitected?
+20:08 < jack> it seems it might be fine.
+20:08 <@adiabatic> ...oh, will that not be necessary?
+20:08 < jack> whoever hacked it was just lazy.
+20:08 < jack> i'm still investigating.
+20:08 <@adiabatic> Good news.
+20:08 < jack> there's a new press release in a few days
+20:09 < jack> from real
+20:09 < jack> launching their new player project
+20:09 -!- bond [~b-o-n-d@xiph-HHHNCK.adsl.univie.ac.at] has joined #xiphmeet
+20:09 < jack> we have a quote in there
+20:09 < jack> nothing spectacular :)
+20:09 < jack> so relations continue to go well with them
+20:09 [Users #xiphmeet]
+20:09 [@adiabatic] [ brendan] [ mau  ] [ princessilea] [ volsung_] 
+20:09 [ bond     ] [ jack   ] [ monty] [ vanguardist ] 
+20:09 -!- Irssi: #xiphmeet: Total of 9 nicks [1 ops, 0 halfops, 0 voices, 8 normal]
+20:09 < jack> it's too bad oddsock isn't here, i wanted to get an update on the OggDS code
+20:10 < jack> i know he succeeded in building from CVS (there were a few tweaks needed though)
+20:10 < mau> i saw it landed on the tree. cool.
+20:10 < jack> so things are looking good on windows plugins for hte long term
+20:10 < jack> we have one company that is working with that code already
+20:11 < jack> i need to get them more in the loop with us regarding where we want that code to go
+20:11 < bond> hy, i just read that you are talking about the oggds filter! and i just wanted to say that a guy called "Nic" (often available at doom9.org) is now working on them
+20:11 < jack> sounds like they are happy to do the work.
+20:11 < jack> is he forking them?  or is he planning to talk to us?
+20:11 < jack> can you tell him to join us in irc sometime to discuss?
+20:12 < bond> yup, i will do that! seems that he makes a lot of progress
+20:12 < jack> i'd rather not have this splinter into 15 separate versions right off the bat if possible.
+20:12 <@adiabatic> Eep.
+20:12 < jack> in the past the windows world has not quite gotten the open source thing :)
+20:12 < jack> especially in this area
+20:13 < jack> so i'm really hoping we can get off on the right foot here.
+20:13 < jack> bond: who are you anyway?  I don't think i've seen you around before :)
+20:13 <@adiabatic> what jack said.
+20:14 <@adiabatic> Hi, who the heck are you?
+20:14 < volsung_> jack: Who is going to be friendly dictator in charge of OggDS in CVS?
+20:14 < bond> no, i am just a guy hanging around at doom9
+20:14 < jack> volsung_: good question.  for now it's me.
+20:14 < jack> i'm happy to delegate 
+20:15 <@adiabatic> I have a Windows machine, but no compiler.
+20:15 < jack> i'm not hte best person for the job, just the person it landed on for hte moment :)
+20:15 <@adiabatic> ...or code-fu.
+20:15 < jack> heh
+20:15 < jack> i'll search for someone, perhaps oddsock will take it
+20:15 < mau> jack, I assume the original developer will no longer work on it?
+20:15 < jack> tobias may eventually return to work on it with us
+20:15 < mau> k
+20:16 < jack> but he handed it off after his limit expired
+20:16 < jack> he gave himself 6 months or so
+20:16 < jack> and when that passed he gave it to us
+20:16 < jack> i think he's a busy boy
+20:16 < jack> mau: please speak up if you'd like to work on it :)
+20:16 < mau> it works great from an user perspective, it would be good to have it standardized 
+20:16 < jack> it will eventually need a theora decoder.
+20:17 < mau> i know, tob has implemented the granulepos differently, and many people use oggds
+20:17 < monty> It will eventually either need to replicate alot of work or talk to oggfile.
+20:17 < jack> well my hope is to get streaming working, and do a nice packaged release 
+20:17 < mau> for vp3 embedding
+20:17 < jack> monty: i meant eventually :)  not right now :)
+20:17 < bond> nic changed a lot in the filter (original cvs is pretty outdated) read more here: http://forum.doom9.org/showthread.php?s=&threadid=58522
+20:18 < monty> Let's move the agenda...
+20:18 < jack> um
+20:18 < jack> why the hell are they doing OGM + AAC?
+20:18 < jack> wtf is left of our stuff at that point?
+20:18 < monty> Ogg.
+20:18 < jack> sigh.
+20:19 < mau> just the container
+20:19 < monty> but it is a rather odd mix :-)
+20:19 <@adiabatic> jack: Because AAC si teh rox0r.
+20:19 < monty> Oh, I know why.
+20:19 < jack> anyway
+20:19 < monty> Because Christian is all about a specialized 5.1 mapping and AAC has the buzzword now.
+20:19 < jack> ok on to releases
+20:20 < jack> monty is goint to wrap up or at least break from his neuros dev in mid august
+20:20 < jack> and start working on the bugs for the 1.0.1 release
+20:20 < jack> whichis currently planned for Sept 1.
+20:20 < monty> yes
+20:20 < jack> i don't believe there is much major work besides monty's efforts required for that release.
+20:21 < jack> still, good to let everyone know so that no one is surprised.
+20:21 < jack> mao had some questions about theora release schedules.
+20:21 [Users #xiphmeet]
+20:21 [@adiabatic] [ brendan] [ mau  ] [ princessilea] [ volsung_] 
+20:21 [ bond     ] [ jack   ] [ monty] [ vanguardist ] 
+20:21 -!- Irssi: #xiphmeet: Total of 9 nicks [1 ops, 0 halfops, 0 voices, 8 normal]
+20:22 < jack> mao: do you think appointting someone project leader woudl help ?
+20:22 <@adiabatic> er, mau, right?
+20:22 < jack> oops, yes :) 
+20:22 < jack> sorry
+20:22 < mau> I believe we need some coordination
+20:22 < mau> and some input from monty :)
+20:22 < mau> make that a lot of input from monty
+20:22 < jack> other than oggfile, what do you need from monty?
+20:22 < mau> sorry
+20:22 < jack> (granted, that's a large chunk :)
+20:23 < mau> I may not be the best person to talk about it, because I am rather practical
+20:23 < mau> but I don't think we are too far away from a beta
+20:23 < jack> it is my understanding that monty's involvement is somewhat over, except for enabling theora in ogg via oggfile.
+20:23 < mau> we need someone to trim suggestions and decide which things will make it
+20:23 < jack> gotcha.
+20:23 < mau> and decide how to package and when, etc
+20:24 < jack> do you think anyone would object to ralph doing this?
+20:24 < mau> for example: I spent some time in the transcoding stuff
+20:24 < mau> No, I believe he is ideal for this
+20:24 < jack> ok.  he recently stepped up to bat for some other theora stuff (contracting)
+20:24 < jack> and since he's feeling more confident, i'll ask him
+20:24 <@adiabatic> jack: ralph, perhaps... ;)
+20:24 < jack> adiabatic: perhaps :)
+20:25 < monty> Mostly, yes.
+20:25 < jack> he's also not here to defend himself :)
+20:25 < monty> I'd love to be more involved in Theora, but prudence dictates delegating.
+20:25 < jack> which is always the best way to get volunteered :)
+20:26 < jack> the timeline as i understand it for monty is 1.0.1 release, oggfile, 1.1 release (vorbis)
+20:26 < mau> it is just that the code is still 95% percent what you di
+20:26 < jack> is that still the case?
+20:26 < mau> d
+20:26 < mau> and it was quite good
+20:26 < monty> we mostly need to saneify the APi a bit.
+20:26 < mau> so I feel we are just hacking at it while waiting for you to finish :)
+20:26 < monty> the code requires minor cleanup.
+20:26 < mau> exactly
+20:26 < jack> monty's a smart cookie, but he's already grossly overbooked.
+20:27 < monty> It's all mostly there; always was.
+20:27 < mau> I know
+20:27 < jack> ok, we'll if ralph signs up
+20:27 < jack> the first thing to do is probably get a small brain dump from monty
+20:27 < mau> k, jack. If he can not I can try to drive this a bit, with some input from monty (maybe one-two hours at irc)
+20:28 < jack> ok
+20:28 < jack> thanks for your efforts so far :)
+20:28 < mau> I am also pretty busy, and I lack Ralph skills with autoconf/automake/libtool
+20:28 < mau> lets talk later about the vp3 codec and apple, ok?
+20:28 < jack> i have some autotool-fu as well, so feel free to yell at me as well
+20:28 < jack> yep
+20:28 < jack> btw everyone
+20:28 < jack> i am going to start paying slightly less attention to irc.
+20:29 < jack> so if you don't get me that way, try email :)
+20:29 < jack> my wasint time/work ratio is a little whacked at the moment :)
+20:29 <@adiabatic> jack: over what sort of a duration?
+20:29 < jack> wasting
+20:29 < jack> i will probably check in morning and in afternoons, but i probably wont' be here all day anymore.
+20:30 <@adiabatic> ah.
+20:30 <@adiabatic> Not Quite Josh.
+20:30 < jack> i'm not disappearing
+20:30 < jack> just trying to get more stuff done.
+20:30 <@adiabatic> Don't blame you.
+20:31 < jack> ok
+20:31 < jack> is there anything else?
+20:31 < jack> or will this be the shortest meeting on recrod? :)
+20:31 <@adiabatic> hurry so we can close before the :35 mark.
+20:31 < monty> I'm done.
+20:32 < jack> ok, thanks everyone for coming!
+20:32 < jack> see you guys next month
+20:32 < monty> all done!
+20:32 < jack> on Sept 6th
+20:32 < brendan> that didn't hurt a bit
+20:32 < jack> ralph will actually be here at my house for that meeting :)
+--- Log closed Sat Aug 02 20:33:15 2003

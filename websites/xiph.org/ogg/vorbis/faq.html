@@ -1,0 +1,170 @@
+<title>  xiph.org: Ogg Vorbis FAQ</title>
+
+<!--#include file="oggtop.include" -->
+
+<h1>Frequently Asked Questions</h1>
+
+<!--#include file="xiphmid.include" -->
+
+<em>October 12, 2000</em><p> 
+
+Also have a look at the <a href="http://www.vorbis.com/faq.psp">FAQ at the Vorbis.com demo site</a> if you don't see your question here.
+
+<h1>General Questions</h1>
+
+<h2>What is Vorbis?</h2>
+
+Ogg Vorbis is a fully Open, non-proprietary, patent-and-royalty-free
+general purpose compressed audio format for high quality
+(44.1-48.0kHz, 16+ bit, polyphonic) audio and music at fixed and
+variable bitrates from 16 to 128 kbps/channel.  This places Vorbis in
+the same class as audio representations including MPEG-1 audio layer
+3, MPEG-4 audio (AAC and TwinVQ), and PAC.<p>
+
+<h2>Why Vorbis?  MP3 is open.</h2>
+
+No, it isn't.  Fraunhofer (and other MPEG consortium members) claim
+that it is impossible to create an mp3 encoder without infringing on
+their patents.  To create/use an encoder, the law says one must pay
+royalties to Fraunhofer and other MPEG Consortium members.  In other
+words, you can play what you like, but you're not allowed to
+contribute without paying the ante.  MPEG-4, destined to be the next
+generation of internet audio, is even more tightly controlled.<p>
+
+More worrisome is the prospect of behind the scenes alliances
+between MPEG (which dominates the audio technology) with the
+RIAA/music industry which seeks to control all distribution.<p>
+
+Do you really want a corporate alliance controlling what music you can
+listen to and when?  Remember that the RIAA is working hard to make
+players that play anything other than officially sanctioned streams
+<em>illegal</em>.
+
+<h2>Why Vorbis?  We already have MP3 and don't want to change.</h2>
+
+I'll be blunt.<p>
+
+If you didn't pay for that copy of mp3enc, you're [technically] a
+thief.  Strictly speaking, LAME users are supposed to pay royalties to
+FhG too.  Of course, MPEG members tend not to go after individuals;
+that would be nearly impossible.<p>
+
+Going after <em>businesses</em> is an entirely different thing.  If
+you're running a business, you either pay the arbitrary royalties (FhG
+decides this on a case-by-case basis, and generally protects
+'exclusives' it has arranged with other companies) or you don't stream.
+<em>There are no low cost, unrestricted, legal streaming solutions for
+small business.</em> The alternatives to MP3 aren't cheap either.<p>
+
+<h2>Can Vorbis stream?</h2>
+
+Yes.  One can both encode and decode as a single pass, real-time
+stream.  Vorbis is well suited to 'Internet Radio' and other forms of
+real-time and offline electronic distribution.<p>
+
+We have initial Icecast support for Vorbis working now; expect a
+release of Icecast will full, official Ogg Vorbis support soon.<p>
+
+<h2>How fast is Vorbis?</h2>
+
+Vorbis requires roughly the same encoding and decoding power as MP3.
+The current Vorbis source is immature (and therefore generally
+unoptimized) so it will also get faster as time goes on.<p>
+
+<h2>Does Vorbis support low bitrate encoding?</h2>
+
+Vorbis is also intended for extreme low bitrates, but that
+functionality does not yet exist in the current CVS source.  On paper,
+the math says Vorbis should scale to low bitrates much more
+gracefully, but we've not yet actually written the code.  Low bitrate
+coding is a high priority, so we'll know the details of low bitrate
+performance soon.<p>
+
+<h2>What extension does a Vorbis file use?</h2>
+
+Ogg Vorbis uses the Ogg bistream format, and the correct extension is
+.ogg<p>
+
+<h2>How does Vorbis compare to MP3?</h2>
+
+Vorbis is currently too immature to evaluate authoritatively against
+MP3.  Right now, it's about as good in the 128-160 kbps range; the
+encoder used to produce these streams is a test encoder
+(vorbis/examples/example_encoder.c) intended to produce bitstreams
+only for code stability testing purposes and illustrate the minimum
+amount of code needed to produce a valid bitstream.  It produces
+perfectly valid bitstreams, but has virtually no features you'd expect
+to see in a production encoder.
+
+A production command line encoder is in progress. <p>
+
+<h2>What are Vorbis's distribution terms?</h2>
+
+Anyone may freely use and distribute the Ogg and Vorbis
+specifications, whether in a private, public or corporate capacity.
+The specification is fully open to the public to be used for any
+purpose.  However, Xiphophorus and the Ogg project (xiph.org) reserve
+the right to set the Ogg/Vorbis specification and certify
+specification compliance.<p>
+
+Xiphophorus's Vorbis software libraries (libvorbis and vorbisfile) are
+distributed under a BSD-like license; these libraries may be used by
+any application, Open or proprietary, linked or incorporated in whole,
+so long as acknowldgement is made to Xiphophorus when using our codec
+source in whole or in derived works.  See the file 'COPYING' in the
+source for all the details.<p>
+
+All other portions of xiph.org's reference Vorbis software are
+distributed under the (GNU) General Public License (GPL).<p>
+
+Because the specification is open, third parties are welcome (and
+encouraged) to implement third party Vorbis software under other
+licenses using xiph.org's reference source as an authoritative
+reference.<p>
+
+<h1>Specification questions</h1>
+<h2>Why a forward adaptive format?</h2>
+
+For maximum flexibility.  Vorbis is meant to be actively researched
+and improved, so the engine, specification and algorithms are
+generalized to an unusual level.  Although forward adaptive algorithms
+are probably slightly anachronistic today, their flexibility can't be
+beat.<p>
+
+<h2>Why MDCT and not wavelets?</h2>
+
+Wavelets are not a magic bullet; the MDCT is a near optimal transform
+for strongly tonal audio.  The time/frequency resolution tradeoffs
+that wavelets offer aren't normally useful in audio... most of the
+time.<p>
+
+That said, percussive, plosive and impulsive audio events show poor
+frequency isolation, but strong time domain isolation; here wavelets
+are <em>very</em> useful... And in fact, wavelets are part of the
+vorbis specification.  The use of wavelets in Vorbis is still
+experimental, however; they will not be part of the 1.0 release.
+
+<h2>Does Vorbis support error correction?</h2>
+
+The Ogg streaming infrastructure that is used by Vorbis checksums and
+protects the data in a Vorbis bitstream.  However, Vorbis does not
+include additional redundancy for error correction.  Corruptions will
+be detected (and the stream will recover immediately after the corrupt
+page), but that corrupt snippet can't be recovered.
+
+<h2>Does Vorbis support mid/side stereo modes?  More than stereo?</h2>
+
+Vorbis has hooks for mid/side stereo and continuous balance stereo,
+but the channel mappings for both are yet to be formally specified and
+implemented. Currently, Vorbis channels are uncoupled.<p>
+
+Vorbis does currently support greater than two channels; the default
+multichannel mapping in the 1.0 release supports up to 255
+simultaneous channels.<p>
+
+<!--#include file="xiphbottom.include" -->
+
+
+
+
+

@@ -1,0 +1,19 @@
+/* This style is intended for fairly professional-sounding writing. */
+
+html {
+	font: 90%/110% "Trebuchet MS", "Bitstream Vera Sans", sans-serif;
+}
+p {
+	text-indent: 1.5em;
+	margin-bottom: 0;
+}
+
+p+ul, p+dl, p+ol {
+	margin-top: 0;
+}
+
+@media print {
+	html {	
+		font: 12pt/14pt "Trebuchet MS", "Bitstream Vera Sans", sans-serif;
+	}
+}

@@ -1,0 +1,320 @@
+19:20 < purple_haese> I could pose as moderator, but we need ralph for a theora update (or strike that part of the meeting)
+19:20 < purple_haese> We have enough icecast people present.
+19:20 < volsung> Okay, well, do we have enough people to talk about Icecast?
+19:20 < volsung> Heh.
+19:20 < volsung> I say start then.
+19:20 < purple_haese> Most other points are Monty, though.
+19:20 < Misirlou> Anybody logging?
+19:20 < volsung> Let me check if I'm logging.
+19:20 < purple_haese> I am logging.
+19:20 < Misirlou> 'Kay.
+19:20 < oddsock> ok, I'll start with icecast
+19:21 < oddsock> icecast is due for a release within the next week or so.
+19:21 < oddsock> everything is pretty much ready, we just need a bit of help with binary packages
+19:21 < volsung> Which platforms?
+19:21 < purple_haese> I can try to build RPMs if nobody else volunteers.
+19:22 < oddsock> we have a RPM built, but need it validated
+19:22 < volsung> I can test RPMs on Mandrake 9.2 when I get back to Austin.
+19:22 < dev0> I can test Debian here...
+19:22 -!- katabatic [~um@dsl-206-55-130-250.tstonramp.com] has quit [Read error: 54 (Connection reset by peer)]
+19:22 < dev0> but I'm not competent enought o build debs
+19:22 < purple_haese> I can test at least RH9 and possibly RH8.
+19:22 < oddsock> we need someone who can build .debs
+19:23 < volsung> calc is usually our man for that.
+19:23 < oddsock> here is the RPM link : http://www.icecast.org/files/icecast-2.0.0-1.i386.rpm
+19:23 < oddsock> additionally, we have a new icecast.org website in the works..
+19:23 < Misirlou> I'm guessing that icecast2 is the latest package?
+19:23 < Misirlou> If so, the maintainer is Jonas Smedegaard <mailto:dr@jones.dk>.
+19:23 < volsung> ices2 packages too?
+19:24 < oddsock> karl ? will we have ices2 in a week or so ?
+19:24 < karlH> ices2 is more of less ready, I'm keen on doing beta3 first though
+19:24 < oddsock> ok, so ices will probably be a separate release
+19:24 < Misirlou> Different guy for ices2, a Keegan Quinn <mailto:ice@thebasement.org>.
+19:24 < oddsock> I'd rather not release them together since they really are separate products
+19:25 < volsung> I'd be nice to have ices2 out at the same time, but, yes, synchronized releases seem to be our downfall.  :/
+19:26 < oddsock> for the new icecast website I am experimenting with a new mailinglist/forum gateway
+19:26 < volsung> Ooh.
+19:26 < vanguardist> nice
+19:27 < oddsock> it will do 2 way communication b/w a web forum and the mailinglist
+19:27 < dev0> nice
+19:27 < dev0> Built from scratch?
+19:27 < oddsock> nope, it uses a slightly modified phpBB2 and a mail filter
+19:27 -!- katabatic_ [~um@dsl-206-55-130-250.tstonramp.com] has joined #xiphmeet
+19:28 < oddsock> the new icecast website will all be in php...
+19:28 < oddsock> I would have liked to wait for the website overhaul project, but..well...I didn't want to wait that long :)
+19:29 < oddsock> I think that's pretty much it, icecast-wise...
+19:29 < karlH> for ices2, pretty much everything is in place, docs etc
+19:30 < karlH> I could do with some verification of some things like solaris live input
+19:30 -!- katabatic_ [~um@dsl-206-55-130-250.tstonramp.com] has quit [Read error: 54 (Connection reset by peer)]
+19:31 -!- katabatic_ [~um@dsl-206-55-130-250.tstonramp.com] has joined #xiphmeet
+19:31 < dev0> oddsock: Is the software section going to be updated for the new icecast site?
+19:32 < oddsock> dev0: a bit, if you have something to add, just send me an email about it and I'll add it..
+19:32 < dev0> oddsock: Does it have to be an email, or would it be enough to note that http://muse.dyne.org is a pretty nice program for streaming?
+19:33 < pisef> dev0: I couldn't make it work with icecast2, does it support that?
+19:33 < oddsock> ah, yes, i've added Muse... http://www.icecast.org/newsite/3rdparty.php is the new page :)
+19:34 < Arc> oddsock, is Freeform listed too?
+19:34 < dev0> pisef: I have to admit, that I haven't tried yet...
+19:34 < oddsock> Arc: never heard of it...what is it ?
+19:35 < Arc> its a CMS I maintain on savannah. it includes the ability to manage Icecast2 streams as well as YP support
+19:35 < Arc> you can setup a schedual with multiple playlists for different times of day in mysql, or change it to relay mode, or live input
+19:36 < oddsock> Arc: send me an email about it and I'll add it when I get back home...
+19:36 -!- purple_haese changed the topic of #xiphmeet to: Xiph.org meeting and conference channel. January 2004 meeting is in progress.
+19:36 < Arc> cool.
+19:37 -!- pisef is now known as Kato
+19:37 < purple_haese> Anything else for icecast?
+19:37 < oddsock> nope..thats it...
+19:37 < purple_haese> On to Theora and OggFile, then. Arc?
+19:38 < dev0> oddsock: See new page looks slightly deformed with Firebird 0.7+ here.
+19:38  * oddsock notes it
+19:38 < Arc> well rillian and derf aren't here, but I can speak from what I know
+19:38 < karlH> dev0: I'm looking into it
+19:38 < Arc> last I heard derf's bitstream changes still need to be added to the code, and derf was still working on his experimental theora encoder
+19:39 < purple_haese> Yes, that's what I heard, too.
+19:39 < Arc> i added libogg2 support for libtheora, you can set an env variable and cause it to compile for it instead of libogg1. the examples are not yet updated
+19:39 -!- volsung [~stan@ip68-228-212-16.ph.ph.cox.net] has quit [Read error: 104 (Connection reset by peer)]
+19:40 < purple_haese> Is libogg2 support in libtheora complete?
+19:40 < Arc> libvorbis still needs to be updated for libogg2 as well, which since there's a larger dev pool could probobally happen pretty quickly
+19:40 < Arc> it should be. It compiles and seems to work, the best I can test it
+19:40 < Arc> there may be a few bugs still that won't be found until we try to use it to encode something but it seems to decode fine
+19:41 -!- volsung [~stan@ip68-228-212-16.ph.ph.cox.net] has joined #xiphmeet
+19:41 < Arc> before the examples can be ported to libogg2 we really need libvorbis to be ported.
+19:41 < volsung> Argh.  Lost power on my laptop.
+19:41 < vanguardist> "always plug in at home, son"
+19:42 < purple_haese> Couldn't you try encoding a video only stream?
+19:42 < Arc> libwrit, for the text subtitle "codec", is being written to use libogg2 as well, which was my reason for porting theora
+19:42 < Arc> yea but I don't know SDL or most of the other code in the examples
+19:43 < Arc> I looked at it and figured it'd be easier to wait until libvorbis is ported
+19:43 < purple_haese> Just rip out all vorbis calls, how hard can that be? ;)
+19:44 < purple_haese> Anyway, no need to get too technical here.
+19:44 < Arc> I believe the example encoder needs to also support libogg2, that it's not just a matter of the libraries being ported and then the examples will magically work
+19:45 < Arc> which blends into OggFile. OggFile is suppost to be part of libogg2, which means the codecs are going to have to be ported to libogg2 either before or during the phase of writting codec plugins for OggFile
+19:47 < purple_haese> Unless Monty comes up with libogg3 before OggFile is complete and everything needs to be redone again. ;)
+19:47 < Arc> the porting process actually isn't that difficult, it's alot of search and replace with a few code changes here and there (some of the functions take different arguments)
+19:48 < purple_haese> I suggest you write up a small how-to on the wiki if you haven't done so already.
+19:48 < volsung> Ooh, very good idea.
+19:50 < Arc> I don't know if anyone here works with libvorbis, but could definetly use a volunteer to do the porting
+19:50 < Arc> I can assist in the process as I'm now familiar with libogg2's api, but I dont think I can manage it alone.
+19:50 < Arc> volunteers?
+19:50 < purple_haese> As I said, write up a how-to, and the volunteers will come.
+19:51 < Arc> purple_haese I think I would need help even with the how-to
+19:52 < purple_haese> Well, you could start by jotting down which functions have to be changed how, and let it grow from there.
+19:52 < Arc> *nod*
+19:53 < Arc> i think a step before that even would be to document the new API
+19:53 < purple_haese> Feel free to do that as far as you can :)
+19:54 < Arc> last I heard from Monty was that he wanted to collaborate on the libogg2 docs, and I offered to document the API the best I could, but never got started
+19:54 < Misirlou> I was working on cleaning up a bit in vorbis/doc/xml.
+19:55 < Arc> Misirlou do you want to help with documenting libogg2?
+19:56 < Misirlou> I suppose so. I don't have any experience programming with it, though.
+19:56 < Arc> I have no experience writting documentation, other than just flat out text or html
+19:56 < Arc> so maybe collaboration could work there
+19:57 < volsung> Unless you have something else in mind, feel free to copy the format of the libvorbisfile docs.
+19:57 < Arc> well there was discussion about adopting a real docs format
+19:58 < purple_haese> We need less discussion and more action. Go with whatever works. Just my 2 cents :)
+19:58 < purple_haese> I suggest Arc writes up the raw docs and Misirlou marks them up.
+19:59 < Misirlou> I'm familiar with XHTML more so than DocBook, so I'll go with that for now.
+19:59 < Arc> Misirlou how about you write the templates? thats where I think I got stuck last time
+19:59 < dev0> but once you have it in DocBook, you can export into virtually everything
+20:00 < Misirlou> Correct.
+20:00 < purple_haese> Well writtem XHTML can be just as expressive as DocBook.
+20:00 < Arc> *nod* and DocBook format is similar to wiki, which is what im familiar with
+20:00 -!- jianxin_yan [~yanjx66@218.21.44.14] has joined #xiphmeet
+20:01 -!- oddsock [oddsock@66.242.1.25] has quit []
+20:01 < dev0> So either come up with a good XHTML version, which could be formatted using CSS or do it in DocBook...
+20:01 < dev0> whatever
+20:01 < Misirlou> Arc: Hmm, you don't really have to use a template. You could just write up some raw text and a file and I'll mark it up.
+20:02 < purple_haese> Anyway, Arc and Misirlou will work together on libogg2 docs.
+20:02  * purple_haese bangs the gavel.
+20:02 < purple_haese> :)
+20:02 < Arc> :)
+20:02 < katabatic_> DocBook similar to Wiki? Har.
+20:02 < Misirlou> purple_haese: By the way, I love your new robe.
+20:02 < purple_haese> Anything else on Theora and/or OggFile?
+20:03 < Arc> I think monty is still working on vorbis stuff, based on the cvs logs
+20:03 < Arc> so no
+20:03 < purple_haese> Okay, moving along.
+20:04 < purple_haese> Helix integration and relationship with Real is a topic for jack and Monty, neither of which are present...
+20:04 < purple_haese> Unless anybody else is present who can speak on that topic, we'll move it to next month.
+20:05 < Arc> and monty isnt here to talk about vorbis II
+20:06 < purple_haese> Well, I can say a little bit on his behalf there.
+20:07 < purple_haese> Monty has recently revamped the bitrate management code in vorbis...
+20:07 < purple_haese> The changes are on CVS HEAD, and we need people to test the changes.
+20:08 < purple_haese> Monty is worried that something is wrong because it worked right off the bat :)
+20:08 < volsung> I didn't quite catch the purpose of the change... Speed or quality improvement?
+20:08 < katabatic_> No.
+20:08 < katabatic_> Real CBR.
+20:09 < purple_haese> It doesn't seem faster. The log entry said something about reduced latency and memory usage
+20:09 < purple_haese> and real CBR.
+20:09 < volsung> Oh, for the chinese folks.
+20:09 < dev0> hmmm
+20:09 < volsung> Ah, reduced memory usage is good.
+20:09 < dev0> If testing is needed I could do some kind of "test experimental vorbis cbr" sticky thread at HA.org...
+20:10 < dev0> if that would be of any help
+20:10 < katabatic_> Monty did ask for testing.
+20:10 < purple_haese> I suppose it can't harm, except maybe by attracting trollish comments.
+20:10 -!- danx0r [~danbmil@c-24-6-154-203.client.comcast.net] has joined #xiphmeet
+20:11 < purple_haese> Hiya, danxor.
+20:11  * purple_haese should use nick completion :)
+20:11 < danx0r> hi guyz
+20:12 < danx0r> is there a log URL?
+20:12 < dev0> not yet
+20:12 < dev0> the meeting is still going on...
+20:12 < Misirlou> dev0: Make sure you append the fact that VBR is recommended over CBR in the majority of cases, just to deter whatever may arise.
+20:12 < dev0> Of course.
+20:12 < purple_haese> danx0r: No live log this time.
+20:13 < Misirlou> One second, I may be able to hack something together.
+20:14 < danx0r> np -- just lurking really
+20:14 < danx0r> seemed like some Theora discussion last month so I thought I would drop in...
+20:14 < danx0r> but where is mont, rill & jack?
+20:14 < purple_haese> Your presence is appreciated.
+20:15 < purple_haese> They seem to have forgotten about the meeting.
+20:15 < danx0r> hmmm..
+20:15 < purple_haese> I am posing as moderator.
+20:15 < danx0r> not that present company isn't sufficient, of course
+20:15 < danx0r> does anyone have more info on vorbis/theora in AVS (chinese EVD thing)?
+20:15 < purple_haese> Okay, I am done with reporting what I know of MOnty's recent work...
+20:16 < purple_haese> All we know is that Monty changed the bitrate manager to allow true CBR.
+20:16 < Misirlou> <http://24.125.118.27:8080/xiphmeet>
+20:16 < danx0r> heh that must have stuck in his craw
+20:16 < Misirlou> Apologies about the broken charset; I need to fix that.
+20:16 < danx0r> it's completely retarded, but that's how the broadcast industry thinks
+20:17 < danx0r> Misirlou -- thanx
+20:17 < Misirlou> danx0r: You're welcome.
+20:18 < purple_haese> danx0r: Since you're here, do you have an update on your progress with the Theora docs?
+20:18 < danx0r> hmmm (blush)
+20:18 < danx0r> er, well, umm
+20:18 < purple_haese> Don't worry, I'm not gonna throw stones, just look at my Ogg Traffic history ;)
+20:18 < danx0r> I took a new job in Sept and moved my family 3000 miles, so... unfortunately, no work has been done
+20:19 < danx0r> at one point Mau was going to take over, then maybe Derf
+20:19 < danx0r> Derf is most def the Theora maven now, right?
+20:19 < danx0r> with his encoder & all
+20:19 < purple_haese> So, we are officially in a Help Needed stage?
+20:19 < danx0r> I think on the docs, yes, for some time
+20:19 < purple_haese> Yes, derf is a Theora wizard, but unfortunately he doesn't know python.
+20:20 < purple_haese> (From what I recall)
+20:20 < dev0> what exactly needs to be documented?
+20:20 < danx0r> purple_haese -- oh, right, I started that concept
+20:20 < danx0r> has anyone looked at the limited (keyframe only) version I did?
+20:20 < purple_haese> rillian has, most likely.
+20:20 < purple_haese> :)
+20:21 < danx0r> Derf could learn python in the time it takes me to brush my teeth
+20:21 < Misirlou> Is derf around?
+20:21 < danx0r> but he's busy I suspect
+20:21 < danx0r> and of course the spec doesn't *really* have to be done in Python, that was just a cute idea
+20:21 -!- derf_ [~lomeando@planetmath.cc.vt.edu] has joined #xiphmeet
+20:21 < purple_haese> Right on cue :)
+20:21 < danx0r> hi derf_
+20:21 < Misirlou> :)
+20:21 < derf_> Hi.
+20:22 < danx0r> I dropped in from the dead, but it appears key ppl are missing today
+20:22 < purple_haese> Oh, I think the executable-spec-in-python is a good idea in general, but not if it keeps us from making progress.
+20:22 < danx0r> Last month's log looked like Theora was getting some action
+20:22 < Arc> danx0r I know Python fairly well. where is your code?
+20:23 < danx0r> I think it's linked to from the wiki... let me see
+20:23 < purple_haese> How about the people that know Theora (e.g. Derf) write up what they know in whatever (pseudocode), and then someone who knows python translates that.
+20:23 < Arc> i thought you were developing it monty-style, where no public looksies until it's ready
+20:23 -!- Misirlou changed the topic of #xiphmeet to: Xiph.org meeting and conference channel. January 2004 meeting is in progress. Log available at <http://24.125.118.27:8080/xiphmeet>.
+20:23 -!- ChanServ changed the topic of #xiphmeet to: Xiph.org meeting and conference channel. January 2004 meeting is in progress.
+20:23 < Misirlou> GAH
+20:23 < danx0r> Arc -- no, I released something in like july or aug
+20:23 < purple_haese>           conference channel. January 2004 meeting is in progress. Log 
+20:23 -!- purple_haese changed the topic of #xiphmeet to: Xiph.org meeting and
+20:24 < danx0r> it's in CVS under docs I think
+20:24 < purple_haese> Ugh.
+20:24 < Misirlou> purple_haese: We have no mojo.
+20:24 < Arc> I'd also love the chance to try out the py-ogg2 that I just wrote
+20:24 -!- purple_haese changed the topic of #xiphmeet to: Xiph.org meeting and conference channel. January 2004 meeting is in progress. Log available at <http://24.125.118.27:8080/xiphmeet>.
+20:24 < purple_haese> Misirlou: Speak for yourself ;)
+20:24 < danx0r> the log seemed to be working
+20:24 < purple_haese> I just needed the right copy-paste mojo
+20:25 < danx0r> Arc -- in the Alpha-2 release, theora/doc
+20:26 < danx0r> spec.html
+20:26 < purple_haese> That's the latest version in existence?
+20:26 < Arc> wait spec.html contains python code?
+20:26 < danx0r> spec.html *is* python code
+20:27 < Arc> *blink* that's just wrong, man!
+20:28 < danx0r> well spec.html and spec.py are textually identical minus formatting
+20:28 < danx0r> I generated them both from the same file
+20:29 < Arc> ok
+20:29 < danx0r> er, spec2html creates spec.html from spec.py
+20:29 < katabatic_> Arc: have an URL to spec.html/.py?
+20:29 < danx0r> but it looks a bit wrong actually -- I think there's a missing file, spec.txt
+20:30 < danx0r> anyway... read the doc, you'll get the picture
+20:30 < purple_haese> derf_: Thanks for coming. Would you like to give us a Theora status update from your perspective?
+20:30 < Arc> katabatic_ its on my system
+20:30 < derf_> Sure. I've made no progress in the last month.
+20:30 < danx0r> wierd, dunno why spec2html is there when the original file is missing
+20:30 < Arc> danx0r  can you join me in #theora?
+20:31 < purple_haese> Heh.
+20:31 < danx0r> sure sorry to noise the meeting
+20:32 < derf_> I discovered I had flubbed up the supra-threshold contrast sensitivity curves, which I need to generate quantization matrices, which I need to get bitrate statistics, which I need to do mode decision, which I need to do P frames.
+20:32 < purple_haese> Yikes.
+20:32 < derf_> So until that's resolved, my experimental encoder is still I frames only.
+20:32 < derf_> And I haven't had time to look at it.
+20:33 < purple_haese> No prob.
+20:33 < derf_> Yeah, exams, projects, part time job work, holidays... December is not a good month.
+20:35 < purple_haese> Alright...
+20:35 < purple_haese> jmspeex: Any news from Speex?
+20:36 < purple_haese> (Or anybody else who wants to give us status updates on anything?)
+20:36 -!- xercist [xercist@dsc02-ari-co-204-32-206-61.rasserver.net] has joined #xiphmeet
+20:37 < dev0> seems like there a no further updates.
+20:38 < purple_haese> In that case, I move to adjourn the meeting, unless anybody really wants to discuss the MP3 Newswire article that somebody put on the draft agenda.
+20:38 < volsung> Not particularly.
+20:38 < Misirlou> Nope, looks like trolling to me.
+20:38 < volsung> We can grumble about it in private.  :)
+20:39 < Misirlou> Oh, did anyone want to create a #flac channel?
+20:39 < purple_haese> Is there demand for it?
+20:39 < jmspeex> purple_haese: I'm still mostly concentrating on the fixed-point
+20:39 < dev0> has anybody looked at the article?
+20:39 < purple_haese> jmspeex: Right. How's that going?
+20:39 < Misirlou> dev0: I did.
+20:39 < jmspeex> It's progressing slowly though (mostly because of the free time I've got)
+20:40 < dev0> it was basically a Pro-RIAA rant...
+20:40 < dev0> nothing to care about.
+20:40 < Misirlou> purple_haese: There might be some demand, and for awhile I created one and a few people popped in and out, but I never got enough people.
+20:41 < volsung> I second the motion to adjourn.  :)
+20:41 < purple_haese> Misirlou: I think you answered your own question :)
+20:41 < dev0> Misirlou: I'd join :)
+20:41 < jmspeex> About the article, I read part of it and though it's not very accurate, it's true that talking about Vorbis II (hadn't heard about it before), makes it sound like those who implemented Vorbis I wounldn't be happy...
+20:42 < dev0> jmspeex: That's not even in that article
+20:42 < jmspeex> Sorry
+20:42 < OggZealot> I'd join too ... sometimes
+20:42 < dev0> the article is just a mindless rant about what has been commercially succesful and what not
+20:42 < jmspeex> Oh, nm then.
+20:42 < dev0> But I agree about your remark on Vorbis II though
+20:43 < purple_haese> Well, porting from Vorbis I to Vorbis II is less of a step that implementing I from scratch...
+20:43 < purple_haese> especially because MOnty plans to make Vorbis II more hardware-friendly.
+20:43 < jmspeex> Of course, if Vorbis II gets started today, it'll take quite a while before it's done, so it probably won't clash with Vorbis I... 
+20:43 < Arc> monty will probobally release tremor with support for both
+20:44 < Arc> and monty said OggFile is a higher priority
+20:44 < purple_haese> And WMA9 is AFAIK incompatible with its predecessors (but I could be wrong)
+20:44 < dev0> WMA9Pro
+20:44 < dev0> there are 2 WMA9s
+20:44 < dev0> Std. and Pro
+20:44 < jmspeex> purple_haese: MS can affort to release incompatible stuff every 6 months. We can't (I'm not saying that's what we do either).
+20:45 < dev0> Std is still compatible with the old v2 decoders (and has the same old horrible WMA quality) and Pro is a completely new codec.
+20:46 < dev0> As an end-user I'd think it would be good to have some development happening on Vorbis I...
+20:47 < purple_haese> And development is happening. See bitrate management changes, for example.
+20:47 < dev0> yeah.
+20:47 < Arc> as monty pointed out, vorbis is the oldest "modern codec"
+20:47 < dev0> and still performing reasonable competetive quality-wise...
+20:48 < purple_haese> Anyway, this is all just idle chatter without Monty to chime in, so I renew my motion to adjourn.
+20:48 < purple_haese> Seconds?
+20:48 < Misirlou> I move to adjourn. (That sounds cool.)
+20:48  * Arc seconds
+20:48 < purple_haese> going... going...
+20:48 < purple_haese> gone :)
+20:49 < purple_haese> So, thanks for coming, everybody.
+20:49 < purple_haese> Happy new year, by the way.
+20:49 < Misirlou> purple_haese: Are you going to post a more formal log on x.o?
+20:49 < purple_haese> Next meeting will be February 7th/8th
+20:50 < Misirlou> I mean, you're free to use mine, but yours might be better.
+20:50 < purple_haese> I don't know about 'formal', but I'll post my log on x.o
+20:51 < purple_haese> I still have to crank out the minutes for December, too :(
+20:51 < purple_haese> Holidays.
+20:51 -!- dev0 [tobias@p508A5C19.dip.t-dialin.net] has left #xiphmeet ["Leaving"]
+20:52 < purple_haese> Anyway, log will be posted within the next 24 hours. Minutes whenever I get around to writing them.
+20:52 < Arc> purple_haese how about an ogg traffic when icecast is released?
+20:52 < Misirlou> Happy new year to you too! (I'll keep my log up just in case anyone's interested.)
+20:52 -!- Misirlou [~aew@c-24-125-118-27.va.client2.attbi.com] has left #xiphmeet []
+20:52 < purple_haese> Arc: Yes, that sounds like a plan.
+20:53 < purple_haese> Okay, I'm leaving. See you later.

@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/press/SSI/inhead.inc"-->
+	<style type='text/css'>
+		html {
+			background: white;
+			color: black;
+		}
+		h1 {
+			margin-bottom: .25em;
+		}
+		
+		h2 {
+			margin: .75em 0 .25em;
+		}
+
+		h3 {
+			font-weight: normal;
+			margin: .5em 0 .25em;
+		}
+		p {
+			margin: .125em 0;
+		}
+	</style>
+
+	<title>Neurosetta: Ogg Vorbis firmware for the Neuros Audio Computer</title>
+
+</head>
+<body>
+<p class='breadcrumbs'>
+	<span>
+	<a href='http://www.xiph.org/'>Xiph.Org</a>:
+	Neurosetta
+	</span>
+</p>
+
+<div id='content'>
+<h1>Neurosetta</h1>
+
+<p>
+Neurosetta is an updated firmware for the Neuros Audio Computer which
+enables the Neuros to play Ogg Vorbis files.
+</p>
+
+<h2>Current Status</h2>
+<p>
+Neurosetta is included in the official firmware from Digital Innovations
+starting at version 1.45. Please go to <a
+href="http://www.neurosaudio.com/support/support_updates.asp"
+>http://www.neurosaudio.com/support/support_updates.asp</a> for downloads.
+</p>
+
+<h2>Instructions</h2>
+<p>
+Please note that you can both upgrade and downgrade firmware on the Neuros.  
+It should be pain-free to try out this firmware and then switch back if you find
+it necessary.
+</p>
+
+<p><i>
+(Firmwares from neurosaudio.com are packaged as self-extracting Windows Executables.  If you are on a non-Windows system, you can unpack them using a standard unzip program.)</i>
+</p>
+
+<p>
+<b>Prepare</b>: Turn off automatic sync in the Neuros Sync Manager before
+beginning.
+</p>
+<ol>
+	<li>Turn off the Neuros.  Unplug the power cord and USB cable.</li>
+	<li>Press the down button and the power button at the same time.</li>
+	<li>Follow on-screen instructions to connect USB cable.</li>
+	<li>
+		<dl>
+			<dt>Windows</dt>
+			<dd>Open up the Neuros Removable drive in Windows Explorer.</dd>
+			<dt>Linux</dt>
+			<dd>Mount your Neuros.</dd>
+		</dl>
+	</li>
+	<li>
+		Copy the <kbd>woid.hex</kbd> file into the firmware directory on the
+		Neuros. If that directory doesn't exist, create it.
+		If there is already a <kbd>woid.hex</kbd> file there, overwrite it.
+		If you're using Linux, unmount the Neuros.
+	</li>
+	<li>Wait for the <samp>USB IDLE</samp> message to appear on the Neuros.</li>
+	<li>
+		Unplug the USB cable from the Neuros and follow the on-screen
+		instructions to complete the installation.
+	</li>
+</ol>
+<p>
+To upload Ogg Vorbis files to the Neuros, you will need to
+follow the <a href="http://www.xiph.org/positron/#vorbis">instructions 
+for enabling Vorbis support in positron</a>.
+</p>
+
+<h2>Bugs, Contact, Etc</h2>
+
+<p>Please report bugs at <a href="http://bugs.xiph.org/">bugs.xiph.org</a> against the <kbd>Neurosetta</kbd> product.</p>
+
+<p>A board for discussing Neurosetta is available on the NeurosAudio.com forums.</p>
+
+</div> <!-- #content -->
+</body>
+</html>

@@ -1,0 +1,371 @@
+Log Opened: Wed Mar 03 18:00:19 2004
+<Misirlou> volsung: Pick me! Pick me!
+*** Join: acolwell (~acolwell@209.210.138.240)
+*** Join: xiphmont (~xiphmont@h004005a8a3c2.ne.client2.attbi.com)
+*** Join: MikeS (~msmith@CPE-144-137-63-214.vic.bigpond.net.au)
+<xiphmont> hihi
+<volsung> HowdyHowdy.
+<Misirlou> hallo
+<vanguardist> m00
+<goosedaemon> hum. the power is flickering a little here. i hope i don't get bumped off.
+*** Join: Lee__ (~chatzilla@66.246.92.228)
+*** Join: oddsock (~oddsock@h-67-101-202-59.CHCGILGM.covad.net)
+<Arc> we're waiting for ralph still
+<oddsock> howdy all 
+<Arc> hey Ed
+<Lee__> just sitting in
+<Arc> rillian was just talking on #theora.. i wonder what happened to him?
+<xiphmont> He's either off making tea or eBaying a small, third-world nation.
+<xiphmont> let's give him a few more, if he doesn't arrive, I'll start it./
+<xiphmont> [I too am making tea and getting situated]
+*** Join: rillian (~giles@mist.thaumas.net)
+<MikeS> (Monty already owns a small, third-world nation, so doesn't have to go and buy one on ebay)
+<rillian> sorry, time zone problems
+<rillian> shall we start?
+<xiphmont> Yep.
+<rillian> someone logging?
+<goosedaemon> i am...
+<rillian> First item is Release team report
+<rillian> I can't say there's been any progress there
+<rillian> ices2 release is still pending
+<xiphmont> and 1.0.2?
+<xiphmont> [I imagine not]
+<rillian> I've not heard of any work in that direction
+<rillian> btw, xiphmont can you fix the outstanding bugs in libogg?
+<xiphmont> Ah, I need to coordinate with you, then.  I was unclear.
+<xiphmont> 'CVS head is waiting to be released as 1.0.2, and has been since New Year'
+<xiphmont> rillian: yes, I need to do that too.
+*** Join: joeforker (dholth@3ffe:bc0:8000:0:0:0:0:262b)
+<rillian> ok. sorry I misunderstood
+<xiphmont> I'm more worried about build system, but there are outstanding bugs to worry about, yes.
+<rillian> We Will Do vorbis 1.0.2
+<MikeS> At least -tools also needs quite a bit of auto* work, 1.0.1 was pretty broken in that respect.
+<joeforker> hi
+<xiphmont> Yeah, well, I saw no traffic and didn;t tell you.  My bad.
+<rillian> hi joeforker
+<rillian> looks like the icecast folk aren't here
+<oddsock> sure we are!
+<xiphmont> BTW, it is a subminor release... I'll be happy with bugs fixed and assisting distros with packages.  
+<rillian> oddsock: oops! sorry :)
+<rillian> next item is codec and project reports
+<rillian> I'll start with theora
+<rillian> fluendo.com has given us funding to get to beta 1
+<rillian> for which we are very grateful
+<xiphmont> [jazzed!]
+<derf_> What exactly does that mean?
+<rillian> they've agreed to make a donation to xiph
+<xiphmont> And we've agreed to use that to fund Theora.
+<xiphmont> [that means Ralph]
+<rillian> and I have a contract with them for doing part of the work
+<MikeS> rillian: yes we is
+<derf_> That doesn't sound like a donation.
+<xiphmont> Some of it is not a donation; the lion's share is.
+<xiphmont> "There is no contractual guarantee to deliver anything" however, we plan to use it for Theora.
+<derf_> But okay. One-time fixed lump sum.
+<rillian> the main sticking point has always been the spec, so I'm happy to subcontract with anyone who would be motivated to write for pay
+<derf_> I'll write for money.
+<xiphmont> That looks like a volunteer.
+<rillian> derf_: feeling more confortable with the format?
+<derf_> I like the term "contractor".
+<derf_> rillian: Probably more so than anyone else on the planet.
+<rillian> it's just last time I asked you wanted to finish your encoder first :)_
+<derf_> Yeah. Well, it makes valid bitstreams now.
+<rillian> there's also been lots of other activity.
+<derf_> That's not "finished", but it's what I meant by that.
+<rillian> karlh patched icecast to stream theora
+<rillian> and there's been some work on front ends to feed it
+<oddsock> there are some issues with karlh's code
+<rillian> anyway, I'd like to shoot for the end of april for theora beta 1
+<oddsock> mainly, he has a whole mess of changes that his theora code relies on, and none of it is in CVS at the moment
+<MikeS> There are many issues with karlh's code. Primarily that he keeps sending me 100 kB+ patches for review that change just about everything, so they're completely incomprehensible. 
+<Arc> rillian yea beginning of april == bad time for release.
+<rillian> I've noticed that with karlh's tree
+<oddsock> this is the problem, we are kind of at an impass..
+<rillian> so what's up with icecast et al.?
+<MikeS> well, we need to do an ices2 release. icecast itself is fine - we've got a release out, we've more-or-less got a plan for the next release.
+<rillian> agreed
+<rillian> who's in charge of that besides karlh?
+<Arc> last i heard from karlh there were three issues with beta4, and two of them were fixed. he said he was expecting the third to be fixed soon.
+* rillian heard likewise
+<oddsock> technically I am in charge, but I'm not doing much to facilitate the code changes karl has to commit
+<rillian> so there are two things
+<rillian> I think we should concentrate on releasing ices2
+<rillian> and then merging some of the new features into the trees
+<MikeS> I'm reviewing karl's changes, at least when he sends me non-ridiculous patches.
+<rillian> MikeS: that includes the recent small changes that have been going in?
+<MikeS> No, most of the small patches are being committed without review. They're generally sensible, this is ok.
+*** Join: adiabatic (~boingo@dsl-206-55-130-248.tstonramp.com)
+<rillian> ok. I'm not sure we can decide anything without karlh here
+<rillian> unless someone else wants to volunteer to package his changes
+<rillian> in reviewable chunks
+<MikeS> He _is_ generally doing that, it just takes me several tries for each new feature to get a reviewable patch. So it's very, very slow going.
+<rillian> so you feel progress is being made, unlike oddsock?
+<oddsock> I feel progress is being made...at a snail's pace...which may be okay, but it's been a few months now, and we haven't released anything
+<rillian> is there a release goals thing for the ice* projects?
+<oddsock> which, again is okay, but I thought we were on a bit quicker schedule
+<rillian> like TheoraTodo in the wiki?
+<oddsock> yeah, we have a release plan
+<oddsock> not for ices, but icecast...let me find the link
+<oddsock> http://wiki.xiph.org/Icecast2ReleasePlan
+<oddsock> unfortunatley no timeframes though
+<rillian> that's fine, I was just curious
+<rillian> shall we move on?
+<MikeS> Yeah, the problem is that the only really active developer right now is karlH, and he's far too willing to take the "throw-the-kitchen-sink-in-too" approach to software development, so we have to guide him.
+<MikeS> Yes, let's move on
+<oddsock> yup
+<rillian> ok. Monty? tell us about ogg and vorbis developments?
+<xiphmont> Sure.
+<xiphmont> (Also in a side conversation about the IEEE-ISTO)
+<rillian> (maybe we can do that with the affero item on agenda)
+<xiphmont> I want to have a full proposal of OggMux, containing feedback of all the recent discussions in fully-fleshed-out but not editied form tonight.
+<xiphmont> No, I'm typing :-)  I'm here for the meeting first off :-)
+<goosedaemon> oggmux?
+<MikeS> goosedaemon: full multiplexed ogg.
+<goosedaemon> kay.
+<xiphmont> The past month saw lots of discussion, and acolwell has a knack for distilling points into clear, consice examples.  We're mostly in agreement, some details are left.
+<MikeS> How multiplexing is required to happen, additional requirements on codecs, any spec changes, etc.
+<xiphmont> We've had basic spec for that for years, but it glossed over all the details.
+<xiphmont> This doc is intended to nail all those details down.
+<xiphmont> Once that is drafted and out for further discussion, OggFile API first draft happens.
+<xiphmont> Also, for SXSW, I want to have a pass through the website done as well as an initial release of Postfish.
+<rillian> how's that coming?
+<xiphmont> How is which?
+<rillian> I was particularly curious about the website
+<xiphmont> Ah.
+<Arc> yea and are we getting new logos or what? :-)
+<xiphmont> I hope you're more curious about function than look. :-)
+<xiphmont> Oh, I see.  Well, the Xiph fish morphs ever so slightly.
+<xiphmont> (Matching the recent print doc logo)
+<xiphmont> beyond that, no.  
+<xiphmont> I was concentrating only on putting information where people expect to find it.
+<adiabatic> (still waiting on word from monty on what the enw artist wants)
+<xiphmont> The site maps are byzantine right now.
+<adiabatic> <-on phone
+<Misirlou> Do we have a vector version of The Fish?
+<xiphmont> Of course.
+<Arc> can you drop a url for it?
+<xiphmont> The fish morph I'm doing.
+<Misirlou> Yeah, I want something to drool over, too
+<rillian> Arc: it's in vorbis/doc/xifish.pdf
+<xiphmont> xiph.org/xiphmont/twirlfish
+<xiphmont> I've not asked Melissa for wordmark.  Hm.  I'll take her out drinking tomorrow night.
+<rillian> Ok. thanks for the update
+<rillian> I've not heard of anything new with speex or flac
+<rillian> what about the tools
+<rillian> volsung?
+<xiphmont> I have been in touch with Melissa, but also known her to be very busy recently.
+<xiphmont> (Thus we don't have website visual work as she's been legitimately unavailable)
+<rillian> (btw, one thing that should happen for the next ao release is to fix whatever broken the macosx plugin in panther)
+<xiphmont> *YES*
+<adiabatic> plugin?
+<MikeS> I think tools haven't really been touched in ages. Well, except that I removed vcut from the build. 
+<xiphmont> MacOSX support is one thing for the 'SXSW' portion of the agenda.
+<rillian> I've looked at that a bit, but haven't traced the issue yet
+<volsung> No news about speex or flac tools.
+<MikeS> adiabatic: libao uses 'plugins' for output support (dynamically loaded)
+<adiabatic> What of ours uses libao save for ogg123?
+<volsung> That's it.
+<volsung> Only other people who use it are non-Xiph.  (Like mpg321 and gaim.)
+<rillian> ah, they're finally using our version? cool
+<adiabatic> ...and who's clamoring for libao-on-OSX?
+<rillian> adiabatic: me
+<rillian> Ok, any other project updates?
+<Arc> back to tools for a moment, if we can
+<rillian> Arc: go ahead
+<Arc> I'd like to discuss the ogg-tools/vorbis-tools + libtheora w/ tools included situation
+<rillian> ah
+<rillian> I'd say, either ogg* need to be renamed vorbis*
+<Arc> I think we need to rip the examples/etc out of libtheora like pre-alpha3.  trying to build it on different machines w/o X is a pain because you have to mod it's build system to not build examples/*
+<rillian> or then need to be rewritten from the ground up to handle video as well
+<Arc> (since the player has SDL as a dependency, etc)
+<rillian> Arc: that's called an autotools bug
+<rillian> and is not a justification for removing the examples
+<Arc> rillian or even with audio, there's been suggestions that flac/speex integration with ogg123/oggenc be justification to move it to ogg-tools
+<rillian> *nod*
+<MikeS> I don't think we need to go moving the actual code (it's basically just a pain to do so).
+<rillian> and there's definitely a need for a more functional theoraenc
+<adiabatic> Arc: for oggenc, oggenc just has fancier-than-wav-and-aiff loaders.
+<xiphmont> yes, sorry about that ;-)
+<Arc> some of the ogg-tools are also going to need updating soon anyways, to reflect the muxing drafts comming out when a decidion is made
+<MikeS> I'm happy to have oggenc extended to support multiple ogg formats, as long as they're kept optional (i.e. I want to be able to just build a vorbis-only oggenc if I don't have everything else installed) if people want that. 
+<rillian> MikeS: sounds good
+<MikeS> I understand the naming issue, but I think users have been using oggenc for years, renaming it would confuse.
+<rillian> I'd vote for extending oggenc to support all our formats then
+<volsung> Audio and video?
+<volsung> Or just audio?
+<rillian> we can start with just audio
+<Arc> I think it should do theora too. especially since I'd like to see theora doing speex/flac :-)
+<adiabatic> I vote against.
+<MikeS> On the other hand, I'm not sure a) how suitable oggenc's internals are to video, and b) how much people actually want to use a simple command-line tool for video encoding
+<Lee__> I do daily
+<volsung> I'm just afraid of getting something that looks like mencoder or transcode.  :)
+* adiabatic waits for the floor
+<xiphmont> I think that it needs to be a new tool with the same name.
+<rillian> MikeS: I think the issue is more of how to handle multiplexed output
+<Lee__> as do most people at archive.org
+<xiphmont> We can do a good job of an all-codec tool even if other groups have failed through laziness.
+<rillian> that's what affects the code internals and the ui
+<MikeS> i.e. We can't go and throw decoding-ten-thousand-video-formats into oggenc, and I don't think it'd be that useful without that.
+<rillian> Lee__: yes, obviously there's a need for such
+<MikeS> Lee__: note: "simple command-line tool", not just "command-line tool". i.e. as volsung says, I don't want to turn oggenc into some monstrosity like mencoder.
+<Arc> MikeS, well hopefully OggFile will be out sometime before we have two or three different video codecs, so we wont need to integrate them into the encoder
+<xiphmont> Oh, you mean *inputs*, sorry.
+<rillian> and clearly, we want mencoder and ffmpeg to support theora output for just those situations
+<joeforker> some have suggested making a decoder that outputs something like yuv4mpeg + pcm in ogg, and letting an encoder parse that from stdin.
+<xiphmont> I only meant outputs.
+<derf_> Also, what makes us less lazy than anyone else?
+<MikeS> Arc: err... no, you missed the point: people don't want to have to find other tools to produce whatever obscure raw format the theora example encoder requires - they want to be able to feed it divx, or mpeg-2, or whatever, and have it all "just work".
+<Arc> MikeS, we can't support those formats anyways. patent issues. so why discuss it?
+<MikeS> xiphmont: yeah, lots of outputs we can do a good tool for. But I'm wondering how useful it'd be without hitting problems with input formats that we don't (or can't due to patents) support.
+<MikeS> Arc: that's my point! 
+<Misirlou> derf_: heh
+<xiphmont> Well, I think that thread started by accident.  
+<Arc> but I do think that oggenc should eventually support theora. and writ. and mng/ming, and whatever else... to encode stuff to.
+<xiphmont> Let's offline it
+<rillian> agreed
+<adiabatic> it = ?
+<MikeS> ok
+<MikeS> adiabatic: it = discussions on the future of oggenc and other ogg-* tools.
+<rillian> do we have consensus that oggenc should at least be able to output speex and oggflac?
+<adiabatic> rillian: Not from me.
+<rillian> rough consensus then :)
+<Arc> adiabatic why dont you expand on your objection?
+<adiabatic> Sure.
+<adiabatic> flac --ogg takes a number of arguments that have everything to do with the particulars of FLAC encoding and would simply be useless, confusing clutter elsewhere.
+<rillian> fair enough
+<MikeS> rillian: I'm willing to put in some work on generalising the output stages of oggenc somewhat, if other people (who know the speex/flac APIs - I'm pretty short on time at the moment) want to write the actual encoding bits.
+<adiabatic> So not only do you have the problem of large swaths of manpage dedicated to flags you won't use...
+<Arc> can OggFlac encoding be done without those extra arguments?
+<adiabatic> ...you're also going to have to resolve what happens when the user uses... (one sec)
+<MikeS> adiabatic: I'd suggest subsuming those within the --advanced-encode-option option.
+<MikeS> and/or only supporting fairly basic usage in oggenc.
+<rillian> let's not start the discussion again
+<xiphmont> this is a more relevant discussion, but it belongs offline as well.
+<xiphmont> adiabatic has a point, but let's not discuss it now.
+<adiabatic> -a (--analyze in FLAC; name of artist in oggenc)
+<rillian> Ok. moving on
+<rillian> SXSW
+<adiabatic> This is messier than "just s/oggenc/vorbisenc/".
+<rillian> monty or vanguardist, any issues?
+<rillian> what do we have planned?\
+<xiphmont> Who all is actually coming?
+<volsung> vanguardist is afk.
+<volsung> But he sent me the letter confirming our booth at SXSW.
+<xiphmont> For the most part, we're just being visible and assisting Dave Rose's crew.  I'll be doing an interview.
+<rillian> Dave Rose being?
+<volsung> doppler
+<xiphmont> doppler; he's implemented all the live show Ogg streaming, and the fact that all the SXSW canned music streams are Ogg.
+<volsung> Guy doing the webcasting of some of the shows.
+<Arc> xiphmont does the xiph crew have shirts or something that identifies them as such? ie, fish logo polo shirts, printed teeshirts, something?
+<rillian> so we'll be helping with the webcasting. that should be inpirational in the tools dept. :)
+<volsung> Yeah, as far as I know, Manuel, Monty and myself will be working the booth.
+<xiphmont> Arc: not right now.
+<volsung> Manuel gets in Thursday night or Friday, i think.
+<xiphmont> "Xiph Heavy Opera Company"
+<Arc> xiphmont is there a plan to do such a thing? if nothing else teeshirts are quick and easy
+<Misirlou> Acme Media Co.
+<rillian> any other coordination questions?
+<xiphmont> I'll look into it.
+<volsung> Uh, what are we going to have at the booth?
+<xiphmont> I actually need folks' itineraries.
+* vanguardist pokes his head in
+<vanguardist> I arrive Friday at 9am.
+<xiphmont> email it!
+<vanguardist> pfm said today that he'll be there for one day (possibly overnight) 
+<xiphmont> arrive/leave, flights, etc.
+<vanguardist> since he wants to see someone play saturday night
+<Arc> SXSW is next weekend right, not this one?
+<volsung> xiphmont: I live here, so you get to tell me where to be and when.  (I'll email contact info.)
+<xiphmont> OK
+<volsung> Arc: Two weeks.
+<vanguardist> Arc: no, 17th
+<Arc> for the booth/etc, is there interest in doing a live theora stream for demo'ing?
+<vanguardist> heh
+<vanguardist> volsung has some crazy stuff going on this laptop :)
+<vanguardist> adding something else like theora would be cool 
+<volsung> Heh, that's mostly just me showing off.  Not a real demo.  :)
+<volsung> With the magic of virtual PC, I hope to be able to show Debian sourcing a stream to Win32 icecast being played with an OS X client.
+<volsung> We'll find out how slow my box gets.
+<rillian> Arc: I think our booth is in the music section
+<Arc> I can't guarentee anything but support for this one camera I have (which outputs JPEG frames, fairly unique) but I'm confident I'll have it streaming to karlh's mod'ed Icecast by this weekend.
+<Arc> you could, ie, have a camera overlooking the crowd from the booth
+<Misirlou> DV -> Icecast?
+<Misirlou> (In the future.)
+<Arc> we don't have DV yet. eventually, not now.
+<rillian> yes we do
+<rillian> ffmpeg2theora does it
+<Arc> we do?
+<rillian> (it's just a little slow on a 3 GHz machine)
+<Arc> rillian does ffmpeg2theora stream to libshout?
+<rillian> oh, not that part. sorry. but that's the part you're writing.
+<Arc> sorry off topic.
+<rillian> quite
+<rillian> that it for SxSW?
+<rillian> Next item, Xiph.org as an Affero client
+<rillian> who put that on? Want to tell us about it?
+<Arc> I did.
+<MikeS> how does anything manage to be slow on a 3 GHz machine?
+<Arc> so I found this group called Affero (they're somehow affiliated with freenode)..
+<rillian> *nod*
+*** Quit: oddsock (Read error: 54 (Connection reset by peer))
+<Arc> they are apparently like paypal, but for donating money in exchange for tech support/etc.  ie, someone helps you with Icecast, you drop them $5, the money goes to their preferred non-profits
+<Arc> 501c3 isn't required (even non-profit status isnt required), but Xiph could quite easily be setup as a charitable org on there, and we could each drop ID numbers for affero. I don't know if we'll see much out of it, but it may be a small source of income
+*** Quit: Lee__ ("ChatZilla 0.9.52B [Mozilla rv:1.6/20040227]")
+<rillian> I've not heard of anyone making a helpful amount of cash through this site, but it is a nice idea
+* Misirlou gives Monty all of his allowance
+<Arc> i figure that we're doing tech support through freenode anyways, and it doesnt cost anything, we might as well play the game and hope it catches on?
+<volsung> What's their cut?
+<Arc> volsung you'd have to check their site for that, I'm not sure.
+<rillian> Arc: can we sign up as individuals without having to be involved as an organization? (except possibly as a benificiary)
+<rillian> maybe you should see if you can make anything answering icecast config questions :)
+<Arc> yea, we would need to be signed up as individuals I think. but Xiph would need to be signed up as a benificiary for money to go to Xiph
+<rillian> I think we should be in there anyway
+<rillian> as a cause
+<adiabatic> Arc: So, what would we need to do to sign Xiph up as a beneficiary, assuming it hasn't already been done?
+<Arc> adiabatic I think anyone here could do it. I just wanted to discuss @ meeting first
+<rillian> Arc: why don't you go ahead and register and see if you can get xiph in as a cause
+<Arc> ok.
+<rillian> the affero people are cooler than the paypal people, so I'd rather the cut go to them :)
+<rillian> thanks
+<rillian> Last item is utility standardization
+<volsung> From the looks of one of their demo screenshots, they take 6%.
+<rillian> this is related to the discussion we tabled earlier
+<rillian> sounds like a reasonable idea to me
+<xiphmont> utility standardization also has to do with how much specialization OggFile will pass through, and what it will try to standardize.
+<rillian> any thoughts on that?
+* rillian suspects "we'll see" is the correct answer
+<adiabatic> "utility standardization"?
+<adiabatic> (it's not in the minutes, so I'm not exactly sure what you're asking)
+<rillian> adiabatic: agenda is at http://wiki.xiph.org/MonthlyMeeting200403
+<adiabatic> o3. Got it.
+<adiabatic> Standardization sounds nice; what sorts of things would such an effort entail?
+<rillian> In terms of the VorbisFutureRelease that got moved to its own page (thanks arc?)
+<rillian> we're still looking for uncompressed 5.1 soundtracks
+<rillian> please keep asking
+<rillian> I shopped around at the neuro conference last week
+<rillian> but nothing helpful
+<adiabatic> rillian: Sounds like a nice idea, but we'd probably have enough pandemonium with a switch to "vorbisenc" from "oggenc".
+<rillian> "activists don't use dolby surround"
+<rillian> Ok, standardization does indeed sound nice
+<rillian> if there are no further comments, I move we adjourn
+<adiabatic> Where do we move the offlined discussions to?
+<rillian> their appropriate channels, or here after the official meeting
+<adiabatic> Gotcha.
+<rillian> (or the mailing lists)
+<adiabatic> Adjourning sounds like a swell idea, then.
+<xiphmont> 'kay
+<MikeS> Thanks for chairing, rillian. 
+<rillian> Ok. thanks *everyone* for coming
+<xiphmont> thank you Ralph
+<adiabatic> goosedaemon: got log?
+<goosedaemon> yeah.
+<Arc> oh btw
+<goosedaemon> is this where i /log off?
+<rillian> adiabatic: can you post the raw?
+<adiabatic> rillian: sure
+<Arc> everyone should thank goosedaemon, he'll be putting out the next OT.
+<adiabatic> goosedaemon: gimme, please.
+<rillian> goosedaemon: yep. we're all through here
+*** USAGE: /LOG [START|STOP|PAUSE|RESUME]
+*** Logging #xiphmeet to I:\#xiphmeet.log
+Log Closed: Wed Mar 03 19:23:12 2004

@@ -1,0 +1,464 @@
+<title>  CDDA Paranoia User Manual </title>
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+<body bgcolor="#ffffff" link="#4b8b8b" vlink="#208b8b">
+
+<!-- topbanner table ************************************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%"><tr>
+<td bgcolor="#ffffff" valign=top align=right width=433 rowspan=3><a 
+href="logo.jpeg"><img src=parabanner2.gif 
+alt="The Laser Playback Head of Omniscience" 
+width=433 height=72 border=0></a></td>
+<td width="100%" bgcolor="#ffffff" valign=top height=35><img border=0 
+src=bannerspace1.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#2a2a2c" valign=top height=20><img 
+src=bannerspace2.gif alt=""></td>
+</tr>
+
+<tr>
+<td width="100%" bgcolor="#ffffff" valign=top><img src=bannerspace3.gif 
+alt=""></td>
+</tr>
+</table>
+<!-- topbanner table done ******************************************** -->
+
+
+
+<!-- main body (with sidemenu) table ********************************* -->
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td valign=top width=132 bgcolor="#ad9164"><img 
+src=bartop.gif border=0 width=132 height=18 
+  alt=""><a href="index.html"><img 
+src=cdbar.gif border=0 width=132 height=18 
+  alt=""></a><a href="news.html"><img 
+src=news.gif border=0 width=132 height=18 
+  alt=""></a><a href="faq.html"><img 
+src=faq.gif border=0 width=132 height=18 
+  alt=""></a><a href="down.html"><img 
+src=cddown.gif border=0 width=132 height=18 
+  alt=""></a><a href="links.html"><img 
+src=resource.gif border=0 width=132 height=18 
+  alt=""></a><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""><img 
+src=bartop.gif border=0 width=132 height=18 alt=""><a href="doc.html"><img 
+src=document.gif border=0 width=132 height=18 
+  alt=""></a><br>&nbsp;<br><a href="manual.html"><img 
+src=manual.gif border=0 width=132 height=18 
+  alt=""></a><a href="prog.html"><img 
+src=prog.gif border=0 width=132 height=18 
+  alt=""></a><a href="trouble.html"><img 
+src=trouble.gif border=0 width=132 height=18 
+  alt=""></a><a href="tech.html"><img 
+src=tech.gif border=0 width=132 height=18 
+  alt=""></a><a href="bugs.html"><img 
+src=bug.gif border=0 width=132 height=18 alt="">
+</td>
+
+<td rowspan=2><img src=sidespacer4.gif width=18 alt=""></td>
+
+<td valign=top width="100%" rowspan=2>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<center>
+    <H1><font color="#6b6b6b">paranoia:</font> 
+        <font color="#000000">cdparanoia user manual</font></h1>
+
+<strong>"I shall explain this by waving my hands about in
+an appropriate manner."</strong><br><em>
+--Cambridge University Math Dept.</em>
+
+<p>
+
+[ <a href="index.html">home</a> |
+<a href="news.html">news</a> |
+<a href="faq.html">faq</a> |
+<a href="down.html">download/cvs</a> |
+<a href="links.html">links/resources</a> |
+<a href="doc.html">documentation</a> ]
+</center>
+<hr>
+
+<p align=left>
+August 25, 1999
+<p align=center>
+<!-- body or table of contents -->
+
+<img src=wait.gif><br><em>Apologies; this page is still under
+construction.  At the moment, this document contains only the
+cdparanoia 9.4 manpage.</em><p>
+
+Japanese manpage available for <a
+href="http://cvs.linux.or.jp/JM/manual/cdparanoia/release/man1/cdparanoia.1">download</a> or <a
+href="manualj.html">viewing as HTML</a>.
+
+<pre>
+<font face="courier" color="#000080">
+
+CDPARANOIA(1)                                       CDPARANOIA(1)
+
+
+NAME
+       cdparanoia  (Paranoia  release  III) - an audio CD reading
+       utility which includes extra data verification features
+
+DATE
+       version III release alpha 9 (03 Dec 1998)
+
+SYNOPSIS
+       cdparanoia [options] span [outfile]
+
+DESCRIPTION
+       cdparanoia retrieves audio tracks from CDDA capable  CDROM
+       drives.   The  data  can be saved to a file or directed to
+       standard output in WAV, AIFF, AIFF-C or raw format.   Most
+       ATAPI,  SCSI and several proprietary CDROM drive makes are
+       supported; cdparanoia can determine if the target drive is
+       CDDA capable.
+
+       In  addition  to  simple  reading,  cdparanoia adds extra-
+       robust data verification, synchronization, error  handling
+       and scratch reconstruction capability.
+
+OPTIONS
+       -v --verbose
+              Be absurdly verbose about the autosensing and read-
+              ing process. Good for setup and debugging.
+
+       -q --quiet
+              Do not print any progress or error information dur-
+              ing the reading process.
+
+       -e --stderr-progress
+              Force output of progress information to stderr (for
+              wrapper scripts).
+
+       -V --version
+              Print the program version and quit.
+
+       -Q --query
+              Perform CDROM drive autosense, query and print  the
+              CDROM table of contents, then quit.
+
+       -s --search-for-drive
+              Forces a complete search for a cdrom drive, even if
+              the /dev/cdrom link exists.
+
+       -h --help
+              Print a brief  synopsis  of  cdparanoia  usage  and
+              options.
+
+       -p --output-raw
+              Output  headerless data as raw 16 bit PCM data with
+              interleaved samples in host byte order.   To  force
+              little  or  big  endian byte order, use -r or -R as
+              described below.
+
+       -r --output-raw-little-endian
+              Output headerless data as raw 16 bit PCM data  with
+              interleaved samples in LSB first byte order.
+
+       -R --output-raw-big-endian
+              Output  headerless data as raw 16 bit PCM data with
+              interleaved samples in MSB first byte order.
+
+       -w --output-wav
+              Output data in Micro$oft RIFF WAV format (note that
+              WAV data is always LSB first byte order).
+
+       -f --output-aiff
+              Output  data  in  Apple AIFF format (note that AIFC
+              data is always in MSB first byte order).
+
+       -a --output-aifc
+              Output data in  uncompressed  Apple  AIFF-C  format
+              (note  that AIFF-C data is always in MSB first byte
+              order).
+
+       -i --output-info file
+              Output a log file containing  autosensing  informa-
+              tion,  events during the reading process, locations
+              of  fixups  and  detected  scratches,  and  general
+              statistics.
+
+       -B --batch
+              Cdda2wav-style  batch  output flag; cdparanoia will
+              split the  output  into  multiple  files  at  track
+              boundaries.   Output  file names are prepended with
+              'track#.'
+
+       -c --force-cdrom-little-endian
+              Some CDROM drives misreport their endianness (or do
+              not   report   it   at  all);  it's  possible  that
+              cdparanoia will  guess  wrong.   Use  -c  to  force
+              cdparanoia  to  treat  the drive as a little endian
+              device.
+
+       -C --force-cdrom-big-endian
+              As above but force cdparanoia to treat the drive as
+              a big endian device.
+
+       -n --force-default-sectors n
+              Force the interface backend to do atomic reads of n
+              sectors per read.  This number can  be  misleading;
+              the kernel will often split read requests into mul-
+              tiple atomic reads (the automated Paranoia code  is
+              aware   of  this)  or  allow  reads  only  wihin  a
+              restricted size range.  This option  should  gener-
+              ally not be used.
+
+       -d --force-cdrom-device device
+              Force  the  interface  backend  to read from device
+              rather than  the  first  readable  CDROM  drive  it
+              finds.   This can be used to specify devices of any
+              valid interface type (ATAPI, SCSI or  proprietary).
+
+       -g --force-generic-device device
+              This  option  is  used along with -d when one wants
+              explicit control in setting both the SCSI cdrom and
+              generic  devices  seperately.  This  option is only
+              useful on non-standard SCSI setups.
+
+       -Z --disable-paranoia
+              Disable data verification and correction  features.
+              When  using  -Z,  cdparanoia  reads data exactly as
+              would cdda2wav with an  overlap  setting  of  zero.
+              This  option implies that and -Y are active, but is
+              not equivalent to -Z -W -X -Y as the -W through  -Z
+              options  specify  layered  levels  of verification.
+              The last specified option takes precedence.
+
+       -Y --disable-extra-paranoia
+              Disables intra-read data verification; only overlap
+              checking at read boundaries is performed.
+
+       -X --disable-scratch-detection
+              Neither look for scratches nor perform scratch-tol-
+              erant synchronization during verification. With  -X
+              specified,  a  scratched disc will cause cdparanoia
+              to abort its read.
+
+       -W --disable-scratch-repair
+              Detect and hold sync across scratches, but  do  not
+              attempt  any  repair  of  damaged data.  If an info
+              file is in use (-i) log the frame positions of  all
+              scratches.
+
+
+OUTPUT SMILIES
+         :-)  Normal operation, low/no jitter
+
+         :-|  Normal operation, considerable jitter
+
+         :-/  Read drift
+
+         :-P  Unreported  loss of streaming in atomic read opera-
+              tion
+
+         8-|  Finding read problems at same point during  reread;
+              hard to correct
+
+         :-0  SCSI/ATAPI transport error
+
+         :-(  Scratch detected
+
+         ;-(  Gave up trying to perform a correction
+
+         :^D  Finished extracting
+
+
+PROGRESS BAR SYMBOLS
+       <space>
+              No corrections needed
+
+          -   Jitter correction required
+
+          +   Unreported loss of streaming/other error in read
+
+          !   Errors found after stage 1 correction; the drive is
+              making the same error  through  multiple  re-reads,
+              and cdparanoia is having trouble detecting them.
+
+          e   SCSI/ATAPI transport error (corrected)
+
+          V   Uncorrected error/skip
+
+
+SPAN ARGUMENT
+       The span argument specifies which track, tracks or subsec-
+       tions of tracks  to  read.   This  argument  is  required.
+       NOTE: Unless the span is a simple number, it's generally a
+       good idea to quote the span argument to  protect  it  from
+       the shell.
+
+       The  span  argument  may  be  a  simple track number or an
+       offset/span specification.  The syntax of  an  offset/span
+       takes the rough form:
+
+       1[ww:xx:yy.zz]-2[aa:bb:cc.dd]
+
+       Here,  1  and 2 are track numbers; the numbers in brackets
+       provide a finer grained offset within a particular  track.
+       [aa:bb:cc.dd]  is in hours/minutes/seconds/sectors format.
+       Zero fields need not be specified:  [::20],  [:20],  [20],
+       [20.],  etc, would be interpreted as twenty seconds, [10:]
+       would be ten minutes, [.30] would be  thirty  sectors  (75
+       sectors per second).
+
+       When  only  a single offset is supplied, it is interpreted
+       as a starting offset and ripping will continue to the  end
+       of  he track.  If a single offset is preceeded or followed
+       by a hyphen, the implicit missing offset is  taken  to  be
+       the start or end of the disc, respectively. Thus:
+
+
+       1:[20.35]
+              Specifies  ripping  from track 1, second 20, sector
+              35 to the end of track 1.
+
+       1:[20.35]-
+              Specifies ripping from 1[20.35] to the end  of  the
+              disc
+
+       -2     Specifies ripping from the beginning of the disc up
+              to (and including) track 2
+
+       -2:[30.35]
+              Specifies ripping from the beginning of the disc up
+              to 2:[30.35]
+
+       2-4    Specifies  ripping  from the beginning of track two
+              to the end of track 4.
+
+       Again, don't forget to protect square  brackets  and  pre-
+       ceeding hyphens from the shell.
+
+
+EXAMPLES
+       A few examples, protected from the shell:
+
+       Query  only with exhaustive search for a drive and full
+              reporting of autosense:
+
+              cdparanoia -vsQ
+
+       Extract an entire disc, putting each track in a seperate
+              file:
+
+              cdparanoia -B "1-"
+
+       Extract from track 1, time 0:30.12 to 1:10.00:
+
+              cdparanoia "1[:30.12]-1[1:10]"
+
+       Extract one minute from track 1, starting at time 0:30.12:
+
+              cdparanoia "1[:30.12]-[1:00]"
+
+
+OUTPUT
+       The  output file argument is optional; if it is not speci-
+       fied, cdparanoia will output samples to one  of  cdda.wav,
+       cdda.aifc,  or cdda.raw depending on whether -w, -a, -r or
+       -R is used (-w is the implicit default).  The output  file
+       argument  of - specifies standard output; all data formats
+       may be piped.
+
+
+ACKNOWLEDGEMENTS
+       Cdparanoia sprang from and  once  drew  heavily  from  the
+       interface  of Heiko Eissfeldt's (heiko@colossus.escape.de)
+       'cdda2wav' package. Cdparanoia  would  not  have  happened
+       without it.
+
+       Joerg   Schilling  has  also  contributed  SCSI  expertise
+       through his generic SCSI transport library.
+
+
+AUTHOR
+       Monty &lt;monty@xiph.org&gt;
+
+       Cdparanoia's homepage may be found at:
+
+       http://www.xiph.org/paranoia/index.html
+
+
+</font>
+</pre>
+
+
+
+<!-- body complete.  cleanup table -->
+</font>
+</td>
+</tr>
+<tr>
+<td valign=bottom bgcolor="#ad9164" width=132><img 
+src=barbottom.gif border=0 width=132 height=18 alt=""></td>
+</tr>
+</table>
+<!-- main body (with sidemenu) table done **************************** -->
+
+
+<!-- main body (no sidemenu table) *********************************** -->
+<table width=100% border=0 cellspacing=0 cellpadding=0>
+<tr>
+<td bgcolor="#ffffff" width=10><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" width=30><img src=sidespacer2.gif alt=""></td>
+<td width=100%><hr>
+
+<table width=100% border=0 cellspacing=0 cellpadding=10><tr><td width=100%>
+<font face="Verdana, Arial, Helvetica" color="#002b8b" size=3>
+<!-- body  -->
+
+
+
+
+<!-- body done -->
+</font>
+</td></tr></table>
+</td>
+</tr>
+</table>
+<!-- main body (no sidemenu table) done ****************************** -->
+
+
+<!-- bottom banner table ********************************************* -->
+
+<table border=0 cellspacing=0 cellpadding=0 width="100%">
+
+<tr>
+<td colspan=3 align=left><img src=bottomA.gif alt=""></td>
+
+</tr><tr>
+
+<td><img src=sidespacer1.gif width=10 alt=""></td>
+<td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
+<td bgcolor="#2a2a2c" align=center valign=center width=100%>
+  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+    border=0></a></td>
+    <td valign=center>
+    <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>
+
+    <a href=../xiphname.html>Cdparanoia</a> and the <a
+    href=../xiphname.html>Laser-Playback-Head-of-Omniscience logo</a> are
+    trademarks (tm) of <a href="/index.html">Xiphophorus</a>.  These pages
+    are copyright (C) 1994-1999 Xiphophorus.  All rights reserved.<br>
+
+    <a href="mailto:webmaster@xiph.org">Comments and
+    questions</a> about this web site are welcome.
+    </font>
+  </td></tr></table>
+</td></tr>
+</table>
+</body>
+

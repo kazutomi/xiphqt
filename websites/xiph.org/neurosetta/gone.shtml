@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/press/SSI/inhead.inc"-->
+	<style type='text/css'>
+		html {
+			background: white;
+			color: black;
+		}
+		h1 {
+			margin-bottom: .25em;
+		}
+		
+		h2 {
+			margin: .75em 0 .25em;
+		}
+
+		h3 {
+			font-weight: normal;
+			margin: .5em 0 .25em;
+		}
+		p {
+			margin: .125em 0;
+		}
+	</style>
+
+	<title>Neurosetta: Ogg Vorbis firmware for the Neuros Audio Computer</title>
+
+</head>
+<body>
+<p class='breadcrumbs'>
+	<span>
+	<a href='http://www.xiph.org/'>Xiph.Org</a>:
+	<a href='/neurosetta/'>Neurosetta</a>:
+	Files
+	</span>
+</p>
+
+<div id='content'>
+<h1>Neurosetta</h1>
+
+<p>
+We don't have the most recent version of Neurosetta anymore; Digital Innovations
+does. Drop by their
+<a href='http://www.neurosaudio.com/support/support_updates.asp'>download
+page</a> to get the latest versions of things.
+</p>
+
+</div> <!-- #content -->
+</body>
+</html>

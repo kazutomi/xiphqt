@@ -1,0 +1,674 @@
+<html>
+<head>
+<title>Vorbis.com - Open, Free Audio</title>
+
+<!--#include file="oggtop.include" -->
+<!--#include file="xiphmid.include" -->
+
+<center><font size=+3>Dare to compare!</font></center>
+<hr noshade>
+
+<blockquote>
+A funny thing about demo pages; about a year ago when Microsoft put up
+a demo page trumpeting how the newly released WMA 8 beat Real 8 in
+64kbps quality, they included a number of samples purportedly
+demonstrating that WMA was now clearly superior.  I read the page at
+that time, shook my head and thought to myself, "Poor Real.  Microsoft
+finally caught them."  I didn't even listen to the samples, but I left
+the page with a clear idea in my head that WMA 8 really was better
+than Real.<p>
+
+Odd thing, though; a few months later I finally listened to those demo
+samples side by side... and was actually surprised to find that Real
+was clearly superior in every featured demo comparison.  It wasn't
+even really close, and these were samples <em>hand picked</em> by Microsoft
+to show off WMA.<p>
+
+The slick page had suckered me-- ME-- of all people, and I obviously
+like to think I'm smarter than that.<p>
+
+So, I beg you, gentle visitor, to listen to the below comparisons and
+not just take my word that Ogg Vorbis 1.0 wins the comparison.  Put on
+some good headphones, let the cat out and have some fun with it.  We
+here at Xiph.Org worked carefully and diligently over the past several
+months improving every aspect of Vorbis, resulting in solid
+improvements in high bitrate reliability and a breathtaking
+improvement at low bitrate performance.  I'd be annoyed to find out we
+could have spent half the time on a slick web page that fooled everyone
+into not actually listening.  It would have saved alot of very hard
+work.<p>
+
+--Monty, lead developer of the Ogg Project 20020719
+</blockquote>
+
+<hr noshade>
+
+<h2>Low bitrate codec roundup</h2>
+
+Ogg Vorbis's full CD-format low bitrate performance is our proudest
+point in this release.  In this test we round up seven of the most
+popular encoders in use today, including Vorbis, in a 64kbps
+free-for-all.  Vorbis's sharp attacks, full dynamics, crisp,
+stable treble and above all <em>reliable</em> quality across the
+length of sample are things to listen for.<p>
+
+There are two Ogg samples in this test; Ogg always performs best in
+its native VBR mode.  CBR and ABR are lower quality techniques, but
+useful for streaming. Therefore, a 'streaming grade' version of the
+Ogg sample is also included, which sacrifices some quality for strict
+bitrate control (it is also the lowest bitrate sample in the test).<p>
+
+Track: <a href="http://fatpipe.vorbis.com/listen/41_30sec.wav"><b>#41 - Dave Matthews Band Sample</b>; <em> download original here</em></a><br>
+<font size="-1">
+Length: 30s   &nbsp;&nbsp;&nbsp;
+</font><br><br>
+
+<em>pre-decompressed WAV files provided for folks who want to compare without installing a hundred decoders.</em><p>
+
+<table width=100% border=1>
+<tr bgcolor=#dfffff>
+
+<th align=center bgcolor=#ffffff>
+Format
+</th>
+
+<td align=center bgcolor=#ffffcf colspan=2>
+<b>Ogg Vorbis</b>
+</td>
+
+<td align=center>
+<b>MP3Pro</b>
+</td>
+
+<td align=center>
+<b>Windows Media Audio 8</b>
+</td>
+
+<td align=center>
+<b>Real Audio 8</b>
+</td>
+
+<td align=center>
+<b>AAC (Quicktime)</b>
+</td>
+
+<td align=center>
+<b>MP3Enc31 (MP3)</b>
+</td>
+
+<td align=center>
+<b>Yamaha VQF</b>
+</td>
+
+</tr>
+
+<tr bgcolor=#dfdfff>
+
+<th align=center bgcolor=#dfffff>
+Mode
+</th>
+
+<td align=center>
+-q 0 (VBR for highest quality)
+</td>
+
+<td align=center>
+-b 64 --managed (ABR for streaming)
+</td>
+
+
+<td align=center>
+64kbps slowest high quality, allow mid/side, allow intensity stereo
+</td>
+
+<td align=center>
+64kbps
+</td>
+
+<td align=center>
+64kbps
+</td>
+
+<td align=center>
+64 kbps, no intensity stereo selectable, 32khz sampling by default
+</td>
+
+<td align=center>
+64kbps -qual 9, 22khz sampling by default
+</td>
+
+<td align=center>
+64 kbps high quality setting, 22khz sampling
+</td>
+
+</tr>
+
+<tr bgcolor=#dfdfff>
+
+<th align=center bgcolor=#dfffff>
+Actual bitrate (kbps)
+</th>
+
+<td align=center>
+69
+</td>
+
+<td align=center>
+62
+</td>
+
+<td align=center>
+64
+</td>
+
+<td align=center>
+65
+</td>
+
+<td align=center>
+69
+</td>
+
+<td align=center>
+69
+</td>
+
+<td align=center>
+64
+</td>
+
+<td align=center>
+64
+</td>
+
+</tr>
+
+<tr bgcolor=#dfdfff>
+
+<th align=center bgcolor=#dfffff>
+Download compressed sample
+</th>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secOgg-q0.ogg">.ogg</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secOgg-b64M.ogg">.ogg</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secMP3pro-64.mp3">.mp3</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secWMA8-64.wma">.wma</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30sec_RM8_64.rm">.rm</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_quicktime_64.mp4">.mp4</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secMP3Enc31.mp3">.mp3</a>
+</td>
+
+<td align=center>
+&nbsp;
+</td>
+
+</tr>
+
+<tr bgcolor=#dfdfff>
+
+<th align=center bgcolor=#dfffff>
+Download uncompressed WAV
+</th>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secOgg-q0.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secOgg-b64M.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secMP3pro-64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secWMA8-64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30sec_RM8_64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_quicktime_64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30secMP3Enc31.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/41_30sec_vqf64.wav">.wav</a>
+</td>
+
+</tr>
+<p>
+
+</table>
+<p>
+
+<br><hr noshade>
+
+<h2>Music collection: test of the Heavy Hitters</h2>
+
+This test consists of two compilation samples that include a varied
+selection of music and percussion.  About half of the clips included
+are from Microsoft's own WMA demos, a few come from high-fidelity
+digital demonstration sources and some are from Xiph.Org's codec tuning
+selection.  The demo below is at mid (~128kbps) and low (~64kbps)
+bitrates.<p>
+
+We chose this longer test from a smaller set of the most popular
+'cutting edge' formats today, Ogg, MP3, WMA and MP3Pro.<p>
+
+
+Track: <a href="http://fatpipe.vorbis.com/listen/compilation.wav"><b>Compilation.wav</b>; <em> download original here</em></a><br>
+<font size="-1">
+Length: approximately one minute   &nbsp;&nbsp;&nbsp;
+</font><br><br>
+<em>pre-decompressed WAV files provided for folks who want to compare without installing a hundred decoders.</em><p>
+
+<table width=100% border=1>
+<tr bgcolor=#efef8f>
+
+<th align=center bgcolor=#ffffff>
+Compilation #1
+</th>
+
+<td align=center bgcolor=#ffffa0>
+<b>Ogg Vorbis</b>
+</td>
+
+<td align=center>
+<b>WMA8</b>
+</td>
+
+<td align=center>
+<b>MP3<br> (LAME 3.91)</b>
+</td>
+
+<td align=center>
+<b>MP3Pro</b>
+</td>
+
+</tr>
+
+<tr bgcolor=#efdf7f>
+<th align=center bgcolor=#dfffff>
+mid-bitrate (128-ish kbps)
+</th>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation-ogg-q4.ogg">.ogg</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation-ogg-q4.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation_wma_128.wma">.wma</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation_wma_128.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation_mp3_128.mp3">.mp3</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation_mp3_128.wav">.wav</a>
+</td>
+
+<td align=center>
+</td>
+
+</tr>
+
+<tr bgcolor=#efdf7f>
+<th align=center bgcolor=#dfffff>
+low-bitrate (64-ish kbps)
+</th>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation-ogg-q0.ogg">.ogg</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation-ogg-q0.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation_wma_64.wma">.wma</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation_wma_64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation_mp3_64.mp3">.mp3</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation_mp3_64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation_mp3pro_64.mp3">.mp3</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation_mp3pro_64.wav">.wav</a>
+
+</td>
+
+</tr>
+</table>
+
+
+<p>
+
+
+Track: <a href="http://fatpipe.vorbis.com/listen/compilation2.wav"><b>Compilation2.wav</b>; <em> download original here</em></a><br>
+<font size="-1">
+Length: approximately one minute   &nbsp;&nbsp;&nbsp;
+</font><br><br>
+<em>pre-decompressed WAV files provided for folks who want to compare without installing a hundred decoders.</em><p>
+
+<table width=100% border=1>
+<tr bgcolor=#efef8f>
+
+<th align=center bgcolor=#ffffff>
+Compilation #2
+</th>
+
+<td align=center bgcolor=#ffffa0>
+<b>Ogg Vorbis</b>
+</td>
+
+<td align=center>
+<b>WMA8</b>
+</td>
+
+<td align=center>
+<b>MP3 <br>(LAME 3.91)</b>
+</td>
+
+<td align=center>
+<b>MP3Pro</b>
+</td>
+
+</tr>
+
+<tr bgcolor=#efdf7f>
+<th align=center bgcolor=#dfffff>
+mid-bitrate (128-ish kbps)
+</th>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2-ogg-q4.ogg">.ogg</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2-ogg-q4.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_wma_128.wma">.wma</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_wma_128.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_mp3_128.mp3">.mp3</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_mp3_128.wav">.wav</a>
+</td>
+
+<td align=center>
+</td>
+
+</tr>
+
+<tr bgcolor=#efdf7f>
+<th align=center bgcolor=#dfffff>
+low-bitrate (64-ish kbps)
+</th>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2-ogg-q0.ogg">.ogg</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2-ogg-q0.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_wma_64.wma">.wma</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_wma_64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_mp3_64.mp3">.mp3</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_mp3_64.wav">.wav</a>
+</td>
+
+<td align=center>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_mp3pro_64.mp3">.mp3</a><br>
+<a href="http://fatpipe.vorbis.com/listen/compilation2_mp3pro_64.wav">.wav</a>
+
+</td>
+
+</tr>
+
+</table>
+<p>
+<br><hr noshade>
+<h2> The original Dare To Compare: Low and Lower Bitrate</h2>
+
+Getting back to that original, vaguely odd WMA8 vs. Real
+demonstration.  Completely aside from the fact that it contradicted
+all the carefully polished ad-speak surrounding it, <em>one thing was
+obviously seriously wrong with it... Ogg wasn't included!</em> It's
+vaguely like holding a political debate without inviting the ruling
+party.<p>
+
+In the spirit of correcting this grave omission, we offer the original
+WMA and RM audio samples from that test, along with Ogg at matching
+bitrates.  To be perfectly honest, these samples are relatively very
+easy to compress, probably explaining why Microsoft chose them.  The
+samples from the above demos are more realistic tests of a general
+pupose codec.  Regardless, we now present, "The Original Dare To Compare,
+now with 100% More Ogg Goodness"<p>
+<em>pre-decompressed WAV files provided for folks who want to compare without installing a hundred decoders.</em><p>
+
+<table border=1 width=100%>
+<tr>
+
+
+<td></td>
+
+<td bgcolor=#dfffff align=center>
+<b>Brandenburg Concerto No. 1 in F Major - J.S. Bach</b></td>
+
+<td bgcolor=#dfdfff align=center>
+<b>Livin' on Borrowed Time - Travis Tritt</b></td>
+
+<td bgcolor=#dfffff align=center>
+<b>In the Dark - Mark Nelson</b></td>
+
+<td bgcolor=#dfdfff align=center>
+<b>Tonight - Mark Nelson</b></td>
+
+</tr>
+
+
+<tr>
+<td bgcolor=#fdfddd align=center><b><nobr>Ogg Vorbis -b 64</nobr></b></td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_zero.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_zero.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_zero.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_zero.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_zero.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_zero.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_zero.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_zero.wav">.wav</a>
+</td>
+
+
+
+</tr>
+<tr>
+<td bgcolor=#dddddd align=center><b>WMA 64 kbps</b></td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_WMA_64.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_WMA_64.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_WMA_64.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_WMA_64.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_WMA_64.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_WMA_64.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_WMA_64.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_WMA_64.wav">.wav</a>
+</td>
+
+</tr>
+<tr>
+<td bgcolor=#dddddd align=center><b>Real 64 kbps</b></td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_64.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_RM8_64.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_64.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Livin__On_Borrowed_Time_RM8_64.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_64.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_RM8_64.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_64.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_RM8_64.wav">.wav</a>
+</td>
+
+</tr>
+<tr>
+<td bgcolor=#fdfddd align=center><b><nobr>Ogg Vorbis -b 45</nobr></b></td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_minus_one.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_minus_one.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_minus_one.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_minus_one.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_minus_one.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_minus_one.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_minus_one.ogg">.ogg</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_minus_one.wav">.wav</a>
+</td>
+
+</tr>
+<tr>
+<td bgcolor=#dddddd align=center><b>WMA 48 kbps</b></td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_WMA_48.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_WMA_48.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_WMA_48.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_WMA_48.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_WMA_48.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_WMA_48.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_WMA_48.wma">.wma</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_WMA_48.wav">.wav</a>
+</td>
+
+
+</tr>
+<tr>
+<td bgcolor=#dddddd align=center><b>Real 44 kbps</b></td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_44.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Brandenburg_Concerto_no._1_in_F_major_RM8_44.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Livin'_On_Borrowed_Time_44.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Livin__On_Borrowed_Time_RM8_44.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfffff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_44.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_02_RM8_44.wav">.wav</a>
+</td>
+
+<td bgcolor=#dfdfff align=center>
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_44.rm">.rm</a> 
+<a href="http://fatpipe.vorbis.com/listen/Marc_Nelson_14_RM8_44.wav">.wav</a>
+</td>
+</tr>
+
+</table>
+
+<br><hr noshade><p>
+
+There's so much more to rave on and on about!  For example, the only
+low bitrate comparisons we've done so far have been at CD rate 44.1kHz
+(except where the competition couldn't keep up and had to downsample).
+As of this release, Ogg also supports a number of modem-rate audio
+modes... all the way down to 8kbps mono and 12kbps stereo.  However,
+this test page is getting long; we'll leave lower sample rate testing
+and comparison as an exercise for the reader.  The motivated listener
+may also wish to sample
+<a href="http://radio.freenode.net/"><abbr title='Freenode Radio'>FNR</abbr></a>
+(#fnr on irc.freenode.net) which streams at mid and modem bitrates exclusively
+in Vorbis.
+
+<p>
+
+Thanks for reading and listening!
+
+<p>
+<br><hr noshade>
+
+<!--#include file="xiphbottom.include" -->
+
+
+</body>
+</html>

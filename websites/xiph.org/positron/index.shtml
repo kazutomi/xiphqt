@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
+<head>
+	<!--#include virtual="/SSI/inhead.inc"-->
+	<!--#include virtual="/press/SSI/inhead.inc"-->
+	<style type='text/css'>
+		html {
+			background: white;
+			color: black;
+		}
+		h1 {
+			margin-bottom: .25em;
+		}
+		
+		h2 {
+			margin: .75em 0 .25em;
+		}
+
+		h3 {
+			font-weight: normal;
+			margin: .5em 0 .25em;
+		}
+		p {
+			margin: .125em 0;
+		}
+	</style>
+
+	<title>positron: the synchronization manager for the Neuros Audio Computer</title>
+
+</head>
+<body>
+<p class='breadcrumbs'>
+	<span>
+	<a href='http://www.xiph.org/'>Xiph.Org</a>:
+	positron
+	</span>
+</p>
+
+<div id='content'>
+<h1>positron</h1>
+
+<p>
+This is the home of positron, the synchronization manager for the Neuros Audio Computer.  This software is primarily intended to support Linux, but will probably be portable to other POSIX systems such as OS X and the BSDs. Currently there are USB protocol issues with OS X, so please don’t try it there yet.
+</p>
+
+<h2 id="vorbis">Vorbis support</h2>
+<p>Vorbis support is now standard on current Neuros firmwares, so positron
+will default to enabling Vorbis support.  You will still need to do the 
+following:</p>
+<ul>
+
+	<li>Install pyogg and pyvorbis.  These can be found on the <a
+	href="http://www.andrewchatham.com/pyogg/">pyogg site</a>, or they
+	might already be packaged by your distribution.</li>
+	<li>If you already used the positron 1.0 release, you may need to
+	edit <code>~/.positron/config</code> and remove the option 
+	<code>oggvorbis_support=false</code>.</li>
+</ul>
+
+
+<h2>Latest Release: 1.1</h2>
+
+<p>
+This release includes proper track sorting for albums and much improved
+MP3 detection.  We recommend you
+run <code>positron rebuild</code> to fix the sorting.  Check out the
+<a href="files/ChangeLog">ChangeLog</a> for a complete list of updates.
+</p>
+
+<h3>Source Downloads</h3>
+<p><a href="files/source/positron-1.1.tar.gz">positron-1.1.tar.gz</a> - Source Tarball</p>
+
+<h3>Binary Downloads</h3>
+
+<h3>RPM-based systems</h3>
+<ul>
+	<li><a href="files/binary/rpm/positron-1.1-1.noarch.rpm">positron-1.1-1.noarch.rpm</a> - RPM file</li>
+	<li><a href="files/source/rpm/positron-1.1-1.src.rpm">positron-1.1-1.src.rpm</a> - Source RPM</li>
+</ul>
+
+
+<!-- <h3>Debian</h3>
+<p><a href="files/binary/deb/positron_1.0-1_all.deb">positron_1.0-1_all.deb</a></p>
+<p>
+Or add the following lines to your /etc/apt/sources.list:
+</p>
+<p><tt>
+deb http://i.cantcode.com/~jack/debian unstable main contrib<br/>
+deb-src http://i.cantcode.com/~jack/debian unstable main contrib<br/>
+</tt></p>
+<p>
+and then install with:
+</p>
+<p><tt>
+apt-get update<br/>
+apt-get install positron<br/>
+</tt></p>
+<p>
+Note: These packages will probably be in Debian unstable soon.
+</p>
+
+<h3>Gentoo</h3>
+<p>Positron is now available in Portage:<br/>
+<code>
+	emerge positron<br/>
+</code>
+</p> -->
+
+
+<h2>Documentation</h2>
+<ul>
+	<li><a href="doc/user-guide.html">Positron User's Guide</a></li>
+	<li><a href="doc/developer-guide.html">Positron Developer's Guide</a></li>
+	<li><a href="files/README">README</a></li>
+	<li><a href="files/ChangeLog">ChangeLog</a></li>
+</ul>
+
+<h2>CVS Access</h2>
+<p>Xiph.org is currently transitioning from CVS to <a
+href="http://subversion.tigris.org">subversion</a> for version
+control.  When we have completed this process, we will post new source
+code checkout instructions.</p>
+
+<h2>Bugs, Contact, Etc</h2>
+
+<p>Please report bugs at <a href="http://bugs.xiph.org/">bugs.xiph.org</a> against the <kbd>positron</kbd> product.</p>
+
+<p>Discussion and support on the <a href="http://www.xiph.org/archives/neurosetta/masterindex.html">Neurosetta mailing list</a></p>
+
+<p>There will also be discussion of positron on the NeurosAudio.com forums.</p>
+
+<h2>Old Releases</h2>
+
+<dl>
+<dt>Version 1.0 Final</dt>
+	<dd><a href="files/binary/rpm/positron-1.0-1.noarch.rpm">positron-1.0-1.noarch.rpm</a> - RPM file</dd>
+	<dd><a href="files/source/rpm/positron-1.0-1.src.rpm">positron-1.0-1.src.rpm</a> - Source RPM</dd>
+	<dd><a href="files/source/positron-1.0.tar.gz">positron-1.0.tar.gz</a> - Source Tarball</dd>
+<dt>Version 1.0 Beta 2</dt>
+	<dd><a href="files/binary/rpm/positron-1.0b2-1.noarch.rpm">positron-1.0b2-1.noarch.rpm</a> - RPM file</dd>
+	<dd><a href="files/source/rpm/positron-1.0b2-1.src.rpm">positron-1.0b2-1.src.rpm</a> - Source RPM</dd>
+	<dd><a href="files/source/positron-1.0b2.tar.gz">positron-1.0b2.tar.gz</a> - Source Tarball</dd>
+<dt>Version 1.0 Beta 1</dt>
+	<dd><a href="files/binary/rpm/positron-1.0b1-1.noarch.rpm">positron-1.0b1-1.noarch.rpm</a> - RPM file</dd>
+	<dd><a href="files/source/rpm/positron-1.0b1-1.src.rpm">positron-1.0b1-1.src.rpm</a> - Source RPM</dd>
+	<dd><a href="files/source/positron-1.0b1.tar.gz">positron-1.0b1.tar.gz</a> - Source Tarball</dd>
+</dl>
+
+</div> <!-- #content -->
+</body>
+</html>

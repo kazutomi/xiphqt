@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>Minutes of the Xiph.org Monthly Meeting for November 2003</title>
+<meta name="author" content="Carsten Haese" />
+<meta name="date" content="November 15, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="minutes-of-the-xiph-org-monthly-meeting-for-november-2003">
+<h1 class="title">Minutes of the Xiph.org Monthly Meeting for November 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>November 15, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#introduction" id="id1" name="id1">1   Introduction</a></li>
+<li><a class="reference" href="#iceshare" id="id2" name="id2">2   IceShare</a></li>
+<li><a class="reference" href="#logos" id="id3" name="id3">3   Logos</a></li>
+<li><a class="reference" href="#status-reports" id="id4" name="id4">4   Status Reports</a><ul class="auto-toc">
+<li><a class="reference" href="#vorbis-1-0-1" id="id5" name="id5">4.1   Vorbis 1.0.1</a></li>
+<li><a class="reference" href="#speex" id="id6" name="id6">4.2   Speex</a></li>
+<li><a class="reference" href="#theora" id="id7" name="id7">4.3   Theora</a></li>
+<li><a class="reference" href="#icecast" id="id8" name="id8">4.4   Icecast</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#scale" id="id9" name="id9">5   SCALE</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1" name="introduction">1   Introduction</a></h1>
+<p>The monthly meeting for November 2003 took place on
+November 2, 2003, at midnight UTC in the IRC channel <tt class="literal"><span class="pre">#xiphmeet</span></tt> on
+<tt class="literal"><span class="pre">irc.freenode.net</span></tt>. The
+following people were present, in alphabetical order, IRC nicknames in
+parentheses:</p>
+<ul class="simple">
+<li>Brendan Cully (brendan)</li>
+<li>Ralph Giles (rillian)</li>
+<li>Carsten Haese (purple_haese)</li>
+<li>Kerl Heyes (karlH)</li>
+<li>Manuel Lora (vanguardist)</li>
+<li>Jack Moffitt (jack)</li>
+<li>Monty (xiphmont)</li>
+<li>Stan Seibert (volsung_)</li>
+<li>Arc Riley (Arc)</li>
+<li>Jean-Marc Valin (jmspeex)</li>
+<li>Ed Zaleski (oddsock)</li>
+</ul>
+<p>The meeting was moderated by Ralph Giles.</p>
+</div>
+<div class="section" id="iceshare">
+<h1><a class="toc-backref" href="#id2" name="iceshare">2   IceShare</a></h1>
+<p>The meeting began with a discussion of IceShare. IceShare is being developed
+by Arc to help Indymedia solve their bandwidth problems by implementing a
+peer-to-peer streaming system. This approach is
+similar to BitTorrent and Peercast, but BitTorrent can't stream live content,
+and Peercast can't provide static content, and it has security problems.
+Hence, Arc is developing IceShare, which is designed to be more secure than
+Peercast and to handle both live and static content. Additionally, it is
+designed to support multiple bitrates for the same content.</p>
+<p>Details about IceShare can be found at <a class="reference" href="http://wiki.xiph.org/IceShare">http://wiki.xiph.org/IceShare</a>, and the
+protocol is described at <a class="reference" href="http://wiki.xiph.org/IceT">http://wiki.xiph.org/IceT</a>. Arc has a partially
+working tracker, the server side, implemented in python. Stan has volunteered
+to work on the client side. The idea is to build an iceshare library that
+could be linked to a number of player applications to reduce coding overlap.</p>
+</div>
+<div class="section" id="logos">
+<h1><a class="toc-backref" href="#id3" name="logos">3   Logos</a></h1>
+<p>Next, a few logo ideas from the advocacy mailing list (see
+<a class="reference" href="http://www.xiph.org/archives/advocacy/0528.html">http://www.xiph.org/archives/advocacy/0528.html</a>) were discussed. While
+the logos that Sheryl designed a few months ago are nice for the webpages,
+they are not suitable for portable players or any other situation where
+color is at a premium. Everyone agreed that there should be a set of official
+logos to use for such situations. However, no concensus to adopt any of the
+suggested logos could be reached, so the matter has been tabled.</p>
+</div>
+<div class="section" id="status-reports">
+<h1><a class="toc-backref" href="#id4" name="status-reports">4   Status Reports</a></h1>
+<div class="section" id="vorbis-1-0-1">
+<h2><a class="toc-backref" href="#id5" name="vorbis-1-0-1">4.1   Vorbis 1.0.1</a></h2>
+<p>Ralph started off the Status Reports segment by noting that, sadly, the
+Vorbis 1.0.1 release is still being held up by unresolved Win32 SDK questions.</p>
+</div>
+<div class="section" id="speex">
+<h2><a class="toc-backref" href="#id6" name="speex">4.2   Speex</a></h2>
+<p>Jean-Marc then gave us an update on Speex. He is working on a fixed-point
+version, which is coming along nicely. It's already much faster on fpu-less
+processors than the original code, but there's a lot left to do to reach
+Jean-Marc's goal of real-time encoding on processors with clock speeds of
+less than 200 MHz.</p>
+</div>
+<div class="section" id="theora">
+<h2><a class="toc-backref" href="#id7" name="theora">4.3   Theora</a></h2>
+<p>Ralph informed us that Dan Miller has resurfaced. Dan has found a day job and
+doesn't have much time to work on the Theora specification, so Ralph and
+Timothy have been picking up the slack.</p>
+<p>Timothy and Mauricio have completed a proof-of-concept lossless
+VP3-to-Theora converter, and have definitively determined that Theora up until
+alpha 2 uses a different coordinate system than VP3. This has been changed to
+VP3's coordinate system to allow for real lossless transcoding
+from VP3 to Theora. This incompatible bitstream change will appear in
+alpha 3, along with some other changes for future flexibility that Timothy
+came up with while working on his improved encoder implementation.</p>
+</div>
+<div class="section" id="icecast">
+<h2><a class="toc-backref" href="#id8" name="icecast">4.4   Icecast</a></h2>
+<p>Ed and Karl finished off the Status Updates section with an update on Icecast.
+The code has reached a certain level of maturity and has been running well
+for a while now, so it was agreed to make a beta release soon. A milestone
+checklist will be put on the wiki.</p>
+</div>
+</div>
+<div class="section" id="scale">
+<h1><a class="toc-backref" href="#id9" name="scale">5   SCALE</a></h1>
+<p>The last item on the agenda was a planning meeting for Xiph's presence at the
+<a class="reference" href="http://www.socallinuxexpo.com">Southern California Linux Expo</a>. Xiph.org will have a booth there, and Monty
+is scheduled to give a talk. Since this didn't concern everyone, the meeting
+was adjourned, and the planning proceeded after the meeting.</p>
+<hr />
+<p>Meeting Minutes for the November 2003 Monthly Meeting</p>
+</div>
+</div>
+</body>
+</html>

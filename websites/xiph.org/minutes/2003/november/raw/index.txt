@@ -1,0 +1,364 @@
+18:56 -!- purple_haese [~carsten@dot.uniqsys.com] has joined #xiphmeet
+18:56 -!- Irssi: #xiphmeet: Total of 6 nicks [0 ops, 0 halfops, 0 voices, 6 normal]
+18:56 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+18:57 < purple_haese> Hiya
+18:57 -!- rillian [giles@82-68-11-25.dsl.in-addr.zen.co.uk] has joined #xiphmeet
+18:57 < purple_haese> Any ops in here that can change the outdated topic?
+18:57 < Arc> hey purple
+18:57 < Arc> rillian can, according to chanserv
+18:58 -!- rillian changed the topic of #xiphmeet to: Xiph.org monthly meeting for november
+18:58 < rillian> how's that?
+18:58 -!- karlH [~karl@82-38-34-147.cable.ubr02.brad.blueyonder.co.uk] has joined #xiphmeet
+18:58 < Arc> you're the channel owner
+18:59 < Arc> can you drop a few of us with chanserv access?
+18:59 < rillian> jack usually chairs, I think that's good enough
+19:00  * rillian blesses purple
+19:00 < purple_haese> ?
+19:01 < rillian> purple: you should be able to set the topic now
+19:01 < Arc> ./msg chanserv access #xiphmeet list
+19:01 -!- brendan [~brendan@coleridge.kublai.com] has joined #xiphmeet
+19:01 < purple_haese> Oh, I see. WHat you did was good enough for me, though, thanks.
+19:02 < rillian> I guess we'll give jack another 3 minutes?
+19:02 < rillian> !date
+19:04 < rillian> can someone give jack a call? he doesn't seem to be online
+19:05 < purple_haese> xiphmont: Could you give jack a call?
+19:07 < rillian> No mike. looks like a small meeting
+19:08 < rillian> I guess we should go ahead and start
+19:08 < rillian> First item is the windows build
+19:08 < rillian> but Jack was the one in charge of that, so I suggest we move that to later
+19:08 < rillian> in case he shows up
+19:08 < rillian> Arc: do you want to tell us about IceShare?
+19:09 < Arc> sure
+19:09 < Arc> right now?
+19:09 < volsung_> Ah, I was curious who was doing that.  :)
+19:09 < rillian> Arc: please
+19:09 < Arc> ok.
+19:10 < Arc> so a few months ago I started talking to Lee about solving our (Indymedia's) server issue. even with a shitload of bandwidth, video is still heavily limited and it's difficult to even do audio
+19:10 < rillian> and this is live streaming, so bitstream doesn't help?
+19:10 < rillian> bittorrent, rather
+19:10 < Arc> so we started brainstorming for P2P ideas. bittorrent was great, but it doesn't do streaming
+19:10 < Arc> yea
+19:11 < Arc> and peercast only does continuous streaming, not streaming static/archived media, plus it has severe security holes
+19:12 < Arc> anyways out of all this brainstorming, testing, etc out the current model that I'm working to build out
+19:12 < volsung_> Any plans to use RTP for delivery?
+19:12 < Arc> it does both continuous, ie Icecast, P2P streaming and static media streaming, plus it can handle multiple bitrates of the same media
+19:13 < Arc> it uses HTTP, see http://wiki.xiph.org/IceHTTP for details
+19:13 < volsung_> I've become more interested in seeing an RTP implementation for Vorbis, which is why I ask.
+19:13 < Arc> the overall concept model is that the P2P servlet is built into the media player itself, and has the ability to seek within static media that it's playing, or go directly to seek points as per URL
+19:13 < jmspeex> volsung_: RTP with Vorbis wouldn't work until Vorbis can handle packet loss
+19:14 < Arc> it's built to use Ogg specifically, working on the Ogg page level
+19:14 < volsung_> jmspeex: I assume you mean "Handle it more gracefully, like without dropouts."
+19:14 < jmspeex> sure
+19:15 < Arc> the media player is activated with a icet:// URL, which directs it to contact a "tracker" and request the media from there
+19:16 < Arc> the IceTracker has a directory of every IceShare peer that currently has a specific page of the media, or page range, and directs the new peer to grab pages or page ranges from other peers
+19:16 < Arc> the tracker keeps track of users, their participation ratios, their capabilities, and can give preference to peers which participate the most
+19:17 < rillian> Arc: This sounds like a really useful project idea. I've heard that peercast has been granted a patent on their method. Can you tell us how your method avoids that patent?
+19:17 < Arc> rillian, a patent on what specifically?
+19:17 < volsung_> Does the tracker hand out a list of packet CRCs to prevent bad data from being propagated?
+19:18 < volsung_> Actually, that might be pretty hefty, nm.
+19:18  * Arc also notes that Peercast's network cannot be used for anything other than Peercast specifically, since their "GPL'ed" license adds a restriction that non-verbatum clients cannot "use their network"
+19:19 < Arc> volsung_, origionally we were going to use CRC32, but then someone (derf? rillian?) pointed out that CRC is not sufficient for security, so the current design uses SHA1
+19:19 < volsung_> How much data do you SHA1 at a time?
+19:20 < volsung_> That would have an impact on the latency/efficiency ratio.
+19:20 < rillian> Arc: I haven't looked at it in any detail. But perhaps that's something you could follow up on.
+19:20 < rillian> given xiph's mission of freely-implementable standards
+19:21 < Arc> the handshake goes something like this.. the client tells the tracker that it needs (n:) a piece of media, the tracker tells it to A: (Ask) several peers for pages or page ranges, the peers they connect to tell the tracker that they're s: (sending) the data, and after each page is received the receiving peer notifies the tracker that it now h: (has) a page, and it's data including SHA1 (or whatever checksum we use). if it does not matc
+19:21 < Arc> the tracker can tell the receiving peer to D: (delete) it.
+19:22 < Arc> the h: confirmation doubles as a "hey tracker, I have this page and can now share it with others
+19:22 < Arc> all this protocol stuff is at http://wiki.xiph.org/IceT
+19:23 < Arc> rillian, difficult since Peercast's protocols are not publically documented
+19:24 < volsung_> Arc: Interesting.  I have other questions, but I think they might be best handled out-of-meeting.
+19:24 < Arc> volsung_, cool
+19:24 < rillian> Arc: granted patents however are. a quick google turns up some references
+19:24 < Arc> anyways this is the briefs.  I've been trying to document as much as I can on the wiki, pretty much everything is interlinked.. http://wiki.xiph.org/IceShare
+19:24 < rillian> Ok. Is that it for IceShare?
+19:25 < Arc> one more thing
+19:25 < volsung_> Ah, one extra q: Have you started implementation?
+19:25 < Arc> I'm recommending that this eventually become a Xiph project.  not tonight, since most people haven't even had a chance to look into it and, well, I'm still building the initial tracker
+19:26 < Arc> volsung_, I have a partially working tracker written in Python, enough to talk to it with a telnet client and use most of the functions. 
+19:26 < volsung_> Awesome.  I was just going to ask about doing it in Python.  :)
+19:27 < volsung_> I'm most interested in the client end, so we should talk.  :)
+19:27 < Arc> the goal is to write a shared library for the media player side, libiceshare, to make it easier to integrate and reduce overlap 
+19:27 < Arc> volsung_, awesome lets chat after meeting
+19:28 < Arc> rillian, I'm done
+19:28 < rillian> Ok
+19:29 < rillian> Next I guess are the usage logos
+19:29 < rillian> I think adiabatic put this on the agenda
+19:29 < jmspeex> I thought we were going to use the logos by princessilea, no?
+19:29 < rillian> the latest post relative to this is http://www.xiph.org/archives/advocacy/0528.html
+19:30 < rillian> anybody know about other proposals?
+19:30 < rillian> jmspeex: to some extent. I think we all like the speex logo.
+19:30 < rillian> (and you do, which is the important part)
+19:30 < purple_haese> Actually, it was I who put this on the agenda, but it's not necessary that I lead this segment of the meeting :)
+19:30 < rillian> but I think we were less happy with the others she did
+19:31 < rillian> but that's certainly one option up for consideration
+19:31 < jmspeex> rillian: Well, it makes sense if we all use them, otherwise there isn't much point
+19:31 < rillian> not necessarily. logos are hard, and the think princessilea's speex parrot is the most successful of that series
+19:31 < jmspeex> A agree that some might need work.
+19:32 < volsung_> FYI, I think Sheryl is interested in continuing on the logos, but she didn't hear anything about officializing them.
+19:33 < rillian> volsung_: that's good. I may be speaking mostly for jack and myself here
+19:33 < rillian> xiphmont: are you actually here? now would be a good time to chime in
+19:34 < volsung_> One thing we have to do is a little data recovery to figure out how some of the illustrator files got trashed.  :(
+19:34 < rillian> oops. I thought she sent those to someone. (though I don't have a copy)
+19:34 < volsung_> Anyone who knows about how Mac illustrator forks get split (and how to reattach them) should contact me.
+19:35 < rillian> anyway, the issue on the agenda is more to do with product labelling than with official project/codec labels
+19:35 < rillian> which may not be the same thing
+19:35 < volsung_> She has PNG versions up, IIRC, but the originals got slightly toasted by some bad external HD mojo.
+19:35 < purple_haese> The posts on the advocacy list have one point, though: We need monochrome logos that can be used on hardware players to signify Ogg support.
+19:35 < rillian> Personally, I think the marevalo logos are fine for that use
+19:36 < purple_haese> Sheryla's logos are nice, and they'd be good for a website, but not for putting on a player.
+19:36 < rillian> so I'd move we recommend them, at least for the moment
+19:36 < jmspeex> I think we should adopt the logos quick before we get flooded with products with all different logos...
+19:36 < purple_haese> Sheryl's, even.
+19:36 < rillian> (I also think the linked iriver logo is file)
+19:36 < rillian> (fine)
+19:37 < jmspeex> purple_haese: you've got a good point.
+19:38 < rillian> setting up a webpage for this would be adi's job, unless we have another volunteer.
+19:38 < rillian> so I guess what we have to decide is: do we approve any of the current design proposals
+19:38 < rillian> if only provisionally
+19:38 < rillian> or do we table for further options or lack of quorum?
+19:38 < jmspeex> rillian: yes or no, but not provisionally
+19:39 < rillian> I meant that it is a done thing to change your logo after a bit if you come up with something better. That's what I meant by 'provisional'
+19:40 < jmspeex> I think we should first try to see if Sheryl can be adapted for a portable device.
+19:40 < purple_haese> On http://www.marevalo.net/OggLogos/, the only acceptable set IMHO is the first set, because the others don't use the proper Ogg capitalization.
+19:40 < jmspeex> oops s/Sheryl/Sheryl's logos/
+19:40 < rillian> purple: I agree. I think Marevalo's are fine, but the other contibutions on the page are not
+19:41 < jmspeex> I think they emphasize too much on Ogg (instead of Vorbis/Speex/...)
+19:41 < purple_haese> I kinda like the one from iRiver.
+19:41 < rillian> jmspeex: that is a good criticism.
+19:42 < purple_haese> True. They all have that failing, even iRiver's.
+19:42 < rillian> purple: would you contact iriver to obtain a vector version of their vorbis support logo?
+19:43 < jmspeex> Actually, I think I wouldn't put Ogg at all, since only Vorbis uses the extension.
+19:44 < rillian> well, theora does too
+19:44 < jmspeex> Oh
+19:44 < purple_haese> rillian: Um. I'd think that'd be a job for somebody higher up the food chain, like Jack.
+19:45 < Arc> isnt the intention to have everything be .ogg, once OggFile is out?
+19:45 < rillian> purple: jack is indisposed. just use your xiph.org address and you'll be fine :)
+19:45 < jmspeex> Arc: That's another debate. It would make some things simpler, but it might also create confision
+19:46 < jmspeex> "My player says 'Ogg supported' but I can't play this [Speex] Ogg file"
+19:46 < Arc> maybe it's a good thing to have "Vorbis" in the logo they use? :_)
+19:46 < rillian> jmspeex: that's another thing to work on of course, and why we've been pushing for the vorbis-tools rpms (for example) to include speex and flac support
+19:46 < purple_haese> rillian: Well, I can ask, but the iRiver logo underemphasizes the "Vorbis" a great deal.
+19:47 < jmspeex> rillian: Sure, but hardware devices won't support Speex for at least a while.
+19:47 < rillian> I think it's not so bad, because the 'support' de-emphasizes the ogg part
+19:47 < rillian> and 'ogg' is the more recognizable bit anyway
+19:48 < rillian> Anyway, it sounds like we have no concensus
+19:48 < rillian> so let's table this
+19:48 < jmspeex> rillian: Ogg is only recognizable for Vorbis, and it's more because of the extension than the bit-stream
+19:48 < rillian> Status reports:
+19:48 < rillian> The vorbis 1.0.1 release is *still* pending
+19:48 < rillian> we've made some progress undertstanding the win32 build issues, I think
+19:49 < rillian> Jack said he would do the actual binary builds to assure we had the issues worked out, but has not
+19:49 < rillian> So I think I should go ahead and work with those who've been helping on the list
+19:49 < rillian> xiphmont: do you want to say anything here?
+19:50 < purple_haese> But only jack knows what binaries he has promised Epic.
+19:50 < purple_haese> Looks like xiphmont is absent, too.
+19:50 < rillian> yes, but we all have some idea now. and that's not good enough to hold up the release another month
+19:51 < rillian> they can fix it in 1.0.2 if we still get it wrong
+19:51 < purple_haese> Heh.
+19:51 < rillian> jmspeex: what's new with speex?
+19:51 < jmspeex> Well, I working on a fixed-point version
+19:52 < jmspeex> It's not finished yet, but it's much faster than the float version ARM
+19:52 < rillian> similar on machines with an fpu?
+19:52 < jmspeex> Unfortunately, I don't have an ARM device myself, so I had to ask a friend
+19:52 < jmspeex> probably. Haven't tested much.
+19:53 < jmspeex> with an FPU, no
+19:53 < rillian> so fixed-point is slower?
+19:53 < jmspeex> On x86, the fixed-point is about 50% slower, which is normal since the FPU slightly faster than the ALU.
+19:54 < jmspeex> fixed-point is much faster without FPU, but a bit slower with an FPU.
+19:54 < rillian> jmspeex: if you're not aware, the sourceforge.net compile farm has an arm machine available. It's not so easy to use (especially for audio work) but that's another free resource.
+19:54 < jmspeex> didn't work when I tried.
+19:54 < rillian> jmspeex: ok, interesting
+19:54 < rillian> they've been down a lot lately :(
+19:54 < jmspeex> I've heard something about handhelds.org, but couldn't connect either.
+19:55 < rillian> is the conversion complete now?
+19:55 < jmspeex> Probably it's much too slow and overloaded...
+19:55 < brendan> I used to have an SA-110 around somewhere, I'll see if I can get it back on the net
+19:55 < jmspeex> about 90-95% of the float ops (the loops) have been converted, but there are still some bits here and there.
+19:56 < rillian> ok. good to hear.
+19:56 < rillian> I've been hitting up every likely person for funding for you, but no luck so far.
+19:56 < jmspeex> The last test on ARM showed it was still about 4x too slow, but then 90% of the time was spent in the kernel, probably doing (slow) float emulation.
+19:56 < rillian> anything else?
+19:56 < rillian> so a ways to go yet
+19:57 < rillian> what speed ARM was this?
+19:57 < purple_haese> What's your target? Real-time encoding on what kind of processor speed?
+19:57 < jmspeex> Don't know. Probably 200 MHz
+19:57 < jmspeex> Speex should run easily in real-time even on <200 MHz.
+19:57 < rillian> indeed :)
+19:58 < jmspeex> I mean the encoder. 
+19:58 < jmspeex> I think the decoder could almost run on a dragonball.
+19:58 < rillian> ooh
+19:58 < purple_haese> Of course you can only provide a starting point. An actual hardware manufacturer probably needs to tweak things to their specific situation anyway.
+19:59 < jmspeex> Even when everything is converted to int, there's still a need to adapt to actual hardware (see Tremor vs. Neuros firmware).
+20:00 < rillian> ok. on to theora
+20:00 < rillian> things were pretty slow until this past week
+20:00 < rillian> Dan Miller resurfaced. He's found a job in the bay area, but hasn't otherwise come back to the fold
+20:00 < rillian> so derf and I have been trying to pick up the slack
+20:01 < rillian> derf and mau completed a lossless transcode application for avi-encapsulated VP3
+20:01 < rillian> and in the process verified that VP3 is 'upside down' relative to the usual y=0 at the top sense
+20:01 < rillian> monty used in the theora code
+20:02 < rillian> so we've inverted the internal encoding (but not the buffers exposed in the client api)
+20:02 < rillian> this is an occasion for an alpha 3 release while we work on the bitstream spec
+20:03 < rillian> which remains the gating item for beta 1 and, as with vorbis, a frozen (or at least perpetually supported) bitstream format
+20:03 < rillian> Good news, as we have several people, including a cool group of video artists, who want to use theora in november
+20:03 < rillian> However, derf has been working on his own encoder implementation
+20:04 < rillian> and in the process has come up with a number of additional bitstream changes he would like
+20:04 < rillian> they're mostly in the direction of increased flexibility 
+20:04 < rillian> and thus scope for future encoder improvement
+20:04 < rillian> and I think they're mostly a good idea
+20:05 < rillian> in part because I think competitiveness with mpeg 4 video is going to be important
+20:05 < rillian> so we have another list of changes that need to be implemented
+20:05 < purple_haese> That's a good argument against the people that clamor for Vorbis encoder docs, saying that that;s vital for 3rd party encoder improvements. Derf demonstrates (on Theora) that a sufficiently knowledgeable coder doesn't need docs :)
+20:05 < rillian> Of course :)
+20:06 < rillian> and he knows both the code and field better than I do
+20:06 < rillian> so I'm doing the best I can as official mantainer
+20:06 < rillian> however, we've been able to work together well this week
+20:06 < rillian> and he doesn't have a lot of time
+20:06 < rillian> or interest in being official mantainer
+20:06 < rillian> so I think it's alright
+20:07 < purple_haese> So Dan is still the lone ranger working on the spec?
+20:07 < rillian> Anyway, it looks like it will be a week or two before alpha 3
+20:07 < rillian> purple: he was our best hope
+20:07 < rillian> but I've been doing some work in the wiki, mostly just documenting the code as I learn it
+20:08 < rillian> also Mike Melanson (sp) from ffmpeg has been documenting VP3
+20:08 < rillian> and he's much further along than our efforts
+20:08 < rillian> so I think the best thing at this point is to help complete his document
+20:08 < rillian> and then add the changes we've made for theora
+20:08 < Arc> rillian, is there an ETA for beta-1?
+20:08 < rillian> there is not
+20:08 -!- oddsock [~oddsock@12-208-78-104.client.attbi.com] has joined #xiphmeet
+20:08 < rillian> hi oddsock!
+20:09 < Arc> is there atleast a "it wont be out until ATLEAST" date?
+20:09 < oddsock> hola
+20:09 < rillian> Arc: at least two weeks. probably at least 8
+20:09 < rillian> any other theora questions?
+20:10 < rillian> Ok, on to tools
+20:10 < rillian> we've already heard from Arc about IceShare
+20:10 < rillian> what's new with Icecast and streaming otherwise?
+20:11 < oddsock> the Streaming directory is humming nicely
+20:11 < karlH> not much people have been distracted with other things
+20:11 < oddsock> it's been running unattended for months now
+20:11 < volsung_> Are there plans to do a icecast/ices 2.0 release soon?
+20:11 < karlH> the autoconf changes seem to of gone well
+20:11 < purple_haese> How close is icecast to an actual release?
+20:12 < oddsock> who is the official maintainer of icecast now ?
+20:12 < rillian> oddsock: indeed. it seems to be about 40 streams now?
+20:13 < rillian> brendan?
+20:13 < purple_haese> Good question.
+20:13 < purple_haese> Has Mike officially given up maintainership?
+20:13 < purple_haese> (Assuming that Mike was/is the maintainer :)
+20:13 < karlH> I'm working on some changes in icecast to improve things but it's a work in progress
+20:13 < oddsock> I think someone needs to step in an take a bit of a control and make that release happen
+20:14 < oddsock> it's been about 3 years in beta test...literally
+20:14 < Arc> oddsock, has the yp instabilities been worked out yet?
+20:14 < oddsock> Arc: there are instabilities ?
+20:14 < volsung_> I nominate oddsock+(brendan or karlH) for doing a release.  :)
+20:15 < purple_haese> I second the nomination :)
+20:15 < Arc> last time I saw there were. like streams no longer being reported if one gets rejected by one of the servers, or other streams not getting reported because one stream got rejected
+20:15 < volsung_> That way we have a Win32 representative involved, since that seems to bite everyone.
+20:15 < brendan> can we check with Mike? I know he's not in a position to code right now but he is still the best arbiter IMHO
+20:16 < purple_haese> Do we have sufficient docs for a release?
+20:16 < oddsock> I think the major issues were documentation
+20:16 < purple_haese> Bingo :)
+20:16 < oddsock> but honestly, If the docs are good enough for icecast now, they should be good enough for 1.0
+20:16 < brendan> are we at feature freeze?
+20:17 < oddsock> brendan: I don't even think we have a maintainer.
+20:17 < purple_haese> Are there docs? I was under the impression that the "docs" consist of sample config files, a mailing list, and an unofficial FAQ.
+20:18 < volsung_> MikeS was the benevolent dictator of record before, so yes, it would be good to check with him.
+20:18 < oddsock> I suggest, we freeze what we have now, add some basic documentation (i.e. README) and release
+20:18 < brendan> I'd do a beta first.
+20:18 < oddsock> there is also the issue of whats in bugtraq
+20:18 < Arc> the admin interface, config file, lots of stuff needs documenting
+20:19 < oddsock> yes, but if we wait for all that to happen, we will be another 3 years till 1.0
+20:19 < brendan> IIRC there are still some buglets in stats. and I'd like to see the prebuffer get in before 1.0
+20:19 < purple_haese> So, we need a power user (not coder) with time on their hands who can write docs.
+20:19 < karlH> oddsock: I've seen that today
+20:19 < brendan> only if we release a beta every 1.5 years :)
+20:19 < volsung_> Who is a hardcore icecast user who we can convince to write docs?
+20:20 < oddsock> we've tried that before, and there is documentation, but it's not complete
+20:20 < jmspeex> Who is a hardcore Speex user who I can convince to write docs? :)
+20:20 < purple_haese> I think we should post a Help Wanted ad on icecast@.
+20:20 < vanguardist> how about releasing what's done as a beta, then do a 1.0 shortly after that with recently-fixed bugs, added docs, etc?
+20:21 < brendan> I think cutting a beta would help, just to alert possible helpers that icecast isn't such a moving target
+20:21 < vanguardist> (otherwise, as oddsock said, it would take a long time for an actual release)
+20:21 < karlH> brendan: the fast prebuffer code I have is ok, but I need to merge the rest of the icecast facilities, that could be done post beta
+20:21 < vanguardist> brendan: right
+20:21 < oddsock> icecast is essentially beta now
+20:21 < purple_haese> vanguardist, brendan: I agree.
+20:22 < brendan> yes, but not officially.
+20:22 < vanguardist> oddsock: i meant it as an official beta
+20:22 < vanguardist> heh, that :)
+20:22 < oddsock> well, I'm all for it, as long as we have a release schedule
+20:22 < brendan> well, we should do a milestone list I guess :)
+20:22 < oddsock> i.e. beta for 1 month then release unless we get bugs
+20:22 < karlH> oddsock: are there are other win32 issues reported ?
+20:23 < oddsock> karlH: the only win32 issue was the one I fixed...
+20:23 < karlH> *any other
+20:23 < purple_haese> So, brendan, oddsock and karlH get as homework assignment to contact Mike and work out a release schedule?
+20:23 < brendan> let's put a milestone checklist on the wiki
+20:24 < rillian> sounds excellent
+20:24 < rillian> go release! :)
+20:24 < volsung_> Bonus points if you beat Vorbis.  :)
+20:24 < brendan> hehe
+20:24 < rillian> volsung: anything new with vorbis-tools? How did the ao release go?
+20:24 < brendan> the slow race is on
+20:25 < volsung_> Nothing new with vorbis-tools as far as I know.  libao release went okay, reports of ppc linux badness, but I haven't confirmed yet.
+20:25 < volsung_> Been busy w/ fellowship apps and midterms and such.
+20:25 < rillian> sounds familiar :(
+20:25 < rillian> ok. No news that I've heard on OggFile
+20:25 < rillian> I believe monty has mostly been hacking on postfish
+20:26 < purple_haese> That's what I've heard,too.
+20:26 < rillian> Ok. that's it for the status report
+20:26 < volsung_> SCALE?  Or is that separate item?
+20:26 < rillian> The last item on the agenda is the socal linux expo
+20:26 < purple_haese> I put SCALE on the agenda.
+20:27 < rillian> Josh Coalson (the flac author) and Monty are giving invited talks
+20:27 < rillian> Jack, Manuel and adiabatic are also attending
+20:27 < rillian> and I believe pfm
+20:27 < purple_haese> And me.
+20:27 < rillian> oops. And purple.
+20:27 < rillian> Xiph will also have a booth
+20:27 < rillian> hopefully with some demos
+20:28 < rillian> so if you have audio or video you can contribute, please get them to jack before november 20th
+20:28 < rillian> (or send video to me and I'll forward)
+20:28 < rillian> Other than mentioning that it's happening
+20:29 < rillian> I think the idea was to brainstorm ideas for the booth
+20:29 < rillian> and let those attending work out their plans
+20:29 < volsung_> How's the KNOPPIX demo CD coming?
+20:29 < rillian> I'd suggest we adjourn the meeting before that
+20:29 < rillian> since it doesn't concern everyone
+20:29 < volsung_> Agreed.
+20:30 < rillian> So any questions that should be part of the meeting?
+20:30 < xiphmont> I thought meeting was 9EST
+20:30 < xiphmont> You guys are going to town already.
+20:30 < purple_haese> He's alive! :)
+20:30 < Arc> hey monty, any updates on OggFile?
+20:30 < vanguardist> heh
+20:30 < xiphmont> Last I looked int he window last night, everyone said 9!
+20:31 -!- jack [~jack@motherfish-II.xiph.org] has joined #xiphmeet
+20:31 < xiphmont> No, I got stuck on a thought problem that currently concerns postfish, but will be useful to Vorbis 1.1 too.
+20:31 < Arc> what's postfish?
+20:32 < xiphmont> a little app I'm updating.
+20:32 < xiphmont> audio filter set.
+20:32 < volsung_> Hmm...  Maybe we need a quickie CGI on motherfish which does countdown to meeting time that we can all synchronize to without having to rely on timezone conversions.
+20:32 < volsung_> Or other miscommunications.
+20:32 < Arc> oh ok. have you given any thought to the time unit OggFile might use for seeking? 
+20:32 < vanguardist> purple_haese did a php thingy :)
+20:32 < purple_haese> Well, the time *is* posted on the wiki.
+20:34 < rillian> Ok. I move we adjourn. seconds?
+20:35 < purple_haese> second.
+20:35 < purple_haese> SCALE attendees and interested parties please stay.
+20:35 < oddsock> what is SCALE ?
+20:35 < purple_haese> southern california linux expo
+20:35 < rillian> Ok. we now return you to informal discussion. Thanks for coming everyone!
+20:35 < purple_haese> http://www.socallinuxexpo.com
+20:35 < oddsock> ah...gotcha
+20:36 < rillian> purple: do you have a raw log you can post. I'm not at home and wasn't able to do one.
+20:36 < purple_haese> rillian: Yeah, let me check real quick...
+20:37 < purple_haese> Yup, log is going.
+20:37 < rillian> excellent. thanks as always for playing secretary
+20:37 < purple_haese> You're welcome.
+20:38 < purple_haese> xiphmont: Do you have an itinerary for SCALE yet?
+20:38 < rillian> purple: excellent.
+20:38  * rillian waves goodnight
+20:38 -!- rillian [giles@82-68-11-25.dsl.in-addr.zen.co.uk] has quit ["bedtime"]
