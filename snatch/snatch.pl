@@ -701,9 +701,10 @@ sub TimerWatch{
 		my$prompt;
 		
 		if($waiting_days){
-		    $prompt=$waiting_days."d $waiting_hours:$waiting_minutes";
+		    $prompt=$waiting_days."d ".$waiting_hours."h ".
+			$waiting_minutes."m";
 		}elsif($waiting_hours){
-		    $prompt=$waiting_days."$waiting_hours:$waiting_minutes";
+		    $prompt=$waiting_hours."h ".$waiting_minutes."m";
 		}else{
 		    $prompt=$waiting_minutes."m ".$waiting_seconds."s";
 		}
@@ -734,7 +735,7 @@ sub TimerWatch{
 	    my$prompt;
 	    
 	    if($hours){
-		$prompt=$waiting_days."$hours:$minutes";
+		$prompt=$hours."h ".$minutes."m";
 	    }else{
 		$prompt=$minutes."m ".$seconds."s";
 	    }
