@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.6 2001/11/02 02:22:08 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.7 2001/11/02 02:51:47 volsung Exp $
 
  ********************************************************************/
 
@@ -880,7 +880,7 @@ void PlayFile()
     eos = 0;    
     while (!eos && !sig_request.exit)
       {
-
+	
 	/* Check signals */
 	if (sig_request.skipfile) 
 	  {
@@ -913,7 +913,7 @@ void PlayFile()
 	  }
 	else if (ret == OV_HOLE)
 	  {
-	    if (Options.statOpts.verbose > 1) 
+	    if (Options.statOpts.verbose > 1)
 	      /* we should be able to resync silently; if not there are 
 		 bigger problems. */
 	      Error ("--- Hole in the stream; probably harmless\n");
@@ -929,7 +929,7 @@ void PlayFile()
 	    if (old_section != current_section && old_section != -1)
 	      eos = 1;
 	  }
-
+	
 
 	/* Update bitrate display */
 	Options.statOpts.stats[4].arg.doublearg = 
@@ -938,26 +938,27 @@ void PlayFile()
 
 	/* Write audio data block to output, skipping or repeating chunks
 	   as needed */
-	do
+	if (ret > 0)
 	  {
-	    if (nthc-- == 0) 
+	    do
 	      {
-		if (Options.outputOpts.buffer)
+		if (nthc-- == 0) 
 		  {
-		    buffer_submit_data (Options.outputOpts.buffer, 
-					convbuffer, ret, 1);
-		    UpdateStats();
+		    if (Options.outputOpts.buffer)
+		      {
+			buffer_submit_data (Options.outputOpts.buffer, 
+					    convbuffer, ret, 1);
+			UpdateStats();
+		      }
+		    else
+		      OutBufferWrite (convbuffer, ret, 1, &Options, 0);
+		    
+		    nthc = Options.playOpts.nth - 1;
 		  }
-		else
-		  OutBufferWrite (convbuffer, ret, 1, &Options, 0);
-		
-		nthc = Options.playOpts.nth - 1;
-	      }
-	  } 
-	while (++ntimesc < Options.playOpts.ntimes);
-
-	ntimesc = 0;
-	
+	      } 
+	    while (++ntimesc < Options.playOpts.ntimes);
+	    ntimesc = 0;
+	  }
       } /* End of data loop */
     
     /* Done playing this logical bitstream.  Now we cleanup output buffer. */
