@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.13 2000/06/14 01:38:31 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.13.4.1 2000/07/25 00:18:10 xiphmont Exp $
 
  ********************************************************************/
 
@@ -34,6 +34,7 @@ typedef struct {
 
   double *ath;
   int    *octave;
+  double *bark;
 
 } vorbis_look_psy;
 
