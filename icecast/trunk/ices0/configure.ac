@@ -2,8 +2,8 @@
 # $Id$
 
 m4_define(ICES_MAJOR, 0)
-m4_define(ICES_MINOR, 4)
-m4_define(ICES_MICRO, 0)
+m4_define(ICES_MINOR, 3)
+m4_define(ICES_MICRO, 0pre4)
 m4_define(ICES_VERSION,
   m4_if(ICES_MICRO, 0, ICES_MAJOR.ICES_MINOR, ICES_MAJOR.ICES_MINOR.ICES_MICRO))
 
