@@ -150,7 +150,7 @@ _genres = [
     "Punk Rock", "Drum Solo", "A capella", "Euro-House", "Dance Hall", "Goa",
     "Drum & Bass", "Club House", "Hardcore", "Terror", "Indie", "BritPop",
     "NegerPunk", "Polsk Punk", "Beat", "Christian Gangsta", "Heavy Metal",
-    "Black Metal", "Crossover", "Contemporary C", "Christian Rock", "Merengue",
+    "Black Metal", "Crossover", "Contemporary Christian", "Christian Rock", "Merengue",
     "Salsa", "Thrash Metal", "Anime", "JPop", "SynthPop",
 ]
 
