@@ -14,13 +14,10 @@
 #define MAX_SECTOR_OVERLAP   32     /* sectors */
 #define MIN_SECTOR_EPSILON  128     /* words */
 #define MIN_SECTOR_BACKUP    16     /* sectors */
-#define JIGGLE_MODULO        15     /* sectors */
-#define MIN_SILENCE_BOUNDARY 1024   /* 16 bit words */
+#define JIGGLE_MODULO         8     /* sectors */
 
 #define min(x,y) ((x)>(y)?(y):(x))
 #define max(x,y) ((x)<(y)?(y):(x))
-
-#include "isort.h"
 
 typedef struct linked_list{
   /* linked list */
@@ -54,14 +51,12 @@ extern linked_list *copy_list(linked_list *list); /* shallow; doesn't copy
 
 typedef struct c_block{
   /* The buffer */
-  int16_t *vector;
-  long begin;
-  long size;
+  void *vector;  /* (is_vector *) */
 
   /* auxiliary support structures */
   unsigned char *flags; /* 1    known boundaries in read data
 			   2    known blanked data
-			   4    matched sample
+			   4    used sample
 			   8    reserved
 			   16   reserved
 			   32   reserved
@@ -77,15 +72,13 @@ typedef struct c_block{
 } c_block;
 
 extern void free_c_block(c_block *c);
-extern void i_cblock_destructor(c_block *c);
 extern c_block *new_c_block(struct cdrom_paranoia *p);
 
 typedef struct v_fragment{
   c_block *one;
-
+  
   long begin;
   long size;
-  int16_t *vector;
 
   /* end of session cases */
   long lastsector;
@@ -99,7 +92,7 @@ typedef struct v_fragment{
 extern void free_v_fragment(v_fragment *c);
 extern v_fragment *new_v_fragment(struct cdrom_paranoia *p,c_block *one,
 				  long begin, long end, int lastsector);
-extern int16_t *v_buffer(v_fragment *v);
+extern size16 *v_buffer(v_fragment *v);
 
 extern c_block *c_first(struct cdrom_paranoia *p);
 extern c_block *c_last(struct cdrom_paranoia *p);
@@ -116,9 +109,7 @@ typedef struct root_block{
   long lastsector;
   struct cdrom_paranoia *p;
 
-  c_block *vector; /* doesn't use any sorting */
-  int silenceflag;
-  long silencebegin;
+  void *vector;
 } root_block;
 
 typedef struct offsets{
@@ -139,7 +130,6 @@ typedef struct cdrom_paranoia{
   linked_list *cache;     /* our data as read from the cdrom */
   long cache_limit;
   linked_list *fragments; /* fragments of blocks that have been 'verified' */
-  sort_info *sortcache;
 
   int readahead;          /* sectors of readahead in each readop */
   int jitter;           
@@ -161,29 +151,8 @@ typedef struct cdrom_paranoia{
 
 } cdrom_paranoia;
 
-extern c_block *c_alloc(int16_t *vector,long begin,long size);
-extern void c_set(c_block *v,long begin);
-extern void c_insert(c_block *v,long pos,int16_t *b,long size);
-extern void c_remove(c_block *v,long cutpos,long cutsize);
-extern void c_overwrite(c_block *v,long pos,int16_t *b,long size);
-extern void c_append(c_block *v, int16_t *vector, long size);
-extern void c_removef(c_block *v, long cut);
-
-#define ce(v) (v->begin+v->size)
-#define cb(v) (v->begin)
-#define cs(v) (v->size)
-
-/* pos here is vector position from zero */
-
 extern void recover_cache(cdrom_paranoia *p);
 extern void i_paranoia_firstlast(cdrom_paranoia *p);
-
-#define cv(c) (c->vector)
-
-#define fe(f) (f->begin+f->size)
-#define fb(f) (f->begin)
-#define fs(f) (f->size)
-#define fv(f) (v_buffer(f))
 
 #define CDP_COMPILE
 #endif
