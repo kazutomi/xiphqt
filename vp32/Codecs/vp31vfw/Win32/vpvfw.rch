@@ -1,12 +1,14 @@
-#include "VP31EVERSION.H"
+#include "vpvfwver.h" 
+
+#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,58,0,3
- PRODUCTVERSION 1,58,0,3
+ FILEVERSION version
+ PRODUCTVERSION version
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -21,19 +23,18 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "VP3VFW\0"
-            VALUE "FileVersion", "1, 58, 0, 3\0"
-            VALUE "InternalName", "VP3VFW\0"
-            VALUE "LegalCopyright", "Copyright © 1999-2000 ON2.COM\0"
+            VALUE "Comments", "On2 VP4 Video Codec \0"
+            VALUE "CompanyName", "On2.com\0"
+            VALUE "FileDescription", "On2_VP4\0"
+            VALUE "FileVersion", versionString
+            VALUE "InternalName", "On2_VP4p\0"
+            VALUE "LegalCopyright", "Copyright © 2000 On2.com\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "VP3VFW\0"
-            VALUE "ProductVersion", "1, 58, 0, 3\0"
+            VALUE "ProductName", "On2_VP4\0"
+            VALUE "ProductVersion", versionString
             VALUE "SpecialBuild", "\0"
-            VALUE "VP31E", VP31EVERSION
         END
     END
     BLOCK "VarFileInfo"
@@ -42,3 +43,4 @@ BEGIN
     END
 END
 
+#endif    // !_MAC
