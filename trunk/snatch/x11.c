@@ -52,9 +52,7 @@ static unsigned long rploc_main=0;
 static int rploc_count=0;
 
 static unsigned long rpfile_shell=0;
-static unsigned long rpfile_entry=0;
 static unsigned long rpfile_main=0;
-static int rpfile_count=0;
 
 static void queue_task(void (*f)(void));
 
@@ -226,14 +224,12 @@ static void FileEntry(void){
   
   fprintf(stderr,"    ...: filling in file field...\n");
   if(openfile)
-    FakeTypeString(openfile,rpfile_entry);
+    FakeTypeString(openfile,rpfile_main);
 
-  FakeKeySym(XStringToKeysym("Return"),0,rpfile_entry);
+  FakeKeySym(XStringToKeysym("Return"),0,rpfile_main);
 
   rpfile_shell=0;
   rpfile_main=0;
-  rpfile_entry=0;
-  rpfile_count=0;
   
 }
 
@@ -251,8 +247,8 @@ static void PolySegment(unsigned char *buf){
     queue_task(Location);
   }
 
-  if(id==rpfile_entry && rpfile_main){
-    rpfile_main=0;
+  if(id==rpfile_main && rpfile_shell){
+    rpfile_shell=0;
     queue_task(FileEntry);
   }
 }
@@ -347,14 +343,6 @@ static void CreateWindow(unsigned char *buf){
     /* File dialog windows */
     if(parent==rpfile_shell){
       rpfile_main=id;
-    }
-    if(parent==rpfile_main){
-      switch(rpfile_count++){
-      case 3:
-	fprintf(stderr,"    ...: text entry: %lx\n",id);
-	rpfile_entry=id;
-	break;
-      }
     }
   }
 }
@@ -486,10 +474,8 @@ static void ChangeProperty(unsigned char *buf){
   /* watch for the open file window */
   if(n>32 &&  !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
     fprintf(stderr,
-	    "    ...: RealPlayer popped open file dialog.  Watching for\n"
-	    "         dialog window tree...\n");
+	    "    ...: RealPlayer popped open file dialog.\n");
     rpfile_shell=id;
-    rpfile_entry=0;
     rpfile_main=0;
   }
 }
