@@ -36,7 +36,7 @@ void usage()
    fprintf (stderr, "\t--wideband   -w    Wideband (16 kHz) input file\n"); 
    fprintf (stderr, "\t--help       -h    This help\n"); 
    fprintf (stderr, "\t--version    -v    Version information\n"); 
-   fprintf (stderr, "\nInputs and outputs must be raw audio (no header), 16 bits\n"); 
+   fprintf (stderr, "\nInput must be raw audio (no header), 16 bits\n"); 
 }
 
 void version()
@@ -54,6 +54,7 @@ int main(int argc, char **argv)
    short in[MAX_FRAME_SIZE];
    float input[MAX_FRAME_SIZE];
    int frame_size;
+   int i,nbBytes;
    SpeexMode *mode=NULL;
    EncState st;
    FrameBits bits;
@@ -158,7 +159,6 @@ int main(int argc, char **argv)
 
    while (1)
    {
-      int i,nbBytes;
       fread(in, sizeof(short), frame_size, fin);
       if (feof(fin))
          break;
@@ -168,7 +168,8 @@ int main(int argc, char **argv)
       nbBytes = frame_bits_write_whole_bytes(&bits, cbits, 200);
       fwrite(cbits, 1, nbBytes, fout);
    }
-   frame_bits_write(&bits, cbits, 200);
+   nbBytes = frame_bits_write(&bits, cbits, 200);
+   fwrite(cbits, 1, nbBytes, fout);
    encoder_destroy(&st);
    exit(0);
    return 1;
