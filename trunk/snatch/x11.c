@@ -193,7 +193,7 @@ static void SetUpReply(unsigned char *buf){
 	      "    ...: RealPlayer X setup\n"
 	      "           window id base = %lx\n"
 	      "           window id mask = %lx\n"
-	      "           server image endianness = %s\n",
+	      "           server image endianness = %s\n"
 	      "           client endianness = %s\n",
 	      window_id_base,window_id_mask,
 	      (bigendian_p?"big":"small"),
@@ -413,6 +413,7 @@ static void ConfigureWindow(unsigned char *buf){
 	}
 	if(testmask==0x8){ /* height */
 	  rpplay_height=val;
+	  logo_y=-1;
 	}
 	count+=4;
       }
@@ -604,15 +605,12 @@ static void PutImage(unsigned char *header,unsigned char *data){
 
     /* after a resize, look where to put the logo... */
     if(x==0 && y<rpplay_height/2 && width==rpplay_width){
-      if(y<=logo_prev)
-	logo_y=-1;
-
       if(logo_y==-1){
 	/* look for the real logo in the data; it's in the middle of the
 	   big black block */
 	int test;
 	
-      fprintf(stderr,"searching for logo...\n");
+	fprintf(stderr,"searching for logo...\n");
 	for(test=play_blackupper;test<height+y;test++)
 	  if(test>=y)
 	    if(ptr[(test-y)*width*4+(width/2*4)+1]!=0)break;
