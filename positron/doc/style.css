@@ -3,3 +3,4 @@ table.fielddef th{border: 2px black solid; border-collapse: collapse;}
 td.nodata    {background-color: rgb(80%, 80%, 80%)}
 h4 {margin-top: 3em}
 .figure { margin-left: auto; margin-right: auto;}
+ul.biglist li { padding-bottom: 1em; }
