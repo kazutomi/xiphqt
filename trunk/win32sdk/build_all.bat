@@ -1,9 +1,12 @@
 @echo off
-rem $Id: build_all.bat,v 1.1 2001/09/13 19:55:00 cwolf Exp $
+rem $Id: build_all.bat,v 1.2 2001/09/13 21:36:24 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
 if ."%SRCROOT%"==."" goto notset
+
+if not exist %SRCROOT%\ogg\include\ogg\ogg.h goto noogg
+if not exist %SRCROOT%\vorbis\include\vorbis\codec.h goto novorbis
 
 rem If one of the makefiles doesn't exist,
 rem assume they all need to be generated
@@ -12,7 +15,6 @@ if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
   msdev -ex ExportMakefile
 )
 
-if not exist %SRCROOT%\ogg\include\ogg\ogg.h goto noogg
 cd "..\ogg\win32"
 nmake /nologo /F .\ogg_dynamic.mak CFG="ogg_dynamic - Win32 Debug" %1
 nmake /nologo /F .\ogg_dynamic.mak CFG="ogg_dynamic - Win32 Release" %1
@@ -20,7 +22,6 @@ nmake /nologo /F .\ogg_static.mak CFG="ogg_static - Win32 Debug" %1
 nmake /nologo /F .\ogg_static.mak CFG="ogg_static - Win32 Release" %1
 cd "..\..\win32sdk"
 
-if not exist %SRCROOT%\vorbis\include\vorbis\codec.h goto novorbis
 cd "..\vorbis\win32"
 nmake /nologo /F .\vorbis_dynamic.mak CFG="vorbis_dynamic - Win32 Debug" %1
 nmake /nologo /F .\vorbis_dynamic.mak CFG="vorbis_dynamic - Win32 Release" %1
