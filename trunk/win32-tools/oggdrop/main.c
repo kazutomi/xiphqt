@@ -6,6 +6,9 @@
 #include "encthread.h"
 #include "audio.h"
 
+#define LOSHORT(l)           ((SHORT)(l))
+#define HISHORT(l)           ((SHORT)(((DWORD)(l) >> 16) & 0xFFFF))
+
 HANDLE event = NULL;
 int width = 120, height = 120;
 RECT bar1, bar2;
@@ -203,8 +206,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_MOUSEMOVE:
 		if (dragging) {
+      point.x = LOSHORT(lParam);
+      point.y = HISHORT(lParam);
+      /* lParam can contain negative coordinates !
 			point.x = LOWORD(lParam);
 			point.y = HIWORD(lParam);
+      */
 			ClientToScreen(hwnd, &point);
 			SetWindowPos(hwnd, 0, point.x - start.x, point.y - start.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 		}
