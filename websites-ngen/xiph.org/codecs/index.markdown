@@ -1,4 +1,5 @@
-# Codecs
+Codecs
+======
 
 We do codecs. Behold:
 * [Vorbis][], a general-purpose audio compression codec

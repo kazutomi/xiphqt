@@ -67,7 +67,12 @@ h6 {
 }
 
 p	{
-	margin: .125em 0;
+	margin: .25em 0;
+	text-indent: 1em;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+	text-indent: 0;
 }
 
 code, kbd {

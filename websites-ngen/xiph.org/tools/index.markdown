@@ -1,4 +1,5 @@
-# Tools
+Tools
+=====
 
 We don’t make just audio and video codecs; we make tools, too. Behold:
 

@@ -1,4 +1,5 @@
-# Speex
+Speex
+=====
 
 ## Overview
 Speex is an [Open Source/Free Software][osfs], patent-free audio compression format

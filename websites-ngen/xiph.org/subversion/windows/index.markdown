@@ -1,4 +1,6 @@
-# Windows-Specific Notes for Subversion Access
+Windows-Specific Notes for Subversion Access
+============================================
+
 If you want to use a Subversion client on Windows, there are two clients that we’ve used:
 the [official command-line client][svn.exe] and [TortoiseSVN][]. It’s possible to use both
 to work on the same checked-out repository and it’s rather nice to have both clients around;

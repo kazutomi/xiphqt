@@ -1,4 +1,5 @@
-# Paranoia
+Paranoia
+========
 <div class='tagline'>
 	“Use your CD-ROM drive to read audio tracks…and have it actually work right!”
 </div>

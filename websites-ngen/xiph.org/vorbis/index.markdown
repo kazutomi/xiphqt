@@ -1,3 +1,4 @@
-# Ogg Vorbis
+Ogg Vorbis
+==========
 
 Vorbis rocks.

@@ -183,7 +183,19 @@ def markdown(filename):
 		ret = fh.read()
 	finally:
 		fh.close()
+	
+	return snipBom(ret)
+
+def snipBom(s):
+	BOM = '\xef\xbb\xbf'
+	ret = ''
+	bomBegin = s.find(BOM)
+	if bomBegin > -1:
+		ret = s[:bomBegin] + s[bomBegin+3:]
+	else:
+		return s
 	return ret
+		
 
 def getParallelFile(where, what):
 	"""

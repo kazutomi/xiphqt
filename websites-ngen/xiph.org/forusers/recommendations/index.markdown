@@ -1,4 +1,5 @@
-# Software Recommendations
+Software Recommendations
+========================
 
 Many open-source projects just love to show off how many other projects use their stuff. We’re no
 exception; we enjoy it quite a bit when a new project, either open-source or otherwise, announces

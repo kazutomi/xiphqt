@@ -1,4 +1,5 @@
-# Donate
+Donate
+======
 
 Xiph.Org is a 501(c)(3) non-profit, so contributions are tax deductible.
 

@@ -1,4 +1,5 @@
-# Codec Comparison
+Codec Comparison
+================
 <table border="2" cellpadding="2" width="100%">
 	<thead>
 		<tr>

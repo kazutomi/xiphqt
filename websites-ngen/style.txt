@@ -6,6 +6,7 @@ Behind the Scenes
 
 *	Four-column tabs for indentation.
 
+
 *	Keep lines to 100 columns or fewer.
 
 *	Use UTF-8. In particular, use proper apostrophes and quotes (U+2018–U+201E) and
@@ -14,6 +15,12 @@ Behind the Scenes
 *	Prefer <x y='z'> to <x y="z">. <x y=z> is an absolute no-no.
 
 *	Close tags that need closing. <p>-as-paragraph-separator has gone the way of the dodo.
+
+*	Prefer the equals-sign-underline for h1 to the single #. The latter method doesn't offer
+	a good way to get around BOMs that may sneak in from Notepad and TextEdit...unless you
+	have the heading on the second line, and that looks ugly. Your call as to whether to use
+	-----style h2 headings, though. I recommend against.
+
 
 
 Spelling, Grammar, and Punctuation

@@ -1,6 +1,5 @@
-# Welcome to xiph.org!
-
-<!-- this stinks. -->
+﻿Welcome to xiph.org!
+====================
 
 Xiph.org develops multimedia codecs and tools to protect the foundations of Internet multimedia
 from control by private interests.
