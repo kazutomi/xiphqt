@@ -26,6 +26,25 @@
 #ifndef __AO_PRIVATE_H__
 #define __AO_PRIVATE_H__
 
+/* --- Operating System Compatibility --- */
+
+/* 
+  OpenBSD systems with a.out binaries require dlsym()ed symbols to be
+  prepended with an underscore, so we need the following nasty #ifdef
+  hack.
+*/
+#if defined(__OpenBSD__) && !defined(__ELF__)
+#define dlsym(h,s) dlsym(h, "_" s)
+#endif
+
+/* RTLD_NOW is the preferred symbol resolution behavior, but
+   some platforms do not support it. */
+#if defined(__OpenBSD__)	
+#define DLOPEN_FLAG RTLD_LAZY
+#else
+#define DLOPEN_FLAG RTLD_NOW
+#endif
+
 /* --- Constants --- */
 
 #ifndef AO_SYSTEM_CONFIG

@@ -90,26 +90,14 @@ void _clear_config()
 
 
 /* Load a plugin from disk and put the function table into a driver_list
-   struct.
+   struct. */
 
-   OpenBSD systems with a.out binaries require dlsym()ed symbols to be
-   prepended with an underscore, so we need the following nasty #ifdef
-   hack. */
-#if defined(__OpenBSD__) && !defined(__ELF__)
-#define dlsym(h,s) dlsym(h, "_" s)
-#endif
 driver_list *_get_plugin(char *plugin_file)
 {
 	driver_list *dt;
 	void *handle;
 
-	/* RTLD_NOW is the preferred symbol resolution behavior, but
-           some platforms do not support it. */
-#if defined(__OpenBSD__)	
-	handle = dlopen(plugin_file, RTLD_LAZY);
-#else
-	handle = dlopen(plugin_file, RTLD_NOW);
-#endif
+	handle = dlopen(plugin_file, DLOPEN_FLAG /* See ao_private.h */);
 
 	if (handle) {
 		dt = (driver_list *)malloc(sizeof(driver_list));
