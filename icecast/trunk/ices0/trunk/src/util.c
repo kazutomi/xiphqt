@@ -270,6 +270,9 @@ ices_util_file_time (unsigned int bitrate, unsigned int filesize, char *buf)
 	unsigned long int days, hours, minutes, nseconds, remains;
 	unsigned long int seconds;
 
+	if (!bitrate)
+	  return NULL;
+
 	/* << 7 == 1024 (bits->kbits) / 8 (bits->bytes) */
 	seconds = filesize / ((bitrate * 1000) >> 3);
 
