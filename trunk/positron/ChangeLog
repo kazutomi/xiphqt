@@ -1,4 +1,4 @@
-Version ??? (???):
+Version 1.1 (April 1, 2004):
 	* mp3_support option added to permit MP3 support to be disabled.
 	Handy for testing firmwares that lack MP3 support.
 	* Fixed serious bug that caused deletion of multiple files to be done
@@ -12,6 +12,12 @@ Version ??? (???):
 	existing databases.
 	* Database handling fix that forces firmwares after 1.41 to cache 
 	the database when it is modified.
+	* Informational messages when scanning directories for files so
+	you know something is going on.
+	* Better error reporting when database directory is not present.
+	* Ogg Vorbis support turned on by default.
+	* Eliminated warnings in Python 2.3 about character encodings
+	in *_zip.py files.
 	
 Version 1.0 (June 19, 2003):
 	* Ogg Vorbis support added.  (Turned off by default)  Requires 

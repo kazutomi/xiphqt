@@ -1,7 +1,7 @@
 positron - Neuros Synchronization Manager for Linux
-Version 1.0
+Version 1.1
 
-Copyright 2003 - Xiph.org Foundation
+Copyright 2003-2004 - Xiph.org Foundation
 Written and maintained by Stan Seibert <volsung@xiph.org>
 
 MP3Info.py: Copyright 2002 - Vivake Gupta (vivakeATomniscia.org).  
@@ -95,11 +95,12 @@ filesystem, however, is always on partition 1.
 
 BACKING UP THE DATABASE
 
-Because positron is beta release software, it would be best to back up
-the Neuros database before use.  You can do this by copying the entire
-"WOID_DB" directory on the Neuros to some safe location.  If you need
-to restore the database, just remove the "WOID_DB" directory on the
-Neuros and copy your backup copy of the directory in its place.
+Given various bug reports about lockups when doing USB transfers to
+the Neuros in Linux, it would be best to back up the Neuros database
+before use.  You can do this by copying the entire "WOID_DB" directory
+on the Neuros to some safe location.  If you need to restore the
+database, just remove the "WOID_DB" directory on the Neuros and copy
+your backup copy of the directory in its place.
 
 
 USAGE
