@@ -1,25 +1,101 @@
 
 #include <stdio.h>
-#include "videodev.h"
+#include <string.h>
 #include "wavelet.h"
 #include "coder.h"
 #include "yuv.h"
 
 
-#define  N_FRAMES  1
+#define  N_FRAMES  4
 
 
-void save_ppm (char *prefix, uint8 *buf, int w, int h)
+int read_ppm_info (char *prefix, int *w, int *h)
+{
+   int i;
+   char fname [256];
+   FILE *file;
+
+   sprintf (fname , "%s0.ppm", prefix);
+   file = fopen (fname, "r");
+
+   if (!file) {
+      fprintf(stderr, "Error: opening first frame '%s'\n", fname);
+      return -1;
+   }
+
+   for (i=0; i<3; i++) {
+      char ln [255];
+      fgets(ln, 255, file);
+      if(*ln == '#')
+         i--;
+      else {
+         if (i == 0 && strncmp("P6", ln, 2)) {
+            fprintf(stderr, "Error: Need PPM file for input\n");
+            exit(-1);
+         }
+         if (i == 1) {
+            ln[20] = 0;
+            sscanf(ln, "%i %i", w, h);
+         }
+      }
+   }
+
+   return 0;
+}
+
+
+int read_ppm (char *prefix, int frame, uint8 *buf, int w, int h)
+{
+   int i;
+   long _w, _h;
+   char fname [256];
+   FILE *file;
+
+   sprintf (fname , "%s%i.ppm", prefix, frame);
+   file = fopen (fname, "r");
+
+   if (!file)
+      return -1;
+
+   for (i=0; i<3; i++) {
+      char ln [256];
+
+      fgets(ln, 255, file);
+      if(*ln == '#')
+         i--;
+      else {
+         if (i == 0 && strncmp("P6", ln, 2)) {
+            fprintf(stderr, "Error: Need PPM file for input\n");
+            exit(-1);
+         }
+         if (i == 1) {
+            ln[20] = 0;
+            sscanf(ln, "%ld %ld", &_w, &_h);
+         }
+      }
+   }
+
+   if (w != _w || h != _h) {
+      fprintf (stderr, "%s: image size inconsistent (w: %i <-> %ld, h: %i <-> %ld) !\n", __FUNCTION__, w, _w, h , _h);
+      exit (-1);
+   }
+
+   fread (buf, 3, w*h, file);
+   return 0;
+}
+
+
+void save_ppm (char *prefix, uint8 *buf, int w, int h, int first_frame, int frames)
 {
    int i;
 
-   for (i=0; i<N_FRAMES; i++)
+   for (i=0; i<frames; i++)
    {
       char fname [256];
       FILE *outfile;
       uint8 *img = buf + w * h * 3 * i;
 
-      sprintf (fname , "%s%i.ppm", prefix, i);
+      sprintf (fname , "%s%i.ppm", prefix, i + first_frame);
       outfile = fopen (fname, "w");
       fprintf (outfile, "P6\n%d %d\n%d\n", w, h, 255);
       fwrite (img, 3, w*h, outfile);
@@ -27,17 +103,17 @@ void save_ppm (char *prefix, uint8 *buf, int w, int h)
 }
 
 
-void save_ppm16 (char *prefix, int16 *buf, int w, int h)
+void save_ppm16 (char *prefix, int16 *buf, int w, int h, int first_frame, int frames)
 {
    int i, j;
 
-   for (i=0; i<N_FRAMES; i++)
+   for (i=0; i<frames; i++)
    {
       char fname [256];
       FILE *outfile;
       int16 *img = buf + w * h * i;
 
-      sprintf (fname , "%s%i.ppm", prefix, i);
+      sprintf (fname , "%s%i.ppm", prefix, i + first_frame);
       outfile = fopen (fname, "w");
       fprintf (outfile, "P6\n%d %d\n%d\n", w, h, 255);
       for (j=0; j<w*h; j++) {
@@ -52,22 +128,21 @@ void save_ppm16 (char *prefix, int16 *buf, int w, int h)
 
 int main (int argc, char **argv)
 {
-   VideoDev *vdev;
-   char *vdev_name = "/dev/video0";
+   char *ppm_prefix = "";
    uint8 *rgb, *rgb2;
    char *bitstream [3];
    int i, ycount, ucount, vcount;
    int ylimit, ulimit, vlimit;
-   Wavelet3DBuf *y, *u, *v, *y2, *u2, *v2;
+   int width = -1, height = -1, frames = 0, frame = 0;
 
    if (argc == 5)
-      vdev_name = argv[4];
+      ppm_prefix = argv[4];
    else if (argc != 4) {
       printf ("\n"
-        " usage: %s <ylimit> <ulimit> <vlimit> <videodevice>\n"
+        " usage: %s <ylimit> <ulimit> <vlimit> <ppm prefix>\n"
         "\n"
         "   ylimit, ulimit, vlimit: cut Y/U/V bitstream after limit bytes\n"
-        "   videodevice:            optional, /dev/video0 by default\n"
+        "   input ppm prefix:       optional, empty by default\n"
         "\n", argv[0]);
       exit (-1);
    }
@@ -76,106 +151,109 @@ int main (int argc, char **argv)
    ulimit = strtol (argv[2], 0, 0);
    vlimit = strtol (argv[3], 0, 0);
 
-   vdev = video_device_new (vdev_name);
+   if (read_ppm_info (ppm_prefix, &width, &height) < 0)
+      exit (-1);
 
-   if (!vdev) {
-      printf ("failed opening videodevice.\n");
-      return (-1);
-   }
+   rgb  = malloc (width * height * 3 * N_FRAMES);
+   rgb2 = malloc (width * height * 3 * N_FRAMES);
+   bitstream[0] = malloc (width * height * N_FRAMES);
+   bitstream[1] = malloc (width * height * N_FRAMES);
+   bitstream[2] = malloc (width * height * N_FRAMES);
 
-   rgb  = malloc (vdev->win.width * vdev->win.height * 3 * N_FRAMES);
-   rgb2 = malloc (vdev->win.width * vdev->win.height * 3 * N_FRAMES);
-   bitstream[0] = malloc (vdev->win.width * vdev->win.height * N_FRAMES);
-   bitstream[1] = malloc (vdev->win.width * vdev->win.height * N_FRAMES);
-   bitstream[2] = malloc (vdev->win.width * vdev->win.height * N_FRAMES);
-
-   y = wavelet_3d_buf_new (vdev->win.width, vdev->win.height, N_FRAMES);
-   u = wavelet_3d_buf_new (vdev->win.width, vdev->win.height, N_FRAMES);
-   v = wavelet_3d_buf_new (vdev->win.width, vdev->win.height, N_FRAMES);
-   y2 = wavelet_3d_buf_new (vdev->win.width, vdev->win.height, N_FRAMES);
-   u2 = wavelet_3d_buf_new (vdev->win.width, vdev->win.height, N_FRAMES);
-   v2 = wavelet_3d_buf_new (vdev->win.width, vdev->win.height, N_FRAMES);
-
-   if (!rgb || !rgb2 || !y || !u || !v || !y2 || !u2 || !v2 ||
-       !bitstream[0] || !bitstream[1] || !bitstream[2])
-   {
+   if (!rgb || !rgb2 || !bitstream[0] || !bitstream[1] || !bitstream[2]) {
       printf ("memory allocation failed.\n");
       return (-1);
    }
 
-   video_device_try_palette (vdev, VIDEO_PALETTE_RGB24);
 
-   for (i=0; i<N_FRAMES; i++)
-      video_device_grab_frame (vdev, rgb + vdev->win.width * vdev->win.height * 3 * i);
+   do {
+      Wavelet3DBuf *y, *u, *v, *y2, *u2, *v2;
 
-   save_ppm ("orig", rgb, vdev->win.width, vdev->win.height);
+      for (frames=0; frames<N_FRAMES; frames++)
+         if (read_ppm (ppm_prefix, frame, rgb + width * height * 3 * frames, width, height) < 0)
+            break;
 
-   rgb2yuv (rgb, y->data, u->data, v->data,
-            vdev->win.width * vdev->win.height * N_FRAMES, 3);
+      y = wavelet_3d_buf_new (width, height, frames);
+      u = wavelet_3d_buf_new (width, height, frames);
+      v = wavelet_3d_buf_new (width, height, frames);
+      y2 = wavelet_3d_buf_new (width, height, frames);
+      u2 = wavelet_3d_buf_new (width, height, frames);
+      v2 = wavelet_3d_buf_new (width, height, frames);
 
-   save_ppm16 ("y", y->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("u", u->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("v", v->data, vdev->win.width, vdev->win.height);
+      if (!y || !u || !v || !y2 || !u2 || !v2) {
+         printf ("memory allocation failed.\n");
+         return (-1);
+      }
 
-   wavelet_3d_buf_fwd_xform (y);
-   wavelet_3d_buf_fwd_xform (u);
-   wavelet_3d_buf_fwd_xform (v);
+      save_ppm ("orig", rgb, width, height, frame, frames);
 
-   save_ppm16 ("y.coeff", y->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("u.coeff", u->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("v.coeff", v->data, vdev->win.width, vdev->win.height);
+      rgb2yuv (rgb, y->data, u->data, v->data, width * height * frames, 3);
 
-   ycount = encode_coeff3d (y, bitstream [0], vdev->win.width * vdev->win.height * N_FRAMES);
-   ucount = encode_coeff3d (u, bitstream [1], vdev->win.width * vdev->win.height * N_FRAMES);
-   vcount = encode_coeff3d (v, bitstream [2], vdev->win.width * vdev->win.height * N_FRAMES);
+      save_ppm16 ("y", y->data, width, height, frame, frames);
+      save_ppm16 ("u", u->data, width, height, frame, frames);
+      save_ppm16 ("v", v->data, width, height, frame, frames);
 
-   if (ycount < ylimit) ylimit = ycount;
-   if (ucount < ulimit) ulimit = ucount;
-   if (vcount < vlimit) vlimit = vcount;
+      wavelet_3d_buf_fwd_xform (y);
+      wavelet_3d_buf_fwd_xform (u);
+      wavelet_3d_buf_fwd_xform (v);
 
-   for (i=1; i<y2->scales; i++)  y2->minmax[i] = y->minmax[i];
-   for (i=1; i<u2->scales; i++)  u2->minmax[i] = u->minmax[i];
-   for (i=1; i<v2->scales; i++)  v2->minmax[i] = v->minmax[i];
+      save_ppm16 ("y.coeff", y->data, width, height, frame, frames);
+      save_ppm16 ("u.coeff", u->data, width, height, frame, frames);
+      save_ppm16 ("v.coeff", v->data, width, height, frame, frames);
 
-   decode_coeff3d (y2, bitstream [0], ylimit);
-   decode_coeff3d (u2, bitstream [1], ulimit);
-   decode_coeff3d (v2, bitstream [2], vlimit);
+      ycount = encode_coeff3d (y, bitstream [0], width * height * frames);
+      ucount = encode_coeff3d (u, bitstream [1], width * height * frames);
+      vcount = encode_coeff3d (v, bitstream [2], width * height * frames);
 
-   for (i=0; i<vdev->win.width*vdev->win.height*N_FRAMES; i++) {
-      rgb [3*i]   = (y->data[i] == y2->data [i]) ? 0 : ~0;
-      rgb [3*i+1] = (u->data[i] == u2->data [i]) ? 0 : ~0;
-      rgb [3*i+2] = (v->data[i] == v2->data [i]) ? 0 : ~0;
-   }
+      if (ycount < ylimit) ylimit = ycount;
+      if (ucount < ulimit) ulimit = ucount;
+      if (vcount < vlimit) vlimit = vcount;
 
-   save_ppm ("coeffdiff", rgb, vdev->win.width, vdev->win.height);
+      for (i=1; i<y2->scales; i++)  y2->minmax[i] = y->minmax[i];
+      for (i=1; i<u2->scales; i++)  u2->minmax[i] = u->minmax[i];
+      for (i=1; i<v2->scales; i++)  v2->minmax[i] = v->minmax[i];
 
-   save_ppm16 ("y.rcoeff", y2->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("u.rcoeff", u2->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("v.rcoeff", v2->data, vdev->win.width, vdev->win.height);
+      decode_coeff3d (y2, bitstream [0], ylimit);
+      decode_coeff3d (u2, bitstream [1], ulimit);
+      decode_coeff3d (v2, bitstream [2], vlimit);
 
-   wavelet_3d_buf_inv_xform (y2);
-   wavelet_3d_buf_inv_xform (u2);
-   wavelet_3d_buf_inv_xform (v2);
+      for (i=0; i<width*height*frames; i++) {
+         rgb [3*i]   = (y->data[i] == y2->data [i]) ? 0 : ~0;
+         rgb [3*i+1] = (u->data[i] == u2->data [i]) ? 0 : ~0;
+         rgb [3*i+2] = (v->data[i] == v2->data [i]) ? 0 : ~0;
+      }
 
-   save_ppm16 ("yr", y2->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("ur", u2->data, vdev->win.width, vdev->win.height);
-   save_ppm16 ("vr", v2->data, vdev->win.width, vdev->win.height);
+      save_ppm ("coeffdiff", rgb, width, height, frame, frames);
 
-   yuv2rgb (y2->data, u2->data, v2->data, rgb2,
-            vdev->win.width * vdev->win.height * N_FRAMES, 3);
+      save_ppm16 ("y.rcoeff", y2->data, width, height, frame, frames);
+      save_ppm16 ("u.rcoeff", u2->data, width, height, frame, frames);
+      save_ppm16 ("v.rcoeff", v2->data, width, height, frame, frames);
 
-   save_ppm ("out", rgb2, vdev->win.width, vdev->win.height);
+      wavelet_3d_buf_inv_xform (y2);
+      wavelet_3d_buf_inv_xform (u2);
+      wavelet_3d_buf_inv_xform (v2);
 
-   video_device_destroy (vdev);
+      save_ppm16 ("yr", y2->data, width, height, frame, frames);
+      save_ppm16 ("ur", u2->data, width, height, frame, frames);
+      save_ppm16 ("vr", v2->data, width, height, frame, frames);
+
+      yuv2rgb (y2->data, u2->data, v2->data, rgb2, width * height * frames, 3);
+
+      save_ppm ("out", rgb2, width, height, frame, frames);
+
+      wavelet_3d_buf_destroy (y);
+      wavelet_3d_buf_destroy (u);
+      wavelet_3d_buf_destroy (v);
+      wavelet_3d_buf_destroy (y2);
+      wavelet_3d_buf_destroy (u2);
+      wavelet_3d_buf_destroy (v2);
+
+      frame += frames;
+
+   } while (frames == N_FRAMES);
 
    free (rgb);
    free (rgb2);
-   wavelet_3d_buf_destroy (y);
-   wavelet_3d_buf_destroy (u);
-   wavelet_3d_buf_destroy (v);
-   wavelet_3d_buf_destroy (y2);
-   wavelet_3d_buf_destroy (u2);
-   wavelet_3d_buf_destroy (v2);
    free (bitstream[0]);
    free (bitstream[1]);
    free (bitstream[2]);

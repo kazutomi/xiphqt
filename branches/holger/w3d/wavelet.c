@@ -132,6 +132,7 @@ void __inv_xform__ (TYPE *data, int stride, int n)
    TYPE *d = _d;
    TYPE *s = _s;
 
+
    for (i=0; i<k+1; i++)
       s [i] = x [i*stride];
 
