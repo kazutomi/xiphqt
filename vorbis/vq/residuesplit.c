@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: residue backend 0 partitioner
- last mod: $Id: residuesplit.c,v 1.1 2000/02/12 08:33:01 xiphmont Exp $
+ last mod: $Id: residuesplit.c,v 1.1.4.1 2000/04/13 04:53:03 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,54 +31,70 @@
 /* modifies the pcm vector, returns book membership in aux */
 
 /* This is currently a bit specific to/hardwired for mapping 0; things
-   will need to change in the future when we het real multichannel
+   will need to change in the future when we get real multichannel
    mappings */
 
-static double _maxval(double *v,int n){
-  int i;
-  double acc=0.;
-  for(i=0;i<n;i++){
-    double val=fabs(v[i]);
-    if(acc<val)acc=val;
-  }
-  return(acc);
-}
+/* does not guard against invalid settings; eg, a subn of 16 and a
+   subgroup request of 32.  Max subn of 128 */
+static void _testhack(double *vec,int n,double *entropy){
+  int i,j=0;
+  double max=0.;
+  double temp[128];
 
-/* mean dB actually */
-static double _meanval(double *v,int n){
-  int i;
-  double acc=0.;
+  /* setup */
+  for(i=0;i<n;i++){
+    if(vec[i])
+      temp[i]=(todB(vec[i])+6.);
+    else
+      temp[i]=0.;
+  }
+
+  /* handle case subgrp==1 outside */
   for(i=0;i<n;i++)
-    acc+=todB(fabs(v[i]));
-  return(fromdB(acc/n));
+    if(temp[i]>max)max=temp[i];
+
+  while(1){
+    entropy[j]=max;
+    n>>=1;
+    j++;
+
+    if(n<=0)break;
+    for(i=0;i<n;i++){
+      temp[i]+=temp[i+n];
+    }
+    max=0.;
+    for(i=0;i<n;i++)
+      if(temp[i]>max)max=temp[i];
+  }
 }
 
 static FILE *of;
 static FILE **or;
 
-int quantaux(double *mask, double *floor,int n,
-	     double *maskmbound,double *maskabound,double *floorbound,
-	     int parts, int subn){
-  long i,j;
 
-  for(i=0;i<=n-subn;){
-    double maxmask=_maxval(mask+i,subn);
-    double meanmask=_meanval(mask+i,subn);
-    double meanfloor=_meanval(floor+i,subn);
+/* we evaluate the the entropy measure for each interleaved subgroup */
+int quantaux(double *res,int n,double *bound,int *subgrp,int parts, int subn){
+  long i,j,p;
+  double entropy[8];
+
+  for(i=0;i<=n-subn;i+=subn){
     int aux;
+    int step;
+    _testhack(res+i,subn,entropy);
 
     for(j=0;j<parts-1;j++)
-      if(maxmask<maskmbound[j] && 
-	 meanmask<maskabound[j] &&
-	 meanfloor<floorbound[j])
+      if(entropy[subgrp[j]]>bound[j])
 	break;
     aux=j;
 
     fprintf(of,"%d, ",aux);      
+    step=subn/(1<<subgrp[j]);
 
-    for(j=0;j<subn;j++,i++)
-      fprintf(or[aux],"%g, ",floor[i]);
-    fprintf(or[aux],"\n");
+    for(j=0;j<step;j++){
+      for(p=j;p<subn;p+=step)
+	fprintf(or[aux],"%g, ",res[p+i]);
+      fprintf(or[aux],"\n");
+    }
   }
 
   fprintf(of,"\n");
@@ -111,12 +127,12 @@ static int getline(FILE *in,double *vec,int begin,int n){
 static void usage(){
   fprintf(stderr,
 	  "usage:\n" 
-	  "residuesplit <mask> <floor> <begin,n,group> <baseout> <m,a,f> [<m,a,f>]...\n"
+	  "residuesplit <res> <begin,n,group> <baseout> <max,subgr> [<max,subgr>]...\n"
 	  "   where begin,n,group is first scalar, \n"
 	  "                          number of scalars of each in line,\n"
 	  "                          number of scalars in a group\n"
-	  "         m,a,f are the boundary conditions for each group\n"
-	  "eg: residuesplit mask.vqd floor.vqd 0,1024,32 res .5 2.5,1.5 ,,.25\n"
+	  "         maxent is the maximum allowable entropy heuristic for a group\n"
+	  "eg: residuesplit mask.vqd floor.vqd 0,1024,16 res 10,2 10,4 5,4 ,8\n"
 	  "produces resaux.vqd and res_0...n.vqd\n\n");
   exit(1);
 }
@@ -124,19 +140,17 @@ static void usage(){
 int main(int argc, char *argv[]){
   char *buffer;
   char *base;
-  int i,parts,begin,n,subn;
-  FILE *mask;
-  FILE *floor;
-  double *maskmbound,*maskabound,*maskvec;
-  double *floorbound,*floorvec;
+  int i,parts,begin,n,subn,*subgrp;
+  FILE *res;
+  double *bound,*vec;
+  long c=0;
+  if(argc<5)usage();
 
-  if(argc<6)usage();
-
-  base=strdup(argv[4]);
+  base=strdup(argv[3]);
   buffer=alloca(strlen(base)+20);
   {
-    char *pos=strchr(argv[3],',');
-    begin=atoi(argv[3]);
+    char *pos=strchr(argv[2],',');
+    begin=atoi(argv[2]);
     if(!pos)
       usage();
     else
@@ -152,42 +166,28 @@ int main(int argc, char *argv[]){
     }
   }
 
-  /* how many parts?  Need to scan m,f... */
-  parts=argc-4; /* yes, one past */
-  maskmbound=malloc(sizeof(double)*parts);
-  maskabound=malloc(sizeof(double)*parts);
-  floorbound=malloc(sizeof(double)*parts);
+  /* how many parts?... */
+  parts=argc-4;
+  bound=malloc(sizeof(double)*parts);
+  subgrp=malloc(sizeof(int)*parts);
 
-  for(i=0;i<parts-1;i++){
-    char *pos=strchr(argv[5+i],',');
-    maskmbound[i]=atof(argv[5+i]);
-    if(*argv[5+i]==',')maskmbound[i]=1e50;
+  for(i=0;i<parts;i++){
+    char *pos=strchr(argv[4+i],',');
+    if(*argv[4+i]==',')
+      bound[i]=1e50;
+    else
+      bound[i]=atof(argv[4+i]);
     if(!pos){
-      maskabound[i]=1e50;
-      floorbound[i]=1e50;
+      subgrp[i]=_ilog(subn)-1;
     }else{
-      maskabound[i]=atof(pos+1);
-      if(pos[1]==',')maskabound[i]=1e50;
-      pos=strchr(pos+1,',');
-      if(!pos)
-	floorbound[i]=1e50;
-      else{
-	floorbound[i]=atof(pos+1);
-      }
+      subgrp[i]=_ilog(atoi(pos+1))-1;
     }
-  }
-  maskmbound[i]=1e50;
-  maskabound[i]=1e50;
-  floorbound[i]=1e50;
 
-  mask=fopen(argv[1],"r");
-  if(!mask){
-    fprintf(stderr,"Could not open file %s\n",argv[1]);
-    exit(1);
   }
-  floor=fopen(argv[2],"r");
-  if(!mask){
-    fprintf(stderr,"Could not open file %s\n",argv[2]);
+
+  res=fopen(argv[1],"r");
+  if(!res){
+    fprintf(stderr,"Could not open file %s\n",argv[1]);
     exit(1);
   }
 
@@ -207,21 +207,22 @@ int main(int argc, char *argv[]){
     }
   }
   
-  maskvec=malloc(sizeof(double)*n);
-  floorvec=malloc(sizeof(double)*n);
+  vec=malloc(sizeof(double)*n);
   /* get the input line by line and process it */
-  while(!feof(mask) && !feof(floor)){
-    if(getline(mask,maskvec,begin,n) &&
-       getline(floor,floorvec,begin,n)) 
-      quantaux(maskvec,floorvec,n,
-	       maskmbound,maskabound,floorbound,parts,subn);
-    
+  while(!feof(res)){
+    if(getline(res,vec,begin,n))
+      quantaux(vec,n,bound,subgrp,parts,subn);
+    c++;
+    if(c&0xff==0xff){
+      c=0;
+      spinnit("kB so far...",(int)(ftell(res)/1024));
+    }
   }
-  fclose(mask);
-  fclose(floor);
+  fclose(res);
   fclose(of);
   for(i=0;i<parts;i++)
     fclose(or[i]);
+  fprintf(stderr,"\rDone                         \n");
   return(0);
 }
 
