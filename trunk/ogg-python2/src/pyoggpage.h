@@ -1,10 +1,11 @@
 #ifndef PYOGG2PAGE_H
 #define PYOGG2PAGE_H
 
-#include <pyogg/pyogg2.h>
+#include "general.h"
 
 typedef struct {
   PyObject_HEAD
+  int valid_flag;
   ogg_page *page;
 } PyOggPageObject;
 

@@ -1,7 +1,7 @@
 #ifndef PYOGGSYNCSTATE_H
 #define PYOGGSYNCSTATE_H
 
-#include <pyogg/pyogg2.h>                                                       
+#include "general.h"
 
 typedef struct {
   PyObject_HEAD

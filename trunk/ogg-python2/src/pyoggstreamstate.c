@@ -121,17 +121,23 @@ PyOggStreamState_Packetin(PyObject *self, PyObject *args)
 			(PyObject *) &packet))
     return NULL;
   
+  if ( packet->valid_flag == 0 ) {
+    PyErr_SetString(PyOggPacket_Error, "this packet is no longer usable.");
+    return NULL;
+  }
+
   ret = ogg_stream_packetin(PyOggStreamState_AsOggStreamState(self), 
                             PyOggPacket_AsOggPacket(packet));
   if (ret == OGG_SUCCESS) {
     Py_INCREF(Py_None);
+    packet->valid_flag = 0;    
     return Py_None;
   } 
   if (ret == OGG_EEOS) {
-    PyErr_SetString(PyOggError, "EOS has been set on this stream");
+    PyErr_SetString(PyOgg_Error, "EOS has been set on this stream");
     return NULL;
   }
-  PyErr_SetString(PyOggError, "error in ogg_stream_packetin");
+  PyErr_SetString(PyOgg_Error, "error in ogg_stream_packetin");
   return NULL;
 }
 
@@ -147,7 +153,7 @@ PyOggStreamState_Pageout(PyObject *self, PyObject *args)
 
   pageobj = PyOggPage_Alloc();
   if ( !pageobj ) {
-    PyErr_SetString(PyOggError, "Out of Memory.");
+    PyErr_SetString(PyOgg_Error, "Out of Memory.");
     return NULL;
   }
   ret = ogg_stream_pageout(PyOggStreamState_AsOggStreamState(self),
@@ -170,7 +176,7 @@ PyOggStreamState_Flush(PyObject *self, PyObject *args)
 
   pageobj = PyOggPage_Alloc();
   if ( !pageobj ) {
-    PyErr_SetString(PyOggError, "Out of Memory.");
+    PyErr_SetString(PyOgg_Error, "Out of Memory.");
     return NULL;
   }
   ret = ogg_stream_flush(PyOggStreamState_AsOggStreamState(self), 
@@ -191,22 +197,28 @@ PyOggStreamState_Pagein(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "O!", &PyOggPage_Type,
 			(PyObject *) &page))
     return NULL;
-  
+
+  if ( page->valid_flag == 0 ) {
+    PyErr_SetString(PyOggPage_Error, "this page is no longer usable.");
+    return NULL;
+  }
+
   ret = ogg_stream_pagein(PyOggStreamState_AsOggStreamState(self), 
                           PyOggPage_AsOggPage(page));
   if (ret == OGG_SUCCESS) {
     Py_INCREF(Py_None);
+    page->valid_flag = 0;    
     return Py_None;
   }
   if (ret == OGG_ESERIAL) {
-    PyErr_SetString(PyOggError, "Page serial does not match stream.");
+    PyErr_SetString(PyOgg_Error, "Page serial does not match stream.");
     return NULL;
   }
   if (ret == OGG_EVERSION) {
-    PyErr_SetString(PyOggError, "Unknown Ogg page version.");
+    PyErr_SetString(PyOgg_Error, "Unknown Ogg page version.");
     return NULL;
   } 
-  PyErr_SetString(PyOggError, "Unknown return from ogg_stream_pagein.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_stream_pagein.");
   return NULL;
 }
 
@@ -222,7 +234,7 @@ PyOggStreamState_Packetout(PyObject *self, PyObject *args)
 
   packetobj = PyOggPacket_Alloc();
   if ( !packetobj ) {
-    PyErr_SetString(PyOggError, "Out of Memory.");
+    PyErr_SetString(PyOgg_Error, "Out of Memory.");
     return NULL;
   }
 
@@ -236,14 +248,14 @@ PyOggStreamState_Packetout(PyObject *self, PyObject *args)
     return Py_None;
   }
   if (ret == OGG_HOLE ) {
-    PyErr_SetString(PyOggError, "Hole in data, stream is desynced.");
+    PyErr_SetString(PyOgg_Error, "Hole in data, stream is desynced.");
     return NULL;
   }
   if (ret == OGG_SPAN) {
-    PyErr_SetString(PyOggError, "Stream spans ??.");
+    PyErr_SetString(PyOgg_Error, "Stream spans ??.");
     return NULL;
   }
-  PyErr_SetString(PyOggError, "Unknown return from ogg_stream_packetout.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_stream_packetout.");
   return NULL;
 }
 
@@ -264,14 +276,14 @@ PyOggStreamState_Packetpeek(PyObject *self, PyObject *args)
     return Py_False;
   }
   if (ret == OGG_HOLE ) {
-    PyErr_SetString(PyOggError, "Hole in data, stream is desynced.");
+    PyErr_SetString(PyOgg_Error, "Hole in data, stream is desynced.");
     return NULL;
   }
   if (ret == OGG_SPAN) {
-    PyErr_SetString(PyOggError, "Stream spans ??.");
+    PyErr_SetString(PyOgg_Error, "Stream spans ??.");
     return NULL;
   }
-  PyErr_SetString(PyOggError, "Unknown return from ogg_stream_packetout.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_stream_packetout.");
   return NULL;
 }
 
@@ -294,7 +306,7 @@ PyOggStreamState_Reset(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
   } else {
-    PyErr_SetString(PyOggError, "Unknown error while resetting stream");
+    PyErr_SetString(PyOgg_Error, "Unknown error while resetting stream");
     return NULL;
   }
 }

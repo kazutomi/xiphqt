@@ -3,7 +3,9 @@
 
 #include <Python.h>
 
-PyObject *PyOggError;
+PyObject *PyOgg_Error;
+PyObject *PyOggPage_Error;
+PyObject *PyOggPacket_Error;
 
 /* Object docstrings */
 

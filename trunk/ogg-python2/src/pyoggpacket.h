@@ -1,8 +1,11 @@
 #ifndef PYOGGPACKET_H
 #define PYOGGPACKET_H
 
+#include "general.h"
+
 typedef struct {
   PyObject_HEAD
+  int valid_flag;
   ogg_packet *packet;
 } PyOggPacketObject;
 

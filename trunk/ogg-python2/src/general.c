@@ -1,5 +1,4 @@
 #include "general.h"
-#include <pyogg/pyogg2.h>
 
 /* Simple function to turn an object into an ogg_int64_t. Returns 0 on
  * an error. Does not DECREF the argument */
