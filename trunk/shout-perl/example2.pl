@@ -10,15 +10,18 @@ use Shout;
 use vars qw{$Debug $Lame};
 chomp( $Lame = `which lame` );
 my $Bitrate=64;
+my $Samplerate = 22050;
 ### Create a new streaming object
 my $streamer = new Shout
-	host			=> "localhost",
+	host		=> "localhost",
 	port		=> 8000,
-	mount		=> "/test2",
-	password	=> "icenc",
-	format => SHOUT_FORMAT_MP3;
-	protocol => SHOUT_PROTOCOL_HTTP;
+	mount		=> "/example2",
+	password	=> "hackme",
+	format          => SHOUT_FORMAT_MP3,
+	protocol        => SHOUT_PROTOCOL_HTTP;
 
+$streamer->set_audio_info(SHOUT_AI_BITRATE => $Bitrate,
+  SHOUT_AI_SAMPLERATE => 22050);
 
 ###############################################################################
 ###	M A I N   P R O G R A M
@@ -40,13 +43,15 @@ for my $file ( @ARGV ) {
 	print STDERR "Can't read '$file': $!" unless -r $file;
 	print "Sending $file...\n";
 
+        $streamer->set_metadata(song => "Now Playing: $file");
+
 	### Run lame in downsampling mode on the file we're going to send
 	open( LAME, "-|" ) || exec $Lame, qw{--mp3input -b}, $Bitrate, qw{-m j -f -S}, $file, "-";
 
 	my $buff;
 	READ: while ((my $len = sysread(LAME, $buff, 4096)) > 0) {
 		print STDERR "Read $len bytes...\n" if $Debug;
-		$streamer->send_data( $buff ) && next;
+		$streamer->send( $buff ) && next;
 
 		warn( "send failed: ", $streamer->get_error, "\n" );
 		last READ;

@@ -10,21 +10,22 @@ my $conn = new Shout;
 # setup all the params
 $conn->host('localhost');
 $conn->port(8000);
-$conn->mount('/testing');
+$conn->mount('/example');
 $conn->password('hackme');
 $conn->public(0);
 $conn->format(SHOUT_FORMAT_MP3);
 $conn->protocol(SHOUT_PROTOCOL_HTTP);
+$conn->set_audio_info(SHOUT_AI_BITRATE => 128, SHOUT_AI_SAMPLERATE => 44100);
 
 # try to connect
 if ($conn->open) {
     print "connected...\n";
-    $conn->setMetadata("song" => "Streaming from standard in");
+    $conn->set_metadata("song" => "Streaming from standard in");
 
     # if we connect, grab data from stdin and shoot it to the server
     my ($buff, $len);
     while (($len = sysread(STDIN, $buff, 4096)) > 0) {
-	unless ($conn->send_data($buff)) {
+	unless ($conn->send($buff)) {
 	    print "Error while sending: " . $conn->get_error . "\n";
 	    last;
 	}
@@ -38,5 +39,3 @@ if ($conn->open) {
 } else {
     print "couldn't connect...\n";
 }
-
-
