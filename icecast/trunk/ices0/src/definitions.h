@@ -54,7 +54,9 @@
 #endif
 
 #ifndef _POSIX_C_SOURCE
+#if !defined(__FreeBSD__) || __FreeBSD__ < 5
 #define _POSIX_C_SOURCE 199506L
+#endif
 #endif
 
 /* This for freebsd (needed on 3.2 at least) */
