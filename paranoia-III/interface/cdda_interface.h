@@ -1,6 +1,6 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
- * Copyright (C) 2001 Xiph.org
+ * Copyright (C) 1998 Monty xiphmont@mit.edu
  * and Heiko Eissfeldt heiko@escape.colossus.de
  *
  * Toplevel interface header; applications include this
@@ -26,7 +26,7 @@
 typedef struct TOC {	/* structure of table of contents */
   unsigned char bFlags;
   unsigned char bTrack;
-  int32_t dwStartSector;
+  unsigned size32 dwStartSector;
 } TOC;
 
 /* interface types */
@@ -39,6 +39,8 @@ typedef struct TOC {	/* structure of table of contents */
 #define CDDA_MESSAGE_LOGIT 2
 
 /* cdrom access function pointer */
+
+void SetupInterface( unsigned char *int_name );
 
 typedef struct cdrom_drive{
 
@@ -69,33 +71,31 @@ typedef struct cdrom_drive{
 
   /* functions specific to particular drives/interrfaces */
 
-  int  (*enable_cdda)  (struct cdrom_drive *d, int onoff);
+  int  (*enable_cdda)  (struct cdrom_drive *d, int speed);
   int  (*read_toc)     (struct cdrom_drive *d);
   long (*read_audio)   (struct cdrom_drive *d, void *p, long begin, 
 		       long sectors);
-  int  (*set_speed)    (struct cdrom_drive *d, int speed);
-  int error_retry;
-  int report_all;
+  int  (*select_speed) (struct cdrom_drive *d,int speed);
 
-  int is_atapi;
-  int is_mmc;
+  int nothing_read;
+  int maxspeed;
 
   /* SCSI command buffer and offset pointers */
   unsigned char *sg;
   unsigned char *sg_buffer;
-  unsigned char inqbytes[4];
 
   /* Scsi parameters and state */
   unsigned char density;
-  unsigned char orgdens;
-  unsigned int orgsize;
+  unsigned char orgmode4;
+  unsigned char orgmode10;
+  unsigned char orgmode11;
   long bigbuff;
   int adjust_ssize;
-
   int fua;
-  int lun;
 
   sigset_t sigset;
+
+  /* Cooked parameters */
 
 } cdrom_drive;
 
@@ -118,7 +118,6 @@ extern cdrom_drive *cdda_identify_test(const char *filename,
 
 /******** Drive oriented functions */
 
-extern int cdda_speed_set(cdrom_drive *d, int speed);
 extern void cdda_verbose_set(cdrom_drive *d,int err_action, int mes_action);
 extern char *cdda_messages(cdrom_drive *d);
 extern char *cdda_errors(cdrom_drive *d);
@@ -139,53 +138,24 @@ extern int cdda_track_preemp(cdrom_drive *d,int track);
 extern long cdda_disc_firstsector(cdrom_drive *d);
 extern long cdda_disc_lastsector(cdrom_drive *d);
 
-/* transport errors: */
-
-#define TR_OK            0
-#define TR_EWRITE        1  /* Error writing packet command (transport) */
-#define TR_EREAD         2  /* Error reading packet data (transport) */
-#define TR_UNDERRUN      3  /* Read underrun */
-#define TR_OVERRUN       4  /* Read overrun */
-#define TR_ILLEGAL       5  /* Illegal/rejected request */
-#define TR_MEDIUM        6  /* Medium error */
-#define TR_BUSY          7  /* Device busy */
-#define TR_NOTREADY      8  /* Device not ready */
-#define TR_FAULT         9  /* Devive failure */
-#define TR_UNKNOWN      10  /* Unspecified error */
-#define TR_STREAMING    11  /* loss of streaming */
-
-static char *strerror_tr[]={
-  "Success",
-  "Error writing packet command to device",
-  "Error reading command from device",
-  "SCSI packet data underrun (too little data)",
-  "SCSI packet data overrun (too much data)",
-  "Illegal SCSI request (rejected by target)",
-  "Medium reading data from medium",
-  "Device busy",
-  "Device not ready",
-  "Target hardware fault",
-  "Unspecified error",
-  "Drive lost streaming"
-};
-
 /* Errors returned by lib: 
 
 001: Unable to set CDROM to read audio mode
-002: Unable to read table of contents lead-out
+002: Unable to read table of contents
 003: CDROM reporting illegal number of tracks
 004: Unable to read table of contents header
 005: Unable to read table of contents entry
 006: Could not read any data from drive
 007: Unknown, unrecoverable error reading data
 008: Unable to identify CDROM model
-009: CDROM reporting illegal table of contents
-010: Unaddressable sector 
 
 100: Interface not supported
 101: Drive is neither a CDROM nor a WORM device
 102: Permision denied on cdrom (ioctl) device
 103: Permision denied on cdrom (data) device
+
+200: Invalid speed setting for drive
+201: Speed select failed
 
 300: Kernel memory error
 
