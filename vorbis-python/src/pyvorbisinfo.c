@@ -16,8 +16,8 @@
 FDEF(ov_info_clear) "Clears a VorbisInfo object";
 FDEF(vorbis_analysis_init) "Create a DSP object to start audio analysis.";
 
-static void py_ov_info_dealloc(py_vinfo *);
-static PyObject *py_ov_info_getattr(py_vinfo *, char *name);
+static void py_ov_info_dealloc(PyObject *);
+static PyObject *py_ov_info_getattr(PyObject *, char *name);
 
 static PyMethodDef py_vinfo_methods[] = {
   {"clear", py_ov_info_clear, 
@@ -39,12 +39,12 @@ PyTypeObject py_vinfo_type = {
   0,
 
   /* Standard Methods */
-  (destructor) py_ov_info_dealloc,
-  (printfunc) 0,
-  (getattrfunc) py_ov_info_getattr,
-  (setattrfunc) 0,
-  (cmpfunc) 0,
-  (reprfunc) 0,
+  /* destructor */ py_ov_info_dealloc,
+  /* printfunc */ 0,
+  /* getattrfunc */ py_ov_info_getattr,
+  /* setattrfunc */ 0,
+  /* cmpfunc */ 0,
+  /* reprfunc */ 0,
   
   /* Type Categories */
   0, /* as number */
@@ -111,12 +111,15 @@ py_ov_info_clear(PyObject *self, PyObject *args)
   py_vinfo *ovi_self = (py_vinfo *) self;
   vorbis_info_clear(&ovi_self->vi);
 
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   Py_INCREF(Py_None);
   return Py_None;
 }
 
 static void
-py_ov_info_dealloc(py_vinfo *self)
+py_ov_info_dealloc(PyObject *self)
 {
   PyMem_DEL(self);
 }
@@ -126,10 +129,10 @@ py_ov_info_dealloc(py_vinfo *self)
      return PyInt_FromLong(vi->x)
 
 static PyObject *
-py_ov_info_getattr(py_vinfo *self, char *name)
+py_ov_info_getattr(PyObject *self, char *name)
 {
   PyObject *res;
-  vorbis_info *vi = & self->vi;
+  vorbis_info *vi = PY_VINFO(self);
   char err_msg[MSG_SIZE];
 
   res = Py_FindMethod(py_vinfo_methods, (PyObject *)self, name);
@@ -167,6 +170,9 @@ py_vorbis_analysis_init(PyObject *self, PyObject *args)
   py_vinfo *ovi_self = (py_vinfo *) self;
   vorbis_dsp_state vd;
 
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   if ((res = vorbis_analysis_init(&vd, &ovi_self->vi)))
     return v_error_from_code(res, "vorbis_analysis_init");
 
@@ -196,8 +202,8 @@ FDEF(comment_values) "Returns a list of values (like a dictionary).\n\
 The list is flattened, so it is a list of tuples of strings,\n\
 not a list of (string, list) tuples.";
 
-static void py_vorbis_comment_dealloc(py_vinfo *);
-static PyObject *py_vorbis_comment_getattr(py_vcomment *, char *name);
+static void py_vorbis_comment_dealloc(PyObject *);
+static PyObject *py_vorbis_comment_getattr(PyObject *, char *name);
 
 
 static PyMethodDef py_vcomment_methods[] = {
@@ -254,12 +260,12 @@ PyTypeObject py_vcomment_type = {
   0,
 
   /* Standard Methods */
-  (destructor) py_vorbis_comment_dealloc,
-  (printfunc) 0,
-  (getattrfunc) py_vorbis_comment_getattr,
-  (setattrfunc) 0,
-  (cmpfunc) 0,
-  (reprfunc) 0,
+  /* destructor */ py_vorbis_comment_dealloc,
+  /* printfunc */ 0,
+  /* getattrfunc */ py_vorbis_comment_getattr,
+  /* setattrfunc */ 0,
+  /* cmpfunc */ 0,
+  /* reprfunc */ 0,
   
   /* Type Categories */
   0, /* as number */
@@ -298,6 +304,9 @@ py_comment_new(PyObject *self, PyObject *args)
 {
   py_vcomment *newobj;
 
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   newobj = (py_vcomment *) PyObject_NEW(py_vcomment, 
 					&py_vcomment_type);
   vorbis_comment_init(&newobj->vc);
@@ -310,6 +319,9 @@ py_vorbis_comment_clear(PyObject *self, PyObject *args)
 {
   py_vcomment *ovc_self = (py_vcomment *) self;
 
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   vorbis_comment_clear(&ovc_self->vc);
   vorbis_comment_init(&ovc_self->vc);
 
@@ -318,7 +330,7 @@ py_vorbis_comment_clear(PyObject *self, PyObject *args)
 }
 
 static void
-py_vorbis_comment_dealloc(py_vinfo *self)
+py_vorbis_comment_dealloc(PyObject *self)
 {
   py_vcomment *ovc_self = (py_vcomment *) self;
 
@@ -331,11 +343,11 @@ py_vorbis_comment_dealloc(py_vinfo *self)
 }
 
 static PyObject*
-py_vorbis_comment_getattr(py_vcomment *self, char *name)
+py_vorbis_comment_getattr(PyObject *self, char *name)
 {
   PyObject *res;
 
-  res = Py_FindMethod(py_vcomment_methods, (PyObject *) self, name);
+  res = Py_FindMethod(py_vcomment_methods, self, name);
   return res;
 }
 
@@ -421,9 +433,13 @@ py_comment_assign(py_vcomment *self,
 static PyObject *
 py_comment_keys(PyObject *self, PyObject *args)
 {
-  PyObject *dict = py_comment_as_dict(self, NULL);
+  PyObject *dict;
   PyObject *keys;
   
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  dict = py_comment_as_dict(self, NULL);
   if (!dict)
     return NULL;
   keys = PyDict_Keys(dict);
@@ -436,8 +452,14 @@ py_comment_items(PyObject *self, PyObject *args)
 {
   int curitem, curpos, j;
   PyObject *key, *val, *curval, *tuple;
-  PyObject *retlist = PyList_New(0);
-  PyObject *dict = py_comment_as_dict(self, NULL);
+  PyObject *retlist;
+  PyObject *dict;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  retlist = PyList_New(0);
+  dict = py_comment_as_dict(self, NULL);
 
   curitem = curpos = 0;
 
@@ -466,9 +488,14 @@ py_comment_values(PyObject *self, PyObject *args)
 {
   int curitem, curpos, j;
   PyObject *key, *val, *curval;
-  PyObject *retlist = PyList_New(0);
-  PyObject *dict = py_comment_as_dict(self, NULL);
+  PyObject *retlist;
+  PyObject *dict;
 
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  retlist = PyList_New(0);
+  dict = py_comment_as_dict(self, NULL);
   curitem = curpos = 0;
 
   while (PyDict_Next (dict, &curitem, &key, &val)) {
@@ -566,6 +593,9 @@ py_comment_as_dict(PyObject *self, PyObject *args)
 
   PyObject *retdict, *curlist, *item, *vendor_obj;
   
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   comment = &ovc_self->vc;
   retdict = PyDict_New();
 

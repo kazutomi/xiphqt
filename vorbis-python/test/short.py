@@ -11,7 +11,7 @@ SIZE = 4096
 
 vf = ogg.vorbis.VorbisFile(filename)
 id = ao.get_driver_id(device)
-ao = ao.Ao(id)
+ao = ao.AudioDevice(id)
 
 while 1:
     (buff, bytes, bit) = vf.read(SIZE)
