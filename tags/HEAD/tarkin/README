@@ -1,0 +1,16 @@
+'Tarkin' is a work-in-progress. Our goal is to create an open source 
+audiovisual streaming technology that parallels or exceeds the quality
+of various proprietary "standards" currently in existance.
+
+The project's main website will be located at http://www.tarkin.org.
+News and code updates will be available there as time and code progress.
+
+At present, Tarkin consists of:
+
+Jack (jack@icecast.org)
+Monty (monty@xiph.org)
+and myself (rickf@transpect.net)
+
+Until some serious code cleanup is done and documentation written, 
+you're going to be pretty much on your own with figuring out how this
+thing works. Good luck. ;)

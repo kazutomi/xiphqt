@@ -1,0 +1,33 @@
+2000-02-07 - Working name chosen
+
+After much spirited (and often silly) brainstorming on a project name, a working name of "Tarkin" (ala Grand Moff) is chosen
+for what has now turned into a project, primarily consisting of Jack, Monty and myself.
+
+Remember, it may be spelled T-a-r-k-i-n, but it's pronounced "VorboVision". ;)
+
+2000-02-06 - Vector packing method implemented
+
+First attempt at getting serious with lossless vector storage. DWT, unlike DCT, requires both spatial and magnitude components
+to be retained. Pyramid vector packing devised with anticipated 40% space savings for vector coords. Tests turn out better
+than expected results (between 45-50%).
+
+2000-02-04 - First player
+
+After showing some of the 'test strips' of the output around, Jack from Greenwitch takes an active interest in within we've
+made a primitive video encoder and player with help from some code borrowed from the Vorbis project. It's slow, the
+compression sucks, the output is ugly, and you can't stop the playback without a kill -SIGKILL, but it DOES work. More or
+less.
+
+2000-02-02 - Changed from 2d to 3d (motion 2d)
+
+After witnessing a number of complaints about lack of an open-source video format on IRC (in channel #icecast), I decide to
+fiddle with the DWT to see how good a result I could get if I converted the transform to use 3 dimensions. Pleasantly suprised
+with the results. Some people on #icecast seem interested.
+
+2000-02-01 - Initial Revision
+
+Unnamed thought experiment takes form from odd thoughts brought on by too much caffiene and Tylenol 3s (trying to kill a
+headache). First wavelet compression engine built, sample images sucked in as .pgm's, run through DWT and iDWT, and spit back
+out. Results were enough to make me say "Huh. Cool."... but not enough to make me want to work on it much more.
+
+$Id: HISTORY,v 1.1 2001/02/13 01:06:24 giles Exp $
