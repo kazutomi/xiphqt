@@ -25,21 +25,20 @@
 
 #define eq_freqs 30
 
-static float eq_freq_list[eq_freqs+1]={
+static const float eq_freq_list[eq_freqs+1]={
   25,31.5,40,50,63,80,
   100,125,160,200,250,315,
   400,500,630,800,1000,1250,1600,
   2000,2500,3150,4000,5000,6300,
   8000,10000,12500,16000,20000,9e10};
 
-static char *eq_freq_labels[eq_freqs]={
+static char * const eq_freq_labels[eq_freqs]={
   "25","31.5","40","50","63","80",
   "100","125","160","200","250","315",
   "400","500","630","800","1k","1.2k","1.6k",
   "2k","2.5k","3.1k","4k","5k","6.3k",
   "8k","10k","12.5k","16k","20k"
 };
-
 
 extern int pull_eq_feedback(float **peak,float **rms);
 extern int eq_load(void);
