@@ -1,11 +1,11 @@
 # distutils build script
-# To install pyshout2, run 'python setup.py install'
+# To install shout-python, run 'python setup.py install'
 
 from distutils.core import setup, Extension
 import os
 import sys
 
-ver = '0.0.3'
+ver = '0.1'
 
 # write default shout.pc path into environment if PKG_CONFIG_PATH is unset
 if not os.environ.has_key('PKG_CONFIG_PATH'):
@@ -52,10 +52,10 @@ shout = Extension('shout', sources = ['shout.c'],
                   libraries = libsonly)
 
 # data_files = []
-setup (name = 'pyshout2',
+setup (name = 'shout-python',
        version = ver,
        description = 'Bindings for libshout 2',
-       url = 'http://xiph.org/~brendan/pyshout2/',
+       url = 'http://xiph.org/~brendan/shout-python/',
        author = 'Brendan Cully',
        author_email = 'brendan@xiph.org',
        ext_modules = [shout])
