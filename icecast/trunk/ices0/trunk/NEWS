@@ -1,3 +1,4 @@
+0.3     2003-07-13
 	* Updated to libshout2, which brings icecast2 compatibility.
 	* ices will now attempt to trim junk and short frames from MP3 files,
 	  which should help if you've been hearing chirps between songs.
@@ -8,6 +9,7 @@
 	* Mono reencoding bug fixed.
 	* ID3v2 tag support.
 	* A blank line in a playlist will terminate ices.
+	* -i (icy_compat) has been removed in favor of -t 'protocol'
 0.2.3	2002-05-01
 	As always, the longer the time between releases, the less changed:
 	* ices no longer uses threads, making it much leaner and more portable.

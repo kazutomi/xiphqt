@@ -17,7 +17,8 @@ ices_get_next
 -------------
 This method is the only required method. It is called by ices at
 startup or when it has finished playing the previous file. It should
-return the path to a track.
+return the path to a track. Returning an empty string will signal
+ices to shut down.
 
 ices_init
 ---------
