@@ -1,3 +1,28 @@
+BUILDING FROM SOURCE
+~~~~~~~~~~~~~~~~~~~~
+Do ./configure, optionally with --with-perl, --with-python and --with-lame, 
+if you want support for that.
+
+If for some reason the configure script doesn't find the include files for
+python, perl or lame, you have to specify the path to these with
+--with-something-includes and --with-something-libraries.
+
+It's probably a good idea to do this anyway.
+
+./configure --help will help you out with the exact syntax for those options.
+
+To configure it all, I use
+./configure --with-perl --with-python --with-lame --with-lame-includes=/home/eel/lame --with-lame-libraries=/home/eel/lame
+
+My python is in /usr/include/python1.5, and perl in /usr/lib/perl/perl5/..., but the configure script
+finds it there so I don't have to specify the path for those.
+
+Then, do 'make' and everything should be fine.
+
+Optionally do a 'make install' which installs all the ices stuff.
+
+BUILDING FROM CVS
+~~~~~~~~~~~~~~~~~
 If you're installing ices from cvs, you need to do something
 like this:
 
@@ -20,8 +45,8 @@ Make sure you've got xml-config in your path and
 that setup should be fine.
 
 For playlist handlers, ices can optionally use
-python (perl support is on the way).
-Add --with-python to the configure script if you
+python or perl.
+Add --with-python or --with-perl, to the configure script if you
 want this enabled.
 
 For reencoding, you'll need libmp3lame, and the --with-lame* options

@@ -5,3 +5,7 @@ Reencoding:
 	ices. Also, make bloody sure that your mp3 files are ok, otherwize
 	the reencoding will make ices crash.
 	A good tool to use for mp3 checking is mp3check.
+Embedded languages for playlist handling:
+	Support perl and python scripts.
+Stable bitrate:
+	Uses libshout.

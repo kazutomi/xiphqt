@@ -39,6 +39,7 @@
 /* Private function declarations */
 static void ices_signals_child (const int sig);
 static void ices_signals_int (const int sig);
+static void ices_signals_hup (const int sig);
 
 /* Global function definitions */
 void
@@ -50,6 +51,7 @@ ices_signals_setup ()
 	signal (SIGIO, SIG_IGN);
 	signal (SIGALRM, SIG_IGN);
 	signal (SIGINT, ices_signals_int);
+	signal (SIGHUP, ices_signals_hup);
 }
 
 static void
@@ -66,6 +68,12 @@ ices_signals_child (const int sig)
 
 	ices_signals_setup ();
 	pid = wait (&stat);
+}
+
+static void
+ices_signals_hup (const int sig)
+{
+	ices_log_reopen_logfile ();
 }
 
 #endif

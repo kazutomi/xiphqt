@@ -162,8 +162,74 @@ Lets first go through the things you can change in ices.
 	Use this option to execute a different python or perl module than the default.
 	Default for python is ices.py and default for perl is ices.pl.
 
+How is it licensed?
+~~~~~~~~~~~~~~~~~~~
+ices is licensed under the Gnu General Public License, and for more info about that
+I suggest you read the file named COPYING.
 
-		
+Features
+~~~~~~~~
 
- 
+---------
+Cue file:
+---------
+The cue file holds information on the file that ices is currently feeding
+to the server. This is neat for you people out there who like running scripts.
+I myself, use the cue file in a tcl script, running from a eggdrop bot, on irc.
+That way I can ask the bot what song is currently playing, how long it is, how
+much of it has been played, and get information about the next songs on the
+playlist.
+The file currently has the following lines, (in this order).
+* filename
+* size (in bytes)
+* bitrate (in kbits/s)
+* minutes:seconds (total song length)
+* percent played (i.e 25, no %-sign)
+* playlist line index (i.e 3, if we're playing the 4:th line in the internal
+  playlist. Logical, huh? ) Also, for you scripting people, when ices
+  starts, it writes its process id to the file ices.pid.
+* ID3 Artist 
+* ID3 Title
+
+--------
+Signals:
+--------
+Sending SIGINT to ices will make it exit.
+Sending SIGHUP to ices will make it close and reopen the logfile.
+
+----------
+Reencoding
+----------
+If compiled with support for reencoding using liblame, and you supply the
+-R command line option or set the Execution/Reencode to 1 in the XML config
+file, then ices will start reencoding your files on the fly to the bitrate
+you specified with the -b option or the Stream/Bitrate tag.
+The sample rate, number of channels, etc, will be chosen on the fly by
+lame itself, you have no control over this. If you want to change it, I suggest
+you add support for this to ices and mail me a patch.
+I think you should be fine with whatever lame chooses though.
+Also, please make sure that your files are ok before you start reencoding them
+with ices. This is because the mpglib part of lame (what does the decoding) is
+rather unstable and will call exit(0) when errors are encountered. This will
+make ices exit, which is kinda bad :)
+I've only tested this with lame 3.86.1, and your mileage my vary.
+
+-----------------
+Playlist handlers
+-----------------
+About 96% of all emails I got about shout was people asking me to add small
+changes to shout playlist handling to suit their specific needs.
+This is course is not how I want to spend my life :)
+Shout had a feature to call an external program with a system() call, before
+each song, and that could possibly modify the playlist.
+This was rather ugly, but did the trick.
+In ices, we take this a step further an include scripting support inside the
+program. You can write your own playlist handler in perl or python, whatever
+you prefer.
+Your script module has to define 5 functions; test, init, shutdown, get_next,
+and get_current_lineno.
+I suggest you take a look in the distributed module files and just expand on
+that.
+
+
 

@@ -50,6 +50,9 @@ ices_setup_init ()
 	/* Copy those options to the libices structure */
 	ices_setup_activate_changes (conn, ices_config);
 
+	/* Open logfiles */
+	ices_log_initialize ();
+
 	/* Initialize the interpreters */
 	interpreter_init ();
 
@@ -90,6 +93,8 @@ ices_setup_shutdown ()
 	ices_id3_shutdown ();
 
 	thread_shutdown ();
+
+	ices_log_shutdown ();
 }
 
 /* Local function definitions */
@@ -373,6 +378,7 @@ ices_setup_daemonize ()
 #ifdef HAVE_SETPGID
 		setpgid (icespid, icespid);
 #endif
+		ices_setup_update_pidfile (icespid);
 		exit (0);
 	}
 #ifdef HAVE_SETPGID
@@ -384,8 +390,8 @@ ices_setup_daemonize ()
 	close (0);
 	close (1);
 	close (2);
-
-	ices_setup_update_pidfile (icespid);
+	
+	ices_log_debug ("After daemonizing.. I'm still alive...");
 }
 
 static void

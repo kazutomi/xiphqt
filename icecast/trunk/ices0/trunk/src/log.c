@@ -21,9 +21,39 @@
 #include "definitions.h"
 
 char lasterror[BUFSIZE];
+FILE *logfile = NULL;
+
 extern ices_config_t ices_config;
 
+/* Private function declarations */
+static void ices_log_string (char *format, char *string);
+static int ices_log_open_logfile ();
+static int ices_log_close_logfile ();
+
 /* Public function definitions */
+void
+ices_log_initialize ()
+{
+	if (!ices_log_open_logfile ()) {
+		ices_log ("%s", ices_log_get_error ());
+	}
+}
+
+void
+ices_log_shutdown ()
+{
+	if (!ices_log_close_logfile ()) {
+		ices_log ("%s", ices_log_get_error ());
+	}
+}
+
+int
+ices_log_reopen_logfile ()
+{
+	ices_log_close_logfile ();
+	return ices_log_open_logfile ();
+}
+
 void
 ices_log_debug (const char *fmt, ...)
 {
@@ -41,7 +71,7 @@ ices_log_debug (const char *fmt, ...)
 #endif
 	va_end(ap);
 
-	fprintf (stderr, "DEBUG: %s\n", buff);
+	ices_log_string ("DEBUG: %s\n", buff);
 }
 
 void
@@ -58,7 +88,7 @@ ices_log (const char *fmt, ...)
 #endif
 	va_end(ap);
 
-	fprintf (stderr, "%s\n", buff);
+	ices_log_string ("%s\n", buff);
 }
 
 void
@@ -100,7 +130,52 @@ thread_log (char *type, int level, char *fmt, ...)
 	vsprintf(buff, fmt, ap);
 #endif
 	va_end(ap);
-	
-	fprintf (stderr, "DEBUG: %s:%d %s\n", type, level, buff);
+
+	ices_log_string ("DEBUG: %s\n", buff);
 }
+
+/* Private function definitions */
+static void
+ices_log_string (char *format, char *string)
+{
+	if (logfile) {
+		fprintf (logfile, format, string);
+	}
+	
+	if (!ices_config.daemon) {
+		fprintf (stdout, format, string);
+	}
+}
+
+static int
+ices_log_open_logfile ()
+{
+	char namespace[1024], errorspace[1024];
+	char *filename;
+	FILE *logfp;
+
+	filename = ices_util_get_random_filename (namespace, "log");
+	
+	logfp = ices_util_fopen_for_writing (filename);
+
+	if (!logfp) {
+		ices_log_error ("Error while opening %s, error: %s", ices_util_strerror (errno, errorspace, 1024));
+		return 0;
+	}
+
+	logfile = logfp;
+	return 1;
+}
+
+static int
+ices_log_close_logfile ()
+{
+	if (logfile) {
+		ices_util_fclose (logfile);
+	}
+
+	return 1;
+}
+
+
 
