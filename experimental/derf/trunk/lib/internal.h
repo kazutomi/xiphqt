@@ -63,6 +63,8 @@
 #define OC_MODE_INTER_GOLDEN_MV (7)
 /*Macro block is not coded.*/
 #define OC_MODE_NOT_CODED       (8)
+/*The number of (coded) modes.*/
+#define OC_NMODES               (8)
 
 /*Predictor bit flags.*/
 /*Left.*/
@@ -154,7 +156,7 @@ typedef struct{
      region of the frame.*/
   unsigned        invalid:1;
   /*The mode of the macroblock this fragment belongs to.*/
-  unsigned        mbmode:6;
+  int             mbmode:6;
   /*The prediction-corrected DC component.*/
   int             dc:16;
   /*A pointer to the portion of an image covered by this fragment in several
@@ -196,54 +198,50 @@ typedef struct{
 
 
 
-/*The fragment array.*/
-typedef struct{
-  /*The fragment plane descriptions.*/
-  oc_fragment_plane    frplanes[3];
-  /*The total number of fragments in a single frame.*/
-  int                  nfrags;
-  /*The list of fragments, indexed in image order.*/
-  oc_fragment         *frags;
-  /*The total number of super blocks in a single frame.*/
-  int                  nsbs;
-  /*The list of super blocks, indexed in image order.*/
-  oc_sb               *sbs;
-  /*The number of macro blocks in the X direction.*/
-  int                  nhmbs;
-  /*The number of macro blocks in the Y direction.*/
-  int                  nvmbs;
-  /*The total number of macro blocks.*/
-  int                  nmbs;
-  /*The list of macro blocks, indexed in super block order.
-    That is, the macro block corresponding to the macro block mbi in super
-     block sbi is (sbi<<2|mbi).*/
-  oc_mb               *mbs;
-  /*The list of flags indicating which blocks are coded in all partially coded
-     super blocks.*/
-  int                 *block_coded_flags;
-  /*The number of block coded flags in the list.
-    This is 16 times the number of super blocks with their partially coded
-     flag set.*/
-  int                  nblock_coded_flags;
-  /*A copy of the image data used to fill the input pointers in each fragment.
-    If the data pointers or strides change, these input pointers must be
-     re-populated.*/
-  theora_ycbcr_buffer  input;
-  /*The number of unique border patterns.*/
-  int                  nborders;
-  /*The storage for the border info for all border fragments.
-    This data is pointed to from the appropriate fragments.*/
-  oc_border_info       borders[16];
-}oc_fragment_array;
-
-
-
 /*Common state information between the encoder and decoder.*/
 typedef struct{
   /*The stream information.*/
   theora_info           info;
-  /*The fragment array.*/
-  oc_fragment_array     frarray;
+  /*The chroma subsampling method.
+    The lowe-order bit indicates X-axis decimation, while the next bit
+     indicates Y-axis decimation.*/
+  int                   chroma_type;
+  /*The fragment plane descriptions.*/
+  oc_fragment_plane     frplanes[3];
+  /*The total number of fragments in a single frame.*/
+  int                   nfrags;
+  /*The list of fragments, indexed in image order.*/
+  oc_fragment          *frags;
+  /*The total number of super blocks in a single frame.*/
+  int                   nsbs;
+  /*The list of super blocks, indexed in image order.*/
+  oc_sb                *sbs;
+  /*The number of macro blocks in the X direction.*/
+  int                   nhmbs;
+  /*The number of macro blocks in the Y direction.*/
+  int                   nvmbs;
+  /*The total number of macro blocks.*/
+  int                   nmbs;
+  /*The list of macro blocks, indexed in super block order.
+    That is, the macro block corresponding to the macro block mbi in super
+     block sbi is (sbi<<2|mbi).*/
+  oc_mb                *mbs;
+  /*The list of flags indicating which blocks are coded in all partially coded
+     super blocks.*/
+  int                  *block_coded_flags;
+  /*The number of block coded flags in the list.
+    This is 16 times the number of super blocks with their partially coded
+     flag set.*/
+  int                   nblock_coded_flags;
+  /*A copy of the image data used to fill the input pointers in each fragment.
+    If the data pointers or strides change, these input pointers must be
+     re-populated.*/
+  theora_ycbcr_buffer   input;
+  /*The number of unique border patterns.*/
+  int                   nborders;
+  /*The storage for the border info for all border fragments.
+    This data is pointed to from the appropriate fragments.*/
+  oc_border_info        borders[16];
   /*The index of the buffers being used for each OC_FRAME_* reference frame.*/
   int                   ref_frame_idx[3];
   /*The actual buffers used for the previously decoded frames.*/
@@ -270,6 +268,17 @@ typedef struct{
 
 
 
+/*The function type used to fill in the U,V plane motion vectors for a macro
+   block when 4 different motion vectors are specified in the luma plane.
+  _cbmvs: The chroma block-level motion vectors to fill in.
+  _lmbmv: The luma macro-block level motion vector to fill in for use in
+           prediction.
+  _lbmvs: The luma block-level motion vectors.*/
+typedef void (*oc_set_chroma_mvs_func)(int _cbmvs[4][2],int _lmbmv[2],
+ const char _lbmvs[4][2]);
+
+
+
 /*A map from the index in the zig zag scan to the coefficient number in a
    block.*/
 extern const int OC_FZIG_ZAG[64];
@@ -277,10 +286,14 @@ extern const int OC_FZIG_ZAG[64];
    scan.*/
 extern const int OC_IZIG_ZAG[64];
 /*The predictor frame to use for each macro block mode.*/
-extern const int OC_FRAME_FOR_MODE[8];
+extern const int OC_FRAME_FOR_MODE[OC_NMODES];
 /*A map from physical macro block ordering to bitstream macro block
    ordering within a super block.*/
 extern const int OC_MB_MAP[2][2];
+/*A table of functions used to fill in the U,V plane motion vectors for a
+   macro block when 4 different motion vectors are specified in the luma
+   plane.*/
+extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[4];
 
 
 
@@ -303,16 +316,16 @@ void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
 int oc_frag_pred_dc(const oc_fragment *_frag,
  const oc_fragment_plane *_frplane,int _x,int _y,int _pred_last[3]);
 
-void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info);
-void oc_frarray_clear(oc_fragment_array *_frarray);
-void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
- theora_ycbcr_buffer _img);
-int oc_frarray_mbi_for_pos(oc_fragment_array *_frarray,int _mbx,int _mby);
-
 int oc_state_init(oc_theora_state *_state,theora_info *_info);
 void oc_state_clear(oc_theora_state *_state);
 void oc_state_borders_fill(oc_theora_state *_state,int _refi);
-void oc_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,int _pli,
- ogg_int16_t _dct_coeffs[64],int _ncoefs,const ogg_uint16_t _iquant[64]);
+void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
+ theora_ycbcr_buffer _img);
+int oc_state_mbi_for_pos(oc_theora_state *_state,int _mbx,int _mby);
+int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
+ int *_offset1,int _dx,int _dy,int _ystride,int _pli);
+void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
+ int _pli,ogg_int16_t _dct_coeffs[64],int _ncoefs,
+ const ogg_uint16_t _iquant[64]);
 
 #endif

@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.3 2003/12/17 21:31:44 derf Exp $
+  last mod: $Id: theora.h,v 1.4 2004/02/15 00:54:07 derf Exp $
 
  ********************************************************************/
 
@@ -88,12 +88,6 @@ typedef struct{
 
 /*TODO: None of these really belong here.
   They are control data, not informational data.*/
-  /*TODO: what does this control? "quick encode/decode."
-    Answer: This controls motion search complexity during encoding.
-    It has no effect on decoding.
-    It is my opinion that such things should be replaced by a general
-     speed/size trade-off parameter for encoding only.*/
-  int            quick_p;
   /*TODO: What do these control?*/
   int            dropframes_p;
   int            keyframe_auto_p;
@@ -118,10 +112,10 @@ typedef struct{
 typedef struct{
   /*The bit pattern for the code, with the LSbit of the pattern aligned in
      the LSbit of the word.*/
-  ogg_uint32_t bits;
+  ogg_uint32_t pattern;
   /*The number of bits in the code.
     This must be between 0 and 32, inclusive.*/
-  int          len;
+  int          nbits;
 }theora_huff_code;
 
 /*The quantization parameters.

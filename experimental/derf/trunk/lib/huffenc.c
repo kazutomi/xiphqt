@@ -814,7 +814,7 @@ const theora_huff_code OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]={
 typedef struct{
   /*The bit pattern, left-shifted so that the MSB of all patterns is
      aligned.*/
-  ogg_uint32_t bits;
+  ogg_uint32_t pattern;
   /*The amount the bit pattern was shifted.*/
   int          shift;
   /*The token this bit pattern represents.*/
@@ -828,8 +828,8 @@ typedef struct{
 static int huff_entry_cmp(const void *_c1,const void *_c2){
   ogg_uint32_t b1;
   ogg_uint32_t b2;
-  b1=((const oc_huff_entry *)_c1)->bits;
-  b2=((const oc_huff_entry *)_c2)->bits;
+  b1=((const oc_huff_entry *)_c1)->pattern;
+  b2=((const oc_huff_entry *)_c2)->pattern;
   return b1<b2?-1:b1>b2?1:0;
 }
 
@@ -855,16 +855,17 @@ int oc_huff_codes_pack(oggpack_buffer *_opb,
     int           j;
     /*First, find the maximum code length so we can align all the bit
        patterns.*/
-    for(maxlen=_codes[i][0].len,j=1;j<OC_NDCT_TOKENS;j++){
-      maxlen=OC_MAXI(_codes[i][j].len,maxlen);
+    maxlen=_codes[i][0].nbits;
+    for(j=1;j<OC_NDCT_TOKENS;j++){
+      maxlen=OC_MAXI(_codes[i][j].nbits,maxlen);
     }
     mask=(1<<maxlen)-1;
     /*Copy over the codes into our temporary workspace.
       The bit patterns are aligned, and the original entry each code is from
        is stored as well.*/
     for(j=0;j<OC_NDCT_TOKENS;j++){
-      entries[j].shift=maxlen-_codes[i][j].len;
-      entries[j].bits=_codes[i][j].bits<<entries[j].shift&mask;
+      entries[j].shift=maxlen-_codes[i][j].nbits;
+      entries[j].pattern=_codes[i][j].pattern<<entries[j].shift&mask;
       entries[j].token=j;
     }
     /*Sort the codes into ascending order.
@@ -884,15 +885,15 @@ int oc_huff_codes_pack(oggpack_buffer *_opb,
         /*For each 1 branch we've descended, back up the tree until we reach a
            0 branch.*/
         bit=1<<bpos;
-        for(;entries[j].bits&bit;bpos++)bit<<=1;
+        for(;entries[j].pattern&bit;bpos++)bit<<=1;
         /*Validate the code.*/
         if(j+1<OC_NDCT_TOKENS){
           mask=~(bit-1)<<1;
           /*The next entry should have a 1 bit where we had a 0, and should
              match our code above that bit.
             This verifies both fullness and prefix-freeness simultaneously.*/
-          if(!(entries[j+1].bits&bit)||
-           (entries[j].bits&mask)!=(entries[j+1].bits&mask)){
+          if(!(entries[j+1].pattern&bit)||
+           (entries[j].pattern&mask)!=(entries[j+1].pattern&mask)){
             return OC_EINVAL;
           }
         }

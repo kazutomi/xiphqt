@@ -113,10 +113,6 @@ SOURCE=..\..\lib\fragment.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\lib\frarray.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\lib\huffdec.c
 # End Source File
 # Begin Source File
@@ -150,6 +146,10 @@ SOURCE=..\..\lib\psych.c
 # Begin Source File
 
 SOURCE=..\..\lib\quant.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\state.c
 # End Source File
 # Begin Source File
 

@@ -140,14 +140,15 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   There are several different ways to go about this.
   The obvious one is to select the coefficients at the end of the zig-zag run,
    and select padding values that force these coefficients to zero.
-  This can be done in an interative manner, by filling in the padding values
+  This can be done in an iterative manner, by filling in the padding values
    with some initial guess (e.g., the average non-padding pixel value),
    performing a DCT, zeroing the desired coefficients, inverting the DCT, and
    updating the padding values with the result of the inverse (keeping the
    non-padding values fixed).
   I remember reading about this method somewhere, but I can no longer find the
    reference for it.
-  In practice, however, this method does not actually work.
+  In practice, however, this method does not actually work when implemented as
+   just described.
 
   The reason for this becomes clear when examining the non-iterative
    formulation of the problem as a system of linear equations.
@@ -171,25 +172,30 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
 
   Another obvious choices of coefficients to zero is the m highest frequency
    values in each column, where m is the number of rows that have at least as
-   many as 8-cifree padding values, where ci is the column index.
-  This does nothing to help the singularity or the eigenvalue problem.
-  One can also attempt to select a linearly independent set of basis functions
-   to zero out using Gaussian elimination.
-  However, there is no clear method to determine when a pivot value is small
-   enough to consider zero, and this still doesn't solve the singular value
-   problem.
-  One can also attempt to extract a linearly independent set from all choices
-   of coefficients to zero out, but determining when a set of vectors is
-   approximately zero is both numerically challenging and still doesn't solve
-   the eigenvalue problem.
+   many as 8-ci padding values, where ci is the column index.
+  This selects the highest frequency coefficients with some non-zero support
+   in the padding region, and ensures that every pixel in the padding region
+   is covered by at least one such coefficient's basis function.
+  However, these conditions alone are not enough to guarantee that the
+   corresponding submatrix of the DCT transform is non-singular, nor does it
+   even help reduce the stiffness of the least squares problem.
 
   A better strategy is to select a linearly independent set of DCT basis
    functions to represent the pixels inside the boundary, and then extrapolate
    the remaining pixel values using the coefficients derived from these basis
-   functions \cite{KA94}.
-  The set can be constructed in an interative manner by starting with only
-   the DC coefficient and adding the basis function which minimizes the
-   approximation error at each step.
+   functions.
+  This is the approach taken by Kaup and Aach  \cite{KA94}.
+  The coefficients corresponding to the basis functions that are not selected
+   are implicitly zeroed out by this process.
+  One can attempt to select the linearly independent set using Gaussian
+   elimination.
+  However, experiments show straightforward methods of determining when a
+   pivot value is small enough to consider zero do not work reliably, and this
+   still doesn't solve the stiffness problem.
+
+  Kaup and Aach take the approach of constructing the set in an iterative
+   manner by starting with only the DC coefficient and adding the basis
+   function which minimizes the approximation error at each step.
   Let G(i,j) be the coefficient of the ith pixel in the jth basis function in
    the 2D iDCT, c(j) the DCT coefficients in the current approxmation, A the
    set of non-padding pixels, f(i) the pixel values, and
@@ -204,24 +210,32 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   The coefficients which minimize the residual at each stage can be computed
    by formulating the least squares solution G^T G c = G^T p.
   Because G^T G is Hermitian, this can be solved by finding the Cholesky
-   decomposition H such that H H^T = G^T G and H is lower-triangular.
-  Then c = H^-T H^-1 G^T p, where H^-T and H^-1 can be found by forward and
-   backward substitution.
+   decomposition L such that L L^T = G^T G and L is lower-triangular.
+  Then c = L^-T L^-1 G^T p, where the multiplication by L^-T and L^-1 can be
+   done by forward and backward substitution.
 
-  Unfortunately, this method now depends on the actual pixel values, unlike
-   the fomulations above, which could all be reduced to finding a matrix to
-   multiply the existing pixel values by which is fixed for a given shape.
-  This could be avoided by choosing some sample pixel values f(n) to
-   approximate.
-  While this method works very well in some cases, it can still occaisionally
-   select a set of basis vectors with small singular values.
+  Unfortunately, this method now depends on the actual pixel values.
+  While it has the advantage of actually working, the other methods above
+   can all be reduced to finding a fixed matrix for a given shape to multiply
+   the existing pixel values by.
+  Thus, so long as the shape does not change, the processing can all be done
+   in advance and run-time computation is reduced to a simple matrix
+   multiplication.
+  This dependency can be avoided by choosing some sample pixel values f(n)
+   to drive approximation instead of using the actual pixel values.
+  While that approach works very well in some cases, it can still
+   occaisionally select a set of basis vectors with small singular values.
+  There is a more robust method, however, that does not require choosing
+   sample pixel values.
 
-  One thing to note is that once a basis vector is added to the set, the
-   corresponding row in the Cholesky decomposition L L^T of G^T G does not
-   change.
-  When computing c from p, division by the diagonal elements of L is performed
+  One thing to note is that as each basis vector is added to G, a single row
+   is added to the Cholesky decompositing L L^T of G^T G.
+  This row only depends on the previous rows of G, and does not change as more
+   rows are added to G.
+  When computing c from p, division by a diagonal element of L is performed
    twice, once during forward substitution and once during backward
    substitution.
+  These are the only divisions in this computation.
   Thus it is small values of these diagonal elements which lead to the
    numerical instability.
   So, instead of trying to minimize the residual energy at each stage, we can
@@ -234,28 +248,51 @@ void oc_fdct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
 
   This method turns out to work very well in practice, and is implemented
    below.
+  The greedy optimization approach appears sufficient to avoid any of the
+   numerical instabilities present in the other methods discussed.
+  A threshold is no longer required for a stopping criteria, since a
+   sufficiently independent set of basis functions can always be found in the
+   DCT.
+
   Once the set of basis functions has been selected, the linear system
    p' = G' (L^-T L^-1) G^T p is solved, where p' is the vector of extrapolated
    pixel values, and G' is the portion of the 2D iDCT basis functions used in
    G that corresponds to these pixels.
   This results in a simple m by n matrix, where m is the number of padding
    pixels and n is the number of non-padding pixels.
-  The entries of this matrix are scaled down by a power of two to ensure they
-   are less than 1, and then stored as signed 1.15 fixed-point values.
+  The entries of this matrix are scaled down by a power of two to ensure their
+   magnitude is less than 1, and then they are stored as signed 1.15
+   fixed-point values.
   During the encode, the non-padding pixel values are scaled by this power of
    two before multiplication.
   The total additonal cost of computing the padding is at most 16 multiplies
    per pixel.
+  By comparison, Theora's fDCT implementation requires 4 multiplies per pixel.
 
-  An additional complexity reduction can be done by noting that if the
-   selected basis vectors are all orthogonal, then (L^-T L^-1) G^T =
+  The complexity can be further reduced by noting that if the selected basis
+   vectors are all orthogonal, then (L^-T L^-1) G^T =
    (G^-1 G^-T) G^T = G^-1 = D^-2 G^T, where D is a diagonal matrix consisting
    of the magnitude of the rows of G.
-  Thus computation of padding pixel values can be avoided completely, and the
-   entire operation reduces to padding with 0's and scaling the output of the
-   fDCT.
-  To reiterate, this only works when the rows of G are orthogonal, and so is
-   not done here.
+  Thus computation of padding pixel values can be avoided completely.
+  The entire operation reduces to padding with 0's, performing an fDCT, and
+   scaling the output.
+  To reiterate, this only works when the rows of G are orthogonal, and so this
+   is not done here.
+
+  There is no longer any bias in this method towards including low-frequency
+   coefficients in the set.
+  However, such a bias is neither always possible, nor strictly necessary.
+  If the signal statistics already tend to send high frequency coefficients to
+   small values, this will not change when some of those high frequencies are
+   forced to zero.
+  Thus, most of the high frequency coefficients will still be quantized to
+   zero, even if they do happen to be included in the basis.
+  The important part is that all of the coefficients not in the basis will be
+   guaranteed to be zero.
+  Zeroing out low-frequency coefficients can be as beneficial to compression
+   as high frequency components.
+  Although they do not often form parts of long zero runs, they tend to have
+   larger magnitudes that require more bits to store.
 
   @INPROCEEDINGS{KA94,
     author="Andr\'{e} Kaup and Til Aach",
@@ -318,10 +355,8 @@ static void oc_update_l(float _l[64][64],int _ac[64],int _nac,
 }
 
 /*Computes the set of basis functions to use to synthesize a partial block.
-  The remaining coefficients are scaled to compensate for the missing pixel
-   values in the block.
-  Scaling values are computed for each of the 2D DCT basis functions, with
-   those exlcuded from the set used for this block set to 0.
+  These basis functions are then used to derive a matrix that extends the
+   signal into the missing region from the pixel values that are present.
   _border_info: The border info structure to initialize with details about the
                  selected basis set.
   _border:      A description of the partial block.*/
@@ -359,6 +394,7 @@ void oc_border_enc_info_init(oc_border_enc_info *_border_info,
   nzp=zpi;
   for(api=0;api<nap;api++)_border_info->pi[api]=(unsigned char)ap[api];
   for(zpi=0;zpi<nzp;zpi++)_border_info->pi[nap+zpi]=(unsigned char)zp[zpi];
+  /*Step 1: Select a linearly independent set of basis functions.*/
   for(ci=0;ci<64;ci++)ac[OC_IZIG_ZAG[ci]]=ci;
   /*Always include the DC coefficient.*/
   for(nac=1;;nac++){
@@ -387,7 +423,7 @@ void oc_border_enc_info_init(oc_border_enc_info *_border_info,
     ac[nac]=ac[best_aci];
     ac[best_aci]=ci;
   }
-  /*Compute the extrapolation matrix.
+  /*Step 2: Compute the extrapolation matrix.
     We also compute a shift value to apply to all the non-zero pixel values.
     We scale the input pixels by this amount and then divide the matrix
      entries by it, so that we're guaranteed that the entries are always less
@@ -442,13 +478,13 @@ void oc_border_enc_info_init(oc_border_enc_info *_border_info,
   _border_info: Information needed to extrapolate pixel values outside the
                  border.
   _y:           The buffer to store the result in.
-                Unlike above, this may NOT be the same as _x.
+                This may be the same as _x.
   _x:           The input coefficients.
                 Pixel values outside the border will be modified.*/
 void oc_fdct8x8_border(const oc_border_info *_border,
  const oc_border_enc_info *_border_info,
  ogg_int16_t _y[64],ogg_int16_t _x[64]){
-  int         ap[64];
+  ogg_int32_t ap[64];
   int         nap;
   int         nzp;
   int         api;

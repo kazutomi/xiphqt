@@ -40,7 +40,8 @@
   
   These values depend on the particular color space one is using, but we'd like
    to derive generic quantization matrices.
-  Therefore we use the geometric average over all color spaces.
+  Therefore we use the geometric average over all color spaces (currently only
+   two).
   Minor mismatches in the fit of the matrices to actual CSF curves will not
    harm the encoder, since it uses adaptive thresholding and amplitude
    reduction based on per-coefficient sensitivity measurements.*/
@@ -192,9 +193,27 @@ static void find_csf_filters(csf_filter_bank _filters,csf_func _csf,
    thesis \cite{Nad00}.
   We use his measurements because they were actually performed in a Y'CbCr
    space, though he does not specify which one.
+
   The extensions to supra-threshold levels use the model proposed by Mark
    Cannon Jr. \cite{Can85}.
-  See doc/theory/psych.nb for more details.
+  There is no clear theory for how supra-threshold contrast should be handled.
+  The law of contrast constancy \cite{GS75} suggests that quantization should
+   be uniform at high levels of contrast.
+  However, recent experiments on wavelet compression suggest that, although the
+   effect of the CSF is reduced at supra-threshold levels, it still provides
+   better perceptual quality than uniform quantization \cite{CH03}.
+  Purported reasons for this are the better preservation of edge structure when
+   details are removed from the fine scales (highest frequencies) first.
+
+  When Cannon's results are adapted to our framework, correcting for the change
+   from Michelson contrast to our model, the result is that the shape of the
+   CSF curve is preserved, though to a lesser amplitude, throughout the entire
+   useful contrast range.
+  This corresponds very well with the findings of Chandler and Hemami.
+  The advantage of using Cannon's scheme over theirs is that Cannon's is very
+   simple, and contains no unexplained magic constants.
+  Current results from Chandler and Hemami give only a small benefit over
+   JPEG200.
 
   @ARTICLE{Can85,
     author="Mark W. Cannon, Jr.",
@@ -205,6 +224,28 @@ static void find_csf_filters(csf_filter_bank _filters,csf_func _csf,
     pages="1760--1758",
     month="Oct.",
     year=1985
+  }
+
+  @ARTICLE{GS75,
+    author="M. A. Georgeson and G. D. Sullivan",
+    title="Contrast constancy: Deblurring in human vision by spatial frequency
+     channels",
+    journal="The Journal of Physiology",
+    volume=252,
+    number=3,
+    pages="627--656",
+    month="Nov.",
+    year=1975
+  }
+
+  @INPROCEEDINGS{CH03,
+    author="Damon M. Chandler and Sheila S. Hemami",
+    title="Suprathreshold image compression based on contrast allocation and
+     global precedence",
+    booktitle="Proc. Human Vision and Electronic Imaging 2003",
+    address="Santa Clara, CA",
+    month="Jan.",
+    year=2003
   }
 
   @PHDTHESIS{Nad00,
@@ -314,9 +355,9 @@ static double csf(csf_ctx *_ctx,double _f){
   return _ctx->scale/(_ctx->contrast+1/s0);
 }
 
-/*This is the Nyquist frequency for a 90 dpi screen viewed from 50 cm out.
+/*This is the Nyquist frequency for a 45 dpi screen viewed from 50 cm out.
   This is assumed to be the closest reasonable viewing distance.*/
-#define FREQUENCY_MAX (15.4609862434702964)
+#define FREQUENCY_MAX (7.558704385696589)
 
 /*Builds the CSF filter banks for each channel and contrast level.*/
 static void build_csf_tables(csf_filter_bank _filters[5][64],
@@ -366,10 +407,13 @@ static void build_csf_tables(csf_filter_bank _filters[5][64],
   }
 }
 
+/*The resolution at which the base matrices are sampled over the range of QI
+   values.*/
+#define NQRANGES (3)
+
 int main(void){
-#define              NQRANGES (9)
-  static const int   QSIZES[NQRANGES]={7,8,8,8,8,8,8,7,1};
-  static const int   QOFFS[NQRANGES+1]={0,7,15,23,31,39,47,55,62,63};
+  static const int   QSIZES[NQRANGES]={15,16,32};
+  static const int   QOFFS[NQRANGES+1]={0,15,31,63};
   /*The names of each pixel format.*/
   static const char *FORMAT_NAMES[4]={
     "4:4:4 subsampling",
@@ -501,6 +545,9 @@ int main(void){
       }
     }
   }
+  /*Print the quantization matrices and their integer, interpolated
+     approximations.*/
+#if 0
   for(pci=0;pci<9;pci++)for(ci=0;ci<64;ci++){
     fprintf(stderr,"[%i][%i]=",pci,ci);
     for(qi=0;qi<64;qi++){
@@ -512,6 +559,12 @@ int main(void){
     }
     fprintf(stderr,"\n\n");
   }
+#endif
+  /*Check to make sure that the coefficients always decrease as the QI rises.
+    This is assumed by the current encoder.*/
+#if 0
+  /*First check to make sure it is not a flaw in the computed matrices
+     themselves.*/
   for(pci=0;pci<9;pci++)for(qi=0;qi<63;qi++)for(ci=0;ci<64;ci++){
     if(fbase_matrices[pci][qi][ci]*qscales[qi]<
      fbase_matrices[pci][qi+1][ci]*qscales[qi+1]){
@@ -521,6 +574,7 @@ int main(void){
        fbase_matrices[pci][qi][ci]*qscales[qi]);
     }
   }
+  /*Then check the approximations.*/
   for(pci=0;pci<9;pci++)for(qi=0;qi<63;qi++){
     if(base_matrices[pci][qi][0]*dc_scale[qi]<
      base_matrices[pci][qi+1][0]*dc_scale[qi+1]){
@@ -535,6 +589,7 @@ int main(void){
       }
     }
   }
+#endif
   /*Dump the generated tables as C code.*/
   printf("static const int OC_DEF_QRANGE_SIZES[%i]={",NQRANGES);
   for(qri=0;qri<NQRANGES;qri++){

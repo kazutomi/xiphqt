@@ -5,13 +5,14 @@
 
 /*This is where we attempt to model low-level vision processes, such as
    sensitivities due to the way human eyes are constructed and how data flows
-   through the early stages of the vision process.
+   through the early stages of the vision system.
   Most of the material here is derived from Marcus Nadenau's Ph.D. thesis,
    though also draws on some earlier work by Scott Daly et al. \cite{Nad00,
    DZL+00}.
-  His thesis dealt almost exclusively with wavelet-based still image codecs
-   since it was targeted at JPEG 2000, but many of the results in it can be
-   generalized to any subband codec with a little work.
+  Nadenau's thesis dealt almost exclusively with wavelet-based still image
+   codecs since it was targeted at JPEG 2000, but many of the results in it
+   can be generalized to any subband codec with a little work.
+  This is, in fact, one of the reasons it was chosen as a starting point.
   It has the advantages that the algorithms described in it are fairly simple,
    computationally efficient, and have shown definite performance increases.
 
@@ -19,16 +20,22 @@
   There is plenty of room for improvement by considering temporal sensitivity,
    temporal masking and other effects of dynamic images that we have not
    considered \cite{Lam96}.
-  This requires at least a three frame delay, and considerable computational
-   overhead, however.
+  The techniques described in the cited reference requires at least a three
+   frame delay, and considerable computational overhead, however.
 
   We also extend Nadenau's contrast sensitivity function measurements to the
    supra-threshold levels video codecs typically operate at by using the
    exponential model proposed by Mark Cannon Jr. \cite{Can85}.
   This area of the literature is in general fairly thin, but his model has
-   the good properties of simplicity and a smooth interpolation between the
-   generally accepted threshold-level CSF measurements and the genereally
-   accepted contrast constancy at levels far above the threshold.
+   the good properties of simplicity and a lack of magic constants.
+  When adapting from Michelson contrast to our simple model, the CSF never
+   reaches the flat curve predicted by contrast constancy in the useful range
+   of contrast levels.
+  However, recent research suggests that uniform quantization does not yield
+   optimal perceptual results at contrast levels far above threshold, although
+   the model they propose to account for this is both complicated, contains
+   many magic constants, and is not robust to varying display parameters
+   \cite{CH03}.
 
   @ARTICLE{Can85,
     author="Mark W. Cannon, Jr.",
@@ -39,6 +46,17 @@
     pages="1760--1758",
     month="Oct.",
     year=1985
+  }
+
+  @INPROCEEDINGS{CH03,
+    author="Damon M. Chandler and Sheila S. Hemami",
+    title="Suprathreshold image compression based on contrast allocation and
+     global precedence",
+    booktitle="Proc. Human Vision and Electronic Imaging 2003",
+    address="Santa Clara, CA",
+    month="Jan.",
+    year=2003,
+    URL="http://citeseer.nj.nec.com/579192.html"
   }
 
   @INPROCEEDINGS{DZL+00,
@@ -69,6 +87,17 @@
     URL="http://ltswww.epfl.ch/pub_files/nadenau/Thesis_Marcus_LQ.pdf"
   }
 
+  @ARTICLE{PSY+93,
+    author="E. Peli and L. E. Arend and G. M. Young and R. B. Goldstein",
+    title="Contrast sensitivity to patch stimuli: effects of spatial bandwidth
+     and temporal presentation",
+    journal="Spatial Vision",
+    volume=7,
+    number=1,
+    pages="1--15",
+    year=1993
+  }
+
   @INPROCEEDINGS{TS96,
     author="Trac D. Tran and Robert Safranek",
     title="A Locally Adaptive Perceptual Masking Threshold Model for Image
@@ -81,6 +110,16 @@
     month="May",
     year=1996,
     URL="http://citeseer.nj.nec.com/tran96locally.html"
+  }
+  
+  @ARTICLE{WYS+97,
+    author="A. B. Watson and G. Y. Yang and J. A. Solomon and J. Villasenor",
+    title="Visibility of wavelet quantization noise",
+    journal="{IEEE} Transactions on Image Processing",
+    volume=6,
+    pages="1164--1175",
+    year=1997,
+    URL="http://citeseer.nj.nec.com/watson97visibility.html"
   }*/
 
 /*All CSF curves are scaled so that their peak is at 1.0, but JND
@@ -110,7 +149,11 @@
   Nadenau chose the former, with no justification, and this may likely be the
    better choice.
   His methods are at least tested and confirmed to give up to 29% bitrate
-   reductions for visually-lossless still image compression.*/
+   reductions for visually-lossless still image compression.
+  Other weight towards the former comes from measurements that show contrast
+   sensitivity of unmasked 1-octave Gabor patches is low-pass, not band-pass
+   \cite{PAY+93}, and that wavelet quantization sensitivity behaves similarly
+   \cite{WYS+97}.*/
 #define OC_YAMP (4.52514935207592383F)
 
 const float OC_YCbCr_SCALE[3][3]={
@@ -1741,7 +1784,7 @@ static const oc_csf_filter_bank OC_CSF_FILTERS[5][8]={
   One could also conceivably weight neighbors in a non-uniform manner.
   This approach was investigated by Tran and Safranek \cite{TS96}, but too
    little detail was reported to reproduce their results.
-  Tran's Mater's thesis might contain more information, but no copy is
+  Tran's Master's thesis might contain more information, but no copy is
    available online.
 
   k_L: Masking dynamic range
@@ -2050,10 +2093,10 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   /*Find the number of rows we have to perform DCTs in advance.*/
   vsize_max=0;
   for(i=0;i<8;i++)if(vsizes[i]>vsize_max)vsize_max=vsizes[i];
-  fplane=_psych->enc->state.frarray.frplanes+_pli;
-  frags=_psych->enc->state.frarray.frags;
+  fplane=_psych->enc->state.frplanes+_pli;
+  frags=_psych->enc->state.frags;
   frinfo=_psych->enc->frinfo;
-  stride=_psych->enc->state.frarray.input[_pli].stride;
+  stride=_psych->enc->state.input[_pli].stride;
   pscale=OC_YCbCr_SCALE[_psych->enc->state.info.colorspace][_pli];
   /*Clear out the mask group weights for the rows above the image.*/
   for(i=(OC_MASK_WINDOW_SZ_MAX-2<<1)-vsize_max;i<OC_MASK_WINDOW_SZ_MAX-1<<1;
@@ -2230,7 +2273,7 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
 oc_psych_ctx *oc_psych_alloc(oc_enc_ctx *_enc){
   oc_psych_ctx *psych;
   int           nhfrags;
-  nhfrags=_enc->state.frarray.frplanes[0].nhfrags;
+  nhfrags=_enc->state.frplanes[0].nhfrags;
   psych=(oc_psych_ctx *)_ogg_malloc(sizeof(*psych));
   psych->csf_row=(oc_weight_block *)_ogg_calloc(
    (nhfrags+(OC_CSF_FILTER_SZ_MAX-1<<1)),sizeof(psych->csf_row[0]));

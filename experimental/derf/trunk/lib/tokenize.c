@@ -7,7 +7,7 @@ typedef struct oc_alphabet_chooser oc_alphabet_chooser;
 /*The goal of the alphabet chooser is to be able to get an estimate of the
    number of bits required to encode a given token while deciding which tokens
    to actually encode.
-  To know the exact cost would requiring knowing which alphabet is going to
+  To know the exact cost would require knowing which alphabet is going to
    be used, but the optimal alphabet choice cannot be made until it is known
    how many of each token is going to be used.
   We can define an approximate cost for token t_n as
@@ -73,7 +73,7 @@ void oc_alphabet_chooser_init(oc_alphabet_chooser *_chooser,
   _chooser->list=(int *)_ogg_malloc(_nalphabets*sizeof(_chooser->list[0]));
   for(ai=0;ai<_nalphabets;ai++){
     for(ti=0;ti<_ntokens;ti++,_codes++){
-      _chooser->token_bits[ai][ti]=_codes->len+_extra_bits[ti];
+      _chooser->token_bits[ai][ti]=_codes->nbits+_extra_bits[ti];
     }
     _chooser->total_bits[ai]=0;
     _chooser->list[ai]=ai;

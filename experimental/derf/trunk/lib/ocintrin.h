@@ -8,6 +8,13 @@
   We define macros for them to allow easy incorporation of these non-ANSI
    features.*/
 
+/*Branchless, but not correct for differences larger than INT_MAX.
+static int oc_mini(int _a,int _b){
+  int ambsign;
+  ambsign=_a-_b>>sizeof(int)*8-1;
+  return (_a&~ambsign)+(_b&ambsign);
+}*/
+
 #define OC_MAXI(_a,_b)      ((_a)<(_b)?(_b):(_a))
 #define OC_MINI(_a,_b)      ((_a)>(_b)?(_b):(_a))
 #define OC_CLAMPI(_a,_b,_c) (OC_MAXI(_a,OC_MINI(_b,_c)))
@@ -25,17 +32,20 @@
 #define OC_DIV8(_x) OC_DIV_POW2(_x,3,0x7)
 /*Divides _x by 16, truncating towards 0.*/
 #define OC_DIV16(_x) OC_DIV_POW2(_x,4,0xF)
+/*Right shifts _dividend by _shift, adding _rval, and subtracting one for
+   negative dividends first..
+  When _rval is (1<<_shift-1), this is equivalent to division with rounding
+   away from zero.*/
 #define OC_DIV_ROUND_POW2(_dividend,_shift,_rval) \
  ((_dividend)+((_dividend)>>sizeof(_dividend)*8-1)+(_rval)>>(_shift))
 /*Swaps two integers _a and _b if _a>_b.*/
 #define OC_SORT2I(_a,_b)\
   if((_a)>(_b)){\
-    int t;\
-    t=(_a);\
+    int t__;\
+    t__=(_a);\
     (_a)=(_b);\
-    (_b)=t;\
+    (_b)=t__;\
   }
-
 
 
 

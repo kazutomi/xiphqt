@@ -2044,7 +2044,7 @@ static const oc_impmap_chroma_frag_weight_func
 static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
   oc_mb *mb;
   float  ret;
-  mb=_impmap->enc->state.frarray.mbs+_mbi;
+  mb=_impmap->enc->state.mbs+_mbi;
   ret=0;
   if(mb->mode!=OC_MODE_INVALID){
     static const int FRAG_DX[4]={0,8,0,8};
@@ -2072,7 +2072,7 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
       int                   yend;
       int                   x;
       int                   y;
-      frag=_impmap->enc->state.frarray.frags+mb->map[0][i];
+      frag=_impmap->enc->state.frags+mb->map[0][i];
       frinfo=_impmap->enc->frinfo+mb->map[0][i];
       xend=x0+FRAG_DX[i]+8;
       yend=y0+FRAG_DY[i]+8;
@@ -2126,8 +2126,8 @@ oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
   impmap->regions=(oc_impmap_region *)_ogg_malloc(
    impmap->seg.cregions*sizeof(impmap->regions[0]));
   impmap->enc=_enc;
-  impmap->chroma_frag_weight=OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[
-   info->chroma_y_decimated<<1|info->chroma_x_decimated];
+  impmap->chroma_frag_weight=
+   OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[_enc->state.chroma_type];
   return impmap;
 }
 
@@ -2148,12 +2148,12 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   /*Segment the Y plane.*/
   /*TODO: Use the same oc_border_info structure as everyone else.
     This would make future integration of an alpha mask easier.*/
-  img_offset=_impmap->enc->state.frarray.input[0].stride*
+  img_offset=_impmap->enc->state.input[0].stride*
    _impmap->enc->state.info.offset_y+_impmap->enc->state.info.offset_x;
-  yplane.data=_impmap->enc->state.frarray.input[0].data+img_offset;
+  yplane.data=_impmap->enc->state.input[0].data+img_offset;
   yplane.width=_impmap->enc->state.info.frame_width;
   yplane.height=_impmap->enc->state.info.frame_height;
-  yplane.stride=_impmap->enc->state.frarray.input[0].stride;
+  yplane.stride=_impmap->enc->state.input[0].stride;
   oc_seg_plane(&_impmap->seg,&yplane);
   /*Gather statistics over the segmentation.*/
   oc_impmap_scan(_impmap,yplane.width,yplane.height);
@@ -2164,10 +2164,10 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   _impmap->mot_limits[1]=2*OC_IMPMAP_MOT_P1*OC_PIXELS_PER_DEGREE*_duration;
   _impmap->mot_limits[2]=2*OC_IMPMAP_MOT_P2*OC_PIXELS_PER_DEGREE*_duration;
   _impmap->mot_limits[3]=2*OC_IMPMAP_MOT_MAX*OC_PIXELS_PER_DEGREE*_duration;
-  nmbs=_impmap->enc->state.frarray.nmbs;
+  nmbs=_impmap->enc->state.nmbs;
   imp_sum=0;
   for(mbi=0;mbi<nmbs;mbi++)imp_sum+=oc_impmap_mb_weight(_impmap,mbi);
-  _impmap->imp_avg=imp_sum/_impmap->enc->state.frarray.frplanes[0].nfrags;
+  _impmap->imp_avg=imp_sum/_impmap->enc->state.frplanes[0].nfrags;
 #if defined(OC_DUMP_IMAGES)
   /*Dump a PNG of the importance maps.*/
   {
@@ -2184,7 +2184,7 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
       sprintf(fname,"%08iim%i.png",(int)_impmap->enc->state.curframe_num,pli);
       fp=fopen(fname,"wb");
       if(fp==NULL)return;
-      fplane=_impmap->enc->state.frarray.frplanes+pli;
+      fplane=_impmap->enc->state.frplanes+pli;
       image=(png_bytep *)oc_malloc_2d(fplane->nvfrags,fplane->nhfrags,
        sizeof(image[0][0]));
       png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);

@@ -323,9 +323,27 @@ static void find_csf_filters(csf_filter_bank _filters,csf_func _csf,
    thesis \cite{Nad00}.
   We use his measurements because they were actually performed in a Y'CbCr
    space, though he does not specify which one.
+
   The extensions to supra-threshold levels use the model proposed by Mark
    Cannon Jr. \cite{Can85}.
-  See doc/theory/psych.nb for more details.
+  There is no clear theory for how supra-threshold contrast should be handled.
+  The law of contrast constancy \cite{GS75} suggests that quantization should
+   be uniform at high levels of contrast.
+  However, recent experiments on wavelet compression suggest that, although the
+   effect of the CSF is reduced at supra-threshold levels, it still provides
+   better perceptual quality than uniform quantization \cite{CH03}.
+  Purported reasons for this are the better preservation of edge structure when
+   details are removed from the fine scales (highest frequencies) first.
+
+  When Cannon's results are adapted to our framework, correcting for the change
+   from Michelson contrast to our model, the result is that the shape of the
+   CSF curve is preserved, though to a lesser amplitude, throughout the entire
+   useful contrast range.
+  This corresponds very well with the findings of Chandler and Hemami.
+  The advantage of using Cannon's scheme over theirs is that Cannon's is very
+   simple, and contains no unexplained magic constants.
+  Current results from Chandler and Hemami give only a small benefit over
+   JPEG200.
 
   @ARTICLE{Can85,
     author="Mark W. Cannon, Jr.",
@@ -336,6 +354,28 @@ static void find_csf_filters(csf_filter_bank _filters,csf_func _csf,
     pages="1760--1758",
     month="Oct.",
     year=1985
+  }
+
+  @ARTICLE{GS75,
+    author="M. A. Georgeson and G. D. Sullivan",
+    title="Contrast constancy: Deblurring in human vision by spatial frequency
+     channels",
+    journal="The Journal of Physiology",
+    volume=252,
+    number=3,
+    pages="627--656",
+    month="Nov.",
+    year=1975
+  }
+
+  @INPROCEEDINGS{CH03,
+    author="Damon M. Chandler and Sheila S. Hemami",
+    title="Suprathreshold image compression based on contrast allocation and
+     global precedence",
+    booktitle="Proc. Human Vision and Electronic Imaging 2003",
+    address="Santa Clara, CA",
+    month="Jan.",
+    year=2003
   }
 
   @PHDTHESIS{Nad00,
@@ -428,13 +468,21 @@ struct csf_ctx{
 /*The exponent parameter in the supra-threshold model.
   Values between 0.4 and 0.6 are reasonable.*/
 #define CONTRAST_EXP (0.5)
+/*The scale parameter of the contrast level.
+  Cannon does not report values for this parameter, and it would differ for us
+   anyway since we do not use Michelson contrast
+   ((L_max-L_min)/(L_max+L_min)).
+  It must be sufficiently small so that physical contrast does not actually
+   decrease as perceptual contrast increases.*/
+#define CONTRAST_SCALE (1.0/64)
 
 /*The main contrast-dependent CSF function.*/
 static double csf(csf_ctx *_ctx,double _f){
   double f;
+  double s0;
   f=_f*_ctx->fmax;
-  return _ctx->scale/(pow(_ctx->contrast,1.0/CONTRAST_EXP)+
-   1.0/_ctx->c0csf(_ctx->c0csf_ctx,f));
+  s0=_ctx->c0csf(_ctx->c0csf_ctx,f);
+  return _ctx->scale/(_ctx->contrast+1/s0);
 }
 
 /*This is the Nyquist frequency for a 45 dpi screen viewed from 50 cm out.
@@ -485,9 +533,9 @@ static void build_csf_tables(csf_filter_bank _filters[5][8]){
   scratch=(double **)alloc_2d(NFREQS*NPHASES*8,NTAPS+1,sizeof(double));
   for(chi=0;chi<5;chi++){
     for(ci=0;ci<8;ci++){
-      csf_ctxs[chi].contrast=CONTRASTS[ci];
+      csf_ctxs[chi].contrast=pow(CONTRASTS[ci]*CONTRAST_SCALE,1.0/CONTRAST_EXP);
       /*Find the normalization constant for this contrast level.*/
-      csf_ctxs[chi].scale=pow(CONTRASTS[ci],1.0/CONTRAST_EXP)+
+      csf_ctxs[chi].scale=csf_ctxs[chi].contrast+
        1/csf_ctxs[chi].c0csf(csf_ctxs[chi].c0csf_ctx,csf_ctxs[chi].peakf);
       find_csf_filters(_filters[chi][ci],(csf_func)csf,csf_ctxs+chi,scratch);
     }
