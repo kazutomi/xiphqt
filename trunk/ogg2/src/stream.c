@@ -1,11 +1,11 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
+ * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -23,11 +23,10 @@
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 
-ogg_stream_state *ogg_stream_create(int serialno, int mode){
+ogg_stream_state *ogg_stream_create(int serialno){
   ogg_stream_state *os=_ogg_calloc(1,sizeof(*os));
   os->watermark=4096;
   os->serialno=serialno;
-  os->mode=mode;
   os->bufferpool=ogg_buffer_create();
   return os;
 } 
@@ -1047,8 +1046,8 @@ void test_pack(const int *pl, const int **headers){
 
 int main(void){
 
-  os_en=ogg_stream_create(0x04030201, 0);
-  os_de=ogg_stream_create(0x04030201, 0);
+  os_en=ogg_stream_create(0x04030201);
+  os_de=ogg_stream_create(0x04030201);
   oy=ogg_sync_create();
   bs=ogg_buffer_create();
 

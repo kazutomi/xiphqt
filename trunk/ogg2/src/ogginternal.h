@@ -1,11 +1,11 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
+ * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -115,7 +115,6 @@ struct ogg_stream_state {
 			      (which is in a seperate abstraction
 			      layer) also knows about the gap */
   ogg_int64_t    granulepos;
-  int            mode;     /* 0 = continuous, 1 = discontinuous */
 
   int            lacing_fill;
   ogg_uint32_t   body_fill;
