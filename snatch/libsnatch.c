@@ -84,6 +84,9 @@ static int snatch_active=1;
 static int fake_audiop=0;
 static int fake_videop=0;
 
+static int output_audio_p=0;
+static int output_video_p=0;
+
 static void (*QueuedTask)(void);
 
 static int outfile_fd=-1;
@@ -110,21 +113,23 @@ static char *nstrdup(char *s){
 }
 
 static int gwrite(int fd, void *buf, int n){
-  while(n){
-    int ret=(*libc_write)(fd,buf,n);
-    if(ret<0){
-      if(errno==EAGAIN)
-	ret=0;
-      else{
-	fprintf(stderr,"**ERROR: Write error on capture file!\n"
-		"       : %s\n",strerror(errno));
-	CloseOutputFile(); /* if the error is the 2GB limit on Linux 2.2,
-			      this will result in a new file getting opened */
-	return(ret);
+  if(fd>=0){
+    while(n){
+      int ret=(*libc_write)(fd,buf,n);
+      if(ret<0){
+	if(errno==EAGAIN)
+	  ret=0;
+	else{
+	  fprintf(stderr,"**ERROR: Write error on capture file!\n"
+		  "       : %s\n",strerror(errno));
+	  CloseOutputFile(1); /* if the error is the 2GB limit on Linux 2.2,
+				this will result in a new file getting opened */
+	  return(ret);
+	}
       }
+      buf+=ret;
+      n-=ret;
     }
-    buf+=ret;
-    n-=ret;
   }
   return(0);
 }
@@ -212,7 +217,7 @@ void *backchannel_thread(void *dummy){
 	if(ret==1)
 	  FakeKeySym(sym,mod,rpplay_window);
       }
-      CloseOutputFile(); /* it will only happen on Robot commands that would
+      CloseOutputFile(0); /* it will only happen on Robot commands that would
 			    be starting a new file */
       break;
     case 'E':
@@ -268,10 +273,10 @@ void *backchannel_thread(void *dummy){
       FakeExposeRPPlay();
       break;
     case 'C':
-      CloseOutputFile();
+      CloseOutputFile(1);
       break;
     case 'I':
-      CloseOutputFile();
+      CloseOutputFile(1);
       snatch_active=0;
       FakeExposeRPPlay();
       break;
@@ -493,11 +498,12 @@ int close(int fd){
   if(fd==audio_fd){
     audio_fd=-1;
     audio_samplepos=0;
+    audio_channels=0;
     audio_timezero=bigtime(NULL,NULL);
     if(debug)
       fprintf(stderr,
 	      "    ...: RealPlayer closed audio playback fd %d\n",fd);
-    CloseOutputFile();
+    CloseOutputFile(0);
   }
     
   return(ret);
@@ -548,6 +554,7 @@ ssize_t write(int fd, const void *buf,size_t count){
     if(count>0 && snatch_active==1){
       
       pthread_mutex_lock(&output_mutex);
+      if(outfile_fd>=0 && !output_audio_p)CloseOutputFile(1);
       if(outfile_fd<0)OpenOutputFile();
       pthread_mutex_unlock(&output_mutex);
       
@@ -627,13 +634,16 @@ static void OpenOutputFile(){
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
 
       if(videocount){
+	output_video_p=1;
 	if(audio_channels){
+	  output_audio_p=1;
 	  gwrite(outfile_fd,"SNATCHAV---\n",12);
 	}else{
 	  gwrite(outfile_fd,"SNATCH-V---\n",12);
 	}
       }else{
 	if(audio_channels){
+	  output_audio_p=1;
 	  gwrite(outfile_fd,"SNATCHA----\n",12);
 	}else{
 	  gwrite(outfile_fd,"SNATCH-----\n",12);
@@ -690,13 +700,16 @@ static void OpenOutputFile(){
 	}
 	
 	if(videocount){
+	  output_video_p=1;
 	  if(audio_channels){
+	    output_audio_p=1;
 	    gwrite(outfile_fd,"SNATCHAV---\n",12);
 	  }else{
 	    gwrite(outfile_fd,"SNATCH-V---\n",12);
 	  }
 	}else{
 	  if(audio_channels){
+	    output_audio_p=1;
 	    gwrite(outfile_fd,"SNATCHA----\n",12);
 	  }else{
 	    gwrite(outfile_fd,"SNATCH-----\n",12);
@@ -713,13 +726,16 @@ static void OpenOutputFile(){
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
 	  
 	  if(videocount){
+	    output_video_p=1;
 	    if(audio_channels){
+	      output_audio_p=1;
 	      gwrite(outfile_fd,"SNATCHAV---\n",12);
 	    }else{
 	      gwrite(outfile_fd,"SNATCH-V---\n",12);
 	    }
 	  }else{
 	    if(audio_channels){
+	      output_audio_p=1;
 	      gwrite(outfile_fd,"SNATCHA----\n",12);
 	    }else{
 	      gwrite(outfile_fd,"SNATCH-----\n",12);
@@ -731,7 +747,7 @@ static void OpenOutputFile(){
   }
 }
 
-static void CloseOutputFile(){
+static void CloseOutputFile(int preserve){
   pthread_mutex_lock(&output_mutex);
   if(outfile_fd>=0){
     videocount=0;
@@ -739,6 +755,10 @@ static void CloseOutputFile(){
     if(outfile_fd!=STDOUT_FILENO)
       close(outfile_fd);
     outfile_fd=-1;
+    if(!preserve){
+      output_audio_p=0;
+      output_video_p=0;
+    }
   }
   pthread_mutex_unlock(&output_mutex);
 }

@@ -116,7 +116,7 @@ static int oss_ioctl_hook(int fd,int rq,void *arg){
       fprintf(stderr,
 	      "    ...: Audio output sampling rate set to %dHz.\n",
 	      audio_rate);
-    CloseOutputFile();
+    CloseOutputFile(0);
     break;
   case SNDCTL_DSP_CHANNELS:
     audio_channels=*(int *)arg;
@@ -124,7 +124,7 @@ static int oss_ioctl_hook(int fd,int rq,void *arg){
       fprintf(stderr,
 	      "    ...: Audio output set to %d channels.\n",
 	      audio_channels);
-    CloseOutputFile();
+    CloseOutputFile(0);
     break;
   case SNDCTL_DSP_SETFMT:
     audio_format=oss_fmt_translate(*(int *)arg);
@@ -132,7 +132,7 @@ static int oss_ioctl_hook(int fd,int rq,void *arg){
       fprintf(stderr,
 	      "    ...: Audio output format set to %s.\n",
 	      audio_fmts[audio_format]);
-    CloseOutputFile();
+    CloseOutputFile(0);
     break;
   case SNDCTL_DSP_GETOSPACE:
     if(fake_audiop){

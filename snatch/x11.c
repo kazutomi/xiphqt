@@ -54,6 +54,8 @@ static int rpfile_lowest=0;
 static void queue_task(void (*f)(void));
 static void initialize();
 static int videocount=0;
+static int videotime=0;
+
 static int depthwarningflag;
 
 static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
@@ -386,11 +388,11 @@ int XConfigureWindow(Display *display,Window id,unsigned int bitmask,XWindowChan
   if(id==rpvideo_window){
     if(bitmask & CWHeight){
       video_height=values->height;
-      CloseOutputFile();
+      CloseOutputFile(0);
     }
     if(bitmask & CWWidth){
       video_width=values->width;
-      CloseOutputFile();
+      CloseOutputFile(0);
     }
   }
 
@@ -410,7 +412,7 @@ int XResizeWindow(Display *display,Window id,unsigned int width,unsigned int hei
   if(id==rpvideo_window){
     video_height=height;
     video_width=width;
-    CloseOutputFile();
+    CloseOutputFile(0);
   }
 
   return(ret);
@@ -506,8 +508,128 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
   return(ret);
 }
 
+/* yes, it's additional CPU load where we don't want any, but the
+   savings in required disk bandwidth is more than worth it (YUV 2:4:0
+   is half the size) */
+
 static char *workbuffer;
 static long worksize;
+void YUVout(XImage *image){
+  pthread_mutex_lock(&output_mutex);
+  if(outfile_fd>=0){
+    char cbuf[80];
+    int i,j,len;	
+
+    long yuv_w=(image->width>>1)<<1; /* must be even for yuv12 */
+    long yuv_h=(image->height>>1)<<1; /* must be even for yuv12 */
+    long yuv_n=yuv_w*yuv_h*3/2;
+
+    long a,b;
+
+    pthread_mutex_unlock(&output_mutex);
+    bigtime(&a,&b);
+    len=sprintf(cbuf,"YUV12 %ld %ld %d %d %ld:",a,b,image->width,
+		image->height,yuv_n);
+	
+    if(worksize<yuv_n){
+      if(worksize==0)
+	workbuffer=malloc(yuv_n);
+      else
+	workbuffer=realloc(workbuffer,yuv_n);
+      worksize=yuv_n;
+    }
+    
+    {
+      unsigned char *y1=workbuffer;
+      unsigned char *y2=workbuffer+yuv_w;
+      unsigned char *u=workbuffer+yuv_w*yuv_h;
+      unsigned char *v=u+yuv_w*yuv_h/4;
+      unsigned char *ptr1=image->data;
+      char *ptr2=image->data+image->bytes_per_line;
+      if(image->byte_order){      
+	
+	for(i=0;i<yuv_h;i+=2){
+	  for(j=0;j<yuv_w;j+=2){
+	    long yval,uval,vval;
+	    
+	    yval  = ptr1[1]*19595 + ptr1[2]*38470 + ptr1[3]*7471;
+	    uval  = ptr1[3]*65536 - ptr1[1]*22117 - ptr1[2]*43419;
+	    vval  = ptr1[1]*65536 - ptr1[2]*54878 - ptr1[3]*10658;
+	    *y1++ = yval>>16;
+
+	    yval  = ptr1[5]*19595 + ptr1[6]*38470 + ptr1[7]*7471;
+	    uval += ptr1[7]*65536 - ptr1[5]*22117 - ptr1[6]*43419;
+	    vval += ptr1[5]*65536 - ptr1[6]*54878 - ptr1[7]*10658;
+	    *y1++ = yval>>16;
+
+	    yval  = ptr2[1]*19595 + ptr2[2]*38470 + ptr2[3]*7471;
+	    uval += ptr2[3]*65536 - ptr2[1]*22117 - ptr2[2]*43419;
+	    vval += ptr2[1]*65536 - ptr2[2]*54878 - ptr2[3]*10658;
+	    *y2++ = yval>>16;
+
+	    yval  = ptr2[5]*19595 + ptr2[6]*38470 + ptr2[7]*7471;
+	    uval += ptr2[7]*65536 - ptr2[5]*22117 - ptr2[6]*43419;
+	    vval += ptr2[5]*65536 - ptr2[6]*54878 - ptr2[7]*10658;
+	    *y2++ = yval>>16;
+	    
+	    *u++  = (uval>>19)+128;
+	    *v++  = (vval>>19)+128;
+	    ptr1+=8;
+	    ptr2+=8;
+	  }
+	  ptr1+=image->bytes_per_line;
+	  ptr2+=image->bytes_per_line;
+	  y1+=yuv_w;
+	  y2+=yuv_w;
+
+	}
+
+      }else{
+
+	for(i=0;i<yuv_h;i+=2){
+	  for(j=0;j<yuv_w;j+=2){
+	    long yval,uval,vval;
+	    
+	    yval  = ptr1[2]*19595 + ptr1[1]*38470 + ptr1[0]*7471;
+	    uval  = ptr1[0]*65536 - ptr1[2]*22117 - ptr1[1]*43419;
+	    vval  = ptr1[2]*65536 - ptr1[1]*54878 - ptr1[0]*10658;
+	    *y1++ = yval>>16;
+
+	    yval  = ptr1[6]*19595 + ptr1[5]*38470 + ptr1[4]*7471;
+	    uval += ptr1[4]*65536 - ptr1[6]*22117 - ptr1[5]*43419;
+	    vval += ptr1[5]*65536 - ptr1[5]*54878 - ptr1[4]*10658;
+	    *y1++ = yval>>16;
+
+	    yval  = ptr2[2]*19595 + ptr2[1]*38470 + ptr2[0]*7471;
+	    uval += ptr2[0]*65536 - ptr2[2]*22117 - ptr2[1]*43419;
+	    vval += ptr2[2]*65536 - ptr2[1]*54878 - ptr2[0]*10658;
+	    *y2++ = yval>>16;
+
+	    yval  = ptr2[6]*19595 + ptr2[5]*38470 + ptr2[4]*7471;
+	    uval += ptr2[4]*65536 - ptr2[6]*22117 - ptr2[5]*43419;
+	    vval += ptr2[5]*65536 - ptr2[5]*54878 - ptr2[4]*10658;
+	    *y2++ = yval>>16;
+	    
+	    *u++  = (uval>>19)+128;
+	    *v++  = (vval>>19)+128;
+	    ptr1+=8;
+	    ptr2+=8;
+	  }
+	  ptr1+=image->bytes_per_line;
+	  ptr2+=image->bytes_per_line;
+	  y1+=yuv_w;
+	  y2+=yuv_w;
+
+	}
+      }
+    }
+    pthread_mutex_lock(&output_mutex);
+    gwrite(outfile_fd,cbuf,len);
+    gwrite(outfile_fd,workbuffer,yuv_n);
+  }
+  pthread_mutex_unlock(&output_mutex);
+}
+
 
 int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	      int src_x,int src_y,
@@ -517,64 +639,23 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 
   int ret=0;
 
-  if(snatch_active==1 && id==rpvideo_window){
-    videocount++;
+  if(id==rpvideo_window){
+    double t=bigtime(NULL,NULL);
+    if(t-videotime)
+      videocount=1;
+    else
+      videocount++;
+  }
 
+  if(snatch_active==1 && id==rpvideo_window){
     pthread_mutex_lock(&output_mutex);
-    if(outfile_fd<0 && videocount>5)OpenOutputFile();
+    if(outfile_fd>=0 && !output_video_p)CloseOutputFile(1);
+    if(outfile_fd<0 && videocount>4)OpenOutputFile();
     pthread_mutex_unlock(&output_mutex);
     /* only do 24 bit zPixmaps for now */
 
     if(image->format==2 && image->depth>16 && image->depth<=24){
-      if(outfile_fd>=0){
-	char cbuf[80];
-	int bpp=image->bytes_per_line/image->width;
-	long a,b,n=image->width*image->height*3;
-	int i,j,len;
-	
-	bigtime(&a,&b);
-	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,image->width,
-		    image->height,n);
-	
-	if(worksize<n){
-	  if(worksize==0)
-	    workbuffer=malloc(n);
-	  else
-	    workbuffer=realloc(workbuffer,n);
-	  worksize=n;
-	}
-	
-	if(image->byte_order){      
-	  char *work=workbuffer;
-	  char *ptr=image->data;
-	  for(i=0;i<image->height;i++){
-	    for(j=0;j<image->width*bpp;){
-	      j++;
-	      *work++=ptr[j++];
-	      *work++=ptr[j++];
-	      *work++=ptr[j++];
-	    }
-	    ptr+=image->bytes_per_line;
-	  }
-	}else{
-	  char *work=workbuffer;
-	  char *ptr=image->data;
-	  for(i=0;i<image->height;i++){
-	    for(j=0;j<image->width*bpp;j+=4){
-	      *work++=ptr[j+2];
-	      *work++=ptr[j+1];
-	      *work++=ptr[j];
-	    }
-	    ptr+=image->bytes_per_line;
-	  }
-	}
-	  	  
-	pthread_mutex_lock(&output_mutex);
-	gwrite(outfile_fd,cbuf,len);
-	gwrite(outfile_fd,workbuffer,n);
-	pthread_mutex_unlock(&output_mutex);
-
-      }
+      YUVout(image);
     }else{
       if(!depthwarningflag)
 	fprintf(stderr,"**ERROR: Right now, Snatch only works with 17-24 bit ZPixmap\n"
@@ -745,70 +826,23 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 		 Bool send_event){
   int ret=0;
 
-  if(!fake_videop)
-    ret=(*xlib_xshmputimage)(display, id, gc, image, src_x, src_y,
-			     dest_x, dest_y, width, height, send_event);
-
-
+  if(id==rpvideo_window){
+    double t=bigtime(NULL,NULL);
+    if(t-videotime>1.)
+      videocount=1;
+    else
+      videocount++;
+  }
+   
   if(snatch_active==1 && id==rpvideo_window){
-    videocount++;
-
     pthread_mutex_lock(&output_mutex);
-    if(outfile_fd<0 && videocount>5)OpenOutputFile();
+    if(outfile_fd>=0 && !output_video_p)CloseOutputFile(1);
+    if(outfile_fd<0 && videocount>4)OpenOutputFile();
     pthread_mutex_unlock(&output_mutex);
 
     /* only do 24 bit zPixmaps for now */
     if(image->format==2 && image->depth>16 && image->depth<=24){
-      if(outfile_fd>=0){
-	char cbuf[80];
-	int bpp=image->bytes_per_line/image->width;
-	long a,b,n=image->width*image->height*3;
-	int i,j,len;
-	
-	bigtime(&a,&b);
-
-	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,image->width,
-		    image->height,n);
-	
-	if(worksize<n){
-	  if(worksize==0)
-	    workbuffer=malloc(n);
-	  else
-	    workbuffer=realloc(workbuffer,n);
-	  worksize=n;
-	}
-	
-	if(image->byte_order){      
-	  char *work=workbuffer;
-	  char *ptr=image->data;
-	  for(i=0;i<image->height;i++){
-	    for(j=0;j<image->width*bpp;){
-	      j++;
-	      *work++=ptr[j++];
-	      *work++=ptr[j++];
-	      *work++=ptr[j++];
-	    }
-	    ptr+=image->bytes_per_line;
-	  }
-	}else{
-	  char *work=workbuffer;
-	  char *ptr=image->data;
-	  for(i=0;i<image->height;i++){
-	    for(j=0;j<image->width*bpp;j+=4){
-	      *work++=ptr[j+2];
-	      *work++=ptr[j+1];
-	      *work++=ptr[j];
-	    }
-	    ptr+=image->bytes_per_line;
-	  }
-	}
-
-	pthread_mutex_lock(&output_mutex);
-	gwrite(outfile_fd,cbuf,len);
-	gwrite(outfile_fd,workbuffer,n);
-	pthread_mutex_unlock(&output_mutex);
-
-      }
+      YUVout(image);
     }else{
       if(!depthwarningflag)
 	fprintf(stderr,"**ERROR: Right now, Snatch only works with 17-24 bit ZPixmap\n"
@@ -818,12 +852,17 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
     }
   }
 
+  if(!fake_videop)
+    ret=(*xlib_xshmputimage)(display, id, gc, image, src_x, src_y,
+			     dest_x, dest_y, width, height, send_event);
+
+
   return(ret);
 }
 
 int XCloseDisplay(Display  *d){
   int ret=(*xlib_xclose)(d);
-  CloseOutputFile();
+  CloseOutputFile(0);
   if(debug)fprintf(stderr,"    ...: X display closed; goodbye.\n\n");
   return(ret);
 }
