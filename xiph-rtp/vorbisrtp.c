@@ -330,7 +330,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
     unsigned char framesize;
     unsigned char *packet;
 
-    const unsigned int max_payload = 256;
+    const unsigned int max_payload = 255;
 
     /* we accumulate short frames between calls */
     static int stacksize = 0;
