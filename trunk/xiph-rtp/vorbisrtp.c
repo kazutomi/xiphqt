@@ -326,6 +326,23 @@ int createsocket (struct RTPHeaders *RTPHeaders, struct sockaddr_in *sockAddr, c
 }
 
 /*****************************************************************************/
+/*  Fills in the Vorbis RTP header in a packet.                              */
+/*****************************************************************************/
+
+int makevorbisheader (unsigned char *packet, int length, struct VorbisBitfields *vorbheader)
+{
+    if (length < 5) return -1;
+
+    ((unsigned int *)packet)[0] = vorbheader->cbident;
+    packet[4] = (vorbheader -> continuation) << 7;
+    packet[4] |= (vorbheader -> fragment) << 6;
+    packet[4] |= (vorbheader -> reserved) << 5;
+    packet[4] |= (vorbheader -> pkts) & 0x1f;          
+    
+    return 0;
+}
+
+/*****************************************************************************/
 /*  Creates RTP packet from Vorbis frame.                                    */
 /*  Deals with fragmentation and multiple Vorbis frame RTP packets           */
 /*****************************************************************************/
@@ -366,7 +383,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
             packet = malloc (262);
 
-            memcpy (packet, vorbheader, 5);
+            makevorbisheader (packet, 262, vorbheader);
             memcpy (packet + 5, &framesize, 1);
             memmove (packet + 6, vorbdata, 256);
 
@@ -399,7 +416,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
         packet = malloc (length + 6);
 
-        memcpy (packet, vorbheader, 5);
+        makevorbisheader (packet, length + 6, vorbheader);
         memcpy (packet + 5, &framesize, 1);
         memcpy (packet + 6, vorbdata + position, length);
 
@@ -448,7 +465,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
             packet = malloc (stacksize + 6);
 
-            memmove (packet, vorbheader, 5);
+            makevorbisheader (packet, stacksize + 6, vorbheader);
             memmove (packet + 6, framestack, stacksize);
 
             /*  Swap RTP headers from host to network order  */
@@ -495,7 +512,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
         packet = malloc (length + 6);
 
-        memcpy (packet, vorbheader, 5);
+        makevorbisheader (packet, length + 6, vorbheader);
         memcpy (packet + 5, &framesize, 1);
         memcpy (packet + 6, vorbdata, length);
 
