@@ -1,5 +1,5 @@
 @echo off
-rem $Id: mfmacro.bat,v 1.4 2001/09/15 06:48:57 cwolf Exp $
+rem $Id: mfmacro.bat,v 1.5 2001/10/18 03:16:53 cwolf Exp $
 rem
 rem Creates and installs VC macro for exporting makefiles from 
 rem the command line.
@@ -12,7 +12,7 @@ rem msdev -ex ExportExampleMakefiles
 rem
 if .%SRCROOT%==. goto notset
 set macrofile="%msdevdir%\Macros\oggvorbis.dsm"
-if exist %macrofile% goto done
+if exist %macrofile% goto enable
 echo 'This macro is for exporting makefiles for all projects > %macrofile%
 echo 'from the command line. >> %macrofile%
 echo 'To invoke: msdev -ex ExportMakefile
@@ -37,7 +37,10 @@ echo   Documents.SaveAll True >> %macrofile%
 echo   Application.Quit >> %macrofile%
 echo end Sub >> %macrofile%
 set macrofile=
-exit
+:enable
+call enableOggMacro.js
+call sleep.js 5
+goto done
 :notset
 echo Error SRCROOT not set
 :done
