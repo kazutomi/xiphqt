@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.5 2000/08/15 15:32:37 msmith Exp $
+# $Id: Makefile.in,v 1.5.2.1 2000/09/27 06:20:58 jack Exp $
 # Makefile for the OggVorbis kmpg module.
 
 # still needs an 'install' entry, but how to find kmp?
