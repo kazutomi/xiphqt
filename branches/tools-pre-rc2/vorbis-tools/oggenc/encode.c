@@ -167,6 +167,9 @@ int oe_encode(oe_enc_opt *opt)
 		}
 	}
 
+	ret = 0; /* Success, set return value to 0 since other things reuse it
+			  * for nefarious purposes. */
+
 	/* Cleanup time */
 cleanup:
 

@@ -91,7 +91,7 @@ int utf8_encode(char *from, char **to, const char *encoding)
 #ifdef HAVE_ICONV
 	static unsigned char buffer[BUFSIZE];
     char *from_p, *to_p;
-	size_t from_left, to_left, ret;
+	size_t from_left, to_left;
 	iconv_t cd;
 #endif
 

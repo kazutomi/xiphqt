@@ -64,6 +64,7 @@ int main(int argc, char **argv)
 
 	char **infiles;
 	int numfiles;
+	int errors=0;
 
 	parse_options(argc, argv, &opt);
 
@@ -145,6 +146,7 @@ int main(int argc, char **argv)
 			{
 				fprintf(stderr, "ERROR: Cannot open input file \"%s\"\n", infiles[i]);
 				free(out_fn);
+				errors++;
 				continue;
 			}
 
@@ -178,6 +180,7 @@ int main(int argc, char **argv)
 		if(!foundformat)
 		{
 			fprintf(stderr, "ERROR: Input file \"%s\" is not a supported format\n", infiles[i]);
+			errors++;
 			continue;
 		}
 
@@ -226,6 +229,7 @@ int main(int argc, char **argv)
 				if(closein)
 					fclose(in);
 				fprintf(stderr, "ERROR: Cannot open output file \"%s\"\n", out_fn);
+				errors++;
 				free(out_fn);
 				continue;
 			}	
@@ -249,7 +253,8 @@ int main(int argc, char **argv)
 			enc_opts.end_encode = final_statistics_null;
 		}
 
-		oe_encode(&enc_opts); /* Should we care about return val? */
+		if(oe_encode(&enc_opts))
+			errors++;
 
 		if(out_fn) free(out_fn);
 		vorbis_comment_clear(&vc);
@@ -262,7 +267,7 @@ int main(int argc, char **argv)
 			fclose(out);
 	}/* Finished this file, loop around to next... */
 
-	return 0;
+	return errors?1:0;
 
 }
 
