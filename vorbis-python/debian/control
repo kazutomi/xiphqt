@@ -3,7 +3,7 @@ Section: interpreters
 Priority: optional
 Maintainer: Christopher L Cheney <ccheney@debian.org>
 Build-Depends: debhelper (>> 2.0.0), libvorbis-dev (>> 1.0beta4), ogg-python (>> 0.2), python-base, python-distutils
-Standards-Version: 3.5.1.0
+Standards-Version: 3.5.2.0
 
 Package: vorbis-python
 Architecture: any
