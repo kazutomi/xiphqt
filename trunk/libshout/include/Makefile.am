@@ -3,3 +3,5 @@
 AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = shout
+
+EXTRA_DIST = os.h
