@@ -24,7 +24,7 @@ static PyMethodDef Ogg_methods[] = {
 static char docstring[] = "";
 
 void
-init_ogg2(void)
+initogg2(void)
 {
   PyObject *module, *dict, *Py_module_info;
 
@@ -34,7 +34,7 @@ init_ogg2(void)
   PyOggStreamState_Type.ob_type = &PyType_Type;
   PyOggSyncState_Type.ob_type = &PyType_Type;
   
-  module = Py_InitModule("_ogg2", Ogg_methods);
+  module = Py_InitModule("ogg2", Ogg_methods);
   dict = PyModule_GetDict(module);
 
   PyOgg_Error = PyErr_NewException("ogg2.OggError", NULL, NULL);
@@ -56,5 +56,5 @@ init_ogg2(void)
   PyModule_AddIntConstant(module, "Ogg_Discont", OGG_DISCONT);
 
   if (PyErr_Occurred())
-    PyErr_SetString(PyExc_ImportError, "_ogg2: init failed");
+    PyErr_SetString(PyExc_ImportError, "ogg2: init failed");
 }
