@@ -581,8 +581,7 @@ case "${host_cpu}-${host_os}" in
         # a function called by this macro, so we could check for that, but
         # who knows whether they'll stub that too in a future libc.)  So,
         # we'll just look for -pthreads and -lpthread first:
-
-        acx_pthread_flags="pthread -pthread -pthreads -mt $acx_pthread_flags"
+        acx_pthread_flags="-pthread -pthreads pthread -mt $acx_pthread_flags"
         ;;
 esac
 
