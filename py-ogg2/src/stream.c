@@ -23,7 +23,7 @@ FDEF(PyOggStreamState_Packetout) "Extract a packet from the stream";
 FDEF(PyOggStreamState_Packetpeek) "Extract a packet from the stream";
 FDEF(PyOggStreamState_Reset) "Reset the stream state";
 FDEF(PyOggStreamState_Eos) "Return whether the end of the stream is reached.";
-FDEF(PyOggStreamState_Setmode) "Set stream mode for (dis)continuous.";
+FDEF(PyOggStreamState_Setdiscont) "Set discontinuous stream mode.";
 
 PyTypeObject PyOggStreamState_Type = {
   PyObject_HEAD_INIT(NULL)
@@ -71,15 +71,15 @@ static PyMethodDef PyOggStreamState_methods[] = {
    METH_VARARGS, PyOggStreamState_Reset_Doc},
   {"eos", PyOggStreamState_Eos, 
    METH_VARARGS, PyOggStreamState_Eos_Doc},
-  {"setmode", PyOggStreamState_Setmode, 
-   METH_VARARGS, PyOggStreamState_Setmode_Doc},
+  {"setdiscont", PyOggStreamState_Setdiscont, 
+   METH_VARARGS, PyOggStreamState_Setdiscont_Doc},
   {NULL, NULL}
 };
 
 static void 
 PyOggStreamState_Dealloc(PyObject *self)
 {
-  ogg_stream_destroy(PyOggStreamState_AsOggStreamState(self));
+  ogg2_stream_destroy(PyOggStreamState_AsOggStreamState(self));
   PyObject_DEL(self);
 }
 
@@ -97,7 +97,7 @@ PyOggStreamState_FromSerialno(int serialno)
   if (ret == NULL)
     return NULL;
 
-  ret->stream = ogg_stream_create(serialno);
+  ret->stream = ogg2_stream_create(serialno);
   if (ret->stream == NULL) {
     PyObject_DEL(ret);
     return NULL;
@@ -130,18 +130,18 @@ PyOggStreamState_Packetin(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  ret = ogg_stream_packetin(PyOggStreamState_AsOggStreamState(self), 
-                            PyOggPacket_AsOggPacket(packet));
-  if (ret == OGG_SUCCESS) {
+  ret = ogg2_stream_packetin(PyOggStreamState_AsOggStreamState(self), 
+                             PyOggPacket_AsOggPacket(packet));
+  if (ret == OGG2_SUCCESS) {
     Py_INCREF(Py_None);
     packet->valid_flag = 0;    
     return Py_None;
   } 
-  if (ret == OGG_EEOS) {
+  if (ret == OGG2_EEOS) {
     PyErr_SetString(PyOgg_Error, "EOS has been set on this stream");
     return NULL;
   }
-  PyErr_SetString(PyOgg_Error, "error in ogg_stream_packetin");
+  PyErr_SetString(PyOgg_Error, "error in ogg2_stream_packetin");
   return NULL;
 }
 
@@ -160,8 +160,8 @@ PyOggStreamState_Pageout(PyObject *self, PyObject *args)
     PyErr_SetString(PyOgg_Error, "Out of Memory.");
     return NULL;
   }
-  ret = ogg_stream_pageout(PyOggStreamState_AsOggStreamState(self),
-                           PyOggPage_AsOggPage(pageobj));
+  ret = ogg2_stream_pageout(PyOggStreamState_AsOggStreamState(self),
+                            PyOggPage_AsOggPage(pageobj));
   if ( ret == 1 ) return (PyObject *) pageobj;
   Py_DECREF(pageobj);
   Py_INCREF(Py_None);
@@ -183,8 +183,8 @@ PyOggStreamState_Flush(PyObject *self, PyObject *args)
     PyErr_SetString(PyOgg_Error, "Out of Memory.");
     return NULL;
   }
-  ret = ogg_stream_flush(PyOggStreamState_AsOggStreamState(self), 
-                         PyOggPage_AsOggPage(pageobj));
+  ret = ogg2_stream_flush(PyOggStreamState_AsOggStreamState(self), 
+                          PyOggPage_AsOggPage(pageobj));
   if ( ret == 1 ) return (PyObject *) pageobj;
   Py_DECREF(pageobj);
   Py_INCREF(Py_None);
@@ -207,22 +207,22 @@ PyOggStreamState_Pagein(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  ret = ogg_stream_pagein(PyOggStreamState_AsOggStreamState(self), 
-                          PyOggPage_AsOggPage(page));
-  if (ret == OGG_SUCCESS) {
+  ret = ogg2_stream_pagein(PyOggStreamState_AsOggStreamState(self), 
+                           PyOggPage_AsOggPage(page));
+  if (ret == OGG2_SUCCESS) {
     Py_INCREF(Py_None);
     page->valid_flag = 0;    
     return Py_None;
   }
-  if (ret == OGG_ESERIAL) {
+  if (ret == OGG2_ESERIAL) {
     PyErr_SetString(PyOgg_Error, "Page serial does not match stream.");
     return NULL;
   }
-  if (ret == OGG_EVERSION) {
+  if (ret == OGG2_EVERSION) {
     PyErr_SetString(PyOgg_Error, "Unknown Ogg page version.");
     return NULL;
   } 
-  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_stream_pagein.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg2_stream_pagein.");
   return NULL;
 }
 
@@ -242,8 +242,8 @@ PyOggStreamState_Packetout(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  ret = ogg_stream_packetout(PyOggStreamState_AsOggStreamState(self), 
-                             PyOggPacket_AsOggPacket(packetobj));
+  ret = ogg2_stream_packetout(PyOggStreamState_AsOggStreamState(self), 
+                              PyOggPacket_AsOggPacket(packetobj));
   if (ret == 1) return (PyObject *) packetobj;
   Py_DECREF(packetobj);
 
@@ -251,15 +251,15 @@ PyOggStreamState_Packetout(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
   }
-  if (ret == OGG_HOLE ) {
+  if (ret == OGG2_HOLE ) {
     PyErr_SetString(PyOgg_Error, "Hole in data, stream is desynced.");
     return NULL;
   }
-  if (ret == OGG_SPAN) {
+  if (ret == OGG2_SPAN) {
     PyErr_SetString(PyOgg_Error, "Stream spans ??.");
     return NULL;
   }
-  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_stream_packetout.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg2_stream_packetout.");
   return NULL;
 }
 
@@ -268,9 +268,9 @@ static PyObject *
 PyOggStreamState_Packetpeek(PyObject *self, PyObject *args)
 {
   int ret;
-  ogg_packet *packet;
+  ogg2_packet *packet;
 
-  ret = ogg_stream_packetout(PyOggStreamState_AsOggStreamState(self), packet);
+  ret = ogg2_stream_packetout(PyOggStreamState_AsOggStreamState(self), packet);
   if (ret == 1) {
     Py_INCREF(Py_True);
     return Py_True;
@@ -279,15 +279,15 @@ PyOggStreamState_Packetpeek(PyObject *self, PyObject *args)
     Py_INCREF(Py_False);
     return Py_False;
   }
-  if (ret == OGG_HOLE ) {
+  if (ret == OGG2_HOLE ) {
     PyErr_SetString(PyOgg_Error, "Hole in data, stream is desynced.");
     return NULL;
   }
-  if (ret == OGG_SPAN) {
+  if (ret == OGG2_SPAN) {
     PyErr_SetString(PyOgg_Error, "Stream spans ??.");
     return NULL;
   }
-  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_stream_packetout.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg2_stream_packetout.");
   return NULL;
 }
 
@@ -302,11 +302,12 @@ PyOggStreamState_Reset(PyObject *self, PyObject *args)
     return NULL;
 
   if ( serialno == -1 ) 
-    ret = ogg_stream_reset(PyOggStreamState_AsOggStreamState(self));
+    ret = ogg2_stream_reset(PyOggStreamState_AsOggStreamState(self));
   else 
-    ret = ogg_stream_reset_serialno(PyOggStreamState_AsOggStreamState(self),serialno);  
+    ret = ogg2_stream_reset_serialno(PyOggStreamState_AsOggStreamState(self),
+                                     serialno);  
 
-  if ( ret == OGG_SUCCESS ) {
+  if ( ret == OGG2_SUCCESS ) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -324,7 +325,7 @@ PyOggStreamState_Eos(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
-  eos = ogg_stream_eos(PyOggStreamState_AsOggStreamState(self));
+  eos = ogg2_stream_eos(PyOggStreamState_AsOggStreamState(self));
   if ( eos == 0 ) {
     Py_INCREF(Py_False);
     return Py_False;
@@ -334,25 +335,24 @@ PyOggStreamState_Eos(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-PyOggStreamState_Setmode(PyObject *self, PyObject *args)
+PyOggStreamState_Setdiscont(PyObject *self, PyObject *args)
 {
-  int mode;
   int ret;
 
-  if (!PyArg_ParseTuple(args, "i", &mode))
+  if (!PyArg_ParseTuple(args, ""))
     return NULL;
   
-  ret = ogg_stream_setmode(PyOggStreamState_AsOggStreamState(self), mode);
+  ret = ogg2_stream_setdiscont(PyOggStreamState_AsOggStreamState(self));
 
-  if ( ret == OGG_SUCCESS ) {
+  if ( ret == OGG2_SUCCESS ) {
     Py_INCREF(Py_None);
     return Py_None;
   } 
-  if ( ret == OGG_EMODE ) {
-    PyErr_SetString(PyOgg_Error, "Cannot set this stream mode at this time.");
+  if ( ret == OGG2_EINVAL ) {
+    PyErr_SetString(PyOgg_Error, "Cannot change to discontinuous mode at this time.");
     return NULL;
   }
-  PyErr_SetString(PyOgg_Error, "Unknown error while setting stream mode");
+  PyErr_SetString(PyOgg_Error, "Unknown error while changing to discontinuous stream mode");
   return NULL;
 }
 

@@ -71,7 +71,7 @@ static PyMethodDef PyOggPage_methods[] = {
 
 PyOggPageObject *
 PyOggPage_Alloc() {
-  ogg_page *page;
+  ogg2_page *page;
   PyOggPageObject *ret;
 
   ret = (PyOggPageObject *) PyObject_NEW(PyOggPageObject, &PyOggPage_Type);
@@ -79,7 +79,7 @@ PyOggPage_Alloc() {
     return NULL;
 
   ret->valid_flag = 1;
-  page = PyMem_New(ogg_page, 1);
+  page = PyMem_New(ogg2_page, 1);
   if (page == NULL) {
     PyObject_Del(ret);
     return NULL;
@@ -92,7 +92,7 @@ PyOggPage_Alloc() {
 
 static void 
 PyOggPage_Dealloc(PyObject *self) {
-  ogg_page_release(PyOggPage_AsOggPage(self));
+  ogg2_page_release(PyOggPage_AsOggPage(self));
   PyMem_Del(PyOggPage_AsOggPage(self));
   PyObject_Del(self);
 }
@@ -112,7 +112,7 @@ PyOggPage_Size(PyObject *self) {
 
 static PyObject* 
 PyOggPage_Getattr(PyObject *self, char *name) {
-  ogg_page *page;
+  ogg2_page *page;
 
   if (((PyOggPageObject *) self)->valid_flag == 0) {
     PyErr_SetString(PyOggPage_Error, "this page is no longer usable.");
@@ -122,21 +122,21 @@ PyOggPage_Getattr(PyObject *self, char *name) {
   page = PyOggPage_AsOggPage(self);
 
   if (strcmp(name, "bos") == 0) 
-    return Py_TrueFalse(ogg_page_bos(page));
+    return Py_TrueFalse(ogg2_page_bos(page));
   if (strcmp(name, "continued") == 0) 
-    return Py_TrueFalse(ogg_page_continued(page));
+    return Py_TrueFalse(ogg2_page_continued(page));
   if (strcmp(name, "eos") == 0) 
-    return Py_TrueFalse(ogg_page_eos(page));
+    return Py_TrueFalse(ogg2_page_eos(page));
   if (strcmp(name, "granulepos") == 0)
-    return PyLong_FromLongLong(ogg_page_granulepos(page));
+    return PyLong_FromLongLong(ogg2_page_granulepos(page));
   if (strcmp(name, "packets") == 0) 
-    return PyInt_FromLong(ogg_page_packets(page));
+    return PyInt_FromLong(ogg2_page_packets(page));
   if (strcmp(name, "pageno") == 0) 
-    return PyInt_FromLong(ogg_page_pageno(page));
+    return PyInt_FromLong(ogg2_page_pageno(page));
   if (strcmp(name, "serialno") == 0) 
-    return PyInt_FromLong(ogg_page_serialno(page));
+    return PyInt_FromLong(ogg2_page_serialno(page));
   if (strcmp(name, "version") == 0) 
-    return PyInt_FromLong(ogg_page_version(page));
+    return PyInt_FromLong(ogg2_page_version(page));
   return Py_FindMethod(PyOggPage_methods, self, name);
 }
 
@@ -153,7 +153,7 @@ PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
       PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
     }
-    ogg_page_set_bos(PyOggPage_AsOggPage(self), v);
+    ogg2_page_set_bos(PyOggPage_AsOggPage(self), v);
     return 0;
   }
   if (strcmp(name, "continued") == 0) {
@@ -162,7 +162,7 @@ PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
       PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
     }
-    ogg_page_set_continued(PyOggPage_AsOggPage(self), v);
+    ogg2_page_set_continued(PyOggPage_AsOggPage(self), v);
     return 0;
   }
   if (strcmp(name, "eos") == 0) {
@@ -171,7 +171,7 @@ PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
       PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
     }
-    ogg_page_set_eos(PyOggPage_AsOggPage(self), v);
+    ogg2_page_set_eos(PyOggPage_AsOggPage(self), v);
     return 0;
   }
   if (strcmp(name, "granulepos") == 0) {
@@ -180,7 +180,7 @@ PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
       PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
     }
-    ogg_page_set_granulepos(PyOggPage_AsOggPage(self), v);
+    ogg2_page_set_granulepos(PyOggPage_AsOggPage(self), v);
     return 0;
   }
   if (strcmp(name, "pageno") == 0) {
@@ -189,7 +189,7 @@ PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
       PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
     }
-    ogg_page_set_pageno(PyOggPage_AsOggPage(self), v);
+    ogg2_page_set_pageno(PyOggPage_AsOggPage(self), v);
     return 0;
   }
   if (strcmp(name, "serialno") == 0) {
@@ -198,7 +198,7 @@ PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
       PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
     }
-    ogg_page_set_serialno(PyOggPage_AsOggPage(self), v);
+    ogg2_page_set_serialno(PyOggPage_AsOggPage(self), v);
     return 0;
   }
   if (strcmp(name, "version") == 0) {
@@ -226,17 +226,17 @@ PyOggPage_Repr(PyObject *self)
     return PyString_FromString(buf);
   }
 
-  bos = ogg_page_bos(PyOggPage_AsOggPage(self)) ? "BOS, " : "";
-  eos = ogg_page_eos(PyOggPage_AsOggPage(self)) ? "EOS, " : "";
-  cont = ogg_page_continued(PyOggPage_AsOggPage(self)) ? "CONT, " : "";
+  bos = ogg2_page_bos(PyOggPage_AsOggPage(self)) ? "BOS, " : "";
+  eos = ogg2_page_eos(PyOggPage_AsOggPage(self)) ? "EOS, " : "";
+  cont = ogg2_page_continued(PyOggPage_AsOggPage(self)) ? "CONT, " : "";
   sprintf(buf, "<OggPage, %s%s%spageno = %ld, granulepos = %lld,"
 	  " packets = %d, serialno = %d, version = %d," 
           " head length = %ld, body length = %ld, at %p (%p)>",
-	  cont, bos, eos, ogg_page_pageno(PyOggPage_AsOggPage(self)),
-          ogg_page_granulepos(PyOggPage_AsOggPage(self)),
-	  ogg_page_packets(PyOggPage_AsOggPage(self)),
-          ogg_page_serialno(PyOggPage_AsOggPage(self)),
-          ogg_page_version(PyOggPage_AsOggPage(self)), 
+	  cont, bos, eos, ogg2_page_pageno(PyOggPage_AsOggPage(self)),
+          ogg2_page_granulepos(PyOggPage_AsOggPage(self)),
+	  ogg2_page_packets(PyOggPage_AsOggPage(self)),
+          ogg2_page_serialno(PyOggPage_AsOggPage(self)),
+          ogg2_page_version(PyOggPage_AsOggPage(self)), 
           PyOggPage_AsOggPage(self)->header_len, 
           PyOggPage_AsOggPage(self)->body_len,
           self, PyOggPage_AsOggPage(self)); 

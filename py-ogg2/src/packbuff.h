@@ -7,7 +7,7 @@ typedef struct {
   PyObject_HEAD
   int msb_flag; /* 0 = LSb (standard), 1 = MSb */
   int write_flag; /* 0 = read, 1 = write, 2 = dead write */
-  oggpack_buffer *buffer;
+  ogg2pack_buffer *buffer;
   PyOggPacketObject *packetobj;  /* temporary workaround */
 } PyOggPackBufferObject;
 

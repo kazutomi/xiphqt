@@ -5,7 +5,7 @@
 
 typedef struct {
   PyObject_HEAD
-  ogg_stream_state *stream;
+  ogg2_stream_state *stream;
 } PyOggStreamStateObject;
 
 extern PyTypeObject PyOggStreamState_Type;

@@ -6,7 +6,7 @@
 typedef struct {
   PyObject_HEAD
   int valid_flag;
-  ogg_packet *packet;
+  ogg2_packet *packet;
 } PyOggPacketObject;
 
 extern PyTypeObject PyOggPacket_Type;
