@@ -1,6 +1,7 @@
 oggmerge
 Makefile
 Makefile.in
+*.gz
 .deps
 .libs
 aclocal.m4
