@@ -109,6 +109,17 @@ class MarkdownWrapper(object):
 		ret += "</html>\n"
 		return ret
 
+def makeReadableDate(isoDate):
+	"""Gets "January 4, 1982" from "1982-01-04"."""
+	year = isoDate[0-4]
+	day = isoDate[-2:]
+	if day.startswith('0'): day = day[-1]
+	month = isoDate[5:7]
+	months = """Nothing January February March April May June
+				July August September October November December""".split()
+	return "%s %s, %s" % (months[int(month)], day, year)
+
+
 if __name__ == '__main__':
 	for dirpath, dirnames, filenames in os.walk('.'):
 		for filename in filter(lambda x: x.endswith(".txt"), filenames):

@@ -7,9 +7,18 @@ To Do
 	ancestors used", kinda like an OO derivation thing.
 *	Anyhow, for this out-of-band data thing: In it, I'd have stuff for:
 	*	Extra things to put in <head>
-	*	Extra things to put before <div id='content'>
-	*	Extra things to put after  <div id='content'>
+	*	Extra things to put **before** `<div id='content'>`
+	*	Extra things to put **after**  `<div id='content'>`
 	* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
 	Maybe I could use PyYaml. Although that's probably serious overkill.
-*	Figure out a way to have a bunch of files in Markdown .txt and then generate news bits
-	from them. Bonus points if you can whip up Atom feeds from the bunch.
+
+For the News Things
+------------------
+
+*	We should be able to generate both page snippets and an Atom feed from the news posts.
+*	The news things should be able to be placed in multiple categories. Such categories would
+	include, but not be limited to "vorbis", "flac", "speex", "theora", "icecast",
+	"organizational", and the like.
+*	News items must be able to be placed in multiple categories; the oggenc that shipped with
+	the 1.0.1 release that could encode to vorbis from flac should be mentioned in both
+	the "vorbis" and "flac" sections.

@@ -1,10 +1,23 @@
 html {
 	font: 80% Verdana, sans-serif;
 	color: #010;
+
+	/* guess which colors I like... */
 	background: #ffdead; /* navajo white */
-	background: #2f4f4f; /* dark slate gray */
 	background: #696969; /* dim gray */
 	background: #008080; /* teal */
+	background: #f5f5f5; /* white smoke */
+	background: #fff5ee; /* seashell */
+	background: #5f9ea0; /* cadet blue */
+	background: #2f4f4f; /* dark slate gray */
+	background: #778899; /* light slate gray */
+	background: #708090; /* slate gray */
+	background: #2e8b57; /* sea green */
+	background: #4682b4; /* steel blue */
+	background: #6495ed; /* cornflower blue */
+	background: #1e90ff; /* cornflower blue */
+	background: #556b2f; /* dark olive green */
+
 	margin: 0;
 	padding: 0;
 }
@@ -15,7 +28,6 @@ body {
 }
 
 h1 {
-	color: #2f4f4f;
 	margin-top: 0;
 }
 
@@ -36,6 +48,9 @@ div#sidebar {
 	padding: 0;
 }
 
+/*	the "bignavbuttons" thing was taken from www.adaptivepath.com.
+	I'm still not sure what the em.reset is for.
+*/
 ul#bignavbuttons {
 	margin: 0;
 	padding: 0;
@@ -45,7 +60,6 @@ ul#bignavbuttons li {
 	list-style-type: none;
 	margin: 0;
 	margin-bottom: 1em;
-	padding: .25em;
 	border: 1px solid gray;
 	background: white;
 }
@@ -59,6 +73,11 @@ ul#bignavbuttons strong {
 
 ul#bignavbuttons a {
 	display: block;
+	padding: .25em;
 	text-decoration: none;
 	font-size: .8em;
+}
+
+ul#bignavbuttons a:hover {
+	background: #90ee90; /* light green */
 }
