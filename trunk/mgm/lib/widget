@@ -485,6 +485,7 @@ sub configure{
     my ($arg,$val);
     while($arg=shift){
 	$val=shift;   
+
         if(!defined($val)){last;}
 	$this->{"$arg"}=$val;
     }

@@ -1,11 +1,11 @@
 # -*-Perl-*-
 use Tk;
-package MGMmodule::cpuusage;
+package MGMmodule::cpustat;
 
 sub module_construct{
     my($this,$toplevel,$width,$height)=@_;
-    
-    $graph=MGM::Graph->new($toplevel,num=>$numcpus,fixed=>'1',
+
+    $graph=MGM::Graph->new($toplevel,num=>$statcpus,fixed=>'1',
 			   width=>$width,height=>$height,prompt=>"%",
 			   rangesetting=>'100',rangecurrent=>'100',
 			   name=>$this->module_name); # don't forget name!!
@@ -16,9 +16,7 @@ sub module_construct{
     $widget;
 }
 
-my@load;
-my@prevload;
-
+$statcpus=1;
 sub module_update{ 
 # in late 2.1+ kernels, each CPU has an entry in /proc/stat along with
 # a common entry.  Earlier, only the common entry.
@@ -29,10 +27,11 @@ sub module_update{
     die "Couldn't open /proc/stat\n" unless open(PROC,"</proc/stat");
     while(<PROC>){
 	if(m/^cpu(\d*)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/){
-	    if($1){
+	    if(length($1)){
 		# per-cpu entry
 		$load[$1+1]=$2+$3+$4;
 		$total[$1+1]=$2+$3+$4+$5;
+		$statcpus=$1+1 if($1+1>$statcpus);
 	    }else{
 		# the common entry 
 		$load[0]=$2+$3+$4;
@@ -44,17 +43,25 @@ sub module_update{
 
     if(defined(@prevload)){
 	my@vals;
-	for(my$i=0;$i<$numcpus;$i++){
-	    my$use=0;
-	    if(defined($load[$i+1])){
-		$use=$i+1;
-	    }
-	    my$tot=$total[$use]-$prevtotal[$use];
+
+	if($statcpus==1){
+	    my$tot=$total[0]-$prevtotal[0];
 	    if($tot>0){
-		$vals[$i]=100*($load[$use]-$prevload[$use])/$tot;
-		$vals[$i]=100 if $vals[$i]>100;
+		$vals[0]=100*($load[0]-$prevload[0])/$tot;
+		$vals[0]=100 if $vals[0]>100;
 	    }else{
-		$vals[$i]=0;
+		$vals[0]=0;
+	    }
+	}else{
+	    for(my$i=0;$i<$numcpus;$i++){
+		my$use=$i+1;
+		my$tot=$total[$use]-$prevtotal[$use];
+		if($tot>0){
+		    $vals[$i]=100*($load[$use]-$prevload[$use])/$tot;
+		    $vals[$i]=100 if $vals[$i]>100;
+		}else{
+		    $vals[$i]=0;
+		}
 	    }
 	}
 	$graph->set(@vals);
@@ -68,7 +75,10 @@ sub module_update{
 sub module_init{
     my($mod,$toplevel,$xpath)=@_;
 
-    # how many CPUs? Get this from /proc/cpuinfo, not /proc/stat    
+    # how many CPUs? Get this from /proc/cpuinfo then /proc/stat.
+    # /proc/stat only sees multiple CPUs as of late 2.1, but we
+    # at least want to mark the single bar as SMP under 2.0
+
     $numcpus=0;
     die "Couldn't open /proc/cpuinfo\n" unless open(PROC,"</proc/cpuinfo");
     while(<PROC>){
@@ -77,22 +87,31 @@ sub module_init{
 	}
     }
     close PROC;
-    
-    ($minx,$miny)=MGM::Graph::calcxysize($mod,100,'%',$numcpus);
 
-    for(my$i=0;$i<$numcpus;$i++){
-	$toplevel->optionAdd("$xpath.bar.$i.label", "cpu $i",22);
+    # now run one 'update' to intialize things and see what CPUs pop up there.
+
+    $mod->module_update;
+
+    ($minx,$miny)=MGM::Graph::calcxysize($mod,100,'%',$statcpus);
+
+    if($numcpus>1 && $statcpus==1){
+	$toplevel->optionAdd("$xpath.bar.0.label", "cpu 0-".($numcpus-1),22);
+    }else{
+	for(my$i=0;$i<$numcpus;$i++){
+	    $toplevel->optionAdd("$xpath.bar.$i.label", "cpu $i",22);
+	}
     }
+
     $toplevel->optionAdd("$xpath.refresh",  250,21);      
     $toplevel->optionAdd("$xpath.minx",     $minx,21);      
     $toplevel->optionAdd("$xpath.miny",     $miny,21);      
-    $toplevel->optionAdd("$xpath.widdemand",100*$numcpus,21);
-    $toplevel->optionAdd("$xpath.lendemand",100,21);      
+    $toplevel->optionAdd("$xpath.scalewidadj", 100*$statcpus,21);
+    $toplevel->optionAdd("$xpath.scalelenadj", 100,21); 
     1;
 }
 
 sub module_name{
-    "cpuusage";
+    "cpustat";
 }
 
 bless {};
