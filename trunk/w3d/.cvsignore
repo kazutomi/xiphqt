@@ -4,8 +4,9 @@ _test_bitcoder
 _test_huffman
 _test_rle
 rle.histogram
-tarkin_dec
 tarkin_enc
+tarkin_dec
+tarkin_sdl_player
 *.pgm
 *.ppm
 stream.ogg
