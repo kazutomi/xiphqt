@@ -1,7 +1,7 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.12 2001/10/18 17:21:59 cwolf Exp $
+rem $Id: makesdk.bat,v 1.13 2001/10/20 21:12:34 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
@@ -13,13 +13,6 @@ if not exist execwait.exe (
   cl /nologo execwait.c
 )
 
-rem If one of the makefiles doesn't exist, 
-rem assume they all need to be generated
-rem
-if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
-  call mkmak.bat
-)
-  
 rd /s /q sdk\include 2> nul
 rd /s /q sdk\lib 2> nul
 rd /s /q sdk\bin 2> nul
@@ -65,6 +58,13 @@ goto ERROR
 
 echo ... vorbis found.
 
+
+rem --- build all
+echo Building libraries...
+call build_all.bat
+if errorlevel 1 goto ERROR
+
+
 rem --- copy include files into sdk
 
 echo Copying include files...
@@ -102,10 +102,6 @@ xcopy /y %SRCROOT%\vorbis\examples\*.c %SRCROOT%\win32sdk\sdk\examples\vorbis > 
 
 echo ... copied.
 
-rem --- build all
-echo Building libraries...
-call build_all.bat
-if errorlevel 1 goto ERROR
 
 xcopy %SRCROOT%\ogg\win32\Static_Release\ogg_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
@@ -168,7 +164,7 @@ goto DONE
 
 :ERROR
 
-echo Some error(s) occurred. Fix it.
+echo Some error(s) occurred. See output above...
 goto EXIT
 
 :notset
