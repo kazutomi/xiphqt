@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: audio.c,v 1.1.2.1 2001/12/08 23:59:24 volsung Exp $
+ last mod: $Id: audio.c,v 1.1.2.2 2001/12/09 03:45:26 volsung Exp $
 
  ********************************************************************/
 
@@ -50,7 +50,6 @@ audio_device_t *append_audio_device(audio_device_t *devices_list,
 
 int audio_devices_write(audio_device_t *d, void *ptr, int nbytes)
 {
-  int i;
   audio_device_t *start = d;
 
   d = start;
@@ -158,7 +157,7 @@ void audio_reopen_callback (buf_t *buf, void *arg)
   while (current != NULL) {
     ao_info *info = ao_driver_info(current->driver_id);
     
-    status_message(1, "Device:   %s", info->name);
+    status_message(1, "\nDevice:   %s", info->name);
     status_message(1, "Author:   %s", info->author);
     status_message(1, "Comments: %s\n", info->comment);
     

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.1 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.2 2001/12/09 03:45:26 volsung Exp $
 
  ********************************************************************/
 
@@ -308,23 +308,23 @@ void print_stream_info (decoder_t *decoder)
     
 
   cb->printf_metadata(decoder->callback_arg, 3,
-		      "Version is %d\n", 
+		      "Version is %d", 
 		      priv->vi->version);
   
   cb->printf_metadata(decoder->callback_arg, 3,
 		      "Bitrate hints: upper=%ld nominal=%ld lower=%ld "
-		      "window=%ld\n", 
+		      "window=%ld", 
 		      priv->vi->bitrate_upper,
 		      priv->vi->bitrate_nominal,
 		      priv->vi->bitrate_lower,
 		      priv->vi->bitrate_window);
   
   cb->printf_metadata(decoder->callback_arg, 2,
-		      "Bitstream is %d channel, %ldHz\n",
+		      "Bitstream is %d channel, %ldHz",
 		      priv->vi->channels,
 		      priv->vi->rate);
   
   cb->printf_metadata(decoder->callback_arg, 2,
-		      "Encoded by: %s\n", priv->vc->vendor);
+		      "Encoded by: %s", priv->vc->vendor);
 }
 
