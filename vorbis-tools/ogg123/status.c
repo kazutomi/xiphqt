@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.1 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: status.c,v 1.1.2.2 2001/08/13 00:43:20 kcarnold Exp $
 
  ********************************************************************/
 
@@ -40,8 +40,10 @@ void UpdateStats (Stat_t stats[])
   ClearLine();
   while (stats->formatstr != NULL)
     {
-      if (stats->prio > MaxPrio)
+      if (stats->prio > MaxPrio || !stats->enabled) {
+	stats++;
 	continue;
+      }
       if (len != 0)
 	len += fprintf (stderr, " ");
       switch (stats->type) {
@@ -68,11 +70,15 @@ void UpdateStats (Stat_t stats[])
 }
 
 /* msg has no final \n and no formatting */
-void ShowMessage (int prio, char *msg)
+void ShowMessage (int prio, char keepLastLine, char *msg)
 {
   if (prio > MaxPrio)
     return;
-  ClearLine();
+  if (!keepLastLine)
+    ClearLine();
+  else
+    if (LastLineLen)
+      fputc ('\n', stderr);
   fprintf (stderr, msg);
   fputc ('\n', stderr);
   LastLineLen = 0;

@@ -11,14 +11,18 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.1 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: status.h,v 1.1.2.2 2001/08/13 00:43:20 kcarnold Exp $
 
  ********************************************************************/
+
+#ifndef __STATUS_H
+#define __STATUS_H
 
 /* status interface */
 
 typedef struct {
   int prio;
+  char enabled;
   char *formatstr;
   enum {
     stat_noarg = 0,
@@ -36,5 +40,7 @@ typedef struct {
 } Stat_t;
 
 void UpdateStats (Stat_t stats[]);
-void ShowMessage (int prio, char *msg);
+void ShowMessage (int prio, char keepStatusLine, char *msg);
 void SetPriority (int prio);
+
+#endif /* __STATUS_H */

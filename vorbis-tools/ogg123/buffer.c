@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.11 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.12 2001/08/13 00:43:20 kcarnold Exp $
 
  ********************************************************************/
 
@@ -101,7 +101,7 @@ void* BufferFunc (void *arg)
   volatile buf_t *vbuf = (volatile buf_t*) buf; /* optimizers... grr */
   size_t WriteThisTime = 0;
   chunk *NewWriterPtr;
-  char iseos = 0;
+  char EOSApplies = 0, tmpEOS;
 
   DEBUG0("BufferFunc");
   sigfillset (&set);
@@ -119,11 +119,8 @@ void* BufferFunc (void *arg)
 
   while (1)
     {
-      /* don't touch the size unless we ask you to. */
-      LOCK_MUTEX (buf->SizeMutex);
-
-      /* paused? Remember to signal DataReady when unpaused. */
     checkPlaying:
+      LOCK_MUTEX (buf->SizeMutex);
       while (!(buf->StatMask & STAT_PLAYING) ||
 	     (buf->StatMask & STAT_PREBUFFERING)) {
 	DEBUG1 ("waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
@@ -162,12 +159,18 @@ void* BufferFunc (void *arg)
 	Prebuffer (buf);
 	if (buf->FlushPending)
 	  goto flushing;
+	UNLOCK_MUTEX (buf->SizeMutex);
+	if (!buf->ReaderActive) {
+	  /* if we never reported EOS to the output, now or never... */
+	  buf->write_func (buf->writer, 0, 0, buf->data, 1);
+	  pthread_exit (NULL);
+	}
 	DEBUG0 ("waiting on data ready");
 	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
 	goto checkPlaying;
       }
 
-      iseos = 0;
+      EOSApplies = 0;
 
       if (buf->reader < buf->writer)
 	{
@@ -185,7 +188,7 @@ void* BufferFunc (void *arg)
 	    NewWriterPtr = buf->buffer;
 	    WriteThisTime = buf->end - buf->writer + 1;
 	    if (buf->reader == buf->buffer)
-	      iseos = buf->eos;
+	      EOSApplies = 1;
 	  }
 	}
       else
@@ -202,16 +205,18 @@ void* BufferFunc (void *arg)
 	    WriteThisTime = buf->OptimalWriteSize;
 	  else {
 	    WriteThisTime = buf->reader - buf->writer;
-	    iseos = buf->eos;
+	    EOSApplies = 1;
 	  }
 	  NewWriterPtr = buf->writer + WriteThisTime;
 	}
       
+      tmpEOS = EOSApplies && buf->eos ;
+
       DEBUG0("writing chunk to output");
       /* unlock while playing sample */
       UNLOCK_MUTEX (buf->SizeMutex);
       DEBUG1("WriteThisTime=%d", WriteThisTime);
-      buf->write_func (buf->writer, WriteThisTime, 1, buf->data, iseos);
+      buf->write_func (buf->writer, WriteThisTime, 1, buf->data, tmpEOS);
 
       DEBUG0("incrementing pointer");
       LOCK_MUTEX (buf->SizeMutex);
@@ -224,17 +229,33 @@ void* BufferFunc (void *arg)
 	  UNLOCK_MUTEX (buf->SizeMutex);
 	  pthread_cond_broadcast (&buf->DataReadyCondition);
 	  pthread_cond_broadcast (&buf->UnderflowCondition);
+	  LOCK_MUTEX (buf->SizeMutex);
 	}
       else
 	{
 	  buf->writer = NewWriterPtr;
 	  vbuf->curfill -= WriteThisTime;
-	  UNLOCK_MUTEX (buf->SizeMutex);
 	}
+
+      if (EOSApplies) {
+	if (tmpEOS != buf->eos) {
+	  /* EOS was signalled while we were playing, so that sample
+	   * didn't get EOS set. Call write_func with no data, just
+	   * the right EOS flag. write_func is called here with the
+	   * locked; it better not take too long if size == nmemb == 0. */
+	  tmpEOS = buf->eos;
+	  buf->write_func (buf->writer, 0, 0, buf->data, tmpEOS);
+	}
+      }
+
+      if (tmpEOS)
+	buf->eos = 0;
+
+      UNLOCK_MUTEX (buf->SizeMutex);
 
       /* slight abuse of the DataReady condition, but makes sense. */
       DEBUG0 ("signalling buffer no longer full");
-      if (buf->curfill + WriteThisTime + buf->OptimalWriteSize >= buf->size)
+      if (buf->curfill + WriteThisTime + buf->OptimalWriteSize >= buf->size || tmpEOS)
 	pthread_cond_signal (&buf->DataReadyCondition);
    }
   /* should never get here */
@@ -278,6 +299,7 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
   buf->prebuffer = prebuffer;
   Prebuffer (buf);
   buf->StatMask |= STAT_PLAYING;
+  buf->ReaderActive = buf->WriterActive = 1;
 
   /* pthreads initialization */
   pthread_mutex_init (&buf->SizeMutex, NULL);
@@ -298,8 +320,8 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
   PrevSize = buf->curfill;
   DUMP_BUFFER_INFO(buf);
 
-  /* wait on buffer overflow */
-  while (buf->curfill + size > buf->size) {
+  /* wait on buffer overflow or ack for eos */
+  while (buf->curfill + size > buf->size || buf->eos) {
     UnPrebuffer (buf);
     pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
   }
@@ -357,7 +379,7 @@ void buffer_flush (buf_t *buf)
 {
   DEBUG0("flush buffer");
   buf->FlushPending = 1;
-  if (!buf->BufferThread)
+  if (!buf->BufferThread || buf->StatMask & STAT_INACTIVE)
     buf->curfill = 0;
   DEBUG0("flush buffer done");
 }
@@ -376,7 +398,13 @@ void buffer_WaitForEmpty (buf_t *buf)
   DEBUG0("done waiting");
   UNLOCK_MUTEX (buf->SizeMutex);
   DEBUG0("buffer empty");
-  Prebuffer (buf);
+  if (!buf->ReaderActive) {
+    pthread_join (buf->BufferThread, NULL);
+    buf->BufferThread = 0;
+    buf->StatMask |= STAT_INACTIVE;
+  }
+  else
+    Prebuffer (buf);
 }
 
 long buffer_full (buf_t* buf) {
@@ -405,9 +433,22 @@ char buffer_Paused (buf_t *buf)
 
 void buffer_MarkEOS (buf_t *buf)
 {
+  /* lock the mutex here so the writer can have some knowledge of when
+   * the marker is set */
+  LOCK_MUTEX (buf->SizeMutex);
   buf->eos = 1;
+  UNLOCK_MUTEX (buf->SizeMutex);
   UnPrebuffer (buf);
   pthread_cond_signal (&buf->DataReadyCondition);
+}
+
+/* Inform the writer that the reader is quitting and it won't get any
+ * more data, ever. */
+void buffer_ReaderQuit (buf_t *buf)
+{
+  UnPrebuffer (buf);
+  buf->ReaderActive = 0;
+  SignalAll (buf);
 }
 
 void buffer_shutdown (buf_t *buf)
@@ -418,6 +459,7 @@ void buffer_shutdown (buf_t *buf)
     pthread_cancel (buf->BufferThread);
     pthread_join (buf->BufferThread, NULL);
     buf->BufferThread = 0;
+    buf->StatMask |= STAT_INACTIVE;
   }
   DEBUG0("buffer done.");
 }
