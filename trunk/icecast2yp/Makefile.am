@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = 1.6 foreign dist-zip
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src 
+SUBDIRS = src sql
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"
