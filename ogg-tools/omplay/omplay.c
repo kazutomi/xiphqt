@@ -44,6 +44,7 @@
 #define STATUS_FILE_PLAY "status.PLAY"
 #define STATUS_FILE_PAUSE "status.PAUSE"
 #define STATUS_FILE_FFWD "status.FFWD"
+#define STATUS_FILE_COMMENTS "status.COMMENTS"
 #define FFWD_SPEED 4
 
 typedef struct status_file_tag
@@ -354,8 +355,8 @@ void open_file(char *filename)
 		ogg_stream_packetout(device.os_v, &op);
 	}
 
-	// at this point we've verified vorbis, and os_m should point to the midi stream
-	// but we need to verify it
+	/* at this point we've verified vorbis, and os_m should point to the midi stream
+	   but we need to verify it */
 	if (ogg_stream_packetout(device.os_m, &op) < 0) {
 		printf("Error reading intial header packet for MIDI.\n");
 		close_devices();
@@ -494,7 +495,8 @@ void decode_vorbis_packet(ogg_packet *op)
 	int samples;
 	ogg_int16_t convbuffer[4096];
 	int convsize = 4096 / device.vi.channels;
-	int i, err;
+	unsigned i;
+	int err;
 	unsigned long count, pos;
 	snd_seq_queue_status_t *qs;
 
@@ -504,9 +506,9 @@ void decode_vorbis_packet(ogg_packet *op)
 		vorbis_synthesis_blockin(&device.vd, &device.vb);
 
 	while ((samples = vorbis_synthesis_pcmout(&device.vd, &pcm)) > 0) {
-		int j;
+		unsigned j;
 		int clipflag = 0;
-		int bout = (samples < convsize ? samples : convsize);
+		unsigned bout = (samples < convsize ? samples : convsize);
 
 		for (i = 0; i < device.vi.channels; i++) {
 			ogg_int16_t *ptr = convbuffer+i;
@@ -652,6 +654,21 @@ void close_status_files(void)
 	close(device.ffwd.fd);
 }
 
+void print_comments(void)
+{
+	FILE *fp;
+	int i;
+
+	fp = fopen(STATUS_FILE_COMMENTS, "w");
+	if (!fp) return;
+
+	for (i = 0; i < device.vc.comments; i++) {
+		fprintf(fp, "%s\n", device.vc.user_comments[i]);
+	}
+
+	fclose(fp);
+}
+
 int main(int argc, char **argv)
 {
 	int err;
@@ -734,6 +751,7 @@ int main(int argc, char **argv)
 			close_devices();
 			return -1;
 		}
+		print_comments();
 	}
 
 	err = set_midi_tempo();
@@ -844,7 +862,7 @@ int main(int argc, char **argv)
 				}
 			}
 
-			// NOTE: this is wrong.  we should wait for _both_ eos's
+			/* NOTE: this is wrong.  we should wait for _both_ eos's*/
 			if (ogg_page_eos(&og)) eos = 1;
 		}
 
