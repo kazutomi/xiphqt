@@ -21,7 +21,7 @@ namespace ogg {
     class packet {
         /// packet points to internal data structures.  not sure how memory management works.
         /// zero packet and free internal storage (NOT SAFE: packet points to internal oggvorbis stuff)
-        /// this method is not called in the ogg, vorbis, or ices source.
+        /// ogg_packet_clear is not called in the ogg, vorbis, or ices source.
         protected:
             void clear ( )              { ogg_packet_clear(&this->data); }
 
@@ -151,9 +151,9 @@ namespace ogg {
     /// Basic unit of ogg bitstream format.
     class page {
         private:
+            ogg_page data;
 
         public:
-            ogg_page data;  // soon to be privatized, take that social security!
             ogg_page *get_data()        { return &this->data; }
 
             /// first page in stream?
@@ -171,8 +171,8 @@ namespace ogg {
             void checksum_set ( )       { ogg_page_checksum_set(this->get_data()); }
 
             /// for encoding. concatenate header and body to form a page, pages to form ogg streams.
-            std::string header ( )      { return std::string((char*)this->data.header, (size_t)this->data.header_len); }
-            std::string body ( )        { return std::string((char*)this->data.body, (size_t)this->data.body_len); }
+            std::string header ( )      { return std::string((char*)this->data.header, (size_t)this->get_data()->header_len); }
+            std::string body ( )        { return std::string((char*)this->data.body, (size_t)this->get_data()->body_len); }
     };
 
     
@@ -201,8 +201,8 @@ namespace ogg {
             char *buffer    ( long size )     { return ogg_sync_buffer (&this->data, size); }
             int   wrote     ( long bytes )    { return ogg_sync_wrote (&this->data, bytes); }
 
-            int   pageout   ( page *og )      { return this->pageout(&og->data);  }
-            long  pageseek  ( page *og )      { return this->pageseek(&og->data); }
+            int   pageout   ( page *og )      { return this->pageout(og->get_data());  }
+            long  pageseek  ( page *og )      { return this->pageseek(og->get_data()); }
 
             /// good to call before seeking
             int   reset     ( )               { return ogg_sync_reset (&this->data); }
@@ -238,10 +238,10 @@ namespace ogg {
             int eos ( )                           { return ogg_stream_eos(&this->data); }
 
             /// use to flush a packet regardles of its size
-            int flush ( page *og )                { return this->flush(&og->data); }
+            int flush ( page *og )                { return this->flush(og->get_data()); }
 
             // decode.  copies page in?
-            int pagein  ( page *og )              { return this->pagein(&og->data); }
+            int pagein  ( page *og )              { return this->pagein(og->get_data()); }
             /// decode.  points a packet at an internal data buffer.
             int packetout   ( packet *op )        { return this->packetout(op->get_data()); }
             /** Attempt to assemble a raw data packet and return it without advancing decoding.
@@ -255,7 +255,7 @@ namespace ogg {
 
             // encode. copies submitted packet. always returns zero.
             int packetin ( packet *op )           { return this->packetin(op->get_data()); }
-            int pageout ( page *og )              { return this->pageout(&og->data); }
+            int pageout ( page *og )              { return this->pageout(og->get_data()); }
 
             /// good to call before seeking
             int reset   ( )                       { return ogg_stream_reset(&this->data); }

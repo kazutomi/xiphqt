@@ -1,0 +1,3 @@
+
+StreamDecoder = Class("FLAC::Decoder::Stream", "FLAC++/decoder.h")
+

@@ -17,7 +17,11 @@ theorapy.cpp: oggcc.cc oggcc.h theoracc.h theorapy.pyste
 	pyste --module=theorapy --out=theorapy.cpp -I. \
 	-I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I/usr/include/  theorapy.pyste
 
-module: theorapy.cpp oggpy.cpp vorbispy.cpp
+flacpy.cpp: flacpy.pyste
+	pyste --module=flacpy --out=flacpy.cpp -I. \
+	-I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I/usr/include/ $<
+
+module: theorapy.cpp oggpy.cpp vorbispy.cpp flacpy.cpp
 	python ./setup.py build
 
 bridge:

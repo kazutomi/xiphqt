@@ -22,13 +22,17 @@ Topic :: Multimedia :: Sound/Audio
 Topic :: Multimedia :: Video
 """
 
+version = "0.5"
+url = "http://dingoskidneys.com/oggpy/"
+
 setup(name="oggpy",
-      version="0.5",
+      version=version,
       description="Boost.Python and C++ wrappers of ogg, vorbis and theora",
       long_description=description,
       author="Daniel Holth",
       author_email="dholth@fastmail.fm",
-      url="http://dingoskidneys.com/oggpy/",
+      url=url,
+      download_url=url+"oggpy-"+version+".tar.gz",
       platforms="linux",
       license="MIT",
       classifiers=filter(None, classifiers.splitlines()),
@@ -47,12 +51,16 @@ setup(name="oggpy",
                     Extension("theorapy", ["oggcc.cc", "theorapy.cpp"],
                               libraries=config.theorapy_libraries,
                               include_dirs=config.theorapy_include_dirs,
-                              depends=["oggcc.h", "theoracc.h"])
+                              depends=["oggcc.h", "theoracc.h"]),
+                    
+                    Extension("flacpy", ["flacpy.cpp"],
+                              libraries=config.flacpy_libraries,
+                              include_dirs=config.flacpy_include_dirs)
 
                     # It works!
                     , Extension("pygame_bridge", ["pygame_bridge.cc"],
-                        libraries=config.bridge_libraries,
-                        include_dirs=config.bridge_include_dirs)
+                                libraries=config.bridge_libraries,
+                                include_dirs=config.bridge_include_dirs)
 
                     ]
      )

@@ -5,7 +5,10 @@
 #
 # Daniel Holth <dholth@fastmail.fm>, 2004
 
-import oss
+try:
+    import oss
+except:
+    oss = None
 import sys
 import oggpy
 import vorbispy

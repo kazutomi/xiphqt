@@ -17,5 +17,8 @@ vorbispy_include_dirs = common_include_dirs
 theorapy_libraries = common_libraries + ["theora"]
 theorapy_include_dirs = common_include_dirs
 
+flacpy_libraries = common_libraries + ["FLAC++", "FLAC"]
+flacpy_include_dirs = common_include_dirs
+
 bridge_libraries = common_libraries + ["SDL", "theora"]
 bridge_include_dirs = common_include_dirs + ["/usr/include/SDL"]
