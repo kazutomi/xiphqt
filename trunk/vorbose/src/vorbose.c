@@ -270,7 +270,7 @@ int main(int argc,char *argv[]){
 	}else{
 	  /* audio packet */
 
-
+	  vorbis_decode(&vi,&op);
 	  packetcounter++;
 	}
 	continue;

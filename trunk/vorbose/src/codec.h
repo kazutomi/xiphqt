@@ -131,3 +131,12 @@ extern int res_inverse(vorbis_info *vi,
 
 extern int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
 			       oggpack_buffer *opb);
+
+extern int floor0_inverse(vorbis_info *vi,vorbis_info_floor0 *info,
+			  oggpack_buffer *opb);
+extern int floor1_inverse(vorbis_info *vi,vorbis_info_floor1 *info,
+			  oggpack_buffer *opb);
+extern int mapping_inverse(vorbis_info *vi,vorbis_info_mapping *info,
+			   oggpack_buffer *opb);
+extern int vorbis_decode(vorbis_info *vi,ogg_packet *op);
+

@@ -257,7 +257,11 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
   if(maptype>0){
     unsigned long q_min,q_del,q_bits,q_seq;
 
-    quantvals=_book_maptype1_quantvals(s);
+    if(maptype==1){
+      quantvals=_book_maptype1_quantvals(s);
+    }else{
+      quantvals=s->entries*s->dim;
+    }
 
     oggpack_read(opb,32,&q_min);
     oggpack_read(opb,32,&q_del);
