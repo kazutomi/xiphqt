@@ -1,0 +1,68 @@
+
+###############################################################################
+# DO NOT EDIT BELOW! ##########################################################
+# (unless, of course, you know what you are doing :) ##########################
+
+VPATH=@srcdir@
+srcdir=@srcdir@
+
+@SET_MAKE@
+FLAGS=@TYPESIZES@ @CFLAGS@
+OPT=@OPT@ $(FLAGS)
+DEBUG=@DEBUG@ $(FLAGS)
+CC=@CC@
+LD=@CC@
+LDFLAGS=@LDFLAGS@ $(FLAGS)
+AR=@AR@
+RANLIB=@RANLIB@
+INSTALL=@INSTALL@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+MANDIR=@mandir@
+LIBS = interface/cdda_interface.a paranoia/cdda_paranoia.a -lm
+
+OFILES = main.o report.o header.o
+
+all: 	
+	cd interface && $(MAKE) all
+	cd paranoia && $(MAKE) all
+	$(MAKE) cdparanoia CFLAGS="$(OPT)" 
+	strip cdparanoia
+
+debug:  
+	cd interface && $(MAKE) debug
+	cd paranoia && $(MAKE) debug
+	$(MAKE) cdparanoia CFLAGS="$(DEBUG)" 
+	$(MAKE) tests CFLAGS="$(OPT)"
+
+tests:	verify_test.o
+	$(LD) $(CFLAGS) $(LDFLAGS) verify_test.o -o verify_test
+
+lib:	
+	cd interface && $(MAKE) lib
+	cd paranoia && $(MAKE) lib
+
+install:
+		$(INSTALL) -m 755 $(srcdir)/cdparanoia $(BINDIR)
+		$(INSTALL) -m 444 $(srcdir)/cdparanoia.1 $(MANDIR)/man1
+
+
+cdparanoia:	$(OFILES) interface/cdda_interface.a paranoia/cdda_paranoia.a
+		$(LD) $(CFLAGS) $(LDFLAGS) $(OFILES) -o cdparanoia $(LIBS)
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	cd interface && $(MAKE) clean
+	cd paranoia && $(MAKE) clean
+	-rm -f cdparanoia *~ config.* *.o *.wav *.aifc *.raw \
+		verify_test core gmon.out
+
+distclean:
+	cd interface && $(MAKE) distclean
+	cd paranoia && $(MAKE) distclean
+	-rm -f cdparanoia *~ config.* *.o *.wav *.aifc *.raw test.file \
+		Makefile verify_test core gmon.out
+ 
