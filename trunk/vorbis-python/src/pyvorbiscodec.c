@@ -11,7 +11,7 @@
 
 /**************************************************************
                          VorbisDSP Object
- **************************************************************/
+**************************************************************/
 
 FDEF(vorbis_analysis_headerout) "Create three header packets for an ogg\n"
 "stream, given an optional comment object.";
@@ -72,12 +72,12 @@ static PyMethodDef DSP_methods[] = {
    METH_VARARGS, py_vorbis_block_init_doc},
   {"write", py_dsp_write,
    METH_VARARGS, py_dsp_write_doc},
-	{"write_wav", py_dsp_write_wav,
-	 METH_VARARGS, py_dsp_write_wav_doc},
+  {"write_wav", py_dsp_write_wav,
+   METH_VARARGS, py_dsp_write_wav_doc},
   {"close", py_dsp_close,
    METH_VARARGS, py_dsp_close_doc},
-	{"bitrate_flushpacket", py_vorbis_bitrate_flushpacket,
-	 METH_VARARGS, py_vorbis_bitrate_flushpacket_doc},
+  {"bitrate_flushpacket", py_vorbis_bitrate_flushpacket,
+   METH_VARARGS, py_vorbis_bitrate_flushpacket_doc},
   {NULL, NULL}
 };
 
@@ -107,7 +107,7 @@ py_dsp_new(PyObject *self, PyObject *args)
     return NULL;
   
   ret = (py_dsp *) PyObject_NEW(py_dsp, &py_dsp_type);
-	ret->parent = NULL;
+  ret->parent = NULL;
   vi = &py_vi->vi;
   vorbis_synthesis_init(&vd, vi);
   return py_dsp_from_dsp(&vd, (PyObject *) py_vi);
@@ -116,7 +116,7 @@ py_dsp_new(PyObject *self, PyObject *args)
 static void
 py_dsp_dealloc(PyObject *self)
 {
-	vorbis_dsp_clear(PY_DSP(self));
+  vorbis_dsp_clear(PY_DSP(self));
   Py_XDECREF(((py_dsp *)self)->parent);
   PyMem_DEL(self);
 }
@@ -264,11 +264,11 @@ py_dsp_write(PyObject *self, PyObject *args)
 
   channels = dsp_self->vd.vi->channels;
 
-	if (PyTuple_Size(args) == 1 && PyTuple_GET_ITEM(args, 0) == Py_None) {
-		vorbis_analysis_wrote(&dsp_self->vd, 0);
-		Py_INCREF(Py_None);
-		return Py_None;
-	}
+  if (PyTuple_Size(args) == 1 && PyTuple_GET_ITEM(args, 0) == Py_None) {
+    vorbis_analysis_wrote(&dsp_self->vd, 0);
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
   if (PyTuple_Size(args) != channels) {
     snprintf(err_msg, sizeof(err_msg), 
 	     "Expected %d strings as arguments; found %d arguments",
@@ -309,58 +309,59 @@ py_dsp_write(PyObject *self, PyObject *args)
 
 static void
 parse_wav_data(const char *byte_data, float **buff, 
-							 int channels, int samples)
+	       int channels, int samples)
 {
-	const float adjust = 1/32768.0;
-	int j, k;
-	for (j = 0; j < samples; j++) {
-		for (k = 0; k < channels; k++) {
-			float val = ((byte_data[j * 2 * channels + 2 * k + 1] << 8) | 
-									 (byte_data[j * 2 * channels + 2 * k] & 0xff)) * adjust;
-			buff[k][j] = val;
-		}
-	}
+  const float adjust = 1/32768.0;
+  int j, k;
+  for (j = 0; j < samples; j++) {
+    for (k = 0; k < channels; k++) {
+      float val = ((byte_data[j * 2 * channels + 2 * k + 1] << 8) | 
+		   (byte_data[j * 2 * channels + 2 * k] & 0xff)) * adjust;
+      buff[k][j] = val;
+    }
+  }
 }
 
 static PyObject *
 py_dsp_write_wav(PyObject *self, PyObject *args) 
 {
-	const char *byte_data;
-	int num_bytes, channels, k;
-	long samples;
-	const int samples_per_it = 1024;
-	py_dsp *dsp = (py_dsp *) self;
-	float **analysis_buffer;
-	int sample_width;
+  const char *byte_data;
+  int num_bytes, channels, k;
+  long samples;
+  const int samples_per_it = 1024;
+  py_dsp *dsp = (py_dsp *) self;
+  float **analysis_buffer;
+  int sample_width;
 
-	channels = dsp->vd.vi->channels;
-	sample_width = channels * 2;
+  channels = dsp->vd.vi->channels;
+  sample_width = channels * 2;
 
-	if (!PyArg_ParseTuple(args, "s#", &byte_data, &num_bytes))
-		return NULL;
+  if (!PyArg_ParseTuple(args, "s#", &byte_data, &num_bytes))
+    return NULL;
 
-	if (num_bytes % (channels * 2) != 0) {
-		PyErr_SetString(Py_VorbisError,
-										"Data is not a multiple of (2 * # of channels)");
-		return NULL;
-	}
-	samples = num_bytes / sample_width;
+  if (num_bytes % sample_width != 0) {
+    PyErr_SetString(Py_VorbisError,
+		    "Data is not a multiple of (2 * # of channels)");
+    return NULL;
+  }
+  samples = num_bytes / sample_width;
 	
-	for (k = 0; k < samples / samples_per_it; k++) {
-		int to_write = MIN(samples - k * samples_per_it, samples_per_it);
+  for (k = 0; 
+       k < (samples + samples_per_it - 1) / samples_per_it; k++) {
+    int to_write = MIN(samples - k * samples_per_it, samples_per_it);
 
-		analysis_buffer = vorbis_analysis_buffer(&dsp->vd, 
-																						 to_write * sizeof(float));
-		/* Parse the wav data directly into the analysis buffer. */
-		parse_wav_data(byte_data, analysis_buffer, channels, to_write);
+    analysis_buffer = vorbis_analysis_buffer(&dsp->vd, 
+					     to_write * sizeof(float));
+    /* Parse the wav data directly into the analysis buffer. */
+    parse_wav_data(byte_data, analysis_buffer, channels, to_write);
 
-		/* Skip any data we've already passed by incrementing the pointer */
-		byte_data += to_write * sample_width;
+    /* Skip any data we've already passed by incrementing the pointer */
+    byte_data += to_write * sample_width;
 
-		vorbis_analysis_wrote(&dsp->vd, to_write);
-	}
+    vorbis_analysis_wrote(&dsp->vd, to_write);
+  }
 	
-	return PyInt_FromLong(samples);
+  return PyInt_FromLong(samples);
 }
 
 static PyObject *
@@ -375,27 +376,27 @@ py_dsp_close(PyObject *self, PyObject *args)
 static PyObject *
 py_vorbis_bitrate_flushpacket(PyObject *self, PyObject *args)
 {
-	ogg_packet op;
-	int ret;
+  ogg_packet op;
+  int ret;
 	
-	if (!PyArg_ParseTuple(args, ""))
-		return NULL;
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
 
-	ret = vorbis_bitrate_flushpacket(PY_DSP(self), &op);
-	if (ret == 1) 
-		return modinfo->ogg_packet_from_packet(&op);
-	else if (ret == 0) {
-		Py_INCREF(Py_None);
-		return Py_None;
-	} else {
-		PyErr_SetString(Py_VorbisError, "Unknown return code from flushpacket");
-		return NULL;
-	}
+  ret = vorbis_bitrate_flushpacket(PY_DSP(self), &op);
+  if (ret == 1) 
+    return modinfo->ogg_packet_from_packet(&op);
+  else if (ret == 0) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  } else {
+    PyErr_SetString(Py_VorbisError, "Unknown return code from flushpacket");
+    return NULL;
+  }
 }
 
 /*********************************************************
 			VorbisBlock
- *********************************************************/
+*********************************************************/
 static void py_block_dealloc(PyObject *);
 static PyObject *py_block_getattr(PyObject *, char*);
 
@@ -436,8 +437,8 @@ PyTypeObject py_block_type = {
 static PyMethodDef Block_methods[] = {
   {"analysis", py_vorbis_analysis,
    METH_VARARGS, py_vorbis_analysis_doc},
-	{"addblock", py_vorbis_bitrate_addblock,
-	 METH_VARARGS, py_vorbis_bitrate_addblock_doc},
+  {"addblock", py_vorbis_bitrate_addblock,
+   METH_VARARGS, py_vorbis_bitrate_addblock_doc},
   {NULL, NULL}
 };
 
@@ -458,34 +459,34 @@ py_block_getattr(PyObject *self, char *name)
 static PyObject*
 py_vorbis_analysis(PyObject *self, PyObject *args)
 {
-	int ret;
+  int ret;
   py_block *b_self = (py_block *) self;
 
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
   ret = vorbis_analysis(&b_self->vb, NULL);
-	if (ret < 0) {
-		PyErr_SetString(Py_VorbisError, "vorbis_analysis failure");
-		return NULL;
-	}
-	Py_INCREF(Py_None);
-	return Py_None;
+  if (ret < 0) {
+    PyErr_SetString(Py_VorbisError, "vorbis_analysis failure");
+    return NULL;
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 static PyObject *
 py_vorbis_bitrate_addblock(PyObject *self, PyObject *args)
 {
-	int ret;
-	if (!PyArg_ParseTuple(args, ""))
-		return NULL;
-	ret = vorbis_bitrate_addblock(PY_BLOCK(self));
-	if (ret < 0) {
-		PyErr_SetString(Py_VorbisError, "addblock failed");
-		return NULL;
-	}
-	Py_INCREF(Py_None);
-	return Py_None;
+  int ret;
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+  ret = vorbis_bitrate_addblock(PY_BLOCK(self));
+  if (ret < 0) {
+    PyErr_SetString(Py_VorbisError, "addblock failed");
+    return NULL;
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 PyObject *
