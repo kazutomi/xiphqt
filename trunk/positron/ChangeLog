@@ -1,0 +1,14 @@
+Version 1.0b1 (May 22, 2003):
+	* Initial public release
+
+Version 1.0b2 (May 28, 2003):
+	* User's Guide and Developer's Guide added
+	* Fixed crashing while using "positron del"
+	* Albums, Artists, and Genres are now sorted on the Neuros
+	* Fixed a problem that caused 35 second MP3s to crash positron
+	* Improved MP3 detection
+	* Files with illegal characters in the filename or in the tags are
+	  handled now.  The characters are changed (usually to underscores)
+	  to prevent Neuros lockups.
+	* Files are now correctly uploaded to both the Flash and the HD
+	  Neuros configurations.  (Before only the HD would work.)
