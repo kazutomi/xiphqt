@@ -61,7 +61,7 @@ ices_cue_update (const char *filename, const int filesize, const int bitrate, co
 void
 ices_cue_shutdown ()
 {
-	char *filename = ices_cue_get_filename ();
+	const char *filename = ices_cue_get_filename ();
 
 	if (filename && filename[0])
 		remove (filename);

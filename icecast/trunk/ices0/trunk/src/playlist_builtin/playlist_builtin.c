@@ -61,6 +61,8 @@ ices_playlist_builtin_get_next ()
 		ices_log_debug ("Caught end of file on playlist, starting over");
 		lineno = 0;
 		ices_util_fclose (fp);
+		if (out)
+			ices_util_free (out);
 		return ices_playlist_builtin_get_next ();
 	}
 	

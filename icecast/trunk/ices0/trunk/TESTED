@@ -25,6 +25,10 @@ SunOS 5.7
 	gcc version 2.95.1
 	without xml, lame, python and perl.
 SunOS 5.7
+	Kernel Generic_106541-02 on a sun4m SUNW,SPARCstation-20
+	Sun WorkShop 6 2000/04/07 C 5.1
+	without xml, lame, python and perl
+SunOS 5.7
 	Kernel Generic_106541-08 sun4u sparc SUNW,Ultra-4
 	gcc version 2.8.0
 	    version 2.8.1
