@@ -60,7 +60,6 @@ ices_setup_init ()
 
 	/* Initialize the thread library */
 	thread_initialize ();
-	thread_catch_signals ();
 
 	/* Setup signal handlers */
 	ices_signals_setup ();

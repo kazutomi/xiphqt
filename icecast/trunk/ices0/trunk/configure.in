@@ -29,6 +29,9 @@ AM_MAINTAINER_MODE
 AM_CONDITIONAL(FSSTD, test x$enable_fsstd = xyes)
 AC_SUBST(USE_FSSTD)
 
+AM_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
+
 dnl reasonable guesses for where stuff is installed
 if test "x$prefix" = "xNONE"; then
 	prefix="/usr/local/icecast"
@@ -194,6 +197,15 @@ else
 	  fi
 	done	
   fi	
+
+  AC_CHECK_FUNCS(nanosleep)
+
+  if test "$ac_cv_func_nanosleep" = no; then
+        for lib in rt; do
+                AC_CHECK_LIB($lib, nanosleep,LIBS="$LIBS -l$lib";HAVE_NANOSLEEP=1;AC_DEFINE(HAVE_NANOSLEEP))
+        done
+  fi
+
 
 fi
 
