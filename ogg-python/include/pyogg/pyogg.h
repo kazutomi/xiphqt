@@ -18,6 +18,13 @@ typedef struct {
   PyObject *(*ogg_packet_from_packet)(ogg_packet *op);
 } ogg_module_info;
 
+/*
+  Function to convert Long Python objects into an ogg_int64 value.
+  Returns 0 on failure (a Python error will be set)
+*/
+int arg_to_int64(PyObject *longobj, ogg_int64_t *val);
+
+
 #endif // __PYOGG_H__
 
 

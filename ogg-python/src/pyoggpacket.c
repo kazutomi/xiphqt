@@ -73,10 +73,10 @@ py_ogg_packet_getattr(PyObject *self, char *name)
 static int
 py_ogg_packet_setattr(PyObject *self, char *name, PyObject *value)
 {
+  ogg_int64_t v;
+
   if (strcmp(name, "granulepos") == 0) {
-    ogg_int64_t v = arg_to_64(value);
-    PyObject *err = PyErr_Occurred();
-    if (err)
+    if (!arg_to_int64(value, &v))
       return -1;
     PY_OGG_PACKET(self)->granulepos = v;
     return 0;
