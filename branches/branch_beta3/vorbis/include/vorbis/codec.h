@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec.h,v 1.32 2000/10/12 07:28:03 jack Exp $
+ last mod: $Id: codec.h,v 1.32.2.1 2000/10/14 03:14:06 xiphmont Exp $
 
  ********************************************************************/
 
@@ -310,6 +310,24 @@ extern int      vorbis_synthesis(vorbis_block *vb,ogg_packet *op);
 extern int      vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb);
 extern int      vorbis_synthesis_pcmout(vorbis_dsp_state *v,float ***pcm);
 extern int      vorbis_synthesis_read(vorbis_dsp_state *v,int samples);
+
+/* Vorbis ERRORS and return codes ***********************************/
+
+#define OV_FALSE      -1  
+#define OV_EOF        -2
+#define OV_HOLE       -3
+
+#define OV_EREAD      -128
+#define OV_EFAULT     -129
+#define OV_EIMPL      -130
+#define OV_EINVAL     -131
+#define OV_ENOTVORBIS -132
+#define OV_EBADHEADER -133
+#define OV_EVERSION   -134
+#define OV_ENOTAUDIO  -135
+#define OV_EBADPACKET -136
+#define OV_EBADLINK   -137
+#define OV_ENOSEEK    -138
 
 #ifdef __cplusplus
 }

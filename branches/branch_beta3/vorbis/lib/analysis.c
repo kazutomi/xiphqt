@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.34 2000/10/12 03:12:52 xiphmont Exp $
+ last mod: $Id: analysis.c,v 1.34.2.1 2000/10/14 03:14:06 xiphmont Exp $
 
  ********************************************************************/
 
@@ -29,7 +29,7 @@
 int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
   vorbis_dsp_state *vd=vb->vd;
   vorbis_info      *vi=vd->vi;
-  int              type;
+  int              type,ret;
   int              mode=0;
 
   vb->glue_bits=0;
@@ -58,18 +58,18 @@ int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
     fprintf(stderr,".");
     }*/
 
-  if(_mapping_P[type]->forward(vb,vd->mode[mode]))
-    return(-1);
-
+  if((ret=_mapping_P[type]->forward(vb,vd->mode[mode])))
+    return(ret);
+  
   /* set up the packet wrapper */
-
+  
   op->packet=oggpack_get_buffer(&vb->opb);
   op->bytes=oggpack_bytes(&vb->opb);
   op->b_o_s=0;
   op->e_o_s=vb->eofflag;
   op->granulepos=vb->granulepos;
   op->packetno=vb->sequence; /* for sake of completeness */
-
+  
   return(0);
 }
 
