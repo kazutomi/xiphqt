@@ -1,3 +1,7 @@
+Version ??? (???):
+	* mp3_support option added to permit MP3 support to be disabled.
+	Handy for testing firmwares that lack MP3 support.
+
 Version 1.0 (June 19, 2003):
 	* Ogg Vorbis support added.  (Turned off by default)  Requires 
 	vorbis and ogg python modules by Andrew Chatham.  
