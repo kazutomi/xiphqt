@@ -1,5 +1,5 @@
 /* metadata.c
- * Copyright (c) 2001-3 Brendan Cully
+ * Copyright (c) 2001-3 Brendan Cully <brendan@xiph.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,17 +19,18 @@
 
 #include "definitions.h"
 
-#define INITDELAY 1000000
+#define INITDELAY 500000
 
 extern ices_config_t ices_config;
 
 static char* Artist = NULL;
 static char* Title = NULL;
+static char* Filename = NULL;
 
 /* Private function declarations */
 static char* metadata_clean_filename (const char* path, char* buf,
 				      size_t len);
-static void metadata_update (input_stream_t* source, int delay);
+static void metadata_update (int delay);
 
 /* Global function definitions */
 
@@ -56,34 +57,43 @@ ices_metadata_set (const char* artist, const char* title)
     Title = ices_util_strdup (title);
 }
 
-/* Update metadata on server via fork.
- * It also does the job of cleaning up the song title to something the
- * world likes.
- * Note that the very first metadata update is delayed, because if we
- * try to update our new info to the server and the server has not yet
- * accepted us as a source, the information is lost. */
 void
-ices_metadata_update (input_stream_t* source)
+ices_metadata_set_file (const char* filename)
 {
-  static int delay = INITDELAY;
+  char buf[1024];
+
+  ices_util_free (Filename);
+  Filename = NULL;
+
+  if (filename && *filename) {
+    metadata_clean_filename (filename, buf, sizeof (buf));
+    Filename = ices_util_strdup (buf);
+  }
+}
+
+/* Update metadata on server via fork.
+ * Note that the very first metadata update after connection is delayed,
+ * because if we try to update our new info to the server and the server has
+ * not yet accepted us as a source, the information is lost. */
+void
+ices_metadata_update (int delay)
+{
   pid_t child;
 
   if (delay)
-    ices_log_debug ("Initially delaying metadata update...");
+    ices_log_debug ("Delaying metadata update...");
 
   if ((child = fork()) == 0) {
-    metadata_update (source, delay);
+    metadata_update (delay ? INITDELAY : 0);
     _exit (0);
   }
 
   if (child == -1)
     ices_log_debug ("Metadata update failed: fork");
-
-  delay = 0;
 }
 
 static void
-metadata_update (input_stream_t* source, int delay)
+metadata_update (int delay)
 {
   ices_stream_t* stream;
   shout_metadata_t* metadata;
@@ -102,7 +112,7 @@ metadata_update (input_stream_t* source, int delay)
       else
 	snprintf (song, sizeof (song), "%s", Title);
     } else
-      metadata_clean_filename (source->path, song, sizeof (song));
+      snprintf (song, sizeof (song), "%s", Filename);
     
     value = song;
   } else

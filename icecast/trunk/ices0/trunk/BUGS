@@ -1,2 +1,3 @@
 * Handles error conditions poorly.
-* Doesn't update metadata on server on reconnect until next track.
+
+$Id: BUGS,v 1.7 2003/06/20 03:28:25 brendan Exp $

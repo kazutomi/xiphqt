@@ -69,12 +69,7 @@ ices_stream_loop (ices_config_t* config)
   ices_stream_t* stream;
   int rc;
 
-  for (stream = config->streams; stream; stream = stream->next)
-    stream_connect (stream);
-
   while (1) {
-    ices_metadata_set (NULL, NULL);
-
     source.path = ices_playlist_get_next ();
 
     ices_cue_set_lineno (ices_playlist_get_current_lineno ());
@@ -89,6 +84,9 @@ ices_stream_loop (ices_config_t* config)
       ices_log ("Playlist file name is empty, shutting down.");
       ices_setup_shutdown ();
     }
+
+    ices_metadata_set (NULL, NULL);
+    ices_metadata_set_file (source.path);
 
     /* This stops ices from entering a loop with 10-20 lines of output per
 	 second. Usually caused by a playlist handler that produces only
@@ -114,7 +112,7 @@ ices_stream_loop (ices_config_t* config)
           ices_util_free (source.path);
           consecutive_errors++;
           continue;
-	    }
+	}
 
     rc = stream_send (config, &source);
     source.close (&source);
@@ -191,7 +189,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
   
   ices_log ("Playing %s", source->path);
 
-  ices_metadata_update (source);
+  ices_metadata_update (0);
 
   finish_send = 0;
   while (! finish_send) {
@@ -363,26 +361,27 @@ stream_open_source (input_stream_t* source)
 static int
 stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 {
-  int rc = -1;
-
-  if (shout_get_connected (stream->conn) != SHOUTERR_CONNECTED)
-    rc = stream_connect (stream);
-
-  if (shout_get_connected (stream->conn) == SHOUTERR_CONNECTED) {
-    shout_sync(stream->conn);
-    if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
-      stream->errs = 0;
-      rc = 0;
-    } else {
-      ices_log_error ("Libshout reported send error, disconnecting: %s",
-		      shout_get_error (stream->conn));
-      shout_close (stream->conn);
-      stream->errs++;
-      rc = -1;
-    }
+  if (shout_get_connected (stream->conn) != SHOUTERR_CONNECTED) {
+    stream_connect (stream);
+    if (shout_get_connected (stream->conn) == SHOUTERR_CONNECTED)
+      ices_metadata_update (1);
+    else
+      return -1;
   }
 
-  return rc;
+  shout_sync(stream->conn);
+  if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
+    stream->errs = 0;
+
+    return 0;
+  }
+
+  ices_log_error ("Libshout reported send error, disconnecting: %s",
+		  shout_get_error (stream->conn));
+  shout_close (stream->conn);
+  stream->errs++;
+
+  return -1;
 }
 
 static int
