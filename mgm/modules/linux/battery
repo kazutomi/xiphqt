@@ -11,7 +11,7 @@ package MGMmodule::battery;
 use IO::Seekable;
 use Socket;
 use vars qw(@percent @battstatus @gstate $ac $lstate $graph $widget 
-	    $xpath $openp $openf $batteries $ac $active $lastbat);
+	    $xpath $openp $openf $opena $batteries $ac $active $lastbat);
 
 sub module_init{
     my$this=shift;
@@ -19,6 +19,9 @@ sub module_init{
     my$toplevel=$this->{"toplevel"};
 
     $active=0;
+    $openp=0;
+    $openf=0;
+    $opena=0;
     $this->read_proc;
     if($active==0){
 	$toplevel->optionAdd("$xclass.active",        'false',21);      
@@ -109,7 +112,9 @@ sub read_proc{
     my$test;
     my$this=shift;
 
+    if($opena){return $this->read_proc_apm;}
     if($openp || $openf){return $this->read_proc_mac;}
+
     $test=$this->read_proc_apm;
     if(defined($test)){return $test;}
     $this->read_proc_mac;
@@ -290,6 +295,7 @@ sub read_proc_apm{
     $batteries=0;
     if(open(PROC,"/proc/apm")){
 	$active=1;
+	$opena=1;
 	sysread PROC,$_,1024;
 	if(m/^\S+\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+([^ \%]+)\%/){
 	    if($1 eq '0xff'){
@@ -420,6 +426,7 @@ sub destroy{
     close B_FD if($openp);
     close PROC if($openf);
     $openp=0;
+    $openf=0;
     undef $xpath;
 }
 
