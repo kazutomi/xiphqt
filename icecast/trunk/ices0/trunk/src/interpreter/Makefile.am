@@ -9,5 +9,5 @@ libinterpreter_a_SOURCES = interpreter.c interpreter_playlist.c
 
 INCLUDES = -I.. -I$(top_srcdir)/resolver -I$(top_srcdir)/thread
 
-
+EXTRA_DIST = playlist_python.c python.c
 

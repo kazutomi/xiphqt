@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libplaylist.a
-noinst_HEADERS = rand.h
+noinst_HEADERS = rand.h playlist_builtin.h
 
 libplaylist_a_SOURCES = playlist_builtin.c rand.c
 

@@ -23,7 +23,6 @@
 #ifdef HAVE_LIBXML
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
-#endif
 
 /* Private function declarations */
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
@@ -32,6 +31,7 @@ static void ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePt
 static void ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
+#endif
 
 /* Global function definitions */
 int
@@ -40,6 +40,7 @@ ices_xml_parse_config_file (ices_config_t *ices_config, const char *configfile)
 #ifndef HAVE_LIBXML
 	ices_log_error ("XML Parser cannot be run, because LIBXML was not found at compile time.");
 	return -1;
+}
 #else
 	char namespace[1024];
 
