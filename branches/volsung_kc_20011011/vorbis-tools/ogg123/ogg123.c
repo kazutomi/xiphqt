@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.20 2001/12/14 05:45:14 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.21 2001/12/14 17:54:05 volsung Exp $
 
  ********************************************************************/
 
@@ -492,9 +492,6 @@ void play (char *source_string)
             
     } /* End of data loop */
     
-  
-    if (audio_buffer != NULL)
-      buffer_mark_eos(audio_buffer);
   } /* End of logical bitstream loop */
   
   /* Done playing this logical bitstream.  Clean up house. */
@@ -504,9 +501,11 @@ void play (char *source_string)
 
   if (audio_buffer) {
     
-    if (!sig_request.exit && !sig_request.skipfile)
+    if (!sig_request.exit && !sig_request.skipfile) {
+      buffer_mark_eos(audio_buffer);
       buffer_wait_for_empty(audio_buffer);
-        
+    }
+
     buffer_thread_kill(audio_buffer);
   }
   

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.6 2001/12/14 16:46:11 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.7 2001/12/14 17:54:05 volsung Exp $
 
  ********************************************************************/
 
@@ -164,8 +164,8 @@ int ovf_read (decoder_t *decoder, void *ptr, int nbytes, int *eos,
     } else if (ret == OV_HOLE) {
       
       if (cb->printf_error != NULL)
-	cb->printf_error(decoder->callback_arg, WARNING,
-			  "--- Hole in the stream; probably harmless\n");
+	cb->printf_error(decoder->callback_arg, INFO,
+			   "--- Hole in the stream; probably harmless\n");
     
     } else if (ret < 0) {
       
@@ -315,6 +315,7 @@ void print_stream_comments (decoder_t *decoder)
   if (cb == NULL || cb->printf_metadata == NULL)
     return;
 
+  cb->printf_metadata(decoder->callback_arg, 1, ""); /* Add a blank line */
 
   for (i = 0; i < priv->vc->comments; i++) {
     comment = priv->vc->user_comments[i];

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: callbacks.c,v 1.1.2.4 2001/12/14 05:45:14 volsung Exp $
+ last mod: $Id: callbacks.c,v 1.1.2.5 2001/12/14 17:54:04 volsung Exp $
 
  ********************************************************************/
 
@@ -19,6 +19,9 @@
 #include <string.h>
 
 #include "callbacks.h"
+
+#define WARNING_VERBOSITY 2
+#define INFO_VERBOSITY    3
 
 /* Audio callbacks */
 
@@ -187,7 +190,17 @@ void decoder_error_callback (void *arg, int severity, char *message, ...)
   va_list ap;
 
   va_start(ap, message);
-  vstatus_error(message, ap);
+  switch (severity) {
+  case ERROR:
+    vstatus_error(message, ap);
+    break;
+  case WARNING:
+    vstatus_message(WARNING_VERBOSITY, message, ap);
+    break;
+  case INFO:
+    vstatus_message(INFO_VERBOSITY, message, ap);
+    break;
+  }
   va_end(ap);
 }
 
@@ -287,8 +300,22 @@ void decoder_buffered_error_callback (void *arg, int severity,
     }
   }
 
-  /* Use vsnprintf! */
-  buffer_append_action_at_end(buf, &status_error_action, sm_arg);
+  
+  switch (severity) {
+  case ERROR:
+    buffer_append_action_at_end(buf, &status_error_action, sm_arg);    
+    break;
+  case WARNING:
+    sm_arg->verbosity = WARNING_VERBOSITY;
+    buffer_append_action_at_end(buf, &status_message_action, sm_arg);
+    break;
+  case INFO:
+    sm_arg->verbosity = INFO_VERBOSITY;
+    buffer_append_action_at_end(buf, &status_message_action, sm_arg);
+    break;
+  }
+
+
 }
 
 
