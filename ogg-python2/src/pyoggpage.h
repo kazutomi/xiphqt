@@ -12,6 +12,6 @@ typedef struct {
 
 extern PyTypeObject PyOggPage_Type;
 
-PyObject *PyOggPage_FromOggPage(ogg_page *page);
+PyOggPageObject *PyOggPage_Alloc(void);
 
 #endif

@@ -61,24 +61,33 @@ static PyMethodDef PyOggPage_methods[] = {
   {NULL, NULL}
 };
 
-static void 
-PyOggPage_Dealloc(PyObject *self) {
-  ogg_page_release(PyOggPage_AsOggPage(self));
-  PyObject_Del(self);
-}
+PyOggPageObject *
+PyOggPage_Alloc() {
+  ogg_page *page;
+  PyOggPageObject *ret;
 
-
-PyObject *
-PyOggPage_FromOggPage(ogg_page *page) {
-  PyOggPageObject *ret = (PyOggPageObject *) PyObject_NEW(PyOggPageObject, 
-                                                          &PyOggPage_Type);
-
+  ret = (PyOggPageObject *) PyObject_NEW(PyOggPageObject, &PyOggPage_Type);
   if (ret == NULL)
     return NULL;
 
+  page = PyMem_New(ogg_page, 1);
+  if (page == NULL) {
+    PyObject_Del(ret);
+    return NULL;
+  }
+  memset(page, 0, sizeof(*page));
+
   ret->page = page;
-  return (PyObject *) ret;
+  return ret;
 }
+
+static void 
+PyOggPage_Dealloc(PyObject *self) {
+  ogg_page_release(PyOggPage_AsOggPage(self));
+  PyMem_Del(PyOggPage_AsOggPage(self));
+  PyObject_Del(self);
+}
+
 
 static PyObject *
 PyOggPage_Size(PyObject *self, PyObject *args) {
@@ -267,16 +276,16 @@ PyOggPage_Repr(PyObject *self)
   char *bos = ogg_page_bos(PyOggPage_AsOggPage(self)) ? "BOS, " : "";
   char *eos = ogg_page_eos(PyOggPage_AsOggPage(self)) ? "EOS, " : "";
   char *cont = ogg_page_continued(PyOggPage_AsOggPage(self)) ? "CONT, " : "";
-
   sprintf(buf, "<OggPage, %s%s%spageno = %ld, granulepos = %lld,"
 	  " packets = %d, serialno = %d, version = %d," 
-          " head length = %ld, body length = %ld at %p>",
+          " head length = %ld, body length = %ld, at %p>",
 	  cont, bos, eos, ogg_page_pageno(PyOggPage_AsOggPage(self)),
           ogg_page_granulepos(PyOggPage_AsOggPage(self)),
 	  ogg_page_packets(PyOggPage_AsOggPage(self)),
           ogg_page_serialno(PyOggPage_AsOggPage(self)),
           ogg_page_version(PyOggPage_AsOggPage(self)), 
           PyOggPage_AsOggPage(self)->header_len, 
-          PyOggPage_AsOggPage(self)->body_len, self); 
+          PyOggPage_AsOggPage(self)->body_len,
+          PyOggPage_AsOggPage(self)); 
   return PyString_FromString(buf);
 }

@@ -253,15 +253,21 @@ static PyObject *
 PyOggSyncState_Pageout(PyObject *self, PyObject *args) 
 {
   int ret;
-  ogg_page *page;
+  PyOggPageObject *pageobj;
 
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
-  page = NULL;
-  ret = ogg_sync_pageout(PyOggSyncState_AsOggSyncState(self), page);
+  pageobj = PyOggPage_Alloc();
+  if ( !pageobj ) {
+    PyErr_SetString(PyOggError, "Out of Memory.");
+    return NULL;
+  }
+  ret = ogg_sync_pageout(PyOggSyncState_AsOggSyncState(self),
+                         PyOggPage_AsOggPage(pageobj));
 
-  if ( ret == 1 ) return PyOggPage_FromOggPage(page);
+  if ( ret == 1 ) return (PyObject *) pageobj;
+  Py_DECREF(pageobj);
   if ( ret == 0 ) {
     Py_INCREF(Py_None);
     return Py_None;

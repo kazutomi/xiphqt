@@ -15,7 +15,7 @@ typedef struct {
   PyTypeObject *PyOggPacket_Type;
   PyTypeObject *PyOggStreamState_Type;
   PyObject *PyOggError;
-  PyObject *(*PyOggPacket_From_Packet)(ogg_packet *packet);
+/*  PyOggPacketObject *(*PyOggPacket_Alloc)(); */
   int (*arg_to_int64)(PyObject *longobj, ogg_int64_t *val);
 } ogg2_module_info;
 

@@ -51,17 +51,26 @@ static PyMethodDef PyOggPacket_methods[] = {
   {NULL, NULL}
 };
 
-PyObject *
-PyOggPacket_FromPacket(ogg_packet *packet)
+PyOggPacketObject * 
+PyOggPacket_Alloc() 
 {
-  PyOggPacketObject *ret = (PyOggPacketObject *) PyObject_NEW(PyOggPacketObject, 
-				                  &PyOggPacket_Type);
+  ogg_packet *packet;
+  PyOggPacketObject *ret;
+
+  ret = (PyOggPacketObject *) PyObject_NEW(PyOggPacketObject,
+                                           &PyOggPacket_Type);
   if (ret == NULL)
     return NULL;
 
-  ret->packet = packet;
-  return (PyObject *)ret;
+  ret->packet = PyMem_New(ogg_packet, 1);
+  if (ret->packet == NULL) {
+    PyObject_Del(ret);
+    return NULL;
+  }
+  memset(ret->packet, 0, sizeof(ogg_packet));
+  return ret;
 }
+
 
 static void
 PyOggPacket_Dealloc(PyObject *self)
