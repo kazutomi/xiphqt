@@ -100,7 +100,7 @@ class WOID:
 
         (pointer, pai_pointer) = self.sai[index]
 
-        return _get_record_at(pointer)
+        return self._get_record_at(pointer)
 
     def get_records(self):
         """Returns a list of all the non-deleted records in this database"""
@@ -113,15 +113,27 @@ class WOID:
         containing data in field number \"check_field\"."""
 
         for i in range(len(self.sai)):
-            sai_record = self.sai[i]
-            (record, next) = self.mdb.read_record_at(sai_record[0])
+            (mdb_pointer, sai_pointer) = self.sai[i]
+
+            if self.mdb.is_record_deleted_at(mdb_pointer):
+                continue
+            
+            record = self.get_record(i)
 
             if record == None:
-                if data == None:
+                continue
+
+            field = unflatten_singlet(record[check_field])
+            field = uncollapse_null_list(field)
+
+            if data == None:
+                if None in field:
                     break
             else:
-                r_tuple = [record["data"]] + record["keys"] + record["extra"]
-                if data in r_tuple[check_field]:
+                upcased_field = [item.upper() for item in field if
+                                 item != None]
+
+                if data.upper() in upcased_field:
                     break
         else:
                i = None   # Could not find record
