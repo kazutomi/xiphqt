@@ -78,6 +78,23 @@ ul#bignavbuttons a {
 	font-size: .8em;
 }
 
-ul#bignavbuttons a:hover {
+ul#bignavbuttons li.vorbis a:hover {
+	background: #74a5fd;
+}
+
+ul#bignavbuttons li.flac a:hover {
+	background: #ff9; /* banana-ish */
+}
+
+ul#bignavbuttons li.speex a:hover {
 	background: #90ee90; /* light green */
 }
+
+ul#bignavbuttons li.theora a:hover {
+	background: #e9f;
+}
+
+ul#bignavbuttons li.icecast a:hover {
+	background: #f5f5f5; /* white smoke */
+}
+

@@ -21,7 +21,7 @@
 
 import os, re, sys, glob, os.path
 MARKDOWN_COMMAND = "Markdown" # could also be "Markdown.pl"
-TITLE_REGEX = re.compile(r"<h1>(.*)</h1>")
+TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
 class MarkdownWrapper(object):
 	"""
 	Important attributes:
@@ -33,6 +33,7 @@ class MarkdownWrapper(object):
 		.inHeadBits			-- a list of strings to be included inside the head element
 		.beforeContentBits	-- stuff to include before the content div
 		.mainText			-- the text from .sourceFileName after it's been turned into HTML
+		.afterMainTextBits	-- comes just after .mainText, but inside the content div
 		.afterContentBits	-- stuff to include after the content div
 	"""
 	def __init__(self, sourceFilename, destFilename=None):
@@ -60,21 +61,20 @@ class MarkdownWrapper(object):
 			self.title = match.group(1)
 		
 		self.lang = 'en-US'
-
+	
+		self.afterMainTextBits = []
 		self.headBits = []
 		self.beforeContentBits = []
 		self.afterContentBits = []
-
-		sidebarFilename = os.path.join(os.path.split(self.sourceFilename)[0], "sidebar.inc")
+		
+		sidebarFilename = getParallelFile(self.sourceFilename, "beforecontent.inc")
 		if os.path.isfile(sidebarFilename):
 			# consider crawling back to ./ from ./foo/bar/baz/quux
-			beforeBit = "<div id='sidebar'>"
-			beforeBit += (file(sidebarFilename).read())
-			beforeBit += "</div>"
+			beforeBit = file(sidebarFilename).read()
 			self.beforeContentBits.append(beforeBit)
-			
 		
-		# todo: similarly to append, say, copyright.inc to afterContentBits
+		
+		# todo: similarly to append, say, copyright.inc to afterMainTextBits
 
 	def renderToFile(self):
 		outfile = file(self.destFilename, "w")
@@ -102,6 +102,8 @@ class MarkdownWrapper(object):
 			ret += bit
 		ret += "<div id='content'>"
 		ret += self.mainText
+		for bit in self.afterMainTextBits:
+			ret += bit
 		ret += "</div>\n"
 		for bit in self.afterContentBits:
 			ret += bit
@@ -111,14 +113,19 @@ class MarkdownWrapper(object):
 
 def makeReadableDate(isoDate):
 	"""Gets "January 4, 1982" from "1982-01-04"."""
-	year = isoDate[0-4]
+	year = isoDate[0:4]
+	month = isoDate[5:7]
 	day = isoDate[-2:]
 	if day.startswith('0'): day = day[-1]
-	month = isoDate[5:7]
 	months = """Nothing January February March April May June
 				July August September October November December""".split()
 	return "%s %s, %s" % (months[int(month)], day, year)
 
+def getParallelFile(where, what):
+	"""
+		given f("/home/foo.txt", "bar.html"), returns "/home/bar.html".
+	"""
+	return os.path.join(os.path.split(where)[0], what)
 
 if __name__ == '__main__':
 	for dirpath, dirnames, filenames in os.walk('.'):
