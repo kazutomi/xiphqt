@@ -358,7 +358,7 @@ sub read_proc_acpi{
 		$battstatus[$batteries]=-1;
 		$percent[$batteries]=0;
 		while(<PROC>){
-		    if(m/^last full capacity:\s+(\d)/){
+		    if(m/^last full capacity:\s+(\d+)/){
 			$total=$1;
 		    }
 		    if(m/^present:\s+yes/){
@@ -367,7 +367,7 @@ sub read_proc_acpi{
 		}
 		
 		while(<PROC2>){
-		    if(m/^remaining capacity:\s+(\d)/){
+		    if(m/^remaining capacity:\s+(\d+)/){
 			$percent[$batteries]=$1*100/$total;
 		    }
 		    if(m/^charging state:\s+charging/){
@@ -383,8 +383,6 @@ sub read_proc_acpi{
 		close PROC2;
 	    }
 	    close PROC;
-	    
-	    
 	    $batteries++;
 	}
 	
