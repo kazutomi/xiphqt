@@ -97,7 +97,7 @@ int mgetch(){
 
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
-#define MAX_OUTPUT_CHANNELS 2
+#define MAX_OUTPUT_CHANNELS 6
 #define MAX_FILECHANNELS 2
 #define CHANNEL_LABEL_LENGTH 50
 int playback_bufsize=0;
@@ -109,12 +109,12 @@ typedef struct {
 } outchannel;
   
 static outchannel channel_list[MAX_OUTPUT_CHANNELS]={
-  {"house front left",0},
-  {"house front right",0},
-  {"house rear left",0},
-  {"house rear right",0},
-  {"five",0},
-  {"six",0},
+  {"house left",0},
+  {"house right",0},
+  {"stage left",0},
+  {"stage right",0},
+  {"rear left",0},
+  {"rear right",0},
 };
 static outchannel rchannel_list[2]={
   {"left",0},
@@ -3016,7 +3016,7 @@ int main(int gratuitously,char *different[]){
     exit(1);
   }
 
-  playfd=fopen("/dev/dsp","wb");
+  playfd=fopen("/dev/dsp1","wb");
   if(!playfd){
     fprintf(stderr,"unable to open audio device for playback: %s.\n",strerror(errno));
     fprintf(stderr,"\nPress enter to continue\n");
