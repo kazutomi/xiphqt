@@ -80,9 +80,6 @@ static int buffer_data(FILE *f, ogg_sync_state *oy)
 
 static int process_file(const char *pathname)
 {
-  int i;
-  char *filename;
-
   FILE *infile;
 
   output_t *junk=NULL;
@@ -107,25 +104,8 @@ static int process_file(const char *pathname)
     return 0;
   }
 
-  /* take out the path section from pathname */
-  for(i=strlen(pathname)-1; i>=0; i--){
-    if(pathname[i]=='/'){
-      i++;
-      break;
-    }
-  }
-
-  if(outdir!=NULL){
-    filename=xmalloc(strlen(outdir)+strlen(&pathname[i])+2);
-    strcpy(filename, outdir);
-    filename[strlen(outdir)]='/';
-    strcpy(&filename[strlen(outdir)+1], &pathname[i]);
-  }else{
-    filename=xstrdup(&pathname[i]);    
-  }
-
   stream_ctrl_init(&sc);
-  output_ctrl_init(&oc, filename);
+  output_ctrl_init(&oc, pathname);
 
   ogg_sync_init(&oy);
 
@@ -187,7 +167,7 @@ static int process_file(const char *pathname)
 		    "  in `%s'.\n"
 		    "  All data from this stream and any further such streams will be written\n"
 		    "  to `%s'.\n\n%s",
-		    ogg_page_serialno(&og), filename,
+		    ogg_page_serialno(&og), pathname,
 		    junk->filename, broken_ogg);
 	  }
 	  output_page_write(junk, &og);
@@ -229,9 +209,7 @@ static int process_file(const char *pathname)
 	    "  of `%s'.\n"
 	    "  The logical streams may have been trunctated in an incomplete\n"
 	    "  transfer or an aborted encoding process.\n\n%s",
-	    sc.streams_used, filename, broken_ogg);
-
-  free(filename);
+	    sc.streams_used, pathname, broken_ogg);
 
   output_ctrl_free(&oc);
   stream_ctrl_free(&sc);
