@@ -20,7 +20,6 @@
 
 #include "definitions.h"
 
-shout_conn_t conn;
 ices_config_t ices_config;
 
 /* Global function definitions */
