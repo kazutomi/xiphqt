@@ -41,7 +41,8 @@ extern long long samplesout;
 extern long long samplesmissing;
 extern long long samplesdiscarded;
 
-extern double vidbuf_fps;
+extern double vidin_fps;
+extern double vidout_fps;
 extern int video_timeahead; 
 
 int snatch_iterator(FILE *in,FILE *out,int process_a,int process_v);
@@ -73,7 +74,8 @@ int main(int argc,char *argv[]){
   int c;
 
   video_timeahead=2; /* absolute minimum for sync to work */
-  vidbuf_fps=30;     /* not critical in audio, but must still be set */
+  vidin_fps=30;     /* not critical in audio, but must still be set */
+  vidout_fps=30;     /* not critical in audio, but must still be set */
 
   while((c=getopt(argc,argv,optstring))!=EOF){
     switch(c){
