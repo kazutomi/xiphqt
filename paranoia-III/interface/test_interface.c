@@ -10,11 +10,31 @@
 #include "low_interface.h"
 #include "utils.h"
 
+/* Testing times:
+
+                        6        7        8       9.2      9.3
+   OK                         0:02.66* 0:03.15  0:03.11  0:04.98
+   JITTER_SMALL               0:53.40  0:51.97  0:27.97  0:10.15
+   JITTER_LARGE      0:06.24           5:50.29  2:44.22  0:15.42
+   JITTER_MASSIVE    0:42.19                   10:58.97  0:42.81
+   FRAG_SMALL        0:04.84                    0:33.40  0:12.31
+   FRAG_LARGE        0:07.68                    3:14.69  0:19.35
+   FRAG_MASSIVE      failure                   34:16.89  2:43.02
+   BOGUS_BYTES
+   DROPDUPE_BYTES    0:19.53* 0:27.91  0:23.54  1:35.97  0:18.78
+   SCRATCH           1:07.96*                            0:16.13
+   UNDERRUN          0:06.81# failure  1:09.40# 1:07.68  0:17.53
+   
+   * defect of some sort 
+   # not including a hang at end of read
+
+   */
+
 /* Build which test model? */
-#define  CDDA_TEST_OK
+#undef  CDDA_TEST_OK
 #undef  CDDA_TEST_JITTER_SMALL
 #undef  CDDA_TEST_JITTER_LARGE
-#undef  CDDA_TEST_JITTER_MASSIVE
+#define CDDA_TEST_JITTER_MASSIVE
 #undef  CDDA_TEST_FRAG_SMALL
 #undef  CDDA_TEST_FRAG_LARGE
 #undef  CDDA_TEST_FRAG_MASSIVE
@@ -23,9 +43,6 @@
 #undef  CDDA_TEST_SCRATCH
 #undef  CDDA_TEST_UNDERRUN
 
-#undef  CDDA_TEST_ALLJITTER
-#undef  CDDA_TEST_SOMEJITTER
-#undef CDDA_TEST_SEEKJITTER
 
 static int test_readtoc (cdrom_drive *d){
   int tracks=0;
@@ -40,11 +57,11 @@ static int test_readtoc (cdrom_drive *d){
 
   d->disc_toc[0].bFlags = 0;
   d->disc_toc[0].bTrack = 1;
-  d->disc_toc[0].dwStartSector = 37;
+  d->disc_toc[0].dwStartSector = 0;
 
   d->disc_toc[1].bFlags = 0x4;
   d->disc_toc[1].bTrack = CDROM_LEADOUT;
-  d->disc_toc[1].dwStartSector = sectors+37;
+  d->disc_toc[1].dwStartSector = sectors;
 
   tracks=2;
   d->cd_extra=0;
@@ -55,13 +72,9 @@ static int test_readtoc (cdrom_drive *d){
    boundaries, etc */
 
 static long test_read(cdrom_drive *d, void *p, long begin, long sectors){
-  int jitter_flag=0;
-  int los_flag=0;
-  static int jitter=0;
   int bytes_so_far=0;
   long bytestotal;
   static FILE *fd=NULL;
-  static long lastread=0;
 
   if(!fd)fd=fdopen(d->cdda_fd,"r");
 
@@ -69,22 +82,6 @@ static long test_read(cdrom_drive *d, void *p, long begin, long sectors){
   sectors-=1;
 #endif
 
-#ifdef CDDA_TEST_SEEKJITTER
-  if(lastread!=begin)jitter_flag=1;
-#else
-#ifdef CDDA_TEST_ALLJITTER
-  jitter_flag=1;
-#else
-#ifdef CDDA_TEST_SOMEJITTER
-  jitter_flag=(drand48()>.9?1:0);
-  los_flag=(drand48()>.9?1:0);
-#else
-  los_flag=1;
-#endif
-#endif
-#endif
-
-  lastread=begin+sectors;
   bytestotal=sectors*CD_FRAMESIZE_RAW;
 
   begin*=CD_FRAMESIZE_RAW;
@@ -94,45 +91,50 @@ static long test_read(cdrom_drive *d, void *p, long begin, long sectors){
     char *inner_buf=p+bytes_so_far;
     long seeki;
     long rbytes;
-    long this_bytes=inner_bytes;
 
 #ifdef CDDA_TEST_OK
+    int this_jitter=0;
+    long this_bytes=inner_bytes;
     
 #else
 #ifdef CDDA_TEST_JITTER_SMALL
-    if(jitter_flag)jitter=4*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    int this_jitter=4*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    long this_bytes=inner_bytes;
 
 #else
 #ifdef CDDA_TEST_JITTER_LARGE
-    if(jitter_flag)jitter=32*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    int this_jitter=32*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    long this_bytes=inner_bytes;
 
 #else
 #ifdef CDDA_TEST_JITTER_MASSIVE
-    if(jitter_flag)jitter=128*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    int this_jitter=128*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    long this_bytes=inner_bytes;
 
 #else
 #ifdef CDDA_TEST_FRAG_SMALL
-    if(los_flag)this_bytes=256*(int)(drand48()*CD_FRAMESIZE_RAW/8);
-    if(jitter_flag)jitter=4*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    int this_jitter=4*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    long this_bytes=256*(int)(drand48()*CD_FRAMESIZE_RAW/8);
 
 #else
 #ifdef CDDA_TEST_FRAG_LARGE
-    if(los_flag)this_bytes=16*(int)(drand48()*CD_FRAMESIZE_RAW/8);
-    if(jitter_flag)jitter=4*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    int this_jitter=32*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    long this_bytes=256*(int)(drand48()*CD_FRAMESIZE_RAW/8);
 
 #else
 #ifdef CDDA_TEST_FRAG_MASSIVE
-    if(los_flag)this_bytes=8*(int)(drand48()*CD_FRAMESIZE_RAW/8);
-    if(jitter_flag)jitter=32*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    int this_jitter=32*(int)((drand48()-.5)*CD_FRAMESIZE_RAW/8);
+    long this_bytes=8*(int)(drand48()*CD_FRAMESIZE_RAW/8);
 
 #else
 #ifdef CDDA_TEST_DROPDUPE_BYTES
-    if(los_flag)this_bytes=CD_FRAMESIZE_RAW;
-    if(jitter_flag)
-      if (drand48()>.8)
-	this_jitter=32;
-      else
-	this_jitter=0;
+    long this_bytes=CD_FRAMESIZE_RAW;
+    int this_jitter;
+
+    if (drand48()>.8)
+      this_jitter=32;
+    else
+      this_jitter=0;
 
 #endif
 #endif
@@ -142,36 +144,16 @@ static long test_read(cdrom_drive *d, void *p, long begin, long sectors){
 #endif
 #endif
 #endif
-
 
     if(this_bytes>inner_bytes)this_bytes=inner_bytes;
-    if(begin+jitter+bytes_so_far<0)jitter=0;    
-    seeki=begin+bytes_so_far+jitter;
-
+    if(begin+this_jitter+bytes_so_far<0)this_jitter=0;    
+    seeki=begin+bytes_so_far+this_jitter;
+    
     if(fseek(fd,seeki,SEEK_SET)<0){
       return(0);
     }
     rbytes=fread(inner_buf,1,this_bytes,fd);
     bytes_so_far+=rbytes;
-    if(rbytes==0)break;
-
-#ifdef CDDA_TEST_SEEKJITTER
-    jitter_flag=0;
-    los_flag=0;
-#else
-#ifdef CDDA_TEST_ALLJITTER
-    jitter_flag=1;
-    los_flag=0;
-#else
-#ifdef CDDA_TEST_SOMEJITTER
-    jitter_flag=(drand48()>.9?1:0);
-  los_flag=(drand48()>.9?1:0);
-#else
-  los_flag=1;
-#endif
-#endif
-#endif
-
   }
 
 #ifdef CDDA_TEST_SCRATCH
@@ -195,11 +177,10 @@ static int Dummy (cdrom_drive *d,int Switch){
 /* set function pointers to use the ioctl routines */
 int test_init_drive (cdrom_drive *d){
 
-  d->nsectors=13;
+  d->nsectors=8;
   d->enable_cdda = Dummy;
   d->read_audio = test_read;
   d->read_toc = test_readtoc;
-  d->set_speed = Dummy;
   d->tracks=d->read_toc(d);
   if(d->tracks==-1)
     return(d->tracks);

@@ -56,17 +56,6 @@ static int cooked_readtoc (cdrom_drive *d){
   return(--tracks);  /* without lead-out */
 }
 
-
-/* Set operating speed */
-static int cooked_setspeed(cdrom_drive *d, int speed)
-{
-  if(d->ioctl_fd!=-1)
-    return ioctl(d->ioctl_fd, CDROM_SELECT_SPEED, speed);
-  else
-    return 0;
-}
-
-
 /* read 'SectorBurst' adjacent sectors of audio sectors 
  * to Buffer '*p' beginning at sector 'lSector'
  */
@@ -136,8 +125,7 @@ static int Dummy (cdrom_drive *d,int Switch){
 
 static int verify_read_command(cdrom_drive *d){
   int i;
-  int16_t *buff=malloc(CD_FRAMESIZE_RAW);
-  int audioflag=0;
+  size16 *buff=malloc(CD_FRAMESIZE_RAW);
 
   cdmessage(d,"Verifying drive can read CDDA...\n");
 
@@ -148,7 +136,6 @@ static int verify_read_command(cdrom_drive *d){
       long firstsector=cdda_track_firstsector(d,i);
       long lastsector=cdda_track_lastsector(d,i);
       long sector=(firstsector+lastsector)>>1;
-      audioflag=1;
 
       if(d->read_audio(d,buff,sector,1)>0){
 	cdmessage(d,"\tExpected command set reads OK.\n");
@@ -160,11 +147,6 @@ static int verify_read_command(cdrom_drive *d){
   }
  
   d->enable_cdda(d,0);
-
-  if(!audioflag){
-    cdmessage(d,"\tCould not find any audio tracks on this disk.\n");
-    return(-403);
-  }
 
   cdmessage(d,"\n\tUnable to read any data; "
 	    "drive probably not CDDA capable.\n");
@@ -245,7 +227,6 @@ int cooked_init_drive (cdrom_drive *d){
   }
   d->enable_cdda = Dummy;
   d->read_audio = cooked_read;
-  d->set_speed = cooked_setspeed;
   d->read_toc = cooked_readtoc;
   ret=d->tracks=d->read_toc(d);
   if(d->tracks<1)

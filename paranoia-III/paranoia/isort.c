@@ -22,9 +22,9 @@ sort_info *sort_alloc(long size){
   ret->size=-1;
   ret->maxsize=size;
 
-  ret->head=calloc(65536,sizeof(sort_link *));
+  ret->head=calloc(65536,sizeof(sort_link **));
   ret->bucketusage=malloc(65536*sizeof(long));
-  ret->revindex=calloc(size,sizeof(sort_link));
+  ret->revindex=calloc(size,sizeof(sort_link *));
   ret->lastbucket=0;
 
   return(ret);
@@ -68,7 +68,7 @@ static void sort_sort(sort_info *i,long sortlo,long sorthi){
 }
 
 /* size *must* be less than i->maxsize */
-void sort_setup(sort_info *i,int16_t *vector,long *abspos,
+void sort_setup(sort_info *i,size16 *vector,long *abspos,
 		long size,long sortlo,long sorthi){
   if(i->sortbegin!=-1)sort_unsortall(i);
 
@@ -88,8 +88,8 @@ sort_link *sort_getmatch(sort_info *i,long post,long overlap,int value){
   
   post=max(0,min(i->size,post));
   i->val=value+32768;
-  i->lo=max(0,post-overlap);       /* absolute position */
-  i->hi=min(i->size,post+overlap); /* absolute position */
+  i->lo=max(0,post-overlap);
+  i->hi=min(i->size,post+overlap);
 
   ret=i->head[i->val];
   while(ret){
