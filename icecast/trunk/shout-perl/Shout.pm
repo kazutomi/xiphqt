@@ -13,6 +13,7 @@ Shout - Perl glue for libshout MP3 streaming source library
 	host  		=> 'localhost',
 	port		=> 8000,
 	mount		=> 'testing',
+        nonblocking     => 0,
 	password	=> 'pa$$word!',
 	user		=> 'username',
 	dumpfile	=> undef,
@@ -31,6 +32,7 @@ Shout - Perl glue for libshout MP3 streaming source library
   $conn->host('localhost');
   $conn->port(8000);
   $conn->mount('testing');
+  $conn->nonblocking(0);
   $conn->password('pa$$word!');
   $conn->user('username');
   $conn->dumpfile(undef);
@@ -95,6 +97,7 @@ tag is given as an argument to the C<use> statement.
 	shout_set_host
 	shout_set_port
 	shout_set_mount
+        shout_set_nonblocking
 	shout_set_password
 	shout_set_user
 	shout_set_icq
@@ -108,6 +111,7 @@ tag is given as an argument to the C<use> statement.
 	shout_get_host
 	shout_get_port
 	shout_get_mount
+        shout_get_nonblocking
 	shout_get_password
 	shout_get_user
 	shout_get_icq
@@ -126,6 +130,7 @@ tag is given as an argument to the C<use> statement.
 	shout_get_protocol
 	shout_set_audio_info
 	shout_get_audio_info
+        shout_queuelen
 
 They work almost identically to their libshout C counterparts. See the libshout
 documentation for more information about how to use the function interface.
@@ -159,7 +164,7 @@ use strict;
 BEGIN {
     use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $AUTOLOAD);
 
-    $VERSION = '2.0.2';
+    $VERSION = '2.1';
 
     use Carp;
 
@@ -178,7 +183,7 @@ BEGIN {
         SHOUT_AI_CHANNELS
 	SHOUTERR_SUCCESS SHOUTERR_INSANE SHOUTERR_NOCONNECT SHOUTERR_NOLOGIN 
 	SHOUTERR_SOCKET SHOUTERR_MALLOC SHOUTERR_METADATA SHOUTERR_CONNECTED 
-	SHOUTERR_UNCONNECTED SHOUTERR_UNSUPPORTED 
+	SHOUTERR_UNCONNECTED SHOUTERR_UNSUPPORTED SHOUTERR_BUSY
     };
     @EXPORT_OK = qw{
 	SHOUT_FORMAT_VORBIS SHOUT_FORMAT_MP3
@@ -187,10 +192,10 @@ BEGIN {
         SHOUT_AI_CHANNELS
 	SHOUTERR_SUCCESS SHOUTERR_INSANE SHOUTERR_NOCONNECT SHOUTERR_NOLOGIN 
 	SHOUTERR_SOCKET SHOUTERR_MALLOC SHOUTERR_METADATA SHOUTERR_CONNECTED 
-	SHOUTERR_UNCONNECTED SHOUTERR_UNSUPPORTED 
+	SHOUTERR_UNCONNECTED SHOUTERR_UNSUPPORTED SHOUTERR_BUSY
 	shout_open shout_close
 	shout_set_metadata shout_metadata_new shout_metadata_free 
-	shout_metadata_add shout_send_data shout_sync shout_delay
+	shout_metadata_add shout_send_data shout_sync shout_delay shout_queuelen
 	shout_set_host shout_set_port shout_set_mount shout_set_password
 	shout_set_user shout_set_dumpfile shout_set_name
 	shout_set_url shout_set_genre shout_set_description
@@ -201,6 +206,7 @@ BEGIN {
 	shout_get_public shout_get_error shout_set_format shout_get_format
 	shout_get_audio_info shout_set_audio_info
 	shout_set_protocol shout_get_protocol shout_get_errno
+        shout_get_nonblocking shout_set_nonblocking
     };
     %EXPORT_TAGS = (
 	all       => \@EXPORT_OK,
@@ -210,7 +216,7 @@ BEGIN {
             SHOUT_AI_CHANNELS
 	    SHOUTERR_SUCCESS SHOUTERR_INSANE SHOUTERR_NOCONNECT SHOUTERR_NOLOGIN 
 	    SHOUTERR_SOCKET SHOUTERR_MALLOC SHOUTERR_METADATA SHOUTERR_CONNECTED 
-	    SHOUTERR_UNCONNECTED SHOUTERR_UNSUPPORTED 
+	    SHOUTERR_UNCONNECTED SHOUTERR_UNSUPPORTED SHOUTERR_BUSY
 	}],
         functions => [qw{shout_open shout_close
             shout_set_metadata shout_metadata_add shout_metadata_new
@@ -226,6 +232,7 @@ BEGIN {
 	    shout_get_public shout_get_error shout_get_errno
 	    shout_set_protocol shout_get_protocol
 	    shout_set_format shout_get_format
+            shout_get_nonblocking shout_set_nonblocking shout_queuelen
         }],
     );
 }
@@ -259,6 +266,7 @@ use vars qw{@TranslatedMethods %CompatibilityMethods};
     public
     format
     protocol
+    nonblocking
 };
 
 %CompatibilityMethods = (
@@ -278,6 +286,7 @@ use vars qw{@TranslatedMethods %CompatibilityMethods};
 ###			host		=> <destination ip address>,
 ###			port		=> <destination port>,
 ###			mount		=> <stream mountpoint>,
+###			nonblocking	=> <use nonblocking IO>,
 ###			password	=> <password to use when connecting>,
 ###			user		=> <username to use when connecting>,
 ###			dumpfile	=> <dumpfile for the stream>,
@@ -413,6 +422,15 @@ sub delay ($) {
     $self->shout_delay; 
 }
 
+### METHOD: queuelen( undef )
+### Tell how many bytes of data are in the write queue. This is only
+### useful in conjunction with nonblocking sends.
+sub queuelen ($) {
+    my $self = shift or croak "delay: Method called as function";
+
+    $self->shout_queuelen;
+}
+
 ### METHOD: set_audio_info( key => val, key => val )
 ### Set audio parameters (bitrate, samplerate, channels etc) for informational
 ### purposes. Audio info is a hash using the SHOUT_AI constants as keys.
@@ -531,6 +549,10 @@ sub updateMetadata ($$) {
 ###	METHOD: public( $boolean )
 ###	Get/set the connection's public flag. This flag, when set to true, indicates
 ###		that the stream may be listed in the public directory servers.
+
+###	METHOD: nonblocking( $boolean )
+###	Get/set the connection's nonblocking flag. This flag, when set to true, indicates
+###		that sends should complete instantly, queueing data if necessary.
 
 ### (PROXY) METHOD: AUTOLOAD( @args )
 ###	Provides a proxy for functions and methods which aren't explicitly defined.

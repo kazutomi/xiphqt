@@ -57,10 +57,12 @@ constant(char *name, int arg)
      return SHOUTERR_UNCONNECTED;
    if (strEQ(name,"SHOUTERR_UNSUPPORTED"))
      return SHOUTERR_UNSUPPORTED;
+   if (strEQ(name,"SHOUTERR_BUSY"))
+     return SHOUTERR_BUSY;
    if (strEQ(name, "SHOUT_FORMAT_MP3"))
      return SHOUT_FORMAT_MP3;
-   if (strEQ(name, "SHOUT_FORMAT_VORBIS"))
-     return SHOUT_FORMAT_VORBIS;
+   if (strEQ(name, "SHOUT_FORMAT_OGG") || strEQ(name, "SHOUT_FORMAT_VORBIS"))
+     return SHOUT_FORMAT_OGG;
    if (strEQ(name, "SHOUT_PROTOCOL_ICY"))
      return SHOUT_PROTOCOL_ICY;
    if (strEQ(name, "SHOUT_PROTOCOL_XAUDIOCAST"))
@@ -127,6 +129,11 @@ shout_set_mount(self, str)
 	char *str
 
 void
+shout_set_nonblocking(self, num)
+	shout_t *self
+	int num
+
+void
 shout_set_password(self, str)
 	shout_t *self
 	char *str
@@ -177,6 +184,10 @@ shout_get_port(self)
 const char *
 shout_get_mount(self)
 	shout_t *self
+
+int
+shout_get_nonblocking(self)
+	shout_t* self
 
 const char *
 shout_get_password(self)
@@ -264,6 +275,10 @@ shout_sync(self)
 int
 shout_delay(self)
        shout_t *self
+
+int
+shout_queuelen(self)
+	shout_t* self
 
 int
 shout_set_audio_info(self, name, value)
