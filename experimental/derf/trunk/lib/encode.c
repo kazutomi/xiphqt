@@ -784,7 +784,7 @@ static void oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         /*Check to see if the fragment can be skipped.
           It is assumed that a skipped fragment always takes fewer bits than a
            coded fragment, though this may not necessarily be true.*/
-        oc_frag_fdct(frag,dct_buf,stride,prev_refi);
+        oc_enc_frag_fdct(_enc,frag,dct_buf,stride,prev_refi);
         for(ci=0;ci<64;ci++){
           if(abs(dct_buf[ci]-frinfo->dct_coeffs[ci])>frinfo->tols[ci])break;
         }
@@ -812,7 +812,13 @@ static int oc_enc_deltaframe(oc_enc_ctx *_enc){
 }
 
 static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
+  int bii;
   int ret;
+  /*FOR TESTING PURPOSES.*/
+  _info->frame_width-=8;
+  _info->frame_height-=8;
+  _info->offset_x+=4;
+  _info->offset_y+=4;
   ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
   oggpackB_writeinit(&_enc->opb);
@@ -820,6 +826,11 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
    sizeof(_enc->frinfo[0]));
   _enc->mbinfo=_ogg_calloc(_enc->state.frarray.nmbs,sizeof(_enc->mbinfo[0]));
   oc_enc_init_mbinfo(_enc);
+  memset(_enc->border_info,0,sizeof(_enc->border_info));
+  for(bii=0;bii<_enc->state.frarray.nborders;bii++){
+    oc_border_enc_info_init(_enc->border_info+bii,
+     _enc->state.frarray.borders+bii);
+  }
   _enc->mcenc=oc_mcenc_alloc(_enc);
   _enc->impmap=oc_impmap_alloc(_enc);
   _enc->psych=oc_psych_alloc(_enc);
@@ -866,8 +877,8 @@ static void oc_enc_clear(oc_enc_ctx *_enc){
   _stride:   The stride of the plane the fragment belongs to.
   _ref_idx:  The picture buffer to perform the DCT on.
              Use OC_FRAME_IO for the current input frame.*/
-void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
- int _stride,int _ref_idx){
+void oc_enc_frag_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
+ ogg_int16_t _dct_vals[64],int _stride,int _ref_idx){
   ogg_int16_t    pix_buf[64];
   unsigned char *pixels;
   int            pixi;
@@ -891,6 +902,7 @@ void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
      pixels.*/
   if(_frag->border!=NULL){
     ogg_int64_t mask;
+    int         bii;
     mask=_frag->border->mask;
     for(pixi=y=0;y<8;y++){
       for(x=0;x<8;x++,pixi++){
@@ -908,7 +920,8 @@ void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
       }
       pixels+=_stride;
     }
-    oc_fdct8x8_border(_frag->border,_dct_vals,pix_buf);
+    bii=_frag->border-_enc->state.frarray.borders;
+    oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,pix_buf);
   }
   /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
   else{

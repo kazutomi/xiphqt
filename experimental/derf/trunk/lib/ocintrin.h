@@ -21,8 +21,12 @@
 #define OC_DIV2_16(_x) OC_DIV_POW2(_x,16,0xFFFF)
 /*Divides _x by 2, truncating towards 0.*/
 #define OC_DIV2(_x) OC_DIV_POW2(_x,1,0x1)
+/*Divides _x by 8, truncating towards 0.*/
+#define OC_DIV8(_x) OC_DIV_POW2(_x,3,0x7)
 /*Divides _x by 16, truncating towards 0.*/
 #define OC_DIV16(_x) OC_DIV_POW2(_x,4,0xF)
+#define OC_DIV_ROUND_POW2(_dividend,_shift,_rval) \
+ ((_dividend)+((_dividend)>>sizeof(_dividend)*8-1)+(_rval)>>(_shift))
 /*Swaps two integers _a and _b if _a>_b.*/
 #define OC_SORT2I(_a,_b)\
   if((_a)>(_b)){\

@@ -4,6 +4,15 @@
 # define _encint_H (1)
 # include "theora/theora.h"
 # include "internal.h"
+
+typedef struct oc_fragment_enc_info oc_fragment_enc_info;
+typedef struct oc_mb_enc_info       oc_mb_enc_info;
+typedef struct oc_border_enc_info   oc_border_enc_info;
+typedef struct oc_impmap_ctx        oc_impmap_ctx;
+typedef struct oc_mcenc_ctx         oc_mcenc_ctx;
+typedef struct oc_psych_ctx         oc_psych_ctx;
+typedef struct theora_enc_ctx       oc_enc_ctx;
+
 # include "fdct.h"
 # include "huffenc.h"
 # include "enquant.h"
@@ -26,7 +35,7 @@
 #define OC_PACKET_DONE        (INT_MAX)
 
 /*Fragment information specific to encoding.*/
-typedef struct{
+struct oc_fragment_enc_info{
   /*The DCT coefficients for coding the fragment in intra mode.
     These are computed in advance by the psycho-visual model, and then reused
      during mode decision.*/
@@ -40,10 +49,10 @@ typedef struct{
   float           imp_weight;
   /*The actual error encoded by the residual after mode selection.*/
   int             eerror;
-}oc_fragment_enc_info;
+};
 
 /*Macro block information specific to encoding.*/
-typedef struct{
+struct oc_mb_enc_info{
   /*The neighboring macro blocks with motion vectors available for the current
      frame.*/
   int           cneighbors[4];
@@ -67,59 +76,65 @@ typedef struct{
   int           aerror;
   /*Minimum 4V motion estimation error from the analysis stage.*/
   int           aerror4mv;
-}oc_mb_enc_info;
+};
 
-typedef struct oc_impmap_ctx oc_impmap_ctx;
-typedef struct oc_mcenc_ctx  oc_mcenc_ctx;
-typedef struct oc_psych_ctx  oc_psych_ctx;
+struct oc_border_enc_info{
+  ogg_int16_t   **fill_matrix;
+  ogg_int16_t     cs[64];
+  unsigned char   pi[64];
+  int             scale;
+};
 
-typedef struct theora_enc_ctx{
+struct theora_enc_ctx{
   /*Shared encoder/decoder state.*/
-  oc_theora_state       state;
+  oc_theora_state        state;
   /*Whether or not packets are ready to be emitted.
     This takes on negative values while there are remaining header packets to
      be emitted, reaches 0 when the codec is ready for input, and goes to 1
      when a frame has been processed and a data packet is ready.*/
-  int                   packet_state;
+  int                    packet_state;
   /*Buffer in which to assemble packets.*/
-  oggpack_buffer        opb;
+  oggpack_buffer         opb;
   /*Encoder-specific fragment information.*/
-  oc_fragment_enc_info *frinfo;
+  oc_fragment_enc_info  *frinfo;
   /*Encoder-specific macro block information.*/
-  oc_mb_enc_info       *mbinfo;
+  oc_mb_enc_info        *mbinfo;
+  /*Encoder-specific border information.*/
+  oc_border_enc_info     border_info[16];
   /*Minimum psychovisual tolerances for each coefficient in each plane.*/
-  ogg_uint16_t          tol_mins[3][64];
+  ogg_uint16_t           tol_mins[3][64];
   /*Context information used to perform motion estimation.*/
-  oc_mcenc_ctx         *mcenc;
+  oc_mcenc_ctx          *mcenc;
   /*Context information used to generate the importance map.*/
-  oc_impmap_ctx        *impmap;
+  oc_impmap_ctx         *impmap;
   /*Context information used to generate low-level perceptual weightings.*/
-  oc_psych_ctx         *psych;
+  oc_psych_ctx          *psych;
   /*The huffman tables in use.*/
-  theora_huff_code      huff_codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+  theora_huff_code       huff_codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
   /*The scale factor for the current quality setting.*/
-  float                 qscale;
+  float                  qscale;
   /*The quantization parameters in use.*/
-  theora_quant_info     qinfo;
-  /*The quantization tables.*/
-  oc_quant_tables      *enquant_tables[2][3];
-  oc_quant_tables       enqaunt_table_data[2][3];
+  theora_quant_info      qinfo;
+  /*Pointers to the quantization tables in use.*/
+  oc_quant_tables       *enquant_tables[2][3];
+  /*Storage for the actual quantization tables.*/
+  oc_quant_tables        enqaunt_table_data[2][3];
   /*The offset of the first DCT token for each coefficient for each plane.*/
-  int                   dct_token_offs[3][64];
+  int                    dct_token_offs[3][64];
   /*The number of DCT tokens for each coefficient.*/
-  int                   ndct_tokens[64];
+  int                    ndct_tokens[64];
   /*The DCT token lists.*/
-  unsigned char       **dct_tokens;
+  unsigned char        **dct_tokens;
   /*The number of extra bits entries for each coefficient.*/
-  int                   nextra_bits[64];
+  int                    nextra_bits[64];
   /*The offset of the first extra bits entry for each coefficient.*/
-  int                   extra_bits_offs[64];
+  int                     extra_bits_offs[64];
   /*The extra bits associated with DCT tokens.*/
-  ogg_uint16_t        **extra_bits;
-}oc_enc_ctx;
+  ogg_uint16_t         **extra_bits;
+};
 
-void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
- int _stride,int _refi);
+void oc_enc_frag_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
+ ogg_int16_t _dct_vals[64],int _stride,int _refi);
 
 oc_mcenc_ctx *oc_mcenc_alloc(oc_enc_ctx *_enc);
 void oc_mcenc_free(oc_mcenc_ctx *_mcenc);

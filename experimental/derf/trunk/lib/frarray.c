@@ -480,7 +480,6 @@ static void oc_frarray_border_init(oc_fragment_array *_frarray,
   oc_fragment_plane *fplane;
   oc_crop_rect      *crop;
   oc_crop_rect       crop_rects[3];
-  int                nborder_frags;
   int                pli;
   int                y;
   int                x;
@@ -488,8 +487,8 @@ static void oc_frarray_border_init(oc_fragment_array *_frarray,
      all the special cases easily.
     We only ever need to do it once.*/
   /*Loop through the fragments, marking those completely outside the
-     displayable region and counting those that straddle the border.*/
-  nborder_frags=0;
+     displayable region and constructing a border mask for those that straddle
+     the border.*/
   yfrag_end=frag=_frarray->frags;
   for(pli=0;pli<3;pli++){
     fplane=&_frarray->frplanes[pli];
@@ -510,9 +509,11 @@ static void oc_frarray_border_init(oc_fragment_array *_frarray,
       }
     }
     y=0;
-    for(yfrag_end+=fplane->nfrags;frag<yfrag_end;){
+    for(yfrag_end+=fplane->nfrags;frag<yfrag_end;y+=8){
       x=0;
-      for(xfrag_end=frag+fplane->nhfrags;frag<xfrag_end;frag++){
+      for(xfrag_end=frag+fplane->nhfrags;frag<xfrag_end;frag++,x+=8){
+        /*First check to see if this fragment is completely outside the
+           displayable region.*/
         /*Note the special checks for an empty cropping rectangle.
           This guarantees that if we count a fragment as straddling the
            border, at least one pixel in the fragment will be inside the
@@ -521,56 +522,38 @@ static void oc_frarray_border_init(oc_fragment_array *_frarray,
          crop->x0>=crop->xf||crop->y0>=crop->yf){
           frag->invalid=1;
         }
+        /*Otherwise, check to see if it overlaps the border.*/
         else if(x<crop->x0&&crop->x0<x+8||x<crop->xf&&crop->xf<x+8||
          y<crop->y0&&crop->y0<y+8||y<crop->yf&&crop->yf<y+8){
-          nborder_frags++;
-        }
-        x+=8;
-      }
-      y+=8;
-    }
-  }
-  /*If we have no fragments straddling the boundary, there's nothing left to
-     do.*/
-  if(nborder_frags<=0)return;
-  /*Allocate storage for the border fragments.*/
-  _frarray->borders=_ogg_calloc(nborder_frags,sizeof(_frarray->borders[0]));
-  /*Loop through the fragments again, this time filling in the border fragment
-     info.*/
-  nborder_frags=0;
-  yfrag_end=frag=_frarray->frags;
-  for(pli=0;pli<3;pli++){
-    fplane=&_frarray->frplanes[pli];
-    crop=&crop_rects[pli];
-    y=0;
-    for(yfrag_end+=fplane->nfrags;frag<yfrag_end;){
-      x=0;
-      for(xfrag_end=yfrag_end+fplane->nhfrags;frag<xfrag_end;frag++){
-        /*We can skip the checks for an empty crop rectangle here, since we
-           know we have at least one non-empty border fragment.*/
-        if(x+8<=crop->x0||crop->xf<=x||y+8<=crop->y0||crop->yf<=y)continue;
-        else if(x<crop->x0&&crop->x0<x+8||x<crop->xf&&crop->xf<x+8||
-         y<crop->y0&&crop->y0<y+8||y<crop->yf&&crop->yf<y+8){
-          int i;
-          frag->border=&_frarray->borders[nborder_frags++];
+          ogg_int64_t mask;
+          int         npixels;
+          int         i;
+          mask=npixels=0;
           for(i=0;i<8;i++){
             int j;
             for(j=0;j<8;j++){
               if(x+j>=crop->x0&&x+j<crop->xf&&y+i>=crop->y0&&y+i<crop->yf){
-                frag->border->mask|=i<<3|j;
-                frag->border->npixels++;
+                mask|=(ogg_int64_t)1<<(i<<3|j);
+                npixels++;
               }
             }
           }
+          /*Search the fragment array for border info with the same pattern.
+            In general, there will be at most 8 different patterns.*/
+          for(i=0;;i++){
+            if(i>=_frarray->nborders){
+              _frarray->nborders++;
+              _frarray->borders[i].mask=mask;
+              _frarray->borders[i].npixels=npixels;
+            }
+            else if(_frarray->borders[i].mask!=mask)continue;
+            frag->border=_frarray->borders+i;
+            break;
+          }
         }
-        x+=8;
       }
     }
   }
-}
-
-static void oc_frarray_border_clear(oc_fragment_array *_frarray){
-  _ogg_free(_frarray->borders);
 }
 
 
@@ -654,7 +637,6 @@ void oc_frarray_init(oc_fragment_array *_frarray,theora_info *_info){
 }
 
 void oc_frarray_clear(oc_fragment_array *_frarray){
-  oc_frarray_border_clear(_frarray);
   _ogg_free(_frarray->block_coded_flags);
   _ogg_free(_frarray->mbs);
   _ogg_free(_frarray->sbs);

@@ -229,9 +229,11 @@ typedef struct{
     If the data pointers or strides change, these input pointers must be
      re-populated.*/
   oc_yuv_buffer      input;
+  /*The number of unique border patterns.*/
+  int                nborders;
   /*The storage for the border info for all border fragments.
     This data is pointed to from the appropriate fragments.*/
-  oc_border_info    *borders;
+  oc_border_info     borders[16];
 }oc_fragment_array;
 
 

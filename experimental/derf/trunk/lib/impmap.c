@@ -1190,8 +1190,8 @@ static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
     dbic=_bic;
     for(i=0;i<4;i++){
       float var;
-      sumx[i]=oc_seg_sum_region(_seg->local_sumx,_dx+dx[i],_dy+dy[i],size_2,
-       size_2);
+      sumx[i]=oc_seg_sum_region(_seg->local_sumx,_dx+dx[i],_dy+dy[i],
+       size_2,size_2);
       sumx2[i]=oc_seg_sum_region(_seg->local_sumx2,_dx+dx[i],_dy+dy[i],
        size_2,size_2);
       var=(sumx2[i]*area-sumx[i]*sumx[i])/(area*area);
@@ -1258,13 +1258,13 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
     dbic=_bic+model_cost;
     for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
       float var;
-      width[i]=(b&OC_SEG_BORDER_XMASKS[i])?_width-dx[i]:size;
-      height[i]=(b&OC_SEG_BORDER_YMASKS[i])?_height-dy[i]:size;
+      width[i]=(b&OC_SEG_BORDER_XMASKS[i])?_width-dx[i]:size_2;
+      height[i]=(b&OC_SEG_BORDER_YMASKS[i])?_height-dy[i]:size_2;
       area[i]=width[i]*height[i];
-      sumx[i]=oc_seg_sum_region(_seg->local_sumx,_dx+dx[i],_dy+dy[i],size,
-       size);
-      sumx2[i]=oc_seg_sum_region(_seg->local_sumx2,_dx+dx[i],_dy+dy[i],size,
-       size);
+      sumx[i]=oc_seg_sum_region(_seg->local_sumx,_dx+dx[i],_dy+dy[i],
+       width[i],height[i]);
+      sumx2[i]=oc_seg_sum_region(_seg->local_sumx2,_dx+dx[i],_dy+dy[i],
+       width[i],height[i]);
       var=(sumx2[i]*area[i]-sumx[i]*sumx[i])/(area[i]*area[i]);
       bic[i]=var>0?area[i]*OC_LOGF(var):0;
       dbic-=bic[i]+model_cost;
@@ -1504,8 +1504,10 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
     area[i]=width[i]*height[i];
     twidth=width[i]+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
     theight=height[i]+OC_SEG_MOMENT_RES-1>>OC_SEG_MOMENT_RES_LOG;
-    sumx[i]=oc_seg_sum_region(_seg->sumx,tx+tdx[i],ty+tdy[i],twidth,theight);
-    sumx2[i]=oc_seg_sum_region(_seg->sumx2,tx+tdx[i],ty+tdy[i],twidth,theight);
+    sumx[i]=oc_seg_sum_region(_seg->sumx,tx+tdx[i],ty+tdy[i],
+     twidth,theight);
+    sumx2[i]=oc_seg_sum_region(_seg->sumx2,tx+tdx[i],ty+tdy[i],
+     twidth,theight);
     var=(sumx2[i]-sumx[i]*sumx[i]/area[i])/area[i];
     bic[i]=var>0?area[i]*OC_LOGF(var):0;
     dbic-=bic[i]+model_cost;
