@@ -14,60 +14,38 @@
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-import MP3Info
+from types import *
+import os
 from os import path
+import string
 
-def copy_file (src_filename, dest_filename):
-    blocksize = 1048576
-    src = file(src_filename, "rb")
-    dest = file(dest_filename, "wb")
+import MP3Info
 
-    block = src.read(blocksize)
-    while block != "":
-        dest.write(block)
-        block = src.read(blocksize)
+def detect(filename):
+    metadata = None
 
-    src.close()
-    dest.close()
+    for detect_func in detect_functions:
+        metadata = detect_func(filename)
+        if metadata != None:
+            break
+    else:
+        metadata = None
 
+    if metadata != None and metadata["title"] == None:
+        # Must have title
+        metadata["title"] = path.split(filename)[1]
 
-class AudioFile:
-    """Base class for various formats.  Defines common operatons and API.
+    return metadata
 
-    Do not instantiate this class.  It will not do what you want."""
-    
-    active = False
-
-    def detect(self, filename):
-        self._fail("detect")
-
-    def get_info(self, filename):
-        self._fail("open")
-
-    def _fail(self, funcname):
-        raise Error("Someone forgot to implement %s.%s()."
-                    % (self.__class__.__name__, funcname))
-
-class MP3File(AudioFile):
-    def detect(self, filename):
-        try:
-            f = file(filename, "rb")
-            m = MP3Info.MP3Info(f)
-        except MP3Info.Error:
-            f.close()
-            return False
-        except IOError:
-            return False
-        
-        return True
-
-    def get_info(self, filename):
+def detect_mp3(filename):
+    try:
         f = file(filename, "rb")
 
         mp3info = MP3Info.MP3Info(f)
 
         header = mp3info.mpeg
-        info = { "size" : header.filesize,
+        info = { "type" : "mp3",
+                 "size" : header.filesize,
                  "length" : header.length,
                  "title" : mp3info.title,
                  "artist" : mp3info.artist,
@@ -79,10 +57,64 @@ class MP3File(AudioFile):
             if info[key] == "":
                 info[key] = None
 
-        # Must have title
-        if info["title"] == None:
-            info["title"] = path.split(filename)[1]
-
         f.close()
+
+    except MP3Info.Error:
+        f.close()
+        return None
+    except IOError:
+        return None
+    except OSError:
+        return None            
+
+    return info
+
+def detect_oggvorbis(filename):
+    try:
+        vf = ogg.vorbis.VorbisFile(filename)
+        vc = vf.comment()
+        vi = vf.info()        
+
+        info = { "type" : "oggvorbis",
+                 "size" : os.stat(filename).st_size,
+                 "length" : int(vf.time_total(-1)),
+                 "title" : None,
+                 "artist" : None,
+                 "album" : None,
+                 "genre" : None }
+
+        actual_keys = map(string.lower, vc.keys())
         
-        return info
+        for tag in ("title","artist","album","genre"):
+            if tag in actual_keys:
+                value = vc[tag]
+                # Force these to be single valued
+                if type(value) == ListType or type(value) == TupleType:
+                    value = value[0]
+
+                # Convert from Unicode back to normal string since
+                # the Neuros can't do Unicode anyway.
+                #
+                # I will probably burn in i18n hell for this.
+                info[tag] = str(value)
+
+    except ogg.vorbis.VorbisError:
+        return None
+    except IOError:
+        return None
+    except OSError:
+        return None
+
+    return info
+
+
+# Only put the ogg vorbis detection code in the list if
+# we have the python module needed.
+
+detect_functions = [detect_mp3]
+
+try:
+     import ogg.vorbis
+     detect_functions.append(detect_oggvorbis)
+except ImportError:
+    pass

@@ -18,13 +18,13 @@
 
 import os
 from os import path
-from audiofile import MP3File
+import audiofile
 from neuros import Neuros
 import util
 
-mp3file = MP3File()
 
-def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
+def gen_filelist(neuros, prefix, suffix, target_prefix,
+                 allowed_types, silent=False):
     filelist = []
     fullname = path.join(prefix, suffix)
 
@@ -37,13 +37,14 @@ def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
         fullname = path.join(prefix, name)
         
         if path.isfile(fullname):
-            if not mp3file.detect(fullname):
+            metadata = audiofile.detect(fullname)
+            if metadata == None or metadata["type"] not in allowed_types:
                 if not silent:
-                    print "Skipping %s.  Not a recognized audio format." \
+                    print "Skipping %s.  Not a supported audio format." \
                           % (fullname,)
             elif neuros.is_valid_hostpath(fullname):
                 # Don't need to copy files already on the Neuros
-                filelist.append((None, fullname))
+                filelist.append((None, fullname, metadata))
             else:
                 targetname = neuros.mangle_hostpath(path.join(target_prefix,
                                                               name))
@@ -52,11 +53,11 @@ def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
                         print "Skipping %s because %s already exists." \
                               % (fullname, targetname)
                 else:
-                    filelist.append((fullname, targetname))
+                    filelist.append((fullname, targetname, metadata))
                     
         elif path.isdir(fullname):
             filelist.extend(gen_filelist(neuros, prefix, name, target_prefix,
-                                         silent))
+                                         allowed_types, silent))
         else:
             if not silent:
                 print "Ignoring %s.  Not a file or directory." % (fullname)
@@ -64,19 +65,14 @@ def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
     return filelist
 
 
-def add_track(neuros, sourcename, targetname, recording=None):
-
-    if sourcename == None:
-        # File already on Neuros
-        info = mp3file.get_info(targetname)
-    else:
-        # File needs to be copied to Neuros
-        info = mp3file.get_info(sourcename)
+def add_track(neuros, sourcename, targetname, metadata, recording=None):
+    if sourcename != None:
         util.copy_file(sourcename, targetname)
 
     # Create DB entry
-    record = (info["title"], None, info["artist"], info["album"],
-              info["genre"], recording, info["length"], info["size"] // 1024,
+    record = (metadata["title"], None, metadata["artist"], metadata["album"],
+              metadata["genre"], recording, metadata["length"],
+              metadata["size"] // 1024,
               neuros.hostpath_to_neurospath(targetname))
     # Add entry to database
     neuros.db["audio"].add_record(record)

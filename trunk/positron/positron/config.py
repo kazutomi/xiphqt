@@ -72,6 +72,7 @@ class Config:
         self.recordingdir = None
         self.neuros_musicdir = "MUSIC"
         self.sort_database = True
+        self.oggvorbis_support = False
         self.syncdirs = []
 
     def set_config_dir(self, config_dir):
@@ -96,6 +97,17 @@ class Config:
             self.clear_deleted()
         if not path.exists(self.config_filenames["recordings"]):
             self.clear_recordings()
+
+    def supported_music_types(self):
+        """Convenience method for getting the list of music types enabled
+        in the config file"""
+
+        types = ["mp3"]
+
+        if self.oggvorbis_support:
+            types.append("oggvorbis")
+
+        return types
 
     # --------- Config file methods ---------
 
@@ -193,6 +205,13 @@ class Config:
                         raise Error(tokenizer.error_leader()
                                     +"Non boolean value '%s' given for %s",
                                     (value, key))
+                elif key == "oggvorbis_support":
+                    try:
+                        self.oggvorbis_support = parse_boolean(value)
+                    except Error:
+                        raise Error(tokenizer.error_leader()
+                                    +"Non boolean value '%s' given for %s",
+                                    (value, key))
                 else:
                     print tokenizer.error_leader() \
                           + "Ignoring unknown option %s" % (key,)
@@ -218,9 +237,14 @@ class Config:
         if self.sort_database:
             sort_database_value = "true"
         else:
-            sort_database_value = "false"
-            
+            sort_database_value = "false"            
         f.write("sort_database=%s\n" % (sort_database_value,))
+
+        if self.oggvorbis_support:
+            oggvorbis_support_value = "true"
+        else:
+            oggvorbis_support_value = "false"
+        f.write("oggvorbis_support=%s\n" % (oggvorbis_support_value,))
 
         for (src,dest) in self.syncdirs:
             f.write("\nbegin sync\n")

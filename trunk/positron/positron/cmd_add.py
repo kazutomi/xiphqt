@@ -82,21 +82,22 @@ def run(config, neuros, args):
         print "Generating file list..."
         for arg in args[:-1]:
             (prefix, suffix) = path.split(arg)
-            filelist.extend(gen_filelist(neuros, prefix, suffix, args[-1]))
+            filelist.extend(gen_filelist(neuros, prefix, suffix, args[-1],
+                                         config.supported_music_types()))
             
 
     if len(filelist) == 0:
         print "No files left to add!"
     elif len(filelist) == 1:
-        (sourcename, targetname) = filelist[0]
+        (sourcename, targetname, metadata) = filelist[0]
         print "Adding %s to the Neuros..." % (sourcename,),
-        add_track(neuros, sourcename, targetname)
+        add_track(neuros, sourcename, targetname, metadata)
         print
     else:
         print "Adding %d tracks to the Neuros..." % (len(filelist),)
-        for (sourcename, targetname) in filelist:
+        for sourcename, targetname, metadata in filelist:
             print "  %s..." % (sourcename,)
-            add_track(neuros, sourcename, targetname)
+            add_track(neuros, sourcename, targetname, metadata)
 
     if config.sort_database:
         print "\nSorting tracks..."

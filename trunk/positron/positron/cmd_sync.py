@@ -89,6 +89,7 @@ def run(config, neuros, args):
             
             for item in os.listdir(source):
                 filelist.extend(gen_filelist(neuros, source, item, targetdir,
+                                             config.supported_music_types(),
                                              silent=True))
 
         # Cut explicitly deleted files
@@ -122,10 +123,10 @@ def run(config, neuros, args):
             else:
                 print "Copying %d new tracks."% (len(filelist),)
                 
-            for (sourcename, targetname) in filelist:
+            for sourcename, targetname, metadata in filelist:
                 basename = path.basename(sourcename)
                 print "    %s..." % (basename,)
-                add_track(neuros, sourcename, targetname)
+                add_track(neuros, sourcename, targetname, metadata)
 
 
     if config.recordingdir == None:
