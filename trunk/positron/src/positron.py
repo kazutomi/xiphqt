@@ -12,6 +12,7 @@ def usage():
 def cmd_sync(econtrol, args):
     pass
 
+def cmd_add(econtrol
 
 def main(argv):
     options = "c:i:hv"
