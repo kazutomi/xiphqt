@@ -6,14 +6,13 @@ require "$libdir/xpm";
 
 package MGM::Bar;
 use vars qw($font);
-@ISA=("Tk::Canvas");
 
 $font=MGM::Font::new(MGM::Xpm::read($main::fontfile));
 
 sub drawborder{
     my($w,$width,$height,$relief,$dim,$lit)=@_;
     $z=0;
-
+    
     if($relief eq 'sunken' ||
        $relief eq 'groove'){
 	$w->createLine($width-1,0, 0,0, 0,$height-1, -capstyle=>'projecting',
@@ -36,31 +35,38 @@ sub drawborder{
     }
 }
 
-sub new{
-    my ($p,$width,$height,$num)=@_;
+sub place{
+    my$this=shift;
+    $this->{"below"}->place(@_);
+    $this;
+}
 
+sub new{
+    my ($ref,$p,$width,$height,$num)=@_;
+    
     $orient=$main::orient;
 
     # we're not as flat as we like to think 
-    my $below=$p->Canvas(Name=>"$num");
-    my$above=$below->{"above"}=$below->Canvas()->place(-relx=>0,-rely=>0,
-					      -anchor=>'nw', 
-					      -bordermode=>'outside');
-    bless $below;
-
+    my$this=bless {};
+    
+    my$below=$this->{"below"}=$p->Canvas(Name=>"$num");
+    my$above=$this->{"above"}=$below->Canvas()->place(-relx=>0,-rely=>0,
+						      -anchor=>'nw', 
+						      -bordermode=>'outside');
+    
     # we configure the color and label via a configurable X resource;
     # it's cleaner than setting up a system that alters a single X resource
 
-    $below->{"aforeXr"}='litforeground';
-    $below->{"abackXr"}='litbackground';
-    $below->{"labelXr"}='label';
+    $this->{"aforeXr"}='litforeground';
+    $this->{"abackXr"}='litbackground';
+    $this->{"labelXr"}='label';
 
-    $below->{"width"}=$width;
-    $below->{"height"}=$height;
-    $below->{"num"}=$num;
+    $this->{"width"}=$width;
+    $this->{"height"}=$height;
+    $this->{"num"}=$num;
 
-    $below->drawit;
-    $below;
+    $this->drawit;
+    $this;
 }
 
 sub configure{
@@ -73,28 +79,30 @@ sub configure{
 	$this->{"$arg"}=$val;
     }
 
-    $this->delete('xpmlabel');
+    $this->{'below'}->delete('xpmlabel');
     $this->{'above'}->delete('xpmlabel');
-
+    
     $this->drawit;
 }
 
 sub drawit{
-    my$below=shift;
+    my$this=shift;
+    my$below=$this->{'below'};
+    my$above=$this->{'above'};
 
     $orient=$main::orient;
 
-    my$width=$below->{"width"};
-    my$height=$below->{"height"};
-    my$num=$below->{"num"};
+    my$width=$this->{"width"};
+    my$height=$this->{"height"};
+    my$num=$this->{"num"};
 
     my $pad=$below->optionGet("textpad","");
     my $relief=$below->optionGet('dimrelief','');
     my $arelief=$below->optionGet('litrelief','');
 
-    my $afore=$below->optionGet($below->{"aforeXr"},'');
-    my $aback=$below->optionGet($below->{"abackXr"},'');
-    my $label=$below->optionGet($below->{"labelXr"},'');
+    my $afore=$below->optionGet($this->{"aforeXr"},'');
+    my $aback=$below->optionGet($this->{"abackXr"},'');
+    my $label=$below->optionGet($this->{"labelXr"},'');
 
     my $fore=$below->optionGet('dimforeground','');
     my $back=$below->optionGet('dimbackground','');
@@ -115,8 +123,8 @@ sub drawit{
     $g/=256;
     $b/=256;
     my$lum=$r*.3+$g*.5+$b*.2;
-    $below->{"dimdim"}=sprintf "#%02x%02x%02x", $r*.5,$g*.5,$b*.5;
-    $below->{"dimlit"}=sprintf "#%02x%02x%02x", 
+    my$dimdim=sprintf "#%02x%02x%02x", $r*.5,$g*.5,$b*.5;
+    my$dimlit=sprintf "#%02x%02x%02x", 
           &main::min($r+$lum*.7,255),&main::min($g+$lum*.7,255),
           &main::min($b+$lum*.7,255);
 
@@ -129,28 +137,27 @@ sub drawit{
 	my$littext=$below->Pixmap($below->PathName.".littext",
 				  -data=>$text->write($afore,$aback,32));
 
-	$below->{"barlength"}=$height;
-	$below->{"litrelief"}=$arelief;
-	$below->{"cfborder"}=$aborder;
+	$this->{"barlength"}=$height;
+	$this->{"litrelief"}=$arelief;
+	$this->{"cfborder"}=$aborder;
 
-	$below->SUPER::configure(-borderwidth=>$aborder,
+	$below->configure(-borderwidth=>$aborder,
 			  -background=>$aback,
 			  highlightthickness=>0,
 			  width=>($width-$aborder*2),
 			  height=>($height-$aborder*2),
 			  relief=>$arelief);
 	
-	my$above=$below->{'above'};
-	$above->SUPER::configure(-borderwidth=>0,
-				 -background=>$back,
-				 highlightthickness=>0,
-				 width=>$width,
-				 height=>$height,
-				 relief=>'flat');
-
-	$below->{"reliefhack"}->destroy if(defined($below->{"reliefhack"}));
+	$above->configure(-borderwidth=>0,
+			  -background=>$back,
+			  highlightthickness=>0,
+			  width=>$width,
+			  height=>$height,
+			  relief=>'flat');
+	
+	$this->{"reliefhack"}->destroy if(defined($this->{"reliefhack"}));
 	if($aborder){
-	    $below->{"reliefhack"}=$above->
+	    $this->{"reliefhack"}=$above->
 		Label(-borderwidth=>$aborder,
 		      -background=>$aback,
 		      highlightthickness=>0,
@@ -167,8 +174,7 @@ sub drawit{
 			    -tags=>['xpmlabel']);
 	$above->createImage($pad,$height-$pad,-image=>$unlittext,
 			    -anchor=>'sw',-tags=>['xpmlabel']);
-	&drawborder($above,$width,$height,$relief,
-		    $below->{"dimdim"},$below->{"dimlit"});
+	&drawborder($above,$width,$height,$relief,$dimdim,$dimlit);
 	
     }else{
 	my$text=$font->maketext($label,$height-($pad*2),$width-($pad*2),
@@ -178,34 +184,31 @@ sub drawit{
 	my$littext=$below->Pixmap($below->PathName.".littext",
 				  -data=>$text->write($afore,$aback,32));
 
-	$below->{"barlength"}=$width;
-	$below->{"cfborder"}=$aborder;
-	$below->SUPER::configure(-borderwidth=>0,
-				 -background=>$back,
-				 highlightthickness=>0,
-				 width=>$width,
-				 height=>$height-$border*2,
-				 relief=>'flat');
+	$this->{"barlength"}=$width;
+	$this->{"cfborder"}=$aborder;
+	$below->configure(-borderwidth=>0,
+			  -background=>$back,
+			  highlightthickness=>0,
+			  width=>$width,
+			  height=>$height-$border*2,
+			  relief=>'flat');
 	
-	my$above=$below->{'above'};
-	$above->SUPER::configure(-borderwidth=>$aborder,
-				 -background=>$aback,
-				 highlightthickness=>0,
-				 width=>($width-2*$aborder),
-				 height=>($height-2*$aborder),
-				 relief=>$arelief);
+	$above->configure(-borderwidth=>$aborder,
+			  -background=>$aback,
+			  highlightthickness=>0,
+			  width=>($width-2*$aborder),
+			  height=>($height-2*$aborder),
+			  relief=>$arelief);
 	
 	$above->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
 			    -tags=>['xpmlabel']);
 	$below->createImage($pad,$height-$pad,-image=>$unlittext,
 			    -anchor=>'sw',-tags=>['xpmlabel']);
-	&drawborder($below,$width,$height,$relief,
-		    $below->{"dimdim"},$below->{"dimlit"});
+	&drawborder($below,$width,$height,$relief,$dimdim,$dimlit);
 	
     }
 
-    $below->{'setting'}=-1;
-    $below;
+    $this;
 }
 
 sub set{
@@ -214,17 +217,16 @@ sub set{
     my $orient=$main::orient;
     if($orient eq 'vertical'){
 	$bar->{'above'}->
-	  SUPER::configure('-height'=>($bar->{"barlength"}-
-				       $per+$bar->{"cfborder"}));
+	    configure('-height'=>($bar->{"barlength"}-
+				  $per+$bar->{"cfborder"}));
     }else{
 	my $border=$bar->{"cfborder"};
 	$bar->{'above'}->
-	  SUPER::configure('-width'=>($per-2*$bar->{"cfborder"}));
+	    configure('-width'=>($per-2*$bar->{"cfborder"}));
     }
 }
 
 package MGM::Graph;
-@ISA=("Tk::Canvas");
 use vars qw(%numbers %prompts);
 
 # all the labels are the same size/color, but we have to do this after the toplevel is created so we have the size/color resources
@@ -353,26 +355,23 @@ sub promptlabel{
 sub new{
     my$class=shift;
     my$p=shift;
+    my$toplevel=$p->{"toplevel"};
 
-    my %graph = ( 'width'=> $p->{"width"},
+    my$ret=bless {( 'width'=> $p->{"width"},
 		  'height'=> $p->{"height"},
 		  'name' => $p->{"name"},
 		  'rangesetting'=>1,
 		  'rangecurrent'=>1,
 		  'minscale'=>1,
 		  'num' => '1',
-		  'fixed' => '0');
-
-    my $ret=\%graph;
-    bless $ret, 'MGM::Graph';
-    $graph{"parent"}=$p->{"toplevel"};
-    $graph{"scaletimer"}=0;
-    $graph{"scalemax"}=0;
+		  'fixed' => '0')};
+    $ret->{"scaletimer"}=0;
+    $ret->{"scalemax"}=0;
 
     $ret->_configure(@_);
 
-    $widget=$ret->{"widget"}=
-	$ret->{"parent"}->Canvas(-class=>$ret->{"name"},
+    my$widget=$ret->{"widget"}=
+	$toplevel->Canvas(-class=>$ret->{"name"},
 				 Name=>$p->{"sequence"});
 
     $ret->{"scalep"}=($widget->optionGet("scale","") eq 'true');
@@ -380,7 +379,7 @@ sub new{
     $ret->{"scalereturn"}=$widget->optionGet("scalereturn","");
     $ret->{"scalethresh"}=$widget->optionGet("scalethresh","");
     $ret->drawit;
-    $graph{"meter"}=[(map{-1}(1..$ret->{"num"}))];
+    $ret->{"meter"}=[(map{-1}(1..$ret->{"num"}))];
     $ret;
 }
 
@@ -465,11 +464,10 @@ sub drawit{
 	$barwidth=int($barwidth);
 	my$x=0;
 	for(my$i=0;$i<$num;$i++){
-	    $this->{$i}=$frame->
-	      MGM::Bar::new($barwidth-1,
-			    $height,
-			    $i)->place('-x'=>$x,'-y'=>0,
-				       '-anchor'=>'nw');
+	    $this->{$i}=MGM::Bar->new($frame,$barwidth-1,
+				      $height,
+				      $i)->place('-x'=>$x,'-y'=>0,
+						 '-anchor'=>'nw');
 	    $x+=$barwidth;
 	}
     }else{
@@ -490,11 +488,10 @@ sub drawit{
 	$barwidth=int($barwidth);
 	my$y=0;
 	for(my$i=0;$i<$num;$i++){
-	    $this->{$i}=$frame->
-	      MGM::Bar::new($width,
-			    $barwidth-1,
-			    $i)->place('-x'=>0,'-y'=>$y,
-				       -anchor=>'nw');
+	    $this->{$i}=MGM::Bar->new($frame,$width,
+				      $barwidth-1,
+				      $i)->place('-x'=>0,'-y'=>$y,
+						 -anchor=>'nw');
 	    $y+=$barwidth;
 	}
     }

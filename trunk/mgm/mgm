@@ -7,6 +7,7 @@ use strict;
 use vars qw($basedir $moddir $libdir $fontfile $toplevel
 	    $orient $stack $background $foreground);
 
+
 $0="moaning-goat-meter"; # OK, this is evil.
 
 $basedir="/home/xiphmont/SnotfishCVS/mgm";
@@ -17,9 +18,11 @@ $fontfile="$libdir/helvetica2.xpm";
 $|=1;
 
 $toplevel=new MainWindow();
+
 my%modules;
 my%instances;
 my@ordered;
+
 my$Xname=$toplevel->Class;
 require "$libdir/widget";
 require "$libdir/sched";
@@ -57,8 +60,8 @@ $toplevel->optionAdd("$Xname*scalerefresh",          '1000',20);
 $toplevel->optionAdd("$Xname*scalereturn",           '8',20);  # 2 seconds
 
 
-$toplevel->optionAdd("$Xname*bar*dimbackground",'#313656',20);
-$toplevel->optionAdd("$Xname*bar*litbackground",'#74ade7',20);
+$toplevel->optionAdd("$Xname*dimbackground",'#313656',20);
+$toplevel->optionAdd("$Xname*litbackground",'#74ade7',20);
 $toplevel->optionAdd("$Xname*bar*dimrelief",    'flat',20);
 $toplevel->optionAdd("$Xname*bar*litrelief",    'raised',20);
 
@@ -91,11 +94,7 @@ $toplevel->configure('-background'=>"$background",'-foreground'
 #               3) draw modules, place and run
 
 &LoadModules($moddir,"share"); # module references
-my$platform=`uname`;
-chop($platform);       
-&LoadModules($moddir,$platform); # module references
-
-
+&LoadModules($moddir,"$");   # platform specificmodule references
 
 &order_modules;        # extract how many to build
 &instance_modules;     # make copies of the references and build
@@ -231,11 +230,14 @@ sub order_modules{
     my$count=0;
     foreach my $key (sort (keys %modules)){
 	# each order entry may have more than one location
-	my$opt=&moption($modules{$key},'order');
-	my@l=split ',', $opt;
-	foreach my $loc (@l){
-	    $instances{"$loc $count"}=$modules{$key};
-	    $count++;
+	my$act=&moption($modules{$key},'active');
+	if($act eq 'true'){
+	    my$opt=&moption($modules{$key},'order');
+	    my@l=split ',', $opt;
+	    foreach my $loc (@l){
+		$instances{"$loc $count"}=$modules{$key};
+		$count++;
+	    }
 	}
     }
     
@@ -412,6 +414,7 @@ sub build_and_run{
 		$mod->{"height"}=$height;
 		$mod->{"sequence"}=$i;
 		my$ret=eval{$mod->module_run};
+
 		if(!defined($ret)){
 		    print STDERR "Error eval()ing ->module_run for ".
 			($mod->{"name"}).": $@\n";
@@ -422,6 +425,7 @@ sub build_and_run{
 		    $ret->repeat($refresh,sub{$mod->module_update})
 #		    &MGM::schedule::perm_schedule($mod,$refresh)
 			if($refresh && ref($mod)->can('module_update'));
+
 		}
 	    }
 	}
@@ -429,9 +433,10 @@ sub build_and_run{
     }
 }
 
+my $leakcheck;
 sub resize{
     my($toplevel,$width,$height)=@_;
-
+    
     if($width!=$actualx || $height!=$actualy){
 
 	# set size;
@@ -440,6 +445,7 @@ sub resize{
 
 	#create a new crop
 	&build_and_run;
+
     }
 }
 
