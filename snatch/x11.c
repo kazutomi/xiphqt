@@ -532,7 +532,6 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	bigtime(&a,&b);
 	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,image->width,
 		    image->height,n);
-	gwrite(outfile_fd,cbuf,len);
 	
 	if(worksize<n){
 	  if(worksize==0)
@@ -567,7 +566,10 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	  }
 	}
 	  	  
+	pthread_mutex_lock(&output_mutex);
+	gwrite(outfile_fd,cbuf,len);
 	gwrite(outfile_fd,workbuffer,n);
+	pthread_mutex_unlock(&output_mutex);
 
       }
     }else{
@@ -758,9 +760,9 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	int i,j,len;
 	
 	bigtime(&a,&b);
+
 	len=sprintf(cbuf,"VIDEO %ld %ld %d %d %ld:",a,b,image->width,
 		    image->height,n);
-	gwrite(outfile_fd,cbuf,len);
 	
 	if(worksize<n){
 	  if(worksize==0)
@@ -794,7 +796,11 @@ int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	    ptr+=image->bytes_per_line;
 	  }
 	}
+
+	pthread_mutex_lock(&output_mutex);
+	gwrite(outfile_fd,cbuf,len);
 	gwrite(outfile_fd,workbuffer,n);
+	pthread_mutex_unlock(&output_mutex);
 
       }
     }else{
