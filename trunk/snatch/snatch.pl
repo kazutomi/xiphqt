@@ -329,11 +329,16 @@ Tk::MainLoop();
 sub trim_glob{
     # the bsd glob routine deals poorly with some whitespace...
     my$pattern=shift;
+    if($pattern ne '-'){
 
-    $pattern=~s/^(\s+).*//;
-    $pattern=~s/(\s+)$//;
-    
-    bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE);
+	$pattern=~s/^(\s+).*//;
+	$pattern=~s/(\s+)$//;
+	
+	my@result=bsd_glob($pattern,GLOB_TILDE|GLOB_BRACE);
+	$result[0];
+    }else{
+	'-';
+    }
 }
 
 sub ThrowRealPlayer{
@@ -341,9 +346,9 @@ sub ThrowRealPlayer{
 
     Status("Starting RealPlayer...");
     # set up the environment
-    my@list=trim_glob("$CONFIG{'LIBSNATCH'}");
+    my$glob=trim_glob("$CONFIG{'LIBSNATCH'}");
 
-    if(GLOB_ERROR || $#list<0){
+    if(GLOB_ERROR || !defined($glob)){
 	Status("Failed to find libsnatch.so!");
 	Alert("Failed to find libsnatch.so!",
 	      "Please verify that libsnatch.so is built,".
@@ -353,11 +358,11 @@ sub ThrowRealPlayer{
     }
     
     $ENV{"SNATCH_DEBUG"}=1;
-    $ENV{"LD_PRELOAD"}=@list[0];
+    $ENV{"LD_PRELOAD"}=$glob;
     $ENV{"SNATCH_COMM_SOCKET"}=$backchannel_socket;
 
-    @list=trim_glob("$CONFIG{'REALPLAYER'}");
-    if(GLOB_ERROR || $#list<0){
+    $glob=trim_glob("$CONFIG{'REALPLAYER'}");
+    if(GLOB_ERROR || !defined($glob)){
 	Status("Failed to find RealPlayer!");
 	Alert("Failed to find RealPlayer!",
 	      "Please verify that RealPlayer is installed,".
@@ -367,7 +372,7 @@ sub ThrowRealPlayer{
     }
 
     die "pipe call failed unexpectedly: $!" unless pipe REAL_STDERR,WRITEH;
-    $realpid=open3("STDIN",">&STDOUT",">&WRITEH",@list[0]);
+    $realpid=open3("STDIN",">&STDOUT",">&WRITEH",$glob);
     close WRITEH;
 
     # a select loop until we have the socket accepted
@@ -432,7 +437,7 @@ sub ThrowRealPlayer{
     Robot_Active() if($mode eq 'active');
     Robot_Timer() if($mode eq 'timer');
     Robot_Inactive() if($mode eq 'inactive');
-    TestOutpath();
+    TestOutpath($CONFIG{OUTPUT_PATH});
 
 }
 
@@ -917,11 +922,6 @@ sub ButtonConfig{
 
 sub Setup{
     %TEMPCONF=%CONFIG;
-    my$tempstdout;
-    if($CONFIG{'OUTPUT_PATH'} eq '-'){
-	$tempstdout='yes';
-	$TEMPCONF{'OUTPUT_PATH'}=`pwd`;
-    }
 
     $window_setupbar->configure(-state=>'disabled');
     $window_setupbar->configure(-relief=>'flat');
@@ -1001,30 +1001,13 @@ sub Setup{
     $temp=$setup_shell->
 	Label(text=>"capture output:")->
 	    place(-x=>5,-y=>$nexty);
-    if($tempstdout eq 'yes'){
-	$setup_stdout=$setup_shell->
-	    Button(text=>"stdout",-relief=>'sunken',-pady=>1)->
-		place(-x=>$temp->reqwidth()+5,-y=>$nexty,
-		      -height=>$temp->reqheight());
-	$setup_path=$setup_shell->
-	    Entry(-textvariable=>\$TEMPCONF{'OUTPUT_PATH'},-width=>256,
-		  -state=>disabled,relief=>groove)->
-		      place(-x=>$temp->reqwidth()+10+$setup_stdout->reqwidth(),
-			    -y=>$nexty,-height=>$temp->reqheight(),
-			    -width=>-$setup_stdout->reqwidth()-$temp->reqwidth()-18,
-			    -relwidth=>1.0);
-    }else{
-	$setup_stdout=$setup_shell->
-	    Button(text=>"stdout",-pady=>1)->
-		place(-x=>$temp->reqwidth()+5,-y=>$nexty,
-		      -height=>$temp->reqheight());
-	$setup_path=$setup_shell->
-	    Entry(-textvariable=>\$TEMPCONF{'OUTPUT_PATH'},-width=>256)->
-		      place(-x=>$temp->reqwidth()+10+$setup_stdout->reqwidth(),
-			    -y=>$nexty,-height=>$temp->reqheight(),
-			    -width=>-$setup_stdout->reqwidth()-$temp->reqwidth()-18,
-			    -relwidth=>1.0);
-    }
+
+    $setup_path=$setup_shell->
+	Entry(-textvariable=>\$TEMPCONF{'OUTPUT_PATH'},-width=>256)->
+	    place(-x=>$temp->reqwidth()+10,
+		  -y=>$nexty,-height=>$temp->reqheight(),
+		  -width=>-$temp->reqwidth()-18,
+		  -relwidth=>1.0);
 
     $nexty+=15+$temp->reqheight();
 
@@ -1036,25 +1019,30 @@ sub Setup{
     $setup->geometry(($minwidth+20)."x".$minheight);
 
     $setup_quit->configure(-command=>[sub{
-	$TEMPCONF{"OUTPUT_PATH"}='-' if($tempstdout eq 'yes');
-	$setup->destroy();undef $setup;%CONFIG=%TEMPCONF;
-	$window_setupbar->configure(state=>'normal');
-	$window_setupbar->configure(relief=>'raised');
-	SaveConfig();
-	
-	ThrowRealPlayer() if(!$comm_ready);
-	Status("Configuration successful");
-	TestOutpath();
+	my $temppath=$TEMPCONF{"OUTPUT_PATH"};
+	if(TestOutpath($temppath,$setup)){
+	    $setup->destroy();undef $setup;%CONFIG=%TEMPCONF;
+	    $CONFIG{OUTPUT_PATH}=trim_glob($temppath);
+	    $window_setupbar->configure(state=>'normal');
+	    $window_setupbar->configure(relief=>'raised');
+	    SaveConfig();
+	    
+	    ThrowRealPlayer() if(!$comm_ready);
+	    Status("Configuration successful");
+	}
     }]);
 
     $setup_apply->configure(-command=>[sub{
-	$TEMPCONF{"OUTPUT_PATH"}='-' if($tempstdout eq 'yes');
-	%CONFIG=%TEMPCONF;
-	SaveConfig();
+	my $temppath=$TEMPCONF{"OUTPUT_PATH"};
 	
-	ThrowRealPlayer() if(!$comm_ready);
-	Status("Configuration successful");
-	TestOutpath($setup);
+	if(TestOutpath($temppath,$setup)){
+	    %CONFIG=%TEMPCONF;
+	    $CONFIG{OUTPUT_PATH}=trim_glob($temppath);
+	    SaveConfig();
+	    
+	    ThrowRealPlayer() if(!$comm_ready);
+	    Status("Configuration successful");
+	}
     }]);
     
     $setup_cancel->configure(-command=>[sub{
@@ -1063,30 +1051,32 @@ sub Setup{
 	$window_setupbar->configure(relief=>'raised');
     }]);
 
-    $setup_stdout->configure(-command=>[sub{Setup_Stdout();}]);
-
 }
 
-sub TestOutpath(){
+sub TestOutpath{
+    my $path=shift;
     my $window=shift;
-    if($CONFIG{OUTPUT_PATH} ne '-'){
-	if(!-W $CONFIG{OUTPUT_PATH}){
+    
+    if($path ne '-'){
+	$path=trim_glob($path);
+	if(!-W $path){
 	    # in the event this is a file spec in a writable directory, try touching it
-	    if(open TEST,">$CONFIG{OUTPUT_PATH}"){
+	    if(open TEST,">$path"){
 		# oh, ok...
 		close(TEST);
-		unlink($CONFIG{OUTPUT_PATH});
-		return;
+		unlink($path);
+		return 1;
 	    }
 
-	    Status("Bad output path");
+	    Status("Bad output path") if($window==$toplevel);
 	    Alert("Selected output path isn't writable!",
 		  "The output path currently set on the configuration panel either does not exist,".
 		  " or is inaccessible due to permissions.  Please set a usable path else ".
 		  "recording will fail.\n",$window);
-	    return;
+	    return 0;
 	}
     }
+    1;
 }
 
 sub Setup_Debug{
@@ -1098,21 +1088,6 @@ sub Setup_Debug{
 	$setup_debug->configure(-relief=>sunken);
     }
 }    
-
-sub Setup_Stdout{
-    if($tempstdout eq 'yes'){
-	$tempstdout='no';
-	$setup_path->configure(-state=>normal);
-	$setup_path->configure(-relief=>sunken);
-	$setup_stdout->configure(-relief=>groove);
-    }else{
-	$tempstdout='yes';
-	$setup_path->configure(-state=>disabled);
-	$setup_path->configure(-relief=>groove);
-	$setup_stdout->configure(-relief=>sunken);
-    }
-}    
-
 
 sub Timer{
 
@@ -1308,12 +1283,8 @@ sub Timer_Copy{
 sub Timer_Entry{
     my$row=shift;
 
-    print "$_[0]\n";
-
     my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
        $password,$outfile,$url)=SplitTimerEntry(shift);
-
-    print "$url\n";
 
     my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime time;    
     $nowmonth++;
@@ -1342,11 +1313,9 @@ sub Timer_Entry{
 	    place(-x=>1,-y=>-1,-rely=>1.0,-anchor=>'sw');
    
     $tentry_quit->configure(-command=>[sub{
-	my$entry="$year $month $day $dayofweek $hour:$minute $duration $audio $video ".
-	    length($username).":$username ".length($password).":$password ".
-		length($outfile).":$outfile ".length($url).":$url";
 
 	# check the entry out
+	$duration=$duration_hour*3600+$duration_minute*60;
 	my$time=TimerStart(-1,-1,$year,$month,$day,$dayofweek,$hour,$minute,$duration);
 	if($time<0){
 	    Alert("Impossible date setting!",
@@ -1354,8 +1323,12 @@ sub Timer_Entry{
 		  " far enough in the past it will never trigger anyway).  Please correct the".
 		  ' date specification before proceeding, or file a bug report with monty@xiph.org'.
 		  " if the date is correct and the code is wrong.\n",$tentry);
-	}else{
-
+	}elsif(TestOutpath($outfile,$tentry)){
+	    $outfile=trim_glob($outfile);
+	    my$entry="$year $month $day $dayofweek $hour:$minute $duration $audio $video ".
+		length($username).":$username ".length($password).":$password ".
+		    length($outfile).":$outfile ".length($url).":$url";
+	    
 	    if($row<0){
 		push @TIMER, $entry;
 	    }else{
@@ -1392,7 +1365,7 @@ sub Timer_Entry{
     my$reqheight=0;
 
     my$t=$tentry_shell->Label(-text=>"Date:")->
-	place(-x=>$x, -y=>$y);
+	place(-x=>$x, -y=>$y, -bordermode=>outside);
     $x+=$t->reqwidth()+5;
 
     # Year
@@ -1401,7 +1374,7 @@ sub Timer_Entry{
 				 "$nowyear",$nowyear,
 				 $nowyear+1,$nowyear+1,
 				 $nowyear+2,$nowyear+2)->
-				     place(-x=>$x,-y=>$y);
+				     place(-x=>$x,-y=>$y,-bordermode=>outside);
     $x+=$tt->reqwidth+5;
     $reqheight=$tt->maxheight()if($tt->maxheight()>$reqheight);
     
@@ -1422,13 +1395,13 @@ sub Timer_Entry{
 				 "October","10",
 				 "November","11",
 				 "December","12")->
-				     place(-x=>$x,-y=>$y);
+				     place(-x=>$x,-y=>$y,-bordermode=>outside);
     $x+=$t->reqwidth+5;
     $reqheight=$t->maxheight()if($t->maxheight()>$reqheight);
 
     # day
     my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$day,-justify=>right)->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth+5;
 
     # day of week
@@ -1441,30 +1414,30 @@ sub Timer_Entry{
 				 "Thursday","4",
 				 "Friday","5",
 				 "Saturday","6")->
-				     place(-x=>$x,-y=>$y);
+				     place(-x=>$x,-y=>$y,-bordermode=>outside);
     $x+=$t->reqwidth+15;
     $reqheight=$t->maxheight()if($t->maxheight()>$reqheight);
 
     my$t=$tentry_shell->Label(-text=>"Time:")->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth()+5;
 
     # hour
     my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$hour,-justify=>right)->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth();
 
     my$t=$tentry_shell->Label(-text=>":")->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth();
 
     # minute
     my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$minute,-justify=>right)->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth+15;
 
     my$t=$tentry_shell->Label(-text=>"Duration:")->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth()+5;
 
     my$duration_hour=int($duration/3600);
@@ -1473,41 +1446,41 @@ sub Timer_Entry{
 
     # duration hour
     my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$duration_hour,-justify=>right)->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth();
 
     my$t=$tentry_shell->Label(-text=>":")->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth();
 
     # duration minute
     my$t=$tentry_shell->Entry(-width=>2,-textvariable=>\$duration_minute,-justify=>right)->
-	place(-x=>$x, -y=>$y, -height=>$tt->reqheight());
+	place(-x=>$x, -y=>$y, -height=>$tt->reqheight(),-bordermode=>outside);
     $x+=$t->reqwidth+5;
 
-    my$reqwidth=$x+10;
-    $reqheight+=$tentry_title->reqheight()+30;  # this is just for the pulldown menus
+    my$reqwidth=$x+25;
+    $reqheight+=$tentry_title->reqheight()+35;  # this is just for the pulldown menus
     $y+=$tt->reqheight()+20;
 
-
-    my$tentry_urllabel=$tentry_shell->Label(-text=>"URL:")->place(-y=>$y,-x=>5);
+    
+    my$t=$tentry_urllabel=$tentry_shell->Label(-text=>"URL:")->place(-y=>$y,-x=>5,-bordermode=>outside);
     my$tentry_url=$tentry_shell->Entry(-textvariable=>\$url,-width=>2048)->
-	place(-in=>$tentry_urllabel,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside,
-	      -width=>$reqwidth-25-$tentry_urllabel->reqwidth());
-    $y+=$tentry_urllabel->reqheight()+5;
-    my$tentry_usernamelabel=$tentry_shell->Label(-text=>"username:")->place(-y=>$y,-x=>5);
+	place(-y=>$y,-x=>10+$t->reqwidth,-height=>$t->reqheight,-bordermode=>outside,
+	      -relwidth=>1.0,-width=>-20-$t->reqwidth());
+    $y+=$t->reqheight()+5;
+    $t=$tentry_usernamelabel=$tentry_shell->Label(-text=>"username:")->place(-y=>$y,-x=>5);
     my$tentry_username=$tentry_shell->Entry(-textvariable=>\$username,-width=>2048)->
-	place(-in=>$tentry_usernamelabel,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside,
-	      -width=>$reqwidth-25-$tentry_usernamelabel->reqwidth());
-    $y+=$tentry_usernamelabel->reqheight()+5;
-    my$tentry_passwordlabel=$tentry_shell->Label(-text=>"password:")->place(-y=>$y,-x=>5);
+	place(-y=>$y,-x=>10+$t->reqwidth,-height=>$t->reqheight,-bordermode=>outside,
+	      -relwidth=>1.0,-width=>-20-$t->reqwidth());
+    $y+=$t->reqheight()+5;
+    $t=$tentry_passwordlabel=$tentry_shell->Label(-text=>"password:")->place(-y=>$y,-x=>5);
     my$tentry_password=$tentry_shell->Entry(-textvariable=>\$password,-width=>2048)->
-	place(-in=>$tentry_passwordlabel,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside,
-	      -width=>$reqwidth-25-$tentry_passwordlabel->reqwidth());
-    $y+=$tentry_passwordlabel->reqheight()+5;
+	place(-y=>$y,-x=>10+$t->reqwidth,-height=>$t->reqheight,-bordermode=>outside,
+	      -relwidth=>1.0,-width=>-20-$t->reqwidth());
+    $y+=$tentry_passwordlabel->reqheight()+10;
 
 
-    my$tentry_silent=$tentry_shell->Label(-text=>"silent record:")->place(-y=>$y,-x=>5);
+    my$tentry_silent=$tentry_shell->Label(-text=>"silent record:")->place(-y=>$y,-x=>5,-bordermode=>outside);
     my$tentry_audio=$tentry_shell->Button(-text=>"audio")->
 	place(-in=>$tentry_silent,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
     $tentry_audio->configure(-command=>[main::nonmomentary,\$tentry_audio,\$audio]);
@@ -1519,9 +1492,36 @@ sub Timer_Entry{
     nonmomentary(\$tentry_audio,\$audio);
     nonmomentary(\$tentry_video,\$video);
     nonmomentary(\$tentry_video,\$video);
+    $y+=$tentry_video->reqheight()+5;
+
+    $t=$tentry_outlabel=$tentry_shell->Label(-text=>"output path")->
+	place(-x=>5,-y=>$y,-bordermode=>outside);
+    my$tentry_out=$tentry_shell->Entry(-textvariable=>\$outfile,-width=>2048)->
+	place(-y=>$y,-x=>10+$t->reqwidth,-height=>$t->reqheight,-bordermode=>outside,
+	      -relwidth=>1.0,-width=>-20-$t->reqwidth());
+
+    $y+=$tentry_outlabel->reqheight()+10;
+
+    $tentry_message=$tentry_shell->
+	Message(-text=>"Any field in the date specification may be set to the wildcard * (asterisk); ".
+		"recording will happen on all dates in the future matching the provided ".
+		"fields.  Time and ".
+		"duration are specified in hours and minutes.\n\n\'Silent record\' indicates that ".
+		"during the record operation, no attempt should be made to open the audio device, ".
+		"play audio ".
+		"or display video.  This is useful both to increase performance and eliminate ".
+		"the possibility timed record will fail due to audio device conflicts with other ".
+		"applications.\n\nOutput path may be a directory [Snatch will choose a filename], ".
+		"a filename [record data will append], or - (dash) indicating standard out.",
+		-width=>$reqwidth-30,-anchor=>w,-class=>AlertDetail)->
+		    place(-x=>5,-y=>$y,-relwidth=>1.0,-width=>-10,-bordermode=>outside);
+    $y+=$tentry_message->reqheight()+5;
+
+
+    $reqheight=max($reqheight,$y+$tentry_quit->reqheight+$tentry_title->reqheight()+35);
 
     $tentry->minsize($reqwidth,$reqheight);
-    $tentry->geometry(($reqwidth+20)."x".$reqheight);
+    $tentry->geometry($reqwidth."x".$reqheight);
 			    
 }
 
@@ -1759,7 +1759,7 @@ sub new{
 
     $button->place(-height=>$maxheight,-width=>$maxwidth);
     $list->configure(-width=>$maxwidth,-height=>$y);
-    $clicklist{maxheight}=$y;
+    $clicklist{maxheight}=$y+$list->optionGet(borderWidth,"")*2;
 
 
     $this->setval($$var);
@@ -1772,7 +1772,7 @@ sub reqheight{
 }
 sub maxheight{
     my$this=shift;
-    $this->{maxheight};
+    $this->{maxheight}+$this->{reqheight};
 }
 
 sub reqwidth{
@@ -1818,9 +1818,15 @@ sub poplist{
     my$row=$this->{'set'};
     my$list=$this->{'list'};
     my$button=$this->{'button'};
-    
-    $list->raise();
-    $list->place(-in=>$button,-relwidth=>1.0,-bordermode=>outside);
+
+    if(defined($this->{pop})){
+	$list->placeForget();
+	delete $this->{pop};
+    }else{
+	$list->raise();
+	$list->place(-in=>$button,-relwidth=>1.0,-rely=>1.0,-bordermode=>outside);
+	$this->{'pop'}='';
+    }
     $this;
 }
 
@@ -1828,3 +1834,6 @@ sub button{
     my$this=shift;
     $this->{'button'};
 }
+k
+
+
