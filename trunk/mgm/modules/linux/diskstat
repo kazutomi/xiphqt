@@ -13,7 +13,8 @@
 
 package MGMmodule::diskstat;
 use vars qw($xpath @rsectors @wsectors @prevr @prevw $widget $graph 
-	    $numdisks $lastmod $kernel);
+	    $numdisks $lastdisks $lastmod $kernel @disknames);
+use IO::Seekable;
 
 # class init
 sub module_init{
@@ -34,12 +35,16 @@ sub module_init{
 	$kernel=4;$this->read_proc;
     } 
 
-    map{$numdisks++ if ($rsectors[$_] || $wsectors[$_])}(0..$#rsectors);
+    # 2.6
+    if(defined(%MGMmodule::helperST::disk26)){
+	$kernel=6;$this->read_proc;
+    } 
 
     if(!$numdisks){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
     } 
     $toplevel->optionAdd("$xclass.order",10,21);   
+    $lastdisks=$numdisks;
     $this;
 }
 
@@ -53,14 +58,15 @@ sub module_instance{
     # modify defaults
     for(my$i=0;$i<$numdisks;$i++){
 	$toplevel->optionAdd("$xpath.bar.".($i*2).".label", 
-			     "disk$i read",21);
+			     "$disknames[$i] read",21);
 	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".label", 
-			     "disk$i write",21);
+			     "$disknames[$i] write",21);
 	$toplevel->optionAdd("$xpath.bar.".($i*2).".litbackground", 
 			     '#e7ad74',21);
 	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".litbackground", 
 			     '#ade774',21);
     }
+
     $toplevel->optionAdd("$xpath.scalewidadj", 160*$numdisks,21);  # narrower
     $toplevel->optionAdd("$xpath.scalereturn", 120,21);
     # this relies on the above defaults
@@ -86,22 +92,59 @@ sub module_run{
 }
 
 sub read_proc{
-    # now uses the 00helper to save on opens 
-    if($kernel==4){
-	my $disk;
-	my@disks=split ' ',$MGMmodule::helperST::proc{"disk_io:"};
-	my$i=0;
+    if($kernel==6){ #2.6-ish
 	undef @rsectors;
 	undef @wsectors;
-	foreach $disk (@disks){
-	    $disk=~m/\(\d+,\d+\):\(\d+,\d+,(\d+),\d+,(\d+)\)/;
-	    $rsectors[$i]=$1;
-	    $wsectors[$i]=$2;
-	    $i++;
+	$numdisks=0;
+	foreach my $key (sort(keys %MGMmodule::helperST::disk26)){
+	    
+	    # if there are per-parition stats available, skip the whole-disk entries
+	    if($key=~m/^[^0-9]+$/){
+		if(defined($MGMmodule::helperST::disk26{"$key"."1"})){
+		    next;
+		}
+	    }
+	    
+	    if($MGMmodule::helperST::disk26{$key}=~m/\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+)/ ||
+	       $MGMmodule::helperST::disk26{$key}=~m/\d+\s+(\d+)\s+\d+\s+(\d+)/){
+	    
+		# if this entry is as-yet unused, ignore it
+		next if($1==0 && $2==0);
+		
+		$rsectors[$numdisks]=$1;
+		$wsectors[$numdisks]=$2;
+		$disknames[$numdisks]=$key;
+		$numdisks++;
+	    }
 	}
+
     }else{
-	@rsectors=split ' ',$MGMmodule::helperST::proc{"disk_rblk"};
-	@wsectors=split ' ',$MGMmodule::helperST::proc{"disk_wblk"};
+	# now uses the 00helper to save on opens
+	if($kernel==4){ #2.4-ish
+	    my $disk;
+	    my@disks=split ' ',$MGMmodule::helperST::proc{"disk_io:"};
+	    
+	    $numdisks=0;
+	    undef @rsectors;
+	    undef @wsectors;
+	    foreach $disk (@disks){
+		$disk=~m/\(\d+,\d+\):\(\d+,\d+,(\d+),\d+,(\d+)\)/;
+		if ($1 || $2){
+		    $rsectors[$numdisks]=$1;
+		    $wsectors[$numdisks]=$2;
+		    $disknames[$numdisks]="disk$numdisks";
+		    $numdisks++;
+		}
+	    }
+	}else{ #2.0/2.2-ish
+	    my@A=split ' ',$MGMmodule::helperST::proc{"disk_rblk"};
+	    my@B=split ' ',$MGMmodule::helperST::proc{"disk_wblk"};
+	    $numdisks=0;
+	    map{if ($A[$_] || $B[$_]){$rsectors[$numdisks]=$A[$_];
+				      $wsectors[$numdisks]=$B[$_];
+				      $disknames[$numdisks]="disk$numdisks";
+				  }}(0..$#A);
+	}
     }
 }
 
@@ -113,7 +156,8 @@ sub module_update{
 	my$time=$MGMmodule::helperST::lastmod;
 	$this->read_proc;
 
-	return &reconfig if($numdisks-1 != $#rsectors);
+	return &reconfig if($numdisks != $lastdisks);
+	$lastdisks=$numdisks;
 
 	if(defined(@prevr)){
 	    my @vals;
@@ -140,7 +184,7 @@ sub module_update{
 }
 
 sub reconfig{
-    $numdisks= $#rsectors+1;
+    $lastdisks=$numdisks;
     @prevr=@rsectors;
     @prevw=@wsectors;
     &main::reinstance() if($widget->optionGet("reconfig","") eq 'true');
