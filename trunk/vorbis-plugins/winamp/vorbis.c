@@ -80,13 +80,14 @@ size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 		return 0; /* It failed */
 }
 
-int seek_func(void *datasource, long offset, int whence)
+int seek_func(void *datasource, int64_t offset, int whence)
 { /* Note that we still need stdio.h even though we don't use stdio, 
    * in order to get appropriate definitions for SEEK_SET, etc.
    */
 	HANDLE file = (HANDLE)datasource;
 	int seek_type;
 	unsigned long retval;
+	int seek_highword = (int)(offset>>32);
 
 	switch(whence)
 	{
@@ -103,7 +104,7 @@ int seek_func(void *datasource, long offset, int whence)
 
 	/* On failure, SetFilePointer returns 0xFFFFFFFF, which is (int)-1 */
 	
-	retval=SetFilePointer(file, offset, NULL, seek_type);
+	retval=SetFilePointer(file, (int)(offset&0xffffffff), &seek_highword, seek_type);
 
 	if(retval == 0xFFFFFFFF)
 		return -1;
@@ -257,25 +258,43 @@ void setpan(int pan)
 
 int infoDlg(char *fn, HWND hwnd)
 {
+	MessageBox(mod.hMainWindow, "Sorry, there is currently no interface to set or read information.", "Unimplemented", MB_OK);
 	// TODO: implement info dialog. 
 	return 0;
 }
 
 char *generate_title(vorbis_comment *comment)
-{
+{/* Later, extend this to be configurable like the mp3 player */
 	char *title = NULL;
+	char buff[1024];
 
-	if (comment->comments >= 3) {
-		char buff[1024];
+	if (comment->comments >= 1) {
+		char *title = NULL, *artist = NULL;
+		int i;
+
+		for(i=0;i<comment->comments;i++)
+		{
+			if(!strnicmp("TITLE=",comment->user_comments[i],6))
+				title = comment->user_comments[i] + 6;
+			else if(!strnicmp("ARTIST=", comment->user_comments[i],7))
+				artist = comment->user_comments[i] + 7;
+		}
+
 		
-		// This assumes 0,1,2 will be artist,album,track
+		if(artist && title)
+			_snprintf(buff, 1024, "%s - %s", artist, title);
+		else if(title)
+			_snprintf(buff, 1024, "%s", title);
+		else if(artist)
+			_snprintf(buff, 1024, "%s - unknown", artist);
+		else
+			_snprintf(buff, 1024, "Unknown track (encoded by %s)", comment->vendor);
 
-		_snprintf(buff, 1024, "%s - %s", comment->user_comments[0], comment->user_comments[2]);
-
-		title = strdup(buff);
-	} else if (comment->comments == 1) {
-		title = strdup(comment->user_comments[0]);
+	} else {
+		_snprintf(buff, 1024, "Unknown track (encoded by %s)", comment->vendor);
 	}
+
+	title = strdup(buff);
 
 	return title;
 }
@@ -382,6 +401,8 @@ int get_576_samples(char *buf)
 void DecodeThread(void *b)
 {
 	int eos = 0;
+	int lostsync = 0;
+	double lastupdate = 0;
 
 	while (!*((int *)b)) {
 		if (seek_needed != -1) {
@@ -408,11 +429,28 @@ void DecodeThread(void *b)
 			int ret;
 			ret = get_576_samples(sample_buffer);
 			
-			if (ret <= 0) {
+			if (ret == 0) {
 				// eof
 				eos = 1;
 			}
+			else if(ret < 0)
+			{
+				/* Hole in data, lost sync, or something like that */
+				/* Inform winamp that we lost sync */
+				mod.SetInfo(bitrate / 1000, samplerate / 1000, num_channels, 0);
+				lostsync = 1;
+			}
 			else {
+				/* Update current bitrate (not currently implemented), and set sync (if lost) */
+				if(lostsync || (decode_pos_ms - lastupdate > 500))
+				{
+					EnterCriticalSection(&if_mutex);
+					bitrate = ov_bitrate_instant(&input_file);
+					mod.SetInfo(bitrate / 1000, samplerate / 1000, num_channels, 1);
+					LeaveCriticalSection(&if_mutex);
+					lostsync = 0;
+					lastupdate = decode_pos_ms;
+				}
 				mod.SAAddPCMData((char *)sample_buffer, num_channels, 16, (long)decode_pos_ms);
 				mod.VSAAddPCMData((char *)sample_buffer, num_channels, 16, (long)decode_pos_ms);
 				decode_pos_ms += (ret/(2*num_channels) * 1000) / (float)samplerate;
