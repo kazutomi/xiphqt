@@ -1,2 +1,2 @@
 # -*-Perl-*-
-do 'modules/share/biff';
+do "$main::moddir/share/biff";

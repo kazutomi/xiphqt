@@ -1,2 +1,2 @@
 # -*-Perl-*-
-do 'modules/share/diskuse';
+do "$main::moddir/share/diskuse";
