@@ -73,6 +73,7 @@ What Must Be Done Before Shipping
 * /speex/			(this one can go in much more easily since I administer it)
 * /lists/			(mailing lists)
 * /paranoia/		(possibly with much less filler than it has)
+* /theora/
 * Documentation for the CMS I’ve cobbled together.
 
 
@@ -81,6 +82,4 @@ What May Or May Not Be Done Before Shipping
 
 * /icecast/			(We’d need to train oddsock/Karl/Mike on how to use this system)
 * /flac/			(Again, more training for Josh and the Russian guy)
-* /theora/
-* /glossary/		(helpful, but we’re currently doing without)
 * /vorbis/sample/	(listen to a sample Ogg Vorbis stream in a couple of bitrates)
