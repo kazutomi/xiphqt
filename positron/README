@@ -73,7 +73,7 @@ your particular distribution, but here are some general hints:
 
 * You need kernel support for USB, USB Mass Storage, and SCSI drives
   either in the kernel or loaded as modules (usbcore, usb-storage,
-  scsi_mod).  Some of these may automatically be loaded for you.
+  scsi_mod, sd_mod).  Some of these may automatically be loaded for you.
 
 * Plug your Neuros into your USB port and wait a moment.  The "dmesg"
   command should show the Neuros being recognized by the USB subsystem
