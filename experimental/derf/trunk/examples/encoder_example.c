@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.7 2004/03/01 01:49:34 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.8 2004/03/03 14:53:04 derf Exp $
 
  ********************************************************************/
 
@@ -353,13 +353,14 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
                             theora_enc_ctx *td,
                             int videoflag){
   /* You'll go to Hell for using static variables */
-  static int            state=-1;
-  static unsigned char *yuvframe[2];
-  unsigned char        *line;
-  static int            framenum;
-  theora_ycbcr_buffer ycbcr;
-  ogg_packet          op;
-  int i, e;
+  static int                 state=-1;
+  static unsigned char      *yuvframe[2];
+  static unsigned char      *upsamp_uvdata;
+  static int                 framenum;
+  static theora_ycbcr_buffer ycbcr;
+  unsigned char             *line;
+  ogg_packet                 op;
+  int i, e,f;
 
   if(state==-1){
         /* initialize the double frame buffer */
@@ -372,6 +373,11 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
     memset(yuvframe[0]+video_x*video_y,0x80,video_x*video_y/2);
     memset(yuvframe[1],0x10,video_x*video_y);
     memset(yuvframe[1]+video_x*video_y,0x80,video_x*video_y/2);
+#if defined(OC_444_MODE)
+    upsamp_uvdata=malloc(2*video_x*video_y);
+#elif defined(OC_422_MODE)
+    upsamp_uvdata=malloc(video_x*video_y);
+#endif
 
     state=0;
   }
@@ -449,22 +455,203 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       /* Theora is a one-frame-in,one-frame-out system; submit a frame
          for compression and pull out the packet */
 
-      {
-        ycbcr[0].width=video_x;
-        ycbcr[0].height=video_y;
-        ycbcr[0].stride=video_x;
-        ycbcr[0].data=yuvframe[0];
+      ycbcr[0].width=video_x;
+      ycbcr[0].height=video_y;
+      ycbcr[0].stride=video_x;
+      ycbcr[0].data=yuvframe[0];
 
+#if defined(OC_444_MODE)
+      {
+        int cboffset=video_x*video_y;
+        int croffset=cboffset+(video_x/2)*(video_y/2);
+
+        ycbcr[1].width=video_x;
+        ycbcr[1].height=video_y;
+        ycbcr[1].stride=video_x;
+        ycbcr[1].data=upsamp_uvdata;
+
+        for(e=0;e<video_y/2;e++){
+          for(f=0;f<video_x/2;f++){
+            if(e+1<video_y/2){
+              if(f+1<video_x/2){
+                ycbcr[1].data[e*2*video_x+f*2]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[e*2*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+1>>1);
+                ycbcr[1].data[(e*2+1)*video_x+f*2]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
+                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+
+                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f+1]+2>>2);
+              }
+              else{
+                ycbcr[1].data[e*2*video_x+f*2]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[e*2*video_x+f*2+1]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[(e*2+1)*video_x+f*2]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
+                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
+              }
+            }
+            else{
+              if(f+1<video_x/2){
+                ycbcr[1].data[e*2*video_x+f*2]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[e*2*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+1>>1);
+                ycbcr[1].data[(e*2+1)*video_x+f*2]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
+                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+1>>1);
+              }
+              else{
+                ycbcr[1].data[e*2*video_x+f*2]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[e*2*video_x+f*2+1]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[(e*2+1)*video_x+f*2]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=
+                 yuvframe[0][cboffset+e*(video_x/2)+f];
+              }
+            }
+          }
+        }
+
+        ycbcr[2].width=video_x;
+        ycbcr[2].height=video_y;
+        ycbcr[2].stride=video_x;
+        ycbcr[2].data=upsamp_uvdata+video_x*video_y;
+
+        for(e=0;e<video_y/2;e++){
+          for(f=0;f<video_x/2;f++){
+            if(e+1<video_y/2){
+              if(f+1<video_x/2){
+                ycbcr[2].data[e*2*video_x+f*2]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[e*2*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+e*(video_x/2)+f+1]+1>>1);
+                ycbcr[2].data[(e*2+1)*video_x+f*2]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
+                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+e*(video_x/2)+f+1]+
+                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(video_x/2)+f+1]+2>>2);
+              }
+              else{
+                ycbcr[2].data[e*2*video_x+f*2]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[e*2*video_x+f*2+1]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[(e*2+1)*video_x+f*2]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
+                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
+              }
+            }
+            else{
+              if(f+1<video_x/2){
+                ycbcr[2].data[e*2*video_x+f*2]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[e*2*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+e*(video_x/2)+f+1]+1>>1);
+                ycbcr[2].data[(e*2+1)*video_x+f*2]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(video_x/2)+f]+
+                 yuvframe[0][croffset+e*(video_x/2)+f+1]+1>>1);
+              }
+              else{
+                ycbcr[2].data[e*2*video_x+f*2]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[e*2*video_x+f*2+1]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[(e*2+1)*video_x+f*2]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=
+                 yuvframe[0][croffset+e*(video_x/2)+f];
+              }
+            }
+          }
+        }
+      }
+#elif defined(OC_422_MODE)
+      {
+        int cboffset=video_x*video_y;
+        int croffset=cboffset+(video_x/2)*(video_y/2);
         ycbcr[1].width=video_x/2;
-        ycbcr[1].height=video_y/2;
+        ycbcr[1].height=video_y;
         ycbcr[1].stride=video_x/2;
-        ycbcr[1].data=yuvframe[0]+video_x*video_y;
+        ycbcr[1].data=upsamp_uvdata;
+
+        for(e=0;e<video_y/2;e++){
+          for(f=0;f<video_x/2;f++){
+            if(e+1<video_y/2){
+              ycbcr[1].data[e*2*(video_x/2)+f]=
+               yuvframe[0][cboffset+e*(video_x/2)+f];
+              ycbcr[1].data[(e*2+1)*(video_x/2)+f]=(unsigned char)
+               (yuvframe[0][cboffset+e*(video_x/2)+f]+
+               yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
+            }
+            else{
+              ycbcr[1].data[e*2*(video_x/2)+f]=
+               yuvframe[0][cboffset+e*(video_x/2)+f];
+              ycbcr[1].data[(e*2+1)*(video_x/2)+f]=
+               yuvframe[0][cboffset+e*(video_x/2)+f];
+            }
+          }
+        }
 
         ycbcr[2].width=video_x/2;
-        ycbcr[2].height=video_y/2;
+        ycbcr[2].height=video_y;
         ycbcr[2].stride=video_x/2;
-        ycbcr[2].data=yuvframe[0]+video_x*video_y*5/4;
+        ycbcr[2].data=upsamp_uvdata+video_y*(video_x/2);
+
+        for(e=0;e<video_y/2;e++){
+          for(f=0;f<video_x/2;f++){
+            if(e+1<video_y/2){
+              ycbcr[2].data[e*2*(video_x/2)+f]=
+               yuvframe[0][croffset+e*(video_x/2)+f];
+              ycbcr[2].data[(e*2+1)*(video_x/2)+f]=(unsigned char)
+               (yuvframe[0][croffset+e*(video_x/2)+f]+
+               yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
+            }
+            else{
+              ycbcr[2].data[e*2*(video_x/2)+f]=
+               yuvframe[0][croffset+e*(video_x/2)+f];
+              ycbcr[2].data[(e*2+1)*(video_x/2)+f]=
+               yuvframe[0][croffset+e*(video_x/2)+f];
+            }
+          }
+        }
       }
+#else
+      ycbcr[1].width=video_x/2;
+      ycbcr[1].height=video_y/2;
+      ycbcr[1].stride=video_x/2;
+      ycbcr[1].data=yuvframe[0]+video_x*video_y;
+
+      ycbcr[2].width=video_x/2;
+      ycbcr[2].height=video_y/2;
+      ycbcr[2].stride=video_x/2;
+      ycbcr[2].data=yuvframe[0]+video_x*video_y*5/4;
+#endif
 
       theora_encode_ycbcr_in(td,ycbcr);
 
@@ -634,8 +821,16 @@ int main(int argc,char *argv[]){
   ti.keyframe_frequency_force=64;
   ti.pp_level=1;
 
+#if defined(OC_444_MODE)
+  ti.chroma_x_decimated=0;
+  ti.chroma_y_decimated=0;
+#elif defined(OC_422_MODE)
+  ti.chroma_x_decimated=1;
+  ti.chroma_y_decimated=0;
+#else
   ti.chroma_x_decimated=1;
   ti.chroma_y_decimated=1;
+#endif
 
   td=theora_encode_alloc(&ti);
   theora_info_clear(&ti);

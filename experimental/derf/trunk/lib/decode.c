@@ -2,6 +2,101 @@
 #include <string.h>
 #include <ogg/ogg.h>
 #include "decint.h"
+#if defined(OC_DUMP_IMAGES)
+# include <stdio.h>
+# include "png.h"
+#endif
+
+
+
+/*The mode alphabets for the various mode coding schemes.
+  Scheme 0 uses a custom alphabet, which is not stored in this table.*/
+static const int OC_MODE_ALPHABETS[7][OC_NMODES]={
+  /*Last MV dominates */
+  {
+    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV_LAST2,OC_MODE_INTER_MV,
+    OC_MODE_INTER_NOMV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
+    OC_MODE_INTER_MV_FOUR
+  },
+  {
+    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV_LAST2,OC_MODE_INTER_NOMV,
+    OC_MODE_INTER_MV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
+    OC_MODE_INTER_MV_FOUR
+  },
+  {
+    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV,OC_MODE_INTER_MV_LAST2,
+    OC_MODE_INTER_NOMV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
+    OC_MODE_INTER_MV_FOUR
+  },
+  {
+    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV,OC_MODE_INTER_NOMV,
+    OC_MODE_INTER_MV_LAST2,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,
+    OC_MODE_GOLDEN_MV,OC_MODE_INTER_MV_FOUR
+  },
+  /*No MV dominates.*/
+  {
+    OC_MODE_INTER_NOMV,OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV_LAST2,
+    OC_MODE_INTER_MV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
+    OC_MODE_INTER_MV_FOUR
+  },
+  {
+    OC_MODE_INTER_NOMV,OC_MODE_GOLDEN_NOMV,OC_MODE_INTER_MV_LAST,
+    OC_MODE_INTER_MV_LAST2,OC_MODE_INTER_MV,OC_MODE_INTRA,OC_MODE_GOLDEN_MV,
+    OC_MODE_INTER_MV_FOUR
+  },
+  /*Default ordering.*/
+  {
+    OC_MODE_INTER_NOMV,OC_MODE_INTRA,OC_MODE_INTER_MV,OC_MODE_INTER_MV_LAST,
+    OC_MODE_INTER_MV_LAST2,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
+    OC_MODE_INTER_MV_FOUR
+  }
+};
+
+
+
+static int oc_sb_run_unpack(oggpack_buffer *_opb){
+  int bits;
+  /*Coding scheme:
+       Codeword            Run Length
+     0                       1
+     10x                     2-3
+     110x                    4-5
+     1110xx                  6-9
+     11110xxx                10-17
+     111110xxxx              18-33
+     111111xxxxxxxxxxxx      34-4129*/
+  bits=oggpackB_read1(_opb);
+  if(bits==0)return 1;
+  bits=oggpackB_read(_opb,2);
+  if((bits&2)==0)return 2+(bits&1);
+  else if((bits&1)==0)return 4+(oggpackB_read1(_opb)&1);
+  bits=oggpackB_read(_opb,3);
+  if((bits&4)==0)return 6+(bits&3);
+  else if((bits&2)==0)return 10+((bits&1)<<2)+(oggpackB_read(_opb,2)&3);
+  else if((bits&1)==0)return 18+(oggpackB_read(_opb,4)&0xF);
+  return 34+(oggpackB_read(_opb,12)&0xFFF);
+}
+
+static int oc_block_run_unpack(oggpack_buffer *_opb){
+  int bits;
+  /*Coding scheme:
+     Codeword             Run Length
+     0x                      1-2
+     10x                     3-4
+     110x                    5-6
+     1110xx                  7-10
+     11110xx                 11-14
+     11111xxxx               15-30*/
+  bits=oggpackB_read(_opb,2);
+  if((bits&2)==0)return 1+(bits&1);
+  else if((bits&1)==0)return 3+(oggpackB_read1(_opb)&1);
+  bits=oggpackB_read(_opb,2);
+  if((bits&2)==0)return 5+(bits&1);
+  else if((bits&1)==0)return 7+(oggpackB_read(_opb,2)&3);
+  if(!oggpackB_read1(_opb))return 11+(oggpackB_read(_opb,2)&3);
+  return 15+(oggpackB_read(_opb,4)&0xF);
+}
+
 
 
 static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
@@ -15,9 +110,9 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
      _dec->state.dequant_table_data[qti]+pli;
   }
   oc_dequant_tables_init(_dec->state.dequant_tables,&_setup->qinfo);
-  _dec->dct_tokens=(unsigned char **)oc_malloc_2d(64,
+  _dec->dct_tokens=(unsigned char **)oc_calloc_2d(64,
    _dec->state.nfrags,sizeof(_dec->dct_tokens[0][0]));
-  _dec->extra_bits=(ogg_uint16_t **)oc_malloc_2d(64,
+  _dec->extra_bits=(ogg_uint16_t **)oc_calloc_2d(64,
    _dec->state.nfrags,sizeof(_dec->extra_bits[0][0]));
 }
 
@@ -27,6 +122,7 @@ static void oc_dec_clear(oc_dec_ctx *_dec){
   oc_huff_trees_clear(_dec->huff_tables);
   oc_state_clear(&_dec->state);
 }
+
 
 static int oc_dec_frame_header_unpack(oc_dec_ctx *_dec){
   /*Check to make sure this is a data packet.*/
@@ -86,49 +182,6 @@ static void oc_dec_mark_all_intra(oc_dec_ctx *_dec){
   }
 }
 
-static int oc_sb_run_unpack(oggpack_buffer *_opb){
-  int bits;
-  /*Coding scheme:
-       Codeword            Run Length
-     0                       1
-     10x                     2-3
-     110x                    4-5
-     1110xx                  6-9
-     11110xxx                10-17
-     111110xxxx              18-33
-     111111xxxxxxxxxxxx      34-4129*/
-  bits=oggpackB_read1(_opb);
-  if(bits==0)return 1;
-  bits=oggpackB_read(_opb,2);
-  if((bits&2)==0)return 2+(bits&1);
-  else if((bits&1)==0)return 4+(oggpackB_read1(_opb)&1);
-  bits=oggpackB_read(_opb,3);
-  if((bits&4)==0)return 6+(bits&3);
-  else if((bits&2)==0)return 10+((bits&1)<<2)+(oggpackB_read(_opb,2)&3);
-  else if((bits&1)==0)return 18+(oggpackB_read(_opb,4)&0xF);
-  return 34+(oggpackB_read(_opb,12)&0xFFF);
-}
-
-static int oc_block_run_unpack(oggpack_buffer *_opb){
-  int bits;
-  /*Coding scheme:
-     Codeword             Run Length
-     0x                      1-2
-     10x                     3-4
-     110x                    5-6
-     1110xx                  7-10
-     11110xx                 11-14
-     11111xxxx               15-30*/
-  bits=oggpackB_read(_opb,2);
-  if((bits&2)==0)return 1+(bits&1);
-  else if((bits&1)==0)return 3+(oggpackB_read1(_opb)&1);
-  bits=oggpackB_read(_opb,2);
-  if((bits&2)==0)return 5+(bits&1);
-  else if((bits&1)==0)return 7+(oggpackB_read(_opb,2)&3);
-  if(!oggpackB_read1(_opb))return 11+(oggpackB_read(_opb,2)&3);
-  return 15+(oggpackB_read(_opb,4)&0xF);
-}
-
 /*Decodes the bit flags for whether or not each super block is partially coded
    or not.
   Return: The number of partially coded super blocks.*/
@@ -146,11 +199,13 @@ static int oc_dec_partial_sb_flags_unpack(oc_dec_ctx *_dec){
     int full_run;
     run_count=oc_sb_run_unpack(&_dec->opb);
     full_run=run_count>=4129;
-    for(;run_count-->0&&sb<sb_end;sb++){
+    do{
       sb->coded_partially=flag;
       sb->coded_fully=0;
       npartial+=flag;
+      sb++;
     }
+    while(--run_count>0&&sb<sb_end);
     if(full_run&&sb<sb_end)flag=oggpackB_read1(&_dec->opb);
     else flag=!flag;
   }
@@ -248,48 +303,6 @@ static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
 }
 
 
-/*The mode alphabets for the various mode coding schemes.
-  Scheme 0 uses a custom alphabet, which is not stored in this table.*/
-static const int OC_MODE_ALPHABETS[7][OC_NMODES]={
-  /*Last MV dominates */
-  {
-    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV_LAST2,OC_MODE_INTER_MV,
-    OC_MODE_INTER_NOMV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
-    OC_MODE_INTER_MV_FOUR
-  },
-  {
-    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV_LAST2,OC_MODE_INTER_NOMV,
-    OC_MODE_INTER_MV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
-    OC_MODE_INTER_MV_FOUR
-  },
-  {
-    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV,OC_MODE_INTER_MV_LAST2,
-    OC_MODE_INTER_NOMV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
-    OC_MODE_INTER_MV_FOUR
-  },
-  {
-    OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV,OC_MODE_INTER_NOMV,
-    OC_MODE_INTER_MV_LAST2,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,
-    OC_MODE_GOLDEN_MV,OC_MODE_INTER_MV_FOUR
-  },
-  /*No MV dominates.*/
-  {
-    OC_MODE_INTER_NOMV,OC_MODE_INTER_MV_LAST,OC_MODE_INTER_MV_LAST2,
-    OC_MODE_INTER_MV,OC_MODE_INTRA,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
-    OC_MODE_INTER_MV_FOUR
-  },
-  {
-    OC_MODE_INTER_NOMV,OC_MODE_GOLDEN_NOMV,OC_MODE_INTER_MV_LAST,
-    OC_MODE_INTER_MV_LAST2,OC_MODE_INTER_MV,OC_MODE_INTRA,OC_MODE_GOLDEN_MV,
-    OC_MODE_INTER_MV_FOUR
-  },
-  /*Default ordering.*/
-  {
-    OC_MODE_INTER_NOMV,OC_MODE_INTRA,OC_MODE_INTER_MV,OC_MODE_INTER_MV_LAST,
-    OC_MODE_INTER_MV_LAST2,OC_MODE_GOLDEN_NOMV,OC_MODE_GOLDEN_MV,
-    OC_MODE_INTER_MV_FOUR
-  }
-};
 
 typedef int (*oc_mode_unpack_func)(oggpack_buffer *_opb);
 
@@ -303,6 +316,7 @@ static int oc_clc_mode_unpack(oggpack_buffer *_opb){
   return oggpackB_read(_opb,3)&7;
 }
 
+/*Unpacks the list of macro block modes for INTER frames.*/
 int oc_dec_mb_modes_unpack(oc_dec_ctx *_dec){
   oc_mode_unpack_func  mode_unpack;
   oc_mb               *mb;
@@ -339,6 +353,8 @@ int oc_dec_mb_modes_unpack(oc_dec_ctx *_dec){
   }
   return 0;
 }
+
+
 
 typedef int (*oc_mv_comp_unpack_func)(oggpack_buffer *_opb);
 
@@ -384,6 +400,8 @@ static int oc_clc_mv_comp_unpack(oggpack_buffer *_opb){
   return mvsigned[bits&1];
 }
 
+/*Unpacks the list of motion vectors for INTER frames, and propagtes the macro
+   block modes and motion vectors to the individual fragments.*/
 static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
   oc_set_chroma_mvs_func  set_chroma_mvs;
   oc_mv_comp_unpack_func  mv_comp_unpack;
@@ -435,6 +453,7 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
           bi=coded[codedi];
           fragi=mb->map[0][bi];
           frag=_dec->state.frags+fragi;
+          frag->mbmode=mb->mode;
           frag->mv[0]=bmvs[bi][0];
           frag->mv[1]=bmvs[bi][1];
         }
@@ -490,33 +509,19 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
   }
 }
 
-/*The smallest value representable by each of the different DCT value
-   category tokens (starting with CAT3).*/
-static const int OC_DCT_VAL_CAT_OFFS[6]={
-  OC_NDCT_VAL_CAT2_SIZE+3,
-  OC_NDCT_VAL_CAT2_SIZE+5,
-  OC_NDCT_VAL_CAT2_SIZE+9,
-  OC_NDCT_VAL_CAT2_SIZE+17,
-  OC_NDCT_VAL_CAT2_SIZE+33,
-  OC_NDCT_VAL_CAT2_SIZE+65
-};
-/*The mask to use to extract the value from each of the different DCT value
-   category tokens (starting with CAT3).*/
-static const int OC_DCT_VAL_CAT_MASKS[6]={
-  0x001,0x003,0x007,0x00F,0x01F,0x1FF
-};
-/*The number of bits to shift the sign of the DCT coefficient over by for each
-   of the different DCT value category tokens (starting with CAT3).*/
-static const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
 
 
 /*Returns the decoded value of the given token.
-  The token MUST be one that corresponds to a single coefficient value, not
-   an EOB token or any kind of zero run token.
+  It CANNOT be called for any of the EOB tokens.
   _token:      The token value to skip.
   _extra_bits: The extra bits attached to this token.
   Return: The decoded coefficient value.*/
 typedef int (*oc_token_dec1val_func)(int _token,int _extra_bits);
+
+/*Handles zero run tokens.*/
+static int oc_token_dec1val_zrl(void){
+  return 0;
+}
 
 /*Handles 1, -1, 2 and -2 tokens.*/
 static int oc_token_dec1val_const(int _token){
@@ -529,24 +534,37 @@ static int oc_token_dec1val_cat2(int _token,int _extra_bits){
   int valsigned[2];
   valsigned[0]=_token-OC_DCT_VAL_CAT2+3;
   valsigned[1]=-valsigned[0];
-  return valsigned[_extra_bits&1];
+  return valsigned[_extra_bits];
 }
 
 /*Handles DCT value tokens categories 3 through 8.*/
 static int oc_token_dec1val_cati(int _token,int _extra_bits){
+  static const int VAL_CAT_OFFS[6]={
+    OC_NDCT_VAL_CAT2_SIZE+3,
+    OC_NDCT_VAL_CAT2_SIZE+5,
+    OC_NDCT_VAL_CAT2_SIZE+9,
+    OC_NDCT_VAL_CAT2_SIZE+17,
+    OC_NDCT_VAL_CAT2_SIZE+33,
+    OC_NDCT_VAL_CAT2_SIZE+65
+  };
+  static const int VAL_CAT_MASKS[6]={
+    0x001,0x003,0x007,0x00F,0x01F,0x1FF
+  };
+  static const int VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
   int valsigned[2];
   int cati;
   cati=_token-OC_NDCT_VAL_CAT2_MAX;
-  valsigned[0]=OC_DCT_VAL_CAT_OFFS[cati]+
-   (_extra_bits&OC_DCT_VAL_CAT_MASKS[cati]);
+  valsigned[0]=VAL_CAT_OFFS[cati]+(_extra_bits&VAL_CAT_MASKS[cati]);
   valsigned[1]=-valsigned[0];
-  return valsigned[_extra_bits>>OC_DCT_VAL_CAT_SHIFTS[cati]&1];
+  return valsigned[_extra_bits>>VAL_CAT_SHIFTS[cati]&1];
 }
 
 /*A jump table for compute the first coefficient value the given token value
    represents.*/
-static const oc_token_dec1val_func OC_TOKEN_DEC1VAL_TABLE[OC_NDCT_VAL_MAX-
- OC_NDCT_ZRL_TOKEN_MAX]={
+static const oc_token_dec1val_func OC_TOKEN_DEC1VAL_TABLE[OC_NDCT_TOKENS-
+ OC_NDCT_EOB_TOKEN_MAX]={
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
   (oc_token_dec1val_func)oc_token_dec1val_const,
   (oc_token_dec1val_func)oc_token_dec1val_const,
   (oc_token_dec1val_func)oc_token_dec1val_const,
@@ -560,17 +578,25 @@ static const oc_token_dec1val_func OC_TOKEN_DEC1VAL_TABLE[OC_NDCT_VAL_MAX-
   oc_token_dec1val_cati,
   oc_token_dec1val_cati,
   oc_token_dec1val_cati,
-  oc_token_dec1val_cati
+  oc_token_dec1val_cati,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl,
+  (oc_token_dec1val_func)oc_token_dec1val_zrl
 };
 
 /*Returns the decoded value of the given token.
-  The token MUST be one that corresponds to a single coefficient value, not
-   an EOB token or any kind of zero run token.
+  It CANNOT be called for any of the EOB tokens.
   _token:      The token value to skip.
   _extra_bits: The extra bits attached to this token.
   Return: The decoded coefficient value.*/
 int oc_dct_token_dec1val(int _token,int _extra_bits){
-  return (*OC_TOKEN_DEC1VAL_TABLE[_token-OC_NDCT_ZRL_TOKEN_MAX])(_token,
+  return (*OC_TOKEN_DEC1VAL_TABLE[_token-OC_NDCT_EOB_TOKEN_MAX])(_token,
    _extra_bits);
 }
 
@@ -594,7 +620,6 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
   int  ebi;
   int  pli;
   int  rli;
-  cfi=0;
   eobs=0;
   ti=ebi=0;
   coded_fragi_end=coded_fragi=_dec->state.coded_fragis;
@@ -605,15 +630,18 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
     for(eobi=eobs;eobi-->0&&coded_fragi<coded_fragi_end;){
       _dec->state.frags[*coded_fragi++].dc=0;
     }
+    cfi=0;
     while(cfi+eobs<_ntoks_left[pli][0]){
       int token;
+      int neb;
       int eb;
       int skip;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
       _dec->dct_tokens[0][ti++]=(char)token;
-      if(OC_DCT_TOKEN_EXTRA_BITS[token]){
-        eb=oggpackB_read(&_dec->opb,OC_DCT_TOKEN_EXTRA_BITS[token]);
+      neb=OC_DCT_TOKEN_EXTRA_BITS[token];
+      if(neb){
+        eb=oggpackB_read(&_dec->opb,neb)&(1<<neb)-1;
         _dec->extra_bits[0][ebi++]=(ogg_int16_t)eb;
       }
       else eb=0;
@@ -626,12 +654,9 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
         }
       }
       else{
-        run_counts[1]++;
+        run_counts[skip-1]++;
         cfi++;
-        if(skip==1){
-         _dec->state.frags[*coded_fragi++].dc=oc_dct_token_dec1val(token,eb);
-        }
-        else _dec->state.frags[*coded_fragi++].dc=0;
+        _dec->state.frags[*coded_fragi++].dc=oc_dct_token_dec1val(token,eb);
       }
     }
     _dec->ndct_tokens[pli][0]=ti;
@@ -650,6 +675,14 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
   return eobs;
 }
 
+/*Unpacks the AC coefficient tokens.
+  This can completely discard coefficient values while unpacking, and so is
+   somewhat simpler than unpacking the DC coefficient tokens.
+  _huff_idx:   The index of the Huffman table to use for each color plane.
+  _ntoks_left: The number of tokens left to be decoded in each color plane for
+                each coefficient.
+               This is updated as EOB tokens and zero run tokens are decoded.
+  Return: The length of any outstanding EOB run.*/
 static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
  int _ntoks_left[3][64]){
   int run_counts[64];
@@ -659,30 +692,33 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
   int ebi;
   int pli;
   int rli;
-  cfi=0;
   eobs=_dec->eob_runs[_zzi];
   ti=ebi=0;
   for(pli=0;pli<3;pli++){
     memset(run_counts,0,sizeof(run_counts));
+    cfi=0;
     while(cfi+eobs<_ntoks_left[pli][_zzi]){
       int token;
+      int neb;
       int eb;
       int skip;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
       _dec->dct_tokens[_zzi][ti++]=(char)token;
-      if(OC_DCT_TOKEN_EXTRA_BITS[token]){
-        eb=oggpackB_read(&_dec->opb,OC_DCT_TOKEN_EXTRA_BITS[token]);
+      neb=OC_DCT_TOKEN_EXTRA_BITS[token];
+      if(neb){
+        eb=oggpackB_read(&_dec->opb,neb)&(1<<neb)-1;
         _dec->extra_bits[_zzi][ebi++]=(ogg_int16_t)eb;
       }
       else eb=0;
       skip=oc_dct_token_skip(token,eb);
       if(skip<0)eobs-=skip;
       else{
-        run_counts[skip]++;
+        run_counts[skip-1]++;
         cfi++;
       }
     }
+    /*TODO: We don't actually use these values for anything, yet.*/
     _dec->ndct_tokens[pli][_zzi]=ti;
     /*Set the EOB count to the portion of the last EOB run which extends past
        this coefficient.*/
@@ -700,19 +736,19 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
 }
 
 /*Tokens describing the DCT coefficients that belong to each fragment are
-   stored in the bistream by coefficient, not by fragment.
-  This means that we either decode all the tokens in order, building up the
-   coefficient lists for each fragment as we go, and then do the iDCT on each
-   fragment, or we have to create separate lists of tokens for each
-   coefficient, so that we can pull the next token required off the head of
-   the appropriate list when decoding a specific fragment.
+   stored in the bistream grouped by coefficient, not by fragment.
+  This means that we either decode all the tokens in order, building up a
+   separate coefficient list for each fragment as we go, and then go back and
+   do the iDCT on each fragment, or we have to create separate lists of tokens
+   for each coefficient, so that we can pull the next token required off the
+   head of the appropriate list when decoding a specific fragment.
   The former was VP3's choice, and it meant 2*w*h extra storage for all the
    decoded coefficient values.
-  We take the second option, which lets us store one or three bytes per token
-   (generally far fewer than the number of coefficients, due to EOB tokens and
-   zero runs), and which requires us to only maintain a counter for each of
-   the 64 coefficients, instead of a counter for every fragment, to determine
-   where the next token goes.*/
+  We take the second option, which lets us store just one or three bytes per
+   token (generally far fewer than the number of coefficients, due to EOB
+   tokens and zero runs), and which requires us to only maintain a counter for
+   each of the 64 coefficients, instead of a counter for every fragment to
+   determine where the next token goes.*/
 static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   static const int OC_HUFF_LIST_MAX[5]={1,6,15,28,64};
   int ntoks_left[3][64];
@@ -726,14 +762,14 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   for(pli=0;pli<3;pli++)for(zzi=0;zzi<64;zzi++){
     ntoks_left[pli][zzi]=_dec->state.ncoded_fragis[pli];
   }
-  huffi_y=oggpackB_read(&_dec->opb,3)&7;
-  huffi_c=oggpackB_read(&_dec->opb,3)&7;
+  huffi_y=oggpackB_read(&_dec->opb,4)&0xF;
+  huffi_c=oggpackB_read(&_dec->opb,4)&0xF;
   huff_idxs[0]=huffi_y;
   huff_idxs[1]=huff_idxs[2]=huffi_c;
   _dec->eob_runs[0]=0;
   eobs=oc_dec_dc_coeff_unpack(_dec,huff_idxs,ntoks_left);
-  huffi_y=oggpackB_read(&_dec->opb,3)&7;
-  huffi_c=oggpackB_read(&_dec->opb,3)&7;
+  huffi_y=oggpackB_read(&_dec->opb,4)&0xF;
+  huffi_c=oggpackB_read(&_dec->opb,4)&0xF;
   zzi=1;
   for(hgi=1;hgi<5;hgi++){
     huff_idxs[0]=huffi_y+(hgi<<4);
@@ -745,51 +781,65 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   }
 }
 
-typedef int (*oc_token_expand_func)(int _token,int _extra_bits,
+
+
+/*Expands a single token into the given coefficient list.
+  This fills in the zeros for zero runs as well as coefficient values, and
+   updates the index of the current coefficient.
+  It CANNOT be called for any of the EOB tokens.
+  _token:      The token value to expand.
+  _extra_bits: The extra bits associated with the token.
+  _dct_coeffs: The current list of coefficients, in zig-zag order.
+  _zzi:        A pointer to the zig-zag index of the next coefficient to write
+                to.
+               This is updated before the function returns.*/
+typedef void (*oc_token_expand_func)(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi);
 
-int oc_token_expand_zrl(int _token,int _extra_bits,
+/*Expands a zero run token.*/
+void oc_token_expand_zrl(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi){
   int zzi;
   zzi=*_zzi;
-  do _dct_coeffs[zzi++]=0;
+  do _dct_coeffs[OC_FZIG_ZAG[zzi++]]=0;
   while(_extra_bits-->0);
   *_zzi=zzi;
-  return 0;
 }
 
-int oc_token_expand_const(int _token,int _extra_bits,
+/*Expands a constant, single-value token.*/
+void oc_token_expand_const(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi){
-  _dct_coeffs[(*_zzi)++]=(ogg_int16_t)oc_token_dec1val_const(_token);
-  return 0;
+  _dct_coeffs[OC_FZIG_ZAG[(*_zzi)++]]=
+   (ogg_int16_t)oc_token_dec1val_const(_token);
 }
 
-int oc_token_expand_cat2(int _token,int _extra_bits,
+/*Expands category 2 single-valued tokens.*/
+void oc_token_expand_cat2(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi){
-  _dct_coeffs[(*_zzi)++]=(ogg_int16_t)oc_token_dec1val_cat2(_token,
-   _extra_bits);
-  return 0;
+  _dct_coeffs[OC_FZIG_ZAG[(*_zzi)++]]=
+   (ogg_int16_t)oc_token_dec1val_cat2(_token,_extra_bits);
 }
 
-int oc_token_expand_cati(int _token,int _extra_bits,
+/*Expands category 3 through 8 single-valued tokens.*/
+void oc_token_expand_cati(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi){
-  _dct_coeffs[(*_zzi)++]=(ogg_int16_t)oc_token_dec1val_cati(_token,
-   _extra_bits);
-  return 0;
+  _dct_coeffs[OC_FZIG_ZAG[(*_zzi)++]]=
+   (ogg_int16_t)oc_token_dec1val_cati(_token,_extra_bits);
 }
 
-int oc_token_expand_run_cat1a(int _token,int _extra_bits,
+/*Expands a category 1a zero run/value combo token.*/
+void oc_token_expand_run_cat1a(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi){
   int zzi;
   int rl;
   zzi=*_zzi;
-  for(rl=_token-OC_DCT_RUN_CAT1A+1;rl-->0;)_dct_coeffs[zzi++]=0;
-  _dct_coeffs[zzi++]=(ogg_int16_t)(1-((_extra_bits&1)<<1));
+  for(rl=_token-OC_DCT_RUN_CAT1A+1;rl-->0;)_dct_coeffs[OC_FZIG_ZAG[zzi++]]=0;
+  _dct_coeffs[OC_FZIG_ZAG[zzi++]]=(ogg_int16_t)(1-(_extra_bits<<1));
   *_zzi=zzi;
-  return 0;
 }
 
-int oc_token_expand_run(int _token,int _extra_bits,
+/*Expands all other zero run/value combo tokens.*/
+void oc_token_expand_run(int _token,int _extra_bits,
  ogg_int16_t _dct_coeffs[64],int *_zzi){
   static const int NZEROS_ADJUST[OC_NDCT_RUN_MAX-OC_DCT_RUN_CAT1B]={
     6,10,1,2
@@ -815,18 +865,22 @@ int oc_token_expand_run(int _token,int _extra_bits,
   _token-=OC_DCT_RUN_CAT1B;
   rl=(_extra_bits&NZEROS_MASK[_token])+NZEROS_ADJUST[_token];
   zzi=*_zzi;
-  while(rl-->0)_dct_coeffs[zzi++]=0;
+  while(rl-->0)_dct_coeffs[OC_FZIG_ZAG[zzi++]]=0;
   valsigned[0]=VALUE_ADJUST[_token]+
    (_extra_bits>>VALUE_SHIFT[_token]&VALUE_MASK[_token]);
   valsigned[1]=-valsigned[0];
-  _dct_coeffs[zzi++]=(ogg_int16_t)valsigned[
-   _extra_bits>>SIGN_SHIFT[_token]&1];
+  _dct_coeffs[OC_FZIG_ZAG[zzi++]]=(ogg_int16_t)valsigned[
+   _extra_bits>>SIGN_SHIFT[_token]];
   *_zzi=zzi;
-  return 0;
 }
 
+/*A jump table for expanding token values into coefficient values.
+  This reduces all the conditional branches, etc., needed to parse these token
+   values down to one indirect jump.*/
 static const oc_token_expand_func OC_TOKEN_EXPAND_TABLE[OC_NDCT_TOKENS-
  OC_NDCT_EOB_TOKEN_MAX]={
+  oc_token_expand_zrl,
+  oc_token_expand_zrl,
   oc_token_expand_const,
   oc_token_expand_const,
   oc_token_expand_const,
@@ -852,14 +906,29 @@ static const oc_token_expand_func OC_TOKEN_EXPAND_TABLE[OC_NDCT_TOKENS-
   oc_token_expand_run
 };
 
-static int oc_dct_token_expand(int _token,int _extra_bits,
+/*Expands a single token into the given coefficient list.
+  This fills in the zeros for zero runs as well as coefficient values, and
+   updates the index of the current coefficient.
+  It CANNOT be called for any of the EOB tokens.
+  _token:      The token value to expand.
+  _extra_bits: The extra bits associated with the token.
+  _dct_coeffs: The current list of coefficients, in zig-zag order.
+  _zzi:        A pointer to the zig-zag index of the next coefficient to write
+                to.
+               This is updated before the function returns.*/
+static void oc_dct_token_expand(int _token,int _extra_bits,
  ogg_int16_t *_dct_coeffs,int *_zzi){
-  return (*OC_TOKEN_EXPAND_TABLE[_token-OC_NDCT_EOB_TOKEN_MAX])(_token,
+  (*OC_TOKEN_EXPAND_TABLE[_token-OC_NDCT_EOB_TOKEN_MAX])(_token,
    _extra_bits,_dct_coeffs,_zzi);
 }
 
 
 
+/*Reconstructs all coded fragments.
+  This requires that each coded fragment have a proper macro block mode and
+   motion vector (if not in INTRA mode), and have it's raw DC value decoded.
+  The token lists for each coefficient should also be filled in, along with
+   initial EOB run counts.*/
 static void oc_dec_frags_recon(oc_dec_ctx *_dec){
   oc_fragment *frag;
   int         *coded_fragi;
@@ -897,7 +966,7 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
     for(;coded_fragi<coded_fragi_end;coded_fragi++){
       /*This array is made bigger than necessary so that an invalid zero run
          cannot cause a buffer overflow.*/
-      ogg_int16_t  dct_coeffs[128];
+      ogg_int16_t  dct_coeffs[65];
       int          fragi;
       int          zzi;
       fragi=*coded_fragi;
@@ -928,12 +997,15 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
   }
 }
 
+
+
 theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
  const theora_setup_info *_setup){
   oc_dec_ctx *dec;
   if(_info==NULL||_setup==NULL)return NULL;
   dec=_ogg_malloc(sizeof(*dec));
   oc_dec_init(dec,_info,_setup);
+  dec->state.curframe_num=0;
   return dec;
 }
 
@@ -950,12 +1022,6 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
   oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
   ret=oc_dec_frame_header_unpack(_dec);
   if(ret<0)return ret;
-  /*Fill in the borders from the reconstructed version of the last encoded
-     frame.*/
-  if(_dec->state.ref_frame_idx[OC_FRAME_SELF]>=0){
-    oc_state_borders_fill(&_dec->state,
-     _dec->state.ref_frame_idx[OC_FRAME_SELF]);
-  }
   /*Select a free buffer to use for the reconstructed version of this frame.*/
   if(_dec->state.frame_type!=OC_INTRA_FRAME&&
    (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
@@ -988,7 +1054,10 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
      rfi==_dec->state.ref_frame_idx[OC_FRAME_PREV];rfi++);
     _dec->state.ref_frame_idx[OC_FRAME_SELF]=rfi;
   }
-  if(_dec->state.frame_type==OC_INTRA_FRAME)oc_dec_mark_all_intra(_dec);
+  if(_dec->state.frame_type==OC_INTRA_FRAME){
+    oc_dec_mark_all_intra(_dec);
+    _dec->state.keyframe_num=_dec->state.curframe_num;
+  }
   else{
     oc_dec_coded_flags_unpack(_dec);
     ret=oc_dec_mb_modes_unpack(_dec);
@@ -1021,6 +1090,8 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
       plfragis[2]=plfragis[1]+_dec->state.ncoded_fragis[1];
       oc_state_frag_copy(&_dec->state,plfragis,_dec->state.ncoded_fragis,
        OC_FRAME_PREV,OC_FRAME_SELF);
+      _dec->state.ref_frame_idx[OC_FRAME_SELF]=
+       _dec->state.ref_frame_idx[OC_FRAME_PREV];
     }
     else{
       plfragis[0]=_dec->state.uncoded_fragis-_dec->state.nuncoded_fragis[0];
@@ -1032,6 +1103,16 @@ int theora_decode_packetin(theora_dec_ctx *_dec,ogg_packet *_op){
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
   }
+  /*Fill in the borders from the reconstructed version of the last encoded
+     frame.*/
+  if(_dec->state.ref_frame_idx[OC_FRAME_PREV]>=0){
+    oc_state_borders_fill(&_dec->state,
+     _dec->state.ref_frame_idx[OC_FRAME_PREV]);
+  }
+  _dec->state.granpos=
+   (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
+   (_dec->state.curframe_num-_dec->state.keyframe_num);
+  _dec->state.curframe_num++;
   return 0;
 }
 
@@ -1039,5 +1120,8 @@ int theora_decode_ycbcr_out(theora_dec_ctx *_dec,theora_ycbcr_buffer _ycbcr){
   /*No post-processing for now.*/
   oc_ycbcr_buffer_flip(_ycbcr,_dec->state.ref_frame_bufs[
    _dec->state.ref_frame_idx[OC_FRAME_SELF]]);
+#if defined(OC_DUMP_IMAGES)
+  oc_state_dump_frame(&_dec->state,OC_FRAME_SELF);
+#endif
   return 0;
 }

@@ -19,7 +19,7 @@ void oc_quant_params_unpack(oggpack_buffer *_opb,
    _qinfo->qi_ranges[1][1].nranges=_qinfo->qi_ranges[0][1].nranges=
    _qinfo->qi_ranges[1][0].nranges=_qinfo->qi_ranges[0][0].nranges=1;
   sizes=(int *)_ogg_malloc(sizeof(sizes[0]));
-  sizes[0]=64;
+  sizes[0]=63;
   _qinfo->qi_ranges[1][2].sizes=_qinfo->qi_ranges[0][2].sizes=
    _qinfo->qi_ranges[1][1].sizes=_qinfo->qi_ranges[0][1].sizes=
    _qinfo->qi_ranges[1][0].sizes=_qinfo->qi_ranges[0][0].sizes=sizes;

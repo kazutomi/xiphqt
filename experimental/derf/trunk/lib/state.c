@@ -2,6 +2,10 @@
 #include <string.h>
 #include "internal.h"
 #include "idct.h"
+#if defined(OC_DUMP_IMAGES)
+# include <stdio.h>
+# include "png.h"
+#endif
 
 
 
@@ -457,7 +461,7 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
   _state->ref_frame_bufs[0][1].width=_state->ref_frame_bufs[0][2].width=
    info->chroma_x_decimated?info->width>>1:info->width;
   _state->ref_frame_bufs[0][1].height=_state->ref_frame_bufs[0][2].height=
-   info->chroma_x_decimated?info->height>>1:info->height;
+   info->chroma_y_decimated?info->height>>1:info->height;
   _state->ref_frame_bufs[0][1].stride=_state->ref_frame_bufs[0][2].stride=
    chstride;
   memcpy(_state->ref_frame_bufs[1],_state->ref_frame_bufs[0],
@@ -823,17 +827,140 @@ void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
       unsigned char *dst;
       unsigned char *src;
       int            j;
+      int            i;
       frag=_state->frags+*fragi;
       dst=frag->buffer[dst_framei];
       src=frag->buffer[src_framei];
       for(j=0;j<8;j++){
-        memcpy(dst,src,8);
+        for(i=0;i<8;i++)dst[i]=src[i];
         dst+=dst_ystride;
         src+=src_ystride;
       }
     }
   }
 }
+
+#if defined(OC_DUMP_IMAGES)
+int oc_state_dump_frame(const oc_theora_state *_state,int _frame){
+  /*Dump a PNG of the reconstructed image.*/
+  png_structp    png;
+  png_infop      info;
+  png_bytep     *image;
+  FILE          *fp;
+  char           fname[16];
+  unsigned char *y_row;
+  unsigned char *u_row;
+  unsigned char *v_row;
+  unsigned char *y;
+  unsigned char *u;
+  unsigned char *v;
+  ogg_int64_t    iframe;
+  ogg_int64_t    pframe;
+  int            y_stride;
+  int            u_stride;
+  int            v_stride;
+  int            framei;
+  int            width;
+  int            height;
+  int            imgi;
+  int            imgj;
+  width=_state->info.width;
+  height=_state->info.height;
+  iframe=_state->granpos>>_state->info.keyframe_granule_shift;
+  pframe=_state->granpos-(iframe<<_state->info.keyframe_granule_shift);
+  sprintf(fname,"%08irec.png",(int)(iframe+pframe));
+  fp=fopen(fname,"wb");
+  if(fp==NULL)return OC_FAULT;
+  image=(png_bytep *)oc_malloc_2d(height,6*width,sizeof(image[0][0]));
+  png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
+  if(png==NULL){
+    oc_free_2d(image);
+    fclose(fp);
+    return OC_FAULT;
+  }
+  info=png_create_info_struct(png);
+  if(info==NULL){
+    png_destroy_write_struct(&png,NULL);
+    oc_free_2d(image);
+    fclose(fp);
+    return OC_FAULT;
+  }
+  if(setjmp(png_jmpbuf(png))){
+    png_destroy_write_struct(&png,&info);
+    oc_free_2d(image);
+    fclose(fp);
+    return OC_FAULT;
+  }
+  framei=_state->ref_frame_idx[_frame];
+  y_row=_state->ref_frame_bufs[framei][0].data;
+  u_row=_state->ref_frame_bufs[framei][1].data;
+  v_row=_state->ref_frame_bufs[framei][2].data;
+  y_stride=_state->ref_frame_bufs[framei][0].stride;
+  u_stride=_state->ref_frame_bufs[framei][1].stride;
+  v_stride=_state->ref_frame_bufs[framei][2].stride;
+  for(imgi=height;imgi-->0;){
+    int dc;
+    y=y_row;
+    u=u_row;
+    v=v_row;
+    for(imgj=0;imgj<6*width;){
+      float    yval;
+      float    uval;
+      float    vval;
+      unsigned rval;
+      unsigned gval;
+      unsigned bval;
+      /*This is intentionally slow and very accurate.*/
+      yval=(*y-16)*(1.0F/219);
+      uval=(*u-128)*(2*(1-0.114F)/224);
+      vval=(*v-128)*(2*(1-0.299F)/224);
+      rval=OC_CLAMPI(0,(int)(65535*(yval+vval)+0.5F),65535);
+      gval=OC_CLAMPI(0,(int)(65535*(
+       yval-uval*(0.114F/0.587F)-vval*(0.299F/0.587F))+0.5F),65535);
+      bval=OC_CLAMPI(0,(int)(65535*(yval+uval)+0.5F),65535);
+      image[imgi][imgj++]=(unsigned char)(rval>>8);
+      image[imgi][imgj++]=(unsigned char)(rval&0xFF);
+      image[imgi][imgj++]=(unsigned char)(gval>>8);
+      image[imgi][imgj++]=(unsigned char)(gval&0xFF);
+      image[imgi][imgj++]=(unsigned char)(bval>>8);
+      image[imgi][imgj++]=(unsigned char)(bval&0xFF);
+      dc=(y-y_row&1)|!_state->info.chroma_x_decimated;
+      y++;
+      u+=dc;
+      v+=dc;
+    }
+    dc=-((height-1-imgi&1)|!_state->info.chroma_y_decimated);
+    y_row+=y_stride;
+    u_row+=dc&u_stride;
+    v_row+=dc&v_stride;
+  }
+  png_init_io(png,fp);
+  png_set_compression_level(png,Z_BEST_COMPRESSION);
+  png_set_IHDR(png,info,width,height,16,PNG_COLOR_TYPE_RGB,
+   PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,PNG_FILTER_TYPE_DEFAULT);
+  switch(_state->info.colorspace){
+    case OC_CS_ITU_REC_470M:{
+      png_set_gAMA(png,info,2.2);
+      png_set_cHRM_fixed(png,info,31006,31616,
+       67000,32000,21000,71000,14000,8000);
+    }break;
+    case OC_CS_ITU_REC_470BG:{
+      png_set_gAMA(png,info,2.67);
+      png_set_cHRM_fixed(png,info,31271,32902,
+       64000,33000,29000,60000,15000,6000);
+    }break;
+  }
+  png_set_pHYs(png,info,_state->info.aspect_numerator,
+   _state->info.aspect_denominator,0);
+  png_set_rows(png,info,image);
+  png_write_png(png,info,PNG_TRANSFORM_IDENTITY,NULL);
+  png_write_end(png,info);
+  png_destroy_write_struct(&png,&info);
+  oc_free_2d(image);
+  fclose(fp);
+  return 0;
+}
+#endif
 
 
 

@@ -3,6 +3,27 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "dump_video"=".\dump_video.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name theora_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vorbis_static
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "encoder_example"=".\encoder_example.dsp" - Package Owner=<4>
 
 Package=<5>

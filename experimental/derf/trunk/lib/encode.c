@@ -4,10 +4,6 @@
 #include <ogg/ogg.h>
 #include "encint.h"
 #include "fdct.h"
-#if defined(OC_DUMP_IMAGES)
-# include <stdio.h>
-# include "png.h"
-#endif
 
 
 
@@ -1148,142 +1144,24 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
      sizeof(_enc->dct_token_offs[pli]));
     coded_fragi_end+=_enc->state.ncoded_fragis[pli];
     for(;coded_fragi<coded_fragi_end;coded_fragi++){
-      oc_fragment *frag;
-      int          fragi;
+      oc_fragment          *frag;
+      oc_fragment_enc_info *efrag;
+      int                   fragi;
+      int                   qti;
+      int                   nnzc;
       fragi=*coded_fragi;
       frag=_enc->state.frags+fragi;
-      if(frag->coded){
-        oc_fragment_enc_info *efrag;
-        int                   qti;
-        int                   nnzc;
-        qti=frag->mbmode!=OC_MODE_INTRA;
-        efrag=_enc->frinfo+fragi;
-        nnzc=oc_enc_frag_quant_tokenize(_enc,efrag,
-         _enc->enquant_tables[qti][pli][0][_enc->state.qi],
-         _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
-        /*While we're here and things are in cache, reconstruct the quantized
-           fragment.*/
-        oc_state_frag_recon(&_enc->state,frag,pli,efrag->dct_coeffs,nnzc,
-         _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
-      }
+      efrag=_enc->frinfo+fragi;
+      qti=frag->mbmode!=OC_MODE_INTRA;
+      nnzc=oc_enc_frag_quant_tokenize(_enc,efrag,
+       _enc->enquant_tables[qti][pli][0][_enc->state.qi],
+       _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
+      /*While we're here and things are in cache, reconstruct the quantized
+         fragment.*/
+      oc_state_frag_recon(&_enc->state,frag,pli,efrag->dct_coeffs,nnzc,
+       _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
     }
   }
-#if defined(OC_DUMP_IMAGES)
-  /*Dump a PNG of the reconstructed image.*/
-  {
-    png_structp    png;
-    png_infop      info;
-    png_bytep     *image;
-    FILE          *fp;
-    char           fname[16];
-    unsigned char *y_row;
-    unsigned char *u_row;
-    unsigned char *v_row;
-    unsigned char *y;
-    unsigned char *u;
-    unsigned char *v;
-    int            y_stride;
-    int            u_stride;
-    int            v_stride;
-    int            framei;
-    int            width;
-    int            height;
-    int            imgi;
-    int            imgj;
-    width=_enc->state.info.width;
-    height=_enc->state.info.height;
-    sprintf(fname,"%08irec.png",_enc->state.curframe_num);
-    fp=fopen(fname,"wb");
-    if(fp==NULL)return;
-    image=(png_bytep *)oc_malloc_2d(height,6*width,sizeof(image[0][0]));
-    png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
-    if(png==NULL){
-      oc_free_2d(image);
-      fclose(fp);
-      return;
-    }
-    info=png_create_info_struct(png);
-    if(info==NULL){
-      png_destroy_write_struct(&png,NULL);
-      oc_free_2d(image);
-      fclose(fp);
-      return;
-    }
-    if(setjmp(png_jmpbuf(png))){
-      png_destroy_write_struct(&png,&info);
-      oc_free_2d(image);
-      fclose(fp);
-      return;
-    }
-    framei=_enc->state.ref_frame_idx[OC_FRAME_SELF];
-    y_row=_enc->state.ref_frame_bufs[framei][0].data;
-    u_row=_enc->state.ref_frame_bufs[framei][1].data;
-    v_row=_enc->state.ref_frame_bufs[framei][2].data;
-    y_stride=_enc->state.ref_frame_bufs[framei][0].stride;
-    u_stride=_enc->state.ref_frame_bufs[framei][1].stride;
-    v_stride=_enc->state.ref_frame_bufs[framei][2].stride;
-    for(imgi=height;imgi-->0;){
-      int dc;
-      y=y_row;
-      u=u_row;
-      v=v_row;
-      for(imgj=0;imgj<6*width;){
-        float    yval;
-        float    uval;
-        float    vval;
-        unsigned rval;
-        unsigned gval;
-        unsigned bval;
-        /*This is intentionally slow and very accurate.*/
-        yval=(*y-16)*(1.0F/219);
-        uval=(*u-128)*(2*(1-0.114F)/224);
-        vval=(*v-128)*(2*(1-0.299F)/224);
-        rval=OC_CLAMPI(0,(int)(65535*(yval+vval)+0.5F),65535);
-        gval=OC_CLAMPI(0,(int)(65535*(
-         yval-uval*(0.114F/0.587F)-vval*(0.299F/0.587F))+0.5F),65535);
-        bval=OC_CLAMPI(0,(int)(65535*(yval+uval)+0.5F),65535);
-        image[imgi][imgj++]=(unsigned char)(rval>>8);
-        image[imgi][imgj++]=(unsigned char)(rval&0xFF);
-        image[imgi][imgj++]=(unsigned char)(gval>>8);
-        image[imgi][imgj++]=(unsigned char)(gval&0xFF);
-        image[imgi][imgj++]=(unsigned char)(bval>>8);
-        image[imgi][imgj++]=(unsigned char)(bval&0xFF);
-        dc=y-y_row&1;
-        y++;
-        u+=dc;
-        v+=dc;
-      }
-      dc=-(height-1-imgi&1);
-      y_row+=y_stride;
-      u_row+=dc&u_stride;
-      v_row+=dc&v_stride;
-    }
-    png_init_io(png,fp);
-    png_set_compression_level(png,Z_BEST_COMPRESSION);
-    png_set_IHDR(png,info,width,height,16,PNG_COLOR_TYPE_RGB,
-     PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,PNG_FILTER_TYPE_DEFAULT);
-    switch(_enc->state.info.colorspace){
-      case OC_CS_ITU_REC_470M:{
-        png_set_gAMA(png,info,2.2);
-        png_set_cHRM_fixed(png,info,31006,31616,
-         67000,32000,21000,71000,14000,8000);
-      }break;
-      case OC_CS_ITU_REC_470BG:{
-        png_set_gAMA(png,info,2.67);
-        png_set_cHRM_fixed(png,info,31271,32902,
-         64000,33000,29000,60000,15000,6000);
-      }break;
-    }
-    png_set_pHYs(png,info,_enc->state.info.aspect_numerator,
-     _enc->state.info.aspect_denominator,0);
-    png_set_rows(png,info,image);
-    png_write_png(png,info,PNG_TRANSFORM_IDENTITY,NULL);
-    png_write_end(png,info);
-    png_destroy_write_struct(&png,&info);
-    oc_free_2d(image);
-    fclose(fp);
-  }
-#endif
   /*Merge the final EOB run of one coefficient list with the start of the
      next, if possible.*/
   for(zzi=1;zzi<64;zzi++){
@@ -1568,7 +1446,7 @@ static int oc_enc_pack_coded_sb_flags(oc_enc_ctx *_enc){
   sb_end=sb+_enc->state.nsbs;
   for(;;sb++){
     if(sb>=sb_end)return 0;
-    if(sb->coded_partially)break;
+    if(!sb->coded_partially)break;
   }
   flag=sb->coded_fully;
   oggpackB_write(&_enc->opb_coded_flags,flag,1);
@@ -2420,6 +2298,8 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
         plfragis[2]=plfragis[1]+_enc->state.ncoded_fragis[1];
         oc_state_frag_copy(&_enc->state,plfragis,_enc->state.ncoded_fragis,
          OC_FRAME_PREV,OC_FRAME_SELF);
+        _enc->state.ref_frame_idx[OC_FRAME_SELF]=
+         _enc->state.ref_frame_idx[OC_FRAME_PREV];
       }
       else{
         plfragis[0]=_enc->state.uncoded_fragis-_enc->state.nuncoded_fragis[0];
@@ -2431,10 +2311,13 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
          _enc->state.ref_frame_idx[OC_FRAME_SELF];
       }
     }
+#if defined(OC_DUMP_IMAGES)
+    oc_state_dump_frame(&_enc->state,OC_FRAME_PREV);
+#endif
     /*Fill in the borders from the reconstructed version of the last encoded
        frame.*/
     oc_state_borders_fill(&_enc->state,
-     _enc->state.ref_frame_idx[OC_FRAME_SELF]);
+     _enc->state.ref_frame_idx[OC_FRAME_PREV]);
   }
   /*Select a free buffer to use for the reconstructed version of this frame.*/
   for(rfi=0;rfi==_enc->state.ref_frame_idx[OC_FRAME_GOLD]||

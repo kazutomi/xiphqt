@@ -13,6 +13,14 @@ static void oc_unpack_octets(oggpack_buffer *_opb,char *_buf,size_t _len){
   while(_len-->0)*_buf++=(char)oggpackB_read(_opb,8);
 }
 
+/*Unpacks a 32-bit integer encoded by octets in little-endian form.*/
+static long oc_unpack_length(oggpack_buffer *_opb){
+  long ret[4];
+  int  i;
+  for(i=0;i<4;i++)ret[i]=oggpackB_read(_opb,8);
+  return ret[0]|ret[1]<<8|ret[2]<<16|ret[3]<<24;
+}
+
 static int oc_info_unpack(oggpack_buffer *_opb,theora_info *_info){
   /*Check the codec bitstream version.*/
   _info->version_major=(unsigned char)oggpackB_read(_opb,8);
@@ -57,7 +65,7 @@ static int oc_info_unpack(oggpack_buffer *_opb,theora_info *_info){
 static int oc_comment_unpack(oggpack_buffer *_opb,theora_comment *_tc){
   long len;
   /*Read the vendor string.*/
-  len=oggpackB_read(_opb,32);
+  len=oc_unpack_length(_opb);
   if(len<0)return OC_BADHEADER;
   _tc->vendor=_ogg_malloc((size_t)len+1);
   oc_unpack_octets(_opb,_tc->vendor,len);
@@ -67,7 +75,7 @@ static int oc_comment_unpack(oggpack_buffer *_opb,theora_comment *_tc){
   if(_tc->comments>=0){
     int i;
     for(i=0;i<_tc->comments;i++){
-      len=oggpackB_read(_opb,32);
+      len=oc_unpack_length(_opb);
       if(len<0)return OC_BADHEADER;
       _tc->comment_lengths[i]=len;
       _tc->user_comments[i]=_ogg_malloc((size_t)len+1);
@@ -85,6 +93,11 @@ static int oc_setup_unpack(oggpack_buffer *_opb,theora_setup_info *_setup){
   return oc_huff_trees_unpack(_opb,_setup->huff_tables);
 }
 
+static void oc_setup_clear(theora_setup_info *_setup){
+  oc_quant_params_clear(&_setup->qinfo);
+  oc_huff_trees_clear(_setup->huff_tables);
+}
+
 static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
  theora_comment *_tc,theora_setup_info **_setup,ogg_packet *_op){
   char buffer[6];
@@ -93,7 +106,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
   /*Check to make sure this is the info header.*/
   packtype=(int)oggpackB_read(_opb,8);
   /*Check the codec string.*/
-  oc_unpack_octets(_opb,buffer,8);
+  oc_unpack_octets(_opb,buffer,6);
   if(memcmp(buffer,"theora",6)!=0)return OC_NOTFORMAT;
   switch(packtype){
     /*Codec info header.*/
@@ -127,8 +140,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
       setup=(oc_setup_info *)_ogg_calloc(1,sizeof(*setup));
       ret=oc_setup_unpack(_opb,setup);
       if(ret<0){
-        oc_quant_params_clear(&setup->qinfo);
-        oc_huff_trees_clear(setup->huff_tables);
+        oc_setup_clear(setup);
         _ogg_free(setup);
       }
       else{
@@ -156,4 +168,11 @@ int theora_decode_headerin(theora_info *_info,theora_comment *_tc,
   ret=oc_dec_headerin(&opb,_info,_tc,_setup,_op);
   /*TODO: Clear opb in libogg2.*/
   return ret;
+}
+
+void theora_setup_free(theora_setup_info *_setup){
+  if(_setup!=NULL){
+    oc_setup_clear(_setup);
+    _ogg_free(_setup);
+  }
 }

@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.5 2004/03/01 01:49:34 derf Exp $
+  last mod: $Id: theora.h,v 1.6 2004/03/03 14:53:04 derf Exp $
 
  ********************************************************************/
 
@@ -266,7 +266,7 @@ extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
 extern void theora_encode_free(theora_enc_ctx *_enc);
 
 
-extern int theora_decode_header(theora_info *_info,theora_comment *_tc,
+extern int theora_decode_headerin(theora_info *_info,theora_comment *_tc,
  theora_setup_info **_setup,ogg_packet *_op);
 extern theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
  const theora_setup_info *_setup);

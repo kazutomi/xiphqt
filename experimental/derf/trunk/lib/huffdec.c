@@ -110,7 +110,7 @@ static int oc_huff_tree_mindepth(oc_huff_node *_binode){
            0 indicates the current node should be stored in the table.*/
 static void oc_huff_node_fill(oc_huff_node **_nodes,
  oc_huff_node *_binode,int _depth){
-  if(--_depth==0)_nodes[0]=_binode;
+  if(_depth--<=0)_nodes[0]=_binode;
   else{
     oc_huff_node_fill(_nodes,_binode->nodes[0],_depth);
     oc_huff_node_fill(_nodes+(1<<_depth),_binode->nodes[1],_depth);
@@ -193,12 +193,12 @@ void oc_huff_trees_clear(oc_huff_node *_nodes[OC_NHUFFMAN_TABLES]){
 /*Unpacks a single token using the given Huffman tree.
   _opb:  The buffer to unpack the token from.
   _node: The tree to unpack the token with.
-  Return: The token value on success, or a negative value on error.*/
+  Return: The token value.*/
 int oc_huff_token_decode(oggpack_buffer *_opb,const oc_huff_node *_node){
   long bits;
-  if(_node->nbits==0)return _node->token;
-  bits=oggpackB_read(_opb,_node->nbits);
-  if(bits<0)return OC_BADPACKET;
-  _node=_node->nodes[bits];
-  return oc_huff_token_decode(_opb,_node);
+  while(_node->nbits!=0){
+    bits=oggpackB_read(_opb,_node->nbits)&(1<<_node->nbits)-1;
+    _node=_node->nodes[bits];
+  }
+  return _node->token;
 }

@@ -306,8 +306,11 @@ typedef void (*oc_set_chroma_mvs_func)(char _cbmvs[4][2],
 
 
 /*A map from the index in the zig zag scan to the coefficient number in a
-   block.*/
-extern const int OC_FZIG_ZAG[64];
+   block.
+  The extra 64 entries send out of bounds indexes to index 64.
+  This is used to safely ignore invalid zero runs when decoding
+   coefficients.*/
+extern const int OC_FZIG_ZAG[128];
 /*A map from the coefficient number in a block to its index in the zig zag
    scan.*/
 extern const int OC_IZIG_ZAG[64];
@@ -331,6 +334,7 @@ extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[4];
 
 int oc_ilog(unsigned _v);
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
+void **oc_calloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
 void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
@@ -361,5 +365,8 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  const ogg_uint16_t _iquant[64]);
 void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
  int _nfragis[3],int _dst_frame,int _src_frame);
+#if defined(OC_DUMP_IMAGES)
+int oc_state_dump_frame(const oc_theora_state *_state,int _frame);
+#endif
 
 #endif
