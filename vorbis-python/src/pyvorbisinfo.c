@@ -233,7 +233,6 @@ not a list of (string, list) tuples.";
 static void py_vorbis_comment_dealloc(PyObject *);
 static PyObject *py_vorbis_comment_getattr(PyObject *, char *name);
 
-
 static PyMethodDef py_vcomment_methods[] = {
   {"clear", py_vorbis_comment_clear, 
    METH_VARARGS, py_vorbis_comment_clear_doc},
@@ -333,8 +332,8 @@ py_comment_new_from_vc(vorbis_comment *vc, PyObject *parent)
   return (PyObject *) newobj;
 }
 
-PyObject *
-py_comment_new_empty()
+static PyObject *
+py_comment_new_empty(void)
 {
   py_vcomment *newobj;
   newobj = (py_vcomment *) PyObject_NEW(py_vcomment, 
@@ -694,13 +693,35 @@ assign_tag(vorbis_comment *vcomment, const char *key, PyObject *tag)
   char tag_buff[1024];
   if (PyString_Check(tag)) {
     tag_str = PyString_AsString(tag);
-  } else {
-    /* TODO - Unicode */
+  } 
+#if PY_UNICODE
+  else if (PyUnicode_Check(tag)) {
+    tag_str = PyString_AsString(PyUnicode_AsUTF8String(tag));
+  }
+#endif
+  else {
+    PyErr_SetString(PyExc_ValueError, 
+                    "Setting comment with non-string object");
+    return 0;
   }
   if (!strcasecmp(key, "vendor")) {
     vcomment->vendor = strdup(tag_str);
   } else {
-    snprintf(tag_buff, sizeof(tag_buff), "%s=%s", key, tag_str);
+    int k;
+    int key_len = strlen(key);
+    int value_len = strlen(tag_str);
+    if (key_len + value_len + 1 >= sizeof(tag_buff)) {
+      PyErr_SetString(PyExc_ValueError, 
+                      "Comment too long for allocated buffer");
+      return 0;
+    }
+    // Capitalize the key. This is not strictly necessary, but it
+    // keeps things looking consistent.
+    for (k = 0; k < key_len; k++) 
+      tag_buff[k] = toupper(key[k]);
+    tag_buff[key_len] = '=';
+    strncpy(tag_buff + key_len + 1, tag_str, sizeof(tag_buff) - key_len - 1);
+    printf("Tag is now \"%s\"", tag_buff);
     vorbis_comment_add(vcomment, tag_buff);
   }
   return 1;
@@ -715,7 +736,11 @@ static int
 create_comment_from_items(vorbis_comment *vcomment, 
                           const char *key, PyObject *item_vals)
 {
-  
+#if PY_UNICODE 
+  if (PyUnicode_Check(item_vals)) {
+    return assign_tag(vcomment, key, item_vals);
+  } else 
+#endif
   if (PyString_Check(item_vals)) {
     return assign_tag(vcomment, key, item_vals);
   } else if (PySequence_Check(item_vals)) {

@@ -211,9 +211,25 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
 
     fname = NULL;
     file = PyFile_AsFile(fobject);
+    if (file) {
+      /* We have to duplicate the file descriptor, since both Python
+         and vorbisfile will want to close it. Don't use the file
+         after you pass it in, or much evil will occur. 
 
-    if (file == NULL) 
+         Really, you shouldn't be passing in files anymore, but in the
+         interest of backwards compatibility it'll stay.
+      */
+      int orig_fd, new_fd;
+      orig_fd = fileno(file);
+      new_fd = dup(orig_fd);
+      file = fdopen(new_fd, "r");
+      if (!file) {
+        PyErr_SetString(PyExc_IOError, "Could not duplicate file.");
+        return NULL;
+      }
+    } else {
       return NULL;
+    }
 
   } else {
     PyErr_SetString(PyExc_TypeError, 
