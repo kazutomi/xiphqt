@@ -1,32 +1,25 @@
 /* 
  * oggsplit - splits multiplexed Ogg files into separate files
  *
- * Copyright (C) 2003 Philip Jägenstedt
+ * Copyright (C) 2003 Philip JÃ¤genstedt
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
-*/
+ */
 
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 #include "output.h"
 #include "common.h"
 
-int output_ctrl_init(output_ctrl_t *oc,
-		     char *dirname, char *filename)
+int output_ctrl_init(output_ctrl_t *oc, char *filename)
 {
+  int fnlen, i;
+
   /* Begin with 8 (output_t *):s
    * We are using an array of (output_t *) instead of just output_t since the
    * address of the output_t objects musn't change (they are referenced
@@ -34,19 +27,25 @@ int output_ctrl_init(output_ctrl_t *oc,
    */
   oc->outputs=xmalloc(sizeof(output_t *)*8);
 
-  oc->dirname=xstrdup(dirname);
-
-  oc->basename=xstrdup(filename);
-
-  /* FIXME: come up with a more portable solution */
-  /* strip .ogg extension if it's there */
-  if(strcasecmp((oc->basename+strlen(oc->basename)-4), ".ogg")==0){
-    oc->basename[strlen(oc->basename)-4]='\0';
-  }
-
   oc->idcount=0;
   oc->outputs_size=8;
   oc->outputs_used=0;
+
+  oc->basename=NULL;
+  oc->suffix=NULL;
+
+  fnlen=strlen(filename);
+  for(i=fnlen-1; i>fnlen-6; i--){
+    if(filename[i]=='.'){
+      oc->basename=xmalloc(i+1);
+      strncpy(oc->basename, filename, i+1);
+      oc->basename[i]='\0';
+      oc->suffix=xstrdup(&filename[i]);
+    }
+  }
+
+  if(oc->basename==NULL)oc->basename=xstrdup(filename);
+  if(oc->suffix==NULL)oc->suffix=xstrdup(".ogg");
 
   return 1;
 }
@@ -61,7 +60,6 @@ int output_ctrl_free(output_ctrl_t *oc)
   }
 
   free(oc->outputs);
-  free(oc->dirname);
   free(oc->basename);
 
   return 1;
@@ -80,24 +78,24 @@ output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c)
 
   op=xmalloc(sizeof(output_t));
 
-  fnlen=strlen(oc->dirname)+strlen(oc->basename)+16;
+  fnlen=strlen(oc->basename)+strlen(oc->suffix)+16;
   op->filename=xmalloc(fnlen);
 
   while(1){
     if(chain_c)
       if(group_c)
-	fnret=snprintf(op->filename, fnlen, "%s%s.c%02d.g%02d.ogg",
-		       oc->dirname, oc->basename, chain_c, group_c);
+	fnret=snprintf(op->filename, fnlen, "%s.c%02d.g%02d%s",
+		       oc->basename, chain_c, group_c, oc->suffix);
       else
-	fnret=snprintf(op->filename, fnlen, "%s%s.c%02d.ogg",
-		       oc->dirname, oc->basename, chain_c);
+	fnret=snprintf(op->filename, fnlen, "%s.c%02d%s",
+		       oc->basename, chain_c, oc->suffix);
     else
       if(group_c)
-	fnret=snprintf(op->filename, fnlen, "%s%s.g%02d.ogg",
-		       oc->dirname, oc->basename, group_c);
+	fnret=snprintf(op->filename, fnlen, "%s.g%02d%s",
+		       oc->basename, group_c, oc->suffix);
       else
-	fnret=snprintf(op->filename, fnlen, "%s%s.junk",
-		       oc->dirname, oc->basename);
+	fnret=snprintf(op->filename, fnlen, "%s.junk%s",
+		       oc->basename, oc->suffix);
 
     if(fnret>=fnlen){
       /* try again and get it right this time */

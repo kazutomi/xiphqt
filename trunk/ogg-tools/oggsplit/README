@@ -7,8 +7,10 @@ oggsplit - splits multiplexed Ogg files
   grouped, for example the video and audio streams in a theora+vorbis
   file.
 
+  For build and install instructions, see INSTALL.
+
   See the manfile (man oggsplit) for usage information.
 
   Comments and bugfixes are welcome.
 
-    - Philip Jägenstedt <philipj@telia.com>
+    - Philip JÃ¤genstedt <philipj@telia.com>

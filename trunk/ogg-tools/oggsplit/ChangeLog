@@ -1,4 +1,10 @@
-2003-08-05  Philip Jägenstedt  <philipj@telia.com>
+oggsplit (0.1.1)
+  * changed how the output filenames are calculated. Now any suffix of
+    length 4 or less is stripped out and used (might be good for .spx).
+  * output files are now placed in CWD by default, instead of the same dir
+    as input files.
+  * changed source files and docs (not the man page) to use UTF-8 encoding.
+  * removed use of autoproject's system.h and xmalloc.c
 
-	* oggsplit: initial version 0.1.0.
-
+oggsplit (0.1.0)
+  * initial version.

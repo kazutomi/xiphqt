@@ -1,7 +1,7 @@
 /* 
  * oggsplit - splits multiplexed Ogg files into separate files
  *
- * Copyright (C) 2003 Philip Jägenstedt
+ * Copyright (C) 2003 Philip JÃ¤genstedt
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
-*/
+ */
 
 #include <stdio.h>
 #include <getopt.h>
@@ -57,8 +57,6 @@ struct option options [] = {
 static void usage(void)
 {
   fprintf(stderr,
-	  "OggSplit %s\n"
-	  "(c) 2003 Philip Jägenstedt <philipj@telia.com>\n\n"
 	  "Usage: oggsplit [options] input_files [...]\n"
 	  "Supported options:\n"
 	  "  -c --unchain   Only split chained streams. The default is to\n"
@@ -82,8 +80,8 @@ static int buffer_data(FILE *f, ogg_sync_state *oy)
 
 static int process_file(const char *pathname)
 {
-  char *dirname, *filename, *slash;
-  int dirname_len;
+  int i;
+  char *filename;
 
   FILE *infile;
 
@@ -109,24 +107,25 @@ static int process_file(const char *pathname)
     return 0;
   }
 
-  /* split out dirname and basename */
-  slash=strrchr(pathname, '/');
-  if(slash==NULL)
-    slash=(char *)(pathname-1);
-  dirname_len=slash-pathname+1;
-  if(outdir!=NULL){
-    dirname=xstrdup(outdir);
-  }else{
-    dirname=xmalloc(dirname_len+1);
-    if(dirname_len)
-      strncpy(dirname, pathname, dirname_len);
-    dirname[dirname_len]='\0';
+  /* take out the path section from pathname */
+  for(i=strlen(pathname)-1; i>=0; i--){
+    if(pathname[i]=='/'){
+      i++;
+      break;
+    }
   }
-  filename=xmalloc(strlen(pathname)-dirname_len+1);
-  strcpy(filename, slash+1);
+
+  if(outdir!=NULL){
+    filename=xmalloc(strlen(outdir)+strlen(&pathname[i])+2);
+    strcpy(filename, outdir);
+    filename[strlen(outdir)]='/';
+    strcpy(&filename[strlen(outdir)+1], &pathname[i]);
+  }else{
+    filename=xstrdup(&pathname[i]);    
+  }
 
   stream_ctrl_init(&sc);
-  output_ctrl_init(&oc, dirname, filename);
+  output_ctrl_init(&oc, filename);
 
   ogg_sync_init(&oy);
 
@@ -232,7 +231,6 @@ static int process_file(const char *pathname)
 	    "  transfer or an aborted encoding process.\n\n%s",
 	    sc.streams_used, filename, broken_ogg);
 
-  free(dirname);
   free(filename);
 
   output_ctrl_free(&oc);
@@ -246,8 +244,8 @@ static int process_file(const char *pathname)
 int main(int argc, char **argv)
 {
   DIR *test;
-  int c, outdir_len;
 
+  int c;
   while((c=getopt_long(argc,argv,optstring,options,NULL))!=EOF){
     switch(c){
     case 'c':
@@ -264,16 +262,8 @@ int main(int argc, char **argv)
       }
       closedir(test);
 
-      outdir_len=strlen(optarg)+2;
-      if(outdir==NULL)
-	outdir=xmalloc(outdir_len);
-      else
-	outdir=xrealloc(outdir, outdir_len);
-      strcpy(outdir, optarg);
-      if(outdir[outdir_len-3]!='/'){
-	outdir[outdir_len-2]='/';
-	outdir[outdir_len-1]='\0';
-      }
+      if(outdir!=NULL)free(outdir);
+      outdir=xstrdup(optarg);
       break;
     case 'V':
       printf("OggSplit %s\n", VERSION);
@@ -304,8 +294,6 @@ int main(int argc, char **argv)
     process_file(argv[optind++]);
     printf("\n");
   }
-
-  printf("Done\n");
 
   if(outdir!=NULL)free(outdir);
 
