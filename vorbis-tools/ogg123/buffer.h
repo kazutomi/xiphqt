@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.14 2001/08/13 21:00:41 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.15 2001/08/22 16:42:31 kcarnold Exp $
  
 ********************************************************************/
 
@@ -69,6 +69,7 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
 		    pInitFunc init_func, int OptimalWriteSize);
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb);
 void buffer_MarkEOS (buf_t *buf);
+void buffer_NewStream (buf_t *buf);
 void buffer_ReaderQuit (buf_t *buf);
 void buffer_shutdown (buf_t *buf);
 void buffer_cleanup (buf_t *buf);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.10 2001/08/13 20:41:52 kcarnold Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.11 2001/08/22 16:42:31 kcarnold Exp $
 
  ********************************************************************/
 
@@ -42,8 +42,7 @@ typedef struct ogg123_options_s {
     int ntimes;                 /* Play every chunk n times */
   } playOpts;
   struct {
-    long int verbose;           /* Verbose output if > 0, quiet if < 0 */
-    long int quiet;             /* Be quiet (no title) */
+    long int verbose;           /* Verbose output if > 1, quiet if 0 */
     
     /* Status options:
      * stats[0] - currently playing file / stream

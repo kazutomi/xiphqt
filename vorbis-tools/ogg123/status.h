@@ -11,12 +11,14 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.2 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: status.h,v 1.1.2.3 2001/08/22 16:42:31 kcarnold Exp $
 
  ********************************************************************/
 
 #ifndef __STATUS_H
 #define __STATUS_H
+
+#include <stdarg.h>
 
 /* status interface */
 
@@ -40,7 +42,8 @@ typedef struct {
 } Stat_t;
 
 void UpdateStats (Stat_t stats[]);
-void ShowMessage (int prio, char keepStatusLine, char *msg);
+void ShowMessage (int prio, char keepStatusLine, char addNewline, char *fmt, ...);
+void Error (char *fmt, ...);
 void SetPriority (int prio);
 
 #endif /* __STATUS_H */
