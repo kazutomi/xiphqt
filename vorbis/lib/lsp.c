@@ -5,20 +5,19 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.24 2002/10/16 07:44:21 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.18 2001/06/15 21:15:39 xiphmont Exp $
 
   The LSP generation code is taken (with minimal modification and a
   few bugfixes) from "On the Computation of the LSP Frequencies" by
-  Joseph Rothweiler (see http://www.rothweiler.us for contact info).
-  The paper is available at:
-
-  http://www.myown1.com/joe/lsf
+  Joseph Rothweiler <rothwlr@altavista.net>, available at:
+  
+  http://www2.xtdl.com/~rothwlr/lsfpaper/lsfpage.html 
 
  ********************************************************************/
 
@@ -52,7 +51,7 @@
    ARM family. */
 
 /* undefine both for the 'old' but more precise implementation */
-#define   FLOAT_LOOKUP
+#undef   FLOAT_LOOKUP
 #undef    INT_LOOKUP
 
 #ifdef FLOAT_LOOKUP
@@ -145,7 +144,7 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
   int i;
   int ampoffseti=rint(ampoffset*4096.f);
   int ampi=rint(amp*16.f);
-  long *ilsp=alloca(m*sizeof(*ilsp));
+  long *ilsp=alloca(m*sizeof(long));
   for(i=0;i<m;i++)ilsp[i]=vorbis_coslook_i(lsp[i]/M_PI*65536.f+.5f);
 
   i=0;
@@ -295,7 +294,10 @@ static void cheby(float *g, int ord) {
 }
 
 static int comp(const void *a,const void *b){
-  return (*(float *)a<*(float *)b)-(*(float *)a>*(float *)b);
+  if(*(float *)a<*(float *)b)
+    return(1);
+  else
+    return(-1);
 }
 
 /* Newton-Raphson-Maehly actually functioned as a decent root finder,
@@ -309,7 +311,7 @@ static int comp(const void *a,const void *b){
 static int Laguerre_With_Deflation(float *a,int ord,float *r){
   int i,m;
   double lastdelta=0.f;
-  double *defl=alloca(sizeof(*defl)*(ord+1));
+  double *defl=alloca(sizeof(double)*(ord+1));
   for(i=0;i<=ord;i++)defl[i]=a[i];
 
   for(m=ord;m>0;m--){
@@ -365,7 +367,7 @@ static int Laguerre_With_Deflation(float *a,int ord,float *r){
 static int Newton_Raphson(float *a,int ord,float *r){
   int i, k, count=0;
   double error=1.f;
-  double *root=alloca(ord*sizeof(*root));
+  double *root=alloca(ord*sizeof(double));
 
   for(i=0; i<ord;i++) root[i] = r[i];
   
@@ -404,10 +406,10 @@ static int Newton_Raphson(float *a,int ord,float *r){
 int vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
   int order2=(m+1)>>1;
   int g1_order,g2_order;
-  float *g1=alloca(sizeof(*g1)*(order2+1));
-  float *g2=alloca(sizeof(*g2)*(order2+1));
-  float *g1r=alloca(sizeof(*g1r)*(order2+1));
-  float *g2r=alloca(sizeof(*g2r)*(order2+1));
+  float *g1=alloca(sizeof(float)*(order2+1));
+  float *g2=alloca(sizeof(float)*(order2+1));
+  float *g1r=alloca(sizeof(float)*(order2+1));
+  float *g2r=alloca(sizeof(float)*(order2+1));
   int i;
 
   /* even and odd are slightly different base cases */
@@ -443,8 +445,8 @@ int vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
   Newton_Raphson(g1,g1_order,g1r); /* if it fails, it leaves g1r alone */
   Newton_Raphson(g2,g2_order,g2r); /* if it fails, it leaves g2r alone */
 
-  qsort(g1r,g1_order,sizeof(*g1r),comp);
-  qsort(g2r,g2_order,sizeof(*g2r),comp);
+  qsort(g1r,g1_order,sizeof(float),comp);
+  qsort(g2r,g2_order,sizeof(float),comp);
 
   for(i=0;i<g1_order;i++)
     lsp[i*2] = acos(g1r[i]);

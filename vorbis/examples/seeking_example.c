@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
- *                                                                  *
+
  ********************************************************************
 
  function: illustrate seeking, and test it too
- last mod: $Id: seeking_example.c,v 1.15 2002/07/11 06:40:47 xiphmont Exp $
+ last mod: $Id: seeking_example.c,v 1.8 2001/05/27 06:43:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -19,11 +19,8 @@
 #include <stdio.h>
 #include "vorbis/codec.h"
 #include "vorbis/vorbisfile.h"
+#include "../lib/misc.h"
 
-#ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
-# include <io.h>
-# include <fcntl.h>
-#endif
 
 void _verify(OggVorbis_File *ov,ogg_int64_t pos,
 	     ogg_int64_t val,ogg_int64_t pcmval,
@@ -54,16 +51,6 @@ void _verify(OggVorbis_File *ov,ogg_int64_t pos,
   for(j=0;j<bread;j++){
     if(buffer[j]!=bigassbuffer[j+pos*2]){
       printf("data position after seek doesn't match pcm position\n");
-
-      {
-	FILE *f=fopen("a.m","w");
-	for(j=0;j<bread;j++)fprintf(f,"%d\n",(int)buffer[j]);
-	fclose(f);
-	f=fopen("b.m","w");
-	for(j=0;j<bread;j++)fprintf(f,"%d\n",(int)bigassbuffer[j+pos*2]);
-	fclose(f);
-      }
-
       exit(1);
     }
   }
@@ -75,12 +62,6 @@ int main(){
   ogg_int64_t pcmlength;
   char *bigassbuffer;
   int dummy;
-
-#ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
-  _setmode( _fileno( stdin ), _O_BINARY );
-  _setmode( _fileno( stdout ), _O_BINARY );
-#endif
-
 
   /* open the file/pipe on stdin */
   if(ov_open(stdin,&ov,NULL,-1)<0){
@@ -104,6 +85,7 @@ int main(){
     
     /* because we want to do sample-level verification that the seek
        does what it claimed, decode the entire file into memory */
+    printf("loading....\n");
     fflush(stdout);
     pcmlength=ov_pcm_total(&ov,-1);
     bigassbuffer=malloc(pcmlength*2); /* w00t */
@@ -116,8 +98,6 @@ int main(){
       }else{
 	pcmlength=i/2;
       }
-      fprintf(stderr,"\rloading.... [%ld left]              ",
-	      (long)(pcmlength*2-i));
     }
     
     /* Exercise all the real seeking cases; ov_raw_seek,
@@ -125,7 +105,7 @@ int main(){
        on pcm_seek */
     {
       ogg_int64_t length=ov.end;
-      printf("\rtesting raw seeking to random places in %ld bytes....\n",
+      printf("testing raw seeking to random places in %ld bytes....\n",
 	     (long)length);
     
       for(i=0;i<1000;i++){
@@ -146,6 +126,7 @@ int main(){
 
     printf("\r");
     {
+      ogg_int64_t length=ov.end;
       printf("testing pcm page seeking to random places in %ld samples....\n",
 	     (long)pcmlength);
     
@@ -182,7 +163,7 @@ int main(){
 	  exit(1);
 	}
 	if(ov_pcm_tell(&ov)!=val){
-	  printf("Declared position didn't perfectly match request: %ld != %ld\n",
+	  printf("Decalred position didn't perfectly match request: %ld != %ld\n",
 		 (long)val,(long)ov_pcm_tell(&ov));
 	  exit(1);
 	}
