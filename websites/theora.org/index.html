@@ -125,6 +125,43 @@
 
 <div class="content">			
 
+<h3>[ 2004 Dec 15 - libtheora 1.0 alpha 4 release ]</h3>
+<p>We're pleased to announce a new release of the libtheora reference
+implemenation. This is an incremental update over alpha 3, in support
+of <a href="http://icecast.org/">Icecast's</a> use of some new utility
+calls to provide theora streaming support.</p>
+<blockquote>
+<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.bz2">
+  libtheora-1.0alpha4.tar.bz2
+</a><br><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.gz">
+  libtheora-1.0alpha4.tar.gz
+</a><br><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.zip">
+  libtheora-1.0alpha4.zip
+</a>
+</blockquote>
+<p>Changes since the alpha3 release:
+<ul>
+ <li>first draft of the Theora I Format Specification</li>
+ <li>API documentation generated from theora.h with Doxygen</li>
+ <li>fix a double-update bug in the motion analysis</li>
+ <li>apply the loop filter before filling motion vector border
+   in the reference frame</li>
+ <li>new utility functions:
+   <tt>theora_packet_isheader(),</tt>
+   <tt>theora_packet_iskeyframe()</tt>, and
+   <tt>theora_granule_frame()</tt></li>
+ <li>optional support for building without floating point</li>
+ <li>optional support for building without encode support</li>
+ <li>various build and packaging fixes</li>
+ <li>pkg-config support</li>
+ <li>SymbianOS build support</li>
+</ul>
+</p>
+<p>We still plan to make incompatible api changes before the first beta 
+release, but this new alpha provides a stable base including all the 
+work that has happened up to those changes.</p>
+<p>Thanks to everyone who contributed!</p>
+
 <h3>[ 2004 Dec 11 - Theora support in LiVES ]</h3>
 <p>Theora is now fully supported in LiVES is a Video Editing System (LiVES), as of version 0.9.1.
 If you are interested in having a nice, user friendly interface for 
