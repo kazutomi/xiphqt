@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20011113";
+$version="Snatch 20011114";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
@@ -561,7 +561,6 @@ sub Robot_PlayFile{
 
 sub Robot_Stop{
     $last_timer_event=time();
-    $recording_restart=0;
     my $stopcode=join "",("Ks",pack ("S",4));
     syswrite COMM_SOCK,$stopcode;
 }
@@ -573,7 +572,6 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
-    $recording_restart=0;
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback) && !recording_active){
@@ -596,7 +594,6 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
-    $recording_restart=0;
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback)){
@@ -638,7 +635,6 @@ sub DoTimedEntry{
        $password,$outfile,$url)=SplitTimerEntry($line);
 
     $recording_pending=1;
-    $recording_restart=1;
     $last_timer_event=$start;
     $next_timer_event=$start+$duration-1; # the -1 is important; makes sure contiguous
                                           # but nonoverlapping events don't interfere
@@ -1078,10 +1074,6 @@ sub ReadStderr{
 	if($line=~/Capture stopped/){
 	    $recording_active=0;
 	    $recording_pending=0;
-
-	    if($recording_restart){
-		SetupTimerDispatch();
-	    }
 	}
 
 	if($line=~/Capturing/){
