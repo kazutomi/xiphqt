@@ -699,9 +699,7 @@ sub MonthDays{
 }
 
 sub TimerStart{
-    print "$_[2]\n";
     my($try,$etry)=TimerWhen(@_);
-    print " ******** $try\n";
     $try;
 }
 	       
@@ -776,8 +774,6 @@ sub TimerWhen{
 	}
 	
 	if($try==-1){
-	    print "$year $month $day $thour $minute\n";
-	    
 	    return($start,$end);
 	}
 
@@ -785,21 +781,17 @@ sub TimerWhen{
 	    # current best guess straddles now 
 	    if($start<$now && $start>$try){
 		#shouldn't allow this case but eh
-
-	    print "$year $month $day $thour $minute\n";
 		return ($start,$end);
 	    }
 	}
 
 	if($etry<$now){
 	    # current guess entirely preceeds now; prefer any guess in the future
-	    print "$year $month $day $thour $minute\n";
 	    return ($start,$end) if($start>$try);
 	}
 
 	if($try>$now){
 	    # current guess in the future.  prefer any guess earlier in time that is not entirely past.
-	    print "$year $month $day $thour $minute\n";
 	    return ($start,$end) if($start<$try && $end>$now);
 	}
 
