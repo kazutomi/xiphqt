@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.6 2001/08/10 16:33:40 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.7 2001/08/10 20:48:06 kcarnold Exp $
 
  ********************************************************************/
 
@@ -23,34 +23,34 @@
  */
 
 #include <sys/types.h>
-#if HAVE_SMMAP
-#include <sys/mman.h>
-#else
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#endif
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h> /* for fork and pipe*/
 #include <fcntl.h>
 #include <signal.h>
 
+#include <assert.h> /* for debug purposes */
+
 #include "ogg123.h"
 #include "buffer.h"
 
-#undef DEBUG_BUFFER
+#define DEBUG_BUFFER
 
 #ifdef DEBUG_BUFFER
 FILE *debugfile;
-#define DEBUG0(x) do { fprintf (debugfile, x "\n" ); } while (0)
-#define DEBUG1(x, y) do { fprintf (debugfile, x "\n" , y); } while (0)
+#define DEBUG0(x) do { if (pthread_self() == buf->BufferThread) fprintf (debugfile, "R: " x "\n" ); else fprintf (debugfile, "W: " x "\n" ); } while (0)
+#define DEBUG1(x, y) do { if (pthread_self() == buf->BufferThread) fprintf (debugfile, "R-: " x "\n", y ); else fprintf (debugfile, "W-: " x "\n", y ); } while (0)
+#define DUMP_BUFFER_INFO(buf) do { fprintf (debugfile, "Buffer info: -reader=%p  -writer=%p  -buf=%p  -end=%p -curfill=%d\n", buf->reader, buf->writer, buf->buffer, buf->end, buf->curfill); } while (0)
 #else
 #define DEBUG0(x)
 #define DEBUG1(x, y)
+#define DUMP_BUFFER_INFO(buf)
 #endif
 
 #define LOCK_MUTEX(mutex) do { DEBUG1("Locking mutex %s.", #mutex); pthread_mutex_lock (&(mutex)); } while (0)
 #define UNLOCK_MUTEX(mutex) do { DEBUG1("Unlocking mutex %s", #mutex); pthread_mutex_unlock(&(mutex)); } while (0) 
+
+#define TARGET_WRITE_SIZE 4096 /* to agree with other mechanisms used in ogg123 */
 
 void Prebuffer (buf_t * buf)
 {
@@ -83,8 +83,10 @@ void* BufferFunc (void *arg)
   sigset_t set;
   buf_t *buf = (buf_t*) arg;
   volatile buf_t *vbuf = (volatile buf_t*) buf; /* optimizers... grr */
+  size_t WriteThisTime = 0;
+  chunk *NewWriterPtr;
 
-  DEBUG0("r: BufferFunc");
+  DEBUG0("BufferFunc");
   sigfillset (&set);
   pthread_sigmask (SIG_SETMASK, &set, NULL);
 
@@ -98,50 +100,86 @@ void* BufferFunc (void *arg)
     checkPlaying:
       while (!(buf->StatMask & STAT_PLAYING) ||
 	     (buf->StatMask & STAT_PREBUFFERING)) {
-	DEBUG1 ("r: waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
+	DEBUG1 ("waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
 	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
       }
 
+      DUMP_BUFFER_INFO(buf);
+      assert (buf->curfill >= 0);
+      assert (buf->writer >= buf->buffer);
+      assert (buf->writer <= buf->end);
+      assert (buf->reader >= buf->buffer);
+      assert (buf->reader <= buf->end);
+
       if (buf->curfill == 0) {
 	UNLOCK_MUTEX (buf->SizeMutex);
-	DEBUG0 ("r: signalling buffer underflow");
+	DEBUG0 ("signalling buffer underflow");
 	pthread_cond_signal (&buf->UnderflowCondition);
 	LOCK_MUTEX (buf->SizeMutex);
 	Prebuffer (buf);
-	DEBUG0 ("r: waiting on data ready");
+	DEBUG0 ("waiting on data ready");
 	pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
 	goto checkPlaying;
       }
 
+      if (buf->reader < buf->writer)
+	{
+	  /* we have all the way to buf->end: 
+	   * |-------------------------------|
+	   * |-^       ^---------------------|
+	   *  reader   writer, our range
+	   */
+	  DEBUG1("up to buf->end, buf->end - buf->writer + 1 = %d", buf->end - buf->writer + 1);
+	  if (buf->end - buf->writer + 1 > TARGET_WRITE_SIZE) {
+	    WriteThisTime = TARGET_WRITE_SIZE;
+	    NewWriterPtr = buf->writer + WriteThisTime;
+	  } else {
+	    NewWriterPtr = buf->buffer;
+	    WriteThisTime = buf->end - buf->writer + 1;
+	  }
+	}
+      else
+	{
+	  /* we have up to buf->reader:
+	   * |-------------------------------|
+	   *    ^--------------^
+	   *   writer         reader
+	   * but we can't use buf->reader itself, becuase that's not in the data.
+	   */
+	  DEBUG1("up to buf->reader, buf->reader - buf->writer = %d", buf->reader - buf->writer);
+	  if (buf->reader - buf->writer > TARGET_WRITE_SIZE)
+	    WriteThisTime = TARGET_WRITE_SIZE;
+	  else
+	    WriteThisTime = buf->reader - buf->writer;
+	  NewWriterPtr = buf->writer + WriteThisTime;
+	}
+
+      DEBUG0("writing chunk to output");
       /* unlock while playing sample */
       UNLOCK_MUTEX (buf->SizeMutex);
-
-      DEBUG0("writing chunk");
-      buf->write_func (buf->writer->data, buf->writer->len, 1, buf->data);
+      DEBUG1("WriteThisTime=%d", WriteThisTime);
+      buf->write_func (buf->writer, WriteThisTime, 1, buf->data);
 
       DEBUG0("incrementing pointer");
       LOCK_MUTEX (buf->SizeMutex);
-      if (vbuf->writer == vbuf->end)
-	vbuf->writer = vbuf->buffer;
-      else
-	vbuf->writer++;
-      vbuf->curfill--;
+      buf->writer = NewWriterPtr;
+      vbuf->curfill -= WriteThisTime;
       UNLOCK_MUTEX (buf->SizeMutex);
 
       /* slight abuse of the DataReady condition, but makes sense. */
-      DEBUG0 ("r: signalling buffer no longer full");
-      if (buf->curfill + 1 == buf->size)
+      DEBUG0 ("signalling buffer no longer full");
+      if (buf->curfill + WriteThisTime + TARGET_WRITE_SIZE >= buf->size)
 	pthread_cond_signal (&buf->DataReadyCondition);
    }
   /* should never get here */
   pthread_cleanup_pop(1);
-  DEBUG0("r: exiting");
+  DEBUG0("exiting");
 }
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
 		    size_t (*write_func) (void *, size_t, size_t, void *))
 {
-  buf_t *buf = malloc (sizeof(buf_t) + sizeof (chunk_t) * (size - 1));
+  buf_t *buf = malloc (sizeof(buf_t) + sizeof (chunk) * (size - 1));
 
   if (buf == NULL)
     {
@@ -180,36 +218,69 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
   return buf;
 }
 
-void submit_chunk (buf_t *buf, chunk_t chunk)
+void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
 {
-  DEBUG0("submit_chunk");
+  char PrevSize;
+  DEBUG1("submit_chunk, size %d", size);
   LOCK_MUTEX (buf->SizeMutex);
+
+  PrevSize = buf->curfill;
+  DUMP_BUFFER_INFO(buf);
+
   /* wait on buffer overflow */
-  while (buf->curfill == buf->size && buf->StatMask & STAT_PLAYING)
+  while (buf->curfill + size > buf->size)
     pthread_cond_wait (&buf->DataReadyCondition, &buf->SizeMutex);
 
-  DEBUG0("writing chunk");
-  *(buf->reader) = chunk;
-  if (buf->reader == buf->end)
-    buf->reader = buf->buffer;
-  else
-    buf->reader++;
-  buf->curfill++;
-
+  DEBUG0("writing chunk into buffer");
+  buf->curfill += size;
+  /* we're guaranteed to have enough space in the buffer by now */
+  if (buf->reader < buf->writer) {
+    DEBUG0("writer before end");
+    /* don't worry about falling off end */
+    memmove (buf->reader, data, size);
+    buf->reader += size;
+  } else {
+    size_t avail = buf->end - buf->reader + 1;
+    DEBUG0("don't run over the end!");
+    if (avail >= size)
+      memmove (buf->reader, data, size);
+    else {
+      memmove (buf->reader, data, avail);
+      size -= avail;
+      data += avail;
+      buf->reader = buf->buffer;
+      memmove (buf->reader, data, size);
+    }
+    buf->reader += size;
+  }
+    
   UNLOCK_MUTEX (buf->SizeMutex);
 
   if ((buf->StatMask & STAT_PREBUFFERING)
-      && buffer_full(buf) >= buf->prebuffer) {
+      && buf->curfill >= buf->prebuffer) {
     DEBUG0("prebuffering done, starting writer");
     LOCK_MUTEX (buf->StatMutex);
     buf->StatMask &= ~STAT_PREBUFFERING;
     UNLOCK_MUTEX (buf->StatMutex);
     pthread_cond_signal (&buf->DataReadyCondition);
   }
-  else if (buf->curfill == 1)
+  else if (PrevSize == 0)
     pthread_cond_signal (&buf->DataReadyCondition);
 
   DEBUG0("submit_chunk exit");
+}
+
+void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb)
+{
+  int i, s;
+  while (nmemb > 0) {
+    for (i = 0; i < size; i += TARGET_WRITE_SIZE) {
+      s = i + TARGET_WRITE_SIZE <= size ? TARGET_WRITE_SIZE : size - i;
+      _SubmitDataChunk (buf, data, s);
+      data += s;
+    }
+    nmemb--;
+  }
 }
 
 void buffer_flush (buf_t *buf)
@@ -246,6 +317,26 @@ void buffer_shutdown (buf_t *buf)
 
 long buffer_full (buf_t* buf) {
   return buf->curfill;
+}
+
+void buffer_Pause (buf_t *buf)
+{
+  LOCK_MUTEX (buf->StatMutex);
+  buf->StatMask &= ~STAT_PLAYING;
+  UNLOCK_MUTEX (buf->StatMutex);
+}
+
+void buffer_Unpause (buf_t *buf)
+{
+  LOCK_MUTEX (buf->StatMutex);
+  buf->StatMask |= STAT_PLAYING;
+  UNLOCK_MUTEX (buf->StatMutex);
+  pthread_cond_signal (&buf->DataReadyCondition);
+}
+
+char buffer_Paused (buf_t *buf)
+{
+  return (char) !(buf->StatMask & STAT_PLAYING);
 }
 
 void buffer_cleanup (buf_t *buf) {
