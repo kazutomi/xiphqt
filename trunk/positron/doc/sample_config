@@ -1,0 +1,9 @@
+mountpoint=/mnt/neuros
+recordingdir=/home/stan/music/recordings
+neuros_musicdir=MUSIC
+sort_database=true
+
+begin sync
+  src="/home/stan/music"
+  dest=MUSIC
+end sync
