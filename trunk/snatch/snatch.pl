@@ -1029,17 +1029,25 @@ sub ReadStderr{
 	      "Hopefully self explanatory...\n");
     }
 
+    if($scalar=~/bit ZPixmap/){
+	Alert("ERROR: This X server is not using 24/32 bit visuals!",
+	      "Right now, Snatch is still new ad as such only supports the highest".
+	      " bitdepth visuals.  These visuals give the best quality and are thus".
+	      " recommended strongly for capture.  Other visuals will eventually be".
+	      " supported as well, but they won't work for now.\n");
+    }
+
+    if($scalar=~/Capture stopped/){
+	$recording_active=0;
+	$recording_pending=0;
+    }
+
     if($scalar=~/Capturing/){
 	$recording_active=time();
 	$recording_pending=0;
 	if(!defined($timer_callback)){
 	    $timer_callback=$toplevel->repeat(1000,[sub{main::TimerWatch();}]);
 	}
-    }
-
-    if($scalar=~/Capture stopped/){
-	$recording_active=0;
-	$recording_pending=0;
     }
 
     print $scalar if($CONFIG{DEBUG} eq 'yes');
