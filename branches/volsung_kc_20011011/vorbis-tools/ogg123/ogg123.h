@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.12.2.3 2001/11/21 23:25:09 volsung Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12.2.4 2001/11/23 05:15:30 volsung Exp $
 
  ********************************************************************/
 
@@ -31,6 +31,19 @@
 #include "ao_interface.h"
 #include "curl_interface.h"
 #include "status.h"
+
+/* SunOS 4 does on_exit() and everything else does atexit() */
+#ifdef HAVE_ATEXIT
+#define ATEXIT(x) (atexit(x))
+#else
+#ifdef HAVE_ON_EXIT
+#define ATEXIT(x) (on_exit( (void (*)(int, void*))(x) , NULL)
+#else
+#define ATEXIT(x)
+#warning "at_exit() and on_exit() not present.  Bad things may happen when the application terminates."
+#endif
+#endif
+ 
 
 typedef struct ogg123_options_s {
   struct {
@@ -82,6 +95,6 @@ void usage();
 void PlayFile();
 int OpenAudioDevices();
 void SigHandler(int ignored);
-void OnExit(int exitcode, void *arg);
+void ExitCleanup();
 
 #endif /* !defined(__OGG123_H) */

@@ -11,7 +11,7 @@ man_MANS = ogg123.1
 INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@ @AO_CFLAGS@
 
 ogg123_LDADD = @VORBISFILE_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ @AO_LIBS@ \
-		@SOCKET_LIBS@ -lcurl
+		@SOCKET_LIBS@ @THREAD_LIBS@ -lcurl
 
 ogg123_SOURCES = ogg123.c ao_interface.c buffer.c getopt.c getopt1.c curl_interface.c options.c status.c \
 	         ogg123.h ao_interface.h buffer.h getopt.h           curl_interface.h options.h status.h
