@@ -67,7 +67,9 @@ langs=(('en','English'),('es','Spanish'))
 texts=((05,10,1,2,3,1,3,3, ( u'Hello World!' ,
                          u'Hola, Mundo!' ) ),
        (12,15,5,6,7,1,3,3, ( u'It\'s a beautiful day to be born.' ,
-                         u'Es un día hermoso para que se llevará.' ) ) )
+                         u'Es un d\N{LATIN SMALL LETTER I WITH ACUTE}'+\
+                         u'a hermoso para que se llevar'+\
+                         u'\N{LATIN SMALL LETTER A WITH ACUTE}.' ) ) )
 
 bp = BitPacker()    
 os=ogg2.OggStreamState(5)
