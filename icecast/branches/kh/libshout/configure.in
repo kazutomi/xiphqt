@@ -5,8 +5,8 @@ m4_define(libshout_major, 2)
 m4_define(libshout_minor, 0)
 m4_define(libshout_micro, 0)
 m4_define(libshout_version,
-  m4_if(libshout_micro, 0, libshout_major.libshout_minor-kh30,
-   libshout_major.libshout_minor.libshout_micro-30))
+  m4_if(libshout_micro, 0, libshout_major.libshout_minor-kh31,
+   libshout_major.libshout_minor.libshout_micro-31))
 
 AC_INIT([libshout], libshout_version, [karl@xiph.org])
 AC_PREREQ(2.54)
