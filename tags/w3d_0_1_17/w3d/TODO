@@ -1,0 +1,11 @@
+ - fix the bitplane-skip-logic bug and check this code, this is not as clean as it should be ...
+ - there is at least one memory leak, try export MALLOC_CHECK_=1
+ - design file/stream format and find a cool name for this codec
+ - write avitow3d/quicktimetow3d/player/recorder (a libsndfile/libaudiofile alike video library would be great !)
+ - tune coefficient transmission order in coder.c -- frame direction child levels should possibly get a smaller offset to supress preecho-alike ghost images
+ - (4,4) - Wavelets
+ - arithmetic binary entropy coders may be faster, simpler and more efficient
+ - profile
+ - rewrite wavelet xform code, the current implementation forces cache misses
+ - introduce fast paths in coefficient decoder if (mps == 0)
+ - mmx/3dnow/sse/altivec
