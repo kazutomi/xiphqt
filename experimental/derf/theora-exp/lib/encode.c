@@ -477,7 +477,7 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
   _qinfo: The quantization parameters.
           These are described in more detail in theora.h.
           This can be NULL, in which case the default quantization parameters
-           will be used.*
+           will be used.
   Return: 0 on success, or a negative value on error.
           OC_FAULT if _enc is NULL.
           OC_EINVAL if the setup header has already been written, or it cannot
@@ -2461,7 +2461,15 @@ static int oc_enc_deltaframe(oc_enc_ctx *_enc){
 static int oc_enc_init(oc_enc_ctx *_enc,const theora_info *_info){
   int ret;
   /*Initialize the shared encoder/decoder state.*/
-  ret=oc_state_init(&_enc->state,_info);
+  if(_info->pic_width<=0||_info->pic_height<=0){
+    theora_info info;
+    memcpy(&info,_info,sizeof(info));
+    /*If the picture size is not specified, default to the rest of the frame.*/
+    if(info.pic_width<=0)info.pic_width=info.frame_width-info.pic_x;
+    if(info.pic_height<=0)info.pic_height=info.frame_height-info.pic_y;
+    ret=oc_state_init(&_enc->state,&info);
+  }
+  else ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
   _enc->block_coded_flags=_ogg_calloc(_enc->state.nfrags,
    sizeof(_enc->block_coded_flags[0]));

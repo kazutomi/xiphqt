@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "theora/theora.h"
+#include "internal.h"
 
 
 
@@ -21,6 +22,10 @@ static int oc_tagcompare(const char *_s1,const char *_s2,int _n){
 
 void theora_info_init(theora_info *_info){
   memset(_info,0,sizeof(*_info));
+  _info->version_major=OC_VERSION_MAJOR;
+  _info->version_minor=OC_VERSION_MINOR;
+  _info->version_subminor=OC_VERSION_SUB;
+  _info->keyframe_granule_shift=6;
 }
 
 void theora_info_clear(theora_info *_info){
