@@ -1,9 +1,19 @@
 @echo off
-rem $Id: build_all.bat,v 1.4 2001/09/14 03:16:13 cwolf Exp $
+rem $Id: build_all.bat,v 1.5 2001/09/15 07:00:31 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
 if ."%SRCROOT%"==."" goto notset
+
+rem If one of the makefiles doesn't exist,
+rem assume they all need to be generated
+rem
+rem Makefile generation is asychronous, so it cannot be 
+rem called inline with this script.
+if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
+  echo Error: must invoke "mkmak.bat" first
+  exit
+)
 
 if not exist %SRCROOT%\ogg\include\ogg\ogg.h goto noogg
 if not exist %SRCROOT%\vorbis\include\vorbis\codec.h goto novorbis
