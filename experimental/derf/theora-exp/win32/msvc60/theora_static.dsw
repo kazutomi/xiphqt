@@ -15,10 +15,13 @@ Package=<4>
     Project_Dep_Name ogg_static
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name theora_static
+    Project_Dep_Name vorbis_static
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name vorbis_static
+    Project_Dep_Name theorabase_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name theoradec_static
     End Project Dependency
 }}}
 
@@ -33,9 +36,6 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name theora_static
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name ogg_static
     End Project Dependency
     Begin Project Dependency
@@ -44,11 +44,17 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name vorbis_static
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name theorabase_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name theoraenc_static
+    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "ogg_static"="..\..\..\xiph\ogg\win32\ogg_static.dsp" - Package Owner=<4>
+Project: "ogg_static"="..\..\..\..\..\trunk\ogg\win32\ogg_static.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -60,7 +66,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "theora_static"=".\theora_static.dsp" - Package Owner=<4>
+Project: "theorabase_static"=".\theorabase_static.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -72,7 +78,43 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vorbis_static"="..\..\..\xiph\vorbis\win32\vorbis_static.dsp" - Package Owner=<4>
+Project: "theoradec_static"=".\theoradec_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name theorabase_static
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "theoraenc_static"=".\theoraenc_static.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ogg_static
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name theorabase_static
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vorbis_static"="..\..\..\..\..\trunk\vorbis\win32\vorbis_static.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -84,7 +126,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vorbisenc_static"="..\..\..\xiph\vorbis\win32\vorbisenc_static.dsp" - Package Owner=<4>
+Project: "vorbisenc_static"="..\..\..\..\..\trunk\vorbis\win32\vorbisenc_static.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
