@@ -11,13 +11,14 @@
  ********************************************************************
 
  function: registry for time, floor, res backends and channel mappings
- last mod: $Id: registry.c,v 1.10 2001/09/07 08:42:30 cwolf Exp $
+ last mod: $Id: registry.c,v 1.10.2.1 2001/12/04 11:16:20 xiphmont Exp $
 
  ********************************************************************/
 
 #include "vorbis/codec.h"
 #include "codec_internal.h"
 #include "registry.h"
+#include "registry_api.h"
 #include "misc.h"
 
 
@@ -51,11 +52,8 @@ vorbis_func_mapping   *_mapping_P[]={
   &mapping0_exportbundle,
 };
 
-  /*
-   * For win32 only, the following code needs to be appended to this file 
-   * because the "sizeof" operator can only evaluate the sizes
-   * of statically initialized arrays in the same compilation unit.
-   */ 
-#if defined(_MSC_VER) && defined(STANDALONE_VORBISENC_DLL)
-# include "shmmap_c.h"
-#endif
+/* make Windows happy; can't access the registry directly outside of
+   libvorbis, and vorbisenc needs a few functions */
+void residue_free_info(vorbis_info_residue *r,int type){
+  _residue_P[type]->free_info(r);
+}
