@@ -523,12 +523,11 @@ int oc_state_init(oc_theora_state *_state,const theora_info *_info){
   _state->frame_type=OC_UNKWN_FRAME;
   oc_state_frarray_init(_state);
   oc_state_ref_bufs_init(_state);
-  /*Convert the keyframe frequency force to a granule shift.*/
-  if(_info->keyframe_frequency_force==0){
-    _state->info.keyframe_frequency_force=0x7FFFFFFF;
+  /*If the keyframe_granule_shift is out of range, use the maximum allowable
+     value.*/
+  if(_info->keyframe_granule_shift<0||_info->keyframe_granule_shift>31){
+    _state->info.keyframe_granule_shift=31;
   }
-  _state->info.keyframe_granule_shift=oc_ilog(
-   _state->info.keyframe_frequency_force-1);
   _state->keyframe_num=0;
   _state->curframe_num=-1;
   return 0;
@@ -861,10 +860,6 @@ void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
   }
 }
 
-static unsigned char oc_clamp255(int _x){
-  return (unsigned char)(((_x<0)-1)&(_x|-(_x>255)));
-}
-
 static void loop_filter_h(unsigned char *_pix,int _ystride,int *_bv){
   int y;
   _pix-=2;
@@ -872,8 +867,8 @@ static void loop_filter_h(unsigned char *_pix,int _ystride,int *_bv){
     int f;
     f=_pix[0]-_pix[3]+3*(_pix[2]-_pix[1]);
     f=*(_bv+(f+4>>3));
-    _pix[1]=oc_clamp255(_pix[1]+f);
-    _pix[2]=oc_clamp255(_pix[2]-f);
+    _pix[1]=OC_CLAMP255(_pix[1]+f);
+    _pix[2]=OC_CLAMP255(_pix[2]-f);
     _pix+=_ystride;
   }
 }
@@ -885,8 +880,8 @@ static void loop_filter_v(unsigned char *_pix,int _ystride,int *_bv){
     int f;
     f=_pix[0]-_pix[_ystride*3]+3*(_pix[_ystride*2]-_pix[_ystride]);
     f=*(_bv+(f+4>>3));
-    _pix[_ystride]=oc_clamp255(_pix[_ystride]+f);
-    _pix[_ystride*2]=oc_clamp255(_pix[_ystride*2]-f);
+    _pix[_ystride]=OC_CLAMP255(_pix[_ystride]+f);
+    _pix[_ystride*2]=OC_CLAMP255(_pix[_ystride*2]-f);
     _pix++;
   }
 }

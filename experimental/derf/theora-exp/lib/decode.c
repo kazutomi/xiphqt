@@ -163,6 +163,7 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
  const theora_setup_info *_setup){
   int qti;
   int pli;
+  int qi;
   oc_state_init(&_dec->state,_info);
   oc_huff_trees_copy(_dec->huff_tables,_setup->huff_tables);
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
@@ -171,15 +172,32 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
   }
   oc_dequant_tables_init(_dec->state.dequant_tables,_dec->pp_dc_scale,
    &_setup->qinfo);
+  for(qi=0;qi<64;qi++){
+    int qsum;
+    qsum=0;
+    for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
+      qsum+=_dec->state.dequant_tables[qti][pli][qi][18]+
+       _dec->state.dequant_tables[qti][pli][qi][19]+
+       _dec->state.dequant_tables[qti][pli][qi][26]+
+       _dec->state.dequant_tables[qti][pli][qi][27]<<(pli==0);
+    }
+    _dec->pp_sharp_mod[qi]=-(qsum>>11);
+  }
   _dec->dct_tokens=(unsigned char **)oc_calloc_2d(64,
    _dec->state.nfrags,sizeof(_dec->dct_tokens[0][0]));
   _dec->extra_bits=(ogg_uint16_t **)oc_calloc_2d(64,
    _dec->state.nfrags,sizeof(_dec->extra_bits[0][0]));
   memcpy(_dec->state.loop_filter_limits,_setup->qinfo.loop_filter_limits,
    sizeof(_dec->state.loop_filter_limits));
+  _dec->dc_qis=NULL;
+  _dec->variances=NULL;
+  _dec->pp_frame_data=NULL;
 }
 
 static void oc_dec_clear(oc_dec_ctx *_dec){
+  _ogg_free(_dec->pp_frame_data);
+  _ogg_free(_dec->variances);
+  _ogg_free(_dec->dc_qis);
   oc_free_2d(_dec->extra_bits);
   oc_free_2d(_dec->dct_tokens);
   oc_huff_trees_clear(_dec->huff_tables);
@@ -937,7 +955,7 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
 }
 
 /*Tokens describing the DCT coefficients that belong to each fragment are
-   stored in the bistream grouped by coefficient, not by fragment.
+   stored in the bitstream grouped by coefficient, not by fragment.
   This means that we either decode all the tokens in order, building up a
    separate coefficient list for each fragment as we go, and then go back and
    do the iDCT on each fragment, or we have to create separate lists of tokens
@@ -1215,6 +1233,463 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
   }
 }
 
+/*No post-processing.*/
+#define OC_PP_LEVEL_DISABLED  (0)
+/*Keep track of DC qi for each block only.*/
+#define OC_PP_LEVEL_TRACKDCQI (1)
+/*Deblock the luma plane.*/
+#define OC_PP_LEVEL_DEBLOCKY  (2)
+/*Dering the luma plane.*/
+#define OC_PP_LEVEL_DERINGY   (3)
+/*Stronger luma plane deringing.*/
+#define OC_PP_LEVEL_SDERINGY  (4)
+/*Deblock the chroma planes.*/
+#define OC_PP_LEVEL_DEBLOCKC  (5)
+/*Dering the chroma planes.*/
+#define OC_PP_LEVEL_DERINGC   (6)
+/*Stronger chroma plane deringing.*/
+#define OC_PP_LEVEL_SDERINGC  (7)
+/*Maximum valid post-processing level.*/
+#define OC_PP_LEVEL_MAX       (7)
+
+/*Filter a horizontal block edge.*/
+static void oc_filter_hedge(unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src,int _src_ystride,int _qstep,int _flimit,
+ int *_variance0,int *_variance1){
+  unsigned char       *rdst;
+  const unsigned char *rsrc;
+  unsigned char       *cdst;
+  const unsigned char *csrc;
+  int                  r[10];
+  int                  sum0;
+  int                  sum1;
+  int                  bx;
+  int                  by;
+  rdst=_dst;
+  rsrc=_src;
+  for(bx=0;bx<8;bx++){
+    cdst=rdst;
+    csrc=rsrc;
+    for(by=0;by<10;by++){
+      r[by]=*csrc;
+      csrc+=_src_ystride;
+    }
+    sum0=sum1=0;
+    for(by=0;by<4;by++){
+      sum0+=abs(r[by+1]-r[by]);
+      sum1+=abs(r[by+5]-r[by+6]);
+    }
+    *_variance0+=OC_MINI(255,sum0);
+    *_variance1+=OC_MINI(255,sum1);
+    if(sum0<_flimit&&sum1<_flimit&&r[5]-r[4]<_qstep&&r[4]-r[5]<_qstep){
+      *cdst=(unsigned char)(r[0]*3+r[1]*2+r[2]+r[3]+r[4]+4>>3);
+      cdst+=_dst_ystride;
+      *cdst=(unsigned char)(r[0]*2+r[1]+r[2]*2+r[3]+r[4]+r[5]+4>>3);
+      cdst+=_dst_ystride;
+      for(by=0;by<4;by++){
+        *cdst=(unsigned char)(r[by]+r[by+1]+r[by+2]+r[by+3]*2+
+         r[by+4]+r[by+5]+r[by+6]+4>>3);
+        cdst+=_dst_ystride;
+      }
+      *cdst=(unsigned char)(r[4]+r[5]+r[6]+r[7]*2+r[8]+r[9]*2+4>>3);
+      cdst+=_dst_ystride;
+      *cdst=(unsigned char)(r[5]+r[6]+r[7]+r[8]*2+r[9]*3+4>>3);
+    }
+    else{
+      for(by=1;by<=8;by++){
+        *cdst=(unsigned char)r[by];
+        cdst+=_dst_ystride;
+      }
+    }
+    rdst++;
+    rsrc++;
+  }
+}
+
+/*Filter a vertical block edge.*/
+static void oc_filter_vedge(unsigned char *_dst,int _dst_ystride,
+ int _qstep,int _flimit,int *_variances){
+  unsigned char       *rdst;
+  const unsigned char *rsrc;
+  unsigned char       *cdst;
+  int                  r[10];
+  int                  sum0;
+  int                  sum1;
+  int                  bx;
+  int                  by;
+  cdst=_dst;
+  for(by=0;by<8;by++){
+    rsrc=cdst-1;
+    rdst=cdst;
+    for(bx=0;bx<10;bx++)r[bx]=*rsrc++;
+    sum0=sum1=0;
+    for(bx=0;bx<4;bx++){
+      sum0+=abs(r[bx+1]-r[bx]);
+      sum1+=abs(r[bx+5]-r[bx+6]);
+    }
+    _variances[0]+=OC_MINI(255,sum0);
+    _variances[1]+=OC_MINI(255,sum1);
+    if(sum0<_flimit&&sum1<_flimit&&r[5]-r[4]<_qstep&&r[4]-r[5]<_qstep){
+      *rdst++=(unsigned char)(r[0]*3+r[1]*2+r[2]+r[3]+r[4]+4>>3);
+      *rdst++=(unsigned char)(r[0]*2+r[1]+r[2]*2+r[3]+r[4]+r[5]+4>>3);
+      for(bx=0;bx<4;bx++){
+        *rdst++=(unsigned char)(r[bx]+r[bx+1]+r[bx+2]+r[bx+3]*2+
+         r[bx+4]+r[bx+5]+r[bx+6]+4>>3);
+      }
+      *rdst++=(unsigned char)(r[4]+r[5]+r[6]+r[7]*2+r[8]+r[9]*2+4>>3);
+      *rdst=(unsigned char)(r[5]+r[6]+r[7]+r[8]*2+r[9]*3+4>>3);
+    }
+    else for(bx=1;bx<=8;bx++)*rdst++=(unsigned char)r[bx];
+    cdst+=_dst_ystride;
+  }
+}
+
+static void oc_dec_deblock_plane(oc_dec_ctx *_dec,int _pli,
+ theora_img_plane *_dst,theora_img_plane *_src){
+  oc_fragment_plane   *fplane;
+  int                 *variance;
+  unsigned char       *dc_qi;
+  unsigned char       *dst;
+  const unsigned char *src;
+  int                  flimit;
+  int                  qstep;
+  int                  y;
+  int                  x;
+  _dst+=_pli;
+  _src+=_pli;
+  dst=_dst->data;
+  src=_src->data;
+  fplane=_dec->state.fplanes+_pli;
+  variance=_dec->variances+fplane->froffset;
+  dc_qi=_dec->dc_qis+fplane->froffset;
+  memset(variance,0,fplane->nfrags*sizeof(variance[0]));
+  for(y=0;y<4;y++){
+    memcpy(dst,src,_dst->width*sizeof(dst[0]));
+    dst+=_dst->ystride;
+    src+=_src->ystride;
+  }
+  for(;y<_dst->height-8;y+=8){
+    for(x=0;x<_dst->width;x+=8){
+      qstep=_dec->pp_dc_scale[*dc_qi];
+      flimit=(qstep*3)>>2;
+      oc_filter_hedge(dst+x,_dst->ystride,src+x-_src->ystride,_src->ystride,
+       qstep,flimit,variance,variance+fplane->nvfrags);
+      if(x>0){
+        oc_filter_vedge(dst+x-(_dst->ystride<<2)-4,_dst->ystride,
+         qstep,flimit,variance-1);
+      }
+      variance++;
+      dc_qi++;
+    }
+    dst+=_dst->ystride<<3;
+    src+=_src->ystride<<3;
+  }
+  for(;y<_dst->height;y++){
+    memcpy(dst,src,_dst->width*sizeof(dst[0]));
+    dst+=_dst->ystride;
+    src+=_src->ystride;
+  }
+  /*Filter the last row of vertical block edges.*/
+  dc_qi++;
+  for(x=8;x<_dst->width;x+=8){
+    qstep=_dec->pp_dc_scale[*dc_qi++];
+    flimit=(qstep*3)>>2;
+    oc_filter_vedge(dst+x-(_dst->ystride<<3)-4,_dst->ystride,
+     qstep,flimit,variance++);
+  }
+}
+
+static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
+ int _dc_scale,int _sharp_mod,int _strong){
+  static const int     MOD_MAX[2]={24,32};
+  static const int     MOD_SHIFT[2]={1,0};
+  const unsigned char *psrc;
+  const unsigned char *src;
+  const unsigned char *nsrc;
+  unsigned char       *dst;
+  int                  vmod[72];
+  int                  hmod[72];
+  int                  mod_hi;
+  int                  by;
+  int                  bx;
+  mod_hi=OC_MINI(3*_dc_scale,MOD_MAX[_strong]);
+  dst=_idata;
+  src=dst;
+  psrc=src-(_ystride&-!(_b&4));
+  for(by=0;by<9;by++){
+    for(bx=0;bx<8;bx++){
+      int mod;
+      mod=32+_dc_scale-(abs(src[bx]-psrc[bx])<<MOD_SHIFT[_strong]);
+      vmod[(by<<3)+bx]=mod<-64?_sharp_mod:OC_CLAMPI(0,mod,mod_hi);
+    }
+    psrc=src;
+    src+=_ystride&-(!(_b&8)|by<8);
+  }
+  nsrc=dst;
+  psrc=src-!(_b&1);
+  for(bx=0;bx<9;bx++){
+    src=nsrc;
+    for(by=0;by<8;by++){
+      int mod;
+      mod=32+_dc_scale-(abs(*src-*psrc)<<MOD_SHIFT[_strong]);
+      hmod[(bx<<3)+by]=mod<-64?_sharp_mod:OC_CLAMPI(0,mod,mod_hi);
+      psrc+=_ystride;
+      src+=_ystride;
+    }
+    psrc=nsrc;
+    nsrc+=!(_b&2)|bx<8;
+  }
+  src=dst;
+  psrc=src-(_ystride&-!(_b&4));
+  nsrc=src+_ystride;
+  for(by=0;by<8;by++){
+    int a;
+    int b;
+    int p;
+    int p1;
+    int a1;
+    a=128;
+    b=64;
+    p=src[0];
+    p1=*(src-!(_b&1));
+    a1=hmod[(bx<<3)+by];
+    a-=a1;
+    b+=a1*p1;
+    p1=psrc[0];
+    a1=vmod[(by<<3)+bx];
+    a-=a1;
+    b+=a1*p1;
+    p1=nsrc[0];
+    a1=vmod[(by+1<<3)+bx];
+    a-=a1;
+    b+=a1*p1;
+    p1=src[1];
+    a1=hmod[(bx+1<<3)+by];
+    a-=a1;
+    b+=a1*p1;
+    dst[0]=OC_CLAMP255(a*p+b>>7);
+    for(bx=1;bx<7;bx++){
+      a=128;
+      b=64;
+      p=src[bx];
+      p1=src[bx-1];
+      a1=hmod[(bx<<3)+by];
+      a-=a1;
+      b+=a1*p1;
+      p1=psrc[bx];
+      a1=vmod[(by<<3)+bx];
+      a-=a1;
+      b+=a1*p1;
+      p1=nsrc[bx];
+      a1=vmod[(by+1<<3)+bx];
+      a-=a1;
+      b+=a1*p1;
+      p1=src[bx+1];
+      a1=hmod[(bx+1<<3)+by];
+      a-=a1;
+      b+=a1*p1;
+      dst[bx]=OC_CLAMP255(a*p+b>>7);
+    }
+    a=128;
+    b=64;
+    p=src[7];
+    p1=src[6];
+    a1=hmod[(bx<<3)+by];
+    a-=a1;
+    b+=a1*p1;
+    p1=psrc[7];
+    a1=vmod[(by<<3)+bx];
+    a-=a1;
+    b+=a1*p1;
+    p1=nsrc[7];
+    a1=vmod[(by+1<<3)+bx];
+    a-=a1;
+    b+=a1*p1;
+    p1=src[7+!(_b&2)];
+    a1=hmod[(bx+1<<3)+by];
+    a-=a1;
+    b+=a1*p1;
+    dst[7]=OC_CLAMP255(a*p+b>>7);
+    dst+=_ystride;
+    psrc=src;
+    src=nsrc;
+    nsrc+=_ystride&-((by<7)|!(_b&8));
+  }
+}
+
+#define OC_DERING_THRESH1 (384)
+#define OC_DERING_THRESH2 (4*OC_DERING_THRESH1)
+#define OC_DERING_THRESH3 (5*OC_DERING_THRESH1)
+#define OC_DERING_THRESH4 (10*OC_DERING_THRESH1)
+
+static void oc_dec_dering_plane(oc_dec_ctx *_dec,int _pli,
+ theora_img_plane *_img){
+  theora_img_plane  *iplane;
+  oc_fragment_plane *fplane;
+  oc_fragment       *frag;
+  int               *variance;
+  unsigned char     *dc_qi;
+  unsigned char     *idata;
+  int                sthresh;
+  int                strong;
+  int                y;
+  int                x;
+  iplane=_img+_pli;
+  fplane=_dec->state.fplanes+_pli;
+  variance=_dec->variances+fplane->froffset;
+  frag=_dec->state.frags+fplane->froffset;
+  strong=_dec->pp_level>=(_pli?OC_PP_LEVEL_SDERINGC:OC_PP_LEVEL_SDERINGY);
+  sthresh=_pli?OC_DERING_THRESH4:OC_DERING_THRESH3;
+  idata=iplane->data;
+  for(y=0;y<iplane->height;y+=8){
+    for(x=0;x<iplane->width;x+=8){
+      int b;
+      int qi;
+      int var;
+      qi=frag->qi;
+      var=*variance;
+      b=(x<=0)|(x+8>=iplane->width)<<1|(y<=0)<<2|(y+8>=iplane->height);
+      if(strong&&var>sthresh){
+        oc_dering_block(idata+x,iplane->ystride,b,
+         _dec->pp_dc_scale[qi],_dec->pp_sharp_mod[qi],1);
+        if(_pli||(b&1)&&*(variance-1)>OC_DERING_THRESH4||
+         (b&2)&&variance[1]>OC_DERING_THRESH4||
+         (b&4)&&*(variance-fplane->nvfrags)>OC_DERING_THRESH4||
+         (b&8)&&variance[fplane->nvfrags]>OC_DERING_THRESH4){
+          oc_dering_block(idata+x,iplane->ystride,b,
+           _dec->pp_dc_scale[qi],_dec->pp_sharp_mod[qi],1);
+          oc_dering_block(idata+x,iplane->ystride,b,
+           _dec->pp_dc_scale[qi],_dec->pp_sharp_mod[qi],1);
+        }
+      }
+      else if(var>OC_DERING_THRESH2){
+        oc_dering_block(idata+x,iplane->ystride,b,
+         _dec->pp_dc_scale[qi],_dec->pp_sharp_mod[qi],1);
+      }
+      else if(var>OC_DERING_THRESH1){
+        oc_dering_block(idata+x,iplane->ystride,b,
+         _dec->pp_dc_scale[qi],_dec->pp_sharp_mod[qi],0);
+      }
+      frag++;
+      variance++;
+    }
+    idata+=iplane->ystride<<3;
+  }
+}
+
+static int oc_dec_postprocess(oc_dec_ctx *_dec){
+  /*pp_level 0: disabled; free any memory used and return*/
+  if(_dec->pp_level<=OC_PP_LEVEL_DISABLED){
+    if(_dec->dc_qis!=NULL){
+      _ogg_free(_dec->dc_qis);
+      _dec->dc_qis=NULL;
+      _ogg_free(_dec->variances);
+      _dec->variances=NULL;
+      _ogg_free(_dec->pp_frame_data);
+      _dec->pp_frame_data=NULL;
+    }
+    return 1;
+  }
+  if(_dec->dc_qis==NULL){
+    /*If we haven't been tracking DC quantization indices, there's no point in
+       starting now.*/
+    if(_dec->state.frame_type!=OC_INTRA_FRAME)return 1;
+    _dec->dc_qis=(unsigned char *)_ogg_malloc(
+     _dec->state.nfrags*sizeof(_dec->dc_qis[0]));
+    memset(_dec->dc_qis,_dec->state.qis[0],_dec->state.nfrags);
+  }
+  else{
+    int           *coded_fragi;
+    int           *coded_fragi_end;
+    unsigned char  qi0;
+    /*Update the DC quantization index of each coded block.*/
+    qi0=(unsigned char)_dec->state.qis[0];
+    coded_fragi_end=_dec->state.coded_fragis+_dec->state.ncoded_fragis[0]+
+     _dec->state.ncoded_fragis[1]+_dec->state.ncoded_fragis[2];
+    for(coded_fragi=_dec->state.coded_fragis;coded_fragi<coded_fragi_end;
+     coded_fragi++){
+      _dec->dc_qis[*coded_fragi]=qi0;
+    }
+  }
+  /*pp_level 1: Stop after updating DC quantization indices.*/
+  if(_dec->pp_level<=OC_PP_LEVEL_TRACKDCQI){
+    if(_dec->variances!=NULL){
+      _ogg_free(_dec->variances);
+      _dec->variances=NULL;
+      _ogg_free(_dec->pp_frame_data);
+      _dec->pp_frame_data=NULL;
+    }
+    return 1;
+  }
+  if(_dec->variances==NULL||
+   _dec->pp_frame_has_chroma!=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC)){
+    size_t frame_sz;
+    frame_sz=_dec->state.info.width*_dec->state.info.height;
+    if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
+      _dec->variances=(ogg_uint32_t *)_ogg_realloc(_dec->variances,
+       _dec->state.fplanes[0].nfrags*sizeof(_dec->variances[0]));
+      _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
+       _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
+      _dec->pp_frame_buf[0].width=_dec->state.info.width;
+      _dec->pp_frame_buf[0].height=_dec->state.info.height;
+      _dec->pp_frame_buf[0].ystride=-_dec->pp_frame_buf[0].width;
+      _dec->pp_frame_buf[0].data=_dec->pp_frame_data+
+       (1-_dec->pp_frame_buf[0].height)*_dec->pp_frame_buf[0].ystride;
+    }
+    else{
+      size_t y_sz;
+      size_t c_sz;
+      int    c_w;
+      int    c_h;
+      _dec->variances=(int *)_ogg_realloc(_dec->variances,
+       _dec->state.nfrags*sizeof(_dec->variances[0]));
+      y_sz=frame_sz;
+      c_w=_dec->state.info.width>>!(_dec->state.info.pixel_fmt&1);
+      c_h=_dec->state.info.height>>!(_dec->state.info.pixel_fmt&2);
+      c_sz=c_w*c_h;
+      frame_sz+=c_sz<<1;
+      _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
+       _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
+      _dec->pp_frame_buf[0].width=_dec->state.info.width;
+      _dec->pp_frame_buf[0].height=_dec->state.info.height;
+      _dec->pp_frame_buf[0].ystride=_dec->pp_frame_buf[0].width;
+      _dec->pp_frame_buf[0].data=_dec->pp_frame_data;
+      _dec->pp_frame_buf[1].width=c_w;
+      _dec->pp_frame_buf[1].height=c_h;
+      _dec->pp_frame_buf[1].ystride=_dec->pp_frame_buf[1].width;
+      _dec->pp_frame_buf[1].data=_dec->pp_frame_buf[0].data+y_sz;
+      _dec->pp_frame_buf[2].width=c_w;
+      _dec->pp_frame_buf[2].height=c_h;
+      _dec->pp_frame_buf[2].ystride=_dec->pp_frame_buf[2].width;
+      _dec->pp_frame_buf[2].data=_dec->pp_frame_buf[1].data+c_sz;
+      oc_ycbcr_buffer_flip(_dec->pp_frame_buf,_dec->pp_frame_buf);
+    }
+    _dec->pp_frame_has_chroma=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC);
+  }
+  /*Perform de-blocking in the Y plane.*/
+  oc_dec_deblock_plane(_dec,0,_dec->pp_frame_buf,
+   _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
+  if(_dec->pp_level>=OC_PP_LEVEL_DERINGY){
+    oc_dec_dering_plane(_dec,0,_dec->pp_frame_buf);
+  }
+  /*If we're not processing chroma, copy the reference frame's chroma planes
+     and return.*/
+  if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
+    memcpy(_dec->pp_frame_buf+1,
+     _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]+1,
+     sizeof(_dec->pp_frame_buf[1])*2);
+    return 0;
+  }
+  oc_dec_deblock_plane(_dec,1,_dec->pp_frame_buf,
+   _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
+  oc_dec_deblock_plane(_dec,2,_dec->pp_frame_buf,
+   _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
+  if(_dec->pp_level<=OC_PP_LEVEL_DEBLOCKC)return 0;
+  oc_dec_dering_plane(_dec,1,_dec->pp_frame_buf);
+  oc_dec_dering_plane(_dec,2,_dec->pp_frame_buf);
+  return 0;
+}
+
 
 
 theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
@@ -1231,6 +1706,41 @@ void theora_decode_free(theora_dec_ctx *_dec){
   if(_dec!=NULL){
     oc_dec_clear(_dec);
     _ogg_free(_dec);
+  }
+}
+
+int theora_decoder_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
+ size_t _buf_sz){
+  switch(_req){
+    case OC_DECCTL_GET_PPLEVEL_MAX:{
+      if(_dec==NULL||_buf==NULL)return OC_FAULT;
+      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+      (*(int *)_buf)=OC_PP_LEVEL_MAX;
+      return 0;
+    }break;
+    case OC_DECCTL_SET_PPLEVEL:{
+      int pp_level;
+      if(_dec==NULL||_buf==NULL)return OC_FAULT;
+      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+      pp_level=*(int *)_buf;
+      if(pp_level<0||pp_level>OC_PP_LEVEL_MAX)return OC_EINVAL;
+      _dec->pp_level=pp_level;
+      return 0;
+    }break;
+    case OC_DECCTL_SET_GRANPOS:{
+      ogg_int64_t granpos;
+      if(_dec==NULL||_buf==NULL)return OC_FAULT;
+      if(_buf_sz!=sizeof(ogg_int64_t))return OC_EINVAL;
+      granpos=*(ogg_int64_t *)_buf;
+      if(granpos<0)return OC_EINVAL;
+      _dec->state.granpos=granpos;
+      _dec->state.keyframe_num=
+       granpos>>_dec->state.info.keyframe_granule_shift;
+      _dec->state.curframe_num=_dec->state.keyframe_num+
+       (granpos&(1<<_dec->state.info.keyframe_granule_shift)-1);
+      return 0;
+    }break;
+    default:return OC_IMPL;
   }
 }
 
@@ -1342,7 +1852,13 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     oc_state_borders_fill(&_dec->state,
      _dec->state.ref_frame_idx[OC_FRAME_PREV]);
   }
-  /*TODO: out-of-loop post-processing.*/
+  /*Perform out-of-loop post-processing, if enabled.*/
+  if(oc_dec_postprocess(_dec)){
+    memcpy(_dec->pp_frame_buf,
+     _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]],
+     sizeof(_dec->pp_frame_buf[0])*3);
+  }
+  /*Update granule position.*/
   _dec->state.granpos=
    (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
    (_dec->state.curframe_num-_dec->state.keyframe_num);
@@ -1352,9 +1868,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
 }
 
 int theora_decode_ycbcr_out(theora_dec_ctx *_dec,theora_ycbcr_buffer _ycbcr){
-  /*No post-processing for now.*/
-  oc_ycbcr_buffer_flip(_ycbcr,_dec->state.ref_frame_bufs[
-   _dec->state.ref_frame_idx[OC_FRAME_SELF]]);
+  oc_ycbcr_buffer_flip(_ycbcr,_dec->pp_frame_buf);
 #if defined(OC_DUMP_IMAGES)
   oc_state_dump_frame(&_dec->state,OC_FRAME_SELF);
 #endif

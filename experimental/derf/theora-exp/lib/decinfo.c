@@ -98,7 +98,7 @@ static int oc_comment_unpack(oggpack_buffer *_opb,theora_comment *_tc){
     int i;
     _tc->comment_lengths=(int *)_ogg_malloc(
      _tc->comments*sizeof(_tc->comment_lengths[0]));
-    _tc->user_comments=(char *)_ogg_malloc(
+    _tc->user_comments=(char **)_ogg_malloc(
      _tc->comments*sizeof(_tc->user_comments[0]));
     for(i=0;i<_tc->comments;i++){
       len=oc_unpack_length(_opb);
@@ -132,9 +132,13 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
   long val;
   int  packtype;
   int  ret;
-  /*Check to make sure this is the info header.*/
   theora_read(_opb,8,&val);
   packtype=(int)val;
+  /*If we're at a data packet and we have received all three headers, we're
+     done.*/
+  if(!(packtype&0x80)&&_info->width>0&&_tc->vendor!=NULL&&*_setup!=NULL){
+    return 0;
+  }
   /*Check the codec string.*/
   oc_unpack_octets(_opb,buffer,6);
   if(memcmp(buffer,"theora",6)!=0)return OC_NOTFORMAT;
@@ -146,7 +150,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
       if(!_op->b_o_s||_info->width>0)return OC_BADHEADER;
       ret=oc_info_unpack(_opb,_info);
       if(ret<0)theora_info_clear(_info);
-      else ret=2;
+      else ret=3;
     }break;
     /*Comment header.*/
     case 0x81:{
@@ -156,7 +160,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
       if(_info->width<=0||_tc->vendor!=NULL)return OC_BADHEADER;
       ret=oc_comment_unpack(_opb,_tc);
       if(ret<0)theora_comment_clear(_tc);
-      else ret=1;
+      else ret=2;
     }break;
     /*Codec setup header.*/
     case 0x82:{
@@ -175,11 +179,13 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
       }
       else{
         *_setup=setup;
-        ret=0;
+        ret=1;
       }
     }break;
-    /*No more headers to read.*/
-    default:ret=0;break;
+    default:{
+      /*We don't know what this header is.*/
+      return OC_BADHEADER;
+    }break;
   }
   return ret;
 }

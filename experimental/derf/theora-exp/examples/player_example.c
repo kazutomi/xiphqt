@@ -93,7 +93,7 @@ vorbis_block     vb;
 vorbis_comment   vc;
 
 int              theora_p=0;
-int              theora_needs_more_headers;
+int              theora_processing_headers;
 int              vorbis_p=0;
 int              stateflag=0;
 
@@ -350,11 +350,11 @@ static void video_write(void){
     wscale = ycbcr[0].width / ycbcr[pli].width;
     hscale = ycbcr[0].height / ycbcr[pli].height;
     crop_offset = (ti.offset_x / wscale)
-	    	+ (ycbcr[pli].ystride)
-		* (ti.offset_y / hscale);
+                + (ycbcr[pli].ystride)
+                * (ti.offset_y / hscale);
     for(i=0;i<yuv_overlay->h / hscale;i++)
       memcpy(yuv_overlay->pixels[planemap[pli]]
-		      + yuv_overlay->pitches[planemap[pli]]*i,
+                      + yuv_overlay->pitches[planemap[pli]]*i,
              ycbcr[pli].data+crop_offset+ycbcr[pli].ystride*i,
              yuv_overlay->w / wscale);
   }
@@ -435,6 +435,9 @@ static void usage(void){
 
 int main(int argc,char *argv[]){
 
+  int pp_level_max;
+  int pp_level;
+  int pp_inc;
   int i,j;
   ogg_packet op;
 
@@ -488,18 +491,22 @@ int main(int argc,char *argv[]){
 
       ogg_stream_init(&test,ogg_page_serialno(&og));
       ogg_stream_pagein(&test,&og);
-      ogg_stream_packetout(&test,&op);
+      ogg_stream_packetpeek(&test,&op);
 
       /* identify the codec: try theora */
-      if(!theora_p && (theora_needs_more_headers=
+      if(!theora_p && (theora_processing_headers=
        theora_decode_headerin(&ti,&tc,&ts,&op))>=0){
         /* it is theora */
         memcpy(&to,&test,sizeof(test));
         theora_p=1;
+        /*Advance past the successfully processed header.*/
+        if(theora_processing_headers)ogg_stream_packetout(&to,NULL);
       }else if(!vorbis_p && vorbis_synthesis_headerin(&vi,&vc,&op)>=0){
         /* it is vorbis */
         memcpy(&vo,&test,sizeof(test));
         vorbis_p=1;
+        /*Advance past the successfully processed header.*/
+        ogg_stream_packetout(&vo,NULL);
       }else{
         /* whatever it is, we don't care about it */
         ogg_stream_clear(&test);
@@ -509,20 +516,24 @@ int main(int argc,char *argv[]){
   }
 
   /* we're expecting more header packets. */
-  while((theora_p && theora_needs_more_headers) || (vorbis_p && vorbis_p<3)){
+  while((theora_p && theora_processing_headers) || (vorbis_p && vorbis_p<3)){
     int ret;
 
     /* look for further theora headers */
-    while(theora_needs_more_headers&&(ret=ogg_stream_packetout(&to,&op))){
+    while(theora_processing_headers&&(ret=ogg_stream_packetpeek(&to,&op))){
       if(ret<0){
         fprintf(stderr,
-	 "Error parsing Theora stream headers; corrupt stream?\n");
+         "Error parsing Theora stream headers; corrupt stream?\n");
         exit(1);
       }
-      theora_needs_more_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
-      if(theora_needs_more_headers<0){
+      theora_processing_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
+      if(theora_processing_headers<0){
         printf("Error parsing Theora stream headers; corrupt stream?\n");
         exit(1);
+      }
+      else if(theora_processing_headers>0){
+        /*Advance past the successfully processed header.*/
+        ogg_stream_packetout(&to,NULL);
       }
       theora_p++;
     }
@@ -566,12 +577,18 @@ int main(int argc,char *argv[]){
            ti.frame_width, ti.frame_height, ti.offset_x, ti.offset_y);
     report_colorspace(&ti);
     dump_comments(&tc);
+    theora_decoder_ctl(td,OC_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
+     sizeof(pp_level_max));
+    pp_level=pp_level_max;
+    theora_decoder_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
+    pp_inc=0;
   }else{
     /* tear down the partial theora setup */
     theora_info_clear(&ti);
     theora_comment_clear(&tc);
-    theora_setup_free(ts);
   }
+  /*Either way, we're done with the codec setup data.*/
+  theora_setup_free(ts);
   if(vorbis_p){
     vorbis_synthesis_init(&vd,&vi);
     vorbis_block_init(&vd,&vb);
@@ -642,6 +659,12 @@ int main(int argc,char *argv[]){
       /* theora is one in, one out... */
       if(ogg_stream_packetout(&to,&op)>0){
 
+        if(pp_inc){
+          pp_level+=pp_inc;
+          theora_decoder_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,
+           sizeof(pp_level));
+          pp_inc=0;
+        }
         if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
           videobuf_time=theora_granule_time(td,videobuf_granulepos);
 
@@ -653,8 +676,10 @@ int main(int argc,char *argv[]){
 
           if(videobuf_time>=get_time())
             videobuf_ready=1;
-	}
-                
+          /*If we are too slow, reduce the pp level.*/
+          else pp_inc=pp_level>0?pp_inc=-1:0;
+        }
+
       }else
         break;
     }
@@ -700,7 +725,17 @@ int main(int argc,char *argv[]){
       }
 
       if(theora_p){
-        long milliseconds=(videobuf_time-get_time())*1000-5;
+        double tdiff;
+        long milliseconds;
+        tdiff=videobuf_time-get_time();
+        /*If we have lots of extra time, increase the post-processing level.*/
+        if(tdiff>ti.fps_denominator*0.25/ti.fps_numerator){
+          pp_inc=pp_level<pp_level_max?1:0;
+        }
+        else if(tdiff<ti.fps_denominator*0.05/ti.fps_numerator){
+          pp_inc=pp_level>0?-1:0;
+        }
+        milliseconds=tdiff*1000-5;
         if(milliseconds>500)milliseconds=500;
         if(milliseconds>0){
           timeout.tv_sec=milliseconds/1000;
@@ -738,7 +773,6 @@ int main(int argc,char *argv[]){
   if(theora_p){
     ogg_stream_clear(&to);
     theora_decode_free(td);
-    theora_setup_free(ts);
     theora_comment_clear(&tc);
     theora_info_clear(&ti);
   }

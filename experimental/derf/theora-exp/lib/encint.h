@@ -162,6 +162,8 @@ struct theora_enc_ctx{
   oc_impmap_ctx           *impmap;
   /*Context information used to generate low-level perceptual weightings.*/
   oc_psych_ctx            *psych;
+  /*The maximum distance between keyframes.*/
+  ogg_uint32_t             keyframe_frequency_force;
   /*The huffman tables in use.*/
   theora_huff_code         huff_codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
   /*The scale factor for the current quality setting.*/

@@ -51,6 +51,18 @@ struct theora_dec_ctx{
   int                      pp_level;
   /*The DC scale used for out-of-loop deblocking.*/
   int                      pp_dc_scale[64];
+  /*The sharpen modifier used for out-of-loop deringing.*/
+  int                      pp_sharp_mod[64];
+  /*The DC quantization index of each block.*/
+  unsigned char           *dc_qis;
+  /*The variance of each block.*/
+  int                     *variances;
+  /*The storage for the post-processed frame buffer.*/
+  unsigned char           *pp_frame_data;
+  /*Whether or not the post-processsed frame buffer has space for chroma.*/
+  int                      pp_frame_has_chroma;
+  /*The buffer used for the post-processed frame.*/
+  theora_ycbcr_buffer      pp_frame_buf;
 };
 
 /*Fix-ups for the libogg1 API, which returns -1 when there are insufficient bits

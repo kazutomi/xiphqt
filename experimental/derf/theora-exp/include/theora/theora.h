@@ -54,8 +54,8 @@ typedef enum{
 }theora_colorspace;
 
 /*The currently defined pixel format tags.
-  TODO: Specify details of where chroma samples are placed.
-  Average luma position, a la JPEG, except in interlaced modes.*/
+  See the Theora specification, Section 4.4, for details on the precise sample
+   locations.*/
 typedef enum{
   /*Chroma decimation by 2 in both the X and Y directions.*/
   OC_PF_420,
@@ -68,6 +68,86 @@ typedef enum{
   /*The total number of currently defined pixel formats.*/
   OC_PF_NFORMATS
 }theora_pixel_fmt;
+
+/*theora_enc_ctl codes.
+  By convention, these are even, to distinguish them from decoder control
+   codes.
+  Keep any experimental or vendor-specific values above 0x8000.*/
+
+/*Sets the Huffman tables to use.
+  The tables are copied, not of stored by reference, so they can be freed after
+   this call.
+  NULL may be specified to revert to the default tables.
+
+  arg: [in]  theora_huff_code[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]
+  Return: OC_FAULT:  _enc_ctx is NULL.
+          OC_EINVAL: Encodng has already begun or one or more of the given
+                      tables is not full or prefix-free, _buf is NULL and
+                      _buf_sz is not zero, or _buf is non-NULL and _buf_sz is
+                      not sizeof(theora_huff_code)*OC_NHUFFMAN_TABLES*
+                      OC_NDCT_TOKENS.
+          OC_IMPL:   Not supported by this implementation. */
+#define OC_ENCCTL_SET_HUFFMAN_CODES (0)
+/*Sets the quantization parameters to use.
+  The parameters are copied, not stored by reference, so they can be freed
+   after this call.
+  NULL may be specified to revert to the default parameters.
+  For the current encoder, scale[ci!=0][qi] must be <= scale[ci!=0][qi-1] and
+   base[qti][pli][qi][ci] must be <= base[qti][pli][qi-1][ci].
+  These two conditions ensure that the actual quantizer for a given qti, pli
+   and ci does not increase as qi increases.
+
+  arg: [in]  theora_quant_info
+  Return: OC_FAULT:  _enc_ctx is NULL.
+          OC_EINVAL: Encodng has already begun or the quantization parameters
+                      does not meet one of the above stated conditions, _buf is
+                      NULL and _buf_sz is not zero, or _buf is non-NULL and
+                      _buf_sz is not sizeof(theora_quant_info).
+          OC_IMPL:   Not supported by this implementation. */
+#define OC_ENCCTL_SET_QUANT_PARAMS (2)
+/*Sets the maximum distance between key frames.
+  This can be changed during an encode, but will be bounded by
+   1<<keyframe_granule_shift.
+  If it is set before encoding begins, keyframe_granule_shift will be enlarged
+   appropriately.
+
+  arg: [in]  ogg_uint32_t: The maximum distance between key frames.
+       [out] ogg_uint32_t: The actual maximum distance set.
+  Return: OC_FAULT:  _enc_ctx or _buf is NULL.
+          OC_EINVAL: _buf_sz is not sizeof(ogg_uint32_t).
+          OC_IMPL:   Not supported by this implementation.*/
+#define OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
+
+/*theora_dec_ctl codes.
+  By convention, these are odd, to distinguish them from encoder control codes.
+  Keep any experimental or vendor-specific values above 0x8000.*/
+
+/*Gets the maximum post-processing level.
+
+  arg: [out] int: The maximum post-processing level.
+  Return: OC_FAULT:  _dec_ctx or _buf is NULL.
+          OC_EINVAL: _buf_sz is not sizeof(int).
+          OC_IMPL:   Not supported by this implementation.*/
+#define OC_DECCTL_GET_PPLEVEL_MAX (1)
+/*Sets the post-processing level.
+  By default, post-processing is disabled.
+
+  arg: [in]  int: The new post-processing level.
+       0 to disable; larger values use more CPU.
+  Return: OC_FAULT:  _dec_ctx or _buf is NULL.
+          OC_EINVAL: _buf_sz is not sizeof(int), or the post-processing level
+                      is out of bounds.
+          OC_IMPL:   Not supported by this implementation. */
+#define OC_DECCTL_SET_PPLEVEL (3)
+/*Sets the granule position.
+  Call this after a seek, before decoding the first frame, to ensure that the
+   proper granule position is returned for all subsequent frames.
+
+  arg: [in]  ogg_int64_t: The granule position of the next frames.
+  Return: OC_FAULT:  _dec_ctx or _buf is NULL.
+          OC_EINVAL: _buf_sz is not sizeof(ogg_int64_t), or the granpos is
+                      negative.*/
+#define OC_DECCTL_SET_GRANPOS (5)
 
 /*A single color plane in an image.*/
 typedef struct{
@@ -112,7 +192,8 @@ typedef struct{
   ogg_uint32_t       fps_numerator;
   ogg_uint32_t       fps_denominator;
   /*The aspect ratio of the pixels.
-    If either value is zero, 1:1 is assumed.*/
+    If either value is zero, the aspect ratio is undefined.
+    If not specified by any external means, 1:1 should be assumed.*/
   ogg_uint32_t       aspect_numerator;
   ogg_uint32_t       aspect_denominator;
   /*The color space.*/
@@ -140,15 +221,13 @@ typedef struct{
      which would make transcoding complex.*/
   int                quality;
   /*The amount to shift to extract the last keyframe number from the granule
-     position.*/
+     position.
+    This can be at most 31.
+    The maximum distance between keyframes is 1<<keyframe_granule_shift.
+    If you leave this at zero and do not set the keyframe frequency with
+     OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, every frame will be encoded as a
+     keyframe.*/
   int                keyframe_granule_shift;
-/*TODO: This doesn't belong here.
-  It is control data, not informational data.
-  We should create a generic ioctl-like interface that can be used to set
-   these implementation-specific things.*/
-  /*Also used for decode init to get granpos shift correct.*/
-  ogg_uint32_t       keyframe_frequency_force;
-  int                pp_level;
 }theora_info;
 
 #define OC_NHUFFMAN_TABLES (80)
@@ -268,10 +347,8 @@ extern int theora_comment_query_count(theora_comment *_tc,char *_tag);
 extern void theora_comment_clear(theora_comment *_tc);
 
 extern theora_enc_ctx *theora_encode_alloc(const theora_info *_info);
-extern int theora_encode_set_huffman_codes(theora_enc_ctx *_enc,
- const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]);
-extern int theora_encode_set_quant_params(theora_enc_ctx *_enc,
- const theora_quant_info *_qinfo);
+extern int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
+ size_t _buf_sz);
 extern int theora_encode_flushheader(theora_enc_ctx *_enc,
  theora_comment *_comments,ogg_packet *_op);
 extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
@@ -279,7 +356,6 @@ extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
 extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
  ogg_packet *_op);
 extern void theora_encode_free(theora_enc_ctx *_enc);
-
 
 extern int theora_decode_headerin(theora_info *_info,theora_comment *_tc,
  theora_setup_info **_setup,ogg_packet *_op);
@@ -289,6 +365,8 @@ extern int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos);
 extern int theora_decode_ycbcr_out(theora_dec_ctx *_dec,
  theora_ycbcr_buffer _ycbcr);
+extern int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
+ size_t _buf_sz);
 extern void theora_decode_free(theora_dec_ctx *_dec);
 
 extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);

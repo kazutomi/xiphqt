@@ -8,7 +8,7 @@ Although they are based upon the VP3.2 and Theora source, which as of the time
 Decoder:
 The decoder here is feature-complete, up to and including all planned bitstream
  features for the initial Theora release.
-Some of these are not yet present even in the CVS decoder.
+Some of these are not yet present even in the reference decoder.
 These include:
 - Support for non-VP3 style quantization matrices (i.e., complete support for
    the additional flexibility added to the quantization matrix specification).
@@ -16,8 +16,6 @@ These include:
    4:2:0 format supported by VP3).
 - Support for block-level qi values.
 Currently missing features:
-- Out-of-loop post-processing (stronger deblocking, deringing filters).
-  These aren't hard, they just haven't been done yet.
 - Advanced buffering API: Client-specified buffers and piplined (striped)
    decode.
   Clients could provide external buffers to decode into when out-of-loop

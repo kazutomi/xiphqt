@@ -820,9 +820,7 @@ int main(int argc,char *argv[]){
   ti.colorspace=OC_CS_UNSPECIFIED;
   ti.target_bitrate=video_r;
   ti.quality=video_q;
-
-  ti.keyframe_frequency_force=64;
-  ti.pp_level=1;
+  ti.keyframe_granule_shift=6;
 
 #if defined(OC_444_MODE)
   ti.pixel_fmt=OC_PF_444;

@@ -69,7 +69,7 @@ theora_setup_info *ts;
 theora_dec_ctx    *td;
 
 int              theora_p=0;
-int              theora_needs_more_headers;
+int              theora_processing_headers;
 int              stateflag=0;
 
 /* single frame video buffering */
@@ -193,14 +193,16 @@ int main(int argc,char *argv[]){
 
       ogg_stream_init(&test,ogg_page_serialno(&og));
       ogg_stream_pagein(&test,&og);
-      ogg_stream_packetout(&test,&op);
+      ogg_stream_packetpeek(&test,&op);
 
       /* identify the codec: try theora */
-      if(!theora_p && (theora_needs_more_headers=
+      if(!theora_p && (theora_processing_headers=
        theora_decode_headerin(&ti,&tc,&ts,&op))>=0){
         /* it is theora */
         memcpy(&to,&test,sizeof(test));
         theora_p=1;
+        /*Advance past the successfully processed header.*/
+        if(theora_processing_headers)ogg_stream_packetout(&to,NULL);
       }else{
         /* whatever it is, we don't care about it */
         ogg_stream_clear(&test);
@@ -210,20 +212,24 @@ int main(int argc,char *argv[]){
   }
 
   /* we're expecting more header packets. */
-  while(theora_p && theora_needs_more_headers){
+  while(theora_p && theora_processing_headers){
     int ret;
 
     /* look for further theora headers */
-    while(theora_needs_more_headers&&(ret=ogg_stream_packetout(&to,&op))){
+    while(theora_processing_headers&&(ret=ogg_stream_packetpeek(&to,&op))){
       if(ret<0){
         fprintf(stderr,
          "Error parsing Theora stream headers; corrupt stream?\n");
         exit(1);
       }
-      theora_needs_more_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
-      if(theora_needs_more_headers<0){
+      theora_processing_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
+      if(theora_processing_headers<0){
         printf("Error parsing Theora stream headers; corrupt stream?\n");
         exit(1);
+      }
+      else if(theora_processing_headers>0){
+        /*Advance past the successfully processed header.*/
+        ogg_stream_packetout(&to,NULL);
       }
       theora_p++;
     }
@@ -252,8 +258,9 @@ int main(int argc,char *argv[]){
     /* tear down the partial theora setup */
     theora_info_clear(&ti);
     theora_comment_clear(&tc);
-    theora_setup_free(ts);
   }
+  /*Either way, we're done with the codec setup data.*/
+  theora_setup_free(ts);
 
   /* open video */
   if(theora_p)open_video();
@@ -304,7 +311,6 @@ int main(int argc,char *argv[]){
   if(theora_p){
     ogg_stream_clear(&to);
     theora_decode_free(td);
-    theora_setup_free(ts);
     theora_comment_clear(&tc);
     theora_info_clear(&ti);
   }
