@@ -505,11 +505,75 @@ void CVorbisFileFormat::CreateFileHeaderObj(void)
 		// required property: StreamCount
 		pHeaderObj->SetPropertyULONG32("StreamCount", 1);
 
+		// do the vorbis comments
+		IRMABuffer *pTitle = NULL;
+		IRMABuffer *pAuthor = NULL;
+		IRMABuffer *pCopyright = NULL;
+		char *pTitleData;
+		char *pAuthorData;
+		char *pCopyrightData;
+
+		int i;
+		printf("Looking for vorbis comments.. We have %d to choose from...\n", m_initial_c.comments);
+		for (i = 0; i < m_initial_c.comments; i++) {
+			printf("Comment %d: %s...\n", i, m_initial_c.user_comments[i]);
+			if (!strncasecmp("title", m_initial_c.user_comments[i], 5)) {
+				char *pos = strchr(m_initial_c.user_comments[i], '=');
+				if (pos == NULL) continue;
+				pos++;
+
+				printf("adding title comment of %s\n", pos);
+
+				m_pClassFactory->CreateInstance(CLSID_IRMABuffer, (void **)&pTitle);
+				if (pTitle == NULL) continue;
+				
+				pTitle->SetSize(strlen(pos) + 1);
+				pTitleData = (char *)pTitle->GetBuffer();
+				strcpy(pTitleData, pos);
+
+				pHeaderObj->SetPropertyBuffer("Title", pTitle);
+			} else if (!strncasecmp("artist", m_initial_c.user_comments[i], 6)) {
+				char *pos = strchr(m_initial_c.user_comments[i], '=');
+				if (pos == NULL) continue;
+				pos++;
+
+				printf("adding author comment of %s\n", pos);
+
+				m_pClassFactory->CreateInstance(CLSID_IRMABuffer, (void **)&pAuthor);
+				if (pAuthor == NULL) continue;
+
+				pAuthor->SetSize(strlen(pos) + 1);
+				pAuthorData = (char *)pAuthor->GetBuffer();
+				strcpy(pAuthorData, pos);
+
+				pHeaderObj->SetPropertyBuffer("Author", pAuthor);
+			} else if (!strncasecmp("copyright", m_initial_c.user_comments[i], 9)) {
+				char *pos = strchr(m_initial_c.user_comments[i], '=');
+				if (pos == NULL) continue;
+				pos++;
+				
+				printf("adding copyright comment of %s\n", pos);
+
+				m_pClassFactory->CreateInstance(CLSID_IRMABuffer, (void **)&pCopyright);
+				if (pCopyright == NULL) continue;
+
+				pCopyright->SetSize(strlen(pos) + 1);
+				pCopyrightData = (char *)pCopyright->GetBuffer();
+				strcpy(pCopyrightData, pos);
+
+				pHeaderObj->SetPropertyBuffer("Copyright", pCopyright);
+			}
+		}
+
+
 		// step 6: notify rma core that header object is ready
 		m_pStatus->FileHeaderReady(PN_STATUS_OK, pHeaderObj);
 
 		// release object since we're done with it
 		pHeaderObj->Release();
+		if (pTitle) pTitle->Release();
+		if (pAuthor) pAuthor->Release();
+		if (pCopyright) pCopyright->Release();
 	}
 
 	//printf("Exiting CreateFileHeaderObj(%d)\n", m_instno);
@@ -554,7 +618,7 @@ void CVorbisFileFormat::CreateStreamHeaderObj(void)
 			pStreamHeaderObj->SetPropertyCString("MimeType", pStringObj);
 			pStringObj->Release();
 		}
-
+	
 		// notify RMA core
 		m_pStatus->StreamHeaderReady(PN_STATUS_OK, pStreamHeaderObj);
 
