@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.6.2.1 2001/10/14 05:42:51 volsung Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.6.2.2 2001/10/17 16:58:14 volsung Exp $
  
 ********************************************************************/
 
@@ -22,7 +22,7 @@
 #include <string.h> /* for memmove */
 #include <signal.h>		/* for SIGINT */
 
-#define DEBUG_CURLINTERFACE
+#undef DEBUG_CURLINTERFACE
 
 #ifdef DEBUG_CURLINTERFACE
 #define debug(x, y...) do { fprintf (stderr, x , ## y); } while (0)
@@ -47,70 +47,6 @@ CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
   return size * nmemb;
 }
 
-size_t
-BufferWriteChunk (void *voidptr, size_t size, void *arg, char iseos)
-{
-  StreamInputBufferData_t *data = arg;
-  unsigned char *ptr = voidptr;
-
-  debug ("buffer writing chunk of %d, %d bytes to go\n", size,
-	 data->BytesRequested);
-
-  pthread_mutex_lock (&data->ReadDataMutex);
-  while (data->BytesRequested == 0 && !data->ShuttingDown)
-    pthread_cond_wait (&data->ReadRequestedCondition, &data->ReadDataMutex);
-
-  data->EOS = iseos;
-  if (iseos)
-    debug ("End of stream.\n");
-
-  if (size <= data->BytesRequested)
-    {
-      debug ("simply moving %d bytes in.\n", size);
-      memmove (data->CurWritePtr, ptr, size);
-      data->CurWritePtr += size;
-      data->BytesRequested -= size;
-      pthread_mutex_unlock (&data->ReadDataMutex);
-      if (data->BytesRequested == 0 || iseos)
-	pthread_cond_signal (&data->ReadDoneCondition);
-    }
-  else
-    {
-      /* There will be some excess data here. Write it, then block on needing more data. */
-      debug ("writing %d bytes, ", data->BytesRequested);
-      memmove (data->CurWritePtr, ptr, data->BytesRequested);
-      data->CurWritePtr += data->BytesRequested;
-      size -= data->BytesRequested;
-      ptr += data->BytesRequested;
-      data->BytesRequested = 0;
-      debug ("saving %d bytes of excess data\n", size);
-      memmove (data->ExcessData, ptr, size);
-      data->ExcessDataSize = size;
-
-      debug ("signalling successful read\n");
-      pthread_mutex_unlock (&data->ReadDataMutex);
-      pthread_cond_signal (&data->ReadDoneCondition);
-    }
-
-  debug ("buffer write done.\n");
-  return size;
-}
-
-size_t
-BufferWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg,
-		     char iseos)
-{
-  size_t written = 0;
-  while (nmemb > 0)
-    {
-      if (nmemb == 1)
-	written += BufferWriteChunk (ptr, size, arg, iseos);
-      else
-	written += BufferWriteChunk (ptr, size, arg, 0);
-      nmemb--;
-    }
-  return written;
-}
 
 int
 CurlProgressFunction (void *arg, size_t dltotal, size_t dlnow, size_t ultotal,
@@ -153,23 +89,25 @@ CurlSetopts (CURL * handle, buf_t * buf, InputOpts_t inputOpts)
 void *
 CurlGo (void *arg)
 {
-  buf_t *buf = arg;
-  StreamInputBufferData_t *data = buf->data;
+  StreamInputBufferData_t *data = (StreamInputBufferData_t *) arg;
   CURLcode ret;
+
   debug ("CurlGo\n");
   ret = curl_easy_perform ((CURL *) data->CurlHandle);
   debug ("curl done.\n");
-  buffer_thread_kill (buf);
+
+  buffer_mark_eos (data->buf);
+
   curl_easy_cleanup (data->CurlHandle);
   data->CurlHandle = 0;
+
   return (void *) ret;
 }
 
-buf_t *
+StreamInputBufferData_t *
 InitStream (InputOpts_t inputOpts)
 {
-  StreamInputBufferData_t *data = calloc (1, sizeof (StreamInputBufferData_t));
-  buf_t *buf;
+  StreamInputBufferData_t *data = malloc (sizeof (StreamInputBufferData_t));
 
   debug ("InitStream\n");
   debug (" Allocated data\n");
@@ -180,10 +118,7 @@ InitStream (InputOpts_t inputOpts)
       exit (1);
     }
 
-  debug (" init pthreads\n");
-  pthread_mutex_init (&data->ReadDataMutex, NULL);
-  pthread_cond_init (&data->ReadRequestedCondition, NULL);
-  pthread_cond_init (&data->ReadDoneCondition, NULL);
+  data->SavedStream = NULL;
 
   debug (" curl init\n");
   data->CurlHandle = curl_easy_init ();
@@ -193,96 +128,51 @@ InitStream (InputOpts_t inputOpts)
       exit (1);
     }
 
-  debug (" create buffer\n");
-  buf = buffer_create (inputOpts.BufferSize, inputOpts.Prebuffer, data,
-		       BufferWriteFunction, NULL, NULL, VORBIS_CHUNKIN_SIZE);
-
-  if (!buf)
+  debug (" create buffer, prebuf = %ld\n", inputOpts.Prebuffer);
+  inputOpts.Prebuffer = 0;
+  inputOpts.BufferSize = 1024*500;
+  data->buf = buffer_create (inputOpts.BufferSize, inputOpts.Prebuffer, NULL,
+			     NULL, NULL, NULL, VORBIS_CHUNKIN_SIZE);
+  /* Don't start the thread since we are going to be pulling data from
+     the buffer instead. */
+  
+  if (!data->buf)
     {
       perror ("Create Buffer");
       exit (1);
     }
 
   debug (" set curl opts\n");
-  CurlSetopts (data->CurlHandle, buf, inputOpts);
+  CurlSetopts (data->CurlHandle, data->buf, inputOpts);
 
   debug (" init saving stream\n");
   if (inputOpts.SaveStream)
     data->SavedStream = fopen (inputOpts.SaveStream, "wb");
 
-  pthread_create (&data->CurlThread, NULL, CurlGo, buf);
+  pthread_create (&data->CurlThread, NULL, CurlGo, data);
 
   debug ("returning.\n");
-  return buf;
+  return data;
 }
 
-size_t
-_StreamBufferRead (void *voidptr, size_t size, size_t nmemb, void *arg)
+void StreamCleanup (StreamInputBufferData_t *data)
 {
-  StreamInputBufferData_t *data = arg;
-  unsigned char *ptr = voidptr;
-  size_t ret;
-
-  ret = size *= nmemb;		/* makes things simpler and run smoother */
-
-  debug ("StreamBufferRead %d bytes\n", ret);
-
-  pthread_mutex_lock (&data->ReadDataMutex);
-
-  if (size <= data->ExcessDataSize)
-    {
-      debug ("reading out of excess data\n");
-      memmove (ptr, data->ExcessData, size);
-      data->ExcessDataSize -= size;
-      if (size < data->ExcessDataSize)
-	memmove (data->ExcessData, data->ExcessData + size,
-		 data->ExcessDataSize);
-      pthread_mutex_unlock (&data->ReadDataMutex);
-    }
-  else
-    {
-      debug ("Using %d bytes of excess data.\n", data->ExcessDataSize);
-      memmove (ptr, data->ExcessData, data->ExcessDataSize);
-      ptr += data->ExcessDataSize;
-      size -= data->ExcessDataSize;
-      if (data->EOS)
-	{
-	  ret = data->ExcessDataSize;
-	  debug ("Data marked EOS, so returning just excess data\n");
-	  pthread_mutex_unlock (&data->ReadDataMutex);
-	  data->ExcessDataSize = 0;
-	  return ret;
-	}
-      else
-	data->ExcessDataSize = 0;
-
-      data->BytesRequested = size;
-      data->WriteTarget = data->CurWritePtr = ptr;
-
-      pthread_mutex_unlock (&data->ReadDataMutex);
-      pthread_cond_signal (&data->ReadRequestedCondition);
-      pthread_mutex_lock (&data->ReadDataMutex);
-
-      while (data->BytesRequested > 0 && !data->EOS)
-	{
-	  debug ("Waiting for %d bytes of data to be read, eos=%d.\n",
-		 data->BytesRequested, data->EOS);
-	  pthread_cond_wait (&data->ReadDoneCondition, &data->ReadDataMutex);
-	}
-      if (data->EOS)
-	ret -= data->BytesRequested;
-      pthread_mutex_unlock (&data->ReadDataMutex);
-    }
-  debug ("buffer read done.\n");
-  return ret;
+  free (data);
 }
+
+/* --------------- vorbisfile callbacks --------------- */
 
 size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
 {
   StreamInputBufferData_t *data = arg;
-  size_t ret = _StreamBufferRead (ptr, size, nmemb, arg);
+  size_t ret;
+
+  debug ("StreamBufferRead %d bytes\n", size*nmemb);
+  ret = buffer_get_data(data->buf, ptr, size, nmemb);
+
   if (data->SavedStream)
     fwrite (ptr, ret, 1, data->SavedStream);
+
   return ret;
 }
 
@@ -300,17 +190,16 @@ StreamBufferClose (void *arg)
   StreamInputBufferData_t *data = arg;
 
   debug ("StreamBufferClose\n");
-  if (data)
-    {
-      pthread_kill (data->CurlThread, SIGTERM);
-      pthread_join (data->CurlThread, NULL);
-      data->ShuttingDown = 1;
-      data->EOS = 1;
-      data->BytesRequested = 0;
-      pthread_cond_signal (&data->ReadRequestedCondition);
-      memset (data, 0, sizeof(data));
-      free (data);
-    }
+
+  pthread_kill (data->CurlThread, SIGTERM);
+  pthread_join (data->CurlThread, NULL);
+
+  buffer_destroy(data->buf);
+  data->buf = NULL;
+
+  if (data->SavedStream)
+    fclose (data->SavedStream);
+
   return 0;
 }
 
@@ -318,12 +207,4 @@ long
 StreamBufferTell (void *arg)
 {
   return 0;
-}
-
-void StreamInputCleanup (buf_t *buf)
-{ 
-  StreamBufferClose (buf->data);
-  buf->data = 0;
-  buffer_thread_kill (buf);
-  buffer_destroy (buf);
 }

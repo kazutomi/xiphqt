@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.2 2001/10/15 05:56:55 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.3 2001/10/17 16:58:14 volsung Exp $
 
  ********************************************************************/
 
@@ -30,8 +30,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <signal.h>
-
-#include <assert.h> /* for debug purposes */
+#include <unistd.h>
 
 #include "ogg123.h"
 #include "buffer.h"
@@ -43,7 +42,7 @@
 
 #ifdef DEBUG_BUFFER
 FILE *debugfile;
-#define DEBUG(x, y...) { if (pthread_self() != buf->thread) fprintf (debugfile, "D: " x "\n", ## y ); else fprintf (debugfile, "P: " x "\n", ## y ); }
+#define DEBUG(x, y...) { fprintf (debugfile, "%d: " x "\n", getpid(),  ## y); }
 #else
 #define DEBUG(x, y...)
 #endif
@@ -65,6 +64,17 @@ void _buffer_thread_cleanup (void *arg)
   pthread_cond_destroy (&buf->write_cond);
 }
 
+
+void _buffer_init_vars (buf_t *buf)
+{
+  /* Initialize buffer flags */
+  buf->prebuffering = buf->prebuffer_size > 0;
+  buf->paused = 0;
+  buf->eos = 0;
+  
+  buf->curfill = 0;
+  buf->start = 0;
+}
 
 void _buffer_thread_init (buf_t *buf)
 {
@@ -89,18 +99,7 @@ void _buffer_thread_init (buf_t *buf)
 	pthread_exit ((void*)ret);
     }
 	
-  /* Setup pthread variables */
-  pthread_mutex_init (&buf->mutex, NULL);
-  pthread_cond_init (&buf->write_cond, NULL);
-  pthread_cond_init (&buf->playback_cond, NULL);
-
-  /* Initialize buffer flags */
-  buf->prebuffering = buf->prebuffer_size > 0;
-  buf->paused = 0;
-  buf->eos = 0;
-  
-  buf->curfill = 0;
-  buf->start = 0;
+  _buffer_init_vars(buf);
 }
 
 
@@ -263,6 +262,11 @@ buf_t *buffer_create (long size, long prebuffer_size, void *data,
 
   buf->initData = initData;
   buf->init_func = init_func;
+
+  /* Setup pthread variables */
+  pthread_mutex_init (&buf->mutex, NULL);
+  pthread_cond_init (&buf->write_cond, NULL);
+  pthread_cond_init (&buf->playback_cond, NULL);
   
   /* Correct for impossible chunk sizes */
   if (audio_chunk_size > size || audio_chunk_size == 0)
@@ -271,6 +275,9 @@ buf_t *buffer_create (long size, long prebuffer_size, void *data,
   buf->audio_chunk_size = audio_chunk_size;
   buf->prebuffer_size = prebuffer_size;
   buf->size = size;
+
+  /* Initialize flags */
+  _buffer_init_vars(buf);
 
   return buf;
 }
@@ -341,6 +348,65 @@ void buffer_submit_data (buf_t *buf, chunk *data, size_t size, size_t nmemb)
   _submit_data_chunk (buf, data, size);
 }
 
+size_t buffer_get_data (buf_t *buf, chunk *data, size_t size, size_t nmemb)
+{
+  int write_amount;
+  int orig_size;
+
+  size *= nmemb;
+  orig_size = size;
+
+  DEBUG("Enter buffer_get_data");
+
+  LOCK_MUTEX(buf->mutex);
+
+  /* Put the data into the buffer as space is made available */
+  while (size > 0)
+    {
+      DEBUG("Obtaining lock on buffer");
+      /* Block until we can read something */
+      if (buf->curfill == 0)
+	{
+	  if (buf->eos)
+	    break; /* No more data to read */
+
+	  DEBUG("Waiting for more data to copy.");
+	  COND_WAIT(buf->playback_cond, buf->mutex);
+	}
+
+      /* Note: Even if curfill is still 0, nothing bad will happen here */
+
+      /* For simplicity, the number of bytes played must satisfy
+	 the following three requirements:
+	 
+	 1. Do not copy more bytes than are stored in the buffer.
+	 2. Do not copy more bytes than the reqested data size.
+	 3. Do not run off the end of the buffer. */
+      write_amount = MIN3(buf->curfill, size, buf->size - buf->start);
+      
+      /* No need to lock mutex here because the other thread will
+	 NEVER reduce the number of bytes stored in the buffer */
+      DEBUG("Copying %d bytes from the buffer", write_amount);
+      memcpy(data, buf->buffer + buf->start, write_amount);
+      
+      buf->curfill -= write_amount;
+      data += write_amount;
+      size -= write_amount;
+      buf->start = (buf->start + write_amount) % buf->size;
+      DEBUG("Updated buffer fill, curfill = %ld", buf->curfill);
+      
+      /* Signal a waiting decoder thread that they can put more
+	 audio into the buffer */
+      DEBUG("Signal decoder thread that buffer space is available");
+      COND_SIGNAL(buf->write_cond);
+    }
+
+   UNLOCK_MUTEX(buf->mutex);
+
+   DEBUG("Exit buffer_get_data");
+   
+   return orig_size - size;
+}
 
 void buffer_mark_eos (buf_t *buf)
 {
