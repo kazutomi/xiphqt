@@ -101,7 +101,7 @@ int mngconvert(param_t *param)
 		   so we read as a chars and unpack in an
 		   endian-independent way. */
 		fread(lenb, 1, 4, param->in);
-		length = (lenb[0]&&0xFF) << 24 | 
+		length = (lenb[0]&0xFF) << 24 | 
 			(lenb[1]&0xFF) << 16 |
 			(lenb[2]&0xFF) << 8 |
 			(lenb[3]&0xFF);
