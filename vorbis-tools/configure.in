@@ -82,16 +82,33 @@ PROFILE="$PROFILE $cflags_save"
 LDFLAGS="$LDFLAGS $ldflags_save"
 
 dnl --------------------------------------------------
-dnl Check for headers
+dnl Check for pthreads (from Miod Vallat <miod@openbsd.org>)
 dnl --------------------------------------------------
-
-dnl none
-
-dnl --------------------------------------------------
-dnl Check for typedefs, structures, etc
-dnl --------------------------------------------------
-
-dnl none
+ 
+AC_CACHE_CHECK(
+        [if compiler recognizes -pthread],
+        ogg123_cv_gcc_pthread,
+        ac_save_CFLAGS=$CFLAGS
+        CFLAGS="$CFLAGS -pthread"
+        AC_LANG_SAVE
+        AC_LANG_C
+        AC_TRY_LINK([#include <pthread.h>],
+                [void *p = pthread_create;],
+                ogg123_cv_gcc_pthread=yes,
+                ogg123_cv_gcc_pthread=no
+        )
+        AC_LANG_RESTORE
+        CFLAGS=$ac_save_CFLAGS
+)
+if test $ogg123_cv_gcc_pthread = yes
+then
+        THREAD_LIBS=""
+        THREAD_CFLAGS="-pthread"
+else
+        dnl AC_CHECK_HEADERS(pthread.h) unreliable
+        AC_CHECK_LIB(pthread,pthread_create,THREAD_LIBS=-lpthread,
+             [AC_CHECK_LIB(c_r,pthread_create,THREAD_LIBS=-lc_r)])
+fi
 
 dnl --------------------------------------------------
 dnl Check for libraries
@@ -104,8 +121,6 @@ SOCKET_LIBS=
 AC_CHECK_HEADER(curl/curl.h, , AC_MSG_ERROR(libcurl headers needed!))
 AC_CHECK_HEADER(curl/easy.h, , AC_MSG_ERROR(libcurl headers needed!))
 AC_CHECK_LIB(curl, curl_easy_perform, CURL_LIBS="-lcurl", AC_MSG_ERROR(libcurl needed!))
-AC_CHECK_HEADER(pthread.h, , AC_MSG_ERROR(pthread header needed!))
-AC_CHECK_LIB(pthread, pthread_mutex_init, THREAD_LIBS="-lpthread", AC_MSG_ERROR(pthread library needed!))
 AC_CHECK_LIB(socket, socket, SOCKET_LIBS="-lsocket")
 AC_CHECK_LIB(nsl, gethostbyname, SOCKET_LIBS="-lnsl $SOCKET_LIBS")
 SHARE_LIBS='$(top_srcdir)/share/libutf8.a $(top_srcdir)/share/libgetopt.a'
@@ -136,6 +151,7 @@ dnl --------------------------------------------------
 AC_SUBST(DEBUG)
 AC_SUBST(PROFILE)
 AC_SUBST(THREAD_LIBS)
+AC_SUBST(THREAD_CFLAGS)
 AC_SUBST(SOCKET_LIBS)
 AC_SUBST(SHARE_LIBS)
 AC_SUBST(CURL_LIBS)
