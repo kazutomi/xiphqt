@@ -1,0 +1,6 @@
+TODO list for oggmerge
+
+* get simple mng->ogg working
+* framework redesign to allow mng+oggvorbis->ogg
+* experiment with stream-description metadata
+* xml substream support
