@@ -3,9 +3,17 @@
 AUTOMAKE_OPTIONS = 1.6 foreign dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = include src examples
+SUBDIRS = include src examples debian
 
 EXTRA_DIST = README COPYING NEWS m4
+
+DISTCLEANFILES = shout-config.in
+
+docdir = $(datadir)/doc/$(PACKAGE)
+doc_DATA = COPYING README examples/example.c
+
+m4datadir = $(datadir)/aclocal
+m4data_DATA = m4/shout.m4
 
 if HAVE_PKGCONFIG
   pkgconfigdir = $(libdir)/pkgconfig
@@ -13,13 +21,12 @@ if HAVE_PKGCONFIG
 else
   bin_SCRIPTS = shout-config
 endif
-DISTCLEANFILES = shout-config.in
-
-## SCCS stuff (for BitKeeper)
-GET = true
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@"
+
+dist-hook:
+	rm -rf `find $(distdir)/m4 -name .svn`

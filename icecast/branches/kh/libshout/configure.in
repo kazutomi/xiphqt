@@ -175,6 +175,7 @@ AC_SUBST(SHOUT_LIBS)
 AC_SUBST(SHOUT_LIBDEPS)
 
 AC_OUTPUT([Makefile
+debian/Makefile
 include/Makefile
 include/shout/Makefile
 include/shout/shout.h
