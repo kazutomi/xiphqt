@@ -14,11 +14,13 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os.h,v 1.10 2000/10/12 03:12:53 xiphmont Exp $
+ last mod: $Id: os.h,v 1.10.2.1 2000/10/19 10:21:02 xiphmont Exp $
 
  ********************************************************************/
 
 #include <math.h>
+#include <ogg/os_types.h>
+
 #ifndef _V_IFDEFJAIL_H_
 #define _V_IFDEFJAIL_H_
 
@@ -55,6 +57,59 @@
 
 #ifndef max
 #  define max(x,y)  ((x)<(y)?(y):(x))
+#endif
+
+
+#if defined(__i386__) && defined(__GNUC__)
+
+/* both GCC and MSVC are kinda stupid about rounding/casting to int.
+   Because of encapsulation constraints (GCC can't see inside the asm
+   block and so we end up doing stupid things like a store/load that
+   is collectively a noop), we do it this way */
+
+/* we must set up the fpu before this works!! */
+
+typedef ogg_int16_t vorbis_fpu_control;
+
+static inline void vorbis_fpu_setround(vorbis_fpu_control *fpu){
+  ogg_int16_t ret;
+  ogg_int16_t temp;
+  __asm__ __volatile__("fnstcw %0\n\t"
+	  "movw %0,%%dx\n\t"
+	  "orw $62463,%%dx\n\t"
+	  "movw %%dx,%1\n\t"
+	  "fldcw %1\n\t":"=m"(ret):"m"(temp): "dx");
+  *fpu=ret;
+}
+
+static inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
+  __asm__ __volatile__("fldcw %0":: "m"(fpu));
+}
+
+/* assumes the FPU is in round mode! */
+static inline int vorbis_ftoi(double f){  /* yes, double!  Otherwise,
+                                             we get extra fst/fld to
+                                             truncate precision */
+  int i;
+  __asm__("fistl %0": "=m"(i) : "t"(f));
+  return(i);
+}
+
+#else
+
+static int vorbis_ftoi(double f){
+  return (int)(f+.5);
+}
+
+
+typedef vorbis_fpu_control int;
+
+static inline void vorbis_fpu_setround(vorbis_fpu_control *fpu){
+}
+
+static inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
+}
+
 #endif
 
 #endif /* _OS_H */
