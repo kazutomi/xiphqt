@@ -1751,115 +1751,125 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos){
   int ret;
   if(_dec==NULL||_op==NULL)return OC_FAULT;
-  oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
-  ret=oc_dec_frame_header_unpack(_dec);
-  if(ret<0)return ret;
-  /*Select a free buffer to use for the reconstructed version of this frame.*/
-  if(_dec->state.frame_type!=OC_INTRA_FRAME&&
-   (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
-   _dec->state.ref_frame_idx[OC_FRAME_PREV]<0)){
-    theora_info *info;
-    size_t       yplane_sz;
-    size_t       cplane_sz;
-    int          yhstride;
-    int          yvstride;
-    int          chstride;
-    int          cvstride;
-    /*We're decoding an INTER frame, but have no initialized reference
-       buffers (i.e., decoding did not start on a key frame).
-      We initialize them to a solid gray here.*/
-    _dec->state.ref_frame_idx[OC_FRAME_GOLD]=0;
-    _dec->state.ref_frame_idx[OC_FRAME_PREV]=0;
-    _dec->state.ref_frame_idx[OC_FRAME_SELF]=1;
-    info=&_dec->state.info;
-    yhstride=info->frame_width+2*OC_UMV_PADDING;
-    yvstride=info->frame_height+2*OC_UMV_PADDING;
-    chstride=yhstride>>!(info->pixel_fmt&1);
-    cvstride=yvstride>>!(info->pixel_fmt&2);
-    yplane_sz=(size_t)yhstride*yvstride;
-    cplane_sz=(size_t)chstride*cvstride;
-    memset(_dec->state.ref_frame_data,0x80,yplane_sz+2*cplane_sz);
-  }
-  else{
-    int rfi;
-    for(rfi=0;rfi==_dec->state.ref_frame_idx[OC_FRAME_GOLD]||
-     rfi==_dec->state.ref_frame_idx[OC_FRAME_PREV];rfi++);
-    _dec->state.ref_frame_idx[OC_FRAME_SELF]=rfi;
-  }
-  if(_dec->state.frame_type==OC_INTRA_FRAME){
-    oc_dec_mark_all_intra(_dec);
-    _dec->state.keyframe_num=_dec->state.curframe_num;
-  }
-  else{
-    oc_dec_coded_flags_unpack(_dec);
-    oc_dec_mb_modes_unpack(_dec);
-    oc_dec_mv_unpack_and_frag_modes_fill(_dec);
-  }
-  oc_dec_block_qis_unpack(_dec);
-  oc_dec_residual_tokens_unpack(_dec);
-  /*TODO: All of the rest of the operations -- reconstructing coded fragments,
-     copying (coded or uncoded) fragments and post-processing -- should be
-     pipelined.
-    i.e., after sufficient numbers of super-block rows are reconstructed, copy
-     back fragments, then after sufficient numbers of super-block rows are
-     complete, post-process.
-    This allows us to operate on the data while it is still in cache,
-     resulting in big performance improvements.
-    An application callback to allow it to process each super-block row as it
-     is decoded is also a good idea.*/
-  oc_dec_frags_recon(_dec);
-  /*Right now the reconstructed frame has only the coded blocks in it.
-    We either need to copy all the other blocks into it, or copy the
-     reconstructed blocks back into the previous frame, whichever is faster.*/
-  if(_dec->state.frame_type==OC_INTRA_FRAME){
-    /*Intra frames always code all fragments, so there is nothing to copy.
-      The new frame becomes both the previous and gold reference frames.*/
-    _dec->state.keyframe_num=_dec->state.curframe_num;
-    _dec->state.ref_frame_idx[OC_FRAME_GOLD]=
-     _dec->state.ref_frame_idx[OC_FRAME_PREV]=
-     _dec->state.ref_frame_idx[OC_FRAME_SELF];
-  }
-  else{
-    int *plfragis[3];
-    int  ncoded;
-    int  nuncoded;
-    ncoded=_dec->state.ncoded_fragis[0]+_dec->state.ncoded_fragis[1]+
-     _dec->state.ncoded_fragis[2];
-    nuncoded=_dec->state.nfrags-ncoded;
-    if(ncoded<nuncoded&&
-     _dec->state.ref_frame_idx[OC_FRAME_PREV]!=
-     _dec->state.ref_frame_idx[OC_FRAME_GOLD]){
-      plfragis[0]=_dec->state.coded_fragis;
-      plfragis[1]=plfragis[0]+_dec->state.ncoded_fragis[0];
-      plfragis[2]=plfragis[1]+_dec->state.ncoded_fragis[1];
-      oc_state_frag_copy(&_dec->state,plfragis,_dec->state.ncoded_fragis,
-       OC_FRAME_PREV,OC_FRAME_SELF);
-      _dec->state.ref_frame_idx[OC_FRAME_SELF]=
-       _dec->state.ref_frame_idx[OC_FRAME_PREV];
+  /*A completely empty packet indicates a dropped frame and is treated exactly
+     like an inter frame with no coded blocks.
+    Only proceed if we have a non-empty packet.*/
+  if(_op->bytes!=0){
+    oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
+    ret=oc_dec_frame_header_unpack(_dec);
+    if(ret<0)return ret;
+    /*Select a free buffer to use for the reconstructed version of this
+       frame.*/
+    if(_dec->state.frame_type!=OC_INTRA_FRAME&&
+     (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
+     _dec->state.ref_frame_idx[OC_FRAME_PREV]<0)){
+      theora_info *info;
+      size_t       yplane_sz;
+      size_t       cplane_sz;
+      int          yhstride;
+      int          yvstride;
+      int          chstride;
+      int          cvstride;
+      /*We're decoding an INTER frame, but have no initialized reference
+         buffers (i.e., decoding did not start on a key frame).
+        We initialize them to a solid gray here.*/
+      _dec->state.ref_frame_idx[OC_FRAME_GOLD]=0;
+      _dec->state.ref_frame_idx[OC_FRAME_PREV]=0;
+      _dec->state.ref_frame_idx[OC_FRAME_SELF]=1;
+      info=&_dec->state.info;
+      yhstride=info->frame_width+2*OC_UMV_PADDING;
+      yvstride=info->frame_height+2*OC_UMV_PADDING;
+      chstride=yhstride>>!(info->pixel_fmt&1);
+      cvstride=yvstride>>!(info->pixel_fmt&2);
+      yplane_sz=(size_t)yhstride*yvstride;
+      cplane_sz=(size_t)chstride*cvstride;
+      memset(_dec->state.ref_frame_data,0x80,yplane_sz+2*cplane_sz);
     }
     else{
-      plfragis[0]=_dec->state.uncoded_fragis-_dec->state.nuncoded_fragis[0];
-      plfragis[1]=plfragis[0]-_dec->state.nuncoded_fragis[1];
-      plfragis[2]=plfragis[1]-_dec->state.nuncoded_fragis[2];
-      oc_state_frag_copy(&_dec->state,plfragis,_dec->state.nuncoded_fragis,
-       OC_FRAME_SELF,OC_FRAME_PREV);
-      _dec->state.ref_frame_idx[OC_FRAME_PREV]=
+      int rfi;
+      for(rfi=0;rfi==_dec->state.ref_frame_idx[OC_FRAME_GOLD]||
+       rfi==_dec->state.ref_frame_idx[OC_FRAME_PREV];rfi++);
+      _dec->state.ref_frame_idx[OC_FRAME_SELF]=rfi;
+    }
+    if(_dec->state.frame_type==OC_INTRA_FRAME){
+      oc_dec_mark_all_intra(_dec);
+      _dec->state.keyframe_num=_dec->state.curframe_num;
+    }
+    else{
+      oc_dec_coded_flags_unpack(_dec);
+      oc_dec_mb_modes_unpack(_dec);
+      oc_dec_mv_unpack_and_frag_modes_fill(_dec);
+    }
+    oc_dec_block_qis_unpack(_dec);
+    oc_dec_residual_tokens_unpack(_dec);
+    /*TODO: All of the rest of the operations -- reconstructing coded
+       fragments, copying (coded or uncoded) fragments and post-processing --
+       should be pipelined.
+      i.e., after sufficient numbers of super-block rows are reconstructed,
+       copy back fragments, then after sufficient numbers of super-block rows
+       are complete, post-process.
+      This allows us to operate on the data while it is still in cache,
+       resulting in big performance improvements.
+      An application callback to allow it to process each super-block row as it
+       is decoded is also a good idea.*/
+    oc_dec_frags_recon(_dec);
+    /*Right now the reconstructed frame has only the coded blocks in it.
+      We either need to copy all the other blocks into it, or copy the
+       reconstructed blocks back into the previous frame, whichever is
+       faster.*/
+    if(_dec->state.frame_type==OC_INTRA_FRAME){
+      /*Intra frames always code all fragments, so there is nothing to copy.
+        The new frame becomes both the previous and gold reference frames.*/
+      _dec->state.keyframe_num=_dec->state.curframe_num;
+      _dec->state.ref_frame_idx[OC_FRAME_GOLD]=
+       _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
-  }
-  /*Filter block edges.*/
-  oc_state_loop_filter(&_dec->state,OC_FRAME_PREV);
-  /*Fill in the borders from the reconstructed version of the last encoded
-     frame.*/
-  if(_dec->state.ref_frame_idx[OC_FRAME_PREV]>=0){
-    oc_state_borders_fill(&_dec->state,
-     _dec->state.ref_frame_idx[OC_FRAME_PREV]);
-  }
-  /*Perform out-of-loop post-processing, if enabled.*/
-  if(oc_dec_postprocess(_dec)){
-    memcpy(_dec->pp_frame_buf,
-     _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]],
-     sizeof(_dec->pp_frame_buf[0])*3);
+    else{
+      int *plfragis[3];
+      int  ncoded;
+      int  nuncoded;
+      ncoded=_dec->state.ncoded_fragis[0]+_dec->state.ncoded_fragis[1]+
+       _dec->state.ncoded_fragis[2];
+      nuncoded=_dec->state.nfrags-ncoded;
+      /*Pick which way the copy goes based on the number of fragments that have
+         to be copied, but make sure we don't overwrite the golden reference
+         frame.*/
+      if(ncoded<nuncoded&&
+       _dec->state.ref_frame_idx[OC_FRAME_PREV]!=
+       _dec->state.ref_frame_idx[OC_FRAME_GOLD]){
+        plfragis[0]=_dec->state.coded_fragis;
+        plfragis[1]=plfragis[0]+_dec->state.ncoded_fragis[0];
+        plfragis[2]=plfragis[1]+_dec->state.ncoded_fragis[1];
+        oc_state_frag_copy(&_dec->state,plfragis,_dec->state.ncoded_fragis,
+         OC_FRAME_PREV,OC_FRAME_SELF);
+        _dec->state.ref_frame_idx[OC_FRAME_SELF]=
+         _dec->state.ref_frame_idx[OC_FRAME_PREV];
+      }
+      else{
+        plfragis[0]=_dec->state.uncoded_fragis-_dec->state.nuncoded_fragis[0];
+        plfragis[1]=plfragis[0]-_dec->state.nuncoded_fragis[1];
+        plfragis[2]=plfragis[1]-_dec->state.nuncoded_fragis[2];
+        oc_state_frag_copy(&_dec->state,plfragis,_dec->state.nuncoded_fragis,
+         OC_FRAME_SELF,OC_FRAME_PREV);
+        _dec->state.ref_frame_idx[OC_FRAME_PREV]=
+         _dec->state.ref_frame_idx[OC_FRAME_SELF];
+      }
+    }
+    /*Filter block edges.*/
+    oc_state_loop_filter(&_dec->state,OC_FRAME_PREV);
+    /*Fill in the borders from the reconstructed version of the last encoded
+       frame.*/
+    if(_dec->state.ref_frame_idx[OC_FRAME_PREV]>=0){
+      oc_state_borders_fill(&_dec->state,
+       _dec->state.ref_frame_idx[OC_FRAME_PREV]);
+    }
+    /*Perform out-of-loop post-processing, if enabled.*/
+    if(oc_dec_postprocess(_dec)){
+      memcpy(_dec->pp_frame_buf,
+       _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]],
+       sizeof(_dec->pp_frame_buf[0])*3);
+    }
   }
   /*Update granule position.*/
   _dec->state.granpos=
