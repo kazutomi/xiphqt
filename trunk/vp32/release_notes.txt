@@ -1,4 +1,12 @@
 Release Notes:
+3.2.4.0 vfw codec 
+- yv12 and yuy2 playback sometimes appeared upside down.
+
+3.2.3.0 vfw codec + 3.2.2.0 quicktime codec
+- solved cr0 bug crashing under linux 
+- i420 + yuy2 support on the vfw encoder 
+- color space conversions read out of bounds bug.
+- problems with invalid settings using the vfw codec
 
 3.2.2.0 vfw codec
 

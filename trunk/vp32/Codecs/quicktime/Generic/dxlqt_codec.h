@@ -24,7 +24,7 @@
 extern "C" 
 {
 	#include "vfw_comp_interface.h"
-	#include "cclib.h"
+//	#include "cclib.h"
 }
 
 #endif

@@ -81,15 +81,6 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib /nologo /dll /incremental:no /map /debug /machine:I386 /nodefaultlib:"bsrx86w.lib" /nodefaultlib:"wksx86w.lib" /pdbtype:sept /libpath:"..\..\Lib\Win32\Debug\\"
-# Begin Custom Build
-TargetPath=.\Debug\vp31vfw.dll
-InputPath=.\Debug\vp31vfw.dll
-SOURCE="$(InputPath)"
-
-"c:\winnt\system32\vp31vfw.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetPath) c:\winnt\system32
-
-# End Custom Build
 
 !ENDIF 
 

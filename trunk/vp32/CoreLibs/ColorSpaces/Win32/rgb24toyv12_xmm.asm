@@ -63,7 +63,7 @@ LOCAL_SPACE     EQU 0
 
 
 ;------------------------------------------------
-; int CC_RGB32toYV12( unsigned char *RGBABuffer, int ImageWidth, int ImageHeight,
+; int CC_RGB24toYV12( unsigned char *RGBABuffer, int ImageWidth, int ImageHeight,
 ;                     unsigned char *YBuffer, unsigned char *UBuffer, unsigned char *VBuffer )
 ;
 CC_RGB24toYV12_XMM_:
@@ -76,58 +76,41 @@ _CC_RGB24toYV12_XMM:
     push    edx
 
 
-;
-; ESP = Stack Pointer                      MM0 = Free
-; ESI = Free                               MM1 = Free
-; EDI = Free                               MM2 = Free
-; EBP = Free                               MM3 = Free
-; EBX = Free                               MM4 = Free
-; ECX = Free                               MM5 = Free
-; EDX = Image width * 3                    MM6 = Free
-; EAX = Free                               MM7 = Free
-;
-
     mov         esi,(CConvParams PTR [esp]).ImageHeight             ; Load Image height
     shr         esi,1                                               ; divide by 2, we process image two lines at a time
     mov         (CConvParams PTR [esp]).ImageHeight,esi             ; Load Image height
     mov         edi,(CConvParams PTR [esp]).RGBABuffer              ; Input Buffer Ptr
-    mov         esi,(CConvParams PTR [esp]).ImageWidth              ; Load Image width
     mov         eax,(CConvParams PTR [esp]).YBuffer                 ; Load Y buffer ptr
-    mov         edx,esi                                             ; prepare to multiply width by 3
-    add         edx,esi                                             ; multi by 2
-    add         edx,esi                                             ; add in to get 3
-
-;
-; ESP = Stack Pointer                      MM0 = Free
-; ESI = ImageWidth                         MM1 = Free
-; EDI = Input Buffer Ptr                   MM2 = Free
-; EBP = Width Ctr                          MM3 = Free
-; EBX = Free                               MM4 = Free
-; ECX = Free                               MM5 = Free
-; EDX = Image width * 3                    MM6 = Free
-; EAX = Y output buff ptr                  MM7 = Free
-;
-
-;
+    mov	    edx,(CConvParams PTR [esp]).SrcPitch		        ; source pitch
+    mov         esi,(CConvParams PTR [esp]).YPitch			  ; destination pitch
 
 HLoopStart:
-    xor         ebp,ebp                                             ; setup width loop ctr
+    mov	    ebp,(CConvParams PTR [esp]).ImageWidth		  ; setup loop ctr
 
 WLoopStart:
 ;
 ; ESP = Stack Pointer                      MM0 = Free
-; ESI = ImageWidth                         MM1 = Free
+; ESI = YPitch                             MM1 = Free
 ; EDI = Input Buffer Ptr                   MM2 = Free
 ; EBP = Width Ctr                          MM3 = Free
 ; EBX = Scratch                            MM4 = Free
 ; ECX = Free                               MM5 = Free
-; EDX = Image width * 3                    MM6 = Free
+; EDX = input pitch		             MM6 = Free
 ; EAX = Y output buff ptr                  MM7 = Used to accumulate sum of R,G,B values so that they can be averaged
 ;
 
 ; process two pixels from first image row
-    movq        mm0,QWORD PTR 0[edi]                                ; G2,B2,R1,G1,B1,R0,G0,B0
-    movq        mm1,QWORD PTR 0[edi+edx]                            ; G2,B2,R1,G1,B1,R0,G0,B0 (2nd row)
+    movd        mm0,DWORD PTR 0[edi]                                ; 00,00,00,00,B1,R0,G0,B0
+    movd        mm2,DWORD PTR 2[edi]					  ; 00 00 00 00 R1,G1,B1,R0	
+
+    psllq       mm2,16								  ; 00 00 R1,G1,B1,R0,00,00 
+    por	    mm0,mm2								  ; 00 00 R1,G1,B1,R0,G0,B0
+
+    movd        mm1,DWORD PTR 0[edi+edx]                            ; 00,00,00,00,B1,R0,G0,B0 (2nd row)
+    movd        mm2,DWORD PTR 2[edi+edx]                            ; 00,00,00,00,R1,G1,B1,R0 (2nd row)
+
+    psllq       mm2,16								  ; 00 00 R1,G1,B1,R0,00,00 
+    por	    mm1,mm2								  ; 00 00 R1,G1,B1,R0,G0,B0
 
     movq        mm2,mm0                                             ; G2,B2,R1,G1,B1,R0,G0,B0
     movq        mm4,mm1                                             ; G2,B2,R1,G1,B1,R0,G0,B0 (2nd row)
@@ -207,7 +190,6 @@ WLoopStart:
     mov         ecx,(CConvParams PTR [esp]).UBuffer                 ;
 
     packssdw    mm7,mm0                                             ; X, X, V, U
-    add         ebp,2                                               ; increment loop ctr
     
     packuswb    mm7,mm0                                             ; X, X, X, X, X, X, V, U
     add         eax,2                                               ; increment Y output buffer ptr
@@ -226,13 +208,31 @@ WLoopStart:
 
     mov         (CConvParams PTR [esp]).VBuffer,ecx                 ; preserve pointer
 
-    cmp         ebp,esi                                             ; are we done yet?
-    jne         WLoopStart    
+    sub         ebp,2                                               ; decrement loop ctr
+    jnz         WLoopStart    
 
 WLoopEnd:
-    add         edi,edx                                             ; Increment input buffer ptr by image width to setp over
-                                                                    ; line already processed
-    add         eax,esi                                             ; Increment Y output buffer ptr by image widht to step over
+
+    mov	    ecx,(CConvParams PTR [esp]).ImageWidth		  ; get the width
+    sub         eax,ecx                                             ; subtract width from y output buffer pointer (back to start of line)
+    add	    eax,esi
+    add         eax,esi								  ; mov eax down 2 y pitches ( we do 2 lines at a time)
+
+    sub         edi,ecx								  ; point destination to start of line ( subtract width 3 times)
+    sub         edi,ecx								  ;
+    sub         edi,ecx								  ;
+    add         edi,edx                                             ; mov edi down 2 lines (we do 2 lines at a time)
+    add         edi,edx                                             ; 
+
+    sar	    ecx,1								  ; conver to a u v pitch 
+
+    sub  	    (CConvParams PTR [esp]).UBuffer,ecx			  ; subtract out the width (back to start of line)  
+    sub  	    (CConvParams PTR [esp]).VBuffer,ecx			  ; subtract out the width  
+    mov	    ecx,esi								  ;
+    sar         ecx,1								  ; convert y pitch to uv pitch
+    add  	    (CConvParams PTR [esp]).UBuffer,ecx			  ; add in uv pitch to u
+    add  	    (CConvParams PTR [esp]).VBuffer,ecx			  ; add in uv pitch to v
+
                                                                     ; line already processed
     dec         (CConvParams PTR [esp]).ImageHeight                 ; decrement image height ctr
     jne         HLoopStart                                          ; are we done yet?

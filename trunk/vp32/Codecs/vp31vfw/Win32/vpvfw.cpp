@@ -896,7 +896,7 @@ long vfwCodec::dx
 	{
 
         DWORD fourCC=dxParms.lpbiSrc->biCompression;
-
+		
 	    xim = DXL_CreateXImageOfType( reinterpret_cast<BYTE *>(dxParms.lpSrc) , fourCC);
 		if (!xim) 
 		{
@@ -940,7 +940,12 @@ long vfwCodec::dx
 		int height = dxParms.lpbiDst->biHeight;
 		int bytes = dxParms.lpbiDst->biBitCount/8;
 		unsigned long offset;
-		
+		enum BITDEPTH bitDepth = getDepth(dxParms.lpbiDst);
+
+		// insure that yuv surfaces are always rightside up (internal buffer is upside down)
+		if(bitDepth==DXYV12||bitDepth == DXYUY2)
+			height = -abs(height);
+
 		if( height > 0) 					// (upside-down) DIB
 		{
 			offset = dxParms.xDst + (height - 1 - dxParms.yDst) * width;
@@ -951,6 +956,7 @@ long vfwCodec::dx
 			height = -height;
 			offset = dxParms.xDst + (height - dxParms.yDst - dxParms.dyDst) * width;
 		}
+		
 		if( vsc == 0 ) 
 		{
 			// ugly dxvism you can't create a vscreen with a width and height
@@ -1076,7 +1082,8 @@ long vfwCodec::cxQuery
 	if( in == 0  ||  
 		(  in->biBitCount != 24 
 		&& in->biBitCount != 32 
-		&& in->biCompression != mmioFOURCC('I','4','2','0') ))
+		&& in->biCompression != mmioFOURCC('I','4','2','0') 
+		&& in->biCompression != mmioFOURCC('Y','U','Y','2') ))
 		return ICERR_BADFORMAT;
 	
 	if( out == 0 )
@@ -1219,6 +1226,18 @@ long vfwCodec::cx
 
 		yuvConfig.VBuffer = (reinterpret_cast<char *>(yuvConfig.UBuffer) 
 			+ yuvConfig.UVWidth * yuvConfig.UVHeight) ;
+	}
+	else if(compressParms->lpbiInput->biCompression == mmioFOURCC('Y','U','Y','2') )
+	{
+		// call our color conversion code 
+		YUY2toYV12(reinterpret_cast<unsigned char *>(compressParms->lpInput)+yuvConfig.YWidth*2*(yuvConfig.YHeight-1),
+					yuvConfig.YWidth,
+					yuvConfig.YHeight, 
+                    reinterpret_cast<unsigned char *>(yuvConfig.YBuffer), 
+					reinterpret_cast<unsigned char *>(yuvConfig.UBuffer), 
+					reinterpret_cast<unsigned char *>(yuvConfig.VBuffer),
+					-yuvConfig.YWidth * 2,
+					yuvConfig.YWidth);
 	}
 	else if(compressParms->lpbiInput->biBitCount==32)
 	{
