@@ -45,8 +45,8 @@ def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
                 # Don't need to copy files already on the Neuros
                 filelist.append((None, fullname))
             else:
-                targetname = path.join(target_prefix, name)
-
+                targetname = neuros.mangle_hostpath(path.join(target_prefix,
+                                                              name))
                 if path.exists(targetname):
                     if not silent:
                         print "Skipping %s because %s already exists." \
