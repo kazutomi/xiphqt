@@ -3,6 +3,6 @@
 
 void encthread_init(void);
 void encthread_addfile(char *file);
-void encthread_setbitrate(int kbps);
+void encthread_setquality(int quality);
 
 #endif
