@@ -14,12 +14,13 @@
  function: window functions
  author: Monty <xiphmont@mit.edu>
  modifications by: Monty
- last modification date: Jul 27 1999
+ last modification date: Nov 16 1999
 
  ********************************************************************/
 
 #include <stdlib.h>
 #include <math.h>
+#include "os.h"
 
 /* The 'vorbis window' is sin(sin(x)*sin(x)*2pi) */
 
@@ -52,3 +53,4 @@ double *_vorbis_window(int window,int left,int right){
 
   return(ret);
 }
+
