@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: #ifdef jail for basic thread mutexing
- last mod: $Id: mutex.h,v 1.1.2.3 2003/01/21 10:23:08 xiphmont Exp $
+ last mod: $Id: mutex.h,v 1.1.2.4 2003/02/03 23:01:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -43,7 +43,7 @@ static void noop(void){return;}
 #define ogg_mutex_unlock(m) (noop())
 
 #else
-#error "this platform has no threading primitive wrappers in ogg/mutex.c"
+#error "configure proper threading wrappers for this platform, or compile with -DUSE_NO_THREADS to build without threading support."
 
 #endif
 
