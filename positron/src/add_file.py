@@ -39,7 +39,8 @@ def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
                     filelist.append((fullname, targetname))
                     
         elif path.isdir(fullname):
-            filelist.extend(gen_filelist(neuros, prefix, name, target_prefix))
+            filelist.extend(gen_filelist(neuros, prefix, name, target_prefix,
+                                         silent))
         else:
             if not silent:
                 print "Ignoring %s.  Not a file or directory." % (fullname)
