@@ -1,0 +1,4 @@
+	<style type='text/css'>
+		@import url(/CSS/all.css);
+		@import url(/vorbis/CSS/all.css);
+	</style>
