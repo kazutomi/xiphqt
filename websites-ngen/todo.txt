@@ -20,7 +20,6 @@ To Do
 	don't end up putting big, useless things like .rpms and source .tgz files and (gasp) .exe
 	files in the subversion repo, making it even more bloated and time-consuming to download.
 
-
 For the News Things
 ------------------
 
@@ -31,3 +30,16 @@ For the News Things
 *	News items must be able to be placed in multiple categories; the oggenc that shipped with
 	the 1.0.1 release that could encode to vorbis from flac should be mentioned in both
 	the "vorbis" and "flac" sections.
+
+File Structure :
+--------------
+
+	/
+	 inhead.include
+	 beforecontent.include
+	 content.markdown
+	 aftercontent.include
+
+	 						/vorbis/ (for example
+							 inhead.include (adding styles)
+

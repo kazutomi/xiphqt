@@ -29,11 +29,11 @@ class MarkdownWrapper(object):
 		.sourceFilename		-- the file containing markdown text
 		.destFilename		-- the output html file name
 		.doctype			-- self explanatory
-		.inHeadBits			-- a list of strings to be included inside the head element
-		.beforeContentBits	-- stuff to include before the content div
+		.inHead				-- a list of strings to be included inside the head element
+		.beforeContent		-- stuff to include before the content div
 		.mainText			-- the text from .sourceFileName after it's been turned into HTML
-		.afterMainTextBits	-- comes just after .mainText, but inside the content div
-		.afterContentBits	-- stuff to include after the content div
+		.afterMainText		-- comes just after .mainText, but inside the content div
+		.afterContent		-- stuff to include after the content div
 	"""
 	def __init__(self, sourceFilename, destFilename=None):
 		self.sourceFilename = sourceFilename
@@ -60,22 +60,40 @@ class MarkdownWrapper(object):
 		
 		self.lang = 'en-US'
 
-		self.afterMainTextBits = []
+		self.afterMainText = ''
 		
-		self.inHeadBits = [
-			"<style type='text/css'>@import url(/CSS/all.css);</style>",
-			"<meta http=equiv='Content-type' content='text/html; charset=UTF-8'>"
-		]
+		self.inHead = ''
 		
-		self.beforeContentBits = []
-		self.afterContentBits = []
+		self.beforeContent = ''
+		self.afterContent  = ''
 		
-		sidebarFilename = getParallelFile(self.sourceFilename, "beforecontent.inc")
-		if os.path.isfile(sidebarFilename):
-			# consider crawling back to ./ from ./foo/bar/baz/quux
-			beforeBit = file(sidebarFilename).read()
-			self.beforeContentBits.append(beforeBit)
+
+		# Now we need to, generally, load in data to attributes based on file name.
+		# In particular
+
+		# 	inhead.include			# 	.inHead
+		#	beforecontent.include	#	.beforeContent
+		#	maintext.markdown		#	.mainText		# NOTE: not in includerList
+		#	aftermaintext.include	#	.afterMainText
+		#	aftercontent.include	#	.afterContent
 		
+		includerList = "inhead beforecontent aftermaintext aftercontent".split()
+		includerList = [ i + ".include" for i in includerList]
+		
+		# this if cascade is ugly, ugly, ugly, ugly. Suggestions, please.
+		
+		for filename in includerList:
+			filename = getParallelFile(self.sourceFilename, filename)
+			print filename
+			if os.path.isfile(filename):
+				contents = file(filename).read()
+				print contents
+				if filename.endswith('inhead.include'):			self.inHead			= contents
+				if filename.endswith('beforecontent.include'):	self.beforeContent	= contents
+				if filename.endswith('aftermaintext.include'):	self.afterMainText	= contents
+				if filename.endswith('aftercontent.include'):	self.afterContent 	= contents
+
+		print "self.inHead: ", self.inHead
 		
 		# todo: similarly to append, say, copyright.inc to afterMainTextBits
 
@@ -93,20 +111,16 @@ class MarkdownWrapper(object):
 		ret += self.doctype + '\n'
 		ret += "<html lang='" + self.lang + "'>\n"
 		ret += "<head>\n"
-		for bit in self.inHeadBits:
-			ret += bit + '\n'
+		ret += self.inHead
 		ret += '<title>' + self.title + '</title>\n'
 		ret += "</head>\n"
 		ret += "<body>\n"
-		for bit in self.beforeContentBits:
-			ret += bit
-		ret += "<div id='content'>"
+		ret += self.beforeContent
+		ret += "<div id='content'>\n"
 		ret += self.mainText
-		for bit in self.afterMainTextBits:
-			ret += bit
+		ret += self.afterMainText
 		ret += "</div>\n"
-		for bit in self.afterContentBits:
-			ret += bit
+		ret += self.afterContent
 		ret += "</body>\n"
 		ret += "</html>\n"
 		return ret
@@ -128,14 +142,15 @@ def getParallelFile(where, what):
 	return os.path.join(os.path.split(where)[0], what)
 
 if __name__ == '__main__':
-	for dirpath, dirnames, filenames in os.walk('.'):
+	for dirpath, dirnames, filenames in os.walk('xiph.org'):
+		# bug if more than one .markdown file in a directory
 		for filename in filter(lambda x: x.endswith(".markdown"), filenames):
-			fullpath = os.path.join(dirpath, filename)
-			print fullpath
-			mw = MarkdownWrapper(fullpath)
+			srcPath = os.path.join(dirpath, filename)
+			print srcPath
+			destPath = getParallelFile(srcPath, "index.html")
+
+			mw = MarkdownWrapper(srcPath, destPath)
 			mw.renderToFile()
 		print "-" * 40
 		if ".svn" in dirnames:
 			dirnames.remove('.svn') # don't transform things in .svn directories
-		if "news" in dirnames:
-			dirnames.remove('news') # ...or those news pages. Yet.

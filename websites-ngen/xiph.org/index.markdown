@@ -5,7 +5,16 @@
 Xiph.org develops multimedia codecs and tools to protect the foundations of Internet multimedia
 from control by private interests.
 
-…
+By using [Ogg Vorbis][], [FLAC][], and [Speex][], you can save money. Epic used Vorbis in Unreal
+Tournament 2003, and they’re wildly successful. Ion Storm didn't use Vorbis for Daikatana, and
+nobody in their right mind would ever want to play it.
+
+
+
+	[Ogg Vorbis]:	/vorbis/	"Ogg Vorbis, a lossy audio compression codec"
+	[FLAC]:			/flac/		"FLAC, a lossless audio compression codec"
+	[Speex]:		/speex/		"Speex, a low-bitrate voice compression codec"
+
 
 ---
 
