@@ -64,12 +64,12 @@ ices_playlist_python_initialize (playlist_module_t* pm)
   if (python_init () < 0)
     return -1;
 
-  res = python_eval ("ices_python_initialize");
+  res = python_eval ("ices_init");
 
   if (res && PyInt_Check (res))
     rc = PyInt_AsLong (res);
   else
-    ices_log_error ("ices_python_initialize failed");
+    ices_log_error ("ices_init failed");
   
   Py_XDECREF (res);
 
@@ -81,12 +81,12 @@ static int
 playlist_python_get_lineno (void)
 {
   int rc = 0;
-  PyObject* res = python_eval ("ices_python_get_current_lineno");
+  PyObject* res = python_eval ("ices_get_lineno");
 
   if (res && PyInt_Check (res))
     rc = PyInt_AsLong (res);
   else
-    ices_log_error ("ices_python_get_current_lineno failed");
+    ices_log_error ("ices_get_lineno failed");
 
   Py_XDECREF (res);
 
@@ -98,12 +98,12 @@ static char *
 playlist_python_get_next (void)
 {
   char* rc = NULL;
-  PyObject* res = python_eval ("ices_python_get_next");
+  PyObject* res = python_eval ("ices_get_next");
 
   if (res && PyString_Check (res))
     rc = ices_util_strdup (PyString_AsString (res));
   else
-    ices_log_error ("ices_python_get_next failed");
+    ices_log_error ("ices_get_next failed");
 
   Py_XDECREF (res);
 
@@ -114,12 +114,12 @@ static char*
 playlist_python_get_metadata (void)
 {
   char* rc = NULL;
-  PyObject* res = python_eval ("ices_python_get_metadata");
+  PyObject* res = python_eval ("ices_get_metadata");
 
   if (res && PyString_Check (res))
     rc = ices_util_strdup (PyString_AsString (res));
   else
-    ices_log_error ("ices_python_get_metadata failed");
+    ices_log_error ("ices_get_metadata failed");
 
   Py_XDECREF (res);
 
@@ -130,10 +130,10 @@ playlist_python_get_metadata (void)
 static void
 playlist_python_shutdown (void)
 {
-  PyObject* res = python_eval ("ices_python_shutdown");
+  PyObject* res = python_eval ("ices_shutdown");
 
   if (! (res && PyInt_Check (res)))
-    ices_log_error ("ices_python_shutdown failed");
+    ices_log_error ("ices_shutdown failed");
 
   Py_XDECREF (res);
 

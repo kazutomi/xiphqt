@@ -63,12 +63,12 @@ ices_playlist_perl_initialize (playlist_module_t* pm)
   if (pl_perl_init_perl () < 0)
     return 0;
 
-  str = pl_perl_eval ("ices_perl_initialize");
+  str = pl_perl_eval ("ices_init");
   ret = atoi (str);	/* allocated in perl.c */
   ices_util_free (str);	/* clean up after yourself! */
 		
   if (!ret) 
-    ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
+    ices_log_error ("Execution of 'ices_init' failed");
 
   return ret;
 }
@@ -79,12 +79,12 @@ playlist_perl_get_lineno (void)
   char *str;
   int ret = 0;
 
-  str = pl_perl_eval ("ices_perl_get_current_lineno");
+  str = pl_perl_eval ("ices_get_lineno");
   ret = atoi (str); 	/* allocated in perl.c */
   ices_util_free (str);	/* clean up after yourself! */
 
   if (!ret) 
-    ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pm failed");
+    ices_log_error ("Execution of 'ices_get_lineno' failed");
 
   return ret;
 }
@@ -92,14 +92,14 @@ playlist_perl_get_lineno (void)
 static char *
 playlist_perl_get_next (void)
 {
-  return pl_perl_eval ("ices_perl_get_next");
+  return pl_perl_eval ("ices_get_next");
   /* implied free(str), this is called higher up */
 }
 
 static char*
 playlist_perl_get_metadata (void)
 {
-  return pl_perl_eval ("ices_perl_get_metadata");
+  return pl_perl_eval ("ices_get_metadata");
 }
 
 static void
@@ -108,12 +108,12 @@ playlist_perl_shutdown (void)
   char *str;
   int ret = 0;
 			                  
-  str = pl_perl_eval ("ices_perl_shutdown");
+  str = pl_perl_eval ("ices_shutdown");
   ret = atoi (str);
   ices_util_free (str);
 
   if (!ret) 
-    ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
+    ices_log_error ("Execution of 'ices_shutdown' failed");
 
   pl_perl_shutdown_perl ();
 
