@@ -249,7 +249,8 @@ ices_stream_send_file (const char *file)
 
 #ifdef HAVE_LIBLAME
   for (stream = ices_config.streams; stream; stream = stream->next)
-    if (stream->reencode) {
+    if (stream->reencode && (!source.read ||
+	(source.bitrate != stream->bitrate))) {
       len = ices_reencode_flush (stream, buf, sizeof (buf));
       if (len > 0)
 	rc = shout_send_data (&stream->conn, buf, len);
