@@ -1,28 +1,26 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.6 2001/09/14 03:16:13 cwolf Exp $
+rem $Id: makesdk.bat,v 1.7 2001/09/15 06:58:56 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
 
 if ."%MSDEVDIR%"==."" goto msdevnotset
 
-rem Create and install MSVC macros, if needed
-call mfmacro.bat
-if errorlevel 1 goto ERROR
-
 rem If one of the makefiles doesn't exist, 
 rem assume they all need to be generated
 rem
 if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
-  msdev -ex ExportMakefile
+  echo Error: must invoke "mkmak.bat" first
+  exit
 )
   
 rd /s /q sdk\include > nul
 rd /s /q sdk\lib > nul
 rd /s /q sdk\bin > nul
 rd /s /q sdk\doc > nul
+rd /s /q sdk\examples > nul
 md sdk\include\ogg
 md sdk\include\vorbis
 md sdk\lib
@@ -161,9 +159,6 @@ goto DONE
 
 :ERROR
 
-cd %SRCROOT%\win32sdk
-rd /s /q sdk > nul
-echo.
 echo Some error(s) occurred. Fix it.
 goto EXIT
 
