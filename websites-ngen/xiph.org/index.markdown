@@ -4,20 +4,13 @@
 Welcome to Xiph.Org!
 ====================
 
-<!-- Communicate “How can we help you with our codecs?” as effectively as possible -->
+<!-- Communicate “How can we help you with our formats and tools?” as effectively as possible -->
 
-<!-- quoth mother: “what’s a codec?” -->
+Xiph.org develops multimedia compression formats and related tools to ensure that the foundations of Internet multimedia remain free and open. By using our formats, you can save money on software- and patent-license fees as [Epic Games][] did by using [Ogg Vorbis][] for in-game music and [Speex][] for between-player voice chat in Unreal Tournament 2003.
 
-Xiph.org develops multimedia codecs and related tools to ensure that the foundations of Internet
-multimedia remain free and open. By using our codecs, you can save money on software- and
-patent-license fees as [Epic Games][] did by using [Ogg Vorbis][] for in-game music and
-[Speex][] for between-player voice chat in Unreal Tournament 2003.
+If you’re a band on tour, you might want to sell soundboard recordings in [FLAC][] like [Metallica][] and [Primus][] do.
 
-If you’re a band on tour, you might want to sell soundboard recordings in [FLAC][] like
-[Metallica][] and [Primus][] do.
-
-If you want to distribute music over the Internet, you might want to consider offering downloads
-in [Ogg Vorbis][] and [FLAC][] as [Magnatune][] does.
+If you want to distribute music over the Internet, you might want to consider offering downloads in [Ogg Vorbis][] and [FLAC][] as [Magnatune][] does.
 
 	[epic games]:	http://www.epicgames.com/
 
@@ -29,6 +22,3 @@ in [Ogg Vorbis][] and [FLAC][] as [Magnatune][] does.
 	[ogg vorbis]:	/vorbis/	"Ogg Vorbis, a lossy audio compression codec"
 	[flac]:			/flac/		"FLAC, a lossless audio compression codec"
 	[speex]:		/speex/		"Speex, a low-bitrate voice compression codec"
-
-
-…

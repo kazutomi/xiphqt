@@ -714,10 +714,11 @@ def doNews():
 		for f in [entrywise, daily, monthly, yearly, toplevel]:
 			f(formatter)
 
-
+	sys.stdout.write('Preparing news posts...')
 	nd = NewsDispenser(os.path.join('news', 'options.ini'))
 	doNewsInAtom(nd)
 	doNewsInHTML(nd)
+	sys.stdout.write('done!\n')
 		
 def main():
 	doNews()

@@ -27,9 +27,15 @@ To Do
 
 *	I got one vote by j^ in #vorbis that the colors for the captioned buttons were too dark.
 
+*	Get an Epic Games programmer to praise us and our work.
+
 
 Open Questions
 --------------
+
+Where do we put the…
+* staff bio page(s)?
+* page that says what you’re missing if you turn off CSS and javascript?
 
 How can we communicate—in ten words or less—why…
 
@@ -61,7 +67,6 @@ What Must Be Done Before Shipping
 	* test with some complete Subversion newbies (including Windows-using people) to make
 	  sure the instructions are usable
 	* drop shadows (optional)
-* /colophon/		(URL subject to change; perhaps /about/website/ ?)
 * /contact/
 * /ogg/				(not much, just spec stuff)
 * /vorbis/			(both from xiph.org and vorbis.com)

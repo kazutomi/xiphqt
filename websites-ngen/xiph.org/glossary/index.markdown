@@ -1,7 +1,6 @@
 Glossary
 ========
 
-
 <dl>
 <dt id='lossless'>lossless</dt>
 <dd>
@@ -11,7 +10,7 @@ Glossary
 		<abbr title='Portable Network Graphics'>PNG</abbr>, and
 		<abbr title='Free Lossless Audio Codec'>FLAC</abbr>.
 	<p>
-	<p>cf. <a href='lossy'>lossy</a>.</p>
+	<p><abbr title='compare'>cf.</abbr> <a href='#lossy'>lossy</a>.</p>
 </dd>
 
 
@@ -22,6 +21,8 @@ Glossary
 		improve compression ratios. Some lossy compressors include Vorbis, Speex,
 		<abbr title='Joint Photographic Experts Group'>JPEG</abbr>, and Theora.
 	</p>
+	<p><abbr title='compare'>cf.</abbr> <a href='#lossless'>lossless</a>.</p>
+
 </dd>
 
 <dt id='transcode'>transcode</dt>
@@ -36,9 +37,9 @@ Glossary
 		<strong>both</strong> codecs turn up in the final data.
 	</p>
 	<p>
-		Transcoding from a <a href='#lossless'>lossless</a> source format to a lossy format does
+		Transcoding from a <a href='#lossless'>lossless</a> source format like
+		<abbr title='Free Lossless Audio Codec'>FLAC</abbr> to a lossy format does
 		not incur the double-artifact penalty.
 	</p>
 </dd>
 </dl>
-

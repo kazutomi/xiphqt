@@ -5,42 +5,48 @@ Site Map
 ·······
 -->
 
-## Audio and video codecs
+## Audio and video formats 
 
-[Vorbis][] · [FLAC][] · [Speex][] · [Theora][]
+[Ogg][] ·
+[Vorbis][] ·
+[FLAC][] ·
+[Speex][] ·
+[Theora][]
 
 
-## Other Things 
+## Tools
 
-[Ogg][] · [Icecast][] · [Postfish][]
+[Icecast][] ·
+[Postfish][]
 
 
 ## Getting In Touch
 
-[Who We Are][who] · [Mailing Lists][lists] · [Wiki][] ·
-·····
+[Who We Are][who] ·
+[Mailing Lists][lists] ·
+[Wiki][]
 
 
 ## Developer Resources
 
-[Xiph.Org Bugzilla][zilla] · ····
+[Xiph.Org Bugzilla][zilla]
+
 
 ## Contribute to Xiph.Org
 
-[Improve Our Stuff][imp] · [Use Our Stuff][use] · [Donate][] ·
-[Buy OggWear from Cafeshops][oggwear] ·
-
-
-
+[Improve Our Stuff][imp] ·
+[Use Our Stuff][use] ·
+[Donate][] ·
+[Buy OggWear from Cafeshops][oggwear]
 
 	[ogg]:		/ogg/			"Our multimedia container format"
-	[vorbis]:	/vorbis/		"Our lossy audio compression codec for music"
-	[flac]:		/flac/			"Our lossless audio compression codec for high-quality archives"
-	[speex]:	/speex/			"Our lossy audio compression codec for speech"
-	[theora]:	/theora/		"Our video compression codec based on VP3"
+	[vorbis]:	/vorbis/		"Our lossy audio compression format for music"
+	[flac]:		/flac/			"Our lossless audio compression format for archives"
+	[speex]:	/speex/			"Our audio compression format for speech"
+	[theora]:	/theora/		"Our video compression format based on VP3"
 	
-	[icecast]:	/icecast/		"Our industrial-strength multimedia streaming server"
-	[postfish]:	/postfish/		"Our compander"
+	[icecast]:	/icecast/		"Our audio streaming server"
+	[postfish]:	/postfish/		"Our audio post-processing tool"
 	
 	[who]:		/who/			"Who We Are"
 	[lists]:	/mailinglists/	"Subscribe to one of our mailing lists or read their archives"

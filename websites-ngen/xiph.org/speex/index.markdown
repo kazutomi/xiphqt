@@ -1,7 +1,7 @@
 Speex
 =====
 
-Speex is an [Open Source/Free Software][osfs], patent-free audio compression format designed for speech. The Speex Project aims to lower the barrier of entry for voice applications by providing a free alternative to expensive proprietary speech codecs Moreover, Speex is well-adapted to Internet applications and provides useful features that are not present in most other speech codecs.  Finally, Speex is part of the [<abbr title='GNU’s Not Unix'>GNU</abbr> Project][gnu] and is available under the terms of the [BSD license][license].
+Speex is a patent-free audio compression format designed for speech. The Speex Project aims to lower the barrier of entry for voice applications by providing a free alternative to expensive proprietary speech codecs Moreover, Speex is well-adapted to Internet applications and provides useful features that are not present in most other speech codecs.  Finally, Speex is part of the [<abbr title='GNU’s Not Unix'>GNU</abbr> Project][gnu] and is available under the terms of the [BSD license][license], an [open source/free software][osfs] license.
 
 	[osfs]:		./osfs/
 	[gnu]:		http://www.gnu.org/

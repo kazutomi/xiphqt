@@ -17,7 +17,7 @@ Behind the Scenes
 
 *	use camelCase for id and class attribute values.
 	
-	Remember that id attributes create things that can be linked to, so avoid trying to break
+	Remember that id attributes create things that can be linked to—so avoid trying to break
 	them, especially when they’re linked to from other parts of the same page or website.
 
 *	Explicitly close all opening tags, including those of table, tr, td, dt, and dl. Close them
@@ -52,7 +52,8 @@ Behind the Scenes
 Spelling, Grammar, Punctuation, and Terminology
 -----------------------------------------------
 
-*	Do not write “CODEC” in all caps.
+*	Do not write “CODEC” in all caps. Further, avoid using “codec” in nontechnical prose;
+	it’s jargony and my mother doesn’t know what one is.
 
 *	Prefer “© 2004 Xiph.Org” to both “Copyright © 2004 Xiph.Org” and
 	“Copyright (c) 2004 Xiph.Org”; the latter two are redundant.
