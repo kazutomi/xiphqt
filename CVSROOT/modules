@@ -38,3 +38,4 @@ ices ices &m4 &src-avl &src-log &src-thread &src-timing
 
 libshout libshout &m4 &src-avl &src-net &src-thread &src-httpp &src-timing
 
+dryice dryice &m4
