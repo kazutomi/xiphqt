@@ -81,7 +81,8 @@ def cmd_del(config, neuros, args):
         print "No files to remove are present in the database!"
     elif len(filelist) == 1:
         (sourcename, sai_index) = filelist[0]
-        print "Removing %s from the Neuros..." % (sourcename,),
+        basename = path.basename(sourcename)
+        print "Removing %s from the Neuros..." % (basename,),
         del_track(neuros, sourcename, sai_index)
         print "  Done!"
     else:
