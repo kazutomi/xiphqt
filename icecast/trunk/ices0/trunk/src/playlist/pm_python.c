@@ -177,6 +177,7 @@ python_init (void)
   if (!(python_module = PyImport_ImportModule (ices_config.pm.module))) {
     ices_log ("Error: Could not import module %s", ices_config.pm.module);
     PyErr_Print();
+    return -1;
   }
 
   /* Find defined methods */
