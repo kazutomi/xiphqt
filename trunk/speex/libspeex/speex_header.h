@@ -1,7 +1,6 @@
 /* Copyright (C) 2002 Jean-Marc Valin 
    File: speex_header.h
-
-   Describes the different modes of the codec
+   Describes the Speex header
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -23,15 +22,28 @@
 #ifndef SPEEX_HEADER_H
 #define SPEEX_HEADER_H
 
+#define SPEEX_HEADER_VERSION_LENGTH 20
+
+#define SPEEX_HEADER_VERSION -1
+
 typedef struct SpeexHeader {
-   char speex_version[20];
+   char speex_string[8];
+   char speex_version[SPEEX_HEADER_VERSION_LENGTH];
    int speex_header_version;
+   int header_size;
    int rate;
    int mode;
    int nb_channels;
-   int byte_rate;
+   int bitrate;
    int frame_size;
+   int vbr;
+   int reserved1;
+   int reserved2;
+   int reserved3;
+   int reserved4;
 } SpeexHeader;
+
+void init_header(SpeexHeader *header, int rate, int nb_channels, int mode);
 
 char *speex_header_to_packet(SpeexHeader *header, int *size);
 
