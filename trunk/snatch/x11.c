@@ -14,16 +14,16 @@ static unsigned long rpshell_window=0;
 static unsigned long rpmain_window=0;
 static unsigned long rpmenu_window=0;
 static unsigned long rpplay_window=0;
-static unsigned long rpplay_width=0;
-static unsigned long rpplay_height=0;
+static long rpplay_width=0;
+static long rpplay_height=0;
 
-static unsigned long logo_y=-1;
-static unsigned long logo_prev=-1;
+static long logo_y=-1;
+static long logo_prev=-1;
 
-static unsigned long play_blackleft=-1;
-static unsigned long play_blackright=-1;
-static unsigned long play_blackupper=-1;
-static unsigned long play_blacklower=-1;
+static long play_blackleft=-1;
+static long play_blackright=-1;
+static long play_blackupper=-1;
+static long play_blacklower=-1;
 
 static unsigned long rpvideo_window=0;
 static int video_width=-1;
@@ -108,7 +108,7 @@ static void FakeKeycode(int keycode, int modmask, unsigned long window){
 static void FakeKeySym(int keysym, int modmask, unsigned long window){
   KeyCode c=XKeysymToKeycode(Xdisplay,keysym);
 
-  if(XKeycodeToKeysym(Xdisplay,c,0)==keysym){
+  if((int)XKeycodeToKeysym(Xdisplay,c,0)==keysym){
     FakeKeycode(c,modmask,window);
   }else{
     FakeKeycode(c,1|modmask,window);
@@ -724,7 +724,8 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
       }
       
       /* blank background */
-      if(x==0 && y==0 && d_width==rpplay_width && d_height==rpplay_height){
+      if(x==0 && y==0 && (int)d_width==rpplay_width && 
+	 (int)d_height==rpplay_height){
 	unsigned char *bptr;
 
 	if(snatch_active==1)
@@ -753,9 +754,9 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	
 	/* paint logo */
 	if(logo_y!=-1){
-	  unsigned char *logo;
-	  int logowidth;
-	  int logoheight;
+	  unsigned char *logo=NULL;
+	  int logowidth=-1;
+	  int logoheight=-1;
 	  
 	  switch(snatch_active){
 	  case 0:

@@ -58,7 +58,8 @@ static pthread_mutex_t esd_mutex=PTHREAD_MUTEX_INITIALIZER;
 /* RealPlayer opens two EsounD connections.  One for daemon control
    requests, the other for streaming audio */
 
-static esd_connection esdconn[2]={{-1},{-1}};
+static esd_connection esdconn[2]={{-1,-1,-1,{0},-1,-1},
+				  {-1,-1,-1,{0},-1,-1}};
 static int esdconmax=2;
 
 static esd_connection *getcon(int fd){
@@ -145,7 +146,7 @@ static int esd_identify(const struct sockaddr *serv_addr,socklen_t addrlen){
     struct sockaddr_in *addr=(struct sockaddr_in *)serv_addr;
     unsigned int port=ntohs(addr->sin_port);
     char *colonpos=strchr(esdsocket,':');
-    if(colonpos && port==atoi(colonpos+1))return(1);
+    if(colonpos && (int)port==atoi(colonpos+1))return(1);
   }
   return(0);
 }
