@@ -32,15 +32,11 @@
 
 */
 
-#ifndef SPEEX_JITTER_H
-#define SPEEX_JITTER_H
-
 #include "speex.h"
 #include "speex_bits.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef SPEEX_JITTER_H
+#define SPEEX_JITTER_H
 
 #define SPEEX_JITTER_MAX_PACKET_SIZE 2000
 #define SPEEX_JITTER_MAX_BUFFER_SIZE 20
@@ -72,11 +68,7 @@ void speex_jitter_destroy(SpeexJitter *jitter);
 
 void speex_jitter_put(SpeexJitter *jitter, char *packet, int len, int time);
 
-void speex_jitter_get(SpeexJitter *jitter, short *out);
-
-#ifdef __cplusplus
-}
-#endif
+void speex_jitter_get(SpeexJitter *jitter, float *out);
 
 
 #endif

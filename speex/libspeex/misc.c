@@ -46,11 +46,6 @@ void print_vec(float *vec, int len, char *name)
 }
 #endif
 
-#ifdef FIXED_DEBUG
-long long spx_mips=0;
-#endif
-
-
 unsigned int be_int(unsigned int i)
 {
    unsigned int ret=i;
@@ -131,11 +126,11 @@ void speex_warning_int(char *str, int val)
    fprintf (stderr, "warning: %s %d\n", str, val);
 }
 
-void speex_rand_vec(float std, spx_sig_t *data, int len)
+void speex_rand_vec(float std, float *data, int len)
 {
    int i;
    for (i=0;i<len;i++)
-      data[i]+=SIG_SCALING*3*std*((((float)rand())/RAND_MAX)-.5);
+      data[i]+=3*std*((((float)rand())/RAND_MAX)-.5);
 }
 
 float speex_rand(float std)

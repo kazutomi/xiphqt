@@ -34,9 +34,6 @@
 #include <unistd.h>
 #include <getopt.h>
 #endif
-#ifndef HAVE_GETOPT_LONG
-#include "getopt_win.h"
-#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,10 +49,6 @@
 #include <fcntl.h>
 #endif
 #include <math.h>
-
-#ifdef __MINGW32__
-#include "wave_out.c"
-#endif
 
 #ifdef HAVE_SYS_SOUNDCARD_H
 #include <sys/soundcard.h>
@@ -233,7 +226,11 @@ FILE *out_file_open(char *outFile, int rate, int *channels)
       }
       else 
       {
+#if defined WIN32 || defined _WIN32
          fout = fopen(outFile, "wb");
+#else
+         fout = fopen(outFile, "w");
+#endif
          if (!fout)
          {
             perror(outFile);
@@ -295,10 +292,10 @@ void version_short()
    printf ("Copyright (C) 2002-2003 Jean-Marc Valin\n");
 }
 
-static void *process_header(ogg_packet *op, int enh_enabled, int *frame_size, int *rate, int *nframes, int forceMode, int *channels, SpeexStereoState *stereo, int *extra_headers, int quiet)
+static void *process_header(ogg_packet *op, int enh_enabled, int *frame_size, int *rate, int *nframes, int forceMode, int *channels, SpeexStereoState *stereo, int *extra_headers)
 {
    void *st;
-   const SpeexMode *mode;
+   SpeexMode *mode;
    SpeexHeader *header;
    int modeID;
    SpeexCallback callback;
@@ -372,23 +369,20 @@ static void *process_header(ogg_packet *op, int enh_enabled, int *frame_size, in
    if (*channels==-1)
       *channels = header->nb_channels;
    
-   if (!quiet)
-   {
-      fprintf (stderr, "Decoding %d Hz audio using %s mode", 
-               *rate, mode->modeName);
+   fprintf (stderr, "Decoding %d Hz audio using %s mode", 
+            *rate, mode->modeName);
 
-      if (*channels==1)
-         fprintf (stderr, " (mono");
-      else
-         fprintf (stderr, " (stereo");
+   if (*channels==1)
+      fprintf (stderr, " (mono");
+   else
+      fprintf (stderr, " (stereo");
       
-      if (header->vbr)
-         fprintf (stderr, ", VBR)\n");
-      else
-         fprintf(stderr, ")\n");
-      /*fprintf (stderr, "Decoding %d Hz audio at %d bps using %s mode\n", 
-       *rate, mode->bitrate, mode->modeName);*/
-   }
+   if (header->vbr)
+      fprintf (stderr, ", VBR)\n");
+   else
+      fprintf(stderr, ")\n");
+   /*fprintf (stderr, "Decoding %d Hz audio at %d bps using %s mode\n", 
+    *rate, mode->bitrate, mode->modeName);*/
 
    *extra_headers = header->extra_headers;
 
@@ -403,17 +397,15 @@ int main(int argc, char **argv)
    char *inFile, *outFile;
    FILE *fin, *fout=NULL;
    short out[MAX_FRAME_SIZE];
-   short output[MAX_FRAME_SIZE];
+   float output[MAX_FRAME_SIZE];
    int frame_size=0;
    void *st=NULL;
    SpeexBits bits;
    int packet_count=0;
    int stream_init = 0;
-   int quiet = 0;
    struct option long_options[] =
    {
       {"help", no_argument, NULL, 0},
-      {"quiet", no_argument, NULL, 0},
       {"version", no_argument, NULL, 0},
       {"version-short", no_argument, NULL, 0},
       {"enh", no_argument, NULL, 0},
@@ -464,9 +456,6 @@ int main(int argc, char **argv)
          {
             usage();
             exit(0);
-         } else if (strcmp(long_options[option_index].name,"quiet")==0)
-         {
-            quiet = 1;
          } else if (strcmp(long_options[option_index].name,"version")==0)
          {
             version();
@@ -553,7 +542,11 @@ int main(int argc, char **argv)
    }
    else 
    {
+#if defined WIN32 || defined _WIN32
       fin = fopen(inFile, "rb");
+#else
+      fin = fopen(inFile, "r");
+#endif
       if (!fin)
       {
          perror(inFile);
@@ -593,7 +586,7 @@ int main(int argc, char **argv)
             /*If first packet, process as Speex header*/
             if (packet_count==0)
             {
-               st = process_header(&op, enh_enabled, &frame_size, &rate, &nframes, forceMode, &channels, &stereo, &extra_headers, quiet);
+               st = process_header(&op, enh_enabled, &frame_size, &rate, &nframes, forceMode, &channels, &stereo, &extra_headers);
                if (!nframes)
                   nframes=1;
                if (!st)
@@ -602,8 +595,7 @@ int main(int argc, char **argv)
 
             } else if (packet_count==1)
             {
-               if (!quiet)
-                  print_comments((char*)op.packet, op.bytes);
+               print_comments((char*)op.packet, op.bytes);
             } else if (packet_count<=1+extra_headers)
             {
                /* Ignore extra headers */
@@ -628,9 +620,6 @@ int main(int argc, char **argv)
                   else
                      ret = speex_decode(st, NULL, output);
 
-                  /*for (i=0;i<frame_size*channels;i++)
-                    printf ("%d\n", (int)output[i]);*/
-
                   if (ret==-1)
                      break;
                   if (ret==-2)
@@ -653,14 +642,22 @@ int main(int argc, char **argv)
                      fputc (ch, stderr);
                      fprintf (stderr, "Bitrate is use: %d bps     ", tmp);
                   }
+                  /*PCM saturation (just in case)*/
+                  for (i=0;i<frame_size*channels;i++)
+                  {
+                     if (output[i]>32000.0)
+                        output[i]=32000.0;
+                     else if (output[i]<-32000.0)
+                        output[i]=-32000.0;
+                  }
                   /*Convert to short and save to output file*/
 		  if (strlen(outFile)!=0)
                   {
                      for (i=0;i<frame_size*channels;i++)
-                        out[i]=le_short(output[i]);
+                        out[i]=(short)le_short((short)floor(.5+output[i]));
 		  } else {
                      for (i=0;i<frame_size*channels;i++)
-                        out[i]=output[i];
+                        out[i]=(short)floor(.5+output[i]);
 		  }
 #if defined WIN32 || defined _WIN32
                   if (strlen(outFile)==0)

@@ -3,10 +3,6 @@
 #include <stdlib.h>
 #include "speex_callbacks.h"
 
-#ifdef FIXED_DEBUG
-extern long long spx_mips;
-#endif
-
 #define FRAME_SIZE 160
 #include <math.h>
 int main(int argc, char **argv)
@@ -16,6 +12,7 @@ int main(int argc, char **argv)
    short in_short[FRAME_SIZE];
    short out_short[FRAME_SIZE];
    float in_float[FRAME_SIZE];
+   float out_float[FRAME_SIZE];
    float sigpow,errpow,snr, seg_snr=0;
    int snr_frames = 0;
    char cbits[200];
@@ -49,9 +46,9 @@ int main(int argc, char **argv)
    speex_decoder_ctl(dec, SPEEX_SET_ENH, &tmp);
    tmp=0;
    speex_encoder_ctl(st, SPEEX_SET_VBR, &tmp);
-   tmp=4;
+   tmp=8;
    speex_encoder_ctl(st, SPEEX_SET_QUALITY, &tmp);
-   tmp=5;
+   tmp=3;
    speex_encoder_ctl(st, SPEEX_SET_COMPLEXITY, &tmp);
 
    speex_mode_query(&speex_nb_mode, SPEEX_MODE_FRAME_SIZE, &tmp);
@@ -82,7 +79,7 @@ int main(int argc, char **argv)
          in_float[i]=in_short[i];
       speex_bits_reset(&bits);
 
-      speex_encode(st, in_short, &bits);
+      speex_encode(st, in_float, &bits);
       nbBits = speex_bits_write(&bits, cbits, 200);
       bitCount+=bits.nbBits;
 
@@ -90,9 +87,19 @@ int main(int argc, char **argv)
          fwrite(cbits, 1, nbBits, fbits);
       speex_bits_rewind(&bits);
 
-      speex_decode(dec, &bits, out_short);
+      speex_decode(dec, &bits, out_float);
       speex_bits_reset(&bits);
 
+      /* Save the bits here */
+      for (i=0;i<FRAME_SIZE;i++)
+      {
+         if (out_float[i]>32767)
+            out_short[i]=32767;
+         else if (out_float[i]<-32768)
+            out_short[i]=-32768;
+         else
+             out_short[i]=(short)(out_float[i]+.5);
+      }
       fwrite(&out_short[skip_group_delay], sizeof(short), FRAME_SIZE-skip_group_delay, fout);
       skip_group_delay = 0;
    }
@@ -109,10 +116,10 @@ int main(int argc, char **argv)
    {
 	float s=0, e=0;
         for (i=0;i<FRAME_SIZE;++i) {
-            s += (float)in_short[i] * in_short[i];
-            e += ((float)in_short[i]-out_short[i]) * ((float)in_short[i]-out_short[i]);
+            s += in_short[i] * in_short[i];
+            e += (in_short[i]-out_short[i]) * (in_short[i]-out_short[i]);
         }
-	seg_snr += 10*log10((s+160)/(e+160));
+	seg_snr += 10*log10((s+1)/(e+1));
 	sigpow += s;
 	errpow += e;
 	snr_frames++;
@@ -123,10 +130,6 @@ int main(int argc, char **argv)
    snr = 10 * log10( sigpow / errpow );
    seg_snr /= snr_frames;
    fprintf(stderr,"SNR = %f\nsegmental SNR = %f\n",snr, seg_snr);
-
-#ifdef FIXED_DEBUG
-   printf ("Total: %f MIPS\n", (float)(1e-6*50*spx_mips/snr_frames));
-#endif
    
    return 1;
 }

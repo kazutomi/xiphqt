@@ -34,35 +34,34 @@
 #define CB_SEARCH_H
 
 #include "speex_bits.h"
-#include "misc.h"
 
 typedef struct split_cb_params {
    int     subvect_size;
    int     nb_subvect;
-   const signed char  *shape_cb;
+   signed char  *shape_cb;
    int     shape_bits;
    int     have_sign;
 } split_cb_params;
 
 
 void split_cb_search_shape_sign(
-spx_sig_t target[],			/* target vector */
-spx_coef_t ak[],			/* LPCs for this subframe */
-spx_coef_t awk1[],			/* Weighted LPCs for this subframe */
-spx_coef_t awk2[],			/* Weighted LPCs for this subframe */
-const void *par,                      /* Codebook/search parameters*/
+float target[],			/* target vector */
+float ak[],			/* LPCs for this subframe */
+float awk1[],			/* Weighted LPCs for this subframe */
+float awk2[],			/* Weighted LPCs for this subframe */
+void *par,                      /* Codebook/search parameters*/
 int   p,                        /* number of LPC coeffs */
 int   nsf,                      /* number of samples in subframe */
-spx_sig_t *exc,
-spx_sig_t *r,
+float *exc,
+float *r,
 SpeexBits *bits,
 char *stack,
 int   complexity
 );
 
 void split_cb_shape_sign_unquant(
-spx_sig_t *exc,
-const void *par,                      /* non-overlapping codebook */
+float *exc,
+void *par,                      /* non-overlapping codebook */
 int   nsf,                      /* number of samples in subframe */
 SpeexBits *bits,
 char *stack
@@ -70,15 +69,15 @@ char *stack
 
 
 void noise_codebook_quant(
-spx_sig_t target[],			/* target vector */
-spx_coef_t ak[],			/* LPCs for this subframe */
-spx_coef_t awk1[],			/* Weighted LPCs for this subframe */
-spx_coef_t awk2[],			/* Weighted LPCs for this subframe */
-const void *par,                      /* Codebook/search parameters*/
+float target[],			/* target vector */
+float ak[],			/* LPCs for this subframe */
+float awk1[],			/* Weighted LPCs for this subframe */
+float awk2[],			/* Weighted LPCs for this subframe */
+void *par,                      /* Codebook/search parameters*/
 int   p,                        /* number of LPC coeffs */
 int   nsf,                      /* number of samples in subframe */
-spx_sig_t *exc,
-spx_sig_t *r,
+float *exc,
+float *r,
 SpeexBits *bits,
 char *stack,
 int   complexity
@@ -86,8 +85,8 @@ int   complexity
 
 
 void noise_codebook_unquant(
-spx_sig_t *exc,
-const void *par,                      /* non-overlapping codebook */
+float *exc,
+void *par,                      /* non-overlapping codebook */
 int   nsf,                      /* number of samples in subframe */
 SpeexBits *bits,
 char *stack

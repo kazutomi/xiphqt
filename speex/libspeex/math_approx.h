@@ -33,14 +33,7 @@
 #ifndef MATH_APPROX_H
 #define MATH_APPROX_H
 
-#include "misc.h"
+float speex_cos(float x);
 
-#ifdef FIXED_POINT
-spx_word16_t spx_sqrt(spx_word32_t x);
-spx_word16_t spx_acos(spx_word16_t x);
-#else
-#define spx_sqrt sqrt
-#define spx_acos acos
-#endif
 
 #endif

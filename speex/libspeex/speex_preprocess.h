@@ -31,8 +31,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SPEEX_PREPROCESS_H
-#define SPEEX_PREPROCESS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,10 +101,10 @@ SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sampling_r
 void speex_preprocess_state_destroy(SpeexPreprocessState *st);
 
 /** Preprocess a frame */
-int speex_preprocess(SpeexPreprocessState *st, short *x, float *noise);
+int speex_preprocess(SpeexPreprocessState *st, float *x, float *noise);
 
 /** Preprocess a frame */
-void speex_preprocess_estimate_update(SpeexPreprocessState *st, short *x, float *noise);
+void speex_preprocess_estimate_update(SpeexPreprocessState *st, float *x, float *noise);
 
 /** Used like the ioctl function to control the preprocessor parameters */
 int speex_preprocess_ctl(SpeexPreprocessState *st, int request, void *ptr);
@@ -127,6 +125,4 @@ int speex_preprocess_ctl(SpeexPreprocessState *st, int request, void *ptr);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

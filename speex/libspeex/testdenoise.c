@@ -6,6 +6,8 @@
 int main()
 {
    short in[NN];
+   short out[NN];
+   float x[NN];
    int i;
    SpeexPreprocessState *st;
    int count=0;
@@ -24,9 +26,13 @@ int main()
       fread(in, sizeof(short), NN, stdin);
       if (feof(stdin))
          break;
-      vad = speex_preprocess(st, in, NULL);
+      for (i=0;i<NN;i++)
+         x[i]=in[i];
+      vad = speex_preprocess(st, x, NULL);
+      for (i=0;i<NN;i++)
+         out[i]=x[i];
       /*fprintf (stderr, "%d\n", vad);*/
-      fwrite(in, sizeof(short), NN, stdout);
+      fwrite(out, sizeof(short), NN, stdout);
       count++;
    }
    speex_preprocess_state_destroy(st);

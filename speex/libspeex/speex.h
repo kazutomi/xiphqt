@@ -167,37 +167,37 @@ struct SpeexMode;
 /* Prototypes for mode function pointers */
 
 /** Encoder state initialization function */
-typedef void *(*encoder_init_func)(const struct SpeexMode *mode);
+typedef void *(*encoder_init_func)(struct SpeexMode *mode);
 
 /** Encoder state destruction function */
 typedef void (*encoder_destroy_func)(void *st);
 
 /** Main encoding function */
-typedef int (*encode_func)(void *state, short *in, SpeexBits *bits);
+typedef int (*encode_func)(void *state, float *in, SpeexBits *bits);
 
 /** Function for controlling the encoder options */
 typedef int (*encoder_ctl_func)(void *state, int request, void *ptr);
 
 /** Decoder state initialization function */
-typedef void *(*decoder_init_func)(const struct SpeexMode *mode);
+typedef void *(*decoder_init_func)(struct SpeexMode *mode);
 
 /** Decoder state destruction function */
 typedef void (*decoder_destroy_func)(void *st);
 
 /** Main decoding function */
-typedef int  (*decode_func)(void *state, SpeexBits *bits, short *out);
+typedef int  (*decode_func)(void *state, SpeexBits *bits, float *out);
 
 /** Function for controlling the decoder options */
 typedef int (*decoder_ctl_func)(void *state, int request, void *ptr);
 
 
 /** Query function for a mode */
-typedef int (*mode_query_func)(const void *mode, int request, void *ptr);
+typedef int (*mode_query_func)(void *mode, int request, void *ptr);
 
 /** Struct defining a Speex mode */ 
 typedef struct SpeexMode {
    /** Pointer to the low-level mode data */
-   const void *mode;
+   void *mode;
 
    /** Pointer to the mode query function */
    mode_query_func query;
@@ -247,7 +247,7 @@ typedef struct SpeexMode {
  * @param mode The mode to use (either speex_nb_mode or speex_wb.mode) 
  * @return A newly created encoder
  */
-void *speex_encoder_init(const SpeexMode *mode);
+void *speex_encoder_init(SpeexMode *mode);
 
 /** Frees all resources associated to an existing Speex encoder state. 
  * @param state Encoder state to be destroyed */
@@ -259,7 +259,7 @@ void speex_encoder_destroy(void *state);
  @param in Frame that will be encoded with a +-2^16 range
  @param bits Bit-stream where the data will be written
  */
-int speex_encode(void *state, short *in, SpeexBits *bits);
+int speex_encode(void *state, float *in, SpeexBits *bits);
 
 /** Used like the ioctl function to control the encoder parameters
  *
@@ -279,7 +279,7 @@ int speex_encoder_ctl(void *state, int request, void *ptr);
  * @param mode Speex mode (one of speex_nb_mode or speex_wb_mode)
  * @return A newly created decoder state
  */ 
-void *speex_decoder_init(const SpeexMode *mode);
+void *speex_decoder_init(SpeexMode *mode);
 
 /** Frees all resources associated to an existing decoder state.
  *
@@ -295,7 +295,7 @@ void speex_decoder_destroy(void *state);
  * @param out Where to write the decoded frame
  * @return return status (0 for no error, -1 for end of stream, -2 other)
  */
-int speex_decode(void *state, SpeexBits *bits, short *out);
+int speex_decode(void *state, SpeexBits *bits, float *out);
 
 /** Used like the ioctl function to control the encoder parameters
  *
@@ -313,25 +313,25 @@ int speex_decoder_ctl(void *state, int request, void *ptr);
  * @param request ioctl-type request (one of the SPEEX_* macros)
  * @param ptr Data exchanged to-from function
  */
-int speex_mode_query(const SpeexMode *mode, int request, void *ptr);
+int speex_mode_query(SpeexMode *mode, int request, void *ptr);
 
 
 /** Default narrowband mode */
-extern const SpeexMode speex_nb_mode;
+extern SpeexMode speex_nb_mode;
 
 /** Default wideband mode */
-extern const SpeexMode speex_wb_mode;
+extern SpeexMode speex_wb_mode;
 
 /** Default "ultra-wideband" mode */
-extern const SpeexMode speex_uwb_mode;
+extern SpeexMode speex_uwb_mode;
 
 #ifdef EPIC_48K
 /** 4.8 kbps narrowband mode */
-extern const SpeexMode speex_nb_48k_mode;
+extern SpeexMode speex_nb_48k_mode;
 #endif
 
 /** List of all modes available */
-extern const SpeexMode *speex_mode_list[SPEEX_NB_MODES];
+extern SpeexMode *speex_mode_list[SPEEX_NB_MODES];
 
 #ifdef __cplusplus
 }

@@ -90,7 +90,7 @@ static float hypergeom_gain(float x)
 {
    int ind;
    float integer, frac;
-   static const float table[21] = {
+   static float table[21] = {
       0.82157, 1.02017, 1.20461, 1.37534, 1.53363, 1.68092, 1.81865, 
       1.94811, 2.07038, 2.18638, 2.29688, 2.40255, 2.50391, 2.60144, 
       2.69551, 2.78647, 2.87458, 2.96015, 3.04333, 3.12431, 3.20326};
@@ -216,7 +216,7 @@ SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sampling_r
    st->loudness2 = 6000;
    st->nb_loudness_adapt = 0;
 
-   st->fft_lookup = (struct drft_lookup*)speex_alloc(sizeof(struct drft_lookup));
+   st->fft_lookup = speex_alloc(sizeof(struct drft_lookup));
    drft_init(st->fft_lookup,2*N);
 
    st->nb_adapt=0;
@@ -536,7 +536,7 @@ static void speex_compute_agc(SpeexPreprocessState *st, float mean_prior)
    
 }
 
-static void preprocess_analysis(SpeexPreprocessState *st, short *x)
+static void preprocess_analysis(SpeexPreprocessState *st, float *x)
 {
    int i;
    int N = st->ps_size;
@@ -607,7 +607,7 @@ static void update_noise_prob(SpeexPreprocessState *st)
 
 }
 
-int speex_preprocess(SpeexPreprocessState *st, short *x, float *echo)
+int speex_preprocess(SpeexPreprocessState *st, float *x, float *echo)
 {
    int i;
    int is_speech=1;
@@ -917,7 +917,7 @@ int speex_preprocess(SpeexPreprocessState *st, short *x, float *echo)
    return is_speech;
 }
 
-void speex_preprocess_estimate_update(SpeexPreprocessState *st, short *x, float *noise)
+void speex_preprocess_estimate_update(SpeexPreprocessState *st, float *x, float *noise)
 {
    int i;
    int N = st->ps_size;
