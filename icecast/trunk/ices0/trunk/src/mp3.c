@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.27 2003/03/16 20:20:11 brendan Exp $
+ * $Id: mp3.c,v 1.28 2003/03/16 22:21:49 brendan Exp $
  */
 
 #include "definitions.h"
@@ -86,6 +86,7 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 #endif
 static int ices_mp3_close (input_stream_t* self);
 static int mp3_fill_buffer (input_stream_t* self, size_t len);
+static void mp3_trim_file (input_stream_t* self);
 static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header);
 static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header);
 static size_t mp3_frame_length(mp3_header_t* header);
@@ -113,6 +114,9 @@ static int ices_mp3_parse (input_stream_t* source)
   /* first check for ID3v2 */
   if (! strncmp ("ID3", mp3_data->buf, 3))
     ices_id3v2_parse (source);
+
+  /* adjust file size for short frames */
+  mp3_trim_file (source);
 
   /* ensure we have at least 4 bytes in the read buffer */
   if (!mp3_data->buf || mp3_data->len - mp3_data->pos < 4)
@@ -157,6 +161,8 @@ static int ices_mp3_parse (input_stream_t* source)
         /* check next frame if possible */
         if (mp3_fill_buffer (source, framelen + 4) <= 0)
           break;
+        /* note: take care with aliasing buffer/mp3_data->buf */
+        buffer = mp3_data->buf;
 
         /* if we can't find the second frame, we assume the first frame was junk */
         if ((rc = mp3_parse_frame(mp3_data->buf + mp3_data->pos + framelen, &next_header))) {
@@ -164,15 +170,17 @@ static int ices_mp3_parse (input_stream_t* source)
               || mh.samplerate != next_header.samplerate) {
             rc = 0;
           /* fallback VBR check if VBR tag is missing */
-          } else if (mh.bitrate != next_header.bitrate) {
-            ices_log_debug ("Bit rate of first frame (%d) doesn't match second frame (%d), assuming VBR",
-                mh.bitrate, next_header.bitrate);
-            source->bitrate = 0;
+          } else {
+            if (mh.bitrate != next_header.bitrate) {
+              ices_log_debug ("Bit rate of first frame (%d) doesn't match second frame (%d), assuming VBR",
+                  mh.bitrate, next_header.bitrate);
+              source->bitrate = 0;
+            }
+            break;
           }
-          break;
         }
         if (!rc)
-          ices_log_debug ("Bad frame at offset %d", source->bytes_read);
+          ices_log_debug ("Bad frame at offset %d", source->bytes_read + mp3_data->pos);
       }
       mp3_data->pos++;
       off++;
@@ -307,6 +315,20 @@ ices_mp3_close (input_stream_t* self)
   return close (self->fd);
 }
 
+/* trim short frame from end of file if necessary */
+static void mp3_trim_file (input_stream_t* self) {
+#if 0
+  char buf[MP3_BUFFER_SIZE];
+  off_t cur;
+  int rc = 0;
+
+  if (! self->filesize)
+    return;
+  cur = lseek (self->fd, 0, SEEK_CUR);
+  while (!rc) {}
+#endif
+}
+
 /* make sure source buffer has at least len bytes.
  * returns: 1: success, 0: EOF before len, -1: malloc error, -2: read error */
 static int mp3_fill_buffer (input_stream_t* self, size_t len) {
@@ -385,7 +407,6 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
   header->layer = 4 - ((buf[1] >> 1) & 0x3);
   header->emphasis = (buf[3]) & 0x3;
 
-  /* free bit rate (idx == 0) is legal, but ices can't handle it reliably */
   if (bitrate_idx == 0xF || samplerate_idx == 0x3
       || header->layer == 4 || header->emphasis == 2)
     return 0;
