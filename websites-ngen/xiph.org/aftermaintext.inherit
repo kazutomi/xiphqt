@@ -1,6 +1,8 @@
 <div id='locations'>
 	<a href='/about/'
 	   title='About us'>About</a> |
+	<a href='/press/'
+	   title='Read our press releases'>Press</a> |
 	<!-- 
 	<a href='/donate/'
 	   title='Give us money'>Donate</a> |

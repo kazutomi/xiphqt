@@ -53,6 +53,13 @@ div#sidebar li a:hover {
 	color: black;
 }
 
+div#sidebar li.forusers		a:hover,
+div#sidebar li.forartists	a:hover,
+div#sidebar li.forlabels	a:hover {
+	background: #445;
+	color: white;
+}
+
 div#sidebar li.vorbis a:hover {
 	background: #b6cfbd;
 	background: rgb(37, 80, 112);
@@ -62,17 +69,14 @@ div#sidebar li.vorbis a:hover {
 div#sidebar li.speex a:hover {
 	background: #b1cfa1;
 	background: rgb(98, 121, 49);
+	background: rgb(53, 115, 102);
 	color: white;
 }
 
 div#sidebar li.flac a:hover {
-	background: #ff9;		/* banana-ish */
-	background: #ddddc3;	/* a slightly darker version of what's on flac.sf.net */
 	background: #9c9;		/* background from flac.sf.net */
 	background: rgb(0, 64, 64);
-
 	color: white;
-
 
 }
 
@@ -83,7 +87,8 @@ div#sidebar li.theora a:hover {
 }
 
 div#sidebar li.icecast a:hover {
-	background: #bbb;
+	background: #333;
+	color: white;
 }
 
 /*

@@ -514,5 +514,5 @@ def doNews():
 	fh.close()
 
 if __name__ == '__main__':
-	doNews()
+	#doNews()
 	doSite()

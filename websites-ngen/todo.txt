@@ -23,6 +23,9 @@ To Do
 	Also, since we’re mantaining python bindings, why not .NET ones, too? The little VB.NET shop
 	seems to be right up our alley.
 
+*	Split /forusers/recommendations/ into /vorbis/recommendations/, /theora/recommendations/, etc.
+
+
 Open Questions
 --------------
 
@@ -45,6 +48,7 @@ I suppose there are two levels of benefits that one can get when he moves to Xip
 	*	Vorbis-style comments rule supreme
 	*	Ease of down-transcoding with stock tools (rather important on unix)
 
+
 What Must Be Done Before Shipping
 ---------------------------------
 
@@ -63,6 +67,7 @@ What Must Be Done Before Shipping
 * /lists/			(mailing lists)
 * /paranoia/		(possibly with much less filler than it has)
 * Documentation for the CMS I’ve cobbled together.
+
 
 What May Or May Not Be Done Before Shipping
 -------------------------------------------

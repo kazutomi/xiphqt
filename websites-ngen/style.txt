@@ -9,16 +9,18 @@ Behind the Scenes
 
 *	Keep lines to 100 columns or fewer.
 
-*	Use UTF-8. In particular, use proper apostrophes and quotes (U+2018–U+201E) and
+*	Use UTF-8. In particular, use proper apostrophes, quotation marks, (U+2018–U+201E) and
 	en and em dashes.
 
 *	Prefer <x y='z'> to <x y="z">. <x y=z> is an absolute no-no.
 
 *	use camelCase for id and class attribute values.
+	Remember that id attributes create things that can be linked to, so avoid trying to break
+	them, especially when they’re linked to from other parts of the same page or website.
 
 *	Try to stay as XHTML-compliant as possible; it’s simply good style. This doesn’t mean that
 	you should include a closing slash in your img tags, but it does mean that you should
-	close your (for example) p, ul, and li tags.
+	close your p, ul, and li tags.
 
 *	Use the ===== style of heading for h1 elements; if you use the single # at the beginning of the
 	of the document, wrapup and Markdown won’t be able to cope with the UTF-8 BOM that some
@@ -33,13 +35,17 @@ Behind the Scenes
 *	Don’t have multiple files or directories that differ only by case; this will cause problems
 	on systems that are case-insensitive.
 
+*	Have two blank lines before headings and one blank line after, as in this file.
+
 
 Spelling, Grammar, and Punctuation
 ----------------------------------
 
-*	Do not write "CODEC" in all caps.
-*	"Copyright © 2004 Xiph.Org" and "Copyright (c) 2004 Xiph.Org" are redundant;
-	prefer "© 2004 Xiph.Org" to both. Failing that, use "Copyright 2004 Xiph.Org".
+*	Do not write “CODEC” in all caps.
+*	Prefer “© 2004 Xiph.Org” to both “Copyright © 2004 Xiph.Org” and
+	“Copyright (c) 2004 Xiph.Org”; the latter two are redundant.
+	If you can’t type a proper copyright symbol, use its HTML entity, `&copy;` or simply write out
+	“Copyright 2004 Xiph.Org”.
 
 
 ### English-Specific Considerations
@@ -57,7 +63,7 @@ URLs and Linkage
 	information on the Redirect directive at
 	<http://httpd.apache.org/docs-2.0/mod/mod_alias.html#redirect>.
 
-*	Redirect to <http://www.xiph.org/>. Not to, for example, <http://xiph.org/>.
+*	Redirect to <http://www.xiph.org/>, not <http://xiph.org/>.
 
 *	Page URLs are to be in the style of /foo/bar/baz/quux/ for reasons described on
 	[Slash Forward][].
@@ -73,6 +79,6 @@ Open Questions
 
 *	Tone: How should we write? I’d like to display a visible sense of humor on the site.
 
-*	Prefer verbs in URLs to adjectives when possible. For example, prefer "/speex/compare/" to
-	"/speex/comparison/". This ought to be done with care; "/foobar/document/" is plain silly
+*	Prefer verbs in URLs to adjectives when possible. For example, prefer “/speex/compare/” to
+	“/speex/comparison/”. This ought to be done with care; “/foobar/document/” is plain silly
 	as it invites the user to actually document our stuff, rather than read documentation.
