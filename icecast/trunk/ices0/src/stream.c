@@ -26,6 +26,9 @@
 #ifdef HAVE_LIBVORBISFILE
 #include "in_vorbis.h"
 #endif
+#ifdef HAVE_LIBFAAD
+#include "in_mp4.h"
+#endif
 
 #ifdef TIME_WITH_SYS_TIME
 #  include <sys/time.h>
@@ -293,12 +296,13 @@ stream_send (ices_config_t* config, input_stream_t* source)
   }
 
 #ifdef HAVE_LIBLAME
-  for (stream = config->streams; stream; stream = stream->next)
-    if (stream->reencode && stream_needs_reencoding (source, stream)) {
-      len = ices_reencode_flush (stream, obuf.data, obuf.len);
-      if (len > 0)
-        rc = stream_send_data (stream, obuf.data, len);
-    }
+  if (!config->plugins) /* flush is only necessary if we're not continuously reencoding */
+    for (stream = config->streams; stream; stream = stream->next)
+      if (stream->reencode && stream_needs_reencoding (source, stream)) {
+	len = ices_reencode_flush (stream, obuf.data, obuf.len);
+	if (len > 0)
+	  rc = stream_send_data (stream, obuf.data, len);
+      }
 
   if (obuf.data)
     free(obuf.data);
