@@ -118,8 +118,6 @@ class WOID:
                       "keys" : [],
                       "extra" : record[self.mdb.header["NumOfKeys"]:]}
 
-        print mdb_record
-
         # Need to lookup keys
         child_pai_modules = []
         for i in range(1,self.mdb.header["NumOfKeys"]):

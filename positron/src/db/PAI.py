@@ -72,8 +72,6 @@ class PAI:
     def add_entry_to_module_at(self, pointer, entry):
         f = self.file
 
-        print "PAI Entry: ",entry
-        
         # Calculate empty space
         (length, flag, num_entries) = self._read_module_header(pointer)
 
