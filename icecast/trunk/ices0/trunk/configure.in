@@ -147,11 +147,13 @@ case $system in
 		AC_DEFINE(__SOMEBSD__)
 		AC_MSG_RESULT(Some BSD variant)
 		OLDCPPFLAGS=$CPPFLAGS
-		CPPFLAGS="$CPPFLAGS -pthread"
+		THREADCPPFLAGS="-pthread"
+		CPPFLAGS="$OLDCPPFLAGS $THREADCPPFLAGS"
 		AC_TRY_COMPILE([#include <pthread.h>],
 			       [pthread_t thread; ],	
 	       		       ,
 			       	CPPFLAGS="$OLDCPPFLAGS")
+		CPPFLAGS=$OLDCPPFLAGS
 		;;
 	*)
 		AC_MSG_RESULT($system)
@@ -254,11 +256,12 @@ if test "$THREADLIBS" = "no"; then
 fi
 
 if test "$THREADLIBS" = "no"; then
-        AC_MSG_ERROR(Your system doesn't seem to support posix threads. Icecast 1.3 and above won't work without threads support)
+        AC_MSG_ERROR(Your system doesn't seem to support posix threads. Ices needs posix threads to compile.) 
         exit
 fi
 
 LIBS="$LIBS $THREADLIBS"
+CPPFLAGS="$CPPFLAGS $THREADCPPFLAGS"
 
 AC_ARG_WITH(lame,
 [  --with-lame[=ARG]	enable support for reencoding using lame [ARG=yes]])
@@ -401,7 +404,7 @@ else
 	echo "xml-config program not found, compiling without libxml support. (This means no support for configfiles)"
 fi
 
-AC_CHECK_HEADERS(fcntl.h sys/time.h sys/stat.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h libxml/parser.h gnome-xml/parser.h)
+AC_CHECK_HEADERS(fcntl.h sys/types.h sys/socket.h sys/time.h sys/stat.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h libxml/parser.h gnome-xml/parser.h)
 AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename setsockopt umask inet_addr inet_aton inet_ntoa sigaction pthread_sigmask)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])
