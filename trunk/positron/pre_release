@@ -6,4 +6,4 @@
 # This does not fix the bdist_rpm target on Mandrake though, as Mandrake
 # expects bz2 manpages.
 
-gzip -c doc/positron.1 > doc/positron.1.gz
+gzip -c9 doc/positron.1 > doc/positron.1.gz
