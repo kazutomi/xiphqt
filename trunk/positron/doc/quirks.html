@@ -1,16 +1,16 @@
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <title>Positron Documentation: Quirks and other Common Pitfalls</title>
+  <title>Positron Developer's Guide: Quirks and other Common Pitfalls</title>
 </head>
 <body>
-<h1>Quirks and other Common Pitfalls</h1>
+<h1>Positron Developer's Guide: Quirks and other Common Pitfalls</h1>
 
 <p>
 As with any device, the Neuros has some quirky behavior that can trip
 up a developer.  This document collects these issues together.  Please
-help us keep this up to date!  Email <a
-href="volsung@xiph.org">volsung@xiph.org</a> with problems and
+help us keep this up to date!  Email 
+<a href="volsung@xiph.org">volsung@xiph.org</a> with problems and
 solutions you discover.
 </p>
 
@@ -23,8 +23,9 @@ recognize the device as a USB Mass Storage device, the USB modules
 might freeze up during I/O, and sometimes the whole system might go
 down.  This seems to be strongly dependent upon the kernel used:
 <ul>
-  <li>2.4.19-16mdk (Shipped with Mandrake 9.0) - Fails so frequently it is nearly unusable</li>
-  <li>2.4.20-somethingmdk FIXME (Shipped with Mandrake 9.1) - Works well</li>
+  <li>2.4.19-16mdk (Shipped with Mandrake 9.0) - Fails so 
+      frequently it is nearly unusable</li>
+  <li>2.4.21-0.13mdk (Shipped with Mandrake 9.1 x86) - Works well</li>
   <li>2.4.21-17mdk (Shipped with Mandrake 9.1 PPC) - Works well</li>
   <li>2.4.20-benh10 - Works well</li>
   <li>2.4.20-gentoo-r3 - Works well</li>
