@@ -2,14 +2,13 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = log 
+SUBDIRS = log thread timing avl
 
 bin_PROGRAMS = ices
 AM_CFLAGS = @XIPH_CFLAGS@
 AM_CPPFLAGS = @XIPH_CPPFLAGS@
 CFLAGS= -g -O20
 
-EXTRA_DIST = thread net timing
 EXTRA_ices_SOURCES = im_oss.c im_sun.c im_alsa.c
 
 if HAVE_OSS_AUDIO
@@ -36,7 +35,7 @@ input_srcs = im_pcm.c im_playlist.c playlist_basic.c playlist_script.c $(oss) $(
 output_srcs = om_shout.c om_file.c
 ices_SOURCES = input.c cfgparse.c runner.c ices.c signals.c reencode.c encode.c stream.c metadata.c audio.c resample.c $(input_srcs) $(output_srcs)
 
-ices_LDADD = log/libicelog.la @ALSA_LIBS@ @JACK_LIBS@ @XIPH_LIBS@
+ices_LDADD = log/libicelog.la thread/libicethread.la avl/libiceavl.la timing/libicetiming.la @ALSA_LIBS@ @JACK_LIBS@ @XIPH_LIBS@
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"

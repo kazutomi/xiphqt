@@ -54,108 +54,104 @@ static void _output_connection_close (struct output_module *mod)
 void check_shout_connected (struct output_module *mod)
 {
     struct output_shout_state *stream = mod->specific;
-    if (shout_connection_ready (stream->shout))
-        return;
-    if (stream->reconnect_attempts == -1 ||
-            stream->reconnect_attempts > stream->reconnect_count)
-    {
-        time_t now = time (NULL);
+    int shouterr;
+    time_t now = time (NULL);
 
+    if (stream->shout == NULL)
+    {
         if (stream->restart_time <= now)
         {
-            int shouterr;
+            char audio_info[11];
+            int failed = 1;
+            struct output_state *state = mod->parent;
 
-            if (stream->shout == NULL || shout_get_errno (stream->shout) != SHOUTERR_PENDING)
+            LOG_DEBUG3 ("Time we started stream on %s:%d%s", stream->hostname, 
+                    stream->port, stream->mount);
+            /* allow for traping long icecast connects */
+            stream->restart_time = now;
+
+            do
             {
-                char audio_info[11];
-                int failed = 1;
-                struct output_state *state = mod->parent;
+                if ((stream->shout = shout_new ()) == NULL)
+                    break;
+                if (shout_set_host (stream->shout, stream->hostname) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_password (stream->shout, stream->password) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_port (stream->shout, stream->port) != SHOUTERR_SUCCESS)
+                    break;
+                if (stream->user && shout_set_user (stream->shout, stream->user) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_mount (stream->shout, stream->mount) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_agent (stream->shout, PACKAGE_STRING) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_name (stream->shout, state->name) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_genre (stream->shout, state->genre) != SHOUTERR_SUCCESS)
+                    break;
+                if (state->url && shout_set_url (stream->shout, state->url) != SHOUTERR_SUCCESS)
+                    break;
+                if (shout_set_description (stream->shout, state->description) != SHOUTERR_SUCCESS)
+                    break;
+                if (stream->yp && shout_set_public (stream->shout, 1) != SHOUTERR_SUCCESS)
+                    break;
 
-                LOG_DEBUG3 ("Time we started stream on %s:%d%s", stream->hostname, 
-                        stream->port, stream->mount);
-                /* allow for traping long icecast connects */
-                stream->restart_time = now;
+                shout_set_nonblocking (stream->shout, 1);
+                shout_set_format (stream->shout, SHOUT_FORMAT_OGG);
+                shout_set_protocol (stream->shout, SHOUT_PROTOCOL_HTTP);
 
-                do
-                {
-                    if ((stream->shout = shout_new ()) == NULL)
-                        break;
-                    if (shout_set_host (stream->shout, stream->hostname) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_password (stream->shout, stream->password) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_port (stream->shout, stream->port) != SHOUTERR_SUCCESS)
-                        break;
-                    if (stream->user && shout_set_user (stream->shout, stream->user) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_mount (stream->shout, stream->mount) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_agent (stream->shout, PACKAGE_STRING) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_name (stream->shout, state->name) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_genre (stream->shout, state->genre) != SHOUTERR_SUCCESS)
-                        break;
-                    if (state->url && shout_set_url (stream->shout, state->url) != SHOUTERR_SUCCESS)
-                        break;
-                    if (shout_set_description (stream->shout, state->description) != SHOUTERR_SUCCESS)
-                        break;
-                    if (stream->yp && shout_set_public (stream->shout, 1) != SHOUTERR_SUCCESS)
-                        break;
+                snprintf(audio_info, sizeof(audio_info), "%ld", state->vi.bitrate_nominal/1000);
+                shout_set_audio_info (stream->shout, SHOUT_AI_BITRATE, audio_info);
 
-                    shout_set_nonblocking (stream->shout, 1);
-                    shout_set_format (stream->shout, SHOUT_FORMAT_VORBISPAGE);
-                    shout_set_protocol (stream->shout, SHOUT_PROTOCOL_HTTP);
+                snprintf(audio_info, sizeof(audio_info), "%ld", state->vi.rate);
+                shout_set_audio_info (stream->shout, SHOUT_AI_SAMPLERATE, audio_info);
 
-                    snprintf(audio_info, sizeof(audio_info), "%ld", state->vi.bitrate_nominal/1000);
-                    shout_set_audio_info (stream->shout, SHOUT_AI_BITRATE, audio_info);
+                snprintf(audio_info, sizeof(audio_info), "%d", state->vi.channels);
+                shout_set_audio_info (stream->shout, SHOUT_AI_CHANNELS, audio_info);
+                failed = 0;
+            } while (0);
 
-                    snprintf(audio_info, sizeof(audio_info), "%ld", state->vi.rate);
-                    shout_set_audio_info (stream->shout, SHOUT_AI_SAMPLERATE, audio_info);
-
-                    snprintf(audio_info, sizeof(audio_info), "%d", state->vi.channels);
-                    shout_set_audio_info (stream->shout, SHOUT_AI_CHANNELS, audio_info);
-                    failed = 0;
-                }
-                while (0);
-                if (failed)
-                {
-                    _output_connection_close (mod);
-                    return;
-                }
-            }
-            if ((shouterr = shout_open(stream->shout)) == SHOUTERR_SUCCESS)
+            if (failed)
             {
-                LOG_INFO3("Connected to server: %s:%d%s",
-                        shout_get_host(stream->shout), shout_get_port(stream->shout), shout_get_mount(stream->shout));
-                stream->connected = 1;
-                stream->reconnect_count = 0;
-                mod->need_headers = 1;
+                _output_connection_close (mod);
                 return;
             }
-            if (shouterr == SHOUTERR_PENDING)
-            {
-                if (now - stream->restart_time > SHOUT_TIMEOUT)
-                {
-                    LOG_ERROR3("Terminating connection to %s:%d%s",
-                            shout_get_host(stream->shout), shout_get_port(stream->shout),
-                            shout_get_mount(stream->shout));
-                    LOG_ERROR1("no reply came in %d seconds", SHOUT_TIMEOUT);
-                    _output_connection_close (mod);
-                }
-                /* ok, we just need to come back to this connection later */
-            }
-            else
-            {
-                LOG_ERROR4("Failed to connect to %s:%d%s (%s)",
-                        shout_get_host(stream->shout), shout_get_port(stream->shout),
-                        shout_get_mount(stream->shout), shout_get_error(stream->shout));
-                _output_connection_close (mod);
-            }
+            shout_open(stream->shout);
         }
+        else
+            return;
+    }
+    shouterr = shout_get_connected (stream->shout);
+    if (shouterr == SHOUTERR_CONNECTED)
+    {
+        LOG_INFO3("Connected to server: %s:%d%s",
+                shout_get_host (stream->shout), shout_get_port (stream->shout),
+                shout_get_mount (stream->shout));
+        stream->connected = 1;
+        stream->reconnect_count = 0;
+        mod->need_headers = 1;
         return;
     }
-    LOG_INFO1 ("%d reconnect attempts, will keep re-trying", stream->reconnect_count);
+    if (shouterr != SHOUTERR_UNCONNECTED)
+    {
+        if (now - stream->restart_time > SHOUT_TIMEOUT)
+        {
+            LOG_ERROR3("Terminating connection to %s:%d%s",
+                    shout_get_host(stream->shout), shout_get_port(stream->shout),
+                    shout_get_mount(stream->shout));
+            LOG_ERROR1("no reply came in %d seconds", SHOUT_TIMEOUT);
+            _output_connection_close (mod);
+        }
+        /* ok, we just need to come back to this connection later */
+    }
+    else
+    {
+        LOG_ERROR4("Failed to connect to %s:%d%s (%s)",
+                shout_get_host(stream->shout), shout_get_port(stream->shout),
+                shout_get_mount(stream->shout), shout_get_error(stream->shout));
+        _output_connection_close (mod);
+    }
 }
 
 
@@ -192,7 +188,8 @@ static int shout_audio_pageout (struct output_module *mod, ogg_page *page)
 int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned samples)
 {
     struct output_shout_state *stream = mod->specific;
-    check_shout_connected (mod);
+    if (stream->connected == 0)
+        check_shout_connected (mod);
     if (stream->connected)
     {
         int send_it = 1;
@@ -225,11 +222,15 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
             stream->prev_page_granulepos = 0;
             stream->prev_packet_granulepos = 0;
 
-            while (ogg_stream_flush (&mod->os, &page) > 0)
+            while (send_it && ogg_stream_flush (&mod->os, &page) > 0)
             {
-                if (send_it && shout_send (stream->shout, &page, 1) != SHOUTERR_SUCCESS)
-                {
+                if (shout_send_raw (stream->shout, page.header, page.header_len) < 0)
                     send_it = 0;
+                if (send_it && shout_send_raw (stream->shout, page.body, page.body_len) < 0)
+                    send_it = 0;
+
+                if (send_it == 0)
+                {
                     LOG_ERROR4("Failed to write headers to %s:%d%s (%s)",
                             shout_get_host (stream->shout), shout_get_port (stream->shout),
                             shout_get_mount (stream->shout), shout_get_error (stream->shout));
@@ -249,9 +250,13 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
 
         while (shout_audio_pageout (mod, &page) > 0)
         {
-            if (send_it && shout_send (stream->shout, &page, 1) != SHOUTERR_SUCCESS)
-            {
+            if (shout_send_raw (stream->shout, page.header, page.header_len) < 0)
                 send_it = 0;
+            if (send_it && shout_send_raw (stream->shout, page.body, page.body_len) < 0)
+                send_it = 0;
+
+            if (send_it == 0 || shout_queuelen(stream->shout) > 65535)
+            {
                 LOG_ERROR4("Failed to write to %s:%d%s (%s)",
                         shout_get_host (stream->shout), shout_get_port (stream->shout),
                         shout_get_mount (stream->shout), shout_get_error (stream->shout));
