@@ -1,11 +1,24 @@
 <div id='locations'>
-	<a href='/about/'		title='About us'>About</a> |
-	<a href='/codecs/'		title='Our multimedia codecs'>Codecs</a> |
-	<a href='/tools/'		title='Tools we’ve written'>Tools</a> |
-	<a href='/lists/'		title='Read or subscribe to one of our mailing lists'>Mail</a> |
-	<a href='/irc/'			title='Visit us on IRC'>IRC</a> |
-	<a href='/subversion/'	title='Check out what we’re working on'>SVN</a> |
-	<a href='/contact/'		title='E-mail us'>Contact</a>
+	<a href='/about/'
+	   title='About us'>About</a> |
+	<a href='/donate/'
+	   title='Give us money'>Donate</a> |
+	<a href='/codecs/'
+	   title='Our multimedia codecs'>Codecs</a> |
+	<a href='/tools/'
+	   title='Tools we’ve written'>Tools</a> |
+	<a href='/lists/'
+	   title='Read or subscribe to one of our mailing lists'>Mail</a> |
+	<a href='/irc/'
+	   title='Chat with us and our users'>IRC</a> |
+	<a href='/subversion/'
+	   title='Check out what we’re working on'>SVN</a> |
+	<a href='http://bugs.xiph.org/'
+	   title='Report a bug'>Bugs</a> |
+	<a href='http://wiki.xiph.org/'
+	   title='Read and post notes about Xiph-related things'>Wiki</a> |
+	<a href='/contact/'
+	   title='E-mail us'>Contact</a> 
 </div>
 
 <div id='copyright'>

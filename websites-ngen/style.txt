@@ -20,6 +20,11 @@ A www.xiph.org style guide
 *	For the love of all that’s holy, leave no space between a question mark and its
 	preceding sentence.
 
+*	(not sure if I want this one in stone or not) Prefer verbs in URLs to adjectives when
+	possible. For example, prefer "/speex/compare/" to "/speex/comparison/". This ought to be
+	done with care; "/foobar/document/" is plain silly as it invites the user to actually document
+	our stuff, rather than read documentation.
+
 Open Questions
 --------------
 *	Tone: How should we write? I’d like to display a visible sense of humor on the site.

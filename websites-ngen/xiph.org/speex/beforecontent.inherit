@@ -1,14 +1,14 @@
 <!-- Working around faithfully reproduced whitespace-sensitive bugs -->
 <div id='sidebar'>
-<ul><li class='first'><a href='/'>Xiph.Org Home</a></li></ul>
 <ul
-><li class='first'><a href='/speex/'>Home</a></li
+><li><a href='/'>Xiph.Org Home</a></li
+><li class='first'><a href='/speex/'>Speex Home</a></li
 ><li><a href='/speex/news/'>News</a></li
 ><li><a href='/speex/compare/'>Compare</a></li
 ><li><a href='/speex/samples/'>Samples</a></li
 ><li><a href='/speex/download/'>Download</a></li
 ><li><a href='/speex/doc/'>Documentation</a></li
-><li><a href='/speex/todo/'>Roadmap</a></li
+><li><a href='/speex/roadmap/'>Roadmap</a></li
 ><li><a href='/speex/users/'>Users</a></li></ul>
 </div>
 
