@@ -3,7 +3,7 @@ AM_CONFIG_HEADER(config.h)
 
 ICES_MAJOR=0
 ICES_MINOR=2
-ICES_MICRO=1
+ICES_MICRO=2
 
 dnl Check to see if ICES_SPECIAL is overridden on commandline
 if test -z "$ICES_SPECIAL" -a -d ${srcdir}/CVS
