@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.23 2001/08/23 01:15:46 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.24 2001/08/23 01:26:42 kcarnold Exp $
 
  ********************************************************************/
 
@@ -113,13 +113,13 @@ void ReadStdConfigs (Option_t opts[])
   char *homedir = getenv("HOME");
 
   /* Read config from files in same order as original parser */
+  ReadConfig (opts, "/etc/ogg123rc");
   if (homedir && strlen(homedir) < FILENAME_MAX - 10) {
     /* Try ~/.ogg123 */
     strncpy (filename, homedir, FILENAME_MAX);
     strcat (filename, "/.ogg123rc");
     ReadConfig (opts, filename);
   }
-  ReadConfig (opts, "/etc/ogg123rc");
 }
 /* /configuration interface */
 
