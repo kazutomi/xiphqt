@@ -62,6 +62,7 @@ def main(argv):
     # Sanity check
     if not config.has_option("general","mountpoint"):
         print "Error: Neuros mountpoint not set with -m and not present in config file."
+        sys.exit(1)
 
     try:
         myNeuros = Neuros(config.get("general", "mountpoint"))
