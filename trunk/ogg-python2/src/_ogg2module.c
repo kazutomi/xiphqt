@@ -12,10 +12,12 @@
 #include "pyoggpage.h"
 
 static PyMethodDef Ogg_methods[] = {
-  {"OggStreamState", PyOggStreamState_New, 
-   METH_VARARGS, PyOggStreamState_Doc},
   {"OggPackBuff", PyOggPackBuffer_New,
    METH_VARARGS, PyOggPackBuffer_Doc},
+  {"OggPackBuffB", PyOggPackBuffer_NewB,
+   METH_VARARGS, PyOggPackBuffer_Doc},
+  {"OggStreamState", PyOggStreamState_New, 
+   METH_VARARGS, PyOggStreamState_Doc},
   {"OggSyncState", PyOggSyncState_New,
    METH_VARARGS, PyOggSyncState_Doc},
   {NULL, NULL}
