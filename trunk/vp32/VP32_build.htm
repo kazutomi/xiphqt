@@ -28,25 +28,22 @@ with proper configurations are required: </P>
 <LI>Macro File for Microsoft Macro Assembler for Intel&reg; Streaming SIMD
 Extensions “iaxmm.inc”. Its available at: <A HREF="http://developer.intel.com/vtune/macropak/download.htm">http://developer.intel.com/vtune/macropak/download.htm</A>)</LI>
 
-<LI>QuickTime for Windows SDK version 4.0 . Its available</LI>
-
-<P><BR>
-<A HREF="http://developer.apple.com/quicktime">http://developer.apple.com/quicktime</A></P>
+<LI>QuickTime for Windows SDK version 4.0 . Its available from <A HREF="http://developer.apple.com/quicktime">http://developer.apple.com/quicktime</A></LI>
 </OL>
 
 <P>Once the system has been configured :<BR>
 <BR>
 </P>
 
+<UL>
 <LI>open the workspace \vp32\vp32.dsw using Microsoft Visual Studio&nbsp;<BR>
-<BR>
 </LI>
 
 <LI>select the video for windows codec project and then project\build&nbsp;<BR>
-<BR>
 </LI>
 
 <LI>select the quicktime codec and then project\build</LI>
+</UL>
 
 <P><BR>
 <B><FONT SIZE=+1>Notes: <BR>
@@ -62,7 +59,7 @@ with default optimization settings.</FONT> <BR>
 <BR>
 </LI>
 
-<LI><B>Microsoft Visual Studio 6.0 Service <BR>
+<LI><B>Microsoft Visual Studio 6.0 Service Pack 4<BR>
 </B>The installation of the Service Pack is required by the installation
 of Microsoft Visual C++ Processor Pack (VCPP). The SP4 provides the support
 to view the MMX and XMM registers in debug window. <BR>
@@ -70,7 +67,7 @@ to view the MMX and XMM registers in debug window. <BR>
 </LI>
 
 <LI><B>Assemblers <BR>
-</B>Microsoft now includes the MASM complier version 6.15, ML.exe and H2inc.exe,
+</B>Microsoft now includes the MASM compiler version 6.15, ML.exe and H2inc.exe,
 as part of the processor pack, so a separate installation of MASM is not
 required. However, the macro file for Intel&reg; Streaming SIMD Extensions
 is required to compile assembly files( *.asm ) using SSE instructions.
@@ -79,29 +76,31 @@ is required to compile assembly files( *.asm ) using SSE instructions.
 </LI>
 
 <LI><B>Include Path for the macro file <BR>
-</B>The path to the file of “iaxmm.inc” should add into the settings of
-Visual studio through “tools-&gt;options-&gt;directories-&gt;include” <BR>
+</B>The path to “iaxmm.inc” should be added to the settings of Visual studio
+through “tools-&gt;options-&gt;directories-&gt;include” <BR>
 <BR>
 </LI>
 
-<LI><B>Executable, Include and Lib Path for the quicktime codec must be
+<LI><B>Executable, Include and Lib Paths for the quicktime codec must be
 set correctly in Visual Studio <BR>
 </B>The path to the quicktime sdk cincludes and component includes directory
-should be add into the settings of Visual studio through “tools-&gt;options-&gt;directories-&gt;include”
-, the path to the quicktime directory libraries should be added through
+should be added to the settings of Visual studio through “tools-&gt;options-&gt;directories-&gt;include”
+, the path to the quicktime libraries directory should be added through
 “tools-&gt;options-&gt;directories-&gt;libraries”, and&nbsp; the path to
 the quicktime tools directory should be added through “tools-&gt;options-&gt;directories-&gt;executables”
 <BR>
 <BR>
 </LI>
 
-<LI><B>resource include file must be setup correctly for building the quicktime
-codec&nbsp; <BR>
-</B><I>NT or Win2K</I> add a new environment variable ( to your autoexec.bat
+<LI><B>resource include files must be setup correctly for building the
+quicktime codec&nbsp; <BR>
+</B><I>NT or Win2K</I>: add a new environment variable ( to your autoexec.bat
 on win98 or ME or to your system environment variables on NT, or 2000 :<BR>
-&nbsp; Rincludes = C:\qtwsdk\rincludes ( or whatever)&nbsp; <BR>
-<I>Other </I>add the following to the custom build line of dxlqt_codec.r<BR>
--i c:\qtwsdk\rincludes (or whatever) <BR>
+&nbsp; Rincludes = C:\qtwsdk\rincludes ( or wherever you have the rincludes
+directory of the QuickTime SDK )&nbsp; <BR>
+<I>Other</I>:<I> </I>add the following to the custom build line of dxlqt_codec.r<BR>
+-i c:\qtwsdk\rincludes ( or wherever you have the rincludes directory of
+the QuickTime SDK ) <BR>
 <BR>
 </LI>
 </UL>
@@ -111,33 +110,59 @@ on win98 or ME or to your system environment variables on NT, or 2000 :<BR>
 
 <H1><A NAME="_Building_VP3_Code"></A>Building VP3 Code Modules on the MAC</H1>
 
-<P><FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
-for OS 9 and Below:</FONT> </P>
+<P><FONT SIZE=+1>The Requirements for Building On2 VP3.2 Libraries on MacOS
+9.1 and Below:</FONT> </P>
 
+<UL>
+<LI>You must use Codewarrior 5.3 or higher to build the libraries. </LI>
+
+<LI>You cannot build the VP3.2 libraries in Codewarrior 6.x.</LI>
+
+<LI>In Control Panels, Internet, Advanced, File&nbsp;Mappings:&nbsp;&nbsp;Need
+to add entries for .s and .ash file extensions mapping both to TEXT file
+type, CWIE&nbsp;Creator. </LI>
+</UL>
+
+<P><FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
+for MacOS 9.1 and Below:</FONT> </P>
+<UL>
 <LI>Codewarrior 5.3</LI>
 
 <LI>Universal Interfaces 3.3.2 or higher.</LI>
+</UL>
 
 <P><BR>
 <FONT SIZE=+1>The Requirements for Building On2 VP3.2 QuickTime Component
-for OS X:</FONT> </P>
+for MacOS X:</FONT> </P>
 
+<UL>
 <LI>Codewarrior 6, patched to 6.2.</LI>
 
 <LI>Universal Interfaces 3.4b10 or higher. (the project's access path for
 Universal Interfaces points at Universal3.4 inside CW6's MacOS Support
 folder)</LI>
+</UL>
 
 <P><BR>
 <FONT SIZE=+1>Once the system has been configured :</FONT> </P>
 
-<LI>open the workspace \vp32\vp32.mcp using CodeWarrior</LI>
+<UL>
+<LI>open the project \vp32\vp32.mcp using CodeWarrior</LI>
 
-<LI>select the vp32 project and then build the library</LI>
+<LI>select the vp32 target and then build the library</LI>
 
-<LI>open the workspace file \vp32\Codecs\quicktime\mac\VP3QTCodec.CW53.mcp</LI>
+<LI>open the project file \vp32\Codecs\quicktime\mac\VP3QTCodec.CW53.mcp</LI>
 
-<LI>select the quicktime codec and then build</LI>
+<LI>select the quicktime codec and then build<BR>
+</LI>
+</UL>
+
+<P><B><FONT SIZE=+1>Notes: </FONT></B></P>
+
+<UL>
+<LI>When testing on MacOS 8.x and 9.x, using Reinstaller to install the
+component will allow you to test the component without rebooting.</LI>
+</UL>
 
 </BODY>
 </HTML>
