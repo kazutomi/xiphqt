@@ -39,7 +39,7 @@ PyTypeObject PyOggPage_Type = {
   PyOggPage_Dealloc,	/* (destructor) */
   0,			/* (printfunc) */ 
   PyOggPage_Getattr,	/* (getattrfunc) */
-  0, 			/* (setattrfunc) */ /* disabled PyOggPage_Setattr, */
+  PyOggPage_Setattr, 	/* (setattrfunc) */
   0, 			/* (cmpfunc) */ 
   PyOggPage_Repr,	/* (reprfunc) */ 
   
@@ -58,14 +58,14 @@ PyTypeObject PyOggPage_Type = {
 };
 
 static PyMethodDef PyOggPage_methods[] = {
-  {"bos", NULL, NULL, NULL},
-  {"continued", NULL, NULL, NULL},
-  {"eos", NULL, NULL, NULL},
-  {"granulepos", NULL, NULL, NULL},
-  {"packets", NULL, NULL, NULL},
-  {"pageno", NULL, NULL, NULL},
-  {"serialno", NULL, NULL, NULL},
-  {"version", NULL, NULL, NULL},
+  {"bos", NULL},
+  {"continued", NULL},
+  {"eos", NULL},
+  {"granulepos", NULL},
+  {"packets", NULL},
+  {"pageno", NULL},
+  {"serialno", NULL},
+  {"version", NULL},
   {NULL, NULL}
 };
 
@@ -140,121 +140,74 @@ PyOggPage_Getattr(PyObject *self, char *name) {
   return Py_FindMethod(PyOggPage_methods, self, name);
 }
 
-/* These are all horribly broken. Needs to be upgraded for libogg2. */
-
 static int
 PyOggPage_Setattr(PyObject *self, char *name, PyObject *value)
 {
-  char *head = (char *) PyOggPage_AsOggPage(self)->header;
-
+  if (((PyOggPageObject *) self)->valid_flag == 0) {
+    PyErr_SetString(PyOggPage_Error, "this page is no longer usable.");
+    return -1;
+  }
   if (strcmp(name, "bos") == 0) {
-    ogg_int64_t v;
-
-    if (!arg_to_int64(value, &v))
+    int v;
+    if (!arg_to_int32(value, &v)) {
+      PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
-    if (!v) {
-      if (head[5] & 0x02) {
-        head[5] = head[5] & 0xFD;
-        ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-      }
-    } else {
-      if (!(head[5] & 0x02)) {
-        head[5] = head[5] | 0x02;
-        ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-      }
     }
+    ogg_page_set_bos(PyOggPage_AsOggPage(self), v);
     return 0;
   }
-
   if (strcmp(name, "continued") == 0) {
-    ogg_int64_t v;
-
-    if (!arg_to_int64(value, &v))
+    int v;
+    if (!arg_to_int32(value, &v)) {
+      PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
-    if (!v) {
-      if (head[5] & 0x01) {
-        head[5] = head[5] & 0xFE;
-        ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-      }
-    } else {
-      if (!(head[5] & 0x01)) {
-        head[5] = head[5] | 0x01;
-        ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-      }
     }
+    ogg_page_set_continued(PyOggPage_AsOggPage(self), v);
     return 0;
   }
- 
   if (strcmp(name, "eos") == 0) {
-    ogg_int64_t v;
-
-    if (!arg_to_int64(value, &v))
+    int v;
+    if (!arg_to_int32(value, &v)) {
+      PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
-    if (!v) {
-      if (head[5] & 0x04) {
-        head[5] = head[5] & 0xFB;
-        ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-      }
-    } else {
-      if (!(head[5] & 0x04)) {
-        head[5] = head[5] | 0x04;
-        ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-      }
     }
+    ogg_page_set_eos(PyOggPage_AsOggPage(self), v);
     return 0;
   }
-
   if (strcmp(name, "granulepos") == 0) {
-    int i;
     ogg_int64_t v;
-    if (!arg_to_int64(value, &v))
+    if (!arg_to_int64(value, &v)) {
+      PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
-    for (i=6; i<14; i++) {
-      head[i] = v & 0xff;
-      v >>= 8;
     }
-    ogg_page_checksum_set(PyOggPage_AsOggPage(self));
+    ogg_page_set_granulepos(PyOggPage_AsOggPage(self), v);
     return 0;
   }
-
   if (strcmp(name, "pageno") == 0) {
-    int i;
-    ogg_int32_t v;
-    if (!arg_to_int32(value, &v))
+    ogg_uint32_t v;
+    if (!arg_to_int32(value, &v)) {
+      PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
-    for (i=18; i<22; i++) {
-      head[i] = v & 0xff;
-      v >>= 8;
     }
-    ogg_page_checksum_set(PyOggPage_AsOggPage(self));
+    ogg_page_set_pageno(PyOggPage_AsOggPage(self), v);
     return 0;
   }
-
   if (strcmp(name, "serialno") == 0) {
-    int i;
-    ogg_int32_t v;
-    if (!arg_to_int32(value, &v))
+    ogg_uint32_t v;
+    if (!arg_to_int32(value, &v)) {
+      PyErr_SetString(PyExc_ValueError, "value must be type INT");  
       return -1;
-    for (i=14; i<18; i++) {
-      head[i] = v & 0xff;
-      v >>= 8;
     }
-    ogg_page_checksum_set(PyOggPage_AsOggPage(self));
+    ogg_page_set_serialno(PyOggPage_AsOggPage(self), v);
     return 0;
   }
-
   if (strcmp(name, "version") == 0) {
-    int i;
-    ogg_int32_t v;
-    if (!arg_to_int32(value, &v))
-      return -1;
-    if ( v<0 | v>255 ) {
-      PyErr_SetString(PyExc_ValueError, "version must be between 0 and 255");  
-      return -1;
-    }
-    head[4] = v;
-    ogg_page_checksum_set(PyOggPage_AsOggPage(self));
-    return 0;
+    PyErr_SetString(PyExc_ValueError, "version is read-only");  
+    return -1;
+  }
+  if (strcmp(name, "packets") == 0) {
+    PyErr_SetString(PyExc_ValueError, "packets is read-only, use OggStreamState");  
+    return -1;
   }
   PyErr_SetString(PyExc_AttributeError, "OggPage object has no such attribute");  
   return -1;

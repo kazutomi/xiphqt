@@ -57,10 +57,10 @@ PyTypeObject PyOggPacket_Type = {
 };
 
 static PyMethodDef PyOggPacket_methods[] = {
-  {"bos", NULL, NULL},
-  {"eos", NULL, NULL},
-  {"granulepos", NULL, NULL},
-  {"packetno", NULL, NULL},
+  {"bos", NULL},
+  {"eos", NULL},
+  {"granulepos", NULL},
+  {"packetno", NULL},
   {NULL, NULL}
 };
 

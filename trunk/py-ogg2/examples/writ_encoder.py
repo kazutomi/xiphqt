@@ -1,5 +1,5 @@
 '''
-  function: Ogg Writ reference encoder
+  function: Ogg Writ 1.2 reference encoder
   last mod: $Id: writ_encoder.py,v 1.2 2004/02/24 06:31:49 arc Exp $
 
 This is an example for how py-ogg2 can be used to rapidly design a new 
@@ -69,10 +69,7 @@ class OggStream :
          packetno = self.packet.packetno
          self.os.packetin(self.packet)
          if self.pn != 2 :
-            print "Flushing: %d" % (packetno)
             self.flush()
-         else : 
-            print "Skipping: %d" % (packetno)
       self.packet = packet
       self.pn = self.pn + 1
 
@@ -83,9 +80,7 @@ class OggStream :
          output = '.'
          while len(output)!= 0 :
             output = self.oy.read(4096)
-            print type(output), len(output)
             self.fd.write(output)
-      else : print 'None!'
 
    def close(self) :
       self.packet.eos = 1
@@ -129,8 +124,8 @@ os = OggStream()
 # Start with Header 0
 bp.write(0,8)				# header packet 0
 bp.write(1953067639,32)			# "writ"
-bp.write(0,8)				# version = 0
-bp.write(2,8)				# subversion = 0
+bp.write(1,8)				# version = 1
+bp.write(2,8)				# subversion = 2
 bp.write(gnum,32)			# granulerate_numerator
 bp.write(gden,32)			# granulerate_denominator
 os.packetin(bp.export())
