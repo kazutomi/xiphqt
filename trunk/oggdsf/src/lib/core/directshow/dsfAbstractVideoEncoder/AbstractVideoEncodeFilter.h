@@ -48,6 +48,7 @@ public:
 	enum eVideoFormat {
 		NONE = 0,
 		THEORA = 100,
+		DIRAC = 101,
 		OTHER_VIDEO = 2000
 	};
 

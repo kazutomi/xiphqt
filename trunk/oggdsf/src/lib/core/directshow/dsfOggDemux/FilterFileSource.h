@@ -39,7 +39,7 @@ class OGG_DEMUX_API FilterFileSource
 {
 public:
 	FilterFileSource(void);
-	~FilterFileSource(void);
+	virtual ~FilterFileSource(void);
 
 	//IFilterDataSource Interface
 	virtual unsigned long seek(unsigned long inPos);

@@ -37,6 +37,7 @@ FilterFileSource::FilterFileSource(void)
 
 FilterFileSource::~FilterFileSource(void)
 {
+	mSourceFile.close();
 }
 
 unsigned long FilterFileSource::seek(unsigned long inPos) {
