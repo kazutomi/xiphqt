@@ -24,9 +24,3 @@
 #DEFAULT (echo ""; id; echo %s; date; cat) >> $CVSROOT/CVSROOT/commitlog
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
-
-# email the logs
-DEFAULT $CVSROOT/CVSROOT/log_accum.pl %s
-
-# notify irc/stats bot
-ALL $CVSROOT/CVSROOT/ciabot_cvs.sh %{sVv}

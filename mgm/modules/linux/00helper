@@ -1,8 +1,7 @@
 # -*-Perl-*-
 
-# this module is a hack; it isn't a widget builder.  It sits in the
-# background and reads /proc/stat, /proc/net/dev and
-# /proc/net/wireless for other modules to reduce opens/closes.
+# this module is a hack; it isn't a widget builder.  It sits in the background
+# and reads /proc/stat for other modules to reduce opens/closes.
 
 # It defines an init method that installs the /proc/stat listener,
 # then marks itself 'inactive' so that mgm doesn't try to call _run,
@@ -12,7 +11,7 @@
 
 
 package MGMmodule::helperST;
-use vars qw(%proc %net %wi $lastmod $active $active_if $wi_count $wi_active);
+use vars qw(%proc %net $lastmod $active $active_if);
 use IO::Seekable;
 
 sub module_init{
@@ -26,11 +25,7 @@ sub module_init{
     
     $lastmod=0;
     $active=0;
-    $wi_active=0;
     if(open(PROC,"/proc/stat")){
-	if(open(WI,"/proc/net/wireless")){
-	    $wi_active=1;
-	}
 	if(open(NET,"/proc/net/dev")){
 	    $active=1;
 	    $this->module_update;
@@ -48,34 +43,18 @@ sub module_instance{
 sub module_update{
     my$data;
     my$netd;
-    my$wid;
     sysseek PROC, 0, SEEK_SET;
     sysseek NET, 0, SEEK_SET;
     sysread NET,$netd,1024;
     sysread PROC,$data,4096;
-    if($wi_active){
-	sysseek WI, 0, SEEK_SET;
-	sysread WI,$wid,4096;
-	$wi_count=0;
-	undef %wi;
-	map{
-	    my$pos=rindex $_, ":";
-	    if($pos>0){
-		my$key=substr $_,0,$pos;
-		$key=~s/^\s*(\S+)\s*/$1/;
-		$wi{$key}=substr $_, $pos+1;
-		$wi_count++;
-	    }
-	} split "\n", $wid;
-    }
-	
+
     $active_if=0;
     undef%net;
     map{
 	my$pos=rindex $_, ":";
 	if($pos>0){
 	    my$key=substr $_,0,$pos;
-	    $key=~s/^\s*(\S+)\s*/$1/;
+	    $key=~s/^\s*(\S+)/$1/;
 	    $net{$key}=substr $_, $pos+1;
 	    $active_if++;
 	}

@@ -306,7 +306,7 @@ sub geometries{
     foreach my $key (@ordered){
 	my $mod=$instances{$key};
 
-	if(defined($mod) && &mplace($mod)){
+	if(defined($mod)){
 	    
 	    my $active=&moption($mod,"active");
 	    my $pad=&moption($mod,"widgetpad");
@@ -319,7 +319,7 @@ sub geometries{
 		    $ladj=&max(1,&max($ladj,&moption($mod,"scalelenadj")));
 		    $wadj+=&max(1,&moption($mod,"scalewidadj")); 
 		}
-
+		
 		if($stack eq 'vertical'){
 		    my$tempx=&moption($mod,'minx')+$pad*2;
 		    $minx=$tempx if ($minx<$tempx);
@@ -368,7 +368,7 @@ sub build_and_run{
     my$pos=0;
     foreach my $key (@ordered){
 	my $mod=$instances{$key};
-	if(defined($mod) && mplace($mod)){
+	if(defined($mod)){
 	    my $pad=&moption($mod,"widgetpad");
 	    my $justify=&moption($mod,"scalejustify");
 	    my$x;
@@ -471,9 +471,7 @@ sub build_and_run{
 	    my$ret=$mod->{'widget'};
 	    if(defined($ret)){
 		$ret->place('-x'=>$mod->{'placex'},
-			    '-y'=>$mod->{'placey'},-anchor=>'nw')
-		    if(mplace($mod));
-
+			    '-y'=>$mod->{'placey'},-anchor=>'nw');
 		my$refresh=$ret->optionGet("scalerefresh","");
 		$ret->repeat($refresh,sub{$mod->module_update})
 		    if($refresh && ref($mod)->can('module_update'));
@@ -576,13 +574,4 @@ sub reinstance{
 sub moption{
     my($mod,$option)=@_;
     $mod->{"widget"}->optionGet($option,"");
-}
-
-sub mplace{
-    my($mod)=@_;
-    if(ref($mod)->can('module_place_p')){
-	$mod->module_place_p();
-    }else{
-	1;
-    }
 }

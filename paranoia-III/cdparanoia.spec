@@ -1,19 +1,18 @@
-%define ver	9.8
+%define ver	9.7
 %define realver	alpha%{ver}
 
-Name: cdparanoia
-Version: %{realver}
-Release: 7
-License: GPL
-Group: Applications/Multimedia
-Source: http://www.xiph.org/paranoia/download/%{name}-III-%{realver}.src.tgz 
-Url: http://www.xiph.org/paranoia/index.html
-BuildRoot: %{_tmppath}/cdparanoia-%{version}-root
-Requires: cdparanoia-libs = %{version}-%{release}
-Obsoletes: cdparanoia-III
 Summary: A Compact Disc Digital Audio (CDDA) extraction tool (or ripper).
+Name: cdparanoia-III
+Version: %{realver}
+Release: 3
+Copyright: GPL
+Group: Applications/Multimedia
+Source: http://www.xiph.org/paranoia/download/%{name}-%{realver}.src.tgz 
+Url: http://www.xiph.org/paranoia/index.html
+BuildRoot: /var/tmp/cdparanoia-root
+Obsoletes: cdparanoia
 
-%description 
+%description
 Cdparanoia (Paranoia III) reads digital audio directly from a CD, then
 writes the data to a file or pipe in WAV, AIFC or raw 16 bit linear
 PCM format.  Cdparanoia doesn't contain any extra features (like the ones
@@ -23,121 +22,63 @@ drives prone to misalignment, frame jitter and loss of streaming during
 atomic reads.  Cdparanoia is also good at reading and repairing data from
 damaged CDs.
 
-%package -n cdparanoia-devel
+%package devel
 Summary: Development tools for libcdda_paranoia (Paranoia III).
 Group: Development/Libraries
-Requires: cdparanoia-libs = %{version}-%{release}
-Obsoletes: cdparanoia-devel
 
-%description -n cdparanoia-devel
-The cdparanoia-devel package contains the static libraries and header
+%description devel
+The cdparanoia-devel package containts the static libraries and header
 files needed for developing applications to read CD Digital Audio disks.
 
-%package -n cdparanoia-libs
-Summary: Libraries for libcdda_paranoia (Paranoia III).
-Group: Development/Libraries
-
-%description -n cdparanoia-libs
-The cdparanoia-libs package contains the dynamic libraries needed for
-applications which read CD Digital Audio disks.
-
 %prep
-%setup -q -n %{name}-III-%{realver}
+%setup -q
 
 %build
-%configure --includedir=%{_includedir}/cdda
+rm -rf $RPM_BUILD_ROOT
+CFLAGS="${RPM_OPT_FLAGS}" ./configure --prefix=/usr
 make  
 
 %install
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 
-install -d $RPM_BUILD_ROOT%{_bindir}
-install -d $RPM_BUILD_ROOT%{_includedir}/cdda
-install -d $RPM_BUILD_ROOT%{_libdir}
-install -d $RPM_BUILD_ROOT%{_mandir}/man1
-install -m 0755 -s cdparanoia $RPM_BUILD_ROOT%{_bindir}
-install -m 0644 cdparanoia.1 $RPM_BUILD_ROOT%{_mandir}/man1/ 
-install -m 0644 utils.h paranoia/cdda_paranoia.h interface/cdda_interface.h \
-	$RPM_BUILD_ROOT%{_includedir}/cdda
+install -d $RPM_BUILD_ROOT/usr/{include,lib,bin,man/man1}
+install -m 0755 -s cdparanoia $RPM_BUILD_ROOT/usr/bin/
+install -m 0644 cdparanoia.1 $RPM_BUILD_ROOT/usr/man/man1/ 
+install -m 0644 paranoia/cdda_paranoia.h $RPM_BUILD_ROOT/usr/include
 install -m 0755 paranoia/libcdda_paranoia.so.0.%{ver} \
-	interface/libcdda_interface.so.0.%{ver} \
-	$RPM_BUILD_ROOT%{_libdir}
-install -m 0755 paranoia/libcdda_paranoia.a interface/libcdda_interface.a \
-	$RPM_BUILD_ROOT%{_libdir}
+	$RPM_BUILD_ROOT/usr/lib
+install -m 0755 paranoia/libcdda_paranoia.a $RPM_BUILD_ROOT/usr/lib
+install -m 0644 interface/cdda_interface.h $RPM_BUILD_ROOT/usr/include
+install -m 0755 interface/libcdda_interface.so.0.%{ver} \
+	$RPM_BUILD_ROOT/usr/lib
+install -m 0755 interface/libcdda_interface.a $RPM_BUILD_ROOT/usr/lib
+gzip -9 $RPM_BUILD_ROOT/usr/man/man1/*
 
-pushd $RPM_BUILD_ROOT%{_libdir}
-ln -s libcdda_paranoia.so.0.%{ver} libcdda_paranoia.so
-ln -s libcdda_interface.so.0.%{ver} libcdda_interface.so
-popd
+%post -p /sbin/ldconfig
 
-%post -n cdparanoia-libs
-/sbin/ldconfig
-
-%postun -n cdparanoia-libs
-if [ "$1" -ge "1" ]; then
-  /sbin/ldconfig
-fi
+%postun -p /sbin/ldconfig
 
 %clean
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 
-%files -n cdparanoia
+%files
 %defattr(-,root,root)
+
 %doc README GPL FAQ.txt
-%{_bindir}/*
-%{_mandir}/man1/*
+/usr/bin/cdparanoia
+/usr/man/man1/cdparanoia.1.gz
+/usr/lib/libcdda_paranoia.so.*
+/usr/lib/libcdda_interface.so.*
 
-%files -n cdparanoia-libs
+%files devel
 %defattr(-,root,root)
-%{_libdir}/*.so*
 
-%files -n cdparanoia-devel
-%defattr(-,root,root)
-%{_includedir}/cdda/*
-%{_libdir}/*.a
+/usr/include/cdda_paranoia.h
+/usr/lib/libcdda_paranoia.a
+/usr/include/cdda_interface.h
+/usr/lib/libcdda_interface.a
 
 %changelog
-* Wed Jan  2 2002 Peter Jones <pjones@redhat.com> alpha9.8-7
-- minor cleanups of $RPM_BUILD_ROOT pruning
-
-* Thu Dec  6 2001 Peter Jones <pjones@redhat.com> alpha9.8-6
-- move includes to %{_includedir}/cdda/
-- add utils.h to %install
-- clean up %install some.
-
-* Sun Nov  4 2001 Peter Jones <pjones@redhat.com> alpha9.8-5
-- make a -libs package which contains the .so files
-- make the cdparanoia dependancy towards that, not -devel
-
-* Thu Aug  2 2001 Peter Jones <pjones@redhat.com>
-- bump the release not to conflict with on in the RH build tree :/
-- reverse devel dependency
-
-* Wed Aug  1 2001 Peter Jones <pjones@redhat.com>
-- fix %post and %postun to only run ldconfig for devel packages
-
-* Wed Jul 18 2001 Crutcher Dunnavant <crutcher@redhat.com>
-- devel now depends on package
-
-* Wed Mar 28 2001 Peter Jones <pjones@redhat.com>
-- 9.8 release.
-
-* Tue Feb 27 2001 Karsten Hopp <karsten@redhat.de>
-- fix spelling error in description
-
-* Thu Dec  7 2000 Crutcher Dunnavant <crutcher@redhat.com>
-- rebuild for new tree
-
-* Fri Jul 21 2000 Trond Eivind Glomsrød <teg@redhat.com>
-- use %%{_tmppath}
-
-* Wed Jul 12 2000 Prospector <bugzilla@redhat.com>
-- automatic rebuild
-
-* Wed Jun 06 2000 Preston Brown <pbrown@redhat.com>
-- revert name change
-- use new rpm macro paths
-
 * Wed Apr 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - Switched spec file from the one used in Red Hat Linux 6.2, which
   also changes the name

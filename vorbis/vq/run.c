@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility main for loading and operating on codebooks
- last mod: $Id: run.c,v 1.15 2001/12/20 01:00:40 segher Exp $
+ last mod: $Id: run.c,v 1.10 2000/05/08 20:49:51 xiphmont Exp $
 
  ********************************************************************/
 
@@ -38,13 +39,13 @@
 
 extern void process_preprocess(codebook **b,char *basename);
 extern void process_postprocess(codebook **b,char *basename);
-extern void process_vector(codebook **b,int *addmul, int inter,float *a,int n);
+extern void process_vector(codebook **b,int *addmul, int inter,double *a,int n);
 extern void process_usage(void);
 
 int main(int argc,char *argv[]){
   char *basename;
-  codebook **b=_ogg_calloc(1,sizeof(codebook *));
-  int *addmul=_ogg_calloc(1,sizeof(int));
+  codebook **b=calloc(1,sizeof(codebook *));
+  int *addmul=calloc(1,sizeof(int));
   int books=0;
   int input=0;
   int interleave=0;
@@ -114,9 +115,9 @@ int main(int argc,char *argv[]){
 	dot=strrchr(basename,'.');
 	if(dot)*dot='\0';
 
-	b=_ogg_realloc(b,sizeof(codebook *)*(books+2));
+	b=realloc(b,sizeof(codebook *)*(books+2));
 	b[books]=codebook_load(name);
-	addmul=_ogg_realloc(addmul,sizeof(int)*(books+1));
+	addmul=realloc(addmul,sizeof(int)*(books+1));
 	addmul[books++]=multp;
 	b[books]=NULL;
       }
@@ -126,7 +127,7 @@ int main(int argc,char *argv[]){
 	int cols;
 	long lines=0;
 	char *line;
-	float *vec;
+	double *vec;
 	FILE *in=fopen(name,"r");
 	if(!in){
 	  fprintf(stderr,"Could not open input file %s\n",name);
@@ -149,7 +150,7 @@ int main(int argc,char *argv[]){
 	    while(*temp==' ')temp++;
 	  }
 	}
-	vec=alloca(cols*sizeof(float));
+	vec=alloca(cols*sizeof(double));
 	while(line){
 	  lines++;
 	  for(j=0;j<cols;j++)
@@ -178,7 +179,7 @@ int main(int argc,char *argv[]){
       int cols;
       char *line;
       long lines=0;
-      float *vec;
+      double *vec;
       if(!input){
 	process_preprocess(b,basename);
 	input++;
@@ -194,7 +195,7 @@ int main(int argc,char *argv[]){
 	  while(*temp==' ')temp++;
 	}
       }
-      vec=alloca(cols*sizeof(float));
+      vec=alloca(cols*sizeof(double));
       while(line){
 	lines++;
 	for(j=0;j<cols;j++)

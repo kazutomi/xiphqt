@@ -21,27 +21,15 @@ sub module_init{
     # at least want to mark the single bar as SMP under 2.0
 
     $lastmod=-1;
-    $numcpus=1;
+    $numcpus=0;
     $statcpus=1;
-    my $countedcpus=0;
-
     if(defined($MGMmodule::helperST::proc{"cpu"}) &&
 	       open(PROC,"</proc/cpuinfo")){
-
-	# in the middle of stable &*@%^@ 2.4, the format of /proc/cpu
-	# changed for NO GOOD FUCKING REASON, at least on PPC.  Take a
-	# reasonable stab at reading both.
-
 	while(<PROC>){
 	    if(m/processor\s*:\s*(\d*)/){
 		$numcpus=$1+1 if ($numcpus<$1+1);
 	    }
-	    if(m/cpu\S*\s*:/){
-		$countedcpus++;
-	    }
 	}
-	$numcpus=$countedcpus if ($numcpus<$countedcpus);
-
 	close PROC;
 	# now check /proc/stat to see how many cpus it reports
 	$this->read_proc;
@@ -111,7 +99,6 @@ sub module_update{
 	    
 	    if($statcpus==1){
 		my$tot=$total[0]-$prevtotal[0];
-
 		if($tot>0){
 		    $vals[0]=100*($load[0]-$prevload[0])/$tot;
 		    $vals[0]=100*$numcpus if $vals[0]>100*$numcpus;
@@ -129,7 +116,6 @@ sub module_update{
 		    }
 		}
 	    }
-
 	    $graph->set(@vals);
 	}
     
@@ -146,10 +132,9 @@ sub read_proc{
     
     # collective cpu entry
     $MGMmodule::helperST::proc{"cpu"}=~m/^(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
-
     $load[0]=$1+$2+$3;
     $total[0]=$load[0]+$4;
-
+    
     for(my$i=0;defined(my$line=$MGMmodule::helperST::proc{"cpu$i"});$i++){
 	$line=~m/^(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
 	# per-cpu entry
@@ -163,5 +148,4 @@ sub destroy{
 }
 
 bless {};
-
 

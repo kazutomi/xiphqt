@@ -65,7 +65,6 @@ sub new{
     $this->{"width"}=$width;
     $this->{"height"}=$height;
     $this->{"num"}=$num;
-    $this->{"value"}=0;
 
     $this->drawit;
     $this;
@@ -85,7 +84,6 @@ sub configure{
     $this->{'above'}->delete('xpmlabel');
     
     $this->drawit;
-    $this->set($this->{'value'});
 }
 
 sub drawit{
@@ -217,8 +215,6 @@ sub drawit{
 sub set{
     my$bar=shift;
     my$per=shift;
-
-    $bar->{'value'}=$per;
     my $orient=$main::orient;
     if($orient eq 'vertical'){
 	$bar->{'above'}->
@@ -323,41 +319,39 @@ sub promptlabel{
     my $orient=$main::orient;
     my $mult;
 
-    if($p->{'scalep'}){
-	($scaleset,$mult)=&scalemod($scaleset);
-	my$label;
-	
-	my($textw,$textl)=&promptsize("$mult$prompt",$scaleset);
-	
-	if($orient eq 'vertical'){
-	    $label=$p->{"widget"}->Canvas(Name=>'scalerange',
-					  -borderwidth=>0,
-					  highlightthickness=>0,
-					  width=>$textw,
-					  height=>$textl,
-					  relief=>'flat')->
-					      place('-x'=>0,'-y'=>2,-anchor=>'nw');
-	    $label->createImage(0,0,
-				-image=>$prompts{"$mult$prompt"},-anchor=>'nw');
-	    $label->createImage(0,$prompts{"$mult$prompt"}->height,
-				-image=>$numbers{"$scaleset"},-anchor=>'nw');
-	}else{
-	    $label=$p->{"widget"}->Canvas(Name=>'scalerange',
-					  -borderwidth=>0,
-					  highlightthickness=>0,
-					  width=>$textl,
-					  height=>$textw,
-					  relief=>'flat')->
-					      place(-relx=>1.0,
-						    '-x'=>-2,'-y'=>0,
-						    -anchor=>'ne');
-	    $label->createImage($numbers{"$scaleset"}->width,0,
-				-image=>$prompts{"$mult$prompt"},-anchor=>'nw');
-	    $label->createImage(0,0,
-				-image=>$numbers{"$scaleset"},-anchor=>'nw');
-	}
-	$label;
+    ($scaleset,$mult)=&scalemod($scaleset);
+    my$label;
+
+    my($textw,$textl)=&promptsize("$mult$prompt",$scaleset);
+
+    if($orient eq 'vertical'){
+	$label=$p->{"widget"}->Canvas(Name=>'scalerange',
+				      -borderwidth=>0,
+				      highlightthickness=>0,
+				      width=>$textw,
+				      height=>$textl,
+				      relief=>'flat')->
+					  place('-x'=>0,'-y'=>2,-anchor=>'nw');
+	$label->createImage(0,0,
+			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
+	$label->createImage(0,$prompts{"$mult$prompt"}->height,
+			    -image=>$numbers{"$scaleset"},-anchor=>'nw');
+    }else{
+	$label=$p->{"widget"}->Canvas(Name=>'scalerange',
+				      -borderwidth=>0,
+				      highlightthickness=>0,
+				      width=>$textl,
+				      height=>$textw,
+				      relief=>'flat')->
+					  place(-relx=>1.0,
+						'-x'=>-2,'-y'=>0,
+						-anchor=>'ne');
+	$label->createImage($numbers{"$scaleset"}->width,0,
+			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
+	$label->createImage(0,0,
+			    -image=>$numbers{"$scaleset"},-anchor=>'nw');
     }
+    $label;
 }
 
 sub new{
@@ -433,77 +427,74 @@ sub drawit{
     
     # a 'graph' consists of a scale, and <n> bars under central control
 
+    my $name=$this->{"name"};
     my $num=$this->{"num"};
-    if($num){
+    my $prompt=$this->{"prompt"};
+    my $fixed=$this->{"fixed"};
 
-	my $name=$this->{"name"};
-	my $prompt=$this->{"prompt"};
-	my $fixed=$this->{"fixed"};
-	
-	my $height=$this->{"height"};
-	my $width=$this->{"width"};
-	my $widget=$this->{"widget"};
+    my $height=$this->{"height"};
+    my $width=$this->{"width"};
+    my $widget=$this->{"widget"};
 
-	$widget->configure(-borderwidth=>0,
-			   highlightthickness=>0,
-			   width=>$width,
-			   height=>$height,
-			   relief=>'flat');
+    $widget->configure(-borderwidth=>0,
+		       highlightthickness=>0,
+		       width=>$width,
+		       height=>$height,
+		       relief=>'flat');
+
+    my $rangesetting=$this->{"rangesetting"};
+    my($dummy,$dummy2,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
+    $this->{"scalew"}=$scalew;
+    $this->{"numlabel"}=$this->promptlabel($rangesetting,$prompt);
+ 
+    my $orient=$main::orient;
+    if($orient eq 'vertical'){
+	$this->drawvscale if($scalew);
+
+	$this->{"barlength"}=$height;
+	my$barwidth=$width-$scalew;
+	my$frame=$this->{"barframe"}=
+	    $widget->Frame(Name=>'bar',
+			   -width=>$barwidth,
+			   -height=>$height,
+			   -borderwidth=>0)->
+			       place('-x'=>$scalew,
+				     '-y'=>0,
+				     '-anchor'=>'nw');
 	
-	my $rangesetting=$this->{"rangesetting"};
-	my($dummy,$dummy2,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
-	$this->{"scalew"}=$scalew;
-	$this->{"numlabel"}=$this->promptlabel($rangesetting,$prompt);
+	$barwidth/=$num;
+	$barwidth=int($barwidth);
+	my$x=0;
+	for(my$i=0;$i<$num;$i++){
+	    $this->{$i}=MGM::Bar->new($frame,$barwidth-1,
+				      $height,
+				      $i)->place('-x'=>$x,'-y'=>0,
+						 '-anchor'=>'nw');
+	    $x+=$barwidth;
+	}
+    }else{
+	$this->drawhscale if($scalew);
+
+	$this->{"barlength"}=$width;
+	my$barwidth=$height-$scalew;
+	my$frame=$this->{"barframe"}=
+	    $widget->Frame(Name=>'bar',
+			   -width=>$width,
+			   -height=>$barwidth,
+			   -borderwidth=>0)->
+			       place('-y'=>$scalew,
+				     '-x'=>0,
+				     -anchor=>'nw');
 	
-	my $orient=$main::orient;
-	if($orient eq 'vertical'){
-	    $this->drawvscale if($scalew);
-	    
-	    $this->{"barlength"}=$height;
-	    my$barwidth=$width-$scalew;
-	    my$frame=$this->{"barframe"}=
-		$widget->Frame(Name=>'bar',
-			       -width=>$barwidth,
-			       -height=>$height,
-			       -borderwidth=>0)->
-				   place('-x'=>$scalew,
-					 '-y'=>0,
-					 '-anchor'=>'nw');
-	    
-	    $barwidth/=$num;
-	    $barwidth=int($barwidth);
-	    my$x=0;
-	    for(my$i=0;$i<$num;$i++){
-		$this->{$i}=MGM::Bar->new($frame,$barwidth-1,
-					  $height,
-					  $i)->place('-x'=>$x,'-y'=>0,
-						     '-anchor'=>'nw');
-		$x+=$barwidth;
-	    }
-	}else{
-	    $this->drawhscale if($scalew);
-	    
-	    $this->{"barlength"}=$width;
-	    my$barwidth=$height-$scalew;
-	    my$frame=$this->{"barframe"}=
-		$widget->Frame(Name=>'bar',
-			       -width=>$width,
-			       -height=>$barwidth,
-			       -borderwidth=>0)->
-				   place('-y'=>$scalew,
-					 '-x'=>0,
-					 -anchor=>'nw');
-	    
-	    $barwidth/=$num;
-	    $barwidth=int($barwidth);
-	    my$y=0;
-	    for(my$i=0;$i<$num;$i++){
-		$this->{$i}=MGM::Bar->new($frame,$width,
-					  $barwidth-1,
-					  $i)->place('-x'=>0,'-y'=>$y,
-						     -anchor=>'nw');
-		$y+=$barwidth;
-	    }
+	$barwidth/=$num;
+	$barwidth=int($barwidth);
+	my$y=0;
+	for(my$i=0;$i<$num;$i++){
+	    $this->{$i}=MGM::Bar->new($frame,$width,
+				      $barwidth-1,
+				      $i)->place('-x'=>0,'-y'=>$y,
+						 -anchor=>'nw');
+	    $y+=$barwidth;
 	}
     }
 }
@@ -703,7 +694,6 @@ sub _newscale{
 
 sub _animate{
     my $this=shift;
-
     $scalep=$this->{"scalep"};
     $scrollp=$this->{"scroll"};
     
@@ -756,84 +746,82 @@ sub set{
     my$this=shift;
     my$num=$this->{"num"};
 
-    if($num){
-	my$length=$this->{"barlength"};
+    my$length=$this->{"barlength"};
+
+    # length is in barlength
+    # current scale setting in rangecurrent
+    # scale 'goal' in rangesetting (may smooth-scroll)
+
+    if($#_>=0){
+	# we have new values incoming.  We need to do full maneuvers
+
+	if($#_!=$num-1){
+	    # might as well.  prevents spurious error printing when 
+	    # something unexpected happens to a module (like a CPU
+	    # disappearing ;-)
+
+	    push @_,$#_+1,map{0}(1..$num); #lazy
+	    $#_=$num-1;
+	}
+
+	# find the largest value for scale adjustment
+	my$metermax=0;
+	map{$metermax=$_ if ($metermax<$_)}(@_, @{$this->{"meter"}},
+					    $this->{"scalemax"});
+	$this->{"scalemax"}=$metermax;
+	my$fixed=$this->{"fixed"};
 	
-	# length is in barlength
-	# current scale setting in rangecurrent
-	# scale 'goal' in rangesetting (may smooth-scroll)
-	
-	if($#_>=0){
-	    # we have new values incoming.  We need to do full maneuvers
-	    
-	    if($#_!=$num-1){
-		# might as well.  prevents spurious error printing when 
-		# something unexpected happens to a module (like a CPU
-		# disappearing ;-)
-		
-		push @_,$#_+1,map{0}(1..$num); #lazy
-		$#_=$num-1;
-	    }
-	    
-	    # find the largest value for scale adjustment
-	    my$metermax=0;
-	    map{$metermax=$_ if ($metermax<$_)}(@_, @{$this->{"meter"}},
-						$this->{"scalemax"});
-	    $this->{"scalemax"}=$metermax;
-	    my$fixed=$this->{"fixed"};
-	    
-	    # raise the scale range?
-	    my$redrawflag=0;
-	    if($fixed==0 && $metermax>$this->{"rangesetting"}){
-		splice @{$this->{"meter"}},0,$#_+1,@_;
-		while($metermax>$this->{"rangesetting"}){
-		    if($this->{"rangesetting"} == 0){
-			$this->{"rangesetting"}=1;
-		    }else{
-			$this->{"rangesetting"}*=2;
-		    }
-		    $this->{"scaletimer"}=0; # reset the timer
-		    $this->{"scalemax"}=$metermax;
-		    $this->_newscale();
+	# raise the scale range?
+	my$redrawflag=0;
+	if($fixed==0 && $metermax>$this->{"rangesetting"}){
+	    splice @{$this->{"meter"}},0,$#_+1,@_;
+	    while($metermax>$this->{"rangesetting"}){
+		if($this->{"rangesetting"} == 0){
+		    $this->{"rangesetting"}=1;
+		}else{
+		    $this->{"rangesetting"}*=2;
 		}
+		$this->{"scaletimer"}=0; # reset the timer
+		$this->{"scalemax"}=$metermax;
+		$this->_newscale();
+	    }
+	}else{
+	    # lower the scale range?
+	    my$scaletimer=$this->{"scaletimer"}+1;
+	    if($fixed==0 && $scaletimer>=$this->{"scalereturn"} &&
+	       $this->{"rangesetting"}>$this->{"minscale"} && 
+	       $metermax*$this->{"scalethresh"}<$this->{"rangesetting"} &&
+	       $this->{"rangesetting"}==$this->{"rangecurrent"}){
+		
+		$this->{"rangesetting"}=int($this->{"rangesetting"}/2);
+		$this->{"scaletimer"}=0;
+		$this->{"scalemax"}=0;
+		splice @{$this->{"meter"}},0,$#_+1,@_;
+		$this->_newscale();
+		
 	    }else{
-		# lower the scale range?
-		my$scaletimer=$this->{"scaletimer"}+1;
-		if($fixed==0 && $scaletimer>=$this->{"scalereturn"} &&
-		   $this->{"rangesetting"}>$this->{"minscale"} && 
-		   $metermax*$this->{"scalethresh"}<$this->{"rangesetting"} &&
-		   $this->{"rangesetting"}==$this->{"rangecurrent"}){
-		    
-		    $this->{"rangesetting"}=int($this->{"rangesetting"}/2);
+		my$meter=$this->{"meter"};
+		for(my$i=0;defined(my$val=shift);$i++){
+		    if($meter->[$i]!=$val){
+			$meter->[$i]=$val;
+			$val*=$length/$this->{"rangecurrent"};
+			$this->{$i}->set($val);
+		    }
+		}
+		
+		if($scaletimer>=$this->{"scalereturn"}){
 		    $this->{"scaletimer"}=0;
 		    $this->{"scalemax"}=0;
-		    splice @{$this->{"meter"}},0,$#_+1,@_;
-		    $this->_newscale();
-		    
 		}else{
-		    my$meter=$this->{"meter"};
-		    for(my$i=0;defined(my$val=shift);$i++){
-			if($meter->[$i]!=$val){
-			    $meter->[$i]=$val;
-			    $val*=$length/$this->{"rangecurrent"};
-			    $this->{$i}->set($val);
-			}
-		    }
-		    
-		    if($scaletimer>=$this->{"scalereturn"}){
-			$this->{"scaletimer"}=0;
-			$this->{"scalemax"}=0;
-		    }else{
-			$this->{"scaletimer"}=$scaletimer;
-			$this->{"scalemax"}=$metermax;
-		    }
+		    $this->{"scaletimer"}=$scaletimer;
+		    $this->{"scalemax"}=$metermax;
 		}
 	    }
-	    
-	}else{
-	    # just scale animation.  No reconfig
-	    $this->_animate();
 	}
+
+    }else{
+	# just scale animation.  No reconfig
+	$this->_animate();
     }
 }
 

@@ -13,7 +13,7 @@
 
 package MGMmodule::diskstat;
 use vars qw($xpath @rsectors @wsectors @prevr @prevw $widget $graph 
-	    $numdisks $lastmod $kernel);
+	    $numdisks $lastmod);
 
 # class init
 sub module_init{
@@ -23,16 +23,7 @@ sub module_init{
 
     # how many disks?  Call read once to init
     $numdisks=0;
-
-    # 2.0 and 2.2
-    if(defined($MGMmodule::helperST::proc{"disk_rblk"})){
-	$kernel=0;$this->read_proc; 
-    }
-
-    # 2.4
-    if(defined($MGMmodule::helperST::proc{"disk_io:"})){
-	$kernel=4;$this->read_proc;
-    } 
+    $this->read_proc if(defined($MGMmodule::helperST::proc{"disk_rblk"}));
 
     map{$numdisks++ if ($rsectors[$_] || $wsectors[$_])}(0..$#rsectors);
 
@@ -61,7 +52,7 @@ sub module_instance{
 	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".litbackground", 
 			     '#ade774',21);
     }
-    $toplevel->optionAdd("$xpath.scalewidadj", 160*$numdisks,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalewidadj", 150*$numdisks,21);  # narrower
     $toplevel->optionAdd("$xpath.scalereturn", 120,21);
     # this relies on the above defaults
 
@@ -87,22 +78,9 @@ sub module_run{
 
 sub read_proc{
     # now uses the 00helper to save on opens 
-    if($kernel==4){
-	my $disk;
-	my@disks=split ' ',$MGMmodule::helperST::proc{"disk_io:"};
-	my$i=0;
-	undef @rsectors;
-	undef @wsectors;
-	foreach $disk (@disks){
-	    $disk=~m/\(\d+,\d+\):\(\d+,\d+,(\d+),\d+,(\d+)\)/;
-	    $rsectors[$i]=$1;
-	    $wsectors[$i]=$2;
-	    $i++;
-	}
-    }else{
-	@rsectors=split ' ',$MGMmodule::helperST::proc{"disk_rblk"};
-	@wsectors=split ' ',$MGMmodule::helperST::proc{"disk_wblk"};
-    }
+
+    @rsectors=split ' ',$MGMmodule::helperST::proc{"disk_rblk"};
+    @wsectors=split ' ',$MGMmodule::helperST::proc{"disk_wblk"};
 }
 
 sub module_update{ 
@@ -112,9 +90,6 @@ sub module_update{
     if($lastmod!=$MGMmodule::helperST::lastmod){
 	my$time=$MGMmodule::helperST::lastmod;
 	$this->read_proc;
-
-	return &reconfig if($numdisks-1 != $#rsectors);
-
 	if(defined(@prevr)){
 	    my @vals;
 	    
@@ -137,13 +112,6 @@ sub module_update{
 	@prevw=@wsectors;
 	$lastmod=$time;
     }
-}
-
-sub reconfig{
-    $numdisks= $#rsectors+1;
-    @prevr=@rsectors;
-    @prevw=@wsectors;
-    &main::reinstance() if($widget->optionGet("reconfig","") eq 'true');
 }
 
 sub destroy{

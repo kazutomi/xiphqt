@@ -11,11 +11,3 @@
 #	[<whitespace>]<filename><whitespace><error message><end-of-line>
 #
 # comment lines begin with '#'
-commit_prep.pl moo1
-commitcheck moo2
-commitinfo moo3
-cvs_acls.pl moo4
-log_accum.pl moo5
-mailto moo6
-ciabot_cvs.sh Moo! It's the CIA!
-

@@ -19,20 +19,26 @@ size_t fread_func(void *ptr, size_t size, size_t nmemb, void *stream) {
 }
 
 
-int fseek_func(void *stream, ogg_int64_t offset, int whence) {
+int fseek_func(void *stream, int64_t offset, int whence) {
   int ret;
   InputStream* input=(InputStream*) stream;
 
   if (whence==SEEK_SET) {
+    cout << "SEEK_SET"<<endl;
     ret=input->seek(offset);
+    cout << "return is:"<<ret<<endl;
     return ret;
   }
   if (whence==SEEK_CUR) {
+    cout << "SEEK_CUR"<<endl;
     ret=input->seek(input->getBytePosition()+offset);
+    cout << "return is:"<<ret<<endl;
     return ret;
   }  
   if (whence==SEEK_END) {
+    cout << "SEEK_END"<<endl;
     ret=input->seek(input->getByteLength());
+    cout << "return is:"<<ret<<endl;
     return ret;
   }   
   cout << "hm, strange call"<<endl;
@@ -42,6 +48,7 @@ int fseek_func(void *stream, ogg_int64_t offset, int whence) {
 
 int fclose_func (void *stream) {
   InputStream* input=(InputStream*) stream;
+  printf("fclose_func called:%8x\n",stream);
 
   // its handled different in kmpg
   // we close the stream if the decoder signals eof.
@@ -52,6 +59,7 @@ int fclose_func (void *stream) {
 
 long ftell_func  (void *stream) {
   InputStream* input=(InputStream*) stream;
+  printf("ftell_func called:%8x\n",stream);
   return input->getBytePosition();
 }
 
@@ -62,8 +70,6 @@ VorbisPlugin::VorbisPlugin() {
   timeDummy=new TimeStamp();
   pcmout=new char[4096];
   lnoLength=false;
-  lshutdown=true;
-
 }
 
 
@@ -74,12 +80,12 @@ VorbisPlugin::~VorbisPlugin() {
 
 
 // here we can config our decoder with special flags
-void VorbisPlugin::config(char* key, char* value,void* user_data) {
+void VorbisPlugin::config(char* key, char* value) {
 
   if (strcmp(key,"-c")==0) {
     lnoLength=true;
   }
-  DecoderPlugin::config(key,value,user_data);
+  DecoderPlugin::config(key,value);
 }
 
 
@@ -94,9 +100,11 @@ int VorbisPlugin::init() {
   // here is the hack to pass the pointer to
   // our streaming interface.
   
+  cout << "ov_openMain -s"<<endl;
   if(ov_open_callbacks(input, &vf, NULL, 0, callbacks) < 0) {
     return false;
   }
+  cout << "ov_openMain -e"<<endl;
 
   return true;
 }
@@ -120,6 +128,7 @@ int VorbisPlugin::processVorbis(vorbis_info* vi,vorbis_comment* comment) {
   switch(ret){
   case 0:
     /* EOF */
+    cout << "eof got"<<endl;
     lDecoderLoop=false;
     break;
   case -1:
@@ -168,12 +177,14 @@ void VorbisPlugin::decoder_loop() {
   output->audioInit();
 
   /********** Decode setup ************/
+  cout << "decoder_loop"<<endl;
   // start decoding
-  lshutdown=false;
+
   while(runCheck()) {
 
     switch(streamState) {
     case _STREAM_STATE_FIRST_INIT :
+      cout << "_STREAM_STATE_FIRST_INIT"<<endl;
       if (init()== false) {
 	// total failure. exit decoding
 	lDecoderLoop=false;
@@ -182,54 +193,61 @@ void VorbisPlugin::decoder_loop() {
       // now init stream
       vi=ov_info(&vf,-1);
       if (lnoLength==false) {
-	pluginInfo->setLength(getTotalLength());
+	pluginInfo->setLength(getSongLength(&vf));
 	output->writeInfo(pluginInfo);
       }
       output->audioSetup(vi->rate,vi->channels-1,1,0,16);
       lhasLength=true;
       setStreamState(_STREAM_STATE_PLAY);
+      cout << "vorbis firstInitialize [END] ********"<<endl;
       break;
     case _STREAM_STATE_INIT :
     case _STREAM_STATE_PLAY :
       processVorbis(vi,comment);
       break;
-    case _STREAM_STATE_WAIT_FOR_END:
-      // exit while loop
-      lDecoderLoop=false;
-      break;
     default:
       cout << "unknown stream state vorbis decoder:"<<streamState<<endl;
     }
   }
-  lshutdown=true;
+  cout << "**** vorbis  Plugin exit"<<endl;
+
   ov_clear(&vf); /* ov_clear closes the stream if its open.  Safe to
 		    call on an uninitialized structure as long as
 		    we've zeroed it */
   
 
+  cout << "audioFlush -s"<<endl;
   output->audioFlush();
+  cout << "audioFlush -e"<<endl;
 }
 
 // vorbis can seek in streams
-int VorbisPlugin::seek_impl(int second) {
+int VorbisPlugin::seek(int second) {
+  decoderLock();
+  // small hack.
+  // splay gets length while streaming
+  if (lDecode) {
+    while(lhasLength==false) {
+      cout << "waiting for length info"<<endl;
+      usleep(100000);
+    }
+  }
   ov_time_seek(&vf,(double) second);
+  decoderUnlock();
   return true;
 }
 
 
 
-int VorbisPlugin::getTotalLength() {
+int VorbisPlugin::getSongLength(OggVorbis_File* vf) {
   int back=0;
   int byteLen=input->getByteLength();
   if (byteLen == 0) {
     return 0;
   }
   /* Retrieve the length in second*/
-  shutdownLock();
-  if (lshutdown==false) {
-      back = (int) ov_time_total(&vf, -1);
-  }
-  shutdownUnlock();
+  back = ov_time_total(vf, -1);
+  cout << "back is:"<<back<<endl;
   
   return back;
 }
