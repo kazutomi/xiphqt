@@ -13,7 +13,7 @@
 
  function: code raw [Vorbis] packets into framed OggSquish stream and
            decode Ogg streams back into raw packets
- last mod: $Id: framing.c,v 1.6.2.1 2000/10/30 08:03:35 xiphmont Exp $
+ last mod: $Id: framing.c,v 1.6.2.2 2000/10/30 22:18:24 xiphmont Exp $
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -158,7 +158,6 @@ int ogg_stream_clear(ogg_stream_state *os){
   if(os){
     if(os->body_data)free(os->body_data);
     if(os->lacing_vals)free(os->lacing_vals);
-    if(os->page_vals)free(os->page_vals);
     if(os->granule_vals)free(os->granule_vals);
 
     memset(os,0,sizeof(ogg_stream_state));    
@@ -184,28 +183,11 @@ static void _os_body_expand(ogg_stream_state *os,int needed){
   }
 }
 
-static void _os_lacing_expand_en(ogg_stream_state *os,int needed){
+static void _os_lacing_expand(ogg_stream_state *os,int needed){
   if(os->lacing_storage<=os->lacing_fill+needed){
     os->lacing_storage+=(needed+32);
     os->lacing_vals=realloc(os->lacing_vals,os->lacing_storage*sizeof(int));
     os->granule_vals=realloc(os->granule_vals,os->lacing_storage*sizeof(ogg_int64_t));
-  }
-}
-
-static void _os_lacing_expand_de(ogg_stream_state *os,int needed){
-  if(os->lacing_storage<=os->lacing_fill+needed){
-    os->lacing_storage+=(needed+32);
-    os->lacing_vals=realloc(os->lacing_vals,os->lacing_storage*sizeof(int));
-
-    if(!os->page_vals)
-      os->page_vals=malloc(os->lacing_storage*sizeof(long));
-    else
-      os->page_vals=realloc(os->page_vals,os->lacing_storage*sizeof(long));
-
-    os->granule_vals=realloc(os->granule_vals,os->lacing_storage*sizeof(ogg_int64_t));
-  }else{
-    if(!os->page_vals)
-      os->page_vals=malloc(os->lacing_storage*sizeof(long));
   }
 }
 
@@ -246,7 +228,7 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
  
   /* make sure we have the buffer storage */
   _os_body_expand(os,op->bytes);
-  _os_lacing_expand_en(os,lacing_vals);
+  _os_lacing_expand(os,lacing_vals);
 
   /* Copy in the submitted packet.  Yes, the copy is a waste; this is
      the liability of overly clean abstraction for the time being.  It
@@ -666,8 +648,6 @@ int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
       if(os->lacing_fill-lr){
 	memmove(os->lacing_vals,os->lacing_vals+lr,
 		(os->lacing_fill-lr)*sizeof(int));
-	memmove(os->page_vals,os->page_vals+lr,
-		(os->lacing_fill-lr)*sizeof(long));
 	memmove(os->granule_vals,os->granule_vals+lr,
 		(os->lacing_fill-lr)*sizeof(ogg_int64_t));
       }
@@ -681,7 +661,7 @@ int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
   if(serialno!=os->serialno)return(-1);
   if(version>0)return(-1);
 
-  _os_lacing_expand_de(os,segments+1);
+  _os_lacing_expand(os,segments+1);
 
   /* are we in sequence? */
   if(pageno!=os->pageno){
@@ -725,7 +705,6 @@ int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
     while(segptr<segments){
       int val=header[27+segptr];
       os->lacing_vals[os->lacing_fill]=val;
-      os->page_vals[os->lacing_fill]=pageno;
       os->granule_vals[os->lacing_fill]=-1;
       
       if(bos){
@@ -826,7 +805,6 @@ int ogg_stream_packetout(ogg_stream_state *os,ogg_packet *op){
     }
 
     op->packetno=os->packetno;
-    op->pageno=os->page_vals[ptr];
     op->granulepos=os->granule_vals[ptr];
     op->bytes=bytes;
 
@@ -843,17 +821,13 @@ int ogg_stream_packetout(ogg_stream_state *os,ogg_packet *op){
 ogg_stream_state os_en, os_de;
 ogg_sync_state oy;
 
-void checkpacket(ogg_packet *op,int len, int no, int pos, int pageno){
+void checkpacket(ogg_packet *op,int len, int no, int pos){
   long j;
   static int sequence=0;
   static int lastno=0;
 
   if(op->bytes!=len){
     fprintf(stderr,"incorrect packet length!\n");
-    exit(1);
-  }
-  if(op->pageno!=pageno){
-    fprintf(stderr,"incorrect pageno in packet!\n");
     exit(1);
   }
   if(op->granulepos!=pos){
@@ -1216,13 +1190,6 @@ void test_pack(const int *pl, const int **headers){
 	    while(ogg_stream_packetout(&os_de,&op_de)>0){
 	      
 	      /* verify the packet! */
-	      /* check page assignment */
-	      if(op_de.pageno!=ogg_page_pageno(&og_de)){
-		fprintf(stderr,"packet completion pageno %ld != pageno %ld!\n",
-			op_de.pageno,ogg_page_pageno(&og_de));
-		exit(1);
-	      }
-
 	      /* check data */
 	      if(memcmp(data+depacket,op_de.packet,op_de.bytes)){
 		fprintf(stderr,"packet data mismatch in decode! pos=%ld\n",
@@ -1464,19 +1431,19 @@ int main(void){
       /* do we get the expected results/packets? */
       
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,0,0,0,0);
+      checkpacket(&test,0,0,0);
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,100,1,-1,1);
+      checkpacket(&test,100,1,-1);
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,4079,2,3000,1);
+      checkpacket(&test,4079,2,3000);
       if(ogg_stream_packetout(&os_de,&test)!=-1){
 	fprintf(stderr,"Error: loss of page did not return error\n");
 	exit(1);
       }
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,76,5,-1,3);
+      checkpacket(&test,76,5,-1);
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,34,6,-1,3);
+      checkpacket(&test,34,6,-1);
       fprintf(stderr,"ok.\n");
     }
 
@@ -1511,19 +1478,19 @@ int main(void){
       /* do we get the expected results/packets? */
       
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,0,0,0,0);
+      checkpacket(&test,0,0,0);
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,100,1,-1,1);
+      checkpacket(&test,100,1,-1);
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,4079,2,3000,1);
+      checkpacket(&test,4079,2,3000);
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,2956,3,4000,2);
+      checkpacket(&test,2956,3,4000);
       if(ogg_stream_packetout(&os_de,&test)!=-1){
 	fprintf(stderr,"Error: loss of page did not return error\n");
 	exit(1);
       }
       if(ogg_stream_packetout(&os_de,&test)!=1)error();
-      checkpacket(&test,300,13,14000,4);
+      checkpacket(&test,300,13,14000);
       fprintf(stderr,"ok.\n");
     }
     
