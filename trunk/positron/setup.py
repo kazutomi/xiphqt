@@ -22,11 +22,13 @@ from os.path import isfile
 from distutils.core import setup
 from setupext import install_data_ext
 
-docdirbase = 'share/doc/positron'
+# FIXME: Jack!  Save me from the distutils monster!
+docdirbase  = 'share/doc/positron-1.0b2'
 manpagebase = 'share/man/man1'
-docfiles = filter(isfile, glob('doc/*.html')) + \
-           filter(isfile, glob('doc/*.png')) + ['README', 'COPYING']
-examfiles = filter(isfile, glob('doc/examples/*'))
+docfiles    = filter(isfile, glob('doc/*.html')) + \
+              filter(isfile, glob('doc/*.png')) + ['README', 'COPYING']
+manpages    = filter(isfile, glob('doc/*.1.gz'))
+examfiles   = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
       version="1.0b2",
@@ -41,7 +43,7 @@ setup(name="positron",
       cmdclass = {'install_data': install_data_ext},
       data_files = [('data', docdirbase, docfiles),
                     ('data', os.path.join(docdirbase, 'examples'), examfiles),
-                    ('data', manpagebase, ['doc/positron.1'])]
+                    ('data', manpagebase, manpages)]
       )
 
 
