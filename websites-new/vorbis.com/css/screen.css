@@ -12,6 +12,10 @@ a {
 	color: #064C84;
 }
 
+a:hover {
+	text-decoration: underline;
+}
+
 .bodyborder {
 	margin: 0;
 	border: 0;
@@ -57,6 +61,10 @@ a {
 	color: #3366CC;
 	text-decoration: none;
 	font-weight: bold;
+}
+
+.navbar li a:hover {
+	text-decoration: underline;
 }
 
 #contact_ {

@@ -33,10 +33,10 @@
 	font-weight: bold;
 }
 
-.banners img {
+.xiphbanners img {
 	display: block;
 	margin-left: auto;
-    margin-right: auto;
+	margin-right: auto;
 }
 
 .resources ul {
@@ -65,7 +65,7 @@
 		<li><a href="http://fluendo.com/press/releases/PR-2004-03.html">Speex Goes 1.0; Xiph.Org now a 501(c)3 Non-Profit Organization</a></li>
 		<li><b><a href="http://fluendo.com/press/releases/PR-2004-03.html">more headlines &gt;</a></b></li>
 	</ul>
-	<div class="banners">
+	<div class="xiphbanners">
 		<img class="vorbisbanner" src="images/banners/vorbis_banner.png" alt="Vorbis Banner" />
     		<img class="xiphbanner" src="images/banners/xiph_banner.png" alt="Xiph Banner" />
 	</div>

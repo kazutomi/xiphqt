@@ -6,6 +6,7 @@ body {
 
 .xiphbar {
 	background-color: #666666;
+	min-height: 29px;
 }
 
 .xiphbar div {
@@ -23,8 +24,6 @@ body {
 	float: left;
 	text-transform: lowercase;
 }
-
-
 
 .xiphbar ul {
 	margin: 0;
@@ -46,5 +45,5 @@ body {
 	color: #FFCC66;
 	text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: .6em;
+	font-size: 10px;
 }

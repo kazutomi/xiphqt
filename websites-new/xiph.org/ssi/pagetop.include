@@ -1,13 +1,10 @@
 
+<div class="thepage">
 <div class="logos">
 	<img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/>
 </div>
 
-
-<table class="contenttable">
-<tr>
-<td class="leftside">
-<div>
+<div class="navbar">
 	<ul>
 		<li id="about_"><a href="/about/">About</a></li>
 		<li id="press_"><a href="/">Press</a></li>
@@ -20,5 +17,10 @@
 		<li id="resources_"><a href="/">Resources by Project</a></li>
 	</ul>
 </div>
-</td>
-<td rowspan="2"  class="content">
+
+<div class="banners">
+	<!-- Visualize a banner here. <img src="/images/banners/try_it.png" alt="Try it out!"/> -->
+</div>
+
+<div class="main">
+<div class="content">
