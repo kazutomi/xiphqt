@@ -157,7 +157,7 @@ static vorbis_info_mapping *mapping0_unpack(vorbis_info *vi,oggpack_buffer *opb)
 #include "psy.h"
 #include "scales.h"
 
-//#if 0
+#if 0
 static long seq=0;
 static ogg_int64_t total=0;
 static float FLOOR1_fromdB_LOOKUP[256]={
@@ -227,7 +227,7 @@ static float FLOOR1_fromdB_LOOKUP[256]={
   0.82788260F, 0.88168307F, 0.9389798F, 1.F, 
 };
 
-//#endif 
+#endif 
 
 extern int *floor1_fit(vorbis_block *vb,vorbis_look_floor *look,
 		       const float *logmdct,   /* in */
@@ -349,7 +349,7 @@ static int mapping0_forward(vorbis_block *vb){
       for(j=0;j<n/2;j++)
 	logmdct[j]=todB(mdct+j);
 
-      //#if 0
+#if 0
       if(vi->channels==2){
 	if(i==0)
 	  _analysis_output("mdctL",seq,logmdct,n/2,1,0,0);
@@ -358,7 +358,7 @@ static int mapping0_forward(vorbis_block *vb){
       }else{
 	_analysis_output("mdct",seq,logmdct,n/2,1,0,0);
       }
-      //#endif 
+#endif 
       
       /* first step; noise masking.  Not only does 'noise masking'
          give us curves from which we can decide how much resolution
@@ -370,14 +370,14 @@ static int mapping0_forward(vorbis_block *vb){
 		    logmdct,
 		    noise); /* noise does not have by-frequency offset
                                bias applied yet */
-      //#if 0
+#if 0
       if(vi->channels==2){
 	if(i==0)
 	  _analysis_output("noiseL",seq,noise,n/2,1,0,0);
 	else
 	  _analysis_output("noiseR",seq,noise,n/2,1,0,0);
       }
-      //#endif
+#endif
 
       /* second step: 'all the other crap'; all the stuff that isn't
          computed/fit for bitrate management goes in the second psy
@@ -389,51 +389,36 @@ static int mapping0_forward(vorbis_block *vb){
 		   global_ampmax,
 		   local_ampmax[i]);
 
-      //#if 0
+#if 0
       if(vi->channels==2){
 	if(i==0)
 	  _analysis_output("toneL",seq,tone,n/2,1,0,0);
 	else
 	  _analysis_output("toneR",seq,tone,n/2,1,0,0);
       }
-      //#endif
+#endif
 
       /* third step; we offset the noise vectors, overlay tone
 	 masking.  We then do a floor1-specific line fit.  If we're
 	 performing bitrate management, the line fit is performed
 	 multiple times for up/down tweakage on demand. */
-      {
-	float aotuvadj[psy_look->n];
 
-	_vp_offset_and_mix(psy_look,
-			   noise,
-			   tone,
-			   1,
-			   logmask,
-			   mdct,
-			   logmdct,
-			   aotuvadj);
-
-	if(vi->channels==2){
-	  if(i==0){
-	    _analysis_output("adjL",seq,aotuvadj,psy_look->n,1,1,0);
-	    _analysis_output("adjmdctL",seq,mdct,n/2,1,1,0);
-	  }else{
-	    _analysis_output("adjR",seq,aotuvadj,psy_look->n,1,1,0);
-	    _analysis_output("adjmdctR",seq,mdct,n/2,1,1,0);
-	  }
-	}
-      }
-
-	
-      //#if 0
+      _vp_offset_and_mix(psy_look,
+			 noise,
+			 tone,
+			 1,
+			 logmask,
+			 mdct,
+			 logmdct);
+      
+#if 0
       if(vi->channels==2){
 	if(i==0)
 	  _analysis_output("mask1L",seq,logmask,n/2,1,0,0);
 	else
 	  _analysis_output("mask1R",seq,logmask,n/2,1,0,0);
       }
-      //#endif
+#endif
 
       /* this algorithm is hardwired to floor 1 for now; abort out if
          we're *not* floor1.  This won't happen unless someone has
@@ -456,7 +441,7 @@ static int mapping0_forward(vorbis_block *vb){
 			   2,
 			   logmask,
 			   mdct,
-			   logmdct,NULL);
+			   logmdct);
 
 #if 0
 	if(vi->channels==2){
@@ -479,7 +464,7 @@ static int mapping0_forward(vorbis_block *vb){
 			   0,
 			   logmask,
 			   mdct,
-			   logmdct,NULL);
+			   logmdct);
 
 #if 0
 	if(vi->channels==2)
@@ -668,10 +653,10 @@ static int mapping0_forward(vorbis_block *vb){
     
   }
 
-  //#if 0
+#if 0
   seq++;
   total+=ci->blocksizes[vb->W]/4+ci->blocksizes[vb->nW]/4;
-  //#endif
+#endif
   return(0);
 }
 
