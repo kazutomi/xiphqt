@@ -4,11 +4,10 @@
 #include "encint.h"
 
 struct oc_mcenc_ctx{
-  oc_enc_ctx  *enc;
-  int          candidates[12][2];
-  int          setb0;
-  int          ncandidates;
-  int          last[2][2];
+  oc_enc_ctx *enc;
+  int         candidates[12][2];
+  int         setb0;
+  int         ncandidates;
 };
 
 /*The maximum Y plane SAD value for accepting the median predictor.*/
@@ -78,14 +77,14 @@ static void oc_mcenc_find_candidates(oc_mcenc_ctx *_mcenc,int _mbi,
     ncandidates=1;
     for(i=0;i<emb->ncneighbors;i++){
       nemb=_mcenc->enc->mbinfo+emb->cneighbors[i];
-      _mcenc->candidates[ncandidates][0]=nemb->mvs[_which_frame][0][0];
-      _mcenc->candidates[ncandidates][1]=nemb->mvs[_which_frame][0][1];
+      _mcenc->candidates[ncandidates][0]=nemb->mvs[0][_which_frame][0];
+      _mcenc->candidates[ncandidates][1]=nemb->mvs[0][_which_frame][1];
       ncandidates++;
     }
     /*Add a few additional vectors to set A: the vector used in the previous
        frame and the (0,0) vector.*/
-    _mcenc->candidates[ncandidates][0]=emb->mvs[_which_frame][1][0];
-    _mcenc->candidates[ncandidates][1]=emb->mvs[_which_frame][1][1];
+    _mcenc->candidates[ncandidates][0]=emb->mvs[1][_which_frame][0];
+    _mcenc->candidates[ncandidates][1]=emb->mvs[1][_which_frame][1];
     ncandidates++;
     _mcenc->candidates[ncandidates][0]=0;
     _mcenc->candidates[ncandidates][1]=0;
@@ -108,8 +107,8 @@ static void oc_mcenc_find_candidates(oc_mcenc_ctx *_mcenc,int _mbi,
   else{
     _mcenc->candidates[0][0]=0;
     _mcenc->candidates[0][1]=0;
-    _mcenc->candidates[1][0]=emb->mvs[_which_frame][1][0];
-    _mcenc->candidates[1][1]=emb->mvs[_which_frame][1][1];
+    _mcenc->candidates[1][0]=emb->mvs[1][_which_frame][0];
+    _mcenc->candidates[1][1]=emb->mvs[1][_which_frame][1];
     ncandidates=2;
   }
   /*Fill in set B: accelerated predictors for this and adjacent macro
@@ -122,9 +121,9 @@ static void oc_mcenc_find_candidates(oc_mcenc_ctx *_mcenc,int _mbi,
   nemb=emb;
   for(i=0;;i++){
     _mcenc->candidates[ncandidates][0]=
-     (nemb->mvs[_which_frame][1][0]<<1)-nemb->mvs[_which_frame][2][0];
+     (nemb->mvs[1][_which_frame][0]<<1)-nemb->mvs[2][_which_frame][0];
     _mcenc->candidates[ncandidates][1]=
-     (nemb->mvs[_which_frame][1][1]<<1)-nemb->mvs[_which_frame][2][1];
+     (nemb->mvs[1][_which_frame][1]<<1)-nemb->mvs[2][_which_frame][1];
     _mcenc->candidates[ncandidates][0]=OC_CLAMPI(-31,
      _mcenc->candidates[ncandidates][0],31);
     _mcenc->candidates[ncandidates][1]=OC_CLAMPI(-31,
@@ -209,40 +208,6 @@ static int oc_mcenc_ysad_check_mbcandidate_fullpel(oc_mcenc_ctx *_mcenc,
   return oc_mcenc_sad_check_mbcandidate_fullpel(_mcenc,_mbi,_dx,_dy,0,
    _ref_framei,_block_err);
 }
-
-#if 0
-static int oc_mcenc_sad_check_bcandidate_fullpel(oc_mcenc_ctx *_mcenc,
- int _mbi,int _bi,int _dx,int _dy,int _pli,int _ref_framei){
-  const oc_fragment_plane *fplane;
-  const oc_fragment       *frag;
-  int                      cur_ystride;
-  int                      ref_ystride;
-  int                      mvoffset;
-  int                      err;
-  /*TODO: customize error function for speed/quality tradeoff.*/
-  fplane=_mcenc->enc->state.frplanes+_pli;
-  cur_ystride=_mcenc->enc->state.input[_pli].stride;
-  ref_ystride=_mcenc->enc->state.ref_frame_bufs[_ref_framei][_pli].stride;
-  mvoffset=_dx+_dy*ref_ystride;
-  err=0;
-  frag=_mcenc->enc->state.frags+_mcenc->enc->state.mbs[_mbi].map[_pli][_bi];
-  if(frag->border==NULL){
-    err=oc_sad8_fullpel(frag->buffer[OC_FRAME_IO],cur_ystride,
-     frag->buffer[_ref_framei]+mvoffset,ref_ystride);
-  }
-  else{
-    err=oc_sad8_fullpel_border(frag->buffer[OC_FRAME_IO],cur_ystride,
-     frag->buffer[_ref_framei]+mvoffset,ref_ystride,frag->border->mask);
-  }
-  return err;
-}
-
-static int oc_mcenc_ysad_check_bcandidate_fullpel(oc_mcenc_ctx *_mcenc,
- int _mbi,int _bi,int _dx,int _dy,int _ref_framei){
-  return oc_mcenc_sad_check_bcandidate_fullpel(_mcenc,_mbi,_bi,_dx,_dy,0,
-   _ref_framei);
-}
-#endif
 
 static int oc_mcenc_ysad_halfpel_mbrefine(oc_mcenc_ctx *_mcenc,
  int _mbi,int _vec[2],int _best_err,int _ref_framei){
@@ -548,7 +513,7 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
                  finding a good vector, and checking these vectors can save us
                  from 100 to several thousand points off our SAD 1 in 15
                  times.
-            Is this a good idea?
+            TODO: Is this a good idea?
             Who knows.
             It needs more testing.*/
           for(;;){
@@ -624,7 +589,6 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
   int             candx;
   int             candy;
   int             ref_framei;
-  int             bi;
   /*TODO: customize error function for speed/(quality+size) tradeoff.*/
   ref_framei=_mcenc->enc->state.ref_frame_idx[_frame];
   mb=_mcenc->enc->state.mbs+_mbi;
@@ -725,10 +689,11 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
       }
     }
   }
+  best_err=oc_mcenc_ysad_halfpel_mbrefine(_mcenc,_mbi,best_vec,best_err,
+   ref_framei);
   emb->mvs[0][_frame][0]=(char)best_vec[0];
   emb->mvs[0][_frame][1]=(char)best_vec[1];
-  return oc_mcenc_ysad_halfpel_mbrefine(_mcenc,_mbi,best_vec,best_err,
-   ref_framei);
+  return best_err;
 }
 
 void oc_mcenc_analyze(oc_mcenc_ctx *_mcenc){

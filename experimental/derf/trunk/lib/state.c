@@ -265,6 +265,7 @@ static void oc_state_border_init(oc_theora_state *_state){
   /*Loop through the fragments, marking those completely outside the
      displayable region and constructing a border mask for those that straddle
      the border.*/
+  _state->nborders=0;
   yfrag_end=frag=_state->frags;
   for(pli=0;pli<3;pli++){
     fplane=_state->frplanes+pli;
@@ -396,6 +397,9 @@ static void oc_state_frarray_init(oc_theora_state *_state){
   _state->mbs=_ogg_calloc(nmbs,sizeof(oc_mb));
   _state->block_coded_flags=_ogg_calloc(nfrags,
    sizeof(_state->block_coded_flags[0]));
+  _state->coded_fragis=_ogg_malloc(nfrags*sizeof(_state->coded_fragis[0]));
+  _state->uncoded_fragis=_state->coded_fragis+nfrags;
+  _state->coded_mbis=_ogg_malloc(nmbs*sizeof(_state->coded_mbis[0]));
   /*Create the mapping from super blocks to fragments.*/
   for(pli=0;pli<3;pli++){
     oc_fragment_plane *fplane;
@@ -410,6 +414,8 @@ static void oc_state_frarray_init(oc_theora_state *_state){
 }
 
 static void oc_state_frarray_clear(oc_theora_state *_state){
+  _ogg_free(_state->coded_mbis);
+  _ogg_free(_state->coded_fragis);
   _ogg_free(_state->block_coded_flags);
   _ogg_free(_state->mbs);
   _ogg_free(_state->sbs);

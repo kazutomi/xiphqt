@@ -37,22 +37,43 @@ static const int OC_MODE_SCHEMES[7][OC_NMODES]={
   Otherwise, the mode is assumed to use the 0,0 vector.*/
 static const int OC_MODE_HAS_MV[OC_NMODES]={0,0,1,1,1,1,0,1};
 
-/*The VLC codes used for motion vectors.*/
-static const theora_huff_code OC_MV_CODES[63]={
-           {0xFF,8},{0xFD,8},{0xFB,8},{0xF9,8},{0xF7,8},{0xF5,8},{0xF3,8},
-  {0xF1,8},{0xEF,8},{0xED,8},{0xEB,8},{0xE9,8},{0xE7,8},{0xE5,8},{0xE3,8},
-  {0xE1,8},{0x6F,7},{0x6D,7},{0x6B,7},{0x69,7},{0x67,7},{0x65,7},{0x63,7},
-  {0x61,7},{0x2F,6},{0x2D,6},{0x2B,6},{0x29,6},{0x09,4},{0x07,4},{0x02,3},
-  {0x00,3},
-  {0x01,3},{0x06,4},{0x08,4},{0x28,6},{0x2A,6},{0x2C,6},{0x2E,6},{0x60,7},
-  {0x62,7},{0x64,7},{0x66,7},{0x68,7},{0x6A,7},{0x6C,7},{0x6E,7},{0xE0,8},
-  {0xE2,8},{0xE4,8},{0xE6,8},{0xE8,8},{0xEA,8},{0xEC,8},{0xEE,8},{0xF0,8},
-  {0xF2,8},{0xF6,8},{0xF4,8},{0xF8,8},{0xFA,8},{0xFC,8},{0xFE,8}
+/*The Huffman codes used for motion vectors.*/
+static const theora_huff_code OC_MV_CODES[2][63]={
+  /*Scheme 1: VLC code.*/
+  {
+             {0xFF,8},{0xFD,8},{0xFB,8},{0xF9,8},{0xF7,8},{0xF5,8},{0xF3,8},
+    {0xF1,8},{0xEF,8},{0xED,8},{0xEB,8},{0xE9,8},{0xE7,8},{0xE5,8},{0xE3,8},
+    {0xE1,8},{0x6F,7},{0x6D,7},{0x6B,7},{0x69,7},{0x67,7},{0x65,7},{0x63,7},
+    {0x61,7},{0x2F,6},{0x2D,6},{0x2B,6},{0x29,6},{0x09,4},{0x07,4},{0x02,3},
+    {0x00,3},
+    {0x01,3},{0x06,4},{0x08,4},{0x28,6},{0x2A,6},{0x2C,6},{0x2E,6},{0x60,7},
+    {0x62,7},{0x64,7},{0x66,7},{0x68,7},{0x6A,7},{0x6C,7},{0x6E,7},{0xE0,8},
+    {0xE2,8},{0xE4,8},{0xE6,8},{0xE8,8},{0xEA,8},{0xEC,8},{0xEE,8},{0xF0,8},
+    {0xF2,8},{0xF6,8},{0xF4,8},{0xF8,8},{0xFA,8},{0xFC,8},{0xFE,8}
+  },
+  /*Scheme 2: (5 bit magnitude),(1 bit sign).
+    This wastes a code word (0x01, negative zero), or a bit (0x00, positive
+     zero, requires only 5 bits to uniquely decode).*/
+  {
+             {0x3F,6},{0x3D,6},{0x3B,6},{0x39,6},{0x37,6},{0x35,6},{0x33,6},
+    {0x31,6},{0x2F,6},{0x2D,6},{0x2B,6},{0x29,6},{0x27,6},{0x25,6},{0x23,6},
+    {0x21,6},{0x1F,6},{0x1D,6},{0x1B,6},{0x19,6},{0x17,6},{0x15,6},{0x13,6},
+    {0x11,6},{0x0F,6},{0x0D,6},{0x0B,6},{0x09,6},{0x07,6},{0x05,6},{0x03,6},
+    {0x00,6},
+    {0x02,6},{0x04,6},{0x06,6},{0x08,6},{0x0A,6},{0x0C,6},{0x0E,6},{0x10,6},
+    {0x12,6},{0x14,6},{0x16,6},{0x18,6},{0x1A,6},{0x1C,6},{0x1E,6},{0x20,6},
+    {0x22,6},{0x24,6},{0x26,6},{0x28,6},{0x2A,6},{0x2C,6},{0x2E,6},{0x30,6},
+    {0x32,6},{0x34,6},{0x36,6},{0x38,6},{0x3A,6},{0x3C,6},{0x3E,6}
+  }
 };
 
+
+
 static int oc_mvbitsa(int _dx,int _dy){
-  return OC_MV_CODES[_dx+31].nbits+OC_MV_CODES[_dy+31].nbits;
+  return OC_MV_CODES[0][_dx+31].nbits+OC_MV_CODES[0][_dy+31].nbits;
 }
+
+
 
 static const theora_huff_code OC_MODE_CODESA[OC_NMODES]={
   {0x00,1},{0x02,2},{0x06,3},{0x0E,4},{0x1E,5},{0x3E,6},{0x7E,7},{0x7F,7}
@@ -61,6 +82,8 @@ static const theora_huff_code OC_MODE_CODESA[OC_NMODES]={
 static const theora_huff_code OC_MODE_CODESB[OC_NMODES]={
   {0x01,3},{0x00,3},{0x02,3},{0x03,3},{0x04,3},{0x07,3},{0x06,3},{0x05,3}
 };
+
+
 
 int oc_sad8_fullpel(const unsigned char *_cur,int _cur_stride,
  const unsigned char *_ref,int _ref_stride){
@@ -128,9 +151,83 @@ int oc_sad8_halfpel_border(const unsigned char *_cur,int _cur_stride,
 }
 
 
+/*Writes the bit pattern for the run length of a run to the given
+   oggpack_buffer.
+  _opb:         The buffer to write to.
+  _value:       The length of the run.
+                This must be positive, and no more than the maximum value of a
+                 run that can be stored with the given prefix code.
+  _val_min:     The minimum value that can be coded in each interval, plus an
+                 extra entry for one past the last interval.
+  _code_prefix: The prefix code that is prepended to the value for
+                 each interval.
+  _code_nbits:   The total number of bits in the bit pattern encoded for each
+                 interval.
+  Return: The number of bits written.*/
+static int oc_pack_run(oggpack_buffer *_opb,int _value,const int _val_min[],
+ const int _code_prefix[],const int _code_nbits[]){
+  int i;
+  for(i=0;_value<_val_min[i+1];i++);
+  oggpackB_write(_opb,_code_prefix[i]+(_value-_val_min[i]),_code_nbits[i]);
+  return _code_nbits[i];
+}
+
+/*Writes the bit pattern for the run length of a super block run to the given
+   oggpack_buffer.
+  _opb:   The buffer to write to.
+  _value: The length of the run.
+          This must be positive, and no more than 4129.*/
+static int oc_pack_sb_run(oggpack_buffer *_opb,int _value){
+  /*Coding scheme:
+       Codeword            Run Length
+     0                       1
+     10x                     2-3
+     110x                    4-5
+     1110xx                  6-9
+     11110xxx                10-17
+     111110xxxx              18-33
+     111111xxxxxxxxxxxx      34-4129*/
+  static const int VAL_MIN[8]={1,2,4,6,10,18,34,4130};
+  static const int CODE_PREFIX[7]={0,4,0xC,0x38,0xF0,0x3E0,0x3F000};
+  static const int CODE_NBITS[7]={1,3,4,6,8,10,18};
+  return oc_pack_run(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
+}
+
+/*Writes the bit pattern for the run length of a block run to the given
+   oggpack_buffer.
+  _opb:   The buffer to write to.
+  _value: The length of the run.
+          This must be positive, and no more than 30.*/
+static int oc_pack_block_run(oggpack_buffer *_opb,int _value){
+  /*Coding scheme:
+     Codeword             Run Length
+     0x                      1-2
+     10x                     3-4
+     110x                    5-6
+     1110xx                  7-10
+     11110xx                 11-14
+     11111xxxx               15-30*/
+  static const int VAL_MIN[7]={1,3,5,7,11,15,31};
+  static const int CODE_PREFIX[6]={0,4,0xC,0x38,0x78,0x1F0};
+  static const int CODE_NBITS[6]={2,3,4,6,7,9};
+  return oc_pack_run(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
+}
+
+
 
 /*Initialize the mode scheme chooser.
-  This need only be called once, ever.*/
+  This need only be called once per encoder.
+  This is probably the best place to describe the various scheme's Theora uses
+   to encode macro block modes.
+  There are 8 possible schemes.
+  Schemes 0-6 use a highly unbalanced Huffman code to code each of the modes.
+  The same set of Huffman codes is used for each of these 7 schemes, but the
+   code associated with each mode varies.
+  Schemes 1-6 have a fixed mapping from Huffman code to MB mode, while scheme
+   0 writes a custom mapping to the bitstream before all the modes.
+  Finally, scheme 7 just encodes each mode directly in 3 bits.
+  Be warned that the number assigned to each mode is slightly different in the
+   bitstream than in this implementation, so a translation needs to be done.*/
 static void oc_mode_scheme_chooser_init(oc_mode_scheme_chooser *_chooser){
   int msi;
   _chooser->mode_ranks[0]=_chooser->scheme0_ranks;
@@ -248,12 +345,16 @@ static void oc_mode_scheme_chooser_update(oc_mode_scheme_chooser *_chooser,
     int sj;
     int scheme0;
     int bits0;
-    scheme0=_chooser->scheme0_list[si];
+    scheme0=_chooser->scheme_list[si];
     bits0=_chooser->scheme_bits[scheme0];
-    for(sj=si;sj>0&&
-     bits0<_chooser->scheme_bits[_chooser->scheme_list[--sj]];){
-      _chooser->scheme_list[sj+1]=_chooser->scheme_list[sj];
+    sj=si;
+    do{
+      int scheme1;
+      scheme1=_chooser->scheme_list[sj-1];
+      if(bits0>=_chooser->scheme_bits[scheme1])break;
+      _chooser->scheme_list[sj]=scheme1;
     }
+    while(--sj>0);
     _chooser->scheme_list[sj]=scheme0;
   }
 }
@@ -381,6 +482,9 @@ static void oc_enc_frame_header_pack(oc_enc_ctx *_enc){
   oggpackB_write(&_enc->opb,_enc->state.frame_type,1);
   /*Write out the current QI.*/
   oggpackB_write(&_enc->opb,_enc->state.qi,6);
+  /*TODO: Support multiple QIs.
+    For now we mark the end of the QI list here.*/
+  oggpackB_write(&_enc->opb,0,1);
   if(_enc->state.frame_type==OC_INTRA_FRAME){
     /*Keyframes have 3 unused configuration bits, holdovers from VP3 days.
       Most of the other unused bits in the VP3 headers were eliminated.
@@ -389,31 +493,257 @@ static void oc_enc_frame_header_pack(oc_enc_ctx *_enc){
   }
 }
 
-/*Mark all fragments as coded and in OC_MODE_INTRA.*/
+/*Mark all fragments as coded and in OC_MODE_INTRA.
+  This also builds up the coded fragment list (in coded order), and clears the
+   uncoded fragment list.
+  It does not update the coded macro block list, as that is not used when
+   coding INTRA frames.*/
 static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
-  oc_fragment *frag;
-  oc_fragment *frag_end;
-  frag=_enc->state.frags;
-  frag_end=frag+_enc->state.nfrags;
-  for(;frag<frag_end;frag++){
-    frag->coded=1;
-    frag->mbmode=OC_MODE_INTRA;
+  oc_sb *sb;
+  oc_sb *sb_end;
+  int    pli;
+  int    ncoded_fragis;
+  int    prev_ncoded_fragis;
+  prev_ncoded_fragis=ncoded_fragis=0;
+  sb=sb_end=_enc->state.sbs;
+  for(pli=0;pli<3;pli++){
+    const oc_fragment_plane *fplane;
+    int                      ystride;
+    int                      prev_refi;
+    fplane=_enc->state.frplanes+pli;
+    sb_end+=fplane->nsbs;
+    prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
+    ystride=_enc->state.ref_frame_bufs[prev_refi][pli].stride;
+    for(;sb<sb_end;sb++){
+      int mbi;
+      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
+        int bi;
+        for(bi=0;bi<4;bi++)if(sb->map[mbi][bi]>=0){
+          oc_fragment *frag;
+          int          fragi;
+          fragi=sb->map[mbi][bi];
+          frag=_enc->state.frags+fragi;
+          frag->coded=1;
+          frag->mbmode=OC_MODE_INTRA;
+          _enc->state.coded_fragis[ncoded_fragis++]=fragi;
 #if defined(OC_BITRATE_STATS)
-    /*Compute the error function used for intra mode fragments.
-      This function can only use information known at mode decision time, and
-       so excludes the DC component.*/
-    {
-      oc_fragment_enc_info *frinfo;
-      int                   ci;
-      int                   eerror;
-      frinfo=_enc->frinfo+(frag-_enc->state.frags);
-      eerror=0;
-      for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
-      frinfo->eerror=eerror;
-    }
+          /*Compute the error function used for intra mode fragments.
+            This function can only use information known at mode decision time, and
+             so excludes the DC component.
+            TODO: Separate this out somewhere more useful.*/
+          {
+            oc_fragment_enc_info *frinfo;
+            int                   ci;
+            int                   eerror;
+            frinfo=_enc->frinfo+fragi;
+            eerror=0;
+            for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
+            frinfo->eerror=eerror;
+          }
 #endif
+        }
+      }
+    }
+    _enc->state.ncoded_fragis[pli]=ncoded_fragis-prev_ncoded_fragis;
+    prev_ncoded_fragis=ncoded_fragis;
+    _enc->state.nuncoded_fragis[pli]=0;
   }
 }
+
+
+/*Performs an fDCT on a given fragment.
+  _frag:     The fragment to perform the 2D DCT on.
+  _dct_vals: The output buffer for the DCT coefficients.
+  _ystride:  The Y stride of the plane the fragment belongs to.
+  _framei:   The picture buffer index to perform the DCT on.
+             Use OC_FRAME_IO for the current input frame.*/
+void oc_enc_frag_intra_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
+ ogg_int16_t _dct_vals[64],int _ystride,int _framei){
+  ogg_int16_t    pix_buf[64];
+  unsigned char *pixels;
+  int            pixi;
+  int            y;
+  int            x;
+  /*NOTE: 128 is subtracted from each pixel value to make it signed.
+    The original VP3 source claimed that, "this reduces the internal precision
+     requirments [sic] in the DCT transform."
+    This is of course not actually true.
+    The transform must still support input in the range [-255,255] to code
+     predicted fragments, since the same transform is used for both.
+    This actually _reduces_ the precision of the results, because larger
+     (absolute) values would have fewer significant bits chopped off when
+     rounding.
+    We're stuck with it, however.
+    At least it might reduce bias towards 0 when coding unpredicted DC
+     coefficients, but that's not what VP3 justified it with.*/
+  pixels=_frag->buffer[_framei];
+  /*For border fragments, only copy pixels that are in the displayable
+     region of the image.
+    The DCT function will compute optimal padding values for the other
+     pixels.*/
+  if(_frag->border!=NULL){
+    ogg_int64_t mask;
+    int         bii;
+    mask=_frag->border->mask;
+    for(pixi=y=0;y<8;y++){
+      for(x=0;x<8;x++,pixi++){
+        pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?pixels[x]-128:0);
+        /*This branchless code is (almost) equivalent to the previous line:
+        int pmask;
+        pmask=-(int)mask&1;
+        pix_buf[pixi]=(ogg_int16_t)(pmask&pixels[x]);
+        We don't use this code to allow the user to pass in a buffer that is
+         the exact size of the displayed image, not the size padded to a
+         multiple of 16.
+        In the latter case, we might segfault on pixels[x] if it is not mapped
+         to a valid page.*/
+        mask>>=1;
+      }
+      pixels+=_ystride;
+    }
+    bii=_frag->border-_enc->state.borders;
+    oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,pix_buf);
+  }
+  /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
+  else{
+    for(pixi=y=0;y<8;y++){
+      for(x=0;x<8;x++,pixi++)pix_buf[pixi]=(ogg_int16_t)(pixels[x]-128);
+      pixels+=_ystride;
+    }
+    oc_fdct8x8(_dct_vals,pix_buf);
+  }
+}
+
+/*Performs an fDCT on a given fragment.
+  _frag:     The fragment to perform the 2D DCT on.
+  _dct_vals: The output buffer for the DCT coefficients.
+  _pli:      The color plane the fragment belongs to.*/
+static void oc_enc_frag_inter_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
+ ogg_int16_t _dct_vals[64],int _pli){
+  ogg_int16_t    pix_buf[64];
+  unsigned char *src;
+  unsigned char *ref0;
+  unsigned char *ref1;
+  int            pixi;
+  int            src_ystride;
+  int            ref_ystride;
+  int            ref_framei;
+  int            mvoffset0;
+  int            mvoffset1;
+  int            bii;
+  int            y;
+  int            x;
+  src_ystride=_enc->state.input[_pli].stride;
+  ref_framei=_enc->state.ref_frame_idx[OC_FRAME_FOR_MODE[_frag->mbmode]];
+  ref_ystride=_enc->state.ref_frame_bufs[ref_framei][_pli].stride;
+  src=_frag->buffer[OC_FRAME_IO];
+  if(oc_state_get_mv_offsets(&_enc->state,&mvoffset0,&mvoffset1,
+   _frag->mv[0],_frag->mv[1],ref_ystride,_pli)>1){
+    ref0=_frag->buffer[ref_framei]+mvoffset0;
+    ref1=_frag->buffer[ref_framei]+mvoffset1;
+    if(_frag->border!=NULL){
+      ogg_int64_t mask;
+      mask=_frag->border->mask;
+      for(pixi=y=0;y<8;y++){
+        for(x=0;x<8;x++,pixi++){
+          pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?
+           src[x]-((int)ref0[x]+ref1[x]>>1):0);
+          mask>>=1;
+        }
+        src+=src_ystride;
+        ref0+=ref_ystride;
+        ref1+=ref_ystride;
+      }
+      bii=_frag->border-_enc->state.borders;
+      oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,
+       pix_buf);
+    }
+    else{
+      for(pixi=y=0;y<8;y++){
+        for(x=0;x<8;x++,pixi++){
+          pix_buf[pixi]=(ogg_int16_t)(src[x]-((int)ref0[x]+ref1[x]>>1));
+        }
+        src+=src_ystride;
+        ref0+=ref_ystride;
+        ref1+=ref_ystride;
+      }
+      oc_fdct8x8(_dct_vals,pix_buf);
+    }
+  }
+  else{
+    ref0=_frag->buffer[ref_framei]+mvoffset0;
+    if(_frag->border!=NULL){
+      ogg_int64_t mask;
+      mask=_frag->border->mask;
+      for(pixi=y=0;y<8;y++){
+        for(x=0;x<8;x++,pixi++){
+          pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?src[x]-(int)ref0[x]:0);
+          mask>>=1;
+        }
+        src+=src_ystride;
+        ref0+=ref_ystride;
+      }
+      bii=_frag->border-_enc->state.borders;
+      oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,
+       pix_buf);
+    }
+    else{
+      for(pixi=y=0;y<8;y++){
+        for(x=0;x<8;x++,pixi++){
+          pix_buf[pixi]=(ogg_int16_t)(src[x]-(int)ref0[x]);
+        }
+        src+=src_ystride;
+        ref0+=ref_ystride;
+      }
+      oc_fdct8x8(_dct_vals,pix_buf);
+    }
+  }
+}
+
+/*Computes the SAD value of a fragment in the input image with respect to its
+   motion compensated predictor..
+  _frag:     The fragment to find the SAD of.
+  _dx:       The X component of the motion vector.
+  _dy:       The Y component of the motion vector.
+  _pli:      The color plane the fragment belongs to.
+  _frame:    The reference frame to predict from.*/
+static int oc_enc_frag_sad(oc_enc_ctx *_enc,oc_fragment *_frag,int _dx,
+ int _dy,int _pli,int _frame){
+  int cur_ystride;
+  int ref_ystride;
+  int ref_framei;
+  int mvoffset0;
+  int mvoffset1;
+  cur_ystride=_enc->state.input[_pli].stride;
+  ref_framei=_enc->state.ref_frame_idx[_frame];
+  ref_ystride=_enc->state.ref_frame_bufs[ref_framei][_pli].stride;
+  if(oc_state_get_mv_offsets(&_enc->state,&mvoffset0,&mvoffset1,_dx,_dy,
+   ref_ystride,_pli)>1){
+    if(_frag->border==NULL){
+      return oc_sad8_halfpel(_frag->buffer[OC_FRAME_IO],cur_ystride,
+       _frag->buffer[ref_framei]+mvoffset0,
+       _frag->buffer[ref_framei]+mvoffset1,ref_ystride);
+    }
+    else{
+      return oc_sad8_halfpel_border(_frag->buffer[OC_FRAME_IO],cur_ystride,
+       _frag->buffer[ref_framei]+mvoffset0,
+       _frag->buffer[ref_framei]+mvoffset1,ref_ystride,_frag->border->mask);
+    }
+  }
+  else{
+    if(_frag->border==NULL){
+      return oc_sad8_fullpel(_frag->buffer[OC_FRAME_IO],cur_ystride,
+       _frag->buffer[ref_framei]+mvoffset0,ref_ystride);
+    }
+    else{
+      return oc_sad8_fullpel_border(_frag->buffer[OC_FRAME_IO],
+       cur_ystride,_frag->buffer[ref_framei]+mvoffset0,ref_ystride,
+       _frag->border->mask);
+    }
+  }
+}
+
+
 
 /*The number of different DCT coefficient values that can be stored by each
    of the different DCT value category tokens.*/
@@ -421,6 +751,8 @@ static const int OC_DCT_VAL_CAT_SIZES[6]={2,4,8,16,32,512};
 /*The number of bits to shift the sign of the DCT coefficient over by for each
    of the different DCT value category tokens.*/
 static const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
+
+
 
 /*Quantize and predict the DC coefficients.
   This is done in a separate step because the prediction of DC coefficients
@@ -502,6 +834,10 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
   }
 }
 
+/*Quantize and tokenize the given fragment.
+  _frinfo: The encoder information for the fragment to quantize.
+  _fquant: The forward quantization matrix to use.
+  _iquant: The inverse quantization matrix to use.*/
 static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
  oc_fragment_enc_info *_frinfo,const ogg_uint16_t _fquant[64],
  const ogg_uint16_t _iquant[64]){
@@ -512,7 +848,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
   int c_sign;
   int cati;
   int tli;
-  /*The DC coefficient is already quantized (it had to be for prediction).
+  /*The DC coefficient is already quantized (it had to be for DC prediction).
     Here we just tokenize it.*/
   if(_frinfo->dct_coeffs[0]){
     qc=abs(_frinfo->dct_coeffs[0]);
@@ -550,6 +886,7 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
   else zrun=1;
   /*Now we quantize and tokenize each AC coefficient.*/
   for(zzi=1;zzi<64;zzi++){
+    int qc_signed[2];
     int qc_max;
     int qc_min;
     int c_sign;
@@ -569,8 +906,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       /*qc_max is the most accurate quantized value.
         This is the largest possible (absolute) value we will use.*/
       qc_max=(ogg_int32_t)c_abs*_fquant[ci]+OC_FQUANT_ROUND>>OC_FQUANT_SHIFT;
-      /*qc_min is the smallest possible (absolute) quantized value whose
-         dequantized value is within the HVS-determined tolerance range.*/
+      /*qc_min is the smallest possible (by absolute value) quantized value
+         whose dequantized value is within the HVS-determined tolerance
+         range.*/
       /*TODO: qc_min could be computed by a division (we do not want to allow
          the rounding errors that are possible with the mul+shift quantization
          used for qc_max), which would allow qc_max to be calculated only if
@@ -597,7 +935,8 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
           /*The zero run tokens appear on the list for the first zero in the
              run.*/
           tli=zzi-zrun;
-          _enc->dct_tok_fragi[tli][_enc->ndct_tokens[tli]]=_frinfo-_enc->frinfo;
+          _enc->dct_tok_fragi[tli][_enc->ndct_tokens[tli]]=
+           _frinfo-_enc->frinfo;
           /*Second assumption: coding a combined run/value token always uses
              fewer bits than coding them separately.*/
           /*CAT1 run/value tokens: the value is 1.*/
@@ -620,7 +959,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
               _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
                (ogg_uint16_t)((c_sign<<3)+zrun-10);
             }
-            _frinfo->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<1)+1);
+            qc_signed[0]=1;
+            qc_signed[1]=-1;
+            _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             zrun=0;
             /*Skip coding the DCT value below.*/
             continue;
@@ -641,7 +982,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
               _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
                (ogg_uint16_t)((c_sign<<2)+(qc<<1)+zrun-2);
             }
-            _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc_min);
+            qc_signed[0]=qc_min;
+            qc_signed[1]=-qc_min;
+            _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             zrun=0;
             /*Skip coding the DCT value below.*/
             continue;
@@ -687,7 +1030,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
                (unsigned char)(OC_DCT_VAL_CAT2+qc_min-3);
               _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=
                (ogg_uint16_t)c_sign;
-              _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc_min);
+              qc_signed[0]=qc_min;
+              qc_signed[1]=-qc_min;
+              _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             }
             else{
               qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
@@ -701,7 +1046,9 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
                 This is either qc_max itself, if it is in the category's
                  range, or the largest value in the category.*/
               qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
-              _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc);
+              qc_signed[0]=qc;
+              qc_signed[1]=-qc;
+              _frinfo->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
               _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
                (unsigned char)(OC_DCT_VAL_CAT3+cati);
               _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=(ogg_uint16_t)
@@ -779,8 +1126,8 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
 }
 
 static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
-  oc_sb *sb;
-  oc_sb *sb_end;
+  int *coded_fragi;
+  int *coded_fragi_end;
   int    pli;
   int    zzi;
   /*Clear any existing DCT tokens.*/
@@ -788,33 +1135,27 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
     _enc->ndct_tokens[zzi]=_enc->nextra_bits[zzi]=0;
     _enc->extra_bits_offs[zzi]=0;
   }
-  sb=sb_end=_enc->state.sbs;
+  coded_fragi_end=coded_fragi=_enc->state.coded_fragis;
   for(pli=0;pli<3;pli++){
-    oc_fragment_plane  *fplane;
-    fplane=_enc->state.frplanes+pli;
-    sb_end+=fplane->nsbs;
     memcpy(_enc->dct_token_offs[pli],_enc->ndct_tokens,
      sizeof(_enc->dct_token_offs[pli]));
-    for(;sb<sb_end;sb++){
-      int mbi;
-      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
-        int bi;
-        for(bi=0;bi<4;bi++)if(sb->map[mbi][bi]>=0){
-          oc_fragment *frag;
-          frag=_enc->state.frags+sb->map[mbi][bi];
-          if(frag->coded){
-            oc_fragment_enc_info *frinfo;
-            int                   qti;
-            int                   nnzc;
-            qti=frag->mbmode!=OC_MODE_INTRA;
-            frinfo=_enc->frinfo+sb->map[mbi][bi];
-            nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,
-             _enc->enquant_tables[qti][pli][0][_enc->state.qi],
-             _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
-            oc_state_frag_recon(&_enc->state,frag,pli,frinfo->dct_coeffs,nnzc,
-             _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
-          }
-        }
+    coded_fragi_end+=_enc->state.ncoded_fragis[pli];
+    for(;coded_fragi<coded_fragi_end;coded_fragi++){
+      oc_fragment *frag;
+      int          fragi;
+      fragi=*coded_fragi;
+      frag=_enc->state.frags+fragi;
+      if(frag->coded){
+        oc_fragment_enc_info *frinfo;
+        int                   qti;
+        int                   nnzc;
+        qti=frag->mbmode!=OC_MODE_INTRA;
+        frinfo=_enc->frinfo+fragi;
+        nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,
+         _enc->enquant_tables[qti][pli][0][_enc->state.qi],
+         _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
+        oc_state_frag_recon(&_enc->state,frag,pli,frinfo->dct_coeffs,nnzc,
+         _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
       }
     }
   }
@@ -884,6 +1225,7 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
         unsigned rval;
         unsigned gval;
         unsigned bval;
+        /*This is intentionally slow and very accurate.*/
         yval=(*y-16)*(1.0F/219);
         uval=(*u-128)*(2*(1-0.114F)/224);
         vval=(*v-128)*(2*(1-0.299F)/224);
@@ -1130,6 +1472,10 @@ static void oc_enc_pack_residual_tokens(oc_enc_ctx *_enc){
 #endif
 }
 
+/*Encodes the current frame as a key frame.
+  The result is stored in the opb field, and the packet state is updated to
+   indicate a new packet is ready.
+  Return: 0 on success, or a negative value on error.*/
 static int oc_enc_keyframe(oc_enc_ctx *_enc){
   _enc->state.frame_type=OC_INTRA_FRAME;
   oc_enc_quant_sel_quality(_enc,1);
@@ -1146,15 +1492,240 @@ static int oc_enc_keyframe(oc_enc_ctx *_enc){
 
 
 
+/*Writes the bit flags for whether or not each super block is partially coded
+   or not.
+  These flags are run-length encoded, with the flag value alternating between
+   each run.
+  Return: The number of bits written.*/
+static int oc_enc_pack_partial_sb_flags(oc_enc_ctx *_enc){
+  unsigned flag;
+  int      run_count;
+  int      sbi;
+  int      ret;
+  /*Write the list of partially coded super block flags.*/
+  flag=_enc->state.sbs[0].coded_partially;
+  oggpackB_write(&_enc->opb_coded_flags,flag,1);
+  ret=1;
+  for(sbi=0;sbi<_enc->state.nsbs;sbi++){
+    for(run_count=0;sbi<_enc->state.nsbs;sbi++){
+      if(_enc->state.sbs[sbi].coded_partially!=flag)break;
+      run_count++;
+    }
+    /*The maximum run length we can encode is 4129.
+      If we encode a run that long, we need to specify the bit value for the
+       next run instead of being able to implicitly toggle it.
+      Note that the original VP3 implementation did not consider this case,
+       and would not write the extra bit for runs of 4129, and would write an
+       invalid code for longer runs.*/
+    /*First, encode runs until we have 4129 or fewer sbs left.*/
+    while(run_count>4129){
+      ret+=oc_pack_sb_run(&_enc->opb_coded_flags,4129);
+      run_count-=4129;
+      oggpackB_write(&_enc->opb_coded_flags,flag,1);
+      ret++;
+    }
+    /*Encode the last run.*/
+    ret+=oc_pack_sb_run(&_enc->opb_coded_flags,run_count);
+    flag=!flag;
+    /*If there are more sbs to come, and we had a run of 4129 exactly,
+       encode the flipped bit.*/
+    if(run_count==4129&&sbi+1<_enc->state.nsbs){
+      oggpackB_write(&_enc->opb_coded_flags,flag,1);
+      ret++;
+    }
+  }
+  return ret;
+}
+
+/*Writes the coded/not coded flags for each super block that is not partially
+   coded.
+  These flags are run-length encoded, with the flag value altenating between
+   each run.
+  Return: The number of bits written.*/
+static int oc_enc_pack_coded_sb_flags(oc_enc_ctx *_enc){
+  unsigned flag;
+  int      run_count;
+  int      sbi;
+  int      ret;
+  /*Write the list of coded/not coded super block flags.*/
+  /*Skip partially coded super blocks: their flags have already been coded.*/
+  for(sbi=0;;sbi++){
+    if(sbi>=_enc->state.nsbs)return 0;
+    if(!_enc->state.sbs[sbi].coded_partially)break;
+  }
+  flag=_enc->state.sbs[sbi].coded_fully;
+  oggpackB_write(&_enc->opb_coded_flags,flag,1);
+  ret=1;
+  for(sbi=0;sbi<_enc->state.nsbs;sbi++){
+    for(run_count=0;sbi<_enc->state.nsbs;sbi++){
+      if(_enc->state.sbs[sbi].coded_partially)continue;
+      if(_enc->state.sbs[sbi].coded_fully!=flag)break;
+      run_count++;
+    }
+    /*The maximum run length we can encode is 4129.
+      If we encode a run that long, we need to specify the bit value for the
+       next run instead of being able to implicitly toggle it.
+      Note that the original VP3 implementation did not consider this case,
+       and would not write the extra bit for runs of 4129, and would write an
+       invalid code for longer runs.*/
+    /*First, encode runs until we have 4129 or fewer sbs left.*/
+    while(run_count>4129){
+      ret+=oc_pack_sb_run(&_enc->opb_coded_flags,4129);
+      run_count-=4129;
+      oggpackB_write(&_enc->opb_coded_flags,flag,1);
+      ret++;
+    }
+    /*Encode the last run.*/
+    ret+=oc_pack_sb_run(&_enc->opb_coded_flags,run_count);
+    flag=!flag;
+    if(run_count==4129&&sbi+1<_enc->state.nsbs){
+      oggpackB_write(&_enc->opb_coded_flags,flag,1);
+      ret++;
+    }
+  }
+  return ret;
+}
+
+/*Writes the coded/not coded flags for each block belonging to a partially
+   coded super block.
+  These flags are run-length encoded, with the flag value alternating between
+   each run.
+  Return: The number of bits written.*/
+static int oc_enc_pack_coded_block_flags(oc_enc_ctx *_enc){
+  int flag;
+  int run_count;
+  int bli;
+  int ret;
+  if(_enc->state.nblock_coded_flags<=0)return 0;
+  flag=_enc->state.block_coded_flags[0];
+  oggpackB_write(&_enc->opb_coded_flags,flag,1);
+  ret=1;
+  for(bli=0;bli<_enc->state.nblock_coded_flags;bli++){
+    for(run_count=0;bli<_enc->state.nblock_coded_flags;bli++){
+      if(_enc->state.block_coded_flags[bli]!=flag)break;
+      run_count++;
+    }
+    /*Since each super block must have a mix of coded and not coded blocks to
+       get on this list, we are guaranteed a maximum run size of 30 (16 blocks
+       per super block, with flags (1000 0000 0000 0000, 0000 0000 0000 0001)
+       or its complement).
+      This avoids the nastiness of the VLC not letting us encode runs long
+       enough like above.*/
+    ret+=oc_pack_block_run(&_enc->opb_coded_flags,run_count);
+    flag=!flag;
+  }
+  return ret;
+}
+
+/*Marks each fragment as coded or not, based on the coefficient-level
+   thresholds computed in the psychovisual stage.
+  The MB mode of the fragments are not set, as they will be computed in
+   oc_enc_choose_mbmodes().
+  This also builds up the coded fragment and uncoded fragment lists.
+  The coded MB list is not built up.
+  That is done during mode decision.*/
+static void oc_enc_mark_coded(oc_enc_ctx *_enc){
+  oc_sb *sb;
+  oc_sb *sb_end;
+  int    pli;
+  int    bli;
+  int    ncoded_fragis;
+  int    prev_ncoded_fragis;
+  int    nuncoded_fragis;
+  int    prev_nuncoded_fragis;
+  _enc->state.nblock_coded_flags=bli=0;
+  _enc->state.uncoded_fragis=_enc->state.coded_fragis+_enc->state.nfrags;
+  prev_ncoded_fragis=ncoded_fragis=prev_nuncoded_fragis=nuncoded_fragis=0;
+  sb=sb_end=_enc->state.sbs;
+  for(pli=0;pli<3;pli++){
+    const oc_fragment_plane *fplane;
+    int                      ystride;
+    int                      prev_refi;
+    fplane=_enc->state.frplanes+pli;
+    sb_end+=fplane->nsbs;
+    prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
+    ystride=_enc->state.ref_frame_bufs[prev_refi][pli].stride;
+    for(;sb<sb_end;sb++){
+      int mbi;
+      sb->coded_fully=1;
+      sb->coded_partially=0;
+      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
+        int bi;
+        for(bi=0;bi<4;bi++)if(sb->map[mbi][bi]>=0){
+          oc_fragment *frag;
+          int          fragi;
+          int          flag;
+          fragi=sb->map[mbi][bi];
+          frag=_enc->state.frags+fragi;
+          if(frag->invalid){
+            frag->coded=0;
+            *(_enc->state.uncoded_fragis-++nuncoded_fragis)=fragi;
+          }
+          else{
+            oc_fragment_enc_info *frinfo;
+            ogg_int16_t           dct_buf[64];
+            int                   ci;
+            /*Check to see if the fragment can be skipped.
+              It is assumed that a skipped fragment always takes fewer bits than a
+               coded fragment, though this may not necessarily be true.
+              A single skipped fragment could take up to 34 bits to encode its
+               location in the RLE scheme Theora uses */
+            oc_enc_frag_intra_fdct(_enc,frag,dct_buf,ystride,prev_refi);
+            frinfo=_enc->frinfo+fragi;
+            for(ci=0;ci<64;ci++){
+              if(abs(dct_buf[ci]-frinfo->dct_coeffs[ci])>frinfo->tols[ci])break;
+            }
+            if(ci>=64){
+              frag->coded=0;
+              *(_enc->state.uncoded_fragis-++nuncoded_fragis)=fragi;
+            }
+            else{
+              frag->coded=1;
+              _enc->state.coded_fragis[ncoded_fragis++]=fragi;
+            }
+          }
+          flag=frag->coded;
+          sb->coded_fully&=flag;
+          sb->coded_partially|=flag;
+          _enc->state.block_coded_flags[bli++]=flag;
+        }
+      }
+      /*If this is a partially coded super block, keep the entries just added
+         to the code block flag list.*/
+      if(!sb->coded_fully&&sb->coded_partially){
+        _enc->state.nblock_coded_flags=bli;
+      }
+      /*Otherwise, discard these entries from the list, as they are
+         implicit.*/
+      else{
+        sb->coded_partially=0;
+        bli=_enc->state.nblock_coded_flags;
+      }
+    }
+    _enc->state.ncoded_fragis[pli]=ncoded_fragis-prev_ncoded_fragis;
+    prev_ncoded_fragis=ncoded_fragis;
+    _enc->state.nuncoded_fragis[pli]=nuncoded_fragis-prev_nuncoded_fragis;
+    prev_nuncoded_fragis=nuncoded_fragis;
+  }
+}
+
+/*Selects an appropriate coding mode for each macro block.
+  A mode is chosen for the macro blocks with at least one coded fragment.
+  A bit cost estimate for coding the frame with the selected modes is made,
+   and a similar estimate is made for coding the frame as a key frame.
+  These estimates are used to select the optimal frame type.
+  Return: The frame type to encode with: OC_INTER_FRAME or OC_INTRA_FRAME.*/
 static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   oc_set_chroma_mvs_func  set_chroma_mvs;
   oc_fragment_enc_info   *frinfo;
   oc_fragment            *frag;
-  oc_fragment            *frag_end;
   oc_mb                  *mb;
-  oc_mb                  *mb_end;
   oc_mb_enc_info         *mbinfo;
+  int                    *uncoded_fragi;
+  int                    *uncoded_fragi_end;
   int                     pli;
+  int                     mbi;
+  int                     fragi;
   int                     ci;
   int                     nmbs;
   int                     last_mv[2][2];
@@ -1162,35 +1733,6 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   int                     mvbitsb;
   int                     intra_bits;
   int                     inter_bits;
-  /*Step 1: Select which fragments need to be coded.*/
-  frinfo=_enc->frinfo;
-  frag_end=frag=_enc->state.frags;
-  for(pli=0;pli<3;pli++){
-    const oc_fragment_plane *fplane;
-    int                      stride;
-    int                      prev_refi;
-    fplane=_enc->state.frplanes+pli;
-    frag_end+=fplane->nfrags;
-    prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
-    stride=_enc->state.ref_frame_bufs[prev_refi][pli].stride;
-    for(;frag<frag_end;frag++,frinfo++){
-      if(frag->invalid)frag->coded=0;
-      else{
-        ogg_int16_t dct_buf[64];
-        /*Check to see if the fragment can be skipped.
-          It is assumed that a skipped fragment always takes fewer bits than a
-           coded fragment, though this may not necessarily be true.
-          A single skipped fragment could take up to 34 bits to encode its
-           location in the RLE scheme Theora uses */
-        oc_enc_frag_fdct(_enc,frag,dct_buf,stride,prev_refi);
-        for(ci=0;ci<64;ci++){
-          if(abs(dct_buf[ci]-frinfo->dct_coeffs[ci])>frinfo->tols[ci])break;
-        }
-        frag->coded=ci<64;
-      }
-    }
-  }
-  /*Step 2: Select a MB mode for each coded MB.*/
   nmbs=_enc->state.nmbs;
   frag=_enc->state.frags;
   set_chroma_mvs=OC_SET_CHROMA_MVS_TABLE[_enc->state.chroma_type];
@@ -1199,45 +1741,90 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   mbinfo=_enc->mbinfo;
   mvbitsa=mvbitsb=0;
   intra_bits=inter_bits=0;
-  for(mb=_enc->state.mbs,mb_end=mb+nmbs;mb<mb_end;mb++,mbinfo++){
+  _enc->state.ncoded_mbis=0;
+  for(mbi=0;mbi<nmbs;mbi++){
+    mb=_enc->state.mbs+mbi;
     if(mb->mode!=OC_MODE_INVALID){
       oc_fragment_enc_info *frinfo;
       int                   err[OC_NMODES][12];
       int                   bits[OC_NMODES];
-      int                   res_bits[OC_NMODES];
       int                   coded[12];
       int                   cbmvs[4][2];
       int                   mbmv[2];
       int                   ncoded;
+      int                   mapii;
       int                   mapi;
       int                   modei;
-      int                   fragi;
       int                   codedi;
       int                   mbpmvbitsa;
       int                   mbgmvbitsa;
       int                   mb4mvbitsa;
       int                   bi;
-      for(mapi=0;mapi<12;mapi++){
+      mbinfo=_enc->mbinfo+mbi;
+      /*Search for at least one coded fragment.*/
+      for(mapii=0;mapii<OC_MB_MAP_NIDXS[_enc->state.chroma_type];mapii++){
+        mapi=OC_MB_MAP_IDXS[_enc->state.chroma_type][mapii];
         fragi=mb->map[mapi>>2][mapi&3];
         if(fragi>=0&&frag[fragi].coded)break;
       }
-      if(mapi>=12){
+      /*If we don't find any, mark this MB not coded and move on.*/
+      if(mapii>=OC_MB_MAP_NIDXS[_enc->state.chroma_type]){
         mb->mode=OC_MODE_NOT_CODED;
         /*Don't bother to do a MV search against the golden frame.*/
         mbinfo->mvs[0][OC_FRAME_GOLD][0]=mbinfo->mvs[0][OC_FRAME_GOLD][1]=0;
         continue;
       }
+      _enc->state.coded_mbis[_enc->state.ncoded_mbis++]=mbi;
       /*Make a list of coded blocks in this macro block.*/
       coded[0]=mapi;
-      for(ncoded=1;mapi<12;mapi++){
-        fragi=mb->map[pli][bi];
+      ncoded=1;
+      for(mapii++;mapii<OC_MB_MAP_NIDXS[_enc->state.chroma_type];mapii++){
+        mapi=OC_MB_MAP_IDXS[_enc->state.chroma_type][mapii];
+        fragi=mb->map[mapi>>2][mapi&3];
         if(fragi>=0&&frag[fragi].coded)coded[ncoded++]=mapi;
       }
       /*Compute the chroma MVs for the 4MV mode.*/
-      /*TODO: Handle not all 4 luma blocks being coded.*/
+      /*TODO: Handle the case when less than 4 luma blocks are being coded.*/
       (*set_chroma_mvs)(cbmvs,mbmv,mbinfo->bmvs);
       /*Do a MV search against the golden frame.*/
       oc_mcenc_search_1mv(_enc->mcenc,mb-_enc->state.mbs,OC_FRAME_GOLD);
+      /*We are now ready to do mode decision for this macro block.
+        Mode decision is done by exhaustively examining all potential choices.
+        Since we use a minimum-quality encoding strategy, this amounts to
+         simply selecting the mode which uses the smallest number of bits,
+         since the minimum quality will be met in any mode.
+        Obviously, doing the motion compensation, fDCT, tokenization, and then
+         counting the bits each token uses is computationally expensive.
+        Theora's EOB runs can also split the cost of these tokens across
+         multiple fragments, and naturally we don't know what the optimal
+         choice of Huffman codes will be until we know all the tokens we're
+         going to encode in all the fragments.
+
+        So we use a simple approach to estimating the bit cost of each mode
+         based upon the SAD value of the residual.
+        The mathematics behind the technique are outlined by Kim \cite{Kim03},
+         but the process is very simple.
+        For each quality index and SAD value, we have a table containing the
+         average number of bits needed to code a fragment.
+        The SAD values are placed into a small number of bins (currently 16).
+        The bit counts are obtained by examining actual encoded frames, with
+         optimal Huffman codes selected and EOB bits appropriately divided
+         among all the blocks they involve.
+        A separate QIxSAD table is kept for each mode and color plane.
+        It may be possible to combine many of these, but only experimentation
+         will tell which ones truly represent the same distribution.
+
+        @ARTICLE{Kim03,
+          author="Hyun Mun Kim",
+          title="Adaptive Rate Control Using Nonlinear Regression",
+          journal="IEEE Transactions on Circuits and Systems for Video
+           Technology",
+          volume=13,
+          number=5,
+          pages="432--439",
+          month="May",
+          year=2003
+        }*/
       memset(bits,0,sizeof(bits));
       /*Find the SAD values for each coded fragment for each possible mode.*/
       for(codedi=0;codedi<ncoded;codedi++){
@@ -1260,7 +1847,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
          last_mv[0][0],last_mv[0][1],pli,OC_FRAME_PREV);
         err[OC_MODE_INTER_MV_LAST2][mapi]=oc_enc_frag_sad(_enc,frag,
          last_mv[1][0],last_mv[1][1],pli,OC_FRAME_PREV);
-        if(bi<4){
+        if(!pli){
           err[OC_MODE_INTER_MV_FOUR][mapi]=oc_enc_frag_sad(_enc,frag,
            mbinfo->bmvs[bi][0],mbinfo->bmvs[bi][1],pli,OC_FRAME_PREV);
         }
@@ -1282,10 +1869,15 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
            modei][OC_MINI(err[modei][mapi]>>6,15)];
         }
       }
+      /*Bit costs are stored in the table with extra precision.
+        Round them down to whole bits here.*/
+      for(modei=0;modei<OC_NMODES;modei++)bits[modei]=bits[modei]+128>>8;
       /*Add in the INTRA bits before we start estimating the cost for things
          not present in I frames.*/
       intra_bits+=bits[OC_MODE_INTRA];
-      /*Estimate the cost of coding the label for each mode.*/
+      /*Estimate the cost of coding the label for each mode.
+        See comments at oc_mode_scheme_chooser_cost() for a description of the
+         method.*/
       for(modei=0;modei<OC_NMODES;modei++){
         bits[modei]+=oc_mode_scheme_chooser_cost(&_enc->mode_scheme_chooser,
          modei);
@@ -1295,20 +1887,22 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
        mbinfo->mvs[0][OC_FRAME_PREV][1]);
       mbgmvbitsa=oc_mvbitsa(mbinfo->mvs[1][OC_FRAME_GOLD][0],
        mbinfo->mvs[0][OC_FRAME_GOLD][1]);
+      /*TODO: Handle the case when less than 4 luma blocks are being coded.*/
       mb4mvbitsa=oc_mvbitsa(mbinfo->bmvs[0][0],mbinfo->bmvs[0][1])+
        oc_mvbitsa(mbinfo->bmvs[1][0],mbinfo->bmvs[1][1])+
        oc_mvbitsa(mbinfo->bmvs[2][0],mbinfo->bmvs[2][1])+
        oc_mvbitsa(mbinfo->bmvs[3][0],mbinfo->bmvs[3][1]);
       /*We use the same opportunity cost method of estimating the cost of
          coding the motion vectors with the two different schemes as we do for
-         estimating the cost of the mode labels themselves.
-        However, because there's only two schemes and they're both pretty
+         estimating the cost of the mode labels.
+        However, because there are only two schemes and they're both pretty
          simple, this can just be done inline.*/
       bits[OC_MODE_INTER_MV]+=OC_MINI(mvbitsa+mbpmvbitsa,mvbitsb+12)-
        OC_MINI(mvbitsa,mvbitsb);
-      bits[OC_MODE_INTER_GOLDEN_MV]=OC_MINI(mvbitsa+mbgmvbitsa,mvbitsb+12)-
+      bits[OC_MODE_INTER_GOLDEN_MV]+=OC_MINI(mvbitsa+mbgmvbitsa,mvbitsb+12)-
        OC_MINI(mvbitsa,mvbitsb);
-      bits[OC_MODE_INTER_MV_FOUR]=OC_MINI(mvbitsa+mb4mvbitsa,mvbitsb+48)-
+      /*TODO: Handle the case when less than 4 luma blocks are being coded.*/
+      bits[OC_MODE_INTER_MV_FOUR]+=OC_MINI(mvbitsa+mb4mvbitsa,mvbitsb+48)-
        OC_MINI(mvbitsa,mvbitsb);
       /*Finally, pick the mode with the cheapest estimated bit cost.*/
       mb->mode=0;
@@ -1371,8 +1965,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
               frag->mv[1]=mbinfo->bmvs[bi][1];
             }
             else{
-              frag->mv[0]=cbmvs[bi][0];
-              frag->mv[1]=cbmvs[bi][1];
+              frag->mv[0]=(char)cbmvs[bi][0];
+              frag->mv[1]=(char)cbmvs[bi][1];
             }
           }
         }
@@ -1383,8 +1977,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
             fragi=mb->map[mapi>>2][mapi&3];
             frag=_enc->state.frags+fragi;
             frag->mbmode=mb->mode;
-            frag->mv[0]=last_mv[0][0];
-            frag->mv[1]=last_mv[0][1];
+            frag->mv[0]=(char)last_mv[0][0];
+            frag->mv[1]=(char)last_mv[0][1];
           }
         }
       }
@@ -1401,27 +1995,38 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
     }
   }
   /*Finally, compare the cost of an INTER frame and an INTRA frame.*/
-  inter_bits+=OC_MINI(mvbitsa,mvbitsb)+
+  if(mvbitsb<mvbitsa){
+    _enc->mv_scheme=1;
+    inter_bits+=mvbitsb;
+  }
+  else{
+    _enc->mv_scheme=0;
+    inter_bits+=mvbitsa;
+  }
    _enc->mode_scheme_chooser.scheme_bits[
    _enc->mode_scheme_chooser.scheme_list[0]];
-  /*TODO: coded/not coded bits.*/
+  /*The easiest way to count the bits needed for coded/not coded fragments is
+     to code them.
+    We need to do this anyway, might as well do it now.*/
+  oggpackB_reset(&_enc->opb_coded_flags);
+  inter_bits+=oc_enc_pack_partial_sb_flags(_enc);
+  inter_bits+=oc_enc_pack_coded_sb_flags(_enc);
+  inter_bits+=oc_enc_pack_coded_block_flags(_enc);
   if(intra_bits>inter_bits)return OC_INTER_FRAME;
   /*All INTRA mode is smaller, but we haven't counted up the cost of all the
      not coded fragments we will now have to code.*/
-  frinfo=_enc->frinfo;
-  frag_end=frag=_enc->state.frags;
+  uncoded_fragi_end=uncoded_fragi=_enc->state.uncoded_fragis;
   for(pli=0;pli<3;pli++){
-    const oc_fragment_plane *fplane;
-    int                      stride;
-    int                      prev_refi;
-    fplane=_enc->state.frplanes+pli;
-    frag_end+=fplane->nfrags;
-    for(;frag<frag_end;frag++,frinfo++){
+    uncoded_fragi_end-=_enc->state.nuncoded_fragis[pli];
+    while(uncoded_fragi-->uncoded_fragi_end){
+      fragi=*uncoded_fragi;
+      frag=_enc->state.frags+fragi;
       /*Assume a very small bit cost for invalid fragments.*/
       if(frag->invalid)intra_bits+=OC_RES_BITRATES[0][pli][OC_MODE_INTRA][0];
-      else if(!frag->coded){
+      else{
         int eerror;
         eerror=0;
+        frinfo=_enc->frinfo+fragi;
         for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
 #if defined(OC_BITRATE_STATS)
         frinfo->eerror=eerror;
@@ -1435,260 +2040,127 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   }
   /*So, we've compared the full cost estimates, and INTRA is still better.
     Code an INTRA frame instead.*/
-#if defined(OC_BITRATE_STATS)
-  /*oc_enc_mark_all_intra() will recompute ALL the error estimates.
-    We only need them for coded fragments not already in INTRA mode.*/
-  frag=_enc->state.frags;
-  frag_end=frag+_enc->state.nfrags;
-  for(;frag<frag_end;frag++){
-    if(!frag->coded){
-      frag->coded=1;
-      frag->mbmode=OC_MODE_INTRA;
-    }
-    else if(frag->mbmode!=OC_MODE_INTRA){
-      int eerror;
-      frinfo=_enc->frinfo+(frag-_enc->state.frags);
-      eerror=0;
-      for(ci=1;ci<64;ci++)eerror+=abs(frinfo->dct_coeffs[ci]);
-      frinfo->eerror=eerror;
-    }
-  }
-#else
   oc_enc_mark_all_intra(_enc);
-#endif
   return OC_INTRA_FRAME;
 }
 
-/*Writes the bit pattern for the run length of a run to the given
-   oggpack_buffer.
-  _opb:         The buffer to write to.
-  _value:       The length of the run.
-                This must be positive, and no more than the maximum value of a
-                 run that can be stored with the given prefix code.
-  _val_min:     The minimum value that can be coded in each interval, plus an
-                 extra entry for one past the last interval.
-  _code_prefix: The prefix code that is prepended to the value for
-                 each interval.
-  _code_nbits:   The total number of bits in the bit pattern encoded for each
-                 interval.*/
-static void oc_pack_run(oggpack_buffer *_opb,int _value,const int _val_min[],
- const int _code_prefix[],const int _code_nbits[]){
-  int i;
-  for(i=0;_value<_val_min[i+1];i++);
-  oggpackB_write(_opb,_code_prefix[i]+(_value-_val_min[i]),_code_nbits[i]);
-}
-
-/*Writes the bit pattern for the run length of a super block run to the given
-   oggpack_buffer.
-  _opb:   The buffer to write to.
-  _value: The length of the run.
-          This must be positive, and no more than 4129.*/
-static void oc_pack_sb_run(oggpack_buffer *_opb,int _value){
-  /*Coding scheme:
-       Codeword            Run Length
-     0                       1
-     10x                     2-3
-     110x                    4-5
-     1110xx                  6-9
-     11110xxx                10-17
-     111110xxxx              18-33
-     111111xxxxxxxxxxxx      34-4129*/
-  static const int VAL_MIN[8]={1,2,4,6,10,18,34,4130};
-  static const int CODE_PREFIX[7]={0,4,0xC,0x38,0xF0,0x3E0,0x3F000};
-  static const int CODE_NBITS[7]={1,3,4,6,8,10,18};
-  oc_pack_run(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
-}
-
-/*Writes the bit pattern for the run length of a block run to the given
-   oggpack_buffer.
-  _opb:   The buffer to write to.
-  _value: The length of the run.
-          This must be positive, and no more than 30.*/
-static void oc_pack_block_run(oggpack_buffer *_opb,int _value){
-  /*Coding scheme:
-     Codeword             Run Length
-     0x                      1-2
-     10x                     3-4
-     110x                    5-6
-     1110xx                  7-10
-     11110xx                 11-14
-     11111xxxx               15-30*/
-  static const int VAL_MIN[7]={1,3,5,7,11,15,31};
-  static const int CODE_PREFIX[6]={0,4,0xC,0x38,0x78,0x1F0};
-  static const int CODE_NBITS[6]={2,3,4,6,7,9};
-  oc_pack_run(_opb,_value,VAL_MIN,CODE_PREFIX,CODE_NBITS);
-}
-
-/*Writes the bit flags for whether or not each super block is partially coded
-   or not.
-  These flags are run-length encoded, with the flag value alternating between
-   each run.*/
-static void oc_enc_pack_partial_sb_flags(oc_enc_ctx *_enc){
-  unsigned flag;
-  int      run_count;
-  int      sbi;
-  /*Write the list of partially coded super block flags.*/
-  flag=_enc->state.sbs[0].coded_partially;
-  oggpackB_write(&_enc->opb,flag,1);
-  for(sbi=0;sbi<_enc->state.nsbs;sbi++){
-    for(run_count=0;sbi<_enc->state.nsbs;sbi++){
-      if(_enc->state.sbs[sbi].coded_partially!=flag)break;
-      run_count++;
-    }
-    /*The maximum run length we can encode is 4129.
-      If we encode a run that long, we need to specify the bit value for the
-       next run instead of being able to implicitly toggle it.
-      Note that the original VP3 implementation did not consider this case,
-       and would not write the extra bit for runs of 4129, and would write an
-       invalid code for longer runs.*/
-    /*First, encode runs until we have 4129 or fewer sbs left.*/
-    while(run_count>4129){
-      oc_pack_sb_run(&_enc->opb,4129);
-      run_count-=4129;
-      oggpackB_write(&_enc->opb,flag,1);
-    }
-    /*Encode the last run.*/
-    oc_pack_sb_run(&_enc->opb,run_count);
-    flag=!flag;
-    /*If there are more sbs to come, and we had a run of 4129 exactly,
-       encode the flipped bit.*/
-    if(run_count==4129&&sbi+1<_enc->state.nsbs){
-      oggpackB_write(&_enc->opb,flag,1);
-    }
-  }
-}
-
-/*Writes the coded/not coded flags for each super block that is not partially
-   coded.
-  These flags are run-length encoded, with the flag value altenating between
-   each run.*/
-static void oc_enc_pack_coded_sb_flags(oc_enc_ctx *_enc){
-  unsigned flag;
-  int      run_count;
-  int      sbi;
-  /*Write the list of coded/not coded super block flags.*/
-  /*Skip partially coded super blocks: their flags have already been coded.*/
-  while(_enc->state.sbs[sbi].coded_partially){
-    sbi++;
-    if(sbi>=_enc->state.nsbs)return;
-  }
-  flag=_enc->state.sbs[sbi].coded_fully;
-  oggpackB_write(&_enc->opb,flag,1);
-  for(sbi=0;sbi<_enc->state.nsbs;sbi++){
-    for(run_count=0;sbi<_enc->state.nsbs;sbi++){
-      if(_enc->state.sbs[sbi].coded_partially)continue;
-      if(_enc->state.sbs[sbi].coded_fully!=flag)break;
-      run_count++;
-    }
-    /*The maximum run length we can encode is 4129.
-      If we encode a run that long, we need to specify the bit value for the
-       next run instead of being able to implicitly toggle it.
-      Note that the original VP3 implementation did not consider this case,
-       and would not write the extra bit for runs of 4129, and would write an
-       invalid code for longer runs.*/
-    /*First, encode runs until we have 4129 or fewer sbs left.*/
-    while(run_count>4129){
-      oc_pack_sb_run(&_enc->opb,4129);
-      run_count-=4129;
-      oggpackB_write(&_enc->opb,flag,1);
-    }
-    /*Encode the last run.*/
-    oc_pack_sb_run(&_enc->opb,run_count);
-    flag=!flag;
-    if(run_count==4129&&sbi+1<_enc->state.nsbs){
-      oggpackB_write(&_enc->opb,flag,1);
-    }
-  }
-}
-
-/*Writes the coded/not coded flags for each block belonging to a partially
-   coded super block.
-  These flags are run-length encoded, with the flag value alternating between
-   each run.*/
-static void oc_enc_pack_coded_block_flags(oc_enc_ctx *_enc){
-  int flag;
-  int run_count;
-  int bli;
-  if(_enc->state.nblock_coded_flags<=0)return;
-  flag=_enc->state.block_coded_flags[0];
-  oggpackB_write(&_enc->opb,flag,1);
-  for(bli=0;bli<_enc->state.nblock_coded_flags;bli++){
-    for(run_count=0;bli<_enc->state.nblock_coded_flags;bli++){
-      if(_enc->state.block_coded_flags[bli]!=flag)break;
-      run_count++;
-    }
-    /*Since each super block must have a mix of coded and not coded blocks to
-       get on this list, we are guaranteed a maximum run size of 30 (16 blocks
-       per super block, with flags (1000 0000 0000 0000) (0000 0000 0000 0001)
-       or its complement).
-      This avoids the nastiness of the VLC not letting us encode runs long
-       enough like above.*/
-    oc_pack_block_run(&_enc->opb,run_count);
-    flag=!flag;
-  }
-}
-
-/*Scans the list of fragments that belong to each super block to determine
-   whether it is fully coded, partially coded, or not coded.
-  The block_coded_flags list is populated using the blocks belonging to
-   partially coded super blocks.
-  _state: The Theora state containing the flags.*/
-static void oc_state_update_sb_coded_bits(oc_theora_state *_state){
-  int flag;
-  int sbi;
-  int bli;
-  _state->nblock_coded_flags=bli=0;
-  for(sbi=0;sbi<_state->nsbs;sbi++){
-    oc_sb *sb;
-    int    mbi;
-    sb=_state->sbs+sbi;
-    sb->coded_fully=1;
-    sb->coded_partially=0;
-    /*Check the status of all the fragments coded in this super block.*/
-    for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
-      int bi;
-      for(bi=0;bi<4;bi++){
-        int fragi;
-        fragi=sb->map[mbi][bi];
-        if(fragi>=0){
-          flag=_state->frags[fragi].coded;
-          sb->coded_fully&=flag;
-          sb->coded_partially|=flag;
-          _state->block_coded_flags[bli++]=flag;
-        }
+/*Performs a motion-compensated fDCT for each fragment coded in a mode other
+   than INTRA.*/
+static void oc_enc_do_inter_dcts(oc_enc_ctx *_enc){
+  int *coded_fragi;
+  int *coded_fragi_end;
+  int  pli;
+  coded_fragi_end=coded_fragi=_enc->state.coded_fragis;
+  for(pli=0;pli<3;pli++){
+    coded_fragi_end+=_enc->state.ncoded_fragis[pli];
+    for(;coded_fragi<coded_fragi_end;coded_fragi++){
+      oc_fragment *frag;
+      frag=_enc->state.frags+*coded_fragi;
+      if(frag->mbmode!=OC_MODE_INTRA){
+        oc_fragment_enc_info *frinfo;
+        frinfo=_enc->frinfo+(frag-_enc->state.frags);
+        oc_enc_frag_inter_fdct(_enc,frag,frinfo->dct_coeffs,pli);
       }
     }
-    /*If this is a partially coded block, keep the entries just added to the
-       code block flag list.*/
-    if(!sb->coded_fully&&sb->coded_partially){
-      _state->nblock_coded_flags=bli;
+  }
+}
+
+static void oc_enc_pack_mb_modes(oc_enc_ctx *_enc){
+  const theora_huff_code *codes;
+  const int              *mode_ranks;
+  int                    *coded_mbi;
+  int                    *coded_mbi_end;
+  int                     scheme;
+  coded_mbi=_enc->state.coded_mbis;
+  coded_mbi_end=coded_mbi+_enc->state.ncoded_mbis;
+  scheme=_enc->mode_scheme_chooser.scheme_list[0];
+  oggpackB_write(&_enc->opb,scheme,3);
+  if(scheme==0){
+    int mi;
+    for(mi=0;mi<8;mi++){
+      /*The numbers associated with each mode in the stream are slightly
+         different than what we use in the source.
+        The lookup here converts between the two.*/
+      oggpackB_write(&_enc->opb,
+       OC_MODE_SCHEMES[6][_enc->mode_scheme_chooser.scheme0_list[mi]],3);
     }
-    /*Otherwise, discard these entries from the list, as they are implicit.*/
-    else{
-      sb->coded_partially=0;
-      bli=_state->nblock_coded_flags;
+  }
+  codes=_enc->mode_scheme_chooser.mode_codes[scheme];
+  mode_ranks=_enc->mode_scheme_chooser.mode_ranks[scheme];
+  for(;coded_mbi<coded_mbi_end;coded_mbi++){
+    const theora_huff_code *code;
+    oc_mb                  *mb;
+    mb=_enc->state.mbs+*coded_mbi;
+    code=codes+mode_ranks[mb->mode];
+    oggpackB_write(&_enc->opb,code->pattern,code->nbits);
+  }
+}
+
+static void oc_enc_pack_mv(oc_enc_ctx *_enc,int _dx,int _dy){
+  const theora_huff_code *code;
+  code=OC_MV_CODES[_enc->mv_scheme]+_dx+31;
+  oggpackB_write(&_enc->opb,code->pattern,code->nbits);
+  code=OC_MV_CODES[_enc->mv_scheme]+_dy+31;
+  oggpackB_write(&_enc->opb,code->pattern,code->nbits);
+}
+
+static void oc_enc_pack_mvs(oc_enc_ctx *_enc){
+  int *coded_mbi;
+  int *coded_mbi_end;
+  oggpackB_write(&_enc->opb,_enc->mv_scheme,1);
+  coded_mbi=_enc->state.coded_mbis;
+  coded_mbi_end=coded_mbi+_enc->state.ncoded_mbis;
+  for(;coded_mbi<coded_mbi_end;coded_mbi++){
+    oc_mb          *mb;
+    oc_mb_enc_info *mbinfo;
+    int             mbi;
+    mbi=*coded_mbi;
+    mb=_enc->state.mbs+mbi;
+    switch(mb->mode){
+      case OC_MODE_INTER_MV:{
+        mbinfo=_enc->mbinfo+mbi;
+        oc_enc_pack_mv(_enc,mbinfo->mvs[OC_FRAME_PREV][0][0],
+         mbinfo->mvs[OC_FRAME_PREV][0][1]);
+      }break;
+      case OC_MODE_INTER_GOLDEN_MV:{
+        mbinfo=_enc->mbinfo+mbi;
+        oc_enc_pack_mv(_enc,mbinfo->mvs[OC_FRAME_PREV][0][0],
+         mbinfo->mvs[OC_FRAME_PREV][0][1]);
+      }
+      case OC_MODE_INTER_MV_FOUR:{
+        int *frag_map;
+        int  bi;
+        /*It's important to store these in coded order, not display order.*/
+        frag_map=_enc->state.sbs[mbi>>2].map[mbi&3];
+        for(bi=0;bi<4;bi++){
+          int fragi;
+          fragi=frag_map[bi];
+          if(fragi>=0){
+            oc_fragment *frag;
+            frag=_enc->state.frags+fragi;
+            oc_enc_pack_mv(_enc,frag->mv[0],frag->mv[1]);
+          }
+        }
+      }break;
     }
   }
 }
 
 static int oc_enc_deltaframe(oc_enc_ctx *_enc){
   oc_enc_quant_sel_quality(_enc,0);
+  oc_enc_mark_coded(_enc);
   _enc->state.frame_type=oc_enc_choose_mbmodes(_enc);
-  if(_enc->state.frame_type==OC_INTER_FRAME){
-    /*TODO: do motion comp and fDCT for non-INTRA fragments.*/
-  }
+  if(_enc->state.frame_type==OC_INTER_FRAME)oc_enc_do_inter_dcts(_enc);
   oc_enc_quant_dc(_enc);
   oc_enc_residual_tokenize(_enc);
   oggpackB_reset(&_enc->opb);
   oc_enc_frame_header_pack(_enc);
   if(_enc->state.frame_type==OC_INTER_FRAME){
-    /*Pack the list of coded blocks.*/
-    oc_state_update_sb_coded_bits(&_enc->state);
-    oc_enc_pack_partial_sb_flags(_enc);
-    oc_enc_pack_coded_sb_flags(_enc);
-    oc_enc_pack_coded_block_flags(_enc);
-    /*TODO: Pack MB modes.*/
-    /*TODO: Pack motion vectors.*/
+    oggpackB_writecopy(&_enc->opb,
+     oggpackB_get_buffer(&_enc->opb_coded_flags),
+     oggpackB_bits(&_enc->opb_coded_flags));
+    oc_enc_pack_mb_modes(_enc);
+    oc_enc_pack_mvs(_enc);
   }
   /*Pack the quantized DCT coefficients.*/
   oc_enc_pack_residual_tokens(_enc);
@@ -1696,6 +2168,7 @@ static int oc_enc_deltaframe(oc_enc_ctx *_enc){
   _enc->packet_state=OC_PACKET_READY;
   return 0;
 }
+
 
 static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   int bii;
@@ -1707,6 +2180,7 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
   oggpackB_writeinit(&_enc->opb);
+  oggpackB_writeinit(&_enc->opb_coded_flags);
   _enc->frinfo=_ogg_calloc(_enc->state.nfrags,
    sizeof(_enc->frinfo[0]));
   _enc->mbinfo=_ogg_calloc(_enc->state.nmbs,sizeof(_enc->mbinfo[0]));
@@ -1720,17 +2194,16 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   _enc->psych=oc_psych_alloc(_enc);
   _enc->packet_state=OC_PACKET_INFO_HDR;
   /*TODO: Revisit qscale.*/
-  /*Currently this is set so that a qi of 0 corresponds to distortions of 24
+  /*Currently this is set so that a QI of 0 corresponds to distortions of 24
      times the JND, and each increase by 16 halves that value.
     This gives us fine discrimination at low qualities, yet effective rate
      control at high qualities.
-    A qi of 63 is speical, however.
+    The QI value 63 is special, however.
     For this, the highest quality, we use one half of a JND for our threshold.
     Due to the lower bounds placed on admissible quantizers, we will not
      actually be able to achieve quality this good, but this should provide as
      close to visually lossless quality as Theora is capable of.
-    Now that we have a more powerful way to specify quantization matrices, we
-     could lift the quantizer restrictions without breaking VP3.1
+    We could lift the quantizer restrictions without breaking VP3.1
      compatibility, but this would result in quantized coefficients that are
      too large for the current bitstream to be able to store.*/
   _enc->qscale=_info->quality>=63?0.5F:
@@ -1756,107 +2229,6 @@ static void oc_enc_clear(oc_enc_ctx *_enc){
   oc_free_2d(_enc->dct_tok_fragi);
   oc_free_2d(_enc->extra_bits);
   oc_state_clear(&_enc->state);
-}
-
-
-
-/*Performs an fDCT on a given fragment.
-  _frag:     The fragment to perform the 2D DCT on.
-  _dct_vals: The output buffer for the DCT coefficients.
-  _stride:   The stride of the plane the fragment belongs to.
-  _ref_idx:  The picture buffer to perform the DCT on.
-             Use OC_FRAME_IO for the current input frame.*/
-void oc_enc_frag_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
- ogg_int16_t _dct_vals[64],int _stride,int _ref_idx){
-  ogg_int16_t    pix_buf[64];
-  unsigned char *pixels;
-  int            pixi;
-  int            y;
-  int            x;
-  /*NOTE: 128 is subtracted from each pixel value to make it signed.
-    The original VP3 source claimed that, "this reduces the internal precision
-     requirments [sic] in the DCT transform."
-    This is of course not actually true.
-    The transform must still support input in the range [-255,255] to code
-     predicted fragments, since the same transform is used for both.
-    This actually _reduces_ the precision of the results, because larger
-     (absolute) values would have fewer significant bits chopped off when
-     rounding.
-    We're stuck with it, however.
-    At least it might reduce bias towards 0 when coding unpredicted DC
-     coefficients, but that's not what VP3 justified it with.*/
-  pixels=_frag->buffer[_ref_idx];
-  /*For border fragments, only copy pixels that are in the displayable
-     region of the image.
-    The DCT function will compute optimal padding values for the other
-     pixels.*/
-  if(_frag->border!=NULL){
-    ogg_int64_t mask;
-    int         bii;
-    mask=_frag->border->mask;
-    for(pixi=y=0;y<8;y++){
-      for(x=0;x<8;x++,pixi++){
-        pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?pixels[x]-128:0);
-        /*This branchless code is (almost) equivalent to the previous line:
-        int pmask;
-        pmask=-(int)_mask&1;
-        pix_buf[pixi]=(ogg_int16_t)(pmask&pixels[x]);
-        We don't use this code to allow the user to pass in a buffer that is
-         the exact size of the displayed image, not the size padded to a
-         multiple of 16.
-        In the latter case, we might segfault on pixels[x] if it is not mapped
-         to a valid page.*/
-        mask>>=1;
-      }
-      pixels+=_stride;
-    }
-    bii=_frag->border-_enc->state.borders;
-    oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,pix_buf);
-  }
-  /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
-  else{
-    for(pixi=y=0;y<8;y++){
-      for(x=0;x<8;x++,pixi++)pix_buf[pixi]=(ogg_int16_t)(pixels[x]-128);
-      pixels+=_stride;
-    }
-    oc_fdct8x8(_dct_vals,pix_buf);
-  }
-}
-
-int oc_enc_frag_sad(oc_enc_ctx *_enc,oc_fragment *_frag,int _dx,
- int _dy,int _pli,int _frame){
-  int cur_ystride;
-  int ref_ystride;
-  int ref_framei;
-  int mvoffset0;
-  int mvoffset1;
-  cur_ystride=_enc->state.input[_pli].stride;
-  ref_framei=_enc->state.ref_frame_idx[_frame];
-  ref_ystride=_enc->state.ref_frame_bufs[ref_framei][_pli].stride;
-  if(oc_state_get_mv_offsets(&_enc->state,&mvoffset0,&mvoffset1,_dx,_dy,
-   ref_ystride,_pli)>1){
-    if(_frag->border==NULL){
-      return oc_sad8_halfpel(_frag->buffer[OC_FRAME_IO],cur_ystride,
-       _frag->buffer[ref_framei]+mvoffset0,
-       _frag->buffer[ref_framei]+mvoffset1,ref_ystride);
-    }
-    else{
-      return oc_sad8_halfpel_border(_frag->buffer[OC_FRAME_IO],cur_ystride,
-       _frag->buffer[ref_framei]+mvoffset0,
-       _frag->buffer[ref_framei]+mvoffset1,ref_ystride,_frag->border->mask);
-    }
-  }
-  else{
-    if(_frag->border==NULL){
-      return oc_sad8_fullpel(_frag->buffer[OC_FRAME_IO],cur_ystride,
-       _frag->buffer[ref_framei]+mvoffset0,ref_ystride);
-    }
-    else{
-      return oc_sad8_fullpel_border(_frag->buffer[OC_FRAME_IO],
-       cur_ystride,_frag->buffer[ref_framei]+mvoffset0,ref_ystride,
-       _frag->border->mask);
-    }
-  }
 }
 
 
@@ -1999,15 +2371,14 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
   /*Step 5: Compute coefficient tolerances.*/
   oc_psych_scan(_enc->psych,0);
   /*Step 6: Encode!*/
-  if(_enc->state.curframe_num==1||
+  if(_enc->state.curframe_num==0||
    _enc->state.curframe_num-_enc->state.keyframe_num>=
    _enc->state.info.keyframe_frequency_force){
     ret=oc_enc_keyframe(_enc);
     if(ret<0)return ret;
   }
   else{
-    /*ret=oc_enc_deltaframe(_enc);*/
-    ret=oc_enc_keyframe(_enc);
+    ret=oc_enc_deltaframe(_enc);
     if(ret<0)return ret;
   }
   /*Note: All buffer management, etc., that is done after a frame is encoded

@@ -131,6 +131,8 @@ struct theora_enc_ctx{
   int                      packet_state;
   /*Buffer in which to assemble packets.*/
   oggpack_buffer           opb;
+  /*Special buffer used for the coded fragment flags.*/
+  oggpack_buffer           opb_coded_flags;
   /*Encoder-specific fragment information.*/
   oc_fragment_enc_info    *frinfo;
   /*Encoder-specific macro block information.*/
@@ -139,8 +141,10 @@ struct theora_enc_ctx{
   oc_border_enc_info       border_info[16];
   /*Minimum psychovisual tolerances for each coefficient in each plane.*/
   ogg_uint16_t             tol_mins[3][64];
-  /*The macro-block mode count for each mode.*/
+  /*The macro-block mode scheme chooser.*/
   oc_mode_scheme_chooser   mode_scheme_chooser;
+  /*The motion vector scheme chosen.*/
+  int                      mv_scheme;
   /*Context information used to perform motion estimation.*/
   oc_mcenc_ctx            *mcenc;
   /*Context information used to generate the importance map.*/
@@ -182,10 +186,8 @@ int oc_sad8_halfpel_border(const unsigned char *_cur,int _cur_stride,
  const unsigned char *_ref0,const unsigned char *_ref1,int _ref_stride,
  ogg_int64_t _mask);
 
-void oc_enc_frag_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
- ogg_int16_t _dct_vals[64],int _stride,int _refi);
-int oc_enc_frag_sad(oc_enc_ctx *_enc,oc_fragment *_frag,int _dx,
- int _dy,int _pli,int _ref_idx);
+void oc_enc_frag_intra_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
+ ogg_int16_t _dct_vals[64],int _ystride,int _framei);
 
 oc_mcenc_ctx *oc_mcenc_alloc(oc_enc_ctx *_enc);
 void oc_mcenc_free(oc_mcenc_ctx *_mcenc);

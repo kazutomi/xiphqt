@@ -233,6 +233,20 @@ typedef struct{
     This is 16 times the number of super blocks with their partially coded
      flag set.*/
   int                   nblock_coded_flags;
+  /*The list of coded fragments, in coded order.*/
+  int                  *coded_fragis;
+  /*The number of coded fragments in each plane.*/
+  int                   ncoded_fragis[3];
+  /*The list of uncoded fragments.
+    This just past the end of the list, which is in reverse order, and
+     uses the same block of allocated storage as the coded_fragis list.*/
+  int                  *uncoded_fragis;
+  /*The number of uncoded fragments in each plane.*/
+  int                   nuncoded_fragis[3];
+  /*The list of coded macro blocks in the Y plane, in coded order.*/
+  int                  *coded_mbis;
+  /*The number of coded macro blocks in the Y plane.*/
+  int                   ncoded_mbis;
   /*A copy of the image data used to fill the input pointers in each fragment.
     If the data pointers or strides change, these input pointers must be
      re-populated.*/
@@ -290,6 +304,12 @@ extern const int OC_FRAME_FOR_MODE[OC_NMODES];
 /*A map from physical macro block ordering to bitstream macro block
    ordering within a super block.*/
 extern const int OC_MB_MAP[2][2];
+/*A list of the indices in the oc_mb.map array that can be valid for each of
+   the various chroma decimation types.*/
+extern const int OC_MB_MAP_IDXS[4][12];
+/*The number of indices in the oc_mb.map array that can be valid for each of
+   the various chroma decimation types.*/
+extern const int OC_MB_MAP_NIDXS[4];
 /*A table of functions used to fill in the U,V plane motion vectors for a
    macro block when 4 different motion vectors are specified in the luma
    plane.*/

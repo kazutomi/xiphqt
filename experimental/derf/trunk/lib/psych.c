@@ -2114,8 +2114,8 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
     if(fragy<fplane->nvfrags){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,dfragi++){
         if(frags[dfragi].invalid)continue;
-        oc_enc_frag_fdct(_psych->enc,frags+dfragi,frinfo[dfragi].dct_coeffs,
-         stride,OC_FRAME_IO);
+        oc_enc_frag_intra_fdct(_psych->enc,
+         frags+dfragi,frinfo[dfragi].dct_coeffs,stride,OC_FRAME_IO);
       }
     }
     /*After a vsize_max delay, perform CSF filtering.*/

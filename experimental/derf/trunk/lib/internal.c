@@ -55,6 +55,19 @@ const int OC_FRAME_FOR_MODE[8]={
    ordering within a super block.*/
 const int OC_MB_MAP[2][2]={{0,3},{1,2}};
 
+/*A list of the indices in the oc_mb.map array that can be valid for each of
+   the various chroma decimation types.*/
+const int OC_MB_MAP_IDXS[4][12]={
+  {0,1,2,3,4,5,6,7,8,9,10,11},
+  {0,1,2,3,4,6,8,10},
+  {0,1,2,3,4,5,8,9},
+  {0,1,2,3,4,8}
+};
+
+/*The number of indices in the oc_mb.map array that can be valid for each of
+   the various chroma decimation types.*/
+const int OC_MB_MAP_NIDXS[4]={12,8,8,6};
+
 /*The number of extra bits that are coded with each of the DCT tokens.
   Each DCT token has some fixed number of additional bits (possibly 0) stored
    after the token itself, containing, for example, coefficient magnitude,

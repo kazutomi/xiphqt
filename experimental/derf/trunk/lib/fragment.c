@@ -19,7 +19,7 @@ void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
   int i;
   for(i=0;i<8;i++){
     int j;
-    for(j=0;j<8;j++)_dst[j]=oc_clamp255(_src[j]+*_residue++);
+    for(j=0;j<8;j++)_dst[j]=oc_clamp255(*_residue+++_src[j]);
     _dst+=_dst_ystride;
     _src+=_src_ystride;
   }
@@ -32,7 +32,7 @@ void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
   for(i=0;i<8;i++){
     int j;
     for(j=0;j<8;j++){
-      _dst[j]=oc_clamp255(((int)_src1[j]+_src2[j]>>1)+*_residue++);
+      _dst[j]=oc_clamp255(*_residue+++((int)_src1[j]+_src2[j]>>1));
     }
     _dst+=_dst_ystride;
     _src1+=_src1_ystride;
