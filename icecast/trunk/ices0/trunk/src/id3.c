@@ -20,104 +20,24 @@
  */
 
 #include "definitions.h"
+#include "metadata.h"
 
 #include <thread.h>
 
 extern ices_config_t ices_config;
 
-static char *ices_id3_song = NULL;
-static char *ices_id3_artist = NULL;
-static mutex_t id3_mutex;
-static int id3_is_initialized = 0;
-
 /* Private function declarations */
-static void ices_id3v1_parse (input_stream_t* source);
 static int id3v2_decode_synchsafe (unsigned char* synchsafe);
-static void ices_id3_cleanup (void);
 
 /* Global function definitions */
 
-/* Initialize the id3 module, create the id3 module mutex */
 void
-ices_id3_initialize (void)
-{
-	thread_create_mutex (&id3_mutex);
-	id3_is_initialized = 1;
-}
-
-/* Only shutdown if we are initialized */
-void
-ices_id3_shutdown (void)
-{
-	if (id3_is_initialized == 1)
-		thread_destroy_mutex (&id3_mutex);
-}
-
-/* Do id3 tag parsing on the file, and update the metadata on
- * the server with the new information */
-void
-ices_id3_parse (input_stream_t* source)
-{
-  /* Make sure no one gets old/corrupt information */
-  thread_lock_mutex (&id3_mutex);
-
-  /* Cleanup the previous information */
-  ices_id3_cleanup ();
-
-  ices_id3v1_parse (source);
-  
-  /* Give the go-ahead to external modules to get id3 info */
-  thread_unlock_mutex (&id3_mutex);
-
-  return;
-}
-
-/* Return the id3 module artist name, if found. */
-char *
-ices_id3_get_artist (char *namespace, int maxlen)
-{
-	thread_lock_mutex (&id3_mutex);
-
-	if (ices_id3_artist) {
-		strncpy (namespace, ices_util_nullcheck (ices_id3_artist), maxlen);
-	} else {
-		namespace[0] = '\0';
-		namespace = NULL;
-	}
-
-	thread_unlock_mutex (&id3_mutex);
-	
-	return namespace;
-}
-
-/* Return the id3 module title name, if found. */
-char *
-ices_id3_get_title (char *namespace, int maxlen)
-{
-	thread_lock_mutex (&id3_mutex);
-
-	if (ices_id3_song) {
-		strncpy (namespace, ices_util_nullcheck (ices_id3_song), maxlen);
-	} else {
-		namespace[0] = '\0';
-		namespace = NULL;
-	}
-
-	thread_unlock_mutex (&id3_mutex);
-	return namespace;
-}
-
-/* Private function definitions */
-
-/* Function that does the id3 tag parsing of a file */
-static void
 ices_id3v1_parse (input_stream_t* source)
 {
   off_t pos;
   char tag[3];
   char song_name[31];
   char artist[31];
-  char genre[31];
   char namespace[1024];
 
   if (! source->canseek)
@@ -137,7 +57,6 @@ ices_id3v1_parse (input_stream_t* source)
 
   memset (song_name, 0, 31);
   memset (artist, 0, 31);
-  memset (genre, 0, 31);
 
   if ((read (source->fd, tag, 3) == 3) && !strncmp (tag, "TAG", 3)) {
     /* Don't stream the tag */
@@ -150,8 +69,7 @@ ices_id3v1_parse (input_stream_t* source)
 
     while (song_name[strlen (song_name) - 1] == ' ')
       song_name[strlen (song_name) - 1] = '\0';
-    ices_id3_song = ices_util_strdup (song_name);
-    ices_log_debug ("ID3v1 song: %s", ices_id3_song);
+    ices_log_debug ("ID3v1 song: %s", song_name);
 
     if (read (source->fd, artist, 30) != 30) {
       ices_log ("Error reading ID3v1 artist");
@@ -160,8 +78,9 @@ ices_id3v1_parse (input_stream_t* source)
 
     while (artist[strlen (artist) - 1] == '\040')
       artist[strlen (artist) - 1] = '\0';
-    ices_id3_artist = ices_util_strdup (artist);
-    ices_log_debug ("ID3v1 artist: %s", ices_id3_artist);
+    ices_log_debug ("ID3v1 artist: %s", artist);
+
+    ices_metadata_set (artist, song_name);
   }
   
 out:
@@ -206,15 +125,4 @@ id3v2_decode_synchsafe (unsigned char* synchsafe)
   res |= synchsafe[0] << 21;
 
   return res;
-}
-
-/* Make a clean slate for the next file */
-static void
-ices_id3_cleanup (void)
-{
-  ices_util_free (ices_id3_song);
-  ices_id3_song = NULL;
-
-  ices_util_free (ices_id3_artist);
-  ices_id3_artist = NULL;
 }

@@ -89,7 +89,6 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 				 int16_t* left, int16_t* right);
 #endif
 static int ices_mp3_close (input_stream_t* self);
-static int ices_mp3_get_metadata (input_stream_t* self, char* buf, size_t len);
 
 /* Return the current song's bitrate */
 int
@@ -132,6 +131,9 @@ ices_mp3_parse (input_stream_t* source)
   mp3_header_t mh;
   size_t len;
   int rc = 1;
+
+  if (! mp3_data->len)
+    return 1;
 
   /* Ogg/Vorbis often contains bits that almost look like MP3 headers */
   if (! strncmp ("OggS", mp3_data->buf, 4))
@@ -243,10 +245,9 @@ ices_mp3_open (input_stream_t* self, const char* buf, size_t len)
 #else
   self->readpcm = NULL;
 #endif
-  self->get_metadata = ices_mp3_get_metadata;
   self->close = ices_mp3_close;
 
-  ices_id3_parse (self);
+  ices_id3v1_parse (self);
 
   if ((rc = ices_mp3_parse (self))) {
     free (mp3_data->buf);
@@ -322,24 +323,4 @@ ices_mp3_close (input_stream_t* self)
   free (self->data);
 
   return close (self->fd);
-}
-
-static int
-ices_mp3_get_metadata (input_stream_t* self, char* buf, size_t len)
-{
-  char artist[1024];
-  char title[1024];
-
-  ices_id3_get_artist (artist, sizeof (artist));
-  ices_id3_get_title (title, sizeof (title));
-
-  if (! *title)
-    return -1;
-
-  if (*artist)
-    snprintf (buf, len, "%s - %s", artist, title);
-  else
-    snprintf (buf, len, "%s", artist);
-
-  return 0;
 }

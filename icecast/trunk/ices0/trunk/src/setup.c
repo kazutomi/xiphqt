@@ -19,6 +19,7 @@
  */
 
 #include "definitions.h"
+#include "metadata.h"
 
 #include <thread.h>
 
@@ -79,8 +80,7 @@ ices_setup_initialize (void)
   /* Initialize the playlist handler */
   ices_playlist_initialize ();
 
-  /* Initialize id3 stuff */
-  ices_id3_initialize ();
+  ices_metadata_init ();
 
 #ifdef HAVE_LIBLAME
   /* Initialize liblame for reeencoding */
@@ -123,8 +123,7 @@ ices_setup_shutdown (void)
   /* Tell the playlist module to shutdown and cleanup */
   ices_playlist_shutdown ();
 
-  /* Shutdown id3 module */
-  ices_id3_shutdown ();
+  ices_metadata_shutdown ();
 
   /* Cleanup the cue file (the cue module has no init yet) */
   ices_cue_shutdown ();

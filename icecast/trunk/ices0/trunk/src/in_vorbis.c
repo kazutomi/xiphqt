@@ -20,6 +20,7 @@
  */
 
 #include "in_vorbis.h"
+#include "metadata.h"
 
 #include <string.h>
 
@@ -37,8 +38,7 @@ typedef struct {
 static int ices_vorbis_readpcm (input_stream_t* self, size_t len,
 				int16_t* left, int16_t* right);
 static int ices_vorbis_close (input_stream_t* self);
-static int ices_vorbis_get_metadata (input_stream_t* self, char* buf,
-				     size_t len);
+static void in_vorbis_set_metadata (ices_vorbis_in_t* vorbis_data);
 
 /* try to open a vorbis file for decoding. Returns:
  *   0: success
@@ -101,10 +101,11 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   self->read = NULL;
   self->readpcm = ices_vorbis_readpcm;
   self->close = ices_vorbis_close;
-  self->get_metadata = ices_vorbis_get_metadata;
 
   self->bitrate = ov_bitrate (vf, -1) / 1000;
 
+  in_vorbis_set_metadata (vorbis_data);
+  
   return 0;
 }
 
@@ -158,10 +159,9 @@ ices_vorbis_close (input_stream_t* self)
   return 0;
 }
 
-static int
-ices_vorbis_get_metadata (input_stream_t* self, char* buf, size_t len)
+static void
+in_vorbis_set_metadata (ices_vorbis_in_t* vorbis_data)
 {
-  ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
   vorbis_comment* comment;
   char* key;
   char* artist = NULL;
@@ -169,7 +169,7 @@ ices_vorbis_get_metadata (input_stream_t* self, char* buf, size_t len)
   int i;
 
   if (! (comment = ov_comment (vorbis_data->vf, -1)))
-    return -1;
+    return;
 
   for (i = 0; i < comment->comments; i++) {
     key = comment->user_comments[i];
@@ -180,13 +180,5 @@ ices_vorbis_get_metadata (input_stream_t* self, char* buf, size_t len)
       title = key+6;
   }
 
-  if (! title)
-    return -1;
-
-  if (artist)
-    snprintf (buf, len, "%s - %s", artist, title);
-  else
-    snprintf (buf, len, "%s", title);
-
-  return 0;
+  ices_metadata_set (artist, title);
 }

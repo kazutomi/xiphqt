@@ -18,4 +18,8 @@
  */
 
 /* Public function declarations */
-void ices_metadata_set (input_stream_t* source);
+void ices_metadata_init (void);
+void ices_metadata_shutdown (void);
+void ices_metadata_get (char* artist, size_t alen, char* title, size_t tlen);
+void ices_metadata_set (const char* artist, const char* title);
+void ices_metadata_update (input_stream_t* source);

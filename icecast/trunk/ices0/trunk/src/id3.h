@@ -19,9 +19,5 @@
  */
 
 /* Public function declarations */
-void ices_id3_parse (input_stream_t* source);
+void ices_id3v1_parse (input_stream_t* source);
 void ices_id3v2_parse (input_stream_t* source);
-char *ices_id3_get_artist (char *namespace, int maxlen);
-char *ices_id3_get_title (char *namespace, int maxlen);
-void ices_id3_initialize (void);
-void ices_id3_shutdown (void);

@@ -154,6 +154,11 @@ ices_stream_send_file (const char *file)
 
   source.path = file;
   source.bytes_read = 0;
+  source.filesize = 0;
+
+  source.read = NULL;
+  source.readpcm = NULL;
+  source.close = NULL;
 
   if (ices_stream_open_source (&source) < 0) {
     return -1;
@@ -180,7 +185,7 @@ ices_stream_send_file (const char *file)
   
   ices_log ("Playing %s", source.path);
 
-  ices_metadata_set (&source);
+  ices_metadata_update (&source);
 
   finish_send = 0;
   while (! finish_send) {
@@ -244,6 +249,7 @@ ices_stream_send_file (const char *file)
 #endif
 
   source.close (&source);
+  ices_metadata_set (NULL, NULL);
 
   return 0;
 }
@@ -268,7 +274,6 @@ ices_stream_open_source (input_stream_t* source)
 
   if (lseek (fd, SEEK_SET, 0) == -1) {
     source->canseek = 0;
-    source->filesize = 0;
   }
   else {
     source->canseek = 1;
