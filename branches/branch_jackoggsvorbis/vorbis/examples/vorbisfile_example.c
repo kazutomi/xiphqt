@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: simple example decoder using vorbisfile
- last mod: $Id: vorbisfile_example.c,v 1.1 2000/06/19 10:05:57 xiphmont Exp $
+ last mod: $Id: vorbisfile_example.c,v 1.1.8.1 2000/09/03 08:34:51 jack Exp $
 
  ********************************************************************/
 
@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "vorbis/codec.h"
-#include "vorbis/vorbisfile.h"
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
 
 #ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
 #include <io.h>

@@ -12,15 +12,14 @@
  ********************************************************************
 
  function: illustrate seeking, and test it too
- last mod: $Id: seeking_example.c,v 1.3 2000/07/07 06:16:24 xiphmont Exp $
+ last mod: $Id: seeking_example.c,v 1.3.6.1 2000/09/03 08:34:51 jack Exp $
 
  ********************************************************************/
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "vorbis/codec.h"
-#include "vorbis/vorbisfile.h"
-#include "../lib/misc.h"
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
 
 int main(){
   OggVorbis_File ov;
