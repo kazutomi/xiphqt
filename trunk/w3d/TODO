@@ -1,8 +1,10 @@
+- segfaults while destroying encoder stream
+
 Here only the wavelet-related TODO's:
 
  - arithmetic binary entropy coders may be faster, simpler and more efficient;
     implement the ZP-Coder
- - design/implement a stream format
+ - oggetize the stream format
  - write avitotarkin/quicktimetotarkin/mpegtotarkin/player/recorder
     (a libsndfile/libaudiofile alike video library would be great !)
  - profile

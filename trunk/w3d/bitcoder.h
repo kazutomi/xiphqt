@@ -49,7 +49,8 @@ void bitcoder_encoder_init (BitCoderState *s, uint32_t limit)
 static inline
 void bitcoder_encoder_done (BitCoderState *s)
 {
-   free (s->bitstream);
+//  XXX FIXME !!!
+//   free (s->bitstream);
 }
 
 
