@@ -189,6 +189,8 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 	ices_config->playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
 	ices_config->verbose = ICES_DEFAULT_VERBOSE;
 	ices_config->reencode = ICES_DEFAULT_REENCODE;
+	ices_config->out_numchannels = -1;
+	ices_config->out_samplerate = -1;
 }
 
 /* Function to free() all allocated memory when ices shuts down. */
@@ -304,7 +306,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
                 if (s[0] == '-') {
 			
 			/* RrivBzx all require arguments */
-			if ((strchr ("RrivBzx", s[1]) == NULL) && arg >= (argc - 1)) {
+			if ((strchr ("RrivBzxHN", s[1]) == NULL) && arg >= (argc - 1)) {
 				ices_log ("Option %c requires an argument!\n", s[1]);
 				ices_setup_usage ();
 				ices_setup_shutdown ();
@@ -358,6 +360,10 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 						ices_util_free (ices_config->host);
 					ices_config->host = ices_util_strdup (argv[arg]);
 					break;
+				case 'H':
+					arg++;
+					ices_config->out_samplerate = atoi (argv[arg]);
+					break;
 				case 'i':
 					ices_config->header_protocol = icy_header_protocol_e;
 					break;
@@ -372,6 +378,10 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					if (ices_config->mount)
 						ices_util_free (ices_config->mount);
 					ices_config->mount = ices_util_strdup (argv[arg]);
+					break;
+				case 'N':
+					arg++;
+					ices_config->out_numchannels = atoi (argv[arg]);
 					break;
 				case 'n':
 					arg++;
@@ -491,6 +501,8 @@ ices_setup_usage ()
 	ices_log ("\t-s (private stream)");
 	ices_log ("\t-S <perl|python|builtin>");
 	ices_log ("\t-u <stream url>");
+	ices_log ("\t-H <reencoded sample rate>");
+	ices_log ("\t-N <reencoded number of channels>"):
 }
 
 /* This function makes ices run in the selected way.

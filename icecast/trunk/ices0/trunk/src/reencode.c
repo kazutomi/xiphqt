@@ -105,6 +105,10 @@ ices_reencode_reset ()
 	}
 
 	ices_reencode_flags.brate = ices_config.bitrate;
+	if (ices_config.out_numchannels != -1)
+		ices_reencode_flags.num_channels = ices_config.out_numchannels);
+	if (ices_config.out_samplerate != -1)
+		ices_reencode_flags.out_samplerate = ices_config.out_samplerate);
 
 	if (lame_init_params (&ices_reencode_flags) == -1) {
 		ices_log ("Error: lame_init_params() failed!");

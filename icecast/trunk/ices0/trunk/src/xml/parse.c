@@ -268,6 +268,10 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices
 			
 			ices_config->verbose = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 
+		} else if (strcmp (cur->name, "Samplerate") == 0) {
+			ices_config->out_samplerate = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+		} else if (strcmp (cur->name, "Channels") == 0) {
+			ices_config->out_numchannels = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 		} else if (strcmp (cur->name, "Base_Directory") == 0) {
 			
 			if (ices_config->base_directory)

@@ -43,6 +43,8 @@ typedef struct ices_config_St {
 	int playlist_type;
 	int verbose;
 	int reencode;
+	int out_samplerate;
+	int out_numchannels;
 	char *dumpfile;
 	char *configfile;
 	char *playlist_file;
