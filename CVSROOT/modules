@@ -32,9 +32,9 @@ src-httpp -d src &httpp
 src-thread -d src &thread
 src-timing -d src &timing
 
-icecast icecast &src-avl src-log src-net src-httpp src-thread src-timing
+icecast icecast &src-avl &src-log &src-net &src-httpp &src-thread &src-timing
 
-ices ices &m4 src-avl src-log src-thread src-timing
+ices ices &m4 &src-avl &src-log &src-thread &src-timing
 
-libshout libshout &m4 src-avl src-net src-thread src-httpp src-timing
+libshout libshout &m4 &src-avl &src-net &src-thread &src-httpp &src-timing
 
