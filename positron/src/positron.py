@@ -10,6 +10,7 @@ import cmd_del
 import cmd_list
 import cmd_clear
 import cmd_pack
+import cmd_sync
 
 import ports
 
@@ -19,10 +20,11 @@ version = "Xiph.org Positron version 0.1"
 # where the command is stored.  The second value is the order to
 # display commands in from usage()
 commands = { "add"  : (cmd_add,   1),
-             "del"  : (cmd_del,   2),
-             "list" : (cmd_list,  3),
-             "clear": (cmd_clear, 4),
-             "pack" : (cmd_pack,  5) }
+             "sync" : (cmd_sync,  2),
+             "del"  : (cmd_del,   3),
+             "list" : (cmd_list,  4),
+             "clear": (cmd_clear, 5),
+             "pack" : (cmd_pack,  6) }
 
 # For sorting according to the display order element in the tuple
 def cmp_func(a, b):
