@@ -12,7 +12,7 @@
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c,v 1.14 2001/02/26 03:50:43 xiphmont Exp $
+ last mod: $Id: psytune.c,v 1.14.4.1 2001/04/05 00:22:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -33,7 +33,7 @@
 
 static vorbis_info_psy _psy_set0={
   1,/*athp*/
-  0,/*decayp*/
+  1,/*decayp*/
 
   -100.f,
   -140.f,
@@ -43,38 +43,33 @@ static vorbis_info_psy _psy_set0={
   /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
   /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
   /* y: 0 10 20 30 40 50 60 70 80 90 100 dB */
-
    1,/* tonemaskp */
   /*  0   10   20   30   40   50   60   70   80   90   100 */
   {
-   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f}, /*63*/
-   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f}, /*88*/
-   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f}, /*125*/
-   //   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-100.}, /*175*/
-   //   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-100.}, /*250*/
-   //   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-100.}, /*350*/
-   //   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-100.}, /*500*/
-   //   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-99.,-100.}, /*700*/
+   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f
+}, /*63*/
+   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f
+}, /*88*/
+   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f
+}, /*125*/
 
-   //   {-30.,-35.,-35.,-40.,-40.,-50.,-60.,-70.,-80.,-90.,-100.}, /*63*/
-   //   {-30.,-35.,-35.,-40.,-40.,-50.,-60.,-70.,-80.,-90.,-100.}, /*88*/
-   //   {-30.,-35.,-35.,-40.,-40.,-50.,-60.,-70.,-80.,-90.,-100.}, /*125*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*175*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*250*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*350*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*500*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*700*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*175*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*250*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*350*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*500*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*700*/
 
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*1000*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*1400*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*1000*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*1400*/
    {-40.f,-40.f,-40.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*2000*/
    {-40.f,-40.f,-40.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*2800*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*4000*/
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*5600*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*4000*/
+   {-35.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*5600*/
 
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*8000*/
-   {-30.f,-30.f,-30.f,-40.f,-40.f,-45.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*11500*/
-   {-30.f,-30.f,-30.f,-35.f,-35.f,-45.f,-50.f,-60.f,-70.f,-80.f,-90.f}, /*16000*/
+   {-30.f,-30.f,-33.f,-35.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*8000*/
+   {-30.f,-30.f,-33.f,-35.f,-35.f,-45.f,-50.f,-60.f,-70.f,-90.f,-100.f}, /*11500*/
+   {-24.f,-24.f,-26.f,-32.f,-32.f,-42.f,-50.f,-60.f,-70.f,-90.f,-100.f}, /*16000*/
+
   },
 
   1,/* peakattp */
@@ -98,35 +93,36 @@ static vorbis_info_psy _psy_set0={
   },
 
   1,/*noisemaskp */
-  -0.f,  /* suppress any noise curve over maxspec+n */
+  -24.f,  /* suppress any noise curve over maxspec+n */
   .5f,   /* low window */
   .5f,   /* high window */
   25,
   25,
-  {.000f, /*63*/
-   .000f, /*88*/
-   .000f, /*125*/
-   .000f, /*175*/
-   .000f, /*250*/
-   .000f, /*350*/
-   .000f, /*500*/
-   .200f, /*700*/
-   .300f, /*1000*/
-   .400f, /*1400*/
-   .400f, /*2000*/
-   .400f, /*2800*/
-   .700f, /*4000*/
-   .900f, /*5600*/
-   .900f, /*8000*/
-   .900f, /*11500*/
-   .900f, /*16000*/
+  {.000f, 0.f, /*63*/
+   .000f, 0.f, /*88*/
+   .000f, 0.f, /*125*/
+   .000f, 0.f, /*175*/
+   .000f, 0.f, /*250*/
+   .000f, 0.f, /*350*/
+   .000f, 0.f, /*500*/
+   .200f, 0.f, /*700*/
+   .300f, 0.f, /*1000*/
+   .400f, 0.f, /*1400*/
+   .400f, 0.f, /*2000*/
+   .400f, 0.f, /*2800*/
+   .700f, 0.f, /*4000*/
+   .850f, 0.f, /*5600*/
+   .900f, 0.f, /*8000*/
+   .900f, 0.f, /*11500*/
+   .900f, 1.f, /*16000*/
   },
  
-  105.f,  /* even decade + 5 is important; saves an rint() later in a
+  95.f,  /* even decade + 5 is important; saves an rint() later in a
             tight loop) */
   -28.,
 
-  -0.f, -.004f   /* attack/decay control */
+  -0.f, -.004f,   /* attack/decay control */
+
 };
 
 static int noisy=0;
@@ -193,6 +189,75 @@ static void floorinit(vorbis_look_floor0 *look,int n,int m,int ln){
     look->linearmap[j]=val;
   }
 }
+
+/*****************************************************************/
+/* fine floor partitioner */
+
+static char amplitude_split[8000];
+static char frequency_split[8000];
+
+/* brute force it for now */
+void partition_split(float *floor,int f0,int f1,int a0,int a1,char *list,int d){
+  int i;
+  for(i=f0;i<f1;i++)
+    if(floor[i]>=a0 && floor[i]<a1)break;
+
+  if(i<f1)
+    strcat(list,"1");
+  else{
+    strcat(list,"0");
+    return;
+  }
+
+  if(f1-f0 >= a1-a0){
+    if(f1-f0==2)return;
+
+    partition_split(floor,f0,(f1+f0)/2,a0,a1,frequency_split,d+1);
+    partition_split(floor,(f1+f0)/2,f1,a0,a1,frequency_split,d+1);
+
+  }else{
+
+    partition_split(floor,f0,f1,a0,(a1+a0)/2,amplitude_split,d+1);
+    partition_split(floor,f0,f1,(a1+a0)/2,a1,amplitude_split,d+1);
+
+  }
+}
+
+
+void partition_setup(float *floor,float *data,int n){
+  int i;
+  float foo[n];
+  amplitude_split[0]='\0';
+  frequency_split[0]='\0';
+
+  for(i=0;i<n;i++){
+    if(data[i]>0){
+      if(data[i]/fromdB(floor[i])>.5){
+	foo[i]=todB(data[i]);
+	data[i]=fromdB(rint(todB(data[i])));
+      }else{
+	foo[i]=-999;
+	data[i]=0.;
+      }
+    }else{
+      if(data[i]/fromdB(floor[i])<-.5){
+	foo[i]=todB(data[i]);
+	data[i]=-fromdB(rint(todB(data[i])));
+      }else{
+	foo[i]=-999;
+	data[i]=0.;
+      }
+    }
+  }
+
+  partition_split(foo,0,n,-128,0,frequency_split,0);
+
+  fprintf(stderr,"%d:%d,  ",strlen(frequency_split),strlen(amplitude_split));
+}
+
+
+
+/****************************************************************/
 
 int main(int argc,char *argv[]){
   int eos=0;
@@ -330,6 +395,9 @@ int main(int argc,char *argv[]){
 
 	analysis("mask",frameno,flr,framesize/2,0,0);
 
+	partition_setup(flr,pcm[i],framesize/2);
+
+	/*
 	for(j=0;j<framesize/2;j++)
 	  mask[j]=flr[j]+140.;
 
@@ -345,7 +413,6 @@ int main(int argc,char *argv[]){
 
 	analysis("quant",frameno,pcm[i],framesize/2,0,0);
 
-	/* re-add floor */
 	for(j=0;j<framesize/2;j++){
 	  float val=rint(pcm[i][j]);
 	  tot++;
@@ -357,7 +424,8 @@ int main(int argc,char *argv[]){
 	    pcm[i][j]=0.f;
 	  }
 	}
-	
+	*/
+
 	analysis("final",frameno,pcm[i],framesize/2,0,1);
 
 	/* take it back to time */

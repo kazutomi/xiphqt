@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: floor backend 0 implementation
- last mod: $Id: floor0.c,v 1.39 2001/02/26 03:50:41 xiphmont Exp $
+ last mod: $Id: floor0.c,v 1.39.4.1 2001/04/05 00:22:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -197,6 +197,7 @@ float _curve_to_lpc(float *curve,float *lpc,
   float *work=alloca(sizeof(float)*mapped);
   int i,j,last=0;
   int bark=0;
+  static int seq=0;
 
   memset(work,0,sizeof(float)*mapped);
   
@@ -232,6 +233,20 @@ float _curve_to_lpc(float *curve,float *lpc,
   /* If we're over-ranged to avoid edge effects, fill in the end of spectrum gap */
   for(i=bark+1;i<mapped;i++)
     work[i]=work[i-1];
+
+
+  /**********************/
+
+  for(i=0;i<l->n;i++)
+    curve[i]-=150;
+
+  _analysis_output_always("barkfloor",seq,work,bark,0,0);
+  _analysis_output_always("barkcurve",seq++,curve,l->n,1,0);
+
+  for(i=0;i<l->n;i++)
+    curve[i]+=150;
+
+  /**********************/
   
   return vorbis_lpc_from_curve(work,lpc,&(l->lpclook));
 }
@@ -240,7 +255,7 @@ float _curve_to_lpc(float *curve,float *lpc,
 /* didn't need in->out seperation, modifies the flr[] vector; takes in
    a dB scale floor, puts out linear */
 static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
-		    float *flr){
+		    float *flr,float *dummy){
   long j;
   vorbis_look_floor0 *look=(vorbis_look_floor0 *)i;
   vorbis_info_floor0 *info=look->vi;
@@ -369,6 +384,8 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
     /* take the coefficients back to a spectral envelope curve */
     vorbis_lsp_to_curve(flr,look->linearmap,look->n,look->ln,
 			lspwork,look->m,amp,info->ampdB);
+
+    _analysis_output_always("barklsp",seq-1,flr,look->n,1,1);
     _analysis_output("lsp3",seq-1,flr,look->n,0,1);
     return(val);
   }

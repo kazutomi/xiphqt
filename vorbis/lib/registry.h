@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: registry for time, floor, res backends and channel mappings
- last mod: $Id: registry.h,v 1.5 2001/02/26 03:50:43 xiphmont Exp $
+ last mod: $Id: registry.h,v 1.5.4.1 2001/04/05 00:22:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -23,7 +23,7 @@
 #define VI_TRANSFORMB 1
 #define VI_WINDOWB 1
 #define VI_TIMEB 1
-#define VI_FLOORB 1
+#define VI_FLOORB 2
 #define VI_RESB 1
 #define VI_MAPB 1
 
