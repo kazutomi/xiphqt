@@ -22,7 +22,7 @@
 * <a href="http://www.hanfbu.de/downloads/linux/howto/streaming.pdf">German icecast2 and ices2 howto written by Tobias Haf.</a>
 </p>
 <p>
-* <a href="http://quasi.ksl.com/icecast/">icecast howto written by Kerry Cox.</a>
+* <a href="http://www.gnuware.com/icecast/">icecast howto written by Kerry Cox.</a>
 </p>
 <p>
 * <a href="http://rezal404.org/wikini/wakka.php?wiki=IceCast2ToC">French translation of Icecast documentation - by Nicolas Henry</a>
