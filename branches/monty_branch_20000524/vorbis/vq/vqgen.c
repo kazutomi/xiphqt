@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: train a VQ codebook 
- last mod: $Id: vqgen.c,v 1.31 2000/05/08 20:49:51 xiphmont Exp $
+ last mod: $Id: vqgen.c,v 1.31.2.1 2000/06/01 12:03:04 xiphmont Exp $
 
  ********************************************************************/
 
@@ -24,6 +24,9 @@
 /* There are so many optimizations to explore in *both* stages that
    considering the undertaking is almost withering.  For now, we brute
    force it all */
+
+#undef   CENTROID 
+#define  MEDIAN 1
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -291,6 +294,7 @@ double vqgen_iterate(vqgen *v,int biasp){
   double asserror=0.;
   double meterror=0.;
   double *new=malloc(sizeof(double)*v->entries*v->elements);
+  double *new2=malloc(sizeof(double)*v->entries*v->elements);
   long   *nearcount=malloc(v->entries*sizeof(long));
   double *nearbias=malloc(v->entries*desired2*sizeof(double));
  #ifdef NOISY
@@ -452,6 +456,7 @@ double vqgen_iterate(vqgen *v,int biasp){
 
     firstmetric-=v->bias[firstentry];
     meterror+=firstmetric;
+#ifdef MEDIAN
     /* set up midpoints for next iter */
     if(v->assigned[j]++){
       for(k=0;k<v->elements;k++)
@@ -462,6 +467,23 @@ double vqgen_iterate(vqgen *v,int biasp){
 	vN(new,j)[k]=ppt[k];
       v->max[firstentry]=firstmetric;
     }
+#else /* centroid */
+    if(v->assigned[j]++){
+      for(k=0;k<v->elements;k++){
+	if(vN(new,j)[k]>ppt[k])vN(new,j)[k]=ppt[k];
+	if(vN(new2,j)[k]<ppt[k])vN(new2,j)[k]=ppt[k];
+      }
+      if(firstmetric>v->max[firstentry])v->max[firstentry]=firstmetric;
+    }else{
+      for(k=0;k<v->elements;k++){
+	vN(new,j)[k]=ppt[k];
+	vN(new2,j)[k]=ppt[k];
+      }
+      v->max[firstentry]=firstmetric;
+    }
+
+
+#endif
   }
 
   /* assign midpoints */
@@ -473,8 +495,13 @@ double vqgen_iterate(vqgen *v,int biasp){
 #endif
     asserror+=fabs(v->assigned[j]-fdesired);
     if(v->assigned[j])
+#ifdef MEDIAN
       for(k=0;k<v->elements;k++)
 	_now(v,j)[k]=vN(new,j)[k]/v->assigned[j];
+#else /* centroid */
+      for(k=0;k<v->elements;k++)
+	_now(v,j)[k]=(vN(new,j)[k]+vN(new2,j)[k])/2.;
+#endif
   }
 
   asserror/=(v->entries*fdesired);

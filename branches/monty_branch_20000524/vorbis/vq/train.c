@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility main for training codebooks
- last mod: $Id: train.c,v 1.17 2000/05/08 20:49:51 xiphmont Exp $
+ last mod: $Id: train.c,v 1.17.2.1 2000/06/01 12:03:04 xiphmont Exp $
 
  ********************************************************************/
 
@@ -210,6 +210,7 @@ int main(int argc,char *argv[]){
       case 'd':
 	if(sscanf(argv[1],"%lf",&mindist)!=1)
 	  goto syner;
+	if(init)v.mindist=mindist;
 	break;
       case 'i':
 	if(sscanf(argv[1],"%d",&iter)!=1)
