@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>libogg - function - oggpack_write</title>
+<title>libogg - function - oggpack_adv_huff</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
@@ -13,20 +13,19 @@
 </tr>
 </table>
 
-<h1>oggpack_write</h1>
+<h1>oggpack_adv_huff</h1>
 
 <p><i>declared in "ogg/ogg.h";</i></p>
 
-<p>This function writes bits into an <a href="oggpack_buffer.html">oggpack_buffer</a>.
-<p>The oggpack_buffer must already be initialized for writing using <a href="oggpack_writeinit.html">oggpack_writeinit</a>.
-<p>Only 32 bits can be written at a time.
+<p>This function advances the location pointer by the specified number of bits without reading any data.
+<p>This also checks for buffer overflow.
 
 <br><br>
 <table border=0 color=black cellspacing=0 cellpadding=7>
 <tr bgcolor=#cccccc>
 	<td>
 <pre><b>
-void  oggpack_write(oggpack_buffer *b,unsigned long value,int bits);
+int oggpack_adv_huff(oggpack_buffer *b,int bits);
 </b></pre>
 	</td>
 </tr>
@@ -35,18 +34,18 @@ void  oggpack_write(oggpack_buffer *b,unsigned long value,int bits);
 <h3>Parameters</h3>
 <dl>
 <dt><i>b</i></dt>
-<dd>Buffer to be used for writing.</dd>
-<dt><i>value</i></dt>
-<dd>The data to be written into the buffer.  This must be 32 bits or fewer.</dd>
+<dd>Pointer to the current oggpack_buffer.</dd>
 <dt><i>bits</i></dt>
-<dd>The number of bits being written into the buffer.</dd>
+<dd>Number of bits to advance.</dd>
 </dl>
 
 
 <h3>Return Values</h3>
 <blockquote>
 <li>
-No values are returned.</li>
+-1 on buffer overflow.</li>
+<li>
+0 in all other cases.</li>
 </blockquote>
 <p>
 

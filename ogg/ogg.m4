@@ -2,10 +2,10 @@
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
 
-dnl XIPH_PATH_OGG([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+dnl AM_PATH_OGG([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl Test for libogg, and define OGG_CFLAGS and OGG_LIBS
 dnl
-AC_DEFUN([XIPH_PATH_OGG],
+AC_DEFUN(AM_PATH_OGG,
 [dnl 
 dnl Get the cflags and libraries
 dnl
@@ -28,7 +28,7 @@ AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run 
     OGG_CFLAGS="-I$ogg_includes"
   elif test "x$ogg_prefix" != "x" ; then
     OGG_CFLAGS="-I$ogg_prefix/include"
-  elif test "x$prefix" != "xNONE"; then
+  elif test "$prefix" != "xNONE"; then
     OGG_CFLAGS="-I$prefix/include"
   fi
 
@@ -88,7 +88,8 @@ int main ()
        echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
        [ echo "*** The test program failed to compile or link. See the file config.log for the"
        echo "*** exact error that occured. This usually means Ogg was incorrectly installed"
-       echo "*** or that you have moved Ogg since it was installed." ])
+       echo "*** or that you have moved Ogg since it was installed. In the latter case, you"
+       echo "*** may want to edit the ogg-config script: $OGG_CONFIG" ])
        CFLAGS="$ac_save_CFLAGS"
        LIBS="$ac_save_LIBS"
      fi
