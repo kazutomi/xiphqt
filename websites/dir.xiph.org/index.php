@@ -60,7 +60,7 @@ else {
 <?
 
 $username = "oddsock";
-$password = "monkey";
+$password = "";
 $database = "icecast2_yp";
 $max_per_page = 10;
 $start = $_GET["start"];
