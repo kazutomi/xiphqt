@@ -1,11 +1,11 @@
 <? include "common/header.php"; ?>
-<h2>Documenation and Information</h2>
+<h2>Documentation and Information</h2>
 <div class="roundcont">
 <div class="roundtop">
 <img src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
-<h3>Official Documenation</h3>
+<h3>Official Documentation</h3>
 
 <p>Here is an index to the icecast documentation we know about.  If there is something out ther on the Web that you know about, but is not listed here, send an email to webmaster@icecast.org. </p>
 <p>All official icecast documentation is <a href="docs/">now available online</a>.</p>
