@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.40.2.2 2001/07/23 12:59:55 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.40.2.3 2001/07/25 19:51:34 volsung Exp $
 
  ********************************************************************/
 
@@ -76,8 +76,9 @@ struct option long_options[] = {
 
 void usage(void)
 {
-    FILE *o;
-    o = stderr;
+    FILE *o = stderr;
+    int i, driver_count;
+    ao_info **devices = ao_driver_info_list(&driver_count);
 
     fprintf(o,
 	    "Ogg123 from " PACKAGE " " VERSION "\n"
@@ -86,11 +87,17 @@ void usage(void)
 	    "  -h, --help     this help\n"
 	    "  -V, --version  display Ogg123 version\n"
 	    "  -d, --device=d uses 'd' as an output device\n"
-	    "      Possible devices are (some may not be compiled):\n"
-	    "      null (output nothing), oss (for Linux and FreeBSD),\n"
-	    "      alsa (for Linux), sun (for NetBSD, OpenBSD, Solaris),\n"
-	    "      irix, arts (aRts sound daemon), esd (ESounD daemon),\n"
-	    "      raw (write to a file), wav (write to a .WAV file)\n"
+	    "      Possible devices are:\n"
+	    "        ");
+
+    for(i = 0; i < driver_count; i++)
+      fprintf(o,"%s ",devices[i]->short_name);
+
+    fprintf(o,"\n");
+
+    fprintf(o,
+	    "  -f, --file=filename  Set the output filename for a previously\n"
+	    "      specified file device (with -d).\n"
 	    "  -k n, --skip n  Skip the first 'n' seconds\n"
 	    "  -o, --device-option=k:v passes special option k with value\n"
 	    "      v to previously specified device (with -d).  See\n"
@@ -607,7 +614,7 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
 	fprintf(stderr, "Error: No device not available.\n");
 	break;
       case AO_ENOTLIVE:
-	fprintf(stderr, "Error: %s requires an ouput filename to be specified with -f.\n", info->short_name);
+	fprintf(stderr, "Error: %s requires an output filename to be specified with -f.\n", info->short_name);
 	break;
       case AO_EBADOPTION:
 	fprintf(stderr, "Error: Unsupported option value to %s device.\n",
