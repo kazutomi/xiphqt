@@ -60,8 +60,8 @@ else {
 <?
 
 $username = "oddsock";
-$password = "";
-$database = "oddsock";
+$password = "monkey";
+$database = "icecast2_yp";
 $max_per_page = 10;
 $start = $_GET["start"];
 $num = $_GET["num"];
@@ -78,6 +78,30 @@ else {
 	$pagesize = $max_per_page;
 }
 
+function contentTypeLookup($content_type) {
+	if ($content_type == "application/x-ogg") {
+		return "Ogg Vorbis";
+	}
+	if ($content_type == "application/ogg") {
+		return "Ogg Vorbis";
+	}
+	if ($content_type == "audio/mpeg") {
+		return "MP3 Audio";
+	}
+	if ($content_type == "audio/x-mpeg") {
+		return "MP3 Audio";
+	}
+	if ($content_type == "video/nsv") {
+		return "NSV Video";
+	}
+	if ($content_type == "audio/aac") {
+		return "AAC Audio";
+	}
+	if ($content_type == "audio/aacp") {
+		return "AAC+ Audio";
+	}
+	return $content_type;
+}
 function getPrevLink($current, $pagesize, $rowcounter) {
 	global $search;
 	global $sgenre;
@@ -172,9 +196,16 @@ function buildStreamLine($server_name,$listen_url, $genre, $listeners, $descript
 		$channels = "Stereo";
 	}
 	$mountpoint = preg_replace("/^http:\/\/.*:.*\//", "/", $listen_url);
-	$type_link = "$server_type";
+	$server_type = contentTypeLookup($server_type);
+	$channels = str_replace(" ", "", $channels);
+	$channels = str_replace("\r\n", "", $channels);
+	if ($channels == "1") {
+		$channels = "Mono";
+	}
+	if ($channels == "2") {
+		$channels = "Stereo";
+	}
 	if ($server_type == "Ogg Vorbis") {
-		$type_link = "<img title='Ogg Vorbis - Listen' alt='Ogg Vorbis - Listen' src='images/vorbis.gif' border=0>";
 		if ($bitrate == "Quality 1@00") {
 			$bitrate = "";
 		}
@@ -201,8 +232,7 @@ function buildStreamLine($server_name,$listen_url, $genre, $listeners, $descript
 			$audio_info = $bitrate."kbps<br>".$samplerate." ".$channels;
 		}
 	}
-	if ($server_type == "MP3 audio") {
-		$type_link = "<img title='MP3 - Listen' alt='MP3 - Listen' src='images/mp3.gif' border=0>";
+	else {
 		if ($bitrate == "Quality 0") {
 			$bitrate = "";
 		}
@@ -228,7 +258,7 @@ function buildStreamLine($server_name,$listen_url, $genre, $listeners, $descript
 	}
 	$streamLine = '
 	<tr>
-		<td class="streamtd_alt" valign="middle" bgcolor="'.$bgcolor.'" ><a href="listen.php?serverURL='.urlencode($listen_url).'&file=listen.m3u">'.$type_link.'</a></td>
+		<td class="streamtd_alt" width=75 valign="middle" bgcolor="'.$bgcolor.'" ><center><a href="listen.php?serverURL='.urlencode($listen_url).'&file=listen.m3u" alt="'.$server_type.'" title="'.$server_type.'" class="listen_a"><div id="listen">'.$server_type.'</div></a></center></td>
 		<td class="streamtd_alt" bgcolor="'.$bgcolor.'">'.$description_tag.'Now playing on <a class="streamtd_alt_2" href="listen.php?serverURL='.urlencode($listen_url).'&file=listen.m3u">'.$mountpoint.'</a> :&nbsp;&nbsp;<font color=yellow>'.substr($current_song, 0, 100).'</font></td>
 		<td class="streamtd_alt" width=75 bgcolor="'.$bgcolor.'"> <center><font color=white>'.substr($genre, 0, 30).'</font></td>
 		<td class="streamtd_alt" width=150 bgcolor="'.$bgcolor.'"><center>'.$audio_info.'</td>
@@ -248,7 +278,7 @@ $directory_data = '
 		<td colspan=5 bgcolor="#000000" height=3></td>
 </tr>
 <tr>
-		<td bgcolor="#222222"></td>
+		<td bgcolor="#222222"><font size=2><b><center>Listen</b></center></font></td>
 		<td valign="middle" bgcolor="#222222" ><font size=2><b>Streams</td>
 		<td width=75 bgcolor="#222222"> <font size=2><b><center>Genre</td>
 		<td width=150 bgcolor="#222222"><font size=2><b><center>Audio Info</td>
@@ -363,7 +393,6 @@ $nav_text = '
 <td bgcolor="#000000"><font color=white face=Verdana size=1>'.getNextLink($start, $pagesize, $printed).'</td>
 </tr>
 </table>';
-print '<center>Click <img src="images/vorbis.gif"> or <img src="images/mp3.gif"> to listen.</center>';
 print $nav_text;
 print $directory_data;
 print $nav_text;
