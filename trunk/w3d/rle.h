@@ -22,6 +22,8 @@
 
 #define ENTROPY_CODER_MPS(coder)          ((coder)->mps)
 #define ENTROPY_CODER_RUNLENGTH(coder)    ((coder)->count)
+//#define ENTROPY_CODER_SKIP(coder,skip)    printf ("coder->count == %u ->", (coder)->count); (coder)->count -= skip; printf ("%u\n", (coder)->count);
+#define ENTROPY_CODER_SKIP(coder,skip)    (coder)->count -= skip
 
 #endif
 

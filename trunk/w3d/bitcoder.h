@@ -20,6 +20,7 @@
 
 #define ENTROPY_CODER_MPS                 1
 #define ENTROPY_CODER_RUNLENGTH(coder)    0
+#define ENTROPY_CODER_SKIP(coder,skip)
 
 #endif
 
