@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.14 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.15 2001/12/11 15:05:56 volsung Exp $
 
  ********************************************************************/
 
@@ -93,7 +93,8 @@ void signal_handler (int signo)
   switch (signo) {
   case SIGALRM:
     sig_request.ticks++;
-    alarm(1);
+    if (sig_request.ticks < options.delay)
+      alarm(1);
     break;
 
   case SIGINT:
@@ -142,6 +143,8 @@ void options_init (ogg123_options_t *opts)
   opts->prebuffer = 0.0f;
   opts->default_device = NULL;
   opts->devices = NULL;
+
+  opts->status_freq = 4;
 }
 
 /* ----------------------------- callbacks ------------------------------ */
@@ -251,7 +254,8 @@ void play (char *source_string)
   decoder_callbacks_t decoder_callbacks = { &decoder_error_callback,
 					    &decoder_metadata_callback };
   print_statistics_arg_t *pstats_arg;
-  
+  buffer_stats_t *buffer_stats;
+
   /* Preserve between calls so we only open the audio device when we 
      have to */
   static audio_format_t old_audio_fmt = { 0, 0, 0, 0, 0 };
@@ -260,7 +264,8 @@ void play (char *source_string)
 
   int eof = 0, eos = 0, ret;
   int nthc = 0, ntimesc = 0;
-  ogg_int64_t last_stats_tick = 0;
+  int next_status = 0;
+  int status_interval = 0;
 
   new_audio_fmt.big_endian = ao_is_big_endian();
   new_audio_fmt.signed_sample = 1;
@@ -347,7 +352,13 @@ void play (char *source_string)
       
       /* Check to see if the audio format has changed */
       if (!audio_format_equal(&new_audio_fmt, &old_audio_fmt)) {
-	audio_format_copy(&old_audio_fmt, &new_audio_fmt);
+	old_audio_fmt = new_audio_fmt;
+	
+	/* Update our status printing interval */
+	status_interval = new_audio_fmt.word_size * new_audio_fmt.channels * 
+	  new_audio_fmt.rate / options.status_freq;
+	next_status = 0;
+
 	reopen_arg = new_audio_reopen_arg(options.devices, &new_audio_fmt);
 
 	if (audio_buffer)	  
@@ -359,20 +370,33 @@ void play (char *source_string)
       
 
       /* Update statistics display if needed */
-      if (last_stats_tick < sig_request.ticks) {
-	last_stats_tick = sig_request.ticks;
-
+      if (next_status <= 0) {
+	
 	pstats_arg = new_print_statistics_arg(stat_format,
 					      transport->statistics(source),
 					      format->statistics(decoder));
-	if (audio_buffer)
+	if (audio_buffer) {
+	  /* Place a status update into the buffer */
 	  buffer_append_action_at_end(audio_buffer,
 				      &print_statistics_callback,
 				      pstats_arg);
-	else
+
+	  /* And if we are not playing right now, do an immediate
+	     update just the output buffer */
+	  buffer_stats = buffer_statistics(audio_buffer);
+	  if (buffer_stats->paused || buffer_stats->prebuffering) {
+	    pstats_arg = new_print_statistics_arg(stat_format,
+						  NULL,
+						  NULL);
+	    print_statistics_callback(audio_buffer, pstats_arg);
+	  }
+
+	} else
 	  print_statistics_callback(NULL, pstats_arg);
-				      
-      }
+	
+	next_status = status_interval;
+      } else
+	next_status -= ret;
 
       /* Write audio data block to output, skipping or repeating chunks
 	 as needed */

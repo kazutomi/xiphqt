@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.12.2.5 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12.2.6 2001/12/11 15:05:56 volsung Exp $
 
  ********************************************************************/
 
@@ -54,7 +54,8 @@ typedef struct ogg123_options_t {
   float prebuffer;            /* Percent of buffer to fill before playing */
   char *default_device;       /* Name of default driver to use */
   audio_device_t *devices;    /* Audio devices to playback to */
-  
+
+  double status_freq;         /* Number of status updates per second */
 } ogg123_options_t;
 
 typedef struct signal_request_t {
