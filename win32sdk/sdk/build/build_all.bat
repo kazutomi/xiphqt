@@ -1,5 +1,5 @@
 @echo off
-rem $Id: build_all.bat,v 1.3 2001/09/15 07:25:36 cwolf Exp $
+rem $Id: build_all.bat,v 1.4 2001/10/18 03:18:56 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
@@ -12,7 +12,7 @@ rem assume they all need to be generated
 rem
 if not exist %SDKHOME%\build\examples.mak (
   echo Must run "mkmak.bat" first...
-  exit 0
+  goto done
 )
 
 nmake /nologo /f encoder.mak CFG="encoder - Win32 Debug" %1
@@ -36,14 +36,14 @@ nmake /nologo /f vorbisfile.mak CFG="vorbisfile - Win32 Release" %1
 nmake /nologo /f vorbisfile_static.mak CFG="vorbisfile_static - Win32 Debug" %1
 nmake /nologo /f vorbisfile_static.mak CFG="vorbisfile_static - Win32 Release" %1
 
-goto normal
+goto done
 
 :nolib
 echo ***** SDK needs to be built first, run win32sdk\maksdk.bat
-exit
+goto done
 
 :notset
 echo ***** Error: must set SDKHOME
-exit
+goto done
 
-:normal
+:done
