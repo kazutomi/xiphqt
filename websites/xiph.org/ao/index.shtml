@@ -81,7 +81,7 @@ or email them to Stan Seibert
 
 <h2 id="release0.8.5">Release 0.8.5 - March 19, 2004</h2>
 <ul>
-	<li>Source code: <a href="src/libao-0.8.5.tar.gz">libao-0.8.5.tar.gz</a></li>
+	<li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-0.8.5.tar.gz">libao-0.8.5.tar.gz</a></li>
 	<li>RedHat 9: <a href="bin/redhat9/libao-0.8.5-3.rh90.i386.rpm">libao-0.8.5-3.rh90.i386.rpm</a></li>
 	<li>RedHat 9 Development: <a href="bin/redhat9/libao-devel-0.8.5-3.rh90.i386.rpm">libao-devel-0.8.5-3.rh90.i386.rpm</a></li>
 	<li>Fedora Core 1: <a href="bin/rhfc1/libao-0.8.5-3.rhfc1.i386.rpm">libao-0.8.5-3.rhfc1.i386.rpm</a></li>
@@ -99,7 +99,7 @@ or email them to Stan Seibert
 
 <h2 id="release0.8.4">Release 0.8.4 - October 5, 2003</h2>
 <ul>
-	<li>Source code: <a href="src/libao-0.8.4.tar.gz">libao-0.8.4.tar.gz</a></li>
+	<li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-0.8.4.tar.gz">libao-0.8.4.tar.gz</a></li>
 </ul>
 <h3>RedHat 9</h3>
 <p>Note that the RedHat RPMS only have support for OSS, esd, and aRts
