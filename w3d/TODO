@@ -1,5 +1,4 @@
  - fix the bitplane-skip-logic bug and check this code, this is not as clean as it should be ...
- - design file/stream format and find a cool name for this codec
  - write avitow3d/quicktimetow3d/player/recorder (a libsndfile/libaudiofile alike video library would be great !)
  - tune coefficient transmission order in coder.c -- frame direction child levels should possibly get a smaller offset to supress preecho-alike ghost images
  - (4,4) - Wavelets
