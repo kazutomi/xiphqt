@@ -1,6 +1,7 @@
 /* log.c
  * - Functions for logging in ices
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -182,18 +183,17 @@ static int
 ices_log_open_logfile (void)
 {
   char namespace[1024], buf[1024];
-  char *filename;
   FILE *logfp;
 
-  filename = ices_util_get_random_filename (buf, "log");
-
-  if (! ices_config.base_directory) {
+  if (! ices_config.base_directory ||
+      strlen (ices_config.base_directory) > 1016)
+  {
     ices_log_error ("Base directory is invalid");
     return 0;
   }
 
-  snprintf (namespace, sizeof (namespace), "%s/%s",
-	    ices_config.base_directory, filename);
+  snprintf (namespace, sizeof (namespace), "%s/ices.log",
+	    ices_config.base_directory);
 
   logfp = ices_util_fopen_for_writing (namespace);
 

@@ -295,31 +295,30 @@ ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile
 static void
 ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc)
 {
-	int arg;
-	char *s;
+  int arg;
+  char *s;
 
-        arg = 1;
-	
-        while (arg < argc) {
-                s = argv[arg];
-		
-                if (s[0] == '-') {
-			
-			switch (s[1]) {
-				case 'c':
-					arg++;
-					if (ices_config->configfile)
-						ices_util_free (ices_config->configfile);
-					ices_config->configfile = ices_util_strdup (argv[arg]);
+  arg = 1;
+
+  while (arg < argc) {
+    s = argv[arg];
+
+    if (s[0] == '-') {
+      switch (s[1]) {
+      case 'c':
+	arg++;
+	if (ices_config->configfile)
+	  ices_util_free (ices_config->configfile);
+	ices_config->configfile = ices_util_strdup (argv[arg]);
 #ifndef HAVE_LIBXML
-					ices_log ("You have no libxml support. The config file you just specified cannot be used.");
-					ices_setup_shutdown ();
+	fprintf (stderr, "Cannot use config file (no XML support).\n");
+	ices_setup_shutdown ();
 #endif
-					break;
-			}
-		}
-		arg++;
-	}
+	break;
+      }
+    }
+    arg++;
+  }
 }
 
 /* This function parses the command line options */
@@ -341,7 +340,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 
     if (s[0] == '-') {
       if ((strchr ("BiRrsVv", s[1]) == NULL) && arg >= (argc - 1)) {
-	ices_log ("Option %c requires an argument!\n", s[1]);
+	fprintf (stderr, "Option %c requires an argument!\n", s[1]);
 	ices_setup_usage ();
 	ices_setup_shutdown ();
 	return;
@@ -434,7 +433,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 #ifdef HAVE_LIBLAME
 	  stream->reencode = 1;
 #else
-	  ices_log ("This ices wasn't compiled with reencoding support");
+	  fprintf (stderr, "This ices wasn't compiled with reencoding support\n");
 	  ices_setup_shutdown ();
 #endif
 	  break;
@@ -517,56 +516,52 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 static void
 ices_setup_usage (void)
 {
-  ices_log ("This is ices " VERSION);
-	ices_log ("ices <options>");
-	ices_log ("Options:");
-	ices_log ("\t-B (Background (daemon mode))");
-	ices_log ("\t-b <stream bitrate>");
-	ices_log ("\t-c <configfile>");
-	ices_log ("\t-D <base directory>");
-	ices_log ("\t-d <stream description>");
-	ices_log ("\t-f <dumpfile on server>");
-	ices_log ("\t-F <playlist>");
-	ices_log ("\t-g <stream genre>");
-	ices_log ("\t-h <host>");
-	ices_log ("\t-i (use icy headers)");
-	ices_log ("\t-M <interpreter module>");
-	ices_log ("\t-m <mountpoint>");
-	ices_log ("\t-n <stream name>");
-	ices_log ("\t-p <port>");
-	ices_log ("\t-P <password>");
-	ices_log ("\t-R (activate reencoding)");
-	ices_log ("\t-r (randomize playlist)");
-	ices_log ("\t-s (private stream)");
-	ices_log ("\t-S <perl|python|builtin>");
-	ices_log ("\t-u <stream url>");
-	ices_log ("\t-v (verbose output)");
-	ices_log ("\t-H <reencoded sample rate>");
-	ices_log ("\t-N <reencoded number of channels>");
+  printf ("This is ices " VERSION "\n");
+  printf ("ices <options>\n");
+  printf ("Options:\n");
+  printf ("\t-B (Background (daemon mode))\n");
+  printf ("\t-b <stream bitrate>\n");
+  printf ("\t-c <configfile>\n");
+  printf ("\t-D <base directory>\n");
+  printf ("\t-d <stream description>\n");
+  printf ("\t-f <dumpfile on server>\n");
+  printf ("\t-F <playlist>\n");
+  printf ("\t-g <stream genre>\n");
+  printf ("\t-h <host>\n");
+  printf ("\t-i (use icy headers)\n");
+  printf ("\t-M <interpreter module>\n");
+  printf ("\t-m <mountpoint>\n");
+  printf ("\t-n <stream name>\n");
+  printf ("\t-p <port>\n");
+  printf ("\t-P <password>\n");
+  printf ("\t-R (activate reencoding)\n");
+  printf ("\t-r (randomize playlist)\n");
+  printf ("\t-s (private stream)\n");
+  printf ("\t-S <perl|python|builtin>\n");
+  printf ("\t-u <stream url>\n");
+  printf ("\t-v (verbose output)\n");
+  printf ("\t-H <reencoded sample rate>\n");
+  printf ("\t-N <reencoded number of channels>\n");
 }
 
 /* display version information */
 static void
 ices_setup_version (void)
 {
-  ices_log ("ices " VERSION "\nFeatures: "
-
+  printf ("ices " VERSION "\nFeatures: "
 #ifdef HAVE_LIBLAME
   "LAME "
 #endif
-
 #ifdef HAVE_LIBPERL
   "PERL "
 #endif
-
 #ifdef HAVE_LIBPYTHON
   "python "
 #endif
-
 #ifdef HAVE_LIBXML
   "libxml "
 #endif
-    );
+  "\n");
 }
 
 /* Put ices in the background, as a daemon */
