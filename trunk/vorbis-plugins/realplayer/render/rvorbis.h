@@ -1,3 +1,19 @@
+/********************************************************************
+ *                                                                  *
+ * THIS FILE IS PART OF THE OGG VORBIS PROJECT SOURCE CODE.         *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
+ * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
+ * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ *                                                                  *
+ * THE OGG VORBIS PROJECT SOURCE CODE IS (C) COPYRIGHT 1994-2001    *
+ * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+
+ ********************************************************************
+
+ function: headers for the render plugin for RealSystem
+
+ ********************************************************************/
+
 #ifndef __RVORBIS_H__
 #define __RVORBIS_H__
 
@@ -93,7 +109,7 @@ class CVorbisRenderer: public IRMARenderer,
 	IRMAAudioPlayer *m_pAudioPlayer;
 	IRMAAudioStream *m_pAudioStream;
 	RMAAudioFormat m_audioFmt;
-	FiveMinuteQueue m_PacketQueue;
+	Queue m_PacketQueue;
 
 	static const char *zm_pDescription;
 	static const char *zm_pCopyright;
