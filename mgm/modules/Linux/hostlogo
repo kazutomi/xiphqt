@@ -4,6 +4,8 @@
 # few things that must be handled explicitly when one isn't mostly
 # just calling MGM::Graph->new()
 
+# instances allowed: multiple
+
 use Tk;
 package MGMmodule::hostlogo;
 
@@ -106,8 +108,9 @@ sub module_update{
 
     my$counter=$this->{"counter"}+1;
     my$logowidth=$this->{"logowidth"};
-    if($counter>=$this->{"logoframes"}){$counter=0;}
-    my$math=$logowidth*$this->{"logoframes"}-$counter*$logowidth;
+    my$logoframes=$this->{"logoframes"};
+    if($counter>=$logoframes){$counter=0;}
+    my$math=$logowidth*$logoframes-$counter*$logowidth;
     $this->{"logowidget"}->coords('logo',$math,0);
     $this->{"counter"}=$counter;
 }

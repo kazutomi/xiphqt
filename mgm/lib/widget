@@ -37,36 +37,6 @@ sub drawborder{
     }
 }
 
-sub reliefhack{
-    my($bar,$y)=@_;
-    my$widget=$bar->{"above"};
-    my$width=$widget->cget("-width");
-    my$relief=$bar->{"litrelief"};
-
-    if($relief eq 'sunken'){
-	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>'projecting',
-			 -fill=>$bar->{"litdim"},-tags=>['newrelief']);
-    }
-
-    if($relief eq 'raised'){
-	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>'projecting',
-			 -fill=>$bar->{"litlit"},-tags=>['newrelief']);
-    }
-
-    if($relief eq 'groove'){
-	$widget->createLine(0,$y-1,0,$y-2,$width-2,$y-2,
-			    -capstyle=>'projecting',
-			    -fill=>$bar->{"litdim"},-tags=>['newrelief']);
-	$widget->createLine(1,$y-1,$width-1,$y-1,$width-1,$y-2,
-			    -capstyle=>'projecting',
-			    -fill=>$bar->{"litlit"},-tags=>['newrelief']);
-    }
-
-    $widget->delete('relief');
-    $widget->addtag('relief',withtag=>'newrelief');
-
-}
-    
 sub new{
     my ($p,$width,$height,$num)=@_;
 
@@ -74,7 +44,7 @@ sub new{
 
     # we're not as flat as we like to think 
     my $below=$p->Canvas(Name=>"$num");
-    $below->{"above"}=$below->Canvas()->place(-relx=>0,-rely=>0,
+    my$above=$below->{"above"}=$below->Canvas()->place(-relx=>0,-rely=>0,
 					      -anchor=>'nw', 
 					      -bordermode=>'outside');
     bless $below;
@@ -150,14 +120,6 @@ sub drawit{
     $below->{"dimlit"}=sprintf "#%02x%02x%02x", 
           &main::min($r+$lum*.7,255),&main::min($g+$lum*.7,255),
           &main::min($b+$lum*.7,255);
-    ($r,$g,$b)=$below->rgb($aback);
-    $r/=256;
-    $g/=256;
-    $b/=256;
-    $below->{"litdim"}=sprintf "#%02x%02x%02x", $r*.5,$g*.5,$b*.5;
-    $below->{"litlit"}=sprintf "#%02x%02x%02x", 
-          &main::min($r+$lum*.7,255),&main::min($g+$lum*.7,255),
-          &main::min($b+$lum*.7,255);
 
     if($orient eq 'vertical'){
 	my$text=$font->maketext($label,$width-($pad*2),$height-($pad*2),
@@ -183,7 +145,22 @@ sub drawit{
 				 width=>$width,
 				 height=>$height,
 				 relief=>'flat');
-	
+
+	$below->{"reliefhack"}->destroy if(defined($below->{"reliefhack"}));
+	if($aborder){
+	    $below->{"reliefhack"}=$above->
+		Label(-borderwidth=>$aborder,
+		      -background=>$aback,
+		      highlightthickness=>0,
+		      width=>($width-$aborder*2),
+		      height=>4,
+		      relief=>$arelief)->
+			  place('-x'=>0,-rely=>1.0,'-y'=>-$aborder,
+				-anchor=>'nw',-bordermode=>'outside');
+	}
+    
+
+
 	$below->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
 			    -tags=>['xpmlabel']);
 	$above->createImage($pad,$height-$pad,-image=>$unlittext,
@@ -236,7 +213,6 @@ sub set{
 	if($orient eq 'vertical'){
 	    my $border=$bar->cget("-borderwidth");
 	    my $l=$bar->{"barlength"};
-	    &reliefhack($bar,$l-$per+$border);
 	    $bar->{'above'}->SUPER::configure('-height'=>($l-$per+$border));
 	}else{
 	    my $border=$bar->{'above'}->cget("-borderwidth");
@@ -708,9 +684,11 @@ sub set{
 
     if(defined($metermax=shift)){
 	$this->{"meter0"}=$metermax;
-	for(my$i=1;$i<$num;$i++){
-	    my$val=$this->{"meter$i"}=shift;
+	my$i=1;
+	while(defined(my$val=shift)){
+	    $this->{"meter$i"}=$val;
 	    $metermax=$val if ($val>$metermax);
+	    $i++;
 	}
 	
 	$this->{"metermax"}=$metermax;

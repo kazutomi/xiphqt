@@ -246,8 +246,14 @@ sub instance_modules{
 	
 	my$ret=eval {$this->module_instance};
 	if(!defined($ret)){
-	    print STDERR "Error eval()ing ->module_instance for ".
-		($mod->{name}).": $@\n";
+	    if(!defined($@)){
+		print STDERR "->module_instance for ".
+		    ($mod->{name})." returned undef: instance already ".
+			"exists (or module forgot to set return val)\n";
+	    }else{
+		print STDERR "Error eval()ing ->module_instance for ".
+		    ($mod->{name}).": $@\n";
+	    }
 	    undef $instances{$key};
 	}else{
 	    $instances{$key}=$ret;
