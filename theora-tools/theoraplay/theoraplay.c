@@ -140,6 +140,10 @@ static int read_packet_theora(OGGZ *oggz, ogg_packet *op, long serialno,
 				serialno, 
 				this->ti.frame_width, this->ti.frame_height,
 				(float)this->ti.fps_numerator/(float)this->ti.fps_denominator);
+			fprintf(stderr, "0x%08x Theora Video: pixel aspect %d:%d\n",
+				serialno, 
+				this->ti.aspect_numerator,
+				this->ti.aspect_denominator);
 
 		}
 	} else {
