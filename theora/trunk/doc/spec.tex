@@ -34,30 +34,32 @@ The later sections assume a high-level understanding of the Theora decode
 \subsection{Overview}
 
 Theora is a general purpose, lossy video codec.
-It is based off the VP3.2 video codec produced by On2 Technologies
+It is based on the VP3 video codec produced by On2 Technologies
  (\url{http://www.on2.com/}).
-On2 Technologies has released the VP3.2 source code under a BSD license, along
- with an irrevocable, royalty-free license to any patent claims it might have
- over the software and any derivatives.
-No formal specification exists for the VP3.2 format beyond this source code,
+On2 Technologies donated the VP3.2 source code to the Xiph.org 
+Foundation and it was released under a BSD license. On2 also made an 
+irrevocable, royalty-free license grant for any patent claims it might 
+have over the software and any derivatives.
+No formal specification exists for the VP3 format beyond this source code,
  though Mike Melanson maintains a detailed description \cite{Mel04}.
 Portions of this specification were adopted from his text with permission.
 
-\subsubsection{VP3.2 and Theora}
+\subsubsection{VP3 and Theora}
 
 Theora contains a superset of the features that were available in the original
- VP3.2 codec.
+ VP3 codec.
 Content encoded with VP3.2 can be losslessly transcoded into the Theora format.
-Theora content cannot, in general, be losslessly transcoded into the VP3.2
+%TODO: what about VP3.1 etc? source tables all say 'VP31'
+Theora content cannot, in general, be losslessly transcoded into the VP3
  format.
-If a feature is not available in the original VP3.2 format, this will be
+If a feature is not available in the original VP3 format, this is
  mentioned when that feature is defined.
 A complete list of these features appears in Appendix~REF.
 
 \subsubsection{Video Formats}
 
 Theora I currently supports progressive video data of arbitrary dimensions in
- one of several 8-bit $Y'C_bC_r$ color spaces.
+ one of several $Y'C_bC_r$ color spaces.
 The precise definition the color spaces supported appears in Section~REF.
 Three different chroma subsampling formats are supported: 4:2:0, 4:2:2,
  and 4:4:4.
@@ -66,10 +68,12 @@ The precise details of each of these formats and their sampling locations are
 
 The Theora I format does not support interlaced material, bit-depths larger
  than 8 bits per component, nor alternate color spaces such as RGB or
- arbitrary multi-channel spaces.
+ arbitrary multi-channel spaces. Black and white content can be 
+efficiently encoded because the uniform chromaticity planes compress 
+well.
 Support for interlaced material is planned for a future version.
-Support for increased bit depths or additional color spaces is not being
- considered as of the time of this writing.
+Support for increased bit depths or additional color spaces is not 
+planned.
 
 \subsubsection{Classification}
 
@@ -78,11 +82,11 @@ Theora I is a block-based lossy transform codec that utilizes an
  compensation.
 This places it in the same class of codecs as MPEG-1, -2, -4, and H.263.
 The details of how individual blocks are organized and how DCT coefficients are
- organized in the bitstream differ from these codecs substantially, however.
+ organized in the bitstream differ stubstantially from these codecs, however.
 Theora supports only intra frames (I frames in MPEG) and inter frames (P frames
  in MPEG).
-In the current version of Theora, there is no equivalent to the bi-predictive
- frames (B frames) found in MPEG codecs.
+There is no equivalent to the bi-predictive frames (B frames) 
+found in MPEG codecs.
 
 \subsubsection{Assumptions}
 
@@ -91,10 +95,11 @@ The Theora codec design assumes a complex, psychovisually-aware encoder and a
 %TODO: Talk more about implementation complexity.
 
 Theora provides none of its own framing, synchronization, or protection against
- errors; it is solely a method of accepting input video frames and compressing
+ transmission errors; it is solely a method of accepting input video 
+frames and compressing
  these frames into raw, unformatted `packets'.
 The decoder then accepts these raw packets in sequence, decodes them,
- and synthesizes a fascimile of the original video frames from them.
+ and synthesizes a fascimile of the original video frames.
 Theora is a free-form variable bit rate (VBR) codec, and packets have no
  minimum size, maximum size, or fixed/expected size.
 
@@ -103,19 +108,21 @@ Theora packets are thus intended to be used with a transport mechanism that
  in accordance with these design assumptions, such as Ogg (for file transport)
  or RTP (for network multicast).
 For the purposes of a few examples in this document, we will assume that Theora
- is to embedded in an Ogg stream specifically, although this is by no means a
+ is embedded in an Ogg stream specifically, although this is by no means a
  requirement or fundamental assumption in the Theora design.
 
-The specification for embedding Theora into an Ogg transport stream is in
+The specification for embedding Theora into an Ogg transport stream is 
+given in
  Appendix~REF.
 
 \subsubsection{Codec Setup and Probability Model}
 
-Theora's heritage is the proprietary commerical codec VP3.2, and thus maintains
- a fair amount of inflexibility when compared to the first Xiph.org codec,
- Vorbis, which was designed as a research codec.
-However, in order to allow some room for encoder improvement, Theora adopts
- some of the configurable aspects of codec setup that are present in Vorbis.
+Theora's heritage is the proprietary commerical codec VP3, and it retains
+ a fair amount of inflexibility when compared to Vorbis, the first 
+Xiph.org codec.
+However, to provide additional scope for encoder improvement,
+Theora adopts some of the configurable aspects of decoder setup that 
+are present in Vorbis.
 
 Theora makes the same controversial design decision that Vorbis made to include
  the entire probability model for the DCT coefficients and all the quantization
@@ -132,14 +139,19 @@ This makes it impossible to begin decoding at any frame in the stream without
 
 Thus, Theora headers are both required for decode to begin and relatively large
  as bitstream headers go.
-The header size is unbouded, although for stream a rule-of-thumb of 16kB or
- less is recommended, and Xiph.org's Theora encoder follows this suggestion.
+The header size is unbounded, although as a rule-of-thumb of less than 16kB 
+ is recommended, and Xiph.org's reference encoder follows this 
+ suggestion.
 %TODO: Is 8kB enough? My setup header is 7.4kB, that doesn't leave much room
 % for comments.
+%RG: the lesson from vorbis is that as small as possible is really 
+% important in some applications. Practically, what's acceptable
+% depends a great deal on the target bitrate. I'd leave 16 kB in the
+% spec for now. fwiw more than 1k of comments is quite unusual.
 
 Our own design work indicates that the primary liability of the required header
  is in mindshare; it is an unusual design and thus causes some amount of
- complaint among engineers as this runs against current design trends, and also
+ complaint among engineers as this runs against current design trends, and
  points out limitations in some existing software/interface designs.
 However, we find that it does not fundamentally limit Theora's suitable
  application space.
@@ -152,8 +164,8 @@ The Theora format is well-defined by its decode specification; any encoder that
 A decoder must faithfully and completely implement the specification defined
  herein %, except where noted,
  to be considered a proper Theora decoder.
-Where appropriate, a non-normative description of encoder processes may be
- described.
+Where appropriate, a non-normative description of encoder processes are
+ included.
 These sections will be marked as such, and a proper Theora encoder is not
  bound to follow them.
 
@@ -172,8 +184,9 @@ The global codec configuration consists of a few video related fields, such as
  pixel format, and a version number.
 The version number is divided into a major version, a minor version, amd a
  minor revision number.
-These are `3', `2', and `0', respectively, due to Theora's origin as the VP3.2
- codec.
+For the format defined in this specification, these are `3', `2', and 
+ `0', respectively, in reference to Theora's origin as
+ a successor to the VP3.1 format.
 
 \subsubsection{Quantization Matrices}
 
@@ -252,19 +265,15 @@ The Theora bitpacking convention specifies the correct mapping of the logical
 
 In most contemporary architectures, a `byte' is synonymous with an `octect',
  that is, eight bits.
-This has not always been the case; seven, ten, eleven, and sixteen bit `bytes'
- have been used.
 For purposes of the bitpacking convention, a byte implies the smallest native
  integer storage representation offered by a platform.
-On modern platforms, this is generally assumed to be eight bits, not
- necessarily because of the processor, but because of the file system/memory
- architecture.
 Modern file systems invariably offer bytes as the fundamental atom of storage.
 
 The most ubiquitous architectures today consider a `byte' to be an octet.
 Note, however, that the Theora bitpacking convention is still well defined for
  any native byte size;
-Theora uses the native bit-width of a given storage system.
+an implementation can use the native bit-width of a given storage 
+system.
 This document assumes that a byte is one octet for purposes of example only.
 
 \subsubsection{Words and Byte Order}
@@ -310,15 +319,15 @@ These integer fields are not aligned to the boundaries of the byte
  after the end of the previous field.
 
 The decoder logically unpacks integers by first reading the MSb of a binary
- integer from the logical bitstream, followed by the next least significant
- bit, etc., until the requested number of bits have been read.
+ integer from the logical bitstream, followed by the next most significant
+ bit, etc., until the required number of bits have been read.
 When unpacking the bytes into bits, the decoder begins by reading the MSb of
  the integer to be read from the most significant unread bit position of the
  source byte, followed by the next-most significant bit position of the
  destination integer, and so on up to the requested number of bits.
-Note that this is a change from the earlier Xiph.org codec, Vorbis I, which
- begins encoding from the LSb of the source integer, reading it from the LSb of
- the source byte.
+Note that this differs from the Vorbis I codec, which
+ begins decoding with the LSb of the source integer, reading it from the
+ LSb of the source byte.
 When all the bits of the current source byte are read, decoding continues with
  the MSb of the next byte.
 Any unfilled bits in the last byte of the packet must be cleared to zero by the
@@ -328,8 +337,8 @@ Any unfilled bits in the last byte of the packet must be cleared to zero by the
 
 The binary integers decoded by the above process may be either signed or
  unsigned.
-This may change from integer to integer, and this document will specify how
- each should be interpreted as it is read.
+This varies from integer to integer, and this specification 
+ indicates how each value should be interpreted as it is read.
 That is, depending on context, the three bit binary pattern `b111' can be taken
  to represent either `$7$' as an unsigned integer or `$-1$' as a signed, two's
  complement integer.
@@ -442,7 +451,7 @@ Two things are worth noting here.
 Although these four bits were originally written as a single four-bit integer,
  reading some other combination of bit-widths from the bitstream is well
  defined.
-There are no artificial alignment boundaries maintained in the bitstream.
+No artificial alignment boundaries are maintained in the bitstream.
 \item
 The first value is the integer `$3$' only because the context stated we were
  reading an unsigned integer.
