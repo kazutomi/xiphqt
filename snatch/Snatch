@@ -15,7 +15,7 @@ if(!defined($HOME)){
     exit 1;
 }
 
-$version="Snatch 20020308";
+$version="Snatch 20020412";
 $configdir=$HOME."/.snatch";
 $configfile=$configdir."/config.txt";
 $historyfile=$configdir."/history.txt";
@@ -560,9 +560,9 @@ sub Robot_PlayFile{
 }
 
 sub Robot_Stop{
-    $last_timer_event=time();
     my $stopcode=join "",("Ks",pack ("S",4));
     syswrite COMM_SOCK,$stopcode;
+    $recording_pending=0;
 }
 
 sub Robot_Exit{
@@ -572,7 +572,6 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
-    $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback) && !recording_active){
 	$timer_callback->cancel();
@@ -594,7 +593,6 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
-    $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback)){
 	$timer_callback->cancel();
@@ -615,7 +613,6 @@ sub Robot_Inactive{
 }
 
 sub Robot_Timer{
-    $last_timer_event=0;
     $next_timer_event=0;
     send_string("O","");
     send_string("L","");
@@ -635,7 +632,6 @@ sub DoTimedEntry{
        $password,$outfile,$url)=SplitTimerEntry($line);
 
     $recording_pending=1;
-    $last_timer_event=$start;
     $next_timer_event=$start+$duration-1; # the -1 is important; makes sure contiguous
                                           # but nonoverlapping events don't interfere
 
@@ -663,7 +659,7 @@ sub SetupTimerDispatch{
 	my$start=shift @TIMETEMP;
 	my$end=shift @ENDTIMETEMP;
 
-	if($start>$last_timer_event && $start<=$now && $end>$now){    
+	if($start<=$now && $end>$now){    
 	    Robot_Stop();
 	    DoTimedEntry($start,$line);
 	    return;
@@ -681,15 +677,21 @@ sub TimerWatch{
     if($mode=~/timer/){
 	my$now=time();
 
+	print "mode=timer\n";
+
 	if($TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<$now){
+	    print "stopping\n";
 	    Robot_Stop();
 	    Robot_Inactive();
 	    ButtonConfig();
 	}else{
 	    
 	    if($now>=$next_timer_event){
+		print "setting up\n";
 		SetupTimerDispatch();
 	    }else{
+		print "recording\n";
+
 		my$waiting_seconds=$next_timer_event-$now;
 		
 		my$waiting_minutes=int($waiting_seconds/60);
@@ -1074,6 +1076,11 @@ sub ReadStderr{
 	if($line=~/Capture stopped/){
 	    $recording_active=0;
 	    $recording_pending=0;
+
+	    if($mode=~/timer/){
+		SetupTimerDispatch();
+	    }
+
 	}
 
 	if($line=~/Capturing/){
