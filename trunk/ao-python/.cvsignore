@@ -1,0 +1,6 @@
+Setup
+config.ao
+MANIFEST
+build
+dist
+*.pyc

@@ -1,7 +1,5 @@
 #include "aomodule.h"
 
-#define ERR(x) "key:val pairs limited to " #x " characters. Go bug Andrew if this is a problem."
-
 static ao_option_t *
 dict_to_options(PyObject *dict)
 {
@@ -19,11 +17,6 @@ dict_to_options(PyObject *dict)
   while (PyDict_Next(dict, &pos, &key, &val) > 0) {
     if (!PyString_Check(key) || !PyString_Check(val)) {
       PyErr_SetString(PyExc_TypeError, "Option keys may only be strings");
-      goto error;
-    }
-
-    if (PyString_Size(key) + PyString_Size(val) > OPTSIZE - 1) {
-      PyErr_SetString(PyExc_ValueError, ERR(OPTSIZE));
       goto error;
     }
 
@@ -47,6 +40,7 @@ static PyObject*
 py_ao_new(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   uint_32 driver_id, bits, rate, channels;
+  char * driver_name;
   PyObject *py_options = NULL;
   ao_option_t *c_options;
   ao_device_t *dev;
@@ -57,16 +51,22 @@ py_ao_new(PyObject *self, PyObject *args, PyObject *kwargs)
   channels = 2;
   c_options = NULL;
 
-  //TODO : Add support for string driver_id
+  if(PyArg_ParseTupleAndKeywords(args, kwargs, "s|lllO!", new_kwlist,
+				 &driver_name, &bits, &rate, &channels, 
+				 &PyDict_Type, &py_options)) {
+    driver_id = ao_get_driver_id(driver_name);
+  } else {
 
-  if(!(PyArg_ParseTupleAndKeywords(args, kwargs, "i|lllO!", new_kwlist,
-				   &driver_id, &bits, &rate, &channels, 
-				   &py_options, &PyDict_Type)))
-    return NULL;
+    PyErr_Clear();
+    if(!(PyArg_ParseTupleAndKeywords(args, kwargs, "i|lllO!", new_kwlist,
+				     &driver_id, &bits, &rate, &channels, 
+				     &PyDict_Type, &py_options)))
+      return NULL;
 
+  }  
   if (py_options && PyDict_Size(py_options) > 0) {
-    // dict_to_options returns NULL on error, so you can't pass
-    // an empty dictionary. We can skip this then anyway.
+    /* dict_to_options returns NULL on error, so you can't pass
+       an empty dictionary. We can skip this then anyway. */
 
     c_options = dict_to_options(py_options);
     if (!c_options) {
@@ -107,7 +107,7 @@ py_ao_get_driver_id(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "|s", &str))
     return NULL;
 
-  driver_id = ao_get_driver_id(str); //takes NULL for default
+  driver_id = ao_get_driver_id(str); /* akes NULL for default */
 
   if (driver_id == -1) {
     PyErr_SetString(Py_aoError, "No such driver");
@@ -120,19 +120,37 @@ py_ao_get_driver_id(PyObject *self, PyObject *args)
 static PyObject *
 py_ao_get_driver_info(PyObject *self, PyObject *args)
 {
-  int driver_id;
+  int driver_id = 0;
+  char *driver_name;
   ao_info_t *info; 
   PyObject *retdict;
 
   if (self != NULL) {
-    //It's a method
+
+    /* It's a method */
     ao_Object *ao_self = (ao_Object *) self;
     info = ao_self->dev->funcs->get_driver_info();
+
   } else {
-    //It's a string
-    if (!(PyArg_ParseTuple(args, "i", &driver_id)))
-      return NULL;
+
+    /* Maybe it's a string */
+    if ((PyArg_ParseTuple(args, "s", &driver_name))) {
+
+      driver_id = ao_get_driver_id(driver_name);
+      if (driver_id == -1) {
+	PyErr_SetString(Py_aoError, "Invalid driver name");
+      }
+
+    } else {
+      
+      /* Maybe it's an int */
+      PyErr_Clear();
+      if (!(PyArg_ParseTuple(args, "i", &driver_id)))
+	return NULL;
+    }
+    
     info = ao_get_driver_info(driver_id);
+
   }
   if (!info) {
     PyErr_SetString(Py_aoError, "Error getting info");
@@ -140,7 +158,7 @@ py_ao_get_driver_info(PyObject *self, PyObject *args)
   }
 
   retdict = PyDict_New();
-  //TODO: More error checking here.
+
   PyDict_SetItemString(retdict, "name", 
 		       PyString_FromString(info->name));
   PyDict_SetItemString(retdict, "short_name", 
@@ -202,14 +220,6 @@ initao(void)
   str = PyString_FromString(docstring);
   PyDict_SetItemString(dict, "__doc__", str);
   Py_DECREF(str);
-
-#ifdef AO_NULL
-  AddInt(AO_NULL);
-#endif
-
-#ifdef AO_NULL
-  AddInt(AO_NULL);
-#endif
 
 #ifdef AO_NULL
   AddInt(AO_NULL);

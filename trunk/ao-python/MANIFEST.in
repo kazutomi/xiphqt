@@ -1,0 +1,3 @@
+include ChangeLog README COPYING AUTHORS NEWS setup.py test.py MANIFEST.in
+recursive-include src/ *.c *.h
+
