@@ -46,6 +46,7 @@ For Debian based systems:
    And type:  apt-get update
               apt-get install positron
 
+For Gentoo systems	: emerge positron
 
 To install from the source tarball, unpack the positron source and 
 cd into the resulting directory.  Then run the following commands:
