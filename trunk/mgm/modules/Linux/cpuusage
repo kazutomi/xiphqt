@@ -1,44 +1,25 @@
 # -*-Perl-*-
 use Tk;
-
 package MGMmodule::cpuusage;
-$name="cpuusage";
-%module;
-
-$main::toplevel->optionAdd("$main::Xname.$name*refresh",        250,20);      
-
-# how many CPUs? Get this from /proc/cpuinfo, not /proc/stat
-
-$numcpus=0;
-die "Couldn't open /proc/cpuinfo\n" unless open(PROC,"</proc/cpuinfo");
-while(<PROC>){
-    if(m/processor\s*:\s*(\d*)/){
-	$numcpus=$1+1 if ($numcpus<$1+1);
-    }
-}
-close PROC;
-
-for(my$i=0;$i<$numcpus;$i++){
-    $main::toplevel->optionAdd("$main::Xname.$name.bar.$i.label","CPU $i",22);
-}
 
 sub module_construct{
-    my($this,$width,$height)=@_;
+    my($this,$toplevel,$width,$height)=@_;
     
-    $graph=MGM::Graph::new($main::toplevel,num=>$numcpus,fixed=>'1',
+    $graph=MGM::Graph->new($toplevel,num=>$numcpus,fixed=>'1',
 			   width=>$width,height=>$height,prompt=>"%",
 			   rangesetting=>'100',rangecurrent=>'100',
-			   name=>$name);
+			   name=>$this->module_name); # don't forget name!!
 
     $widget=$graph->{"widget"};
-    my$refresh=$widget->optionGet("refresh","Refresh");
-    $widget->repeat($refresh,\&update);
-
-    $this->{"graph"}=$graph;
-    $this->{"widget"}=$widget;
+    $this->{"graph"}=$graph;   # for local use
+    $this->{"widget"}=$widget; # widget is required by mgm
+    $widget;
 }
 
-sub update{ 
+my@load;
+my@prevload;
+
+sub module_update{ 
 # in late 2.1+ kernels, each CPU has an entry in /proc/stat along with
 # a common entry.  Earlier, only the common entry.
 
@@ -48,7 +29,7 @@ sub update{
     die "Couldn't open /proc/stat\n" unless open(PROC,"</proc/stat");
     while(<PROC>){
 	if(m/^cpu(\d*)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/){
-	    if(defined($1)){
+	    if($1){
 		# per-cpu entry
 		$load[$1+1]=$2+$3+$4;
 		$total[$1+1]=$2+$3+$4+$5;
@@ -84,13 +65,34 @@ sub update{
 
 }
 
-($minx,$miny)=&MGM::Graph::calcxysize(\%module,100,'%',$numcpus);
+sub module_init{
+    my($mod,$toplevel,$xpath)=@_;
 
-$module{"mgm_module_name"}=$name;
-$module{"mgm_module_minx"}=$minx;
-$module{"mgm_module_miny"}=$miny;
-$module{"mgm_module_wdemand"}=12*$numcpus;
-$module{"mgm_module_ldemand"}=50;
-$module{"mgm_module_construct"}=\&module_construct;
+    # how many CPUs? Get this from /proc/cpuinfo, not /proc/stat    
+    $numcpus=0;
+    die "Couldn't open /proc/cpuinfo\n" unless open(PROC,"</proc/cpuinfo");
+    while(<PROC>){
+	if(m/processor\s*:\s*(\d*)/){
+	    $numcpus=$1+1 if ($numcpus<$1+1);
+	}
+    }
+    close PROC;
+    
+    ($minx,$miny)=MGM::Graph::calcxysize($mod,100,'%',$numcpus);
 
-\%module;
+    for(my$i=0;$i<$numcpus;$i++){
+	$toplevel->optionAdd("$xpath.bar.$i.label", "cpu $i",22);
+    }
+    $toplevel->optionAdd("$xpath.refresh",  250,21);      
+    $toplevel->optionAdd("$xpath.minx",     $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",     $miny,21);      
+    $toplevel->optionAdd("$xpath.widdemand",100*$numcpus,21);
+    $toplevel->optionAdd("$xpath.lendemand",100,21);      
+    1;
+}
+
+sub module_name{
+    "cpuusage";
+}
+
+bless {};

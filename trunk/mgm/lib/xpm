@@ -17,7 +17,7 @@ sub rgb{
 	my$r=hex$1;
 	my$g=hex$2;
 	my$b=hex$3;
-	"$r*=16;$g*=16;$b*=16;" if(length($val)==3);
+       if(length($val)==3){$r*=16;$g*=16;$b*=16};
 	($r,$g,$b);
     }else{
 	my($r,$g,$b)=$main::toplevel->rgb($val);
@@ -163,7 +163,7 @@ sub write{
     foreach $key (0..31){
 	$c=chr($key+65);
 	$out.="\",\n\"$c  $type ";
-	if("#$key" eq transp){
+	if("#$key" eq 'transp'){
 	    $out.="None\",\n";
 	}else{
 	    
@@ -227,7 +227,7 @@ sub rot90{
     # build new grid
     my@gray;
     for(my$i=0;$i<$w;$i++){
-	@gray[$w-$i-1]=[map{@$_[$i]}@{$xpm->{"gray"}}[0..$h-1]];
+	$gray[$w-$i-1]=[map{@$_[$i]}@{$xpm->{"gray"}}[0..$h-1]];
     }
     $xpm->{"gray"}=\@gray;
     $xpm->{"width"}=$h;
@@ -237,17 +237,19 @@ sub rot90{
 
 sub reduceonex{
     my($w,$nw,$v)=@_;
-    my$del=$w/($nw?$nw:1);
+    my$del=(1.0*$w)/($nw?$nw:1);
     my$prev=0;
     my$iprev=0;
     my$oldval=$v->[0];
+
     for(my$nx=0;$nx<$nw;$nx++){
 	my$x=$del*($nx+1);
 	my$ix=int($x);
+	$x-=$ix;
 
-	my$val=$oldval*(1-$prev+$iprev);
+	my$val=$oldval*(1-$prev);
 	for(my$i=$iprev+1;$i<$ix;$i++){$val+=$v->[$i]};
-	$val+=($oldval=$v->[$ix])*($x-$ix);
+	$val+=($oldval=$v->[$ix])*$x if($x);
 	
 	$v->[$nx]=$val/$del;
 	
@@ -301,11 +303,13 @@ sub reduceoney{
 	    $iprev++;
 	}
 	# terminal row 
-	$idel=($y-$iy)/$del;
-	$v=$vv->[$iy];
-	for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]*$idel;}
-	$iprev=$iy;
-	$prev=$y;
+	if($y<$h){
+	    $idel=($y-$iy)/$del;
+	    $v=$vv->[$iy];
+	    for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]*$idel;}
+	    $iprev=$iy;
+	    $prev=$y;
+	}
     }
     splice @$vv, $nh-$h, $h-$nh;
 }
