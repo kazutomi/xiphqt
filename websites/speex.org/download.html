@@ -34,12 +34,20 @@ This bugfix release fixes a multithreading bug and corrects an underflow problem
 </ul>
 
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release</h2>
-<h3 id='one.1.5'>1.1.5</h3>
-<p>
-The main change in this release is that the 1.1.5 <abbr title='application programming interface'>API</abbr> and
-<abbr title='application binary interface'>ABI</abbr> are now compatible with 1.0.<var>x</var>. The versions of the functions taking
-a <code>short*</code> now have an "_int" suffix, as in <code>speex_encode_int()</code>.
-</p>
+<h3 id='one.1.5'>1.1.6</h3>
+			<p>
+			There are seven changes in this release.
+			<ul>
+				<li>Improved jitter buffer (now actually works)</li>
+				<li>Denoiser tuning</li>
+				<li>Improved echo canceller (please send feedback)</li>
+				<li>Support for Symbian OS</li>
+				<li>Gapless playback for speexenc/speexdec</li>
+				<li>Run-time identification of Speex version with a new speex_lib_ctl() call</li>
+				<li>Moved the includes to /usr/include/speex/</li>
+			</ul>
+			<br>
+			</p>
 
 <ul>
 <li><a href="download/speex-1.1.6.tar.gz">Source Code</a></li>
