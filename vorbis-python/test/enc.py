@@ -82,7 +82,7 @@ class NumericWaveReader(WaveReader):
 
 
 def main():
-    vi = ogg.vorbis.VorbisInfo(nominal_bitrate=150000)
+    vi = ogg.vorbis.VorbisInfo(quality=0.1)
     vc = ogg.vorbis.VorbisComment()
 
     vd = vi.analysis_init()
@@ -106,15 +106,18 @@ def main():
     packets = 0
     samples = 0
     
-    while 1:
+    eos = 0
+    while not eos:
         #returns a tuple of strings representing arrays of floats
         channel_data = inwav.read_stereo(2048)
-        if not channel_data: break # didn't read any data
-        apply(vd.write, channel_data) 
+        if not channel_data:
+            print "No data"
+            vd.write(None) # didn't read any data
+        else:
+            apply(vd.write, channel_data) 
 
-        samples = samples + len(channel_data[0]) / 2
+            samples = samples + len(channel_data[0]) / 4
 
-        eos = 0
         vb = vd.blockout()
         while vb:
             packets = packets + 1
@@ -125,15 +128,19 @@ def main():
             if packets % 10 == 0: 
                 print "%0.2f" % (100.0 * samples / inwav.samples)
             
-            op = vb.analysis()
-            os.packetin(op)
-        
-            while not eos:
-                og = os.pageout()
-                if not og:
-                    break
-                og.writeout(fout)
-                eos = og.eos()
+            vb.analysis()
+            vb.addblock()
+            
+            op = vd.bitrate_flushpacket()
+            while op:
+                os.packetin(op)
+                while not eos:
+                    og = os.pageout()
+                    if not og:
+                        break
+                    og.writeout(fout)
+                    eos = og.eos()
+                op = vd.bitrate_flushpacket()
             
             vb = vd.blockout()
     

@@ -10,13 +10,14 @@
 #include "vcedit.h"
 
 /*  
-   *********************************************************
-                        VorbisInfo Object methods 
-   *********************************************************
+*********************************************************
+VorbisInfo Object methods 
+*********************************************************
 */
 
 FDEF(ov_info_clear) "Clears a VorbisInfo object";
 FDEF(vorbis_analysis_init) "Create a DSP object to start audio analysis.";
+FDEF(vorbis_info_blocksize) "I have NO idea what this does.";
 
 static void py_ov_info_dealloc(PyObject *);
 static PyObject *py_ov_info_getattr(PyObject *, char *name);
@@ -26,6 +27,8 @@ static PyMethodDef py_vinfo_methods[] = {
    METH_VARARGS, py_ov_info_clear_doc},
   {"analysis_init", py_vorbis_analysis_init, 
    METH_VARARGS, py_vorbis_analysis_init_doc},
+	{"blocksize", py_vorbis_info_blocksize,
+	 METH_VARARGS, py_vorbis_info_blocksize_doc},
   {NULL, NULL}
 };
 
@@ -74,12 +77,14 @@ py_info_new_from_vi(vorbis_info *vi)
 }
 
 static char *py_info_new_kw[] = {"channels", "rate", "max_bitrate",
-																 "nominal_bitrate", "min_bitrate", NULL};
+																 "nominal_bitrate", "min_bitrate", "quality",
+																 NULL};
 
 PyObject *
 py_info_new(PyObject *self, PyObject *args, PyObject *kwdict)
 {
   long channels, rate, max_bitrate, nominal_bitrate, min_bitrate;
+	double quality = -1.0;
   vorbis_info vi; 
   int res;
 
@@ -89,15 +94,19 @@ py_info_new(PyObject *self, PyObject *args, PyObject *kwdict)
   nominal_bitrate = 128000;
   min_bitrate = -1;
   if (!PyArg_ParseTupleAndKeywords(args, kwdict, 
-				   "|lllll", py_info_new_kw, 
-				   &channels, &rate, &max_bitrate,
-				   &nominal_bitrate, &min_bitrate))
+																	 "|llllld", py_info_new_kw, 
+																	 &channels, &rate, &max_bitrate,
+																	 &nominal_bitrate, &min_bitrate, &quality))
     return NULL;
   vorbis_info_init(&vi);
 
-  res = vorbis_encode_init(&vi, channels, rate,
-			   max_bitrate, nominal_bitrate,
-			   min_bitrate);
+	if (quality > 0.0) {
+		res = vorbis_encode_init_vbr(&vi, channels, rate, quality);
+	} else {
+		res = vorbis_encode_init(&vi, channels, rate,
+														 max_bitrate, nominal_bitrate,
+														 min_bitrate);
+	}
 
   if (res != 0) {
     vorbis_info_clear(&vi);
@@ -129,6 +138,19 @@ py_ov_info_dealloc(PyObject *self)
 #define CMP_RET(x) \
    if (strcmp(name, #x) == 0) \
      return PyInt_FromLong(vi->x)
+
+static PyObject *
+py_vorbis_info_blocksize(PyObject *self, PyObject *args)
+{
+  vorbis_info *vi = PY_VINFO(self);
+	int res, zo;
+	
+	if (!PyArg_ParseTuple(args, "l", &zo))
+		return NULL;
+	
+	res = vorbis_info_blocksize(vi, zo);
+	return PyInt_FromLong(res);
+}
 
 static PyObject *
 py_ov_info_getattr(PyObject *self, char *name)
@@ -182,9 +204,9 @@ py_vorbis_analysis_init(PyObject *self, PyObject *args)
 }
 
 /*  
-   *********************************************************
-                   VorbisComment Object methods 
-   *********************************************************
+*********************************************************
+VorbisComment Object methods 
+*********************************************************
 */
 
 
@@ -659,32 +681,32 @@ py_comment_as_dict(PyObject *self, PyObject *args)
 #endif
 
       if (!item)
-	goto error;
+				goto error;
       
       if (make_caps_key(key, keylen)) { /* overwrites key */
-	Py_DECREF(item);
-	goto error;
+				Py_DECREF(item);
+				goto error;
       }
 
       /* GetItem borrows a reference */
       if ((curlist = PyDict_GetItemString(retdict, key))) {
 
-	/* A list already exists for that key */
-	if (PyList_Append(curlist, item) < 0) {
-	  Py_DECREF(item);
-	  goto error;
-	}
+				/* A list already exists for that key */
+				if (PyList_Append(curlist, item) < 0) {
+					Py_DECREF(item);
+					goto error;
+				}
 
       } else {
 
-	/* Add a new list in that position */
-	curlist = PyList_New(1);
-	PyList_SET_ITEM(curlist, 0, item);
-	Py_INCREF(item);
+				/* Add a new list in that position */
+				curlist = PyList_New(1);
+				PyList_SET_ITEM(curlist, 0, item);
+				Py_INCREF(item);
 
-	/* this does not steal a reference */
-	PyDict_SetItemString(retdict, key, curlist); 
-	Py_DECREF(curlist);
+				/* this does not steal a reference */
+				PyDict_SetItemString(retdict, key, curlist); 
+				Py_DECREF(curlist);
       }
       Py_DECREF(item);
     }
@@ -759,7 +781,7 @@ write_comments(vorbis_comment *vc, const char *filename, int append)
 	if (vcedit_write(state, out_file) < 0) {
 		char buff[256];
 		snprintf(buff, sizeof(buff), "Could not write comments to file: %s",
-						vcedit_error(state));
+						 vcedit_error(state));
 		PyErr_SetString(Py_VorbisError, buff);
 
 		vcedit_clear(state);
@@ -787,7 +809,6 @@ static PyObject *
 py_comment_append_to(PyObject *self, PyObject *args) 
 {
 	vorbis_comment *vc = PY_VCOMMENT(self);
-	PyObject *ret;
 	const char *filename;
 	if (!PyArg_ParseTuple(args, "s", &filename))
 		return NULL;
