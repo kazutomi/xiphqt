@@ -1,0 +1,757 @@
+**** BEGIN LOGGING AT Sat May  8 06:42:37 2004 (some lead up was logged informally)
+
+May 08 06:42:37 -->     You are now talking on #xiphmeet
+May 08 06:42:37 ---     Topic for #xiphmeet is Welcome to the Xiph.org meeting and discussion channel. The next meeting is 2004-05-08 14:00 +00:00 to discuss the mux spec. The next monthly meeting will be 2004-06-02 12:00 +00:00; please add items to the agenda for that meeting at <http://wiki.xiph.org/MonthlyMeeting200406>.
+May 08 06:42:37 ---     Topic for #xiphmeet set by Misirlou at Thu May  6 14:21:40
+May 08 06:44:42 -->     kfish (~conrad@195.8.233.220.exetel.com.au) has joined #xiphmeet
+May 08 06:47:51 -->     jack (~jack@i.cantcode.com) has joined #xiphmeet
+May 08 06:49:46 <derf_> :99s/lenghts/lengths
+May 08 06:50:35 <derf_> :105s/lenghts/lengths
+May 08 06:52:04 -->     xiphmont (~xiphmont@HOTASS-9.MIT.EDU) has joined #xiphmeet
+May 08 06:52:33 -->     illiminable (~illiminab@dsl-202-72-166-70.wa.westnet.com.au) has joined #xiphmeet
+May 08 06:52:40 <rillian>       morning all
+May 08 06:52:42 <xiphmont>      for folks who are preparing:
+May 08 06:52:54 <illiminable>   evening
+May 08 06:53:00 <xiphmont>      the current mux document is in SVN in the ogg module int he doc/ directory.
+May 08 06:53:08 <derf_> xiphmont: 
+May 08 06:53:10 <derf_> :99s/lenghts/lengths
+May 08 06:53:12 <derf_> :105s/lenghts/lengths
+May 08 06:53:35 <xiphmont>      You have write access, don't you?
+May 08 06:53:49 <derf_> :127s/or be zero for a header page/or for a header page be zero
+May 08 06:53:56 <xiphmont>      [although I do appreciate the ping]
+May 08 06:54:26 -->     acolwell (~acolwell@66.135.158.27) has joined #xiphmeet
+May 08 06:54:35 <derf_> Sure... I don't generally commit on stuff I _know_ other people are working on.
+May 08 06:54:47 <xiphmont>      OK.
+May 08 06:54:56 <derf_> Also, someone just brought me pie.
+May 08 06:55:04 <xiphmont>      I am currrently still a bit too groggy to think.  
+May 08 06:55:12 <xiphmont>      OK, that's a good reason too.
+May 08 06:56:05 <thomasvs>      let me know when we can start asking questions :)
+May 08 06:56:32 <jack>  i have a warmup question for ralph
+May 08 06:56:33 <thomasvs>      ogg-multiplex.html ?
+May 08 06:56:35 <thomasvs>      why is it in html ?
+May 08 06:56:50 <jack>  thomasvs: because monty LOVES sgml
+May 08 06:56:59 <xiphmont>      It started that way some time back; HTML is still easier for me to weild.
+May 08 06:57:08 <xiphmont>      It will need to become docbook.
+May 08 06:57:17 <jack>  ralph: when we did oggmerge, did we order granulepos monotonically for all codecs?
+May 08 06:57:21 <xiphmont>      Naw, SGML is fine, the tools like to bite me.
+May 08 06:57:28 <thomasvs>      well, I made a docbook/xml template tarball a while back, wouldn't mind moving it over
+May 08 06:57:38 <jack>  xiphmont: txt works for me and the rest of the world :)
+May 08 06:57:44 <rillian>       jack: no
+May 08 06:57:52 <jack>  rillian: how did we sort them?
+May 08 06:57:54 <thomasvs>      it has autotool setup worked out, and builds html/ps/pdf/txt with images
+May 08 06:58:03 <xiphmont>      sure, but this makes it render better in Galeon :-)
+May 08 06:58:22 <jack>  ack.. you are still using galeon?  anyway, enough off topicness.
+May 08 06:58:38 <rillian>       rather than monotonic ordering and begin/end times
+May 08 06:58:48 <thomasvs>      is "bisection search" basically the same thing as binary lookup ?
+May 08 06:58:57 <rillian>       we ordered by the end time of the previous logical page
+May 08 06:59:15 <jack>  which is the same as start time would be right?
+May 08 06:59:29 <rillian>       thomasvs: that's guess, jump, check, extrapolate, jump, check, extrapolate
+May 08 06:59:46 <rillian>       bisection because ideally you cut the search space by half each time
+May 08 06:59:56 <xiphmont>      welll, more than half.
+May 08 06:59:57 <rillian>       jack: similar but not exactly the same
+May 08 07:00:08 <thomasvs>      rillian: are there optimizations for extrapolation, or is it just linear ?
+May 08 07:00:19 <xiphmont>      thomasvs: we use Newton's method.
+May 08 07:00:41 <rillian>       well, looks like everyone's here
+May 08 07:00:19 <xiphmont>      thomasvs: we use Newton's method.
+May 08 07:00:41 <rillian>       well, looks like everyone's here
+May 08 07:00:47 <jack>  but all the packets were arranged monotonically right?
+May 08 07:00:56 <derf_> xiphmont: You mean the secant method?
+May 08 07:01:00 <jack>  we'd take the next page of the n codecs
+May 08 07:01:07 <jack>  pick whichever one had the lowest value
+May 08 07:01:11 <jack>  and then repeat
+May 08 07:01:47 <xiphmont>      derf_: possibly, but I've not heard it called the secant method before.
+May 08 07:02:09 -->     xiphlog (~giles@motherfish-II.xiph.org) has joined #xiphmeet
+May 08 07:02:32 <derf_> xiphmont: Newton requires you to be able to compute derivatives. The secant method uses successive points to estimate a derivative.
+May 08 07:02:54 ---     rillian has changed the topic to: Welcome to the Xiph.org meeting and discussion channel. The next meeting is 2004-05-08 14:00 +00:00 to discuss the mux spec. The next monthly meeting will be 2004-06-02 12:00 +00:00; please add items to the agenda for that meeting at <http://wiki.xiph.org/MonthlyMeeting200406>. Live log at http://xiph.org/~giles/xiphmeet.log
+
+--- Log opened Sat May 08 10:02:03 2004
+10:02 -!- xiphlog [~giles@motherfish-II.xiph.org] has joined #xiphmeet
+10:02 -!- Topic for #xiphmeet: Welcome to the Xiph.org meeting and discussion channel. The next meeting is 2004-05-08 14:00 +00:00 to discuss the mux spec. The next monthly meeting will be 2004-06-02 12:00 +00:00; please add items to the agenda for that meeting at <http://wiki.xiph.org/MonthlyMeeting200406>.
+10:02 -!- Topic set by Misirlou [] [Thu May  6 17:21:40 2004]
+10:02 [Users #xiphmeet]
+10:02 [ acolwell] [ illiminable] [ kfish   ] [ ozone  ] [ thomasvs] [ xiphmont] 
+10:02 [ derf_   ] [ jack       ] [ Misirlou] [ rillian] [ xiphlog ] 
+10:02 -!- Irssi: #xiphmeet: Total of 11 nicks [0 ops, 0 halfops, 0 voices, 11 normal]
+10:02 -!- Channel #xiphmeet created Fri Apr 30 06:59:53 2004
+10:02 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+10:02 < derf_> xiphmont: Newton requires you to be able to compute derivatives. The secant method uses successive points to estimate a derivative.
+10:02 -!- rillian changed the topic of #xiphmeet to: Welcome to the Xiph.org meeting and discussion channel. The next meeting is 2004-05-08 14:00 +00:00 to discuss the mux spec. The next monthly meeting will be 2004-06-02 12:00 +00:00; please add items to the agenda for that meeting at <http://wiki.xiph.org/MonthlyMeeting200406>. Live log at http://xiph.org/~giles/xiphmeet.log
+10:03 < thomasvs> xiphmont: what function do you perform newton on then ?
+10:03  * thomasvs must be missing something obvious
+10:03 < derf_> The latter converges slower than quadratically, but requires fewer function evaluations.
+10:04 < derf_> (the `estimated' derivative is that of the straight line between the two points)
+10:04 < jack> thomasvs: you guess where you wan tto seek to and read some data
+10:05 < jack> you inspect granulepos at those locations, and dtermine if you've gone too far or not
+10:05 < xiphmont> derf_: yes, that's what we're doing
+10:05 < jack> then you make a quick estimate on how far away you missed by, and jump again.
+10:06 < illiminable> Can someone explain to me what the spec means by a short packet... i assum this is not just byte length
+10:07 < jack> ralph: was my earlier characterization of oggmerge correct?
+10:07 < rillian> jack: yes, looking at the code you are correct
+10:07 < xiphmont> illiminable: it's a term from the other docs
+10:07 < jack> how is that different that start time sort?
+10:08 < rillian> sorting by the time of the previous logical page is what I decided we needed to do to improve buffering
+10:08 < rillian> it was an attempt to solve the same problem the begin/end time flag solves
+10:08 < xiphmont> illiminable: basically, in a packet that encodes multiple samples in a block-based codec (like audio), a 'short packet' is one that looks like a regularly blocksized packet, but we want to trim some data off the beginning or end.
+10:08 < thomasvs> suppose you have two concurrent streams, but the audio is set to start five seconds after the video (which is for example possible in mpeg).  how should this be handled when muxing to ogg ?
+10:08 < thomasvs> are we supposed to have the vorbis coder generate 5 secs of silence ?
+10:09 < rillian> thomasvs: yes
+10:09 < jack> thomasvs: the first audio packet comes before the video frame at the 5 second point.
+10:09 < rillian> that's not an ogg thing, but a theora thing
+10:09 < rillian> jack: I guess that would work, but you'd end up buffering 5 seconds of video
+10:09 < jack> you will rarely see that situation though
+10:09 < illiminable> xiphmont: ok... i kind of get it
+10:09 < rillian> so it's more efficient to encode silence
+10:09 < thomasvs> jack: ok, on the ogg level it's fine to first generate headers but then don't send any data for one of the streams for a given amount of time ?
+10:09 < jack> because otherwise you'll hear dead silence then audio
+10:09 < derf_> Well, as it currently stands, neither Vorbis nor Theora have a way to specify an initial delay.
+10:10 < thomasvs> rillian: why does theora add that requirement ?
+10:10 < jack> usually you encode the full audio and let vorbis nuke the silecnce.
+10:10 < rillian> thomasvs: it could be a SHOULD rather than a MUST, but basically for the buffering performance
+10:10 < rillian> and simplicity
+10:10 < thomasvs> rillian: does theora specifically have hooks then for vorbis ?
+10:11 < thomasvs> rillian: or would this be a SHOULD for any video codec begin used ?
+10:11  * thomasvs always tries to keep distinctions between ogg and various codec when thinking about it
+10:11 < rillian> the Ogg Theora specification has hooks for audio that sort of assume you're using vorbis or speex
+10:11 < rillian> thomasvs: just Ogg Theora
+10:12 < rillian> we've got two issues here. Ogg multiplex in general
+10:12 < rillian> and Ogg Theora multiplex
+10:12 < jack> ok, so first of all, how does having this starttime/endtime distinction help, since sorting by endtime of previous page works fine?
+10:12 < rillian> the second can be more restrictive than the first
+10:13 < xiphmont> whoops, sorry, early morning call of nature suddenly asserted itself.
+10:13 < thomasvs> (I'll let you guys discuss the other stuff before I ask some more things, I don't want to get in the way)
+10:13 < rillian> jack: it doesn't work so well when you have subtitle pages
+10:13 < xiphmont> to answer thomasvs's earlier question:
+10:13 < acolwell> jack: Sorting by previous endtime breaks the original spec by having the granulepos of the pages to no longer be monotonically increasing
+10:13 < derf_> jack: Using endtime for discontinuous streams can require an arbitrarily large buffer.
+10:13 < xiphmont> ...ending on a different time is easy; we all understand that one.
+10:13 < rillian> or what acolwell said
+10:14 < derf_> Using endtime for continuous streams can require a slightly larger than optimal buffer.
+10:14 < rillian> arranging the pages for optimal decode as I always thought we should just do, means non-time-linear order
+10:14 < xiphmont> beginning actually works the same way; another one of the continuous streams fills the gap; the buffering can see that there was no audio occurring there.
+10:14 < derf_> (but at least not one that's unbounded)
+10:14 < rillian> which the RFC says you can't do, although the original docs only support that as one reading
+10:15 < xiphmont> So you don;t actually need to specify any explicit initial delay or end time
+10:15 < xiphmont> In fact...
+10:15 < xiphmont> "Continuous streams" will even work in the general case so long as only one of the continuous streams is actually continuous; gaps in others would get noticed.  
+10:15 < acolwell> derf_: it can be large though if sparse streams are in there and they use end timestamps
+10:15 < jack> i am missing something
+10:15 < jack> how is starttime != endtime of previous page
+10:16 < rillian> So that's the major questions I'd like answered here. There are advantages to time-linear sorting. I think the seek is a red herring given keyframe complications, but what monty just pointed out is a good side benifit
+10:16 < xiphmont> But that behavior shouldn't be encouraged; it makes ordering more brittle and malformed streams would get even worse.
+10:16 < derf_> acolwell: Yes, that's what I said.
+10:16 < xiphmont> jack: we've gone through that in the previous months
+10:16 < rillian> however, linear order + good sorting basically requires reving the spec
+10:16 < xiphmont> In essence it is
+10:16 < rillian> so is that justified?
+10:16 < xiphmont> However, you end up disassociating the data from the point in the stream where it's useful.
+10:17 < acolwell> derf_: oops I didn't read far enough back. It's early.. :)
+10:17 < rillian> jack: the ingredient in monty's argument it took me forever to understand is that he's assuming linear order by granulepos-time-equivalent is a requirement
+10:17 < xiphmont> We have parallel threads going on, I'm trying to handle the first.
+10:17 < thomasvs> xiphmont: what you just told me only applies when page start granulepos are really monotonically increasing in time between the different streams, correct ?
+10:17 < xiphmont> thomasvs: yes
+10:18 < thomasvs> xiphmont: which isn't currently a requirement by the ogg spec, right ?
+10:18 < xiphmont> You get a number of features for free plus additional buffer behavior robustness in the ordered caase.
+10:18 < xiphmont> Actually, I had intended it to be and though it was part of current spec.
+10:18 < xiphmont> Others didn;t realize that and have implemented otherwise.
+10:18 < derf_> I had always understood it to be part of the current spec.
+10:18 < xiphmont> Unintentional fork in understanding.
+10:19 < thomasvs> well, it's not in the spec afaik, explicitly, and I did wonder about it.
+10:19 < rillian> derf_: it's in the rfc, but not in the original doc
+10:19 < derf_> rillian: I never read the RFC.
+10:19 < thomasvs> it seemed to me like it would be ok for a muxer to mux in a way that all packets in a page belong to only one of the streams, for example.
+10:19 < xiphmont> Back to jack's question...
+10:19 < rillian> I guess you just read it differently then. like sylvia when she wrote the RFC
+10:20 < rillian> thomasvs: that must be true regardless
+10:20 < xiphmont> So what you end up with is having to find two consecutive pages of a logical stream in a muxed physical stream to know where you are.  That complicates seeking in terms of implementation and execution complexity.
+10:20 < derf_> thomasvs: Pages are physically incapable of containing packets from more than one stream.
+10:20 < thomasvs> oh, right, my mistake
+10:21 < rillian> acolwell: you've probable got the most practical experience on the issue. What's your take on what we should do?
+10:21 < thomasvs> does this force codecs to know about each other's granule unit choice ? or is that just up to the muxers/demuxers that convert granulepos to real timestamps ?
+10:21 < xiphmont> I think we're generally at a deployment level of muxed streams that we should do it right.
+10:21 < xiphmont> thomasvs: granule choice is a flag in the Ogg page header, thus the discussion about revving the spec.
+10:22 < acolwell> xiphmont: have you posted a preliminary mux spec somewhere?
+10:22 < thomasvs> acolwell: in svn
+10:22 < xiphmont> we can do it without revving, but most software doesn't look for the flags it doesn't know about and reject nonzero.
+10:22 < xiphmont> Spec says it should, but nobody botheres including me, oops.
+10:22 < thomasvs> acolwell: ogg/doc/ogg-multiplex.html
+10:23 < jack> xiphmont: when you say "most software" do you mean "our software"
+10:23 < illiminable> So is granule pos choice totally optional... ie no codec specifies one or the other... or will some codecs specify the choice of one convention or the other ?
+10:23 < jack> because if you don't, i think "most software" is misleading.
+10:23 < acolwell> is svn easy to setup? I haven't done it yet. 
+10:23 < xiphmont> jack: I do.
+10:23 < jack> we're teh only real implenetation people use.
+10:23 < rillian> another argument against linear sort is handling broken streams. If you're liberal in what you accept your seek shouldn't break if the pages are out of order. Therefore, by the priniciple of minimum requirements, we shouldn't require in the spec something that it's possible to get wrong without damaging decodability
+10:23 < thomasvs> acolwell: you can browse it online too I think
+10:23 < derf_> acolwell: http://svn.xiph.org
+10:24 < thomasvs> http://svn.xiph.org/trunk/ogg/doc/ogg-multiplex.html
+10:24 < xiphmont> rillian: I disagree; the kind of damage that's tolerated is simply different.
+10:24 < acolwell> thomasvs, rillian, _derf: thanks
+10:24 < jack> i think we're not likely to see pages out of order unless it's a bug in someones code.  no one is currently producing multiplexed streams except us as far as i know.
+10:25 < illiminable> and me :)
+10:25 < derf_> jack: OGM.
+10:25 < thomasvs> jack: that assumes .ogm is not valid .ogg right ?
+10:25 < illiminable> But i've told everyone not to distribute them yet, because they are probably broken
+10:25 < jack> OGM is a different standard and not relevant to our conversation
+10:25 < xiphmont> OGM is, I thought, AVI wrapped in Ogg.
+10:25 < derf_> illiminable: Good man.
+10:25 < derf_> xiphmont: Basically.
+10:25 < thomasvs> we have some muxed streams too, but likely not completely valid :)
+10:25 < xiphmont> but OGM is not relevant here
+10:26 < rillian> OGM uses the AVI FOURCC thing for codec identification
+10:26 < thomasvs> would be nice if xiph provided a commandline tool to measure/comment on how good a file adheres to spec
+10:26 < acolwell> I think j^ was working on something too. He's sent me a few muxed streams before as well
+10:26 < jack> thomasvs: we have one for vorbis streams.
+10:26 < derf_> Like ogginfo?
+10:26 < rillian> I believe it's fine except for page ordering not being what you want
+10:26 < thomasvs> something that would tell you stuff like "this file contains wrongly ordered muxed pages"
+10:27 < rillian> xiphmont: likewise, I think if we implement the end/starttime flag, mixed use of that flag in a logical stream must be allowed
+10:27 < illiminable> OGM is ogg except every stream has a standardised header, ie fixed information in fixed places, which makes it easier for directshow to know what filters to connect to without having to explicitly know how to decode every different header
+10:27 < xiphmont> If we 'use other streams to find gaps in a continuous stream' should only be used for start/end gaps.  If we spec that, then a broken stream with poor mux order will still work perfectly, just eat more buffering.
+10:28 < acolwell> rillian: mixed modes in a logical stream can cause problems. 
+10:28 < xiphmont> rillian: that is an assetion on one of the 'POINT OF DISCUSSION' areas, right?
+10:28 < jack> illiminable: ogm is not ogg.  we don't have fixed headers.
+10:28 < rillian> xiphmont: yes
+10:28 < xiphmont> OK
+10:28 -!- Arc [~arc@syr-24-169-76-104.twcny.rr.com] has joined #xiphmeet
+10:28 < xiphmont> Specific rason?
+10:28 < rillian> jack: ogm is ogg if it complies with the spec
+10:28 < acolwell> rillian: you should pick one or the other for a stream except for the last page
+10:29 < illiminable> i know it's not ogg, but it just puts another header before every actual codec header
+10:29 < rillian> just because they used fixed headers in the packets
+10:29 < kfish> there's always going to be slight ordering problems, eg. with video frames not all being the same length.
+10:29 < illiminable> but as far as i know it follows the spec
+10:29 < jack> rillian: so they have a "header" stream?
+10:29 < rillian> acolwell: I agree it complicates things. that's why I'm not in favour in the first place
+10:29 < jack> why do we care about ogm again?
+10:29 < kfish> muxers should just be required to make a best effort, and without needing to understand the codec
+10:29 < xiphmont> I do think, actually, that aside from start/end, buffering should be as robust as possible.
+10:30 < rillian> jack: no, every packet just begins with a codec id
+10:30 < thomasvs> can someone outline the various points of discussion so I don't bring up redundant points ? ie, the things that aren't settled here yet ?
+10:30 < derf_> kfish: Nothing ever required anything to be the same length as anything else.
+10:30 < xiphmont> ...and that we should not allow wiggle room in the intent of 'Continuous streams mean continuous'.
+10:30 < derf_> Audio frames also constantly change length.
+10:30 < illiminable> jack: You probably don't, but others do... and ogm is much friendlier to directshow than raw ogg
+10:30 < jack> illiminable: the wohle idea of ogm is so counter to xiph's mission
+10:30 < xiphmont> Directshow can deal with real Ogg fine.
+10:31 < jack> the only common thing is they used two of our technologies
+10:31 < rillian> thomasvs: see my invite on the lists
+10:31 < jack> anyway, let's move on 
+10:31 < xiphmont> the Ogm discussion is partially political.  We should have it later/elsewhere
+10:32 < xiphmont> This is an engineering meeting.
+10:32 < kfish> derf_, i just mean there's not always an exact mapping of frame no to time, which matters for theora with frameno in the granulepos, but not for vorbis with sample number
+10:32 < xiphmont> (I'm goign to take a few minutes now to go back and move changes into the doc)
+10:32 < illiminable> Sorry to repeat:  So is granule pos choice totally optional... ie no codec specifies one or the other... or will some codecs specify the choice of one convention or the other ?
+10:33 < rillian> kfish: that doesn't really apply to theora either. it assumes a fixed absolute frame rate
+10:33 < acolwell> I would say that you can pic one or the other for a logical stream. Once you pick though you have to stick with it.
+10:33 < xiphmont> illiminable: ordering choice?
+10:33 < illiminable> No start or end choice
+10:34 < kfish> rillian, what about -drop rates?
+10:34 < acolwell> except for the last page. It should always be an endtime
+10:34 < xiphmont> acolwell: what is it you're worried about if that's left open?
+10:34 < rillian> kfish: the encoder must fix that up
+10:34 < Arc> acolwell: what? why would the last page be treated differently?
+10:35 < rillian> kfish: as I understand it, it's just a limitation of cheap capture hardware. you'd have to do that for e.g. broadcast anyway
+10:35 < kfish> rillian, what do you mean by "fix"?
+10:35 < thomasvs> (to make it easier for me to understand some stuff: is it OK/possible but not advisable/frowned upon/completely forbidden to mux say, mpeg video and mpeg audio ?)
+10:35 < acolwell> well one of the problems with endtimes in a muxed stream is that you have to find a pagefrom each stream before you can hand one out in order. If you have start times you don't have to do that. If you can mix them, then you basically have to assume the worst case
+10:35 < rillian> acolwell: what should a decoder do with a stream that is mixed counter to spec?
+10:36 < acolwell> Arc: So you can always know the duration by looking at the last page like you do now
+10:36 < xiphmont> acolwell: in a muxed stream of continuous streams, you have to anyway.
+10:36 < acolwell> xiphmont: Not if they are in order by start time
+10:36 < xiphmont> the worst case buffering is worse, yes.  But it is for mixing start/end anyway.
+10:36 < xiphmont> It doesn;t break logi, it just eats more buffer.
+10:36 < rillian> thomasvs: no. but that's politics again. can we talk about it later?
+10:36 < Arc> acolwell: better that making an exception, just make the last page empty and give it the end-pos of the whole stream, which is the start-pos of the last page
+10:36 < derf_> acolwell: Unless your stream is truncated, in which case that's not true.
+10:36 < xiphmont> And the docs should be clear that mixing is likely a silly thing that will eat buffer.
+10:37 < thomasvs> rillian: (I'm asking because of the technical aspects wrt. granulepos and interleaving, so substitute MPEG for "any codec")
+10:37 < xiphmont> Yes, the other possibility is to fix start or end ordering per logical stream and not use a flag.
+10:38 < xiphmont> Arc's NULL page idea goes along with that.
+10:38 < acolwell> Arc, derf_ : Ok so it doesn't HAVE to be an end time unless you are trimming off part of a frame
+10:38 < xiphmont> If we're not going to allow mixing and the flag, we should seriously consider that.
+10:38 < xiphmont> acolwell: one could also say that in start ordering, the codec simply has to know how big tis frames really are.
+10:39 < Arc> acolwell: actually if you want to trim end-time you would just make a NULL end-page with a shorter start-time
+10:40 < acolwell> Arc: I believe xiphmont made a point in an earlier discussion that the NULL page doesn't work for trimming samples because vorbis needs to know this data before handing the frame to the codec
+10:40 < xiphmont> acolwell: correct
+10:41 < xiphmont> However NULL end page does have one benefit; you can get the length of the stream without counting packets.
+10:42 < illiminable> Just to mention some aspects of directshow implemetnations... buffer is fixed outright from the start, before data is sent, start and end times are required for all samples.
+10:42 < xiphmont> I should have included this possible route in the doc as a point for discussion.  It slipped my mind.
+10:42 < xiphmont> illiminable: so some of that will have to be faked.
+10:42 < thomasvs> xiphmont: ooh, that's a nice feature in general - given the low cost of implementing it, it should be a strong suggestion
+10:43 < kfish> ok, it makes sense that granulepos should mean the same thing throughout a logical bitstream, anything else is crack
+10:43 < xiphmont> I agree with rillian: Ahveing the flag impies mixing is allowed.  I also agree with acolwell; arbitrary mixing is senseless.  Thus, my thinking is now turning against 'flag int he header of every page'.
+10:43 < thomasvs> kfish: yeah, so your choice of it limits the things a codec can change in-stream.
+10:44 < thomasvs> kfish: which applies to audio as well, ie you don't see regular audio files changing sample rate mid-stream, while they theoretically could
+10:44 < acolwell> xiphmont: How about this you can either put a null page with a start time or an end time page with a single packet in it.  The first is used in cases where you are using start timestamps for a logical stream and don't need to trim any samples. The second is for when you need to trim samples
+10:44 < kfish> thomasvs, thank goodness you don't :)
+10:44 < xiphmont> acolwell: I tlike the idea better: "The codec must know it's own actual output blocksize"
+10:45 < xiphmont> that breaks nothing.
+10:45 < xiphmont> And is much cleaner.
+10:45 < thomasvs> kfish: so, if you do it (which does happen in video, there are dvd's out there which for example go from real shot scenes to animated fragments), you should just send it as a new logical stream.
+10:45 < xiphmont> Wait...
+10:45 < derf_> The thing I liked about using the flag is that it lets the muxer decide which ordering to use.
+10:46 < xiphmont> actually, no...
+10:46 < xiphmont> we can do granulepos context detection of short packets even in start time.
+10:46 < xiphmont> The granulepos simply ends up meaning something slightly different on the last page.
+10:46 < xiphmont> I'm not sure I like this idea tho...
+10:47 < derf_> Oh geez, I see where that's going.
+10:47 < derf_> But, as I was saying...
+10:47 < xiphmont> Or we special case last page; "short packet on one by itself"
+10:47 < xiphmont> OH!
+10:47 < xiphmont> I'm not thinking.  There is precedent.
+10:47 < derf_> Perhaps you could keep the flag, but only check it in the very first page.
+10:47 < xiphmont> derf_: or we could go back to 'we ask the codec; the codec knows'
+10:47 < xiphmont> that was in the previous version of the spec.
+10:48 < derf_> xiphmont: Right, but current codecs don't have a bit to store it one way or the other.
+10:48 < derf_> So for legacy codecs, you're stuck picking one or the other.
+10:48 < xiphmont> OK, so the way 'granpos context' works now is actually a mirror image of our worry with start time.
+10:48 < derf_> Vorbis, for example, could use start time without issue if it has no short packets.
+10:48 < Arc> xiphmont: the problem of making the granulepos of the endpage shorter is it messes up ordering, the same for making it longer
+10:49 < derf_> s/Vorbis/A Vorbis stream
+10:49 < xiphmont> the fist page in an end-time ordered stream is special cased w.r.t. trimming the beginng, just how we'd have to special-case the last page of a start-time ordered stream to get a short packet.
+10:49 < xiphmont> derf_: legacy codes have already chosen, is the point....
+10:50 < xiphmont> any legacy codec that wants to make a new choice must rev anyway.
+10:50 < xiphmont> Arc: not really.
+10:50 < kfish> either granpos tells you the start of the first packet starting on a page, or the end of the last packet ending on a page -- all these corner cases are symmetric
+10:50 < xiphmont> it's still monotonic unless the last page has negative audio samples :-)
+10:50 < xiphmont> OK, so the way things are *now*:
+10:50 < derf_> xiphmont: Yes, without the explicit flag. With the flag at the Ogg level, the choice doesn't have to be fixed for all streams of that codec.
+10:51 < xiphmont> Actually, hold on, I'm talking multiple threads.
+10:51 < illiminable> If the choice is not fixed for any particular codec... where is the advantage... doesn't it mean we just have to handle two cases instead of one ?
+10:51 < xiphmont> derf_: we have to ask the codec to map granpos anyway.  We *also* ask the codec 'are you start or end orderd'?  
+10:52 < xiphmont> illiminable: actually, the ordering only affects buffering metrics.  it doesn;t affect the logic or implementation.
+10:52 < acolwell> illiminable: We have to do both anyways because Vorbis is out in the wild with end timestamps. 
+10:52 < xiphmont> OK, anyway, the short packet problem isn;t special in start-ordering.
+10:52 < illiminable> But that's what i mean... if we have already implemented and made it work with end stamps why add another case ?
+10:52 < xiphmont> The special cases are merely placed in a mirror image of end-time, but they're exactly symmetric.
+10:53 < thomasvs> yeah - what codecs prefer start time ordering ?
+10:53 < xiphmont> illiminable: buffering
+10:53 < illiminable> buffering makes no difference to my implementation
+10:53 < derf_> xiphmont: Yes, I don't have a conceptual problem with it. But e.g. Vorbis only REQUIRES end-time in some cases, but has no way to choose between one or the other on a stream-by-stream basis.
+10:53 < xiphmont> start-time ordering is demonstrably more efficient in worst and typical caase behavior.
+10:54 < illiminable> as i said buffer sizes are fixed in advance before the codec sees the data...
+10:54 < thomasvs> ok, so one of the possibilities being discusses is revving the ogg version so both start and end time can be added ?
+10:54 < xiphmont> derf_: actually, Vorbis I requires end-time period.  Vorbis II will be start time (or maybe both).
+10:54 < xiphmont> Vorbis II gets to decide.
+10:54 < xiphmont> I don;t yet see where your confusion is.
+10:54 < illiminable> And "ask the codec" is not quite so easy in directshow...
+10:54 < xiphmont> illiminable: compressed buffer size or data buffer size?
+10:54 < derf_> xiphmont: Given a Vorbis I stream with no short packets, why is end-time required?
+10:55 < xiphmont> derf_: because changing it without the code knowing breaks exact positioning.
+10:55 < illiminable> between all filters are groups of fixed sized buffers... they don't change.
+10:55 < xiphmont> (ie, Vorbisfile already exists and is widely deployed)
+10:55 < derf_> xiphmont: "Without the code knowing"... I was planning on telling it.
+10:55 < acolwell> what if we only add the starttime endtime bit to the pages with the begin and end flags?
+10:55 < derf_> That was the point of the Ogg-level flag.
+10:55 < xiphmont> illiminable: bufferd of uncompressed data waiting to be used in sync or compressed data after demux?
+10:56 < kfish> surely if an audio page contains only the end of one packet and the start of the next, the difference in granulepos will be exactly one sample, ie. negligible?
+10:56 < illiminable> Both
+10:56 < Arc> illiminable: buffering is not talking about "how much data to buffer".  with a muxed bitstream, ie with Theora where you have audio and video. it has to do with the file itself, not the player implementation
+10:56 < derf_> vorbisfile doesn't handle multiplexed streams anyway.
+10:56 < illiminable> arc: please explain ?
+10:56 < derf_> acolwell: That was essentially my suggestion.
+10:56 < xiphmont> OK, I'm now expanded out to four concurrent arguments.  I can't track them all.
+10:57 < xiphmont> derf_: I want to avoid if possible releasing new code that breaks old code.  We have struck on a way of doing that; let the codcec decide.
+10:57 < xiphmont> acolwell: we're discussing eliminating any need to mix start/end positioning at all.  
+10:57 < Arc> illiminable: with end time granulepos pages are ordered by end-time too.  and when you order by end-time, you will often get pages of data before you get pages of other codecs for the same time.
+10:58 < xiphmont> illiminable: answer the question :-)
+10:58 < illiminable> arc: that doesn't matter with the way directshow buffers
+10:58 < xiphmont> illiminable: WHICH BUFFERS
+10:58 < illiminable> all buffers !
+10:58 < Arc> it doesnt have anything to do with directshow. 
+10:58 < xiphmont> 'buffer per codec' can mean six things.  tell me which one.
+10:58 < derf_> xiphmont: Right, that was the first solution we came up with. I find the idea of "specify it in the stream" more pleasing.
+10:59 < xiphmont> So, stream buffer, buffer after mux before codec in and codec output slop, yes?
+10:59 < illiminable> yep
+10:59 < illiminable> before renderer after mux, after codec... all fixed size
+10:59 < xiphmont> derf_: it is specified in the stream... at the codec level.  if the codec is capable of dealing, it's in the codec's initial header.
+10:59 < derf_> xiphmont: You said you wanted to go back to our first idea when people started complaining about changing the granpos interpretation on a per-page basis.
+10:59 < Arc> if you're receiving a stream over http you would need to, potentially, buffer several additional seconds, and worse yet, this is not reliable. you could not be able to play in time not because the data you need isn't available, or because you can't receive it fast enough, but because the data you need is mis-ordered in the stream
+11:00 < xiphmont> derf_: I said it was a previous idea from feb, yes.
+11:00 < derf_> xiphmont: I'm saying that you can just define the flag as only valid on the BOS page, and now that's not a consideration.
+11:00 < xiphmont> derf_: and if it's in the codec's iniitial header, yep, it's set on the BOS page.
+11:00 < xiphmont> "Why give codecs that can't handle the choice a choice?"
+11:01 < xiphmont> illiminable: any objection to 'Just use a really big buffer'?
+11:01 < xiphmont> Static buffering pisses me off.  
+11:01 < illiminable> That's what i already do !
+11:01 < xiphmont> OK :-)
+11:01 < xiphmont> On a PC, it doesn;t matter as much.
+11:01 < kfish> arc: incorrect, ordering by end time ensures that complete frames are delivered as early as possible. It's ordering by start time that causes unfair ordering, whereby packets of longer duration can preempt later, shorter packets.
+11:02 < Arc> xiphmont: it is a big deal to streaming tho
+11:02 < acolwell> xiphmont: so if we yse the "ask the codec approach". What do we do about Theora and Speex? Do we switch them to start timestamps?
+11:03 < acolwell> s/yse/use
+11:03 < xiphmont> Theora: yes, definitely.  Speex: up to JM, probably yes.
+11:03 < derf_> xiphmont: That's at least a _different_ reason, which is what I was asking for. My answer would be: some codecs can handle a choice, but can't specify it because there wasn't a choice to make when they were designed.
+11:03 < xiphmont> I would also add it to Vorbis.... may still... but that breaks shipped hardware players to an extent.
+11:04 < xiphmont> derf_: ah, I see.
+11:04 < xiphmont> well, let me think about that a bit.
+11:05 < xiphmont> yes, Vorbis's position is somewhat unique and more constraining.
+11:05 < xiphmont> I'd love to be able to use Vorbis I with start time in a muxed stream.
+11:05 < jack> you can.
+11:06 < xiphmont> It just isn't strictly a 'Vorbis I stream' standing on its own if it's demuxed and start-time ordering is left in-tact.
+11:06 < jack> vorbis I is only really implemented in non muxed mode.
+11:06 < xiphmont> jack: right.
+11:06 < Arc> just bump the ogg version up. it'd be the responsibility of the demuxer to change the granulepos when you demux
+11:06 < acolwell> kfish: preemption happens in either case. Start timestamps get you to what you need "now" faster
+11:06 < kfish> acolwell, no, it's not useful "now", it's only useful when it's complete
+11:07 < xiphmont> I'm just worried that demux currently by default will just suck out the Vorbis section when asked and leave pagination unmodified.
+11:07 < derf_> kfish: It needs to be complete before you can continue decoding the stream, because it comes first.
+11:07 < xiphmont> I'm beginnign to think that's a minor worry.
+11:07 < Arc> kfish: you need the entire page before you can use any of it. large pages don't matter since their start time's proceed that of any later pages, therefore you need the larger page before any smaller pages
+11:07 < derf_> xiphmont: Right, but it will also leave the version number revved.
+11:07 < xiphmont> derf_: yes.
+11:07 < xiphmont> eh?
+11:07 < xiphmont> Oh
+11:07 < xiphmont> I was hoping to find a way that does not rev number.
+11:08 < xiphmont> derf_ has a point though.
+11:08 < xiphmont> But at least I think we're decided on 'no mixing in one logical stream'.
+11:09 < derf_> I never really had a strong preference on that one one way or the other, but other people seem vehemently opposed.
+11:09 < derf_> Or at least in mild disfavor.
+11:09 < kfish> acolwell, arc: let's say a long-duration packet starts before and ends after a shorter-duration packet. Ordering by end time, the short packet comes first, and (correctly) can be rendered sooner. However, ordering by start time, the longer packet starves.
+11:09 < xiphmont> I think the 'short packet' issue is also resolved; we don't actually need to to touch it.  Current mechanisms/precedent do work, I just didn't realize it.
+11:09 < jack> hey guys, it's extremely hard to follow any of this.
+11:09 < xiphmont> derf_: vehemently opposed to which?
+11:09 < xiphmont> jack: *no shit*
+11:09 < derf_> xiphmont: Changing things mid-logical stream.
+11:09 < jack> especially for those of us who raen't as up to speed
+11:10 < derf_> kfish: No...
+11:10 < jack> i suggest we move to email where handling multiple threads is easier.
+11:10 < jack> and we can think about our responses for 5 minutes.
+11:10 < derf_> kfish: If you the long packet comes FIRST, then it's because it's rendered FIRST.
+11:10 < xiphmont> email is slow... I think perhaps having a moderator in the discussion may be better.
+11:10 < derf_> So you can't exactly render the shorter one that comes later ealier.
+11:10 < derf_> Because it comes later.
+11:11 < kfish> derf_, we need to render the shorter packet first, because it's ready sooner. Hence we should order by end-time.
+11:11 < xiphmont> At least for a bit; this is actually being very helpful to my thinking, even if it's confusing to be in four conversations at once.
+11:11 < jack> ok, i'll be the moderator then.
+11:11 < derf_> kfish: You don't render things by when they're "ready"... you render them by when they're supposed to be displayed.
+11:11 < xiphmont> FOLKS
+11:11 < jack> everybody shut up :)
+11:11 < Arc> jack, lets get everyone on the same page first.
+11:11 < xiphmont> Arc: No
+11:12 < xiphmont> Pecause we're on six pages and that will just continue.
+11:12 < jack> there are two things going on at once
+11:12 < xiphmont> OK, floor to Jack.
+11:12 < jack> one is hammering out details of monty's presented ideas
+11:12 < jack> which is not quite what i had in mind.
+11:12 < jack> the other is, why are these ideas better than the other ones.
+11:13  * xiphmont raises hand
+11:13 < jack> i don't think it's been resolved to everyone's satisfaction why the curren tthings we do are worse.
+11:13 < jack> so monty, please 
+11:13 < xiphmont> I apologize that things are still so fluid; however it's obvious the details matter and as a group, we've not yet had time to hammer them all out.
+11:14 < xiphmont> Several good arguments today show that ideas as presented int he current document still need to evolve.
+11:14 < xiphmont> Email would be one way to handle that, but despite this being somewhat chaotic, it is resulting in a rapid refinement of thinking.
+11:15 < xiphmont> Points made so far that I consider critical:
+11:16 < xiphmont> a) If we put a mux-ordering flag in every page, it makes no sense to not allow a codec to change it every page.  Simultaneously, Aaron thinks allowing such a thing is a bad idea.  
+11:17 < xiphmont> b) allowing order mixing was originally to allow a start-time ordered stream to make use of an end-ordered last page.  The idea is, this would allow use of granpos context to detect short-packets on the last page and offer trivial detection of stream length.
+11:18 < xiphmont> c) Short packets on the last page of a start-time ordered stream are actually a symmetrically identical case to an initial short packet in an end-time ordered stream.  We do not need mixing to accomplish this, just transplane an already existing special-case.
+11:19  * derf_ raises hand
+11:19 < xiphmont> d) We can also acheive trivial 'stream length' either with a final NULL page, or by special casing the EOS page in a start-time ordered stream.
+11:20 < xiphmont> I scede the floor.
+11:20 < derf_> Re: c), it's not _precisely_ symmetrical.
+11:20 < xiphmont> Not quite, but the idea is the same.
+11:21 < derf_> The reason the initial short packet works in an end-time ordered stream is that you have a nice reference point, 0, to truncate against.
+11:21 < xiphmont> Mostly, there is technical precedent.
+11:21 < derf_> You don't have a fixed reference point at the end of a start-time ordered stream, because you don't know how long the stream is.
+11:21 < xiphmont> You have that in the start-time stream; the previous page's timing
+11:22  * Arc raises hand
+11:22 < derf_> Hmm, okay, I could see how you could work that.
+11:22 < xiphmont> (It is done that way in end-time ordering too; you can't seek to the last page of an end-time stream if that last page ends on a short packet)
+11:22 < xiphmont> So, not exactly symmetric, but all preexisting mechanism.
+11:23 < derf_> Yeah, I'll buy it. I'll cede to Arc.
+11:23 < Arc> what if a new flag was made, designed only to work along with BOS/EOS, for SHORT.  This could change the behavior of the granulepos handling and indicate that additional processing is nessesary
+11:24 < Arc> <end>
+11:25 < xiphmont> Unneccessary.
+11:25 < xiphmont> And adds an aditional mechanism to preexisting machinery, when preexisting machinery will do this.
+11:26  * Arc raises again :-)
+11:26 < jack> if it's quick :)
+11:27 < Arc> ok so the last page is made short by the start of the previous page, plus the total samples in the previous page.. when this mis-matches the start of the 'last page', then that many samples are skipped at the end. this makes sense
+11:27 < Arc> and it also makes sense for the start time of the first page to be greater than zero
+11:28 < Arc> first question, what happens when the stream doesnt start at zero, such as if you want ot edit a live stream archive or cut at some point beyond the first page
+11:28 < xiphmont> Arc: in current documentation.  Go read it.
+11:29 < jack> ok
+11:29 < xiphmont> This case is only 'hard' in the end-ordered case, and it is handled.
+11:29 < xiphmont> [by five year old code[
+11:29 < Arc> ok. done, then.
+11:29 < jack> so back to my question again, which still has not been answered.  what is the drawback of what we do now, and how is this set of ideas better?
+11:29 < xiphmont> Sorry for accidentally sidestepping.
+11:30 < xiphmont> In fact, we're not arguing about some new way of doing things; mostly this is trying to codify what we're doing now, making changes if necessary to sidestep corner cases.
+11:30 < xiphmont> Also, there were a few points of design that had always been in my mind, but either did not make it into documentation, or only did so in obtuse ways.
+11:31 < xiphmont> This boils down to one point of confusion: page ordering.
+11:31 < derf_> I would've said, "There are large swaths still missing," but that's just me.
+11:31  * acolwell acolwell raises hand
+11:31 < xiphmont> derf is out of order, but he is correct.
+11:31 < xiphmont> Two things have 'changed':
+11:32 < xiphmont> a) I had always intended that page ordering be strict by granule.  This was not clear, although we mostly followed it in practice.
+11:33 < xiphmont> b) ordering was by end-time.  Long ago, jack convinced me that by start-time was more efficient.  Aaron re-convinced me aerlier this year.  Where things got confusing with respect to a) is that several folks then mapped start-ordering onto end-granule.
+11:34 < xiphmont> So, this is more about ending confusion and finally tackling corner cases explicitly rather than defining anything actually new.
+11:34  * rillian raises hand
+11:34 < xiphmont> jack: is this capturing what you wanted me to get at any more closely?
+11:34 < jack> more so. acolwell?
+11:34 < xiphmont> I realise that's way high-level
+11:35 < acolwell> I have questions about the start and end conditions mentioned before
+11:35 < xiphmont> OK
+11:36 < acolwell> If the starting page and then ending page have end timestamps then that system will still work as it does now.
+11:36 < acolwell> If we have streams with start timestamps will these pages still have end timestamps?
+11:36 < xiphmont> yes.  Note that the current system involves special-casing for short packets already.
+11:36 < xiphmont> No.  One or the other.
+11:37 < xiphmont> the first line responded to your first line, the second the second
+11:37 < acolwell> ok. how does it work with start timestamps then? Will the first page have a negative timestamp?
+11:38 < xiphmont> for a short packet?
+11:38 < acolwell> yes. So in the case where I want to trim off the first few samples of the stream what is the timestamp on that page?
+11:39 < xiphmont> In an overlap-add codec, first audio packet doesn't actually flush samples.
+11:39 -!- j^ [~j@chello062178219173.12.15.univie.teleweb.at] has joined #xiphmeet
+11:39 < xiphmont> So you can put first auio on its own page, then have the second on the next page and a short granulepos to flag it. (end-time ordering does it this way too)
+11:40 < xiphmont> Or... (because some corners of me regret the granpos context approach)
+11:41 < xiphmont> (especially if it's not an overlap-add codec) just flag the shortness in packet itself so the codec directly informs itself.
+11:41 < xiphmont> essentially, the way vorbis works, whenever it sees a short sample count, it cuts samples.
+11:42 < xiphmont> if it hasn;t flushed samples yet, it takes them off the front, else it cuts them off the back.
+11:42 < jack> since ralph has to leave soon, let's hear him and get back on topic.
+11:42 < xiphmont> OK
+11:42 < acolwell> ok. In the end case I'm assuming that the granulepos on the last page indicates somewhere inside the previous page?
+11:42 < acolwell> ok I cede to rillian
+11:43 < rillian> Ok
+11:43 < xiphmont> acolwell: at *this* point, just be satisfied it's possible.  Teher's more than one way, and I think it's irrelevant to the level were still workign at
+11:44 < acolwell> ok
+11:45 < rillian> I'm glad we're working out the details of monty's scheme
+11:45 < rillian> and it's useful to see all the implications
+11:45 < rillian> however I still think there's a higher level question of whether
+11:46 < rillian> or rather how
+11:46 < rillian> this compares to another solution
+11:46 < rillian> the one *I* always thought we were using :)
+11:46 < rillian> we can do it the way we have now
+11:46 < rillian> but that has bad buffereing
+11:47 < rillian> so we need to change something
+11:47 < rillian> we can change to start-time ordering, or some mix of start-and-end
+11:47 < rillian> which is the basis of monty's proposal
+11:47 < rillian> or we can change the requirement for linear ordering
+11:48 < rillian> as I understood the historical discussion
+11:48 < rillian> the motivation for linear ordering was seeking
+11:48 < rillian> if the pages are in linear temporal ordering
+11:48 < rillian> you can use any of them as a signpost in your bisection search
+11:49 < rillian> That's nice, but on a practical level I don't believe it solves the problem you think it does
+11:49 < xiphmont> (and buffering intuition)
+11:49 < rillian> even with linear order, there's always one page of 'jitter'
+11:49 < rillian> so to make sure you have everything you need to begin playback
+11:49 < rillian> you have to back up a little bit
+11:50 < xiphmont> not true.
+11:50 < xiphmont> (or rather, only true about keyframes)
+11:50 < rillian> hang on
+11:50 < xiphmont> Ah, I just realized something
+11:50 < xiphmont> OK, I'll shut up.
+11:50 < derf_> (actually, you can avoid it there, too)
+11:50 < rillian> if there's only one kind of ordering
+11:51 < rillian> low page frequency logical streams (like subtitles) will be a long way from the seek point
+11:51 < rillian> but you're being lazy, so you say "who cares about subtitles; we'll just wait for the next one"
+11:52 < xiphmont> [rather, I'm sorry, it is true.  Revelation was something else]
+11:52 < rillian> you can even say "who cares about one page of audio, that's not much sync error"
+11:52 < rillian> or much delay at playback start
+11:53 < rillian> but then there's keyframes
+11:53 < rillian> to seek *properly* in theora, you have to seek to the *keyframe* before the time you want
+11:53 < rillian> and then fast-decoder forward to the cue point
+11:53 < rillian> so you can't actually use any page as a seeking signpost
+11:54 < rillian> you have to use the video pages
+11:54 < rillian> or some combination
+11:54 < xiphmont> uhh...
+11:54 < xiphmont> You have to get to the keyframe, and you use signposts to do that :-)
+11:54  * illiminable thanks rillian for making the point he can't express properly :)
+11:55 < rillian> xiphmont: as I understand that suggestion, you seek to your seek point with bisection search
+11:55 < rillian> you scan for a video frame
+11:55 < rillian> you calcuate the time of the previous keyframe
+11:55 < rillian> you bisection search for *that*
+11:55 < rillian> and begin decoding
+11:55 < rillian> is that correct?
+11:55 < xiphmont> yes
+11:55 < xiphmont> yes
+11:55 < rillian> ok. that's reasonable
+11:55 < rillian> now for the other half of this
+11:56 < rillian> which is page ordering
+11:56 < derf_> rillian: The key point xiphmont is making that during the second seek, as well as the first, you can use ANY page you find to refine your search for the video page with the keyframe.
+11:56 < rillian> derf_: understood
+11:56 < rillian> and thanks for clarifying that
+11:56 < rillian> now, as I said, if we have only start times or or only end times
+11:56 < rillian> linear order is not the optimal order for the decoder to recieve the pages
+11:57 < xiphmont> ?
+11:57 < rillian> mixing start and end times (on a per-logical stream, per codec basis, or whatever)
+11:57 < xiphmont> oh, right
+11:57 < rillian> is a way to improve on that
+11:57 < xiphmont> eh?
+11:57 < rillian> be letting you reorder some of the pages in a limited way
+11:58 < rillian> now, if we instead relax the requirement for strict linear order
+11:58 < rillian> you can reorder to your heart's content
+11:58  * acolwell raises hand
+11:58 < rillian> without having to add an extra thing that the codec or mux 'knows'
+11:59 < rillian> and it has the advantage that streams with pages out of order are ok
+12:00 < rillian> the spec becomes "encoders SHOULD order pages to minimize the buffering required by the decoder for playback"
+12:00 < rillian> a good decoder will make its best effort regardless
+12:00 -!- illi [~illiminab@dsl-202-72-166-70.wa.westnet.com.au] has joined #xiphmeet
+12:01 < rillian> adding the linear stream requirement makes it ok to write decoders that break on streams that are perfectly decodeable
+12:01 < rillian> so we're coddling the wrong people here
+12:01 < rillian> Sorry if that was a bit rambly
+12:02 < xiphmont> the last point isn't really valid; a continuous stream is a continuous stream, and best-effort should be required by spec.
+12:02 < rillian> but the question that's not been decided to my satisfaction is precisely which of these proposals is easier
+12:02 < xiphmont> As for the previous point about buffering
+12:02 < xiphmont> Do you have any examples?  Aaron managed to toss a few my way about stert-time.
+12:02 -!- illiminable [~illiminab@dsl-202-72-166-70.wa.westnet.com.au] has quit [Read error: 60 (Operation timed out)]
+12:02 < xiphmont> start-time
+12:03 < rillian> xiphmont: I was thinking about Arc's simple example that started all this
+12:03 -!- illi is now known as illiminable
+12:03 < rillian> you have a subtitle page containing text to be displayed for two seconds
+12:04 < rillian> if you order by end time you have to buffer two seconds of everything else
+12:05 < xiphmont> subtitle pages are discontinuous...
+12:05 < xiphmont> (so buffering is not based on it)
+12:05 < rillian> xiphmont: aha. so not all pages are the same?
+12:06 < xiphmont> I'm interrupting though
+12:06 < xiphmont> Oh.
+12:06 < rillian> how does the mux layer know which streams are relevent to buffering?
+12:06 < xiphmont> yeah, a discontinuous stream is allowed to have arbitrary gaps and log-duration data.
+12:06 < xiphmont> "ask the codec"
+12:06 < rillian> what you're saying is equivalent to 'who cares about subtitles during seeking'
+12:06 < xiphmont> Not really
+12:07 < rillian> ok. you can not ask the codec and do what I'm suggesting a good decoder would do anyway
+12:07 < xiphmont> discontinuous streams are intended to have pages 'fall out' of the buffering that is intuited from the continuous streams.
+12:07  * acolwell arm getting tired
+12:07 < rillian> quite
+12:07  * rillian cedes to acolwell
+12:08 < acolwell> thank you. :
+12:09 < acolwell> I think you'll find that start time ordering will always be the "relaxed ordering" that you come up with
+12:09 < acolwell> It is also unclear to me how you would do an efficient search for seeking when the pages are not in a known ordering. 
+12:09 < derf_> I will even argue that with start-time ordering, you don't need to handle continuous and discontiuous streams distinctly.
+12:09 < xiphmont> rillian has asserted it can be done, and I atually believe him.  However, I fear the extrac omplexity.
+12:10 < xiphmont> derf_: there is an assertion that demux should make a best effort in continuous streams.
+12:11 < acolwell> I agree with derf_ and Monty. Subtitles don't need to have the "key frame" concept just like audio codecs don't. You start whereever the seek point is
+12:11 < xiphmont> In a properly muxed stream, you're right.  In a broken stream, the demux needs to know.
+12:11 < acolwell> these sparse streams shouldn't generate long duration pages either.
+12:12 < xiphmont> well, bounded length.  But we've all been in agreement about discontinuous streams for a while AFAIK.
+12:12 < jack> alcolwell: dvds defiantely don't stop displaying subtitles just because you did a seek slightly past the beginning
+12:12 < jack> or do they?
+12:12 < derf_> xiphmont: The current mux spec does not carry that information across. You go through a lot of trouble to define the distinction, but then never use it.
+12:12 < derf_> jack: They do.
+12:13 < xiphmont> derf_: ah
+12:13 < xiphmont> OK, that's a valid complaint.
+12:13 < derf_> Or rather, most DVD player implementations do.
+12:13 < xiphmont> I don;t carefully describe how buffering actually works and I need to.
+12:13 < xiphmont> rather, I need to describe with illustrations both buffer and seek.
+12:13 < derf_> xiphmont: There are two key things missing, in my opinion.
+12:13 < acolwell> jack: Right. In DVD's the subtitles are interleaved with the data. ie small duration pages
+12:13 < xiphmont> Actually, aaron has floor.
+12:14  * xiphmont shuts up
+12:14 < jack> so what you're saying is that subtitles should be associated with every keyframe
+12:14 < derf_> Yeah, sorry.
+12:14 < rillian> I have to go now unfortunately. thanks everyone for coming. I'll follow up via email
+12:14 < xiphmont> yes, this will generate email.
+12:15 < acolwell> I'm saying that subtitle pages should be short in duration and close to the actual point they need to be displayed. This insures they are not lost when a seek occurs
+12:15 < jack> but they will be lost unless they are closer than a keyframe away from teh seekpoint, no?
+12:16 < xiphmont> jack: yes
+12:16 < jack> i guess the issue is whether after a seek you are guarunteed to decode all relevant data for that time period
+12:16 < acolwell> keyframes don't matter.. They are an event at a particular time. When the time comes they are displayed
+12:17 < xiphmont> and it is sensible to do as yu suggest, or just refresh subtitles regularly.
+12:17 < jack> i think people will expect this to be the case.
+12:17 < xiphmont> jack: in this respect, discontinuous streams are somewhat second-class.  If you want that behavior, the encoder needs to either refreh often or arrange carefully.
+12:18 < jack> subtitles are hardly second class.
+12:18 < xiphmont> I meant in terms of buffering, not importance.
+12:18 < xiphmont> the only *real* way to do this is non-linear encoding.
+12:19 < jack> ok, then is the liboggfile going to give me all teh data i need to present at time x, and can it do this efficiently?
+12:19 < xiphmont> ..becasue you end up with pathalogical buffering if you arrange by end-time, you end up with dropped discontinuous by start time, or you write something that searches the whole steam linearlly.
+12:19 < xiphmont> jack: yes.
+12:20 < xiphmont> It gives you a guarantee of complete, gapless information from continuous streams, and gives you everything in a discontinuous stream starting at or past the requested point.
+12:20 < xiphmont> ...and it can do so in lg(n) for a seek, just like vorbisfile.
+12:20 < jack> that's not quite teh same thing.
+12:21 < xiphmont> No it's not, but it's the best you can do without non-linear encoding.
+12:21 < xiphmont> (Or high computational complexity; also a DVD FF is not really a seek)
+12:21 < derf_> The way Writ currently handles this problem, IIRC, is it defines a maximum duration for subtitle events.
+12:21 < acolwell> perhaps a better way to put it is that you will be provided with all the information needed to display all data after the seek point.
+12:21 < xiphmont> And most low end DVD players don;t even support seek; only 'play from chapter' and 'pause'
+12:21 < jack> ff != seek in general.
+12:21 < derf_> If you want to guarantee you have all the subtitle data, seek that far in advance and discard.
+12:22 < xiphmont> ...and DVDs even have the luxury of using nonlinear data.
+12:22 < acolwell> you can add a "keyframe" concept to subtitles and it will seek to it just like it would for video.
+12:22 < jack> how do you know to look for the subtitles? :)
+12:22 < xiphmont> acolwell: oooh, point.
+12:23 < xiphmont> oh
+12:23 < jack> you'd have to check all data between the seek point and the first keyframe
+12:23 < xiphmont> no... requires alot of scanning, as subtitles will be sparse.
+12:23 < xiphmont> (you have to find at least one to do the keyframe thing)
+12:23 < acolwell> there are basically 2 classes of streams for seeking. keyframe and non-keyframe. Keyframe has fixed starting points. Non-keyframe you can start anywhere. I think I need better names for these types
+12:24 < jack> also, are subtitles png overlays or text or what?
+12:24 < jack> it's my undersand they are usually graphics.
+12:24 < jack> so repeating them over and over doesn't seem so sensible
+12:24 < derf_> jack: The plan is to have two different subtitle formats, one for each.
+12:25 < derf_> You'll seldom have a subtitle that lasts longer than 6 seconds.
+12:25 < jack> and graphical ones are restricted to applications where the extra bandwidth is irrelevant?
+12:25 < xiphmont> graphical ones are restricted to 'stupid overlay tricks' :-)
+12:26 < xiphmont> seriously...
+12:26 < acolwell> I cede
+12:27 < xiphmont> you can also dump dummy frames to find subtitle 'keyframes' and render the subtitles a continuous stream if you really want it.
+12:27 < xiphmont> "there are ways to do this"
+12:27 < jack> ok
+12:27 < jack> i'm somewhat satisfied then.
+12:27 < xiphmont> and really, we're bumping up againsta  limitation of linear coding, not of how Ogg is doing it.
+12:27 < xiphmont> I agree it's an important concept. 
+12:27 < jack> i prorpose we adjourn and continue via email after monty presents a revised spec and thinks some more.
+12:28 < derf_> I had a couple of things I wanted to say first.
+12:28 < xiphmont> Actually, do not wait for revised spec, although I will be doing that immediately after getting food/coffe.
+12:28 < jack> go ahead derf
+12:28 < xiphmont> oh, yes, derf has been waiting patiently.
+12:29 < derf_> Well, as I started to say before, there are three things the current spec needs (yes, the number went up):
+12:29 < derf_> A detailed explanation of precisely how the following can be done efficiently: buffering, seeking, determining total play length.
+12:29 < xiphmont> [wow, no Monty Python jokes.  Thank god.]
+12:30 < derf_> You describe how everything is arranged in the stream, but you do NOT describe how someone is supposed to use all that information.
+12:30 < xiphmont> a) agreed
+12:30 < xiphmont> b) I had forewarned I wouldn;t be writing that in time for the meeting; good examples are hard and time consuming.
+12:30 < xiphmont> ...in fact I hope to subcontract much of it.
+12:30 < derf_> Examples are one thing, I wanted something more.
+12:31 < xiphmont> Oh, more english.  Fair enough.
+12:31 < derf_> i.e., pseudocode, algorithm description, something general, instead of specific, that describes all the corner cases.
+12:31 < xiphmont> ah, corner cases.  Got it.
+12:31 < derf_> That I could turn into code in my language of choice in short order.
+12:31 < xiphmont> "Here be the monsters.  Use the railgun."
+12:32 < xiphmont> right
+12:33 < xiphmont> [...]
+12:33 < derf_> Finally, I had one more major issue, but I'm convinced it will arise when attempting to do what I just suggested.
+12:33 < xiphmont> might as well air it.
+12:33 < derf_> And I also am short on time, so I won't go into just now, as I think it will be involved.
+12:34 < xiphmont> tease.  How about a quick warning?
+12:34 < derf_> More "keyframe embedded in the middle of a page" details.
+12:34 < derf_> But I think it has more general implications.
+12:34 < xiphmont> Oh, yeah, I'm already worried about aspects of that.  Something new about it on your mind?
+12:34 < xiphmont> s/worried/concerning myself.
+12:35 < xiphmont> seeking? buffering?
+12:35 < derf_> Less than half an hour old... let me formulate it a little better before trying to explain it.
+12:35 < derf_> Seeking.
+12:35 < xiphmont> ok
+12:35 < derf_> And finally, I had a few more typo fixes for the spec, but that's easily handled offline.
+12:35 < derf_> That was everything I had to say.
+12:35 < xiphmont> Or you can send email in an hour or two.  I need to eat and become unstinky.
+12:36 < derf_> Yes, so do I, in the other order.
+12:36 < xiphmont> ok
+12:36 < derf_> I already had some pie.
+12:36 < xiphmont> right :-)
+12:36 < xiphmont> jack: we done for now?
+12:40 < xiphmont> Everone is stunned into silence. 
+12:40 < xiphmont> Or asleep.
+12:40 < jack> yep
+12:40 < acolwell> I think this was good. Are we planning on having another meeting after fleshing a few things out over email
+12:40 < xiphmont> Email for now.
+12:41 < xiphmont> The point of IRC was to have this discussion as quickly as possible.
+12:41 < xiphmont> I wanted high-ground consensus of the big points.
+12:41 < xiphmont> One of derf's points is still not nailed in my head, that will likely be myu first email.
+12:41 < xiphmont> But the gist is all agreed now.
+12:42 < jack> we may try a second irc discussion if email proves to be too slow.
+12:42 < xiphmont> yes
+12:43 < xiphmont> We should likely have another scheduled anyway; that one can be larger, more informational, and more detailed.
+12:45 < acolwell> sounds good to me
+12:47 < kfish> xiphmont, will you flesh out some rationale for your proposals?
+12:47 < xiphmont> derf has already asked I do so.
+12:47 < kfish> cool :)
+12:49 -!- jack [~jack@i.cantcode.com] has left #xiphmeet []
+12:52  * xiphmont is away: I am Jack's raging emacs mode.
+12:58 -!- ozone [~pan068@c211-30-78-105.belrs2.nsw.optusnet.com.au] has left #xiphmeet []
+12:59 -!- xiphmont [~xiphmont@HOTASS-9.MIT.EDU] has quit [Read error: 60 (Operation timed out)]
+13:00 -!- j^ [~j@chello062178219173.12.15.univie.teleweb.at] has quit ["Client exiting"]
+13:02 -!- acolwell [~acolwell@66.135.158.27] has quit ["Trillian (http://www.ceruleanstudios.com)"]
+13:03 -!- illiminable [~illiminab@dsl-202-72-166-70.wa.westnet.com.au] has quit ["Leaving"]
+13:42 -!- kfish [~conrad@195.8.233.220.exetel.com.au] has quit ["Leaving"]
+20:32 -!- Goony [~Goony@c-67-167-248-10.client.comcast.net] has joined #xiphmeet
+21:00 -!- Goony [~Goony@c-67-167-248-10.client.comcast.net] has quit [Read error: 60 (Operation timed out)]
+--- Log closed Sat May 08 21:14:54 2004
