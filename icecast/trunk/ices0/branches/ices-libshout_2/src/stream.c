@@ -170,7 +170,8 @@ stream_send (ices_config_t* config, input_stream_t* source)
     for (stream = config->streams; stream; stream = stream->next)
       if (stream->bitrate != source->bitrate) {
 	decode = 1;
-	ices_reencode_reset ();
+	ices_reencode_reset (source);
+	break;
       }
 #endif
 

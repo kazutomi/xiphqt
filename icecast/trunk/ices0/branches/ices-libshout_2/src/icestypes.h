@@ -104,6 +104,7 @@ typedef struct _input_stream_t {
   size_t filesize;
   size_t bytes_read;
   unsigned int bitrate;
+  unsigned int samplerate;
 
   void* data;
 

@@ -226,24 +226,13 @@ then
 
   if test "$have_LAME" != "no"
   then
-    dnl lame_init_old only exists in the NEW API - we don't actually use it.
-    AC_CHECK_LIB(mp3lame, lame_init_old, [
+    AC_CHECK_LIB(mp3lame, lame_encode_flush_nogap, [
       have_LAME="yes"
       LIBS="$LIBS -lmp3lame"
       ICES_OBJECTS="$ICES_OBJECTS reencode.o"
       LIBM="-lm"
       AC_DEFINE(HAVE_LIBLAME, 1, [Define if you have the LAME MP3 library])
       ], [have_LAME="no"], -lm)
-  fi
-
-  dnl lame_encode_flush_nogap was added at the same time that lame was made
-  dnl to handle calls to lame_encode_buffer following a flush, so we use
-  dnl this as a flag to see whether we have to reset the LAME engine between
-  dnl songs.
-  if test "$have_LAME" = "yes"
-  then
-  AC_CHECK_LIB(mp3lame, lame_encode_flush_nogap, [
-    AC_DEFINE(HAVE_LAME_NOGAP, 1, [Define if libmp3lame has lame_encode_flush_nogap])],, -lm)
   fi
 fi
 

@@ -115,9 +115,14 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
     return -1;
   }
 
-  ices_log_debug("Ogg vorbis file found, version %d, %d channels, %ld Hz",
-                 vorbis_data->info->version, vorbis_data->info->channels,
-		 vorbis_data->info->rate);
+  self->bitrate = vorbis_data->info->bitrate_nominal / 1000;
+  if (! self->bitrate)
+    self->bitrate = ov_bitrate (vf, -1) / 1000;
+  self->samplerate = (unsigned int) vorbis_data->info->rate;
+
+  ices_log_debug("Ogg vorbis file found, version %d, %d kbps, %d channels, %ld Hz",
+                 vorbis_data->info->version, self->bitrate, vorbis_data->info->channels,
+		 self->samplerate);
 
   vorbis_data->vf = vf;
   vorbis_data->samples = 0;
@@ -128,8 +133,6 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   self->read = NULL;
   self->readpcm = ices_vorbis_readpcm;
   self->close = ices_vorbis_close;
-
-  self->bitrate = ov_bitrate (vf, -1) / 1000;
 
   in_vorbis_set_metadata (vorbis_data);
   
