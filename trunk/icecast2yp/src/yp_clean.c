@@ -16,6 +16,7 @@ MYSQL_RES	*result2;
 
 #define YP_ERROR 0
 #define YP_SUCCESS 1
+#define YP_EXCEPTION 2
 
 
 int cleanServers2(char *error)
@@ -250,6 +251,178 @@ int cleanServers4(char *error)
 	return(YP_SUCCESS);
 
 }
+int cleanServers5(char *error)
+{
+	char	sql[8096];
+	char	sid[2046];
+	int	i;
+	MYSQL_ROW	row;
+	MYSQL_ROW	row2;
+	int	existing = 0;
+	int	nrows = 0;
+	int	nrows2 = 0;
+        char    detail_id[255] = "";
+        char    parent_id[255] = "";
+        char    id[255] = "";
+	char	*p1 = NULL;
+	int	ret = YP_SUCCESS;
+
+	memset(sql, '\000', sizeof(sql));
+
+	sprintf(sql,"SELECT id FROM playlists");
+	if(mysql_real_query(&dbase,sql,strlen(sql))) {
+		strcpy(error, mysql_error(&dbase));
+		return(YP_ERROR);
+	}
+	result = mysql_store_result(&dbase);
+	nrows = mysql_num_rows(result);
+	if(nrows == 0) {
+		return(YP_SUCCESS);
+	}
+	else {
+		for (i=0;i<nrows;i++) {
+			row = mysql_fetch_row(result);
+			if (row[0]) {
+				sprintf(id, "%s", row[0]);
+				sprintf(sql,"SELECT count(*) FROM clusters where id = '%s'", id);
+				if(mysql_real_query(&dbase,sql,strlen(sql))) {
+					strcpy(error, mysql_error(&dbase));
+					return(YP_ERROR);
+				}
+				result2 = mysql_store_result(&dbase);
+				nrows2 = mysql_num_rows(result2);
+				if(nrows2 != 0) {
+					row2 = mysql_fetch_row(result2);
+					if (row2[0]) {
+						if (atoi(row2[0]) == 0) {
+							sprintf(sql,"delete from clusters where id = '%s'", row[0]);
+							if (mysql_real_query(&dbase,sql,strlen(sql))) {
+								sprintf(error, "clusters: %s", mysql_error(&dbase));
+								sprintf(sql,"ROLLBACK");
+								mysql_real_query(&dbase,sql,strlen(sql));
+								mysql_free_result(result);
+								mysql_free_result(result2);
+								return(YP_ERROR);
+							}
+							sprintf(sql,"delete from playlists where id = '%s'", row[0]);
+							if (mysql_real_query(&dbase,sql,strlen(sql))) {
+								sprintf(error, "playlists: %s", mysql_error(&dbase));
+								sprintf(sql,"ROLLBACK");
+								mysql_real_query(&dbase,sql,strlen(sql));
+								mysql_free_result(result);
+								mysql_free_result(result2);
+								return(YP_ERROR);
+							}
+							sprintf(sql,"delete from server_details where playlist_id = '%s'", row[0]);
+							if (mysql_real_query(&dbase,sql,strlen(sql))) {
+								sprintf(error, "server_details: %s", mysql_error(&dbase));
+								sprintf(sql,"ROLLBACK");
+								mysql_real_query(&dbase,sql,strlen(sql));
+								mysql_free_result(result);
+								mysql_free_result(result2);
+								return(YP_ERROR);
+							}
+							LogMessage(LOG_INFO, "Deleted Cluster ID (%s) because it didn't have a record in clusters", id);
+							ret = YP_EXCEPTION;
+						}
+					}
+				}
+				mysql_free_result(result2);
+			}
+		}
+		mysql_free_result(result);
+		sprintf(sql,"COMMIT");
+		mysql_real_query(&dbase,sql,strlen(sql));
+	}
+	return(ret);
+
+}
+int cleanServers6(char *error)
+{
+	char	sql[8096];
+	char	sid[2046];
+	int	i;
+	MYSQL_ROW	row;
+	MYSQL_ROW	row2;
+	int	existing = 0;
+	int	nrows = 0;
+	int	nrows2 = 0;
+        char    detail_id[255] = "";
+        char    parent_id[255] = "";
+        char    id[255] = "";
+	char	*p1 = NULL;
+	int	ret = YP_SUCCESS;
+
+	memset(sql, '\000', sizeof(sql));
+
+	sprintf(sql,"SELECT id FROM clusters");
+	if(mysql_real_query(&dbase,sql,strlen(sql))) {
+		strcpy(error, mysql_error(&dbase));
+		return(YP_ERROR);
+	}
+	result = mysql_store_result(&dbase);
+	nrows = mysql_num_rows(result);
+	if(nrows == 0) {
+		return(YP_SUCCESS);
+	}
+	else {
+		for (i=0;i<nrows;i++) {
+			row = mysql_fetch_row(result);
+			if (row[0]) {
+				sprintf(id, "%s", row[0]);
+				sprintf(sql,"SELECT count(*) FROM server_details where playlist_id = '%s'", id);
+				if(mysql_real_query(&dbase,sql,strlen(sql))) {
+					strcpy(error, mysql_error(&dbase));
+					return(YP_ERROR);
+				}
+				result2 = mysql_store_result(&dbase);
+				nrows2 = mysql_num_rows(result2);
+				if(nrows2 != 0) {
+					row2 = mysql_fetch_row(result2);
+					if (row2[0]) {
+						if (atoi(row2[0]) == 0) {
+							sprintf(sql,"delete from clusters where id = '%s'", row[0]);
+							if (mysql_real_query(&dbase,sql,strlen(sql))) {
+								sprintf(error, "clusters: %s", mysql_error(&dbase));
+								sprintf(sql,"ROLLBACK");
+								mysql_real_query(&dbase,sql,strlen(sql));
+								mysql_free_result(result);
+								mysql_free_result(result2);
+								return(YP_ERROR);
+							}
+							sprintf(sql,"delete from playlists where id = '%s'", row[0]);
+							if (mysql_real_query(&dbase,sql,strlen(sql))) {
+								sprintf(error, "playlists: %s", mysql_error(&dbase));
+								sprintf(sql,"ROLLBACK");
+								mysql_real_query(&dbase,sql,strlen(sql));
+								mysql_free_result(result);
+								mysql_free_result(result2);
+								return(YP_ERROR);
+							}
+							sprintf(sql,"delete from server_details where playlist_id = '%s'", row[0]);
+							if (mysql_real_query(&dbase,sql,strlen(sql))) {
+								sprintf(error, "server_details: %s", mysql_error(&dbase));
+								sprintf(sql,"ROLLBACK");
+								mysql_real_query(&dbase,sql,strlen(sql));
+								mysql_free_result(result);
+								mysql_free_result(result2);
+								return(YP_ERROR);
+							}
+							LogMessage(LOG_INFO, "Deleted Cluster ID (%s) because it didn't have a record in clusters", id);
+							ret = YP_EXCEPTION;
+						}
+					}
+				}
+				mysql_free_result(result2);
+			}
+		}
+		mysql_free_result(result);
+		sprintf(sql,"COMMIT");
+		mysql_real_query(&dbase,sql,strlen(sql));
+	}
+	return(ret);
+
+}
 
 int cleanServers(char *error)
 {
@@ -368,6 +541,26 @@ int main(int argc, char * argv[])
 			LogMessage(LOG_ERROR, "Error: %s", error);
 		}
 		LogMessage(LOG_INFO, "Ran clean servers 4 OK");
+		ret = cleanServers5(error);
+		if (ret == YP_ERROR) {
+			LogMessage(LOG_ERROR, "Error: %s", error);
+		}
+		if (ret == YP_EXCEPTION) {
+			cleanServers2(error);
+			cleanServers3(error);
+			cleanServers4(error);
+		}
+		LogMessage(LOG_INFO, "Ran clean servers 5 OK");
+		ret = cleanServers6(error);
+		if (ret == YP_ERROR) {
+			LogMessage(LOG_ERROR, "Error: %s", error);
+		}
+		if (ret == YP_EXCEPTION) {
+			cleanServers2(error);
+			cleanServers3(error);
+			cleanServers4(error);
+		}
+		LogMessage(LOG_INFO, "Ran clean servers 6 OK");
 	}
 	return(0);
 }

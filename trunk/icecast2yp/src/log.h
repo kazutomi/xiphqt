@@ -23,6 +23,6 @@ void setLogIP(char *sid);
 #define LOG_DEBUG LM_DEBUG, __FILE__, __LINE__
 #define Log	LogMessage
 
-#define YP_LOGDIR "./"
+#define YP_LOGDIR "/tmp/"
 
 #endif
