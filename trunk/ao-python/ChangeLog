@@ -1,3 +1,6 @@
+2002-9-24   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* setup.py: fixed regular expression
+	
 2001-12-09  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* README: Updated to document the "filename" keyword
 	
