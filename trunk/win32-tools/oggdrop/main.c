@@ -560,9 +560,7 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
           break;
 
         case IDC_EDIT1:
-          (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
-                                     IDC_USEBITRATE,
-                                     IDC_USEQUALITY);
+ 
 
           switch (HIWORD(wParam))
           {
@@ -595,6 +593,10 @@ BOOL CALLBACK QCProc(HWND hwndDlg, UINT message,
               SendDlgItemMessage(hwndDlg, IDC_EDIT1, EM_SETSEL,
                   (WPARAM)0, (LPARAM)-1);
             }
+
+            (void) CheckRadioButton(hwndDlg, IDC_USEQUALITY,
+                                             IDC_USEBITRATE,
+                                             IDC_USEQUALITY);
 
           }
             
