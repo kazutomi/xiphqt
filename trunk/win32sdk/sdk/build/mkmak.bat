@@ -1,5 +1,5 @@
 @echo off
-rem $Id: mkmak.bat,v 1.2 2001/09/15 08:09:25 cwolf Exp $
+rem $Id: mkmak.bat,v 1.3 2001/10/18 03:25:03 cwolf Exp $
 rem
 rem This can't be called from the build script because
 rem it runs asychronously.
@@ -12,7 +12,7 @@ rem
 if not exist %SDKHOME%\build\examples.mak (
    echo Generating makefiles, please wait...
    msdev -ex ExportExampleMakefiles
-   sleep 5
+   call sleep.js 5
    echo Done.
 )
 goto done
