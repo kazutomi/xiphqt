@@ -173,7 +173,7 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
 
 			if (!ret) {
 				ices_log_error ("Libshout reported send error: %i...", conn.error);
-				break;
+				return 0;
 			}
 			
 		} else if (read_bytes == 0) 
