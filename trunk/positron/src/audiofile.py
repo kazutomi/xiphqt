@@ -59,12 +59,12 @@ class MP3File(AudioFile):
                  "genre" : None }
 
         if mp3info.id3 != None:
-            tags = mp3info.id3.tags
+            id3 = mp3info.id3
 
-            info["title"] = tags["TT2"]
-            info["artist"] = tags["TP1"]
-            info["album"] = tags["TAL"]
-            info["genre"] = tags["TCO"]
+            info["title"] = id3.title
+            info["artist"] = id3.artist
+            info["album"] = id3.album
+            info["genre"] = id3.genre
 
         # Convert empty string entries to nulls
         for key in info.keys():

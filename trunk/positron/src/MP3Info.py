@@ -421,8 +421,8 @@ class MP3Info:
         if id3.valid:
             self.id3 = id3
 
-        id3 = ID3v2(file)
-        if id3.valid:
+        id3v2 = ID3v2(file)
+        if id3v2.valid and id3v2.tags != {}:
             self.id3 = id3
 
         self.mpeg = MPEG(file)
@@ -431,6 +431,11 @@ class MP3Info:
         if self.id3 is None:
             return
 
+        # No sense in making clients guess whether these variables exists
+        self.title = self.artist = self.track = self.year = \
+                     self.comment = self.composer = self.album = \
+                     self.disc = self.genre = self.encoder = None
+        
         for tag in self.id3.tags.keys():
             if tag == 'TT2' or tag == 'TIT2':
                 self.title = self.id3.tags[tag]
