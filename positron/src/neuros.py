@@ -29,26 +29,23 @@ class Neuros:
         "audio"      : { "no_flatten"   : (1, ),
                          "extra_format" : (">I",">I","z"),
                          "extra_names"  : ("Time", "Size", "Path") },
-        
+
+        # FIXME: Spec is wrong, these databases have screwy fields
         "pcaudio"    : { "no_flatten"   : (1, ),
-                         "extra_format" : (">I",">I","z"),
-                         "extra_names"  : ("Time", "Size", "Path") },
+                         "extra_format" : (">I",">I"),
+                         "extra_names"  : ("Time", "Size") },
         
         "unidedhisi" : { "no_flatten"   : (),
                          "extra_format" : ("z","z"),
                          "extra_names"  : ("Source", "Path") },
 
         "idedhisi"   : { "no_flatten"   : (),
-                         "extra_format" : ("z","z","z",
-                                           "z","z",
-                                           ">I",">I","z"),
-                         "extra_names"  : ("Source", "Artist", "Album",
-                                           "Genre", "Track Name",
-                                           "Time", "Size", "Path") },
+                         "extra_format" : (),
+                         "extra_names"  : () },
         
         "failedhisi" : { "no_flatten"   : (),
-                         "extra_format" : ("z","z"),
-                         "extra_names"  : ("Source", "Path") }
+                         "extra_format" : (),
+                         "extra_names"  : () }
         }
 
 

@@ -136,7 +136,7 @@ def cmd_add(config, neuros, args):
     else:
         print "Adding %d tracks to the Neuros..." % (len(filelist),)
         for (sourcename, targetname) in filelist:
-            print "  %s..." % (sourcename)
+            print "  %s..." % (sourcename,)
             add_track(neuros, sourcename, targetname)
 
         print "\nDone!"
