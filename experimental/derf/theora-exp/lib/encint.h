@@ -1,4 +1,3 @@
-#define OC_BITRATE_STATS (1)
 #include <limits.h>
 #if !defined(_encint_H)
 # define _encint_H (1)

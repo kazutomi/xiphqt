@@ -2264,10 +2264,11 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
         /*Now undo all the work we did above and just use a constant quantizer
            value for testing purposes.*/
         efrag->qi_min[0]=efrag->qi_min[1]=_psych->enc->state.info.quality;
-        for(i=0;i<63;i++){
+        for(i=0;i<64;i++){
           efrag->tols[i]=OC_MINI(
            _psych->enc->state.dequant_tables[0][_pli][efrag->qi_min[0]][i],
-           _psych->enc->state.dequant_tables[1][_pli][efrag->qi_min[1]][i])>>1;
+           _psych->enc->state.dequant_tables[1][_pli][efrag->qi_min[1]][i])+
+           1>>1;
         }
 #endif
         /*Remove the parts of the group neighborhoods that are old.*/
