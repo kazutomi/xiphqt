@@ -37,8 +37,8 @@ resource 'STR ' (130) {
 //*************************************************************************
 //	Version INFO
 //*************************************************************************
-#define SHORTVERSIONSTRING "3.2.1.3"
-#define LONGVERSIONSTRING "On2 VP3 Video Codec 3.2.1.3\nOn2 Technologies, The Duck Corporation 2001"
+#define SHORTVERSIONSTRING "3.2.2.0"
+#define LONGVERSIONSTRING "On2 VP3 Video Codec 3.2.2.0\nOn2 Technologies, The Duck Corporation 2001"
 
  resource 'vers' (1, purgeable) {
     0x03, 0x20, final, 0x03, verUS,
@@ -198,4 +198,4 @@ resource 'STR ' (resid_DecoInfo) {
 	resource 'dlle' (resid_Deco) {
 		"CDComponentDispatch"
 	};
-#endif
+#endif
