@@ -1,0 +1,503 @@
+--- Log opened Wed May 05 19:58:21 2004
+19:58 -!- xiphmont [~xiphmont@h004005a8a3c2.ne.client2.attbi.com] has joined #xiphmeet
+19:59 < rillian> hi monty
+19:59 < xiphmont> hihi
+19:59 -!- rillian changed the topic of #xiphmeet to: Xiph.org meeting and discussion channel. MonthlyMeeting in progress. Agenda at http://wiki.xiph.org/MonthlyMeeting200405. Live log at http://xiph.org/~giles/xiphmeet.log for those joining us late.
+20:00 < rillian> shall we begin?
+20:00 < rillian> First, thanks everyone for coming
+20:00 < rillian> News and organizational efforts first:
+20:00 < rillian> we've joined the Linux Audio Consortium
+20:00 < rillian> (linuxaudio.org)
+20:01 < rillian> they invited us
+20:01 < rillian> and it seems like a good forum to meet implementers
+20:01 < rillian> Monty has agreed to represent us there
+20:01  * xiphmont waves
+20:01 < rillian> that's brand new
+20:02 < rillian> so nothing's actually happened yet
+20:02 < rillian> but hopefully it will help with the liason part we're not so good at :)
+20:02 < rillian> Next item is ISTO work
+20:02 < rillian> xiphmont: you want to report on that?
+20:03 < xiphmont> I am stalled right now; despite repeatedly repinging after a promising initial contact, Nat Friedman hasn't responded.
+20:03 < xiphmont> I will ping again tonight.
+20:03 < xiphmont> I don;t expect it's anything problematic.
+20:03 < xiphmont> He started out as very positive in the first email exchange; fo all I know, something came up.
+20:03 < rillian> I also contacted havoc briefly about getting something like a policy statement from Gnome and freedesktop
+20:03 < xiphmont> and he's been away.
+20:04 < rillian> but I need to get back to him about what we can do there
+20:04 < xiphmont> right; I was hoping to meet with Nat before talking to Havoc, but clearly we can't stall on it.
+20:04 < rillian> Next bit
+20:04 < xiphmont> I hadn't come up with 'what to do when enthusiastic people just disappear' :-)
+20:04 < thomasvs> can I get a pointer to that ?
+20:04 -!- jmspeex [~jmspeex@modemcable208.224-70-69.mc.videotron.ca] has joined #xiphmeet
+20:04 < thomasvs> I might be able to poke Nat a bit
+20:04 < jmspeex> hi guys
+20:04 < rillian> I'm sure you've all noticed motherfish has been down a lot lately
+20:05 < rillian> welcome jean-marc
+20:05 < xiphmont> Thanks.  Be friendly, it hasn't been a problem.  We just don't want to stall momentum which started out vstrong.
+20:05 < xiphmont> (that was to thomasvs)
+20:05 < volsung> Quick q: What does ISTO have to do with Gnome/Freedesktop?
+20:05 < xiphmont> Nothing directly.
+20:05 < volsung> Maybe I forgot what ISTO was.  :)
+20:05 < rillian> isto sets up industry forums
+20:05 < xiphmont> However, the ISTO thing is unlikely to suceed if there's no industry support for it.
+20:05 < thomasvs> xiphmont: well, maybe i should look at a pointer what the discussion is about before I ping him :)
+20:05 < rillian> which we thought might be a useful model for funding development an getting buy in
+20:06 < rillian> looks like we won't get buy in unless we get chosen as 'essential for the linux desktop'
+20:06 < xiphmont> thomasvs: talking about what interest Ximian/GF/Novell have in Ogg and an Ogg Forum.
+20:06 < rillian> so we've been trying to talk to people who can make that so :)
+20:06 < volsung> Ah, okay.  Makes sense now.
+20:06 < thomasvs> ok, I'm following.
+20:07 < xiphmont> ...and if we really have no industry support...
+20:07 < xiphmont> ...we should probably just go home at this point ;-)
+20:07 < thomasvs> eek.  we as a very small part of industry support xiph.
+20:07 < xiphmont> [we have industry support, it seems, we've just generally never asked for much]
+20:07 < thomasvs> (ie, don't go home just yet)
+20:07 < xiphmont> We're not good at it, and the industry doesn't know we need it.
+20:07 < rillian> thomasvs: yep. and we appreciate it very much
+20:08 < rillian> that it for isto?
+20:08 < thomasvs> xiphmont: at the next guadec I'll be directly speaking to some people on these very issues, including Red Hat and Novell
+20:08 -!- DanielWH [~DanielWH@3ffe:bc0:8000:0:0:0:0:262b] has joined #xiphmeet
+20:08 < xiphmont> rillian: on my end yes.  I'm sorry to be stalled.
+20:09 < rillian> thomasvs: good :) you contacts would be really valuable for this
+20:09 < xiphmont> thomasvs: thanks; that will be appreciated.  And we want to make sure we're asking from within a clear and reconizable structure.
+20:09 < xiphmont> Warm fuzzies and all that.
+20:10 < rillian> ok, onward
+20:10 < rillian> we suspect part of the problem with our server is just flakey hardware
+20:10 < rillian> and we were intending to install more disk anyway
+20:10 < rillian> so I've purchased a replacement box
+20:10 < xiphmont> it is the last functional member of a batch of rackmount servers that all fried.
+20:11 < jmspeex> rillian: What did you end up buying?
+20:11 < rillian> 2U dual athlon 2600
+20:11 < rillian> nothing special, but it will be much more machine than we have now
+20:12 < rillian> should arrive at the colo in 10-14 days
+20:12 < xiphmont> An additional thing to mention re colo
+20:12 < rillian> hopefully this will solve our reliablility problems
+20:12 < xiphmont> Motherfish (be it II or III) is to be moved into a 'more carefully tended' datacenter by its keeper.
+20:13 < xiphmont> This gives us the added advantage that we will have an extra 2U of rackspace for a network power switch.
+20:13 < xiphmont> No firm timetable on that.
+20:13 < xiphmont> but "soon"
+20:13 < rillian> xiphmont: ah, thanks. that's good to know
+20:14 < rillian> btw, jack already has a network power switch, so this is not a new purchase
+20:14 < xiphmont> right, forgot to mention that.
+20:14 < rillian> also, I think the recent downtime should inspire us to be better at offsite backups
+20:14 < rillian> and perhaps get a mirror going
+20:14 < rillian> I can put something on my dsl when my server box arrives from england in a week or two
+20:14 < xiphmont> at a bare minimum, good backups of SVN and mail archives.
+20:15 < rillian> volsung has also graciously offered to maintain backups on his home machine
+20:15 < jmspeex> I've got friends at the Sherbrooke LUG, maybe they can provide mirroring (they're on the university network)
+20:15 < xiphmont> The good news is that SVN + archives is small.
+20:15 < rillian> jmspeex: that would be cool
+20:15 < xiphmont> <50M
+20:15 < xiphmont> oops, actually, CVS+archives was < 50M.  Not sure about SVN
+20:15 < rillian> yes, keeping the websites in svn would also make mirroring very easy
+20:16 < jmspeex> rillian: If I give you the address of the guy, can you give him the details of what we need?
+20:16 < rillian> jmspeex: yes
+20:16 < jmspeex> yannick.brosseau@usherbrooke.ca
+20:16 < rillian> finally, at monty's suggestion/request, I'm going to be installing dspam
+20:16 < rillian> hopefully this will help with spam on personal accounts
+20:16 < xiphmont> A quick summary:
+20:17 < rillian> as well as cut out the few viruses that are making it past the current TMDA filter on the lists
+20:17 -!- kjoonlee [~foo@218.147.118.240] has joined #xiphmeet
+20:17 < xiphmont> dspam is a hybrid bayesian spam filter.
+20:17 < rillian> hello kjoonlee
+20:17 < kjoonlee> hi :)
+20:17 < xiphmont> Among other things it has to be trained; the details in setup will have to do with the training aspect.
+20:17 < xiphmont> I had envisioned a common spam db for the lists, and an opt-in to personal training for each MF user.
+20:18 < rillian> that sounds appropriate
+20:18 < xiphmont> Apparently newest postfix *finally* passes on "IP of connecting client' information.
+20:18 < xiphmont> That also means that greylist/whitelist software once again has a chance of working
+20:18 < xiphmont> (will no longer be fooled by forged spam)
+20:19 < xiphmont> I leave details of impleemntation up to Ralph's discretion since he's the unfortunate soul who has to weild the duct tape.
+20:19 < rillian> :)
+20:19 < xiphmont> [a round of somber applause for Ralph]
+20:19 < rillian> ok, that's all I had to say about the upgrades
+20:19  * kfish puts on a parliament cd: party on the motherfish!
+20:20 < rillian> shall we move on the project status reports?
+20:20 < rillian> unfortunately not much is new with theora
+20:20 < rillian> since the last meeting
+20:20 < rillian> we have about 40 pages of spec written
+20:20 < rillian> (out of at least 100)
+20:20 < rillian> derf's been busy with school
+20:20 < rillian> and I've been busy with my new daughter
+20:21 < rillian> we should both have time for another spurt in the next week.
+20:21 < rillian> thomasvs: did you want to talk about the gstreamer stuff?
+20:22 < Arc> rillian: are you still expecting to have Beta-1 out by the end of the month?
+20:22 < rillian> Arc: we're still trying for as soon as we can
+20:22 < rillian> we missed the end of april target, obviously
+20:23 < thomasvs> rillian: well, just wondering how theora is going right now
+20:23 < Arc> for Beta-4? yea I realise, just wondering how much it's getting pushed back by
+20:23 < thomasvs> rillian: our guy is going full speed ahead on making sure encoding/muxing works
+20:23 < rillian> thomasvs: we're not planning on changing the bitstream format again
+20:23 < thomasvs> rillian: our goal is still to stream guadec in ogg/theora
+20:23 < rillian> when's guadec again?
+20:23 < thomasvs> rillian: so we hope to have beta1 relatively before guadec
+20:23 < thomasvs> 28-30 of june
+20:24 < thomasvs> (as a technical aside, there shouldn't be any problem delivering ogg/theora over http right ?)
+20:24 < rillian> my goal was 6 June, so there we go
+20:24 < xiphmont> no problems.
+20:24 < kfish> thomasvs, it works fine :)
+20:24 < rillian> (no there's not. karl has some experimental icecast code, even)
+20:25 < rillian> the only thing not set is the multiplex spec. we'll address that in a bit
+20:25 < thomasvs> ok - I expect our team to bombard rillian more in the next month :)
+20:25 < rillian> jmspeex: how's speex? you're looking for help?
+20:25 < Arc> thomasvs: both mplayer and xine can receive Ogg Theora over HTTP and stream it, tho AFAIK both need some TLC in this
+20:25 < jmspeex> I'm looking for help regarding anything Win32-related and for tracking all the plugins and stuff - what works, what not, ...
+20:26 < thomasvs> Arc: great - will test with our streamer
+20:26 < jmspeex> Right now, it's a mess
+20:27 < kfish> jmspeex, can you describe the problems within libspeex?
+20:28 -!- Misirlou [~asdf@c-24-125-118-27.va.client2.attbi.com] has joined #xiphmeet
+20:28 < jmspeex> kfish: what problems within libspeex?
+20:28 < kfish> jmspeex, the ones you're concerned about regarding Win32 :)
+20:29 < jmspeex> Oh, I'm not worried about libspeex, but all the stuff that uses it.
+20:29 < jmspeex> I have no ideas of what plugins are available and which ones work. 
+20:29 < jmspeex> Also, the win32 project is constantly out of date and we have win32 compiles once in a while
+20:29 < rillian> it's a pity illiminable isn't here
+20:29 < rillian> he does have a working directshow plugin
+20:30 < jmspeex> that's nice.
+20:30 < rillian> http://svn.xiph.org/trunk/oggdsf/
+20:30 < jmspeex> (I think the one that's linked on the page is broken - never tried it)
+20:30 < rillian> we're hoping his can become official versions
+20:30 < rillian> so you might check with him about things
+20:31 < jmspeex> sure. I wan't even aware the project existed.
+20:31 < rillian> it's quite new
+20:31 < volsung> He appeared rather suddenly.  :)
+20:31 < rillian> we can thank kfish for getting the ball rolling, at least indirectly :)
+20:32 < kfish> http://www.illiminable.com/ogg/
+20:32 < rillian> Ok, so that's another announcement :)
+20:32 < rillian> illiminable/Zen has joined us officially to work on directshow plugins
+20:32 < rillian> see the above website, and code in svn
+20:32 < rillian> they're still very much in flux
+20:33 < jmspeex> Anyway, the thing is that it would be nice if someone actually using windows (if such person exist around here) would take care of some of the Speex stuff.
+20:33 < rillian> but the aim is basically to support everything well
+20:33 < volsung> Vorbis, Speex, FLAC and Theora, right?
+20:33 < rillian> volsung: right
+20:33 < rillian> do we have any volunteers to help jm there?
+20:34 < rillian> or friends you can rope in?
+20:34 < rillian> jmspeex: I'd suggest working with illiminable and/or conrad if they're interested
+20:34 < rillian> fishsound works on win32
+20:35 < rillian> ok. looks like no icecast people can make it
+20:35 < jmspeex> I'll contact illiminable about DS anyway.
+20:35 < rillian> volsung: anything new with your projects?
+20:36 < rillian> segher pointed out some new vorbis-tools po files I need to commit
+20:36 < volsung> rillian: Not much.  Been trying to pass Statistical Mechanics.
+20:36 < volsung> :)
+20:36 < rillian> :)
+20:36 < thomasvs> re: po files, are you guys affiliated with the translation project ?
+20:36 -!- MikeS [~msmith@CPE-144-137-40-253.vic.bigpond.net.au] has joined #xiphmeet
+20:36 < volsung> Not me.
+20:36 < volsung> Segher appears occassionally and tells us to commit stuff.
+20:37 < rillian> thomasvs: segher's been handling this, but he lost track of his write access a year or two ago
+20:37 < xiphmont> Which reminds me, I just found a segher hit-and-commit bug from 2000 or so....
+20:37 < MikeS> (sorry I'm late - work stuff)
+20:38 < rillian> hi MikeS!
+20:38 < jmspeex> hi
+20:38 < rillian> just in time to tell us about icecast
+20:38 < thomasvs> well, the translation project is working out very well for us; if you're not using it yet, maybe look into it
+20:39 < MikeS> ok.
+20:39 -!- wasabi [~wasabi@c-24-0-141-85.client.comcast.net] has joined #xiphmeet
+20:40 -!- apwbd_ [~seth@wbar8.dal1-4-13-107-071.dsl-verizon.net] has joined #xiphmeet
+20:40 < MikeS> icecast: things are generally going well, we've (finally) got a burst-on-connect implementation in there, as well as proper listener-authentication. 
+20:40  * rillian cheers
+20:41 < MikeS> We've been having some discussions as to what to do with karl heyes' fork (which fixes up some things - so we want to merge those, and adds some things - some of which we'd like to add, and rewrites large swathes of code - for no obvious reason, so we don't want that). 
+20:42 < MikeS> That's problematic, since karl is uninterested in doing partial merges, and he's the only one who knows his code at all. So... not sure what we're going to do there.
+20:43 < rillian> :(
+20:43 < rillian> are the specific goals for 2.1?
+20:43 < rillian> there
+20:43 < MikeS> oddsock also wants a debate over turning burst-on-connect on by default (currently, it's off: this offers behaviour like the 2.0 release by default. Turning it on is helpful for common (but not very smart) clients like winamp, _but_ drastically increases minimum latency (by a factor of - not precisely measured - at least 4)
+20:44 < rillian> I'm not sure minimum latency is all that important in broadcast
+20:45 < rillian> though can't you just ramp up the burst size after source connect?
+20:45 < MikeS> I don't believe so. Probably worth discussing at some point. I think probably "give it another couple of months for new features, then stabilise" would be a good plan
+20:45 < rillian> too bad about the timescale
+20:45 < MikeS> rillian: it's important for some people. There are quite a lot of people trying to do talkback-radio style things with icecast - and you can tolerate a small amount of latency there, but not 5+ seconds.
+20:46 < MikeS> How does ramping up the burst size help?
+20:46 < rillian> in particular, we of course want theora support immediately after theora beta :)
+20:46 < rillian> MikeS: I see. no, it doesn't help with that
+20:47 < MikeS> Yes, I think multiple ogg codec support is probably a good threshold feature for 2.1 - perhaps we should aim to stabilise for 2.1 immediately after that gets done? Not sure when I'll have time though - got a lot on my plate at the moment.
+20:47 < rillian> MikeS: understood
+20:47 < rillian> that sounds like a good plan to me too
+20:47 < rillian> and doing icecast support has been on my list for a while
+20:48 < rillian> We should move on in the interests of time
+20:48 < rillian> I think that's everyone but monty
+20:48 < MikeS> yes, I have nothing further to say at this point.
+20:48 < rillian> who will be writing OggFile this month dammit
+20:48 < xiphmont> hi
+20:48 < rillian> xiphmont: what's on your plate?
+20:48 < xiphmont> Hold on, failing to parse
+20:48 < xiphmont> grammar
+20:48 < xiphmont> split
+20:48 < xiphmont> over
+20:48 < xiphmont> sixteen
+20:48 < xiphmont> lines...
+20:49 < xiphmont> OK, ready :-)
+20:49 < xiphmont> So, jack has reappeared
+20:49 < xiphmont> [wild applause]
+20:49 < xiphmont> and informed me that I am to put down the Postfish and get Back To Work.  Namely, OggFile with first-cut functionality.... June 1st.
+20:49 < xiphmont> That's aggressive.
+20:49 < xiphmont> But doable with focus.
+20:50 < rillian> please do
+20:50 < xiphmont> I'm back from vacation and feeling very good about having Jack back, and I am launching into Oggfile.
+20:50 < Misirlou> Since adiabatic isn't here, I will throw in a "Huzzah!"
+20:50 < xiphmont> Immediately, there are two things:
+20:50 < xiphmont> Jack suggested a meeting this weekend to Talk About Mux.
+20:51 < xiphmont> I'm busy Sat night but otherwise wide open on time.
+20:51 < rillian> yes, that's next agenda item
+20:51 < xiphmont> The second thing, or rather the first, is that I will have a complete document for folks to read before and refer to during the meeting.
+20:51 < rillian> xiphmont: excellent
+20:51 < rillian> so, granulepos meeting
+20:52 < rillian> jack suggested we get together on irc this weekend
+20:52 < xiphmont> Make sure that Conrad and the other liboggz/libfishsound and the gstreamer folks are invited.
+20:52 < rillian> and figure out what we *really* want to do
+20:52 < xiphmont> And acolwell, and so on...
+20:52 < rillian> so jack, monty and I are a minimum
+20:52 < rillian> but we're really like kfish, acolwell, derf, and whoever else
+20:52 < rillian> to join us
+20:52 < rillian> scheduling will be hell I imagine
+20:52 -!- walters [walters@verbum.org] has joined #xiphmeet
+20:52 < rillian> kfish: are you free at all this weekend?
+20:53 < jmspeex> Not sure if I'll be available this weekend
+20:53 < kfish> rillian, sure, I don't sleep anyway :)
+20:53 < rillian> I'm busy 9-7 (pacific) both days
+20:53 < Arc> I'll be there whenever, just say when.
+20:54 < rillian> kfish: ok, good. that simplifies
+20:54 < rillian> MikeS: interested at all?
+20:54 < rillian> jmspeex: ok. too bad. didn't know you were interested in the mux stuff.
+20:55 < jmspeex> Well, as far as it affects Speex, right?
+20:55 < xiphmont> It doesn't really affect anything standalone... only mixing stream types.
+20:55 < jmspeex> (i.e. if granulepos changes - is that what we're talking about?)
+20:55 < xiphmont> Nothing that currently exists will break.
+20:55 < Arc> not to break topic too far, but has there been a resolution on what should happen with speex/flac? should it change or not?
+20:56 < xiphmont> Arc: later. :-)
+20:56 < MikeS> rillian: yes, if I can make it
+20:56 < jmspeex> seeking in non-mux stuff will keep working?
+20:56 < rillian> ok. I'll try and coordinate via email with illiminable and aaron
+20:56 < xiphmont> yes
+20:56 < rillian> and pick some times
+20:56 -!- Arawn [zgsqsffnd@user-37ka4gj.dialup.mindspring.com] has joined #xiphmeet
+20:56 < xiphmont> I'd personally consider Aaron a must-have as well.
+20:56 < Arawn> evening gents
+20:56 < rillian> xiphmont: ok
+20:57 < Misirlou> If we don't already, I think we should advertise these meetings on the mailing list(s).
+20:57 < rillian> thomasvs: you're welcome to join us too, or send your mux person
+20:57 < rillian> Misirlou: fair enough. it's easy to forget
+20:57 < thomasvs> rillian: what's that in 0-timezone time ?
+20:57 < rillian> thomasvs: we don't have a time yet
+20:57 < thomasvs> rillian: ok, send out a mail
+20:58 < thomasvs> our mux guy doesn't have internet at home yet, but we'll see what we can do :)
+20:58 < rillian> ah
+20:58 < jmspeex> Misirlou: That's a good job for a crontab
+20:58 < rillian> it will be very early for one group of us
+20:58 < rillian> Ok. next item is also from jack
+20:58 < xiphmont> if he can't attend, we can have a side-email conversation with.  I want to minimize how long the flamefest will go on in email post meeting is all, since in IRC at least it will be shorter than a month-long fets on the lists.
+20:59 < xiphmont> Wait
+20:59 < xiphmont> I'm not done! :-)
+20:59 < rillian> xiphmont has the floow
+20:59 < rillian> floor
+20:59 < xiphmont> I know that most of you regard Postfish as 'that fucking application that kept me distracted from working on Ogg' and that it is...
+20:59 < xiphmont> And jack has requested I put it down, which I am doing.
+21:00 < xiphmont> Regardless, it's close to a first release and I will wibble on it a little here and there as I need it personally.
+21:00 < xiphmont> And it is a worhtwhile Xiph project, just not Ogg related.  Anyway, it's nearly done :-)
+21:01 < xiphmont> There are people who care, even if the rest of you want to see it burned, stoned, and tossed off a cliff :-)
+21:01 < xiphmont> There, done :-)
+21:01 < rillian> i think postfish is great. and of course you should do fun things too. it's just that organizationally we have higher priorities
+21:01 < xiphmont> We do indeed.
+21:01 < rillian> So, coming back into things
+21:01 < xiphmont> It turned out to be Alot Harder Than Expected.
+21:01  * kfish proposes a toast to the side projects that keep us all motivated and alive
+21:01 < rillian> here here!
+21:02 < jmspeex> I guess in my case, the side project is Speex itself :)
+21:02 < rillian> Coming back into things, jack was stuck by how poor our client support is
+21:02 < rillian> as we all should be
+21:02 < rillian> it's true that content distribution is was really drives adoption
+21:03 < rillian> but there's a chicken-and-egg problem there
+21:03 < rillian> in that we can't demand/coddle/encourage people to distribute using our codecs
+21:03 < rillian> when there's less than universal support
+21:03 < rillian> illiminables directshow filters are a great step there
+21:03 < jmspeex> I say we start giving away free copies of Vorbis
+21:03 -!- Company [~Company@pD9E3335B.dip.t-dialin.net] has joined #xiphmeet
+21:04 < jmspeex> (sorry, couldn't resist)
+21:04 < xiphmont> [groan]
+21:04 < rillian> jmspeex: seriously though. that's obviously not been enough
+21:04 < jmspeex> I know. Same for Speex
+21:04 < rillian> jack suggested we divvy up the vendors, osen, platforms, players, etc.
+21:04 < MikeS> The problem, fairly consistently over the last N years, has been a lack of win32 people that actually stay around long-term. So we have to figure out what we're doing wrong there: why won't they stay?
+21:04 < rillian> and start doing real advocacy
+21:05 < xiphmont> Our client support suffered greatly when all the independent players of the Bubble disappeared to be replaced with iTunes/Winamp.  And that was it.
+21:05 < xiphmont> er
+21:05 < xiphmont> iTunes/WiMP
+21:05 < jmspeex> Actually, as rillian says, a DS filter that supports all codecs is nice.
+21:05 < rillian> so, we need to be talking to the iTunes and WMP project managers
+21:05 < rillian> they don't have to listen
+21:05 < rillian> but we should be bugging them *all the time* about it
+21:06 < rillian> Jack volunteered to take the hard ones
+21:06 < rillian> Apple, Microsoft, Real
+21:06 < jmspeex> doesn't DS ensure all the files play with WMP?
+21:06 -!- volsung [~volsung@cs6668118-176.austin.rr.com] has quit [Read error: 104 (Connection reset by peer)]
+21:06 < rillian> yes. but does microsoft ensure that all WMPs have our filters?
+21:07 < rillian> when can people encode to vorbis in iTunes
+21:07 < rillian> heck, apple just shipped a flac-alike!
+21:07 < rillian> we should be leaning on them all the time
+21:07 < rillian> this is really a separate issue from development work
+21:07 < kfish> rillian, silvia and I talked to Dave Singer from Apple last year. Apparently they're concerned about patents surrounding Vorbis.
+21:07 < jmspeex> We may want to start a "Get Ogg Now!" campain with icons that point to eaily installable DS filters.
+21:08 < kfish> rillian, If that's really the case, they (and other companies) may need a stronger patent statement from Xiph.
+21:08 < rillian> kfish: the US legal system doesn't work that way
+21:08 < MikeS> jmspeex: if we have good WMP filters, yes - but we need to get them either a) installed by default, or b) on some sort of auto-install server so they get installed on-the-fly when a user tries to play an ogg (WMP has this, right? I know some of the other big ones do...)
+21:08 < rillian> but what we can do is talk to them about it more
+21:08 < QuantumKnot> the quicktime vorbis plugins work well with iTunes
+21:08 < rillian> QuantumKnot: except for streaming
+21:08 < MikeS> QuantumKnot: really? I've heard they're incomplete and flaky.
+21:09 < rillian> unless there's a new version I haven't seen
+21:09 < kfish> rillian, I meant a statement of how Vorbis has been designed using prior art, that's all.
+21:09 < jmspeex> MikeS: Exactly... and I think b) will help having more content so that a) can happen.
+21:09 < xiphmont> kfish: the strongest statement we can make are that big companies like Virgin, IBM, EA and Microsoft itself ship Vorbis in their products everyday.
+21:09 < rillian> So jack volunteered to do the hard ones
+21:10 < rillian> I'll pass on what you said kfish. maybe you can work with him and apple
+21:10 < vanguardist> (excuse me, who is kfish?)
+21:10 < xiphmont> Conrad Parker
+21:10 < rillian> CSIRO person, along with Silvia
+21:10 < MikeS> Maybe you should write that up and put it on the website? Explaining why the legal system makes it impossible to _guarantee_ anything, but showing that $BIG_COMPANIES are using it, etc.
+21:10 < vanguardist> thx
+21:10 < rillian> author of liboggz and libfishsound
+21:10 < MikeS> rillian: other than "the hard ones", what targets do we have?
+21:10 < kfish> vanguardist, hi :)
+21:10 < vanguardist> hi hi
+21:11 < rillian> I offered to take gnome/gstreamer/kde
+21:11 < rillian> (hopefully with a lot of help from thomasvs :)
+21:11 < rillian> That leaves, every game company and player you know
+21:11 < rillian> linux and bsd distributions (making sure we're available and the default)
+21:11 < rillian> Java
+21:12 < MikeS> There's also the ongoing hardware-company-advocacy. Apple, obviously, would be a great one to get there, too.
+21:12 < Misirlou> Apple iPod feedback: http://www.apple.com/feedback/ipod.html
+21:12 < Misirlou> Apple iTunes and iTunes Music Store feedback: http://www.apple.com/feedback/itunes.html
+21:12 < xiphmont> Note that I believe IBM ships Ogg support in their JVM in some form.
+21:12 < rillian> xiphmont: very cool
+21:12 < rillian> if we could get into Sun's that would be major
+21:12 < xiphmont> Also, apparently IBM has an active 'Emerging Business Opportunity' group researching online music right now.
+21:12 < MikeS> So I guess with most of the free-software-world, it's mostly a matter of advocating for "make us the default", since they've _generally_ already got support.
+21:13 < rillian> and given their desktop linux efforts, I thnk we have a good chance
+21:13 < rillian> MikeS: yes
+21:13 < MikeS> xiphmont: really? cool. I'll have to go and have a look at IBM's jvm again.
+21:13 < rillian> So how wants to talk to Sun/java people?
+21:13 < rillian> who
+21:13 < thomasvs> I think JDS already has vorbis
+21:13 < rillian> we thought adi might be good there
+21:13 < MikeS> Sun has apparently even stopped shipping mp3 decoders in their JVM, last I heard.
+21:13 < MikeS> rillian: why adi, particularly?
+21:14 < rillian> he likes C++
+21:14 < rillian> and it seems a useful direction for his skills
+21:14 < rillian> anyway this is something non-developers can really help with
+21:14 < MikeS> C++? I thought we were talking about targetting sun/java?
+21:15 < xiphmont> 'native support'
+21:15 < MikeS> (I'm not saying he's a bad person to do this sort of thing - he's not - just that it wasn't obvious to me why you were singling him out)
+21:15 < rillian> vanguardist: would you like to talk to macromedia? until they start supporting vorbis in flash?
+21:16 < rillian> Arc: this would be good for your publicity skills too
+21:16 < rillian> well, perhaps our efforts will inspire you :)
+21:16 < Arc> rillian: alot of my free time is getting eaten up writting a fork-distro of Gentoo without MP3/etc support as default, after being abhorred at finding out it doesn't even allow you to turn off MP3 decoding
+21:17 < Arc> so consider that my contribution :-)
+21:17 < jmspeex> Is is possible to have a java applet that plays ogg files so websites can have have Ogg files without requiring a download?
+21:17 < vanguardist> rillian: ok
+21:17 < rillian> Arc: but gentoo also needs to be convinced not to do that
+21:17 < MikeS> jmspeex: yes. 
+21:17 < MikeS> jmspeex: I believe such already exists.
+21:17 < rillian> vanguardist: great, thanks!
+21:17 < jmspeex> Any volunteer?
+21:17 < kjoonlee> jmspeex: jorbis
+21:18 < Misirlou> yeah, I played with it the other day
+21:18 < Misirlou> it=jorbis
+21:18 < jmspeex> Someone already did it for Speex, but I don't think it's open-source - though the java port of Speex is.
+21:18 < MikeS> (they use the java-translation of libvorbis, so they're not ultra-speedy, but this isn't generally a problem on modern hardware)
+21:18 < Arc> rillian: I'm hoping the creation of FreeGentoo gives them the nessesary kick-in-the-ass.. their dev team is sufficiently split on the subject where, at current, i don't think they're going to budge
+21:18 < thomasvs> Arc: is there a thread on a list we can look at for that discussion ?
+21:19 < rillian> Someone should also approach the mono folks
+21:21 < Misirlou> They can normally be found in a Blog Near You
+21:21 < Arc> thomasvs: mostly the discussion has happened on IRC, but i did some google'ing and found it's something that has been discussed before.
+21:22 < rillian> Anyway, that's the idea. we need to step up out adoption efforts
+21:22 < rillian> Find out where we're not supported
+21:22 < rillian> why we're not not supported
+21:22 < rillian> and how we can get supported
+21:22 < Misirlou> How does Mono play into this? C# bindings?
+21:23 < rillian> Misirlou: yes. support in their base library, that sort of thing
+21:23 < thomasvs> so apparently, sun's jds ships with vorbis, flac and speex
+21:23 < rillian> thomasvs: wow
+21:23 < Misirlou> albeit it seems an outdated version of flac
+21:24 < thomasvs> yes, sun is very conservative about versions it ships
+21:24 < rillian> Misirlou: you want to pester them to change it?
+21:24  * thomasvs doesn't want to field support questions for 0.6 versions of gstreamer :/
+21:24 < QuantumKnot> MikeS: just to answer your question about the QT plugin way up above, it's not feature complete (visualisations dont work), but yes, ogg vorbis files can play, be listed, and even vorbis comments work in iTunes.  Latest version speeds up vorbis file loading (released in March I think)
+21:24 < MikeS> JDS is just gnome, isn't it?
+21:25 < MikeS> (well, presumably a somewhat modified gnome, but basically...)
+21:25 < Misirlou> rillian: sure, I was just hooked up with some names
+21:25 < rillian> next step should be the JDK :)
+21:25 < rillian> Misirlou: great!
+21:25 < rillian> in the interests of time, lets move on to the last item
+21:26 < rillian> thomasvs was complaining about the time
+21:26 < rillian> and jack couldn't make it because of that, though he would have liked to come to this one
+21:26 < rillian> So I think we should alternate a couple of times
+21:26 < thomasvs> eek - not complaining, just generally wondering
+21:26 < rillian> so at least everyone can come some of the times
+21:26 < thomasvs> (but yes, my gf would appreciate it)
+21:27 < rillian> any other suggestions?
+21:27 < rillian> this one was at 0 GMT
+21:27 < rillian> one obvious thing is to try 8 and 16 GMT
+21:27 < rillian> anyone here have a preference for a different day?
+21:27 < xiphmont> I still like Wed.
+21:27 < xiphmont> ...but am flexible on time.
+21:28 < kfish> I prefer midweek, weekends are for partying :)
+21:28 < xiphmont> agreed.
+21:28 < rillian> MikeS, kfish: how about 16 GMT on wednesday?
+21:28 -!- adiabatic [~comatoast@dsl-206-55-130-248.tstonramp.com] has joined #xiphmeet
+21:29 < rillian> hi adi
+21:29 < adiabatic> Still going?
+21:29 < MikeS> For those of us in australia, I'd imagine rougly 0-12 GMT is a reasonable range. 
+21:29 < MikeS> rillian: I don't think I could make it at 16 GMT. 
+21:30 < rillian> ok 8 GMT is fine for me
+21:30 < rillian> 3 AM for monty
+21:30 < rillian> what about that?
+21:30 < Misirlou> heh
+21:30 < xiphmont> I *just* got myself back to getting up before 10am...
+21:30 < MikeS> (that's ~2am, and I do have to go to work in the morning). But I don't expect a time to work well for everyone, so don't consider that an absolute objection.
+21:30 < xiphmont> OK, 3am it is.  I like having an excuse.
+21:30 < adiabatic> Er, what's being discussed?
+21:30 < jmspeex> 8 GMT is 4 EDT... a bit late
+21:31 -!- DanielWH [~DanielWH@3ffe:bc0:8000:0:0:0:0:262b] has quit ["Client exiting"]
+21:31 < MikeS> I think 8 GMT is going to be bad for more people than 16 GMT is.
+21:31 < MikeS> (not for me, but I'm only one person... in the interests of everyone else...)
+21:31 < Misirlou> adiabatic: Meeting times.
+21:31 < thomasvs> 12GMT doesn't work for you MikeS ?
+21:32 < MikeS> adiabatic: we're discussing having two times for meetings (on alternate months), so more people can make it. 
+21:32 < adiabatic> Messy.
+21:32 < MikeS> thomasvs: 12 GMT would work for me. It's awfully early for the US people, though, isn't it?
+21:32 < rillian> I can get up that early
+21:32 < rillian> it's not too bad on the east coast
+21:33 < adiabatic> For what day of the week will this be?
+21:33 < rillian> wednesday in north america
+21:33 < MikeS> Anyway, I'm unlikely to be able to make _any_ of these times next month (I'll be moving, and probably won't have internet access for a while)
+21:33 < xiphmont> 12GMT is 8am for me?
+21:33 < xiphmont> [I'll do that]
+21:33 < rillian> xiphmont: yes
+21:34 < rillian> ok. let's try 12 GMT
+21:34 < xiphmont> really, I'll manage to do any time once a month.
+21:34 < rillian> that's nice an symmetrical
+21:34 < adiabatic> I can't make it from 3 PM to 6:30 PM at GMT-7...
+21:35 < rillian> adiabatic: you should be able to make this one. it's just really early (5 am)
+21:35 < xiphmont> giggle.
+21:35 < rillian> Ok. that's everything on our agenda
+21:35 < Misirlou> So, 23:59 +00:00 and 11:59 +00:00 will be the alternating times?
+21:35 < rillian> Misirlou: at least for the next month, yes :)
+21:35 < adiabatic> I dislike getting up that early, but it's a much better time slot than what we have now. At least for me.
+21:36 < Misirlou> Okay, cool, I will update the wiki.
+21:36 < MikeS> So, I assume we're doing the 12 GMT one next month?
+21:36 < adiabatic> So we're having twice-monthly meetings?
+21:36 < rillian> thanks everyone for coming!
+21:36 < MikeS> adiabatic: no, once monthly, alternating times.
+21:36 < kfish> thanks rillian
+21:36 < rillian> do I have a second for adjournment?
+21:36 < adiabatic> second.
+21:36 < xiphmont> yay!
+21:37 < rillian> Ok. we now return you to informal discussions
+21:37 < xiphmont> Oh, 'aye!'
+21:37 < xiphmont> I have to go make Sigmatel happy.
+21:37 < kfish> pants off!
+21:37  * thomasvs runs to bed :)
+21:37 < thomasvs> kfish: geez - do all aussies say that ?
+--- Log closed Wed May 05 21:37:44 2004
