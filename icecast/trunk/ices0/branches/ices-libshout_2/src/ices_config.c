@@ -25,12 +25,12 @@
 #include <libxml/xmlmemory.h>
 
 /* Private function declarations */
-static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
-static void ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
-static void ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
+static int parse_file (const char *configfile, ices_config_t *ices_config);
+static void parse_playlist_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
+static void parse_execution_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 				ices_stream_t *ices_config);
-static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_stream_t *stream);
+static void parse_stream_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_stream_t *stream);
 static char* ices_xml_read_node (xmlDocPtr doc, xmlNodePtr node);
 
 /* Global function definitions */
@@ -51,13 +51,12 @@ ices_xml_parse_config_file (ices_config_t *ices_config, const char *configfile)
   xmlKeepBlanksDefault(0);
 	
   /* Parse the file and be happy */
-  return ices_xml_parse_file (configfile, ices_config);
+  return parse_file (configfile, ices_config);
 }
-
 
 /* I hope you can tell this is my first try at xml and libxml :)  */
 static int
-ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
+parse_file (const char *configfile, ices_config_t *ices_config)
 {
   xmlDocPtr doc;
   xmlNsPtr ns;
@@ -124,13 +123,13 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 	ices_setup_parse_stream_defaults (stream);
       }
 
-      ices_xml_parse_stream_nodes (doc, ns, cur->xmlChildrenNode, stream);
+      parse_stream_node (doc, ns, cur->xmlChildrenNode, stream);
 
       nstreams++;
     } else if (strcmp (cur->name, "Playlist") == 0) {
-      ices_xml_parse_playlist_nodes (doc, ns, cur->xmlChildrenNode, ices_config);
+      parse_playlist_node (doc, ns, cur->xmlChildrenNode, ices_config);
     } else if (strcmp (cur->name, "Execution") == 0) {
-      ices_xml_parse_execution_nodes (doc, ns, cur->xmlChildrenNode, ices_config);
+      parse_execution_node (doc, ns, cur->xmlChildrenNode, ices_config);
     } else {
       ices_log ("Unknown Node: %s", cur->name);
     }
@@ -142,8 +141,8 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 }
 
 /* Parse the stream specific configuration */
-void
-ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+static void
+parse_stream_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 			     ices_stream_t *stream)
 {
   for (; cur; cur = cur->next) {
@@ -229,7 +228,7 @@ parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /* Parse the execution specific options */
 static void
-ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+parse_execution_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 				ices_config_t *ices_config)
 {
   for (; cur; cur = cur->next) {
@@ -252,7 +251,7 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /* Parse the playlist specific configuration */
 static void
-ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
+parse_playlist_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
 {
   for (; cur; cur = cur->next) {
     if (cur->type == XML_COMMENT_NODE)
