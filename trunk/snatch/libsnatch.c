@@ -27,7 +27,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XShm.h>
 
-static pthread_mutex_t open_mutex=PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t output_mutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
@@ -548,8 +548,10 @@ ssize_t write(int fd, const void *buf,size_t count){
 	len=sprintf(cbuf,"AUDIO %ld %ld %d %d %d %d:",a,b,audio_channels,
 		    audio_rate,audio_format,count);
 	
+	pthread_mutex_lock(&output_mutex);
 	gwrite(outfile_fd,cbuf,len);
 	gwrite(outfile_fd,(void *)buf,count);
+	pthread_mutex_unlock(&output_mutex);
 	
       }
     }
@@ -609,7 +611,7 @@ static void queue_task(void (*f)(void)){
 }
 
 static void OpenOutputFile(){
-  pthread_mutex_lock(&open_mutex);
+  pthread_mutex_lock(&output_mutex);
   if(outfile_fd!=-2){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
@@ -665,7 +667,7 @@ static void OpenOutputFile(){
 		    (audio_channels==1?"mono":"stereo"),
 		    audio_rate);
 	  }else{
-	    pthread_mutex_unlock(&open_mutex);
+	    pthread_mutex_unlock(&output_mutex);
 	    return;
 	  }
 	}
@@ -719,11 +721,11 @@ static void OpenOutputFile(){
       }
     }
   }
-  pthread_mutex_unlock(&open_mutex);
+  pthread_mutex_unlock(&output_mutex);
 }
 
 static void CloseOutputFile(){
-  pthread_mutex_lock(&open_mutex);
+  pthread_mutex_lock(&output_mutex);
   if(outfile_fd>=0){
     videocount=0;
     if(debug)fprintf(stderr,"    ...: Capture stopped.\n");
@@ -731,5 +733,5 @@ static void CloseOutputFile(){
       close(outfile_fd);
     outfile_fd=-1;
   }
-  pthread_mutex_unlock(&open_mutex);
+  pthread_mutex_unlock(&output_mutex);
 }
