@@ -22,7 +22,6 @@ AC_TRY_LINK([#include <stdarg.h>], [va_list ap1, ap2; va_copy(ap1, ap2);],
     AC_MSG_RESULT([memcpy])
     ])
   ])
-])
 ])dnl XIPH_FUNC_VA_COPY
 
 dnl XIPH_C_ATTRIBUTE
@@ -33,13 +32,12 @@ dnl
 AC_DEFUN([XIPH_C_ATTRIBUTE],
 [dnl
 # check for __attribute__
-AC_TRY_COMPILE([int func(void) __attribute__((unused));],[int x __attribute__ ((unused));],,
-    [ AH_TEMPLATE([__attribute__], [Compile away if __attribute__ keyword is not supported])
-    AC_DEFINE([__attribute__(x)],[/**/])
-    ])
-])
+AC_TRY_COMPILE([int func(void) __attribute__((unused));],
+    [int x __attribute__ ((unused));],,[dnl
+    AH_TEMPLATE([__attribute__],[Define to empty if __attribute__ is not supported])
+    AC_DEFINE([__attribute__(x)],[/**/])
+    ])
 ])dnl XIPH_C_ATTRIBUTE
-
 
 dnl XIPH_GCC_WARNING
 dnl Karl Heyes
@@ -169,3 +167,21 @@ EOF
 done
 $1="$xt_filtered $$1"
 ])dnl XIPH_VAR_PREPEND
+
+dnl XIPH_C__FUNC__
+dnl Karl Heyes <karl@xiph.org> 07/2004
+AC_DEFUN([XIPH_C__FUNC__],
+[dnl
+AC_MSG_CHECKING([for __func__])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,[const char *x = __func__;])],
+    [ AC_MSG_RESULT([yes])],
+    [ AH_TEMPLATE([__func__], [Replace __func__ if not supported])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[const char *x = __FUNCTION__;])],
+        [ AC_DEFINE([__func__],[__FUNCTION__])
+        AC_MSG_RESULT([yes])],
+        [ AC_DEFINE([__func__],[""])
+        AC_MSG_RESULT([no])
+        ])
+    ])
+])dnl XIPH_C__FUNC__
+
