@@ -497,7 +497,7 @@ dxlqt_CDInitialize(dxlqt_Globals glob, ImageSubCodecDecompressCapabilities *cap)
 void dxlqt_CodecRegister(void)
 {
 	ComponentDescription td;
-	ComponentRoutineUPP componentEntryPoint = NewComponentRoutineProc(dxlqt_CDComponentDispatch);
+	ComponentRoutineUPP componentEntryPoint = NewComponentRoutineProc((ComponentRoutineProcPtr)dxlqt_CDComponentDispatch);
 
 	td.componentType = decompressorComponentType;
 	td.componentManufacturer = kAppleManufacturer;
