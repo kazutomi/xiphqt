@@ -37,7 +37,7 @@
    distances.
   These are the slopes of the fit lines.
   See colorreg.c for details.
-  
+
   These values depend on the particular color space one is using, but we'd like
    to derive generic quantization matrices.
   Therefore we use the geometric average over all color spaces (currently only
@@ -446,7 +446,7 @@ int main(void){
   int             qi;
   int             ci;
   for(qi=0;qi<64;qi++){
-    qscales[qi]=qi>=63?1:1.5*pow(2,0.0625*(64-qi));
+    qscales[qi]=qi>=63?0.5F:1.5*pow(2,0.0625*(64-qi));
     ac_scale[qi]=65535;
     dc_scale[qi]=65535;
   }
@@ -463,8 +463,7 @@ int main(void){
     }
     for(qi=0;qi<64;qi++)for(ci=0;ci<64;ci++){
       fbase_matrices[pci][qi][ci]=
-       2/(DCT_SCALE*DCT_SCALE*OC_YCbCr_SCALE[pli]*
-       filters[chx][qi][ci&7]*filters[chy][qi][ci>>3]);
+       1/(OC_YCbCr_SCALE[pli]*filters[chx][qi][ci&7]*filters[chy][qi][ci>>3]);
     }
   }
   /*Scale the base matrices to be in the range of a single byte.*/
@@ -514,13 +513,13 @@ int main(void){
        take the minimum scale factor over all color channels and coefficients.*/
     for(pci=0;pci<9;pci++){
       int scale;
-      scale=(int)(fbase_matrices[pci][qi][0]*qscales[qi]*100/
-       base_matrices[pci][qi][0]);
+      scale=(int)(fbase_matrices[pci][qi][0]*qscales[qi]*
+       (100/(DCT_SCALE*DCT_SCALE))/base_matrices[pci][qi][0]);
       if(scale<1)scale=1;
       if(scale<dc_scale[qi])dc_scale[qi]=scale;
       for(ci=1;ci<64;ci++){
-        scale=(int)(fbase_matrices[pci][qi][ci]*qscales[qi]*100/
-         base_matrices[pci][qi][ci]);
+        scale=(int)(fbase_matrices[pci][qi][ci]*qscales[qi]*
+         (100/(DCT_SCALE*DCT_SCALE))/base_matrices[pci][qi][ci]);
         if(scale<1)scale=1;
         if(scale<ac_scale[qi])ac_scale[qi]=scale;
       }
@@ -557,7 +556,7 @@ int main(void){
     for(qi=0;qi<64;qi++){
       if(!(qi&3))fprintf(stderr,"\n  ");
       fprintf(stderr,"%3i-%5.2lf",
-       (base_matrices[pci][qi][ci]*(ci==0?dc_scale[qi]:ac_scale[qi])/100),
+       (base_matrices[pci][qi][ci]*(ci==0?dc_scale[qi]:ac_scale[qi])/100)<<2,
        fbase_matrices[pci][qi][ci]*qscales[qi]);
       if(qi<63)fprintf(stderr,",");
     }
@@ -680,6 +679,6 @@ int main(void){
     printf("\n  }");
     if(pfi<3)printf(",");
   }
-  printf("\n};");
+  printf("\n};\n");
   return 0;
 }
