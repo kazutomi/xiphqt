@@ -50,6 +50,7 @@ static int      (*libc_writev)(int,const struct iovec *,int);
 static int      (*libc_ioctl)(int,int,void *);
 static pid_t    (*libc_fork)(void);
 
+static int      (*xlib_xclose)(Display *);
 static Display *(*xlib_xopen)(const char *);
 static int      (*xlib_xdrawsegments)(Display *,Drawable,GC,XSegment *,int);
 static Window   (*xlib_xcreatewindow)(Display *,Window,int,int,unsigned int,unsigned int,
@@ -278,6 +279,7 @@ void initialize(void){
     libc_ioctl=get_me_symbol("ioctl");
     libc_fork=get_me_symbol("fork");
     xlib_xopen=get_me_symbol("XOpenDisplay");
+    xlib_xclose=get_me_symbol("XCloseDisplay");
     xlib_xdrawsegments=get_me_symbol("XDrawSegments");
     xlib_xcreatewindow=get_me_symbol("XCreateWindow");
     xlib_xconfigurewindow=get_me_symbol("XConfigureWindow");
@@ -512,8 +514,10 @@ int close(int fd){
 }
 
 ssize_t write(int fd, const void *buf,size_t count){
+  int ret;
   if(fd==audio_fd){
-    fprintf(stderr,"audio");
+    //    ret=((*libc_write)(fd,buf,count));
+    //return(ret);
 
     if(fake_audiop)return(count);
   }
@@ -549,14 +553,17 @@ int ioctl(int fd,unsigned long int rq, ...){
   va_end(optional);
   
   if(fd==audio_fd){
+      fprintf(stderr,"ioctl %lx ",rq);
+      
     if(rq==SNDCTL_DSP_SPEED ||
        rq==SNDCTL_DSP_CHANNELS ||
+       rq==SNDCTL_DSP_GETODELAY ||
        rq==SNDCTL_DSP_SETFMT){
 
       if(!fake_audiop)
         ret=(*libc_ioctl)(fd,rq,arg);
-      
-      if(ret==0){
+
+      if(ret==0  || rq==SNDCTL_DSP_GETODELAY){
 	switch(rq){
 	case SNDCTL_DSP_SPEED:
 	  audio_rate=*(int *)arg;
@@ -578,6 +585,18 @@ int ioctl(int fd,unsigned long int rq, ...){
 	    fprintf(stderr,
 		    "    ...: Audio output format set to %s.\n",
 		    formatname(audio_format));
+	  break;
+	case SNDCTL_DSP_GETODELAY: /* Must reject the ODELAY if we're not going to track 
+				      audio bytes and timing! */
+	  {
+	    int foo=*(int *)arg;
+	    if(debug)
+	      fprintf(stderr,
+		      "    ...: Audio output delay returned %d %d.\n",
+		      ret,foo);
+	    *(int *)arg=0;
+	    ret=-1;
+	  }
 	  break;
 	}
       }
