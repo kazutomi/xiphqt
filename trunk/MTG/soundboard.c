@@ -391,10 +391,7 @@ int edit_tag(int number,tag t){
   int refcount;
   _alloc_tag_if_needed(number);
 
-  refcount=tag_list[number].refcount;
-  
   tag_list[number]=t;
-  tag_list[number].refcount=refcount;
 
   /* state is zeroed when we go to production mode.  Done  */
   return(0);
@@ -462,9 +459,9 @@ int load_tag(FILE *f){
     release_label(t.sample_path);
     return(-1);
   }
+  edit_tag(number,t);
   aquire_label(t.sample_desc);
 
-  edit_tag(number,t);
   return(0);
 }
 
@@ -2179,7 +2176,7 @@ int add_sample_menu(){
 	fprintf(stderr,"Press enter to continue\n");
 	getc(stdin);
 	switch_to_ncurses();
-
+	f.edit=1;
       }else{
 	switch_to_ncurses();
 	break;
@@ -2205,8 +2202,8 @@ int add_sample_menu(){
     t.fade_out=15;
     
     tagno=new_tag_number();
-    aquire_tag(tagno);
     edit_tag(tagno,t);
+    aquire_tag(tagno);
   }
 
   /* got it, add a new cue */
