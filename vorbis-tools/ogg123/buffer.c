@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.22 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23 2001/08/31 18:19:57 kcarnold Exp $
 
  ********************************************************************/
 
@@ -165,6 +165,9 @@ void* BufferFunc (void *arg)
 	  Prebuffer (buf);
 	  SignalAll(buf);
 	  buf->FlushPending = 0;
+	  if (buf->eos)
+	    buf->write_func (buf->writer, 0, 0, buf->data, buf->eos);
+	  buf->eos = 0;
 	  LOCK_MUTEX (buf->SizeMutex);
 	}
 

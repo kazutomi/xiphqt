@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.27 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.28 2001/08/31 18:19:57 kcarnold Exp $
 
  ********************************************************************/
 
@@ -774,8 +774,10 @@ void play_file()
 	  skipfile_requested = 0;
 	  signal(SIGALRM,signal_activate_skipfile);
 	  alarm(Options.playOpts.delay);
-	  if (Options.outputOpts.buffer)
+	  if (Options.outputOpts.buffer) {
+	    buffer_MarkEOS (Options.outputOpts.buffer);
 	    buffer_flush (Options.outputOpts.buffer);
+	  }
 	  break;
 	}
 
