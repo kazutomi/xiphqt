@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.13.4.1 2000/07/25 00:18:10 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.13.4.2 2000/07/29 13:27:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -30,7 +30,7 @@ typedef struct {
 
   double ***tonecurves;
   double **peakatt;
-  double ***noisecurves;
+  double **noiseatt;
 
   double *ath;
   int    *octave;

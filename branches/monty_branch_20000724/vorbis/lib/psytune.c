@@ -13,7 +13,7 @@
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c,v 1.4 2000/06/14 01:38:31 xiphmont Exp $
+ last mod: $Id: psytune.c,v 1.4.4.1 2000/07/29 13:27:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,43 +31,44 @@
 #include "lpc.h"
 
 static vorbis_info_psy _psy_set0={
-  1,/*athp*/
+  0,/*athp*/
   1,/*decayp*/
   1,/*smoothp*/
-  0,8,0.,
+  1,.2,
 
-  -130.,
+  -100.,
+  -140.,
 
   1,/* tonemaskp */
-  {-80.,-80.,-80.,-80.,-100.}, /* remember that el 0,2 is a 80 dB curve */
-  {-35.,-40.,-60.,-80.,-80.}, /* remember that el 4 is an 80 dB curve, not 100 */
-  {-35.,-40.,-60.,-80.,-100.},
-  {-35.,-40.,-60.,-80.,-100.},
-  {-35.,-40.,-60.,-80.,-100.},
-  {-35.,-40.,-60.,-80.,-100.},
-  {-35.,-40.,-60.,-80.,-100.},  
+  {-40.,-40.,-60.,-80.,-100.}, /* remember that el 0,2 is a 80 dB curve */
+  {-40.,-40.,-60.,-80.,-100.}, /* remember that el 4 is an 80 dB curve, not 100 */
+  {-40.,-40.,-60.,-80.,-100.},
+  {-40.,-40.,-60.,-80.,-100.},
+  {-40.,-40.,-60.,-80.,-100.},
+  {-45.,-45.,-65.,-85.,-105.},
+  {-45.,-45.,-65.,-85.,-105.},  
 
   1,/* peakattp */
-  {-12.,-12.,-12.,-16.,-18.},
-  {-12.,-12.,-12.,-16.,-18.},
-  {-12.,-12.,-12.,-16.,-18.},
-  {-12.,-12.,-12.,-16.,-18.},
-  {-12.,-12.,-12.,-16.,-18.},
-  {-8.,-10.,-12.,-16.,-18.},
-  {-6.,-8.,-10.,-12.,-12.},
+  {-18.,-20.,-22.,-22.,-22.},
+  {-18.,-20.,-22.,-22.,-22.},
+  {-18.,-20.,-18.,-20.,-22.},
+  {-16.,-18.,-18.,-20.,-22.},
+  {-16.,-18.,-18.,-20.,-22.},
+  {-16.,-18.,-18.,-20.,-22.},
+  {-12.,-14.,-16.,-18.,-22.},
 
-  1,/*noisemaskp */
+  0,/*noisemaskp */
   {-100.,-100.,-100.,-200.,-200.},
   {-100.,-100.,-100.,-200.,-200.},
   {-100.,-100.,-100.,-200.,-200.},
-  {-60.,-60.,-60.,-80.,-80.},
-  {-60.,-60.,-60.,-80.,-80.},
-  {-60.,-60.,-60.,-80.,-80.},
-  {-55.,-55.,-60.,-80.,-80.},
+  {-6.,-6.,-6.,-6.,-6.},
+  {-0.,-0.,-0.,-0.,-0.},
+  {-0.,-0.,-0.,-2.,-2.},
+  { 2., 2., 2., 2., 2.},
 
-  100.,
+  110.,
 
-  .9998, .9999  /* attack/decay control */
+  .9998, .9997,  /* attack/decay control */
 };
 
 static int noisy=0;
@@ -209,12 +210,9 @@ int main(int argc,char *argv[]){
   _vp_psy_init(&p_look,&_psy_set0,framesize/2,44100);
   floorinit(&floorlook,framesize/2,order,map);
 
-  for(i=0;i<13;i++)
+  for(i=0;i<7;i++)
     for(j=0;j<9;j++)
       analysis("Ptonecurve",i*10+j,p_look.tonecurves[i][j],EHMER_MAX,0,1);
-  for(i=0;i<13;i++)
-    for(j=0;j<9;j++)
-      analysis("Pnoisecurve",i*10+j,p_look.noisecurves[i][j],EHMER_MAX,0,1);
 
   /* we cheat on the WAV header; we just bypass 44 bytes and never
      verify that it matches 16bit/stereo/44.1kHz. */
@@ -307,6 +305,7 @@ int main(int argc,char *argv[]){
 	}
       }
  
+      fprintf(stderr,"*");
       fwrite(buffer,1,framesize*2,stdout);
       memmove(buffer,buffer2,framesize*2);
 
