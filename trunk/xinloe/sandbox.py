@@ -33,13 +33,17 @@ class SBTreeCtrl(wxTreeCtrl):
 class SandboxPanel(wxPanel):
   def __init__(self, parent):
     wxPanel.__init__(self, parent, -1, style=wxWANTS_CHARS)
-    EVT_SIZE(self, self.OnSize)
+    self.parent = parent
 
-    #self.tree = wxTreeListCtrl(self, -1, style = wxTR_TWIST_BUTTONS)
-    self.tree = SBTreeCtrl(self, -1, wxDefaultPosition, wxDefaultSize,
-                           wxTR_HAS_BUTTONS | wxTR_EDIT_LABELS
-                           | wxTR_MULTIPLE | wxTR_HIDE_ROOT
-                           | wxTR_TWIST_BUTTONS)
+    EVT_SIZE(self, self.OnSize)
+    self.tid = wxNewId()
+    self.tree = SBTreeCtrl(self, self.tid, wxDefaultPosition, 
+                           wxDefaultSize, wxTR_HAS_BUTTONS 
+                           | wxTR_HIDE_ROOT | wxTR_TWIST_BUTTONS)
+
+    EVT_RIGHT_DOWN(self.tree, self.OnRightDown)
+    EVT_TREE_SEL_CHANGED(self, self.tid, self.OnSelChanged)
+
     isz = (16,16)
     il = wxImageList(isz[0], isz[1])
     self.lclidx = il.Add(geticon('dev-lcl',0))
@@ -77,13 +81,12 @@ class SandboxPanel(wxPanel):
     self.tree.SetItemImage(self.web, self.webidx, which = wxTreeItemIcon_Normal)
 
     self.tree.Expand(self.root)
-    EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
 
 
   def OnSize(self, evt):
     self.tree.SetSize(self.GetSize())
 
-  def OnRightClick(self, evt):
+  def OnRightDown(self, evt):
     pt = evt.GetPosition()
     item, flags = self.tree.HitTest(pt)
     if item == self.devlocal : 
@@ -101,41 +104,114 @@ class SandboxPanel(wxPanel):
     menu.Destroy()
 
   def OnNewLocalFile(self, evt):
-    dlg = wxFileDialog(None, "Choose a file", os.getcwd(), "", 
+    dlg = wxFileDialog(self, "Choose a file", os.getcwd(), "", 
                        "Ogg Media (.ogg)|*.ogg|All Files (*)|*",
-                       wxOPEN | wxMULTIPLE | wxCHANGE_DIR )
+                       wxOPEN 
+                       # | wxMULTIPLE we're not ready for this yet 
+                       # | wxCHANGE_DIR this messes up our path!
+                       )
     if dlg.ShowModal() == wxID_OK:
       paths = dlg.GetPaths()
       for path in paths : 
-        self.AddNewFile(path)
+        newfile = LocalFile(self, path)
     dlg.Destroy()
 
+  def OnSelChanged(self, evt):
+    item = evt.GetItem()
+    handler = self.tree.GetItemData(item).GetData()
+    if handler :
+      self.parent.infoboxWin.ShowCodec(handler)
 
-  def AddNewFile(self, path):
-    fd = open(path,'r')
-    if fd.read(4) != 'OggS' :
-      print 'Non-Ogg file detected!'
-      return
-    fd.seek(0)
-    newfile = self.tree.AppendItem(self.devlocal, os.path.split(path)[1])
-    self.tree.SetPyData(newfile, None)
-    self.tree.SetItemImage(newfile, self.fileidx, which = wxTreeItemIcon_Normal)
-    chain = self.tree.AppendItem(newfile, 'Chain #0')
-    self.tree.SetPyData(chain, None) 
-    self.tree.SetItemImage(chain, self.muxpackidx, which = wxTreeItemIcon_Normal)
-    self.tree.SetItemImage(chain, self.muxopenidx, which = wxTreeItemIcon_Expanded)
 
-    sy = ogg2.OggSyncState()
-    while sy:
-      sy.input(fd)
+class LocalFile:
+  def __init__(self, parent, path):
+    self.parent = parent
+    self.path = path
+    self.chains = []
+    self.length = 0
+    self.bytes = 0
+    self.eof = False
+    self.name = os.path.split(path)[1]
+    self.desc = 'application/ogg'
+    self.icon = 'oggfile'
+
+    self.sy = ogg2.OggSyncState()
+    self.fd = open(path,'r')
+    if self.fd.read(4) != 'OggS' :
+      return      
+    self.fd.seek(0)
+    self.branch = parent.tree.AppendItem(parent.devlocal, self.name)
+    parent.tree.SetPyData(self.branch, self)
+    parent.tree.SetItemImage(self.branch, parent.fileidx, which = wxTreeItemIcon_Normal)
+    
+    self.page = None
+    while not self.eof:
+      self.chains.append(self.Chain(self))
+      self.bytes = self.bytes + self.chains[-1].bytes      
+      self.length = self.length + self.chains[-1].length      
+
+  class Chain:
+    def __init__(self, parent):
+      self.parent = parent
+      grandparent = parent.parent
+      self.icon = ''
+
+      chain = grandparent.tree.AppendItem(parent.branch, \
+       'Chain %d (%s offset)' % (len(parent.chains), timestr(parent.length)))
+      grandparent.tree.SetPyData(chain, self) 
+      grandparent.tree.SetItemImage(chain, grandparent.muxpackidx, 
+                                    which = wxTreeItemIcon_Normal)
+      grandparent.tree.SetItemImage(chain, grandparent.muxopenidx, 
+                                    which = wxTreeItemIcon_Expanded)
+      self.serials = {}
+
+      bitstreams = self.GetNewStreams()
+      for handler in bitstreams:
+        self.serials[handler.serialno] = handler
+        stream = grandparent.tree.AppendItem(chain, handler.name)
+        grandparent.tree.SetPyData(stream, handler) 
+        if not grandparent.codecidx.has_key(handler.icon) :
+          print 'Missing icon for %s' % handler.name
+          handler.icon = ''
+        grandparent.tree.SetItemImage(stream, 
+          grandparent.codecidx[handler.icon], which = wxTreeItemIcon_Normal)
+
+      while parent.page and parent.page.pageno > 0:
+        self.serials[parent.page.serialno].PageIn(parent.page)
+        parent.page = None
+        while not parent.page:
+          if self.parent.sy.input(parent.fd) == 0 : 
+            parent.eof  = True
+            break  # End of file reached.
+          parent.page = parent.sy.pageout()
+
+      self.bytes = 0
+      self.length = 0
+      for handler in bitstreams:
+        self.bytes = self.bytes + handler.bytes
+        if handler.length > self.length :
+          self.length = handler.length
+  
+
+    def GetNewStreams(self):
+      parent = self.parent
+
+      bitstreams = []
       while 1:
-        page = sy.pageout()
-        if page :
-          if page.pageno > 0 :
-            sy = None
-            break 
-          st = ogg2.OggStreamState(page.serialno)
-          st.pagein(page)
+        while 1:
+          while not parent.page:
+            if parent.sy.input(parent.fd) == 0 : 
+              parent.page = None
+              parent.eof  = True
+              return bitstreams  # End of file reached.
+            parent.page = parent.sy.pageout()
+          if parent.page.pageno > 0 :
+            return bitstreams      
+
+          serialno = parent.page.serialno
+          pagesize = len(parent.page)
+          st = ogg2.OggStreamState(serialno)
+          st.pagein(parent.page)
           packet = st.packetout()
           bp = ogg2.OggPackBuff(packet)
           header = ""
@@ -146,11 +222,8 @@ class SandboxPanel(wxPanel):
           for c in handlers.codecs :
             handler = c(header)
             if handler.name : break
-          stream = self.tree.AppendItem(chain,  handler.name)
-          self.tree.SetPyData(stream, handler) 
-          if not self.codecidx.has_key(handler.icon) :
-            print 'Missing icon for %s' % handler.name
-            handler.icon = ''
-          self.tree.SetItemImage(stream, self.codecidx[handler.icon],
-                                 which = wxTreeItemIcon_Normal)
-        else : break    
+          bitstreams.append(handler)
+          handler.state = st
+          handler.serialno = serialno
+          handler.bytes = pagesize
+          parent.page = None

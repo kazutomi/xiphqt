@@ -20,24 +20,45 @@
 
 from general import *
 
-class InfoboxPanel(wxWindow, wxScrolledPanel):
+class InfoboxPanel(wxScrolledPanel):
   def __init__(self, parent):
     wxScrolledPanel.__init__(self, parent, -1)
-    self.SetBackgroundColour('White')
-    infobox = wxBoxSizer(wxVERTICAL)
-    title = gettext(self, ' Theora I - General Purpose Video ', 5)
-    general = gettext(self, '00:01:59 205kbps (293293942 bytes)', 3)
-    topbox = wxBoxSizer(wxHORIZONTAL)
-    bmp = geticon('theora',3)
-    logo = wxStaticBitmap(self, -1, bmp, wxPoint(16, 16),
+    self.infowin = InfoboxScrolledPanel(self)
+    self.topsizer = wxBoxSizer(wxVERTICAL)
+    self.topsizer.Add(self.infowin, 1, wxEXPAND, 0)
+    self.SetSizer(self.topsizer)
+    self.SetupScrolling(scroll_x=False)
+    self.SetAutoLayout(1)
+
+  def ShowCodec(self, handler):
+    self.topsizer.Remove(self.infowin)
+    self.infowin.Destroy()
+    self.infowin = InfoboxScrolledPanel(self)
+    self.topsizer.Add(self.infowin, 1, wxEXPAND, 0)
+
+    bmp = geticon(handler.icon,3)
+    logo = wxStaticBitmap(self.infowin, -1, bmp, wxPoint(16, 16),
                           wxSize(bmp.GetWidth(), bmp.GetHeight()))
+    title = gettext(self.infowin, ' %s - %s '%(handler.name, handler.desc), 5)
+    general = gettext(self.infowin, '%s %s (%s)' % (timestr(handler.length), 
+                       ratestr(handler.bytes, handler.length), 
+                       bytestr(handler.bytes)), 3)
+
+    topbox = wxBoxSizer(wxHORIZONTAL)
     topbox.Add(logo, 0, wxALIGN_LEFT, 4)
     titlebox = wxBoxSizer(wxVERTICAL)
     titlebox.Add(title, 0, wxALIGN_LEFT, 4)
     titlebox.Add(general, 0, wxALIGN_CENTER, 4)
     topbox.AddSizer(titlebox, 0)
-    self.SetSizer(infobox)
-    self.SetAutoLayout(1)
-    self.SetupScrolling(scroll_x=False)    
+    infobox = wxBoxSizer(wxVERTICAL)
     infobox.AddSizer(topbox, 0)
+    self.infowin.SetAutoLayout(1)
+    self.infowin.SetSizer(infobox)
+    self.topsizer.Layout()
 
+class InfoboxScrolledPanel(wxWindow, wxPanel):
+  def __init__(self, parent):
+    wxPanel.__init__(self, parent, -1)
+    self.SetBackgroundColour('White')
+    self.SetAutoLayout(1)
+    

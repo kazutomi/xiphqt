@@ -18,17 +18,19 @@
 
 '''
 
-#
-# Every codec is expected to have a name, desc, icon, and version
-# All other variables are up to the codec to set and use as needed
-#
-
 class GenCodec:
   def __init__(self, header):
     self.name = ''
     self.desc = ''
     self.icon = ''
+    self.b = 0
+    self.q = 0
+    self.length = 0
+    self.bytes = 0
     self.version = 0
+
+  def PageIn(self, page):
+    self.bytes = self.bytes + len(page)
 
 class Vorbis(GenCodec):
   def __init__(self, header):
@@ -44,9 +46,15 @@ class Vorbis(GenCodec):
                   (ord(header[14])*65536) + (ord(header[15])*16777216)
       else :
         self.name = 'Vorbis (Unsupported Version)'
-        self.desc = ''
         self.version = chr(ord(header[7]) + (ord(header[8])*256) + \
                    (ord(header[9])*65536) + (ord(header[10])*16777216))
+        self.samplerate = 0
+
+  def PageIn(self, page):
+    self.bytes = self.bytes + len(page)
+    if self.samplerate > 0 :
+      self.length = page.granulepos / self.samplerate
+
     
 class Theora(GenCodec):
   def __init__(self, header):
@@ -74,7 +82,6 @@ class Theora(GenCodec):
      
       else :
         self.name = 'Theora (Unsupported Version)'
-        self.desc = ''
         self.version = str(ord(header[7])) + '.' + \
                        str(ord(header[8])) + '.' + \
                        str(ord(header[9])) 
@@ -107,9 +114,14 @@ class Speex(GenCodec):
                  (ord(header[58])*65536) + (ord(header[59])*16777216)
       else :
         self.name = 'Speex (Unsupported Version)'
-        self.desc = ''
         self.version = str(ord(header[28]) + (ord(header[29])*256) + \
                    (ord(header[30])*65536) + (ord(header[31])*16777216))
+        self.samplerate = 0
+
+  def PageIn(self, page):
+    self.bytes = self.bytes + len(page)
+    if self.samplerate > 0 :
+      self.length = page.granulepos / self.samplerate
 
 class FLAC(GenCodec):
   def __init__(self, header):
@@ -119,12 +131,7 @@ class FLAC(GenCodec):
       self.desc = 'Lossless Audio'
       self.icon = 'flac'
       self.version = '0'
-      #
-      # Someone needs to teach these guys about Ogg info headers!!!
-      #
-      #self.channels = ord(header[11])
-      #self.samplerate = ord(header[12]) + (ord(header[13])*256) + \
-      #          (ord(header[14])*65536) + (ord(header[15])*16777216)
+      # need samplerate, channels, samplesize, and bitrate
 
 class Writ(GenCodec):
   def __init__(self, header):
@@ -140,10 +147,8 @@ class Writ(GenCodec):
         d = ord(header[11]) + (ord(header[12])*256) + \
             (ord(header[13])*65536) + (ord(header[14])*16777216)
         self.framerate = float(n)/float(d)
-        print self.version, self.framerate
       else :
         self.name = 'Writ (Unsupported Version)'
-        self.desc = ''
         self.version = str(ord(header[5]))
 
 codecs = (Vorbis, Theora, Speex, FLAC, Writ, GenCodec)
