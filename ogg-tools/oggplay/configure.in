@@ -26,7 +26,7 @@ CFLAGS="$CFLAGS `sdl-config --cflags`"
 LDFLAGS="$LDFLAGS `sdl-config --libs`"
 
 dnl check for libogg - macro in acinclude.m4
-AM_PATH_OGG([CFLAGS="$CFLAGS $OGG_CFLAGS" LIBS="$LIBS $OGG_LIBS"])
+XIPH_PATH_OGG([CFLAGS="$CFLAGS $OGG_CFLAGS" LIBS="$LIBS $OGG_LIBS"])
 
 dnl check for libmng - macro in acinclude.m4
 LIBMNG_CHECK()

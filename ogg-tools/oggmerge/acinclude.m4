@@ -2,10 +2,10 @@
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
 
-dnl AM_PATH_OGG([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+dnl XIPH_PATH_OGG([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl Test for libogg, and define OGG_CFLAGS and OGG_LIBS
 dnl
-AC_DEFUN(AM_PATH_OGG,
+AC_DEFUN(XIPH_PATH_OGG,
 [dnl 
 dnl Get the cflags and libraries
 dnl
@@ -97,10 +97,10 @@ int main ()
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
 
-dnl AM_PATH_VORBIS([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+dnl XIPH_PATH_VORBIS([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl Test for libvorbis, and define VORBIS_CFLAGS and VORBIS_LIBS
 dnl
-AC_DEFUN(AM_PATH_VORBIS,
+AC_DEFUN(XIPH_PATH_VORBIS,
 [dnl 
 dnl Get the cflags and libraries
 dnl
