@@ -22,7 +22,6 @@
 
 #include <thread.h>
 
-extern shout_conn_t conn;
 extern ices_config_t ices_config;
 
 static char *ices_id3_filename = NULL;
@@ -185,13 +184,14 @@ ices_id3_update_metadata (const char *filename, int file_bytes)
 void *
 ices_id3_update_thread (void *arg)
 {
+  ices_stream_config_t* stream;
   int ret;
   char metastring[1024], song[2048], artistspace[1024], titlespace[1024],
     filespace[1024];
   char *id3_artist = ices_id3_get_artist (artistspace, 1024);
   char *id3_song = ices_id3_get_title (titlespace, 1024);
   const char *filename = ices_id3_get_filename (filespace, 1024);
-  
+	
   if (*((int*)arg))
     thread_sleep (*((int*)arg));
 
@@ -206,12 +206,14 @@ ices_id3_update_thread (void *arg)
   else
     sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
 
-  ret = shout_update_metadata (&conn, metastring);
+  for (stream = ices_config.streams; stream; stream = stream->next) {
+    ret = shout_update_metadata (&stream->conn, metastring);
 	
-  if (ret != 1)
-    ices_log ("Updating metadata on server failed.");
-  else
-    ices_log ("Updated metadata on server to: %s", song);
+    if (ret != 1)
+      ices_log ("Updating metadata on server failed.");
+    else
+      ices_log ("Updated metadata on server to: %s", song);
+  }
 	
   thread_exit (0);
   return 0;

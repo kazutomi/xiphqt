@@ -29,8 +29,7 @@
 
 extern ices_config_t ices_config;
 
-static int reencode_lame_allocated = 0;
-static lame_global_flags* ices_reencode_flags;
+static int nsamples; /* per call to lame_decode */
 static short int right[4096 * 30]; /* Probably overkill like hell, can someone calculate a better value please? */
 static short int left[4096 * 30];
 
@@ -44,7 +43,14 @@ static void reencode_lame_init (void);
 void
 ices_reencode_initialize (void)
 {
-  if (!ices_config.reencode) 
+  ices_stream_config_t* stream;
+
+  /* are any streams reencoding? */
+  for (stream = ices_config.streams; stream; stream = stream->next)
+    if (stream->reencode)
+      ices_config.reencode = 1;
+
+  if (! ices_config.reencode)
     return;
 
 #ifdef HAVE_LAME_NOGAP
@@ -63,7 +69,7 @@ ices_reencode_reset (void)
   reencode_lame_init ();
 #endif
 
-  if (lame_decode_init () == -1) {
+  if (lame_decode_init () < 0) {
     ices_log ("Error: initialization of liblame's decoder failed!");
     ices_setup_shutdown ();
   }
@@ -73,36 +79,52 @@ ices_reencode_reset (void)
 void
 ices_reencode_shutdown (void)
 {
-  if (reencode_lame_allocated)
-    lame_close (ices_reencode_flags);
+  ices_stream_config_t* stream;
+
+  for (stream = ices_config.streams; stream; stream = stream->next)
+    if (stream->encoder_initialised)
+      lame_close ((lame_global_flags*) stream->encoder_state);
+}
+
+/* decode buffer, of length buflen, into left and right. Stream-independent
+ * (do this once per chunk, not per stream). Result is number of samples
+ * for ices_reencode_reencode_chunk. */
+int
+ices_reencode_decode (unsigned char* buf, size_t blen)
+{
+  return (nsamples = lame_decode (buf, blen, left, right));
 }
 
 /* reencode buff, of len buflen, put max outlen reencoded bytes in outbuf */
 int
-ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *outbuf, int outlen)
+ices_reencode_reencode_chunk (ices_stream_config_t* stream, unsigned char *buff,
+			      int buflen, unsigned char *outbuf, int outlen)
 {
-	int decode_ret = lame_decode ((char *)buff, buflen, left, right);
+  lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
 
-	if (decode_ret > 0)
-		return lame_encode_buffer (ices_reencode_flags, left, right, decode_ret, (char *)outbuf, outlen);
-	return decode_ret;
+  if (nsamples <= 0)
+    return nsamples;
+  
+  return lame_encode_buffer (lame, left, right, nsamples, outbuf, outlen);
 }
 
 /* At EOF of each file, flush the liblame buffers and get some extra candy */
 int
-ices_reencode_flush (unsigned char *outbuf, int maxlen)
+ices_reencode_flush (ices_stream_config_t* stream, unsigned char *outbuf,
+		     int maxlen)
 {
-  int ret;
+  lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
+  int rc;
 
 #ifdef HAVE_LAME_NOGAP
-  ret = lame_encode_flush_nogap (ices_reencode_flags, (char *)outbuf, maxlen);
+  rc = lame_encode_flush_nogap (lame, (char *)outbuf, maxlen);
 #else
-  ret = lame_encode_flush (ices_reencode_flags, (char*) outbuf, maxlen);
-  lame_close (ices_reencode_flags);
-  reencode_lame_allocated = 0;
+  rc = lame_encode_flush (lame, (char*) outbuf, maxlen);
+  lame_close (lame);
+  lame->encoder_initialised = 0;
 #endif
 
-  return ret;
+  return rc;
 }
 
 /* Resets the lame engine. Depending on which version of LAME we have, we must
@@ -110,31 +132,45 @@ ices_reencode_flush (unsigned char *outbuf, int maxlen)
 static void
 reencode_lame_init ()
 {
-  if (! (ices_reencode_flags = lame_init ())) {
-    ices_log ("Error initialising LAME.");
-    ices_setup_shutdown ();
-  }
+  ices_stream_config_t* stream;
+  lame_global_flags* lame;
 
-  /* not all of these functions were implemented by LAME 3.88 */
+  if (! ices_config.reencode)
+    return;
+
+  for (stream = ices_config.streams; stream; stream = stream->next) {
+    if (! stream->reencode)
+      continue;
+
+    if (! (stream->encoder_state = lame_init ())) {
+      ices_log ("Error resetting LAME.");
+      ices_setup_shutdown ();
+    }
+
+    lame = (lame_global_flags*) stream->encoder_state;
+
+    /* not all of these functions were implemented by LAME 3.88 */
 #ifdef HAVE_LAME_NOGAP
-  lame_set_brate (ices_reencode_flags, ices_config.bitrate);
-  if (ices_config.out_numchannels != -1)
-    lame_set_num_channels (ices_reencode_flags, ices_config.out_numchannels);
-  if (ices_config.out_samplerate != -1)
-    lame_set_out_samplerate (ices_reencode_flags, ices_config.out_samplerate);
+    lame_set_brate (lame, stream->bitrate);
+    if (stream->out_numchannels > 0)
+      lame_set_num_channels (lame, stream->out_numchannels);
+    if (stream->out_samplerate > 0)
+      lame_set_out_samplerate (lame, stream->out_samplerate);
+    lame_set_original (lame, 0);
 #else
-  ices_reencode_flags->brate = ices_config.bitrate;
-  if (ices_config.out_numchannels != -1)
-    ices_reencode_flags->num_channels = ices_config.out_numchannels;
-  if (ices_config.out_samplerate != -1)
-    ices_reencode_flags->out_samplerate = ices_config.out_samplerate;
+    lame->brate = stream->bitrate;
+    if (stream->out_numchannels > 0)
+      lame->num_channels = stream->out_numchannels;
+    if (stream->out_samplerate != -1)
+      lame->out_samplerate = stream->out_samplerate;
 #endif
 
-  /* lame_init_params isn't more specific about the problem */
-  if (lame_init_params (ices_reencode_flags) < 0) {
-    ices_log ("Error setting LAME parameters. Check bitrate, channels, and "
-	      "sample rate.");
-  }
+    /* lame_init_params isn't more specific about the problem */
+    if (lame_init_params (lame) < 0) {
+      ices_log ("Error setting LAME parameters. Check bitrate, channels, and "
+		"sample rate.");
+    }
 
-  reencode_lame_allocated = 1;
+    stream->encoder_initialised = 1;
+  }
 }

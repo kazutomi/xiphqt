@@ -23,7 +23,6 @@
 #include <string.h>
 #include <thread.h>
 
-extern shout_conn_t conn;
 extern ices_config_t ices_config;
 
 char **ices_argv;

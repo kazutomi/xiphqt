@@ -24,33 +24,47 @@
 typedef enum {icy_header_protocol_e = 0, xaudiocast_header_protocol_e = 1} header_protocol_t;
 typedef enum {ices_playlist_python_e = 0, ices_playlist_builtin_e = 1, ices_playlist_perl_e = 2} playlist_type_t;
 
+typedef struct ices_stream_config_St {
+  shout_conn_t conn;
+  void* encoder_state;
+  int encoder_initialised;
+
+  char* mount;
+
+  char* name;
+  char* genre;
+  char* description;
+  char* url;
+  int ispublic;
+
+  int reencode;
+  int bitrate;
+  int out_samplerate;
+  int out_numchannels;
+
+  struct ices_stream_config_St* next;
+} ices_stream_config_t;
+
 typedef struct ices_config_St {
-	char *host;
-	int port;
-	char *mount;
-	char *password;
-	header_protocol_t header_protocol;
-	char *name;
-	char *genre;
-	char *description;
-	char *url;
-	int bitrate;
-	int ispublic;
-	int daemon;
-	int randomize_playlist;
-	int pre_dj;
-	int post_dj;
-	int playlist_type;
-	int verbose;
-	int reencode;
-	int out_samplerate;
-	int out_numchannels;
-	char *dumpfile;
-	char *configfile;
-	char *playlist_file;
-	char *interpreter_file;
-	char *base_directory;
-	FILE *logfile;
+  char *host;
+  int port;
+  char *password;
+  header_protocol_t header_protocol;
+  int daemon;
+  int randomize_playlist;
+  int pre_dj;
+  int post_dj;
+  int playlist_type;
+  int verbose;
+  int reencode;
+  char *dumpfile;
+  char *configfile;
+  char *playlist_file;
+  char *interpreter_file;
+  char *base_directory;
+  FILE *logfile;
+
+  ices_stream_config_t* streams;
 }ices_config_t;
 
 #endif

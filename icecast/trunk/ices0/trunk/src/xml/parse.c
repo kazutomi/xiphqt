@@ -40,7 +40,7 @@ static void ices_xml_parse_setup_defaults (void);
 static void ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
-static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
+static void ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_stream_config_t *ices_stream_config);
 static xmlNodePtr ices_xml_get_root_element (xmlDocPtr doc);
 static xmlNodePtr ices_xml_get_children_node (xmlNodePtr cur);
 #endif
@@ -84,6 +84,10 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 	xmlDocPtr doc;
 	xmlNsPtr ns;
 	xmlNodePtr cur;
+
+	/* we support multiple stream nodes */
+	int nstreams = 0;
+	ices_stream_config_t* stream = ices_config->streams;
 
 	/* This does the actual parsing */
 	if (!(doc = xmlParseFile (configfile))) {
@@ -132,21 +136,29 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 	/* Separate the parsing into different submodules,
 	 * Server, Stream, Playlist and Execution */
 	while (cur != NULL) {
+	  if (strcmp (cur->name, "Server") == 0) {
+	    ices_xml_parse_server_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
+	  } else if (strcmp (cur->name, "Stream") == 0) {
+	    /* first stream is preallocated */
+	    if (nstreams) {
+	      stream->next = (ices_stream_config_t*) malloc (sizeof (ices_stream_config_t));
+	      stream = stream->next;
+	      /* in case fields are omitted in the config file */
+	      ices_setup_parse_stream_defaults (stream);
+	    }
 
-		if (strcmp (cur->name, "Server") == 0) {
-			ices_xml_parse_server_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
-		} else if (strcmp (cur->name, "Stream") == 0) {
-			ices_xml_parse_stream_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
-		} else if (strcmp (cur->name, "Playlist") == 0) {
-			ices_xml_parse_playlist_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
-		} else if (strcmp (cur->name, "Execution") == 0) {
-			ices_xml_parse_execution_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
-		} else {
-			ices_log ("Unknown Node: %s", cur->name);
-		}
+	    ices_xml_parse_stream_nodes (doc, ns, ices_xml_get_children_node (cur), stream);
 
-		cur = cur->next;
+	    nstreams++;
+	  } else if (strcmp (cur->name, "Playlist") == 0) {
+	    ices_xml_parse_playlist_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
+	  } else if (strcmp (cur->name, "Execution") == 0) {
+	    ices_xml_parse_execution_nodes (doc, ns, ices_xml_get_children_node (cur), ices_config);
+	  } else {
+	    ices_log ("Unknown Node: %s", cur->name);
+	  }
 
+	  cur = cur->next;
 	}
 	
 	/* Be a good boy and cleanup */
@@ -155,52 +167,51 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 }
 
 /* Parse the stream specific configuration */
-static void
-ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
+void
+ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+			     ices_stream_config_t *stream)
 {
-	while (cur != NULL) {
-		if (strcmp (cur->name, "Name") == 0) {
+  while (cur != NULL) {
+    if (strcmp (cur->name, "Name") == 0) {
+      ices_util_free (stream->name);
+      stream->name = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Genre") == 0) {
+      ices_util_free (stream->genre);
+      stream->genre = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Description") == 0) {
+      ices_util_free (stream->description);
+      stream->description = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "URL") == 0) {
+      ices_util_free (stream->url);
+      stream->url = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Mountpoint") == 0) {
+      ices_util_free (stream->mount);
+      stream->mount = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Bitrate") == 0) {
+      stream->bitrate = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Public") == 0) {
+      stream->ispublic = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Reencode") == 0) {
+      int res = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 
-			if (ices_config->name)
-				ices_util_free (ices_config->name);
+#ifndef HAVE_LIBLAME
+      if (res == 1) {
+	ices_log ("Support for reencoding with liblame was not found. You can't reencode this.");
+	ices_setup_shutdown ();
+      }
+#endif
+			
+      stream->reencode = res;
+    } else if (strcmp (cur->name, "Samplerate") == 0) {
+      stream->out_samplerate = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else if (strcmp (cur->name, "Channels") == 0) {
+      stream->out_numchannels = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
+    } else {
+      ices_log ("Unknown Stream keyword: %s", cur->name);
+    }
 
-			ices_config->name = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else if (strcmp (cur->name, "Genre") == 0) {
-
-			if (ices_config->genre)
-				ices_util_free (ices_config->genre);
-
-			ices_config->genre = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else if (strcmp (cur->name, "Description") == 0) {
-
-			if (ices_config->description)
-				ices_util_free (ices_config->description);
-
-			ices_config->description = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else if (strcmp (cur->name, "URL") == 0) {
-
-			if (ices_config->url)
-				ices_util_free (ices_config->url);
-
-			ices_config->url = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else if (strcmp (cur->name, "Bitrate") == 0) {
-
-			ices_config->bitrate = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else if (strcmp (cur->name, "Public") == 0) {
-
-			ices_config->ispublic = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else {
-			ices_log ("Unknown Stream keyword: %s", cur->name);
-		}
-
-		cur = cur->next;
-	}
+    cur = cur->next;
+  }
 }
 
 /* Parse the server specific configuration */
@@ -218,13 +229,6 @@ ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_co
 				ices_util_free (ices_config->host);
 
 			ices_config->host = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-		} else if (strcmp (cur->name, "Mountpoint") == 0) {
-			
-			if (ices_config->mount)
-				ices_util_free (ices_config->mount);
-
-			ices_config->mount = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 
 		} else if (strcmp (cur->name, "Password") == 0) {
 			
@@ -270,10 +274,6 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices
 			
 			ices_config->verbose = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 
-		} else if (strcmp (cur->name, "Samplerate") == 0) {
-			ices_config->out_samplerate = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-		} else if (strcmp (cur->name, "Channels") == 0) {
-			ices_config->out_numchannels = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 		} else if (strcmp (cur->name, "BaseDirectory") == 0) {
 			
 			if (ices_config->base_directory)
@@ -281,18 +281,6 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices
 			
 			ices_config->base_directory = ices_util_strdup ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
 			
-		} else if (strcmp (cur->name, "Reencode") == 0) {
-
-			int res = atoi ((char *)xmlNodeListGetString (doc, ices_xml_get_children_node(cur), 1));
-
-#ifndef HAVE_LIBLAME
-			if (res == 1) {
-				ices_log ("Support for reencoding with liblame was not found. You can't reencode this.");
-				ices_setup_shutdown ();
-			}
-#endif
-			
-			ices_config->reencode = res;
 
 		} else {
 

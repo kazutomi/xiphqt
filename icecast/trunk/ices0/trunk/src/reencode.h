@@ -21,7 +21,11 @@
 /* Public function declarations */
 void ices_reencode_initialize (void);
 void ices_reencode_shutdown (void);
-int ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *outbuf, int outlen);
+int ices_reencode_decode (unsigned char* buf, size_t blen);
+int ices_reencode_reencode_chunk (ices_stream_config_t* stream,
+				  unsigned char *buff, int buflen,
+				  unsigned char *outbuf, int outlen);
 void ices_reencode_reset (void);
-int ices_reencode_flush (unsigned char *outbuf, int maxlen);
+int ices_reencode_flush (ices_stream_config_t* stream, unsigned char *outbuf,
+			 int maxlen);
 

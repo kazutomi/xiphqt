@@ -28,7 +28,7 @@ static void ices_setup_parse_defaults (ices_config_t *ices_config);
 static void ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile);
 static void ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc);
-static void ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *ices_config);
+static void ices_setup_activate_libshout_changes (const ices_config_t *ices_config);
 static void ices_setup_usage (void);
 static void ices_setup_version (void);
 static void ices_setup_update_pidfile (int icespid);
@@ -37,7 +37,6 @@ static void ices_setup_run_mode_select (ices_config_t *ices_config);
 static int  ices_setup_shutting_down = 0;
 static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 
-extern shout_conn_t conn;
 extern ices_config_t ices_config;
 
 static int ThreadsInitialised = 0;
@@ -50,42 +49,44 @@ static int ThreadsInitialised = 0;
 void
 ices_setup_initialize (void)
 {
-	/* Setup signal handlers */
-	ices_signals_setup ();
+  ices_stream_config_t* stream;
+  
+  /* Setup signal handlers */
+  ices_signals_setup ();
 
-	/* Parse the options in the config file, and the command line */
-	ices_setup_parse_options (&ices_config);
+  /* Parse the options in the config file, and the command line */
+  ices_setup_parse_options (&ices_config);
 
-	/* Go into daemon mode if requested */
-	ices_setup_run_mode_select (&ices_config);
+  /* Go into daemon mode if requested */
+  ices_setup_run_mode_select (&ices_config);
 
-	/* Initialize the libshout structure */
-	shout_init_connection (&conn);
-	
-	/* Copy those options to the libshout structure */
-	ices_setup_activate_libshout_changes (&conn, &ices_config);
+  /* Initialize the libshout structure */
+  for (stream = ices_config.streams; stream; stream = stream->next) {
+    shout_init_connection (&stream->conn);
+  }
 
-	/* Open logfiles */
-	ices_log_initialize ();
+  ices_setup_activate_libshout_changes (&ices_config);
 
-	/* Initialize the interpreters */
-	interpreter_initialize ();
+  /* Open logfiles */
+  ices_log_initialize ();
 
-	/* Initialize the thread library */
-	thread_initialize ();
-	ThreadsInitialised = 1;
+  /* Initialize the interpreters */
+  interpreter_initialize ();
 
-	/* Initialize the playlist handler */
-	ices_playlist_initialize ();
+  /* Initialize the thread library */
+  thread_initialize ();
+  ThreadsInitialised = 1;
 
-	/* Initialize id3 stuff */
-	ices_id3_initialize ();
+  /* Initialize the playlist handler */
+  ices_playlist_initialize ();
+
+  /* Initialize id3 stuff */
+  ices_id3_initialize ();
 
 #ifdef HAVE_LIBLAME
-	/* Initialize liblame for reeencoding */
-	ices_reencode_initialize ();
+  /* Initialize liblame for reeencoding */
+  ices_reencode_initialize ();
 #endif
-	
 }
 
 /* Top level ices shutdown function.
@@ -93,55 +94,58 @@ ices_setup_initialize (void)
 void
 ices_setup_shutdown (void)
 {
-	/* Protection for multiple threads calling shutdown.
-	 * Remember that this is can be called from many places,
-	 * including the SIGING signal handler */
-	if (ThreadsInitialised) {
-		thread_library_lock ();
+  ices_stream_config_t* stream;
 
-		if (ices_setup_shutting_down) {
-		  thread_library_unlock ();
-		  return;
-		}
+  /* Protection for multiple threads calling shutdown.
+   * Remember that this is can be called from many places,
+   * including the SIGING signal handler */
+  if (ThreadsInitialised) {
+    thread_library_lock ();
 
-		ices_setup_shutting_down = 1;
+    if (ices_setup_shutting_down) {
+      thread_library_unlock ();
+      return;
+    }
 
-		thread_library_unlock ();
-	}
+    ices_setup_shutting_down = 1;
 
-	/* Tell libshout to disconnect from server */
-	shout_disconnect (&conn);
+    thread_library_unlock ();
+  }
+
+  /* Tell libshout to disconnect from server */
+  for (stream = ices_config.streams; stream; stream = stream->next)
+    shout_disconnect (&stream->conn);
 
 #ifdef HAVE_LIBLAME
-	/* Order the reencoding engine to shutdown */
-	ices_reencode_shutdown ();
+  /* Order the reencoding engine to shutdown */
+  ices_reencode_shutdown ();
 #endif
 
-	/* Tell the playlist module to shutdown and cleanup */
-	ices_playlist_shutdown ();
+  /* Tell the playlist module to shutdown and cleanup */
+  ices_playlist_shutdown ();
 
-	/* Shutdown id3 module */
-	ices_id3_shutdown ();
+  /* Shutdown id3 module */
+  ices_id3_shutdown ();
 
-	/* Cleanup the cue file (the cue module has no init yet) */
-	ices_cue_shutdown ();
+  /* Cleanup the cue file (the cue module has no init yet) */
+  ices_cue_shutdown ();
 
-	/* Shutdown the thread library */
-	thread_shutdown ();
+  /* Shutdown the thread library */
+  thread_shutdown ();
 
-	/* Make sure we're not leaving any memory allocated around when
-	 * we exit. This makes it easier to find memory leaks, and 
-	 * some systems actually don't clean up that well */
-	ices_setup_free_all_allocations (&ices_config);
+  /* Make sure we're not leaving any memory allocated around when
+   * we exit. This makes it easier to find memory leaks, and 
+   * some systems actually don't clean up that well */
+  ices_setup_free_all_allocations (&ices_config);
 	
-	/* Let the log and console know we wen't down ok */
-	ices_log ("Ices Exiting...");
+  /* Let the log and console know we wen't down ok */
+  ices_log ("Ices Exiting...");
 
-	/* Close logfiles */
-	ices_log_shutdown ();
+  /* Close logfiles */
+  ices_log_shutdown ();
 	
-	/* Down and down we go... */
-	exit (1);
+  /* Down and down we go... */
+  exit (1);
 }
 
 /* Local function definitions */
@@ -172,72 +176,85 @@ ices_setup_parse_options (ices_config_t *ices_config)
 static void
 ices_setup_parse_defaults (ices_config_t *ices_config)
 {
-	ices_config->host = ices_util_strdup (ICES_DEFAULT_HOST);
-	ices_config->port = ICES_DEFAULT_PORT;
-	ices_config->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
-	ices_config->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
-	ices_config->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
-	ices_config->name = ices_util_strdup (ICES_DEFAULT_NAME);
-	ices_config->genre = ices_util_strdup (ICES_DEFAULT_GENRE);
-	ices_config->description = ices_util_strdup (ICES_DEFAULT_DESCRIPTION);
-	ices_config->url = ices_util_strdup (ICES_DEFAULT_URL);
-	ices_config->bitrate = ICES_DEFAULT_BITRATE;
-	ices_config->ispublic = ICES_DEFAULT_ISPUBLIC;
-	ices_config->dumpfile = NULL; /* No dumpfile by default */
-	ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
-	ices_config->playlist_file = ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
-	ices_config->interpreter_file = NULL; /* Default to the hardcoded default */
-	ices_config->randomize_playlist = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
-	ices_config->daemon = ICES_DEFAULT_DAEMON;
-	ices_config->pre_dj = ICES_DEFAULT_PRE_DJ;
-	ices_config->post_dj = ICES_DEFAULT_POST_DJ;
-	ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
-	ices_config->playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
-	ices_config->verbose = ICES_DEFAULT_VERBOSE;
-	ices_config->reencode = ICES_DEFAULT_REENCODE;
-	ices_config->out_numchannels = -1;
-	ices_config->out_samplerate = -1;
+  ices_config->host = ices_util_strdup (ICES_DEFAULT_HOST);
+  ices_config->port = ICES_DEFAULT_PORT;
+  ices_config->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
+  ices_config->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
+  ices_config->dumpfile = NULL; /* No dumpfile by default */
+  ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
+  ices_config->playlist_file = ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
+  ices_config->interpreter_file = NULL; /* Default to the hardcoded default */
+  ices_config->randomize_playlist = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
+  ices_config->daemon = ICES_DEFAULT_DAEMON;
+  ices_config->pre_dj = ICES_DEFAULT_PRE_DJ;
+  ices_config->post_dj = ICES_DEFAULT_POST_DJ;
+  ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
+  ices_config->playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
+  ices_config->verbose = ICES_DEFAULT_VERBOSE;
+  ices_config->reencode = 0;
+
+  ices_config->streams =
+    (ices_stream_config_t*) malloc (sizeof (ices_stream_config_t));
+
+  ices_setup_parse_stream_defaults (ices_config->streams);
+}
+
+/* Place hardcoded defaults into an ices_stream_config object */
+void
+ices_setup_parse_stream_defaults (ices_stream_config_t* ices_stream_config)
+{
+  ices_stream_config->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
+  
+  ices_stream_config->name = ices_util_strdup (ICES_DEFAULT_NAME);
+  ices_stream_config->genre = ices_util_strdup (ICES_DEFAULT_GENRE);
+  ices_stream_config->description = ices_util_strdup (ICES_DEFAULT_DESCRIPTION);
+  ices_stream_config->url = ices_util_strdup (ICES_DEFAULT_URL);
+  ices_stream_config->ispublic = ICES_DEFAULT_ISPUBLIC;
+
+  ices_stream_config->bitrate = ICES_DEFAULT_BITRATE;
+  ices_stream_config->reencode = ICES_DEFAULT_REENCODE;
+  ices_stream_config->out_numchannels = -1;
+  ices_stream_config->out_samplerate = -1;
+
+  ices_stream_config->encoder_state = NULL;
+  ices_stream_config->encoder_initialised = 0;
+
+  ices_stream_config->next = NULL;
+}
+
+/* Frees ices_stream_config_t data (but not the object itself) */
+static void
+ices_setup_free_stream (ices_stream_config_t* stream)
+{
+  ices_util_free (stream->mount);
+
+  ices_util_free (stream->name);
+  ices_util_free (stream->genre);
+  ices_util_free (stream->description);
+  ices_util_free (stream->url);
 }
 
 /* Function to free() all allocated memory when ices shuts down. */
 static void
 ices_setup_free_all_allocations (ices_config_t *ices_config)
 {
-	if (ices_config->host)
-		ices_util_free (ices_config->host);
+  ices_stream_config_t *stream, *next;
 
-	if (ices_config->mount)
-		ices_util_free (ices_config->mount);
+  ices_util_free (ices_config->host);
+  ices_util_free (ices_config->password);
+  ices_util_free (ices_config->dumpfile);
+  ices_util_free (ices_config->configfile);
+  ices_util_free (ices_config->playlist_file);
+  ices_util_free (ices_config->interpreter_file);
+  ices_util_free (ices_config->base_directory);
 
-	if (ices_config->password)
-		ices_util_free (ices_config->password);
+  for (stream = ices_config->streams; stream; stream = next)
+  {
+    next = stream->next;
 
-	if (ices_config->name)
-		ices_util_free (ices_config->name);
-
-	if (ices_config->genre)
-		ices_util_free (ices_config->genre);
-
-	if (ices_config->description)
-		ices_util_free (ices_config->description);
-
-	if (ices_config->url)
-		ices_util_free (ices_config->url);
-
-	if (ices_config->dumpfile)
-		ices_util_free (ices_config->dumpfile);
-
-	if (ices_config->configfile)
-		ices_util_free (ices_config->configfile);
-
-	if (ices_config->playlist_file)
-		ices_util_free (ices_config->playlist_file);
-
-	if (ices_config->interpreter_file)
-		ices_util_free (ices_config->interpreter_file);
-
-	if (ices_config->base_directory)
-		ices_util_free (ices_config->base_directory);
+    ices_setup_free_stream (stream);
+    ices_util_free (stream);
+  }
 }
 
 /* Tell the xml module to parse the config file. */
@@ -328,16 +345,15 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'b':
 					arg++;
-					ices_config->bitrate = atoi (argv[arg]);
+					ices_config->streams->bitrate = atoi (argv[arg]);
 					break;
 				case 'c':
 					arg++;
 					break;
 				case 'd':
 					arg++;
-					if (ices_config->description)
-						ices_util_free (ices_config->description);
-					ices_config->description = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->streams->description);
+					ices_config->streams->description = ices_util_strdup (argv[arg]);
 					break;
 				case 'D':
 					arg++;
@@ -359,9 +375,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'g':
 					arg++;
-					if (ices_config->genre)
-						ices_util_free (ices_config->genre);
-					ices_config->genre = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->streams->genre);
+					ices_config->streams->genre = ices_util_strdup (argv[arg]);
 					break;
 				case 'h':
 					arg++;
@@ -371,7 +386,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'H':
 					arg++;
-					ices_config->out_samplerate = atoi (argv[arg]);
+					ices_config->streams->out_samplerate = atoi (argv[arg]);
 					break;
 				case 'i':
 					ices_config->header_protocol = icy_header_protocol_e;
@@ -384,19 +399,17 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'm':
 					arg++;
-					if (ices_config->mount)
-						ices_util_free (ices_config->mount);
-					ices_config->mount = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->streams->mount);
+					ices_config->streams->mount = ices_util_strdup (argv[arg]);
 					break;
 				case 'N':
 					arg++;
-					ices_config->out_numchannels = atoi (argv[arg]);
+					ices_config->streams->out_numchannels = atoi (argv[arg]);
 					break;
 				case 'n':
 					arg++;
-					if (ices_config->name)
-						ices_util_free (ices_config->name);
-					ices_config->name = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->streams->name);
+					ices_config->streams->name = ices_util_strdup (argv[arg]);
 					break;
 				case 'P':
 					arg++;
@@ -410,7 +423,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 'R':
 #ifdef HAVE_LIBLAME
-					ices_config->reencode = 1;
+					ices_config->streams->reencode = 1;
 #else
 					ices_log ("Support for reencoding with liblame was not found. You can't reencode this.");
 					ices_setup_shutdown ();
@@ -431,13 +444,12 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 					break;
 				case 's':
 					arg++;
-					ices_config->ispublic = 0;
+					ices_config->streams->ispublic = 0;
 					break;
 				case 'u':
 					arg++;
-					if (ices_config->url)
-						ices_util_free (ices_config->url);
-					ices_config->url = ices_util_strdup (argv[arg]);
+					ices_util_free (ices_config->streams->url);
+					ices_config->streams->url = ices_util_strdup (argv[arg]);
 					break;
 			        case 'V':
 				  ices_setup_version ();
@@ -463,28 +475,42 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 /* This function takes all the new configuration and copies it to the
    libshout object. */
 static void
-ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *ices_config)
+ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 {
-	conn->port = ices_config->port;
-	conn->ip = ices_config->host;
-	conn->password = ices_config->password;
-	conn->icy_compat = ices_config->header_protocol == icy_header_protocol_e;
-	conn->dumpfile = ices_config->dumpfile;
-	conn->name = ices_config->name;
-	conn->url = ices_config->url;
-	conn->genre = ices_config->genre;
-	conn->description = ices_config->description;
-	conn->bitrate = ices_config->bitrate;
-	conn->ispublic = ices_config->ispublic;
-	conn->mount = ices_config->mount;
+  ices_stream_config_t* stream;
+  int streamno = 0;
 
-	ices_log_debug ("Sending following information to libshout:");
-	ices_log_debug ("Host: %s\tPort: %d", conn->ip, conn->port);
-	ices_log_debug ("Password: %s\tIcy Compat: %d", conn->password, conn->icy_compat);
-	ices_log_debug ("Name: %s\tURL: %s", conn->name, conn->url);
-	ices_log_debug ("Genre: %s\tDesc: %s", conn->genre, conn->description);
-	ices_log_debug ("Bitrate: %d\tPublic: %d", conn->bitrate, conn->ispublic);
-	ices_log_debug ("Mount: %s\tDumpfile: %s", ices_util_nullcheck (conn->mount), ices_util_nullcheck (conn->dumpfile)); 
+  for (stream = ices_config->streams; stream; stream = stream->next) {
+    stream->conn.port = ices_config->port;
+    stream->conn.ip = ices_config->host;
+    stream->conn.password = ices_config->password;
+    stream->conn.icy_compat =
+      ices_config->header_protocol == icy_header_protocol_e;
+    stream->conn.dumpfile = ices_config->dumpfile;
+    stream->conn.name = stream->name;
+    stream->conn.url = stream->url;
+    stream->conn.genre = stream->genre;
+    stream->conn.description = stream->description;
+    stream->conn.bitrate = stream->bitrate;
+    stream->conn.ispublic = stream->ispublic;
+    stream->conn.mount = stream->mount;
+
+    ices_log_debug ("Sending following information to libshout:");
+    ices_log_debug ("Stream: %d", streamno);
+    ices_log_debug ("Host: %s\tPort: %d", stream->conn.ip, stream->conn.port);
+    ices_log_debug ("Password: %s\tIcy Compat: %d", stream->conn.password,
+		    stream->conn.icy_compat);
+    ices_log_debug ("Name: %s\tURL: %s", stream->conn.name, stream->conn.url);
+    ices_log_debug ("Genre: %s\tDesc: %s", stream->conn.genre,
+		    stream->conn.description);
+    ices_log_debug ("Bitrate: %d\tPublic: %d", stream->conn.bitrate,
+		    stream->conn.ispublic);
+    ices_log_debug ("Mount: %s\tDumpfile: %s",
+		    ices_util_nullcheck (stream->conn.mount),
+		    ices_util_nullcheck (stream->conn.dumpfile));
+
+    streamno++;
+  }
 }
 
 /* Display all command line options for ices */
