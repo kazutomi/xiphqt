@@ -35,7 +35,8 @@
 
 extern int        vidbuf_height;
 extern int        vidbuf_width;
-extern double     vidbuf_fps;
+extern double     vidin_fps;
+extern double     vidout_fps;
 extern int        ratecode;
 extern int        video_timeahead;
 			 
@@ -46,6 +47,7 @@ extern long long framesin;
 extern long long framesout;
 extern long long framesmissing;
 extern long long framesdiscarded;
+extern long fpsgraph[61];
       
 int snatch_iterator(FILE *in,FILE *out,int process_a,int process_v);
 
@@ -72,7 +74,14 @@ static void usage(FILE *f){
 	  "                  7, 59.940fps\n"
 	  "                  8, 60.000fps\n"
 	  "              N=5, 30fps default\n"
+	  "  -g        : graph distribution of frame time deltas [to help\n"
+	  "              determine correct input fps]\n"              
 	  "  -h        : this information to stdout\n"
+	  "  -i <N>    : force input to specific number of frames per \n"
+	  "              second.  Setting this to the 'correct' input fps\n"
+	  "              is never necessary, but it will smooth the video\n "
+	  "              motion in a capture that contains jerks/dropouts.\n"
+	  "              Use the actual fps for <N>, not MPEG mode as above.\n"
 	  "  -n <N>    : output only up to the last frame beginning \n"
 	  "              before <N> seconds elapsed from start of file\n"
 	  "              (if preceeding or without -b) or from start of\n"
@@ -82,15 +91,17 @@ static void usage(FILE *f){
 	  "              width W by height H\n\n");
 }
 
-const char *optstring = "b:f:hn:qs:";
+const char *optstring = "b:f:ghi:n:qs:";
 
 int main(int argc,char *argv[]){
   int done=0;
   int noisy=1;
   int c;
+  int graph=0;
 
   ratecode=5;
-  vidbuf_fps=30;
+  vidin_fps=30;
+  vidout_fps=30;
   video_timeahead=15;
 
   while((c=getopt(argc,argv,optstring))!=EOF){
@@ -102,7 +113,15 @@ int main(int argc,char *argv[]){
       ratecode=atoi(optarg);
       if(ratecode<1)ratecode=1;
       if(ratecode>8)ratecode=8;
-      vidbuf_fps=framerates[ratecode];
+      vidout_fps=framerates[ratecode];
+      break;
+    case 'g':
+      graph=1;
+      break;
+    case 'i':
+      vidin_fps=atof(optarg);
+      if(vidin_fps<1.)vidin_fps=1.;
+      if(vidin_fps>60.)vidin_fps=60.;
       break;
     case 'h':
       usage(stdout);
@@ -139,7 +158,7 @@ int main(int argc,char *argv[]){
     done=snatch_iterator(stdin,stdout,0,1);
 
     if(noisy){
-      long seconds=framesout/vidbuf_fps;
+      long seconds=framesout/vidout_fps;
       long minutes=seconds/60;
       long hours;
 
@@ -152,7 +171,18 @@ int main(int argc,char *argv[]){
 	      hours,minutes,seconds);
     }
   }
-	      
+
+  if(graph){
+    long total=0;
+    int i;
+
+    if(noisy)fprintf(stderr,"\n");
+    for(i=1;i<=60;i++)
+      total+=fpsgraph[i];
+    for(i=1;i<=60;i++)
+      fprintf(stderr,"%3dfps|%*c\n",i,fpsgraph[i]*70/total,'*');
+  }
+    
   if(noisy)fprintf(stderr,"\n");
   return(0);
 }
