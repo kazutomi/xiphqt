@@ -65,12 +65,13 @@ class OggStream :
       if self.pn == 0 :
          packet.bos = 1
       else :
+         packetno = self.packet.packetno
          self.os.packetin(self.packet)
          if self.pn != 2 :
-            print "Flushing: %d" % (self.packet.packetno)
+            print "Flushing: %d" % (packetno)
             self.flush()
          else : 
-            print "Skipping: %d" % (self.packet.packetno)
+            print "Skipping: %d" % (packetno)
       self.packet = packet
       self.pn = self.pn + 1
 

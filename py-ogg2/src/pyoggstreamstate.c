@@ -23,6 +23,7 @@ FDEF(PyOggStreamState_Packetout) "Extract a packet from the stream";
 FDEF(PyOggStreamState_Packetpeek) "Extract a packet from the stream";
 FDEF(PyOggStreamState_Reset) "Reset the stream state";
 FDEF(PyOggStreamState_Eos) "Return whether the end of the stream is reached.";
+FDEF(PyOggStreamState_Setmode) "Set stream mode for (dis)continuous.";
 
 PyTypeObject PyOggStreamState_Type = {
   PyObject_HEAD_INIT(NULL)
@@ -70,6 +71,8 @@ static PyMethodDef PyOggStreamState_methods[] = {
    METH_VARARGS, PyOggStreamState_Reset_Doc},
   {"eos", PyOggStreamState_Eos, 
    METH_VARARGS, PyOggStreamState_Eos_Doc},
+  {"setmode", PyOggStreamState_Setmode, 
+   METH_VARARGS, PyOggStreamState_Setmode_Doc},
   {NULL, NULL}
 };
 
@@ -106,6 +109,7 @@ PyObject *
 PyOggStreamState_New(PyObject *self, PyObject *args)
 {
   int serialno;
+
   if (!PyArg_ParseTuple(args, "i", &serialno))
     return NULL;
   return PyOggStreamState_FromSerialno(serialno);
@@ -327,6 +331,29 @@ PyOggStreamState_Eos(PyObject *self, PyObject *args)
   } 
   Py_INCREF(Py_True);
   return Py_True;
+}
+
+static PyObject*
+PyOggStreamState_Setmode(PyObject *self, PyObject *args)
+{
+  int mode;
+  int ret;
+
+  if (!PyArg_ParseTuple(args, "i", &mode))
+    return NULL;
+  
+  ret = ogg_stream_setmode(PyOggStreamState_AsOggStreamState(self), mode);
+
+  if ( ret == OGG_SUCCESS ) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  } 
+  if ( ret == OGG_EMODE ) {
+    PyErr_SetString(PyOgg_Error, "Cannot set this stream mode at this time.");
+    return NULL;
+  }
+  PyErr_SetString(PyOgg_Error, "Unknown error while setting stream mode");
+  return NULL;
 }
 
 
