@@ -44,8 +44,11 @@ sub module_update{
 	    close NET;
 	    close PROC;
 	    map{
-		if(m/^\s*([^:]+):\s*(.*)/){
-		    $net{$1}=$2;
+		my$pos=rindex $_, ":";
+		if($pos>0){
+		    my$key=substr $_,0,$pos;
+		    $key=~s/^\s*(\S+)/$1/;
+		    $net{$key}=substr $_, $pos+1;
 		}
 	    } split "\n", $netd;
 	}else{
