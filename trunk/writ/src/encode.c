@@ -11,7 +11,7 @@
  ********************************************************************
 
  encode.c: Writ stream encoding
- last mod: $Id: encode.c,v 1.2 2003/12/09 07:11:30 arc Exp $
+ last mod: $Id: encode.c,v 1.3 2003/12/09 20:40:50 arc Exp $
 
  ********************************************************************/
 
@@ -22,9 +22,12 @@
 int writ_encode_init(writ_state *ws, ogg_uint32_t granule_num, 
                      ogg_uint32_t granule_den) {
   ws = _ogg_malloc(sizeof(writ_state));
-  ws->granulepos = 0;
+  ws->granulepos = -1;
   ws->num_phrases = 0;
   ws->skip_phrases = 0;
+
+  ws->opb = _ogg_malloc(oggpack_buffersize());
+  ws->opb_state = ogg_buffer_create();
 
   ws->wi = _ogg_malloc(sizeof(writ_info));
   ws->wi->subversion = 0;
@@ -36,6 +39,7 @@ int writ_encode_init(writ_state *ws, ogg_uint32_t granule_num,
 
 int writ_encode_clear(writ_state *ws) {
   _ogg_free(ws->wi);
+  _ogg_free(ws->opb);
   _ogg_free(ws);
 
   return OGG_SUCCESS;
@@ -49,12 +53,9 @@ int writ_encode_lang_add(writ_state *ws, char *name, char *desc) {
   if (ws->wi->subversion == 0) {
     ws->wi->subversion = 1;
     ws->wi->num_languages = 0;
-    ws->wi->languages = malloc(sizeof(writ_language)*16);
+    ws->wi->languages = malloc(sizeof(writ_language)*256);
   } else {
-    if (ws->wi->num_languages == 15) 
-      ws->wi->languages = realloc(ws->wi->languages, 
-                                  sizeof(writ_language)*256);
-    if (ws->wi->num_languages == 255) return -1;
+    if (ws->wi->num_languages == 255) return -8;
     ws->wi->num_languages++;
   }
   new_lang = ws->wi->languages + ws->wi->num_languages;
@@ -76,17 +77,14 @@ int writ_encode_wind_init(writ_state *ws, int scale_x, int scale_y) {
   ws->wi->location_scale_x = scale_x;
   ws->wi->location_scale_y = scale_y;
   ws->wi->num_windows = 0;
-  ws->wi->windows = malloc(sizeof(writ_window)*16);
+  ws->wi->windows = malloc(sizeof(writ_window)*256);
 
   return OGG_SUCCESS;
 }
 
 int writ_encode_wind_add(writ_state *ws, int left, int top, int width, 
                          int height, int align_x, int align_y) {
-  if (ws->wi->num_windows == 15) 
-      ws->wi->windows = realloc(ws->wi->windows, 
-                                sizeof(writ_window)*256);
-  if (ws->wi->num_windows == 255) return -1;
+  if (ws->wi->num_windows == 255) return -8;
   
   ws->wi->windows[ws->wi->num_windows].location_x = left;
   ws->wi->windows[ws->wi->num_windows].location_y = top;
@@ -98,3 +96,61 @@ int writ_encode_wind_add(writ_state *ws, int left, int top, int width,
 
   return OGG_SUCCESS;
 }
+
+
+int writ_encode_packetout(writ_state *ws, ogg_packet **op) {
+  int i;
+
+  if ( ws->granulepos != -1 ) return -1;
+  
+  oggpack_writeinit(ws->opb, ws->opb_state);
+  oggpack_write(ws->opb, 0, 8);
+  oggpack_write(ws->opb, 1953067639, 32);
+  oggpack_write(ws->opb, 0, 8);
+  oggpack_write(ws->opb, ws->wi->subversion, 8);
+  oggpack_write(ws->opb, ws->wi->granulerate_numerator, 32);
+  oggpack_write(ws->opb, ws->wi->granulerate_denominator, 32);
+  ws->packet_queue[0] = oggpack_writebuffer(ws->opb);
+  
+  if (ws->wi->subversion > 0) {
+    writ_language *wl;
+
+    oggpack_writeinit(ws->opb, ws->opb_state);
+    oggpack_write(ws->opb, 1, 8);
+    oggpack_write(ws->opb, 1953067639, 32);
+    oggpack_write(ws->opb, ws->wi->num_languages, 8);
+    /* One or more times */
+    for (i=0; i<=ws->wi->num_languages; i++) {
+      wl = ws->wi->languages + i;
+      writ_text_write(ws->opb, wl.language_name);
+      writ_text_write(ws->opb, wl.language_desc);
+    }
+    ws->packet_queue[1] = oggpack_writebuffer(ws->opb);
+
+    if (ws->wi->subversion > 1) {
+      int bitx = ilog(ws->wi->location_scale_x);
+      int bity = ilog(ws->wi->location_scale_y);
+
+      oggpack_writeinit(ws->opb, ws->opb_state);
+      oggpack_write(ws->opb, 2, 8);
+      oggpack_write(ws->opb, 1953067639, 32);
+      oggpack_write(ws->opb, ws->wi->location_scale_x, 16);
+      oggpack_write(ws->opb, ws->wi->location_scale_y, 16);
+      oggpack_write(ws->opb, ws->wi->num_windows, 8);
+      /* Zero or more times */
+      for (i=0; i < ws->wi->num_windows; i++) {
+        wn = ws->wi->windows + i;
+        oggpack_write(ws->opb, wn.location_x, bitx);
+        oggpack_write(ws->opb, wn.location_y, bity);
+        oggpack_write(ws->opb, wn.location_width, bitx);
+        oggpack_write(ws->opb, wn.location_height, bity);
+        oggpack_write(ws->opb, wn.alignment_x, 2);
+        oggpack_write(ws->opb, wn.alignment_y, 2);
+      }        
+      ws->packet_queue[2] = oggpack_writebuffer(ws->opb);
+      return 2;
+    }
+    return 1;
+  }
+  return 0;
+}      

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: toplevel libwrit include
- last mod: $Id: writ.h,v 1.7 2003/12/09 07:11:30 arc Exp $
+ last mod: $Id: writ.h,v 1.8 2003/12/09 20:40:49 arc Exp $
 
  ********************************************************************/
 
@@ -69,13 +69,17 @@ typedef struct writ_phrase {
 
 
 typedef struct writ_state {
-  writ_info   *wi;
+  writ_info        *wi;
   
-  ogg_int64_t  granulepos;
+  oggpack_buffer   *opb;
+  ogg_buffer_state *opb_state;
 
-  int          num_phrases;
-  int          skip_phrases;
-  writ_phrase *phrase_buffer;
+  ogg_int64_t       granulepos;
+  ogg_packet       *packet_queue[4];
+
+  int               num_phrases;
+  int               skip_phrases;
+  writ_phrase      *phrase_buffer;
   
 } writ_state;
 
@@ -92,8 +96,7 @@ extern int writ_encode_wind_init(writ_state *ws,
 extern int writ_encode_wind_add(writ_state *ws, int left, int top, 
                                 int width, int height, 
                                 int align_x, int align_y);
-extern int writ_encode_get_header(writ_state *ws, int packets,
-                                  ogg_packet *op);
+extern int writ_encode_packetout(writ_state *ws, ogg_packet **op);
 
 /* A different call for each subversion, the best way? */
 extern int writ_encode_phrase0(writ_state *ws, ogg_packet *ogg_packet,
