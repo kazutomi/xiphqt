@@ -27,6 +27,14 @@ sub module_instance{
     my$widget=$this->{"widget"};
     my$xpath=$this->{"xpath"};
 
+    $widget->optionAdd("$xpath.scalewidadj", 5,21);
+    $widget->optionAdd("$xpath.scalelenadj", 10,21); 
+    $widget->optionAdd("$xpath*font",             
+			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
+    $widget->optionAdd("$xpath*scalerefresh",        80,20);
+
+    $widget->optionAdd("$xpath.scalejustify", 0,20);      
+
     # use our font and find the labelsize...
     my$testlabel=$this->{"widget"}->Label(-text=>$this->{"hostname"},
 					 -borderwidth=>0,
@@ -49,16 +57,8 @@ sub module_instance{
     
     my$minx=($logowidth>$textwidth?$logowidth:$textwidth);
     my$miny=$logoheight+$textheight;
-
     $widget->optionAdd("$xpath.minx", $minx,21);      
     $widget->optionAdd("$xpath.miny", $miny,21);      
-    $widget->optionAdd("$xpath.scalewidadj", 5,21);
-    $widget->optionAdd("$xpath.scalelenadj", 10,21); 
-    $widget->optionAdd("$xpath*font",             
-			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-    $widget->optionAdd("$xpath*scalerefresh",        80,20);
-
-    $widget->optionAdd("$xpath.scalejustify", 0,20);      
 
     $this;
 }
