@@ -289,4 +289,14 @@ AC_SUBST(DEBUG)
 AC_SUBST(CFLAGS)
 AC_SUBST(PROFILE)
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile doc/ogg/Makefile include/Makefile include/ogg2/Makefile include/ogg2/config_types.h win32/Makefile debian/Makefile)
+AC_OUTPUT(
+Makefile
+src/Makefile
+doc/Makefile
+doc/ogg2/Makefile
+include/Makefile
+include/ogg2/Makefile
+include/ogg2/config_types.h
+win32/Makefile
+debian/Makefile
+)
