@@ -7,20 +7,22 @@ Behind the Scenes
 
 *	Use four-column tabs for indentation.
 
-*	Keep lines to 100 columns or fewer.
+*	Don’t hard-wrap paragraphs that have no leading whitespace, but for all other things
+	(bulleted and numbered lists) hard-wrap at 100 columns or fewer to keep things nice-looking.
 
 *	Use UTF-8. In particular, use proper apostrophes, quotation marks, (U+2018–U+201E) and
 	en and em dashes.
 
-*	Prefer <x y='z'> to <x y="z">. <x y=z> is an absolute no-no.
+*	Prefer <x y='z'> to <x y="z">. Do not use <x y=z>.
 
 *	use camelCase for id and class attribute values.
+	
 	Remember that id attributes create things that can be linked to, so avoid trying to break
 	them, especially when they’re linked to from other parts of the same page or website.
 
-*	Try to stay as XHTML-compliant as possible; it’s simply good style. This doesn’t mean that
-	you should include a closing slash in your img tags, but it does mean that you should
-	close your p, ul, and li tags.
+*	Explicitly close all opening tags, including those of table, tr, td, dt, and dl. Close them
+	with </table>, &c., not with </>, even though it would be _really_ nice. I may yet move
+	all this stuff to XHTML one day, and I don’t want gratuitous incompatibilities.
 
 *	Use the ===== style of heading for h1 elements; if you use the single # at the beginning of the
 	of the document, wrapup and Markdown won’t be able to cope with the UTF-8 BOM that some
@@ -29,13 +31,14 @@ Behind the Scenes
 *	Prefer ## to -------- for second-level headings, unlike in this file and in todo.txt.
 
 *	Directories generally not shown to users should start with a capital letter.
-	Prime examples of this are the */CSS/ directories and /Error/. However, their subdirectories
-	should start with lowercase letters—like /CSS/sidebars/.
+	Prime examples of this are /CSS/, /Error/, and /JS/. However, their subdirectories
+	should start with lowercase letters, like /CSS/sidebars/.
 
 *	Don’t have multiple files or directories that differ only by case; this will cause problems
-	on systems that are case-insensitive.
+	on case-insensitive file systems like NTFS and HFS+.
 
 *	Have two blank lines before headings and one blank line after, as in this file.
+	Except, of course, for the first-level heading at the beginning of the file.
 
 *	Use all-lowercase Markdown URL identifiers. Markdown URL identifiers are compared
 	case-insensitively, which means that `[foo][]` and `[Foo][]` resolve to the same identifier
@@ -62,6 +65,7 @@ Spelling, Grammar, Punctuation, and Terminology
 ### English-Specific Considerations
 
 *	For em dashes, leave no space between the dash and the words—like this.
+
 *	For the love of all that’s holy, leave no space between a question mark and its
 	preceding sentence. Same for exclamation points, periods, commas, and colons.
 

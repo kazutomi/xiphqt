@@ -15,8 +15,7 @@ Contribute to Xiph.Org
 
 -->
 
-If you want to help Xiph.Org ensure that the foundations of Internet multimedia remain free,
-there are three main ways to help:
+If you want to help Xiph.Org ensure that the foundations of Internet multimedia remain free, there are three main ways to help:
 
 * Improve our codecs, libraries, or tools.
 * Improve others’ tools and libraries that use our codecs and tools.
@@ -29,13 +28,7 @@ If you want to improve our stuff, here are some suggestions:
   available to users of the .NET Framework.
 * Help improve our documentation.
 
-However, it’s not enough to have multimedia codecs; their success is dependent on the quality
-and availability of the tools that use them. As such, if you want to help further our mission,
-you may want to consider improving a music or video player rather than working on our libraries
-and tools directly. For example, you may want to work on the UI or plugins of a CD ripper so
-people who want to reencode their music collection in Ogg Vorbis or FLAC can do so with a
-minimum of fuss. If you are writing or improving an application, have a look at [our suggestions
-on how you can improve your application][betterapps].
+However, it’s not enough to have multimedia codecs; their success is dependent on the quality and availability of the tools that use them. As such, if you want to help further our mission, you may want to consider improving a music or video player rather than working on our libraries and tools directly. For example, you may want to work on the UI or plugins of a CD ripper so people who want to reencode their music collection in Ogg Vorbis or FLAC can do so with a minimum of fuss. If you are writing or improving an application, have a look at [our suggestions on how you can improve your application][betterapps].
 
 	[betterapps]: ./betterapps/
 
@@ -49,24 +42,20 @@ on how you can improve your application][betterapps].
 
 ##  Help Windows Media Player support more of our formats
 
-Help work on [illiminable’s Ogg DirectShow Filters][illi] so Windows Media Player will be able
-to play Ogg Vorbis, Ogg Speex, Ogg FLAC, and Ogg Theora files.
+Help work on [illiminable’s Ogg DirectShow Filters][illi] so Windows Media Player will be able to play Ogg Vorbis, Ogg Speex, Ogg FLAC, and Ogg Theora files.
 
 	[illi]: http://www.illiminable.com/ogg/
 
 
 ## Improve Vorbis, FLAC, and Speex support in iTunes
 
-iTunes is _the_ audio player for OS X; in order to be usable on that platform by novices, we
-need to be at least somewhat usable on that platform.
-Translated: Make sure that people can play Vorbis, FLAC, and Speex on Windows Media player on
-Windows and on iTunes on OS X.
+iTunes is _the_ audio player for OS X; in order to be usable on that platform by novices, we need to be at least somewhat usable on that platform. Translated: Make sure that people can play Vorbis, FLAC, and Speex on Windows Media player on Windows and on iTunes on OS X.
 
 
 ## Implement our codecs in your application
 
-One of the ways you can help us out is to make sure our codecs work on as many players as
-possible—preferably the most common players.
+One of the ways you can help us out is to make sure our codecs work on as many players as possible—preferably the most common players.
+
 
 ## Improve the comment handling in your (or someone else’s) application
 
@@ -74,12 +63,15 @@ A number of music player applications don’t handle all the corner cases that c
 [Vorbis-style comment headers][vcomment]. In particular…
 
 * Does the app ensure that only UTF-8 enters the comment header?
+
 * Does the app allow multiline comment values?
+
 * Does the app handle streams that have more than one comment with the same name?
   
   For example, what would your app do if you had two `%artist%` comments—one set to
   “Duke Ellington” and the other to “Count Basie”? If your app has a way to select tracks by
   artist, would the track show up in both Count Basie’s and Duke Ellington’s lists?
+
 * Concatenate two Ogg-encapsulated audio files together. Does the user lose any functionality
   compared to if they were not concatenated?
 

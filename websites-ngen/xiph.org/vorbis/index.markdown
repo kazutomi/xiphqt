@@ -1,4 +1,6 @@
-Ogg Vorbis
-==========
+Vorbis
+======
 
-Vorbis rocks.
+Vorbis is a [lossy][], general-purpose audio compression format.
+
+	[lossy]:		/glossary/#lossy "See our glossary entry for “lossy”"
