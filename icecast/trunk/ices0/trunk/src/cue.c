@@ -58,7 +58,7 @@ ices_cue_update (input_stream_t* source)
   ices_metadata_get (artist, sizeof (artist), title, sizeof (title));
 
   fprintf (fp, "%s\n%d\n%d\n%s\n%f\n%d\n%s\n%s\n", source->path,
-	   source->filesize, source->bitrate,
+	   (int)source->filesize, source->bitrate,
        ices_util_file_time (source->bitrate, source->filesize, buf),
 	   ices_util_percent (source->bytes_read, source->filesize),
 	   ices_cue_lineno, artist, title);
@@ -94,8 +94,7 @@ ices_cue_set_filename (const char *filename)
 const char *
 ices_cue_get_filename (void)
 {
-  static char filespace[1024];
-  char buf[1024];
+  static char buf[1024];
 
   if (ices_cue_filename)
     return ices_cue_filename;
@@ -105,12 +104,9 @@ ices_cue_get_filename (void)
     return NULL;
   }
 
-  ices_util_get_random_filename (buf, "cue");
+  snprintf (buf, sizeof (buf), "%s/ices.cue", ices_config.base_directory);
 
-  snprintf (filespace, sizeof (filespace), "%s/%s", ices_config.base_directory,
-	    buf);
-
-  return filespace;
+  return buf;
 }
 
 
