@@ -48,7 +48,7 @@ For Debian-based systems:
 
 For Gentoo systems	: emerge positron
 The ebuild is masked, so you might have to specify the entire path, 
-typically /usr/portage/media-sound/positron/positron-1.0_beta2-ebuild.
+typically /usr/portage/media-sound/positron/positron-1.0_beta2.ebuild.
 
 To install from the source tarball, unpack the positron source and 
 cd into the resulting directory.  Then run the following commands:
