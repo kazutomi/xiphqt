@@ -126,7 +126,7 @@ int main(){
 
    *********************************************************************/
 
-  ret=vorbis_encode_init_vbr(&vi,2,44100,.5);
+  ret=vorbis_encode_init_vbr(&vi,2,44100,.4);
 
   /* do not continue if setup failed; this can happen if we ask for a
      mode that libVorbis does not support (eg, too low a bitrate, etc,

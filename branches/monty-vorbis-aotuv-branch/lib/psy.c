@@ -854,7 +854,8 @@ void _vp_offset_and_mix(vorbis_look_psy *p,
 			int offset_select,
 			float *logmask,
 			float *mdct,
-			float *logmdct){
+			float *logmdct,
+			float *adj){
   int i,n=p->n;
   float de, coeffi, cx=1.0, cy=1.0; /* AoTuV */
   float toneatt=p->vi->tone_masteratt[offset_select];
@@ -876,30 +877,34 @@ void _vp_offset_and_mix(vorbis_look_psy *p,
 	However, this code is not perfect and all noise problems cannot be solved. 
 	by Aoyumi @ 2004/04/18
     */
-    if(logmask[i] != (tone[i]+toneatt)){
-      // partial masking value is used here.
-      coeffi = -17.2*cy;
-      val = val - logmdct[i];
+
+    {
+      coeffi = -17.2*cy;       /* coeffi is a -17.2dB threshold */
+      val = val - logmdct[i];  /* val == mdct line value relative to floor in dB */
+
       if(val > coeffi){
+	/* mdct value is > -17.2 dB below floor */
+
 	de = 1.0-((val-coeffi)*0.005*cx);
+	/* pro-rated attenuation:
+	   -0.00 dB boost if mdct value is -17.2dB (relative to floor) 
+	   -0.77 dB boost if mdct value is 0dB (relative to floor) 
+	   -1.64 dB boost if mdct value is +17.2dB (relative to floor) 
+	   etc... */
+
 	if(de < 0) de = 0.0001;
-      }else 
+      }else
+	/* mdct value is <= -17.2 dB below floor */
+ 
 	de = 1.0-((val-coeffi)*0.0003*cx);
+	/* pro-rated attenuation:
+	   +0.00 dB atten if mdct value is -17.2dB (relative to floor) 
+	   +0.45 dB atten if mdct value is -34.4dB (relative to floor) 
+	   etc... */
 
       mdct[i] *= de;
-    }else{
-      // A masking value is used here.
-      coeffi = -57*cy;
-      val = logmask[i];
-      if(val > coeffi){
-	de = 1.0-((val-coeffi)*0.005*cx);
-	if(de < 0) de = 0.0001;
-      }else 
-	de = 1.0-((val-coeffi)*0.0003*cx);
-
-      mdct[i] *= de;
+      if(adj)adj[i]=de;
     }
-
   }
 }
 
@@ -1156,7 +1161,7 @@ void _vp_couple(int blobno,
 
        /* The threshold of a stereo is changed with the size of n */
        if(n > 1000)
-         postpoint=stereo_threshholds_limited[g->coupling_postpointamp[blobno]]; // XXXX
+         postpoint=stereo_threshholds_limited[g->coupling_postpointamp[blobno]]; 
  
       for(j=0;j<p->n;j+=partition){
 	float acc=0.f;
@@ -1209,13 +1214,13 @@ void hf_reduction(vorbis_info_psy_global *g,
                       vorbis_info_mapping0 *vi,
                       float **mdct){
  
-       int i,j,n=p->n, de=0.3*p->m_val;
-       int limit=g->coupling_pointlimit[p->vi->blockflag][PACKETBLOBS/2];
-       int start=p->vi->normal_start;
-       
-       for(i=0; i<vi->coupling_steps; i++){
-	 for(j=start; j<limit; j++){} // ???
-               for(; j<n; j++) 
-		 mdct[i][j] *= (1.0 - de*((float)(j-limit) / (float)(n-limit)));
-       }
+  int i,j,n=p->n, de=0.3*p->m_val;
+  int limit=g->coupling_pointlimit[p->vi->blockflag][PACKETBLOBS/2];
+  int start=p->vi->normal_start;
+  
+  for(i=0; i<vi->coupling_steps; i++){
+    for(j=start; j<limit; j++){} // ???
+    for(; j<n; j++) 
+      mdct[i][j] *= (1.0 - de*((float)(j-limit) / (float)(n-limit)));
+  }
 }
