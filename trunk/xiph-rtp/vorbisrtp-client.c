@@ -140,6 +140,12 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
     fprintf(out, "  data: %d bytes in block %d\n", length, i);
     offset += length;
   }
+  if (pkts == 0) {
+    length = data[offset++];
+    fprintf(out, "  data: %d bytes in fragment\n", length);
+    offset += length;
+  }
+
   if (len - offset > 0)
     fprintf(out, "  %d unused bytes at the end of the packet!\n", 
       len - offset);
