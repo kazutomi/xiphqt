@@ -1,0 +1,376 @@
+
+#include <stdio.h>
+#include <stdint.h>
+#include "coder.h"
+#include "rle.h"
+
+
+
+#define OUTPUT_BIT(s,bit)   rlecoder_write_bit(s,bit)
+#define INPUT_BIT(s)        rlecoder_read_bit(s)
+
+
+
+#define IS_SIGNIFICAND(x)             (mask & ((x >> sign_shift) ^ x))
+#define SIGN_SENT_BIT                 (1 << (8*sizeof(TYPE)-2))
+#define COEFF_WAS_SIGNIFICAND(coeff)  ((coeff ^ (coeff >> 1)) & SIGN_SENT_BIT)
+#define BITPLANE(coeff)               ((x >> (8*sizeof(TYPE)-7)) & 0x1f)
+#define CAN_SKIP_COEFF(coeff)         (COEFF_WAS_SIGNIFICAND(coeff) || BITPLANE(coeff) == bitplane)
+#define UPDATE_BITPLANE(coeff)        (coeff = (coeff & ~(0x1f << (8*sizeof(TYPE)-7))) | ((bitplane & 0x1f) << (8*sizeof(TYPE)-7)))
+#define SIGN(x)                       (((x & (1 << (8*sizeof(TYPE)-1))) >> (8*sizeof(TYPE)-1)))
+
+
+void clear_masks (Wavelet3DBuf *waveletbuf)
+{
+   int i;
+   for (i=0; i<waveletbuf->width*waveletbuf->height*waveletbuf->frames; i++) {
+      if (SIGN(waveletbuf->data[i])) {
+         waveletbuf->data[i] |= 0x3f << (8*sizeof(TYPE) - 7);
+      } else {
+         waveletbuf->data[i] &= ~(0x3f << (8*sizeof(TYPE) - 7));
+      }
+   }
+}
+
+
+
+
+#define WRITE_UNSIGNED_8BIT(x)                         \
+   do {                                                \
+      int i;                                           \
+                                                       \
+      for (i=7; i>=0; i--)                             \
+         OUTPUT_BIT(&rlecoder,((x) & (1 << i)) >> i);  \
+                                                       \
+      x ^= SIGN_SENT_BIT;                              \
+   } while (0)
+
+
+/**
+ *  write 8 least significand bits and sign of TYPE x
+ */
+#define WRITE_SIGNED_8BIT(x)                           \
+   do {                                                \
+      int i;                                           \
+                                                       \
+      OUTPUT_BIT(&rlecoder,SIGN(x));                   \
+      for (i=7; i>=0; i--)                             \
+         OUTPUT_BIT(&rlecoder,((x) & (1 << i)) >> i);  \
+                                                       \
+      x ^= SIGN_SENT_BIT;                              \
+   } while (0)
+
+
+
+#define ENCODE(quadrant,w0,h0,f0)                                             \
+do {                                                                          \
+   int x0, y0, z0;                                                            \
+                                                                              \
+   for (z0=0; z0<f0; z0++) {                                                  \
+      for (y0=0; y0<h0; y0++) {                                               \
+         for (x0=0; x0<w0; x0++) {                                            \
+            uint8_t *path = (uint8_t*) (void*) waveletbuf->scratchbuf;        \
+            int32_t childlevel = 0;                                           \
+                                                                              \
+            path[0] = 0;                                                      \
+            do {                                                              \
+               uint32_t x = x0 + (path [childlevel] & 1);                     \
+               uint32_t y = y0 + ((path [childlevel] >> 1) & 1);              \
+               uint32_t z = z0 + ((path [childlevel] >> 2) & 1);              \
+                                                                              \
+               if (rlecoder.bitcoder.byte_count >= rlecoder.bitcoder.limit) { \
+                  clear_masks (waveletbuf);                                   \
+                  return  rlecoder_done (&rlecoder);                          \
+               }                                                              \
+                                                                              \
+               if (level+childlevel+1 < waveletbuf->scales                    \
+                && x < waveletbuf->w[level+childlevel+1]                      \
+                && y < waveletbuf->h[level+childlevel+1]                      \
+                && z < waveletbuf->f[level+childlevel+1])                     \
+               {                                                              \
+                  TYPE *coeff = waveletbuf->data                              \
+                        + waveletbuf->offset [level + childlevel] [quadrant]  \
+                        + z * waveletbuf->width * waveletbuf->height          \
+                        + y * waveletbuf->width + x;                          \
+                                                                              \
+                  if (COEFF_WAS_SIGNIFICAND(*coeff)) {                        \
+                     if (IS_SIGNIFICAND(*coeff)) {                            \
+                        OUTPUT_BIT(&rlecoder,1);                              \
+                     } else {                                                 \
+                        OUTPUT_BIT(&rlecoder,0);                              \
+                     }                                                        \
+                     UPDATE_BITPLANE(*coeff);                                 \
+          /*         path [childlevel]++;                                     \
+                     while (path [childlevel] == 8 && childlevel > 0) {       \
+                        childlevel--;                                         \
+                        path [childlevel]++;                                  \
+                        x0 >>= 1;                                             \
+                        y0 >>= 1;                                             \
+                        z0 >>= 1;                                             \
+                     }                                                        \
+            */    } else {                                                    \
+                     if (IS_SIGNIFICAND(*coeff)) {                            \
+                        OUTPUT_BIT(&rlecoder,1);                              \
+                        OUTPUT_BIT(&rlecoder,SIGN(*coeff));                   \
+                        *coeff ^= SIGN_SENT_BIT;                              \
+                        UPDATE_BITPLANE(*coeff);                              \
+           /*           x0 = x << 1;                                          \
+                        y0 = y << 1;                                          \
+                        z0 = z << 1;                                          \
+                        childlevel++;                                         \
+                        path [childlevel] = 0;                                \
+             */      } else {                                                 \
+                        OUTPUT_BIT(&rlecoder,0);                              \
+                        if (mask == 1) {                                      \
+                           OUTPUT_BIT(&rlecoder,SIGN(*coeff));                \
+                           *coeff ^= SIGN_SENT_BIT;                           \
+                           UPDATE_BITPLANE(*coeff);                           \
+                        }                                                     \
+            /*          path [childlevel]++;                                  \
+                        while (path [childlevel] == 8 && childlevel > 0) {    \
+                           childlevel--;                                      \
+                           path [childlevel]++;                               \
+                           x0 >>= 1;                                          \
+                           y0 >>= 1;                                          \
+                           z0 >>= 1;                                          \
+                        }                                                     \
+            */       }                                                        \
+                  }                                                           \
+               } else {                                                       \
+           /*     do {                                                        \
+                     childlevel--;                                            \
+                     path [childlevel]++;                                     \
+                     x0 >>= 1;                                                \
+                     y0 >>= 1;                                                \
+                     z0 >>= 1;                                                \
+                  } while (path [childlevel] == 8 && childlevel > 0);         \
+          */   }                                                              \
+            } while (childlevel > 0);                                         \
+         }                                                                    \
+      }                                                                       \
+   }                                                                          \
+} while (0)
+
+
+
+
+/**
+ *  encode waveletbuf until limit bytes are written to
+ *  bitstream or complete buffer is encoded.
+ *
+ */
+size_t encode_coeff3d (Wavelet3DBuf *waveletbuf, uint8_t *bitstream, size_t limit)
+{
+   RLECoderState rlecoder = { -1, 0, { 0, 0, 0, bitstream, limit } };
+   int bitplane;
+   int  w = waveletbuf->width;
+   int  h = waveletbuf->height;
+   int  f = waveletbuf->frames;
+
+
+   WRITE_SIGNED_8BIT(waveletbuf->data[0]);
+
+   for (bitplane=8; bitplane>=0; bitplane--) {
+      TYPE mask = 1 << bitplane;
+      int sign_shift = 8*sizeof(TYPE) - 1 - bitplane;
+      int level;
+
+      for (level=0; level < waveletbuf->scales-1; level++) {
+         uint32_t w1, h1, f1;
+
+         if (rlecoder.bitcoder.byte_count >= rlecoder.bitcoder.limit) {
+            clear_masks (waveletbuf);
+            return  rlecoder_done (&rlecoder);
+         }
+
+         w = waveletbuf->w [level];
+         h = waveletbuf->h [level];
+         f = waveletbuf->f [level];
+         w1 = waveletbuf->w [level+1] - w;
+         h1 = waveletbuf->h [level+1] - h;
+         f1 = waveletbuf->f [level+1] - f;
+
+         if (w1 > 0)  ENCODE (1,w1,h,f);
+         if (h1 > 0)  ENCODE (2,w,h1,f);
+         if (f1 > 0)  ENCODE (3,w,h,f1);
+         if (w1 > 0 && h1 > 0)  ENCODE (4,w1,h1,f);
+         if (w1 > 0 && f1 > 0)  ENCODE (5,w,h,f1);
+         if (h1 > 0 && f1 > 0)  ENCODE (6,w,h1,f1);
+         if (w1 > 0 && h1 > 0 && f1 > 0)  ENCODE (7,w1,h1,f1);
+      }
+   }
+
+   clear_masks (waveletbuf);
+   return  rlecoder_done (&rlecoder);
+}
+
+
+
+
+
+
+#define READ_UNSIGNED_8BIT(x)                \
+   do {                                      \
+      int i;                                 \
+                                             \
+      x = 0;                                 \
+      for (i=7; i>=0; i--)                   \
+         if (INPUT_BIT(&rlecoder))           \
+            x |= 1 << i;                     \
+                                             \
+      x ^= SIGN_SENT_BIT;                    \
+   } while (0)
+
+
+#define READ_SIGNED_8BIT(x)                  \
+   do {                                      \
+      int i;                                 \
+                                             \
+      x = INPUT_BIT(&rlecoder) ? ~0xff : 0;  \
+      for (i=7; i>=0; i--)                   \
+         if (INPUT_BIT(&rlecoder))           \
+            x |= 1 << i;                     \
+                                             \
+      x ^= SIGN_SENT_BIT;                    \
+   } while (0)
+
+
+
+
+#define DECODE(quadrant,w0,h0,f0)                                             \
+do {                                                                          \
+   int x0, y0, z0;                                                            \
+                                                                              \
+   for (z0=0; z0<f0; z0++) {                                                  \
+      for (y0=0; y0<h0; y0++) {                                               \
+         for (x0=0; x0<w0; x0++) {                                            \
+            uint8_t *path = (uint8_t*) (void*) waveletbuf->scratchbuf;        \
+            int32_t childlevel = 0;                                           \
+                                                                              \
+            path[0] = 0;                                                      \
+            do {                                                              \
+               uint32_t x = x0 + (path [childlevel] & 1);                     \
+               uint32_t y = y0 + ((path [childlevel] >> 1) & 1);              \
+               uint32_t z = z0 + ((path [childlevel] >> 2) & 1);              \
+                                                                              \
+               if (rlecoder.bitcoder.byte_count >= rlecoder.bitcoder.limit) { \
+                  clear_masks (waveletbuf);                                   \
+                  return;                                                     \
+               }                                                              \
+                                                                              \
+               if (level+childlevel+1 < waveletbuf->scales                    \
+                && x < waveletbuf->w [level+childlevel+1]                     \
+                && y < waveletbuf->h [level+childlevel+1]                     \
+                && z < waveletbuf->f [level+childlevel+1])                    \
+               {                                                              \
+                  TYPE *coeff = waveletbuf->data                              \
+                        + waveletbuf->offset [level + childlevel] [quadrant]  \
+                        + z * waveletbuf->width * waveletbuf->height          \
+                        + y * waveletbuf->width + x;                          \
+                                                                              \
+                  if (COEFF_WAS_SIGNIFICAND(*coeff)) {                        \
+                     if (INPUT_BIT(&rlecoder))                                \
+                        *coeff ^= mask /*| (mask >> 1)*/;                     \
+                     UPDATE_BITPLANE(*coeff);                                 \
+         /*          path [childlevel]++;                                     \
+                     while (path [childlevel] == 8 && childlevel > 0) {       \
+                        childlevel--;                                         \
+                        path [childlevel]++;                                  \
+                        x0 >>= 1;                                             \
+                        y0 >>= 1;                                             \
+                        z0 >>= 1;                                             \
+                     }                                                        \
+         */       } else {                                                    \
+                     if (INPUT_BIT(&rlecoder)) {                              \
+                        if (INPUT_BIT(&rlecoder))                             \
+                           *coeff = ~0;                                       \
+                        *coeff ^= mask /*| (mask >> 1)*/;                     \
+                        *coeff ^= SIGN_SENT_BIT;                              \
+                        UPDATE_BITPLANE(*coeff);                              \
+      /*                x0 = x << 1;                                          \
+                        y0 = y << 1;                                          \
+                        z0 = z << 1;                                          \
+                        childlevel++;                                         \
+                        path [childlevel] = 0;                                \
+        */           } else {                                                 \
+                        if (mask == 1) {                                      \
+                           if (INPUT_BIT(&rlecoder))                          \
+                              *coeff = ~0;                                    \
+                           *coeff ^= SIGN_SENT_BIT;                           \
+                           UPDATE_BITPLANE(*coeff);                           \
+                        }                                                     \
+          /*            path [childlevel]++;                                  \
+                        while (path [childlevel] == 8 && childlevel > 0) {    \
+                           childlevel--;                                      \
+                           path [childlevel]++;                               \
+                           x0 >>= 1;                                          \
+                           y0 >>= 1;                                          \
+                           z0 >>= 1;                                          \
+                        }                                                     \
+            */       }                                                        \
+                  }                                                           \
+               } else {                                                       \
+       /*         do {                                                        \
+                     childlevel--;                                            \
+                     path [childlevel]++;                                     \
+                     x0 >>= 1;                                                \
+                     y0 >>= 1;                                                \
+                     z0 >>= 1;                                                \
+                  } while (path [childlevel] == 8 && childlevel > 0);         \
+         */    }                                                              \
+            } while (childlevel > 0);                                         \
+         }                                                                    \
+      }                                                                       \
+   }                                                                          \
+} while (0)
+
+
+
+
+/**
+ *  decode count bytes from bitstream to waveletbuf.
+ *
+ */
+void decode_coeff3d (Wavelet3DBuf *waveletbuf, uint8_t *bitstream, size_t count)
+{
+   RLECoderState rlecoder = { -1, 0, { 0, 0, 0, bitstream, count } };
+   int bitplane;
+   int w = waveletbuf->width;
+   int h = waveletbuf->height;
+   int f = waveletbuf->frames;
+
+   memset (waveletbuf->data, 0, w * h * f * sizeof(TYPE));
+
+   READ_SIGNED_8BIT(waveletbuf->data[0]);
+
+   for (bitplane=8; bitplane>=0; bitplane--) {
+      int level;
+
+      for (level=0; level < waveletbuf->scales-1; level++) {
+         uint32_t w1, h1, f1;
+         TYPE mask = 1 << bitplane;
+
+         if (rlecoder.bitcoder.byte_count >= rlecoder.bitcoder.limit) {
+            clear_masks (waveletbuf);
+            return;
+         }
+
+         w = waveletbuf->w [level];
+         h = waveletbuf->h [level];
+         f = waveletbuf->f [level];
+         w1 = waveletbuf->w [level+1] - w;
+         h1 = waveletbuf->h [level+1] - h;
+         f1 = waveletbuf->f [level+1] - f;
+
+         if (w1 > 0)  DECODE (1,w1,h,f);
+         if (h1 > 0)  DECODE (2,w,h1,f);
+         if (f1 > 0)  DECODE (3,w,h,f1);
+         if (w1 > 0 && h1 > 0)  DECODE (4,w1,h1,f);
+         if (w1 > 0 && f1 > 0)  DECODE (5,w,h,f1);
+         if (h1 > 0 && f1 > 0)  DECODE (6,w,h1,f1);
+         if (w1 > 0 && h1 > 0 && f1 > 0)  DECODE (7,w1,h1,f1);
+      }
+   }
+   clear_masks (waveletbuf);
+}
+

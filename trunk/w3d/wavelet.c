@@ -5,12 +5,12 @@
 #define MAX3(a,b,c) (MAX(a,MAX(b,c)))
 
 
-Wavelet3DBuf* wavelet_3d_buf_new (uint32 width, uint32 height, uint32 frames)
+Wavelet3DBuf* wavelet_3d_buf_new (uint32_t width, uint32_t height, uint32_t frames)
 {
    Wavelet3DBuf* buf = (Wavelet3DBuf*) malloc (sizeof (Wavelet3DBuf));
-   uint32 _w = width;
-   uint32 _h = height;
-   uint32 _f = frames;
+   uint32_t _w = width;
+   uint32_t _h = height;
+   uint32_t _f = frames;
    int level;
 
    if (!buf)
@@ -35,14 +35,14 @@ Wavelet3DBuf* wavelet_3d_buf_new (uint32 width, uint32 height, uint32 frames)
       _f = (_f+1)/2;
    }
 
-   buf->w = (uint32*) malloc (buf->scales * sizeof (uint32));
-   buf->h = (uint32*) malloc (buf->scales * sizeof (uint32));
-   buf->f = (uint32*) malloc (buf->scales * sizeof (uint32));
-   buf->minmax = (TYPE*) malloc (buf->scales * sizeof (TYPE));
+   buf->w = (uint32_t*) malloc (buf->scales * sizeof (uint32_t));
+   buf->h = (uint32_t*) malloc (buf->scales * sizeof (uint32_t));
+   buf->f = (uint32_t*) malloc (buf->scales * sizeof (uint32_t));
+   buf->offset = (uint32_t (*) [8]) malloc (8 * buf->scales * sizeof (uint32_t));
 
    buf->scratchbuf = (TYPE*) malloc (MAX3(width, height, frames) * sizeof (TYPE));
 
-   if (!buf->w || !buf->h || !buf->f || !buf->minmax || !buf->scratchbuf) {
+   if (!buf->w || !buf->h || !buf->f || !buf->offset || !buf->scratchbuf) {
       wavelet_3d_buf_destroy (buf);
       return NULL;
    }
@@ -55,6 +55,14 @@ Wavelet3DBuf* wavelet_3d_buf_new (uint32 width, uint32 height, uint32 frames)
       buf->w [level] = (buf->w [level+1] + 1) / 2;
       buf->h [level] = (buf->h [level+1] + 1) / 2;
       buf->f [level] = (buf->f [level+1] + 1) / 2;
+      buf->offset[level][0] = 0;
+      buf->offset[level][1] = buf->w [level];
+      buf->offset[level][2] = buf->h [level] * width;
+      buf->offset[level][3] = buf->f [level] * width * height;
+      buf->offset[level][4] = buf->offset [level][2] + buf->w [level];
+      buf->offset[level][5] = buf->offset [level][3] + buf->w [level];
+      buf->offset[level][6] = buf->offset [level][3] + buf->offset [level][2];
+      buf->offset[level][7] = buf->offset [level][6] + buf->w [level];
    }
 
    return buf;
@@ -74,6 +82,8 @@ void wavelet_3d_buf_destroy (Wavelet3DBuf* buf)
          free (buf->h);
       if (buf->f)
          free (buf->f);
+      if (buf->offset)
+         free (buf->offset);
       if (buf->scratchbuf)
          free (buf->scratchbuf);
       free (buf);
@@ -83,18 +93,12 @@ void wavelet_3d_buf_destroy (Wavelet3DBuf* buf)
 
 
 
-/*
- *  return value is MAX(largest coefficient, ~(smallest coefficient))
- *  (will be used to skip empty bitplanes)
- */
 static inline
-TYPE __fwd_xform__ (Wavelet3DBuf *buf, TYPE *data, int stride, int n)
+void __fwd_xform__ (Wavelet3DBuf *buf, TYPE *data, int stride, int n)
 {
    TYPE *d = buf->scratchbuf;
    TYPE *x = data;
    TYPE *s = data;
-   TYPE min = ~0;
-   TYPE max = 0;
    int i, k=n/2;
 
    for (i=0; i<((n&1) ? k : (k-1)); i++)   /*  highpass coefficients */
@@ -111,17 +115,8 @@ TYPE __fwd_xform__ (Wavelet3DBuf *buf, TYPE *data, int stride, int n)
    if (n & 1 || n <=2)                          /*  n is odd   */
       s [k*stride] = x[(n-1)*stride] + (d[k-1] >> 1);
 
-   for (i=0; i<n/2; i++) {
+   for (i=0; i<n/2; i++)
       x [(n-k+i)*stride] = d [i];
-
-      if (d [i] > max)
-         max = d [i];
-
-      if (d [i] < min)
-         min = d [i];
-   }
-
-   return (max | ~min);   
 }
 
 
@@ -163,17 +158,16 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
    int level;
 
    for (level=buf->scales-1; level>0; level--) {
-      uint32 w = buf->w[level];
-      uint32 h = buf->h[level];
-      uint32 f = buf->f[level];
-      buf->minmax[level] = 0;
+      uint32_t w = buf->w[level];
+      uint32_t h = buf->h[level];
+      uint32_t f = buf->f[level];
 
       if (w > 1) {
          int row, frame;
          for (frame=0; frame<f; frame++) {
             for (row=0; row<h; row++) {
                TYPE *data = buf->data + (frame * buf->height + row) * buf->width;
-               buf->minmax [level] |= __fwd_xform__ (buf, data, 1, w);
+               __fwd_xform__ (buf, data, 1, w);
             }
          }
       }
@@ -183,7 +177,7 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
          for (frame=0; frame<f; frame++) {
             for (col=0; col<w; col++) {
                TYPE *data = buf->data + frame * buf->width * buf->height + col;
-               buf->minmax [level] |= __fwd_xform__ (buf, data, buf->width, h);
+               __fwd_xform__ (buf, data, buf->width, h);
             }
          }
       }
@@ -193,19 +187,11 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
          for (j=0; j<h; j++) {
             for (i=0; i<w; i++) {
                TYPE *data = buf->data + j*buf->width + i;
-               buf->minmax [level] |= __fwd_xform__ (buf, data, buf->width * buf->height, f);
+               __fwd_xform__ (buf, data, buf->width * buf->height, f);
             }
          }
       }
    }
-
-/*printf ("s == %i, minmax == %i\n", buf->data[0], buf->minmax [2]);*/
-
-   if (buf->data[0] >= 0)          /*  put DC coefficient bitmask in level 2 */
-      buf->minmax [2] |= buf->data[0];
-   else
-      buf->minmax [2] |= ~(buf->data[0]);
-/*printf ("s == %i, minmax == %i\n", buf->data[0], buf->minmax [2]);*/
 }
 
 
@@ -216,9 +202,9 @@ void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf)
    int level;
 
    for (level=1; level<buf->scales; level++) {
-      uint32 w = buf->w[level];
-      uint32 h = buf->h[level];
-      uint32 f = buf->f[level];
+      uint32_t w = buf->w[level];
+      uint32_t h = buf->h[level];
+      uint32_t f = buf->f[level];
 
       if (f > 1) {
          int i, j;
