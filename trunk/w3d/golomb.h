@@ -6,12 +6,25 @@
 
 
 static inline
+unsigned int required_bits (unsigned int x)
+{
+   int bits = 31;
+
+   while ((x & (1 << bits)) == 0 && bits)
+      bits--;
+
+   return bits;
+}
+
+
+static inline
 void write_number_binary (BitCoderState *b, unsigned int x, int bits)
 {
    while (bits) {
       bits--;
       bitcoder_write_bit (b, (x >> bits) & 1);
    }
+printf ("wrote %i with %i bits\n", x, bits);
 }
 
 
@@ -26,18 +39,6 @@ unsigned int read_number_binary (BitCoderState *b, int bits)
    }
 
    return x;
-}
-
-
-static inline
-unsigned int required_bits (unsigned int x)
-{
-   int bits = 31;
-
-   while ((x & (1 << bits)) == 0 && bits)
-      bits--;
-
-   return bits;
 }
 
 

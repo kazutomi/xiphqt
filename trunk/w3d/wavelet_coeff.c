@@ -9,7 +9,7 @@ void encode_coeff (ENTROPY_CODER significand_bitstream [],
                    ENTROPY_CODER insignificand_bitstream [],
                    TYPE coeff)
 {
-   TYPE mask [2] = { 0, ~0 };
+   static TYPE mask [2] = { 0, ~0 };
    int sign = (coeff >> (8*sizeof(TYPE)-1)) & 1;
    TYPE significance = coeff ^ mask[sign];
    int i = TYPE_BITS;
@@ -31,7 +31,7 @@ static inline
 TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
                    ENTROPY_CODER insignificand_bitstream [])
 {
-   TYPE mask [2] = { 0, ~0 };
+   static TYPE mask [2] = { 0, ~0 };
    TYPE significance = 0;
    int sign;
    int i = TYPE_BITS;
