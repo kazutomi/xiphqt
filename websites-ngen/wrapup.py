@@ -52,7 +52,7 @@ class MarkdownWrapper(object):
 		self.title = "Untitled Document"
 		match = TITLE_REGEX.match(self.mainText)
 		if match:									#TODO: needs decent error handling
-			self.title = match.group(1)
+			self.title = "Xiph.Org: " + match.group(1)
 		
 		self.lang = 'en-US'
 

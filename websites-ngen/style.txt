@@ -10,6 +10,8 @@ A www.xiph.org style guide
 	information on the Redirect directive at
 	<http://httpd.apache.org/docs-2.0/mod/mod_alias.html#redirect>.
 
+*	Redirect to <http://www.xiph.org/>. Not to, for example, <http://xiph.org/>.
+
 *	Use UTF-8. In particular, use proper apostrophes and quotes (U+2018–U+201E) and
 	en and em dashes.
 

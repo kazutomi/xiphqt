@@ -1,5 +1,28 @@
 <div id='sidebar'>
-<ul id='bignavbuttons'>
+<ul>
+<li class='forusers'>
+	<a href='/forusers/'>
+		<strong>For Users</strong><br>
+		For a better-sounding audio collection.
+		<em class='reset'>&nbsp;</em>
+	</a>
+</li>
+<li class='forartists'>
+	<a href='/forartists/'>
+		<strong>For Artists</strong><br>
+		Get more fans with our stuff.
+		<em class='reset'>&nbsp;</em>
+	</a>
+</li>
+<li class='forlabels'>
+	<a href='/forlabels/'>
+		<strong>For Labels</strong><br>
+		Reduce the costs of selling music.
+		<em class='reset'>&nbsp;</em>
+	</a>
+</li>
+</ul>
+<ul>
 <li class='vorbis'>
 	<a href='/vorbis/'>
 		<strong>Vorbis</strong><br>

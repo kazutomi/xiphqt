@@ -75,7 +75,7 @@ code {
 }
 
 div#content {
-	margin: 0 1em 1em 19em;
+	margin: 0 1em 1em 17em;
 	padding: 0 .5em;
 	border: 1px solid gray;
 	background: white;
@@ -86,7 +86,7 @@ div#sidebar {
 	position: absolute;
 	top: 50px;
 	left: 1em;
-	width: 17em;
+	width: 15em;
 	margin: 0;
 	padding: 0;
 }
@@ -94,12 +94,12 @@ div#sidebar {
 /*	the "bignavbuttons" thing was taken from www.adaptivepath.com.
 	I'm still not sure what the em.reset is for.
 */
-ul#bignavbuttons {
-	margin: 0;
+div#sidebar ul {
+	margin: 0 0 2em;
 	padding: 0;
 }
 
-ul#bignavbuttons li {
+div#sidebar li {
 	list-style-type: none;
 	margin: 0;
 	margin-bottom: 1em;
@@ -107,51 +107,51 @@ ul#bignavbuttons li {
 	background: white;
 }
 
-ul#bignavbuttons strong {
+div#sidebar strong {
 	display: block;
 	font-size: larger;
 	margin-bottom: 0;
 	padding-bottom: 0;
 }
 
-ul#bignavbuttons a {
+div#sidebar a {
 	display: block;
 	padding: .25em;
 	text-decoration: none;
 	color: black;
 }
 
-ul#bignavbuttons a:link,
-ul#bignavbuttons a:visited {
+div#sidebar a:link,
+div#sidebar a:visited {
 	color: black;
 }
 
-ul#bignavbuttons li a:hover {
+div#sidebar li a:hover {
 	color: black;
 }
 
-ul#bignavbuttons li.vorbis a:hover {
+div#sidebar li.vorbis a:hover {
 	background: #b6cfbd;
 }
 
-ul#bignavbuttons li.speex a:hover {
+div#sidebar li.speex a:hover {
 	background: #b1cfa1;
 }
 
-ul#bignavbuttons li.flac a:hover {
+div#sidebar li.flac a:hover {
 	background: #ff9; /* banana-ish */
 	background: #6e6942;
 	background: #c7cf97; /* Mike calls this one "gloomy AND nasty" */
 	background: #cac8a9; /* "less nasty" */
 }
 
-ul#bignavbuttons li.theora a:hover {
+div#sidebar li.theora a:hover {
 	background: #ebf;
 	background: #d0c6ff;
 	background: #bdb8cf;
 }
 
-ul#bignavbuttons li.icecast a:hover {
+div#sidebar li.icecast a:hover {
 	background: #f5f5f5; /* white smoke */
 	background: #ccc;
 }
@@ -168,4 +168,10 @@ div#copyright {
 	margin: 1em 2em 0;
 	padding: .25em 0 1em;
 	text-align: center;
+}
+
+img.tortoiseSvnScreenie {
+	float: right;
+	border: 1px solid gray;
+	margin: 2px;
 }
