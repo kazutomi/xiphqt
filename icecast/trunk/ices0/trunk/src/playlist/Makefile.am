@@ -2,7 +2,11 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-INCLUDES = -I$(top_srcdir)/src
+if NEED_SHOUT
+SHOUT_INCLUDES = -I$(top_srcdir)/libshout
+endif
+
+INCLUDES = -I$(top_srcdir)/src $(SHOUT_INCLUDES)
 
 noinst_LIBRARIES = libplaylist.a
 noinst_HEADERS = playlist.h pm_builtin.h rand.h
