@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.6 2003/03/14 12:46:00 brendan Exp $
+# $Id: configure.ac,v 1.7 2003/03/14 22:42:25 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -37,7 +37,6 @@ AC_AIX
 AC_ISC_POSIX
 AC_MINIX
 
-IRIX=no
 case $host in
   *hpux*)
     CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
@@ -46,24 +45,12 @@ case $host in
       CFLAGS="$CFLAGS -Aa"
     fi
   ;;
-  *irix*)
-    IRIX=yes
-  ;;
 esac
 
 dnl -- Compiler feature check --
 
 AC_C_CONST
 AC_C_BIGENDIAN
-
-dnl -- System library check --
-
-if test "$IRIX" = "yes"
-then
-  AC_MSG_WARN(Skipping library tests because they confuse Irix)
-else
-  AC_SEARCH_LIBS(gethostbyname, dns nsl resolv)
-fi
 
 dnl -- System header check --
 

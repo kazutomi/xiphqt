@@ -33,26 +33,6 @@ const char cnull[7] = "(null)";
 
 /* Public function definitions */
 
-char* ices_util_getip(const char *what, char *buf, int len)
-{
-  struct hostent *host;
-  char *temp;
-
-  /* do a little sanity checking */
-  if (what == NULL || buf == NULL || len <= 0)
-    return NULL;
-
-  host = gethostbyname(what);
-  if (host == NULL) {
-    buf = NULL;
-  } else {
-    temp = inet_ntoa(*(struct in_addr *)host->h_addr);
-    strncpy(buf, temp, len);
-  }
-
-  return buf;
-}
-
 /* Wrapper function around strdup. Will always return
  * an allocated string, "(null)" if given NULL argument. */
 char *
