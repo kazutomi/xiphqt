@@ -48,6 +48,7 @@ typedef struct {
 	unsigned long ppos;
 	midi_page_t *pages;
 	int serialno;
+	ogg_int64_t old_granulepos;
 	// timing information
 	int ticks;
 	long tempo;
@@ -77,6 +78,7 @@ int midi_state_init(oggmerge_state_t *state, int serialno)
 		midistate->op = NULL;
 		midistate->pages = NULL;
 		midistate->serialno = serialno;
+		midistate->old_granulepos = 0;
 		midistate->ticks = 480;
 		midistate->tempo = 500000; // 120 bpm == 500,000 microseconds per beat
 		midistate->frames = 0;
@@ -326,11 +328,13 @@ static u_int64_t _make_timestamp(midi_state_t *midistate, ogg_int64_t granulepos
 	u_int64_t timestamp;
 
 	if (midistate->smtpe) {
-		timestamp = (double)granulepos * ((double)(midistate->frames * midistate->ticks) / (double)1000000);
+		timestamp = (double)midistate->old_granulepos * ((double)(midistate->frames * midistate->ticks) / (double)1000000);
 	} else {
 		// tempo is in us/quartnernote
-		timestamp = (double)granulepos * (double)midistate->tempo / (double)midistate->ticks;
+		timestamp = (double)midistate->old_granulepos * (double)midistate->tempo / (double)midistate->ticks;
 	}
+
+	midistate->old_granulepos = granulepos;
 
 	return timestamp;
 }
@@ -697,16 +701,15 @@ static int _process_data(midi_state_t *midistate)
 			continue;
 		case e_endofevent:
 			midistate->current += midistate->timestamp;
-			if (midistate->ppos >= 512 || all_done) {
+			if (midistate->ppos >= 128 || all_done) {
 				// close out this packet and start a new one
 				_resize_packet(midistate, midistate->ppos);
 				midistate->op->granulepos = midistate->current;
 				ogg_stream_packetin(&midistate->os, midistate->op);
 				midistate->op = NULL;
-				_queue_pages(midistate);
+				_flush_pages(midistate);
 				if (all_done) {
 					midistate->ps = e_done;
-					_flush_pages(midistate);
 				} else {
 					midistate->ps = e_newpacket;
 				}

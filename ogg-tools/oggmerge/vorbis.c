@@ -18,12 +18,14 @@ typedef struct vorbis_page_tag {
 typedef struct {
 	ogg_sync_state oy;
 	int serialno;
+	ogg_int64_t old_granulepos;
 	int first_page;
 	unsigned long samplerate;
 	vorbis_page_t *pages;
 } vorbis_state_t;
 
 static void _add_vorbis_page(vorbis_state_t *vstate, ogg_page *og);
+
 
 int vorbis_state_init(oggmerge_state_t *state, int serialno)
 {
@@ -37,7 +39,11 @@ int vorbis_state_init(oggmerge_state_t *state, int serialno)
 	ogg_sync_init(&vstate->oy);
 	vstate->first_page = 1;
 	vstate->samplerate = 0;
-	
+	vstate->old_granulepos = 0;
+
+	// NOTE: we just ignore serialno for now
+	// until a future libogg supports ogg_page_set_serialno
+
 	state->private = (void *)vstate;
 
 	return 1;
@@ -146,7 +152,9 @@ static u_int64_t _make_timestamp(vorbis_state_t *vstate, ogg_int64_t granulepos)
 	
 	if (vstate->samplerate == 0) return 0;
 	
-	stamp = (double)granulepos * (double)1000000 / (double)vstate->samplerate;
+	stamp = (double)vstate->old_granulepos * (double)1000000 / (double)vstate->samplerate;
+
+	vstate->old_granulepos = granulepos;
 
 	return stamp;
 }
