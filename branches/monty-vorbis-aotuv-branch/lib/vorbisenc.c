@@ -162,14 +162,10 @@ static vorbis_info_mapping0 _map_nominal[2]={
 
 static ve_setup_data_template *setup_list[]={
   &ve_setup_44_stereo,
-  &ve_setup_44_stereo_low,
   &ve_setup_44_uncoupled,
-  &ve_setup_44_uncoupled_low,
 
   &ve_setup_32_stereo,
-  &ve_setup_32_stereo_low,
   &ve_setup_32_uncoupled,
-  &ve_setup_32_uncoupled_low,
 
   &ve_setup_22_stereo,
   &ve_setup_22_uncoupled,
@@ -183,8 +179,6 @@ static ve_setup_data_template *setup_list[]={
 
   &ve_setup_X_stereo,
   &ve_setup_X_uncoupled,
-  &ve_setup_X_stereo_low,
-  &ve_setup_X_uncoupled_low,
   &ve_setup_XX_stereo,
   &ve_setup_XX_uncoupled,
   0
