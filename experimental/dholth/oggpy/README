@@ -1,0 +1,47 @@
+What's this?
+============
+
+If you've downloaded this, you're probably wondering two things - what's
+it for, and why doesn't it compile?
+
+I wrote this wrapper because I was frustrated with the official ogg/vorbis
+wrapper and to teach myself about Boost.Python.  When encoding the
+official ogg/vorbis Python wrapper could only write its output to a file.
+No tostring() method.  Well, mine has a tostring() method, and it's
+written in a more concise and understandable way thanks to the magic
+of Boost.Python.  Ideally, by combining this wrapper and shoutpy, it will
+be possible to write a program like ices (re-encode and stream ogg/vorbis)
+in Python.
+
+Incidentally, there's a separately usable C++ wrapper here too.
+
+This is a very early release.  By downloading this software, you're
+participating in the receiving end of the 'release early, release often'
+open source philosophy.
+
+Send your feedback to dholth@fastmail.fm.
+
+Thanks,
+
+Daniel Holth
+
+Compiling
+=========
+
+To compile this software, use setup.py.
+	
+Edit the setup:
+	vim setup.py
+
+Compile:
+	python setup.py build
+
+(Possibly):
+	python setup.py install
+
+Basic necessities will include editing setup.py to point to your
+Boost.Python include directory, and possibly removing theora
+support.
+
+Boost.Python 1.31 or CVS is necessary; 1.30 won't work because it lacks
+a str:: constructor used in vorbispy_wrappers.cc

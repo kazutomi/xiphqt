@@ -1,11 +1,32 @@
-declaration_code('#include "oggcc.h"')
+def document(element, blurb):
+	"""Add a docstring to a definition"""
+	element._Attribute('doc', blurb)
 
-oggpy = AllFromHeader("oggcc.h")
+Include("oggpy_wrappers.h")
 
-exclude(oggpy.sync.data)
-exclude(oggpy.sync.buffer)
+oggpy    = AllFromHeader("oggcc.h")
+
+# exclude(oggpy.oggpack_base)
+exclude(oggpy.oggpack_base.get_data)
+exclude(oggpy.oggpack_base.get_buffer)
+exclude(oggpy.oggpack.get_buffer)
+exclude(oggpy.oggpack.get_data)
+exclude(oggpy.oggpackB.get_buffer)
+exclude(oggpy.oggpackB.get_data)
 exclude(oggpy.packet.data)
+exclude(oggpy.packet.get_data)
 exclude(oggpy.page.data)
+exclude(oggpy.page.get_data)
 exclude(oggpy.stream.data)
-exclude(oggpy.dsp.analysis_buffer)
-exclude(oggpy.comment.comment_query)
+exclude(oggpy.sync.buffer)
+exclude(oggpy.sync.data)
+exclude(oggpy.sync.wrote)
+exclude(oggpy.userpacket.get_data)
+
+syncwrite = Function("ogg::sync_write", "oggpy_wrappers.h")
+oggpy.syncwrite = syncwrite
+
+document(oggpy.sync, "Separate streams into ogg pages")
+document(oggpy.sync.pageout, "Produce a page.")
+
+# add_method(oggpy.sync, "sync_write")

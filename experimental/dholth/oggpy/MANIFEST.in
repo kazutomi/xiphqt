@@ -1,0 +1,6 @@
+include Doxyfile MANIFEST.in CHANGELOG COPYING
+include *.pyste *.h
+include tests/*.py
+include tests/encode.py
+include tests/oggtext.py
+include tests/test.py

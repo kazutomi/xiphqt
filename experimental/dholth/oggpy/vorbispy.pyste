@@ -1,0 +1,26 @@
+vorbispy = AllFromHeader("vorbiscc.h")
+
+Include("vorbispy_wrappers.h")
+
+# exclude(vorbispy.comment.query)
+exclude(vorbispy.dsp.analysis_buffer)
+exclude(vorbispy.dsp.get_data)
+exclude(vorbispy.comment.get_data)
+
+# vorbispy.block.synthesis.infos.doc = "Synthesize things."
+# #Function("oggpy_synthesis_pcmout", "oggpy_wrappers.h")
+
+doc = """\
+oggpy_synthesis_pcmout(oggpy.dsp) -> pcm data
+
+Fetches some pcm data from vorbis decode, in a channels by samples numarray object.
+It's so cool, you could keep meat in it."""
+
+pcmout = Function("oggpy_synthesis_pcmout", "vorbispy_wrappers.h", doc = doc)
+Function("oggpy_analysis_write", "vorbispy_wrappers.h")
+Function("get_comments", "vorbispy_wrappers.h")
+
+# #add_method(oggpy.sync, "ogg::sync_write")
+# #rename(oggpy.sync.sync_write, "write")
+
+# module_code("oggpy_wrappers_init();\n")
