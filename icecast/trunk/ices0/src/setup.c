@@ -555,7 +555,6 @@ ices_setup_usage (void)
   printf ("\t-F <playlist>\n");
   printf ("\t-g <stream genre>\n");
   printf ("\t-h <host>\n");
-  printf ("\t-i (use icy headers)\n");
   printf ("\t-M <interpreter module>\n");
   printf ("\t-m <mountpoint>\n");
   printf ("\t-n <stream name>\n");
