@@ -1,3 +1,9 @@
+positron (1.0b2-1) unstable; urgency=low
+
+  * New Upstream Release.
+
+ -- Jack Moffitt <jack@xiph.org>  Wed, 28 May 2003 15:50:00 -0600
+
 positron (1.0b1-1) unstable; urgency=low
 
   * Initial Release.
