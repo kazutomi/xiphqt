@@ -419,7 +419,7 @@ sub build_and_run{
 		    my$refresh=$ret->optionGet("scalerefresh","");
 		    $ret->repeat($refresh,sub{$mod->module_update})
 #		    &MGM::schedule::perm_schedule($mod,$refresh)
-			if($refresh);
+			if($refresh && ref($mod)->can('module_update'));
 		}
 	    }
 	}
