@@ -116,8 +116,6 @@ int main(int argc, char **argv)
 		char *artist=NULL, *album=NULL, *title=NULL, *track=NULL, *date=NULL;
 		input_format *format;
 
-
-
 		/* Set various encoding defaults */
 
 		enc_opts.serialno = opt.serial++;
@@ -352,15 +350,16 @@ char *generate_name_string(char *format,
 		char *artist, char *title, char *album, char *track, char *date)
 {
 	char *buffer;
-	char *cur;
 	char next;
+	int len;
+	char *string;
+	int used=0;
+	int buflen;
 
-	buffer = calloc(CHUNK,1);
+	buffer = calloc(CHUNK+1,1);
+	buflen = CHUNK;
 
-	cur = buffer;
-
-
-	while(*format)
+	while(*format && used < buflen)
 	{
 		next = *format++;
 
@@ -369,27 +368,37 @@ char *generate_name_string(char *format,
 			switch(*format++)
 			{
 				case '%':
-					*cur++ = '%';
+					*(buffer+(used++)) = '%';
 					break;
 				case 'a':
-					strcat(buffer, artist?artist:"(none)");
-					cur += strlen(artist?artist:"(none)");
+					string = artist?artist:"(none)";
+					len = strlen(string);
+					strncpy(buffer+used, string, buflen-used);
+					used += len;
 					break;
 				case 'd':
-					strcat(buffer, date?date:"(none)");
-					cur += strlen(date?date:"(none)");
+					string = date?date:"(none)";
+					len = strlen(string);
+					strncpy(buffer+used, string, buflen-used);
+					used += len;
 					break;
 				case 't':
-					strcat(buffer, title?title:"(none)");
-					cur += strlen(title?title:"(none)");
+					string = title?title:"(none)";
+					len = strlen(string);
+					strncpy(buffer+used, string, buflen-used);
+					used += len;
 					break;
 				case 'l':
-					strcat(buffer, album?album:"(none)");
-					cur += strlen(album?album:"(none)");
+					string = album?album:"(none)";
+					len = strlen(string);
+					strncpy(buffer+used, string, buflen-used);
+					used += len;
 					break;
 				case 'n':
-					strcat(buffer, track?track:"(none)");
-					cur += strlen(track?track:"(none)");
+					string = track?track:"(none)";
+					len = strlen(string);
+					strncpy(buffer+used, string, buflen-used);
+					used += len;
 					break;
 				default:
 					fprintf(stderr, "WARNING: Ignoring illegal escape character '%c' in name format\n", *(format - 1));
@@ -397,7 +406,7 @@ char *generate_name_string(char *format,
 			}
 		}
 		else
-			*cur++ = next;
+			*(buffer + (used++)) = next;
 	}
 
 	return buffer;
