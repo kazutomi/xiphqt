@@ -1,0 +1,199 @@
+<title>  xiph.org: MGM manual </title>
+
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080">
+
+<p align=center><img src="mgm.gif"><br>
+<hr>
+
+<p align=center>
+[ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
+<hr>
+
+<h1>T.F.M. for Users</h1>
+<h2>beginning</h2>
+
+MGM is configured via X resources, like procmeter used to be.  As an
+example, my .Xresources entries for MGM look like this:
+
+<pre>
+mgm*background:		#222222
+mgm*textpad:		0
+mgm.Forks.active:	false
+mgm.Swapstat.active:	false
+mgm.Pagestat.active:	false
+mgm.Context.active:	false
+mgm.Phoon*background:	black
+mgm.Phoon*foreground:	white
+mgm.Clock*background:	black
+mgm.Clock*foreground:	white
+mgm.geometry:		450x62+1+1
+</pre>
+
+Resources can be set on the command line; for example, if given the following:
+
+<pre>
+mgm -background DimGray
+</pre>
+
+MGM handles the command line equivalent to <tt>mgm*background:
+DimGray</tt>.  Resources on the command line are given a resource
+priority of 80 (and thus generally take precedence over entries in
+.Xresources, which take precedence over built-in settings).<p>
+
+<h2>resource naming</h2>
+
+A number of resources are global to all of MGM.  Most resources,
+however, are set by module.  Module resources may be set for all
+modules of a given type (the module class is the same as the module
+name capitalized.  Most of the entries in my .Xresources file above
+are by-Class entries).  Modules may also be configured by instance;
+modules are numbered from 0-n (left-to-right or top-to-bottom).  For
+example, to set a blue background for module number three, one should
+use:
+
+<pre>
+mgm.3*background:   blue
+</pre>
+
+Most modules use bargraphs; individual bars are also addressable as:
+
+<pre>
+mgm*<em>Class</em>.bar.<em>number</em>
+</pre>
+
+or 
+
+<pre>
+mgm.<em>number</em>.bar.<em>number</em>
+</pre>
+
+<h2>resource lists</h2>
+
+<h3>Global resources</h3>
+
+The following resources are set once for the MGM main window and
+affect all of MGM. They should be set as
+"<tt>mgm.<em>resource</em></tt>".
+
+<ul>
+<li>bars
+<li>lendemand
+<li>stack
+<li>widdemand
+</ul>
+
+<h3>Instance resources</h3>
+
+The following resources are common to all modules and may be set at
+the main window for all modules by using
+"<tt>mgm*<em>resource</em></tt>".  They may also be set for individual
+module classes or module instance.  A number of modules use Xresources
+beyond the list below; these resources are discussed in the
+documentation for the relevant module.
+
+<ul>
+<li>background
+<li>foreground
+<li>borderwidth
+<li>relief
+<li>textpad
+<li>widgetpad
+<li>font
+<li>labelsize
+<li>active
+<li>order
+<li>scale
+<li>scalethresh
+<li>scalelenadj
+<li>scalewidadj
+<li>scalecolor
+<li>scalescroll
+<li>scalerefresh
+<li>scalereturn
+<li>scalejustify
+<li>dimbackground
+<li>litbackground
+<li>dimforeground
+<li>litforeground
+<li>dimrelief
+<li>litrelief
+<li>label
+<li>ratio
+</ul>
+
+<h3>Module documentation</h3>
+
+A number of modules implement extra features or resources.
+Documentation for each module appears below. Below are the modules
+currently distributed with MGM.
+
+<ul>
+<li>battery
+<li>biff
+<li>clock
+<li>context
+<li>cpustat
+<li>diskstat
+<li>diskuse
+<li>forks
+<li>hostlogo
+<li>loadav
+<li>memuse
+<li>netstat
+<li>pagestat
+<li>phoon
+<li>spacer
+<li>swapstat
+</ul>
+
+<h2>A very few examples</h2>
+
+<h3>Vertical mode</h3>
+
+command line:<br>
+<tt>mgm -bars horizontal -stack vertical</tt><p>
+
+Xresources:
+<pre>
+mgm.bars:       horizontal
+mgm.stack:      vertical
+</pre>
+
+<h3>Single battery graph with a picture</h3>
+
+Xresources:
+<pre>
+mgm*active:                false
+mgm*Battery.active:        true
+mgm*Hostlogo.active:       true
+mgm*Hostlogo.label:        
+mgm*Hostlogo.logopixmap:   ~/battery.xpm
+mgm.bars:                  horizontal
+</pre>
+
+(of course, the picture actually has to be there)
+
+<hr>
+<a href="http://www.xiph.org/">
+<img src="white-xifish.gif" align=left border=0>
+</a>
+<p>
+<font size=-2 color=#505050>
+
+MGM will not get your whites whiter or your colors brighter.  It will,
+however, sit there and look spiffy while sucking down a major
+honking wad of RAM.<p>
+
+MGM, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-1999 Xiphophorus. All rights reserved.<p>
+
+</body>
