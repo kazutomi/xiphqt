@@ -36,24 +36,26 @@ typedef unsigned long long uint64_t;
 ])
 
 dnl XIPH_TYPE_SOCKLEN_T
-dnl Brendan Cully
+dnl Karl Heyes
 dnl
 # XIPH_TYPE_SOCKLEN_T
 # Check for socklen_t, or define as int if missing
 AC_DEFUN([XIPH_TYPE_SOCKLEN_T],
 [dnl
 AC_CHECK_HEADERS([sys/socket.h])
-AC_CHECK_TYPES([socklen_t],,,
-  [#if HAVE_SYS_TYPES_H
+AH_VERBATIM([HAVE_SOCKLEN_T],
+[/* define if you have the socklen_t type */
+#undef HAVE_SOCKLEN_T
+
+#ifndef HAVE_SOCKLEN_T
+  typedef int socklen_t;
+  #define HAVE_SOCKLEN_T
+#endif])
+AC_TRY_COMPILE([
+#ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
-#if HAVE_SYS_SOCKET_H
+#ifdef HAVE_SYS_SOCKET_H
 # include <sys/socket.h>
-#endif
-  ])
-AH_VERBATIM([X_HAVE_SOCKLEN_T],
-  [#ifndef HAVE_SOCKLEN_T
-typedef int socklen_t;
-#endif
-  ])
+#endif], [socklen_t s = 0;], [AC_DEFINE([HAVE_SOCKLEN_T])])
 ])

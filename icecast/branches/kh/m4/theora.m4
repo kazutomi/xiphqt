@@ -1,8 +1,10 @@
 # Configure paths for libtheora
-# Karl Heyes 02-Feb-2004
+# Jack Moffitt <jack@icecast.org> 10-21-2000
+# updated by Karl Heyes 02-Feb-2004
 
 dnl XIPH_PATH_THEORA([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl Test for libtheora, and define THEORA_CFLAGS THEORA_LIBS
+dnl THEORA_THEORAENC_LIBS THEORA_THEORAFILE_LIBS THEORA_LDFLAGS
 dnl
 
 AC_DEFUN([XIPH_PATH_THEORA],
