@@ -119,7 +119,9 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 
   /* Separate the parsing into different submodules,
    * Server, Stream, Playlist and Execution */
-  while (cur != NULL) {
+  for (; cur != NULL; cur = cur->next) {
+    if (cur->type == XML_COMMENT_NODE)
+      continue;
     if (strcmp (cur->name, "Server") == 0) {
       ices_xml_parse_server_nodes (doc, ns, cur->xmlChildrenNode, ices_config);
     } else if (strcmp (cur->name, "Stream") == 0) {
@@ -142,8 +144,6 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
     } else {
       ices_log ("Unknown Node: %s", cur->name);
     }
-
-    cur = cur->next;
   }
 	
   /* Be a good boy and cleanup */
