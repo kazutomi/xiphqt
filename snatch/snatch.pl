@@ -990,6 +990,16 @@ sub ButtonPressConfig(){
     $window_vmute->configure(-relief=>'groove') if ($CONFIG{VIDEO_MUTE} eq 'no');
     $window_vmute->configure(-relief=>'sunken') if ($CONFIG{VIDEO_MUTE} eq 'yes');
 
+    if(defined($tentry)){
+
+	if($mode=~/^active/ || ($mode=~/timer/ && $timer_entry_active==1)){
+	    $tentry_test->configure(-state=>disabled);
+	}else{
+	    $tentry_test->configure(-state=>normal);
+	}
+
+    }
+
 }
 
 sub ButtonConfig{
@@ -1201,6 +1211,7 @@ sub Timer{
     
     $timerw_quit->configure(-command=>[sub{
 	undef $listbox;
+	undef $timerw;
 	$timerw->destroy();
 	$window_timerbar->configure(state=>'normal');
 	$window_timerbar->configure(relief=>'raised');
@@ -1481,26 +1492,32 @@ sub Timer_Entry{
 	    }
 	    
 	    SaveHistory();
-	    BuildListBox();
-	    
+
+	    if(defined($timerw)){
+		BuildListBox();
+		
+		$timerw_add->configure(-state=>normal);
+		if(defined($timer_row)){
+		    $timerw_edit->configure(-state=>normal);
+		    $timerw_duplicate->configure(-state=>normal);
+		    $timerw_delete->configure(-state=>normal);
+		}
+	    }
+
 	    $tentry->destroy();
+	    undef $tentry;
+	}
+    }]);
+    $tentry_cancel->configure(-command=>[sub{
+	if(defined($timerw)){
 	    $timerw_add->configure(-state=>normal);
 	    if(defined($timer_row)){
 		$timerw_edit->configure(-state=>normal);
 		$timerw_duplicate->configure(-state=>normal);
 		$timerw_delete->configure(-state=>normal);
 	    }
-	    undef $tentry;
 	}
-    }]);
-    $tentry_cancel->configure(-command=>[sub{
 	$tentry->destroy();
-	$timerw_add->configure(-state=>normal);
-	if(defined($timer_row)){
-	    $timerw_edit->configure(-state=>normal);
-	    $timerw_duplicate->configure(-state=>normal);
-	    $timerw_delete->configure(-state=>normal);
-	}
 	undef $tentry;
     }]);
 
@@ -1629,7 +1646,7 @@ sub Timer_Entry{
 	place(-in=>$tentry_audio,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
     $tentry_video->configure(-command=>[main::nonmomentary,\$tentry_video,\$video]);
 
-    my$tentry_test=$tentry_shell->Button(-text=>"test connect now")->
+    $tentry_test=$tentry_shell->Button(-text=>"test connect now")->
 	place(-relx=>1.0,-x=>-10,-y=>$y,-height=>$tentry_silent->reqheight,-anchor=>'ne',
 	      -bordermode=>outside);
 
