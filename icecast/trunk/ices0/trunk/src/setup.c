@@ -318,7 +318,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
     s = argv[arg];
 
     if (s[0] == '-') {
-      if ((strchr ("BiRrsVv", s[1]) == NULL) && arg >= (argc - 1)) {
+      if ((strchr ("BRrsVv", s[1]) == NULL) && arg >= (argc - 1)) {
 	fprintf (stderr, "Option %c requires an argument!\n", s[1]);
 	ices_setup_usage ();
 	ices_setup_shutdown ();
@@ -369,9 +369,6 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
         case 'H':
 	  arg++;
 	  stream->out_samplerate = atoi (argv[arg]);
-	  break;
-        case 'i':
-	  stream->protocol = icy_protocol_e;
 	  break;
         case 'M':
 	  arg++;
@@ -430,6 +427,19 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  break;
         case 's':
 	  stream->ispublic = 0;
+	  break;
+        case 't':
+	  arg++;
+	  if (!strcmp (argv[arg], "http"))
+	    stream->protocol = http_protocol_e;
+	  else if (!strcmp (argv[arg], "xaudiocast"))
+	    stream->protocol = xaudiocast_protocol_e;
+	  else if (!strcmp (argv[arg], "icy"))
+	    stream->protocol = icy_protocol_e;
+	  else {
+	    fprintf (stderr, "Unknown protocol %s. Use 'http', 'xaudiocast' or 'icy'.\n", argv[arg]);
+	    ices_setup_shutdown ();
+	  }
 	  break;
         case 'u':
 	  arg++;

@@ -27,7 +27,8 @@ ices \- stream MP3 audio to an icecast server
 .IR port \|]
 .RB [\| \-P
 .IR password \|]
-.RB [\| -i \|]
+.RB [\| \-t
+.IR protocol \|]
 .\" Stream options
 .RB [\| \-n
 .IR name \|]
@@ -161,14 +162,16 @@ instead of the default,
 Log into the icecast server using the password
 .IR password .
 .TP
-.B \-i
-Use old shoutcast-compatible
-.B icy
-method to log in, instead of the icecast-compatible
-.B x-audiocast
-method. If you have to use this you will lose some functionality, most
-notably the ability to specify mountpoints (and hence, multiple
-streams).
+.BI \-t \ protocol
+Connect to the server using the streaming protocol
+.IR protocol .
+Protocol should be one of
+.BR http , \ xaudiocast ,\ or \ icy ,
+depending on whether your server is icecast 2, icecast 1,
+or shoutcast compatible, respectively. The default is
+.BR http .
+(Shoutcast would be most compatible but, unfortunately, that
+protocol does not support multiple mount points).
 .TP
 .BI \-n \ name
 Set the name of this stream to

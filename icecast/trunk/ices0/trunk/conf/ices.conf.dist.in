@@ -21,7 +21,8 @@
     <!-- Set this to 1 if you want to see more verbose output from ices -->
     <Verbose>0</Verbose>
     <!-- This directory specifies where ices should put the logfile, cue file
-	 and pid file (if daemonizing). -->
+	 and pid file (if daemonizing). Don't use /tmp if you have l33t h4x0rz
+         on your server. -->
     <BaseDirectory>/tmp</BaseDirectory>
   </Execution>
 
@@ -58,7 +59,7 @@
     <Public>0</Public>
 
     <!-- Stream bitrate, used to specify bitrate if reencoding, otherwise
-	 just used for display on yp and on the server. Try to keep it
+	 just used for display on YP and on the server. Try to keep it
 	 accurate -->
     <Bitrate>128</Bitrate>
     <!-- If this is set to 1, and ices is compiled with liblame support,
