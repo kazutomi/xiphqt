@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.5 2001/12/12 15:52:25 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.6 2001/12/14 16:46:11 volsung Exp $
 
  ********************************************************************/
 
@@ -200,8 +200,12 @@ decoder_stats_t *ovf_statistics (decoder_t *decoder)
   long instant_bitrate;
   long avg_bitrate;
 
-  priv->stats.total_time = ov_time_total(&priv->vf, -1);
-  priv->stats.current_time = ov_time_tell(&priv->vf);
+  /* ov_time_tell() doesn't work on non-seekable streams, so we use
+     ov_pcm_tell()  */
+  priv->stats.total_time = (double) ov_pcm_total(&priv->vf, -1) /
+    (double) decoder->actual_fmt.rate;
+  priv->stats.current_time = (double) ov_pcm_tell(&priv->vf) / 
+    (double) decoder->actual_fmt.rate;
 
   /* vorbisfile returns 0 when no bitrate change has occurred */
   instant_bitrate = ov_bitrate_instant(&priv->vf);
