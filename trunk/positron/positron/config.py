@@ -72,6 +72,7 @@ class Config:
         self.recordingdir = None
         self.neuros_musicdir = "MUSIC"
         self.sort_database = True
+        self.mp3_support = True
         self.oggvorbis_support = False
         self.syncdirs = []
 
@@ -102,7 +103,10 @@ class Config:
         """Convenience method for getting the list of music types enabled
         in the config file"""
 
-        types = ["mp3"]
+        types = []
+
+        if self.mp3_support:
+            types.append("mp3")
 
         if self.oggvorbis_support:
             types.append("oggvorbis")
@@ -212,6 +216,13 @@ class Config:
                         raise Error(tokenizer.error_leader()
                                     +"Non boolean value '%s' given for %s",
                                     (value, key))
+                elif key == "mp3_support":
+                    try:
+                        self.mp3_support = parse_boolean(value)
+                    except Error:
+                        raise Error(tokenizer.error_leader()
+                                    +"Non boolean value '%s' given for %s",
+                                    (value, key))
                 else:
                     print tokenizer.error_leader() \
                           + "Ignoring unknown option %s" % (key,)
@@ -245,6 +256,12 @@ class Config:
         else:
             oggvorbis_support_value = "false"
         f.write("oggvorbis_support=%s\n" % (oggvorbis_support_value,))
+
+        if self.mp3_support:
+            mp3_support_value = "true"
+        else:
+            mp3_support_value = "false"
+        f.write("mp3_support=%s\n" % (mp3_support_value,))
 
         for (src,dest) in self.syncdirs:
             f.write("\nbegin sync\n")
