@@ -1,3 +1,7 @@
+2002-12-15  Andrew H. Chatham <pyogg@andrewchatham.com>
+	* aomodule.c: ao_driver_id no longer accepts NULL as a default
+	* aomodule.c: fixed some compiler warnings with gcc 3.2 
+	
 2002-9-24   Andrew H. Chatham <pyogg@andrewchatham.com>
 	* setup.py: fixed regular expression
 	

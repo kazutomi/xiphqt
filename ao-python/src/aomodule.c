@@ -46,15 +46,15 @@ parse_args(PyObject *args, PyObject *kwargs,
 	   uint_32 *driver_id,
 	   uint_32 *overwrite)
 {
-  static char *driver_id_kwlist[] = {"driver_id", "bits", "rate", 
-				     "channels", "byte_format",
-				     "options", "filename", 
-				     "overwrite", NULL};
-  static char *driver_name_kwlist[] = {"driver_name", "bits", "rate", 
-				       "channels", "byte_format",
-				       "options", "filename", 
-				       "overwrite", NULL};
-
+  static const char *driver_id_kwlist[] = {"driver_id", "bits", "rate", 
+					   "channels", "byte_format",
+					   "options", "filename", 
+					   "overwrite", NULL};
+  static const char *driver_name_kwlist[] = {"driver_name", "bits", 
+					     "rate", 
+					     "channels", "byte_format",
+					     "options", "filename", 
+					     "overwrite", NULL};
   const char *driver_name = NULL;
 
   assert(py_options != NULL);
@@ -72,7 +72,7 @@ parse_args(PyObject *args, PyObject *kwargs,
   overwrite = 0;
 
   if(PyArg_ParseTupleAndKeywords(args, kwargs, "s|llllO!sl", 
-				 driver_name_kwlist,
+				 (char **) driver_name_kwlist,
 				 &driver_name, 
 				 &format->bits, 
 				 &format->rate, 
@@ -85,7 +85,7 @@ parse_args(PyObject *args, PyObject *kwargs,
   } else {
     PyErr_Clear();
     if(!(PyArg_ParseTupleAndKeywords(args, kwargs, "i|llllO!sl",
-				     driver_id_kwlist,
+				     (char **) driver_id_kwlist,
 				     driver_id, 
 				     &format->bits, 
 				     &format->rate, 
@@ -163,10 +163,10 @@ py_ao_driver_id(PyObject *self, PyObject *args)
   int driver_id;
   char *str = NULL;
 
-  if (!PyArg_ParseTuple(args, "|s", &str))
+  if (!PyArg_ParseTuple(args, "s", &str))
     return NULL;
 
-  driver_id = ao_driver_id(str); /* takes NULL for default */
+  driver_id = ao_driver_id(str);
 
   if (driver_id == -1) {
     PyErr_SetString(Py_aoError, "No such driver");

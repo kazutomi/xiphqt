@@ -21,12 +21,11 @@ static void py_ao_dealloc(ao_Object *);
 static PyObject* py_ao_getattr(PyObject *, char *);
 
 static char py_ao_play_doc[] = 
-"Play the contents of a given audio buffer.\n\
-\
-\n
-Arguments:\n\
-buff : Buffer or string containing audio data\n\
-n : Number of bytes to play (defaults to len(buff))";
+"Play the contents of a given audio buffer.\n\n"
+"Arguments:\n"\
+"buff : Buffer or string containing audio data\n"\
+"n : Number of bytes to play (defaults to len(buff))";
+
 static PyObject *py_ao_play(PyObject *, PyObject *);
 
 static char py_ao_driver_id_doc[] = 
@@ -47,16 +46,16 @@ static char py_ao_is_big_endian_doc[] =
 static PyObject *py_ao_is_big_endian(PyObject *, PyObject *);
 
 static char py_ao_doc[] = 
-"
-AudioDevice(driverid, bits=16, rate=44100, channels=2, byte_format=1, options=[], filename='', overwrite=0)\n\
-OR
-AudioDevice(drivername, bits=16, rate=44100, channels=2, byte_format=1, options=[], filename='', overwrite=0)\n\
-\n\
-An AudioDevice object is an interface to a sound device. You can either pass\n\
-an id of a specific type of device or the name of that device type.\n\
-If filename is passed, the module will try to open an output file as the\n\
-audio device. In this case, overwrite indicates whether to overwrite an\n\
-existing file\n";
+"AudioDevice(driverid, bits=16, rate=44100, channels=2, byte_format=1,\n"
+"            options=[], filename='', overwrite=0)\n"
+"OR\n"
+"AudioDevice(drivername, bits=16, rate=44100, channels=2, byte_format=1,\n"
+"            options=[], filename='', overwrite=0)\n\n"
+"An AudioDevice object is an interface to a sound device. You can either\n"
+"pass an id of a specific type of device or the name of that device type.\n"
+"If filename is passed, the module will try to open an output file as the\n"
+"audio device. In this case, overwrite indicates whether to overwrite an\n"
+"existing file\n";
 
 static PyTypeObject ao_Type = {
   PyObject_HEAD_INIT(&PyType_Type)
