@@ -4,6 +4,100 @@
 #include "encint.h"
 #include "fdct.h"
 
+
+/*Initializes the macro block neighbor lists.
+  This assumes that the entire mbinfo memory region has been initialized with
+   zeros.
+  _enc: The encoding context.*/
+static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
+  oc_fragment_array *frarray;
+  oc_mb             *mbs;
+  oc_mb_enc_info    *emb0;
+  int                nhmbs;
+  int                nvmbs;
+  int                y;
+  frarray=&_enc->state.frarray;
+  mbs=frarray->mbs;
+  emb0=_enc->mbinfo;
+  nhmbs=frarray->frplanes[0].nhsbs<<1;
+  nvmbs=frarray->frplanes[0].nvsbs<<1;
+  /*Loop through the Y plane super blocks.*/
+  for(y=0;y<nvmbs;y+=2){
+    int x;
+    for(x=0;x<nhmbs;x+=2,emb0+=4){
+      int ymb;
+      /*Loop through the macro blocks in each super block in display order.*/
+      for(ymb=0;ymb<2;ymb++){
+        int xmb;
+        for(xmb=0;xmb<2;xmb++){
+          /*Because of the Hilbert curve ordering the macro blocks are
+             visited in, the available neighbors change depending on where in
+             a super block the macro block is located.
+            Only the first three vectors are used in the median calculation
+             for the optimal predictor, and so the most important should be
+             listed first.
+            Additional vectors are used, so there will always be at least 3.*/
+          /*The number of current neighbors for each macro block position.*/
+          static const int NCNEIGHBORS[4]={4,3,2,4};
+          /*The offset of each current neighbor in the X direction.*/
+          static const int CDX[4][4]={
+            {-1,0,1,-1},
+            {-1,0,-1,},
+            {-1,-1},
+            {-1,0,0,1}
+          };
+          /*The offset of each current neighbor in the Y direction.*/
+          static const int CDY[4][4]={
+            {0,-1,-1,-1},
+            {0,-1,-1},
+            {0,-1},
+            {0,-1,1,-1}
+          };
+          /*The offset of each previous neighbor in the X direction.*/
+          static const int PDX[4]={-1,0,1,0};
+          /*The offset of each previous neighbor in the Y direction.*/
+          static const int PDY[4]={0,-1,0,1};
+          oc_mb_enc_info *emb;
+          int             mbx;
+          int             mby;
+          int             mbn;
+          int             i;
+          mbn=OC_MB_MAP[ymb][xmb];
+          emb=emb0+mbn;
+          mbx=x|xmb;
+          mby=y|ymb;
+          /*Make sure this macro block is within the encoded region.*/
+          if(mbx>=nhmbs||mby>=nvmbs)continue;
+          /*Fill in the neighbors with current motion vectors available.*/
+          for(i=0;i<NCNEIGHBORS[mbn];i++){
+            int nx;
+            int ny;
+            int nmb;
+            nx=mbx+CDX[mbn][i];
+            ny=mby+CDY[mbn][y];
+            if(nx<0||nx>=nhmbs||ny<0)continue;
+            nmb=nx+ny*nhmbs+OC_MB_MAP[ny&1][nx&1];
+            if(mbs[nmb].mode<0)continue;
+            emb->cneighbors[emb->ncneighbors++]=nmb;
+          }
+          /*Fill in the neighbors with previous motion vectors available.*/
+          for(i=0;i<4;i++){
+            int nx;
+            int ny;
+            int nmb;
+            nx=mbx+PDX[i];
+            ny=mby+PDY[i];
+            if(nx<0||nx>=nhmbs||ny<0||ny>=nvmbs)continue;
+            nmb=nx+ny*nhmbs+OC_MB_MAP[ny&1][nx&1];
+            if(mbs[nmb].mode<0)continue;
+            emb->pneighbors[emb->npneighbors++]=nmb;
+          }
+        }
+      }
+    }
+  }
+}
+
 int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   int ret;
   ret=oc_state_init(&_enc->state,_info);
@@ -11,6 +105,7 @@ int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   _enc->frinfo=_ogg_calloc(_enc->state.frarray.nfrags,
    sizeof(_enc->frinfo[0]));
   _enc->mbinfo=_ogg_calloc(_enc->state.frarray.nmbs,sizeof(_enc->mbinfo[0]));
+  oc_enc_init_mbinfo(_enc);
   return 0;
 }
 

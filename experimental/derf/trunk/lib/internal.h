@@ -1,5 +1,6 @@
 #if !defined(_internal_H)
 # define _internal_H (1)
+# include <stdlib.h>
 # include "theora.h"
 # include "huffman.h"
 
@@ -22,12 +23,12 @@
 #define OC_UMV_PADDING (16)
 
 /*Frame classification indices.*/
-/*The current frame.*/
-#define OC_FRAME_SELF (0)
+/*The previous golden frame.*/
+#define OC_FRAME_GOLD (0)
 /*The previous frame.*/
 #define OC_FRAME_PREV (1)
-/*The previous golden frame.*/
-#define OC_FRAME_GOLD (2)
+/*The current frame.*/
+#define OC_FRAME_SELF (2)
 
 /*Macroblock modes.*/
 /*Encoded with no motion compensated prediction.*/
@@ -248,6 +249,10 @@ extern const int OC_FZIG_ZAG[64];
 extern const int OC_IZIG_ZAG[64];
 /*The predictor frame to use for each macro block mode.*/
 extern const int OC_FRAME_FOR_MODE[8];
+/*A map from physical macro block ordering to bitstream macro block
+   ordering within a super block.*/
+extern const int OC_MB_MAP[2][2];
+
 
 
 void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz);

@@ -49,6 +49,10 @@ const int OC_FRAME_FOR_MODE[8]={
   OC_FRAME_GOLD,
 };
 
+/*A map from physical macro block ordering to bitstream macro block
+   ordering within a super block.*/
+const int OC_MB_MAP[2][2]={{0,3},{1,2}};
+
 
 
 /*Initializes the buffers used for reconstructed frames.
@@ -185,7 +189,7 @@ void **oc_alloc_2d(size_t _height,size_t _width,size_t _sz){
   size_t  colsz;
   size_t  datsz;
   char   *ret;
-  colsize=_height*sizeof(void *);
+  colsz=_height*sizeof(void *);
   datsz=_sz*_width*_height;
   /*Alloc array and row pointers.*/
   ret=(char *)_ogg_malloc(datsz+colsz);

@@ -4,6 +4,87 @@
 #include <string.h>
 #include <ogg/ogg.h>
 #include "encint.h"
+#include "psych.h"
+
+/*Importance map calculations.
+
+  The importance map isolates "regions of interest" or areas of the image that
+   are likely to draw viewer attention.
+  Because the visual accuity of the fovea is so much higher than in a viewer's
+   peripheral vision, bits can be taken from uninteresting areas and allocated
+   to areas that the viewer is actually looking at.
+
+  The algorithm here is mostly that which was described by Osberger in his
+   Ph.D. thesis \cite{Osb99}.
+  This document was once available online, but as both the student and his
+   supervising professor have since left the university, it does not appear to
+   be available any longer.
+  The algorithm has the advantages of being simple (and thus fairly fast),
+   requiring no tuning parameters, and having demonstrable correlation with
+   actual human fixations (for still images only).
+  It is also well described in the thesis, which makes a re-implementation
+   from scratch fairly easy.
+
+  It is, however, a fairly ad-hoc algorithm.
+  While its design decisions are in fact made by taking into account real
+   properties of the human visual system, they are not necessarily the only
+   decisions that could be made, or even the best.
+  Thus experimentation could potentially produce a better method, but this
+   would require collecting our own eye-tracking data to validate the model
+   against.
+
+  Also, its extension to video has not been experimentally validated.
+  Although correlation was demonstrated against actual human fixation points
+   for still images, a similar experiment was not carried out for video
+   sequences.
+
+  @PHDTHESIS{Osb99,
+    author="Wilfried Osberger",
+    title="Perceptual Vision Models for Picture Quality Assessment and
+     Compression Applications",
+    school="Queensland University of Technology",
+    address="Brisbane, Australia",
+    month="Mar.",
+    year=1999
+  }*/
+
+/*The number of weighting factors assigned to each segmented region.*/
+#define OC_IMPMAP_NSEG_WEIGHTS          (5)
+
+/*The number of weighting factors which must be rescaled into the interval
+   [0,1]*/
+#define OC_IMPMAP_NSEG_RESCALED_WEIGHTS (2)
+
+/*The list of weighting factors assigned to each segmented region.*/
+enum{
+  /*Contrast with surrounding regions.*/
+  OC_IMPMAP_WEIGHT_CONTRAST,
+  /*Unusualness of the region's shape.*/
+  OC_IMPMAP_WEIGHT_SHAPE,
+  /*Note: These three come last, since they do not need to be rescaled.*/
+  /*Size of the region.*/
+  OC_IMPMAP_WEIGHT_SIZE,
+  /*Closeness of the region to the image center.*/
+  OC_IMPMAP_WEIGHT_LOCATION,
+  /*Degree to which the region is in the foreground vs. background.*/
+  OC_IMPMAP_WEIGHT_FOREGROUND
+};
+
+/*The limits for assessing motion as an attractor of attention, in deg/sec.
+  Importance increases linearly from 0 to 1 over the range [min,p1], stays
+   constant over [p1,p2], and decreases linearly over the range [p2,max].
+  It might be wise to disable the upper limit, so that moving farther away
+   from the screen does not make the image look worse as faster motions are
+   slowed down enough to become visible.*/
+
+/*Minimum important motion.*/
+#define OC_IMPMAP_MOT_MIN (0.0F)
+/*First peak important motion.*/
+#define OC_IMPMAP_MOT_P1  (5.0F)
+/*Second peak important motion.*/
+#define OC_IMPMAP_MOT_P2  (10.0F)
+/*Maximum important motion.*/
+#define OC_IMPMAP_MOT_MAX (15.0F)
 
 /*Image segmentation code.
   The image segmentation drives the rest of the importance map calculations.
@@ -29,7 +110,7 @@
   BIC(model)=log P(data|model)-1/2(model dimension)log(data sample count).
 
   Using a Gaussian distribution as the model, this reduces to
-   1/2log(variance)-log(data sample count).
+   (1/2)(data sample count)log(variance)-log(data sample count).
   The last term is typically weighted by a parameter \lambda to penalize small
    samples, but that weighting is omitted here.
   Instead, like Osberger, a minimal region size is enforced.
@@ -56,53 +137,37 @@
    image sampled every OC_SEG_MOMENT_RES pixels.
   The reduced resolution is designed to reduce memory requirements, since
    otherwise they would require 8 bytes per pixel.
-  With a resolution of 4 pixels, this is reduced to 1/2 byte per pixel.
+  With a resolution of 4 pixels, this is reduced to 1/8 byte per pixel.
   Once recursion descends below this resolution level, a local moment table is
    computed for the remaining lookups.
-  Because the local moment table is small (200 bytes), it easily fits in
+  Because the local moment table is small (648 bytes), it easily fits in
    cache. Thus even though this method requires scanning the input image as
    much as two times, it yields a vast reduction in the amount of memory
-   outside of cache that is accessed (2.5 bytes read, 0.5 bytes written per
-   pixel as compared to 10 bytes read, 8 bytes written).
+   outside of cache that is accessed (2.125 bytes read, 0.125 bytes written
+   per pixel as compared to 10 bytes read, 8 bytes written).*/
 
-*/
-
-/*The log base 2 of the resolution of the global moment table.*/
-#define OC_SEG_MOMENT_RES_LOG  (2)
+/*The log base 2 of the resolution of the global moment table.
+  TODO: should this be 4? That gives a 2.25kB table, but aligns rows with
+   cache lines on some hardware (assuming the picture starts on a multiple of
+   16 boundary).*/
+#define OC_SEG_MOMENT_RES_LOG           (3)
 /*The resolution of the global moment table.*/
-#define OC_SEG_MOMENT_RES      (1<<OC_SEG_MOMENT_RES_LOG)
+#define OC_SEG_MOMENT_RES               (1<<OC_SEG_MOMENT_RES_LOG)
 /*A mask for the bits below the resolution of the moment table.*/
-#define OC_SEG_MOMENT_RES_MASK (OC_SEG_MOMENT_RES-1)
+#define OC_SEG_MOMENT_RES_MASK          (OC_SEG_MOMENT_RES-1)
 
 /*The minimum size of a segmented region.
   Imposing this limit gives us an upper bound on the number of regions that
    can be created, which allows us to allocate storage in advance.*/
-#define OC_SEG_REGION_SZ_MIN   (16)
+#define OC_SEG_REGION_SZ_MIN            (16)
 
-/*The number of weighting factors assigned to each segmented region.*/
-#define OC_IMPMAP_NSEG_WEIGHTS          (5)
 
-/*The number of weighting factors which must be rescaled into the interval
-   [0,1]*/
-#define OC_IMPMAP_NSEG_RESCALED_WEIGHTS (3)
-
-/*The list of weighting factors assigned to each segmented region.*/
-enum{
-  /*Contrast with surrounding regions.*/
-  OC_IMPMAP_WEIGHT_CONTRAST,
-  /*Unusualness of the region's shape.*/
-  OC_IMPMAP_WEIGHT_SHAPE,
-  /*Closeness of the region to the image center.*/
-  OC_IMPMAP_WEIGHT_LOCATION,
-  /*Size of the region.*/
-  OC_IMPMAP_WEIGHT_SIZE,
-  /*Degree to which the region is in the foreground vs. background.*/
-  OC_IMPMAP_WEIGHT_FOREGROUND
-};
 
 typedef struct oc_seg_neighbor oc_seg_neighbor;
 typedef struct oc_seg_region   oc_seg_region;
 typedef struct oc_seg_ctx      oc_seg_ctx;
+
+
 
 /*An entry in the linked list of region neighbors.*/
 struct oc_seg_neighbor{
@@ -180,7 +245,7 @@ struct oc_impmap_ctx{
 
 
 
-/*The following masks are used to test quad tree nodes for boundary
+/*The following masks are used to test quad-tree child nodes for boundary
    conditions.
   The bits they are tested against are the following:
   0: size>width
@@ -189,6 +254,9 @@ struct oc_impmap_ctx{
   3: (size/2)>height
   4: (size/2)==width
   5: (size/2)==height
+  Here "size" is the size of quadtree nodes at the parent's level, and "width"
+   and "height" are the dimensions of the part of the parent node that lies
+   inside the image.
 
   The quadtree nodes are organized as:
   +---+---+
@@ -198,17 +266,17 @@ struct oc_impmap_ctx{
   +---+---+
 */
 
-/*If any of the bits in these masks are set, the corresponding quad-tree node
+/*If any of the bits in these masks are set, the corresponding child node
    is completely clipped by the border.*/
 static const int OC_SEG_CLIP_MASKS[4]={0x0,0x14,0x28,0x3C};
-/*If the bit in these masks is set, the width of the quad-tree node is
-   partially clipped by the border.*/
+/*If the bit in these masks is set, the width of the child node is partially
+   clipped by the border.*/
 static const int OC_SEG_BORDER_XMASKS[4]={0x4,0x1,0x4,0x1};
-/*If the bit in these masks is set, the height of the quad-tree node is
-   partially clipped by the border.*/
+/*If the bit in these masks is set, the height of the child node is partially
+   clipped by the border.*/
 static const int OC_SEG_BORDER_YMASKS[4]={0x8,0x8,0x2,0x2};
 /*If any of the bits in these masks are set, either the width or height of the
-   quad-tree node is partially clipped by the border.*/
+   child node is partially clipped by the border.*/
 static const int OC_SEG_BORDER_MASKS[4]={0xC,0x9,0x6,0x3};
 
 
@@ -354,6 +422,7 @@ static void oc_seg_merge(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
   memset(lastr,0xFF,sizeof(lastr));
   bestr=-1;
   rbic=FLT_MAX;
+  rvar=rsumx=rsumx2=0;
   rarea=-1;
   bic0=0.5F*_area*(float)log(_var);
   /*Scan the left edge, if present, for adjacent regions.*/
@@ -435,15 +504,19 @@ static void oc_seg_merge(oc_seg_ctx *_seg,int _x0,int _y0,int _width,
 }
 
 /*Recursive split-merge step.
-  Version for internal regions with local table lookups.
-  _seg:   The segmentation context.
-  _x0:    The X coordinate of the upper-left hand corner of the local region.
-  _y0:    The Y coordinate of the upper-left hand corner of the local region.
-  _dx:    The X coordinate of the upper-left hand corner of the block relative
-           to the local region.
-  _dy:    The Y coordinate of the upper-left hand corner of the block relative
-           to the local region.
-  _level: The log base 2 of the block size.*/
+  Version for interior regions with local table lookups.
+  _seg:    The segmentation context.
+  _x0:     The X coordinate of the upper-left hand corner of the local region.
+  _y0:     The Y coordinate of the upper-left hand corner of the local region.
+  _dx:     The X coordinate of the upper-left hand corner of the block
+            relative to the local region.
+  _dy:     The Y coordinate of the upper-left hand corner of the block
+            relative to the local region.
+  _level:  The log base 2 of the block size.
+  _area:   The area of the block in pixels^2.
+  _sumx:   The sum of the pixel values over the block.
+  _sumx2:  The sum of the pixel values squared over the block.
+  _var:    The variance of the block.*/
 static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
  int _dx,int _dy,int _level,int _area,float _sumx,float _sumx2,float _var){
   int size;
@@ -486,14 +559,20 @@ static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
 
 /*Recursive split-merge step.
   Version for border regions with local table lookups.
-  _seg:   The segmentation context.
-  _x0:    The X coordinate of the upper-left hand corner of the local region.
-  _y0:    The Y coordinate of the upper-left hand corner of the local region.
-  _dx:    The X coordinate of the upper-left hand corner of the block relative
-           to the local region.
-  _dy:    The Y coordinate of the upper-left hand corner of the block relative
-           to the local region.
-  _level: The log base 2 of the block size.*/
+  _seg:    The segmentation context.
+  _x0:     The X coordinate of the upper-left hand corner of the local region.
+  _y0:     The Y coordinate of the upper-left hand corner of the local region.
+  _dx:     The X coordinate of the upper-left hand corner of the block
+            relative to the local region.
+  _dy:     The Y coordinate of the upper-left hand corner of the block
+            relative to the local region.
+  _width:  The width of the block in pixels.
+  _height: The height of the block in pixels.
+  _level:  The log base 2 of the block size.
+  _area:   The area of the block in pixels^2.
+  _sumx:   The sum of the pixel values over the block.
+  _sumx2:  The sum of the pixel values squared over the block.
+  _var:    The variance of the block.*/
 static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
  int _x0,int _y0,int _dx,int _dy,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _var){
@@ -549,12 +628,16 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
 }
 
 /*Recursive split-merge step.
-  Version for border regions with manual summing.
+  Version for interior regions with manual summing.
   _seg:   The segmentation context.
   _x0:    The X coordinate of the upper-left hand corner of the block.
   _y0:    The Y coordinate of the upper-left hand corner of the block.
   _level: The log base 2 of the block size.
-  _plane: The image plane being segmented.*/
+  _area:   The area of the block in pixels^2.
+  _sumx:   The sum of the pixel values over the block.
+  _sumx2:  The sum of the pixel values squared over the block.
+  _var:    The variance of the block.
+  _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _var,
  const oc_img_plane *_plane){
@@ -588,8 +671,14 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
   _seg:   The segmentation context.
   _x0:    The X coordinate of the upper-left hand corner of the block.
   _y0:    The Y coordinate of the upper-left hand corner of the block.
+  _width:  The width of the block in pixels.
+  _height: The height of the block in pixels.
   _level: The log base 2 of the block size.
-  _plane: The image plane being segmented.*/
+  _area:   The area of the block in pixels^2.
+  _sumx:   The sum of the pixel values over the block.
+  _sumx2:  The sum of the pixel values squared over the block.
+  _var:    The variance of the block.
+  _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _var,const oc_img_plane *_plane){
@@ -630,12 +719,16 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
 }
 
 /*Recursive split-merge step.
-  Version for border regions with reduced resolution table lookups.
+  Version for interior regions with reduced resolution table lookups.
   _seg:   The segmentation context.
   _x0:    The X coordinate of the upper-left hand corner of the block.
   _y0:    The Y coordinate of the upper-left hand corner of the block.
   _level: The log base 2 of the block size.
-  _plane: The image plane being segmented.*/
+  _area:   The area of the block in pixels^2.
+  _sumx:   The sum of the pixel values over the block.
+  _sumx2:  The sum of the pixel values squared over the block.
+  _var:    The variance of the block.
+  _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _var,
  const oc_img_plane *_plane){
@@ -691,11 +784,17 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
 
 /*Recursive split-merge step.
   Version for border regions with reduced resolution table lookups.
-  _seg:   The segmentation context.
-  _x0:    The X coordinate of the upper-left hand corner of the block.
-  _y0:    The Y coordinate of the upper-left hand corner of the block.
-  _level: The log base 2 of the block size.
-  _plane: The image plane being segmented.*/
+  _seg:    The segmentation context.
+  _x0:     The X coordinate of the upper-left hand corner of the block.
+  _y0:     The Y coordinate of the upper-left hand corner of the block.
+  _width:  The width of the block in pixels.
+  _height: The height of the block in pixels.
+  _level:  The log base 2 of the block size.
+  _area:   The area of the block in pixels^2.
+  _sumx:   The sum of the pixel values over the block.
+  _sumx2:  The sum of the pixel values squared over the block.
+  _var:    The variance of the block.
+  _plane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _var,const oc_img_plane *_plane){
@@ -771,6 +870,11 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
   else oc_seg_merge(_seg,_x0,_y0,_width,_height,_area,_sumx,_sumx2,_var);
 }
 
+/*Initialize a segmentation context.
+  This pre-allocates all memory needed by the segmentation process.
+  _seg:    The segmentation context.
+  _width:  The width of the image to segment, in pixels.
+  _height: The height of the image to segment, in pixels.*/
 static void oc_seg_init(oc_seg_ctx *_seg,int _width,int _height){
   int size;
   int level_max;
@@ -804,6 +908,8 @@ static void oc_seg_init(oc_seg_ctx *_seg,int _width,int _height){
    nneighbors*sizeof(_seg->neighbors[0]));
 }
 
+/*Frees all memory used by the given segmentation context.
+  _seg: The segmentation context to clear.*/
 static void oc_seg_clear(oc_seg_ctx *_seg){
   oc_free_2d(_seg->sumx);
   oc_free_2d(_seg->sumx2);
@@ -847,7 +953,7 @@ static void oc_seg_add_neighbor(oc_seg_ctx *_seg,int _from,int _to){
 }
 
 /*Scans a newly created segmentation to enumerate neighbors, count border
-   pixels and count edge pixels.
+   pixels, count edge pixels, and count pixels near the center of the image.
   _seg:    The segmentation context.
   _width:  The width of the image.
   _height: The height of the image.*/
@@ -1029,18 +1135,50 @@ void oc_impmap_free(oc_impmap_ctx *_impmap){
   }
 }
 
-void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img){
+/*Computes the importance of a given motion vector.
+  _dx:         The horizontal motion, in half-pixels/frame.
+  _dy:         The vertical motion, in half-pixels/frame.
+  _mot_limits: The boundaries of each of the three piecewise sections of the
+                importance function, pre-adjusted to half-pixels/frame.*/
+static float oc_impmap_mot_weight(int _dx,int _dy,float _mot_limits[4]){
+  float mot;
+  /*This computation is perhaps too simple: In reality, it is motion which
+     deviates from the average (3D) motion that attracts attention.
+    Consider a camera that is moving straight forward.
+    The motion with the largest magnitudes is on the edge of the image, but
+     the most likely center of attention is the vanishing point in the center
+     of the image.
+    All of the motion in the image can be explained by one global motion of
+     the camera, and so none of it in particular draws attention.
+    However, the Theora codec does not currently have a form of global motion
+     compensation, and computing it just for this measurement is awfully
+     expensive.*/
+  mot=(float)sqrt(_dx*_dx+_dy*_dy);
+  if(mot<_mot_limits[0])return 0;
+  else if(mot<_mot_limits[1]){
+    return (mot-_mot_limits[0])/(_mot_limits[1]-_mot_limits[0]);
+  }
+  else if(mot<_mot_limits[2])return 1;
+  else if(mot<_mot_limits[3]){
+    return (_mot_limits[3]-mot)/(_mot_limits[3]-_mot_limits[2]);
+  }
+  else return 0;
+}
+
+void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img,
+ float _duration){
   float weight_mins[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
   float weight_maxs[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
   float weight_scales[OC_IMPMAP_NSEG_RESCALED_WEIGHTS];
   float imp_max;
   float imp_scale;
+  float mot_limits[4];
   oc_seg_region *reg;
   int            regi;
   int            i;
   /*Segment the Y plane.*/
   oc_seg_plane(&_impmap->seg,&_img[0]);
-  /*Compute the importance values for each region.*/
+  /*Compute the importance values for each region:*/
   for(i=0;i<OC_IMPMAP_NSEG_RESCALED_WEIGHTS;i++){
     weight_mins[i]=FLT_MAX;
     weight_maxs[i]=-FLT_MAX;
@@ -1105,10 +1243,16 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,const oc_yuv_buffer _img){
     }
     if(reg->importance>imp_max)imp_max=reg->importance;
   }
-  /*Rescale the region's importance into the range [0,1].*/
-  if(imp_max>0)imp_scale=1/imp_max;
-  else imp_scale=1;
-  for(regi=0;regi<_impmap->seg.nregions;regi++){
-    _impmap->seg.regions[regi].importance*=imp_scale;
+  /*Rescale the regions' importances into the range [0,1].*/
+  if(imp_max>0){
+    imp_scale=1/imp_max;
+    for(regi=0;regi<_impmap->seg.nregions;regi++){
+      _impmap->seg.regions[regi].importance*=imp_scale;
+    }
   }
+  /*Rescale motion limits from deg/sec to half-pixels/frame.*/
+  mot_limits[0]=2*OC_IMPMAP_MOT_MIN*OC_PIXELS_PER_DEGREE*_duration;
+  mot_limits[1]=2*OC_IMPMAP_MOT_P1*OC_PIXELS_PER_DEGREE*_duration;
+  mot_limits[2]=2*OC_IMPMAP_MOT_P2*OC_PIXELS_PER_DEGREE*_duration;
+  mot_limits[3]=2*OC_IMPMAP_MOT_MAX*OC_PIXELS_PER_DEGREE*_duration;
 }

@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W4 /Gm /GX /ZI /Od /I "../../../xiph-write/ogg/include" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+# ADD CPP /nologo /W4 /Gm /GX /ZI /Od /I "../../../xiph/ogg/include" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -85,11 +85,19 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\lib\decode.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\encode.c
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\fdct.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\fragment.c
 # End Source File
 # Begin Source File
 
@@ -114,6 +122,10 @@ SOURCE=..\..\lib\impmap.c
 # Begin Source File
 
 SOURCE=..\..\lib\internal.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\mcenc.c
 # End Source File
 # End Group
 # Begin Group "Header Files"

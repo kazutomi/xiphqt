@@ -421,7 +421,6 @@ static const oc_mb_fill_cmapping_func MB_FILL_CMAPPING_TABLE[4]={
   _cvdec     Whether or not chroma is decimated vertically.*/
 static void oc_mb_create_mapping(oc_mb _mbs[],
  const oc_fragment_plane _frplanes[3],int _chdec,int _cvdec){
-  static const int MB_MAP[2][2]={{0,3},{1,2}};
   oc_mb_fill_cmapping_func  mb_fill_cmapping;
   oc_mb                    *mb0;
   int                       y;
@@ -439,13 +438,13 @@ static void oc_mb_create_mapping(oc_mb _mbs[],
           oc_mb *mb;
           int    mbx;
           int    mby;
-          mb=mb0+MB_MAP[ymb][xmb];
+          mb=mb0+OC_MB_MAP[ymb][xmb];
           mbx=x|xmb<<1;
           mby=y|ymb<<1;
           /*Initialize fragment indexes to -1.*/
           memset(mb->map,0xFF,sizeof(mb->map));
           /*Make sure this macro block is within the encoded region.*/
-          if(mbx>=_frplanes[0].nhfrags||mby>=_frplanes[0].nfrags){
+          if(mbx>=_frplanes[0].nhfrags||mby>=_frplanes[0].nvfrags){
             mb->mode=-1;
             continue;
           }

@@ -5,7 +5,7 @@
 #include "idct.h"
 
 /*Divides _x by 65536, truncating towards 0.*/
-#define DIV2_16(_x) OC_DIV_POW2(_x,16,0xFFFF)
+#define OC_DIV2_16(_x) OC_DIV_POW2(_x,16,0xFFFF)
 
 /*Performs a forward 8 point Type-II DCT transform.
   The output is scaled by a factor of 2 from the orthonormal version of the
@@ -35,26 +35,26 @@ static void fdct8(ogg_int16_t *_y,const ogg_int16_t _x[8]){
   /*Butterflies for ouputs 0 and 4.*/
   u=t[0]+t[2];
   v=t[1]+t[3];
-  _y[0<<3]=(ogg_int16_t)DIV2_16(OC_C4S4*(u+v));
-  _y[4<<3]=(ogg_int16_t)DIV2_16(OC_C4S4*(u-v));
+  _y[0<<3]=(ogg_int16_t)OC_DIV2_16(OC_C4S4*(u+v));
+  _y[4<<3]=(ogg_int16_t)OC_DIV2_16(OC_C4S4*(u-v));
   /*Apply rotation for outputs 2 and 6.*/
   u=t[0]-t[2];
   v=t[6]-t[4];
-  _y[2<<3]=(ogg_int16_t)(DIV2_16(OC_C2S6*u)+DIV2_16(OC_C6S2*v));
-  _y[6<<3]=(ogg_int16_t)(DIV2_16(OC_C6S2*u)-DIV2_16(OC_C2S6*v));
+  _y[2<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C2S6*u)+OC_DIV2_16(OC_C6S2*v));
+  _y[6<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C6S2*u)-OC_DIV2_16(OC_C2S6*v));
   /*Compute some common terms.*/
-  t[3]=DIV2_16(OC_C4S4*(t[1]-t[3]));
-  t[4]=-DIV2_16(OC_C4S4*(t[6]+t[4]));
+  t[3]=OC_DIV2_16(OC_C4S4*(t[1]-t[3]));
+  t[4]=-OC_DIV2_16(OC_C4S4*(t[6]+t[4]));
   /*Apply rotation for outputs 1 and 7.*/
   u=t[7]+t[3];
   v=t[4]-t[5];
-  _y[1<<3]=(ogg_int16_t)(DIV2_16(OC_C1S7*u)-DIV2_16(OC_C7S1*v));
-  _y[7<<3]=(ogg_int16_t)(DIV2_16(OC_C7S1*u)+DIV2_16(OC_C1S7*v));
+  _y[1<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C1S7*u)-OC_DIV2_16(OC_C7S1*v));
+  _y[7<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C7S1*u)+OC_DIV2_16(OC_C1S7*v));
   /*Apply rotation for outputs 3 and 5.*/
   u=t[7]-t[3];
   v=t[4]+t[5];
-  _y[3<<3]=(ogg_int16_t)(DIV2_16(OC_C3S5*u)-DIV2_16(OC_C5S3*v));
-  _y[5<<3]=(ogg_int16_t)(DIV2_16(OC_C5S3*u)+DIV2_16(OC_C3S5*v));
+  _y[3<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C3S5*u)-OC_DIV2_16(OC_C5S3*v));
+  _y[5<<3]=(ogg_int16_t)(OC_DIV2_16(OC_C5S3*u)+OC_DIV2_16(OC_C3S5*v));
 }
 
 /*Performs a forward 8x8 Type-II DCT transform.
