@@ -568,8 +568,8 @@ will be mixed with Vorbis audio in an Ogg container to encode movies.
 	In addition, <a href='http://flac.sourceforge.net/'>FLAC</a> can be embedded in
 Ogg and some preliminary work has been done to put MNG and MIDI content
 into Ogg files as well.  Experimental code is available in the
-<tt>ogg-tools</tt> module in the <a href="http://www.xiph.org/cvs.html">Xiph.org
-CVS repository</a>. Programmers working on such extensions can discuss
+<tt>ogg-tools</tt> module in the <a href="http://www.xiph.org/svn.html">Xiph.org
+Subversion repository</a>. Programmers working on such extensions can discuss
 issues and questions on the <a href="http://www.xiph.org/ogg/vmail.html">vorbis-dev mailing list</a>.</p>
           </dd>
         </dl>
@@ -584,7 +584,7 @@ issues and questions on the <a href="http://www.xiph.org/ogg/vmail.html">vorbis-
           <dd>
 			<p>It is important to first become familiar with current development efforts.   The best ways to do this are:</p>
 			<ul>
-				<li>Download and compile the latest development code from <a href="http://www.xiph.org/cvs.html">the Xiph.org CVS repository</a>. The 
+				<li>Download and compile the latest development code from <a href="http://www.xiph.org/svn.html">the Xiph.org Subversion repository</a>. The 
 				important modules for Ogg Vorbis development are <tt>ogg</tt>, <tt>vorbis</tt>, <tt>ao</tt>, and
 				<tt>vorbis-tools</tt>.  If you are interested in working on putting other media types
 				into Ogg files, the <tt>ogg-tools</tt> module also has example code.</li>
