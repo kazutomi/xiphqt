@@ -26,7 +26,7 @@ docdirbase  = 'share/doc/positron'
 manpagebase = 'share/man/man1'
 docfiles    = filter(isfile, glob('doc/*.html')) + \
               filter(isfile, glob('doc/*.png')) + ['README', 'COPYING']
-manpages    = filter(isfile, glob('doc/*.1.gz'))
+manpages    = ['doc/positron.1.gz']
 examfiles   = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
