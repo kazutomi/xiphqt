@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "internal.h"
+#include "idct.h"
 
 /*A map from the index in the zig zag scan to the coefficient number in a
    block.*/
@@ -55,7 +56,7 @@ const int OC_MB_MAP[2][2]={{0,3},{1,2}};
 
 
 
-static int oc_ilog(unsigned _v){
+int oc_ilog(unsigned _v){
   int ret;
   for(ret=0;_v;ret++)_v>>=1;
   return ret;
@@ -78,7 +79,7 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
   int            cvstride;
   int            yoffset;
   int            coffset;
-  int            i;
+  int            rfi;
   info=&_state->info;
   /*Compute the image buffer parameters for each plane.*/
   yhstride=info->width+2*OC_UMV_PADDING;
@@ -106,18 +107,24 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
   memcpy(_state->ref_frame_bufs[2],_state->ref_frame_bufs[0],
    sizeof(_state->ref_frame_bufs[0]));
   /*Set up the data pointers for the YUV buffers.*/
-  for(i=0;i<3;i++){
-    _state->ref_frame_bufs[i][0].data=ref_frame_data+yoffset;
+  for(rfi=0;rfi<3;rfi++){
+    _state->ref_frame_bufs[rfi][0].data=ref_frame_data+yoffset;
     ref_frame_data+=yplane_sz;
-    _state->ref_frame_bufs[i][1].data=ref_frame_data+coffset;
+    _state->ref_frame_bufs[rfi][1].data=ref_frame_data+coffset;
     ref_frame_data+=cplane_sz;
-    _state->ref_frame_bufs[i][2].data=ref_frame_data+coffset;
+    _state->ref_frame_bufs[rfi][2].data=ref_frame_data+coffset;
     ref_frame_data+=cplane_sz;
+    /*Flip the buffer upside down.*/
+    oc_yuv_buffer_flip(_state->ref_frame_bufs[rfi],
+     _state->ref_frame_bufs[rfi]);
+    /*Initialize the fragment pointers into this buffer.*/
+    oc_frarray_fill_buffer_ptrs(&_state->frarray,rfi,
+     _state->ref_frame_bufs[rfi]);
   }
   /*Initialize the reference frame indexes.*/
-  _state->ref_frame_idx[OC_FRAME_GOLD]=-1;
-  _state->ref_frame_idx[OC_FRAME_PREV]=-1;
-  _state->ref_frame_idx[OC_FRAME_SELF]=0;
+  _state->ref_frame_idx[OC_FRAME_GOLD]=
+   _state->ref_frame_idx[OC_FRAME_PREV]=
+   _state->ref_frame_idx[OC_FRAME_SELF]=-1;
 }
 
 static void oc_state_ref_bufs_clear(oc_theora_state *_state){
@@ -143,6 +150,7 @@ int oc_state_init(oc_theora_state *_state,theora_info *_info){
   }
   memset(_state,0,sizeof(_state));
   memcpy(&_state->info,_info,sizeof(*_info));
+  _state->frame_type=OC_UNKWN_FRAME;
   oc_frarray_init(&_state->frarray,_info);
   oc_state_ref_bufs_init(_state);
   if(_info->keyframe_frequency_force==0){
@@ -178,7 +186,8 @@ static void oc_iplane_borders_fill(oc_img_plane *_iplane,
   apix=_iplane->data;
   bpix=_iplane->data+_iplane->width-1;
   epix=_iplane->data+_iplane->height*_iplane->stride;
-  while(apix<epix){
+  /*Note the use of != instead of <, which allows stride to be negative.*/
+  while(apix!=epix){
     memset(apix-_hpadding,apix[0],_hpadding);
     memset(bpix+1,bpix[0],_hpadding);
     apix+=_iplane->stride;
@@ -189,7 +198,7 @@ static void oc_iplane_borders_fill(oc_img_plane *_iplane,
   apix=_iplane->data-_hpadding;
   bpix=_iplane->data+(_iplane->height-1)*_iplane->stride;
   epix=apix-_iplane->stride*_vpadding;
-  while(apix>epix){
+  while(apix!=epix){
     memcpy(apix-_iplane->stride,apix,fullw);
     memcpy(bpix+_iplane->stride,bpix,fullw);
     apix-=_iplane->stride;
@@ -214,6 +223,77 @@ void oc_state_borders_fill(oc_theora_state *_state,int _refi){
      PL_PADDING[pli][_state->info.chroma_y_decimated]);
   }
 }
+
+void oc_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,int _pli,
+ ogg_int16_t _dct_coeffs[64],int _ncoefs,const ogg_uint16_t _iquant[64]){
+  ogg_int16_t dct_buf[64];
+  ogg_int16_t res_buf[64];
+  int dst_framei;
+  int dst_ystride;
+  int zzi;
+  int ci;
+  /*Special case only having a DC component.*/
+  if(_ncoefs<2){
+    ogg_int16_t p;
+    /*Why is the iquant product rounded in this case and no others?
+      Who knows.*/
+    p=(ogg_int16_t)((ogg_int32_t)_frag->dc*_iquant[0]+15>>5);
+    for(ci=0;ci<64;ci++)res_buf[ci]=p;
+  }
+  else{
+    /*First, dequantize the coefficients.*/
+    dct_buf[0]=(ogg_int16_t)((ogg_int32_t)_frag->dc*_iquant[0]);
+    for(zzi=1;zzi<_ncoefs;zzi++){
+      int ci;
+      ci=OC_FZIG_ZAG[zzi];
+      dct_buf[ci]=(ogg_int16_t)((ogg_int32_t)_dct_coeffs[ci]*_iquant[ci]);
+    }
+    /*Then, fill in the remainder of the coefficients with 0's, and perform
+       the iDCT.*/
+    if(_ncoefs<10){
+      for(;zzi<10;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
+      oc_idct8x8_10(res_buf,dct_buf);
+    }
+    else{
+      for(;zzi<64;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
+      oc_idct8x8(res_buf,dct_buf);
+    }
+  }
+  /*Fill in the target buffer.*/
+  dst_framei=_state->ref_frame_idx[OC_FRAME_SELF];
+  dst_ystride=_state->ref_frame_bufs[dst_framei][_pli].stride;
+  /*For now stride values in all ref frames assumed to be equal.*/
+  if(_frag->mbmode==OC_MODE_INTRA){
+    oc_frag_recon_intra(_frag->buffer[dst_framei],dst_ystride,res_buf);
+  }
+  else{
+    int src_framei;
+    int src_ystride;
+    int src_offset1;
+    src_framei=_state->ref_frame_idx[OC_FRAME_FOR_MODE[_frag->mbmode]];
+    src_ystride=_state->ref_frame_bufs[src_framei][_pli].stride;
+    if((_frag->mv[0]&1)||(_frag->mv[1]&1)){
+      int src_offset2;
+      int dy;
+      src_offset1=OC_DIV2(_frag->mv[0]);
+      src_offset2=_frag->mv[0]-src_offset1;
+      dy=OC_DIV2(_frag->mv[1]);
+      src_offset1+=dy*src_ystride;
+      dy=_frag->mv[1]-dy;
+      src_offset2+=dy*src_ystride;
+      oc_frag_recon_inter2(_frag->buffer[dst_framei],dst_ystride,
+       _frag->buffer[src_framei]+src_offset1,src_ystride,
+       _frag->buffer[src_framei]+src_offset2,src_ystride,res_buf);
+    }
+    else{
+      src_offset1=OC_DIV2(_frag->mv[0])+OC_DIV2(_frag->mv[1])*src_ystride;
+      oc_frag_recon_inter(_frag->buffer[dst_framei],dst_ystride,
+       _frag->buffer[src_framei]+src_offset1,src_ystride,res_buf);
+    }
+  }
+}
+
+
 
 const int OC_DCT_TOKEN_EXTRA_BITS[OC_NDCT_TOKENS]={
   0,0,0,2,3,4,12,3,6,
@@ -247,6 +327,21 @@ void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz){
 
 void oc_free_2d(void **_ptr){
   _ogg_free(_ptr);
+}
+
+/*Fills in a YUV buffer with a pointer to the image data in the first buffer,
+   but with the opposite vertical orientation.
+  _dst: The destination buffer.
+        This can be the same as _src.
+  _src: The source buffer.*/
+void oc_yuv_buffer_flip(oc_yuv_buffer _dst,const oc_yuv_buffer _src){
+  int pli;
+  for(pli=0;pli<3;pli++){
+    _dst[pli].width=_src[pli].width;
+    _dst[pli].height=_src[pli].height;
+    _dst[pli].data=_src[pli].data+(_src[pli].height-1)*_src[pli].stride;
+    _dst[pli].stride=-_src[pli].stride;
+  }
 }
 
 const char *theora_version_string(void){

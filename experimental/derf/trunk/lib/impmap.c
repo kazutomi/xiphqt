@@ -5,6 +5,11 @@
 #include <ogg/ogg.h>
 #include "encint.h"
 #include "psych.h"
+#define OC_DUMP_IMAGES (0)
+#if defined(OC_DUMP_IMAGES)
+# include <stdio.h>
+# include "png.h"
+#endif
 
 /*Importance map calculations.
 
@@ -165,7 +170,14 @@ enum{
   Otherwise, the best bound available would be the number of pixels in the
    image.
   This also removes overhead early on required to deal with one pixel regions
-   that often accumulate on region borders.*/
+   that often accumulate on region borders.
+   
+  TODO: Initial results do not look very promising.
+  Candidates to replace this segmentation algorithm are needed.
+  One potential solution may be to perform the initial split based upon edge
+   detection results within the region instead of on region variance.
+  Also, operating on an RLE-compressed label image may provide further speed
+   improvements.*/
 
 /*The log base 2 of the resolution of the global moment table.*/
 #define OC_SEG_MOMENT_RES_LOG   (4)
@@ -185,7 +197,9 @@ enum{
 #define OC_SEG_REGION_SZ_MIN    (16)
 
 /*The weight to associate with the model cost, scaled by a factor of 2.*/
-#define OC_SEG_MODEL_WEIGHT     (2*16)
+/*#define OC_SEG_MODEL_WEIGHT     (2*1)*/
+#define OC_SEG_MODEL_SPLIT_WEIGHT (2*4)
+#define OC_SEG_MODEL_MERGE_WEIGHT (2*16)
 
 
 
@@ -752,7 +766,7 @@ static void oc_seg_pair_update(oc_seg_ctx *_seg,oc_seg_pair *_pair){
   _pair->bic=var>0?area*OC_LOGF(var):0;
   old_dbic=_pair->dbic;
   _pair->dbic=_pair->bic-reg0->bic-reg1->bic-
-   OC_SEG_MODEL_WEIGHT*OC_LOGF(area);
+   OC_SEG_MODEL_MERGE_WEIGHT*OC_LOGF(area);
   _seg->reheap(_seg,_pair,old_dbic);
 }
 
@@ -903,7 +917,7 @@ static void oc_seg_merge(oc_seg_ctx *_seg){
     reg[0]->sumx=pair->sumx;
     reg[0]->sumx2=pair->sumx2;
     reg[0]->bic=pair->bic;
-    reg[1]->link.regi=regi[0];
+    reg[1]->link.regi=regi[dst];
     /*Finally free the pair.*/
     oc_seg_pair_free(_seg,pair);
     /*Now update all the pairs that involve the new merged region.*/
@@ -1143,7 +1157,7 @@ static void oc_seg_splitmerge_il(oc_seg_ctx *_seg,int _x0,int _y0,
       bic[i]=var>0?area*OC_LOGF(var):0;
       dbic-=bic[i];
     }
-    dbic-=3*OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+    dbic-=3*OC_SEG_MODEL_SPLIT_WEIGHT*OC_LOGF(_area);
     if(dbic>=0){
       for(i=0;i<4;i++){
         oc_seg_splitmerge_il(_seg,_x0,_y0,_dx+dx[i],_dy+dy[i],_level,area,
@@ -1199,7 +1213,7 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
     b=(size>_width)|((size>_height)<<1)|
      ((size_2>_width)<<2)|((size_2>_height)<<3)|
      ((size_2==_width)<<4)|((size_2==_height)<<5);
-    model_cost=OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+    model_cost=OC_SEG_MODEL_SPLIT_WEIGHT*OC_LOGF(_area);
     dbic=_bic+model_cost;
     for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
       float var;
@@ -1367,7 +1381,7 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
     bic[i]=var>0?area*OC_LOGF(var):0;
     dbic-=bic[i];
   }
-  dbic-=3*OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+  dbic-=3*OC_SEG_MODEL_SPLIT_WEIGHT*OC_LOGF(_area);
   if(dbic>=0){
     int dx[4];
     int dy[4];
@@ -1438,7 +1452,7 @@ static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
   b=(size>_width)|((size>_height)<<1)|
    ((size_2>_width)<<2)|((size_2>_height)<<3)|
    ((size_2==_width)<<4)|((size_2==_height)<<5);
-  model_cost=OC_SEG_MODEL_WEIGHT*OC_LOGF(_area);
+  model_cost=OC_SEG_MODEL_SPLIT_WEIGHT*OC_LOGF(_area);
   dbic=_bic+model_cost;
   for(i=0;i<4;i++)if(!(b&OC_SEG_CLIP_MASKS[i])){
     float var;
@@ -1735,6 +1749,56 @@ static void oc_impmap_scan(oc_impmap_ctx *_impmap,int _width,int _height){
   for(y=height_2>>1;y<yend;y++)for(x=width_2>>1;x<xend;x++){
     iregions[labels[y][x]].ncenter++;
   }
+#if defined(OC_DUMP_IMAGES)
+  /*Dump a PNG of the segmented image.
+    Each segment is mapped to its mean gray level.*/
+  {
+    png_structp   png;
+    png_infop     info;
+    png_bytep    *image;
+    FILE         *fp;
+    char  fname[16];
+    sprintf(fname,"%08iseg.png",_impmap->enc->state.curframe_num);
+    fp=fopen(fname,"wb");
+    if(fp==NULL)return;
+    image=(png_bytep *)oc_malloc_2d(_height,_width,sizeof(image[0][0]));
+    png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
+    if(png==NULL){
+      oc_free_2d(image);
+      fclose(fp);
+      return;
+    }
+    info=png_create_info_struct(png);
+    if(info==NULL){
+      png_destroy_write_struct(&png,NULL);
+      oc_free_2d(image);
+      fclose(fp);
+      return;
+    }
+    if(setjmp(png_jmpbuf(png))){
+      png_destroy_write_struct(&png,&info);
+      oc_free_2d(image);
+      fclose(fp);
+      return;
+    }
+    for(y=0;y<_height;y++)for(x=0;x<_width;x++){
+      int regi;
+      regi=labels[y][x];
+      image[_height-1-y][x]=(unsigned char)(
+       sregions[regi].sumx/sregions[regi].npixels+0.5F);
+    }
+    png_init_io(png,fp);
+    png_set_compression_level(png,Z_BEST_COMPRESSION);
+    png_set_IHDR(png,info,_width,_height,8,PNG_COLOR_TYPE_GRAY,
+     PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,PNG_FILTER_TYPE_DEFAULT);
+    png_set_rows(png,info,image);
+    png_write_png(png,info,PNG_TRANSFORM_IDENTITY,NULL);
+    png_write_end(png,info);
+    png_destroy_write_struct(&png,&info);
+    oc_free_2d(image);
+    fclose(fp);
+  }
+#endif
 }
 
 static void oc_impmap_regions_weight(oc_impmap_ctx *_impmap){
@@ -1914,7 +1978,7 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
   float  ret;
   mb=_impmap->enc->state.frarray.mbs+_mbi;
   ret=0;
-  if(mb->mode>=0){
+  if(mb->mode!=OC_MODE_INVALID){
     static const int FRAG_DX[4]={0,8,0,8};
     static const int FRAG_DY[4]={0,0,8,8};
     oc_mb_enc_info    *emb;
@@ -1934,20 +1998,21 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
     x0=mb->x-_impmap->offset_x;
     y0=mb->y-_impmap->offset_y;
     for(i=0;i<4;i++){
-      oc_fragment *frag;
-      int          xend;
-      int          yend;
-      int          x;
-      int          y;
+      oc_fragment          *frag;
+      oc_fragment_enc_info *frinfo;
+      int                   xend;
+      int                   yend;
+      int                   x;
+      int                   y;
       frag=_impmap->enc->state.frarray.frags+mb->map[0][i];
+      frinfo=_impmap->enc->frinfo+mb->map[0][i];
       xend=x0+FRAG_DX[i]+8;
       yend=y0+FRAG_DY[i]+8;
       frag_imps[i]=0;
       if(frag->border==NULL){
         for(y=y0+FRAG_DY[i];y<yend;y++)for(x=x0+FRAG_DX[i];x<xend;x++){
-          float ireg_imp;
-          ireg_imp=iregions[labels[y][x]].importance;
-          frag_imps[i]=OC_MAXF(frag_imps[i],ireg_imp);
+          frag_imps[i]=OC_MAXF(frag_imps[i],
+           iregions[labels[y][x]].importance);
         }
       }
       else{
@@ -1956,17 +2021,15 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
         border=frag->border;
         for(y=y0+FRAG_DY[i],bit=1;y<yend;y++){
           for(x=x0+FRAG_DX[i];x<xend;x++,bit<<=1)if(border->mask&bit){
-            float ireg_imp;
-            ireg_imp=iregions[labels[y][x]].importance;
-            frag_imps[i]=OC_MAXF(frag_imps[i],ireg_imp);
+            frag_imps[i]=OC_MAXF(frag_imps[i],
+             iregions[labels[y][x]].importance);
           }
         }
       }
       frag_imps[i]+=mot_imp;
       ret+=frag_imps[i];
-      frag_imp_weights[i]=
+      frinfo->imp_weight=frag_imp_weights[i]=
        (2*frag_imps[i]+_impmap->imp_avg)/(frag_imps[i]+2*_impmap->imp_avg);
-      _impmap->enc->frinfo->imp_weight=frag_imp_weights[i];
     }
     (*_impmap->chroma_frag_weight)(_impmap->enc->frinfo,mb->map,
      frag_imp_weights);

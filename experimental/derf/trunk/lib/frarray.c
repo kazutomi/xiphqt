@@ -449,7 +449,7 @@ static void oc_mb_create_mapping(oc_mb _mbs[],
           memset(mb->map,0xFF,sizeof(mb->map));
           /*Make sure this macro block is within the encoded region.*/
           if(mbx>=_frplanes[0].nhfrags||mby>=_frplanes[0].nvfrags){
-            mb->mode=-1;
+            mb->mode=OC_MODE_INVALID;
             continue;
           }
           /*Fill in the fragment indices for the Y plane.*/
@@ -674,7 +674,7 @@ void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
   /*Special handling for the input image to give us the opportunity to skip
      some updates.
     The other buffers do not change throughout the encoding process.*/
-  if(_buf_idx==3){
+  if(_buf_idx==OC_FRAME_IO){
      if(memcmp(_frarray->input,_img,sizeof(oc_yuv_buffer))==0)return;
      memcpy(_frarray->input,_img,sizeof(oc_yuv_buffer));
   }
@@ -710,4 +710,3 @@ void oc_frarray_fill_buffer_ptrs(oc_fragment_array *_frarray,int _buf_idx,
 int oc_frarray_mbi_for_pos(oc_fragment_array *_frarray,int _mbx,int _mby){
   return ((_mbx&~1)<<1)+(_mby&~1)*_frarray->nhmbs+OC_MB_MAP[_mby&1][_mbx&1];
 }
-

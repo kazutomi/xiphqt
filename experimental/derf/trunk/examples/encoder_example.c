@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.2 2003/09/29 04:00:41 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.3 2003/11/01 14:40:23 derf Exp $
 
  ********************************************************************/
 
@@ -468,12 +468,9 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       theora_encode_yuv_in(td,yuv);
 
       /* if there's only one frame, it's the last in the stream */
-      /*if(state<2)
-        theora_encode_packetout(td,1,&op);
-      else
-        theora_encode_packetout(td,0,&op);
-
-      ogg_stream_packetin(to,&op);*/
+      while(theora_encode_packetout(td,state<2,&op)){
+        ogg_stream_packetin(to,&op);
+      }
 
       {
         signed char *temp=yuvframe[0];

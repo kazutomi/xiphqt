@@ -34,8 +34,12 @@
 #define OC_FRAME_PREV (1)
 /*The current frame.*/
 #define OC_FRAME_SELF (2)
+/*The input or output frame.*/
+#define OC_FRAME_IO   (3)
 
 /*Macroblock modes.*/
+/*Macro block is invalid: It is never coded.*/
+#define OC_MODE_INVALID         (-1)
 /*Encoded with no motion compensated prediction.*/
 #define OC_MODE_INTRA           (0)
 /*Encoded difference from the same macro block in the previous frame.*/
@@ -57,6 +61,8 @@
 /*Encoded difference from the previous golden frame offset by the given motion
    vector.*/
 #define OC_MODE_INTER_GOLDEN_MV (7)
+/*Macro block is not coded.*/
+#define OC_MODE_NOT_CODED       (8)
 
 /*Predictor bit flags.*/
 /*Left.*/
@@ -275,9 +281,19 @@ extern const int OC_MB_MAP[2][2];
 
 
 
+int oc_ilog(unsigned _v);
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
+void oc_yuv_buffer_flip(oc_yuv_buffer _dst,const oc_yuv_buffer _src);
+
+void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
+ const ogg_int16_t *_residue);
+void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue);
+void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
+ int _src2_ystride,const ogg_int16_t *_residue);
 int oc_frag_pred_dc(const oc_fragment *_frag,
  const oc_fragment_plane *_frplane,int _x,int _y,int _pred_last[3]);
 
@@ -289,5 +305,8 @@ int oc_frarray_mbi_for_pos(oc_fragment_array *_frarray,int _mbx,int _mby);
 
 int oc_state_init(oc_theora_state *_state,theora_info *_info);
 void oc_state_clear(oc_theora_state *_state);
+void oc_state_borders_fill(oc_theora_state *_state,int _refi);
+void oc_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,int _pli,
+ ogg_int16_t _dct_coeffs[64],int _ncoefs,const ogg_uint16_t _iquant[64]);
 
 #endif

@@ -1836,6 +1836,12 @@ static const float OC_MASK_WEIGHTS[OC_MASK_NGROUPS]={
   OC_MASK_R_CSF_NU/(OC_MASK_K_L_NU*79),
 };
 
+/*This constant is used to absorb noise in the CSF values of low-amplitude
+   coefficients.*/
+#define OC_CSF_NOISE_LEVEL (16)
+/*The amount that the DC coefficient of the DC transform is shifted by.*/
+#define OC_CSF_DC_SHIFT    (4096)
+
 
 
 typedef float oc_weight_block[64];
@@ -1848,6 +1854,10 @@ struct oc_psych_ctx{
   /*A single row of CSF-filtered coefficients (after vertical filtering).
     This has OC_CSF_FILTER_SZ_MAX-1 blocks of padding on each side.*/
   oc_weight_block     *csf_row;
+  /*OC_MASK_WINDOW_SZ_MAX rows of CSF-filtered coefficients (after both
+     vertical and horizontal filtering).
+    This has no padding on either side.*/
+  oc_weight_block    **csf_weights;
   /*The half-width of the CSF filters in the current filter banks, rounded
      down.*/
   int                  csf_filter_sizes[5][8];
@@ -1938,7 +1948,8 @@ static void oc_psych_csf_filters_interpolate(oc_psych_ctx *_psych,
     /*Find the filter length that leaves us with less than 1% error.
       For a filter size of n, the actual number of taps is 2*n+1.*/
     for(k=0;k<5;k++){
-      for(j=4;OC_FABSF(_psych->csf_filters[k][i][0]*0.01F)>
+      for(j=OC_CSF_FILTER_SZ_MAX-1;
+       OC_FABSF(_psych->csf_filters[k][i][0]*0.01F)>
        OC_FABSF(_psych->csf_filters[k][i][j]);j--);
       _psych->csf_filter_sizes[k][i]=j;
     }
@@ -1950,8 +1961,28 @@ static void oc_psych_csf_filters_interpolate(oc_psych_ctx *_psych,
     vfilti=k<<1;
     hfilti=k>0?(k<<1)-1:0;
     for(i=0;i<8;i++)for(j=0;j<8;j++){
-      _psych->csf_offsets[k][i<<3|j]=OC_FABSF(
-       _psych->csf_filters[vfilti][i][0]*_psych->csf_filters[hfilti][j][0]);
+      int hi;
+      int vi;
+      _psych->csf_offsets[k][i<<3|j]=0;
+      for(vi=1;vi<=_psych->csf_filter_sizes[vfilti][i];vi++){
+        for(hi=1;hi<=_psych->csf_filter_sizes[hfilti][j];hi++){
+          _psych->csf_offsets[k][i<<3|j]+=_psych->csf_filters[vfilti][i][vi]*
+           _psych->csf_filters[hfilti][j][hi];
+        }
+      }
+      _psych->csf_offsets[k][i<<3|j]*=4;
+      for(vi=1;vi<=_psych->csf_filter_sizes[vfilti][i];vi++){
+        _psych->csf_offsets[k][i<<3|j]+=_psych->csf_filters[vfilti][i][vi]*2*
+         _psych->csf_filters[hfilti][j][0];
+      }
+      for(hi=1;hi<=_psych->csf_filter_sizes[hfilti][j];hi++){
+        _psych->csf_offsets[k][i<<3|j]+=_psych->csf_filters[vfilti][i][0]*2*
+         _psych->csf_filters[hfilti][j][hi];
+      }
+      _psych->csf_offsets[k][i<<3|j]+=_psych->csf_filters[vfilti][i][0]*
+       _psych->csf_filters[hfilti][j][0];
+      _psych->csf_offsets[k][i<<3|j]=OC_FABSF(_psych->csf_offsets[k][i<<3|j])*
+       (i||j?OC_CSF_NOISE_LEVEL:OC_CSF_DC_SHIFT);
     }
   }
 }
@@ -1964,9 +1995,12 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   oc_fragment_enc_info *frinfo;
   oc_mask_block        *maskg_row;
   oc_weight_block      *maskw_row;
+  oc_weight_block      *csfw_row;
   ogg_int16_t          *coeff;
-  float                *weight;
-  float                *weight_min;
+  ogg_uint16_t         *tol_min;
+  float                *csfw;
+  float                *maskw;
+  float                *maskg;
   float                *csf_offset;
   float                 pscale;
   float                 fscale;
@@ -1991,8 +2025,8 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   int                   k;
   csf_offset=_psych->csf_offsets[_pli];
   /*Initialize the minimum psychovisual weight array.*/
-  weight_min=_psych->enc->weight_mins[_pli];
-  for(i=0;i<64;i++)weight_min[i]=FLT_MAX;
+  tol_min=_psych->enc->tol_mins[_pli];
+  for(i=0;i<64;i++)tol_min[i]=32767;
   /*Select the filter sets we're going to use.*/
   vfilti=_pli<<1;
   hfilti=_pli>0?(_pli<<1)-1:0;
@@ -2008,6 +2042,12 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   frinfo=_psych->enc->frinfo;
   stride=_psych->enc->state.frarray.input[_pli].stride;
   pscale=OC_YUV_SCALE[_psych->enc->state.info.colorspace][_pli];
+  /*Clear out the mask group weights for the rows above the image.*/
+  for(i=(OC_MASK_WINDOW_SZ_MAX-2<<1)-vsize_max;i<OC_MASK_WINDOW_SZ_MAX-1<<1;
+   i++){
+    memset(_psych->mask_groups[i][0],0,sizeof(oc_mask_block)*(
+     fplane->nhfrags+(OC_MASK_WINDOW_SZ_MAX-1<<1)));
+  }
   /*Run each of the filters over the rows, with a suitable delay between
      each.*/
   fragy_end=fplane->nvfrags+vsize_max+OC_MASK_WINDOW_SZ_MAX-1;
@@ -2018,7 +2058,8 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
     if(fragy<fplane->nvfrags){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,dfragi++){
         if(frags[dfragi].invalid)continue;
-        oc_frag_fdct(frags+dfragi,frinfo[dfragi].dct_coeffs,stride);
+        oc_frag_fdct(frags+dfragi,frinfo[dfragi].dct_coeffs,stride,
+         OC_FRAME_IO);
       }
     }
     /*After a vsize_max delay, perform CSF filtering.*/
@@ -2027,20 +2068,19 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
       /*First, the vertical filter.*/
       for(fragx=0,chfragi=cfragi;fragx<fplane->nhfrags;fragx++,chfragi++){
         int fragi_off;
-        weight=_psych->csf_row[fragx+OC_CSF_FILTER_SZ_MAX-1];
+        csfw=_psych->csf_row[fragx+OC_CSF_FILTER_SZ_MAX-1];
         for(i=0;i<64;i++){
           filti=i>>3;
-          weight[i]=vfilters[filti][0]*frinfo[chfragi].dct_coeffs[i];
+          csfw[i]=vfilters[filti][0]*frinfo[chfragi].dct_coeffs[i];
           fragi_off=fplane->nhfrags;
-          for(j=1;j<=vsizes[filti];j++){
+          for(j=vsizes[filti];j>0;j--){
             int coeffs;
             int cvfragi;
             cvfragi=chfragi-fragi_off;
-            coeffs=cvfragi>=fplane->froffset?
-             coeffs=frinfo[cvfragi].dct_coeffs[i]:0;
-            cvfragi=cfragi+fragi_off;
+            coeffs=cvfragi>=fplane->froffset?frinfo[cvfragi].dct_coeffs[i]:0;
+            cvfragi=chfragi+fragi_off;
             if(cvfragi<fragi_end)coeffs+=frinfo[cvfragi].dct_coeffs[i];
-            weight[i]+=0.5F*vfilters[filti][j]*coeffs;
+            csfw[i]+=0.5F*vfilters[filti][j]*coeffs;
             fragi_off+=fplane->nhfrags;
           }
         }
@@ -2048,34 +2088,43 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
       /*Next, the horizontal filtering.*/
       maskg_row=_psych->mask_groups[OC_MASK_WINDOW_SZ_MAX-1<<1];
       maskw_row=_psych->mask_weights[OC_MASK_WINDOW_SZ_MAX-1];
+      csfw_row=_psych->csf_weights[OC_MASK_WINDOW_SZ_MAX-1];
       memset(maskg_row[0],0,sizeof(maskg_row[0])*(
        fplane->nhfrags+(OC_MASK_WINDOW_SZ_MAX-1<<1)));
       for(fragx=0;fragx<fplane->nhfrags;fragx++,cfragi++){
-        if(frags[cfragi].invalid)continue;
-        cfragj=fragx+OC_CSF_FILTER_SZ_MAX-1;
-        mfragj=fragx+OC_MASK_WINDOW_SZ_MAX-1;
-        weight=frinfo[cfragi].weights;
-        for(i=0;i<64;i++){
-          filti=i&7;
-          weight[i]=hfilters[filti][0]*_psych->csf_row[cfragj][i];
-          for(j=hsizes[filti];j>0;j--){
-            weight[i]+=0.5F*hfilters[filti][j]*(
-             _psych->csf_row[cfragj-j][i]+_psych->csf_row[cfragj+j][i]);
+        csfw=csfw_row[fragx];
+        if(frags[cfragi].invalid)memset(csfw,0,sizeof(oc_weight_block));
+        else{
+          cfragj=fragx+OC_CSF_FILTER_SZ_MAX-1;
+          mfragj=fragx+OC_MASK_WINDOW_SZ_MAX-1;
+          for(i=0;i<64;i++){
+            filti=i&7;
+            csfw[i]=hfilters[filti][0]*_psych->csf_row[cfragj][i];
+            for(j=hsizes[filti];j>0;j--){
+              csfw[i]+=0.5F*hfilters[filti][j]*(
+               _psych->csf_row[cfragj-j][i]+_psych->csf_row[cfragj+j][i]);
+            }
+            csfw[i]=OC_FABSF(csfw[i]);
+          }
+          maskw=maskw_row[fragx];
+          maskg=maskg_row[mfragj];
+          for(i=1;i<64;i++){
+            maskw[i]=OC_POWF(csfw[i],OC_MASK_NU);
+            maskg[OC_MASK_GROUP[i]]+=maskw[i];
           }
         }
-        weight[0]=OC_FABSF(weight[0]);
-        for(i=1;i<64;i++){
-          weight[i]=OC_FABSF(weight[i]);
-          maskw_row[fragx][i]=OC_POWF(weight[i],OC_MASK_NU);
-          maskg_row[mfragj][OC_MASK_GROUP[i]]+=maskw_row[fragx][i];
-        }
       }
+    }
+    else{
+      /*Clear out the mask group weights for the rows below the image.*/
+      memset(_psych->mask_groups[OC_MASK_WINDOW_SZ_MAX-1<<1][0],0,
+       sizeof(oc_mask_block)*(fplane->nhfrags+(OC_MASK_WINDOW_SZ_MAX-1<<1)));
     }
     /*After an additional OC_MASK_WINDOW_SZ_MAX delay, perform neighborhood
        masking.*/
     if(fragy>=vsize_max+OC_MASK_WINDOW_SZ_MAX-1){
       static const int o=OC_MASK_WINDOW_SZ_MAX-1;
-      float group_sums[10];
+      oc_mask_block group_sums;
       for(i=0;i<OC_MASK_NFULL_GROUPS;i++){
         group_sums[i]=0;
         for(j=o-OC_MASK_WINDOW_SIZES[i];j<=o+OC_MASK_WINDOW_SIZES[i];j++){
@@ -2110,23 +2159,30 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
           This is the best solution I could come up with to handle the problem
            of 0's in the inter DCT coefficients that, because of motion
            compensation, are not 0 in the intra DCT coefficients and thus
-           need a valid weight.*/
+           need a valid weight.
+          The DC coefficient has a different offset added than the others,
+           because the pixel values have 128 subtracted from them before the
+           DCT is performed, which offsets the DC coefficient by 4096.*/
         coeff=frinfo[mfragi].dct_coeffs;
-        weight=frinfo[mfragi].weights;
+        csfw=_psych->csf_weights[0][fragx];
+        maskw=maskw_row[fragx];
         /*Compute the scaling value for this fragment.*/
         fscale=pscale*frinfo[mfragi].imp_weight/_psych->enc->qscale;
         /*The DC coefficient is not masked.*/
-        frinfo[mfragi].weights[0]=(1+abs(coeff[0]))/
-         (fscale*(csf_offset[0]+weight[0]));
+        frinfo[mfragi].tols[0]=(ogg_uint16_t)OC_MINI(65535,(int)(
+         (OC_CSF_DC_SHIFT+abs(coeff[0]))/(fscale*(csf_offset[0]+csfw[0]))));
+        tol_min[0]=(ogg_uint16_t)OC_MINI(tol_min[0],frinfo[mfragi].tols[0]);
         /*The remaining coefficients are masked.*/
         for(i=1;i<64;i++){
           float mask;
           int   groupi;
           groupi=OC_MASK_GROUP[i];
-          mask=group_sums[groupi]-maskw_row[fragx][i];
-          frinfo[mfragi].weights[i]=
-           ((1+abs(coeff[i]))*(1+OC_MASK_WEIGHTS[groupi]*mask))/
-           (fscale*(csf_offset[i]+weight[i]));
+          mask=group_sums[groupi]-maskw[i];
+          frinfo[mfragi].tols[i]=(ogg_uint16_t)OC_MINI(65535,(int)(
+           ((OC_CSF_NOISE_LEVEL+abs(coeff[i]))*
+           (1+OC_MASK_WEIGHTS[groupi]*mask))/
+           (fscale*(csf_offset[i]+csfw[i]))));
+          tol_min[i]=(ogg_uint16_t)OC_MINI(tol_min[i],frinfo[mfragi].tols[i]);
         }
         /*Remove the parts of the group neighborhoods that are old.*/
         for(i=0;i<OC_MASK_NFULL_GROUPS;i++){
@@ -2147,10 +2203,13 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
     }
     _psych->mask_groups[OC_MASK_WINDOW_SZ_MAX-1<<1]=maskg_row;
     maskw_row=_psych->mask_weights[0];
+    csfw_row=_psych->csf_weights[0];
     for(i=0;i<OC_MASK_WINDOW_SZ_MAX-1;i++){
       _psych->mask_weights[i]=_psych->mask_weights[i+1];
+      _psych->csf_weights[i]=_psych->csf_weights[i+1];
     }
     _psych->mask_weights[OC_MASK_WINDOW_SZ_MAX-1]=maskw_row;
+    _psych->csf_weights[OC_MASK_WINDOW_SZ_MAX-1]=csfw_row;
   }
 }
 
@@ -2161,7 +2220,9 @@ oc_psych_ctx *oc_psych_alloc(oc_enc_ctx *_enc){
   nhfrags=_enc->state.frarray.frplanes[0].nhfrags;
   psych=(oc_psych_ctx *)_ogg_malloc(sizeof(*psych));
   psych->csf_row=(oc_weight_block *)_ogg_calloc(
-   nhfrags+(OC_CSF_FILTER_SZ_MAX-1<<1),sizeof(psych->csf_row[0]));
+   (nhfrags+(OC_CSF_FILTER_SZ_MAX-1<<1)),sizeof(psych->csf_row[0]));
+  psych->csf_weights=(oc_weight_block **)oc_malloc_2d(
+   OC_MASK_WINDOW_SZ_MAX,nhfrags,sizeof(psych->csf_weights[0][0]));
   psych->mask_groups=(oc_mask_block **)oc_malloc_2d(
    (OC_MASK_WINDOW_SZ_MAX<<1)-1,nhfrags+(OC_MASK_WINDOW_SZ_MAX-1<<1),
    sizeof(psych->mask_groups[0][0]));
@@ -2174,6 +2235,7 @@ oc_psych_ctx *oc_psych_alloc(oc_enc_ctx *_enc){
 void oc_psych_free(oc_psych_ctx *_psych){
   if(_psych!=NULL){
     _ogg_free(_psych->csf_row);
+    oc_free_2d((void **)_psych->csf_weights);
     oc_free_2d((void **)_psych->mask_groups);
     oc_free_2d((void **)_psych->mask_weights);
     _ogg_free(_psych);

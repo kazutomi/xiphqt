@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <ogg/ogg.h>
 #include "encint.h"
 #include "fdct.h"
@@ -23,7 +24,8 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
       Only the first three vectors are used in the median calculation
        for the optimal predictor, and so the most important should be
        listed first.
-      Additional vectors are used, so there will always be at least 3.*/
+      Additional vectors are used, so there will always be at least 3, except
+       for in the upper-left most macro block.*/
     /*The number of current neighbors for each macro block position.*/
     static const int NCNEIGHBORS[4]={4,3,2,4};
     /*The offset of each current neighbor in the X direction.*/
@@ -55,7 +57,7 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
     int i;
     mb=frarray->mbs+mbi;
     /*Make sure this macro block is within the encoded region.*/
-    if(mb->mode<0)continue;
+    if(mb->mode==OC_MODE_INVALID)continue;
     emb=_enc->mbinfo+mbi;
     mbn=mbi&3;
     mbx=mb->x>>4;
@@ -66,7 +68,7 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
       nmby=mby+CDY[mbn][i];
       if(nmbx<0||nmbx>=frarray->nhmbs||nmby<0||nmby>=frarray->nvmbs)continue;
       nmbi=oc_frarray_mbi_for_pos(frarray,nmbx,nmby);
-      if(frarray->mbs[nmbi].mode<0)continue;
+      if(frarray->mbs[nmbi].mode==OC_MODE_INVALID)continue;
       emb->cneighbors[emb->ncneighbors++]=nmbi;
     }
     /*Fill in the neighbors with previous motion vectors available.*/
@@ -75,7 +77,7 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
       nmby=mby+PDY[i];
       if(nmbx<0||nmbx>=frarray->nhmbs||nmby<0||nmby>=frarray->nvmbs)continue;
       nmbi=oc_frarray_mbi_for_pos(frarray,nmbx,nmby);
-      if(frarray->mbs[nmbi].mode<0)continue;
+      if(frarray->mbs[nmbi].mode==OC_MODE_INVALID)continue;
       emb->pneighbors[emb->npneighbors++]=nmbi;
     }
   }
@@ -83,26 +85,38 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
 
 /*Select a quantizer for the given quality.*/
 static void oc_enc_quant_sel_quality(oc_enc_ctx *_enc,int _intra_only){
-  int qi;
-  int ci;
+  unsigned qmax[2][3];
+  int      qi;
+  int      ci;
   /*This quantizer selection really bugs me.
     In order to guarantee a minimum error value, we must select a quantizer
      no larger than twice the smallest allowable error for each coefficient.
     In reality, most fragments will not require such a small quantizer, but
      Theora only supports per-frame quantizer selection.*/
-  for(qi=0;qi<63;qi++){
-    for(ci=0;ci<64;ci++){
-      float qmax;
-      qmax=2*_enc->weight_mins[0][ci];
-      if(_enc->state.dequant_tables[qi].intra_y[ci]>qmax||
-       _enc->state.dequant_tables[qi].intra_c[ci]>qmax||
-       _enc->state.dequant_tables[qi].intra_c[ci]>qmax||
-       !_intra_only&&
-       (_enc->state.dequant_tables[qi].inter[ci]>qmax||
-       _enc->state.dequant_tables[qi].inter[ci]>qmax||
-       _enc->state.dequant_tables[qi].inter[ci]>qmax)){
+  qmax[0][0]=OC_MAXI(2*_enc->tol_mins[0][0],OC_INTRA_DC_QUANT_MIN);
+  qmax[0][1]=OC_MAXI(2*_enc->tol_mins[1][0],OC_INTRA_DC_QUANT_MIN);
+  qmax[0][2]=OC_MAXI(2*_enc->tol_mins[2][0],OC_INTRA_DC_QUANT_MIN);
+  qmax[1][0]=OC_MAXI(2*_enc->tol_mins[0][0],OC_INTER_DC_QUANT_MIN);
+  qmax[1][1]=OC_MAXI(2*_enc->tol_mins[1][0],OC_INTER_DC_QUANT_MIN);
+  qmax[1][2]=OC_MAXI(2*_enc->tol_mins[2][0],OC_INTER_DC_QUANT_MIN);
+  for(qi=ci=0;qi<63;qi++){
+    for(;;){
+      if(_enc->state.dequant_tables[qi].intra_y[ci]>qmax[0][0]||
+       _enc->state.dequant_tables[qi].intra_c[ci]>qmax[0][1]||
+       _enc->state.dequant_tables[qi].intra_c[ci]>qmax[0][2]||
+       !_intra_only&&(
+       _enc->state.dequant_tables[qi].inter[ci]>qmax[1][0]||
+       _enc->state.dequant_tables[qi].inter[ci]>qmax[1][1]||
+       _enc->state.dequant_tables[qi].inter[ci]>qmax[1][2])){
         break;
       }
+      if(++ci>=64)break;
+      qmax[0][0]=OC_MAXI(2*_enc->tol_mins[0][ci],OC_INTRA_AC_QUANT_MIN);
+      qmax[0][1]=OC_MAXI(2*_enc->tol_mins[1][ci],OC_INTRA_AC_QUANT_MIN);
+      qmax[0][2]=OC_MAXI(2*_enc->tol_mins[2][ci],OC_INTRA_AC_QUANT_MIN);
+      qmax[1][0]=OC_MAXI(2*_enc->tol_mins[0][ci],OC_INTER_AC_QUANT_MIN);
+      qmax[1][1]=OC_MAXI(2*_enc->tol_mins[1][ci],OC_INTER_AC_QUANT_MIN);
+      qmax[1][2]=OC_MAXI(2*_enc->tol_mins[2][ci],OC_INTER_AC_QUANT_MIN);
     }
     if(ci==64)break;
   }
@@ -131,11 +145,17 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
   frag=_enc->state.frarray.frags;
   frag_end=frag+_enc->state.frarray.nfrags;
   for(;frag<frag_end;frag++){
-    if(frag->invalid)continue;
     frag->coded=1;
     frag->mbmode=OC_MODE_INTRA;
   }
 }
+
+/*The number of different DCT coefficient values that can be stored by each
+   of the different DCT value category tokens.*/
+static const int OC_DCT_VAL_CAT_SIZES[6]={2,4,8,16,32,512};
+/*The number of bits to shift the sign of the DCT coefficient over by for each
+   of the different DCT value category tokens.*/
+static const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
 
 /*Quantize and predict the DC coefficients.
   This is done in a separate step because the prediction of DC coefficients
@@ -149,7 +169,8 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
   frinfo=_enc->frinfo;
   for(pli=0;pli<3;pli++){
     oc_fragment_plane *fplane;
-    const ogg_uint16_t *quant[2];
+    const ogg_uint16_t *fquant[2];
+    const ogg_uint16_t *iquant[2];
     int                 pred_last[3];
     int                 fragx;
     int                 fragy;
@@ -157,35 +178,72 @@ static void oc_enc_quant_dc(oc_enc_ctx *_enc){
     pred_last[OC_FRAME_PREV]=0;
     pred_last[OC_FRAME_SELF]=0;
     fplane=_enc->state.frarray.frplanes+pli;
-    quant[0]=pli>0?_enc->enquant_tables[_enc->state.qi].intra_c:
-     _enc->enquant_tables[_enc->state.qi].intra_y;
-    quant[1]=_enc->enquant_tables[_enc->state.qi].inter;
+    if(pli==0){
+      fquant[0]=_enc->enquant_tables[_enc->state.qi].intra_y;
+      iquant[0]=_enc->state.dequant_tables[_enc->state.qi].intra_y;
+    }
+    else{
+      fquant[0]=_enc->enquant_tables[_enc->state.qi].intra_c;
+      iquant[0]=_enc->state.dequant_tables[_enc->state.qi].intra_c;
+    }
+    fquant[1]=_enc->enquant_tables[_enc->state.qi].inter;
+    iquant[1]=_enc->state.dequant_tables[_enc->state.qi].inter;
     for(fragy=0;fragy<fplane->nvfrags;fragy++){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++,frinfo++){
+        int qc_pred;
+        int qc;
+        int c;
+        int c_abs;
+        int qti;
         if(!frag->coded)continue;
-        /*Note: we don't do any special token bits minimization here, because
-           we don't know what the previous encoded token was, since we're not
-           processing blocks in the order we'll encode them in.*/
-        frag->dc=(ogg_int32_t)frinfo->dct_coeffs[0]*
-         quant[frag->mbmode!=OC_MODE_INTRA][0]+OC_FQUANT_ROUND>>
-         OC_FQUANT_SHIFT;
-        frinfo->dct_coeffs[0]=(ogg_int16_t)OC_CLAMPI(-OC_DCT_VAL_RANGE,
-         frag->dc-oc_frag_pred_dc(frag,fplane,fragx,fragy,pred_last),
-         OC_DCT_VAL_RANGE);
-        pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc;
+        qc_pred=oc_frag_pred_dc(frag,fplane,fragx,fragy,pred_last);
+        /*We now center the DC coefficient range around the predicted value
+           and perform token bits optimization based on the HVS-determined
+           tolerance range.
+          For more details, see oc_enc_frag_quant_tokenize().*/
+        qti=frag->mbmode!=OC_MODE_INTRA;
+        c=frinfo->dct_coeffs[0]-qc_pred*iquant[qti][0];
+        c_abs=abs(c);
+        if(c_abs<=frinfo->tols[0])qc=0;
+        else{
+          int qc_max;
+          int qc_min;
+          int qc_offs;
+          int c_sign;
+          int c_min;
+          int c_recon;
+          int cati;
+          qc_max=(ogg_int32_t)c_abs*fquant[qti][0]+OC_FQUANT_ROUND>>
+           OC_FQUANT_SHIFT;
+          c_sign=c<0;
+          c_recon=(qc_max-1)*iquant[qti][0];
+          c_min=OC_MAXI(0,c_abs-frinfo->tols[0]);
+          for(qc_min=qc_max;c_recon>=c_min;qc_min--)c_recon-=iquant[qti][0];
+          if(qc_min<3+OC_NDCT_VAL_CAT2_SIZE)qc=qc_min;
+          else{
+            qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
+            for(cati=0;cati<5&&qc_min>=qc_offs+OC_DCT_VAL_CAT_SIZES[cati];
+             cati++){
+              qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
+            }
+            qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
+          }
+          qc*=(-c_sign<<1)+1;
+        }
+        pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc=qc+qc_pred;
+        frinfo->dct_coeffs[0]=(ogg_int16_t)qc;
       }
     }
   }
 }
 
-static void oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
+static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
  oc_fragment_enc_info *_frinfo,const ogg_uint16_t _fquant[64],
  const ogg_uint16_t _iquant[64]){
-  static const int OC_DCT_VAL_CAT_SIZES[6]={2,4,8,16,32,512};
-  static const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
   int zzi;
   int zrun;
   int qc;
+  int qc_offs;
   int c_sign;
   int cati;
   int tli;
@@ -204,23 +262,20 @@ static void oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
          (unsigned char)(OC_TWO_TOKEN+c_sign);
       }break;
       default:{
-        qc-=3;
-        if(qc<OC_NDCT_VAL_CAT2_SIZE){
+        if(qc-3<OC_NDCT_VAL_CAT2_SIZE){
           _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
-           (unsigned char)(OC_DCT_VAL_CAT2+qc);
+           (unsigned char)(OC_DCT_VAL_CAT2+qc-3);
           _enc->extra_bits[0][_enc->nextra_bits[0]++]=(ogg_uint16_t)c_sign;
         }
         else{
-          for(cati=0;;){
-            qc-=OC_DCT_VAL_CAT_SIZES[cati];
-            cati++;
-            if(qc<OC_DCT_VAL_CAT_SIZES[cati]){
-              _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
-               (unsigned char)(OC_DCT_VAL_CAT2+cati);
-              _enc->extra_bits[0][_enc->nextra_bits[0]++]=
-               (ogg_uint16_t)((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc);
-            }
+          qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
+          for(cati=0;qc>=qc_offs+OC_DCT_VAL_CAT_SIZES[cati];cati++){
+            qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
           }
+          _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
+           (unsigned char)(OC_DCT_VAL_CAT2+cati);
+          _enc->extra_bits[0][_enc->nextra_bits[0]++]=
+           (ogg_uint16_t)((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc);
         }
       }
     }
@@ -238,123 +293,151 @@ static void oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
     int ci;
     ci=OC_FZIG_ZAG[zzi];
     c_abs=abs(_frinfo->dct_coeffs[ci]);
-    c_sign=_frinfo->dct_coeffs[ci]<0;
-    /*qc_max is the most accurate quantized value.
-      This is the largest possible (absolute) value we will use.*/
-    qc_max=(ogg_int32_t)c_abs*_fquant[ci]+OC_FQUANT_ROUND>>OC_FQUANT_SHIFT;
-    /*qc_min is the smallest possible (absolute) quantized value whose
-       dequantized value is within the HVS-determined tolerance range.*/
-    qc_min=qc_max-1;
-    c_recon=qc_min*_iquant[ci];
-    c_min=OC_MAXI(0,c_abs-(int)_frinfo->weights[ci]);
-    for(;c_recon>=c_min;qc_min--)c_recon-=_iquant[ci];
-    qc_min++;
-    /*We now proceed to find a token that is as close to qc_max as possible,
-       but does not use any more bits than would be required for qc_min.
-      The general assumption we make is that encoding a value closer to 0
-       always uses fewer bits.*/
     /*Best case: we can encode this as a zero.*/
-    if(qc_min==0)zrun++;
+    if(c_abs<=_frinfo->tols[ci]){
+      zrun++;
+      _frinfo->dct_coeffs[ci]=0;
+    }
     else{
-      /*If we have an outstanding zero run, code it now.*/
-      if(zrun>0){
-        /*The zero run tokens appear on the list for the first zero in the
-           run.*/
-        tli=zzi-zrun;
-        /*Second assumption: coding a combined run/value token always uses
-           fewer bits than coding them separately.*/
-        /*CAT1 run/value tokens: the value is 1.*/
-        if(qc_min==1&&zrun<=17){
-          if(zrun<=5){
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
-             (unsigned char)(OC_DCT_RUN_CAT1A+(zrun-1));
-            _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-             (ogg_uint16_t)c_sign;
-          }
-          else if(zrun<=9){
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=OC_DCT_RUN_CAT1B;
-            _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-             (ogg_uint16_t)((c_sign<<2)+zrun-6);
-          }
-          else{
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=OC_DCT_RUN_CAT1C;
-            _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-             (ogg_uint16_t)((c_sign<<3)+zrun-10);
-          }
-          /*Skip coding the DCT value below.*/
-          continue;
-        }
-        /*CAT2 run/value tokens: the value is 2-3.*/
-        else if(qc_min<=3&&zrun<=3){
-          if(zrun==1){
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=OC_DCT_RUN_CAT2A;
-            qc=OC_MINI(1,qc_max-2);
-            _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-             (ogg_uint16_t)((c_sign<<1)+qc);
-          }
-          else{
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=OC_DCT_RUN_CAT2B;
-            qc=OC_MINI(1,qc_max-2);
-            _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-             (ogg_uint16_t)((c_sign<<2)+(qc<<1)+zrun-2);
-          }
-          /*Skip coding the DCT value below.*/
-          continue;
-        }
-        /*The run is too long or the quantized value too large: code them
-           separately.*/
-        else{
-          /*This is stupid: non-short ZRL tokens are never used for run values
-             less than 9, but codewords are reserved for them, wasting bits.
-            Yes, yes, this would've meant a non-constant number of extra bits
-             for this token, but even so.*/
-          if(zrun<=8){
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
-             OC_DCT_SHORT_ZRL_TOKEN;
-          }
-          else{
-            _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
-             OC_DCT_ZRL_TOKEN;
-          }
-          _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-           (ogg_uint16_t)(zrun-1);
-        }
+      c_sign=_frinfo->dct_coeffs[ci]<0;
+      /*qc_max is the most accurate quantized value.
+        This is the largest possible (absolute) value we will use.*/
+      qc_max=(ogg_int32_t)c_abs*_fquant[ci]+OC_FQUANT_ROUND>>OC_FQUANT_SHIFT;
+      /*qc_min is the smallest possible (absolute) quantized value whose
+         dequantized value is within the HVS-determined tolerance range.*/
+      /*TODO: qc_min could be computed by a division (we do not want to allow
+         the rounding errors that are possible with the mul+shift quantization
+         used for qc_max), which would allow qc_max to be calculated only if
+         needed below.
+        Is this faster?
+        Who knows.*/
+      c_recon=(qc_max-1)*_iquant[ci];
+      c_min=c_abs-_frinfo->tols[ci];
+      for(qc_min=qc_max;c_recon>=c_min;qc_min--)c_recon-=_iquant[ci];
+      /*We now proceed to find a token that is as close to qc_max as possible,
+         but does not use any more bits than would be required for qc_min.
+        The general assumption we make is that encoding a value closer to 0
+         always uses fewer bits.
+        qc_min can still reach 0 here despite the test above, if the quantizer
+         value is larger than the tolerance (which can happen for very small
+         tolerances; the quantizer value has a minimum it cannot go below).*/
+      if(qc_min==0){
+        zrun++;
+        _frinfo->dct_coeffs[ci]=0;
       }
-      /*No zero run, or the run and the qc value are being coded separately.*/
-      switch(qc_min){
-        case 1:{
-          _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
-           (unsigned char)(OC_ONE_TOKEN+c_sign);
-        }break;
-        case 2:{
-          _enc->dct_tokens[0][_enc->ndct_tokens[0]++]=
-           (unsigned char)(OC_TWO_TOKEN+c_sign);
-        }break;
-        default:{
-          if(qc_min-3<OC_NDCT_VAL_CAT2_SIZE){
-            _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
-             (unsigned char)(OC_DCT_VAL_CAT2+qc_min-3);
-            _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=
-             (ogg_uint16_t)c_sign;
+      else{
+        /*If we have an outstanding zero run, code it now.*/
+        if(zrun>0){
+          /*The zero run tokens appear on the list for the first zero in the
+             run.*/
+          tli=zzi-zrun;
+          /*Second assumption: coding a combined run/value token always uses
+             fewer bits than coding them separately.*/
+          /*CAT1 run/value tokens: the value is 1.*/
+          if(qc_min==1&&zrun<=17){
+            if(zrun<=5){
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               (unsigned char)(OC_DCT_RUN_CAT1A+(zrun-1));
+              _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
+               (ogg_uint16_t)c_sign;
+            }
+            else if(zrun<=9){
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               OC_DCT_RUN_CAT1B;
+              _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
+               (ogg_uint16_t)((c_sign<<2)+zrun-6);
+            }
+            else{
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               OC_DCT_RUN_CAT1C;
+              _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
+               (ogg_uint16_t)((c_sign<<3)+zrun-10);
+            }
+            _frinfo->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<1)+1);
+            zrun=0;
+            /*Skip coding the DCT value below.*/
+            continue;
           }
+          /*CAT2 run/value tokens: the value is 2-3.*/
+          else if(qc_min<=3&&zrun<=3){
+            if(zrun==1){
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               OC_DCT_RUN_CAT2A;
+              qc=OC_MINI(1,qc_max-2);
+              _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
+               (ogg_uint16_t)((c_sign<<1)+qc);
+            }
+            else{
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               OC_DCT_RUN_CAT2B;
+              qc=OC_MINI(1,qc_max-2);
+              _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
+               (ogg_uint16_t)((c_sign<<2)+(qc<<1)+zrun-2);
+            }
+            _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc_min);
+            zrun=0;
+            /*Skip coding the DCT value below.*/
+            continue;
+          }
+          /*The run is too long or the quantized value too large: code them
+             separately.*/
           else{
-            int qc_offs;
-            qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
-            for(cati=0;;){
-              qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
-              cati++;
-              if(qc_min-qc_offs<OC_DCT_VAL_CAT_SIZES[cati]){
-                /*qc_min can be encoded in this category.
-                  Since all DCT values in the category use the same number of
-                   bits, we encode the closest value to qc_max.
-                  This is either qc_max itself, if it is in the category's
-                   range, or the largest value in the category.*/
-                qc=OC_MINI(OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max-qc_offs);
-                _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
-                 (unsigned char)(OC_DCT_VAL_CAT2+cati);
-                _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=
-                 (ogg_uint16_t)((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc);
+            /*This is stupid: non-short ZRL tokens are never used for run
+               values less than 9, but codewords are reserved for them,
+               wasting bits.
+              Yes, yes, this would've meant a non-constant number of extra
+               bits for this token, but even so.*/
+            if(zrun<=8){
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               OC_DCT_SHORT_ZRL_TOKEN;
+            }
+            else{
+              _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
+               OC_DCT_ZRL_TOKEN;
+            }
+            _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
+             (ogg_uint16_t)(zrun-1);
+            zrun=0;
+          }
+        }
+        /*No zero run, or the run and the qc value are being coded
+           separately.*/
+        switch(qc_min){
+          case 1:{
+            _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
+             (unsigned char)(OC_ONE_TOKEN+c_sign);
+            _frinfo->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<1)+1);
+          }break;
+          case 2:{
+            _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
+             (unsigned char)(OC_TWO_TOKEN+c_sign);
+            _frinfo->dct_coeffs[ci]=(ogg_int16_t)((-c_sign<<2)+2);
+          }break;
+          default:{
+            if(qc_min-3<OC_NDCT_VAL_CAT2_SIZE){
+              _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
+               (unsigned char)(OC_DCT_VAL_CAT2+qc_min-3);
+              _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=
+               (ogg_uint16_t)c_sign;
+              _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc_min);
+            }
+            else{
+              qc_offs=3+OC_NDCT_VAL_CAT2_SIZE;
+              for(cati=0;cati<5&&qc_min>=qc_offs+OC_DCT_VAL_CAT_SIZES[cati];
+               cati++){
+                qc_offs+=OC_DCT_VAL_CAT_SIZES[cati];
               }
+              /*qc_min can be encoded in this category.
+                Since all DCT values in the category use the same number of
+                 bits, we encode the closest value to qc_max.
+                This is either qc_max itself, if it is in the category's
+                 range, or the largest value in the category.*/
+              qc=OC_MINI(qc_offs+OC_DCT_VAL_CAT_SIZES[cati]-1,qc_max);
+              _frinfo->dct_coeffs[ci]=(ogg_int16_t)(((-c_sign<<1)+1)*qc);
+              _enc->dct_tokens[zzi][_enc->ndct_tokens[zzi]++]=
+               (unsigned char)(OC_DCT_VAL_CAT2+cati);
+              _enc->extra_bits[zzi][_enc->nextra_bits[zzi]++]=(ogg_uint16_t)
+               ((c_sign<<OC_DCT_VAL_CAT_SHIFTS[cati])+qc-qc_offs);
             }
           }
         }
@@ -421,9 +504,11 @@ static void oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
       }
     }
   }
+  /*Return the number of coefficients before the final zero run.*/
+  return 64-zrun;
 }
 
-static void oc_enc_residual(oc_enc_ctx *_enc){
+static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
   oc_sb *sb;
   oc_sb *sb_end;
   int    pli;
@@ -431,7 +516,7 @@ static void oc_enc_residual(oc_enc_ctx *_enc){
   /*Clear any existing DCT tokens.*/
   for(zzi=0;zzi<64;zzi++){
     _enc->ndct_tokens[zzi]=_enc->nextra_bits[zzi]=0;
-    _enc->dct_token_offs[zzi]=_enc->extra_bits_offs[zzi]=0;
+    _enc->extra_bits_offs[zzi]=0;
   }
   sb=sb_end=_enc->state.frarray.sbs;
   for(pli=0;pli<3;pli++){
@@ -450,18 +535,26 @@ static void oc_enc_residual(oc_enc_ctx *_enc){
     }
     fquant[1]=_enc->enquant_tables[_enc->state.qi].inter;
     iquant[1]=_enc->state.dequant_tables[_enc->state.qi].inter;
+    for(zzi=0;zzi<64;zzi++){
+      _enc->dct_token_offs[pli][zzi]=_enc->ndct_tokens[zzi];
+    }
     for(;sb<sb_end;sb++){
       int mbi;
       for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
         int bi;
-        for(bi=0;bi<4;bi++){
+        for(bi=0;bi<4;bi++)if(sb->map[mbi][bi]>=0){
           oc_fragment *frag;
           frag=_enc->state.frarray.frags+sb->map[mbi][bi];
           if(frag->coded){
-            int qti;
+            oc_fragment_enc_info *frinfo;
+            int                   qti;
+            int                   nnzc;
             qti=frag->mbmode!=OC_MODE_INTRA;
-            oc_enc_frag_quant_tokenize(_enc,_enc->frinfo+sb->map[mbi][bi],
-             fquant[qti],iquant[qti]);
+            frinfo=_enc->frinfo+sb->map[mbi][bi];
+            nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,fquant[qti],
+             iquant[qti]);
+            oc_frag_recon(&_enc->state,frag,pli,frinfo->dct_coeffs,nnzc,
+             iquant[qti]);
           }
         }
       }
@@ -510,19 +603,157 @@ static void oc_enc_residual(oc_enc_ctx *_enc){
        runl-OC_EOB_OFFS[new_tok]);
     }
     _enc->nextra_bits[zzi-1]=ebi;
-    _enc->dct_token_offs[zzi]++;
+    _enc->dct_token_offs[0][zzi]++;
+    /*Note: We don't bother to update the offsets for planes 1 and 2 if
+       planes 0 or 1 don't have any tokens.
+      This turns out not to matter due to the way we use the offsets later.*/
     if(OC_DCT_TOKEN_EXTRA_BITS[old_tok2])_enc->extra_bits_offs[zzi]++;
+  }
+}
+
+static void oc_enc_pack_residual_tokens(oc_enc_ctx *_enc){
+  static const int OC_HUFF_LIST_MIN[5]={0,1,16,32,48};
+  static const int OC_HUFF_LIST_MAX[5]={1,16,32,48,64};
+  int hgi;
+  for(hgi=0;hgi<5;hgi++){
+    const theora_huff_code *huff_codes_y;
+    const theora_huff_code *huff_codes_c;
+    int                     token_counts_y[32];
+    int                     token_counts_c[32];
+    int                     huff_base;
+    int                     bits_y_min;
+    int                     bits_c_min;
+    int                     huffi_y;
+    int                     huffi_c;
+    int                     huffi;
+    int                     token;
+    int                     zzi;
+    int                     ti;
+    int                     ebi;
+    huff_base=hgi<<4;
+    /*Step 1: Select huffman tables for the token lists.*/
+    memset(token_counts_y,0,sizeof(token_counts_y));
+    memset(token_counts_c,0,sizeof(token_counts_c));
+    for(zzi=OC_HUFF_LIST_MIN[hgi];zzi<OC_HUFF_LIST_MAX[hgi];zzi++){
+      for(ti=_enc->dct_token_offs[0][zzi];ti<_enc->dct_token_offs[1][zzi];
+       ti++){
+        token_counts_y[_enc->dct_tokens[zzi][ti]]++;
+      }
+      /*Note: don't reset ti; dct_token_offs might be non-monotonic.*/
+      for(;ti<_enc->ndct_tokens[zzi];ti++){
+        token_counts_c[_enc->dct_tokens[zzi][ti]]++;
+      }
+    }
+    bits_y_min=bits_c_min=INT_MAX;
+    huffi_y=huffi_c=huff_base;
+    for(huffi=huff_base;huffi<huff_base+16;huffi++){
+      int bits_y;
+      int bits_c;
+      bits_y=bits_c=0;
+      for(token=0;token<32;token++){
+        bits_y+=token_counts_y[token]*_enc->huff_codes[huffi][token].len;
+        bits_c+=token_counts_c[token]*_enc->huff_codes[huffi][token].len;
+      }
+      if(bits_y<bits_y_min){
+        bits_y_min=bits_y;
+        huffi_y=huffi;
+      }
+      if(bits_c<bits_c_min){
+        bits_c_min=bits_c;
+        huffi_c=huffi;
+      }
+    }
+    /*Step 2: Write the tokens using these tables.*/
+    oggpackB_write(&_enc->opb,huffi_y-huff_base,4);
+    oggpackB_write(&_enc->opb,huffi_c-huff_base,4);
+    huff_codes_y=_enc->huff_codes[huffi_y];
+    huff_codes_c=_enc->huff_codes[huffi_c];
+    for(zzi=OC_HUFF_LIST_MIN[hgi];zzi<OC_HUFF_LIST_MAX[hgi];zzi++){
+      ebi=_enc->extra_bits_offs[zzi];
+      for(ti=_enc->dct_token_offs[0][zzi];ti<_enc->dct_token_offs[1][zzi];
+       ti++){
+        token=_enc->dct_tokens[zzi][ti];
+        oggpackB_write(&_enc->opb,huff_codes_y[token].bits,
+         huff_codes_y[token].len);
+        if(OC_DCT_TOKEN_EXTRA_BITS[token]){
+          oggpackB_write(&_enc->opb,_enc->extra_bits[zzi][ebi++],
+           OC_DCT_TOKEN_EXTRA_BITS[token]);
+        }
+      }
+      /*Note: don't reset ti; dct_token_offs might be non-monotonic.*/
+      for(;ti<_enc->ndct_tokens[zzi];ti++){
+        token=_enc->dct_tokens[zzi][ti];
+        oggpackB_write(&_enc->opb,huff_codes_c[token].bits,
+         huff_codes_c[token].len);
+        if(OC_DCT_TOKEN_EXTRA_BITS[token]){
+          oggpackB_write(&_enc->opb,_enc->extra_bits[zzi][ebi++],
+           OC_DCT_TOKEN_EXTRA_BITS[token]);
+        }
+      }
+    }
   }
 }
 
 static int oc_enc_keyframe(oc_enc_ctx *_enc){
   _enc->state.frame_type=OC_INTRA_FRAME;
   oc_enc_quant_sel_quality(_enc,1);
-  oggpackB_reset(&_enc->opb);
-  oc_enc_frame_header_pack(_enc);
   oc_enc_mark_all_intra(_enc);
   oc_enc_quant_dc(_enc);
-  oc_enc_residual(_enc);
+  oc_enc_residual_tokenize(_enc);
+  oggpackB_reset(&_enc->opb);
+  oc_enc_frame_header_pack(_enc);
+  oc_enc_pack_residual_tokens(_enc);
+  /*Success: Mark the packet as ready to be flushed.*/
+  _enc->packet_state=OC_PACKET_READY;
+  return 0;
+}
+
+static void oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
+  oc_fragment_enc_info *frinfo;
+  oc_fragment          *frag;
+  oc_fragment          *frag_end;
+  int                   pli;
+  /*Step 1: Select which fragments need to be coded.*/
+  frinfo=_enc->frinfo;
+  frag_end=frag=_enc->state.frarray.frags;
+  for(pli=0;pli<3;pli++){
+    const oc_fragment_plane *fplane;
+    int                      stride;
+    int                      prev_refi;
+    fplane=_enc->state.frarray.frplanes+pli;
+    frag_end+=fplane->nfrags;
+    prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
+    stride=_enc->state.ref_frame_bufs[prev_refi][pli].stride;
+    for(;frag<frag_end;frag++,frinfo++){
+      if(frag->invalid)frag->coded=0;
+      else{
+        ogg_int16_t dct_buf[64];
+        int         ci;
+        /*Check to see if the fragment can be skipped.
+          It is assumed that a skipped fragment always takes fewer bits than a
+           coded fragment, though this may not necessarily be true.*/
+        oc_frag_fdct(frag,dct_buf,stride,prev_refi);
+        for(ci=0;ci<64;ci++){
+          if(abs(dct_buf[ci]-frinfo->dct_coeffs[ci])>frinfo->tols[ci])break;
+        }
+        frag->coded=ci<64;
+      }
+    }
+  }
+
+  /*TODO: Select a MB mode to code each macro block in.*/
+}
+
+static int oc_enc_deltaframe(oc_enc_ctx *_enc){
+  _enc->state.frame_type=OC_INTER_FRAME;
+  oc_enc_quant_sel_quality(_enc,0);
+  oc_enc_choose_mbmodes(_enc);
+  oc_enc_quant_dc(_enc);
+  oc_enc_residual_tokenize(_enc);
+  oggpackB_reset(&_enc->opb);
+  oc_enc_frame_header_pack(_enc);
+  /*TODO: pack frag coded flags/mb modes.*/
+  oc_enc_pack_residual_tokens(_enc);
   /*Success: Mark the packet as ready to be flushed.*/
   _enc->packet_state=OC_PACKET_READY;
   return 0;
@@ -542,7 +773,7 @@ static int oc_enc_init(oc_enc_ctx *_enc,theora_info *_info){
   _enc->psych=oc_psych_alloc(_enc);
   _enc->packet_state=OC_PACKET_INFO_HDR;
   /*TODO: Revisit qscale.*/
-  _enc->qscale=0.5F*_info->quality;
+  _enc->qscale=0.25F*(63-_info->quality);
   memcpy(_enc->huff_codes,OC_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
   theora_encode_set_quant_params(_enc,NULL);
   _enc->dct_tokens=(unsigned char **)oc_malloc_2d(64,
@@ -562,93 +793,52 @@ static void oc_enc_clear(oc_enc_ctx *_enc){
 }
 
 
-#if 0
-/*Performs an initial DCT on the data for each fragment before any attempt at
-   motion compensation.
-  This data is used to compute the HVS-modeled weights for each coefficient,
-   as well as for the macro block mode decision.
-
-  For now, this function is disabled, and DCT's are performed in psych.c where
-   they are first used for better cache coherency.
-  This may be changed to make separation clearner when the HVS stuff gets
-   moved to plug-ins.
-
-  _enc: The encoder context.
-  _img: The input image.
-        The fragment array must have already been filled with input pointers
-         to this image.*/
-static void oc_enc_init_dcts(oc_enc_ctx *_enc,oc_yuv_buffer _img){
-  int pli;
-  for(pli=0;pli<3;pli++){
-    oc_img_plane      *iplane;
-    oc_fragment_plane *frplane;
-    int                frag_end;
-    int                fragi;
-    iplane=&_img[pli];
-    frplane=_enc->state.frarray.frplanes+pli;
-    frag_end=frplane->froffset+frplane->nfrags;
-    for(fragi=frplane->froffset;fragi<frag_end;fragi++){
-      oc_fragment          *frag;
-      oc_fragment_enc_info *frinfo;
-      ogg_int16_t           pix_buf[64];
-      unsigned char        *pixels;
-      int                   pixi;
-      int                   y;
-      frag=_enc->state.frarray.frags+fragi;
-      /*Skip blocks that are not displayable.*/
-      if(frag->invalid)continue;
-      pixels=frag->buffer[3];
-      frinfo=_enc->frinfo+fragi;
-      /*For border fragments, only copy pixels that are in the displayable
-         region of the image.
-        The DCT function will compute optimal padding values for the other
-         pixels.*/
-      if(frag->border){
-        for(pixi=y=0;y<8;y++){
-          int x;
-          for(x=0;x<8;x++,pixi++)if(frag->border->mask&1<<pixi){
-            pix_buf[pixi]=pixels[x];
-          }
-          pixels+=iplane->stride;
-        }
-        oc_fdct8x8_border(frag->border,frinfo->dct_coeffs[0],pix_buf);
-      }
-      /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
-      else{
-        pixels=frag->buffer[3];
-        for(pixi=y=0;y<8;y++){
-          int x;
-          for(x=0;x<8;x++,pixi++)pix_buf[pixi]=pixels[x];
-          pixels+=iplane->stride;
-        }
-        oc_fdct8x8(frinfo->dct_coeffs[0],pix_buf);
-      }
-    }
-  }
-}
-#endif
 
 /*Performs an fDCT on a given fragment.
   _frag:     The fragment to perform the 2D DCT on.
   _dct_vals: The output buffer for the DCT coefficients.
-  _stride:   The stride of the plane the fragment belongs to.*/
+  _stride:   The stride of the plane the fragment belongs to.
+  _ref_idx:  The picture buffer to perform the DCT on.
+             Use OC_FRAME_IO for the current input frame.*/
 void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
- int _stride){
+ int _stride,int _ref_idx){
   ogg_int16_t    pix_buf[64];
   unsigned char *pixels;
   int            pixi;
   int            y;
   int            x;
-  pixels=_frag->buffer[3];
+  /*NOTE: 128 is subtracted from each pixel value to make it signed.
+    The original VP3 source claimed that, "this reduces the internal precision
+     requirments [sic] in the DCT transform."
+    This is of course not actually true.
+    The transform must still support input in the range [-255,255] to code
+     predicted fragments, since the same transform is used for both.
+    This actually _reduces_ the precision of the results, because larger
+     values would have fewer significant bits chopped off when rounding.
+    We're stuck with it, however.
+    At least it might claim to reduce bias towards 0 when coding unpredicted
+     DC coefficients.*/
+  pixels=_frag->buffer[_ref_idx];
   /*For border fragments, only copy pixels that are in the displayable
      region of the image.
     The DCT function will compute optimal padding values for the other
      pixels.*/
   if(_frag->border!=NULL){
+    ogg_int64_t mask;
+    mask=_frag->border->mask;
     for(pixi=y=0;y<8;y++){
       for(x=0;x<8;x++,pixi++){
-        pix_buf[pixi]=(ogg_int16_t)(
-         (_frag->border->mask&(ogg_int64_t)1<<pixi)?pixels[x]:0);
+        pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?pixels[x]-128:0);
+        /*This branchless code is equivalent to the previous line:
+        int pmask;
+        pmask=-(int)_mask&1;
+        pix_buf[pixi]=(ogg_int16_t)(pmask&pixels[x]);
+        We don't use this code to allow the user to pass in a buffer that is
+         the exact size of the displayed image, not the size padded to a
+         multiple of 16.
+        In the latter case, we might segfault on pixels[x] if it is not mapped
+         to a valid page.*/
+        mask>>=1;
       }
       pixels+=_stride;
     }
@@ -657,7 +847,7 @@ void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
   /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
   else{
     for(pixi=y=0;y<8;y++){
-      for(x=0;x<8;x++,pixi++)pix_buf[pixi]=pixels[x];
+      for(x=0;x<8;x++,pixi++)pix_buf[pixi]=(ogg_int16_t)(pixels[x]-128);
       pixels+=_stride;
     }
     oc_fdct8x8(_dct_vals,pix_buf);
@@ -717,9 +907,12 @@ int theora_encode_set_quant_params(theora_enc_ctx *_enc,
 
 
 int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _img){
-  int cwidth;
-  int cheight;
-  int ret;
+  oc_yuv_buffer img;
+  int           cwidth;
+  int           cheight;
+  int           ret;
+  int           rfi;
+  int           mbi;
   /*Step 1: validate parameters.*/
   if(_enc==NULL||_img==NULL)return OC_FAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return OC_EINVAL;
@@ -735,28 +928,73 @@ int theora_encode_yuv_in(theora_enc_ctx *_enc,oc_yuv_buffer _img){
    _img[1].height!=cheight||_img[2].height!=cheight){
     return OC_EINVAL;
   }
+  /*Flip the input buffer upside down.*/
+  oc_yuv_buffer_flip(img,_img);
   /*Step 2: Update state.*/
+  if(_enc->state.ref_frame_idx[OC_FRAME_SELF]>=0){
+    /*Fill in the borders from the reconstructed version of the last encoded
+       frame.*/
+    oc_state_borders_fill(&_enc->state,
+     _enc->state.ref_frame_idx[OC_FRAME_SELF]);
+    /*Use this frame data for the appropriate reference frames, depending on
+       the type.*/
+    if(_enc->state.frame_type==OC_INTRA_FRAME){
+      _enc->state.keyframe_num=_enc->state.curframe_num;
+      _enc->state.ref_frame_idx[OC_FRAME_GOLD]=
+       _enc->state.ref_frame_idx[OC_FRAME_PREV]=
+       _enc->state.ref_frame_idx[OC_FRAME_SELF];
+    }
+    else{
+     _enc->state.ref_frame_idx[OC_FRAME_PREV]=
+      _enc->state.ref_frame_idx[OC_FRAME_SELF];
+    }
+  }
+  /*Select a free buffer to use for the reconstructed version of this frame.*/
+  for(rfi=0;rfi==_enc->state.ref_frame_idx[OC_FRAME_GOLD]||
+   rfi==_enc->state.ref_frame_idx[OC_FRAME_PREV];rfi++);
+  _enc->state.ref_frame_idx[OC_FRAME_SELF]=rfi;
+  /*Move the motion vector predictors back a frame.*/
+  for(mbi=_enc->state.frarray.frplanes[0].nsbs<<2;mbi-->0;){
+    oc_mb_enc_info *emb;
+    emb=_enc->mbinfo+mbi;
+    memmove(emb->mvs[1][0],emb->mvs[0][0],sizeof(emb->mvs[0]));
+  }
   _enc->state.curframe_num++;
-  /*TODO: Move buffers around, etc.*/
   /*Step 3: Fill the fragment array with pointers into the user buffer.*/
-  oc_frarray_fill_buffer_ptrs(&_enc->state.frarray,3,_img);
+  oc_frarray_fill_buffer_ptrs(&_enc->state.frarray,OC_FRAME_IO,img);
   /*Step 4: Analyze motion.*/
   oc_mcenc_analyze(_enc->mcenc);
   /*Step 5: Compute importance map.*/
   oc_impmap_fill(_enc->impmap,
    _enc->state.info.fps_denominator/(float)_enc->state.info.fps_numerator);
-  /*Step 6: Compute coefficient weights.*/
+  /*Step 6: Compute coefficient tolerances.*/
   oc_psych_scan(_enc->psych,0);
-  /*TODO: other things, like, maybe encoding.*/
+  /*Step 7: Encode!*/
   if(_enc->state.curframe_num==1||
    _enc->state.curframe_num-_enc->state.keyframe_num>=
    _enc->state.info.keyframe_frequency_force){
     ret=oc_enc_keyframe(_enc);
     if(ret<0)return ret;
   }
-  _enc->state.granpos=
-   (_enc->state.keyframe_num<<_enc->state.keyframe_granule_shift)+
-   (_enc->state.curframe_num-_enc->state.keyframe_num);
+  else{
+    ret=oc_enc_deltaframe(_enc);
+    if(ret<0)return ret;
+  }
+  /*Note: All buffer management, etc., that is done after a frame is encoded
+     is delayed until the next frame is encoded.
+    This allows for a future API that would let an encoding application
+     examine the decompressed output and attempt to re-encode the same frame
+     again with different settings if it disapproved.
+    Here we just update the granpos needed for the output packet and return.*/
+  if(_enc->state.frame_type==OC_INTRA_FRAME){
+    _enc->state.granpos=
+     _enc->state.keyframe_num+1<<_enc->state.keyframe_granule_shift;
+  }
+  else{
+    _enc->state.granpos=
+     (_enc->state.keyframe_num<<_enc->state.keyframe_granule_shift)+
+     (_enc->state.curframe_num-_enc->state.keyframe_num);
+  }
   return 0;
 }
 

@@ -28,10 +28,11 @@ typedef struct{
     These are computed in advance by the psycho-visual model, and then reused
      during mode decision.*/
   ogg_int16_t     dct_coeffs[64];
-  /*The perceptual weight of each coefficient.
-    This is an 8.8 fixed point number that should be used to scale the squared
-     error of each coefficient.*/
-  float           weights[64];
+  /*The maximum allowed distortion allowed for this coefficient.
+    The quantizer is free to choose any quantized value that does not move the
+     reconstructed value more than this amount away from the true coefficient
+     value.*/
+  ogg_uint16_t    tols[64];
   /*The weight derived from the importance of this fragment.*/
   float           imp_weight;
 }oc_fragment_enc_info;
@@ -48,21 +49,19 @@ typedef struct{
   int           pneighbors[4];
   /*The number of previous neighbors available.*/
   int           npneighbors;
-  /*Motion vectors for a frame against the previous frame and
-     against the golden frame.
-    Each is a set of 3 vectors, for the co-located block in this
-     frame and the previous two frames, which can be used to judge
-     constant velocity and constant acceleration.
+  /*Motion vectors for a macro block for the current frame and the previous
+     two frames.
+    Each is a set of 2 vectors against the previous frame and against the
+     golden frame, which can be used to judge constant velocity and constant
+     acceleration.
     Uninitialized MVs are (0,0).*/
-  char          mvs[2][3][2];
+  char          mvs[3][2][2];
   /*Per-block motion vectors for this frame against the previous frame.*/
   char          bmvs[4][2];
   /*Minimum motion estimation error from the analysis stage.*/
   int           aerror;
   /*Minimum 4V motion estimation error from the analysis stage.*/
-  int           a4mverror;
-  /*Minimum motion estimation error from the estimation stage.*/
-  int           eerror;
+  int           aerror4mv;
 }oc_mb_enc_info;
 
 typedef struct oc_impmap_ctx oc_impmap_ctx;
@@ -83,8 +82,8 @@ typedef struct theora_enc_ctx{
   oc_fragment_enc_info *frinfo;
   /*Encoder-specific macro block information.*/
   oc_mb_enc_info       *mbinfo;
-  /*Minimum psychovisual weights for each coefficient in each plane.*/
-  float                 weight_mins[3][64];
+  /*Minimum psychovisual tolerances for each coefficient in each plane.*/
+  ogg_uint16_t          tol_mins[3][64];
   /*Context information used to perform motion estimation.*/
   oc_mcenc_ctx         *mcenc;
   /*Context information used to generate the importance map.*/
@@ -101,8 +100,8 @@ typedef struct theora_enc_ctx{
   oc_quant_tables       enquant_tables[64];
   /*The number of DCT tokens for each coefficient.*/
   int                   ndct_tokens[64];
-  /*The offset of the first DCT token for each coefficient.*/
-  int                   dct_token_offs[64];
+  /*The offset of the first DCT token for each coefficient for each plane.*/
+  int                   dct_token_offs[3][64];
   /*The DCT token lists.*/
   unsigned char       **dct_tokens;
   /*The number of extra bits entries for each coefficient.*/
@@ -114,7 +113,7 @@ typedef struct theora_enc_ctx{
 }oc_enc_ctx;
 
 void oc_frag_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
- int _stride);
+ int _stride,int _refi);
 
 oc_mcenc_ctx *oc_mcenc_alloc(oc_enc_ctx *_enc);
 void oc_mcenc_free(oc_mcenc_ctx *_mcenc);

@@ -75,19 +75,13 @@ static void idct8(ogg_int16_t *_y,const ogg_int16_t _x[8]){
 static void idct8_4(ogg_int16_t *_y,const ogg_int16_t _x[4]){
   int t[8];
   int r;
-  t[6]=(int)(OC_C7S1*_x[1]>>16);
-  t[1]=(int)(OC_C1S7*_x[1]>>16);
-  t[4]=-(int)(OC_C5S3*_x[5]>>16);
-  t[7]=(int)(OC_C3S5*_x[5]>>16);
-  r=t[1]-t[7];
-  t[7]+=t[1];
-  t[1]=r*OC_C4S4>>16;
-  r=t[6]-t[4];
-  t[4]+=t[6];
-  t[6]=r*OC_C4S4>>16;
+  t[6]=t[4]=(int)(OC_C7S1*_x[1]>>16);
+  t[1]=t[7]=(int)(OC_C1S7*_x[1]>>16);
+  t[1]=t[1]*OC_C4S4>>16;
+  t[6]=t[6]*OC_C4S4>>16;
   t[5]=t[3]=(int)(OC_C4S4*_x[0]>>16);
-  t[2]=(int)(OC_C6S2*_x[3]>>16);
-  t[0]=(int)(OC_C2S6*_x[3]>>16);
+  t[2]=(int)(OC_C6S2*_x[3]>>16)-(int)(OC_C2S6*_x[2]>>16);
+  t[0]=(int)(OC_C2S6*_x[3]>>16)+(int)(OC_C6S2*_x[2]>>16);
   t[5]-=t[1];
   t[1]=t[3]+t[1];
   r=t[3]-t[0];
@@ -119,15 +113,13 @@ static void idct8_4(ogg_int16_t *_y,const ogg_int16_t _x[4]){
 static void idct8_3(ogg_int16_t *_y,const ogg_int16_t _x[3]){
   int t[8];
   int r;
-  t[6]=(int)(OC_C7S1*_x[1]>>16);
-  t[1]=(int)(OC_C1S7*_x[1]>>16);
-  t[7]=t[1];
+  t[6]=t[4]=(int)(OC_C7S1*_x[1]>>16);
+  t[1]=t[7]=(int)(OC_C1S7*_x[1]>>16);
   t[1]=t[1]*OC_C4S4>>16;
-  t[4]=t[6];
   t[6]=t[6]*OC_C4S4>>16;
   t[5]=t[3]=(int)(OC_C4S4*_x[0]>>16);
-  t[2]=(int)(OC_C6S2*_x[3]>>16);
-  t[0]=(int)(OC_C2S6*_x[3]>>16);
+  t[2]=-(int)(OC_C2S6*_x[2]>>16);
+  t[0]=(int)(OC_C6S2*_x[2]>>16);
   t[5]-=t[1];
   t[1]=t[3]+t[1];
   r=t[3]-t[0];
@@ -158,8 +150,8 @@ static void idct8_3(ogg_int16_t *_y,const ogg_int16_t _x[3]){
       The other 6 are assumed to be 0.*/
 static void idct8_2(ogg_int16_t *_y,const ogg_int16_t _x[3]){
   int t[8];
-  t[7]=t[1]=(int)(OC_C1S7*_x[1]>>16);
-  t[4]=t[6]=(int)(OC_C7S1*_x[1]>>16);
+  t[1]=t[7]=(int)(OC_C1S7*_x[1]>>16);
+  t[6]=t[4]=(int)(OC_C7S1*_x[1]>>16);
   t[1]=t[1]*OC_C4S4>>16;
   t[6]=t[6]*OC_C4S4>>16;
   t[5]=t[3]=(int)(OC_C4S4*_x[0]>>16);

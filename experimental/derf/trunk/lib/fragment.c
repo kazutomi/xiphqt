@@ -4,7 +4,7 @@ static unsigned char oc_clamp255(int _x){
   return (unsigned char)(((_x<0)-1)&(_x|-(_x>255)));
 }
 
-static void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
+void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
  const ogg_int16_t *_residue){
   int i;
   for(i=0;i<8;i++){
@@ -14,7 +14,7 @@ static void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-static void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
+void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue){
   int i;
   for(i=0;i<8;i++){
@@ -25,7 +25,7 @@ static void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-static void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
+void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
  int _src2_ystride,const ogg_int16_t *_residue){
   int i;
@@ -114,7 +114,8 @@ int oc_frag_pred_dc(const oc_fragment *_frag,
   int                pred_frame;
   /*The boundary condition flags.*/
   int                bc;
-  /*DC predictor values: left, up-left, up, up-right, missing values skipped.*/
+  /*DC predictor values: left, up-left, up, up-right, missing values
+     skipped.*/
   int                p[4];
   /*Predictor count.*/
   int                np;
