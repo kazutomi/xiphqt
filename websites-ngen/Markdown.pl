@@ -14,7 +14,7 @@ use strict;
 use warnings;
 
 use Digest::MD5 qw(md5_hex);
-use utf8;
+#use utf8;
 # binmode( STDOUT, ":utf8" );  # c.f.: http://acis.openlib.org/dev/perl-unicode-struggle.html
 use vars qw($VERSION);
 $VERSION = '1.0b4';

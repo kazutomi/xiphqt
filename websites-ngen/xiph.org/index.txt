@@ -2,6 +2,13 @@
 
 <!-- this stinks. -->
 
+Xiph.org develops multimedia codecs and tools to protect the foundations of Internet multimedia
+from control by private interests.
+
+…
+
+---
+
 The Xiph.Org Foundation is a non-profit corporation dedicated to protecting the foundations of
 Internet multimedia from control by private interests. Our purpose is to support and develop free,
 open protocols and software to serve the public, developer and business markets.
@@ -30,16 +37,6 @@ A person who has not studied German can form no idea
 of what a perplexing language it is. 
 
 
----------
-
-Freundschaftsbezeigungen. 
-
-Dilettantenaufdringlichkeiten. 
-
-Stadtverordnetenversammlungen. 
-
----------
-
 These things are not words, they are alphabetical processions. 
 And they are not rare; one can open a German newspaper
 at any time and see them marching majestically across
@@ -54,3 +51,4 @@ and thus increase the variety of my stock.  Here rare
 some specimens which I lately bought at an auction sale
 of the effects of a bankrupt bric-a-brac hunter:
 
+…
