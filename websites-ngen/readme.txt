@@ -6,7 +6,7 @@ Requirements
 
 *	Python 2.3.2, to run wrapup.py (use earlier versions at your own risk)
 *	Perl 5.6.1, to run Markdown (ActivePerl works fine)
-*	Apache, if you want to view your changes
+*	Apache2, if you want to view your changes (and you probably do)
 
 Trying It Out
 -------------

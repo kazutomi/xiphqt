@@ -1,9 +1,36 @@
 A www.xiph.org style guide
 ==========================
 
+Behind the Scenes
+-----------------
+
 *	Four-column tabs for indentation.
 
 *	Keep lines to 100 columns or fewer.
+
+*	Use UTF-8. In particular, use proper apostrophes and quotes (U+2018–U+201E) and
+	en and em dashes.
+
+*	Prefer <x y='z'> to <x y="z">. <x y=z> is an absolute no-no.
+
+*	Close tags that need closing. <p>-as-paragraph-separator has gone the way of the dodo.
+
+
+Spelling, Grammar, and Punctuation
+-----------
+*	For em dashes, in English, leave no space between the dash and the words—like this.
+
+*	For the love of all that’s holy, leave no space between a question mark and its
+	preceding sentence.
+
+*	Do not write "CODEC" in all caps.
+
+*	"Copyright © 2004 Xiph.Org" and "Copyright (c) 2004 Xiph.Org" are redundant;
+	prefer "© 2004 Xiph.Org" to both. Failing that, drop the "(c)".
+
+
+URLs and Linkage
+----------------
 
 *	Due to cross-platform and build restrictions, we can’t use symlinks or hard links.
 	Instead, use HTTP redirects in .htaccess files. For more information, see the Apache 2
@@ -12,20 +39,13 @@ A www.xiph.org style guide
 
 *	Redirect to <http://www.xiph.org/>. Not to, for example, <http://xiph.org/>.
 
-*	Use UTF-8. In particular, use proper apostrophes and quotes (U+2018–U+201E) and
-	en and em dashes.
-
-*	For em dashes, in English, leave no space between the dash and the words—like this.
-
-*	For the love of all that’s holy, leave no space between a question mark and its
-	preceding sentence.
-
-*	(not sure if I want this one in stone or not) Prefer verbs in URLs to adjectives when
-	possible. For example, prefer "/speex/compare/" to "/speex/comparison/". This ought to be
-	done with care; "/foobar/document/" is plain silly as it invites the user to actually document
-	our stuff, rather than read documentation.
 
 Open Questions
 --------------
 *	Tone: How should we write? I’d like to display a visible sense of humor on the site.
+
+*	Prefer verbs in URLs to adjectives when possible. For example, prefer "/speex/compare/" to
+	"/speex/comparison/". This ought to be done with care; "/foobar/document/" is plain silly
+	as it invites the user to actually document our stuff, rather than read documentation.
+
 
