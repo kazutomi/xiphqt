@@ -1,3 +1,22 @@
+- 0.2.2		2001-08-01
+	- You can now specify the host and port for each mount point
+	  separately. In fact, you have to.
+	- MP3 encoding output buffer size increased, seems to handle VBRs
+	  better, don't know why this is necessary at the moment.
+	- Thread stack size increased again.
+	- Write to stdout directly for usage/-V info, so it doesn't get
+	  swallowed if ices is configured to run in the background.
+	- Include system configuration info in ices -V output.
+	- Use setsid() to detach from tty, not setpgid().
+	- Load perl module as a proper module. This means you'd better return
+	  1 at the end of your module.
+	- Set PYTHONPATH reliably (not using an automatic variable), and
+	  removed the arbitrary length limit.
+	- Log file no longer appends PID. In general I think this is a silly
+	  practice. I would have removed it from the cue file too, but a)
+	  I don't use the cue file, and b) it at least cleans up after itself
+	  on exit.
+	- Build dependency bugs fixed.
 - 0.2.1		2001-07-12
 	- Thread stack size increased, to prevent segfaults during metadata
 	  updates on Solaris, FreeBSD, OpenBSD, and probably anything that
