@@ -29,11 +29,10 @@ sub module_instance{
     my$widget=$this->{"widget"};
     my$xpath=$this->{"xpath"};
 
-    $widget->optionAdd("$xpath.scalewidadj", 5,21);
-    $widget->optionAdd("$xpath.scalelenadj", 10,21); 
+    $widget->optionAdd("$xpath.scalewidadj", 15,21);
+    $widget->optionAdd("$xpath.scalelenadj", 15,21); 
     $widget->optionAdd("$xpath*font",             
 			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-    $widget->optionAdd("$xpath*scalerefresh",        80,20);
 
     $widget->optionAdd("$xpath.scalejustify", 0,20);      
 
@@ -45,6 +44,9 @@ sub module_instance{
     my$textheight=$this->{"textheight"}=$testlabel->reqheight;
     my$textwidth=$this->{"textwidth"}=$testlabel->reqwidth;
     $testlabel->destroy;
+    my$borderwidth=$this->{"borderwidth"}=$widget->optionGet('borderwidth','');
+    $this->{"relief"}=$widget->optionGet('relief','');
+    
 
     # load the logo in the instance init in case the user has selected
     # something different per instance
@@ -53,12 +55,31 @@ sub module_instance{
     my$logofile=$widget->optionGet("logopixmap","");
     $logofile="$main::libdir/fishframe.xpm" if(!defined($logofile));
     my$logo=$this->{"logo"}=$widget->Pixmap(-file => $logofile);
-    my$logoframes=$this->{"logoframes"}=12;
-    my$logowidth=$this->{"logowidth"}=$logo->width/12;
+
+    my$logoframes=$this->{"logoframes"}=1;
+    my$logowidth=$this->{"logowidth"}=$logo->width;
     my$logoheight=$this->{"logoheight"}=$logo->height;
+
+    # is this an animated pixmap?
+    if(open(XPM,"$logofile")){	
+	while(<XPM>){
+	    if(m{nimated:\s*(\d+)x(\d+)x(\d+)\@(\d+)}){
+		$logoframes=$this->{"logoframes"}=$3;
+		$logowidth=$this->{"logowidth"}=$1;
+		$logoheight=$this->{"logoheight"}=$2;
+		$widget->optionAdd("$xpath.scalerefresh",$4,21);
+	    }else{
+		last if(m/char/);
+	    }
+	}
+	close XPM;
+    }
+    if($logoframes==0){
+	$widget->optionAdd("$xpath.scalerefresh",0,21);
+    }
     
-    my$minx=($logowidth>$textwidth?$logowidth:$textwidth);
-    my$miny=$logoheight+$textheight;
+    my$minx=($logowidth>$textwidth?$logowidth:$textwidth)+$borderwidth*2;
+    my$miny=$logoheight+$textheight+$borderwidth*2;
     $widget->optionAdd("$xpath.minx", $minx,21);      
     $widget->optionAdd("$xpath.miny", $miny,21);      
 
@@ -80,17 +101,19 @@ sub module_run{
     my$textpad=($width-$textwidth)/2;
     my$vpad=($height-$logoheight-$textheight)/2;
 
-    my$widget=$toplevel->Frame(-class=>$this->{"name"},
+     my$widget=$toplevel->Frame(-class=>$this->{"name"},
 			       Name=>$this->{"sequence"},
-			       borderwidth=>0,
 			       highlightthickness=>0,
+			       borderwidth=>$this->{"borderwidth"},
+			       relief=>$this->{"relief"},
 			       width=>$width,height=>$height);
     $this->{"logowidget"}=$widget->Canvas(borderwidth=>0,
 					  highlightthickness=>0,
 					  width=>$this->{"logowidth"},
 					  height=>$this->{"logoheight"})->
 					      place('-x'=>$logopad,
-						    '-y'=>$vpad,-anchor=>'nw');
+						    '-y'=>$vpad,-anchor=>'nw',
+						    -bordermode=>'outside');
     $this->{"logowidget"}->createImage(0,0,-image=>$this->{"logo"},
 				       -anchor=>'ne',-tags=>["logo"]);
     
@@ -98,8 +121,9 @@ sub module_run{
 		   -borderwidth=>0,
 		   -padx=>1,-pady=>1)->
 		       place('-x'=>$textpad,'-y'=>$vpad+$this->{"logoheight"},
-			     -anchor=>'nw');
+			     -anchor=>'nw',-bordermode=>'outside');
     $this->{"counter"}=0;
+#    $this->module_update;
     $this->{"widget"}=$widget;
 }
 
