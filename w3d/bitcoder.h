@@ -80,7 +80,7 @@ int bitcoder_is_empty (BitCoderState *s)
 {
    if (!s->bitstream || s->byte_count >= s->limit)
 {
-printf ("bitcoder empty !!!\n");
+//printf ("bitcoder empty !!!\n");
       return 1;
 }
 
