@@ -17,7 +17,7 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *   last mod: $Id: core.c,v 1.1 2004/03/02 03:32:02 arc Exp $
+ *   last mod: $Id: core.c,v 1.2 2004/03/04 06:35:16 arc Exp $
  */
 
 #include <stdio.h>
@@ -36,7 +36,8 @@ usage (char *pname)
 {
   fprintf (stderr,
            "Usage: %s <options>\n"
-           " -c <file>            location of configuration file to use\n");
+           " -c <file>            location of configuration file to use\n",
+           (char*)basename(pname));
   exit (1);
 }
 
@@ -46,6 +47,9 @@ int main(int argc, char **argv)
   char config_filename[256]="dryice.conf";
 
   int c;
+
+
+/* This obviously needs more work 
 
   while ((c = getopt (argc, argv, "c:")) != EOF) {
     switch (c) {
@@ -58,7 +62,6 @@ int main(int argc, char **argv)
     }
   }
 
-/* This obviously needs more work 
 
   if ((config = fopen(config_filename, "r")) == NULL) {
     printf("Could not open configuration file\n", config_filename);
