@@ -1,39 +1,84 @@
+#spec060 -- new stuff
+#spec061 -- finally -- bitwise equivalent to C code! (without loop filter)
+#spec062 -- FINALLY -- bitwise equvalent, even for TKAL!  problem was dang page/packet stuff
+#           this works sorta, but still needs to be revamped so Ogg stuff is not brittle
+#           but at least it works with its own test data.  Now gotta add loop filter
+#spec063 -- some tweaks
+#spec064 -- loop filter -- not working yet, but reorged pixel maps & stuff
+#spec065 -- loop filter working! (?) yes!
+#spec066 -- cleanup time -- derf's comments, other stuff (see unk.txt)
+#           firster -- fix up UV ala C code
+#spec067 -- first -- fixing header parsing stuff
+#spec068 -- decode_packet() -- now we can do a proper main loop
+#spec069 -- ok, using correct logic for headers & frames
+#spec070 -- cleaned up for release as 0.070
+#spec071 -- take command line args, insist on info & table headers -- make it 0.071
+
 ##_Theora Bitstream Specification and Reference Decoder -- Theora 1.0
+#Document version: 0.071
 
 #(c) 2003 Xiph Foundation, Dan Miller
 
 #special thanks to various people at On2 Technologies for donating VP3, and to the folks at Xiph.org Foundation for
-#doing good things with it
+#doing good things with it. Particular shout outs to Mike Melansen, Tim Teriberry, Ralph Giles, Christopher
+#Montgomery, Mauricio Piacentini, and Jack Moffit (please let me know if I spelled your name wrong..)
 
-#This documentation is released under the yada yada open free gnu/BDS license etc.
+#This documentation and software are distributed under the terms of the BSD-style Theora license, as outlined in the
+#"COPYING" file in the root directory of this distribution. Please familiarize yourself with these terms before
+#distributing any of the documents in this directory.
+
+#Introduction
 
 #Theora is a video codec. This is the spec. 
 
+#State of this document
 
-#Introduction
+#This document is unfinished. It is a work in progress that is included in the Theora release for your edification.
+#Once it is complete and verified, it will hopefully become the canonical reference for Theora compatibility.
+
+#The most glaring deficiency is that presently the documentation and Python decoder only cover keyframes. We are
+#actively looking for volunteers to help us complete the work of fully documenting the Theora format. If you are
+#interested and believe you can help, please post a message to theora-dev@xiph.org, or contact jack@xiph.org or
+#danbmil99@yahoo.com.
+
+#In addition to support for predicted frames, the Python script needs to be heavily error-protected. Presently
+#various illegal bitstreams will cause the program to go into an endless loop or crash in other unpredictable ways.
+#The specification should eventually be usable as a syntax checker that is able to detect and report on any possible
+#error condition within the bitstream. In addition to work on the code, we will need to generate a comprehensive test
+#suite of encoded files that exercise every aspect of the bitstream. Illegal files will also need to be generated to
+#test the error handling capacity of the script.
 #About this document
 
 #This document is The Theora Bitstream Specification and Reference Decoder. It is both an english language
 #description of the Theora video bitstream, and an interpretable program in the Python programming language, which
 #can be executed using a version 2.0 or later Python interpreter. More information about Python can be gleaned at
 #www.python.org. When run as a Python script, this document will decode compliant Theora bitstreams, producing
-#uncompressed YUV files.
+#uncompressed YUV files. The YUV output format is identical to that used by
+#theora/win32/experimental/dumpvid/dump_vid.exe, which is as follows:
+
+#For each frame, Y pixel data is output as unsigned characters, scanning left to right for each row of pixels
+#starting with the top row. The Y data is followed by interleaved V and U data, ie one scanline of V followed by one
+#scanline of U. This format allows raw data to be inspected visually as a monochrome image, with the V and U planes
+#situated directly below the Y plane.
 
 #To invoke this document as a Python program: at the command prompt, type:
-#[prompt]> python spec.py testspec.ogg
-
-#The raw file will be saved as "out.raw"
+#[prompt]> python spec.py testspec.ogg out.raw
+#The program will attempt to open and decode 'testspec.ogg'.  The raw decoded file will be saved as "out.raw"
 
 #Formatting Conventions
 
-#There are two versions of this document: HTML, and Python.  Both are created from the same source file.  
+#There are three versions of this document: text, HTML, and Python. The HTML and Python versions are created from the
+#text file, spec.txt. While spec.txt is actually a legal Python script, the formatted version spec.py is more
+#readable as the comments have been reformatted with linefeeds and formatting characters have been stripped. To
+#create the HTML version spec.html, a simple hinting scheme is used to specify some rudimentary formatting (see
+#txt2html.py for details). The following commands will regenerate both files from the source file:
+
+#[prompt]> python txt2py.py spec.txt spec.py
+#[prompt]> python txt2html.py spec.txt spec.html
 
 #In the HTML version, non-code sections are generally formatted using a variable-width font to distinguish them from
 #code. Code and non-code can be interspersed, even within Python routines. In general, non-code blocks of text within
 #routines will be italicized.
-
-#The Python version is a simple ascii text file intended for viewing in a source code editor with a fixed-width font.
-#Non-code sections are formatted as legal Python comments.
 
 #Overview
 
@@ -46,6 +91,8 @@
 
 # * Verification Output Streams (uncompressed YUV data)
 
+#(Note: the following paragraph will not be considered in effect until this document is completed and verified - Ed.)
+
 #A decoding application is Theora compliant IFF it can decode any Theora bitstream that is decodable with the
 #Reference Decoder (this document), producing output that is bytewise equivalent. Several Verification Bitstreams and
 #Verification Output Streams are included in the Specification Package for reference; the Verification Output Streams
@@ -55,7 +102,8 @@
 
 #Please note: the Python code herein is written solely to facilitate the definition and compliance testing of Theora
 #bitstreams. It is by design an extremely inefficient and poorly structured piece of code. Do not use this as a
-#template for real-world player applications. Instead, start with the C-based Theora decoder from CVS.
+#template for real-world player applications. Instead, start with the C-based Theora decoder available for download
+#at www.theora.org.
 
 #The Theora Bitstream Specification does not cover encoders, except for the following sentence:
 
@@ -75,31 +123,78 @@
 
 from array import array
 from os import abort
+import sys
 
-#some globals & useful functions:
+#usage:
 
-oggfile = file("testspec.ogg","rb")
+if len(sys.argv) < 3:
+  print "usage: python spec.py infile outfile"
+  abort()
+
+#some globals & useful definitions:
+
+#oggfile = file("testspec.ogg","rb")
+oggfile = file(sys.argv[1],"rb")
 oggstring = oggfile.read()                            #NOTE limited by memory constraints -- should use file I/O
 oggindex = 0
+pagebytes = 0
+pagestart =0
 oggbyte = 0
 bitmask = 0
 oggbuf = array('B',oggstring)                         #convert to an array of unsigned bytes
 huffs = []                                            #this will contain list of huffman trees
+infoflag = 0                                          #initialization flags
+tableflag = 0
 
 #Bitstream parsing routines
 
-#bit & byte ordering: For historical reasons, Ogg is generally little-endian, while Theora is big-endian when reading
-#values larger than 8 bits directly from the stream. For byte reads (on byte boundaries), it doesn't matter; both
-#schemes use the same bitpacking within a byte. These routines are intended primarily for reading the actual Theora
-#bitstream. However for testing purposes, we have to implement a bit of Ogg since the test files are Ogg formatted.
-#Note readlong() which is implemented to facilitate little-endian longword reads in the Ogg-aware routines.
+#Bit & byte ordering: typically, Ogg packs bits starting with the most significant bit to the least. For historical
+#reasons, Theora packs bits least significant bit first. In cases where values are byte-aligned (8 bit boundaries),
+#this only affects byte ordering. We do some Ogg parsing but it happens to be only on byte-aligned values, so we use
+#readbits(8) but reverse the byte order (See for instance readOgg32())
+
+#Note that in this specification we are assuming bytes are always 8 bit values. Future versions may support non-8-bit
+#platforms.
+
+#helpers:
+
+def flushpacket():                                    #flush bits between packets
+  global bitmask
+  bitmask = 0
+
+def flushpage():                                      #flush packet & disable paging for read_page_header()
+  global bitmask, pagebytes
+  bitmask = 0
+  pagebytes = 999999                                  #kluge - yuk
+
+#simple Ogg page header parsing routine.  Note we are not checking CRC's; we are assuming Ogg data is not corrupt.
+
+def read_page_header():
+  global oggindex, pagebytes, pagestart
+  flushpage()
+  oggs = readstring(4)                                #get the putated 4-byte Ogg identifier
+  if oggs != "OggS":
+    print "invalid page data -- OggS =", oggs
+    abort()
+  oggindex += 10                                      #serialnum at offset 14
+  serialno = readOgg32()
+  oggindex += 8                                       #segment count at offset 26
+  segments = readbits(8)
+  bytes = 0
+  for i in range(segments):
+    bytes += readbits(8)
+  pagebytes = bytes
+  pagestart = oggindex
+
 
 #this routine just grabs a byte from the input stream:
 
 def readbyte():                                       #note: this is a low-level function to read 
                                                       #a byte-aligned octet from the datastream.
                                                       #To read an arbitrarily aligned byte, use readbits(8)
-  global oggindex
+  global oggindex,pagebytes
+  if oggindex >= pagestart+pagebytes:
+    read_page_header()
   byte = oggbuf[oggindex]
   oggindex += 1
   return byte
@@ -109,8 +204,8 @@ def readbyte():                                       #note: this is a low-level
 def readbit():
   global bitmask, oggbyte
   if bitmask == 0:
-    bitmask = 0x80
     oggbyte = readbyte()
+    bitmask = 0x80
   if oggbyte & bitmask:
     bit = 1
   else:
@@ -118,12 +213,9 @@ def readbit():
   bitmask >>= 1
   return bit
 
-def flushpage():                                      #Ogg pages are byte-aligned; need to flush after using
-  global bitmask
-  bitmask = 0
-
 #readbits: our workhorse.  Gets up to 32 bits from the stream 
-#(note -- hi bit is first bit read! use readlong() or build up values through sequential byte reads for Ogg purposes)
+#(note -- hi bit is first bit read! use readOgg32() or build up values through sequential byte reads for Ogg
+#purposes)
 
 def readbits(x):
   ret = 0
@@ -140,9 +232,9 @@ def readstring(x):
     s += chr(readbits(8))
   return s
 
-#readlong reads a longword Ogg style:
+#readOgg32 reads a longword Ogg style:
 
-def readlong():                                       #different than readbits(32): byte order is reversed
+def readOgg32():                                      #different than readbits(32): byte order is reversed
 
   return readbits(8) + (readbits(8) << 8) + (readbits(8) << 16) + (readbits(8) << 24)
 
@@ -159,9 +251,16 @@ def readlong():                                       #different than readbits(3
 #Note how this function is called recursively for each possible branch in the tree until all branches have bottomed
 #out with complete bitstrings:
 
+hufftokens=0                                          #keep track of # of token strings -- 32 max
+
 def read_hufftable(table):
+  global hufftokens
   if readbit():                                       #if bit==1, this bitstring is complete
     table.append( readbits(5) )                       #next 5 bits = token number for this string
+    hufftokens += 1
+    if hufftokens > 32:
+      print "illegal huffman table, > 32 tokens"
+      abort()
   else:                                               #if bit was zero, we have two more entries defining
                                                       #the zero and one case for the next bit:
     table.append([])                                  #add another pair of tables
@@ -186,11 +285,11 @@ def readtoken(huf):
 
 #Each table contains the following five entries in this order:
 
-#  base run length
-#  number of extra run length bits (0 - 12)
-#  base value
-#  number of extra value bits (0 - 9)
-#  number of extra sign bits (0 or 1)
+##  base run length
+##  number of extra run length bits (0 - 12)
+##  base value
+##  number of extra value bits (0 - 9)
+##  number of extra sign bits (0 or 1)
 
 token_array = [    
 [1, 0, 'eob', 0, 0], 
@@ -235,8 +334,8 @@ token_array = [
 
 def parsetoken(huf):
   global token_array                                  #(not strictly necessary for read-only in Python)
-
   token = readtoken(huf)                              #read a token from the stream
+
   table = token_array[token]                          #get our table of parameters for this token
   run = table[0]                                      #base run length
   run_extra = table[1]                                #number of extra bits for run length
@@ -260,50 +359,22 @@ def parsetoken(huf):
                                                       #note: string * 1 = string, so 'eob', 'zrl' are OK
 
 
-#routines to read & parse headers
-
-#simple Ogg page header parsing routine:
-
-def read_page_header():
-  global oggindex
-  flushpage()
-  oggs = readstring(4)                                #get the putated 4-byte Ogg identifier
-  if oggs != "OggS":
-    print "invalid page data"
-    abort()
-  oggindex += 10                                      #serialnum at offset 14
-  serialno = readlong()
-  oggindex += 8                                       #segment count at offset 26
-  segments = readbits(8)
-  bytes = 0
-  for i in range(segments):
-    bytes += readbits(8)
+#routines to read & parse codec headers
 
 #routine to parse the Theora info header:
-#[note: next three routines need to be rewritten so headers can come in any order]
 
 def read_info_header():
   global huffs, encoded_width, encoded_height, decode_width, decode_height, offset_x, offset_y
   global fps_numerator, fps_denominator, aspect_numerator, aspect_denominator, quality, bitrate
-  global version_major, version_minor, version_subminor, colorspace
-
-  typeflag = readbits(8)
-
-  if typeflag != 0x80:                                #first bit = 1; next 7 bits define header type.
-                                                      #for info header, 7 bit value = zero, so we have 0x80
-    print "expected info header?"
-    abort()
-
-  cid = readstring(6)                                 #codec ID
-  if cid != "theora":
-    print "Not a Theora header packet"
-    abort()
+  global version_major, version_minor, version_subminor, colorspace, infoflag
 
   version_major = readbits(8)                         #major & minor version must be exact match
   if version_major != 3:
+    print "incompatible major version#"
     abort()
   version_minor = readbits(8)
   if version_minor != 2:
+    print "incompatible minor version#"
     abort()
   version_subminor = readbits(8)
 
@@ -323,44 +394,24 @@ def read_info_header():
   colorspace = readbits(8)                            #colorspace flag defines YUV to RGB mapping
   bitrate = readbits(24)                              #target bitrate; not used for decode
   quality = readbits(6)                               #target quality also not used for decode
-
+  infoflag = 1
 
 #parse the comment header:
 
 def read_comment_header():
   global vendor_string, vendor_string_len, comment_string, comment_string_len
 
-  typeflag = readbits(8)
-
-  if typeflag != 0x81:                                #header type 1 = comment
-    print "expected comment header? typeflag =",typeflag
-    abort()
-  cid = readstring(6)
-  if cid != "theora":
-    print "corrupted comment header?", cid
-    abort()
-    
-  vendor_string_len = readlong()
+  vendor_string_len = readOgg32()
   vendor_string = readstring(vendor_string_len)
-  comment_string_len = readlong()
+  comment_string_len = readOgg32()
   comment_string = readstring(comment_string_len)
 
 
 #read & parse the table header:
 
 def read_table_header():
-  global scale_table_AC, scale_table_DC, Y_quantizer, UV_quantizer, IF_quantizer, frequency_counts
-
-  typeflag = readbits(8)
-
-  if typeflag != 0x82:                                            #type 2 = table header
-    print "expected table header? type = ", hex(typeflag)
-    abort()
-
-  cid = readstring(6)
-  if cid != "theora":
-    print "corrupted table header?", cid
-    abort()
+  global scale_table_AC, scale_table_DC, Y_quantizer, UV_quantizer, IF_quantizer
+  global frequency_counts, hufftokens, tableflag
 
   scale_table_AC = []                                             #64 possible quantizer scalers for AC coeffs
   for x in range(64):    scale_table_AC.append(readbits(16))
@@ -380,8 +431,38 @@ def read_table_header():
 
   for x in range(80):                                             #Read in huffman tables
     huffs.append([])
+    hufftokens=0
     read_hufftable(huffs[x])
 
+  tableflag = 1
+
+def decode_header():
+
+  header_type = readbits(7)
+
+  cid = readstring(6)
+  if cid != "theora":
+    print "not a theora stream header", cid
+    abort()
+
+  if header_type == 0:
+    read_info_header()
+    flushpacket()
+    return "info"
+
+  elif header_type == 1:
+    read_comment_header()
+    flushpacket()
+    return "comment"
+
+  elif header_type == 2:
+    read_table_header()
+    flushpacket()
+    return "table"
+
+  else:
+    print "unknown stream header type -- skipping"
+    return "unknown"
 
 # Routines that decode video
 
@@ -447,7 +528,7 @@ def de_hilbert(w, h, colist):                               #width, height, coef
         p, q = hilbert[i]                                   #nice Python syntax
         xx = x*4 + p
         yy = y*4 + q
-        if (xx < w) & (yy < h):                                   #skip stuff out of range
+        if (xx < w) & (yy < h):                             #skip stuff out of range
           comap[xx][yy] = colist[ii]                        #if in range, get a coeff
           ii += 1
   return comap
@@ -481,7 +562,7 @@ def DCpredict(comap, w, h):
         if x == 0:                                          #left column?
           u = comap[0][y-1][0]                              #u = upper
           ur = comap[1][y-1][0]                             #ur = upper-right
-          p = u                                             #[Shouldn't this be u*75 + ur*53??? but this works!]
+          p = u
           comap[0][y][0] += p                               #add predictor to decoded value
 
         else:                                               #general case -- neither left column nor top row
@@ -525,7 +606,7 @@ def DCpredict(comap, w, h):
 #    where sf = scale_table_DC[quality_index] for DC dequantizer
 #               scale_table_AC[quality_index] for AC dequantizer
 
-#Note that the dequantize routine also multiplies each coefficient by 4.  This is to facilitate the iDCT later on.
+#(Note that the dequantize routine also multiplies each coefficient by 4.  This is to facilitate the iDCT later on.)
 
 def dequant(data, scaleDC, scaleAC, dqtable):
   mul = int( (scaleDC * dqtable[0]) / 100 ) * 4
@@ -536,8 +617,9 @@ def dequant(data, scaleDC, scaleAC, dqtable):
 
 #ZIG-ZAG order
 
-#The coefficients in each 8x8 DCT coded block are layed out in 'zig-zag' order. The following table shows the order
-#in which the 64 coefficients are coded:
+#The coefficients in each 8x8 DCT coded block are layed out in 'zig-zag' order.  
+
+#The following table shows the order in which the 64 coefficients are coded:
 
 zigzag=[  
   0,  1,  5,  6,  14, 15, 27, 28,
@@ -568,47 +650,45 @@ def Mul_fix(a, b):
 
 #addition and subtraction can be performed normally.
 
-#First we define a one-dimensional iDCT:
+#First we define a one-dimensional iDCT. Note that there are many implementations of iDCT available. Theora
+#compatibility requires that the output of your iDCT routine be bitwise equivalent to the one outlined here:
 
 def idct_1D(data, i, stride):
-
-#[where did these varnames come from?  somebody make them instructive please]
 
   A = Mul_fix(64277, data[i+stride]) + Mul_fix(12785, data[i+7*stride])
   B = Mul_fix(12785, data[i+stride]) - Mul_fix(64277, data[i+7*stride])
   C = Mul_fix(54491, data[i+3*stride]) + Mul_fix(36410, data[i+5*stride])
   D = Mul_fix(54491, data[i+5*stride]) - Mul_fix(36410, data[i+3*stride])
-  Ad = Mul_fix(46341, A - C)
-  Bd = Mul_fix(46341, B - D)
-  Cd = A + C
-  Dd = B + D
+  A2 = Mul_fix(46341, A - C)
+  B2 = Mul_fix(46341, B - D)
+  C2 = A + C
+  D2 = B + D
   E = Mul_fix(46341, data[i] + data[i+4*stride])
   F = Mul_fix(46341, data[i] - data[i+4*stride])
   G = Mul_fix(60547, data[i+2*stride]) + Mul_fix(25080, data[i+6*stride])
   H = Mul_fix(25080, data[i+2*stride]) - Mul_fix(60547, data[i+6*stride])
-  Ed = E - G
-  Gd = E + G
-  Add = F + Ad
-  Bdd = Bd - H
-  Fd = F - Ad
-  Hd = Bd + H
+  E2 = E - G
+  G2 = E + G
+  A3 = F + A2
+  B3 = B2 - H
+  F2 = F - A2
+  H2 = B2 + H
 
-  data[i] = Gd + Cd
-  data[i+stride] = Add + Hd
-  data[i+2*stride] = Add - Hd
-  data[i+3*stride] = Ed + Dd
-  data[i+4*stride] = Ed - Dd
-  data[i+5*stride] = Fd + Bdd
-  data[i+6*stride] = Fd - Bdd
-  data[i+7*stride] = Gd - Cd
+  data[i] = G2 + C2
+  data[i+stride] = A3 + H2
+  data[i+2*stride] = A3 - H2
+  data[i+3*stride] = E2 + D2
+  data[i+4*stride] = E2 - D2
+  data[i+5*stride] = F2 + B3
+  data[i+6*stride] = F2 - B3
+  data[i+7*stride] = G2 - C2
 
 #2D iDCT is performed first on rows, then columns (note order can affect lower bits!)
 
-#Note that we dequantized all coefficients to 4 times their real value. Since each coefficient is run through the
-#iDCT twice (horizontal & vertical), the final values must be divided by 16.
+#(Note that we dequantized all coefficients to 4 times their real value. Since each coefficient is run through the
+#iDCT twice (horizontal & vertical), the final values must be divided by 16.)
 
 def idct(data):
-
   for y in range(8):
     idct_1D(data, y*8, 1);
 
@@ -618,10 +698,108 @@ def idct(data):
   for x in range(64):
     data[x] = (data[x] + 8) >> 4                            #add for rounding; /16 (remember dequant was *4!)
 
-#this routine converts intra-coded blocks of data into unsigned chars
+#loop filter
 
-def pixelize(data, w, h, dx, dy):
-  pix = []
+#the Theora loop filter is run along every horizontal and vertical edge between blocks where one of the blocks is
+#coded. In the keyframe case, this means every edge except the borders of the frame. For predicted frames, the only
+#edges that are not filtered are those between two uncoded blocks (because they were filtered at some point
+#previously, when the block was originally reconstructed)...
+
+#clamping routine
+
+def clampit(n, lo, hi):
+  if n < lo:
+    return lo
+  if n > hi:
+    return hi
+  return n
+
+#first, define an array of quality-dependent filter parameters:
+
+loopfilter_array = [
+  30, 25, 20, 20, 15, 15, 14, 14,
+  13, 13, 12, 12, 11, 11, 10, 10,
+  9,  9,  8,  8,  7,  7,  7,  7,
+  6,  6,  6,  6,  5,  5,  5,  5,
+  4,  4,  4,  4,  3,  3,  3,  3,
+  2,  2,  2,  2,  2,  2,  2,  2,
+  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0 ]
+
+#next, we define a step function with five linear segments:
+
+def loopfunc(n):
+  global loopfilter_array
+  global quality_index                                      #from the frame header
+  K = loopfilter_array[quality_index]
+  if (n <= -K*2) | (n >= K*2):
+    return 0
+  elif (n > -K*2) & (n < -K):
+    return -2*K - n
+  elif (n >= -K) & (n <= K):
+    return n
+  else:
+    return 2*K - n
+
+#now the 1D filter functions:
+
+def filter_horiz(pixmap, x, y):
+  for i in range(8):
+
+    A = pixmap[x-2][y+i]
+    B = pixmap[x-1][y+i]
+    C = pixmap[x][y+i]
+    D = pixmap[x+1][y+i]
+
+    A = clampit(A, -128, 127)
+    B = clampit(B, -128, 127)
+    C = clampit(C, -128, 127)
+    D = clampit(D, -128, 127)
+
+    N = ( 4+(A - B*3 + C*3 - D)) >> 3
+    delta = loopfunc(N)
+
+    pixmap[x-1][y+i] = B + delta
+    pixmap[x][y+i] = C - delta
+
+def filter_vert(pixmap, x, y):
+
+  for i in range(8):
+
+    A = pixmap[x+i][y-2]
+    B = pixmap[x+i][y-1]
+    C = pixmap[x+i][y]
+    D = pixmap[x+i][y+1]
+
+    A = clampit(A, -128, 127)
+    B = clampit(B, -128, 127)
+    C = clampit(C, -128, 127)
+    D = clampit(D, -128, 127)
+
+    N = ( 4+(A - B*3 + C*3 - D)) >> 3
+    delta = loopfunc(N)
+
+    pixmap[x+i][y-1] = B + delta
+    pixmap[x+i][y] = C - delta
+
+#full filter (keyframe case only):
+
+def loopfilter(pixmap, w, h):
+  for y in range(h>>3):
+    for x in range(w>>3):
+      xx = x*8
+      yy = y*8
+      if xx > 0:                                      #vertical if not on left edge
+        filter_horiz(pixmap, xx, yy)
+      if yy > 0:                                      #horiz if not on top row
+        filter_vert(pixmap, xx, yy)
+
+#Pixel management routines
+
+#this routine converts an array of 8x8 blocks of data into a pixel array
+
+def blocks2pixels(data, w, h, dx, dy):
+  pix = [ [0 for y in range(h)] for x in range(w) ]         #initialize 2D array, pix[w][h]
 
   for y in range(h):
     for x in range(w):
@@ -631,17 +809,25 @@ def pixelize(data, w, h, dx, dy):
       by = yy >> 3
       ix = xx % 8
       iy = yy % 8
-      #print "pixelize: bx, by, ix, iy",bx,by,ix,iy
       p = data[bx][by][ix + iy*8]
-      p += 128
-      if p < 0:
-        p = 0
-      if p > 255:
-        p = 255
-      pix.append(p)
-
-#return a linear list of suitably clamped & range-checked values from a map of blocks
+      pix[x][y] = p
   return pix
+
+#one last helper -- turns a color map (integers with x, y coordinates) into a straight block array, clamped to 0-255:
+
+def pixels2chars(pixels):
+  h = len(pixels[0])
+  w = len(pixels)
+
+  data = []                                                 #initialze linear array width * height long
+
+  for y in range(h):
+    for x in range(w):
+      p = pixels[x][y]
+      p += 128
+      p = clampit(p, 0, 255)
+      data.append(p)                                        #add it to the list
+  return data
 
 # *** DECODING THE FRAME ***
 
@@ -650,15 +836,14 @@ def pixelize(data, w, h, dx, dy):
 def decode_frame():
   print
   print "DECODING FRAME"
+  global quality_index, infoflag, tableflag
+
+  if (infoflag == 0) | (tableflag == 0):                    #if info & table not initialized
+    print "stream parameters not initialized -- missing info or table headers?"
+    abort()
 
 #First, we decode the frame header:
 
-  packet_type = readbit()
-  print "packet_type:", packet_type
-  if packet_type != 0:
-    print "illegal packet type"
-    abort()
-    
   is_predicted = readbit()
   print "is_predicted:", is_predicted
   quality_index = readbits(6)
@@ -691,7 +876,6 @@ def decode_frame():
 #Also, as we go higher into the coefficient index, we will use different huffman tables:
 
     for i in range(64):                                     #For each coefficient index,
-
       if i == 0:                                            #get DC huffman tables for coeff=0
         huff_Y = readbits(4)
         huff_UV = readbits(4)
@@ -727,20 +911,20 @@ def decode_frame():
 #if this is an end-of-block token, that means we have a run of blocks to mark as fully decoded:
 
           if val == 'eob':                                  #eob = End Of Block run
-            xx = x
-            for r in range(run):                            #clear <run> blocks (and wrap around!!)
+            xx = x                                          #temporary block index starts with x
+            for r in range(run):                            #clear (run) blocks
               done = len(coeffs[xx])                        #this many coeffs are set in this block
               remain = 64 - done                            #this many remain
-              for j in range (remain):
-                coeffs[xx].append(0)                        #zero out the rest of the block
-              skipped=0                                     #keep a count of skipped blocks
-              while len(coeffs[xx]) >i:                     #skip blocks that are coded up to this point or further
-                xx = (xx+1) % blocks_tot                    #next block (and wrap around)
-                skipped += 1
-                if skipped >= blocks_tot:                   #quit if we're done (or we can loop forever)
-                  break
-#otherwise the token represents a run of zeros followed by a value:
+              for j in range (remain):                      #for all remaining coeffs
+                coeffs[xx].append(0)                        #set to zero
+              ii = i                                        #temporary coeff index starts with i
+              while (len(coeffs[xx]) >ii) and ii<64:        #find next candidate block for eob treatment
+                xx += 1                                     #next block
+                if xx == blocks_tot:                        #if we wrapped around,
+                  xx = 0                                    #back to block zero
+                  ii += 1                                   #and next coeff
 
+#otherwise the token represents a run of zeros followed by a value:
           else:                                             #zero run + value
             for r in range (run):                           #a run of zeros
               coeffs[x].append(0)
@@ -789,81 +973,111 @@ def decode_frame():
         comapV[x][y] = temp + []
 
 #convert the image into a raw byte array of planar Y, V, U:
-#[note: this format differs from Mau's dumpvid, which lays out U & V interleaved rather than strict planar]
 
-    pixY = pixelize(comapY, decode_width, decode_height, offset_x, offset_y)
-    pixU = pixelize(comapU, decode_width>>1, decode_height>>1, offset_x>>1, offset_y>>1)
-    pixV = pixelize(comapV, decode_width>>1, decode_height>>1, offset_x>>1, offset_y>>1)
+    pixY = blocks2pixels(comapY, decode_width, decode_height, offset_x, offset_y)
+    pixU = blocks2pixels(comapU, decode_width>>1, decode_height>>1, offset_x>>1, offset_y>>1)
+    pixV = blocks2pixels(comapV, decode_width>>1, decode_height>>1, offset_x>>1, offset_y>>1)
+
+#run loop filter:
+
+    loopfilter(pixY, decode_width, decode_height)
+    loopfilter(pixU, decode_width>>1, decode_height>>1)
+    loopfilter(pixV, decode_width>>1, decode_height>>1)
 
 #return the three color planes:
 
-    return pixY, pixU, pixV
+    return pixels2chars(pixY), pixels2chars(pixU), pixels2chars(pixV)
 
 #Decode Predicted Frame:                THIS SECTION UNFINISHED
   else: 
     print "decoding interframe (NOT!)"
+    abort()
     coding_scheme = readbits(3)
     if coding_scheme == 0:
       mode_alphabet = []                                    #define a list (think of it as an array)
       for x in range(8):
         mode_alphabet.append(readbits(3))                   #add another mode to the list
 
-#end of definition for decode_frame()
+#--end of definition for decode_frame()
 
+
+#Parse Theora packets
+
+#Define a function to parse the packet type & call appropriate functions. Returns either a string for header packets,
+#or a tuple of Y, U, and V data for frames:
+
+def decode_packet():
+  packet_type = readbit()
+  if packet_type == 0:
+    return decode_frame()
+  else:
+    return decode_header()
 
 #MAIN TEST SEQUENCE
 
 #let's test our routines by parsing the stream headers and the first frame.
 
 print
-print "DECODING STREAM HEADERS"
+print "THEORA SPEC PYTHON SCRIPT"
+print "Test: decoding first frame of", sys.argv[1]
+ret = ""
 
-#Read and Verify Stream Headers:
+while type(ret) == type(""):                          #string means stream header parsed
+  ret = decode_packet()
+  if type(ret) == type(""):                           #if it's a header packet,
+    print "header packet type:", ret                  #print the type (info, comment, tables)
+    if ret == "info":
+      print "  version:", version_major, version_minor, version_subminor 
+      print "  encoded width:", encoded_width
+      print "  encoded height:", encoded_height
+      print "  decode width:", decode_width
+      print "  decode height:", decode_height
+      print "  X offset:", offset_x
+      print "  Y offset:", offset_y
+      print "  fps:", fps_numerator, "/", fps_denominator
+      print "  aspect:", aspect_numerator, "/", aspect_denominator
+      print "  colorspace:",
+      if colorspace == 0:
+        print "  not specified"
+      elif colorspace == 1:
+        print "  ITU 601"
+      elif colorspace == 2:
+        print "  CIE 709"
+      else:
+        print "  colorspace type not recognized"
+      print "  target bitrate:", bitrate
+      print "  target quality:", quality
 
-read_page_header()
-read_info_header()
-read_page_header()                                          #I know there's one around here
-read_comment_header()                                       #but not here! (this is encoder-specific -- will be fixed)
-read_table_header()
+    elif ret == "comment":
+      print "  vendor string:", vendor_string
+      print "  comment length:", comment_string_len
+    elif ret == "table":
+      print "tables loaded"
+  else:
+    print "frame decoded"
 
-#print some useful information:
+#'ret' should now have the first frame:
 
-print "vendor string:", vendor_string
-print "comment length:", comment_string_len
-print "version:", version_major, version_minor, version_subminor 
-print "encoded width:", encoded_width
-print "encoded height:", encoded_height
-print "decode width:", decode_width
-print "decode height:", decode_height
-print "X offset:", offset_x
-print "Y offset:", offset_y
-print "fps:", fps_numerator, "/", fps_denominator
-print "aspect:", aspect_numerator, "/", aspect_denominator
-print "colorspace:",
-if colorspace == 0:
-  print "not specified"
-elif colorspace == 1:
-  print "ITU 601"
-elif colorspace == 2:
-  print "CIE 709"
-else:
-  print "colorspace type not recognized, assuming unspecified"
-  colorspace = 0
-print "target bitrate:", bitrate
-print "target quality:", quality
+Y, U, V = ret
 
-# read the first frame...
+#define a little routine to fix up the UV buffer the way we like:
 
-read_page_header()                                          #see prev. note about this function -- becomes read_packet()
-Y, U, V = decode_frame()
+def interleave(U, V, w, h):
+  buf = []
+  for y in range(h):
+    for x in range(w):
+      buf.append( V[y*w + x] )
+    for x in range(w):
+      buf.append( U[y*w + x] )
+  return buf
 
-#and write it to disk.
+#write data to disk:
 
-buf = array('B', Y+U+V)
-outfile = file("out.raw","wb")
+buf = array('B', Y + interleave(U, V, decode_width/2, decode_height/2) )
+outfile = file(sys.argv[2],"wb")
 outfile.write(buf)
 
-#that's all for now
+#that's all for now.
 print "done"
 
  
