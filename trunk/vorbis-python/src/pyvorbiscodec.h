@@ -16,6 +16,9 @@ typedef struct {
   PyObject *parent;
 } py_block;
 
+#define PY_DSP(x) (&(((py_dsp *) (x))->vd))
+#define PY_BLOCK(x) (&(((py_block *) (x))->vb))
+
 extern PyTypeObject py_dsp_type;
 extern PyTypeObject py_block_type;
 

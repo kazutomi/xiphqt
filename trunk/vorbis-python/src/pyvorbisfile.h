@@ -9,6 +9,7 @@ typedef struct {
   OggVorbis_File *ovf;
 } py_vorbisfile;
 
+#define PY_VORBISFILE(x) (((py_vorbisfile *)x)->ovf)
 extern PyTypeObject py_vorbisfile_type;
 
 #endif // __PYVORBIS_FILE_H__

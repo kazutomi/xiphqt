@@ -14,6 +14,9 @@ typedef struct {
   PyObject *parent;
 } py_vcomment;
 
+#define PY_VINFO(x) (&(((py_vinfo *) (x))->vi))
+#define PY_VCOMMENT(x) (&(((py_vcomment *) (x))->vc))
+
 extern PyTypeObject py_vinfo_type;
 extern PyTypeObject py_vcomment_type;
 

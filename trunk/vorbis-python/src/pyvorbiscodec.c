@@ -21,7 +21,7 @@ Each argument must be a string containing the audio data for a\n\
 single channel.";
 FDEF(dsp_close) "Signal that all audio data has been written to the object.";
 
-static void py_dsp_dealloc(py_dsp *);
+static void py_dsp_dealloc(PyObject *);
 static PyObject *py_dsp_getattr(PyObject *, char*);
 
 char py_dsp_doc[] = "";
@@ -34,12 +34,12 @@ PyTypeObject py_dsp_type = {
   0,
 
   /* Standard Methods */
-  (destructor) py_dsp_dealloc,
-  (printfunc) 0,
-  (getattrfunc) py_dsp_getattr,
-  (setattrfunc) 0,
-  (cmpfunc) 0,
-  (reprfunc) 0,
+  /* destructor */ py_dsp_dealloc,
+  /* printfunc */  0,
+  /* getattrfunc */ py_dsp_getattr,
+  /* setattrfunc */ 0,
+  /* cmpfunc */ 0,
+  /* reprfunc */ 0,
 
   /* Type Categories */
   0, /* as number */
@@ -101,9 +101,9 @@ py_dsp_new(PyObject *self, PyObject *args)
 }
 
 static void
-py_dsp_dealloc(py_dsp *self)
+py_dsp_dealloc(PyObject *self)
 {
-  Py_XDECREF(self->parent);
+  Py_XDECREF(((py_dsp *)self)->parent);
   PyMem_DEL(self);
 }
 
@@ -119,6 +119,10 @@ py_vorbis_analysis_blockout(PyObject *self, PyObject *args)
   vorbis_block vb;
   int ret;
   py_dsp *dsp_self = (py_dsp *) self;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   vorbis_block_init(&dsp_self->vd, &vb);
   ret = vorbis_analysis_blockout(&dsp_self->vd, &vb);
   if (ret == 1)
@@ -143,6 +147,9 @@ py_vorbis_analysis_headerout(PyObject *self, PyObject *args)
   PyObject *pyheader_code = NULL;
   PyObject *ret = NULL;
   
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   // Takes a comment object as the argument.
   // I'll just give them an empty one if they don't provied one.
   if (!PyArg_ParseTuple(args, "|O!", &py_vcomment_type, &comm))
@@ -192,6 +199,9 @@ py_vorbis_block_init(PyObject *self, PyObject *args)
   vorbis_block vb;
   py_dsp *dsp_self = (py_dsp *) self;
   PyObject *ret;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
 
   vorbis_block_init(&dsp_self->vd,&vb);
   ret = py_block_from_block(&vb, self);
@@ -294,7 +304,7 @@ py_dsp_close(PyObject *self, PyObject *args)
 /*********************************************************
 			VorbisBlock
  *********************************************************/
-static void py_block_dealloc(py_block *);
+static void py_block_dealloc(PyObject *);
 static PyObject *py_block_getattr(PyObject *, char*);
 
 FDEF(vorbis_analysis) "Output an OggPage.";
@@ -309,12 +319,12 @@ PyTypeObject py_block_type = {
   0,
 
   /* Standard Methods */
-  (destructor) py_block_dealloc,
-  (printfunc) 0,
-  (getattrfunc) py_block_getattr,
-  (setattrfunc) 0,
-  (cmpfunc) 0,
-  (reprfunc) 0,
+  /* destructor */ py_block_dealloc,
+  /* printfunc */ 0,
+  /* getattrfunc */ py_block_getattr,
+  /* setattrfunc */ 0,
+  /* cmpfunc */ 0,
+  /* reprfunc */ 0,
 
   /* Type Categories */
   0, /* as number */
@@ -337,10 +347,10 @@ static PyMethodDef Block_methods[] = {
 };
 
 static void
-py_block_dealloc(py_block *self)
+py_block_dealloc(PyObject *self)
 {
-  vorbis_block_clear(&self->vb);
-  Py_XDECREF(self->parent);
+  vorbis_block_clear(PY_BLOCK(self));
+  Py_XDECREF(((py_block *)self)->parent);
   PyMem_DEL(self);
 }
 
@@ -355,6 +365,10 @@ py_vorbis_analysis(PyObject *self, PyObject *args)
 {
   py_block *b_self = (py_block *) self;
   ogg_packet op;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   vorbis_analysis(&b_self->vb, &op); //TODO error code
   return modinfo->ogg_packet_from_packet(&op);
 }

@@ -1,5 +1,18 @@
+5-14-2001  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* setup.py: Bumped to version 0.3
+
+	* src/general.[ch]: Removed arg_to_64 and use ogg-python's arg_to_int64
+
+	* src/general.h: Fixed preprocessor warnings
+
+	* src/py*.c: Methods which take no arguments now require no arguments
+	Made functions match Python-expected signatures
+
+	* test/short.py: Fixed to match new Python ao module. I think I broke
+	something, so test/ogg123.py doesn't work at the moment
+	
 1-17-2001 Andrew H. Chatham <andrew.chatham@duke.edu>
-	* * All was essentially created, since this is the first separation
+	* All was essentially created, since this is the first separation
 	of pyvorbis and pyogg
 	
 11-29-2000 Andrew H. Chatham <andrew.chatham@duke.edu>
