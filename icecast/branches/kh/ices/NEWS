@@ -1,0 +1,427 @@
+1.59
+----
+. fix ALSA silence issue, stupid bug...a one-liner as well
+. Allow downmix to accept >2 channels
+. put back original timing allocation code in im_jack, also
+  base ringbuffer size on buffer_size and sleep time
+
+1.58
+----
+. fix build issue for saved id
+. update jack input module to use ringbuffer
+
+1.57
+----
+. handle "-" in playlist to refer to stdin
+. for live inputs make sure module only fails after 100 buffer allocation
+  failures in succession, instead of in total.
+. report initial failed log file opening
+
+1.56
+----
+. small update to JACK input
+. make sure non-blocking sockets are used in libshout
+
+1.55
+----
+. removed more unused code
+. plug some memory leaks, affected 
+. tweaked parameters to input modules, higher max/preloaded buffers and
+  a longer recovery delay for playlist.
+
+1.54
+----
+. Add JACK input, feedback if possible
+. various internal API cleanups
+. buffer allocation messages are handled more gracefully
+. fix quirk with missing metadata filename
+
+1.53
+----
+. fix compile issue on OBSD wrt im_sun module
+. change unknown XML element message, state filename and quote tags in question
+. small C99 cleanups, check for __func__
+. XML call API change, was causing a memory corruption in parsing.
+
+1.52
+----
+. fix up minor compile issue.
+. push shout_t creation/population to connection time, allows instance
+  metadata to after encode section.
+. fixup alsa input code.
+
+1.51
+----
+. YP bitrate is expected to be in kbps 
+. added URL to global and per-instance metadata.
+. fixup metadata settings better. string copies were not being done
+
+1.50
+----
+. function rename cleanup for xml parser
+. implement background tag, it can now makes itself daemon
+. only free buffers when there's a surplus. prealloc is minimum.
+. only warn on so many reconnect attempts, keep retrying.
+. supply nominal-bitrate to the shout audio info at connection time.
+. take out logging messages in sig handlers. Functions are not signal safe
+. moved the dead air buffer into global, saves using duplicate buffers
+
+1.49
+----
+. update encode_initialise, allow for setting VBR mode by bitrate, also
+  constrained VBR mode doesn't work as expected, vorbisenc issue.
+. add pidfile option for external handling
+. update im_sun to handle the different endian on sun/sparc sun/x86 and
+  openbsd
+. change buffer allocation routine. preallocation is still done but on a
+  smaller scale and the buffer allocation routine allocs/initialises buffers
+  when needed and below limit.  The free routine will free one buffer every so
+  often to cut down on surplus buffers.
+
+1.48
+----
+. Stupid timer fix, on timing error the reset wasn't working out right
+. fixup im_sun better, should work ok for OBSD now. maybe solaris as well
+. don't try reading metadata file if it isn't stated
+
+1.47
+----
+. changed sched_getparam to pthread_*  to work on OBSD
+
+1.46
+----
+. fix managed mode selection
+. make serial numbers random for each outgoing stream
+
+1.45
+----
+. call shout close even if connection failed. This prevents zombie
+  connections from building up.
+
+1.44
+----
+. increase delay on failed buffer allocations to 100ms, and increase
+  timer to account for it, this should prevent a bursts on recovery.
+. Add logsize xml parameter in kbytes, default is 2048.
+. tweak to make buffer count dependant on number of runners
+
+1.43
+----
+. downmix is now a bool type, so true,yes as well as 1 is valid
+. in playlist loop on buffer allocation failure, this should stop needless
+  logging as the previous message is noted.
+
+1.42
+----
+. dead code removal
+. reset timer if input jumps more than 1 second.
+. when sleeping enabled (normal) and buffer allocation fails then instead
+  of dropping out, log one message, sleep for a short while and retry again
+. implement bool tpye XML tags in config. true. yes are acceptable as well 
+  as a numeric.
+
+1.41
+----
+. separate user-derived rate/channels, from input derived ones.
+
+1.40
+----
+. fix granulepos for file fixing, for extra compliance.
+. added "once" tag for handling each input once only. Needed for file fix.
+
+1.39
+----
+. Made playlist honor USR1 USR2 signals again
+. fixup ALSA, but untested until I install the drivers again.
+. minor cleanups, removing unused bits etc
+
+1.38
+----
+. don't share the code_ops structure as it contains stream specific info
+. drop the vorbis array from the buffers, it was a hack
+. ALSA driver not fully changed over yet
+
+1.37
+----
+First 3 could break things as they are fairly substantial changes
+. big input flow control change, callback approach
+. various structure re-arrangement 
+. playlist now sends as out as ogg packets instead of ogg pages, also
+  samples are calculated per packet.
+. put quotes around filenames, allows for easy tracking in logs.
+. reencoder takes packets instead of pages
+. make random playlist more random
+
+1.36
+----
+. Fixed bug in playlist script, the rate regulation was disabled.
+. removed odd printf
+
+1.35
+----
+. fix reconnect_delay/attempts parsing issue.
+. Added YP option for advertising the shout stream
+. Updated m4 scripts in line with CVS
+. Added 2Meg log cycle
+
+1.34
+----
+. move various code out of cfgparse into specifics files.
+. elimate passthru in encode.
+. set samplerate/channels on every buffer from the playlist
+  fixes an assert possibility
+
+1.33
+----
+. Add skip option to pcm input, to allow for removal of initial
+  data on certain connections, typically shoutcast
+. avoid segv bugs on flushed shout connections.
+. make file save time-reset work again.
+. fixed a bug on first file created as the first audio page
+  would only contain one packet.
+. updated timing code to be more precise on ogg files with gaps
+  at the beginning.
+. Added sleep param to playlist to not sleep when reading ogg
+  files. not to be used with shout connections but fine for
+  disk writes.
+
+1.32
+----
+. fix-up NULL dereference on exit for passthru vorbis case,
+. do instance cleanup at end of runner.
+. add better timer logic into playlist, so that long sleeps
+  don't occur on ogg files with gaps at the start.
+
+1.31
+----
+. requires libshout kh14 (API change, more inline with CVS)
+. ogg test now check for a ogg v1.0 call
+. om_shout now flushes pages every 2 seconds, if not less
+
+1.30
+----
+. lots of dead code removal
+. place specifc output modules in separate files, more modular
+  this allows for specifying multiple savestreams and shout
+  connections per instance. (note config file change)
+. separate reencode packetin from pagein for later work.
+. various little cleanups, name changes etc
+
+1.29
+----
+. minor cleanups for distributing files.
+. add optional debug for checking pthread flags.
+. a few memory leaks fixes.
+
+1.28
+----
+. Adeed calls to reencode to take pages and produce packets for output,
+  this removes the page build -> spilt -> re-build logic.
+. Add comment tag for reencode for encoder identification
+. push the drop priviledge code to before the log file creation.
+. drop any special privs when reading the config file.
+
+1.27
+----
+. Added encode API based on packets instead of pages
+. Added output API based on packets instead of pages.
+. Changed PCM->vorbis to use the packet-based encoding route, saves 
+  needless splitting and recalculation of granulepos. reencode still
+  uses pages.
+. Added realtime option for setting scheduling policy
+. Added support for dropping setuid or change to different user.
+
+1.26
+----
+. added fmask/dmask for file creation permissions (0600/0700)
+. updated auto* build to CVS style
+. added reset-time tag (default 1) in savestream to modify granulepos
+  on file change
+
+1.25
+----
+. made im_pcm do back off when buffers have run out
+. renamed setup.* to cfgparse.* to match CVS
+
+1.24
+----
+. renamed the res_ functions/structure as they can clash with the resolver
+. cleaned up the build a bit more
+. split acinclude in the separate m4 macros
+. another fix for getting the samplerate on reencoding correct
+
+1.23
+----
+. reencoding with resampling/downmixing was having problems
+. im_pcm args support failed for old source parameter.
+
+1.22
+----
+. more playlist work, was not starting the reencoder, and did not provide 
+  the sample counts correctly
+. im_oss didn't increase senttime which caused a large catchup occurring
+  for any following modules, leading to buffer starvation.
+. Provide a mechanism for providing args for the command on im_pcm. Useful
+  for ogg123 as it doesn't deal with close output pipes correctly.
+  
+1.21
+----
+. The input_sleep routine was working the sleep time wrong
+. playlist needed work for the EOS handling
+
+1.20
+----
+.  improved the save stream naming, so that subdirs are created when needed
+.  change default duration of a file to 1 hour and allow 0 to disable
+.  add <on-metadata> tag in save stream to enable metadata to switch the file.
+
+1.19
+----
+. made input modules handle input module switchover better.
+     Needed EOS handling for input module
+     fix for negative granulepos on switchover.
+. removed debugging printf 
+. Allowed for creating sub-directories when writing files.
+. use shout_audio_info to state samplerate and channels at connection start, this
+  probably needs done better as that can change mid connection.
+
+1.18
+----
+. updated config file for stream info
+. various autoconf build updates
+
+1.17
+---
+. removed the metadata section, now you just state the stream info per instance or
+  globally.
+. changed build setup, now checks for pthreads better and supplies much of the
+  build information without much trouble
+
+1.16
+----
+. minor fix for reconnection of streams.
+. CVS alsa input copied but not integrated
+, comment out "increase max buffers" until a better place can be found.
+
+1.15
+----
+. trap for max input buffers in im_oss, reading audio into an unused buffer until 
+  either an input buffer is availble or a certain amount of time has elapsed, help
+  with sudden loads.
+. set eos on on shutdown in input thread (oss, pcm)
+. don't do select in pcm module when no time is to be elapsed.
+. add timestamp to input module, and trap from restarting inputs too quickly
+. input thread now closes the first input which causes a chain of pipe closes, a 
+  close of the runner pipe acts as the runner shutdown
+. improved debug messages
+. fixed up packet granulepos calculation so that valid ogg pages can be created.
+  This needs more work as some cases still have problems, like input switch
+. bother file and shout streams should start at granulepos 0.
+. timing_sleep need not call select if no sleeping required.
+
+1.14
+----
+. continuing from before, the outgoing libshout stream is now built separately from
+  the internal ogg pages. This applies to all setups. Ther serial numbers for file 
+  and libshout streams are incremented each time.
+. im_pcm im_oss now set eos on signal then critical on next buffer.
+. libshout startup is pushed to the output ogg page stage, this simplifies the
+  high end flow control in the runner, and prevents encoder/reencoder initialising
+  on libshout connect.
+. fixed some parsing, show warnings for unknown tags.
+
+1.13
+----
+. Changed what save stream stores, now builds a separate ogg stream
+. default timeout to 5 seconds on im_pcm.
+. allow for no specifying a hostname, eg write to disk only
+
+1.12
+----
+. warn if trying to encode 0 samples.
+. make OSS module uninterleave
+. sort out metadata for OSS and pcm inputs, check the file at start as well.
+. playlist is available now, may need more testing.
+. log read comments from metadata file.
+. re-organise the setup/shutdown on stream change.
+. allow for writing stream to disk, even when the connection to icecast is gone
+. allow for file name expansion (strftime) for file to write
+
+1.11
+----
+. Changes to the autoconf build.
+. pushed PCM uninterleaving into input thread.
+. start to break up re-encoding, currently broken
+. Made iintial OSS input work, uninterleave work still needed.
+. Changed how silence detection worked for PCM input, it had 
+  problems with EOS detection.
+. Changed // to /* */
+
+1.10
+----
+. force encoder quality values between -1 and 10 inclusive.
+. Change trigger level for samples per page before flushing.
+. Change pcm module to emit silence buffers when nothing has
+  been read.  Useful for masking latencies of external sources 
+. Change resolution of senttime back to uS as the ms count has
+  frational part causing sync drift
+
+1.9
+---
+. fixed stereo bug on playing some tracks.
+. terminate properly on unrunnable scripts.
+
+1.8
+---
+. Allocate encoder/reencoder at instance creation
+. Compile condition for using pipe as oppose to pthread conditionals
+. Change encode parsing
+   - drop samplerate/channels out of encode parsing.
+   - Add don't encodde vorbis.
+   - Handle comments
+   - warn of unrecognised options
+. don't allocate shout structure twice per instance
+. Free up hostname/mount/password from xml after passing to shout
+. Change encoder setup/shutdown routines. 
+. Add checks for samples in page. If 0 don't try the vorbis code.
+. Add close stdin in im_pcm for the spawned script, detach keyboard.
+. Update re-encoder routines.
+. Added reencode_clear in flush routine to clear up memory sooner.
+. Added require_critical to stream to act as a per stream critical flag.
+. Removed maxqueuelength
+
+1.7
+---
+. Re-introduce pipes between runners to see if there is any performance
+  difference between these and the signals used by pthreads.
+
+1.6
+---
+. Chenged free buffers check from WARN to ERROR, as it's pretty final.
+. Completely zap MAX_INPUT_BUFFERS and increase the MIN_INPUT_BUFFER
+. Change wait period after the input thread has started runners to 1sec.
+. Don't treat comments as unknown in input parameter list.
+. moved default_len to pcm-specifc structure.
+. Added samples parameter to pcm input, default to 12288.
+. experimental - try quicker uninterleave in encode_data.
+
+
+1.5:
+----
+
+. Replace MAX_INPUT_BUFFER with MIN_INPUT_BUFFERS
+. Get main input code to initialise the buffers, calling a module specific
+function.
+. Changed im_pcm read to loop until a buffer is full instead of just sending
+only what was read.
+. put -march in configure.in.  Needs proper extra args processing for makefile
+. Changed id values to start from 1 instead of 0
+. Changed sample_in_page limit to force a flush.
+. Added buffers tag in input_module to allow for overriding default.
+. Remove im_pcm specific buffers parameter.
+. misc indent cleanups, zap input_fluish_queue.
+. move control structure.
+. reduce sleep after runners started from to 500ms
+. cleanup send_to_runner.
+. LOG messages cleanup
+

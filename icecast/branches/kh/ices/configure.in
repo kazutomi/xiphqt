@@ -1,0 +1,187 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT([IceS], [2.0-kh59], [karl@xiph.org])
+AC_PREREQ(2.54)
+AC_CONFIG_SRCDIR(src/ices.c)
+
+AM_INIT_AUTOMAKE
+AM_CONFIG_HEADER(config.h)
+AM_MAINTAINER_MODE
+
+AC_PROG_CC
+AC_PROG_LIBTOOL
+XIPH_C__FUNC__
+
+dnl Set some options based on environment
+
+case "$host" in
+   *bsd*|*irix*)
+   ;;
+   *) AC_DEFINE(_XOPEN_SOURCE, 600, [Define if you have POSIX and XPG specifications])
+   ;;
+esac
+case "$host" in 
+*-*-irix*)
+        DEBUG="-g -signed" 
+        XIPH_CFLAGS="-O2 -w -signed"
+        PROFILE="-p -g3 -O2 -signed"
+;;
+*-*-solaris*)
+        AC_DEFINE(__EXTENSIONS__, 1, [define to 1 for IPv6 functions on solaris])
+        DEBUG="-v -g"
+        XIPH_CFLAGS="-xO4 -fast -w -fsimple -native -xcg92"
+        PROFILE="-v -xpg -g -xO4 -fast -native -fsimple -xcg92 -Dsuncc"
+;;
+*)
+        AC_DEFINE(GNU_SOURCE, 1, [define to 1 to enable some GNU extensions])
+        DEBUG="-g"
+        XIPH_CFLAGS="-ffast-math -fsigned-char"
+        PROFILE="-g -p" 
+;;
+esac
+
+dnl Checks for programs.
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_CHECK_HEADERS([grp.h alloca.h stropts.h])
+
+dnl Check for OSS
+
+AC_CHECK_HEADER(sys/soundcard.h, have_oss=yes, have_oss=no)
+AC_CHECK_HEADER(machine/soundcard.h, have_oss=yes, )
+AM_CONDITIONAL(HAVE_OSS_AUDIO,test "$have_oss" = yes)
+if test "$have_oss" = yes; then
+    AC_DEFINE(HAVE_OSS_AUDIO,,[Define to enable OSS input module])
+fi
+
+dnl Check for Sun audio
+
+AC_C_BIGENDIAN
+AC_ARG_ENABLE(sun-audio,
+    AC_HELP_STRING([--disable-sun-audio],
+                   [Disable sun audio input (default autodetect)]),
+    enable_sun="$enableval",
+    enable_sun=yes
+)
+if test x$enable_sun = xyes; then
+   AC_CHECK_HEADER(sys/audioio.h, have_sun_audio=yes, have_sun_audio=no)
+
+   if test "$have_sun_audio" = yes; then
+       AC_DEFINE(HAVE_SUN_AUDIO,,[Define to enable sun audio input module])
+   fi
+fi
+AM_CONDITIONAL(HAVE_SUN_AUDIO,test "$have_sun_audio" = yes)
+
+dnl Check for ALSA audio
+
+AC_CHECK_HEADER([alsa/asoundlib.h], ices_have_alsa=yes, ices_have_alsa=no, [
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+])
+AM_CONDITIONAL(HAVE_ALSA_AUDIO,test "$ices_have_alsa" = yes)
+
+if test "$ices_have_alsa" = yes; then
+   ALSA_LIBS="-lasound"
+   AC_DEFINE(HAVE_ALSA_AUDIO, ,[Define to enable ALSA input module])
+fi
+
+dnl Check for JACK audio
+
+AC_CHECK_HEADER([jack/jack.h], ices_have_jack=yes, ices_have_jack=no, [
+])
+AM_CONDITIONAL(HAVE_JACK,test "$ices_have_jack" = yes)
+
+if test "$ices_have_jack" = yes; then
+   JACK_LIBS="-ljack"
+   AC_DEFINE(HAVE_JACK, ,[Define to enable JACK input module])
+fi
+
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+xt_ices_LIBS="$LIBS"
+LIBS=""
+AC_SEARCH_LIBS([nanosleep],[rt],
+        [AC_DEFINE([HAVE_NANOSLEEP],1,[Define if you have the nanosleep function])
+        XIPH_VAR_PREPEND([XIPH_LIBS],[$LIBS])
+        ])
+LIBS="$xt_ices_LIBS"
+
+
+dnl Check for types
+AC_CHECK_TYPES([uint64_t],,AC_ERROR([could not find a uint64_t type]))
+
+dnl Checks for library functions.
+AC_FUNC_STRERROR_R
+
+dnl -- configure options --
+
+dnl deal with xml-config
+AC_MSG_RESULT([checking for XML configuration])
+AC_ARG_VAR([XMLCONFIG],[XML configuration program])
+AC_ARG_WITH(xml-config,
+    [AC_HELP_STRING([--with-xml-config=PATH],
+                    [use xml-config in PATH to find libxml])],
+    [XMLCONFIG="$withval"],
+    [AC_PATH_PROGS(XMLCONFIG, [xml2-config xml-config], "")]
+)
+if test "x$XMLCONFIG" = "x"; then
+    AC_MSG_ERROR([XML configuration could not be found])
+fi
+if ! test -x "$XMLCONFIG"; then
+    AC_MSG_ERROR([$XMLCONFIG cannot be executed])
+fi
+XML_LIBS="$($XMLCONFIG --libs)"
+XML_CFLAGS="$($XMLCONFIG --cflags)"
+xt_ices_LIBS="$LIBS"
+xt_ices_CFLAGS="$CFLAGS"
+LIBS="$XML_LIBS"
+CFLAGS="$CFLAGS $XML_CFLAGS"
+AC_CHECK_FUNC(xmlParseFile,, [AC_MSG_ERROR([There was a problem linking with libxml])])
+LIBS="$xt_ices_LIBS"
+CFLAGS="$xt_ices_CFLAGS"
+XIPH_VAR_PREPEND([XIPH_LIBS],[$XML_LIBS])
+XIPH_VAR_APPEND([XIPH_CFLAGS],[$XML_CFLAGS])
+
+XIPH_PATH_SHOUT(,AC_MSG_ERROR([Need libshout-kh release]))
+XIPH_VAR_APPEND([XIPH_CPPFLAGS], [$SHOUT_CPPFLAGS])
+XIPH_VAR_APPEND([XIPH_CFLAGS], [$SHOUT_CFLAGS])
+XIPH_VAR_PREPEND([XIPH_LIBS], [-lvorbisenc $SHOUT_LIBS])
+
+xt_save_LIBS=$LIBS
+xt_save_CFLAGS=$CFLAGS
+LIBS="$SHOUT_LIBS $LIBS"
+CFLAGS="$CFLAGS $SHOUT_CFLAGS"
+AC_CHECK_FUNCS(sched_get_priority_max)
+CFLAGS=$xt_save_CFLAGS
+LIBS=$xt_save_LIBS
+
+dnl Make substitutions
+
+AC_SUBST(ALSA_LIBS)
+AC_SUBST(JACK_LIBS)
+AC_SUBST(XML_LIBS)
+AC_SUBST(XML_CFLAGS)
+AC_SUBST(LIBTOOL_DEPS)
+AC_SUBST(DEBUG)
+AC_SUBST(PROFILE)
+AC_SUBST(XIPH_LIBS)
+AC_SUBST(XIPH_CFLAGS)
+AC_SUBST(XIPH_CPPFLAGS)
+AC_SUBST(PTHREAD_CFLAGS)
+AC_SUBST(LIBS)
+AC_SUBST(LDFLAGS)
+
+AC_OUTPUT(Makefile conf/Makefile src/Makefile src/log/Makefile)

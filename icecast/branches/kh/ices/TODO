@@ -1,0 +1,34 @@
+. loss of audio sync on playlist USR1/USR2 is cause by the timer accounting for the
+page granulepos but not all the packets are extracted and sent to icecast. 
+
+. do the vorbis granulepos calculations in the playlist and send out packets instead
+of pages.  The output is ok now for taking packets.
+
+. playlist needs re-org to do packet sending and possible program spawn for external
+decode like mp3 transcoding.  Use libcurl for direct ogg URL to packet
+sending.
+
+. pcm input needs to drop the silence detection logic, and also default to do no
+sleeping as most uses are externally timed anyway.
+
+. ALSA needs to be worked on to be usable
+
+. make output mechanism more modular, so that multiple output can be done
+
+  <shout>
+     <hostname>....</hostname>
+     <port>....</port>
+  </shout>    
+
+. make passthough work better, currently sends pages which are then split up.
+
+. separate cfg parsing to individual modules, with the core left in cfgparser.c
+
+considerations.
+
+libcurl 7.10 needed for no signal support
+
+getting the playlist to produce packets instead of pages will resolve the extended 
+sleep check better and may resolve the lost samples on USR1/2.
+
+

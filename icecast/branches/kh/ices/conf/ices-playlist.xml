@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ices>
+
+	<background>0</background> <!-- run in background? (unimplemented) -->
+	<logpath>/tmp</logpath> <!-- where logs, etc go. -->
+	<logfile>ices.log</logfile>
+	<loglevel>4</loglevel> <!-- 1=error,2=warn,3=info,4=debug -->
+    <logsize>2048</logsize> <!-- the size the log file must be before rotation -->
+    <consolelog>0</consolelog> <!-- set this to 1 to log to the console instead
+                                    of to the file above -->
+    <pidfile>/var/ices/ices.pid</pidfile> <!-- file to write process id to -->
+
+	<stream>
+        
+		<!-- input module -->
+		<input>
+			<module>playlist</module>
+			<param name="type">basic</param>        <!-- Only 'basic' and script implemented -->
+			<param name="file">playlist.txt</param> <!-- be sure this exists -->
+			<param name="random">0</param>          <!-- random play -->
+			<param name="once">0</param>            <!-- if set to 1 , plays once through, then exits. -->
+		</input>
+
+        <runner>
+            <!-- Stream instance -->
+            <instance>
+                <shout>
+                    <!-- Server details: -->
+                    <hostname>localhost</hostname>
+                    <port>8000</port>
+                    <password>hackme</password>
+                    <mount>/example1.ogg</mount>
+
+                    <reconnectdelay>2</reconnectdelay>
+                    <reconnectattempts>5</reconnectattempts> 
+                </shout>
+
+                <encode>  
+                    <!-- VBR mode can be selected via quality or nominal-bitrate -->
+                    <!-- selecting enabling managed has to be done separately as -->
+                    <!-- it's slower, but can be used to limit a high threshold -->
+                    <nominal-bitrate>65536</nominal-bitrate> <!-- bps. e.g. 64 kbps -->
+                </encode>
+            </instance>
+        </runner>
+	</stream>
+</ices>
