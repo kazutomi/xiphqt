@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: toplevel libwrit include
- last mod: $Id: writ.h,v 1.1 2003/08/17 08:29:58 arc Exp $
+ last mod: $Id: writ.h,v 1.2 2003/08/17 08:34:49 arc Exp $
 
  ********************************************************************/
 
@@ -65,4 +65,7 @@ typedef struct writ_phrase {
 
   writ_text    *phrase;
 } writ_phrase;  
+
+
+extern int ilog(unsigned int v);	/* src/format.c */
 
