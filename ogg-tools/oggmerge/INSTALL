@@ -1,3 +1,7 @@
+In addition to the general instructions below, you will will need to
+install (or have installed) the ogg and vorbis libraries. Please see
+xiph.org or vorbis.com for information on obtaining those.
+
 Basic Installation
 ==================
 

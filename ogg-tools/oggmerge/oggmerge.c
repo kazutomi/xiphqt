@@ -24,6 +24,7 @@ oggmerge -- utility for splicing together ogg bitstreams
 #include "oggmerge.h"
 #include "vorbis.h"
 #include "midi.h"
+#include "mng.h"
 
 #define VERSIONINFO "oggmerge v" VERSION "\n"
 
@@ -59,6 +60,7 @@ struct option long_options[] = {
 	{"quiet", 0, NULL, 'q'},
 	{"verbose", 0, NULL, 'v'},
 	{"help", 0, NULL, 'h'},
+	{"help", 0, NULL, '?'},
 	{"version", 0, NULL, 'V'},
 	{"output", 1, NULL, 'o'},
 	{NULL, 0, NULL, 0}
@@ -69,7 +71,7 @@ static void _parse_args(int argc, char **argv)
 	int ret;
 	int option_index = 1;
 
-	while ((ret = getopt_long(argc, argv, "qvhVo:", long_options, &option_index)) != -1) {
+	while ((ret = getopt_long(argc, argv, "qvh?Vo:", long_options, &option_index)) != -1) {
 		switch (ret) {
 		case 0:
 			fprintf(stderr, "Internal error parsing command line options.\n");
@@ -82,6 +84,7 @@ static void _parse_args(int argc, char **argv)
 		case 'v':
 			params.verbose = 2;
 			break;
+		case '?':
 		case 'h':
 			_usage();
 			exit(0);
@@ -111,12 +114,14 @@ static int _get_type(char *filename)
 	ext = strrchr(filename, '.');
 	if (ext == NULL) return TYPEUNKNOWN;
 
+	/* should be smarter and check file magic */
+
 	if (strcasecmp(ext, ".ogg") == 0)
 		return TYPEVORBIS;
 	else if (strcasecmp(ext, ".mid") == 0)
 		return TYPEMIDI;
-/*	else if (strcasecmp(ext, ".mng") == 0)
-	return TYPEMNG; */
+	else if (strcasecmp(ext, ".mng") == 0)
+		return TYPEMNG;
 	return TYPEUNKNOWN;
 }
 
@@ -200,6 +205,10 @@ int main(int argc, char **argv)
 			file->data_in = midi_data_in;
 			file->page_out = midi_page_out;
 			break;
+		case TYPEMNG:
+			file->state_init = mng_state_init;
+			file->data_in = mng_data_in;
+			file->page_out = mng_page_out;
 		}
 
 		file->serialno = 0;

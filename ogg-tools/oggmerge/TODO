@@ -4,3 +4,13 @@ TODO list for oggmerge
 * experiment with stream-description metadata
 * xml substream support
 * test
+
+ISSUES with the midi packetizer
+
+* doesn't track tempo changes
+* doesn't handle smpte drop-frame ('29' fps) properly
+
+ISSUES with the mng packetizer
+
+* doesn't work yet :)
+
