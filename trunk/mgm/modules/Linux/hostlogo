@@ -8,9 +8,9 @@ $name="hostlogo";
 $main::toplevel->optionAdd("$main::Xname.$name*font",             
 			   "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
 $main::toplevel->optionAdd("$main::Xname.$name*refresh",        80,20);      
+$main::toplevel->optionAdd("$main::Xname.$name*order",        0,20);      
 
-$logo=$main::toplevel->
-    Pixmap(-file => "$main::libdir/fishframe.xpm");
+$logo=$main::toplevel->Pixmap(-file => "$main::libdir/fishframe.xpm");
 
 $logoframes=12;
 $logowidth=$logo->width/$logoframes;
@@ -19,23 +19,24 @@ $hostname=`hostname`;
 chop$hostname;
 $hostname=~s{^([^\.]+).*}{$1};
 
-# use our font and find the labesize...
-my$testlabel=$main::toplevel->Label(Name=>$name,
-				    -text=>$hostname,
-				    -borderwidth=>0,
-				    -padx=>1,-pady=>1);
+# dummy; Tk doesn't let us look up resources for windows that don't exist.
+# use our font and find the labelsize...
+$testlabel=$main::toplevel->Label(Name=>$name,
+				  -text=>$hostname,
+				  -borderwidth=>0,
+				  -padx=>1,-pady=>1);
 
 $textheight=$testlabel->reqheight;
 $textwidth=$testlabel->reqwidth;
 $testlabel->destroy;
-undef $textlabel;
+undef $testlabel;
 
 sub module_construct{
     my($this,$width,$height)=@_;
 
     my$logopad=($width-$logowidth)/2;
     my$textpad=($width-$textwidth)/2;
-    my$vpad=($height-$logoheight-$textheight)/3;
+    my$vpad=($height-$logoheight-$textheight)/2;
 
     $widget=$main::toplevel->Frame(Name=>$name,
 				   borderwidth=>0,
@@ -52,7 +53,7 @@ sub module_construct{
     $widget->Label(-text=>$hostname,
 		   -borderwidth=>0,
 		   -padx=>1,-pady=>1)->
-		       place(-x=>$textpad,-y=>$vpad*2+$logoheight,
+		       place(-x=>$textpad,-y=>$vpad+$logoheight,
 			     -anchor=>'nw');
     
     my$refresh=$widget->optionGet("refresh","Refresh");
@@ -71,18 +72,13 @@ sub twirlback{
 }
 
 $minx=($logowidth>$textwidth?$logowidth:$textwidth);
-$requestx=$minx+8;
 $miny=$logoheight+$textheight;
-$requesty=$miny+12;
-
-$demand=0;
 
 $module{"mgm_module_name"}=$name;
 $module{"mgm_module_minx"}=$minx;
 $module{"mgm_module_miny"}=$miny;
-$module{"mgm_module_reqx"}=$requestx;
-$module{"mgm_module_reqy"}=$requesty;
-$module{"mgm_module_demand"}=$demand;
+$module{"mgm_module_wdemand"}=0;
+$module{"mgm_module_ldemand"}=0;
 $module{"mgm_module_construct"}=\&module_construct;
 
 \%module;

@@ -5,26 +5,183 @@ use IPC::Open2;
 
 # single bar graph pseudo-widget, built out of Tk canvases.
 
+package MGM::Text;
+
+# set up cropping limits
+
+my$data=qx{pbmtext -font $main::fontfile "_A|Wpqf_"};
+$test=&filter($data,"pnmfile");
+$test=~m/(\d*)\s*by\s*(\d*)/;
+my$width=$1;
+my$height=$2;
+
+my$test=&filter($data,"pnmcrop -top 2>/dev/null| pnmfile");
+$test=~m/(\d*)\s*by\s*(\d*)/;
+$topcrop=$height-$2-3;
+
+my$test=&filter($data,"pnmcrop -bottom 2>/dev/null| pnmfile");
+$test=~m/(\d*)\s*by\s*(\d*)/;
+$bottomcrop=$height-$2-1;
+
+my$test=&filter($data,"pnmcrop -left 2>/dev/null| pnmfile");
+$test=~m/(\d*)\s*by\s*(\d*)/;
+$leftcrop=$width-$1-1;
+
+my$test=&filter($data,"pnmcrop -right 2>/dev/null| pnmfile");
+$test=~m/(\d*)\s*by\s*(\d*)/;
+$rightcrop=$width-$1-1;
+
+sub filter{
+    my($data,$commandline)=@_;
+
+    die unless my$pid=IPC::Open2::open2(OUT,IN,$commandline);
+    print IN $data;
+	
+    my $out;
+    while(<OUT>){
+	$out=$out.$_;
+    }
+    close IN;
+    close OUT;
+    waitpid($pid,0);
+    $out;
+}
+
+sub maketext{
+    my($text)=@_;
+    
+    my$data=qx{pbmtext -font $main::fontfile \"$text\"};
+
+    # get width/height for cropping that does not vary the height
+
+    $test=&filter($data,"pnmfile");
+    $test=~m/(\d*)\s*by\s*(\d*)/;
+
+    my$width=$1-($leftcrop+$rightcrop);
+    my$height=$2-($topcrop+$bottomcrop);
+
+    $rawimages->{$text}=&filter($data,"pnmcut $leftcrop $topcrop $width $height|pnmdepth 255 2>/dev/null");
+}
+
+sub scaletext{
+    my($text,$stretch,$length,$height,$fore,$back,$dir,$nocache)=@_;
+    
+    if($height==0){
+	undef;
+    }else{
+	
+	&maketext($text) if(!defined($rawimages->{"$text"}));
+	my$data=$rawimages->{"$text"};
+
+	undef $rawimages->{"$text"} if(defined($nocache));
+	
+	$test=&filter($data,"pnmfile");
+	
+	$test=~m/(\d*)\s*by\s*(\d*)/;
+	$length=$height/$2*$1 if ($length<=0);
+	my$ratio=$stretch*$1/$2;
+	
+	my$command;
+	# will it be too long to fit with a preserved aspect ratio?
+	if($ratio > $length/$height){
+	    # yes.  Squash it
+	    $command="pgmtoppm \"$fore\"-\"$back\" ".
+		"| pnmscale -xsize $length -ysize $height|";
+	    
+	}else{
+	    # no.  preserve the ratio
+	    my$yscale=$height/$2;
+	    my$xscale=$yscale*$stretch;
+
+	    $command="pgmtoppm \"$fore\"-\"$back\" | ".
+		"pnmscale -yscale $yscale -xscale $xscale |";
+	}
+
+	$command=$command."pnmflip -r90 |" if($dir eq "vertical");
+	$command=$command."ppmtoxpm 2>/dev/null";
+		
+	$data=&filter($data,$command);
+	
+	eval{$main::toplevel->Pixmap('-data'=>"$data")};
+    }
+}
+
 package MGM::Bar;
 @ISA=("Tk::Canvas");
+
+sub drawborder{
+    my($w,$width,$height,$relief,$dim,$lit)=@_;
+    $z=0;
+
+    if($relief eq 'sunken' ||
+       $relief eq 'groove'){
+	$w->createLine($width-1,0, 0,0, 0,$height-1, -capstyle=>projecting,
+		       -fill=>$dim);
+	$w->createLine($width-1,0, $width-1,$height-1, 0,$height-1, 
+		       -capstyle=>projecting,-fill=>$lit);
+
+	if($relief eq 'groove'){
+	    $z=1;
+	    $width-=1;
+	    $height-=1;
+	    $relief='raised';
+	}
+    }
+    if($relief eq 'raised'){
+	$w->createLine($width-1,$z, $width-1,$height-1, $z,$height-1, 
+		       -capstyle=>projecting,-fill=>$dim);
+	$w->createLine($width-1,$z, $z,$z, $z,$height-1, -capstyle=>projecting,
+		       -fill=>$lit);
+    }
+}
+
+sub reliefhack{
+    my($bar,$y)=@_;
+    my$widget=$bar->{"above"};
+    my$width=$widget->cget("-width");
+    my$relief=$bar->{"litrelief"};
+
+    if($relief eq 'sunken'){
+	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>projecting,
+			 -fill=>$bar->{"litdim"},-tags=>['newrelief']);
+    }
+
+    if($relief eq 'raised'){
+	$widget->createLine(0,$y-1,$width-1,$y-1,-capstyle=>projecting,
+			 -fill=>$bar->{"litlit"},-tags=>['newrelief']);
+    }
+
+    if($relief eq 'groove'){
+	$widget->createLine(0,$y-1,0,$y-2,$width-2,$y-2,-capstyle=>projecting,
+			 -fill=>$bar->{"litdim"},-tags=>['newrelief']);
+	$widget->createLine(1,$y-1,$width-1,$y-1,$width-1,$y-2,
+			 -capstyle=>projecting,
+			 -fill=>$bar->{"litlit"},-tags=>['newrelief']);
+    }
+
+    $widget->delete('relief');
+    $widget->addtag('relief',withtag=>'newrelief');
+
+}
+    
 
 sub new{
     my ($p,$width,$height,$num)=@_;
 
     $orient=$main::orient;
-    $pad=$main::toplevel->optionGet("pad","Pad");
 
     # we're not as flat as we like to think 
-    my $unlit=$p->Canvas(Name=>"$num");
+    my $below=$p->Canvas(Name=>"$num");
 
-    my $relief=$unlit->optionGet('dimrelief','Dimelief');
-    my $arelief=$unlit->optionGet('litrelief','Litrelief');
-    my $afore=$unlit->optionGet('litforeground','Litforeground');
-    my $aback=$unlit->optionGet('litbackground','Litbackground');
-    my $fore=$unlit->optionGet('dimforeground','Dimforeground');
-    my $back=$unlit->optionGet('dimbackground','Dimbackground');
-    my $label=$unlit->optionGet('label','Label');
-    my $ratio=$unlit->optionGet('ratio','Ratio');
+    my $pad=$below->optionGet("textpad","Textpad");
+    my $relief=$below->optionGet('dimrelief','Dimelief');
+    my $arelief=$below->optionGet('litrelief','Litrelief');
+    my $afore=$below->optionGet('litforeground','Litforeground');
+    my $aback=$below->optionGet('litbackground','Litbackground');
+    my $fore=$below->optionGet('dimforeground','Dimforeground');
+    my $back=$below->optionGet('dimbackground','Dimbackground');
+    my $label=$below->optionGet('label','Label');
+    my $ratio=$below->optionGet('ratio','Ratio');
     
     my$border=0;
     $border=2 if ($relief eq 'groove');
@@ -36,148 +193,233 @@ sub new{
     $aborder=1 if ($arelief eq 'sunken');
     $aborder=1 if ($arelief eq 'raised');
 
-    $unlit->configure(-borderwidth=>$border,
-		      -background=>$back,
-		      highlightthickness=>0,
-		      width=>($width-$border*2),
-		      height=>($height-$border*2),
-		      relief=>$relief);
+    bless $below,"MGM::Bar";
 
-    bless $unlit,"MGM::Bar";
+    my($r,$g,$b)=$below->rgb($back);
+    $r/=256;
+    $g/=256;
+    $b/=256;
+    my$lum=$r*.3+$g*.5+$b*.2;
+    $below->{"dimdim"}=sprintf "#%02x%02x%02x", $r*.5,$g*.5,$b*.5;
+    $below->{"dimlit"}=sprintf "#%02x%02x%02x", 
+          &main::min($r+$lum*.7,255),&main::min($g+$lum*.7,255),
+          &main::min($b+$lum*.7,255);
+    my($r,$g,$b)=$below->rgb($aback);
+    $r/=256;
+    $g/=256;
+    $b/=256;
+    $below->{"litdim"}=sprintf "#%02x%02x%02x", $r*.5,$g*.5,$b*.5;
+    $below->{"litlit"}=sprintf "#%02x%02x%02x", 
+          &main::min($r+$lum*.7,255),&main::min($g+$lum*.7,255),
+          &main::min($b+$lum*.7,255);
 
-    my$lit=$unlit->{'lit'}=$unlit->Canvas(-borderwidth=>$aborder,
-					  -background=>$aback,
-					  highlightthickness=>0,
-					  width=>($width-2*$aborder),
-					  height=>($height-2*$aborder),
-					  relief=>$arelief)->
-					      place(-relx=>0,-rely=>1.0,
-						    -anchor=>sw, 
-						    -bordermode=>outside);
-    
     if($orient eq 'vertical'){
+	$unlittext=MGM::Text::scaletext($label,$ratio,$height-($pad*2),
+					$width-($pad*2),$fore,$back,
+					"vertical");
+	$littext=MGM::Text::scaletext($label,$ratio,$height-($pad*2),
+				      $width-($pad*2),$afore,$aback,
+				      "vertical");
 
-	$unlittext=&scaletext($label,$ratio,$width-($pad*2),
-				   $height-($pad*2),$fore,$back,"vertical");
-	$littext=&scaletext($label,$ratio,$width-($pad*2),
-				 $height-($pad*2),$afore,$aback,"vertical");
+
+	$below->{"barlength"}=$height;
+	$below->{"litrelief"}=$arelief;
+	$below->configure(-borderwidth=>$aborder,
+			  -background=>$aback,
+			  highlightthickness=>0,
+			  width=>($width-$aborder*2),
+			  height=>($height-$aborder*2),
+			  relief=>$arelief);
+
+	
+	my$above=$below->{'above'}=
+	    $below->Canvas(-borderwidth=>0,
+			   -background=>$back,
+			   highlightthickness=>0,
+			   width=>$width,
+			   height=>$height,
+			   relief=>'flat')->
+			       place(-relx=>0,-rely=>0,
+				     -anchor=>'nw', 
+				     -bordermode=>outside);
+    
+	$below->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw');
+	$above->createImage($pad,$height-$pad,-image=>$unlittext,
+			    -anchor=>'sw');
+	&drawborder($above,$width,$height,$relief,
+		    $below->{"dimdim"},$below->{"dimlit"});
 
     }else{
+	
+	$unlittext=MGM::Text::scaletext($label,$ratio,$width-($pad*2),
+					$height-($pad*2),$fore,$back);
+	$littext=MGM::Text::scaletext($label,$ratio,$width-($pad*2),
+				      $height-($pad*2),$afore,$aback);
 
-	$unlittext=&scaletext($label,$ratio,$width-($pad*2),
-				   $height-($pad*2),$fore,$back,"horizontal");
-	$littext=&scaletext($label,$ratio,$width-($pad*2),
-				 $height-($pad*2),$afore,$aback,"horizontal");
-
+	$below->{"barlength"}=$width;
+	$below->configure(-borderwidth=>0,
+			  -background=>$back,
+			  highlightthickness=>0,
+			  width=>$width,
+			  height=>$height-$border*2,
+			  relief=>'flat');
+	
+	my$above=$below->{'above'}=
+	    $below->Canvas(-borderwidth=>$aborder,
+			   -background=>$aback,
+			   highlightthickness=>0,
+			   width=>($width-2*$aborder),
+			   height=>($height-2*$aborder),
+			   relief=>$arelief)->
+			       place(-relx=>0,-rely=>1.0,
+				     -anchor=>sw, 
+				     -bordermode=>outside);
+	
+	$above->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw');
+	$below->createImage($pad,$height-$pad,-image=>$unlittext,
+			    -anchor=>'sw');
+	&drawborder($below,$width,$height,$relief,
+		    $below->{"dimdim"},$below->{"dimlit"});
+	
     }
     
-    $unlit->createImage($pad,$height-$pad,-image=>$unlittext,-anchor=>'sw');
     
-    $lit->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
-		      -tags=>['littext']);
-
-    $unlit->{'setting'}=-1;
-    $unlit;
+    $below->{'setting'}=-1;
+    $below;
 }
 
 sub set{
     my($bar,$per)=@_;
-    
-    if($per != $bar->{'setting'}){
 
+    $per=int($per);
+
+    if($per != $bar->{'setting'}){
 	my $orient=$main::orient;
-	my $border=$bar->{'lit'}->cget("-borderwidth");
 	if($orient eq 'vertical'){
-	    $bar->{'lit'}->coords('littext',$pad,($per-$pad));
-	    $bar->{'lit'}->configure('-height'=>($per-2*$border));
+	    my $border=$bar->cget("-borderwidth");
+	    my $l=$bar->{"barlength"};
+	    &reliefhack($bar,$l-$per+$border);
+	    $bar->{'above'}->configure('-height'=>($l-$per+$border));
 	}else{
-	    $bar->{'lit'}->configure('-width'=>($per-2*$border));
+	    my $border=$bar->{'above'}->cget("-borderwidth");
+	    $bar->{'above'}->configure('-width'=>($per-2*$border));
 	}
 
 	$bar->{'setting'}=$per;
     }
 }
 
-sub maketext{
-    my($text)=@_;
-    
-    $images->{$text}=qx{pbmtext -font $main::fontfile $text | pnmcrop 2>/dev/null |pnmpad -white -l1 -r1 -t1 -b1|pnmdepth 255 2>/dev/null };
-}
-
-sub scaletext{
-    my($text,$stretch,$width,$height,$fore,$back,$dir)=@_;
-
-    &maketext($text) if(!defined($images->{"$text"}));
-    my$data=$images->{"$text"};
-
-    die unless IPC::Open2::open2(OUT,IN,"pnmfile");
-    print IN $data;
-    
-    my $test;
-    while(<OUT>){
-	$test=$test.$_;
-    }
-    close IN;
-    close OUT;
-    
-    $test=~m/(\d*)\s*by\s*(\d*)/;
-    my$ratio=$stretch*$1/$2;
-
-    if($dir eq "vertical"){
-
-	# will it be too long to fit with a preserved aspect ratio?
-	if($ratio > $height/$width){
-	    # yes.  Squash it
-	    
-	    die unless IPC::Open2::open2(OUT,IN,"pgmtoppm \"$fore\"-\"$back\" | pnmscale -xsize $height -ysize $width| pnmflip -r90 |ppmtoxpm 2>/dev/null");
-	    
-	}else{
-	    # no.  preserve the ratio
-	    my$yscale=$width/$2;
-	    my$xscale=$yscale*$stretch;
-	    die unless IPC::Open2::open2(OUT,IN,"pgmtoppm \"$fore\"-\"$back\" | pnmscale -yscale $yscale -xscale $xscale | pnmflip -r90 |ppmtoxpm 2>/dev/null");
-	    
-	}
-    }else{
-	
-	# will it be too long to fit with a preserved aspect ratio?
-	if($ratio > $width/$height){
-	    # yes.  Squash it
-	    
-	    die unless IPC::Open2::open2(OUT,IN,"pgmtoppm \"$fore\"-\"$back\" | pnmscale -xsize $width -ysize $height|ppmtoxpm 2>/dev/null");
-	    
-	}else{
-	    # no.  preserve the ratio
-	    my$yscale=$height/$2;
-	    my$xscale=$yscale*$stretch;
-	    
-	    die unless IPC::Open2::open2(OUT,IN,"pgmtoppm \"$fore\"-\"$back\" | pnmscale -yscale $yscale -xscale $xscale|ppmtoxpm 2>/dev/null");
-	    
-	}
-    }
-
-    print IN $data;
-    undef $data;
-    while(<OUT>){
-	$data=$data.$_;
-    }
-    close IN;
-    close OUT;
-
-    $main::toplevel->Pixmap('-data'=>"$data");
-}
-
 package MGM::Graph;
 @ISA=("Tk::Canvas");
 
-sub textsize{
-    my($text)=@_;
-    my$testlabel=$main::toplevel->Label(-text=>$text,-borderwidth=>0,
-					-padx=>1,-pady=>1);
-    $fontheight=$testlabel->reqheight;
-    $fontwidth=$testlabel->reqwidth;
-    $testlabel->destroy;
-    ($fontheight,$fontwidth);
+# all the labels are the same size/color, but we have to do this after the toplevel is created so we have the size/color resources
+
+sub cacheem{
+    my$size=$main::toplevel->optionGet("labelsize","");
+    my$fg=$main::foreground;
+    my$bg=$main::background;
+    my$orient=$main::orient;
+    while(my$num=shift){
+	if(!defined($numbers{$num})){	
+	    $numbers{$num}=
+		MGM::Text::scaletext($num,1.2,-1,$size,$fg,$bg,$orient,1);
+	}
+    }
+}
+
+sub cacheinit{
+    if(!defined($numbers)){
+	&cacheem("1","2","4","8","16","32","64","128","256","512");
+    }
+}
+
+sub cacheprompt{
+    my$prompt=shift;
+    
+    if(!defined($prompts{"$prompt"})){
+	my$size=$main::toplevel->optionGet("labelsize","");
+	my$fg=$main::foreground;
+	my$bg=$main::background;
+	my$orient=$main::orient;
+	
+	$prompts{"$prompt"}=
+	  MGM::Text::scaletext("$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
+	$prompts{"k$prompt"}=
+	  MGM::Text::scaletext("k$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
+	$prompts{"M$prompt"}=
+	    MGM::Text::scaletext("M$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
+	$prompts{"G$prompt"}=
+	  MGM::Text::scaletext("G$prompt",1.2,-1,$size,$fg,$bg,$orient,1);
+    }
+}
+
+sub promptsize{
+    my($prompt,$setting)=@_;
+
+    if($main::orient eq 'vertical'){
+	($numbers{$setting}->width,
+	 $numbers{$setting}->height+$prompts{"$prompt"}->height);
+    }else{
+	($numbers{$setting}->height,
+	 $numbers{$setting}->width+$prompts{"$prompt"}->width);
+    }
+}
+
+sub scalemod{
+    my$scaleset=shift;
+    my$multiplier;
+    
+    if($scaleset>512){
+	$scaleset/=1024;
+	$multiplier="k";
+	if($scaleset>512){
+	    $scaleset/=1024;
+	    $multiplier="M";
+	    if($scaleset>512){
+		$scaleset/=1024;
+		$multiplier="G";
+	    }
+	}
+    }
+    ($scaleset,$multiplier);
+}
+
+sub promptlabel{
+    my($p,$scaleset,$prompt)=@_;
+    my $orient=$main::orient;
+    my $multiplier;
+
+    ($scaleset,$multiplier)=&scalemod($scaleset);
+    my$label;
+
+    my($textw,$textl)=&promptsize("$mult$prompt",$scaleset);
+    if($orient eq 'vertical'){
+	$label=$p->{"widget"}->Canvas(Name=>scalerange,
+				      -borderwidth=>0,
+				      highlightthickness=>0,
+				      width=>$textw,
+				      height=>$textl,
+				      relief=>'flat')->
+					  place(-x=>0,-y=>2,-anchor=>'nw');
+	$label->createImage(0,0,
+			    -image=>$prompts{"$mult$prompt"},-anchor=>'nw');
+	$label->createImage(0,$textl-1,
+			    -image=>$numbers{"$scaleset"},-anchor=>'sw');
+    }else{
+	$label=$p->{"widget"}->Canvas(Name=>scalerange,
+				      -borderwidth=>0,
+				      highlightthickness=>0,
+				      width=>$textl,
+				      height=>$textw,
+				      relief=>'flat')->
+					  place(-relx=>1.0,
+						-x=>-2,-y=>0,-anchor=>'ne');
+	$label->createImage($textl-1,0,
+			    -image=>$prompts{"$mult$prompt"},-anchor=>'ne');
+	$label->createImage(0,0,
+			    -image=>$numbers{"$scaleset"},-anchor=>'nw');
+    }
+    $label;
 }
 
 sub new{
@@ -185,102 +427,54 @@ sub new{
 
     my %graph = ( 'num' => '1',
 		  'fixed' => '0',
-		  'rangesetting'=> '100',
-		  'rangecurrent'=> '100' );
+		  'rangesetting'=> '1',
+		  'rangecurrent'=> '1' );
 
     my $ret=\%graph;
     bless $ret, 'MGM::Graph';
-    $ret->{"parent"}=$p;
+    $graph{"parent"}=$p;
 
     $ret->configure(@_);
     $ret;
 }
 
-sub minsize{
-    my($this)=shift;
+sub calcsize{
+    my($this,$scaleset,$prompt,$num)=@_;
+    
+    my$barw=4*$num;
+    my$barl=10;
+    my$scalew=0;
+    my$textl=0;
+    my$textwl=0;
 
-    # the size of the scale prompt
-    my$text="000k$this->{'prompt'}";
-    my($textw,$texth)=&textsize($text);
+    if (&main::moption($this,"scale") eq 'true'){
+	my($set,$mult)=&scalemod($scaleset);
+	&cacheinit();
+	&cacheprompt($prompt);
+	&cacheem($set);
 
-    my $scalep=0;
-    $scalep=1 if ($this->{"widget"}->optionGet("scale","Scale") eq 'true');
-    my $orient=$main::orient;
-    my $num=$this->{"num"};
-
-    # scale is a minimum 6 pixels wide/high, also account for the
-    # number label (goes on the scale if a horizontal scale, above if
-    # vertical the number label if a horizontal (a vertical goes
-    # above)...
-
-    my($minx,$miny);
-
-    #vertical or horizontal?
-    if($orient eq 'vertical'){
-	my $minscale=6;
-	$minscale=0 if(!$scalep);
-	my $minbar=2;
-
-	$minx=$minscale+$minbar*$num;
-	$minx=$textw if($minx<$textw);
-
-	$miny=$texth+1+30;
-    }else{
-	my $minscale=$texth+2;
-	my $minbar=2;
-	$minscale=0 if(!$scalep);
-	$miny=$minscale+$minbar*$num;
-
-	$minx=$textw+15;
-	$minx=40 if ($minx<40);
+	($textw,$textl)=&promptsize("$mult$prompt",$set);
+	$textw+=3;
+	$textl+=10;
+	$scalew=6;
     }
 
-    ($minx,$miny);
+    $scalew=&main::max($scalew,$textw);
+    $barl=&main::max($barl,$textl);
+
+    ($barw+$scalew,$barl,$scalew);
 }
 
-sub reqsize{
+sub calcxysize{
+    my($w,$l)=&calcsize(@_);
 
-    my($this)=shift;
-
-    # the size of the scale prompt
-    my$text="000k$this->{'prompt'}";
-    my($textw,$texth)=&textsize($text);
-
-    my $scalep=0;
-    $scalep=1 if ($this->{"widget"}->optionGet("scale","Scale") eq 'true');
-    my $orient=$main::orient;
-    my $num=$this->{"num"};
-
-    # scale is a minimum 6 pixels wide/high, also account for the
-    # number label (goes on the scale if a horizontal scale, above if
-    # vertical the number label if a horizontal (a vertical goes
-    # above)...
-
-    my($minx,$miny);
-
-    #vertical or horizontal?
-    if($orient eq 'vertical'){
-	my $minscale=6;
-	$minscale=0 if(!$scalep);
-	my $minbar=8;
-
-	$minx=$minscale+$minbar*$num;
-	$minx=$textw+1 if($minx<$textw+1);
-
-	$miny=$texth+1+60;
+    if($main::orient eq 'vertical'){
+	($w,$l);
     }else{
-	my $minscale=$texth+2;
-	my $minbar=8;
-	$minscale=0 if(!$scalep);
-	$miny=$minscale+$minbar*$num;
-
-	$minx=$textw+15;
-	$minx=60 if ($minx<60);
+	($l,$w);
     }
-
-    ($minx,$miny);
 }
-
+    
 sub drawit{
     my$this=shift;
     
@@ -295,8 +489,15 @@ sub drawit{
 
     my $name=$this->{"name"};
     my $num=$this->{"num"};
+    my $prompt=$this->{"prompt"};
+    my $rangesetting=$this->{"rangesetting"};
+    my $fixed=$this->{"fixed"};
+
     my $height=$this->{"height"};
     my $width=$this->{"width"};
+
+    my($dummy,$dummy,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);
+    $this->{"scalew"}=$scalew;
 
     my$widget=$this->{"widget"}=
 	$this->{"parent"}->Canvas(Name=>$name,
@@ -306,95 +507,57 @@ sub drawit{
 				  height=>$height,
 				  relief=>'flat');
     
-    my $scalep=0;
-    $scalep=1 if ($widget->optionGet("scale","Scale") eq 'true');
-
+    $this->{"numlabel"}=$this->promptlabel($rangesetting,$prompt);
+ 
     my $orient=$main::orient;
-    my($textw,$texth)=&textsize("0g");
-
-    # scale is a minimum 6 pixels wide/high, also account for the
-    # number label (goes on the scale if a horizontal scale, above if
-    # vertical the number label if a horizontal (a vertical goes
-    # above)...
-
-    #vertical or horizontal?
     if($orient eq 'vertical'){
-	if($scalep){
-	    $this->{"numlabel"}=$this->{"widget"}->
-		Label(-text=>"$this->{'rangesetting'}$this->{'prompt'}",
-		      -borderwidth=>0,-padx=>1,-pady=>1)->
-			  place(-x=>0,-y=>0,-anchor=>'nw');
+	$this->drawvscale if($scalew);
 
-	    # min scale width is 4(6).  If the widget is really big,
-	    # should we make a bigger scale?
-	    # not implemented yet
-	    
-	    $this->{"barxo"}=6;
-	    $this->{"baryo"}=$texth;
-	}else{
-	    $this->{"barxo"}=0;
-	    $this->{"baryo"}=0;
-
-	}
-	
-	$this->{"barlength"}=$height-$this->{"baryo"};
-	$this->{"barwidth"}=($width-$this->{"barxo"})/$num;
-
-	$this->drawvscale if($scalep);
+	$this->{"barlength"}=$height;
+	my$barwidth=$width-$scalew;
 	my$frame=$widget->Frame(Name=>'bar',
-				-width=>$width-$this->{"barxo"},
-				-height=>$height-$this->{"baryo"},
+				-width=>$barwidth,
+				-height=>$height,
 				-borderwidth=>0)->
-				    place(-x=>$this->{"barxo"},
-					  -y=>$this->{"baryo"},
+				    place(-x=>$scalew,
+					  -y=>0,
 					  -anchor=>'nw');
-
+	
+	$barwidth/=$num;
+	$barwidth=int($barwidth);
 	my$x=0;
-	for(my$i=0;$i<$this->{"num"};$i++){
+	for(my$i=0;$i<$num;$i++){
 	    $this->{"bar$i"}=$frame->
-	      MGM::Bar::new(int($x+$this->{"barwidth"})-int($x)-1,
-			    $this->{"barlength"},
-			    $i)->place(-x=>$x,-y=>-1,
+	      MGM::Bar::new($barwidth-1,
+			    $height,
+			    $i)->place(-x=>$x,-y=>0,
 				       -anchor=>'nw');
-	    $x+=$this->{"barwidth"};
+	    $x+=$barwidth;
 	}
     }else{
-	if($scalep){
-	    $this->{"numlabel"}=$this->{"widget"}->
-		Label(-text=>"$this->{'rangesetting'}$this->{'prompt'}",
-		      -borderwidth=>0,-padx=>1,-pady=>1)->
-			  place(-relx=>1.0,-x=>-3,
-				-y=>0,-anchor=>'ne');
-	    
-	    $this->{"barxo"}=0;
-	    $this->{"baryo"}=$texth;
-	}else{
-	    $this->{"barxo"}=0;
-	    $this->{"baryo"}=0;
-	}
+	$this->drawhscale if($scalew);
 
 	$this->{"barlength"}=$width;
-	$this->{"barwidth"}=($height-$this->{"baryo"})/$num;
-
-	$this->drawhscale if($scalep);
+	my$barwidth=$height-$scalew;
 	my$frame=$widget->Frame(Name=>'bar',
-				-width=>$width-$this->{"barxo"},
-				-height=>$height-$this->{"baryo"},
+				-width=>$width,
+				-height=>$barwidth,
 				-borderwidth=>0)->
-				    place(-x=>$this->{"barxo"},
-					  -y=>$this->{"baryo"},
+				    place(-y=>$scalew,
+					  -x=>0,
 					  -anchor=>'nw');
-
+	
+	$barwidth/=$num;
+	$barwidth=int($barwidth);
 	my$y=0;
-	for(my$i=0;$i<$this->{"num"};$i++){
+	for(my$i=0;$i<$num;$i++){
 	    $this->{"bar$i"}=$frame->
-	      MGM::Bar::new($this->{"barlength"},
-			    int($y+$this->{"barwidth"})-int($y)-1,
+	      MGM::Bar::new($width,
+			    $barwidth-1,
 			    $i)->place(-x=>0,-y=>$y,
 				       -anchor=>'nw');
-	    $y+=$this->{"barwidth"};
+	    $y+=$barwidth;
 	}
-
     }
 }
 
@@ -411,6 +574,8 @@ sub configure{
 	$val=shift;   
         if(!defined($val)){last;}
 	$this->{"$arg"}=$val;
+
+	print "$arg $val\n";
     }
 
     # The only strategy, currently, is to redraw ;-) 
@@ -430,23 +595,21 @@ sub drawvscale{
     # build new scale 
     my$widget=$this->{"widget"};
     my$color=$widget->optionGet("scalecolor","Scalecolor");
-    my$xo=$this->{"barxo"}-2;
-    my$yo=$this->{"baryo"};
-    my$height=$this->{"barlength"};
-    my$width=$this->{"barxo"}-2;
+    my$height=$this->{"height"};
+    my$width=4;
+    my$xo=$this->{"scalew"}-2;
 
-
-    $widget->createLine($xo,$yo,$xo,$yo+$height-1,0,$yo+$height-1,
-			-tags=>['newscale'],-fill=>$color,-capstyle=>'projecting');
+    $widget->createLine($xo,0,$xo,$height-1,$xo-$width,$height-1,
+			-tags=>['newscale'],-fill=>$color,
+			-capstyle=>'projecting');
 
     # powers of two. tics no closer than every 4 pixels
 
     my$max=$height/$this->{"rangecurrent"}*$this->{"rangesetting"};
-    if($max==$height){
-	$widget->createLine($xo,$yo,0,$yo,
+    if($this->{"rangecurrent"}==$this->{"rangesetting"}){
+	$widget->createLine($xo,0,$xo-$width,0,
 			    -tags=>['newscale'],-fill=>$color,
 			    -capstyle=>'projecting');
-
     }
 
     my$step=1;
@@ -455,8 +618,8 @@ sub drawvscale{
 	last if($width<1);
 	last if($max/$div<4);
 	for(my$tic=1;;$tic+=$step){
-	    my$y=$yo+$height-$max/$div*$tic;
-	    if($y>=$yo){
+	    my$y=$height-$max/$div*$tic;
+	    if($y>=0){
 		$widget->createLine($xo,$y,$xo-$width,$y,
 				    -tags=>['newscale'],-fill=>$color,
 				    -capstyle=>'projecting');
@@ -468,7 +631,7 @@ sub drawvscale{
 	$width-- if ($flag);
 	$step=2;
     }
-
+    
     # replace old scale with new scale 
     
     $widget->delete('scale');
@@ -487,21 +650,20 @@ sub drawhscale{
     # build new scale 
     my$widget=$this->{"widget"};
     my$color=$widget->optionGet("scalecolor","Scalecolor");
-    my$yo=$this->{"baryo"}-2;
-    my$width=$this->{"barlength"};
-    my$height=$this->{"baryo"}-5;
+    my$yo=$this->{"scalew"}-2;
+    my$width=$this->{"width"};
+    my$height=4;
 
     $widget->createLine(0,$yo-$height,0,$yo,$width-1,$yo,
-			-tags=>['newscale'],-fill=>$color,-capstyle=>'projecting');
+			-tags=>['newscale'],-fill=>$color,
+			-capstyle=>'projecting');
     
     # powers of two. tics no closer than every 4 pixels
-
     my$max=$width/$this->{"rangecurrent"}*$this->{"rangesetting"};
-    if($max==$width){
+    if($this->{"rangecurrent"}==$this->{"rangesetting"}){
 	$widget->createLine($width-1,$yo-$height,$width-1,$yo,
 			    -tags=>['newscale'],-fill=>$color,
 			    -capstyle=>'projecting');
-	
     }
     
     my$step=1;
@@ -532,6 +694,7 @@ sub drawhscale{
 
 sub set{
     my$this=shift;
+
     my$num=$this->{"num"};
     my$metermax;
     my$length=$this->{"barlength"};
@@ -577,8 +740,9 @@ sub set{
 	}
 	if($flag){
 	    my$val=int($this->{'rangesetting'});
-	    $this->{"numlabel"}->
-		configure(-text=>"$val$this->{'prompt'}");
+	    
+	    $this->{"numlabel"}->destroy;
+	    $this->{"numlabel"}=$this->promptlabel($val,$this->{'prompt'});
 	}
     }
 
