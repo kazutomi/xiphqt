@@ -89,8 +89,6 @@ protected:
 	//Member Data
 	AbstractAudioDecodeInputPin* mInputPin;
 	AbstractAudioDecodeOutputPin* mOutputPin;
-
-	
 };
 
 
