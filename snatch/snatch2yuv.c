@@ -173,14 +173,20 @@ int main(int argc,char *argv[]){
   }
 
   if(graph){
-    long total=0;
+    long max=0;
     int i;
 
     if(noisy)fprintf(stderr,"\n");
     for(i=1;i<=60;i++)
-      total+=fpsgraph[i];
-    for(i=1;i<=60;i++)
-      fprintf(stderr,"%3dfps|%*c\n",i,fpsgraph[i]*70/total,'*');
+      if(max<fpsgraph[i])max=fpsgraph[i];
+    if(max)
+      for(i=1;i<=60;i++){
+	int val=(int)(fpsgraph[i]*70/max);
+	if(val)
+	  fprintf(stderr,"%3dfps|%*c\n",i,val-1,'*');
+	else
+	  fprintf(stderr,"%3dfps|\n",i,val-1,'*');
+      }
   }
     
   if(noisy)fprintf(stderr,"\n");
