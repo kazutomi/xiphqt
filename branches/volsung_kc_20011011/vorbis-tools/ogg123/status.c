@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.8 2001/12/14 05:45:14 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.9 2001/12/19 02:07:52 volsung Exp $
 
  ********************************************************************/
 
@@ -29,6 +29,12 @@ pthread_mutex_t output_lock = PTHREAD_MUTEX_INITIALIZER;
 
 
 /* ------------------- Private functions ------------------ */
+
+void unlock_output_lock (void *arg)
+{
+  pthread_mutex_unlock(&output_lock);
+}
+
 
 void write_buffer_state_string (char *dest, buffer_stats_t *buf_stats)
 {
@@ -311,11 +317,13 @@ void status_reset_output_lock ()
 
 void status_clear_line ()
 {
+  pthread_cleanup_push(unlock_output_lock, NULL);
+
   pthread_mutex_lock(&output_lock);
-
   clear_line(last_line_len);
-
   pthread_mutex_unlock(&output_lock);
+
+  pthread_cleanup_pop(0);
 }
 
 void status_print_statistics (stat_format_t *stats,
@@ -323,11 +331,12 @@ void status_print_statistics (stat_format_t *stats,
 			      data_source_stats_t *transport_statistics,
 			      decoder_stats_t *decoder_statistics)
 {
+  pthread_cleanup_push(unlock_output_lock, NULL);
 
   /* Updating statistics is not critical.  If another thread is
      already doing output, we skip it. */
   if (pthread_mutex_trylock(&output_lock) == 0) {
-
+    
     if (decoder_statistics != NULL) {
       /* Current playback time */
       write_time_string(stats[1].arg.stringarg,
@@ -375,6 +384,8 @@ void status_print_statistics (stat_format_t *stats,
 
     pthread_mutex_unlock(&output_lock);
   }
+
+  pthread_cleanup_pop(0);
 }
 
 
@@ -385,6 +396,8 @@ void status_message (int verbosity, const char *fmt, ...)
   if (verbosity > max_verbosity)
     return;
 
+  pthread_cleanup_push(unlock_output_lock, NULL);
+
   pthread_mutex_lock(&output_lock);
 
   va_start (ap, fmt);
@@ -392,6 +405,8 @@ void status_message (int verbosity, const char *fmt, ...)
   va_end (ap);
 
   pthread_mutex_unlock(&output_lock);
+
+  pthread_cleanup_pop(0);
 }
 
 
@@ -400,11 +415,15 @@ void vstatus_message (int verbosity, const char *fmt, va_list ap)
   if (verbosity > max_verbosity)
     return;
 
+  pthread_cleanup_push(unlock_output_lock, NULL);
+
   pthread_mutex_lock(&output_lock);
 
   vstatus_print_nolock(fmt, ap);
 
   pthread_mutex_unlock(&output_lock);
+
+  pthread_cleanup_pop(0);
 }
 
 
@@ -412,21 +431,25 @@ void status_error (const char *fmt, ...)
 {
   va_list ap;
 
-  pthread_mutex_lock(&output_lock);
+  pthread_cleanup_push(unlock_output_lock, NULL);
 
+  pthread_mutex_lock(&output_lock);
   va_start (ap, fmt);
   vstatus_print_nolock (fmt, ap);
   va_end (ap);
-
   pthread_mutex_unlock(&output_lock);
+
+  pthread_cleanup_pop(0);
 }
 
 
 void vstatus_error (const char *fmt, va_list ap)
 {
+  pthread_cleanup_push(unlock_output_lock, NULL);
+
   pthread_mutex_lock(&output_lock);
-
   vstatus_print_nolock (fmt, ap);
-
   pthread_mutex_unlock(&output_lock);
+
+  pthread_cleanup_pop(0);
 }
