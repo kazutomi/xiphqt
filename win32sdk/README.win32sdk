@@ -1,4 +1,4 @@
-$Id: README.win32sdk,v 1.8 2001/10/20 21:12:33 cwolf Exp $
+$Id: README.win32sdk,v 1.9 2001/10/20 21:31:39 cwolf Exp $
 $Name:  $
 
 win32sdk Readme, 13 September, 2001 Chris Wolf
@@ -18,6 +18,10 @@ PREREQUSITES
   cvs modules "ogg", "vorbis" and "win32sdk" (this module) are 
   required for this build.
 
+  if an NMAKE (see below) build is going to be performed, then the 
+  Windows-Script-Host, %SYSTEMROOT%\system32\cscript.exe is 
+  required to export the make and dependency files, otherwise
+  this step will need to be performed maually.
 
 QUICK SUMMARY
 
@@ -36,6 +40,16 @@ BUILD USING NMAKE
   makefiles are generated, which should work in older versions
   of MSVC.  In order to do this, set the environment
   variable "USENMAKE" to "true" (actually, any value will work).
+
+  If Windows-script-host, "cscript.exe" is unavailable, then perform
+  the following manual steps:
+
+  1.) Invoke msdev and load "win32sdk\all.dsw"
+  2.) Perform the following menu navigation:
+
+      Project->Export Makefile
+      When the "Export Makefile(s)" dialog comes up, select all the 
+      checkboxes, then press the "Ok" button.
 
   If there are nmake build problems, try the following three steps
   before performing the build again.
@@ -91,6 +105,6 @@ OTHER SCRIPTS
   clean_dist.bat      - restores win32sdk to it's freshly checked out state,
  
   mkmak.bat           - creates makefiles and dependency files in the ogg and
-                        vorbis modules.
+                        vorbis modules.  Needs %SYSTEMROOT%\system32\cscript.exe
 
   sdk\build\mkmak.bat - creates makefiles for the example programs
