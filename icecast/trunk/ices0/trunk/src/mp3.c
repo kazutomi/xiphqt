@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.21 2003/03/11 22:28:53 brendan Exp $
+ * $Id: mp3.c,v 1.22 2003/03/12 12:12:58 brendan Exp $
  */
 
 #include "definitions.h"
@@ -98,11 +98,11 @@ static int ices_mp3_parse (input_stream_t* source)
   ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
   unsigned char *buffer;
   mp3_header_t mh;
-  size_t len, rlen;
-  int rc = 1;
+  size_t len;
+  int rc = 0;
   int off = 0;
 
-  if (! mp3_data->len)
+  if (mp3_data->len < 4)
     return 1;
 
   /* Ogg/Vorbis often contains bits that almost look like MP3 headers */
@@ -110,45 +110,47 @@ static int ices_mp3_parse (input_stream_t* source)
     return 1;
 
   /* first check for ID3v2 */
-  if (! strncmp ("ID3", mp3_data->buf, 3)) {
+  if (! strncmp ("ID3", mp3_data->buf, 3))
     ices_id3v2_parse (source);
-    /* We're committed now. If we don't find an MP3 header the file is
-     * garbage */
-    rc = -1;
+
+  /* refill buffer if ID3v2 parsing consumed it */
+  if (!mp3_data->len) {
+    buffer = (unsigned char*) malloc (MP3_BUFFER_SIZE);
+    len = source->read (source, buffer, MP3_BUFFER_SIZE);
+    mp3_data->buf = buffer;
+    mp3_data->len = len;
+    mp3_data->pos = 0;
+  }
+
+  if (mp3_data->len < 4) {
+    ices_log_error("Short file");
+    return  -1;
   }
 
   /* seek past garbage if necessary */
+  buffer = mp3_data->buf;
   do {
-    len = mp3_data->len;
-    buffer = mp3_data->buf;
+    len = mp3_data->len - mp3_data->pos;
 
-    if (!len) {
-      buffer = (unsigned char*) malloc (MP3_BUFFER_SIZE);
-      len = source->read (source, buffer, MP3_BUFFER_SIZE);
-      mp3_data->buf = buffer;
-      mp3_data->len = len;
-      mp3_data->pos = 0;
-    }
-    /* we must be able to read at least 4 bytes of header */
-
-    while (!(rc = mp3_parse_frame(buffer + mp3_data->pos, &mh)) && (mp3_data->len >= 4)) {
-      mp3_data->pos++;
-      mp3_data->len--;
-      off++;
-    }
-
-    len = mp3_data->len;
-    /* copy remaining bits to front, refill buffer without malloc/free */
-    if (len && len < 4) {
+    /* copy remaining bytes to front, refill buffer without malloc/free */
+    if (len < 4) {
       memcpy (buffer, buffer + mp3_data->pos, len);
       /* make read fetch from source instead of buffer */
-      mp3_data->len = 0;
-      rlen = source->read(source, buffer + len, MP3_BUFFER_SIZE - len);
-      mp3_data->len = len + rlen;
+      mp3_data->buf = NULL;
+      len += source->read(source, buffer + len, mp3_data->len - len);
+      mp3_data->buf = buffer;
       mp3_data->pos = 0;
-      len = rlen;
+      if (len < 4)
+        break;
     }
-  } while (!rc && len);
+
+    /* we must be able to read at least 4 bytes of header */
+    while (mp3_data->len - mp3_data->pos >= 4
+        && !(rc = mp3_parse_frame(buffer + mp3_data->pos, &mh))) {
+      mp3_data->pos++;
+      off++;
+    }
+  } while (!rc);
 
   if (!rc) {
     ices_log_error ("Couldn't find synch");
@@ -161,6 +163,7 @@ static int ices_mp3_parse (input_stream_t* source)
   source->samplerate = mh.samplerate;
   source->bitrate = mh.bitrate;
 
+  /* bitrate of zero ensures that lazy reencoding won't be lazy */
   if (mp3_check_vbr(source, &mh) > 0)
     source->bitrate = 0;
 
@@ -225,19 +228,18 @@ static ssize_t
 ices_mp3_read (input_stream_t* self, void* buf, size_t len)
 {
   ices_mp3_in_t* mp3_data = self->data;
+  int remaining;
   int rlen = 0;
 
-  if (mp3_data->len) {
-    if (mp3_data->len > len) {
+  if (mp3_data->buf) {
+    remaining = mp3_data->len - mp3_data->pos;
+    if (remaining > len) {
       rlen = len;
       memcpy (buf, mp3_data->buf + mp3_data->pos, len);
-      mp3_data->len -= len;
       mp3_data->pos += len;
     } else {
-      rlen = mp3_data->len;
-      memcpy (buf, mp3_data->buf + mp3_data->pos, mp3_data->len);
-      mp3_data->len = 0;
-      mp3_data->pos = 0;
+      rlen = remaining;
+      memcpy (buf, mp3_data->buf + mp3_data->pos, remaining);
       free (mp3_data->buf);
       mp3_data->buf = NULL;
     }
@@ -259,7 +261,7 @@ static ssize_t
 ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
 		  int16_t* right)
 {
-  unsigned char buf[4096];
+  unsigned char buf[MP3_BUFFER_SIZE];
   ssize_t rlen;
   int nsamples = 0;
 
@@ -338,14 +340,15 @@ static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
   mp3_header_t next_header;
   ssize_t framelen;
   off_t cur;
+  int offset;
 
   if (!source->canseek)
     return -1;
 
   cur = lseek(source->fd, 0, SEEK_CUR);
-
+  offset = mp3_data->len - mp3_data->pos;
   /* check for Xing VBR tag */
-  lseek(source->fd, 36 - (ssize_t)mp3_data->len, SEEK_CUR);
+  lseek(source->fd, 36 - offset, SEEK_CUR);
   if (read(source->fd, buf, 4) == 4) {
     if (!strncmp("Xing", buf, 4)) {
       ices_log_debug("VBR tag found");
@@ -362,7 +365,7 @@ static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
   lseek(source->fd, cur, SEEK_SET);
   if ((framelen = mp3_frame_length(header))) {
     ices_log_debug("Frame length expected: %d bytes", framelen);
-    lseek(source->fd, framelen - (ssize_t)mp3_data->len, SEEK_CUR);
+    lseek(source->fd, framelen - offset, SEEK_CUR);
     if (read(source->fd, buf, 4) == 4) {
       if (!mp3_parse_frame(buf, &next_header))
         ices_log_debug("Couldn't find second frame header");
