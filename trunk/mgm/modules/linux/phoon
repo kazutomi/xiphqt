@@ -1,2 +1,4 @@
 # -*-Perl-*-
-do "$main::moddir/share/phoon";
+my$ret=do "$main::moddir/share/phoon";
+die ($@) unless (defined($ret));
+$ret;

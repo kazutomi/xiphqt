@@ -19,15 +19,15 @@
 
 <h2>Troubleshooting the beast...</h2>
 
-MGM is aimed at skilled users, not the 3l33T3 warez crowd.<p>
+MGM is aimed at skilled users, not the 3l33T3 war3z crowd.<p>
 
 (1f U sp3ll l1k3 th1s, gu3ss wh1ch U R)<p>
 
-It's for those who know what an awful hack MGM is and just don't
-care. MGM was originally a script for my use, but a few other folks
-liked it so I'm just going to fling it at the world at large.  I'm not
-going to let it become a support load. I'm not interested in teaching
-newbies how to use X resources this time around, sorry.<p>
+MGM was originally a script for my own use, but a few other folks
+liked it (not unintended) so I'm just going to fling it at the world
+at large.  I'm not going to let it become a support load. I'm not
+interested in teaching newbies how to use X resources this time
+around, sorry.<p>
 
 That said, there are a few things that are tricky about using MGM, so
 I might as well save folks the time of slugging through misleading
@@ -56,10 +56,23 @@ at /usr/lib/perl5/Tk/Submethods.pm line 37.
 </pre>
 
 Chances are you have whitespace in your MGM resources.  Emacs in
-font-lock mode has the tendancy to insert tabs where you least expect.
+font-lock mode has the tendency to insert tabs where you least expect.
 Check carefully for this.
 
 <p>
+
+<h3>It runs perfectly for a while then suddenly explodes</h3>
+
+A few modules (diskuse and netstat for now) watch for changes in
+machine configuration and will trigger an update of the whole MGM
+window if, for example, a new filesystem appears in df.<p>
+
+If you're riding the limits of minimum sizing, it's possible that the
+window really needed to be bigger for the extra entry and instead the
+world ended.  Similarly, forcably disabling automatic updates
+(*reconfig: false) can cause things to break as MGM tries to monitor
+devices that no longer exist.  Or, maybe you found a bug.  If you
+did, drop us a line at <a href="mailto:mgm@xiph.org">mgm@xiph.org</a>.
 
 <hr>
 <a href="http://www.xiph.org/">

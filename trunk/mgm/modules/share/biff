@@ -100,5 +100,9 @@ sub module_update{
     }
 }
 
+sub destroy{
+    undef $xpath;
+}
+
 bless {};
 

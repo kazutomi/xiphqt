@@ -1,2 +1,4 @@
 # -*-Perl-*-
-do "$main::moddir/share/spacer";
+my$ret=do "$main::moddir/share/spacer";
+die ($@) unless (defined($ret));
+$ret;

@@ -143,5 +143,9 @@ sub read_proc{
     }	
 }
 
+sub destroy{
+    undef $xpath;
+}
+
 bless {};
 

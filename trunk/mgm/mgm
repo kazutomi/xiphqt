@@ -24,9 +24,14 @@ $fontfile="$libdir/helvetica2.xpm";
 
 $0="moaning-goat-meter"; # OK, this is evil.
 
-$|=1;
+#$|=1;
 
-$toplevel=new MainWindow();
+$toplevel=new MainWindow(-class=>'Mgm');
+
+# get us our logo xpm
+
+my$mgmlogoH=$toplevel->Pixmap(-file => "$libdir/mgm-small.xpm");
+my$mgmlogoV=$toplevel->Pixmap(-file => "$libdir/mgm-vertical.xpm");
 
 my%modules;
 my%instances;
@@ -56,6 +61,7 @@ $toplevel->optionAdd("$Xname*font",
 $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
 $toplevel->optionAdd("$Xname*active",           'true',20);
+$toplevel->optionAdd("$Xname*reconfig",         'true',20);
 $toplevel->optionAdd("$Xname*order",            1000,20);
 $toplevel->optionAdd("$Xname*scale",            'true',20);
 $toplevel->optionAdd("$Xname*scalejustify",     '1',20);
@@ -97,31 +103,25 @@ $toplevel->optionAdd("$Xname*litforeground", "$background",20);
 $toplevel->configure('-background'=>"$background",'-foreground'
 		     =>"$foreground");
 
+# hack to set geometry when specified in .Xresources; reinstance can't
+# do this, or we'll 'creep' on reconfig
+my$geometry=$toplevel->optionGet("geometry","");
+if(defined($geometry)){
+    $toplevel->geometry($geometry);
+}
+
 # three stages: 1) get module references and extract how many to build
 #               2) make module instances, extract geometry
 #               3) draw modules, place and run
 
+my($actualx,$actualy,$renderflag,$renderx,$rendery);
+my($minx,$miny,$reqx,$reqy,$ladj,$wadj);
+$renderflag=0;
+
 &LoadModules($moddir,$Config{'osname'});   # platform specificmodule references
 
-&order_modules;        # extract how many to build
-&instance_modules;     # make copies of the references and build
-                       # complete instances
+&reinstance();
 
-my($minx,$miny,$reqx,$reqy,$ladj,$wadj)=&geometries; #extract geometry
-
-$toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
-my $geometry=$toplevel->optionGet("geometry","");
-$toplevel->geometry($geometry);
-$toplevel->minsize($minx,$miny);
-$toplevel->resizable('TRUE','TRUE');
-$geometry=~m{(\d*)x(\d*)};
-my$actualx=$1;
-my$actualy=$2;
-
-$toplevel->bind('MainWindow','<Configure>',[\&resize,Ev('w'),Ev('h')]);
-
-# all set.  Build the widgets and start the timers 
-&build_and_run;
 Tk::MainLoop();
 
 #########################################################################
@@ -357,90 +357,132 @@ sub build_and_run{
 	$extradely=$extray/$wadj if($wadj>0);    
     }
 
-    # build the widgets in order
+    # determine new logo size and placement.  
+    # unmap old widgets
 
     my$i=0;
     my$pos=0;
+    foreach my $key (@ordered){
+	my $mod=$instances{$key};
+	if(defined($mod)){
+	    my $pad=&moption($mod,"widgetpad");
+	    my $justify=&moption($mod,"scalejustify");
+	    my$x;
+	    my$y;
+	    my$width;
+	    my$height;
+	    
+	    my$xlocaldemand;
+	    my$ylocaldemand;
+	    
+	    if($orient eq 'vertical'){
+		$xlocaldemand=&max(1,&moption($mod,"scalewidadj"));
+		$ylocaldemand=&max(1,&moption($mod,"scalelenadj"));
+	    }else{
+		$xlocaldemand=&max(1,&moption($mod,"scalelenadj"));
+		$ylocaldemand=&max(1,&moption($mod,"scalewidadj"));
+	    }
+	    
+	    # note that some versions of Tk have an off by one error 
+	    # positioning along the south border.  Always use nw 
+	    # anchors for safety when possible even if the math is 
+	    # annoying
+	    
+	    if($stack eq 'vertical'){
+		$width=$minx+$extradelx*$xlocaldemand-$pad*2;
+		$height=&moption($mod,"miny")+
+		    $extradely*$ylocaldemand;
+		$x=$pad+
+		    ($justify-1)/-2*($actualx-$pad*2-$width);
+		$y=$pos+$pad/2;
+		$pos+=$height+$pad;
+	    }else{
+		$width=&moption($mod,"minx")+
+		    $extradelx*$xlocaldemand;
+		$height=$miny+$extradely*$ylocaldemand-$pad*2;
+		$y=$pad+
+		    ($justify+1)/2*($actualy-$pad*2-$height);
+		$x=$pos+$pad/2;
+		$pos+=$width+$pad;
+	    }
+	    
+	    # these are controlled by us and needed in the object anyway,
+	    # so we set them
+	    $mod->{"width"}=$width;
+	    $mod->{"height"}=$height;
+	    $mod->{"placex"}=$x;
+	    $mod->{"placey"}=$y;
+	    $mod->{"sequence"}=$i;
+	    $mod->{'widget'}->placeForget;
+	    
+	}
+	$i++;
+    }
+
+    # pop in the logo while we render.  Rendering takes a while.
+    my $logoframe=$toplevel->Canvas(width=>$actualx,height=>$actualy,
+				    borderwidth=>0,highlightthickness=>0,
+				    background=>'#404040')->
+					place(-anchor=>"nw",'-x'=>0,'-y'=>0);
+    if($actualx>$actualy){
+	$logoframe->createImage($actualx/2,$actualy/2,
+				-image=>$mgmlogoH,-anchor=>'center');
+    }else{
+	$logoframe->createImage($actualx/2,$actualy/2,
+				-image=>$mgmlogoV,-anchor=>'center');
+    }       
+    $toplevel->update();
+
+    # build the widgets in order, then render the new
+    # instances. Destroy old widgets as they're no longer needed
 
     foreach my $key (@ordered){
 	my $mod=$instances{$key};
 	if(defined($mod)){
-
-	    my $active=&moption($mod,"active");
-	    my $pad=&moption($mod,"widgetpad");
-	    my $justify=&moption($mod,"scalejustify");
-	    if($active eq 'true'){
-		my$x;
-		my$y;
-		my$width;
-		my$height;
-
-		my$xlocaldemand;
-		my$ylocaldemand;
-		
-		if($orient eq 'vertical'){
-		    $xlocaldemand=&max(1,&moption($mod,"scalewidadj"));
-		    $ylocaldemand=&max(1,&moption($mod,"scalelenadj"));
-		}else{
-		    $xlocaldemand=&max(1,&moption($mod,"scalelenadj"));
-		    $ylocaldemand=&max(1,&moption($mod,"scalewidadj"));
-		}
-
-		# note that some versions of Tk have an off by one error 
-		# positioning along the south border.  Always use nw 
-		# anchors for safety when possible even if the math is 
-		# annoying
-		
-		if($stack eq 'vertical'){
-		    $width=$minx+$extradelx*$xlocaldemand-$pad*2;
-		    $height=&moption($mod,"miny")+
-			$extradely*$ylocaldemand;
-		    $x=$pad+
-			($justify-1)/-2*($actualx-$pad*2-$width);
-		    $y=$pos+$pad/2;
-		    $pos+=$height+$pad;
-		}else{
-		    $width=&moption($mod,"minx")+
-			$extradelx*$xlocaldemand;
-		    $height=$miny+$extradely*$ylocaldemand-$pad*2;
-		    $y=$pad+
-			($justify+1)/2*($actualy-$pad*2-$height);
-		    $x=$pos+$pad/2;
-		    $pos+=$width+$pad;
-		}
-
+	    $mod->{"widget"}->destroy;
+	    undef $mod->{"widget"};
+	    my$ret=eval{$mod->module_run};
+	    
+	    if(!defined($ret)){
+		print STDERR "Error eval()ing ->module_run for ".
+		    ($mod->{"name"}).": $@\n";
+	    }else{
 		# destroy the resource dummy/old widget
-		$mod->{"widget"}->destroy;
-		undef $mod->{"widget"};
-
-		# build it
-
-		# these are controlled by us and needed in the object anyway,
-		# so we set them
-		$mod->{"width"}=$width;
-		$mod->{"height"}=$height;
-		$mod->{"sequence"}=$i;
-		my$ret=eval{$mod->module_run};
-
-		if(!defined($ret)){
-		    print STDERR "Error eval()ing ->module_run for ".
-			($mod->{"name"}).": $@\n";
-		}else{
-		    $mod->{"widget"}=$ret; # must store the widget
-		    $ret->place('-x'=>$x,'-y'=>$y,-anchor=>'nw');
-		    my$refresh=$ret->optionGet("scalerefresh","");
-		    $ret->repeat($refresh,sub{$mod->module_update})
-#		    &MGM::schedule::perm_schedule($mod,$refresh)
-			if($refresh && ref($mod)->can('module_update'));
-
-		}
+		$mod->{"widget"}=$ret; # must store the widget
 	    }
 	}
 	$i++;
+	$toplevel->update();
+	if($actualx!=$renderx || $actualy!=$rendery){last}
+    }
+
+    # make the logo go away
+
+    $logoframe->destroy();
+
+    # map/schedule the new widgets
+    foreach my $key (@ordered){
+	my $mod=$instances{$key};
+	if(defined($mod)){
+	    my$ret=$mod->{'widget'};
+	    if(defined($ret)){
+		$ret->place('-x'=>$mod->{'placex'},
+			    '-y'=>$mod->{'placey'},-anchor=>'nw');
+		my$refresh=$ret->optionGet("scalerefresh","");
+		$ret->repeat($refresh,sub{$mod->module_update})
+		    if($refresh && ref($mod)->can('module_update'));
+		
+	    }
+	}
     }
 }
 
-my $leakcheck;
+# this could be reentrant as we do toplevel updates during rendering.
+# Make sure we DTRT.
+
+# this is also called to render placemant and sizing for the initial
+# mapping of the the toplevel.
+
 sub resize{
     my($toplevel,$width,$height)=@_;
     
@@ -450,10 +492,79 @@ sub resize{
 	$actualx=$width;
 	$actualy=$height;
 
-	#create a new crop
-	&build_and_run;
+	# create a new crop
+	if(!$renderflag){
+	    # not async reentrant.  Don't need to worry about atomicity.
+	    $renderflag=1;
 
+	    while($renderx!=$actualx || $rendery!=$actualy){
+		$renderx=$actualx;
+		$rendery=$actualy;
+		&build_and_run;
+	    }
+	    $renderflag=0;
+	}
     }
+}
+
+# this hook rebuilds all the module instances in case a reconfigure
+# happened.  Not especially efficient, but it's a drop int he bucket
+# compared to the full re-render that has to happen anyway.
+
+sub reinstance{
+
+    # blow away the current instances.
+    # unmap, undef each instance from instances.
+    foreach my $key (keys %instances){
+	my $mod=$instances{$key};
+	if(defined($mod)){
+	    # call widget destructor
+	    $mod->{'widget'}->destroy;
+	    undef $mod->{'widget'};
+
+	    # call instance destructor
+	    $mod->destroy() if (ref($mod)->can('destroy'));
+
+	    # undef
+	    undef $instances{$key};
+	    
+	}
+    }
+
+    # undef the ordering
+    undef @ordered;
+ 
+    &order_modules;        # extract how many to build
+    &instance_modules;     # make copies of the references and build
+                           # complete instances
+    
+    $actualx=-1;
+    $actualy=-1;
+    $renderx=-1;
+    $rendery=-1;
+    ($minx,$miny,$reqx,$reqy,$ladj,$wadj)=&geometries; #extract new geometry
+
+    # do we resize?  Our approach is clean but perhaps impractical; if
+    # the geometry has been forced, we obey that even if the size is
+    # below the forced minimums.  Thus a random reconfigure could
+    # spontaneously break things.  eit.  Caveat user.
+
+    $toplevel->minsize($minx,$miny);
+    $toplevel->resizable('TRUE','TRUE');
+
+    my$geometry=$toplevel->optionGet("geometry","");
+    if(defined($geometry)){
+	$geometry=~m{(\d*)x(\d*)};
+	$reqx=$1;$reqy=$2;
+    }else{
+	$toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
+	$toplevel->geometry($reqx."x".$reqy);
+    }
+
+    $toplevel->bind('MainWindow','<Configure>',[\&resize,Ev('w'),Ev('h')]);
+
+    # all set.  Build the widgets and start the timers 
+    &resize($toplevel,$reqx,$reqy);
 }
 
 sub moption{
