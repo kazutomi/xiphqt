@@ -43,10 +43,12 @@ static int fpos = 0;
 static int flen = 0;
 
 /* public functions */
-ices_plugin_t *crossfade_plugin(void) {
-  FadeSamples = FadeSecs * 44100;
+ices_plugin_t *crossfade_plugin(int secs) {
+  FadeSamples = secs * 44100;
   FL = malloc(FadeSamples * 2);
   FR = malloc(FadeSamples * 2);
+  ices_log_debug("Crossfading %d seconds between tracks", secs);
+
   return &Crossfader;
 }
 

@@ -79,9 +79,6 @@ ices_setup_initialize (void)
 #ifdef HAVE_LIBLAME
   /* Initialize liblame for reeencoding */
   ices_reencode_initialize ();
-  /*
-  ices_config.plugin = crossfade_plugin();
-  */
 #endif
 }
 
@@ -336,6 +333,10 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  arg++;
 	  stream->bitrate = atoi (argv[arg]);
 	  break;
+        case 'C':
+	  arg++;
+	  if (atoi(argv[arg]) > 0)
+	    ices_config->plugin = crossfade_plugin(atoi(argv[arg]));
         case 'c':
 	  arg++;
 	  break;

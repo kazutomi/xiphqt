@@ -12,6 +12,10 @@
     <!-- Module name to pass to the playlist handler if using  perl or python.
 	 If you use the builtin playlist handler then this is ignored -->
     <Module>ices</Module>
+    <!-- Set this to the number of seconds to crossfade between tracks.
+         Leave out or set to zero to disable crossfading (the default).
+    <Crossfade>5</Crossfade>
+    -->
   </Playlist>
 
   <Execution>

@@ -1,7 +1,7 @@
 /* parse.c
  * - Functions for xml file parsing
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001-3 Brendan Cully
+ * Copyright (c) 2001-4 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * $Id$
  */
 
 #include "definitions.h"
@@ -253,6 +254,8 @@ parse_execution_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 static void
 parse_playlist_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
 {
+  int i;
+
   for (; cur; cur = cur->next) {
     if (cur->type == XML_COMMENT_NODE)
       continue;
@@ -275,6 +278,9 @@ parse_playlist_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *
       ices_util_free (ices_config->pm.module);
       ices_config->pm.module =
 	ices_util_strdup (ices_xml_read_node (doc, cur));
+    } else if (strcmp (cur->name, "Crossfade") == 0) {
+      if ((i = atoi (ices_xml_read_node (doc, cur))) > 0)
+	ices_config->plugin = crossfade_plugin(i);
     } else {
       ices_log ("Unknown playlist keyword: %s", cur->name);
     }

@@ -31,6 +31,6 @@ typedef struct _ices_plugin {
   struct _ices_plugin *next;
 } ices_plugin_t;
 
-ices_plugin_t *crossfade_plugin(void);
+ices_plugin_t *crossfade_plugin(int secs);
 
 #endif
