@@ -11,11 +11,11 @@
  ********************************************************************
 
  function: toplevel libogg include
- last mod: $Id: ogg.h 7296 2004-07-23 23:07:26Z arc $
+ last mod: $Id: oggs.h 7296 2004-07-23 23:07:26Z arc $
 
  ********************************************************************/
-#ifndef _OGG_H
-#define _OGG_H
+#ifndef _OGGS_H
+#define _OGGS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,18 +24,31 @@ extern "C" {
 #include <ogg2/ogg.h>
 
 typedef struct {
+/* This is obviously not finished.
+
+I'm not even sure what this will be useful for, yet.  May be removed 
+later if deemed unnessesary, but I'm sure a good use will come up.
+*/
+
 } oggs_state;
 
 typedef struct {
-  int   num_media;
-  int  *media;  /* This needs to point to a struct */
+
+/* This is obviously not finished.
+
+The media will contain either one or multiple ogg_packet objects (I'm 
+thinking one is enough - multiple just adds latency unnessesarily since 
+buffering is done by the input/output plugins), a current time offset, 
+the format (oggs_format), and other information nessesary for matching.
+*/
+
 } oggs_media;
 
 typedef struct {
   char  *name;
   int    num_fields;
   char **labels;
-  void  *params;
+  char **params;
 } oggs_format;
 
 typedef struct {
@@ -43,6 +56,19 @@ typedef struct {
   void *address;
 } oggs_method; 
 
+typedef struct {
+  oggs_media   *input;
+  ogg_uint32_t  last_time;
+  ogg_uint32_t  total_time;
+  char         *table;
+/* This is a table of 2-bit fields, each representing one second of
+   total_time, as follows: 00 = Unknown State or Missing
+                           01 = Known to be available or Incomplete
+                           10 = Bad or Damaged section of stream
+                           11 = Cached and verified good
+   This is intended to give a visual scope for not only damaged streams
+   but also for streaming buffers/caches and encoding status. */
+} oggs_seekbar;
 
 
 /* An oggs_state object is required for all OggStream functionality.  */
@@ -65,18 +91,25 @@ extern int oggs_destroy(*oggs_state);
 /* combination of codec plugins which can fufill the request. Null is */
 /* returned if no plugins are available to complete a given request.  */
 
-extern oggs_media *oggs_init_input(oggs_state  *oss,
-                                   oggs_method *method);
-extern oggs_media *oggs_init_codec(oggs_state  *oss,
-                                   oggs_media  *media,
-                                   oggs_format *format);
-extern int oggs_init_output(oggs_state  *oss,
-                            oggs_media  *media,
-                            oggs_method *method);
+extern int oggs_init_input( oggs_state    *oss,
+                            oggs_method   *method,
+                            oggs_seekbar  *seek,
+                            oggs_media   **output );
+
+extern int oggs_init_codec( oggs_state   *oss,
+                            int           num_input,
+                            oggs_media  **input,
+                            oggs_format  *format,
+                            oggs_media  **output );
+
+extern int oggs_init_output( oggs_state   *oss,
+                             int           num_input,
+                             oggs_media  **input,
+                             oggs_method  *method);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* _OGG_H */
+#endif  /* _OGGS_H */
