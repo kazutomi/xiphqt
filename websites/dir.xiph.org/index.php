@@ -66,6 +66,7 @@ $max_per_page = 10;
 $start = $_GET["start"];
 $num = $_GET["num"];
 $sgenre = $_GET["sgenre"];
+$stype = $_GET["stype"];
 $search = $_GET["search"];
 
 $link = mysql_connect("localhost", $username, $password);
@@ -142,6 +143,22 @@ function getNextLink($current, $pagesize, $rowcounter) {
 		$extra .= "&sgenre=".urlencode($sgenre);
 	}
 	return "<a class=\"nav\" href=\"?start=$next&num=$pagesize$extra\"><font size=3>Next</font></a>";
+}
+function getContentTypes() {
+	$query = "select distinct(server_type) from server_details";
+	$result = mysql_query($query);
+	if (!$result) {
+		print "<center><font color=red>Mysql Error: ".mysql_error()."!</center><br>";
+	}
+	 
+	$result_string = "Format Search<br>";
+	$result_string .= "<select name='stype'>";
+	$result_string .= "<option value='' selected>";
+	while ($row = mysql_fetch_row($result)) {
+		$result_string .= "<option value='$row[0]'>$row[0]";
+	}
+	$result_string .= "</select>";
+	return $result_string;
 }
 function getTotalListeners() {
 	$query = "select sum(listeners) from servers";
@@ -295,12 +312,19 @@ $directory_data = '
 ';
  
 $query = "select id, server_name, listeners from servers order by rank desc";
+$subquery = "";
 
 if ($sgenre) {
 	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and b.genre like '%$sgenre%' group by a.id, a.server_name, a.listeners order by a.rank desc";
+	$subquery = "and genre like '%$sgenre%'";
+}
+if ($stype) {
+	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and b.server_type like '%$stype%' group by a.id, a.server_name, a.listeners order by a.rank desc";
+	$subquery = "and server_type like '%$stype%'";
 }
 if ($search) {
 	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and (a.server_name like '%$search%' or b.description like '%$search%' or b.current_song like '%$search%' or b.genre like '%$search%') group by a.id, a.server_name, a.listeners order by a.rank desc";
+	$subquery = "and (server_name like '%$search%' or description like '%$search%' or current_song like '%$search%' or genre like '%$search%')";
 }
 $result = mysql_query($query);
 if (!$result) {
@@ -344,7 +368,7 @@ while ($row = mysql_fetch_row($result)) {
 	}
 	if ($server_name != "") {
 		$all_listeners = $listeners;
-		$query = "select description, genre, url, current_song, listen_url, server_type, bitrate, samplerate, channels, listeners+0, parent_id, id from server_details where parent_id = $id";
+		$query = "select description, genre, url, current_song, listen_url, server_type, bitrate, samplerate, channels, listeners+0, parent_id, id from server_details where parent_id = $id $subquery";
 		
 		$streamDetailsLine = "";
 		$result2 = mysql_query($query);
@@ -425,6 +449,7 @@ Genre<br><select style="font-size:8pt" name=sgenre>
 <option value="70s">70s
 </select>
 <br>
+<? print getContentTypes(); ?><br>
 Freeform Search<br><input name=search style="font-size:8pt">
 <input type=Submit value=Search>
 </form>
