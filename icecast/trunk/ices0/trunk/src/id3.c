@@ -64,6 +64,7 @@ ssize_t id3v2_read_frame (input_stream_t* source, id3v2_tag* tag);
 static int id3v2_skip_data (input_stream_t* source, id3v2_tag* tag, size_t len);
 static int id3v2_decode_synchsafe (unsigned char* synchsafe);
 static int id3v2_decode_synchsafe3 (unsigned char* synchsafe);
+static int id3v2_decode_unsafe (unsigned char* in);
 
 /* Global function definitions */
 
@@ -177,7 +178,9 @@ ices_id3v2_parse (input_stream_t* source)
     remaining -= rv;
   }
 
-  ices_metadata_set (tag.artist, tag.title);
+  /* allow fallback to ID3v1 */
+  if (tag.artist || tag.title)
+    ices_metadata_set (tag.artist, tag.title);
   ices_util_free (tag.artist);
   ices_util_free (tag.title);
 
@@ -232,6 +235,9 @@ id3v2_read_frame (input_stream_t* source, id3v2_tag* tag)
   if (tag->major_version < 3) {
     len = id3v2_decode_synchsafe3 (hdr + 3);
     hdr[3] = '\0';
+  } else if (tag->major_version == 3) {
+    len = id3v2_decode_unsafe (hdr + 4);
+    hdr[4] = '\0';
   } else {
     len = id3v2_decode_synchsafe (hdr + 4);
     hdr[4] = '\0';
@@ -326,6 +332,20 @@ id3v2_decode_synchsafe3 (unsigned char* synchsafe)
   res = synchsafe[2];
   res |= synchsafe[1] << 7;
   res |= synchsafe[0] << 14;
+
+  return res;
+}
+
+/* id3v2.3 badly specifies frame length */
+static int
+id3v2_decode_unsafe (unsigned char* in)
+{
+  int res;
+
+  res = in[3];
+  res |= in[2] << 8;
+  res |= in[1] << 16;
+  res |= in[0] << 24;
 
   return res;
 }
