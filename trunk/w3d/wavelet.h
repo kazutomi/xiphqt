@@ -23,7 +23,23 @@ extern Wavelet3DBuf* wavelet_3d_buf_new (uint32_t width, uint32_t height,
 
 extern void wavelet_3d_buf_destroy (Wavelet3DBuf* buf);
 
-extern void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf);
-extern void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf);
+/**
+ *  transform buf->data
+ *  a_moments is the number of vanishing moments of the analyzing
+ *  highpass filter,
+ *  s_moments the one of the synthesizing lowpass filter.
+ */
+extern void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf,
+                                      int a_moments, int s_moments);
+extern void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf,
+                                      int a_moments, int s_moments);
+
+extern int  wavelet_3d_buf_encode_coeff (const Wavelet3DBuf* buf,
+                                         uint8_t *bitstream,
+                                         uint32_t limit);
+
+extern void wavelet_3d_buf_decode_coeff (Wavelet3DBuf* buf,
+                                         uint8_t *bitstream,
+                                         uint32_t limit);
 
 #endif
