@@ -1181,15 +1181,120 @@ static void oc_dct_token_expand(int _token,int _extra_bits,
 
 
 
+static int oc_dec_postprocess_init(oc_dec_ctx *_dec){
+  /*pp_level 0: disabled; free any memory used and return*/
+  if(_dec->pp_level<=OC_PP_LEVEL_DISABLED){
+    if(_dec->dc_qis!=NULL){
+      _ogg_free(_dec->dc_qis);
+      _dec->dc_qis=NULL;
+      _ogg_free(_dec->variances);
+      _dec->variances=NULL;
+      _ogg_free(_dec->pp_frame_data);
+      _dec->pp_frame_data=NULL;
+    }
+    return 1;
+  }
+  if(_dec->dc_qis==NULL){
+    /*If we haven't been tracking DC quantization indices, there's no point in
+       starting now.*/
+    if(_dec->state.frame_type!=OC_INTRA_FRAME)return 1;
+    _dec->dc_qis=(unsigned char *)_ogg_malloc(
+     _dec->state.nfrags*sizeof(_dec->dc_qis[0]));
+    memset(_dec->dc_qis,_dec->state.qis[0],_dec->state.nfrags);
+  }
+  else{
+    int           *coded_fragi;
+    int           *coded_fragi_end;
+    unsigned char  qi0;
+    /*Update the DC quantization index of each coded block.*/
+    qi0=(unsigned char)_dec->state.qis[0];
+    coded_fragi_end=_dec->state.coded_fragis+_dec->state.ncoded_fragis[0]+
+     _dec->state.ncoded_fragis[1]+_dec->state.ncoded_fragis[2];
+    for(coded_fragi=_dec->state.coded_fragis;coded_fragi<coded_fragi_end;
+     coded_fragi++){
+      _dec->dc_qis[*coded_fragi]=qi0;
+    }
+  }
+  /*pp_level 1: Stop after updating DC quantization indices.*/
+  if(_dec->pp_level<=OC_PP_LEVEL_TRACKDCQI){
+    if(_dec->variances!=NULL){
+      _ogg_free(_dec->variances);
+      _dec->variances=NULL;
+      _ogg_free(_dec->pp_frame_data);
+      _dec->pp_frame_data=NULL;
+    }
+    return 1;
+  }
+  if(_dec->variances==NULL||
+   _dec->pp_frame_has_chroma!=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC)){
+    size_t frame_sz;
+    frame_sz=_dec->state.info.frame_width*_dec->state.info.frame_height;
+    if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
+      _dec->variances=(ogg_uint32_t *)_ogg_realloc(_dec->variances,
+       _dec->state.fplanes[0].nfrags*sizeof(_dec->variances[0]));
+      _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
+       _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
+      _dec->pp_frame_buf[0].width=_dec->state.info.frame_width;
+      _dec->pp_frame_buf[0].height=_dec->state.info.frame_height;
+      _dec->pp_frame_buf[0].ystride=-_dec->pp_frame_buf[0].width;
+      _dec->pp_frame_buf[0].data=_dec->pp_frame_data+
+       (1-_dec->pp_frame_buf[0].height)*_dec->pp_frame_buf[0].ystride;
+    }
+    else{
+      size_t y_sz;
+      size_t c_sz;
+      int    c_w;
+      int    c_h;
+      _dec->variances=(int *)_ogg_realloc(_dec->variances,
+       _dec->state.nfrags*sizeof(_dec->variances[0]));
+      y_sz=frame_sz;
+      c_w=_dec->state.info.frame_width>>!(_dec->state.info.pixel_fmt&1);
+      c_h=_dec->state.info.frame_height>>!(_dec->state.info.pixel_fmt&2);
+      c_sz=c_w*c_h;
+      frame_sz+=c_sz<<1;
+      _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
+       _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
+      _dec->pp_frame_buf[0].width=_dec->state.info.frame_width;
+      _dec->pp_frame_buf[0].height=_dec->state.info.frame_height;
+      _dec->pp_frame_buf[0].ystride=_dec->pp_frame_buf[0].width;
+      _dec->pp_frame_buf[0].data=_dec->pp_frame_data;
+      _dec->pp_frame_buf[1].width=c_w;
+      _dec->pp_frame_buf[1].height=c_h;
+      _dec->pp_frame_buf[1].ystride=_dec->pp_frame_buf[1].width;
+      _dec->pp_frame_buf[1].data=_dec->pp_frame_buf[0].data+y_sz;
+      _dec->pp_frame_buf[2].width=c_w;
+      _dec->pp_frame_buf[2].height=c_h;
+      _dec->pp_frame_buf[2].ystride=_dec->pp_frame_buf[2].width;
+      _dec->pp_frame_buf[2].data=_dec->pp_frame_buf[1].data+c_sz;
+      oc_ycbcr_buffer_flip(_dec->pp_frame_buf,_dec->pp_frame_buf);
+    }
+    _dec->pp_frame_has_chroma=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC);
+  }
+  /*If we're not processing chroma, copy the reference frame's chroma planes.*/
+  if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
+    memcpy(_dec->pp_frame_buf+1,
+     _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]+1,
+     sizeof(_dec->pp_frame_buf[1])*2);
+  }
+  return 0;
+}
+
+
+
 typedef struct{
   int  ti[3][64];
   int  ebi[3][64];
   int  eob_runs[3][64];
+  int  bounding_values[512];
   int *coded_fragis[3];
   int *uncoded_fragis[3];
+  int  fragy0[3];
+  int  fragy_end[3];
   int  pred_last[3][3];
   int  mcu_nvfrags;
   int  cur_fragy;
+  int  loop_filter;
+  int  pp_level;
 }oc_dec_pipeline_state;
 
 
@@ -1225,6 +1330,21 @@ static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
   }
   /*Set the previous DC predictor to 0 for all color planes and frame types.*/
   memset(_pipe->pred_last,0,sizeof(_pipe->pred_last));
+  /*Initialize the bounding value array for the loop filter.*/
+  _pipe->loop_filter=!oc_state_loop_filter_init(&_dec->state,
+   _pipe->bounding_values+256);
+  /*Initialize any buffers needed for post-processing.
+    We also save the current post-processing level, to guard against the user
+     changing it from a callback.*/
+  if(!oc_dec_postprocess_init(_dec))_pipe->pp_level=_dec->pp_level;
+  /*If we don't have enough information to post-process, disable it, regardless
+     of the user-requested level.*/
+  else{
+    _pipe->pp_level=OC_PP_LEVEL_DISABLED;
+    memcpy(_dec->pp_frame_buf,
+     _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]],
+     sizeof(_dec->pp_frame_buf[0])*3);
+  }
 }
 
 /*Reconstructs all coded fragments in a single MCU (one or two super block
@@ -1253,8 +1373,9 @@ static void oc_dec_frags_recon_mcu(oc_dec_ctx *_dec,
     /*Compute the first and last fragment row of the current MCU for this
        plane.*/
     frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
-    fragy0=_pipe->cur_fragy>>frag_shift;
-    fragy_end=OC_MINI(fragy0+(_pipe->mcu_nvfrags>>frag_shift),fplane->nvfrags);
+    _pipe->fragy0[pli]=fragy0=_pipe->cur_fragy>>frag_shift;
+    _pipe->fragy_end[pli]=fragy_end=
+     OC_MINI(fragy0+(_pipe->mcu_nvfrags>>frag_shift),fplane->nvfrags);
     ncoded_fragis[pli]=0;
     pred_last=_pipe->pred_last[pli];
     frag=_dec->state.frags+fplane->froffset+(fragy0*fplane->nhfrags);
@@ -1664,117 +1785,24 @@ static void oc_dec_dering_plane(oc_dec_ctx *_dec,int _pli,
   }
 }
 
-static int oc_dec_postprocess(oc_dec_ctx *_dec){
-  /*pp_level 0: disabled; free any memory used and return*/
-  if(_dec->pp_level<=OC_PP_LEVEL_DISABLED){
-    if(_dec->dc_qis!=NULL){
-      _ogg_free(_dec->dc_qis);
-      _dec->dc_qis=NULL;
-      _ogg_free(_dec->variances);
-      _dec->variances=NULL;
-      _ogg_free(_dec->pp_frame_data);
-      _dec->pp_frame_data=NULL;
-    }
-    return 1;
-  }
-  if(_dec->dc_qis==NULL){
-    /*If we haven't been tracking DC quantization indices, there's no point in
-       starting now.*/
-    if(_dec->state.frame_type!=OC_INTRA_FRAME)return 1;
-    _dec->dc_qis=(unsigned char *)_ogg_malloc(
-     _dec->state.nfrags*sizeof(_dec->dc_qis[0]));
-    memset(_dec->dc_qis,_dec->state.qis[0],_dec->state.nfrags);
-  }
-  else{
-    int           *coded_fragi;
-    int           *coded_fragi_end;
-    unsigned char  qi0;
-    /*Update the DC quantization index of each coded block.*/
-    qi0=(unsigned char)_dec->state.qis[0];
-    coded_fragi_end=_dec->state.coded_fragis+_dec->state.ncoded_fragis[0]+
-     _dec->state.ncoded_fragis[1]+_dec->state.ncoded_fragis[2];
-    for(coded_fragi=_dec->state.coded_fragis;coded_fragi<coded_fragi_end;
-     coded_fragi++){
-      _dec->dc_qis[*coded_fragi]=qi0;
-    }
-  }
+static void oc_dec_postprocess(oc_dec_ctx *_dec,int _pp_level){
   /*pp_level 1: Stop after updating DC quantization indices.*/
-  if(_dec->pp_level<=OC_PP_LEVEL_TRACKDCQI){
-    if(_dec->variances!=NULL){
-      _ogg_free(_dec->variances);
-      _dec->variances=NULL;
-      _ogg_free(_dec->pp_frame_data);
-      _dec->pp_frame_data=NULL;
-    }
-    return 1;
-  }
-  if(_dec->variances==NULL||
-   _dec->pp_frame_has_chroma!=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC)){
-    size_t frame_sz;
-    frame_sz=_dec->state.info.frame_width*_dec->state.info.frame_height;
-    if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
-      _dec->variances=(ogg_uint32_t *)_ogg_realloc(_dec->variances,
-       _dec->state.fplanes[0].nfrags*sizeof(_dec->variances[0]));
-      _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
-       _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
-      _dec->pp_frame_buf[0].width=_dec->state.info.frame_width;
-      _dec->pp_frame_buf[0].height=_dec->state.info.frame_height;
-      _dec->pp_frame_buf[0].ystride=-_dec->pp_frame_buf[0].width;
-      _dec->pp_frame_buf[0].data=_dec->pp_frame_data+
-       (1-_dec->pp_frame_buf[0].height)*_dec->pp_frame_buf[0].ystride;
-    }
-    else{
-      size_t y_sz;
-      size_t c_sz;
-      int    c_w;
-      int    c_h;
-      _dec->variances=(int *)_ogg_realloc(_dec->variances,
-       _dec->state.nfrags*sizeof(_dec->variances[0]));
-      y_sz=frame_sz;
-      c_w=_dec->state.info.frame_width>>!(_dec->state.info.pixel_fmt&1);
-      c_h=_dec->state.info.frame_height>>!(_dec->state.info.pixel_fmt&2);
-      c_sz=c_w*c_h;
-      frame_sz+=c_sz<<1;
-      _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
-       _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
-      _dec->pp_frame_buf[0].width=_dec->state.info.frame_width;
-      _dec->pp_frame_buf[0].height=_dec->state.info.frame_height;
-      _dec->pp_frame_buf[0].ystride=_dec->pp_frame_buf[0].width;
-      _dec->pp_frame_buf[0].data=_dec->pp_frame_data;
-      _dec->pp_frame_buf[1].width=c_w;
-      _dec->pp_frame_buf[1].height=c_h;
-      _dec->pp_frame_buf[1].ystride=_dec->pp_frame_buf[1].width;
-      _dec->pp_frame_buf[1].data=_dec->pp_frame_buf[0].data+y_sz;
-      _dec->pp_frame_buf[2].width=c_w;
-      _dec->pp_frame_buf[2].height=c_h;
-      _dec->pp_frame_buf[2].ystride=_dec->pp_frame_buf[2].width;
-      _dec->pp_frame_buf[2].data=_dec->pp_frame_buf[1].data+c_sz;
-      oc_ycbcr_buffer_flip(_dec->pp_frame_buf,_dec->pp_frame_buf);
-    }
-    _dec->pp_frame_has_chroma=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC);
-  }
+  if(_pp_level<=OC_PP_LEVEL_TRACKDCQI)return;
   /*Perform de-blocking in the Y plane.*/
   oc_dec_deblock_plane(_dec,0,_dec->pp_frame_buf,
    _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
-  if(_dec->pp_level>=OC_PP_LEVEL_DERINGY){
+  if(_pp_level>=OC_PP_LEVEL_DERINGY){
     oc_dec_dering_plane(_dec,0,_dec->pp_frame_buf);
   }
-  /*If we're not processing chroma, copy the reference frame's chroma planes
-     and return.*/
-  if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
-    memcpy(_dec->pp_frame_buf+1,
-     _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]+1,
-     sizeof(_dec->pp_frame_buf[1])*2);
-    return 0;
-  }
+  /*If we're not processing chroma, return.*/
+  if(_pp_level<OC_PP_LEVEL_DEBLOCKC)return;
   oc_dec_deblock_plane(_dec,1,_dec->pp_frame_buf,
    _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
   oc_dec_deblock_plane(_dec,2,_dec->pp_frame_buf,
    _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]]);
-  if(_dec->pp_level<=OC_PP_LEVEL_DEBLOCKC)return 0;
+  if(_pp_level<=OC_PP_LEVEL_DEBLOCKC)return;
   oc_dec_dering_plane(_dec,1,_dec->pp_frame_buf);
   oc_dec_dering_plane(_dec,2,_dec->pp_frame_buf);
-  return 0;
 }
 
 
@@ -1840,6 +1868,9 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     Only proceed if we have a non-empty packet.*/
   if(_op->bytes!=0){
     oc_dec_pipeline_state pipe;
+    int                   refi;
+    int                   pli;
+    int                   notdone;
     oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
     ret=oc_dec_frame_header_unpack(_dec);
     if(ret<0)return ret;
@@ -1860,7 +1891,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
         We initialize them to a solid gray here.*/
       _dec->state.ref_frame_idx[OC_FRAME_GOLD]=0;
       _dec->state.ref_frame_idx[OC_FRAME_PREV]=0;
-      _dec->state.ref_frame_idx[OC_FRAME_SELF]=1;
+      _dec->state.ref_frame_idx[OC_FRAME_SELF]=refi=1;
       info=&_dec->state.info;
       yhstride=info->frame_width+2*OC_UMV_PADDING;
       yvstride=info->frame_height+2*OC_UMV_PADDING;
@@ -1871,10 +1902,9 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
       memset(_dec->state.ref_frame_data,0x80,yplane_sz+2*cplane_sz);
     }
     else{
-      int rfi;
-      for(rfi=0;rfi==_dec->state.ref_frame_idx[OC_FRAME_GOLD]||
-       rfi==_dec->state.ref_frame_idx[OC_FRAME_PREV];rfi++);
-      _dec->state.ref_frame_idx[OC_FRAME_SELF]=rfi;
+      for(refi=0;refi==_dec->state.ref_frame_idx[OC_FRAME_GOLD]||
+       refi==_dec->state.ref_frame_idx[OC_FRAME_PREV];refi++);
+      _dec->state.ref_frame_idx[OC_FRAME_SELF]=refi;
     }
     if(_dec->state.frame_type==OC_INTRA_FRAME){
       oc_dec_mark_all_intra(_dec);
@@ -1899,14 +1929,34 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
        is decoded is also a good idea.*/
     oc_dec_pipeline_init(_dec,&pipe);
     do{
+      int notstart;
+      int sdelay;
+      int edelay;
       oc_dec_frags_recon_mcu(_dec,&pipe);
-      /*TODO: Loop filter.*/
-      /*TODO: Fill borders.*/
-      /*TODO: Out-of-loop post-processing.
-        What is the required latency of this?*/
+      notstart=pipe.cur_fragy>0;
       pipe.cur_fragy+=pipe.mcu_nvfrags;
+      notdone=pipe.cur_fragy<_dec->state.fplanes[0].nvfrags;
+      for(pli=0;pli<3;pli++){
+        sdelay=edelay=0;
+        if(pipe.loop_filter){
+          sdelay+=notstart;
+          edelay+=notdone;
+          oc_state_loop_filter_frag_rows(&_dec->state,pipe.bounding_values+256,
+           refi,pli,pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
+        }
+        /*To fill the borders, we have an additional two pixel delay, since a
+           fragment in the next row could filter its top edge, using two pixels
+           from a fragment in this row.
+          But there's no reason to delay a full fragment.*/
+        oc_state_borders_fill_rows(&_dec->state,refi,pli,
+         (pipe.fragy0[pli]-sdelay<<3)-(sdelay<<1),
+         (pipe.fragy_end[pli]-edelay<<3)-(edelay<<1));
+      }
+      /*TODO: Out-of-loop post-processing.*/
     }
-    while(pipe.cur_fragy<_dec->state.fplanes[0].nvfrags);
+    while(notdone);
+    /*Finish filling in the reference frame borders.*/
+    for(pli=0;pli<3;pli++)oc_state_borders_fill_caps(&_dec->state,refi,pli);
     /*Update the reference frame indices.*/
     if(_dec->state.frame_type==OC_INTRA_FRAME){
       /*The new frame becomes both the previous and gold reference frames.*/
@@ -1920,19 +1970,9 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
       _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
-    /*Filter block edges.*/
-    oc_state_loop_filter(&_dec->state,OC_FRAME_PREV);
-    /*Fill in the borders from the reconstructed version of the last encoded
-       frame.*/
-    if(_dec->state.ref_frame_idx[OC_FRAME_PREV]>=0){
-      oc_state_borders_fill(&_dec->state,
-       _dec->state.ref_frame_idx[OC_FRAME_PREV]);
-    }
     /*Perform out-of-loop post-processing, if enabled.*/
-    if(oc_dec_postprocess(_dec)){
-      memcpy(_dec->pp_frame_buf,
-       _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]],
-       sizeof(_dec->pp_frame_buf[0])*3);
+    if(pipe.pp_level>OC_PP_LEVEL_TRACKDCQI){
+      oc_dec_postprocess(_dec,pipe.pp_level);
     }
   }
   /*Update granule position.*/

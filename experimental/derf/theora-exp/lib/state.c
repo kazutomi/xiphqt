@@ -545,36 +545,59 @@ void oc_state_clear(oc_theora_state *_state){
 
 /*Duplicates the pixels on the border of the image plane out into the
    surrounding padding for use by unrestricted motion vectors.
-  _iplane:   The image plane to fill the borders of.
-  _hpadding: The amount of padding on each side in the horizontal direction.
-  _vpadding: The amount of padding on each side in the vertical direction.*/
-static void oc_iplane_borders_fill(theora_img_plane *_iplane,
- int _hpadding,int _vpadding){
-  unsigned char *apix;
-  unsigned char *bpix;
-  unsigned char *epix;
-  int            fullw;
-  /*First extend the vertical edges.*/
-  apix=_iplane->data;
-  bpix=_iplane->data+_iplane->width-1;
-  epix=_iplane->data+_iplane->height*_iplane->ystride;
+  This function only adds the left and right borders, and only for the fragment
+   rows specified.
+  _refi: The index of the reference buffer to pad.
+  _pli:  The color plane.
+  _y0:   The Y coordinate of the first row to pad.
+  _yend: The Y coordinate of the row to stop padding at.*/
+void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
+ int _y0,int _yend){
+  theora_img_plane *iplane;
+  unsigned char    *apix;
+  unsigned char    *bpix;
+  unsigned char    *epix;
+  int               hpadding;
+  hpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&1));
+  iplane=_state->ref_frame_bufs[_refi]+_pli;
+  apix=iplane->data+_y0*iplane->ystride;
+  bpix=apix+iplane->width-1;
+  epix=iplane->data+_yend*iplane->ystride;
   /*Note the use of != instead of <, which allows ystride to be negative.*/
   while(apix!=epix){
-    memset(apix-_hpadding,apix[0],_hpadding);
-    memset(bpix+1,bpix[0],_hpadding);
-    apix+=_iplane->ystride;
-    bpix+=_iplane->ystride;
+    memset(apix-hpadding,apix[0],hpadding);
+    memset(bpix+1,bpix[0],hpadding);
+    apix+=iplane->ystride;
+    bpix+=iplane->ystride;
   }
-  /*Next extend the horizontal edges.*/
-  fullw=_iplane->width+(_hpadding<<1);
-  apix=_iplane->data-_hpadding;
-  bpix=_iplane->data+(_iplane->height-1)*_iplane->ystride;
-  epix=apix-_iplane->ystride*_vpadding;
+}
+
+/*Duplicates the pixels on the border of the image plane out into the
+   surrounding padding for use by unrestricted motion vectors.
+  This function only adds the top and bottom borders, and must be called after
+   the left and right borders are added.
+  _refi:      The index of the reference buffer to pad.
+  _pli:       The color plane.*/
+void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli){
+  theora_img_plane *iplane;
+  unsigned char    *apix;
+  unsigned char    *bpix;
+  unsigned char    *epix;
+  int               hpadding;
+  int               vpadding;
+  int               fullw;
+  hpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&1));
+  vpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&2));
+  iplane=_state->ref_frame_bufs[_refi]+_pli;
+  fullw=iplane->width+(hpadding<<1);
+  apix=iplane->data-hpadding;
+  bpix=iplane->data+(iplane->height-1)*iplane->ystride;
+  epix=apix-iplane->ystride*vpadding;
   while(apix!=epix){
-    memcpy(apix-_iplane->ystride,apix,fullw);
-    memcpy(bpix+_iplane->ystride,bpix,fullw);
-    apix-=_iplane->ystride;
-    bpix+=_iplane->ystride;
+    memcpy(apix-iplane->ystride,apix,fullw);
+    memcpy(bpix+iplane->ystride,bpix,fullw);
+    apix-=iplane->ystride;
+    bpix+=iplane->ystride;
   }
 }
 
@@ -583,16 +606,11 @@ static void oc_iplane_borders_fill(theora_img_plane *_iplane,
   _state: The context containing the reference buffers.
   _refi:  The index of the reference buffer to pad.*/
 void oc_state_borders_fill(oc_theora_state *_state,int _refi){
-  static const int PL_PADDING[3][2]={
-    {OC_UMV_PADDING,OC_UMV_PADDING},
-    {OC_UMV_PADDING/2,OC_UMV_PADDING},
-    {OC_UMV_PADDING/2,OC_UMV_PADDING}
-  };
   int pli;
   for(pli=0;pli<3;pli++){
-    oc_iplane_borders_fill(&_state->ref_frame_bufs[_refi][pli],
-     PL_PADDING[pli][_state->info.pixel_fmt&1],
-     PL_PADDING[pli][_state->info.pixel_fmt>>1]);
+    oc_state_borders_fill_rows(_state,_refi,pli,0,
+     _state->ref_frame_bufs[_refi][pli].height);
+    oc_state_borders_fill_caps(_state,_refi,pli);
   }
 }
 
@@ -890,65 +908,93 @@ static void loop_filter_v(unsigned char *_pix,int _ystride,int *_bv){
   }
 }
 
-void oc_state_loop_filter(oc_theora_state *_state,int _frame){
-  int bounding_values[512];
+/*Initialize the bounding values array used by the loop filter.
+  _bv: Storage for the array.
+       The total array size should be 512, but this pointer should point to the
+         256th entry, as that is more convenient for the filter functions.
+  Return: 0 on success, or a non-zero value if no filtering need be applied.*/
+int oc_state_loop_filter_init(oc_theora_state *_state,
+ int *_bv){
   int flimit;
-  int framei;
-  int pli;
   int i;
   flimit=_state->loop_filter_limits[_state->qis[0]];
-  if(flimit==0)return;
-  framei=_state->ref_frame_idx[_frame];
-  memset(bounding_values,0,sizeof(bounding_values));
+  if(flimit==0)return 1;
+  _bv-=256;
+  memset(_bv,0,sizeof(_bv[0])*512);
   for(i=0;i<flimit;i++){
-    bounding_values[256-i-flimit]=i-flimit;
-    bounding_values[256-i]=-i;
-    bounding_values[256+i]=i;
-    bounding_values[256+i+flimit]=flimit-i;
+    _bv[256-i-flimit]=i-flimit;
+    _bv[256-i]=-i;
+    _bv[256+i]=i;
+    _bv[256+i+flimit]=flimit-i;
   }
+  return 0;
+}
+
+/*Apply the loop filter to a given set of fragment rows in the given plane.
+  The filter may be run on the bottom edge, affecting pixels in the next row of
+   fragments, so this row also needs to be available.
+  _bv:        The bounding values array.
+  _refi:      The index of the frame buffer to filter.
+  _pli:       The color plane to filter.
+  _fragy0:    The Y coordinate of the first fragment row to filter.
+  _fragy_end: The Y coordinate of the fragment row to stop filtering at.*/
+void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
+ int _refi,int _pli,int _fragy0,int _fragy_end){
+  theora_img_plane  *iplane;
+  oc_fragment_plane *fplane;
+  oc_fragment       *frag_top;
+  oc_fragment       *frag0;
+  oc_fragment       *frag;
+  oc_fragment       *frag_end;
+  oc_fragment       *frag0_end;
+  oc_fragment       *frag_bot;
+  iplane=_state->ref_frame_bufs[_refi]+_pli;
+  fplane=_state->fplanes+_pli;
   /*The following loops are constructed somewhat non-intuitively on purpose.
     The main idea is: if a block boundary has at least one coded fragment on
      it, the filter is applied to it.
     However, the order that the filters are applied in matters, and VP3 chose
      the somewhat strange ordering used below.*/
-  for(pli=0;pli<3;pli++){
-    theora_img_plane  *iplane;
-    oc_fragment_plane *fplane;
-    oc_fragment       *frag00;
-    oc_fragment       *frag0;
-    oc_fragment       *frag;
-    oc_fragment       *frag_end;
-    oc_fragment       *frag0_end;
-    iplane=_state->ref_frame_bufs[framei]+pli;
-    fplane=_state->fplanes+pli;
-    frag00=frag0=_state->frags+fplane->froffset;
-    frag0_end=frag0+fplane->nfrags;
-    while(frag0<frag0_end){
-      frag=frag0;
-      frag_end=frag+fplane->nhfrags;
-      while(frag<frag_end){
-        if(frag->coded){
-          if(frag>frag0){
-            loop_filter_h(frag->buffer[framei],iplane->ystride,
-             bounding_values+256);
-          }
-          if(frag0>frag00){
-            loop_filter_v(frag->buffer[framei],iplane->ystride,
-             bounding_values+256);
-          }
-          if(frag+1<frag_end&&!(frag+1)->coded){
-            loop_filter_h(frag->buffer[framei]+8,iplane->ystride,
-             bounding_values+256);
-          }
-          if(frag+fplane->nhfrags<frag0_end&&!(frag+fplane->nhfrags)->coded){
-            loop_filter_v((frag+fplane->nhfrags)->buffer[framei],
-             iplane->ystride,bounding_values+256);
-          }
+  frag_top=_state->frags+fplane->froffset;
+  frag0=frag_top+_fragy0*fplane->nhfrags;
+  frag0_end=frag0+(_fragy_end-_fragy0)*fplane->nhfrags;
+  frag_bot=_state->frags+fplane->froffset+fplane->nfrags;
+  while(frag0<frag0_end){
+    frag=frag0;
+    frag_end=frag+fplane->nhfrags;
+    while(frag<frag_end){
+      if(frag->coded){
+        if(frag>frag0){
+          loop_filter_h(frag->buffer[_refi],iplane->ystride,_bv);
         }
-        frag++;
+        if(frag0>frag_top){
+          loop_filter_v(frag->buffer[_refi],iplane->ystride,_bv);
+        }
+        if(frag+1<frag_end&&!(frag+1)->coded){
+          loop_filter_h(frag->buffer[_refi]+8,iplane->ystride,_bv);
+        }
+        if(frag+fplane->nhfrags<frag_bot&&!(frag+fplane->nhfrags)->coded){
+          loop_filter_v((frag+fplane->nhfrags)->buffer[_refi],
+           iplane->ystride,_bv);
+        }
       }
-      frag0+=fplane->nhfrags;
+      frag++;
     }
+    frag0+=fplane->nhfrags;
+  }
+}
+
+/*Apply the complete loop filter to the given frame.*/
+void oc_state_loop_filter(oc_theora_state *_state,int _frame){
+  int bounding_values[512];
+  int framei;
+  int pli;
+  int i;
+  framei=_state->ref_frame_idx[_frame];
+  if(oc_state_loop_filter_init(_state,bounding_values+256))return;
+  for(pli=0;pli<3;pli++){
+    oc_state_loop_filter_frag_rows(_state,bounding_values+256,
+     framei,pli,0,_state->fplanes[pli].nvfrags);
   }
 }
 
