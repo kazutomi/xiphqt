@@ -1,4 +1,0 @@
-VP3 for QuickTime Version 3.2.1.3 Release Notes:
-
-- Fixed bug that occured when compressing in Adobe Premiere.  When data rate was set to a low value and "Allow Dropped Frames" was checked in the compressor settings dialog box, Adobe Premiere would force all key frames and the compressor would either overshoot the requested data rate or produce output of a lower quality than expected.
-
