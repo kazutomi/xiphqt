@@ -42,7 +42,7 @@ typedef struct {
   long           bytes;
   long           b_o_s;
   long           e_o_s;
-  ogg_int64_t    start_granule;
+  ogg_int64_t    top_granule;
   ogg_int64_t    end_granule;
   ogg_int64_t    packetno;     /* sequence number for decode; the framing
 				  knows where there's a hole in the data,
@@ -155,7 +155,6 @@ extern int      ogg2_page_release(ogg2_page *og);
 #define  OGG2_ESERIAL  -13
 #define  OGG2_EINVAL   -14
 #define  OGG2_EEOS     -15
-#define  OGG2_EMODE    -16
 
 #ifdef __cplusplus
 }
