@@ -21,7 +21,6 @@
 /* Public function declarations */
 char **ices_util_get_argv (void);
 int ices_util_get_argc (void);
-char* ices_util_getip (const char* host, char* buf, int len);
 char *ices_util_strdup (const char *string);
 void ices_util_set_args (int argc, char **argv);
 int ices_util_open_for_reading (const char *file);
