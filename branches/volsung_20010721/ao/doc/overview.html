@@ -46,12 +46,12 @@ configuration files.
 
 <li>Call <a
 href="ao_default_driver_id.html">ao_default_driver_id()</a> to get the
-ID number of the default output driver.  This is <i>always</i> a live
-output driver, though it may be the null driver, which just discards
-the audio data.  If you want to specify a particular output driver,
-you may call <a href="ao_driver_id.html">ao_driver_id()</a> with a
-string corresponding to the short name of the device (i.e. "oss",
-"wav", etc.) instead.
+ID number of the default output driver.  This may not be successful if
+no audio hardware is available, it is in use, or is not in the "standard"
+configuration.  If you want to specify a particular output driver, you
+may call <a href="ao_driver_id.html">ao_driver_id()</a> with a string
+corresponding to the short name of the device (i.e. "oss", "wav",
+etc.) instead.
 <p>
 
 <li>If you are using the default device, no extra options are needed.

@@ -66,6 +66,7 @@ typedef struct ao_info {
         char *author; /* driver author */
 	char *comment; /* driver comment */
 	int  preferred_byte_format;
+	int  priority;
 	char **options;
 	int  option_count;
 } ao_info;

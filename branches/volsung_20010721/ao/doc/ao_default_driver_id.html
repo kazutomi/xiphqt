@@ -17,7 +17,7 @@
 
 <p><i>declared in "ao/ao.h";</i></p>
 
-<p>Determins the default live output driver and returns its ID number.
+<p>Returns the ID number of the default live output driver.
 If the <a href="ao_conf.html">configuration files</a> specify a
 default driver, its ID is returned, otherwise the library tries to
 pick a live output driver that will work on the host platform.
@@ -37,10 +37,13 @@ int ao_default_driver_id();
 <blockquote>
 <li>a non-negative value is the ID number of the default driver.</li>
 
-<li>-1 indicates failure.  Currently, this should never happen, but check
-for it anyway.</li>
+<li>-1 indicates failure to find a usable audio output device.</li>
 </blockquote>
 <p>
+
+<h3>Notes</h3>
+<p>If no default device is available, you may still use the null device
+to test your application.</p>
 
 <br><br>
 <hr noshade>

@@ -152,31 +152,30 @@ int _find_default_driver_id (const char *name)
 {
 	int def_id;
 	int id;
+	int priority;
+	ao_info *info;
 	driver_list *driver = driver_head;
 
 	if ( name == NULL || (def_id = ao_driver_id(name)) < 0 ) {
 		/* No default specified. Find one among available drivers. */
 		def_id = -1;
 		
-		/* Skip null driver */
-		id = 1;
-		driver = driver->next;
+		id = 0;
+		priority = 0; /* This forces the null driver to be skipped */ 
+		while (driver != NULL) {
 
-		while (driver != NULL && def_id == -1) {
+			info = driver->functions->driver_info();
 
-			if ( (driver->functions->driver_info()->type
-			     == AO_TYPE_LIVE) &&
+			if ( info->type == AO_TYPE_LIVE && 
+			     info->priority > priority &&
 			     driver->functions->test() ) {
-				
+				priority = info->priority;
 				def_id = id; /* Found a usable driver */
 			}
+
 			driver = driver->next;
 			id++;
 		}
-
-		/* Did we actually find anything? */
-		if (def_id == -1)
-			def_id = 0; /* If not, use null driver */
 	}
 
 	return def_id;

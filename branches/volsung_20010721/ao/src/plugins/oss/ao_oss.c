@@ -52,6 +52,7 @@ static ao_info ao_oss_info =
 	"Aaron Holtzman <aholtzma@ess.engr.uvic.ca>",
 	"Outputs audio to the Open Sound System driver.",
 	AO_FMT_NATIVE,
+	20,
 	ao_oss_options,
 	1
 };

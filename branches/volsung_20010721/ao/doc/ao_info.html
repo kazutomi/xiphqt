@@ -29,6 +29,7 @@
   char *short_name; /* short name of driver */
   char *comment; /* driver comment */
   int  preferred_byte_format;
+  int  priority;
   char **options;
   int  option_count;
 } ao_info;</b></pre>
@@ -60,6 +61,11 @@ See
 <a href="ao_sample_format.html">ao_sample_format</a> for a list of
 allowed values.
 </dd>
+<dt><i>priority</i></dt>
+<dd>A positive integer ranking how likely it is for this driver to be
+the default.  The default driver will be a functioning driver with
+highest priority.  See the <a href="drivers.html">drivers document</a>
+for more explanation.</dd>
 <dt><i>comment</i></dt>
 <dd>Pointer to a driver comment string (possibly <tt>NULL</tt>).  It may 
 contain newlines.</dd>

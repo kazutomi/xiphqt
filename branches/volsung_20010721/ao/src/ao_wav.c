@@ -88,6 +88,7 @@ static ao_info ao_wav_info =
 	"Aaron Holtzman <aholtzma@ess.engr.uvic.ca>",
 	"Sends output to a .wav file",
 	AO_FMT_LITTLE,
+	0,
 	NULL, /* No options */
 	0
 };

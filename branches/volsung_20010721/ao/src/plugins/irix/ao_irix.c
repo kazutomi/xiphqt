@@ -53,6 +53,7 @@ static ao_info ao_irix_info =
 	"Jim Miller <???@sgi.com>",
 	"WARNING: This driver is untested!"
 	AO_FMT_NATIVE,
+	20,
 	NULL,
 	1
 };

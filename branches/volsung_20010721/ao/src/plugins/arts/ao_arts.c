@@ -39,6 +39,7 @@ static ao_info ao_arts_info =
 	"Rik Hemsley (rikkus) <rik@kde.org>",
 	"Outputs to the aRts soundserver.",
 	AO_FMT_NATIVE,
+	10,
 	NULL,
 	0
 };

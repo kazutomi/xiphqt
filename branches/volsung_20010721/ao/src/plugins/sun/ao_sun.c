@@ -53,6 +53,7 @@ ao_info ao_sun_info = {
 	"Christian Weisgerber <naddy@openbsd.org>",
 	"Outputs to the sun audio system.",
 	AO_FMT_NATIVE,
+	20,
 	ao_sun_options,
 	1
 };

@@ -34,6 +34,7 @@ static ao_info ao_null_info = {
 	"Stan Seibert <volsung@asu.edu>",
 	"This driver does nothing.",
 	AO_FMT_NATIVE,
+	0,
 	NULL, /* No options */
 	0
 };

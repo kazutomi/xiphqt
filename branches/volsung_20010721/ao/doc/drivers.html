@@ -29,8 +29,7 @@ libao.
 <h3>null</h3>
 
 Null driver.  This is just a test device which does not write the
-audio data anywhere.  It will be used as the default driver if no
-other suitable driver can be found.
+audio data anywhere.
 <p>
 
 <b>Option keys:</b> None.
@@ -161,6 +160,37 @@ either the raw or the au driver instead.
 <b>Option keys:</b> None.
 <p>
 
+<hr>
+
+<a name="default_driver">
+<h2>Default Driver Detection</h2>
+
+In the absence of <a href="config.html">configuration files</a> to
+explicit identify a default driver, the library will try to detect a
+suitable default driver.  It does this by testing every available live
+output driver (using <a
+href="ao_plugin_test.html">ao_plugin_test()</a>) and finding the
+driver with the highest priority (see the <a
+href="ao_info.html">ao_info</a> struct) that works.  Drivers with
+priority 0, such as the null and file output drivers, are never
+selected as the default.
+<p>
+
+The ranking system currently used is:
+<center>
+<table border="1">
+  <tr><th>Priority</th><th>Drivers</th>              </tr>
+  <tr><td>30</td>      <td>alsa</td>                 </tr>
+  <tr><td>20</td>      <td>oss, irix, sun</td>       </tr>
+  <tr><td>10</td>      <td>esd,arts</td>             </tr>
+  <tr bgcolor="#888888"><td> 0</td>      <td>null, all file output</td></tr>
+</table>
+</center>
+<p>
+
+Clearly, any ranking scheme will fail to make everybody happy.  For
+such cases, the <a href="config.html">configuration files</a> can be
+easily used to define an appropriate default output device
 
 <br><br>
 <hr noshade>

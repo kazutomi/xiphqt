@@ -70,6 +70,7 @@ static ao_info ao_au_info =
 	"Wil Mahan <wtm2@duke.edu>",
 	"Sends output to a .au file",
 	AO_FMT_BIG,
+	0,
 	NULL, /* No options */
 	0
 };
