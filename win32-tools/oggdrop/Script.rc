@@ -82,6 +82,10 @@ BEGIN
             MENUITEM "256 kbps",                    IDM_BITRATE256
             MENUITEM "350 kbps",                    IDM_BITRATE350
         END
+        POPUP "Options"
+        BEGIN
+            MENUITEM "Errors to log file",          IDM_LOGERR
+        END
         MENUITEM "Always On Top",               IDM_ONTOP
         MENUITEM SEPARATOR
         MENUITEM "Quit",                        IDM_QUIT

@@ -134,7 +134,6 @@ DWORD WINAPI encode_thread(LPVOID arg)
 {
 	char *in_file;
 	long nextserial;
-	char buf[1024];
 
 	/* Now, do some checking for illegal argument combinations */
 
@@ -160,12 +159,13 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			enc_opts.progress_update = _update;
 			enc_opts.end_encode = _nothing_end;
 			enc_opts.error = _error;
-		
+
+			set_filename(in_file);
 
 			in = fopen(in_file, "rb");
 
 			if (in == NULL) {
-				MessageBox(NULL, "blah", "error opening inputfile", 0);
+				error_handler("Can't open %s", in_file);
 				numfiles--;
 				continue;
 			}
@@ -195,16 +195,14 @@ DWORD WINAPI encode_thread(LPVOID arg)
 
 			if (!foundformat) {
 				free(out_fn);
-				_snprintf(buf, 1024, "Format not supported!  Skipping file %s...", in_file);
-				MessageBox(NULL, buf, "error", 0);
+				/* error reported by reader */
 				numfiles--;
 				continue;
 			}
 
 			out = fopen(out_fn, "wb");
 			if(out == NULL) {
-				_snprintf(buf, 1024, "Error opening/writing to output files %s...", out_fn);
-				MessageBox(NULL, buf, "error", 0);
+				error_handler("Error opening/writing to output file %s", out_fn);
 				numfiles--;
 				continue;
 			}	

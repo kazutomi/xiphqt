@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "resource.h"
 #include "encthread.h"
+#include "audio.h"
 
 HANDLE event = NULL;
 int width = 120, height = 120;
@@ -240,7 +241,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
 			}
 			break;
-			
+	
+		case IDM_LOGERR:
+			state = GetMenuState(menu, LOWORD(wParam), MF_BYCOMMAND);
+			if ((state & MF_CHECKED) == MF_CHECKED) {
+				CheckMenuItem(menu, LOWORD(wParam), MF_UNCHECKED);
+				set_use_dialogs(1);
+			} else {
+				CheckMenuItem(menu, LOWORD(wParam), MF_CHECKED);
+				set_use_dialogs(0);
+			}
+			break;
+
 		case IDM_BITRATE128:
 			CheckMenuItem(menu, IDM_BITRATE128, MF_CHECKED);
 			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
