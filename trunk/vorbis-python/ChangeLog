@@ -1,3 +1,14 @@
+2001-01-27  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* pyvorbiscodec.c (py_dsp_write_wav), (parse_wav_data): Added
+	* pyvorbiscodec.c (py_dsp_write): Write 0 if None
+	
+	* pyvorbisinfo.c: Removed some unused variables
+	* pyvorbisinfo.c (py_info_new): Parse the quality option
+	* pyvorbisinfo.c (py_vorbis_info_blocksize): Added
+
+	* test/enc.py: Updated to do new encode process (with quality setting)
+	* test/enc2.py: Updated to do quality setting and use write_wav
+
 2001-01-21  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* pyvorbisinfo.c: Comment objects now store pointers to the
 	comment structures, not the structure itself. Helps with dealloc.

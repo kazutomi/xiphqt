@@ -38,15 +38,19 @@ linuxsounddev module present in Python2.0.
 To encode, you need to feed a VorbisDSPState object PCM data as one
 array of floating point values ranging from -1.0 ... 1.0 per
 channel. You can do this in pure Python, but it almost doubles the
-time it takes to encode (less if you optimize it, I suppose).
+time it takes to encode. The other option is to read data using the
+python "wave" module and write it to the VorbisDSPState directly using
+the x.write_wav(mywave.readframes(n)) call. This will only work with
+16-bit Wave files.
 
 Perhaps you are wondering how much of a performance hit you'll be
 taking using the Python bindings versus straight C. Well, I've tried
 to make things as fast as possible, but of course nothing's
 perfect. Decoding a file, top reports about the same CPU usage for my
 ogg123.py and the C implementation of ogg123. For encoding, it's about
-twice as slow if you're using my test enc.py file. It can probably
-stand some speedup, though.
+twice as slow as oggenc if you're using my test enc.py file (parsing
+the wave file somewhat by hand). If you use the write_wav function,
+it's only about 3% slower than oggenc.
 
 
 

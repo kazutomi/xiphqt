@@ -1,25 +1,45 @@
 #!/usr/bin/env python
-import ogg.vorbis, audiofile
-vd = ogg.vorbis.VorbisInfo(nominal_bitrate=150000).analysis_init()
+'''An example of encoding using the Python wave module'''
+import ogg.vorbis, wave
+
+fout = open('out.ogg', 'w')
+inwav = wave.open('in.wav','r')
+channels = inwav.getnchannels()
+vd = ogg.vorbis.VorbisInfo(channels = channels,
+                           rate = inwav.getframerate(),
+                           quality = 0.2).analysis_init()
 os = ogg.OggStreamState(5)
 map(os.packetin, vd.headerout())
-fout = open('out.ogg', 'w')
-inwav = audiofile.WavReader('in.wav')
 og = os.flush()
 while og:
     og.writeout(fout)
     og = os.flush()
-while 1:
-    channel_data = inwav.read_channels(1024)
-    if not channel_data[0]: break
-    apply(vd.write, channel_data) 
+nsamples = 1024
+
+eos = 0
+total = 0
+while not eos:
+    data = inwav.readframes(nsamples)
+    total = total + nsamples
+    if not data:
+        vd.write(None)
+        break
+    vd.write_wav(data)
+    #print 100.0 * total / inwav.getnframes()
     vb = vd.blockout()
     while vb:
-        os.packetin(vb.analysis())
-        while 1:
-            og = os.pageout()
-            if not og: break
-            og.writeout(fout)
+        vb.analysis()
+        vb.addblock()
+
+        op = vd.bitrate_flushpacket()
+        while op:
+            os.packetin(op)
+            while not eos:
+                og = os.pageout()
+                if not og: break
+                og.writeout(fout)
+                eos = og.eos()
+            op = vd.bitrate_flushpacket()
         vb = vd.blockout()
 
 
