@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=oggdrop - Win32 Debug
+CFG=oggdrop - Win32 Release
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=oggdrop - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "oggdrop.mak" CFG="oggdrop - Win32 Debug"
+!MESSAGE NMAKE /f "oggdrop.mak" CFG="oggdrop - Win32 Release"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -38,8 +38,9 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
+# PROP Output_Dir "Release\static"
+# PROP Intermediate_Dir "Release\static"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\ogg\include" /I "..\..\vorbis\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
@@ -64,8 +65,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
+# PROP Output_Dir "Debug\static"
+# PROP Intermediate_Dir "Debug\static"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
@@ -155,6 +156,42 @@ SOURCE=.\resource\twirlfish02.bmp
 # Begin Source File
 
 SOURCE=.\resource\twirlfish03.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish04.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish05.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish06.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish07.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish08.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish09.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish10.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish11.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource\twirlfish12.bmp
 # End Source File
 # End Group
 # End Target
