@@ -249,6 +249,9 @@ void source_clear_source (source_t *source)
     {
         refbuf_t *p = source->stream_data;
         source->stream_data = p->next;
+        /* can be referenced by burst handler as well */
+        while (p->_count > 1)
+            refbuf_release (p);
         refbuf_release (p);
     }
     source->stream_data_tail = NULL;
@@ -582,23 +585,23 @@ void source_main (source_t *source)
             {
                 source->stream_data = refbuf;
                 source->burst_point = refbuf;
-                refbuf_addref (source->burst_point);
             }
             if (source->stream_data_tail)
                 source->stream_data_tail->next = refbuf;
             source->stream_data_tail = refbuf;
             source->queue_size += refbuf->len;
+            /* new buffer is referenced for burst */
+            refbuf_addref (refbuf);
 
             /* new data on queue, so check the burst point */
             source->burst_offset += refbuf->len;
             if (source->burst_offset > source->burst_size)
             {
-                source->burst_offset -= source->burst_point->len;
                 if (source->burst_point->next)
                 {
                     refbuf_release (source->burst_point);
                     source->burst_point = source->burst_point->next;
-                    refbuf_addref (source->burst_point);
+                    source->burst_offset -= source->burst_point->len;
                 }
             }
 
@@ -686,18 +689,19 @@ void source_main (source_t *source)
          */
         if (source->stream_data)
         {
+            /* normal unreferenced queue data will have a refcount 1, but
+             * burst queue data will be at least 2, active clients will also
+             * increase refcount */
             while (source->stream_data->_count == 1)
             {
                 refbuf_t *to_go = source->stream_data;
 
-                if (to_go->next == NULL)
-                    break;
-                /* make sure the burst point is not the refbuf we are
-                 * deleting, if so move on one  */
-                if (source->burst_point == to_go)
+                if (to_go->next == NULL || source->burst_point == to_go)
                 {
-                    source->burst_point = to_go->next;
-                    source->burst_offset -= to_go->len;
+                    /* this should not happen */
+                    ERROR0 ("queue state is unexpected");
+                    source->running = 0;
+                    break;
                 }
                 source->stream_data = to_go->next;
                 source->queue_size -= to_go->len;
