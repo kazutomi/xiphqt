@@ -5,7 +5,7 @@ use Tk qw(exit);
 use IPC::Open2;
 use Config;
 use strict;
-use vars qw($basedir $moddir $libdir $fontfile $toplevel
+use vars qw($basedir $moddir $libdir $modname $fontfile $toplevel
 	    $orient $stack $background $foreground);
 
 # current install strategy: plop ourselves somewhere line
@@ -122,7 +122,10 @@ my($actualx,$actualy,$renderflag,$renderx,$rendery);
 my($minx,$miny,$reqx,$reqy,$ladj,$wadj);
 $renderflag=0;
 
-&LoadModules($moddir,$Config{'osname'});   # platform specificmodule references
+# platform specific module references
+my $modname = $Config{'osname'};
+$modname =~ tr/A-Z/a-z/;
+&LoadModules($moddir,$modname);
 
 &reinstance();
 
