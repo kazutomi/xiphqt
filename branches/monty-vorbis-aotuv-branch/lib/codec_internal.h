@@ -18,10 +18,6 @@
 #ifndef _V_CODECI_H_
 #define _V_CODECI_H_
 
-#define TRAIN_FLOOR1
-#define TRAIN_RES
-#define TRAIN_RESAUX
-
 #include "envelope.h"
 #include "codebook.h"
 
