@@ -2,6 +2,8 @@
 
 AUTOMAKE_OPTIONS = dist-zip foreign
 
+SUBDIRS = testfiles tools
+
 bin_PROGRAMS = oggmerge
 
 oggmerge_SOURCES = oggmerge.c vorbis.c midi.c\
