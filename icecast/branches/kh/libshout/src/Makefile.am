@@ -13,7 +13,7 @@ noinst_HEADERS = shout_private.h util.h
 libshout_la_SOURCES = shout.c util.c ogg.c mp3.c
 
 libshout_la_LIBADD = net/libicenet.la timing/libicetiming.la avl/libiceavl.la\
-		httpp/libicehttpp.la thread/libicethread.la
+		httpp/libicehttpp.la thread/libicethread.la @XIPH_LIBS@
 
 INCLUDES = -I$(top_builddir)/include
 
