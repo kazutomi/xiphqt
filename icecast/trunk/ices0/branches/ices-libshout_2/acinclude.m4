@@ -1,6 +1,6 @@
 dnl local M4 configure macros
 dnl Brendan Cully <brendan@xiph.org>
-dnl $Id: acinclude.m4,v 1.2.2.2 2003/03/04 18:25:11 brendan Exp $
+dnl $Id: acinclude.m4,v 1.2.2.3 2003/03/05 04:02:45 brendan Exp $
 
 # XIPH_PATH_PYTHON(PATH)
 # Search for python in PATH, or in the path if none is given.
@@ -44,8 +44,8 @@ then
 
   # Extra libraries required by python
   PYTHON_EXTRA_LIBS="_XIPH_PYTHON_CFG([$PYTHON], [LIBS])"
-  PYTHON_EXTRA_LIBS="$PYTHON_LIBS _XIPH_PYTHON_CFG([$PYTHON], [SYSLIBS])"
-  PYTHON_EXTRA_LIBS="$PYTHON_LIBS _XIPH_PYTHON_CFG([$PYTHON], [SHLIBS])"
+  PYTHON_EXTRA_LIBS="$PYTHON_EXTRA_LIBS _XIPH_PYTHON_CFG([$PYTHON], [SYSLIBS])"
+  PYTHON_EXTRA_LIBS="$PYTHON_EXTRA_LIBS _XIPH_PYTHON_CFG([$PYTHON], [SHLIBS])"
 
   PYTHON_CPPFLAGS="-I[]_XIPH_PYTHON_CFG([$PYTHON], [INCLUDEPY])"
 
