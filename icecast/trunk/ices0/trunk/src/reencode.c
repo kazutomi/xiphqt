@@ -22,7 +22,12 @@
 #include "definitions.h"
 
 #ifdef HAVE_LIBLAME
-#include <lame.h>
+
+#ifdef HAVE_LAME_LAME_H
+# include <lame/lame.h>
+#else
+# include <lame.h>
+#endif
 
 extern ices_config_t ices_config;
 
