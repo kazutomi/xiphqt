@@ -5,9 +5,9 @@
 # just calling MGM::Graph->new()
 
 use Tk;
-
 package MGMmodule::hostlogo;
 
+# this is called once to init the class; construct is called per-instance
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
@@ -27,8 +27,8 @@ sub module_init{
     $toplevel->optionAdd("$xpath.scalelenadj", 10,21); 
     $toplevel->optionAdd("$xpath*font",             
 			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-    $toplevel->optionAdd("$xpath*scalerefresh",        80,20);      
-    $toplevel->optionAdd("$xpath*order",        0,20);
+    $toplevel->optionAdd("$xpath*scalerefresh",        80,20);
+    $toplevel->optionAdd("$xpath.order",               0,20);
 
     # use our font and find the labelsize...
     my$testlabel=$this->{"widget"}->Label(-text=>$hostname,
@@ -50,7 +50,10 @@ sub module_init{
 }
 
 sub module_construct{
-    my$this=shift;
+    my$this=shift;  # a class reference
+    %module=%$this; # build an independant instance
+    $this=\%module; #
+    bless $this;    #
 
     my$width=$this->{"width"};
     my$height=$this->{"height"};
@@ -64,7 +67,7 @@ sub module_construct{
     my$textpad=($width-$textwidth)/2;
     my$vpad=($height-$logoheight-$textheight)/2;
 
-    my$widget=$toplevel->Frame(Name=>$this->{"name"},
+    my$widget=$toplevel->Frame(-class=>$this->{"name"},
 			       borderwidth=>0,
 			       highlightthickness=>0,
 			       width=>$width,height=>$height);
@@ -84,6 +87,7 @@ sub module_construct{
 			     -anchor=>'nw');
     $this->{"counter"}=0;
     $this->{"widget"}=$widget;
+    $this;
 }
 
 sub module_update{

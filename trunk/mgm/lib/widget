@@ -67,7 +67,6 @@ sub reliefhack{
 
 }
     
-
 sub new{
     my ($p,$width,$height,$num)=@_;
 
@@ -75,15 +74,61 @@ sub new{
 
     # we're not as flat as we like to think 
     my $below=$p->Canvas(Name=>"$num");
+    $below->{"above"}=$below->Canvas()->place(-relx=>0,-rely=>0,
+					      -anchor=>'nw', 
+					      -bordermode=>'outside');
+    bless $below;
+
+    # we configure the color and label via a configurable X resource;
+    # it's cleaner than setting up a system that alters a single X resource
+
+    $below->{"aforeXr"}='litforeground';
+    $below->{"abackXr"}='litbackground';
+    $below->{"labelXr"}='label';
+
+    $below->{"width"}=$width;
+    $below->{"height"}=$height;
+    $below->{"num"}=$num;
+
+    $below->drawit;
+    $below;
+}
+
+sub configure{
+    my$this=shift;
+    my ($arg,$val);
+    while(defined($arg=shift)){
+	$val=shift;   
+
+        if(!defined($val)){last;}
+	$this->{"$arg"}=$val;
+    }
+
+    $this->delete('xpmlabel');
+    $this->{'above'}->delete('xpmlabel');
+
+    $this->drawit;
+}
+
+sub drawit{
+    my$below=shift;
+
+    $orient=$main::orient;
+
+    my$width=$below->{"width"};
+    my$height=$below->{"height"};
+    my$num=$below->{"num"};
 
     my $pad=$below->optionGet("textpad","");
     my $relief=$below->optionGet('dimrelief','');
     my $arelief=$below->optionGet('litrelief','');
-    my $afore=$below->optionGet('litforeground','');
-    my $aback=$below->optionGet('litbackground','');
+
+    my $afore=$below->optionGet($below->{"aforeXr"},'');
+    my $aback=$below->optionGet($below->{"abackXr"},'');
+    my $label=$below->optionGet($below->{"labelXr"},'');
+
     my $fore=$below->optionGet('dimforeground','');
     my $back=$below->optionGet('dimbackground','');
-    my $label=$below->optionGet('label','');
     my $ratio=$below->optionGet('ratio','');
     
     my$border=0;
@@ -96,8 +141,6 @@ sub new{
     $aborder=1 if ($arelief eq 'sunken');
     $aborder=1 if ($arelief eq 'raised');
     
-    bless $below,"MGM::Bar";
-
     my($r,$g,$b)=$below->rgb($back);
     $r/=256;
     $g/=256;
@@ -120,64 +163,60 @@ sub new{
 	my$text=$font->maketext($label,$width-($pad*2),$height-($pad*2),
 			      $ratio,1,1);
 	
-	my$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back));
-	my$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback));
+	my$unlittext=$main::toplevel->Pixmap(-data=>$text->write($fore,$back,32));
+	my$littext=$main::toplevel->Pixmap(-data=>$text->write($afore,$aback,32));
 
 	$below->{"barlength"}=$height;
 	$below->{"litrelief"}=$arelief;
-	$below->configure(-borderwidth=>$aborder,
+
+	$below->SUPER::configure(-borderwidth=>$aborder,
 			  -background=>$aback,
 			  highlightthickness=>0,
 			  width=>($width-$aborder*2),
 			  height=>($height-$aborder*2),
 			  relief=>$arelief);
-
 	
-	my$above=$below->{'above'}=
-	    $below->Canvas(-borderwidth=>0,
-			   -background=>$back,
-			   highlightthickness=>0,
-			   width=>$width,
-			   height=>$height,
-			   relief=>'flat')->
-			       place(-relx=>0,-rely=>0,
-				     -anchor=>'nw', 
-				     -bordermode=>'outside');
-    
-	$below->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw');
+	my$above=$below->{'above'};
+	$above->SUPER::configure(-borderwidth=>0,
+				 -background=>$back,
+				 highlightthickness=>0,
+				 width=>$width,
+				 height=>$height,
+				 relief=>'flat');
+	
+	$below->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
+			    -tags=>['xpmlabel']);
 	$above->createImage($pad,$height-$pad,-image=>$unlittext,
-			    -anchor=>'sw');
+			    -anchor=>'sw',-tags=>['xpmlabel']);
 	&drawborder($above,$width,$height,$relief,
 		    $below->{"dimdim"},$below->{"dimlit"});
-
+	
     }else{
 	my$text=$font->maketext($label,$height-($pad*2),$width-($pad*2),
 			      $ratio,0,1);
-	my$unlittext=$toplevel->Pixmap(-data=>$text->write($fore,$back));
-	my$littext=$toplevel->Pixmap(-data=>$text->write($afore,$aback));
+	my$unlittext=$toplevel->Pixmap(-data=>$text->write($fore,$back,32));
+	my$littext=$toplevel->Pixmap(-data=>$text->write($afore,$aback,32));
 
 	$below->{"barlength"}=$width;
-	$below->configure(-borderwidth=>0,
-			  -background=>$back,
-			  highlightthickness=>0,
-			  width=>$width,
-			  height=>$height-$border*2,
-			  relief=>'flat');
+	$below->SUPER::configure(-borderwidth=>0,
+				 -background=>$back,
+				 highlightthickness=>0,
+				 width=>$width,
+				 height=>$height-$border*2,
+				 relief=>'flat');
 	
-	my$above=$below->{'above'}=
-	    $below->Canvas(-borderwidth=>$aborder,
-			   -background=>$aback,
-			   highlightthickness=>0,
-			   width=>($width-2*$aborder),
-			   height=>($height-2*$aborder),
-			   relief=>$arelief)->
-			       place(-relx=>0,-rely=>1.0,
-				     -anchor=>'sw', 
-				     -bordermode=>'outside');
+	my$above=$below->{'above'};
+	$above->SUPER::configure(-borderwidth=>$aborder,
+				 -background=>$aback,
+				 highlightthickness=>0,
+				 width=>($width-2*$aborder),
+				 height=>($height-2*$aborder),
+				 relief=>$arelief);
 	
-	$above->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw');
+	$above->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
+			    -tags=>['xpmlabel']);
 	$below->createImage($pad,$height-$pad,-image=>$unlittext,
-			    -anchor=>'sw');
+			    -anchor=>'sw',-tags=>['xpmlabel']);
 	&drawborder($below,$width,$height,$relief,
 		    $below->{"dimdim"},$below->{"dimlit"});
 	
@@ -198,10 +237,10 @@ sub set{
 	    my $border=$bar->cget("-borderwidth");
 	    my $l=$bar->{"barlength"};
 	    &reliefhack($bar,$l-$per+$border);
-	    $bar->{'above'}->configure('-height'=>($l-$per+$border));
+	    $bar->{'above'}->SUPER::configure('-height'=>($l-$per+$border));
 	}else{
 	    my $border=$bar->{'above'}->cget("-borderwidth");
-	    $bar->{'above'}->configure('-width'=>($per-2*$border));
+	    $bar->{'above'}->SUPER::configure('-width'=>($per-2*$border));
 	}
 
 	$bar->{'setting'}=$per;
@@ -226,7 +265,7 @@ sub cacheem{
 		Pixmap(-data=>$MGM::Bar::font->
 		       maketext($num,$size,undef,1,
 				$orient eq 'vertical'?1:undef)->
-		       write($fg,$bg));
+		       write($fg,$bg,32));
 	}
     }
 }
@@ -249,19 +288,19 @@ sub cacheprompt{
 	$prompts{"$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg));
+					  write($fg,$bg,32));
 	$prompts{"k$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("k$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg));
+					  write($fg,$bg,32));
 	$prompts{"M$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("M$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg));
+					  write($fg,$bg,32));
 	$prompts{"G$prompt"}=$main::toplevel->Pixmap(-data=>
 	    $MGM::Bar::font->maketext("G$prompt",$size,undef,1,
 				      $orient eq 'vertical'?1:undef)->
-					  write($fg,$bg));
+					  write($fg,$bg,32));
     }
 }
 
@@ -355,7 +394,13 @@ sub new{
     $graph{"scaletimer"}=0;
     $graph{"scalemax"}=0;
 
-    $ret->configure(@_);
+    $ret->_configure(@_);
+
+    $widget=$ret->{"widget"}=
+	$ret->{"parent"}->Canvas(-class=>$ret->{"name"},
+				 Name=>$p->{"sequence"});
+
+    $ret->drawit;
     $ret;
 }
 
@@ -376,7 +421,7 @@ sub calcsize{
 
 	($textw,$textl)=&promptsize("$mult$prompt",$set);
 	$textw+=3;
-	$textl+=10;
+	$textl+=4;
 	$scalew=6;
     }
 
@@ -408,25 +453,7 @@ sub drawit{
 
     my $height=$this->{"height"};
     my $width=$this->{"width"};
-    my $widget;
-
-    if(defined($this->{"widget"})){
-	# don't destroy the toplevel canvas if we're already built; the
-	# cause is a configure event and we can't re-place ourselves
-
-	$this->{"barframe"}->destroy; 
-	$this->{"numlabel"}->destroy; 
-	undef $this->{"barframe"};
-	undef $this->{"numlabel"};
-	
-	for(my$i=0;$i<$this->{"num"};$i++){
-	    undef $this->{"bar$i"};
-	}
-	$widget=$this->{"widget"};
-    }else{
-	$widget=$this->{"widget"}=
-	    $this->{"parent"}->Canvas(Name=>$name);
-    }
+    my $widget=$this->{"widget"};
 
     $widget->configure(-borderwidth=>0,
 		       highlightthickness=>0,
@@ -499,7 +526,7 @@ sub place{
     $this;
 }
 
-sub configure{
+sub _configure{
     my$this=shift;
     my ($arg,$val);
     while(defined($arg=shift)){
@@ -523,9 +550,31 @@ sub configure{
     }
     $this->{"rangediff"}=$this->{"rangesetting"}-
 	$this->{"rangecurrent"};
+}
 
-    # The only strategy, currently, is to redraw ;-) 
-    $this->drawit();
+# we can't configure anything that requires size changes.
+sub configure{
+    my$this=shift;
+    my%copy=%$this;
+    
+    $this->_configure(@_);
+
+    if($copy{"rangesetting"} != $this->{"rangesetting"}){
+	my$val=int($this->{'rangesetting'});
+	
+	$this->{"numlabel"}->destroy;
+	$this->{"numlabel"}=$this->promptlabel($val,$this->{'prompt'});
+	$this->{"rangediff"}=$this->{"rangesetting"}-
+	    $this->{"rangecurrent"};
+    }
+}
+
+# a way to configure individual bars
+sub barconfigure{
+    my$this=shift;
+    my$bar=shift;
+    $bar=$this->{"bar$bar"};
+    $bar->configure(@_);
 }
 
 sub drawvscale{
@@ -693,6 +742,8 @@ sub set{
 	   $this->{"rangesetting"}==$this->{"rangecurrent"}){
 	    # we have. compare against the largest value in the past
 	    # hysteresis period
+
+	    $scalemax=$metermax if($scalereturn==0);
 	    
 	    if($this->{"rangesetting"}/2>=$minscale && 
 		  $scalemax*$ethresh<$this->{"rangesetting"}){
