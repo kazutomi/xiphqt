@@ -138,27 +138,6 @@ ices_log_get_error (void)
 	return lasterror;
 }
 
-/* Specific log method for thread info */
-void
-thread_log (char *type, int level, char *fmt, ...)
-{
-	char buff[BUFSIZE];
-	va_list ap;
-
-	if (!ices_config.verbose)
-		return;
-	
-	va_start(ap, fmt);
-#ifdef HAVE_VSNPRINTF
-	vsnprintf(buff, BUFSIZE, fmt, ap);
-#else
-	vsprintf(buff, fmt, ap);
-#endif
-	va_end(ap);
-
-	ices_log_string ("DEBUG: %s\n", buff);
-}
-
 /* Private function definitions */
 
 /* Function to log string to both console and file */
