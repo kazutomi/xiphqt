@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang='en-US'>
+<head>
+	<meta http-equiv='Content-type' content='text/html; charset=UTF-8'>
+	<title>Wrapup Documentation</title>
+	<style type='text/css'>
+		html {
+			font-family: 'Palatino Linotype', 'Hoefler Text', Georgia, sans-serif;
+			background: #132354;
+		}
+		
+		body {
+			background: #eee;
+			border: thin solid gray;
+			padding: 0 1em;
+			max-width: 50em;
+		}
+		kbd, code, tt {
+			font-family: 'Courier New', Monaco, 'Lucida Console', monospace;
+		}
+		
+		h1, h2, h3, h4, h5, h6 {
+			border-bottom: thin solid #999;
+		}
+		h2 { border-bottom-color: #ccc; }
+		h3 { border-bottom-color: #ccc; }
+		h4 { border-bottom-color: #ccc; }
+		h5 { border-bottom-color: #ccc; }			
+		h6 { border-bottom-color: #ddd; }
+
+		ol, ul {
+			margin: 0;
+			padding: 0 0 0 2em;
+		}
+		li {
+			margin: .5em 0;
+			padding: 0;
+		}
+	</style>
+</head>
+<body>
+
+<h1>Wrapup Documentation</h1>
+<h2 id='requirements'>Requirements</h2>
+<ul>
+<li>
+	<a href='http://www.python.org'>Python</a> 2.3.2, to run wrapup.py
+	(use earlier versions at your own risk)
+</li>
+<li>
+	<a href='http://www.perl.org/'>Perl</a> 5.6.1, to run Markdown
+	(<a href='http://www.activestate.com/Products/ActivePerl/'>ActivePerl</a> works fine)</li>
+<li><a href='http://httpd.apache.org/'>Apache</a> 2, to check your changes</li>
+<li><a href='http://www.daringfireball.net/projects/markdown/'>Markdown</a> 1.0b4 (included)</li>
+</ul>
+
+
+<h2 id='usage'>Usage</h2>
+<p>
+Simply run <kbd>wrapup.py</kbd> in the directory it’s in. If nothing failed, you should see
+a newly generated .html file for every .markdown file that isn’t in the news directory.
+</p>
+
+<h3 id='creation'>Creating</h3>
+<p>
+Suppose you want to create a new document. Here’s how:
+</p>
+
+<ol>
+<li>
+Think of a good location to put it and what to call it. Don’t gloss over this step; what you
+write will, ideally, be available at that location forever.
+</li>
+<li>Create a directory for that location.</li>
+<li>Create and edit a file called “index.markdown” in that directory.</li>
+<li>When you want to see your edits, run wrapup.py from its directory.</li>
+</ol>
+
+<h2 id='apacheSetup'>Apache Setup</h2>
+<p>
+If you want to view your changes on your own computer, you’ll need to install
+<a href='http://httpd.apache.org/'>Apache</a>. In either the <code>&lt;Directory&gt;</code> or the
+<code>&lt;VirtualHost&gt;</code> blocks, put the following directives:
+</p>
+<pre><code>
+    Options Indexes Includes FollowSymLinks
+    AllowOverride All
+</code></pre>
+
+<p>
+Ensure that <tt>mod_rewrite</tt> is on. The non-English versions of the site won’t work without
+it.
+</p>
+
+
+<h2 id='inheritsAndIncludes'><kbd>.inherit</kbd> and <kbd>.include</kbd> files</h2>
+<p>
+Inherit and include files serve <em>very</em> similar purposes—they both reduce the amount of
+boilerplate that has to be typed in. Wrapup has five insertion points:
+</p>
+<ol>
+<li>
+	Inside the <code>head</code> element<br>
+	(<tt>inhead.inherit</tt> and <tt>inhead.include</tt>)
+</li>
+<li>
+	A CSS-specific inside-the-<code>head</code> element<br>
+	(<tt>css.inherit</tt> and <tt>css.include</tt>)
+</li>
+<li>
+	Before the main content <code>div</code>, suitable for menus<br>
+	(<tt>beforecontent.inherit</tt> and <tt>beforecontent.include</tt>)
+</li>
+<li>
+	After the text inside the main content <code>div</code><br>
+	(<tt>aftermaintext.inherit</tt> and <tt>aftermaintext.include</tt>)
+</li>
+<li>
+	After the main content <code>div</code><br>
+	(<tt>aftercontent.inherit</tt> and <tt>aftercontent.include</tt>)
+</li>
+</ol>
+
+<p>
+Inherited files came first when I developed Wrapup; I then realized that there would be many things
+that I would want on the front page but not on its subpages. I then implemented <tt>.include</tt>
+files for uninherited, page-specific things.
+</p>
+
+
+<h2 id='multilingual'>Multilingual Concerns</h2>
+<p>…<tt>index.es.html</tt>…<tt>/es</tt>…</p>
+
+<p>
+After working with wrapup and adding ways for multiple languages to be added without too much
+fuss, I discovered that I’d need to have ways for non-English languages to override my CSS
+includes as Verdana is a poor first choice for text in Korean. Additionally, other languages like
+German may need tweaked widths to cope with its exceptionally long words. Further, each language
+would need its own sidebar include and perhaps its own header includes.
+</p>
+<p>
+Given these constraints, each .inherit and .include set has language-specific infixes, such as
+<tt>css.es.include</tt> and <tt>aftermaintext.ko.inherit</tt>.
+</body>
+</html>

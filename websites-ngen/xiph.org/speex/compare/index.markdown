@@ -1,6 +1,7 @@
 Codec Comparison
 ================
-<table border="2" cellpadding="2" width="100%">
+
+<table id='comparison'>
 	<thead>
 		<tr>
 			<th>Codec</th>
@@ -8,7 +9,6 @@ Codec Comparison
 			<th>bitrate (kbps)</th>
 			<th>delay (ms)</th>
 			<th><a href="#multiRate">multi-rate</a></th>
-
 			<th><a href="#embedded">embedded</a></th>
 			<th><a href="#vbr"><abbr title="variable bitrate">VBR</abbr></a></th>
 			<th><a href="#plc"><abbr title="packet loss concealment">PLC</abbr></a></th>
@@ -17,12 +17,11 @@ Codec Comparison
 		</tr>
 	</thead>
 	<tbody>
-		<tr class="speex">
+		<tr>
 			<td>Speex</td>
 			<td>8, 16, 32</td>
 			<td>
 				2.15-24.6 (<abbr title="narrowband">NB</abbr>)<br>
-
 				4-44.2    (<abbr title="wideband">WB</abbr>)
 			</td>
 			<td>

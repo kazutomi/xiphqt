@@ -1,10 +1,8 @@
 To Do
 =====
 
-*	Implement some of the ideas on <http://wiki.xiph.org/SXSW2004Ideas>.
-
 *	Make the front page look less like a blog page and more like a proper introduction.
-	Communicate what we can do for the user.
+	Communicate what we can do for the user. Perhaps with even (gasp) images.
 
 *	Make a new essay (series) for /about/. Or do something other than an essay.
 
@@ -18,6 +16,9 @@ To Do
 *	A software directory.
 
 *	We need a tagline. Lame starter: "Compressing your media into byte-size chunks"
+
+*	`<link>` bits from one language version to the other. Consider using the information in
+	those options.ini files.
 
 *	Communicate that we want to attract—**and retain**—Windows developers.
 	Also, since we’re mantaining python bindings, why not .NET ones, too? The little VB.NET shop

@@ -15,11 +15,15 @@ Behind the Scenes
 
 *	use camelCase for id and class attribute values.
 
-*	Close tags that need closing. <p>-as-paragraph-separator has gone the way of the dodo.
+*	Try to stay as XHTML-compliant as possible; it’s simply good style. This doesn’t mean that
+	you should include a closing slash in your img tags, but it does mean that you should
+	close your (for example) p, ul, and li tags.
 
-*	Prefer the equals-sign-underline for h1 to the single #. The latter method doesn't offer
-	a good way to get around BOMs that may sneak in from Notepad and TextEdit. However, prefer
-	## to ------ for marking up second-level headings.
+*	Use the ===== style of heading for h1 elements; if you use the single # at the beginning of the
+	of the document, wrapup and Markdown won’t be able to cope with the UTF-8 BOM that some
+	editors add in.
+
+*	Prefer ## to -------- for second-level headings. Unlike in this file and in readme.txt.
 
 *	Directories generally not shown to users should start with a capital letter.
 	Prime examples of this are the */CSS/ directories and /Error/.
@@ -27,6 +31,7 @@ Behind the Scenes
 
 Spelling, Grammar, and Punctuation
 ----------------------------------
+
 *	Do not write "CODEC" in all caps.
 *	"Copyright © 2004 Xiph.Org" and "Copyright (c) 2004 Xiph.Org" are redundant;
 	prefer "© 2004 Xiph.Org" to both. Failing that, use "Copyright 2004 Xiph.Org".

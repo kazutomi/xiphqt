@@ -38,27 +38,27 @@ class MarkdownWrapper(object):
 		.doctype				--	self explanatory
 		
 		.inHeadInherit			--	An inherited	string from inhead.inherit
-									...to be included inside the head element
+									…to be included inside the head element
 		
 		.inHeadInclude			--	An uninherited	string from inhead.include
-									...to be included right after .inHeadInherit
+									…to be included right after .inHeadInherit
 		
 		.cssInherit				--	An inherited	string from css.inherit
-									...to be included inside the head element
+									…to be included inside the head element
 		
 		.cssInclude				--	An uninherited	string from css.include
-									...to be included right after .cssInherit
+									…to be included right after .cssInherit
 		
 		.beforeContentInherit	--	An inherited	string from beforecontent.inherit.
-									...to be included right before the content div
+									…to be included right before the content div
 		
 		.beforeContentInclude	--	An uninherited string from beforecontent.include.
-									...to be included right before the content div
+									…to be included right before the content div
 		
 		.mainText				--	the text from .sourceFileName after it's been turned into HTML
 		
 		.afterMainTextInherit	--	An inherited	string from aftermaintext.inherit
-									...included at the end of .mainText, but inside
+									…included at the end of .mainText, but inside
 									<div id='content'>
 		
 		.afterMainTextInclude	--	Like the above, but not inherited, and above it. I think.
@@ -106,14 +106,43 @@ class MarkdownWrapper(object):
 		self.afterContentInherit  = ''
 		self.afterContentInclude  = ''
 
-		# Now we need to stuff these attributes from their respective files.
-		
-		prefixes = "inhead css beforecontent aftermaintext aftercontent".split()
-		inheritables = prefixes[:]
-		inheritables = [i + ".inherit" for i in inheritables]
+		self.bodyAttributes = ''
 
-		includables =  prefixes[:]
-		includables =  [i + ".include" for i in includables]
+		self.__loadIncludes()
+		self.__loadOptions()
+	
+	def __loadOptions(self):
+		
+		def getBaseName(path):
+			"""
+				'index.html'			-> 'index'
+				'index.es.markdown'		-> 'index.es'
+				'/foo/bar/baz.es.txt'	-> 'baz.es'
+			"""
+			filename = os.path.split(path)[1]
+			filenameWithoutExtension = os.path.splitext(filename)[0]
+			return filenameWithoutExtension
+
+		configFilename = getParallelFile(self.sourceFilename, 'options.ini')
+		if not os.path.isfile(configFilename):
+			return
+
+		config = SafeConfigParser()
+		config.read(configFilename)
+		
+		for section in config.sections():
+			if section == getBaseName(self.sourceFilename):
+				for key, value in config.items(section):
+					if key == 'bodyattributes':
+						self.bodyAttributes = ' ' + value
+				
+
+	def __loadIncludes(self):
+		"""Loads .include and .inherit files into this object's attributes."""
+
+		prefixes = "inhead css beforecontent aftermaintext aftercontent".split()
+		inheritables = [i + ".inherit" for i in prefixes]
+		includables =  [i + ".include" for i in prefixes]
 		
 		# this if cascade is ugly, ugly, ugly, ugly. Suggestions, please.
 		def makeSearchers(baseList, ext):
@@ -156,7 +185,7 @@ class MarkdownWrapper(object):
 					self.afterMainTextInherit = contents
 				if AFTERCONTENT_INHERIT.search(filename):
 					self.afterContentInherit = contents
-		for baseFilename in prefixes[:]:
+		for baseFilename in prefixes:
 			if self.lang != 'en-US':
 				baseFilename += ".%s" % self.lang
 			baseFilename += ".include"
@@ -179,6 +208,7 @@ class MarkdownWrapper(object):
 		langFilename = getParallelFile(self.sourceFilename, "lang.include")
 		if langFilename and os.path.isfile(langFilename):
 			self.langInclude = file(langFilename).read()
+
 	def renderToFile(self):
 		outfile = file(self.destFilename, "w")
 		try:
@@ -193,14 +223,16 @@ class MarkdownWrapper(object):
 		ret += self.doctype + '\n'
 		ret += "<html lang='" + self.lang + "'>\n"
 		ret += "<head>\n"
-		ret +=	"<meta http-equiv='Content-type' content='text/html; charset=UTF-8'>\n"
+		ret +=	"	<meta http-equiv='Content-type' content='text/html; charset=UTF-8'>\n"
 		ret +=	self.inHeadInherit
 		ret +=	self.inHeadInclude
-		ret +=	'<title>' + self.title + '</title>\n'
+		ret +=	'	<title>' + self.title + '</title>\n'
 		ret +=	self.cssInherit
 		ret +=	self.cssInclude
 		ret += "</head>\n"
-		ret += "<body>\n"
+		ret += "<body"
+		ret += self.bodyAttributes
+		ret += ">\n"
 		ret +=  self.langInclude
 		ret +=	self.beforeContentInherit
 		ret +=	self.beforeContentInclude
@@ -301,7 +333,7 @@ def getParentedFile(filename):
 			if os.path.isfile(filename): return filename
 			else: return ""
 
-class NewsItem:
+class NewsItem(object):
 	def __init__(self, post='', title='', author='', date=None, sections=None):
 		self.post = post
 		self.title = title
@@ -313,7 +345,7 @@ class NewsItem:
 		return cmp(self.date)
 	
 
-class NewsDispenser:
+class NewsDispenser(object):
 	def __init__(self, optionsFile):
 		"""Make a very simple list of news posts. This is not final code."""
 		config = SafeConfigParser({'sections': 'general'})
@@ -347,12 +379,12 @@ class NewsDispenser:
 			Return news items from
 		"""
 
-class	NewsFormatter:
+class NewsFormatter(object):
 	def __init__(self, newsItems): pass
 	def formatOne(self, newsItem): pass
 	def formatAll(self): pass
 
-class	HTMLNewsFormatter(NewsFormatter):
+class HTMLNewsFormatter(NewsFormatter):
 	""" This is just one HTML news formatter of possibly many, really."""
 	def __init__(self, newsItems, dateFormat="%A, %B %d, %Y"):
 		self.newsItems = newsItems
@@ -373,7 +405,7 @@ class	HTMLNewsFormatter(NewsFormatter):
 			ret += self.formatOne(ni)
 		return ret
 
-class	AtomNewsFormatter(NewsFormatter):
+class AtomNewsFormatter(NewsFormatter):
 
 	# Tag URIs: http://www.taguri.org/ (used for atom:id)
 

@@ -46,3 +46,14 @@ div#sidebar a:visited {
 div#sidebar a:hover {
 	background: #c1dfb1;
 }
+
+table#comparison {
+	border-collapse: collapse;
+	font-size: 90%;
+	width: 100%;
+}
+
+table#comparison th,
+table#comparison td {
+	border: 1px solid black;
+}
