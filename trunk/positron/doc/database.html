@@ -243,7 +243,7 @@ primary field (also a null-terminated string).
 <h2>Maintaining Database Consistency</h2>
 
 <p>
-Reading the database is fairly straightforward; the tricky parts is
+Reading the database is fairly straightforward; the tricky part is
 maintaining consistency between all of the parts of the database when
 modifying it.  Failure to do this correctly often leads to
 unpredictable behavior in the Neuros, and sometimes even causes it to
@@ -293,7 +293,7 @@ pointers to parent records:</p>
 <ol>
   <li>Move all of the modules after the module being extended down by
   the size of the extension.  Remember that the size of PAI module
-  must be a multiple of the <a href="PAI.html#minlength">minimum
+  must be a multiple of the <a href="pai.html#minlength">minimum 
   module length</a>.</li>
   
   <li>Fill in the extra space with zeros.</li>

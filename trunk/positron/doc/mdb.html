@@ -106,8 +106,8 @@ MDB Records are composed of three types of fields (always occuring in this order
 
   <dt>Access Keys</dt><dd>There can be zero or more access keys per
   database.  Rather than store the actual data (like "Rock" or "FM
-  Radio"), a pointer to the MDB holding this data in the child
-  database is stored.  Null values are recorded by pointed at the 
+  Radio"), a pointer to the MDB record holding this data in the child
+  database is stored.  Null values are recorded by pointing at the 
   <a href="#nullrec">null record</a> in the child database.</dd>
 
   <dt>Extra Info</dt><dd>These can be zero or more extra info fields.
@@ -144,7 +144,7 @@ format is special delimiter words:
 
   <dt>0x002F</dt><dd>/ - Escaper.  If any field value contains one of
   these special words (including the escaper itself), it must be
-  escaped using this character.  For example, to store the pointer
+  escaped using this word.  For example, to store the pointer
   0x00000023 in a field, you would have to write 0x0000,0x002F,0x0023.</dd>
 </dl>
 </p>
