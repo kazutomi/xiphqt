@@ -302,7 +302,7 @@ class MPEG:
         if not self.valid:
             raise Error("MPEG header not valid")
 
-        self._parse_xing(file)
+        self._parse_xing(file, seeklimit, seekstart)
         
 
     def _find_header(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT,
@@ -394,28 +394,42 @@ class MPEG:
         
         self.valid = 1
 
-    def _parse_xing(self, file):
+    def _parse_xing(self, file, seekstart=0, seeklimit=_MP3_HEADER_SEEK_LIMIT):
         """Parse the Xing-specific header.
 
         For variable-bitrate (VBR) MPEG files, Xing includes a header which
         can be used to approximate the (average) bitrate and the duration
         of the file.
         """
-        file.seek(0, 0)
-        header = file.read(128)
+        file.seek(seekstart, 0)
+        header = file.read(seeklimit)
 
-        i = string.find(header, 'Xing')
-        if i > 0:
-            (flags,) = struct.unpack('>i', header[i+4:i+8])
-            if flags & 3:
-                # flags says "frames" and "bytes" are present. use them.
-                (frames,) = struct.unpack('>i', header[i+8:i+12])
-                (bytes,) = struct.unpack('>i', header[i+12:i+16])
+        try:
+            i = string.find(header, 'Xing')
+            if i > 0:
+                header += file.read(128)
+                (flags,) = struct.unpack('>i', header[i+4:i+8])
+                if flags & 3:
+                    # flags says "frames" and "bytes" are present. use them.
+                    (frames,) = struct.unpack('>i', header[i+8:i+12])
+                    (bytes,) = struct.unpack('>i', header[i+12:i+16])
 
-                if self.samplerate:
-                    self.length = int(round(frames * self.samplesperframe / self.samplerate))
-                    self.bitrate = ((bytes * 8.0 / self.length) / 1000)
+                    if self.samplerate:
+                        length = int(round(frames * self.samplesperframe / self.samplerate))
+                        bitrate = ((bytes * 8.0 / length) / 1000)
+                        self.length = length
+                        self.bitrate = bitrate
+                        return
+        except ZeroDivisionError:
+            pass # This header is bad
+        except struct.error:
+            pass # This header is bad
 
+        # If we made it here, the header wasn't any good.  Try at the beginning
+        # now just in case
+        if seekstart != 0:
+            self._parse_xing(file, 0, seeklimit)
+        
 class MP3Info:
     def __init__(self, file):
         self.valid = 0
