@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.7 2001/11/02 02:51:47 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.8 2001/11/21 22:57:23 volsung Exp $
 
  ********************************************************************/
 
@@ -171,7 +171,7 @@ void InitStats (Stat_t stats[])
   cur->type = stat_doublearg;
 
   cur = &stats[7]; /* input buffer status */
-  cur->prio = 2; cur->enabled = 0; cur->formatstr = "(%s)";
+  cur->prio = 2; cur->enabled = 0; cur->formatstr = "%s";
   cur->type = stat_stringarg; cur->arg.stringarg = NULL;
 
   cur = &stats[8]; /* output buffer fill % */
@@ -223,7 +223,7 @@ void SetStateString (buf_t *buf, char *strbuf)
   char *sep = "(";
 
   if (buf->prebuffering) {
-    cur += sprintf (cur, "%sPrebuffering", sep);
+    cur += sprintf (cur, "%sPrebuf", sep);
     sep = comma;
   }
   if (buf->paused) {
@@ -236,6 +236,8 @@ void SetStateString (buf_t *buf, char *strbuf)
   }
   if (cur != strbuf)
     cur += sprintf (cur, ")");
+  else
+    *cur = '\0';
 }
 
 
@@ -256,8 +258,6 @@ void UpdateStats (void)
 	  / (double) Options.inputOpts.data->buf->size * 100.0f;
       }
 
-      if (stats[7].arg.stringarg)
-	free (stats[7].arg.stringarg);
       stats[7].arg.stringarg = strdup (strbuf);
       
       memset (strbuf, 0, 80);
@@ -274,9 +274,10 @@ void UpdateStats (void)
       stats[9].arg.stringarg = strdup (strbuf);
       
       PrintStatsLine (stats);
+
+      pthread_mutex_unlock(&stats_lock);
     }
 
-  pthread_mutex_unlock(&stats_lock);
 }
 
 
@@ -287,45 +288,22 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg,
 		      char iseos)
 {
   static ogg_int64_t cursample = 0;
-  static unsigned char RechunkBuffer[BUFFER_CHUNK_SIZE];
-  static size_t curBuffered = 0;
   size_t origSize;
-  unsigned char *data = ptr;
 
   origSize = size;
   size *= nmemb;
   
-  SetTime (Options.statOpts.stats, cursample);
-  UpdateStats();
   cursample += Options.playOpts.nth * size / Options.outputOpts.channels / 2 
     / Options.playOpts.ntimes; /* locked to 16-bit */
-  //  fprintf(stderr, "nmemb = %d, size = %d, cursample = %lld\n", nmemb, size,
-  //  cursample);
 
-  /* optimized fast path */
-  if (curBuffered == BUFFER_CHUNK_SIZE && curBuffered == 0)
-    devices_write (ptr, size, 1, Options.outputOpts.devices);
-  else
-    /* don't actually write until we have a full chunk, or of course EOS */
-    while (size) {
-      size_t toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? 
-	BUFFER_CHUNK_SIZE - curBuffered : size;
-      memmove (RechunkBuffer + curBuffered, data, toChunkNow);
-      size -= toChunkNow;
-      data += toChunkNow;
-      curBuffered += toChunkNow;
-      if (curBuffered == BUFFER_CHUNK_SIZE) {
-	devices_write (RechunkBuffer, curBuffered, 1, 
-		       Options.outputOpts.devices);
-	curBuffered = 0;
-      }
-    }
+  devices_write (ptr, size, 1, Options.outputOpts.devices);
 
-  if (iseos) {
+  SetTime (Options.statOpts.stats, cursample);
+  UpdateStats();
+
+  if (iseos)
     cursample = 0;
-    devices_write (RechunkBuffer, curBuffered, 1, Options.outputOpts.devices);
-    curBuffered = 0;
-  }
+
   return origSize;
 }
 
@@ -737,7 +715,8 @@ void PlayFile()
   int is_big_endian = ao_is_big_endian();
   double realseekpos = Options.playOpts.seekpos;
   int nthc = 0, ntimesc = 0;
-    ov_callbacks VorbisfileCallbacks;
+  long bitrate;
+  ov_callbacks VorbisfileCallbacks;
   
   /* Setup callbacks and data structures for HTTP stream or file */
   if (IsURL(Options.playOpts.read_file))
@@ -872,8 +851,15 @@ void PlayFile()
     
 
     /* Start the audio playback thread before we begin sending data */    
-    if (Options.outputOpts.buffer)
+    if (Options.outputOpts.buffer) {
+
+      /* First reset mutexes and other synchronization variables */
+      buffer_sync_reset (Options.outputOpts.buffer);
+      pthread_mutex_destroy (&stats_lock);
+      pthread_mutex_init (&stats_lock, NULL);
+
       buffer_thread_start (Options.outputOpts.buffer);
+    }
     
 
     /* Loop through data within a logical bitstream */
@@ -932,8 +918,15 @@ void PlayFile()
 	
 
 	/* Update bitrate display */
-	Options.statOpts.stats[4].arg.doublearg = 
-	  (double) ov_bitrate_instant (&vf) / 1000.0f;
+	bitrate = ov_bitrate_instant (&vf);
+	if (bitrate == OV_FALSE) {
+	  /* Not playing */
+	  Options.statOpts.stats[4].arg.doublearg = 0.0f;
+	} else if (bitrate > 0) {
+	  /* New bitrate information to report */
+	  Options.statOpts.stats[4].arg.doublearg = 
+	    (double) bitrate  / 1000.0f;
+	}
 
 
 	/* Write audio data block to output, skipping or repeating chunks

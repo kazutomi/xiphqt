@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.3 2001/10/17 16:58:14 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.4 2001/11/21 22:57:23 volsung Exp $
 
  ********************************************************************/
 
@@ -98,8 +98,6 @@ void _buffer_thread_init (buf_t *buf)
       if (!ret)
 	pthread_exit ((void*)ret);
     }
-	
-  _buffer_init_vars(buf);
 }
 
 
@@ -147,7 +145,9 @@ void *_buffer_thread_func (void *arg)
          NEVER reduce the number of bytes stored in the buffer */
       DEBUG("Sending %d bytes to the audio device", write_amount);
       buf->write_func(buf->buffer + buf->start, sizeof(chunk), write_amount,
-		      buf->data, buf->eos);
+		      buf->data, 
+		      /* Only set EOS if this is the last chunk */
+		      write_amount == buf->curfill ? buf->eos : 0);
       
       LOCK_MUTEX(buf->mutex);
       buf->curfill -= write_amount;
@@ -283,6 +283,22 @@ buf_t *buffer_create (long size, long prebuffer_size, void *data,
 }
 
 
+void buffer_sync_reset (buf_t *buf)
+{
+  /* Cleanup pthread variables */
+  pthread_mutex_destroy (&buf->mutex);
+  pthread_cond_destroy (&buf->write_cond);
+  pthread_cond_destroy (&buf->playback_cond);
+  
+  /* Reinit pthread variables */
+  pthread_mutex_init (&buf->mutex, NULL);
+  pthread_cond_init (&buf->write_cond, NULL);
+  pthread_cond_init (&buf->playback_cond, NULL);
+
+  _buffer_init_vars(buf);
+}
+
+
 void buffer_destroy (buf_t *buf)
 {
   DEBUG("buffer_destroy");
@@ -414,6 +430,7 @@ void buffer_mark_eos (buf_t *buf)
 
   LOCK_MUTEX(buf->mutex);
   buf->eos = 1;
+  buf->prebuffering = 0;
   COND_SIGNAL(buf->playback_cond);
   UNLOCK_MUTEX(buf->mutex);
 }
