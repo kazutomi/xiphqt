@@ -288,8 +288,10 @@ ices_util_percent (int this, int of_that)
 char *
 ices_util_file_time (int bitrate, int filesize, char *buf)
 {
-	unsigned long int seconds = (double)(((double)bitrate) / 8.0) / (double) filesize;
 	unsigned long int days, hours, minutes, nseconds, remains;
+	unsigned long int seconds;
+
+	 seconds = (double)((double)filesize / ((double)(bitrate * 1000) / 8.0));
 
 	if (!buf)
 		return NULL;
