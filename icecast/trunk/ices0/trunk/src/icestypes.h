@@ -91,7 +91,7 @@ typedef enum {
 typedef struct _input_stream_t {
   input_type_t type;
 
-  const char* path;
+  char* path;
   int fd;
   int canseek;
   size_t filesize;

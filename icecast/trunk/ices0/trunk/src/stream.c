@@ -102,7 +102,7 @@ ices_stream_loop (void)
 		
     if (stream_open_source (&source) < 0) {
       ices_log ("Error opening %s: %s", source.path, ices_log_get_error ());
-      ices_util_free (&source.path);
+      ices_util_free (source.path);
       consecutive_errors++;
       continue;
     }
@@ -112,8 +112,8 @@ ices_stream_loop (void)
 	if (!stream->reencode) {
 	  ices_log ("Cannot play %s without reencoding", source.path);
 	  source.close (&source);
-	  ices_util_free (&source.path);
-	  consecutive_errors ++;
+	  ices_util_free (source.path);
+	  consecutive_errors++;
 	  continue;
 	}
 
@@ -128,11 +128,11 @@ ices_stream_loop (void)
 	 invalid file names. */
       if (consecutive_errors > 10) {
 	ices_log ("Exiting after 10 consecutive errors.");
-	ices_util_free (&source.path);
+	ices_util_free (source.path);
 	ices_setup_shutdown ();
       }
 
-      ices_util_free (&source.path);
+      ices_util_free (source.path);
       continue;
     } else {
       /* Reset the consecutive error counter */
@@ -140,7 +140,7 @@ ices_stream_loop (void)
     }
 		
     /* Free the dynamically allocated filename */
-    ices_util_free (&source.path);
+    ices_util_free (source.path);
   }
   /* Not reached */
 }
