@@ -511,7 +511,7 @@ int updateClusterID(char *server_name, char *listing_ip, char *error, char *clus
 	return(1);
 }
 
-int addServer(char *server_name, char *genre, char *cluster_password, char *desc, char *url, char *listenurl, char *server_type, char *bitrate, char *listing_ip, char *sid, char *samplerate, char *channels, char *error)
+int addServer(char *server_name, char *genre, char *cluster_password, char *desc, char *url, char *listenurl, char *server_type, char *server_subtype, char *bitrate, char *listing_ip, char *sid, char *samplerate, char *channels, char *error)
 {
 	char	sql[2*8096];
 	int	i;
@@ -523,6 +523,7 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	char	*desc_esc = NULL;
 	char	*url_esc = NULL;
 	char	*server_type_esc = NULL;
+	char	*server_subtype_esc = NULL;
 	char	*bitrate_esc = NULL;
 	char	*listenurl_esc = NULL;
 	char	*listeners_esc = NULL;
@@ -622,6 +623,8 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	memset(desc_esc, '\000', strlen(desc)*2 + 1);
 	server_type_esc = malloc(strlen(server_type)*2 + 1);
 	memset(server_type_esc, '\000', strlen(server_type)*2 + 1);
+	server_subtype_esc = malloc(strlen(server_subtype)*2 + 1);
+	memset(server_subtype_esc, '\000', strlen(server_subtype)*2 + 1);
 	bitrate_esc = malloc(strlen(bitrate)*2 + 1);
 	memset(bitrate_esc, '\000', strlen(bitrate)*2 + 1);
 	listenurl_esc = malloc(strlen(listenurl)*2 + 1);
@@ -638,6 +641,7 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	mysql_real_escape_string(&dbase, url_esc, url, strlen(url));
 	mysql_real_escape_string(&dbase, desc_esc, desc, strlen(desc));
 	mysql_real_escape_string(&dbase, server_type_esc, server_type, strlen(server_type));
+	mysql_real_escape_string(&dbase, server_subtype_esc, server_subtype, strlen(server_subtype));
 	mysql_real_escape_string(&dbase, bitrate_esc, bitrate, strlen(bitrate));
 	mysql_real_escape_string(&dbase, listenurl_esc, listenurl, strlen(listenurl));
 	mysql_real_escape_string(&dbase, samplerate_esc, samplerate, strlen(samplerate));
@@ -701,6 +705,7 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 			  listen_url,		\
 			  playlist_id,		\
 			  server_type,		\
+			  server_subtype,	\
 			  bitrate,		\
 			  listeners,		\
 			  samplerate,		\
@@ -718,9 +723,10 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 			  %s,			\
 			  '%s',			\
 			  '%s',			\
+			  '%s',			\
 			  0,			\
 			  '%s',			\
-			  '%s')", parent_id, server_name_esc, listing_ip, desc_esc, genre_esc, sid, cluster_password_esc, url_esc, "", listenurl_esc, cluster_id, server_type_esc, bitrate_esc, samplerate_esc, channels_esc);
+			  '%s')", parent_id, server_name_esc, listing_ip, desc_esc, genre_esc, sid, cluster_password_esc, url_esc, "", listenurl_esc, cluster_id, server_type_esc, server_subtype_esc, bitrate_esc, samplerate_esc, channels_esc);
 	Log(LOG_DEBUG, sql);
 	if (mysql_real_query(&dbase,sql,strlen(sql))) {
 		sprintf(error, "servers: %s", mysql_error(&dbase));
@@ -767,6 +773,9 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	if (server_type_esc) {
 		free(server_type_esc);
 	}
+	if (server_subtype_esc) {
+		free(server_subtype_esc);
+	}
 	if (bitrate_esc) {
 		free(bitrate_esc);
 	}
@@ -795,6 +804,9 @@ Error:
 	}
 	if (server_type_esc) {
 		free(server_type_esc);
+	}
+	if (server_subtype_esc) {
+		free(server_subtype_esc);
 	}
 	if (bitrate_esc) {
 		free(bitrate_esc);
