@@ -97,6 +97,8 @@ static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
     XFree(children);
     id=parent_return;
   }
+  *root_x=x;
+  *root_y=y;
 }
 
 static void FakeKeycode(int keycode, int modmask, unsigned long window){
@@ -138,7 +140,6 @@ void FakeButton1(unsigned long window){
   int root_x,root_y;
 
   XGetGeometryRoot(window,&root_x,&root_y);
-
   memset(&event,0,sizeof(event));
   event.display=Xdisplay;
   event.type=4; /* button down */
@@ -505,7 +506,7 @@ static void ChangeProperty(unsigned char *buf){
   }
 
   /* watch for the open file window */
-  if(n>32 &&  !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
+  if(n>32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
     fprintf(stderr,
 	    "    ...: RealPlayer popped open file dialog.\n");
     rpfile_shell=id;
@@ -574,10 +575,7 @@ static void PutImage(unsigned char *header,unsigned char *data){
     unsigned char *ptr=data;
     long i,j,k;
 
-    fprintf(stderr,"%d %d %d %d %d %d\n",x,y,width,height,rpplay_width,rpplay_height);
-
     if(x==0 && width==rpplay_width){
-      fprintf(stderr,"searching for screen...\n");
       if(y==0){
 	play_blackupper=42;
 	play_blacklower=-1;
@@ -610,7 +608,6 @@ static void PutImage(unsigned char *header,unsigned char *data){
 	   big black block */
 	int test;
 	
-	fprintf(stderr,"searching for logo...\n");
 	for(test=play_blackupper;test<height+y;test++)
 	  if(test>=y)
 	    if(ptr[(test-y)*width*4+(width/2*4)+1]!=0)break;

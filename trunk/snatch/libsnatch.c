@@ -39,7 +39,7 @@
 
 static int    (*libc_open)(const char *,int,mode_t);
 static int    (*libc_connect)(int sockfd, const struct sockaddr *serv_addr,
-			   socklen_t addrlen);
+			      socklen_t addrlen);
 static int    (*libc_close)(int);
 static size_t (*libc_read)(int,void *,size_t);
 static size_t (*libc_write)(int,const void *,size_t);
@@ -180,6 +180,8 @@ void *backchannel_thread(void *dummy){
     case 'P':
     case 'L':
     case 'O':
+    case 'F':
+    case 'D':
       ret=fread(&length,2,1,backchannel_fd);
       if(ret==1){
 	if(length)buf=calloc(length+1,1);
@@ -201,6 +203,14 @@ void *backchannel_thread(void *dummy){
 	  case 'O':
 	    if(openfile)free(openfile);
 	    openfile=buf;
+	    break;
+	  case 'F':
+	    if(outfile)free(outfile);
+	    outfile=buf;
+	    break;
+	  case 'D':
+	    if(audioname)free(audioname);
+	    audioname=buf;
 	    break;
 	  }
       }
@@ -255,13 +265,13 @@ void initialize(void){
     xlib_xopen=get_me_symbol("XOpenDisplay");
 
     /* output path? */
-    outpath=getenv("SNATCH_OUTPUT_PATH");
+    outpath=strdup(getenv("SNATCH_OUTPUT_PATH"));
     if(!outpath){
       if(debug)
 	fprintf(stderr,
 		"----env: SNATCH_OUTPUT_PATH\n"
 		"           not set. Using current working directory.\n");
-      outpath=".";
+      outpath=strdup(".");
     }else{
       if(debug)
 	fprintf(stderr,
@@ -270,13 +280,13 @@ void initialize(void){
     }
 
     /* audio device? */
-    audioname=getenv("SNATCH_AUDIO_DEVICE");
+    audioname=strdup(getenv("SNATCH_AUDIO_DEVICE"));
     if(!audioname){
       if(debug)
 	fprintf(stderr,
 		"----env: SNATCH_AUDIO_DEVICE\n"
 		"           not set. Using default (/dev/dsp*).\n");
-      audioname="/dev/dsp*";
+      audioname=strdup("/dev/dsp*");
     }else{
       if(debug)
 	fprintf(stderr,
@@ -459,7 +469,13 @@ pid_t fork(void){
   return((*libc_fork)());
 }
 
-/* The audio device is subverted through open() */
+/* The audio device is subverted through open().  If we didn't care
+   about allowing a fake audio open() to 'succeed' even when the real
+   device is busy, then we could just watch for the ioctl(), grab the
+   fd() then, and not need to bother with any silly string matching.
+   However, we *do* care, so we do this the more complex, slightly
+   more error prone way. */
+
 int open(const char *pathname,int flags,...){
   va_list ap;
   int ret;
