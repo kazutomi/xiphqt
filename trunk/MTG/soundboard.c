@@ -1,25 +1,37 @@
+/* TODO:
+
+   make Esc behavior correct in editing menus by using temp cue/tag storage
+   tag list menu
+
+*/
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
 #include <signal.h>
 #include <curses.h>
+#include <fcntl.h>
 
 
 #define int16 short
 static char *tempdir="/tmp/beaverphonic/";
-static char *installdir="/usr/local/beaverphonic/";
+static char *lockfile="/tmp/beaverphonic/lock";
+//static char *installdir="/usr/local/beaverphonic/";
+static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
 #define VERSION "20020128.0"
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
 
 pthread_mutex_t master_mutex=PTHREAD_MUTEX_INITIALIZER;
-static int main_master_volume=50;
+static long main_master_volume=50;
 char *program;
 static int playback_buffer_minfill=-1;
 static int running=1;
@@ -35,13 +47,21 @@ void *m_realloc(void *in,int bytes){
   return(realloc(in,bytes));
 }
 
-void addnlstr(char *s,int n,char c){
+void addnlstr(const char *s,int n,char c){
   int len=strlen(s),i;
   addnstr(s,n);
   n-=len;
   for(i=0;i<n;i++)addch(c);
 }
 
+void switch_to_stderr(){
+  def_prog_mode();           /* save current tty modes */
+  endwin();                  /* restore original tty modes */
+}
+
+void switch_to_ncurses(){
+  refresh();                 /* restore save modes, repaint screen */
+}
 
 /******** channel mappings.  All hardwired for now... ***********/
 // only OSS stereo builin for now
@@ -104,6 +124,15 @@ void aquire_label(int number){
   label_list[number].refcount++;
 }
 
+const char *label_text(int number){
+  if(number<0 || 
+     number>=label_count || 
+     label_list[number].refcount==0 ||
+     label_list[number].text==NULL)
+    return"";
+  return label_list[number].text;
+}
+
 void release_label(int number){
   label *label;
   if(number>=label_count)return;
@@ -118,8 +147,8 @@ int save_label(FILE *f,int number){
   if(number<=label_count){
     if(label_list[number].refcount){
       fprintf(f,"LBL:%d %d:%s",number,
-	      strlen(label_list[number].text),
-	      label_list[number].text);
+	      strlen(label_text(number)),
+	      label_text(number));
       
       count=fprintf(f,"\n");
       if(count<1)return(-1);
@@ -162,13 +191,14 @@ typedef struct {
   int          refcount;
 
   label_number sample_path;
-  int    loop_p;
+  label_number sample_desc;
+  long   loop_p;
   long   loop_start;
   long   loop_lapping;
   long   fade_out;
 
   void  *basemap;
-  int16 *channel_vec[2];
+  int16 *data;
   int    channels;
   long   samplelength;
 
@@ -191,7 +221,6 @@ typedef struct {
 struct sample_header{
   long sync;
   long channels;
-  long samples;
 };
 
 static tag        *tag_list;
@@ -218,102 +247,129 @@ static void _alloc_tag_if_needed(int number){
   }
 }
 
-/* UI convention: this has too many useful things to report if sample
-   opening goes awry, and I don't want to define a huge message
-   reporting system through ncurses in C, so we go back to tty-like
-   for reporting here, waiting for a keypress if nonzero return */
+  /* UI convention: this has too many useful things to report if
+     sample opening goes awry, and I don't want to define a huge
+     message reporting system through ncurses in C, so we go back to
+     tty-like for reporting here, waiting for a keypress if nonzero
+     return */
+
+int load_sample(tag *t,const char *path){
+  char *template=alloca(strlen(tempdir)+20);
+  char *tmp,*buffer;
+  int ret=0;
+
+  fprintf(stderr,"Loading %s...\n",path);
+  /* parse the file; use preexisting tools via external Perl glue */
+  /* select a temp file for the glue to convert file into */
+  /* valid use of mktemp; only one Beaverphonic is running a time,
+     and we need a *name*, not a *file*. */
+
+  sprintf(template,"%sconversion.XXXXXX",tempdir);
+  tmp=mktemp(template);
+  if(!tmp)return(-1);
+
+  buffer=alloca(strlen(installdir)+strlen(tmp)+strlen(path)+20);  
+  fprintf(stderr,"\tcopying/converting...\n");
+  sprintf(buffer,"%sconvert.pl \'%s\' \'%s\'",installdir,path,tmp);
+  ret=system(buffer);
+  if(ret)goto out;
+  
+  /* our temp file is a host-ordered 44.1kHz 16 bit PCM file, n
+     channels uninterleaved.  first word is channels */
+  fprintf(stderr,"\treading...\n");
+  {
+    FILE *cheat=fopen(tmp,"rb");
+    struct sample_header head;
+    int count,i;
+    int fd;
+    long length;
+    if(!cheat){
+      fprintf(stderr,"Failed to open converted file %s:\n\t(%s)\n",
+	      tmp,strerror(errno));
+      ret=-1;goto out;
+    }
+
+    /* find length,etc */
+    if(fseek(cheat,-sizeof(head),SEEK_END)){
+      fprintf(stderr,"Unable to seek to end of file!\n\t%s\n",
+	      strerror(ferror(cheat)));
+      fclose(cheat);
+      ret=-1;goto out;
+    }
+    length=ftell(cheat);
+    if(length<0){
+      fprintf(stderr,"Unable to determine length of file!\n\t%s\n",
+	      strerror(ferror(cheat)));
+      fclose(cheat);
+      ret=-1;goto out;
+    }
+    count=fread(&head,sizeof(head),1,cheat);
+
+    fclose(cheat);
+    if(count<1){
+      fprintf(stderr,"Conversion file %s openable, but truncated\n",tmp);
+      ret=-1;goto out;
+    }
+    if(head.sync!=55){
+      fprintf(stderr,"Conversion file created by incorrect "
+	      "version of convert.pl\n\t%s unreadable\n",tmp);
+      ret=-1;goto out;
+    }
+    
+    t->channels=head.channels;
+    t->samplelength=length/(t->channels*2);
+
+    /* mmap the sample file */
+    fprintf(stderr,"\tmmaping...\n");
+    fd=open(tmp,O_RDONLY);
+    if(fd<0){
+      fprintf(stderr,"Unable to open %s fd for mmap:\n\t%d (%s)\n",
+	      tmp,errno,strerror(errno));
+      ret=-1;goto out;
+    }
+    t->basemap=
+      mmap(NULL,
+	   t->samplelength*sizeof(int16)*t->channels+sizeof(head),
+	   PROT_READ,MAP_PRIVATE,fd,0);
+    close(fd);
+
+    if(!t->basemap){
+      fprintf(stderr,"Unable to mmap fd %d (%s):\n\t%d (%s)\n",
+	      fd,tmp,errno,strerror(errno));
+      ret=-1;goto out;
+    }
+    t->data=t->basemap+sizeof(head);
+  }
+  fprintf(stderr,"\tDONE\n\n");
+  
+ out:
+  if(tmp)unlink(tmp);
+  return(ret);
+}
+
+int unload_sample(tag *t){
+  /* unmap */
+  if(t->basemap)
+    munmap(t->basemap,
+	   t->samplelength*sizeof(int16)*
+	   t->channels+sizeof(struct sample_header));
+
+  t->basemap=NULL;
+  t->data=NULL;
+  t->samplelength=0;
+  t->channels=0;
+  return(0);
+}
+
 int edit_tag(int number,tag t){
-  int offset,ret;
+  int ret;
   tag *tag;
   _alloc_tag_if_needed(number);
   
-  t.basemap=NULL;
-  t.channels=0;
-  t.samplelength=0;
-
   tag_list[number]=t;
-  tag=tag_list+number;
-
-  /* allow the edit to be accepted if the file cannot be opened, but
-     alert the operator */
-  {
-    /* parse the file; use preexisting tools via external Perl glue */
-    /* select a temp file for the glue to convert file into */
-    /* valid use of mktemp; only one Beaverphonic is running a time,
-       and we need a *name*, not a *file*. */
-
-    char *template=alloca(strlen(tempdir)+20);
-    char *tmp;
-
-    sprintf(template,"%sconversionXXXXXX",tempdir);
-    tmp=mktemp(template);
-    if(!tmp)return(-1);
-
-    {
-      char *orig=label_list[t.sample_path].text;
-      char *buffer=alloca(strlen(installdir)+strlen(tmp)+strlen(orig)+20);
-      
-      sprintf(buffer,"%sconvert.pl %s %s",installdir,orig,tmp);
-      ret=system(buffer);
-      if(ret)return(ret);
-    }
-	
-    /* our temp file is a host-ordered 44.1kHz 16 bit PCM file, n
-       channels uninterleaved.  first word is channels */
-    {
-      FILE *cheat=fopen(tmp,"rb");
-      struct sample_header head;
-      int count,i;
-      int fd;
-      if(!cheat){
-	fprintf(stderr,"Failed to open converted file %s:\n\t%d (%s)\n",
-		tmp,ferror(cheat),strerror(ferror(cheat)));
-	return(-1);
-      }
-      count=fread(&head,sizeof(head),1,cheat);
-      fclose(cheat);
-      if(count<(int)sizeof(head)){
-	fprintf(stderr,"Conversion file %s openable, but truncated\n",tmp);
-	return(-1);
-      }
-      if(head.sync!=55){
-	fprintf(stderr,"Conversion file created by incorrect "
-		"version of convert.pl\n\t%s unreadable\n",tmp);
-	return(-1);
-      }
-
-      tag->channels=head.channels;
-      tag->samplelength=head.samples;
-      offset=sizeof(head);
-
-      /* mmap the sample file */
-      fd=open(tmp,O_RDONLY);
-      if(fd<0){
-	fprintf(stderr,"Unable to open %s fd for mmap:\n\t%d (%s)\n",
-		tmp,errno,strerror(errno));
-	return(-1);
-      }
-      tag->basemap=
-	mmap(NULL,
-	     tag->samplelength*sizeof(int16)*tag->channels+sizeof(head),
-	     PROT_READ,MAP_PRIVATE,fd,0);
-      close(fd);
-      if(!tag->basemap){
-	fprintf(stderr,"Unable to mmap fd %d (%s):\n\t%d (%s)\n",
-		fd,tmp,errno,strerror(errno));
-	return(-1);
-      }
-      
-      for(i=0;i<tag->channels && i<2 ;i++) /* only up to stereo channels */
-	tag->channel_vec[i]=(int16 *)(tag->basemap)+
-	  sizeof(head)+head.samples*i;
-      
-    } 
-  }
 
   /* state is zeroed when we go to production mode.  Done  */
   return(0);
-
 }
 
 void aquire_tag(int number){
@@ -326,6 +382,12 @@ void release_tag(int number){
   if(number<0)return;
   if(number>=tag_count)return;
   tag_list[number].refcount--;
+  if(tag_list[number].refcount==0){
+    if(tag_list[number].basemap)
+      unload_sample(tag_list+number);
+    release_label(tag_list[number].sample_path);
+    release_label(tag_list[number].sample_desc);
+  }
   if(tag_list[number].refcount<0)
     tag_list[number].refcount=0;
 }
@@ -337,8 +399,9 @@ int save_tag(FILE *f,int number){
   if(number>=tag_count)return(0);
   t=tag_list+number;
   if(t->refcount){
-    fprintf(f,"TAG:%d %d %ld %ld %ld",
-	    number,t->sample_path,t->loop_p,t->loop_start,t->loop_lapping,
+    fprintf(f,"TAG:%d %d %d %ld %ld %ld %ld",
+	    number,t->sample_path,t->sample_desc,
+	    t->loop_p,t->loop_start,t->loop_lapping,
 	    t->fade_out);
     count=fprintf(f,"\n");
     if(count<1)return(-1);
@@ -359,14 +422,20 @@ int load_tag(FILE *f){
   int len,count,number;
   memset(&t,0,sizeof(t));
   
-  count=fscanf(f,":%d %d %ld %ld %ld",
-	       &number,&t.sample_path,&t.loop_p,&t.loop_start,
+  count=fscanf(f,":%d %d %d %ld %ld %ld %ld",
+	       &number,&t.sample_path,&t.sample_desc,&t.loop_p,&t.loop_start,
 	       &t.loop_lapping,&t.fade_out);
-  if(count<5){
+  if(count<7){
     addnlstr("LOAD ERROR (TAG): too few fields.",80,' ');
     return(-1);
   }
   aquire_label(t.sample_path);
+  if(load_sample(&t,label_text(t.sample_path))){
+    release_label(t.sample_path);
+    return(-1);
+  }
+  aquire_label(t.sample_desc);
+
   edit_tag(number,t);
   return(0);
 }
@@ -503,6 +572,11 @@ int load_cue(FILE *f){
     addnlstr("LOAD ERROR (CUE): too few fields.",80,' ');
     return(-1);
   }
+  if(c.tag>=tag_count ||
+     !tag_list[c.tag].basemap){
+    addnlstr("LOAD ERROR (CUE): references a bad TAG",80,' ');
+    return(-1);
+  }
 
   for(i=0;i<maxchannels;i++){
     int v;
@@ -539,10 +613,10 @@ int load_cue(FILE *f){
   return(0);
 }
 
-int load_val(FILE *f, int *val){
+int load_val(FILE *f, long *val){
   int count;
   int t;  
-  count=fscanf(f,": %d",&t);
+  count=fscanf(f,": %ld",&t);
   if(count<1){
     addnlstr("LOAD ERROR (VAL): missing field.",80,' ');
     return(-1);
@@ -551,9 +625,9 @@ int load_val(FILE *f, int *val){
   return(0);
 }
 
-int save_val(FILE *f, char *p, int val){  
+int save_val(FILE *f, char *p, long val){  
   int count;
-  fprintf(f,"%s: %d",p,val);
+  fprintf(f,"%s: %ld",p,val);
   count=fprintf(f,"\n");
   if(count<1)return(-1);
   return(0);
@@ -611,15 +685,6 @@ int save_program(FILE *f){
 }
 
 /***************** simple form entry fields *******************/
-
-void switch_to_stderr(){
-  def_prog_mode();           /* save current tty modes */
-  endwin();                  /* restore original tty modes */
-}
-
-void switch_to_ncurses(){
-  refresh();                 /* restore save modes, repaint screen */
-}
 
 enum field_type { FORM_YESNO, FORM_PERCENTAGE, FORM_NUMBER, FORM_GENERIC,
                   FORM_BUTTON } ;
@@ -703,7 +768,7 @@ void draw_field(formfield *f,int edit,int focus){
       break;
     case FORM_NUMBER:
       {
-	int var=*(int *)(f->var);
+	long var=*(long *)(f->var);
 	char buf[80];
 	snprintf(buf,80,"%*d",f->width-2,var);
 	addstr(buf);
@@ -871,7 +936,7 @@ int form_handle_char(form *f,int c){
 	break;
       case FORM_NUMBER:
 	{
-	  int *val=(int *)ff->var;
+	  long *val=(long *)ff->var;
 	  switch(c){
 	  case '0':case '1':case '2':case '3':case '4':
 	  case '5':case '6':case '7':case '8':case '9':
@@ -1059,26 +1124,26 @@ void main_update_cues(int y){
 
     for(i=-1;i<2;i++){
       char buf[80];
-      move(y+i*2+2,0);
+      move(y+i*3+3,0);
       if(i==0){
 	addstr("NEXT => ");
 	attron(A_REVERSE);
       }
       if(cn<0){
-	move(y+i*2+2,8);
+	move(y+i*3+3,8);
 	addnlstr("",71,' ');
-	move(y+i*2+3,8);
+	move(y+i*3+4,8);
 	addnlstr("**** BEGIN",71,' ');
       }else if(cn>=cue_count){
-	move(y+i*2+2,8);
+	move(y+i*3+3,8);
 	addnlstr("****** END",71,' ');
 	attroff(A_REVERSE);
-	move(y+i*2+3,8);
+	move(y+i*3+4,8);
 	addnlstr("",71,' ');
 	if(i==0){
-	  move(y+i*2+4,8);
+	  move(y+i*3+6,8);
 	  addnlstr("",71,' ');
-	  move(y+i*2+5,8);
+	  move(y+i*3+7,8);
 	  addnlstr("",71,' ');
 	}
 	break;
@@ -1086,12 +1151,12 @@ void main_update_cues(int y){
 	cue *c;
 	c=cue_list+cn;
 
-	snprintf(buf,13,"%10s) ",label_list[c->label].text);
-	mvaddstr(y+i*2+2,8,buf);
-	addnlstr(label_list[c->cue_text].text,59,' ');
+	move(y+i*3+3,8);
+	addnlstr(label_text(c->label),12,' ');
+	addnlstr(label_text(c->cue_text),59,' ');
 
-	mvaddstr(y+i*2+3,8,"            ");
-	addnlstr(label_list[c->cue_desc].text,59,' ');
+	mvaddstr(y+i*3+4,8,"            ");
+	addnlstr(label_text(c->cue_desc),59,' ');
       }
       attroff(A_BOLD);
       while(++cn<cue_count)
@@ -1131,7 +1196,7 @@ void main_update_tags(int y){
 	else
 	  sprintf(buf,"[%3ds] ",(ms+500)/1000);
 	addstr(buf);
-	addnlstr(label_list[path].text,55,' ');
+	addnlstr(label_text(path),55,' ');
       }
       move(y+i,14);
       addnlstr("",55,' ');
@@ -1178,7 +1243,7 @@ int save_top_level(char *fn){
   FILE *f;
   if(!firstsave){
     char *buf=alloca(strlen(fn)*2+20);
-    sprintf(buf,"cp %s %s~",fn,fn);
+    sprintf(buf,"cp %s %s~ 2>/dev/null",fn,fn);
     /* create backup file */
     system(buf);
     firstsave=1;
@@ -1237,14 +1302,14 @@ int main_menu(){
 
 
   mvhline(9+MAX_CHANNELS,0,0,80);
-  mvhline(16+MAX_CHANNELS,0,0,80);
+  mvhline(18+MAX_CHANNELS,0,0,80);
 
   main_update_master(main_master_volume,5);
   main_update_playbuffer(4);
   main_update_outchannel_labels(7);
 
   main_update_cues(10+MAX_CHANNELS);
-  main_update_tags(17+MAX_CHANNELS);
+  main_update_tags(19+MAX_CHANNELS);
   curs_set(0);
 
   refresh();
@@ -1396,7 +1461,7 @@ int add_cue_menu(){
   int tnum=new_tag_number();
   form f;
 
-  char label[12]="";
+  char label[13]="";
   char text[61]="";
   char desc[61]="";
 
@@ -1454,97 +1519,6 @@ int add_cue_menu(){
   return(MENU_MAIN);
 }
 
-int add_sample_cue_menu(){
-  int tnum=new_tag_number();
-  int i;
-  char buf[50];
-  form f;
-  form_init(&f,9+MAX_CHANNELS*3);
-  clear();
-  box(stdscr,0,0);
-  mvaddstr(0,2," Add new sample cue ");
-
-  mvaddstr(2,2,"cue number");
-  mvaddstr(3,2,"cue decimal");
-  mvaddstr(4,2,"sample tag");
-  sprintf(buf,"%4d",tnum);
-  attron(A_BOLD);
-  mvaddstr(4,18,buf);
-  attroff(A_BOLD);
-
-  mvaddstr(5,2,"cue text");
-  mvaddstr(7,2,"sample file");
-  mvaddstr(9,2,"volume master       % fade       /      ms");
-  mvaddstr(10,2,"loop                     crosslap       ms");
-
-  mvaddstr(12,2,"channels out");
-
-  for(i=0;i<MAX_CHANNELS;i++){
-    sprintf(buf,"L     %%     R -> %d ",i);
-    mvaddstr(12+i,17,buf);
-    addnlstr(channel_list[i].label,40,' ');
-  }
-    
-
-  {
-    int number=0;
-    int decimal=0;
-    char text[60]="\0";
-    char path[60]="\0";
-    int master=100;
-    int masterin=15;
-    int masterout=15;
-    int outvol[2][MAX_CHANNELS]={{100,0},{0,100}};
-    int loop=0;
-    int cross=0;
-    int loopfield,crossfield;
-
-    field_add(&f,FORM_NUMBER,17,2,6,&number);
-    field_add(&f,FORM_NUMBER,17,3,6,&decimal);
-    field_add(&f,FORM_GENERIC,17,5,60,text);
-    field_add(&f,FORM_GENERIC,17,7,60,path);
-
-    field_add(&f,FORM_PERCENTAGE,17,9,5,&master);
-    field_add(&f,FORM_NUMBER,29,9,6,&masterin);
-    field_add(&f,FORM_NUMBER,36,9,6,&masterout);
-
-    loopfield=field_add(&f,FORM_YESNO,17,10,5,&loop);
-    crossfield=field_add(&f,FORM_NUMBER,36,10,6,&cross);
-    field_state(&f,crossfield,0);
-		
-    for(i=0;i<MAX_CHANNELS;i++){
-      field_add(&f,FORM_PERCENTAGE,18,12+i,5,&(outvol[0][i]));
-      field_add(&f,FORM_PERCENTAGE,24,12+i,5,&(outvol[1][i]));
-    }
-    
-    refresh();
-
-    while(1){
-      int ch=form_handle_char(&f,getch());
-
-      switch(ch){
-      case 27: /* esc */
-	goto out;
-      case KEY_ENTER: case '\n':case '\r':
-	{
-
-	}
-	return(MENU_MAIN);
-      }
-
-      if(f.cursor==loopfield){
-	if(loop)
-	  field_state(&f,crossfield,1);
-	else
-	  field_state(&f,crossfield,0);
-      }
-    }
-  }
-  
- out:
-  form_clear(&f);
-  return(MENU_MAIN);
-}
 
 void edit_keypress_menu(){
   clear();
@@ -1571,11 +1545,394 @@ void edit_keypress_menu(){
   mvaddstr(8,12,"add new mixer change to cue");
   mvaddstr(9,12,"delete highlighted action");
   mvaddstr(10,12,"edit highlighted action");
-  mvaddstr(11,12,"list all sample and sample tags");
+  mvaddstr(11,12,"list all samples and sample tags");
 
   mvaddstr(13,12,"any key to return to cue edit menu");
   refresh();
   getch();
+}
+
+void edit_sample_menu(int n){
+  int i,j;
+  cue *c=cue_list+n;
+  tag *t=tag_list+cue_list[n].tag;
+  char tdesc[61]="";
+  char buf[82];
+  form f;
+
+  clear();
+  box(stdscr,0,0);
+  mvaddstr(0,2," Add/Edit sample cue ");
+  
+  mvaddstr(10,2,"loop                      crosslap       ms");
+  mvaddstr(11,2,"volume master        % fade       /      ms");
+  
+  form_init(&f,7+MAX_CHANNELS*t->channels);
+  strcpy(tdesc,label_text(t->sample_desc));
+
+  field_add(&f,FORM_GENERIC,18,7,59,tdesc);
+
+  field_add(&f,FORM_YESNO,18,10,5,&t->loop_p);
+  field_add(&f,FORM_NUMBER,37,10,6,&t->loop_lapping);
+
+  field_add(&f,FORM_PERCENTAGE,18,11,5,&c->mix.vol_master);
+  field_add(&f,FORM_NUMBER,30,11,6,&c->mix.vol_ms);
+  field_add(&f,FORM_NUMBER,37,11,6,&t->fade_out);
+  
+  mvaddstr(2,2,"cue label        ");
+  addnlstr(label_text(c->label),59,' ');
+  mvaddstr(3,2,"cue text         ");
+  addnlstr(label_text(c->cue_text),59,' ');
+  mvaddstr(4,2,"cue description  ");
+  addnlstr(label_text(c->cue_desc),59,' ');
+
+  mvaddstr(6,2,"sample path      ");
+  addnlstr(label_text(t->sample_path),59,' ');
+
+  mvaddstr(7,2,"sample desc");
+  mvaddstr(8,2,"sample tag       ");
+  sprintf(buf,"%d",c->tag);
+  addstr(buf);
+
+  mvhline(13,3,0,74);
+  mvhline(14+MAX_CHANNELS,3,0,74);
+  mvvline(14,2,0,MAX_CHANNELS);
+  mvvline(14,77,0,MAX_CHANNELS);
+  mvaddch(13,2,ACS_ULCORNER);
+  mvaddch(13,77,ACS_URCORNER);
+  mvaddch(14+MAX_CHANNELS,2,ACS_LLCORNER);
+  mvaddch(14+MAX_CHANNELS,77,ACS_LRCORNER);
+  
+  if(t->channels==2){
+    mvaddstr(13,6," L ");
+    mvaddstr(13,11," R ");
+  }else{
+    for(i=0;i<t->channels;i++){
+      mvaddch(13,6+i*5,' ');
+      addch(48+i);
+      addch(' ');
+    }
+  }
+
+  for(i=0;i<MAX_CHANNELS;i++){
+    for(j=0;j<t->channels && j<2;j++)
+      field_add(&f,FORM_PERCENTAGE,4+j*5,14+i,5,&c->mix.outvol[j][i]);
+    sprintf(buf,"%% ->%2d ",i);
+    mvaddstr(14+i,4+t->channels*5,buf);
+    addnlstr(channel_list[i].label,76-11-t->channels*5,' ');
+  }
+
+  field_add(&f,FORM_BUTTON,61,17+MAX_CHANNELS,16,"ACCEPT CHANGES");
+
+
+#if 0
+ Add/edit sample to cue -------------------------------------------------------
+
+  cue label       [          ]
+  cue text        [                                                          ]
+  cue description [                                                          ]
+
+  sample path     [                                                          ]
+  sample desc     [                                                          ]
+  sample tag      0 
+
+  loop            [No ]     crosslap [----]ms                           
+  volume master   [100]% fade [  15]/[  15]ms
+                            
+  --- L -- R -----------------------------------------------------------------
+ |  [100][  0]% -> 0 offstage left                                            |
+ |  [  0][100]% -> 1 offstage right                                           |
+ |  [  0][  0]% -> 2                                                          |
+ |  [  0][  0]% -> 3                                                          |
+ |  [  0][  0]% -> 4                                                          |
+ |  [  0][  0]% -> 5                                                          |
+ |  [  0][  0]% -> 6                                                          |
+ |  [  0][  0]% -> 7                                                          |
+  ----------------------------------------------------------------------------
+
+#endif
+
+  while(1){
+    int ch=form_handle_char(&f,getch());
+    
+    switch(ch){
+    case 27:
+      goto out;
+    case 'x':case 'X':case KEY_ENTER:
+      unsaved=1;
+      edit_label(t->sample_desc,tdesc);
+      goto out;
+    }
+  }
+ out:
+  form_clear(&f);
+}
+
+void edit_mix_menu(int n){
+  int i,j;
+  cue *c=cue_list+n;
+  tag *t=tag_list+cue_list[n].tag;
+  char tdesc[61]="";
+  char buf[82];
+  form f;
+
+  clear();
+  box(stdscr,0,0);
+  mvaddstr(0,2," Add/Edit mix cue ");
+  
+  mvaddstr(10,2,"volume master        % fade       ms");
+  
+  form_init(&f,3+MAX_CHANNELS*t->channels);
+  strcpy(tdesc,label_text(t->sample_desc));
+
+  field_add(&f,FORM_PERCENTAGE,18,10,5,&c->mix.vol_master);
+  field_add(&f,FORM_NUMBER,30,10,6,&c->mix.vol_ms);
+  
+  mvaddstr(2,2,"cue label        ");
+  addnlstr(label_text(c->label),59,' ');
+  mvaddstr(3,2,"cue text         ");
+  addnlstr(label_text(c->cue_text),59,' ');
+  mvaddstr(4,2,"cue description  ");
+  addnlstr(label_text(c->cue_desc),59,' ');
+
+  mvaddstr(6,2,"sample path      ");
+  addnlstr(label_text(t->sample_path),59,' ');
+
+  mvaddstr(7,2,"sample desc      ");
+  addnlstr(label_text(t->sample_desc),59,' ');
+  mvaddstr(8,2,"sample tag       ");
+  sprintf(buf,"%d",c->tag);
+  addstr(buf);
+
+  mvhline(12,3,0,74);
+  mvhline(13+MAX_CHANNELS,3,0,74);
+  mvvline(13,2,0,MAX_CHANNELS);
+  mvvline(13,77,0,MAX_CHANNELS);
+  mvaddch(12,2,ACS_ULCORNER);
+  mvaddch(12,77,ACS_URCORNER);
+  mvaddch(13+MAX_CHANNELS,2,ACS_LLCORNER);
+  mvaddch(13+MAX_CHANNELS,77,ACS_LRCORNER);
+  
+  if(t->channels==2){
+    mvaddstr(12,6," L ");
+    mvaddstr(12,11," R ");
+  }else{
+    for(i=0;i<t->channels;i++){
+      mvaddch(12,6+i*5,' ');
+      addch(48+i);
+      addch(' ');
+    }
+  }
+
+  for(i=0;i<MAX_CHANNELS;i++){
+    for(j=0;j<t->channels && j<2;j++)
+      field_add(&f,FORM_PERCENTAGE,4+j*5,13+i,5,&c->mix.outvol[j][i]);
+    sprintf(buf,"%% ->%2d ",i);
+    mvaddstr(13+i,4+t->channels*5,buf);
+    addnlstr(channel_list[i].label,76-11-t->channels*5,' ');
+  }
+
+  field_add(&f,FORM_BUTTON,61,16+MAX_CHANNELS,16,"ACCEPT CHANGES");
+
+
+#if 0
+ Add/edit mix change ---------------------------------------------------------
+
+  cue label       [          ]
+  cue text        [                                                          ]
+  cue description [                                                          ]
+
+  modify tag      [   0]
+ 
+  volume master   [100]% fade [  15]
+                            
+  --- L -- R -----------------------------------------------------------------
+ |  [100][  0]% -> 0 offstage left                                            |
+ |  [  0][100]% -> 1 offstage right                                           |
+ |  [  0][  0]% -> 2                                                          |
+ |  [  0][  0]% -> 3                                                          |
+ |  [  0][  0]% -> 4                                                          |
+ |  [  0][  0]% -> 5                                                          |
+ |  [  0][  0]% -> 6                                                          |
+ |  [  0][  0]% -> 7                                                          |
+  ----------------------------------------------------------------------------
+
+ (l: list tags)
+
+#endif
+
+  while(1){
+    int ch=form_handle_char(&f,getch());
+    
+    switch(ch){
+    case 27:
+      goto out;
+    case 'x':case 'X':case KEY_ENTER:
+      unsaved=1;
+      goto out;
+    }
+  }
+ out:
+  form_clear(&f);
+
+}
+
+int add_sample_menu(){
+  /* two-stage... get sample first so the mixer is accurate */
+  tag t;
+  tag_number tagno;
+
+  form f;
+  char path[64]="";
+
+  clear();
+  box(stdscr,0,0);
+  mvaddstr(0,2," Add new sample to cue ");
+  
+  form_init(&f,1);
+  mvaddstr(2,2,"sample path");
+  field_add(&f,FORM_GENERIC,14,2,62,path);
+  f.edit=1;
+  form_redraw(&f);
+
+  while(1){
+    int ch=getch();
+    int re=form_handle_char(&f,ch);
+
+    if(re>=0 || !f.edit){
+      if(ch==27){
+	form_clear(&f);
+	return(MENU_EDIT);
+      }
+      break;
+    }
+  }
+
+  /* try to load the sample! */
+  switch_to_stderr();
+  if(load_sample(&t,path)){
+    fprintf(stderr,"Press enter to continue\n");
+    getc(stdin);
+    switch_to_ncurses();
+    return(1);
+  }
+  switch_to_ncurses();
+
+  unsaved=1;
+
+  /* finish the tag */
+  {
+    t.sample_path=new_label_number();
+    aquire_label(t.sample_path);
+    edit_label(t.sample_path,path);
+
+    t.sample_desc=new_label_number();
+    aquire_label(t.sample_desc);
+    edit_label(t.sample_desc,"");
+    t.loop_p=0;
+    t.loop_start=0;
+    t.loop_lapping=1000;
+
+    t.fade_out=15;
+    
+    tagno=new_tag_number();
+    aquire_tag(tagno);
+    edit_tag(tagno,t);
+  }
+
+  /* got it, add a new cue */
+  {
+    cue c;
+    
+    aquire_label(c.label=cue_list[cue_list_number].label);
+    aquire_label(c.cue_text=cue_list[cue_list_number].cue_text);
+    aquire_label(c.cue_desc=cue_list[cue_list_number].cue_desc);
+    c.tag=tagno;
+    c.tag_create_p=1;
+    memset(&c.mix,0,sizeof(mix));
+    c.mix.vol_master=100;
+    c.mix.vol_ms=10;
+    c.mix.outvol[0][0]=100;
+    c.mix.outvol[1][1]=100;
+
+    add_cue(cue_list_number+1,c);
+  }
+
+  /* go to main edit menu */
+  edit_sample_menu(cue_list_number+1);
+
+  return(MENU_EDIT);
+}
+
+int add_mix_menu(){
+  tag_number tagno=0;
+
+  form f;
+
+  clear();
+  box(stdscr,0,0);
+  mvaddstr(0,2," Add mixer change to cue ");
+  
+  form_init(&f,1);
+  mvaddstr(2,2,"tag number ");
+  field_add(&f,FORM_NUMBER,13,2,12,&tagno);
+  f.edit=1;
+  form_redraw(&f);
+
+  mvaddstr(4,2,"'");
+  attron(A_BOLD);
+  addstr("l");
+  attroff(A_BOLD);
+  addstr("' for a list of sample tags                    ");
+
+  while(1){
+    int ch=getch();
+    int re=form_handle_char(&f,ch);
+
+    if(re>=0 || !f.edit){
+      if(ch==27){
+	form_clear(&f);
+	return(MENU_EDIT);
+      }
+      if(tagno>=tag_count || tag_list[tagno].refcount<=0){
+	mvaddstr(4,2,"Bad tag number; any key to continue.");
+	getch();
+	mvaddstr(4,2,"'");
+	attron(A_BOLD);
+	addstr("l");
+	attroff(A_BOLD);
+	addstr("' for a list of sample tags                    ");
+	f.edit=1;
+	form_redraw(&f);
+      }else
+	break;
+    }
+  }
+
+  /* add the new cue */
+  {
+    cue c;
+    unsaved=1;
+
+    aquire_tag(tagno);
+    aquire_label(c.label=cue_list[cue_list_number].label);
+    aquire_label(c.cue_text=cue_list[cue_list_number].cue_text);
+    aquire_label(c.cue_desc=cue_list[cue_list_number].cue_desc);
+    c.tag=tagno;
+    c.tag_create_p=0;
+    memset(&c.mix,0,sizeof(mix));
+    c.mix.vol_master=100;
+    c.mix.vol_ms=10;
+    c.mix.outvol[0][0]=100;
+    c.mix.outvol[1][1]=100;
+
+    add_cue(cue_list_number+1,c);
+  }
+
+  /* go to main edit menu */
+  edit_mix_menu(cue_list_number+1);
+
+  return(MENU_EDIT);
 }
 
 int edit_cue_menu(){
@@ -1590,13 +1947,13 @@ int edit_cue_menu(){
   int last=first;
   int actions,i;
 
-  while(cue_list[last].tag!=-1)last++;
+  while(last<cue_count && cue_list[last].tag!=-1)last++;
   actions=last-first;
 
   form_init(&f,4+actions);
-  strcpy(label,label_list[cue_list[base].label].text);
-  strcpy(text,label_list[cue_list[base].cue_text].text);
-  strcpy(desc,label_list[cue_list[base].cue_desc].text);
+  strcpy(label,label_text(cue_list[base].label));
+  strcpy(text,label_text(cue_list[base].cue_text));
+  strcpy(desc,label_text(cue_list[base].cue_desc));
 
   field_add(&f,FORM_GENERIC,18,2,12,label);
   field_add(&f,FORM_GENERIC,18,3,59,text);
@@ -1607,16 +1964,14 @@ int edit_cue_menu(){
     int tag=cue_list[first+i].tag;
     snprintf(buf,80,"%s sample %d (%s)",
 	     cue_list[first+i].tag_create_p?"ADD":"MIX",tag,
-	     label_list[tag_list[tag].sample_path].text);
-    field_add(&f,FORM_BUTTON,11,6+i,64,buf);
+	     label_text(tag_list[tag].sample_path));
+    field_add(&f,FORM_BUTTON,11,6+i,66,buf);
   }
   if(actions==0){
     mvaddstr(6,11,"--None--");
     i++;
   }
   field_add(&f,FORM_BUTTON,66,7+i,11,"MAIN MENU");
-
-  refresh();
 
   while(1){
     int loop=1;
@@ -1646,7 +2001,29 @@ int edit_cue_menu(){
 	edit_label(cue_list[base].cue_text,text);
 	edit_label(cue_list[base].cue_desc,desc);
 	goto out;
-
+      case 'a':case 'A':
+	add_sample_menu();
+	form_clear(&f);
+	return(MENU_EDIT);
+      case 'm':case 'M':
+	add_mix_menu();
+	form_clear(&f);
+	return(MENU_EDIT);
+      case 'd': case 'D':
+	if(actions>0){
+	  if(f.cursor>=3 && f.cursor<3+actions){
+	    int n=first+f.cursor-3;
+	    unsaved=1;
+	    delete_cue_single(n);
+	    form_clear(&f);
+	    return(MENU_EDIT);
+	  }
+	}
+	break;
+      case 'l': case 'L':
+	//list_tag_menu();
+	loop=0;
+	break;
       case KEY_ENTER:
 	if(f.cursor==3+actions){
 	  unsaved=1;
@@ -1656,10 +2033,11 @@ int edit_cue_menu(){
 	  goto out;
 	}
 	/* ... else we're an action edit */
-
-	{
-
-	}
+	if(cue_list[first+f.cursor-3].tag_create_p)
+	   edit_sample_menu(first+f.cursor-3);
+	else
+	   edit_mix_menu(first+f.cursor-3);
+	loop=0;
 	break;
       }
     }
@@ -1702,11 +2080,42 @@ int main_loop(){
 }
   
 int main(int gratuitously,char *different[]){
+  int lf;
+
   if(gratuitously<2){
     fprintf(stderr,"Usage: beaverphonic <settingfile>\n");
     exit(1);
   }
+
+  mkdir(tempdir,0777);
+
+  /* lock against other instances */
+  lf=open(lockfile,O_CREAT|O_RDWR,0770);
+  if(lf<0){
+    fprintf(stderr,"unable to open lock file: %s.\n",strerror(errno));
+    exit(1);
+  }
   
+  if(flock(lf,LOCK_EX|LOCK_NB)){
+    fprintf(stderr,"Another Beaverphonic process is running.\n"
+	    "  (could not aquire lockfile)\n");
+    exit(1);
+  }
+
+  /* load the sound config if the file exists, else create it */
+  program=strdup(different[1]);
+  {
+    FILE *f=fopen(program,"rb");
+    if(f){
+      if(load_program(f)){
+	fprintf(stderr,"Press enter to continue\n");
+	getc(stdin);
+      }
+      fclose(f);
+    }
+  }
+
+
   initscr(); cbreak(); noecho();
   nonl();
   intrflush(stdscr, FALSE);
@@ -1714,88 +2123,15 @@ int main(int gratuitously,char *different[]){
   use_default_colors();
   signal(SIGINT,SIG_IGN);
 
-  /* load the sound config if the file exists, else create it */
-  program=strdup(different[1]);
-  {
-    FILE *f=fopen(program,"rb");
-    if(f){
-      load_program(f);
-      fclose(f);
-    }
-  }
   
   main_loop();
   endwin();                  /* restore original tty modes */  
+  close(lf);
+  unlink(lockfile);
 }  
 
 
 #if 0 
-
- Add new cue -----------------------------------------------------------------
-  cue label       [          ]
-  cue text        [                                                          ]
-  cue description [                                                          ]
-
- Edit cue --------------------------------------------------------------------
-  cue label       [          ]
-  cue text        [                                                          ]
-  cue description [                                                          ]
-
-  actions: [MIX sample 1 (                    )                              ]
-           [ADD sample 3 (                    )                              ]
-
-  ?
-  a  add sample
-  m  mix sample
-  l  list samples
-  e/enter  edit action 
-  Esc/Enter off main menu
-
- Add new sample to cue -------------------------------------------------------
-
-  cue label       [          ]
-  cue text        [                                                          ]
-  cue description [                                                          ]
-
-  sample path     [                                                          ]
-  sample tag      0 
-
-  loop            [No ]     crosslap [----]ms                           
-  volume master   [100]% fade [  15]/[  15]ms
-                            
-  --- L -- R -----------------------------------------------------------------
- |  [100][  0]% -> 0 offstage left                                            |
- |  [  0][100]% -> 1 offstage right                                           |
- |  [  0][  0]% -> 2                                                          |
- |  [  0][  0]% -> 3                                                          |
- |  [  0][  0]% -> 4                                                          |
- |  [  0][  0]% -> 5                                                          |
- |  [  0][  0]% -> 6                                                          |
- |  [  0][  0]% -> 7                                                          |
-  ----------------------------------------------------------------------------
-
- Add mix change to cue -------------------------------------------------------
-
-  cue label       [          ]
-  cue text        [                                                          ]
-  cue description [                                                          ]
-
-  modify tag      [   0]
- 
-  volume master   [100]% fade [  15]
-                            
-  --- L -- R -----------------------------------------------------------------
- |  [100][  0]% -> 0 offstage left                                            |
- |  [  0][100]% -> 1 offstage right                                           |
- |  [  0][  0]% -> 2                                                          |
- |  [  0][  0]% -> 3                                                          |
- |  [  0][  0]% -> 4                                                          |
- |  [  0][  0]% -> 5                                                          |
- |  [  0][  0]% -> 6                                                          |
- |  [  0][  0]% -> 7                                                          |
-  ----------------------------------------------------------------------------
-
- (l: list tags)
 
 OUTPUT CHANNELS
 
@@ -1805,3 +2141,8 @@ OUTPUT CHANNELS
 
 
 #endif
+
+
+
+
+
