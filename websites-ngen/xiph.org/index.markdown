@@ -18,7 +18,7 @@ nobody in their right mind would ever want to play it.
 
 ---
 
-The Xiph.Org Foundation is a non-profit corporation dedicated to protecting the foundations of
+The Xiph.org Foundation is a non-profit corporation dedicated to protecting the foundations of
 Internet multimedia from control by private interests. Our purpose is to support and develop free,
 open protocols and software to serve the public, developer and business markets.
 

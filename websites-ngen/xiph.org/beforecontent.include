@@ -28,5 +28,13 @@
 		<em class='reset'>&nbsp;</em>
 	</a>
 </li>
+<li class='icecast'>
+	<a href='/icecast/'>
+		<strong>Icecast</strong><br>
+		Industrial-strength audio streaming.
+		<em class='reset'>&nbsp;</em>
+	</a>
+</li>
+
 </ul>
 </div>

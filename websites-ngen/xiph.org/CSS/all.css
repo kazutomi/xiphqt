@@ -11,7 +11,6 @@ html {
 	background: #778899; /* light slate gray */
 	background: #708090; /* slate gray */
 	background: #2e8b57; /* sea green */
-	background: #4682b4; /* steel blue */
 	background: #6495ed; /* cornflower blue */
 	background: #1e90ff; /* cornflower blue */
 	background: #556b2f; /* dark olive green */
@@ -19,6 +18,9 @@ html {
 	background: #f5f5f5; /* white smoke */
 	background: #ffdead; /* navajo white */
 	background: #696969; /* dim gray */
+	background: #a9ae7c; /* picked this one up from DigitalColor meter */
+	background: #a3a9a3; /* from a seagull's wingpit */
+	background: #4682b4; /* steel blue */
 
 	margin: 0;
 	padding: 0;
@@ -31,18 +33,21 @@ body {
 
 h1 {
 	margin-top: 0;
+	padding-top: .25em;
+	font-size: 225%;
 }
 
-h1, h2, h3, h4, h5, h6, ul#bignavbuttons strong {
+h1, h2, h3, h4, h5, h6 {
 	font-family: "Palatino Linotype", Georgia, "Book Antiqua", serif;
 	font-weight: normal;
 	color: #088;
 
+
 }
+
 div#content {
 	margin: 0 1em 1em 19em;
 	padding: 0 .5em;
-	width: 40em;
 	border: 1px solid gray;
 	background: white;
 	background: #f5f5f5; /* white smoke */
@@ -84,6 +89,7 @@ ul#bignavbuttons a {
 	display: block;
 	padding: .25em;
 	text-decoration: none;
+	color: black;
 }
 
 ul#bignavbuttons a:link,
@@ -91,23 +97,38 @@ ul#bignavbuttons a:visited {
 	color: black;
 }
 
+ul#bignavbuttons li a:hover {
+	color: black;
+}
+
 ul#bignavbuttons li.vorbis a:hover {
-	background: #74a5fd;
+	background: #b6cfbd;
+}
+
+ul#bignavbuttons li.speex a:hover {
+	background: #b1cfa1;
 }
 
 ul#bignavbuttons li.flac a:hover {
 	background: #ff9; /* banana-ish */
-}
-
-ul#bignavbuttons li.speex a:hover {
-	background: #90ee90; /* light green */
+	background: #6e6942;
+	background: #c7cf97; /* Mike calls this one "gloomy AND nasty" */
+	background: #cac8a9; /* "less nasty" */
 }
 
 ul#bignavbuttons li.theora a:hover {
 	background: #ebf;
+	background: #d0c6ff;
+	background: #bdb8cf;
 }
 
 ul#bignavbuttons li.icecast a:hover {
 	background: #f5f5f5; /* white smoke */
+	background: #ccc;
 }
 
+div#footer {
+	border-top: 1px solid #aaa;
+	padding: .25em 0 1em;
+	text-align: center;
+}
