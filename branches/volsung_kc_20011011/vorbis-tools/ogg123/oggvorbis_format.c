@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.7 2001/12/14 17:54:05 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.8 2001/12/16 00:31:42 volsung Exp $
 
  ********************************************************************/
 
@@ -194,6 +194,28 @@ int ovf_read (decoder_t *decoder, void *ptr, int nbytes, int *eos,
 }
 
 
+int ovf_seek (decoder_t *decoder, double offset, int whence)
+{
+  ovf_private_t *priv = decoder->private;
+  int ret;
+  double cur;
+
+  if (whence == DECODER_SEEK_CUR) {
+    cur = ov_time_tell(&priv->vf);
+    if (cur >= 0.0)
+      offset += cur;
+    else
+      return 0;
+  }
+
+  ret = ov_time_seek(&priv->vf, offset);
+  if (ret == 0)
+    return 1;
+  else
+    return 0;
+}
+
+
 decoder_stats_t *ovf_statistics (decoder_t *decoder)
 {
   ovf_private_t *priv = decoder->private;
@@ -237,6 +259,7 @@ format_t oggvorbis_format = {
   &ovf_can_decode,
   &ovf_init,
   &ovf_read,
+  &ovf_seek,
   &ovf_statistics,
   &ovf_cleanup,
 };
