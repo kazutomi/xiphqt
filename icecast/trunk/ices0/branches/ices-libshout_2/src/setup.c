@@ -478,10 +478,8 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
       shout_set_protocol(conn, SHOUT_PROTOCOL_HTTP);
     else
       shout_set_protocol(conn, SHOUT_PROTOCOL_XAUDIOCAST);
-/*  TODO: Not yet supported in libshout2 */
-#if 0
-    stream->conn.dumpfile = stream->dumpfile;
-#endif
+    if (stream->dumpfile)
+      shout_set_dumpfile(conn, stream->dumpfile);
     shout_set_name (conn, stream->name);
     shout_set_url (conn, stream->url);
     shout_set_genre (conn, stream->genre);
@@ -503,12 +501,7 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 		    shout_get_public (conn));
     ices_log_debug ("Mount: %s\tDumpfile: %s",
 		    shout_get_mount (conn),
-#if 0
-		    ices_util_nullcheck (stream->conn.dumpfile));
-#else
-                    "Not supported in libshout2");
-#endif
-
+		    ices_util_nullcheck (shout_get_dumpfile (conn)));
     streamno++;
   }
 }
