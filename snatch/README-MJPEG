@@ -1,4 +1,4 @@
-Snatch 20011114
+Snatch 20020222
 
 Converting Snatch capture files to MPEG audio/video with MJPEG-1.4.1
 
@@ -7,6 +7,12 @@ Converting Snatch capture files to MPEG audio/video with MJPEG-1.4.1
 mjpegtools-1.4.1 is a nice little collection of MPEG audio and video
 utilities that, for the most part, work out of the box.  The output
 quality is very nice, and the tool set is intelligently arranged.
+
+(I'll note that 1.6.0 of mjpeg-tools is now out; I find that 1.4.1
+gives slightly better quality performance and still prefer it over its
+newer cousing.  Also, 1.6.0 changes the YUV file format used together
+by the tools in an incompatable way with 1.4.1, so supporting both
+will take some hacking).
 
 The various tools in the mjpeg-tools trade video in YUV format and
 audio as WAV.  Snatch support for mjpegtools consists of two
