@@ -368,8 +368,8 @@ will most likely consist of a Vorbis audio track and a video track
 (using Tarkin, VP3 or some other video codec) inside of a single Ogg
 file.  Some preliminary work has been done to put MNG and MIDI content
 into Ogg files as well.  Experimental code is available in the
-ogg-tools module in the <a href="http://www.xiph.org/cvs.html">Xiph.org
-CVS repository</a>. Programmers working on such extensions can discuss
+ogg-tools module in the <a href="http://www.xiph.org/svn.html">Xiph.org
+SVN repository</a>. Programmers working on such extensions can discuss
 issues and questions on the <a href="http://www.xiph.org/ogg/vmail.html">vorbis-dev mailing list</a>.</p></dd>
 <dt><a href="#unique" id="unique">What other unique features does Ogg Vorbis have?</a></dt>
 <dd><p>Vorbis has a well defined comment header that is easy to use and extensible and obviates the need for clunky hacks like ID3 tags.  Vorbis has bitrate scaling - a feature that lets you adjust the bitrate of a Vorbis file or stream without reencoding; just chop the packets up in the sizes you want them.  Vorbis files can be sliced and edited with sample granularity.  Vorbis has support for many channels, not just 1 or 2.  Vorbis files can be logically chained together.</p></dd>
@@ -383,7 +383,7 @@ issues and questions on the <a href="http://www.xiph.org/ogg/vmail.html">vorbis-
 <dd>
 <p>It is important to first become familiar with current development efforts.   The best ways to do this are:</p>
 <ul>
-						<li>Download and compile the latest development code from <a href="http://www.xiph.org/cvs.html">the Xiph.org CVS repository</a>. The 
+						<li>Download and compile the latest development code from <a href="http://www.xiph.org/svn.html">the Xiph.org SVN repository</a>. The 
 important modules for Ogg Vorbis development are ogg, vorbis, ao, and
 vorbis-tools.  If you are interested in working on putting other media types
 into Ogg files, the ogg-tools module also has example code.</li>
@@ -399,7 +399,7 @@ interesting at the current moment.</li>
 libraries and tools?</a></dt>
 <dd>
 <p>If you want to contribute bug fixes or enhancements to vorbis-tools, the
-preferred method is to generate a patch against the latest <a href="http://www.xiph.org/cvs.html">CVS code</a>. You can do this by running
+preferred method is to generate a patch against the latest <a href="http://www.xiph.org/svn.html">SVN code</a>. You can do this by running
 the command &quot;cvs diff -u &gt; mybugfix.patch&quot; from the source code directory you
 checked out from CVS.</p>
 <p>Once you have a patch, you need to file a bug/enhancement report on the <a href="http://bugs.xiph.org">Xiph.org Bugzilla server</a>. You can attach your
