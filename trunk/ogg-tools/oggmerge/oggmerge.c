@@ -251,7 +251,11 @@ int main(int argc, char **argv)
 		file = params.input;
 		while (file) {
 			if (file->page == NULL) {
-				while (!feof(file->fp) && file->status == EMOREDATA  && (file->page = file->page_out(&file->state)) == NULL) {
+				while ((file->page = file->page_out(&file->state)) == NULL && file->status == EMOREDATA) {
+					if (feof(file->fp)) {
+						file->status = 0;
+						break;
+					}
 					bytes = fread(buf, 1, BUFSIZE, file->fp);
 					file->status = file->data_in(&file->state, buf, bytes);
 					if (file->status < 0 && file->status != EMOREDATA) {

@@ -251,7 +251,7 @@ static int _get_byte(midi_state_t *midistate)
 	if (databuf->pos == databuf->size)
 		midistate->data = databuf->next;
 
-	return value;
+	return value & 0xFF;
 }
 
 static int64_t _get_long(midi_state_t *midistate)
@@ -263,8 +263,7 @@ static int64_t _get_long(midi_state_t *midistate)
 	value = ((_get_byte(midistate) & 0xFF) << 24) | ((_get_byte(midistate) & 0xFF) << 16) | 
 		((_get_byte(midistate) & 0xFF) << 8) | (_get_byte(midistate) & 0xFF);
 
-//	if (_little_endian()) return _swap_long(value);
-	return value;
+	return value & 0xFFFFFFFF;
 }
 
 static long _get_short(midi_state_t *midistate)
@@ -275,8 +274,7 @@ static long _get_short(midi_state_t *midistate)
 
 	value = ((_get_byte(midistate) & 0xFF) << 8) | (_get_byte(midistate) & 0xFF);
 
-//	if (_little_endian()) return _swap_short(value);
-	return value;
+	return value & 0xFFFF;
 }
 
 static ogg_page *_copy_ogg_page(ogg_page *og)
@@ -460,7 +458,6 @@ static int _process_data(midi_state_t *midistate)
 				break;
 			}
 			
-			printf("_process_data(): parsing header\n");
 			// parse the header, make a packet, and stuff
 			// into the stream
 			buf = _get_data(midistate, 4);
@@ -488,11 +485,6 @@ static int _process_data(midi_state_t *midistate)
 				ticks = (rawtime & 0x7FFF);
 			}
 		
-			if (smtpe)
-				printf("SMTPE timebase of %d frames and %d ticks per frame\n", frames, ticks);
-			else
-				printf("Timebase of %d ticks per quarternote\n", ticks);
-
 			// grab second chunk header
 			buf = _get_data(midistate, 4);
 			if (buf == NULL || memcmp(buf, "MTrk", 4) != 0) {

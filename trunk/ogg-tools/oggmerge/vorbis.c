@@ -146,7 +146,6 @@ static u_int64_t _make_timestamp(vorbis_state_t *vstate, ogg_int64_t granulepos)
 	
 	if (vstate->samplerate == 0) return 0;
 	
-	printf("making timestamp from granulepos = %lld and samplerate = %d\n", granulepos, vstate->samplerate);
 	stamp = (double)granulepos * (double)1000000 / (double)vstate->samplerate;
 	
 	return stamp;
