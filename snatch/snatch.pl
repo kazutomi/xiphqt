@@ -351,6 +351,7 @@ sub trim_glob{
 }
 
 sub ThrowRealPlayer{
+    $recording_active=0;
     $SIG{CHLD}='IGNORE';
 
     Status("Starting RealPlayer...");
@@ -661,7 +662,8 @@ sub SetupTimerDispatch{
 	    DoTimedEntry($start,$line);
 	    return;
 	}else{
-	    $next_timer_event=$start if($next_timer_event==0 || $start<$next_timer_event);
+	    $next_timer_event=$start if(($next_timer_event==0 || 
+					$start<$next_timer_event) && $start>$now);
 	}
     }
     # nothing happening now
@@ -692,7 +694,7 @@ sub TimerWatch{
 	    $prompt=$waiting_minutes."m ".$waiting_seconds."s";
 	}
 	
-	if($timer_entry_active){
+	if($recording_active){
 	    Status("Timer recording [$prompt]");
 	}else{
 	    Status("Timer wait [$prompt]");

@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include "snatchppm.h"
 #include "waitppm.h"
+#include "realppm.h"
 
 static unsigned long root_window=0;
 static unsigned long rpshell_window=0;
@@ -16,7 +17,6 @@ static unsigned long rpplay_window=0;
 static unsigned long rpplay_width=0;
 static unsigned long rpplay_height=0;
 
-static unsigned long logo_x=0;
 static unsigned long logo_y=-1;
 static unsigned long logo_prev=-1;
 
@@ -443,7 +443,6 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
       rpplay_width=0;
       rpplay_height=0;
       
-      logo_x=0;
       logo_y=-1;
       logo_prev=-1;
       
@@ -582,12 +581,10 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	  if(blacklower-test<snatchheight)logo_y=-1;
 	}
       }
-      logo_x=(width/2)-(snatchwidth/2);
-
     }
       
     /* blank background */
-    if(snatch_active){
+    {
       unsigned char *bptr;
       
       if(snatch_active==1)
@@ -612,32 +609,54 @@ int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
 	    ptr[i*width*4+j*4]=bptr[2];
 	  }
       }
+    }
       
-      /* paint logo */
-      if(logo_y!=-1){
-	for(i=0;i<snatchheight;i++){
-	  if(i+logo_y<height){
-	    char *snatch;
-	    char *real;
-	    
-	    real=ptr+width*4*(i+logo_y)+logo_x*4;
-	    snatch=(snatch_active==1?snatchppm:waitppm)+snatchwidth*3*i;
-	    
-	    if(endian){
+    /* paint logo */
+    if(logo_y!=-1){
+      unsigned char *logo;
+      int logowidth;
+      int logoheight;
 
-	      for(k=0,j=0;k<snatchwidth*3 && j<width*4;){
-		real[++j]=snatch[k++];
-		real[++j]=snatch[k++];
-		real[++j]=snatch[k++];
-		++j;
-	      }
-	      	      
-	    }else{
-	      for(k=0,j=0;k<snatchwidth*3 && j<width*4;j+=4){
-		real[j+2]=snatch[k++];
-		real[j+1]=snatch[k++];
-		real[j]=snatch[k++];
-	      }
+      switch(snatch_active){
+      case 0:
+	logo=realppm;
+	logowidth=realwidth;
+	logoheight=realheight;
+	break;
+      case 1:
+	logo=snatchppm;
+	logowidth=snatchwidth;
+	logoheight=snatchheight;
+	break;
+      case 2:
+	logo=waitppm;
+	logowidth=snatchwidth;
+	logoheight=snatchheight;
+	break;
+      }
+
+      for(i=0;i<logoheight;i++){
+	if(i+logo_y<height){
+	  char *snatch;
+	  char *real;
+	  
+	  real=ptr+width*4*(i+logo_y)+(rpplay_width-logowidth)*2;
+	  snatch=logo+logowidth*3*i;
+	  
+	  if(endian){
+	    
+	    for(k=0,j=0;k<logowidth*3 && j<width*4;){
+	      real[++j]=snatch[k++];
+	      real[++j]=snatch[k++];
+	      real[++j]=snatch[k++];
+	      ++j;
+	    }
+	    
+	  }else{
+	    for(k=0,j=0;k<logowidth*3 && j<width*4;j+=4){
+	      real[j+2]=snatch[k++];
+	      real[j+1]=snatch[k++];
+	      real[j]=snatch[k++];
 	    }
 	  }
 	}
