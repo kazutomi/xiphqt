@@ -5,6 +5,10 @@ AM_INIT_AUTOMAKE(oggmerge,0.9)
 
 AC_PROG_CC
 
+dnl substitue the included getopt if the system doesn't support long options
+AC_CHECK_FUNC(getopt_long, [GETOPT_OBJS=''], [GETOPT_OBJS='getopt.$(OBJEXT) getopt1.$(OBJEXT)'])
+AC_SUBST(GETOPT_OBJS)
+
 XIPH_PATH_OGG()
 XIPH_PATH_VORBIS()
 
