@@ -84,21 +84,7 @@ ices_stream_loop (void)
 
   /* Foreeeever streams, I want to be forever streaming... */
   while (1) {
-    char *file;
-
-    /* Get the next file to stream from the playlist module.
-     * This is a dynamically allocated string, which we free
-     * further down in the loop */
-    file = ices_playlist_get_next ();
-    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
-
-    /* We quit if the playlist handler gives us a NULL filename */
-    if (!file) {
-      ices_log ("Warning: ices_file_get_next() gave me an error, this is not good. [%s]", ices_log_get_error ());
-      ices_setup_shutdown ();
-    }
-		
-    source.path = file;
+    source.path = ices_playlist_get_next ();
     source.bytes_read = 0;
     source.filesize = 0;
 
@@ -106,8 +92,17 @@ ices_stream_loop (void)
     source.readpcm = NULL;
     source.close = NULL;
 
+    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
+
+    /* We quit if the playlist handler gives us a NULL filename */
+    if (!source.path) {
+      ices_log ("Warning: ices_file_get_next() gave me an error, this is not good. [%s]", ices_log_get_error ());
+      ices_setup_shutdown ();
+    }
+		
     if (stream_open_source (&source) < 0) {
-      ices_util_free (file);
+      ices_log ("Error opening %s: %s", source.path, ices_log_get_error ());
+      ices_util_free (&source.path);
       consecutive_errors++;
       continue;
     }
@@ -115,16 +110,16 @@ ices_stream_loop (void)
     if (!source.read)
       for (stream = ices_config.streams; stream; stream = stream->next)
 	if (!stream->reencode) {
-	  ices_log ("Cannot play %s without reencoding", file);
+	  ices_log ("Cannot play %s without reencoding", source.path);
 	  source.close (&source);
-	  ices_util_free (file);
+	  ices_util_free (&source.path);
 	  consecutive_errors ++;
 	  continue;
 	}
 
     /* If something goes on while transfering, we just go on */
     if (stream_send (&source) < 0) {
-      ices_log ("Encountered error while transfering %s: %s", file, ices_log_get_error ());
+      ices_log ("Encountered error while transfering %s: %s", source.path, ices_log_get_error ());
 
       consecutive_errors++;
 
@@ -133,11 +128,11 @@ ices_stream_loop (void)
 	 invalid file names. */
       if (consecutive_errors > 10) {
 	ices_log ("Exiting after 10 consecutive errors.");
-	ices_util_free (file);
+	ices_util_free (&source.path);
 	ices_setup_shutdown ();
       }
 
-      ices_util_free (file);
+      ices_util_free (&source.path);
       continue;
     } else {
       /* Reset the consecutive error counter */
@@ -145,7 +140,7 @@ ices_stream_loop (void)
     }
 		
     /* Free the dynamically allocated filename */
-    ices_util_free (file);
+    ices_util_free (&source.path);
   }
   /* Not reached */
 }
@@ -291,7 +286,7 @@ stream_open_source (input_stream_t* source)
 
   if ((fd = open (source->path, O_RDONLY)) < 0) {
     ices_util_strerror (errno, buf, sizeof (buf));
-    ices_log_error ("Error opening %s: %s", source->path, buf);
+    ices_log_error ("Error opening: %s", buf);
 
     return -1;
   }
@@ -308,7 +303,7 @@ stream_open_source (input_stream_t* source)
 
   if ((len = read (fd, buf, sizeof (buf))) <= 0) {
     ices_util_strerror (errno, buf, sizeof (buf));
-    ices_log_error ("Error reading header from %s: %s", source->path, buf);
+    ices_log_error ("Error reading header: %s", source->path, buf);
     
     return -1;
   }
