@@ -555,6 +555,7 @@ sub Robot_PlayFile{
 
 sub Robot_Stop{
     $last_timer_event=time();
+    $recording_restart=0;
     my $stopcode=join "",("Ks",pack ("S",4));
     syswrite COMM_SOCK,$stopcode;
 }
@@ -566,7 +567,7 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
-
+    $recording_restart=0;
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback) && !recording_active){
@@ -589,6 +590,7 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
+    $recording_restart=0;
     $last_timer_event=0;
     $next_timer_event=0;
     if(defined($timer_callback)){
@@ -630,6 +632,7 @@ sub DoTimedEntry{
        $password,$outfile,$url)=SplitTimerEntry($line);
 
     $recording_pending=1;
+    $recording_restart=1;
     $last_timer_event=$start;
     $next_timer_event=$start+$duration-1; # the -1 is important; makes sure contiguous
                                           # but nonoverlapping events don't interfere
@@ -1018,6 +1021,8 @@ sub Alert{
 }
 
 sub ReadStderr{
+    my$saveflag=0;
+
     $bytes=sysread REAL_STDERR, my$scalar, 4096;
     if($bytes==0){
 	Disconnect();
@@ -1026,44 +1031,58 @@ sub ReadStderr{
 	ThrowRealPlayer();
     }
 
-    if($scalar=~/X display closed/){
-	Disconnect();
-	$toplevel->fileevent(REAL_STDERR,'readable' => ''); 
-      Tk::exit(0);
-    }	
+    print $scalar if($CONFIG{DEBUG} eq 'yes');
 
-    if($scalar=~/ERROR: Could not stat[^\n]+\n\s+([^:]*): (.+)*/){
-	Alert("Unable to open output file!",
-	      "Libsnatch reported $1: $2\n");
+    push my@lines, split /\n/, $saved_stderr.$scalar;
+    if((chomp $scalar)==0){
+	$saved_stderr=$lines[$#lines];
+    }else{
+	$saved_stderr="";
     }
 
-    if($scalar=~/Password not/){
-	Alert("Password not accepted!",
-	      "Hopefully self explanatory...\n");
-    }
+    foreach my$line (@lines){
 
-    if($scalar=~/bit ZPixmap/){
-	Alert("ERROR: This X server is not using 24/32 bit visuals!",
-	      "Right now, Snatch is still new ad as such only supports the highest".
-	      " bitdepth visuals.  These visuals give the best quality and are thus".
-	      " recommended strongly for capture.  Other visuals will eventually be".
-	      " supported as well, but they won't work for now.\n");
-    }
+	if($line=~/X display closed/){
+	    Disconnect();
+	    $toplevel->fileevent(REAL_STDERR,'readable' => ''); 
+	  Tk::exit(0);
+	}	
 
-    if($scalar=~/Capture stopped/){
-	$recording_active=0;
-	$recording_pending=0;
-    }
+	if($line=~/ERROR: Could not stat[^\n]+\n\s+([^:]*): (.+)*/){
+	    Alert("Unable to open output file!",
+		  "Libsnatch reported $1: $2\n");
+	}
+	
+	if($line=~/Password not/){
+	    Alert("Password not accepted!",
+		  "Hopefully self explanatory...\n");
+	}
 
-    if($scalar=~/Capturing/){
-	$recording_active=time();
-	$recording_pending=0;
-	if(!defined($timer_callback)){
-	    $timer_callback=$toplevel->repeat(1000,[sub{main::TimerWatch();}]);
+	if($line=~/bit ZPixmap/){
+	    Alert("ERROR: This X server is not using 24/32 bit visuals!",
+		  "Right now, Snatch is still new ad as such only supports the highest".
+		  " bitdepth visuals.  These visuals give the best quality and are thus".
+		  " recommended strongly for capture.  Other visuals will eventually be".
+		  " supported as well, but they won't work for now.\n");
+	}
+	
+	if($line=~/Capture stopped/){
+	    $recording_active=0;
+	    $recording_pending=0;
+
+	    if($recording_restart){
+		SetupTimerDispatch();
+	    }
+	}
+
+	if($line=~/Capturing/){
+	    $recording_active=time();
+	    $recording_pending=0;
+	    if(!defined($timer_callback)){
+		$timer_callback=$toplevel->repeat(1000,[sub{main::TimerWatch();}]);
+	    }
 	}
     }
-
-    print $scalar if($CONFIG{DEBUG} eq 'yes');
 }
 
 sub ButtonPressConfig(){
