@@ -92,6 +92,12 @@ ices_reencode_reset (input_stream_t* source)
 
     lame = (lame_global_flags*)stream->encoder_state;
 
+    lame_set_in_samplerate (lame, source->samplerate);
+    /* Lame won't reencode mono to stereo for some reason, so we have to
+     * duplicate left into right by hand. */
+    if (source->channels == 1 && stream->out_numchannels == 1)
+      lame_set_num_channels (lame, source->channels);
+
     lame_set_brate (lame, stream->bitrate);
     if (stream->out_numchannels == 1)
       lame_set_mode (lame, MONO);
@@ -99,7 +105,6 @@ ices_reencode_reset (input_stream_t* source)
       lame_set_out_samplerate (lame, stream->out_samplerate);
     lame_set_original (lame, 0);
     
-    lame_set_in_samplerate (lame, source->samplerate);
     /* lame_init_params isn't more specific about the problem */
     if (lame_init_params (lame) < 0) {
       ices_log ("LAME: error resetting sample rate.");

@@ -119,6 +119,7 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   if (! self->bitrate)
     self->bitrate = ov_bitrate (vf, -1) / 1000;
   self->samplerate = (unsigned int) vorbis_data->info->rate;
+  self->channels = vorbis_data->info->channels;
 
   ices_log_debug("Ogg vorbis file found, version %d, %d kbps, %d channels, %ld Hz",
                  vorbis_data->info->version, self->bitrate, vorbis_data->info->channels,

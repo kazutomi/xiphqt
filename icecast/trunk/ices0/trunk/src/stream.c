@@ -172,6 +172,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
   /* worst case decode: 22050 Hz at 8kbs = 44.1 samples/byte */
   static int16_t left[INPUT_BUFSIZ * 45];
   static int16_t right[INPUT_BUFSIZ * 45];
+  static int16_t* rightp;
 #endif
 
 #ifdef HAVE_LIBLAME
@@ -234,6 +235,12 @@ stream_send (ices_config_t* config, input_stream_t* source)
 #ifdef HAVE_LIBLAME
         if (stream->reencode && stream_needs_reencoding (source, stream)) {
           if (samples > 0) {
+            /* for some reason we have to manually duplicate right from left to get
+             * LAME to output stereo from a mono source */
+            if (source->channels == 1 && stream->out_numchannels != 1)
+              rightp = left;
+            else
+              rightp = right;
             if (obuf.len < 7200 + samples + samples / 4) {
               char *tmpbuf;
 
@@ -246,7 +253,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	          obuf.data = tmpbuf;
 	          ices_log_debug ("Grew output buffer to %d bytes", obuf.len);
 	        }
-	        if ((olen = ices_reencode (stream, samples, left, right, obuf.data,
+	        if ((olen = ices_reencode (stream, samples, left, rightp, obuf.data,
 	            obuf.len)) < -1) {
 	          ices_log_error ("Reencoding error, aborting track");
 	          goto err;
@@ -323,6 +330,7 @@ stream_open_source (input_stream_t* source)
 
   source->filesize = 0;
   source->bytes_read = 0;
+  source->channels = 2;
 
   if ((fd = open (source->path, O_RDONLY)) < 0) {
     ices_util_strerror (errno, buf, sizeof (buf));
