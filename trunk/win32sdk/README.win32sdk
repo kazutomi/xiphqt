@@ -1,4 +1,4 @@
-$Id: README.win32sdk,v 1.5 2001/09/15 08:56:12 cwolf Exp $
+$Id: README.win32sdk,v 1.6 2001/10/18 17:21:59 cwolf Exp $
 $Name:  $
 
 win32sdk Readme, 13 September, 2001 Chris Wolf
@@ -18,50 +18,23 @@ PREREQUSITES
   cvs modules "ogg", "vorbis" and "win32sdk" (this module) are 
   required for this build.
 
-  The script "mkmak.bat" must be run at least once to generate 
-  the makefiles.
-  
-  It will:
-  1.) create and install MSVC macros which allow performing an
-      export of project makefiles and associated depenency files.
-      The macro will then be invoked to generate the makefiles.
-  
 QUICK SUMMARY
+
+  1.) run makesdk.bat
+  2.) cd sdk\build
+  3.) run build_all.bat
+  4.) run run_tests.bat
+
+
+  If there are build problems, try the following three steps
+  before performing the above mentioned four steps.
 
   1.) run clean_libs_mak.bat
   2.) run mkmak.bat
   3.) run clean_all.bat
-  4.) run makesdk.bat
-  5.) cd sdk\build
-  6.) run mkmak.bat
-  7.) run build_all.bat
-  8.) run run_tests.bat
+
 
 BUILDING
-
-  To prepare the sdk for use, run "mkmak.bat", followed by "makesdk.bat".
-
-  This script will:
-
-	1.) create "include", "lib", "bin", "doc" and "examples" 
-      directories and copy the required files from the dependent 
-      cvs modules (ogg and vorbis libraries).
-
-  2.) Using nmake, build the static and dynamic (DLL) libraries 
-      and copy them to the sdk\lib directory.  This is accomplished
-      in "makesdk.bat" by invoking the "build_all.bat" script.
-
-  Note that the makefiles are generated from the IDE, and are thus a
-  reflection of the workspace and project file states.  It is strongly
-  recommended to make changes via the IDE and export the makefiles,
-  rather than tweaking the makefiles directly.
-
-
-  N.B. The script "mkmak.bat" invokes msdev using an automation macro;
-       once invoked, the process runs in the background, so a sleep
-       is added to make sure that all the makefiles are generated before
-       the user attempts to run build_all.bat.  Some slower machines
-       may require more time.
 
   The following steps are optional. They are for building the libraries
   in place. The purpose of this step is for libaray development under
@@ -109,5 +82,8 @@ OTHER SCRIPTS
  
   mkmak.bat           - creates makefiles and dependency files in the ogg and
                         vorbis modules.
+
+  mfmacro.bat         - creates an MSVC macro used for makefile
+                        generation from the command line.
 
   sdk\build\mkmak.bat - creates makefiles for the example programs

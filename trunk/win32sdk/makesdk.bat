@@ -1,19 +1,23 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.11 2001/10/18 03:26:33 cwolf Exp $
+rem $Id: makesdk.bat,v 1.12 2001/10/18 17:21:59 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
 
 if ."%MSDEVDIR%"==."" goto msdevnotset
 
+
+if not exist execwait.exe (
+  cl /nologo execwait.c
+)
+
 rem If one of the makefiles doesn't exist, 
 rem assume they all need to be generated
 rem
 if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
-  echo Error: must invoke "mkmak.bat" first
-  goto exit
+  call mkmak.bat
 )
   
 rd /s /q sdk\include 2> nul
@@ -86,7 +90,7 @@ xcopy %SRCROOT%\vorbis\doc\vorbisenc\*.css %SRCROOT%\win32sdk\sdk\doc\vorbis\vor
 xcopy %SRCROOT%\vorbis\doc\vorbisfile\*.html %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisfile > nul
 xcopy %SRCROOT%\vorbis\doc\vorbisfile\*.css %SRCROOT%\win32sdk\sdk\doc\vorbis\vorbisfile > nul
 
-copy sleep.js %SRCROOT%\win32sdk\sdk\build
+copy execwait.exe %SRCROOT%\win32sdk\sdk\build
 
 echo ... copied.
 

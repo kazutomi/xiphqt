@@ -1,5 +1,5 @@
 @echo off
-rem $Id: build_all.bat,v 1.6 2001/10/18 03:15:49 cwolf Exp $
+rem $Id: build_all.bat,v 1.7 2001/10/18 17:21:59 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
@@ -11,8 +11,9 @@ rem
 rem Makefile generation is asychronous, so it cannot be 
 rem called inline with this script.
 if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
-  echo Error: must invoke "mkmak.bat" first
-  goto done
+rem  echo Error: must invoke "mkmak.bat" first
+rem  goto done
+call mkmak.bat
 )
 
 if not exist %SRCROOT%\ogg\include\ogg\ogg.h goto noogg
