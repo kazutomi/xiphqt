@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: simple example decoder
- last mod: $Id: decoder_example.c,v 1.27 2002/07/12 15:07:52 giles Exp $
+ last mod: $Id: decoder_example.c,v 1.25 2002/01/22 08:06:05 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,7 +31,7 @@
 #include <fcntl.h>
 #endif
 
-#if defined(__MACOS__) && defined(__MWERKS__)
+#if defined(macintosh) && defined(__MWERKS__)
 #include <console.h>      /* CodeWarrior's Mac "command-line" support */
 #endif
 

@@ -12,7 +12,7 @@
 
  function: normalized modified discrete cosine transform
            power of two length transform only [64 <= n ]
- last mod: $Id: mdct.c,v 1.32 2002/10/16 02:43:48 xiphmont Exp $
+ last mod: $Id: mdct.c,v 1.29 2002/01/22 08:06:07 xiphmont Exp $
 
  Original algorithm adapted long ago from _The use of multirate filter
  banks for coding of high quality digital audio_, by T. Sporer,
@@ -26,7 +26,7 @@
 
  This module DOES NOT INCLUDE code to generate/apply the window
  function.  Everybody has their own weird favorite including me... I
- happen to like the properties of y=sin(.5PI*sin^2(x)), but others may
+ happen to like the properties of y=sin(2PI*sin^2(x)), but others may
  vehemently disagree.
 
  ********************************************************************/
@@ -96,6 +96,11 @@ STIN void mdct_butterfly_8(DATA_TYPE *x){
   REG_TYPE r1   = x[6] - x[2];
   REG_TYPE r2   = x[4] + x[0];
   REG_TYPE r3   = x[4] - x[0];
+
+           r0   = x[6] + x[2];
+	   r1   = x[6] - x[2];
+	   r2   = x[4] + x[0];
+	   r3   = x[4] - x[0];
 
 	   x[6] = r0   + r2;
 	   x[4] = r0   - r2;

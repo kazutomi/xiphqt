@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: illustrate seeking, and test it too
- last mod: $Id: seeking_example.c,v 1.15 2002/07/11 06:40:47 xiphmont Exp $
+ last mod: $Id: seeking_example.c,v 1.13 2002/02/28 04:12:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -146,6 +146,7 @@ int main(){
 
     printf("\r");
     {
+      ogg_int64_t length=ov.end;
       printf("testing pcm page seeking to random places in %ld samples....\n",
 	     (long)pcmlength);
     
