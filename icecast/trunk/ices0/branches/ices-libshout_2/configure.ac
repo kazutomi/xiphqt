@@ -1,59 +1,39 @@
-AC_INIT(src/ices.c)
-AM_CONFIG_HEADER(config.h)
+# configure script for ices
+# $Id: configure.ac,v 1.1.2.1 2003/03/04 02:52:21 brendan Exp $
 
-ICES_MAJOR=0
-ICES_MINOR=2
-ICES_MICRO=3
+m4_define(ICES_MAJOR, 0)
+m4_define(ICES_MINOR, 2)
+m4_define(ICES_MICRO, 3)
+m4_define(ICES_VERSION,
+  m4_if(ICES_MICRO, 0, ICES_MAJOR.ICES_MINOR, ICES_MAJOR.ICES_MINOR.ICES_MICRO))
 
-dnl Check to see if ICES_SPECIAL is overridden on commandline
-if test -z "$ICES_SPECIAL" -a -d ${srcdir}/CVS
-then
-  ICES_SPECIAL="cvs"
-fi
+AC_INIT([ices], ICES_VERSION, [icecast@xiph.org])
+AC_PREREQ(2.52)
+AC_CONFIG_SRCDIR([src/ices.c])
 
-if test -n "$ICES_MICRO" -a "$ICES_MICRO" != "0"
-then
-  ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO
-else
-  ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR
-fi
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile src/Makefile src/playlist/Makefile
+  conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1])
 
-if test -z "$ICES_SPECIAL"
-then
-  ICES_VERSION=$ICES_VERSION_SMALL
-else
-  ICES_VERSION=$ICES_VERSION_SMALL-$ICES_SPECIAL
-fi
-
-VERSION="$ICES_VERSION"
-
-AC_MSG_RESULT([Building ices $VERSION...])
-
-dnl reasonable guesses for where stuff is installed
-if test "$prefix" = "NONE"
-then
-  prefix="/usr/local/icecast"
-fi
+VERSION=ICES_VERSION
 
 AC_ARG_WITH(docdir,
-[  --with-docdir=DIR       ices documentation in DIR [PREFIX/doc/ices]],
-[ices_cv_docdir="$with_docdir"],
-[ices_cv_docdir='${prefix}/doc/ices'])
+  [[  --with-docdir=DIR       put documentation in DIR [PREFIX/doc/ices]]],
+  [ices_cv_docdir="$with_docdir"],
+  [ices_cv_docdir='${prefix}/doc/ices'])
 
 docdir="$ices_cv_docdir"
 AC_SUBST(docdir)
 
 AC_ARG_WITH(moddir,
-[  --with-moddir=DIR       ices playlist modules in DIR [SYSCONFDIR/modules]],
-[ices_cv_moddir="$with_moddir"],
-[ices_cv_moddir='${sysconfdir}/modules'])
+  [[  --with-moddir=DIR       put playlist modules in DIR [SYSCONFDIR/modules]]],
+  [ices_cv_moddir="$with_moddir"],
+  [ices_cv_moddir='${sysconfdir}/modules'])
 
 moddir="$ices_cv_moddir"
 AC_SUBST(moddir)
 
 dnl -- Finally, actual autoconf stuff --
-
-AM_MAINTAINER_MODE
 
 AC_ARG_PROGRAM
 
@@ -65,8 +45,6 @@ then
   CFLAGS="$CFLAGS -Wall"
 fi
 
-AC_CHECK_PROG(UNAME,uname,uname)
-AC_CHECK_PROG(GMAKE,gmake,gmake)
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
@@ -78,7 +56,7 @@ AC_ISC_POSIX
 AC_MINIX
 
 IRIX=no
-case $target in
+case $host in
   *solaris*)
     if test "$CC" = cc
     then
@@ -142,7 +120,7 @@ AC_CHECK_FUNCS([vsnprintf setsid setlinebuf])
 dnl -- Required extra libraries --
 
 AC_ARG_WITH(libshout,
-[  --with-libshout[=DIR]       use installed libshout [in DIR]])
+  [[  --with-libshout[=DIR]   use installed libshout [in DIR]]])
 
 have_libshout="no"
 if test "$with_libshout" != "no"
@@ -179,15 +157,14 @@ fi
 
 if test "$have_libshout" != "yes"
 then
-  libshout="libshout"
+  AC_CONFIG_SUBDIRS([libshout])
 fi
-AC_CONFIG_SUBDIRS($libshout)
 AM_CONDITIONAL(NEED_SHOUT, test "$have_libshout" != "yes")
 
 dnl -- Optional features --
 
 AC_ARG_WITH(lame,
-[  --with-lame[=DIR]           enable support for reencoding with lame [in DIR]])
+  [[  --with-lame[=DIR]       enable support for reencoding with lame [in DIR]]])
 
 AC_ARG_WITH(lame-includes,
 [  --with-lame-includes=DIR    directory to find lame.h])
@@ -250,7 +227,7 @@ then
 fi
 
 AC_ARG_WITH(vorbis,
-[  --with-vorbis[=DIR]         support for vorbis using libvorbisfile [in DIR]])
+  [[  --with-vorbis[=DIR]     support for vorbis using libvorbisfile [in DIR]]])
 
 if test "$have_LAME" != "yes"
 then
@@ -297,7 +274,7 @@ then
 fi
 
 AC_ARG_WITH(perl,
-[  --with-perl[=DIR]           enable perl interpreter [found in DIR]])
+  [[  --with-perl[=DIR]       enable perl interpreter [found in DIR]]])
 
 have_perl="no"
 PERL=perl
@@ -344,7 +321,7 @@ then
 fi
 
 AC_ARG_WITH(python,
-[  --with-python[=DIR]         enable python interpreter [in DIR]])
+  [[  --with-python[=DIR]     enable python interpreter [in DIR]]])
 
 use_python=$withval
 
@@ -406,7 +383,7 @@ then
 fi
 
 AC_ARG_WITH(xml-config,
-[  --with-xml-config=PATH      Use xml-config in PATH to find libxml ])
+  [  --with-xml-config=PATH  use xml-config in PATH to find libxml ])
 
 have_xml="no"
 if test "$with_xml_config" != "no"
@@ -416,7 +393,7 @@ then
     XMLCONFIG="$with_xml_config"
     if ! test -x "$XMLCONFIG"
     then
-      AC_MSG_ERROR([$with_xmlconfig is not a program])
+      AC_MSG_ERROR([$with_xmlconfig cannot be run])
     fi
   else
     AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
@@ -440,8 +417,7 @@ LIBS="$LIBS $LIBM $LIBDL"
 AC_SUBST(ICES_OBJECTS)
 AC_SUBST(PLAYLIST_OBJECTS)
 
-AC_OUTPUT([Makefile src/Makefile src/playlist/Makefile
-  conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1])
+AC_OUTPUT
 
 AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
 AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])
@@ -457,12 +433,3 @@ AC_MSG_RESULT([  Vorbis  : $have_vorbis])
 AC_MSG_RESULT([  Perl    : $have_perl])
 AC_MSG_RESULT([  Python  : $have_python])
 AC_MSG_RESULT([  XML     : $have_xml])
-
-if test "$GMAKE"
-then
-  AC_MSG_RESULT([Configuration complete. Now run 'gmake'.])
-  AC_MSG_RESULT([You can then run 'gmake install' to install ices])
-else
-  AC_MSG_RESULT([Configuration complete. Now run 'make'.])
-  AC_MSG_RESULT([You can then run 'make install' to install ices])
-fi
