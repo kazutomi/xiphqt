@@ -245,34 +245,15 @@ InputName=rgb32toyv12_xmm
 # End Source File
 # Begin Source File
 
-SOURCE=.\Win32\yvyutoyv12_mmx.asm
+SOURCE=.\Win32\uyvytoyv12_mmx.c
+# End Source File
+# Begin Source File
 
-!IF  "$(CFG)" == "colorconversions - Win32 Release"
+SOURCE=.\Win32\yuy2toyv12_mmx.c
+# End Source File
+# Begin Source File
 
-# Begin Custom Build
-IntDir=.\..\..\..\ObjectCode\ColorSpaces\Release
-InputPath=.\Win32\yvyutoyv12_mmx.asm
-InputName=yvyutoyv12_mmx
-
-".\$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	ml /Zi /Zm /Cx /c /coff /Fl$(IntDir)\$(InputName).lst /Fo $(IntDir)\$(InputName).obj $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "colorconversions - Win32 Debug"
-
-# Begin Custom Build
-IntDir=.\..\..\..\ObjectCode\ColorSpaces\Debug
-InputPath=.\Win32\yvyutoyv12_mmx.asm
-InputName=yvyutoyv12_mmx
-
-".\$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	ml /Zi /Zm /Cx /c /coff /Fl$(IntDir)\$(InputName).lst /Fo $(IntDir)\$(InputName).obj $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
+SOURCE=.\Win32\yvyutoyv12_mmx.c
 # End Source File
 # End Group
 # Begin Group "Generic"
@@ -285,6 +266,34 @@ SOURCE=.\ColorConversions.c
 # Begin Source File
 
 SOURCE=.\lutbl.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\rgb24toyv12.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\rgb32toyv12.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\rgbtorgb.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\rgbtoyuv.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\uyvytoyv12.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\yuy2toyv12.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\yvyutoyv12.c
 # End Source File
 # End Group
 # End Group
