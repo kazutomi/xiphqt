@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: PCM data vector blocking, windowing and dis/reassembly
- last mod: $Id: block.c,v 1.42 2000/12/21 21:04:38 xiphmont Exp $
+ last mod: $Id: block.c,v 1.42.2.1 2000/12/27 23:46:35 xiphmont Exp $
 
  Handle windowing, overlap-add, etc of the PCM vectors.  This is made
  more amusing by Vorbis' current two allowed block sizes.
@@ -533,9 +533,18 @@ int vorbis_analysis_blockout(vorbis_dsp_state *v,vorbis_block *vb){
   /* copy the vectors; this uses the local storage in vb */
   {
     vb->pcm=_vorbis_block_alloc(vb,sizeof(float *)*vi->channels);
+    vb->pcmdelay=_vorbis_block_alloc(vb,sizeof(float *)*vi->channels);
     for(i=0;i<vi->channels;i++){
+      vb->pcmdelay[i]=
+	_vorbis_block_alloc(vb,(vb->pcmend+beginW)*sizeof(float));
+      memcpy(vb->pcmdelay[i],v->pcm[i],(vb->pcmend+beginW)*sizeof(float));
+      vb->pcm[i]=vb->pcmdelay[i]+beginW;
+      
+      /* before we added the delay 
       vb->pcm[i]=_vorbis_block_alloc(vb,vb->pcmend*sizeof(float));
       memcpy(vb->pcm[i],v->pcm[i]+beginW,ci->blocksizes[v->W]*sizeof(float));
+      */
+
     }
   }
   
@@ -553,33 +562,36 @@ int vorbis_analysis_blockout(vorbis_dsp_state *v,vorbis_block *vb){
 
   /* advance storage vectors and clean up */
   {
-    int new_centerNext=ci->blocksizes[1]/2;
+    int new_centerNext=ci->blocksizes[1]/2+ci->delaycache;
     int movementW=centerNext-new_centerNext;
 
-    _ve_envelope_shift(b->ve,movementW);
-    v->pcm_current-=movementW;
+    if(movementW>0){
 
-    for(i=0;i<vi->channels;i++)
-      memmove(v->pcm[i],v->pcm[i]+movementW,
-	      v->pcm_current*sizeof(float));
-
-
-    v->lW=v->W;
-    v->W=v->nW;
-    v->centerW=new_centerNext;
-
-    v->sequence++;
-
-    if(v->eofflag){
-      v->eofflag-=movementW;
-      /* do not add padding to end of stream! */
-      if(v->centerW>=v->eofflag){
-	v->granulepos+=movementW-(v->centerW-v->eofflag);
+      _ve_envelope_shift(b->ve,movementW);
+      v->pcm_current-=movementW;
+      
+      for(i=0;i<vi->channels;i++)
+	memmove(v->pcm[i],v->pcm[i]+movementW,
+		v->pcm_current*sizeof(float));
+      
+      
+      v->lW=v->W;
+      v->W=v->nW;
+      v->centerW=new_centerNext;
+      
+      v->sequence++;
+      
+      if(v->eofflag){
+	v->eofflag-=movementW;
+	/* do not add padding to end of stream! */
+	if(v->centerW>=v->eofflag){
+	  v->granulepos+=movementW-(v->centerW-v->eofflag);
+	}else{
+	  v->granulepos+=movementW;
+	}
       }else{
 	v->granulepos+=movementW;
       }
-    }else{
-      v->granulepos+=movementW;
     }
   }
 

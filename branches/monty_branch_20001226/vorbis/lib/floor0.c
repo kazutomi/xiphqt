@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: floor backend 0 implementation
- last mod: $Id: floor0.c,v 1.34 2000/12/21 21:04:39 xiphmont Exp $
+ last mod: $Id: floor0.c,v 1.34.2.1 2000/12/27 23:46:35 xiphmont Exp $
 
  ********************************************************************/
 
@@ -238,12 +238,13 @@ float _curve_to_lpc(float *curve,float *lpc,
 }
 
 /* generate the whole freq response curve of an LSP IIR filter */
+/* didn't need in->out seperation, modifies the flr[] vector; takes in
+   a dB scale floor, puts out linear */
 static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
-		    float *in,float *out,vorbis_bitbuffer *vbb){
+		    float *flr,vorbis_bitbuffer *vbb){
   long j;
   vorbis_look_floor0 *look=(vorbis_look_floor0 *)i;
   vorbis_info_floor0 *info=look->vi;
-  float *work=alloca((look->ln+look->n)*sizeof(float));
   float amp;
   long bits=0;
   long val=0;
@@ -263,15 +264,15 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
   ef=fopen(buffer,"a");
 #endif
 
-  /* our floor comes in on a linear scale; go to a [-Inf...0] dB
-     scale.  The curve has to be positive, so we offset it. */
+  /* our floor comes in on a [-Inf...0] dB scale.  The curve has to be
+     positive, so we offset it. */
 
   for(j=0;j<look->n;j++)
-    work[j]=todB(in[j])+info->ampdB;
+    flr[j]+=info->ampdB;
 
   /* use 'out' as temp storage */
   /* Convert our floor to a set of lpc coefficients */ 
-  amp=sqrt(_curve_to_lpc(work,out,look));
+  amp=sqrt(_curve_to_lpc(flr,flr,look));
 
   /* amp is in the range (0. to ampdB].  Encode that range using
      ampbits bits */
@@ -292,6 +293,7 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
   }
 
   if(val){
+    float *lspwork=alloca(look->m*sizeof(float));
 
     /* the spec supports using one of a number of codebooks.  Right
        now, encode using this lib supports only one */
@@ -300,18 +302,17 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
     bitbuf_write(vbb,0,_ilog(info->numbooks));
 
     /* LSP <-> LPC is orthogonal and LSP quantizes more stably  */
-    vorbis_lpc_to_lsp(out,out,look->m);
+    vorbis_lpc_to_lsp(flr,flr,look->m);
 
 #ifdef ANALYSIS
-    {
-      float *lspwork=alloca(look->m*sizeof(float));
-      memcpy(lspwork,out,look->m*sizeof(float));
-      vorbis_lsp_to_curve(work,look->linearmap,look->n,look->ln,
-			  lspwork,look->m,amp,info->ampdB);
-      _analysis_output("prefit",seq,work,look->n,0,1);
-
-    }
-
+#ifndef TRAIN_LSP
+    
+    memcpy(lspwork,flr,look->m*sizeof(float));
+    vorbis_lsp_to_curve(flr,look->linearmap,look->n,look->ln,
+			lspwork,look->m,amp,info->ampdB);
+    _analysis_output("prefit",seq,flr,look->n,0,1);
+    
+#endif
 #endif
 
 
@@ -320,8 +321,8 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
     {
       float last=0.f;
       for(j=0;j<look->m;j++){
-	fprintf(of,"%.12g, ",out[j]-last);
-	last=out[j];
+	fprintf(of,"%.12g, ",flr[j]-last);
+	last=flr[j];
       }
     }
     fprintf(of,"\n");
@@ -334,7 +335,7 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
        nailed to the last quantized value of the previous block. */
 
     for(j=0;j<look->m;j+=b->dim){
-      int entry=_f0_fit(b,out,work,j);
+      int entry=_f0_fit(b,flr,lspwork,j);
       bits+=vorbis_book_bufencode(b,entry,vbb);
 
 #ifdef TRAIN_LSP
@@ -343,28 +344,17 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
 
     }
 
-#ifdef ANALYSIS
-    {
-      float last=0;
-      for(j=0;j<look->m;j++){
-	out[j]=work[j]-last;
-	last=work[j];
-      }
-    }
-	
-#endif
-
 #ifdef TRAIN_LSP
     fclose(ef);
 #endif
 
     /* take the coefficients back to a spectral envelope curve */
-    vorbis_lsp_to_curve(out,look->linearmap,look->n,look->ln,
-			work,look->m,amp,info->ampdB);
+    vorbis_lsp_to_curve(flr,look->linearmap,look->n,look->ln,
+			lspwork,look->m,amp,info->ampdB);
     return(val);
   }
 
-  memset(out,0,sizeof(float)*look->n);
+  memset(flr,0,sizeof(float)*look->n);
   seq++;
   return(val);
 }

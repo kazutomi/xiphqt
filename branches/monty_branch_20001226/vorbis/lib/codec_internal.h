@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec_internal.h,v 1.3 2000/11/17 11:47:18 xiphmont Exp $
+ last mod: $Id: codec_internal.h,v 1.3.2.1 2000/12/27 23:46:35 xiphmont Exp $
 
  ********************************************************************/
 
@@ -103,10 +103,14 @@ typedef struct codec_setup_info {
   vorbis_info_psy     *psy_param[64]; /* encode only */
   
   /* for block long/sort tuning; encode only */
-  int        envelopesa;
+  int       envelopesa;
   float     preecho_thresh;
-  float     preecho_clamp;
+  float     postecho_thresh;
   float     preecho_minenergy;
+
+  /* delay caching... how many samples to keep around prior to our
+     current block to aid in analysis? */
+  int       delaycache;
 
 } codec_setup_info;
 

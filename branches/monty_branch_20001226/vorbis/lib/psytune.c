@@ -13,7 +13,7 @@
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c,v 1.11 2000/12/21 21:04:40 xiphmont Exp $
+ last mod: $Id: psytune.c,v 1.11.2.1 2000/12/27 23:46:35 xiphmont Exp $
 
  ********************************************************************/
 
@@ -26,6 +26,7 @@
 #include "os.h"
 #include "psy.h"
 #include "mdct.h"
+#include "smallft.h"
 #include "window.h"
 #include "scales.h"
 #include "lpc.h"
@@ -34,17 +35,20 @@
 static vorbis_info_psy _psy_set0={
   1,/*athp*/
   0,/*decayp*/
-  1,/*smoothp*/
-  0,.2,
 
-  -100.,
-  -140.,
+  -100.f,
+  -140.f,
+
+  8,
 
   /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
   /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
   /* y: 0 10 20 30 40 50 60 70 80 90 100 dB */
 
-   0,/* tonemaskp */
+  2,
+  -40.f, /* nearDCdB */
+
+   1,/* tonemaskp */
   /*  0   10   20   30   40   50   60   70   80   90   100 */
   {{-30.,-35.,-35.,-40.,-40.,-50.,-60.,-70.,-80.,-90.,-100.}, /*63*/
    {-30.,-35.,-35.,-40.,-40.,-50.,-60.,-70.,-80.,-90.,-100.}, /*88*/
@@ -65,52 +69,56 @@ static vorbis_info_psy _psy_set0={
    {-30.,-35.,-35.,-40.,-40.,-50.,-60.,-70.,-80.,-90.,-100.}, /*16000*/
   },
 
-  1,/* peakattp */
-  {{-14.,-16.,-18.,-19.,-20.,-21.,-22.,-22.,-22.,-22.,-22.}, /*63*/
-   {-14.,-16.,-18.,-19.,-20.,-21.,-22.,-22.,-22.,-22.,-22.}, /*88*/
-   {-14.,-16.,-18.,-19.,-20.,-21.,-22.,-22.,-22.,-22.,-22.}, /*125*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
-   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*8000*/
+  0,/* peakattp */
+  {{-14.,-16.,-18.,-19.,-20.,-21.,-22.,-22.,-28.,-28.,-28.}, /*63*/
+   {-14.,-16.,-18.,-19.,-20.,-21.,-22.,-22.,-28.,-28.,-28.}, /*88*/
+   {-14.,-16.,-18.,-19.,-20.,-21.,-22.,-22.,-28.,-28.,-28.}, /*125*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-18.,-28.,-28.,-28.}, /*175*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-18.,-28.,-28.,-28.}, /*250*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-18.,-28.,-28.,-28.}, /*350*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-28.,-28.,-28.,-28.}, /*500*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-28.}, /*700*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-28.}, /*1000*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-28.}, /*1400*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-28.}, /*2000*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-28.}, /*2400*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-28.}, /*4000*/
+   { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-18.,-20.}, /*5600*/
    { -7., -8., -9.,-10.,-10.,-11.,-12.,-13.,-15.,-16.,-17.}, /*8000*/
    { -6., -7., -9., -9., -9., -9.,-10.,-11.,-12.,-13.,-14.}, /*11500*/
    { -6., -6., -9., -9., -9., -9., -9., -9.,-10.,-11.,-12.}, /*16000*/
   },
 
 
-  0,/*noisemaskp */
-  /*  0   10   20   30   40   50   60    70    80    90   100 */
-  {{-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*63*/
-   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*88*/
-   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*125*/
-   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*175*/
-   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*250*/
-   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*350*/
-   {-99.,-99.,-99.,-99.,-99.,-99.,-99.,-199.,-199.,-199.,-199.}, /*500*/
-   {  6.,  6.,  6.,  2.,  2.,  2.,  2.,   2.,   2.,   1.,   0.}, /*700*/
-
-   {  6.,  6.,  6.,  5.,  5.,  5.,  5.,   5.,   5.,   4.,   3.}, /*1000*/
-   {  6.,  6.,  6.,  5.,  5.,  5.,  5.,   5.,   5.,   4.,   3.}, /*1400*/
-   {  6.,  6.,  6.,  5.,  5.,  5.,  5.,   5.,   5.,   4.,   3.}, /*2000*/
-   {  6.,  6.,  6.,  5.,  5.,  5.,  5.,   5.,   5.,   4.,   3.}, /*2800*/
-   {  6.,  6.,  6.,  5.,  5.,  5.,  5.,   5.,   5.,   4.,   3.}, /*4000*/
-   { 10., 10., 10., 10., 10., 10.,  8.,   8.,   6.,   6.,   6.}, /*5600*/
-   { 10., 10., 10., 10., 10., 10.,  8.,   8.,   8.,   8.,   8.}, /*8000*/
-   { 10., 10., 10., 10., 10., 10., 10.,  10.,  10.,  10.,  10.}, /*11500*/
-   { 10., 10., 10., 10., 10., 10., 10.,  10.,  10.,  10.,  10.}, /*16000*/
+  1,/*noisemaskp */
+  -40.f,  /* suppress any noise curve over maxspec+n */
+  .5f,   /* low window */
+  .5f,   /* high window */
+  25,
+  25,
+  {.000f, /*63*/
+   .000f, /*88*/
+   .000f, /*125*/
+   .000f, /*175*/
+   .000f, /*250*/
+   .000f, /*350*/
+   .000f, /*500*/
+   .500f, /*700*/
+   .500f, /*1000*/
+   .500f, /*1400*/
+   .500f, /*2000*/
+   .500f, /*2800*/
+   .700f, /*4000*/
+   .800f, /*5600*/
+   .850f, /*8000*/
+   .850f, /*11500*/
+   .900f, /*16000*/
   },
  
-  100.,
+  105.f,  /* even decade + 5 is important; saves an rint() later in a
+            tight loop) */
 
-  -0., -.004   /* attack/decay control */
+  -0.f, -.004f   /* attack/decay control */
 };
 
 static int noisy=0;
@@ -182,9 +190,10 @@ int main(int argc,char *argv[]){
   int order=32;
   int map=256;
 
-  float *pcm[2],*out[2],*window,*decay[2],*lpc,*floor,*mask;
+  float *pcm[2],*out[2],*window,*lpc,*flr,*mask;
   signed char *buffer,*buffer2;
   mdct_lookup m_look;
+  drft_lookup f_look;
   vorbis_look_psy p_look;
   long i,j,k;
 
@@ -236,20 +245,19 @@ int main(int argc,char *argv[]){
   pcm[1]=_ogg_malloc(framesize*sizeof(float));
   out[0]=_ogg_calloc(framesize/2,sizeof(float));
   out[1]=_ogg_calloc(framesize/2,sizeof(float));
-  decay[0]=_ogg_calloc(framesize/2,sizeof(float));
-  decay[1]=_ogg_calloc(framesize/2,sizeof(float));
-  floor=_ogg_malloc(framesize*sizeof(float));
+  flr=_ogg_malloc(framesize*sizeof(float));
   lpc=_ogg_malloc(order*sizeof(float));
   buffer=_ogg_malloc(framesize*4);
   buffer2=buffer+framesize*2;
   window=_vorbis_window(0,framesize,framesize/2,framesize/2);
   mdct_init(&m_look,framesize);
+  drft_init(&f_look,framesize);
   _vp_psy_init(&p_look,&_psy_set0,framesize/2,44100);
   floorinit(&floorlook,framesize/2,order,map);
 
   for(i=0;i<P_BANDS;i++)
     for(j=0;j<P_LEVELS;j++)
-      analysis("Ptonecurve",i*100+j,p_look.tonecurves[i][j],EHMER_MAX,0,1);
+      analysis("Ptonecurve",i*100+j,p_look.tonecurves[i][j],EHMER_MAX,0,0);
 
   /* we cheat on the WAV header; we just bypass 44 bytes and never
      verify that it matches 16bit/stereo/44.1kHz. */
@@ -281,26 +289,51 @@ int main(int argc,char *argv[]){
 	float amp;
 
 	analysis("pre",frameno,pcm[i],framesize,0,0);
+	memcpy(mask,pcm[i],sizeof(float)*framesize);
 	
 	/* do the psychacoustics */
 	for(j=0;j<framesize;j++)
-	  pcm[i][j]*=window[j];
+	  mask[j]=pcm[i][j]*=window[j];
+	
+	drft_forward(&f_look,mask);
 
-	memcpy(mask,pcm[i],sizeof(float)*framesize);
+	mask[0]/=(framesize/4.);
+	for(j=1;j<framesize-1;j+=2)
+	  mask[(j+1)>>1]=4*hypot(mask[j],mask[j+1])/framesize;
 
 	mdct_forward(&m_look,pcm[i],pcm[i]);
+	memcpy(mask+framesize/2,pcm[i],sizeof(float)*framesize/2);
+	analysis("mdct",frameno,pcm[i],framesize/2,0,1);
+	analysis("fft",frameno,mask,framesize/2,0,1);
 
-	analysis("mdct",frameno,pcm[i],framesize/2,1,1);
+	_vp_compute_mask(&p_look,mask,mask+framesize/2,flr,NULL);
 
-	_vp_compute_mask(&p_look,pcm[i],floor,decay[i]);
+	analysis("floor",frameno,flr,framesize/2,0,0);
+
+	for(j=0;j<framesize/2;j++)
+	  flr[j]=fromdB(flr[j]);
 	
-	analysis("floor",frameno,floor,framesize/2,1,1);
-	analysis("decay",frameno,decay[i],framesize/2,1,1);
 
-	_vp_apply_floor(&p_look,pcm[i],floor);
+	/*for(j=0;j<framesize/2;){
+	  float energy=0.;
+	  float acc=0.;
+	  float *v=pcm[i]+j;
+	  int flag=0;
+	  for(k=0;k<32;k++){
+	    energy+=v[k]*v[k];
+	    if(fabs(v[k]/flr[j+k])>.5)acc+=v[k]*v[k];
+	  }
+	  if(acc*2<energy){
+	    if(acc>0.)fprintf(stderr,"culling\n");
+	    for(k=0;k<32;k++)v[k]=0;
+	  }
+	  j+=k;
+	  }*/
+
+	_vp_apply_floor(&p_look,pcm[i],flr);
 
 
-	analysis("quant",frameno,pcm[i],framesize/2,1,1);
+	analysis("quant",frameno,pcm[i],framesize/2,0,0);
 
 	/* re-add floor */
 	for(j=0;j<framesize/2;j++){
@@ -309,13 +342,13 @@ int main(int argc,char *argv[]){
 	  if(val){
 	    nonz++;
 	    acc+=log(fabs(val)*2.f+1.f)/log(2);
-	    pcm[i][j]=val*floor[j];
+	    pcm[i][j]=val*flr[j];
 	  }else{
 	    pcm[i][j]=0.f;
 	  }
 	}
 	
-	analysis("final",frameno,pcm[i],framesize/2,1,1);
+	analysis("final",frameno,pcm[i],framesize/2,0,1);
 
 	/* take it back to time */
 	mdct_backward(&m_look,pcm[i],pcm[i]);

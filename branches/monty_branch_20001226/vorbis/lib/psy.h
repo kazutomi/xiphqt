@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.16 2000/11/06 00:07:02 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.16.2.1 2000/12/27 23:46:35 xiphmont Exp $
 
  ********************************************************************/
 
@@ -31,17 +31,18 @@
 typedef struct vorbis_info_psy{
   int    athp;
   int    decayp;
-  int    smoothp;
 
-  int    noisecullp;
-  float noisecull_barkwidth;
+  float  ath_adjatt;
+  float  ath_maxatt;
 
-  float ath_adjatt;
-  float ath_maxatt;
+  int   eighth_octave_lines;
 
   /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
   /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
   /* y: 0 10 20 30 40 50 60 70 80 90 100 dB */
+
+  int   nearDCp;
+  float nearDCdB;
 
   int tonemaskp;
   float toneatt[P_BANDS][P_LEVELS];
@@ -50,7 +51,12 @@ typedef struct vorbis_info_psy{
   float peakatt[P_BANDS][P_LEVELS];
 
   int noisemaskp;
-  float noiseatt[P_BANDS][P_LEVELS];
+  float noisemaxsupp;
+  float noisewindowlo;
+  float noisewindowhi;
+  int   noisewindowlomin;
+  int   noisewindowhimin;
+  float noisemedian[P_BANDS];
 
   float max_curve_dB;
 
@@ -65,11 +71,16 @@ typedef struct {
 
   float ***tonecurves;
   float **peakatt;
-  float **noiseatt;
+  float *noisemedian;
 
   float *ath;
-  int    *octave;
+  long  *octave;             /* in n.ocshift format */
   float *bark;
+
+  long  firstoc;
+  long  shiftoc;
+  int   eighth_octave_lines; /* power of two, please */
+  int   total_octave_lines;  
 
 } vorbis_look_psy;
 
@@ -80,7 +91,9 @@ extern void  *_vi_psy_dup(void *source);
 extern void   _vi_psy_free(vorbis_info_psy *i);
 extern vorbis_info_psy *_vi_psy_copy(vorbis_info_psy *i);
 
-extern void   _vp_compute_mask(vorbis_look_psy *p,float *f, 
+extern void   _vp_compute_mask(vorbis_look_psy *p,
+			       float *fft, 
+			       float *mdct, 
 			       float *floor,
 			       float *decay);
 extern void _vp_apply_floor(vorbis_look_psy *p,float *f,float *flr);
