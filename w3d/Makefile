@@ -1,7 +1,7 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM -DDBG_MEMLEAKS
+CFLAGS = -g -O3 -Wall -DTYPE=int16_t -DRLECODER #-DDBG_XFORM -DDBG_MEMLEAKS
 LFLAGS = -g #-lefence
 
 OBJS = mem.o pnm.o wavelet.o wavelet_xform.o wavelet_coeff.o wavelet_coeff2.o \
