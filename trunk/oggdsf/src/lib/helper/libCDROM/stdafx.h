@@ -10,3 +10,8 @@
 #include <windows.h>
 
 // TODO: reference additional headers your program requires here
+#ifdef LIBCDROM_EXPORTS
+#define LIBCDROM_API __declspec(dllexport)
+#else
+#define LIBCDROM_API __declspec(dllimport)
+#endif
