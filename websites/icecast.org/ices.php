@@ -25,8 +25,8 @@
 
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Utility</b></td><td><b>Description</b></td><td><b>Download Link</b></td></tr>
-<tr><td>ices2 (version 2.0)</td><td>source client for broadcasting in Ogg Vorbis format to an icecast2 server</td><td><a href="http://svn.xiph.org/releases/ices/ices-2.0.0.tar.gz">ices-2.0.0.tar.gz</a></td></tr>
-<tr><td>ices0 (version 0.4)</td><td>source client for broadcasting in MP3 format to an icecast2 server</td><td><a href="http://svn.xiph.org/releases/ices/ices-0.4.tar.gz">ices-0.4.tar.gz</a></td></tr>
+<tr><td>ices2 (version 2.0)</td><td>source client for broadcasting in Ogg Vorbis format to an icecast2 server</td><td><a href="http://downloads.xiph.org/releases/ices/ices-2.0.0.tar.gz">ices-2.0.0.tar.gz</a></td></tr>
+<tr><td>ices0 (version 0.4)</td><td>source client for broadcasting in MP3 format to an icecast2 server</td><td><a href="http://downloads.xiph.org/releases/ices/ices-0.4.tar.gz">ices-0.4.tar.gz</a></td></tr>
 </table>
 </div>
 <div class="roundbottom">
