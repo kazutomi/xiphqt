@@ -1,7 +1,7 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.7 2001/09/15 06:58:56 cwolf Exp $
+rem $Id: makesdk.bat,v 1.8 2001/09/15 08:09:23 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
@@ -29,6 +29,9 @@ md sdk\doc\ogg\ogg
 md sdk\doc\vorbis\vorbisenc
 md sdk\doc\vorbis\vorbisfile
 md sdk\examples\vorbis
+
+attrib +r sdk\build\test.ogg
+attrib +r sdk\build\test.wav
 
 rem --- is ogg here?
 
