@@ -964,7 +964,7 @@ write_comments(vorbis_comment *vc, const char *filename, int append)
   strcat(tempfile, ".pytemp");
   
   /* Open the file */
-  in_file = fopen(filename, "r");
+  in_file = fopen(filename, "rb");
   if (!in_file) {
     PyErr_SetFromErrno(PyExc_IOError);
     return NULL;

@@ -202,7 +202,7 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
   
   if (PyArg_ParseTuple(args, "s|sl", &fname, &initial, &ibytes)) {
 
-    file = fopen(fname, "r");
+    file = fopen(fname, "rb");
     fobject = NULL;
 
     if (file == NULL) {

@@ -8,7 +8,7 @@ import array
 class WaveReader:
     def __init__(self, filename):
         self.filename = filename
-        self._f = open(filename)
+        self._f = open(filename, 'rb')
         self._read_header()
 
     def _read_header(self):
@@ -95,7 +95,7 @@ def main():
     os.packetin(header_com)
     os.packetin(header_code)
     
-    fout = open('out.ogg', 'w')
+    fout = open('out.ogg', 'wb')
     inwav = WaveReader('in.wav')
 
     og = os.flush()
