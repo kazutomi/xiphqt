@@ -116,7 +116,7 @@
  <input type="hidden" name="item_name" value="theora donation">
  <input type="hidden" name="currency_code" value="USD">
  <input type="hidden" name="amount" value="10.00">
- <input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif" border="0" name="submit" alt="Make a donation via PayPal">
+ <input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif" name="submit" alt="Make a donation via PayPal">
 </form>
 </div>
 
@@ -151,7 +151,7 @@ talking about the danger of patenting software have been put on the net.</p>
 <a href="http://www.itcollege.ee/koostoo/avalikudloengudarhiiv.php">http://www.itcollege.ee/koostoo/avalikudloengudarhiiv.php</a></p>
 
 <p>Videos themselves:<br>
-<a href="http://www.itcollege.ee/dl/OGG/avaloeng10_1.ogg">http://www.itcollege.ee/dl/OGG/avaloeng10_1.ogg</a></br>
+<a href="http://www.itcollege.ee/dl/OGG/avaloeng10_1.ogg">http://www.itcollege.ee/dl/OGG/avaloeng10_1.ogg</a><br />
 <a href="http://www.itcollege.ee/dl/OGG/avaloeng10_2.ogg">http://www.itcollege.ee/dl/OGG/avaloeng10_2.ogg</a></p>
 
 <p>Mirror:<br>
@@ -166,7 +166,7 @@ original size, and qualities are Vorbis: 2/10 and Theora: 4/10.</p>
 <p>Streaming startup <a href="http://fluendo.com/">fluendo.com</a> is doing it again.<br />
 This time live from the <a href="http://conference2004.kde.org/">KDE World summit</a> in Ludwigsburg, Germany.
 </p>
-<p>During the conference, the live streams are available from <a href="http://streamingserver.akademy.kde.org/">http://streamingserver.akademy.kde.org/</a> along with viewer suggestions.</p> 
+<p>During the conference, the live streams are available from <a href="http://streamingserver.akademy.kde.org/">http://streamingserver.akademy.kde.org/</a> along with viewer suggestions.<br />
 Archives are available at <a href="http://ktown.kde.org/akademy/">http://ktown.kde.org/akademy/</a>
 </p>
 
@@ -230,7 +230,7 @@ So go ahead, there's no reason to delay adopting a free alternative any more!
 <h3>[ 2004 Mar 20 - Theora alpha 3 release ]</h3>
 <p>
 We're pleased to announce the alpha 3 release of the theora reference
-implementation.
+implementation.</p>
 <blockquote>
 <a href="http://theora.org/files/libtheora-1.0alpha3.tar.bz2">
     http://theora.org/files/libtheora-1.0alpha3.tar.bz2
@@ -239,8 +239,9 @@ implementation.
 </a><br><a href="http://theora.org/files/libtheora-1.0alpha3.zip">
     http://theora.org/files/libtheora-1.0alpha3.zip</a>
 </blockquote>
-</p><p>
+<p>
 The main differences over alpha 2:
+</p>
 <ul>
 <li>    The encoded image has been flipped to match the sense used in VP3,
     with the origin at the lower left. This allows lossless transcoding
@@ -253,7 +254,8 @@ The main differences over alpha 2:
     including a transcoder for avi vp3 files.
 </li>
 </ul>
-</p><p>
+
+<p>
 We hope there were be no more incompatible bitstream changes, but as
 with previous alpha releases we make no promises that the format will
 not change again.
@@ -272,13 +274,15 @@ href="http://subversion.tigris.org/">subversion</a>
 from cvs, along with all the other Xiph.org projects.
 </p><p>
 Please make a fresh checkout if you're following the
-development tree:
+development tree:</p>
 <blockquote>
 <tt>svn checkout http://svn.xiph.org/trunk/theora</tt>
 </blockquote>
+<p>
 as cvs is no longer updated. You can also mount the
 dav url directly on your desktop for read-only access.
-</p><p>
+</p>
+<p>
 See our <a href="svn.html">instruction page</a> for details.
 You can find more information about this great new tool at
 <a href="http://svnbook.red-bean.com/">definitive reference book's</a>
@@ -296,17 +300,17 @@ it means the format will be frozen and encoded files will be supported by future
 reference implementation. So if you want to help things along pull out the code and help with the
 documentation, or donate something to help pay for the work.
 <p>
-<p align="center"> <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
+<div align="center"> <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
 method="post">
 <input type="hidden" name="cmd" value="_xclick">
 <input type="hidden" name="business" value="donate@xiph.org">
 <input type="hidden" name="item_name" value="theora donation">
 <input type="hidden" name="currency_code" value="USD">
 <input type="hidden" name="amount" value="10.00">
-<input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif" border="0"
+<input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
 name="submit" alt="Make a donation via PayPal">
 </form>
-</p>
+</div>
 <h3>[ June 9, 2003 - Theora alpha 2 release ]</h3>
 <p>
 The libtheora reference implementation has reached its 'alpha 2' milestone.
