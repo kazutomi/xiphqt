@@ -3,3 +3,6 @@ DirectoryIndex index.html index.xhtml index.shtml index.markdown index.txt
 
 # good guess, but not good enough
 Redirect permanent /svn/ http://www.xiph.org/subversion/ 
+
+RewriteEngine On
+RewriteRule ^(.*)(es|de)$ $1index.$2.html

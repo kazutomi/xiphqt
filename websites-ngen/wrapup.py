@@ -63,7 +63,7 @@ class MarkdownWrapper(object):
 		.afterContentInherit	--	stuff to include after the content div
 			
 	"""
-	def __init__(self, sourceFilename, destFilename=None):
+	def __init__(self, sourceFilename, destFilename=None, lang=None):
 		self.sourceFilename = sourceFilename
 		if destFilename:
 			self.destFilename = destFilename
@@ -80,7 +80,8 @@ class MarkdownWrapper(object):
 		if match:									#TODO: needs decent error handling
 			self.title = "Xiph.Org: " + match.group(1)
 		
-		self.lang = 'en-US'
+		self.lang = lang
+		if self.lang == None: self.lang == 'en-US'
 
 		self.inHeadInherit = ''
 		self.inHeadInclude = ''
@@ -214,8 +215,9 @@ def getParentedFile(filename):
 	Or even given cheeses\france\brie.html:
 		cheeses\france\brie.html
 		cheeses\brie.html
-		brie.html	
-
+		brie.html
+	
+	Returns "" if no such file is found.
 	"""
 	while True:
 		# okay, we need to abort out on two conditions:
@@ -289,8 +291,7 @@ class NewsDispenser:
 		return ret
 		
 	def dump(self):
-		"""You will rot in the Hot Place if you modify the contents of this return value."""
-		return self.datedAndOptionedPostList
+		return self.datedAndOptionedPostList[:]
 	def dumpPretty(self):
 		ret = ""
 		for post in self.datedAndOptionedPostList:
@@ -303,10 +304,13 @@ if __name__ == '__main__':
 		# bug if more than one .markdown file in a directory
 		for filename in filter(lambda x: x.endswith(".markdown"), filenames):
 			srcPath = os.path.join(dirpath, filename)
+			destFile = os.path.splitext(filename)[0] + ".html"
+			destPath = getParallelFile(srcPath, destFile)
 			print srcPath
-			destPath = getParallelFile(srcPath, "index.html")
-
-			mw = MarkdownWrapper(srcPath, destPath)
+			
+			lang = 'en-US'
+			if ".es." in srcPath: lang = "es"
+			mw = MarkdownWrapper(srcPath, destPath, lang)
 			mw.renderToFile()
 		if ".svn" in dirnames:
 			dirnames.remove('.svn') # don't transform things in .svn directories
