@@ -1,4 +1,4 @@
-AC_INIT([icecast2_yp], [0.1.0], [icecast@xiph.org])
+AC_INIT([icecast2_yp], [0.2.0], [icecast@xiph.org])
 
 AC_CANONICAL_HOST
 AC_PREREQ(2.54)

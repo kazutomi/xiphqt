@@ -121,6 +121,50 @@ int genSID(char *sid, char *error)
 	return(YP_SUCCESS);
 
 }
+int genClusterPassword(char *sid, char *error)
+{
+	char	key[1024];
+	int i = 0;
+	char	sql[8096];
+	MYSQL_ROW	row;
+	int	existing = 0;
+	int	nrows = 0;
+
+
+	Log(LOG_DEBUG, "Generating Cluster Password");
+	for (i=0;i<10;i++) {
+		memset(key, '\000', sizeof(key));
+		sprintf(key, "%f", GetCurrentTime());
+		Log(LOG_DEBUG, "Key %d = %s", i, key);
+
+		memset(sql, '\000', sizeof(sql));
+
+		sprintf(sql,"select count(*) from clusters where cluster_password = \'%s\'",key);
+		if(mysql_real_query(&dbase,sql,strlen(sql))) {
+			strcpy(error, mysql_error(&dbase));
+			return(YP_ERROR);
+		}
+		result = mysql_store_result(&dbase);
+		nrows = mysql_num_rows(result);
+		if(nrows == 0) {
+			return(YP_ERROR);
+		}
+		else {
+			row = mysql_fetch_row(result);
+			mysql_free_result(result);
+			existing = 0;
+			if (row[0]) {
+				existing = atoi(row[0]);
+			}
+			if (!existing) {
+				strcpy(sid, key);
+				break;
+			}
+		}
+	}
+	return(YP_SUCCESS);
+
+}
 void disconnectFromDB() {
 	mysql_close(&dbase);
 }
@@ -194,6 +238,120 @@ int checkForCluster(char *server_name, char *listing_ip, char *error, char *exis
 		}
 	}
 	return existing;
+}
+int getPlaylistId(char *parent_id, char *detail_id, char *error, char *playlist_id, char *listen_url)
+{
+	char	sql[8096];
+	MYSQL_ROW	row;
+	int	existing = 0;
+	int	nrows = 0;
+
+	memset(sql, '\000', sizeof(sql));
+
+	snprintf(sql, sizeof(sql)-1, "select playlist_id, listen_url from server_details where id = %s and parent_id = %s",detail_id, parent_id);
+	Log(LOG_DEBUG, "getPlaylistId: Going to execute %s", sql);
+	if(mysql_real_query(&dbase,sql,strlen(sql))) {
+		strcpy(error, mysql_error(&dbase));
+		return(YP_ERROR);
+	}
+
+	result = mysql_store_result(&dbase);
+	nrows = mysql_num_rows(result);
+	
+	if(nrows == 0) {
+		existing = 0;
+	}
+	else {
+		row = mysql_fetch_row(result);
+		mysql_free_result(result);
+		if (row[0]) {
+			existing = 1;
+			strcpy(playlist_id, row[0]);
+			strcpy(listen_url, row[1]);
+		}
+	}
+	return existing;
+}
+int checkForClusterId(char *server_name, char *cluster_password, char *error, char *existing_id)
+{
+	char	sql[8096];
+	MYSQL_ROW	row;
+	int	existing = 0;
+	int	nrows = 0;
+	char	*server_name_esc = NULL;
+	char	*cluster_password_esc = NULL;
+
+	memset(sql, '\000', sizeof(sql));
+
+	server_name_esc = malloc(strlen(server_name)*2 + 1);
+	memset(server_name_esc, '\000', strlen(server_name)*2 + 1);
+	cluster_password_esc = malloc(strlen(cluster_password)*2 + 1);
+	memset(cluster_password_esc, '\000', strlen(cluster_password)*2 + 1);
+	mysql_real_escape_string(&dbase, server_name_esc, server_name, strlen(server_name));
+	mysql_real_escape_string(&dbase, cluster_password_esc, cluster_password, strlen(cluster_password));
+
+	snprintf(sql, sizeof(sql)-1, "select id from clusters where server_name = \'%s\' and cluster_password = \'%s\'",server_name_esc, cluster_password_esc);
+	if(mysql_real_query(&dbase,sql,strlen(sql))) {
+		strcpy(error, mysql_error(&dbase));
+		free(server_name_esc);
+		return(YP_ERROR);
+	}
+
+	free(server_name_esc);
+	server_name_esc = NULL;
+	free(cluster_password_esc);
+	cluster_password_esc = NULL;
+
+	result = mysql_store_result(&dbase);
+	nrows = mysql_num_rows(result);
+	
+	if(nrows == 0) {
+		existing = 0;
+	}
+	else {
+		row = mysql_fetch_row(result);
+		mysql_free_result(result);
+		if (row[0]) {
+			existing = 1;
+			strcpy(existing_id, row[0]);
+		}
+	}
+	return existing;
+}
+int anyMorePlaylists(char *sid, char *error)
+{
+	char	sql[8096];
+	MYSQL_ROW	row;
+	int	existing = 0;
+	int	nrows = 0;
+
+	memset(sql, '\000', sizeof(sql));
+
+	snprintf(sql, sizeof(sql)-1, "select count(*) from playlists where id = %s",sid);
+	if(mysql_real_query(&dbase,sql,strlen(sql))) {
+		strcpy(error, mysql_error(&dbase));
+		return(YP_ERROR);
+	}
+
+	result = mysql_store_result(&dbase);
+	nrows = mysql_num_rows(result);
+	
+	if(nrows == 0) {
+		return(0);
+	}
+	else {
+		row = mysql_fetch_row(result);
+		mysql_free_result(result);
+		if (row[0]) {
+			if (atoi(row[0]) > 0) {
+				return(1);
+			}
+		}
+		else {
+			return(0);
+		}
+	}
+	return(0);
 }
 int anyMoreServerDetails(char *sid, char *error, char *parent_id)
 {
@@ -355,7 +513,7 @@ int updateClusterID(char *server_name, char *listing_ip, char *error, char *clus
 
 int addServer(char *server_name, char *genre, char *cluster_password, char *desc, char *url, char *listenurl, char *server_type, char *bitrate, char *listing_ip, char *sid, char *samplerate, char *channels, char *error)
 {
-	char	sql[8096];
+	char	sql[2*8096];
 	int	i;
 	MYSQL_ROW	row;
 	int	existing = 0;
@@ -370,10 +528,14 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	char	*listeners_esc = NULL;
 	char	*samplerate_esc = NULL;
 	char	*channels_esc = NULL;
+	char	*cluster_password_esc = NULL;
 	int	cluster_flag = 0;
+	int	clusterid_flag = 0;
 	int	have_cluster_id = 0;
 	char	table_name[255] = "";
 	char	parent_id[255] = "";
+	char	cluster_id[255] = "";
+	char	generated_cluster_password[255] = "";
 	char	detail_id[255] = "";
 	int	ret = 0;
 
@@ -444,6 +606,12 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 		goto Error;
 	}
 
+	if (strlen(cluster_password) == 0) {
+		if (genClusterPassword(cluster_password, error) != YP_SUCCESS) {
+			goto Error;
+		}
+	}
+
 	server_name_esc = malloc(strlen(server_name)*2 + 1);
 	memset(server_name_esc, '\000', strlen(server_name)*2 + 1);
 	genre_esc = malloc(strlen(genre)*2 + 1);
@@ -462,6 +630,8 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	memset(samplerate_esc, '\000', strlen(samplerate)*2 + 1);
 	channels_esc = malloc(strlen(channels)*2 + 1);
 	memset(channels_esc, '\000', strlen(channels)*2 + 1);
+	cluster_password_esc = malloc(strlen(cluster_password)*2 + 1);
+	memset(cluster_password_esc, '\000', strlen(cluster_password)*2 + 1);
 
 	mysql_real_escape_string(&dbase, server_name_esc, server_name, strlen(server_name));
 	mysql_real_escape_string(&dbase, genre_esc, genre, strlen(genre));
@@ -472,6 +642,7 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	mysql_real_escape_string(&dbase, listenurl_esc, listenurl, strlen(listenurl));
 	mysql_real_escape_string(&dbase, samplerate_esc, samplerate, strlen(samplerate));
 	mysql_real_escape_string(&dbase, channels_esc, channels, strlen(channels));
+	mysql_real_escape_string(&dbase, cluster_password_esc, cluster_password, strlen(cluster_password));
 
 
 	if (!cluster_flag) {
@@ -488,6 +659,35 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 
 	Log(LOG_DEBUG, sql);
 
+	Log(LOG_DEBUG, "Checking for a cluster ID");
+	existing = checkForClusterId(server_name, cluster_password, error, cluster_id);
+	if (existing == YP_ERROR) {
+		Log(LOG_DEBUG, "check for cluster ID returned error");
+		goto Error;
+	}
+	if (existing) {
+		clusterid_flag = 1;
+	}
+	Log(LOG_DEBUG, "Done Checking for a cluster ID");
+	if (!clusterid_flag) {
+		snprintf(sql, sizeof(sql)-1, "insert into clusters (server_name, cluster_password) values  ('%s', '%s')", server_name_esc, cluster_password_esc);
+		if (mysql_real_query(&dbase,sql,strlen(sql))) {
+			sprintf(error, "clusters: %s", mysql_error(&dbase));
+			sprintf(sql,"ROLLBACK");
+			mysql_real_query(&dbase,sql,strlen(sql));
+			goto Error;
+		}
+		sprintf(cluster_id, "%d", mysql_insert_id(&dbase));
+	}
+
+	snprintf(sql, sizeof(sql)-1, "insert into playlists (id, listen_url) values  (%s, '%s')", cluster_id, listenurl_esc);
+	if (mysql_real_query(&dbase,sql,strlen(sql))) {
+		sprintf(error, "playlists: %s", mysql_error(&dbase));
+		sprintf(sql,"ROLLBACK");
+		mysql_real_query(&dbase,sql,strlen(sql));
+		goto Error;
+	}
+
 	snprintf(sql, sizeof(sql)-1, "insert into \
 		server_details (parent_id,		\
 			  server_name,		\
@@ -499,6 +699,7 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 			  url,			\
 			  current_song,		\
 			  listen_url,		\
+			  playlist_id,		\
 			  server_type,		\
 			  bitrate,		\
 			  listeners,		\
@@ -514,11 +715,13 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 			  '%s',			\
 			  '%s',			\
 			  '%s',			\
+			  %s,			\
 			  '%s',			\
 			  '%s',			\
 			  0,			\
 			  '%s',			\
-			  '%s')", parent_id, server_name_esc, listing_ip, desc_esc, genre_esc, sid, cluster_password, url_esc, "", listenurl_esc, server_type_esc, bitrate_esc, samplerate_esc, channels_esc);
+			  '%s')", parent_id, server_name_esc, listing_ip, desc_esc, genre_esc, sid, cluster_password_esc, url_esc, "", listenurl_esc, cluster_id, server_type_esc, bitrate_esc, samplerate_esc, channels_esc);
+	Log(LOG_DEBUG, sql);
 	if (mysql_real_query(&dbase,sql,strlen(sql))) {
 		sprintf(error, "servers: %s", mysql_error(&dbase));
 		sprintf(sql,"ROLLBACK");
@@ -793,7 +996,9 @@ int removeServer(char *sid, char *removeip, char *cluster_password, char *error)
 	int	nrows = 0;
 	int	cluster_flag = 0;
 	char	detail_id[255] = "";
+	char	playlist_id[255] = "";
 	char	parent_id[255] = "";
+	char	listenurl[1024] = "";
 	char	*p1;
 
 	memset(sql, '\000', sizeof(sql));
@@ -829,12 +1034,41 @@ int removeServer(char *sid, char *removeip, char *cluster_password, char *error)
 		}
 		mysql_free_result(result);
 
+		existing = getPlaylistId(parent_id, detail_id, error, playlist_id, listenurl);
+		if (existing == YP_ERROR) {
+			Log(LOG_DEBUG, "check for playlist id returned error");
+		}
+
+		sprintf(sql,"delete from playlists where id = %s and listen_url = \'%s\'", playlist_id, listenurl);
+		if (mysql_real_query(&dbase,sql,strlen(sql))) {
+			sprintf(error, "playlists: %s", mysql_error(&dbase));
+			sprintf(sql,"ROLLBACK");
+			mysql_real_query(&dbase,sql,strlen(sql));
+			return(YP_ERROR);
+		}
+
 		sprintf(sql,"delete from server_details where id = %s", detail_id);
 		if (mysql_real_query(&dbase,sql,strlen(sql))) {
 			sprintf(error, "clustered_servers: %s", mysql_error(&dbase));
 			sprintf(sql,"ROLLBACK");
 			mysql_real_query(&dbase,sql,strlen(sql));
 			return(YP_ERROR);
+		}
+
+		Log(LOG_DEBUG, "Checking to see if there are any more playlist ids");
+		if (!anyMorePlaylists(playlist_id, error)) {
+			Log(LOG_DEBUG, "Nope, so lets delete the parent in clusters...");
+			// Now delete the parent
+			sprintf(sql,"delete from clusters where id = %s", playlist_id);
+			if (mysql_real_query(&dbase,sql,strlen(sql))) {
+				sprintf(error, "clusters: %s", mysql_error(&dbase));
+				sprintf(sql,"ROLLBACK");
+				mysql_real_query(&dbase,sql,strlen(sql));
+				return(YP_ERROR);
+			}
+		}
+		else {
+			Log(LOG_DEBUG, "Yep, so lets NOT delete the clusters parent...");
 		}
 	
 		// At this point, we need to check to see if there are any server_details left for this

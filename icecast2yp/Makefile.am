@@ -10,3 +10,6 @@ debug:
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@"
+static:
+	$(MAKE) all LDFLAGS="${LDFLAGS} -all-static"
+
