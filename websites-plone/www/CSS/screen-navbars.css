@@ -65,6 +65,10 @@ div#navbar2 li {
 	display: block;
 }
 
+div#navbar2 li:hover {
+	background:  no-repeat url(/Images/logos/xiph/35x20.png) left #7089e4;
+}
+
 div#navbar2 abbr[title] { 
 	font-style: normal;
 }

@@ -24,3 +24,7 @@ div#navbar2 {
 div#navbar2 a{
 	color: #000000;
 }
+
+div#navbar2 li:hover {
+	background:  no-repeat url(/Images/logos/xiph/35x20.png) left #efef46;
+}

@@ -10,6 +10,7 @@
 		<ul>
 			<li><a href="/projects/tools/paranoia/">CD Paranoia</a></li>
 			<li><a href="/">Ogg Writ</a></li>
+			<li><a href="/projects/other/voip">Xiph VoIP Core</a></li>
 			<li><a href="/">Tarkin</a></li>
 			<li><a href="/">svn</a></li>
 			<li><a href="/">mailing lists</a></li>

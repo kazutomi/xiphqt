@@ -5,8 +5,8 @@
 <!--#include virtual="/SSI/xiph/leftside.inc"-->
 <!--#include virtual="/SSI/rightside.inc"-->
 
-  <h1>Welcome to Xiph.org</h1>
-  <p> The Xiph.org Foundation is a non-profit association dedicated to protecting the foundations of Internet multimedia from control by private interests. Our purpose is to support and develop free, open protocols and software to serve the public, developer and business markets. </p>
-  <p style='text-align: center;'> <a href='/map/'>Site map</a> </p>
+<h1>Welcome to Xiph.org</h1>
+<p> The Xiph.org Foundation is a non-profit association dedicated to protecting the foundations of Internet multimedia from control by private interests. Our purpose is to support and develop free, open protocols and software to serve the public, developer and business markets. </p>
+<p style='text-align: center;'> <a href='/map/'>Site map</a> </p>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->

@@ -1,8 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
-<head>
-	<!--#include virtual="/SSI/inhead.inc"-->
-	<!--#include virtual="/SSI/xiph/inhead.inc"-->
+<!--#include virtual="/SSI/topofhead.inc"-->
     <title>Xiph.org: about us</title>
 	<style type='text/css'>
 		dl.releasesByYear,
@@ -15,16 +11,11 @@
 			list-style-type: none;
 		}
 	</style>
-</head>
+<!--#include virtual="/SSI/xiph/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/SSI/xiph/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
 
-<body>
-	<!--#include virtual="/SSI/topofbody.inc"-->
-	<div class='pinchedIn'>
-		<!--#include virtual="/SSI/tabs.inc"-->
-	</div>
-	<div class='sectionSpecific'>
-		<!--#include virtual="/SSI/navbar.inc"-->
-		<div id='content'>
 			<h1>Xiph.org Press Releases</h1>
 			<p>
 				This page is an entry point to all of our press releases. They&#x2019;re
@@ -55,8 +46,5 @@
 					</ol>
 				</dd>
 			</dl>
-		</div>
-	</div>
-	<!--#include virtual="/SSI/bottomofbody.inc"-->
-</body>
-</html>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->

@@ -1,24 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
-<head>
-	<!--#include virtual="/SSI/inhead.inc"-->
-	<!--#include virtual="/SSI/xiph/inhead.inc"-->
-    <title>Xiph.org: Mailing Lists</title>
-</head>
-<body>
-	<!--#include virtual="/SSI/topofbody.inc"-->
-	<div class='pinchedIn'>
-		<!--#include virtual="/SSI/tabs.inc"-->
-	</div>
-	<div class='sectionSpecific'>
-		<!--#include virtual="/SSI/navbar.inc"-->
-		<div id='content'>
-			<h1>Xiph.org Mailing Lists</h1>
-			<p>
-				Our mailing lists rock.
-			</p>
-		</div>
-	</div>
-	<!--#include virtual="/SSI/bottomofbody.inc"-->
-</body>
-</html>
+<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: home</title>
+<!--#include virtual="/SSI/xiph/inhead.inc"-->
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/SSI/xiph/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+<h1>Mailing Lists</h1>
+<p>Our Mailing Lists would rock if they were up!</p>
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->
