@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: illustrate simple use of chained bitstream and vorbisfile.a
- last mod: $Id: chaining_example.c,v 1.6 2000/10/12 03:12:39 xiphmont Exp $
+ last mod: $Id: chaining_example.c,v 1.6.2.1 2000/10/30 20:51:21 jack Exp $
 
  ********************************************************************/
 
@@ -24,7 +24,7 @@ int main(){
   int i;
 
   /* open the file/pipe on stdin */
-  if(ov_open(stdin,&ov,NULL,-1)==-1){
+  if(ov_open(stdin,&ov,NULL,-1)<0){
     printf("Could not open input as an OggVorbis file.\n\n");
     exit(1);
   }

@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: simple example decoder
- last mod: $Id: decoder_example.c,v 1.13 2000/10/12 03:12:39 xiphmont Exp $
+ last mod: $Id: decoder_example.c,v 1.13.2.1 2000/10/30 20:51:21 jack Exp $
 
  ********************************************************************/
 
@@ -153,7 +153,7 @@ int main(int argc, char **argv){
 	  while(i<2){
 	    result=ogg_stream_packetout(&os,&op);
 	    if(result==0)break;
-	    if(result==-1){
+	    if(result<0){
 	      /* Uh oh; data at some point was corrupted or missing!
 		 We can't tolerate that in a header.  Die. */
 	      fprintf(stderr,"Corrupt secondary header.  Exiting.\n");
@@ -202,7 +202,7 @@ int main(int argc, char **argv){
       while(!eos){
 	int result=ogg_sync_pageout(&oy,&og);
 	if(result==0)break; /* need more data */
-	if(result==-1){ /* missing or corrupt data at this page position */
+	if(result<0){ /* missing or corrupt data at this page position */
 	  fprintf(stderr,"Corrupt or missing data in bitstream; "
 		  "continuing...\n");
 	}else{
@@ -212,7 +212,7 @@ int main(int argc, char **argv){
 	    result=ogg_stream_packetout(&os,&op);
 
 	    if(result==0)break; /* need more data */
-	    if(result==-1){ /* missing or corrupt data at this page position */
+	    if(result<0){ /* missing or corrupt data at this page position */
 	      /* no reason to complain; already complained above */
 	    }else{
 	      /* we have a packet.  Decode it */
