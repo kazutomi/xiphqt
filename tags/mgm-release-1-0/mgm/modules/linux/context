@@ -1,0 +1,91 @@
+# -*-Perl-*-
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
+
+package MGMmodule::context;
+use vars qw($xpath $context $prev $widget $graph $lastmod);
+
+# class init
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+    # is the helper up and running?
+    if(!defined($MGMmodule::helperST::proc{"ctxt"})){
+	$toplevel->optionAdd("$xclass.active",'false',21);   
+    } 
+    $toplevel->optionAdd("$xclass.order",3,21);   
+    $this;
+}
+
+# instance init
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
+    
+    # modify defaults
+    $toplevel->optionAdd("$xpath.bar.0.label", "context",21);
+    $toplevel->optionAdd("$xpath.scalereturn", 30,21);
+    $toplevel->optionAdd("$xpath.scalewidadj", 80,21);
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);
+    
+    # this relies on the above defaults
+
+    my($minx,$miny)=MGM::Graph::calcxysize($this,1024*1024*512,
+					   '/s',1);
+    
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
+    $this;
+}
+
+# instance widget build
+sub module_run{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>1,
+			   prompt=>'/s',
+			   minscale=>1024);
+    
+    $lastmod=-1;
+    $widget=$graph->{"widget"};        # must return the widget
+}
+
+sub read_proc{
+    # now uses the 00helper to save on opens 
+    ($context)=split ' ',$MGMmodule::helperST::proc{"ctxt"};
+}
+
+sub module_update{ 
+    my$this=shift;
+    
+    # don't update unless the helper has
+    if($lastmod!=$MGMmodule::helperST::lastmod){
+	my$time=$MGMmodule::helperST::lastmod;
+	
+	$this->read_proc;
+	if(defined($prev)){
+	    my$f=($context-$prev)/($time-$lastmod)*100;
+	    
+	    # don't be clever and only call set if values change; set must
+	    # be called each refresh period or the graph will get
+	    # confused.
+	    
+	    $graph->set($f);
+	}
+	
+	$prev=$context;
+	$lastmod=$time;
+    }
+}
+
+bless {};
+
