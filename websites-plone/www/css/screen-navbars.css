@@ -12,7 +12,7 @@ div#navbar1 ul {
 	margin: 0 0 0 10px;
 	border-width: 0px;
 	padding: 0 0 0 40px;
-	background: no-repeat url(../images/35x20.png) left;
+	background: no-repeat url(/images/layout/35x20.png) left;
 }
 
 div#navbar1 li {

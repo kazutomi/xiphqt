@@ -52,19 +52,40 @@ div#leftside {
 
 div#rightside {
 	margin: 0px 0 0 160px;
-	padding: 20px;
-	background-image: url(../images/topleft.png);
-	background-color: #FFFFFF;
+	padding: 0px;
+	background: #FFFFFF;
 	border-left: 3px solid #000000;
 	border-right: 3px solid #000000;
 	border-bottom: 3px solid #000000;
+	-moz-border-radius-bottomleft: 15px;
+	-moz-border-radius-bottomright: 15px;
+}
 
+#rs2 {
+	margin: 0;
+	border: 0;
+	padding: 0;
+	background: no-repeat url(/images/layout/bwtopleft.png) top left #FFFFFF;
+}
+
+#rs3 {
+	margin: 0;
+	border: 0;
+	padding: 0;
+	background: no-repeat url(/images/layout/bwbottomright.png) bottom right #FFFFFF;
+}
+
+#rs4 {
+	margin: 0 30px 0 0;
+	border: 0;
+	padding: 0;
+	background: no-repeat url(/images/layout/bwbottomleft.png) bottom left #FFFFFF;
 }
 
 #content {
-	margin: 0 20px 0 20px;
-	padding: 10px;
-	background:  no-repeat url(images/topleft.png) #FFFFFF;
+	margin: 0 0 0 20px;
+	padding: 0 30px 0 10px;
+	background: no-repeat url(/images/layout/bwtopright.png) top right #FFFFFF;
 }
 
 /*

@@ -46,7 +46,7 @@
 </div>
 
 
-<div id="rightside">
+<div id="rightside"><div id="rs2">
 
 <div id="content">
 
@@ -59,7 +59,9 @@ protocols and software to serve the public, developer and business
 markets. </p>
 <p style="text-align: center;"> <a href="http://xiph.commo.de/map/">Site map</a> </p>
 
-</div>
+</div></div>
+
+<div id="rs3"><div id="rs4">&nbsp;</div></div>
 
 </div>
 
