@@ -58,6 +58,9 @@ ices_setup_initialize (void)
   if (ices_config.daemon)
     ices_setup_daemonize ();
 
+  /* Open logfiles */
+  ices_log_initialize ();
+
   /* Initialize the libshout structure */
   for (stream = ices_config.streams; stream; stream = stream->next) {
     if (!(stream->conn = shout_new ())) {
@@ -67,9 +70,6 @@ ices_setup_initialize (void)
   }
 
   ices_setup_activate_libshout_changes (&ices_config);
-
-  /* Open logfiles */
-  ices_log_initialize ();
 
   /* Initialize the playlist handler */
   ices_playlist_initialize ();
@@ -174,7 +174,7 @@ ices_setup_parse_stream_defaults (ices_stream_t* stream)
   stream->host = ices_util_strdup (ICES_DEFAULT_HOST);
   stream->port = ICES_DEFAULT_PORT;
   stream->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
-  stream->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
+  stream->protocol = ICES_DEFAULT_PROTOCOL;
 
   stream->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
   stream->dumpfile = NULL;
@@ -369,7 +369,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  stream->out_samplerate = atoi (argv[arg]);
 	  break;
         case 'i':
-	  stream->header_protocol = icy_header_protocol_e;
+	  stream->protocol = icy_protocol_e;
 	  break;
         case 'l':
                     ices_config->pm.loop_playlist = 0;
@@ -473,9 +473,9 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     shout_set_port (conn, stream->port);
     shout_set_password (conn, stream->password);
     shout_set_format (conn, SHOUT_FORMAT_MP3);
-    if (stream->header_protocol == icy_header_protocol_e)
+    if (stream->protocol == icy_protocol_e)
       shout_set_protocol(conn, SHOUT_PROTOCOL_ICY);
-    else if (stream->header_protocol == http_header_protocol_e)
+    else if (stream->protocol == http_protocol_e)
       shout_set_protocol(conn, SHOUT_PROTOCOL_HTTP);
     else
       shout_set_protocol(conn, SHOUT_PROTOCOL_XAUDIOCAST);
@@ -495,17 +495,17 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
 
     ices_log_debug ("Sending following information to libshout:");
     ices_log_debug ("Stream: %d", streamno);
-    ices_log_debug ("Host: %s\tPort: %d", shout_get_host (conn), shout_get_port (conn));
-    ices_log_debug ("Password: %s\tIcy Compat: %d", shout_get_password (conn),
-		    (shout_get_protocol(conn) == SHOUT_PROTOCOL_ICY) ? 1 : 0);
+    ices_log_debug ("Host: %s:%d (protocol: %s)", shout_get_host (conn),
+                    shout_get_port (conn),
+		    stream->protocol == icy_protocol_e ? "icy" :
+		      stream->protocol == http_protocol_e ? "http" : "xaudiocast");
+    ices_log_debug ("Mount: %s, Password: %s", shout_get_mount (conn), shout_get_password (conn));
     ices_log_debug ("Name: %s\tURL: %s", shout_get_name (conn), shout_get_url(conn));
     ices_log_debug ("Genre: %s\tDesc: %s", shout_get_genre (conn),
 		    shout_get_description (conn));
     ices_log_debug ("Bitrate: %s\tPublic: %d", shout_get_audio_info (conn, SHOUT_AI_BITRATE),
 		    shout_get_public (conn));
-    ices_log_debug ("Mount: %s\tDumpfile: %s",
-		    shout_get_mount (conn),
-		    ices_util_nullcheck (shout_get_dumpfile (conn)));
+    ices_log_debug ("Dump file: %s", ices_util_nullcheck (shout_get_dumpfile (conn)));
     streamno++;
   }
 }

@@ -215,11 +215,11 @@ parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       unsigned char *str = ices_xml_read_node (doc, cur);
 
       if (str && (strcasecmp(str, "icy") == 0))
-	ices_config->header_protocol = icy_header_protocol_e;
+	ices_config->protocol = icy_protocol_e;
       else if (str && (strcasecmp(str, "http") == 0))
-	ices_config->header_protocol = http_header_protocol_e;
+	ices_config->protocol = http_protocol_e;
       else
-	ices_config->header_protocol = xaudiocast_header_protocol_e;
+	ices_config->protocol = xaudiocast_protocol_e;
     } else {
       ices_log ("Unknown Server keyword: %s", cur->name);
     }

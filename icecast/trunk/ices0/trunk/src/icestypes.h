@@ -23,10 +23,10 @@
 #define _ICES_ICESTYPES_H
 
 typedef enum {
-  icy_header_protocol_e,
-  xaudiocast_header_protocol_e,
-  http_header_protocol_e
-} header_protocol_t;
+  icy_protocol_e,
+  xaudiocast_protocol_e,
+  http_protocol_e
+} protocol_t;
 
 typedef enum {
   ices_playlist_builtin_e,
@@ -44,7 +44,7 @@ typedef struct ices_stream_St {
   char *host;
   int port;
   char *password;
-  header_protocol_t header_protocol;
+  protocol_t protocol;
 
   char* mount;
   char* dumpfile;
