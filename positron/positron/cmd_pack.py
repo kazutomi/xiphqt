@@ -42,7 +42,8 @@ def run(config, neuros, args):
             database.pack()
 
             if config.sort_database:
-                database.sort()
+                database.sort(path.join(*neuros.mountpoint_parts +
+                                        [neuros.DB_DIR, 'tracks.txt']))
                 
             neuros.close_db(arg)
         except neuros_module.Error, e:

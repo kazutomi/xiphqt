@@ -83,6 +83,14 @@ def run(config, neuros, args):
             print "  "+d
             neuros.new_db(d)
 
+        print "Clearing track number cache..."
+
+        try:
+            os.remove(path.join(*neuros.mountpoint_parts +
+                                [neuros.DB_DIR, 'tracks.txt']))
+        except Exception:
+            pass    # Silently fail
+        
         print "\nFinding existing audio files on the Neuros..."
         # Now we need to find all the files to readd them to the database.
         filelist = [item[1:] for item in
@@ -110,7 +118,8 @@ def run(config, neuros, args):
             add_track(neuros, None, track, metadata,
                       recording=recording_source(track))
         if config.sort_database:
-            audio_db.sort()
+            audio_db.sort(path.join(*neuros.mountpoint_parts +
+                                    [neuros.DB_DIR, 'tracks.txt']))
         neuros.close_db("audio")
 
         print "\nAdding HiSi clips to unidedhisi database..."
@@ -122,7 +131,8 @@ def run(config, neuros, args):
                       neuros.hostpath_to_neurospath(track))
             unidedhisi_db.add_record(record)
         if config.sort_database:
-            unidedhisi_db.sort()
+            unidedhisi_db.sort(path.join(*neuros.mountpoint_parts +
+                                         [neuros.DB_DIR, 'tracks.txt']))
         neuros.close_db("unidedhisi")
         
     except neuros_module.Error, e:

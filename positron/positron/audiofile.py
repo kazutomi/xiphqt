@@ -50,7 +50,8 @@ def detect_mp3(filename):
                  "title" : mp3info.title,
                  "artist" : mp3info.artist,
                  "album" : mp3info.album,
-                 "genre" : mp3info.genre }
+                 "genre" : mp3info.genre,
+                 "tracknumber" : mp3info.track}
 
         # Convert empty string entries to nulls
         for key in info.keys():
@@ -81,11 +82,12 @@ def detect_oggvorbis(filename):
                  "title" : None,
                  "artist" : None,
                  "album" : None,
-                 "genre" : None }
+                 "genre" : None,
+                 "tracknumber" : None}
 
         actual_keys = map(string.lower, vc.keys())
         
-        for tag in ("title","artist","album","genre"):
+        for tag in ("title","artist","album","genre","tracknumber"):
             if tag in actual_keys:
                 value = vc[tag]
                 # Force these to be single valued

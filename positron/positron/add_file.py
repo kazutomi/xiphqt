@@ -3,6 +3,7 @@
 # add_file.py - utilities for file addition
 #
 # Copyright (C) 2003, Xiph.org Foundation
+# Copyright (C) 2003 Brett Smith <bretts@canonical.org>
 #
 # This file is part of positron.
 #
@@ -70,10 +71,25 @@ def add_track(neuros, sourcename, targetname, metadata, recording=None):
         util.copy_file(sourcename, targetname)
 
     # Create DB entry
+    destination = neuros.hostpath_to_neurospath(targetname)
     record = (metadata["title"], None, metadata["artist"], metadata["album"],
               metadata["genre"], recording, metadata["length"],
-              metadata["size"] // 1024,
-              neuros.hostpath_to_neurospath(targetname))
+              metadata["size"] // 1024, destination)
     # Add entry to database
     neuros.db["audio"].add_record(record)
     
+    try:
+        filename = path.join(*neuros.mountpoint_parts +
+                             [neuros.DB_DIR, 'tracks.txt'])
+        tracknum_file = file(filename, 'a')
+        tracknum = metadata.get('tracknumber', None)
+        if tracknum is None:
+            tracknum = metadata.get('title', targetname)
+            try:
+                tracknum.lower()
+            except AttributeError:
+                pass
+        tracknum_file.write('%s\t%s\n' % (destination, tracknum))
+        tracknum_file.close()
+    except IOError:
+        pass  # Fail silently if we can't write the file.

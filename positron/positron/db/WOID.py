@@ -3,6 +3,7 @@
 # db/WOID.py - WOID functions
 #
 # Copyright (C) 2003, Xiph.org Foundation
+# Copyright (C) 2003 Brett Smith <bretts@canonical.org>
 #
 # This file is part of positron.
 #
@@ -19,7 +20,7 @@ from util import *
 from os import path
 from MDB import MDB
 from SAI import SAI,cmp_sai_record
-from PAI import PAI
+from PAI import PAI,pai_sorters,pai_get_tracknums
 from XIM import XIM
 
 def _mangle_field(field):
@@ -346,14 +347,36 @@ class WOID:
         for record in records:
             self.add_record(record)
 
-    def sort(self):
+    def sort(self, tracklist_filename, root_mdb = None):
         """Sorts the contents of this database and all child databases."""
+
+        if root_mdb is None:
+            root_mdb = self.mdb
 
         cmpfunc = lambda a,b: cmp_sai_record(self.mdb, a, b)
         self.sai.sort(cmpfunc)
+        name_index = self.name.find('\x00')
+        if name_index != -1:
+            name = self.name[:name_index]
+        else:
+            name = self.name
+        if name.endswith('s'):
+            name = name[:-1]
+        if self.pai is not None:
+            base_sort_func = pai_sorters.get(name, None)
+            if name == 'Album':
+                tracknums = pai_get_tracknums(tracklist_filename)
+                sort_func = lambda ptr: base_sort_func(root_mdb, tracknums,
+                                                       ptr)
+            elif base_sort_func is not None:
+                sort_func = lambda ptr: base_sort_func(root_mdb, ptr)
+            else:
+                sort_func = None
+            if sort_func is not None:
+                self.pai.sort(sort_func, self.sai)
 
         for child in self.children:
-            child.sort()
+            child.sort(tracklist_filename, root_mdb)
 
     def close(self):
         self.mdb.close()
