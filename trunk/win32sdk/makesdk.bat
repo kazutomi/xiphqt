@@ -1,7 +1,7 @@
 @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.8 2001/09/15 08:09:23 cwolf Exp $
+rem $Id: makesdk.bat,v 1.9 2001/09/15 08:46:22 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
@@ -16,11 +16,11 @@ if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
   exit
 )
   
-rd /s /q sdk\include > nul
-rd /s /q sdk\lib > nul
-rd /s /q sdk\bin > nul
-rd /s /q sdk\doc > nul
-rd /s /q sdk\examples > nul
+rd /s /q sdk\include 2> nul
+rd /s /q sdk\lib 2> nul
+rd /s /q sdk\bin 2> nul
+rd /s /q sdk\doc 2> nul
+rd /s /q sdk\examples 2> nul
 md sdk\include\ogg
 md sdk\include\vorbis
 md sdk\lib
