@@ -19,15 +19,32 @@
  * 
  * \section intro Introduction
  *
- * This is the documentation for the libtheora C API.
- * libtheora is the reference implementation for
- * <a href="http://www.theora.org/">Theora</a>, a free video codec.
- * Theora is derived from On2's VP3 codec with improved features and
- * integration for Ogg multimedia formats by
- * <a href="http://www.xiph.org/">Xiph.Org</a>.*/
+ * This is the documentation for the <tt>libtheora</tt> C API.
+ * <tt>libtheora</tt> is the reference implementation for
+ *  <a href="http://www.theora.org/">Theora</a>, a free video codec.
+ * Theora is derived from On2's VP3 codec with additional features and
+ *  integration for Ogg multimedia formats by
+ *  <a href="http://www.xiph.org/">the Xiph.Org Foundation</a>.
+ * Complete documentation of the format itself is available in
+ * <a href="http://www.theora.org/doc/Theora_I_spec.pdf">the Theora
+ *  specification</a>.
+ *
+ * \subsection Organization
+ *
+ * <tt>libtheora</tt> is actually subdivided into three separate libraries:
+ * - <tt>libtheoraenc</tt>, containing routines exclusive to the encoder.
+ *   You must link to this if you use any of the functions listed in
+ *    \ref encfuncs.
+ * - <tt>libtheoradec</tt>, containing routines exclusive to the decoder.
+ *   You must link to this if you use any of the functions listed in
+ *    \ref decfuncs.
+ * - <tt>libtheorabase</tt>, containing routines shared by the encoder and the
+ *    decoder.
+ *   You must link to this if you use any of the functions in this API, not
+ *    not just those listed in \ref basefuncs.*/
 
 /**\file
- * The libtheora C API.*/
+ * The <tt>libtheora</tt> C API.*/
 
 #if !defined(_O_THEORA_H_)
 # define _O_THEORA_H_ (1)
@@ -65,9 +82,9 @@ typedef enum{
   /**The color space was not specified at the encoder.
       It may be conveyed by an external means.*/
   OC_CS_UNSPECIFIED,
-  /**A colorspace designed for NTSC content.*/
+  /**A color space designed for NTSC content.*/
   OC_CS_ITU_REC_470M,
-  /**A colorspace designed for PAL/SECAM content.*/
+  /**A color space designed for PAL/SECAM content.*/
   OC_CS_ITU_REC_470BG,
   /**The total number of currently defined color spaces.*/
   OC_CS_NSPACES
@@ -90,12 +107,13 @@ typedef enum{
   OC_PF_NFORMATS
 }theora_pixel_fmt;
 
-/**\name theora_encode_ctl() Codes
- * By convention, these are even, to distinguish them from decoder control
- *  codes.
+/**\name theora_encode_ctl() codes
+ * \anchor encctlcodes
+ * These are the available request codes for theora_encode_ctl().
+ * By convention, these are even, to distinguish them from the
+ *  \ref decctlcodes "decoder control codes".
  * Keep any experimental or vendor-specific values above \c 0x8000.*/
 /*@{*/
-
 /**Sets the Huffman tables to use.
  * The tables are copied, not of stored by reference, so they can be freed
  *  after this call.
@@ -103,7 +121,7 @@ typedef enum{
  *
  * \param[in] _buf <tt>theora_huff_code[#OC_NHUFFMAN_TABLES][#OC_NDCT_TOKENS]</tt>
  * \retval OC_FAULT  \a _enc_ctx is <tt>NULL</tt>.
- * \retval OC_EINVAL Encodng has already begun or one or more of the given
+ * \retval OC_EINVAL Encoding has already begun or one or more of the given
  *                     tables is not full or prefix-free, \a _buf is
  *                     <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf is
  *                     non-<tt>NULL</tt> and \a _buf_sz is not
@@ -122,7 +140,7 @@ typedef enum{
  *
  * \param[in] _buf #theora_quant_info
  * \retval OC_FAULT  \a _enc_ctx is <tt>NULL</tt>.
- * \retval OC_EINVAL Encodng has already begun, the quantization parameters
+ * \retval OC_EINVAL Encoding has already begun, the quantization parameters
  *                    do not meet one of the above stated conditions, \a _buf
  *                    is <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf
  *                    is non-<tt>NULL</tt> and \a _buf_sz is not
@@ -135,20 +153,22 @@ typedef enum{
  * If it is set before encoding begins, theora_info#keyframe_granule_shift will
  *  be enlarged appropriately.
  *
- * \param[in]  _buf ogg_uint32_t: The maximum distance between key frames.
- * \param[out] _buf ogg_uint32_t: The actual maximum distance set.
+ * \param[in]  _buf <tt>ogg_uint32_t</tt>: The maximum distance between key
+ *                   frames.
+ * \param[out] _buf <tt>ogg_uint32_t</tt>: The actual maximum distance set.
  * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
  * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(ogg_uint32_t)</tt>.
  * \retval OC_IMPL   Not supported by this implementation.*/
 #define OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
 /*@}*/
 
-/**\name theora_decode_ctl() Codes
- * By convention, these are odd, to distinguish them from encoder control
- *  codes.
+/**\name theora_decode_ctl() codes
+ * \anchor decctlcodes
+ * These are the available request codes for theora_decode_ctl().
+ * By convention, these are odd, to distinguish them from the
+ *  \ref encctlcodes "encoder control codes".
  * Keep any experimental or vendor-specific values above \c 0x8000.*/
 /*@{*/
-
 /**Gets the maximum post-processing level.
  *
  * \param[out] _buf int: The maximum post-processing level.
@@ -173,7 +193,8 @@ typedef enum{
  * Call this after a seek, before decoding the first frame, to ensure that the
  *  proper granule position is returned for all subsequent frames.
  *
- * \param[in] _buf ogg_int64_t: The granule position of the next frames.
+ * \param[in] _buf <tt>ogg_int64_t</tt>: The granule position of the next
+ *                  frame.
  * \retval OC_FAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
  * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(ogg_int64_t)</tt>, or the
  *                    granule position is negative.*/
@@ -195,7 +216,7 @@ typedef enum{
 
 
 /**A buffer for a single color plane in an uncompressed image.
- * This contains the image data in a left-to-righ, top-down format.
+ * This contains the image data in a left-to-right, top-down format.
  * Each row of pixels is stored contiguously in memory, but successive rows
  *  need not be.
  * Use \a ystride to compute the offset of the next row.
@@ -379,7 +400,7 @@ typedef struct{
   /**The amount to shift to extract the last keyframe number from the granule
    *  position.
    * This can be at most 31.
-   * The maximum distance between keyframes is
+   * The maximum distance between key frames is
    *  <tt>1<<#keyframe_granule_shift</tt>.
    * If you leave this at zero and do not set the keyframe frequency with
    *  #OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, every frame will be encoded as a
@@ -387,34 +408,41 @@ typedef struct{
   int                keyframe_granule_shift;
 }theora_info;
 
-/**The number of Huffman tables used by Theora.*/
-#define OC_NHUFFMAN_TABLES (80)
-/**The number of DCT token values in each table.*/
-#define OC_NDCT_TOKENS     (32)
-
-/**A Huffman code for a Theora DCT token.
- * Each set of Huffman codes in a given table must form a complete, prefix-free
- *  code.
- * There is no requirement that all the tokens in a table have a valid code,
- *  but the current encoder is not optimized to take advantage of this.
- * If there is not at least one table with a code for every token in each of
- *  the five groups of 16 tables, then the encoder may fail to encode certain
- *  frames.
- * The complete table in the first group of 16 does not have to be in the same
- *  place as the complete table in the other groups, but the complete tables in
- *  the remaining four groups must all be in the same place.*/
-typedef struct{
-  /**The bit pattern for the code, with the LSbit of the pattern aligned in
-   *   the LSbit of the word.*/
-  ogg_uint32_t pattern;
-  /**The number of bits in the code.
-   * This must be between 0 and 32, inclusive.*/
-  int          nbits;
-}theora_huff_code;
-
-/**The Huffman tables used by VP3.*/
-extern const theora_huff_code
- OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+/**The comment information.
+ *
+ * This structure holds the in-stream metadata corresponding to
+ *  the 'comment' header packet.
+ * The comment header is meant to be used much like someone jotting a quick
+ *  note on the label of a video.
+ * It should be a short, to the point text note that can be more than a couple
+ *  words, but not more than a short paragraph.
+ *
+ * The metadata is stored as a series of (tag, value) pairs, in
+ *  length-encoded string vectors.
+ * The first occurrence of the '=' character delimits the tag and value.
+ * A particular tag may occur more than once, and order is significant.
+ * The character set encoding for the strings is always UTF-8, but the tag
+ *  names are limited to ASCII, and treated as case-insensitive.
+ * See <a href="http://www.theora.org/doc/Theora_I_spec.pdf">the Theora
+ *  specification</a>, Section 6.3.3 for details.
+ *
+ * In filling in this structure, theora_decode_header() will null-terminate
+ *  the user_comment strings for safety.
+ * However, the bitstream format itself treats them as 8-bit clean vectors,
+ *  possibly containing null characters, and so the length array should be
+ *  treated as their authoritative length.
+ */
+typedef struct theora_comment{
+  /**The array of comment string vectors.*/
+  char **user_comments;
+  /**An array of the corresponding length of each vector, in bytes.*/
+  int   *comment_lengths;
+  /**The total number of comment strings.*/
+  int    comments;
+  /**The null-terminated vendor string.
+     This identifies the software used to encode the stream.*/
+  char  *vendor;
+}theora_comment;
 
 /**A single base matrix.*/
 typedef unsigned char theora_quant_base[64];
@@ -502,41 +530,36 @@ typedef struct{
 /**The quantization parameters used by VP3.*/
 extern const theora_quant_info OC_VP31_QUANT_INFO;
 
-/**The comment information.
- *
- * This structure holds the in-stream metadata corresponding to
- *  the 'comment' header packet.
- * The comment header is meant to be used much like someone jotting a quick
- *  note on the label of a video.
- * It shold be a short, to the point text note that can be more than a couple
- *  words, but not more than a short paragraph.
- *
- * The metadata is stored as a series of (tag, value) pairs, in
- *  length-encoded string vectors.
- * The first occurence of the '=' character delimits the tag and value.
- * A particular tag may occur more than once, and order is significant.
- * The character set encoding for the strings is always UTF-8, but the tag
- *  names are limited to ASCII, and treated as case-insensitive.
- * See <a href="http://www.theora.org/doc/Theora_I_spec.pdf">the Theora
- *  specification</a>, Section 6.3.3 for details.
- *
- * In filling in this structure, theora_decode_header() will null-terminate
- *  the user_comment strings for safety.
- * However, the bitstream format itself treats them as 8-bit clean vectors,
- *  possibly containing nul characters, and so the length array should be
- *  treated as their authoritative length.
- */
-typedef struct theora_comment{
-  /**The array of comment string vectors.*/
-  char **user_comments;
-  /**An array of the corresponding length of each vector, in bytes.*/
-  int   *comment_lengths;
-  /**The total number of comment strings.*/
-  int    comments;
-  /**The null-terminated vendor string.
-     This identifies the software used to encode the stream.*/
-  char  *vendor;
-}theora_comment;
+/**The number of Huffman tables used by Theora.*/
+#define OC_NHUFFMAN_TABLES (80)
+/**The number of DCT token values in each table.*/
+#define OC_NDCT_TOKENS     (32)
+
+/**A Huffman code for a Theora DCT token.
+ * Each set of Huffman codes in a given table must form a complete, prefix-free
+ *  code.
+ * There is no requirement that all the tokens in a table have a valid code,
+ *  but the current encoder is not optimized to take advantage of this.
+ * If there is not at least one table with a code for every token in each of
+ *  the five groups of 16 tables, then the encoder may fail to encode certain
+ *  frames.
+ * The complete table in the first group of 16 does not have to be in the same
+ *  place as the complete table in the other groups, but the complete tables in
+ *  the remaining four groups must all be in the same place.*/
+typedef struct{
+  /**The bit pattern for the code, with the LSbit of the pattern aligned in
+   *   the LSbit of the word.*/
+  ogg_uint32_t pattern;
+  /**The number of bits in the code.
+   * This must be between 0 and 32, inclusive.*/
+  int          nbits;
+}theora_huff_code;
+
+/**The Huffman tables used by VP3.*/
+extern const theora_huff_code
+ OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+
+
 
 /**\name Encoder and decoder state
    The following data structures are opaque, and their contents are not
@@ -546,15 +569,266 @@ typedef struct theora_comment{
 /*@{*/
 /**The encoder context.*/
 typedef struct theora_enc_ctx    theora_enc_ctx;
-/**The decoder state.*/
+/**The decoder context.*/
 typedef struct theora_dec_ctx    theora_dec_ctx;
 /**Setup information.
-   This contains auxilliary information (Huffman tables and quantization
+   This contains auxiliary information (Huffman tables and quantization
     parameters) decoded from the setup header by theora_decode_headerin() to be
-    passed to theora_decode_alloc().*/
+    passed to theora_decode_alloc().
+   It can be re-used to initialize any number of decoders, and can be freed
+    via theora_setup_free() at any time.*/
 typedef struct theora_setup_info theora_setup_info;
 /*@}*/
 
+
+
+/**\defgroup encfuncs Functions for Encoding*/
+/*@{*/
+/**\name Functions for encoding
+ * You must link to <tt>libtheorabase</tt> and <tt>libtheoraenc</tt> if you use
+ *  any of the functions in this section.
+ *
+ * The functions are listed in the order they are used in a typical encode.
+ * The basic steps are:
+ * - Fill in a #theora_info structure with details on the format of the video
+ *    you wish to encode.
+ * - Allocate a #theora_enc_ctx handle with theora_encode_alloc().
+ * - Perform any additional encoder configuration required with
+ *    theora_encode_ctl().
+ * - Repeatedly call theora_encode_flushheader() to retrieve all the header
+ *    packets.
+ * - For each uncompressed frame:
+ *   - Submit the uncompressed frame via theora_encode_ycbcr_in()
+ *   - Repeatedly call theora_encode_packetout() to retrieve any video data
+ *      packets that are ready.
+ * - Call theora_encode_free() to release all encoder memory.*/
+/*@{*/
+/**Allocates an encoder instance.
+ * \param _info A #theora_info struct filled with the desired encoding
+ *               parameters.
+ * \return The initialized #theora_enc_ctx handle.
+ * \retval NULL If the encoding parameters were invalid.*/
+extern theora_enc_ctx *theora_encode_alloc(const theora_info *_info);
+/**Encoder control function.
+ * This is used to provide advanced control the encoding process.
+ * \param _enc    A #theora_enc_ctx handle.
+ * \param _req    The control code to process.
+ *                See \ref encctlcodes "the list of available control codes"
+ *                 for details.
+ * \param _buf    The parameters for this control code.
+ * \param _buf_sz The size of the parameter buffer.*/
+extern int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
+ size_t _buf_sz);
+/**Outputs the next header packet.
+ * This should be called repeatedly after encoder initialization until it
+ *  returns 0 to get all of the header packets, in order, before encoding
+ *  actual video data.
+ * \param _enc      A #theora_enc_ctx handle.
+ * \param _comments The metadata to place in the comment header, when it is
+ *                   encoded.
+ * \param _op       An <tt>ogg_packet</tt> structure to fill.
+ *                  All of the elements of this structure will be set,
+ *                   including a pointer to the header data.
+ *                  The memory for the header data is owned by
+ *                   <tt>libtheora</tt>.
+ * \return A positive value indicates that a header packet was successfully
+ *          produced.
+ * \retval 0        No packet was produced, and no more header packets remain.
+ * \retval OC_FAULT \a _enc, \a _comments, or \a _op was <tt>NULL</tt>.*/
+extern int theora_encode_flushheader(theora_enc_ctx *_enc,
+ theora_comment *_comments,ogg_packet *_op);
+/**Submits an uncompressed frame to the encoder.
+ * \param _enc   A #theora_enc_ctx handle.
+ * \param _ycbcr A buffer of Y'CbCr data to encode.
+ * \retval 0         Success.
+ * \retval OC_FAULT  \a _enc or \a _ycbcr is <tt>NULL</tt>.
+ * \retval OC_EINVAL The buffer size does not match the frame size the encoder
+ *                    was initialized with, or encoding has already completed.
+ */
+extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
+ theora_ycbcr_buffer _ycbcr);
+/**Retrieves encoded video data packets.
+ * This should be called repeatedly after each frame is submitted to flush any
+ *  encoded packets, until it returns 0.
+ * The encoder will not buffer these packets as subsequent frames are
+ *  compressed, so a failure to do so function will result in lost video data.
+ * \note Currently the encoder operates in a one-frame-in, one-packet-out
+ *        manner.
+ *       However, this may be changed in the future.
+ * \param _enc  A #theora_enc_ctx handle.
+ * \param _last Set this flag to a non-zero value if no more uncompressed
+ *               frames will be submitted.
+ *              This ensures that a proper EOS flag is set on the last packet.
+ * \param _op   An <tt>ogg_packet</tt> structure to fill.
+ *              All of the elements of this structure will be set, including a
+ *               pointer to the video data.
+ *              The memory for the video data is owned by <tt>libtheora</tt>.
+ * \return A positive value indicates that a video data packet was successfully
+ *          produced.
+ * \retval 0        No packet was produced, and no more encoded video data
+ *                   remains.
+ * \retval OC_FAULT \a _enc or \a _op was <tt>NULL</tt>.*/
+extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
+ ogg_packet *_op);
+/**Frees an allocated encoder instance.
+ * \param _enc A #theora_enc_ctx handle.*/
+extern void theora_encode_free(theora_enc_ctx *_enc);
+/*@}*/
+/*@}*/
+
+
+/**\defgroup decfuncs Functions for Decoding*/
+/*@{*/
+/**\name Functions for decoding
+ * You must link to <tt>libtheorabase</tt> and <tt>libtheoradec</tt> if you use
+ *  any of the functions in this section.
+ *
+ * The functions are listed in the order they are used in a typical decode.
+ * The basic steps are:
+ * - Parse the header packets by repeatedly calling theora_decode_headerin().
+ * - Allocate a #theora_dec_ctx handle with theora_decode_alloc().
+ * - Call theora_setup_free() to free any memory used for codec setup
+ *    information.
+ * - Perform any additional decoder configuration with theora_decode_ctl().
+ * - For each video data packet:
+ *   - Submit the packet to the decoder via theora_decode_packetin().
+ *   - Retrieve the uncompressed video data via theora_decode_ycbcr_out().
+ * - Call theora_decode_free() to release all decoder memory.*/
+/*@{*/
+/**Decodes the header packets of a Theora stream.
+ * This should be called on the initial packets of the stream, in succession,
+ *  until it returns <tt>0</tt>, indicating that all headers have been
+ *  processed, or an error is encountered.
+ * At least three header packets are required, and additional optional header
+ *  packets may follow.
+ * This can be used on the first packet of any logical stream to determine if
+ *  that stream is a Theora stream.
+ * \param _info  A #theora_info structure to fill in.
+ *               This must have been previously initialized with
+ *                theora_info_init().
+ *               The application may immediately begin using the contents of
+ *                this structure after the first header is decoded, though it
+ *                must continue to be passed in on all subsequent calls.
+ * \param _tc    A #theora_comment structure to fill in.
+ *               The application may immediately begin using the contents of
+ *                this structure after the second header is decoded, though it
+ *                must continue to be passed in on all subsequent calls.
+ * \param _setup Returns a pointer to additional, private setup information
+ *                needed by the decoder.
+ *               The contents of this pointer must be initialized to
+ *                <tt>NULL</tt> on the first call, and the returned value must
+ *                continue to be passed in on all subsequent calls.
+ * \param _op    An <tt>ogg_packet</tt> structure which contains one of the
+ *                initial packets of an Ogg logical stream.
+ * \return A positive value indicates that a Theora header was successfully
+ *          processed.
+ * \retval 0            The first video data packet was encountered after all
+ *                       required header packets were parsed.
+ *                      The packet just passed in on this call should be saved
+ *                       and fed to theora_decode_packetin() to begin decoding
+ *                       video data.
+ * \retval OC_FAULT     One of \a _info, \a _tc, or \a _setup was
+ *                       <tt>NULL</tt>.
+ * \retval OC_BADHEADER \a _op was <tt>NULL</tt>, the packet was not the next
+ *                       header packet in the expected sequence, or the format
+ *                       of the header data was invalid.
+ * \retval OC_VERSION   The packet data was a Theora info header, but for a
+ *                       bitstream version not decodable with this version of
+ *                       <tt>libtheora</tt>.
+ * \retval OC_NOTFORMAT The packet was not a Theora header.
+ */
+extern int theora_decode_headerin(theora_info *_info,theora_comment *_tc,
+ theora_setup_info **_setup,ogg_packet *_op);
+/**Allocates a decoder instance.
+ * \param _info  A #theora_info struct filled via theora_decode_headerin().
+ * \param _setup A #theora_setup_info handle returned via
+ *                theora_decode_headerin().
+ * \return The initialized #theora_dec_ctx handle.
+ * \retval NULL If the decoding parameters were invalid.*/
+extern theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
+ const theora_setup_info *_setup);
+/**Releases all storage used for the decoder setup information.
+ * This should be called after you no longer want to create any decoders for
+ *  a stream whose headers you have parsed with theora_decode_headerin().
+ * \param _setup The setup information to free.
+ *               This can safely be <tt>NULL</tt>.*/
+extern void theora_setup_free(theora_setup_info *_setup);
+/**Encoder control function.
+ * This is used to provide advanced control the decoding process.
+ * \param _dec    A #theora_dec_ctx handle.
+ * \param _req    The control code to process.
+ *                See \ref decctlcodes "the list of available control codes"
+ *                 for details.
+ * \param _buf    The parameters for this control code.
+ * \param _buf_sz The size of the parameter buffer.*/
+extern int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
+ size_t _buf_sz);
+/**Submits a packet containing encoded video data to the decoder.
+ * \param _dec     A #theora_dec_ctx handle.
+ * \param _op      An <tt>ogg_packet</tt> containing encoded video data.
+ * \param _granpos Returns the granule position of the decoded packet.
+ *                 If non-<tt>NULL</tt>, the granule position for this specific
+ *                  packet is stored in this location.
+ *                 This is computed incrementally from previously decoded
+ *                  packets.
+ *                 After a seek, the correct granule position must be set via
+ *                  #OC_DECCTL_SET_GRANPOS for this to work properly.
+ * \retval 0            Success.
+ * \retval OC_FAULT     \a _dec or _op was <tt>NULL</tt>.
+ * \retval OC_BADPACKET \a _op does not contain encoded video data.
+ * \retval OC_IMPL      The video data uses bitstream features which this
+ *                       library does not support.*/
+extern int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
+ ogg_int64_t *_granpos);
+/**Outputs the next available frame of decoded Y'CbCr data.
+ * \param _dec   A #theora_dec_ctx handle.
+ * \param _ycbcr A video buffer structure to fill in.
+ *               <tt>libtheora</tt> will fill in all the members of this
+ *                structure, including the pointers to the uncompressed video
+ *                data.
+ *               The memory for this video data is owned by
+ *                <tt>libtheora</tt>.
+ *               It may be freed or overwritten without notification when
+ *                subsequent frames are decoded.
+ * \retval 0 Success
+ */
+extern int theora_decode_ycbcr_out(theora_dec_ctx *_dec,
+ theora_ycbcr_buffer _ycbcr);
+/**Frees an allocated decoder instance.
+ * \param _dec A #theora_dec_ctx handle.*/
+extern void theora_decode_free(theora_dec_ctx *_dec);
+/*@}*/
+/*@}*/
+
+
+/**\defgroup basefuncs Functions Shared by Encode and Decode*/
+/*@{*/
+/**\name Basic shared functions*/
+/*@{*/
+/**Retrieves a human-readable string to identify the library vendor and
+ *  version.
+ * \return the version string.*/
+extern const char *theora_version_string(void);
+/**Retrieves the library version number.
+ * This is the highest bitstream version that the encoder library will produce,
+ *  or that the decoder library can decode.
+ * This number is composed of a 16-bit major version, 8-bit minor version
+ * and 8 bit sub-version, composed as follows:
+ * \code
+ * (VERSION_MAJOR<<16)+(VERSION_MINOR<<8)+(VERSION_SUBMINOR)
+ * \endcode
+ * \return the version number.*/
+extern ogg_uint32_t theora_version_number(void);
+/**Converts a granule position to an absolute time in seconds.
+ * The granule position is interpreted in the context of a given
+ *  #theora_enc_ctx or #theora_dec_ctx handle (either will suffice).
+ * \param _encdec     A previously allocated #theora_enc_ctx or #theora_dec_ctx
+ *                     handle.
+ * \param _granpos The granule position to convert.
+ * \return The absolute time in seconds corresponding to \a _granpos.
+ * \retval -1 The given granule position is invalid (ie. negative).*/
+extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);
+/*@}*/
 
 
 /**\name Functions for manipulating header data*/
@@ -623,167 +897,7 @@ extern int theora_comment_query_count(theora_comment *_tc,char *_tag);
  * It will free all memory used by the structure members.
  * \param _tc The #theora_comment struct to clear.*/
 extern void theora_comment_clear(theora_comment *_tc);
-
-/**Releases all storage used for the decoder setup information.
- * This should be called after you no longer want to create any decoders for
- *  a stream after parsing its headers with theora_decode_headerin().
- * \param _setup The setup information to free.
- *               This can safely be <tt>NULL</tt>.*/
-extern void theora_setup_free(theora_setup_info *_setup);
 /*@}*/
-
-
-/**\name Functions for encoding*/
-/*@{*/
-/**Allocates an encoder instance.
- * \param _info A #theora_info struct filled with the desired encoding
- *               parameters.
- * \return The initialized #theora_enc_ctx handle.
- * \retval NULL If the encoding parameters were invalid.*/
-extern theora_enc_ctx *theora_encode_alloc(const theora_info *_info);
-/**Encoder control function.
- * This is used to provide advanced control the encoding process.
- * \param _enc    A #theora_enc_ctx handle.
- * \param _req    The control code to process.
- * \param _buf    The parameters for this control code.
- * \param _buf_sz The size of the parameter buffer.*/
-extern int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
- size_t _buf_sz);
-/**Outputs the next header packet.
- * This should be called repeatedly after encoder initialization until it
- *  returns 0 to get all of the header packets, in order, before encoding
- *  actual video data.
- * \param _enc      A #theora_enc_ctx handle.
- * \param _comments The metadata to place in the comment header, when it is
- *                   encoded.
- * \param _op       An ogg_packet structure to fill.
- *                  All of the elements of this structure will be set,
- *                   including a pointer to the header data.
- *                  The memory for the header data is owned by libtheora.
- * \return A positive value indicates that a header packet was successfully
- *          produced.
- * \retval 0        No packet was produced, and no more header packets remain.
- * \retval OC_FAULT \a _enc, \a _comments, or \a _op was <tt>NULL</tt>.*/
-extern int theora_encode_flushheader(theora_enc_ctx *_enc,
- theora_comment *_comments,ogg_packet *_op);
-/**Submits an uncompressed frame to the encoder.
- * \param _enc   A #theora_enc_ctx handle.
- * \param _ycbcr A buffer of Y'CbCr data to encode.
- * \retval 0         Success.
- * \retval OC_EFAULT \a _enc or \a _ycbcr is <tt>NULL</tt>.
- * \retval OC_EINVAL The buffer size does not match the frame size the encoder
- *                    was initialized with, or encoding has already completed.
- */
-extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
- theora_ycbcr_buffer _ycbcr);
-/**Retrieves encoded video data packets.
- * This should be called repeatedly after each frame is submitted to flush any
- *  encoded packets, until it returns 0.
- * The encoder will not buffer these packets as subsequent frames are
- *  compressed, so a failure to do so function will result in lost video data.
- * \note Currently the encoder operates in a one-frame-in, one-packet-out
- *        manner.
- *       However, this may be changed in the future.
- * \param _enc  A #theora_enc_ctx handle.
- * \param _last Set this flag to a non-zero value if no more uncompressed
- *               frames will be submitted.
- *              This ensures that a proper EOS flag is set on the last packet.
- * \param _op   An ogg_packet structure to fill.
- *              All of the elements of this structure will be set, including a
- *               pointer to the video data.
- *              The memory for the video data is owned by libtheora.
- * \return A positive value indicates that a video data packet was successfully
- *          produced.
- * \retval 0        No packet was produced, and no more encoded video data
- *                   remains.
- * \retval OC_FAULT \a _enc or \a _op was <tt>NULL</tt>.*/
-extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
- ogg_packet *_op);
-/**Frees an allocated encoder instance.
- * \param _enc A #theora_enc_ctx handle.*/
-extern void theora_encode_free(theora_enc_ctx *_enc);
-/*@}*/
-
-
-/**\name Functions for decoding*/
-/*@{*/
-extern int theora_decode_headerin(theora_info *_info,theora_comment *_tc,
- theora_setup_info **_setup,ogg_packet *_op);
-/**Allocates a decoder instance.
- * \param _info  A #theora_info struct filled via theora_decode_headerin().
- * \param _setup A #theora_setup_info handle returned via
- *                theora_decode_headerin().
- * \return The initialized #theora_dec_ctx handle.
- * \retval NULL If the decoding parameters were invalid.*/
-extern theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
- const theora_setup_info *_setup);
-/**Submits a packet containing encoded video data to the decoder.
- * \param _dec     A #theora_dec_ctx handle.
- * \param _op      An ogg_packet containing encoded video data.
- * \param _granpos Returns the granule position of the decoded packet.
- *                 If non-<tt>NULL</tt>, the granule position for this specific
- *                  packet is stored in this location.
- *                 This is computed incrementally from previously decoded
- *                  packets.
- *                 After a seek, the correct granule position must be set via
- *                  #OC_DECCTL_SET_GRANPOS for this to work properly.
- * \retval 0            Success.
- * \retval OC_FAULT     \a _dec or _op was <tt>NULL</tt>.
- * \retval OC_BADPACKET \a _op does not contain encoded video data.
- * \retval OC_IMPL      The video data uses bitstream features which this
- *                       library does not support.*/
-extern int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
- ogg_int64_t *_granpos);
-/**Outputs the next available frame of decoded Y'CbCr data.
- * \param _dec   A #theora_dec_ctx handle.
- * \param _ycbcr A video buffer structure to fill in.
- *               libtheora will fill in all the members of this structure,
- *                including the pointers to unccompressed video data.
- *               The memory for this video data is owned by libtheora.
- * \retval 0 Success
- */
-extern int theora_decode_ycbcr_out(theora_dec_ctx *_dec,
- theora_ycbcr_buffer _ycbcr);
-/**Encoder control function.
- * This is used to provide advanced control the decoding process.
- * \param _dec    A #theora_dec_ctx handle.
- * \param _req    The control code to process.
- * \param _buf    The parameters for this control code.
- * \param _buf_sz The size of the parameter buffer.*/
-extern int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
- size_t _buf_sz);
-/**Frees an allocated decoder instance.
- * \param _dec A #theora_dec_ctx handle.*/
-extern void theora_decode_free(theora_dec_ctx *_dec);
-/*@}*/
-
-
-/**\name Shared encoding and decoding functions*/
-/*@{*/
-/**Retrieves a human-readable string to identify the library vendor and
- *  version.
- * \return the version string.*/
-extern const char *theora_version_string(void);
-/**Retrieves the library version number.
- * This is the highest bitstream version that the encoder library will produce,
- *  or that the decoder library can decode.
- * This number is composed of a 16-bit major version, 8-bit minor version
- * and 8 bit sub-version, composed as follows:
- * \code
- * (VERSION_MAJOR<<16)+(VERSION_MINOR<<8)+(VERSION_SUB)
- * \endcode
- * \return the version number.*/
-extern ogg_uint32_t theora_version_number(void);
-
-/**Converts a granule position to an absolute time in seconds.
- * The granule position is interpreted in the context of a given
- *  #theora_enc_ctx or #theora_dec_ctx handle (either will suffice).
- * \param _encdec     A previously allocated #theora_enc_ctx or #theora_dec_ctx
- *                     handle.
- * \param _granpos The granule position to convert.
- * \return The absolute time in seconds corresponding to \a _granpos.
- * \retval -1 The given granulepos is invalid (ie. negative).*/
-extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);
 /*@}*/
 
 
