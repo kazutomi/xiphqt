@@ -1,4 +1,4 @@
-/* ogg123.c by Kenneth Arnold <kcarnold@arnoldnet.net> */
+/* ogg123.c by Kenneth Arnold <ogg123@arnoldnet.net> */
 /* Modified to use libao by Stan Seibert <volsung@asu.edu> */
 
 /********************************************************************
@@ -8,17 +8,15 @@
  * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
  * PLEASE READ THESE TERMS BEFORE DISTRIBUTING.                     *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
- * by Monty <monty@xiph.org> and the XIPHOPHORUS Company            *
+ * THE Ogg123 SOURCE CODE IS (C) COPYRIGHT 2000-2001                *
+ * by Kenneth C. Arnold <ogg@arnoldnet.net> AND OTHER CONTRIBUTORS  *
  * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.7 2001/08/09 01:56:55 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.8 2001/08/10 16:33:40 kcarnold Exp $
 
  ********************************************************************/
-
-/* FIXME : That was a messy message. Fix it. */
 
 #include <sys/types.h>
 #include <string.h>
@@ -30,18 +28,19 @@
 #include <errno.h>
 #include <time.h>
 #include <getopt.h>
-
 #include <signal.h>
 
 #include "ogg123.h"
+#include "ao_interface.h"
+#include "buffer.h"
 
 /* take buffer out of the data segment, not the stack */
 char convbuffer[BUFFER_CHUNK_SIZE];
 int convsize = BUFFER_CHUNK_SIZE;
-buf_t * buffer = NULL;
+buf_t * InBuffer = NULL;
+buf_t * OutBuffer = NULL;
 
 static char skipfile_requested;
-/*static void (*old_sig)(int);*/
 
 struct {
     char *key;			/* includes the '=' for programming convenience */
@@ -108,6 +107,7 @@ void usage(void)
 	    "      v to previously specified device (with -d).  See\n"
 	    "      man page for more info.\n"
 	    "  -b n, --buffer n  use a buffer of approximately 'n' kilobytes\n"
+	    "  -p n, --prebuffer n  prebuffer n% of the buffer before playing\n"
 	    "  -v, --verbose  display progress and other useful stuff\n"
 	    "  -q, --quiet    don't display anything (no title)\n"
 	    "  -z, --shuffle  shuffle play\n"
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     opt.nth = 1;
     opt.ntimes = 1;
 
-    atexit (ogg123_atexit);
+    on_exit (ogg123_onexit, &opt);
     signal (SIGINT, signal_quit);
     ao_initialize();
 
@@ -187,7 +187,12 @@ int main(int argc, char **argv)
 	    usage();
 	    exit(0);
 	case 'p':
-	  opt.prebuffer = atoi (optarg);
+	  opt.prebuffer = atoi (optarg); /* prebuffer in integer percentage */
+	  if (opt.prebuffer < 0 || opt.prebuffer > 100)
+	    {
+	      fprintf (stderr, "Prebuffer value invalid. Range is 0-100, using nearest value.\n");
+	      opt.prebuffer = opt.prebuffer < 0 ? 0 : 100;
+	    }
 	  break;
 	case 'q':
 	    opt.quiet++;
@@ -215,8 +220,10 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (opt.buffer_size > 1 && opt.prebuffer == 0)
-      opt.prebuffer = 1; /* for good measure */
+    if (optind == argc) {
+	usage();
+	exit(1);
+    }
 
     /* Add last device to device list or use the default device */
     if (temp_driver_id < 0) {
@@ -233,11 +240,13 @@ int main(int argc, char **argv)
 				       temp_options, NULL);
     }
 
-    if (optind == argc) {
-	usage();
-	exit(1);
-    }
-
+    if (opt.buffer_size)
+      {
+	opt.prebuffer = (int) ((double) opt.prebuffer * (double) opt.buffer_size / 100.0F);
+	OutBuffer = StartBuffer (opt.buffer_size, opt.prebuffer,
+				 opt.outdevices, devices_write);
+      }
+    
     if (opt.shuffle) {
 	int i;
 	
@@ -257,22 +266,13 @@ int main(int argc, char **argv)
 	optind++;
     }
 
-    while (opt.outdevices != NULL) {
-      if (opt.outdevices->device)
-        ao_close(opt.outdevices->device);
-      current = opt.outdevices->next_device;
-      free(opt.outdevices);
-      opt.outdevices = current;
-    }
-
-    if (buffer != NULL) {
-	    buffer_shutdown(buffer);
-            buffer = NULL;
+    if (OutBuffer != NULL) {
+      buffer_WaitForEmpty (OutBuffer);
+      buffer_cleanup (OutBuffer);
+      OutBuffer = NULL;
     }
     
-    ao_shutdown();
-
-    return (0);
+    exit (0);
 }
 
 /* Two signal handlers, one for SIGINT, and the second for
@@ -292,23 +292,12 @@ void signal_skipfile(int which_signal)
    * and blow away existing "output.wav" file.
    */
 
-  fprintf (stderr, "skipfile\n");
-  
-#if 0
-  if (old_sig != NULL) {
-    signal(which_signal,old_sig);
-    raise(which_signal);
-  }
-  else
-#endif
-    signal (SIGINT, signal_quit);
-  /* should that be unconditional? man pages are not clear on this */
+  signal (SIGINT, signal_quit);
 }
 
 void signal_activate_skipfile(int ignored)
 {
-  fprintf (stderr, "activate skipfile.\n");
-  /*old_sig = */signal(SIGINT,signal_skipfile);
+  signal(SIGINT,signal_skipfile);
 }
 
 void signal_quit(int ignored)
@@ -331,8 +320,6 @@ void play_file(ogg123_options_t opt)
     int is_big_endian = ao_is_big_endian();
     double realseekpos = opt.seekpos;
     int nthc = 0, ntimesc = 0;
-
-    /* Junk left over from the failed info struct */
     double u_time, u_pos;
 
     if (strcmp(opt.read_file, "-")) {	/* input file not stdin */
@@ -436,7 +423,7 @@ void play_file(ogg123_options_t opt)
 	vorbis_comment *vc = ov_comment(&vf, -1);
 	vorbis_info *vi = ov_info(&vf, -1);
 
-	if(open_audio_devices(&opt, vi->rate, vi->channels, &buffer) < 0)
+	if(open_audio_devices(&opt, vi->rate, vi->channels) < 0)
 		exit(1);
 
 	if (opt.quiet < 1) {
@@ -487,8 +474,8 @@ void play_file(ogg123_options_t opt)
 	      skipfile_requested = 0;
 	      signal(SIGALRM,signal_activate_skipfile);
 	      alarm(opt.delay);
-	      if (buffer) {
-		buffer_flush (buffer);
+	      if (OutBuffer) {
+		buffer_flush (OutBuffer);
 	      }
 	      break;
   	    }
@@ -515,16 +502,16 @@ void play_file(ogg123_options_t opt)
 
 		do {
 		  if (nthc-- == 0) {
-		    if (buffer)
+		    if (OutBuffer)
 		      {
 			chunk_t chunk;
 			chunk.len = ret;
 			memcpy (chunk.data, convbuffer, ret);
 			
-			submit_chunk (buffer, chunk);
+			submit_chunk (OutBuffer, chunk);
 		      }
 		    else
-		      devices_write(convbuffer, ret, opt.outdevices);
+		      devices_write(convbuffer, ret, 1, opt.outdevices);
 		    nthc = opt.nth - 1;
 		  }
 		} while (++ntimesc < opt.ntimes);
@@ -537,12 +524,12 @@ void play_file(ogg123_options_t opt)
 		      c_sec = u_pos - 60 * c_min;
 		      r_min = (long) (u_time - u_pos) / (long) 60;
 		      r_sec = (u_time - u_pos) - 60 * r_min;
-		      if (buffer)
+		      if (OutBuffer)
 			fprintf(stderr,
 				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f, Buffer fill: %3.0f%%   \r",
 				c_min, c_sec, r_min, r_sec, t_min, t_sec,
 				(double) ov_bitrate_instant(&vf) / 1000.0F,
-				(double) buffer_full(buffer) / (double) buffer->size * 100.0F);
+				(double) buffer_full(OutBuffer) / (double) OutBuffer->size * 100.0F);
 		      else
 			fprintf(stderr,
 				"\rTime: %02li:%05.2f [%02li:%05.2f] of %02li:%05.2f, Bitrate: %.1f   \r",
@@ -550,15 +537,16 @@ void play_file(ogg123_options_t opt)
 				(double) ov_bitrate_instant(&vf) / 1000.0F);
 		    } else {
 		      /* working around a bug in vorbisfile */
+		      /* I don't think that bug is there anymore -ken */
 		      u_pos = (double) ov_pcm_tell(&vf) / (double) vi->rate;
 		      c_min = (long) u_pos / (long) 60;
 		      c_sec = u_pos - 60 * c_min;
-		      if (buffer)
+		      if (OutBuffer)
 			fprintf(stderr,
 				"\rTime: %02li:%05.2f, Bitrate: %.1f, Buffer fill: %3.0f%%   \r",
 				c_min, c_sec,
 				(float) ov_bitrate_instant (&vf) / 1000.0F,
-				(double) buffer_full(buffer) / (double) buffer->size * 100.0F);
+				(double) buffer_full(OutBuffer) / (double) OutBuffer->size * 100.0F);
 		      else
 			fprintf(stderr,
 				"\rTime: %02li:%05.2f, Bitrate: %.1f   \r",
@@ -580,14 +568,9 @@ void play_file(ogg123_options_t opt)
 	fprintf(stderr, "\nDone.\n");
 }
 
-int get_tcp_socket(void)
-{
-    return socket(AF_INET, SOCK_STREAM, 0);
-}
-
 FILE *http_open(char *server, int port, char *path)
 {
-    int sockfd = get_tcp_socket();
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct hostent *host;
     struct sockaddr_in sock_name;
 
@@ -611,7 +594,9 @@ FILE *http_open(char *server, int port, char *path)
     return fdopen(sockfd, "r+b");
 }
 
-int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **buffer)
+/* if not for the two lines involving the buffer, this would go in
+ * ao_interface.c. */
+int open_audio_devices(ogg123_options_t *opt, int rate, int channels)
 {
   static int prevrate=0, prevchan=0;
   devices_t *current;
@@ -622,16 +607,10 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
   
   if(prevrate !=0 && prevchan!=0)
 	{
-	  if (buffer != NULL && *buffer != NULL) {
-	    buffer_shutdown (*buffer);
-	    *buffer = NULL;
-	  }
+	  if (OutBuffer)
+	    buffer_WaitForEmpty (OutBuffer);
 
-	  current = opt->outdevices;
-	  while (current != NULL) {
-	    ao_close(current->device);
-	    current = current->next_device;
-	  }
+	  close_audio_devices (opt->outdevices);
 	}
   
   format.rate = prevrate = rate;
@@ -660,7 +639,7 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
     if (current->device == NULL) {
       switch (errno) {
       case AO_ENODRIVER:
-	fprintf(stderr, "Error: No device not available.\n");
+	fprintf(stderr, "Error: Device not available.\n");
 	break;
       case AO_ENOTLIVE:
 	fprintf(stderr, "Error: %s requires an output filename to be specified with -f.\n", info->short_name);
@@ -696,15 +675,18 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
     current = current->next_device;
   }
   
-  if (opt->buffer_size)
-    *buffer = fork_writer (opt->buffer_size, opt->outdevices, opt->prebuffer);
-  
-    return 0;
+  return 0;
 }
 
-void ogg123_atexit (void)
+void ogg123_onexit (int exitcode, void *arg)
 {
-  if (buffer)
-    buffer_cleanup (buffer);
-  buffer = NULL;
+  ogg123_options_t *opt = (ogg123_options_t*) arg;
+
+  if (OutBuffer) {
+    buffer_flush (OutBuffer);
+    buffer_cleanup (OutBuffer);
+    OutBuffer = NULL;
+  }
+
+  ao_atexit (exitcode, opt->outdevices);
 }
