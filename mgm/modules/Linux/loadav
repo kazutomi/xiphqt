@@ -1,0 +1,48 @@
+# -*-Perl-*-
+
+# the best beginning module example.  Very simple, uses the standard hooks
+
+use Tk;
+
+package MGMmodule::loadav;
+use vars qw($graph);
+
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xpath=$this->{"xpath"};
+
+    # modify defaults
+    $toplevel->optionAdd("$xpath*scalerefresh",1000,21); # slower
+    $toplevel->optionAdd("$xpath.bar.0.label", "Load average",21);
+    $toplevel->optionAdd("$xpath.bar.1.label", "Load (5min)",21);
+    $toplevel->optionAdd("$xpath.bar.2.label", "Load (15min)",21);
+    $toplevel->optionAdd("$xpath.scalewidadj", 220,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
+
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' proc(s)',3);
+
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
+    1;
+}
+
+sub module_construct{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>3,prompt=>' proc(s)');
+    $graph->{"widget"};        # must return the widget
+}
+
+sub module_update{ 
+    die "Couldn't open /proc/loadavg\n" unless open(PROC,"</proc/loadavg");
+    while(<PROC>){
+	if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
+	    $graph->set($1,$2,$3);
+	}
+    }
+    close PROC;
+}
+
+bless {};
+
