@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: PCM data envelope analysis and manipulation
- last mod: $Id: envelope.c,v 1.23 2000/10/12 03:12:52 xiphmont Exp $
+ last mod: $Id: envelope.c,v 1.23.2.1 2000/11/03 10:05:47 xiphmont Exp $
 
  Preecho calculation.
 
@@ -24,6 +24,7 @@
 #include <math.h>
 #include <ogg/ogg.h>
 #include "vorbis/codec.h"
+#include "codec_internal.h"
 
 #include "os.h"
 #include "scales.h"
@@ -72,11 +73,12 @@ static float cheb_highpass_A[]={
   2.3920318913};
 
 void _ve_envelope_init(envelope_lookup *e,vorbis_info *vi){
+  codec_setup_info *ci=vi->codec_setup;
   int ch=vi->channels;
-  int window=vi->envelopesa;
+  int window=ci->envelopesa;
   int i;
   e->winlength=window;
-  e->minenergy=fromdB(vi->preecho_minenergy);
+  e->minenergy=fromdB(ci->preecho_minenergy);
   e->iir=calloc(ch,sizeof(IIR_state));
   e->filtered=calloc(ch,sizeof(float *));
   e->ch=ch;
@@ -156,7 +158,8 @@ static float _ve_deltai(envelope_lookup *ve,IIR_state *iir,
 
 long _ve_envelope_search(vorbis_dsp_state *v,long searchpoint){
   vorbis_info *vi=v->vi;
-  envelope_lookup *ve=v->ve;
+  codec_setup_info *ci=vi->codec_setup;
+  envelope_lookup *ve=((backend_lookup_state *)(v->backend_state))->ve;
   long i,j;
   
   /* make sure we have enough storage to match the PCM */
@@ -180,7 +183,7 @@ long _ve_envelope_search(vorbis_dsp_state *v,long searchpoint){
   /* Now search through our cached highpass data for breaking points */
   /* starting point */
   if(v->W)
-    j=v->centerW+vi->blocksizes[1]/4-vi->blocksizes[0]/4;
+    j=v->centerW+ci->blocksizes[1]/4-ci->blocksizes[0]/4;
   else
     j=v->centerW;
 
@@ -190,14 +193,14 @@ long _ve_envelope_search(vorbis_dsp_state *v,long searchpoint){
       IIR_state *iir=ve->iir+i;
       float m=_ve_deltai(ve,iir,filtered-ve->winlength,filtered);
       
-      if(m>vi->preecho_thresh){
+      if(m>ci->preecho_thresh){
 	/*granulepos++;*/
 	return(0);
       }
       /*granulepos++;*/
     }
     
-    j+=vi->blocksizes[0]/2;
+    j+=ci->blocksizes[0]/2;
     if(j>=searchpoint)return(1);
   }
   

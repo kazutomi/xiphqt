@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: psychoacoustics not including preecho
- last mod: $Id: psy.c,v 1.29 2000/10/12 03:12:53 xiphmont Exp $
+ last mod: $Id: psy.c,v 1.29.2.1 2000/11/03 10:05:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -39,6 +39,12 @@ void _vi_psy_free(vorbis_info_psy *i){
     memset(i,0,sizeof(vorbis_info_psy));
     free(i);
   }
+}
+
+vorbis_info_psy *_vi_psy_copy(vorbis_info_psy *i){
+  vorbis_info_psy *ret=malloc(sizeof(vorbis_info_psy));
+  memcpy(ret,i,sizeof(vorbis_info_psy));
+  return(ret);
 }
 
 /* Set up decibel threshhold slopes on a Bark frequency scale */

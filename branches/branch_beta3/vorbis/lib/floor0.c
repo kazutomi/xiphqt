@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: floor backend 0 implementation
- last mod: $Id: floor0.c,v 1.25 2000/10/12 03:12:52 xiphmont Exp $
+ last mod: $Id: floor0.c,v 1.25.2.1 2000/11/03 10:05:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -21,11 +21,11 @@
 #include <math.h>
 #include <ogg/ogg.h>
 #include "vorbis/codec.h"
+#include "codec_internal.h"
 #include "registry.h"
 #include "lpc.h"
 #include "lsp.h"
-#include "bookinternal.h"
-#include "sharedbook.h"
+#include "codebook.h"
 #include "scales.h"
 #include "misc.h"
 #include "os.h"
@@ -70,6 +70,13 @@ static long _f0_fit(codebook *book,
 
 /***********************************************/
 
+static vorbis_info_floor *floor0_copy_info (vorbis_info_floor *i){
+  vorbis_info_floor0 *info=(vorbis_info_floor0 *)i;
+  vorbis_info_floor0 *ret=malloc(sizeof(vorbis_info_floor0));
+  memcpy(ret,info,sizeof(vorbis_info_floor0));
+  return(ret);
+}
+
 static void floor0_free_info(vorbis_info_floor *i){
   if(i){
     memset(i,0,sizeof(vorbis_info_floor0));
@@ -102,7 +109,9 @@ static void floor0_pack (vorbis_info_floor *i,oggpack_buffer *opb){
 }
 
 static vorbis_info_floor *floor0_unpack (vorbis_info *vi,oggpack_buffer *opb){
+  codec_setup_info     *ci=vi->codec_setup;
   int j;
+
   vorbis_info_floor0 *info=malloc(sizeof(vorbis_info_floor0));
   info->order=oggpack_read(opb,8);
   info->rate=oggpack_read(opb,16);
@@ -115,12 +124,13 @@ static vorbis_info_floor *floor0_unpack (vorbis_info *vi,oggpack_buffer *opb){
   if(info->rate<1)goto err_out;
   if(info->barkmap<1)goto err_out;
   if(info->numbooks<1)goto err_out;
-
+    
   for(j=0;j<info->numbooks;j++){
     info->books[j]=oggpack_read(opb,8);
-    if(info->books[j]<0 || info->books[j]>=vi->books)goto err_out;
+    if(info->books[j]<0 || info->books[j]>=ci->books)goto err_out;
   }
-  return(info);  
+  return(info);
+
  err_out:
   floor0_free_info(info);
   return(NULL);
@@ -139,10 +149,11 @@ static vorbis_look_floor *floor0_look (vorbis_dsp_state *vd,vorbis_info_mode *mi
   int j;
   float scale;
   vorbis_info        *vi=vd->vi;
+  codec_setup_info   *ci=vi->codec_setup;
   vorbis_info_floor0 *info=(vorbis_info_floor0 *)i;
   vorbis_look_floor0 *look=calloc(1,sizeof(vorbis_look_floor0));
   look->m=info->order;
-  look->n=vi->blocksizes[mi->blockflag]/2;
+  look->n=ci->blocksizes[mi->blockflag]/2;
   look->ln=info->barkmap;
   look->vi=info;
 
@@ -282,7 +293,8 @@ static int floor0_forward(vorbis_block *vb,vorbis_look_floor *i,
 
     /* the spec supports using one of a number of codebooks.  Right
        now, encode using this lib supports only one */
-    codebook *b=vb->vd->fullbooks+info->books[0];
+    backend_lookup_state *be=vb->vd->backend_state;
+    codebook *b=be->fullbooks+info->books[0];
     oggpack_write(&vb->opb,0,_ilog(info->numbooks));
 
     /* LSP <-> LPC is orthogonal and LSP quantizes more stably  */
@@ -354,7 +366,8 @@ static int floor0_inverse(vorbis_block *vb,vorbis_look_floor *i,float *out){
     float *lsp=alloca(sizeof(float)*look->m);
 
     if(booknum!=-1){
-      codebook *b=vb->vd->fullbooks+info->books[booknum];
+      backend_lookup_state *be=vb->vd->backend_state;
+      codebook *b=be->fullbooks+info->books[booknum];
       float last=0.;
       
       memset(out,0,sizeof(double)*look->m);    
@@ -380,7 +393,7 @@ static int floor0_inverse(vorbis_block *vb,vorbis_look_floor *i,float *out){
 
 /* export hooks */
 vorbis_func_floor floor0_exportbundle={
-  &floor0_pack,&floor0_unpack,&floor0_look,&floor0_free_info,
+  &floor0_pack,&floor0_unpack,&floor0_look,&floor0_copy_info,&floor0_free_info,
   &floor0_free_look,&floor0_forward,&floor0_inverse
 };
 

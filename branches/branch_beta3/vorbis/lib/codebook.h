@@ -11,8 +11,8 @@
  *                                                                  *
  ********************************************************************
 
- function: codebook types
- last mod: $Id: codebook.h,v 1.7 2000/10/12 03:12:41 xiphmont Exp $
+ function: basic shared codebook operations
+ last mod: $Id: codebook.h,v 1.1.2.1 2000/11/03 10:05:47 xiphmont Exp $
 
  ********************************************************************/
 
@@ -56,6 +56,8 @@ typedef struct static_codebook{
   struct encode_aux_nearestmatch *nearest_tree;
   struct encode_aux_threshmatch  *thresh_tree;
   struct encode_aux_pigeonhole  *pigeon_tree;
+
+  int allocedp;
 } static_codebook;
 
 /* this structures an arbitrary trained book to quickly find the
@@ -114,9 +116,42 @@ typedef struct codebook{
 
 } codebook;
 
+extern void vorbis_staticbook_clear(static_codebook *b);
+extern void vorbis_staticbook_destroy(static_codebook *b);
+extern int vorbis_book_init_encode(codebook *dest,const static_codebook *source);
+extern int vorbis_book_init_decode(codebook *dest,const static_codebook *source);
+extern void vorbis_book_clear(codebook *b);
+
+extern float *_book_unquantize(const static_codebook *b);
+extern float *_book_logdist(const static_codebook *b,float *vals);
+extern float _float32_unpack(long val);
+extern long   _float32_pack(float val);
+extern int  _best(codebook *book, float *a, int step);
+extern int _ilog(unsigned int v);
+extern long _book_maptype1_quantvals(const static_codebook *b);
+
+extern int vorbis_book_besterror(codebook *book,float *a,int step,int addmul);
+extern long vorbis_book_codeword(codebook *book,int entry);
+extern long vorbis_book_codelen(codebook *book,int entry);
+
+
+
+extern int vorbis_staticbook_pack(const static_codebook *c,oggpack_buffer *b);
+extern int vorbis_staticbook_unpack(oggpack_buffer *b,static_codebook *c);
+
+extern int vorbis_book_encode(codebook *book, int a, oggpack_buffer *b);
+extern int vorbis_book_errorv(codebook *book, float *a);
+extern int vorbis_book_encodev(codebook *book, int best,float *a, 
+			       oggpack_buffer *b);
+extern int vorbis_book_encodevs(codebook *book, float *a, oggpack_buffer *b,
+				int step,int stagetype);
+
+extern long vorbis_book_decode(codebook *book, oggpack_buffer *b);
+extern long vorbis_book_decodevs(codebook *book, float *a, oggpack_buffer *b,
+				 int step,int stagetype);
+extern long s_vorbis_book_decodevs(codebook *book, float *a, oggpack_buffer *b,
+				   int step,int stagetype);
+
+
+
 #endif
-
-
-
-
-
