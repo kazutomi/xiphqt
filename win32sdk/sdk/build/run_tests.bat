@@ -1,5 +1,5 @@
 @echo off
-rem $Id: run_tests.bat,v 1.2 2001/09/15 08:09:25 cwolf Exp $
+rem $Id: run_tests.bat,v 1.3 2001/09/16 23:52:57 cwolf Exp $
 rem
 rem  Not using setlocal, so it will work on windows 9x
 set OLDPATH=%PATH%
@@ -9,64 +9,64 @@ if not exist ..\bin\ goto nosdk
 if not exist ..\bin\encoder_static_d.exe goto notbuilt
 
 echo **** encoder_static_d ****
-encoder_static_d test.wav out.ogg
+encoder_static_d < test.wav > out.ogg
 
 echo **** encoder_static ****
-encoder_static test.wav out.ogg
+encoder_static < test.wav > out.ogg
 
 echo **** encoder_d ****
-encoder_d test.wav out.ogg
+encoder_d < test.wav > out.ogg
 
 echo **** encoder ****
-encoder test.wav out.ogg
+encoder < test.wav > out.ogg
 
 echo **** decoder_static_d ****
-decoder_static_d test.ogg out.pcm
+decoder_static_d < test.ogg > out.pcm
 
 echo **** decoder_static ****
-decoder_static test.ogg out.pcm
+decoder_static < test.ogg > out.pcm
 
 echo **** decoder_d ****
-decoder_d test.ogg out.pcm
+decoder_d < test.ogg > out.pcm
 
 echo **** decoder ****
-decoder test.ogg out.pcm
+decoder < test.ogg > out.pcm
 
 echo **** vorbisfile_static_d ****
-vorbisfile_static_d test.ogg out.pcm
+vorbisfile_static_d < test.ogg > out.pcm
 
 echo **** vorbisfile_static ****
-vorbisfile_static test.ogg out.pcm
+vorbisfile_static < test.ogg > out.pcm
 
 echo **** vorbisfile_d ****
-vorbisfile_d test.ogg out.pcm
+vorbisfile_d < test.ogg > out.pcm
 
 echo **** vorbisfile ****
-vorbisfile test.ogg out.pcm
+vorbisfile < test.ogg > out.pcm
 
 echo **** chaining_static_d ****
-chaining_static_d test.ogg
+chaining_static_d < test.ogg
 
 echo **** chaining_static ****
-chaining_static test.ogg
+chaining_static < test.ogg
 
 echo **** chaining_d ****
-chaining_d test.ogg
+chaining_d < test.ogg
 
 echo **** chaining ****
-chaining test.ogg
+chaining < test.ogg
 
 echo **** seeking_static_d ****
-seeking_static_d test.ogg
+seeking_static_d < test.ogg
 
 echo **** seeking_static ****
-seeking_static test.ogg
+seeking_static < test.ogg
 
 echo **** seeking_d ****
-seeking_d test.ogg
+seeking_d < test.ogg
 
 echo **** seeking ****
-seeking test.ogg
+seeking < test.ogg
 goto done
 
 :nosdk
