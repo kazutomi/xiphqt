@@ -806,11 +806,11 @@ int main(int argc, char **argv)
 	while (!eos && device.play.status) {
 		/* Pause if we're supposed to */
 		if (device.pause.status) {
+			global_note_off();
 			while (device.pause.status) {
 				usleep(10000);
 				update_status();
 			}
-			global_note_off();
 		}
 
 		/* Handle fast foward */
