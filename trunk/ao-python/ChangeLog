@@ -1,3 +1,6 @@
+2001-02-18  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* README: Fixed incorrect config instructions
+	
 2001-01-31  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* setup.py, config_unix.py, setup.cfg: Went back to an older way
 	of configuring things, which seems to be the only maintainable way

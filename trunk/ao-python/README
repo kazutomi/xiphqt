@@ -7,7 +7,7 @@ To build you need distutils package from
 http://www.python.org/sigs/distutils-sig/download.html (it comes with
 Python 2.0). To install:
 
-python setup.py config
+python config_unix.py
 python setup.py build
 [as root] python setup.py install
 
