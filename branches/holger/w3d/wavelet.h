@@ -13,6 +13,7 @@ typedef struct {
    uint32 *w;
    uint32 *h;
    uint32 *f;
+   TYPE *minmax;
 } Wavelet3DBuf;
 
 

@@ -2,7 +2,7 @@
 Hi,
 
 this is a experimental 3d-integer-wavelet-video compression codec. Since the
-integer wavelet transformation is reversible and a reversible rgb-yuv conversion
+integer wavelet transform is reversible and a reversible rgb-yuv conversion
 is used (you can understand it as (1,2) integer wavelet transform, too), this
 codec should be lossless if you transmit the whole bitstream.
 The Y/U/V-bitstreams are embedded, thus you can simply get lossy compression 
@@ -44,7 +44,7 @@ which means: images are grabbed from '/dev/video1', the Y component bitstream
 is limited to 20000 Bytes, the U and V bitstreams to 5000 Bytes.
 The last argument may be omitted.
 
-Since video_device_grab_frame() uses a read() call to grab the image, it may
+Since video_device_grab_frame() uses a read() call to grab images, it may
 not work with some bttv drivers. Rewrite this function for mmap()'d access if
 you want. Or even better, write something to read frames from mpeg/quicktime/avi
 movies. And design a simple file format with multiplexed bitstreams. And write 
