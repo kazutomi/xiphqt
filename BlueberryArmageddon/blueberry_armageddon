@@ -171,6 +171,7 @@ $window_album=$window_shell->
 $y+=$window_artist_label->reqheight()+5;
 $infoy=$y;
 
+$seekrit=0;
 $tracks=0;
 for(my$i=1;$i<=99;$i++){
     my$text="track$i: ";
@@ -302,6 +303,9 @@ sub Rip{
 
 	    my$track=$ripstatus;
 	    my$title=$trackname[$track];
+
+	    $track=0 if($track==$tracks && $seekrit);
+
 	    $wavfile="/tmp/$$.wav";
 	    my$glob;
 	    eval "\$glob=\"$rip\"";
@@ -329,7 +333,8 @@ sub Rip{
 sub Track_Path{
     my($tracknum)=@_;
     $trackpad=$tracknum;
-    $trackpad="0$tracknum" if($tracknum<10);
+    $trackpad=0 if($trackpad==$tracks && $seekrit);
+    $trackpad="0$trackpad" if($trackpad<10);
     "$trackbase/$artist/$album/$artist - $album - $trackpad - $trackname[$tracknum]$suffix";
 }
 
@@ -357,6 +362,7 @@ sub Rescan{
 	    $tracks=$1 if ($1>$tracks);
 	    $leadout=$2+$3+150;
 	    push @toc,"$1 $m $s $f";
+	    $initial=$3 if($1==1);
 	}
     } 
 
@@ -376,7 +382,7 @@ sub Rescan{
 	Status("Query failed");
 	Alert("Could not query cdrom; drive empty?",$output);
     }else{
-	for(my$i=1;$i<=$tracks;$i++){
+	for(my$i=1;$i<=99;$i++){
 	    $trackrip[$i]=1;
 	} 
 	    
@@ -422,6 +428,12 @@ sub Rescan{
 		}
 		$artist="";
 		$album="";
+		$seekrit=0;
+		if($initial>100){
+		    $tracks++;
+		    $trackname[$tracks]="Hidden Track Zero";
+		    $seekrit=1;
+		}
 
 		$cddb->DESTROY();
 		
@@ -444,7 +456,14 @@ sub Rescan{
 	    $trackname[$i+1]=$disc_info->{"ttitles"}[$i];
 		$trackname[$i+1]=~s/\//:/g;
 	}
-	
+
+	$seekrit=0;
+	if($initial>100){
+	    $tracks++;
+	    $trackname[$tracks]="Hidden Track Zero";
+	    $seekrit=1;
+	}
+
 	Recheck();
 	Status("Album Loaded");
 	$cddb->DESTROY();
