@@ -51,6 +51,7 @@ int main(int argc, char * argv[])
 	memset(samplerate, '\000', sizeof(samplerate));
 	memset(channels, '\000', sizeof(channels));
 	memset(msg, '\000', sizeof(msg));
+	memset(st, '\000', sizeof(st));
 
 	Log(LOG_DEBUG, "Starting execution");
 	if (getenv("REMOTE_ADDR")) {	
