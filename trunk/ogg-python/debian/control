@@ -2,7 +2,7 @@ Source: ogg-python
 Section: interpreters
 Priority: optional
 Maintainer: Christopher L Cheney <ccheney@debian.org>
-Build-Depends: debhelper (>> 2.0.0), libogg-dev (>> 1.0beta4), libvorbis-dev (>> 1.0beta4), python-base, python-distutils
+Build-Depends: debhelper (>> 2.0.0), libogg-dev (>> 1.0beta4), python-base, python-distutils
 Standards-Version: 3.5.1.0
 
 Package: ogg-python
