@@ -1,4 +1,8 @@
 Release Notes:
+
+3.2.5.0 vfw codec
+- solved xp playback problem
+
 3.2.4.0 vfw codec 
 - yv12 and yuy2 playback sometimes appeared upside down.
 
@@ -17,3 +21,8 @@ Release Notes:
 - changed the behavior of the codec if datarate control is disabled  
   in vfw.  Now uses a fixed quality set to what the worst frame quality 
   is.
+
+====================================
+Known Issues:
+- shows in black and white under windows xp, on a geforce 2 card under 
+  windows media player 2 not windows media player 8

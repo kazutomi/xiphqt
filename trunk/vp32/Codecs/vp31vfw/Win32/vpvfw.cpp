@@ -34,7 +34,7 @@ using namespace std;
 
 const long			vfwCodec::compFourCC=mmioFOURCC('V','P','3','1');
 const long			vfwCodec::fourCCsSupported[] = { vfwCodec::compFourCC};
-const enum BITDEPTH vfwCodec::bitDepthsSupported[] = {DXYV12, DXYUY2, DXRGB32, DXRGB24, DXRGB16, DXRGB16_565};
+const enum BITDEPTH vfwCodec::bitDepthsSupported[] = {DXYUY2, DXRGB32, DXRGB24, DXRGB16, DXRGB16_565,DXYV12};
 const WCHAR			vfwCodec::szDescription[] = L"VP31® Compressor";
 const WCHAR			vfwCodec::szName[] = L"VP31";
 const char *		vfwCodec::registryEntry = "SOFTWARE\\On2 Technologies\\VFW Encoder/Decoder Settings\\VP31";
@@ -89,7 +89,7 @@ void vfwDXspec::defaultValues()
 	if( lpbiDst != 0 ) 
 	{
 		dxDst = lpbiDst->biWidth;
-		dyDst = lpbiDst->biHeight;
+		dyDst = abs(lpbiDst->biHeight);
 	} 
 	else
 	{
