@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.31 2003/03/17 04:45:03 brendan Exp $
+ * $Id: mp3.c,v 1.32 2003/03/19 18:58:24 brendan Exp $
  */
 
 #include "definitions.h"
@@ -191,10 +191,8 @@ static int ices_mp3_parse (input_stream_t* source)
   if (off)
     ices_log_debug("Skipped %d bytes of garbage before MP3", off);
 
-#ifdef TRIM_FILE
   /* adjust file size for short frames */
   mp3_trim_file (source, &mh);
-#endif
 
   if (source->bitrate)
     ices_log_debug ("%s layer %s, %d kbps, %d Hz, %s", version_names[mh.version],
