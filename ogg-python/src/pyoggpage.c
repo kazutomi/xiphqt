@@ -9,8 +9,10 @@
 
 char py_ogg_page_doc[] = "";
 
-static void py_ogg_page_dealloc(py_ogg_page *);
+static void py_ogg_page_dealloc(PyObject *);
 static PyObject* py_ogg_page_getattr(PyObject *, char *);
+static int py_ogg_page_setattr(PyObject *self, char *name, PyObject *value);
+static PyObject *py_ogg_page_repr(PyObject *self);
 
 FDEF(ogg_page_writeout) "Write the page to a given file object. Returns the number of bytes written.";
 FDEF(ogg_page_eos) "Tell whether this page is the end of a stream.";
@@ -29,12 +31,12 @@ PyTypeObject py_ogg_page_type = {
   0,
   
   /* Standard Methods */
-  (destructor) py_ogg_page_dealloc,
-  (printfunc) 0,
-  (getattrfunc) py_ogg_page_getattr,
-  (setattrfunc) 0,
-  (cmpfunc) 0,
-  (reprfunc) 0,
+  /* (destructor) */ py_ogg_page_dealloc,
+  /* (printfunc) */ 0,
+  /* (getattrfunc) */ py_ogg_page_getattr,
+  /* (setattrfunc) */ py_ogg_page_setattr,
+  /* (cmpfunc) */ 0,
+  /* (reprfunc) */ py_ogg_page_repr,
   
   /* Type Categories */
   0, /* as number */
@@ -71,7 +73,7 @@ static PyMethodDef py_ogg_page_methods[] = {
 };
 
 static void 
-py_ogg_page_dealloc(py_ogg_page *self)
+py_ogg_page_dealloc(PyObject *self)
 {
   PyMem_DEL(self);
 }
@@ -90,6 +92,8 @@ py_ogg_page_from_page(ogg_page *op)
   if (pyop == NULL)
     return NULL;
 
+  // FIX: won't this leak memory?  how does the page's pointed-to
+  // memory get freed?
   pyop->op = *op;
   return (PyObject *) pyop;
 }
@@ -117,43 +121,95 @@ py_ogg_page_writeout(PyObject *self, PyObject *args)
 static PyObject*
 py_ogg_page_eos(PyObject *self, PyObject *args)
 {
-  int eos = ogg_page_eos(PY_OGG_PAGE(self));
-  return PyInt_FromLong(eos);
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+  return PyInt_FromLong(ogg_page_eos(PY_OGG_PAGE(self)));
 }
 
 static PyObject *
 py_ogg_page_version(PyObject *self, PyObject *args) 
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyInt_FromLong(ogg_page_version(PY_OGG_PAGE(self)));
 }
 
 static PyObject *
 py_ogg_page_serialno(PyObject *self, PyObject *args)
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyInt_FromLong(ogg_page_serialno(PY_OGG_PAGE(self)));
 }
 
 static PyObject *
 py_ogg_page_pageno(PyObject *self, PyObject *args)
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyLong_FromLong(ogg_page_pageno(PY_OGG_PAGE(self)));
 }
 
 static PyObject *
 py_ogg_page_continued(PyObject *self, PyObject *args) 
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyInt_FromLong(ogg_page_continued(PY_OGG_PAGE(self)));
 }
 
 static PyObject *
 py_ogg_page_bos(PyObject *self, PyObject *args) 
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyInt_FromLong(ogg_page_bos(PY_OGG_PAGE(self)));
 }
 
 static PyObject *
 py_ogg_page_granulepos(PyObject *self, PyObject *args) 
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
   return PyLong_FromLong(ogg_page_granulepos(PY_OGG_PAGE(self)));
 }
 
+static int
+py_ogg_page_setattr(PyObject *self, char *name, PyObject *value)
+{
+  // XXX: somehow the set and get forms should be unified, perhaps to
+  // make them both attribute accesses?
+
+  if (strcmp(name, "pageno") == 0) {
+    // FIX: also handle PyLong?
+    if (PyInt_Check(value)) {
+      long v = PyInt_AsLong(value);
+      char *pb = PY_OGG_PAGE(self)->header;
+      // XXX: ugh, libogg should do this instead
+      int i;
+      for (i=18; i<22; i++) {
+	pb[i] = v & 0xff;
+	v >>= 8;
+      }
+      return 0;
+    } else
+      return -1;
+  }
+  return -1;
+}
+
+static PyObject *
+py_ogg_page_repr(PyObject *self)
+{
+  ogg_page *op = PY_OGG_PAGE(self);
+  char buf[256];
+  char *cont = ogg_page_continued(op) ? "CONT " : "";
+  char *bos = ogg_page_bos(op) ? "BOS " : "";
+  char *eos = ogg_page_eos(op) ? "EOS " : "";
+
+  sprintf(buf, "<OggPage, %s%s%spageno = %ld, granulepos = %lld,"
+	  " serialno = %d, head length = %ld, body length = %ld at %p>",
+	  cont, bos, eos, ogg_page_pageno(op), ogg_page_granulepos(op),
+	  ogg_page_serialno(op), op->header_len, op->body_len, self); 
+  return PyString_FromString(buf);
+}

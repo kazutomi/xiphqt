@@ -1,3 +1,24 @@
+2001-05-01  Mike Coleman  <mkc@mathdogs.com>
+	* test/oggtail.py: new script to show off some of ogg module
+	
+	* src/pyogg*.c: methods with no args now check that they're called
+	this way
+
+	* src/pyogg*.c: add repr functions
+
+	* src/pyogg*.c: add type checking for PyTypeObject function table
+	
+	* src/pyoggpacket.c: add get/set granulepos attribute
+	* src/pyoggpage.c: add set pageno attribute
+
+	* src/pyoggstreamstate.c: implement pagein, packetout methods
+	
+	* src/pyoggsyncstate.c: implement bytesin, pageseek methods,
+	comment out unneeded wrote method
+
+	* src/pyogg*state.c: fix free of bogus pointer in dealloc
+	
+	
 3-27-2001 Andrew H. Chatham <andrew.chatham@duke.edu>
 	* src/_oggmodule.c: Added OggSyncState
 

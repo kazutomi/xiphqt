@@ -8,8 +8,9 @@
 
 char py_oggpack_buffer_doc[] = "";
 
-static void py_oggpack_buffer_dealloc(py_oggpack_buffer *);
+static void py_oggpack_buffer_dealloc(PyObject *);
 static PyObject* py_oggpack_buffer_getattr(PyObject *, char *);
+static PyObject *py_oggpack_repr(PyObject *self);
 
 FDEF(oggpack_reset) "";
 FDEF(oggpack_writeclear) "";
@@ -40,12 +41,12 @@ PyTypeObject py_oggpack_buffer_type = {
   0,
   
   /* Standard Methods */
-  (destructor) py_oggpack_buffer_dealloc,
-  (printfunc) 0,
-  (getattrfunc) py_oggpack_buffer_getattr,
-  (setattrfunc) 0,
-  (cmpfunc) 0,
-  (reprfunc) 0,
+  /* (destructor) */ py_oggpack_buffer_dealloc,
+  /* (printfunc) */ 0,
+  /* (getattrfunc) */ py_oggpack_buffer_getattr,
+  /* (setattrfunc) */ 0,
+  /* (cmpfunc) */ 0,
+  /* (reprfunc) */ py_oggpack_repr,
   
   /* Type Categories */
   0, /* as number */
@@ -92,7 +93,7 @@ static PyMethodDef py_oggpack_buffer_methods[] = {
 };
 
 static void
-py_oggpack_buffer_dealloc(py_oggpack_buffer *self)
+py_oggpack_buffer_dealloc(PyObject *self)
 {
   PyMem_DEL(self);
 }
@@ -106,9 +107,13 @@ py_oggpack_buffer_getattr(PyObject *self, char *name)
 PyObject *
 py_oggpack_buffer_new(PyObject *self, PyObject *args) 
 {
-  py_oggpack_buffer *ret = 
-    (py_oggpack_buffer *) PyObject_NEW(py_oggpack_buffer,
-				       &py_oggpack_buffer_type);
+  py_oggpack_buffer *ret;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  ret = (py_oggpack_buffer *) PyObject_NEW(py_oggpack_buffer,
+					   &py_oggpack_buffer_type);
   if (ret == NULL)
     return NULL;
 
@@ -119,12 +124,18 @@ py_oggpack_buffer_new(PyObject *self, PyObject *args)
 static PyObject *
 py_oggpack_reset(PyObject *self, PyObject *args)
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   oggpack_reset(PY_OGGPACK_BUFF(self));
 }
 
 static PyObject *
 py_oggpack_writeclear(PyObject *self, PyObject *args)
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   oggpack_writeclear(PY_OGGPACK_BUFF(self));
 }
 
@@ -166,6 +177,10 @@ static PyObject *
 py_oggpack_look1(PyObject *self, PyObject *args) 
 {
   long ret;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   ret = oggpack_look1(PY_OGGPACK_BUFF(self));
   return PyLong_FromLong(ret);
 }
@@ -173,14 +188,24 @@ py_oggpack_look1(PyObject *self, PyObject *args)
 static PyObject *
 py_oggpack_bytes(PyObject *self, PyObject *args)
 {
-  long ret = oggpack_bytes(PY_OGGPACK_BUFF(self));
+  long ret;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  ret = oggpack_bytes(PY_OGGPACK_BUFF(self));
   return PyLong_FromLong(ret);
 }
 
 static PyObject *
 py_oggpack_bits(PyObject *self, PyObject *args)
 {
-  long ret = oggpack_bits(PY_OGGPACK_BUFF(self));
+  long ret;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  ret = oggpack_bits(PY_OGGPACK_BUFF(self));
   return PyLong_FromLong(ret);
 }
 
@@ -226,7 +251,12 @@ py_oggpack_read(PyObject *self, PyObject *args)
 static PyObject *
 py_oggpack_read1(PyObject *self, PyObject *args)
 {
-  long ret = oggpack_read1(PY_OGGPACK_BUFF(self));
+  long ret;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  ret = oggpack_read1(PY_OGGPACK_BUFF(self));
   return PyInt_FromLong(ret);
 }
 
@@ -261,7 +291,22 @@ py_oggpack_adv_huff(PyObject *self, PyObject *args)
 static PyObject *
 py_oggpack_adv1(PyObject *self, PyObject *args)
 {
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+
   oggpack_adv1(PY_OGGPACK_BUFF(self));
   Py_INCREF(Py_None);
   return Py_None;
 }
+
+static PyObject *
+py_oggpack_repr(PyObject *self)
+{
+  oggpack_buffer *ob = PY_OGGPACK_BUFF(self);
+  char buf[256];
+
+  sprintf(buf, "<OggPackBuff, endbyte = %ld, endbit = %d at %p>", ob->endbyte,
+	  ob->endbit, self);
+  return PyString_FromString(buf);
+}
+
