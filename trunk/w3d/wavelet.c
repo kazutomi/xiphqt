@@ -512,3 +512,26 @@ void wavelet_3d_buf_decode_coeff (Wavelet3DBuf* buf,
    }
 }
 
+
+
+#if defined(DBG_XFORM)
+
+#include "ppm.h"
+
+void wavelet_3d_buf_dump (char *fmt,
+                          uint32_t first_frame_in_buf,
+                          uint32_t id,
+                          Wavelet3DBuf* buf)
+{
+   char fname [256];
+   uint32_t f;
+
+   for (f=0; f<buf->frames; f++) {
+      snprintf (fname, 256, fmt, id, first_frame_in_buf + f);
+
+      write_ppm16 (fname, buf->data + f * buf->width * buf->height,
+                   buf->width, buf->height);
+   }
+}
+#endif
+

@@ -1,7 +1,7 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER
+CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM
 LFLAGS = -g
 
 OBJS = ppm.o wavelet.o wavelet_xform.o yuv.o tarkin.o tarkin-io.o
