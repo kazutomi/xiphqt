@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.9 2003/03/23 23:40:58 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.10 2003/03/26 07:35:20 xiphmont Exp $
 
  ********************************************************************/
 
@@ -101,23 +101,14 @@ struct ogg_stream_state {
   ogg_reference *header_tail;
   ogg_reference *body_head;
   ogg_reference *body_tail;
-  long           body_fill;
-
-  /* encode-side header build */
-  oggbyte_buffer    header_build;
-  int               lacing_fill;
 
   ogg_reference *returned;
-  ogg_reference *returned_head;
-
-  long           header_len;
-  long           body_len;
+  ogg_reference *returned_header;
 
   int            e_o_s;    /* set when we have buffered the last
                               packet in the logical bitstream */
   int            b_o_s;    /* set after we've written the initial page
 			      of a logical bitstream */
-  int            headers;  /* how many setup headers? */
   long           serialno;
   long           pageno;
   ogg_int64_t    packetno; /* sequence number for decode; the framing
@@ -125,7 +116,23 @@ struct ogg_stream_state {
 			      but we need coupling so that the codec
 			      (which is in a seperate abstraction
 			      layer) also knows about the gap */
+  ogg_int64_t    granulepos;
 
+  int            lacing_fill;
+  ogg_uint32_t   body_fill;
+
+  /* encode-side header build */
+  unsigned int   watermark;
+  oggbyte_buffer header_build;
+  int            continued;
+
+  /* decode-side state data */
+  int            holeflag;
+  int            spanflag;
+  int            clearflag;
+  int            laceptr;
+  ogg_uint32_t   body_fill_next;
+  
 };
 
 extern ogg_buffer_state *ogg_buffer_create(void);

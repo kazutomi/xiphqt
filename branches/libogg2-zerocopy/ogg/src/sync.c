@@ -12,7 +12,7 @@
 
  function: decode stream sync and memory management foundation code;
            takes in raw data, spits out packets
- last mod: $Id: sync.c,v 1.1.2.5 2003/03/23 23:40:58 xiphmont Exp $
+ last mod: $Id: sync.c,v 1.1.2.6 2003/03/26 07:35:20 xiphmont Exp $
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -201,7 +201,7 @@ int ogg_sync_destroy(ogg_sync_state *oy){
     memset(oy,0,sizeof(*oy));
     _ogg_free(oy);
   }
-  return 0;
+  return OGG_SUCCESS;
 }
 
 static void _release_returned(ogg_sync_state *oy){
@@ -259,12 +259,12 @@ unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long bytes){
 }
 
 int ogg_sync_wrote(ogg_sync_state *oy, long bytes){ 
-  if(!oy->fifo_head)return -1;
+  if(!oy->fifo_head)return OGG_EINVAL;
   if(oy->fifo_head->buffer->size-oy->fifo_head->length-oy->fifo_head->begin < 
-     bytes)return -1;
+     bytes)return OGG_EINVAL;
   oy->fifo_head->length+=bytes;
   oy->fifo_fill+=bytes;
-  return 0;
+  return OGG_SUCCESS;
 }
 
 static ogg_uint32_t _checksum(ogg_reference *or, int bytes){
@@ -353,7 +353,7 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   }else{
     /* simply advance */
     oy->fifo_tail=
-      ogg_buffer_split(oy->fifo_tail,oy->headerbytes+oy->bodybytes);      
+      ogg_buffer_pretruncate(oy->fifo_tail,oy->headerbytes+oy->bodybytes);
   }
   
   ret=oy->headerbytes+oy->bodybytes;
@@ -393,16 +393,16 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   if(!oy->fifo_tail)oy->fifo_head=0;
 
  sync_out:
-  return(ret);
+  return ret;
 }
 
 /* sync the stream and get a page.  Keep trying until we find a page.
    Supress 'sync errors' after reporting the first.
 
    return values:
-   -1) recapture (hole in data)
-    0) need more data
-    1) page returned
+   OGG_HOLE) recapture (hole in data)
+          0) need more data
+          1) page returned
 
    Returns pointers into buffered data; invalidated by next call to
    _stream, _clear, _init, or _buffer */
@@ -417,17 +417,17 @@ int ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og){
     long ret=ogg_sync_pageseek(oy,og);
     if(ret>0){
       /* have a page */
-      return(1);
+      return 1;
     }
     if(ret==0){
       /* need more data */
-      return(0);
+      return 0;
     }
     
     /* head did not start a synced page... skipped some bytes */
     if(!oy->unsynced){
       oy->unsynced=1;
-      return(-1);
+      return OGG_HOLE;
     }
 
     /* loop. keep looking */
@@ -444,7 +444,7 @@ int ogg_sync_reset(ogg_sync_state *oy){
   oy->unsynced=0;
   oy->headerbytes=0;
   oy->bodybytes=0;
-  return(0);
+  return OGG_SUCCESS;
 }
 
 /* checksum the page; direct table CRC */
@@ -500,7 +500,7 @@ extern int ogg_sync_pagein(ogg_sync_state *oy,ogg_page *og){
   else
     oy->fifo_head=ogg_buffer_walk(oy->fifo_tail=og->header);
   oy->fifo_head=ogg_buffer_cat(oy->fifo_head,og->body);
-  return(0);
+  return OGG_SUCCESS;
 }
 
 extern long ogg_sync_bufferout(ogg_sync_state *oy, unsigned char **buffer){
@@ -524,6 +524,6 @@ extern long ogg_sync_bufferout(ogg_sync_state *oy, unsigned char **buffer){
     ret=oy->returned_body->length;
   }
 
-  return(ret);
+  return ret;
 
 }
