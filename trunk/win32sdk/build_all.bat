@@ -1,5 +1,5 @@
 @echo off
-rem $Id: build_all.bat,v 1.2 2001/09/13 21:36:24 cwolf Exp $
+rem $Id: build_all.bat,v 1.3 2001/09/14 01:26:30 cwolf Exp $
 rem
 rem Invoke as "build_all.bat CLEAN" to clean all targets
 rem
@@ -36,7 +36,7 @@ nmake /nologo /F .\vorbisfile_dynamic.mak CFG="vorbisfile_dynamic - Win32 Releas
 nmake /nologo /F .\vorbisfile_static.mak CFG="vorbisfile_static - Win32 Debug" %1
 nmake /nologo /F .\vorbisfile_static.mak CFG="vorbisfile_static - Win32 Release" %1
 cd "..\..\win32sdk"
-exit
+goto normal
 
 :noogg
 echo ***** Need module OGG -- not present
@@ -49,3 +49,5 @@ exit
 :notset
 echo ***** Error: must set SRCROOT
 exit
+
+:normal

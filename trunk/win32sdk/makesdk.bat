@@ -1,7 +1,7 @@
-@echo off
+rem @echo off
 echo ---+++--- Making Win32 SDK ---+++---
 rem
-rem $Id: makesdk.bat,v 1.4 2001/09/13 19:55:00 cwolf Exp $
+rem $Id: makesdk.bat,v 1.5 2001/09/14 01:26:30 cwolf Exp $
 rem
 
 if ."%SRCROOT%"==."" goto notset
@@ -15,20 +15,17 @@ if not exist %SRCROOT%\vorbis\win32\vorbis_dynamic.mak (
   msdev -ex ExportMakefile
 )
   
-rd /s /q sdk > nul
-md sdk
-md sdk\include
+rd /s /q sdk\include > nul
+rd /s /q sdk\lib > nul
+rd /s /q sdk\bin > nul
+rd /s /q sdk\doc > nul
 md sdk\include\ogg
 md sdk\include\vorbis
 md sdk\lib
 md sdk\bin
-md sdk\doc
-md sdk\doc\ogg
 md sdk\doc\ogg\ogg
-md sdk\doc\vorbis
 md sdk\doc\vorbis\vorbisenc
 md sdk\doc\vorbis\vorbisfile
-md sdk\examples
 md sdk\examples\vorbis
 
 rem --- is ogg here?
@@ -90,7 +87,7 @@ rem --- copy examples into sdk
 
 echo Copying examples...
 
-xcopy %SRCROOT%\vorbis\examples\*.c %SRCROOT%\win32sdk\sdk\examples\vorbis
+xcopy /y %SRCROOT%\vorbis\examples\*.c %SRCROOT%\win32sdk\sdk\examples\vorbis
 
 echo ... copied.
 
@@ -125,7 +122,7 @@ xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.lib %SRCROOT%\win32sd
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.pdb %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
-xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.dll %SRCROOT%\win32sdk\sdk\bin > nul
+xcopy %SRCROOT%\vorbis\win32\Vorbis_Dynamic_Debug\vorbis_d.dll %SRCROOT%\win32sdk\sdk\bin 
 if errorlevel 1 goto ERROR
 xcopy %SRCROOT%\vorbis\win32\VorbisFile_Static_Release\vorbisfile_static.lib %SRCROOT%\win32sdk\sdk\lib > nul
 if errorlevel 1 goto ERROR
