@@ -25,7 +25,7 @@ oggmerge -- utility for splicing together ogg bitstreams
 #include "vorbis.h"
 #include "midi.h"
 
-#define VERSIONINFO "oggmerge v0.9\n"
+#define VERSIONINFO "oggmerge v" VERSION "\n"
 
 param_t params;
 

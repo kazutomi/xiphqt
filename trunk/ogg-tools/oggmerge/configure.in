@@ -17,4 +17,4 @@ dnl Check for headers
 AC_HEADER_STDC()
 #AC_CHECK_HEADERS(libmng.h)
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile testfiles/Makefile tools/Makefile)
