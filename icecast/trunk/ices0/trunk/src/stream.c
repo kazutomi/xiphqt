@@ -204,7 +204,9 @@ ices_stream_send_file (const char *file)
       olen = 0;
       rc = 1;
       for (stream = ices_config.streams; stream; stream = stream->next) {
-	if (! stream->reencode) {
+	/* don't reencode if the source is MP3 and the same bitrate */
+	if (!stream->reencode || (source.read &&
+	      (stream->bitrate == source.bitrate))) {
 	  rc = shout_send_data (&stream->conn, ibuf, len);
 	  shout_sleep (&stream->conn);
 	}
