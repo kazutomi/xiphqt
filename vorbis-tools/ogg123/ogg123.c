@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.10 2001/08/11 02:10:09 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.11 2001/08/11 02:55:37 kcarnold Exp $
 
  ********************************************************************/
 
@@ -550,7 +550,7 @@ void play_file(ogg123_options_t opt)
 		    if (OutBuffer)
 			SubmitData (OutBuffer, convbuffer, ret, 1);
 		    else
-		      devices_write(convbuffer, ret, 1, opt.outdevices);
+		      devices_write(convbuffer, ret, 1, opt.outdevices, 0);
 		    nthc = opt.nth - 1;
 		  }
 		} while (++ntimesc < opt.ntimes);

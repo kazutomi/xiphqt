@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.8 2001/08/11 02:10:09 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.9 2001/08/11 02:55:37 kcarnold Exp $
 
  ********************************************************************/
 
@@ -83,6 +83,7 @@ void* BufferFunc (void *arg)
   volatile buf_t *vbuf = (volatile buf_t*) buf; /* optimizers... grr */
   size_t WriteThisTime = 0;
   chunk *NewWriterPtr;
+  char iseos = 0;
 
   DEBUG0("BufferFunc");
   sigfillset (&set);
@@ -156,8 +157,10 @@ void* BufferFunc (void *arg)
 	  DEBUG1("up to buf->reader, buf->reader - buf->writer = %d", buf->reader - buf->writer);
 	  if (buf->reader - buf->writer > TARGET_WRITE_SIZE)
 	    WriteThisTime = TARGET_WRITE_SIZE;
-	  else
+	  else {
 	    WriteThisTime = buf->reader - buf->writer;
+	    iseos = buf->eos;
+	  }
 	  NewWriterPtr = buf->writer + WriteThisTime;
 	}
 
@@ -165,7 +168,7 @@ void* BufferFunc (void *arg)
       /* unlock while playing sample */
       UNLOCK_MUTEX (buf->SizeMutex);
       DEBUG1("WriteThisTime=%d", WriteThisTime);
-      buf->write_func (buf->writer, WriteThisTime, 1, buf->data);
+      buf->write_func (buf->writer, WriteThisTime, 1, buf->data, iseos);
 
       DEBUG0("incrementing pointer");
       LOCK_MUTEX (buf->SizeMutex);
@@ -184,7 +187,7 @@ void* BufferFunc (void *arg)
 }
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
-		    size_t (*write_func) (void *, size_t, size_t, void *),
+		    size_t (*write_func) (void *, size_t, size_t, void *, char),
 		    void *initData, int (*init_func) (void*))
 {
   buf_t *buf = malloc (sizeof(buf_t) + sizeof (chunk) * (size - 1));
@@ -349,6 +352,12 @@ char buffer_Paused (buf_t *buf)
 {
   return (char) !(buf->StatMask & STAT_PLAYING);
 }
+
+void buffer_MarkEOS (buf_t *buf)
+{
+  buf->eos = 1;
+}
+
 
 void buffer_cleanup (buf_t *buf) {
   if (buf) {

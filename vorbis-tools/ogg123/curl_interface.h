@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.1 2001/08/11 02:10:09 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.2 2001/08/11 02:55:37 kcarnold Exp $
  
 ********************************************************************/
 
@@ -50,8 +50,8 @@ typedef struct StreamInputBufferData_s {
   pthread_cond_t ReadDoneCondition;
 
   CURL * CurlHandle;
-  char EOFAt;
-  char EOFWhileReading;
+
+  char EOS;
 
   size_t BytesRequested;
   unsigned char *WriteTarget;

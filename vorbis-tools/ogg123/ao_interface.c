@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ao_interface.c,v 1.5.2.3 2001/08/11 02:10:09 kcarnold Exp $
+ last mod: $Id: ao_interface.c,v 1.5.2.4 2001/08/11 02:55:37 kcarnold Exp $
 
  ********************************************************************/
 
@@ -43,7 +43,7 @@ devices_t *append_device(devices_t * devices_list, int driver_id,
     return devices_list;
 }
 
-size_t devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d)
+size_t devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d, char iseos)
 {
   size_t i, total = 0;
   devices_t * start = d;
