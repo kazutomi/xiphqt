@@ -18,6 +18,7 @@ from types import *
 import os
 from os import path
 import string
+import struct
 
 import MP3Info
 
@@ -117,14 +118,37 @@ def detect_oggvorbis(filename):
 
     return info
 
+def detect_wav(filename):
+    if filename[-4:] in ['.wav','.WAV','.Wav']:
+        info = { "type" : "wav",
+                 "size" : os.stat(filename).st_size,
+                 "length" : 1,
+                 "title" : None,
+                 "artist" : None,
+                 "album" : None,
+                 "genre" : None,
+                 "tracknumber" : None}
+        wav_file=open(filename)
+        wav_file.seek(0x04,0)
+        size = int(struct.unpack('1i',wav_file.read(4))[0])
+        wav_file.seek(0x1c,0)
+        bytes_sec = int(struct.unpack('1i',wav_file.read(4))[0])
+        wav_file.close()
+        duration = size/bytes_sec
+         
+        info["length"] = duration
+        return info
+    else:
+        return None
 
 # Only put the ogg vorbis detection code in the list if
 # we have the python module needed.
 
-detect_functions = [detect_mp3]
+detect_functions = [detect_mp3,detect_wav]
 
 try:
      import ogg.vorbis
      detect_functions.insert(0, detect_oggvorbis)
 except ImportError:
     pass
+

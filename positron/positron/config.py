@@ -74,6 +74,7 @@ class Config:
         self.sort_database = True
         self.mp3_support = True
         self.oggvorbis_support = False
+        self.wav_support = True
         self.syncdirs = []
 
     def set_config_dir(self, config_dir):
@@ -110,6 +111,9 @@ class Config:
 
         if self.oggvorbis_support:
             types.append("oggvorbis")
+            
+        if self.wav_support:
+            types.append("wav")
 
         return types
 
@@ -223,6 +227,13 @@ class Config:
                         raise Error(tokenizer.error_leader()
                                     +"Non boolean value '%s' given for %s",
                                     (value, key))
+                elif key == "wav_support":
+                    try:
+                        self.wav_support = parse_boolean(value)
+                    except Error:
+                        raise Error(tokenizer.error_leader()
+                                    +"Non boolean value '%s' given for %s",
+                                    (value, key))
                 else:
                     print tokenizer.error_leader() \
                           + "Ignoring unknown option %s" % (key,)
@@ -262,6 +273,12 @@ class Config:
         else:
             mp3_support_value = "false"
         f.write("mp3_support=%s\n" % (mp3_support_value,))
+
+        if self.wav_support:
+            wav_support_value = "true"
+        else:
+            wav_support_value = "false"
+        f.write("wav_support=%s\n" % (wav_support_value,))
 
         for (src,dest) in self.syncdirs:
             f.write("\nbegin sync\n")
