@@ -4,13 +4,26 @@ import string
 import os
 import sys
 
+log_name = 'config.log'
+if os.path.isfile(log_name):
+    os.unlink(log_name)
+
+def write_log(msg):
+    log_file = open(log_name, 'a')
+    log_file.write(msg)
+    log_file.write('\n')
+    log_file.close()
+
+def exit(code=0):
+    sys.exit(code)
+
 def msg_checking(msg):
     print "Checking", msg, "...",
 
-def execute(cmd, display = 0):
-    if display:
-        print cmd
-    return os.system(cmd)
+def execute(cmd):
+    write_log("Execute: %s" % cmd)
+    full_cmd = '%s 1>>%s 2>&1' % (cmd, log_name)
+    return os.system(full_cmd)
 
 def run_test(input, flags = ''):
     try:
@@ -19,6 +32,7 @@ def run_test(input, flags = ''):
         f.close()
         compile_cmd = '%s -o _temp _temp.c %s' % (os.environ.get('CC', 'cc'),
                                                   flags)
+        write_log("executing test: %s" % compile_cmd)
         if not execute(compile_cmd):
             execute('./_temp')
     finally:
@@ -50,13 +64,13 @@ def find_ao(ao_prefix = '/usr/local', enable_aotest = 1):
     msg_checking('for Ao')
 
     if enable_aotest:
-        execute('rm -f conf.aotest', 0)
+        execute('rm -f conf.aotest')
 
         try:
             run_test(ao_test_program, "-I" + ao_include_dir)
             if not os.path.isfile('conf.aotest'):
                 raise RuntimeError, "Did not produce output"
-            execute('rm conf.aotest', 0)
+            execute('rm conf.aotest')
             
         except Exception, e:
             print "test program failed"
@@ -77,10 +91,18 @@ def write_data(data):
             
 def print_help():
     print '''%s
-    --prefix      Give the prefix in which ao was installed.''' % sys.argv[0]
-    sys.exit(0)
+    --prefix                 Give the prefix in which ao was installed
+                               (separated by a space)''' % sys.argv[0]
+    exit()
 
 def parse_args():
+    def arg_check(data, argv, pos, arg_type, key):
+        "Register an command line arg which takes an argument"
+        if len(argv) == pos:
+            print arg_type, "needs an argument"
+            exit(1)
+        data[key] = argv[pos]
+        
     data = {}
     argv = sys.argv
     for pos in range(len(argv)):
@@ -88,11 +110,7 @@ def parse_args():
             print_help()
         if argv[pos] == '--prefix':
             pos = pos + 1
-            if len(argv) == pos:
-                print "Prefix needs an argument"
-                sys.exit(1)
-            data['prefix'] = argv[pos]
-
+            arg_check(data, argv, pos, "Ao Prefix", 'prefix')
     return data
     
 def main():
@@ -102,7 +120,7 @@ def main():
     data = find_ao(ao_prefix = prefix)
     if not data:
         print "Config failure"
-        sys.exit(1)
+        exit(1)
     write_data(data)
 
 if __name__ == '__main__':
