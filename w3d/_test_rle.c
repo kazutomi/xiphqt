@@ -14,6 +14,8 @@
 
 #include <time.h>
 #include "rle.h"
+#include "mem.h"
+#include "mem.c"      /*  FIXME !!  */
 
 
 
@@ -42,7 +44,7 @@ int main ()
       while (limit == 0)
          limit = rand() * 1.0 * MAX_COUNT / RAND_MAX;
 
-      bit = (uint8_t*) malloc (limit);
+      bit = (uint8_t*) MALLOC (limit);
 
      /**
       *   check encoding ...
@@ -60,7 +62,7 @@ int main ()
 
          count = ENTROPY_ENCODER_FLUSH(&encoder);
 
-         bitstream = (uint8_t*) malloc (count);
+         bitstream = (uint8_t*) MALLOC (count);
          memcpy (bitstream, ENTROPY_CODER_BITSTREAM(&encoder), count);
 
          ENTROPY_ENCODER_DONE(&encoder);
@@ -81,7 +83,8 @@ int main ()
          }
       }
 
-      free (bit);
+      FREE (bit);
+      FREE (bitstream);
    }
 
    fprintf (stdout, "\ndone.\n\n");

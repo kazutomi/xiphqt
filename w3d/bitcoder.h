@@ -1,10 +1,7 @@
 #ifndef __BITCODER_H
 #define __BITCODER_H
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-
+#include "mem.h"
 
 #if defined(BITCODER)
 
@@ -40,7 +37,7 @@ void bitcoder_encoder_init (BitCoderState *s, uint32_t limit)
    s->bit_count = 0;
    s->byte = 0;
    s->byte_count = 0;
-   s->bitstream = (uint8_t*) malloc (limit);
+   s->bitstream = (uint8_t*) MALLOC (limit);
    s->limit = limit;
 }
 
@@ -48,8 +45,7 @@ void bitcoder_encoder_init (BitCoderState *s, uint32_t limit)
 static inline
 void bitcoder_encoder_done (BitCoderState *s)
 {
-//  XXX FIXME !!!
-//   free (s->bitstream);
+   FREE (s->bitstream);
 }
 
 

@@ -1,5 +1,4 @@
-#include <stdlib.h>
-#include <string.h>
+#include "mem.h"
 #include "wavelet.h"
 #include "rle.h"
 
@@ -16,7 +15,7 @@
 Wavelet3DBuf* wavelet_3d_buf_new (uint32_t width, uint32_t height,
                                   uint32_t frames)
 {
-   Wavelet3DBuf* buf = (Wavelet3DBuf*) malloc (sizeof (Wavelet3DBuf));
+   Wavelet3DBuf* buf = (Wavelet3DBuf*) MALLOC (sizeof (Wavelet3DBuf));
    uint32_t _w = width;
    uint32_t _h = height;
    uint32_t _f = frames;
@@ -25,7 +24,7 @@ Wavelet3DBuf* wavelet_3d_buf_new (uint32_t width, uint32_t height,
    if (!buf)
       return NULL;
 
-   buf->data = (TYPE*) malloc (width * height * frames * sizeof (TYPE));
+   buf->data = (TYPE*) MALLOC (width * height * frames * sizeof (TYPE));
 
    if (!buf->data) {
       wavelet_3d_buf_destroy (buf);
@@ -44,12 +43,12 @@ Wavelet3DBuf* wavelet_3d_buf_new (uint32_t width, uint32_t height,
       _f = (_f+1)/2;
    }
 
-   buf->w = (uint32_t*) malloc (buf->scales * sizeof (uint32_t));
-   buf->h = (uint32_t*) malloc (buf->scales * sizeof (uint32_t));
-   buf->f = (uint32_t*) malloc (buf->scales * sizeof (uint32_t));
-   buf->offset = (uint32_t (*) [8]) malloc (8 * buf->scales * sizeof (uint32_t));
+   buf->w = (uint32_t*) MALLOC (buf->scales * sizeof (uint32_t));
+   buf->h = (uint32_t*) MALLOC (buf->scales * sizeof (uint32_t));
+   buf->f = (uint32_t*) MALLOC (buf->scales * sizeof (uint32_t));
+   buf->offset = (uint32_t (*) [8]) MALLOC (8 * buf->scales * sizeof (uint32_t));
 
-   buf->scratchbuf = (TYPE*) malloc (MAX3(width, height, frames) * sizeof (TYPE));
+   buf->scratchbuf = (TYPE*) MALLOC (MAX3(width, height, frames) * sizeof (TYPE));
 
    if (!buf->w || !buf->h || !buf->f || !buf->offset || !buf->scratchbuf) {
       wavelet_3d_buf_destroy (buf);
@@ -82,18 +81,18 @@ void wavelet_3d_buf_destroy (Wavelet3DBuf* buf)
 {
    if (buf) {
       if (buf->data)
-         free (buf->data);
+         FREE (buf->data);
       if (buf->w)
-         free (buf->w);
+         FREE (buf->w);
       if (buf->h)
-         free (buf->h);
+         FREE (buf->h);
       if (buf->f)
-         free (buf->f);
+         FREE (buf->f);
       if (buf->offset)
-         free (buf->offset);
+         FREE (buf->offset);
       if (buf->scratchbuf)
-         free (buf->scratchbuf);
-      free (buf);
+         FREE (buf->scratchbuf);
+      FREE (buf);
    }
 }
 
@@ -135,13 +134,13 @@ TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
 
    do {
       i--;
-      significance = INPUT_BIT(&significand_bitstream[i]) << i;
+      significance = 0; //INPUT_BIT(&significand_bitstream[i]) << i;
    } while (!significance && i > 0);
 
-   sign = INPUT_BIT(&significand_bitstream[i]);
+   sign = 0; //INPUT_BIT(&significand_bitstream[i]);
 
    while (--i >= 0) {
-      significance |= INPUT_BIT(&insignificand_bitstream[i]) << i;
+      significance |= 0; //INPUT_BIT(&insignificand_bitstream[i]) << i;
    };
 
    return (significance ^ mask[sign]);
@@ -256,7 +255,7 @@ void decode_coefficients (Wavelet3DBuf* buf,
          decode_quadrant (buf,level,7,w1,h1,f1,s_stream,i_stream);
    }
 }
-#endif
+#else
 
 static
 void encode_coefficients (const Wavelet3DBuf* buf,
@@ -279,7 +278,7 @@ void decode_coefficients (Wavelet3DBuf* buf,
    for (i=0; i<buf->width*buf->height*buf->frames; i++)
       buf->data[i] = decode_coeff(s_stream, i_stream);
 }
-
+#endif
 
 
 static
@@ -510,7 +509,7 @@ void wavelet_3d_buf_decode_coeff (Wavelet3DBuf* buf,
 
 #if defined(DBG_XFORM)
 
-#include "ppm.h"
+#include "pnm.h"
 
 void wavelet_3d_buf_dump (char *fmt,
                           uint32_t first_frame_in_buf,
@@ -523,7 +522,7 @@ void wavelet_3d_buf_dump (char *fmt,
    for (f=0; f<buf->frames; f++) {
       snprintf (fname, 256, fmt, id, first_frame_in_buf + f);
 
-      write_ppm16 (fname, buf->data + f * buf->width * buf->height,
+      write_pgm16 (fname, buf->data + f * buf->width * buf->height,
                    buf->width, buf->height);
    }
 }

@@ -2,12 +2,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <string.h>
+#include "mem.h"
 #include "tarkin.h"
-#include "ppm.h"
+#include "pnm.h"
 
 
 static
@@ -37,6 +35,7 @@ int main (int argc, char **argv)
    int fd;
    TarkinStream *tarkin_stream;
    TarkinVideoLayerDesc layer [] = { { 0, 0, 1, 5000, TARKIN_RGB24 } };
+   TarkinColorFormat type;
 
    if (argc == 1) {
       layer[0].bitrate = 1000;
@@ -52,10 +51,14 @@ int main (int argc, char **argv)
    }
 
    snprintf (fname, 256, fmt, 0);
-   if (read_ppm_info (fname, &layer[0].width, &layer[0].height) < 0)
+   type = read_pnm_header (fname, &layer[0].width, &layer[0].height);
+
+   if (type < 0)
       exit (-1);
 
-   rgb  = malloc (layer[0].width * layer[0].height * 3);
+   layer[0].format = (type == 3) ? TARKIN_RGB24 : TARKIN_GRAYSCALE;
+
+   rgb  = (uint8_t*) MALLOC (layer[0].width * layer[0].height * type);
 
    if ((fd = open ("stream.tarkin", O_CREAT | O_RDWR | O_TRUNC, 0644)) < 0) {
       printf ("error opening '%s' for writing !\n", "stream.tarkin");
@@ -71,7 +74,7 @@ int main (int argc, char **argv)
       printf (fname, frame);
       printf ("'");
 
-      if (read_ppm (fname, rgb, layer[0].width, layer[0].height) < 0)
+      if (read_pnm (fname, rgb) < 0)
       {
          printf (" failed.\n");
          break;
@@ -82,7 +85,7 @@ int main (int argc, char **argv)
       frame++;
    } while (1);
 
-   free (rgb);
+   FREE (rgb);
    tarkin_stream_destroy (tarkin_stream);
    close (fd);
 

@@ -3,9 +3,7 @@
  *   (this one has to be rewritten to write ogg streams ...)
  */
 
-#include <stdlib.h>
-#include <string.h>
-
+#include "mem.h"
 #include "tarkin.h"
 #include "tarkin-io.h"
 #include "yuv.h"
@@ -17,7 +15,7 @@
 
 TarkinStream* tarkin_stream_new (int fd)
 {
-   TarkinStream *s = (TarkinStream*) calloc (1, sizeof(TarkinStream));
+   TarkinStream *s = (TarkinStream*) CALLOC (1, sizeof(TarkinStream));
 
    if (!s)
       return NULL;
@@ -36,18 +34,22 @@ void tarkin_stream_destroy (TarkinStream *s)
    if (!s)
       return;
 
-   for (i=0; i<s->n_layers; i++)
-      if (s->layer[i].waveletbuf)
-         for (j=0; j<s->layer[i].n_comp; j++)
+   for (i=0; i<s->n_layers; i++) {
+      if (s->layer[i].waveletbuf) {
+         for (j=0; j<s->layer[i].n_comp; j++) {
             wavelet_3d_buf_destroy (s->layer[i].waveletbuf[j]);
+         }
+         FREE(s->layer[i].waveletbuf);
+      }
+   }
 
    if (s->layer)
-      free(s->layer);
+      FREE(s->layer);
 
    if (s->bitstream);
-      free(s->bitstream);
+      FREE(s->bitstream);
 
-   free(s);
+   FREE(s);
 }
 
 
@@ -61,7 +63,7 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
    uint32_t i, j;
 
    s->n_layers = n_layers;
-   s->layer = (TarkinVideoLayer*) calloc (n_layers, sizeof(TarkinVideoLayer));
+   s->layer = (TarkinVideoLayer*) CALLOC (n_layers, sizeof(TarkinVideoLayer));
 
    for (i=0; i<n_layers; i++) {
       TarkinVideoLayer *layer = &s->layer[i];
@@ -94,7 +96,7 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
          break;
       };
 
-      layer->waveletbuf = (Wavelet3DBuf**) calloc (layer->n_comp,
+      layer->waveletbuf = (Wavelet3DBuf**) CALLOC (layer->n_comp,
                                                    sizeof(Wavelet3DBuf*));
       for (j=0; j<layer->n_comp; j++)
          layer->waveletbuf[j] = wavelet_3d_buf_new (desc[i].width,
@@ -112,7 +114,7 @@ int tarkin_stream_write_layer_descs (TarkinStream *s,
 
    err = write_layer_descs(s->fd, s);
 
-   s->bitstream = (uint8_t*) malloc (max_bitstream_len);
+   s->bitstream = (uint8_t*) MALLOC (max_bitstream_len);
 
    return err;
 }
@@ -182,6 +184,8 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
    if (read_tarkin_header(s->fd, s) != TARKIN_OK)
       return 0;
 
+   s->layer = (TarkinVideoLayer*) CALLOC (1, s->n_layers * sizeof(TarkinVideoLayer));
+
    if (read_layer_descs(s->fd, s) != TARKIN_OK)
       return 0;
 
@@ -216,7 +220,7 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
          BUG("unknown color format");
       };
 
-      layer->waveletbuf = (Wavelet3DBuf**) calloc (layer->n_comp,
+      layer->waveletbuf = (Wavelet3DBuf**) CALLOC (layer->n_comp,
                                                    sizeof(Wavelet3DBuf*));
       for (j=0; j<layer->n_comp; j++) {
          layer->waveletbuf[j] = wavelet_3d_buf_new (layer->desc.width,
@@ -232,7 +236,7 @@ uint32_t tarkin_stream_read_header (TarkinStream *s)
           + 2 * 9 * sizeof(uint32_t) * layer->n_comp;
    }
 
-   s->bitstream = (uint8_t*) malloc (max_bitstream_len);
+   s->bitstream = (uint8_t*) MALLOC (max_bitstream_len);
 
    return s->n_layers;
 }

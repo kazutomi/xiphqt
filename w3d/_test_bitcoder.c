@@ -15,6 +15,8 @@
 
 #include <time.h>
 #include "bitcoder.h"
+#include "mem.h"
+#include "mem.c"       /* FIXME !!  */
 
 
 
@@ -43,7 +45,7 @@ int main ()
       while (limit == 0)
          limit = rand() * 1.0 * MAX_COUNT / RAND_MAX;
 
-      bit = (uint8_t*) malloc (limit);
+      bit = (uint8_t*) MALLOC (limit);
 
      /**
       *   check encoding ...
@@ -63,7 +65,7 @@ int main ()
 
          TEST(count == limit/8 || count == limit/8 + 1);
 
-         bitstream = (uint8_t*) malloc (count);
+         bitstream = (uint8_t*) MALLOC (count);
          memcpy (bitstream, encoder.bitstream, count);
 
          bitcoder_encoder_done (&encoder);
@@ -83,7 +85,8 @@ int main ()
          }
       }
 
-      free (bit);
+      FREE (bit);
+      FREE (bitstream);
    }
 
    fprintf (stdout, "\ndone.\n\n");
