@@ -553,7 +553,7 @@ ices_setup_version (void)
   "LAME "
 #endif
 #ifdef HAVE_LIBPERL
-  "PERL "
+  "Perl "
 #endif
 #ifdef HAVE_LIBPYTHON
   "python "
@@ -561,7 +561,12 @@ ices_setup_version (void)
 #ifdef HAVE_LIBXML
   "libxml "
 #endif
-  "\n");
+  "\n"
+  "System configuration file: " ICES_ETCDIR "/ices.conf\n"
+#if defined (HAVE_LIBPERL) || defined (HAVE_LIBPYTHON)
+  "Playlist module directory: " ICES_MODULEDIR "\n"
+#endif
+    );
 }
 
 /* Put ices in the background, as a daemon */

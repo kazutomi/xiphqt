@@ -26,6 +26,6 @@ ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a \
 
 ices_DEPENDENCIES = @ICES_OBJECTS@
 
-INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" \
+INCLUDES = -DICES_ETCDIR=\"$(sysconfdir)\" -DICES_MODULEDIR=\"$(moddir)\" \
 	-I$(top_srcdir)/resolver -I$(top_srcdir)/thread $(SHOUT_INCLUDES)
 
