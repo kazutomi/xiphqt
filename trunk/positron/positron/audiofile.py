@@ -115,6 +115,6 @@ detect_functions = [detect_mp3]
 
 try:
      import ogg.vorbis
-     detect_functions.append(detect_oggvorbis)
+     detect_functions.insert(0, detect_oggvorbis)
 except ImportError:
     pass
