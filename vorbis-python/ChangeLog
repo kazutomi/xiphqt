@@ -1,3 +1,6 @@
+2001-12-09  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* config_unix.py: Better logging and finer-grained path arguments
+	
 2001-09-02  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* setup.py: bumped version number to 0.4
 
