@@ -6,7 +6,7 @@ EXTRA_DIST = COPYING autogen.sh
 
 bin_PROGRAMS = vorbose
 
-vorbose_SOURCES = codebook.c codec.h info.c map.c res.c \
+vorbose_SOURCES = codebook.c codec.h floor.c info.c map.c res.c \
 		  vorbose.c
 
 debug:
