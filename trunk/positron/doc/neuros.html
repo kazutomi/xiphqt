@@ -27,11 +27,29 @@ identified when the Neuros is attached to the host computer.
 
 <p>
 The Neuros itself is a modular device composed of both a main unit,
-containing the DSP and other electronics, and a backpack containing
-the battery and storage media.  This allows the device to be upgraded
-by replacing the backpack to provide new capabilities.  Currently, the
-Neuros is available with either a 128 MB Flash memory backpack or a 20
-GB hard disk backpack.
+containing the DSP, flash memory and other electronics, and a backpack
+containing the battery and optionally a hard disk.  This allows the
+device to be upgraded by replacing the backpack to provide new
+capabilities.  Currently, the Neuros is available in the following
+configurations:
+
+<ul>
+
+    <li>128 MB - The main unit has 128 MB of flash, and the backpack
+    only contains a battery.</li>
+
+    <li>20 GB - The main unit has 64 MB of flash, and the backpack
+    contains a battery and a 20 GB hard disk.</li>
+
+</ul>
+
+The HD backpack is sold separately, and can be attached to the 128 MB
+main unit.  All configurations are handled the same way by the
+synchronization software, with one exception documented in the <a
+href="#pathformat">File Structure</a> section.  Note that the current
+configuration of the Neuros cannot be straightforwardly detected in
+software.  Positron decides whether the HD or the flash memory is in
+use by looking at the size of the filesystem of the mounted Neuros.
 </p>
 
 <h2>Interface</h2>
@@ -45,7 +63,7 @@ external drive with a single FAT32 partition to be mounted using the
 standard operating system tools.  Beyond that, no special drivers are
 needed, which makes the Neuros (in principle) very portable between
 operating systems.
-<p>
+</p>
 
 <p>
 When connected to a host computer via the USB port, the Neuros goes
@@ -70,7 +88,7 @@ index files based upon the contents of various fields in the database,
 like artist or genre.  It is the job of the synchronization program
 running on the host computer to update the database to reflect changes
 in the list of files available for playback.
-<p>
+</p>
 
 <p>
 There are several databases kept on the Neuros.  One lists all the
@@ -78,12 +96,12 @@ audio files, but others are used to keep track of HiSi clips which
 have been successfully identified, cannot be identified, or have not
 been identified yet, as well as the listing of all the music files
 stored on the host computer.
-<p>
+</p>
 
 <p>
 For more information about the database format, read
 <a href="database.html">Working With the Database</a>.
-<p>
+</p>
 
 <h2>File Structure</h2>
 
@@ -101,13 +119,20 @@ For more information about the database format, read
 /WOID_HISI/ - (Optional) directory for HiSi MP3 clips
 /WOID_RECORD/ - (Optional) directory for recordings (FM or Microphone)
 </pre>
+<p>Also note that the Windows Neuros Sync Manager and positron use
+<tt>/MUSIC/</tt> by default for storing music tracks, though that is
+in no way required.</p>
 
+<a name="pathformat"/>
 <p>
 Pathnames in the databases use a strange hybrid Windows/Unix-like
-syntax.  The root directory on the Neuros is called "C:", but forward
-slashes are used instead of backslashes.  For example,
-<tt>C:/WOID_RECORD/Mic 02-27-01 17-19-00.mp3</tt> is a possible filename.
+syntax.  The root directory on the Neuros is called "C:" if the Neuros
+is wearing the hard drive backpack, and "D:" if the flash memory is
+being used.  Forward slashes are used instead of backslashes.  For
+example, <tt>C:/WOID_RECORD/Mic 02-27-01 17-19-00.mp3</tt> is a
+possible filename for a track saved on the Neuros hard drive.
 </p>
+
 
 </body>
 </html>

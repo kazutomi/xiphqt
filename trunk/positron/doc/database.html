@@ -1,7 +1,15 @@
 <html>
 <head>
+  <style type="text/css">
+    table.fielddef {border: thin black solid; border-collapse: collapse}
+    table.fielddef td {border: thin black solid}
+    table.fielddef th {border: thin black solid}
+    td.nodata    {background-color: rgb(80%, 80%, 80%)}
+    h4 {margin-top: 3em}
+  </style>
   <title>Positron Documentation: Working with the Database</title>
 </head>
+
 <body>
 <h1>Working with the Database</h1>
 
@@ -12,23 +20,26 @@ synchronization.  The primary databases are:
 </p>
 
 <dl>
-  <dt>audio</dt><dd>Audio files stored on the Neuros</dd>
+  <dt><a href="#audio">audio</a></dt><dd>Audio files stored on the
+  Neuros</dd>
 
-  <dt>pcaudio</dt><dd>Audio files stored on the host computer</dd>
+  <dt><a href="#pcaudio">pcaudio</a></dt><dd>Audio files stored on the
+  host computer</dd>
 
-  <dt>unidedhisi</dt><dd>HiSi clips that have not been identified yet.
-  These clips should be fingerprinted and looked up on the HiSi server
-  during synchronization.</dd>
+  <dt><a href="#unidedhisi">unidedhisi</a></dt><dd>HiSi clips that
+  have not been identified yet.  These clips should be fingerprinted
+  and looked up on the HiSi server during synchronization.</dd>
 
-  <dt>idedhisi</dt><dd>HiSi clips that have been identified.  If the
-  fingerprint is successfully located on the HiSi server, the database
-  record corresponding to the clip should be removed from unidedhisi
-  and put into this database along with the metadata returned from the
-  server.</dd>
+  <dt><a href="#idedhisi">idedhisi</a></dt><dd>HiSi clips that have
+  been identified.  If the fingerprint is successfully located on the
+  HiSi server, the database record corresponding to the clip should be
+  removed from unidedhisi and put into this database along with the
+  metadata returned from the server.</dd>
 
-  <dt>failedhisi</dt><dd>HiSi clips that could not be identified.  If
-  the lookup fails, the record from the HiSi clip should be moved from
-  the unidedhisi database to this database.</dd>
+  <dt><a href="#failedhisi">failedhisi</a></dt><dd>HiSi clips that
+  could not be identified.  If the lookup fails, the record from the
+  HiSi clip should be moved from the unidedhisi database to this
+  database.</dd>
 
 </dl>
 
@@ -44,26 +55,22 @@ quickly looked up.  (Example: finding all the songs with the genre
 not need to be indexed, like filenames or file sizes.  Some fields may
 also contain a collection of values, called a "bag".  This is used in
 the audio database to allow one file to be in multiple playlists at
-once (i.e. have multiple values in its playlist field).  Note that
-every database is required to have a special null record.
+once (i.e. have multiple values in its playlist field).  Every
+database is required to have a special null record.
 </p>
 
 <h2>Design</h2>
 
 <p>
-The database structure described above is implemented recursively
-using a root database (audio, unidedhisi, etc.) with a child database
-(artist, genre, etc.)  for each access key.  When a record is added to
-the root, the actual contents of each access key field are replaced
-with a pointer to the record in the child db containing the value in
-its primary field.  Of course, if the value doesn't already exist in
-the child database, it must be added.  The following diagram shows an
-example record from the audio database:
-</p>
-
-<p>
-Notice that null values are possible for access keys; just use a
-pointer to the null record in the child database.
+The database structure described above is implemented as a tree of
+databases using a root database (audio, unidedhisi, etc.) with a child
+database (artist, genre, etc.)  for each access key.  When a record is
+added to the root, the actual contents of each access key field are
+replaced with a pointer to the record in the child db containing the
+value in its primary field.  Of course, if the value doesn't already
+exist in the child database, it must be added.  Null values are
+possible for access keys; just use a pointer to the null record in the
+child database.
 </p>
 
 <h3>File Format</h3>
@@ -110,6 +117,7 @@ terminated with a null word (0x0000).  Integers (including pointers)
 and bitfields are always stored in big-endian format.
 </p>
 
+<a name="dbfiles"/>
 <ul>
   <li><a href="mdb.html">MDB File Format</a></li>
   <li><a href="sai.html">SAI File Format</a></li>
@@ -119,24 +127,197 @@ and bitfields are always stored in big-endian format.
 <h3>Standard Database Field Definitions</h3>
 
 <p>
-In the following sections, the fields for each of the standard databases are defined.  The following types are used to describe the extra info fields:
+In the following sections, the fields for each of the standard
+databases are defined.  The following types are used to describe the
+extra info fields:
 </p>
 <ul>
   <li>sz - Null-terminated string</li>
   <li>uint32 - Unsigned 32-bit integer</li>
 </ul>
 <p>
-Note that the primary field is always a null-terminated string, and
-the access keys are pointers to records in child databases which have
-only a primary field (also a null-terminated string).
+The primary field is always a null-terminated string, and the access
+keys are 32 bit pointers to records in child databases which have only a
+primary field (also a null-terminated string).
 </p>
 
+<a name="audio"/>
 <h4>audio</h4>
 
 <table class="fielddef">
-  <tr><th>#</th><th>Name</th><th>Type</th><th>Description</th></tr>
-  <tr><td>0</td><td></td>    <td></td>    <td></td></tr>
+  <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
+  <tr><td>0</td><td>Title</td><td>Primary</td><td>Title of track</td></tr>
+  <tr><td>1</td><td>Playlist</td><td>Access Key</td><td>Name of Playlist(s) containing this track</td></tr>
+  <tr><td>2</td><td>Artist</td><td>Access Key</td><td></td></tr>
+  <tr><td>3</td><td>Album</td><td>Access Key</td><td></td></tr>
+  <tr><td>4</td><td>Genre</td><td>Access Key</td><td></td></tr>
+  <tr><td>5</td><td>Recordings</td><td>Access Key</td><td>Set to "FM Radio" if the track was
+     recorded from the radio and "Microphone" if it was recorded from the microphone.</td></tr>
+  <tr><td>6</td><td>Time</td><td>uint32</td><td>Length of track in seconds</td></tr>
+  <tr><td>7</td><td>Size</td><td>uint32</td><td>Size of track in kilobytes</td></tr>
+  <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on Neuros filesystem.  Follows path conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
 </table>
+
+<a name="pcaudio"/>
+<h4>pcaudio</h4>
+
+<table class="fielddef">
+  <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
+  <tr><td>0</td><td>Title</td><td>Primary</td><td>Title of track</td></tr>
+  <tr><td>1</td><td>Playlist</td><td>Access Key</td><td>Name of Playlist(s) containing this track</td></tr>
+  <tr><td>2</td><td>Artist</td><td>Access Key</td><td></td></tr>
+  <tr><td>3</td><td>Album</td><td>Access Key</td><td></td></tr>
+  <tr><td>4</td><td>Genre</td><td>Access Key</td><td></td></tr>
+  <tr><td>5</td><td>Recordings</td><td>Access Key</td><td>Set to "FM Radio" if the track was
+     recorded from the radio and "Microphone" if it was recorded from the microphone.</td></tr>
+  <tr><td>6</td><td>Time</td><td>uint32</td><td>Length of track in seconds</td></tr>
+  <tr><td>7</td><td>Size</td><td>uint32</td><td>Size of track in kilobytes</td></tr>
+  <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on host PC filesystem.</td></tr>
+</table>
+
+<a name="unidedhisi">
+<h4>unidedhisi</h4>
+
+<table class="fielddef">
+  <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
+  <tr><td>0</td><td>Title</td><td>Primary</td><td>Usually the name of the file </td></tr>
+  <tr><td>1</td><td>Source</td><td>sz</td><td>Source of track (Ex: "FM 100.7")</td></tr>
+  <tr><td>2</td><td>Path</td><td>sz</td><td>Path to track on Neuros filesystem.  Follows path 
+      conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
+</table>
+
+<a name="idedhisi">
+<h4>idedhisi</h4>
+
+<table class="fielddef">
+  <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
+  <tr><td>0</td><td>Title</td><td>Primary</td><td>Title of HiSi clip (not title of actual track)</td></tr>
+  <tr><td>1</td><td>Source</td><td>sz</td><td>Source of clip (see 
+      <a href="#unidedhisi">unidedhisi</a>)</td></tr>
+  <tr><td>2</td><td>Artist</td><td>sz</td><td></td></tr>
+  <tr><td>3</td><td>Album</td><td>sz</td><td></td></tr>
+  <tr><td>4</td><td>Genre</td><td>sz</td><td></td></tr>
+  <tr><td>5</td><td>Track Name</td><td>sz</td><td>Title of actual track.  
+      (Found during song identification)</td></tr>
+  <tr><td>6</td><td>Time</td><td>uint32</td><td>Length of track in seconds</td></tr>
+  <tr><td>7</td><td>Size</td><td>uint32</td><td>Size of track in kilobytes</td></tr>
+  <tr><td>8</td><td>Path</td><td>sz</td><td>Path to track on Neuros filesystem.  Follows path 
+      conventions specified in the <a href="neuros.html#pathformat">Overview</a>. </td></tr>
+</table>
+
+<a name="failedhisi">
+<h4>failedhisi</h4>
+
+<p>Field definitions are the same as <a href="#unidedhisi">unidedhisi</a>.</p>
+
+<table class="fielddef">
+  <tr><th>#</th><th>Name</th><th>Type</th><th width="70%">Description</th></tr>
+  <tr><td>0</td><td>Title</td><td>Primary</td><td></td></tr>
+  <tr><td>1</td><td>Source</td><td>sz</td><td></td></tr>
+  <tr><td>2</td><td>Path</td><td>sz</td><td></td></tr>
+</table>
+
+<h2>Maintaining Database Consistency</h2>
+
+<p>
+Reading the database is fairly straightforward; the tricky parts is
+maintaining consistency between all of the parts of the database when
+modifying it.  Failure to do this correctly often leads to
+unpredictable behavior in the Neuros, and sometimes even causes it to
+freeze.  The follow sections will explain these consistency conditions
+for various common operations on the database.  They assume you are
+familiar with the format of the various <a href="#dbfiles">database
+files</a>.
+</p>
+
+<h3>Adding a Record</h3>
+
+<p>To add a new record to a database:</p>
+<ol>
+
+  <li>Locate pointers to all of the access keys by searching the
+  appropriate child database for each one.  Note that empty access keys
+  should point at the null record in the associated child database.</li>
+
+  <li>Any access keys that cannot be found need to be added to the
+  child databases (by recursively following these steps), and these
+  new pointers gathered.</li>
+
+  <li>Using these pointers to the access keys, a new record needs to
+  be added to the MDB file.</li>
+
+  <li>If this is a child database, a new module in the PAI file should
+  be created.</li>
+
+  <li>A new SAI record should be created with pointers to the MDB
+  record created in step 3, and the PAI module in step 4.
+  (Remember the <a href="sai.html#caveat">caveat</a> about pointers to
+  PAI modules.)</li>
+
+  <li>An entry to the MDB record created in step 3 needs to be added
+  to the PAI module associated with each access key in the child
+  databases.  If there is no more room for an additional entry in a
+  PAI module, it may be necessary to <a href="#extendPAI">extend
+  it</a>.</li>
+
+</ol>
+
+<a name="extendPAI">
+<h3>Extending a PAI Module</h3>
+<p>Extending a PAI module makes it larger so that it can hold more
+pointers to parent records:</p>
+
+<ol>
+  <li>Move all of the modules after the module being extended down by
+  the size of the extension.  Remember that the size of PAI module
+  must be a multiple of the <a href="PAI.html#minlength">minimum
+  module length</a>.</li>
+  
+  <li>Fill in the extra space with zeros.</li>
+
+  <li>All of the PAI pointers in the associated SAI file will be wrong
+  for modules that are located after this one in the PAI file.  Update
+  them to reflect the new locations.</li>
+
+</ol>
+
+
+<h3>Deleting a Record</h3>
+<p>There are two ways to delete a record.  It can be "marked" as
+deleted, and it will be ignored by the Neuros (this is what the
+firmware does when the user requests the a record to be delete):</p>
+
+<ol>
+  <li>Set the "isDeleted" flag on the MDB record.</li>
+
+  <li>Remove the entire SAI record associated with this record.  This
+  must be done by moving the rest of the file up by the size of one
+  record.</li>
+
+  <li>If this is a child database, clear the associated PAI module and
+  mark it as empty.  The module does not actually have to be
+  removed.</li>
+
+  <li>If this database has access keys, then the backlinking pointers
+  in each of the associated PAI modules in the child databases needs
+  to be removed.  Removing a pointer from a PAI module requires it to
+  be erased by sliding all of the other entries in that module up.
+  (Not the whole file!  The module itself should not change size.  Put
+  zeros in the extra spot in the module this creates.)</li>
+
+  <li>If an access key in a child database no longer has any entries
+  in its PAI module, that means it is no longer used by any records in
+  the parent database and should be deleted.  Follow these same steps
+  again for it.</li>
+
+</ol>
+
+<p>Complete deletion of a record is much more difficult.  It is
+identical to the above process, but also requires the MDB records and
+PAI modules to be removed from their respective files.  This will
+invalidate many pointers in the whole database, so it is perhaps
+easier to rebuild the database from scratch than to attempt to update
+the contents of the database in place.</p>
 
 </body>
 </html>
