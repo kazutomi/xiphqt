@@ -5,9 +5,6 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-
-
-
 CFLAGS = -Wall -g
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
@@ -54,15 +51,17 @@ install: build
 	dh_installdirs
 
 	python setup.py install --prefix $(CURDIR)/debian/positron/usr
-	
+
 	# remove extra docs that get installed
 	rm -f $(CURDIR)/debian/positron/usr/share/doc/positron/COPYING
+
+	#dh_install
 
 binary-indep: build install
 	dh_testdir
 	dh_testroot
+	dh_installchangelogs ChangeLog
 	dh_installdocs
-	dh_install
 	dh_installman
 	dh_compress
 	dh_fixperms
