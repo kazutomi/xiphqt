@@ -5,21 +5,42 @@ import getopt
 from ConfigParser import ConfigParser
 from neuros import Neuros
 import neuros
-from cmd_add import cmd_add
-from cmd_del import cmd_del
-from cmd_list import cmd_list
-from cmd_clear import cmd_clear
-from cmd_pack import cmd_pack
+import cmd_add
+import cmd_del
+import cmd_list
+import cmd_clear
+import cmd_pack
 
 import ports
 
 version = "Xiph.org Positron version 0.1"
 
-def usage():
-    print version
-    print
-    print "positron add: Add files to the Neuros, copying as needed"
+# Hash table of commands.  The first value in the tuple is the module
+# where the command is stored.  The second value is the order to
+# display commands in from usage()
+commands = { "add"  : (cmd_add,   1),
+             "del"  : (cmd_del,   2),
+             "list" : (cmd_list,  3),
+             "clear": (cmd_clear, 4),
+             "pack" : (cmd_pack,  5) }
 
+# For sorting according to the display order element in the tuple
+def cmp_func(a, b):
+    return a[1] - b[1]
+
+def usage():
+    print version, "- Neuros portable music player sync tool"
+    print
+    
+    cmds = commands.values()
+    cmds.sort(cmp_func)
+
+    for (item, order) in cmds:
+        first_line = item.__doc__.split("\n")[0]
+        print "  ",first_line
+
+    print
+    print "For more help on a specific command, type: positron help <command>"
 
 def set_config_defaults(config):
     config.add_section("general")
@@ -51,6 +72,21 @@ def main(argv):
         elif o in ("-m", "--mount-point"):
             mountpoint = a
 
+    if len(remaining) == 0:
+        usage()
+        sys.exit(0)
+    elif remaining[0] == "help":
+        if len(remaining) > 1:
+            if commands.has_key(remaining[1]):
+                (cmd, display_order) = commands[remaining[1]]
+                print cmd.__doc__
+            else:
+                    print remaining[1], "is not a valid command."
+            sys.exit(0)
+        else:
+            usage()
+            sys.exit(0)
+
     # Open config file
     config = ConfigParser()
     set_config_defaults(config)
@@ -70,22 +106,13 @@ def main(argv):
 
     try:
         myNeuros = Neuros(config.get("general", "mountpoint"))
-        
-        # now select major command
-        if len(remaining) == 0:
-            usage()
-        elif remaining[0] == "add":
-            cmd_add(config, myNeuros, remaining[1:])
-        elif remaining[0] == "del":
-            cmd_del(config, myNeuros, remaining[1:])
-        elif remaining[0] == "list":
-            cmd_list(config, myNeuros, remaining[1:])
-        elif remaining[0] == "clear":
-            cmd_clear(config, myNeuros, remaining[1:])
-        elif remaining[0] == "pack":
-            cmd_pack(config, myNeuros, remaining[1:])
+
+        if commands.has_key(remaining[0]):
+            cmd = commands[remaining[0]]
+            cmd.run(config, myNeuros, remaining[1:])
         else:
             print remaining[0], "is not a valid command."
+            print
             usage()
 
         exit_value = 0

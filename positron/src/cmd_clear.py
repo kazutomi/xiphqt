@@ -1,10 +1,10 @@
-"""positron clear: Clears all entries from Neuros databases
+"""positron clear:\tClears all entries from databases
 
   positron clear
 
      Clears all databases.
 
-  positron clear [database names]
+  positron clear <database1> <database2> ...
 
      Clears all entries from a particular database.  Valid database names
      are: audio, pcaudio, unidedhisi, idedhisi, failedhisi
@@ -16,10 +16,7 @@ from neuros import Neuros
 import neuros as neuros_module
 import util
 
-def usage():
-    print __doc__
-    
-def cmd_clear(config, neuros, args):
+def run(config, neuros, args):
     if len(args) == 0:
         args = ["audio", "unidedhisi", "idedhisi", "failedhisi"]
 

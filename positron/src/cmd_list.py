@@ -1,10 +1,10 @@
-"""positron list: Lists files in the database
+"""positron list:\tLists files in the database
 
   positron list
 
      Lists files in the audio database
 
-  positron list [database names]
+  positron list <database1> <database2> ...
 
      Packs all entries from a particular database.  Valid database names
      are: audio, pcaudio, unidedhisi, idedhisi, failedhisi
@@ -14,8 +14,6 @@ from neuros import Neuros
 import neuros as neuros_module
 import util
 
-def usage():
-    print __doc__
 
 def display_field(field):
     if len(field) == 0:
@@ -40,7 +38,7 @@ def display_audio_record(neuros, record):
     print "Filename: %s" % (neuros.neurospath_to_hostpath(record[8]),)
 
     
-def cmd_list(config, neuros, args):
+def run(config, neuros, args):
     if len(args) == 0:
         args = ["audio"]
 

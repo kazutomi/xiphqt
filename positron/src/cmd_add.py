@@ -1,19 +1,21 @@
-"""positron add: Adds files to the Neuros database, copying as necessary
+"""positron add:\tAdds files to the Neuros database, copying as necessary
 
-  positron add sourcefile targetfile
+  positron add <sourcefile> <targetfile>
 
      Copies sourcefile to targetfile (a path on the Neuros that does not exist)
 
-  positron add sourcefiles targetdir
+  positron add <sourcefile1> <sourcefile2> ... <targetdir>
 
      Copies sourcefiles to targetdir (a directory on the Neuros that already
      exists)
 
-  positron add sourcefiles
+  positron add <sourcefile1> <sourcefile2> ...
 
-     Copies sourcefiles to the default music directory.  Note that paths in
-     sourcefiles that are already on the Neuros will not be copied, but
-     just added to the database if not already present.
+     Copies sourcefiles to the default music directory.
+
+Files that are already on the Neuros will not be overwritten, but just
+added to the database if not already present.  Non-music files are
+ignored.
 """
 
 import os
@@ -24,9 +26,6 @@ import util
 
 mp3file = MP3File()
 
-def usage():
-    print __doc__
-    
 def gen_filelist(neuros, prefix, suffix, target_prefix):
     filelist = []
     fullname = path.join(prefix, suffix)
@@ -81,7 +80,7 @@ def add_track(neuros, sourcename, targetname):
     neuros.db["audio"].add_record(record)
 
             
-def cmd_add(config, neuros, args):
+def run(config, neuros, args):
     audio_db = neuros.open_db("audio")
 
     # There are a couple different cases we could be dealing with:
@@ -100,8 +99,9 @@ def cmd_add(config, neuros, args):
     filelist = []
 
     if len(args) == 0:
-        usage()
+        print __module__.__doc__
         return
+    
     # Deal with case 3 first
     if not neuros.is_valid_hostpath(args[-1]) or path.isfile(args[-1]):
         musicdir = path.join(neuros.mountpoint,
