@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.9 2001/12/19 02:07:52 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.10 2001/12/19 02:13:58 volsung Exp $
 
  ********************************************************************/
 
@@ -400,6 +400,8 @@ void status_message (int verbosity, const char *fmt, ...)
 
   pthread_mutex_lock(&output_lock);
 
+  clear_line(last_line_len);
+
   va_start (ap, fmt);
   vstatus_print_nolock(fmt, ap);
   va_end (ap);
@@ -419,6 +421,7 @@ void vstatus_message (int verbosity, const char *fmt, va_list ap)
 
   pthread_mutex_lock(&output_lock);
 
+  clear_line(last_line_len);
   vstatus_print_nolock(fmt, ap);
 
   pthread_mutex_unlock(&output_lock);
@@ -435,6 +438,7 @@ void status_error (const char *fmt, ...)
 
   pthread_mutex_lock(&output_lock);
   va_start (ap, fmt);
+  clear_line(last_line_len);
   vstatus_print_nolock (fmt, ap);
   va_end (ap);
   pthread_mutex_unlock(&output_lock);
@@ -448,6 +452,7 @@ void vstatus_error (const char *fmt, va_list ap)
   pthread_cleanup_push(unlock_output_lock, NULL);
 
   pthread_mutex_lock(&output_lock);
+  clear_line(last_line_len);
   vstatus_print_nolock (fmt, ap);
   pthread_mutex_unlock(&output_lock);
 
