@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
+#else
+typedef long DWORD;
 #endif
-
 
 /*extremely crude app to dump vp3 frames from an avi file*/
 /*filenames are hardcoded*/
@@ -12,8 +13,9 @@
 
 int main(int argc, const char **argv)
 {
-    FILE * f = fopen("outfile.vp3", "wb");
 
+    FILE * f = fopen("outfile.vp3", "wb");
+    
     char * buffer = malloc(32768);
     int olength;
     int length;
@@ -23,6 +25,7 @@ int main(int argc, const char **argv)
     int keyframegap = 0;
     int maxkeyframegap = 0;
     
+    DWORD initialticks;
     
     int framew = 0;
     int frameh = 0;
