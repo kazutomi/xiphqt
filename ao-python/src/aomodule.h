@@ -105,7 +105,7 @@ static char docstring[] =
 "A Python wrapper for the ao library using in the ogg project.";
 
 
-#endif __AO_MODULE_H__
+#endif /* __AO_MODULE_H__ */
 
 
 
