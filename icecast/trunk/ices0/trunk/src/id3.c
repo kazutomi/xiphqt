@@ -39,6 +39,8 @@ static void ices_id3_cleanup ();
 static char *ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize);
 
 /* Global function definitions */
+
+/* Initialize the id3 module, create the id3 module mutex */
 void
 ices_id3_initialize ()
 {
@@ -46,6 +48,7 @@ ices_id3_initialize ()
 	id3_is_initialized = 1;
 }
 
+/* Only shutdown if we are initialized */
 void
 ices_id3_shutdown ()
 {
@@ -53,22 +56,32 @@ ices_id3_shutdown ()
 		thread_destroy_mutex (&id3_mutex);
 }
 
+/* Do id3 tag parsing on the file, and update the metadata on
+ * the server with the new information */
 int
 ices_id3_parse_file (const char *filename, int file_bytes)
 {
+	/* Make sure no one gets old/corrupt information */
 	thread_mutex_lock (&id3_mutex);
 
+	/* Cleanup the previous information */
 	ices_id3_cleanup ();
 	
+	/* Do the actual id3 parsing. If the file has an id3 tag,
+         * tell the stream module to stream 128 bytes less. */
 	if (ices_id3_parse (filename, file_bytes))
 		file_bytes -= 128;
 
+	/* Give the go-ahead to external modules to get id3 info */
 	thread_mutex_unlock (&id3_mutex);
 
+	/* Update metadata on server, in a spawned new thread */
 	ices_id3_update_metadata (filename, file_bytes);
 	return file_bytes;
 }
 
+/* Return the id3 module artist name, if found.
+ * String return is static memory */
 char *
 ices_id3_get_artist ()
 {
@@ -88,6 +101,8 @@ ices_id3_get_artist ()
 	return out;
 }
 
+/* Return the id3 module title name, if found.
+ * String return is static memory */
 char *
 ices_id3_get_title ()
 {
@@ -106,6 +121,8 @@ ices_id3_get_title ()
 	return out;
 }
 
+/* Return the id3 module genre name, if found.
+ * String return is static memory */
 char *
 ices_id3_get_genre ()
 {
@@ -125,6 +142,8 @@ ices_id3_get_genre ()
 	return out;
 }
 
+/* Return the id3 module file name, if found.
+ * String return is static memory */
 char *
 ices_id3_get_filename ()
 {
@@ -146,6 +165,8 @@ ices_id3_get_filename ()
 
 /* Private function definitions */
 
+/* Spawn a new thread to update metadata on server. Should be
+ * very low overhead */
 static void
 ices_id3_update_metadata (const char *filename, int file_bytes)
 {
@@ -154,6 +175,12 @@ ices_id3_update_metadata (const char *filename, int file_bytes)
 	}
 }
 
+/* Function used by the updating thread to update metadata on server.
+ * It also does the job of cleaning up the song title to something the
+ * world likes.
+ * Note that the very first metadata update is delayed, because if we
+ * try to update our new info to the server and the server has not yet
+ * accepted us as a source, the information is lost */
 void *
 ices_id3_update_thread (void *arg)
 {
@@ -192,6 +219,7 @@ ices_id3_update_thread (void *arg)
 	return 0;
 }
 
+/* Function that does the id3 tag parsing of a file */
 static int
 ices_id3_parse (const char *filename, int file_bytes)
 {
@@ -256,6 +284,7 @@ ices_id3_parse (const char *filename, int file_bytes)
 	return 1;
 }
 
+/* Make a clean slate for the next file */
 static void
 ices_id3_cleanup ()
 {
@@ -280,6 +309,7 @@ ices_id3_cleanup ()
 	}
 }
 
+/* Cleanup a filename so it looks more like a song name */
 static char *
 ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize)
 {
@@ -300,10 +330,3 @@ ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize)
 	ices_log_debug ("Filename cleaned up from [%s] to [%s]", oldname, namespace);
 	return namespace;
 }
-
-
-
-
-
-
-

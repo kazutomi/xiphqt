@@ -21,11 +21,13 @@
 #include "definitions.h"
 
 #if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
+/* Python.h defines this, compilers complain about multiple definitions */
 #undef _REENTRANT
 # include "playlist_python.c"
 #endif
 
 #if defined(HAVE_LIBPERL)
+/* Same thing here, perl redefines this */
 # ifdef ANY
 #  undef ANY
 # endif

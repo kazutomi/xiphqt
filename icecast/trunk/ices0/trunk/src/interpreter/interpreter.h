@@ -21,7 +21,7 @@
 #ifndef __ICECAST_INTERPRETER_H
 # define __ICECAST_INTERPRETER_H
 
-void interpreter_init ();
+void interpreter_initialize ();
 void interpreter_shutdown ();
 # if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
 char *interpreter_playlist_python_get_next ();

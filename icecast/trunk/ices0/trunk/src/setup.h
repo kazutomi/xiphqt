@@ -19,5 +19,5 @@
  */
 
 /* Public function declarations */
-void ices_setup_init ();
+void ices_setup_initialize ();
 void ices_setup_shutdown ();

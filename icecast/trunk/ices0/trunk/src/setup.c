@@ -28,35 +28,40 @@ static void ices_setup_parse_defaults (ices_config_t *ices_config);
 static void ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile);
 static void ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc);
-static void ices_setup_activate_changes (shout_conn_t *conn, const ices_config_t *ices_config);
+static void ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *ices_config);
 static void ices_setup_usage ();
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize ();
 static void ices_setup_run_mode_select (ices_config_t *ices_config);
-static int _ices_setup_shutting_down = 0;
-static void ices_setup_cleanup (ices_config_t *ices_config);
+static int  ices_setup_shutting_down = 0;
+static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 
 /* Global function definitions */
+
+/* Top level initialization function for ices.
+ * It will parse options, initialize modules,
+ * and if requested, become a daemon. */
 void
-ices_setup_init ()
+ices_setup_initialize ()
 {
+	/* Request libshout and ices configuration objects */
 	ices_config_t *ices_config = ices_util_get_config ();
 	shout_conn_t *conn = ices_util_get_conn ();
 	
-	/* Initialize the libices structure */
+	/* Initialize the libshout structure */
 	shout_init_connection (conn);
 	
 	/* Parse the options in the config file, and the command line */
 	ices_setup_parse_options (ices_config);
 	
-	/* Copy those options to the libices structure */
-	ices_setup_activate_changes (conn, ices_config);
+	/* Copy those options to the libshout structure */
+	ices_setup_activate_libshout_changes (conn, ices_config);
 
 	/* Open logfiles */
 	ices_log_initialize ();
 
 	/* Initialize the interpreters */
-	interpreter_init ();
+	interpreter_initialize ();
 
 	/* Initialize the thread library */
 	thread_initialize ();
@@ -79,46 +84,72 @@ ices_setup_init ()
 	ices_setup_run_mode_select (ices_config);
 }
 
+/* Top level ices shutdown function.
+ * This is the _only_ way out of here */
 void
 ices_setup_shutdown ()
 {
 	shout_conn_t *conn;
 
+	/* Protection for multiple threads calling shutdown.
+	 * Remember that this is can be called from many places,
+	 * including the SIGING signal handler */
 	if (thread_is_initialized ()) {
 		thread_library_lock ();
 
-		if (_ices_setup_shutting_down)
+		if (ices_setup_shutting_down)
 			return;
 
-		_ices_setup_shutting_down = 1;
+		ices_setup_shutting_down = 1;
 
 		thread_library_unlock ();
 	}
 
+	/* Request libshout object */
 	conn = ices_util_get_conn ();
 
+	/* Tell libshout to disconnect from server */
 	shout_disconnect (conn);
 
 #ifdef HAVE_LIBLAME
+	/* Order the reencoding engine to shutdown */
 	ices_reencode_shutdown ();
 #endif
 
+	/* Tell the playlist module to shutdown and cleanup */
 	ices_playlist_shutdown ();
 
+	/* Shutdown id3 module */
 	ices_id3_shutdown ();
 
+	/* Cleanup the cue file (the cue module has no init yet) */
+	ices_cue_shutdown ();
+
+	/* Shutdown the thread library */
 	thread_shutdown ();
 
-	ices_setup_cleanup (ices_util_get_config());
+	/* Make sure we're not leaving any memory allocated around when
+	 * we exit. This makes it easier to find memory leaks, and 
+	 * some systems actually don't clean up that well */
+	ices_setup_free_all_allocations (ices_util_get_config());
 	
+	/* Let the log and console know we wen't down ok */
 	ices_log ("Ices Exiting...");
 
+	/* Close logfiles */
 	ices_log_shutdown ();
 	
+	/* Down and down we go... */
 	exit (1);
 }
 
 /* Local function definitions */
+
+/* Top level option parsing function.
+ * Sets of options object (ices_config), with:
+ * - Hardcoded defaults
+ * - Configfile settings
+ * - Command line options */
 static void
 ices_setup_parse_options (ices_config_t *ices_config)
 {
@@ -135,6 +166,8 @@ ices_setup_parse_options (ices_config_t *ices_config)
 	ices_setup_parse_command_line (ices_config, ices_util_get_argv(), ices_util_get_argc());
 }
 
+/* Function for placing hardcoded defaults in the 
+ * options object (ices_config) */
 static void
 ices_setup_parse_defaults (ices_config_t *ices_config)
 {
@@ -163,8 +196,9 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 	ices_config->reencode = ICES_DEFAULT_REENCODE;
 }
 
+/* Function to free() all allocated memory when ices shuts down. */
 static void
-ices_setup_cleanup (ices_config_t *ices_config)
+ices_setup_free_all_allocations (ices_config_t *ices_config)
 {
 	if (ices_config->host)
 		ices_util_free (ices_config->host);
@@ -203,6 +237,7 @@ ices_setup_cleanup (ices_config_t *ices_config)
 		ices_util_free (ices_config->base_directory);
 }
 
+/* Tell the xml module to parse the config file. */
 static void
 ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile)
 {
@@ -212,10 +247,13 @@ ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile
 		/* ret == -1 means we have no libxml support */
 		ices_log_debug ("%s", ices_log_get_error ());
 	} else if (ret == 0) {
+		/* A real error */
 		ices_log ("%s", ices_log_get_error ());
 	}
 }
 
+/* This function looks through the command line options for a new
+ * configfile. */
 static void
 ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc)
 {
@@ -242,6 +280,7 @@ ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, ch
 	}
 }
 
+/* This function parses the command line options */
 static void
 ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc)
 {
@@ -255,6 +294,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 		
                 if (s[0] == '-') {
 			
+			/* RrivBzx all require arguments */
 			if ((strchr ("RrivBzx", s[1]) == NULL) && arg >= (argc - 1)) {
 				ices_log ("Option %c requires an argument!\n", s[1]);
 				ices_setup_usage ();
@@ -389,8 +429,10 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 	}
 }
 
+/* This function takes all the new configuration and copies it to the
+   libshout object. */
 static void
-ices_setup_activate_changes (shout_conn_t *conn, const ices_config_t *ices_config)
+ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *ices_config)
 {
 	conn->port = ices_config->port;
 	conn->ip = ices_config->host;
@@ -414,6 +456,7 @@ ices_setup_activate_changes (shout_conn_t *conn, const ices_config_t *ices_confi
 	ices_log_debug ("Mount: %s\tDumpfile: %s", ices_util_nullcheck (conn->mount), ices_util_nullcheck (conn->dumpfile)); 
 }
 
+/* Display all command line options for ices */
 static void
 ices_setup_usage ()
 {
@@ -441,7 +484,8 @@ ices_setup_usage ()
 	ices_log ("\t-u <stream url>");
 }
 
-
+/* This function makes ices run in the selected way.
+ * If requested, this is in the background */
 static void
 ices_setup_run_mode_select (ices_config_t *ices_config)
 {
@@ -449,6 +493,7 @@ ices_setup_run_mode_select (ices_config_t *ices_config)
 		ices_setup_daemonize ();
 }
 
+/* Put ices in the background, as a daemon */
 static void
 ices_setup_daemonize ()
 {
@@ -464,6 +509,8 @@ ices_setup_daemonize ()
 #ifdef HAVE_SETPGID
 		setpgid (icespid, icespid);
 #endif
+		/* Update the pidfile (so external applications know what pid
+		   ices is running with. */
 		ices_setup_update_pidfile (icespid);
 		exit (0);
 	}
@@ -480,14 +527,16 @@ ices_setup_daemonize ()
 	ices_log_debug ("After daemonizing.. I'm still alive...");
 }
 
+/* Update a file called ices.pid with the given process id */
 static void
 ices_setup_update_pidfile (int icespid)
 {
 	FILE *pidfd = ices_util_fopen_for_writing ("ices.pid");
 	
-	fprintf (pidfd, "%d", icespid);
-	
-	ices_util_fclose (pidfd);
+	if (pidfd) {
+		fprintf (pidfd, "%d", icespid);
+		ices_util_fclose (pidfd);
+	}
 }
 
 		

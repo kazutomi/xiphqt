@@ -73,12 +73,14 @@ ices_playlist_builtin_get_next ()
 	return out;
 }
 
+/* Return the current playlist file line number */
 int
 ices_playlist_builtin_get_current_lineno ()
 {
 	return lineno;
 }
 
+/* Initialize the builting playlist handler */
 int
 ices_playlist_builtin_initialize (ices_config_t *ices_config)
 {
@@ -101,6 +103,7 @@ ices_playlist_builtin_initialize (ices_config_t *ices_config)
 	return 1;
 }
 
+/* Shutdown the builtin playlist handler */
 int
 ices_playlist_builtin_shutdown (ices_config_t *ices_config)
 {
@@ -112,6 +115,9 @@ ices_playlist_builtin_shutdown (ices_config_t *ices_config)
 }
 	
 /* Private function definitions */
+
+/* Shuffle the playlist by creating a box-unique "internal" playlist
+ * and using that as the playlist */
 static void
 playlist_builtin_shuffle_playlist ()
 {
@@ -137,6 +143,7 @@ playlist_builtin_shuffle_playlist ()
 	strncpy (playlist_file, newname, 1024);
 }
 
+/* Verify that the user specified playlist actually exists */
 static int
 playlist_builtin_verify_playlist (ices_config_t *ices_config)
 {
@@ -158,6 +165,7 @@ playlist_builtin_verify_playlist (ices_config_t *ices_config)
 	}
 }
 
+/* Skip to line number lineno in file */
 static int
 playlist_builtin_line_skip (int lineno, FILE *fp)
 {

@@ -230,6 +230,3 @@ Your script module has to define 5 functions; test, init, shutdown, get_next,
 and get_current_lineno.
 I suggest you take a look in the distributed module files and just expand on
 that.
-
-
-

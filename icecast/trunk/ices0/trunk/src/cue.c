@@ -34,6 +34,8 @@ char *ices_cue_filename = NULL;
  */
 
 /* Global function definitions */
+
+/* Update the cue file with a set of variables */
 void
 ices_cue_update (const char *filename, const int filesize, const int bitrate, const int bytes_played) 
 {
@@ -55,12 +57,25 @@ ices_cue_update (const char *filename, const int filesize, const int bitrate, co
 	ices_util_fclose (fp);
 }
 
+/* Cleanup the cue module by removing the cue file */
+void
+ices_cue_shutdown ()
+{
+	char *filename = ices_cue_get_filename ();
+
+	if (filename && filename[0])
+		remove (filename);
+}
+
+/* Mutator for the cue filename */
 void
 ices_cue_set_filename (const char *filename)
 {
 	ices_cue_filename = ices_util_strdup (filename);
 }
 
+/* Return the current cue filename, and create it if
+ * necessary */
 const char *
 ices_cue_get_filename ()
 {

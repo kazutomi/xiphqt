@@ -23,6 +23,10 @@
 extern ices_config_t ices_config;
 
 /* Global function definitions */
+
+/* Wrapper function for the specific playlist handler's current line number.
+ * This might not be available if your playlist is a database or something
+ * weird, but it's just for the cue file so it doesn't matter much */
 int
 ices_playlist_get_current_lineno ()
 {
@@ -46,6 +50,9 @@ ices_playlist_get_current_lineno ()
 	}
 }
 
+/* Wrapper for the playlist handler's next file function.
+ * Remember that if this returns non-NULL then the return
+ * value is free()ed by the caller. */
 char *
 ices_playlist_get_next ()
 {
@@ -69,6 +76,7 @@ ices_playlist_get_next ()
 	}
 }
 
+/* Initialize the toplevel playlist handler */
 int
 ices_playlist_initialize ()
 {
@@ -94,6 +102,7 @@ ices_playlist_initialize ()
 	}
 }
 
+/* Shutdown the playlist handler */
 int
 ices_playlist_shutdown ()
 {	
@@ -116,8 +125,3 @@ ices_playlist_shutdown ()
 			return 0;
 	}
 }
-	
-
-
-
-

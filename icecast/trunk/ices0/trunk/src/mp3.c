@@ -74,24 +74,28 @@ static int ices_mp3_sample_rate = -1;
 static int ices_mp3_mode = -1;
 static int ices_mp3_channels = -1;
 
+/* Return the current song's bitrate */
 int
 ices_mp3_get_bitrate ()
 {
 	return ices_mp3_bitrate;
 }
 
+/* Return the current song's sample rate */
 int
 ices_mp3_get_sample_rate ()
 {
 	return ices_mp3_sample_rate;
 }
 
+/* Return the current song's mode */
 int
 ices_mp3_get_mode ()
 {
 	return ices_mp3_mode;
 }
 
+/* return the number of channels in current song */
 int
 ices_mp3_get_channels ()
 {
@@ -99,6 +103,9 @@ ices_mp3_get_channels ()
 }
 
 /* Global function definitions */
+
+/* Parse mp3 file for header information; bitrate, channels, mode, sample_rate.
+ */
 int
 ices_mp3_parse_file (const char *filename)
 {
@@ -118,12 +125,13 @@ ices_mp3_parse_file (const char *filename)
 	
 	fseek (file, 0, SEEK_SET);
 	readsize = fread (&buff, 1, 1024, file);
-	readsize -= 4;
 	
-	if (readsize <= 0) {
+	if (readsize <= 0 || feof (file)) {
 		ices_util_fclose (file);
 		return -2;
 	}
+
+	readsize -= 4;
 	
 	buffer = buff - 1;
 	
@@ -182,7 +190,3 @@ ices_mp3_parse_file (const char *filename)
 		return 1;
 	}
 }
-
-
-			
-

@@ -21,6 +21,10 @@
 #include "definitions.h"
 
 /* Global function definitions */
+
+/* As of now, these functions do nothing.
+ * In the future, they will call hooks in the interpreter code
+ * to do certain things just before and just after playing a song */
 void
 ices_dj_pre ()
 {

@@ -32,6 +32,9 @@ static short int left[4096 * 30];
 
 
 /* Global function definitions */
+
+/* Initialize the reencoding engine in ices, initialize
+ * the liblame structures and be happy */
 void
 ices_reencode_initialize ()
 {
@@ -50,6 +53,8 @@ ices_reencode_initialize ()
 		ices_setup_shutdown ();
 	}
 
+	/* This is the bitrate we want the stream to be, specified by the
+	 * user with -b or in the config file */
 	ices_reencode_flags.brate = ices_config.bitrate;
 
 	if (lame_init_params (&ices_reencode_flags) == -1) {
@@ -63,24 +68,29 @@ ices_reencode_initialize ()
 	ices_reencode_initialized = 0;
 }
 
+/* Tell the reencoder what number of channels the current song has */
 void
 ices_reencode_set_channels (int channels)
 {
 	ices_reencode_flags.num_channels = channels;
 }
 
+/* Tell the reencoder what sample rate the current song is */
 void
 ices_reencode_set_sample_rate (int samplerate)
 {
 	ices_reencode_flags.in_samplerate = samplerate;
 }
 
+/* What mode is the current song in? */
 void
 ices_reencode_set_mode (int mode)
 {
 	ices_reencode_flags.mode = mode;
 }
 
+/* For each song, reset the liblame engine, otherwize it craps out if
+ * the bitrate or sample rate changes */
 void
 ices_reencode_reset () 
 {
@@ -101,6 +111,7 @@ ices_reencode_reset ()
 	}
 }
 
+/* If initialized, shutdown the reencoding engine */
 void
 ices_reencode_shutdown ()
 {
@@ -108,6 +119,7 @@ ices_reencode_shutdown ()
 		return;
 }
 
+/* reencode buff, of len buflen, put max outlen reencoded bytes in outbuf */
 int
 ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *outbuf, int outlen)
 {
@@ -118,6 +130,7 @@ ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *ou
 	return decode_ret;
 }
 
+/* At EOF of each file, flush the liblame buffers and get some extra candy */
 int
 ices_reencode_flush (unsigned char *outbuf, int maxlen)
 {

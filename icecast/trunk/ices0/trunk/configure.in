@@ -8,7 +8,7 @@ ICES_MICRO=1
 
 dnl Check to see if ICES_SPECIAL is overridden on commandline
 if test -z "$ICES_SPECIAL"; then
-	ICES_SPECIAL=NONE
+	ICES_SPECIAL=beta2
 fi
 
 ICES_VERSION_SMALL=$ICES_MAJOR.$ICES_MINOR.$ICES_MICRO

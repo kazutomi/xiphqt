@@ -23,6 +23,7 @@
 
 typedef enum {icy_header_protocol_e = 0, xaudiocast_header_protocol_e = 1} header_protocol_t;
 typedef enum {ices_playlist_python_e = 0, ices_playlist_builtin_e = 1, ices_playlist_perl_e = 2} playlist_type_t;
+
 typedef struct ices_config_St {
 	char *host;
 	int port;

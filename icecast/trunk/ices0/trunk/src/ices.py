@@ -1,6 +1,9 @@
 from string import *
 import sys
 
+# This is just a skeleton, something for you to start with.
+# All these functions should exist in your module
+
 ices_module_version = "0.0.1"
 
 def testfunction ():

@@ -41,6 +41,8 @@ static xmlNodePtr ices_xml_get_children_node (xmlNodePtr cur);
 #endif
 
 /* Global function definitions */
+
+/* Top level XML configfile parser */
 int
 ices_xml_parse_config_file (ices_config_t *ices_config, const char *configfile)
 {
@@ -60,14 +62,17 @@ ices_xml_parse_config_file (ices_config_t *ices_config, const char *configfile)
 			return 0;
 		}
 	
+	/* Setup the parser options */
 	ices_xml_parse_setup_defaults ();
 	
+	/* Parse the file and be happy */
 	return ices_xml_parse_file (configfile, ices_config);
 #endif
 }
 
 #ifdef HAVE_LIBXML
-/* I hope you can tell this is my first try at xml and libxml :) */
+
+/* I hope you can tell this is my first try at xml and libxml :)  */
 static int
 ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 {
@@ -75,32 +80,38 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 	xmlNsPtr ns;
 	xmlNodePtr cur;
 
+	/* This does the actual parsing */
 	if (!(doc = xmlParseFile (configfile))) {
 		ices_log_error ("XML Parser: Error while parsing %s", configfile);
 		return 0;
 	}
 	
+	/* Gimme the root element dammit! */
 	if (!(cur = ices_xml_get_root_element (doc))) {
 		ices_log_error ("XML Parser: Empty documenent %s", configfile);
 		xmlFreeDoc (doc);
 		return 0;
 	}
 	
+	/* Verify that the document is of the right type in the right namespace */
 	if (!(ns = xmlSearchNsByHref (doc, cur, (unsigned char *)"http://www.icecast.org/projects/ices"))) {
 		ices_log_error ("XML Parser: Document of invalid type, no ices namespace found");
 		xmlFreeDoc (doc);
 		return 0;
 	}
 
+	/* First element should be configuration */
 	if (!cur->name || (strcmp (cur->name, "Configuration"))) {
 		ices_log_error ("XML Parser: Document of invalid type, root node is not 'Configuration'");
 		xmlFreeDoc (doc);
 		return 0;
 	}
 
+	/* Get the configuration tree */
 	/* Tree traversal */
 	cur = ices_xml_get_children_node (cur);
 
+/* If we have libxml/parser.h, it's libxml 2.x */
 #ifdef HAVE_LIBXML_PARSER_H
 	while (cur && xmlIsBlankNode (cur)) {
 		cur = cur->next;
@@ -113,6 +124,8 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 		return 1;
 	}
 
+	/* Separate the parsing into different submodules,
+	 * Server, Stream, Playlist and Execution */
 	while (cur != NULL) {
 
 		if (strcmp (cur->name, "Server") == 0) {
@@ -131,10 +144,12 @@ ices_xml_parse_file (const char *configfile, ices_config_t *ices_config)
 
 	}
 	
+	/* Be a good boy and cleanup */
 	xmlFreeDoc (doc);
 	return 1;
 }
 
+/* Parse the stream specific configuration */
 static void
 ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
 {
@@ -183,6 +198,7 @@ ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_co
 	}
 }
 
+/* Parse the server specific configuration */
 static void
 ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
 {
@@ -236,6 +252,7 @@ ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_co
 	}
 }
 
+/* Parse the execution specific options */
 static void
 ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
 {
@@ -278,6 +295,7 @@ ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices
 	}
 }
 
+/* Parse the playlist specific configuration */
 static void
 ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config)
 {
@@ -321,6 +339,7 @@ ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_
 
 }
 
+/* Wrapper function to get xml children, to work with old libxml */
 static xmlNodePtr
 ices_xml_get_children_node (xmlNodePtr cur)
 {
@@ -332,6 +351,7 @@ ices_xml_get_children_node (xmlNodePtr cur)
 #endif
 }
 
+/* Wrapper function to get xml root element, to work with old libxml */
 static xmlNodePtr
 ices_xml_get_root_element (xmlDocPtr doc)
 {
@@ -342,6 +362,7 @@ ices_xml_get_root_element (xmlDocPtr doc)
 #endif
 }
 
+/* Setup some libxml parser options */
 static void
 ices_xml_parse_setup_defaults ()
 {
@@ -350,12 +371,3 @@ ices_xml_parse_setup_defaults ()
 #endif
 }
 #endif
-			
-
-
-
-
-
-
-
-

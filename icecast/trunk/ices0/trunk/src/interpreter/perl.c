@@ -35,7 +35,7 @@ static PerlInterpreter *my_perl;
  */
 
 static void
-interpreter_perl_init ()
+interpreter_perl_initialize ()
 {
 	static char *my_argv[] = {"", "ices.pm"}; 	/* dummy arguments, hardcoded pearl module */
 	
@@ -100,9 +100,3 @@ interpreter_perl_eval_function (char *functionname)
 	
 	return retstr;
 }
-
-
-
-
-
-

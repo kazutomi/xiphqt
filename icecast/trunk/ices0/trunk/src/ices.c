@@ -24,16 +24,22 @@ shout_conn_t conn;
 ices_config_t ices_config;
 
 /* Global function definitions */
+
+/* Ices starts here. But ends in ices_setup_shutdown(),
+ * which calls exit(0) and that's the last you see of it. */
 int 
 main (int argc, char **argv)
 {
+	/* Make command line arguments available through 
+	 * ices_util_get_argc() and argv */
 	ices_util_set_args (argc, argv);
-
-	ices_setup_init ();
 	
+	/* Setup all options, and initialize all submodules */
+	ices_setup_initialize ();
+	
+	/* Connect to server and keep streaming all the good stuff */
 	ices_stream_loop ();
 	
-	ices_setup_shutdown ();
-	
+	/* Not reached */
 	return 0;
 }

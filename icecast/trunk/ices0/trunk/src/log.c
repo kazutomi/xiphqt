@@ -31,6 +31,8 @@ static int ices_log_open_logfile ();
 static int ices_log_close_logfile ();
 
 /* Public function definitions */
+
+/* Initialize the log module, creates log file */
 void
 ices_log_initialize ()
 {
@@ -39,6 +41,7 @@ ices_log_initialize ()
 	}
 }
 
+/* Shutdown the log module, close the logfile */
 void
 ices_log_shutdown ()
 {
@@ -47,6 +50,7 @@ ices_log_shutdown ()
 	}
 }
 
+/* Cycle the logfile, usually called from the SIGHUP handler */
 int
 ices_log_reopen_logfile ()
 {
@@ -54,6 +58,7 @@ ices_log_reopen_logfile ()
 	return ices_log_open_logfile ();
 }
 
+/* Log only if verbose mode is set. Prepend output with DEBUG:  */
 void
 ices_log_debug (const char *fmt, ...)
 {
@@ -74,6 +79,7 @@ ices_log_debug (const char *fmt, ...)
 	ices_log_string ("DEBUG: %s\n", buff);
 }
 
+/* Log to console and file */
 void
 ices_log (const char *fmt, ...)
 {
@@ -91,6 +97,7 @@ ices_log (const char *fmt, ...)
 	ices_log_string ("%s\n", buff);
 }
 
+/* Store error information in module memory */
 void
 ices_log_error (const char *fmt, ...)
 {
@@ -108,12 +115,14 @@ ices_log_error (const char *fmt, ...)
 	strncpy (lasterror, buff, BUFSIZE);
 }
 
+/* Get last error from log module */
 char *
 ices_log_get_error ()
 {
 	return lasterror;
 }
 
+/* Specific log method for thread info */
 void
 thread_log (char *type, int level, char *fmt, ...)
 {
@@ -135,6 +144,8 @@ thread_log (char *type, int level, char *fmt, ...)
 }
 
 /* Private function definitions */
+
+/* Function to log string to both console and file */
 static void
 ices_log_string (char *format, char *string)
 {
@@ -147,6 +158,7 @@ ices_log_string (char *format, char *string)
 	}
 }
 
+/* Open the ices logfile, create it if needed */
 static int
 ices_log_open_logfile ()
 {
@@ -167,6 +179,7 @@ ices_log_open_logfile ()
 	return 1;
 }
 
+/* Close ices' logfile */
 static int
 ices_log_close_logfile ()
 {
@@ -176,6 +189,3 @@ ices_log_close_logfile ()
 
 	return 1;
 }
-
-
-

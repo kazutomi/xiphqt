@@ -20,6 +20,7 @@
 
 #include <Python.h>
 
+/* Call the python function to get the current line number */
 int
 interpreter_playlist_python_get_current_lineno ()
 {
@@ -32,6 +33,7 @@ interpreter_playlist_python_get_current_lineno ()
 	return 0;
 }
 
+/* Call python function to get next file to play */
 char *
 interpreter_playlist_python_get_next ()
 {
@@ -43,6 +45,7 @@ interpreter_playlist_python_get_next ()
 	return NULL;
 }
 
+/* Call python function to inialize the python script */
 int
 interpreter_playlist_python_initialize (ices_config_t *ices_config)
 {
@@ -56,6 +59,7 @@ interpreter_playlist_python_initialize (ices_config_t *ices_config)
 }
 
 
+/* Call python function to shutdown the script */
 int
 interpreter_playlist_python_shutdown (ices_config_t *ices_config)
 {

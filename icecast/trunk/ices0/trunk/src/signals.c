@@ -42,6 +42,11 @@ static void ices_signals_int (const int sig);
 static void ices_signals_hup (const int sig);
 
 /* Global function definitions */
+
+/* Setup signal handlers for some signals that we don't want
+ * delivered to icecast, and some that we want to handle in
+ * a certain way, like SIGINT to cleanup and exit, and hup
+ * to close and reopen logfiles */
 void
 ices_signals_setup ()
 {
@@ -54,6 +59,7 @@ ices_signals_setup ()
 	signal (SIGHUP, ices_signals_hup);
 }
 
+/* SIGINT, ok, let's be nice and just drop dead */
 static void
 ices_signals_int (const int sig)
 {
@@ -61,6 +67,7 @@ ices_signals_int (const int sig)
 	ices_setup_shutdown ();
 }
 			
+/* Guess we fork()ed, let's take care of the dead process */
 static void
 ices_signals_child (const int sig)
 {
@@ -71,6 +78,7 @@ ices_signals_child (const int sig)
 	pid = wait (&stat);
 }
 
+/* SIGHUP caught, let's cycle logfiles */
 static void
 ices_signals_hup (const int sig)
 {

@@ -26,28 +26,33 @@ static PyThreadState *interpreter_python_init_thread ();
 static void interpreter_python_shutdown_thread (PyThreadState *threadstate);
 static void interpreter_python_setup_path ();
 
+/* Function to initialize the python interpreter */
 static void
-interpreter_python_init ()
+interpreter_python_initialize ()
 {
 	char *module_name;
 
+	/* For some reason, python refuses to look in the
+	 * current directory for modules */
 	interpreter_python_setup_path ();
 
+	/* Initialize the python structure and thread stuff */
 	Py_Initialize ();
 	PyEval_InitThreads ();
 	
 	mainthreadstate = PyThreadState_Get ();
 
+	/* If user specified a certain module to be loaded,
+	 * then obey */
 	if (ices_config.interpreter_file) {
 		module_name = ices_config.interpreter_file;
 	} else {
 		module_name = "ices";
 	}
 
-	/* ices_python_init ();  This is if we want to export C functions to the python scripts */
-	
 	ices_log_debug ("Importing %s.py module...", module_name);
 
+	/* Call the python api code to import the module */
 	if (!(ices_python_module = PyImport_ImportModule (module_name))) {
 		ices_log ("Error: Could not import module %s", module_name);
 		PyErr_Print();
@@ -59,6 +64,8 @@ interpreter_python_init ()
 	PyEval_ReleaseLock ();
 }
 
+/* Force the python interpreter to look in our module path
+ * and in the current directory for modules */
 static void
 interpreter_python_setup_path ()
 {
@@ -80,6 +87,7 @@ interpreter_python_setup_path ()
 	putenv (newpath);
 }
 
+/* Shutdown the python interpreter */
 static void
 interpreter_python_shutdown ()
 {
@@ -87,6 +95,7 @@ interpreter_python_shutdown ()
   Py_Finalize ();
 }
 
+/* Startup a new python thread */
 static PyThreadState *
 interpreter_python_init_thread ()
 {
@@ -103,6 +112,7 @@ interpreter_python_init_thread ()
   return newthreadstate;
 }
 
+/* Shutdown the thread */
 static void
 interpreter_python_shutdown_thread (PyThreadState *threadstate)
 {
@@ -115,21 +125,25 @@ interpreter_python_shutdown_thread (PyThreadState *threadstate)
   PyEval_ReleaseLock ();
 }
 
+/* Evaluate the python function in a new thread */
 void *
 interpreter_python_eval_function (char *functionname)
 {
 	PyObject *ret;
 
+	/* Create a new python thread */
 	PyThreadState *threadstate = interpreter_python_init_thread ();
 	
 	PyEval_AcquireLock ();
 	
 	PyThreadState_Swap (threadstate);
 	
+	/* Reload the module (it might have changed) */
 	ices_python_module = PyImport_ReloadModule (ices_python_module);
 	
 	ices_log_debug ("Interpreting [%s]", functionname);
 	
+	/* Call the python function */
 	ret = PyObject_CallMethod (ices_python_module, functionname, NULL);
 
 	PyThreadState_Swap (NULL);
@@ -142,9 +156,3 @@ interpreter_python_eval_function (char *functionname)
 
 	return ret;
 }
-
-
-
-
-
-
