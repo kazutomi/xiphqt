@@ -1,4 +1,5 @@
 import os
+from os import path
 
 def trim_newline(s):
     "Returns s without a trailing newline if present."
@@ -30,3 +31,15 @@ def copy_file (src_filename, dest_filename):
 
     src.close()
     dest.close()
+
+def recursive_delete(pathname):
+    if path.isfile(pathname):
+        os.remove(pathname)
+    elif path.isdir(pathname):
+        for item in os.listdir(pathname):
+            recursive_delete(path.join(pathname, item))
+
+        os.rmdir(pathname)
+    else:
+        raise OSError("Non-file or directory encountered.")
+    
