@@ -74,7 +74,11 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <shout.h>
+#ifdef HAVE_SHOUT_SHOUT_H
+# include <shout/shout.h>
+#else
+# include <shout.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>

@@ -1,6 +1,5 @@
 AC_INIT(src/ices.c)
 AM_CONFIG_HEADER(config.h)
-AC_CONFIG_SUBDIRS(libshout)
 
 ICES_MAJOR=0
 ICES_MINOR=0
@@ -23,7 +22,7 @@ fi
 
 VERSION="$ICES_VERSION"
 
-echo "Building ices-$VERSION..."
+AC_MSG_RESULT([Building ices-$VERSION...])
 
 AM_INIT_AUTOMAKE(ices, $VERSION)
 AM_MAINTAINER_MODE
@@ -100,43 +99,38 @@ fi
 AC_CHECK_PROG(UNAME,uname,uname)
 AC_CHECK_PROG(GMAKE,gmake,gmake)
 AC_PROG_INSTALL
+AC_PROG_MAKE_SET
 
-dnl weird ass systems
+dnl -- System check --
+
 AC_CANONICAL_HOST
 AC_AIX
 AC_ISC_POSIX
 AC_MINIX
 
-AC_MSG_CHECKING(your OS)
-system=`$UNAME`
 IRIX=no
-case $system in
-  SunOS)
-    if test x`uname -r | cut -d . -f 1` = "x5"
-    then
-      AC_MSG_RESULT(Solaris)
-    else
-      AC_MSG_RESULT(SunOS)
-    fi
+case $target in
+  *solaris*)
     if test "$CC" = cc
     then
       CFLAGS="$CFLAGS -mt"
     fi
   ;;
-  HP-UX)
-    AC_MSG_RESULT(HP-UX)
+  *sunos*)
+    if test "$CC" = cc
+    then
+      CFLAGS="$CFLAGS -mt"
+    fi
+  ;;
+  *hpux*)
     CFLAGS="$CFLAGS -D_HPUX_SOURCE -DHPUX"
     if test "$CC" = cc
     then
       CFLAGS="$CFLAGS -Aa"
     fi
   ;;
-  IRIX)
+  *irix*)
     IRIX=yes
-    AC_MSG_RESULT(IRIX)
-  ;;
-  *)
-    AC_MSG_RESULT($system)
   ;;
 esac
 
@@ -205,6 +199,50 @@ dnl -- System function check --
 
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([vsnprintf setpgid inet_addr inet_aton setlinebuf])
+
+dnl -- Required extra libraries --
+
+AC_ARG_WITH(libshout,
+[  --with-libshout[=DIR]       use installed libshout [in DIR]])
+
+have_libshout="no"
+if test "$with_libshout" != "no"
+then
+  if test -n "$with_libshout" -a "$with_libshout" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_libshout/include"
+    LDFLAGS="$LDFLAGS -L$with_libshout/lib"
+  fi
+
+  AC_CHECK_HEADER(shout/shout.h, [
+    AC_DEFINE(HAVE_SHOUT_SHOUT_H, 1, [ Define if you have <shout/shout.h ])
+    have_libshout="maybe"
+  ])
+  if test "$have_libshout" != "no"
+  then
+    AC_CHECK_LIB(shout, shout_init_connection, [
+      have_libshout="yes"
+      LIBS="$LIBS -lshout"
+    ])
+  fi
+
+  if test "$have_libshout" != "yes"
+  then
+    if test -n "$with_libshout"
+    then
+      AC_MSG_ERROR([Could not find an installed shout library])
+    else
+      AC_MSG_RESULT([Installed libshout not found, using builtin])
+    fi
+  fi
+fi
+
+if test "$have_libshout" != "yes"
+then
+  libshout="libshout"
+fi
+AC_CONFIG_SUBDIRS($libshout)
+AM_CONDITIONAL(NEED_SHOUT, test "$have_libshout" != "yes")
 
 dnl -- Optional features --
 
@@ -278,7 +316,7 @@ then
   then
     AC_MSG_ERROR([Could not find a valid LAME library installation])
   else
-    AC_MSG_WARN([Could not find a valid LAME library, reencoding disabled])
+    AC_MSG_RESULT([Could not find a valid LAME library, reencoding disabled])
   fi
 fi
 
@@ -316,9 +354,9 @@ if test "$with_perl" != "no" -a "$have_perl" != "yes"
 then
   if test -n "$with_perl"
   then
-    AC_MSG_ERROR([Could not find your perl libraries])
+    AC_MSG_ERROR([Could not find perl libraries])
   else
-    AC_MSG_WARN([Could not find your perl libraries, perl scripting disabled])
+    AC_MSG_RESULT([Could not find perl libraries, perl scripting disabled])
   fi
 fi
 
@@ -379,7 +417,7 @@ then
   then
     AC_MSG_ERROR([Could not find the python library])
   else
-    AC_MSG_WARN([Could not find the python library, python scripting disabled])
+    AC_MSG_RESULT([Could not find the python library, python scripting disabled])
   fi
 fi
 
@@ -406,7 +444,7 @@ then
     CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
     AC_CHECK_HEADERS([libxml/parser.h gnome-xml/parser.h parser.h])
   else
-    AC_MSG_WARN([Compiling without libxml support - no configfiles])
+    AC_MSG_RESULT([Compiling without libxml support - no configfiles])
   fi
 fi
 
@@ -419,16 +457,14 @@ AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile
   conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile
   avl/Makefile log/Makefile src/interpreter/Makefile src/xml/Makefile])
 
-echo
-echo "Compiling with CPPFLAGS=$CPPFLAGS"
-echo "Linking with LDFLAGS=$LDFLAGS $LIBS"
-echo
+AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
+AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])
 
 if test "$GMAKE"
 then
-  echo "Configuration complete. Now run 'gmake'."
-  echo "You can then run 'gmake install' to install ices"
+  AC_MSG_RESULT([Configuration complete. Now run 'gmake'.])
+  AC_MSG_RESULT([You can then run 'gmake install' to install ices])
 else
-  echo "Configuration complete. Now run 'make'."
-  echo "You can then run 'make install' to install ices"
+  AC_MSG_RESULT([Configuration complete. Now run 'make'.])
+  AC_MSG_RESULT([You can then run 'make install' to install ices])
 fi
