@@ -60,6 +60,8 @@ void
 ices_stream_loop (void)
 {
   int consecutive_errors = 0;
+  int linenum_old = 0;
+  int linenum_new = 0;
   input_stream_t source;
   ices_stream_t* stream;
 
@@ -92,14 +94,32 @@ ices_stream_loop (void)
     source.readpcm = NULL;
     source.close = NULL;
 
-    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
+    /* keep track of the line numbers */
+    linenum_old = linenum_new;
+    linenum_new = ices_playlist_get_current_lineno ();
+    ices_cue_set_lineno (linenum_new);
+
+    /* we quit if we're told not to loop and the the new line num is lower than the old */
+    if ( !ices_config.pm.loop_playlist && ( linenum_new < linenum_old ) ) {
+      ices_log ("Info: next playlist line number less than previous.  Looping disabled.  Quiting.");
+      ices_setup_shutdown ();
+    }
 
     /* We quit if the playlist handler gives us a NULL filename */
     if (!source.path) {
       ices_log ("Warning: ices_file_get_next() gave me an error, this is not good. [%s]", ices_log_get_error ());
       ices_setup_shutdown ();
     }
-		
+
+    /* This stops ices from entering a loop with 10-20 lines of output per
+	 second. Usually caused by a playlist handler that produces only
+	 invalid file names. */
+    if (consecutive_errors > 10) {
+	ices_log ("Exiting after 10 consecutive errors.");
+	ices_util_free (source.path);
+	ices_setup_shutdown ();
+    }
+
     if (stream_open_source (&source) < 0) {
       ices_log ("Error opening %s: %s", source.path, ices_log_get_error ());
       ices_util_free (source.path);
@@ -122,15 +142,6 @@ ices_stream_loop (void)
       ices_log ("Encountered error while transfering %s: %s", source.path, ices_log_get_error ());
 
       consecutive_errors++;
-
-      /* This stops ices from entering a loop with 10-20 lines of output per
-	 second. Usually caused by a playlist handler that produces only
-	 invalid file names. */
-      if (consecutive_errors > 10) {
-	ices_log ("Exiting after 10 consecutive errors.");
-	ices_util_free (source.path);
-	ices_setup_shutdown ();
-      }
 
       ices_util_free (source.path);
       continue;

@@ -273,6 +273,8 @@ ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_
       ices_util_free (ices_config->pm.module);
       ices_config->pm.module =
 	ices_util_strdup (ices_xml_read_node (doc, cur));
+    } else if (strcmp (cur->name, "Loop") == 0) {
+      ices_config->pm.loop_playlist = atoi (ices_xml_read_node (doc, cur));
     } else {
       ices_log ("Unknown playlist keyword: %s", cur->name);
     }
