@@ -37,9 +37,9 @@
 #endif
 
 /* Private function declarations */
-static void ices_signals_child (const int sig);
-static void ices_signals_int (const int sig);
-static void ices_signals_hup (const int sig);
+static RETSIGTYPE ices_signals_child (const int sig);
+static RETSIGTYPE ices_signals_int (const int sig);
+static RETSIGTYPE ices_signals_hup (const int sig);
 
 /* Global function definitions */
 
@@ -60,7 +60,7 @@ ices_signals_setup (void)
 }
 
 /* SIGINT, ok, let's be nice and just drop dead */
-static void
+static RETSIGTYPE
 ices_signals_int (const int sig)
 {
 	ices_log_debug ("Caught SIGINT, closing down...");
@@ -68,7 +68,7 @@ ices_signals_int (const int sig)
 }
 			
 /* Guess we fork()ed, let's take care of the dead process */
-static void
+static RETSIGTYPE
 ices_signals_child (const int sig)
 {
 	pid_t pid;
@@ -79,7 +79,7 @@ ices_signals_child (const int sig)
 }
 
 /* SIGHUP caught, let's cycle logfiles */
-static void
+static RETSIGTYPE
 ices_signals_hup (const int sig)
 {
 	ices_log_debug ("Caught SIGHUP, cycling logfiles...");

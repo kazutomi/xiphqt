@@ -140,6 +140,12 @@ case $system in
   ;;
 esac
 
+dnl -- Compiler feature check --
+
+AC_C_CONST
+
+dnl -- System library check --
+
 if test "$IRIX" = "yes"
 then
   AC_MSG_WARN(Skipping library tests because they confuse Irix)
@@ -150,57 +156,57 @@ else
   AC_SEARCH_LIBS(nanosleep, rt)
 fi
 
-dnl Checks for header files.
-AC_HEADER_STDC
-AC_HEADER_SYS_WAIT
-AC_HEADER_DIRENT
-
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_SIGNAL
-AC_HEADER_TIME
-AC_STRUCT_TM
-AC_RETSIGTYPE
-
-dnl Checks for library functions.
-AC_FUNC_STRFTIME
-AC_FUNC_VPRINTF
-
 THREADLIBS="no"
 
-AC_MSG_CHECKING(for pthread functions in standard libraries)
-AC_TRY_LINK(, [pthread_create();],AC_MSG_RESULT(yes);THREADLIBS="",AC_MSG_RESULT(no))
+AC_CHECK_FUNCS(pthread_create, THREADLIBS="")
 
-if test "$THREADLIBS" = ""; then
-	AC_MSG_CHECKING(if that definition really works)
-	AC_TRY_RUN([int main() { return !pthread_equal(pthread_self(), pthread_self());}],
-		    AC_MSG_RESULT(yes);THREADLIBS="",
-		    AC_MSG_RESULT(no);THREADLIBS="no",
-		    AC_MSG_RESULT(crosscompiling so no);THREADLIBS="no")
+if test -z "$THREADLIBS"
+then
+  AC_MSG_CHECKING(if the system thread library works)
+  AC_TRY_RUN([
+int main() {
+  return !pthread_equal(pthread_self(), pthread_self());
+}
+  ],
+    AC_MSG_RESULT(yes),
+    AC_MSG_RESULT(no);THREADLIBS="no",
+    AC_MSG_RESULT(crosscompiling so no);THREADLIBS="no")
 fi
 
-if test "$THREADLIBS" = "no"; then
-    for lib in pthread c_r dce pthreads; do
-      AC_CHECK_LIB($lib,pthread_create,THREADLIBS="-l$lib")
-      if test $THREADLIBS != "no"; then
-	break
-      fi
-    done
+if test "$THREADLIBS" = "no"
+then
+  for lib in pthread c_r dce pthreads; do
+    AC_CHECK_LIB($lib,pthread_create,THREADLIBS="-l$lib")
+    if test $THREADLIBS != "no"; then
+      break
+    fi
+  done
 fi
   
-if test "$THREADLIBS" = "no"; then
-	  AC_CHECK_FUNCS(pthread_create,THREADLIBS="")
-fi
-
-if test "$THREADLIBS" = "no"; then
-        AC_MSG_ERROR(Your system doesn't seem to support posix threads. Ices needs posix threads to compile.) 
-        exit
+if test "$THREADLIBS" = "no"
+then
+  AC_MSG_ERROR([Your system doesn't seem to support posix threads. Ices needs posix threads to compile.]) 
 fi
 
 LIBS="$LIBS $THREADLIBS"
 CPPFLAGS="$CPPFLAGS $THREADCPPFLAGS"
+
+dnl -- System header check --
+
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([fcntl.h sys/types.h sys/socket.h sys/stat.h unistd.h \
+  signal.h sys/signal.h errno.h])
+
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SIGNAL
+
+dnl -- System function check --
+
+AC_FUNC_STRFTIME
+AC_CHECK_FUNCS([vsnprintf setpgid inet_addr inet_aton setlinebuf])
+
+dnl -- Optional features --
 
 AC_ARG_WITH(lame,
 [  --with-lame[=DIR]           enable support for reencoding with lame [in DIR]])
@@ -377,21 +383,34 @@ then
   fi
 fi
 
-AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
+AC_ARG_WITH(xmlconfig,
+[  --with-xml-config=PATH      Use xml-config in PATH to find libxml ])
 
-if test "$XMLCONFIG"; then
-  AC_DEFINE(HAVE_LIBXML, 1, [ Define if you have the GNOME XML library ])
-  LIBS="$LIBS `$XMLCONFIG --libs`"
-  CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
-else
-  AC_MSG_WARN([Compiling without libxml support. (This means no support for configfiles)])
+if test "$with_xmlconfig" != "no"
+then
+  if test -n "$with_xmlconfig" -a "$with_xmlconfig" != "yes"
+  then
+    XMLCONFIG="$with_xmlconfig"
+    if ! test -x "$XMLCONFIG"
+    then
+      AC_MSG_ERROR([$with_xmlconfig is not a program])
+    fi
+  else
+    AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
+  fi
+
+  if test -n "$XMLCONFIG"
+  then
+    AC_DEFINE(HAVE_LIBXML, 1, [ Define if you have the GNOME XML library ])
+    LIBS="$LIBS `$XMLCONFIG --libs`"
+    CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
+    AC_CHECK_HEADERS([libxml/parser.h gnome-xml/parser.h parser.h])
+  else
+    AC_MSG_WARN([Compiling without libxml support - no configfiles])
+  fi
 fi
 
-AC_CHECK_HEADERS([fcntl.h sys/types.h sys/socket.h sys/time.h sys/stat.h \
-  unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h \
-  libxml/parser.h gnome-xml/parser.h parser.h])
-AC_CHECK_FUNCS([snprintf vsnprintf setpgid inet_addr inet_aton inet_ntoa \
-  pthread_sigmask setlinebuf])
+dnl -- and finish up --
 
 LIBS="$LIBS $LIBM $LIBDL"
 AC_SUBST(ICES_OBJECTS)
@@ -400,14 +419,16 @@ AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile
   conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile
   avl/Makefile log/Makefile src/interpreter/Makefile src/xml/Makefile])
 
+echo
 echo "Compiling with CPPFLAGS=$CPPFLAGS"
 echo "Linking with LDFLAGS=$LDFLAGS $LIBS"
+echo
 
 if test "$GMAKE"
 then
-  echo "Ok, everything seems ok. Now do 'gmake'."
-  echo "You can then run 'gmake install' to install as you specified"
+  echo "Configuration complete. Now run 'gmake'."
+  echo "You can then run 'gmake install' to install ices"
 else
-  echo "Ok, everything seems ok. Now do 'make'."
-  echo "You can then run 'make install' to install as you specified"
+  echo "Configuration complete. Now run 'make'."
+  echo "You can then run 'make install' to install ices"
 fi
