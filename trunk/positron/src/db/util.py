@@ -89,6 +89,17 @@ def collapse_null_list(obj):
     else:
         return obj
 
+def uncollapse_null_list(obj):
+    """Converts [] to [None], leaves other objects unchanged"""
+    if type(obj) is ListType or type(obj) is TupleType:
+        if len(obj) == 0:
+            return [None]
+        else:
+            return obj
+    else:
+        return obj
+    
+
 def flatten_singlet(obj):
     """Extracts element from single object lists, otherwise returns obj unchanged
 

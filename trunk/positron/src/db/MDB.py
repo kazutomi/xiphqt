@@ -59,6 +59,14 @@ def _escape_string(str):
 
     return new
 
+def _pack_field(field):
+    """Packs a field (list of values) with bag delimiters as needed"""
+    str = field[0]
+    for item in field[1:]:
+        str +=  Special.BAG_DELIM + _escape_string(item)
+
+    return str
+
 def _pack_fields(fields):
     """Packs a list of fields using the MDB format.
 
@@ -66,17 +74,10 @@ def _pack_fields(fields):
 
     Returns a string with the packed data."""
 
-    str = ""
+    str = _pack_field(fields[0])
 
-    for field in fields:
-        for item in field:
-            str += _escape_string(item)
-
-            if len(field) > 1:
-                str += Special.BAG_DELIM
-
-        if len(fields) > 1:
-            str += Special.FIELD_DELIM
+    for field in fields[1:]:
+        str += Special.FIELD_DELIM + _pack_field(field)
 
     str += Special.END_OF_RECORD
     return str
@@ -218,6 +219,19 @@ class MDB:
 
         return (record, to_pointer(f.tell()))
 
+    def is_record_deleted_at(self, pointer):
+        f = self.file
+
+        f.seek(to_offset(pointer))
+
+        flags = fread_word(f)
+
+        # Check ID bit
+        if flags & 0x8000 == 0:
+            raise Error("Invalid record: ID bit not set")
+
+        return flags & 0x01
+
     def undelete_record_at(self, pointer):
         self._set_delete_flag(pointer, 0)
 
@@ -241,50 +255,53 @@ class MDB:
         fwrite_word(f, flags)
         f.flush()
 
-
     def append_record(self, record):
         """Writes a new record to the end of the file.
 
         The record should be formatted in the same way as the return value from
         read_record_at()."""
 
-        # Record flag
-        flags = 0x8000
-        if record["isDeleted"]:
-            flags |= 0x0001
+        # Deal with degenerate null record case
+        if record == None:
+            new = "\x80\x00\x00\x25"
+        else:
+            # Record flag
+            flags = 0x8000
+            if record["isDeleted"]:
+                flags |= 0x0001
 
-        new = struct.pack(">H", flags)
+            new = struct.pack(">H", flags)
 
-        fields = []
-        # Primary Record Data
-        fields.append(map(term_string, record["data"]))
+            fields = []
+            # Primary Record Data
+            fields.append(map(term_string, record["data"]))
 
-        # Access Keys
-        if len(record["keys"]) != self.header["NumOfKeys"]-1:
-            raise Error("Incorrect number of access keys in record")
+            # Access Keys
+            if len(record["keys"]) != self.header["NumOfKeys"]-1:
+                raise Error("Incorrect number of access keys in record")
 
-        for key in record["keys"]:
-            values = [struct.pack(">I", item) for item in key]
-            fields.append(values)
+            for key in record["keys"]:
+                values = [struct.pack(">I", item) for item in key]
+                fields.append(values)
 
-        # Extra Info Fields
-        if len(record["extra"]) != (self.header["NumOfFieldsPerRecord"]
-                                    - self.header["NumOfKeys"]):
-            raise Error("Incorrect number of extra info fields in record")
+            # Extra Info Fields
+            if len(record["extra"]) != (self.header["NumOfFieldsPerRecord"]
+                                        - self.header["NumOfKeys"]):
+                raise Error("Incorrect number of extra info fields in record")
 
-        for i in range(len(record["extra"])):
-            values = []
-            for item in record["extra"][i]:
-                if self.extra_format[i] == "z":
-                    values.append(term_string(item))
-                else:
-                    values.append(struct.pack(self.extra_format[i], item))
+            for i in range(len(record["extra"])):
+                values = []
+                for item in record["extra"][i]:
+                    if self.extra_format[i] == "z":
+                        values.append(term_string(item))
+                    else:
+                        values.append(struct.pack(self.extra_format[i], item))
 
-            fields.append(values)
-                    
+                fields.append(values)
 
-        # Pack record
-        new += _pack_fields(fields)
+
+            # Pack record
+            new += _pack_fields(fields)
 
         # Write to disk
         self.file.seek(0,2)
@@ -293,7 +310,6 @@ class MDB:
         self.file.flush()
 
         return position
-        
 
     def _read_header(self, f):
         "Parse the MDB header data and return a dict with the relevant info."
@@ -363,6 +379,19 @@ class MDB:
         f.seek(-2, 1)
 
         return f.read(length)
+
+    def clear(self):
+        """Remove all entries from database."""
+        f = self.file
+
+        # Truncate to just after header
+        record_start = self.header["RecordStart"]
+        f.truncate(to_offset(record_start))
+
+        # Note that caller needs to add null record and keep sync with
+        # SAI
+
+        f.flush()
 
     def close(self):
         self.file.close()
