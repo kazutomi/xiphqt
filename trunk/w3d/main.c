@@ -6,7 +6,7 @@
 #include "yuv.h"
 
 
-#define  N_FRAMES  4
+#define  N_FRAMES  1
 
 
 void save_ppm (char *prefix, uint8 *buf, int w, int h)
@@ -132,6 +132,10 @@ int main (int argc, char **argv)
    if (ycount < ylimit) ylimit = ycount;
    if (ucount < ulimit) ulimit = ucount;
    if (vcount < vlimit) vlimit = vcount;
+
+   for (i=1; i<y2->scales; i++)  y2->minmax[i] = y->minmax[i];
+   for (i=1; i<u2->scales; i++)  u2->minmax[i] = u->minmax[i];
+   for (i=1; i<v2->scales; i++)  v2->minmax[i] = v->minmax[i];
 
    decode_coeff3d (y2, bitstream [0], ylimit);
    decode_coeff3d (u2, bitstream [1], ulimit);
