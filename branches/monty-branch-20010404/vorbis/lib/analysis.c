@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.43 2001/02/26 03:50:41 xiphmont Exp $
+ last mod: $Id: analysis.c,v 1.43.4.1 2001/04/05 00:22:48 xiphmont Exp $
 
  ********************************************************************/
 
@@ -75,8 +75,7 @@ int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
 }
 
 /* there was no great place to put this.... */
-void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
-#ifdef ANALYSIS
+void _analysis_output_always(char *base,int i,float *v,int n,int bark,int dB){
   int j;
   FILE *of;
   char buffer[80];
@@ -102,5 +101,11 @@ void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
     }
   }
   fclose(of);
+}
+
+void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
+#ifdef ANALYSIS
+  _analysis_output_always(base,i,v,n,bark,dB);
 #endif
 }
+
