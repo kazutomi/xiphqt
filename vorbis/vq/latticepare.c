@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility for paring low hit count cells from lattice codebook
- last mod: $Id: latticepare.c,v 1.11 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: latticepare.c,v 1.3 2000/06/14 01:38:32 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,11 +21,12 @@
 #include <math.h>
 #include <string.h>
 #include <errno.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "../lib/scales.h"
 #include "bookutil.h"
 #include "vqgen.h"
 #include "vqsplit.h"
-#include "../lib/os.h"
 
 /* Lattice codebooks have two strengths: important fetaures that are
    poorly modelled by global error minimization training (eg, strong
@@ -56,20 +58,20 @@
    produces a new output book on stdout 
 */
 
-static float _dist(int el,float *a, float *b){
+static double _dist(int el,double *a, double *b){
   int i;
-  float acc=0.f;
+  double acc=0.;
   for(i=0;i<el;i++){
-    float val=(a[i]-b[i]);
+    double val=(a[i]-b[i]);
     acc+=val*val;
   }
   return(acc);
 }
 
-static float *pointlist;
+static double *pointlist;
 static long points=0;
 
-void add_vector(codebook *b,float *vec,long n){
+void add_vector(codebook *b,double *vec,long n){
   int dim=b->dim,i,j;
   int step=n/dim;
   for(i=0;i<step;i++){
@@ -79,7 +81,7 @@ void add_vector(codebook *b,float *vec,long n){
   }
 }
 
-static int bestm(codebook *b,float *vec){
+static int bestm(codebook *b,double *vec){
   encode_aux_threshmatch *tt=b->c->thresh_tree;
   int dim=b->dim;
   int i,k,o;
@@ -97,12 +99,12 @@ static int bestm(codebook *b,float *vec){
   return(best);
 }
 
-static int closest(codebook *b,float *vec,int current){
+static int closest(codebook *b,double *vec,int current){
   encode_aux_threshmatch *tt=b->c->thresh_tree;
   int dim=b->dim;
   int i,k,o;
 
-  float bestmetric=0;
+  double bestmetric=0;
   int bestentry=-1;
   int best=bestm(b,vec);
 
@@ -110,7 +112,7 @@ static int closest(codebook *b,float *vec,int current){
 
   for(i=0;i<b->entries;i++){
     if(b->c->lengthlist[i]>0 && i!=best && i!=current){
-      float thismetric=_dist(dim, vec, b->valuelist+i*dim);
+      double thismetric=_dist(dim, vec, b->valuelist+i*dim);
       if(bestentry==-1 || thismetric<bestmetric){
 	bestentry=i;
 	bestmetric=thismetric;
@@ -121,15 +123,15 @@ static int closest(codebook *b,float *vec,int current){
   return(bestentry);
 }
 
-static float _heuristic(codebook *b,float *ppt,int secondbest){
-  float *secondcell=b->valuelist+secondbest*b->dim;
+static double _heuristic(codebook *b,double *ppt,int secondbest){
+  double *secondcell=b->valuelist+secondbest*b->dim;
   int best=bestm(b,ppt);
-  float *firstcell=b->valuelist+best*b->dim;
-  float error=_dist(b->dim,firstcell,secondcell);
-  float *zero=alloca(b->dim*sizeof(float));
-  float fromzero;
+  double *firstcell=b->valuelist+best*b->dim;
+  double error=_dist(b->dim,firstcell,secondcell);
+  double *zero=alloca(b->dim*sizeof(double));
+  double fromzero;
   
-  memset(zero,0,b->dim*sizeof(float));
+  memset(zero,0,b->dim*sizeof(double));
   fromzero=sqrt(_dist(b->dim,firstcell,zero));
 
   return(error/fromzero);
@@ -214,7 +216,7 @@ int main(int argc,char *argv[]){
 	    int cols;
 	    long lines=0;
 	    char *line;
-	    float *vec;
+	    double *vec;
 	    FILE *in=fopen(name,"r");
 	    if(!in){
 	      fprintf(stderr,"Could not open input file %s\n",name);
@@ -232,7 +234,7 @@ int main(int argc,char *argv[]){
 		while(*temp==' ')temp++;
 	      }
 	    }
-	    vec=alloca(cols*sizeof(float));
+	    vec=alloca(cols*sizeof(double));
 	    /* count, then load, to avoid fragmenting the hell out of
 	       memory */
 	    while(line){
@@ -245,7 +247,7 @@ int main(int argc,char *argv[]){
 	      if((lines&0xff)==0)spinnit("counting samples...",lines*cols);
 	      line=setup_line(in);
 	    }
-	    pointlist=_ogg_malloc((cols*lines+entries*dim)*sizeof(float));
+	    pointlist=malloc((cols*lines+entries*dim)*sizeof(double));
 	    
 	    rewind(in);
 	    line=setup_line(in);
@@ -309,15 +311,15 @@ int main(int argc,char *argv[]){
     long indexedpoints=0;
     long *entryindex;
     long *reventry;
-    long *membership=_ogg_malloc(points*sizeof(long));
-    long *firsthead=_ogg_malloc(entries*sizeof(long));
-    long *secondary=_ogg_malloc(points*sizeof(long));
-    long *secondhead=_ogg_malloc(entries*sizeof(long));
+    long *membership=malloc(points*sizeof(long));
+    long *firsthead=malloc(entries*sizeof(long));
+    long *secondary=malloc(points*sizeof(long));
+    long *secondhead=malloc(entries*sizeof(long));
 
-    long *cellcount=_ogg_calloc(entries,sizeof(long));
-    long *cellcount2=_ogg_calloc(entries,sizeof(long));
-    float *cellerror=_ogg_calloc(entries,sizeof(float));
-    float *cellerrormax=_ogg_calloc(entries,sizeof(float));
+    long *cellcount=calloc(entries,sizeof(long));
+    long *cellcount2=calloc(entries,sizeof(long));
+    double *cellerror=calloc(entries,sizeof(double));
+    double *cellerrormax=calloc(entries,sizeof(double));
     long cellsleft=entries;
     for(i=0;i<points;i++)membership[i]=-1;
     for(i=0;i<entries;i++)firsthead[i]=-1;
@@ -327,11 +329,11 @@ int main(int argc,char *argv[]){
     for(i=0;i<points;i++){
       /* assign vectors to the nearest cell.  Also keep track of second
 	 nearest for error statistics */
-      float *ppt=pointlist+i*dim;
+      double *ppt=pointlist+i*dim;
       int    firstentry=closest(b,ppt,-1);
       int    secondentry=closest(b,ppt,firstentry);
-      float firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
-      float secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
+      double firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
+      double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
       
       if(!(i&0xff))spinnit("initializing... ",points-i);
     
@@ -352,12 +354,12 @@ int main(int argc,char *argv[]){
     /* which cells are most heavily populated?  Protect as many from
        dispersal as the user has requested */
     {
-      long **countindex=_ogg_calloc(entries,sizeof(long *));
+      long **countindex=calloc(entries,sizeof(long *));
       for(i=0;i<entries;i++)countindex[i]=cellcount+i;
       qsort(countindex,entries,sizeof(long *),longsort);
       for(i=0;i<protect;i++){
 	int ptr=countindex[i]-cellcount;
-	cellerrormax[ptr]=9e50f;
+	cellerrormax[ptr]=9e50;
       }
     }
 
@@ -379,8 +381,8 @@ int main(int argc,char *argv[]){
     /* do the automatic cull request */
     while(cellsleft>target){
       int bestcell=-1;
-      float besterror=0;
-      float besterror2=0;
+      double besterror=0;
+      double besterror2=0;
       long head=-1;
       char spinbuf[80];
       sprintf(spinbuf,"cells left to eliminate: %ld : ",cellsleft-target);
@@ -410,11 +412,11 @@ int main(int argc,char *argv[]){
       firsthead[bestcell]=-1;
       while(head!=-1){
 	/* head is a point number */
-	float *ppt=pointlist+head*dim;
+	double *ppt=pointlist+head*dim;
 	int firstentry=closest(b,ppt,-1);
 	int secondentry=closest(b,ppt,firstentry);
-	float firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
-	float secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
+	double firstmetric=_dist(dim,b->valuelist+dim*firstentry,ppt);
+	double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
 	long next=membership[head];
 
 	if(head<points-entries){
@@ -438,15 +440,15 @@ int main(int argc,char *argv[]){
       head=secondhead[bestcell];
       secondhead[bestcell]=-1;
       while(head!=-1){
-	float *ppt=pointlist+head*dim;
+	double *ppt=pointlist+head*dim;
 	/* who are we assigned to now? */
 	int firstentry=closest(b,ppt,-1);
 	/* what is the new second closest match? */
 	int secondentry=closest(b,ppt,firstentry);
 	/* old second closest is the cell being disbanded */
-	float oldsecondmetric=_dist(dim,b->valuelist+dim*bestcell,ppt);
+	double oldsecondmetric=_dist(dim,b->valuelist+dim*bestcell,ppt);
 	/* new second closest error */
-	float secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
+	double secondmetric=_dist(dim,b->valuelist+dim*secondentry,ppt);
 	long next=secondary[head];
 
 	if(head<points-entries){
@@ -488,7 +490,7 @@ int main(int argc,char *argv[]){
     free(cellerrormax);
     free(secondary);
 
-    pointindex=_ogg_malloc(points*sizeof(long));
+    pointindex=malloc(points*sizeof(long));
     /* make a point index of fall-through points */
     for(i=0;i<points;i++){
       int best=_best(b,pointlist+i*dim,1);
@@ -498,7 +500,7 @@ int main(int argc,char *argv[]){
     }
 
     /* make an entry index */
-    entryindex=_ogg_malloc(entries*sizeof(long));
+    entryindex=malloc(entries*sizeof(long));
     target=0;
     for(i=0;i<entries;i++){
       if(b->c->lengthlist[i]>0)
@@ -506,17 +508,17 @@ int main(int argc,char *argv[]){
     }
 
     /* make working space for a reverse entry index */
-    reventry=_ogg_malloc(entries*sizeof(long));
+    reventry=malloc(entries*sizeof(long));
 
     /* do the split */
     nt=b->c->nearest_tree=
-      _ogg_calloc(1,sizeof(encode_aux_nearestmatch));
+      calloc(1,sizeof(encode_aux_nearestmatch));
 
     nt->alloc=4096;
-    nt->ptr0=_ogg_malloc(sizeof(long)*nt->alloc);
-    nt->ptr1=_ogg_malloc(sizeof(long)*nt->alloc);
-    nt->p=_ogg_malloc(sizeof(long)*nt->alloc);
-    nt->q=_ogg_malloc(sizeof(long)*nt->alloc);
+    nt->ptr0=malloc(sizeof(long)*nt->alloc);
+    nt->ptr1=malloc(sizeof(long)*nt->alloc);
+    nt->p=malloc(sizeof(long)*nt->alloc);
+    nt->q=malloc(sizeof(long)*nt->alloc);
     nt->aux=0;
 
     fprintf(stderr,"Leaves added: %d              \n",
@@ -538,7 +540,7 @@ int main(int argc,char *argv[]){
     for(i=0;i<entries;i++)entryindex[i]=1;
     for(i=0;i<points-entries;i++){
       int best=_best(b,pointlist+i*dim,1);
-      float *a=pointlist+i*dim;
+      double *a=pointlist+i*dim;
       if(!(i&0xff))spinnit("counting hits...",i);
       if(best==-1){
 	fprintf(stderr,"\nINTERNAL ERROR; a point count not be matched to a\n"
@@ -555,7 +557,7 @@ int main(int argc,char *argv[]){
        the lengths after the build */
     {
       int upper=0;
-      long *lengthlist=_ogg_calloc(entries,sizeof(long));
+      long *lengthlist=calloc(entries,sizeof(long));
       for(i=0;i<entries;i++){
 	if(b->c->lengthlist[i]>0)
 	  entryindex[upper++]=entryindex[i];

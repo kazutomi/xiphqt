@@ -1,42 +1,31 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: illustrate simple use of chained bitstream and vorbisfile.a
- last mod: $Id: chaining_example.c,v 1.18 2002/10/11 11:14:41 xiphmont Exp $
+ last mod: $Id: chaining_example.c,v 1.5 2000/06/14 10:13:35 xiphmont Exp $
 
  ********************************************************************/
 
-#include <stdlib.h>
-#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
-
-#ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
-#include <io.h>
-#include <fcntl.h>
-#endif
+#include "vorbis/codec.h"
+#include "vorbis/vorbisfile.h"
+#include "../lib/misc.h"
 
 int main(){
   OggVorbis_File ov;
   int i;
 
-#ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
-  /* Beware the evil ifdef. We avoid these where we can, but this one we 
-     cannot. Don't add any more, you'll probably go to hell if you do. */
-  _setmode( _fileno( stdin ), _O_BINARY );
-  _setmode( _fileno( stdout ), _O_BINARY );
-#endif
-
   /* open the file/pipe on stdin */
-  if(ov_open(stdin,&ov,NULL,-1)<0){
+  if(ov_open(stdin,&ov,NULL,-1)==-1){
     printf("Could not open input as an OggVorbis file.\n\n");
     exit(1);
   }
@@ -45,8 +34,6 @@ int main(){
   if(ov_seekable(&ov)){
     printf("Input bitstream contained %ld logical bitstream section(s).\n",
 	   ov_streams(&ov));
-    printf("Total bitstream samples: %ld\n\n",
-	   (long)ov_pcm_total(&ov,-1));
     printf("Total bitstream playing time: %ld seconds\n\n",
 	   (long)ov_time_total(&ov,-1));
 
@@ -61,13 +48,23 @@ int main(){
     printf("\t\t%ldHz %d channels bitrate %ldkbps serial number=%ld\n",
 	   vi->rate,vi->channels,ov_bitrate(&ov,i)/1000,
 	   ov_serialnumber(&ov,i));
-    printf("\t\theader length: %ld bytes\n",(long)
-	   (ov.dataoffsets[i]-ov.offsets[i]));
-    printf("\t\tcompressed length: %ld bytes\n",(long)(ov_raw_total(&ov,i)));
-    printf("\t\tplay time: %lds\n",(long)ov_time_total(&ov,i));
+    printf("\t\tcompressed length: %ld bytes ",(long)(ov_raw_total(&ov,i)));
+    printf(" play time: %lds\n",(long)ov_time_total(&ov,i));
   }
 
   ov_clear(&ov);
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 

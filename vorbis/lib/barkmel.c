@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: bark scale utility
- last mod: $Id: barkmel.c,v 1.12 2002/07/11 06:40:48 xiphmont Exp $
+ last mod: $Id: barkmel.c,v 1.1 2000/01/04 09:04:58 xiphmont Exp $
 
  ********************************************************************/
 
@@ -21,43 +22,39 @@ int main(){
   int i;
   double rate;
   for(i=64;i<32000;i*=2){
-    rate=48000.f;
+    rate=48000.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
-    rate=44100.f;
+    rate=44100.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
-    rate=32000.f;
+    rate=32000.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
-    rate=22050.f;
+    rate=22050.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
-    rate=16000.f;
+    rate=16000.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
-    rate=11025.f;
+    rate=11025.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
-    rate=8000.f;
+    rate=8000.;
     fprintf(stderr,"rate=%gHz, block=%d, f(1)=%.2gHz bark(1)=%.2g (of %.2g)\n\n",
 	    rate,i,rate/2 / (i/2),toBARK(rate/2 /(i/2)),toBARK(rate/2));
 
 
   }
-  {
-    float i;
-    int j;
-    for(i=0.,j=0;i<28;i+=1,j++){
-      fprintf(stderr,"(%d) bark=%f %gHz (%d of 128)\n",
-              j,i,fromBARK(i),(int)(fromBARK(i)/22050.*128.));
-    }
+  for(i=0;i<28;i++){
+    fprintf(stderr,"bark=%d %gHz\n",
+	    i,fromBARK(i));
   }
   return(0);
 }

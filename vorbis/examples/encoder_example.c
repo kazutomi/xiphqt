@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: simple example encoder
- last mod: $Id: encoder_example.c,v 1.50 2002/07/16 09:26:07 xiphmont Exp $
+ last mod: $Id: encoder_example.c,v 1.8 2000/06/15 09:18:34 xiphmont Exp $
 
  ********************************************************************/
 
@@ -22,19 +23,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <math.h>
-#include <vorbis/vorbisenc.h>
+#include "vorbis/modes.h"
 
 #ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
 #include <io.h>
 #include <fcntl.h>
 #endif
 
-#if defined(__MACOS__) && defined(__MWERKS__)
-#include <console.h>      /* CodeWarrior's Mac "command-line" support */
-#endif
 
 #define READ 1024
 signed char readbuffer[READ*4+44]; /* out of the data segment, not the stack */
@@ -45,30 +42,20 @@ int main(){
   ogg_page         og; /* one Ogg bitstream page.  Vorbis packets are inside */
   ogg_packet       op; /* one raw packet of data for decode */
   
-  vorbis_info      vi; /* struct that stores all the static vorbis bitstream
+  vorbis_info     *vi; /* struct that stores all the static vorbis bitstream
 			  settings */
   vorbis_comment   vc; /* struct that stores all the user comments */
 
   vorbis_dsp_state vd; /* central working state for the packet->PCM decoder */
   vorbis_block     vb; /* local working space for packet->PCM decode */
 
-  int eos=0,ret;
-  int i, founddata;
-
-#if defined(macintosh) && defined(__MWERKS__)
-  int argc = 0;
-  char **argv = NULL;
-  argc = ccommand(&argv); /* get a "command line" from the Mac user */
-                          /* this also lets the user set stdin and stdout */
-#endif
+  int eos=0;
 
   /* we cheat on the WAV header; we just bypass 44 bytes and never
      verify that it matches 16bit/stereo/44.1kHz.  This is just an
      example, after all. */
 
 #ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
-  /* if we were reading/writing a file, it would also need to in
-     binary mode, eg, fopen("file.wav","wb"); */
   /* Beware the evil ifdef. We avoid these where we can, but this one we 
      cannot. Don't add any more, you'll probably go to hell if you do. */
   _setmode( _fileno( stdin ), _O_BINARY );
@@ -76,70 +63,20 @@ int main(){
 #endif
 
 
-  /* we cheat on the WAV header; we just bypass the header and never
-     verify that it matches 16bit/stereo/44.1kHz.  This is just an
-     example, after all. */
-
-  readbuffer[0] = '\0';
-  for (i=0, founddata=0; i<30 && ! feof(stdin) && ! ferror(stdin); i++)
-  {
-    fread(readbuffer,1,2,stdin);
-
-    if ( ! strncmp((char*)readbuffer, "da", 2) )
-    {
-      founddata = 1;
-      fread(readbuffer,1,6,stdin);
-      break;
-    }
-  }
+  fread(readbuffer,1,44,stdin);
 
   /********** Encode setup ************/
 
-  vorbis_info_init(&vi);
-
-  /* choose an encoding mode.  A few possibilities commented out, one
-     actually used: */
-
-  /*********************************************************************
-   Encoding using a VBR quality mode.  The usable range is -.1
-   (lowest quality, smallest file) to 1. (highest quality, largest file).
-   Example quality mode .4: 44kHz stereo coupled, roughly 128kbps VBR 
-  
-   ret = vorbis_encode_init_vbr(&vi,2,44100,.4);
-
-   ---------------------------------------------------------------------
-
-   Encoding using an average bitrate mode (ABR).
-   example: 44kHz stereo coupled, average 128kbps VBR 
-  
-   ret = vorbis_encode_init(&vi,2,44100,-1,128000,-1);
-
-   ---------------------------------------------------------------------
-
-   Encode using a qulity mode, but select that quality mode by asking for
-   an approximate bitrate.  This is not ABR, it is true VBR, but selected
-   using the bitrate interface, and then turning bitrate management off:
-
-   ret = ( vorbis_encode_setup_managed(&vi,2,44100,-1,128000,-1) ||
-           vorbis_encode_ctl(&vi,OV_ECTL_RATEMANAGE_AVG,NULL) ||
-           vorbis_encode_setup_init(&vi));
-
-   *********************************************************************/
-
-  ret=vorbis_encode_init_vbr(&vi,2,44100,.5);
-
-  /* do not continue if setup failed; this can happen if we ask for a
-     mode that libVorbis does not support (eg, too low a bitrate, etc,
-     will return 'OV_EIMPL') */
-
-  if(ret)exit(1);
+  /* choose an encoding mode */
+  /* (mode 0: 44kHz stereo uncoupled, roughly 128kbps VBR) */
+  vi=&info_A;
 
   /* add a comment */
   vorbis_comment_init(&vc);
-  vorbis_comment_add_tag(&vc,"ENCODER","encoder_example.c");
+  vorbis_comment_add(&vc,"Track encoded by encoder_example.c");
 
   /* set up the analysis state and auxiliary encoding storage */
-  vorbis_analysis_init(&vd,&vi);
+  vorbis_analysis_init(&vd,vi);
   vorbis_block_init(&vd,&vb);
   
   /* set up our packet->stream encoder */
@@ -166,16 +103,7 @@ int main(){
     ogg_stream_packetin(&os,&header_comm);
     ogg_stream_packetin(&os,&header_code);
 
-	/* This ensures the actual
-	 * audio data will start on a new page, as per spec
-	 */
-	while(!eos){
-		int result=ogg_stream_flush(&os,&og);
-		if(result==0)break;
-		fwrite(og.header,1,og.header_len,stdout);
-		fwrite(og.body,1,og.body_len,stdout);
-	}
-
+    /* no need to write out here.  We'll get to that in the main loop */
   }
   
   while(!eos){
@@ -193,14 +121,14 @@ int main(){
       /* data to encode */
 
       /* expose the buffer to submit data */
-      float **buffer=vorbis_analysis_buffer(&vd,READ);
+      double **buffer=vorbis_analysis_buffer(&vd,READ);
       
       /* uninterleave samples */
       for(i=0;i<bytes/4;i++){
 	buffer[0][i]=((readbuffer[i*4+1]<<8)|
-		      (0x00ff&(int)readbuffer[i*4]))/32768.f;
+		      (0x00ff&(int)readbuffer[i*4]))/32768.;
 	buffer[1][i]=((readbuffer[i*4+3]<<8)|
-		      (0x00ff&(int)readbuffer[i*4+2]))/32768.f;
+		      (0x00ff&(int)readbuffer[i*4+2]))/32768.;
       }
     
       /* tell the library how much we actually submitted */
@@ -212,27 +140,24 @@ int main(){
        block for encoding now */
     while(vorbis_analysis_blockout(&vd,&vb)==1){
 
-      /* analysis, assume we want to use bitrate management */
-      vorbis_analysis(&vb,NULL);
-      vorbis_bitrate_addblock(&vb);
+      /* analysis */
+      vorbis_analysis(&vb,&op);
+      
+      /* weld the packet into the bitstream */
+      ogg_stream_packetin(&os,&op);
 
-      while(vorbis_bitrate_flushpacket(&vd,&op)){
+      /* write out pages (if any) */
+      while(!eos){
+	int result=ogg_stream_pageout(&os,&og);
+	if(result==0)break;
+	fwrite(og.header,1,og.header_len,stdout);
+	fwrite(og.body,1,og.body_len,stdout);
+
+	/* this could be set above, but for illustrative purposes, I do
+	   it here (to show that vorbis does know where the stream ends) */
 	
-	/* weld the packet into the bitstream */
-	ogg_stream_packetin(&os,&op);
-	
-	/* write out pages (if any) */
-	while(!eos){
-	  int result=ogg_stream_pageout(&os,&og);
-	  if(result==0)break;
-	  fwrite(og.header,1,og.header_len,stdout);
-	  fwrite(og.body,1,og.body_len,stdout);
-	  
-	  /* this could be set above, but for illustrative purposes, I do
-	     it here (to show that vorbis does know where the stream ends) */
-	  
-	  if(ogg_page_eos(&og))eos=1;
-	}
+	if(ogg_page_eos(&og))eos=1;
+
       }
     }
   }
@@ -242,8 +167,6 @@ int main(){
   ogg_stream_clear(&os);
   vorbis_block_clear(&vb);
   vorbis_dsp_clear(&vd);
-  vorbis_comment_clear(&vc);
-  vorbis_info_clear(&vi);
   
   /* ogg_page and ogg_packet structs always point to storage in
      libvorbis.  They're never freed or manipulated directly */
@@ -251,3 +174,4 @@ int main(){
   fprintf(stderr,"Done.\n");
   return(0);
 }
+

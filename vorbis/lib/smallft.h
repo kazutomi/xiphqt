@@ -1,19 +1,20 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: fft transform
- last mod: $Id: smallft.h,v 1.12 2002/07/11 06:40:50 xiphmont Exp $
+ last mod: $Id: smallft.h,v 1.6 2000/01/22 13:28:32 xiphmont Exp $
 
- ********************************************************************/
+********************************************************************/
 
 #ifndef _V_SMFT_H_
 #define _V_SMFT_H_
@@ -22,12 +23,12 @@
 
 typedef struct {
   int n;
-  float *trigcache;
+  double *trigcache;
   int *splitcache;
 } drft_lookup;
 
-extern void drft_forward(drft_lookup *l,float *data);
-extern void drft_backward(drft_lookup *l,float *data);
+extern void drft_forward(drft_lookup *l,double *data);
+extern void drft_backward(drft_lookup *l,double *data);
 extern void drft_init(drft_lookup *l,int n);
 extern void drft_clear(drft_lookup *l);
 
