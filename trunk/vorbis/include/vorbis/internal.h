@@ -13,20 +13,12 @@
 
  function: libvorbis codec internal types.  These structures are 
            'visible', but generally uninteresting to the developer
- last mod: $Id: internal.h,v 1.6 2000/06/18 12:33:47 xiphmont Exp $
+ last mod: $Id: internal.h,v 1.7 2000/07/12 09:36:17 xiphmont Exp $
 
  ********************************************************************/
 
 #ifndef _vorbis_internal_h_
 #define _vorbis_internal_h_
-
-/* lookup structures for various simple transforms *****************/
-
-typedef struct {
-  double *window;
-  long winlen;
-  void *fft;
-} envelope_lookup;
 
 /* structures for various internal data abstractions ********************/
 
