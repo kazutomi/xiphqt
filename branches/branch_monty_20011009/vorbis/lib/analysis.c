@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.46 2001/08/13 01:36:56 xiphmont Exp $
+ last mod: $Id: analysis.c,v 1.46.4.1 2001/11/16 08:17:04 xiphmont Exp $
 
  ********************************************************************/
 
@@ -27,8 +27,12 @@
 
 int analysis_noisy=1;
 
+int vorbis_analysis_packetout(vorbis_block *vb,ogg_packet *op){
+  return(vorbis_bitrate_flushpacket(&(vb->bms),op));
+}
+
 /* decides between modes, dispatches to the appropriate mapping. */
-int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
+int vorbis_analysis(vorbis_block *vb){
   vorbis_dsp_state     *vd=vb->vd;
   backend_lookup_state *b=vd->backend_state;
   vorbis_info          *vi=vd->vi;
@@ -64,17 +68,8 @@ int vorbis_analysis(vorbis_block *vb,ogg_packet *op){
 
   if((ret=_mapping_P[type]->forward(vb,b->mode[mode])))
     return(ret);
-  
-  /* set up the packet wrapper */
-  
-  op->packet=oggpack_get_buffer(&vb->opb);
-  op->bytes=oggpack_bytes(&vb->opb);
-  op->b_o_s=0;
-  op->e_o_s=vb->eofflag;
-  op->granulepos=vb->granulepos;
-  op->packetno=vb->sequence; /* for sake of completeness */
-  
-  return(0);
+
+  return(vorbis_bitrate_addblock(vb));
 }
 
 /* there was no great place to put this.... */
