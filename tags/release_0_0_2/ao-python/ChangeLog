@@ -1,0 +1,25 @@
+2001-02-18  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* README: Fixed incorrect config instructions
+	
+2001-01-31  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* setup.py, config_unix.py, setup.cfg: Went back to an older way
+	of configuring things, which seems to be the only maintainable way
+	to do it until distutils has better configuration
+	support. "./setup.py bdist_rpm" should work fine now.
+	
+2001-01-21  Andrew H. Chatham <andrew.chatham@duke.edu>
+	* src/aomodule.c (dict_to_options): Size checking removed; no
+	longer necessary
+	
+	* src/aomodule.h: Made comments closer to Python style guide
+        * src/aomodule.[ch]: Switched to C-style comments
+	
+	* src/aomodule.c (py_ao_new) (py_ao_get_driver_info): Support
+	string argument
+
+	* src/aomodule.c (initao): Removed extra calls to AddInt
+
+	* ChangeLog: Started
+	* build.py: removed
+	
+	* setup.py: Added configuration
