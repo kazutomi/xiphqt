@@ -48,7 +48,7 @@ def gen_filelist(neuros, prefix, suffix, target_prefix, silent=False):
     return filelist
 
 
-def add_track(neuros, sourcename, targetname):
+def add_track(neuros, sourcename, targetname, recording=None):
 
     if sourcename == None:
         # File already on Neuros
@@ -60,7 +60,7 @@ def add_track(neuros, sourcename, targetname):
 
     # Create DB entry
     record = (info["title"], None, info["artist"], info["album"],
-              info["genre"], None, info["length"], info["size"] // 1024,
+              info["genre"], recording, info["length"], info["size"] // 1024,
               neuros.hostpath_to_neurospath(targetname))
     # Add entry to database
     neuros.db["audio"].add_record(record)

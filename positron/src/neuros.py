@@ -1,6 +1,8 @@
 import db
+import db.new
 import os
 from os import path
+import util
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -30,22 +32,24 @@ class Neuros:
                          "extra_format" : (">I",">I","z"),
                          "extra_names"  : ("Time", "Size", "Path") },
 
-        # FIXME: Spec is wrong, these databases have screwy fields
         "pcaudio"    : { "no_flatten"   : (1, ),
-                         "extra_format" : (">I",">I"),
-                         "extra_names"  : ("Time", "Size") },
+                         "extra_format" : (">I",">I","z"),
+                         "extra_names"  : ("Time", "Size", "Path") },
         
         "unidedhisi" : { "no_flatten"   : (),
                          "extra_format" : ("z","z"),
                          "extra_names"  : ("Source", "Path") },
 
         "idedhisi"   : { "no_flatten"   : (),
-                         "extra_format" : (),
-                         "extra_names"  : () },
+                         "extra_format" : ("z","z","z","z","z",
+                                           ">I",">I","z"),
+                         "extra_names"  : ("Source", "Artist",
+                                           "Album", "Genre", "Track Name",
+                                           "Time", "Size", "Path") },
         
         "failedhisi" : { "no_flatten"   : (),
-                         "extra_format" : (),
-                         "extra_names"  : () }
+                         "extra_format" : ("z","z"),
+                         "extra_names"  : ("Source", "Path") }
         }
 
 
@@ -90,6 +94,26 @@ class Neuros:
 
         self.db[name].close()
         self.db[name] = None
+
+    def new_db(self, name):
+        # Close database before we trash it
+        if self.db[name] != None:
+            self.close_db(name)
+            reopen = True
+        else:
+            reopen = False
+
+        # Erase database dir if present
+        dbpath = path.join(self.mountpoint, Neuros.DB_DIR, name)
+        
+        if path.exists(dbpath):
+            util.recursive_delete(dbpath)
+
+        # Write new database
+        db.new.unpack(name, path.join(self.mountpoint, Neuros.DB_DIR))
+        
+        if reopen:
+            self.open_db(name)
 
     def get_serial_number(self):
 
