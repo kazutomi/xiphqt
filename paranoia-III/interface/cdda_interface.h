@@ -40,6 +40,8 @@ typedef struct TOC {	/* structure of table of contents */
 
 /* cdrom access function pointer */
 
+void SetupInterface( unsigned char *int_name );
+
 typedef struct cdrom_drive{
 
   int opened; /* This struct may just represent a candidate for opening */
