@@ -1,6 +1,18 @@
 /* top layer of subversion library to intercept RealPlayer socket and
    device I/O. --Monty 20011101 */
 
+/* We grab audio by watching for open() on the audio device, and then
+   capturing ioctl()s and read()s.  X is dealt with at two levels;
+   when we need to add our own X events, we do that through
+   RealPlayer's own Xlib state (to avoid opening another, or confusing
+   Xlib by adding/removing events from its stream.  This is another
+   way to get the infamous 'Xlib: Unexpected async reply' error, even
+   if things are properly locked).  Mostly we deal with X by
+   watching/effecting the wire level protocol over the X fd.  Watching
+   the raw X gives some extra flexibility (like capturing expose),
+   especially for potential future features (like not mapping the RP
+   windows at all, but RP being unaware of it). */
+
 #define _GNU_SOURCE
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
@@ -10,6 +22,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <string.h>
 #include <dlfcn.h>
 #include <sys/time.h>
@@ -54,10 +68,18 @@ static int audio_format=-1;
 static int X_fd=-1;
 
 static pthread_t snatch_backchannel_thread;
+static pthread_t snatch_event_thread;
 
-static char username[256];
-static char password[256];
+static char *username=NULL;
+static char *password=NULL;
+static char *openfile=NULL;
+static char *location=NULL;
+
 static int snatch_active=1;
+static int fake_audiop=0;
+static int fake_videop=0;
+
+static void (*QueuedTask)(void);
 
 #include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
 		    Oh and I'm lazy. */
@@ -105,34 +127,87 @@ void *get_me_symbol(char *symbol){
   return(ret);
 }
 
-void *backchannel_and_timer(void *dummy){
+static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
+
+void *event_thread(void *dummy){
+  if(debug)
+    fprintf(stderr,"    ...: Event thread %lx reporting for duty!\n",
+	    (unsigned long)pthread_self());
+
+  while(1){
+    pthread_cond_wait(&event_cond,&event_mutex);
+    if(QueuedTask){
+      (*QueuedTask)();
+      QueuedTask=NULL;
+    }else{
+      fprintf(stderr,
+	      "**ERROR: Internal fault! event thread awoke without an event\n"
+	      "         to process!\n");
+    }
+  }
+}
+
+void *backchannel_thread(void *dummy){
   if(debug)
     fprintf(stderr,"    ...: Backchannel thread %lx reporting for duty!\n",
 	    (unsigned long)pthread_self());
 
   while(1){
     char rq;
-    char buffer[256];
-    size_t bytes=fread(&rq,1,1,backchannel_fd);
+    size_t ret=fread(&rq,1,1,backchannel_fd);
+    short length;
+    char *buf=NULL;
     
-    if(bytes<=0){
+    if(ret<=0){
       fprintf(stderr,"**ERROR: Backchannel lost!  exit(1)ing...\n");
       exit(1);
     }
-
-    if(debug)
-      fprintf(stderr,"    ...: Backchannel request\n");
+    rpauth_already=0;
 
     switch(rq){
     case 'K':
-      bytes=fread(buffer,1,256,backchannel_fd);
-      FakeKeycode(buffer[0],buffer[1],buffer[2],rpplay_window);
+      {
+	unsigned char sym;
+	unsigned short mod;
+	ret=fread(&sym,1,1,backchannel_fd);
+	ret=fread(&mod,2,1,backchannel_fd);
+	if(ret==1)
+	  FakeKeySym(sym,mod,rpplay_window);
+      }
       break;
     case 'U':
-      fread(username,1,256,backchannel_fd);
-      break;
     case 'P':
-      fread(password,1,256,backchannel_fd);
+    case 'L':
+    case 'O':
+      ret=fread(&length,2,1,backchannel_fd);
+      if(ret==1){
+	if(length)buf=calloc(length+1,1);
+	if(length)ret=fread(buf,1,length,backchannel_fd);
+	if(length && ret==length)
+	  switch(rq){
+	  case 'U':
+	    if(username)free(username);
+	    username=buf;
+	    break;
+	  case 'P':
+	    if(password)free(password);
+	    password=buf;
+	    break;
+	  case 'L':
+	    if(location)free(location);
+	    location=buf;
+	    break;
+	  case 'O':
+	    if(openfile)free(openfile);
+	    openfile=buf;
+	    break;
+	  }
+      }
+      break;
+    case 'T':
+      snatch_active=2;
+      FakeExposeRPPlay();
       break;
     case 'A':
       snatch_active=1;
@@ -142,11 +217,17 @@ void *backchannel_and_timer(void *dummy){
       snatch_active=0;
       FakeExposeRPPlay();
       break;
-    case 'S':
-      FakeKeycode(9,0,1,rpplay_window);
+    case 's':
+      fake_audiop=1;
       break;
-    case 'G':
-      FakeKeycode(43,0,1,rpplay_window);
+    case 'S':
+      fake_audiop=0;
+      break;
+    case 'v':
+      fake_videop=1;
+      break;
+    case 'V':
+      fake_videop=0;
       break;
     }
   }
@@ -202,6 +283,30 @@ void initialize(void){
 		"----env: SNATCH_AUDIO_DEVICE\n"
 		"           set (%s)\n",audioname);
     }
+
+    if(getenv("SNATCH_AUDIO_FAKE")){
+      if(debug)
+	fprintf(stderr,
+		"----env: SNATCH_AUDIO_FAKE\n"
+		"           set.  Faking audio operations.\n");
+      fake_audiop=1;
+    }else
+      if(debug)
+	fprintf(stderr,
+		"----env: SNATCH_AUDIO_FAKE\n"
+		"           not set.\n");
+
+    if(getenv("SNATCH_VIDEO_FAKE")){
+      if(debug)
+	fprintf(stderr,
+		"----env: SNATCH_VIDEO_FAKE\n"
+		"           set.  Faking video operations.\n");
+      fake_videop=1;
+    }else
+      if(debug)
+	fprintf(stderr,
+		"----env: SNATCH_VIDEO_FAKE\n"
+		"           not set.\n");
 
     if(debug)
       fprintf(stderr,"    ...: Now watching for RealPlayer audio output.\n");
@@ -315,20 +420,26 @@ void initialize(void){
 
 	if(debug)
 	  fprintf(stderr,
-		  "    ...: starting backchannel/fake event thread...\n");
+		  "    ...: starting backchannel/fake event threads...\n");
 	
 	if((ret=pthread_create(&snatch_backchannel_thread,NULL,
-		       backchannel_and_timer,NULL))){
+		       backchannel_thread,NULL))){
 	  fprintf(stderr,
 		  "**ERROR: could not create backchannel worker thread.\n"
 		  "         Error code returned: %d\n"
 		  "         exit(1)ing...\n\n",ret);
 	  exit(1);
-	}else
-	  if(debug)
+	}else{
+	  pthread_mutex_lock(&event_mutex);
+	  if((ret=pthread_create(&snatch_event_thread,NULL,
+				 event_thread,NULL))){
 	    fprintf(stderr,
-		    "         ...done.\n");
-
+		    "**ERROR: could not create event worker thread.\n"
+		    "         Error code returned: %d\n"
+		    "         exit(1)ing...\n\n",ret);
+	    exit(1);
+	  }
+	}
       }else
 	if(debug)
 	  fprintf(stderr,
@@ -349,19 +460,19 @@ pid_t fork(void){
 }
 
 /* The audio device is subverted through open() */
-int open(const char *pathname,int flags,mode_t mode){
+int open(const char *pathname,int flags,...){
+  va_list ap;
   int ret;
+  mode_t mode;
 
   initialize();
-  ret=(*libc_open)(pathname,flags,mode);
 
-  if(ret>-1){
-    /* open needs only watch for the audio device. */
-    if( (audioname[strlen(audioname)-1]=='*' &&
-	 !strncmp(pathname,audioname,strlen(audioname)-1)) ||
-	(audioname[strlen(audioname)-1]!='*' &&
-	 !strcmp(pathname,audioname))){
-      
+  /* open needs only watch for the audio device. */
+  if( (audioname[strlen(audioname)-1]=='*' &&
+       !strncmp(pathname,audioname,strlen(audioname)-1)) ||
+      (audioname[strlen(audioname)-1]!='*' &&
+       !strcmp(pathname,audioname))){
+
       /* a match! */
       if(audio_fd>-1){
 	/* umm... an audio fd is already open.  report the problem and
@@ -373,6 +484,13 @@ int open(const char *pathname,int flags,mode_t mode){
 		"         This behavior is unexpected; ignoring this open()\n"
 		"         request.\n",pathname);
       }else{
+
+	/* are we faking the audio? */
+	if(fake_audiop)
+	  ret=(*libc_open)("/dev/null",O_RDWR,mode);
+	else
+	  ret=(*libc_open)(pathname,flags,mode);
+	
 	audio_fd=ret;
 	audio_channels=-1;
 	audio_rate=-1;
@@ -382,9 +500,20 @@ int open(const char *pathname,int flags,mode_t mode){
 		  "    ...: Caught RealPlayer opening audio device "
 		  "%s (fd %d).\n",
 		  pathname,ret);
+	if(debug && fake_audiop)
+	  fprintf(stderr,
+		  "    ...: Faking the audio open and writes as requested.\n");
       }
-    }
+      return(ret);
   }
+
+  if(flags|O_CREAT){
+    va_start(ap,flags);
+    mode=va_arg(ap,mode_t);
+    va_end(ap);
+  }
+
+  ret=(*libc_open)(pathname,flags,mode);
   return(ret);
 }
 
@@ -512,7 +641,7 @@ int writev(int fd,const struct iovec *v,int n){
 int ioctl(int fd,unsigned long int rq, ...){
   va_list optional;
   void *arg;
-  int ret;
+  int ret=0;
   initialize();
   
   va_start(optional,rq);
@@ -524,7 +653,8 @@ int ioctl(int fd,unsigned long int rq, ...){
        rq==SNDCTL_DSP_CHANNELS ||
        rq==SNDCTL_DSP_SETFMT){
 
-      ret=(*libc_ioctl)(fd,rq,arg);
+      if(!fake_audiop)
+        ret=(*libc_ioctl)(fd,rq,arg);
       
       if(ret==0){
 	switch(rq){
@@ -557,7 +687,6 @@ int ioctl(int fd,unsigned long int rq, ...){
   return((*libc_ioctl)(fd,rq,arg));
 }
 
-
 Display *XOpenDisplay(const char *d){
   if(!XInitThreads()){
     fprintf(stderr,"**ERROR: Unable to set multithreading support in Xlib.\n"
@@ -565,4 +694,13 @@ Display *XOpenDisplay(const char *d){
     exit(1);
   }
   return(Xdisplay=(*xlib_xopen)(d));
+}
+
+static void queue_task(void (*f)(void)){
+  fprintf(stderr,"Queueing task...\n");
+  pthread_mutex_lock(&event_mutex);
+  QueuedTask=f;
+  pthread_cond_signal(&event_cond);
+  pthread_mutex_unlock(&event_mutex);
+  fprintf(stderr,"done...");
 }
