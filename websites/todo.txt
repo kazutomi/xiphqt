@@ -5,3 +5,9 @@ To Do
 	.txt file that's being used as the source for the main body.
 *	After I've implemented that, I need a way for this sort of thing to "use whatever my
 	ancestors used", kinda like an OO derivation thing.
+*	Anyhow, for this out-of-band data thing: In it, I'd have stuff for:
+	*	Extra things to put in <head>
+	*	Extra things to put before <div id='content'>
+	*	Extra things to put after  <div id='content'>
+	* 	Maybe a partially-automated way to do next and previous <link rel='...'> bits.
+	Maybe I could use PyYaml. Although that's probably serious overkill.
