@@ -1,18 +1,23 @@
 # -*-Perl-*-
 
-# the best beginning module example.  Very simple, uses the standard hooks
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
 
 use Tk;
-
 package MGMmodule::biff;
+use vars qw($maildrop $xpath $graph $widget $lastmod);
 
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xclass=$this->{"xclass"};
 
-    my$maildrop=$this->{"widget"}->optionGet("maildrop","");
-
+    $maildrop=$this->{"widget"}->optionGet("maildrop","");
+    
     if(!defined($maildrop)){
 	my$name=getpwuid($<);
 	if(!defined($name)){
@@ -32,7 +37,6 @@ sub module_init{
 	    }
 	}
     }
-    $this->{"maildrop"}=$maildrop;
     $toplevel->optionAdd("$xclass.order", 100,21);
     $this;
 }
@@ -40,7 +44,8 @@ sub module_init{
 sub module_instance{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
-    my$xpath=$this->{"xpath"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
 
     # modify defaults
     $toplevel->optionAdd("$xpath*scalerefresh",5000,21); # slower
@@ -55,36 +60,36 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);      
 
-    $this->{"lastmod"}=0;
+    $lastmod=0;
     $this;
 }
 
 sub module_run{
     my$this=shift;
     
-    $this->{"graph"}=MGM::Graph->new($this,num=>1,prompt=>' messages',
+    $graph=MGM::Graph->new($this,num=>1,prompt=>' messages',
 				     minscale=>4);
     $this->module_update;
-    $this->{"graph"}{"widget"};        # must return the widget
+    $widget=$graph->{"widget"};        # must return the widget
 }
 
 sub module_update{ 
     my$this=shift;
     my$count=0;
-    my$modtime=(stat $this->{"maildrop"})[9];
+    my$modtime=(stat $maildrop)[9];
     if(defined($modtime)){
-	if($modtime!=$this->{"lastmod"}){
-	    if (open(PROC,"<$this->{maildrop}")){
+	if($modtime!=$lastmod){
+	    if (open(PROC,"<$maildrop")){
 		while(<PROC>){
 		    $count++ if(m/^From /);
 		}
 		close PROC;
 	    }
-	    $this->{"lastmod"}=$modtime;
+	    $lastmod=$modtime;
 	}
-	$this->{"graph"}->set($count);
+	$graph->set($count);
     }else{
-	$this->{"graph"}->set(0);
+	$graph->set(0);
     }
 }
 

@@ -1,16 +1,23 @@
 # -*-Perl-*-
 
-# the best beginning module example.  Very simple, uses the standard hooks
+# the best beginning module example.  Very simple, uses the standard hooks.
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
 
 use Tk;
-
 package MGMmodule::loadav;
+use vars qw($xpath $widget $graph);
 
 sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xclass=$this->{"xclass"};
-
+    
     unless (open(PROC,"</proc/loadavg")){
 	$toplevel->optionAdd("$xclass*active",'false',21);
     }
@@ -21,7 +28,8 @@ sub module_init{
 sub module_instance{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
-    my$xpath=$this->{"xpath"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
     # modify defaults
     $toplevel->optionAdd("$xpath*scalerefresh",1000,21); # slower
     $toplevel->optionAdd("$xpath.bar.0.label", "Load average",21);
@@ -29,9 +37,9 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.bar.2.label", "Load (15min)",21);
     $toplevel->optionAdd("$xpath.scalewidadj", 220,21);  # narrower
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
-
+    
     my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' proc(s)',3);
-
+    
     $toplevel->optionAdd("$xpath.minx",        $minx,21);      
     $toplevel->optionAdd("$xpath.miny",        $miny,21);          
     $this;
@@ -40,8 +48,8 @@ sub module_instance{
 sub module_run{
     my$this=shift;
     
-    $this->{"graph"}=MGM::Graph->new($this,num=>3,prompt=>' proc(s)');
-    $this->{"graph"}{"widget"};        # must return the widget
+    $graph=MGM::Graph->new($this,num=>3,prompt=>' proc(s)');
+    $widget=$graph->{"widget"};        # must return the widget
 }
 
 sub module_update{ 
@@ -49,7 +57,7 @@ sub module_update{
     if(open(PROC,"</proc/loadavg")){
 	while(<PROC>){
 	    if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
-		$this->{"graph"}->set($1,$2,$3);
+		$graph->set($1,$2,$3);
 	    }
 	}
 	close PROC;

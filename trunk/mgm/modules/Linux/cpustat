@@ -1,61 +1,50 @@
 # -*-Perl-*-
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
+
 use Tk;
 package MGMmodule::cpustat;
+use vars qw($numcpus $statcpus $xpath $graph @load @total @prevload 
+	    @prevtotal $widget);
 
-sub module_run{
-    my($this)=@_;
-    $this->{"graph"}=MGM::Graph->new($this,num=>$this->{"statcpus"},fixed=>'1',
-			   prompt=>"%",rangecurrent=>100,rangesetting=>'100');
-    $this->{"graph"}{"widget"};        # must return widget
-}
-
-sub module_update{ 
+# class init
+sub module_init{
     my$this=shift;
-    
-    # in late 2.1+ kernels, each CPU has an entry in /proc/stat along with
-    # a common entry.  Earlier, only the common entry.
-    
-    my($load,$total,$statcpus)=$this->read_proc;
-    my$prevload=$this->{"prevload"};
-    my$prevtotal=$this->{"prevtotal"};
-    
-    if(defined($prevload)){
-	my@vals;
-	
-	if($this->{"statcpus"}==1){
-	    my$tot=$total->[0]-$prevtotal->[0];
-	    if($tot>0){
-		$vals[0]=100*($load->[0]-$prevload->[0])/$tot;
-		$vals[0]=100 if $vals[0]>100;
-	    }else{
-		$vals[0]=0;
-	    }
-	}else{
-	    for(my$i=0;$i<$this->{"numcpus"};$i++){
-		my$use=$i+1;
-		my$tot=$total->[$use]-$prevtotal->[$use];
-		if($tot>0){
-		    $vals[$i]=100*($load->[$use]-$prevload->[$use])/$tot;
-		    $vals[$i]=100 if $vals[$i]>100;
-		}else{
-		    $vals[$i]=0;
-		}
+    my$xclass=$this->{"xclass"};
+
+    # how many CPUs? Get this from /proc/cpuinfo then /proc/stat.
+    # /proc/stat only sees multiple CPUs as of late 2.1, but we
+    # at least want to mark the single bar as SMP under 2.0
+
+    $numcpus=0;
+    $statcpus=0;
+    if(open(PROC,"</proc/cpuinfo")){
+	while(<PROC>){
+	    if(m/processor\s*:\s*(\d*)/){
+		$numcpus=$1+1 if ($numcpus<$1+1);
 	    }
 	}
-	$this->{"graph"}->set(@vals);
+	close PROC;
+	# now check /proc/stat to see how many cpus it reports
+	$this->read_proc;
+    }else{
+	$this->{"toplevel"}->optionAdd("$xclass.active",0,21);
     }
-    
-    @{$this->{"prevload"}}=@{$load};
-    @{$this->{"prevtotal"}}=@{$total};
-    
+    $this->{"toplevel"}->optionAdd("$xclass.order",     1,21);      
+    $this;
 }
-    
+
+# instance init
 sub module_instance{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
-    my$xpath=$this->{"xpath"};
-    my$statcpus=$this->{"statcpus"};
-    my$numcpus=$this->{"statcpus"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
 
     ($minx,$miny)=MGM::Graph::calcxysize($this,100,'%',$statcpus);
 
@@ -76,37 +65,54 @@ sub module_instance{
     $this;
 }
 
-sub module_init{
-    my$this=shift;
-
-    # how many CPUs? Get this from /proc/cpuinfo then /proc/stat.
-    # /proc/stat only sees multiple CPUs as of late 2.1, but we
-    # at least want to mark the single bar as SMP under 2.0
-
-    my$numcpus=0;
-    die "Couldn't open /proc/cpuinfo\n" unless open(PROC,"</proc/cpuinfo");
-    while(<PROC>){
-	if(m/processor\s*:\s*(\d*)/){
-	    $numcpus=$1+1 if ($numcpus<$1+1);
-	}
-    }
-    close PROC;
-    $this->{"numcpus"}=$numcpus;
-
-    # now run one 'update' to intialize things and see what CPUs pop up there.
-    (undef,undef,$this->{"statcpus"})=$this->read_proc;
-    if(!$this->{"statcpus"}){
-	$this->{"toplevel"}->optionAdd($this->{"xclass"}.".active",0,21);
-    }
-    $this->{"toplevel"}->optionAdd($this->{"xclass"}.".order",     1,21);      
-    $this;
+# instance widget build
+sub module_run{
+    my($this)=@_;
+    $graph=MGM::Graph->new($this,num=>$statcpus,fixed=>'1',
+			   prompt=>"%",rangecurrent=>100,rangesetting=>'100');
+    $widget=$graph->{"widget"};        # must return widget
 }
 
+sub module_update{ 
+    my$this=shift;
+    
+    # in late 2.1+ kernels, each CPU has an entry in /proc/stat along with
+    # a common entry.  Earlier, only the common entry.
+    
+    $this->read_proc;
+    
+    if(defined(@prevload)){
+	my@vals;
+	
+	if($statcpus==1){
+	    my$tot=$total[0]-$prevtotal[0];
+	    if($tot>0){
+		$vals[0]=100*($load[0]-$prevload[0])/$tot;
+		$vals[0]=100 if $vals[0]>100;
+	    }else{
+		$vals[0]=0;
+	    }
+	}else{
+	    for(my$i=0;$i<$numcpus;$i++){
+		my$use=$i+1;
+		my$tot=$total[$use]-$prevtotal[$use];
+		if($tot>0){
+		    $vals[$i]=100*($load[$use]-$prevload[$use])/$tot;
+		    $vals[$i]=100 if $vals[$i]>100;
+		}else{
+		    $vals[$i]=0;
+		}
+	    }
+	}
+	$graph->set(@vals);
+    }
+    
+    @prevload=@load;
+    @prevtotal=@total;
+}
+    
 sub read_proc{
     shift;
-    my @load;
-    my @total;
-    my $statcpus=1;
     if(open(PROC,"</proc/stat")){
 	while(<PROC>){
 	    if(m/^cpu(\d*)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/){
@@ -120,12 +126,11 @@ sub read_proc{
 		    $load[0]=$2+$3+$4;
 		    $total[0]=$2+$3+$4+$5;
 		}
+	    }else{
+		last;
 	    }
 	}
 	close PROC;    
-	(\@load,\@total,$statcpus);
-    }else{
-	(undef,undef,0);
     }
 }
 
