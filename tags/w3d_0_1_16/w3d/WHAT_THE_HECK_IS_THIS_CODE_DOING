@@ -1,0 +1,57 @@
+
+Hi,
+
+this is a experimental 3d-integer-wavelet-video compression codec. Since the
+integer wavelet transform is reversible and a reversible rgb-yuv conversion
+is used (you can understand it as (1,2) integer wavelet transform, too), this
+codec should be lossless if you transmit the whole bitstream.
+The Y/U/V-bitstreams are embedded, thus you can simply get lossy compression 
+and shape the used bandwith by cutting bitstreams, when a user defined limit 
+is reached.
+
+
+Here is how the current code works:
+
+First we grab N_FRAMES (defined in main.c) frames from a video4linux device.
+Then each pixel becomes transformed into a YUV-alike colorspace. Take a look in
+yuv.c to see how it is done. Each component is then transformed into frequency
+space by applying the wavelet transform in x, y and frame direction. 
+The frame-direction transform is our high-order 'motion compensation'.
+At boundaries we use (1,1)-Wavelets (== HAAR transform), inside the image 
+(2,2)-Wavelets. (4,4)-Wavelets should be easy to add. See wavelet.c for details.
+
+The resulting coefficients are scanned bitplane by bitplane and 
+runlength-encoded. Runlengths are Huffman-compressed and written into the 
+bitstreams. The bitplanes of higher-frequency scales are offset'ed to ensure a
+fast transmission of high-energy-low-frequency coefficients. (coder.c)
+The huffman coder is quite simple and uses a hardcoded table, this can be done
+much better, but I wanted to get it working fast.
+
+Decompression works exactly like compression but in reversed direction.
+
+The test program writes for each frame the grabbed original image, the y/u/v
+component (may look strange, since u/v can be negative and are not clamped to
+the [0:255] range), the coefficients (look much more like usual wavelet 
+coefficients if you add 128 to each pixel), the coefficients after they are 
+runlength/huffman encoded and decoded, the y/u/v components when inverse wavelet
+transform is done and the output image in .ppm format.
+
+You can call the test program like this:
+
+  $ ./main 20000 5000 5000 /dev/video1
+
+which means: images are grabbed from '/dev/video1', the Y component bitstream
+is limited to 20000 Bytes, the U and V bitstreams to 5000 Bytes.
+The last argument may be omitted.
+
+Since video_device_grab_frame() uses a read() call to grab images, it may
+not work with some bttv drivers. Rewrite this function for mmap()'d access if
+you want. Or even better, write something to read frames from mpeg/quicktime/avi
+movies. And design a simple file format with multiplexed bitstreams. And write 
+a player. And ...
+Take a look in the TODO file.
+
+Good Luck,
+
+- Holger Waechtler  <hwaechtler@users.sourceforge.net>
+
