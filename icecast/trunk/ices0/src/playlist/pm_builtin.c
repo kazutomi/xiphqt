@@ -1,7 +1,7 @@
 /* playlist_text.c
  * - Module for simple playlist
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-4 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -72,6 +72,7 @@ playlist_builtin_get_next (void)
   char *out;
   static int level = 0;
   struct stat st;
+  FILE* tmpfp;
 
   /* If the original playlist has changed on disk (and we are not
    * randomising) reload it. */
@@ -82,9 +83,23 @@ playlist_builtin_get_next (void)
     return NULL;
 
   if (feof (fp)) {
-    ices_log_debug ("Reached end of playlist, rewinding");
     lineno = 0;
-    rewind (fp);
+    /* might as well rererandomize here (and pick up any changes) */
+    if (ices_config.pm.randomize) {
+      ices_log_debug ("Reshuffling playlist");
+      tmpfp = fp;
+      if (playlist_builtin_open_playlist(&ices_config.pm)) {
+	playlist_builtin_shuffle_playlist();
+	ices_util_fclose(tmpfp);
+      } else {
+	ices_log_debug("Reshuffling failed, rewinding old list");
+	fp = tmpfp;
+	rewind(fp);
+      }
+    } else {
+      ices_log_debug ("Reached end of playlist, rewinding");
+      rewind (fp);
+    }
   }
 
   if (! (out = ices_util_read_line (fp)))
