@@ -27,8 +27,11 @@ static int cf_process(int ilen, int16_t* il, int16_t* ir);
 
 static ices_plugin_t Crossfader = {
   "crossfade",
+
   cf_new_track,
-  cf_process
+  cf_process,
+
+  NULL
 };
 
 static int NewTrack = 0;

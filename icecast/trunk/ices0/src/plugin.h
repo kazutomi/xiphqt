@@ -16,15 +16,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * $Id$
  */
 
 #ifndef _ICES_PLUGIN_H_
 #define _ICES_PLUGIN_H_ 1
 
-typedef struct {
+typedef struct _ices_plugin {
   const char *name;
+
   void (*new_track)(void);
   int (*process)(int ilen, int16_t *il, int16_t *ir);
+
+  struct _ices_plugin *next;
 } ices_plugin_t;
 
 ices_plugin_t *crossfade_plugin(void);

@@ -150,6 +150,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 #ifdef HAVE_LIBLAME
   int decode = 0;
   buffer_t obuf;
+  ices_plugin_t *plugin;
   /* worst case decode: 22050 Hz at 8kbs = 44.1 samples/byte */
   static int16_t left[INPUT_BUFSIZ * 45];
   static int16_t right[INPUT_BUFSIZ * 45];
@@ -164,7 +165,8 @@ stream_send (ices_config_t* config, input_stream_t* source)
     ices_reencode_reset (source);
     if (config->plugin) {
       decode = 1;
-      config->plugin->new_track();
+      for (plugin = config->plugin; plugin; plugin = plugin->next)
+	config->plugin->new_track();
     } else
       for (stream = config->streams; stream; stream = stream->next)
 	if (stream->reencode && stream_needs_reencoding (source, stream)) {
@@ -205,9 +207,9 @@ stream_send (ices_config_t* config, input_stream_t* source)
 
 #ifdef HAVE_LIBLAME
     /* run output through plugin */
-    if (samples && config->plugin) {
-      samples = config->plugin->process(samples, left, right);
-    }
+    for (plugin = config->plugin; plugin; plugin = plugin->next)
+      if (samples)
+	samples = plugin->process(samples, left, right);
 #endif
 
     if (len == 0) {
