@@ -1,6 +1,6 @@
 TODO list for oggmerge
 
-* get simple mng->ogg working
-* framework redesign to allow mng+oggvorbis->ogg
+* write mng packetizer plugin
 * experiment with stream-description metadata
 * xml substream support
+* test
