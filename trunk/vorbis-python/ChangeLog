@@ -1,3 +1,11 @@
+2003-5-31   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* pyvorbisinfo.c (py_comment_subscript) Applied patch from Brian
+	Warner to fix a bug where I wasn't clearing the Python error
+	correctly in unicode conversion.
+
+	* pyvorbisinfo.c (write_comments) Applied patch from Csaba Henk to
+	fix comment modification in Windows.
+	
 2003-5-13   Andrew H. Chatham <pyogg@andrewchatham.com>
 	* pyvorbisinfo.c (py_info_new): Applied patch from 
 	Andrew Mahone to allow negative quality values

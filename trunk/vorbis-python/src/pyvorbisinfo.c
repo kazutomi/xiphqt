@@ -423,6 +423,8 @@ py_comment_subscript(py_vcomment *self,
 #if PY_UNICODE
     item = PyUnicode_DecodeUTF8(res, vallen, NULL);
     if (!item) {
+      /* must clear the exception raised by PyUnicode_DecodeUTF8() */
+      PyErr_Clear();
       /* To deal with non-UTF8 comments (against the standard) */
       item = PyString_FromStringAndSize(res, vallen); 
     }
@@ -1024,6 +1026,23 @@ write_comments(vorbis_comment *vc, const char *filename, int append)
   fclose(in_file);
   fclose(out_file);
 
+  /* The following comment, quoted from the vorbiscomment/vcomment.c file
+   * of the vorbis-tools package, regards to, e.g., Windows:
+   * 
+   * Some platforms fail to rename a file if the new name already exists, so
+   * we need to remove, then rename. How stupid.
+   * 
+   * This is why the following block had to be inserted to make things work under
+   * Windows also.
+   * 
+   * <Csaba Henk (ekho@renyi.hu)>
+   */
+  
+  if (remove(filename)) {
+    PyErr_SetFromErrno(PyExc_IOError);
+    return NULL;
+  }
+  
   if (rename(tempfile, filename)) {
     PyErr_SetFromErrno(PyExc_IOError);
     return NULL;
