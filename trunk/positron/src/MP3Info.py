@@ -31,7 +31,7 @@ def _from_synch_safe(synchsafe):
             synchsafe = (0,) + synchsafe
         (b3, b2, b1, b0) = synchsafe
 
-    x = 256
+    x = 128
     return (((b3 * x + b2) * x + b1) * x + b0)
 
 def _strip_zero(s):
@@ -263,12 +263,11 @@ _emphases = [ "none", "50/15 ms", "reserved", "CCIT J.17" ]
 _MP3_HEADER_SEEK_LIMIT = 8192
 
 class MPEG:
-    def __init__(self, file):
+    def __init__(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT, seekstart=0):
         self.valid = 0
 
         file.seek(0, 2)
         self.filesize = file.tell()
-        file.seek(0, 0)
 
         self.version = 0
         self.layer = 0
@@ -284,7 +283,7 @@ class MPEG:
         self.emphasis = ""
         self.length = 0
 
-        offset, header = self._find_header(file)
+        offset, header = self._find_header(file, seeklimit, seekstart)
         if offset == -1 or header is None:
             raise Error("Could not find MPEG header")
 
@@ -296,14 +295,15 @@ class MPEG:
         self._parse_xing(file)
         
 
-    def _find_header(self, file):
-        file.seek(0, 0)
+    def _find_header(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT,
+                     seekstart=0):
+        file.seek(seekstart, 0)
         amount_read = 0
 
         # see if we get lucky with the first four bytes
         amt = 4
 
-        while amount_read < _MP3_HEADER_SEEK_LIMIT:
+        while amount_read < seeklimit:
             header = file.read(amt)
             if len(header) < amt:
                 # awfully short file. just give up.
@@ -329,6 +329,7 @@ class MPEG:
                 
                 amount_read = amount_read + 4
                 header = header + more
+
             return amount_read - len(header) + offset, header[offset:offset+4]
         
         # couldn't find the header
@@ -435,7 +436,11 @@ class MP3Info:
         if id3v2.valid and id3v2.tags != {}:
             self.id3 = id3
 
-        self.mpeg = MPEG(file)
+        if id3v2.valid:
+            self.mpeg = MPEG(file)
+        else:
+            # Header better be the first thing if there is no ID3v2
+            self.mpeg = MPEG(file, seeklimit=4)
 
 
         if self.id3 is None:
