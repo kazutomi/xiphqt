@@ -11,8 +11,44 @@ not_here(char *s)
    return -1;
 }
 
+static const char *
+strconstant(const char *name, int arg)
+{
+  if (strEQ(name,"SHOUT_AI_BITRATE"))
+#ifdef SHOUT_AI_BITRATE
+    return SHOUT_AI_BITRATE;
+#else
+  goto notthere;
+#endif
+
+  if (strEQ(name,"SHOUT_AI_SAMPLERATE"))
+#ifdef SHOUT_AI_SAMPLERATE
+    return SHOUT_AI_SAMPLERATE;
+#else
+  goto notthere;
+#endif
+
+  if (strEQ(name,"SHOUT_AI_CHANNELS"))
+#ifdef SHOUT_AI_CHANNELS
+    return SHOUT_AI_CHANNELS;
+#else
+  goto notthere;
+#endif
+
+  if (strEQ(name,"SHOUT_AI_QUALITY"))
+#ifdef SHOUT_AI_QUALITY
+    return SHOUT_AI_QUALITY;
+#else
+  goto notthere;
+#endif
+
+notthere:
+  errno = EINVAL;  
+  return NULL;
+}
+	
 static double
-ant(char *name, int arg)
+constant(char *name, int arg)
 {
    errno = 0;
    switch (*name) {
@@ -172,10 +208,21 @@ MODULE = Shout		PACKAGE = Shout
 
 PROTOTYPES: ENABLE
 
+const char *
+strconstant(name, arg)
+  const char * name
+  int          arg
+
 double
-ant(name,arg)
+constant(name,arg)
 	char *		name
 	int		arg
+
+void
+shout_init()
+
+void
+shout_shutdown()
 
 shout_t *
 raw_new(CLASS)
@@ -368,5 +415,4 @@ int
 shout_set_metadata(self,md)
 	shout_t *self
 	shout_metadata_t *md
-
 
