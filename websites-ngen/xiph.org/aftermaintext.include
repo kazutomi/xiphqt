@@ -1,9 +1,9 @@
 <div id='locations'>
-	<a href='/about/'	title='About us'>About</a> |
-	<a href='/lists/'	title='Read or subscribe to one of our mailing lists'>mail</a> |
-	<a href='/irc/'		title='Visit us on IRC'>IRC</a> |
-	<a href='/svn/'		title='Check out what we’re working on'>SVN</a> |
-	<a href='/contact/'	title='E-mail us'>Contact</a>
+	<a href='/about/'		title='About us'>About</a> |
+	<a href='/lists/'		title='Read or subscribe to one of our mailing lists'>mail</a> |
+	<a href='/irc/'			title='Visit us on IRC'>IRC</a> |
+	<a href='/subversion/'	title='Check out what we’re working on'>SVN</a> |
+	<a href='/contact/'		title='E-mail us'>Contact</a>
 </div>
 
 <div id='copyright'>

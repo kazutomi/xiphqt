@@ -69,6 +69,10 @@ p	{
 	margin: .125em 0;
 }
 
+code {
+	font: 100% Monaco, "Lucida Console", monospace;
+}
+
 div#content {
 	margin: 0 1em 1em 19em;
 	padding: 0 .5em;
