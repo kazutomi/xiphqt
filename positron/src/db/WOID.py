@@ -233,14 +233,13 @@ class WOID:
         for child in self.children:
             child.clear()
 
-        self.mdb.clear()
+        null_rec_pointer = self.mdb.clear()
         self.sai.clear()
         if self.pai != None:
             self.pai.clear()
 
         # Add required null record
-        position = self.mdb.append_record(None)
-        self.sai.append((position, 0))
+        self.sai.append((null_rec_pointer, 0))
 
     def pack(self):
         """Removes all deleted records in this database and child databases."""

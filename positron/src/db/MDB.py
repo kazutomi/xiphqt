@@ -381,17 +381,21 @@ class MDB:
         return f.read(length)
 
     def clear(self):
-        """Remove all entries from database."""
+        """Remove all entries from database.
+
+        Returns the file pointer to the required null record."""
         f = self.file
 
         # Truncate to just after header
         record_start = self.header["RecordStart"]
         f.truncate(to_offset(record_start))
 
-        # Note that caller needs to add null record and keep sync with
-        # SAI
+        # Add required null record
+        null_rec_pointer = self.append_record(None)
 
         f.flush()
+
+        return null_rec_pointer
 
     def close(self):
         self.file.close()
