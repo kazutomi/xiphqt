@@ -144,7 +144,7 @@ projects/ices">
                         <ices:Execution>
                                 <ices:Background>0</ices:Background>
                                 <ices:Verbose>1</ices:Verbose>
-                                <ices:Base_Directory>/tmp</ices:Base_Directory>
+                                <ices:BaseDirectory>/tmp</ices:Base_Directory>
                                 <ices:Reencode>0</ices:Reencode>
                                 <ices:Samplerate>-1</ices:Samplerate>
                                 <ices:Channels>-1</ices:Channels>
@@ -301,4 +301,3 @@ L</ices:Description>
                                   _______
    
           This document is written by Alexander Haväng [eel@icecast.org].
-                              Last modified: Thu Aug 24 13:01:27 PDT 2000
