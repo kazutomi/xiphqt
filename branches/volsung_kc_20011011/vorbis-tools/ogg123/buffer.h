@@ -11,30 +11,32 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.16.2.3 2001/11/21 22:57:23 volsung Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16.2.4 2001/12/08 23:59:24 volsung Exp $
  
 ********************************************************************/
 
-/* A (relatively) generic circular buffer interface */
+/* A generic circular buffer interface with the ability to buffer
+   actions (conceptually) between bytes in the buffer.*/
 
-#ifndef __BUFFER_H
-#define __BUFFER_H
+#ifndef __BUFFER_H__
+#define __BUFFER_H__
 
+#include <stdlib.h>
 #include <pthread.h>
+#include <ogg/os_types.h>
 
-typedef unsigned char chunk; /* sizeof (chunk) must be 1; if you need otherwise it's not hard to fix */
-typedef size_t (*pWriteFunc) (void *, size_t, size_t, void *, char);
-typedef int (*pInitFunc) (void *);
 
-typedef struct buf_s
+struct action_t; /* forward declaration */
+
+/* buffer_write_func(void *data, int nbytes, int eos, void *arg) */
+typedef int (*buffer_write_func_t) (void *, int, int, void *);
+
+typedef struct buf_t
 {
   /* generic buffer interface */
-  void * data;
-  pWriteFunc write_func;
+  void *write_arg;
+  buffer_write_func_t write_func;
 
-  void * initData;
-  pInitFunc init_func;
-  
   /* pthread variables */
   pthread_t thread;
 
@@ -60,16 +62,32 @@ typedef struct buf_s
   /* buffer data */
   long curfill;     /* how much the buffer is currently filled */
   long start;       /* offset in buffer of start of available data */
-  chunk buffer[1];   /* The buffer itself. It's more than one chunk. */
+  ogg_int64_t position; /* How many bytes have we output so far */
+  ogg_int64_t position_end; /* Position right after end of data */
+
+  struct action_t *actions; /* Queue actions to perform */
+  char buffer[1];   /* The buffer itself. It's more than one byte. */
 } buf_t;
+
+
+/* action_func(buf_t *buf, void *arg) */
+typedef void (*action_func_t) (buf_t *, void *);
+
+typedef struct action_t {
+  ogg_int64_t position;
+  action_func_t action_func;
+  void *arg;
+  struct action_t *next;
+} action_t;
+
 
 /* --- Buffer allocation --- */
 
-buf_t *buffer_create (long size, long prebuffer, void *data, 
-		      pWriteFunc write_func, void *initData, 
-		      pInitFunc init_func, int audio_chunk_size);
+buf_t *buffer_create (long size, long prebuffer,
+		      buffer_write_func_t write_func, void *arg,
+		      int audio_chunk_size);
 
-void buffer_sync_reset (buf_t *buf);
+void buffer_reset (buf_t *buf);
 void buffer_destroy (buf_t *buf);
 
 /* --- Buffer thread control --- */
@@ -79,13 +97,21 @@ void buffer_thread_unpause (buf_t *buf);
 void buffer_thread_kill    (buf_t *buf);
 
 /* --- Data buffering functions --- */
-void buffer_submit_data (buf_t *buf, chunk *data, size_t size, size_t nmemb);
-size_t buffer_get_data (buf_t *buf, chunk *data, size_t size, size_t nmemb);
+void buffer_submit_data (buf_t *buf, char *data, long nbytes);
+size_t buffer_get_data (buf_t *buf, char *data, long nbytes);
 
 void buffer_mark_eos (buf_t *buf);
+
+/* --- Action buffering functions --- */
+void buffer_action_now (buf_t *buf, action_func_t action_func, 
+			void *action_arg);
+void buffer_action_at_end (buf_t *buf, action_func_t action_func, 
+			   void *action_arg);
+void buffer_action_at (buf_t *buf, action_func_t action_func, 
+		       void *action_arg, ogg_int64_t position);
 
 /* --- Buffer status functions --- */
 void buffer_wait_for_empty (buf_t *buf);
 long buffer_full (buf_t *buf);
 
-#endif /* !defined (__BUFFER_H) */
+#endif /* __BUFFER_H__ */
