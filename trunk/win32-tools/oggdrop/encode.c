@@ -19,6 +19,7 @@
 
 #define READSIZE 1024
 
+extern int nominalBitrate;
 
 int oe_write_page(ogg_page *page, FILE *fp);
 
@@ -48,14 +49,28 @@ int oe_encode(oe_enc_opt *opt)
 	/* Have vorbisenc choose a mode for us */
 	vorbis_info_init(&vi);
   
-  /* Not yet...
-  if (opt->oeMode == OE_MODE_BITRATE)
-	  vorbis_encode_init(&vi, opt->channels, opt->rate, -1, 
-			opt->bitrate*1000, -1);
-  else
-  */
-    vorbis_encode_init_vbr(&vi, opt->channels, opt->rate, 
-                                opt->quality_coefficient);
+	if (opt->oeMode == OE_MODE_BITRATE)
+  {
+		if (vorbis_encode_init(&vi, opt->channels, opt->rate, -1, 
+			opt->bitrate*1000, -1))
+    {
+      opt->error("Can't encode with selected params/file attrs");
+      vorbis_info_clear(&vi);
+      return 1;
+    }
+  }
+	else
+  {
+	  if (vorbis_encode_init_vbr(&vi, opt->channels, opt->rate, 
+                        opt->quality_coefficient))
+    {
+      opt->error("Can't encode with selected params/file attrs");
+      vorbis_info_clear(&vi);
+      return 1;
+    }
+    else
+      nominalBitrate = vi.bitrate_nominal;
+  }
 
 	/* Now, set up the analysis engine, stream encoder, and other
 	   preparation before the encoding begins.
@@ -138,32 +153,37 @@ int oe_encode(oe_enc_opt *opt)
 		{
 
 			/* Do the main analysis, creating a packet */
-			vorbis_analysis(&vb, &op);
+      vorbis_analysis(&vb,NULL);	
+			vorbis_bitrate_addblock(&vb);
 
-			/* Add packet to bitstream */
-			ogg_stream_packetin(&os,&op);
-			packetsdone++;
-
-			/* If we've gone over a page boundary, we can do actual output,
-			   so do so (for however many pages are available) */
-
-			while(!eos)
+			while(vorbis_bitrate_flushpacket(&vd, &op)) 
 			{
-				int result = ogg_stream_pageout(&os,&og);
-				if(!result) break;
 
-				ret = oe_write_page(&og, opt->out);
-				if(!ret)
+				/* Add packet to bitstream */
+				ogg_stream_packetin(&os,&op);
+				packetsdone++;
+
+				/* If we've gone over a page boundary, we can do actual output,
+				   so do so (for however many pages are available) */
+
+				while(!eos)
 				{
-					opt->error("Failed writing data to output stream\n");
-					ret = 1;
-					goto cleanup; /* Bail */
-				}
-				else
-					bytes_written += ret; 
+					int result = ogg_stream_pageout(&os,&og);
+					if(!result) break;
 
-				if(ogg_page_eos(&og))
-					eos = 1;
+					ret = oe_write_page(&og, opt->out);
+					if(!ret)
+					{
+						opt->error("Failed writing data to output stream\n");
+						ret = 1;
+						goto cleanup; /* Bail */
+					}
+					else
+						bytes_written += ret; 
+
+					if(ogg_page_eos(&og))
+						eos = 1;
+				}
 			}
 		}
 	}
