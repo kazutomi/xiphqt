@@ -1,0 +1,142 @@
+<html>
+<head>
+  <title>Positron Documentation: Working with the Database</title>
+</head>
+<body>
+<h1>Working with the Database</h1>
+
+<p>
+The Neuros has several on-disk databases that are used by both the
+device during normal operation and the host computer during
+synchronization.  The primary databases are:
+</p>
+
+<dl>
+  <dt>audio</dt><dd>Audio files stored on the Neuros</dd>
+
+  <dt>pcaudio</dt><dd>Audio files stored on the host computer</dd>
+
+  <dt>unidedhisi</dt><dd>HiSi clips that have not been identified yet.
+  These clips should be fingerprinted and looked up on the HiSi server
+  during synchronization.</dd>
+
+  <dt>idedhisi</dt><dd>HiSi clips that have been identified.  If the
+  fingerprint is successfully located on the HiSi server, the database
+  record corresponding to the clip should be removed from unidedhisi
+  and put into this database along with the metadata returned from the
+  server.</dd>
+
+  <dt>failedhisi</dt><dd>HiSi clips that could not be identified.  If
+  the lookup fails, the record from the HiSi clip should be moved from
+  the unidedhisi database to this database.</dd>
+
+</dl>
+
+<p>
+Each database can be thought as a collection of records with a fixed
+number (greater than or equal to 1) of fields.  The first field is the
+primary field.  Next are zero or more fields called <emph>access
+keys</emph>, which are fields whose contents are indexed.  All the
+records that contain a particular value in an access key field can be
+quickly looked up.  (Example: finding all the songs with the genre
+"Rock") Finally, the access keys are followed by zero or more
+<emph>extra info</emph> fields.  These fields contain data that does
+not need to be indexed, like filenames or file sizes.  Some fields may
+also contain a collection of values, called a "bag".  This is used in
+the audio database to allow one file to be in multiple playlists at
+once (i.e. have multiple values in its playlist field).  Note that
+every database is required to have a special null record.
+</p>
+
+<h2>Design</h2>
+
+<p>
+The database structure described above is implemented recursively
+using a root database (audio, unidedhisi, etc.) with a child database
+(artist, genre, etc.)  for each access key.  When a record is added to
+the root, the actual contents of each access key field are replaced
+with a pointer to the record in the child db containing the value in
+its primary field.  Of course, if the value doesn't already exist in
+the child database, it must be added.  The following diagram shows an
+example record from the audio database:
+</p>
+
+<p>
+Notice that null values are possible for access keys; just use a
+pointer to the null record in the child database.
+</p>
+
+<h3>File Format</h3>
+
+<p>
+Each root database is stored in a directory whose name is the same as
+the database name.  Inside that directory are two files holding the
+contents of the root database, a <emph>MDB</emph> file and a
+<emph>SAI</emph> file.  Child databases have a MDB and SAI file as
+well as a <emph>PAI</emph> file used for reverse lookups.  The name of
+each of these files will be the name of the database with either a
+".mdb", ".sai", or ".pai" extension.  All the files for the root and
+child databases are stored in the same directory.  The file layout for
+the audio database is:
+</p>
+
+<pre>
+audio/albums.mdb - Album child database
+audio/albums.pai
+audio/albums.sai
+audio/artist.mdb - Artist child database
+audio/artist.pai
+audio/artist.sai
+audio/audio.mdb - Root database
+audio/audio.sai
+audio/genre.mdb - Genre child database
+audio/genre.pai
+audio/genre.sai
+audio/playlist.mdb - Playlist child database
+audio/playlist.pai
+audio/playlist.sai
+audio/recordings.mdb - Recordings child database
+audio/recordings.pai
+audio/recordings.sai
+</pre>
+
+<p>
+All database files are treated as a sequence of 16-bit words.  A
+"pointer" is a word offset in a file.  So a pointer with value 0
+refers to bytes 0 and 1 in the file, and a pointer with value 22
+refers to bytes 44 and 45.  Null-terminated strings are padded with an
+extra null byte if they do not end on a word boundary and are
+terminated with a null word (0x0000).  Integers (including pointers)
+and bitfields are always stored in big-endian format.
+</p>
+
+<ul>
+  <li><a href="mdb.html">MDB File Format</a></li>
+  <li><a href="sai.html">SAI File Format</a></li>
+  <li><a href="pai.html">PAI File Format</a></li>
+</ul>
+
+<h3>Standard Database Field Definitions</h3>
+
+<p>
+In the following sections, the fields for each of the standard databases are defined.  The following types are used to describe the extra info fields:
+</p>
+<ul>
+  <li>sz - Null-terminated string</li>
+  <li>uint32 - Unsigned 32-bit integer</li>
+</ul>
+<p>
+Note that the primary field is always a null-terminated string, and
+the access keys are pointers to records in child databases which have
+only a primary field (also a null-terminated string).
+</p>
+
+<h4>audio</h4>
+
+<table class="fielddef">
+  <tr><th>#</th><th>Name</th><th>Type</th><th>Description</th></tr>
+  <tr><td>0</td><td></td>    <td></td>    <td></td></tr>
+</table>
+
+</body>
+</html>

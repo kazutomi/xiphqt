@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>An Overview of the Neuros</title>
+  <title>Positron Documentation: An Overview of the Neuros</title>
 </head>
 <body>
 <h1>An Overview of the Neuros</h1>
@@ -51,9 +51,9 @@ operating systems.
 When connected to a host computer via the USB port, the Neuros goes
 into a synchronization mode where it simply acts as a passive hard
 disk.  The host does not directly send commands the Neuros, but rather
-copies files and manipulates a database stored on the external
-filesystem, which is then read by the device firmware when the device
-is disconnected for normal use.
+copies files and manipulates a database stored on the filesystem,
+which is then read by the device firmware when the device is
+disconnected for normal use.
 </p>
 
 <h2>Database</h2>
@@ -81,7 +81,8 @@ stored on the host computer.
 <p>
 
 <p>
-For more information about the database format, read <a href="database.html">"Working With the Database"</a>.
+For more information about the database format, read
+<a href="database.html">Working With the Database</a>.
 <p>
 
 <h2>File Structure</h2>
@@ -90,9 +91,23 @@ For more information about the database format, read <a href="database.html">"Wo
 <pre>
 /        - root directory
 /sn.txt  - contains the serial number of this Neuros
-/WOID_DB - directory for all databases
+/WOID_DB/ - directory for all databases
 /WOID_DB/audio/ - database of audio files stored on the Neuros
+/WOID_DB/failedhisi/ - database of HiSi clips that could not be identified
+/WOID_DB/idedhisi/ - database of HiSi clips that were identified
+/WOID_DB/pcaudio/ - database of audio files stored on the host computer
+/WOID_DB/unidedhisi/ - database of HiSi clips that have not been identified yet
+/WOID_SYNC/ - not sure what this is for
+/WOID_HISI/ - (Optional) directory for HiSi MP3 clips
+/WOID_RECORD/ - (Optional) directory for recordings (FM or Microphone)
 </pre>
+
+<p>
+Pathnames in the databases use a strange hybrid Windows/Unix-like
+syntax.  The root directory on the Neuros is called "C:", but forward
+slashes are used instead of backslashes.  For example,
+<tt>C:/WOID_RECORD/Mic 02-27-01 17-19-00.mp3</tt> is a possible filename.
+</p>
 
 </body>
 </html>
