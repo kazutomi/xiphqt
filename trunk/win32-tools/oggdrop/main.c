@@ -253,7 +253,46 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
+		case IDM_BITRATE64:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_CHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			encthread_setbitrate(64);
+			break;
+
+		case IDM_BITRATE80:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_CHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			encthread_setbitrate(80);
+			break;
+
+		case IDM_BITRATE96:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_CHECKED);
+			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE256, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE350, MF_UNCHECKED);
+			encthread_setbitrate(96);
+			break;
+
 		case IDM_BITRATE128:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE128, MF_CHECKED);
 			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
@@ -263,6 +302,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDM_BITRATE160:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE160, MF_CHECKED);
 			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
@@ -272,6 +314,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDM_BITRATE192:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE192, MF_CHECKED);
@@ -281,6 +326,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 			
 		case IDM_BITRATE256:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);
@@ -290,6 +338,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDM_BITRATE350:
+			CheckMenuItem(menu, IDM_BITRATE64, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE80, MF_UNCHECKED);
+			CheckMenuItem(menu, IDM_BITRATE96, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE128, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE160, MF_UNCHECKED);
 			CheckMenuItem(menu, IDM_BITRATE192, MF_UNCHECKED);

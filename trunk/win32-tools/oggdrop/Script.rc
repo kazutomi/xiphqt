@@ -76,7 +76,10 @@ BEGIN
     BEGIN
         POPUP "Bitrate"
         BEGIN
-            MENUITEM "128 kbps",                    IDM_BITRATE128, CHECKED
+            MENUITEM "64 kbps",                     IDM_BITRATE64
+            MENUITEM "80 kbps",                     IDM_BITRATE80, CHECKED
+            MENUITEM "96 kbps",                     IDM_BITRATE96
+            MENUITEM "128 kbps",                    IDM_BITRATE128
             MENUITEM "160 kbps",                    IDM_BITRATE160
             MENUITEM "192 kbps",                    IDM_BITRATE192
             MENUITEM "256 kbps",                    IDM_BITRATE256
