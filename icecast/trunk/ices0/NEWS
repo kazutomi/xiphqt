@@ -1,4 +1,5 @@
-	* MP4 audio support added via libfaad.
+	* FLAC transcoding support.
+	* MP4 transcoding support added via libfaad.
 	* Crossfader added.
 	* Tested with LAME 3.96.1
 0.3     2003-07-13

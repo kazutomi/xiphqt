@@ -9,7 +9,7 @@
          2. Signal Handling 
          3. Playlist Handling 
          4. Reencoding 
-	 5. Vorbis and MP4 transcoding
+	 5. Vorbis, FLAC and MP4 transcoding
 	 6. Crossfading
     D. Configuring 
          1. Command line options 
@@ -94,10 +94,10 @@
             init, shutdown, get_next, and get_current_lineno. I suggest
             you take a look in the distributed module files and just
             expand on that.
-	 5. Vorbis and MP4 transcoding
+	 5. Vorbis, FLAC and MP4 transcoding
             If compiled with the appropriate libraries, ices can transcode
-            Ogg Vorbis and MP4 (AAC) audio files to MP3 on the fly. Keep your
-	    sources in whatever format you like best.
+            Ogg Vorbis, FLAC and MP4 (AAC) audio files to MP3 on the fly. Keep
+	    your sources in whatever format you like best.
 	 6. Crossfading
 	    If compiled with reencoding support, ices can also crossfade
             between tracks, giving you that pro radio station sound.
