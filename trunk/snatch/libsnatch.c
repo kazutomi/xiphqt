@@ -583,8 +583,6 @@ int close(int fd){
 }
 
 ssize_t write(int fd, const void *buf,size_t count){
-  initialize();
-
   if(fd==X_fd){
     ProcessBuffer(&clientCS,(void *)buf,count,DataToServer);
     return(count);
