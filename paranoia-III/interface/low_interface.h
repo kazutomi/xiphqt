@@ -42,15 +42,18 @@
 #define CDROMAUDIOBUFSIZ        0x5382 /* set the audio buffer size */
 #endif
 
-#include <scsi/sg.h>
-#include <scsi/scsi.h>
+/* easiest as many dists don't make proper symlinks */
+#include <linux/../scsi/sg.h>
+#include <linux/../scsi/scsi.h>
 
 #include <linux/cdrom.h>
 #include <linux/major.h>
 
 #include "cdda_interface.h"
 
-#define MAX_RETRIES 8
+#define MAX_RETRIES 32 /* There's a *reason* for this value.  Don't
+			  change it randomly without looking at what
+			  it's used for */
 #define MAX_BIG_BUFF_SIZE 65536
 #define MIN_BIG_BUFF_SIZE 4096
 #define SG_OFF sizeof(struct sg_header)

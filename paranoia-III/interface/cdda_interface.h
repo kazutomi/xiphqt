@@ -1,6 +1,6 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
- * Copyright (C) 2001 Xiph.org
+ * Copyright (C) 1998 Monty xiphmont@mit.edu
  * and Heiko Eissfeldt heiko@escape.colossus.de
  *
  * Toplevel interface header; applications include this
@@ -26,7 +26,7 @@
 typedef struct TOC {	/* structure of table of contents */
   unsigned char bFlags;
   unsigned char bTrack;
-  int32_t dwStartSector;
+  size32 dwStartSector;
 } TOC;
 
 /* interface types */
@@ -39,6 +39,8 @@ typedef struct TOC {	/* structure of table of contents */
 #define CDDA_MESSAGE_LOGIT 2
 
 /* cdrom access function pointer */
+
+void SetupInterface( unsigned char *int_name );
 
 typedef struct cdrom_drive{
 
@@ -55,6 +57,7 @@ typedef struct cdrom_drive{
   int interface;
   int bigendianp;
   int nsectors;
+  int ignore_toc_offset;
 
   int cd_extra;
   int tracks;
@@ -73,9 +76,7 @@ typedef struct cdrom_drive{
   int  (*read_toc)     (struct cdrom_drive *d);
   long (*read_audio)   (struct cdrom_drive *d, void *p, long begin, 
 		       long sectors);
-  int  (*set_speed)    (struct cdrom_drive *d, int speed);
   int error_retry;
-  int report_all;
 
   int is_atapi;
   int is_mmc;
@@ -118,7 +119,6 @@ extern cdrom_drive *cdda_identify_test(const char *filename,
 
 /******** Drive oriented functions */
 
-extern int cdda_speed_set(cdrom_drive *d, int speed);
 extern void cdda_verbose_set(cdrom_drive *d,int err_action, int mes_action);
 extern char *cdda_messages(cdrom_drive *d);
 extern char *cdda_errors(cdrom_drive *d);
@@ -139,36 +139,6 @@ extern int cdda_track_preemp(cdrom_drive *d,int track);
 extern long cdda_disc_firstsector(cdrom_drive *d);
 extern long cdda_disc_lastsector(cdrom_drive *d);
 
-/* transport errors: */
-
-#define TR_OK            0
-#define TR_EWRITE        1  /* Error writing packet command (transport) */
-#define TR_EREAD         2  /* Error reading packet data (transport) */
-#define TR_UNDERRUN      3  /* Read underrun */
-#define TR_OVERRUN       4  /* Read overrun */
-#define TR_ILLEGAL       5  /* Illegal/rejected request */
-#define TR_MEDIUM        6  /* Medium error */
-#define TR_BUSY          7  /* Device busy */
-#define TR_NOTREADY      8  /* Device not ready */
-#define TR_FAULT         9  /* Devive failure */
-#define TR_UNKNOWN      10  /* Unspecified error */
-#define TR_STREAMING    11  /* loss of streaming */
-
-static char *strerror_tr[]={
-  "Success",
-  "Error writing packet command to device",
-  "Error reading command from device",
-  "SCSI packet data underrun (too little data)",
-  "SCSI packet data overrun (too much data)",
-  "Illegal SCSI request (rejected by target)",
-  "Medium reading data from medium",
-  "Device busy",
-  "Device not ready",
-  "Target hardware fault",
-  "Unspecified error",
-  "Drive lost streaming"
-};
-
 /* Errors returned by lib: 
 
 001: Unable to set CDROM to read audio mode
@@ -180,7 +150,7 @@ static char *strerror_tr[]={
 007: Unknown, unrecoverable error reading data
 008: Unable to identify CDROM model
 009: CDROM reporting illegal table of contents
-010: Unaddressable sector 
+010: Unrecoverable system error reading data
 
 100: Interface not supported
 101: Drive is neither a CDROM nor a WORM device

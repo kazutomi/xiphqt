@@ -1,12 +1,7 @@
-#include <stdlib.h>
 #include <endian.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-
-extern long buffering_write(int outf, char *buffer, long num);
-extern int buffering_close(int fd);
-
 
 /* I wonder how many alignment issues this is gonna trip in the
    future...  it shouldn't trip any...  I guess we'll find out :) */
@@ -18,70 +13,70 @@ static inline int bigendianp(void){
   return(1);
 }
 
-static inline int32_t swap32(int32_t x){
-  return((((u_int32_t)x & 0x000000ffU) << 24) | 
-	 (((u_int32_t)x & 0x0000ff00U) <<  8) | 
-	 (((u_int32_t)x & 0x00ff0000U) >>  8) | 
-	 (((u_int32_t)x & 0xff000000U) >> 24));
+static inline size32 swap32(size32 x){
+  return((((unsigned size32)x & 0x000000ffU) << 24) | 
+	 (((unsigned size32)x & 0x0000ff00U) <<  8) | 
+	 (((unsigned size32)x & 0x00ff0000U) >>  8) | 
+	 (((unsigned size32)x & 0xff000000U) >> 24));
 }
 
-static inline int16_t swap16(int16_t x){
-  return((((u_int16_t)x & 0x00ffU) <<  8) | 
-	 (((u_int16_t)x & 0xff00U) >>  8));
+static inline size16 swap16(size16 x){
+  return((((unsigned size16)x & 0x00ffU) <<  8) | 
+	 (((unsigned size16)x & 0xff00U) >>  8));
 }
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 
-static inline int32_t be32_to_cpu(int32_t x){
+static inline size32 be32_to_cpu(size32 x){
   return(swap32(x));
 }
 
-static inline int16_t be16_to_cpu(int16_t x){
+static inline size16 be16_to_cpu(size16 x){
   return(swap16(x));
 }
 
-static inline int32_t le32_to_cpu(int32_t x){
+static inline size32 le32_to_cpu(size32 x){
   return(x);
 }
 
-static inline int16_t le16_to_cpu(int16_t x){
+static inline size16 le16_to_cpu(size16 x){
   return(x);
 }
 
 #else
 
-static inline int32_t be32_to_cpu(int32_t x){
+static inline size32 be32_to_cpu(size32 x){
   return(x);
 }
 
-static inline int16_t be16_to_cpu(int16_t x){
+static inline size16 be16_to_cpu(size16 x){
   return(x);
 }
 
-static inline int32_t le32_to_cpu(int32_t x){
+static inline size32 le32_to_cpu(size32 x){
   return(swap32(x));
 }
 
-static inline int16_t le16_to_cpu(int16_t x){
+static inline size16 le16_to_cpu(size16 x){
   return(swap16(x));
 }
 
 
 #endif
 
-static inline int32_t cpu_to_be32(int32_t x){
+static inline size32 cpu_to_be32(size32 x){
   return(be32_to_cpu(x));
 }
 
-static inline int32_t cpu_to_le32(int32_t x){
+static inline size32 cpu_to_le32(size32 x){
   return(le32_to_cpu(x));
 }
 
-static inline int16_t cpu_to_be16(int16_t x){
+static inline size16 cpu_to_be16(size16 x){
   return(be16_to_cpu(x));
 }
 
-static inline int16_t cpu_to_le16(int16_t x){
+static inline size16 cpu_to_le16(size16 x){
   return(le16_to_cpu(x));
 }
 
