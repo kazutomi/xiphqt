@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: hufftree builder
- last mod: $Id: huffbuild.c,v 1.12 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: huffbuild.c,v 1.12.6.1 2002/06/26 00:37:53 xiphmont Exp $
 
  ********************************************************************/
 
@@ -127,8 +127,8 @@ int main(int argc, char *argv[]){
 
   {
     long vals=pow(maxval,subn);
-    long *hist=_ogg_malloc(vals*sizeof(long));
-    long *lengths=_ogg_malloc(vals*sizeof(long));
+    long *hist=_ogg_calloc(vals,sizeof(long));
+    long *lengths=_ogg_calloc(vals,sizeof(long));
     
     for(j=loval;j<vals;j++)hist[j]=guard;
     
@@ -168,8 +168,8 @@ int main(int argc, char *argv[]){
   " * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *\n"
   " * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *\n"
   " *                                                                  *\n"
-  " * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *\n"
-  " * by the XIPHOPHORUS Company http://www.xiph.org/                  *\n"
+  " * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *\n"
+  " * by the Xiph.Org Foundation http://www.xiph.org/                  *\n"
   " *                                                                  *\n"
   " ********************************************************************\n"
   "\n"
