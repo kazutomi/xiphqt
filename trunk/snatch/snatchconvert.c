@@ -671,7 +671,7 @@ static int process_video_frame(char *buffer,FILE *f,int notfakep){
 	  else
 	    break;
 	}
-	vidbuf_frames=actual;
+	vidbuf_frames=ideal-1;
 	
       }else{
 
