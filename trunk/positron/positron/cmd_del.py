@@ -50,7 +50,7 @@ def gen_filelist(neuros, pathname):
         if sai_index == None:
             empty = False
         else:
-            filelist.append((fullname, sai_index))
+            filelist.append((fullname, neuros_path))
                     
     elif path.isdir(pathname):
         subs = os.listdir(pathname)
@@ -71,14 +71,14 @@ def gen_filelist(neuros, pathname):
     return (filelist, empty)
 
 
-def del_track(config, neuros, sourcename, sai_index):
+def del_track(config, neuros, sourcename, filename):
     try:
         os.remove(sourcename)
-        neuros_path = neuros.db["audio"].get_record(sai_index)[8].lower()
+        sai_index = neuros.db["audio"].find(filename, 8)
         
         # Remove entry from database
         neuros.db["audio"].delete_record(sai_index)
-        config.add_deleted(neuros_path)
+        config.add_deleted(filename.lower())
         
     except os.error, e:
         print "Error:", e
@@ -109,11 +109,11 @@ def run(config, neuros, args):
     else:
         tracks = len([item for item in filelist if item[1] != None])
         print "Removing %d tracks from the Neuros..." % (tracks,)
-        for (sourcename, sai_index) in filelist:
+        for (sourcename, filename) in filelist:
             basename = path.basename(sourcename)
-            if sai_index != None:
+            if filename != None:
                 print "  %s..." % (basename, )
-                del_track(config, neuros, sourcename, sai_index)
+                del_track(config, neuros, sourcename, filename)
             else:
                 print "  Removing empty directory %s..." % (sourcename, )
                 try:
