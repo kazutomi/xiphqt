@@ -720,6 +720,15 @@ sub set{
     if($#_>=0){
 	# we have new values incoming.  We need to do full maneuvers
 
+	if($#_!=$num-1){
+	    # might as well.  prevents spurious error printing when 
+	    # something unexpected happens to a module (like a CPU
+	    # disappearing ;-)
+
+	    push @_,$#_+1,map{0}(1..$num); #lazy
+	    $#_=$num-1;
+	}
+
 	# find the largest value for scale adjustment
 	my$metermax=0;
 	map{$metermax=$_ if ($metermax<$_)}(@_, @{$this->{"meter"}},

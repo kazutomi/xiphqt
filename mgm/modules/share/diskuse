@@ -9,7 +9,7 @@
 
 use Tk;
 package MGMmodule::diskuse;
-use vars qw($xpath $graph $widget $fs @data);
+use vars qw($xpath $graph $widget $fs $num @data @labels);
 
 sub module_init{
     my$this=shift;
@@ -34,14 +34,22 @@ sub module_instance{
     $toplevel->optionAdd("$xpath*scalerefresh",30000,21); # slower
     $this->read_proc;
 
+    undef@labels;
+    $num=0;
     for(my$i=0;$i<$fs;$i++){
 	my$label=shift @data;
+	
+	push @labels, ($label);
 	my$cap=shift @data;
 	my($adj,$mult)=MGM::Graph::scalemod($cap*10);
 	$adj=int($adj+.5)/10;
 
-	$toplevel->optionAdd("$xpath.bar.$i.label", "$label ($adj$mult)",22);
+	# modify the label (if needed)
+	$label=~s{/dev/}{}; # strip 'dev' off dev mounts
+
+	$toplevel->optionAdd("$xpath.bar.$i.label", "$label $adj$mult",22);
 	shift @data;
+	$num++;
     }
 
     $toplevel->optionAdd("$xpath.scalewidadj", 80*$fs,21);  # narrower
@@ -59,8 +67,9 @@ sub module_run{
     $graph=MGM::Graph->new($this,num=>$fs,
 			   prompt=>'% used',fixed=>1,
 			   rangesetting=>100,rangecurrent=>100);
+    $widget=$graph->{"widget"};
     $this->module_update;
-    $widget=$graph->{"widget"};        # must return the widget
+    $widget;
 }
 
 sub read_proc{
@@ -73,6 +82,13 @@ sub read_proc{
 	shift @temp;
 	while(defined(my$line=shift @temp)){
 	    if($line=~m/^(\S+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)/){
+
+		# is this a label we want to display?  Filter /proc and AFS
+		# for example...
+
+		next if($1=~m/^\s*AFS/);
+		next if($1=~m/^\/?proc/);
+
 		$fs++;
 		push @data, ($1,$2*1024,$3);
 	    }
@@ -84,12 +100,24 @@ sub module_update{
     my$this=shift;
     $this->read_proc;
     my@adj;
+    my$i=0;
     while($#data>0){
-	shift @data;
+	return &reconfig if(!defined($labels[$i]));
+	return &reconfig if(shift(@data) ne $labels[$i]);
 	shift @data;
 	push @adj, (shift @data);
+	$i++;
     }
     $graph->set(@adj);
+    &reconfig if($i!=$num);
+}
+
+sub reconfig{
+    &main::reinstance() if($widget->optionGet("reconfig","") eq 'true');
+}
+
+sub destroy{
+    undef $xpath;
 }
 
 bless {};

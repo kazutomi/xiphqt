@@ -65,7 +65,7 @@ sub module_run{
 			       height=>$height,
 			       borderwidth=>0,
 			       highlightthickness=>0,
-			       background=>$mainback);
+			       -background=>$mainback);
 
     my$back=$widget->optionGet("background","");
 
@@ -76,7 +76,7 @@ sub module_run{
 		       relief=>$this->{"relief"},
 		       width=>$width,
 		       height=>$border*2+$thick,
-		       background=>$back)->place('-x'=>0,'-y'=>$pad,
+		       -background=>$back)->place('-x'=>0,'-y'=>$pad,
 						 -anchor=>'nw');
     }else{
 	my$pad=($width-$thick-$border*2)/2;
@@ -85,7 +85,7 @@ sub module_run{
 		       relief=>$this->{"relief"},
 		       width=>$border*2+$thick,
 		       height=>$height,
-		       background=>$back)->place('-x'=>$pad,'-y'=>0,
+		       -background=>$back)->place('-x'=>$pad,'-y'=>0,
 						 -anchor=>'nw');
     }
     $widget;

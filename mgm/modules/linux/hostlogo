@@ -1,2 +1,4 @@
 # -*-Perl-*-
-do "$main::moddir/share/hostlogo";
+my$ret=do "$main::moddir/share/hostlogo";
+die ($@) unless (defined($ret));
+$ret;

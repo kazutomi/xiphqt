@@ -1,2 +1,4 @@
 # -*-Perl-*-
-do "$main::moddir/share/biff";
+my$ret=do "$main::moddir/share/biff";
+die ($@) unless (defined($ret));
+$ret;

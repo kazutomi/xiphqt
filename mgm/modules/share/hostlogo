@@ -59,7 +59,8 @@ sub module_instance{
     # not completely implemented
     my$logofile=$widget->optionGet("logopixmap","");
     $logofile="$main::libdir/fishframe.xpm" if(!defined($logofile));
-    my$logo=$this->{"logo"}=$widget->Pixmap(-file => $logofile);
+    my$logo=$this->{"logo"}=$widget->Pixmap("_hostlogo_xpm",
+					    -file => $logofile);
 
     my$logoframes=$this->{"logoframes"}=1;
     my$logowidth=$this->{"logowidth"}=$logo->width;

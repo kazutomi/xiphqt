@@ -21,21 +21,6 @@ sub module_init{
     # is the helper up and running?
     if(!defined(%MGMmodule::helperST::net)){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
-    } else{
-	@keys=keys %MGMmodule::helperST::net;
-	$active=$#keys+1;
-	
-	# three possible different formats.  
-	my@test=split ' ', $MGMmodule::helperST::net{$keys[0]};
-
-	if($#test==10){
-	    $field=5;
-	    $prompt=' pkts/s';
-	    $minscale=16;
-	}else{
-	    $field=($#test+1)/2;
-	    $prompt='B/s';
-	}
     }
     $toplevel->optionAdd("$xclass.order",20,21);   
     $this;
@@ -47,6 +32,25 @@ sub module_instance{
     my$toplevel=$this->{"toplevel"};
     return undef if(defined($xpath));
     $xpath=$this->{"xpath"};
+
+    undef@keys;
+    undef@prev;
+    foreach my $key (keys %MGMmodule::helperST::net){
+	push @keys, $key if(defined($MGMmodule::helperST::net{$key}));
+    }
+    $active=$MGMmodule::helperST::active_if;
+    
+    # three possible different formats.  
+    my@test=split ' ', $MGMmodule::helperST::net{$keys[0]};
+    
+    if($#test==10){
+	$field=5;
+	$prompt=' pkts/s';
+	$minscale=16;
+    }else{
+	$field=($#test+1)/2;
+	$prompt='B/s';
+    }
 
     # modify defaults
     my$i=0;
@@ -83,17 +87,6 @@ sub module_run{
     $widget=$graph->{"widget"};        # must return the widget
 }
 
-sub read_proc{
-    # now uses the 00helper to save on opens 
-    my$i=0;
-    foreach my $key (@keys){
-	my@temp=split ' ', $MGMmodule::helperST::net{$key};
-	$bytes[$i]=$temp[0];
-	$bytes[$i+1]=$temp[$field];
-	$i+=2;
-    }
-}
-
 sub module_update{ 
     my$this=shift;
     
@@ -102,18 +95,36 @@ sub module_update{
 	my$time=$MGMmodule::helperST::lastmod;
 	my@vals;
 
-	$this->read_proc;
+	my$i=0;
+	my$reflag=0;
+	foreach my $key (@keys){
+	    return &reconfig if(!defined($MGMmodule::helperST::net{$key}));
+	    my@temp=split ' ', $MGMmodule::helperST::net{$key};
+	    $bytes[$i]=$temp[0];
+	    $bytes[$i+1]=$temp[$field];
+	    $i+=2;
+	}
+	
 	if(defined(@prev)){
-	    for(my$i=0;$i<$active*2;$i++){
+	    for($i=0;$i<$active*2;$i++){
 		$vals[$i]=($bytes[$i]-$prev[$i])/($time-$lastmod)*100;
 	    }
 	    
 	    $graph->set(@vals);
+	    return &reconfig if($active<$MGMmodule::helperST::active_if);
 	}
 	
 	@prev=@bytes;
 	$lastmod=$time;
     }
+}
+
+sub reconfig{
+    &main::reinstance() if($widget->optionGet("reconfig","") eq 'true');
+}
+
+sub destroy{
+    undef $xpath;
 }
 
 bless {};
