@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.23 2003/03/13 23:06:14 brendan Exp $
+ * $Id: mp3.c,v 1.24 2003/03/15 18:38:25 brendan Exp $
  */
 
 #include "definitions.h"
@@ -347,10 +347,10 @@ static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
 
   cur = lseek(source->fd, 0, SEEK_CUR);
   offset = mp3_data->len - mp3_data->pos;
-  /* check for Xing VBR tag */
+  /* check for VBR tag */
   lseek(source->fd, 36 - offset, SEEK_CUR);
   if (read(source->fd, buf, 4) == 4) {
-    if (!strncmp("Xing", buf, 4)) {
+    if (!strncmp("VBRI", buf, 4) || !strncmp("Xing", buf, 4)) {
       ices_log_debug("VBR tag found");
       lseek(source->fd, cur, SEEK_SET);
       return 1;
