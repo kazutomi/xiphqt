@@ -214,8 +214,6 @@ python_eval (char *functionname)
 #if PM_PYTHON_MAKE_THREADS
   PyThreadState_Swap (threadstate);
 #endif
-  /* Reload the module (it might have changed) */
-  ices_python_module = PyImport_ReloadModule (ices_python_module);
 
   ices_log_debug ("Interpreting [%s]", functionname);
 	
