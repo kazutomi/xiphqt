@@ -6,8 +6,7 @@ To Do
 
 *	Make a new essay (series) for /about/. Or do something other than an essay.
 
-*	Fix the Atom compliance bugs. Make sure that there’s no way someone could accidentally
-	screw up the id element.
+*	Finish the news backend.
 
 *	What sorts of things should go in Ogg Traffic? The news feed(s)? Press releases?
 	I’d say that PRs and OTs should be announced in the news feeds, but should the OTs
@@ -53,10 +52,14 @@ What Must Be Done Before Shipping
 * /about/			(and a new one, please; the current one is dated)
 * /donate/
 * /subversion/
+	* test with some complete Subversion newbies (including Windows-using people) to make
+	  sure the instructions are usable
+	* drop shadows (optional)
+* /colophon/		(URL subject to change; perhaps /about/website/ ?)
 * /contact/
 * /ogg/				(not much, just spec stuff)
 * /vorbis/			(both from xiph.org and vorbis.com)
-* /speex/
+* /speex/			(this one can go in much more easily since I administer it)
 * /lists/			(mailing lists)
 * /paranoia/		(possibly with much less filler than it has)
 * Documentation for the CMS I’ve cobbled together.

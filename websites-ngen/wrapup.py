@@ -20,12 +20,22 @@
 #    3. This notice may not be removed or altered from any source distribution.
 
 import os, re, sys, glob, os.path, time, datetime 
+from time import strftime, strptime
 import pdb
 from ConfigParser import SafeConfigParser
+from sets import Set
 
 MARKDOWN_COMMAND = "perl Markdown.pl" # could also be "perl Markdown.pl"
 TITLE_REGEX = re.compile(r"<h1.*>(.*)</h1>")
 LANGUAGE_EXTRACTOR = re.compile(r"^.*\.(.{2,5})\..*$") # anything from “.es.” to “.zh-TW.”
+
+class MissingOptionError(Exception):
+	def __init__(self, option, section):
+		self.option = option
+		self.section = section
+
+	def __str__(self):
+		return "Must define a '%s' in section %s" % (self.option, self.section)
 
 class MarkdownWrapper(object):
 	"""
@@ -334,15 +344,21 @@ def getParentedFile(filename):
 			else: return ""
 
 class NewsItem(object):
-	def __init__(self, post='', title='', author='', date=None, sections=None):
-		self.post = post
-		self.title = title
-		self.author = author
-		self.date = date
-		self.sections = sections
+	def __init__(self):
+		self.post = ''
+		self.title = ''
+		self.summary = ''
+		self.tag = ''
+		self.dateCreated = None
+		self.dateIssued = None
+		self.dateModified = None
+		self.sections = Set()
 	
 	def __cmp__(self, other):
-		return cmp(self.date)
+		return cmp(self.dateCreated, other.dateCreated)
+
+def reverser(lhs, rhs):	# primarily to sort NewsItems newest-first
+	return -cmp(lhs, rhs)
 	
 
 class NewsDispenser(object):
@@ -352,24 +368,53 @@ class NewsDispenser(object):
 		config.read(os.path.join("news", "options.ini"))
 
 		FILENAME_DATE_FORMAT = "on%Y-%m-%dat%H%M"
+		USUAL_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 		
 		self.newsItems = []
-		
+		# strftime: format as string; strptime: parse string and get a struct_time
 		# okay, now we want to go through the sections and associate each with their newspost.
 		for section in config.sections(): # section is string
 			ni = NewsItem()
-			ni.date = time.strptime(section, FILENAME_DATE_FORMAT)
+			ni.dateCreated = time.strptime(section, FILENAME_DATE_FORMAT)
+			#ni.dateModified = ni.dateIssued = ni.dateCreated #XXX
 			for key, value in config.items(section):
-				if key == 'author': 
-					ni.author = value
-				if key == 'sections':
-					ni.sections = value.split()
 				if key == 'title':
 					ni.title = value
+
+				if key == 'summary':
+					ni.summary = value
+
+				if key == 'tag suffix':
+					ni.tag = 'tag:xiph.org,%s:%s' % \
+							  (time.strftime('%Y-%m-%d', ni.dateCreated), value)
+
+				if key == 'sections':
+					ni.sections = Set(value.split())
+
+				if key == 'issued':
+					ni.dateIssued = time.strptime(value, USUAL_TIME_FORMAT)
+					
+				if key == 'modified':
+					ni.dateModified = time.strptime(value, USUAL_TIME_FORMAT)
+					
+	
+			# now for some error checking…
+			if not ni.title:	raise MissingOptionError('Title', section)
+			if not ni.summary:	raise MissingOptionError('Summary', section)
+
+				
+			if not ni.tag:		raise MissingOptionError('Tag Suffix', section)
+
+			# …and some error covering…
+			if not ni.dateModified:
+				ni.dateModified = ni.dateCreated
+			if not ni.dateIssued:
+				ni.dateIssued = ni.dateCreated
 			filename = os.path.join('news', section + '.txt')
 			s = markdown(filename)
 			ni.post = s
 			self.newsItems.append(ni)
+		self.newsItems.sort(reverser)
 	
 	def dump(self):
 		return self.newsItems[:]
@@ -416,24 +461,30 @@ class AtomNewsFormatter(NewsFormatter):
 	def formatOne(self, newsItem, index=0):
 		ret =  "<entry>\n"
 		ret += "<title>" + newsItem.title + "</title>\n"
-		# these next two lines are so wrong.
-		ret += "<issued>%s</issued>\n" % time.strftime(self.dateFormat, newsItem.date)
-		ret += "<modified>%s</modified>\n" % time.strftime(self.dateFormat, newsItem.date)
-		ret += "<id>tag:xiph.org,%s:%s</id>" % (time.strftime("%Y", newsItem.date), index)
-		ret += "<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n"
-		ret += "<content type='text/html' mode='escaped'><![CDATA["
-		ret += newsItem.post
-		ret += "]]></content>\n"
-		ret += "</entry>"
+		if newsItem.dateCreated:
+			ret +=	"<created>%s</created>\n" % strftime(self.dateFormat, newsItem.dateCreated)
+		if newsItem.dateIssued:
+			ret +=	"<issued>%s</issued>\n" % strftime(self.dateFormat, newsItem.dateIssued)
+		if newsItem.dateModified:
+			ret +=	"<modified>%s</modified>\n" % strftime(self.dateFormat, newsItem.dateModified)
+		ret +=		"<id>%s</id>\n" % newsItem.tag
+		ret +=		"<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n"
+		ret +=		"<content type='text/html' mode='escaped'><![CDATA["
+		ret +=		newsItem.post
+		ret +=		"]]></content>\n"
+		ret +=		"</entry>"
 		return ret
 	def formatAll(self):
 		ret = ''
 		ret +=	"<?xml version='1.0' encoding='utf-8'?>\n" \
-				"<feed version='0.3' xmlns='http://purl.org/atom/ns#'>\n" \
-				"	<title>Xiph.Org News</title>\n" \
-				"	<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n" \
-				"    <modified>2003-12-13T18:30:02Z</modified>\n"
-		ret +=	"<author><name>Xiph.Org Foundation</name></author>"
+				"<feed version='0.3' xmlns='http://purl.org/atom/ns#' xml:lang='en-US'>\n" \
+				"<title>Xiph.Org News</title>\n" \
+				"<link rel='alternate' type='text/html' href='http://www.xiph.org/news/'/>\n" \
+				"<modified>%s</modified>\n" % \
+					strftime(self.dateFormat, self.newsItems[0].dateModified)
+		ret +=	"<generator>Wrapup</generator>\n" \
+				"<copyright>© %s Xiph.Org Foundation</copyright>\n" % time.gmtime()[0] + \
+				"<author><name>Xiph.Org Foundation</name></author>\n\n"
 
 		for index, newsItem in enumerate(self.newsItems):
 			ret += self.formatOne(newsItem, index) + "\n\n"
@@ -457,9 +508,10 @@ def doNews():
 	nd = NewsDispenser(os.path.join('news', 'options.ini'))
 	#print HTMLNewsFormatter(nd.dump()).formatAll()
 	s = AtomNewsFormatter(nd.dump()).formatAll()
-	fh = open('xiph.org\\atom.xml', 'w')
+	fh = open(os.path.join('xiph.org', 'feeds', 'atom.xml'), 'w')
 	fh.write(s)
 	fh.close()
 
 if __name__ == '__main__':
+	doNews()
 	doSite()
