@@ -217,11 +217,7 @@ int main(int argc,char *argv[]){
 
     /* look for further theora headers */
     while(theora_processing_headers&&(ret=ogg_stream_packetpeek(&to,&op))){
-      if(ret<0){
-        fprintf(stderr,
-         "Error parsing Theora stream headers; corrupt stream?\n");
-        exit(1);
-      }
+      if(ret<0)continue;
       theora_processing_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
       if(theora_processing_headers<0){
         printf("Error parsing Theora stream headers; corrupt stream?\n");
@@ -233,6 +229,10 @@ int main(int argc,char *argv[]){
       }
       theora_p++;
     }
+
+    /*Stop now so we don't fail if there aren't enough pages in a short
+       stream.*/
+    if(!(theora_p && theora_processing_headers))break;
 
     /* The header pages/packets will arrive before anything else we
        care about, or the stream is not obeying spec */

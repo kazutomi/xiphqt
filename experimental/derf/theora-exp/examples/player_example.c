@@ -521,11 +521,7 @@ int main(int argc,char *argv[]){
 
     /* look for further theora headers */
     while(theora_processing_headers&&(ret=ogg_stream_packetpeek(&to,&op))){
-      if(ret<0){
-        fprintf(stderr,
-         "Error parsing Theora stream headers; corrupt stream?\n");
-        exit(1);
-      }
+      if(ret<0)continue;
       theora_processing_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
       if(theora_processing_headers<0){
         printf("Error parsing Theora stream headers; corrupt stream?\n");
@@ -551,6 +547,10 @@ int main(int argc,char *argv[]){
       vorbis_p++;
       if(vorbis_p==3)break;
     }
+
+    /*Stop now so we don't fail if there aren't enough pages in a short
+       stream.*/
+    if(!(theora_p&&theora_processing_headers)&&!(vorbis_p&&vorbis_p<3))break;
 
     /* The header pages/packets will arrive before anything else we
        care about, or the stream is not obeying spec */
@@ -664,6 +664,16 @@ int main(int argc,char *argv[]){
           theora_decoder_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,
            sizeof(pp_level));
           pp_inc=0;
+        }
+        /*HACK: This should be set after a seek or a gap, but we might not have
+           a granulepos for the first packet (we only have them for the last
+           packet on a page), so we just set it as often as we get it.
+          To do this right, we should back-track from the last packet on the
+           page and compute the correct granulepos for the first packet after
+           a seek or a gap.*/
+        if(op.granulepos>=0){
+          theora_decoder_ctl(td,OC_DECCTL_SET_GRANPOS,&op.granulepos,
+           sizeof(op.granulepos));
         }
         if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
           videobuf_time=theora_granule_time(td,videobuf_granulepos);
