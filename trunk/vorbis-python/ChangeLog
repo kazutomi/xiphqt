@@ -1,3 +1,8 @@
+2004-1-18   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* enc2.py: Apply a suggested change from Daniel Holth that makes
+	the output more valid (eos gets set). Also updated to demonstrate
+	the new ogg_page.tostring()
+	
 2003-12-18  Andrew H. Chatham <pyogg@andrewchatham.com>
 	* pyvorbisinfo.c: Incoporate John Morton's explanations about what
 	all those arguments mean. Now everything that takes a logical
