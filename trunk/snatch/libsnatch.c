@@ -614,6 +614,21 @@ static void OpenOutputFile(){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
+
+      if(videocount){
+	if(audio_channels){
+	  gwrite(outfile_fd,"SNATCHAV---\n",6);
+	}else{
+	  gwrite(outfile_fd,"SNATCH-V---\n",6);
+	}
+      }else{
+	if(audio_channels){
+	  gwrite(outfile_fd,"SNATCHA----\n",6);
+	}else{
+	  gwrite(outfile_fd,"SNATCH-----\n",6);
+	}
+      }
+
     }else{
       struct stat buf;
       int ret=stat(outpath,&buf);
@@ -664,6 +679,20 @@ static void OpenOutputFile(){
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
 	}
 	
+	if(videocount){
+	  if(audio_channels){
+	    gwrite(outfile_fd,"SNATCHAV---\n",6);
+	  }else{
+	    gwrite(outfile_fd,"SNATCH-V---\n",6);
+	  }
+	}else{
+	  if(audio_channels){
+	    gwrite(outfile_fd,"SNATCHA----\n",6);
+	  }else{
+	    gwrite(outfile_fd,"SNATCH-----\n",6);
+	  }
+	}
+	
       }else{
 	outfile_fd=open64(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
 	if(outfile_fd<0){
@@ -672,6 +701,20 @@ static void OpenOutputFile(){
 	  outfile_fd=-2;
 	}else{
 	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
+	  
+	  if(videocount){
+	    if(audio_channels){
+	      gwrite(outfile_fd,"SNATCHAV---\n",6);
+	    }else{
+	      gwrite(outfile_fd,"SNATCH-V---\n",6);
+	    }
+	  }else{
+	    if(audio_channels){
+	      gwrite(outfile_fd,"SNATCHA----\n",6);
+	    }else{
+	      gwrite(outfile_fd,"SNATCH-----\n",6);
+	    }
+	  }
 	}
       }
     }
