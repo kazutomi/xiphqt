@@ -490,7 +490,18 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
     if(os->mode&1){
       /* Discontinuous Mode */
       printf("Not yet..\n");
-      
+
+/* The jist of what needs to happen here :
+      if((!os->continued&&os->laceptr==0)||
+         (os->continued&&os->laceptr>0&&oggbyte_read1(ob,26+os->laceptr)<255))
+        op->granulepos=os->granulepos;
+        
+ or, as Monty said,
+
+      "first lacing if continued flag is not set, else first lacing 
+       after the first non-255 lacing"
+*/
+
     }else{
       /* Continuous Mode */
       if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
