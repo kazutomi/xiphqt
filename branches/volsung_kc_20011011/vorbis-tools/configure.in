@@ -5,7 +5,7 @@ dnl Initialization
 dnl ------------------------------------------------
 
 AC_INIT(oggenc/encode.c)
-AM_INIT_AUTOMAKE(vorbis-tools,1.0rc1)
+AM_INIT_AUTOMAKE(vorbis-tools,1.0rc2)
 
 dnl --------------------------------------------------  
 dnl Check for programs
@@ -103,24 +103,31 @@ AM_PATH_AO(,AC_MSG_ERROR(libao needed!))
 SOCKET_LIBS=
 AC_CHECK_HEADER(curl/curl.h, , AC_MSG_ERROR(libcurl headers needed!))
 AC_CHECK_HEADER(curl/easy.h, , AC_MSG_ERROR(libcurl headers needed!))
-AC_CHECK_LIB(curl, curl_easy_perform, , AC_MSG_ERROR(libcurl needed!))
+AC_CHECK_LIB(curl, curl_easy_perform, CURL_LIBS="-lcurl", AC_MSG_ERROR(libcurl needed!))
 AC_CHECK_HEADER(pthread.h, , AC_MSG_ERROR(pthread header needed!))
 AC_CHECK_LIB(pthread, pthread_mutex_init, THREAD_LIBS="-lpthread", AC_MSG_ERROR(pthread library needed!))
 AC_CHECK_LIB(socket, socket, SOCKET_LIBS="-lsocket")
 AC_CHECK_LIB(nsl, gethostbyname, SOCKET_LIBS="-lnsl $SOCKET_LIBS")
+SHARE_LIBS='$(top_srcdir)/share/libutf8.a $(top_srcdir)/share/libgetopt.a'
 
 dnl --------------------------------------------------
 dnl Check for library functions
 dnl --------------------------------------------------
 
-AC_FUNC_SMMAP
+AM_ICONV
 AC_CHECK_FUNCS(atexit on_exit)
+AM_LANGINFO_CODESET
 
 dnl --------------------------------------------------
 dnl Work around FHS stupidity
 dnl --------------------------------------------------
 
-AM_CONDITIONAL(PREFIX_IS_USR, test x$prefix = x"/usr")
+if test "$prefix" = "/usr"; then
+    MANDIR='$(datadir)/man'
+else
+    MANDIR='$(prefix)/man'
+fi
+AC_SUBST(MANDIR)
 
 dnl --------------------------------------------------
 dnl Do substitutions
@@ -130,5 +137,7 @@ AC_SUBST(DEBUG)
 AC_SUBST(PROFILE)
 AC_SUBST(THREAD_LIBS)
 AC_SUBST(SOCKET_LIBS)
+AC_SUBST(SHARE_LIBS)
+AC_SUBST(CURL_LIBS)
 
-AC_OUTPUT(Makefile oggenc/Makefile oggenc/man/Makefile ogg123/Makefile vorbiscomment/Makefile ogginfo/Makefile debian/Makefile)
+AC_OUTPUT(Makefile include/Makefile share/Makefile oggenc/Makefile oggenc/man/Makefile ogg123/Makefile vorbiscomment/Makefile vcut/Makefile ogginfo/Makefile debian/Makefile)

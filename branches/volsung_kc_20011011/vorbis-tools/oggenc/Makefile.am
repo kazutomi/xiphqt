@@ -6,12 +6,14 @@ SUBDIRS = man
 
 bin_PROGRAMS = oggenc
 
-INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@
+INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@ -I$(top_srcdir)/include
 
-oggenc_LDADD = @VORBISENC_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@
-oggenc_SOURCES = oggenc.c audio.c encode.c getopt.c getopt1.c\
-		platform.c\
-		audio.h encode.h platform.h getopt.h
+oggenc_LDADD = @VORBISENC_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ @LIBICONV@ \
+               @SHARE_LIBS@
+oggenc_DEPENDENCIES = @SHARE_LIBS@
+
+oggenc_SOURCES = oggenc.c audio.c encode.c platform.c \
+                 audio.h encode.h platform.h
 
 EXTRA_DIST = oggenc.dsp build_oggenc.bat
 

@@ -15,23 +15,29 @@
 #include <getopt.h>
 #include <string.h>
 #include <time.h>
+#include <locale.h>
 
 #include "platform.h"
 #include "encode.h"
 #include "audio.h"
+#include "utf8.h"
 
-#define VERSION_STRING "OggEnc v0.7 (libvorbis rc1)\n"
-#define COPYRIGHT "(c) 2000 Michael Smith <msmith@labyrinth.net.au)\n"
+#define VERSION_STRING "OggEnc v0.8 (libvorbis rc2)\n"
+#define COPYRIGHT "(c) 2001 Michael Smith <msmith@labyrinth.net.au)\n"
+
 #define CHUNK 4096 /* We do reads, etc. in multiples of this */
 
 struct option long_options[] = {
-	{"quiet",0,0,'q'},
+	{"quiet",0,0,'Q'},
 	{"help",0,0,'h'},
 	{"comment",1,0,'c'},
 	{"artist",1,0,'a'},
 	{"album",1,0,'l'},
 	{"title",1,0,'t'},
+    {"genre",1,0,'G'},
 	{"names",1,0,'n'},
+    {"name-remove",1,0,'X'},
+    {"name-replace",1,0,'P'},
 	{"output",1,0,'o'},
 	{"version",0,0,'v'},
 	{"raw",0,0,'r'},
@@ -39,26 +45,37 @@ struct option long_options[] = {
 	{"raw-chan",1,0,'C'},
 	{"raw-rate",1,0,'R'},
 	{"bitrate",1,0,'b'},
+	{"min-bitrate",1,0,'m'},
+	{"max-bitrate",1,0,'M'},
+	{"quality",1,0,'q'},
 	{"date",1,0,'d'},
 	{"tracknum",1,0,'N'},
 	{"serial",1,0,'s'},
 	{NULL,0,0,0}
 };
 	
-char *generate_name_string(char *format, char *artist, char *title, char *album, char *track, char *date);
-void parse_options(int argc, char **argv, oe_options *opt);
-void build_comments(vorbis_comment *vc, oe_options *opt, int filenum, 
-		char **artist, char **album, char **title, char **tracknum, char **date);
-void usage(void);
+static char *generate_name_string(char *format, char *remove_list, 
+        char *replace_list, char *artist, char *title, char *album, 
+        char *track, char *date, char *genre);
+static void parse_options(int argc, char **argv, oe_options *opt);
+static void build_comments(vorbis_comment *vc, oe_options *opt, int filenum, 
+		char **artist,char **album, char **title, char **tracknum, char **date,
+        char **genre);
+static void usage(void);
 
 int main(int argc, char **argv)
 {
-	oe_options opt = {NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 
-		0, 0,16,44100,2, NULL,NULL,128,0}; /* Default values */
+	/* Default values */
+	oe_options opt = {"ISO-8859-1", NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 
+		0, NULL, 0, NULL, 0, 0, 0,16,44100,2, NULL,DEFAULT_NAMEFMT_REMOVE, 
+        DEFAULT_NAMEFMT_REPLACE, NULL, -1,128,-1, -1.0f,0};
 	int i;
 
 	char **infiles;
 	int numfiles;
+	int errors=0;
+
+	setlocale(LC_ALL, "");
 
 	parse_options(argc, argv, &opt);
 
@@ -107,25 +124,27 @@ int main(int argc, char **argv)
 		FILE *in, *out = NULL;
 		int foundformat = 0;
 		int closeout = 0, closein = 0;
-		char *artist=NULL, *album=NULL, *title=NULL, *track=NULL, *date=NULL;
+		char *artist=NULL, *album=NULL, *title=NULL, *track=NULL;
+        char *date=NULL, *genre=NULL;
 		input_format *format;
-
-
 
 		/* Set various encoding defaults */
 
 		enc_opts.serialno = opt.serial++;
 		enc_opts.progress_update = update_statistics_full;
+        enc_opts.start_encode = start_encode_full;
 		enc_opts.end_encode = final_statistics;
 		enc_opts.error = encode_error;
 		
 		/* OK, let's build the vorbis_comments structure */
-		build_comments(&vc, &opt, i, &artist, &album, &title, &track, &date);
+		build_comments(&vc, &opt, i, &artist, &album, &title, &track, 
+                &date, &genre);
 
 		if(!strcmp(infiles[i], "-"))
 		{
 			setbinmode(stdin);
 			in = stdin;
+            infiles[i] = NULL;
 			if(!opt.outfile)
 			{
 				setbinmode(stdout);
@@ -140,6 +159,7 @@ int main(int argc, char **argv)
 			{
 				fprintf(stderr, "ERROR: Cannot open input file \"%s\"\n", infiles[i]);
 				free(out_fn);
+				errors++;
 				continue;
 			}
 
@@ -163,8 +183,9 @@ int main(int argc, char **argv)
 			format = open_audio_file(in, &enc_opts);
 			if(format)
 			{
-				fprintf(stderr, "Opening with %s module: %s\n", 
-						format->format, format->description);
+                if(!opt.quiet)
+				    fprintf(stderr, "Opening with %s module: %s\n", 
+					    	format->format, format->description);
 				foundformat=1;
 			}
 
@@ -172,7 +193,10 @@ int main(int argc, char **argv)
 
 		if(!foundformat)
 		{
-			fprintf(stderr, "ERROR: Input file \"%s\" is not a supported format\n", infiles[i]);
+			fprintf(stderr, "ERROR: Input file \"%s\" is not a supported format\n", infiles[i]?infiles[i]:"(stdin)");
+    		if(closein)
+				fclose(in);
+			errors++;
 			continue;
 		}
 
@@ -191,7 +215,9 @@ int main(int argc, char **argv)
 			}
 			else if(opt.namefmt)
 			{
-				out_fn = generate_name_string(opt.namefmt, artist, title, album, track,date);
+				out_fn = generate_name_string(opt.namefmt, opt.namefmt_remove, 
+                        opt.namefmt_replace, artist, title, album, track,date,
+                        genre);
 			}
 			else if(opt.title)
 			{
@@ -199,7 +225,7 @@ int main(int argc, char **argv)
 				strcpy(out_fn, title);
 				strcat(out_fn, ".ogg");
 			}
-			else
+			else if(infiles[i])
 			{
 				/* Create a filename from existing filename, replacing extension with .ogg */
 				char *start, *end;
@@ -213,6 +239,10 @@ int main(int argc, char **argv)
 				out_fn[end-start] = 0;
 				strcat(out_fn, ".ogg");
 			}
+            else {
+                fprintf(stderr, "WARNING: No filename, defaulting to \"default.ogg\"\n");
+                out_fn = strdup("default.ogg");
+            }
 
 
 			out = fopen(out_fn, "wb");
@@ -221,6 +251,7 @@ int main(int argc, char **argv)
 				if(closein)
 					fclose(in);
 				fprintf(stderr, "ERROR: Cannot open output file \"%s\"\n", out_fn);
+				errors++;
 				free(out_fn);
 				continue;
 			}	
@@ -231,18 +262,24 @@ int main(int argc, char **argv)
 		enc_opts.out = out;
 		enc_opts.comments = &vc;
 		enc_opts.filename = out_fn;
-		enc_opts.bitrate = opt.kbps; /* defaulted at the start, so this is ok */
+		enc_opts.infilename = infiles[i];
+		enc_opts.bitrate = opt.nominal_bitrate; 
+		enc_opts.min_bitrate = opt.min_bitrate;
+		enc_opts.max_bitrate = opt.max_bitrate;
+		enc_opts.quality = opt.quality;
 
 		if(!enc_opts.total_samples_per_channel)
 			enc_opts.progress_update = update_statistics_notime;
 
 		if(opt.quiet)
 		{
+            enc_opts.start_encode = start_encode_null;
 			enc_opts.progress_update = update_statistics_null;
 			enc_opts.end_encode = final_statistics_null;
 		}
 
-		oe_encode(&enc_opts); /* Should we care about return val? */
+		if(oe_encode(&enc_opts))
+			errors++;
 
 		if(out_fn) free(out_fn);
 		vorbis_comment_clear(&vc);
@@ -255,11 +292,11 @@ int main(int argc, char **argv)
 			fclose(out);
 	}/* Finished this file, loop around to next... */
 
-	return 0;
+	return errors?1:0;
 
 }
 
-void usage(void)
+static void usage(void)
 {
 	fprintf(stdout, 
 		VERSION_STRING
@@ -269,15 +306,23 @@ void usage(void)
 		"\n"
 		"OPTIONS:\n"
 		" General:\n"
-		" -q, --quiet          Produce no output to stderr\n"
+		" -Q, --quiet          Produce no output to stderr\n"
 		" -h, --help           Print this help text\n"
 		" -r, --raw            Raw mode. Input files are read directly as PCM data\n"
 		" -B, --raw-bits=n     Set bits/sample for raw input. Default is 16\n"
 		" -C, --raw-chan=n     Set number of channels for raw input. Default is 2\n"
 		" -R, --raw-rate=n     Set samples/sec for raw input. Default is 44100\n"
-		" -b, --bitrate        Choose a bitrate to encode at. Internally,\n"
-		"                      a mode approximating this value is chosen.\n"
-		"                      Takes an argument in kbps. Default is 128kbps\n"
+		" -b, --bitrate        Choose a nominal bitrate to encode at. Attempt\n"
+		"                      to encode at a bitrate averaging this. Takes an\n"
+		"                      argument in kbps.\n"
+/* these options are not supported by the rc2 vorbisenc. don't mention them. */
+/*		" -m, --min-bitrate    Specify a minimum bitrate (in kbps). Useful for\n"
+		"                      encoding for a fixed-size channel.\n"
+		" -M, --max-bitrate    Specify a maximum bitrate in kbps. Useful in\n"
+		"                      for streaming applications.\n"
+		" -q, --quality        Specify quality between 0 (low) and 10 (high),\n"
+		"                      instead of specifying a particular bitrate.\n"
+		"                      This is the normal mode of operation.\n"		*/
 		" -s, --serial         Specify a serial number for the stream. If encoding\n"
 		"                      multiple files, this will be incremented for each\n"
 		"                      stream after the first.\n"
@@ -288,6 +333,14 @@ void usage(void)
 		"                      %%n, %%d replaces by artist, title, album, track number,\n"
 		"                      and date, respectively (see below for specifying these).\n"
 		"                      %%%% gives a literal %%.\n"
+        " -X, --name-remove=s  Remove the specified characters from parameters to the\n"
+        "                      -n format string. Useful to ensure legal filenames.\n"
+        " -P, --name-replace=s Replace characters remove by --name-remove with the\n"
+        "                      characters specified. If this string shorter than the\n"
+        "                      --name-remove list or is not specified, the extra\n"
+        "                      characters are just removed.\n"
+        "                      Default settings for the above two arguments are platform\n"
+        "                      specific.\n"
 		" -c, --comment=c      Add the given string as an extra comment. This may be\n"
 		"                      used multiple times.\n"
 		" -d, --date           Date for track (usually date of performance)\n"
@@ -295,6 +348,7 @@ void usage(void)
 		" -t, --title          Title for this track\n"
 		" -l, --album          Name of album\n"
 		" -a, --artist         Name of artist\n"
+        " -g, --genre          Genre of track\n"
 		"                      If multiple input files are given, then multiple\n"
 		"                      instances of the previous five arguments will be used,\n"
 		"                      in the order they are given. If fewer titles are\n"
@@ -306,39 +360,70 @@ void usage(void)
 		"                      once, for example, and have it used for all the files)\n"
 		"\n"
 		"INPUT FILES:\n"
-		" OggEnc input files must currently be 16 bit PCM WAV, AIFF, or AIFF/C files.\n"
-		" Files may be mono or stereo (or more channels) and sampling rates \n"
-		" between 8kHz and 56kHz.\n"
-		" You can specify taking the file from stdin by using - as the input filename.\n"
+		" OggEnc input files must currently be 16 or 8 bit PCM WAV, AIFF, or AIFF/C\n"
+		" files. Files may be mono or stereo (or more channels) and any sample rate.\n"
+		" However, the encoder is only tuned for rates of 44.1 and 48 kHz and while\n"
+		" other rates will be accepted quality will be significantly degraded.\n"
 		" Alternatively, the --raw option may be used to use a raw PCM data file, which\n"
-		" must be 16bit stereo little-endian PCM ('headerless wav').\n"
+		" must be 16bit stereo little-endian PCM ('headerless wav'), unless additional\n"
+		" parameters for raw mode are specified.\n"
+		" You can specify taking the file from stdin by using - as the input filename.\n"
 		" In this mode, output is to stdout unless an outfile filename is specified\n"
 		" with -o\n"
-		"\n"
-		"MODES:\n"
-		" OggEnc currently supports 6 different modes. Each of these is a fully VBR\n"
-		" (variable bitrate) mode, but they vary in intended average bitrate. The \n"
-		" bitrate option (--bitrate, -b) will choose the mode closest to the chosen\n"
-		" bitrate. The 6 modes are approximately 112,128,160,192,256, and 350 kbps\n"
-		" (for stereo 44.1kHz input. Halve these numbers for mono input).\n"
-		" The default is the 128 kbps mode.  Lower sampling rates work properly,\n"
-		" but don't scale the bitrate; -b 112 on a stereo 22kHz file will produce a\n"
-		" ~70kbps file, not 112kbps.)\n");
+		"\n");
 }
 
-char *generate_name_string(char *format, 
-		char *artist, char *title, char *album, char *track, char *date)
+static int strncpy_filtered(char *dst, char *src, int len, char *remove_list, 
+        char *replace_list)
+{
+    char *hit, *drop_margin;
+    int used=0;
+
+    if(remove_list == NULL || *remove_list == 0)
+    {
+        strncpy(dst, src, len-1);
+        dst[len-1] = 0;
+        return strlen(dst);
+    }
+
+    drop_margin = remove_list + (replace_list == NULL?0:strlen(replace_list));
+
+    while(*src && used < len-1)
+    {
+        if((hit = strchr(remove_list, *src)) != NULL)
+        {
+            if(hit < drop_margin)
+            {
+                *dst++ = replace_list[hit - remove_list];
+                used++;
+            }
+        }
+        else
+        {
+            *dst++ = *src;
+            used++;
+        }
+        src++;
+    }
+    *dst = 0;
+
+    return used;
+}
+
+static char *generate_name_string(char *format, char *remove_list,
+        char *replace_list, char *artist, char *title, char *album, 
+        char *track, char *date, char *genre)
 {
 	char *buffer;
-	char *cur;
 	char next;
+	char *string;
+	int used=0;
+	int buflen;
 
-	buffer = calloc(CHUNK,1);
+	buffer = calloc(CHUNK+1,1);
+	buflen = CHUNK;
 
-	cur = buffer;
-
-
-	while(*format)
+	while(*format && used < buflen)
 	{
 		next = *format++;
 
@@ -347,27 +432,37 @@ char *generate_name_string(char *format,
 			switch(*format++)
 			{
 				case '%':
-					*cur++ = '%';
+					*(buffer+(used++)) = '%';
 					break;
 				case 'a':
-					strcat(buffer, artist?artist:"(none)");
-					cur += strlen(artist?artist:"(none)");
+					string = artist?artist:"(none)";
+					used += strncpy_filtered(buffer+used, string, buflen-used, 
+                            remove_list, replace_list);
 					break;
 				case 'd':
-					strcat(buffer, date?date:"(none)");
-					cur += strlen(date?date:"(none)");
+					string = date?date:"(none)";
+					used += strncpy_filtered(buffer+used, string, buflen-used,
+                            remove_list, replace_list);
 					break;
+                case 'g':
+                    string = genre?genre:"(none)";
+                    used += strncpy_filtered(buffer+used, string, buflen-used,
+                            remove_list, replace_list);
+                    break;
 				case 't':
-					strcat(buffer, title?title:"(none)");
-					cur += strlen(title?title:"(none)");
+					string = title?title:"(none)";
+					used += strncpy_filtered(buffer+used, string, buflen-used,
+                            remove_list, replace_list);
 					break;
 				case 'l':
-					strcat(buffer, album?album:"(none)");
-					cur += strlen(album?album:"(none)");
+					string = album?album:"(none)";
+					used += strncpy_filtered(buffer+used, string, buflen-used,
+                            remove_list, replace_list);
 					break;
 				case 'n':
-					strcat(buffer, track?track:"(none)");
-					cur += strlen(track?track:"(none)");
+					string = track?track:"(none)";
+					used += strncpy_filtered(buffer+used, string, buflen-used,
+                            remove_list, replace_list);
 					break;
 				default:
 					fprintf(stderr, "WARNING: Ignoring illegal escape character '%c' in name format\n", *(format - 1));
@@ -375,18 +470,18 @@ char *generate_name_string(char *format,
 			}
 		}
 		else
-			*cur++ = next;
+			*(buffer + (used++)) = next;
 	}
 
 	return buffer;
 }
 
-void parse_options(int argc, char **argv, oe_options *opt)
+static void parse_options(int argc, char **argv, oe_options *opt)
 {
 	int ret;
 	int option_index = 1;
 
-	while((ret = getopt_long(argc, argv, "a:b:B:c:C:d:hl:n:N:o:qrR:s:t:v", 
+	while((ret = getopt_long(argc, argv, "a:b:B:c:C:d:G:hl:m:M:n:N:o:P:q:QrR:s:t:vX:", 
 					long_options, &option_index)) != -1)
 	{
 		switch(ret)
@@ -407,6 +502,14 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				opt->dates = realloc(opt->dates, (++opt->date_count)*sizeof(char *));
 				opt->dates[opt->date_count - 1] = strdup(optarg);
 				break;
+            case 'G':
+                opt->genre = realloc(opt->genre, (++opt->genre_count)*sizeof(char *));
+                opt->genre[opt->genre_count - 1] = strdup(optarg);
+                break;
+			case 'h':
+				usage();
+				exit(0);
+				break;
 			case 'l':
 				opt->album = realloc(opt->album, (++opt->album_count)*sizeof(char *));
 				opt->album[opt->album_count - 1] = strdup(optarg);
@@ -422,7 +525,26 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				opt->title[opt->title_count - 1] = strdup(optarg);
 				break;
 			case 'b':
-				opt->kbps = atoi(optarg);
+				opt->nominal_bitrate = atoi(optarg);
+				break;
+			case 'm':
+				opt->min_bitrate = atoi(optarg);
+				break;
+			case 'M':
+				opt->max_bitrate = atoi(optarg);
+				break;
+			case 'q':
+				opt->quality = (float)(atof(optarg) * 0.1);
+				if(opt->quality > 1.0f)
+				{
+					opt->quality = 1.0f;
+					fprintf(stderr, "WARNING: quality setting too high, setting to maximum quality.\n");
+				}
+				else if(opt->quality < 0.0f)
+				{
+					opt->quality = 0.0f;
+					fprintf(stderr, "WARNING: negative quality specified, setting to minimum.\n");
+				}
 				break;
 			case 'n':
 				if(opt->namefmt)
@@ -432,6 +554,24 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				}
 				opt->namefmt = strdup(optarg);
 				break;
+            case 'X':
+				if(opt->namefmt_remove && opt->namefmt_remove != 
+                        DEFAULT_NAMEFMT_REMOVE)
+				{
+					fprintf(stderr, "WARNING: Multiple name format filters specified, using final\n");
+					free(opt->namefmt_remove);
+				}
+				opt->namefmt_remove = strdup(optarg);
+				break;
+            case 'P':
+				if(opt->namefmt_replace && opt->namefmt_replace != 
+                        DEFAULT_NAMEFMT_REPLACE)
+                {
+					fprintf(stderr, "WARNING: Multiple name format filter replacements specified, using final\n");
+					free(opt->namefmt_replace);
+				}
+				opt->namefmt_replace = strdup(optarg);
+				break;
 			case 'o':
 				if(opt->outfile)
 				{
@@ -440,11 +580,7 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				}
 				opt->outfile = strdup(optarg);
 				break;
-			case 'h':
-				usage();
-				exit(0);
-				break;
-			case 'q':
+			case 'Q':
 				opt->quiet = 1;
 				break;
 			case 'r':
@@ -490,12 +626,12 @@ void parse_options(int argc, char **argv, oe_options *opt)
 				if (opt->rawmode != 1)
 				{
 					opt->rawmode = 1;
-					fprintf(stderr, "WARNING: Raw samplerate specified for non-raw data. Assuming input is raw.\n");
+					fprintf(stderr, "WARNING: Raw sample rate specified for non-raw data. Assuming input is raw.\n");
 				}
 				if(sscanf(optarg, "%u", &opt->raw_samplerate) != 1)
 				{
 					opt->raw_samplerate = 44100; /* Failed, so just set to 44100 */
-					fprintf(stderr, "WARNING: Invalid samplerate specified, assuming 44100.\n");
+					fprintf(stderr, "WARNING: Invalid sample rate specified, assuming 44100.\n");
 				}
 				break;
 			case '?':
@@ -508,15 +644,31 @@ void parse_options(int argc, char **argv, oe_options *opt)
 	}
 }
 
-void build_comments(vorbis_comment *vc, oe_options *opt, int filenum, 
-		char **artist, char **album, char **title, char **tracknum, char **date)
+static void add_tag(vorbis_comment *vc, oe_options *opt,char *name, char *value)
+{
+	char *utf8;
+	if(utf8_encode(value, &utf8) >= 0)
+	{
+		if(name == NULL)
+			vorbis_comment_add(vc, utf8);
+		else
+			vorbis_comment_add_tag(vc, name, utf8);
+		free(utf8);
+	}
+	else
+		fprintf(stderr, "Couldn't convert comment to UTF-8, cannot add\n");
+}
+
+static void build_comments(vorbis_comment *vc, oe_options *opt, int filenum, 
+		char **artist, char **album, char **title, char **tracknum, 
+        char **date, char **genre)
 {
 	int i;
 
 	vorbis_comment_init(vc);
 
 	for(i = 0; i < opt->comment_count; i++)
-		vorbis_comment_add(vc, opt->comments[i]);
+		add_tag(vc, opt, NULL, opt->comments[i]);
 
 	if(opt->title_count)
 	{
@@ -530,7 +682,7 @@ void build_comments(vorbis_comment *vc, oe_options *opt, int filenum,
 			i = filenum;
 
 		*title = opt->title[i];
-		vorbis_comment_add_tag(vc, "title", opt->title[i]);
+		add_tag(vc, opt, "title", opt->title[i]);
 	}
 
 	if(opt->artist_count)
@@ -541,8 +693,19 @@ void build_comments(vorbis_comment *vc, oe_options *opt, int filenum,
 			i = filenum;
 	
 		*artist = opt->artist[i];
-		vorbis_comment_add_tag(vc, "artist", opt->artist[i]);
+		add_tag(vc, opt, "artist", opt->artist[i]);
 	}
+
+    if(opt->genre_count)
+    {
+        if(filenum >= opt->genre_count)
+            i = opt->genre_count-1;
+        else
+            i = filenum;
+
+        *genre = opt->genre[i];
+        add_tag(vc, opt, "genre", opt->genre[i]);
+    }
 
 	if(opt->date_count)
 	{
@@ -552,7 +715,7 @@ void build_comments(vorbis_comment *vc, oe_options *opt, int filenum,
 			i = filenum;
 	
 		*date = opt->dates[i];
-		vorbis_comment_add_tag(vc, "date", opt->dates[i]);
+		add_tag(vc, opt, "date", opt->dates[i]);
 	}
 	
 	if(opt->album_count)
@@ -565,14 +728,14 @@ void build_comments(vorbis_comment *vc, oe_options *opt, int filenum,
 			i = filenum;
 
 		*album = opt->album[i];	
-		vorbis_comment_add_tag(vc, "album", opt->album[i]);
+		add_tag(vc, opt, "album", opt->album[i]);
 	}
 
 	if(filenum < opt->track_count)
 	{
 		i = filenum;
 		*tracknum = opt->tracknum[i];
-		vorbis_comment_add_tag(vc, "tracknumber", opt->tracknum[i]);
+		add_tag(vc, opt, "tracknumber", opt->tracknum[i]);
 	}
 }
 
