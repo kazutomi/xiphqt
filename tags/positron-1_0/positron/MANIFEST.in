@@ -1,0 +1,10 @@
+include TODO
+include COPYING
+include ChangeLog
+include MANIFEST.in
+graft scripts
+graft setupext
+graft doc
+graft debian
+exclude doc/*.1
+global-exclude *.pyc
