@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * $Id$
  */
 
 #include "definitions.h"
@@ -166,7 +167,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
     if (config->plugin) {
       decode = 1;
       for (plugin = config->plugin; plugin; plugin = plugin->next)
-	config->plugin->new_track();
+	config->plugin->new_track(source);
     } else
       for (stream = config->streams; stream; stream = stream->next)
 	if (stream->reencode && stream_needs_reencoding (source, stream)) {

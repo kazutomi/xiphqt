@@ -20,9 +20,8 @@
  */
 
 #include "definitions.h"
-#include "plugin.h"
 
-static void cf_new_track(void);
+static void cf_new_track(input_stream_t *source);
 static int cf_process(int ilen, int16_t* il, int16_t* ir);
 
 static ices_plugin_t Crossfader = {
@@ -35,12 +34,12 @@ static ices_plugin_t Crossfader = {
 };
 
 static int NewTrack = 0;
-static int FadeSecs = 3;
 static int FadeSamples;
 static int16_t* FL;
 static int16_t* FR;
 static int fpos = 0;
 static int flen = 0;
+static int skipnext = 0;
 
 /* public functions */
 ices_plugin_t *crossfade_plugin(int secs) {
@@ -53,7 +52,24 @@ ices_plugin_t *crossfade_plugin(int secs) {
 }
 
 /* private functions */
-static void cf_new_track(void) {
+static void cf_new_track(input_stream_t *source) {
+  int filesecs;
+
+  /* turn off crossfading for tracks less than twice the length of the fade */
+  if (skipnext) {
+    skipnext = 0;
+    return;
+  }
+
+  if (source->filesize && source->bitrate) {
+    filesecs = source->filesize / (source->bitrate * 128);
+    if (filesecs < FadeSamples * 2 / 44100) {
+      ices_log_debug("crossfade: not fading short track of %d secs", filesecs);
+      skipnext = 1;
+      return;
+    }
+  }
+
   NewTrack = FadeSamples;
 }
 

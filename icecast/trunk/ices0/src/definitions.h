@@ -109,7 +109,6 @@
 #include "reencode.h"
 #include "ices_config.h"
 #include "playlist/playlist.h"
-#include "plugin.h"
 
 #define BUFSIZE 8192
 #define ICES_DEFAULT_HOST "127.0.0.1"

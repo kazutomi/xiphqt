@@ -22,8 +22,6 @@
 #ifndef _ICES_ICESTYPES_H
 #define _ICES_ICESTYPES_H
 
-#include "plugin.h"
-
 typedef enum {
   icy_protocol_e,
   xaudiocast_protocol_e,
@@ -77,19 +75,6 @@ typedef struct {
   void (*shutdown) (void);
 } playlist_module_t;
 
-typedef struct {
-  int daemon;
-  int verbose;
-  int reencode;
-  char *configfile;
-  char *base_directory;
-  FILE *logfile;
-
-  ices_stream_t* streams;
-  playlist_module_t pm;
-  ices_plugin_t *plugin;
-} ices_config_t;
-
 /* -- input stream types -- */
 typedef enum {
   ICES_INPUT_VORBIS,
@@ -116,4 +101,26 @@ typedef struct _input_stream_t {
 		     int16_t* right);
   int (*close)(struct _input_stream_t* self);
 } input_stream_t;
+
+typedef struct _ices_plugin {
+  const char *name;
+
+  void (*new_track)(input_stream_t *source);
+  int (*process)(int ilen, int16_t *il, int16_t *ir);
+
+  struct _ices_plugin *next;
+} ices_plugin_t;
+
+typedef struct {
+  int daemon;
+  int verbose;
+  int reencode;
+  char *configfile;
+  char *base_directory;
+  FILE *logfile;
+
+  ices_stream_t* streams;
+  playlist_module_t pm;
+  ices_plugin_t *plugin;
+} ices_config_t;
 #endif
