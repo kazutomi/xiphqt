@@ -3,9 +3,9 @@
 
 	a testbed player for ogg multimedia
 
-	$Date: 2001/09/03 19:11:33 $
+	$Date: 2003/06/22 21:43:03 $
 
-	Ralph Giles <giles@thaumas.net>
+	Ralph Giles <giles@xiph.org>
 
 	This program my be redistributed under the terms of the
 	GNU General Public Licence, version 2, or at your preference,
@@ -138,10 +138,14 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 		fprintf(stderr, "  submitting %d bytes to the mng decoder\n", copybytes);
 
 		/* copy it into the mng decode buffer */
-		memcpy(buffer, stuff->op_last->packet, copybytes);
+		memcpy(buffer, stuff->op_last->packet + stuff->op_bytes, copybytes);
+		stuff->op_bytes += copybytes;
 		*bytesread += copybytes;
 
-		stuff->op_last = NULL;
+		if (stuff->op_bytes == stuff->op_last->bytes) {
+			stuff->op_last = NULL;
+			stuff->op_bytes = 0;
+		}
 
 		/* are we done? */
 		if (*bytesread >= byteswanted)
@@ -151,10 +155,11 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 	/* we still need more data, so look for more packets in the saved page */
 	if (stuff->og_last) {
 	while (ogg_stream_packetout(stuff->os, op) > 0) {
-		fprintf(stderr, "  got packet %ld\n", op->packetno);
+		fprintf(stderr, "  got packet %ld", op->packetno);
+		fprintf(stderr, " (%d bytes)\n", op->bytes);
 		
 		/* copy it into the mng decode buffer */
-		copybytes = MIN(byteswanted - *bytesread, stuff->op_last->bytes - stuff->op_bytes);
+		copybytes = MIN(byteswanted - *bytesread, op->bytes);
 		fprintf(stderr, "  submitting %d bytes to the mng decoder\n", copybytes);
                 memcpy(buffer + (*bytesread), op->packet, copybytes);
                 *bytesread += copybytes;
@@ -198,7 +203,7 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 	fprintf(stderr, "looking for ogg pages...\n");
 
 	/* process any pages we found */
-	while (rc = ogg_sync_pageout(stuff->oy, og) > 0) {
+	while ((rc = ogg_sync_pageout(stuff->oy, og)) > 0) {
 		fprintf(stderr, " got page %x:%ld\n",
 			ogg_page_serialno(og), ogg_page_pageno(og));
 		/* have we seen this (or any) substream before? */
@@ -218,7 +223,8 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 		/* packetize it */
 		ogg_stream_pagein(stuff->os, og);
 		while (ogg_stream_packetout(stuff->os, op) > 0) {
-			fprintf(stderr, "  got packet %ld\n", op->packetno);
+			fprintf(stderr, "  got packet %ld", op->packetno);
+			fprintf(stderr, " (%d bytes)\n", op->bytes);
 			/* check for overflow -- should never happen */
 			if (*bytesread >= byteswanted) {
 				fprintf(stderr, "error: packet data bigger than we thought!\n");
@@ -269,7 +275,7 @@ mng_bool mymngprocessheader(mng_handle mng,
 	SDL_Surface	*screen;
 	char		title[256];
 
-//	fprintf(stderr, "our mng is %dx%d\n", width,height);
+	fprintf(stderr, "our mng is %dx%d\n", width,height);
 
 	screen = SDL_SetVideoMode(width,height, 32, SDL_SWSURFACE);
 	if (screen == NULL) {
@@ -286,7 +292,7 @@ mng_bool mymngprocessheader(mng_handle mng,
 	snprintf(title, 256, "mngplay: %s", stuff->filename);
 	SDL_WM_SetCaption(title, "mngplay");
 
-	/* in necessary, lock the drawing surface to the decoder
+	/* if necessary, lock the drawing surface to the decoder
 	   can safely fill it. We'll unlock elsewhere before display */
 	if (SDL_MUSTLOCK(stuff->surface)) {
 		if ( SDL_LockSurface(stuff->surface) < 0 ) {
@@ -327,7 +333,7 @@ mng_uint32 mymnggetticks(mng_handle mng)
 	mng_uint32 ticks;
 
 	ticks = (mng_uint32)SDL_GetTicks();
-//	fprintf(stderr, "  %d\t(returning tick count)\n",ticks);
+	//fprintf(stderr, "  %d\t(returning tick count)\n",ticks);
 
 	return(ticks);
 }
@@ -346,6 +352,8 @@ mng_bool mymngrefresh(mng_handle mng, mng_uint32 x, mng_uint32 y,
 	/* dereference our structure */
         stuff = (stuff_t*)mng_get_userdata(mng);
 
+	//fprintf(stderr, "refreshing display\n");
+
 	/* if necessary, unlock the display */
 	if (SDL_MUSTLOCK(stuff->surface)) {
                 SDL_UnlockSurface(stuff->surface);
@@ -362,7 +370,6 @@ mng_bool mymngrefresh(mng_handle mng, mng_uint32 x, mng_uint32 y,
                 }
         }
 	
-
 	return MNG_TRUE;
 }
 
