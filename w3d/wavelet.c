@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "wavelet.h"
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MAX3(a,b,c) (MAX(a,MAX(b,c)))
 
 
 Wavelet3DBuf* wavelet_3d_buf_new (uint32 width, uint32 height, uint32 frames)
@@ -38,7 +40,9 @@ Wavelet3DBuf* wavelet_3d_buf_new (uint32 width, uint32 height, uint32 frames)
    buf->f = (uint32*) malloc (buf->scales * sizeof (uint32));
    buf->minmax = (TYPE*) malloc (buf->scales * sizeof (TYPE));
 
-   if (!buf->w || !buf->h || !buf->f || !buf->minmax) {
+   buf->scratchbuf = (TYPE*) malloc (MAX3(width, height, frames) * sizeof (TYPE));
+
+   if (!buf->w || !buf->h || !buf->f || !buf->minmax || !buf->scratchbuf) {
       wavelet_3d_buf_destroy (buf);
       return NULL;
    }
@@ -70,6 +74,8 @@ void wavelet_3d_buf_destroy (Wavelet3DBuf* buf)
          free (buf->h);
       if (buf->f)
          free (buf->f);
+      if (buf->scratchbuf)
+         free (buf->scratchbuf);
       free (buf);
    }
 }
@@ -78,13 +84,13 @@ void wavelet_3d_buf_destroy (Wavelet3DBuf* buf)
 
 
 /*
- *  returns value is MAX(largest coefficient, ~(smallest coefficient))
+ *  return value is MAX(largest coefficient, ~(smallest coefficient))
  *  (will be used to skip empty bitplanes)
  */
 static inline
-TYPE __fwd_xform__ (TYPE *data, int stride, int n)
+TYPE __fwd_xform__ (Wavelet3DBuf *buf, TYPE *data, int stride, int n)
 {
-   TYPE *d = (TYPE*) malloc (sizeof(TYPE) * n/2);
+   TYPE *d = buf->scratchbuf;
    TYPE *x = data;
    TYPE *s = data;
    TYPE min = ~0;
@@ -115,18 +121,16 @@ TYPE __fwd_xform__ (TYPE *data, int stride, int n)
          min = d [i];
    }
 
-   free (d);
-
    return (max | ~min);   
 }
 
 
 static inline
-void __inv_xform__ (TYPE *data, int stride, int n)
+void __inv_xform__ (Wavelet3DBuf *buf, TYPE *data, int stride, int n)
 {
    int i, k=n/2;
-   TYPE *s = (TYPE*) malloc (sizeof(TYPE) * (k+1));
-   TYPE *d = (TYPE*) malloc (sizeof(TYPE) * k);
+   TYPE *s = buf->scratchbuf;
+   TYPE *d = buf->scratchbuf + n - k;
    TYPE *x = data;
 
    for (i=0; i<k+1; i++)
@@ -148,9 +152,6 @@ void __inv_xform__ (TYPE *data, int stride, int n)
 
    if (!(n & 1))                                /*  n is even   */
       x [(n-1)*stride] = d[k-1] + x[(n-2)*stride];
-
-   free (s);
-   free (d);
 }
 
 
@@ -172,7 +173,7 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
          for (frame=0; frame<f; frame++) {
             for (row=0; row<h; row++) {
                TYPE *data = buf->data + (frame * buf->height + row) * buf->width;
-               buf->minmax [level] |= __fwd_xform__ (data, 1, w);
+               buf->minmax [level] |= __fwd_xform__ (buf, data, 1, w);
             }
          }
       }
@@ -182,7 +183,7 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
          for (frame=0; frame<f; frame++) {
             for (col=0; col<w; col++) {
                TYPE *data = buf->data + frame * buf->width * buf->height + col;
-               buf->minmax [level] |= __fwd_xform__ (data, buf->width, h);
+               buf->minmax [level] |= __fwd_xform__ (buf, data, buf->width, h);
             }
          }
       }
@@ -192,7 +193,7 @@ void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf)
          for (j=0; j<h; j++) {
             for (i=0; i<w; i++) {
                TYPE *data = buf->data + j*buf->width + i;
-               buf->minmax [level] |= __fwd_xform__ (data, buf->width * buf->height, f);
+               buf->minmax [level] |= __fwd_xform__ (buf, data, buf->width * buf->height, f);
             }
          }
       }
@@ -224,7 +225,7 @@ void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf)
          for (j=0; j<h; j++) {
             for (i=0; i<w; i++) {
                TYPE *data = buf->data + j*buf->width + i;
-               __inv_xform__ (data, buf->width * buf->height, f);
+               __inv_xform__ (buf, data, buf->width * buf->height, f);
             }
          }
       }
@@ -234,7 +235,7 @@ void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf)
          for (frame=0; frame<f; frame++) {
             for (col=0; col<w; col++) {
                TYPE *data = buf->data + frame * buf->width * buf->height + col;
-               __inv_xform__ (data, buf->width, h);
+               __inv_xform__ (buf, data, buf->width, h);
             }
          }
       }
@@ -244,10 +245,11 @@ void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf)
          for (frame=0; frame<f; frame++) {
             for (row=0; row<h; row++) {
                TYPE *data = buf->data + (frame * buf->height + row) * buf->width;
-               __inv_xform__ (data, 1, w);
+               __inv_xform__ (buf, data, 1, w);
             }
          }
       }
    }
 }
+
 

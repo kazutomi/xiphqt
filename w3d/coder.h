@@ -24,13 +24,6 @@ typedef struct {
 
 
 
-typedef struct {
-   Wavelet3DBuf *waveletbuf;
-   RLECoderState  rlecoder;
-} Coder;
-
-
-
 extern size_t encode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t limit);
 extern void   decode_coeff3d (Wavelet3DBuf *waveletbuf, uint8 *bitstream, size_t count);
 
