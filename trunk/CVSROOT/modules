@@ -24,3 +24,13 @@
 # character to interpose another module into the current module.  This
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
+
+icecast-src-avl -a -d icecast/src avl
+icecast-src-log -a -d icecast/src log
+icecast-src-net -a -d icecast/src net
+icecast-src-httpp -a -d icecast/src httpp
+icecast-src-thread -a -d icecast/src thread
+icecast-src-timing -a -d icecast/src timing
+
+icecast-test -a icecast icecast-src-avl icecast-src-httpp icecast-src-log \
+		icecast-src-timing icecast-src-thread icecast-src-net
