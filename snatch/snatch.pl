@@ -124,6 +124,7 @@ if(-e $historyfile){
     }
     close HFILE;
 }
+TimerSort();
 
 # build the UI
 my $toplevel=new MainWindow(-class=>'Snatch');
@@ -1143,7 +1144,6 @@ sub BuildListBox(){
     $listbox->destroy() if(defined($listbox));
 
     # assemble the sorted timer elements we're actually interested into an array for listbox
-    TimerSort();
     my$n=$#TIMER;
     my@listarray;
     
@@ -1226,7 +1226,6 @@ sub Timer_Highlight{
     if(!defined($tentry)){
 	if(defined($highlightnow) && $highlightnow+2>time){
 	    
-	    print "$timer_row $_[0]\n";
 	    if($timer_row==$_[0]){
 		# doubleclick hack.  Edit this entry
 		Timer_Edit();
@@ -1249,7 +1248,9 @@ sub Timer_Delete{
     my$actual_row=$TIMER_SORTED[$timer_row];
 
     splice @TIMER,$actual_row,1;
+    TimerSort();
     SaveHistory();
+    ButtonConfig();
     $timerw_edit->configure(-state=>disabled);
     $timerw_delete->configure(-state=>disabled);
     $timerw_duplicate->configure(-state=>disabled);
@@ -1328,8 +1329,12 @@ sub Timer_Entry{
 	    
 	    if($row<0){
 		push @TIMER, $entry;
+		TimerSort();
+		ButtonConfig();
 	    }else{
 		splice @TIMER,$row,1,$entry;
+		TimerSort();
+		ButtonConfig();
 	    }
 	    
 	    SaveHistory();
@@ -1499,14 +1504,16 @@ sub Timer_Entry{
 	Message(-text=>"Any field in the date specification may be set to the wildcard * (asterisk); ".
 		"recording will happen on all dates in the future matching the provided ".
 		"fields.  Time and ".
-		"duration are specified in hours and minutes.\n\n\'Silent record\' indicates that ".
+		"duration are specified in hours and minutes, time uses a 24 hour clock.".
+		"\n\n\'Silent record\' indicates that ".
 		"during the record operation, no attempt should be made to open the audio device, ".
 		"play audio ".
 		"or display video.  This is useful both to increase performance and eliminate ".
 		"the possibility timed record will fail due to audio device conflicts with other ".
 		"applications.\n\nOutput path may be a directory [Snatch will choose a filename], ".
 		"a filename [record data will append], or - (dash) indicating standard out.",
-		-width=>$reqwidth-30,-anchor=>w,-class=>AlertDetail)->
+		-width=>$reqwidth-30-$tentry_shell->cget(borderwidth)*2,
+		-anchor=>w,-class=>AlertDetail)->
 		    place(-x=>5,-y=>$y,-relwidth=>1.0,-width=>-10,-bordermode=>outside);
     $y+=$tentry_message->reqheight()+5;
 
