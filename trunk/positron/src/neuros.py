@@ -124,7 +124,7 @@ class Neuros:
     def neurospath_to_hostpath(self, neurospath):
         neurospath_parts = neurospath.split("/")
 
-        if len(neurospath_parts) < 1 or neurospath_parts[0] != "C:":
+        if len(neurospath_parts) < 1 or neurospath_parts[0].lower() != "c:":
             raise Error("Neuros path does not start with C:")
 
         hostpath_parts = self.mountpoint_parts + neurospath_parts[1:]

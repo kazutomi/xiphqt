@@ -47,12 +47,21 @@ def strip_quotes(s):
     else:
         return s
 
+def trim_newline(s):
+    if len(s) > 1:
+        if s[-1] == "\n":
+            return s[:-1]
+        else:
+            return s
+    else:
+        return s
+
 
 class Config:
     def __init__(self):
         self.set_config_dir(ports.user_config_dir())
         self.mountpoint = None
-        self.recording_dir = None
+        self.recordingdir = None
         self.neuros_musicdir = "MUSIC"
         self.sort_database = True
         self.syncdirs = []
@@ -178,6 +187,12 @@ class Config:
 
             token = tokenizer.get_token()
 
+        # Cleanup unspecified dest directories now that we've read everything
+        # and know what the neuros_musicdir is
+        for i in range(len(self.syncdirs)):
+            if self.syncdirs[i][1] == None:
+                self.syncdirs[i][1] = neuros_musicdir
+
     def write_config_file(self):
         f = file(self.config_filenames["config"], "w")
 
@@ -238,7 +253,7 @@ class Config:
         f.close()
 
         # Eliminate null entries and trim trailing newlines
-        return [item.rstrip("\n") for item in l if item != "" or item == "\n"]
+        return [trim_newline(item) for item in l if item != "" or item == "\n"]
 
     def _add_item(self, filename, item):
         f = file(filename, "a")
