@@ -117,7 +117,7 @@ int dump_packet_rtp(unsigned char *data, const int len, FILE *out)
   R = (data[offset] & 0x20) >> 5;
   pkts = (data[offset] & 0x1F);
 
-  fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d   %d packets\n",
+  fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d   packets: %d\n",
     ident, C, F, R, pkts);
 
   return 0;
