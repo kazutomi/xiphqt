@@ -70,11 +70,20 @@ URLs and Linkage
 ----------------
 
 *	Due to cross-platform and build restrictions, we can’t use symlinks or hard links.
-	Instead, use HTTP redirects in .htaccess files. For more information, see the Apache 2
-	information on the Redirect directive at
+	Instead, use the Redirect and RedirectMatch directives in the top-level .htaccess file.
+	For more information, see the Apache 2 information at
 	<http://httpd.apache.org/docs-2.0/mod/mod_alias.html#redirect>.
 
 *	Redirect to <http://www.xiph.org/>, not <http://xiph.org/>.
+
+*	Do not abbreviate directory names. For example, make URLs so they look like
+	“/vorbis/documentation/”, not “/vorbis/doc/”, with the exception of “/faq/”.
+
+	However, add in a RedirectMatch in the .htaccess file to perma-redirect
+	from /doc/ to /documentation/, because people may try /doc/ and we don’t want to disappoint.
+
+*	Use U.S. English for URL spelling (“license”, “optimize”), but pop in a RedirectMatch from
+	the Commonwealth spelling.
 
 *	Page URLs are to be in the style of /foo/bar/baz/quux/ for reasons described on
 	[Slash Forward][].
