@@ -6,13 +6,13 @@
 </div>
 <div class="newscontent">
 
-<h4>Icecast Current Release (2.0.2)</h4>
+<h4>Icecast Current Release (2.1.0)</h4>
 <center>
 <p>Binary Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>Red Hat 9.x/Fedora RPM</td><td><a href="http://svn.xiph.org/releases/icecast/icecast-2.0.2-1.i386.rpm">icecast-2.0.2-1.i386.rpm</a></td></tr>
-<tr><td>Windows NT/2000/XP</td><td><a href="http://svn.xiph.org/releases/icecast/icecast2_win32_2.0.2_setup.exe">icecast2_win32_2.0.2_setup.exe</a></td></tr>
+<tr><td>Red Hat 9.x/Fedora RPM</td><td><a href="http://svn.xiph.org/releases/icecast/icecast-2.1.0-1.i386.rpm">icecast-2.1.0-1.i386.rpm</a></td></tr>
+<tr><td>Windows NT/2000/XP</td><td><a href="http://svn.xiph.org/releases/icecast/icecast2_win32_2.1.0_setup.exe">icecast2_win32_2.1.0_setup.exe</a></td></tr>
 </table>
 </center>
 <br></br>
@@ -20,8 +20,8 @@
 <p>Source Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>All</td><td><a href="http://svn.xiph.org/releases/icecast/icecast-2.0.2.tar.gz">icecast-2.0.2.tar.gz</a></td></tr>
-<tr><td>RPM-compatable</td><td><a href="http://svn.xiph.org/releases/icecast/icecast-2.0.2-1.src.rpm">icecast-2.0.2-1.src.rpm</a></td></tr>
+<tr><td>All</td><td><a href="http://svn.xiph.org/releases/icecast/icecast-2.1.0.tar.gz">icecast-2.1.0.tar.gz</a></td></tr>
+<tr><td>RPM-compatable</td><td><a href="http://svn.xiph.org/releases/icecast/icecast-2.1.0-1.src.rpm">icecast-2.1.0-1.src.rpm</a></td></tr>
 </table>
 </center>
 <p>In addition to icecast, you will most likely need to download a source client for creating the actual stream.  We suggest that you download one from our <a href="3rdparty.php">3rdparty applications</a> page.</p>

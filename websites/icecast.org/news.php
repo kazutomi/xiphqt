@@ -4,6 +4,73 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Icecast Release 2.1.0</h3>
+<p>After about 8 months in development, version 2.1.0 of icecast has been released.
+</p>
+<p>
+<font color=white size=4><b>New features for 2.1 (in no particular order)</b></font>
+<p>
+<font color=yellow>Listener Authentication</font></br>
+  Icecast now supports listener authentication.  This provides a mechanism for
+  creating/maintaining users and passwords for listeners.  Currently, we only
+  have implemented a simple, file-based storage for users and passwords.  New
+  authenticators are on the horizon (such as URL-based or possibly MySQL based)
+  New admin pages were also added for the maintenance of users/passwords. Please
+  check the docs for a more detailed description of this new feature.
+</br>
+</br>
+<font color=yellow>Multi-Level Fallbacks</font></br>
+  Multi-level fallbacks allow for specifications of a series of fallback mounts
+  that you could use, for instance, to set up a series of progressively lower
+  bitrate streams that would be cascaded through.  For instance, a modem user
+  would connect to the highest bitrate stream, and then could be cascaded
+  down to a progressively lower stream until they reach a value they can
+  handle.
+</br>
+</br>
+<font color=yellow>Burst-On-Connect</font></br>
+  This is an new, optional config setting which will send a initial burst of
+  data to connecting listeners.  This has the effect of reducing
+  (significantly) the startup buffer latency from the end-user perspective.
+  This option is enabled by default.
+</br>
+</br>
+<font color=white size=4><b>New Enhancements for 2.1</b></font></br>
+<font color=yellow>Update to admin interface</font></br>
+  This interface has been cleaned up quite a bit and made a bit nicer.
+</br>
+</br>
+
+<font color=yellow>Rewrite of the YP listing code</font></br>
+  The icecast yp code has received a complete overhaul by karl, and it's a much
+  more stable and failure-resistant implementation.
+</br>
+</br>
+
+<font color=yellow>Lots and lots of bugs fixed</font></br>
+  Check the ChangeLog for a complete list of these...
+</br>
+</br>
+</p>
+
+<p>Download Icecast 2.1.0 from the <a href="download.php">Download page</a>.</p>
+
+<div class="poster">
+Posted November 4, 2004 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Icecast Release 2.0.2</h3>
 <p>This patch release fixes an exploit found by Luigi Auriemma. We recommend that all
 users currently upgrade to this patch release.
