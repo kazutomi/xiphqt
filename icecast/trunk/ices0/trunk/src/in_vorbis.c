@@ -46,17 +46,17 @@ static int ices_vorbis_get_metadata (input_stream_t* self, char* buf,
  *  -1: error opening
  */
 int
-ices_vorbis_open (input_stream_t* self)
+ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
 {
   ices_vorbis_in_t* vorbis_data;
   OggVorbis_File* vf;
   FILE* fin;
-  char buf[128];
+  char errbuf[128];
   int rc;
 
-  if (! (fin = fopen (self->path, "rb"))) {
-    ices_util_strerror (errno, buf, sizeof (buf));
-    ices_log_error ("Error opening %s: %s", self->path, buf);
+  if (! (fin = fdopen (self->fd, "rb"))) {
+    ices_util_strerror (errno, errbuf, sizeof (errbuf));
+    ices_log_error ("Error opening %s: %s", self->path, errbuf);
 
     return -1;
   }
@@ -66,7 +66,7 @@ ices_vorbis_open (input_stream_t* self)
     return -1;
   }
 
-  if ((rc = ov_open (fin, vf, NULL, 0)) != 0) {
+  if ((rc = ov_open (fin, vf, buf, len)) != 0) {
     free (vf);
     fclose (fin);
 

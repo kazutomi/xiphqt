@@ -26,6 +26,6 @@
 
 #include <vorbis/vorbisfile.h>
 
-int ices_vorbis_open (input_stream_t* self);
+int ices_vorbis_open (input_stream_t* self, char* buf, size_t len);
 
 #endif

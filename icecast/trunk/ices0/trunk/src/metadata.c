@@ -95,9 +95,6 @@ ices_metadata_clean_filename (const char* path, char *buf, size_t len)
 {
   char *ptr =NULL;
 
-  ices_log_debug ("Filename before cleanup: [%s]",
-		  ices_util_nullcheck (path));
-
   if (!path || !buf) {
     ices_log ("ERROR: Polluted strings sent to filename cleanup.");
     return NULL;

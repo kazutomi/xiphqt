@@ -34,7 +34,6 @@ static int id3_is_initialized = 0;
 /* Private function declarations */
 static int ices_id3_parse (const char *filename, int file_bytes);
 static void ices_id3_cleanup (void);
-static char *ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize);
 
 /* Global function definitions */
 

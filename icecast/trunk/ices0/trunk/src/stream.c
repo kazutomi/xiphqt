@@ -190,11 +190,15 @@ ices_stream_send_file (const char *file)
       olen = len;
       for (stream = ices_config.streams; stream; stream = stream->next) {
 #ifdef HAVE_LIBLAME
-	if (ices_config.reencode || source.type != ICES_INPUT_MP3)
+	if (ices_config.reencode || source.type != ICES_INPUT_MP3) {
 	  olen = ices_reencode_reencode_chunk (stream, len, left, right, buf,
-					      0);
+					       sizeof (buf));
+	  if (olen == -1) {
+	    ices_log_debug ("Output buffer too small, skipping chunk");
+	  }
+	}
 #endif
-	if (olen) {
+	if (olen > 0) {
 	  rc = shout_send_data (&stream->conn, buf, olen);
 	  shout_sleep (&stream->conn);
 			
@@ -235,8 +239,8 @@ ices_stream_send_file (const char *file)
 static int
 ices_stream_open_source (input_stream_t* source)
 {
-  ices_mp3_in_t* mp3_data;
   char buf[1024];
+  size_t len;
   int fd;
   int rc;
 
@@ -247,44 +251,35 @@ ices_stream_open_source (input_stream_t* source)
     return -1;
   }
 
+  source->fd = fd;
+
   if (lseek (fd, SEEK_SET, 0) == -1)
     source->canseek = 0;
   else {
     source->canseek = 1;
     source->filesize = ices_util_fd_size (fd);
   }
-  ices_log_error ("Seek: %s", source->canseek ? "yes" : "no");
+
+  if ((len = read (fd, buf, sizeof (buf))) <= 0) {
+    ices_util_strerror (errno, buf, sizeof (buf));
+    ices_log_error ("Error reading header from %s: %s", source->path, buf);
+    
+    return -1;
+  }
+
+  if (!(rc = ices_mp3_open (source, buf, len)))
+    return 0;
+  if (rc < 0)
+    goto err;
 
 #ifdef HAVE_LIBVORBISFILE
-  if (source->canseek) {
-    if ((rc = ices_vorbis_open (source)) == 0) {
-      close (fd);
-      return 0;
-    } else if (rc < 0) {
-      close (fd);
-      return -1;
-    }
-  }
+  if (!(rc = ices_vorbis_open (source, buf, len)))
+    return 0;
+  if (rc < 0)
+    goto err;
 #endif
 
-  /* let's hope it's MP3 */
-  if (source->canseek) {
-    ices_mp3_parse_file (source->path);
-    source->bitrate = ices_mp3_get_bitrate ();
-  }
-
-  mp3_data = (ices_mp3_in_t*) malloc (sizeof (ices_mp3_in_t));
-  mp3_data->fd = fd;
-
-  source->type = ICES_INPUT_MP3;
-  source->data = mp3_data;
-
-  source->read = ices_mp3_read;
-#ifdef HAVE_LIBLAME
-  source->readpcm = ices_mp3_readpcm;
-#endif
-  source->get_metadata = ices_mp3_get_metadata;
-  source->close = ices_mp3_close;
-
-  return 0;
+err:
+  close (fd);
+  return -1;
 }
