@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.5 2003/03/13 20:51:36 brendan Exp $
+# $Id: configure.ac,v 1.6 2003/03/14 12:46:00 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -11,27 +11,10 @@ AC_INIT([ices], ICES_VERSION, [icecast@xiph.org])
 AC_PREREQ(2.52)
 AC_CONFIG_SRCDIR([src/ices.c])
 
-AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile src/playlist/Makefile
   conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1])
 
 VERSION=ICES_VERSION
-
-AC_ARG_WITH(docdir,
-  [[  --with-docdir=DIR       put documentation in DIR [PREFIX/doc/ices]]],
-  [ices_cv_docdir="$with_docdir"],
-  [ices_cv_docdir='${prefix}/doc/ices'])
-
-docdir="$ices_cv_docdir"
-AC_SUBST(docdir)
-
-AC_ARG_WITH(moddir,
-  [[  --with-moddir=DIR       put playlist modules in DIR [SYSCONFDIR/modules]]],
-  [ices_cv_moddir="$with_moddir"],
-  [ices_cv_moddir='${sysconfdir}/modules'])
-
-moddir="$ices_cv_moddir"
-AC_SUBST(moddir)
 
 dnl -- Finally, actual autoconf stuff --
 
@@ -100,9 +83,27 @@ AC_CHECK_FUNCS([vsnprintf setsid setlinebuf])
 
 dnl -- Build system init --
 
-AM_INIT_AUTOMAKE(ices, $VERSION)
+AM_INIT_AUTOMAKE([1.6 foreign])
+AM_MAINTAINER_MODE
+AM_CONFIG_HEADER(config.h)
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
+
+AC_ARG_WITH(docdir,
+  [[  --with-docdir=DIR       put documentation in DIR [PREFIX/doc/ices]]],
+  [ices_cv_docdir="$with_docdir"],
+  [ices_cv_docdir='${prefix}/doc/ices'])
+
+docdir="$ices_cv_docdir"
+AC_SUBST(docdir)
+
+AC_ARG_WITH(moddir,
+  [[  --with-moddir=DIR       put playlist modules in DIR [SYSCONFDIR/modules]]],
+  [ices_cv_moddir="$with_moddir"],
+  [ices_cv_moddir='${sysconfdir}/modules'])
+
+moddir="$ices_cv_moddir"
+AC_SUBST(moddir)
 
 dnl -- Required extra libraries --
 
@@ -170,6 +171,7 @@ then
     AC_DEFINE(HAVE_LIBXML, 1, [Define if you have the GNOME XML library])
     LIBS="$LIBS `$XMLCONFIG --libs`"
     CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
+    ICES_OBJECTS="$ICES_OBJECTS ices_config.o"
     have_xml="yes"
   else
     AC_MSG_RESULT([Compiling without libxml support - no configfiles])
@@ -192,10 +194,10 @@ then
     CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
     LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
     LIBS="$LIBS $PYTHON_LIBS"
+    PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_python.o"
     AC_DEFINE(HAVE_LIBPYTHON, 1, [Define if you have the python library])
   fi
 fi
-AM_CONDITIONAL(USE_PYTHON, test "$have_python" = "yes")
 
 if test "$with_python" != "no" -a "$have_python" != "yes"
 then
@@ -235,13 +237,13 @@ then
   if test "$ac_cv_func_perl_construct" != "no"
   then
     have_perl="yes"
+    PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_perl.o"
     AC_DEFINE(HAVE_LIBPERL, 1, [Define if you have perl libraries])
   else
     CPPFLAGS="$saved_CPPFLAGS"
     LIBS="$saved_LIBS"
   fi
 fi
-AM_CONDITIONAL(USE_PERL, test "$have_perl" = "yes")
 
 if test "$with_perl" != "no" -a "$have_perl" != "yes"
 then
@@ -278,13 +280,13 @@ then
       have_LAME="yes"
       LIBS="$LIBS -lmp3lame"
       LIBM="-lm"
+      ICES_OBJECTS="$ICES_OBJECTS reencode.o"
       AC_DEFINE(HAVE_LIBLAME, 1, [Define if you have the LAME MP3 library])
       
       AC_CHECK_FUNCS([lame_decode_exit])
       ], [have_LAME="no"], -lm)
   fi
 fi
-AM_CONDITIONAL(USE_LAME, test "$have_LAME" = "yes")
 
 if test "$with_lame" != "no" -a "$have_LAME" != "yes"
 then
@@ -326,11 +328,11 @@ then
     AC_CHECK_LIB(vorbisfile, ov_open, [
       LIBS="$LIBS -lvorbisfile -lvorbis -logg"
       AC_DEFINE(HAVE_LIBVORBISFILE, 1, [Define if you have libvorbisfile])
+      ICES_OBJECTS="$ICES_OBJECTS in_vorbis.o"
       have_vorbis="yes"
     ],[have_vorbis="no"],-lvorbis -logg)
   fi
 fi
-AM_CONDITIONAL(USE_VORBIS, test "$have_vorbis" = "yes")
 
 if test "$with_vorbis" != "no" -a "$have_vorbis" != "yes"
 then
@@ -345,14 +347,16 @@ fi
 dnl -- and finish up --
 
 LIBS="$LIBS $LIBM $LIBDL"
+AC_SUBST(ICES_OBJECTS)
+AC_SUBST(PLAYLIST_OBJECTS)
 
 AC_OUTPUT
 
 AC_MSG_RESULT([Compiling with: $CPPFLAGS $CFLAGS])
 AC_MSG_RESULT([Linking with: $LDFLAGS $LIBS])
 AC_MSG_RESULT([Features:])
+AC_MSG_RESULT([  XML     : $have_xml])
+AC_MSG_RESULT([  Python  : $have_python])
+AC_MSG_RESULT([  Perl    : $have_perl])
 AC_MSG_RESULT([  LAME    : $have_LAME])
 AC_MSG_RESULT([  Vorbis  : $have_vorbis])
-AC_MSG_RESULT([  Perl    : $have_perl])
-AC_MSG_RESULT([  Python  : $have_python])
-AC_MSG_RESULT([  XML     : $have_xml])
