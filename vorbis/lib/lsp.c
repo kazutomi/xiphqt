@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.17 2001/02/26 03:50:42 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.17.2.1 2001/03/28 03:08:14 segher Exp $
 
   The LSP generation code is taken (with minimal modification and a
   few bugfixes) from "On the Computation of the LSP Frequencies" by
@@ -39,6 +39,69 @@
 #include "misc.h"
 #include "lookup.h"
 #include "scales.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define LDBTAB 12
+#define LCOSTAB 12
+#define NDBTAB (1<<LDBTAB)
+#define NCOSTAB (1<<LCOSTAB)
+
+#define fromdB_t1(x) (dbtab1[(*(int *)&(x) >> (32-LDBTAB)) & (NDBTAB-1)])
+#define fromdB_t2(x) (dbtab2[(*(int *)&(x) >> (32-LDBTAB)) & (NDBTAB-1)])
+#define tcos_t(x) (tcostab[(*(int *)&(x) >> (23-LCOSTAB)) & (NCOSTAB-1)])
+
+static float dbtab1[NDBTAB];
+static float dbtab2[NDBTAB];
+static float tcostab[NCOSTAB];
+
+static void initdbtab()
+{
+        int i;
+        float t;
+
+        for (i = 0; i < NDBTAB; i++) {
+                *(int *)&t = (i << (32-LDBTAB)) | (1 << (31-LDBTAB));
+                dbtab1[i] = fromdB(1.0f/sqrt(t));
+                dbtab2[i] = fromdB(-t);
+//fprintf(stderr, "%4d: %08x %12.6f %12.6f\n", i, (i << (32-LDBTAB)) | (1 << (31-LDBTAB)), dbtab1[i], dbtab2[i]);
+        }
+        for (i = 0; i < NCOSTAB; i++) {
+                *(int *)&t = 0x40800000 | (i << (23-LCOSTAB)) | (1 << (22-LCOSTAB));
+//fprintf(stderr, "xxx %f\n", t);
+                tcostab[i] = 2.f*cos(t-4.0f);
+//fprintf(stderr, "%4d: %08x %12.6f\n", i, 0x40800000 | (i << (23-LCOSTAB)) | (1 << (22-LCOSTAB)), tcostab[i]);
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* three possible LSP to f curve functions; the exact computation
    (float), a lookup based float implementation, and an integer
@@ -244,21 +307,38 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 
 /* side effect: changes *lsp to cosines of lsp */
 void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
-			    float amp,float ampoffset){
+                            float amp,float ampoffset){
   int i;
   float wdel=M_PI/ln;
-  for(i=0;i<m;i++)lsp[i]=2.f*cos(lsp[i]);
+  float ampm2 = 1.f/(amp*amp);
+  float mamp = fromdB_t2(ampoffset);
+
+{static int needinit=1;if(needinit){needinit=0;initdbtab();}}
+
+  for(i=0;i<m;i++)lsp[i]+=4.f;
+  for(i=0;i<m;i++)lsp[i]=tcos_t(lsp[i]);
 
   i=0;
   while(i<n){
     int j,k=map[i];
     float p=.5f;
     float q=.5f;
-    float w=2.f*cos(wdel*k);
-    for(j=1;j<m;j+=2){
+    float p1=1.f;
+    float q1=1.f;
+    float w=4.f+wdel*k;
+    w=tcos_t(w);
+    for(j=1;j<m-2;j+=4){
+      q *= w-lsp[j-1];
+      p *= w-lsp[j];
+      q1 *= w-lsp[j+1];
+      p1 *= w-lsp[j+2];
+    }
+    for(;j<m;j+=2){
       q *= w-lsp[j-1];
       p *= w-lsp[j];
     }
+    q *= q1;
+    p *= p1;
     if(j==m){
       /* odd order filter; slightly assymetric */
       /* the last coefficient */
@@ -271,7 +351,8 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
       q*=q*(2.f+w);
     }
 
-    q=fromdB(amp/sqrt(p+q)-ampoffset);
+    q=(p+q)*ampm2;
+    q=mamp*fromdB_t1(q);
 
     curve[i]=q;
     while(map[++i]==k)curve[i]=q;
@@ -280,6 +361,7 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 
 #endif
 #endif
+
 
 static void cheby(float *g, int ord) {
   int i, j;
