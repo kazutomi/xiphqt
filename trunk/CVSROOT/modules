@@ -34,3 +34,6 @@ icecast-src-timing -d src &timing
 
 icecast icecast &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-httpp &icecast-src-thread &icecast-src-timing
 
+ices ices &icecast-src-avl &icecast-src-log &icecast-src-net &icecast-src-thread &icecast-src-timing
+
+
