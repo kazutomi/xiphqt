@@ -1,0 +1,20 @@
+<%@ page imports="siteconfig,link" %>
+<html>
+<body bgcolor=white>
+
+<a href="edit_link.psp" target="content">Add/Edit a Link</a><br>
+<hr>
+<% ll = link.LinkList() %>
+<% for l in ll.list: %>
+[<a href="edit_link.psp?id=<%= l.id %>" target="content">edit</a>] - [<a href="del_link.psp?id=<%= l.id %>" target="content">delete</a>]<br>
+<br>
+<font size="+2"><a href="<%= l.url %>"><b><%= l.name %></b></a></font><br>
+<font size="-1">added to <b><%= l.catname %></b> on <i><%= l.date_added %></i></font><br>
+<br>
+<%= l.html_blurb() %>
+<br><br>
+<% end %>
+<hr>
+
+</body>
+</html>

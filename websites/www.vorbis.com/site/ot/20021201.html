@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for December 1, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          December 1, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Carsten Haese</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">December 1, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727443">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2727287">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726916">Jean-Marc
+              Valin</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726613">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726625">Bitrate
+              Peeling</a></dt>
+
+              <dt>2.2. <a href="#id2726726">Cutting Vorbis
+              Files</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2728842">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2728852">Happy
+              Thanksgiving!</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727443"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <p>As always, these updates reflect recent development
+        activity in the CVS repository. New features mentioned in
+        this section will usually appear in the next official
+        release of the respective product.</p>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727287"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Between answering too many emails and continuing work
+          on Theora integration, Monty committed an enhancement to
+          Tremor's memory handling methods. This enhancement
+          reduces heap usage on average from 250kB to 155kB.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726916"></a>1.2.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc's recent work on Speex includes VBR
+          improvements and improved packet loss concealment. With
+          the new packet loss concealment, quality will remain very
+          good under 10% packet loss, and speech will remain
+          intelligble under up to 30% packet loss.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726613"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726625"></a>2.1.
+              Bitrate Peeling</h3>
+            </div>
+          </div>
+
+          <p>Jim Hines started a lengthy thread on November 7,
+          2002, by <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0057.html"
+          target="_top">asking</a> about the status of bitrate
+          peeling. Bitrate peeling is the currently not yet
+          implemented feature for reducing the bitrate (and
+          thereby, size) of an Ogg Vorbis file by chopping off
+          high-resolution data from the ends of packets to yield a
+          smaller lower quality stream without decoding and
+          re-encoding.</p>
+
+          <p>This feature is unique to Ogg Vorbis, and has very
+          sexy applications:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>In a streaming situation, the server would store
+                only one high quality stream, and dynamically peel
+                it down to the client's bandwidth.</p>
+
+                <p>It was <a href=
+                "http://www.xiph.org/archives/vorbis/200211/0080.html"
+                 target="_top">pointed out</a> that Real
+                accomplishes roughly the same effect with its
+                SureStream technology, but this is a weak
+                comparison, as Jack Moffit <a href=
+                "http://www.xiph.org/archives/vorbis/200211/0085.html"
+                 target="_top">clarified here</a>. A SureStream
+                server encodes the audio stream into different
+                streams at discrete pre-set bitrates, and it can
+                only switch between those pre-set bitrates. A
+                dynamically peeling Vorbis stream server would be
+                able to peel the stream down smoothly to fit the
+                client's capacity as closely as possible, without
+                causing huge jumps in quality.</p>
+              </li>
+
+              <li>
+                <p>As Daniel Schregenberger <a href=
+                "http://www.xiph.org/archives/vorbis/200211/0222.html"
+                 target="_top">noted</a>, once portable Ogg Vorbis
+                players come into existence, you could store high
+                quality Ogg Vorbis files on your PC for your
+                Audiophile home theater setup, and peel them down
+                to "good enough for lousy headphones on a noisy
+                train" portable files.</p>
+              </li>
+
+              <li>
+                <p>Beni Cherniavsky <a href=
+                "http://www.xiph.org/archives/vorbis/200211/0109.html"
+                 target="_top">mentioned</a> a very intriguing
+                counterpart to bitrate peeling. If you have a
+                peeler that saves the bits it chopped off, you
+                could reconstitute the higher quality files by
+                adding the missing bits to the lower quality file.
+                This idea could lead to a music download service
+                where you can download a low quality preview
+                version of a song, and if you are interested,
+                download the missing bits to make it a high quality
+                version.</p>
+              </li>
+            </ul>
+          </div>
+
+          <p>Bitrate peeling is not actually implemented yet. A
+          proof-of-concept tool exists, but it doesn't produce
+          sufficiently satisfactory results on version 1.0 encoded
+          Ogg Vorbis files. To work satisfactorily, bitrate peeling
+          requires support on the encoder side, which takes time to
+          write, and Monty hasn't had time to do that yet.</p>
+
+          <p>However, the amount of traffic that the bitrate
+          peeling topic produced on the list <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0219.html"
+          target="_top">prompted Monty</a> to think harder about
+          implementing it, and to give it a higher development
+          priority.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726726"></a>2.2.
+              Cutting Vorbis Files</h3>
+            </div>
+          </div>
+
+          <p>Another unique feature of Ogg Vorbis files is that you
+          can cut them into parts without decoding and re-encoding.
+          Eduardo Carreiro asked about this feature in <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0213.html"
+          target="_top">this message</a>.</p>
+
+          <p>Jared Anderson <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0214.html"
+          target="_top">pointed out</a> vcut as one tool for this
+          job, but he cautioned that it is not production quality
+          yet and may cause loss of data. In other words, please
+          try it after backing up your files!</p>
+
+          <p>As another possible solution, Beni Cherniavsky <a
+          href=
+          "http://www.xiph.org/archives/vorbis/200211/0221.html"
+          target="_top">mentioned</a> MusiCutter.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2728842"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728852"></a>3.1. Happy
+              Thanksgiving!</h3>
+            </div>
+          </div>
+
+          <p>We at Xiph.org wish everybody a Happy Thanksgiving.
+          May you enjoy your days of turkey sandwiches, turkey
+          tetrazzini, and other dishes that can be made from
+          leftover turkey!</p>
+
+          <p>If you are thankful for Ogg Vorbis, the best
+          patent-free audio codec in the world, or any of the other
+          cool stuff that Xiph.org does, please consider <a href=
+          "http://www.xiph.org/ogg/vorbis/donate.html" target=
+          "_top">donating</a> to the Xiph.org Foundation.</p>
+
+          <p>Also, if you're in need for some gift ideas, check out
+          the great <a href=
+          "http://www.cafeshops.com/cp/store.aspx?s=oggwear"
+          target="_top">Xiph.Org merchandise</a> at <a href=
+          "http://www.cafeshops.com" target=
+          "_top">Cafeshops</a>.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

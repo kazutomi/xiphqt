@@ -1,0 +1,99 @@
+<html>
+<head><title>Encoding files with Vorbis</title></head>
+
+<h2><center>Encoding files with Vorbis</center></h2>
+
+<center><i>This is the second of a four-part series of articles about Ogg Vorbis, a high quality, open source audio compression technology.</i></center>
+
+<p>Last week we introduced Vorbis and explained why it is superior to other
+encoding systems. This week, we will discuss how Vorbis compresses
+audio.
+
+<p>One of the unfortunate legacies of the mp3 era is the common assumption
+that bitrate directly affects quality. Though it is true that a
+higher bitrate results in a larger file, it does not necessarily sound
+better. There are better and easier ways to encode music.
+
+<p>As an alternative to dealing with bitrates, Vorbis offers a streamlined
+"quality" setting control. The values range from zero to ten. The higher
+the value, the better the final quality.
+
+<p><b>How is this different from a quality setting on mp3 encoders?</b>
+
+<p>Vorbis uses a technology called VBR, which stands for variable bitrate.
+VBR improves encoding and saves space. By using VBR, Vorbis can increase
+the bitrate on parts of a track that are harder to encode and reduce it
+on parts that are easier. This saves space since it does not need to
+maintain the same bitrate during sections where it is not needed. Also,
+quality is improved since the encoder is allowed to increase the bitrate
+whenever necessary.
+
+<p><b>Aren't there mp3 files that use variable (or average) bitrates?</b>
+
+<p>Yes, there are. The problem, however, is that not every mp3 encoder and
+player (particularly those on portable devices) can decode mp3s that use
+variable bitrates. There are several encoders and players on the market, but they are not necessarily fully compatible and interchangeable
+with each other.
+
+<p>Vorbis, on the other hand, natively supports VBR. This means that Vorbis
+files will be compatible everywhere. This is beneficial for the user who
+wants to listen to music wherever Vorbis files can be played. However,
+it is also very important for artists who want to be certain that their
+music is compressed with high quality tools that can reach the largest
+audience possible.
+
+<p>Other methods of compression are possible with Vorbis, such as constant
+and bounded bitrate control. These are usually reserved to fine tune the
+size of a file or stream. The quality control, however, is the normal
+mode of operation. Vorbis developers strongly recommend the use of the
+latter for everyday use, as it produces a higher quality file.
+
+<p><b>Encoders</b>
+
+<p>The most widely used Vorbis encoders are oggenc for Unix/Linux and OggDrop for Windows, MacOS 9, and MacOS X.
+
+<p>Oggenc is a command line tool for Unix/Linux.  For most uses, the standard way of encoding files is simply oggenc [options] input.wav, where a common option is -q [quality between 0 and 10].  The default quality setting is 3.  For more information refer to the man page.
+
+<p>OggDrop for Windows is a graphical tool that, like oggenc, converts .wav files to Vorbis files.  It can be configured to use a quality setting.  To encode simply drag and drop the files into the OggDrop window.
+
+<p>Ogg Drop is a program for MacOS 8.5 or greater.  It will encode AIFF and wav files into .ogg files.  Ogg Drop also has a built-in comment (tag) editor and can also play .ogg files.
+
+<p>You may find these and other Vorbis compatible tools at <a href=http://www.vorbis.com/download.psp>http://www.vorbis.com/download.psp</a>
+
+<p><b>What about transcoding music from other formats to Vorbis?</b>
+
+<p>While we are glad that people are using our format, we're here to make audio a better experience.  Transcoding from a lossy format to another lossy format
+will most definitely result in a loss of audio quality.
+
+<p>To better visualize what goes on, let's user a dollar as an example.
+This is the original wav file with which we'll start.  Let's make an mp3.
+Since it is a lossy compression format, information is lost.  We end up
+with, say, 60 cents.  Now we take the same original dollar and make a .ogg.
+Vorbis is also lossy, but compresses audio more efficiently.  We get 75 cents.
+
+<p>Transcoding implies taking the mp3 -the 60 cents- and then use those 60
+cents as the source of a new ogg file.  The result can't possibly an
+improvement in quality.  Rather, it would be something like 50 cents.
+Transcoding between lossy formats reduces quality. This analogy holds true
+for all lossy compression formats (Real, Windows Media, etc.).
+
+<p>One of the goals of Ogg Vorbis is to provide the best possible audio
+quality.  Converting mp3s to .ogg is not a way to achieve that.  If you are
+looking for high quality audio, refrain from transcofing.  From now on,
+encode all of your music with Vorbis.  It is ultimately better to have good
+sounding oggs made from original material that to have transcoded files that
+to do not do justice to Vorbis' potential.
+
+<p>Next week, we will talk about playing Vorbis files.
+
+<p>Visit <a href="http://www.vorbis.com">http://www.vorbis.com</a> for
+software, music, links, and news.
+
+<br><i>For comments or questions please write us at <a
+href="mailto:feedback@vorbis.com">feedback@vorbis.com</a>.</i> </p>
+
+<p> Copyright (c) 2002 by Xiph.org Foundation. This material may be distributed only
+subject to the terms and conditions set forth in the Open Publication
+License, v.1.0 or later (the latest version is presently available at <a
+href="http://www.opencontent.org/openpub/">http://www.opencontent.org/openpub/</a>).
+</p></html>

@@ -1,0 +1,170 @@
+body {
+	display: block;
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	background: #51626B;
+	color: #CCCCCC;
+	font-family: Verdana, sans-serif;
+	font-size: smaller;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-size: 1em;
+	font-weight: normal;
+	margin: 0px;
+	border: none;
+	padding: 0px;
+}
+
+body .head .head {
+	margin: 0px;
+	border-bottom: 4px outset #AAAAAA;
+	padding: 1px 1em;
+	background: #AAAAAA;
+	color: #555555;
+}
+
+body .head .head .head {
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	width: 49%;
+	float: right;
+	text-align: right;
+}
+
+body .head .head .body {
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	background-image: none;
+	background-color: #AAAAAA;
+}
+
+body .head .head .body a {
+	background: #AAAAAA;
+	color: #555555;
+	text-decoration: none;
+	text-transform: uppercase;
+	background-image: none;
+}
+
+body .head .body {
+	margin: 0px;
+	border: none;
+	border-bottom: 3px outset #4F6698;
+	padding: 15px 0px 0px;
+	background: url("topbar.png") repeat-x #4F6698;
+	text-align: left;
+}
+
+body .head .body .head {
+	height: 38px;
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	background: url("bluetexture.png") 108px 0px repeat-y #4F6698;
+	text-align: left;
+}
+
+body .head .body .body {
+	display: block;
+	height: 41px;
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	background: url("bluetexture.png") 108px 0px repeat-y #4F6698;
+}
+
+.logo {
+	float: left;
+}
+
+a img {
+	border: none;
+}
+
+body .body {
+	display: block;
+	margin: 0px;
+	border: none;
+	padding: 12px 0px 0px;
+	background: url("bodybar.png") top left repeat-y;
+}
+
+body .body .head {
+	display: block;
+	height: 28px;
+	margin: 3px 3px 0px;
+	border-top: 3px solid black;
+	border-left: 3px solid black;
+	border-right: 3px solid black;
+	border-bottom: 2px solid black;
+	padding: 0px 1em;
+	background: url("graybubblebar.png") top left no-repeat #CCCCCC;
+	color: black;
+	font-weight: bold;
+	font-size: 12px;
+	line-height: 28px;
+	text-align: center;
+}
+
+body .body .body {
+	display: block;
+	margin: 0px 3px;
+	border-top: none;
+	border-left: 3px solid black;
+	border-right: 3px solid black;
+	border-bottom: 3px solid black;
+	padding: 10px;
+	background-color: white;
+	background-image: none;
+	color: black;
+}
+
+body .body .body h3 {
+	font-size: 1.8em;
+	font-weight: bold;
+}
+
+body .body .body h4 {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+body .body .body h5 {
+	font-size: 1em;
+	font-weight: bold;
+}
+
+body .body .body .nav {
+	text-align: right;
+}
+
+body .body .body a {
+	color: #11C;
+	text-decoration: none;
+}
+
+body .body .body a:hover {
+	color: #00A;
+	text-decoration: underline;
+}
+
+body .foot {
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	text-align: center;
+	font-style: italic;
+}
+
+body .foot a {
+	color: #AAAAAA;
+	text-decoration: none;
+}
+
+body .foot a:hover {
+	text-decoration: underline;
+}

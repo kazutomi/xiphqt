@@ -1,0 +1,21 @@
+<%@ page imports="siteconfig,news" %>
+<html>
+<body bgcolor=white>
+
+<a href="edit_news.psp" target="content">Add/Edit a News Item</a><br>
+<hr>
+<% nl = news.NewsList() %>
+<% for n in nl.list: %>
+[<a href="edit_news.psp?id=<%= n.id %>" target="content">edit</a>] - [<a href="del_news.psp?id=<%= n.id %>" target="content">delete</a>]<br>
+<br>
+<img src="<%= n.iconfile %>" align=left width=32 height=32>
+<font size="+2"><%= n.title %></font><br>
+<font size="-1">posted by <%= n.poster %> on <i><%= n.date_added %></i></font><br>
+<br>
+<%= n.html_blurb() %>
+<br><br>
+<% end %>
+<hr>
+
+</body>
+</html>

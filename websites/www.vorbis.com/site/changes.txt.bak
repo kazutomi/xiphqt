@@ -1,0 +1,55 @@
+libao:
+
+* New API is not compatible with programs that used the old API.
+* Default driver detection works correctly.
+* Compilation fixes for the BSDs and Solaris.
+* OSS driver no longer freezes on systems using the OSS emulation
+  layer of ALSA when the dsp device is in use by another device.
+* Configuration file support has been added.  See the libao.conf(5)
+  man page for details.
+
+vorbis-tools:
+
+  ogg123:
+
+  * The default output device is now set in the libao configuration
+    files.  A future release of ogg123 will allow a configuration
+    option to override the libao default.  In this release, the ogg123
+    config files are ignored.  Note that most systems will not need to
+    override the default selected by libao.
+
+  * The -f is now used to set the output filename when writing
+    audio to a file.  Default filenames are no longer supported.
+
+
+  ogginfo:
+
+  * Simple file integrity checks are now performed on the Ogg files.
+  * Only the info for the first logical bitstream of a chained file
+    will be displayed.
+
+  vorbiscomment:
+
+  * append mode added for appending comments to an existing file.
+  * More user-friendly interface.
+  * Major bugs in file-rewriting core fixed.
+  * Processing with vorbiscomment will fix a number of common problems
+    with ogg files.
+
+  vcut:
+
+  * New utility for sample-accurate manipulation of vorbis files without
+    requiring reencoding.
+
+libvorbis:
+
+* Powerful channel coupling system takes advantage of similarities between 
+  channels to reduce bitrate.
+* Additional encoding modes give more flexibility in bitrate selection.
+  64,80,96,160,192,256,350 stereo; 32,48,64,80,112,140 mono modes. 
+* Only 44.1KHz/48KHz is officially supporte d in this release. Lower
+  sample rates will work, but with much lower quality.
+* Cascaded encoding makes libvorbis ready for future bitrate reduction 
+  tools.
+* Decode engine bugfix ensures better compatibiltiy with future Vorbis codecs.
+

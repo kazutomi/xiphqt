@@ -1,0 +1,17 @@
+<%@ page imports="siteconfig,softwarenews" indentType="braces" %>
+<%
+sn = softwarenews.SoftwareNews(id=req.field('id', None), software=req.field('software', None), title=req.field('title', None), blurb=req.field('blurb', None), date_added=req.field('date_added', None))
+%>
+
+<html>
+<body bgcolor=white>
+<% if sn.save(): { %>
+<h1> Software News added/updated successfully. </h1>
+<a href="softwarenews.psp" target="content">Back To Software News Page</a>
+<% } else: { %>
+<h1> Add/update failed.  Please hit 'back' and try again. </h1>
+<% } %>
+
+
+</body>
+</html>

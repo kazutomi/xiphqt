@@ -1,0 +1,20 @@
+<%@ page imports="siteconfig,software" %>
+<html>
+<body bgcolor=white>
+
+<a href="edit_software.psp" target="content">Add a Software Project</a><br>
+<hr>
+<% sl = software.SoftwareList() %>
+<% for s in sl.list: %>
+[<a href="edit_software.psp?id=<%= s.id %>" target="content">edit</a>] - [<a href="del_software.psp?id=<%= s.id %>" target="content">delete</a>]<br>
+<br>
+<a href="<%= s.url %>"><font size="+2"><%= s.name %></font></a><br>
+<font size="-1"><i><%= s.date_added %></i></font><br>
+<br>
+<%= s.html_blurb() %>
+<br><br>
+<% end %>
+<hr>
+
+</body>
+</html>

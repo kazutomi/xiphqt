@@ -1,0 +1,85 @@
+This release of the Ogg Vorbis libraries and tools is mostly a 
+long-overdue bug-fix release, though we have added some new features 
+listed in the Changelog below.
+
+WARNING TO BINARY PACKAGERS: While all of the libraries are binary 
+compatible with applications linked against the 1.0 release, 
+libvorbisfile 1.0.1 uses the new libvorbis 1.0.1 API additions and will 
+not work with 1.0. Please make sure that if you split these libraries 
+into separate packages that this dependency is noted.
+
+Changelog
+
+libogg 1.1
+
+    * Big endian bitpacker added for Theora and future Ogg codec 
+      support.
+    * Minor documentation fixes.
+
+libvorbis/libvorbisfile/libvorbisenc 1.0.1
+
+    * Corrects errors in the Vorbis specification documentation.
+    * Specification converted to DocBook format.
+    * Added timebase conversion call to libvorbis.
+    * Fixes ov_time_tell() bug for non-seekable streams.
+    * Various decoding fixes.
+    * Addition of ov_crosslap() which allows smooth transitions between 
+      two vorbis segments.
+    * Numerous seeking fixes and optimizations.
+    * Fixed bugs affecting decode of one-audio-page samples.
+    * Added ov_halfrate() which allows a "free" conversion from the 
+      source sample rate to half of the source rate.
+    * Improved handling of quiet signals in low bitrate modes
+
+vorbis-tools 1.0.1
+ogg123
+
+    * Support for playing FLAC and Speex files. Both the native FLAC and 
+      Ogg FLAC varieties are supported. Special thanks to OldMan, adiabatic, 
+      and smack from #vorbis for sponsoring the development of this feature.
+    * Send correct User Agent and Accept strings in the HTTP 1.1 headers
+    * Fixed bug preventing the status line from showing the total time 
+      information in certain circumstances
+    * Fixed a pthread crash bug on certain platforms (like NetBSD)
+    * Added support for the --end option to specify at what time 
+      playback should stop. Both --skip and --end also now accept times in 
+      hh:mm:ss format. Thanks to Hans Schou.
+    * If the --skip option is greater than the length of the file, 
+      ogg123 now terminates with an error.
+
+oggdec
+
+    * Fixed small memory leak.
+    * Fixed error that caused oggdec to crash when output file was not 
+      specified.
+
+oggenc
+
+    * Patch from Jordan Mendelson to support reading little-endian AIFF 
+      files (which happen to be made by MacOS X when ripping CDs?).
+    * --scale option to allow scaling the volume of the input. Helps 
+      with clipping inputs.
+    * Fixed usage messages.
+    * 24 bit input support
+    * FLAC and Ogg FLAC read support. Comments from the FLAC file are 
+      preserved unless explicitly dropped with the --discard-comments option. 
+      Also funded by OldMan, adiabatic, and smack.
+    * Less frequent status updates.
+
+ogginfo
+
+    * Minor typo and portability fixes.
+    * Emits fewer spurious errors when minor errors are detected.
+    * Return a useful status code.
+    * Fixed overflow bug on really long files.
+
+vcut
+
+    * Patch from Jared Anderson allows the cutpoint to be specified in 
+      (integer) seconds by prefixing it with a +.
+
+vorbiscomment
+
+    * More forgiving of Ogg files that begin with garbage (like ID3v2 
+      tags).
+

@@ -1,0 +1,32 @@
+<%@ page imports="siteconfig,software" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	s = software.Software(req.field('id'))
+	s.delete()
+%>
+<html>
+<body bgcolor=white>
+<h1>Software Project Deleted<h1>
+<hr>
+
+<br>
+<a href="software.psp" target="content">Go Back To Software Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="software.psp" target="content">Go Back To Software Page</a>
+
+</body>
+</html>
+<%
+}
+%>

@@ -1,0 +1,57 @@
+<%@ page imports="siteconfig,software,platform" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	s = software.Software(req.field('id'))
+	s.load()
+} else: {
+	s = software.Software(id=None, url='', name='', blurb='', date_added=None)
+}
+
+pl = platform.PlatformList()
+%>
+
+<html>
+<body bgcolor=white>
+<h1>Add/Edit a Software Project<h1>
+<hr>
+
+<form method=post action="edit_software2.psp">
+<% if s.date_added: { %>
+<input type=hidden name=date_added value="<%= s.date_added %>">
+<% } %>
+<% if s.id: { %>
+<input type=hidden name=id value="<%= s.id %>">
+<% } %>
+<table border=0>
+<tr>
+<td>URL:</td><td><input type=text name=url size=30 value="<%= s.url %>"></td>
+</tr><tr>
+<td>Name:</td><td><input type=text name=name size=50 value="<%= s.name %>"></td>
+</tr><tr>
+<td colspan=2>
+Platforms:<br>
+<% for p in pl.list: { %>
+<% if p.id in s.platform: { %>
+<input type=checkbox name=platform value="<%= p.id %>" checked><%= p.name %><br>
+<% } else: { %>
+<input type=checkbox name=platform value="<%= p.id %>"><%= p.name %><br>
+<% } %>
+<% } %>
+</td><td></td>
+</tr><tr>
+<td colspan=2>
+Blurb:<br>
+<textarea name=blurb cols=40 rows=10><%= s.blurb %></textarea>
+</td><td></td>
+</tr>
+</table>
+<input type=submit value="Add/Edit Software Project">
+</form>
+
+</body>
+</html>
+
+
+
+
+

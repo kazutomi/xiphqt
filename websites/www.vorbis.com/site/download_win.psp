@@ -1,0 +1,80 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Download Ogg Vorbis 1.0 Software for Windows 9x/ME/NT/2000/XP'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<h2>Players</h2>
+<p>
+	Don&#x2019;t have a player that plays Ogg Vorbis? try one of these:
+</p>
+
+<ul class='playerList'>
+	<li>
+		<a href="http://classic.winamp.com/">Winamp 2</a> Standard or Full
+		(good metadata and
+		<a href='http://www.icecast.org/'>Icecast</a> support)
+	<li>
+		<a href="http://www.winamp.com/">Winamp 3</a>
+		(looks pretty, has poor metadata and no Icecast support)
+	</li>
+	<li>
+		<a href='http://foobar2000.hydrogenaudio.org/'>foobar2000</a>
+		(<em>very</em> spartan interface, streams from Icecast, has
+		best-of-breed comment editing and masstagging capabilities)
+	</li>
+	<li>
+		<a href="http://www.zinf.org/">Zinf</a>
+		(is open source)
+	</li>
+</ul>
+
+<h2>Encoders &amp; Jukeboxes</h2>
+<p>
+	Use the following software to make your own Ogg Vorbis files.
+</p>
+
+<dl>
+	<dt><a href="http://www.vorbis.com/files/1.0/windows/oggdrop-win32.zip">Oggdrop</a></dt>
+	<dd>Simple drag and drop GUI encoder; no nonsense, just works</dd>
+
+	<dt><a href="http://www.vorbis.com/files/1.0/windows/oggdropXPd.zip">OggdropXPd</a></dt>
+	<dd>More powerful, more complex drag and drop GUI encoder</dd>
+	
+	<dt><a href="http://www.vorbis.com/files/1.0/windows/vorbis-tools-1.0-win32.zip">vorbis-tools</a></dt>
+	<dd>command line utilities including oggenc, ogginfo, vorbiscomment, vcut, and oggdec</dd>
+</dl>
+<h2>Source Code / Development Tools</h2>
+
+<p>
+Developers who wish to write their own Ogg Vorbis software, or add Ogg Vorbis 
+support to their current products, will need the SDK and/or source code.
+
+<a href="http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip">Ogg Vorbis Win32 SDK (1.0)</a><br>
+<a href="http://www.vorbis.com/files/1.0/windows/libogg-1.0.zip">libogg source (1.0)</a><br>
+<a href="http://www.vorbis.com/files/1.0/windows/libvorbis-1.0.zip">libvorbis source (1.0)</a><br>
+<a href="http://www.vorbis.com/files/1.0/windows/vorbis-tools-1.0.zip">vorbis-tools source (1.0)</a><br>
+<a href="http://www.vorbis.com/files/1.0/windows/libao-0.8.3.zip">libao source (0.8.3)</a><br>
+</p>
+
+<h2>Other Software</h2>
+<p>
+You can find other Ogg Vorbis software developed by third parties on the
+<a href="/software.psp">software page</a>.
+</p>
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">

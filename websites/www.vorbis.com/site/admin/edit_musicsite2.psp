@@ -1,0 +1,17 @@
+<%@ page imports="siteconfig,musicsite" indentType="braces" %>
+<%
+ms = musicsite.MusicSite(id=req.field('id', None), url=req.field('url', None), name=req.field('name', None), blurb=req.field('blurb', None), date_added=req.field('date_added', None))
+%>
+
+<html>
+<body bgcolor=white>
+<% if ms.save(): { %>
+<h1> Music Site Added/Updated Successfully. </h1>
+<a href="musicsites.psp" target="content">Back To Music Sites Page</a>
+<% } else: { %>
+<h1> Add/Update failed.  Please hit 'back' and try again. </h1>
+<% } %>
+
+
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Monday, March 3, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Monday, March 3, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+          target="_top">Carsten "Purple" Haese</a></h3>
+        </div>
+
+        <div>
+          <p class="pubdate">March 3, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727443">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2727368">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726599">Stan Seibert</a></dt>
+
+              <dt>1.3. <a href="#id2726616">Jean-Marc
+              Valin</a></dt>
+
+              <dt>1.4. <a href="#id2726634">Michael Smith</a></dt>
+
+              <dt>1.5. <a href="#id2726692">Brendan Cully</a></dt>
+
+              <dt>1.6. <a href="#id2726716">MonkeyMan</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726740">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726753">Goals and non-Goals of
+              Vorbis Comments</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2728856">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2728866">Speex RC3</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727443"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727368"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty has begun work on Neurosetta, the Vorbis-enabled
+          firmware for the <a href="http://www.neurosaudio.com"
+          target="_top">Neuros Digital Audio Computer</a>. His
+          progress will be documented on the upcoming Neurosetta
+          web site.</p>
+
+          <p>He also found the time to code an extension to
+          vorbisfile that will make it more useful for in-game
+          music. Since vorbis is lossy, piecing together vorbis
+          files can introduce tiny clicks at the boundary, even if
+          the originals to the pieces fit together seamlessly. With
+          the recently coded overlap functions, such operations can
+          be performed seamlessly.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726599"></a>1.2. Stan
+              Seibert</h3>
+            </div>
+          </div>
+
+          <p>Stan received technical documentation from Digital
+          Innovations about the Neuros synchronization mechanism
+          and started to work on Positron, the Neuros
+          synchronization application for Linux.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726616"></a>1.3.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>After some tuning work, Jean-Marc decided to call the
+          result Release Candidate 3. Read more about Speex RC3
+          below in Recent Developments.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726634"></a>1.4.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Among miscellaneous bug fixes, Mike added the
+          following new features to icecast:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>Complete support for relaying mp3 metadata</p>
+              </li>
+
+              <li>
+                <p>Stream Dumping (for writing an incoming stream
+                to disk)</p>
+              </li>
+
+              <li>
+                <p>Static configuration of mountpoint fallbacks</p>
+              </li>
+
+              <li>
+                <p>Per mountpoint listener maxima</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726692"></a>1.5.
+              Brendan Cully</h3>
+            </div>
+          </div>
+
+          <p>Brendan committed a number of fixes to libshout,
+          including a fix to a naughty little buglet in
+          <tt>util_dict_free</tt> that Oddsock discovered.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726716"></a>1.6.
+              MonkeyMan</h3>
+            </div>
+          </div>
+
+          <p>MonkeyMan is the man in charge of the Neurosetta web
+          site, and he is currently working on the initial setup.
+          When there's something to see, we'll let you know.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726740"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726753"></a>2.1. Goals
+              and non-Goals of Vorbis Comments</h3>
+            </div>
+          </div>
+
+          <p>The topic of Vorbis comments is very similar to a
+          volcano: It lies dormant for a long time, and then
+          it suddenly erupts without warning into a lava flood of
+          flaming mailing list traffic.  Such an
+          eruption was accidentally triggered by Sergey Meniailenko
+          when he asked <a href=
+          "http://www.xiph.org/archives/vorbis/200302/0177.html"
+          target="_top">in this message</a> how he can tag a Vorbis
+          file with information that indicates a guest artist.</p>
+
+          <p>Vorbis comments are a delicate subject because they
+          serve a very specific purpose, but some people
+          want to use them for more than that. Vorbis comments
+          store human-readable information that provides clues
+          about the contents of the file. Vorbis comments are not
+          designed to form the basis for an all-encompassing
+          database of music metadata.</p>
+
+          <p>This distinction is apparently hard to grasp for many
+          people. Vorbis comments are the equivalent of a quick
+          note scribbled on the bottom of a CDR. They are not
+          designed to store cover artwork, karaoke lyrics, or the
+          artist's family tree.</p>
+
+          <p>When confronted with this shortcoming of vorbis
+          comments, people naturally ask where they should store
+          cover artwork, karaoke lyrics, or the artist's family
+          tree. The answer is: It doesn't really matter. Nobody is
+          going to stop you from storing a uuencoded PNG file in a
+          vorbis comment for cover artwork, but such maneuvers only
+          work for you. There is no standard for conveying cover
+          artwork, so you can store it anyway you like, as long as
+          you don't expect it to work anywhere outside your own PC.
+          (If you give such a file to a friend whose player
+          displays nonstandard tags verbatim, they'll simply get
+          flooded with a deluge of uuencode nonsense.)</p>
+
+          <p>The lack of a standard for such arbitrary metadata is
+          the core problem. Monty didn't think it was necessary to
+          have such a standard, and since he created Vorbis, this
+          decision was completely within his rights. Vorbis
+          comments will never become a mechanism for storing
+          arbitrary metadata.</p>
+
+          <p>If you want to store arbitrary metadata, make up a
+          method for storing, retrieving, manipulating, and using
+          arbitrary metadata. If enough people use this method, and
+          if it doesn't use vorbis comments for data storage, it
+          has a chance of becoming a standard.</p>
+
+          <p>Until that fine day, what do we tell Sergey about
+          storing a guest artist's name in a vorbis file? Since
+          there is no standard for a GUESTARTIST tag, the answer
+          depends on what software Sergey has available, and on how
+          the software displays nonstandard tags. He could store it
+          in a GUESTARTIST tag. He could list the main performer
+          and the guest performer in separate PERFORMER tags. There
+          may be other solutions. The answer ultimately depends on
+          which one works best for Sergey.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2728856"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728866"></a>3.1. Speex
+              RC3</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc released the third and final Release
+          Candidate for <a href="http://www.speex.org" target=
+          "_top">Speex</a> 1.0! The tentative release date for the
+          big 1.0 is March 16th, 2003, and if no bugs are found,
+          this Release Candidate will become Speex 1.0. Please help
+          Jean-Marc by downloading and testing RC3.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

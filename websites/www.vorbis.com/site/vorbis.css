@@ -1,0 +1,31 @@
+.morelink { background-color: #6891C0; } 
+.splash1 { color: #FEE; } 
+.splash2 { color: #EFE; } 
+.splash3 { color: #EEF; } 
+body, html { margin: 0; background: #51626B; color: #000; } 
+a { text-decoration: none; color: #11C; } 
+a:hover { text-decoration: underline; color: #00A; } 
+
+.navcolor { background-color: #445B8E; } 
+.downloadcolor { background-color: #009; } 
+
+.defaultborder { background-color: #000; }
+.defaulttitle { background-color: #CCC; }
+.defaultcontent { background-color: #FFF; }
+
+.blueborder { background-color: #336; }
+.bluetitle { background-color: #BBC; }
+.bluecontent { background-color: #d0E0Ff; }
+ul.mirrors li {
+	list-style-type: none;
+}
+dl.faq dt {
+	font-size: larger;
+	font-weight: bold;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+dl.faq dd {
+	margin-top: 0;
+	margin-bottom: 1.25em;
+}

@@ -1,0 +1,32 @@
+<%@ page imports="siteconfig,softwarenews" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	sn = softwarenews.SoftwareNews(req.field('id'))
+	sn.delete()
+%>
+<html>
+<body bgcolor=white>
+<h1>Software News Deleted<h1>
+<hr>
+
+<br>
+<a href="softwarenews.psp" target="content">Go Back To Software News Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="softwarenews.psp" target="content">Go Back To Software News Page</a>
+
+</body>
+</html>
+<%
+}
+%>

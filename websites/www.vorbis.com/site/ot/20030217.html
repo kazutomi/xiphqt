@@ -1,0 +1,305 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Monday, February 17, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Monday, February 17, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+          target="_top">Carsten Haese</a></h3>
+        </div>
+
+        <div>
+          <p class="pubdate">February 17, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2725097">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725920">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2727143">Jean-Marc
+              Valin</a></dt>
+
+              <dt>1.3. <a href="#id2726598">Michael Smith</a></dt>
+
+              <dt>1.4. <a href="#id2726621">Brendan Cully</a></dt>
+
+              <dt>1.5. <a href="#id2726644">Oddsock</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726600">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726672">Vorbis on Playstation
+              2</a></dt>
+
+              <dt>2.2. <a href="#id2726623">Speex ACM
+              Codec</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2726746">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2726759">Icecast
+              Goodies</a></dt>
+
+              <dt>3.2. <a href="#id2728505">application/ogg blessed
+              by IANA</a></dt>
+
+              <dt>3.3. <a href="#id2728537">New Software</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2725097"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725920"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Continuing on his libogg coding spree, Monty has
+          completed the <span class="emphasis"><i>zero
+          copy</i></span> rewrite of the bit packer and is in the
+          process of testing and debugging this rewrite. He also
+          fixed a small floating point exception in libvorbis that
+          occurred in the floor line fitter when part of the
+          spectrum fell under -140dB.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727143"></a>1.2.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc is busy preparing Speex RC3. There were
+          minor bug fixes, documentation updates, and a change to
+          the excitation codebooks in order to remove artifacts
+          that occurred in some transients when the energy rose too
+          quickly in the middle of a frame.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726598"></a>1.3.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike checked in tons of updates to icecast. There were
+          lots of bug fixes and infrastructure improvements that
+          are too numerous to list individually, but to mention one
+          prominent example, icecast now fully supports IPv6.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726621"></a>1.4.
+              Brendan Cully</h3>
+            </div>
+          </div>
+
+          <p>Brendan added icecast 1.x dumpfile support and filled
+          in the <tt>shout_version</tt> function.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726644"></a>1.5.
+              Oddsock</h3>
+            </div>
+          </div>
+
+          <p>Thanks to a large commit sent in by Oddsock, icecast 2
+          is getting YP listing support. Read more about this
+          below.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726600"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726672"></a>2.1. Vorbis
+              on Playstation 2</h3>
+            </div>
+          </div>
+
+          <p>Playstation developer David Etherton started a very
+          lengthy thread with <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200302/0031.html"
+           target="_top">this message</a> asking about implementing
+          Vorbis on the Playstation 2. It didn't take long for the
+          responses to point him to the Tremor integer decoder.
+          David reviewed the options, and it seems he has decided
+          that Tremor is the way to go. He proceeded to tweak
+          Tremor to improve performance on the PS2's MIPS
+          processor, and discusses a number of interesting ideas in
+          the remainder of this thread.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726623"></a>2.2. Speex
+              ACM Codec</h3>
+            </div>
+          </div>
+
+          <p>While Speex support for VoIP applications is pretty
+          good on the Linux side, Windows has a bit of a
+          disadvantage because nobody has stepped up to the plate
+          to write a Speex ACM codec. This is going to change, as
+          <a href=
+          "http://www.xiph.org/archives/speex-dev/200302/0010.html"
+          target="_top">this message</a> indicates. X-Fixer and
+          Brian Teague are going to work together to implement an
+          ACM codec, which will bring Speex's outstanding quality
+          to NetMeeting and allow good sounding connections between
+          GnomeMeeting and NetMeeting.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726746"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726759"></a>3.1.
+              Icecast Goodies</h3>
+            </div>
+          </div>
+
+          <p>Over the past two weeks, a lot has happened in icecast
+          development to bridge the gap between icecast 1 and
+          icecast 2. One feature that icecast 1 users missed in
+          icecast 2 was YP listing support, which is now available
+          to icecast 2 thanks to the efforts of Oddsock. You can
+          read his announcement <a href=
+          "http://www.xiph.org/archives/icecast/4136.html" target=
+          "_top">here</a>.</p>
+
+          <p>Another recent development that should make it easier
+          for icecast 2 to grow its user base is <a href=
+          "http://quasi.ksl.com/icecast/" target="_top">this</a>
+          inofficial icecast2 HOWTO, written by Kerry Cox. If you
+          were toying with the idea of setting up an icecast
+          server, but were intimidated by the lack of
+          documentation, this HOWTO might give you just the push
+          you need.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728505"></a>3.2.
+              <tt>application/ogg</tt> blessed by IANA</h3>
+            </div>
+          </div>
+
+          <p>The efforts of Linus Walleij, Silvia Pfeiffer, and
+          others to gain official recognition for Xiph's open
+          standards have reached the first milestone in getting the
+          MIME type <tt>application/ogg</tt> officially assigned.
+          You can read the details <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200302/0107.html"
+           target="_top">here</a>.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728537"></a>3.3. New
+              Software</h3>
+            </div>
+          </div>
+
+          <p>More Vorbis aware software has been added to the <a
+          href="http://www.vorbis.com/softwarenews.psp" target=
+          "_top">Software section</a> of <a href=
+          "http://www.vorbis.com/" target="_top">vorbis.com</a>.
+          The new titles are:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>Musicbrowzer, an audio player for Windows
+                2000/XP that is designed for an entertainment PC.
+                It has playlist management, tag editing, and can
+                use a remote control.</p>
+              </li>
+
+              <li>
+                <p>Total Recorder records streaming audio, Mic
+                input, Line-in input as well as CDs and DVDs. The
+                resulting files are saved on your computer's
+                hard-drive. The latest version (4.1) now supports
+                Vorbis.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

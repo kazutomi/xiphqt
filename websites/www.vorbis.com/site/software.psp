@@ -1,0 +1,57 @@
+<%@ page imports="infobox,platform,software" indentType="braces" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Other Software Which Supports Ogg Vorbis'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<% if req.field('id', None) == None and req.field('pid', None) == None: { %>
+
+<center>
+<h3>Choose a Platform</h3>
+<% pl = platform.PlatformList() %>
+<% for p in pl.list: { %>
+<a href="/software.psp?pid=<%= p.id %>"><%= p.name %></a><br>
+<% } %>
+
+<% } elif req.field('pid', None) != None: { %>
+
+<% sl = software.SoftwareList(platform=int(req.field('pid'))) %>
+<% for s in sl.list: { %>
+
+<a href="<%= s.url %>"><font size="+2"><%= s.name %></font></a><br>
+<font size="-1"><i><%= s.date_added %></i></font><br>
+<br>
+<%= s.blurb %>
+<br><br>
+
+<% } %>
+
+<% } else: { %>
+
+<% s = software.Software(id=int(req.field('id'))) %>
+<% s.load() %>
+<a href="<%= s.url %>"><font size="+2"><%= s.name %></font></a><br>
+<font size="-1"><i><%= s.date_added %></i></font><br>
+<br>
+<%= s.blurb %>
+<br><br>
+<% } %>
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

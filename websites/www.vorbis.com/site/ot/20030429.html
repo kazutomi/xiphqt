@@ -1,0 +1,305 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta content=
+  "HTML Tidy for Linux/x86 (vers 1st April 2003), see www.w3.org"
+  name="generator">
+  <meta content="text/html; charset=us-ascii" http-equiv=
+  "Content-Type">
+
+  <title>Ogg Traffic for Tuesday, April 29, 2003</title>
+  <meta name="generator" content="DocBook XSL Stylesheets V1.49">
+</head>
+
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+alink="#0000FF">
+  <div class="article">
+    <div class="titlepage">
+      <div>
+        <h1 class="title"><a name="id2747498"></a>Ogg Traffic for
+        Tuesday, April 29, 2003</h1>
+      </div>
+
+      <div>
+        <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+        target="_top">Carsten "Purple" Haese</a></h3>
+      </div>
+
+      <div>
+        <p class="pubdate">April 29, 2003</p>
+      </div>
+      <hr>
+    </div>
+
+    <div class="toc">
+      <p><b>Table of Contents</b></p>
+
+      <dl>
+        <dt>1. <a href="#id2747553">Status Updates</a></dt>
+
+        <dd>
+          <dl>
+            <dt>1.1. <a href="#id2749407">Monty</a></dt>
+
+            <dt>1.2. <a href="#id2747402">Stan Seibert</a></dt>
+
+            <dt>1.3. <a href="#id2749443">Michael Smith</a></dt>
+
+            <dt>1.4. <a href="#id2749437">Karl Heyes</a></dt>
+
+            <dt>1.5. <a href="#id2749658">Oddsock</a></dt>
+          </dl>
+        </dd>
+
+        <dt>2. <a href="#id2749469">Interesting
+        Discussions</a></dt>
+
+        <dd>
+          <dl>
+            <dt>2.1. <a href="#id2749480">Appending an Ogg file to
+            another</a></dt>
+          </dl>
+        </dd>
+
+        <dt>3. <a href="#id2750079">Recent Developments</a></dt>
+
+        <dd>
+          <dl>
+            <dt>3.1. <a href="#id2750093">Emmett Plant leaves
+            Xiph.org</a></dt>
+
+            <dt>3.2. <a href="#id2750131">Independent Label
+            considers going Vorbis</a></dt>
+
+            <dt>3.3. <a href="#id2750178">Theora support coming to
+            Xine</a></dt>
+
+            <dt>3.4. <a href="#id2750228">Xiph.org News
+            Feed</a></dt>
+          </dl>
+        </dd>
+      </dl>
+    </div>
+
+    <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+    Issues of Ogg Traffic</a></p>
+
+    <div class="section">
+      <div class="titlepage">
+        <div>
+          <h2 class="title" style="clear: both"><a name=
+          "id2747553"></a>1. Status Updates</h2>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2749407"></a>1.1.
+            Monty</h3>
+          </div>
+        </div>
+
+        <p>Monty is continuing his crusade to reduce memory usage
+        in Tremor to the bare essentials. Most recently, he tackled
+        the inverse MDCT. It is now done fully in-place, without
+        any working memory needed beyond the buffer for the current
+        window. He also reduced unnecessary memory accesses, and
+        the last stage of the MDCT now renders directly into the
+        PCM output buffer.</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2747402"></a>1.2. Stan
+            Seibert</h3>
+          </div>
+        </div>
+
+        <p>Stan is making good progress on Positron and its
+        technical documentation. It is not ready for public
+        tinkering yet, but he reports that it can successfully
+        upload MP3 files to the Neuros.</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2749443"></a>1.3. Michael
+            Smith</h3>
+          </div>
+        </div>
+
+        <p>Mike committed more icecast bug fixes, added a helpful
+        explanation to the example configuration file, and
+        committed a patch to support aliasing, contributed by Paul
+        Donohue.</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2749437"></a>1.4. Karl
+            Heyes</h3>
+          </div>
+        </div>
+
+        <p>Karl fixed a nasty off-by-one bug in libshout and
+        continued to inject sanity into the icecast autotools
+        setup.</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2749658"></a>1.5.
+            Oddsock</h3>
+          </div>
+        </div>
+
+        <p>Oddsock cleaned up the icecast win32 build, added a
+        console mode to the icecast win32 version, and added
+        support for sending "What's Playing" information to the yp
+        server.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="titlepage">
+        <div>
+          <h2 class="title" style="clear: both"><a name=
+          "id2749469"></a>2. Interesting Discussions</h2>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2749480"></a>2.1.
+            Appending an Ogg file to another</h3>
+          </div>
+        </div>
+
+        <p>This question comes up once in a while, so I guess it's
+        time to provide a tiny How-To for appending an Ogg file to
+        another. Dominic Mueller <a href=
+        "http://www.xiph.org/archives/vorbis/200304/0106.html"
+        target="_top">surmises in this message</a> that it can't be
+        as easy as simply concatenating two Ogg files. Or can
+        it?</p>
+
+        <p>The answer is a resounding, Yes, it <span class=
+        "emphasis"><i>is</i></span> that easy! One key feature of
+        the Ogg container format is that you can append one song to
+        another by simple file concatenation. The result of such a
+        concatenation is one <span class="emphasis"><i>physical
+        bitstream</i></span> (i.e. one file) that contains two or
+        more <span class="emphasis"><i>logical
+        bitstreams</i></span>. Such constructs are allowed and
+        encouraged by the specification, and they are just one more
+        example of why Ogg is really cool technology.</p>
+
+        <p>As far as Dominic's worry about multiple Vorbis comments
+        is concerned, this is really no problem. Each logical
+        bitstream does retain its comments, but this is an asset,
+        not a liability. A Vorbis player program should display the
+        comments for the current logical bitstream and update its
+        display to reflect the changes in comments from one logical
+        bitstream to the next. So if you have larger works that
+        consist of separate parts, you can rip and tag each part
+        individually. After concatenating the parts, you can listen
+        to the work as a whole, and the player will always tell you
+        which part you're listening to!</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="titlepage">
+        <div>
+          <h2 class="title" style="clear: both"><a name=
+          "id2750079"></a>3. Recent Developments</h2>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2750093"></a>3.1. Emmett
+            Plant leaves Xiph.org</h3>
+          </div>
+        </div>
+
+        <p>The Xiph.org Foundation announced <a href=
+        "http://www.xiph.org/press/2003/ceo/" target="_top">in this
+        press release</a> the termination of its contract with
+        Emmett Plant, who acted as CEO of Xiph.org since May 2002.
+        Now that Xiph.org is a federal tax-exempt non-profit
+        organization under section 501(c)3, it needs to find a
+        better balance between private and public funding. Emmett's
+        work was very helpful in raising corporate awareness of
+        Vorbis and in making portable Vorbis support a reality, but
+        Xiph.org must now refocus on public interests.</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2750131"></a>3.2.
+            Independent Label considers going Vorbis</h3>
+          </div>
+        </div>
+
+        <p><a href=
+        "http://www.xiph.org/archives/vorbis/200304/0117.html"
+        target="_top">This message</a> reports that <a href=
+        "http://www.fatchucks.com/z1.html" target="_top">Fat
+        Chuck's Music</a>, an independent music label that gives
+        artists 100% of the profit from the sales of their music,
+        is considering moving to Ogg Vorbis as its official format
+        for online music distribution. This report is currently
+        unconfirmed, but if this is true, this is yet another step
+        towards broad public acceptance of Ogg Vorbis.</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2750178"></a>3.3. Theora
+            support coming to Xine</h3>
+          </div>
+        </div>
+
+        <p><a href=
+        "http://www.xiph.org/archives/theora/200304/0002.html"
+        target="_top">Andreas Heinchen informs us</a> that he has
+        begun, and almost completed, adding support for <a href=
+        "http://www.theora.org" target="_top">Theora</a> to
+           <a href="http://xine.sourceforge.net" target=
+           "_top">Xine</a>. Player support is an important
+           prerequisite for codec adoption, so Andreas' efforts to
+           integrate Theora into Xine are certainly appreciated.
+           Good luck, Andreas!</p>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h3 class="title"><a name="id2750228"></a>3.4. Xiph.org
+            News Feed</h3>
+          </div>
+        </div>
+
+        <p>Nathan has set up an RSS feed that will serve up all the
+        latest Xiph.org news. This feed can be aggregated into
+        other web pages, or you can use an RSS viewer (like e.g.
+        Evolution's summary page) to get Xiph.org news without a
+        web browser. The feed is available at <a href=
+        "http://www.xiph.org/feeds/xiph.xml" target=
+        "_top">http://www.xiph.org/feeds/xiph.xml</a>.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

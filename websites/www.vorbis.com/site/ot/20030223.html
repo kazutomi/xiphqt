@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Sunday, February 23, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Sunday, February 23, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+          target="_top">Carsten Haese</a></h3>
+        </div>
+
+        <div>
+          <p class="pubdate">February 23, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727095">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725840">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726790">Michael Smith</a></dt>
+
+              <dt>1.3. <a href="#id2726606">Brendan Cully</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726630">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726642">Integer Speex</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2726703">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2726716">Portables, Portables,
+              Portables!</a></dt>
+
+              <dt>3.2. <a href="#id2726718">Bringing Vorbis support
+              to Nero software</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727095"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725840"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty and Emmett traveled to Chicago to meet with the
+          friendly folks from Digital Innovations, makers of the
+          Neuros Digital Audio Computer. Read more about this
+          meeting below in <a href="#a.portables">this week's cover
+          story</a>.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726790"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike fixed various icecast bugs, including a password
+          checking bug (thanks to Karl Heyes for the fix), and a
+          serious bug with source creation that occurred in relays
+          when the local mountpoint and the mountpoint were not the
+          same.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726606"></a>1.3.
+              Brendan Cully</h3>
+            </div>
+          </div>
+
+          <p>Brendan has extended the methods for setting, getting,
+          and communicating bitrates to convey more detailed
+          information. The new method will allow tracking of sample
+          rate and number of channels in addition to the
+          bitrate.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726630"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726642"></a>2.1.
+              Integer Speex</h3>
+            </div>
+          </div>
+
+          <p>Rick Kane asked in <a href=
+          "http://www.xiph.org/archives/speex-dev/200302/0028.html"
+          target="_top">this message</a> if anyone has done any
+          work for a version of Speex that can run on processors
+          that don't support floating point math. Only a few hours
+          later, Andrew Baker introduced himself to the mailing
+          list with <a href=
+          "http://www.xiph.org/archives/speex-dev/200302/0029.html"
+          target="_top">this message</a>, and described in great
+          detail his plans to do exactly that.</p>
+
+          <p>Andrew is going to target specific TI DSP's, and he
+          will work in a somewhat backwards way: Instead of
+          integerizing the code first, and then porting to an
+          integer DSP, he is going to first port to a
+          floating-point DSP, and then proceed to integerize the
+          code to implement it on a fixed point DSP. Still, it is
+          quite likely that this project will produce results that
+          should make it easier to target other fixed-point
+          processors.</p>
+
+          <p>If you're interested in embedded Speex
+          implementations, this will be an interesting project to
+          watch.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726703"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726716"></a>3.1. <a
+              name="a.portables"></a>Portables, Portables,
+              Portables!</h3>
+            </div>
+          </div>
+
+          <p>We promised that 2003 would be an interesting year,
+          and it's really starting to get interesting. As you
+          probably know too well, support for portable players is
+          the only remaining advantage that MP3 has over Ogg
+          Vorbis. Very soon, this advantage is going to disappear.
+          That's right, in a few months you will be able to go to
+          your local consumer electronics store and buy a digital
+          music player that plays Ogg Vorbis files!</p>
+
+          <p>The most promising contender is the Neuros Digital
+          Audio Player that was already mentioned a few weeks ago.
+          It is now official that Xiph will provide a firmware for
+          the Neuros that will enable it to play Vorbis files. You
+          can find more details and the official Xiph press release
+          <a href="http://www.xiph.org/ogg/vorbis/portables.html"
+          target="_top">here</a>.</p>
+
+          <p>Another contender is the line of <a href=
+          "http://www.iriver.com" target="_top">iRiver</a>'s
+          digital media players. iRiver commissioned Xiph to
+          evaluate the possibility of Vorbis playback on iRiver's
+          devices, and the evaluation has concluded with the result
+          that the provided development hardware is able to play
+          Vorbis. Unfortunately, it is currently not known which
+          devices are based on this development hardware. The
+          cautious conclusion is that at least one model from
+          iRiver's line of players has the necessary power to play
+          Vorbis audio.</p>
+
+          <p>Now that the evaluation is completed, the next step is
+          to implement a firmware that will actually play Vorbis.
+          iRiver has expressed intent to commission Xiph for this
+          step as well, but no formal agreement has been made
+          yet.</p>
+
+          <p>More details will be posted when they become
+          available.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726718"></a>3.2.
+              Bringing Vorbis support to Nero software</h3>
+            </div>
+          </div>
+
+          <p>Ahead Software, makers of the popular Nero CD burning
+          software, have released an SDK that allows developers to
+          add new audio formats to Nero, Nero Express, and NeroMIX,
+          according to <a href=
+          "http://www.nero.com/en/index.html#c1002825712128"
+          target="_top">this web page</a>. This means that Nero can
+          support Ogg Vorbis through a third-party plug-in.</p>
+
+          <p>Any volunteers that are interested in gaining instant
+          fame by providing such a plug-in, please step forward! On
+          the Nero side, you'll have to deal with whatever
+          documentation the SDK provides, but on the Vorbis side
+          we'll help out as much as we can on the
+          <tt>vorbis-dev</tt> mailing list or in <tt>#vorbis</tt>
+          on <tt>irc.xiph.org</tt>. Good luck!</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

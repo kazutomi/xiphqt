@@ -1,0 +1,57 @@
+<%@ page imports="siteconfig,software,softwarenews" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	sn = softwarenews.SoftwareNews(req.field('id'))
+	sn.load()
+} else: {
+	sn = softwarenews.SoftwareNews(id=None, software=None, title='', blurb='', date_added=None)
+}
+
+sl = software.SoftwareList()
+%>
+
+<html>
+<body bgcolor=white>
+<h1>Add a Software News Item<h1>
+<hr>
+
+<form method=post action="edit_softwarenews2.psp">
+<% if sn.date_added: { %>
+<input type=hidden name=date_added value="<%= sn.date_added %>">
+<% } %>
+<% if sn.id: { %>
+<input type=hidden name=id value="<%= sn.id %>">
+<% } %>
+<table border=0>
+<tr>
+<td>Software:</td>
+<td>
+<select name="software">
+<% for s in sl.list: { %>
+<% if sn.software == s.id: { %>
+<option value="<%= s.id %>" selected><%= s.name %>
+<% } else: { %>
+<option value="<%= s.id %>"><%= s.name %>
+<% } %>
+<% } %>
+</select>
+</td>
+</tr><tr>
+<td>Title:</td><td><input type=text name=title size=50 value="<%= sn.title %>"></td>
+</tr><tr>
+<td colspan=2>
+Blurb:<br>
+<textarea name=blurb cols=40 rows=10><%= sn.blurb %></textarea>
+</td><td></td>
+</tr>
+</table>
+<input type=submit value="Add/Edit Software News">
+</form>
+
+</body>
+</html>
+
+
+
+
+

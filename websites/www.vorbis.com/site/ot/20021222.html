@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Sunday, December 22, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Sunday, December 22, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Carsten Haese</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">December 22, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727365">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725840">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2727142">Jean-Marc
+              Valin</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726593">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726606">Converting FLAC to Ogg
+              Vorbis</a></dt>
+
+              <dt>2.2. <a href="#id2726713">Transcoding Ogg Vorbis
+              to Ogg Vorbis</a></dt>
+
+              <dt>2.3. <a href="#id2728821">Preaching the Gospel of
+              the Fish</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2728869">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2728878">Speex Beta 4
+              Released</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727365"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725840"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty is hard at work on libogg to accommodate Theora,
+          but he's out of town until after Christmas. He's working
+          as he travels.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727142"></a>1.2.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc has released Speex Beta 4! See below for
+          details.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726593"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726606"></a>2.1.
+              Converting FLAC to Ogg Vorbis</h3>
+            </div>
+          </div>
+
+          <p>Randolph Carter asked in <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0195.html"
+          target="_top">this message</a> if there's an easy way to
+          convert a <a href="http://flac.sourceforge.net" target=
+          "_top">FLAC</a> encoded file to Ogg Vorbis without losing
+          the metadata tags.</p>
+
+          <p>For Windows users, there is <a href=
+          "http://home.wanadoo.nl/~w.speek/oggifier.htm" target=
+          "_top">Oggifier</a>, as <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0200.html"
+          target="_top">this reply</a> pointed out. Oggifier is
+          basically a graphical frontend to <tt>oggenc</tt> that
+          can transcode from various formats, including FLAC, and
+          preserve metadata tags, so it fits the bill exactly,
+          except that Randolph was interested in a Linux
+          solution.</p>
+
+          <p>For Linux, at least for the command line, <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200212/0030.html"
+           target="_top">Josh Coalson suggested</a> something along
+          the lines of:</p>
+<pre class="programlisting">
+oggenc ... \ 
+       -a `metaflac --show-vc-field=artist | sed '/^.*=//'` \ 
+       -t ... \
+       -l ...
+</pre>
+
+          <p><a href=
+          "http://www.xiph.org/archives/vorbis-dev/200212/0031.html"
+           target="_top">Beni Cherniavsky responded</a> that this
+          "pull" style for metadata tagging drops anything that
+          isn't explicitly listed in the encoding command. He
+          suggested that it would be better to retrieve all tags
+          and somehow feed them to the <tt>oggenc</tt> command,
+          e.g. using <tt>xargs</tt>. The actual implementation is
+          left as an exercise to the reader.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726713"></a>2.2.
+              Transcoding Ogg Vorbis to Ogg Vorbis</h3>
+            </div>
+          </div>
+
+          <p>As a follow-up to the transcoding discussions of the
+          past, a reader <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0191.html"
+          target="_top">wondered in this message</a> how bad the
+          quality loss from transcoding Ogg Vorbis to Ogg Vorbis
+          would be in comparison to an MP3 to Ogg Vorbis
+          transcoding.</p>
+
+          <p><a href=
+          "http://www.xiph.org/archives/vorbis/200212/0204.html"
+          target="_top">Monty responded</a> that the quality loss
+          would probably not be quite as bad, but reencoding should
+          be avoided if possible, since there will be generational
+          loss in each reencoding.</p>
+
+          <p>Here is my layman's explanation for why quality loss
+          will always happen during reencoding: Ogg Vorbis encoding
+          is an approximation of whatever audio data is fed into
+          it. This can be illustrated with the task of rounding a
+          given number to a certain precision. For example, take
+          the number <tt>1.447</tt>, and round to two decimal
+          places, and you get <tt>1.45</tt>. Now "reencode" the
+          result by rounding to one decimal place, and you get
+          <tt>1.5</tt>, even though the original would have been
+          rounded to <tt>1.4</tt>.</p>
+
+          <p>If you think this example is simplistic and contrived,
+          you're right, but it still illustrates the problem of
+          generational loss that's inherent in any reencoding
+          process. Other examples include making an audio tape copy
+          of an audio tape, a video tape copy of a video tape, a
+          fax of a fax, etc.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728821"></a>2.3.
+              Preaching the Gospel of the Fish</h3>
+            </div>
+          </div>
+
+          <p>Corey Miller reported in <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0182.html"
+          target="_top">this thread</a> of his attempts to bring
+          the goodness of Ogg Vorbis to more people. He hopes to
+          convince <a href="http://www.massinova.com/" target=
+          "_top">The Massinova Project</a> to provide Ogg Vorbis
+          streams. The <a href=
+          "http://forums.massinova.com/viewtopic.html?t=744"
+          target="_top">feedback on the Massinova User Forum</a>
+          about Ogg's quality has been very positive. While there
+          is no indication of whether Massinova will actually
+          provide Ogg Vorbis streams, Corey's advocacy has
+          introduced Ogg Vorbis to a number of people that wouldn't
+          have known about it otherwise.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2728869"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728878"></a>3.1. Speex
+              Beta 4 Released</h3>
+            </div>
+          </div>
+
+          <p>On December 20, 2002, Jean-Marc Valin released <a
+          href="http://www.speex.org" target="_top">Speex</a> Beta
+          4. Here is his announcement:</p>
+
+          <p>This is the 4th beta and probably the last before we
+          start putting out release candidates. This release adds a
+          number of quality improvements and some new features;
+          first, the quality of the variable bitrate (VBR) mode has
+          been greatly improved, especially for wideband. Also,
+          some improvements were made to the packetloss concealment
+          code in order to reduce artifacts caused by lost packets.
+          There has been improvements to the 2.15 kbps mode, which
+          now sounds a bit better. The last quality improvement is
+          in the perceptual enhancement which is now good enough to
+          be enabled by default in speexdec (but not by default in
+          libspeex for now).</p>
+
+          <p>One of the new features in this release is a VAD
+          (Voice Activity Detection) mode that conserves bandwidth
+          when there's no speech, and even when VBR isn't enabled.
+          VAD is coupled with DTX (Discontinuous Transmission), a
+          feature that can completely stop data transmission when
+          the noise is constant (in which case, comfort noise
+          generation is turned on). The last new feature in this
+          release is an ABR (Average Bitrate) option, which uses
+          VBR with a quality that's adjusted to meet a certain
+          target (average) bitrate.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

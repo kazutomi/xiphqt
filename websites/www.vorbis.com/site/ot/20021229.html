@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Sunday, December 29, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Sunday, December 29, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Carsten Haese</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">December 29, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727365">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725840">FUD-Busting</a></dt>
+
+              <dt>1.2. <a href="#id2726711">Recompressing Ogg
+              Vorbis files</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2728744">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2728751">Using 
+              oggenc to convert FLAC to Ogg Vorbis</a></dt>
+
+              <dt>2.2. <a href="#id2728760">Happy Holidays</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727365"></a>1. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725840"></a>1.1.
+              FUD-Busting</h3>
+            </div>
+          </div>
+
+          <p>In <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0286.html"
+          target="_top">this message</a>, a reader invited the
+          community to comment on the validity a few anti-Ogg
+          claims that a friend of his made. The community reacted
+          with a number of responses, the most noteworthy of which
+          is <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0308.html"
+          target="_top">this one</a> by Monty, who takes the time
+          to debunk the claims carefully and authoritatively.</p>
+
+          <p>Here is a summary of the claims, together with some
+          responses.</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>Claim: Ogg has to this day, fundamental problems
+                with low frequency encoding.</p>
+
+                <p>Monty responds: "It did about two years ago.
+                Since then, these claims have persisted, yet folks
+                who claim it don't manage to pick it out in ABX
+                testing (or pick out something unrelated)."</p>
+
+                <p>The claim also mentions an artifact with the
+                ominous sounding name of "pre-echo aliasing," but
+                no definition to go along with it. The example
+                that's given in place of a definition can be
+                explained with interference between sound waves, as
+                <a href=
+                "http://www.xiph.org/archives/vorbis/200212/0313.html"
+                 target="_top">this response</a> points out, and
+                this phenomenon is an inherent property of sound
+                that has nothing to do with whether you use Ogg
+                Vorbis or not.</p>
+              </li>
+
+              <li>
+                <p>Claim: Ogg is not free from patents.</p>
+
+                <p>Fact: Both Xiph.Org and AOL have conducted or
+                commissioned patent searches by qualified patent
+                attorneys who have determined that Ogg Vorbis is
+                not infringing on any patents. Saying that Ogg
+                Vorbis is not patent free without backing it up
+                with a patent that Ogg Vorbis is infringing on,
+                like the above claim does, is blatant
+                FUD-mongering.</p>
+              </li>
+
+              <li>
+                <p>Claim: Ogg is too little, too late. Subclaim:
+                Ogg should have gone with wavelets, like other
+                audio and video encoding systems coming out in the
+                next year.</p>
+
+                <p>Response: Let's start out by noting that the
+                claim is not providing any examples of this
+                supposed next generation of wavelet based coding
+                systems. Since the claimant offers no credentials
+                apart from being a DJ, it is unlikely that he
+                actually knows what a wavelet is, and more likely
+                that he is just repeating buzzwords. As Moritz <a
+                href=
+                "http://www.xiph.org/archives/vorbis/200212/0290.html"
+                 target="_top">points out</a>, the benefit from
+                using wavelets for audio coding is far less than
+                it's hyped up to be.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726711"></a>1.2.
+              Recompressing Ogg Vorbis files</h3>
+            </div>
+          </div>
+
+          <p>Olaf van der Spek <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0238.html"
+          target="_top">reports in this message</a> that
+          <tt>bzip2</tt> achieved a 10% reduction on a couple of
+          Ogg Vorbis files, and he wonders how this can be.</p>
+
+          <p>John Morton <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0243.html"
+          target="_top">explains</a> that Ogg Vorbis uses pre-set
+          Huffman codes in order to be able to encode the source in
+          one pass. Encoding with optimal Huffman codes requires
+          two passes, which would make live encoding and streaming
+          impossible.</p>
+
+          <p>Because of the sub-optimal one pass method, it is
+          possible to gain some space by recompressing an Ogg
+          Vorbis file, but space savings as dramatic as 10% could
+          not be reproduced with the current version of the
+          encoder. (For example, a quick test by myself resulted in
+          a pitiful 0.2% gain on a randomly chosen file from my
+          collection.)</p>
+
+          <p>Segher Boessenkool is currently developing a tool that
+          optimizes the Huffman codes for a given Ogg Vorbis file
+          in order to shave off a few percent of the file size. <a
+          href=
+          "http://www.xiph.org/archives/vorbis/200212/0306.html"
+          target="_top">He reports</a> that the resulting space
+          savings are normally under 5%, and typically between 1%
+          and 2%.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2728744"></a>2. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728751"></a>2.1. Using
+              oggenc to convert FLAC to Ogg Vorbis</h3>
+            </div>
+          </div>
+
+          <p>Remember <a
+          href="http://www.vorbis.com/ot/20021222.html#id2726606">this
+          discussion</a> about converting FLAC to Ogg Vorbis? Stan Seibert
+          adds <a
+          href="http://www.xiph.org/archives/vorbis-dev/200212/0040.html"
+          >another solution</a> to the problem: a patch to oggenc.
+          This patch allows oggenc to read in a FLAC file as input file
+          and copy metadata comments into the Ogg Vorbis output file.</p>
+          <p>There were build problems reported by one user, so as always,
+          Your Mileage May Vary!</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728760"></a>2.2. Happy
+              Holidays</h3>
+            </div>
+          </div>
+
+          <p>The Xiph.Org team wishes everybody a peaceful holiday
+          season and a happy new year!</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

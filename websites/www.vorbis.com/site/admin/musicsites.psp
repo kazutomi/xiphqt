@@ -1,0 +1,20 @@
+<%@ page imports="siteconfig,musicsite" %>
+<html>
+<body bgcolor=white>
+
+<a href="edit_musicsite.psp" target="content">Add a Music Site</a><br>
+<hr>
+<% msl = musicsite.MusicSiteList() %>
+<% for ms in msl.list: %>
+[<a href="edit_musicsite.psp?id=<%= ms.id %>" target="content">edit</a>] - [<a href="del_musicsite.psp?id=<%= ms.id %>" target="content">delete</a>]<br>
+<br>
+<a href="<%= ms.url %>"><font size="+2"><%= ms.name %></font></a><br>
+<font size="-1"><i><%= ms.date_added %></i></font><br>
+<br>
+<%= ms.html_blurb() %>
+<br><br>
+<% end %>
+<hr>
+
+</body>
+</html>

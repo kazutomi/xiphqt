@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Tuesday, March 11, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Tuesday, March 11, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+          target="_top">Carsten "Purple" Haese</a></h3>
+        </div>
+
+        <div>
+          <p class="pubdate">March 11, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727443">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2727368">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726594">Michael Smith</a></dt>
+
+              <dt>1.3. <a href="#id2726685">Brendan Cully</a></dt>
+
+              <dt>1.4. <a href="#id2726718">Karl Heyes</a></dt>
+
+              <dt>1.5. <a href="#id2726742">Ralph Giles</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726768">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726721">Emmett at GDC</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727443"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727368"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty finished up the last bits and documentation for
+          the crosslapping API that I mentioned last week. In the
+          process, he cleaned up the vorbisfile seeking code, and
+          improved the accuracy of post-seek bitrate tracking.</p>
+
+          <p>Details about this recent round of changes and a call
+          for widespread testing can be found in <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200303/0030.html"
+           target="_top">this message</a>.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726594"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike is unstoppable and sent in another avalanche of
+          improvements to icecast. This time around, his
+          improvements include:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>Support listening on multiple sockets.</p>
+              </li>
+
+              <li>
+                <p>Support for shoutcast source protocol added.</p>
+              </li>
+
+              <li>
+                <p>Started implementing generic admin interface.
+                Supports (so far):</p>
+
+                <div class="itemizedlist">
+                  <ul type="round">
+                    <li>
+                      <p>dynamic configuration of mount
+                      fallbacks</p>
+                    </li>
+
+                    <li>
+                      <p>setting of mp3 metadata</p>
+                    </li>
+
+                    <li>
+                      <p>dumping raw xml stats</p>
+                    </li>
+
+                    <li>
+                      <p>listing all connected clients on a
+                      mountpoint:</p>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726685"></a>1.3.
+              Brendan Cully</h3>
+            </div>
+          </div>
+
+          <p>In addition to making some improvements to the ices
+          and libshout build systems, Brendan has merged the
+          <tt>ices-libshout_2</tt> of ices 0.x into mainline CVS.
+          Anyone that is using the combination of ices 0.x and
+          libshout 2 should switch to mainline with <tt>cvs update
+          -A</tt> to get future updates, as the branch will no
+          longer be maintained.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726718"></a>1.4. Karl
+              Heyes</h3>
+            </div>
+          </div>
+
+          <p>After contributing a number of valuable icecast
+          patches, Karl has now become a full member of the
+          development team with write access to the CVS repository.
+          His first round of commits includes improvements to the
+          build system and other miscellaneous improvements.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726742"></a>1.5. Ralph
+              Giles</h3>
+            </div>
+          </div>
+
+          <p>Ralph committed a patch to Theora from Dan Miller.
+          This patch makes the encoder write the codebooks into the
+          file header so they're not needed in the decoder. This
+          breaks compatibility with alpha 1, but it will allow
+          future improvements to the encoder without having to
+          change the file format or the decoder.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726768"></a>2. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726721"></a>2.1. Emmett
+              at GDC</h3>
+            </div>
+          </div>
+
+          <p>Emmett traveled to the Game Developers Conference in
+          San Jose to continue his quest to take over the world
+          with cool Xiph stuff, only to discover that this part of
+          the world had already surrendered before he got there! He
+          reported the following impression from GDC:</p>
+
+          <p>"The most interesting thing I saw there was rampant
+          Vorbis adoption. You couldn't throw a rock without
+          hitting someone either currently using Vorbis or using it
+          for their next game. It was quite strange, actually. More
+          people know about Vorbis at GDC than [at] LinuxWorld
+          Expo. The most common response to 'Are you [using] or are
+          you planning to use Ogg Vorbis?' was 'Well, duh.'"</p>
+
+          <p>This response is actually not surprising, since game
+          developers have a natural need for good multimedia
+          technology, and if it's free, that's even better. Quite a
+          few developers have wondered why we don't have a web site
+          for game developers. The answer is that such a thing
+          takes time, but we are seriously thinking about it.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,32 @@
+<%@ page imports="siteconfig,type,news" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	n = news.News(req.field('id'))
+	n.delete()
+%>
+<html>
+<body bgcolor=white>
+<h1>News Deleted<h1>
+<hr>
+
+<br>
+<a href="news.psp" target="content">Go Back To News Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="news.psp" target="content">Go Back To News Page</a>
+
+</body>
+</html>
+<%
+}
+%>

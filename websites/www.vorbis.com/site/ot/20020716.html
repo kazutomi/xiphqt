@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Tuesday, July 16, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2743050"></a>Ogg Traffic for
+          Tuesday, July 16, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Stan Seibert</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">July 16, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2745914">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2745922">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2745940">Michael Smith</a></dt>
+
+              <dt>1.3. <a href="#id2745960">Stan Seibert</a></dt>
+
+              <dt>1.4. <a href="#id2745983">Chris Cheney</a></dt>
+
+              <dt>1.5. <a href="#id2746003">Ralph Giles</a></dt>
+
+              <dt>1.6. <a href="#id2746021">Emmett Plant</a></dt>
+
+              <dt>1.7. <a href="#id2746039">Manuel Lora</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2746058">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2746075">RTP Based Unicast and
+              Multicast Vorbis</a></dt>
+
+              <dt>2.2. <a href="#id2746192">Quality Comparison
+              Between Vorbis Encoder Releases</a></dt>
+
+              <dt>2.3. <a href="#id2746244">Uncoupled
+              Modes</a></dt>
+
+              <dt>2.4. <a href="#id2746268">Vote for
+              Vorbis!</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745914"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745922"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty committed the Vorbis modes for low sample rate
+          (8, 11, 16, and 22 kHz) and retuned the 44/48 kHz modes
+          slightly. He also corrected some problems with the way
+          bitrate management options were handled in oggenc. Monty
+          has been spending much of the week writing the Vorbis
+          specification.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745940"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Michael made some last minute fixes to some of the
+          vorbis tools before leaving on vacation this week. He
+          correct some UTF-8 handling bugs in ogginfo and updated
+          oggenc to support the new negative quality modes in the
+          Vorbis encoder. The quality can now be sent between -1.0
+          and 10.0. A quality -1 file tends to be around 45-50 kbps
+          for stereo 44.1 kHz audio.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745960"></a>1.3. Stan
+              Seibert</h3>
+            </div>
+          </div>
+
+          <p>This week Stan made some build fixes to vorbis tools
+          and fixed some of the library version information for
+          libvorbis, libvorbisenc and libvorbisfile. A bug in the
+          HTTP buffering used by ogg123 was corrected, preventing
+          ogg123 from using 100% of the CPU when playing some URLs.
+          Stan also added a --audio-buffer=x option (x is in kB) to
+          allow users to control the size of the audio buffer in
+          ogg123. Setting this to a value larger than 128 may
+          prevent skipping on slower systems.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745983"></a>1.4. Chris
+              Cheney</h3>
+            </div>
+          </div>
+
+          <p>Chris updated the Debian packaging files and split the
+          vorbis library package into three packages, one for
+          libvorbis, libvorbisfile and libvorbisenc. This was
+          necessary because the version numbers of these three
+          libraries will diverge in the upcoming release. Chris
+          also provided valuable assistance to Stan in figuring out
+          the library version situation for the vorbis library.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746003"></a>1.5. Ralph
+              Giles</h3>
+            </div>
+          </div>
+
+          <p>Ralph updated the Mac project files and fixed some
+          build bugs. He also updated ogginfo for Michael to be
+          able to identify the version number for CVS encoded files
+          and to not flag some CVS encoded files as having
+          erroneous headers.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746021"></a>1.6. Emmett
+              Plant</h3>
+            </div>
+          </div>
+
+          <p>Emmett, the Xiph.org CEO, has been coordinating the
+          activities of the various developers and build people.
+          When he's not keeping tabs of the master TODO list, he's
+          drawing diagrams for Monty that will be included in the
+          final Vorbis specification.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746039"></a>1.7. Manuel
+              Lora</h3>
+            </div>
+          </div>
+
+          <p>Manuel, the Xiph.org webmaster, has been hard at work
+          this getting web pages ready for the next release. He's
+          been helping Monty prepare listening samples that will
+          show what the new encoder can do. He's also been updating
+          the documentation on the website.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2746058"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <p>This week, we feature a new section in Ogg Traffic that
+        will include summaries of the discussion threads and other
+        postings on the Ogg-related mailing lists. I won't promise
+        to cover every thread, but just those I think will be of
+        general interest.</p>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746075"></a>2.1. RTP
+              Based Unicast and Multicast Vorbis</h3>
+            </div>
+          </div>
+
+          <p>Peter Maersk-Moller announced preliminary code at <a
+          href=
+          "http://sourceforge.net/forum/forum.php?thread_id=703395&amp;forum_id=59136"
+           target=
+          "_top">http://sourceforge.net/forum/forum.php?thread_id=703395&amp;forum_id=59136</a>
+          that does RTP streaming of Vorbis packets in unicast and
+          multicast modes.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746192"></a>2.2.
+              Quality Comparison Between Vorbis Encoder
+              Releases</h3>
+            </div>
+          </div>
+
+          <p>There was a long conversation about whether the latest
+          encoder in CVS achieves the same quality as previous
+          encoders. Zvezdan Dimitrijevic contended that the beta 4
+          encoder was better than the CVS encoder. Monty disagreed,
+          and posted a <a href=
+          "http://www.xiph.org/archives/vorbis/200207/0186.html"
+          target="_top">long reply</a> explaining why. Zvezdan
+          maintained his position, and <a href=
+          "http://www.xiph.org/archives/vorbis/200207/0225.html"
+          target="_top">later in the conversation</a> produced
+          graphs supporting his observation that less phase
+          information was preserved in CVS as compared to beta 4.
+          Monty agreed that more phase information was being
+          removed in the encoders since RC2, but said that the
+          information should be inaudible. He cautioned against
+          looking for artifacts using graphs since the real test is
+          whether you can actually hear the defects. Zvezdan
+          replied that he was hearing a difference, and only used
+          the graphs to try and identify what he was hearing. Monty
+          pointed out that the graphs didn't conclusively prove
+          that a lack of phase information was the source of the
+          artifact. However, Zvezdan reported that when he
+          increased the cutoff frequency for phase information to
+          16 kHz in the RC3 encoder, he was no longer able to hear
+          the defect.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746244"></a>2.3.
+              Uncoupled Modes</h3>
+            </div>
+          </div>
+
+          <p>P&aacute;d&aacute;r Atila asked how to force uncoupled
+          encoding at high bitrates using the CVS encoder. It was
+          pointed out that at the high bitrates mentioned, the
+          channel coupling in Vorbis is lossless. Uncoupled
+          encoding would preserve no extra information and take
+          more space. P&aacute;d&aacute;r went ahead and posted a
+          modified version of the encoder that allowed completely
+          uncoupled stereo. Monty replied that the feature would
+          not be added to the Xiph.org encoder in the near
+          future.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746268"></a>2.4. Vote
+              for Vorbis!</h3>
+            </div>
+          </div>
+
+          <p>Adrien Beau reported that the Linux Journal had opened
+          <a href="http://www.linuxjournal.com/rc2002/" target=
+          "_top">voting</a> for their 2002 Reader's Choice poll and
+          that both the "Vorbis Tools" and ogg123 were listed as
+          options in the Audio Tools category. Adrien observed that
+          this was a little confusing since ogg123 is part of the
+          Vorbis Tools package. Everyone interested in voting
+          should do so before August 12, 2002.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

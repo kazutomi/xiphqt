@@ -1,0 +1,37 @@
+<%@ page imports="siteconfig,softwarenews" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	sn = softwarenews.SoftwareNews(req.field('id'))
+	sn.load()
+%>
+<html>
+<body bgcolor=white>
+<h1>Really Delete "<%= sn.title %>"<h1>
+<hr>
+
+<form method=post action="del_softwarenews2.psp">
+<input type=hidden name=id value="<%= sn.id %>">
+<input type=submit value="Yes, Delete It">
+</form>
+
+<br>
+<a href="softwarenews.psp" target="content">No, Go Back To Software News Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="softwarenews.psp" target="content">Go Back To Software News Page</a>
+
+</body>
+</html>
+<%
+}
+%>

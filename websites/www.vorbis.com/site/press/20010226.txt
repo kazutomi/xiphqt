@@ -1,0 +1,64 @@
+Ogg Vorbis Creators Announce Formation of Xiph.org Foundation
+Coincides with Release of Beta 4 and Major Licensing Change
+
+Xiph.org, creators of the Ogg Vorbis audio codec, Icecast streaming media 
+server, Cdparanoia, and other multimedia software, are announcing the 
+formation of the Xiph.org Foundation.  The Xiph.org Foundation will work to 
+promote the creation of free, unencumbered, and interoperable multimedia 
+standards. The Foundation has applied for nonprofit status, thus formalizing 
+the noncompetitive, research oriented nature of its work.  The Foundation will 
+be seeking contributions from both corporate and private sources, with the 
+goal of enabling further development of the Xiph.org projects and building 
+a strong team capable of pushing the leading edge of technology.
+
+The Xiph.org Foundation formalizes the relationship between the various 
+Xiph.org projects and the developers that produce and maintain these projects.
+Board members will include Xiph.org creators and developers Christopher 
+Montgomery and Michael Person and Icecast.org founder and developer Jack 
+Moffitt, as well as other leaders and contributors. Participants in the 
+Xiph.org projects will also be involved in the foundation.
+
+In conjunction with the creation of the Foundation, the Xiph.org developers 
+have released Beta 4 of the Ogg Vorbis libraries.  This release features major 
+quality enhancements, optimizations, bug fixes, and other improvements.  The 
+encoding and decoding speeds have been drastically improved over previous 
+versions.  Sound quality has also increased dramatically in the latest 
+release.
+
+With the Beta 4 release, the Ogg Vorbis libraries have moved to the BSD 
+license.  The change from LGPL to BSD was made to enable the use of Ogg 
+Vorbis in all forms of software and hardware.  Jack Moffitt says, "We are 
+changing the license in response to feedback from many parties.  It has 
+become clear to us that adoption of Ogg Vorbis will be accelerated even 
+further by the use of a less restrictive license that is friendlier toward 
+proprietary software and hardware systems.  We want everyone to be able to 
+use Ogg Vorbis."
+
+In response to the change of license, Richard Stallman of the Free Software 
+Foundation says, "I agree.  It is wise to make some of the Ogg Vorbis code 
+available for use in proprietary software, so that commercial companies doing 
+proprietary software will use it, and help Vorbis succeed in competition with 
+other formats that would be restricted against our use."
+
+Hardware and software adoption of Ogg Vorbis has continued at an unprecedented 
+pace.  Ogg Vorbis is already one of the most widely supported codecs in 
+software.  The Xiph.org team is also proud to announce that Ogg Vorbis is now 
+available in portable hardware form.  Interactive Objects, Inc. has announced 
+the Dadio 2.0 operating system with Ogg Vorbis support.  This will ensure that 
+many upcoming audio hardware devices support Vorbis playback.   "iObjects is 
+happy to be the first to provide high-quality Ogg Vorbis playback for portable 
+devices.  This development increases freedom of choice for portable users," 
+said Mark Phillips, CTO of Interactive Objects, Inc..
+
+Visit http://www.vorbis.com to download the newest beta release and new Ogg 
+Vorbis music tracks.  Encoder and player software is now available for use 
+on most operating systems.  
+
+For more information about the Xiph.org projects, please visit 
+http://www.xiph.org.  Additional information about the Xiph.org Foundation 
+will be available online soon.  Interested parties or donors should contact:
+
+Jack Moffitt
+Executive Director
+Xiph.org Foundation
+415.595.5215

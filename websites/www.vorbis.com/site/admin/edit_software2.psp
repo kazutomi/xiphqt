@@ -1,0 +1,31 @@
+<%@ page imports="siteconfig,software,types" indentType="braces" %>
+<%
+
+p = req.field('platform', None)
+if p: {
+	if type(p) == types.StringType: {
+		pf = [int(p)]
+	} elif type(p) == types.ListType: {
+		pf = p
+	} else: {
+		pf = None
+	}
+} else: {
+	pf = None
+}
+
+s = software.Software(id=req.field('id', None), platform=pf, url=req.field('url', None), name=req.field('name', None), blurb=req.field('blurb', None), date_added=req.field('date_added', None))
+%>
+
+<html>
+<body bgcolor=white>
+<% if s.save(): { %>
+<h1> Software Project Added/Updated Successfully. </h1>
+<a href="software.psp" target="content">Back To Software Page</a>
+<% } else: { %>
+<h1> Add/Update failed.  Please hit 'back' and try again. </h1>
+<% } %>
+
+
+</body>
+</html>

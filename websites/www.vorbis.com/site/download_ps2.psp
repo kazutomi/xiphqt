@@ -1,0 +1,106 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Download Ogg Vorbis 1.0 Software For PlayStation 2 Linux'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<br>
+
+<h2>Encoders / Players / Tools</h2>
+<blockquote>
+These tools will allow you to play, encode and manage Ogg Vorbis files.
+<br><br>
+
+<b>Vorbis Tools</b> (requires libraries: <b> curl</b>, <b>libao</b>, <b>libogg</b>, <b>libvorbis</b>)<br><br>
+
+&nbsp;&nbsp;for PS2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/vorbis-tools-1.0-1.mipsel.rpm">vorbis-tools-1.0-1.mipsel.rpm</a><br>
+
+&nbsp;&nbsp;for everyone:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/unix/vorbis-tools-1.0.tar.gz">vorbis-tools-1.0.tar.gz</a><br>
+<br>
+
+</blockquote>
+
+<br>
+
+<h2>Libraries</h2>
+<blockquote>
+These are the core libraries that make Ogg Vorbis work.  You'll need these
+to use anything else.
+<br><br>
+
+<b>curl</b><br><br>
+&nbsp;&nbsp;for PS2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/curl-7.9.8-1.mipsel.rpm">curl-7.9.8-1.mipsel.rpm</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>developer packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/curl-devel-7.9.8-1.mipsel.rpm">curl-devel-7.9.8-1.mipsel.rpm</a><br>
+<br>
+<b>libao</b><br><br>
+
+&nbsp;&nbsp;for PS2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/libao-0.8.3-1.mipsel.rpm">libao-0.8.3-1.mipsel.rpm</a><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>developer packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/libao-devel-0.8.3-1.mipsel.rpm">libao-devel-0.8.3-1.mipsel.rpm</a><br>
+
+<br>
+
+&nbsp;&nbsp;for everyone:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/unix/libao-0.8.3.tar.gz">libao-0.8.3.tar.gz</a><br>
+<br>
+<b>libogg</b><br><br>
+
+&nbsp;&nbsp;for PS2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a
+href="files/1.0/ps2/libogg-1.0-1.mipsel.rpm">libogg-1.0-1.mipsel.rpm</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/libogg-devel-1.0-1.mipsel.rpm">libogg-devel-1.0-1.mipsel.rpm</a><br>
+
+<br>
+
+&nbsp;&nbsp;for everyone:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/unix/libogg-1.0.tar.gz">libogg-1.0.tar.gz</a><br>
+
+<br>
+
+<b>libvorbis</b> (requires libraries: <b>libogg</b>)<br><br>
+
+&nbsp;&nbsp;for PS2:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a
+href="files/1.0/ps2/libvorbis-1.0-1.mipsel.rpm">libvorbis-1.0-1.mipsel.rpm</a><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/ps2/libvorbis-devel-1.0-1.mipsel.rpm">libvorbis-devel-1.0-1.mipsel.rpm</a><br>
+
+<br>
+
+&nbsp;&nbsp;for everyone:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0/unix/libvorbis-1.0.tar.gz">libvorbis-1.0.tar.gz</a><br>
+
+</blockquote>
+
+<br>
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

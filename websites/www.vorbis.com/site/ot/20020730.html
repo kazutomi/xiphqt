@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Tuesday, July 30, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2743050"></a>Ogg Traffic for
+          Tuesday, July 30, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Stan Seibert</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">July 30, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2745922">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2745930">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2745952">Michael Smith</a></dt>
+
+              <dt>1.3. <a href="#id2745984">Chris Cheney</a></dt>
+
+              <dt>1.4. <a href="#id2746002">Ralph Giles</a></dt>
+
+              <dt>1.5. <a href="#id2746018">Andrew Chatham</a></dt>
+
+              <dt>1.6. <a href="#id2746036">Ryan Gordon</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2746061">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2746069">Quality and Ripping
+              speed</a></dt>
+
+              <dt>2.2. <a href="#id2746101">Ogg-on-a-Chip Project
+              First Phase Finished</a></dt>
+
+              <dt>2.3. <a href="#id2746134">Ogg123
+              Crossfade</a></dt>
+
+              <dt>2.4. <a href="#id2746168">Rehuff for Ogg
+              Vorbis</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2746195">New Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2746203">Vorbis 1.0</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p>After a trip to Austin, I'm back this week with a new Ogg
+      Traffic. This issue will cover the last two weeks of
+      development. Congratulations to the Xiph.org team on Vorbis
+      1.0!</p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745922"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745930"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty finished off the Vorbis specification and put it
+          into CVS (as well as the 1.0 release). In the process, he
+          found and fixed some little remaining bugs in the Vorbis
+          libraries. Testing also revealed a severe bug with the
+          code that allowed you to set bitrate limits (accessed in
+          oggenc with the -m and -M options). This was fortunately
+          fixed before Vorbis 1.0 was released. Monty took a much
+          deserved break after Vorbis 1.0 was officially released
+          on July 19.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745952"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Michael fixed some Borland compiler issues and fixed
+          oggenc to not include Vorbis header packets in the
+          bitrate displayed when compression is finished. Including
+          the headers would tend to misleadingly inflate the
+          bitrate display, especially on very short files. He
+          updated ogg123 to display the new long form <a href=
+          "http://www.replaygain.org" target="_top">Replay Gain</a>
+          tags (REPLAYGAIN_* rather than RG_*). The -R (raw output)
+          option in oggdec was changed to not have a binary flag
+          value after it. Now, -R just means "output raw,
+          headerless audio data". After the 1.0 release, Michael
+          updated libvorbis in CVS to work around a qsort() bug on
+          Solaris.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745984"></a>1.3. Chris
+              Cheney</h3>
+            </div>
+          </div>
+
+          <p>Chris made a quick fix to ogg123 adding support for
+          HTTP redirection when loading Ogg Vorbis files from a
+          URL. Chris also finished off the Debian package updates
+          and uploaded the new Vorbis .debs into the Debian system
+          when 1.0 was released.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746002"></a>1.4. Ralph
+              Giles</h3>
+            </div>
+          </div>
+
+          <p>Ralph fixed various documentation typos and committed
+          a patch from David Gasaway to make it easier to link
+          vorbis-tools code into C++ projects.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746018"></a>1.5. Andrew
+              Chatham</h3>
+            </div>
+          </div>
+
+          <p>Andrew updated the comment interfaces in the Python
+          bindings. Comments can now be made using Python
+          dictionary objects, which Andrew says is a big
+          improvement. Andrew also updated the Python bindings to
+          reflect the Vorbis 1.0 release.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746036"></a>1.6. Ryan
+              Gordon</h3>
+            </div>
+          </div>
+
+          <p>Ryan provided us with some much needed building
+          assistance on Vorbis 1.0. He fixed some build issues on
+          various platforms (like BeOS) and compiled many of the
+          Vorbis 1.0 packages available for download on the <a
+          href="http://www.vorbis.com/" target="_top">Vorbis
+          website</a>. Special thanks go out to Ryan for helping us
+          out!</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2746061"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746069"></a>2.1.
+              Quality and Ripping speed</h3>
+            </div>
+          </div>
+
+          <p>Amy Schoenhofen asked about the ripping (and encoding)
+          speeds people were getting with Vorbis 1.0. The thread
+          quickly shifted to the question of the connection between
+          quality level and ripping speed. Several people reported
+          that the higher the quality level, the quicker the
+          compression. However, Moritz Grim reported the opposite
+          correlation. Shawn Leas actually <a href=
+          "http://www.xiph.org/archives/vorbis/200207/0410.html"
+          target="_top">performed a test</a> and found that there
+          wasn't much change in encoding speed at different quality
+          settings on his system (others will certainly vary). At
+          the end of his email, he gives the test scripts he
+          used.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746101"></a>2.2.
+              Ogg-on-a-Chip Project First Phase Finished</h3>
+            </div>
+          </div>
+
+          <p>Pattara Kiatisevi <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200207/0175.html"
+           target="_top">announced</a> that his group's masters
+          thesis project to implement an Ogg Vorbis decoder in
+          hardware had been completed. Details were available at
+          the <a href="http://oggonachip.sf.net" target=
+          "_top">oggonachip</a> website.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746134"></a>2.3. Ogg123
+              Crossfade</h3>
+            </div>
+          </div>
+
+          <p>Nigel Weeks asked if it would be possible to add a
+          feature to ogg123 allowing consecutive tracks to be
+          cross-faded. This feature would allow one track to
+          seamlessly fade into the next. Players like XMMS and
+          Winamp have plugins that do this already. Stan replied
+          that this would be difficult to implement in ogg123, but
+          was open to suggestions. The discussion moved into the
+          issue of how cross-fading should be done. Paul Martin
+          pointed out that each song has a different optimal "end
+          fade" point, so automatically doing a cross-fade is
+          tricky. In <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200207/0205.html"
+           target="_top">this post</a> he explains a little about
+          his approach.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746168"></a>2.4. Rehuff
+              for Ogg Vorbis</h3>
+            </div>
+          </div>
+
+          <p>Segher Boessenkool <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200207/0210.html"
+           target="_top">posted an update</a> of his rehuff tool to
+          vorbis-dev. It is a tool you can run on Ogg Vorbis files
+          that losslessly optimizes the compression in Ogg Vorbis
+          files. It provides about a 3% reduction in size and
+          shrinks the headers quite a bit.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2746195"></a>3. New Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746203"></a>3.1. Vorbis
+              1.0</h3>
+            </div>
+          </div>
+
+          <p>Of course, the biggest development this week (or year
+          for that matter) is the release of Vorbis 1.0. Vorbis.com
+          has a great <a href=
+          "http://www.xiph.org/ogg/vorbis/listen.html" target=
+          "_top">listening test</a> which we encourage everyone to
+          try so you can see how great Vorbis is. For the
+          statistically minded, ff123 conducted a <a href=
+          "http://ff123.net/64test/testplan.html" target=
+          "_top">group listening test</a> of Vorbis, mp3pro, WMA8,
+          and AAC in the 64 kbps region. <a href=
+          "http://ff123.net/64test/results.html" target=
+          "_top">Results</a> have been posted for the test, showing
+          mp3pro and Vorbis to be the winners.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

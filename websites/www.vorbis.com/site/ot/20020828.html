@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Wednesday, August 28, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2741134"></a>Ogg Traffic for
+          Wednesday, August 28, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Stan Seibert</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">August 28, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2745850">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2745858">Michael Smith</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2745872">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2745880">Running Icecast on Port
+              80 without root privileges</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2745924">New Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2745932">Open Letter from the
+              Xiph.org CEO on the MP3 License Changes</a></dt>
+
+              <dt>3.2. <a href="#id2745956">Codec Test at
+              c't</a></dt>
+
+              <dt>3.3. <a href="#id2745989">alogg 1.0.4
+              Released</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745850"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745858"></a>1.1.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike fixed a chroot() bug in icecast and merged more
+          Win32 updates from Oddsock.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745872"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745880"></a>2.1.
+              Running Icecast on Port 80 without root
+              privileges</h3>
+            </div>
+          </div>
+
+          <p>Bryan Jay Miller <a href=
+          "http://www.xiph.org/archives/icecast/3148.html" target=
+          "_top">asked</a> about the possibilities of running
+          icecast on port 80, but without root privileges. Alan
+          Bushnell suggested using firewall software (like iptables
+          or netfilter) to redirect port 80 to an unprivileged
+          port. Samuel Hathaway provided a link to <a href=
+          "http://www.epita.fr:8000/~flav/cbs/doc/html/" target=
+          "_top">cbs</a> [Warning: this server might be down], a
+          client-server tool for allowing unprivileged programs to
+          bind to ports below 1024. Moritz Grimm pointed out that
+          icecast 2 (in CVS) supports changing its UID and GID, and
+          running within a chroot()'ed jail. Icecast 2 only needs
+          to run as root long enough to bind to privileged ports
+          and then can switch to a normal user.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745924"></a>3. New Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745932"></a>3.1. Open
+              Letter from the Xiph.org CEO on the MP3 License
+              Changes</h3>
+            </div>
+          </div>
+
+          <p>In response to Thomson's decision to charge patent
+          licensing fees for MP3 decoder software, Xiph.org CEO
+          Emmett Plant has posted an <a href=
+          "http://www.xiph.org/ogg/vorbis/openletter.html" target=
+          "_top">open letter</a> to Thomson.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745956"></a>3.2. Codec
+              Test at c't</h3>
+            </div>
+          </div>
+
+          <p>Robert Michel reports that the German IT magazine
+          "c't" is running an <a href=
+          "http://www.heise.de/ct/leserbefragung/hoertest/" target=
+          "_top">online listening test</a> between AAC, MP3, WMA
+          and Vorbis. <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0185.html"
+          target="_top">Robert's posting</a> gives instructions in
+          English for non-German speakers. Hurry if you want to
+          participate, because the tests close at midnight on
+          August 28.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745989"></a>3.3. alogg
+              1.0.4 Released</h3>
+            </div>
+          </div>
+
+          <p>Vincent Penquerc'h released <a href=
+          "http://lyrian.obnix.com/alogg/" target="_top">alogg</a>
+          1.0.4, "a library which integrates Ogg/Vorbis to the
+          Allegro game programming library."</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Thursday, September 5, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2743050"></a>Ogg Traffic for
+          Thursday, September 5, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Stan Seibert</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">September 5, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2745927">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2745934">Michael Smith</a></dt>
+
+              <dt>1.2. <a href="#id2745950">Monty</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2745964">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2745971">Debian MP3-&gt;Vorbis
+              Transcoding</a></dt>
+
+              <dt>2.2. <a href="#id2746131">Analog Artifact
+              Estimation</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2746198">New Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2746206">Xiph.org Releases
+              Integerized Vorbis Decoder</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745927"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745934"></a>1.1.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike applied a patch to icecast to fix XSLT compiler
+          flags and to fix a problem with file serving from
+          icecast.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745950"></a>1.2.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty put the Tremor source code (see below for
+          information on the Tremor release) into CVS!</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745964"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745971"></a>2.1. Debian
+              MP3-&gt;Vorbis Transcoding</h3>
+            </div>
+          </div>
+
+          <p>Craig Dickson began a long thread discussing <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0209.html"
+          target="_top">the possibility of Debian including an MP3
+          to Vorbis transcoder</a>. He was concerned about the
+          quality issues and asked other Debian developers on the
+          vorbis list to take a look at the in-progress thread on
+          the debian-devel list. David Parker noted that such a
+          tool would have the same patent problems that other mp3
+          decoders would have. I <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0219.html"
+          target="_top">summarized the reasons why you should and
+          should not transcode</a> and suggested that we pick an
+          unofficial tag that should be used to mark transcoded
+          files. Segher <a href=
+          "http://www.xiph.org/archives/vorbis/200209/0010.html"
+          target="_top">replied</a> that a more general construct
+          for marking the file's history would be better. He
+          suggested a "FILE_HISTORY" tag which would have a
+          freeform string describing the operations that had been
+          performed on the file, including oggenc parameters and
+          descriptions of previous encodings (ex: "FILE_HISTORY=192
+          kbps MP3"). A file could have several "FILE_HISTORY" tags
+          if several operations had been performed on it (peeling,
+          channel merging, etc.).</p>
+
+          <p>There was also some discussion of the legal status of
+          MP3 decoders in light of the removal of the
+          "non-commercial software doesn't have to pay royalties"
+          wording from the MP3 licensing page. Moritz Grimm said
+          that Thomson's position had not changed, and
+          non-commercial software was still exempt from royalties.
+          He did note, as did Greg Wooledge, that there was still a
+          problem with distributing MP3 software under the GPL
+          because the GPL required commercial redistribution to be
+          permitted, but that was not allowed by the MP3 patent
+          licensing rules without royalty payments.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746131"></a>2.2. Analog
+              Artifact Estimation</h3>
+            </div>
+          </div>
+
+          <p>John Bradford asked whether it would make sense for a
+          video codec (like VP3) to include algorithms to deal with
+          various sorts of common analog video artifacts, since a
+          lot of video comes from analog sources. <a href=
+          "http://www.xiph.org/archives/theora-dev/200208/0041.html"
+           target="_top">His post</a> includes a very extensive
+          list of common analog artifacts. Henry Mason said that
+          some of the issues John brought up could be dealt with by
+          preprocessing the video before giving it to the encoder
+          stage. Daniel Miller (from On2) mentioned that, while
+          John's points were interesting, the Theora project would
+          be mostly focused on integrating VP3 into the Ogg
+          framework and less so on improving the quality of the
+          encoder. He did say that, just as in Vorbis, the VP3
+          format was flexible enough to permit the encoder to be
+          improved while keeping the bitstream format fixed (and
+          therefore all of the deployed decoders happy). So the
+          ability to do significant tuning would be available in
+          the future.</p>
+
+          <p>The thread got people thinking about various
+          psychovisual issues (much as Vorbis uses psychoacoustic
+          techniques to select audio components to discard)
+          involved in compressing video. Daniel Miller talked about
+          <a href=
+          "http://www.xiph.org/archives/theora-dev/200209/0003.html"
+           target="_top">his own research</a> into alternative
+          metrics to use for estimating the quality of a video
+          codec. He said that most codecs (including VP3) are
+          designed with a great deal of weight given to the Peak
+          Signal-to-Noise Ratio (PSNR), which he feels is
+          inadequate to describe perceived quality.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2746198"></a>3. New Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746206"></a>3.1.
+              Xiph.org Releases Integerized Vorbis Decoder</h3>
+            </div>
+          </div>
+
+          <p>Xiph.org decided on Sept. 2 to help speed the
+          development of portable Vorbis players by <a href=
+          "http://www.xiph.org/ogg/vorbis/hardware.html" target=
+          "_top">releasing</a> their integerized Vorbis decoder,
+          named "Tremor," under a BSD-like license. Tremor is a
+          Vorbis decoding library written for CPUs without floating
+          point hardware, like most handheld devices use. It was
+          previously a proprietary library--licensed by theKompany
+          for their Sharp Zaurus player, among others--but now it's
+          available for everyone to use.</p>
+
+          <p>Xiph.org is asking for help from end users to get the
+          word out that it's time for hardware makers to start
+          looking at Vorbis. The release page gives contact
+          information for the manufacturers of many popular
+          portable music players. We would ask that you politely
+          contact the manufacturers of devices that you would like
+          to see support Vorbis in the future. Chances are by now
+          that they've heard about the Tremor release, but
+          demonstrating that there is a large Vorbis user base will
+          go a long way to convincing manufacturers that Vorbis
+          support translates to increased sales.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,178 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Download Ogg Vorbis 1.0.1 Software For Unix/Linux'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<i>Note: If you use an rpm based distribution other than Red Hat, you can probably still use the RPMs
+provided by download the SRPMS and rebuilding them (rpm --rebuild x.src.rpm)</i><br>
+<br>
+<i>Note to Debian users: Debian unstable is kept up to date with the latest packages you will find here.
+After several days with no reported issues, these packages make their way to the testing branch.</i>
+
+<h2>Players</h2>
+<blockquote>
+
+<b><a href="http://www.xmms.org/">XMMS</a></b> (requires libraries: <b>libogg</b>, <b>libvorbis</b>):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<A href="http://www.xmms.org/">Download at xmms.org</A><BR>
+
+<b><a href="http://www.zinf.org/">Zinf (formerly FreeAMP)</a></b><br>
+&nbsp;&nbsp;<a href="http://www.zinf.org/download.php">download Zinf</a><br>
+
+</blockquote>
+
+<br>
+
+<h2>Encoders / Players / Tools</h2>
+<blockquote>
+These tools will allow you to play, encode and manage Ogg Vorbis files.
+<br><br>
+
+<b>Vorbis Tools</b> (requires libraries: <b>libao</b>, <b>libogg</b>, <b>libvorbis</b>)<br><br>
+
+<blockquote><b>Note:</b> In addition to the libao, libogg, and libvorbis
+packages, the vorbis-tools RPM requires Speex and FLAC RPMs to be installed.
+<p>Speex RPMs are available on <a href="http://speex.org/download.html"
+>the Speex Download page</a>.
+<p>FLAC RPMs are available at <a href="http://psyche.freshrpms.net/rpm.html?id=1030"
+>freshrpms.net</a>.
+</blockquote>
+&nbsp;&nbsp;Vorbis-tools for RedHat Linux 9:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/vorbis-tools-1.0.1-1.i386.rpm">vorbis-tools-1.0.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/vorbis-tools-1.0.1-1.src.rpm">vorbis-tools-1.0.1-1.src.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/vorbis-tools-debuginfo-1.0.1-1.i386.rpm">vorbis-tools-debuginfo-1.0.1-1.i386.rpm</a><br>
+
+<br>
+&nbsp;&nbsp;Vorbis-tools for RedHat Linux 8:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH8/vorbis-tools-1.0.1-1.i386.rpm">vorbis-tools-1.0.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/vorbis-tools-1.0.1-1.src.rpm">vorbis-tools-1.0.1-1.src.rpm</a><br>
+
+<br>
+
+&nbsp;&nbsp;for everyone:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/vorbis-tools-1.0.1.tar.gz">vorbis-tools-1.0.1.tar.gz</a><br>
+
+</blockquote>
+
+<br>
+
+<h2>Libraries</h2>
+<blockquote>
+These are the core libraries that make Ogg Vorbis work.  You'll need these
+to use anything else.
+<br><br>
+
+<b>libao</b><br><br>
+See <a href='http://www.xiph.org/ao/'>www.xiph.org/ao/</a>.
+<br><br>
+
+<b>libogg</b><br><br>
+
+&nbsp;&nbsp;for RedHat Linux 9:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/libogg-1.1-1.i386.rpm">libogg-1.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/libogg-1.1-1.src.rpm">libogg-1.1-1.src.rpm</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/libogg-devel-1.1-1.i386.rpm">libogg-devel-1.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/libogg-debuginfo-1.1-1.i386.rpm">libogg-debuginfo-1.1-1.i386.rpm</a><br><br>
+
+<br>
+
+&nbsp;&nbsp;for RedHat Linux 8:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH8/libogg-1.1-1.i386.rpm">libogg-1.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/libogg-1.1-1.src.rpm">libogg-1.1-1.src.rpm</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH8/libogg-devel-1.1-1.i386.rpm">libogg-devel-1.1-1.i386.rpm</a><br>
+
+&nbsp;&nbsp;for everyone:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/libogg-1.1.tar.gz">libogg-1.1.tar.gz</a><br>
+
+<br>
+
+<b>libvorbis</b> (requires libraries: <b>libogg</b>)<br><br>
+
+&nbsp;&nbsp;for RedHat Linux 9:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/libvorbis-1.0.1-1.i386.rpm">libvorbis-1.0.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/libvorbis-1.0.1-1.src.rpm">libvorbis-1.0.1-1.src.rpm</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/libvorbis-devel-1.0.1-1.i386.rpm">libvorbis-devel-1.0.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH9/libvorbis-debuginfo-1.0.1-1.i386.rpm">libvorbis-debuginfo-1.0.1-1.i386.rpm</a><br><br>
+
+<br>
+&nbsp;&nbsp;for RedHat Linux 8:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH8/libvorbis-1.0.1-1.i386.rpm">libvorbis-1.0.1-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/libvorbis-1.0.1-1.src.rpm">libvorbis-1.0.1-1.src.rpm</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<i>development packages</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/RH8/libvorbis-devel-1.0.1-1.i386.rpm">libvorbis-devel-1.0.1-1.i386.rpm</a><br>
+
+&nbsp;&nbsp;for everyone:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.vorbis.com/files/1.0.1/unix/libvorbis-1.0.1.tar.gz">libvorbis-1.0.1.tar.gz</a><br>
+
+</blockquote>
+
+<br>
+
+<h2 id="python">Python Bindings:</h2>
+<blockquote>
+If you wish to use or develop Ogg Vorbis software in Python, get these.
+<br><br>
+
+<b>pyao</b> (requires libraries: <b>libao</b>)<br><br>
+
+&nbsp;&nbsp;for RPM systems:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyao-0.81-1.i386.rpm">pyao-0.81-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyao-0.81-1.src.rpm">pyao-0.81-1.src.rpm</a><br>
+
+<br>
+
+&nbsp;&nbsp;for everyone:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyao-0.81.tar.gz">pyao-0.81.tar.gz</a><br>
+
+<br>
+<b>pyogg</b> (requires libraries: <b>libogg</b>)<br><br>
+
+&nbsp;&nbsp;for RPM systems:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyogg-1.3-1.i386.rpm">pyogg-1.3-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyogg-1.3-1.src.rpm">pyogg-1.3-1.src.rpm</a><br>
+
+<br>
+
+&nbsp;&nbsp;for everyone:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyogg-1.3.tar.gz">pyogg-1.3.tar.gz</a><br>
+
+<br>
+
+<b>pyvorbis</b> (requires libraries: <b>libogg</b>, <b>pyogg</b>, <b>libvorbis</b>)<br><br>
+
+&nbsp;&nbsp;for RPM systems:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyvorbis-1.3-1.i386.rpm">pyvorbis-1.3-1.i386.rpm</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyvorbis-1.3-1.src.rpm">pyvorbis-1.3-1.src.rpm</a><br>
+
+<br>
+&nbsp;&nbsp;for everyone:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="files/1.0.1/unix/py/pyvorbis-1.3.tar.gz">pyvorbis-1.3.tar.gz</a><br>
+
+</blockquote>
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

@@ -1,0 +1,17 @@
+<%@ page imports="siteconfig,category,link" indentType="braces" %>
+<%
+l = link.Link(id=req.field('id', None), cat=req.field('cat', None), url=req.field('url', None), name=req.field('name', None), blurb=req.field('blurb', None), date_added=req.field('date_added', None))
+%>
+
+<html>
+<body bgcolor=white>
+<% if l.save(): { %>
+<h1> Link added/updated successfully. </h1>
+<a href="links.psp" target="content">Back To Links Page</a>
+<% } else: { %>
+<h1> Add/update failed.  Please hit 'back' and try again. </h1>
+<% } %>
+
+
+</body>
+</html>

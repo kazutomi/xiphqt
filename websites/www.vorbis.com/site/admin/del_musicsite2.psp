@@ -1,0 +1,32 @@
+<%@ page imports="siteconfig,musicsite" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	ms = musicsite.MusicSite(req.field('id'))
+	ms.delete()
+%>
+<html>
+<body bgcolor=white>
+<h1>Music Site Deleted<h1>
+<hr>
+
+<br>
+<a href="musicsites.psp" target="content">Go Back To Music Sites Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="musicsites.psp" target="content">Go Back To Music Sites Page</a>
+
+</body>
+</html>
+<%
+}
+%>

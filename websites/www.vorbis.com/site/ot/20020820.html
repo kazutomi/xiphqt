@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Tuesday, August 20, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2743050"></a>Ogg Traffic for
+          Tuesday, August 20, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Stan Seibert</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">August 20, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2745931">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2745939">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2745952">Michael Smith</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2746190">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2746198">Feedback on Ogg Speex
+              file format</a></dt>
+
+              <dt>2.2. <a href="#id2746244">Chat with ogg</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2793476">New Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2746267">IRC Channel
+              Moved</a></dt>
+
+              <dt>3.2. <a href="#id2744246">VP3 Patch for
+              Xine</a></dt>
+
+              <dt>3.3. <a href="#id2793584">OggShell v1.0
+              released</a></dt>
+
+              <dt>3.4. <a href="#id2793610">Support for Ogg Vorbis
+              added to WebSiteRobot</a></dt>
+
+              <dt>3.5. <a href="#id2793499">application/ogg status
+              update</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <p>I'm finally settled into my new residence in Austin, so
+      Ogg Traffic will be posted regularly again.</p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745931"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745939"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty fixed some typos in the Vorbis specification
+          discovered by Kenneth Arnold.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745952"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike's been doing a lot of work on icecast and ices
+          over the past 2 weeks. Thanks to a patch from Oddsock,
+          the XML icecast server stats can now be transformed using
+          an XSLT file (into, for example, a very pretty HTML
+          file). An example XSLT file is included with the icecast
+          source. Oddsock also contributed a Win32 port, including
+          GUI, for icecast, which is now in the icecast/win32
+          directory in CVS. Icecast now will generate .m3u
+          responses for existing streams. The .m3u filename is just
+          the stream name with .m3u appended (/stream.ogg will
+          appear in the playlist file /stream.ogg.m3u). Simple
+          fileserving from icecast has also been added, including
+          sending the MIME type of the file based upon the file
+          extension. Various other fixes to icecast include proper
+          client counting, closed memory leaks, and logging
+          improvements.</p>
+
+          <p>Ices is now more tolerant of corrupt (or poorly
+          constructed) Ogg streams and has better error handling.
+          Metadata elements specified globally in the ices config
+          file can now be overridden in each &lt;instance&gt;.
+          Playlist entries can now be commented out using "#", as
+          in many other programs. The combination of resampling and
+          downmixing with live sources has now been fixed.</p>
+
+          <p>Libshout has been modified to use HTTP Basic
+          authentication as its primary authentication mechanism.
+          The old ice-password method is still supported, but
+          deprecated in favor of HTTP Basic auth.</p>
+
+          <p>In vorbis-tools, Mike fixed ogginfo to detect when Ogg
+          files have unset granulepos values and also fixed a typo
+          in the oggenc usage message.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2746190"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746198"></a>2.1.
+              Feedback on Ogg Speex file format</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc Valin, the main author of the voice codec
+          "Speex," posted a <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200208/0076.html"
+           target="_top">request</a> for feedback on a proposal for
+          storing Speex data inside of an Ogg bitstream. Michael
+          Smith suggested that Speex use the same comment format as
+          Vorbis rather than define a new format. Both Michael and
+          Ingo Blum noted that there was no need to have a special
+          end-of-stream packet since Ogg packets already have an
+          EOS flag. There was some confusion about what the
+          granulepos value of an Ogg page meant, but Michael
+          pointed out that granulepos is the last sample decodable
+          from the current page.</p>
+
+          <p>Michael also mentioned in this thread that Segher's
+          rehuff tool tended to produce mangled streams where every
+          page had a granulepos of -1. Segher agreed, conceding
+          that he had forgotten to set the granulepos in the Ogg
+          pages. (Some of Michael's patches mentioned above are to
+          allow more graceful handling of Ogg streams broken in
+          this very manner.) Mike warned that vorbisfile could get
+          stuck in an infinite loop if you tried to seek in a
+          stream with all -1 granulepos values, but running the
+          stream through vorbiscomment would fix this problem.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746244"></a>2.2. Chat
+              with ogg</h3>
+            </div>
+          </div>
+
+          <p>Olaf Marzocchi <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0102.html"
+          target="_top">asked</a> whether anyone had successfully
+          used Ogg to do online voice chat. Several people pointed
+          out that streaming voice from a live source is no problem
+          with Vorbis, especially using ices and icecast. However,
+          it was also noted that there would be quite a lag caused
+          by all of the buffering present in the
+          encode-&gt;send-&gt;decode path. It was suggested that
+          Speex be looked at as an alternative to Vorbis that is
+          more optimized for voice.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2793476"></a>3. New Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746267"></a>3.1. IRC
+              Channel Moved</h3>
+            </div>
+          </div>
+
+          <p>The Vorbis discussion and development channel,
+          #vorbis, has moved from the Openprojects.net IRC network
+          to the new Xiph.org server at irc.vorbis.com. This server
+          also hosts other Xiph.org related channels, like
+          #icecast.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2744246"></a>3.2. VP3
+              Patch for Xine</h3>
+            </div>
+          </div>
+
+          <p>Mike Melanson posted <a href=
+          "http://www.xiph.org/archives/theora-dev/200208/0020.html"
+           target="_top">instructions</a> describing how to patch
+          Xine to play VP3 (the video codec that will be used in
+          Ogg Theora) files. It involves patching and compiling
+          Xine from CVS, so it is definitely for the more
+          experienced Linux hacker.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2793584"></a>3.3.
+              OggShell v1.0 released</h3>
+            </div>
+          </div>
+
+          <p>Stefan Tobiasson announced that <a href=
+          "http://www.gbg.bonet.se/stefant/oggshell/" target=
+          "_top">OggShell v1.0</a> had been released. As he
+          describes it, "OggShell is a freeware Windows front-end
+          for OggEnc. Suggestions and bug reports are welcome."</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2793610"></a>3.4.
+              Support for Ogg Vorbis added to WebSiteRobot</h3>
+            </div>
+          </div>
+
+          <p>Poly informed the vorbis list readers that support for
+          encoding and publishing Ogg Vorbis files had been added
+          to <a href="http://www.netforall.com/downloads.html"
+          target="_top">WebSiteRobot</a>, a combined web page
+          creation tool and server.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2793499"></a>3.5.
+              application/ogg status update</h3>
+            </div>
+          </div>
+
+          <p>Linus Walleij has been working for quite a long time
+          to make application/ogg an official MIME type. In his <a
+          href=
+          "http://www.xiph.org/archives/vorbis-dev/200208/0075.html"
+           target="_top">latest update</a>, he informs us that the
+          process has been stalled in the IETF working group by an
+          objection that Ogg is not documented in an RFC. Linus
+          says that he has been told that a reference
+          implementation should be sufficient to satisfy the
+          working group, but he is willing to write an Ogg RFC if
+          they require one. He is requesting pointers to all known
+          libraries that can manipulate Ogg files.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

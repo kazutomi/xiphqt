@@ -1,0 +1,51 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Download Ogg Vorbis Software for Mac OS 9 and Mac OS X'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<h2>1.0 developer kit</h2>
+Includes HTML docs, includes, shared libraries, and vorbis example source
+<blockquote>
+<a href="http://www.vorbis.com/files/1.0/macos/oggvorbis-macos-libs-1.0.sit">SDK for MacOS9</a><br>
+<a href="http://www.vorbis.com/files/1.0/macos/oggvorbis-macosx-libs-1.0.tar.gz">SDK for MacOSX</a><br>
+</blockquote>
+
+<h2>Players</h2>
+<i>These players are currently known to use use older Ogg releases.  We'll post any updates we become aware of.</y>
+<blockquote>
+<a href="http://www.panic.com/audion/">Audion 3</a><br>
+<a href="http://www.unsanity.com/echo.html">Unsanity Echo</a><br>
+<a href="http://www.subband.com/macamp/">MacAMP</a><br>
+</blockquote>
+
+<h2>Encoders</h2>
+<i>These encoders are currently known to use use older Ogg releases.  We'll post any updates we become aware of.</y>
+<blockquote>
+<a href="http://www.proteron.com/n2mp3pro/">N2MP3 Pro</a><br>
+<a href="http://www.macdvd.org/DropOgg/">DropOgg</a><br>
+<a href="http://www.nouturn.com/oggdrop/index.html">OggDrop</a> for MacOS 9 and MacOS X<br>
+</blockquote>
+
+<br>
+
+<b>You can find more Macintosh software on our <a href="/software.psp">third party software page</a>.</b>
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

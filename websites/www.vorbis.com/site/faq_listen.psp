@@ -1,0 +1,160 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Ogg Vorbis Listener FAQ'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<h2>General</h2>
+<ul>
+	<li><a href="#what">What is Ogg Vorbis?</a></li>
+	<li><a href="#format">Why are these files in .ogg format instead of .mp3?</a></li>
+	<li><a href="#support">What can I do if my player or operating system isn't supported?</a></li>
+	<li><a href="#encode">I like Ogg Vorbis.  How can I make my own Ogg Vorbis files?</a></li> 
+</ul>
+
+<h2>Windows</h2>
+<ul>
+	<li><a href="#windows">What players support Ogg Vorbis in Windows?</a></li>
+</ul>
+
+<h2>Unix-alikes</h2>
+<ul>
+	<li><a href="#unix">What players support Ogg Vorbis in Unix?</a></li>
+</ul>
+
+<h2>OS X</h2>
+<ul>
+	<li><a href="#mac">What players support Ogg Vorbis in OS X?</a></li>
+</ul>
+
+<h2>General</h2>
+<dl class='faq'>
+	<dt id='what'>What is Ogg Vorbis?</dt>
+	<dd>
+		<p>
+			Ogg Vorbis is an audio compression format similar to
+			MP3, but better because:
+		</p>
+			<ul>
+				<li>it has a higher sound quality/filesize ratio</li>
+				<li>has a standardized, flexible comment header</li>
+				<li>is free, open, and unpatented</li>
+			</ul>
+		<p>
+			More information about Ogg Vorbis can be found at
+			<a href="http://www.vorbis.com/">vorbis.com</a>.
+		</p>   
+	</dd>
+
+	<dt id='format'>Why are these files in .ogg format instead of .mp3?</a></dt>
+	<dd>
+		<ul>
+			<li>Ogg Vorbis files sound better at smaller sizes compared to MP3 files.</li>
+			<li>
+				MP3 carries patent-licensing restrictions that don't apply to
+				Ogg Vorbis.
+			</li>
+		</ul>
+	</dd>
+	<dt id='support'>What can I do if my player or operating system isn't supported?</a></dt>
+	<dd>
+		<p>
+			Check with the maker of your software to make sure that it doesn't
+			support Ogg Vorbis, because we may have missed many options in our
+			FAQ. <strong>If your favorite player still does not support Ogg Vorbis,
+			ask for it!</strong> The software community has been very supportive thus
+			far, and user demand is what will drive adoption of Ogg Vorbis.
+		</p>
+	</dd>
+	<dt id='encode'>I like Ogg Vorbis.  How can I make my own Ogg Vorbis files?</a></dt>
+	<dd>
+		<p>
+			Standalone encoders for several operating systems are available on
+			our <a href="http://www.vorbis.com/download.psp">encoder download page</a>.
+			Here are our best bets:
+		</p>
+		<ul>
+			<li>
+				Using Windows? Try
+				<a href='http://cdexos.sourceforge.net/'>CDex</a>.
+			</li>
+			<li>
+				Using a Unixlike system? Try
+				<a href='http://lly.org/~rcw/abcde/page/'><abbr title='A Better CD Encoder'>abcde</abbr></a>.
+				If shell scripts scare you, try <a href='http://www.nostatic.org/grip/'>grip</a>.
+			</li>
+			<li>
+				Using OS X? Try
+				<a href='http://www.nouturn.com/oggdrop/'>Ogg Drop</a>.
+			</li>
+		</ul>
+		</p>
+			We also maintain a
+			<a href="http://www.vorbis.com/software.psp">directory of software that supports Ogg Vorbis</a>.
+		</p> 
+	</dd>
+</dl>
+<h2>Windows</h2>
+<dl class='faq'>
+	<dt id='windows'>What players support Ogg Vorbis in Windows?</dt>
+	<dd>
+		<p>At least:</p>
+		<ul>
+			<li><a href='http://www.winamp.com/'>Winamp</a> (both versions 2 and 3)</li>
+			<li><a href='http://foobar2000.hydrogenaudio.org/'>foobar2000</a></li>
+			<li><a href='http://zinf.sourceforge.net/'>Zinf</a></li>
+		</ul>
+	</dd>
+</dl>
+
+<h2>Unix / Linux</h2>
+<dl class='faq'>
+	<dt id='unix'>What players support Ogg Vorbis in Unix?</dt>
+	<dd>
+		<p>At least:</p>
+		<ul>
+			<li><a href='http://xmms.org/'>XMMS</a></li>
+			<li><a href='http://zinf.sourceforge.net/'>Zinf</a></li>
+		</ul>
+	</dd>
+</dl>
+<h2>OS X</h2>
+<dl class='faq'>
+	<dt id='mac'>I'm a Mac user.  How do I listen?</a></dt>
+	<dd>
+		<p>At least:</p>
+		<ul>
+			<li>
+				<a href='http://xmms.org/'>XMMS</a>
+				(through <a href='http://fink.sourceforge.net/'>Fink</a>)
+			</li>
+		</ul>
+		<p>
+			Additionally, there have been occasional reports of success with
+			the expired <a href='http://www.macamplite.com/'>MacAmp Lite</a>
+			with the provided registration codes, but
+			<span title='Nathan Sharfi'>one of the webmasters here</span>
+			has been unable to get it to accept the main registration code on the site.
+		</p>
+	</dd>
+</dl>
+
+<p style='font-size: smaller;'>updated March 12, 2003</p>
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

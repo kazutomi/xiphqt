@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Thursday, August 8, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2743050"></a>Ogg Traffic for
+          Thursday, August 8, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Stan Seibert</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">August 8, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2745935">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2745943">Michael Smith</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2745957">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2745964">Rehuff for Ogg
+              Vorbis</a></dt>
+
+              <dt>2.2. <a href="#id2746026">General Purpose Decoder
+              Chip</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2746066">New Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2746073">Xiph.org Server
+              Migration</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <p>I apologize for a late Ogg Traffic this week. For the next
+      couple weeks Ogg Traffic will be pretty sporadic as I move to
+      a new state and figure out my Internet connection
+      options.</p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745935"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745943"></a>1.1.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Michael spent much of the week working on ices and
+          icecast (audio streaming tools which support Ogg Vorbis).
+          He has added support for resampling and downmixing both
+          audio from live sources and audio from playlists. This
+          should be a big help to those who want to create a
+          broadband and a modem stream from the same source. He
+          also fixed some bugs with using managed bitrates (like
+          bitrate max and min) in ices.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2745957"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2745964"></a>2.1. Rehuff
+              for Ogg Vorbis</h3>
+            </div>
+          </div>
+
+          <p>Segher's <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200207/0210.html"
+           target="_top">rehuff tool</a> generated several
+          questions on the vorbis-dev list. Most were curious what
+          it actually did to increase the compression. Segher
+          explained that it takes the Huffman codes used in the Ogg
+          Vorbis file and replaces them with the optimal Huffman
+          codes. (Huffman compression is explained a little bit <a
+          href=
+          "http://www.faqs.org/faqs/compression-faq/part2/section-1.html"
+           target="_top">here</a>.) Christian Buchner asked why the
+          Vorbis 1.0 encoding libraries did not do this sort of
+          optimization automatically. Segher said that calculating
+          optimal Huffman codes required you to know all of the
+          data you were compressing (in the particular file) in
+          advance. That would make the encoder a multipass encoder,
+          which is no good for encoding a stream (which you
+          transmit as you encode).</p>
+
+          <p>Several bugs in rehuff were found by various people on
+          the list, so Segher posted a <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200208/0026.html"
+           target="_top">patch</a> that fixed the reported
+          problems. R. L. Horn reported that rehuff failed on
+          single channel Ogg files. Segher confirmed that this was
+          the case because he had not yet added support for mono
+          files yet. (The current Vorbis encoder uses a different
+          schemes to encode mono files and stereo files.)</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746026"></a>2.2.
+              General Purpose Decoder Chip</h3>
+            </div>
+          </div>
+
+          <p>Tone <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0029.html"
+          target="_top">announced</a> that Cirrus was releasing a
+          chip, the CS7410, that had both a DSP and a general
+          purpose CPU core for decoding various audio formats,
+          including MP3 and WMA. He and others discussed the
+          possibility of using such a chip for Vorbis decoding.
+          Kenneth Arnold posted links to the actual Cirrus pages
+          documenting the chip in <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0030.html"
+          target="_top">his post</a>.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2746066"></a>3. New Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2746073"></a>3.1.
+              Xiph.org Server Migration</h3>
+            </div>
+          </div>
+
+          <p>The various Xiph.org websites were moved on August 6th
+          to a new server with much more bandwidth. This new server
+          was actually used during the Vorbis 1.0 release to serve
+          images and the Vorbis packages. Now the websites are
+          entirely being entirely served from the high bandwidth
+          connection. Unfortunately, there have been some DNS
+          issues with the registrar which might make the sites
+          (which include xiph.org, vorbis.com and icecast.org)
+          temporarily unavailable for some people, as Monty
+          explained in a <a href=
+          "http://www.xiph.org/archives/vorbis/200208/0058.html"
+          target="_top">posting this morning</a>. Special thanks go
+          out to Greg Maxwell for providing Xiph.org with a new
+          home.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

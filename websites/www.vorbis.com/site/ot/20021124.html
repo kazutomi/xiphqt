@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Sunday, November 24, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727372"></a>Ogg Traffic for
+          Sunday, November 24, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Carsten Haese</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">November 24, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727443">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725839">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726604">Michael Smith</a></dt>
+
+              <dt>1.3. <a href="#id2726619">Jean-Marc
+              Valin</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726635">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726642">Ogg Vorbis Industry
+              Standard?</a></dt>
+
+              <dt>2.2. <a href="#id2726669">Ogg Vorbis to MP3
+              transcoding</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2726725">Recent (and not so recent)
+          Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2726731">Tremor</a></dt>
+
+              <dt>3.2. <a href="#id2728484">Speex joins
+              Xiph.org</a></dt>
+
+              <dt>3.3. <a href="#id2728507">Theora Alpha
+              One</a></dt>
+
+              <dt>3.4. <a href="#id2728544">Icecast 2</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727443"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725839"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty's main current focus within Ogg is on
+          integration of projects; further tuning and improvement
+          of the specific codecs is on hold until the larger
+          framework is in place to glue the pieces together via a
+          native mux/demux framework. The intent of this
+          integration work is to allow transparent mix-and-match of
+          different Ogg codecs for audio and video (and in the
+          future, other media types such as arbitrary metadata); In
+          short, to provide the necessary, coherent API to all Ogg
+          components ala Quicktime or DirectShow (while
+          simultaneously simplifying deployment of Ogg within these
+          and other systems).</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726604"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Michael Smith applied lots of miscellaneous bugfixes
+          and improvements to Icecast 2. Thanks to Karl Heyes, who
+          contributed many patches, including better networking
+          code.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726619"></a>1.3.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc Valin is making great progress with Speex.
+          Recent additions to Speex beta 3 include support for
+          ultra-wideband signals (sampling rates above 16kHz),
+          intensity stereo, and a 50% to 100% speed
+          improvement.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726635"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726642"></a>2.1. Ogg
+              Vorbis Industry Standard?</h3>
+            </div>
+          </div>
+
+          <p>Peter Maersk-Moller <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0165.html"
+          target="_top">shared</a> the problems he has had
+          convincing government agencies and businesses to adopt
+          Ogg Vorbis as an alternative to MP3. The main problem is
+          that, albeit well documented in technical documentation
+          as well as source code, Ogg Vorbis is not a recognized
+          standard.</p>
+
+          <p>As a possible solution, Linus Walleij <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0194.html"
+          target="_top">pointed out</a> Silvia Pfeiffer's <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200211/0062.html"
+           target="_top">work</a> on creating an RFC draft for the
+          Ogg encapsulation format. Silvia hopes to get the draft
+          ready for the next IETF meeting. We'll let you know what
+          happens.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726669"></a>2.2. Ogg
+              Vorbis to MP3 transcoding</h3>
+            </div>
+          </div>
+
+          <p>Once again, the issue of transcoding between Ogg
+          Vorbis and MP3 has <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0176.html"
+          target="_top">come up</a>. This time, however, the
+          question was not about going from MP3 to Ogg Vorbis, but
+          from Ogg Vorbis to MP3, for the specific purpose of
+          getting a PC based Ogg Vorbis collection into a portable
+          player.</p>
+
+          <p>It was <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0187.html"
+          target="_top">pointed out</a> that transcoding is in
+          general not a good idea, but it is a solution with an
+          acceptable <a href=
+          "http://www.xiph.org/archives/vorbis/200211/0189.html"
+          target="_top">space gain versus quality loss</a> tradeoff
+          if you're only doing it in order to play the resulting
+          files on a portable player.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726725"></a>3. Recent (and not so recent)
+            Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726731"></a>3.1.
+              Tremor</h3>
+            </div>
+          </div>
+
+          <p>Since the open source release of Tremor, the community
+          has contributed quite a few improvements in order to
+          increase performance, reduce the memory footprint, and
+          build the code on different platforms. Some examples
+          are:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>Nicolas Pitre, the author of a GPL'ed
+                integerized version of the Vorbis decoder,
+                contributed many ideas to the Tremor codebase.
+                Among many other improvements, he reduced the
+                memory footprint by consolidating the mathematical
+                lookup tables, and he carefully tweaked and
+                optimized the computationally most intensive parts
+                in order to improve performance, especially on the
+                ARM platform.</p>
+              </li>
+
+              <li>
+                <p>Andrew Leadbetter <a href=
+                "http://www.xiph.org/archives/tremor/200211/0009.html"
+                 target="_top">reported</a> that he has managed to
+                compile Tremor on Symbian OS v7.0. The port plays
+                44.1kHz stereo files in realtime on a Sony Ericsson
+                P800.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728484"></a>3.2. Speex
+              joins Xiph.org</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc Valin, author of the patent free, open
+          source speech codec <a href="http://www.speex.org"
+          target="_top">Speex</a>, joined Xiph.org, and re-released
+          Speex under Xiph's open source license. Speex is a codec
+          specifically designed for speech, which makes it an ideal
+          codec for integration into Internet Telephony and VoIP
+          projects. Speex Beta 3 was released on November 11,
+          2002.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728507"></a>3.3. Theora
+              Alpha One</h3>
+            </div>
+          </div>
+
+          <p><a href="http://www.theora.org" target="_top">Ogg
+          Theora</a>, Xiph.org's project for integrating On2's VP3
+          video codec into the Ogg framework has released its first
+          alpha on September 25, 2002. This release implements a
+          simple, generic encode and decode API, a commandline
+          Theora/Vorbis with full and correct muxing, and an
+          example <a href="http://www.libsdl.org" target=
+          "_top">SDL</a> player.</p>
+
+          <p>Keep your eyes peeled for alpha 2, which is scheduled
+          to be released on December 1, 2002.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728544"></a>3.4.
+              Icecast 2</h3>
+            </div>
+          </div>
+
+          <p>Michael Smith has taken over the <a href=
+          "http://www.icecast.org" target="_top">Icecast</a>
+          project. Icecast 2 is a streaming server that supports
+          Ogg Vorbis and MP3 streaming, and is scalable to
+          thousands of users. The first alpha of Icecast 2,
+          released on October 10, 2002, is already very stable and
+          ready for widespread use. It can be downloaded <a href=
+          "http://www.xiph.org/~msmith/" target=
+          "_top">here</a>.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

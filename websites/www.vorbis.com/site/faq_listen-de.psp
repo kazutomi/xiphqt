@@ -1,0 +1,146 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Ogg Vorbis Listener FAQ'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<font size="-1">updated 11/07/2000</font><br><br>
+
+<p><b>General</b></p>
+
+<a href="#what">What is Ogg Vorbis?</a><br>
+
+<a href="#format">Why are these files in .ogg format instead of .mp3?</a><br>
+
+<a href="#support">What can I do if my player or operating system isn't supported?</a><br>
+
+<a href="#encode">I like Ogg Vorbis.  How can I make my own Ogg Vorbis files?</a><br>
+
+<p><b>Windows 95/98/NT/2000</b></p>
+
+<a href="#windows">What players support Ogg Vorbis in Windows?</a><br>
+
+<a href="#winamp">How do I listen to Ogg Vorbis using Winamp?</a><br>
+
+<a href="#sonique">How do I listen to Ogg Vorbis using Sonique?</a><br>
+
+<a href="#freeamp">How do I listen to Ogg Vorbis using FreeAmp?</a><br>
+
+<p><b>Unix / Linux</b></p>
+
+<a href="#unix">What players support Ogg Vorbis in Unix?</a><br>
+
+<a href="#xmms">How do I listen to Ogg Vorbis using XMMS?</a><br>
+
+<p><b>Macintosh</b></p>
+
+<a href="#mac">I'm a Mac user.  How do I listen?</a><br>
+
+<p><b>BeOS</b></p>
+
+<a href="#beos">What players support Ogg Vorbis in BeOS?</a><br>
+
+<br><br><br><br>
+
+
+<p><b>General</b></p>
+
+<a name="what">What is Ogg Vorbis?</a><br>
+<p>Ogg Vorbis is a new audio compression format.  It is roughly comparable
+to other formats used to store and play digital music, such as MP3, VQF, AAC,
+and other digital audio formats.  It is different from these other formats
+because it is completely free, open, and unpatented.  More information about Ogg Vorbis can be found at <a href="http://www.vorbis.com">Vorbis.com</a>.</p>   
+
+<a name="format">Why are these files in .ogg format instead of .mp3?</a><br>
+<P>There are lots of reasons that content providers switch to .ogg format.  Many files will compress to a smaller size with higher quality using Ogg Vorbis instead of MP3.
+MP3 also carries patent licensing restrictions which do not apply to Ogg Vorbis.  Ogg Vorbis is an artist-friendly, technologically advanced audio codec.  Releasing content in Ogg Vorbis is the best way to show support for the work done by the project.</p>
+
+<a name="support">What can I do if my player or operating system isn't supported?</a><br>
+<p>Check with the maker of your software to make sure that it doesn't support Ogg Vorbis, because we may have missed many options in our FAQ.  If your favorite player still does not support Ogg Vorbis, ask for it!  The software community has been very supportive thus far, and user demand is what will drive adoption of Ogg Vorbis.
+Make sure that software companies know that you want Ogg Vorbis.  In the meantime, we've provided guides to several popular applications that you can use instead.</p>
+
+<a name="encode">I like Ogg Vorbis.  How can I make my own Ogg Vorbis files?</a><br>
+<p>Standalone encoders for several operating systems are available at <a href="http://www.vorbis.com/download.psp">Vorbis.com</a>.  Also, several jukebox and audio applications already have built-in support for Vorbis ripping and encoding.  The most up-to-date list can be found <a href="http://www.vorbis.com/software.psp">here</a>.</p>
+
+<br>
+<a href="#top">Back to Top</a>
+<br><br> 
+
+<p><b>Windows 95/98/NT/2000</b></p>
+
+<a name="windows">What players support Ogg Vorbis in Windows?</a><br>
+<p>Currently, supported players include Winamp, Sonique, FreeAmp, Ultraplayer, eTantrum, and others.</p>
+
+<a name="winamp">How do I listen to Ogg Vorbis using Winamp?</a><br>
+<p>First, download the plugin <a
+href="http://www.vorbis.com/download.psp">here</a>.  Unzip the
+included .dll file (in_vorbis.dll) to your C:\Program
+Files\Winamp\Plugins folder.  After restarting Winamp, you should be
+able to play Ogg Vorbis files.  A more complete explanation with
+screenshots can be found <a
+href="http://www.vorbis.com/winamp.html">here</a>. 
+
+</p>
+
+<a name="sonique">How do I listen to Ogg Vorbis using Sonique?</a><br>
+<p>Ogg Vorbis playback with Sonique no longer requires a plugin.  All
+versions of Sonique starting with 1.808 suport Ogg Vorbis.  You can
+download the latest version of Sonique <a
+href="http://www.sonique.com">here</a>.</p>
+
+<a name="freeamp">How do I listen to Ogg Vorbis using Freeamp?</a><br>
+
+<p>The latest beta of FreeAmp supports Ogg Vorbis playback.  The Windows installer can be downloaded <a href="http://www.freeamp.org/download/FreeAmpSetup_2_1_rc5.exe">here</a>.</p>
+
+<br>
+<a href="#top">Back to Top</a>
+<br><br> 
+<p><b>Unix / Linux</b></p>
+
+<a name="unix">What players support Ogg Vorbis in Unix?</a><br>
+<p>XMMS supports Ogg Vorbis playback through plugins, as does the latest version of FreeAmp for Linux.   There are also several command line decoders.</p>
+
+<a name="xmms">How do I listen to Ogg Vorbis using XMMS?</a><br>
+<p>First, download the plugin <a href="http://www.vorbis.com/download.psp">here</a>.  Gunzip and untar the included .so file (libvorbis.so) to your /usr/lib/xmms/Input (or /usr/local/lib/xmms/Input, depending on your system) folder.   After restarting XMMS, you should be able to play Ogg Vorbis files. 
+</p>
+<br>
+<a href="#top">Back to Top</a>
+
+<br><br> 
+<p><b>Macintosh</b></p>
+
+<a name="mac">I'm a Mac user.  How do I listen?</a><br>
+<p>Unsanity Echo for MacOS now supports Ogg Vorbis.  You can download the
+software from <a href="http://www.unsanity.com/echo.html">their
+page</a>.  If you are would like to see Ogg Vorbis support in more
+players for MacOS, please contact the makers of your favorite player
+software and let them know.</p> <br>
+<a href="#top">Back to Top</a>
+
+<br><br>
+<p><b>BeOS</b></p>
+
+<a name="beos">What players support Ogg Vorbis in BeOS?</a><br>
+<p>A complete set of Vorbis tools, including a plugin for Cl-Amp, can be downloaded <a href="http://www.bebits.com/app/1058">here</a>.
+<br>
+<a href="#top">Back to Top</a>
+
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

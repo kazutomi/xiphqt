@@ -1,0 +1,194 @@
+<%@ page imports="infobox" %>
+<psp:insert file="header.html" static="0">
+<a name="top">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+ 
+  
+<%
+box = infobox.InfoBox()
+box.title = 'Ogg Vorbis General FAQ - Spanish'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+   
+self.write(box.start())
+%>
+
+<div align=center><font size=-1>updated 09/14/2001</font></div><br><br>
+<a href="faq.psp"><i>[in english]</i></a><a href="faq-de.psp"><i>[in german]</i></a>
+
+<p><b>¿Qué es?</b></p>
+
+<a href="#what">¿Qué es Ogg Vorbis?</a><br>
+<a href="#names">¿Qué significan los nombres?</a><br>
+<a href="#mean">¿De dónde vienen los nombres? Qué representa el logo?</a><br>
+<a href="#ext">¿Cuál es la extension de los archivos de Ogg Vorbis?</a><br>
+<a href="#replace">¿Vorbis reemplaza completamente a MP3, o es simplemente un codec complementario?</a><br>
+<a href="#done">¿Cuándo estará listo Ogg Vorbis?</a><br>
+<a href="#artist">Soy un artista. ¿Por qué me debería interesar?</a><br>
+<a href="#fan">Soy un fanático de musica. ¿Por qué me debería interesar?</a><br>
+<a href="#dev">Soy un programador. ¿Por qué me debería interesar?</a><br>
+<a href="#company">Tengo una compañía de música. ¿Por qué me debería interesar?</a><br>
+
+<p><b>Licencia</b></p>
+
+<a href="#flic">¿Qué tipo de licencia usa el formato Ogg Vorbis?</a><br>
+<a href="#slic">¿Qué tipo de licencia usa el software incluído con Ogg Vorbis?</a><br>
+<a href="#com">Desarrollamos software comercial con código fuente cerrado. ¿Puedo usar Ogg Vorbis? ¿Tendría que pagar derechos de licencia?</a><br>
+<a href="#sell">¿Hay costos para distibuir, vender, o transmitir en formato Ogg Vorbis como los hay en otros formatos (MP3)?</a><br>
+<a href="#money">Si no hay costo alguno, ¿cómo planean ganar dinero con el formato? ¿Van a cobrar costos de licencia cuando Vorbis adquiera popularidad?</a><br>
+<p><b>Calidad del audio</b></p>
+<a href="#sound">¿Vorbis suena mejor que MP3?</a><br>
+<a href="#improve">¿Mejorará la calidad de audio de Ogg Voribs?</a><br>
+<a href="#other">¿Por qué Ogg Vorbis es mejor que los otros codecs de MP3 que ya están disponibles?</a><br>
+<a href="#test">Ustedes afirman que Vorbis provee una excelente calidad de audio. ¿Se han realizado pruebas que confirman lo dicho?</a><br>
+<a href="#bugs">He escuchado varios artefactos obvios. ¿Por qué ocurré eso?</a><br>
+
+<p><b>Características</b></p>
+
+<a href="#size">¿De qué tamano son los archivos de Ogg Vorbis comparados con MP3 a la misma calidad?</a><br>
+<a href="#bitrate">¿Cuál es la máxima cantidad de bits de muestreo con el cual Vorbis puede codificar?</a><br>
+<a href="#comments">¿Ogg Vorbis puede presentar el titulo e información del artista cuando se reproduce el archivo? No he visto esa funcion en los archivos de prueba.</a><br>
+<a href="#speed">¿Cuán rápido son los codificadores/decodificadores?</a><br>
+<a href="#video">¿Dónde está el video?</a><br>
+<a href="#stream">¿Qué hay acerca de la transmisión de audio en directo en formato Ogg Vorbis?</a><br>
+<a href="#support">¿Qué software y hardware usa Ogg Vorbis?</a><br>
+<a href="#unique">¿Cúales son las características únicas de Ogg Vorbis?</a>
+<br><br><br><br><br>
+<p><b>¿Qué es?</b></p>
+<a name=what><em>¿Qué es Ogg Vorbis?</em></a><br>
+
+<p>Ogg Vorbis is un nuevo formato de compresión de audio. Se puede comparar con otros formatos para guardar y reproducir música digital, tales como MP3, VQF, AAC, etc. La diferencia está en que Vorbis es totalmente gratis, abierto y sin patentes.</p>
+
+<a name=names><em>¿Qué significan los nombres?</em></a><br>
+
+<p>Vorbis es el nombre específico del esquema de compresión de audio usado para crear archivos de OggVorbis. Es parte del proyecto Ogg, el cual está diseñado para crear un sistema multimedial completamente abierto. Actualmente, OggVorbis es la única parte funcional del proyecto Ogg, el cual está cerca de ser terminado.</p>
+
+<a name=mean><em>¿De dónde vienen los nombres? Qué representa el logo?</em><br>
+
+<p></a><a href="http://www.xiph.org/">Xiph.org</a> tiene una <A href="http://www.xiph.org/xiphname.html">página que explica el origen y significado de los nombres y los logos.</a>.</p>
+
+<a name=ext><em>¿Cuál es la extensión de los archivos de Ogg Vorbis?</em></a><br>
+
+<p>Como es parte del proyecto Ogg, los archivos Vorbis tienen la extensión .ogg.</p>
+
+<a name=replace><em>¿Vorbis reemplaza completamente a MP3, o es simplemente un codec complementario?</em></a><br>
+
+<p>Ogg Vorbis ha sido diseñado para reemplazar completemante a todos los formatos de audio sujetos a patentes. Esto permite la posibilidad de codificar música o audio con Vorbis sin preocupación.</p>
+
+<a name=done><em>¿Cuándo estará listo Ogg Vorbis?</em></a><br>
+
+<p>Estamos en camino a la version final, 1.0. Sin embargo, el formato ya está definido. Un archivo Vorbis creado hoy sera compatible con futuros decodificadores. El formato ha sido diseñado para ser flexible, para que los desarrolladores puedan continuar y mejorar el tamaño de los archivos y la calidad de audio sin dejar atrás codificadores y reproductores antiguos.</p>
+
+<a name=artist><em>Soy un artista. ¿Por qué me debería interesar?</em></a><br>
+
+<p>Hay un par de razones:</p>
+<p>A pesar de que no todos los artistas lo saben, MP3 es un formato con pérdida de calidad. Una gran cantidad de información de audio es extraída a la hora de crear archivos MP3. El resultado es un archivo con una calidad de audio inferior al disco original.  Vorbis tambien es un formato con pérdida de calidad, pero usa un modelo acústico superior para reducir el daño. De esta manera, la musica distribuida en Vorbis sonará mejor que en un archivo del mismo tamaño en MP3.</p>
+<p>Asimismo, todos los artistas deben tener en cuenta las condiciones de las licencias. Si usted decide vender música en formato MP3, es su responsibilidad pagarle a Fraunhoffer un porcentaje de cada venta porque estaría usando sus patentes.  Vorbis está libre de patentes y de licencias; nunca necesitará pagar para poder vender, regalar, o transmitir su propia música.</p>
+
+<a name=fan><em>Me gusta escuchar música. ¿Por qué me debería interesar?</em></a><br>
+
+<p>Para comenzar, Vorbis provee un formato de alta calidad para su música. El tamaño del archivo es mas pequeño que MP3 y continúa reduciéndose con su desarrollo. Vorbis ya disfruta en una una gran cantidad de reproductores disponibles y pronto va a ser compatible con reproductores de hardware. Con Vorbis, Ud. puede escuchar música con más fidelidad y menos espacio. Igualmente, el uso de Vorbis significa que los reproductores y codificadores no están sujetos a ningúna licencia. Actualmente, hay muy pocos codificadores para generar archivos MP3, porque una gran mayoría de las compañías no pueden pagar las condiciones para usar dichos codificadores. Con Vorbis uno puede escoger su codificador.</p>
+
+<a name=dev><em>Soy un programador. ¿Por qué me debería interesar?</em></a><br>
+
+<p>Si Ud. desarrolla reproductores de audio de software o hardware, no podrá distribuir su trabajo sin ser afectado por los términos de uso de patentes de audio. Con Vorbis, Ud puede crear sus propios productos -software o hardware- para codificar o decodificar archivos de música sin restricciones, derechos, o limites de distribución. Vorbis ofrece un formato flexible, de alta calidad y que es de gran interés para los amantes del audio. Para mayor información de programación, favor consultar a la pagina <A href="http://www.xiph.org/ogg/vorbis/index.html">de desarrolladores</a>.</p>
+
+<a name=company><em>Tengo una compañía de música. ¿Por qué me debería interesar?</em></a><br>
+
+<p>Las compañías de música deberían estar muy interesadas en el formato Ogg Vorbis. Las otras tecnologias requieren de una gran inversión financiera, pero Vorbis ofrece una plataforma única la la cual puede ser obtenida fácilmente por compañías en pleno crecimiento y como incentivo para ahorrar dinero en empresas ya establecidas. Dada la naturaleza abierta de Vorbis y compatibilidad en diversos reproductores, sus clientes no tendrán problemas de incompatibilidad y así mismo apreciarán una mayor calidad de audio.</p>
+
+<a href="#top">Ir hacia arriba&nbsp;</a>
+<br>
+<p><b>Licencia</b></p>
+
+<a name=flic><em>¿Qué tipo de licencia usa el formato Ogg Vorbis?</em></a><br>
+
+<p>La especificaciónes de OggVorbis son de dominio público.  Es totalmente gratis para uso comercial o sin fines de lucro.  Esto permite que los desarrolladores comerciales escriban software compatible con la especificación de Ogg Voribs de manera independiente y sin recargo ni restricción alguna. Sin embargo, desarrolladores que deseen usar el software de codigo abierto que nosotros hemos escrito deberán adherirse a ciertas reglas.</p>
+
+<a name=slic><em>¿Qué tipo de licencia usa el software includido con Ogg Vorbis?</em></a><br>
+
+<p>Los programas utilitarios incluidos con OggVorbis están publicados bajo los términos del GNU GPL (GNU Licencia General Pública). Los detalles se pueden encontrar en <A href="http://www.gnu.org/home.es.html">http://www.gnu.org/home.es.html</a>.</p>Las bibliotecas y las herramientas de desarrollo han sido publicadss bajo la licencia BSD, la cual es más flexible para compañías. Favor tener en cuenta que desarrolladores aún así tienen la libertad de usar la especificación para escribir independientemente sus propias implementaciones de OggVorbis en código cerrado que no estan sujetas a estas licencias.  <p></p>
+
+<a name=com><em>Desarrollamos software comercial con código fuente cerrado. ¿Puedo usar Ogg Vorbis? ¿Tendría que pagar derechos de licencia?</em></a><br>
+
+<p>No hay derechos de licencia asociados con la espeficicacion Ogg Vorbis. Ud. puede escribir, vender (o regalar) implementaciones de codificadores, decodificadores u otras herramientas de Vorbis con código abierto o cerrado. Sin ebargo, si Ud. usa nuestro software en vez de escribir una implementacion independiente, deberá respectar los términos de la licencia. Nuestas bibliotecas (distribuidas bajo la licencia BSD) pueden usar usadas totalmente o en parte en programas con código fuente cerrado.</p>
+
+<a name=sell><em>¿Hay costos para distibuir, vender o transmitir en formato Ogg Vorbis como los hay en otros formatos (MP3)?</em></a><br>
+
+<p>No.</p>
+
+<a name=money><em>¿Si no hay costo alguno, cómo planean ganar dinero con el formato? ¿Van a cobrar costos de licencia cuando Vorbis adquiera popularidad?</em></a><br>
+
+<p>Las ventajas de un formato sin patentes ni licencias nos compensan más que los interes comerciales asociados directamente con el formato. Vorbis siempre será gratis y estará bajo dominio público. Nadie necesita colocar restricciones a la propiedad intelectual de Vorbis para poder disfrutar de sus beneficios.</p>
+
+<br><a href=" #top">Ir hacia arriba</a>
+<p><B>Calidad del audio</B></p>
+
+<a name=sound><em>¿Vorbis suena mejor que MP3?</em></a><br>
+
+<p>Vorbis utiliza principios matemáticos muy diferentes a los que usa MP3, lo cual presenta otro tipo de desafío en la manera de comprimir música. En las pruebas de audio, los archivos de Vorbis y MP3 codificados con la misma compresión tienen una calidad de audio parecida.</p>
+
+<a name=improve><em>¿Mejorará la calidad de audio de Ogg Vorbis?</em></a><br>
+
+<p>Sí. Vorbis es un formato flexible, lo cual posibilita la afinacion de los algoritmos aún cuando el formato este congelado. Vorbis suena muy bien, y mejorará en el futuro.</p>
+
+<a name=other><em>¿Por qué Ogg Vorbis es mejor que los otros codecs de MP3 que ya están disponibles?</em></a><br><br>
+
+<p>Vorbis suena mejor. Vorbis es abierto. Vorbis no tiene restricciones intelectuales que interfieran. Y Vorbis no solamente anhela ser mejor, sino que funciona fundamentalmente mejor en todos sus aspectos.</p>
+
+<a name=test><em>Ustedes afirman que Vorbis provee una excelente calidad de audio. ¿Se han realizado pruebas que confirman lo dicho?</em></a><br>
+
+<p>Durante el transcurse de las versiones beta, pudimos arreglar muchos de los errores de programación que afectaron la calidad del audio.  Todavía estamos esforzándonos para corregir el resto mientras nos preparamos para la versión 1.0. Las versiones beta son mayormente para los desarrolladores y para aquellos que deseen probar nuestra tecnología. Cuando lleguemos a la versión 1.0, esperamos realizar pruebas enlazadas con varias muestas de audio para comparar Vorbis con otros formatios de audio. Basándonos en pruebas informales realizadas por los programadores y gente interesada, estamos seguros de que a Vorbis le irá bien. Los resultados serán usados para continuar la afinación del formato mientras continúe su desarrollo. </p>
+
+<a name=bugs><em>He escuchado varios artefactos obvios. ¿Por qué ocurré eso?</em></a><br>
+
+<p>Mientras el formato Vorbis se está estandarizando, el codificador de Vorbis sigue siendo beta. Los errores de audio más importantes han sido corregidos, pero todavía existen unos cuantos que afectan la calidad. Si los archivos que escuchó fueron codificados con un codificador antiguo (pre-beta 4), podría contener errores serios que afecten la calidad de audio. Intente re-codificar la fuente original del audio usando un codificador más reciente. Les avisaremos cuando Vorbis este listo para pruebas exhaustivas.</p>
+
+<a href="#top">Ir hacia arriba</a>
+<br>
+<p><B>Características</B></p>
+
+<a name=size><em>¿De qué tamano son los archivos de Ogg Vorbis comparados con MP3 a la misma cantidad de muestreo?</em></a>
+
+<p>Dos archivos codificados al misma cantidad de muestreo siempre tendrán el mismo tamaño si es que los dos fueron codificados con CRB (Bitrate Constante). Actualmente, el beta de Vorbis solamente codifica con VBR (Bitrate Variable), el cual produce archivos mas pequeños con mejor calidad, ya que no desperdicia información en audio que es facil de codificar. Los archivos producidos con Vorbis Beta tendrán un tamaño muy similar a archivos MP3 a 128kbs, pero sonarán mejor.</p>
+
+<a name=bitrate><em>¿Cuál es la máxima cantidad de muestreo con la cual Vorbis puede codificar?</em></a> 
+
+<p>En teoría, no hay limite. Vorbis ha sido afinado para que usar cantidades de muestreo entre 16kpbs y 128kpbs por canal. Pero no hay nada en la especificación que no permite codificar un archivo a 512kbps o 8kbps. El codificador actual funciona en los siguientes bitrates: 128, 160, 192, 256, 350 kbps en mono o stereo. cantidades menores estarán disponibles en el futuro.</p>
+
+<a name=comments><em>¿Ogg Vorbis puede presentar el título y la información del artista cuando se reproduce el archivo? No he visto esa función en los archivos de prueba.</em></a> 
+
+<p>Sí, Vorbis incluye un campo flexible para comentarios acerca de la canción, artista, u otra información. El codificador actual permite la introducción de comenarios a la hora de codificar. Existen herramientas hechas por terceros con las cuales se pueden agregar o editar datos de la pista actual.</p>
+
+<a name=speed><em>¿Cuán rápido son los codificadores/decodificadores?</em></a><br>
+
+<p>El codificador actual es igual de rápido en comparación con la mayoría de codificadores comerciales de audio (y el doble comprado con beta 3), pero no igual de rápido que otros.  Dado que estamos usando código sin optimizaciones, esto no es sorpresa. Conforme las herramientas para Vorbis vayan madurando, aumentarán su velocidad. El proceso de decodificación se parece en complejidad al de MP3, y cuando las herramientas de decodificación de Vorbis se optimicen, podrán decodificar a velocidades semejantes. La velocidad de decodificación se ha incrementado 3-4 veces durante desde el primer beta, luego de la primera fase de optimización.</p>
+
+<a name=video><em>¿Dónde está el video?</em></a><br>
+
+<p>Aún estamos trabajando en un preliminar del codec de video que funcionará en el marco de trabajo de Ogg. Sin embargo, el video presenta una nueva serie de retos, y nuestro objetivo principal está en el audio por el momento.</p>
+
+<a name=stream><em>¿Qué hay acerca de la transmisión de audio en directo en formato Ogg Vorbis?</em></a><br>
+
+<p>La transmisión de audio en directo es un componente importante de Vorbis. El formato ha sido diseñado para que sea fácilmente transmitible en directo. Los diseñadores de Vorbis estan trabajando mano a mano con los creadores de Icecast (un programa para transmisiones en vivo) para que Icecast sea compatible con Vorbis. Así mismo, estamos trabajando en un reproductor que soporte archivos ogg trasmitidos en directo. Además, pronto desde la web de ogg estarán disponibles dichos componentes como accesorios para los reproductores actuales. Esto será cuando salga la versión 1.0 de Vorbis.</p>
+
+<p><a name=support><em>¿Qué software y hardware usa Ogg Vorbis?</em></a><br>
+
+<p>Un gran número de programas pueden reproducir/decodificar Ogg Vorbis. Está incluído en reproductores populares tales como Sonique y Freeamp para Windows y Unsanity Echo para MacOS. También puede ser usado en varios programas de audio tales como CDex, Siren Jukebox y GoldWave. Una lista más completa se encuentra en nuestra <A href="http://www.vorbis.com/download.psp">página de software</a>. En el terreno del hardware, iObjects ha anunciado compatibilidad con Ogg Vorbis en su Dadio 2.0 OS, diseñado para reproductores de audio portátiles. El desarrollo de éste y de otros proveedores de hardware asegurarán que Ogg Vorbis disfrute de amplia compatibilidad con hardware de audio.</p>
+
+<a name=unique><em>¿Cúales son las características únicas de Ogg Vorbis?</em></a><br>
+
+<p>Vorbis tiene una muy bien definida cabecera para comentarios, que es extendible y facil de usar, sin tener que usar etiquetas de ID3. Vorbis tiene una escala de muestreo, una función que permite cambian el la cantidad de muestra de un archivo o transmisión sin tener que recodificar; simplemente se acortan los paquetes al tamaño deseado. Los archivos Vorbis pueden ser trozados y luego editados con extraordinaria fineza de muestreo. Vorbis puede implementar canales múltiples, no solamente uno ó dos. Además, los archivos en Vorbis se pueden encadenar logicamente. </p>
+
+<br>
+<a href="#top">Ir hacia arriba</a>
+<br />
+Traducido por <a href="mailto:vanguardist@yahoo.com">Manuel Lora</a>
+</font>
+<%
+self.write(box.finish())
+%>
+  
+<psp:insert file="footer.html" static="0">

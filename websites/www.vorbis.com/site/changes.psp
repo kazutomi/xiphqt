@@ -1,0 +1,83 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Ogg Vorbis RC2 Released'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<pre>
+
+libvorbis:
+
+* <a href="stereo.psp">Powerful channel coupling system takes advantage of similarities between 
+  channels to reduce bitrate.</a>
+* Additional encoding modes give more flexibility in bitrate selection.
+  64,80,96,128,160,192,256,350 stereo; 32,48,64,80,112,140 mono modes. 
+* Only 44.1KHz/48KHz is officially supported in this release. Lower
+  sample rates will work, but with much lower quality.
+* Cascaded encoding makes libvorbis ready for future bitrate reduction 
+  tools.
+* Decode engine bugfix ensures better compatibility with future Vorbis codecs.
+
+vorbis-tools:
+
+  ogg123:
+
+  * The default output device is now set in the libao configuration
+    files.  A future release of ogg123 will allow a configuration
+    option to override the libao default.  In this release, the ogg123
+    config files are ignored.  Note that most systems will not need to
+    override the default selected by libao.
+  * The -f is now used to set the output filename when writing
+    audio to a file.  Default filenames are no longer supported.
+
+  oggenc:
+
+  * Correct UTF8 encoding, so that non-ASCII comments can be encoded correctly.
+  * Better input file handling, including wav parser bugfixes.
+
+  ogginfo:
+
+  * Simple file integrity checks are now performed on the Ogg files.
+  * Only the info for the first logical bitstream of a chained file
+    will be displayed.
+
+  vorbiscomment:
+
+  * append mode added for appending comments to an existing file.
+  * More user-friendly interface.
+  * Major bugs in file-rewriting core fixed.
+  * Processing with vorbiscomment will fix a number of common problems
+    with ogg files.
+
+  vcut:
+
+  * New utility for sample-accurate manipulation of vorbis files without
+    requiring reencoding.
+
+libao:
+
+* New API is not compatible with programs that used the old API.
+* Default driver detection works correctly.
+* Compilation fixes for the BSDs and Solaris.
+* OSS driver no longer freezes on systems using the OSS emulation
+  layer of ALSA when the dsp device is in use by another device.
+* Configuration file support has been added.  See the libao.conf(5)
+  man page for details.
+
+</pre>
+
+<%
+self.write(box.finish())
+%>
+  
+<psp:insert file="footer.html" static="0">

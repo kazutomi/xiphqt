@@ -1,0 +1,38 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Download Ogg Vorbis Software'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<center>
+<h3>Select your operating system below to see the available direct downloads.</h3>
+
+<a href="/download_unix_1.0.1.psp">Unix / Linux</a><br>
+<a href="/download_win_1.0.1.psp">Windows</a><br>
+<br>
+<br>
+<p style='font-weight: bold;'>
+	Find other Ogg Vorbis software on our <a href="/software.psp">third party software page</a>.
+</p>
+</center>
+
+
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

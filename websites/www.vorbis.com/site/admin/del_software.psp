@@ -1,0 +1,37 @@
+<%@ page imports="siteconfig,software" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	s = software.Software(req.field('id'))
+	s.load()
+%>
+<html>
+<body bgcolor=white>
+<h1>Really Delete "<%= s.name %>"<h1>
+<hr>
+
+<form method=post action="del_software2.psp">
+<input type=hidden name=id value="<%= s.id %>">
+<input type=submit value="Yes, Delete It">
+</form>
+
+<br>
+<a href="software.psp" target="content">No, Go Back To Software Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="software.psp" target="content">Go Back To Software Page</a>
+
+</body>
+</html>
+<%
+}
+%>

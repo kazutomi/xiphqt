@@ -1,0 +1,32 @@
+<%@ page imports="siteconfig,category,link" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	l = link.Link(req.field('id'))
+	l.delete()
+%>
+<html>
+<body bgcolor=white>
+<h1>Link Deleted<h1>
+<hr>
+
+<br>
+<a href="links.psp" target="content">Go Back To Links Page</a>
+
+</body>
+</html>
+<%
+} else: {
+%>
+<html>
+<body bgcolor=white>
+<h1>Nothing to delete<h1>
+<hr>
+
+<br>
+<a href="links.psp" target="content">Go Back To Links Page</a>
+
+</body>
+</html>
+<%
+}
+%>

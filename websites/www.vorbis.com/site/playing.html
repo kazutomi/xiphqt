@@ -1,0 +1,72 @@
+<html>
+<head>
+	<title>Playing Files with Vorbis</title>
+	</head>
+
+<body>
+	<center><h2>Playing Files with Vorbis</h2></center>
+	<p><center><i>This is the third of a four-part series of
+		articles about Ogg Vorbis, a high quality, open source audio
+		compression technology.</i></center></p>
+	
+	<p>Last week, we introduced some of the mechanisms that Vorbis uses to
+		encode audio. This week, we will briefly outline how to play Vorbis files and streams
+		using some of the most common playback utilities.</p>
+
+	<b>How can I play Vorbis files in Windows?</b>
+	<p>One of the best Vorbis players for Windows is
+		<a href="http://www.winamp.com">Winamp</a>, which has shipped an ogg
+		Vorbis decoder since version 2.80. (Note that the lite version does not include the decoder.)</p>
+
+	<b>How can I play Vorbis files when I'm using Linux or another unixlike
+		operating system?</b>
+	<p>For Linux, the BSDs, and Unix operating systems, the two main vorbis
+		players are ogg123, the command line utility, and
+		<a href="http://www.xmms.org">XMMS</a> for a graphical X-based player.
+		<br />
+		ogg123 is a simple command-line player that operates much like mpg123
+		and takes a list of .ogg files as arguments to the program. To skip to
+		the next file, press Ctrl-c once. To stop playback, press Ctrl-c twice
+		in two seconds.</p>
+	
+	<b>How can I play Vorbis files in MacOS 9 or OS X?</b>
+		<p><a href="http://www.nouturn.com/oggdrop/index.html">Ogg Drop</a>
+		for OS X is capable of playing vorbis files, but it can't seek
+		inside of a file as of this writing. In addition, 
+		<a href="http://www.panic.com/audion/">Audion 2</a>,
+		<a href="http://www.unsanity.com/echo.html">Unsanity Echo</a>, and
+		<a href="http://www.subband.com/macamp/macamp.html">Macamp</a> all
+		list Ogg Vorbis as one of the formats that they support.</p>
+	
+	<b>How can I listen to a Vorbis stream...</b>
+	<p><i>...on Windows?</i>
+	<p>If you want to listen to a stream and are given a link in
+		Internet Explorer, it's best to right-click on the link and select
+		the "Copy Shortcut" option, and then paste that into Winamp's
+		"Open Location" dialog by right clicking on the Load button.</p>
+
+	<i>...on Linux/UNIX with ogg123?</i>
+	<p>Simply run ogg123 with the stream as the input file, as in
+		<tt>ogg123 http://www.example.com/stream.ogg</tt>.</p>
+
+	<i>...in Linux/UNIX with XMMS?</i>
+	<p>Select "Play Location" by right-clicking on the main XMMS window and paste or type the url. Control-L also brings up the same window.</p>
+
+	<i>...on MacOS?</i>
+	<p>As of this writing, there are no tools for MacOS that will play a Vorbis stream.</p>
+	<i>...with Java?</i>
+	<p>Jcraft's <a href=http://www.jcraft.com/jorbis/index.html>JOrbis </a>is a free Java Vorbis player. It will decode streams from within a web browser with Java enabled.</p>
+
+<br>Next week, we will discuss the philosophy behind the Xiph.org Foundation, free software, and open source multimedia.
+	<p>Visit <a href="http://www.vorbis.com">http://www.vorbis.com</a>
+			for software, music, links, and news.</p>
+	<hr />
+	<p>Copyright (c) 2002 by Xiph.org Foundation.
+		This material may be distributed only subject to the terms and
+		conditions set forth in the Open Publication License, v.1.0
+		or later (the latest version is presently available at
+		<a href="http://www.opencontent.org/openpub/"
+		>http://www.opencontent.org/openpub/</a>).</p>
+
+</body>
+</html>

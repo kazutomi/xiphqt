@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Monday, January 27, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Monday, January 27, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Carsten Haese</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">January 27, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727365">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725840">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726913">Jean-Marc
+              Valin</a></dt>
+
+              <dt>1.3. <a href="#id2726603">Michael Smith</a></dt>
+
+              <dt>1.4. <a href="#id2726623">Brendan Cully</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726643">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726655">Using Signal Difference
+              for Quality Evaluation?</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2726706">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2726720">LinuxWorld Conference
+              and Expo</a></dt>
+
+              <dt>3.2. <a href="#id2726743">Icecast.org's New
+              Face</a></dt>
+
+              <dt>3.3. <a href="#id2726774">Vorbis 1.0 GT3</a></dt>
+
+              <dt>3.4. <a href="#id2728747">Is that a Portable
+              Vorbis Player on the Horizon?</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727365"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725840"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Even though he was at LinuxWorld, Monty still found
+          time to continue his work on libogg and committed a
+          number of incremental changes to the CVS repository.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726913"></a>1.2.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc reduced the amount of data needed for Speex
+          by eliminating redundant data and changing the excitation
+          codebooks from <tt>float</tt> to <tt>signed short</tt>
+          data.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726603"></a>1.3.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike fixed a segmentation fault that occurred during a
+          fallback mount request if the current source didn't
+          exist.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726623"></a>1.4.
+              Brendan Cully</h3>
+            </div>
+          </div>
+
+          <p>Brendan fixed a small build problem in icecast.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726643"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726655"></a>2.1. Using
+              Signal Difference for Quality Evaluation?</h3>
+            </div>
+          </div>
+
+          <p><a href=
+          "http://www.xiph.org/archives/vorbis/200301/0176.html"
+          target="_top">This message</a> raises a somewhat
+          frequently asked question about audio compression: Can
+          the quality of an audio compression scheme be judged by
+          listening to the sound that results from subtracting the
+          original signal from the compressed signal?</p>
+
+          <p>The answer is, no, not for lossy compression. For
+          lossless compression, the difference should be 0, of
+          course, but for lossy compression, all bets are off. A
+          compression method that produces a quieter difference is
+          not necessarily better sounding that one that produces a
+          louder difference. The reason is that lossy compression
+          methods use psychoacoustic methods to discard information
+          that the human ear can't hear <span class=
+          "emphasis"><i>in the context of the original
+          signal</i></span>. This creates a difference that's
+          audible when the original signal is subtracted out, but
+          that difference is not necessarily audible when played
+          together with the original signal.</p>
+
+          <p>This phenomenon can be illustrated with the analogy of
+          searching for a needle in a haystack. When you take away
+          the haystack, the needle is immediately obvious, but
+          inside the haystack, the needle is very hard to find.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726706"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726720"></a>3.1.
+              LinuxWorld Conference and Expo</h3>
+            </div>
+          </div>
+
+          <p>The LinuxWorld Conference and Expo went well, and
+          everybody has returned home safely. Emmett promised me a
+          little write-up that should be available next week.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726743"></a>3.2.
+              Icecast.org's New Face</h3>
+            </div>
+          </div>
+
+          <p>Nathan has finished the icecast.org redesign, and the
+          result is now accessible for all to see at <a href=
+          "http://www.icecast.org" target="_top">icecast.org</a>.
+          Check it out!</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726774"></a>3.3. Vorbis
+              1.0 GT3</h3>
+            </div>
+          </div>
+
+          <p>Garf has spent some time tuning the higher bitrate
+          modes of the Vorbis encoder to address the concerns of
+          audiophiles that still prefer MPC over Vorbis at high
+          bitrates. The first beta of Garf's tuned <tt>oggenc</tt>
+          is available <a href=
+          "http://sjeng.sourceforge.net/vorbisgt3.html" target=
+          "_top">here</a> and features tuning for quality levels 5
+          and higher. If you have good ears, please give it a try
+          and tell Garf how it works for you.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728747"></a>3.4. Is
+              that a Portable Vorbis Player on the Horizon?</h3>
+            </div>
+          </div>
+
+          <p>It just might be! Xiph.org has entered into a
+          preliminary agreement to bring Vorbis playback to the <a
+          href="http://www.neurosaudio.com" target="_top">Neuros
+          Digital Audio Computer</a>. You can read the full
+          announcement on the <a href=
+          "http://www.xiph.org/ogg/vorbis/hardware.html" target=
+          "_top">hardware page</a>. Please note that this is <span
+          class="bold"><b>not</b></span> a guarantee that Vorbis
+          will definitely work on these devices. We're working on
+          it, but we won't make any promises we can't keep. Once
+          we're sure that it'll work, we'll let you know.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

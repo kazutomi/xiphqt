@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.9: http://docutils.sourceforge.net/" />
+<title>Ogg Traffic for Tuesday, July 15, 2003</title>
+<meta name="author" content="Carsten &quot;Purple&quot; Haese" />
+<meta name="date" content="July 15, 2003" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="ogg-traffic-for-tuesday-july-15-2003">
+<h1 class="title">Ogg Traffic for Tuesday, July 15, 2003</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Carsten &quot;Purple&quot; Haese</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>July 15, 2003</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#status-updates" id="id1" name="id1">1   Status Updates</a><ul class="auto-toc">
+<li><a class="reference" href="#stan-seibert" id="id2" name="id2">1.1   Stan Seibert</a></li>
+<li><a class="reference" href="#ed-zaleski" id="id3" name="id3">1.2   Ed Zaleski</a></li>
+<li><a class="reference" href="#brendan-cully" id="id4" name="id4">1.3   Brendan Cully</a></li>
+<li><a class="reference" href="#karl-heyes" id="id5" name="id5">1.4   Karl Heyes</a></li>
+<li><a class="reference" href="#dan-miller" id="id6" name="id6">1.5   Dan Miller</a></li>
+<li><a class="reference" href="#mauricio-piacentini" id="id7" name="id7">1.6   Mauricio Piacentini</a></li>
+<li><a class="reference" href="#ralph-giles" id="id8" name="id8">1.7   Ralph Giles</a></li>
+<li><a class="reference" href="#andrew-chatham" id="id9" name="id9">1.8   Andrew Chatham</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#recent-developments" id="id10" name="id10">2   Recent Developments</a><ul class="auto-toc">
+<li><a class="reference" href="#libshout-2-0-ices-0-3-tandem-release" id="id11" name="id11">2.1   Libshout 2.0 / ices 0.3 Tandem Release</a></li>
+<li><a class="reference" href="#oggds-directshow-filters-in-cvs" id="id12" name="id12">2.2   OggDS DirectShow Filters in CVS</a></li>
+<li><a class="reference" href="#apache-gives-thumbs-up-to-application-ogg" id="id13" name="id13">2.3   Apache gives Thumbs Up to application/ogg</a></li>
+<li><a class="reference" href="#ogg-vorbis-decoder-chip" id="id14" name="id14">2.4   Ogg Vorbis Decoder Chip</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a class="reference" href="http://www.vorbis.com/ot/">Previous Issues of Ogg Traffic</a></p>
+<div class="section" id="status-updates">
+<h1><a class="toc-backref" href="#id1" name="status-updates">1   Status Updates</a></h1>
+<div class="section" id="stan-seibert">
+<h2><a class="toc-backref" href="#id2" name="stan-seibert">1.1   Stan Seibert</a></h2>
+<p>Stan has committed tons of bugfixes to positron to make its MP3 detection
+logic more robust against false positives. He also integrated various
+contributed patches to libao. A patch by David Walser improves plugin detection,
+while a patch by Antoine Mathys adds a plugin for NAS output.</p>
+</div>
+<div class="section" id="ed-zaleski">
+<h2><a class="toc-backref" href="#id3" name="ed-zaleski">1.2   Ed Zaleski</a></h2>
+<p>Ed committed a few bugfixes to icecast2's YP code. He eliminated memory leaks,
+made the implementation more robust against error conditions, and added logic
+to force a YP server touch when the Vorbis or MP3 metadata change.</p>
+</div>
+<div class="section" id="brendan-cully">
+<h2><a class="toc-backref" href="#id4" name="brendan-cully">1.3   Brendan Cully</a></h2>
+<p>Brendan wins the committer of the month award due to an amazing increase in
+CVS activity in preparation for his libshout2/ices0.3 tandem release. He cleaned
+up the build system considerably, e.g. by moving lots of common m4 macros into
+a shared location, and fixed countless bugs. More about his tandem release
+below.</p>
+</div>
+<div class="section" id="karl-heyes">
+<h2><a class="toc-backref" href="#id5" name="karl-heyes">1.4   Karl Heyes</a></h2>
+<p>Karl committed lots of bugfixes and improvements to icecast2 and ices2.
+For example, among other build cleanups, he switched ices2 to use the shared m4
+module that Brendan introduced, and he added HUP-signalled log cycling to
+icecast2.</p>
+</div>
+<div class="section" id="dan-miller">
+<h2><a class="toc-backref" href="#id6" name="dan-miller">1.5   Dan Miller</a></h2>
+<p>Dan is busy writing the Theora bitstream specification. His goal is to get
+&quot;executable pseudocode,&quot; which is why he is writing it in python. That way,
+checking implementations against the specification will be simply a matter of
+running them both and comparing the results, since the specification is also
+acting as the authoritative reference implementation.</p>
+<p>The most recent version of Dan's work in progress can be obtained by FTP
+from ftp.vp3.com, username vp3, password vp3dev.</p>
+</div>
+<div class="section" id="mauricio-piacentini">
+<h2><a class="toc-backref" href="#id7" name="mauricio-piacentini">1.6   Mauricio Piacentini</a></h2>
+<p>Mauricio added a few options to the Theora example encoder to allow the user
+to specify the aspect numerator and denominator, as well as the framerate
+numerator and denominator. He also corrected his SDL-based example player,
+which previously relied on timing information from the audio stream, to
+properly handle video-only Theora streams.</p>
+</div>
+<div class="section" id="ralph-giles">
+<h2><a class="toc-backref" href="#id8" name="ralph-giles">1.7   Ralph Giles</a></h2>
+<p>Ralph was all over the map: He applied a patch from Ben Hines to libao to
+make the macosx device work, he joined Karl and Brendan on their quest to
+inject sanity into the libshout/ices/icecast build process, and he committed
+some build fixes to ogg123.</p>
+</div>
+<div class="section" id="andrew-chatham">
+<h2><a class="toc-backref" href="#id9" name="andrew-chatham">1.8   Andrew Chatham</a></h2>
+<p>Andrew has made a bugfix release of the python bindings pyogg and pyvorbis.
+The latest version, 1.3, can be downloaded from
+<a class="reference" href="http://www.andrewchatham.com/pyogg/">http://www.andrewchatham.com/pyogg/</a>.</p>
+</div>
+</div>
+<div class="section" id="recent-developments">
+<h1><a class="toc-backref" href="#id10" name="recent-developments">2   Recent Developments</a></h1>
+<div class="section" id="libshout-2-0-ices-0-3-tandem-release">
+<h2><a class="toc-backref" href="#id11" name="libshout-2-0-ices-0-3-tandem-release">2.1   Libshout 2.0 / ices 0.3 Tandem Release</a></h2>
+<p>Brendan announced the joint release of <a class="reference" href="http://www.xiph.org/archives/icecast-dev/0588.html">libshout 2.0</a> and <a class="reference" href="http://www.xiph.org/archives/icecast/5418.html">ices 0.3</a>, together
+with the Python and Perl bindings for libshout 2.0, shout-perl 2.0.1 and
+shout-python 0.1.</p>
+<p>Libshout 2.0 contains lots of bugfixes compared to libshout 1, and adds support
+for icecast 2, Ogg Vorbis streaming, and IPv6.</p>
+<p>Ices 0.3 has many improvements over its predecessor, ices 0.2.3, and it is
+strongly recommended that users of ices 0.2.3 upgrade to 0.3. The new version is
+more stable, adds VBR support, ID3v2 support, and trims junk from MP3 files.</p>
+</div>
+<div class="section" id="oggds-directshow-filters-in-cvs">
+<h2><a class="toc-backref" href="#id12" name="oggds-directshow-filters-in-cvs">2.2   OggDS DirectShow Filters in CVS</a></h2>
+<p>Jack received the source code for Tobias Waldvogel's OggDS DirectShow filters,
+and imported it into CVS as the oggds module. This code is version 0.9.9.3,
+and it is supposed to be feature complete except for problems with Unicode
+characters in Vorbis comments.</p>
+<p>The OggDS filters bring Ogg Vorbis support to any DirectShow compatible
+application, including Windows Media Player. If you use Windows, please test
+the filters and report any bugs at <a class="reference" href="http://bugs.xiph.org">http://bugs.xiph.org</a>.</p>
+</div>
+<div class="section" id="apache-gives-thumbs-up-to-application-ogg">
+<h2><a class="toc-backref" href="#id13" name="apache-gives-thumbs-up-to-application-ogg">2.3   Apache gives Thumbs Up to application/ogg</a></h2>
+<p>According to the <a class="reference" href="http://cvs.apache.org/viewcvs.cgi/apache-1.3/conf/mime.types">Apache CVS log</a>, now that the MIME type application/ogg has
+an <a class="reference" href="http://www.rfc-editor.org/rfc/rfc3534.txt">RFC</a>, it has been approved to be included in the default <cite>mime.types</cite>
+configuration file that ships with the Apache distribution.</p>
+<p>Not only does this mean that webmasters won't have to edit this file manually
+in the future to serve Oggs with the proper MIME type, but it also shows 
+that Ogg is steadily gaining legitimacy.</p>
+</div>
+<div class="section" id="ogg-vorbis-decoder-chip">
+<h2><a class="toc-backref" href="#id14" name="ogg-vorbis-decoder-chip">2.4   Ogg Vorbis Decoder Chip</a></h2>
+<p>Fresh off the mailing list, here is yet another piece of evidence that Ogg
+Vorbis is gaining acceptance. FineArch, Inc., have <a class="reference" href="http://www.xiph.org/archives/vorbis/200307/0219.html">announced</a> that they have
+completed an Ogg Vorbis decoder chip. Licensors only need to add a few
+components such as flash memory and a DAC to turn it into a portable Ogg Vorbis
+player. Of course, since this chip was just announced today, there are no
+players that use this chip yet, but this is still an exciting development.</p>
+<hr />
+<p>Ogg Traffic for July 15, 2003</p>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'A Note from Mazer Rackham'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<h2> A note from the band </h2>
+<b>Mazer Rackham</b> is a Boston based rock and roll band led by singer/songwriter Michael Moore.  Frequently compared to the Talking Heads, Elvis Costello and the Grateful Dead, they would prefer their first recording, Lies Heavy, be filed as psychedelic bluegrass punk.<p>
+
+These recordings feature Michael Moore's guitar and vocals, Deborah Moore on bass, Josh Goldberg playing saxophones, Sarah Glynn on auxiliary guitar and violin 
+and Sean Taylor playing the hybrid banjo/guitar monstrosity dubbed "The Wankee".<p>
+
+Mazer lives and works in and around Boston, Massachusetts. <p>
+
+&lt;disclaimer&gt;
+The songs from Mazer Rackham Lies Heavy may be freely
+downloaded and distributed provided the following conditions
+are met:<p>
+
+<ol>
+<li>This statement in its entirety is included in some legible 
+form with the recorded materials.
+<li>The recordings are not sold for profit or used to endorse any
+product or service without explicit permission.
+</ol><p>
+
+(All songs written by Michael Moore, copyright 1999)
+These songs and recordings are the exclusive property of 
+Michael Moore of Mazer Rackham.  If you enjoy them, please
+consider sending $5 to:<p>
+<address>
+          Mazer Rackham<br>
+          P.O. Box 365903<br>
+          Hyde Park, MA 02136<br>
+</address><p>
+
+To purchase a CD (complete with liner notes and photography!) 
+and have it sent anywhere in the continental US, send $12 to 
+the above address.<p>
+
+Send us money, we'll use it to make more music!
+Thanks for listening.<p>
+
+<h2>Tracks and commentary</h2>
+Here are some song things. It's hard to write about stuff I've
+written.  Very weird.<p>
+
+<ul>
+<li><a href="music/Mazer_Rackham_-_Night.ogg">Night</a>:  Disciples of Beckett frequently contend that we're 
+all waiting for something.  This may be so, but some manage
+to wait more gracefully than others.<p>
+
+<li><a href="music/Mazer_Rackham_-_Trash.ogg">Trash Entertainment</a>:  Most really good books, plays or games 
+have a lot of distractions throughout that keep you from 
+focusing on the main point, objective, or message.  Life 
+follows this pattern so closely that it's difficult to even 
+formulate a guess.   One can only surmise that whatever God
+is, it does its job well.<p>
+
+<li><a href="music/Mazer_Rackham_-_Leave_It_Behind.ogg">Leave it Behind</a>:  Waking, you discover that you're not the
+person you were a minute before.  Half asleep, you realize that
+you aren't the same person you were last year, last week, yesterday,
+or fifteen minutes from now.  You may be enlightened, but the you 
+thirty seconds away won't be.<p>
+
+<li><a href="music/Mazer_Rackham_-_No_Regret.ogg">No Regret</a>:  Sometimes it's more important to take any action
+than to make sure you take the right one.<p>
+
+<li><a href="music/Mazer_Rackham_-_Almost_Alright.ogg">Almost Alright</a>:  Introspection eventually breaks down.  You 
+have to live with your decisions, you don't always need to 
+justify them.<p>
+
+<li><a href="music/Mazer_Rackham_-_Whats_the_Plan.ogg">What's the Plan?</a>:  Tom Glynn plays drums for this track, 
+as well as on Trash, Night, Leave it Behind and No Regret.    <p>
+
+<li><a href="music/Mazer_Rackham_-_Goat.ogg">Goat</a>: Inspired by an early cyberpunk novel.  I think fear of 
+identity is one of the most rational impulses a person can
+have, but is escape really possible?  Even the Buddha ended up
+bequeathing us a hundred thousand statues of a human form that 
+he insisted was meaningless.  <p>
+
+<li><a href="music/Mazer_Rackham_-_Opportunity_Fades.ogg">Opportunity Fades</a>:  This is almost less a song than a 
+collection of sounds.  Reich hears music in the background 
+noise of daily life.  For me, this is close to the 
+reverse.<p>
+
+<li><a href="music/Mazer_Rackham_-_Juggernaut.ogg">Juggernaut</a>:  A song about group consciousness and the degree
+to which it compromises free will.   Really. <p>
+
+<li><a href="music/Mazer_Rackham_-_Jesus.ogg">Jesus</a>:  Recorded Live in Ancestor Square, St. George Utah.  
+Ryan Anderson joined us on Drums.   If you truly believe that
+admittance into heaven will be granted on the basis of the 
+correct syllables whispered to the guy with the flaming sword,
+here's a thought:  suppose you get three guesses and your first
+guess is wrong.<p>
+
+<li><a href="music/Mazer_Rackham_-_Ocean.ogg">Ocean</a>:  Also recorded live in Ancestor Square.  My guitar 
+pedal died going into the solo, but the crowd carried us.
+Interpreting your own dreams is either dishonest or dangerous.
+I have nothing to say about this song.
+tify them.<p>
+</ul>
+
+(No text for '<a href="music/Mazer_Rackham_-_Truth.ogg">Truth</a>' or '<a href="music/Mazer_Rackham_-_Sorrow_Me.ogg">Sorrow Me</a>')<p>
+
+Tracks Courtesy of <A href="http://www.mazer-rackham.com/">Mazer Rackham</A>.
+
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">

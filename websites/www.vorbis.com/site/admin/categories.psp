@@ -1,0 +1,19 @@
+<%@ page imports="siteconfig,category" %>
+<html>
+<body bgcolor=white>
+
+<a href="edit_category.psp" target="content">Add a Category</a><br>
+<hr>
+<% cl = category.CategoryList() %>
+<% for c in cl.list: %>
+[<a href="edit_category.psp?id=<%= c.id %>" target="content">edit</a>] - [<a href="del_category.psp?id=<%= c.id %>" target="content">delete</a>]<br>
+<br>
+<font size="+2"><b><%= c.name %></b></font>
+<br>
+<%= c.html_blurb() %>
+<br><br>
+<% end %>
+<hr>
+
+</body>
+</html>

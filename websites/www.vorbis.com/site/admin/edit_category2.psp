@@ -1,0 +1,14 @@
+<%@ page imports="siteconfig,category" indentType="braces" %>
+<%
+c = category.Category(id=req.field('id', None), name=req.field('name', None), blurb=req.field('blurb', None))
+%>
+<html>
+<body bgcolor=white>
+<% if c.save(): { %>
+<h1> Category Added/Updated Successfully. </h1>
+<a href="categories.psp" target="content">Back To Categories</a>
+<% } else: { %>
+<h1> Add/Update failed.  Please hit 'back' and try again. </h1>
+<% } %>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<%@ page imports="siteconfig,category,link" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	l = link.Link(req.field('id'))
+	l.load()
+} else: {
+	l = link.Link(id=None, cat=None, url='', name='', blurb='', date_added=None)
+}
+
+cl = category.CategoryList()
+%>
+
+<html>
+<body bgcolor=white>
+<h1>Add a Link<h1>
+<hr>
+
+<form method=post action="edit_link2.psp">
+<% if l.date_added: { %>
+<input type=hidden name=date_added value="<%= l.date_added %>">
+<% } %>
+<% if l.id: { %>
+<input type=hidden name=id value="<%= l.id %>">
+<% } %>
+<table border=0>
+<tr>
+<td>URL:</td><td><input type=text name=url value="<%= l.url %>"></td>
+</tr><tr>
+<td>Category:</td>
+<td>
+<select name=cat>
+<% for c in cl.list: { %>
+<% if l.cat == c.id: { %>
+<option value="<%= c.id %>" selected><%= c.name %>
+<% } else: { %>
+<option value="<%= c.id %>"><%= c.name %>
+<% } %>
+<% } %>
+</select>
+</td>
+</tr><tr>
+<td>Name:</td><td><input type=text name=name size=50 value="<%= l.name %>"></td>
+</tr><tr>
+<td colspan=2>
+Blurb:<br>
+<textarea name=blurb cols=40 rows=10><%= l.blurb %></textarea>
+</td><td></td>
+</tr>
+</table>
+<input type=submit value="Add/Edit Link">
+</form>
+
+</body>
+</html>
+
+
+
+
+

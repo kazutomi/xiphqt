@@ -1,0 +1,39 @@
+<%@ page imports="siteconfig,category" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	c = category.Category(req.field('id'))
+	c.load()
+} else: {
+	c = category.Category(id=None, name='', blurb='')
+}
+%>
+
+<html>
+<body bgcolor=white>
+<h1>Add/Edit a Category<h1>
+<hr>
+
+<form method=post action="edit_category2.psp">
+<% if c.id: { %>
+<input type=hidden name=id value="<%= c.id %>">
+<% } %>
+<table border=0>
+<tr>
+<td>Name:</td><td><input type=text name=name size=50 value="<%= c.name %>"></td>
+</tr><tr>
+<td colspan=2>
+Blurb:<br>
+<textarea name=blurb cols=40 rows=10><%= c.blurb %></textarea>
+</td><td></td>
+</tr>
+</table>
+<input type=submit value="Add/Edit Category">
+</form>
+
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,61 @@
+<html><head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type"><title>Ogg Traffic for Monday, July 1, 2002</title>
+
+<meta name="generator" content="DocBook XSL Stylesheets V1.45"></head>
+<body bgcolor="white" text="black" link="#0000ff" vlink="#840084" alink="#0000ff"><div class="article">
+<div class="titlepage">
+<div><h1 class="title">
+<a name="id5283347"></a>Ogg Traffic for Monday, July 1, 2002</h1></div>
+<div><block use-attribute-sets="article.titlepage.recto.style" font-size="12pt" font-weight="bold" space-before="0.5em">Stan Seibert<block use-attribute-sets="article.titlepage.recto.style" font-size="10pt" font-weight="normal" font-style="italic"></block></block><div class="address"><p><tt>&lt;<a href="mailto:volsung@xiph.org">volsung@xiph.org</a>&gt;</tt></p></div></div>
+<hr>
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl><dt>1. <a href="#id5336165">We're Back!</a>
+</dt><dt>2. <a href="#id5336191">Status Updates</a>
+</dt><dd><dl><dt>2.1. <a href="#id5336205">Monty</a>
+</dt><dt>2.2. <a href="#id5336253">Michael Smith</a>
+</dt></dl></dd><dt>3. <a href="#id5286882">New Developments</a>
+</dt><dd><dl><dt>3.1. <a href="#id5286895">Ogg Theora</a>
+</dt></dl></dd></dl>
+</div>
+<div class="section">
+<div class="titlepage"><div><h2 class="title" style="clear: both;">
+<a name="id5336165"></a>1. We're Back!</h2></div></div>
+<p>
+After a 6 month hiatus, Ogg Traffic is back again.  While OT has been quiet for a while, development
+has not slowed.  Big things are brewing at Xiph.org, as you'll see in this week's Ogg Traffic update. 
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h2 class="title" style="clear: both;">
+<a name="id5336191"></a>2. Status Updates</h2></div></div>
+<p>
+The Ogg team is gearing up for RC4.  Here is a quick update on what some of the team members have been working on.
+</p>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5336205"></a>2.1. Monty</h3></div></div>
+<p>
+Monty has been spending a lot of time finishing the new encoder for RC4.  Mainline <a href="http://www.xiph.org/cvs.html">CVS</a> now has his "Grand Simplification" code available for testing.  VBR encoding (only specifying a quality setting) is now running faster <i>and</i> producing higher quality files (quality 0 has been getting good reviews from the users in #vorbis IRC channel).  Both stereo and mono modes at 44.1 and 48 kHz are available for testing in the CVS repository.  VBR with bitrate constraints (max, min, and average) should also be working as well.  The stereo coupling has gotten smarter, allowing the encoder to select the stereo mode with greater flexibility.  In addition, the encoder is also exposing more adjustable parameters to the world, so some aspects of the encoding process can be tuned without modifying libvorbis directly.  In the coming days, Monty will also be tuning the modes for use at sample rates below 44.1 kHz.  The adventurous are invited to test the new code and let us know how it is working.  As always, bugs (or other comments) should be reported to the <a href="vorbis-dev@xiph.org">vorbis development mailing list</a>.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5336253"></a>2.2. Michael Smith</h3></div></div>
+<p>
+Michael has been working on two things lately.  First, he's been rewriting ogginfo to make it better at detecting errors in Ogg files and also to get it ready to work with Ogg files that contain something other than a single Vorbis stream.  He has also been patching oggenc to allow more control over the encoding process.  Oggenc allows the input audio to be resampled and downmixed on-the-fly before being encoded.  Access to the new vorbis encoder options has also been added via the <i>--advanced-encode-option key=value</i> flag.  Those interested in testing these new options should look at the set_advanced_encoder_options() function in oggenc/encode.c.  The latest ogginfo and oggenc can be found in the vorbis-tools module in <a href="http://www.xiph.org/cvs.html">CVS</a>.
+</p>
+</div>
+</div>
+<div class="section">
+<div class="titlepage"><div><h2 class="title" style="clear: both;">
+<a name="id5286882"></a>3. New Developments</h2></div></div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5286895"></a>3.1. Ogg Theora Announcement</h3></div></div>
+<p>
+Last week, the Ogg Theora project was announced.  Over the next year, Xiph.org will be integrating the VP3 video codec (contributed by <a href="http://www.on2.com">On2 Technologies</a>) into the Ogg multimedia framework to create an Open Source video solution.  More details can be found in <a href="http://linux.com/article.pl?sid=02/06/21/2145217">the Linux.com news article</a> or the official <a href="http://www.theora.org">Theora website</a>.
+</p>
+</div>
+</body></html>

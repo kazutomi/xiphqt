@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Monday, March 31, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Monday, March 31, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+          target="_top">Carsten "Purple" Haese</a></h3>
+        </div>
+
+        <div>
+          <p class="pubdate">March 31, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727443">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2727368">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726791">Michael Smith</a></dt>
+
+              <dt>1.3. <a href="#id2726616">Brendan Cully</a></dt>
+
+              <dt>1.4. <a href="#id2726638">Karl Heyes</a></dt>
+
+              <dt>1.5. <a href="#id2726658">Jean-Marc
+              Valin</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726679">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726692">Tremor
+              Improvements</a></dt>
+
+              <dt>2.2. <a href="#id2726752">Nero Ogg Vorbis
+              plugin</a></dt>
+
+              <dt>2.3. <a href="#id2726694">New Software</a></dt>
+
+              <dt>2.4. <a href="#id2728792">New (Experimental)
+              Bitrate Peeler Available</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727443"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727368"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>In a flurry of CVS activity, Monty has completed the
+          tedious <span class=
+          "emphasis"><i>libogg2-zerocopy</i></span> rewrite of the
+          memory management for the Ogg framing layer. He then
+          proceeded to deploy the new memory management in Tremor,
+          along with the recent vorbisfile fixes and optimizations.
+          Read more about this below.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726791"></a>1.2.
+              Michael Smith</h3>
+            </div>
+          </div>
+
+          <p>Mike was busy as always and added 24 bit input support
+          to oggenc, fixed ices build problems, addressed various
+          icecast bugs, and added two new admin commands to icecast
+          for killing clients by id and for killing sources.</p>
+
+          <p>Mike is also consistently one of the most active team
+          members on the mailing list, helping users with various
+          Icecast and Vorbis related problems. Thanks, Mike!</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726616"></a>1.3.
+              Brendan Cully</h3>
+            </div>
+          </div>
+
+          <p>Brendan committed more ices code cleanups and took a
+          first stab at making YP support in icecast optional.
+          Since YP support depends on libcurl, this would allow
+          people that don't have libcurl and don't need YP support
+          to still build icecast.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726638"></a>1.4. Karl
+              Heyes</h3>
+            </div>
+          </div>
+
+          <p>Karl committed various cleanups, autotools tweaks and
+          build fixes to ices and libshout.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726658"></a>1.5.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Since <a href="http://www.speex.org" target=
+          "_top">Speex 1.0</a> was released just last week, there
+          was no CVS activity for Speex, but Jean-Marc already has
+          plans for future developments. He has been seen on the
+          IRC channel thinking out loud about possibilities for
+          integer-only implementations of the Speex encoder and
+          decoder.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726679"></a>2. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726692"></a>2.1. Tremor
+              Improvements</h3>
+            </div>
+          </div>
+
+          <p>As mentioned above, Monty has completed the <span
+          class="emphasis"><i>libogg2-zerocopy</i></span> redesign
+          of the Ogg memory management code. In a nutshell, this
+          new memory management cuts buffering of stream data to an
+          absolute minimum and eliminates lots of memory copies
+          between framing layers. This ought to be useful for
+          applications with high data rates (e.g. <a href=
+          "http://www.theora.org" target="_top">Video</a>), and it
+          might give a performance boost on embedded platforms with
+          slow memory. Because of its usefulness in embedded
+          applications, the libogg2 memory management has been
+          merged into Tremor, the integer-only Vorbis decoder
+          library.</p>
+
+          <p>Along with this, Monty has merged his recent
+          vorbisfile fixes and seeking optimizations into Tremor.
+          As he states <a href=
+          "http://www.xiph.org/archives/tremor/200303/0017.html"
+          target="_top">in this message</a>, the changes have
+          passed basic unit testing, but unit testing can't replace
+          real-world testing by lots of people. If you'd like to
+          help, please grab the latest copy of Tremor and bang on
+          it!</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726752"></a>2.2. Nero
+              Ogg Vorbis plugin</h3>
+            </div>
+          </div>
+
+          <p>Various versions of this plugin have been floating
+          around the Net for a while (the first version was sighted
+          mere days after Nero's SDK became available), but now it
+          seems to have found a sufficiently stable home. The Ogg
+          Vorbis plugin for Nero can be downloaded <a href=
+          "http://neroplugins.cd-rw.org/" target="_top">from this
+          page</a>, along with plugins for FLAC and other
+          codecs.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726694"></a>2.3. New
+              Software</h3>
+            </div>
+          </div>
+
+          <p>A new title has been added to the <a href=
+          "http://www.vorbis.com/softwarenews.psp" target=
+          "_top">Software section</a> at <a href=
+          "http://www.vorbis.com" target="_top">vorbis.com</a>. The
+          new addition is <a href="http://www.cajun.nu" target=
+          "_top">CAJUN</a>, which is a project that allows you to
+          turn an old PC into a car or home jukebox. Written in
+          Perl, CAJUN supports keypads, infra-red remote controls,
+          LCD/VFD displays, FM cards, CD players, Ogg Vorbis,
+          Shoutcast/Icecast streams, GPS devices, and other
+          goodies.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728792"></a>2.4. New
+              (Experimental) Bitrate Peeler Available</h3>
+            </div>
+          </div>
+
+          <p>Just when I wanted to submit this Ogg Traffic, Segher
+          informed me that he has finished a new experimental
+          bitrate peeler. (A bitrate peeler is a tool that reduces
+          a Vorbis file to a smaller bitrate without decoding and
+          reencoding.)</p>
+
+          <p>You can read his announcement and download the code <a
+          href=
+          "http://www.xiph.org/archives/vorbis-dev/200303/0085.html"
+           target="_top">here</a>. Please note that the code is
+          experimental. Give it a whirl and let Segher know if you
+          have any problems.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

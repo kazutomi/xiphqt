@@ -1,0 +1,351 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Sunday, December 15, 2002</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Sunday, December 15, 2002</h1>
+        </div>
+
+        <div>
+          <h3 class="author">Carsten Haese</h3>
+        </div>
+
+        <div>
+          <p class="pubdate">December 15, 2002</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727365">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2725840">Monty</a></dt>
+
+              <dt>1.2. <a href="#id2726913">Jean-Marc
+              Valin</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726660">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726672">Corrupted Ogg Vorbis
+              Files</a></dt>
+
+              <dt>2.2. <a href="#id2728893">Music in Ogg Vorbis
+              format</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2728966">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2728976">Ogg Standard Drafts
+              submitted to IETF</a></dt>
+
+              <dt>3.2. <a href="#id2729007">New Vorbis Related
+              Software</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727365"></a>1. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2725840"></a>1.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty is still working towards Theora Alpha Two. As he
+          explained on irc.xiph.org in #vorbis, "The integration
+          for the work I'm doing needs to be tighter than I
+          thought."</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726913"></a>1.2.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>Jean-Marc is getting very close to the Speex beta4
+          release. Recent additions to the CVS repository include
+          code for:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p>VAD with bitrate reduction in VBR and comfort
+                noise generation in CBR</p>
+              </li>
+
+              <li>
+                <p>Initial ABR support</p>
+              </li>
+
+              <li>
+                <p>Initial high-band perceptual enhancement</p>
+              </li>
+
+              <li>
+                <p>Quality improvements in the 2.15kbps mode</p>
+              </li>
+            </ul>
+          </div>
+
+          <p>Jean-Marc also started a thread on the
+          <tt>speex-dev</tt> mailing list soliciting feature
+          requests for Speex 1.0. Beta4 will be the last beta
+          release before the big 1.0, so if there's anything you'd
+          like to see in Speex 1.0 that's not on the list of
+          planned features on <a href="http://www.speex.org"
+          target="_top">speex.org</a>, feel free to let Jean-Marc
+          know about it.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726660"></a>2. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726672"></a>2.1.
+              Corrupted Ogg Vorbis Files</h3>
+            </div>
+          </div>
+
+          <p>Christopher Verdesi <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0105.html"
+          target="_top">asked the list in this message</a> about a
+          bunch of Ogg Vorbis files that were created by OggdropXPd
+          v. 1.1., tagged with Winamp 2.80, copied over to Mac OS,
+          and then copied back to Windows. Something in this
+          process corrupted those files, and he wanted to know what
+          could have caused this corruption.</p>
+
+          <p>The exact cause has not been determined, or at least
+          no final resolution has appeared on the mailing list, but
+          it is instructive as a general troubleshooting guide to
+          discuss the theories that have been offered in
+          response.</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p><a href=
+                "http://www.xiph.org/archives/vorbis/200212/0108.html"
+                 target="_top">ID3 tags</a></p>
+
+                <p>Many Ogg Vorbis files are corrupted because some
+                older programs insist on adding ID3 tags to every
+                file under the sun and don't realize that this
+                actually corrupts Ogg Vorbis files.</p>
+
+                <p>While this explanation doesn't help Christopher
+                (Winamp 2.80 is new enough to avoid the ID3
+                mistake), ID3 tags are indeed a very common cause
+                for corrupt Ogg Vorbis files.</p>
+
+                <p>An Ogg Vorbis file that's corrupted by an ID3
+                tag can be repaired by simply removing the ID3
+                tag.</p>
+              </li>
+
+              <li>
+                <p><a href=
+                "http://www.xiph.org/archives/vorbis/200212/0107.html"
+                 target="_top">EOL munging</a></p>
+
+                <p>Binary files in general, and Ogg Vorbis files in
+                particular, don't take kindly to the translation of
+                End-Of-Line characters that's performed during the
+                transfer of plain text files between incompatible
+                platforms. ASCII mode FTP between Linux and
+                Windows, for example, will almost certainly corrupt
+                an Ogg Vorbis file. (Solution: Use binary mode FTP
+                instead!)</p>
+
+                <p>Another example is an HTTP transfer from a
+                server that wrongly identifies <tt>.ogg</tt> files
+                as plain text files to a Windows browser. The
+                solution here is to tell the server explicitly that
+                <tt>.ogg</tt> files are binary files (MIME type
+                <tt>application/x-ogg</tt>) so it won't fall back
+                to a <tt>text/plain</tt> default and serve
+                scrambled Oggs.</p>
+
+                <p>EOL munging is in general irreversible, so an
+                Ogg Vorbis file with this kind of corruption is
+                most likely beyond repair.</p>
+              </li>
+
+              <li>
+                <p><a href=
+                "http://www.xiph.org/archives/vorbis/200212/0106.html"
+                 target="_top">Misguided Resource Fork</a></p>
+
+                <p>Peter Harris surmised that, since the transfer
+                involved Mac OS, the transfer software may have
+                added garbage to the beginning of the file. In such
+                a case, the file can be repaired by deleting the
+                extraneous data that precedes the actual beginning
+                of the physical Ogg stream, which is marked by the
+                the character sequence <tt>OggS</tt>.</p>
+
+                <p>While the reference decoder can actually deal
+                with this kind of corruption, this could
+                conceivably be a problem with other decoder
+                implementations.</p>
+
+                <p>As a general rule, make sure that you use a
+                transfer method that reproduces a bit-identical
+                copy of the original file.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728893"></a>2.2. Music
+              in Ogg Vorbis format</h3>
+            </div>
+          </div>
+
+          <p>Chris Nuccitelli pointed out in <a href=
+          "http://www.xiph.org/archives/vorbis/200212/0104.html"
+          target="_top">this message</a> that a group called Alpha
+          Conspiracy offers free music downloads in Ogg Vorbis
+          format. The responses to this message pointed out other
+          sites that also offer free downloads in Ogg Vorbis:</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p><a href=
+                "http://www.xiph.org/archives/vorbis/200212/0111.html"
+                 target="_top">Pandora Records</a></p>
+              </li>
+
+              <li>
+                <p><a href=
+                "http://www.xiph.org/archives/vorbis/200212/0132.html"
+                 target="_top">Drumbassmix.com</a></p>
+              </li>
+
+              <li>
+                <p><a href=
+                "http://www.xiph.org/archives/vorbis/200212/0141.html"
+                 target="_top">Moto</a></p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2728966"></a>3. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728976"></a>3.1. Ogg
+              Standard Drafts submitted to IETF</h3>
+            </div>
+          </div>
+
+          <p>Silvia Pfeiffer <a href=
+          "http://www.xiph.org/archives/theora-dev/200212/0008.html"
+           target="_top">informs us in this message</a> that she
+          and Linus Walleij have submitted Internet Drafts for the
+          Ogg file format and the <tt>application/ogg</tt> MIME
+          type to the IETF. They intend to get both drafts accepted
+          as RFCs at the next IETF meeting in March 2003.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2729007"></a>3.2. New
+              Vorbis Related Software</h3>
+            </div>
+          </div>
+
+          <p>During the past week, two new projects have been added
+          to the <a href="http://www.vorbis.com/softwarenews.psp"
+          target="_top">software section</a> of <a href=
+          "http://www.vorbis.com/" target=
+          "_top">vorbis.com</a>.</p>
+
+          <div class="itemizedlist">
+            <ul type="disc">
+              <li>
+                <p><a href=
+                "http://www.vorbis.com/software.psp?id=94" target=
+                "_top">Pocket Tunes</a> is a media player
+                application for the Palm Tungsten T, that can,
+                among other things, play Ogg Vorbis files.</p>
+              </li>
+
+              <li>
+                <p><a href=
+                "http://www.vorbis.com/software.psp?id=95" target=
+                "_top">Xmcd</a> is a CD player program that now
+                also supports CD ripping to Ogg Vorbis and other
+                formats.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv=
+    "Content-Type">
+
+    <title>Ogg Traffic for Tuesday, March 18, 2003</title>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.48">
+  </head>
+
+  <body bgcolor="white" text="black" link="#0000FF" vlink="#840084"
+  alink="#0000FF">
+    <div class="article">
+      <div class="titlepage">
+        <div>
+          <h1 class="title"><a name="id2727373"></a>Ogg Traffic for
+          Tuesday, March 18, 2003</h1>
+        </div>
+
+        <div>
+          <h3 class="corpauthor"><a href="mailto:carsten@xiph.org"
+          target="_top">Carsten "Purple" Haese</a></h3>
+        </div>
+
+        <div>
+          <p class="pubdate">March 18, 2003</p>
+        </div>
+        <hr>
+      </div>
+
+      <div class="toc">
+        <p><b>Table of Contents</b></p>
+
+        <dl>
+          <dt>1. <a href="#id2727443">Editorial</a></dt>
+
+          <dd>
+            <dl>
+              <dt>1.1. <a href="#id2727368">It's Ogg, not
+              OGG!</a></dt>
+            </dl>
+          </dd>
+
+          <dt>2. <a href="#id2726660">Status Updates</a></dt>
+
+          <dd>
+            <dl>
+              <dt>2.1. <a href="#id2726668">Monty</a></dt>
+
+              <dt>2.2. <a href="#id2726689">Michael Smith, Brendan
+              Cully, Karl Heyes</a></dt>
+
+              <dt>2.3. <a href="#id2726712">Jean-Marc
+              Valin</a></dt>
+
+              <dt>2.4. <a href="#id2726734">Stan Seibert</a></dt>
+            </dl>
+          </dd>
+
+          <dt>3. <a href="#id2726771">Interesting
+          Discussions</a></dt>
+
+          <dd>
+            <dl>
+              <dt>3.1. <a href="#id2726775">Vorbis Decoder from
+              Scratch</a></dt>
+            </dl>
+          </dd>
+
+          <dt>4. <a href="#id2728811">Recent Developments</a></dt>
+
+          <dd>
+            <dl>
+              <dt>4.1. <a href="#id2728821">Asterisk PBX supports
+              Speex</a></dt>
+
+              <dt>4.2. <a href="#id2728855">Speex heading for the
+              RFC Track</a></dt>
+
+              <dt>4.3. <a href="#id2728884">WinAmp needs
+              You!</a></dt>
+            </dl>
+          </dd>
+        </dl>
+      </div>
+
+      <p><a href="http://www.vorbis.com/ot/" target="_top">Previous
+      Issues of Ogg Traffic</a></p>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2727443"></a>1. Editorial</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2727368"></a>1.1. It's
+              <span class="emphasis"><i>Ogg</i></span>, not <span
+              class="emphasis"><i>OGG</i></span>!</h3>
+            </div>
+          </div>
+
+          <p>With an ever-increasing adoption of Ogg Vorbis, I'm
+          seeing an increasing number of new users refer to it
+          as <span class="emphasis"><i>OGG</i></span>. This is a
+          trend that I would like to counter with this piece of
+          authoritative information: It's not <span class=
+          "emphasis"><i>OGG</i></span>, it is <span class=
+          "emphasis"><i>Ogg</i></span>! You may think that this is
+          an insignificant difference, but I don't think so. Please
+          let me explain why.</p>
+
+          <p>Writing <span class="emphasis"><i>OGG</i></span> in a
+          context where both uppercase and lowercase letters are used
+          implies that it is an acronym like our good old
+          competitor Em-Pee-Three. I haven't heard anybody try to
+          pronounce <span class="emphasis"><i>OGG</i></span>, but
+          I'm willing to bet that there are people that are tempted
+          to read it as an
+          acronym and hence pronounce it Oh-Gee-Gee, which is not
+          right. The format's name is <span class=
+          "emphasis"><i>Ogg</i></span>. It is a word, not an
+          acronym, and it's pronounced like <span class=
+          "emphasis"><i>Dog</i></span> without the letter <span
+          class="emphasis"><i>D</i></span>. If you're not familiar
+          with the word or why it is a fitting name for an audio
+          compression algorithm, please see the OggSquish section
+          on <a href="http://www.xiph.org/xiphname.html" target=
+          "_top">this page</a>.</p>
+
+          <p>If you respect Ogg Vorbis for the amazing piece of
+          technology that it is, please respect its creator, Monty,
+          and call it by the name that he chose for it, and spread
+          the word: It's Ogg, not OGG!</p>
+
+          <p>Thanks for listening. We now return to our regular
+          scheduled program.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726660"></a>2. Status Updates</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726668"></a>2.1.
+              Monty</h3>
+            </div>
+          </div>
+
+          <p>Monty corrected some typos in the Vorbis decoder
+          specification that John Ripley found. He also committed
+          more optimizations and improvements to libogg2.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726689"></a>2.2.
+              Michael Smith, Brendan Cully, Karl Heyes</h3>
+            </div>
+          </div>
+
+          <p>The icecast/ices/libshout development team is still on
+          a roll and is committing patches like crazy. This week,
+          we've seen lots of bugfixes, code cleanups, and attempts
+          to get a sane autotools system to work.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726712"></a>2.3.
+              Jean-Marc Valin</h3>
+            </div>
+          </div>
+
+          <p>In preparation for Speex 1.0, which is due to be
+          released very soon, Jean-Marc has made some documentation
+          fixes and eliminated a few compiler warnings.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726734"></a>2.4. Stan
+              Seibert</h3>
+            </div>
+          </div>
+
+          <p>Stan, author of the <span class=
+          "emphasis"><i>Positron</i></span> sync manager for the <a
+          href="http://www.neurosaudio.com" target="_top">Neuros
+          Digital Audio Computer</a>, has now received his demo
+          unit, which allowed him to get some hands-on experience
+          with the Neuros and to gain intimate knowledge of its
+          software innards.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2726771"></a>3. Interesting Discussions</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2726775"></a>3.1. Vorbis
+              Decoder from Scratch</h3>
+            </div>
+          </div>
+
+          <p>John Ripley informs us in <a href=
+          "http://www.xiph.org/archives/vorbis-dev/200303/0016.html"
+           target="_top">this message</a> that he has succeeded in
+          implementing a Vorbis decoder from scratch, using almost
+          exclusively the pseudocode specifications, and only
+          resorting to libvorbis code in certain parts where the
+          specifications contained too many typos to produce a
+          working implementation.</p>
+
+          <p>With this effort, John provided a valuable service to
+          the Vorbis community by validating large parts of the
+          specification as correct, and by pointing out where the
+          specification contains errors that need to be corrected.
+          Having correct decoder specifications is essential for a
+          codec, and thanks to John's efforts, the Vorbis specs are
+          that much closer to being 100% correct.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="titlepage">
+          <div>
+            <h2 class="title" style="clear: both"><a name=
+            "id2728811"></a>4. Recent Developments</h2>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728821"></a>4.1.
+              Asterisk PBX supports Speex</h3>
+            </div>
+          </div>
+
+          <p>Ross Finlayson informs us in <a href=
+          "http://www.xiph.org/archives/speex-dev/200303/0007.html"
+          target="_top">this message</a> that the software PBX <a
+          href="http://www.asterisk.org" target="_top">Asterisk</a>
+          has recently accepted his patches to support dynamic
+          payload types, and as a consequence, Asterisk's SIP
+          implementation now supports Speex!</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728855"></a>4.2. Speex
+              heading for the RFC Track</h3>
+            </div>
+          </div>
+
+          <p>Greg Herlein, main author of the Speex RTP profile
+          draft <a href=
+          "http://www.xiph.org/archives/speex-dev/200303/0006.html"
+          target="_top">reports in this message</a> that he will
+          present his draft for initial consideration at the next
+          meeting of the IETF's AV Working Group on March 20th. We
+          wish him the best of luck, and, as always, we'll keep you
+          informed of future developments.</p>
+        </div>
+
+        <div class="section">
+          <div class="titlepage">
+            <div>
+              <h3 class="title"><a name="id2728884"></a>4.3. WinAmp
+              needs You!</h3>
+            </div>
+          </div>
+
+          <p>
+          
+          Nullsoft, the makers of Winamp, have agreed to
+          let Xiph.org work on Ogg support in the new version
+          of Winamp.
+          Unfortunately, we're all really busy, so we need help. If
+          you think you are the right person for the job, please
+          don't hesitate and contact Emmett at <a href=
+          "mailto:emmett@xiph.org" target=
+          "_top">emmett@xiph.org</a>.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

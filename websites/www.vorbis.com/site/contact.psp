@@ -1,0 +1,39 @@
+<%@ page imports="infobox" %>
+<a name="top">
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%
+box = infobox.InfoBox()
+box.title = 'Contact The Ogg Vorbis Team'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+
+
+If you have any comments, questions, or problems, please feel free to email 
+<a href="mailto:feedback@vorbis.com">feedback@vorbis.com</a>
+<br><br>
+For press inquiries, send email to <a href="mailto:press@vorbis.com">press@vorbis.com</a>.
+<br><br>
+
+Subscribe to the <a href="http://www.xiph.org/ogg/vmail.html">Vorbis mailing list</a>.<br>
+Read the <a href="http://www.xiph.org/archives/">Vorbis list archive</a>.
+<br><br>
+Join us in IRC at <b>irc.xiph.org/#vorbis</b>.<br>
+
+
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">
+
+
+

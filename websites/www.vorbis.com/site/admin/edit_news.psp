@@ -1,0 +1,59 @@
+<%@ page imports="siteconfig,type,news" indentType="braces" %>
+<%
+if req.field('id', default=None): {
+	n = news.News(req.field('id'))
+	n.load()
+} else: {
+	n = news.News(id=None, poster='', type=None, title='', blurb='', date_added=None)
+}
+
+tl = type.TypeList()
+%>
+
+<html>
+<body bgcolor=white>
+<h1>Add a News Item<h1>
+<hr>
+
+<form method=post action="edit_news2.psp">
+<% if n.date_added: { %>
+<input type=hidden name=date_added value="<%= n.date_added %>">
+<% } %>
+<% if n.id: { %>
+<input type=hidden name=id value="<%= n.id %>">
+<% } %>
+<table border=0>
+<tr>
+<td>Poster:</td><td><input type=text name=poster size=30 value="<%= n.poster %>"></td>
+</tr><tr>
+<td>Type:</td>
+<td>
+<select name=type>
+<% for t in tl.list: { %>
+<% if n.type == t.id: { %>
+<option value="<%= t.id %>" selected><%= t.name %>
+<% } else: { %>
+<option value="<%= t.id %>"><%= t.name %>
+<% } %>
+<% } %>
+</select>
+</td>
+</tr><tr>
+<td>Title:</td><td><input type=text name=title size=50 value="<%= n.title %>"></td>
+</tr><tr>
+<td colspan=2>
+Blurb:<br>
+<textarea name=blurb cols=40 rows=10><%= n.blurb %></textarea>
+</td><td></td>
+</tr>
+</table>
+<input type=submit value="Add/Edit News">
+</form>
+
+</body>
+</html>
+
+
+
+
+

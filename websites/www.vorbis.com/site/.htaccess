@@ -1,0 +1,7 @@
+#Redirect permanent /faq_listen.psp http://www.vorbis.com/faq.psp
+Redirect gone /playing.html
+Redirect permanent /faq http://www.vorbis.com/faq.psp
+Redirect permanent /download http://www.vorbis.com/download.psp
+
+Redirect temp /ot/latest.html http://www.vorbis.com/ot/20040225.html
+AddType audio/x-speex .spx

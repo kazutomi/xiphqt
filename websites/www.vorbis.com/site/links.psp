@@ -1,0 +1,8 @@
+<%@ page imports="siteconfig,link" %>
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%= link.get_link_box() %>
+
+<psp:insert file="footer.html" static="0">

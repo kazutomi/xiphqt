@@ -1,0 +1,37 @@
+IMPORTANT INFORMATION
+
+These packages are built inside a chroot environment, so they should work
+on any Red Hat 7.3 system.
+
+Please note that Ogg and Vorbis are system libraries and as such get used by
+a lot of programs.  The packages depending on it will take time to get 
+upgraded.
+
+If at this time you have RPM's installed for any of these packages (examples
+are xmms, GStreamer, tuxracer, xine, among others), these Ogg Vorbis 
+RPM's might not be installable.
+
+There is nothing wrong with either Ogg Vorbis or the packages, it's just
+the way things work.  The ABI for some of the libraries has changed since
+rc3.
+ 
+Your choices at this point are :
+
+a) wait until your distribution has updated your RPM's that use Ogg Vorbis
+b) uninstall the RPM's in question, install the Ogg Vorbis RPM's, and
+   rebuild
+   the source RPM's for the packages you want to have
+c) install Ogg Vorbis from source in a different prefix.
+
+
+LIBAO INFORMATION
+
+libao includes plug-ins for esd, oss, arts, and alsa (0.9).  You can find
+RPM's for alsa on the GStreamer apt repository, 
+http://gstreamer.net/releases/redhat/
+Let us know if they work for you ;)
+
+Some people have reported an issue with OSS and mpg321 using the 0.8.3
+version.  For some reason, mpg321 doesn't autodetect OSS.  It seems to
+be a bug in mpg321, you can force the oss driver using the -o option.
+ogg123 does work as expected.

@@ -1,0 +1,211 @@
+<%@ page imports="infobox" %>
+<psp:insert file="header.html" static="0">
+<a name="top">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+
+<%
+box = infobox.InfoBox()
+box.title = 'Ogg Vorbis General FAQ - German'
+box.fontsize = -1
+box.title_image = '/images/NewsBox-bg.png'
+box.title_image_r = '/images/NewsBox-right-bg.png'
+
+self.write(box.start())
+%>
+
+<div align=center><font size="-1">updated 10/24/2001</font></div><br><br>
+<a href="faq-es.psp"><i>[en español]</i></a> <a href="faq.psp"><i>[in english]</i></a>
+
+<p><b>Was Ist Es?</b></p>
+
+<a href="#what">Was ist Ogg Vorbis?</a><br>
+
+<a href="#names">Was bedeuten all die ganzen Namen?</a><br>
+
+<a href="#mean">Wo kommen die Namen her? Was bedeutet das Logo?</a><br>
+
+<a href="#ext">Wie heisst die Dateiendung f&uuml;r Ogg Vorbis?</a><br>
+
+<a href="#replace">Ersetzt Vorbis MP3 vollst&auml;ndig oder ist es nur ein erg&auml;nzender Codec?</a><br>
+
+<a href="#done">Wann wird Ogg Vorbis fertig sein?</a><br>
+
+<a href="#artist">Ich bin ein K&uuml;nstler. Warum sollte mich das interessieren?</a><br>
+
+<a href="#fan">Ich bin ein Musikfan. Warum sollte mich das interessieren
+?</a><br>
+
+<a href="#dev">Ich bin ein Entwickler. Warum sollte mich das interessieren?</a><br>
+
+<a href="#company">Ich f&uuml;hre eine Musikfirma. Warum sollte mich das interessieren?</a><br>
+
+<p><b>Lizenzbestimmungen</b></p>
+
+<a href="#flic">Welche Lizenz gilt f&uuml;r das Ogg Vorbis-Format?</a><br>
+
+<a href="#slic">Welche Lizenz gilt f&uuml;r die mitgelieferte Ogg Vorbis-Software?</a><br>
+
+<a href="#com">Wir machen kommerzielle, ClosedSource-Software. Kann ich &uuml;berhaupt Ogg Vorbis benutzen? Welche Lizenzgeb&uuml;hren muss ich zahlen?</a><br>
+
+<a href="#sell">M&uuml;ssen Lizenzgeb&uuml;hren f&uuml;r den Vertrieb, Verkauf oder das Streaming im Ogg Vorbis-Format wie bei anderen Formaten wie z.B. MP3, bezahlt werden?</a><br>
+
+<a href="#money">Wenn es keine Lizenzgeb&uuml;hren gibt, wie verdient Ihr dann Geld damit? Werdet ihr sp&auml;ter Geb&uuml;hren verlangen, wenn Vorbis bekannt geworden ist?</a><br>
+
+<p><b>Audioqualit&auml;t</b></p>
+
+<a href="#sound">Klingt Ogg Vorbis besser als MP3?</a><br>
+
+<a href="#improve">Wird sich die Audioqualit&auml;t von Ogg Vorbis noch verbessern?</a><br>
+
+<a href="#other">Warum ist Ogg Vorbis besser als die anderen erh&auml;ltlichen &quot;Neuen MP3&quot;-Codecs?</a><br>
+
+<a href="#test">Ihr behauptet, dass Vorbis eine grossartige Audioqualit&auml;t besitzt. Habt ihr H&ouml;rtests gemacht, um das untermauern zu k&ouml;nnen?</a><br>
+
+<a href="#bugs">Ich habe Testsamples mit deutlichen Artefakten geh&ouml;rt. Wieso konnte das passieren?</a><br>
+
+
+<p><b>Features</b></p>
+
+<a href="#size">Wie gross sind Ogg Vorbis-Dateien? Wie gross sind sie im Vergleich zu MP3-Dateien bei &auml;hnlicher Bitrate?</a><br>
+
+<a href="#bitrate">Mit welcher Bitrate kann Vorbis maximal enkodieren?</a><br>
+
+<a href="#comments">Besitzt Ogg Vorbis die F&auml;higkeit, Liedertitel und K&uuml;nstlerinformationen beim Abspielen oder Streamen darzustellen? Ich sehe nichts davon in den Testdateien.</a><br>
+
+<a href="#speed">Wie schnell sind die Enkodierer/Dekodierer?</a><br>
+
+<a href="#video">Wo ist Video?</a><br>
+
+<a href="#stream">Wie sieht es mit Streaming beim Ogg Vorbis-Format aus?</a><br>
+
+<a href="#support">Welche Soft- und welche Hardware unterst&uuml;tzt Ogg Vorbis?</a><br>
+
+<a href="#unique">Welche einzigartigen Features hat Ogg Vorbis?</a><br>
+
+<br><br><br><br>
+
+
+<p><b>What Is Es?</b></p>
+
+<a name="what"><em>Was ist Ogg Vorbis?</em></a><br>
+<p>Ogg Vorbis ist ein neues Audiokompressionsformat. Es ist ungef&auml;hr mit anderen Formaten zum Speichern und Abspielen digitaler Musik vergleichbar, so wie z.B. mit MP3, VQF, AAC und anderen digitalen Audioformaten. Es unterscheidet sich von diesen Formaten insofern, als dass es v&ouml;llig frei, offen und unpatentiert ist.</p>   
+
+
+<a name="names"><em>Was bedeuten all die ganzen Namen?</em></a><br>
+<p>Vorbis ist der Name des Audiokompressionsschemas, das benutzt wird, um Ogg Vorbis-Dateien zu erzeugen. Es ist ein Teil des Ogg-Projekts, ein Rahmenprojekt, entworfen mit dem Ziel, ein vollst&auml;ndig offenes Multimedia-System zu verwirklichen. Derzeit ist Ogg Vorbis der einzige funktionierende Teil des Ogg-Projekts, welches noch sehr weit von seiner Fertigstellung entfernt ist.</p>
+
+<a name="mean"><em>Wo kommen die Namen her? Was bedeutet das Logo?</em><br>
+<p>Auf <a href="http://www.xiph.org">Xiph.org</a> gibt es eine <a href="http://www.xiph.org/xiphname.html">Seite, die die Quellen und Bedeutungen der Namen und Logos erkl&auml;rt</a>.</p>
+
+<a name="ext"><em>Wie heisst die Dateiendung f&uuml;r Ogg Vorbis?</em></a><br>
+<p>Da es ein Teil des Ogg-Projekts ist, haben die Dateien die Endung .ogg.</p>
+
+<a name="replace"><em>Ersetzt Vorbis MP3 vollst&auml;ndig oder ist es nur ein erg&auml;nzender Codec?</em></a><br>
+<p>Ogg Vorbis wurde entworfen, um alle propriet&auml;ren, patentierten Audioformate zu ersetzen. Das bedeutet, dass Du deine ganze Musik oder sonstigen Audiodaten nach Vorbis umwandeln kannst und nie mehr zur&uuml;ckblickn musst.</p>
+
+<a name="done"><em>Wann wird Ogg Vorbis fertig sein?</em></a><br>
+<p>Wir werden vermutlich sehr bald eine finale 1.0 Release herausbringen. Nichtsdestotrotz ist das Dateiformat schon seit einiger Zeit abgeschlossen. Eine Vorbis-Datei, die heute erzeugt wird, wird auch noch viele Jahre mit zuk&uuml;nftigen Dekodierern kompatibel sein. Das Format wurde flexibel entworfen, so dass die Entwickler die Dateigr&ouml;sse und Klangqualit&auml;t verbessern k&ouml;nnen, ohne mit alten Enkodierern und Playern zu "brechen".</p>
+
+<a name="artist"><em>Ich bin ein K&uuml;nstler. Warum sollte mich das interessieren?</em></a><br>
+<p>Es gibt mehrere Gr&uuml;nde:</p>
+
+<p>Obwohl es viele K&uuml;nstler nicht bemerken, ist MP3 doch ein &quot;verlustbehaftetes&quot; Format. Deshalb werden viele Klangdaten bei der Erstellung von MP3-Dateien entfernt. Dieses resultiert in einer Datei mit geringerer Klangqualit&auml;t als eine CD. Vorbis ist ebenfalls ein &quot;verlustbehaftetes&quot; Format, benutzt aber ein verbessertes Akustikmodell, um die Verluste einzugrenzen. Und deshalb klingt unter Vorbis ver&ouml;ffentlichte Musik besser als eine in der Gr&ouml;sse vergleichbare MP3-Datei.</p>
+
+<p>Ausserdem sollten K&uuml;nstler &uuml;ber Lizenzbestimmungen von Formaten Bescheid wissen. Wenn Du Dich dazu entscheidest, Deine Musik im MP3-Format zu verkaufen, dann bist Du daf&uuml;r verantwortlich, Frauenhofer einen Anteil deiner Verk&auml;fe abzutreten, da Du ihr Patent benutzt. Vorbis ist patent- und lizenzfrei, weshalb du niemals irgendjemanden bezahlen musst, um deine eigene Musik zu verkaufen, wegzugeben oder zu streamen.</p>
+
+<a name="fan"><em>Ich bin ein Musikfan. Warum sollte mich das interessieren?</em></a><br>
+<p>Zum einen bietet Dir Vorbis ein hochqualitatives Format, um Dir Deine Musik anzuh&ouml;ren. Zum anderen ist auch die Dateigr&ouml;sse geringer als bei MP3 und verringert sich sogar noch mehr, je weiter die Entwicklung voranschreitet. Vorbis findet jetzt schon weite Verbreitung in den Software-Playern und sollte demn&auml;chst kompatibel mit einigen grossen Hardware-Playern sein. Mit Vorbis kannst Du Dir Deine Musik in h&ouml;herer Qualit&auml;t bei weniger Platzbedarf anh&ouml;ren. Ausserdem bedeutet die Benutzung von Vorbis, dass die Wahl Deines Players und Enkodierers nicht an bestimmte Lizenzbestimmungen gebunden ist. Derzeit kannst Du nur aus einigen wenigen Enkodierern ausw&auml;hlen, um deine MP3-Dateien zu erstellen, weil die meisten Firmen die Lizenzgeb&uuml;hren f&uuml;r die Enkodierer nicht zahlen k&ouml;nnen oder wollen. Die Benutzung von Vorbis hingegen stellt Dir eine breite Palette an Enkodierern zur Verf&uuml;gung.</p>
+
+
+<a name="dev"><em>Ich bin ein Entwickler. Warum sollte mich das interessieren?</em></a><br>
+
+<p>Wenn Du Hard- oder Software-Audioplayer entwickelst, kannst Du Deine Arbeit nicht vertreiben, ohne dass du von propriet&auml;ren Patent- und Lizenzbestimmungen aus dem Audiobereich betroffen w&auml;rst. Mit Vorbis kannst Du Deine Hard- oder Softwareprodukte zum en-/dekodieren von Musikdateien erstellen, ohne auf Restriktionen, Abgaben oder Einschr&auml;nkungen beim Vertrieb zu achten. Vorbis bietet ausserdem ein flexibles, hochqualitatives Format, das von grossem Interesse f&uuml;r alle Audio-Geeks da draussen ist. Wirf bitte einen Blick auf unsere <a href="http://www.xiph.org/ogg/vorbis/index.html">Developer-Site</a> f&uuml;r mehr Entwicklerinformationen.</p>
+
+<a name="company"><em>Ich f&uuml;hre eine Musikfirma. Warum sollte mich das interessieren?</em></a><br>
+
+<p>Musikfirmen sollten am Ogg Vorbis-Format sehr interessiert sein. Andere Technologien erfordern eine grosse finanzielle Investition, um beginnen zu k&ouml;nnen. Vorbis aber bietet eine einzigartige Plattform, die f&uuml;r aufstrebende Firmen leicht zu integrieren ist und eine Sparmassnahme f&uuml;r die etablierten Firmen darstellt. Wegen der breiten Player-Unterst&uuml;tzung f&uuml;r Vorbis und wegen seiner offenen Natur werden Deine Kunden und Klienten nicht von Inkompatibilit&auml;ten geplagt. Auch werden sie die hohe Klangqualit&auml;t zu sch&auml;tzen wissen.</p>
+
+<a href="#top">Zur&uuml;ck nach Oben</a>
+<br> 
+
+<p><b>Lizenzbestimmungen</b></p>
+
+<a name="flic"><em>>Welche Lizenz gilt f&uuml;r das Ogg Vorbis-Format?</em></a><br>
+<p>Ogg Vorbis ist in der Public Domain spezifiziert. Es ist v&ouml;llig frei f&uuml;r die kommerzielle und unkommerzielle Nutzung. Das bedeutet, dass kommerzielle Entwickler unabh&auml;ngig Ogg Vorbis-Software schreiben d&uuml;rfen, die kompatibel zur Spezifikation ist, ohne daf&uuml;r zu zahlen oder irgendwelche anderen Restriktionen hinnehmen zu m&uuml;ssen. Dennoch m&uuml;ssen Entwickler, die die von uns geschriebene OpenSource-Software benutzen wollen, einige Regeln beachten.
+
+<a name="slic"><em>Welche Lizenz gilt f&uuml;r die mitgelieferte Ogg Vorbis-Software?</em></a><br>
+<p>Die geb&uuml;ndelte Ogg Vorbis-Utilitysoftware steht unter der GNU GPL, oder GNU General Public License. N&auml;here Informationen k&ouml;nnen bei <a href="http://www.gnu.org/">www.gnu.org</a> gefunden werden.</p>
+
+<p>Die Biblioheken und das SDK stehen unter der gesch&auml;ftsfreundlicheren BSD-Lizenz. Wir bitten zu beachten, dass Entwickler immer noch die Spezifikation nutzen d&uuml;rfen, um ClosedSource-Implementationen von Ogg Vorbis zu schreiben, die nicht an diese Lizenzen gebunden sind.</p>
+
+<a name="com"><em>Wir machen kommerzielle, ClosedSource-Software. Kann ich &uuml;berhaupt Ogg Vorbis benutzen? Welche Lizenzgeb&uuml;hren muss ich zahlen?</em></a><br>
+<p>Nochmal: es gibt keine Lizenzgeb&uuml;hren f&uuml;r IRGENDEINE Nutzung der Ogg Vorbis-Spezifikation. Bei kommerzieller Entwicklung ist es Dir erlaubt, OpenSource- oder ClosedSource-Implementationen von Vorbis als Enkodierer, Dekodierer oder anderen Werkzeugen zu verkaufen (oder zu verschenken). Dennoch musst Du die Lizenzbestimmungen respektieren, wenn Du unsere Software anstatt einer eigenen Implementation benutzt. Unsere Bibliotheken [verf&uuml;gbar unter BSD-Lizenz] k&ouml;nnen als Ganzes oder in Teilen f&uuml;r ClosedSource-Applikationen genutzt werden.</p>
+
+<a name="sell"><em>Muss man Lizenzgeb&uuml;hren f&uuml;r den Vertrieb, Verkauf oder das Streaming im Ogg Vorbis-Format wie bei anderen Formaten, wie z.B. MP3, zahlen?</em></a><br>
+<p>Nein.</p>
+
+<a name="money"><em>Wenn es keine Lizenzgeb&uuml;hren gibt, wie verdient Ihr dann Geld damit? Werdet Ihr sp&auml;ter Geb&uuml;hren verlangen, wenn Vorbis bekannt geworden ist?</em></a><br>
+<p>Die Vorteile eines patent- und lizenzfreien Formats &uuml;berwiegen die M&ouml;glichkeit direkt &uuml;ber das Format Geld zu verdienen. Vorbis wird immer frei und in der Public Domain sein. Niemand braucht Urheberrechtsanspr&uuml;che auf Vorbis, um davon profitieren zu k&ouml;nnen.
+</p>
+
+<br>
+<a href="#top">Zur&uuml;ck nach Oben</a>
+<br> 
+
+<p><b>Audioqualit&auml;t</b></p>
+
+<a name="sound"><em>Klingt Ogg Vorbis besser als MP3?</em></a><br>
+<p>Da Vorbis auf anderen mathematische Grundlagen beruht als MP3, stellt es sich auch anderen Herausforderungen bei der Kompression von Musik. Vorbis- und MP3-Dateien, die bei der gleichen Bitrate enkodiert wurden, haben bei aktuellen H&ouml;rtests eine &auml;hnliche Klangqualit&auml;t erreicht.</p>
+
+<a name="improve"><em>Wird sich die Audioqualit&auml;t von Ogg Vorbis noch verbessern?</em></a><br>
+<p>Ja. Vorbis besitzt ein flexibles Format, welches sogar nach seiner Festlegung erlaubt, signifikantes Tuning der Klangqualit&auml;t und Verbesserung der Algorithmen vorzunehmen. Vorbis klingt heute bereits sehr gut und klingt t&auml;glich besser.</p>
+
+<a name="other"><em>Warum ist Ogg Vorbis besser als die anderen erh&auml;ltlichen &quot;Neuen MP3&quot;-Codecs?</em></a><br>
+<p>Vorbis klingt besser. Vorbis ist offen. Vorbis stellen sich keine Restriktionen durch Urheberrechte in den Weg. Und Vorbis versucht nicht nur besser zu klingen, sondern versucht auch, Dinge auf allen m&ouml;glichen Wegen fundamental besser zu machen.</p>
+
+<a name="test"><em>Ihr behauptet, dass Vorbis eine grossartige Audioqualit&auml;t besitzt. Habt ihr H&ouml;rtests gemacht, um das untermauern zu k&ouml;nnen?</em></a><br>
+<p>W&auml;hrend den letzten &ouml;ffentlichen Betaversionen haben wir fast alle Bugs, die die Audioqualit&auml;t betrafen, entfernt. Wir arbeiten noch an den restlichen Bugs, die dann bei Release 1.0 entfernt sein werden. The Betaversionen sind im wesentlichen f&uuml;r Entwickler und Early-Adopters gedacht, um einen Einblick in unsere Technologie zu erhalten. Wenn wir Version 1.0 erreichen, werden wir hoffentlich Doppel-Blindh&ouml;rtests mit einer Auswahl an Testsamples durchf&uuml;hren, um Vorbis mit konkurrierenden Audioformaten ordentlich vergleichen zu k&ouml;nnen. Basierend auf informellen H&ouml;rtests von Entwicklern und anderen interessierten Stellen, sind wir zuversichtlich, dass Vorbis sich in diesen Tests gut schlagen wird. Diese Tests werden benutzt werden, um w&auml;hrend der Entwicklung das Format weiter tunen zu k&ouml;nnen.</p>
+
+
+<a name="bugs"><em>Ich habe Testsamples mit deutlichen Artefakten geh&ouml;rt. Wieso konnte das passieren?</em></a><br>
+<p>Das Vorbis-Dateiformat ist zwar standardisiert, aber der Enkodierer von Vorbis liegt noch in einer Betaversion vor. Die bekanntesten Bugs in Bezug auf die Audioqualit&auml;t wurden in den letzten Betaversionen entfernt, aber einige existieren noch. Wenn die von Dir geh&ouml;rten Dateien mit einer fr&uuml;heren Version (pre-beta 4) enkodiert wurden, dann kann es sein, dass sie schwerwiegende Bugs bzgl. ihrer Audioqualit&auml;t aufweisen, die aber inzwischen behoben wurden. Versuche, die Dateien mit einem aktuellen Enkodierer erneut umzuwandeln. Wir werden es jeden wisssen lassen, wenn Vorbis f&uuml;r intensive H&ouml;rtests bereit ist. Und zwar in einer Qualit&auml;t, die auch Audiophile zufriedenstellt.</p>
+
+<a href="#top">Zur&uuml;ck nach Oben</a> <br>
+
+<p><b>Features</b></p>
+
+<a name="size"><em>Wie gross sind Ogg Vorbis-Dateien? Wie gross sind sie im Vergleich zu MP3-Dateien bei &auml;hnlicher Bitrate?</em></a><br>
+<p>Zwei Dateien der gleichen Bitrate werden immer die gleiche Gr&ouml;sse besitzen, wenn sie beide mit CBR (konstanter Bitrate) encoded wurden. Die aktuelle Vorbis Beta encoded Dateien nur in VBR (variable Bitrate), welche kleinere Dateien in besserer Qualit&auml;t erzeugen kann, weil es keine Daten f&uuml;r Audio verschwenden muss, die leicht zu encoden sind. Mit der aktuellen Vorbis Beta erzeugte Dateien werden ungef&auml;hr die Gr&ouml;sse einer 128kbps MP3-Datei besitzen, dabei aber besser klingen.</p>
+
+<a name="bitrate"><em>Mit welcher Bitrate kann Vorbis maximal enkodieren?</em></a><br>
+<p>Theoretisch gibt es keine. Vorbis ist f&uuml;r Bitraten von 16-128kbps PRO KANAL optimiert. Aber es gibt keine Stelle in der Spezifikation die sagt, dass Du nicht eine Datei mit 512kbps oder 8 kbsp enkodieren kannst. Der aktuelle Beta-Enkodierer unterst&uuml;tzt folgende Bitraten: 128, 160, 192, 256, 350 kbps in Mono oder Stereo. Niedrigere Bitraten werden in sp&auml;teren Versionen verf&uuml;gbar sein.</p>
+
+<a name="comments"><em>Besitzt Ogg Vorbis die F&auml;higkeit, Liedertitel und K&uuml;nstlerinformationen beim Abspielen oder Streamen darzustellen? Ich sehe nichts davon in den Testdateien.</em></a><br>
+<p>Ja, Vorbis besitzt ein flexibles, vollst&auml;ndiges Kommentarfeld f&uuml;r Lied- und K&uuml;nstlerinfo und auch die M&ouml;glichkeit der Speicherung weiterer Trackdaten. Die aktuelle Betaversion des Enkodierers erlaubt jetzt auch Kommentare zur Zeit des Enkodierens einzugeben. Andere Werkzeuge zum Enkodieren von Dritten geben Dir ebenfalls die M&ouml;glichkeit, die Trackdaten einzugeben oder zu bearbeiten.</p>
+
+<a name="speed"><em>Wie schnell sind die Enkodierer/Dekodierer?</em></a><br>
+<p>Derzeit ist der Enkodierer so schnell wie die meisten kommerziellen Enkodierer im Audiobereich (und ungef&auml;hr zweimal so schnell wie beta 3), aber lange nicht so schnell wie einige andere. Da wir aber nicht-optimierten Betacode benutzen, ist das auch nicht anders zu erwarten. Aber w&auml;hrend die Vorbis-Tools reifen, werden sie auch schneller. Das Dekodieren ist mehr oder weniger von gleicher Komplexit&auml;t wie bei MP3, und wenn die Vorbis-Tools zum Dekodieren optimiert sind, sollten sie auch mit &auml;hnlicher Geschwindigkeit dekodieren. Die Dekodiergeschwindigkeit ist seit der ersten Betaversion schon nach der ersten Optimierungsphase um den Faktor 3-4 gestiegen.</p>
+
+<a name="video"><em>Wo ist Video?</em></a><br>
+<p>Wir haben einen vorl&auml;ufigen Video-Codec entwickelt, der mit dem Ogg-Framework zusammenarbeitet. Nichtsdestotrotz bildet Video einen neuen Satz von Herausfordernungen und unser prim&auml;rer Fokus liegt im Moment auf Audio.</p>
+
+<a name="stream"><em>Wie sieht es mit Streaming beim Ogg Vorbis-Format aus?</em></a><br>
+<p>Streaming ist eine wichtige Komponente von Vorbis. Das Format wurde von Grund auf so entworfen, dass es einfach zu streamen ist. Die Designer von Vorbis arbeiten mit den Leuten der Icecast Streaming-Media-Software, um Icecast Vorbis-kompatibel zu machen.  Wir arbeiten auch an der Unterst&uuml;tzung f&uuml;r die streamingf&auml;higen Player. Das Streamen von Ogg-Dateien aus dem Web wird von den Player-Plugins in Release 1.0 von Vorbis unterst&uuml;tzt werden.</p>
+
+<a name="support"><em>Welche Soft- und welche Hardware unterstützt Ogg Vorbis?</em></a><br>
+<p>Ogg Vorbis enkodieren oder abspielen ist mit einer grossen Auswahl popul&auml;rer Software m&ouml;glich. Es ist in bekannten Playern wie Sonique, FreeAmp f&uuml;r Windows und Unsanity Echo f&uuml;r MacOS enthalten.  Es wird auch von popul&auml;ren Audioapplikationen wie CDex, Siren Jukebox, and GoldWave unterst&uuml;tzt. F&uuml;r eine ausf&uuml;hrlichere Liste, solltest Du Dir <a href="download.psp">unsere Softwareseite</a> ansehen. Hardwareseitig haben iObjects Unterst&uuml;tzung f&uuml;r Ogg Vorbis in ihrem Dadio 2.0 OS verk&uuml;ndet, welches f&uuml;r portable Audioplayer entworfen wurde. Diese Entwicklung sollte, zusammen mit anderen Hardwareanbietern, versichern, dass Ogg Vorbis-Unterst&uuml;tzung in zuk&uuml;nftiger Audiohardware f&uuml;r den Massenmarkt weit verbreitet sein wird.</p>  
+
+<a name="unique"><em>Welche einzigartigen Features hat Ogg Vorbis?</em></a><br>
+<p>Vorbis besitzt einen wohldefinierten Kommentar-Header, der einfach zu benutzen und zu erweitern ist, und ausserdem die Notwendigkeit eines umst&auml;ndlichen Hacks wie ID3-Tags obsolet macht. Vorbis hat Bitratenskalierung - ein Feature, das Dich die Bitrate Deiner Vorbis-Datei oder Deines Vorbis-Streams, ohne neu zu kodieren, anpassen laesst; Du mussst die Pakete nur in die Gr&ouml;sse zerhacken, wie Du sie brauchst. Vorbis-Dateien k&ouml;nnen in beliebiger Granularit&auml;t zerteilt und bearbeitet werden. Vorbis unterst&uuml;tzt viele Kan&auml;le, nicht nur 1 oder 2. Vorbis-Dateien k&ouml;nnen logisch aneinander gekettet werden.</p>
+
+
+<br>
+<a href="#top">Zur&uuml;ck nach Oben</a>
+
+<%
+self.write(box.finish())
+%>
+
+<psp:insert file="footer.html" static="0">

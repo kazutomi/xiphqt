@@ -1,0 +1,241 @@
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+<title>Ogg Traffic for Tuesday, October 22, 2001</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.45">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="article">
+<div class="titlepage">
+<div><h1 class="title">
+<a name="id5283347"></a>Ogg Traffic for Tuesday, October 22, 2001</h1></div>
+<div><block use-attribute-sets="article.titlepage.recto.style" font-size="12pt" font-weight="bold" space-before="0.5em">Jack Moffitt<block use-attribute-sets="article.titlepage.recto.style" font-size="10pt" font-weight="normal" font-style="italic"><div class="address"><p><tt>&lt;<a href="mailto:jack@xiph.org">jack@xiph.org</a>&gt;</tt></p></div></block></block></div>
+<hr>
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt>1. <a href="#id5336164">Status Updates</a>
+</dt>
+<dd><dl>
+<dt>1.1. <a href="#id5336179">Monty</a>
+</dt>
+<dt>1.2. <a href="#id5336199">Stan Seibert</a>
+</dt>
+<dt>1.3. <a href="#id5348374">Jack Moffitt</a>
+</dt>
+<dt>1.4. <a href="#id5336239">Chris Wolf</a>
+</dt>
+</dl></dd>
+<dt>2. <a href="#id5336259">New Developments</a>
+</dt>
+<dd><dl>
+<dt>2.1. <a href="#id5336269">Multicast Vorbis</a>
+</dt>
+<dt>2.2. <a href="#id5286915">Tarkin</a>
+</dt>
+<dt>2.3. <a href="#id5286955">Ogg MIDI</a>
+</dt>
+<dt>2.4. <a href="#id5285480">Ogg MNG</a>
+</dt>
+</dl></dd>
+<dt>3. <a href="#id5285499">Interesting Happenings</a>
+</dt>
+<dd><dl>
+<dt>3.1. <a href="#id5285514">BBC Ogg Broadcasts</a>
+</dt>
+<dt>3.2. <a href="#id5285557">Vorbis on Dreamcast</a>
+</dt>
+<dt>3.3. <a href="#id5285581">Vorbis in Serious Sam</a>
+</dt>
+<dt>3.4. <a href="#id5285599">Ogg FLAC</a>
+</dt>
+<dt>3.5. <a href="#id5285632">Java Support for Ogg</a>
+</dt>
+</dl></dd>
+</dl>
+</div>
+<div class="section">
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="id5336164"></a>1. Status Updates</h2></div></div>
+<p>
+The Ogg team is still pushing towards RC3 among other goals.  Here is
+a quick update from some of the most active developers in the last few weeks.
+</p>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5336179"></a>1.1. Monty</h3></div></div>
+<p> 
+Monty continues to tune and develop bitrate management.  RC3 bitrate
+management will allow seperate configuration of minimum, maximum, and
+average bitrate over a user-selectable window size.  Naturally,
+variable bitrate modes are still supported as Vorbis's strongest
+point.  This is one of the final encoder features for a 1.0 Ogg Vorbis 
+release.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5336199"></a>1.2. Stan Seibert</h3></div></div>
+<p>
+Stan has been working hard on ogg123 and libao.  He has branched Kenneth's
+kcarnold_work branch and his updates are available on his
+voslung_kc_20011011 branch.  These updates include a rewrite of the
+buffering code to be much more simple and bug-free, working HTTP
+streaming, and much better signal handling.  If you're an ogg123
+user, we suggest you test out this new development and report any
+problems you encounter.  Libao has some Linux/PPC bugs fixed in the
+OSS plugin.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5348374"></a>1.3. Jack Moffitt</h3></div></div>
+<p>
+Jack been working towards an alpha release of icecast 2.0.  This
+includes tons of build system work for icecast, ices, and libshout for
+Solaris, FreeBSD, and Win32.  Many people have been testing builds
+from CVS, and this will be a chance for those interested in Ogg
+streaming to test on a wider scale.  Jack also completed the Ogg MIDI
+work, bringing the first new substream to the Ogg framework.  He and
+Ralph Giles are still working on the specification, which will be
+finished shortly.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5336239"></a>1.4. Chris Wolf</h3></div></div>
+<p>
+Chris has been updating and documenting the Win32 build system.  A
+portable nmake-based build system is now available, as well as a much
+updated an improved Developer Studio based one.  There is much better
+documentation now as well.  For details see win32sdk/README.win32sdk.
+</p>
+</div>
+</div>
+<div class="section">
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="id5336259"></a>2. New Developments</h2></div></div>
+<p>
+Since the last official release a lot of work has been done in various
+areas.
+</p>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5336269"></a>2.1. Multicast Vorbis</h3></div></div>
+<p>
+Erik Kruus <a href="http://www.xiph.org/archives/vorbis-dev/200110/0090.html" target="_top">posted</a>
+about his multicast Vorbis over RTP work.  We now have the first
+implementation of the <a href="http://www.xiph.org/ogg/vorbis/doc/draft-moffitt-vorbis-rtp-00.txt" target="_top">Vorbis
+RTP draft specification</a>.  It does not support chained streams
+yet, but this will hopefully be addressed in a future version of the
+specification and the draft.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5286915"></a>2.2. Tarkin</h3></div></div>
+<p>
+Holger posted <a href="http://www.xiph.org/archives/tarkin-dev/200109/0058.html" target="_top">an 
+update</a> to the <a href="http://www.xiph.org/archives/tarkin-dev/masterindex.html" target="_top">tarkin-dev</a>
+list.  Essentially the Tarkin code in the w3d module of CVS is now
+usable to a large extent.  It produces compressed bitstreams, should
+have reasonable compression ratios, etc.  There is currently not a
+player for Tarkin yet, but we hope to have one soon, as well as a
+specification for Tarkin inside Ogg bitstreams.  Give it a whirl!
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5286955"></a>2.3. Ogg MIDI</h3></div></div>
+<p>
+Jack finished version 1 of the Ogg MIDI work, and a spec is
+forthcoming.  The working code is in the ogg-tools module of CVS, and
+the tools to play with are oggmerge and omplay.  oggmerge combines
+substreams into a single Ogg bitstream, and omplay plays Ogg files
+comprised of synchronized MIDI and Vorbis substreams.  The code is
+pretty simple and serves as a model for future substreams.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5285480"></a>2.4. Ogg MNG</h3></div></div>
+<p>
+Ralph Giles has been working on MNG substreams for Ogg for some time
+and did much of the foundation research and work that led to Ogg
+MIDI.  He recently picked back up his work and we should have Ogg MNG
+streams pretty soon.
+</p>
+</div>
+</div>
+<div class="section">
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="id5285499"></a>3. Interesting Happenings</h2></div></div>
+<p>
+A lot of mail comes in to the various lists as well as to the
+team's personal mailboxes.  The following is a highlight of the
+interesting things that have been mentioned or announced.
+</p>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5285514"></a>3.1. BBC Ogg Broadcasts</h3></div></div>
+<p>
+Ciaran Anscomb of the BBC (yes, <span class="emphasis"><i>that</i></span> BBC) has
+<a href="http://www.xiph.org/archives/vorbis/200110/0280.html" target="_top">announced</a>
+that they are testing scheduled Ogg broadcasts with icecast 2.0.  You
+can tune into these broadcasts at <a href="http://support.bbc.co.uk/oggstreams.shtml" target="_top">http://support.bbc.co.uk/oggstreams.shtml</a>.
+The page will be updated as new things are added.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5285557"></a>3.2. Vorbis on Dreamcast</h3></div></div>
+<p>
+Thorsten Titze <a href="http://www.xiph.org/archives/vorbis/200110/0123.html" target="_top">wrote in</a>
+to inform us that he had ported Ogg Vorbis to the Dreamcast platform
+using the Open Source Dreamcast OS KallistiOS.  This work will soon
+become part of the KallistiOS source tree.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5285581"></a>3.3. Vorbis in Serious Sam</h3></div></div>
+<p>
+Alen Ladavac, the Lead Programmer of Croteam, wrote in to tell us that
+the next version of their game Serious Sam would ship with Ogg in
+their sound engine.  In addition to being used in Croteam's
+games, it is also available to their engine licensees.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5285599"></a>3.4. Ogg FLAC</h3></div></div>
+<p>
+Josh Coalson, author of <a href="htttp://flac.sf.net/" target="_top">FLAC</a>, has <a href="http://www.xiph.org/archives/vorbis/200110/0231.html" target="_top">added an option</a> to the FLAC encoder
+to produce Ogg bitstreams.  This will be interesting work especially
+once Ogg MNG is done, as we will have a great distribution format for
+lossless video.
+</p>
+</div>
+<div class="section">
+<div class="titlepage"><div><h3 class="title">
+<a name="id5285632"></a>3.5. Java Support for Ogg</h3></div></div>
+<p>
+<a href="http://www.jcraft.com/" target="_top">JCraft</a> has produced even
+more Java software that supports Ogg.  They now have <a href="http://www.jcraft.com/jroar/" target="_top">jRoar</a> which is an
+icecast 2.0 compatible streaming server and proxy as well as <a href="http://www.jcraft.com/jesd/index.html" target="_top">jESD</a> which is an
+ESD compatible sound server in Pure Java that also supports the
+sending of Ogg instead of raw audio.  This is in addition to the Pure
+Java version of the Ogg Vorbis decoder and player <a href="http://www.jcraft.com/jorbis/" target="_top">jOrbis</a>.
+</p>
+<p>
+In a related note, idcmp <a href="http://www.xiph.org/archives/vorbis/200110/0199.html" target="_top">pointed us
+to</a> an RFE (Request for Enhancement) over at the Java Developer
+Center.  If you are a Java developer and interested in Ogg Vorbis,
+<a href="http://developer.java.sun.com/developer/bugParade/bugs/4499904.html" target="_top">this
+RFE</a> could use your vote!  It essentially requests that Ogg
+Vorbis become part of Java's multimedia infrastructure.
+</p>
+</div>
+</div>
+</div></body>
+</html>

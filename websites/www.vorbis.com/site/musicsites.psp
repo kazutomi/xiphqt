@@ -1,0 +1,8 @@
+<%@ page imports="siteconfig,musicsite" %>
+<psp:insert file="header.html" static="0">
+<psp:insert file="globalnav.html" static="0">
+<psp:insert file="topnav.html" static="0">
+
+<%= musicsite.get_musicsite_box() %>
+
+<psp:insert file="footer.html" static="0">

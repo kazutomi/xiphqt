@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.0: http://docutils.sourceforge.net/" />
+<title>Ogg Traffic for Wednesday, February 25, 2004</title>
+<meta name="author" content="Arc Riley" />
+<meta name="date" content="February 25, 2004" />
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="ogg-traffic-for-wednesday-february-25-2004">
+<h1 class="title">Ogg Traffic for Wednesday, February 25, 2004</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Arc Riley</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="mailto:arc&#64;xiph.org">arc&#64;xiph.org</a></td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>February 25, 2004</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><a name="table-of-contents">Table of Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#status-updates" id="id1" name="id1">1   Status Updates</a><ul class="auto-toc">
+<li><a class="reference" href="#monty" id="id2" name="id2">1.1   Monty</a></li>
+<li><a class="reference" href="#jean-marc-valin" id="id3" name="id3">1.2   Jean-Marc Valin</a></li>
+<li><a class="reference" href="#mike-smith" id="id4" name="id4">1.3   Mike Smith</a></li>
+<li><a class="reference" href="#arc-riley" id="id5" name="id5">1.4   Arc Riley</a></li>
+<li><a class="reference" href="#ed-zaleski" id="id6" name="id6">1.5   Ed Zaleski</a></li>
+<li><a class="reference" href="#karl-heyes" id="id7" name="id7">1.6   Karl Heyes</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#news-and-recent-developments" id="id8" name="id8">2   News and Recent Developments</a><ul class="auto-toc">
+<li><a class="reference" href="#ogg-granulepos-discussion" id="id9" name="id9">2.1   Ogg granulepos discussion</a></li>
+<li><a class="reference" href="#icecast-gets-multi-codec-ogg-support" id="id10" name="id10">2.2   Icecast gets multi-codec Ogg support</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#help-needed" id="id11" name="id11">3   Help Needed</a><ul class="auto-toc">
+<li><a class="reference" href="#speex-hacking" id="id12" name="id12">3.1   Speex Hacking</a></li>
+<li><a class="reference" href="#porting-theora" id="id13" name="id13">3.2   Porting Theora</a></li>
+<li><a class="reference" href="#technical-writers" id="id14" name="id14">3.3   Technical Writers</a></li>
+<li><a class="reference" href="#ogg-traffic-editor" id="id15" name="id15">3.4   Ogg Traffic Editor</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a class="reference" href="http://www.vorbis.com/ot/">Previous Issues of Ogg Traffic</a></p>
+<div class="section" id="status-updates">
+<h1><a class="toc-backref" href="#id1" name="status-updates">1   Status Updates</a></h1>
+<div class="section" id="monty">
+<h2><a class="toc-backref" href="#id2" name="monty">1.1   Monty</a></h2>
+<p>Monty continued his work on Postfish with several GUI enhancements and 
+bug fixes.  He has also started work on the OggFile documentation by 
+publishing a draft for discontinuous bitstream handling in Ogg.  More on 
+this in the News section below.</p>
+</div>
+<div class="section" id="jean-marc-valin">
+<h2><a class="toc-backref" href="#id3" name="jean-marc-valin">1.2   Jean-Marc Valin</a></h2>
+<p>Jean-Marc optimized Speex to better make use of SSE extensions. 
+He found the time to integrate minor patches.</p>
+</div>
+<div class="section" id="mike-smith">
+<h2><a class="toc-backref" href="#id4" name="mike-smith">1.3   Mike Smith</a></h2>
+<p>Mike committed several MP3-related bug fixes to Icecast and fixed a typo
+in the libvorbis documentation.  He also disabled vcut from vorbis-tools
+default install as it's broken and unlikely to see further development.</p>
+</div>
+<div class="section" id="arc-riley">
+<h2><a class="toc-backref" href="#id5" name="arc-riley">1.4   Arc Riley</a></h2>
+<p>Arc continued work on Dan Miller's Python-based Theora reference decoder 
+applying recent Theora bitstream changes, changing the output format to
+yuv4mpeg2, and porting it to py-ogg2.</p>
+</div>
+<div class="section" id="ed-zaleski">
+<h2><a class="toc-backref" href="#id6" name="ed-zaleski">1.5   Ed Zaleski</a></h2>
+<p>Ed made some Windows-related fixes to libspeex and added an installer 
+config for Inno Setup which can be used to create a Windows installer 
+for Speex.</p>
+</div>
+<div class="section" id="karl-heyes">
+<h2><a class="toc-backref" href="#id7" name="karl-heyes">1.6   Karl Heyes</a></h2>
+<p>Karl continued work on his Icecast 2.0 branch and built initial support 
+for streaming Ogg Theora and Ogg Speex with Icecast2.  More on this in 
+the News section below.</p>
+</div>
+</div>
+<div class="section" id="news-and-recent-developments">
+<h1><a class="toc-backref" href="#id8" name="news-and-recent-developments">2   News and Recent Developments</a></h1>
+<div class="section" id="ogg-granulepos-discussion">
+<h2><a class="toc-backref" href="#id9" name="ogg-granulepos-discussion">2.1   Ogg granulepos discussion</a></h2>
+<p>To extend or not to extend, and how, was the question raised over 
+discontinuous bitstreams in Ogg.  When Ogg was initially designed only 
+continuous bitstreams, whereas the last granule of each page is one less 
+than the beginning granule of the next, were foreseen.  This covers 
+virtually all audio and video codecs.</p>
+<p>The end-time was chosen so that the granulepos of the last page of a 
+stream represented the stream's total length.  Even if the stream is 
+incomplete a decoder can use the granulepos of the last complete page. 
+Granulepos is also used for streaming, seeking, and muxing (combining 
+multiple codecs into an Ogg file so that they play at the same time).</p>
+<p>However, not all codecs are continuous.  Subtitle formats, for example, 
+may have a long period of time between text phrases and the text phrases 
+may overlap in duration.  While the discontinuous nature of these codecs 
+have been handled in various ways, such as OggMIDI using standard 
+end-time granulepos but ordering by start-time, no standard has been 
+found for these codecs.</p>
+<p>One <a class="reference" href="http://www.xiph.org/ogg/doc/ogg-multiplex.html">proposed solution</a> for discontinuous bitstreams was to have the 
+granulepos represent the start-time of a page.  As demonstrated in the 
+<a class="reference" href="http://wiki.xiph.org/OggWrit">OggWrit spec</a>, this results in discontinuous codecs appearing before
+continuous codecs in a muxed stream, but since most discontinuous codecs
+are fairly low bitrate this is unlikely to cause many buffering issues.</p>
+<p>Another proposed solution, which is being favored at the moment, is for 
+all codecs (except for Vorbis I, for backwards compatibility) to use 
+start-time for granulepos.  This has the added benefit of better 
+buffering, but also eliminates the easy length discovery as described 
+above.</p>
+<p>This is a continuing discussion which may last several more weeks.
+Settling on a solution will open Ogg to an array of different codecs and 
+move us closer to having a complete multimedia framework.</p>
+</div>
+<div class="section" id="icecast-gets-multi-codec-ogg-support">
+<h2><a class="toc-backref" href="#id10" name="icecast-gets-multi-codec-ogg-support">2.2   Icecast gets multi-codec Ogg support</a></h2>
+<p>Through two independent implementations, one by Karl Heyes and another 
+by Daniel Holth, pre-encoded Ogg Theora files can now be streamed with 
+Icecast2.  Theora isn't alone, either, as Karl's code also adds Speex 
+support while Daniel's adds FLAC support.</p>
+<p>This is exciting news as, for the first time, royalty-free video 
+streaming is possible.  We may be just months away from opening the 
+market to small web-based television stations which could not afford 
+streaming licenses or per-viewer royalties previously imposed on them.</p>
+<p>There are still bugs to work out, however, and this experimental work 
+is not yet available to the general public.  Currently both 
+implementations pace the stream by Vorbis alone resulting in less than 
+optimal buffering, wasted bandwidth on connect, and a requirement that 
+Theora streams include Vorbis audio.  Also, with both MPlayer and Xine 
+you can currently only watch the first Ogg Theora file in a stream as 
+neither is capable of playing multiple chained streams.  These bugs are 
+likely to be worked out in the upcoming weeks as we near an Icecast 
+public release with debugged multi-codec streaming.</p>
+</div>
+</div>
+<div class="section" id="help-needed">
+<h1><a class="toc-backref" href="#id11" name="help-needed">3   Help Needed</a></h1>
+<div class="section" id="speex-hacking">
+<h2><a class="toc-backref" href="#id12" name="speex-hacking">3.1   Speex Hacking</a></h2>
+<p>Jean-Marc is calling for volunteers to help with the fixed-point 
+libspeex port, platform-specific optimizations, and an echo canceler.  
+Contact <a class="reference" href="mailto:jm&#64;xiph.org">jm&#64;xiph.org</a> for more information.</p>
+</div>
+<div class="section" id="porting-theora">
+<h2><a class="toc-backref" href="#id13" name="porting-theora">3.2   Porting Theora</a></h2>
+<p>Ralph Giles is seeking volunteers to write tools for using Theora on 
+MacOS and Windows.  Additionally, Aaron Colwell is looking for help 
+writing a Theora encoder plugin for Real's Helix Producer. Contact 
+<a class="reference" href="mailto:giles&#64;xiph.org">giles&#64;xiph.org</a> for more details.</p>
+</div>
+<div class="section" id="technical-writers">
+<h2><a class="toc-backref" href="#id14" name="technical-writers">3.3   Technical Writers</a></h2>
+<p>Virtually every Xiph project is in need of better documentation, most 
+notably Theora where a documented specification is necessary before the
+format is frozen.  Interested parties should contact <a class="reference" href="mailto:arc&#64;xiph.org">arc&#64;xiph.org</a>.</p>
+</div>
+<div class="section" id="ogg-traffic-editor">
+<h2><a class="toc-backref" href="#id15" name="ogg-traffic-editor">3.4   Ogg Traffic Editor</a></h2>
+<p>Carsten &quot;Purple&quot; Haese has retired as OT editor, leaving the position 
+open for an inspired volunteer to put together these newsletters.  
+Interested parties should contact <a class="reference" href="mailto:carsten&#64;xiph.org">carsten&#64;xiph.org</a>.</p>
+<hr />
+<p>Ogg Traffic for February 25, 2004</p>
+</div>
+</div>
+</div>
+</body>
+</html>
