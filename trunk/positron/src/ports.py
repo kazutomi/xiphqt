@@ -1,11 +1,14 @@
 import os
 from os import path
 
-
-def config_file_path():
+def site_config_file_path():
     if os.name == "nt":
-        return path.join(path.expanduser("~"),"Application Data","Positron",
-                         "config.txt")
+        return None
     else:
-        return path.join(path.expanduser("~"),".positron"
+        return path.join("/etc/",".positron")
 
+def user_config_file_path():
+    if os.name == "nt":
+        return None
+    else:
+        return path.join(path.expanduser("~"),".positron")
