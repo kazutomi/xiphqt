@@ -554,7 +554,7 @@ sub configure{
 sub barconfigure{
     my$this=shift;
     my$bar=shift;
-    $bar=$this->{"bar$bar"};
+    $bar=$this->{$bar};
     $bar->configure(@_);
 }
 

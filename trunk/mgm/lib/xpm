@@ -28,13 +28,24 @@ sub rgb{
 
 sub read{
     my($file,$transp)=@_;
-    $transp="#ffffff"if(!defined($transp));
     die "Couldn't open $file for reading: $!" unless open(XPM,"$file");
-    $_=<XPM>;
+    undef $/;
+    my$data=<XPM>;
+    $/="\n";
+    close XPM;
+    &data($data,$transp);
+}
+
+sub data{
+    my($data,$transp)=@_;
+    $transp="#ffffff"if(!defined($transp));
+    my@lines=split "\n", $data;
+    $_=shift @lines;
     
     if(m{/\* XPM \*/}){
-	$_=<XPM>;
-	$_=<XPM>;
+	$_=shift @lines;
+	$_=shift @lines;
+
 	m/^\"(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
 	if($4==1){
 	    my%xpm;
@@ -44,50 +55,32 @@ sub read{
 	    my$colors=$3;
 	    
 	    my$entries;
-	    my$redentries;
-	    my$greenentries;
-	    my$blueentries;
+	    my$gentries;
 	    my$type='g'; # graymap until upgraded
 	    
 	    for(my$i=0;$i<$colors;$i++){
-		$_=<XPM>;m/^\"(.)\s+(\S)\s+([^\"\s]+)/;
+		$_=shift @lines;;m/^\"(.)\s+(\S)\s+([^\"\s]+)/;
 		$type='c' if($2 eq 'c');
 		$entries.=sprintf "\\%03o", ord $1;
 		$val=$3;
 		
 		$val=$transp if(ucfirst($val) eq 'None');
-		($red,$blue,$green)=MGM::Xpm::rgb($val);
+		($red,$green,$blue)=MGM::Xpm::rgb($val);
 		
-		$redentries.=sprintf "\\%03o", $red;
-		$greenentries.=sprintf "\\%03o", $green;
-		$blueentries.=sprintf "\\%03o", $blue;
+		$val=$red*.3+$green*.5+$blue*.2;
+
+		$gentries.=sprintf "\\%03o", $val;
 	    }
 	    
 	    # read the image bits
 	    
 	    for(my$y=0;$y<$height;$y++){
-		my$red=<XPM>;
-		$red=substr $red, 1, $width;
+		my$line=shift @lines;
+		$line=substr $line, 1, $width;
 		
 		# sometimes Perl makes me positively weep for joy:
-		if($type eq 'c'){
-		    my$green=$red;my$blue=$red;
-		    eval "\$green=~tr[$entries][$greenentries];";
-		    eval "\$blue=~tr[$entries][$blueentries];";
-		    eval "\$red=~tr[$entries][$redentries];";
-		    
-		    my@redgrid = (unpack('C*',$red));
-		    my@greengrid = (unpack('C*',$green));
-		    my@bluegrid = (unpack('C*',$blue));
-		    
-		    $vector .= pack 'C*', map{$redgrid[$_]*.3+
-						  $greengrid[$_]*.5+
-						      $bluegrid[$_]*.2}(0..$#redgrid);
-		    
-		}else{
-		    eval "\$red=~tr[$entries][$redentries];";
-		    $vector.=$red;
-		}
+		eval "\$line=~tr[$entries][$gentries];";
+		$vector.=$line;
 		
 	    }
 	    
@@ -95,18 +88,15 @@ sub read{
 	    
 	    my$ref=\%xpm;
 	    bless($ref,"MGM::Xpm");
-	    close XPM;
 	    $ref;
 	}else{
 	    print STDERR "This code can only handle Pixmaps with single ".
 		"byte color indicies\n";
-	    close XPM;
 	    undef;
 	}
     }else{
 	print STDERR "Input file is not in XPM format ".
 	    "(must begin with /* XPM */)\n";
-	close XPM;
 	undef;
     }
 }
@@ -131,6 +121,7 @@ sub write{
     # easier than reading, but harder to do efficiently
     
     $transp=-1 if(!defined($transp));
+
     my$width=$xpm->{"width"};
     my$height=$xpm->{"height"};
     my$colors=0;
