@@ -4,16 +4,19 @@ RM = rm -rf
 CFLAGS = -g -O0 -Wall -I.. -DTYPE=uint16_t
 LFLAGS = -g
 
-TARGETS = ppmdiff
+TARGETS = ppmdiff yuv2ppm
 
 OBJS = $(TARGETS:=.o) ../pnm.o
 SRCS = $(OBJS:.o=.c)
 
 
-all: ppmdiff
+all: $(OBJS) $(TARGETS)
 
-ppmdiff: $(OBJS)
-	$(CC) $(LFLAGS) $(OBJS) -o $@
+ppmdiff: ppmdiff.o ../pnm.o
+	$(CC) $(LFLAGS) ppmdiff.o ../pnm.o -o $@
+
+yuv2ppm: yuv2ppm.o ../pnm.o
+	$(CC) $(LFLAGS) yuv2ppm.o ../pnm.o -o $@
 
 .c.o: .depend
 	$(CC) $(CFLAGS) -c $< -o $@
