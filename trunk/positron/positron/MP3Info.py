@@ -448,7 +448,7 @@ class MP3Info:
 
         id3v2 = ID3v2(file)
         if id3v2.valid and id3v2.tags != {}:
-            self.id3 = id3
+            self.id3 = id3v2
 
         if id3v2.valid:
             # We'll be generous for files with ID3v2 tags.
