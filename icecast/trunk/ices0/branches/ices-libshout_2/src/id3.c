@@ -119,6 +119,7 @@ ices_id3v2_parse (input_stream_t* source)
   }
 
   tag.artist = tag.title = NULL;
+  tag.pos = 0;
   tag.major_version = *(buf + 3);
   tag.minor_version = *(buf + 4);
   tag.flags = *(buf + 5);
@@ -136,7 +137,7 @@ ices_id3v2_parse (input_stream_t* source)
   if (tag.flags & ID3V2_FLAG_FOOTER)
     remaining -= 10;
 
-  while (remaining > 0 && (tag.artist == NULL || tag.title == NULL)) {
+  while (remaining > 10 && (tag.artist == NULL || tag.title == NULL)) {
     if ((rv = id3v2_read_frame (source, &tag)) < 0) {
       ices_log ("Error reading ID3v2 frames");
 
