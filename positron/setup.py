@@ -24,7 +24,8 @@ from setupext import install_data_ext
 
 docdirbase = 'share/doc/positron'
 manpagebase = 'share/man/man1'
-docfiles = filter(isfile, glob('doc/*.html')) + ['README', 'COPYING']
+docfiles = filter(isfile, glob('doc/*.html')) + \
+           filter(isfile, glob('doc/*.png')) + ['README', 'COPYING']
 examfiles = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
@@ -39,7 +40,8 @@ setup(name="positron",
       scripts=['scripts/positron'],
       cmdclass = {'install_data': install_data_ext},
       data_files = [('data', docdirbase, docfiles),
-                    ('data', os.path.join(docdirbase, 'examples'), examfiles)]
+                    ('data', os.path.join(docdirbase, 'examples'), examfiles),
+                    ('data', manpagebase, ['doc/positron.1'])]
       )
 
 
