@@ -1,7 +1,8 @@
 PYTHON_HEADER_DIR=/usr/include/python2.3
 BOOST_HEADER_DIR=/home/dholth/opt/include/boost-1_31
 
-all: module
+all:
+	./setup.py build
 
 #multiple: oggpy.pyste vorbispy.pyste theorapy.pyste
 #	pyste --multiple --module=oggpy --out=oggpy -I. -I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I$(HOME)/include/theora \

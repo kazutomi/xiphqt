@@ -52,7 +52,7 @@ namespace ogg {
             userpacket(std::string bytes, ogg_int64_t granulepos, bool bos = false, bool eos = false)
             {
                 this->bytes = bytes;
-                (const char*)(this->get_data()->packet) = bytes.c_str();
+                this->get_data()->packet = (unsigned char*)bytes.c_str();
                 this->get_data()->granulepos = granulepos;
                 this->get_data()->bytes      = bytes.size();
                 this->get_data()->b_o_s      = bos;

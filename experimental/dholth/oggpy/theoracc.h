@@ -139,16 +139,16 @@ namespace ogg {
                 int decode_header ( theora::comment *cc , ogg::packet *op )  { 
                     return  theora_decode_header ( this->get_data() , cc->get_data() , op->get_data() ); }
         };
+        
 
-		
         /// YUV image data
         class yuv_image : public yuv_buffer
         {
             public:
                 yuv_buffer *get_data()  { return (yuv_buffer*)this; }
         };
+	
 
-		
         /// Codec state.
         class state {
             private:
