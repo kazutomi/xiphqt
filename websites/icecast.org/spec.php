@@ -26,6 +26,7 @@ Examples of existing directories can be found at :<br></br>
 * Ability to create a new entry in the listing<br></br>
 * Ability to update an existing entry in the listing<br></br>
 * Ability to remove an entry from the listing<br></br>
+* Ability to group related broadcasts<br></br>
 * Ability to cluster relayed broadcasts into a single listing<br></br>
 * Support for icecast/icecast2 mountpoints<br></br>
 * Listing should be done by the streaming server (i.e. no manual effort required)<br></br>
@@ -34,7 +35,6 @@ Examples of existing directories can be found at :<br></br>
 <br>
 <p>Additionally, the protocols which define the conversations above should NOT be proprietary, and should be well defined.</p>
 <br>
-<p>For the first release of the YP, clustering (combining the same broadcasts from multiple relays into a single listing) will not be supported.  If the need arises for this type of functionality, it will be built at that time.</p>
 <h3>Protocol</h3>
 <p>HTTP protocol will be used for all communication between the listing client (icecast2 in this case) and the listing server (listing script(s))</p>
 <p>
@@ -56,7 +56,7 @@ The URL call will have the following mandatory parameters :
 <center><table border=1 width="80%">
 <tr><td>action</td><td>Action (add in this case)</td></tr>
 <tr><td>sn</td><td>Server Name</td></tr>
-<tr><td>type</td><td>Server Type</td></tr>
+<tr><td>type</td><td>Server Type (content type)</td></tr>
 <tr><td>genre</td><td>Server Genre</td></tr>
 <tr><td>b</td><td>Server Bitrate</td></tr>
 <tr><td>listenurl</td><td>Listen URL (url which listeners use to listen)</td></tr>
@@ -67,11 +67,12 @@ The URL call will have the following *optional* parameters :
 </p>
 <center>
 <table border=1 width="80%">
-<tr><td>cpswd</td><td>Cluster Password (broadcasts with the same Server Name and cluster password will be displayed together in the directory server) - this is currently not implemented, servers are clustered based off server name and listing IP.</td></tr>
+<tr><td>cpswd</td><td>Cluster Password (broadcasts with the same Server Name and cluster password will be displayed together in the directory server).</td></tr>
 <tr><td>user</td><td>YP userid - not necessilarily all YP implementation will support users and passwords</td></tr>
 <tr><td>pass</td><td>YP password - not necessilarily all YP implementation will support users and passwords</td></tr>
 <tr><td>desc</td><td>Server Description</td></tr>
 <tr><td>url</td><td>Stream URL (not the listen url, usually a link to the broadcasters website)</td></tr>
+<tr><td>stype</td><td>Server Sub type.  Used normally for multi-codec streams (ogg/theora, vp6/aac).  Codecs should be separated by a '/' delimiter.</td></tr>
 </table>
 </center>
 <p>
@@ -98,7 +99,7 @@ URL: http://dir.xiph.org/cgi-bin/yp-cgi?action=add&amp;sn=Oddsock+Server&amp;
 
 Listing Client Request
 -----------------
-GET /yp-cgi?action=add&amp;sn=Oddsock+Server&amp;listenurl=http://localhost:8000/oddsock.ogg&amp;<br>genre=Rock&amp;b=64&amp;type=Ogg+Vorbis
+GET /yp-cgi?action=add&amp;sn=Oddsock+Server&amp;listenurl=http://localhost:8000/oddsock.ogg&amp;<br>genre=Rock&amp;b=64&amp;type=application/ogg
 
 
 Listing Server Response
@@ -140,8 +141,16 @@ The URL call will have the following *optional* parameters :
 </p>
 <center><table border=1 width="80%">
 <tr><td>st</td><td>Song Title</td></tr>
-<tr><td>listeners</td><td>Number of listeners</td></tr>
+<tr><td>listeners</td><td>Number of listeners ***</td></tr>
+<tr><td>max_listeners</td><td>Maximum capacity of station ***</td></tr>
+<tr><td>alt</td><td>Average Listening time ***</td></tr>
+<tr><td>ht</td><td>Stream Hits (tuneins) ***</td></tr>
+<tr><td>cm</td><td>5 minute tunein ***</td></tr>
+<tr><td>stype</td><td>Server Sub type.  Used normally for multi-codec streams (ogg/theora, vp6/aac).  Codecs should be separated by a '/' delimiter. - Note that since it is possible to change codecs mid stream in some container formats, so this field is updatable on a touch.</td></tr>
 </table>
+<p>
+*** = due to the open-source nature of icecast, these metrics may not be reliable (i.e. they may be fake), it is up to the YP administrator to decide whether to include these stats.
+</p>
 </center>
 <p>
 The listing scripts will respond with the following HTTP headers
@@ -253,51 +262,70 @@ Based off these requirements, I suggest that the server listing scripts be imple
 <table border=0 width="70%">
 <tr><td>
 <pre>
-mysql> desc servers;
-+-------------+--------------+------+-----+---------+----------------+
-| Field       | Type         | Null | Key | Default | Extra          |
-+-------------+--------------+------+-----+---------+----------------+
-| id          | mediumint(9) |      | PRI | NULL    | auto_increment |
-| server_name | varchar(100) | YES  |     | NULL    |                |
-| listing_ip  | varchar(25)  | YES  |     | NULL    |                |
-| listeners   | int(11)      | YES  |     | NULL    |                |
-| rank        | int(11)      | YES  |     | NULL    |                |
-+-------------+--------------+------+-----+---------+----------------+
-5 rows in set (1.46 sec)
 
-mysql> desc servers_touch;
-+-------------+--------------+------+-----+---------+-------+
-| Field       | Type         | Null | Key | Default | Extra |
-+-------------+--------------+------+-----+---------+-------+
-| id          | varchar(200) |      | PRI |         |       |
-| server_name | varchar(100) | YES  |     | NULL    |       |
-| listing_ip  | varchar(25)  | YES  |     | NULL    |       |
-| last_touch  | datetime     | YES  |     | NULL    |       |
-+-------------+--------------+------+-----+---------+-------+
-4 rows in set (0.04 sec)
+--
+-- Table structure for table 'server_details'
+--
 
-mysql> desc server_details;
-+------------------+--------------+------+-----+---------+----------------+
-| Field            | Type         | Null | Key | Default | Extra          |
-+------------------+--------------+------+-----+---------+----------------+
-| id               | mediumint(9) |      | PRI | NULL    | auto_increment |
-| parent_id        | mediumint(9) | YES  |     | NULL    |                |
-| server_name      | varchar(100) | YES  |     | NULL    |                |
-| listing_ip       | varchar(25)  | YES  |     | NULL    |                |
-| description      | varchar(255) | YES  |     | NULL    |                |
-| genre            | varchar(100) | YES  |     | NULL    |                |
-| sid              | varchar(200) | YES  |     | NULL    |                |
-| cluster_password | varchar(50)  | YES  |     | NULL    |                |
-| url              | varchar(255) | YES  |     | NULL    |                |
-| current_song     | varchar(255) | YES  |     | NULL    |                |
-| listen_url       | varchar(200) | YES  |     | NULL    |                |
-| server_type      | varchar(25)  | YES  |     | NULL    |                |
-| bitrate          | varchar(25)  | YES  |     | NULL    |                |
-| listeners        | int(11)      | YES  |     | NULL    |                |
-| channels         | varchar(25)  | YES  |     | NULL    |                |
-| samplerate       | varchar(25)  | YES  |     | NULL    |                |
-+------------------+--------------+------+-----+---------+----------------+
-16 rows in set (0.00 sec)
+CREATE TABLE if not exists server_details (
+  id mediumint(9) NOT NULL auto_increment,
+  parent_id mediumint(9) default NULL,
+  server_name varchar(100) default NULL,
+  listing_ip varchar(25) default NULL,
+  description varchar(255) default NULL,
+  genre varchar(100) default NULL,
+  sid varchar(200) default NULL,
+  cluster_password varchar(50) default NULL,
+  url varchar(255) default NULL,
+  current_song varchar(255) default NULL,
+  listen_url varchar(200) default NULL,
+  playlist_id mediumint(9) default NULL,
+  server_type varchar(25) default NULL,
+  server_subtype varchar(255) default NULL,
+  bitrate varchar(25) default NULL,
+  listeners int(11) default NULL,
+  channels varchar(25) default NULL,
+  samplerate varchar(25) default NULL,
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+create table if not exists playlists (
+  id mediumint(9) NOT NULL,
+  listen_url varchar(200) default NULL
+) TYPE=MyISAM;
+
+create table if not exists clusters (
+  id mediumint(9) NOT NULL auto_increment,
+  server_name varchar(255) default NULL,
+  cluster_password varchar(50) default NULL,
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table 'servers'
+--
+
+CREATE TABLE if not exists servers (
+  id mediumint(9) NOT NULL auto_increment,
+  server_name varchar(100) default NULL,
+  listing_ip varchar(25) default NULL,
+  listeners int(11) default NULL,
+  rank int(11) default NULL,
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table 'servers_touch'
+--
+
+CREATE TABLE if not exists servers_touch (
+  id varchar(200) NOT NULL default '',
+  server_name varchar(100) default NULL,
+  listing_ip varchar(25) default NULL,
+  last_touch datetime default NULL,
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
 
 
 </pre>
