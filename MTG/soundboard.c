@@ -910,11 +910,11 @@ static inline void _next_sample(int16 *out){
     if(channel_list[i].peak<fabs(staging[i]))
       channel_list[i].peak=fabs(staging[i]);
     if(staging[i]>32767.){
-      out[i]=SWAP(32767);
+      out[i]=32767;
     }else if(staging[i]<-32768.){
-      out[i]=SWAP(-32768);
+      out[i]=-32768;
     }else
-      out[i]=SWAP((int)(rint(staging[i])));
+      out[i]=(int)(rint(staging[i]));
   }
 }
 
@@ -925,7 +925,7 @@ void *playback_thread(void *dummy){
   /* sound device startup */
   audio_buf_info info;
   int fd=fileno(audiofd),i;
-  int format=AFMT_S16_LE;
+  int format=AFMT_S16_NE;
   int channels=MAX_OUPUT_CHANNELS;
   int rate=44100;
   long last=0;
@@ -936,9 +936,13 @@ void *playback_thread(void *dummy){
   int count=0,ret;
 
   ioctl(fd,SNDCTL_DSP_SETFRAGMENT,&fragment);
-  ioctl(fd,SNDCTL_DSP_SETFMT,&format);
+  ret=ioctl(fd,SNDCTL_DSP_SETFMT,&format);
+  if(ret || format!=AFMT_S16_NE){
+    fprintf(stderr,"Could not set AFMT_S16_NE\n");
+    exit(1);
+  }
   ret=ioctl(fd,SNDCTL_DSP_CHANNELS,&channels);
-  if(ret){
+  if(ret || channels!=MAX_OUPUT_CHANNELS){
     fprintf(stderr,"Could not set %d channels\n",channels);
     exit(1);
   }
@@ -2526,7 +2530,7 @@ int main(int gratuitously,char *different[]){
     exit(1);
   }
 
-  audiofd=fopen("/dev/dsp","wb");
+  audiofd=fopen("/dev/dsp1","wb");
   if(!audiofd){
     fprintf(stderr,"unable to open audio device: %s.\n",strerror(errno));
     fprintf(stderr,"\nPress enter to continue\n");
