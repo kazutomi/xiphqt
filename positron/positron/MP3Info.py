@@ -31,8 +31,6 @@
 
 import struct
 import string
-import random
-import re
 
 def _from_synch_safe(synchsafe):
     if isinstance(synchsafe, type(1)):
@@ -96,13 +94,8 @@ class ID3v2Frame:
         size = ()
         if version == 2:
             size = struct.unpack('!3b', file.read(3))
-            self.size = (size[0] * 256 + size[1]) * 256 + size[2]
-        elif version == 3:
-            size = struct.unpack('!L', file.read(4))
-            self.size = size[0]
-        elif version == 4:
+        elif version == 3 or version == 4:
             size = struct.unpack('!4b', file.read(4))
-            self.size = _from_synch_safe(size)
 
         if version == 3:  # abc00000 def00000
             (flags,) = struct.unpack('!1b', file.read(1))
@@ -125,6 +118,7 @@ class ID3v2Frame:
             self.f_unsynchronization       = flags >> 1 & 1 #n
             self.f_data_length_indicator   = flags >> 0 & 1 #p
 
+        self.size = _from_synch_safe(size)
         self.data = _strip_zero(file.read(self.size))
 
 _genres = [
@@ -151,7 +145,7 @@ _genres = [
     "Punk Rock", "Drum Solo", "A capella", "Euro-House", "Dance Hall", "Goa",
     "Drum & Bass", "Club House", "Hardcore", "Terror", "Indie", "BritPop",
     "NegerPunk", "Polsk Punk", "Beat", "Christian Gangsta", "Heavy Metal",
-    "Black Metal", "Crossover", "Contemporary Christian", "Christian Rock", "Merengue",
+    "Black Metal", "Crossover", "Contemporary C", "Christian Rock", "Merengue",
     "Salsa", "Thrash Metal", "Anime", "JPop", "SynthPop",
 ]
 
@@ -275,7 +269,7 @@ _mode_extensions = [
 
 _emphases = [ "none", "50/15 ms", "reserved", "CCIT J.17" ]
 
-_MP3_HEADER_SEEK_LIMIT = 500000
+_MP3_HEADER_SEEK_LIMIT = 4096
 
 class MPEG:
     def __init__(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT, seekstart=0):
@@ -298,111 +292,49 @@ class MPEG:
         self.emphasis = ""
         self.length = 0
 
-        # The longest possible frame for any MPEG audio file
-        # is 4609 bytes for a MPEG 2, Layer 1 256 kbps, 8000Hz with
-        # a padding slot.  Add an extra 4 bytes to ensure we get the
-        # next header and round up to a multiple of 4 to get the magic
-        # number 4616.  If this is an MPEG file, then from a random
-        # point in the middle (far away from the tag stupidity), we
-        # should always find an MPEG frame header in any 4616 byte
-        # substring.
-        #
-        # We pick a location in the middle 50% of the file to
-        # do a header test, and we require that we find three consecutive
-        # frame headers in a row, as calculated by their frame lengths.
-        # If it passes, then we proceed with parsing (using much less
-        # restrictive searching)
-        test_pos = int(random.uniform(0.25,0.75) * self.filesize)
-
-        offset, header = self._find_header(file, seeklimit=4616,
-                                           seekstart=test_pos,
-                                           check_next_header=2)
-        if offset == -1 or header is None:
-            raise Error("Failed MPEG frame test.")
-            
-        # Now we can look for the first header
         offset, header = self._find_header(file, seeklimit, seekstart)
         if offset == -1 or header is None:
             raise Error("Could not find MPEG header")
 
-        # Note that _find_header already parsed the header
-        
+        self._parse_header(header)
+        ### offset + framelength will find another header. verify??
         if not self.valid:
             raise Error("MPEG header not valid")
 
         self._parse_xing(file, seeklimit, seekstart)
+        
 
     def _find_header(self, file, seeklimit=_MP3_HEADER_SEEK_LIMIT,
-                     seekstart=0, check_next_header=1):
-        amt = 5120  # Multiple of 512 is hopefully more efficient to read from
-                    # disk, and size ensure the random test will only
-                    # read once
-        curr_pos = 0
-        read_more = False
-
+                     seekstart=0):
         file.seek(seekstart, 0)
-        # Don't read more than we are allowed to see (size of header is 4)
-        header = file.read(min(amt,seeklimit+4))
+        header = file.read(4) # see if we get lucky with the first four bytes
+        curr_pos = 0
+        amt = 1024
         
-        while curr_pos <= seeklimit:            
+        while len(header) <= seeklimit:
+            
             # look for the sync byte
             offset = string.find(header, chr(255), curr_pos)
-            #print curr_pos + seekstart
             if offset == -1:
                 curr_pos = len(header)  # Header after everything so far
-                read_more = True
             elif offset + 4 > len(header):
                 curr_pos = offset  # Need to read more, jump back here later
-                read_more = True
             elif ord(header[offset+1]) & 0xE0 == 0xE0:
-
-                # Finish now if we should not check the next header
-                if check_next_header == 0:
-                    return seekstart+offset, header[offset:offset+4]
-
-                # We have a possible winner, test parse this header and
-                # check if the next header is in the right place.
-                # WARNING: _parse_header has side effects!  This should
-                # be fixed, though in this case it does not matter.
-                self._parse_header(header[offset:offset+4])
-                    
-                if self.valid:
-
-                    file_pos = file.tell()
-                    
-                    next_off, next_header = \
-                              self._find_header(file, seeklimit=0,
-                                        seekstart=seekstart+offset
-                                                  +self.framelength,
-                                        check_next_header=check_next_header-1)
-
-                    # Move the file pointer back
-                    file.seek(file_pos,0)
-                    
-                    if next_off != -1:
-                        return seekstart+offset, header[offset:offset+4]
-                    else:
-                        curr_pos = offset+2
-                else:
-                    curr_pos = offset+2
-                    
+                return seekstart+offset, header[offset:offset+4]
             else:
                 curr_pos = offset+2 # Gotta be after the 2 bytes we looked at
 
-            if read_more and curr_pos <= seeklimit:
-                chunk = file.read(amt)
-                if len(chunk) == 0:
-                    # no more to read, give up
-                    return -1, None
-                else:
-                    header += chunk
+            chunk = file.read(amt)  # Read bigger chunks
+            header += chunk
+
+            if len(chunk) == 0:
+                # no more to read, give up
+                return -1, None
         
         # couldn't find the header
         return -1, None
 
     def _parse_header(self, header):
-        self.valid = 0 # Assume the worst until proven otherwise
-        
         # AAAAAAAA AAABBCCD EEEEFFGH IIJJKLMM
         (bytes,) = struct.unpack('>i', header)
         mpeg_version =    (bytes >> 19) & 3  # BB   00 = MPEG2.5, 01 = res, 10 = MPEG2, 11 = MPEG1  
@@ -450,29 +382,14 @@ class MPEG:
 
         try:
             if self.layer == 1:
-                self.framelength = (12000 * self.bitrate // self.samplerate + padding_bit) * 4
+                self.framelength = ((  12 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit) * 4
                 self.samplesperframe = 384.0
-            elif self.layer == 2:
-                self.framelength =  144000 * self.bitrate // self.samplerate + padding_bit
-                self.samplesperframe = 1152.0
             else:
-                # MPEG 2 and 2.5 calculate framelength different
-                # (discovered in LAME source)
-                if mpeg_version == 0 or mpeg_version == 2:
-                    fake_samplerate = self.samplerate << 1
-                else:
-                    fake_samplerate = self.samplerate
-                    
-                self.framelength = 144000 * self.bitrate // fake_samplerate + padding_bit
-                self.samplesperframe = 1152.0 # This might be wrong
-                
+                self.framelength =  ( 144 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit
+                self.samplesperframe = 1152.0
             self.length = int(round((self.filesize / self.framelength) * (self.samplesperframe / self.samplerate)))
         except ZeroDivisionError:
             return  # Division by zero means the header is bad
-
-        # More sanity checks
-        if self.framelength < 0 or self.length < 0:
-            return
         
         self.valid = 1
 
@@ -513,9 +430,6 @@ class MPEG:
             self._parse_xing(file, 0, seeklimit)
         
 class MP3Info:
-
-    num_regex = re.compile("\d+")
-    
     def __init__(self, file):
         self.valid = 0
 
@@ -536,8 +450,9 @@ class MP3Info:
             self.id3 = id3v2
 
         if id3v2.valid:
-            # ID3v2 size (header_size) doesn't include 10 bytes of header
-            self.mpeg = MPEG(file, seekstart=id3v2.header_size+10)
+            # We'll be generous for files with ID3v2 tags.
+            self.mpeg = MPEG(file, seekstart=id3v2.header_size,
+                             seeklimit=10*_MP3_HEADER_SEEK_LIMIT)
         else:
             # Header better be near the beginning if there is no ID3v2
             self.mpeg = MPEG(file)
@@ -566,14 +481,9 @@ class MP3Info:
             elif tag == 'TCO' or tag == 'TCON':
                 self.genre = self.id3.tags[tag]
                 if self.genre and self.genre[0] == '(' and self.genre[-1] == ')':
-                    genres = self.num_regex.findall(self.genre)
-                    if len(genres) > 0:
-                        try:
-                            # Force to single valued even if multiple
-                            self.genre = _genres[int(genres[0])]
-                        except IndexError:
-                            self.genre = ""
-                    else:
+                    try:
+                        self.genre = _genres[int(self.genre[1:-1])]
+                    except IndexError:
                         self.genre = ""
             elif tag == 'TEN' or tag == 'TENC':
                 self.encoder = self.id3.tags[tag]

@@ -18,7 +18,6 @@ from types import *
 import os
 from os import path
 import string
-import struct
 
 import MP3Info
 
@@ -51,8 +50,7 @@ def detect_mp3(filename):
                  "title" : mp3info.title,
                  "artist" : mp3info.artist,
                  "album" : mp3info.album,
-                 "genre" : mp3info.genre,
-                 "tracknumber" : mp3info.track}
+                 "genre" : mp3info.genre }
 
         # Convert empty string entries to nulls
         for key in info.keys():
@@ -83,31 +81,22 @@ def detect_oggvorbis(filename):
                  "title" : None,
                  "artist" : None,
                  "album" : None,
-                 "genre" : None,
-                 "tracknumber" : None}
+                 "genre" : None }
 
-        actual_keys = []
-        for tag in vc.keys():
-            try:
-                actual_keys.append(tag.lower())
-            except UnicodeError:
-                pass  # Don't let bad tags stop us
-            
-        for tag in ("title","artist","album","genre","tracknumber"):
+        actual_keys = map(string.lower, vc.keys())
+        
+        for tag in ("title","artist","album","genre"):
             if tag in actual_keys:
-                try:
-                    value = vc[tag]
-                    # Force these to be single valued
-                    if type(value) == ListType or type(value) == TupleType:
-                        value = value[0]
+                value = vc[tag]
+                # Force these to be single valued
+                if type(value) == ListType or type(value) == TupleType:
+                    value = value[0]
 
-                    # Convert from Unicode to ASCII since the Neuros can't
-                    # do Unicode anyway.
-                    #
-                    # I will probably burn in i18n hell for this.
-                    info[tag] = value.encode('ascii','replace')
-                except UnicodeError:
-                    pass
+                # Convert from Unicode to ASCII since the Neuros can't
+                # do Unicode anyway.
+                #
+                # I will probably burn in i18n hell for this.
+                info[tag] = value.encode('ascii','replace')
 
     except ogg.vorbis.VorbisError:
         return None
@@ -118,37 +107,14 @@ def detect_oggvorbis(filename):
 
     return info
 
-def detect_wav(filename):
-    if filename[-4:] in ['.wav','.WAV','.Wav']:
-        info = { "type" : "wav",
-                 "size" : os.stat(filename).st_size,
-                 "length" : 1,
-                 "title" : None,
-                 "artist" : None,
-                 "album" : None,
-                 "genre" : None,
-                 "tracknumber" : None}
-        wav_file=open(filename)
-        wav_file.seek(0x04,0)
-        size = int(struct.unpack('1i',wav_file.read(4))[0])
-        wav_file.seek(0x1c,0)
-        bytes_sec = int(struct.unpack('1i',wav_file.read(4))[0])
-        wav_file.close()
-        duration = size/bytes_sec
-         
-        info["length"] = duration
-        return info
-    else:
-        return None
 
 # Only put the ogg vorbis detection code in the list if
 # we have the python module needed.
 
-detect_functions = [detect_mp3,detect_wav]
+detect_functions = [detect_mp3]
 
 try:
      import ogg.vorbis
      detect_functions.insert(0, detect_oggvorbis)
 except ImportError:
     pass
-

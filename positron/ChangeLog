@@ -1,18 +1,3 @@
-Version ??? (???):
-	* mp3_support option added to permit MP3 support to be disabled.
-	Handy for testing firmwares that lack MP3 support.
-	* Fixed serious bug that caused deletion of multiple files to be done
-	incorrectly.
-	* Positron now preserves the access and modification times of files
-	when copying them to the Neuros, allowing the use of standard
-	synchronization tools like rsync.
-	* Major improvement of MP3 detection and parsing code.
-	* Vastly improved database sorting, including sorting by track number.
-	Note that you will need to use "positron rebuild" to resort your
-	existing databases.
-	* Database handling fix that forces firmwares after 1.41 to cache 
-	the database when it is modified.
-	
 Version 1.0 (June 19, 2003):
 	* Ogg Vorbis support added.  (Turned off by default)  Requires 
 	vorbis and ogg python modules by Andrew Chatham.  

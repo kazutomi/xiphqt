@@ -19,7 +19,7 @@ individually add and delete tracks from a Neuros, as well as
 synchronize it with a directory tree of music.
 
 As far as your computer is concerned, a Neuros is just an external USB
-hard disk, following the USB Mass Storage standard.  You can copy
+1 hard disk, following the USB Mass Storage standard.  You can copy
 any sort of file, music or otherwise, onto the Neuros.  However, only files
 that are listed in a special database stored on the Neuros will be
 playable.  This is where positron is needed.  It will both physically
@@ -41,6 +41,8 @@ For Debian-based systems:
               apt-get install positron
 
 For Gentoo systems	: emerge positron
+The ebuild is masked, so you might have to specify the entire path, 
+typically /usr/portage/media-sound/positron/positron-1.0.ebuild.
 
 To install from the source tarball, unpack the positron source and 
 cd into the resulting directory.  Then run the following commands:
@@ -144,8 +146,8 @@ us in one of the following ways:
   reports to be filed this way.  Please file them against the 'positron' 
   product.
 * Mailing list: http://www.xiph.org/archives.  Look for the positron list.
-* IRC: #positron on irc.freenode.net.  You are also welcome to join 
-  #vorbis-talk for general talk about the Xiph.org Foundation projects.
+* IRC: #positron on irc.xiph.org.  You are also wecome to join #vorbis 
+  for general talk about the Xiph.org Foundation projects.
 * Email: You may contact the author directly at volsung@xiph.org, but
   please only do this as a last resort.
 

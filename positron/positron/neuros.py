@@ -20,7 +20,6 @@ import os
 from os import path
 import util
 import ports
-import string
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -72,14 +71,7 @@ def FAT_mangle_filename(filename):
 
         new_filename += new_char
 
-    # FAT filenames can't end with period
-    while new_filename.endswith('.'):
-        new_filename = new_filename[:-1]
-    
     return new_filename
-
-    #return new_filename.rstrip('.')  Replace above code w/ this after
-    #                                 Python 2.2.2 and later are required
 
 class Neuros:
 
@@ -121,21 +113,11 @@ class Neuros:
         self.mountpoint = path.abspath(mountpoint)
 
         # Check and see if the mountpoint looks legit
+        dbpath = path.join(self.mountpoint, Neuros.DB_DIR)
         try:
-            contents = os.listdir(self.mountpoint)
-            for name in contents:
-                if name.upper() == Neuros.DB_DIR.upper():
-                    # Make sure to save the proper case of the mountpoint
-                    Neuros.DB_DIR = name
-                    break
-            else:
-                raise Error("The mountpoint %s does not appear to contain"
-                            " a %s database directory."
-                            % (mountpoint, Neuros.DB_DIR))
-            
+            os.listdir(dbpath)
         except OSError:
-            raise Error("The mountpoint %s is not accessible."
-                        "  Please check your permissions."
+            raise Error("%s does not look like a Neuros mountpoint"
                         % (mountpoint,))
 
         # Handy to keep around

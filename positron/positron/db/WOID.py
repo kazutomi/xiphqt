@@ -3,7 +3,6 @@
 # db/WOID.py - WOID functions
 #
 # Copyright (C) 2003, Xiph.org Foundation
-# Copyright (C) 2003 Brett Smith <bretts@canonical.org>
 #
 # This file is part of positron.
 #
@@ -20,7 +19,7 @@ from util import *
 from os import path
 from MDB import MDB
 from SAI import SAI,cmp_sai_record
-from PAI import PAI,pai_sorters,pai_get_tracknums
+from PAI import PAI
 from XIM import XIM
 
 def _mangle_field(field):
@@ -262,9 +261,6 @@ class WOID:
         new_sai_record = (mdb_pointer, pai_pointer) 
         self.sai.append(new_sai_record)
 
-        # Mark the modification
-        self.mdb.set_modified_flag()
-
         # Now we update the child PAI files with back pointers and
         # keep SAI file in sync if an offset occured
         for index, child_pai_module_ptr in child_pai_modules:
@@ -311,8 +307,6 @@ class WOID:
                 if num_entries == 0:
                     child_db.delete_record(child_index)
 
-        self.mdb.set_modified_flag()
-
     def clear(self):
         """Removes all records in this database and child databases."""
         for child in self.children:
@@ -327,7 +321,6 @@ class WOID:
             
         # Add required null record
         self.sai.append((null_rec_pointer, pai_ptr))
-        self.mdb.set_modified_flag()
 
     def count_deleted(self):
         "Returns the number of deleted records in this database"
@@ -353,38 +346,14 @@ class WOID:
         for record in records:
             self.add_record(record)
 
-    def sort(self, tracklist_filename, root_mdb = None):
+    def sort(self):
         """Sorts the contents of this database and all child databases."""
-
-        if root_mdb is None:
-            root_mdb = self.mdb
 
         cmpfunc = lambda a,b: cmp_sai_record(self.mdb, a, b)
         self.sai.sort(cmpfunc)
-        name_index = self.name.find('\x00')
-        if name_index != -1:
-            name = self.name[:name_index]
-        else:
-            name = self.name
-        if name.endswith('s'):
-            name = name[:-1]
-        if self.pai is not None:
-            base_sort_func = pai_sorters.get(name, None)
-            if name == 'Album':
-                tracknums = pai_get_tracknums(tracklist_filename)
-                sort_func = lambda ptr: base_sort_func(root_mdb, tracknums,
-                                                       ptr)
-            elif base_sort_func is not None:
-                sort_func = lambda ptr: base_sort_func(root_mdb, ptr)
-            else:
-                sort_func = None
-            if sort_func is not None:
-                self.pai.sort(sort_func, self.sai)
 
         for child in self.children:
-            child.sort(tracklist_filename, root_mdb)
-
-        self.mdb.set_modified_flag()
+            child.sort()
 
     def close(self):
         self.mdb.close()
@@ -395,3 +364,5 @@ class WOID:
         for child in self.children:
             child.close()
         self.__init__()  # Reset variables to undefined state
+
+    

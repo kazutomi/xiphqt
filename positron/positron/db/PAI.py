@@ -3,7 +3,6 @@
 # db/PAI.py - PAI functions
 #
 # Copyright (C) 2003, Xiph.org Foundation
-# Copyright (C) 2003 Brett Smith <bretts@canonical.org>
 #
 # This file is part of positron.
 #
@@ -17,44 +16,6 @@
 
 import struct
 from util import *
-
-def pai_get_tracknums(filename):
-    tracknums = {}
-    try:
-        inputfile = file(filename)
-        while 1:
-            data = inputfile.readline()
-            if not data:
-                break
-            data = data.split('\t', 1)
-            tracknums[data[0]] = data[1]
-        inputfile.close()
-    except IOError:
-        pass
-    return tracknums
-
-
-def pai_sort_by_title(root_mdb, mdb_ptr):
-    return root_mdb.read_record_at(mdb_ptr)[0]['data'][0].lower()
-
-
-def pai_sort_by_filename(root_mdb, mdb_ptr):
-    return root_mdb.read_record_at(mdb_ptr)[0]['extra'][2][0].lower()
-
-
-def pai_sort_by_tracknum(root_mdb, tracknums, mdb_ptr):
-    filename = root_mdb.read_record_at(mdb_ptr)[0]['extra'][2][0]
-    tracknum = tracknums.get(filename, '')
-    try:
-        return int(tracknum, 10)
-    except (TypeError, ValueError):
-        return tracknum
-
-    
-pai_sorters = {'Album': pai_sort_by_tracknum,
-               'Artist': pai_sort_by_title,
-               'Genre': pai_sort_by_title
-               }
 
 class PAI:
 
@@ -342,20 +303,3 @@ class PAI:
         self.file.close()
         self.__init__()
 
-    def sort(self, sort_func, sai):
-        sai_index = 0
-        while 1:
-            sai_index = sai_index + 1
-            try:
-                pai_ptr = sai[sai_index][1]
-            except IndexError:
-                break
-            mdb_ptr_list = [ptr[0] for ptr in self.read_module_at(pai_ptr)[0]]
-            entries = []
-            for mdb_ptr in mdb_ptr_list:
-                data = sort_func(mdb_ptr)
-                entries.append((data, mdb_ptr))
-            entries.sort()
-            self.clear_module_at(pai_ptr)
-            for entry in entries:
-                self.add_entry_to_module_at(pai_ptr, entry[1])

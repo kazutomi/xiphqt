@@ -3,7 +3,6 @@
 # add_file.py - utilities for file addition
 #
 # Copyright (C) 2003, Xiph.org Foundation
-# Copyright (C) 2003 Brett Smith <bretts@canonical.org>
 #
 # This file is part of positron.
 #
@@ -17,19 +16,18 @@
 
 "Utility module for adding files to the Neuros.  Used by cmd_sync and cmd_add."
 
-import sys
 import os
 from os import path
 import audiofile
 from neuros import Neuros
 import util
 
+
 def gen_filelist(neuros, prefix, suffix, target_prefix,
-                 allowed_types, silent=False, status=True):
+                 allowed_types, silent=False):
     filelist = []
     fullname = path.join(prefix, suffix)
-    clearline =  "\r"+" "*70+"\r"
-    
+
     if path.isdir(fullname):
         files = [path.join(suffix,name) for name in os.listdir(fullname)]
     else:
@@ -58,13 +56,6 @@ def gen_filelist(neuros, prefix, suffix, target_prefix,
                     filelist.append((fullname, targetname, metadata))
                     
         elif path.isdir(fullname):
-            if status:
-                sys.stderr.write(clearline)
-                status = "Scanning %s" % (fullname,)
-                if len(status) > 70:
-                    status = status[:67] + "..." 
-                sys.stderr.write(status+"\r")
-                    
             filelist.extend(gen_filelist(neuros, prefix, name, target_prefix,
                                          allowed_types, silent))
         else:
@@ -79,25 +70,10 @@ def add_track(neuros, sourcename, targetname, metadata, recording=None):
         util.copy_file(sourcename, targetname)
 
     # Create DB entry
-    destination = neuros.hostpath_to_neurospath(targetname)
     record = (metadata["title"], None, metadata["artist"], metadata["album"],
               metadata["genre"], recording, metadata["length"],
-              metadata["size"] // 1024, destination)
+              metadata["size"] // 1024,
+              neuros.hostpath_to_neurospath(targetname))
     # Add entry to database
     neuros.db["audio"].add_record(record)
     
-    try:
-        filename = path.join(*neuros.mountpoint_parts +
-                             [neuros.DB_DIR, 'tracks.txt'])
-        tracknum_file = file(filename, 'a')
-        tracknum = metadata.get('tracknumber', None)
-        if tracknum is None:
-            tracknum = metadata.get('title', targetname)
-            try:
-                tracknum.lower()
-            except AttributeError:
-                pass
-        tracknum_file.write('%s\t%s\n' % (destination, tracknum))
-        tracknum_file.close()
-    except IOError:
-        pass  # Fail silently if we can't write the file.

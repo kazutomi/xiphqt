@@ -72,9 +72,7 @@ class Config:
         self.recordingdir = None
         self.neuros_musicdir = "MUSIC"
         self.sort_database = True
-        self.mp3_support = True
         self.oggvorbis_support = False
-        self.wav_support = True
         self.syncdirs = []
 
     def set_config_dir(self, config_dir):
@@ -104,16 +102,10 @@ class Config:
         """Convenience method for getting the list of music types enabled
         in the config file"""
 
-        types = []
-
-        if self.mp3_support:
-            types.append("mp3")
+        types = ["mp3"]
 
         if self.oggvorbis_support:
             types.append("oggvorbis")
-            
-        if self.wav_support:
-            types.append("wav")
 
         return types
 
@@ -220,20 +212,6 @@ class Config:
                         raise Error(tokenizer.error_leader()
                                     +"Non boolean value '%s' given for %s",
                                     (value, key))
-                elif key == "mp3_support":
-                    try:
-                        self.mp3_support = parse_boolean(value)
-                    except Error:
-                        raise Error(tokenizer.error_leader()
-                                    +"Non boolean value '%s' given for %s",
-                                    (value, key))
-                elif key == "wav_support":
-                    try:
-                        self.wav_support = parse_boolean(value)
-                    except Error:
-                        raise Error(tokenizer.error_leader()
-                                    +"Non boolean value '%s' given for %s",
-                                    (value, key))
                 else:
                     print tokenizer.error_leader() \
                           + "Ignoring unknown option %s" % (key,)
@@ -267,18 +245,6 @@ class Config:
         else:
             oggvorbis_support_value = "false"
         f.write("oggvorbis_support=%s\n" % (oggvorbis_support_value,))
-
-        if self.mp3_support:
-            mp3_support_value = "true"
-        else:
-            mp3_support_value = "false"
-        f.write("mp3_support=%s\n" % (mp3_support_value,))
-
-        if self.wav_support:
-            wav_support_value = "true"
-        else:
-            wav_support_value = "false"
-        f.write("wav_support=%s\n" % (wav_support_value,))
 
         for (src,dest) in self.syncdirs:
             f.write("\nbegin sync\n")
@@ -323,7 +289,7 @@ class Config:
         f.close()
 
         # Eliminate null entries and trim trailing newlines
-        return [trim_newline(item) for item in l if item != "" and item != "\n"]
+        return [trim_newline(item) for item in l if item != "" or item == "\n"]
 
     def _add_item(self, filename, item):
         f = file(filename, "a")

@@ -168,8 +168,7 @@ def run(config, neuros, args):
         print " Done."
 
     if config.sort_database:
-        audio_db.sort(path.join(*neuros.mountpoint_parts +
-                                [neuros.DB_DIR, 'tracks.txt']))
+        audio_db.sort()
         
     neuros.close_db("audio")
     

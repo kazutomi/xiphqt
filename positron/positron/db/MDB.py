@@ -381,7 +381,7 @@ class MDB:
         
         header["isRoot"] = (header["Attributes"] & 0x01) == 0x01
         header["isRemovableChildDB"] = (header["Attributes"] & 0x02) == 0x02
-        header["isModified"] = (header["Status"] & 0x02) == 0x00
+        header["isModified"] = (header["Status"] & 0x01) == 0x01
 
         # Read pointers
         pattern = ">II" + "II"*header["NumOfKeys"]
@@ -421,20 +421,6 @@ class MDB:
         f.seek(-2, 1)
 
         return f.read(length)
-
-    def set_modified_flag(self, new_state=True):
-        # Only do something if there has been a state change to
-        # save disk access.
-        if self.header["isModified"] != new_state:
-            # Flip status bit
-            self.header["Status"] = self.header["Status"] & ~0x02
-            self.header["isModified"] = new_state
-            # Write it to disk
-            status_word = struct.pack(">H", self.header["Status"])
-            self.file.seek(to_offset(2))
-            self.file.write(status_word)
-            self.file.flush()
-            
 
     def clear(self):
         """Remove all entries from database.

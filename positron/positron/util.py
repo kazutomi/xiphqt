@@ -16,7 +16,6 @@
 
 import os
 from os import path
-from stat import *
 
 def trim_newline(s):
     "Returns s without a trailing newline if present."
@@ -32,7 +31,7 @@ def copy_file (src_filename, dest_filename):
     """Copy a file from src_filename to dest_filename
 
     Directories are created as needed to accomodate dest_filename"""
-    blocksize = 1024
+    blocksize = 1048576
     src = file(src_filename, "rb")
 
     (dirname, basename) = os.path.split(dest_filename)
@@ -48,9 +47,6 @@ def copy_file (src_filename, dest_filename):
 
     src.close()
     dest.close()
-
-    s = os.stat(src_filename)
-    os.utime(dest_filename, (s[ST_ATIME], s[ST_MTIME]))
 
 def recursive_delete(pathname):
     if path.isfile(pathname):
