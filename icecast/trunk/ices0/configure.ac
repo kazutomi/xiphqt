@@ -367,7 +367,7 @@ then
     LDFLAGS="$LDFLAGS -L$with_flac/lib"
   fi
 
-  AC_CHECK_HEADER(faad.h, have_flac="maybe")
+  AC_CHECK_HEADER([FLAC/stream_decoder.h], have_flac="maybe")
   if test "$have_flac" != "no"
   then
     AC_CHECK_LIB(FLAC, FLAC__stream_decoder_new, [
