@@ -34,7 +34,7 @@
 #undef ICES_MODULEDIR
 
 /* What the hell is this? */
-#undef PACKAGE
+#undef ICES_PACKAGE
 
 /* DAMN I HATE HATE HATE AUTOCONF */
 #undef HAVE_SOCKET

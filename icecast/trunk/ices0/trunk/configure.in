@@ -19,12 +19,12 @@ else
 	ICES_VERSION=$ICES_VERSION_SMALL.$ICES_SPECIAL
 fi
 
-PACKAGE=ices
+ICES_PACKAGE=ices
 VERSION="$ICES_VERSION"
 
 echo "Building ices-$VERSION..."
 
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE($ICES_PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 AM_CONDITIONAL(FSSTD, test x$enable_fsstd = xyes)
 AC_SUBST(USE_FSSTD)
@@ -92,7 +92,7 @@ dnl Checks for programs.
 AC_PROG_CC
 
 if test "$GCC" = yes; then
-	CFLAGS="$CFLAGS -Wall -ansi -pedantic"
+	CFLAGS="$CFLAGS -Wall"
 fi
 
 AC_CHECK_PROG(UNAME,uname,uname)
