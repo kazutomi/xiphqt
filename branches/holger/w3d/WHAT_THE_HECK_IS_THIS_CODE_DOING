@@ -38,7 +38,7 @@ transform is done and the output image in .ppm format.
 
 You can call the test program like this:
 
-  $ ./main 20000 5000 5000 ../clips/
+  $ ./main 20000 5000 5000 ../clips/%i.ppm
 
 which means: images are grabbed from directory ../clips/0.ppm, ../clips/1.ppm,
 etc. The Y component bitstream is limited to 20000 Bytes, the U and V bitstreams
