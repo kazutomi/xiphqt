@@ -27,7 +27,7 @@ like this:
 
 cvs co ices
 cd ices
-cvs co log libshout
+cvs co libshout
 
 ./autogen.sh
 make

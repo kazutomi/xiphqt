@@ -20,8 +20,7 @@ ices_SOURCES = ices.c log.c setup.c stream.c util.c mp3.c cue.c metadata.c \
 
 EXTRA_ices_SOURCES = ices_config.c in_vorbis.c reencode.c
 
-ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a ../log/libicelog.a \
-	$(SHOUT_LIBS)
+ices_LDADD = @ICES_OBJECTS@ playlist/libplaylist.a $(SHOUT_LIBS)
 
 ices_DEPENDENCIES = $(ices_LDADD)
 
