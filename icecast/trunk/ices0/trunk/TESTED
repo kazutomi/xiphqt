@@ -6,6 +6,14 @@ Redhat Linux 6.1
 	perl 5.0 patchlevel 5 subversion 3
 	libxml version 2.1.1
 	lame 3.86.1
+Redhat Linux 6.1
+	Kernel 2.2.17-pre13 on a i686
+	glibc-2.1.2-13
+	gcc version egcs-2.91.66
+	python-1.5.2-13
+	perl 5.0 patchlevel 5 subversion 3
+	libxml version 1.0.0-2 (hmmmm...)
+	without lame support
 Redhat Linux 5.2
 	Kernel 2.2.15-mosix on a i586
 	glibc version 2.0.7-29
