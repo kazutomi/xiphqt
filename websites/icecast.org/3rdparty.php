@@ -18,6 +18,7 @@
 <tr><td>ezstream</td><td>Windows 98/NT/2000/XP Unix</td><td><a href="http://www.icecast.org/ezstream.php">http://www.icecast.org/ezstream.php</a></td></tr>
 <tr><td>Nicecast</td><td>Mac OSX</td><td><a href="http://www.rogueamoeba.com/nicecast/">http://www.rogueamoeba.com/nicecast/</a></td></tr>
 <tr><td>IceGenerator</td><td>Unix</td><td><a href="http://sourceforge.net/projects/icegenerator">http://sourceforge.net/projects/icegenerator</a></td></tr>
+<tr><td>Orban Opticodec-PC</td><td>Windows</td><td><a href="http://www.orban.com/orban/products/stream/1010_overview.html">http://www.orban.com/</a></td></tr>
 </table>
 </center>
 </div>
