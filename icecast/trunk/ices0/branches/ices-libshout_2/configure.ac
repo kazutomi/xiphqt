@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.1.2.3 2003/03/04 06:10:14 brendan Exp $
+# $Id: configure.ac,v 1.1.2.4 2003/03/04 18:00:01 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -163,13 +163,44 @@ AM_CONDITIONAL(NEED_SHOUT, test "$have_libshout" != "yes")
 dnl -- Optional features --
 AC_CACHE_SAVE
 
+AC_ARG_WITH(xml-config,
+  [  --with-xml-config=PATH  use xml-config in PATH to find libxml ])
+
+have_xml="no"
+if test "$with_xml_config" != "no"
+then
+  if test -n "$with_xml_config" -a "$with_xml_config" != "yes"
+  then
+    XMLCONFIG="$with_xml_config"
+    if ! test -x "$XMLCONFIG"
+    then
+      AC_MSG_ERROR([$with_xmlconfig cannot be run])
+    fi
+  else
+    AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
+  fi
+
+  if test -n "$XMLCONFIG"
+  then
+    AC_DEFINE(HAVE_LIBXML, 1, [Define if you have the GNOME XML library])
+    LIBS="$LIBS `$XMLCONFIG --libs`"
+    CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
+    ICES_OBJECTS="$ICES_OBJECTS ices_config.o"
+    have_xml="yes"
+  else
+    AC_MSG_RESULT([Compiling without libxml support - no configfiles])
+  fi
+fi
+
 AC_ARG_WITH([python],
-  [[  --with-python[=PATH]       include python scripting support]],,[with_python="yes"])
+  [[  --with-python[=PATH]    include python scripting support]],
+  [enable_python="$with_python"],
+  [enable_python="yes"])
 
 have_python="no"
-if test "$with_python" != "no"
+if test "$enable_python" != "no"
 then
-  XIPH_PATH_PYTHON($with_python)
+  XIPH_PATH_PYTHON([$enable_python])
   if test -n "$PYTHON_LIBS"
   then
     have_python="yes"
@@ -181,29 +212,64 @@ then
   fi
 fi
 
-AC_ARG_WITH(lame,
-  [[  --with-lame[=DIR]       enable support for reencoding with lame [in DIR]]])
-
-AC_ARG_WITH(lame-includes,
-[  --with-lame-includes=DIR    directory to find lame.h])
-
-AC_ARG_WITH(lame-libraries,
-[  --with-lame-libraries=DIR   directory to find lame library])
-
-if test "$with_lame_includes"
+if test "$with_python" != "no" -a "$have_python" != "yes"
 then
-  if test -f "$with_lame_includes/lame.h" -o -f "$with_lame_includes/lame/lame.h"
+  if test -n "$with_python"
   then
-    CPPFLAGS="$CPPFLAGS -I$with_lame_includes"
+    AC_MSG_ERROR([Could not link to python])
   else
-    AC_MSG_ERROR([lame.h not found in $with_lame_includes])
+    AC_MSG_RESULT([Could not link to python, python scripting disabled])
   fi
 fi
 
-if test "$with_lame_libraries"
+AC_ARG_WITH(perl,
+  [[  --with-perl[=PATH]      include perl scripting support]])
+
+have_perl="no"
+PERL=perl
+if test "$with_perl" != "no"
 then
-  LDFLAGS="$LDFLAGS -L$with_lame_libraries"
+  if test -n "$with_perl" -a "$with_perl" != "yes"
+  then
+    PERL="$with_perl"
+    if ! test -x "$PERL"
+    then
+      AC_MSG_ERROR([Perl not found in the specified location])
+    fi
+  fi
+
+  PERLCFLAGS=`$PERL -MExtUtils::Embed -e ccopts`
+  PERLLIBS=`$PERL -MExtUtils::Embed -e ldopts`
+
+  saved_CPPFLAGS="$CPPFLAGS"
+  saved_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $PERLCFLAGS"
+  LIBS="$LIBS $PERLLIBS"
+
+  AC_CHECK_FUNCS(perl_construct)
+  if test "$ac_cv_func_perl_construct" != "no"
+  then
+    have_perl="yes"
+    PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_perl.o"
+    AC_DEFINE(HAVE_LIBPERL, 1, [Define if you have perl libraries])
+  else
+    CPPFLAGS="$saved_CPPFLAGS"
+    LIBS="$saved_LIBS"
+  fi
 fi
+
+if test "$with_perl" != "no" -a "$have_perl" != "yes"
+then
+  if test -n "$with_perl"
+  then
+    AC_MSG_ERROR([Could not link to perl])
+  else
+    AC_MSG_RESULT([Could not link to perl, perl scripting disabled])
+  fi
+fi
+
+AC_ARG_WITH(lame,
+  [[  --with-lame[=DIR]       enable support for reencoding with lame [in DIR]]])
 
 have_LAME="no"
 if test "$with_lame" != "no"
@@ -286,81 +352,6 @@ then
     AC_MSG_ERROR([Could not find libvorbisfile])
   else
     AC_MSG_RESULT([Could not find libvorbisfile, vorbis support disabled])
-  fi
-fi
-
-AC_ARG_WITH(perl,
-  [[  --with-perl[=DIR]       enable perl interpreter [found in DIR]]])
-
-have_perl="no"
-PERL=perl
-if test "$with_perl" != "no"
-then
-  if test -n "$with_perl" -a "$with_perl" != "yes"
-  then
-    PERL="$with_perl/bin/perl"
-    if ! test -x "$PERL"
-    then
-      AC_MSG_ERROR([Perl not found in the specified location])
-    fi
-  fi
-
-  PERLCFLAGS=`$PERL -MExtUtils::Embed -e ccopts`
-  PERLLIBS=`$PERL -MExtUtils::Embed -e ldopts`
-
-  saved_CPPFLAGS="$CPPFLAGS"
-  saved_LIBS="$LIBS"
-  CPPFLAGS="$CPPFLAGS $PERLCFLAGS"
-  LIBS="$LIBS $PERLLIBS"
-
-  AC_CHECK_FUNCS(perl_construct)
-  if test "$ac_cv_func_perl_construct" != "no"
-  then
-    have_perl="yes"
-    PLAYLIST_OBJECTS="$PLAYLIST_OBJECTS pm_perl.o"
-    AC_DEFINE(HAVE_LIBPERL, 1, [Define if you have perl libraries])
-  else
-    CPPFLAGS="$saved_CPPFLAGS"
-    LIBS="$saved_LIBS"
-  fi
-fi
-
-if test "$with_perl" != "no" -a "$have_perl" != "yes"
-then
-  if test -n "$with_perl"
-  then
-    AC_MSG_ERROR([Could not find perl libraries])
-  else
-    AC_MSG_RESULT([Could not find perl libraries, perl scripting disabled])
-  fi
-fi
-
-AC_ARG_WITH(xml-config,
-  [  --with-xml-config=PATH  use xml-config in PATH to find libxml ])
-
-have_xml="no"
-if test "$with_xml_config" != "no"
-then
-  if test -n "$with_xml_config" -a "$with_xml_config" != "yes"
-  then
-    XMLCONFIG="$with_xml_config"
-    if ! test -x "$XMLCONFIG"
-    then
-      AC_MSG_ERROR([$with_xmlconfig cannot be run])
-    fi
-  else
-    AC_CHECK_PROGS(XMLCONFIG, [xml2-config xml-config])
-  fi
-
-  if test -n "$XMLCONFIG"
-  then
-    AC_DEFINE(HAVE_LIBXML, 1, [Define if you have the GNOME XML library])
-    LIBS="$LIBS `$XMLCONFIG --libs`"
-    CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
-    ICES_OBJECTS="$ICES_OBJECTS ices_config.o"
-    have_xml="yes"
-  else
-    AC_MSG_RESULT([Compiling without libxml support - no configfiles])
   fi
 fi
 
