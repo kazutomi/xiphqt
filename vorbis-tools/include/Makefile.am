@@ -2,7 +2,4 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-mandir = @MANDIR@
-man_MANS = oggenc.1
-
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST = utf8.h getopt.h

@@ -12,7 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <getopt.h>
+#include <locale.h>
+#include "getopt.h"
+#include "utf8.h"
 
 #include "vcedit.h"
 
@@ -32,11 +34,15 @@ typedef struct {
 	char	*infilename, *outfilename;
 	char	*commentfilename;
 	FILE	*in, *out, *com;
+	int commentcount;
+	char **comments;
+	int tempoutfile;
 } param_t;
 
 #define MODE_NONE  0
 #define MODE_LIST  1
 #define MODE_WRITE 2
+#define MODE_APPEND 3
 
 /* prototypes */
 void usage(void);
@@ -66,6 +72,7 @@ int main(int argc, char **argv)
 	vcedit_state *state;
 	vorbis_comment *vc;
 	param_t	*param;
+	int i;
 
 	/* initialize the cmdline interface */
 	param = new_param();
@@ -99,7 +106,7 @@ int main(int argc, char **argv)
 		return 0;		
 	}
 
-	if (param->mode == MODE_WRITE) {
+	if (param->mode == MODE_WRITE || param->mode == MODE_APPEND) {
 
 		state = vcedit_new_state();
 
@@ -112,10 +119,20 @@ int main(int argc, char **argv)
 
 		/* grab and clear the exisiting comments */
 		vc = vcedit_comments(state);
-		vorbis_comment_clear(vc);
-		vorbis_comment_init(vc);
+		if(param->mode != MODE_APPEND) 
+		{
+			vorbis_comment_clear(vc);
+			vorbis_comment_init(vc);
+		}
+
+		for(i=0; i < param->commentcount; i++)
+		{
+			if(add_comment(param->comments[i], vc) < 0)
+				fprintf(stderr, "Bad comment: \"%s\"\n", param->comments[i]);
+		}
 
 		/* build the replacement structure */
+		if(param->commentcount==0)
 		{
 			/* FIXME should use a resizeable buffer! */
 			char *buf = (char *)malloc(sizeof(char)*1024);
@@ -162,16 +179,25 @@ int main(int argc, char **argv)
 void print_comments(FILE *out, vorbis_comment *vc)
 {
 	int i;
+    char *decoded_value;
 
 	for (i = 0; i < vc->comments; i++)
-		fprintf(out, "%s\n", vc->user_comments[i]);
+    {
+	    if (utf8_decode(vc->user_comments[i], &decoded_value) >= 0)
+        {
+    		fprintf(out, "%s\n", decoded_value);
+            free(decoded_value);
+        }
+        else
+            fprintf(out, "%s\n", vc->user_comments[i]);
+    }
 }
 
 /**********
 
-   Take a line of the form "TAG=value string", parse it,
-   and add it to the vorbis_comment structure. Error checking
-   is performed.
+   Take a line of the form "TAG=value string", parse it, convert the
+   value to UTF-8, and add it to the
+   vorbis_comment structure. Error checking is performed.
 
    Note that this assumes a null-terminated string, which may cause
    problems with > 8-bit character sets!
@@ -180,7 +206,7 @@ void print_comments(FILE *out, vorbis_comment *vc)
 
 int  add_comment(char *line, vorbis_comment *vc)
 {
-	char	*mark, *value;
+	char	*mark, *value, *utf8_value;
 
 	/* strip any terminal newline */
 	{
@@ -193,7 +219,7 @@ int  add_comment(char *line, vorbis_comment *vc)
 	 * as the comment spec requires. For the moment, we
 	 * also restrict ourselves to 0-terminated values */
 
-	mark = index(line, '=');
+	mark = strchr(line, '=');
 	if (mark == NULL) return -1;
 
 	value = line;
@@ -206,10 +232,18 @@ int  add_comment(char *line, vorbis_comment *vc)
 	*mark = '\0';	
 	value++;
 
-	/* append the comment and return */
-	vorbis_comment_add_tag(vc, line, value);
-
-	return 0;
+	/* convert the value from the native charset to UTF-8 */
+	if (utf8_encode(value, &utf8_value) >= 0) {
+		
+		/* append the comment and return */
+		vorbis_comment_add_tag(vc, line, utf8_value);
+        free(utf8_value);
+		return 0;
+	} else {
+		fprintf(stderr, "Couldn't convert comment to UTF8, "
+			"cannot add\n");
+		return -1;
+	}
 }
 
 
@@ -226,10 +260,22 @@ void usage(void)
 	fprintf(stderr, 
 		"Usage: \n"
 		"  vorbiscomment [-l] file.ogg (to list the comments)\n"
+		"  vorbiscomment -a in.ogg out.ogg (to append comments)\n"
 		"  vorbiscomment -w in.ogg out.ogg (to modify comments)\n"
 		"	in the write case, a new set of comments in the form\n"
 		"	'TAG=value' is expected on stdin. This set will\n"
 		"	completely replace the existing set.\n"
+		"   Either of -a and -w can take only a single filename,\n"
+		"   in which case a temporary file will be used.\n"
+		"   -c can be used to take comments from a specified file\n"
+		"   instead of stdin.\n"
+		"   Example: vorbiscomment -a in.ogg -c comments.txt\n"
+		"   will append the comments in comments.txt to in.ogg\n"
+		"   Finally, you may specify any number of tags to add on\n"
+		"   the command line using the -t option. e.g.\n"
+		"   vorbiscomment -a in.ogg -t \"ARTIST=Some Guy\" -t \"TITLE=A Title\"\n"
+		"   (note that when using this, reading comments from the comment\n"
+		"   file or stdin is disabled)\n"
 	); 
 }
 
@@ -256,6 +302,10 @@ param_t *new_param(void)
 	param->in = param->out = NULL;
 	param->com = NULL;
 
+	param->commentcount=0;
+	param->comments=NULL;
+	param->tempoutfile=0;
+
 	return param;
 }
 
@@ -273,7 +323,9 @@ void parse_options(int argc, char *argv[], param_t *param)
 	int ret;
 	int option_index = 1;
 
-	while ((ret = getopt_long(argc, argv, "lwhqc:",
+	setlocale(LC_ALL, "");
+
+	while ((ret = getopt_long(argc, argv, "alwhqc:t:",
 			long_options, &option_index)) != -1) {
 		switch (ret) {
 			case 0:
@@ -286,6 +338,9 @@ void parse_options(int argc, char *argv[], param_t *param)
 			case 'w':
 				param->mode = MODE_WRITE;
 				break;
+			case 'a':
+				param->mode = MODE_APPEND;
+				break;
 			case 'h':
 				usage();
 				exit(0);
@@ -296,6 +351,11 @@ void parse_options(int argc, char *argv[], param_t *param)
 			case 'c':
 				param->commentfilename = strdup(optarg);
 				break;
+			case 't':
+				param->comments = realloc(param->comments, 
+						(param->commentcount+1)*sizeof(char *));
+				param->comments[param->commentcount++] = strdup(optarg);
+				break;
 			default:
 				usage();
 				exit(1);
@@ -303,14 +363,26 @@ void parse_options(int argc, char *argv[], param_t *param)
 	}
 
 	/* remaining bits must be the filenames */
-	if ((param->mode == MODE_LIST && (argc - optind) != 1) ||
-		(param->mode == MODE_WRITE && (argc - optind) != 2)) {
+	if((param->mode == MODE_LIST && (argc-optind) != 1) ||
+	   ((param->mode == MODE_WRITE || param->mode == MODE_APPEND) &&
+	   ((argc-optind) < 1 || (argc-optind) > 2))) {
 			usage();
 			exit(1);
 	}
+
 	param->infilename = strdup(argv[optind]);
-	if (param->mode == MODE_WRITE)
-		param->outfilename = strdup(argv[optind+1]);
+	if (param->mode == MODE_WRITE || param->mode == MODE_APPEND)
+	{
+		if(argc-optind == 1)
+		{
+			param->tempoutfile = 1;
+			param->outfilename = malloc(strlen(param->infilename)+8);
+			strcpy(param->outfilename, param->infilename);
+			strcat(param->outfilename, ".vctemp");
+		}
+		else
+			param->outfilename = strdup(argv[optind+1]);
+	}
 }
 
 /**********
@@ -341,7 +413,7 @@ void open_files(param_t *p)
 		exit(1);
 	}
 
-	if (p->mode == MODE_WRITE) { 
+	if (p->mode == MODE_WRITE || p->mode == MODE_APPEND) { 
 
 		/* open output for write mode */
 
@@ -407,4 +479,7 @@ void close_files(param_t *p)
 	if (p->in != NULL) fclose(p->in);
 	if (p->out != NULL) fclose(p->out);
 	if (p->com != NULL) fclose(p->com);
+
+	if(p->tempoutfile)
+		rename(p->outfilename, p->infilename);
 }
