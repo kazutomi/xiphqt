@@ -26,6 +26,8 @@ static void cf_new_track(input_stream_t *source);
 static int cf_process(int ilen, int16_t* il, int16_t* ir);
 static void cf_shutdown(void);
 
+static int resample(unsigned int oldrate, unsigned int newrate);
+
 static ices_plugin_t Crossfader = {
   "crossfade",
 
@@ -37,6 +39,7 @@ static ices_plugin_t Crossfader = {
   NULL
 };
 
+static int Fadelen;
 static int FadeSamples;
 static int16_t* FL = NULL;
 static int16_t* FR = NULL;
@@ -48,6 +51,7 @@ static int NewTrack = 0;
 
 /* public functions */
 ices_plugin_t *crossfade_plugin(int secs) {
+  Fadelen = secs;
   FadeSamples = secs * 44100;
 
   return &Crossfader;
@@ -62,7 +66,7 @@ static int cf_init(void) {
   if (!(Swap = malloc(FadeSamples * 2)))
     goto err;
 
-  ices_log_debug("Crossfading %d seconds between tracks", FadeSamples / 44100);
+  ices_log_debug("Crossfading %d seconds between tracks", Fadelen);
   return 0;
 
   err:
@@ -76,8 +80,10 @@ static void cf_new_track(input_stream_t *source) {
   static input_stream_t lasttrack;
   int filesecs;
 
-  if (lasttrack.samplerate && lasttrack.samplerate != source->samplerate)
-    skipnext = 1;
+  if (lasttrack.samplerate && lasttrack.samplerate != source->samplerate) {
+    if (resample(lasttrack.samplerate, source->samplerate) < 0)
+      skipnext = 1;
+  }
 
   memcpy(&lasttrack, source, sizeof(lasttrack));
 
@@ -89,7 +95,7 @@ static void cf_new_track(input_stream_t *source) {
 
   if (source->filesize && source->bitrate) {
     filesecs = source->filesize / (source->bitrate * 128);
-    if (filesecs < 10 || filesecs <= FadeSamples * 2 / 44100) {
+    if (filesecs < 10 || filesecs <= Fadelen * 2) {
       ices_log_debug("crossfade: not fading short track of %d secs", filesecs);
       skipnext = 1;
       return;
@@ -97,11 +103,6 @@ static void cf_new_track(input_stream_t *source) {
   }
 
   NewTrack = FadeSamples;
-  if (source->samplerate != 44100) {
-    NewTrack *= source->samplerate/44100.0;
-    if (NewTrack > FadeSamples)
-      NewTrack = FadeSamples;
-  }
 }
 
 static int cf_process(int ilen, int16_t* il, int16_t* ir)
@@ -171,4 +172,56 @@ static void cf_shutdown(void) {
   }
 
   ices_log_debug("Crossfader shutting down");
+}
+
+static int resample(unsigned int oldrate, unsigned int newrate) {
+  int16_t* left;
+  int16_t* right;
+  int16_t* newswap;
+  unsigned int newsize = Fadelen * newrate;
+  unsigned int newlen;
+  int i;
+  int off;
+  int eps;
+
+  if (!(left = malloc(newsize * sizeof(int16_t))))
+    return -1;
+
+  if (!(right = malloc(newsize * sizeof(int16_t)))) {
+    free(left);
+    return -1;
+  }
+  if (!(newswap = malloc(newsize * sizeof(int16_t)))) {
+    free(left);
+    free(right);
+    return -1;
+  }
+
+  i = 0;
+  eps = 0;
+  off = (fpos + FadeSamples - flen) % FadeSamples;
+  newlen = flen * (float)newrate / oldrate;
+  /* the trusty Bresenham algorithm */
+  while (i < newlen) {
+    left[i] = FL[off];
+    right[i] = FR[off];
+    eps += oldrate;
+    while (eps * 2 >= (int)newrate) {
+      off = (off + 1) % FadeSamples;
+      eps -= newrate;
+    }
+    i++;
+  }
+
+  free(FL);
+  free(FR);
+  free(Swap);
+  FL = left;
+  FR = right;
+  Swap = newswap;
+  FadeSamples = newsize;
+  flen = newlen;
+  fpos = i % FadeSamples;
+
+  return 0;
 }

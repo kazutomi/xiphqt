@@ -1,4 +1,3 @@
 * Handles error conditions poorly.
-* Crossfader mishandles sample rate change. Maybe I need a resampler?
 
 $Id$
