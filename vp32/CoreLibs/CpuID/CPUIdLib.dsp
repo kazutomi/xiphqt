@@ -125,37 +125,6 @@ InputName=cpuid
 # End Source File
 # Begin Source File
 
-SOURCE=.\Win32\D9xOSSupXMM.asm
-
-!IF  "$(CFG)" == "CPUIdLib - Win32 Release"
-
-# Begin Custom Build
-IntDir=.\..\..\..\ObjectCode\cpuID\release
-InputPath=.\Win32\D9xOSSupXMM.asm
-InputName=D9xOSSupXMM
-
-".\"$(IntDir)"\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	ml /Zi /Zm /Cx /c /coff /Fl$(IntDir)\$(InputName).lst /Fo $(IntDir)\$(InputName).obj $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "CPUIdLib - Win32 Debug"
-
-# Begin Custom Build
-IntDir=.\..\..\..\ObjectCode\cpuID\debug
-InputPath=.\Win32\D9xOSSupXMM.asm
-InputName=D9xOSSupXMM
-
-".\"$(IntDir)"\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	ml /Zi /Zm /Cx /c /coff /Fl$(IntDir)\$(InputName).lst /Fo $(IntDir)\$(InputName).obj $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\Win32\InitXMMReg.asm
 
 !IF  "$(CFG)" == "CPUIdLib - Win32 Release"
