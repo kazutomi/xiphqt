@@ -145,6 +145,8 @@ class MarkdownWrapper(object):
 				for key, value in config.items(section):
 					if key == 'bodyattributes':
 						self.bodyAttributes = ' ' + value
+					if key == 'title':
+						self.title = value
 				
 
 	def __loadIncludes(self):

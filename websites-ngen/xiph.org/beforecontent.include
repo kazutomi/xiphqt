@@ -27,21 +27,21 @@
 <li class='vorbis'>
 	<a href='/vorbis/'>
 		<strong>Vorbis</strong><br>
-		Lossy audio compression for music.
+		Lossy audio compression<br>for music.
 		<em class='reset'>&nbsp;</em>
 	</a>
 </li>
 <li class='speex'>
 	<a href='/speex/'>
 		<strong>Speex</strong><br>
-		Low-bitrate audio compression for speech.
+		Low-bitrate audio compression<br>for speech.
 		<em class='reset'>&nbsp;</em>
 	</a>
 </li>
 <li class='flac'>
 	<a href='/flac/'>
 		<strong title='Free Lossless Audio Codec'>FLAC</strong><br>
-		Lossless audio compression for archival.
+		Lossless audio compression<br>for immaculate music archives.
 		<em class='reset'>&nbsp;</em>
 	</a>
 </li>

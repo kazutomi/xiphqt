@@ -39,10 +39,6 @@
 			padding: 0;
 		}
 		
-		ins {
-			color: blue;
-		}
-		
 		ul#toc {
 			margin: 0;
 			padding: 0;
@@ -82,12 +78,26 @@
 		ul#toc a:hover {
 			background: #ccc;
 		}
-			
 		
+		.ahem {
+			margin: 1em 3em;
+			font-style: italic;
+		}
+
+		[class~=ahem] {
+			display: none;
+		}
 	</style>
 </head>
 <body>
 <h1 id='top'>Wrapup Documentation</h1>
+<p class='ahem'>
+	This page will be slightly handier when viewed in
+	<a href='http://www.mozilla.org/products/firefox/'>Mozilla Firefox</a> than in
+	Internet Explorer as the navigation menu will stay in place in that blue section on the right
+	as you scroll.
+</p>
+
 <ul id='toc'>
 	<li><a href='#top'>Top</a></li>
 	<li><a href='#requirements'>Requirements</a></li>
@@ -95,6 +105,7 @@
 	<li><a href='#creation'>Creating</a></li>
 	<li><a href='#apacheSetup'>Apache Setup</a></li>
 	<li><a href='#inheritsAndIncludes'><tt>.inherit</tt> and <tt>.include</tt> files</a></li>
+	<li><a href='#options'><tt>options.ini</tt> files</a></li>
 	<li><a href='#multilingual'>Multilingual Concerns</a></li>
 </ul>
 
@@ -207,6 +218,12 @@
 	<tt>/speex/index.html</tt> and <tt>/speex/compare/index.html</tt>.
 </p>
 
+<h2 id='options'><tt>options.ini</tt> files</h2>
+<p>
+	There will occasionally be small changes that need to be put in HTML documents that are made.
+	These small changes go in <tt>options.ini</tt> files. For a fully commented example, see
+	<a href='xiph.org/options.ini'>the top-level <tt>options.ini</tt> file</a>.
+</p>
 
 <h2 id='multilingual'>Multilingual Concerns</h2>
 <p>
@@ -216,15 +233,16 @@
 	<tt>.include</tt> files, such as <tt>css.ko.inherit</tt>.
 </p>
 <p>
-	If you’re the first person to translate a page from English, you’ll need to edit a
-	<tt>lang.include</tt> file that has a |-separated list of all the available languages for
-	that page. If you don’t know what it’s supposed to look like, see
-	<tt>/lang.include</tt> for an example.
+	However, when you’re writing HTML/Markdown pages, don’t refer to the actual file in your
+	links; link to <tt>/foo/bar/baz/ja</tt> instead of <tt>/foo/bar/baz/index.ja.html</tt>.
+	<tt>mod_rewrite</tt> will serve up content from the short, pretty URL from the appropriate
+	file.
 </p>
 <p>
-	To refer to these pages from a Web browser, refer to, say, <tt>/speex/ja</tt> for the
-	Japanese version of <tt>/speex/</tt>; the little bit of <tt>mod_rewrite</tt> translates
-	that into the <tt>index.ja.html</tt> file that’s stored on disk.
+	If you’re the first person to translate a page from English, you’ll need to edit a
+	<tt>lang.include</tt> file that has a |-separated list of all the available languages for
+	that page. If you don’t know what it’s supposed to look like, see the top-level
+	<a href='xiph.org/lang.include'><tt>lang.include</tt></a> for an example.
 </p>
 <p>
 	<strong>If you’re adding a new language to the website for the first time</strong>,
