@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * $Id: mp3.c,v 1.26 2003/03/16 08:32:34 brendan Exp $
+ * $Id: mp3.c,v 1.27 2003/03/16 20:20:11 brendan Exp $
  */
 
 #include "definitions.h"
@@ -99,7 +99,7 @@ static int ices_mp3_parse (input_stream_t* source)
   ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
   unsigned char *buffer;
   mp3_header_t mh;
-  size_t len;
+  size_t len, framelen;
   int rc = 0;
   int off = 0;
 
@@ -141,8 +141,9 @@ static int ices_mp3_parse (input_stream_t* source)
 
     /* we must be able to read at least 4 bytes of header */
     while (mp3_data->len - mp3_data->pos >= 4) {
-      if ((rc = mp3_parse_frame(buffer + mp3_data->pos, &mh))) {
-        size_t framelen;
+      /* don't bother with free bit rate MP3s - they are so rare that a parse error is more likely */
+      if ((rc = mp3_parse_frame(buffer + mp3_data->pos, &mh))
+          && (framelen = mp3_frame_length (&mh))) {
         mp3_header_t next_header;
 
         source->samplerate = mh.samplerate;
@@ -154,8 +155,6 @@ static int ices_mp3_parse (input_stream_t* source)
         }
 
         /* check next frame if possible */
-        if ((framelen = mp3_frame_length (&mh)) <= 0)
-          break;
         if (mp3_fill_buffer (source, framelen + 4) <= 0)
           break;
 
@@ -386,8 +385,9 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
   header->layer = 4 - ((buf[1] >> 1) & 0x3);
   header->emphasis = (buf[3]) & 0x3;
 
-  if ((bitrate_idx == 0xF) || (samplerate_idx == 0x3)
-      || (header->layer == 4) || (header->emphasis == 2))
+  /* free bit rate (idx == 0) is legal, but ices can't handle it reliably */
+  if (bitrate_idx == 0xF || samplerate_idx == 0x3
+      || header->layer == 4 || header->emphasis == 2)
     return 0;
 
   header->error_protection = !(buf[1] & 0x1);
