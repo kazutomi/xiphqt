@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.17 2001/08/13 03:08:30 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.18 2001/08/13 17:31:46 kcarnold Exp $
 
  ********************************************************************/
 
@@ -169,13 +169,22 @@ void SetTime (Stat_t stats[], ogg_int64_t sample)
   double r_sec, t_sec;
 
   if (stats[2].enabled && Options.inputOpts.seekable) {
-    r_min = (long) (Options.inputOpts.totalTime - time) / (long) 60;
-    r_sec = ((double) Options.inputOpts.totalTime - time) - 60.0f * (double) r_min;
+    if (sample > Options.inputOpts.totalSamples) {
+      /* file probably grew while playing; update total time */
+      Options.inputOpts.totalSamples = sample;
+      Options.inputOpts.totalTime = time;
+      stats[3].arg.stringarg[0] = '\0';
+      r_min = 0;
+      r_sec = 0.0f;
+    } else {
+      r_min = (long) (Options.inputOpts.totalTime - time) / (long) 60;
+      r_sec = ((double) Options.inputOpts.totalTime - time) - 60.0f * (double) r_min;
+    }
     sprintf (stats[2].arg.stringarg, "[%02li:%05.2f]", r_min, r_sec);
     if (stats[3].arg.stringarg[0] == '\0') {
       t_min = (long) Options.inputOpts.totalTime / (long) 60;
       t_sec = Options.inputOpts.totalTime - 60.0f * t_min;
-      sprintf (stats[3].arg.stringarg, "of %02li:%05.2f", t_min, t_sec);
+      sprintf (stats[3].arg.stringarg, "%02li:%05.2f", t_min, t_sec);
     }    
   }
   sprintf (stats[1].arg.stringarg, "%02li:%05.2f", c_min, c_sec);
@@ -673,6 +682,7 @@ void play_file()
 	
 	Options.inputOpts.seekable = 1;
 	Options.inputOpts.totalTime = ov_time_total(&vf, -1);
+	Options.inputOpts.totalSamples = ov_pcm_total(&vf, -1);
 	Options.statOpts.stats[2].enabled = 1;
 	Options.statOpts.stats[3].enabled = 1;
 	if (Options.statOpts.verbose > 0)
@@ -778,7 +788,10 @@ void play_file()
     
     ov_clear(&vf);
     
-    buffer_MarkEOS (Options.outputOpts.buffer);
+    if (Options.outputOpts.buffer) {
+      buffer_MarkEOS (Options.outputOpts.buffer);
+      buffer_WaitForEmpty (Options.outputOpts.buffer);
+    }
 
     if (Options.statOpts.quiet < 1)
       fprintf(stderr, "\nDone.\n");

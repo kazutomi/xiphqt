@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.5 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.6 2001/08/13 17:31:46 kcarnold Exp $
  
 ********************************************************************/
 
@@ -32,6 +32,7 @@ typedef struct InputOpts_s {
   long Prebuffer;
   char seekable;
   double totalTime;
+  ogg_int64_t totalSamples;
 
   char *SaveStream;
   
