@@ -61,7 +61,7 @@ else {
 
 $username = "oddsock";
 $password = "";
-$database = "icecast2_yp";
+$database = "oddsock";
 $max_per_page = 10;
 $start = $_GET["start"];
 $num = $_GET["num"];
