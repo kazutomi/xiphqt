@@ -6,7 +6,7 @@
 #include "yuv.h"
 
 
-#define  N_FRAMES  1
+#define  N_FRAMES  8
 
 
 int read_ppm_info (char *prefix, int *w, int *h)
@@ -31,6 +31,7 @@ int read_ppm_info (char *prefix, int *w, int *h)
       else {
          if (i == 0 && strncmp("P6", ln, 2)) {
             fprintf(stderr, "Error: Need PPM file for input\n");
+            fclose (file);
             exit(-1);
          }
          if (i == 1) {
@@ -40,6 +41,7 @@ int read_ppm_info (char *prefix, int *w, int *h)
       }
    }
 
+   fclose (file);
    return 0;
 }
 
@@ -66,6 +68,7 @@ int read_ppm (char *prefix, int frame, uint8 *buf, int w, int h)
       else {
          if (i == 0 && strncmp("P6", ln, 2)) {
             fprintf(stderr, "Error: Need PPM file for input\n");
+            fclose (file);
             exit(-1);
          }
          if (i == 1) {
@@ -77,10 +80,12 @@ int read_ppm (char *prefix, int frame, uint8 *buf, int w, int h)
 
    if (w != _w || h != _h) {
       fprintf (stderr, "%s: image size inconsistent (w: %i <-> %ld, h: %i <-> %ld) !\n", __FUNCTION__, w, _w, h , _h);
+      fclose (file);
       exit (-1);
    }
 
    fread (buf, 3, w*h, file);
+   fclose (file);
    return 0;
 }
 
@@ -99,6 +104,7 @@ void save_ppm (char *prefix, uint8 *buf, int w, int h, int first_frame, int fram
       outfile = fopen (fname, "w");
       fprintf (outfile, "P6\n%d %d\n%d\n", w, h, 255);
       fwrite (img, 3, w*h, outfile);
+      fclose (outfile);
    }
 }
 
@@ -120,6 +126,7 @@ void save_ppm16 (char *prefix, int16 *buf, int w, int h, int first_frame, int fr
          uint8 c [3] = { img[j], img [j], img[j] };
          fwrite (c, 1, 3, outfile);
       }
+      fclose (outfile);
    }
 }
 
@@ -169,9 +176,16 @@ int main (int argc, char **argv)
    do {
       Wavelet3DBuf *y, *u, *v, *y2, *u2, *v2;
 
-      for (frames=0; frames<N_FRAMES; frames++)
-         if (read_ppm (ppm_prefix, frame, rgb + width * height * 3 * frames, width, height) < 0)
+      for (frames=0; frames<N_FRAMES; frames++) {
+         printf ("read frame %i", frame + frames);
+         if (read_ppm (ppm_prefix, frame + frames,
+                       rgb + width * height * 3 * frames, width, height) < 0)
+         {
+            printf (" failed.\n");
             break;
+         }
+         printf ("\n");
+      }
 
       y = wavelet_3d_buf_new (width, height, frames);
       u = wavelet_3d_buf_new (width, height, frames);
