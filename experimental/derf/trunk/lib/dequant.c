@@ -96,9 +96,10 @@ int oc_quant_params_unpack(oggpack_buffer *_opb,
       return OC_BADHEADER;
     }
     qranges->nranges=qri;
-    qranges->sizes=qrsizes=_ogg_malloc(qri*sizeof(qrsizes[0]));
+    qranges->sizes=qrsizes=(int *)_ogg_malloc(qri*sizeof(qrsizes[0]));
     memcpy(qrsizes,sizes,qri*sizeof(qrsizes[0]));
-    qranges->base_matrices=qrbms=_ogg_malloc((qri+1)*sizeof(qrbms[0]));
+    qranges->base_matrices=qrbms=(theora_quant_base *)_ogg_malloc(
+     (qri+1)*sizeof(qrbms[0]));
     do memcpy(qrbms[qri],base_mats[indices[qri]],sizeof(qrbms[qri]));
     while(qri-->0);
   }

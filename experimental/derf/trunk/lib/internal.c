@@ -212,7 +212,7 @@ static void oc_set_chroma_mvs00(char _cbmvs[4][2],const char _lbmvs[4][2]){
   This version is for use with chroma decimated in the Y direction.
   _cbmvs: The chroma block-level motion vectors to fill in.
   _lbmvs: The luma block-level motion vectors.*/
-static oc_set_chroma_mvs01(char _cbmvs[4][2],const char _lbmvs[4][2]){
+static void oc_set_chroma_mvs01(char _cbmvs[4][2],const char _lbmvs[4][2]){
   int dx;
   int dy;
   dx=_lbmvs[0][0]+_lbmvs[2][0];

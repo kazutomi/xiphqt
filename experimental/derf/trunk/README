@@ -1,0 +1,48 @@
+These libraries were created to allow me to run my own personal experiments
+ with Theora.
+They are not currently part of the official Theora distribution.
+Although they are based upon the VP3.2 and Theora source, which as of the time
+ of this writing serve as the only complete documentation of the VP3 and Theora
+ formats, they were written from scratch.
+
+Decoder:
+The decoder here is feature-complete, up to and including all planned bitstream
+ features for the initial Theora release.
+Some of these are not yet present even in the CVS decoder.
+These include:
+- Support for non-VP3 style quantization matrices (i.e., complete support for
+   the additional flexibility added to the quantization matrix specification).
+- Support for additional pixel foramts: 4:4:4 and 4:2:2 (in additional to the
+   4:2:0 format supported by VP3).
+- Support for block-level qi values.
+  This feature is not yet set in stone.
+  We reserve the right to change the Huffman codes used for RLE-coding the qi
+   map, which will break any streams encoded with this feature, as thoes
+   Huffman codes are NOT stored in the setup header.
+Currently missing features:
+- Out-of-loop post-processing (stronger deblocking, deringing filters).
+  These aren't hard, they just haven't been done yet.
+- Advanced buffering API: Client-specified buffers and piplined (striped)
+   decode.
+  Clients could provide external buffers to decode into when out-of-loop
+   post-processing is enabled (if it isn't enabled, a copy has to be done
+   anyway).
+  Pipelined decode would combine the reconstruction, copy-back frags, loop
+   filtering and post-processing stages, and expose the decoded frame to
+   clients a super-block row at a time, minimizing cache footprint.
+
+Encoder:
+The encoder is highly experimental.
+It currently generates valid bitstreams using ALL of the decoder features
+ supported above.
+However, it is also currently broken, producing pretty horrible quality files
+ at very high bitrates.
+This should be tracked down and fixed before too much longer, but it hasn't
+ happened yet.
+
+Building:
+A simple GNU Makefile and MSVC++ 6 project files are provided.
+Edit both to taste.
+The Windows workspaces are probably currently broken due to the move to
+ Subversion and subsequent reorganization.
+Due to issues with my win32 Subversion client, I can't fix them at the moment.
