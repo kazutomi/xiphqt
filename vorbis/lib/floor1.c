@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: floor backend 1 implementation
- last mod: $Id: floor1.c,v 1.16 2001/10/02 00:14:31 segher Exp $
+ last mod: $Id: floor1.c,v 1.16.2.1 2001/11/22 06:21:08 xiphmont Exp $
 
  ********************************************************************/
 
@@ -1025,7 +1025,6 @@ static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
   vorbis_look_floor1 *look=(vorbis_look_floor1 *)in;
   vorbis_info_floor1 *info=look->vi;
   
-  codec_setup_info   *ci=vb->vd->vi->codec_setup;
   int i,j,k;
   codebook *books=((backend_lookup_state *)(vb->vd->backend_state))->
     fullbooks;   
