@@ -1,0 +1,470 @@
+# -*-Perl-*-
+
+package MGM::Xpm;
+
+# read/write XPM format, simple transformations; grayscale for the moment
+
+my@hex;
+for(my$i=0;$i<256;$i++){$hex[$i]=sprintf "%02x", $i}
+
+sub rgb{
+    my$val=shift;
+
+    if($val=~m/#/){
+	$val=~m/\#(.)(.)(.)/ if(length($val)==4);
+	$val=~m/\#(..)(..)(..)/ if(length($val)==7);
+	$val=~m/\#(..)..(..)..(..)/ if(length($val)==13);
+	my$r=hex$1;
+	my$g=hex$2;
+	my$b=hex$3;
+	"$r*=16;$g*=16;$b*=16;" if(length($val)==3);
+	($r,$g,$b);
+    }else{
+	my($r,$g,$b)=$main::toplevel->rgb($val);
+	($r/256,$g/256,$b/256);
+    }
+}
+
+sub read{
+    my($file,$transp)=@_;
+    $transp="#ffffff"if(!defined($transp));
+    die "Couldn't open $file for reading: $!" unless open(XPM,"$file");
+    $_=<XPM>;
+
+    if(m{/\* XPM \*/}){
+	$_=<XPM>;
+	$_=<XPM>;
+	m/^\"(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
+	if($4==1){
+	    my%xpm;
+	    my@grid;
+	    my$width=$xpm{"width"}=$1;
+	    my$height=$xpm{"height"}=$2;
+	    my$colors=$3;
+
+	    my$entries;
+	    my$redentries;
+	    my$greenentries;
+	    my$blueentries;
+	    my$type='g'; # graymap until upgraded
+
+	    for(my$i=0;$i<$colors;$i++){
+		$_=<XPM>;m/^\"(.)\s+(\S)\s+([^\"\s]+)/;
+		$type='c' if($2 eq 'c');
+		$entries.=sprintf "\\%03o", ord $1;
+		$val=$3;
+
+		$val=$transp if(ucfirst($val) eq 'None');
+		($red,$blue,$green)=MGM::Xpm::rgb($val);
+		
+		$redentries.=sprintf "\\%03o", $red;
+		$greenentries.=sprintf "\\%03o", $green;
+		$blueentries.=sprintf "\\%03o", $blue;
+	    }
+
+	    # read the image bits
+
+	    for(my$y=0;$y<$height;$y++){
+		my$red=<XPM>;
+		$red=substr $red, 1, $width;
+		
+		# sometimes Perl makes me positively weep for joy:
+		if($type eq 'c'){
+		    my$green=$red;my$blue=$red;
+		    eval "\$green=~tr[$entries][$greenentries];";
+		    eval "\$blue=~tr[$entries][$blueentries];";
+		    eval "\$red=~tr[$entries][$redentries];";
+		    
+		    my@redgrid = (unpack('C*',$red));
+		    my@greengrid = (unpack('C*',$green));
+		    my@bluegrid = (unpack('C*',$blue));
+		    $grid[$y] = [map{$redgrid[$_]*.3+
+					$greengrid[$_]*.5+
+					    $bluegrid[$_]*.2}(0..$#redgrid)];
+		    
+		}else{
+		    eval "\$red=~tr[$entries][$redentries];";
+		    $grid[$y] = [unpack('C*',$red)];
+		}
+
+	    }
+	    
+	    $xpm{"gray"}=\@grid;
+	    
+	    my$ref=\%xpm;
+	    bless($ref,"MGM::Xpm");
+	    close XPM;
+	    $ref;
+	}else{
+	    print STDERR "This code can only handle Pixmaps with single ".
+		"byte color indicies\n";
+	    close XPM;
+	    undef;
+	}
+    }else{
+	print STDERR "Input file is not in XPM format ".
+	    "(must begin with /* XPM */)\n";
+	close XPM;
+	undef;
+    }
+}
+
+sub copy{
+    my$xpm=shift;
+    my%copy;
+
+
+    $copy{"width"}=$xpm->{"width"};
+    my$height=$copy{"height"}=$xpm->{"height"};
+
+
+    $copy{"gray"}= [ map {[@{$xpm->{"gray"}->[$_]}] }(0..$height-1) ]
+		   if (defined($xpm->{"gray"}));
+
+    $ret=\%copy;
+    bless $ret, "MGM::Xpm";
+}
+
+sub write{
+    my($xpm,$black,$white,$transp)=@_;
+    # easier than reading, but harder to do efficiently
+    
+    my$gray=$xpm->{"gray"};
+    my$width=$xpm->{"width"};
+    my$height=$xpm->{"height"};
+    my$colors=0;
+    my$type='c';
+    
+    my%entries;
+    my$char=' ';
+    my$buffer;
+    my$out;
+
+    my($br,$bg,$bb)=&rgb($black);
+    my($wr,$wg,$wb)=&rgb($white);
+
+    $wr=($wr-$br)/32;
+    $wg=($wg-$bg)/32;
+    $wb=($wb-$bb)/32;
+    
+    for(my$i=0;$i<$height;$i++){
+	my$gi=$gray->[$i];
+	$buffer.="\",\n\"";
+
+	for(my$j=0;$j<$width;$j++){
+	    $buffer.=chr($gi->[$j]/8+65);
+	}
+
+    }
+
+    $out="/* XPM */\nstatic char * mgm_xpm[] = {\n".
+	"\"$width $height 32 1";
+
+    foreach $key (0..31){
+	$c=chr($key+65);
+	$out.="\",\n\"$c  $type ";
+	if("#$key" eq transp){
+	    $out.="None\",\n";
+	}else{
+	    
+	    my$r=$key*$wr+$br;
+	    my$g=$key*$wg+$bg;
+	    my$b=$key*$wb+$bb;
+	    
+	    my$val=$hex[$r].$hex[$g].$hex[$b];
+
+	    $out.="#$val";
+	}
+    }
+
+    $out.=$buffer."\"};\n";
+    $out;
+}
+
+sub new{
+    my($width,$height,$val)=@_;
+    
+    my($red,$green,$blue)=MGM::Xpm::rgb($val);
+    my$gray=$red*.3+$green*.5+$blue*.2;
+    my%xpm;
+
+    $xpm{"width"}=$width;
+    $xpm{"height"}=$height;
+
+    my@v=map{$gray}(0..$width-1);
+    $xpm{"gray"}= [ map { [@v] }(0..$height-1) ];
+
+    $ret=\%xpm;
+    bless $ret, "MGM::Xpm";
+}
+
+sub width{
+    my$xpm=shift;
+    $xpm->{"width"};
+}
+
+sub height{
+    my$xpm=shift;
+    $xpm->{"height"};
+}
+
+sub merge{
+    my($to,$tox,$toy,$from,$x,$y,$w,$h)=@_;
+    
+    for(my$i=0;$i<$h;$i++){
+	splice @{$to->{"gray"}[$toy+$i]}, $tox, $w, 
+	@{$from->{"gray"}[$y+$i]}[$x..$x+$w-1];
+    }
+    $to;
+}
+
+sub rot90{
+    my$xpm=shift;
+    
+    $w=$xpm->width;
+    $h=$xpm->height;
+
+    # build new grid
+    my@gray;
+    for(my$i=0;$i<$w;$i++){
+	@gray[$w-$i-1]=[map{@$_[$i]}@{$xpm->{"gray"}}[0..$h-1]];
+    }
+    $xpm->{"gray"}=\@gray;
+    $xpm->{"width"}=$h;
+    $xpm->{"height"}=$w;
+    $xpm;
+}
+
+sub reduceonex{
+    my($w,$nw,$v)=@_;
+    my$del=$w/$nw;
+    my$prev=0;
+    my$iprev=0;
+    my$oldval=$v->[0];
+    for(my$nx=0;$nx<$nw;$nx++){
+	my$x=$del*($nx+1);
+	my$ix=int($x);
+
+	my$val=$oldval*(1-$prev+$iprev);
+	for(my$i=$iprev+1;$i<$ix;$i++){$val+=$v->[$i]};
+	$val+=($oldval=$v->[$ix])*($x-$ix);
+	
+	$v->[$nx]=$val/$del;
+	
+	$prev=$x;
+	$iprev=$ix;
+    }
+    splice @$v, $nw-$w, $w-$nw;
+}
+
+sub enlargeonex{
+    my($w,$nw,$v)=@_;
+    my$del=$w/$nw;
+    my$prev=$w;
+    my$iprev=$w-1;
+    my$oldval=$v->[$w-1];
+    for(my$nx=$nw-1;$nx>=0;$nx--){
+	my$x=$del*($nx);
+	my$ix=int($x);
+
+	if($ix==$iprev){
+	    $v->[$nx]=$v->[$ix];
+	}else{
+	    my$val=$oldval*($prev-$iprev);
+	    $val+=($oldval=$v->[$ix])*(1-$x+$ix);
+	    $v->[$nx]=$val/$del;
+	}
+	$prev=$x;
+	$iprev=$ix;
+    }
+}
+
+sub reduceoney{
+    my($w,$h,$nh,$vv)=@_;
+    my$del=$h/$nh;
+    my$prev=0;
+    my$iprev=0;
+    for(my$ny=0;$ny<$nh;$ny++){
+	my$y=$del*($ny+1);
+	my$iy=int($y);
+	my$nv=$vv->[$ny];
+	
+	# initial row 
+	my$idel=(1-$prev+$iprev)/$del;
+	my$v=$vv->[$iprev];
+	for(my$x=0;$x<$w;$x++){$nv->[$x]=$v->[$x]*$idel;}
+	#intevening rows
+	$iprev++;
+	while($iprev<$iy){
+	    my$v=$vv->[$iprev];
+	    for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]/$del;}
+	    $iprev++;
+	}
+	# terminal row 
+	$idel=($y-$iy)/$del;
+	$v=$vv->[$iy];
+	for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]*$idel;}
+	$iprev=$iy;
+	$prev=$y;
+    }
+    splice @$vv, $nh-$h, $h-$nh;
+}
+
+sub enlargeoney{
+    my($w,$h,$nh,$vv)=@_;
+    for(my$y=$h;$y<$nh;$y++){$vv->[$y]=[]};
+    my$del=$h/$nh;
+    my$prev=$h;
+    my$iprev=$h-1;
+    for(my$ny=$nh-1;$ny>=0;$ny--){
+	my$y=$del*$ny;
+	my$iy=int($y);
+	
+	if($iprev==$iy){
+	    $vv->[$ny]= [@{$vv->[$iprev]}];
+	}else{
+	    my$nv=$vv->[$ny];
+	    
+	    # initial row 
+	    my$idel=($prev-$iprev)/$del;
+	    my$v=$vv->[$iprev];
+	    for(my$x=0;$x<$w;$x++){$nv->[$x]=$v->[$x]*$idel;}
+	    # terminal row 
+	    $idel=(1-$y+$iy)/$del;
+	    $v=$vv->[$iy];
+	    for(my$x=0;$x<$w;$x++){$nv->[$x]+=$v->[$x]*$idel;}
+	}
+	$iprev=$iy;
+	$prev=$y;
+    }
+}
+
+sub scale{
+    my($xpm,$nw,$nh)=@_;
+    
+    $w=$xpm->width;
+    $h=$xpm->height;
+
+    if($nw<$w){
+	for(my$y=0;$y<$h;$y++){
+	    &reduceonex($w,$nw,$xpm->{"gray"}->[$y]);
+	}
+	$w=$nw;
+	$xpm->{"width"}=$w;
+    }
+    
+    if($nh<$h){
+	&reduceoney($w,$h,$nh,$xpm->{"gray"});
+	$h=$nh;
+	$xpm->{"height"}=$h;
+    }
+
+    if($nw>$w){
+	for(my$y=0;$y<$h;$y++){
+	    &enlargeonex($w,$nw,$xpm->{"gray"}->[$y]);
+	}
+	$w=$nw;
+	$xpm->{"width"}=$w;
+    }
+    
+    if($nh>$h){
+	&enlargeoney($w,$h,$nh,$xpm->{"gray"});
+	$h=$nh;
+	$xpm->{"height"}=$h;
+    }
+
+    $xpm;
+}
+
+sub getpixel{
+    my($xpm,$x,$y)=@_;
+    $xpm->{"gray"}->[$y][$x];
+}
+
+package MGM::Font;
+
+sub new{
+    my($xpm)=@_;
+
+    my%font;
+    my$count=32;
+    my$pos=0;
+
+    $font{"bitmap"}=$xpm;
+    $font{"height"}=$xpm->height-1;
+    while($pos<$xpm->width){
+	$font{"$count"}=$pos;
+	# find the width
+   
+	while(++$pos<$xpm->width){
+	    last if (!$xpm->getpixel($pos,0));
+	}
+	$font{($count)."w"}=$pos-$font{"$count"};
+	$count++;
+    }
+    my$ref=\%font;
+    bless $ref, "MGM::Font";
+}
+
+sub textsize{
+    my($font,$text,$height)=@_;
+    my$acc=0;
+    my$pop;
+    while($pop=ord chop($text)){
+	$acc+=$font->{($pop)."w"};
+    }
+
+    if(!defined($height)){
+	($acc,$font->{"height"});
+    }else{
+	(int($height/$font->{"height"}*$acc),$height);
+    }
+}   
+
+sub maketext{
+    my($font,$text,$height,$widthlimit,$stretch,$rot90,$cache)=@_;
+
+    my($bigw,$bigh);
+    my$bigtext;
+	
+    if(!defined($textcache{$text})){
+
+	# how big?
+	($bigw,$bigh)=$font->textsize($text);
+
+	# make a pixmap frame
+	$bigtext=MGM::Xpm::new($bigw+2,$bigh+2,'#ffffff');
+	
+	# paste in characters
+	my$pos=$bigw+1;
+	while(my$pop=ord chop($text)){
+	    my$w=$font->{($pop)."w"};
+	    $pos-=$w;
+	    $bigtext->merge($pos,1,$font->{"bitmap"},$font->{$pop},1,
+			    $w,$bigh);
+	}
+
+	$textcache{$text}=$bigtext if(defined($cache));
+    }else{
+	$bigtext=$textcache{$text};
+	$bigw=$bigtext->width;
+	$bigh=$bigtext->height;
+    }
+
+    # scale it.  
+
+    $width=int($height/$bigh*$bigw*$stretch+.9);
+    $width=$widthlimit if (defined($widthlimit) && $width>$widthlimit);
+    my$ret=$bigtext->copy;
+
+    print "making: ($height,$width)\n";
+    $ret->scale($width,$height);
+
+    print "result: (".($ret->height).",".($ret->width).")\n";
+
+    $ret->rot90 if ($rot90);
+    $ret;
+}
+
+1;
+
