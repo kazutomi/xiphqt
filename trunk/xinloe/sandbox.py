@@ -154,27 +154,16 @@ class LocalFile:
     def __init__(self, parent):
       self.parent = parent
       grandparent = parent.parent
+      self.name = 'Chain %d (%s offset)' % (len(parent.chains), 
+                                            timestr(parent.length))
+      self.desc = ''
       self.icon = ''
 
-      chain = grandparent.tree.AppendItem(parent.branch, \
-       'Chain %d (%s offset)' % (len(parent.chains), timestr(parent.length)))
-      grandparent.tree.SetPyData(chain, self) 
-      grandparent.tree.SetItemImage(chain, grandparent.muxpackidx, 
-                                    which = wxTreeItemIcon_Normal)
-      grandparent.tree.SetItemImage(chain, grandparent.muxopenidx, 
-                                    which = wxTreeItemIcon_Expanded)
       self.serials = {}
 
       bitstreams = self.GetNewStreams()
       for handler in bitstreams:
         self.serials[handler.serialno] = handler
-        stream = grandparent.tree.AppendItem(chain, handler.name)
-        grandparent.tree.SetPyData(stream, handler) 
-        if not grandparent.codecidx.has_key(handler.icon) :
-          print 'Missing icon for %s' % handler.name
-          handler.icon = ''
-        grandparent.tree.SetItemImage(stream, 
-          grandparent.codecidx[handler.icon], which = wxTreeItemIcon_Normal)
 
       while parent.page and parent.page.pageno > 0:
         self.serials[parent.page.serialno].PageIn(parent.page)
@@ -184,6 +173,30 @@ class LocalFile:
             parent.eof  = True
             break  # End of file reached.
           parent.page = parent.sy.pageout()
+
+      if parent.length > 0:
+        extra = ' (%s offset)' % timestr(parent.length)
+      else :
+        extra = ''
+      if len(bitstreams) == 1 :
+        chain = parent.branch
+      else :
+        chain = grandparent.tree.AppendItem(parent.branch, 'Muxed Stream'+extra)
+        grandparent.tree.SetPyData(chain, self) 
+        grandparent.tree.SetItemImage(chain, grandparent.muxpackidx, 
+                                      which = wxTreeItemIcon_Normal)
+        grandparent.tree.SetItemImage(chain, grandparent.muxopenidx, 
+                                      which = wxTreeItemIcon_Expanded)
+        extra = ''
+      for handler in bitstreams:
+        stream = grandparent.tree.AppendItem(chain, handler.name+extra)
+        grandparent.tree.SetPyData(stream, handler) 
+        if not grandparent.codecidx.has_key(handler.icon) :
+          print 'Missing icon for %s' % handler.name
+          handler.icon = ''
+        grandparent.tree.SetItemImage(stream, 
+          grandparent.codecidx[handler.icon], which = wxTreeItemIcon_Normal)
+
 
       self.bytes = 0
       self.length = 0
