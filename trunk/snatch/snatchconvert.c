@@ -505,39 +505,45 @@ static int process_audio_frame(char *head,FILE *f,int track_or_process){
   }else{
     long long actualpos=(t-audbuf_zerotime)*audbuf_rate*audbuf_channels+.5;
     long i;
+
+    /* we do not nail conversion to a realtime clock when only audio
+       has been captured; Snatch may have faked the audio interface,
+       which decoupled playback from any clock */
+
+    if(video_p){
     
-    //fprintf(stderr,"audio sample jitter: %ld [%ld:%ld]\n",
-    //(long)(nextsamplepos-actualpos),(long)nextsamplepos,(long)actualpos);
-
-    /* hold last sample through any gap, assuming a bit of
-       hysteresis.  That also holds us through roundoff error (the
-       roundoff error does *not* creep frame to frame) */
-    if(audbuf_channels>1){
-      for(i=actualpos-nextsamplepos-12;i>0;i-=2){
-	rebuffer_sample(-2,track_or_process);
-	rebuffer_sample(-2,track_or_process);
-	samplesmissing++;
-	//fprintf(stderr,".");
-      }
-    }else{
-      for(i=actualpos-nextsamplepos-12;i>0;i--){
-	rebuffer_sample(-1,track_or_process);	
-	samplesmissing++;
-	//fprintf(stderr,".");
-      }
-    }
-
-    /* discard samples if we're way too far ahead; only likely to
-       happen due to a fault or misuse of splicing */
-    if(nextsamplepos-actualpos>12){
-      /* if we're so far ahead more than 10% of the frame must
-         disappear, just discard, else compact things a bit by
-         dropping samples */
-
-      fprintf(stderr,"audio sync got way ahead; this case not currently handled\n");
-      exit(1);
-
+      //fprintf(stderr,"audio sample jitter: %ld [%ld:%ld]\n",
+      //(long)(nextsamplepos-actualpos),(long)nextsamplepos,(long)actualpos);
       
+      /* hold last sample through any gap, assuming a bit of
+	 hysteresis.  That also holds us through roundoff error (the
+	 roundoff error does *not* creep frame to frame) */
+      if(audbuf_channels>1){
+	for(i=actualpos-nextsamplepos-12;i>0;i-=2){
+	  rebuffer_sample(-2,track_or_process);
+	  rebuffer_sample(-2,track_or_process);
+	  samplesmissing++;
+	  //fprintf(stderr,".");
+	}
+      }else{
+	for(i=actualpos-nextsamplepos-12;i>0;i--){
+	  rebuffer_sample(-1,track_or_process);	
+	  samplesmissing++;
+	  //fprintf(stderr,".");
+	}
+      }
+      
+      /* discard samples if we're way too far ahead; only likely to
+	 happen due to a fault or misuse of splicing */
+      if(nextsamplepos-actualpos>12){
+	/* if we're so far ahead more than 10% of the frame must
+	   disappear, just discard, else compact things a bit by
+	   dropping samples */
+	
+	fprintf(stderr,"audio sync got way ahead; this case not currently handled\n");
+	exit(1);
+	
+      }
     }
   }
   
