@@ -4,24 +4,16 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = man
 
-datadir = @datadir@
-localedir = $(datadir)/locale
-DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
-
 bin_PROGRAMS = oggenc
 
-INCLUDES = @SHARE_CFLAGS@ @OGG_CFLAGS@ @VORBIS_CFLAGS@ @I18N_CFLAGS@
+INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@
 
-oggenc_LDADD = @OGGENC_FLAC_OBJS@ @SHARE_LIBS@ \
-	       @VORBISENC_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ \
-	       @LIBICONV@ @I18N_LIBS@ @FLAC_LIBS@
+oggenc_LDADD = @VORBISENC_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@
+oggenc_SOURCES = oggenc.c audio.c encode.c getopt.c getopt1.c\
+		platform.c\
+		audio.h encode.h platform.h getopt.h
 
-oggenc_DEPENDENCIES = @OGGENC_FLAC_OBJS@ @SHARE_LIBS@
-
-oggenc_SOURCES = oggenc.c audio.c encode.c platform.c \
-                 audio.h encode.h platform.h resample.c resample.h
-
-EXTRA_oggenc_SOURCES = flac.c flac.h easyflac.c easyflac.h
+EXTRA_DIST = oggenc.dsp build_oggenc.bat
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"

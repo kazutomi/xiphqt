@@ -2,7 +2,7 @@
  *
  *  ao_alsa.c
  *
- *      Copyright (C) Stan Seibert - July 2000, July 2001
+ *      Copyright (C) Stan Seibert - July 2000
  *
  *  This file is part of libao, a cross-platform library.  See
  *  README for a history of this source code.
@@ -32,26 +32,10 @@
 
 #include <sys/asoundlib.h>
 #include <ao/ao.h>
-#include <ao/plugin.h>
 
 #define AO_ALSA_BUF_SIZE 32768
 
-
-static char *ao_alsa_options[] = {"card","dev","buf_size"};
-static ao_info ao_alsa_info =
-{
-	AO_TYPE_LIVE,
-	"Advanced Linux Sound Architecture (ALSA) output",
-	"alsa",
-	"Stan Seibert <volsung@asu.edu>",
-	"Outputs to the Advanced Linux Sound Architecture version 0.5.x.",
-	AO_FMT_NATIVE,
-	34,
-	ao_alsa_options,
-	3
-};
-
-typedef struct ao_alsa_internal
+typedef struct ao_alsa_internal_s
 {
 	snd_pcm_t *pcm_handle;
 	char *buf;
@@ -59,65 +43,46 @@ typedef struct ao_alsa_internal
 	int buf_end;
 	int card;
 	int dev;
-} ao_alsa_internal;
+} ao_alsa_internal_t;
 
-
-int ao_plugin_test()
+ao_info_t ao_alsa_info =
 {
-	snd_pcm_t *handle;
+	"Advanced Linux Sound Architecture (ALSA) output",
+	"alsa",
+	"Stan Seibert <volsung@asu.edu>",
+	"Otuputs to the Advanced Linux Sound Architecture."
+};
 
-	if (snd_pcm_open(&handle, 0, 0, 
-			 SND_PCM_OPEN_PLAYBACK | SND_PCM_OPEN_NONBLOCK) != 0)
-		return 0; /* Cannot use this plugin with default parameters */
-	else {
-		snd_pcm_close(handle);
-		return 1; /* This plugin works in default mode */
+static int _is_big_endian(void)
+{
+        uint_16 pattern = 0xbabe;
+        unsigned char *bytewise = (unsigned char *)&pattern;
+
+        if (bytewise[0] == 0xba) return 1;
+        return 0;
+}
+
+void ao_alsa_parse_options(ao_alsa_internal_t *state, ao_option_t *options)
+{
+	state->card = 0;
+	state->dev = 0;
+	state->buf_size = AO_ALSA_BUF_SIZE;
+
+	while (options) {
+		if (!strcmp(options->key, "card"))
+			state->card = atoi(options->value);
+		else if (!strcmp(options->key, "dev"))
+			state->dev = atoi(options->value);
+		else if (!strcmp(options->key, "buf_size"))
+			state->buf_size = atoi(options->value);
+		
+		options = options->next;
 	}
 }
 
-
-ao_info *ao_plugin_driver_info(void)
+ao_internal_t *plugin_open(uint_32 bits, uint_32 rate, uint_32 channels, ao_option_t *options)
 {
-	return &ao_alsa_info;
-}
-
-
-int ao_plugin_device_init(ao_device *device)
-{
-	ao_alsa_internal *internal;
-
-	internal = (ao_alsa_internal *) malloc(sizeof(ao_alsa_internal));
-
-	if (internal == NULL)	
-		return 0; /* Could not initialize device memory */
-	
-	internal->buf_size = AO_ALSA_BUF_SIZE;
-	internal->card = 0;
-	internal->dev = 0;
-	
-	device->internal = internal;
-
-	return 1; /* Memory alloc successful */
-}
-
-
-int ao_plugin_set_option(ao_device *device, const char *key, const char *value)
-{
-	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
-	if (!strcmp(key, "card"))
-		internal->card = atoi(value);
-	else if (!strcmp(key, "dev"))
-		internal->dev = atoi(value);
-	else if (!strcmp(key, "buf_size"))
-		internal->buf_size = atoi(value);
-
-	return 1;
-}
-
-int ao_plugin_open(ao_device *device, ao_sample_format *format)
-{
-	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
-
+	ao_alsa_internal_t *state;
 	snd_pcm_channel_params_t param;
 	int err;
 
@@ -128,153 +93,126 @@ int ao_plugin_open(ao_device *device, ao_sample_format *format)
 
 	param.format.interleave = 1;
 
-	switch (format->bits) {
+	switch (bits) {
 	case 8  : param.format.format = SND_PCM_SFMT_S8;
 		  break;
-        case 16 : param.format.format = 
-		    device->client_byte_format == AO_FMT_BIG ?
+        case 16 : param.format.format = _is_big_endian() ?
 		    SND_PCM_SFMT_S16_BE : SND_PCM_SFMT_S16_LE;
-	          device->driver_byte_format = device->client_byte_format;
 		  break;
-	default : return 0;
+	default : return NULL;
 	}
 
-	if (format->channels == 1 || format->channels == 2)
-		param.format.voices = format->channels;
+	if (channels > 0 && channels < 3)
+		param.format.voices = channels;
 	else
-		return 0;
+		return NULL;
 
-	/* Finish filling in the parameter structure */
-	param.format.rate = format->rate;
+	// Allocate the state structure and parse the options
+	state = malloc(sizeof(ao_alsa_internal_t));
+
+	if (state == NULL)
+		return NULL;
+
+	ao_alsa_parse_options(state, options);
+
+	// Finish filling in the parameter structure
+	param.format.rate = rate;
 
 	param.start_mode = SND_PCM_START_FULL;
 	
 	param.stop_mode = SND_PCM_STOP_STOP;
 
-	param.buf.block.frag_size = internal->buf_size;
+	param.buf.block.frag_size = state->buf_size;
 	param.buf.block.frags_min = 1;
 	param.buf.block.frags_max = 8;
 
-	internal->buf = malloc(internal->buf_size);
-	internal->buf_end = 0;
-	if (internal->buf == NULL)
-	  return 0;  /* Could not alloc swap buffer */
 
-
-	/* Open the ALSA device */
-	err = snd_pcm_open(&(internal->pcm_handle), 
-			   internal->card, 
-			   internal->dev,
+	err = snd_pcm_open(&(state->pcm_handle), 
+			   state->card, 
+			   state->dev,
 			   SND_PCM_OPEN_PLAYBACK | SND_PCM_OPEN_NONBLOCK);
 	if (err < 0) {
-		free(internal->buf);
-		return 0;
+		free(state);
+		return NULL;
 	}
 
-	err = snd_pcm_channel_params(internal->pcm_handle, &param);
+	err = snd_pcm_channel_params(state->pcm_handle, &param);
 
 	if (err < 0) {
-		snd_pcm_close(internal->pcm_handle);
-		free(internal->buf);
-		return 0;
+		snd_pcm_close(state->pcm_handle);
+		free(state);
+		return NULL;
 	}
 
-	snd_pcm_nonblock_mode(internal->pcm_handle, 0);
-	snd_pcm_channel_prepare(internal->pcm_handle, 
-				SND_PCM_CHANNEL_PLAYBACK);
+	state->buf = malloc(state->buf_size);
+	state->buf_end = 0;
 
-	return 1;
+	snd_pcm_nonblock_mode(state->pcm_handle, 0);
+	snd_pcm_channel_prepare(state->pcm_handle, SND_PCM_CHANNEL_PLAYBACK);
+
+	return state;
 }
 
+void plugin_close(ao_internal_t *state)
+{
+	ao_alsa_internal_t *s = (ao_alsa_internal_t *) state;
+	snd_pcm_close(s->pcm_handle);
+	free(s);
+}
 
-int _alsa_write_buffer(ao_alsa_internal *s)
+void ao_alsa_write_buffer(ao_alsa_internal_t *s)
 {
 	snd_pcm_channel_status_t status;
 	snd_pcm_t *pcm_handle = s->pcm_handle;
 	int len = s->buf_end;
-	ssize_t written, snd_pcm_write_ret;
 
 	s->buf_end = 0;
-
-	snd_pcm_write_ret = written = 0;
-	while ((snd_pcm_write_ret >= 0) && (written < len)) {
-		while ((snd_pcm_write_ret = snd_pcm_write(pcm_handle, s->buf, len)) == -EINTR)
-			;
-		if (snd_pcm_write_ret > 0)
-			written += snd_pcm_write_ret;
-	}
-
+	snd_pcm_write(pcm_handle, s->buf, len);
 	memset(&status, 0, sizeof(status));
 	if (snd_pcm_channel_status(pcm_handle, &status) < 0) {
 		fprintf(stderr, "ALSA: could not get channel status\n");
-		return 0;
+		return;
 	}       
 	if (status.underrun) {
-		/* fprintf(stderr, "ALSA: underrun. resetting channel\n"); */
+		fprintf(stderr, "ALSA: underrun. resetting channel\n");
 		snd_pcm_channel_flush(pcm_handle, SND_PCM_CHANNEL_PLAYBACK);
 		snd_pcm_playback_prepare(pcm_handle);
 		snd_pcm_write(pcm_handle, s->buf, len);
 		if (snd_pcm_channel_status(pcm_handle, &status) < 0) {
 			fprintf(stderr, "ALSA: could not get channel status. giving up\n");
-			return 0;
+			return;
 		}
 		if (status.underrun) {
 			fprintf(stderr, "ALSA: write error. giving up\n");
-					return 0;
+					return;
 		}               
 	}
-
-	return 1;
 }	
 
-
-int ao_plugin_play(ao_device *device, const char *output_samples, 
-		uint_32 num_bytes)
+void plugin_play(ao_internal_t *state, void* output_samples, uint_32 num_bytes)
 {
-	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
-	
+	ao_alsa_internal_t *s = (ao_alsa_internal_t *) state;
 	int packed = 0;
 	int copy_len;
 	char *samples = (char *) output_samples;
-	int ok = 1;
 
-	while (packed < num_bytes && ok) {
+	while (packed < num_bytes) {
 		/* Pack the buffer */
-		if (num_bytes-packed < internal->buf_size - internal->buf_end)
+		if (num_bytes-packed < s->buf_size-s->buf_end)
 			copy_len = num_bytes - packed;
 		else
-			copy_len = internal->buf_size - internal->buf_end;
+			copy_len = s->buf_size-s->buf_end;
 
-		memcpy(internal->buf + internal->buf_end, samples + packed, 
-		       copy_len); 
+		memcpy(s->buf + s->buf_end, samples + packed, copy_len); 
 		packed += copy_len;
-		internal->buf_end += copy_len;
+		s->buf_end += copy_len;
 
-		if(internal->buf_end == internal->buf_size)
-			ok = _alsa_write_buffer(internal);
+		if(s->buf_end == s->buf_size)
+			ao_alsa_write_buffer(s);
 	}
-
-	return ok;
 }
 
-
-int ao_plugin_close(ao_device *device)
+ao_info_t *plugin_get_driver_info(void)
 {
-	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
-	int result;
-
-	/* Clear buffer */
-	result = _alsa_write_buffer(internal);
-	snd_pcm_close(internal->pcm_handle);
-	free(internal->buf);
-
-	return result;
-}
-
-
-void ao_plugin_device_clear(ao_device *device)
-{
-	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
-
-	free(internal);
+	return &ao_alsa_info;
 }

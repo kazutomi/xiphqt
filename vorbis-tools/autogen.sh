@@ -4,7 +4,6 @@
 
 package="vorbis-tools"
 
-olddir=`pwd`
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
@@ -22,35 +21,18 @@ DIE=0
 (automake --version) < /dev/null > /dev/null 2>&1 || {
         echo
         echo "You must have automake installed to compile $package."
-	echo "Download the appropriate package for your system,"
+	echo "Download the appropriate package for your system,
 	echo "or get the source from one of the GNU ftp sites"
 	echo "listed in http://www.gnu.org/order/ftp.html"
         DIE=1
 }
 
-(aclocal --version) < /dev/null > /dev/null 2>&1 || {
-	echo
-	echo "The aclocal tool was not found. You probably"
-	echo "need to update your automake package to at least"
-	echo "version 1.3."
-	echo
-}
-
-(libtoolize --version) < /dev/null > /dev/null 2>&1 || {
+(libtool --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have libtool installed to compile $package."
-	echo "Download the appropriate package for your system,"
+	echo "Download the appropriate package for your system,
 	echo "or get the source from one of the GNU ftp sites"
 	echo "listed in http://www.gnu.org/order/ftp.html"
-	DIE=1
-}
-
-(gettext --version) < /dev/null > /dev/null 2>&1 || {
-	echo
-	echo "You must have gettext installed to compile $package."
-	echo "Install the appropriate package for your system"
-	echo "or get the source from one of the GNU ftp sites"
-	echo "e.g. ftp://ftp.gnu.org/pub/gnu/gettext/"
 	DIE=1
 }
 
@@ -71,10 +53,9 @@ aclocal $ACLOCAL_FLAGS
 #autoheader
 echo "  libtoolize --automake"
 libtoolize --automake
-echo "  automake --add-missing $AUTOMAKE_FLAGS"
-automake --add-missing $AUTOMAKE_FLAGS 
+echo "  automake --add-missing"
+automake --add-missing 
 echo "  autoconf"
 autoconf
 
-cd $olddir
 $srcdir/configure "$@" && echo

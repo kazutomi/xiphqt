@@ -1,7 +1,7 @@
-libao - A Cross-platform Audio Library, Version 0.8.5
+libao - A Cross-platform Audio Library, Version 0.6.0
 
 Originally Copyright (C) Aaron Holtzman - May 1999
-Changes Copyright (C) Stan Seibert - July 2000-March 2004
+Changes Copyright (C) Stan Seibert - July 2000
 More Changes Copyright (C) Jack Moffitt - October 2000
 
 libao is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ supports:
    * OSS (Open Sound System)
    * ESD (ESounD or Enlighten Sound Daemon)
    * ALSA (Advanced Linux Sound Architecture)
-   * AIX
    * Solaris (untested)
    * IRIX (untested)
 
@@ -45,22 +44,12 @@ cross-platform support to ogg123.  I (Stan Seibert) downloaded the
 libao library, severely hacked it up in order to make the build
 process simpler and support multiple live-playback devices.  (The
 original code allowed one live playback driver, the wav driver, and a
-null driver to be compiled into the library.)  Jack Moffitt got it
-supporting dynamically loaded plugins so that binary versions of libao
-could be provided.  The API was revised for version 0.8.0.
+null driver to be compiled into the library.)  
 
-This code is being maintained by Stan Seibert (volsung@xiph.org) 
+Then Jack Moffitt got it supporting dynamicly loaded plugins so that 
+binary versions of libao could be provided.
+
+This code is being maintained by Stan Seibert (indigo@aztec.asu.edu) 
 and various other individuals.  Please DO NOT annoy Aaron Holtzman about 
 bugs, features, comments, etc. regarding this code.
 
-WORKAROUNDS
-
-The OSS emulation in ALSA deviates from the OSS spec by not returning
-immediately from an open() call if the OSS device is already in use.
-Instead, it makes the application wait until the device is available.
-This is not desirable during the autodetection phase of libao, so a
-workaround has been included in the source.  Since the workaround
-itself violates the OSS spec and causes other problems on some
-platforms, it is only enabled when ALSA is detected.  The workaround
-can be turned on or off by passing the --enable-broken-oss or
---disable-broken-oss flag to the configure script.

@@ -1,9 +1,9 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: utility for finding the distribution in a data set
- last mod: $Id: distribution.c,v 1.9 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: distribution.c,v 1.3 2001/02/02 03:52:27 xiphmont Exp $
 
  ********************************************************************/
 
@@ -102,24 +102,7 @@ int main(int argc,char *argv[]){
 
 	for(i=0;i<b->entries;i++)
 	  if(c->lengthlist[i]>base)base=c->lengthlist[i];
-
-	/* dump a full, correlated count */
-	for(j=0;j<b->entries;j++){
-	  if(c->lengthlist[j]){
-	    int indexdiv=1;
-	    printf("%4d: ",j);
-	    for(k=0;k<b->dim;k++){	
-	      int index= (j/indexdiv)%bins;
-	      printf("%+3.1f,", c->quantlist[index]*_float32_unpack(c->q_delta)+
-		     _float32_unpack(c->q_min));
-	      indexdiv*=bins;
-	    }
-	    printf("\t|");
-	    for(k=0;k<base-c->lengthlist[j];k++)printf("*");
-	    printf("\n");
-	  }
-	}
-
+	
 	/* do a rough count */
 	for(j=0;j<b->entries;j++){
 	  int indexdiv=1;
@@ -163,11 +146,8 @@ int main(int argc,char *argv[]){
     line=setup_line(in);
     while(line){      
       float code;
-      char buf[80];
       lines++;
-
-      sprintf(buf,"getting min/max (%.2f::%.2f). lines...",min,max);
-      if(!(lines&0xff))spinnit(buf,lines);
+      if(!(lines&0xff))spinnit("getting min/max. lines so far...",lines);
       
       while(!flag && sscanf(line,"%f",&code)==1){
 	line=strchr(line,',');
@@ -175,7 +155,7 @@ int main(int argc,char *argv[]){
 	flag=1;
       }
       
-      while(line && sscanf(line,"%f",&code)==1){
+      while(sscanf(line,"%f",&code)==1){
 	line=strchr(line,',');
 	if(line)line++;
 	if(code<min)min=code;
@@ -196,52 +176,48 @@ int main(int argc,char *argv[]){
     printf("\r                                                     \r");
     printf("Minimum scalar value: %f\n",min);
     printf("Maximum scalar value: %f\n",max);
-
-    if(argv[2]){
-      
-      printf("\n counting hits into %ld bins...\n",bins+1);
-      countarray=calloc(bins+1,sizeof(long));
-      
-      rewind(in);
-      line=setup_line(in);
-      while(line){      
-	float code;
-	lines--;
-	if(!(lines&0xff))spinnit("counting distribution. lines so far...",lines);
-	
-	while(line && sscanf(line,"%f",&code)==1){
-	  line=strchr(line,',');
-	  if(line)line++;
-	  
-	  code-=min;
-	  code/=(max-min);
-	  code*=bins;
-	  countarray[(int)rint(code)]++;
-	  total++;
-	}
-	
-	line=setup_line(in);
-      }
     
-      /* make a pretty graph */
-      {
-	long maxcount=0,i,j;
-	for(i=0;i<bins+1;i++)
-	  if(countarray[i]>maxcount)maxcount=countarray[i];
+    printf("\n counting hits into %d bins...\n",bins+1);
+    countarray=calloc(bins+1,sizeof(long));
+    
+    rewind(in);
+    line=setup_line(in);
+    while(line){      
+      float code;
+      lines--;
+      if(!(lines&0xff))spinnit("counting distribution. lines so far...",lines);
+      
+      while(sscanf(line,"%f",&code)==1){
+	line=strchr(line,',');
+	if(line)line++;
 	
-	printf("\r                                                     \r");
-	printf("Total scalars: %ld\n",total);
-	for(i=0;i<bins+1;i++){
-	  int stars=rint(50./maxcount*countarray[i]);
-	  printf("%08f (%8ld) |",(max-min)/bins*i+min,countarray[i]);
-	  for(j=0;j<stars;j++)printf("*");
-	  printf("\n");
-	}
+	code-=min;
+	code/=(max-min);
+	code*=bins;
+	countarray[(int)rint(code)]++;
+	total++;
       }
+      
+      line=setup_line(in);
     }
 
     fclose(in);
-
+    
+    /* make a pretty graph */
+    {
+      long maxcount=0,i,j;
+      for(i=0;i<bins+1;i++)
+	if(countarray[i]>maxcount)maxcount=countarray[i];
+      
+      printf("\r                                                     \r");
+      printf("Total scalars: %ld\n",total);
+      for(i=0;i<bins+1;i++){
+	int stars=rint(50./maxcount*countarray[i]);
+	printf("%08f (%8ld) |",(max-min)/bins*i+min,countarray[i]);
+	for(j=0;j<stars;j++)printf("*");
+      printf("\n");
+      }
+    }
   }
   printf("\nDone.\n");
   exit(0);

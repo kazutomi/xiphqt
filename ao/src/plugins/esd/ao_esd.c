@@ -2,7 +2,7 @@
  *
  *  ao_esd.c
  *
- *      Copyright (C) Stan Seibert - July 2000, July 2001
+ *      Copyright (C) Stan Seibert - July 2000
  *
  *  This file is part of libao, a cross-platform library.  See
  *  README for a history of this source code.
@@ -32,149 +32,94 @@
 
 #include <esd.h>
 #include <ao/ao.h>
-#include <ao/plugin.h>
 
-static char *ao_esd_options[] = {"host"};
-static ao_info ao_esd_info =
-{
-	AO_TYPE_LIVE,
-	"ESounD output",
-	"esd",
-	"Stan Seibert <volsung@asu.edu>",
-	"Outputs to the Enlightened Sound Daemon.",
-	AO_FMT_NATIVE,
-	40,
-	ao_esd_options,
-	1
-};
-
-
-typedef struct ao_esd_internal
+typedef struct ao_esd_internal_s
 {
 	int sock;
 	char *host;
-} ao_esd_internal;
+} ao_esd_internal_t;
 
-
-int ao_plugin_test()
+ao_info_t ao_esd_info =
 {
-	int sock;
+	"ESounD output",
+	"esd",
+	"Stan Seibert <volsung@asu.edu>",
+	"Outputs to the Enlighted Sound Daemon."
+};
 
-	/* don't wake up the beast while detecting */
-	putenv("ESD_NO_SPAWN=1"); 
-	sock = esd_open_sound(NULL);
-	if (sock < 0)
-		return 0;
-	if (esd_get_standby_mode(sock) != ESM_RUNNING) {
-		esd_close(sock);
-		return 0;
+void ao_esd_parse_options(ao_esd_internal_t *state, ao_option_t *options)
+{
+	state->host = NULL;
+
+	while (options) {
+		if (!strcmp(options->key, "host"))
+			state->host = strdup(options->value);
+		
+		options = options->next;
 	}
-
-	esd_close(sock);
-	return 1;
 }
 
-
-ao_info *ao_plugin_driver_info(void)
+ao_internal_t *plugin_open(uint_32 bits, uint_32 rate, uint_32 channels, ao_option_t *options)
 {
-	return &ao_esd_info;
-}
-
-
-int ao_plugin_device_init(ao_device *device)
-{
-	ao_esd_internal *internal;
-
-	internal = (ao_esd_internal *) malloc(sizeof(ao_esd_internal));
-
-	if (internal == NULL)	
-		return 0; /* Could not initialize device memory */
-	
-	internal->host = NULL;
-	
-	device->internal = internal;
-
-	return 1; /* Memory alloc successful */
-}
-
-int ao_plugin_set_option(ao_device *device, const char *key, const char *value)
-{
-	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
-
-	if (!strcmp(key, "host")) {
-		free(internal->host);
-		internal->host = strdup(value);
-	}
-
-	return 1;
-}
-
-int ao_plugin_open(ao_device *device, ao_sample_format *format)
-{
-	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
+	ao_esd_internal_t *state;
 	int esd_bits;
 	int esd_channels;
 	int esd_mode = ESD_STREAM;
 	int esd_func = ESD_PLAY;
 	int esd_format;
 
-	switch (format->bits)
+	switch (bits)
 	{
 	case 8  : esd_bits = ESD_BITS8;
 		  break;
 	case 16 : esd_bits = ESD_BITS16;
 		  break;
-	default : return 0;
+	default : return NULL;
 	}
 
-	switch (format->channels)
+	switch (channels)
 	{
 	case 1 : esd_channels = ESD_MONO;
 		 break;
 	case 2 : esd_channels = ESD_STEREO;
 		 break;
-	default: return 0;
+	default: return NULL;
 	}
 	
 	esd_format = esd_bits | esd_channels | esd_mode | esd_func;
 
-	internal->sock = esd_play_stream(esd_format, format->rate, 
-					 internal->host,
-					 "libao output");
-	if (internal->sock < 0)
-		return 0; /* Could not contact ESD server */
-	
-	device->driver_byte_format = AO_FMT_NATIVE;
+	state = malloc(sizeof(ao_esd_internal_t));
 
-	return 1;
+	if (state == NULL)
+		return NULL;
+
+	ao_esd_parse_options(state, options);
+
+	state->sock = esd_play_stream(esd_format, rate, state->host,
+				      "libao output");
+	if ( state->sock <= 0 ) {
+		free(state->host);
+		free(state);
+		return NULL;
+	}
+
+	return state;
 }
 
-int ao_plugin_play(ao_device *device, const char* output_samples, 
-		uint_32 num_bytes)
+void plugin_close(ao_internal_t *state)
 {
-	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
-
-	if (write(internal->sock, output_samples, num_bytes) < 0)
-		return 0;
-	else
-		return 1;
+	ao_esd_internal_t *s = (ao_esd_internal_t *) state;
+	close(s->sock);
+	free(s->host);
+	free(s);
 }
 
-
-int ao_plugin_close(ao_device *device)
+void plugin_play(ao_internal_t *state, void* output_samples, uint_32 num_bytes)
 {
-	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
-
-	close(internal->sock);
-
-	return 1;
+	write(((ao_esd_internal_t *) state)->sock, output_samples, num_bytes);
 }
 
-
-void ao_plugin_device_clear(ao_device *device)
+ao_info_t *plugin_get_driver_info(void)
 {
-	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
-
-	free(internal->host);
-	free(internal);
+	return &ao_esd_info;
 }

@@ -34,20 +34,20 @@ DYNAMIC_LIBS = -logg -lvorbis
 
 SRCS = \
 	../rvorbis.cpp \
-	../queue.cpp
+	../fivemque.cpp
 
 OBJS = $(COMPILED_OBJS) $(SOURCE_OBJS)
 
 COMPILED_OBJS = \
 	rel/obj/rvorbis.so \
-	rel/obj/queue.so
+	rel/obj/fivemque.so
 
 SOURCE_OBJS = 
 
 INCLUDES = \
 	-I/usr/X11R6/include \
 	-I/usr/X11R6/include \
-	-I/home/jack/rmasdk/include \
+	-I/home/jack/src/rmasdk_6_0/include \
 	-I.. \
 	-I./pub
 
@@ -74,8 +74,8 @@ rel/obj:
 	if test -d rel/obj; then echo; else mkdir rel/obj; fi
 rel/obj/rvorbis.so : ../rvorbis.cpp
 	$(CXX) $(CXXFLAGS) -fPIC -DPIC -o rel/obj/rvorbis.so -c ../rvorbis.cpp
-rel/obj/queue.so : ../queue.cpp
-	$(CXX) $(CXXFLAGS) -fPIC -DPIC -o rel/obj/queue.so -c ../queue.cpp
+rel/obj/fivemque.so : ../fivemque.cpp
+	$(CXX) $(CXXFLAGS) -fPIC -DPIC -o rel/obj/fivemque.so -c ../fivemque.cpp
 copy:
 	if test -d ../release; then echo; else mkdir ../release; fi
 	cp rel/rvorbis.so ../release/rvorbis.so
