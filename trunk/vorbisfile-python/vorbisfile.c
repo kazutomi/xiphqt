@@ -788,6 +788,45 @@ static PyObject *ov_comment_py(PyObject *self, PyObject *args)
     return result;
 }
 
+static PyObject *ov_read_float_py(PyObject *self, PyObject *args)
+{
+    PyObject *cobj, *result, **channel, *list;
+    long ret;
+    int current_section, samples, channels, i, j;
+    float **pcm_channels;
+    OggVorbis_File *vf;
+
+    if (!PyArg_ParseTuple(args, "Oi", &cobj, &samples)) {
+	PyErr_SetString(PyExc_StandardError, "Couldn't parse arguments");
+	return NULL;
+    }
+
+    if (!PyCObject_Check(cobj)) {
+	PyErr_SetString(PyExc_StandardError, "Expected vorbisfile object");
+	return NULL;
+    }
+
+    vf = (OggVorbis_File *)PyCObject_AsVoidPtr(cobj);
+    channels = vf->vi->channels;
+
+    ret = ov_read_float(vf, &pcm_channels, samples, &current_section);
+    if (ret > 0) {
+	list = PyList_New(channels);
+	for (i=0; i<channels; i++) {
+	    channel[i] = PyList_New(ret);
+	    PyList_SetItem(list, i, channel[i]);
+
+	    for (j=0; j<ret; j++) {
+		PyList_SetItem(channel[i], j, 
+			       PyFloat_FromDouble(pcm_channels[i][j]));
+	    }
+	}
+    }
+
+    result = Py_BuildValue("(lOi)", ret, list, current_section);
+    return result;
+}
+
 static PyObject *ov_read_py(PyObject *self, PyObject *args)
 {
     PyObject *cobj, *result;
@@ -947,8 +986,8 @@ static PyMethodDef vorbisfileMethods[] = {
      "return something"},
     {"ov_comment", ov_comment_py, METH_VARARGS,
      "return something"},
-    //{"ov_read_float", ov_read_float_py, METH_VARARGS,
-    // "return something"},
+    {"ov_read_float", ov_read_float_py, METH_VARARGS,
+     "return something"},
     {"ov_read", ov_read_py, METH_VARARGS,
      "return something"},
     {"ov_crosslap", ov_crosslap_py, METH_VARARGS,
