@@ -12,12 +12,12 @@ endif
 bin_PROGRAMS = ices
 
 noinst_HEADERS = definitions.h setup.h log.h stream.h util.h playlist.h cue.h \
-	dj.h mp3.h id3.h signals.h reencode.h icestypes.h
+	dj.h in_vorbis.h mp3.h id3.h signals.h reencode.h icestypes.h
 
 ices_SOURCES = log.c setup.c ices.c stream.c util.c playlist.c dj.c mp3.c \
 	cue.c id3.c signals.c
 
-EXTRA_ices_SOURCES = reencode.c
+EXTRA_ices_SOURCES = in_vorbis.c reencode.c
 
 ices_LDADD = @ICES_OBJECTS@ playlist_builtin/libplaylist.a \
 	interpreter/libinterpreter.a xml/libicesxml.a \

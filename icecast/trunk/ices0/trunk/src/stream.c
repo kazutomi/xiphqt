@@ -20,17 +20,24 @@
 
 #include "definitions.h"
 
+#ifdef HAVE_LIBVORBISFILE
+#include "in_vorbis.h"
+#endif
+
 #include <resolver.h>
+
+#define INPUT_BUFSIZ 4096
+
+/* -- local types -- */
 
 extern ices_config_t ices_config;
 
 /* Private function declarations */
 static int ices_stream_send_file (const char *file);
-static int ices_stream_fd_size (int fd, const char *file, int file_bytes);
-static int ices_stream_fd_until_eof (int fd, const char *file);
-static int ices_stream_send_reencoded (ices_stream_config_t* stream,
-				       unsigned char *buff, int read_bytes,
-				       int file_bytes);
+static int ices_stream_open_source (input_stream_t* source);
+
+static int16_t left[INPUT_BUFSIZ * 30];
+static int16_t right[INPUT_BUFSIZ * 30];
 
 /* Public function definitions */
 
@@ -141,76 +148,81 @@ ices_stream_loop (void)
 static int
 ices_stream_send_file (const char *file)
 {
-	int file_bytes, ret;
-	int fd = ices_util_open_for_reading (file);
-	char namespace[1024];
+  input_stream_t source;
+  ices_stream_config_t* stream;
+  unsigned char buf[INPUT_BUFSIZ * 4];
+  char namespace[1024];
+  ssize_t len;
+  int rc;
 
-	/* Could we open this file, is the file handle valid? */
-	if (!ices_util_valid_fd (fd)) {
-		ices_log_error ("Could not open file %s, error: %s", file, ices_util_strerror (errno, namespace, 1024));
-		return 0;
-	}
+  source.path = file;
 
-	/* Check the size of the file to stream */
-	if ((file_bytes = ices_util_fd_size (fd)) == -1) {
-		ices_log_error ("Unable to get filesize for file %s", file);
-		ices_util_close (fd);
-		return 0;
-	}
+  if (ices_stream_open_source (&source) < 0) {
+    ices_log_error ("Error sending %s", source.path);
+    return 0;
+  }
 
-	if (file_bytes == 0) {
-		ices_log_error ("Zero sized file %s", file);
-		ices_util_close (fd);
-		return 0;
-	}
+#ifdef HAVE_LIBLAME
+  ices_reencode_reset ();
+#endif
+  
+  ices_log ("Streaming from %s until EOF..", source.path);
 	
-	/* Check the type of the file. If it's a regular file then we
-	 * check the size of it and stream that size.
-	 * If it's a fifo, we stream until eof. This is handled
-	 * by two separate functions cause the semantics are too
-	 * unwieldy to combine. */
-	switch (ices_util_is_regular_file (fd)) {
-		case -1:
-		case -2:
-			/* Some stat error */
-			ices_util_close (fd);
-			return 0;
-			break;
-		case 0:
-			/* Fifo or pipe */
-			ices_stream_fd_until_eof (fd, file);
-			ices_util_close (fd);
-			return 1;
-			break;
+  while (1) {
+#ifdef HAVE_LIBLAME
+    if (ices_config.reencode || source.type != ICES_INPUT_MP3) {
+      len = source.readpcm (&source, sizeof (left), left, right);
+    } else
+#endif
+      len = source.read (&source, buf, sizeof (buf));
+
+    if (len > 0) {
+
+      for (stream = ices_config.streams; stream; stream = stream->next) {
+#ifdef HAVE_LIBLAME
+	if (ices_config.reencode || source.type != ICES_INPUT_MP3)
+	  len = ices_reencode_reencode_chunk (stream, len, left, right, buf,
+					      sizeof (buf));
+#endif
+	if (len) {
+	  rc = shout_send_data (&stream->conn, buf, len);
+			
+	  if (!rc) {
+	    ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
+	    break;
+	  }
 	}
+      }
+			
+    } else if (len == 0) {
+      source.close (&source);
+      return 1;
+    } else {
+      ices_log_error ("Read error while reading %s: %s", source.path,
+		      ices_util_strerror (errno, namespace, 1024));
+      source.close (&source);
+      return 0;
+    }
 
-	/* Rest if for regular files only  */
+    ices_cue_update (&source, len);
+    for (stream = ices_config.streams; stream; stream = stream->next)
+      shout_sleep(&stream->conn);
+  }
 
-	/* Check mp3 headers for bitrate, mode, channels, etc... */
-	ices_mp3_parse_file (file);
+#ifdef HAVE_LIBLAME
+  for (stream = ices_config.streams; stream; stream = stream->next) {
+    len = ices_reencode_flush (stream, buf, sizeof (buf));
+    if (len > 0)
+      rc = shout_send_data (&stream->conn, buf, len);
+  }
+#endif
 
-	/* Check for id3 tag
-	 * Send metadata to server
-	 * Return file size excluding id3 tag
-	 * This also does the metadata update on the server */
-	file_bytes = ices_id3_parse_file (file, file_bytes);
+  source.close (&source);
 
-	/* Id3 tag parsing went wrong */
-	if (file_bytes <= 0) {
-		ices_log_error ("Unable to get file size, or zero length file: %s, error: %s", file, ices_util_strerror (errno, namespace, 1024));
-		ices_util_close (fd);
-		return 0;
-	}
-
-	/* Stream file_bytes bytes from fd */
-	ret = ices_stream_fd_size (fd, file, file_bytes);
-
-	/* Be a good boy and close the file */
-	ices_util_close (fd);
-
-	return ret;
+  return 1;
 }
 
+#if 0
 /* Stream file_bytes bytes from fd */
 static int
 ices_stream_fd_size (int fd, const char *file, int file_bytes)
@@ -302,9 +314,10 @@ ices_stream_fd_until_eof (int fd, const char *file)
 	}
       }
 			
-    } else if (read_bytes == 0)
-      return 1;
-    else {
+    } else if (read_bytes == 0) {
+      if (feof (fd)) 
+	return 1;
+    } else {
       ices_log_error ("Read error while reading %s: %s", file, ices_util_strerror (errno, namespace, 1024));
       return 0;
     }
@@ -315,30 +328,60 @@ ices_stream_fd_until_eof (int fd, const char *file)
   return 1;
 }
 
-/* Reencode and send given chunk to server.
- * If file is up, flush the reencoding buffers and send the remains */
+#endif
+
+/* open up path, figure out what kind of input it is, and set up source */
 static int
-ices_stream_send_reencoded (ices_stream_config_t* stream, unsigned char *buff,
-			    int read_bytes, int file_bytes)
+ices_stream_open_source (input_stream_t* source)
 {
-  int ret = 1;
-#ifdef HAVE_LIBLAME
-  unsigned char reencode_buff[15000];
-  int len = ices_reencode_reencode_chunk (stream, buff, read_bytes, reencode_buff, 15000);
-	
-  if (len > 0)
-    ret = shout_send_data (&stream->conn, reencode_buff, len);
-  else if (len < 0)
-    return 0;
-	
-  /* Flush and send remains if file is up */
-  if (file_bytes <= 0) {
-    len = ices_reencode_flush (stream, reencode_buff, 15000);
-    if (len > 0)
-      ret = shout_send_data (&stream->conn, reencode_buff, len);
+  ices_mp3_in_t* mp3_data;
+  char buf[1024];
+  int fd;
+  int rc;
+
+  if ((fd = open (source->path, O_RDONLY)) < 0) {
+    ices_util_strerror (errno, buf, sizeof (buf));
+    ices_log_error ("Error opening %s: %s", source->path, buf);
+
+    return -1;
+  }
+
+  if ((source->filesize = lseek (fd, SEEK_END, 0)) < 0)
+    source->canseek = 0;
+  else {
+    lseek (fd, SEEK_SET, 0);
+    source->canseek = 1;
+  }
+  ices_log_error ("Seek: %s", source->canseek ? "yes" : "no");
+
+#ifdef HAVE_LIBVORBISFILE
+  if (source->canseek) {
+    if ((rc = ices_vorbis_open (source)) == 0) {
+      close (fd);
+      return 0;
+    } else if (rc < 0) {
+      close (fd);
+      return -1;
+    }
   }
 #endif
-  return ret;
+
+  /* let's hope it's MP3 */
+  if (source->canseek) {
+    ices_mp3_parse_file (source->path);
+    ices_id3_parse_file (source->path, 0);
+    source->bitrate = ices_mp3_get_bitrate ();
+  }
+
+  mp3_data = (ices_mp3_in_t*) malloc (sizeof (ices_mp3_in_t));
+  mp3_data->fd = fd;
+
+  source->type = ICES_INPUT_MP3;
+  source->data = mp3_data;
+
+  source->read = ices_mp3_read;
+  source->readpcm = ices_mp3_readpcm;
+  source->close = ices_mp3_close;
+
+  return 0;
 }
-
-

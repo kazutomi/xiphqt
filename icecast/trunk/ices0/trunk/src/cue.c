@@ -39,7 +39,7 @@ char *ices_cue_filename = NULL;
 
 /* Update the cue file with a set of variables */
 void
-ices_cue_update (const char *filename, const int filesize, const int bitrate, const int bytes_played) 
+ices_cue_update (input_stream_t* source, const int bytes_played) 
 {
 	char buf[1024];
 	char namespace[1024], namespace2[1024];
@@ -53,8 +53,10 @@ ices_cue_update (const char *filename, const int filesize, const int bitrate, co
 		return;
 	}
 
-	fprintf (fp, "%s\n%d\n%d\n%s\n%f\n%d\n%s\n%s\n", filename, filesize, bitrate, ices_util_file_time (bitrate, filesize, buf),
-		 ices_util_percent (bytes_played, filesize), ices_playlist_get_current_lineno (), ices_util_nullcheck (id3artist), ices_util_nullcheck (id3title));
+	fprintf (fp, "%s\n%d\n%d\n%s\n%f\n%d\n%s\n%s\n", source->path,
+		 source->filesize, source->bitrate,
+		 ices_util_file_time (source->bitrate, source->filesize, buf),
+		 ices_util_percent (bytes_played, source->filesize), ices_playlist_get_current_lineno (), ices_util_nullcheck (id3artist), ices_util_nullcheck (id3title));
 	
 	ices_util_fclose (fp);
 }

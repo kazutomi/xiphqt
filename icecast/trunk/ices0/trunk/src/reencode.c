@@ -29,10 +29,6 @@
 
 extern ices_config_t ices_config;
 
-static int nsamples; /* per call to lame_decode */
-static short int right[4096 * 30]; /* Probably overkill like hell, can someone calculate a better value please? */
-static short int left[4096 * 30];
-
 /* -- local prototypes -- */
 static void reencode_lame_init (void);
 
@@ -90,15 +86,17 @@ ices_reencode_shutdown (void)
  * (do this once per chunk, not per stream). Result is number of samples
  * for ices_reencode_reencode_chunk. */
 int
-ices_reencode_decode (unsigned char* buf, size_t blen)
+ices_reencode_decode (unsigned char* buf, size_t blen, size_t olen,
+		      int16_t* left, int16_t* right)
 {
-  return (nsamples = lame_decode (buf, blen, left, right));
+  return lame_decode (buf, blen, left, right);
 }
 
 /* reencode buff, of len buflen, put max outlen reencoded bytes in outbuf */
 int
-ices_reencode_reencode_chunk (ices_stream_config_t* stream, unsigned char *buff,
-			      int buflen, unsigned char *outbuf, int outlen)
+ices_reencode_reencode_chunk (ices_stream_config_t* stream, int nsamples,
+			      int16_t* left, int16_t* right,
+			      unsigned char *outbuf, int outlen)
 {
   lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
 

@@ -67,4 +67,27 @@ typedef struct ices_config_St {
   ices_stream_config_t* streams;
 }ices_config_t;
 
+/* -- input stream types -- */
+typedef enum {
+  ICES_INPUT_VORBIS,
+  ICES_INPUT_MP3
+} input_type_t;
+
+typedef struct _input_stream_t {
+  input_type_t type;
+
+  const char* path;
+  int canseek;
+  ssize_t filesize;
+  unsigned int bitrate;
+
+  void* data;
+
+  ssize_t (*read)(struct _input_stream_t* self, void* buf, size_t len);
+  /* len is the size in bytes of left or right. The two buffers must be
+   * the same size. */
+  ssize_t (*readpcm)(struct _input_stream_t* self, size_t len, int16_t* left,
+		     int16_t* right);
+  int (*close)(struct _input_stream_t* self);
+} input_stream_t;
 #endif

@@ -320,6 +320,41 @@ then
   fi
 fi
 
+AC_ARG_WITH(vorbis,
+[  --with-vorbis[=DIR]         support for vorbis using libvorbisfile [in DIR]])
+
+if test "$with_vorbis" != "no"
+then
+  AC_CACHE_SAVE
+  if test -n "$with_vorbis" -a "$with_vorbis" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_vorbis/include"
+    LDFLAGS="$LDFLAGS -L$with_vorbis/lib"
+  fi
+
+  have_vorbis="no"
+  AC_CHECK_HEADER(vorbis/vorbisfile.h, have_vorbis="maybe")
+  if test "$have_vorbis" != "no"
+  then
+    AC_CHECK_LIB(vorbisfile, ov_open, [
+      ICES_OBJECTS="$ICES_OBJECTS in_vorbis.o"
+      LIBS="$LIBS -lvorbisfile -lvorbis -logg"
+      AC_DEFINE(HAVE_LIBVORBISFILE, 1, [ Define if you have libvorbisfile ])
+      have_vorbis="yes"
+    ],,-lvorbis -logg)
+  fi
+fi
+
+if test "$with_vorbis" != "no" -a "$have_vorbis" != "yes"
+then
+  if test -n "$with_vorbis"
+  then
+    AC_MSG_ERROR([Could not find libvorbisfile])
+  else
+    AC_MSG_RESULT([Could not find libvorbisfile, vorbis support disabled])
+  fi
+fi
+
 AC_ARG_WITH(perl,
 [  --with-perl[=DIR]           enable perl interpreter [found in DIR]])
 

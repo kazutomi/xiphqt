@@ -1,6 +1,7 @@
 /* mp3.c
  * - Functions for mp3 in ices
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -189,4 +190,44 @@ ices_mp3_parse_file (const char *filename)
 			ices_mp3_channels = 2;
 		return 1;
 	}
+}
+
+/* input_stream_t wrapper for fread */
+ssize_t
+ices_mp3_read (input_stream_t* self, void* buf, size_t len)
+{
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) self->data;
+
+  return read (mp3_data->fd, buf, len);
+}
+
+ssize_t
+ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
+		  int16_t* right)
+{
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) self->data;
+  static unsigned char mp3buf[4096];
+  ssize_t rlen;
+  int nsamples = 0;
+
+  while (! nsamples) {
+    if ((rlen = read (mp3_data->fd, mp3buf, sizeof (mp3buf))) <= 0)
+      return rlen;
+
+    nsamples = ices_reencode_decode (mp3buf, rlen, len, left, right);
+  }
+
+  return nsamples;
+}
+
+int
+ices_mp3_close (input_stream_t* self)
+{
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) self->data;
+  int fd;
+
+  fd = mp3_data->fd;
+  free (self->data);
+
+  return close (fd);
 }

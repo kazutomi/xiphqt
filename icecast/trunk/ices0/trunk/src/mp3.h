@@ -18,6 +18,12 @@
  *
  */
 
+/* -- structures -- */
+
+typedef struct {
+  int fd;
+} ices_mp3_in_t;
+
 /* Public function declarations */
 int ices_mp3_parse_file (const char *file);
 int ices_mp3_get_bitrate (void);
@@ -25,3 +31,7 @@ int ices_mp3_get_sample_rate (void);
 int ices_mp3_get_mode (void);
 int ices_mp3_get_channels (void);
 
+ssize_t ices_mp3_read (input_stream_t* self, void* buf, size_t len);
+ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
+			  int16_t* right);
+int ices_mp3_close (input_stream_t* self);
