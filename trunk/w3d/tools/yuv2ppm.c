@@ -54,7 +54,7 @@ void usage (char *progname)
            "usage: %s <in.yuv> <ppmnames>\n"
            "\n"
            "        where <in.yuv> is the input .yuv sequence and\n"
-           "        and <ppmnames> is a template like image%%03d.yuv\n"
+           "        and <ppmnames> is a template like image%%03d.ppm\n"
            "\n", progname);
    exit (-1);
 }
