@@ -186,8 +186,13 @@ class WOID:
                     
                 # MDB pointer to matching record in child db
                 pointer = sai_record[0]
-                if (sai_record[1] != 0):  # Don't update if PAI module pointer is zero
-                    child_pai_modules.append((i-1, sai_record[1]))
+                if (sai_record[1] == 0):
+                    # Need to make a PAI module for this entry and update
+                    # child sai
+                    sai_record[1] = self.children[i-1].pai.append_module([])
+                    self.children[i-1].sai[sai_index] = sai_record
+                    
+                child_pai_modules.append((i-1, sai_record[1]))
 
                 bag.append(pointer)
                 
@@ -255,10 +260,12 @@ class WOID:
         null_rec_pointer = self.mdb.clear()
         self.sai.clear()
         if self.pai != None:
-            self.pai.clear()
-
+            pai_ptr = self.pai.clear()
+        else:
+            pai_ptr = 0
+            
         # Add required null record
-        self.sai.append((null_rec_pointer, 0))
+        self.sai.append((null_rec_pointer, pai_ptr))
 
     def pack(self, cmpfunc=None):
         """Removes all deleted records in this database and child databases.
