@@ -72,18 +72,12 @@ ices_stream_loop (ices_config_t* config)
   while (1) {
     source.path = ices_playlist_get_next ();
 
-    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
-
-    /* We quit if the playlist handler gives us a NULL filename */
-    if (!source.path) {
-      ices_log ("Warning: ices_file_get_next() returned an error: %s", ices_log_get_error ());
-      ices_setup_shutdown ();
-    }
-
-    if (source.path[0] == '\0') {
+    if (!(source.path && source.path[0])) {
       ices_log ("Playlist file name is empty, shutting down.");
       ices_setup_shutdown ();
     }
+
+    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
 
     ices_metadata_set (NULL, NULL);
     ices_metadata_set_file (source.path);
@@ -228,7 +222,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
               rightp = left;
             else
               rightp = right;
-            if (obuf.len < 7200 + samples + samples / 4) {
+            if (obuf.len < (unsigned int) (7200 + samples + samples / 4)) {
               char *tmpbuf;
 
               /* pessimistic estimate from lame.h */
@@ -415,9 +409,11 @@ stream_connect (ices_stream_t* stream)
 }
 
 static int stream_needs_reencoding (input_stream_t* source, ices_stream_t* stream) {
-    if (!source->read || source->bitrate != stream->bitrate
-        || (stream->out_samplerate > 0 && source->samplerate != stream->out_samplerate)
-        || (stream->out_numchannels > 0 && source->channels != stream->out_numchannels))
+    if (!source->read || source->bitrate != (unsigned int)stream->bitrate
+        || (stream->out_samplerate > 0 &&
+	    source->samplerate != (unsigned int)stream->out_samplerate)
+        || (stream->out_numchannels > 0 &&
+	    source->channels != (unsigned int)stream->out_numchannels))
       return 1;
 
   return 0;
