@@ -677,8 +677,10 @@ void global_note_off(void)
 	snd_seq_ev_clear(&ev);
 	for (c = 0; c < 16; c++) {
 		for (n = 0; n < 128; n++) {
+			snd_seq_ev_set_dest(&ev, device.seq_addr.client, device.seq_addr.port);
 			snd_seq_ev_set_noteoff(&ev, c, n, 127);
 			snd_seq_event_output_direct(device.seqhandle, &ev);
+			snd_seq_drain_output(device.seqhandle);
 		}
 	}
 }
