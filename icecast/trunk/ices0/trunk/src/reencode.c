@@ -48,6 +48,11 @@ ices_reencode_initialize (void)
   if (! ices_config.reencode)
     return;
 
+  if (lame_decode_init () < 0) {
+    ices_log ("LAME: error initialising decoder");
+    ices_setup_shutdown ();
+  }
+
   ices_log_debug ("Using LAME version %s\n", get_lame_version ());
 }
 
@@ -58,21 +63,6 @@ ices_reencode_reset (input_stream_t* source)
 {
   ices_stream_t* stream;
   lame_global_flags* lame;
-  static int decoder_init = 0;
-
-  if (decoder_init) {
-    if (lame_decode_exit () < 0) {
-      ices_log ("LAME: error resetting decoder");
-      ices_setup_shutdown ();
-    }
-    decoder_init = 0;
-  }
-
-  if (lame_decode_init () < 0) {
-    ices_log ("LAME: error initialising decoder");
-    ices_setup_shutdown ();
-  }
-  decoder_init = 1;
 
   for (stream = ices_config.streams; stream; stream = stream->next) {
     if (! stream->reencode)
