@@ -84,8 +84,10 @@ static int ices_mp3_channels = -1;
 /* -- static prototypes -- */
 static int ices_mp3_parse_file (const char* buf, size_t len);
 static ssize_t ices_mp3_read (input_stream_t* self, void* buf, size_t len);
+#ifdef HAVE_LIBLAME
 static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 				 int16_t* left, int16_t* right);
+#endif
 static int ices_mp3_close (input_stream_t* self);
 static int ices_mp3_get_metadata (input_stream_t* self, char* buf, size_t len);
 

@@ -151,7 +151,6 @@ ices_stream_send_file (const char *file)
   input_stream_t source;
   ices_stream_config_t* stream;
   unsigned char ibuf[INPUT_BUFSIZ];
-  unsigned char buf[INPUT_BUFSIZ * 4];
   char namespace[1024];
   ssize_t len;
   ssize_t olen;
@@ -159,6 +158,7 @@ ices_stream_send_file (const char *file)
   int samples;
   int rc;
 #ifdef HAVE_LIBLAME
+  unsigned char buf[INPUT_BUFSIZ * 4];
   static int16_t left[INPUT_BUFSIZ * 30];
   static int16_t right[INPUT_BUFSIZ * 30];
 #endif
