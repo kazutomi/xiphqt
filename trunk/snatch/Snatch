@@ -575,7 +575,8 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
-    $next_timer_event=0;
+    $next_timer_start=0;
+    $next_timer_end=0;
     if(defined($timer_callback) && !recording_active){
 	$timer_callback->cancel();
 	undef $timer_callback;
@@ -596,7 +597,8 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
-    $next_timer_event=0;
+    $next_timer_start=0;
+    $next_timer_end=0;
     $mode='inactive';
     if(defined($timer_callback)){
 	$timer_callback->cancel();
@@ -616,7 +618,8 @@ sub Robot_Inactive{
 }
 
 sub Robot_Timer{
-    $next_timer_event=0;
+    $next_timer_start=0;
+    $next_timer_end=0;
     send_string("O","");
     send_string("L","");
     syswrite COMM_SOCK,'T';
@@ -652,7 +655,8 @@ sub SetupTimerDispatch{
     my$now=time();
     my@TIMETEMP=@TIMER_TIMES;
     my@ENDTIMETEMP=@TIMER_ENDTIMES;
-    $next_timer_event=0;
+    $next_timer_start=0;
+    $next_timer_end=0;
 
     foreach my$line (@TIMER){
 	my$start=shift @TIMETEMP;
@@ -660,12 +664,13 @@ sub SetupTimerDispatch{
 
 	if($start<=$now && $end>$now){    
 	    Robot_Stop();
-	    $next_timer_event=$now;
+	    $next_timer_start=$start;
+	    $next_timer_end=$end;
 	    DoTimedEntry($start,$line);
 	    return;
 	}else{
-	    $next_timer_event=$start if(($next_timer_event==0 || 
-					$start<$next_timer_event) && $start>$now);
+	    $next_timer_start=$start if(($next_timer_start==0 || 
+					$start<$next_timer_start) && $start>$now);
 	}
     }
     # nothing happening now
@@ -685,10 +690,10 @@ sub TimerWatch{
 	}else{
 	    
 	    my $next;
-	    if($recording_active){
-		$next=$TIMER_ENDTIMES[$TIMER_SORTED[0]];
+	    if($recording_active || $recording_pending){
+		$next=$next_timer_end;
 	    }else{
-		$next=$next_timer_event;
+		$next=$next_timer_start;
 	    }
 	    
 	    if($now>=$next){
