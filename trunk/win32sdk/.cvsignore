@@ -1,6 +1,5 @@
 Debug
 Release
-sdk
 *.ncb
 *.plg
 *.mak
