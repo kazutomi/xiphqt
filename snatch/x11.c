@@ -21,7 +21,7 @@ static unsigned long rpplay_width=0;
 static unsigned long rpplay_height=0;
 
 static unsigned long logo_x=0;
-static unsigned long logo_y=0;
+static unsigned long logo_y=-1;
 static unsigned long logo_prev=-1;
 
 static unsigned long play_blackleft=-1;
@@ -79,6 +79,26 @@ static unsigned short IByte (unsigned char *buf){
   return(buf[0]);
 }
 
+static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
+  int x=0;
+  int y=0;
+  while(id!=root_window){
+    Window root_return,parent_return,*children;
+    int x_return, y_return;
+    unsigned int width_return, height_return, border_width_return,
+      depth_return;
+
+    XGetGeometry(Xdisplay,id,&root_return, &x_return, &y_return,
+		    &width_return,&height_return,&border_width_return,
+		 &depth_return);
+    x+=x_return;
+    y+=y_return;
+    XQueryTree(Xdisplay,id,&root_return,&parent_return,&children,&depth_return);
+    XFree(children);
+    id=parent_return;
+  }
+}
+
 static void FakeKeycode(int keycode, int modmask, unsigned long window){
   XKeyEvent event;
   memset(&event,0,sizeof(event));
@@ -115,12 +135,20 @@ static void FakeKeySym(int keysym, int modmask, unsigned long window){
 
 void FakeButton1(unsigned long window){
   XButtonEvent event;
+  int root_x,root_y;
+
+  XGetGeometryRoot(window,&root_x,&root_y);
 
   memset(&event,0,sizeof(event));
   event.display=Xdisplay;
   event.type=4; /* button down */
   event.button=1;
   event.root=root_window;
+  event.x=4;
+  event.y=4;
+  event.x_root=root_x+4;
+  event.y_root=root_y+4;
+
   event.window=window;
   event.same_screen=1;
 
@@ -166,7 +194,10 @@ static void SetUpReply(unsigned char *buf){
 	      "           window id base = %lx\n"
 	      "           window id mask = %lx\n"
 	      "           server image endianness = %s\n",
-	      window_id_base,window_id_mask,(bigendian_p?"big":"small"));
+	      "           client endianness = %s\n",
+	      window_id_base,window_id_mask,
+	      (bigendian_p?"big":"small"),
+	      (littleEndian?"small":"big"));
     }
   }
 }
@@ -178,12 +209,8 @@ static void UsernameAndPassword(void){
     FakeTypeString(username,rpauth_username);
   if(password)
     FakeTypeString(password,rpauth_password);
+  FakeButton1(rpauth_okbutton);
 
-  FakeTypeString(" ",rpauth_okbutton); /* space activates the button.
-                                          Saves work parsing the
-                                          window tree to get an
-                                          absolute X,Y to make an
-                                          event */
   rpauth_shell=0;
   rpauth_main=0;
   rpauth_password=0;
@@ -197,21 +224,12 @@ static void Location(void){
   
   fprintf(stderr,"    ...: filling in location field...\n");
 
-  FakeTypeString(" ",rploc_clear); /* space activates the button.
-				      Saves work parsing the
-				      window tree to get an
-				      absolute X,Y to make an
-				      event */
+  FakeButton1(rploc_clear);
 
   if(location)
     FakeTypeString(location,rploc_entry);
-  fprintf(stderr,"rploc_ok %lx\n",rploc_ok);
-  
 
-  FakeKeySym(XStringToKeysym("Tab"),0,rploc_ok);
-  FakeKeySym(XStringToKeysym("space"),0,rploc_ok);
-
-  //FakeTypeString(" ",rploc_ok);
+  FakeButton1(rploc_ok);
 
   rploc_shell=0;
   rploc_main=0;
@@ -385,10 +403,10 @@ static void ConfigureWindow(unsigned char *buf){
       unsigned long testmask=1<<i;
       unsigned long val;
       if(bitmask & testmask){
-	if(bigendian_p)
-	  val=IShort(&buf[12+count+2]);
-	else
+	if(littleEndian)
 	  val=IShort(&buf[12+count]);
+	else
+	  val=IShort(&buf[12+count+2]);
 
 	if(testmask==0x4){ /* width */
 	  rpplay_width=val;
@@ -438,7 +456,7 @@ static void ChangeProperty(unsigned char *buf){
       rpplay_height=0;
       
       logo_x=0;
-      logo_y=0;
+      logo_y=-1;
       logo_prev=-1;
       
       rpvideo_window=0;
@@ -555,7 +573,10 @@ static void PutImage(unsigned char *header,unsigned char *data){
     unsigned char *ptr=data;
     long i,j,k;
 
+    fprintf(stderr,"%d %d %d %d %d %d\n",x,y,width,height,rpplay_width,rpplay_height);
+
     if(x==0 && width==rpplay_width){
+      fprintf(stderr,"searching for screen...\n");
       if(y==0){
 	play_blackupper=42;
 	play_blacklower=-1;
@@ -591,6 +612,7 @@ static void PutImage(unsigned char *header,unsigned char *data){
 	   big black block */
 	int test;
 	
+      fprintf(stderr,"searching for logo...\n");
 	for(test=play_blackupper;test<height+y;test++)
 	  if(test>=y)
 	    if(ptr[(test-y)*width*4+(width/2*4)+1]!=0)break;
