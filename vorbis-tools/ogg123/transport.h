@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: transport.h,v 1.1.2.2 2001/12/11 05:29:09 volsung Exp $
+ last mod: $Id: transport.h,v 1.1.2.3 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include "ogg/os_types.h"
 #include "buffer.h"
-
+#include "ogg123.h"
 
 typedef struct data_source_stats_t {
   ogg_int64_t bytes_read;
@@ -45,7 +45,7 @@ typedef struct data_source_t {
 typedef struct transport_t {
   char *name;
   int (* can_transport)(char *source_string);
-  data_source_t* (* open) (char *source_string);
+  data_source_t* (* open) (char *source_string, ogg123_options_t *ogg123_opts);
   int (* peek) (data_source_t *source, void *ptr, size_t size, size_t nmemb);
   int (* read) (data_source_t *source, void *ptr, size_t size, size_t nmemb);
   int (* seek) (data_source_t *source, long offset, int whence);

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: cmdline_options.h,v 1.1.2.1 2001/12/08 23:59:25 volsung Exp $
+ last mod: $Id: cmdline_options.h,v 1.1.2.2 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -20,6 +20,7 @@
 
 #include "ogg123.h"
 #include "cfgfile_options.h"
+#include "audio.h"
 
 int parse_cmdline_options (int argc, char **argv,
 			   ogg123_options_t *ogg123_opts,

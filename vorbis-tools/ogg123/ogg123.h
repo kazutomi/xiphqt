@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.12.2.6 2001/12/11 15:05:56 volsung Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12.2.7 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -20,7 +20,6 @@
 
 #include <ogg/os_types.h>
 #include "audio.h"
-#include "status.h"
 
 /* Compatibility fixes */
 
@@ -53,7 +52,8 @@ typedef struct ogg123_options_t {
   long buffer_size;           /* Size of audio buffer */
   float prebuffer;            /* Percent of buffer to fill before playing */
   char *default_device;       /* Name of default driver to use */
-  audio_device_t *devices;    /* Audio devices to playback to */
+
+  audio_device_t *devices;    /* Audio devices to use */
 
   double status_freq;         /* Number of status updates per second */
 } ogg123_options_t;
@@ -65,4 +65,4 @@ typedef struct signal_request_t {
   ogg_int64_t ticks;
 } signal_request_t;
 
-#endif /* !defined(__OGG123_H) */
+#endif /* __OGG123_H__ */

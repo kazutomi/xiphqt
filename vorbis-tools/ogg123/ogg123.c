@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.15 2001/12/11 15:05:56 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.16 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -30,6 +30,7 @@
 
 #include "audio.h"
 #include "buffer.h"
+#include "callbacks.h"
 #include "cfgfile_options.h"
 #include "cmdline_options.h"
 #include "format.h"
@@ -142,7 +143,6 @@ void options_init (ogg123_options_t *opts)
   opts->buffer_size = 0;
   opts->prebuffer = 0.0f;
   opts->default_device = NULL;
-  opts->devices = NULL;
 
   opts->status_freq = 4;
 }
@@ -277,7 +277,7 @@ void play (char *source_string)
     return;
   }
   
-  if ( (source = transport->open(source_string)) == NULL ) {
+  if ( (source = transport->open(source_string, &options)) == NULL ) {
     status_error("Cannot open %s.\n", source_string);
     return;
   }
@@ -288,8 +288,8 @@ void play (char *source_string)
     return;
   }
   
-  if ( (decoder = format->init(source, &new_audio_fmt, &decoder_callbacks, 
-			       NULL)) == NULL ) {
+  if ( (decoder = format->init(source, &options, &new_audio_fmt, 
+			       &decoder_callbacks, NULL)) == NULL ) {
     status_error("Error opening %s using the %s module."
 		 "  The file may be corrupted.\n", source_string,
 		 format->name);

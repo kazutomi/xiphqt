@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: cmdline_options.c,v 1.1.2.1 2001/12/08 23:59:24 volsung Exp $
+ last mod: $Id: cmdline_options.c,v 1.1.2.2 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -22,7 +22,6 @@
 #include <ao/ao.h>
 
 #include "cmdline_options.h"
-#include "audio.h"
 #include "status.h"
 
 struct option long_options[] = {
@@ -50,7 +49,7 @@ struct option long_options[] = {
 
 int parse_cmdline_options (int argc, char **argv,
 			   ogg123_options_t *ogg123_opts,
-			   file_option_t        *file_opts)
+			   file_option_t    *file_opts)
 {
   int option_index = 1;
   ao_option *temp_options = NULL;
@@ -221,9 +220,9 @@ int parse_cmdline_options (int argc, char **argv,
       }
 
       ogg123_opts->devices = append_audio_device(ogg123_opts->devices,
-						 temp_driver_id,
-						 temp_options, 
-						 NULL);
+					     temp_driver_id,
+					     temp_options, 
+					     NULL);
     }
 
 

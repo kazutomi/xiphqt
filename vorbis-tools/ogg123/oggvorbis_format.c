@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: oggvorbis_format.c,v 1.1.2.3 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: oggvorbis_format.c,v 1.1.2.4 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -75,7 +75,8 @@ int ovf_can_decode (data_source_t *source)
 }
 
 
-decoder_t* ovf_init (data_source_t *source, audio_format_t *audio_fmt,
+decoder_t* ovf_init (data_source_t *source, ogg123_options_t *ogg123_opts,
+		     audio_format_t *audio_fmt,
 		     decoder_callbacks_t *callbacks, void *callback_arg)
 {
   decoder_t *decoder;
@@ -144,7 +145,7 @@ int ovf_read (decoder_t *decoder, void *ptr, int nbytes, int *eos,
     priv->bos = 0;
   }
 
-  audio_format_copy(audio_fmt, &decoder->actual_fmt);
+  *audio_fmt = decoder->actual_fmt;
 
   /* Attempt to read as much audio as is requested */
   while (nbytes > 0) {

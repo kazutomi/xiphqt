@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.5 2001/12/11 15:05:56 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.6 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#include "buffer.h"
 #include "status.h"
 
 char temp_buffer[200];
@@ -459,45 +458,4 @@ void vstatus_error (const char *fmt, va_list ap)
   vstatus_print_nolock (fmt, ap);
 
   pthread_mutex_unlock(&output_lock);
-}
-
-
-void print_statistics_callback (buf_t *buf, void *arg)
-{
-  print_statistics_arg_t *stats_arg = (print_statistics_arg_t *) arg;
-  buffer_stats_t *buffer_stats;
-
-  if (buf != NULL)
-    buffer_stats = buffer_statistics(buf);
-  else
-    buffer_stats = NULL;
-
-  status_print_statistics(stats_arg->stat_format,
-			  buffer_stats,
-			  stats_arg->transport_statistics,
-			  stats_arg->decoder_statistics);
-
-  free(stats_arg->transport_statistics);
-  free(stats_arg->decoder_statistics);
-  free(stats_arg);
-}
-
-
-print_statistics_arg_t *new_print_statistics_arg (
-			       stat_format_t *stat_format,
-			       data_source_stats_t *transport_statistics,
-			       decoder_stats_t *decoder_statistics)
-{
-  print_statistics_arg_t *arg;
-
-  if ( (arg = malloc(sizeof(print_statistics_arg_t))) == NULL ) {
-    status_error("Error: Out of memory in new_print_statistics_arg().\n");
-    exit(1);
-  }  
-  
-  arg->stat_format = stat_format;
-  arg->transport_statistics = transport_statistics;
-  arg->decoder_statistics = decoder_statistics;
-
-  return arg;
 }

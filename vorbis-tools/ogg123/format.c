@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: format.c,v 1.1.2.2 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: format.c,v 1.1.2.3 2001/12/11 18:46:23 volsung Exp $
 
  ********************************************************************/
 
@@ -46,27 +46,6 @@ format_t *select_format (data_source_t *source)
 
   return formats[i];
 }
-
-
-int audio_format_equal (audio_format_t *a, audio_format_t *b)
-{
-  return 
-    a->big_endian    == b->big_endian    &&
-    a->word_size     == b->word_size     &&
-    a->signed_sample == b->signed_sample &&
-    a->rate          == b->rate          &&
-    a->channels      == b->channels;
-}
-
-
-void audio_format_copy (audio_format_t *dest, audio_format_t *source)
-{
-  dest->big_endian    = source->big_endian;
-  dest->word_size     = source->word_size;
-  dest->signed_sample = source->signed_sample;
-  dest->rate          = source->rate;  
-  dest->channels      = source->channels;
-}  
 
 
 decoder_stats_t *malloc_decoder_stats (decoder_stats_t *to_copy)
