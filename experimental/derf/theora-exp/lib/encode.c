@@ -1340,7 +1340,7 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
        _enc->enquant_tables[qti][pli][frag->qi],iquants[frag->qi]);
       /*While we're here and things are in cache, reconstruct the quantized
          fragment.*/
-      oc_state_frag_recon(&_enc->state,frag,pli,efrag->dct_coeffs,nnzc,
+      oc_state_frag_recon(&_enc->state,frag,pli,efrag->dct_coeffs,nnzc,nnzc,
        iquants[_enc->state.qis[0]][0],iquants[frag->qi]);
     }
   }
