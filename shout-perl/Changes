@@ -1,5 +1,9 @@
 Revision history for Perl extension Shout.
 
+2.0   Sat Jul  5 14:47:00 2003
+	- full implementation
+	- backward compatible with Shout 1.0
+
 1.1.2 Thu Jul  3 12:40:40 2003
 	- updated for libshout 2
 
