@@ -38,6 +38,8 @@
 ./src/dj.h - Header file for dj handling
 ./src/ices.c - Top level ices functions (main())
 ./src/icestypes.h - Ices data type definitions
+./src/ices_config.c - configfile parser source
+./src/ices_config.h - Headerfile for configfile parser
 ./src/id3.c - File for id3 tag parsing and metadata update
 ./src/id3.h - Headerfile for id3 tag parsing and metadata update
 ./src/log.c - File for ices logging
@@ -61,9 +63,6 @@
 ./src/playlist_builtin/playlist_builtin.h - Header file for builtin playlist
 ./src/playlist_builtin/rand.c - File randomization source
 ./src/playlist_builtin/rand.h - Header file for file randomization
-./src/xml - Directory for xml configfile parser
-./src/xml/parse.c - XML configfile parser source
-./src/xml/parse.h - Headerfile for XML configfile parser
 ./resolver - Directory for the dns resolver module
 ./resolver/resolver.c - Resolver functions
 ./resolver/resolver.h - Resolver headers

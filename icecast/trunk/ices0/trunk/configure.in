@@ -468,14 +468,14 @@ then
   fi
 fi
 
-AC_ARG_WITH(xmlconfig,
+AC_ARG_WITH(xml-config,
 [  --with-xml-config=PATH      Use xml-config in PATH to find libxml ])
 
-if test "$with_xmlconfig" != "no"
+if test "$with_xml_config" != "no"
 then
-  if test -n "$with_xmlconfig" -a "$with_xmlconfig" != "yes"
+  if test -n "$with_xml_config" -a "$with_xml_config" != "yes"
   then
-    XMLCONFIG="$with_xmlconfig"
+    XMLCONFIG="$with_xml_config"
     if ! test -x "$XMLCONFIG"
     then
       AC_MSG_ERROR([$with_xmlconfig is not a program])
@@ -489,13 +489,12 @@ then
     AC_DEFINE(HAVE_LIBXML, 1, [ Define if you have the GNOME XML library ])
     LIBS="$LIBS `$XMLCONFIG --libs`"
     CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
-    ICES_SUBDIRS="$ICES_SUBDIRS xml"
+    ICES_OBJECTS="$ICES_OBJECTS ices_config.o"
     AC_CHECK_HEADERS([libxml/parser.h gnome-xml/parser.h parser.h])
   else
     AC_MSG_RESULT([Compiling without libxml support - no configfiles])
   fi
 fi
-AM_CONDITIONAL(NEED_XML, test -n "$XMLCONFIG")
 
 dnl -- and finish up --
 
@@ -505,7 +504,7 @@ AC_SUBST(ICES_SUBDIRS)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile 
   conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile
-  avl/Makefile log/Makefile src/interpreter/Makefile src/xml/Makefile])
+  avl/Makefile log/Makefile src/interpreter/Makefile])
 
 AC_MSG_RESULT([Compiling with CPPFLAGS=$CPPFLAGS])
 AC_MSG_RESULT([Linking with LDFLAGS=$LDFLAGS $LIBS])

@@ -1,4 +1,4 @@
-/* parse.h
+/* ices_config.h
  * - XML parser function declarations for ices
  * Copyright (c) 2000 Alexander Haväng
  *

@@ -23,6 +23,7 @@
 #include "playlist.h"
 
 extern ices_config_t ices_config;
+static int playlist_init = 0;
 
 /* Global function definitions */
 
@@ -94,6 +95,7 @@ ices_playlist_initialize (void)
     ices_setup_shutdown ();
   }
 
+  playlist_init = 1;
   return rc;
 }
 
@@ -101,5 +103,6 @@ ices_playlist_initialize (void)
 void
 ices_playlist_shutdown (void)
 {
-  ices_config.pm.shutdown ();
+  if (playlist_init)
+    ices_config.pm.shutdown ();
 }
