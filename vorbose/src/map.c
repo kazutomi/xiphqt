@@ -171,45 +171,29 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
   return -1;
 }
 
-#if 0
-ogg_int16_t mapping_inverse(vorbis_dsp_state *vd,vorbis_info_mapping *info){
-  vorbis_info          *vi=vd->vi;
-  codec_setup_info     *ci=(codec_setup_info *)vi->codec_setup;
-
-  ogg_int16_t   i,j;
-  ogg_int32_t   n=ci->blocksizes[vd->W];
-
-  ogg_int32_t **pcmbundle=_ogg_alloc(0,sizeof(*pcmbundle)*vi->channels);
-  ogg_int16_t  *zerobundle=_ogg_alloc(0,sizeof(*zerobundle)*vi->channels);
-  ogg_int16_t  *nonzero=_ogg_alloc(0,sizeof(*nonzero)*vi->channels);
-  ogg_int32_t **floormemo=_ogg_alloc(0,sizeof(*floormemo)*vi->channels);
+int mapping_inverse(vorbis_info *vi,vorbis_info_mapping *info,
+			    oggpack_buffer *opb){
+  int   i,j;
+  int  *zerobundle=alloca(sizeof(*zerobundle)*vi->channels);
+  int  *nonzero=alloca(sizeof(*nonzero)*vi->channels);
   
-  /* recover the spectral envelope; store it in the PCM vector for now */
   for(i=0;i<vi->channels;i++){
-    ogg_int16_t submap=0;
-    ogg_int16_t floorno;
+    int submap=0;
+    int floorno;
     
-    if(info->submaps>1)
-      submap=info->chmuxlist[i];
+    if(info->submaps>1)submap=info->chmuxlist[i];
     floorno=info->submaplist[submap].floor;
     
-    if(ci->floor_type[floorno]){
+    if(packetinfo_p)
+      printf("             channel %2d floor: ",i);
+
+    if(vi->floor_param[floorno].type){
       /* floor 1 */
-      floormemo[i]=_ogg_alloc(0,sizeof(*floormemo[i])*
-			  floor1_memosize(ci->floor_param[floorno]));
-      floormemo[i]=floor1_inverse1(vd,ci->floor_param[floorno],floormemo[i]);
+      nonzero[i]=floor1_inverse(vi,&vi->floor_param[floorno].floor.floor1,opb);
     }else{
       /* floor 0 */
-      floormemo[i]=_ogg_alloc(0,sizeof(*floormemo[i])*
-			  floor0_memosize(ci->floor_param[floorno]));
-      floormemo[i]=floor0_inverse1(vd,ci->floor_param[floorno],floormemo[i]);
+      nonzero[i]=floor0_inverse(vi,&vi->floor_param[floorno].floor.floor0,opb);
     }
-    
-    if(floormemo[i])
-      nonzero[i]=1;
-    else
-      nonzero[i]=0;      
-    _ogg_bzero(vd->work[i],sizeof(*vd->work[i])*n/2);
   }
 
   /* channel coupling can 'dirty' the nonzero listing */
@@ -223,88 +207,80 @@ ogg_int16_t mapping_inverse(vorbis_dsp_state *vd,vorbis_info_mapping *info){
 
   /* recover the residue into our working vectors */
   for(i=0;i<info->submaps;i++){
-    ogg_int16_t ch_in_bundle=0;
+    int ch_in_bundle=0;
     for(j=0;j<vi->channels;j++){
       if(!info->chmuxlist || info->chmuxlist[j]==i){
 	if(nonzero[j])
-	  zerobundle[ch_in_bundle]=1;
+	  zerobundle[ch_in_bundle++]=1;
 	else
 	  zerobundle[ch_in_bundle]=0;
-	pcmbundle[ch_in_bundle++]=vd->work[j];
       }
     }
     
-    res_inverse(vd,ci->residue_param+info->submaplist[i].residue,
-		pcmbundle,zerobundle,ch_in_bundle);
+    res_inverse(vi,vi->residue_param+info->submaplist[i].residue,
+		zerobundle,ch_in_bundle,opb);
   }
 
 
-  _analysis("mid",seq,vd->work[0],n/2,0,0);
-  _analysis("side",seq,vd->work[1],n/2,0,0);
-
-  /* channel coupling */
-  for(i=info->coupling_steps-1;i>=0;i--){
-    ogg_int32_t *pcmM=vd->work[info->coupling[i].mag];
-    ogg_int32_t *pcmA=vd->work[info->coupling[i].ang];
-    
-    for(j=0;j<n/2;j++){
-      ogg_int32_t mag=pcmM[j];
-      ogg_int32_t ang=pcmA[j];
-      
-      if(mag>0)
-	if(ang>0){
-	  pcmM[j]=mag;
-	  pcmA[j]=mag-ang;
-	}else{
-	  pcmA[j]=mag;
-	  pcmM[j]=mag+ang;
-	}
-      else
-	if(ang>0){
-	  pcmM[j]=mag;
-	  pcmA[j]=mag+ang;
-	}else{
-	  pcmA[j]=mag;
-	  pcmM[j]=mag-ang;
-	}
-    }
-  }
-
-  _analysis("resL",seq,vd->work[0],n/2,0,0);
-  _analysis("resR",seq,vd->work[1],n/2,0,0);
-
-  /* compute and apply spectral envelope */
-  for(i=0;i<vi->channels;i++){
-    ogg_int32_t *pcm=vd->work[i];
-    ogg_int16_t submap=0;
-    ogg_int16_t floorno;
-
-    if(info->submaps>1)
-      submap=info->chmuxlist[i];
-    floorno=info->submaplist[submap].floor;
-
-    if(ci->floor_type[floorno]){
-      /* floor 1 */
-      floor1_inverse2(vd,ci->floor_param[floorno],floormemo[i],pcm);
-    }else{
-      /* floor 0 */
-      floor0_inverse2(vd,ci->floor_param[floorno],floormemo[i],pcm);
-    }
-  }
-
-  _analysis("specL",seq,vd->work[0],n/2,1,1);
-  _analysis("specR",seq++,vd->work[1],n/2,1,1);
-  
-
-  /* transform the PCM data; takes PCM vector, vb; modifies PCM vector */
-  /* only MDCT right now.... */
-  for(i=0;i<vi->channels;i++)
-    mdct_backward(n,vd->work[i]);
-
-  _ogg_free(pcmbundle); /* need only free the lowest */
-
-  /* all done! */
   return(0);
 }
 
-#endif
+
+int vorbis_decode(vorbis_info *vi,ogg_packet *op){
+  int                   mode;
+  unsigned long         ret;
+  oggpack_buffer       *opb=alloca(oggpack_buffersize());
+  oggpack_readinit(opb,op->packet);
+
+  if(packetinfo_p)
+    printf("info packet: decoding Vorbis stream packet %ld\n",
+	   (long)op->packetno);
+  
+  /* Check the packet type */
+  if(oggpack_read1(opb)!=0){
+    if(warn_p || packetinfo_p)
+      printf("WARN packet: packet is not an audio packet! Skipping...\n\n");
+    return 1 ;
+  }
+  
+  /* read our mode and pre/post windowsize */
+  oggpack_read(opb,ilog(vi->modes),&ret);
+  mode=ret;
+  if(oggpack_eop(opb))goto eop;
+  if(packetinfo_p)
+    printf("             packet mode     : %d\n",mode);
+  if(mode>=vi->modes){
+    if(warn_p || packetinfo_p)
+      printf("WARN packet: packet mode out of range! Skipping...\n\n");
+    return 1;
+  }
+
+  if(packetinfo_p)
+    printf("             block size      : %d\n",
+	   vi->blocksizes[vi->mode_param[mode].blockflag]);
+  
+  if(vi->mode_param[mode].blockflag){
+    oggpack_read(opb,1,&ret);
+    if(oggpack_eop(opb))goto eop;
+    if(packetinfo_p)
+      printf("             previous        : %d\n",
+	     vi->blocksizes[ret!=0]);
+    oggpack_read(opb,1,&ret);
+    if(oggpack_eop(opb))goto eop;
+    if(packetinfo_p)
+      printf("             next            : %d\n",
+	     vi->blocksizes[ret!=0]);
+  }
+  
+  /* packet decode and portions of synthesis that rely on only this block */
+  mapping_inverse(vi,vi->map_param+vi->mode_param[mode].mapping,opb);
+  if(packetinfo_p)
+    printf("\n");
+
+  return 0;
+ eop:
+  if(warn_p || packetinfo_p)
+    printf("WARN packet: Premature EOP while parsing packet mode.\n\n");
+  return 0;
+
+}

@@ -127,7 +127,6 @@ int res_inverse(vorbis_info *vi,
   long partvals=n/samples_per_partition;
   long partwords=(partvals+partitions_per_word-1)/partitions_per_word;
   int **partword=0;
-  ogg_int16_t step=n/phrasebook->dim;
 
   if(info->type<2){
     for(i=0;i<ch;i++)if(nonzero[i])used++;
@@ -185,8 +184,9 @@ int res_inverse(vorbis_info *vi,
 	  if(info->stagemasks[partword[j][i]]&(1<<s)){
 	    codebook *stagebook=vi->book_param+
 	      info->stagebooks[(partword[j][i]<<3)+s];
+	    int step=samples_per_partition/stagebook->dim;
 	    for (l=0;l<step;l++)
-	      if(vorbis_book_decode(stagebook,opb))
+	      if(vorbis_book_decode(stagebook,opb)==-1)
 		goto eopbreak1;
 	  }
 	}
@@ -197,7 +197,7 @@ int res_inverse(vorbis_info *vi,
   return 0;
  eopbreak1:
   if(packetinfo_p || truncpacket_p)
-    printf("             packet truncated in residue decode\n\n");
+    printf("info packet: packet truncated in residue decode\n\n");
 
   return 0;
 }
