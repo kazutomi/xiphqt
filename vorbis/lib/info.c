@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: maintain the info structure, info <-> header packets
- last mod: $Id: info.c,v 1.41 2001/06/15 21:15:39 xiphmont Exp $
+ last mod: $Id: info.c,v 1.41.2.1 2001/08/02 06:14:43 xiphmont Exp $
 
  ********************************************************************/
 
@@ -23,7 +23,6 @@
 #include <ctype.h>
 #include <ogg/ogg.h>
 #include "vorbis/codec.h"
-#include "backends.h"
 #include "codec_internal.h"
 #include "codebook.h"
 #include "registry.h"

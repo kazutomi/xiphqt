@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.44 2001/05/27 06:43:59 xiphmont Exp $
+ last mod: $Id: analysis.c,v 1.44.2.1 2001/08/02 06:14:42 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,6 +20,7 @@
 #include <math.h>
 #include <ogg/ogg.h>
 #include "vorbis/codec.h"
+#include "codec_internal.h"
 #include "registry.h"
 #include "scales.h"
 #include "os.h"
