@@ -1658,7 +1658,7 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
       vmod[(by<<3)+bx]=mod<-64?_sharp_mod:OC_CLAMPI(0,mod,mod_hi);
     }
     psrc=src;
-    src+=_ystride&-(!(_b&8)|by<8);
+    src+=_ystride&-(!(_b&8)|by<7);
   }
   nsrc=dst;
   psrc=dst-!(_b&1);
@@ -1672,7 +1672,7 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
       src+=_ystride;
     }
     psrc=nsrc;
-    nsrc+=!(_b&2)|bx<8;
+    nsrc+=!(_b&2)|bx<7;
   }
   src=dst;
   psrc=src-(_ystride&-!(_b&4));
@@ -1748,7 +1748,7 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
     dst+=_ystride;
     psrc=src;
     src=nsrc;
-    nsrc+=_ystride&-(!(_b&8)|by<7);
+    nsrc+=_ystride&-(!(_b&8)|by<6);
   }
 }
 
