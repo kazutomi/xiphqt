@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <vorbis/codec.h>
+#include <vorbis/vorbisenc.h>
 
 
 typedef void TIMER;
