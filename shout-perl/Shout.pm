@@ -451,7 +451,7 @@ sub connect ($) {
 sub icy_compat ($$) {
     my $self = shift or croak "icy_compat: Method called as function";
     if (@_) {
-	my $compat = shift or croak "icy_compat: No parameter specified";
+	my $compat = shift;
 
 	if ($compat) {
 	    $self->protocol(SHOUT_PROTOCOL_ICY()) ? 0 : 1;
