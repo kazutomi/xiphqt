@@ -16,13 +16,13 @@
 <p>IRC is potentially the fastest way to get an answer, if you're lucky. Our official channel is #icecast on irc.freenode.net.</p>
 
 <h5>E-mail</h5>
-<p>We have a few mailslots if you would rather use plain ol email: </p>
 
+<p>Email the webmaster if you notice a broken link, outdated or inaccurate information, or another flaw on icecast.org.  For questions, use the mailing list above.</p>
 <pre>
 webmaster@xiph.org 
 </pre>
 
-<p>Email the webmaster if you notice a broken link, outdated or inaccurate information, or another flaw on icecast.org.</p>
+
 </div>
 <div class="roundbottom">
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
