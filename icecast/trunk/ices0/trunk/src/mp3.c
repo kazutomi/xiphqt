@@ -17,9 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * $Id: mp3.c,v 1.21 2003/03/11 22:28:53 brendan Exp $
  */
 
 #include "definitions.h"
+
+/* reference: http://mpgedit.org/mpgedit/mpeg_format/mpeghdr.htm */
 
 #define MPG_MD_MONO 3
 
@@ -70,7 +73,7 @@ static unsigned int s_freq[3][4] =
   {11025, 8000, 8000, 0}
 };
 
-static char *mode_names[5] = {"stereo", "j-stereo", "dual-ch", "single-ch", "multi-ch"};
+static char *mode_names[5] = {"stereo", "j-stereo", "dual-ch", "mono", "multi-ch"};
 static char *layer_names[3] = {"I", "II", "III"};
 static char *version_names[3] = {"MPEG-1", "MPEG-2 LSF", "MPEG-2.5"};
 
@@ -83,6 +86,8 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 #endif
 static int ices_mp3_close (input_stream_t* self);
 static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header);
+static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header);
+static size_t mp3_frame_length(mp3_header_t* header);
 
 /* Global function definitions */
 
@@ -155,14 +160,16 @@ static int ices_mp3_parse (input_stream_t* source)
 
   source->samplerate = mh.samplerate;
   source->bitrate = mh.bitrate;
-  if (! source->bitrate) {
-    ices_log_error ("Bitrate is 0");
-    return rc;
-  }
 
-  ices_log_debug ("%s layer %s, %d kbps, %d Hz", version_names[mh.version],
-                  layer_names[mh.layer - 1], mh.bitrate, mh.samplerate);
-  ices_log_debug ("Mode: %s, %d channels", mode_names[mh.mode], mh.channels);
+  if (mp3_check_vbr(source, &mh) > 0)
+    source->bitrate = 0;
+
+  if (source->bitrate)
+    ices_log_debug ("%s layer %s, %d kbps, %d Hz, %s", version_names[mh.version],
+                    layer_names[mh.layer - 1], mh.bitrate, mh.samplerate, mode_names[mh.mode]);
+  else
+    ices_log_debug ("%s layer %s, VBR, %d Hz, %s", version_names[mh.version],
+                    layer_names[mh.layer - 1], mh.samplerate, mode_names[mh.mode]);
   ices_log_debug ("Ext: %d\tMode_Ext: %d\tCopyright: %d\tOriginal: %d", mh.extension,
                   mh.mode_ext, mh.copyright, mh.original);
   ices_log_debug ("Error Protection: %d\tEmphasis: %d\tPadding: %d", mh.error_protection,
@@ -302,8 +309,10 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
   samplerate_idx = (buf[2] >> 2) & 0x3;
   header->mode = (buf[3] >> 6) & 0x3;
   header->layer = 4 - ((buf[1] >> 1) & 0x3);
+  header->emphasis = (buf[3]) & 0x3;
 
-  if ((bitrate_idx == 0xF) || (samplerate_idx == 0x3) || (header->layer == 4))
+  if ((bitrate_idx == 0xF) || (samplerate_idx == 0x3)
+      || (header->layer == 4) || (header->emphasis == 2))
     return 0;
 
   header->error_protection = !(buf[1] & 0x1);
@@ -314,12 +323,76 @@ static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
   header->samplerate = s_freq[header->version][samplerate_idx];
   header->padding = (buf[2] >> 1) & 0x01;
   header->extension = buf[2] & 0x01;
-  header->mode = (buf[3] >> 6) & 0x3;
   header->mode_ext = (buf[3] >> 4) & 0x03;
   header->copyright = (buf[3] >> 3) & 0x01;
   header->original = (buf[3] >> 2) & 0x1;
-  header->emphasis = (buf[3]) & 0x3;
   header->channels = (header->mode == MPG_MD_MONO) ? 1 : 2;
 
   return 1;
+}
+
+/* TODO: check without seeking */
+static int mp3_check_vbr(input_stream_t* source, mp3_header_t* header) {
+  ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
+  char buf[4];
+  mp3_header_t next_header;
+  ssize_t framelen;
+  off_t cur;
+
+  if (!source->canseek)
+    return -1;
+
+  cur = lseek(source->fd, 0, SEEK_CUR);
+
+  /* check for Xing VBR tag */
+  lseek(source->fd, 36 - (ssize_t)mp3_data->len, SEEK_CUR);
+  if (read(source->fd, buf, 4) == 4) {
+    if (!strncmp("Xing", buf, 4)) {
+      ices_log_debug("VBR tag found");
+      lseek(source->fd, cur, SEEK_SET);
+      return 1;
+    }
+  } else {
+    ices_log_debug("Error trying to read VBR tag");
+    lseek(source->fd, cur, SEEK_SET);
+    return -1;
+  }
+
+  /* otherwise check next frame if possible */
+  lseek(source->fd, cur, SEEK_SET);
+  if ((framelen = mp3_frame_length(header))) {
+    ices_log_debug("Frame length expected: %d bytes", framelen);
+    lseek(source->fd, framelen - (ssize_t)mp3_data->len, SEEK_CUR);
+    if (read(source->fd, buf, 4) == 4) {
+      if (!mp3_parse_frame(buf, &next_header))
+        ices_log_debug("Couldn't find second frame header");
+      else {
+        ices_log_debug("Second frame: %s layer %s, %d kbps, %d Hz", 
+                       version_names[next_header.version],
+                       layer_names[next_header.layer - 1], next_header.bitrate,
+	               next_header.samplerate);
+        /* if bit rates don't match assume VBR */
+        if (header->bitrate != next_header.bitrate)
+	  return 1;
+      }
+    } else
+      ices_log_debug("Error reading next frame");
+    lseek(source->fd, cur, SEEK_SET);
+  }
+  
+  return 0;
+}
+
+/* Calculate the expected length of the next frame, or return 0 if we don't know how */
+static size_t mp3_frame_length(mp3_header_t* header) {
+  if (!header->bitrate)
+    return 0;
+
+  if (header->layer == 1) {
+    return (12000 * header->bitrate / header->samplerate + header->padding) * 4;
+  } else {
+    return 144000 * header->bitrate / header->samplerate + header->padding;
+  }
+
+  return 0;
 }
