@@ -132,6 +132,11 @@ shout_set_password(self, str)
 	char *str
 
 void
+shout_set_user(self, str)
+	shout_t *self
+	char *str
+
+void
 shout_set_dumpfile(self, str)
 	shout_t *self
 	char *str
@@ -175,6 +180,10 @@ shout_get_mount(self)
 
 const char *
 shout_get_password(self)
+	shout_t *self
+
+const char *
+shout_get_user(self)
 	shout_t *self
 
 const char *
