@@ -18,28 +18,26 @@
 
 '''
 
-from wxPython.wx import *
-from wxPython.lib.scrolledpanel import wxScrolledPanel
-import images
+from general import *
 
 class InfoboxPanel(wxWindow, wxScrolledPanel):
   def __init__(self, parent):
     wxScrolledPanel.__init__(self, parent, -1)
     self.SetBackgroundColour('White')
-    vbox = wxBoxSizer(wxVERTICAL)
-    desc = wxStaticText(self, -1, '''Theora I - General Purpose Video Codec
-
-293293942 bytes (1:59.00 @ 205kbps) 25fps 4:2:0 YUV''')
-    print dir(desc.GetFont())
-    print desc.GetFont().GetPointSize()
-    
-    hbox = wxBoxSizer(wxHORIZONTAL)
-    bmp = images.geticon('theora',3)
+    infobox = wxBoxSizer(wxVERTICAL)
+    title = gettext(self, ' Theora I - General Purpose Video ', 5)
+    general = gettext(self, '00:01:59 205kbps (293293942 bytes)', 3)
+    topbox = wxBoxSizer(wxHORIZONTAL)
+    bmp = geticon('theora',3)
     logo = wxStaticBitmap(self, -1, bmp, wxPoint(16, 16),
                           wxSize(bmp.GetWidth(), bmp.GetHeight()))
-    hbox.Add(logo, 0, wxALIGN_LEFT, 4)
-    hbox.Add(desc, 0, wxALIGN_RIGHT, 4)
-    self.SetSizer(vbox)
+    topbox.Add(logo, 0, wxALIGN_LEFT, 4)
+    titlebox = wxBoxSizer(wxVERTICAL)
+    titlebox.Add(title, 0, wxALIGN_LEFT, 4)
+    titlebox.Add(general, 0, wxALIGN_CENTER, 4)
+    topbox.AddSizer(titlebox, 0)
+    self.SetSizer(infobox)
     self.SetAutoLayout(1)
     self.SetupScrolling(scroll_x=False)    
-    vbox.AddSizer(hbox, 0)
+    infobox.AddSizer(topbox, 0)
+

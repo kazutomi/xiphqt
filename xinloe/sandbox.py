@@ -18,11 +18,8 @@
 
 '''
 
-import os
-import ogg2
-from wxPython.wx import *
-
-import images
+from general import *
+import handlers
 
 class SBTreeCtrl(wxTreeCtrl):
   def OnCompareItems(self, item1, item2):
@@ -45,19 +42,21 @@ class SandboxPanel(wxPanel):
                            | wxTR_TWIST_BUTTONS)
     isz = (16,16)
     il = wxImageList(isz[0], isz[1])
-    self.lclidx = il.Add(images.geticon('dev-lcl',0))
-    self.p2pidx = il.Add(images.geticon('dev-p2p',0))
-    self.webidx = il.Add(images.geticon('dev-web',0))
+    self.lclidx = il.Add(geticon('dev-lcl',0))
+    self.p2pidx = il.Add(geticon('dev-p2p',0))
+    self.webidx = il.Add(geticon('dev-web',0))
     self.fldridx     = il.Add(wxArtProvider_GetBitmap(wxART_FOLDER, wxART_OTHER, isz))
     self.fldropenidx = il.Add(wxArtProvider_GetBitmap(wxART_FILE_OPEN, wxART_OTHER, isz))
     self.fileidx     = il.Add(wxArtProvider_GetBitmap(wxART_REPORT_VIEW, wxART_OTHER, isz))
-    self.muxpackidx  = il.Add(images.geticon('mux-packed',0))
-    self.muxopenidx  = il.Add(images.geticon('mux-opened',0))
-    self.vorbisidx   = il.Add(images.geticon('vorbis',0))
-    self.theoraidx   = il.Add(images.geticon('theora',0))
-    self.speexidx    = il.Add(images.geticon('speex',0))
-    self.flacidx     = il.Add(images.geticon('flac',0))
-    self.unknownidx  = il.Add(images.geticon('unknown',0))
+    self.muxpackidx  = il.Add(geticon('mux-packed',0))
+    self.muxopenidx  = il.Add(geticon('mux-opened',0))
+
+    self.codecidx = { 'vorbis'  : il.Add(geticon('vorbis',0)),
+                      'theora'  : il.Add(geticon('theora',0)),
+                      'speex'   : il.Add(geticon('speex',0)),
+                      'flac'    : il.Add(geticon('flac',0)),
+                      'nonfree' : il.Add(geticon('nonfree',0)),
+                      ''        : il.Add(geticon('unknown',0))}
 
     self.tree.SetImageList(il)
     self.il = il
@@ -144,35 +143,14 @@ class SandboxPanel(wxPanel):
             byte = bp.read(8)
             if type(byte) == int : header = header + chr(byte)
             else : break
-          if header[:7] == '\x01vorbis':
-            if header[7:11] == '\x00\x00\x00\x00' : 
-              ch = ord(header[11])
-              sa = ord(header[12])+(ord(header[13])*256)
-              sa = sa+(ord(header[14])*65536)+(ord(header[15])*16777216)
-              stream = self.tree.AppendItem(chain,  'Vorbis I (%d channels, %d samples/sec)' % (ch, sa))
-              self.tree.SetPyData(stream, ('vorbis', 0, ch, sa)) 
-            else : 
-              stream = self.tree.AppendItem(chain,  'Vorbis (Unsupported Version)')
-              self.tree.SetPyData(stream, ('vorbis',)) 
-            self.tree.SetItemImage(stream, self.vorbisidx, which = wxTreeItemIcon_Normal)
-          elif header[:7] == '\x80theora':
-            stream = self.tree.AppendItem(chain,  'Theora')
-            self.tree.SetPyData(stream, None) 
-            self.tree.SetItemImage(stream, self.theoraidx, which = wxTreeItemIcon_Normal)
-          elif header[:5] == 'Speex':
-            stream = self.tree.AppendItem(chain,  'Speex')
-            self.tree.SetPyData(stream, None) 
-            self.tree.SetItemImage(stream, self.speexidx, which = wxTreeItemIcon_Normal)
-          elif header[:4] == 'fLaC':
-            stream = self.tree.AppendItem(chain,  'FLAC')
-            self.tree.SetPyData(stream, None) 
-            self.tree.SetItemImage(stream, self.flacidx, which = wxTreeItemIcon_Normal)
-          elif header[:5] == '\x00writ':
-            stream = self.tree.AppendItem(chain,  'Writ')
-            self.tree.SetPyData(stream, None) 
-            self.tree.SetItemImage(stream, self.unknownidx, which = wxTreeItemIcon_Normal)
-          else :
-            stream = self.tree.AppendItem(chain,  'Unknown Codec')
-            self.tree.SetPyData(stream, None) 
-            self.tree.SetItemImage(stream, self.unknownidx, which = wxTreeItemIcon_Normal)
+          for c in handlers.codecs :
+            handler = c(header)
+            if handler.name : break
+          stream = self.tree.AppendItem(chain,  handler.name)
+          self.tree.SetPyData(stream, handler) 
+          if not self.codecidx.has_key(handler.icon) :
+            print 'Missing icon for %s' % handler.name
+            handler.icon = ''
+          self.tree.SetItemImage(stream, self.codecidx[handler.icon],
+                                 which = wxTreeItemIcon_Normal)
         else : break    
