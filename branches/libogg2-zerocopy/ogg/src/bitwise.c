@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: pack variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.14.2.5 2003/02/03 23:01:47 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.14.2.6 2003/02/05 06:42:28 xiphmont Exp $
 
  ********************************************************************/
 
@@ -213,7 +213,7 @@ void oggpack_readinit(oggpack_buffer *b,ogg_buffer_reference *r){
   b->headptr=b->head->data+begin;
 
   if(b->head->used>b->length){
-    b->headend=b->length;
+    b->headend=b->length-begin;
   }else{
     b->headend=b->head->used-begin;
   }
@@ -469,7 +469,11 @@ int oggpack_read(oggpack_buffer *b,int bits,unsigned long *ret){
     b->count+=b->head->used;
     b->length-=b->head->used;
     b->head=b->head->next;
-    b->headend+=b->head->used;
+
+    if(b->length<b->head->used)
+      b->headend+=b->length;
+    else
+      b->headend+=b->head->used;
 
   }else{
   
@@ -544,7 +548,10 @@ int oggpackB_read(oggpack_buffer *b,int bits,unsigned long *ret){
     b->count+=b->head->used;
     b->length-=b->head->used;
     b->head=b->head->next;
-    b->headend+=b->head->used;
+    if(b->length<b->head->used)
+      b->headend+=b->length;
+    else
+      b->headend+=b->head->used;
     
   }else{
   
@@ -802,6 +809,45 @@ void lsbverify(unsigned long *values,int *len,unsigned char *flat) {
   /* verify that trailing packing is zeroed */
   while(flatbit && flatbit<8){
     int bit=(flat[flatbyte]>>flatbit++)&1;
+  
+    if(0!=bit){
+      fprintf(stderr,"\n\tERROR: trailing byte padding not zero!\n");
+      exit(1);
+    }
+  }  
+  
+
+}
+
+void msbverify(unsigned long *values,int *len,unsigned char *flat) {
+  int j,k;
+  int flatbyte=0;
+  int flatbit=0;
+  
+  /* verify written buffer is correct bit-by-bit */
+  for(j=0;j<TESTWORDS;j++){
+    for(k=0;k<len[j];k++){
+      int origbit=(values[j]>>(len[j]-k-1))&1;
+      int bit=(flat[flatbyte]>>(7-flatbit))&1;
+      flatbit++;
+      if(flatbit>7){
+	flatbit=0;
+	++flatbyte;
+      }
+      
+      if(origbit!=bit){
+	fprintf(stderr,"\n\tERROR: bit mismatch!  "
+		"word %d, bit %d, value %lx, len %d\n",
+		j,k,values[j],len[j]);
+	exit(1);
+      }
+      
+    }
+  }
+
+  /* verify that trailing packing is zeroed */
+  while(flatbit && flatbit<8){
+    int bit=(flat[flatbyte]>>(7-flatbit++))&1;
   
     if(0!=bit){
       fprintf(stderr,"\n\tERROR: trailing byte padding not zero!\n");
@@ -1071,7 +1117,7 @@ int main(void){
   /* now the scary shit: randomized testing */
 
   for(i=0;i<1000;i++){
-    int j,count=0,count2=0;
+    int j,count=0,count2=0,bitcount=0;
     unsigned long values[TESTWORDS];
     int len[TESTWORDS];
     unsigned char flat[4*TESTWORDS]; /* max possible needed size */
@@ -1085,11 +1131,26 @@ int main(void){
       values[j]=rand();
       len[j]=(rand()%32)+1;
       count+=len[j];
+
       oggpack_write(&o,values[j],len[j]);
+
+      bitcount+=len[j];
+      if(oggpack_bits(&o)!=bitcount){
+	fprintf(stderr,"\nERROR: Write bitcounter %d != %ld!\n",
+		bitcount,oggpack_bits(&o));
+	exit(1);
+      }
+      if(oggpack_bytes(&o)!=(bitcount+7)/8){
+	fprintf(stderr,"\nERROR: Write bytecounter %d != %ld!\n",
+		(bitcount+7)/8,oggpack_bytes(&o));
+	exit(1);
+      }
+      
     }
 
     /* flatten the packbuffer out to a vector */
     count2=flatten(flat);
+    oggpackB_writeclear(&o);
 
     /* verify against original list */
     lsbverify(values,len,flat);
@@ -1140,12 +1201,27 @@ int main(void){
 
 	oggpack_readinit(&o,&or);
 
-	for(j=0;j<bitoffset;j++)
-	  oggpack_read1(&o);
-	
+	/* verify bit count */
+	if(oggpack_bits(&o)!=0){
+	  fprintf(stderr,"\nERROR: Read bitcounter not zero!\n");
+	  exit(1);
+	}
+	if(oggpack_bytes(&o)!=0){
+	  fprintf(stderr,"\nERROR: Read bytecounter not zero!\n");
+	  exit(1);
+	}
+
+	bitcount=bitoffset;
+	oggpack_read(&o,bitoffset,&temp);
+
 	/* read and compare to original list */
 	for(j=begin;j<begin+ilen;j++){
-	  if(oggpack_read(&o,len[j],&temp)){
+	  int ret;
+	  if(len[j]==1 && rand()%1)
+	    temp=ret=oggpack_read1(&o);
+	  else
+	    ret=oggpack_read(&o,len[j],&temp);
+	  if(ret<0){
 	    fprintf(stderr,"\nERROR: End of stream too soon! word: %d\n",
 		    j-begin);
 	    exit(1);
@@ -1155,14 +1231,260 @@ int main(void){
 		    values[j]&mask[len[j]],temp,j-begin,len[j]);
 	    exit(1);
 	  }
+	  bitcount+=len[j];
+	  if(oggpack_bits(&o)!=bitcount){
+	    fprintf(stderr,"\nERROR: Read bitcounter %d != %ld!\n",
+		    bitcount,oggpack_bits(&o));
+	    exit(1);
+	  }
+	  if(oggpack_bytes(&o)!=(bitcount+7)/8){
+	    fprintf(stderr,"\nERROR: Read bytecounter %d != %ld!\n",
+		    (bitcount+7)/8,oggpack_bytes(&o));
+	    exit(1);
+	  }
+	  
 	}
+	/* are we on our last byte as predicted? */
+	if(!oggpack_read(&o,8,&temp)){
+	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
+	    exit(1);
+	}	
+
+	/* look/adv version */
+	oggpack_readinit(&o,&or);
+	bitcount=bitoffset;
+	oggpack_adv(&o,bitoffset);
+
+	/* read and compare to original list */
+	for(j=begin;j<begin+ilen;j++){
+	  int ret;
+	  if(len[j]==1 && rand()%1)
+	    temp=ret=oggpack_look1(&o);
+	  else
+	    ret=oggpack_look(&o,len[j],&temp);
+
+	  if(ret<0){
+	    fprintf(stderr,"\nERROR: End of stream too soon! word: %d\n",
+		    j-begin);
+	    exit(1);
+	  }
+	  if(temp!=(values[j]&mask[len[j]])){
+	    fprintf(stderr,"\nERROR: Incorrect read %lx != %lx, word %d, len %d\n",
+		    values[j]&mask[len[j]],temp,j-begin,len[j]);
+	    exit(1);
+	  }
+	  if(len[j]==1 && rand()%1)
+	    oggpack_adv1(&o);
+	  else
+	    oggpack_adv(&o,len[j]);
+	  bitcount+=len[j];
+	  if(oggpack_bits(&o)!=bitcount){
+	    fprintf(stderr,"\nERROR: Read bitcounter %d != %ld!\n",
+		    bitcount,oggpack_bits(&o));
+	    exit(1);
+	  }
+	  if(oggpack_bytes(&o)!=(bitcount+7)/8){
+	    fprintf(stderr,"\nERROR: Read bytecounter %d != %ld!\n",
+		    (bitcount+7)/8,oggpack_bytes(&o));
+	    exit(1);
+	  }
+	  
+	}
+	/* are we on our last byte as predicted? */
+	if(!oggpack_read(&o,8,&temp)){
+	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
+	    exit(1);
+	}	
+
       }
     }
-    oggpack_writeinit(&o,&bs);
   }
-  fprintf(stderr,"\rRandomized n-bit testing (LSb)... ok.   \n");
+  fprintf(stderr,"\rRandomized testing (LSb)... ok.   \n");
 
-  oggpackB_writeclear(&o);
+  for(i=0;i<1000;i++){
+    int j,count=0,count2=0,bitcount=0;
+    unsigned long values[TESTWORDS];
+    int len[TESTWORDS];
+    unsigned char flat[4*TESTWORDS]; /* max possible needed size */
+
+    fprintf(stderr,"\rRandomized testing (MSb)... (%ld)   ",1000-i);
+    oggpackB_writeinit(&o,&bs);
+
+    /* generate a list of words and lengths */
+    /* write the required number of bits out to packbuffer */
+    for(j=0;j<TESTWORDS;j++){
+      values[j]=rand();
+      len[j]=(rand()%32)+1;
+      count+=len[j];
+
+      oggpackB_write(&o,values[j],len[j]);
+
+      bitcount+=len[j];
+      if(oggpackB_bits(&o)!=bitcount){
+	fprintf(stderr,"\nERROR: Write bitcounter %d != %ld!\n",
+		bitcount,oggpackB_bits(&o));
+	exit(1);
+      }
+      if(oggpackB_bytes(&o)!=(bitcount+7)/8){
+	fprintf(stderr,"\nERROR: Write bytecounter %d != %ld!\n",
+		(bitcount+7)/8,oggpackB_bytes(&o));
+	exit(1);
+      }
+      
+    }
+
+    /* flatten the packbuffer out to a vector */
+    count2=flatten(flat);
+    oggpackB_writeclear(&o);
+
+    /* verify against original list */
+    msbverify(values,len,flat);
+
+    /* construct random-length buffer chain from flat vector; random
+       byte starting offset within the length of the vector */
+    {
+      ogg_buffer *obl=NULL,*ob=NULL;
+      unsigned char *ptr=flat;
+      
+      /* build buffer chain */
+      while(count2){
+	int ilen;
+	ogg_buffer *temp=_ogg_malloc(sizeof(*temp)); /* we don't bother
+                                                      freeing later;
+                                                      this is just a
+                                                      unit test */
+	if(obl)
+	  obl->next=temp;
+	else
+	  ob=temp;
+
+	ilen=(rand()%8)*4+4;
+	if(ilen>count2)ilen=count2;
+	obl=temp;
+	obl->data=ptr;
+	obl->size=count2;
+	obl->used=ilen;
+	
+	count2-=ilen;
+	ptr+=ilen;
+      }
+      /* build reference; choose a starting offset. */
+      {
+	int begin=(rand()%TESTWORDS);
+	int ilen=(rand()%(TESTWORDS-begin));
+	int bitoffset,bitcount=0;
+	unsigned long temp;
+	or.buffer=ob;
+
+	for(j=0;j<begin;j++)
+	  bitcount+=len[j];
+	or.begin=bitcount/8;
+	bitoffset=bitcount%8;
+	for(;j<begin+ilen;j++)
+	  bitcount+=len[j];
+	or.length=((bitcount+7)/8)-or.begin;
+
+	oggpackB_readinit(&o,&or);
+
+	/* verify bit count */
+	if(oggpackB_bits(&o)!=0){
+	  fprintf(stderr,"\nERROR: Read bitcounter not zero!\n");
+	  exit(1);
+	}
+	if(oggpackB_bytes(&o)!=0){
+	  fprintf(stderr,"\nERROR: Read bytecounter not zero!\n");
+	  exit(1);
+	}
+
+	bitcount=bitoffset;
+	oggpackB_read(&o,bitoffset,&temp);
+
+	/* read and compare to original list */
+	for(j=begin;j<begin+ilen;j++){
+	  int ret;
+	  if(len[j]==1 && rand()%1)
+	    temp=ret=oggpackB_read1(&o);
+	  else
+	    ret=oggpackB_read(&o,len[j],&temp);
+	  if(ret<0){
+	    fprintf(stderr,"\nERROR: End of stream too soon! word: %d\n",
+		    j-begin);
+	    exit(1);
+	  }
+	  if(temp!=(values[j]&mask[len[j]])){
+	    fprintf(stderr,"\nERROR: Incorrect read %lx != %lx, word %d, len %d\n",
+		    values[j]&mask[len[j]],temp,j-begin,len[j]);
+	    exit(1);
+	  }
+	  bitcount+=len[j];
+	  if(oggpackB_bits(&o)!=bitcount){
+	    fprintf(stderr,"\nERROR: Read bitcounter %d != %ld!\n",
+		    bitcount,oggpackB_bits(&o));
+	    exit(1);
+	  }
+	  if(oggpackB_bytes(&o)!=(bitcount+7)/8){
+	    fprintf(stderr,"\nERROR: Read bytecounter %d != %ld!\n",
+		    (bitcount+7)/8,oggpackB_bytes(&o));
+	    exit(1);
+	  }
+	  
+	}
+	/* are we on our last byte as predicted? */
+	if(!oggpackB_read(&o,8,&temp)){
+	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
+	    exit(1);
+	}	
+
+	/* look/adv version */
+	oggpackB_readinit(&o,&or);
+	bitcount=bitoffset;
+	oggpackB_adv(&o,bitoffset);
+
+	/* read and compare to original list */
+	for(j=begin;j<begin+ilen;j++){
+	  int ret;
+	  if(len[j]==1 && rand()%1)
+	    temp=ret=oggpackB_look1(&o);
+	  else
+	    ret=oggpackB_look(&o,len[j],&temp);
+
+	  if(ret<0){
+	    fprintf(stderr,"\nERROR: End of stream too soon! word: %d\n",
+		    j-begin);
+	    exit(1);
+	  }
+	  if(temp!=(values[j]&mask[len[j]])){
+	    fprintf(stderr,"\nERROR: Incorrect read %lx != %lx, word %d, len %d\n",
+		    values[j]&mask[len[j]],temp,j-begin,len[j]);
+	    exit(1);
+	  }
+	  if(len[j]==1 && rand()%1)
+	    oggpackB_adv1(&o);
+	  else
+	    oggpackB_adv(&o,len[j]);
+	  bitcount+=len[j];
+	  if(oggpackB_bits(&o)!=bitcount){
+	    fprintf(stderr,"\nERROR: Read bitcounter %d != %ld!\n",
+		    bitcount,oggpackB_bits(&o));
+	    exit(1);
+	  }
+	  if(oggpackB_bytes(&o)!=(bitcount+7)/8){
+	    fprintf(stderr,"\nERROR: Read bytecounter %d != %ld!\n",
+		    (bitcount+7)/8,oggpackB_bytes(&o));
+	    exit(1);
+	  }
+	  
+	}
+	/* are we on our last byte as predicted? */
+	if(!oggpackB_read(&o,8,&temp)){
+	    fprintf(stderr,"\nERROR: Excess buffer data after read\n");
+	    exit(1);
+	}	
+
+      }
+    }
+  }
+  fprintf(stderr,"\rRandomized testing (MSb)... ok.   \n");
 
   ogg_buffer_clear(&bs);
   return(0);
