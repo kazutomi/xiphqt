@@ -134,13 +134,13 @@ TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
 
    do {
       i--;
-      significance = 0; //INPUT_BIT(&significand_bitstream[i]) << i;
+      significance = INPUT_BIT(&significand_bitstream[i]) << i;
    } while (!significance && i > 0);
 
-   sign = 0; //INPUT_BIT(&significand_bitstream[i]);
+   sign = INPUT_BIT(&significand_bitstream[i]);
 
    while (--i >= 0) {
-      significance |= 0; //INPUT_BIT(&insignificand_bitstream[i]) << i;
+      significance |= INPUT_BIT(&insignificand_bitstream[i]) << i;
    };
 
    return (significance ^ mask[sign]);

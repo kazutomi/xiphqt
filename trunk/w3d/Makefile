@@ -1,8 +1,8 @@
 CC = gcc
 RM = rm -rf
 
-CFLAGS = -pg -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM -DDBG_MEMLEAKS
-LFLAGS = -pg -lefence
+CFLAGS = -g -O0 -Wall -DTYPE=int16_t -DRLECODER -DDBG_XFORM -DDBG_MEMLEAKS
+LFLAGS = -g -lefence
 
 OBJS = mem.o pnm.o wavelet.o wavelet_xform.o yuv.o tarkin.o tarkin-io.o
 
@@ -25,7 +25,8 @@ tarkin_dec: $(OBJS) tarkin_dec.o
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	$(RM) $(OBJS) $(TARGET) gmon.out core .depend .depend.bak rle.histogram *.ppm
+	$(RM) $(OBJS) $(TARGET) gmon.out core .depend .depend.bak rle.histogram
+	$(RM) *.ppm *.pgm
 	$(RM) $(TEST_TARGETS) $(TEST_OBJS)
 	$(RM) tarkin_enc tarkin_dec tarkin_enc.o tarkin_dec.o
 
