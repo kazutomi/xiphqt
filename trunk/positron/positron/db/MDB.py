@@ -422,6 +422,20 @@ class MDB:
 
         return f.read(length)
 
+    def set_modified_flag(self, new_state=True):
+        # Only do something if there has been a state change to
+        # save disk access.
+        if self.header["isModified"] != new_state:
+            # Flip status bit
+            self.header["Status"] = self.header["Status"] ^ 0x01
+            self.header["isModified"] = new_state
+            # Write it to disk
+            status_word = struct.pack(">H", self.header["Status"])
+            self.file.seek(to_offset(2))
+            self.file.write(status_word)
+            self.file.flush()
+            
+
     def clear(self):
         """Remove all entries from database.
 
