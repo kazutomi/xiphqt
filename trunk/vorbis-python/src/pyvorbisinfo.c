@@ -36,6 +36,8 @@ char py_vinfo_doc[] =
 "A VorbisInfo object stores information about a Vorbis stream.\n\
 Information is stored as attributes.";
 
+static PyObject *py_ov_info_str(PyObject *);
+
 PyTypeObject py_vinfo_type = {
   PyObject_HEAD_INIT(NULL)
   0,
@@ -57,7 +59,7 @@ PyTypeObject py_vinfo_type = {
   0, /* as mapping */
   0, /* hash */
   0, /* binary */
-  0, /* repr */
+  &py_ov_info_str, /* repr */
   0, /* getattro */
   0, /* setattro */
   0, /* as buffer */
@@ -169,6 +171,7 @@ py_ov_info_getattr(PyObject *self, char *name)
     CMP_RET(bitrate_upper);
     CMP_RET(bitrate_nominal);
     CMP_RET(bitrate_lower);
+    CMP_RET(bitrate_window);
     break;
   case 'c':
     CMP_RET(channels);
@@ -184,6 +187,38 @@ py_ov_info_getattr(PyObject *self, char *name)
   snprintf(err_msg, MSG_SIZE, "No attribute: %s", name);
   PyErr_SetString(PyExc_AttributeError, err_msg);
   return NULL;
+}
+
+#define ADD_FIELD(field) \
+  { \
+    int added = snprintf(cur, buf_left, "  %s: %d\n", #field, vi->field); \
+    cur += added; \
+    buf_left -= added; \
+  }
+
+static PyObject *
+py_ov_info_str(PyObject *self) 
+{
+  PyObject *ret = NULL;
+  char buf[1000];
+  char *cur = &buf[0];
+  int buf_left = sizeof(buf) - 1;
+  vorbis_info *vi = PY_VINFO(self);
+
+  int added = snprintf(cur, buf_left, "<VorbisInfo>\n");
+  cur += added;
+  buf_left -= added;
+
+  ADD_FIELD(version);
+  ADD_FIELD(channels);
+  ADD_FIELD(rate);
+  ADD_FIELD(bitrate_upper);
+  ADD_FIELD(bitrate_nominal);
+  ADD_FIELD(bitrate_lower);
+  ADD_FIELD(bitrate_window);
+  
+  ret = PyString_FromString(buf);
+  return ret;
 }
 
 static PyObject *
@@ -280,8 +315,10 @@ Vorbis stream's comments do not have to be unique.\n\
 A comment object also has the keys() items() and values() functions that\n\
 dictionaries have, the difference being that the lists in items() and\n\
 values() are flattened. So if there are two 'Artist' entries, there will\n\
-be two separate tuples in items() for 'Artist' and two strings for 'Artist'\n\
-in value().";
+be two separate tuples in items() for 'Artist' and two strings for \n\
+'Artist' in value().";
+
+static PyObject *py_vcomment_str(PyObject *);
 
 PyTypeObject py_vcomment_type = {
   PyObject_HEAD_INIT(NULL)
@@ -304,7 +341,7 @@ PyTypeObject py_vcomment_type = {
   &py_vcomment_Mapping_Methods,
   0, /* hash */
   0, /* binary */
-  0, /* repr */
+  &py_vcomment_str, /* repr */
   0, /* getattro */
   0, /* setattro */
   0, /* as buffer */
@@ -382,6 +419,60 @@ py_vorbis_comment_dealloc(PyObject *self)
   }
 
   PyMem_DEL(self);
+}
+
+
+static PyObject*
+py_vcomment_str(PyObject *self) 
+{
+#if PY_UNICODE
+  py_vcomment *vc_self = (py_vcomment *) self;
+  int k, buf_len = 0;
+  char *buf, *cur;
+  PyObject *ret = NULL;
+
+  static const char *message = "<VorbisComment>\n";
+  int message_len = strlen(message);
+  static const char *prefix = "  "; /* goes before each line */
+  int prefix_len = strlen(prefix);
+  static const char *suffix = "\n"; /* after each line */
+  int suffix_len = strlen(suffix);
+
+  /* first figure out how much space we need */
+  for (k = 0; k < vc_self->vc->comments; ++k) {
+    buf_len += vc_self->vc->comment_lengths[k];
+  }
+
+  /* add space for prefix/suffix and a trailing \0 */
+  buf_len += vc_self->vc->comments * (prefix_len + suffix_len) + 1; 
+  buf_len += message_len;
+  buf = malloc(buf_len);
+
+  strcpy(buf, message);
+  cur = buf + message_len;
+
+  /* now copy the comments in */
+  for (k = 0; k < vc_self->vc->comments; ++k) {
+    int comment_len = vc_self->vc->comment_lengths[k];
+    
+    strncpy(cur, prefix, prefix_len);
+    cur += prefix_len;
+
+    strncpy(cur, vc_self->vc->user_comments[k], comment_len);
+    cur += comment_len;
+
+    strncpy(cur, suffix, suffix_len);
+    cur += suffix_len;
+  }
+  buf[buf_len - 1] = '\0';
+
+  ret = PyUnicode_DecodeUTF8(buf, buf_len, NULL);
+  free(buf);
+  return ret;
+#else
+  /* We can't do much without unicode */
+  return PyString_FromString("<VorbisComment>");
+#endif
 }
 
 static PyObject*
