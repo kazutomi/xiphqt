@@ -412,7 +412,7 @@ AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile con
 echo "Running configure in libshout..."
 
 cd libshout
-./configure "$@" && echo
+./configure && echo
 cd ..
 
 echo "Compiling with CPPFLAGS=$CPPFLAGS"

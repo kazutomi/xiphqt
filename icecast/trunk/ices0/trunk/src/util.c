@@ -148,7 +148,7 @@ ices_util_get_random_filename (char *namespace, char *type)
 #ifdef _WIN32
 	doooh();
 #else
-	sprintf (namespace, "/tmp/ices.%s.%d", type, getpid ());
+	sprintf (namespace, "/tmp/ices.%s.%d", type, (int)getpid ());
 	return namespace;
 #endif
 }
