@@ -48,6 +48,7 @@ void encthread_init(void)
 	}
 }
 
+extern char* fileName;
 void encthread_addfile(char *file)
 {
 	char *filename;
@@ -196,6 +197,7 @@ DWORD WINAPI encode_thread(LPVOID arg)
 				strncpy(out_fn, start, end-start);
 				out_fn[end-start] = 0;
 				strcat(out_fn, ".ogg");
+        fileName = out_fn;
 			}
 
 			/* Now, we need to select an input audio format */
