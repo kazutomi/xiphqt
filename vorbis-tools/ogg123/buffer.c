@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.7 2001/08/10 20:48:06 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.8 2001/08/11 02:10:09 kcarnold Exp $
 
  ********************************************************************/
 
@@ -49,8 +49,6 @@ FILE *debugfile;
 
 #define LOCK_MUTEX(mutex) do { DEBUG1("Locking mutex %s.", #mutex); pthread_mutex_lock (&(mutex)); } while (0)
 #define UNLOCK_MUTEX(mutex) do { DEBUG1("Unlocking mutex %s", #mutex); pthread_mutex_unlock(&(mutex)); } while (0) 
-
-#define TARGET_WRITE_SIZE 4096 /* to agree with other mechanisms used in ogg123 */
 
 void Prebuffer (buf_t * buf)
 {
@@ -90,7 +88,16 @@ void* BufferFunc (void *arg)
   sigfillset (&set);
   pthread_sigmask (SIG_SETMASK, &set, NULL);
 
+  /* Run the initialization function, if there is one */
+  if (buf->init_func)
+    {
+      int ret = buf->init_func (buf->initData);
+      if (!ret)
+	pthread_exit ((void*)ret);
+    }
+
   pthread_cleanup_push (PthreadCleanup, buf);
+
   while (1)
     {
       /* don't touch the size unless we ask you to. */
@@ -177,7 +184,8 @@ void* BufferFunc (void *arg)
 }
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
-		    size_t (*write_func) (void *, size_t, size_t, void *))
+		    size_t (*write_func) (void *, size_t, size_t, void *),
+		    void *initData, int (*init_func) (void*))
 {
   buf_t *buf = malloc (sizeof(buf_t) + sizeof (chunk) * (size - 1));
 
@@ -200,6 +208,9 @@ buf_t *StartBuffer (long size, long prebuffer, void *data,
 
   buf->data = data;
   buf->write_func = write_func;
+
+  buf->initData = initData;
+  buf->init_func = init_func;
 
   buf->reader = buf->writer = buf->buffer;
   buf->end = buf->buffer + (size - 1);
