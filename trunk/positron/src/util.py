@@ -43,3 +43,12 @@ def recursive_delete(pathname):
     else:
         raise OSError("Non-file or directory encountered.")
     
+def cmp_records(a,b):
+    if a == None and b == None:
+        return 0
+    elif a == None:
+        return -1
+    elif b == None:
+        return 1
+    else:
+        return cmp(a[0].lower(), b[0].lower())
