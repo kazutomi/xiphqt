@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: internal/hidden data representation structures
- last mod: $Id: ogginternal.h,v 1.1.2.5 2003/03/06 23:13:36 xiphmont Exp $
+ last mod: $Id: ogginternal.h,v 1.1.2.6 2003/03/15 01:26:09 xiphmont Exp $
 
  ********************************************************************/
 
@@ -22,81 +22,72 @@
 #include "mutex.h"
 
 struct ogg_buffer_state{
-  ogg_buffer *unused_pool;
-  int         outstanding;
-  int         encode_decode_flag; /* (0==encode, 1==decode)*/
+  ogg_buffer    *unused_buffers;
+  int            outstanding_buffers;
+
+  ogg_reference *unused_references;
+  int            outstanding_references;
+
   ogg_mutex_t mutex;
 };
 
-typedef struct{
-  ogg_buffer           *segment;
-  int                   cursor;
-} ogg_buffer_cursor;
-
 struct ogg_buffer {
-  unsigned char     *data;
-  int                used;
-  struct ogg_buffer *next;
-  int                size;
-  int                refbeg; /* in decode, this field is used for
-				cross-abstraction refcounting and
-				memory usage tracking.  In encode,
-				each buffer fragment has a single
-				usage pathway, so this field is used
-				for pretruncation , needed by encode
-				but not decode */
+  unsigned char      *data;
+  long                size;
+  int                 refcount;
+  union {
+    ogg_buffer_state *owner;
+    ogg_buffer       *next;
+  } ptr;
+};
 
+struct ogg_reference {
+  struct ogg_buffer    *buffer;
+  long                  begin;
+  long                  length;
+  struct ogg_reference *next;
 };
 
 struct oggpack_buffer {
-  int               headbit;
-  unsigned char    *headptr;
-  long              headend;
+  int            headbit;
+  unsigned char *headptr;
+  long           headend;
 
   /* memory management */
-  ogg_buffer       *head;
-  ogg_buffer       *tail;  
-  ogg_buffer_state *owner; /* centralized mem management; buffer fragment 
-			      memory is owned and managed by the physical
-			      stream abstraction */
+  ogg_reference *head;
+  ogg_reference *tail;
 
   /* render the byte/bit counter API constant time */
-  long length; /* meaningful only in decode */
-  long count;  /* doesn't count the tail */
+  long count;              /* doesn't count the tail */
+  ogg_buffer_state *owner; /* cache preferred pool for write lazy init */
 
 };
 
-typedef struct ogg_packet_chain {
-  ogg_buffer_reference     packet;
-  ogg_int64_t              granulepos;
-
-  struct ogg_packet_chain *next;
-} ogg_packet_chain;
+typedef struct{
+  ogg_reference *segment;
+  int            cursor;
+} ogg_buffer_cursor;
 
 struct ogg_sync_state {
   /* encode/decode mem management */
-  ogg_buffer_state      bufferpool;
+  ogg_buffer_state  bufferpool;
 
   /* stream buffers */
-  ogg_buffer           *fifo_head;
-  ogg_buffer           *fifo_tail;
+  ogg_reference    *fifo_head;
+  ogg_reference    *fifo_tail;
   
-  long                  fifo_cursor;
-  long                  fifo_fill;
-  ogg_buffer_reference  returned;
+  long              fifo_cursor;
+  long              fifo_fill;
+  ogg_reference    *returned;
 
   /* stream sync management */
-  int         unsynced;
-  int         headerbytes;
-  int         bodybytes;
+  int               unsynced;
+  int               headerbytes;
+  int               bodybytes;
 
 };
 
 struct ogg_stream_state {
-  ogg_packet_chain *unused;
-  ogg_packet_chain *head;
-  ogg_packet_chain *tail;
-
 
   long              body_len;
 
@@ -122,17 +113,15 @@ struct ogg_stream_state {
 
 };
 
-extern void ogg_buffer_init(ogg_buffer_state *bs,int encode_decode_flag);
-extern void ogg_buffer_clear(ogg_buffer_state *bs);
-extern ogg_buffer *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes);
-extern int ogg_buffer_realloc(ogg_buffer_state *bs,ogg_buffer *ob,long bytes);
-extern ogg_buffer *ogg_buffer_pretruncate(ogg_buffer *ob,ogg_buffer_state *bs,
-					  int bytes);
-extern void ogg_buffer_release(ogg_buffer *ob,ogg_buffer_state *bs);
-extern void ogg_reference_clear(ogg_buffer_reference *or);
-extern void ogg_reference_mark(ogg_buffer_reference *or);
-extern void ogg_reference_release(ogg_buffer_reference *or);
-
-
+extern void           ogg_buffer_init(ogg_buffer_state *bs);
+extern void           ogg_buffer_clear(ogg_buffer_state *bs);
+extern ogg_reference *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes);
+extern ogg_reference *ogg_buffer_dup(ogg_reference *or,long begin,long length);
+extern ogg_reference *ogg_buffer_extend(ogg_reference *or,long bytes);
+extern void           ogg_buffer_mark(ogg_reference *or);
+extern void           ogg_buffer_release(ogg_reference *or);
+extern ogg_reference *ogg_buffer_pretruncate(ogg_reference *or,long pos);
+extern void           ogg_buffer_posttruncate(ogg_reference *or,long pos);
+extern void           ogg_buffer_cat(ogg_reference *tail, ogg_reference *head);
 
 #endif

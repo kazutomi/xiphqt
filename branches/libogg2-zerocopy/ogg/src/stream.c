@@ -10,9 +10,9 @@
  *                                                                  *
  ********************************************************************
 
- function: code raw [Vorbis] packets into framed OggSquish stream and
+ function: code raw packets into framed Ogg stream and
            decode Ogg streams back into raw packets
- last mod: $Id: stream.c,v 1.1.2.1 2003/03/06 23:13:36 xiphmont Exp $
+ last mod: $Id: stream.c,v 1.1.2.2 2003/03/15 01:26:09 xiphmont Exp $
 
  ********************************************************************/
 
