@@ -3,17 +3,32 @@
 use Tk;
 use Tk qw(exit); 
 use IPC::Open2;
-# graph pseudo-widget, built out of Tk canvases.
+
+# single bar graph pseudo-widget, built out of Tk canvases.
 
 package MGM::Bar;
 @ISA=("Tk::Canvas");
 
 sub new{
-    my ($p,$width,$height,$fore,$back,$afore,$aback,$name,$relief,$arelief)=@_;
+    my ($p,$width,$height,$num)=@_;
 
     $orient=$main::toplevel->optionGet("bars","Bars");
     $pad=$main::toplevel->optionGet("pad","Pad");
 
+    # we're not as flat as we like to think 
+    my $unlit=$p->Canvas(Name=>"$num");
+
+    my $relief=$unlit->optionGet('relief','Relief');
+
+    my $arelief=$unlit->optionGet('activerelief','Activerelief');
+    my $afore=$unlit->optionGet('activeforeground','Activeforeground');
+    my $aback=$unlit->optionGet('activebackground','Activebackground');
+
+    my $fore=$unlit->optionGet('foreground','Foreground');
+    my $back=$unlit->optionGet('background','Background');
+    my $label=$unlit->optionGet('label','Label');
+    my $ratio=$unlit->optionGet('ratio','Ratio');
+    
     $border=0;
     $border=2 if ($relief eq 'groove');
     $border=1 if ($relief eq 'sunken');
@@ -24,12 +39,13 @@ sub new{
     $aborder=1 if ($arelief eq 'sunken');
     $aborder=1 if ($arelief eq 'raised');
 
-    my $unlit=$main::toplevel->Canvas(-borderwidth=>$border,
-				      -background=>$back,
-				      highlightthickness=>0,
-				      width=>($width-$border*2),
-				      height=>($height-$border*2),
-				      relief=>$relief);
+    $unlit->configure(-borderwidth=>$border,
+		      -background=>$back,
+		      highlightthickness=>0,
+		      width=>($width-$border*2),
+		      height=>($height-$border*2),
+		      relief=>$relief);
+
     bless $unlit,"MGM::Bar";
 
     my$lit=$unlit->{'lit'}=$unlit->Canvas(-borderwidth=>$aborder,
@@ -44,16 +60,16 @@ sub new{
     
     if($orient eq 'vertical'){
 
-	$unlittext=&maketext($name,$width-($pad*2),
+	$unlittext=&maketext($label,$ratio,$width-($pad*2),
 				   $height-($pad*2),$fore,$back,"vertical");
-	$littext=&maketext($name,$width-($pad*2),
+	$littext=&maketext($label,$ratio,$width-($pad*2),
 				 $height-($pad*2),$afore,$aback,"vertical");
 
     }else{
 
-	$unlittext=&maketext($name,$width-($pad*2),
+	$unlittext=&maketext($label,$ratio,$width-($pad*2),
 				   $height-($pad*2),$fore,$back,"horizontal");
-	$littext=&maketext($name,$width-($pad*2),
+	$littext=&maketext($label,$ratio,$width-($pad*2),
 				 $height-($pad*2),$afore,$aback,"horizontal");
 
     }
@@ -69,20 +85,27 @@ sub new{
 sub set{
     my($bar,$per)=@_;
     
-    my $orient=$main::toplevel->optionGet("bars","Bars");
-    my $border=$bar->{'lit'}->cget("-borderwidth");
-    if($orient eq 'vertical'){
-	$bar->{'lit'}->coords('littext',$pad,($per-$pad));
-	$bar->{'lit'}->configure('-height'=>($per-2*$border));
-    }else{
-	$bar->{'lit'}->configure('-width'=>($per-2*$border));
+    if($per != $bar->{'setting'}){
+
+	my $orient=$main::toplevel->optionGet("bars","Bars");
+	my $border=$bar->{'lit'}->cget("-borderwidth");
+	if($orient eq 'vertical'){
+	    $bar->{'lit'}->coords('littext',$pad,($per-$pad));
+	    $bar->{'lit'}->configure('-height'=>($per-2*$border));
+	}else{
+	    $bar->{'lit'}->configure('-width'=>($per-2*$border));
+	}
+
+	$bar->{'setting'}=$per;
     }
 }
 
 sub maketext{
-    my($text,$width,$height,$fore,$back,$dir)=@_;
+    my($text,$stretch,$width,$height,$fore,$back,$dir)=@_;
     
-    $data=qx{pbmtext -font $main::fontfile $text | pnmcrop 2>/dev/null };
+    print "$text $width $height $fore $back $dir\n";
+
+    $data=qx{pbmtext -font $main::fontfile $text | pnmcrop 2>/dev/null |pnmpad -white -l1 -r1 -t1 -b1 };
     
     die unless IPC::Open2::open2(OUT,IN,"pnmfile");
     print IN $data;
@@ -95,7 +118,7 @@ sub maketext{
     close OUT;
     
     $test=~m/(\d*)\s*by\s*(\d*)/;
-    my$ratio=$1/$2;
+    my$ratio=$stretch*$1/$2;
 
     if($dir eq "vertical"){
 
@@ -103,12 +126,13 @@ sub maketext{
 	if($ratio > $height/$width){
 	    # yes.  Squash it
 	    
-	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xsize $height -ysize $width| pnmflip -r90 |ppmtoxpm 2>/dev/null");
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm \"$fore\"-\"$back\" | pnmscale -xsize $height -ysize $width| pnmflip -r90 |ppmtoxpm 2>/dev/null");
 	    
 	}else{
 	    # no.  preserve the ratio
-	    
-	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xysize $height $width| pnmflip -r90 |ppmtoxpm 2>/dev/null");
+	    my$yscale=$width/$2;
+	    my$xscale=$yscale*$stretch;
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm \"$fore\"-\"$back\" | pnmscale -yscale $yscale -xscale $xscale | pnmflip -r90 |ppmtoxpm 2>/dev/null");
 	    
 	}
     }else{
@@ -117,12 +141,14 @@ sub maketext{
 	if($ratio > $width/$height){
 	    # yes.  Squash it
 	    
-	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xsize $width -ysize $height|ppmtoxpm 2>/dev/null");
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm \"$fore\"-\"$back\" | pnmscale -xsize $width -ysize $height|ppmtoxpm 2>/dev/null");
 	    
 	}else{
 	    # no.  preserve the ratio
+	    my$yscale=$height/$2;
+	    my$xscale=$yscale*$stretch;
 	    
-	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm $fore-$back | pnmscale -xysize $width $height|ppmtoxpm 2>/dev/null");
+	    die unless IPC::Open2::open2(OUT,IN,"pnmdepth 256 2>/dev/null | pgmtoppm \"$fore\"-\"$back\" | pnmscale -yscale $yscale -xscale $xscale|ppmtoxpm 2>/dev/null");
 	    
 	}
     }
@@ -138,6 +164,259 @@ sub maketext{
     $main::toplevel->Pixmap('-data'=>"$data");
 }
 
+package MGM::Graph;
+@ISA=("Tk::Canvas");
+
+sub textsize{
+    my($text)=@_;
+    my$testlabel=$main::toplevel->Label(-text=>$text,-borderwidth=>0,
+					-padx=>0,-pady=>0);
+    $fontheight=$testlabel->reqheight;
+    $fontwidth=$testlabel->reqwidth;
+    ($fontheight,$fontwidth);
+}
+
+sub new{
+    my$p=shift;
+
+    my %graph = ( 'num' => '1',
+		  'fixed' => '0',
+		  'scale' => '1',
+		  'range'=> '100' );
+
+    my $ret=\%graph;
+    bless $ret, 'MGM::Graph';
+    $ret->{"parent"}=$p;
+
+    $ret->configure(@_);
+    $ret;
+}
+
+sub minsize{
+    my($this)=shift;
+
+    # the size of the scale prompt
+    my$text="000k$this->{'prompt'}";
+    my($textw,$texth)=&textsize($text);
+
+    my $scalep=0;
+    $scalep=1 if ($this->{"widget"}->optionGet("scale","Scale") eq 'true');
+    my $orient=$main::toplevel->optionGet("bars","Bars");
+    my $num=$this->{"num"};
+
+    # scale is a minimum 6 pixels wide/high, also account for the
+    # number label (goes on the scale if a horizontal scale, above if
+    # vertical the number label if a horizontal (a vertical goes
+    # above)...
+
+    my($minx,$miny);
+
+    #vertical or horizontal?
+    if($orient eq 'vertical'){
+	my $minscale=6;
+	$minscale=0 if(!$scalep);
+	my $minbar=2;
+
+	$minx=$minscale+$minbar*$num;
+	$minx=$textw if($minx<$textw);
+
+	$miny=$texth+1+30;
+    }else{
+	my $minscale=$texth+2;
+	my $minbar=2;
+	$minscale=0 if(!$scalep);
+	$miny=$minscale+$minbar*$num;
+
+	$minx=$textw+15;
+	$minx=40 if ($minx<40);
+    }
+
+    ($minx,$miny);
+}
+
+sub reqsize{
+
+    my($this)=shift;
+
+    # the size of the scale prompt
+    my$text="000k$this->{'prompt'}";
+    my($textw,$texth)=&textsize($text);
+
+    my $scalep=0;
+    $scalep=1 if ($this->{"widget"}->optionGet("scale","Scale") eq 'true');
+    my $orient=$main::toplevel->optionGet("bars","Bars");
+    my $num=$this->{"num"};
+
+    # scale is a minimum 6 pixels wide/high, also account for the
+    # number label (goes on the scale if a horizontal scale, above if
+    # vertical the number label if a horizontal (a vertical goes
+    # above)...
+
+    my($minx,$miny);
+
+    #vertical or horizontal?
+    if($orient eq 'vertical'){
+	my $minscale=6;
+	$minscale=0 if(!$scalep);
+	my $minbar=8;
+
+	$minx=$minscale+$minbar*$num;
+	$minx=$textw+1 if($minx<$textw+1);
+
+	$miny=$texth+1+60;
+    }else{
+	my $minscale=$texth+2;
+	my $minbar=8;
+	$minscale=0 if(!$scalep);
+	$miny=$minscale+$minbar*$num;
+
+	$minx=$textw+15;
+	$minx=60 if ($minx<60);
+    }
+
+    ($minx,$miny);
+}
+
+sub drawit{
+    my$this=shift;
+    
+    undef $this->{"widget"};
+    undef $this->{"numlabel"};
+
+    for(my$i=0;$i<$this->{"num"};$i++){
+	undef $this->{"bar$i"};
+    }
+
+    # a 'graph' consists of a scale, and <n> bars under central control
+
+    my $name=$this->{"name"};
+    my $num=$this->{"num"};
+    my $height=$this->{"height"};
+    my $width=$this->{"width"};
+
+    my$widget=$this->{"widget"}=
+	$this->{"parent"}->Canvas(Name=>$name,
+				  -borderwidth=>0,
+				  highlightthickness=>0,
+				  width=>$width,
+				  height=>$height,
+				  relief=>'flat');
+    
+    my $scalep=0;
+    $scalep=1 if ($widget->optionGet("scale","Scale") eq 'true');
+
+    print "name= $name\n scalep = $scalep\n";
+
+    my $orient=$main::toplevel->optionGet("bars","Bars");
+    my($textw,$texth)=&textsize("0g");
+
+    # scale is a minimum 6 pixels wide/high, also account for the
+    # number label (goes on the scale if a horizontal scale, above if
+    # vertical the number label if a horizontal (a vertical goes
+    # above)...
+
+    #vertical or horizontal?
+    if($orient eq 'vertical'){
+	if($scalep){
+	    $this->{"numlabel"}=$this->{"widget"}->
+		Label(-text=>"$this->{'scalesetting'}$this->{'prompt'}",
+		      -borderwidth=>0,-padx=>0,-pady=>0)->
+			  place(-x=>0,-y=>0,-anchor=>'nw');
+	    
+	    $this->{"barxo"}=6;
+	    $this->{"baryo"}=$texth+1;
+#	    $this->drawvscale;
+	}else{
+	    $this->{"barxo"}=0;
+	    $this->{"baryo"}=0;
+
+	}
+	
+	$this->{"barlength"}=$height-$this->{"baryo"};
+	$this->{"barwidth"}=($width-$this->{"barxo"})/$num;
+
+	my$frame=$widget->Frame(Name=>'bar',
+				-width=>$width-$this->{"barxo"},
+				-height=>$height-$this->{"baryo"},
+				-borderwidth=>0)->
+				    place(-x=>$this->{"barxo"},
+					  -y=>$this->{"baryo"},
+					  -anchor=>'nw');
+
+	my$x=0;
+	for(my$i=0;$i<$this->{"num"};$i++){
+	    $this->{"bar$i"}=$frame->
+	      MGM::Bar::new(int($x+$this->{"barwidth"})-int($x),
+			    $this->{"barlength"},
+			    $i)->place(-x=>$x,-y=>0,
+				       -anchor=>'nw');
+	    $x+=$this->{"barwidth"};
+	}
+    }else{
+	if($scalep){
+	    $this->{"numlabel"}=$this->{"widget"}->
+		Label(-text=>"$this->{'scalesetting'}$this->{'prompt'}",
+		      -borderwidth=>0,-padx=>0,-pady=>0)->
+			  place(-relx=>1.0,-x=>-3,
+				-y=>0,-anchor=>'ne');
+	    
+	    $this->{"barxo"}=0;
+	    $this->{"baryo"}=$texth+2;
+#	    $this->drawhscale;
+	}else{
+	    $this->{"barxo"}=0;
+	    $this->{"baryo"}=0;
+	}
+
+	$this->{"barlength"}=$width;
+	$this->{"barwidth"}=($height-$this->{"baryo"})/$num;
+
+	my$frame=$widget->Frame(Name=>'bar',
+				-width=>$width-$this->{"barxo"},
+				-height=>$height-$this->{"baryo"},
+				-borderwidth=>0)->
+				    place(-x=>$this->{"barxo"},
+					  -y=>$this->{"baryo"},
+					  -anchor=>'nw');
+
+	my$y=0;
+	for(my$i=0;$i<$this->{"num"};$i++){
+	    $this->{"bar$i"}=$frame->
+	      MGM::Bar::new($this->{"barlength"},
+			    int($y+$this->{"barwidth"})-int($y),
+			    $i)->place(-x=>0,-y=>$y,
+				       -anchor=>'nw');
+	    $y+=$this->{"barwidth"};
+	}
+
+    }
+}
+
+sub place{
+    my$this=shift;
+    $this->{"widget"}->place(@_);
+    $this;
+}
+
+sub configure{
+    my$this=shift;
+    my ($arg,$val);
+    while($arg=shift){
+	$val=shift;   
+        if(!defined($val)){last;}
+	$this->{"$arg"}=$val;
+    }
+
+    # The only strategy, currently, is to redraw ;-) 
+
+    $this->drawit();
+}
+
+sub set{
+
+
+}
+
 package main;
 
 $|=1;
@@ -148,12 +427,17 @@ $fontfile="helvetica24.bdf";
 
 &doit(@ARGV);
 
-$test=new MGM::Bar(100,20,'gray','blue4','white','red','CPU','groove','raised')->place(-x=>0,-y=>0,-anchor=>nw);
+#$test=$toplevel->MGM::Bar::new(100,20,'gray','blue4','white','red','CPU','groove','raised')->place(-x=>0,-y=>0,-anchor=>nw);
 
-$test->repeat(1000,[sub{$test->set()}]);
+$toplevel->optionAdd("$Xname.cpu.scale",            'true',80);
+$test=$toplevel->MGM::Graph::new(width=>100,height=>20,
+				 name=>'cpu',
+				 prompt=>'100%')->
+    place(-x=>0,-y=>0,-anchor=>nw);
+
+$test->repeat(1000,[sub{$test->{"bar0"}->set(15);}]);
 
 Tk::MainLoop();
-
 
 
 # toplevel setup
@@ -164,12 +448,29 @@ sub doit{
     $toplevel=new MainWindow();
     $Xname=$toplevel->Class;
 
-    $toplevel->optionAdd("$Xname.background",  '#202020',20);
-    $toplevel->optionAdd("$Xname.foreground",  '#cccccc',20);
+    $toplevel->optionAdd("$Xname*background",  '#202020',20);
+    $toplevel->optionAdd("$Xname*foreground",  '#cccccc',20);
+
     $toplevel->optionAdd("$Xname.geometry",    '300x100',20);
     $toplevel->optionAdd("$Xname.stack",       'horizontal',20);
-    $toplevel->optionAdd("$Xname.bars",        'vertical',20);
-    $toplevel->optionAdd("$Xname.pad",         '3',20);
+    $toplevel->optionAdd("$Xname.bars",        'horizontal',20);
+    $toplevel->optionAdd("$Xname.pad",         '2',20);
+    $toplevel->optionAdd("$Xname*font",    
+			 '-misc-fixed-*-*-*-*-8-*-*-*-*-*-*-*',20);
+
+    $toplevel->optionAdd("$Xname*active",           'true',20);
+    $toplevel->optionAdd("$Xname*scale",            'true',20);
+    $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
+    $toplevel->optionAdd("$Xname*refresh",          '1000',20);
+
+    $toplevel->optionAdd("$Xname*bar*background",       '#313656',81);
+
+    $toplevel->optionAdd("$Xname*bar*activebackground", '#74ade7',21);
+    $toplevel->optionAdd("$Xname*bar*label",            "fill in",21);
+    $toplevel->optionAdd("$Xname*bar*activerelief",     'raised',21);
+    $toplevel->optionAdd("$Xname*bar*relief",           'sunken',21);
+    $toplevel->optionAdd("$Xname*bar*ratio",            '1.5',21);
+
 
     # suck in command line resources
     while(my $arg=shift){
@@ -177,12 +478,17 @@ sub doit{
 
 	if($arg){
 	    $val=shift;
-	    $toplevel->optionAdd("$Xname.$arg",  "$val",80);
+	    $toplevel->optionAdd("$Xname*$arg",  "$val",80);
 	}
     }
     
     $background=$toplevel->optionGet("background","Background");
     $foreground=$toplevel->optionGet("foreground","Foreground");
+
+    $toplevel->optionAdd("$Xname*bar*foreground",       "$background",81);
+    $toplevel->optionAdd("$Xname*bar*activeforeground", "$background",20);
+
+
 	
     $toplevel->configure('-background'=>"$background",'-foreground'
 			 =>"$foreground");
@@ -258,20 +564,6 @@ sub LoadModule{
       }
 
       # set default module options
-      $toplevel->optionAdd("$Xname.$name.active",           'true',19);
-      $toplevel->optionAdd("$Xname.$name.background",       '#313656',19);
-      $toplevel->optionAdd("$Xname.$name.foreground",       "$background",19);
-      $toplevel->optionAdd("$Xname.$name.activebackground", '#74ade7',19);
-      $toplevel->optionAdd("$Xname.$name.activeforeground", "$background",19);
-      $toplevel->optionAdd("$Xname.$name.activebackground2",'#74ade7',19);
-      $toplevel->optionAdd("$Xname.$name.activeforeground2","$background",19);
       $toplevel->optionAdd("$Xname.$name.name",             "$name",19);
-      $toplevel->optionAdd("$Xname.$name.activerelief",     'raised',19);
-      $toplevel->optionAdd("$Xname.$name.relief",           'groove',19);
-      $toplevel->optionAdd("$Xname.$name.scale",            'true',19);
-      $toplevel->optionAdd("$Xname.$name.scalecolor",       'yellow',19);
-      $toplevel->optionAdd("$Xname.$name.refresh",          '1000',19);
   }
 }
-
-package MGM::PixText;
