@@ -10,6 +10,7 @@
 import os
 from os import path
 from neuros import Neuros
+import db
 import util
 
 def usage():
@@ -17,12 +18,14 @@ def usage():
     
 def gen_filelist(neuros, pathname):
     filelist = []
+    fullname = path.abspath(pathname)
     empty = True
 
-    if not neuros.is_valid_hostpath(pathname):
-        print "Warning: Ignoring %s because it is not a path on the Neuros."
+    if not neuros.is_valid_hostpath(fullname):
+        print "Warning: Ignoring %s because it is not a path on the Neuros." \
+              % (pathname, )
     elif path.isfile(pathname):
-        fullname = path.abspath(pathname)
+
         neuros_path = neuros.hostpath_to_neurospath(fullname)
 
         # Search for this pathname in the last field
@@ -44,7 +47,7 @@ def gen_filelist(neuros, pathname):
         # If all the contents of this directory are (or are going to
         # be empty), then this directory can be deleted
         if empty:
-            filelist.append((pathname, None))
+            filelist.append((fullname, None))
     else:
         print "Ignoring %s.  Not a file or directory." % (pathname)
 
@@ -58,7 +61,7 @@ def del_track(neuros, sourcename, sai_index):
         neuros.db["audio"].delete_record(sai_index)
     except os.error, e:
         print "Error:", e
-    except db.util.error, e:
+    except db.util.Error, e:
         print "Error:", e
 
 def cmd_del(config, neuros, args):
