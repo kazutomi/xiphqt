@@ -131,6 +131,9 @@ void tarkin_stream_flush (TarkinStream *s)
          uint32_t bitstream_len;
 
          wavelet_3d_buf_fwd_xform (layer->waveletbuf[j], 2, 2);
+         wavelet_3d_buf_dump ("coeff-%d-%03d.ppm",
+                              s->current_frame, j, layer->waveletbuf[j]);
+
          bitstream_len = wavelet_3d_buf_encode_coeff (layer->waveletbuf[j],
                                                       s->bitstream,
                                                       layer->bitstream_len);
@@ -265,6 +268,8 @@ uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **rgba)
 
             wavelet_3d_buf_decode_coeff (layer->waveletbuf[j], s->bitstream,
                                          bitstream_len);
+            wavelet_3d_buf_dump ("rcoeff-%d-%03d.ppm",
+                                 s->current_frame, j, layer->waveletbuf[j]);
             wavelet_3d_buf_inv_xform (layer->waveletbuf[j], 2, 2);
          }
       }

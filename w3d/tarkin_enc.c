@@ -80,7 +80,7 @@ int main (int argc, char **argv)
 
       tarkin_stream_write_frame (tarkin_stream, &rgb);
       frame++;
-   } while (1);
+   } while (0);
 
    free (rgb);
    tarkin_stream_destroy (tarkin_stream);

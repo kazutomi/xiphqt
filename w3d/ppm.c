@@ -1,8 +1,8 @@
 /**
  *   This code has some serious problems with DOS-style CR/LF linebreaks.
- *   Simon already contributed better code, but there has been no attempt to
- *   use them for now.
- *   If you want do do this, please send me a patch.
+ *   Simon already contributed better routines, but there has been no attempt to
+ *   use them for now (I'm just too lazy lazy). If you want do this job, 
+ *   please send me a patch.
  *
  *     - Holger
  */
@@ -109,6 +109,16 @@ void write_ppm (char *fname, uint8_t *rgb, int w, int h)
 }
 
 
+static inline
+uint8_t CLAMP(int16_t x)
+{
+   x *= 4;
+   x += 128;
+   return  ((x > 255) ? 255 : (x < 0) ? 0 : x);
+}
+
+
+
 void write_ppm16 (char *fname, int16_t *rgb, int w, int h)
 {
    int i;
@@ -123,7 +133,7 @@ void write_ppm16 (char *fname, int16_t *rgb, int w, int h)
 
    fprintf (outfile, "P6\n%d %d\n%d\n", w, h, 255);
    for (i=0; i<w*h; i++) {
-      uint8_t c [3] = { rgb[i], rgb[i], rgb[i] };
+      uint8_t c [3] = { CLAMP(rgb[i]), CLAMP(rgb[i]), CLAMP(rgb[i]) };
       fwrite (c, 1, 3, outfile);
    }
    fclose (outfile);
