@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.18 2001/12/12 15:52:25 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.19 2001/12/13 16:20:17 volsung Exp $
 
  ********************************************************************/
 
@@ -179,6 +179,42 @@ void select_stats (stat_format_t *stats, ogg123_options_t *opts,
   /* Put logic here to decide if this stream needs a total time display */
 }
 
+
+/* Handles printing statistics depending upon whether or not we have 
+   buffering going on */
+void display_statistics (stat_format_t *stat_format,
+			 buf_t *audio_buffer, 
+			 data_source_t *source,
+			 decoder_t *decoder)
+{
+  print_statistics_arg_t *pstats_arg;
+  buffer_stats_t *buffer_stats;
+
+  pstats_arg = new_print_statistics_arg(stat_format,
+					source->transport->statistics(source),
+					decoder->format->statistics(decoder));
+  if (audio_buffer) {
+    /* Place a status update into the buffer */
+    buffer_append_action_at_end(audio_buffer,
+				&print_statistics_action,
+				pstats_arg);
+    
+    /* And if we are not playing right now, do an immediate
+       update just the output buffer */
+    buffer_stats = buffer_statistics(audio_buffer);
+    if (buffer_stats->paused || buffer_stats->prebuffering) {
+      pstats_arg = new_print_statistics_arg(stat_format,
+					    NULL,
+					    NULL);
+      print_statistics_action(audio_buffer, pstats_arg);
+    }
+    free(buffer_stats);
+    
+  } else
+    print_statistics_action(NULL, pstats_arg);
+}
+
+
 void print_audio_devices_info(audio_device_t *d)
 {
   ao_info *info;
@@ -193,27 +229,6 @@ void print_audio_devices_info(audio_device_t *d)
     d = d->next_device;
   }
 
-}
-
-
-/* ----------------------------- callbacks ------------------------------ */
-
-void decoder_error_callback (void *arg, int severity, char *message, ...)
-{
-  va_list ap;
-
-  va_start(ap, message);
-  vstatus_error(message, ap);
-  va_end(ap);
-}
-
-void decoder_metadata_callback (void *arg, int verbosity, char *message, ...)
-{
-  va_list ap;
-
-  va_start(ap, message);
-  vstatus_message(verbosity, message, ap);
-  va_end(ap);
 }
 
 
@@ -302,10 +317,9 @@ void play (char *source_string)
   format_t *format;
   data_source_t *source;
   decoder_t *decoder;
-  decoder_callbacks_t decoder_callbacks = { &decoder_error_callback,
-					    &decoder_metadata_callback };
-  print_statistics_arg_t *pstats_arg;
-  buffer_stats_t *buffer_stats;
+
+  decoder_callbacks_t decoder_callbacks;
+  void *decoder_callbacks_arg;
 
   /* Preserve between calls so we only open the audio device when we 
      have to */
@@ -313,14 +327,28 @@ void play (char *source_string)
   audio_format_t new_audio_fmt;
   audio_reopen_arg_t *reopen_arg;
 
+  /* Flags and counters galore */
   int eof = 0, eos = 0, ret;
   int nthc = 0, ntimesc = 0;
   int next_status = 0;
   int status_interval = 0;
 
+
+  /* Set preferred audio format (used by decoder) */
   new_audio_fmt.big_endian = ao_is_big_endian();
   new_audio_fmt.signed_sample = 1;
   new_audio_fmt.word_size = 2;
+
+  /* Select appropriate callbacks */
+  if (audio_buffer != NULL) {
+    decoder_callbacks.printf_error = &decoder_buffered_error_callback;
+    decoder_callbacks.printf_metadata = &decoder_buffered_error_callback;
+    decoder_callbacks_arg = audio_buffer;
+  } else {
+    decoder_callbacks.printf_error = &decoder_error_callback;
+    decoder_callbacks.printf_metadata = &decoder_error_callback;
+    decoder_callbacks_arg = NULL;
+  }
 
   /* Locate and use transport for this data source */  
   if ( (transport = select_transport(source_string)) == NULL ) {
@@ -340,7 +368,7 @@ void play (char *source_string)
   }
   
   if ( (decoder = format->init(source, &options, &new_audio_fmt, 
-			       &decoder_callbacks, NULL)) == NULL ) {
+			       &decoder_callbacks, audio_buffer)) == NULL ) {
     status_error("Error opening %s using the %s module."
 		 "  The file may be corrupted.\n", source_string,
 		 format->name);
@@ -416,41 +444,20 @@ void play (char *source_string)
 	reopen_arg = new_audio_reopen_arg(options.devices, &new_audio_fmt);
 
 	if (audio_buffer)	  
-	  buffer_insert_action_at_end(audio_buffer, &audio_reopen_callback,
+	  buffer_insert_action_at_end(audio_buffer, &audio_reopen_action,
 				      reopen_arg);
 	else
-	  audio_reopen_callback(NULL, reopen_arg);
+	  audio_reopen_action(NULL, reopen_arg);
       }
       
 
       /* Update statistics display if needed */
       if (next_status <= 0) {
-	
-	pstats_arg = new_print_statistics_arg(stat_format,
-					      transport->statistics(source),
-					      format->statistics(decoder));
-	if (audio_buffer) {
-	  /* Place a status update into the buffer */
-	  buffer_append_action_at_end(audio_buffer,
-				      &print_statistics_callback,
-				      pstats_arg);
-
-	  /* And if we are not playing right now, do an immediate
-	     update just the output buffer */
-	  buffer_stats = buffer_statistics(audio_buffer);
-	  if (buffer_stats->paused || buffer_stats->prebuffering) {
-	    pstats_arg = new_print_statistics_arg(stat_format,
-						  NULL,
-						  NULL);
-	    print_statistics_callback(audio_buffer, pstats_arg);
-	  }
-
-	} else
-	  print_statistics_callback(NULL, pstats_arg);
-	
+	display_statistics(stat_format, audio_buffer, source, decoder); 
 	next_status = status_interval;
       } else
 	next_status -= ret;
+
 
       /* Write audio data block to output, skipping or repeating chunks
 	 as needed */
@@ -476,18 +483,19 @@ void play (char *source_string)
       buffer_mark_eos(audio_buffer);
   } /* End of logical bitstream loop */
   
+  /* Done playing this logical bitstream.  Clean up house. */
 
-  /* Done playing this logical bitstream.  Now we cleanup output buffer. */
+  /* Print final stats */
+  display_statistics(stat_format, audio_buffer, source, decoder); 
+
   if (audio_buffer) {
     
     if (!sig_request.exit && !sig_request.skipfile)
       buffer_wait_for_empty(audio_buffer);
-    
-    
+        
     buffer_thread_kill(audio_buffer);
   }
   
-
   alarm(0);  
   format->cleanup(decoder);
   transport->close(source);

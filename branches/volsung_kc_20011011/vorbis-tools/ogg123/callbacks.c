@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: callbacks.c,v 1.1.2.2 2001/12/12 15:52:25 volsung Exp $
+ last mod: $Id: callbacks.c,v 1.1.2.3 2001/12/13 16:20:17 volsung Exp $
 
  ********************************************************************/
 
@@ -32,7 +32,7 @@ int audio_play_callback (void *ptr, int nbytes, int eos, void *arg)
   return ret ? nbytes : 0;
 }
 
-void audio_reopen_callback (buf_t *buf, void *arg)
+void audio_reopen_action (buf_t *buf, void *arg)
 {
   audio_reopen_arg_t *reopen_arg = (audio_reopen_arg_t *) arg;
   audio_device_t *current;
@@ -139,7 +139,7 @@ audio_reopen_arg_t *new_audio_reopen_arg (audio_device_t *devices,
 
 /* Statistics callbacks */
 
-void print_statistics_callback (buf_t *buf, void *arg)
+void print_statistics_action (buf_t *buf, void *arg)
 {
   print_statistics_arg_t *stats_arg = (print_statistics_arg_t *) arg;
   buffer_stats_t *buffer_stats;
@@ -177,4 +177,157 @@ print_statistics_arg_t *new_print_statistics_arg (
   arg->decoder_statistics = decoder_statistics;
 
   return arg;
+}
+
+
+/* Decoder callbacks */
+
+void decoder_error_callback (void *arg, int severity, char *message, ...)
+{
+  va_list ap;
+
+  va_start(ap, message);
+  vstatus_error(message, ap);
+  va_end(ap);
+}
+
+
+void decoder_metadata_callback (void *arg, int verbosity, char *message, ...)
+{
+  va_list ap;
+
+  va_start(ap, message);
+  vstatus_message(verbosity, message, ap);
+  va_end(ap);
+}
+
+
+/* ---------------------------------------------------------------------- */
+
+/* These actions are just wrappers for vstatus_message() and vstatus_error() */
+
+typedef struct status_message_arg_t {
+  int verbosity;
+  char *message;
+} status_message_arg_t;
+
+
+status_message_arg_t *new_status_message_arg (int verbosity)
+{
+  status_message_arg_t *arg;
+
+  if ( (arg = malloc(sizeof(status_message_arg_t))) == NULL ) {
+    status_error("Error: Out of memory in new_status_message_arg().\n");
+    exit(1);
+  }  
+  
+  arg->verbosity = verbosity;
+
+  return arg;
+}
+  
+
+void status_error_action (buf_t *buf, void *arg)
+{
+  status_message_arg_t *myarg = (status_message_arg_t *) arg;
+
+  status_error(myarg->message);
+
+  free(myarg->message);
+  free(myarg);
+}
+
+
+void status_message_action (buf_t *buf, void *arg)
+{
+  status_message_arg_t *myarg = (status_message_arg_t *) arg;
+
+  status_message(myarg->verbosity, myarg->message);
+
+  free(myarg->message);
+  free(myarg);
+}
+
+/* -------------------------------------------------------------- */
+
+void decoder_buffered_error_callback (void *arg, int severity, 
+				      char *message, ...)
+{
+  va_list ap;
+  buf_t *buf = (buf_t *)arg;
+  status_message_arg_t *sm_arg = new_status_message_arg(0);
+  int n, size = 80; /* Guess we need no more than 80 bytes. */
+
+
+  /* Preformat the string and allocate space for it.  This code taken
+     straight from the vsnprintf() man page.  We do this here because
+     we might need to reinit ap several times. */
+  if ((sm_arg->message = malloc (size)) == NULL) {
+    status_error("Error: Out of memory in decoder_buffered_metadata_callback().\n");
+    exit(1);
+  }
+  
+  while (1) {
+    /* Try to print in the allocated space. */
+    va_start(ap, message);
+    n = vsnprintf (sm_arg->message, size, message, ap);
+    va_end(ap);
+    
+    /* If that worked, return the string. */
+    if (n > -1 && n < size)
+      break;
+    /* Else try again with more space. */
+    if (n > -1)    /* glibc 2.1 */
+      size = n+1; /* precisely what is needed */
+    else           /* glibc 2.0 */
+      size *= 2;  /* twice the old size */
+    if ((sm_arg->message = realloc (sm_arg->message, size)) == NULL) {
+      status_error("Error: Out of memory in decoder_buffered_metadata_callback().\n");
+      exit(1);
+    }
+  }
+
+  /* Use vsnprintf! */
+  buffer_append_action_at_end(buf, &status_error_action, sm_arg);
+}
+
+
+void decoder_buffered_metadata_callback (void *arg, int verbosity, 
+					 char *message, ...)
+{
+  va_list ap;
+  buf_t *buf = (buf_t *)arg;
+  status_message_arg_t *sm_arg = new_status_message_arg(0);
+  int n, size = 80; /* Guess we need no more than 80 bytes. */
+
+
+  /* Preformat the string and allocate space for it.  This code taken
+     straight from the vsnprintf() man page.  We do this here because
+     we might need to reinit ap several times. */
+  if ((sm_arg->message = malloc (size)) == NULL) {
+    status_error("Error: Out of memory in decoder_buffered_metadata_callback().\n");
+    exit(1);
+  }
+  
+  while (1) {
+    /* Try to print in the allocated space. */
+    va_start(ap, message);
+    n = vsnprintf (sm_arg->message, size, message, ap);
+    va_end(ap);
+    
+    /* If that worked, return the string. */
+    if (n > -1 && n < size)
+      break;
+    /* Else try again with more space. */
+    if (n > -1)    /* glibc 2.1 */
+      size = n+1; /* precisely what is needed */
+    else           /* glibc 2.0 */
+      size *= 2;  /* twice the old size */
+    if ((sm_arg->message = realloc (sm_arg->message, size)) == NULL) {
+      status_error("Error: Out of memory in decoder_buffered_metadata_callback().\n");
+      exit(1);
+    }
+  }
+
+  buffer_append_action_at_end(buf, &status_message_action, sm_arg);
 }

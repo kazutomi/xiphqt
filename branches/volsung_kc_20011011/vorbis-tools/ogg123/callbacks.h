@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: callbacks.h,v 1.1.2.1 2001/12/11 18:46:22 volsung Exp $
+ last mod: $Id: callbacks.h,v 1.1.2.2 2001/12/13 16:20:17 volsung Exp $
 
  ********************************************************************/
 
@@ -38,7 +38,7 @@ typedef struct audio_reopen_arg_t {
 } audio_reopen_arg_t;
 
 int audio_play_callback (void *ptr, int nbytes, int eos, void *arg);
-void audio_reopen_callback (buf_t *buf, void *arg);
+void audio_reopen_action (buf_t *buf, void *arg);
 
 audio_reopen_arg_t *new_audio_reopen_arg (audio_device_t *devices,
 					  audio_format_t *fmt);
@@ -52,10 +52,21 @@ typedef struct print_statistics_arg_t {
   decoder_stats_t *decoder_statistics;
 } print_statistics_arg_t;
 
-void print_statistics_callback (buf_t *buf, void *arg);
+void print_statistics_action (buf_t *buf, void *arg);
 print_statistics_arg_t *new_print_statistics_arg (
 			       stat_format_t *stat_format,
 			       data_source_stats_t *transport_statistics,
 			       decoder_stats_t *decoder_statistics);
+
+
+/* Decoder callbacks */
+void decoder_error_callback (void *arg, int severity, char *message, ...);
+void decoder_metadata_callback (void *arg, int verbosity, char *message, ...);
+
+void decoder_buffered_error_callback (void *arg, int severity, 
+				      char *message, ...);
+void decoder_buffered_metadata_callback (void *arg, int verbosity, 
+					 char *message, ...);
+
 
 #endif /* __CALLBACKS_H__ */
