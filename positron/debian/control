@@ -1,5 +1,5 @@
 Source: positron
-Section: python
+Section: sound
 Priority: optional
 Maintainer: Jack Moffitt <jack@xiph.org>
 Build-Depends-Indep: debhelper (>> 4.0.0), python (>= 2.1), python-dev (>= 2.1)
