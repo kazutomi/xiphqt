@@ -98,7 +98,7 @@ class AOPlayer(Player):
     def __init__(self, id=None):
         import ao
         if id is None:
-            id = ao.get_driver_id('esd')
+            id = ao.driver_id('esd')
         self.dev = ao.AudioDevice(id)
 
     def write(self, buff, bytes):
