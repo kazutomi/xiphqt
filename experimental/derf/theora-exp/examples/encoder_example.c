@@ -17,7 +17,9 @@
  ********************************************************************/
 
 #define _GNU_SOURCE
+#if !defined(_REENTRANT)
 #define _REENTRANT
+#endif
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 #define _FILE_OFFSET_BITS 64
@@ -72,12 +74,12 @@ int audio_hz=0;
 float audio_q=.1F;
 int audio_r=-1;
 
-int video_x=0;
-int video_y=0;
-int frame_x=0;
-int frame_y=0;
-int frame_x_offset=0;
-int frame_y_offset=0;
+int frame_w=0;
+int frame_h=0;
+int pic_w=0;
+int pic_h=0;
+int pic_x=0;
+int pic_y=0;
 int video_hzn=-1;
 int video_hzd=-1;
 int video_an=-1;
@@ -241,7 +243,7 @@ static void id_file(char *f){
       }
 
       ret=sscanf((char *)buffer,"MPEG2 W%d H%d F%d:%d I%c A%d:%d",
-                 &frame_x,&frame_y,&tmp_video_hzn,&tmp_video_hzd,&interlace,
+                 &pic_w,&pic_h,&tmp_video_hzn,&tmp_video_hzd,&interlace,
                  &tmp_video_an,&tmp_video_ad);
       if(ret<7){
         fprintf(stderr,"Error parsing YUV4MPEG2 header in file %s.\n",f);
@@ -262,7 +264,7 @@ static void id_file(char *f){
       video=test;
 
       fprintf(stderr,"File %s is %dx%d %.02f fps YUV12 video.\n",
-              f,frame_x,frame_y,(double)video_hzn/video_hzd);
+              f,pic_w,pic_h,(double)video_hzn/video_hzd);
 
       return;
     }
@@ -364,19 +366,19 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
 
   if(state==-1){
         /* initialize the double frame buffer */
-    yuvframe[0]=malloc(video_x*video_y*3/2);
-    yuvframe[1]=malloc(video_x*video_y*3/2);
+    yuvframe[0]=malloc(frame_w*frame_h*3/2);
+    yuvframe[1]=malloc(frame_w*frame_h*3/2);
 
         /* clear initial frame as it may be larger than actual video data */
         /* fill Y plane with 0x10 and UV planes with 0X80, for black data */
-    memset(yuvframe[0],0x10,video_x*video_y);
-    memset(yuvframe[0]+video_x*video_y,0x80,video_x*video_y/2);
-    memset(yuvframe[1],0x10,video_x*video_y);
-    memset(yuvframe[1]+video_x*video_y,0x80,video_x*video_y/2);
+    memset(yuvframe[0],0x10,frame_w*frame_h);
+    memset(yuvframe[0]+frame_w*frame_h,0x80,frame_w*frame_h/2);
+    memset(yuvframe[1],0x10,frame_w*frame_h);
+    memset(yuvframe[1]+frame_w*frame_h,0x80,frame_w*frame_h/2);
 #if defined(OC_444_MODE)
-    upsamp_uvdata=malloc(2*video_x*video_y);
+    upsamp_uvdata=malloc(2*frame_w*frame_h);
 #elif defined(OC_422_MODE)
-    upsamp_uvdata=malloc(video_x*video_y);
+    upsamp_uvdata=malloc(frame_w*frame_h);
 #endif
 
     state=0;
@@ -421,27 +423,27 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
         }
 
         /* read the Y plane into our frame buffer with centering */
-        line=yuvframe[i]+video_x*frame_y_offset+frame_x_offset;
-        for(e=0;e<frame_y;e++){
-          ret=fread(line,1,frame_x,video);
-            if(ret!=frame_x) break;
-          line+=video_x;
+        line=yuvframe[i]+frame_w*pic_y+pic_x;
+        for(e=0;e<pic_h;e++){
+          ret=fread(line,1,pic_w,video);
+            if(ret!=pic_w) break;
+          line+=frame_w;
         }
         /* now get Cb plane*/
-        line=yuvframe[i]+(video_x*video_y)
-          +(video_x/2)*(frame_y_offset/2)+frame_x_offset/2;
-        for(e=0;e<frame_y/2;e++){
-          ret=fread(line,1,frame_x/2,video);
-            if(ret!=frame_x/2) break;
-          line+=video_x/2;
+        line=yuvframe[i]+(frame_w*frame_h)
+          +(frame_w/2)*(pic_y/2)+pic_x/2;
+        for(e=0;e<pic_h/2;e++){
+          ret=fread(line,1,pic_w/2,video);
+            if(ret!=pic_w/2) break;
+          line+=frame_w/2;
         }
         /* and the Cr plane*/
-        line=yuvframe[i]+(video_x*video_y*5/4)
-                  +(video_x/2)*(frame_y_offset/2)+frame_x_offset/2;
-        for(e=0;e<frame_y/2;e++){
-          ret=fread(line,1,frame_x/2,video);
-            if(ret!=frame_x/2) break;
-          line+=video_x/2;
+        line=yuvframe[i]+(frame_w*frame_h*5/4)
+                  +(frame_w/2)*(pic_y/2)+pic_x/2;
+        for(e=0;e<pic_h/2;e++){
+          ret=fread(line,1,pic_w/2,video);
+            if(ret!=pic_w/2) break;
+          line+=frame_w/2;
         }
         state++;
       }
@@ -455,138 +457,138 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       /* Theora is a one-frame-in,one-frame-out system; submit a frame
          for compression and pull out the packet */
 
-      ycbcr[0].width=video_x;
-      ycbcr[0].height=video_y;
-      ycbcr[0].ystride=video_x;
+      ycbcr[0].width=frame_w;
+      ycbcr[0].height=frame_h;
+      ycbcr[0].ystride=frame_w;
       ycbcr[0].data=yuvframe[0];
 
 #if defined(OC_444_MODE)
       {
-        int cboffset=video_x*video_y;
-        int croffset=cboffset+(video_x/2)*(video_y/2);
+        int cboffset=frame_w*frame_h;
+        int croffset=cboffset+(frame_w/2)*(frame_h/2);
         int f;
 
-        ycbcr[1].width=video_x;
-        ycbcr[1].height=video_y;
-        ycbcr[1].ystride=video_x;
+        ycbcr[1].width=frame_w;
+        ycbcr[1].height=frame_h;
+        ycbcr[1].ystride=frame_w;
         ycbcr[1].data=upsamp_uvdata;
 
-        for(e=0;e<video_y/2;e++){
-          for(f=0;f<video_x/2;f++){
-            if(e+1<video_y/2){
-              if(f+1<video_x/2){
-                ycbcr[1].data[e*2*video_x+f*2]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[e*2*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+1>>1);
-                ycbcr[1].data[(e*2+1)*video_x+f*2]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
-                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+
-                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+
-                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f+1]+2>>2);
+        for(e=0;e<frame_h/2;e++){
+          for(f=0;f<frame_w/2;f++){
+            if(e+1<frame_h/2){
+              if(f+1<frame_w/2){
+                ycbcr[1].data[e*2*frame_w+f*2]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[e*2*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+e*(frame_w/2)+f+1]+1>>1);
+                ycbcr[1].data[(e*2+1)*frame_w+f*2]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(frame_w/2)+f]+1>>1);
+                ycbcr[1].data[(e*2+1)*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+e*(frame_w/2)+f+1]+
+                 yuvframe[0][cboffset+(e+1)*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(frame_w/2)+f+1]+2>>2);
               }
               else{
-                ycbcr[1].data[e*2*video_x+f*2]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[e*2*video_x+f*2+1]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[(e*2+1)*video_x+f*2]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
-                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
+                ycbcr[1].data[e*2*frame_w+f*2]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[e*2*frame_w+f*2+1]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[(e*2+1)*frame_w+f*2]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(frame_w/2)+f]+1>>1);
+                ycbcr[1].data[(e*2+1)*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+(e+1)*(frame_w/2)+f]+1>>1);
               }
             }
             else{
-              if(f+1<video_x/2){
-                ycbcr[1].data[e*2*video_x+f*2]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[e*2*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+1>>1);
-                ycbcr[1].data[(e*2+1)*video_x+f*2]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][cboffset+e*(video_x/2)+f]+
-                 yuvframe[0][cboffset+e*(video_x/2)+f+1]+1>>1);
+              if(f+1<frame_w/2){
+                ycbcr[1].data[e*2*frame_w+f*2]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[e*2*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+e*(frame_w/2)+f+1]+1>>1);
+                ycbcr[1].data[(e*2+1)*frame_w+f*2]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[(e*2+1)*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+                 yuvframe[0][cboffset+e*(frame_w/2)+f+1]+1>>1);
               }
               else{
-                ycbcr[1].data[e*2*video_x+f*2]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[e*2*video_x+f*2+1]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[(e*2+1)*video_x+f*2]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
-                ycbcr[1].data[(e*2+1)*video_x+f*2+1]=
-                 yuvframe[0][cboffset+e*(video_x/2)+f];
+                ycbcr[1].data[e*2*frame_w+f*2]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[e*2*frame_w+f*2+1]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[(e*2+1)*frame_w+f*2]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
+                ycbcr[1].data[(e*2+1)*frame_w+f*2+1]=
+                 yuvframe[0][cboffset+e*(frame_w/2)+f];
               }
             }
           }
         }
 
-        ycbcr[2].width=video_x;
-        ycbcr[2].height=video_y;
-        ycbcr[2].ystride=video_x;
-        ycbcr[2].data=upsamp_uvdata+video_x*video_y;
+        ycbcr[2].width=frame_w;
+        ycbcr[2].height=frame_h;
+        ycbcr[2].ystride=frame_w;
+        ycbcr[2].data=upsamp_uvdata+frame_w*frame_h;
 
-        for(e=0;e<video_y/2;e++){
-          for(f=0;f<video_x/2;f++){
-            if(e+1<video_y/2){
-              if(f+1<video_x/2){
-                ycbcr[2].data[e*2*video_x+f*2]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[e*2*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+e*(video_x/2)+f+1]+1>>1);
-                ycbcr[2].data[(e*2+1)*video_x+f*2]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
-                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+e*(video_x/2)+f+1]+
-                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+
-                 yuvframe[0][croffset+(e+1)*(video_x/2)+f+1]+2>>2);
+        for(e=0;e<frame_h/2;e++){
+          for(f=0;f<frame_w/2;f++){
+            if(e+1<frame_h/2){
+              if(f+1<frame_w/2){
+                ycbcr[2].data[e*2*frame_w+f*2]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[e*2*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+e*(frame_w/2)+f+1]+1>>1);
+                ycbcr[2].data[(e*2+1)*frame_w+f*2]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(frame_w/2)+f]+1>>1);
+                ycbcr[2].data[(e*2+1)*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+e*(frame_w/2)+f+1]+
+                 yuvframe[0][croffset+(e+1)*(frame_w/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(frame_w/2)+f+1]+2>>2);
               }
               else{
-                ycbcr[2].data[e*2*video_x+f*2]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[e*2*video_x+f*2+1]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[(e*2+1)*video_x+f*2]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
-                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
+                ycbcr[2].data[e*2*frame_w+f*2]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[e*2*frame_w+f*2+1]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[(e*2+1)*frame_w+f*2]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(frame_w/2)+f]+1>>1);
+                ycbcr[2].data[(e*2+1)*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+(e+1)*(frame_w/2)+f]+1>>1);
               }
             }
             else{
-              if(f+1<video_x/2){
-                ycbcr[2].data[e*2*video_x+f*2]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[e*2*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+e*(video_x/2)+f+1]+1>>1);
-                ycbcr[2].data[(e*2+1)*video_x+f*2]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=(unsigned char)
-                 (yuvframe[0][croffset+e*(video_x/2)+f]+
-                 yuvframe[0][croffset+e*(video_x/2)+f+1]+1>>1);
+              if(f+1<frame_w/2){
+                ycbcr[2].data[e*2*frame_w+f*2]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[e*2*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+e*(frame_w/2)+f+1]+1>>1);
+                ycbcr[2].data[(e*2+1)*frame_w+f*2]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[(e*2+1)*frame_w+f*2+1]=(unsigned char)
+                 (yuvframe[0][croffset+e*(frame_w/2)+f]+
+                 yuvframe[0][croffset+e*(frame_w/2)+f+1]+1>>1);
               }
               else{
-                ycbcr[2].data[e*2*video_x+f*2]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[e*2*video_x+f*2+1]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[(e*2+1)*video_x+f*2]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
-                ycbcr[2].data[(e*2+1)*video_x+f*2+1]=
-                 yuvframe[0][croffset+e*(video_x/2)+f];
+                ycbcr[2].data[e*2*frame_w+f*2]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[e*2*frame_w+f*2+1]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[(e*2+1)*frame_w+f*2]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
+                ycbcr[2].data[(e*2+1)*frame_w+f*2+1]=
+                 yuvframe[0][croffset+e*(frame_w/2)+f];
               }
             }
           }
@@ -594,66 +596,66 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       }
 #elif defined(OC_422_MODE)
       {
-        int cboffset=video_x*video_y;
-        int croffset=cboffset+(video_x/2)*(video_y/2);
+        int cboffset=frame_w*frame_h;
+        int croffset=cboffset+(frame_w/2)*(frame_h/2);
         int f;
 
-        ycbcr[1].width=video_x/2;
-        ycbcr[1].height=video_y;
-        ycbcr[1].ystride=video_x/2;
+        ycbcr[1].width=frame_w/2;
+        ycbcr[1].height=frame_h;
+        ycbcr[1].ystride=frame_w/2;
         ycbcr[1].data=upsamp_uvdata;
 
-        for(e=0;e<video_y/2;e++){
-          for(f=0;f<video_x/2;f++){
-            if(e+1<video_y/2){
-              ycbcr[1].data[e*2*(video_x/2)+f]=
-               yuvframe[0][cboffset+e*(video_x/2)+f];
-              ycbcr[1].data[(e*2+1)*(video_x/2)+f]=(unsigned char)
-               (yuvframe[0][cboffset+e*(video_x/2)+f]+
-               yuvframe[0][cboffset+(e+1)*(video_x/2)+f]+1>>1);
+        for(e=0;e<frame_h/2;e++){
+          for(f=0;f<frame_w/2;f++){
+            if(e+1<frame_h/2){
+              ycbcr[1].data[e*2*(frame_w/2)+f]=
+               yuvframe[0][cboffset+e*(frame_w/2)+f];
+              ycbcr[1].data[(e*2+1)*(frame_w/2)+f]=(unsigned char)
+               (yuvframe[0][cboffset+e*(frame_w/2)+f]+
+               yuvframe[0][cboffset+(e+1)*(frame_w/2)+f]+1>>1);
             }
             else{
-              ycbcr[1].data[e*2*(video_x/2)+f]=
-               yuvframe[0][cboffset+e*(video_x/2)+f];
-              ycbcr[1].data[(e*2+1)*(video_x/2)+f]=
-               yuvframe[0][cboffset+e*(video_x/2)+f];
+              ycbcr[1].data[e*2*(frame_w/2)+f]=
+               yuvframe[0][cboffset+e*(frame_w/2)+f];
+              ycbcr[1].data[(e*2+1)*(frame_w/2)+f]=
+               yuvframe[0][cboffset+e*(frame_w/2)+f];
             }
           }
         }
 
-        ycbcr[2].width=video_x/2;
-        ycbcr[2].height=video_y;
-        ycbcr[2].ystride=video_x/2;
-        ycbcr[2].data=upsamp_uvdata+video_y*(video_x/2);
+        ycbcr[2].width=frame_w/2;
+        ycbcr[2].height=frame_h;
+        ycbcr[2].ystride=frame_w/2;
+        ycbcr[2].data=upsamp_uvdata+frame_h*(frame_w/2);
 
-        for(e=0;e<video_y/2;e++){
-          for(f=0;f<video_x/2;f++){
-            if(e+1<video_y/2){
-              ycbcr[2].data[e*2*(video_x/2)+f]=
-               yuvframe[0][croffset+e*(video_x/2)+f];
-              ycbcr[2].data[(e*2+1)*(video_x/2)+f]=(unsigned char)
-               (yuvframe[0][croffset+e*(video_x/2)+f]+
-               yuvframe[0][croffset+(e+1)*(video_x/2)+f]+1>>1);
+        for(e=0;e<frame_h/2;e++){
+          for(f=0;f<frame_w/2;f++){
+            if(e+1<frame_h/2){
+              ycbcr[2].data[e*2*(frame_w/2)+f]=
+               yuvframe[0][croffset+e*(frame_w/2)+f];
+              ycbcr[2].data[(e*2+1)*(frame_w/2)+f]=(unsigned char)
+               (yuvframe[0][croffset+e*(frame_w/2)+f]+
+               yuvframe[0][croffset+(e+1)*(frame_w/2)+f]+1>>1);
             }
             else{
-              ycbcr[2].data[e*2*(video_x/2)+f]=
-               yuvframe[0][croffset+e*(video_x/2)+f];
-              ycbcr[2].data[(e*2+1)*(video_x/2)+f]=
-               yuvframe[0][croffset+e*(video_x/2)+f];
+              ycbcr[2].data[e*2*(frame_w/2)+f]=
+               yuvframe[0][croffset+e*(frame_w/2)+f];
+              ycbcr[2].data[(e*2+1)*(frame_w/2)+f]=
+               yuvframe[0][croffset+e*(frame_w/2)+f];
             }
           }
         }
       }
 #else
-      ycbcr[1].width=video_x/2;
-      ycbcr[1].height=video_y/2;
-      ycbcr[1].ystride=video_x/2;
-      ycbcr[1].data=yuvframe[0]+video_x*video_y;
+      ycbcr[1].width=frame_w/2;
+      ycbcr[1].height=frame_h/2;
+      ycbcr[1].ystride=frame_w/2;
+      ycbcr[1].data=yuvframe[0]+frame_w*frame_h;
 
-      ycbcr[2].width=video_x/2;
-      ycbcr[2].height=video_y/2;
-      ycbcr[2].ystride=video_x/2;
-      ycbcr[2].data=yuvframe[0]+video_x*video_y*5/4;
+      ycbcr[2].width=frame_w/2;
+      ycbcr[2].height=frame_h/2;
+      ycbcr[2].ystride=frame_w/2;
+      ycbcr[2].data=yuvframe[0]+frame_w*frame_h*5/4;
 #endif
 
       theora_encode_ycbcr_in(td,ycbcr);
@@ -799,20 +801,20 @@ int main(int argc,char *argv[]){
     fprintf(stderr,"No video files submitted for compression?\n");
     exit(1);
   }
-  /* Theora has a divisible-by-sixteen restriction for the encoded video size */
-  /* scale the frame size up to the nearest /16 and calculate offsets */
-  video_x=((frame_x + 15) >>4)<<4;
-  video_y=((frame_y + 15) >>4)<<4;
-  frame_x_offset=(video_x-frame_x)/2;
-  frame_y_offset=(video_y-frame_y)/2;
+  /* Theora has a divisible-by-sixteen restriction for the encoded frame size */
+  /* scale the picture size up to the nearest /16 and calculate offsets */
+  frame_w=pic_w+15&~0xF;
+  frame_h=pic_h+15&~0xF;
+  pic_x=frame_w-pic_w>>1&~1;
+  pic_y=frame_h-pic_h>>1&~1;
 
   theora_info_init(&ti);
-  ti.width=video_x;
-  ti.height=video_y;
-  ti.frame_width=frame_x;
-  ti.frame_height=frame_y;
-  ti.offset_x=frame_x_offset;
-  ti.offset_y=frame_y_offset;
+  ti.frame_width=frame_w;
+  ti.frame_height=frame_h;
+  ti.pic_width=pic_w;
+  ti.pic_height=pic_h;
+  ti.pic_x=pic_x;
+  ti.pic_y=pic_y;
   ti.fps_numerator=video_hzn;
   ti.fps_denominator=video_hzd;
   ti.aspect_numerator=video_an;

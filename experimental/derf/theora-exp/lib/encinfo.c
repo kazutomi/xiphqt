@@ -31,13 +31,13 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       oggpackB_write(&_enc->opb,OC_VERSION_MINOR,8);
       oggpackB_write(&_enc->opb,OC_VERSION_SUB,8);
       /*Describe the encoded frame.*/
-      oggpackB_write(&_enc->opb,_enc->state.info.width>>4,16);
-      oggpackB_write(&_enc->opb,_enc->state.info.height>>4,16);
-      oggpackB_write(&_enc->opb,_enc->state.info.frame_width,24);
-      oggpackB_write(&_enc->opb,_enc->state.info.frame_height,24);
-      oggpackB_write(&_enc->opb,_enc->state.info.offset_x,8);
-      oggpackB_write(&_enc->opb,_enc->state.info.height-
-       _enc->state.info.frame_height-_enc->state.info.offset_y,8);
+      oggpackB_write(&_enc->opb,_enc->state.info.frame_width>>4,16);
+      oggpackB_write(&_enc->opb,_enc->state.info.frame_height>>4,16);
+      oggpackB_write(&_enc->opb,_enc->state.info.pic_width,24);
+      oggpackB_write(&_enc->opb,_enc->state.info.pic_height,24);
+      oggpackB_write(&_enc->opb,_enc->state.info.pic_x,8);
+      oggpackB_write(&_enc->opb,_enc->state.info.frame_height-
+       _enc->state.info.pic_height-_enc->state.info.pic_y,8);
       oggpackB_write(&_enc->opb,_enc->state.info.fps_numerator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.fps_denominator,32);
       oggpackB_write(&_enc->opb,_enc->state.info.aspect_numerator,24);

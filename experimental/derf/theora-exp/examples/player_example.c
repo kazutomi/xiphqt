@@ -303,14 +303,14 @@ static void open_video(void){
     exit(1);
   }
 
-  screen = SDL_SetVideoMode(ti.frame_width, ti.frame_height, 0, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(ti.pic_width, ti.pic_height, 0, SDL_SWSURFACE);
   if ( screen == NULL ) {
     fprintf(stderr, "Unable to set %dx%d video: %s\n",
-            ti.frame_width,ti.frame_height,SDL_GetError());
+            ti.pic_width,ti.pic_height,SDL_GetError());
     exit(1);
   }
 
-  yuv_overlay = SDL_CreateYUVOverlay(ti.frame_width, ti.frame_height,
+  yuv_overlay = SDL_CreateYUVOverlay(ti.pic_width, ti.pic_height,
                                      SDL_YV12_OVERLAY,
                                      screen);
   if ( yuv_overlay == NULL ) {
@@ -320,8 +320,8 @@ static void open_video(void){
   }
   rect.x = 0;
   rect.y = 0;
-  rect.w = ti.frame_width;
-  rect.h = ti.frame_height;
+  rect.w = ti.pic_width;
+  rect.h = ti.pic_height;
 
   SDL_DisplayYUVOverlay(yuv_overlay, &rect);
 }
@@ -349,9 +349,9 @@ static void video_write(void){
   for (pli = 0; pli < 3; pli++) {
     wscale = ycbcr[0].width / ycbcr[pli].width;
     hscale = ycbcr[0].height / ycbcr[pli].height;
-    crop_offset = (ti.offset_x / wscale)
+    crop_offset = (ti.pic_x / wscale)
                 + (ycbcr[pli].ystride)
-                * (ti.offset_y / hscale);
+                * (ti.pic_y / hscale);
     for(i=0;i<yuv_overlay->h / hscale;i++)
       memcpy(yuv_overlay->pixels[planemap[pli]]
                       + yuv_overlay->pitches[planemap[pli]]*i,
@@ -570,11 +570,11 @@ int main(int argc,char *argv[]){
   if(theora_p){
     td=theora_decode_alloc(&ti,ts);
     printf("Ogg logical stream %x is Theora %dx%d %.02f fps video\n",
-           to.serialno,ti.width,ti.height, 
+           to.serialno,ti.frame_width,ti.frame_height, 
            (double)ti.fps_numerator/ti.fps_denominator);
-    if(ti.width!=ti.frame_width || ti.height!=ti.frame_height)
+    if(ti.frame_width!=ti.pic_width || ti.frame_height!=ti.pic_height)
       printf("  Frame content is %dx%d with offset (%d,%d).\n",
-           ti.frame_width, ti.frame_height, ti.offset_x, ti.offset_y);
+           ti.pic_width, ti.pic_height, ti.pic_x, ti.pic_y);
     report_colorspace(&ti);
     dump_comments(&tc);
     theora_decoder_ctl(td,OC_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,

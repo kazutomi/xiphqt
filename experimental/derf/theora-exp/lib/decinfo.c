@@ -43,26 +43,28 @@ static int oc_info_unpack(oggpack_buffer *_opb,theora_info *_info){
   }
   /*Read the encoded frame description.*/
   theora_read(_opb,16,&val);
-  _info->width=(ogg_uint32_t)val<<4;
+  _info->frame_width=(ogg_uint32_t)val<<4;
   theora_read(_opb,16,&val);
-  _info->height=(ogg_uint32_t)val<<4;
+  _info->frame_height=(ogg_uint32_t)val<<4;
   theora_read(_opb,24,&val);
-  _info->frame_width=(ogg_uint32_t)val;
+  _info->pic_width=(ogg_uint32_t)val;
   theora_read(_opb,24,&val);
-  _info->frame_height=(ogg_uint32_t)val;
+  _info->pic_height=(ogg_uint32_t)val;
   theora_read(_opb,8,&val);
-  _info->offset_x=(ogg_uint32_t)val;
-  /*Note: The sense of offset_y is inverted in what we pass back to the
-     application compared to how it is stored in the bitstream.*/
+  _info->pic_x=(ogg_uint32_t)val;
+  /*Note: The sense of pic_y is inverted in what we pass back to the
+     application compared to how it is stored in the bitstream.
+    This is because the bitstream uses a right-handed coordinate system, while
+     applications expect a left-handed one.*/
   theora_read(_opb,8,&val);
-  _info->offset_y=_info->height-_info->frame_height-(ogg_uint32_t)val;
+  _info->pic_y=_info->frame_height-_info->pic_height-(ogg_uint32_t)val;
   theora_read32(_opb,&val);
   _info->fps_numerator=(ogg_uint32_t)val;
   theora_read32(_opb,&val);
   _info->fps_denominator=(ogg_uint32_t)val;
-  if(_info->width<=0||_info->height<=0||
-   _info->frame_width+_info->offset_x>_info->width||
-   _info->frame_height+_info->offset_y>_info->height||
+  if(_info->frame_width<=0||_info->frame_height<=0||
+   _info->pic_width+_info->pic_x>_info->frame_width||
+   _info->pic_height+_info->pic_y>_info->frame_height||
    _info->fps_numerator<=0||_info->fps_denominator<=0){
     return OC_BADHEADER;
   }
@@ -136,7 +138,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
   packtype=(int)val;
   /*If we're at a data packet and we have received all three headers, we're
      done.*/
-  if(!(packtype&0x80)&&_info->width>0&&_tc->vendor!=NULL&&*_setup!=NULL){
+  if(!(packtype&0x80)&&_info->frame_width>0&&_tc->vendor!=NULL&&*_setup!=NULL){
     return 0;
   }
   /*Check the codec string.*/
@@ -147,7 +149,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
     case 0x80:{
       /*This should be the first packet, and we should not already be
          initialized.*/
-      if(!_op->b_o_s||_info->width>0)return OC_BADHEADER;
+      if(!_op->b_o_s||_info->frame_width>0)return OC_BADHEADER;
       ret=oc_info_unpack(_opb,_info);
       if(ret<0)theora_info_clear(_info);
       else ret=3;
@@ -157,7 +159,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
       if(_tc==NULL)return OC_FAULT;
       /*We shoud have already decoded the info header, and should not yet have
          decoded the comment header.*/
-      if(_info->width<=0||_tc->vendor!=NULL)return OC_BADHEADER;
+      if(_info->frame_width<=0||_tc->vendor!=NULL)return OC_BADHEADER;
       ret=oc_comment_unpack(_opb,_tc);
       if(ret<0)theora_comment_clear(_tc);
       else ret=2;
@@ -168,7 +170,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
       if(_tc==NULL||_setup==NULL)return OC_FAULT;
       /*We should have already decoded the info header and the comment header,
          and should not yet have decoded the setup header.*/
-      if(_info->width<=0||_tc->vendor==NULL||*_setup!=NULL){
+      if(_info->frame_width<=0||_tc->vendor==NULL||*_setup!=NULL){
         return OC_BADHEADER;
       }
       setup=(oc_setup_info *)_ogg_calloc(1,sizeof(*setup));

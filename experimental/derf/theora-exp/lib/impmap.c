@@ -357,10 +357,10 @@ struct oc_impmap_ctx{
   float                              inv_edge_sz_max;
   /*The horizontal offset used to convert from image buffer coordinates to
      label buffer coordinates.*/
-  int                                offset_x;
+  int                                pic_x;
   /*The vertical offset used to convert from image buffer coordinates to label
      buffer coordinates.*/
-  int                                offset_y;
+  int                                pic_y;
   /*The boundaries of each of the three piecewise sections of the importance
      function for motion, pre-adjusted to half-pixels/frame.*/
   float                              mot_limits[4];
@@ -2064,8 +2064,8 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
      emb->mvs[0][OC_FRAME_PREV][1]);
     iregions=_impmap->regions;
     labels=_impmap->seg.labels;
-    x0=mb->x-_impmap->offset_x;
-    y0=mb->y-_impmap->offset_y;
+    x0=mb->x-_impmap->pic_x;
+    y0=mb->y-_impmap->pic_y;
     for(i=0;i<4;i++){
       oc_fragment          *frag;
       oc_fragment_enc_info *efrag;
@@ -2114,15 +2114,15 @@ oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
   int            width;
   int            height;
   info=&_enc->state.info;
-  width=info->frame_width;
-  height=info->frame_height;
+  width=info->pic_width;
+  height=info->pic_height;
   impmap=(oc_impmap_ctx *)_ogg_malloc(sizeof(*impmap));
   oc_seg_init(&impmap->seg,width,height);
   impmap->inv_region_sz_max=100.0F/(width*height);
   edge_sz=width>1?height>1?(width-2<<1)+(height<<1):width:height;
   impmap->inv_edge_sz_max=2.0F/edge_sz;
-  impmap->offset_x=info->offset_x;
-  impmap->offset_y=info->offset_y;
+  impmap->pic_x=info->pic_x;
+  impmap->pic_y=info->pic_y;
   impmap->imp_avg=0.5F;
   /*Allocate space for the region stats and neighbor links.*/
   impmap->regions=(oc_impmap_region *)_ogg_malloc(
@@ -2151,10 +2151,10 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   /*TODO: Use the same oc_border_info structure as everyone else.
     This would make future integration of an alpha mask easier.*/
   img_offset=_impmap->enc->state.input[0].ystride*
-   _impmap->enc->state.info.offset_y+_impmap->enc->state.info.offset_x;
+   _impmap->enc->state.info.pic_y+_impmap->enc->state.info.pic_x;
   yplane.data=_impmap->enc->state.input[0].data+img_offset;
-  yplane.width=_impmap->enc->state.info.frame_width;
-  yplane.height=_impmap->enc->state.info.frame_height;
+  yplane.width=_impmap->enc->state.info.pic_width;
+  yplane.height=_impmap->enc->state.info.pic_height;
   yplane.ystride=_impmap->enc->state.input[0].ystride;
   oc_seg_plane(&_impmap->seg,&yplane);
   /*Gather statistics over the segmentation.*/

@@ -1627,14 +1627,14 @@ static int oc_dec_postprocess(oc_dec_ctx *_dec){
   if(_dec->variances==NULL||
    _dec->pp_frame_has_chroma!=(_dec->pp_level>=OC_PP_LEVEL_DEBLOCKC)){
     size_t frame_sz;
-    frame_sz=_dec->state.info.width*_dec->state.info.height;
+    frame_sz=_dec->state.info.frame_width*_dec->state.info.frame_height;
     if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
       _dec->variances=(ogg_uint32_t *)_ogg_realloc(_dec->variances,
        _dec->state.fplanes[0].nfrags*sizeof(_dec->variances[0]));
       _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
        _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
-      _dec->pp_frame_buf[0].width=_dec->state.info.width;
-      _dec->pp_frame_buf[0].height=_dec->state.info.height;
+      _dec->pp_frame_buf[0].width=_dec->state.info.frame_width;
+      _dec->pp_frame_buf[0].height=_dec->state.info.frame_height;
       _dec->pp_frame_buf[0].ystride=-_dec->pp_frame_buf[0].width;
       _dec->pp_frame_buf[0].data=_dec->pp_frame_data+
        (1-_dec->pp_frame_buf[0].height)*_dec->pp_frame_buf[0].ystride;
@@ -1647,14 +1647,14 @@ static int oc_dec_postprocess(oc_dec_ctx *_dec){
       _dec->variances=(int *)_ogg_realloc(_dec->variances,
        _dec->state.nfrags*sizeof(_dec->variances[0]));
       y_sz=frame_sz;
-      c_w=_dec->state.info.width>>!(_dec->state.info.pixel_fmt&1);
-      c_h=_dec->state.info.height>>!(_dec->state.info.pixel_fmt&2);
+      c_w=_dec->state.info.frame_width>>!(_dec->state.info.pixel_fmt&1);
+      c_h=_dec->state.info.frame_height>>!(_dec->state.info.pixel_fmt&2);
       c_sz=c_w*c_h;
       frame_sz+=c_sz<<1;
       _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
        _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
-      _dec->pp_frame_buf[0].width=_dec->state.info.width;
-      _dec->pp_frame_buf[0].height=_dec->state.info.height;
+      _dec->pp_frame_buf[0].width=_dec->state.info.frame_width;
+      _dec->pp_frame_buf[0].height=_dec->state.info.frame_height;
       _dec->pp_frame_buf[0].ystride=_dec->pp_frame_buf[0].width;
       _dec->pp_frame_buf[0].data=_dec->pp_frame_data;
       _dec->pp_frame_buf[1].width=c_w;
@@ -1772,10 +1772,10 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     _dec->state.ref_frame_idx[OC_FRAME_PREV]=0;
     _dec->state.ref_frame_idx[OC_FRAME_SELF]=1;
     info=&_dec->state.info;
-    yhstride=info->width+2*OC_UMV_PADDING;
-    yvstride=info->height+2*OC_UMV_PADDING;
-    chstride=(info->pixel_fmt&1)?yhstride:yhstride>>1;
-    cvstride=(info->pixel_fmt&2)?yvstride:yvstride>>1;
+    yhstride=info->frame_width+2*OC_UMV_PADDING;
+    yvstride=info->frame_height+2*OC_UMV_PADDING;
+    chstride=yhstride>>!(info->pixel_fmt&1);
+    cvstride=yvstride>>!(info->pixel_fmt&2);
     yplane_sz=(size_t)yhstride*yvstride;
     cplane_sz=(size_t)chstride*cvstride;
     memset(_dec->state.ref_frame_data,0x80,yplane_sz+2*cplane_sz);

@@ -252,8 +252,9 @@ int main(int argc,char *argv[]){
   if(theora_p){
     td=theora_decode_alloc(&ti,ts);
     fprintf(stderr,"Ogg logical stream %x is Theora %dx%d %.02f fps video\nEncoded frame content is %dx%d with %dx%d offset\n",
-            to.serialno,ti.width,ti.height, (double)ti.fps_numerator/ti.fps_denominator,
-            ti.frame_width, ti.frame_height, ti.offset_x, ti.offset_y);
+            to.serialno,ti.frame_width,ti.frame_height,
+            (double)ti.fps_numerator/ti.fps_denominator,
+            ti.pic_width, ti.pic_height, ti.pic_x, ti.pic_y);
   }else{
     /* tear down the partial theora setup */
     theora_info_clear(&ti);

@@ -275,10 +275,10 @@ static void oc_state_border_init(oc_theora_state *_state){
     fplane=_state->fplanes+pli;
     crop=crop_rects+pli;
     /*Set up the cropping rectangle for this plane.*/
-    crop->x0=_state->info.offset_x;
-    crop->xf=_state->info.offset_x+_state->info.frame_width;
-    crop->y0=_state->info.offset_y;
-    crop->yf=_state->info.offset_y+_state->info.frame_height;
+    crop->x0=_state->info.pic_x;
+    crop->xf=_state->info.pic_x+_state->info.pic_width;
+    crop->y0=_state->info.pic_y;
+    crop->yf=_state->info.pic_y+_state->info.pic_height;
     if(pli>0){
       if(!(_state->info.pixel_fmt&1)){
         crop->x0=crop->x0>>1;
@@ -354,13 +354,17 @@ static void oc_state_frarray_init(oc_theora_state *_state){
   int csbs;
   int nsbs;
   int nmbs;
+  int hdec;
+  int vdec;
   int pli;
   /*Figure out the number of fragments in each plane.*/
   /*These parameters have already been validated to be multiples of 16.*/
-  yhfrags=_state->info.width>>3;
-  yvfrags=_state->info.height>>3;
-  chfrags=(_state->info.pixel_fmt&1)?yhfrags:yhfrags+1>>1;
-  cvfrags=(_state->info.pixel_fmt&2)?yvfrags:yvfrags+1>>1;
+  yhfrags=_state->info.frame_width>>3;
+  yvfrags=_state->info.frame_height>>3;
+  hdec=!(_state->info.pixel_fmt&1);
+  vdec=!(_state->info.pixel_fmt&2);
+  chfrags=yhfrags+hdec>>hdec;
+  cvfrags=yvfrags+vdec>>vdec;
   yfrags=yhfrags*yvfrags;
   cfrags=chfrags*cvfrags;
   nfrags=yfrags+2*cfrags;
@@ -445,24 +449,24 @@ static void oc_state_ref_bufs_init(oc_theora_state *_state){
   int            rfi;
   info=&_state->info;
   /*Compute the image buffer parameters for each plane.*/
-  yhstride=info->width+2*OC_UMV_PADDING;
-  yvstride=info->height+2*OC_UMV_PADDING;
-  chstride=(info->pixel_fmt&1)?yhstride:yhstride>>1;
-  cvstride=(info->pixel_fmt&2)?yvstride:yvstride>>1;
+  yhstride=info->frame_width+2*OC_UMV_PADDING;
+  yvstride=info->frame_height+2*OC_UMV_PADDING;
+  chstride=yhstride>>!(info->pixel_fmt&1);
+  cvstride=yvstride>>!(info->pixel_fmt&2);
   yplane_sz=(size_t)yhstride*yvstride;
   cplane_sz=(size_t)chstride*cvstride;
   yoffset=OC_UMV_PADDING+OC_UMV_PADDING*yhstride;
-  coffset=((info->pixel_fmt&1)?OC_UMV_PADDING:OC_UMV_PADDING>>1)+
-   ((info->pixel_fmt&2)?OC_UMV_PADDING:OC_UMV_PADDING>>1)*chstride;
+  coffset=(OC_UMV_PADDING>>!(info->pixel_fmt&1))+
+   (OC_UMV_PADDING>>!(info->pixel_fmt&2))*chstride;
   _state->ref_frame_data=ref_frame_data=_ogg_malloc(3*(yplane_sz+2*cplane_sz));
   /*Set up the width, height and stride for the image buffers.*/
-  _state->ref_frame_bufs[0][0].width=info->width;
-  _state->ref_frame_bufs[0][0].height=info->height;
+  _state->ref_frame_bufs[0][0].width=info->frame_width;
+  _state->ref_frame_bufs[0][0].height=info->frame_height;
   _state->ref_frame_bufs[0][0].ystride=yhstride;
   _state->ref_frame_bufs[0][1].width=_state->ref_frame_bufs[0][2].width=
-   (info->pixel_fmt&1)?info->width:info->width>>1;
+   info->frame_width>>!(info->pixel_fmt&1);
   _state->ref_frame_bufs[0][1].height=_state->ref_frame_bufs[0][2].height=
-   (info->pixel_fmt&2)?info->height:info->height>>1;
+   info->frame_height>>!(info->pixel_fmt&2);
   _state->ref_frame_bufs[0][1].ystride=_state->ref_frame_bufs[0][2].ystride=
    chstride;
   memcpy(_state->ref_frame_bufs[1],_state->ref_frame_bufs[0],
@@ -505,21 +509,21 @@ int oc_state_init(oc_theora_state *_state,const theora_info *_info){
      the bitstream.
     The displayable frame must fit inside the encoded frame.
     The color space must be one known by the encoder.*/
-  if((_info->width&0xF)||(_info->height&0xF)||
-   _info->width>=0x100000||_info->height>=0x100000||
-   _info->offset_x+_info->frame_width>_info->width||
-   _info->offset_y+_info->frame_height>_info->height||
-   _info->offset_x>255||
-   _info->height-_info->frame_height-_info->offset_y>255||
+  if((_info->frame_width&0xF)||(_info->frame_height&0xF)||
+   _info->frame_width>=0x100000||_info->frame_height>=0x100000||
+   _info->pic_x+_info->pic_width>_info->frame_width||
+   _info->pic_y+_info->pic_height>_info->frame_height||
+   _info->pic_x>255||
+   _info->frame_height-_info->pic_height-_info->pic_y>255||
    _info->colorspace<0||_info->colorspace>=OC_CS_NSPACES||
    _info->pixel_fmt<0||_info->pixel_fmt>=OC_PF_NFORMATS){
     return OC_EINVAL;
   }
   memset(_state,0,sizeof(*_state));
   memcpy(&_state->info,_info,sizeof(*_info));
-  /*Invert the sense of offset_y to match Theora's right-handed coordinate
+  /*Invert the sense of pic_y to match Theora's right-handed coordinate
      system.*/
-  _state->info.offset_y=_info->height-_info->frame_height-_info->offset_y;
+  _state->info.pic_y=_info->frame_height-_info->pic_height-_info->pic_y;
   _state->frame_type=OC_UNKWN_FRAME;
   oc_state_frarray_init(_state);
   oc_state_ref_bufs_init(_state);
@@ -973,8 +977,8 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   int            height;
   int            imgi;
   int            imgj;
-  width=_state->info.width;
-  height=_state->info.height;
+  width=_state->info.frame_width;
+  height=_state->info.frame_height;
   iframe=_state->granpos>>_state->info.keyframe_granule_shift;
   pframe=_state->granpos-(iframe<<_state->info.keyframe_granule_shift);
   sprintf(fname,"%08i%s.png",(int)(iframe+pframe),_suf);

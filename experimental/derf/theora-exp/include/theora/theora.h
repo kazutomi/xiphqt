@@ -172,21 +172,24 @@ typedef struct{
   unsigned char      version_major;
   unsigned char      version_minor;
   unsigned char      version_subminor;
-  /*The encoded width: must be a multiple of 16, and less than 1048576.*/
-  ogg_uint32_t       width;
-  /*The encoded height: must be a multiple of 16, and less than 1048576.*/
-  ogg_uint32_t       height;
-  /*The displayed width: must be no larger than width.*/
+  /*The encoded frame width: must be a multiple of 16, and less than 1048576.*/
   ogg_uint32_t       frame_width;
-  /*The displayed height: must be no larger than height.*/
+  /*The encoded frame height: must be a multiple of 16, and less than
+     1048576.*/
   ogg_uint32_t       frame_height;
-  /*The x offset of the displayed frame: must be no larger than
-     width-frame_width or 255, whichever is smaller.*/
-  ogg_uint32_t       offset_x;
-  /*The y offset of the displayed frame: must be no larger than
-     height-frame_height, and height-frame_height-offset_y must be no larger
-     than 255.*/
-  ogg_uint32_t       offset_y;
+  /*The displayed picture width: must be no larger than width.*/
+  ogg_uint32_t       pic_width;
+  /*The displayed picture height: must be no larger than height.*/
+  ogg_uint32_t       pic_height;
+  /*The x offset of the displayed picture: must be no larger than
+     frame_width-pic_width or 255, whichever is smaller.*/
+  ogg_uint32_t       pic_x;
+  /*The y offset of the displayed picture: must be no larger than
+     frame_height-pic_height, and frame_height-pic_height-pic_y must be no
+     larger than 255.
+    This offset is specified from the top of the image, as this API uses the
+     standard graphics left-handed coordinate system.*/
+  ogg_uint32_t       pic_y;
   /*The frame rate, as a fraction.
     If either is 0, the frame rate is undefined.*/
   ogg_uint32_t       fps_numerator;

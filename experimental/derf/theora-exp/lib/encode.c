@@ -2582,13 +2582,13 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
   /*Step 1: validate parameters.*/
   if(_enc==NULL||_img==NULL)return OC_FAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return OC_EINVAL;
-  if(_img[0].width!=(int)_enc->state.info.width||
-   _img[0].height!=(int)_enc->state.info.height){
+  if(_img[0].width!=(int)_enc->state.info.frame_width||
+   _img[0].height!=(int)_enc->state.info.frame_height){
     return OC_EINVAL;
   }
-  cwidth=_enc->state.info.width;
+  cwidth=_enc->state.info.frame_width;
   if(!(_enc->state.info.pixel_fmt&1))cwidth>>=1;
-  cheight=_enc->state.info.height;
+  cheight=_enc->state.info.frame_height;
   if(!(_enc->state.info.pixel_fmt&2))cheight>>=1;
   if(_img[1].width!=cwidth||_img[2].width!=cwidth||
    _img[1].height!=cheight||_img[2].height!=cheight){
