@@ -10,6 +10,9 @@ MODE_LAP = 8
 FORMAT_INT = 0
 FORMAT_FLOAT = 1
 
+class VorbisFileHoleError(StandardError):
+    pass
+
 class VorbisFile(object):
     def __init__(self):
         self.vf = None
@@ -116,6 +119,8 @@ class VorbisFile(object):
             real_num = num * wordsize * 2 # FIXME: get number channels
             samps, data, cs = ov_read(self.vf, real_num, bendian,
                                       wordsize, signed)
+            if samps < 0:
+                raise VorbisFileHoleError, "vorbisfile error %d" % samps
             return data, cs
         else:
             raise StandardError, "Unknown format requested"
