@@ -2516,7 +2516,10 @@ theora_enc_ctx *theora_encode_alloc(const theora_info *_info){
   oc_enc_ctx *enc;
   if(_info==NULL)return NULL;
   enc=_ogg_malloc(sizeof(*enc));
-  oc_enc_init(enc,_info);
+  if(oc_enc_init(enc,_info)<0){
+    _ogg_free(enc);
+    return NULL;
+  }
   return enc;
 }
 

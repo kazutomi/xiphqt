@@ -176,12 +176,14 @@ static int oc_block_run_unpack(oggpack_buffer *_opb){
 
 
 
-static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
+static int oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
  const theora_setup_info *_setup){
   int qti;
   int pli;
   int qi;
-  oc_state_init(&_dec->state,_info);
+  int ret;
+  ret=oc_state_init(&_dec->state,_info);
+  if(ret<0)return ret;
   oc_huff_trees_copy(_dec->huff_tables,_setup->huff_tables);
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
     _dec->state.dequant_tables[qti][pli]=
@@ -212,6 +214,7 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
   _dec->pp_frame_data=NULL;
   _dec->stripe_cb.ctx=NULL;
   _dec->stripe_cb.stripe_decoded=NULL;
+  return 0;
 }
 
 static void oc_dec_clear(oc_dec_ctx *_dec){
@@ -1821,7 +1824,10 @@ theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
   oc_dec_ctx *dec;
   if(_info==NULL||_setup==NULL)return NULL;
   dec=_ogg_malloc(sizeof(*dec));
-  oc_dec_init(dec,_info,_setup);
+  if(oc_dec_init(dec,_info,_setup)<0){
+    _ogg_free(dec);
+    return NULL;
+  }
   dec->state.curframe_num=0;
   return dec;
 }
