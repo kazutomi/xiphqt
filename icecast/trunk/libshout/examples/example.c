@@ -1,4 +1,6 @@
-/* example.c: Demonstration of the libshout API. */
+/* example.c: Demonstration of the libshout API.
+ * $Id$
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
