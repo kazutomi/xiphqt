@@ -427,6 +427,10 @@ py_comment_subscript(py_vcomment *self,
     int vallen = strlen(res);
 #if PY_UNICODE
     item = PyUnicode_DecodeUTF8(res, vallen, NULL);
+    if (!item) {
+      /* To deal with non-UTF8 comments (against the standard) */
+      item = PyString_FromStringAndSize(res, vallen); 
+    }
 #else
     item = PyString_FromStringAndSize(res, vallen);
 #endif
@@ -560,9 +564,11 @@ py_comment_items(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
-  retlist = PyList_New(0);
   dict = py_comment_as_dict(self, NULL);
+  if (!dict)
+    return NULL;
 
+  retlist = PyList_New(0);
   curitem = curpos = 0;
 
   while (PyDict_Next(dict, &curitem, &key, &val) > 0) {
@@ -727,6 +733,10 @@ py_comment_as_dict(PyObject *self, PyObject *args)
       
 #if PY_UNICODE
       item = PyUnicode_DecodeUTF8(val, vallen, NULL);
+      if (!item) {
+        /* To deal with non-UTF8 comments (against the standard) */
+        item = PyString_FromStringAndSize(val, vallen); 
+      } 
 #else
       item = PyString_FromStringAndSize(val, vallen);
 #endif
