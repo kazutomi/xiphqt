@@ -47,7 +47,7 @@ SOURCE_OBJS =
 INCLUDES = \
 	-I/usr/X11R6/include \
 	-I/usr/X11R6/include \
-	-I/home/jack/download/rmasdk_6_0/include \
+	-I/home/jack/src/rmasdk_6_0/include \
 	-I.. \
 	-I./pub
 
