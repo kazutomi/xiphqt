@@ -23,7 +23,8 @@
 
 extern int declip_load(void);
 extern int declip_setblock(int n);
-extern int declip_setactive(int activep,int ch);
 extern int declip_settrigger(double trigger,int ch);
+extern int declip_setiterations(double x);
+extern int declip_setconvergence(double x);
 extern int declip_reset(void);
 extern time_linkage *declip_read(time_linkage *in);
