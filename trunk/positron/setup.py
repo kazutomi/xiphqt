@@ -30,7 +30,7 @@ manpages    = ['doc/positron.1.gz']
 examfiles   = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
-      version="1.0",
+      version="1.1",
       description="A synchronization manager for the Neuros Audio Computer",
       long_description="positron is the synchronization manager for the Neuros Audio Computer.\nIt supports adding, removing, and syncing files to/from the Neuros\ndevice.",
       license="BSD",
