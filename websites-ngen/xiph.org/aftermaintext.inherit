@@ -7,12 +7,17 @@
 	<a href='/donate/'
 	   title='Give us money'>Donate</a> |
 	-->
+	<a href='/map/'
+	   title='See a bird’s-eye view of the site'>Map</a> |
+	
 	<a href='/contribute/'
 	   title='See how you can help us out'>Contribute</a> |
+	<!--
 	<a href='/codecs/'
 	   title='Our multimedia codecs'>Codecs</a> |
 	<a href='/tools/'
 	   title='Tools we’ve written'>Tools</a> |
+	-->
 	<a href='/lists/'
 	   title='Read or subscribe to one of our mailing lists'>Mail</a> |
 	<a href='/subversion/'

@@ -2,7 +2,10 @@ AddDefaultCharset UTF-8
 DirectoryIndex index.html index.markdown index.txt
 
 # good guess, but not good enough
-Redirect permanent /svn/ http://www.xiph.org/subversion/ 
+RedirectMatch permanent ^/svn/?$				/subversion/ 
+RedirectMatch permanent ^/help/?$				/contribute/ 
+RedirectMatch permanent ^/speex/licence/?$		/speex/license/
+RedirectMatch permanent ^/speex/doc/?$			/speex/documentation/
 
 ErrorDocument 404 /Error/404/
 ErrorDocument 410 /Error/410/

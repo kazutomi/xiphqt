@@ -7,12 +7,13 @@ applications by providing a free alternative to expensive proprietary speech cod
 Moreover, Speex is well-adapted to Internet applications and provides useful features that
 are not present in most other codecs.
 Finally, Speex is part of the [<abbr title='GNU’s Not Unix'>GNU</abbr> Project][gnu]
-and is available under the [Xiph.org variant of the BSD license][xiph-bsd].
+and is available under the terms of the [BSD license][license].
 
 	[osfs]:		./osfs/
 	[gnu]:		http://www.gnu.org/
-	[xiph-bsd]:	/licenses/bsd/
-	
+	[license]:	./license/
+
+
 ## The Technology
 
 Speex is based on <abbr title='Code-Excited Linear Prediction'>CELP</abbr> and is designed

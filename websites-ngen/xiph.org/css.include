@@ -1,3 +1,7 @@
 	<style type='text/css'>
 		@import url(/CSS/sidebars/captionedbuttons.css);
+		img.logo {
+			float: right;
+			padding: 0 0 .5em .1em;
+		}
 	</style>

@@ -1,4 +1,4 @@
-﻿<img alt='' src='/Images/logos/xiph.gif' style='float: right;'>
+﻿<img alt='' src='/Images/logos/xiph.gif' class='logo'>
 
 
 Welcome to Xiph.Org!
