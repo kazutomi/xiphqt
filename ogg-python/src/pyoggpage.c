@@ -17,6 +17,9 @@ FDEF(ogg_page_eos) "Tell whether this page is the end of a stream.";
 FDEF(ogg_page_version) "Return the stream version";
 FDEF(ogg_page_serialno) "Return the serial number of the page";
 FDEF(ogg_page_pageno) "Return the page number of the page";
+FDEF(ogg_page_continued) "Return whether this page contains data continued from the previous page.";
+FDEF(ogg_page_bos) "Return whether this page is the beginning of a logical bistream.";
+FDEF(ogg_page_granulepos) "Return the granular position of the data contained in this page.";
 
 PyTypeObject py_ogg_page_type = {
   PyObject_HEAD_INIT(&PyType_Type)
@@ -58,6 +61,12 @@ static PyMethodDef py_ogg_page_methods[] = {
    METH_VARARGS, py_ogg_page_serialno_doc},
   {"pageno", py_ogg_page_pageno,
    METH_VARARGS, py_ogg_page_pageno_doc},
+  {"continued", py_ogg_page_continued,
+   METH_VARARGS, py_ogg_page_continued_doc},
+  {"bos", py_ogg_page_bos,
+   METH_VARARGS, py_ogg_page_bos_doc},
+  {"granulepos", py_ogg_page_granulepos,
+   METH_VARARGS, py_ogg_page_granulepos_doc},
   {NULL, NULL}
 };
 
@@ -129,3 +138,22 @@ py_ogg_page_pageno(PyObject *self, PyObject *args)
 {
   return PyLong_FromLong(ogg_page_pageno(PY_OGG_PAGE(self)));
 }
+
+static PyObject *
+py_ogg_page_continued(PyObject *self, PyObject *args) 
+{
+  return PyInt_FromLong(ogg_page_continued(PY_OGG_PAGE(self)));
+}
+
+static PyObject *
+py_ogg_page_bos(PyObject *self, PyObject *args) 
+{
+  return PyInt_FromLong(ogg_page_bos(PY_OGG_PAGE(self)));
+}
+
+static PyObject *
+py_ogg_page_granulepos(PyObject *self, PyObject *args) 
+{
+  return PyLong_FromLong(ogg_page_granulepos(PY_OGG_PAGE(self)));
+}
+

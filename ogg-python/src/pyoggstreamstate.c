@@ -15,9 +15,10 @@ static void py_ogg_stream_state_dealloc(py_ogg_stream_state *);
 static PyObject* py_ogg_stream_state_getattr(PyObject *, char *);
 
 FDEF(ogg_stream_packetin) "Add a packet to the stream.";
+FDEF(ogg_stream_clear) "Clear the contents of the stream state.";
 FDEF(ogg_stream_flush) "Produce an ogg page suitable for writing to output.";
-FDEF(ogg_stream_eos) "Not quite sure what it does!!"; /* FIXME */
-FDEF(ogg_stream_pageout) "Not quite sure what it does!!"; /* FIXME */
+FDEF(ogg_stream_eos) "Return whether the end of the stream is reached.";
+FDEF(ogg_stream_pageout) "Extract and return an OggPage.";
 FDEF(ogg_stream_reset) "Reset the stream state";
 FDEF(ogg_stream_pagein) "Write a page to the stream";
 FDEF(ogg_stream_packetout) "Extract a packet from the stream";
@@ -52,6 +53,8 @@ PyTypeObject py_ogg_stream_state_type = {
 };
 
 static PyMethodDef py_ogg_stream_state_methods[] = {
+  {"clear", py_ogg_stream_clear,
+   METH_VARARGS, py_ogg_stream_clear_doc},
   {"packetin", py_ogg_stream_packetin,
    METH_VARARGS, py_ogg_stream_packetin_doc},
   {"flush", py_ogg_stream_flush,
@@ -68,6 +71,7 @@ static PyMethodDef py_ogg_stream_state_methods[] = {
 static void 
 py_ogg_stream_state_dealloc(py_ogg_stream_state *self)
 {
+  ogg_stream_destroy(PY_OGG_STREAM(self));
   PyMem_DEL(self);
 }
 
@@ -97,6 +101,14 @@ py_ogg_stream_state_new(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "i", &serialno))
     return NULL;
   return py_ogg_stream_state_from_serialno(serialno);
+}
+
+static PyObject *
+py_ogg_stream_clear(PyObject *self, PyObject *args) 
+{
+  ogg_stream_clear(PY_OGG_STREAM(self));
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 static PyObject *

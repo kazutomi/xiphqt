@@ -12,6 +12,8 @@ static PyMethodDef Ogg_methods[] = {
    METH_VARARGS, py_ogg_stream_state_doc},
   {"OggPackBuff", py_oggpack_buffer_new,
    METH_VARARGS, py_oggpack_buffer_doc},
+  {"OggSyncState", py_ogg_sync_state_new,
+   METH_VARARGS, py_ogg_sync_state_doc},
   {NULL, NULL}
 };
 

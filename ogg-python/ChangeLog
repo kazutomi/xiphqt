@@ -1,3 +1,12 @@
+3-27-2001 Andrew H. Chatham <andrew.chatham@duke.edu>
+	* src/_oggmodule.c: Added OggSyncState
+
+	* src/pyoggpage.c: Added _continued, _bos, _granulepos
+
+	* src/pyoggstreamstate.c: Added _clear
+
+	* src/pyoggsyncstate.c: Added _pageseek, _clear and constructor
+	
 3-17-2001 Andrew H. Chatham <andrew.chatham@duke.edu>
 	* src/_oggmodule.c: Remove dependency on Vorbis
 
