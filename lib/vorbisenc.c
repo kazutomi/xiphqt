@@ -653,6 +653,7 @@ static void get_setup_template(vorbis_info *vi,
 	  float del=(req-low)/(high-low);
 	  hi->base_setting=j+del;
 	}
+
 	return;
       }
     }
@@ -897,7 +898,7 @@ int vorbis_encode_setup_vbr(vorbis_info *vi,
   codec_setup_info *ci=vi->codec_setup;
   highlevel_encode_setup *hi=&ci->hi;
 
-  quality+=.00001;
+  quality+=.0000001;
   if(quality>=1.)quality=.9999;
 
   get_setup_template(vi,channels,rate,quality,0);

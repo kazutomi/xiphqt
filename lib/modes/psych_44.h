@@ -592,7 +592,7 @@ static adj_stereo _psy_stereo_modes_44[12]={
 
 /* tone master attenuation by base quality mode and bitrate tweak */
 static att3 _psy_tone_masteratt_44[12]={
-  {{ 35,  21,   9},  0, 1.25}, /* -1 */
+  {{ 35,  21,   9},  0,    0}, /* -1 */
   {{ 30,  20,   8}, -2, 1.25}, /* 0 */
   /*  {{ 25,  14,   4},  0,    0}, *//* 1 */
   {{ 23,  12,   2},  0,    0}, /* 1 */
