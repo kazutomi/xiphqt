@@ -72,24 +72,46 @@ sub module_update{
 }
 
 sub read_proc{
+    $memtotal=0;
+    $memuse=0;
+    $swaptotal=0;
+    $swapuse=0;
+
     if(open(PROC,"/proc/meminfo")){
-	<PROC>;
-	$_=<PROC>;
-	if(m/^Mem:\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)/){
-	    $memtotal=$1;
-	    $memuse=$2-$3-$4;
-	}else{
-	    $memtotal=0;
-	    $memuse=0;
+
+	while(defined($_=<PROC>)){
+
+	    # 2.0/2.2/2.4-ish
+	    if(m/^Mem:\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)/){
+		$memtotal=$1;
+		$memuse=$2-$3-$4;
+	    }
+	    if(m/^Swap:\s+(\d+)\s+(\d+)/){
+		$swaptotal=$1;
+		$swapuse=$2;
+	    }
+
+	    # 2.6-ish
+	    if(m/^MemTotal:\s+(\d+)\s+kB/){
+		$memtotal=$1*1000;
+	    }
+	    if(m/^SwapTotal:\s+(\d+)\s+kB/){
+		$swaptotal=$1*1000;
+	    }
+	    if(m/^MemFree:\s+(\d+)\s+kB/){
+		$memuse=$memtotal-$1*1000;
+	    }
+	    if(m/^Buffers:\s+(\d+)\s+kB/){
+		$memuse=$memuse-$1*1000;
+	    }
+	    if(m/^Cached:\s+(\d+)\s+kB/){
+		$memuse=$memuse-$1*1000;
+	    }
+	    if(m/^SwapFree:\s+(\d+)\s+kB/){
+		$swapuse=$swaptotal-$1*1000;
+	    }
 	}
-	$_=<PROC>;
-	if(m/^Swap:\s+(\d+)\s+(\d+)/){
-	    $swaptotal=$1;
-	    $swapuse=$2;
-	}else{
-	    $swaptotal=0;
-	    $swapuse=0;
-	}
+    
 	close PROC;
     }
 }
