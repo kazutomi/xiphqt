@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.16.2.6 2001/12/18 04:15:44 volsung Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16.2.7 2001/12/19 01:34:26 volsung Exp $
  
 ********************************************************************/
 
@@ -58,6 +58,7 @@ typedef struct buf_t
   int prebuffering;
   int paused;
   int eos;
+  int abort_write;
 
   /* buffer data */
   long curfill;     /* how much the buffer is currently filled */
