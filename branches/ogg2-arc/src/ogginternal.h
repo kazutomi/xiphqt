@@ -115,7 +115,7 @@ struct ogg2_stream_state {
 			      (which is in a seperate abstraction
 			      layer) also knows about the gap */
   ogg_int64_t    granulepos;
-  int            mode;     /* 0 = continuous, 1 = discontinuous */
+  int            discont;  /* 0 = continuous, 1 = discontinuous */
 
   int            lacing_fill;
   ogg_uint32_t   body_fill;

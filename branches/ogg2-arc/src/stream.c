@@ -31,18 +31,13 @@ ogg2_stream_state *ogg2_stream_create(int serialno){
   return os;
 } 
 
-int ogg2_stream_setmode(ogg2_stream_state *os, int mode){
-  /* I don't know what extra modes may be needed, but we might as well
-     provide support for them in the API. */
-
-  /* (Dis)cont mode must be known and set before Page 1 is processed */
-  if(mode&1){
-    if(os->pageno==0||(os->pageno==1&&os->packets==0)){
-      os->mode=mode;
-      return OGG2_SUCCESS;
-    }
+int ogg2_stream_setdiscont(ogg2_stream_state *os){
+  /* Discont mode must be known and set before Page 1 is processed */
+  if(os->pageno==0||(os->pageno==1&&os->packets==0)){
+    os->discont=1;
+    return OGG2_SUCCESS;
   }
-  return OGG2_EMODE;
+  return OGG2_EINVAL;
 }
 
 int ogg2_stream_setfill(ogg2_stream_state *os,int watermark){
@@ -143,10 +138,10 @@ int ogg2_stream_packetin(ogg2_stream_state *os,ogg2_packet *op){
   }
 
   if(!os->lacing_fill)
-    ogg2byte_init(&os->header_build,0,os->bufferpool);
+    ogg2byte_init(&os->header_build, 0, os->bufferpool);
 
   /* for discontinuous mode */
-  if(os->mode&1&&!os->packets)os->granulepos=op->granulepos;
+  if(os->discont && !os->packets) os->granulepos=op->end_granule;
   os->packets++;   
 
   /* concat packet data */
@@ -169,7 +164,7 @@ int ogg2_stream_packetin(ogg2_stream_state *os,ogg2_packet *op){
      granulepos et al and then finish packet lacing */
   
   os->body_fill+=remainder;
-  if(!(os->mode&1))os->granulepos=op->granulepos;
+  if (!os->discont) os->granulepos=op->end_granule;
   os->packetno++;  /* for the sake of completeness */
   if(op->e_o_s)os->e_o_s=1;
   ogg2byte_set1(&os->header_build,remainder,27+os->lacing_fill++);
@@ -491,21 +486,21 @@ static int _packetout(ogg2_stream_state *os,ogg2_packet *op,int adv){
     else
       op->e_o_s=0;
 
-    if(os->mode&1){
+    if (os->discont){
       /* Discontinuous Mode */
       if(!os->continued) {
-        if(os->packets==0)op->granulepos=os->granulepos;
-        else op->granulepos=-1;
+        if(os->packets==0)op->end_granule=os->granulepos;
+        else op->end_granule=-1;
       }else{
-        if(os->packets==1)op->granulepos=os->granulepos;
-        else op->granulepos=-1;
+        if(os->packets==1)op->end_granule=os->granulepos;
+        else op->end_granule=-1;
       }
     }else{
       /* Continuous Mode */
       if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
-        op->granulepos=os->granulepos;
+        op->end_granule=os->granulepos;
       else
-        op->granulepos=-1;
+        op->end_granule=-1;
     }
     
     os->packets++;
@@ -585,7 +580,7 @@ void checkpacket(ogg2_packet *op,int len, int no, int pos){
     fprintf(stderr,"incorrect packet length!\n");
     exit(1);
   }
-  if(op->granulepos!=pos){
+  if(op->end_granule!=pos){
     fprintf(stderr,"incorrect packet position!\n");
     exit(1);
   }

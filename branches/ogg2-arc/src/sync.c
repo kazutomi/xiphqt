@@ -591,7 +591,8 @@ void ogg2_packet_dup(ogg2_packet *dup,ogg2_packet *orig){
   dup->bytes=orig->bytes;
   dup->b_o_s=orig->b_o_s;
   dup->e_o_s=orig->e_o_s;
-  dup->granulepos=orig->granulepos;
+  dup->top_granule=orig->top_granule;
+  dup->end_granule=orig->end_granule;
   dup->packetno=orig->packetno;
 
   dup->packet=ogg2_buffer_dup(orig->packet);
