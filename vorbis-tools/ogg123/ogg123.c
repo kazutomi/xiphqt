@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.13 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.14 2001/08/12 18:34:47 kcarnold Exp $
 
  ********************************************************************/
 
@@ -85,6 +85,7 @@ struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
+/* configuration interface */
 int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, char *filename, char *line)
 {
   if (pcode == parse_syserr)
@@ -119,6 +120,20 @@ void ReadStdConfigs (Option_t opts[])
   }
   ReadConfig (opts, "/etc/ogg123rc");
 }
+/* /configuration interface */
+
+/* buffer interface */
+size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseos)
+{
+  static ogg_int64_t cursample = 0;
+  
+  /* update status */
+  /* update cursample */
+  if (iseos)
+    cursample = 0;
+  devices_write (ptr, size, nmemb, (devices_t *) arg);
+}
+/* /buffer interface */
 
 void usage(void)
 {
@@ -249,16 +264,21 @@ int main(int argc, char **argv)
 	    current_options = &current->options;
 	    break;
 	case 'f':
+	  if (temp_driver_id >= 0) {
 	    info = ao_driver_info(temp_driver_id);
 	    if (info->type == AO_TYPE_FILE) {
-	        free(current->filename);
-		current->filename = strdup(optarg);
+	      free(current->filename);
+	      current->filename = strdup(optarg);
 	    } else {
-	        fprintf(stderr, "Driver %s is not a file output driver.\n",
-			info->short_name);
-	        exit(1);
+	      fprintf(stderr, "Driver %s is not a file output driver.\n",
+		      info->short_name);
+	      exit(1);
 	    }
-	    break;
+	  } else {
+	    fprintf (stderr, "Cannot specify output file without specifying a driver.\n");
+	    exit (1);
+	  }
+	  break;
 	case 'k':
 	    opt.seekpos = atof(optarg);
 	    break;
@@ -331,6 +351,7 @@ int main(int argc, char **argv)
 	      "Could not load default driver and no driver specified in config file. Exiting.\n");
       exit(1);
     }
+
     opt.outdevices = append_device(opt.outdevices, temp_driver_id, 
 				   temp_options, NULL);
 
@@ -341,7 +362,7 @@ int main(int argc, char **argv)
 	opt.outbuffer_size *= 1024;
 	opt.outprebuffer = (opt.outprebuffer * (float) opt.outbuffer_size / 100.0f);
 	OutBuffer = StartBuffer (opt.outbuffer_size, (int) opt.outprebuffer,
-				 opt.outdevices, (pWriteFunc) devices_write,
+				 opt.outdevices, (pWriteFunc) OutBufferWrite,
 				 NULL, NULL, 4096);
       }
     
@@ -579,7 +600,7 @@ void play_file(ogg123_options_t *opt)
 		    if (OutBuffer)
 			SubmitData (OutBuffer, convbuffer, ret, 1);
 		    else
-		      devices_write(convbuffer, ret, 1, opt->outdevices, 0);
+		      devices_write(convbuffer, ret, 1, opt->outdevices);
 		    nthc = opt->nth - 1;
 		  }
 		} while (++ntimesc < opt->ntimes);

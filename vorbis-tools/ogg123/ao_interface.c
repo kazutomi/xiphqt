@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ao_interface.c,v 1.5.2.5 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: ao_interface.c,v 1.5.2.6 2001/08/12 18:34:46 kcarnold Exp $
 
  ********************************************************************/
 
@@ -43,7 +43,7 @@ devices_t *append_device(devices_t * devices_list, int driver_id,
     return devices_list;
 }
 
-size_t devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d, char iseos)
+size_t devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d)
 {
   size_t i, total = 0;
   devices_t * start = d;
@@ -82,47 +82,6 @@ int add_option(ao_option ** op_h, const char *optstring)
     free(key);
 
     return (result);
-}
-
-int get_default_device(void)
-{
-    FILE *fp;
-    char filename[FILENAME_MAX];
-    char line[100];
-    char *device = NULL;
-    char *homedir = getenv("HOME");
-    int i;
-
-    /* Maybe I'm being extremely paranoid, but if ogg123 is ever suid
-       root (to access audio devices), this is a possible buffer overflow. */
-    if (homedir == NULL || strlen(homedir) >= FILENAME_MAX - 10)
-	return -1;
-
-    strncpy(filename, homedir, FILENAME_MAX);
-    strcat(filename, "/.ogg123rc");
-
-    fp = fopen(filename, "r");
-    /* if no ~/.ogg123rc can be found, try /etc/ogg123rc instead */
-    if (!fp) fp = fopen("/etc/ogg123rc", "r");
-
-    /* This is a very simplistic parser. If more options are ever added,
-       it will need a serious overhaul. */
-    if (fp) {
-      while (fgets(line, 100, fp)) {
-	if (strncmp(line, "default_device=", 15) == 0) {
-	  device = &line[15];
-	  for (i = 0; i < strlen(device); i++)
-	    if (device[i] == '\n' || device[i] == '\r')
-	      device[i] = 0;
-	}
-      }
-      fclose(fp);
-    }
-    
-    if (device)
-      return ao_driver_id(device);
-    
-    return -1;
 }
 
 void close_audio_devices (devices_t *devices)
