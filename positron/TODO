@@ -3,19 +3,17 @@ Positron TODO List
 Bugs
 ----
 
-* Find some.  :)
+* Sorting entries in all child databases, not just the root.  (I think
+  we can do this by quicksorting just the SAI entries.)
+
+* A file can be added to the database twice if the file is removed
+  from disk but not the database, then it is added again.
+
+* Ctrl-C during some operations will result in a corrupted database.
 
 
 Features
 --------
-
-* sync, config command
-
-* persistent delete listing so that files removed with "positron del"
-  are not put back on the next sync.
-
-* Sorting entries in the database after an add operation (modify pack
-  to permit sorting, and use that at the end of a batch of updates)
 
 * Proper detection of valid music file attributes (title, genre, time,
 etc) in Ogg Vorbis files.
@@ -25,18 +23,11 @@ and transcoding to a format the Neuros supports.  Needs to be
 flexible enough to support firmware that only does MP3 as well as
 firmware that can do both MP3 and Ogg.
 
+* HiSi identification support
 
-Spec Questions
---------------
+* Playlist management
 
-(In reference to "WOID DB specification.doc")
-
-* What is the format for display data (pg. 7)?  It appears to be just
-an ASCII string in the actual databases I've looked at.  However, the
-special handling (prefixing the string with its size) makes me think
-that what I'm seeing is just a special case and I might see more
-complicated data structures there in the future.
-
+* Making firmware updates
 
 
 USB Issues
@@ -45,6 +36,12 @@ USB Issues
 (Note that it is not clear where the best place for the solution of
 these problems is (the firmware vs. the operating system), but they
 are definitely not solvable in positron.)
+
+* The Mandrake 9.0 kernel (2.4.19-16mdk) is very buggy with the
+Neuros.  Frequently, the Neuros is never assigned a SCSI device, or is
+never even recognized by the USB subsystem, and the usb modules are
+locked up.  Removing them is impossible, and the system needs to be
+rebooted.  ==> Solution: Use Mandrake 9.1.  No observed problems.
 
 * The Neuros does not responding to the "Mode Sense" command defined 
 in the USB Mass Storage Class standard.
@@ -72,5 +69,3 @@ updating core OS components in OS X.)
 My best guess, (again, watching USB debug messages in Linux) is this
 is because the Neuros also does not respond to a USB Mass Storage
 command, which Linux can deal with, but OS X chokes on.
-
-* Does NetBSD have USB code which can help?
