@@ -144,7 +144,8 @@ extern void _vp_offset_and_mix(vorbis_look_psy *p,
 			       int offset_select,
 			       float *logmask,
 			       float *mdct,
-			       float *logmdct);
+			       float *logmdct,
+			       float *diag);
 
 extern float _vp_ampmax_decay(float amp,vorbis_dsp_state *vd);
 

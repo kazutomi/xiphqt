@@ -22,7 +22,7 @@
 #include "os.h"
 
 /* 20log10(x) */
-//#define VORBIS_IEEE_FLOAT32 1
+#define VORBIS_IEEE_FLOAT32 1
 #ifdef VORBIS_IEEE_FLOAT32
 
 static float unitnorm(float x){
