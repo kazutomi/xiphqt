@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: callbacks.h,v 1.1.2.2 2001/12/13 16:20:17 volsung Exp $
+ last mod: $Id: callbacks.h,v 1.1.2.3 2001/12/14 05:45:14 volsung Exp $
 
  ********************************************************************/
 
@@ -48,14 +48,14 @@ audio_reopen_arg_t *new_audio_reopen_arg (audio_device_t *devices,
 
 typedef struct print_statistics_arg_t {
   stat_format_t *stat_format;
-  data_source_stats_t *transport_statistics;
+  data_source_stats_t *data_source_statistics;
   decoder_stats_t *decoder_statistics;
 } print_statistics_arg_t;
 
 void print_statistics_action (buf_t *buf, void *arg);
 print_statistics_arg_t *new_print_statistics_arg (
 			       stat_format_t *stat_format,
-			       data_source_stats_t *transport_statistics,
+			       data_source_stats_t *data_source_statistics,
 			       decoder_stats_t *decoder_statistics);
 
 

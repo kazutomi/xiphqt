@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.19 2001/12/13 16:20:17 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.20 2001/12/14 05:45:14 volsung Exp $
 
  ********************************************************************/
 
@@ -193,6 +193,20 @@ void display_statistics (stat_format_t *stat_format,
   pstats_arg = new_print_statistics_arg(stat_format,
 					source->transport->statistics(source),
 					decoder->format->statistics(decoder));
+
+  /* Disable/Enable statistics as needed */
+
+  if (pstats_arg->decoder_statistics->total_time <
+      pstats_arg->decoder_statistics->current_time) {
+    stat_format[2].enabled = 0;  /* Remaining playback time */
+    stat_format[3].enabled = 0;  /* Total playback time */
+  }
+
+  if (pstats_arg->data_source_statistics->input_buffer_used) {
+    stat_format[6].enabled = 1;  /* Input buffer fill % */
+    stat_format[7].enabled = 1;  /* Input buffer state  */
+  }
+
   if (audio_buffer) {
     /* Place a status update into the buffer */
     buffer_append_action_at_end(audio_buffer,

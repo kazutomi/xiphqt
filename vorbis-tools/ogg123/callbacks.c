@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: callbacks.c,v 1.1.2.3 2001/12/13 16:20:17 volsung Exp $
+ last mod: $Id: callbacks.c,v 1.1.2.4 2001/12/14 05:45:14 volsung Exp $
 
  ********************************************************************/
 
@@ -151,10 +151,10 @@ void print_statistics_action (buf_t *buf, void *arg)
 
   status_print_statistics(stats_arg->stat_format,
 			  buffer_stats,
-			  stats_arg->transport_statistics,
+			  stats_arg->data_source_statistics,
 			  stats_arg->decoder_statistics);
 
-  free(stats_arg->transport_statistics);
+  free(stats_arg->data_source_statistics);
   free(stats_arg->decoder_statistics);
   free(stats_arg);
 }
@@ -162,7 +162,7 @@ void print_statistics_action (buf_t *buf, void *arg)
 
 print_statistics_arg_t *new_print_statistics_arg (
 			       stat_format_t *stat_format,
-			       data_source_stats_t *transport_statistics,
+			       data_source_stats_t *data_source_statistics,
 			       decoder_stats_t *decoder_statistics)
 {
   print_statistics_arg_t *arg;
@@ -173,7 +173,7 @@ print_statistics_arg_t *new_print_statistics_arg (
   }  
   
   arg->stat_format = stat_format;
-  arg->transport_statistics = transport_statistics;
+  arg->data_source_statistics = data_source_statistics;
   arg->decoder_statistics = decoder_statistics;
 
   return arg;

@@ -15,7 +15,8 @@ ogg123_LDADD = @VORBISFILE_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ @AO_LIBS@ \
 
 ogg123_SOURCES = audio.c buffer.c callbacks.c \
                  cfgfile_options.c cmdline_options.c \
-                 file_transport.c format.c getopt.c getopt1.c         \
+                 file_transport.c format.c http_transport.c getopt.c \
+                 getopt1.c         \
                  ogg123.c oggvorbis_format.c status.c transport.c     \
                  audio.h buffer.h callbacks.h \
                  cfgfile_options.h cmdline_options.h \

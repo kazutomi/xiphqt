@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.4.2.5 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: status.h,v 1.1.2.4.2.6 2001/12/14 05:45:14 volsung Exp $
 
  ********************************************************************/
 
@@ -64,7 +64,7 @@ void status_reset_output_lock ();
 void status_clear_line ();
 void status_print_statistics (stat_format_t *stats,
 			      buffer_stats_t *audio_statistics,
-			      data_source_stats_t *transport_statistics,
+			      data_source_stats_t *data_source_statistics,
 			      decoder_stats_t *decoder_statistics);
 void status_message (int verbosity, const char *fmt, ...);
 void vstatus_message (int verbosity, const char *fmt, va_list ap);
