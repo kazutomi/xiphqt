@@ -109,6 +109,7 @@ typedef struct CP_INSTANCE
     INT32  DropFrameTriggerBytes;
     BOOL   DropFrameCandidate;
 	UINT32 QualitySetting;
+	UINT32 Sharpness;
     UINT32 PreProcFilterLevel;
 	BOOL   NoDrops;
 
@@ -373,7 +374,7 @@ extern BOOL EAllocateFragmentInfo(CP_INSTANCE *cpi);
 extern BOOL EAllocateFrameInfo(CP_INSTANCE *cpi);
 extern void EDeleteFragmentInfo(CP_INSTANCE *cpi);
 extern void EDeleteFrameInfo(CP_INSTANCE *cpi);
-extern void UpdateQC( PB_INSTANCE *pbi, UINT32 NewQ );
+extern void UpdateQC( CP_INSTANCE *cpi, UINT32 NewQ );
 extern UINT32 PickIntra( CP_INSTANCE *cpi, UINT32 SBRows, UINT32 SBCols, UINT32 HExtra, UINT32 VExtra, UINT32 PixelsPerLine);
 extern UINT32 PickModes( CP_INSTANCE *cpi, UINT32 SBRows, UINT32 SBCols, UINT32 HExtra, UINT32 VExtra, UINT32 PixelsPerLine, 
                  UINT32 *InterError, UINT32 *IntraError);

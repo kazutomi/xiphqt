@@ -1,20 +1,8 @@
-//==========================================================================
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-//  KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
-//  PURPOSE.
-//
-//  Copyright (c) 1999 - 2001  On2 Technologies Inc. All Rights Reserved.
-//
-//--------------------------------------------------------------------------
-
-
 #include "regentry.h"
 //#include "stdafx.h"
 #include <windows.h>
 #include <stdio.h>
-
+ 
 int Registry_GetEntry(void *data, REGISTRY_TYPE r, 
 					  unsigned long *sizeItem, char *nameItem, RegistryAccess regAccess)
 {
@@ -76,8 +64,23 @@ int Registry_SetEntry(void *data, REGISTRY_TYPE r,
 			memcpy(outdata,data,sizeItem+1);break;
 	}
 	
-    if (RegOpenKeyEx( HKEY_LOCAL_MACHINE,(const char *) regAccess ,0,
+	unsigned long OpenOrCreate;
+/*    if (RegOpenKeyEx( HKEY_LOCAL_MACHINE,(const char *) regAccess ,0,
         KEY_ALL_ACCESS,&hKey) != ERROR_SUCCESS)
+		*/
+    if (RegCreateKeyEx(
+		HKEY_LOCAL_MACHINE,
+		(const char *) regAccess,
+		0,           
+		0,           
+		REG_OPTION_NON_VOLATILE,  
+		KEY_ALL_ACCESS,        
+		0,
+		
+		&hKey,          
+		&OpenOrCreate   
+		) != ERROR_SUCCESS)
+
 	{ 
 		return -1;
 	}

@@ -1,15 +1,3 @@
-//==========================================================================
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-//  KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
-//  PURPOSE.
-//
-//  Copyright (c) 1999 - 2001  On2 Technologies Inc. All Rights Reserved.
-//
-//--------------------------------------------------------------------------
-
-
 #ifndef _regentry_h
 #define _regentry_h
 
@@ -34,7 +22,7 @@ typedef enum REG_TYPE_TEMP {
 	REG_DOUBLE=4
 } REGISTRY_TYPE;
  
-
+ 
 #ifdef __cplusplus
 extern "C" {
 #endif  

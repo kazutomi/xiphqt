@@ -460,6 +460,7 @@ CP_INSTANCE * CreateCPInstance(void)
     cpi->ThreshMapThreshold = 5;
     cpi->QuickCompress = TRUE;
 	cpi->MaxConsDroppedFrames = 1;
+	cpi->Sharpness = 2;
 
     cpi->PreProcFilterLevel = 2;
 

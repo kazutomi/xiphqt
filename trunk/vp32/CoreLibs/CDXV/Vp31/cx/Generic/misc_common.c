@@ -436,7 +436,7 @@ void RegulateQ( CP_INSTANCE *cpi, INT32 UpdateScore )
     if ( cpi->pb.ThisFrameQualityValue != cpi->pb.LastFrameQualityValue )
     {                    
         /* Initialise quality tables. */
-        UpdateQC( &cpi->pb, cpi->pb.ThisFrameQualityValue );
+        UpdateQC( cpi, cpi->pb.ThisFrameQualityValue );
         cpi->pb.LastFrameQualityValue = cpi->pb.ThisFrameQualityValue;
     }
 

@@ -367,7 +367,7 @@ void CompressFirstFrame(CP_INSTANCE *cpi)
 	cpi->pb.LastFrameQualityValue = cpi->pb.ThisFrameQualityValue;
 
     // Initialise quantizer. 
-    UpdateQC(&cpi->pb, cpi->pb.ThisFrameQualityValue );  
+    UpdateQC(cpi, cpi->pb.ThisFrameQualityValue );  
 
     /* Initialise the cpi->pb.display_fragments and other fragment structures for the first frame. */
     for ( i = 0; i < cpi->pb.UnitFragments; i ++ )
@@ -437,7 +437,7 @@ void CompressKeyFrame(CP_INSTANCE *cpi)
 	cpi->pb.LastFrameQualityValue = cpi->pb.ThisFrameQualityValue;
 
     /* Initialise DCT tables. */
-    UpdateQC(&cpi->pb, cpi->pb.ThisFrameQualityValue );  
+    UpdateQC(cpi, cpi->pb.ThisFrameQualityValue );  
 
     // Initialise the cpi->pb.display_fragments and other fragment structures for the first frame. 
     for ( i = 0; i < cpi->pb.UnitFragments; i ++ )

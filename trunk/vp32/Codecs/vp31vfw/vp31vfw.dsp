@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VP31VFW_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\..\Include" /I "..\..\..\Include" /I "Include" /I "..\..\..\Include\VP31" /I "..\..\Include\VP31" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VP31VFW_EXPORTS" /D "VP30_COMPRESS" /D "DXV_DECOMPRESS" /FD /opt:ref /c
+# ADD CPP /nologo /G6 /MT /W3 /GX /O2 /I "..\..\Include" /I "..\..\..\Include" /I "Include" /I "..\..\..\Include\VP31" /I "..\..\Include\VP31" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VP31VFW_EXPORTS" /D "VP30_COMPRESS" /D "DXV_DECOMPRESS" /FD /opt:ref /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -53,16 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib s_dxv.lib winmm.lib s_vpxblit.lib s_cconv.lib s_cpuid.lib s_sal.lib /nologo /dll /pdb:none /map /machine:I386 /libpath:"..\..\Lib\Win32\Release\\" /opt:ref
-# Begin Custom Build
-TargetPath=.\Release\vp31vfw.dll
-InputPath=.\Release\vp31vfw.dll
-SOURCE="$(InputPath)"
-
-"c:\windows\system\vp31vfw.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetPath) c:\windows\system\vp31vfw.dll
-
-# End Custom Build
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib /nologo /dll /pdb:none /map /machine:I386 /nodefaultlib:"bsrx86w.lib" /nodefaultlib:"wksx86w.lib" /libpath:"..\..\Lib\Win32\Release\\" /opt:ref
 
 !ELSEIF  "$(CFG)" == "vp31vfw - Win32 Debug"
 
@@ -78,7 +69,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VP31VFW_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MTd /W3 /Gm /GX /ZI /Od /I "..\..\Include" /I "..\..\..\Include" /I "Include" /I "..\..\..\Include\VP31" /I "..\..\Include\VP31" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VP31VFW_EXPORTS" /D "VP30_COMPRESS" /D "DXV_DECOMPRESS" /FD /GZ /c
+# ADD CPP /nologo /G6 /MTd /W3 /Gm /GX /Zi /Od /I "..\..\Include" /I "..\..\..\Include" /I "Include" /I "..\..\..\Include\VP31" /I "..\..\Include\VP31" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VP31VFW_EXPORTS" /D "VP30_COMPRESS" /D "DXV_DECOMPRESS" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -89,14 +80,14 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib s_dxv.lib winmm.lib s_vpxblit.lib s_cconv.lib s_cpuid.lib s_sal.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\..\Lib\Win32\Debug\\"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib /nologo /dll /incremental:no /map /debug /machine:I386 /nodefaultlib:"bsrx86w.lib" /nodefaultlib:"wksx86w.lib" /pdbtype:sept /libpath:"..\..\Lib\Win32\Debug\\"
 # Begin Custom Build
 TargetPath=.\Debug\vp31vfw.dll
 InputPath=.\Debug\vp31vfw.dll
 SOURCE="$(InputPath)"
 
-"c:\windows\system\vp31vfw.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetPath) c:\windows\system\vp31vfw.dll
+"c:\winnt\system32\vp31vfw.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy $(TargetPath) c:\winnt\system32
 
 # End Custom Build
 
@@ -106,10 +97,6 @@ SOURCE="$(InputPath)"
 
 # Name "vp31vfw - Win32 Release"
 # Name "vp31vfw - Win32 Debug"
-# Begin Source File
-
-SOURCE=.\Win32\confdll.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\Win32\drvproci.cpp
@@ -132,29 +119,25 @@ SOURCE=.\Win32\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Win32\testmain.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\Win32\vfw_config_dlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Win32\vp31vfw.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Win32\vp31vfw.def
-# End Source File
-# Begin Source File
-
-SOURCE=.\Win32\vp31vfw.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\Win32\vp3vfw.rc
 # ADD BASE RSC /l 0x409 /i "Win32"
 # ADD RSC /l 0x409 /i "Win32" /i "..\..\include"
+# End Source File
+# Begin Source File
+
+SOURCE=.\Win32\vpvfw.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Win32\vpvfw.def
+# End Source File
+# Begin Source File
+
+SOURCE=.\Win32\vpvfw.h
 # End Source File
 # End Target
 # End Project

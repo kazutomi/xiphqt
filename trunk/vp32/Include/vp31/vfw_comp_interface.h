@@ -60,6 +60,7 @@ typedef struct
 	UINT32  MinimumDistanceToKeyFrame;
 	INT32   ForceKeyFrameEvery;
 	INT32	NoiseSensitivity;
+	INT32   Sharpness;
 
 } COMP_CONFIG;
 
