@@ -48,13 +48,11 @@ using namespace std;
 class LIBOOOGGCHEF_API AnnodexRecomposer : public IRecomposer, public IOggCallback
 {
 public:
-	typedef bool (*BufferWriter) (unsigned char *buffer, unsigned long bufferSize, void *userData);
-
 	AnnodexRecomposer(void);
-	AnnodexRecomposer(string inFilename, BufferWriter inBufferWriter, void* inBufferWriterUserData);
+	AnnodexRecomposer(string inFilename, BufferWriter inBufferWriter, void* inBufferWriterUserData, const string inCachedSeekTableFilename = "");
 	~AnnodexRecomposer(void);
 
-	void recomposeStreamFrom(double inStartingTimeOffset, const vector<string>* inWantedMIMETypes, const string inCachedSeekTableFilename = "");
+	void recomposeStreamFrom(double inStartingTimeOffset, const vector<string>* inWantedMIMETypes);
 	bool acceptOggPage(OggPage* inOggPage);
 
     AnnodexRecomposer(const AnnodexRecomposer&);  // Don't copy me
@@ -76,8 +74,6 @@ protected:
 		LOOK_FOR_HEADERS,
 		LOOK_FOR_BODY,
 	};
-
-	void sendPage(OggPage* inOggPage);
 
 	BufferWriter mBufferWriter;
 	void* mBufferWriterUserData;
