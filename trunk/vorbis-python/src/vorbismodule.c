@@ -106,7 +106,7 @@ initvorbis(void)
 		       PyString_FromString(docstring));
 
   PyDict_SetItemString(dict, "__version__", 
-		       PyString_FromString(VERSION));
+		       PyString_FromString("1.2"));
 
   if (PyErr_Occurred())
     PyErr_SetString(PyExc_ImportError, 

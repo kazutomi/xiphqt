@@ -54,7 +54,7 @@ init_ogg(void)
   PyDict_SetItemString(dict, "_moduleinfo", Py_module_info);
 
   PyDict_SetItemString(dict, "__doc__", PyString_FromString(docstring));
-  PyDict_SetItemString(dict, "__version__", PyString_FromString(VERSION));
+  PyDict_SetItemString(dict, "__version__", PyString_FromString("1.2"));
 
   if (PyErr_Occurred())
     PyErr_SetString(PyExc_ImportError, "_ogg: init failed");

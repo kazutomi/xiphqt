@@ -13,19 +13,19 @@
                          VorbisDSP Object
  **************************************************************/
 
-FDEF(vorbis_analysis_headerout) "Create three header packets for an ogg\n\
-stream, given an optional comment object.";
+FDEF(vorbis_analysis_headerout) "Create three header packets for an ogg\n"
+"stream, given an optional comment object.";
 FDEF(vorbis_analysis_blockout) "Output a VorbisBlock. Data must be written to the object first.";
 
 FDEF(vorbis_block_init) "Create a VorbisBlock object for use in encoding {more?!}";
-FDEF(dsp_write) "Write audio data to the dsp device and have it analyzed. \n\
-Each argument must be a string containing the audio data for a\n\
-single channel.\n
-If None is passed as the only argument, this will signal that no more\n
-data needs to be written.";
-FDEF(dsp_write_wav) "Write audio data to the dsp device and have it analyzed.\n\
-The single argument is the output from the python wave module. Only supports\n\
-16-bit wave data (8-bit waves will produce garbage).";
+FDEF(dsp_write) "Write audio data to the dsp device and have it analyzed. \n"
+"Each argument must be a string containing the audio data for a\n"
+"single channel.\n"
+"If None is passed as the only argument, this will signal that no more\n"
+"data needs to be written.";
+FDEF(dsp_write_wav) "Write audio data to the dsp device and have it analyzed.\n"
+"The single argument is the output from the python wave module. Only supports\n"
+"16-bit wave data (8-bit waves will produce garbage).";
 FDEF(dsp_close) "Signal that all audio data has been written to the object.";
 FDEF(vorbis_bitrate_flushpacket) "";
 

@@ -1,3 +1,7 @@
+2003-1-18   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* Applied a patch from Nicodemus <nicodemus@globalite.com.br> to 
+	get this to build on windows.
+	
 2002-9-24   Andrew H. Chatham <pyogg@andrewchatham.com>
 	* setup.py: fixed regular expression
 	
