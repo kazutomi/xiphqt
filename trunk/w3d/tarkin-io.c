@@ -128,6 +128,7 @@ int read_layer_descs (int fd, TarkinStream *s)
 
 int read_tarkin_bitstream (int fd, uint8_t *bitstream)
 {
+   uint32_t bytes = 0;
    uint32_t len;
 
    if (read (fd, &len, 4) < 4 || len == 0)
@@ -135,7 +136,10 @@ int read_tarkin_bitstream (int fd, uint8_t *bitstream)
 
    LE32_TO_CPU(len);
 
-   return read (fd, bitstream, len);
+   while (bytes < len)
+      bytes += read (fd, bitstream + bytes, len - bytes);
+
+   return len;
 }
 
 

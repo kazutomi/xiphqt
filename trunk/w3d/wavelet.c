@@ -3,7 +3,6 @@
 #include "wavelet.h"
 #include "rle.h"
 
-
 /**
  *   (The transform code is in wavelet_xform.c)
  */
@@ -295,31 +294,57 @@ void decode_coefficients (Wavelet3DBuf* buf,
 
 
 static
+uint32_t insignificand_truncation_table [9] = {
+   2, 4, 8, 16, 32, 64, 128, 256, 512
+};
+
+
+static
+uint32_t significand_truncation_table [8] = { 2, 4, 8, 16, 32, 64, 128, 256 };
+
+
+static
 uint32_t setup_limittabs (ENTROPY_CODER significand_bitstream [],
                           ENTROPY_CODER insignificand_bitstream [],
                           uint32_t significand_limittab [],
-                          uint32_t insignificand_limittab [])
+                          uint32_t insignificand_limittab [],
+                          uint32_t limit)
 {
    uint32_t byte_count = 0;
    int i;
 
-   for (i=0; i<9; i++) {
-      uint32_t bytes = ENTROPY_ENCODER_FLUSH(&significand_bitstream[i]);
-bytes=i > 3 ? 200 : 20*i;
-      significand_limittab[i] = bytes;
-      byte_count += bytes;
-   }
-   
+//printf ("%s: limit == %u\n", __FUNCTION__, limit);
+   limit -= 2 * 9 * sizeof(uint32_t);  /* 2 limittabs, coded binary */
+//printf ("%s: rem. limit == %u\n", __FUNCTION__, limit);
+
    for (i=0; i<9; i++) {
       uint32_t bytes = ENTROPY_ENCODER_FLUSH(&insignificand_bitstream[i]);
-bytes=i > 5 ? 100 : 10*i;
 
-      insignificand_limittab[i] = bytes;
-      byte_count += bytes;
+      insignificand_limittab[i] =
+                          limit * insignificand_truncation_table[i] / 2048;
+
+      if (bytes < insignificand_limittab[i])
+         insignificand_limittab[i] = bytes;
+//printf ("insignificand_limittab[%i]  == %u\n", i, insignificand_limittab[i]);
+      byte_count += insignificand_limittab[i];
    }
 
-byte_count += 2 * 9 * sizeof(uint32_t);  /* 2 limittabs, coded binary */
+   for (i=8; i>0; i--) {
+      uint32_t bytes = ENTROPY_ENCODER_FLUSH(&significand_bitstream[i]);
 
+      significand_limittab[i] = limit * significand_truncation_table[8-i] / 2048;
+
+      if (bytes < significand_limittab[i])
+         significand_limittab[i] = bytes;
+//printf ("significand_limittab[%i]  == %u\n", i, significand_limittab[i]);
+      byte_count += significand_limittab[i];
+   }
+
+   significand_limittab[i] = limit - byte_count;
+   byte_count += significand_limittab[i];
+
+//printf ("significand_limittab[%i]  == %u\n", i, significand_limittab[i]);
+//printf ("byte_count == %u\n", byte_count);
    return byte_count;
 }
 
@@ -381,7 +406,7 @@ void merge_bitstreams (uint8_t *bitstream,
 {
    int i;
 
-   for (i=0; i<9; i++) {
+   for (i=8; i>=0; i--) {
       memcpy (bitstream,
               ENTROPY_CODER_BITSTREAM(&significand_bitstream[i]),
               significand_limittab[i]);
@@ -389,12 +414,12 @@ void merge_bitstreams (uint8_t *bitstream,
       bitstream += significand_limittab[i];
    }
 
-   for (i=0; i<9; i++) {
+   for (i=8; i>=0; i--) {
       memcpy (bitstream,
               ENTROPY_CODER_BITSTREAM(&insignificand_bitstream[i]),
               insignificand_limittab[i]);
 
-      bitstream += significand_limittab[i];
+      bitstream += insignificand_limittab[i];
    }
 }
 
@@ -409,14 +434,14 @@ void split_bitstreams (uint8_t *bitstream,
    uint32_t byte_count;
    int i;
 
-   for (i=0; i<9; i++) {
+   for (i=8; i>=0; i--) {
       byte_count = significand_limittab[i];
       ENTROPY_DECODER_INIT(&significand_bitstream[i], bitstream, byte_count);
       bitstream += byte_count;
    }
 
-   for (i=0; i<9; i++) {
-      byte_count = significand_limittab[i];
+   for (i=8; i>=0; i--) {
+      byte_count = insignificand_limittab[i];
       ENTROPY_DECODER_INIT(&insignificand_bitstream[i], bitstream, byte_count);
       bitstream += byte_count;
    }
@@ -442,7 +467,8 @@ int wavelet_3d_buf_encode_coeff (const Wavelet3DBuf* buf,
    encode_coefficients (buf, significand_bitstream, insignificand_bitstream);
 
    byte_count = setup_limittabs (significand_bitstream, insignificand_bitstream,
-                                 significand_limittab, insignificand_limittab);
+                                 significand_limittab, insignificand_limittab,
+                                 limit);
 
    bitstream = write_limittabs (bitstream,
                                 significand_limittab, insignificand_limittab);
