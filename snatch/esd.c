@@ -41,7 +41,6 @@ static void esd_add_char_to_fake(esd_connection *e,char c){
 }
 
 static void esd_add_string_to_fake(esd_connection *e,char *c,int n){
-  fprintf(stderr,"string=%s\n",c);
   while(n--)
     esd_add_char_to_fake(e,*c++);
 }
@@ -237,18 +236,9 @@ static int esd_read_hook(int fd,void *buf,int count){
 		  esdconn[i].fakebuf+count,
 		  esdconn[i].fakecount);
 
-	fprintf(stderr,"esdfd %d FAKE read %d\n",fd,count);
-	for(i=0;i<count;i++)
-	  fprintf(stderr,"0x%x,",(int)(((unsigned char *)buf)[i]));
-	fprintf(stderr,"\n");
 	return(count);
       }else{
 	int ret=((*libc_read)(fd,buf,count));
-	int i;
-	fprintf(stderr,"esdfd %d read %d\n",fd,ret);
-	for(i=0;i<count;i++)
-	  fprintf(stderr,"0x%x,",(int)(((unsigned char *)buf)[i]));
-	fprintf(stderr,"\n");
 	return(ret);
       }
     }
@@ -275,12 +265,9 @@ static int esd_write_hook(int fd, const void *buf,int count){
 	n=count/4;
       }
       
-      fprintf(stderr,"esdfd %d write %d [%d]\n",fd,count,*ptr);
-      
       while(n-->0){
 	if(esdconn[i].count<=0){
 	  /* handle new request */
-	  fprintf(stderr,"ESD proto requested=%d fd=%d\n",*ptr,fd);
 	  esdconn[i].rq=*ptr++;
 	  switch(esdconn[i].rq){
 	  case 3:
@@ -349,7 +336,6 @@ static int esd_write_hook(int fd, const void *buf,int count){
 	    case 3:
 	      /* ok, audio stream init all handled; cut it loose */
 	      audio_fd=fd;
-	      fprintf(stderr,"ESD audio stream (fd %d) cut loose\n",fd);
 	      /* no response; just go */
 	      break;
 	    case 17:
