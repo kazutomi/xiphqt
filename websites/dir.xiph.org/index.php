@@ -106,6 +106,7 @@ function contentTypeLookup($content_type) {
 function getPrevLink($current, $pagesize, $rowcounter) {
 	global $search;
 	global $sgenre;
+	global $stype;
 
 	if (($current - $pagesize) < 0) {
 		$prev = -1;
@@ -120,6 +121,9 @@ function getPrevLink($current, $pagesize, $rowcounter) {
 	if ($sgenre) {
 		$extra .= "&sgenre=".urlencode($sgenre);
 	}
+	if ($stype) {
+		$extra .= "&stype=".urlencode($stype);
+	}
 	if ($prev >= 0) {
 		return "<a class=\"nav\" href=\"?start=$prev&num=$pagesize$extra\"><font size=3>Prev</font></a>";
 	}
@@ -130,6 +134,7 @@ function getPrevLink($current, $pagesize, $rowcounter) {
 function getNextLink($current, $pagesize, $rowcounter) {
 	global $search;
 	global $sgenre;
+	global $stype;
 
 	if ($rowcounter < $pagesize) {
 		return "";
@@ -141,6 +146,9 @@ function getNextLink($current, $pagesize, $rowcounter) {
 	}
 	if ($sgenre) {
 		$extra .= "&sgenre=".urlencode($sgenre);
+	}
+	if ($stype) {
+		$extra .= "&stype=".urlencode($stype);
 	}
 	return "<a class=\"nav\" href=\"?start=$next&num=$pagesize$extra\"><font size=3>Next</font></a>";
 }
