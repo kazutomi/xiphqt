@@ -43,3 +43,5 @@ int __cdecl fish_sound_command (FishSound * fsound, int command, void * data,
 int __cdecl fish_sound_get_interleave (FishSound * fsound);
 
 int __cdecl fish_sound_set_interleave (FishSound * fsound, int interleave);
+
+long __cdecl fish_sound_get_frameno (FishSound * fsound);
