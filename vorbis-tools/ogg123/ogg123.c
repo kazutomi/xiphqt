@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.1 2001/06/22 03:55:36 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.2 2001/06/23 00:17:43 kcarnold Exp $
 
  ********************************************************************/
 
@@ -70,6 +70,8 @@ struct option long_options[] = {
     {"shuffle", no_argument, 0, 'z'},
     {"buffer", required_argument, 0, 'b'},
     {"delay", required_argument, 0, 'l'},
+    {"nth", required_argument, 0, 'x'},
+    {"ntimes", required_argument, 0, 'y'},
     {0, 0, 0, 0}
 };
 
@@ -110,23 +112,18 @@ int main(int argc, char **argv)
     ao_option_t *temp_options = NULL;
     ao_option_t ** current_options = &temp_options;
     int temp_driver_id = -1;
-	devices_t *current;
+    devices_t *current;
 
-    opt.read_file = NULL;
-    opt.shuffle = 0;
-    opt.verbose = 0;
-    opt.quiet = 0;
-    opt.seekpos = 0;
-    opt.instream = NULL;
-    opt.outdevices = NULL;
-    opt.buffer_size = 0;
+    memset (&opt, 0, sizeof(opt));
     opt.delay = 1;
+    opt.nth = 1;
+    opt.ntimes = 1;
 
     atexit (buffer_cleanup);
     signal (SIGINT, signal_quit);
     ao_initialize();
 
-    while (-1 != (ret = getopt_long(argc, argv, "b:d:hl:k:o:qvVz",
+    while (-1 != (ret = getopt_long(argc, argv, "b:d:hl:k:o:qvVxyz",
 				    long_options, &option_index))) {
 	switch (ret) {
 	case 0:
@@ -171,6 +168,12 @@ int main(int argc, char **argv)
 	case 'V':
 	    fprintf(stderr, "Ogg123 from " PACKAGE " " VERSION "\n");
 	    exit(0);
+	case 'x':
+	  opt.nth = atoi (optarg);
+	  break;
+	case 'y':
+	  opt.ntimes = atoi (optarg);
+	  break;
 	case 'z':
 	    opt.shuffle = 1;
 	    break;
@@ -288,6 +291,7 @@ void play_file(ogg123_options_t opt)
     double t_sec = 0, c_sec = 0, r_sec = 0;
     int is_big_endian = ao_is_big_endian();
     double realseekpos = opt.seekpos;
+    int nthc = 0, ntimesc = 0;
 
     /* Junk left over from the failed info struct */
     double u_time, u_pos;
@@ -470,17 +474,23 @@ void play_file(ogg123_options_t opt)
 		if (old_section != current_section && old_section != -1)
 		    eos = 1;
 
-		if (buffer)
-		  {
-		    chunk_t chunk;
-		    chunk.len = ret;
-		    memcpy (chunk.data, convbuffer, ret);
-		    
-		    submit_chunk (buffer, chunk);
+		do {
+		  if (nthc-- == 0) {
+		    if (buffer)
+		      {
+			chunk_t chunk;
+			chunk.len = ret;
+			memcpy (chunk.data, convbuffer, ret);
+			
+			submit_chunk (buffer, chunk);
+		      }
+		    else
+		      devices_write(convbuffer, ret, opt.outdevices);
+		    nthc = opt.nth - 1;
 		  }
-		else
-		  devices_write(convbuffer, ret, opt.outdevices);
-		
+		} while (++ntimesc < opt.ntimes);
+		ntimesc = 0;
+
 		if (opt.verbose > 0) {
 		    if (ov_seekable (&vf)) {
 		      u_pos = ov_time_tell(&vf);
