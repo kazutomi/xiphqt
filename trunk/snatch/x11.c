@@ -53,6 +53,8 @@ static int rploc_count=0;
 
 static unsigned long rpfile_shell=0;
 static unsigned long rpfile_main=0;
+static unsigned long rpfile_entry=0;
+static int rpfile_lowest=0;
 
 static void queue_task(void (*f)(void));
 
@@ -207,26 +209,31 @@ static void Location(void){
 				      window tree to get an
 				      absolute X,Y to make an
 				      event */
+
   if(location)
     FakeTypeString(location,rploc_entry);
   FakeTypeString(" ",rploc_ok);
 
-  rpauth_shell=0;
-  rpauth_main=0;
-  rpauth_password=0;
-  rpauth_username=0;
-  rpauth_okbutton=0;
-  rpauth_count=0;
+  rploc_shell=0;
+  rploc_main=0;
+  rploc_ok=0;
+  rploc_count=0;
+  rploc_entry=0;
   
 }
 
 static void FileEntry(void){
-  
+  int i;
   fprintf(stderr,"    ...: filling in file field...\n");
-  if(openfile)
-    FakeTypeString(openfile,rpfile_main);
 
-  FakeKeySym(XStringToKeysym("Return"),0,rpfile_main);
+  /* gah, hack */
+  for(i=0;i<300;i++)
+    FakeKeySym(XStringToKeysym("BackSpace"),0,rpfile_entry);
+
+  if(openfile)
+    FakeTypeString(openfile,rpfile_entry);
+
+  FakeKeySym(XStringToKeysym("Return"),0,rpfile_entry);
 
   rpfile_shell=0;
   rpfile_main=0;
@@ -247,7 +254,7 @@ static void PolySegment(unsigned char *buf){
     queue_task(Location);
   }
 
-  if(id==rpfile_main && rpfile_shell){
+  if(id==rpfile_entry && rpfile_shell){
     rpfile_shell=0;
     queue_task(FileEntry);
   }
@@ -343,6 +350,14 @@ static void CreateWindow(unsigned char *buf){
     /* File dialog windows */
     if(parent==rpfile_shell){
       rpfile_main=id;
+      rpfile_lowest=0;
+    }
+    if(parent==rpfile_main){
+      int y=IShort(&buf[14]);
+      if(y>rpfile_lowest){
+	rpfile_entry=id;
+	rpfile_lowest=y;
+      }
     }
   }
 }

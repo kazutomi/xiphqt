@@ -18,7 +18,7 @@ my $openloc="rtp://blah";
 my $playcode=join "",("Ks",pack ("S",4),"Kp",pack ("S",4));
 my $stopcode=join "",("Ks",pack ("S",4));
 my $exitcode=join "",("Kq",pack ("S",4));
-my $opencode=join "".("Ko",pack ("S",4));
+my $opencode=join "",("Ko",pack ("S",4));
 my $loccode=join "",("Kl",pack ("S",4));
 
 die $! unless socket(LISTEN_SOCK, PF_UNIX, SOCK_STREAM,0);
