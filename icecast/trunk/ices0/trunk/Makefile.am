@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = resolver thread src conf doc 
+SUBDIRS = libshout resolver thread src conf doc 
 
 install-data-local:
 	mkdir -p $(DESTDIR)$(ICES_LOGDIR_INST)

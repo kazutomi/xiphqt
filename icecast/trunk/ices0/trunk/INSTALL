@@ -7,20 +7,12 @@ cvs co resolver thread
 cd thread
 cvs co avl
 cd ..
+cvs co libshout
 
 ./autogen.sh
 make
 
 And you'll hopefully have a ices binary in src/
-
-ices now depends on libshout, and it will look
-for ices.h in /usr/include/shout/shout.h and
-/usr/local/include/shout/shout.h.
-If you've got libshout installed somewhere else,
-then you need to use the libshout parameters to
-the configure script.
-
-Same with libshout.a or so.
 
 For configfiles, ices depends on libxml, and I've
 only tested it with libxml version 2.
@@ -32,13 +24,9 @@ python (perl support is on the way).
 Add --with-python to the configure script if you
 want this enabled.
 
-Don't forget to run ldconfig after you've installed
-libshout on elf systems.
-
 For reencoding, you'll need libmp3lame, and the --with-lame* options
 in configure. That works fine for me most of the time, but I wouldn't
 exactly call it stable.
-
 
 Check the ./configure --help options for this.
 

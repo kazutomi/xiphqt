@@ -1,0 +1,169 @@
+ices
+----
+
+Introduction
+~~~~~~~~~~~~
+For a very long time, the only good streaming tool for command line systems
+was shout. Shout had a lot of issues, it was a quick and dirty hack, it
+was buggy, it was sending data too fast or too slow, and it was just something
+no one wanted to fix.
+
+So we rewrote it from scratch, and the next generation streamer, 'ices', is
+here. 'ices' is short for 'icesource', a source for the icecast server.
+'ices' should be pronounced 'isis' like the egyptian godess of fertility.
+
+For more information about icecast, I suggest you check out the icecast
+webpage at http://www.icecast.org/.
+
+What is it for?
+~~~~~~~~~~~~~~~
+
+ices, armed with a list of mp3 files, sends a continuous stream of mp3 data
+to an icecast server. The server is then responsible for accepting client
+connections and feeding the mp3 stream to them.
+But the stream originates in the streamer, 'ices'.
+The terms 'encoder', 'streamer' and 'source' are used equivalently throughout
+this document, and throughout all the documentation in the streaming system.
+
+What can it do?
+~~~~~~~~~~~~~~~
+ices can do everything shout could do, and more.
+It can be configured through hard coded defaults, a configfile, and command
+line options.
+
+The configfile is in XML, but don't get scared and run off. Just edit the
+distributed configfile and change the values you need.
+
+The command line options should be familiar to old shout users, although 
+some options have been renamed.
+
+Lets first go through the things you can change in ices.
+
+* Server Hostname
+	Command line option: -h <host>
+	Config file tag: Server/Hostname
+	This is the name, or ip, of the host ices should connect to.
+	It has to run a streaming server, capable of the xaudiocast
+	or icy protocol.
+	This value defaults to localhost.
+
+* Server Port
+	Command line option: -p <port>
+	Config file tag: Server/Port
+	This is the port the server is listening on, by default 8000.
+
+* Server Password
+	Command line option: -P <password>
+	Config file tag: Server/Password
+	The encoder password for the server. If this is not correct,
+	then ices cannot log in on the server, and ices will exit.
+
+* Server Protocol
+	Command line option: -i for icy-headers
+	Config file tag: Server/Protocol
+	Either xaudiocast or icy. Use xaudiocast if you can, and icy
+	if you must.
+
+* Execution Background
+	Command line option: -B
+	Config file tag: Execution/Background
+	This will launch ices in the background, as a daemon.
+
+* Execution Verbose
+	Command line option: -v
+	Config file tag: Execution/Verbose
+	Normally ices outputs what stream is playing and a small
+	amount of extra information.
+	With verbose turned on, you get a whole lot of debugging
+	information and lots of track info.
+
+* Execution Base Directory
+	Command line option: -D <directory>
+	Config file tag: Execution/Base_directory
+	ices uses this directory for cue files, log files and
+	temporary playlist files. You need write permissions
+	in this directory. The default is /tmp
+
+* Execution Reencode
+	Command line option: -R (turns reencoding on)
+	Config file tag: Execution/Reencode
+	When you turn this option on, ices (if compiled with libmp3lame support) will
+	reencode your mp3 files on the fly to whatever bitrate you specify with the
+	Stream Bitrate option.
+	PLEASE note that if your files are corrupt, this might crash ices because the
+	library used to decode (mpglib) is not very stable.
+	I suggest you check your files with mp3check or some other mp3 verification program
+	before you add them to your playlist.
+	Just popping them into your favourite player and checking the sound is definately
+	not enough.
+	For legal reasons, this option is not available on the binary distributions.
+	
+* Stream Name
+	Command line option: -n <stream name>
+	Config file tag: Stream/Name
+	This is the name of the stream, not to be confused with the
+	name of the song playing.
+
+* Stream Genre
+	Command line option: -g <stream genre>
+	Config file tag: Stream/Genre
+	This is the genre of your stream, e.g Jazz or Static.
+
+* Stream Description
+	Command line option: -d <stream description>
+	Config file tag: Stream/Description
+	This option is a description of your stream.
+
+* Stream URL
+	Command line option: -u <URL>
+	Config file tag: Stream/URL
+	This should be a URL describing your stream.
+
+* Stream Bitrate
+	Command line option: -b <bitrate>
+	Config file tag: Stream/Bitrate
+	If you turn on reencoding then this will be the bitrate of the stream,
+	otherwize the actual bitrate of the stream is the bitrate your files
+	are encoded at, and this value is for displaying purposes only.
+	Read the last 3 lines again, please.
+
+* Stream Public
+	Command line option: -s (makes stream private)
+	Config file tag: Stream/Public
+	This regulates whether the icecast server will display your stream
+	on a directory server. Default is 1 (yes).
+
+* Playlist File
+	Command line option: -F <file>
+	Config file tag: Playlist/File
+	This is the file where ices originally looks for files to play.
+	When using playlist modules in perl or python, this argument
+	is passed to the playlist handler.
+
+* Playlist Randomize
+	Command line option: -r (randomizes file)
+	Config file tag: Playlist/Randomize
+	This option is passed to the playlist handler, and tells it
+	to randomize the playlist.
+
+* Playlist Type
+	Command line option: -S <perl|python|builtin>
+	Config file tag: Playlist/Type
+	By default, ices using a builtin playlist handler. It handles randomization and not
+	much more. Most people want sophisticated playlist handlers that interface databases
+	and keeps track of god knows what. ices handles embedded python and embedded perl,
+	so now you can write your own modules, without modifying ices, that does just about
+	anything. Use this option to change the playlist handler type from builtin (default),
+	to python or perl.
+
+* Playlist Module
+	Command line option: -M <module>
+	Config file tag: Playlist/Module
+	Use this option to execute a different python or perl module than the default.
+	Default for python is ices.py and default for perl is ices.pl.
+
+
+		
+
+ 
+

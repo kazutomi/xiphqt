@@ -343,6 +343,7 @@ ices_setup_usage ()
 	ices_log ("\t-n <stream name>");
 	ices_log ("\t-p <port>");
 	ices_log ("\t-P <password>");
+	ices_log ("\t-R (activate reencoding)");
 	ices_log ("\t-r (randomize playlist)");
 	ices_log ("\t-s (private stream)");
 	ices_log ("\t-S <perl|python|builtin>");

@@ -7,7 +7,7 @@ noinst_HEADERS = rand.h playlist_builtin.h
 
 libplaylist_a_SOURCES = playlist_builtin.c rand.c
 
-INCLUDES = -I$(top_srcdir)/resolver -I$(top_srcdir)/thread -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)/resolver -I$(top_srcdir)/thread -I$(top_srcdir)/src -I$(top_srcdir)/libshout
 
 
 

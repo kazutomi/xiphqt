@@ -103,8 +103,10 @@ ices_playlist_builtin_initialize (ices_config_t *ices_config)
 int
 ices_playlist_builtin_shutdown (ices_config_t *ices_config)
 {
-	if (ices_config->randomize_playlist)
+	if (ices_config->randomize_playlist) {
+		ices_log_debug ("Removing temp playlist file [%s]", playlist_file);
 		return ices_util_remove (playlist_file);
+	}
 	return 1;
 }
 	

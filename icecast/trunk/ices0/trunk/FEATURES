@@ -1,4 +1,7 @@
-* Read file to play next from a specified file
-* Titlestreaming
-* Skip id3 tags
-* Basic streaming using libshout
+XML configfiles:
+	You need libxml version 2 to use the configfile features of ices.
+Reencoding:
+	You need libmp3lame.a and lame.h to use the reencoding features of
+	ices. Also, make bloody sure that your mp3 files are ok, otherwize
+	the reencoding will make ices crash.
+	A good tool to use for mp3 checking is mp3check.

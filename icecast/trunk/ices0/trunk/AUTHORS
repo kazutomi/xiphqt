@@ -1,0 +1,15 @@
+ices was designed and written by 
+
+Alexander Havang	<eel@icecast.org>
+
+The perl interface was written by
+
+Chad Armstrong		<chad@icecast.org>
+
+Reencoding using libmp3lame was added with
+much help from Mark Taylor <mt@sulaco.org>.
+
+Libshout was written and designed by
+Jack Moffitt    <jack@icecast.org>
+Chad Armstrong  <chad@icecast.org>
+Scott Manley    <szyzyg@icecast.org>

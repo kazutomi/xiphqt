@@ -4,6 +4,7 @@
 		<ices:File>apan.txt</ices:File>
 		<ices:Randomize>1</ices:Randomize>
 		<ices:Type>builtin</ices:Type>
+		<ices:Module>ices</ices:Module>
 	</ices:Playlist>
 	<ices:Server>
 		<ices:Hostname>localhost</ices:Hostname>
@@ -15,6 +16,7 @@
 		<ices:Background>0</ices:Background>
 		<ices:Verbose>1</ices:Verbose>
 		<ices:Base_Directory>/tmp</ices:Base_Directory>
+		<ices:Reencode>0</ices:Reencode>
 	</ices:Execution>
 	<ices:Stream>
 		<ices:Name>Cool ices default name from XML</ices:Name>

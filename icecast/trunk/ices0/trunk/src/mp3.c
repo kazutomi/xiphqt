@@ -111,7 +111,7 @@ ices_mp3_parse_file (const char *filename)
 	mp3_header_t mh;
 	
 	if ((file = ices_util_fopen_for_reading (filename)) == NULL) {
-		ices_log_error ("Could not access [%s], error: %s", filename, ices_util_strerror (errno, buff, 1024));
+		ices_log_error ("Could not access [%s], error: %s", filename, ices_util_strerror (errno, (char *)buff, 1024));
 		ices_util_fclose (file);
 		return -2;
 	}

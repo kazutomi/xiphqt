@@ -112,7 +112,7 @@ int
 ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *outbuf, int outlen)
 {
 	int decode_ret = lame_decode ((char *)buff, buflen, left, right);
-	
+
 	if (decode_ret > 0)
 		return lame_encode_buffer (&ices_reencode_flags, left, right, decode_ret, (char *)outbuf, outlen);
 	return decode_ret;
@@ -121,6 +121,7 @@ ices_reencode_reencode_chunk (unsigned char *buff, int buflen, unsigned char *ou
 int
 ices_reencode_flush (unsigned char *outbuf, int maxlen)
 {
-	return lame_encode_finish (&ices_reencode_flags, (char *)outbuf, maxlen);
+	int ret = lame_encode_finish (&ices_reencode_flags, (char *)outbuf, maxlen);
+	return ret;
 }
 #endif

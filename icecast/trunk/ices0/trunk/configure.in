@@ -146,6 +146,12 @@ case $system in
 		__SOMEBSD__=yes
 		AC_DEFINE(__SOMEBSD__)
 		AC_MSG_RESULT(Some BSD variant)
+		OLDCPPFLAGS=$CPPFLAGS
+		CPPFLAGS="$CPPFLAGS -pthread"
+		AC_TRY_COMPILE([#include <pthread.h>],
+			       [pthread_t thread; ],	
+	       		       ,
+			       	CPPFLAGS="$OLDCPPFLAGS")
 		;;
 	*)
 		AC_MSG_RESULT($system)
@@ -254,20 +260,6 @@ fi
 
 LIBS="$LIBS $THREADLIBS"
 
-OLDCPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS -pthread"
-AC_TRY_COMPILE([#include <pthread.h>],
-	       [pthread_t thread; ],	
-	       ,
-	       CPPFLAGS="$OLDCPPFLAGS")
-
-OLDCPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS -mt"
-AC_TRY_COMPILE([#include <pthread.h>],
-	       [pthread_t thread; ],	
-	       ,
-	       CPPFLAGS="$OLDCPPFLAGS")
-
 AC_ARG_WITH(lame,
 [  --with-lame[=ARG]	enable support for reencoding using lame [ARG=yes]])
 
@@ -359,41 +351,6 @@ AC_CHECK_FUNCS(Py_Initialize)
 	fi
 fi
 
-AC_ARG_WITH(libshout-includes,
-[  --with-libshout-includes=DIR		Directory to find shout.h])
-if test -f "$withval/shout.h"; then
-	CPPFLAGS="$CPPFLAGS -I$withval"
-elif test -f "$withval/shout/shout.h"; then
-	CPPFLAGS="$CPPFLAGS -I$withval/shout"
-elif test -f "$withval/include/shout/shout.h"; then
-	CPPFLAGS="$CPPFLAGS -I$withval/include/shout"
-elif test -f "/usr/include/shout/shout.h"; then
-	CPPFLAGS="$CPPFLAGS -I/usr/include/shout"
-elif test -f "/usr/local/include/shout/shout.h"; then
-	CPPFLAGS="$CPPFLAGS -I/usr/local/include/shout"
-else
-	echo 'Could not find shout.h anywhere nere the location you said.'
-	echo 'Without libshout, no ices.'
-	exit
-fi
-
-AC_ARG_WITH(libshout-libraries,
-[  --with-libshout-libraries=DIR	Directory to find libshout library])
-
-if test -f "$withval/libshout.a"; then
-	LDFLAGS="$LDFLAGS -L$withval"
-elif test -f "$withval/lib/libshout.a"; then
-	LDFLAGS="$LDFLAGS -L$withval/lib"
-elif test -f "/usr/local/lib/libshout.a"; then
-	LDFLAGS="$LDFLAGS -L/usr/local/lib"
-elif test -f "/usr/lib/libshout.a"; then
-	LDFLAGS="$LDFLAGS -L/usr/lib"
-else
-	echo 'Could not find libshout libraries anywhere.'
-	echo 'Without libshout, no ices.'
-	exit
-fi
-
 AC_CHECK_PROG(XMLCONFIG,xml-config,xml-config)
 
 if test "$XMLCONFIG"; then
@@ -409,6 +366,12 @@ AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h assert.h sys/resource.h math.h sign
 AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename setsockopt umask inet_addr inet_aton inet_ntoa sigaction)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])
+
+echo "Running configure in libshout..."
+
+cd libshout
+./configure "$@" && echo
+cd ..
 
 echo "Compiling with CPPFLAGS=$CPPFLAGS"
 echo "Linking with LDFLAGS=$LDFLAGS $LIBS"

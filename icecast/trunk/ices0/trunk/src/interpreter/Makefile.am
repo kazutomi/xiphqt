@@ -7,7 +7,7 @@ noinst_HEADERS = interpreter.h
 
 libinterpreter_a_SOURCES = interpreter.c interpreter_playlist.c
 
-INCLUDES = -I.. -I$(top_srcdir)/resolver -I$(top_srcdir)/thread
+INCLUDES = -I.. -I$(top_srcdir)/resolver -I$(top_srcdir)/thread -I$(top_srcdir)/libshout
 
 EXTRA_DIST = playlist_python.c python.c
 
