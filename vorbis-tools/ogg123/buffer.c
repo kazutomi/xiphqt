@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.23.2.4 2001/11/21 22:57:23 volsung Exp $
+ last mod: $Id: buffer.c,v 1.7.2.23.2.5 2001/11/23 05:15:29 volsung Exp $
 
  ********************************************************************/
 
@@ -37,8 +37,6 @@
 
 #define MIN(x,y)     ( (x) < (y) ? (x) : (y) )
 #define MIN3(x,y,z)  MIN(x,MIN(y,z))
-
-#define DEBUG_BUFFER
 
 #ifdef DEBUG_BUFFER
 FILE *debugfile;

@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.9 2001/11/21 23:25:08 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.10 2001/11/23 05:15:29 volsung Exp $
 
  ********************************************************************/
 
@@ -461,7 +461,7 @@ int main(int argc, char **argv)
 
 
 
-  on_exit (OnExit, &Options);
+  ATEXIT (ExitCleanup);
   signal (SIGINT, SigHandler);
   signal (SIGTSTP, SigHandler);
   signal (SIGCONT, SigHandler);
@@ -1076,8 +1076,7 @@ int OpenAudioDevices()
   return 0;
 }
 
-
-void OnExit (int exitcode, void *arg)
+void ExitCleanup ()
 {
   if (Options.inputOpts.data)
     {
@@ -1091,6 +1090,6 @@ void OnExit (int exitcode, void *arg)
       Options.outputOpts.buffer = NULL;
     }
 
-  ao_onexit (exitcode, Options.outputOpts.devices);
+  ao_onexit (Options.outputOpts.devices);
   Options.outputOpts.devicesOpen = 0;
 }

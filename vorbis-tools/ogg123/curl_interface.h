@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.7.2.1 2001/10/17 16:58:14 volsung Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.7.2.2 2001/11/23 05:15:29 volsung Exp $
  
 ********************************************************************/
 
@@ -67,6 +67,6 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg);
 int StreamBufferSeek (void *arg, ogg_int64_t offset, int whence);
 int StreamBufferClose (void *arg);
 long StreamBufferTell (void *arg);
-void StreamInputCleanup (buf_t *buf);
+void StreamCleanup (StreamInputBufferData_t *data);
 
 #endif /* __CURL_INTERFACE_H */
