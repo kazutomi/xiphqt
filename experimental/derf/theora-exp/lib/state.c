@@ -754,8 +754,8 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
      be is 46, and so that doesn't affect any of the cases in this routine.
     However, if the last token WAS a pure zero run of length 63, then _last_zzi
      will be 1 while the number of coefficients decoded is 64.
-    Thus, we will trigger the following special case, where a pure coefficient
-     count would not.
+    Thus, we will trigger the following special case, where the real
+     coefficient count would not.
     Note also that a zero run of length 64 will give _last_zzi a value of 0,
      but we still process the DC coefficient, which might have a non-zero value
      due to DC prediction.

@@ -1237,19 +1237,19 @@ static int oc_enc_frag_quant_tokenize(oc_enc_ctx *_enc,
             if(zrun==1){
               _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
                OC_DCT_RUN_CAT2A;
-              qc=OC_MINI(1,qc_max-2);
+              qc=OC_MINI(3,qc_max);
               _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-               (ogg_uint16_t)((c_sign<<1)+qc);
+               (ogg_uint16_t)((c_sign<<1)+qc-2);
             }
             else{
               _enc->dct_tokens[tli][_enc->ndct_tokens[tli]++]=
                OC_DCT_RUN_CAT2B;
-              qc=OC_MINI(1,qc_max-2);
+              qc=OC_MINI(3,qc_max);
               _enc->extra_bits[tli][_enc->nextra_bits[tli]++]=
-               (ogg_uint16_t)((c_sign<<2)+(qc<<1)+zrun-2);
+               (ogg_uint16_t)((c_sign<<2)+(qc-2<<1)+zrun-2);
             }
-            qc_signed[0]=qc_min;
-            qc_signed[1]=-qc_min;
+            qc_signed[0]=qc;
+            qc_signed[1]=-qc;
             _efrag->dct_coeffs[ci]=(ogg_int16_t)qc_signed[c_sign];
             zrun=0;
             /*Skip coding the DCT value below.*/
@@ -2023,6 +2023,13 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           qi=_enc->qis[OC_INTER_FRAME][frag_qii[codedi][OC_INTER_FRAME][1]];
           bits[OC_MODE_INTER_NOMV]+=OC_RES_BITRATES[qi][pli][
            OC_MODE_INTER_NOMV][OC_MINI(err[OC_MODE_INTER_NOMV][mapi]>>6,15)];
+          /*Also mark this fragment with the selected INTER qi.
+            It will be reset if we eventually code this as an INTRA frame.*/
+#if defined(OC_BITRATE_STATS)
+          efrag->eerror=err[OC_MODE_INTER_NOMV][mapi];
+#endif
+          efrag->qii=frag_qii[codedi][OC_INTER_FRAME][1];
+          frag->qi=qi;
         }
         intra_bits+=mbintrabits+128>>8;
         inter_bits+=bits[OC_MODE_INTER_NOMV]+128>>8;
