@@ -1,7 +1,7 @@
 @echo off
 echo ---+++--- Building Vorbisenc (Dynamic) ---+++---
 
-if .%SRCROOT%==. set SRCROOT=i:\xiph
+if .%SRCROOT%==. set SRCROOT=c:\src
            
 set OLDPATH=%PATH%
 set OLDINCLUDE=%INCLUDE%
