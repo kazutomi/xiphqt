@@ -23,6 +23,7 @@
 extern ices_config_t ices_config;
 
 char *ices_cue_filename = NULL;
+static int ices_cue_lineno = 0;
 
 /* Syntax of cue file
  * filename
@@ -34,6 +35,8 @@ char *ices_cue_filename = NULL;
  * artist
  * songname
  */
+
+static int ices_cue_get_lineno ();
 
 /* Global function definitions */
 
@@ -56,8 +59,10 @@ ices_cue_update (input_stream_t* source, const int bytes_played)
 	fprintf (fp, "%s\n%d\n%d\n%s\n%f\n%d\n%s\n%s\n", source->path,
 		 source->filesize, source->bitrate,
 		 ices_util_file_time (source->bitrate, source->filesize, buf),
-		 ices_util_percent (bytes_played, source->filesize), ices_playlist_get_current_lineno (), ices_util_nullcheck (id3artist), ices_util_nullcheck (id3title));
-	
+		 ices_util_percent (bytes_played, source->filesize),
+		 ices_cue_lineno, ices_util_nullcheck (id3artist),
+		 ices_util_nullcheck (id3title));
+
 	ices_util_fclose (fp);
 }
 
@@ -69,6 +74,12 @@ ices_cue_shutdown (void)
 
 	if (filename && filename[0])
 		remove (filename);
+}
+
+void
+ices_cue_set_lineno (int lineno)
+{
+  ices_cue_lineno = lineno;
 }
 
 /* Mutator for the cue filename */

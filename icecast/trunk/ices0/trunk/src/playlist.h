@@ -21,5 +21,6 @@
 /* Public function declarations */
 int ices_playlist_get_current_lineno (void);
 char *ices_playlist_get_next (void);
+char* ices_playlist_get_metadata (void);
 int ices_playlist_initialize (void);
 int ices_playlist_shutdown (void);

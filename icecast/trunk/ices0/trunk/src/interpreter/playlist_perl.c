@@ -49,6 +49,12 @@ interpreter_playlist_perl_get_next (void)
 	/* implied free(str), this is called higher up */
 }
 
+char*
+interpreter_playlist_perl_get_metadata (void)
+{
+  return interpreter_perl_eval_function ("ices_perl_get_metadata");
+}
+
 int
 interpreter_playlist_perl_initialize (ices_config_t *ices_config)
 {

@@ -87,6 +87,7 @@ ices_stream_loop (void)
      * This is a dynamically allocated string, which we free
      * further down in the loop */
     file = ices_playlist_get_next ();
+    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
 		
     /* We quit if the playlist handler gives us a NULL filename */
     if (!file) {

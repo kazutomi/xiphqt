@@ -45,6 +45,17 @@ interpreter_playlist_python_get_next (void)
 	return NULL;
 }
 
+char*
+interpreter_playlist_python_get_metadata (void)
+{
+	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_metadata");
+
+	if (res && PyString_Check (res))
+		return ices_util_strdup (PyString_AsString (res));
+	ices_log_error ("Execution of 'ices_python_get_metadata()' in ices.py failed");
+	return NULL;
+}
+
 /* Call python function to inialize the python script */
 int
 interpreter_playlist_python_initialize (ices_config_t *ices_config)

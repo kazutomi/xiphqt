@@ -70,10 +70,35 @@ ices_playlist_get_next (void)
 			return interpreter_playlist_perl_get_next ();
 			break;
 #endif
-		default:
+	        default:
 			ices_log_error ("Unknown playlist module!");
 			return NULL;
 	}
+}
+
+/* Allows a script to override file metadata if it wants. Returns NULL
+ *   to mean 'do it yourself' */
+char*
+ices_playlist_get_metadata (void)
+{
+  switch (ices_config.playlist_type) {
+    case ices_playlist_builtin_e:
+      return NULL;
+      break;
+#ifdef HAVE_LIBPYTHON
+    case ices_playlist_python_e:
+      return interpreter_playlist_python_get_metadata ();
+      break;
+#endif
+#ifdef HAVE_LIBPERL
+    case ices_playlist_perl_e:
+      return interpreter_playlist_perl_get_metadata ();
+      break;
+#endif
+    default:
+      ices_log_error ("Unknown playlist module!");
+      return NULL;
+  }
 }
 
 /* Initialize the toplevel playlist handler */

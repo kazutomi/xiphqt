@@ -63,14 +63,20 @@ ices_metadata_thread (void *arg)
   ices_stream_config_t* stream;
   input_stream_t* source = (input_stream_t*) arg;
   char song[1024];
+  char* playlist_metadata;
+  char* metadata;
   int rc;
 
   if (delay)
     thread_sleep (delay);
 
-  if (source->get_metadata (source, song, sizeof (song)) < 0) {
-    ices_metadata_clean_filename (source->path, song, sizeof (song));
-  }
+  if (! (playlist_metadata = ices_playlist_get_metadata ())) {
+    if (source->get_metadata (source, song, sizeof (song)) < 0) {
+      ices_metadata_clean_filename (source->path, song, sizeof (song));
+    }
+    metadata = song;
+  } else
+    metadata = playlist_metadata;
   
   if (ices_config.header_protocol == icy_header_protocol_e)
     ;
@@ -79,14 +85,16 @@ ices_metadata_thread (void *arg)
     ;
 
   for (stream = ices_config.streams; stream; stream = stream->next) {
-    rc = shout_update_metadata (&stream->conn, song);
+    rc = shout_update_metadata (&stream->conn, metadata);
 	
     if (rc != 1)
       ices_log_error ("Updating metadata on %s failed.", stream->mount);
     else
-      ices_log_debug ("Updated metadata on %s to: %s", stream->mount, song);
+      ices_log_debug ("Updated metadata on %s to: %s", stream->mount, metadata);
   }
-	
+
+  ices_util_free (playlist_metadata);
+
   thread_exit (0);
   return 0;
 }

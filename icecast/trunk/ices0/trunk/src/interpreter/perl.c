@@ -100,9 +100,9 @@ interpreter_perl_shutdown (void)
 void *
 interpreter_perl_eval_function (char *functionname)
 {
-	dSP;				/* initialize stack pointer      */
 	int retcount = 0;
-	char *retstr;
+	char *retstr = NULL;
+	dSP;				/* initialize stack pointer      */
 	
 	ices_log_debug ("Interpreting [%s]", functionname);
 	
@@ -110,15 +110,25 @@ interpreter_perl_eval_function (char *functionname)
 	SAVETMPS;			/* ...is a temporary variable.   */
 	PUSHMARK(SP);			/* remember the stack pointer    */
 	PUTBACK;			/* make local stack pointer global */
-	
-	retcount = perl_call_pv(functionname, G_SCALAR);	/* make the call */
+
+	/* G_SCALAR: get a scalar return | G_EVAL: Trap errors */
+	retcount = perl_call_pv(functionname, G_SCALAR | G_EVAL);
 	
 	SPAGAIN;			/* refresh stack pointer         */
-	
-	/* we're calling strdup here, free() this later! */
-	retstr = ices_util_strdup (POPp);/* pop the return value from stack */        
-	ices_log_debug ("perl [%s] returned %d values, last [%s]", functionname, retcount, retstr);
-	
+
+	/* Check for errors in execution */
+	if (SvTRUE (ERRSV)) {
+	  STRLEN n_a;
+	  ices_log_debug ("Perl error: %s", SvPV (ERRSV, n_a));
+	  (void) POPs;
+	} else if (retcount) {
+	  /* we're calling strdup here, free() this later! */
+	  retstr = ices_util_strdup (POPp);/* pop the return value from stack */        
+	  ices_log_debug ("perl [%s] returned %d values, last [%s]", functionname, retcount, retstr);
+	} else
+	  ices_log_debug ("Perl call returned nothing");
+
+	PUTBACK;
 	FREETMPS;			/* free that return value        */
 	LEAVE;				/* ...and the XPUSHed "mortal" args.*/
 	

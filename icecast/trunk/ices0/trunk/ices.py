@@ -11,13 +11,19 @@ songnumber = -1
 # Function called from the python api just to verify that your file
 # is ok.  
 def testfunction ():
-	print 'Should module version', ices_module_version, 'initializing...'
+	print 'ices module version', ices_module_version, 'initializing...'
 
 # Function called to get the next filename to stream. 
 # Should return a string.
 def ices_python_get_next ():
 	print 'Executing get_next() function...'
 	return 'Very nice song.mp3'
+
+# This function, if defined, returns the string you'd like used
+# as metadata (ie for title streaming) for the current song. You may
+# return null to indicate that the file comment should be used.
+def ices_python_get_metadata ()
+        return 'Artist - Title (Label, Year)'
 
 # Function called to initialize your python environment.
 # Should return 1 if ok, and 0 if something went wrong.
@@ -32,13 +38,8 @@ def ices_python_shutdown ():
 	return 1
 
 # Function used to put the current line number of
-# the playlist in the cue file. If you don't care
-# about cue files, just return any integer.
-# It should, however, return 0 the very first time
-# and then never 0 again. This is because the metadata
-# updating function should be delayed a little for
-# the very first song, because the icecast server may
-# not have accepted the stream yet.
+# the playlist in the cue file. If you don't care about this number
+# don't use it.
 def ices_python_get_current_lineno ():
 	global songnumber
 	print 'Executing get_current_lineno() function...'

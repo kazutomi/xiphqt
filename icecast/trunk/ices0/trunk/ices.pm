@@ -22,14 +22,14 @@ sub ices_perl_get_next {
 	return "/home/chad/music/A Perfect Circle - Reinholder.mp3";
 }
 
+# If defined, the return value is used for title streaming (metadata)
+sub ices_perl_get_metadata {
+        return "Artist - Title (Album, Year)";
+}
+
 # Function used to put the current line number of
 # the playlist in the cue file. If you don't care
 # about cue files, just return any integer.
-# It should, however, return 0 the very first time
-# and then never 0 again. This is because the metadata
-# updating function should be delayed a little for
-# the very first song, because the icecast server may
-# not have accepted the stream yet.
 sub ices_perl_get_current_lineno {
 	return 1;
 }
