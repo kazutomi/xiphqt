@@ -77,12 +77,6 @@ ices_stream_loop (void)
   while (1) {
     char *file;
 
-    /* NULL definition as of now, it will handle scripted
-     * DJ files in the future. Or perhaps there is no need
-     * for this now that all playlist handling is done in
-     * scripts. */
-    ices_dj_pre ();
-
     /* Get the next file to stream from the playlist module.
      * This is a dynamically allocated string, which we free
      * further down in the loop */
@@ -133,10 +127,6 @@ ices_stream_loop (void)
       /* Reset the consecutive error counter */
       consecutive_errors = 0;
     }
-		
-    /* Run the post DJ program/script
-     * Currently does nada */
-    ices_dj_post ();
 		
     /* Free the dynamically allocated filename */
     ices_util_free (file);

@@ -111,7 +111,6 @@
 #include "log.h"
 #include "util.h"
 #include "cue.h"
-#include "dj.h"
 #include "id3.h"
 #include "mp3.h"
 #include "signals.h"
