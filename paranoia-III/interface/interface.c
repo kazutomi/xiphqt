@@ -13,22 +13,12 @@
 #include "common_interface.h"
 #include "utils.h"
 
-static void _clean_messages(cdrom_drive *d){
-  if(d){
-    if(d->messagebuf)free(d->messagebuf);
-    if(d->errorbuf)free(d->errorbuf);
-    d->messagebuf=NULL;
-    d->errorbuf=NULL;
-  }
-}
-
 /* doubles as "cdrom_drive_free()" */
 int cdda_close(cdrom_drive *d){
   if(d){
     if(d->opened)
       d->enable_cdda(d,0);
 
-    _clean_messages(d);
     if(d->cdda_device_name)free(d->cdda_device_name);
     if(d->ioctl_device_name)free(d->ioctl_device_name);
     if(d->drive_model)free(d->drive_model);
@@ -43,54 +33,37 @@ int cdda_close(cdrom_drive *d){
 
 /* finish initializing the drive! */
 int cdda_open(cdrom_drive *d){
-  int ret;
   if(d->opened)return(0);
 
   switch(d->interface){
   case GENERIC_SCSI:  
-    if((ret=scsi_init_drive(d)))
-      return(ret);
+    if(scsi_init_drive(d))
+      return(1);
     break;
   case COOKED_IOCTL:  
-    if((ret=cooked_init_drive(d)))
-      return(ret);
+    if(cooked_init_drive(d))
+      return(1);
     break;
 #ifdef CDDA_TEST
   case TEST_INTERFACE:  
-    if((ret=test_init_drive(d)))
-      return(ret);
+    if(test_init_drive(d))
+      return(1);
     break;
 #endif
   default:
     cderror(d,"100: Interface not supported\n");
-    return(-100);
+    return(1);
   }
   
-  /* Check TOC, enable for CDDA */
-  
-  /* Some drives happily return a TOC even if there is no disc... */
-  {
-    int i;
-    for(i=0;i<d->tracks;i++)
-      if(d->disc_toc[i].dwStartSector<0 ||
-	 d->disc_toc[i+1].dwStartSector==0){
-	d->opened=0;
-	cderror(d,"009: CDROM reporting illegal table of contents\n");
-	return(-9);
-      }
-  }
+  /* Get TOC, enable for CDDA */
 
-  if((ret=d->enable_cdda(d,1)))
-    return(ret);
+  d->nothing_read=-1;
+  if(d->enable_cdda(d,1))
+    return(1);
     
   /*  d->select_speed(d,d->maxspeed); most drives are full speed by default */
   if(d->bigendianp==-1)d->bigendianp=data_bigendianp(d);
   return(0);
-}
-
-int cdda_speed_set(cdrom_drive *d, int speed)
-{
-  return d->set_speed ? d->set_speed(d, speed) : 0;
 }
 
 long cdda_read(cdrom_drive *d, void *buffer, long beginsector, long sectors){
@@ -105,7 +78,7 @@ long cdda_read(cdrom_drive *d, void *buffer, long beginsector, long sectors){
 	
 	if(d->bigendianp!=bigendianp()){
 	  int i;
-	  u_int16_t *p=(u_int16_t *)buffer;
+	  unsigned size16 *p=(unsigned size16 *)buffer;
 	  long els=sectors*CD_FRAMESIZE_RAW/2;
 	  
 	  for(i=0;i<els;i++)p[i]=swap16(p[i]);
@@ -116,7 +89,16 @@ long cdda_read(cdrom_drive *d, void *buffer, long beginsector, long sectors){
   }
   
   cderror(d,"400: Device not open\n");
-  return(-400);
+  return(-1);
+}
+
+int cdda_speed(cdrom_drive *d, unsigned speed){
+  if(!d->opened){
+    cderror(d,"400: Device not open\n");
+    return(1);
+  }
+  if(d->select_speed(d,speed))return(1);
+  return(0);
 }
 
 void cdda_verbose_set(cdrom_drive *d,int err_action, int mes_action){

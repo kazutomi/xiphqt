@@ -1,6 +1,6 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
- * Copyright (C) 1998, 2002 Monty monty@xiph.org
+ * Copyright (C) 1998 Monty xiphmont@mit.edu
  *
  * CDROM communication common to all interface methods is done here 
  * (mostly ioctl stuff, but not ioctls specific to the 'cooked'
@@ -28,23 +28,16 @@ int ioctl_ping_cdrom(int fd){
 
 /* Use the ioctl thingy above ping the cdrom; this will get model info */
 char *atapi_drive_info(int fd){
-  /* Work around the fact that the struct grew without warning in
-     2.1/2.0.34 */
-  
-  struct hd_driveid *id=malloc(512); /* the size in 2.0.34 */
-  char *ret;
+  static struct hd_driveid id;
 
-  if (!(ioctl(fd, HDIO_GET_IDENTITY, id))) {
+  if (!(ioctl(fd, HDIO_GET_IDENTITY, &id))) {
 
-    if(id->model==0 || id->model[0]==0)
-      ret=copystring("Generic Unidentifiable ATAPI CDROM");
+    if(id.model==0 || id.model[0]==0)
+      return(copystring("Generic Unidentifiable ATAPI CDROM"));
     else
-      ret=copystring(id->model);
-  }else
-    ret=copystring("Generic Unidentifiable CDROM");
-
-  free(id);
-  return(ret);
+      return(copystring(id.model));
+  }
+  return(copystring("Generic Unidentifiable CDROM"));
 }
 
 int data_bigendianp(cdrom_drive *d){
@@ -55,7 +48,7 @@ int data_bigendianp(cdrom_drive *d){
   float *a=calloc(1024,sizeof(float));
   float *b=calloc(1024,sizeof(float));
   long readsectors=5;
-  int16_t *buff=malloc(readsectors*CD_FRAMESIZE_RAW);
+  size16 *buff=malloc(readsectors*CD_FRAMESIZE_RAW);
 
   /* look at the starts of the audio tracks */
   /* if real silence, tool in until some static is found */
@@ -63,8 +56,7 @@ int data_bigendianp(cdrom_drive *d){
   /* Force no swap for now */
   d->bigendianp=-1;
   
-  cdmessage(d,"\nAttempting to determine drive endianness from data...");
-  d->enable_cdda(d,1);
+  cdmessage(d,"Attempting to determine drive endianness from data...");
   for(i=0,checked=0;i<d->tracks;i++){
     float lsb_energy=0;
     float msb_energy=0;
@@ -94,13 +86,8 @@ int data_bigendianp(cdrom_drive *d){
 	  }
 	  if(!zeroflag)break;
 	  firstsector+=readsectors;
-	}else{
-	  d->enable_cdda(d,0);
-	  free(a);
-	  free(b);
-	  free(buff);
-	  return(-1);
 	}
+	
       }
 
       beginsec*=CD_FRAMESIZE_RAW/2;
@@ -111,14 +98,14 @@ int data_bigendianp(cdrom_drive *d){
 	
 	for(j=0;j<128;j++)a[j]=le16_to_cpu(buff[j*2+beginsec+460]);
 	for(j=0;j<128;j++)b[j]=le16_to_cpu(buff[j*2+beginsec+461]);
-	fft_forward(128,a,NULL,NULL);
-	fft_forward(128,b,NULL,NULL);
+	fft_forward(128,a);
+	fft_forward(128,b);
 	for(j=0;j<128;j++)lsb_energy+=fabs(a[j])+fabs(b[j]);
 	
 	for(j=0;j<128;j++)a[j]=be16_to_cpu(buff[j*2+beginsec+460]);
 	for(j=0;j<128;j++)b[j]=be16_to_cpu(buff[j*2+beginsec+461]);
-	fft_forward(128,a,NULL,NULL);
-	fft_forward(128,b,NULL,NULL);
+	fft_forward(128,a);
+	fft_forward(128,b);
 	for(j=0;j<128;j++)msb_energy+=fabs(a[j])+fabs(b[j]);
       }
     }
@@ -139,7 +126,6 @@ int data_bigendianp(cdrom_drive *d){
   free(a);
   free(b);
   d->bigendianp=endiancache;
-  d->enable_cdda(d,0);
 
   /* How did we vote?  Be potentially noisy */
   if(lsb_votes>msb_votes){
@@ -166,46 +152,14 @@ int data_bigendianp(cdrom_drive *d){
 }
 
 /************************************************************************/
-/* Here we fix up a couple of things that will never happen.  yeah,
-   right.  The multisession stuff is from Hannu's code; it assumes it
-   knows the leadoud/leadin size. */
+/* Query for multisession sector boundaries; make sure our last audio
+   track ends within the audio session. This is derived from Heiko's
+   code.  Frankly, I don't understand exactly what he's doing. */
 
 int FixupTOC(cdrom_drive *d,int tracks){
   struct cdrom_multisession ms_str;
-  int j;
-  
-  /* First off, make sure the 'starting sector' is >=0 */
-  
-  for(j=0;j<tracks;j++){
-    if(d->disc_toc[j].dwStartSector<0){
-      cdmessage(d,"\n\tTOC entry claims a negative start offset: massaging"
-		".\n");
-      d->disc_toc[j].dwStartSector=0;
-    }
-    if(j<tracks-1 && d->disc_toc[j].dwStartSector>
-       d->disc_toc[j+1].dwStartSector){
-      cdmessage(d,"\n\tTOC entry claims an overly large start offset: massaging"
-		".\n");
-      d->disc_toc[j].dwStartSector=0;
-    }
 
-  }
-  /* Make sure the listed 'starting sectors' are actually increasing.
-     Flag things that are blatant/stupid/wrong */
-  {
-    long last=d->disc_toc[0].dwStartSector;
-    for(j=1;j<tracks;j++){
-      if(d->disc_toc[j].dwStartSector<last){
-	cdmessage(d,"\n\tTOC entries claim non-increasing offsets: massaging"
-		  ".\n");
-	 d->disc_toc[j].dwStartSector=last;
-	
-      }
-      last=d->disc_toc[j].dwStartSector;
-    }
-  }
-
-  /* For a scsi device, the ioctl must go to the specialized SCSI
+  /* For a scsi device, the ioctl must got to the specialized SCSI
      CDROM device, not the generic device. */
 
   if (d->ioctl_fd != -1) {
@@ -216,6 +170,7 @@ int FixupTOC(cdrom_drive *d,int tracks){
     if (result == -1) return -1;
 
     if (ms_str.addr.lba > 100) {
+      int j;
 
       /* This is an odd little piece of code --Monty */
 
@@ -223,8 +178,7 @@ int FixupTOC(cdrom_drive *d,int tracks){
       /* adjust end of last audio track to be in the first session */
       for (j = tracks-1; j >= 0; j--) {
 	if (j > 0 && !IS_AUDIO(d,j) && IS_AUDIO(d,j-1)) {
-	  if ((d->disc_toc[j].dwStartSector > ms_str.addr.lba - 11400) &&
-	      (ms_str.addr.lba - 11400 > d->disc_toc[j-1].dwStartSector))
+	  if (d->disc_toc[j].dwStartSector > ms_str.addr.lba - 11400) 
 	    d->disc_toc[j].dwStartSector = ms_str.addr.lba - 11400;
 	  break;
 	}
