@@ -18,6 +18,9 @@
  *
  */
 
+#ifndef _ICES_DEFINITIONS_H
+#define _ICES_DEFINITIONS_H
+
 #ifdef _WIN32
 #include <win32config.h>
 #elif defined(HAVE_CONFIG_H)
@@ -94,33 +97,8 @@
 #include <fcntl.h>
 #endif
 
-typedef enum {icy_header_protocol_e = 0, xaudiocast_header_protocol_e = 1} header_protocol_t;
-typedef enum {ices_playlist_python_e = 0, ices_playlist_builtin_e = 1, ices_playlist_perl_e = 2} playlist_type_t;
-typedef struct ices_config_St {
-	char *host;
-	int port;
-	char *mount;
-	char *password;
-	header_protocol_t header_protocol;
-	char *name;
-	char *genre;
-	char *description;
-	char *url;
-	int bitrate;
-	int ispublic;
-	int daemon;
-	int randomize_playlist;
-	int pre_dj;
-	int post_dj;
-	int playlist_type;
-	int verbose;
-	int reencode;
-	char *dumpfile;
-	char *configfile;
-	char *playlist_file;
-	char *interpreter_file;
-	char *base_directory;
-}ices_config_t;
+/* This has all the datatypes */
+#include "icestypes.h"
 
 #include "setup.h"
 #include "stream.h"
@@ -159,3 +137,5 @@ typedef struct ices_config_St {
 #define ICES_DEFAULT_PLAYLIST_TYPE ices_playlist_builtin_e;
 #define ICES_DEFAULT_VERBOSE 0
 #define ICES_DEFAULT_REENCODE 0
+
+#endif

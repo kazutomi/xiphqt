@@ -19,18 +19,25 @@
  */
 
 #ifndef __ICECAST_INTERPRETER_H
-#define __ICECAST_INTERPRETER_H
+# define __ICECAST_INTERPRETER_H
 
 void interpreter_init ();
 void interpreter_shutdown ();
-#if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
-void *interpreter_python_eval_function (char *functionname);
+# if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
 char *interpreter_playlist_python_get_next ();
+int interpreter_playlist_python_initialize ();
+int interpreter_playlist_python_shutdown ();
+int interpreter_playlist_python_get_current_lineno ();
+void *interpreter_python_eval_function (char *functionname);
+# endif
+
+# if defined(HAVE_LIBPERL)
+char *interpreter_playlist_perl_get_next ();
 int interpreter_playlist_perl_initialize (ices_config_t *ices_config);
 int interpreter_playlist_perl_shutdown (ices_config_t *ices_config);
 int interpreter_playlist_perl_get_current_lineno ();
-#endif
-#endif
+void * interpreter_perl_eval_function (char *functionname);
+# endif
 
-
+#endif
 

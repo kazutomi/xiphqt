@@ -25,10 +25,15 @@ extern ices_config_t ices_config;
 #if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
 static void interpreter_python_init ();
 static void interpreter_python_shutdown ();
+/* python defines _REENTRANT */
+#undef _REENTRANT
 #include "python.c"
 #endif
 
-#if defined(HAVE_PERL_H) && defined(HAVE_LIBPERL)
+#if defined(HAVE_LIBPERL)
+# ifdef ANY
+#  undef ANY
+# endif
 static void interpreter_perl_init ();
 static void interpreter_perl_shutdown ();
 #include "perl.c"

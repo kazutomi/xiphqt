@@ -17,9 +17,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-#include <EXTERN.h>
-#include <perl.h>
-#include "definitions.h"
+
+/* Stupid automake and STUPID perl */
+#ifdef PACKAGE
+#undef PACKAGE
+#endif
+
+#include <EXTERN.h> 
+#include <perl.h> 
 
 static PerlInterpreter *my_perl;
 

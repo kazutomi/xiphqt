@@ -21,7 +21,13 @@
 #include "definitions.h"
 
 #if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
-#include "playlist_python.c"
-#elif defined(HAVE_PERL_H) && defined(HAVE_LIBPERL)
-#include "playlist_perl.c"
+#undef _REENTRANT
+# include "playlist_python.c"
+#endif
+
+#if defined(HAVE_LIBPERL)
+# ifdef ANY
+#  undef ANY
+# endif
+# include "playlist_perl.c"
 #endif
