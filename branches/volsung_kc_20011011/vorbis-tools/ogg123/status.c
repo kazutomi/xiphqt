@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.7.2.4 2001/12/11 05:29:08 volsung Exp $
+ last mod: $Id: status.c,v 1.1.2.7.2.5 2001/12/11 15:05:56 volsung Exp $
 
  ********************************************************************/
 
@@ -22,7 +22,7 @@
 #include "buffer.h"
 #include "status.h"
 
-
+char temp_buffer[200];
 int last_line_len = 0;
 int max_verbosity = 0;
 
@@ -100,12 +100,8 @@ void SetTime (stat_format_t stats[], ogg_int64_t sample)
 #endif
 
 
-void clear_line ()
+void clear_line (int len)
 {
-  int len;
-
-  len = last_line_len;
-
   fputc('\r', stderr);
 
   while (len > 0) {
@@ -117,12 +113,38 @@ void clear_line ()
 }
 
 
+int sprintf_clear_line(int len, char *buf)
+{
+  int i = 0;
+
+  buf[i] = '\r';
+  i++;
+
+  while (len > 0) {
+    buf[i] = ' ';
+    len--;
+    i++;
+  }
+
+  buf[i] = '\r';
+  i++;
+
+  /* Null terminate just in case */
+  buf[i] = '\0';
+
+  return i;
+}
+
 int print_statistics_line (stat_format_t stats[])
 {
   int len = 0;
-  
-  clear_line(last_line_len);
-  
+  char *str = temp_buffer;
+
+  /* Put the clear line text into the same string buffer so that the
+     line is cleared and redrawn all at once.  This reduces
+     flickering.  Don't count characters used to clear line in len */
+  str += sprintf_clear_line(last_line_len, str); 
+
   while (stats->formatstr != NULL) {
     
     if (stats->verbosity > max_verbosity || !stats->enabled) {
@@ -131,30 +153,32 @@ int print_statistics_line (stat_format_t stats[])
     }
 
     if (len != 0)
-      len += fprintf(stderr, " ");
+      len += sprintf(str+len, " ");
 
     switch (stats->type) {
     case stat_noarg:
-      len += fprintf(stderr, stats->formatstr);
+      len += sprintf(str+len, stats->formatstr);
       break;
     case stat_intarg:
-      len += fprintf(stderr, stats->formatstr, stats->arg.intarg);
+      len += sprintf(str+len, stats->formatstr, stats->arg.intarg);
       break;
     case stat_stringarg:
-      len += fprintf(stderr, stats->formatstr, stats->arg.stringarg);
+      len += sprintf(str+len, stats->formatstr, stats->arg.stringarg);
       break;
     case stat_floatarg:
-      len += fprintf(stderr, stats->formatstr, stats->arg.floatarg);
+      len += sprintf(str+len, stats->formatstr, stats->arg.floatarg);
       break;
     case stat_doublearg:
-      len += fprintf(stderr, stats->formatstr, stats->arg.doublearg);
+      len += sprintf(str+len, stats->formatstr, stats->arg.doublearg);
       break;
     }
 
     stats++;
   }
 
-  fprintf(stderr, "\r");
+  len += sprintf(str+len, "\r");
+
+  fprintf(stderr, "%s", temp_buffer);
 
   return len;
 }
@@ -211,8 +235,8 @@ stat_format_t *stat_format_create ()
     
   cur = stats + 2; /* remaining playback time (preformatted) */
   cur->verbosity = 1;
-  cur->enabled = 0;
-  cur->formatstr = "%s";
+  cur->enabled = 1;
+  cur->formatstr = "[%s]";
   cur->type = stat_stringarg;
   cur->arg.stringarg = calloc(TIME_STR_SIZE, sizeof(char));
 
@@ -224,7 +248,7 @@ stat_format_t *stat_format_create ()
 
   cur = stats + 3; /* total playback time (preformatted) */
   cur->verbosity = 1;
-  cur->enabled = 0;
+  cur->enabled = 1;
   cur->formatstr = "of %s";
   cur->type = stat_stringarg;
   cur->arg.stringarg = calloc(TIME_STR_SIZE, sizeof(char));
@@ -319,7 +343,7 @@ void status_clear_line ()
 {
   pthread_mutex_lock(&output_lock);
 
-  clear_line();
+  clear_line(last_line_len);
 
   pthread_mutex_unlock(&output_lock);
 }
@@ -377,8 +401,6 @@ void status_print_statistics (stat_format_t *stats,
       write_buffer_state_string(stats[9].arg.stringarg, audio_statistics);
     }
     
-    clear_line();
-
     last_line_len = print_statistics_line(stats);
 
     pthread_mutex_unlock(&output_lock);
