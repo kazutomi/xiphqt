@@ -8,26 +8,419 @@
 
 
 
-			<h1>Speex News</h1>
+        <h1>News</h1>
+		<!--
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'></div>
+			<div class='meta'></div>
+		</div>
+		<div class='content'>
 
-			<!-- Bwahaha! tables for layout purposes! In XHTML! -->
+		</div>
+	</div>
+-->
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.0.4 Released</div>
+			<div class='meta'>July 21, 2004</div>
+		</div>
+		<div class='content'>
+			<p>
+			There are three changes in this release.
+			<ul>
+				<li>Headers are now in /usr/include/speex/ (but a copy is still in /usr/include for compat reasons).</li>
+				<li>Pseudo-gapless playback (i.e. playback has the same number of samples)</li>
+				<li>Fixed a potential bug (unconfirmed) that might cause a segfault in special circumstances.</li>
+			</ul>
+			</p>
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.1.5 Released</div>
+			<div class='meta'>April 21, 2004</div>
+		</div>
+		<div class='content'>
+			<p>
+			The main change in this release is that the 1.1.5 <abbr title='application programming interface'>API</abbr> and
+			<abbr title='application binary interface'>ABI</abbr> are now compatible with 1.0.<var>x</var>. The versions of the functions taking
+			a <code>short*</code> now have an "_int" suffix, as in <code>speex_encode_int()</code>.
+			</p>
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.1.4 Released</div>
+			<div class='meta'>January 20, 2004</div>
+		</div>
+		<div class='content'>
+	            <p>                Happy Belated New Year. This release has minor fixed-point improvements and a code cleanup.                The SSE code has been converted from inline assembly to SSE intrinsics, so it should now work on win32. More functions have been written to use SSE.            </p>	
+		</div>
+		</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.1.3 Released</div>
+			<div class='meta'>December 2, 2003</div>
+		</div>
+		<div class='content'>
+<p>This unstable release brings more improvements to the fixed-point port. Many new functions have been converted and most modes now work in real-time. I encourage everyone to test this code by compiling with <kbd>--enable-fixed-point</kbd> and <kbd>--enable-fixed-point-debug</kbd> and report any error messages and send the (smallest possible) file which reproduces the problem.</p>
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.0.3 Released</div>
+			<div class='meta'>November 19, 2003</div>
+		</div>
+		<div class='content'>
+<p>
+In this bugfix release: a fix for a multithreqading bug and a correction for an underflow problem that could slow decoding dramatically on x86 processors.
+</p>
 
-			<table class='newsentry'>
-				<thead>
-					<tr>
-						<th>Speex 1.1.1 Released</th>
-						<th>January 5, 2003</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td colspan='2'>
-							This is the latest release of Speex. In this release, we've improved
-							portability to non-POSIX operating systems and finished up the
-							FPU-free version. Please test it.
-						</td>
-					</tr>
-				</tbody>
-			</table>
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.1.2 Released</div>
+			<div class='meta'>November 11, 2003</div>
+		</div>
+		<div class='content'>
+
+<p>This new unstable release improves on the fixed-point port started in <a href='olddownload.html#one.1.1'>1.1.1</a>. The port is not yet complete, but many modes are now usable in real-time on ARM processors. The fixed-point version is enabled with <kbd>--enable-fixed-point</kbd> and ARM-specific optimizations can be enabled with <kbd>--enable-arm-asm</kbd>.</p>
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.1.1 Released</div>
+			<div class='meta'>November 1, 2003</div>
+		</div>
+		<div class='content'>
+			<p>This release adds a partial fixed-point port which can be enabled using the <kbd>--enable-fixed-point</kbd> option at configure time. Not all floating-point operations have been converted yet, but all the code should work.</p>
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.0.2 Released</div>
+			<div class='meta'>September 24, 2003</div>
+		</div>
+		<div class='hlcontent'>
+<p>
+Just a bugfix release. This update adds soundcard support for Solaris and the
+BSDs as well as minor bugfixes and a documentation update.
+</p>
+
+		</div>
+	</div>
+	<div class='newsitem'>
+		<div class='hlheader'>
+			<div class='title'>Speex 1.1 Released</div>
+			<div class='meta'>September 18, 2003</div>
+		</div>
+		<div class='hlcontent'>
+<p>
+This is an <strong>unstable</strong> release. It brings many new features, some
+of which are still experimental. The new features are:
+</p>
+<ul>
+<li>
+a denoiser that removes most of the background noise and can be used before
+encoding (available as <kbd>--denoise</kbd> in speexenc)
+</li>
+<li>
+automatic gain control (AGC), which adjusts the volume to a constant level
+(available as <kbd>--agc</kbd> in speexenc)
+</li>
+<li>echo cancellation (experimental, only available from libspeex)</li>
+<li>
+A jitter buffer which handles packet buffering for <abbr>VoIP</abbr>
+applications (experimental, only available from libspeex)
+</li>
+<li>
+an improved narrowband mode at 4.8 <abbr>kbps</abbr> (nonstandard mode,
+only availablefrom libspeex for applications that don't require compatibility
+with other software)
+</li>
+</ul>
+<p>
+Please test this release and report bugs. If you’re developing a
+<abbr>VoIP</abbr> application, you are encouraged to try out these new features
+which will help increase the quality of the speech transmitted.
+</p>
+		</div>
+	</div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Speex goes 1.0</div>
+            <div class="meta">March 24, 2003</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+			It’s official; Speex has reached the 1.0 milestone. In addition to
+			some minor cosmetic fixes, the bitstream format has been frozen.
+        </p>
+		<p>
+			For a bit more information, read the
+			<a href="http://www.xiph.org/press/2003/nonprofitspeex1/">press release</a>.
+		</p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title"><abbr title="Release Candidate">RC</abbr>3 released; <strong>last call for changes</strong></div>
+            <div class="meta">Sunday, March 2, 2003</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+			Just some more bugfixes and tuning are in this release;
+			If no bugs are found, this may be rebranded Speex 1.0.
+        </p>
+		<p><em>If  there’s anything that doesn’t work, <strong>now</strong> is your last good time to report a bug.</em></p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title"><abbr title="Release Candidate">RC</abbr>2 released</div>
+            <div class="meta">January 28, 2003</div>
+          </div>
+          <div class="hlcontent">
+	<p>Again, from the <a href="download.html">Download</a> page:</p>
+	<blockquote>
+		<p>
+			This is the second <abbr title="Release Candidate">RC</abbr> for Speex. It fixes some minor bugs and reduces the binary size somewhat as the codebooks were converted from <code>float</code> values to <code>char</code>s. As a result of this, files encoded with earlier versions will have a slight increase in noise (typically less than 1 <abbr title="decibel">dB</abbr>) when decoded with the newer decoder.
+		</p>
+
+		<p>As with the last release, you are encouraged to test it, beat on it, and report bugs. If you want to know how you can make 1.0 better, have a look at the <a href="todo.html">Roadmap</a> page.
+		</p>
+	</blockquote>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title"><abbr title="Release Candidate">RC</abbr>1 released</div>
+            <div class="meta">January 16, 2003</div>
+          </div>
+          <div class="hlcontent">
+		<p>From the <a href="download.html">Download</a> page:</p>
+		<blockquote>
+	<p>
+		This is Release Candidate 1 for Speex 1.0. The only new feature (yes, <span title="Jean-Marc Valin">I</span> know beta4 was supposed to be feature-complete) is a very low bitrate (3.95 <abbr title="kilobits per second">kbps</abbr>) mode for narrowband. This release also fixes a number of bugs, including  a fix for low-bitrate wideband encoding—however, this fix adds high-frequency noise during the decoding of beta4 and earlier data. Finally, the WAV handling is more robust and handles undocumented extensions better.
+	</p>
+
+	<p>
+	The goal is to release <abbr title="Release Candidate">RC</abbr>2 in early February, and if all goes well (no major bugs are found), release 1.0 before March. For more details, including how you can make 1.0 better, see the <a href="todo.html">Roadmap</a>.	
+	</p>
+		</blockquote>
+
+	</div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Beta 4 released</div>
+            <div class="meta">December 20, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            This is the 4th beta and probably the last before we start putting out release candidates. This release adds a number of quality improvements and some new features; first, the quality of the variable bitrate (VBR) mode has been greatly improved, especially for wideband. Also, some improvements were made to the packetloss concealment code in order to reduce artifacts caused by lost packets. There has been improvements to the 2.15 kbps mode, which now sounds a bit better. The last quality improvement is in the perceptual enhancement which is now good enough to be enabled by default in speexdec (but not by default in libspeex for now).
+        </p>
+        <p>
+One of the new features in this release is a VAD (Voice Activity Detection) mode that conserves bandwidth when there’s no speech, and even when VBR isn’t enabled.  VAD is coupled with DTX (Discontinuous Transmission), a feature that can completely stop data transmission when the noise is constant (in which case, comfort noise generation is turned on). The last new feature in this release is an ABR (Average Bitrate) option, which uses VBR with a quality that’s adjusted to meet a certain target (average) bitrate.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Experimental Java bindings for Speex</div>
+            <div class="meta">December 18, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            Boyd Ebsworthy has released (very) experimental Java bindings
+            of Speex. As usual the libraries are available on the
+            <a href="download.html">download</a> page.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Minor site updates</div>
+            <div class="meta">November 29, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            index.html has been updated with the news that Speex is a
+            GNU project. Additionally, the <a href="todo.html">Todo</a> list has
+            been updated.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Windows binaries of Speex Beta 3,
+        <abbr title="realtime protocol">RTP</abbr> Draft 5 available,
+        and a Debian package listing</div>
+            <div class="meta">November 12, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            The latest draft of the Speex RTP is available on the
+            <a href="standards.html">Standards</a> page and the
+            Windows binaries are on the <a href="download.html">Download</a>
+            page. Finally, since Speex was added to
+            <a href="http://www.debian.org/">Debian</a>’s packaging
+            system, we’ve put up a
+            <a href="packages.html">packages</a> page with information
+            about Speex in other package repositories.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Speex Beta 3 released</div>
+            <div class="meta">November 11, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            This is the third beta for Speex, implementing what should be the
+            last new features before 1.0. These new features are a new
+            “ultra-wideband” mode for encoding at 32kHz
+            (up to 48kHz) and an intensity stereo mode. Both of these are
+            implemented to preserve backward and forward compatibility
+            with other releases. This means that it is now possible to
+            encode almost any wave file using Speex. Most of the work left
+            for 1.0 is now quality improvements regarding VBR,
+            perceptual enhancement and packet loss concealment.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Draft 4 of the Speex <abbr title="realtime protocol">RTP</abbr>
+        draft available</div>
+            <div class="meta">November 25, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            <a href="drafts/draft-herlein-speex-rtp-profile-04.txt">Draft 4</a> of the Speex RTP is available.
+            All of the drafts (past and present) are available in the
+            <a href="drafts/">drafts</a> directory.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Windows binaries of Speex Beta 2 released</div>
+            <div class="meta">October 29, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            John Edwards has provided us with Windows binaries of the
+            Beta 2 release, and are available on the
+            <a href="download.html">download</a> page.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Speex Beta 2 released</div>
+            <div class="meta">October 22, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            This second beta release brings many, many optimizations to the
+            encoder and decoder. In some cases, the speedup is on the order
+            of 50% to 100%.  As part of the optimizations, some sections of
+            Speex have been written in assembly with
+            <abbr title="streaming SIMD extensions">SSE</abbr>
+            instructions which can be enabled with the <code>_USE_SSE</code>
+            flag when compiling with <a href="http://gcc.gnu.org/">GCC</a>.
+            Finally, the code has received a major cleanup.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">New site redesign</div>
+            <div class="meta">October 11–22, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            The old site had a bug that
+            <abbr title="Internet Explorer">IE</abbr> 6 didn’t
+            interpret the same way as other browsers, which prompted a total
+            rewrite of the site. Now, speex.org uses the latest
+            <a href="http://www.webstandards.org">web standards</a>,
+            including
+            <abbr title="eXtensible hypertext markup language">XHTML</abbr>
+            1.1 for content,
+            <abbr title="cascading stylesheets">CSS</abbr> for
+            presentation, and the occasional 
+            <abbr title="portable network graphics">PNG</abbr> graphic.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Now a member of <a href="http://www.xiph.org/">Xiph.Org</a></div>
+            <div class="meta">October 11, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            Speex is now a project of the
+            <a href="http://www.xiph.org/">Xiph.Org Foundation</a>, a
+            non-profit company devoted to the creation, production and
+            maintenance of open multimedia standards. In addition to
+            moving to Xiph, the Speex source is now licensed under
+            Xiph.org's variant of the BSD license.
+        </p>
+        <p>
+            Also, today marks the release of Speex Beta One!
+            It is available via the
+            <a href="download.html">download page</a> as source and
+            pre-compiled binaries. The
+            <abbr title="application programming interface">API</abbr>
+            and bitstream are in “soft freeze”,
+            and there’s new support for vorbiscomment. Enjoy!
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Speex 0.8.1 released</div>
+            <div class="meta">November 4, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            Speex 0.8.1 released. This release fixes a bug in the new 0.8
+            API (<code>speex_mode_query()</code>). Users of speexenc and
+            speexdec don’t need to upgrade, but users of libspeex
+            (either directly or through another application) should.
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Speex 0.8.0 released</div>
+            <div class="meta">August 24, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+            Speex 0.8.0 released. The <code>speex_decode()</code> function no
+            longer uses the “lost” parameter.
+            Applications will need to be updated. 
+        </p>
+    </div>
+        </div>
+        <div class="newsitem">
+          <div class="hlheader">
+            <div class="title">Speex 0.7.0 released</div>
+            <div class="meta">August 9, 2002</div>
+          </div>
+          <div class="hlcontent">
+        <p>
+           Speex 0.7.0 released. The format of the bit stream has changed once
+           again and the bandwidth required has been reduced slightly.  
+        </p>
+    </div>
+        </div>
 
 <!--#include virtual="/SSI/bottomofbody.inc"-->

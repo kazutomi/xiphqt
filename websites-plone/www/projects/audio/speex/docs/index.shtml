@@ -1,0 +1,54 @@
+﻿<!--#include virtual="/SSI/topofhead.inc"-->
+<title>Xiph.org: Speex</title>
+<!--#include virtual="/projects/audio/speex/SSI/inhead.inc"-->
+<style type="text/css" media="screen">li#home { background: no-repeat url(/Images/logos/speex/20x35.png) left #88c24d; }</style>
+<!--#include virtual="/SSI/topofbody.inc"-->
+<!--#include virtual="/projects/audio/speex/SSI/leftside.inc"-->
+<!--#include virtual="/SSI/rightside.inc"-->
+
+<h1>Documentation</h1>
+<p>
+	Have a look at the
+	<a href="/faq/"><abbr title="Frequently Asked Questions">FAQ</abbr></a>
+	if you’re not quite sure what Speex is, or what it can do.
+</p>
+<h2>Manual</h2>
+<p>
+	The Speex manual provides an introduction to Speex and
+	<abbr title="Code Excited Linear Prediction">CELP</abbr> coding,
+	<span class="program">speexenc</span> and
+	<span class="program">speexdec</span> information, 
+	libspeex <abbr title="Application Programming Interface">API</abbr>
+	information,
+	and miscellaneous format information.
+</p>
+<ul>
+	<li><a href="manual.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
+	<li><a href="manual.ps">Postscript</a></li>
+	<li><a href="manual2/">HTML (online)</a></li>
+	<li><a href="manual.tar.gz">HTML (tarball)</a></li>
+</ul>
+
+<h2><abbr title="Application Programming Interface">API</abbr> Reference</h2>
+<p>
+	The Speex <abbr title="Application Programming Interface">API</abbr>
+	Reference Manual provides information on programming with libspeex.
+</p>
+<ul>
+	<li><a href="API/refman.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
+	<li><a href="API/refman.ps">Postscript</a></li>
+	<li><a href="API/refman/">HTML (online)</a></li>
+	<li><a href="API/refman.tar.gz">HTML (tarball)</a></li>
+</ul>
+
+<h2>Standards</h2>
+<p>
+	There are efforts underway to make Speex an
+	<abbr title="Internet Engineering Task Force">IETF</abbr>-blessed format;
+	A draft of “<a href="drafts/draft-herlein-speex-rtp-profile-02.txt"><abbr title="Realtime Protocol">RTP</abbr> Payload
+	Format for the Speex Codec</a>” is available.
+</p>
+
+
+<!--#include virtual="/SSI/bottomofbody.inc"-->
+
