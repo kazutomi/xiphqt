@@ -850,7 +850,7 @@ static inline void _next_sample(int16 *out){
       _playback_remove(i);
     
     /* determine if fade out has begun */
-    if(t->sample_position==t->sample_fade_start){
+    if(t->sample_position==t->sample_fade_start && !t->loop_p){
       /* effect a master volume slew *now* */
       t->master_vol_slew=_slew_ms(t->fade_out,
 				  t->master_vol_current,0);
@@ -1962,8 +1962,8 @@ void edit_sample_menu(int n){
   mvaddch(14+MAX_CHANNELS,77,ACS_LRCORNER);
   
   if(t->channels==2){
-    mvaddstr(13,6," L ");
-    mvaddstr(13,11," R ");
+    mvaddstr(13,5," L ");
+    mvaddstr(13,10," R ");
   }else{
     for(i=0;i<t->channels;i++){
       mvaddch(13,6+i*5,' ');
@@ -2078,8 +2078,8 @@ void edit_mix_menu(int n){
   mvaddch(13+MAX_CHANNELS,77,ACS_LRCORNER);
   
   if(t->channels==2){
-    mvaddstr(12,6," L ");
-    mvaddstr(12,11," R ");
+    mvaddstr(12,5," L ");
+    mvaddstr(12,10," R ");
   }else{
     for(i=0;i<t->channels;i++){
       mvaddch(12,6+i*5,' ');
