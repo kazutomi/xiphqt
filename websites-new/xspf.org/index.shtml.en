@@ -1,0 +1,47 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>XSPF: XML Shareable Playlist Format: Home</title>
+<style type="text/css">
+<!--
+#home_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>XSPF Home</h1>
+
+<p>
+XSPF is the XML Shareable Playlist Format, pronounced <b>spiff</b>.
+</p>
+
+<p>
+XSPF is a next generation playlist format that:
+</p>
+
+<ul>
+<li>Is open -- the format is not controlled by any one corporation.</a>
+<li>Is portable -- You should be able to send a playlist without the content to your friends and have it be usable.</a>
+<li>Doesn't suck -- Most existing playlist formats suck.</a>
+</ul>
+
+<p>
+XSPF is a work in progress and is not complete. Take a look at our 
+<a href="http://playlist.musicbrainz.org/playlist/moin.cgi/">Wiki</a> -- this is our playground for 
+working out the details of this new playlist format. The <a href="specs.html">draft specification</a>
+outlines how the playlists are going to work and look, and the <a href="schema.html">schema</a> page
+has a simple schema and a couple of example XSPF files.
+
+</p>
+
+<p>
+We also have a <a href="list.html">mailing list</a> you're welcome to join. If you have any comments
+on XSPF, please post them here.
+</p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

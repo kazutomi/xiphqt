@@ -1,0 +1,45 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>XSPF: XML Shareable Playlist Format: Applications</title>
+<style type="text/css">
+<!--
+#applications_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Applications</h1>
+
+<p>
+So far, there are only a few applications/websites using XSPF:
+</p>
+
+<ul>
+<li><a href="http://webjay.org">WebJay</a></li>
+<li><a href="http://gnomoradio.org">Gnomoradio</a> is adding support for XSPF.</li>
+
+</ul>
+
+<h1>Utilities</h1>
+
+<p>
+A few utilities have been written so far:
+</p>
+
+<ul>
+<li>
+
+<p>
+<a href="http://mayhem-chaos.net/stuff/xspf-download-0.1.0.py">xspf-download-0.1.0.py</a> is a Python script that parses XSPF and M3U files and downloads the files to the local harddrive. This script is has bare-bones functionality but can be pretty useful.
+</p>
+
+</li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

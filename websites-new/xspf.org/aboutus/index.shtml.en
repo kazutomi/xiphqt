@@ -1,0 +1,38 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>XSPF: XML Shareable Playlist Format: About Us</title>
+<style type="text/css">
+<!--
+#aboutus_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>About the XSPF Team</h1>
+
+<p>
+The following people have contributed to XSPF's creation:
+</p>
+
+<ul>
+<li>Dan Brickley, <a href="http://www.w3.org">W3C</a></li>
+<li>Dave Brown, <a href="http://yahoo.com">Yahoo! Inc.</a></li>
+
+<li>Matthias Friedrich, <a href="http://musicbrainz.org">MusicBrainz</a></li>
+<li>Lucas Gonze, <a href="http://webjay.org">WebJay</a></li>
+<li>Kevin Marks, <a href="http://technorati.com">Technorati</a></li>
+<li>Robert Kaye, <a href="http://musicbrainz.org">MusicBrainz</a></li>
+<li>Ian Rogers, <a href="http://yahoo.com">Yahoo! Inc.</a></li>
+</ul>
+
+<p>
+And a number other people who have contributed via the <a href="list.html">mailing list</a> and <a href="http://playlist.musicbrainz.org/playlist/moin.cgi/">wiki</a>.
+</p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

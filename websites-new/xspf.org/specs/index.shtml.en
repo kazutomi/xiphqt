@@ -1,0 +1,27 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>XSPF: XML Shareable Playlist Format: Specifications</title>
+<style type="text/css">
+<!--
+#specs_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Specifications</h1>
+
+<p>
+Current version: 1
+</p>
+
+<p>
+The latest specification is <a href="http://gonze.com/xspf/xspf-v1.html">XSPF Specification Version 1</a>.
+</p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

@@ -1,0 +1,22 @@
+<div class="thepage">
+<div class="logos">
+	<img src="/images/logos/xspf-logo-3.png" alt="XSPF: XML Shareable Playlist Format Logo"/>
+</div>
+
+<div class="navbar">
+	<ul>
+		<li id="home_"><a href="/">Home</a></li>
+		<li id="specs_"><a href="/specs/">Specs</a></li>
+		<li id="schema_"><a href="/schema/">Schema</a></li>
+		<li id="applications_"><a href="/applications/">Applications</a></li>
+		<li id="mailinglist_"><a href="/mailinglist/">Mailing List</a></li>
+		<li id="wiki_"><a href="http://playlist.musicbrainz.org/playlist/moin.cgi/">Wiki</a></li>
+		<li id="aboutus_"><a href="/aboutus/">About Us</a></li>
+	</ul>
+</div>
+
+<div class="banners">
+	<!-- Visualize a banner here. <img src="/images/banners/try_it.png" alt="Try it out!"/> -->
+</div>
+
+<div class="content">
