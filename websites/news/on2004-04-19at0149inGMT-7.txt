@@ -1,0 +1,5 @@
+# A News Post
+
+This is a news post. With a [link to our new website][l].
+
+	[l]: http://www.xiph.org/
