@@ -11,11 +11,11 @@
  ********************************************************************
 
  function: toplevel libwrit include
- last mod: $Id: writ.h,v 1.3 2003/08/17 21:16:13 arc Exp $
+ last mod: $Id: writ.h,v 1.4 2003/08/19 06:19:17 arc Exp $
 
  ********************************************************************/
 
-#include <ogg/ogg.h>
+#include <ogg2/ogg.h>
 
   
 typedef struct writ_text {
