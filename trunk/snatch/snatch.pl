@@ -252,9 +252,9 @@ $window_statuslabel=$window_shell->
     place(-x=>5,-y=>0,-rely=>.2,-relheight=>.4,-anchor=>'w');
 
 $window_status=$window_shell->
-    Label(Name=>"status",-class=>"Status",text=>"Starting...")->
-    place(-x=>5,-y=>0,-relx=>1.0,-relheight=>1.0,
-	  -anchor=>'nw',-in=>$window_statuslabel);
+    Label(Name=>"status",-class=>"Status",text=>"Starting...",-anchor=>'w')->
+    place(-x=>5+$window_statuslabel->reqwidth,-rely=>.2,-anchor=>'w',
+	  -relheight=>.4,-relwidth=>1.0,-width=>-10-$window_statuslabel->reqwidth);
 
 $window_active=$window_shell->Button(Name=>"active",text=>"capture all",
 				    state=>disabled)->
@@ -526,7 +526,7 @@ sub Robot_PlayLoc{
 
     send_string("P",$password);
     send_string("U",$username);
-    send_string("L",$openloc);
+    send_string("L",$loc);
 
     syswrite COMM_SOCK,$loccode;
  
@@ -534,7 +534,7 @@ sub Robot_PlayLoc{
 }
 
 sub Robot_PlayFile{
-    my($loc)=@_;
+    my($openfile)=@_;
     my $stopcode=join "",("Ks",pack ("S",4));
     my $opencode=join "",("Ko",pack ("S",4));
 
@@ -544,6 +544,7 @@ sub Robot_PlayFile{
 }
 
 sub Robot_Stop{
+    $last_timer_event=time();
     my $stopcode=join "",("Ks",pack ("S",4));
     syswrite COMM_SOCK,$playcode;
 }
@@ -555,11 +556,20 @@ sub Robot_Exit{
 }
 
 sub Robot_Active{
+    $timer_entry_active=0;
+    $last_timer_event=0;
+    $next_timer_event=0;
+    if(defined($timer_callback)){
+	$timer_callback->cancel();
+	undef $timer_callback;
+    }
+
     # clear out robot settings to avoid hopelessly confusing the user
     send_string("U","");
     send_string("P","");
     send_string("O","");
     send_string("L","");
+    send_string("F",$CONFIG{'OUTPUT_PATH'});
     syswrite COMM_SOCK,'A';
     Robot_Audio($CONFIG{"AUDIO_MUTE"});
     Robot_Video($CONFIG{"VIDEO_MUTE"});
@@ -569,10 +579,19 @@ sub Robot_Active{
 }
 
 sub Robot_Inactive{
+    $timer_entry_active=0;
+    $last_timer_event=0;
+    $next_timer_event=0;
+    if(defined($timer_callback)){
+	$timer_callback->cancel();
+	undef $timer_callback;
+    }
+
     send_string("U","");
     send_string("P","");
     send_string("O","");
     send_string("L","");
+    send_string("F",$CONFIG{'OUTPUT_PATH'});
     syswrite COMM_SOCK,'I';
     Robot_Audio($CONFIG{"AUDIO_MUTE"});
     Robot_Video($CONFIG{"VIDEO_MUTE"});
@@ -582,16 +601,96 @@ sub Robot_Inactive{
 }
 
 sub Robot_Timer{
-    send_string("U","");
-    send_string("P","");
-    send_string("O","");
-    send_string("L","");
-    syswrite COMM_SOCK,'T';
-    Robot_Audio($CONFIG{"AUDIO_MUTE"});
-    Robot_Video($CONFIG{"VIDEO_MUTE"});
-    Status("Timed recording only");
-    $mode='timer';
-    ButtonPressConfig();
+    if(!defined($timer_callback)){
+	$last_timer_event=0;
+	$next_timer_event=0;
+	$timer_entry_active=0;
+	send_string("O","");
+	send_string("L","");
+	syswrite COMM_SOCK,'T';
+	Status("Timer wait");
+	$mode='timer';
+	ButtonPressConfig();
+	SetupTimerDispatch();
+	$timer_callback=$toplevel->repeat(1000,[main::TimerWatch]);
+    }
+}
+
+sub DoTimedEntry{
+    my($start,$line)=@_;
+    my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+       $password,$outfile,$url)=SplitTimerEntry($line);
+
+    $timer_entry_active=1;
+    $last_timer_event=$start;
+    $next_timer_event=$start+$duration-1; # the -1 is important; makes sure contiguous
+                                          # but nonoverlapping events don't interfere
+
+    syswrite COMM_SOCK,'A';    
+    send_string("F",$outfile);
+    Robot_Audio($audio);
+    Robot_Video($video);
+    if($url=~/^file:(.*)/){
+	#file, through the file dialog
+	Robot_PlayFile($1);
+    }else{
+	#network stream/URL, through location dialog
+	Robot_PlayLoc($url,$username,$password);
+    }
+}
+
+sub SetupTimerDispatch{
+    TimerSort();
+    my$now=time();
+    my@TIMETEMP=@TIMER_TIMES;
+    foreach my$line (@TIMER){
+	my$start=shift @TIMETEMP;
+	my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+	   $password,$outfile,$url)=SplitTimerEntry($line);
+	my$end=$start+$duration;
+
+	if($start>$last_timer_event && $start<=$now && $end>$now){    
+	    Robot_Stop();
+	    DoTimedEntry($start,$line);
+	    return;
+	}else{
+	    $next_timer_event=$start if($next_timer_event==0 || $start<$next_timer_event);
+	}
+    }
+    # nothing happening now
+    Robot_Stop();
+    syswrite COMM_SOCK,'T';    
+}
+    
+sub TimerWatch{
+    my$now=time();
+    my$waiting_seconds=$next_timer_event-$now;
+
+    my$waiting_minutes=int($waiting_seconds/60);
+    $waiting_seconds-=$waiting_minutes*60;
+
+    my$waiting_hours=int($waiting_minutes/60);
+    $waiting_minutes-=$waiting_hours*60;
+
+    my$waiting_days=int($waiting_hours/24);
+    $waiting_hours-=$waiting_days*24;
+    my$prompt;
+    
+    if($waiting_days){
+	$prompt=$waiting_days."d $waiting_hours:$waiting_minutes";
+    }elsif($waiting_hours){
+	$prompt=$waiting_days."$waiting_hours:$waiting_minutes";
+    }else{
+	$prompt=$waiting_minutes."m ".$waiting_seconds."s";
+    }
+
+    if($timer_entry_active){
+	Status("Timer recording [$prompt]");
+    }else{
+	Status("Timer wait [$prompt]");
+    }
+
+    SetupTimerDispatch() if($now>=$next_timer_event);
 }
 
 sub Robot_Audio{
@@ -1125,8 +1224,6 @@ sub Timer{
 	    place(-x=>0,-y=>-5,-relwidth=>1.0,-anchor=>'sw',
 		  -in=>$timerw_edit,-bordermode=>outside);
 
-    $listbox=BuildListBox();
-    
     $minwidth=500;
     $minheight=$timerw_add->reqheight()*4+$timerw_quit->reqheight()+$timerw_title->reqheight()+95;
     
@@ -1138,6 +1235,8 @@ sub Timer{
     $timerw_delete->configure(-command,[sub{Timer_Delete();}]);
     $timerw_duplicate->configure(-command,[sub{Timer_Copy();}]);
 
+    $listbox=BuildListBox();
+    
 }
 
 sub BuildListBox(){
@@ -1195,7 +1294,9 @@ sub BuildListBox(){
 	    }else{
 		$dur_hours.=":";
 	    }
-	    $dur_minutes='00' if($dur_minutes==0);
+
+	    $dur_minutes='0'.int($dur_minutes) if($dur_minutes <10);
+	    $minute='0'.int($minute) if($minute <10);
 	    
 	    push @listarray, "$emph","$year ",$monthtrans->{$month},"$day ",
 	    $daytrans->{$dayofweek},"$hour:$minute ","$dur_hours$dur_minutes ",$url;
@@ -1212,8 +1313,48 @@ sub BuildListBox(){
 	      -bordermode=>outside);
     
     $listbox->callback(\&Timer_Highlight);
-    $listbox;
     undef $timer_row;
+
+    $timerw->update();
+    CheckTimerOverlap();
+
+    $listbox;
+}
+
+sub CheckTimerOverlap{
+    my@TIMETEMP=@TIMER_TIMES;
+    my@TIMER_END;
+    my$rows=0;
+
+    foreach my$line (@TIMER){
+	my$time=shift @TIMETEMP;
+	my($year,$month,$day,$dayofweek,$hour,$minute,$duration,$audio,$video,$username,
+	   $password,$outfile,$url)=SplitTimerEntry($TIMER[$TIMER_SORTED[$i]]);
+	push @TIMER_END,$time+$duration;
+	$rows++;
+    }
+
+    for(my$i=0;$i<$rows;$i++){
+	for(my$j=$i+1;$j<$rows;$j++){
+	    my $start1=$TIMER_TIMES[$i];
+	    my $end1=$TIMER_END[$i];
+	    my $start2=$TIMER_TIMES[$j];
+	    my $end2=$TIMER_END[$j];
+
+	    if($start1>0 && $start2>0){
+		if(($start1>=$start2 && $start1<$end2)||
+		   ($start2>=$start1 && $start2<$end1)){
+		    Alert("Some timer entries currently overlap!",
+			  "When multiple entries overlap, start and stop events are processed ".
+			  "in order; that is, if program B is scheduled to begin during program ".
+			  "A, program B will interrupt the recording of program A.  Should A ".
+			  "continue past the ending point of B, recording program A will resume.\n",
+			  $timerw);
+		    return;
+		}
+	    }
+	}
+    }
 }
 
 sub TimerSort{
@@ -1281,10 +1422,12 @@ sub Timer_Entry{
 
     my$duration_hour=int($duration/3600);
     my$duration_minute=int(($duration-$duration_hour*3600+59)/60);
-    $duration_minute='00' if("$duration_minute" eq '0');
+    $duration_minute='0'.int($duration_minute) if($duration_minute <10);
+    $minute='0'.int($minute) if($minute <10);
 
 
     my($nowsec,$nowmin,$nowhour,$nowday,$nowmonth,$nowyear)=localtime time;    
+
     $nowmonth++;
     $nowyear+=1900;
 
@@ -1485,6 +1628,28 @@ sub Timer_Entry{
     my$tentry_video=$tentry_shell->Button(-text=>"video")->
 	place(-in=>$tentry_audio,-relx=>1.0,-x=>5,-relheight=>1.0,-bordermode=>outside);
     $tentry_video->configure(-command=>[main::nonmomentary,\$tentry_video,\$video]);
+
+    my$tentry_test=$tentry_shell->Button(-text=>"test connect now")->
+	place(-relx=>1.0,-x=>-10,-y=>$y,-height=>$tentry_silent->reqheight,-anchor=>'ne',
+	      -bordermode=>outside);
+
+    if($mode=~/^active/ || ($mode=~/timer/ && $timer_entry_active==1)){
+	$tentry_test->configure(-state=>disabled);
+    }
+
+    $tentry_test->configure(-command=>[sub{
+	
+	Robot_Audio($audio);
+	Robot_Video($video);
+	if($url=~/^file:(.*)/){
+	    #file, through the file dialog
+	    Robot_PlayFile($1);
+	}else{
+	    #network stream/URL, through location dialog
+	    Robot_PlayLoc($url,$username,$password);
+	}
+    }]);
+				       
     #laziness
     nonmomentary(\$tentry_audio,\$audio);
     nonmomentary(\$tentry_audio,\$audio);
@@ -1510,8 +1675,9 @@ sub Timer_Entry{
 		"play audio ".
 		"or display video.  This is useful both to increase performance and eliminate ".
 		"the possibility timed record will fail due to audio device conflicts with other ".
-		"applications.\n\nOutput path may be a directory [Snatch will choose a filename], ".
-		"a filename [record data will append], or - (dash) indicating standard out.",
+		"applications.\n\nOutput path may be a directory [Snatch create a new ".
+		"file for each record request], ".
+		"a filename [record will append to that file], or - (dash) indicating standard out.",
 		-width=>$reqwidth-30-$tentry_shell->cget(borderwidth)*2,
 		-anchor=>w,-class=>AlertDetail)->
 		    place(-x=>5,-y=>$y,-relwidth=>1.0,-width=>-10,-bordermode=>outside);
@@ -1714,6 +1880,7 @@ sub new{
     my$var=$clicklist{variable}=shift @_;
     my$rows=00;
     my@textrows;
+    my@valrows;
     my@widgetrows;
 
     $clicklist{textrows}=\@textrows;
@@ -1733,6 +1900,7 @@ sub new{
 	if(defined($value)){
 	    $textrows[$rows]=$text;
 	    $valrows[$rows]=$value;
+
 	    my$w=$widgetrows[$rows]=$list->Button(-class=>'Item',-text=>$text,
 						  -command=>[$this=>setrow,$rows]);
 	    $maxheight=$w->reqheight() if($w->reqheight()>$maxheight);
@@ -1834,6 +2002,5 @@ sub button{
     my$this=shift;
     $this->{'button'};
 }
-k
 
 
