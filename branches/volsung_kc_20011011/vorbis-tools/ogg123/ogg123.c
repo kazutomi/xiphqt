@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.22 2001/12/16 00:31:41 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.23 2001/12/16 21:45:25 volsung Exp $
 
  ********************************************************************/
 
@@ -429,11 +429,15 @@ void play (char *source_string)
       }
 
       if (sig_request.pause) {
-	buffer_thread_pause (audio_buffer);
+	if (audio_buffer)
+	  buffer_thread_pause (audio_buffer);
+
 	kill (getpid(), SIGSTOP); /* We block here until we unpause */
 	
 	/* Done pausing */
-	buffer_thread_unpause (audio_buffer);
+	if (audio_buffer)
+	  buffer_thread_unpause (audio_buffer);
+
 	sig_request.pause = 0;
       }
 
