@@ -463,7 +463,8 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
 
   /* watch for the auth password window */
   if(username || password){
-    if(n>32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
+
+    if(n>=32 &&  !memcmp(data,"AuthDialogShell\0RCACoreAppShell\0",32)){
       if(rpauth_already>2){
 	fprintf(stderr,
 		"**ERROR: Password not accepted.\n");
@@ -485,7 +486,7 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
 
   /* watch for the open location window */
   if(location){
-    if(n>36 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",36)){
+    if(n>=40 &&  !memcmp(data,"OpenLocationDialogShell\0RCACoreAppShell\0",40)){
       fprintf(stderr,
 	    "    ...: RealPlayer popped open location dialog.  Watching for\n"
 	      "         dialog window tree...\n");
@@ -498,7 +499,7 @@ int XChangeProperty(Display *display,Window id,Atom property,Atom type,int forma
   }
   if(openfile){
     /* watch for the open file window */
-    if(n>32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
+    if(n>=32 && !memcmp(data,"OpenFileDialogShell\0RCACoreAppShell\0",32)){
       fprintf(stderr,
 	      "    ...: RealPlayer popped open file dialog.\n");
       rpfile_shell=id;

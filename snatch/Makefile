@@ -2,14 +2,14 @@ BINDIR  = /usr/local/bin
 LIBDIR  = /usr/local/lib
 
 CC	= gcc
-CFLAGS	= -O2 -W
-SOFLAGS = -shared
+CFLAGS	= -O2 -W 
+SOFLAGS = -shared -L/usr/X11/lib
 INSTALL = install
 
 all:		libsnatch.so snatch2yuv snatch2yuv2 snatch2wav
 
 libsnatch.so: 	libsnatch.c x11.c oss.c esd.c realppm.h snatchppm.h waitppm.h
-	$(CC) $(CFLAGS) $(SOFLAGS) libsnatch.c -o libsnatch.so
+	$(CC) $(CFLAGS) $(SOFLAGS) libsnatch.c -o libsnatch.so -lX11
 
 snatch2yuv: 	snatchconvert.c snatch2yuv.c
 	$(CC) $(CFLAGS) snatchconvert.c snatch2yuv.c -o snatch2yuv -lm
