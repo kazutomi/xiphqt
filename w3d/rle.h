@@ -2,6 +2,7 @@
 #define __RLE_H
 
 #include <string.h>
+#include <assert.h>
 #include "mem.h"
 #include "bitcoder.h"
 
@@ -19,6 +20,7 @@
    rlecoder_decoder_init(coder,bitstream,limit)
 #define ENTROPY_DECODER_DONE(coder)       /* nothing to do ... */
 #define ENTROPY_CODER_BITSTREAM(coder)    ((coder)->bitcoder.bitstream)
+#define ENTROPY_CODER_EOS(coder)          ((coder)->bitcoder.eos)
 
 #define ENTROPY_CODER_MPS(coder)          ((coder)->mps)
 #define ENTROPY_CODER_RUNLENGTH(coder)    ((coder)->count+1)
@@ -27,13 +29,6 @@
 
 
 #define RLE_HISTOGRAM 1
-
-
-typedef struct {
-   int mps;                      /*  more probable symbol            */
-   uint32_t count;               /*  have seen count+1 mps's         */
-   BitCoderState bitcoder;
-} RLECoderState;
 
 
 
@@ -134,6 +129,62 @@ void huffmancoder_write (BitCoderState *s, uint32_t x)
 
 
 
+static inline
+int required_bits (uint32_t x)
+{
+   int bits = 32;
+
+   assert (x >= 0);
+
+   while (--bits >= 0 && ((x >> bits) & 1) == 0)
+      ;
+
+   return bits;
+}
+
+
+static inline
+void write_unsigned_number (BitCoderState *s, uint32_t x)
+{
+   int bits;
+
+   assert (x >= 0);
+
+   bits = required_bits (x);
+
+   huffmancoder_write (s, bits);
+
+   while (--bits >= 0)
+      bitcoder_write_bit (s, (x >> bits) & 1);
+}
+
+static inline
+uint32_t read_unsigned_number (BitCoderState *s)
+{
+   int bits = huffmancoder_read (s);
+   uint32_t x = 1 << bits;
+
+   if (s->eos)
+      return ~0;
+
+   while (--bits >= 0) {
+      x |= bitcoder_read_bit (s) << bits;
+      if (s->eos)
+         return ~0;
+   }
+
+   return x;
+}
+
+
+typedef struct {
+   int mps;                      /*  more probable symbol            */
+   uint32_t count;               /*  have seen count mps's           */
+   BitCoderState bitcoder;
+} RLECoderState;
+
+
+
 #ifdef RLE_HISTOGRAM
 uint32_t histogram [512];
 uint32_t max_runlength;
@@ -153,7 +204,7 @@ void rlecoder_write_bit (RLECoderState *s, int bit)
 #endif
       s->mps = bit & 1;
       s->count = 0;
-      huffmancoder_write (&s->bitcoder, bit ? 1 : 0);
+      bitcoder_write_bit (&s->bitcoder, bit);
    }
 
    if (s->mps == bit) {
@@ -167,7 +218,7 @@ void rlecoder_write_bit (RLECoderState *s, int bit)
       if (max_runlength < s->count)
          max_runlength = s->count-1;
 #endif
-      huffmancoder_write (&s->bitcoder, s->count-1);
+      write_unsigned_number (&s->bitcoder, s->count);
       s->mps = ~s->mps & 1;
       s->count = 1;
    }
@@ -177,9 +228,9 @@ static inline
 int rlecoder_read_bit (RLECoderState *s)
 {
    if (s->count == 0) {
-      s->count = huffmancoder_read (&s->bitcoder) + 1;
+      s->count = read_unsigned_number (&s->bitcoder);
       s->mps = ~s->mps & 1;
-      if (bitcoder_is_empty(&s->bitcoder)) {
+      if (s->bitcoder.eos) {
          s->mps = 0;
          s->count = ~0;
       }
@@ -204,8 +255,7 @@ void rlecoder_encoder_init (RLECoderState *s, uint32_t limit)
 static inline
 uint32_t rlecoder_encoder_flush (RLECoderState *s)
 {
-   huffmancoder_write (&s->bitcoder, s->count-1);
-
+   write_unsigned_number (&s->bitcoder, s->count);
    return bitcoder_flush (&s->bitcoder);
 }
 
@@ -214,9 +264,9 @@ static inline
 void rlecoder_decoder_init (RLECoderState *s, uint8_t *bitstream, uint32_t limit)
 {
    bitcoder_decoder_init (&s->bitcoder, bitstream, limit);
-   s->mps = huffmancoder_read (&s->bitcoder);
-   s->count = huffmancoder_read (&s->bitcoder) + 1;
-   if (bitcoder_is_empty(&s->bitcoder)) {
+   s->mps = bitcoder_read_bit (&s->bitcoder);
+   s->count = read_unsigned_number (&s->bitcoder);
+   if (s->bitcoder.eos) {
       s->mps = 0;
       s->count = ~0;
    }

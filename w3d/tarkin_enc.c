@@ -34,7 +34,7 @@ int main (int argc, char **argv)
    int fd;
    TarkinStream *tarkin_stream;
    TarkinVideoLayerDesc layer [] = { { 0, 0, 1, 5000, TARKIN_RGB24 } };
-   TarkinColorFormat type;
+   int type;
 
    if (argc == 1) {
       layer[0].bitstream_len = 1000;

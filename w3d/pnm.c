@@ -155,13 +155,11 @@ void write_pnm (char *fname, uint8_t *rgb, int w, int h)
 static inline
 uint8_t CLAMP(int16_t x)
 {
-   x *= 4;
-   x += 128;
    return  ((x > 255) ? 255 : (x < 0) ? 0 : x);
 }
 
 
-void write_pgm16 (char *fname, int16_t *rgb, int w, int h)
+void write_pgm16 (char *fname, int16_t *rgb, int w, int h, int16_t offset)
 {
    int i;
    FILE *outfile;
@@ -175,7 +173,7 @@ void write_pgm16 (char *fname, int16_t *rgb, int w, int h)
 
    fprintf (outfile, "P5\n%d %d\n%d\n", w, h, 255);
    for (i=0; i<w*h; i++) {
-      uint8_t c = CLAMP(rgb[i]);
+      uint8_t c = CLAMP(rgb[i] + offset);
       fwrite (&c, 1, 1, outfile);
    }
    fclose (outfile);

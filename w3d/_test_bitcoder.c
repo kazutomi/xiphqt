@@ -2,10 +2,10 @@
  *   Bitcoder regression test
  */
 
-#define TEST(x)                                       \
-   if(!(x)) {                                         \
-      fprintf(stderr, "Test ("#x") FAILED !!!\n");    \
-      exit (-1);                                      \
+#define TEST(x)                                                        \
+   if(!(x)) {                                                          \
+      fprintf(stderr, "line %i: Test ("#x") FAILED !!!\n", __LINE__);  \
+      exit (-1);                                                       \
    }
 
 
@@ -44,8 +44,9 @@ int main ()
 
       while (limit == 0)
          limit = rand() * 1.0 * MAX_COUNT / RAND_MAX;
+         limit &= ~0x7;
 
-      bit = (uint8_t*) MALLOC (limit);
+         bit = (uint8_t*) MALLOC (limit);
 
      /**
       *   check encoding ...
@@ -63,7 +64,7 @@ int main ()
 
          count = bitcoder_flush (&encoder);
 
-         TEST(count == limit/8 || count == limit/8 + 1);
+         TEST(count == limit/8);
 
          bitstream = (uint8_t*) MALLOC (count);
          memcpy (bitstream, encoder.bitstream, count);
@@ -78,10 +79,17 @@ int main ()
          BitCoderState decoder;
          uint32_t i;
 
-         bitcoder_decoder_init (&decoder, bitstream, limit);
+         bitcoder_decoder_init (&decoder, bitstream, count);
 
          for (i=0; i<limit; i++) {
+            TEST(!decoder.eos);
             TEST(bit[i] == bitcoder_read_bit (&decoder));
+         }
+
+         TEST(!decoder.eos);
+         for (i=0; i<limit; i++) {
+            TEST(bitcoder_read_bit (&decoder) == 0);
+            TEST(decoder.eos);
          }
       }
 

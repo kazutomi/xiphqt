@@ -131,21 +131,19 @@ void tarkin_stream_flush (TarkinStream *s)
       for (j=0; j<layer->n_comp; j++) {
          uint32_t bitstream_len;
 
-         wavelet_3d_buf_dump ("color-%d-%03d.pgm",
-                              s->current_frame - s->current_frame_in_buf, j,
-                              layer->waveletbuf[j]);
-
          wavelet_3d_buf_fwd_xform (layer->waveletbuf[j],
                                    layer->desc.a_moments,
                                    layer->desc.s_moments);
 
          wavelet_3d_buf_dump ("coeff-%d-%03d.pgm",
                               s->current_frame - s->current_frame_in_buf, j,
-                              layer->waveletbuf[j]);
+                              layer->waveletbuf[j], 128);
 
          bitstream_len = wavelet_3d_buf_encode_coeff (layer->waveletbuf[j],
                                                       s->bitstream,
-                                                      layer->desc.bitstream_len);
+                                                      j == 0 ?
+                                                      layer->desc.bitstream_len :
+                                                      layer->desc.bitstream_len/4);
          write_tarkin_bitstream (s->fd, s->bitstream, bitstream_len);
       }
    }
@@ -154,13 +152,19 @@ void tarkin_stream_flush (TarkinStream *s)
 
 uint32_t tarkin_stream_write_frame (TarkinStream *s, uint8_t **rgba)
 {
-   uint32_t i;
+   uint32_t i, j;
 
    for (i=0; i<s->n_layers; i++) {
       TarkinVideoLayer *layer = &s->layer[i];
 
       layer->color_fwd_xform (rgba[i], layer->waveletbuf,
                               s->current_frame_in_buf);
+
+      for (j=0; j<layer->n_comp; j++)
+         wavelet_3d_buf_dump ("color-%d-%03d.pgm",
+                              s->current_frame - s->current_frame_in_buf, j,
+                              layer->waveletbuf[j], j == 0 ? 0 : 128);
+
    }
 
    s->current_frame_in_buf++;
@@ -280,7 +284,8 @@ uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **rgba)
                                          bitstream_len);
 
             wavelet_3d_buf_dump ("rcoeff-%d-%03d.pgm",
-                                 s->current_frame, j, layer->waveletbuf[j]);
+                                 s->current_frame, j, layer->waveletbuf[j],
+                                 128);
 
             wavelet_3d_buf_inv_xform (layer->waveletbuf[j], 
                                       layer->desc.a_moments,
@@ -288,7 +293,7 @@ uint32_t tarkin_stream_read_frame (TarkinStream *s, uint8_t **rgba)
 
             wavelet_3d_buf_dump ("rcolor-%d-%03d.pgm",
                                  s->current_frame - s->current_frame_in_buf, j,
-                                 layer->waveletbuf[j]);
+                                 layer->waveletbuf[j], j == 0 ? 0 : 128);
          }
       }
    }

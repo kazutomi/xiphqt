@@ -29,6 +29,7 @@ void encode_coeff (ENTROPY_CODER significand_bitstream [],
 }
 
 
+
 static inline
 TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
                    ENTROPY_CODER insignificand_bitstream [])
@@ -41,9 +42,13 @@ TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
    do {
       i--;
       significance = INPUT_BIT(&significand_bitstream[i]) << i;
+      if (ENTROPY_CODER_EOS(&significand_bitstream[i]))
+         return 0;
    } while (!significance && i > 0);
 
    sign = INPUT_BIT(&significand_bitstream[i]);
+   if (ENTROPY_CODER_EOS(&significand_bitstream[i]))
+      return 0;
 
    while (--i >= 0) {
       significance |= INPUT_BIT(&insignificand_bitstream[i]) << i;
@@ -257,14 +262,16 @@ void decode_coefficients (Wavelet3DBuf* buf,
 
 static
 uint32_t insignificand_truncation_table [10] = {
-//   1, 2, 4, 8, 16, 32, 64, 128, 256, 512
-   100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+//   1, 2, 4, 8, 16, 12, 64, 128, 256, 512
+//   100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+   24, 24, 24, 24, 24, 24, 24, 24, 24, 48
 };
 
 
 static
 uint32_t significand_truncation_table [9] = { //1, 2, 4, 8, 16, 32, 64, 128, 256 };
-   100, 100, 100, 100, 100, 100, 100, 100, 100
+//   100, 100, 100, 100, 100, 100, 100, 100, 100
+   24, 24, 24, 24, 24, 24, 24, 24, 48
 };
 
 
@@ -286,22 +293,27 @@ printf ("%s: rem. limit == %u\n", __FUNCTION__, limit);
       uint32_t bytes = ENTROPY_ENCODER_FLUSH(&insignificand_bitstream[i]);
 
       insignificand_limittab[i] =
-                          limit * insignificand_truncation_table[i] / 2048;
+                        limit * insignificand_truncation_table[i] / 2048;
 
       if (bytes < insignificand_limittab[i])
          insignificand_limittab[i] = bytes;
-printf ("insignificand_limittab[%i]  == %u\n", i, insignificand_limittab[i]);
+printf ("insignificand_limittab[%i]  == %u / %u\n", i, insignificand_limittab[i], bytes);
       byte_count += insignificand_limittab[i];
    }
 
    for (i=9; i>0; i--) {
       uint32_t bytes = ENTROPY_ENCODER_FLUSH(&significand_bitstream[i]);
 
-      significand_limittab[i] = limit * significand_truncation_table[9-i] / 2048;
+      significand_limittab[i] = limit * significand_truncation_table[9-i] / 2048
+                 + (10-i)*(limit - byte_count)/10;
+
+      if (significand_limittab[i] > limit - byte_count)
+         significand_limittab[i] = limit - byte_count;
 
       if (bytes < significand_limittab[i])
          significand_limittab[i] = bytes;
-printf ("significand_limittab[%i]  == %u\n", i, significand_limittab[i]);
+printf ("significand_limittab[%i]  == %u / %u\n", i, significand_limittab[i], bytes);
+
       byte_count += significand_limittab[i];
    }
 
@@ -479,26 +491,4 @@ void wavelet_3d_buf_decode_coeff (Wavelet3DBuf* buf,
    }
 }
 
-
-
-#if defined(DBG_XFORM)
-
-#include "pnm.h"
-
-void wavelet_3d_buf_dump (char *fmt,
-                          uint32_t first_frame_in_buf,
-                          uint32_t id,
-                          Wavelet3DBuf* buf)
-{
-   char fname [256];
-   uint32_t f;
-
-   for (f=0; f<buf->frames; f++) {
-      snprintf (fname, 256, fmt, id, first_frame_in_buf + f);
-
-      write_pgm16 (fname, buf->data + f * buf->width * buf->height,
-                   buf->width, buf->height);
-   }
-}
-#endif
 
