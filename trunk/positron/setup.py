@@ -25,7 +25,7 @@ setup(name="positron",
       author="Stan Seibert",
       author_email="volsung@xiph.org",
       url="http://www.neurosaudio.com/",
-      package_dir = {'positron': 'src'},
+      packages=['positron']
       scripts=['scripts/positron']
       )
 
