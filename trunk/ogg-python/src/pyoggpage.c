@@ -15,6 +15,7 @@ static int py_ogg_page_setattr(PyObject *self, char *name, PyObject *value);
 static PyObject *py_ogg_page_repr(PyObject *self);
 
 FDEF(ogg_page_writeout) "Write the page to a given file object. Returns the number of bytes written.";
+FDEF(ogg_page_tostring) "Return the page data as a string.";
 FDEF(ogg_page_eos) "Tell whether this page is the end of a stream.";
 FDEF(ogg_page_version) "Return the stream version";
 FDEF(ogg_page_serialno) "Return the serial number of the page";
@@ -55,6 +56,8 @@ PyTypeObject py_ogg_page_type = {
 static PyMethodDef py_ogg_page_methods[] = {
   {"writeout", py_ogg_page_writeout,
    METH_VARARGS, py_ogg_page_writeout_doc},
+  {"tostring", py_ogg_page_tostring,
+   METH_VARARGS, py_ogg_page_tostring_doc},
   {"eos", py_ogg_page_eos,
    METH_VARARGS, py_ogg_page_eos_doc},
   {"version", py_ogg_page_version,
@@ -116,6 +119,27 @@ py_ogg_page_writeout(PyObject *self, PyObject *args)
 
   return PyInt_FromLong(bytes);
 
+}
+
+/* Basically the same thing as py_ogg_page_writeout, but it returns
+   the contents as a string */
+static PyObject *
+py_ogg_page_tostring(PyObject *self, PyObject *args) 
+{
+  int bytes;
+  PyObject *ret;
+  py_ogg_page *op_self = (py_ogg_page *) self;
+
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+  
+  ret = PyString_FromStringAndSize(op_self->op.header, op_self->op.header_len);
+  if (ret == NULL)
+    return NULL;
+  PyString_ConcatAndDel(&ret, 
+			PyString_FromStringAndSize(op_self->op.body, 
+						   op_self->op.body_len));
+  return ret;
 }
 
 static PyObject*
