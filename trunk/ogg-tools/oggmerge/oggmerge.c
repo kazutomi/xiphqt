@@ -29,7 +29,7 @@ oggmerge -- utility for splicing together ogg bitstreams
 
 param_t params;
 
-void _usage(void)
+static void _usage(void)
 {
 	/* prefer stdout to stderr to coddle win32 */
 	FILE *out = stdout;
@@ -46,14 +46,13 @@ void _usage(void)
 	);
 }
 
-void _set_defaults(void)
+static void _set_defaults(void)
 {
 	/* set defaults */
 	params.outfile = NULL;
-	params.outfile = NULL;
+	params.out = NULL;
 	params.input = NULL;
-	params.quiet = 0;
-	params.verbose = 0;
+	params.verbose = 1;
 }
 
 struct option long_options[] = {
@@ -65,7 +64,7 @@ struct option long_options[] = {
 	{NULL, 0, NULL, 0}
 };
 
-void _parse_args(int argc, char **argv)
+static void _parse_args(int argc, char **argv)
 {
 	int ret;
 	int option_index = 1;
@@ -77,12 +76,11 @@ void _parse_args(int argc, char **argv)
 			exit(1);
 			break;
 		case 'q':
-			params.quiet = 1;
+			/* default is 1. quiet is 0, verbose is > 1 */
 			params.verbose = 0;
 			break;
 		case 'v':
-			params.quiet = 0;
-			params.verbose = 1;
+			params.verbose = 2;
 			break;
 		case 'h':
 			_usage();
@@ -106,7 +104,7 @@ void _parse_args(int argc, char **argv)
 	}
 }
 
-int _get_type(char *filename)
+static int _get_type(char *filename)
 {
 	char *ext;
 
@@ -122,7 +120,7 @@ int _get_type(char *filename)
 	return TYPEUNKNOWN;
 }
 
-void _add_file(filelist_t *file)
+static void _add_file(filelist_t *file)
 {
 	filelist_t *temp;
 
@@ -135,7 +133,7 @@ void _add_file(filelist_t *file)
 	}
 }
 
-int _unique_serialno(int serialno)
+static int _unique_serialno(int serialno)
 {
 	filelist_t *file;
 
