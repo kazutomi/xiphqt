@@ -267,7 +267,7 @@ fi
 
 if test "$with_lame_libraries"
 then
-  LIBS="$LIBS -L$with_lame_libraries"
+  LDFLAGS="$LDFLAGS -L$with_lame_libraries"
 fi
 
 if test "$with_lame" != "no"
