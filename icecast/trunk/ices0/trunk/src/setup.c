@@ -36,7 +36,6 @@ static void ices_setup_usage (void);
 static void ices_setup_version (void);
 static void ices_setup_update_pidfile (int icespid);
 static void ices_setup_daemonize (void);
-static void ices_setup_run_mode_select (ices_config_t *ices_config);
 static int  ices_setup_shutting_down = 0;
 static void ices_setup_free_all_allocations (ices_config_t *ices_config);
 
@@ -60,8 +59,8 @@ ices_setup_initialize (void)
   /* Parse the options in the config file, and the command line */
   ices_setup_parse_options (&ices_config);
 
-  /* Go into daemon mode if requested */
-  ices_setup_run_mode_select (&ices_config);
+  if (ices_config.daemon)
+    ices_setup_daemonize ();
 
   /* Initialize the libshout structure */
   for (stream = ices_config.streams; stream; stream = stream->next) {
@@ -567,15 +566,6 @@ ices_setup_version (void)
   "libxml "
 #endif
     );
-}
-
-/* This function makes ices run in the selected way.
- * If requested, this is in the background */
-static void
-ices_setup_run_mode_select (ices_config_t *ices_config)
-{
-	if (ices_config->daemon) 
-		ices_setup_daemonize ();
 }
 
 /* Put ices in the background, as a daemon */

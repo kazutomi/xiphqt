@@ -128,31 +128,27 @@ playlist_perl_shutdown (void)
 static void
 xs_init (void)
 {
-	char *file = __FILE__;
-	printf ("Including dynaloader\n");
-	newXS ("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
+  char *file = __FILE__;
+  newXS ("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
 }
 
 /* most of the following is almost ripped straight out of 'man perlcall'
  * or 'man perlembed' 
  *
- * my_perl is left resident, and we do not reload the perl module file
- * when it changes.
  * shutdown() will clean up anything allocated at this point
  */
 
 static int
 pl_perl_init_perl (void)
 {
-  static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
+  static char *my_argv[5] = { "", "-I" ICES_MODULEDIR, NULL, "-e", "0" };
   static char module_space[255];
 
-  strncpy (module_space, ices_config.pm.module, 251);
-  module_space[251] = '\0'; /* Just to make sure */
-  strcat (module_space, ".pm");
-  my_argv[1] = module_space;
+  snprintf (module_space, sizeof (module_space), "-M%s",
+	    ices_config.pm.module);
+  my_argv[2] = module_space;
 
-  ices_log_debug ("Importing Perl module %s", my_argv[1]);
+  ices_log_debug ("Importing Perl module %s", my_argv[2]);
 
   if((my_perl = perl_alloc()) == NULL) {
     ices_log_debug ("perl_alloc() error: (no memory!)");
@@ -161,7 +157,7 @@ pl_perl_init_perl (void)
 
   perl_construct(my_perl);
 
-  if (perl_parse(my_perl, xs_init, 2, my_argv, NULL)) {
+  if (perl_parse(my_perl, xs_init, 5, my_argv, NULL)) {
     ices_log_debug ("perl_parse() error: parse problem");
     return -1;
   }

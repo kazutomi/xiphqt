@@ -1,5 +1,5 @@
-# This is just a skeleton, something for you to start with.
-# All these functions should exist in your module
+# At least ices_get_next must be defined. And, like all perl modules, it
+# must return 1 at the end.
 
 # Function called to initialize your python environment.
 # Should return 1 if ok, and 0 if something went wrong.
@@ -33,3 +33,5 @@ sub ices_get_metadata {
 sub ices_get_lineno {
 	return 1;
 }
+
+return 1;
