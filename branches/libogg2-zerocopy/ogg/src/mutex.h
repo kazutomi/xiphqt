@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: #ifdef jail for basic thread mutexing
- last mod: $Id: mutex.h,v 1.1.2.2 2003/01/21 08:18:34 xiphmont Exp $
+ last mod: $Id: mutex.h,v 1.1.2.3 2003/01/21 10:23:08 xiphmont Exp $
 
  ********************************************************************/
 
@@ -36,7 +36,7 @@ typedef pthread_mutex_t ogg_mutex_t;
 
 #elif USE_NO_THREADS
 typedef int ogg_mutex_t;
-static void noop(void){return};
+static void noop(void){return;}
 #define ogg_mutex_init(m) (noop())
 #define ogg_mutex_clear(m) (noop())
 #define ogg_mutex_lock(m) (noop())
