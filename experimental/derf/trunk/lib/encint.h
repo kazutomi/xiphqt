@@ -133,6 +133,8 @@ struct theora_enc_ctx{
   oggpack_buffer           opb;
   /*Special buffer used for the coded fragment flags.*/
   oggpack_buffer           opb_coded_flags;
+  /*The estimated bit cost of the current frame.*/
+  int                      est_bits;
   /*Encoder-specific fragment information.*/
   oc_fragment_enc_info    *frinfo;
   /*Encoder-specific macro block information.*/

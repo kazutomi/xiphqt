@@ -2059,8 +2059,8 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
     int                y0;
     int                i;
     emb=_impmap->enc->mbinfo+_mbi;
-    mot_imp=oc_impmap_mot_weight(_impmap,emb->mvs[OC_FRAME_PREV][0][0],
-     emb->mvs[OC_FRAME_PREV][0][1]);
+    mot_imp=oc_impmap_mot_weight(_impmap,emb->mvs[0][OC_FRAME_PREV][0],
+     emb->mvs[0][OC_FRAME_PREV][1]);
     iregions=_impmap->regions;
     labels=_impmap->seg.labels;
     x0=mb->x-_impmap->offset_x;

@@ -39,32 +39,32 @@
 
 /*Macroblock modes.*/
 /*Macro block is invalid: It is never coded.*/
-#define OC_MODE_INVALID         (-1)
+#define OC_MODE_INVALID           (-1)
 /*Encoded with no motion compensated prediction.*/
-#define OC_MODE_INTRA           (0)
+#define OC_MODE_INTRA             (0)
 /*Encoded difference from the same macro block in the previous frame.*/
-#define OC_MODE_INTER           (1)
+#define OC_MODE_INTER_NOMV        (1)
 /*Encoded difference from the previous frame offset by the given motion
    vector.*/
-#define OC_MODE_INTER_MV        (2)
+#define OC_MODE_INTER_MV          (2)
 /*Encoded difference from the previous frame offset by the last coded motion
    vector.*/
-#define OC_MODE_INTER_MV_LAST   (3)
+#define OC_MODE_INTER_MV_LAST     (3)
 /*Encoded difference from the previous frame offset by the second to last
    coded motion vector.*/
-#define OC_MODE_INTER_MV_LAST2  (4)
+#define OC_MODE_INTER_MV_LAST2    (4)
 /*Encoded difference from the previous frame offset by the individual motion
    vectors given for each block.*/
-#define OC_MODE_INTER_MV_FOUR   (5)
+#define OC_MODE_INTER_MV_FOUR     (5)
 /*Encoded difference from the same macro block in the previous golden frame.*/
-#define OC_MODE_INTER_GOLDEN    (6)
+#define OC_MODE_INTER_GOLDEN_NOMV (6)
 /*Encoded difference from the previous golden frame offset by the given motion
    vector.*/
-#define OC_MODE_INTER_GOLDEN_MV (7)
+#define OC_MODE_INTER_GOLDEN_MV   (7)
 /*Macro block is not coded.*/
-#define OC_MODE_NOT_CODED       (8)
+#define OC_MODE_NOT_CODED         (8)
 /*The number of (coded) modes.*/
-#define OC_NMODES               (8)
+#define OC_NMODES                 (8)
 
 /*Predictor bit flags.*/
 /*Left.*/
@@ -347,5 +347,7 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[64],int _ncoefs,
  const ogg_uint16_t _iquant[64]);
+void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
+ int _nfragis[3],int _dst_frame,int _src_frame);
 
 #endif

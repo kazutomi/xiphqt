@@ -793,3 +793,42 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
     }
   }
 }
+
+/*Copies the fragments specified by the lists of fragment indices from one
+   frame to another.
+  _fragis:    A pointer to a list of fragment indices for each color plane.
+  _nfragis:   The number of fragment indices to copy in each list.
+  _dst_frame: The reference frame to copy to.
+  _src_frame: The reference frame to copy from.*/
+void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
+ int _nfragis[3],int _dst_frame,int _src_frame){
+  int dst_framei;
+  int dst_ystride;
+  int src_framei;
+  int src_ystride;
+  int pli;
+  dst_framei=_state->ref_frame_idx[_dst_frame];
+  src_framei=_state->ref_frame_idx[_src_frame];
+  for(pli=0;pli<3;pli++){
+    const int *fragi;
+    const int *fragi_end;
+    dst_ystride=_state->ref_frame_bufs[dst_framei][pli].stride;
+    src_ystride=_state->ref_frame_bufs[src_framei][pli].stride;
+    fragi=_fragis[pli];
+    fragi_end=fragi+_nfragis[pli];
+    for(;fragi<fragi_end;fragi++){
+      oc_fragment  *frag;
+      unsigned char *dst;
+      unsigned char *src;
+      int            j;
+      frag=_state->frags+*fragi;
+      dst=frag->buffer[dst_framei];
+      src=frag->buffer[src_framei];
+      for(j=0;j<8;j++){
+        memcpy(dst,src,8);
+        dst+=dst_ystride;
+        src+=src_ystride;
+      }
+    }
+  }
+}

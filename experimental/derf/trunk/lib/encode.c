@@ -1157,6 +1157,8 @@ static void oc_enc_residual_tokenize(oc_enc_ctx *_enc){
         nnzc=oc_enc_frag_quant_tokenize(_enc,frinfo,
          _enc->enquant_tables[qti][pli][0][_enc->state.qi],
          _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
+        /*While we're here and things are in cache, reconstruct the quantized
+           fragment.*/
         oc_state_frag_recon(&_enc->state,frag,pli,frinfo->dct_coeffs,nnzc,
          _enc->state.dequant_tables[qti][pli][0][_enc->state.qi]);
       }
@@ -1742,7 +1744,9 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   memset(last_mv,0,sizeof(last_mv));
   mbinfo=_enc->mbinfo;
   mvbitsa=mvbitsb=0;
-  intra_bits=inter_bits=0;
+  /*TODO: Plus 7 for each additional QI.*/
+  intra_bits=12;
+  inter_bits=9;
   _enc->state.ncoded_mbis=0;
   for(mbi=0;mbi<nmbs;mbi++){
     mb=_enc->state.mbs+mbi;
@@ -1776,7 +1780,6 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         mbinfo->mvs[0][OC_FRAME_GOLD][0]=mbinfo->mvs[0][OC_FRAME_GOLD][1]=0;
         continue;
       }
-      _enc->state.coded_mbis[_enc->state.ncoded_mbis++]=mbi;
       /*Make a list of coded blocks in this macro block.*/
       coded[0]=mapi;
       ncoded=1;
@@ -1785,8 +1788,51 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         fragi=mb->map[mapi>>2][mapi&3];
         if(fragi>=0&&_enc->state.frags[fragi].coded)coded[ncoded++]=mapi;
       }
+      /*Special case: If no luma blocks are coded, but some chroma blocks are,
+         then the macro block defaults to OC_MODE_INTER_NOMV, and no mode need
+         be explicitly coded for it.*/
+      if(coded[0]>=4){
+        mb->mode=OC_MODE_NOT_CODED;
+        /*Don't bother to do a MV search against the golden frame.*/
+        mbinfo->mvs[0][OC_FRAME_GOLD][0]=mbinfo->mvs[0][OC_FRAME_GOLD][1]=0;
+        /*We do collect bitrate stats for frame type decision.*/
+        bits[OC_MODE_INTRA]=bits[OC_MODE_INTER_NOMV]=0;
+        for(codedi=0;codedi<ncoded;codedi++){
+          mapi=coded[codedi];
+          pli=mapi>>2;
+          fragi=mb->map[pli][mapi&3];
+          frag=_enc->state.frags+fragi;
+          frinfo=_enc->frinfo+fragi;
+          /*Set the MB mode and MV in the fragment.*/
+          frag->mbmode=OC_MODE_INTER_NOMV;
+          frag->mv[0]=frag->mv[1]=0;
+          /*Calculate the bitrate estimates.*/
+          err[OC_MODE_INTRA][mapi]=0;
+          for(ci=1;ci<64;ci++){
+            err[OC_MODE_INTRA][mapi]+=abs(frinfo->dct_coeffs[ci]);
+          }
+          err[OC_MODE_INTER_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,0,0,pli,
+           OC_FRAME_PREV);
+          bits[OC_MODE_INTRA]+=OC_RES_BITRATES[_enc->state.qi][pli][
+           OC_MODE_INTRA][OC_MINI(err[OC_MODE_INTRA][mapi]>>8,15)];
+          bits[OC_MODE_INTER_NOMV]+=OC_RES_BITRATES[_enc->state.qi][pli][
+           OC_MODE_INTER_NOMV][OC_MINI(err[OC_MODE_INTER_NOMV][mapi]>>6,15)];
+        }
+        intra_bits+=bits[OC_MODE_INTRA]+128>>8;
+        inter_bits+=bits[OC_MODE_INTER_NOMV]+128>>8;
+        continue;
+      }
+      /*Otherwise, add this to the coded MB list.*/
+      _enc->state.coded_mbis[_enc->state.ncoded_mbis++]=mbi;
       /*Compute the chroma MVs for the 4MV mode.*/
-      /*TODO: Handle the case when less than 4 luma blocks are being coded.*/
+      /*First, if any luma blocks are not coded, use the (0,0) vector for
+         them.*/
+      for(mapi=0;mapi<4;mapi++){
+        fragi=mb->map[0][mapi];
+        if(fragi<0||!_enc->state.frags[fragi].coded){
+          mbinfo->bmvs[mapi][0]=mbinfo->bmvs[mapi][1]=0;
+        }
+      }
       (*set_chroma_mvs)(cbmvs,mbmv,mbinfo->bmvs);
       /*Do a MV search against the golden frame.*/
       oc_mcenc_search_1mv(_enc->mcenc,mb-_enc->state.mbs,OC_FRAME_GOLD);
@@ -1840,7 +1886,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         for(ci=1;ci<64;ci++){
           err[OC_MODE_INTRA][mapi]+=abs(frinfo->dct_coeffs[ci]);
         }
-        err[OC_MODE_INTER][mapi]=oc_enc_frag_sad(_enc,frag,0,0,pli,
+        err[OC_MODE_INTER_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,0,0,pli,
          OC_FRAME_PREV);
         err[OC_MODE_INTER_MV][mapi]=oc_enc_frag_sad(_enc,frag,
          mbinfo->mvs[0][OC_FRAME_PREV][0],mbinfo->mvs[0][OC_FRAME_PREV][1],
@@ -1857,17 +1903,17 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           err[OC_MODE_INTER_MV_FOUR][mapi]=oc_enc_frag_sad(_enc,frag,
            cbmvs[bi][0],cbmvs[bi][1],pli,OC_FRAME_PREV);
         }
-        err[OC_MODE_INTER_GOLDEN][mapi]=oc_enc_frag_sad(_enc,frag,
+        err[OC_MODE_INTER_GOLDEN_NOMV][mapi]=oc_enc_frag_sad(_enc,frag,
          0,0,pli,OC_FRAME_GOLD);
         err[OC_MODE_INTER_GOLDEN_MV][mapi]=oc_enc_frag_sad(_enc,frag,
          mbinfo->mvs[0][OC_FRAME_GOLD][0],mbinfo->mvs[0][OC_FRAME_GOLD][1],
          pli,OC_FRAME_GOLD);
         /*Using these distortion values, estimate the number of bits needed to
            code this fragment in each mode.*/
-        bits[OC_MODE_INTRA]+=OC_RES_BITRATES[_enc->state.qi][mapi>>2][
+        bits[OC_MODE_INTRA]+=OC_RES_BITRATES[_enc->state.qi][pli][
          OC_MODE_INTRA][OC_MINI(err[OC_MODE_INTRA][mapi]>>8,15)];
         for(modei=OC_MODE_INTRA+1;modei<OC_NMODES;modei++){
-          bits[modei]+=OC_RES_BITRATES[_enc->state.qi][mapi>>2][
+          bits[modei]+=OC_RES_BITRATES[_enc->state.qi][pli][
            modei][OC_MINI(err[modei][mapi]>>6,15)];
         }
       }
@@ -1928,8 +1974,12 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           mvbitsb+=12;
           last_mv[1][0]=last_mv[0][0];
           last_mv[1][1]=last_mv[0][1];
-          last_mv[0][0]=mbinfo->mvs[0][OC_FRAME_PREV][0];
-          last_mv[0][1]=mbinfo->mvs[0][OC_FRAME_PREV][1];
+          mbmv[0]=last_mv[0][0]=mbinfo->mvs[0][OC_FRAME_PREV][0];
+          mbmv[1]=last_mv[0][1]=mbinfo->mvs[0][OC_FRAME_PREV][1];
+        }break;
+        case OC_MODE_INTER_MV_LAST:{
+          mbmv[0]=last_mv[0][0];
+          mbmv[1]=last_mv[0][1];
         }break;
         case OC_MODE_INTER_MV_LAST2:{
           mbmv[0]=last_mv[1][0];
@@ -1938,18 +1988,21 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           last_mv[1][1]=last_mv[0][1];
           last_mv[0][0]=mbmv[0];
           last_mv[0][1]=mbmv[1];
-        }
+        }break;
         case OC_MODE_INTER_MV_FOUR:{
           mvbitsa+=mb4mvbitsa;
           mvbitsb+=48;
           last_mv[1][0]=last_mv[0][0];
           last_mv[1][1]=last_mv[0][1];
-          last_mv[0][0]=mbmv[0];
-          last_mv[0][1]=mbmv[1];
+          /*After 4MV mode, the last MV is the one from the last block.*/
+          last_mv[0][0]=mbinfo->bmvs[3][0];
+          last_mv[0][1]=mbinfo->bmvs[3][1];
         }break;
         case OC_MODE_INTER_GOLDEN_MV:{
           mvbitsa+=mbgmvbitsa;
           mvbitsb+=12;
+          mbmv[0]=mbinfo->mvs[0][OC_FRAME_GOLD][0];
+          mbmv[1]=mbinfo->mvs[0][OC_FRAME_GOLD][1];
         }break;
       }
       if(OC_MODE_HAS_MV[mb->mode]){
@@ -1972,15 +2025,15 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
             }
           }
         }
-        /*For every other mode with a MV, it is stored in last_mv[0].*/
+        /*For every other mode with a MV, it is stored in mbmv.*/
         else{
           for(codedi=0;codedi<ncoded;codedi++){
             mapi=coded[codedi];
             fragi=mb->map[mapi>>2][mapi&3];
             frag=_enc->state.frags+fragi;
             frag->mbmode=mb->mode;
-            frag->mv[0]=(char)last_mv[0][0];
-            frag->mv[1]=(char)last_mv[0][1];
+            frag->mv[0]=(char)mbmv[0];
+            frag->mv[1]=(char)mbmv[1];
           }
         }
       }
@@ -2014,7 +2067,10 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   inter_bits+=oc_enc_pack_partial_sb_flags(_enc);
   inter_bits+=oc_enc_pack_coded_sb_flags(_enc);
   inter_bits+=oc_enc_pack_coded_block_flags(_enc);
-  if(intra_bits>inter_bits)return OC_INTER_FRAME;
+  if(intra_bits>inter_bits){
+    _enc->est_bits=inter_bits;
+    return OC_INTER_FRAME;
+  }
   /*All INTRA mode is smaller, but we haven't counted up the cost of all the
      not coded fragments we will now have to code.*/
   uncoded_fragi_end=uncoded_fragi=_enc->state.uncoded_fragis;
@@ -2036,13 +2092,17 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         intra_bits+=OC_RES_BITRATES[_enc->state.qi][pli][
          OC_MODE_INTRA][OC_MINI(eerror>>8,15)];
         /*If it turns out INTRA mode was more expensive, we're done.*/
-        if(intra_bits>inter_bits)return OC_INTER_FRAME;
+        if(intra_bits>inter_bits){
+          _enc->est_bits=inter_bits;
+          return OC_INTER_FRAME;
+        }
       }
     }
   }
   /*So, we've compared the full cost estimates, and INTRA is still better.
     Code an INTRA frame instead.*/
   oc_enc_mark_all_intra(_enc);
+  _enc->est_bits=intra_bits;
   return OC_INTRA_FRAME;
 }
 
@@ -2076,14 +2136,16 @@ static void oc_enc_pack_mb_modes(oc_enc_ctx *_enc){
   scheme=_enc->mode_scheme_chooser.scheme_list[0];
   oggpackB_write(&_enc->opb,scheme,3);
   if(scheme==0){
+    int ranks[8];
     int mi;
+    /*The numbers associated with each mode in the stream are slightly
+       different than what we use in the source.
+      The lookup here converts between the two.*/
     for(mi=0;mi<8;mi++){
-      /*The numbers associated with each mode in the stream are slightly
-         different than what we use in the source.
-        The lookup here converts between the two.*/
-      oggpackB_write(&_enc->opb,
-       OC_MODE_SCHEMES[6][_enc->mode_scheme_chooser.scheme0_list[mi]],3);
+      ranks[OC_MODE_SCHEMES[6][mi]]=
+       _enc->mode_scheme_chooser.scheme0_ranks[mi];
     }
+    for(mi=0;mi<8;mi++)oggpackB_write(&_enc->opb,ranks[mi],3);
   }
   codes=_enc->mode_scheme_chooser.mode_codes[scheme];
   mode_ranks=_enc->mode_scheme_chooser.mode_ranks[scheme];
@@ -2121,27 +2183,19 @@ static void oc_enc_pack_mvs(oc_enc_ctx *_enc){
     switch(mb->mode){
       case OC_MODE_INTER_MV:{
         mbinfo=_enc->mbinfo+mbi;
-        oc_enc_pack_mv(_enc,mbinfo->mvs[OC_FRAME_PREV][0][0],
-         mbinfo->mvs[OC_FRAME_PREV][0][1]);
+        oc_enc_pack_mv(_enc,mbinfo->mvs[0][OC_FRAME_PREV][0],
+         mbinfo->mvs[0][OC_FRAME_PREV][1]);
       }break;
       case OC_MODE_INTER_GOLDEN_MV:{
         mbinfo=_enc->mbinfo+mbi;
-        oc_enc_pack_mv(_enc,mbinfo->mvs[OC_FRAME_PREV][0][0],
-         mbinfo->mvs[OC_FRAME_PREV][0][1]);
-      }
+        oc_enc_pack_mv(_enc,mbinfo->mvs[0][OC_FRAME_GOLD][0],
+         mbinfo->mvs[0][OC_FRAME_GOLD][1]);
+      }break;
       case OC_MODE_INTER_MV_FOUR:{
-        int *frag_map;
-        int  bi;
-        /*It's important to store these in coded order, not display order.*/
-        frag_map=_enc->state.sbs[mbi>>2].map[mbi&3];
+        int bi;
+        mbinfo=_enc->mbinfo+mbi;
         for(bi=0;bi<4;bi++){
-          int fragi;
-          fragi=frag_map[bi];
-          if(fragi>=0){
-            oc_fragment *frag;
-            frag=_enc->state.frags+fragi;
-            oc_enc_pack_mv(_enc,frag->mv[0],frag->mv[1]);
-          }
+          oc_enc_pack_mv(_enc,mbinfo->bmvs[bi][0],mbinfo->bmvs[bi][1]);
         }
       }break;
     }
@@ -2335,22 +2389,46 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
   oc_ycbcr_buffer_flip(img,_img);
   /*Step 2: Update state.*/
   if(_enc->state.ref_frame_idx[OC_FRAME_SELF]>=0){
-    /*Fill in the borders from the reconstructed version of the last encoded
-       frame.*/
-    oc_state_borders_fill(&_enc->state,
-     _enc->state.ref_frame_idx[OC_FRAME_SELF]);
-    /*Use this frame data for the appropriate reference frames, depending on
-       the type.*/
+    /*Right now the reconstructed frame has only the coded blocks in it.
+      We either need to copy all the other blocks into it, or copy the
+       reconstructed blocks back into the previous frame, whichever is
+       faster.*/
     if(_enc->state.frame_type==OC_INTRA_FRAME){
+      /*Intra frames always code all fragments, so there is nothing to copy.
+        The new frame becomes both the previous and gold reference frames.*/
       _enc->state.keyframe_num=_enc->state.curframe_num;
       _enc->state.ref_frame_idx[OC_FRAME_GOLD]=
        _enc->state.ref_frame_idx[OC_FRAME_PREV]=
        _enc->state.ref_frame_idx[OC_FRAME_SELF];
     }
     else{
-     _enc->state.ref_frame_idx[OC_FRAME_PREV]=
-      _enc->state.ref_frame_idx[OC_FRAME_SELF];
+      int *plfragis[3];
+      int  ncoded;
+      int  nuncoded;
+      ncoded=_enc->state.ncoded_fragis[0]+_enc->state.ncoded_fragis[1]+
+       _enc->state.ncoded_fragis[2];
+      nuncoded=_enc->state.nfrags-ncoded;
+      if(ncoded<nuncoded){
+        plfragis[0]=_enc->state.coded_fragis;
+        plfragis[1]=plfragis[0]+_enc->state.ncoded_fragis[0];
+        plfragis[2]=plfragis[1]+_enc->state.ncoded_fragis[1];
+        oc_state_frag_copy(&_enc->state,plfragis,_enc->state.ncoded_fragis,
+         OC_FRAME_PREV,OC_FRAME_SELF);
+      }
+      else{
+        plfragis[0]=_enc->state.uncoded_fragis-_enc->state.nuncoded_fragis[0];
+        plfragis[1]=plfragis[0]-_enc->state.nuncoded_fragis[1];
+        plfragis[2]=plfragis[1]-_enc->state.nuncoded_fragis[2];
+        oc_state_frag_copy(&_enc->state,plfragis,_enc->state.nuncoded_fragis,
+         OC_FRAME_SELF,OC_FRAME_PREV);
+        _enc->state.ref_frame_idx[OC_FRAME_PREV]=
+         _enc->state.ref_frame_idx[OC_FRAME_SELF];
+      }
     }
+    /*Fill in the borders from the reconstructed version of the last encoded
+       frame.*/
+    oc_state_borders_fill(&_enc->state,
+     _enc->state.ref_frame_idx[OC_FRAME_SELF]);
   }
   /*Select a free buffer to use for the reconstructed version of this frame.*/
   for(rfi=0;rfi==_enc->state.ref_frame_idx[OC_FRAME_GOLD]||

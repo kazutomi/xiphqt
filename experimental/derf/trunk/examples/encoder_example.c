@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.5 2003/12/17 21:31:44 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.6 2004/02/24 04:55:10 derf Exp $
 
  ********************************************************************/
 
@@ -632,7 +632,6 @@ int main(int argc,char *argv[]){
   ti.quality=video_q;
 
   ti.dropframes_p=0;
-  ti.quick_p=1;
   ti.keyframe_auto_p=1;
   ti.keyframe_frequency=64;
   ti.keyframe_frequency_force=64;
