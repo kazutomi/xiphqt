@@ -5,7 +5,7 @@ Contact
 
 Christopher “Monty” Montgomery, Head Honcho: <monty@xiph.org>
 
-Jack Moffit, #1: <jack@xiph.org>
+Jack Moffitt, #1: <jack@xiph.org>
 
 Manuel Lora, Evangelist: <vanguardist@xiph.org>
 
