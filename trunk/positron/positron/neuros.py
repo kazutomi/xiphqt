@@ -20,6 +20,7 @@ import os
 from os import path
 import util
 import ports
+import string
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -120,11 +121,15 @@ class Neuros:
         self.mountpoint = path.abspath(mountpoint)
 
         # Check and see if the mountpoint looks legit
-        dbpath = path.join(self.mountpoint, Neuros.DB_DIR)
         try:
-            os.listdir(dbpath)
+            contents = os.listdir(self.mountpoint)
+            if Neuros.DB_DIR not in map(string.upper, contents):
+                raise Error("The mountpoint %s does not appear to contain"
+                            " a %s database directory."
+                            % (mountpoint, Neuros.DB_DIR))
         except OSError:
-            raise Error("%s does not look like a Neuros mountpoint"
+            raise Error("The mountpoint %s is not accessible."
+                        "  Please check your permissions."
                         % (mountpoint,))
 
         # Handy to keep around
