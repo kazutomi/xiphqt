@@ -11,13 +11,12 @@
  ********************************************************************
 
  function: bitrate tracking and management
- last mod: $Id: bitrate.c,v 1.3 2001/12/14 07:21:16 xiphmont Exp $
+ last mod: $Id: bitrate.c,v 1.3.2.1 2001/12/17 05:39:23 xiphmont Exp $
 
  ********************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <math.h>
 #include <ogg/ogg.h>
