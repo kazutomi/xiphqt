@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: cfgfile_options.c,v 1.1.2.1 2001/12/08 23:59:24 volsung Exp $
+ last mod: $Id: cfgfile_options.c,v 1.1.2.2 2001/12/16 01:35:22 volsung Exp $
 
  ********************************************************************/
 
@@ -80,7 +80,8 @@ void file_options_init (file_option_t opts[])
       case opt_type_string:
 	*(char **) opts->ptr = *(char **) opts->dfl;
 	break;
-	
+
+      case opt_type_bool:
       case opt_type_int:
 	*(long int *) opts->ptr = *(int *) opts->dfl;
 	break;
@@ -166,6 +167,9 @@ void file_options_describe (file_option_t opts[], FILE *f)
       case opt_type_none:
 	w -= fprintf (f, "none");
 	break;
+      case opt_type_bool:
+	w -= fprintf (f, "bool");
+	break;
       case opt_type_char:
 	w -= fprintf (f, "char");
 	break;
@@ -200,6 +204,7 @@ void file_options_describe (file_option_t opts[], FILE *f)
 	case opt_type_string:
 	  fputs (*(char **) opt->dfl, f);
 	  break;
+	case opt_type_bool:
 	case opt_type_int:
 	  fprintf (f, "%ld", *(long int *) opt->dfl);
 	  break;
@@ -277,6 +282,25 @@ parse_code_t parse_line (file_option_t opts[], char *line)
 	if (value != NULL || strlen(value) > 0)
 	  return parse_badvalue;
 	opt->found++;
+	break;
+
+      case opt_type_bool:
+	if (!value || *value == '\0')
+	  return parse_badvalue;
+	
+	/* Maybe this is a numeric bool */
+	tmpl = strtol (value, &endptr, 0);
+
+	if ( strncasecmp(value, "y", 1) == 0
+	     || strcasecmp(value, "true")
+	     || (*endptr == '\0' && tmpl) )
+	  *(long int *) opt->ptr = 1;
+	else if ( strncasecmp(value, "n", 1) == 0
+		  || strcasecmp(value, "false")
+		  || (*endptr == '\0' && !tmpl) )
+	  *(long int *) opt->ptr = 0;
+	else
+	  return parse_badvalue;
 	break;
 
       case opt_type_char:
