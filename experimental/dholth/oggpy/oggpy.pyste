@@ -1,0 +1,7 @@
+oggpy = AllFromHeader("oggcc.h")
+
+exclude(oggpy.sync_state.data)
+exclude(oggpy.sync_state.buffer)
+exclude(oggpy.packet.data)
+exclude(oggpy.page.data)
+exclude(oggpy.stream.data)
