@@ -169,7 +169,7 @@ static int shout_audio_pageout (struct output_module *mod, ogg_page *page)
         else
             ret = 0;
     }
-    else if (stream->page_samples > (uint64_t)mod->parent->vi.rate)
+    else if (stream->page_samples >= stream->flush_trigger)
         ret = ogg_stream_flush (&mod->os, page);
     else
         ret = ogg_stream_pageout (&mod->os, page);
@@ -221,6 +221,8 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
             mod->start_pos = granule;
             stream->prev_page_granulepos = 0;
             stream->prev_packet_granulepos = 0;
+            if (stream->flush_trigger == 0)
+                stream->flush_trigger = state->vi.rate;
 
             while (send_it && ogg_stream_flush (&mod->os, &page) > 0)
             {
@@ -300,6 +302,7 @@ int parse_shout (xmlNodePtr node, void *arg)
     int  yp          = 0,
          reconnect_delay = DEFAULT_RECONN_DELAY,
          reconnect_attempts = DEFAULT_RECONN_ATTEMPTS,
+         flush_samples = 0,
          port        = 8000;
 
     struct cfg_tag shout_tags[] =
@@ -310,6 +313,7 @@ int parse_shout (xmlNodePtr node, void *arg)
         { "username",           get_xml_string, &user },
         { "mount",              get_xml_string, &mount },
         { "yp",                 get_xml_bool,   &yp },
+        { "flush-samples",      get_xml_int,    &flush_samples },
         { "reconnectdelay",     get_xml_int,    &reconnect_delay },
         { "reconnectattempts",  get_xml_int,    &reconnect_attempts },
         { NULL, NULL, NULL }
@@ -340,6 +344,7 @@ int parse_shout (xmlNodePtr node, void *arg)
         stream->mount = mount;
         stream->port = port;
         stream->yp = yp;
+        stream->flush_trigger = flush_samples;
 
         stream->reconnect_delay = reconnect_delay;
         stream->reconnect_attempts = reconnect_attempts;
@@ -349,7 +354,7 @@ int parse_shout (xmlNodePtr node, void *arg)
         state->head = mod;
         return 0;
     }
-    fprintf (stderr, "shout output failed\n");
+    LOG_ERROR0 ("shout output failed");
     if (hostname)   xmlFree (hostname);
     if (user)       xmlFree (user);
     if (password)   xmlFree (password);

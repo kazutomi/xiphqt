@@ -26,11 +26,12 @@ struct output_shout_state
     int port;
     int yp;
     int connected;
+    int flush_trigger;
     int reconnect_delay;
     int reconnect_count;
     int reconnect_attempts;
     time_t restart_time;
-    uint64_t page_samples;
+    int page_samples;
     uint64_t prev_page_granulepos;
     uint64_t prev_packet_granulepos;
 };

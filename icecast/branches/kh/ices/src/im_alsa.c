@@ -44,6 +44,27 @@
 
 #define SAMPLES 8192
 
+static void alsa_free_buffer (input_module_t *mod, input_buffer *ib)
+{
+    im_alsa_state *s = mod->internal;
+    float **ptr;
+    int i;
+
+    ptr = ib->buf;
+    for (i=s->channels; i; i--)
+    {
+        if (ptr)
+        {
+            free (*ptr);
+            *ptr = NULL;
+        }
+        ptr++;
+    }
+    free (ib->buf);
+    ib->buf = NULL;
+}
+
+
 
 static int alsa_initialise_buffer (input_module_t *mod, input_buffer *ib)
 {
@@ -74,12 +95,16 @@ void alsa_close_module(input_module_t *mod)
 {
 	if (mod)
 	{
+        LOG_INFO0 ("closing ALSA module");
 		if (mod->internal)
 		{
 			im_alsa_state *s = mod->internal;
 			if (s->fd != NULL)
+            {
+                LOG_DEBUG0 ("closing alsa pcm handle");
 				snd_pcm_close(s->fd);
-			free(s);
+            }
+            s->fd = NULL;
 		}
 	}
 }
@@ -90,8 +115,10 @@ void alsa_shutdown_module (input_module_t *mod)
     im_alsa_state *s = mod->internal;
 
     LOG_INFO0 ("Shutdown ALSA module");
+    free (s->read_buffer);
     free (s);
     mod->internal = NULL;
+    snd_config_update_free_global ();
 }
 
 
@@ -182,6 +209,7 @@ int alsa_init_module(input_module_t *mod)
 	mod->subtype = INPUT_PCM_LE_16;
 	mod->getdata = alsa_read;
     /* mod->release_input_buffer = alsa_return_buffer; */
+    mod->free_input_buffer = alsa_free_buffer;
     mod->initialise_buffer = alsa_initialise_buffer;
     mod->buffer_count = ices_config->runner_count*10 + 5;
     mod->prealloc_count = ices_config->runner_count * 4;
@@ -195,7 +223,7 @@ int alsa_init_module(input_module_t *mod)
 	rate = 44100; /* Defaults */
 	channels = 2; 
     samples = SAMPLES;
-    s->periods = 2;
+    s->periods = -1;
     s->buffer_time = 500000;
 
 	current = mod->module_params;
@@ -291,10 +319,13 @@ int alsa_open_module(input_module_t *mod)
         LOG_ERROR2("Error setting buffer time %u: %s", s->buffer_time, snd_strerror(err));
         goto fail;
     }
-    if ((err = snd_pcm_hw_params_set_periods(s->fd, hwparams, s->periods, 0)) < 0)
+    if (s->periods > 0)
     {
-        LOG_ERROR2("Error setting %u periods: %s", s->periods, snd_strerror(err));
-        goto fail;
+        if ((err = snd_pcm_hw_params_set_periods(s->fd, hwparams, s->periods, 0)) < 0)
+        {
+            LOG_ERROR2("Error setting %u periods: %s", s->periods, snd_strerror(err));
+            goto fail;
+        }
     }
 
 	if ((err = snd_pcm_hw_params(s->fd, hwparams)) < 0)
@@ -306,8 +337,11 @@ int alsa_open_module(input_module_t *mod)
 
 	/* We're done, and we didn't fail! */
 	LOG_INFO1("Opened audio device %s", s->device);
-    LOG_INFO4("with %d channel(s), %d Hz, buffer %u ms (%u periods)",
-			s->channels, s->rate, s->buffer_time/1000, s->periods);
+    LOG_INFO2("with %d channel(s), %d Hz", s->channels, s->rate);
+    if (s->periods == -1)
+        LOG_DEBUG1 ("using %umS buffer", s->buffer_time/1000);
+    else
+        LOG_DEBUG2 ("using %umS buffer and %d periods", s->buffer_time/1000, s->periods);
 
 	return 0;
 

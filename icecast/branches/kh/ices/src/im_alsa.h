@@ -36,7 +36,7 @@ typedef struct
 	int rate;
 	int channels;
     unsigned buffer_time;
-    unsigned periods;
+    int periods;
 
 	snd_pcm_t *fd;
     const char *device;
