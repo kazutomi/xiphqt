@@ -4,7 +4,7 @@
  * This code is licensed under the GNU LGPL. See COPYING in the source
  * distribution for details.
  *
- * $Id: shout.c,v 1.1 2003/07/03 17:30:45 brendan Exp $
+ * $Id: shout.c,v 1.2 2003/07/09 21:56:43 brendan Exp $
  */
 
 #include <Python.h>
@@ -90,7 +90,9 @@ static char docstring[] = "Shout library v2 interface\n\n"
   " audio_info - dictionary of stream audio parameters, for YP information.\n"
   "              Useful keys include \"bitrate\" (in kbps), \"samplerate\"\n"
   "              (in Hz), \"channels\" and \"quality\" (vorbis encoding\n"
-  "              quality. All dictionary values should be strings.\n"
+  "              quality. All dictionary values should be strings. The known\n"
+  "              keys are defined as the SHOUT_AI_* constants, but any other\n"
+  "              will be passed along to the server as well.\n"
   "   dumpfile - file name to record stream to on server (not supported on\n"
   "              all servers)\n"
   "      agent - for customizing the HTTP user-agent header\n\n";
@@ -196,15 +198,31 @@ static PyMethodDef ShoutObjectMethods[] = {
 };
 
 void initshout(void) {
-  PyObject* methods;
+  PyObject* mod;
   PyObject* dict;
 
   ShoutObject_Type.ob_type = &PyType_Type;
 
-  methods = Py_InitModule3("shout", ShoutMethods, docstring);
-  dict = PyModule_GetDict(methods);
+  mod = Py_InitModule3("shout", ShoutMethods, docstring);
+  dict = PyModule_GetDict(mod);
   ShoutError = PyErr_NewException("shout.ShoutException", NULL, NULL);
   PyDict_SetItemString(dict, "ShoutException", ShoutError);
+
+  PyModule_AddIntConstant(mod, "SHOUTERR_SUCCESS", SHOUTERR_SUCCESS);
+  PyModule_AddIntConstant(mod, "SHOUTERR_INSANE", SHOUTERR_INSANE);
+  PyModule_AddIntConstant(mod, "SHOUTERR_NOCONNECT", SHOUTERR_NOCONNECT);
+  PyModule_AddIntConstant(mod, "SHOUTERR_NOLOGIN", SHOUTERR_NOLOGIN);
+  PyModule_AddIntConstant(mod, "SHOUTERR_SOCKET", SHOUTERR_SOCKET);
+  PyModule_AddIntConstant(mod, "SHOUTERR_MALLOC", SHOUTERR_MALLOC);
+  PyModule_AddIntConstant(mod, "SHOUTERR_METADATA", SHOUTERR_METADATA);
+  PyModule_AddIntConstant(mod, "SHOUTERR_CONNECTED", SHOUTERR_CONNECTED);
+  PyModule_AddIntConstant(mod, "SHOUTERR_UNCONNECTED", SHOUTERR_UNCONNECTED);
+  PyModule_AddIntConstant(mod, "SHOUTERR_UNSUPPORTED", SHOUTERR_UNSUPPORTED);
+
+  PyModule_AddStringConstant(mod, "SHOUT_AI_BITRATE", SHOUT_AI_BITRATE);
+  PyModule_AddStringConstant(mod, "SHOUT_AI_SAMPLERATE", SHOUT_AI_SAMPLERATE);
+  PyModule_AddStringConstant(mod, "SHOUT_AI_CHANNELS", SHOUT_AI_CHANNELS);
+  PyModule_AddStringConstant(mod, "SHOUT_AI_QUALITY", SHOUT_AI_QUALITY);
 }
 
 /* -- shout module methods -- */
