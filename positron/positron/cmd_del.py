@@ -91,7 +91,7 @@ def run(config, neuros, args):
     filelist = []
 
     if len(args) == 0:
-        print __module__.__doc__
+        print __doc__
         return
 
     for arg in args:
