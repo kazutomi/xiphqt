@@ -6,44 +6,50 @@
 #ifndef _ISORT_H_
 #define _ISORT_H_
 
-typedef struct sort_link{
-  struct sort_link *next;
-} sort_link;
+#include "p_block.h"
 
-typedef struct sort_info{
-  int16_t *vector;                /* vector (storage doesn't belong to us) */
+typedef struct is_link {
+  struct is_link *link;
+  long           indice;
+  struct is_link *parent;
+} is_link;
 
-  long  *abspos;                 /* pointer for side effects */
-  long  size;                    /* vector size */
-
-  long  maxsize;                 /* maximum vector size */
-
-  long sortbegin;                /* range of contiguous sorted area */
-  long lo,hi;                    /* current post, overlap range */
-  int  val;                      /* ...and val */
+typedef struct {
+  long           begin; /* absolute offset for vectors */
+  long           size;
+  size16         *vector;
 
   /* sort structs */
-  sort_link **head;           /* sort buckets (65536) */
+  struct is_link **b_tails;  /* sort buckets */
+  struct is_link **b_aux;    /* auxiliary storage */
+  struct is_link **revindex; /* for incremental sorts */
 
-  long *bucketusage;          /*  of used buckets (65536) */
-  long lastbucket;
-  sort_link *revindex;
+  int             *sorted;   /* which sectors are sorted? */
+  int             sortdirty;
 
-} sort_info;
+  /* mem management */
+  struct is_link *b_free;
+  struct is_link *b_mem;
+} is_vector;
 
-extern sort_info *sort_alloc(long size);
-extern void sort_unsortall(sort_info *i);
-extern void sort_setup(sort_info *i,int16_t *vector,long *abspos,long size,
-		       long sortlo, long sorthi);
-extern void sort_free(sort_info *i);
-extern sort_link *sort_getmatch(sort_info *i,long post,long overlap,int value);
-extern sort_link *sort_nextmatch(sort_info *i,sort_link *prev);
+extern void *isort_alloc();
+extern void *isort_alloc_with_buffer(size16 *b,long size);
+extern void isort_unsort(void *in);
+extern void isort_free(void *in);
+extern void isort_append(void *in, size16 *vector, long size);
+extern void isort_insert(void *in,long pos,size16 *vector,long size);
+extern void isort_overwrite(void *in,long pos,size16 *vector,long size);
+extern void isort_remove(void *in,long cutpos,long cutsize);
+extern void isort_removef(void *in, long cutpos);
+extern long *isort_matches(long pos,int value, void *match,long overlap);
+extern size16 *isort_yank(void *in);
 
-#define is(i) (i->size)
-#define ib(i) (*i->abspos)
-#define ie(i) (i->size+*i->abspos)
-#define iv(i) (i->vector)
-#define ipos(i,l) (l-i->revindex)
+#define isort_buffer(i) ((is_vector *)i?((is_vector *)i)->vector:NULL)
+#define isort_size(i) ((is_vector *)i?((is_vector *)i)->size:0)
+#define isort_begin(i) ((is_vector *)i?((is_vector *)i)->begin:-1)
+#define isort_end(i) ((is_vector *)i?((is_vector *)i)->begin+\
+		      ((is_vector *)i)->size:-1)
+#define isort_set(i,b) (((is_vector *)i)->begin=b)
 
 #endif
 
