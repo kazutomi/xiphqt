@@ -203,6 +203,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	  /* don't reencode if the source is MP3 and the same bitrate */
 	  if (!stream->reencode || (source->read &&
 				    (stream->bitrate == source->bitrate))) {
+	    shout_sync(stream->conn);
 	    rc = stream_send_data (stream, ibuf, len);
 	  }
 #ifdef HAVE_LIBLAME
@@ -213,6 +214,8 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	    if (olen == -1) {
 	      ices_log_debug ("Output buffer too small, skipping chunk");
 	    } else if (olen > 0) {
+	      shout_sync(stream->conn);
+	      ices_log_debug ("Sending %d bytes", olen);
 	      rc = stream_send_data (stream, obuf, olen);
 	    }
 	  }
@@ -328,7 +331,6 @@ stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 
   if (shout_get_connected (stream->conn) == SHOUTERR_CONNECTED) {
     if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
-      shout_sync (stream->conn);
       stream->errs = 0;
       rc = 0;
     } else {
