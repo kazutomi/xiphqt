@@ -1,7 +1,7 @@
 #ifndef PYOGGSTREAMSTATE_H
 #define PYOGGSTREAMSTATE_H
 
-#include <pyogg/pyogg2.h>
+#include "general.h"
 
 typedef struct {
   PyObject_HEAD

@@ -1,7 +1,6 @@
 #ifndef PYOGGPACKBUFF_H
 #define PYOGGPACKBUFF_H
 
-#include <pyogg/pyogg2.h>
 #include "pyoggpacket.h"
 
 typedef struct {

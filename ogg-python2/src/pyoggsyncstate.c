@@ -109,15 +109,21 @@ PyOggSyncState_Pagein(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "O!", &PyOggPage_Type,
                         (PyObject *) &page))
     return NULL;
+
+  if ( page->valid_flag == 0 ) {
+    PyErr_SetString(PyOggPage_Error, "this page is no longer usable.");
+    return NULL;
+  }
   
   ret = ogg_sync_pagein(PyOggSyncState_AsOggSyncState(self),
                         PyOggPage_AsOggPage(page));
 
   if (ret == OGG_SUCCESS) {
     Py_INCREF(Py_None);
+    page->valid_flag = 0;
     return Py_None;
   }
-  PyErr_SetString(PyOggError, "Unknown return from ogg_sync_pagein.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_sync_pagein.");
   return NULL;
 }
 
@@ -150,7 +156,7 @@ PyOggSyncState_Read(PyObject *self, PyObject *args)
   if (ret == OGG_SUCCESS) return pybufferobj;
 
   Py_DECREF(pybufferobj);
-  PyErr_SetString(PyOggError, "Unknown return from ogg_sync_read.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_sync_read.");
   return NULL;
 }
   
@@ -180,7 +186,7 @@ PyOggSyncState_Output(PyObject *self, PyObject *args)
   ret = ogg_sync_read(PyOggSyncState_AsOggSyncState(self), ask_bytes);
   if (ret == OGG_SUCCESS) return PyInt_FromLong(ask_bytes);
 
-  PyErr_SetString(PyOggError, "Unknown return from ogg_sync_read.");
+  PyErr_SetString(PyOgg_Error, "Unknown return from ogg_sync_read.");
   return NULL;
 }
 
@@ -198,7 +204,7 @@ PyOggSyncState_Reset(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
   }
-  PyErr_SetString(PyOggError, "Unknown error from ogg_sync_reset.");
+  PyErr_SetString(PyOgg_Error, "Unknown error from ogg_sync_reset.");
   return NULL;
 }
 
@@ -222,7 +228,7 @@ PyOggSyncState_Write(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
   }
-  PyErr_SetString(PyOggError, "Unknown error from ogg_sync_wrote.");
+  PyErr_SetString(PyOgg_Error, "Unknown error from ogg_sync_wrote.");
   return NULL;
 }
 
@@ -249,7 +255,7 @@ PyOggSyncState_Input(PyObject *self, PyObject *args)
   if ( ret == OGG_SUCCESS ) {
     return PyLong_FromLong(bytes);
   }
-  PyErr_SetString(PyOggError, "Unknown error from ogg_sync_wrote.");
+  PyErr_SetString(PyOgg_Error, "Unknown error from ogg_sync_wrote.");
   return NULL;
 }
 
@@ -265,7 +271,7 @@ PyOggSyncState_Pageout(PyObject *self, PyObject *args)
 
   pageobj = PyOggPage_Alloc();
   if ( !pageobj ) {
-    PyErr_SetString(PyOggError, "Out of Memory.");
+    PyErr_SetString(PyOgg_Error, "Out of Memory.");
     return NULL;
   }
   ret = ogg_sync_pageout(PyOggSyncState_AsOggSyncState(self),
@@ -278,9 +284,9 @@ PyOggSyncState_Pageout(PyObject *self, PyObject *args)
     return Py_None;
   }
   if (ret == OGG_HOLE ) {
-    PyErr_SetString(PyOggError, "Hole in data, stream is desynced.");
+    PyErr_SetString(PyOgg_Error, "Hole in data, stream is desynced.");
     return NULL;
   }
-  PyErr_SetString(PyOggError, "Unknown error from ogg_sync_pageout.");
+  PyErr_SetString(PyOgg_Error, "Unknown error from ogg_sync_pageout.");
   return NULL;
 }
