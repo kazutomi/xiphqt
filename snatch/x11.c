@@ -92,15 +92,19 @@ static void FakeKeycode(int keycode, int modmask, unsigned long window){
 
   XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
 
-  event.type=3; /* key up */
+  /* Don't send the keyups; RP doesn't care and a 'return' or 'space'
+     can close a window... resulting in sending a keyup to a drawable
+     that doesn't exist. */
 
-  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
+  //event.type=3; /* key up */
+
+  //XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&event);
 
 }
 
 static void FakeKeySym(int keysym, int modmask, unsigned long window){
   KeyCode c=XKeysymToKeycode(Xdisplay,keysym);
-  
+
   if(XKeycodeToKeysym(Xdisplay,c,0)==keysym){
     FakeKeycode(c,modmask,window);
   }else{
@@ -111,17 +115,6 @@ static void FakeKeySym(int keysym, int modmask, unsigned long window){
 
 void FakeButton1(unsigned long window){
   XButtonEvent event;
-  XCrossingEvent enter;
-
-  memset(&enter,0,sizeof(enter));
-  enter.type=7;
-  enter.display=Xdisplay;
-  enter.window=window;
-  enter.root=root_window;
-  enter.mode=0;
-  enter.detail=3;
-  enter.same_screen=1;
-  XSendEvent(Xdisplay,(Window)window,0,0,(XEvent *)&enter);
 
   memset(&event,0,sizeof(event));
   event.display=Xdisplay;
@@ -212,7 +205,13 @@ static void Location(void){
 
   if(location)
     FakeTypeString(location,rploc_entry);
-  FakeTypeString(" ",rploc_ok);
+  fprintf(stderr,"rploc_ok %lx\n",rploc_ok);
+  
+
+  FakeKeySym(XStringToKeysym("Tab"),0,rploc_ok);
+  FakeKeySym(XStringToKeysym("space"),0,rploc_ok);
+
+  //FakeTypeString(" ",rploc_ok);
 
   rploc_shell=0;
   rploc_main=0;
