@@ -77,7 +77,7 @@ static inline long rs(root_block *root){
   return(cs(root->vector));
 }
 
-static inline int16_t *rv(root_block *root){
+static inline size16 *rv(root_block *root){
   if(!root)return(NULL);
   if(!root->vector)return(NULL);
   return(cv(root->vector));
@@ -87,7 +87,7 @@ static inline int16_t *rv(root_block *root){
 
 /**** matching and analysis code *****************************************/
 
-static inline long i_paranoia_overlap(int16_t *buffA,int16_t *buffB,
+static inline long i_paranoia_overlap(size16 *buffA,size16 *buffB,
 			       long offsetA, long offsetB,
 			       long sizeA,long sizeB,
 			       long *ret_begin, long *ret_end){
@@ -107,7 +107,7 @@ static inline long i_paranoia_overlap(int16_t *buffA,int16_t *buffB,
   return(endA-beginA);
 }
 
-static inline long i_paranoia_overlap2(int16_t *buffA,int16_t *buffB,
+static inline long i_paranoia_overlap2(size16 *buffA,size16 *buffB,
 				       char *flagsA,char *flagsB,
 				       long offsetA, long offsetB,
 				       long sizeA,long sizeB,
@@ -343,7 +343,7 @@ static long i_stage1(cdrom_paranoia *p,c_block *new,
 
   while(ptr && ptr!=new){
 
-    if(callback)(*callback)(cb(new),PARANOIA_CB_VERIFY);
+    (*callback)(cb(new),PARANOIA_CB_VERIFY);
     i_iterate_stage1(p,ptr,new,callback);
 
     ptr=c_prev(ptr);
@@ -392,7 +392,7 @@ static long i_iterate_stage2(cdrom_paranoia *p,v_fragment *v,
   if(min(fe(v)+p->dynoverlap,re(root))-
     max(fb(v)-p->dynoverlap,rb(root))<=0)return(0);
 
-  if(callback)(*callback)(fb(v),PARANOIA_CB_VERIFY);
+  (*callback)(fb(v),PARANOIA_CB_VERIFY);
 
   /* just a bit of v; determine the correct area */
   fbv=max(fb(v),rb(root)-p->dynoverlap);
@@ -421,7 +421,7 @@ static long i_iterate_stage2(cdrom_paranoia *p,v_fragment *v,
 	r->begin=matchbegin;
 	r->end=matchend;
 	r->offset=-offset;
-	if(offset)if(callback)(*callback)(r->begin,PARANOIA_CB_FIXUP_EDGE);
+	if(offset)(*callback)(r->begin,PARANOIA_CB_FIXUP_EDGE);
 	return(1);
       }
     }
@@ -432,7 +432,7 @@ static long i_iterate_stage2(cdrom_paranoia *p,v_fragment *v,
 
 /* simple test for a root vector that ends in silence*/
 static void i_silence_test(root_block *root){
-  int16_t *vec=rv(root);
+  size16 *vec=rv(root);
   long end=re(root)-rb(root)-1;
   long j;
   
@@ -453,7 +453,7 @@ static long i_silence_match(root_block *root, v_fragment *v,
 			  void(*callback)(long,int)){
 
   cdrom_paranoia *p=v->p;
-  int16_t *vec=fv(v);
+  size16 *vec=fv(v);
   long end=fs(v),begin;
   long j;
 
@@ -468,7 +468,7 @@ static long i_silence_match(root_block *root, v_fragment *v,
   if(fb(v)>=re(root) && fb(v)-p->dynoverlap<re(root)){
     /* extend the zeroed area of root */
     long addto=fb(v)+MIN_SILENCE_BOUNDARY-re(root);
-    int16_t vec[addto];
+    size16 vec[addto];
     memset(vec,0,sizeof(vec));
     c_append(rc(root),vec,addto);
   }
@@ -549,9 +549,9 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	long beginL=begin+offset;
 
 	if(l==NULL){
-	  int16_t *buff=malloc(fs(v)*sizeof(int16_t));
+	  size16 *buff=malloc(fs(v)*sizeof(size16));
 	  l=c_alloc(buff,fb(v),fs(v));
-	  memcpy(buff,fv(v),fs(v)*sizeof(int16_t));
+	  memcpy(buff,fv(v),fs(v)*sizeof(size16));
 	}
 
 	i_analyze_rift_r(rv(root),cv(l),
@@ -568,7 +568,7 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	  /* a problem with root */
 	  if(matchA>0){
 	    /* dropped bytes; add back from v */
-	    if(callback)(*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DROPPED);
+	    (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DROPPED);
 	    if(rb(root)+begin<p->root.returnedlimit)
 	      break;
 	    else{
@@ -580,7 +580,7 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	    }
 	  }else{
 	    /* duplicate bytes; drop from root */
-	    if(callback)(*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DUPED);
+	    (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DUPED);
 	    if(rb(root)+begin+matchA<p->root.returnedlimit) 
 	      break;
 	    else{
@@ -594,13 +594,13 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	  /* a problem with the fragment */
 	  if(matchB>0){
 	    /* dropped bytes */
-	    if(callback)(*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DROPPED);
+	    (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DROPPED);
 	    c_insert(l,beginL,rv(root)+begin-matchB,
 			 matchB);
 	    offset+=matchB;
 	  }else{
 	    /* duplicate bytes */
-	    if(callback)(*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DUPED);
+	    (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DUPED);
 	    c_remove(l,beginL+matchB,-matchB);
 	    offset+=matchB;
 	  }
@@ -639,9 +639,9 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	long endL=end+offset;
 	
 	if(l==NULL){
-	  int16_t *buff=malloc(fs(v)*sizeof(int16_t));
+	  size16 *buff=malloc(fs(v)*sizeof(size16));
 	  l=c_alloc(buff,fb(v),fs(v));
-	  memcpy(buff,fv(v),fs(v)*sizeof(int16_t));
+	  memcpy(buff,fv(v),fs(v)*sizeof(size16));
 	}
 
 	i_analyze_rift_f(rv(root),cv(l),
@@ -658,13 +658,13 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	  /* a problem with root */
 	  if(matchA>0){
 	    /* dropped bytes; add back from v */
-	    if(callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DROPPED);
+	    (*callback)(end+rb(root),PARANOIA_CB_FIXUP_DROPPED);
 	    if(end+rb(root)<p->root.returnedlimit)
 	      break;
 	    c_insert(rc(root),end,cv(l)+endL,matchA);
 	  }else{
 	    /* duplicate bytes; drop from root */
-	    if(callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DUPED);
+	    (*callback)(end+rb(root),PARANOIA_CB_FIXUP_DUPED);
 	    if(end+rb(root)<p->root.returnedlimit)
 	      break;
 	    c_remove(rc(root),end,-matchA);
@@ -673,11 +673,11 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	  /* a problem with the fragment */
 	  if(matchB>0){
 	    /* dropped bytes */
-	    if(callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DROPPED);
+	    (*callback)(end+rb(root),PARANOIA_CB_FIXUP_DROPPED);
 	    c_insert(l,endL,rv(root)+end,matchB);
 	  }else{
 	    /* duplicate bytes */
-	    if(callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DUPED);
+	    (*callback)(end+rb(root),PARANOIA_CB_FIXUP_DUPED);
 	    c_remove(l,endL,-matchB);
 	  }
 	}else if(matchC){
@@ -726,7 +726,7 @@ static long i_stage2_each(root_block *root, v_fragment *v,
 	long sizeA=rs(root);
 	long sizeB;
 	long vecbegin;
-	int16_t *vector;
+	size16 *vector;
 	  
 	if(l){
 	  sizeB=cs(l);
@@ -785,8 +785,8 @@ static int i_init_root(root_block *root, v_fragment *v,long begin,
     }
 
     {
-      int16_t *buff=malloc(fs(v)*sizeof(int16_t));
-      memcpy(buff,fv(v),fs(v)*sizeof(int16_t));
+      size16 *buff=malloc(fs(v)*sizeof(size16));
+      memcpy(buff,fv(v),fs(v)*sizeof(size16));
       root->vector=c_alloc(buff,fb(v),fs(v));
     }    
 
@@ -927,7 +927,7 @@ static void verify_skip_case(cdrom_paranoia *p,void(*callback)(long,int)){
   }
   if(post==-1)post=0;
 
-  if(callback)(*callback)(post,PARANOIA_CB_SKIP);
+  (*callback)(post,PARANOIA_CB_SKIP);
   
   /* We want to add a sector.  Look for a c_block that spans,
      preferrably a verified area */
@@ -971,7 +971,7 @@ static void verify_skip_case(cdrom_paranoia *p,void(*callback)(long,int)){
       gend=min(gend+OVERLAP_ADJ,cend);
 
       if(rv(root)==NULL){
-	int16_t *buff=malloc(cs(graft));
+	size16 *buff=malloc(cs(graft));
 	memcpy(buff,cv(graft),cs(graft));
 	rc(root)=c_alloc(buff,cb(graft),cs(graft));
       }else{
@@ -986,7 +986,7 @@ static void verify_skip_case(cdrom_paranoia *p,void(*callback)(long,int)){
 
   /* No?  Fine.  Great.  Write in some zeroes :-P */
   {
-    void *temp=calloc(CD_FRAMESIZE_RAW,sizeof(int16_t));
+    void *temp=calloc(CD_FRAMESIZE_RAW,sizeof(size16));
 
     if(rv(root)==NULL){
       rc(root)=c_alloc(temp,post,CD_FRAMESIZE_RAW);
@@ -1059,7 +1059,7 @@ c_block *i_read_c_block(cdrom_paranoia *p,long beginword,long endword,
   long driftcomp=(float)p->dyndrift/CD_FRAMEWORDS+.5;
   c_block *new=NULL;
   root_block *root=&p->root;
-  int16_t *buffer=NULL;
+  size16 *buffer=NULL;
   char *flags=NULL;
   long sofar;
   long dynoverlap=(p->dynoverlap+CD_FRAMEWORDS-1)/CD_FRAMEWORDS; 
@@ -1139,7 +1139,7 @@ c_block *i_read_c_block(cdrom_paranoia *p,long beginword,long endword,
 	/* Uhhh... right.  Make something up. But don't make us seek
            backward! */
 
-	if(callback)(*callback)((adjread+thisread)*CD_FRAMEWORDS,PARANOIA_CB_READERR);  
+	(*callback)((adjread+thisread)*CD_FRAMEWORDS,PARANOIA_CB_READERR);  
 	memset(buffer+(sofar+thisread)*CD_FRAMEWORDS,0,
 	       CD_FRAMESIZE_RAW*(secread-thisread));
 	if(flags)memset(flags+(sofar+thisread)*CD_FRAMEWORDS,2,
@@ -1160,7 +1160,7 @@ c_block *i_read_c_block(cdrom_paranoia *p,long beginword,long endword,
       if(adjread+secread-1==p->current_lastsector)
 	new->lastsector=-1;
       
-      if(callback)(*callback)((adjread+secread-1)*CD_FRAMEWORDS,PARANOIA_CB_READ);
+      (*callback)((adjread+secread-1)*CD_FRAMEWORDS,PARANOIA_CB_READ);
       
       sofar+=secread;
       readat=adjread+secread; 
@@ -1188,15 +1188,7 @@ c_block *i_read_c_block(cdrom_paranoia *p,long beginword,long endword,
 /* The returned buffer is *not* to be freed by the caller.  It will
    persist only until the next call to paranoia_read() for this p */
 
-int16_t *paranoia_read(cdrom_paranoia *p, void(*callback)(long,int)){
-  return paranoia_read_limited(p,callback,20);
-}
-
-  /* I added max_retry functionality this way in order to avoid
-     breaking any old apps using the nerw libs.  cdparanoia 9.8 will
-     need the updated libs, but nothing else will require it. */
-int16_t *paranoia_read_limited(cdrom_paranoia *p, void(*callback)(long,int),
-			       int max_retries){
+size16 *paranoia_read(cdrom_paranoia *p, void(*callback)(long,int)){
 
   long beginword=p->cursor*(CD_FRAMEWORDS);
   long endword=beginword+CD_FRAMEWORDS;
@@ -1291,7 +1283,7 @@ int16_t *paranoia_read_limited(cdrom_paranoia *p, void(*callback)(long,int),
 
       if(retry_count%5==0){
 	if(p->dynoverlap==MAX_SECTOR_OVERLAP*CD_FRAMEWORDS ||
-	   retry_count==max_retries){
+	   retry_count==20){
 	  if(!(p->enable&PARANOIA_MODE_NEVERSKIP))verify_skip_case(p,callback);
 	  retry_count=0;
 	}else{
@@ -1299,7 +1291,7 @@ int16_t *paranoia_read_limited(cdrom_paranoia *p, void(*callback)(long,int),
 	    p->dynoverlap*=1.5;
 	    if(p->dynoverlap>MAX_SECTOR_OVERLAP*CD_FRAMEWORDS)
 	      p->dynoverlap=MAX_SECTOR_OVERLAP*CD_FRAMEWORDS;
-	    if(callback)(*callback)(p->dynoverlap,PARANOIA_CB_OVERLAP);
+	    (*callback)(p->dynoverlap,PARANOIA_CB_OVERLAP);
 	  }
 	}
       }

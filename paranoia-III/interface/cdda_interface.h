@@ -1,6 +1,6 @@
 /******************************************************************
  * CopyPolicy: GNU Public License 2 applies
- * Copyright (C) 2001 Xiph.org
+ * Copyright (C) 1998 Monty xiphmont@mit.edu
  * and Heiko Eissfeldt heiko@escape.colossus.de
  *
  * Toplevel interface header; applications include this
@@ -26,7 +26,7 @@
 typedef struct TOC {	/* structure of table of contents */
   unsigned char bFlags;
   unsigned char bTrack;
-  int32_t dwStartSector;
+  size32 dwStartSector;
 } TOC;
 
 /* interface types */
@@ -39,6 +39,8 @@ typedef struct TOC {	/* structure of table of contents */
 #define CDDA_MESSAGE_LOGIT 2
 
 /* cdrom access function pointer */
+
+void SetupInterface( unsigned char *int_name );
 
 typedef struct cdrom_drive{
 

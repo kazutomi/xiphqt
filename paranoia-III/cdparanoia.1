@@ -1,6 +1,8 @@
-.TH CDPARANOIA 1 "02 Mar 2001"
+.TH CDPARANOIA 1
 .SH NAME
-cdparanoia 9.8 (Paranoia release III) \- an audio CD reading utility which includes extra data verification features
+cdparanoia (Paranoia release III) \- an audio CD reading utility which includes extra data verification features
+.SH DATE
+version III release alpha 9.7 (13 Dec 1999)
 .SH SYNOPSIS
 .B cdparanoia
 .RB [ options ]
@@ -150,20 +152,7 @@ track 1 index 1 as sector 0 for all read operations.  This results in
 every track seeming to start too late (losing a bit of the beginning
 and catching a bit of the next track).
 .B \-T
-accounts for this behavior.  Note that this option will cause
-cdparanoia to attempt to read sectors before or past the known user
-data area of the disc, resulting in read errors at disc edges on most
-drives and possibly even hard lockups on some buggy hardware.
-
-.TP
-.BI "\-O --sample-offset " number
-Use this option to force the entire disc to shift sample position
-output by the given amount; This can be used to shift track boundaries
-for the whole disc manually on sample granularity. Note that this will
-cause cdparanoia to attempt to read partial sectors before or past the
-known user data area of the disc, probably causing read errors on most
-drives and possibly even hard lockups on some buggy hardware.
-
+accounts for this behavior.
 
 .TP
 .B \-Z --disable-paranoia
@@ -176,15 +165,9 @@ This option implies that
 is active.
 
 .TP
-.B \-z --never-skip[=max_retries]
-Do not accept any skips; retry forever if needed.  An optional maximum
-number of retries can be specified; for comparison, default without -z is
-currently 20.
-
-.TP
 .B \-Y --disable-extra-paranoia
 Disables intra-read data verification; only overlap checking at read
-boundaries is performed. It can wedge if errors occur in the attempted overlap area. Not recommended.
+boundaries is performed. Not recommended.
 
 .TP
 .B \-X --abort-on-skip
@@ -349,4 +332,6 @@ generic SCSI transport library.
 Monty <monty@xiph.org>
 .P
 Cdparanoia's homepage may be found at:
+.P
+.ce 
 http://www.xiph.org/paranoia/

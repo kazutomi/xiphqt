@@ -3,7 +3,7 @@
 # DO NOT EDIT BELOW! ##########################################################
 # (unless, of course, you know what you are doing :) ##########################
 
-VERSION=9.8
+VERSION=9.7
 VPATH=@srcdir@
 srcdir=@srcdir@
 
@@ -64,20 +64,14 @@ slib:
 	cd paranoia && $(MAKE) slib
 
 install:
-	$(INSTALL) -d -m 0755 $(BINDIR)
-	$(INSTALL) -m 0755 $(srcdir)/cdparanoia $(BINDIR)
-	$(INSTALL) -d -m 0755 $(MANDIR)
-	$(INSTALL) -d -m 0755 $(MANDIR)/man1
-	$(INSTALL) -m 0644 $(srcdir)/cdparanoia.1 $(MANDIR)/man1
-	$(INSTALL) -d -m 0755 $(INCLUDEDIR)
-	$(INSTALL) -m 0644 $(srcdir)/paranoia/cdda_paranoia.h $(INCLUDEDIR)
-	$(INSTALL) -d -m 0755 $(LIBDIR)
-	$(INSTALL) -m 0644 $(srcdir)/paranoia/libcdda_paranoia.so.0.$(VERSION) $(LIBDIR)
-	$(INSTALL) -m 0644 $(srcdir)/paranoia/libcdda_paranoia.a $(LIBDIR)
-	$(INSTALL) -m 0644 $(srcdir)/interface/cdda_interface.h $(INCLUDEDIR)
-	$(INSTALL) -m 0644 $(srcdir)/interface/libcdda_interface.so.0.$(VERSION) $(LIBDIR)
-	$(INSTALL) -m 0644 $(srcdir)/interface/libcdda_interface.a $(LIBDIR)
-	$(INSTALL) -m 0644 $(srcdir)/utils.h $(INCLUDEDIR)
+	$(INSTALL) -p -m 0755 $(srcdir)/cdparanoia $(BINDIR)
+	$(INSTALL) -p -m 0644 $(srcdir)/cdparanoia.1 $(MANDIR)/man1
+	$(INSTALL) -p -m 0644 $(srcdir)/paranoia/cdda_paranoia.h $(INCLUDEDIR)
+	$(INSTALL) -p -m 0644 $(srcdir)/paranoia/libcdda_paranoia.so.0.$(VERSION) $(LIBDIR)
+	$(INSTALL) -p -m 0644 $(srcdir)/paranoia/libcdda_paranoia.a $(LIBDIR)
+	$(INSTALL) -p -m 0644 $(srcdir)/interface/cdda_interface.h $(INCLUDEDIR)
+	$(INSTALL) -p -m 0644 $(srcdir)/interface/libcdda_interface.so.0.$(VERSION) $(LIBDIR)
+	$(INSTALL) -p -m 0644 $(srcdir)/interface/libcdda_interface.a $(LIBDIR)
 	ln -fs libcdda_interface.so.0.$(VERSION) \
 		$(LIBDIR)/libcdda_interface.so.0
 	ln -fs libcdda_interface.so.0.$(VERSION) \
