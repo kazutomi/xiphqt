@@ -58,7 +58,7 @@ $toplevel->optionAdd("$Xname*scalerefresh",          '1000',20);
 $toplevel->optionAdd("$Xname*scalereturn",           '8',20);  # 2 seconds
 
 
-$toplevel->optionAdd("$Xname*dimbackground",'#313656',20);
+$toplevel->optionAdd("$Xname*dimbackground",'#414676',20);
 $toplevel->optionAdd("$Xname*litbackground",'#74ade7',20);
 $toplevel->optionAdd("$Xname*bar*dimrelief",    'flat',20);
 $toplevel->optionAdd("$Xname*bar*litrelief",    'raised',20);

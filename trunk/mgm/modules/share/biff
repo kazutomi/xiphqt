@@ -37,7 +37,7 @@ sub module_init{
 	    }
 	}
     }
-    $toplevel->optionAdd("$xclass.order", 100,21);
+    $toplevel->optionAdd("$xclass.order", 200,21);
     $this;
 }
 
@@ -52,7 +52,7 @@ sub module_instance{
     $toplevel->optionAdd("$xpath*scalereturn",0,21);
     $toplevel->optionAdd("$xpath*label", "mail",21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);   # narrower
-    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
+    $toplevel->optionAdd("$xpath.scalelenadj", 100,21);   # shorter
     $toplevel->optionAdd("$xpath.bar.0.litbackground", '#cccccc',21);
     
     my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' msgs',1);

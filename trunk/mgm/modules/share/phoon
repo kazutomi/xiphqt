@@ -27,7 +27,6 @@ sub module_instance{
 
     $toplevel->optionAdd("$xpath.relief", 'sunken' ,21);
     $toplevel->optionAdd("$xpath.ipad", 20 ,21);
-    $toplevel->optionAdd("$xpath.background",'black' ,21);
     $toplevel->optionAdd("$xpath.borderwidth", 1 ,21);
     $toplevel->optionAdd("$xpath.scalewidadj", 150,21);
     $toplevel->optionAdd("$xpath.scalelenadj", 60,21);

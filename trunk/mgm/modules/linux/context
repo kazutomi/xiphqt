@@ -20,7 +20,7 @@ sub module_init{
     if(!defined($MGMmodule::helperST::proc{"ctxt"})){
 	$toplevel->optionAdd("$xclass.active",'false',21);   
     } 
-    $toplevel->optionAdd("$xclass.order",1,21);   
+    $toplevel->optionAdd("$xclass.order",3,21);   
     $this;
 }
 
@@ -35,6 +35,7 @@ sub module_instance{
     $toplevel->optionAdd("$xpath.bar.0.label", "context",21);
     $toplevel->optionAdd("$xpath.scalereturn", 30,21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);
     
     # this relies on the above defaults
 

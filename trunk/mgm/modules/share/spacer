@@ -12,7 +12,7 @@ sub module_init{
     my$this=shift;
     my$toplevel=$this->{"toplevel"};
     my$xclass=$this->{"xclass"};
-    $toplevel->optionAdd("$xclass.order",               '1.5,101',20);
+    $toplevel->optionAdd("$xclass.order",               '99,199',20);
     $stack=$toplevel->optionGet("stack","");
     $this;
 }

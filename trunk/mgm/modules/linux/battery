@@ -20,7 +20,7 @@ sub module_init{
     if(!defined($test)){
 	$toplevel->optionAdd("$xclass.active",        'false',21);      
     }
-    $toplevel->optionAdd("$xclass.order",200,21);      
+    $toplevel->optionAdd("$xclass.order",201,21);      
     $this;
 }
 
@@ -37,7 +37,7 @@ sub module_instance{
     $toplevel->optionAdd("$xpath*label", "battery",21);
     $toplevel->optionAdd("$xpath*lowlabel", "battery low",21);
     $toplevel->optionAdd("$xpath.scalewidadj", 80,21);  # narrower
-    $toplevel->optionAdd("$xpath.scalelenadj", 100,21);  # shorter
+    $toplevel->optionAdd("$xpath.scalelenadj", 100,21);
 
     my$fg=&main::moption($this,"litforeground");
     $toplevel->optionAdd("$xpath*midforeground", $fg,21);
