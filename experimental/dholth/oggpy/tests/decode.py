@@ -48,6 +48,9 @@ def test(ogg, outfile = None):
     packets = packetsource(ogg)
 
     vorbis = 0
+
+    sizes = {}
+
     for packet in packets:
         
         if vorbis < 3:
@@ -90,6 +93,12 @@ def test(ogg, outfile = None):
 
                     interleaved = numarray.zeros(samples.shape[1]*channels, numarray.Int16)
 
+                    shape = samples.shape[1]
+                    try:
+                        sizes[shape] += 1
+                    except:
+                        sizes[shape] = 1
+
                     for i in range(channels):
                         interleaved[i::channels] = wav[i]
 
@@ -104,7 +113,11 @@ def test(ogg, outfile = None):
         vorbis += 1
 
     # set total frames in wav header when done
-    audio.writeframes('')
+    if not outfile:
+        audio.writeframes('')
+
+    # see how the block sizes go
+    print sizes
                                 
 
 if __name__ == "__main__":

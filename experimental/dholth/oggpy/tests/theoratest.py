@@ -115,5 +115,5 @@ if __name__ == "__main__":
        
     gen = test(file(filename, "rb"))
     
-    for i in range(3):
+    for i in range(30):
         print gen.next()

@@ -62,10 +62,10 @@ setup(name="oggpy",
 #                              "oggpy/_vorbispy.cpp", "vorbispy_wrappers.cc", "oggpy_wrappers.cc"],
 #                              libraries=["ogg", "theora", "vorbis", "vorbisenc", boostlib],
 #                              include_dirs=extra_include_dirs, depends=["oggcc.h", "theoracc.h"])
-                    # this is broken too; I think the pygame <--> boost connection is not all there.
-                    # Extension("pygame_bridge", ["pygame_bridge.cc"],
-                    #     libraries=["SDL", "ogg", "theora", boostlib],
-                    #     include_dirs=extra_include_dirs)
+                    # It works.
+                    , Extension("pygame_bridge", ["pygame_bridge.cc"],
+                        libraries=["SDL", "ogg", "theora", boostlib],
+                        include_dirs=extra_include_dirs)
 
                     ]
      )

@@ -19,7 +19,7 @@ pcmout 	       = Function("oggpy_synthesis_pcmout", header, doc = \
 """synthesis_pcmout(dsp) -> pcm data
 
 Fetch some pcm data from vorbis decode.
-Return a [channels][samples] array of 32 bit floats."""
+Return a [channels][samples] array of 32 bit floats.""")
 
 
 exclude(dsp.analysis_buffer)
