@@ -15,7 +15,7 @@ void usage (const char *program_name)
      " usage: %s <input filename format string> <bitrate> <a_m> <s_m>\n"
      "\n"
      "   input ppm filename format:  optional, \"%%i.ppm\" by default\n"
-     "   bitrate:                    cut Y/U/V bitstream after limit bits (!!!)/frame\n"
+     "   bitrate:                    cut Y/U/V bitstream after limit bytes/frame\n"
      "                               (something like 1228800 makes sense here)\n" 
      "   a_m, s_m:                   number of vanishing moments of the\n"
      "                               analysis/synthesis filter, (2,2) by default\n"
