@@ -1,4 +1,3 @@
-#include <vorbis/codec.h>
 #include <pyogg/pyogg.h>
 
 #include "general.h"
@@ -6,10 +5,13 @@
 
 #include "pyoggstreamstate.h"
 #include "pyoggpacket.h"
+#include "pyoggpackbuff.h"
 
 static PyMethodDef Ogg_methods[] = {
   {"OggStreamState", py_ogg_stream_state_new, 
    METH_VARARGS, py_ogg_stream_state_doc},
+  {"OggPackBuff", py_oggpack_buffer_new,
+   METH_VARARGS, py_oggpack_buffer_doc},
   {NULL, NULL}
 };
 
