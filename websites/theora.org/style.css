@@ -24,3 +24,6 @@ a:hover { color: #286FFF; text-decoration: none }
 .headline {
 	font-size: x-large; font-weight: bold;
 }
+.txt {
+	text-align: justify;
+}
