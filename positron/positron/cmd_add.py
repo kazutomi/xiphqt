@@ -95,8 +95,10 @@ def run(config, neuros, args):
         print
     else:
         print "Adding %d tracks to the Neuros..." % (len(filelist),)
+        i = 1
         for sourcename, targetname, metadata in filelist:
-            print "  %s..." % (sourcename,)
+            print "  %d. %s..." % (i, sourcename)
+            i += 1
             add_track(neuros, sourcename, targetname, metadata)
 
     if config.sort_database:
