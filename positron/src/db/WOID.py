@@ -95,37 +95,53 @@ class WOID:
 
         return record
 
+    def get_record(self, index):
+        """Retreives the record with the given SAI index number"""
+
+        (pointer, pai_pointer) = self.sai[index]
+
+        return _get_record_at(pointer)
+
     def get_records(self):
-        """Returns a list of all the records in this database"""
+        """Returns a list of all the non-deleted records in this database"""
 
-        return [self._get_record_at(pointer[0]) for pointer in self.sai]
+        return [self._get_record_at(pointer[0]) for pointer in self.sai
+                if not self.mdb.is_record_deleted_at(pointer[0])]
 
-    def find(self, data):
+    def find(self, data, check_field = 0):
+        """Returns the SAI index number for the first non-deleted record
+        containing data in field number \"check_field\"."""
 
-        for sai_record in self.sai:
-            record = self.mdb.read_record_at(sai_record[0])[0]
+        for i in range(len(self.sai)):
+            sai_record = self.sai[i]
+            (record, next) = self.mdb.read_record_at(sai_record[0])
+
             if record == None:
                 if data == None:
                     break
-            elif data in record["data"]:
-                break
+            else:
+                r_tuple = [record["data"]] + record["keys"] + record["extra"]
+                if data in r_tuple[check_field]:
+                    break
         else:
-               sai_record = None   # Could not find record
+               i = None   # Could not find record
 
-        return sai_record
+        return i
 
     def add_record(self, record):
         # Call internal add record function but discard return values
         self._add_record(record)
-
+        
     def _add_record(self, record):
         """Adds a record to this db and returns a SAI tuple for it.
+        
         First element of return value is a word pointer to the MDB
         record and the second element is a word pointer to the PAI
         module corresponding to new record."""
 
         # Put single objects into lists
         record = map(unflatten_singlet, record)
+        record = map(uncollapse_null_list, record)
 
         # Build record hash
         mdb_record = {"isDeleted" : False,
@@ -144,13 +160,15 @@ class WOID:
                 # modules for each child record so we can update them
                 # later once we know the pointer to the main record we
                 # are adding
-                sai_record = self.children[i-1].find(key)
+                sai_index = self.children[i-1].find(key)
             
-                if sai_record == None:
+                if sai_index == None:
                     # Need to add this key to child database
                     child_record = (key,)
                     sai_record = self.children[i-1]._add_record(child_record)
-
+                else:
+                    sai_record = self.children[i-1].sai[sai_index]
+                    
                 # MDB pointer to matching record in child db
                 pointer = sai_record[0]
                 if (sai_record[1] != 0):  # Don't update if PAI module pointer is zero
@@ -177,14 +195,62 @@ class WOID:
 
         return new_sai_record
 
-    def delete_record(self, filename):
-        pass
+    def delete_record(self, sai_index):
+        """Deletes record with index number sai_index."""
+        (mdb_pointer, pai_pointer) = self.sai[sai_index]
+
+        record = self.mdb.read_record_at(mdb_pointer)
+        self.mdb.delete_record_at(mdb_pointer)
+        self.sai[sai_index][1] = 0  #Blank PAI pointer
+        self.pai.clear_module_at(pai_pointer)
+
+        for i in len(record["keys"]):
+            for key in record["keys"][i]:
+                child_db = self.children[i]
+                child_index = child_db.sai.find(key)
+                (child_mdb_pointer, child_pai_pointer) = \
+                                    child_db.sai[child_index] 
+                child_db.pai.delete_entry_in_module_at(child_pai_pointer,
+                                                       mdb_pointer)
+                (length, flags, num_entries) = \
+                         child_db.pai.read_module_header_at(child_pai_pointer)
+                if num_entries == 0:
+                    child_db.delete_record(child_index)
+
+    def clear(self):
+        """Removes all records in this database and child databases."""
+        for child in self.children:
+            child.clear()
+
+        self.mdb.clear()
+        self.sai.clear()
+        if self.pai != None:
+            self.pai.clear()
+
+        # Add required null record
+        position = self.mdb.append_record(None)
+        self.sai.append((position, 0))
+
+    def pack(self):
+        """Removes all deleted records in this database and child databases."""
+
+        # Sure, we could be more clever about this, but barring memory
+        # constraints, this seems to be the easiest approach, and not
+        # that much slower.
+        records = self.get_records()
+        self.clear()
+        for record in records:
+            if record != None: # Don't readd null record
+                self.add_record(record)
 
     def close(self):
         self.mdb.close()
         self.sai.close()
         if self.pai != None:
             self.pai.close()
-        self.__init__()
+
+        for child in self.children:
+            child.close()
+        self.__init__()  # Reset variables to undefined state
 
     

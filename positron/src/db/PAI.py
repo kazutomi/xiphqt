@@ -46,6 +46,14 @@ class PAI:
 
         return pointers
 
+    def read_module_header_at(self, pointer):
+        """Returns (length, flags, num_entries) for the module referenced by
+        pointer."""
+        f = self.file
+        pointer -= PAI.MODULE_HEADER_LEN
+
+        return _read_module_header(pointer)
+
     def _read_module_header(self, pointer):
         f = self.file
 
@@ -111,31 +119,49 @@ class PAI:
         else:
             return None
         
-    def delete_entry_in_module_at(self, pointer, entry_num):
+    def delete_entry_in_module_at(self, pointer, entry):
+        """Searches through module and erases the give entry.
+
+        Note that entry is the value, not the index number or some
+        other identifier.  A linear search for entry is performed and
+        the first match encountered is erased, if any.
+
+        Returns True if entry located and deleted, False if entry not
+        present"""
+        
         f = self.file
-        pointer = PAI.MODULE_HEADER_LEN
+        pointer -= PAI.MODULE_HEADER_LEN
 
         (length, flag, num_entries) = _read_module_header(pointer)
 
-        # Sanity check
-        if entry_num >= num_entries:
-            raise Error("entry_num is greater than the number of entries")
-
-        # Find the word pointer to word *after* entry_num.  If entry_num is last
-        # then we will be pointing at the terminating null longword
-        next_entry = pointer + PAI.MODULE_HEADER_LEN + 2 * (entry_num + 1)
+        # Find the word pointer to word *after* entry.  If entry
+        # is last then we will be pointing at the terminating null
+        # longword
+        f.seek(to_offset(pointer + PAI.MODULE_HEADER_LEN))
+        (curr_entry,) = struct.unpack(">I", f.read(4))
+        entry_num = 0
+        while entry_num < num_entries:
+            if curr_entry == entry:
+                break
+            (curr_entry,) = struct.unpack(">I", f.read(4))
+            entry_num += 1
+        else:
+            # Entry not found.
+            return False
 
         # Read everything from here to the end of the module (including footer)
-        read_len = length - (pointer - next_entry)
-
-        f.seek(to_offset(next_entry))
+        next_entry_pointer = to_pointer(f.tell())
+        read_len = length - (next_entry_pointer - pointer)
         module_remainder = f.read(to_offset(read_len))
 
-        # Now go to the entry to delete and write over it.  The terminating null
-        # footer will ensure that the extra space is null padded correctly.
-        f.seek(to_offset(next_entry - 2))
+        # Now go to the entry to delete and write over it.  The
+        # terminating null footer will ensure that the extra space is
+        # null padded correctly.
+        f.seek(to_offset(next_entry_pointer - 2))
         f.write(module_remainder)
         f.flush()
+
+        return True
 
     def append_module(self, entries):
         f = self.file
@@ -202,6 +228,22 @@ class PAI:
         f.write(length_str)
         f.flush()
 
+    def clear_module_at(self, pointer):
+        f = self.file
+        module_start = pointer - PAI.MODULE_HEADER_LEN
+
+        (length, flag, num_entries) = self._read_module_header(module_start)
+
+        flag |= 0x0001
+        num_entries = 0
+
+        new_module = struct.pack(">HHH", length, flag, num_entries)
+
+        new_module += "\x00\x00" * (length - 3)
+
+        f.seek(to_offset(module_start),0)
+        f.write(new_module)
+        f.flush()
 
     def set_empty_module_at(self, pointer, value=True):
         f = self.file
@@ -224,6 +266,10 @@ class PAI:
         f = self.file
         f.seek(to_pointer(PAI.FILE_HEADER_LEN))
         f.truncate()
+
+        # Always have to have one dummy module in it
+        self.append_module([])
+        
         f.flush()
     
     def close(self):

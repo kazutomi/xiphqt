@@ -94,8 +94,8 @@ class SAI:
 
     def clear(self):
         self.file.truncate(SAI.DATA_START+8)
-        self.file.seek(SAI.DATA_START)
-        self.file.write("\x00"*8)
+        self.file.seek(8)
+        self.file.write("\x00"*24)
         self.num_entries = 0
     
 
