@@ -1,5 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
+<?
+	$iceroot = "http://www.icecast.org/";
+	$dirroot = "http://dir.xiph.org/";
+?>
 <html>
 <head>
 <title>Icecast.org</title>
@@ -24,15 +28,15 @@
 	<table border=0 cellpadding=1 cellspacing=3 width="90%">
 	<tr>
 	    <td align=center >
-	    <a class="nav" href="index.php">Home</a>&nbsp;&nbsp;|&nbsp;&nbsp;  
-	    <a class="nav" href="download.php">Download</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="svn.php">Subversion</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="streamlist.php">Stream Directory</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="docs.php">Docs</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="3rdparty.php">3rd Party Apps</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="ices.php">Ices</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="mailinglist.php">Mailing List</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-	    <a class="nav" href="contact.php">Contact</a>
+	    <a class="nav" href="<? print $iceroot; ?>index.php">Home</a>&nbsp;&nbsp;|&nbsp;&nbsp;  
+	    <a class="nav" href="<? print $iceroot; ?>download.php">Download</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $iceroot; ?>svn.php">Subversion</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $dirroot; ?>index.php">Stream Directory</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $iceroot; ?>docs.php">Docs</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $iceroot; ?>3rdparty.php">3rd Party Apps</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $iceroot; ?>ices.php">Ices</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $iceroot; ?>mailinglist.php">Mailing List</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="<? print $iceroot; ?>contact.php">Contact</a>
 	    </td></tr>
 	</table>
 	</center>
