@@ -18,7 +18,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 #
-# This software is maintained by Vivake (vivakeATomniscia.org) and is available at:
+# The author, Vivake Gupta, also grants you the right to use this code
+# under the Xiph.org BSD license.  See COPYING for details.
+#
+# This copy of MP3Info is maintained by Stan Seibert <volsung@xiph.org>.
+# The original version is by Vivake (vivakeATomniscia.org) is available at:
 #     http://www.omniscia.org/~vivake/python/MP3Info.py
 #
 # May 2003 - Various changes for more robust MP3 detection.
