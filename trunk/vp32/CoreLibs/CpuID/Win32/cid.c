@@ -99,14 +99,14 @@ int DoesOSSupportXMM( void )
       /*
        * we are on a Windows 9x system.
        */
-      if( Does9xOSSupportXMM())         // does the Windows 9x support the XMM instructions?
+      //if( Does9xOSSupportXMM())         // does the Windows 9x support the XMM instructions?
       {
          ReturnValue = TRUE;            // yup
       }
-      else
-      {
+      //else
+      //{
          //ReturnValue = FALSE;           // Nope, don't support XMM instructions
-      }
+      //}
    }
 
    return( ReturnValue );

@@ -339,15 +339,46 @@ extern void (*YVYUtoYV12FuncPtr)( unsigned char *YVYUBuffer, int ImageWidth, int
 /*
  * Macros to make it easier to call the needed functions
  */
+extern void (*RGB32toYV12)( unsigned char *RGBABuffer, int ImageWidth, int ImageHeight,
+                            unsigned char *YBuffer, unsigned char *UBuffer, unsigned char *VBuffer, int SrcPitch,int DstPitch );
+
+extern void (*RGB24toYV12)( unsigned char *RGBBuffer, int ImageWidth, int ImageHeight,
+                            unsigned char *YBuffer, unsigned char *UBuffer, unsigned char *VBuffer, int SrcPitch,int DstPitch );
+
+extern void (*UYVYtoYV12)( unsigned char *UYVYBuffer, int ImageWidth, int ImageHeight,
+                           unsigned char *YBuffer, unsigned char *UBuffer, unsigned char *VBuffer, int SrcPitch,int DstPitch );
+
+extern void (*YUY2toYV12)( unsigned char *UYVYBuffer, int ImageWidth, int ImageHeight,
+                           unsigned char *YBuffer, unsigned char *UBuffer, unsigned char *VBuffer, int SrcPitch,int DstPitch );
+
+extern void (*YVYUtoYV12)( unsigned char *YVYUBuffer, int ImageWidth, int ImageHeight,
+                           unsigned char *YBuffer, unsigned char *UBuffer, unsigned char *VBuffer, int SrcPitch,int DstPitch );
+
 #define CC_RGB32toYV12( _RGBABuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer ) \
-        (*RGB32toYV12FuncPtr)( _RGBABuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer )
-                      
+        (*RGB32toYV12)( _RGBABuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer, _ImageWidth*4, _ImageWidth )
+
 #define CC_RGB24toYV12( _RGBBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer ) \
-        (*RGB24toYV12FuncPtr)( _RGBBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer )
+        (*RGB24toYV12)( _RGBBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer, _ImageWidth*3, _ImageWidth )
+
+#define CC_UYVYtoYV12( _UYVYBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer ) \
+        (*UYVYtoYV12)( _UYVYBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer, _ImageWidth*2, _ImageWidth )
+
+#define CC_YUY2toYV12( _YUY2Buffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer ) \
+        (*YUY2toYV12)( _YUY2Buffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer, _ImageWidth*2, _ImageWidth )
 
 #define CC_YVYUtoYV12( _YVYUBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer ) \
-        (*YVYUtoYV12FuncPtr)( _YVYUBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer )
+        (*YVYUtoYV12)( _YVYUBuffer, _ImageWidth, _ImageHeight, _YBuffer, _UBuffer, _VBuffer, _ImageWidth*2, _ImageWidth )
 
+// super generic rgb to yuv color conversion can handle any rgb to yuv conversion
+// provided r,g,b components are 1 byte apiece, and that the resulting y is 1 byte
+extern void ConvertRGBtoYUV(
+    const unsigned char* const pucSourceR, const unsigned char* const pucSourceG, const unsigned char* const pucSourceB,
+    int width, int height, int rgb_step, int rgb_pitch,
+    unsigned char* const pucDestY, unsigned char* const pucDestU, unsigned char* const pucDestV,
+    int uv_width_shift, int uv_height_shift,
+    int y_step, int y_pitch,int uv_step,int uv_pitch);
+
+/*
 
 void ConvertRGBtoYUV(
 	unsigned char *r_src,unsigned char *g_src,unsigned char *b_src, 
@@ -356,7 +387,7 @@ void ConvertRGBtoYUV(
 	int uv_width_shift, int uv_height_shift,
 	int y_step, int y_pitch,int uv_step,int uv_pitch
 	);
-
+*/
 #ifdef __cplusplus
 }
 #endif
