@@ -61,11 +61,6 @@ dnl Checks for library functions.
 
 dnl -- configure options --
 
-XIPH_PATH_THEORA([DRYICE_OPTIONAL="$DRYICE_OPTIONAL ../codec_modules/theora.o"],
-        AC_MSG_WARN([Theora support disabled!]))
-XIPH_VAR_APPEND([XIPH_CPPFLAGS],[$THEORA_CFLAGS])
-XIPH_VAR_PREPEND([XIPH_LIBS],[$THEORA_LIBS])
-
 dnl Make substitutions
 
 AC_SUBST(XIPH_CPPFLAGS)
