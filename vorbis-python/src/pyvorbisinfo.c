@@ -100,7 +100,7 @@ py_info_new(PyObject *self, PyObject *args, PyObject *kwdict)
     return NULL;
   vorbis_info_init(&vi);
 
-  if (quality > 0.0) {
+  if (quality > -1.0) {
     res = vorbis_encode_init_vbr(&vi, channels, rate, quality);
   } else {
     res = vorbis_encode_init(&vi, channels, rate,

@@ -264,6 +264,12 @@ py_ov_open(py_vorbisfile *self, PyObject *args)
 
 static char *read_kwlist[] = {"length", "bigendian", "word", "signed", NULL};
 
+static int is_big_endian() {
+  static int x = 0x1;
+  char x_as_char = *(char *) &x;
+  return x_as_char == 0x1 ? 0 : 1;
+}
+
 static PyObject *
 py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
 {
@@ -278,7 +284,8 @@ py_ov_read(PyObject *self, PyObject *args, PyObject *kwdict)
   int length, word, sgned, bitstream;
   int bigendianp;
 
-  bigendianp = (BYTE_ORDER == BIG_ENDIAN);
+  // Default to host order
+  bigendianp = is_big_endian();
   length = 4096;
   word = 2;
   sgned = 1;

@@ -1,3 +1,11 @@
+2003-5-13   Andrew H. Chatham <pyogg@andrewchatham.com>
+	* pyvorbisinfo.c (py_info_new): Applied patch from 
+	Andrew Mahone to allow negative quality values
+	* pyvorbisfile.c (is_big_endian): Use runtime endian test rather
+	than try to figure out where everyone keeps endian.h
+	* pyvorbiscodec.c (py_dsp_write_wav): Applied patch from Andrew
+	Mahone to fix a truncation bug with weird wav files.
+	
 2003-2-07   Andrew H. Chatham <pyogg@andrewchatham.com>
 	* Applied another patch from Nicodemus to fix things windows. Pass
 	the "b" flag to all file open commands.
