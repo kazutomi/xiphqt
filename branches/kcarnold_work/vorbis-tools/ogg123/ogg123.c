@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.9 2001/08/10 20:48:06 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.10 2001/08/11 02:10:09 kcarnold Exp $
 
  ********************************************************************/
 
@@ -32,6 +32,7 @@
 
 #include "ogg123.h"
 #include "ao_interface.h"
+#include "curl_interface.h"
 #include "buffer.h"
 
 /* take buffer out of the data segment, not the stack */
@@ -245,7 +246,8 @@ int main(int argc, char **argv)
       {
 	opt.prebuffer = (int) ((double) opt.prebuffer * (double) opt.buffer_size / 100.0F);
 	OutBuffer = StartBuffer (opt.buffer_size, opt.prebuffer,
-				 opt.outdevices, devices_write);
+				 opt.outdevices, devices_write,
+				 NULL, NULL);
       }
     
     if (opt.shuffle) {
@@ -307,23 +309,79 @@ void signal_quit(int ignored)
   exit(0);
 }
 
+/* from vorbisfile.c */
+static int _fseek64_wrap(FILE *f,ogg_int64_t off,int whence)
+{
+  if(f==NULL)return(-1);
+  return fseek(f,(int)off,whence);
+}
+
 void play_file(ogg123_options_t opt)
 {
-    /* Oh my gosh this is disgusting. Big cleanups here will include an
-       almost complete rewrite of the hacked-out HTTP streaming and a shift
-       to using callbacks for the vorbisfile input.
-    */
-
-    OggVorbis_File vf;
-    int current_section = -1, eof = 0, eos = 0, ret;
-    int old_section = -1;
-    long t_min = 0, c_min = 0, r_min = 0;
-    double t_sec = 0, c_sec = 0, r_sec = 0;
-    int is_big_endian = ao_is_big_endian();
-    double realseekpos = opt.seekpos;
-    int nthc = 0, ntimesc = 0;
-    double u_time, u_pos;
-
+  OggVorbis_File vf;
+  int current_section = -1, eof = 0, eos = 0, ret;
+  int old_section = -1;
+  long t_min = 0, c_min = 0, r_min = 0;
+  double t_sec = 0, c_sec = 0, r_sec = 0;
+  int is_big_endian = ao_is_big_endian();
+  double realseekpos = opt.seekpos;
+  int nthc = 0, ntimesc = 0;
+  double u_time, u_pos;
+  int tmp;
+  ov_callbacks VorbisfileCallbacks;
+  
+  tmp = strchr(opt.read_file, ':') - opt.read_file;
+  if (tmp < 10 && tmp + 2 < strlen(opt.read_file) && !strncmp(opt.read_file + tmp, "://", 3))
+    {
+      InputOpts_t inputOpts;
+      
+      /* let's call this a URL. */
+      if (opt.quiet < 1)
+	fprintf (stderr, "Playing from stream %s\n", opt.read_file);
+      VorbisfileCallbacks.read_func = StreamBufferRead;
+      VorbisfileCallbacks.seek_func = StreamBufferSeek;
+      VorbisfileCallbacks.close_func = StreamBufferClose;
+      VorbisfileCallbacks.tell_func = StreamBufferTell;
+      
+      inputOpts.BufferSize = 1024*1024;
+      inputOpts.Prebuffer = 0;
+      inputOpts.URL = opt.read_file;
+      InBuffer = InitStream (inputOpts);
+      if ((ov_open_callbacks (InBuffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
+	fprintf(stderr, "E: input not an Ogg Vorbis audio stream.\n");
+	return;
+      }
+      
+    }
+  else
+    {
+      VorbisfileCallbacks.read_func = fread;
+      VorbisfileCallbacks.seek_func = _fseek64_wrap;
+      VorbisfileCallbacks.close_func = fclose;
+      VorbisfileCallbacks.tell_func = ftell;
+      if (strcmp(opt.read_file, "-"))
+	{
+	  if (opt.quiet < 1)
+	    fprintf(stderr, "Playing from file %s.\n", opt.read_file);
+	  /* Open the file. */
+	  if ((opt.instream = fopen(opt.read_file, "rb")) == NULL) {
+	    fprintf(stderr, "Error opening input file.\n");
+	    exit(1);
+	  }
+	}
+      else
+	{
+	  if (opt.quiet < 1)
+	    fprintf(stderr, "Playing from standard input.\n");
+	  opt.instream = stdin;
+	}
+      if ((ov_open_callbacks (opt.instream, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
+	fprintf(stderr, "E: input not an Ogg Vorbis audio stream.\n");
+	return;
+      }
+    }
+#if 0
+      /* old stream code */
     if (strcmp(opt.read_file, "-")) {	/* input file not stdin */
 	if (!strncmp(opt.read_file, "http://", 7)) {
 	    /* Stream down over http */
@@ -391,42 +449,27 @@ void play_file(ogg123_options_t opt)
 	    free(server);
 	    free(path);
 	} else {
-	    if (opt.quiet < 1)
-		fprintf(stderr, "Playing from file %s.\n", opt.read_file);
-	    /* Open the file. */
-	    if ((opt.instream = fopen(opt.read_file, "rb")) == NULL) {
-		fprintf(stderr, "Error opening input file.\n");
-		exit(1);
-	    }
 	}
-    } else {
-	if (opt.quiet < 1)
-	    fprintf(stderr, "Playing from standard input.\n");
-	opt.instream = stdin;
     }
-
-    if ((ov_open(opt.instream, &vf, NULL, 0)) < 0) {
-	fprintf(stderr, "E: input not an Ogg Vorbis audio stream.\n");
-	return;
-    }
-
+#endif
+    
     /* Setup so that pressing ^C in the first second of playback
      * interrupts the program, but after the first second, skips
      * the song.  This functionality is similar to mpg123's abilities. */
-
+    
     if (opt.delay > 0) {
-        skipfile_requested = 0;
-	signal(SIGALRM,signal_activate_skipfile);
-	alarm(opt.delay);
+      skipfile_requested = 0;
+      signal(SIGALRM,signal_activate_skipfile);
+      alarm(opt.delay);
     }
-
+    
     while (!eof) {
-	int i;
-	vorbis_comment *vc = ov_comment(&vf, -1);
-	vorbis_info *vi = ov_info(&vf, -1);
-
-	if(open_audio_devices(&opt, vi->rate, vi->channels) < 0)
-		exit(1);
+      int i;
+      vorbis_comment *vc = ov_comment(&vf, -1);
+      vorbis_info *vi = ov_info(&vf, -1);
+      
+      if(open_audio_devices(&opt, vi->rate, vi->channels) < 0)
+	exit(1);
 
 	if (opt.quiet < 1) {
 	    if (eos && opt.verbose) fprintf (stderr, "\r                                                                          \r\n");

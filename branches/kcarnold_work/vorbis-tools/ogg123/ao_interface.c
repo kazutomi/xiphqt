@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ao_interface.c,v 1.5.2.2 2001/08/10 16:33:40 kcarnold Exp $
+ last mod: $Id: ao_interface.c,v 1.5.2.3 2001/08/11 02:10:09 kcarnold Exp $
 
  ********************************************************************/
 
@@ -129,7 +129,9 @@ void close_audio_devices (devices_t *devices)
 {
   devices_t *current = devices;
   while (current != NULL) {
-    ao_close(current->device);
+    if (current->device)
+      ao_close(current->device);
+    current->device = NULL;
     current = current->next_device;
   }
 }

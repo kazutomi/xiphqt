@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.7 2001/08/10 20:48:06 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.8 2001/08/11 02:10:09 kcarnold Exp $
  
 ********************************************************************/
 
@@ -29,6 +29,9 @@ typedef struct buf_s
   /* generic buffer interface */
   void * data;
   size_t (*write_func) (chunk *ptr, size_t size, size_t nmemb, void * d);
+
+  void * initData;
+  int (*init_func) (void *);
   
   /* pthreads variables */
   pthread_t BufferThread;
@@ -53,8 +56,11 @@ typedef struct buf_s
 #define STAT_PLAYING 2
 #define STAT_EMPTYING 4
 
+#define TARGET_WRITE_SIZE 4096 /* to agree with other mechanisms used in ogg123 */
+
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
-		    size_t (*write_func) (void *, size_t, size_t, void *));
+		    size_t (*write_func) (void *, size_t, size_t, void *),
+		    void *initData, int (*init_func) (void*));
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb);
 void buffer_shutdown (buf_t *buf);
 void buffer_cleanup (buf_t *buf);
