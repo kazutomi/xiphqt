@@ -12,76 +12,36 @@ Ogg Vs Matroska
 </style>
 
 <p>
-Ogg Vs Matroska is more like KDE vs GNOME or Vim vs Emacs. Both have
-different philosophies. Matroska is more a kitchen sink format, whereas
+Ogg and Matroska both have different philosophies, and both can co-exist.
+Matroska is more a kitchen sink format, whereas
 ogg is an absolute bare bones format.
-Which one is beeter really depends on preference. Matroska specs are very 
-complex (as compared to Ogg). But file seeking ang editing support in
-matroska is better than that in Ogg.
+Which one is better really depends on preference. 
+Ogg is focussing on high compatibility and playability,
+making it ideal for content
+distribution, as well as streaming.
+Ogg is ment to become the free
+alternative for content distribution
+Matroska on the other hand is competing with MOV and Quicktime, and aiming
+to replace AVI and VfW/Dshow, as a
+general use container 
+with a clear focus on video and audio
+editing.
 </p>
 <p>
-Ogg essentially says, specify the bare minimum amount of information and let
-the demuxer and the decodecs figure everything else out for themselves. Where
-the demuxer needs codec niformation it asks the decoder for it. The
-advantage being that it doesn't limit the types of codec you can use it
-for. The disadvantage being that in terms of implementation the demuxer becomes
-dependant on codecs.
-</p>
-<p>
-Matroska on the other hand says 99.9% of codecs and all currently used
-codecs won't be limited by it and those are the only ones we care about, so
-we are going to specify as much information as possible in a standardised
-way, so the demuxer never needs to ask the codecs for any help, because the
-muxer has already gathered all the information it might need and stored it
-in a standard way for the demuxer to use. So the demuxer doesn't ever need
-to ask a decoder for codec specific information.
-</p>
-<h2>Ogg Vs Matroska in words of Matroksa Admin (ChristianHJW)</h2>
-<div class="shift">
-<p>
-Speaking of Ogg, we are still convinced that there is not enough
-information on the container level, and too
+Speaking of Ogg, there is not enough information on the container level, and too
 much has to be done on the decoder level, especially for editing purposes.
-For content distribution and
-streaming this approach is quite good, although we also feel a bit more
-complexity could have improved Ogg's
-capabilities and the comparison to other competing containers, aiming for
-the same thing, like RM, ASF and in
-future mainly MP4, but this was Monty's decision to keep it as simple as
-possible, and there are of course
+For content distribution and streaming this approach is quite good, 
+Although a bit more complexity could have improved Ogg's
+capabilities in comparison to other competing containers, aiming for
+the same thing, like RM, ASF and in future mainly MP4, but it was 
+decided to keep it as simple as possible, and there are of course
 some very nice advantages of doing that, especially with respect to Xiph's
 opensource approach.
 </p> 
 <p>
-As Ogg and matroska are now aiming for completely different purposes, they
-will both co-exist nicely, i have
-no doubts in that. Ogg is focussing on high compatibility and playability,
-making it ideal for content
-distribution, as well as streaming. Ogg is ment to become the free
-alternative for content distribution, and
-there can be no doubt that we will support Ogg Theora best we can from all
-our tools.
+Matroska, unlike Ogg is complex. Seeking in matroska is fast as compared to
+that in Ogg. You can use features like menus, chapters etc in Matroska.
 </p> 
-<p>
-matroska on the other hand is competing with MOV and Quicktime, and aiming
-to replace AVI and VfW/Dshow, as a
-general use container (kitchen sink format)
-with a clear focus on video and audio
-editing. We understood that we need a working multimedia framework to be
-able to become a real alternative
-for codec developers, and for all platforms, thats why for the time being
-we are working on porting Gstreamer
-to win32 ( and later Mac OSX ), and will define a simple but powerful codec
-API, wrapping the gstreamer
-plugin API, so that developers can start to make their own codecs, just
-like what happenend with DivX and VfW
-( VCM ) years ago ( and even works with Speex via the ACM codec that was
-made for it ), so they can put their
-own streams in the MKV container. Based on that we are planning to make a
-nice editor also, but lets first
-get the basic framework working.
-</p> 
-</div>
 7th July, 2004
 
 <!--#include virtual="/xiphbottom.include" -->
