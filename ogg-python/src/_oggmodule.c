@@ -27,6 +27,7 @@ static ogg_module_info mi = {
   &py_ogg_stream_state_type,
   NULL,                          /* Will be Py_OggError */
   py_ogg_packet_from_packet,
+  arg_to_int64,
 };
 
 void
