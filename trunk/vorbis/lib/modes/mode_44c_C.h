@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: predefined encoding modes; 44kHz stereo ~64kbps true VBR
- last mod: $Id: mode_44c_C.h,v 1.1 2001/08/13 07:43:15 xiphmont Exp $
+ last mod: $Id: mode_44c_C.h,v 1.2 2001/08/13 08:38:30 xiphmont Exp $
 
  ********************************************************************/
 
@@ -49,25 +49,25 @@
 #include "books/line_1024x31_3sub2.vqh"
 #include "books/line_1024x31_3sub3.vqh"
 
-#include "books/res_44c_B_128aux.vqh"
-#include "books/res_44c_B_1024aux.vqh"
+#include "books/res_44c_C_128aux.vqh"
+#include "books/res_44c_C_1024aux.vqh"
 
-#include "books/res_Bc_1.vqh"
-#include "books/res_Bc_2.vqh"
-#include "books/res_Bc_3.vqh"
-#include "books/res_Bc_4.vqh"
-#include "books/res_Bc_5.vqh"
-#include "books/res_Bc_6.vqh"
-#include "books/res_Bc_7.vqh"
-#include "books/res_Bc_8.vqh"
-#include "books/res_Bc_8a.vqh"
-#include "books/res_Bc_9.vqh"
-#include "books/res_Bc_9a.vqh"
-#include "books/res_Bc_9b.vqh"
+#include "books/res_Cc_1.vqh"
+#include "books/res_Cc_2.vqh"
+#include "books/res_Cc_3.vqh"
+#include "books/res_Cc_4.vqh"
+#include "books/res_Cc_5.vqh"
+#include "books/res_Cc_6.vqh"
+#include "books/res_Cc_7.vqh"
+#include "books/res_Cc_8.vqh"
+#include "books/res_Cc_8a.vqh"
+#include "books/res_Cc_9.vqh"
+#include "books/res_Cc_9a.vqh"
+#include "books/res_Cc_9b.vqh"
 
 #include "maskadj_A.h"
 
-static vorbis_info_psy_global _psy_set_44c_BG={
+static vorbis_info_psy_global _psy_set_44c_CG={
   0, /* decaydBpms */
   8,   /* lines per eighth octave */
   
@@ -338,21 +338,21 @@ codec_setup_info info_44c_C={
     &_huff_book_line_1024x31_3sub2,
     &_huff_book_line_1024x31_3sub3, /* 22 */
 
-    &_huff_book_res_44c_B_128aux, 
-    &_huff_book_res_44c_B_1024aux,
+    &_huff_book_res_44c_C_128aux, 
+    &_huff_book_res_44c_C_1024aux,
     
-    &_vq_book_res_Bc_1,
-    &_vq_book_res_Bc_2,
-    &_vq_book_res_Bc_3,
-    &_vq_book_res_Bc_4,
-    &_vq_book_res_Bc_5,
-    &_vq_book_res_Bc_6,
-    &_vq_book_res_Bc_7,
-    &_vq_book_res_Bc_8,
-    &_vq_book_res_Bc_8a,
-    &_vq_book_res_Bc_9,
-    &_vq_book_res_Bc_9a,
-    &_vq_book_res_Bc_9b,
+    &_vq_book_res_Cc_1,
+    &_vq_book_res_Cc_2,
+    &_vq_book_res_Cc_3,
+    &_vq_book_res_Cc_4,
+    &_vq_book_res_Cc_5,
+    &_vq_book_res_Cc_6,
+    &_vq_book_res_Cc_7,
+    &_vq_book_res_Cc_8,
+    &_vq_book_res_Cc_8a,
+    &_vq_book_res_Cc_9,
+    &_vq_book_res_Cc_9a,
+    &_vq_book_res_Cc_9b,
 
 
   },
