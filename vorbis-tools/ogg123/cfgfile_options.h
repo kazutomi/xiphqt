@@ -11,27 +11,24 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.h,v 1.1.2.2 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: cfgfile_options.h,v 1.1.2.1 2001/12/08 23:59:24 volsung Exp $
 
  ********************************************************************/
 
-#ifndef __OPTIONS_H
-#define __OPTIONS_H
+#ifndef __CFGFILE_OPTIONS_H__
+#define __CFGFILE_OPTIONS_H__
 
 #include <stdio.h>
 
-/* options.h
- *  Header to ogg123 configuration options interface
- */
-
 typedef enum {
   opt_type_none = 0,
+  opt_type_bool,
   opt_type_char,
   opt_type_string,
   opt_type_int, /* long int */
   opt_type_float,
   opt_type_double
-} OptionType;
+} file_option_type_t;
 
 typedef enum {
   parse_ok = 0,
@@ -40,21 +37,23 @@ typedef enum {
   parse_nokey,
   parse_badvalue,
   parse_badtype
-} ParseCode;
+} parse_code_t;
 
-typedef struct Option_s {
+typedef struct file_option_t {
   char found;
   const char *name;
   const char *desc;
-  OptionType type;
+  file_option_type_t type;
   void *ptr;
   void *dfl;
-} Option_t;
+} file_option_t;
 
-void InitOpts (Option_t opts[]);
-ParseCode ParseLine (Option_t opts[], char *line);
-ParseCode ParseFile (Option_t opts[], const char *filename, int (*errfunc) (void *, ParseCode, int, const char*, char*), void *arg);
-const char *ParseErr (ParseCode pcode);
-void DescribeOptions (Option_t opts[], FILE *outfile);
+void file_options_init (file_option_t opts[]);
+void file_options_describe (file_option_t opts[], FILE *outfile);
 
-#endif /* __OPTIONS_H */
+parse_code_t parse_line (file_option_t opts[], char *line);
+parse_code_t parse_config_file (file_option_t opts[], const char *filename);
+const char *parse_error_string (parse_code_t pcode);
+void parse_std_configs (file_option_t opts[]);
+
+#endif /* __OPTIONS_H__ */

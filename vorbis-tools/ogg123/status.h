@@ -11,19 +11,17 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.4.2.1 2001/10/31 05:38:56 volsung Exp $
+ last mod: $Id: status.h,v 1.1.2.4.2.2 2001/12/08 23:59:25 volsung Exp $
 
  ********************************************************************/
 
-#ifndef __STATUS_H
-#define __STATUS_H
+#ifndef __STATUS_H__
+#define __STATUS_H__
 
 #include <stdarg.h>
 
-/* status interface */
-
 typedef struct {
-  int prio;
+  int verbosity;
   char enabled;
   const char *formatstr;
   enum {
@@ -39,12 +37,31 @@ typedef struct {
     float floatarg;
     double doublearg;
   } arg;
-} Stat_t;
+} stat_t;
 
-void PrintStatsLine (Stat_t stats[]);
-void ShowMessage (int prio, char keepStatusLine, char addNewline, 
-		  const char *fmt, ...);
-void Error (const char *fmt, ...);
-void SetPriority (int prio);
 
-#endif /* __STATUS_H */
+/* Status options:
+ * stats[0] - currently playing file / stream
+ * stats[1] - current playback time
+ * stats[2] - remaining playback time
+ * stats[3] - total playback time
+ * stats[4] - instantaneous bitrate
+ * stats[5] - average bitrate (not yet implemented)
+ * stats[6] - input buffer fill %
+ * stats[7] - input buffer status
+ * stats[8] - output buffer fill %
+ * stats[9] - output buffer status
+ * stats[10] - Null format string to mark end of array
+ */
+
+stat_t *stats_create ();
+void stats_cleanup (stat_t *stats);
+
+void status_set_verbosity (int verbosity);
+void status_reset_output_lock ();
+void status_clear_line ();
+void status_print_statistics (stat_t *stats);
+void status_message (int verbosity, const char *fmt, ...);
+void status_error (const char *fmt, ...);
+
+#endif /* __STATUS_H__ */

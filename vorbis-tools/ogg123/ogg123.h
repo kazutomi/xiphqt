@@ -11,26 +11,22 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.h,v 1.7.2.12.2.4 2001/11/23 05:15:30 volsung Exp $
+ last mod: $Id: ogg123.h,v 1.7.2.12.2.5 2001/12/08 23:59:25 volsung Exp $
 
  ********************************************************************/
 
-#ifndef __OGG123_H
-#define __OGG123_H
+#ifndef __OGG123_H__
+#define __OGG123_H__
 
-/* Common includes */
-#include <ogg/ogg.h>
-#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
-#include <ao/ao.h>
+#include <ogg/os_types.h>
+#include "audio.h"
+#include "status.h"
+
+/* Compatibility fixes */
 
 #ifdef __sun
 #include <alloca.h>
 #endif
-
-#include "ao_interface.h"
-#include "curl_interface.h"
-#include "status.h"
 
 /* SunOS 4 does on_exit() and everything else does atexit() */
 #ifdef HAVE_ATEXIT
@@ -40,61 +36,32 @@
 #define ATEXIT(x) (on_exit( (void (*)(int, void*))(x) , NULL)
 #else
 #define ATEXIT(x)
-#warning "at_exit() and on_exit() not present.  Bad things may happen when the application terminates."
+#warning "Neither atexit() nor on_exit() is present.  Bad things may happen when the application terminates."
 #endif
 #endif
  
 
-typedef struct ogg123_options_s {
-  struct {
-    char *read_file;            /* File to decode */
-    char shuffle;               /* Should we shuffle playing? */
-    double seekpos;             /* Amount to seek by */
-    int delay;                  /* delay for skip to next song */
-    int nth;                    /* Play every nth chunk */
-    int ntimes;                 /* Play every chunk n times */
-  } playOpts;
-  struct {
-    long int verbose;           /* Verbose output if > 1, quiet if 0 */
-    
-    /* Status options:
-     * stats[0] - currently playing file / stream
-     * stats[1] - current playback time
-     * stats[2] - remaining playback time
-     * stats[3] - total playback time
-     * stats[4] - instantaneous bitrate
-     * stats[5] - average bitrate (not yet implemented)
-     * stats[6] - input buffer fill %
-     * stats[7] - input buffer status
-     * stats[8] - output buffer fill %
-     * stats[9] - output buffer status
-     * stats[10] - Null format string to mark end of array
-     */
-    Stat_t stats[11];
-  } statOpts;
-  InputOpts_t inputOpts;
-  struct {
-    buf_t *buffer;
-    long BufferSize;
-    float Prebuffer;
-    ogg_int64_t cursample;
-    int rate, channels;         /* playback params for opening audio devices */
-    char devicesOpen;
-    devices_t *devices;
-    char *default_device;
-  } outputOpts;
+typedef struct ogg123_options_t {
+  long int verbosity;         /* Verbose output if > 1, quiet if 0 */
+
+  int shuffle;               /* Should we shuffle playing? */
+  int delay;                  /* delay for skip to next song */
+  int nth;                    /* Play every nth chunk */
+  int ntimes;                 /* Play every chunk n times */
+  double seekpos;             /* Position in file to seek to */
+
+  long buffer_size;           /* Size of audio buffer */
+  float prebuffer;            /* Percent of buffer to fill before playing */
+  char *default_device;       /* Name of default driver to use */
+  audio_device_t *devices;    /* Audio devices to playback to */
+  
 } ogg123_options_t;
 
 typedef struct signal_request_t {
   int skipfile;
   int exit;
   int pause;
+  ogg_int64_t ticks;
 } signal_request_t;
-
-void usage();
-void PlayFile();
-int OpenAudioDevices();
-void SigHandler(int ignored);
-void ExitCleanup();
 
 #endif /* !defined(__OGG123_H) */

@@ -13,8 +13,11 @@ INCLUDES = @OGG_CFLAGS@ @VORBIS_CFLAGS@ @AO_CFLAGS@
 ogg123_LDADD = @VORBISFILE_LIBS@ @VORBIS_LIBS@ @OGG_LIBS@ @AO_LIBS@ \
 		@SOCKET_LIBS@ @THREAD_LIBS@ -lcurl
 
-ogg123_SOURCES = ogg123.c ao_interface.c buffer.c getopt.c getopt1.c curl_interface.c options.c status.c \
-	         ogg123.h ao_interface.h buffer.h getopt.h           curl_interface.h options.h status.h
+ogg123_SOURCES = audio.c buffer.c cfgfile_options.c cmdline_options.c \
+                 file_transport.c format.c getopt.c getopt1.c         \
+                 ogg123.c oggvorbis_format.c status.c transport.c     \
+                 audio.h buffer.h cfgfile_options.h cmdline_options.h \
+                 format.h getopt.h ogg123.h status.h transport.h
 
 EXTRA_DIST = $(man_MANS) $(doc_DATA)
 
