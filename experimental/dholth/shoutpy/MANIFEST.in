@@ -1,0 +1,4 @@
+include Doxyfile MANIFEST.in CHANGELOG COPYING
+include *.h example.py example.cc config.py
+include Jamfile Jamrules boost-build.jam LICENSE
+recursive-include gentoo *.ebuild

@@ -1,0 +1,31 @@
+shoutpy 
+-------
+http://dingoskidneys.com/shoutpy/
+
+A Python (Boost.Python) and C++ wrapper for libshout 2.
+
+Installing
+----------
+You must have Boost.Python >= version 1.31.
+
+Edit config.py if boost.python or libshout is installed outside your
+compiler's normal search path or you are not using gcc and boost.python
+1.31.
+
+To compile and install:
+	python setup.py install
+
+In gentoo, you may install the notable dependencies thus:
+    ACCEPT_KEYWORDS=~x86 emerge libshout && emerge boost
+
+A gentoo ebuild is provided.
+
+A boost-jam setup (edit Jamrules and boost-build.jam to point to your
+boost installation) is also provided; you will need to install the boost
+sources and the latest boost-jam before you can use this.  Then type
+
+	bjam
+
+and look for the module and C++ source client under ./bin/
+
+(c) 2004 Daniel Holth <dholth@fastmail.fm>

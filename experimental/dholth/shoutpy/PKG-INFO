@@ -1,0 +1,18 @@
+Metadata-Version: 1.0
+Name: shoutpy
+Version: 0.5.2
+Summary: Boost.Python bindings for libshout 2
+Home-page: http://dingoskidneys.com/shoutpy/
+Author: Daniel Holth
+Author-email: dholth@fastmail.fm
+License: GNU LGPL
+Download-URL: http://dingoskidneys.com/shoutpy/shoutpy-0.5.2.tar.gz
+Description: shoutpy provides Pythonic bindings for libshout 2.
+Platform: linux
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: C++
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Multimedia :: Sound/Audio

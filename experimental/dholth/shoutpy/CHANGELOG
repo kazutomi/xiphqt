@@ -1,0 +1,3 @@
+0.5 : added doxygen documentation for C++ code, and docstrings for Python.
+0.4 : included example.py; Shout.send works.
+0.3 : initial release

@@ -1,0 +1,30 @@
+# Daniel Holth <dholth@fastmail.fm>, 2004
+# based on David Abraham's example from Boost.Python
+
+# This file is not important unless you want to use boost-jam;
+# bjam -sBUILD=release builds a smaller binary than setup.py
+
+# This is the top of our own project tree
+project-root ;
+
+import python ;
+
+# The Python extension
+extension shoutpy
+: # sources
+  shoutpy.cc
+  shoutcc.cc
+: # requirements
+  <find-library>shout
+  <find-library>boost_python
+  ;
+  
+# The C++ example
+exe cplus_streaming_example
+: # sources
+  example.cc
+  shoutcc.cc
+: # requirements
+  <find-library>shout
+  ;
+
