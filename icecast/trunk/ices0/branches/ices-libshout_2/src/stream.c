@@ -39,7 +39,7 @@
 
 #define INPUT_BUFSIZ 4096
 /* sleep this long in ms when every stream has errors */
-#define ERROR_DELAY 1000
+#define ERROR_DELAY 999
 
 extern ices_config_t ices_config;
 
@@ -325,11 +325,10 @@ stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 {
   int rc = -1;
 
-  if ((shout_get_connected (stream->conn) == SHOUTERR_UNCONNECTED) &&
-      stream->connect_delay <= time(NULL))
+  if (shout_get_connected (stream->conn) != SHOUTERR_CONNECTED)
     rc = stream_connect (stream);
 
-  if (shout_get_connected (stream->conn)) {
+  if (shout_get_connected (stream->conn) == SHOUTERR_CONNECTED) {
     if (shout_send (stream->conn, buf, len) == SHOUTERR_SUCCESS) {
       shout_sync (stream->conn);
       stream->errs = 0;
@@ -349,22 +348,26 @@ stream_send_data (ices_stream_t* stream, unsigned char* buf, size_t len)
 static int
 stream_connect (ices_stream_t* stream)
 {
+  time_t now = time(NULL);
   const char* mount = shout_get_mount (stream->conn);
 
+  if (stream->connect_delay > now)
+    return -1;
+
   if (shout_open (stream->conn) != SHOUTERR_SUCCESS) {
-    ices_log ("Mount failed on http://%s:%d%s%s, error: %s",
+    ices_log_error ("Mount failed on http://%s:%d%s%s, error: %s",
 		    shout_get_host (stream->conn), shout_get_port (stream->conn),
 		    (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount),
 		    shout_get_error (stream->conn));
-    stream->connect_delay = time(NULL) + 1;
+    stream->connect_delay = now + 1;
     stream->errs++;
 
     return -1;
   }
 
   ices_log ("Mounted on http://%s:%d%s%s", shout_get_host (stream->conn),
-            shout_get_port (stream->conn),
-            (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
+                  shout_get_port (stream->conn),
+                  (mount && mount[0] == '/') ? "" : "/", ices_util_nullcheck (mount));
 
   return 0;
 }
