@@ -91,11 +91,22 @@ class SAI:
     def append(self, value):
         entry = self._pack_entry(value) + "\x00"*8
 
-        self.file.seek(-8,2)
+        self.file.seek(SAI.DATA_START + 8*self.num_entries)
         self.file.write(entry)
 
         # Update header
         self.num_entries += 1
+        self.file.seek(8)
+        self.file.write(struct.pack(">H", self.num_entries))
+
+    def delete(self, index):
+        self.file.seek(SAI.DATA_START + 8*(index+1))
+        rest = self.file.read()
+        self.file.seek(SAI.DATA_START + 8*index)        
+        self.file.write(rest)
+
+        # Update header
+        self.num_entries -= 1
         self.file.seek(8)
         self.file.write(struct.pack(">H", self.num_entries))
 

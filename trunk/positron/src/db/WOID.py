@@ -121,7 +121,10 @@ class WOID:
             record = self.get_record(i)
 
             if record == None:
-                continue
+                if data == None and check_field == 0:
+                    break
+                else:
+                    continue
 
             field = unflatten_singlet(record[check_field])
             field = uncollapse_null_list(field)
@@ -213,9 +216,7 @@ class WOID:
 
         (record, next) = self.mdb.read_record_at(mdb_pointer)
         self.mdb.delete_record_at(mdb_pointer)
-        sai_record = self.sai[sai_index]
-        sai_record[1] = 0  #Blank PAI pointer
-        self.sai[sai_index] = sai_record
+        self.sai.delete(sai_index)
         if self.pai != None:
             self.pai.clear_module_at(pai_pointer)
 
