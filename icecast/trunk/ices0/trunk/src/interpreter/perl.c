@@ -34,7 +34,7 @@ static PerlInterpreter *my_perl;
 extern void boot_DynaLoader ();
 
 static void
-xs_init ()
+xs_init (void)
 {
 	char *file = __FILE__;
 	printf ("Including dynaloader\n");
@@ -48,7 +48,7 @@ xs_init ()
  */
 
 static void
-interpreter_perl_initialize ()
+interpreter_perl_initialize (void)
 {
 	static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
 	static char module_space[255];
@@ -82,7 +82,7 @@ interpreter_perl_initialize ()
 
 /* cleanup time! */
 static void
-interpreter_perl_shutdown ()
+interpreter_perl_shutdown (void)
 {
 	if (my_perl != NULL){
 		perl_destruct(my_perl);

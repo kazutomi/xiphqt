@@ -22,13 +22,13 @@
 
 static PyThreadState *mainthreadstate = NULL;
 static PyObject *ices_python_module;
-static PyThreadState *interpreter_python_init_thread ();
+static PyThreadState *interpreter_python_init_thread (void);
 static void interpreter_python_shutdown_thread (PyThreadState *threadstate);
-static void interpreter_python_setup_path ();
+static void interpreter_python_setup_path (void);
 
 /* Function to initialize the python interpreter */
 static void
-interpreter_python_initialize ()
+interpreter_python_initialize (void)
 {
 	char *module_name;
 
@@ -67,7 +67,7 @@ interpreter_python_initialize ()
 /* Force the python interpreter to look in our module path
  * and in the current directory for modules */
 static void
-interpreter_python_setup_path ()
+interpreter_python_setup_path (void)
 {
 	char *pythonpath = getenv ("PYTHONPATH");
 	char newpath[1024];
@@ -89,7 +89,7 @@ interpreter_python_setup_path ()
 
 /* Shutdown the python interpreter */
 static void
-interpreter_python_shutdown ()
+interpreter_python_shutdown (void)
 {
   PyEval_AcquireLock ();
   Py_Finalize ();
@@ -97,7 +97,7 @@ interpreter_python_shutdown ()
 
 /* Startup a new python thread */
 static PyThreadState *
-interpreter_python_init_thread ()
+interpreter_python_init_thread (void)
 {
   PyInterpreterState *maininterpreterstate = NULL;
   PyThreadState *newthreadstate;

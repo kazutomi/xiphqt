@@ -59,7 +59,7 @@ ices_cue_update (const char *filename, const int filesize, const int bitrate, co
 
 /* Cleanup the cue module by removing the cue file */
 void
-ices_cue_shutdown ()
+ices_cue_shutdown (void)
 {
 	const char *filename = ices_cue_get_filename ();
 
@@ -77,7 +77,7 @@ ices_cue_set_filename (const char *filename)
 /* Return the current cue filename, and create it if
  * necessary */
 const char *
-ices_cue_get_filename ()
+ices_cue_get_filename (void)
 {
 	static char filespace[1024];
 

@@ -36,7 +36,7 @@ static short int left[4096 * 30];
 /* Initialize the reencoding engine in ices, initialize
  * the liblame structures and be happy */
 void
-ices_reencode_initialize ()
+ices_reencode_initialize (void)
 {
 	char version[21];
 
@@ -92,7 +92,7 @@ ices_reencode_set_mode (int mode)
 /* For each song, reset the liblame engine, otherwize it craps out if
  * the bitrate or sample rate changes */
 void
-ices_reencode_reset () 
+ices_reencode_reset (void) 
 {
 	if (lame_init (&ices_reencode_flags) == -1) {
 		ices_log ("Error: initialization of liblame failed!");
@@ -117,7 +117,7 @@ ices_reencode_reset ()
 
 /* If initialized, shutdown the reencoding engine */
 void
-ices_reencode_shutdown ()
+ices_reencode_shutdown (void)
 {
 	if (!ices_config.reencode || ices_reencode_initialized == 0)
 		return;

@@ -26,13 +26,13 @@
  * In the future, they will call hooks in the interpreter code
  * to do certain things just before and just after playing a song */
 void
-ices_dj_pre ()
+ices_dj_pre (void)
 {
 
 }
 
 void
-ices_dj_post ()
+ices_dj_post (void)
 {
 
 }

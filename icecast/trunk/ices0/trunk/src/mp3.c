@@ -76,28 +76,28 @@ static int ices_mp3_channels = -1;
 
 /* Return the current song's bitrate */
 int
-ices_mp3_get_bitrate ()
+ices_mp3_get_bitrate (void)
 {
 	return ices_mp3_bitrate;
 }
 
 /* Return the current song's sample rate */
 int
-ices_mp3_get_sample_rate ()
+ices_mp3_get_sample_rate (void)
 {
 	return ices_mp3_sample_rate;
 }
 
 /* Return the current song's mode */
 int
-ices_mp3_get_mode ()
+ices_mp3_get_mode (void)
 {
 	return ices_mp3_mode;
 }
 
 /* return the number of channels in current song */
 int
-ices_mp3_get_channels ()
+ices_mp3_get_channels (void)
 {
 	return ices_mp3_channels;
 }

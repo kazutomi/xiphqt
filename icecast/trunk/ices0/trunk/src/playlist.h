@@ -19,7 +19,7 @@
  */
 
 /* Public function declarations */
-int ices_playlist_get_current_lineno();
-char *ices_playlist_get_next ();
-int ices_playlist_initialize ();
-int ices_playlist_shutdown ();
+int ices_playlist_get_current_lineno (void);
+char *ices_playlist_get_next (void);
+int ices_playlist_initialize (void);
+int ices_playlist_shutdown (void);

@@ -48,7 +48,7 @@ static void ices_signals_hup (const int sig);
  * a certain way, like SIGINT to cleanup and exit, and hup
  * to close and reopen logfiles */
 void
-ices_signals_setup ()
+ices_signals_setup (void)
 {
 #ifndef _WIN32
 	signal (SIGPIPE, SIG_IGN);

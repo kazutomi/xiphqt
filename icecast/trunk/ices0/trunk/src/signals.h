@@ -19,4 +19,4 @@
  */
 
 /* Public function declarations */
-void ices_signals_setup ();
+void ices_signals_setup (void);

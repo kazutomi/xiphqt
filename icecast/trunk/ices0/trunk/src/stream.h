@@ -19,4 +19,4 @@
  */
 
 /* Public function declarations */
-void ices_stream_loop ();
+void ices_stream_loop (void);

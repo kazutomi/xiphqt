@@ -19,8 +19,8 @@
  */
 
 /* Public function declarations */
-char **ices_util_get_argv();
-int ices_util_get_argc();
+char **ices_util_get_argv (void);
+int ices_util_get_argc (void);
 char *ices_util_strdup (const char *string);
 void ices_util_set_args (int argc, char **argv);
 int ices_util_open_for_reading (const char *file);
@@ -31,8 +31,8 @@ void ices_util_fclose (FILE *fp);
 char *ices_util_read_line (FILE *fp);
 char *ices_util_get_random_filename (char *namespace, char *type);
 int ices_util_remove (const char *filename);
-int ices_util_get_random ();
-int ices_util_fd_size ();
+int ices_util_get_random (void);
+int ices_util_fd_size (int fd);
 int ices_util_is_regular_file (int fd);
 int ices_util_directory_create (const char *filename);
 int ices_util_directory_exists (const char *filename);

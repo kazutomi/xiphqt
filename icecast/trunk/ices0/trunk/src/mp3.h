@@ -20,8 +20,8 @@
 
 /* Public function declarations */
 int ices_mp3_parse_file (const char *file);
-int ices_mp3_get_bitrate ();
-int ices_mp3_get_sample_rate ();
-int ices_mp3_get_mode ();
-int ices_mp3_get_channels ();
+int ices_mp3_get_bitrate (void);
+int ices_mp3_get_sample_rate (void);
+int ices_mp3_get_mode (void);
+int ices_mp3_get_channels (void);
 

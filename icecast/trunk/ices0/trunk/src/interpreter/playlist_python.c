@@ -22,11 +22,11 @@
 
 /* Call the python function to get the current line number */
 int
-interpreter_playlist_python_get_current_lineno ()
+interpreter_playlist_python_get_current_lineno (void)
 {
 	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_current_lineno");
 
-	if (res && PyInt_Check(res))
+	if (res && PyInt_Check (res))
 		return PyInt_AsLong (res);
 
 	ices_log_error ("Execution of 'ices_python_get_current_lineno()' in ices.py failed");
@@ -35,11 +35,11 @@ interpreter_playlist_python_get_current_lineno ()
 
 /* Call python function to get next file to play */
 char *
-interpreter_playlist_python_get_next ()
+interpreter_playlist_python_get_next (void)
 {
 	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_get_next");
 
-	if (res && PyString_Check(res))
+	if (res && PyString_Check (res))
 		return ices_util_strdup (PyString_AsString (res));
 	ices_log_error ("Execution of 'ices_python_get_next()' in ices.py failed");
 	return NULL;
@@ -51,7 +51,7 @@ interpreter_playlist_python_initialize (ices_config_t *ices_config)
 {
 	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_initialize");
 
-	if (res && PyInt_Check(res))
+	if (res && PyInt_Check (res))
 		return PyInt_AsLong (res);
 
 	ices_log_error ("Execution of 'ices_python_initialize()' in ices.py failed");
@@ -65,7 +65,7 @@ interpreter_playlist_python_shutdown (ices_config_t *ices_config)
 {
 	PyObject *res = (PyObject *)interpreter_python_eval_function ("ices_python_shutdown");
 
-	if (res && PyInt_Check(res))
+	if (res && PyInt_Check (res))
 		return PyInt_AsLong (res);
 
 	ices_log_error ("Execution of 'ices_python_shutdown()' in ices.py failed");

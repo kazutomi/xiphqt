@@ -25,7 +25,7 @@ int lineno;
 #include "rand.h"
 
 /* Private function declarations */
-static void playlist_builtin_shuffle_playlist ();
+static void playlist_builtin_shuffle_playlist (void);
 static int playlist_builtin_verify_playlist (ices_config_t *ices_config);
 static int playlist_builtin_line_skip (int lineno, FILE *fp);
 
@@ -36,7 +36,7 @@ static int playlist_builtin_line_skip (int lineno, FILE *fp);
    reads the line, closes the file and
    returns the line. */
 char *
-ices_playlist_builtin_get_next ()
+ices_playlist_builtin_get_next (void)
 {
 	FILE *fp = ices_util_fopen_for_reading (playlist_file);
 	char *out;
@@ -77,7 +77,7 @@ ices_playlist_builtin_get_next ()
 
 /* Return the current playlist file line number */
 int
-ices_playlist_builtin_get_current_lineno ()
+ices_playlist_builtin_get_current_lineno (void)
 {
 	return lineno;
 }
@@ -90,7 +90,7 @@ ices_playlist_builtin_initialize (ices_config_t *ices_config)
 
 	if (!playlist_builtin_verify_playlist (ices_config)) {
 		ices_log ("Could not find a valid playlist, and I can't bloody well make up the music myself.");
-		ices_setup_shutdown (0);
+		ices_setup_shutdown ();
 		return -1;
 	}
 	
@@ -121,7 +121,7 @@ ices_playlist_builtin_shutdown (ices_config_t *ices_config)
 /* Shuffle the playlist by creating a box-unique "internal" playlist
  * and using that as the playlist */
 static void
-playlist_builtin_shuffle_playlist ()
+playlist_builtin_shuffle_playlist (void)
 {
 	char *newname, namespace[1024];
 	FILE *old, *new;

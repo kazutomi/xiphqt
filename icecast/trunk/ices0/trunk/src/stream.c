@@ -36,7 +36,7 @@ static int ices_stream_send_reencoded (shout_conn_t *conn, unsigned char *buff, 
 /* Top level streaming function, called once from main() to
  * connect to server and start streaming */
 void
-ices_stream_loop ()
+ices_stream_loop (void)
 {
 	char namespace[1024];
 	int consecutive_errors = 0;

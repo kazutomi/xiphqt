@@ -24,15 +24,15 @@ extern ices_config_t ices_config;
 
 /* Private function declarations */
 static void ices_log_string (char *format, char *string);
-static int ices_log_open_logfile ();
-static int ices_log_close_logfile ();
+static int ices_log_open_logfile (void);
+static int ices_log_close_logfile (void);
 
 static char lasterror[BUFSIZE];
 /* Public function definitions */
 
 /* Initialize the log module, creates log file */
 void
-ices_log_initialize ()
+ices_log_initialize (void)
 {
 	if (!ices_log_open_logfile ()) {
 		ices_log ("%s", ices_log_get_error ());
@@ -42,7 +42,7 @@ ices_log_initialize ()
 
 /* Shutdown the log module, close the logfile */
 void
-ices_log_shutdown ()
+ices_log_shutdown (void)
 {
 	if (!ices_log_close_logfile ()) {
 		ices_log ("%s", ices_log_get_error ());
@@ -52,7 +52,7 @@ ices_log_shutdown ()
 /* Close everything, start up with clean slate when 
  * run as a daemon */
 void
-ices_log_daemonize ()
+ices_log_daemonize (void)
 {
 	close (0); 
 	close (1); 
@@ -67,7 +67,7 @@ ices_log_daemonize ()
 
 /* Cycle the logfile, usually called from the SIGHUP handler */
 int
-ices_log_reopen_logfile ()
+ices_log_reopen_logfile (void)
 {
 	ices_log_close_logfile ();
 	return ices_log_open_logfile ();
@@ -132,7 +132,7 @@ ices_log_error (const char *fmt, ...)
 
 /* Get last error from log module */
 char *
-ices_log_get_error ()
+ices_log_get_error (void)
 {
 	return lasterror;
 }
@@ -179,7 +179,7 @@ ices_log_string (char *format, char *string)
 
 /* Open the ices logfile, create it if needed */
 static int
-ices_log_open_logfile ()
+ices_log_open_logfile (void)
 {
 	char namespace[1024], errorspace[1024];
 	char *filename;
@@ -204,7 +204,7 @@ ices_log_open_logfile ()
 
 /* Close ices' logfile */
 static int
-ices_log_close_logfile ()
+ices_log_close_logfile (void)
 {
 	if (ices_config.logfile) {
 		ices_util_fclose (ices_config.logfile);

@@ -27,20 +27,23 @@
 #include <perl.h>
 
 int
-interpreter_playlist_perl_get_current_lineno ()
+interpreter_playlist_perl_get_current_lineno (void)
 {
  	char *str;
-	int ret=0;
+	int ret = 0;
 	
 	str = interpreter_perl_eval_function ("ices_perl_get_current_lineno");
-	ret = atoi(str); 	/* allocated in perl.c */
-	ices_util_free(str);	/* clean up after yourself! */
-	if (!ret) ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pm failed");
+	ret = atoi (str); 	/* allocated in perl.c */
+	ices_util_free (str);	/* clean up after yourself! */
+
+	if (!ret) 
+		ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pm failed");
+
 	return ret;
 }
 
 char *
-interpreter_playlist_perl_get_next ()
+interpreter_playlist_perl_get_next (void)
 {
 	return interpreter_perl_eval_function ("ices_perl_get_next");
 	/* implied free(str), this is called higher up */
@@ -50,29 +53,32 @@ int
 interpreter_playlist_perl_initialize (ices_config_t *ices_config)
 {
         char *str;
-        int ret=0;
+        int ret = 0;
 			
         str = interpreter_perl_eval_function ("ices_perl_initialize");
-        ret = atoi(str);	/* allocated in perl.c */
-	ices_util_free(str);	/* clean up after yourself! */
+        ret = atoi (str);	/* allocated in perl.c */
+	ices_util_free (str);	/* clean up after yourself! */
 		
-        if (!ret) ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
+        if (!ret) 
+		ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
+
         return ret;
 
 }
-
 
 int
 interpreter_playlist_perl_shutdown (ices_config_t *ices_config)
 {
         char *str;
-        int ret=0;
+        int ret = 0;
 			                  
         str = interpreter_perl_eval_function ("ices_perl_shutdown");
-	ret = atoi(str);
-	ices_util_free(str);
+	ret = atoi (str);
+	ices_util_free (str);
 
-        if (!ret) ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
+        if (!ret) 
+		ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
+
         return ret;
 }
 

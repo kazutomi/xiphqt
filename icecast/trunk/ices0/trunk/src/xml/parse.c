@@ -34,7 +34,7 @@
 
 /* Private function declarations */
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
-static void ices_xml_parse_setup_defaults ();
+static void ices_xml_parse_setup_defaults (void);
 static void ices_xml_parse_playlist_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_execution_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
 static void ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_config_t *ices_config);
@@ -371,7 +371,7 @@ ices_xml_get_root_element (xmlDocPtr doc)
 
 /* Setup some libxml parser options */
 static void
-ices_xml_parse_setup_defaults ()
+ices_xml_parse_setup_defaults (void)
 {
 #ifdef HAVE_LIBXML_PARSER_H
 	xmlKeepBlanksDefault(0);

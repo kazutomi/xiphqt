@@ -56,8 +56,8 @@ extern ices_config_t ices_config;
  */ 
 
 #if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
-static void interpreter_python_initialize ();
-static void interpreter_python_shutdown ();
+static void interpreter_python_initialize (void);
+static void interpreter_python_shutdown (void);
 /* python defines _REENTRANT */
 #undef _REENTRANT
 #include "python.c"
@@ -67,14 +67,14 @@ static void interpreter_python_shutdown ();
 # ifdef ANY
 #  undef ANY
 # endif
-static void interpreter_perl_initialize ();
-static void interpreter_perl_shutdown ();
+static void interpreter_perl_initialize (void);
+static void interpreter_perl_shutdown (void);
 #include "perl.c"
 #endif
 
 /* Initialize the specified interpreter */
 void
-interpreter_initialize ()
+interpreter_initialize (void)
 {
 #ifdef HAVE_LIBPYTHON
 	if (ices_config.playlist_type == ices_playlist_python_e)
@@ -88,7 +88,7 @@ interpreter_initialize ()
 
 /* Shutdown the specified interpreter */
 void
-interpreter_shutdown ()
+interpreter_shutdown (void)
 {
 #ifdef HAVE_LIBPYTHON
 	if (ices_config.playlist_type == ices_playlist_python_e)

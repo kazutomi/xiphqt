@@ -38,14 +38,14 @@ extern ices_config_t ices_config;
 static void ices_id3_update_metadata (const char *filename, int file_bytes);
 void *ices_id3_update_thread (void *arg);
 static int ices_id3_parse (const char *filename, int file_bytes);
-static void ices_id3_cleanup ();
+static void ices_id3_cleanup (void);
 static char *ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize);
 
 /* Global function definitions */
 
 /* Initialize the id3 module, create the id3 module mutex */
 void
-ices_id3_initialize ()
+ices_id3_initialize (void)
 {
 	thread_create_mutex (&id3_mutex);
 	id3_is_initialized = 1;
@@ -53,7 +53,7 @@ ices_id3_initialize ()
 
 /* Only shutdown if we are initialized */
 void
-ices_id3_shutdown ()
+ices_id3_shutdown (void)
 {
 	if (id3_is_initialized == 1)
 		thread_destroy_mutex (&id3_mutex);
@@ -279,7 +279,7 @@ ices_id3_parse (const char *filename, int file_bytes)
 
 /* Make a clean slate for the next file */
 static void
-ices_id3_cleanup ()
+ices_id3_cleanup (void)
 {
 	if (ices_id3_song) {
 		ices_util_free (ices_id3_song);

@@ -50,14 +50,14 @@ ices_util_strdup (const char *string)
 
 /* Wrapper function around CLI argv */
 char **
-ices_util_get_argv ()
+ices_util_get_argv (void)
 {
 	return ices_argv;
 }
 
 /* Wrapper function around CLI argc */
 int 
-ices_util_get_argc ()
+ices_util_get_argc (void)
 {
 	return ices_argc;
 }
@@ -188,7 +188,7 @@ ices_util_remove (const char *filename)
 
 /* Function to get a box-unique integer */
 int
-ices_util_get_random () 
+ices_util_get_random (void) 
 {
 #ifdef _WIN32
 	doooh();

@@ -19,5 +19,5 @@
  */
 
 /* Public function declarations */
-void ices_dj_post ();
-void ices_dj_pre ();
+void ices_dj_post (void);
+void ices_dj_pre (void);

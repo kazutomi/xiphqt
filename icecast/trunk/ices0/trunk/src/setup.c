@@ -29,9 +29,9 @@ static void ices_setup_parse_config_file (ices_config_t *ices_config, const char
 static void ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *ices_config);
-static void ices_setup_usage ();
+static void ices_setup_usage (void);
 static void ices_setup_update_pidfile (int icespid);
-static void ices_setup_daemonize ();
+static void ices_setup_daemonize (void);
 static void ices_setup_run_mode_select (ices_config_t *ices_config);
 static int  ices_setup_shutting_down = 0;
 static void ices_setup_free_all_allocations (ices_config_t *ices_config);
@@ -45,7 +45,7 @@ extern ices_config_t ices_config;
  * It will parse options, initialize modules,
  * and if requested, become a daemon. */
 void
-ices_setup_initialize ()
+ices_setup_initialize (void)
 {
 	/* Setup signal handlers */
 	ices_signals_setup ();
@@ -87,7 +87,7 @@ ices_setup_initialize ()
 /* Top level ices shutdown function.
  * This is the _only_ way out of here */
 void
-ices_setup_shutdown ()
+ices_setup_shutdown (void)
 {
 	/* Protection for multiple threads calling shutdown.
 	 * Remember that this is can be called from many places,
@@ -481,7 +481,7 @@ ices_setup_activate_libshout_changes (shout_conn_t *conn, const ices_config_t *i
 
 /* Display all command line options for ices */
 static void
-ices_setup_usage ()
+ices_setup_usage (void)
 {
 	ices_log ("ices <options>");
 	ices_log ("Options:");
@@ -520,7 +520,7 @@ ices_setup_run_mode_select (ices_config_t *ices_config)
 
 /* Put ices in the background, as a daemon */
 static void
-ices_setup_daemonize ()
+ices_setup_daemonize (void)
 {
 	int icespid = fork ();
 	
