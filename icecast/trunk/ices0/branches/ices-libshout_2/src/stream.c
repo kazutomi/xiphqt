@@ -287,9 +287,8 @@ stream_open_source (input_stream_t* source)
 
   source->fd = fd;
 
-  if (lseek (fd, SEEK_SET, 0) == -1) {
+  if (lseek (fd, SEEK_SET, 0) == -1)
     source->canseek = 0;
-  }
   else {
     source->canseek = 1;
     source->filesize = ices_util_fd_size (fd);
