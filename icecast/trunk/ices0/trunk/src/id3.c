@@ -149,7 +149,9 @@ ices_id3_get_filename ()
 static void
 ices_id3_update_metadata (const char *filename, int file_bytes)
 {
-	thread_create ("Metadata Update Thread", ices_id3_update_thread, NULL);
+	if (thread_create ("Metadata Update Thread", ices_id3_update_thread, NULL) == -1) {
+		ices_log ("Error: Could not create metadata update thread!");
+	}
 }
 
 void *
