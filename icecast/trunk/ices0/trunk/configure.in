@@ -99,6 +99,7 @@ if test "$GCC" = yes; then
 fi
 
 AC_CHECK_PROG(UNAME,uname,uname)
+AC_CHECK_PROG(GMAKE,gmake,gmake)
 AC_PROG_INSTALL
 
 dnl weird ass systems
@@ -416,7 +417,7 @@ else
 	echo "xml-config program not found, compiling without libxml support. (This means no support for configfiles)"
 fi
 
-AC_CHECK_HEADERS(fcntl.h sys/types.h sys/socket.h sys/time.h sys/stat.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h libxml/parser.h gnome-xml/parser.h)
+AC_CHECK_HEADERS(fcntl.h sys/types.h sys/socket.h sys/time.h sys/stat.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h libxml/parser.h gnome-xml/parser.h parser.h)
 AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename setsockopt umask inet_addr inet_aton inet_ntoa sigaction pthread_sigmask)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])
@@ -430,5 +431,11 @@ cd ..
 echo "Compiling with CPPFLAGS=$CPPFLAGS"
 echo "Linking with LDFLAGS=$LDFLAGS $LIBS"
 
+if test "$GMAKE"; then
+echo "Ok, everything seems ok. Now do 'gmake'."
+echo "You can then run 'gmake install' to install as you specified"
+else
 echo "Ok, everything seems ok. Now do 'make'."
-echo "You can then run make install to install as you specified"
+echo "You can then run 'make install' to install as you specified"
+fi
+

@@ -1,3 +1,14 @@
+- 0.0.1b3	2000-08-08
+	- Reencoding fixes, commented config file and README.playlist
+	- Changed perl module to use user specified module
+	- ices.py and ices.pm now commented
+	- Configure.in now checks for gmake, and tells user to use this
+	  if found.
+	- ices.pm,ices.py and README.playlist included in dist.
+	- Moved README to README.old and lynx -dump -nolist on
+	  doc/icesmanual.html to the new README. (I don't want to
+	  maintain two sets of documentation)
+	- Started to work on the FAQ
 - 0.0.1b2	2000-08-02
 	- Code cleanup, lots of code comments added
 - 0.0.1b1	2000-07-19

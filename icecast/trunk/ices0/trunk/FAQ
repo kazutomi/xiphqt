@@ -1,0 +1,15 @@
+1. What should the ices playlist file look like?
+A: For the builtin playlist handler (the default), the playlist file
+   is very simple. One file per line, and nothing else.
+   E.g:
+   /mp3/live/cool_live.mp3
+   /mp3/cool/live_cool.mp3
+   etc..
+
+2. The icecast server tells me the password is wrong, but I have
+   the correct password in my ices.conf file! What am I doing wrong?
+A: Either ices can't find the config file, or you compiled ices without
+   support for libxml (probably because your system does not have
+   libxml). Without libxml, no config files.
+   It could also mean that you compiled the icecast server with crypt
+   support.

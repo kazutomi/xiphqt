@@ -39,6 +39,8 @@ SunOS 5.7
 FreeBSD 4.0-RELEASE i386
 	gcc version 2.95.2
 	Perl 5.0 patchlevel 5 subversion 3
+	lame 3.86 beta 
+	libxml 1.8.7	
 OpenBSD 2.7 i386
 	gcc version 2.95.1
 	Perl 5.0 version 6 subversion 0

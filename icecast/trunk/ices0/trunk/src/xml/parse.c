@@ -24,10 +24,13 @@
 # ifdef HAVE_LIBXML_PARSER_H
 #  include <libxml/xmlmemory.h>
 #  include <libxml/parser.h>
+# elif HAVE_GNOME_XML_PARSER_H
+#  include <gnome-xml/xmlmemory.h>
+#  include <gnome-xml/parser.h>
 # else
-#  include <gnome-xml/parser.h>
-#  include <gnome-xml/parser.h>
-# endif
+#  include <parser.h>
+#  include <xmlmemory.h>
+#endif
 
 /* Private function declarations */
 static int ices_xml_parse_file (const char *configfile, ices_config_t *ices_config);
