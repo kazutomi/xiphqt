@@ -467,6 +467,7 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     shout_set_host (conn, stream->host);
     shout_set_port (conn, stream->port);
     shout_set_password (conn, stream->password);
+    shout_set_format (conn, SHOUT_FORMAT_MP3);
     if (stream->header_protocol == icy_header_protocol_e)
       shout_set_protocol(conn, SHOUT_PROTOCOL_ICY);
     else
