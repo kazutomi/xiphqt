@@ -74,6 +74,13 @@ source alternatives, this document is best place to start with.
 <b>Real Media:</b> This was developed by Real Networks as media streaming
 	  solution.
 <br>
+<i>Note:</i> Open source implementations of mpeg program streams, 
+avi and quicktime containers also exists.
+<!--, and except for the character 
+of the common codecs found in those formats there's no 
+reason related to patentes one couldn't use them. 
+(MS claims a patent of asf. I don't know anything about real's 
+native format.)-->
 </div>
 
 <a name="open-containers"></a>
@@ -102,8 +109,8 @@ source alternatives, this document is best place to start with.
 	<a name="ogm-container">
 	<h2>OGM</h2>
 	<p>
-	Once upon a time, a young named named Tobias created DirectShow
-	filters for the Ogg Multimedia Format. You can use them to encode
+	Tobias created DirectShow filters for the Ogg Multimedia Format 
+	which can be used to  encode
 	video into the Ogg format, as well as play Ogg Vorbis files on programs
 	like Windows Media Player. The problem is that the DirectShow
 	filters are an extension to the Ogg Multimedia Framework that lies outside
@@ -143,31 +150,60 @@ source alternatives, this document is best place to start with.
 <a name="ogg-vs-matroska"></a>
 <h2>Ogg Vs Matroska?</h2>
 <div class="shift">
+<p align="justify">
  Ogg and Matroska have different philosophies. Ogg is focussing on high
 compatibility and playability, making it ideal for content
 distribution, as well as streaming. matroska on the other hand is competing
 with MOV and Quicktime, and aiming to replace AVI and VfW/Dshow, as a
 general use container ( kitchen sink format ) with a clear focus on video and audio
-editing. You can continue reading <a href="ogg-vs-matroska.html">Ogg Vs
+editing. Ogg has much lower and bounded overhead, and
+its primary design distinction is streamability, while
+Matroska offers hierachical access, very much in the
+vein of Apple's Quicktime file format. Read more about <a href="ogg-vs-matroska.html">Ogg Vs
 Matroska</a>.
+</p>
 </div>
 
 <a name="ogg-vs-ogm"></a>
 <h2>Ogg Vs Ogm?</h2>
 <div class="shift">
+<p align="justify">
+Ogg format have id header which are an additional restriction
+as compared to OGM. So while an OGM file is an Ogg file
+an Ogg file is <b>not</b> necessarily an OGM file,
+and so parsers that assume the id header will break on
+general ogg files (anything but degenerate Ogg Vorbis
+basically). And of course, we believe it to be an
+unnecessary abstraction breaking restriction designed
+to make the format easier for AVI-based code to parse.
+Since the whole point was to get around the limitations
+of AVI for content distribution, it irks, and that's
+why we don't support it.
+</p>
+<p align="justify">
+Also people generally use the patent encumbered
+DivX or mpeg4 video codecs in OGM with vorbis
+audio codec. This gives a false sense of 
+<i>open source</i> solution (becase DivX/mpeg4
+are not open).
+</p>
  Read <a href="ogm.html">more about OGM</a>.
 </div>
 
 <a name="extension"></a>
 <h2>What file extensions to use with Ogg?</h2>
 <div class="shift">
-A controversial issue, I will write about it sometime later.
+You can of course use whatever extension you 
+like, but the recommended extension is .ogg.
+<a href="http://www.faqs.org/rfcs/rfc3534.html">
+RFC 3534</a> defines <i>application/ogg</i>
+mimetype to represnt Ogg files.
 </div>
 
 <a name="subtitle"></a>
 <h2>What about subtitles in Ogg?</h2>
 <div class="shift">
-I don't know much about subtitles, may be someone who knows can update it.
+Please checkout <a href="http://wiki.xiph.org/index.php/Writ">Ogg Writ</a>.
 </div>
 
 <a name="codecs"></a>
