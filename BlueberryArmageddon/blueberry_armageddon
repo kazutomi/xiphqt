@@ -16,7 +16,7 @@ $width=400;
 
 $query='cdparanoia -d $device -Q 2>&1';
 $rip='cdparanoia -ez -d $device $track -w $wavfile';
-$encode='oggenc -q 4.99 -a {$metaartist} -t {$metatitle} -l {$metaalbum} $wavfile -o $outfile';
+$encode='oggenc -q 4.9 -a {$metaartist} -t {$metatitle} -l {$metaalbum} $wavfile -o $outfile';
 $playrip='cdparanoia -vZd $device $playstatus $pipe';
 $play='play -t wav $pipe ';
 
@@ -596,7 +596,8 @@ sub ReadStderr{
 	Skip();
     }
 
-    push my@lines, split /[\n\r]/, $saved_stderr.$scalar;
+    $scalar=~s/\r/\n/;
+    push my@lines, split /[\n|\r]/, $saved_stderr.$scalar;
     if((chomp $scalar)==0){
 	$saved_stderr=$lines[$#lines];
     }else{
