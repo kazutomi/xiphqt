@@ -1,6 +1,12 @@
 #include <stdio.h>
+#ifndef _WIN32
 #include <endian.h>
 #include <assert.h>
+#else
+#define LITTLE_ENDIAN 0
+#define BIG_ENDIAN 1
+#define BYTE_ORDER LITTLE_ENDIAN     
+#endif
 
 #include "general.h"
 #include "vorbismodule.h"

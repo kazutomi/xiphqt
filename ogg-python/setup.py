@@ -11,7 +11,7 @@ from distutils.core import setup
 from distutils.extension import Extension
 
 VERSION_MAJOR = 1
-VERSION_MINOR = 0
+VERSION_MINOR = 2
 pyogg_version = str(VERSION_MAJOR) + "." + str(VERSION_MINOR)
 
 def get_setup():
@@ -40,7 +40,7 @@ ogg_include_dir = data['ogg_include_dir']
 ogg_lib_dir = data['ogg_lib_dir']
 ogg_libs = string.split(data['ogg_libs'])
 
-_oggmodule = Extension(name='_oggmodule',
+_oggmodule = Extension(name='_ogg',
                        sources=['src/_oggmodule.c',
                                 'src/pyoggpacket.c',
                                 'src/pyoggstreamstate.c',
@@ -54,7 +54,7 @@ _oggmodule = Extension(name='_oggmodule',
                        
                        include_dirs=[ogg_include_dir, 'include'],
                        library_dirs=[ogg_lib_dir],
-                       libraries=['ogg'])
+                       libraries=ogg_libs)
 
 setup ( name = "pyogg",
         version = pyogg_version,

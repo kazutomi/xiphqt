@@ -671,6 +671,29 @@ py_vorbis_comment_query_count(PyObject *self, PyObject *args)
   return PyInt_FromLong(vorbis_comment_query_count(vc, tag));
 }
 
+/* We need this for Win32, so I'll implement it rather than use
+   strcasecmp on Linux */
+static int pystrcasecmp(const char *str1, const char *str2) {
+  int k = 0;
+  while (str1[k] != '\0' && str2[k] != '\0') {
+    char c1 = str1[k];
+    char c2 = str2[k];
+    if (c1 >= 'A' && c1 <= 'Z') {
+      c1 = c1 - 'A' + 'a';
+    }
+    if (c2 >= 'A' && c1 <= 'Z') {
+      c2 = c1 - 'A' + 'a';
+    }
+    if (c1 < c2) {
+      return -1;
+    } else if (c1 > c2) {
+      return 1;
+    }
+    ++k;
+  }
+  return 0;
+}
+
 static int
 make_caps_key(char *in, int size)
 {
@@ -704,7 +727,7 @@ assign_tag(vorbis_comment *vcomment, const char *key, PyObject *tag)
                     "Setting comment with non-string object");
     return 0;
   }
-  if (!strcasecmp(key, "vendor")) {
+  if (!pystrcasecmp(key, "vendor")) {
     vcomment->vendor = strdup(tag_str);
   } else {
     int k;
@@ -744,7 +767,7 @@ create_comment_from_items(vorbis_comment *vcomment,
     return assign_tag(vcomment, key, item_vals);
   } else if (PySequence_Check(item_vals)) {
     int j, val_length = PySequence_Length(item_vals);
-    if (!strcasecmp(key, "vendor") && val_length > 1) {
+    if (!pystrcasecmp(key, "vendor") && val_length > 1) {
       PyErr_SetString(PyExc_ValueError, "Cannot have multiple vendor tags");
     }
     for (j = 0; j < val_length; j++) {

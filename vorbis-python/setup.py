@@ -7,7 +7,7 @@ from distutils.core import setup
 from distutils.extension import Extension
 
 VERSION_MAJOR = 1
-VERSION_MINOR = 1
+VERSION_MINOR = 2
 pyvorbis_version = str(VERSION_MAJOR) + '.' + str(VERSION_MINOR)
 
 try:
@@ -48,7 +48,7 @@ vorbis_libs = string.split(data['vorbis_libs'])
 ogg_include_dir = data['ogg_include_dir']
 ogg_lib_dir = data['ogg_lib_dir']
 
-vorbismodule = Extension(name='vorbismodule',
+vorbismodule = Extension(name='vorbis',
                          sources=['src/vorbismodule.c',
                                   'src/pyvorbisfile.c',
                                   'src/pyvorbiscodec.c',
