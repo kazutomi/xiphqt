@@ -38,7 +38,6 @@ typedef struct {
 	char *outfile;
 	FILE *out;
 	filelist_t *input;
-	int quiet;
 	int verbose;
 } param_t;
 
@@ -56,8 +55,4 @@ typedef struct {
 #define TYPEMNG 3
 
 #endif  /* __OGGMERGE_H__ */
-
-
-
-
 
