@@ -56,5 +56,6 @@ void client_send_401(client_t *client);
 void client_send_403(client_t *client);
 void client_send_400(client_t *client, char *message);
 int client_send_bytes (client_t *client, const void *buf, unsigned len);
+void client_set_queue (client_t *client, refbuf_t *refbuf);
 
 #endif  /* __CLIENT_H__ */

@@ -340,8 +340,7 @@ void source_move_clients (source_t *source, source_t *dest)
             avl_delete (source->pending_tree, client, NULL);
 
             /* switch client to different queue */
-            client->refbuf = dest->stream_data_tail;
-            client->pos = 0;
+            client_set_queue (client, dest->stream_data_tail);
             avl_insert (dest->pending_tree, (void *)client);
         }
 
@@ -356,8 +355,7 @@ void source_move_clients (source_t *source, source_t *dest)
             avl_delete (source->client_tree, client, NULL);
 
             /* switch client to different queue */
-            client->refbuf = dest->stream_data_tail;
-            client->pos = 0;
+            client_set_queue (client, dest->stream_data_tail);
             avl_insert (dest->pending_tree, (void *)client);
         }
         source->listeners = 0;
@@ -433,7 +431,7 @@ static void send_to_listener (source_t *source, client_t *client, int deletion_e
     if (client->refbuf == NULL)
     {
         /* make clients start at the per source burst point on the queue */
-        client->refbuf = source->burst_point;
+        client_set_queue (client, source->burst_point);
         if (client->refbuf == NULL)
            return;
     }
@@ -584,6 +582,7 @@ void source_main (source_t *source)
             {
                 source->stream_data = refbuf;
                 source->burst_point = refbuf;
+                refbuf_addref (source->burst_point);
             }
             if (source->stream_data_tail)
                 source->stream_data_tail->next = refbuf;
@@ -596,7 +595,11 @@ void source_main (source_t *source)
             {
                 source->burst_offset -= source->burst_point->len;
                 if (source->burst_point->next)
+                {
+                    refbuf_release (source->burst_point);
                     source->burst_point = source->burst_point->next;
+                    refbuf_addref (source->burst_point);
+                }
             }
 
             /* save stream to file */
@@ -678,13 +681,17 @@ void source_main (source_t *source)
             stats_event_args (source->mount, "listeners", "%d", source->listeners);
         }
 
-        if (remove_from_q)
+        /* lets reduce the queue, any lagging clients should of been
+         * terminated by now
+         */
+        if (source->stream_data)
         {
-            refbuf_t *to_go = source->stream_data;
-            if (to_go->next)
+            while (source->stream_data->_count == 1)
             {
-                source->stream_data = to_go->next;
-                source->queue_size -= to_go->len;
+                refbuf_t *to_go = source->stream_data;
+
+                if (to_go->next == NULL)
+                    break;
                 /* make sure the burst point is not the refbuf we are
                  * deleting, if so move on one  */
                 if (source->burst_point == to_go)
@@ -692,10 +699,10 @@ void source_main (source_t *source)
                     source->burst_point = to_go->next;
                     source->burst_offset -= to_go->len;
                 }
+                source->stream_data = to_go->next;
+                source->queue_size -= to_go->len;
                 refbuf_release (to_go);
             }
-            else
-                WARN0("possible queue length error");
         }
 
         /* release write lock on client_tree */

@@ -351,10 +351,9 @@ static int write_buf_to_client (format_plugin_t *self, client_t *client)
 
     if (refbuf->next && client->pos == refbuf->len)
     {
-        client->refbuf = refbuf->next;
-        client->pos = 0;
+        client_set_queue (client, refbuf->next);
+        refbuf = client->refbuf;
     }
-    refbuf = client->refbuf;
     do
     {
         if (client_data->headers != refbuf->associated)
