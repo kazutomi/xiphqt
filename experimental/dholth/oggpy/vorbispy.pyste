@@ -1,27 +1,41 @@
-vorbispy = AllFromHeader("vorbiscc.h")
+# Pyste wrapper for vorbispy.
+# Daniel Holth <dholth@fastmail.fm>, Mar. 2004
 
-Include("vorbispy_wrappers.h")
+# The document function relies on a private Pyste hack to actually work.
+def document(element, blurb):
+	"""Add a docstring to a definition"""
+	element._Attribute('doc', blurb)
 
-# exclude(vorbispy.comment.query)
-exclude(vorbispy.dsp.analysis_buffer)
-exclude(vorbispy.dsp.get_data)
-exclude(vorbispy.comment.get_data)
-exclude(vorbispy.info.get_data)
+header  = "vorbispy_wrappers.h"
+        
+comment = Class("ogg::vorbis::comment", header)
+info    = Class("ogg::vorbis::info", header)
+block   = Class("ogg::vorbis::block", header)
+dsp 	= Class("ogg::vorbis::dsp", header)
+	
+analysis_write = Function("oggpy_analysis_write", header)
+get_comments   = Function("get_comments", header)
+pcmout 	       = Function("oggpy_synthesis_pcmout", header, doc = \
+"""synthesis_pcmout(dsp) -> pcm data
 
-# vorbispy.block.synthesis.infos.doc = "Synthesize things."
-# #Function("oggpy_synthesis_pcmout", "oggpy_wrappers.h")
+Fetch some pcm data from vorbis decode.
+Return a [channels][samples] array of 32 bit floats."""
 
-doc = """\
-oggpy_synthesis_pcmout(oggpy.dsp) -> pcm data
 
-Fetches some pcm data from vorbis decode, in a channels by samples numarray object.
-It's so cool, you could keep meat in it."""
+exclude(dsp.analysis_buffer)
+exclude(dsp.get_data)
+exclude(comment.get_data)
+exclude(info.get_data)
 
-pcmout = Function("oggpy_synthesis_pcmout", "vorbispy_wrappers.h", doc = doc)
-Function("oggpy_analysis_write", "vorbispy_wrappers.h")
-Function("get_comments", "vorbispy_wrappers.h")
+add_method(dsp, "oggpy_analysis_write")
+rename(dsp.oggpy_analysis_write, "analysis_write")
+exclude(analysis_write)
 
-# #add_method(oggpy.sync, "ogg::sync_write")
-# #rename(oggpy.sync.sync_write, "write")
+add_method(comment, "get_comments")
+exclude(get_comments)
 
-module_code("oggpy_wrappers_init();\n")
+add_method(dsp, "oggpy_synthesis_pcmout")
+rename(dsp.oggpy_synthesis_pcmout, "synthesis_pcmout")
+exclude(pcmout)
+
+module_code("    oggpy_wrappers_init();\n")

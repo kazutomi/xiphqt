@@ -35,12 +35,16 @@ def packetsource(ogg):
                 yield op
 
 
-def test(ogg):
-    """Display some basic information about a theora stream."""
+def test(ogg, imagewriter = None):
+    """Display some basic information about a theora stream.
+    
+    arguments:
+        ogg is a file object
+        imagewriter is a pygame_bridge object"""
 
     numarray.Error.setMode(all="ignore")
 
-    oggpy.sync.write = oggpy.sync_write # hack until the wrapper can do this itself
+    # oggpy.sync.write = oggpy.sync_write # hack until the wrapper can do this itself
     
     ti = theorapy.info()
     tc = theorapy.comment()
@@ -54,45 +58,51 @@ def test(ogg):
         if theora == 0:
             head = ti.decode_header(tc, op)
             if head >= 0:
-                print "got theora", head
+                # print "got theora", head
                 theora += 1
             else:
-                print "no theora"
+                # print "no theora"
                 return
                 
-        elif theora < 3:   # should handle packets that are more than one page long.
+        elif theora < 3:
             h = ti.decode_header(tc, op)
             print "header ", h
             theora += 1
 
         elif theora == 3:
-            print "This theora encoded by: ", tc.get_vendor()
-            print "Trying to decode with: ", theorapy.version_string(), theorapy.version_number()
-            for i in dir(ti):
-                if i[0:2] != "__":
-                    try:
-                        value = ti.__getattribute__(i)
-                        if not inspect.ismethod(value):
-                            print i, value
-                    except TypeError:
-                        pass
-            print "decode init returns", td.decode_init(ti)
-
-            print "comments:"
-            for i in range(tc.size()):
-                print tc.query_index(i)
-            print ":end comments"
-
+            td.decode_init(ti)
+            yield (ti, tc, td)
+            #
+            # print "This theora encoded by: ", tc.get_vendor()
+            # print "Trying to decode with: ", theorapy.version_string(), theorapy.version_number()
+            # for i in dir(ti):
+            #     if i[0:2] != "__":
+            #         try:
+            #             value = ti.__getattribute__(i)
+            #             if not inspect.ismethod(value):
+            #                 print i, value
+            #         except TypeError:
+            #             pass
+            # print "decode init returns",
+            #
+            # print "comments:"
+            # for i in range(tc.size()):
+            #     print tc.query_index(i)
+            # print ":end comments"
+            #
             theora += 1
            
-        elif theora > 3 and theora < 10:
-            print theora
+        elif theora > 3:
+            # print theora
             theora += 1
             assert(td.decode_packetin(op) == 0)
             assert(td.decode_YUVout(yuv) == 0)
-            print "yuv info:"
-            print "y\t%d\t%d\t%d" % (yuv.y_width, yuv.y_height, yuv.y_stride)
-            print "uv\t%d\t%d\t%d" % (yuv.uv_width, yuv.uv_height, yuv.uv_stride)
+            # print "yuv info:"
+            # print "y\t%d\t%d\t%d" % (yuv.y_width, yuv.y_height, yuv.y_stride)
+            # print "uv\t%d\t%d\t%d" % (yuv.uv_width, yuv.uv_height, yuv.uv_stride)
+
+            yield yuv
+            
         else:
             break
 
@@ -102,5 +112,8 @@ if __name__ == "__main__":
         filename = sys.argv[1]
     else:
         filename = "video.ogg"
-        
-    test(file(filename, "rb"))
+       
+    gen = test(file(filename, "rb"))
+    
+    for i in range(3):
+        print gen.next()

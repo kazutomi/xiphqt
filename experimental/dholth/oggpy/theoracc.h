@@ -78,6 +78,17 @@ typedef struct {
 namespace ogg {
     /// libtheora
     namespace theora {
+        /// libtheora error codes
+        enum theora_errors {
+            ocFault     = OC_FAULT,
+            ocEinval    = OC_EINVAL,
+            ocBadHeader = OC_BADHEADER,
+            ocNotFormat = OC_NOTFORMAT,
+            ocImpl      = OC_IMPL,
+            ocBadPacket = OC_BADPACKET,
+            ocNewPacket = OC_NEWPACKET
+        };
+        
         /// Annotate theora streams.
         class comment {
             private:
@@ -131,9 +142,13 @@ namespace ogg {
         
 
         /// YUV image data
-        class yuv_image : public yuv_buffer { };
+        class yuv_image : public yuv_buffer
+        {
+            public:
+                yuv_buffer *get_data()  { return (yuv_buffer*)this; }
+        };
 
-        
+
         /// Codec state.
         class state {
             private:

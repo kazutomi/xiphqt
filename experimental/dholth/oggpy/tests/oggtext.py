@@ -4,6 +4,9 @@
 #
 # Puts lines of text into a new ogg-format stream.
 #
+# Each page of the text gets a new page in the ogg stream;
+# try it with the ogg rfcs.
+#
 # Daniel Holth <dholth@fastmail.fm>, 2004
 
 import oggpy
@@ -17,19 +20,20 @@ page = oggpy.page()
 pack = oggpy.userpacket("OGGText", granule, True, False)
 os.packetin(pack)
 
-os.pageout(page)
+os.flush(page)
 sys.stdout.write(page.header())
 sys.stdout.write(page.body())
 
 for data in sys.stdin.readlines():
-    if(os.pageout(page) != 0):
-        sys.stdout.write(page.header())
-        sys.stdout.write(page.body())
-    granule += len(data)
+    if data[0] == chr(12):
+        while(os.flush(page) != 0):
+            sys.stdout.write(page.header())
+            sys.stdout.write(page.body())
+    granule += 1
     pack = oggpy.userpacket(data, granule, False, False)
     os.packetin(pack)
 
-pack = oggpy.userpacket("END", granule, False, True)
+pack = oggpy.userpacket("", granule, False, True)
 os.packetin(pack)
 os.pageout(page)
 sys.stdout.write(page.header())

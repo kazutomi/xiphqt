@@ -6,7 +6,7 @@ from distutils.extension import Extension
 import os.path
 import sys
 
-extra_include_dirs = [".", "/home/dholth/include/theora"]
+extra_include_dirs = [".", "/home/dholth/include/theora", "/usr/include/SDL"]
 
 if sys.version[0:3] == "2.3":
     boost = "/home/dholth/opt/include/boost-1_31" # boost.python include path
@@ -31,7 +31,7 @@ Topic :: Multimedia :: Sound/Audio
 """
 
 setup(name="oggpy",
-      version="0.3",
+      version="0.4",
       description="Boost.Python and C++ wrappers of ogg, vorbis and theora",
       long_description=description,
       author="Daniel Holth",
@@ -52,7 +52,8 @@ setup(name="oggpy",
                    
                     Extension("theorapy", ["oggcc.cc", "theorapy.cpp"],
                               libraries=["ogg", "theora", boostlib],
-                              include_dirs=extra_include_dirs, depends=["oggcc.h", "theoracc.h"])                    
+                              include_dirs=extra_include_dirs, depends=["oggcc.h", "theoracc.h"])
+
 # If we want to statically link libboost_python we would have to put
 # everything in one file; this doesn't work right away due to name
 # collisions.
@@ -61,6 +62,11 @@ setup(name="oggpy",
 #                              "oggpy/_vorbispy.cpp", "vorbispy_wrappers.cc", "oggpy_wrappers.cc"],
 #                              libraries=["ogg", "theora", "vorbis", "vorbisenc", boostlib],
 #                              include_dirs=extra_include_dirs, depends=["oggcc.h", "theoracc.h"])
-                  ]
+                    # this is broken too; I think the pygame <--> boost connection is not all there.
+                    # Extension("pygame_bridge", ["pygame_bridge.cc"],
+                    #     libraries=["SDL", "ogg", "theora", boostlib],
+                    #     include_dirs=extra_include_dirs)
+
+                    ]
      )
 

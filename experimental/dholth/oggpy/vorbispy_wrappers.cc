@@ -1,4 +1,4 @@
-/* Wrappers for oggpy.
+/* Wrappers for vorbispy.
  *
  * Daniel Holth <dholth@fastmail.fm>
  * 21 Jan. 2004
@@ -8,7 +8,6 @@
 #include <string.h>
 #include <vorbis/codec.h>
 #include <numarray/libnumarray.h>
-#include <boost/version.hpp>
 
 using namespace ogg;
 using namespace boost::python;
@@ -19,8 +18,9 @@ void oggpy_wrappers_init()
 }
 
 
-// It lives!!!
-// ideas: see if vorbis will let us read zero until samples is a minimum size > 0, to give less units to python
+// Notes:
+// synthesis_pcmout() does not accumulate sound samples if it is not
+// called each time after synthesis_blockin()
 PyObject *oggpy_synthesis_pcmout(ogg::vorbis::dsp *dsp)
 {
   PyArrayObject *pcmarray = NULL;

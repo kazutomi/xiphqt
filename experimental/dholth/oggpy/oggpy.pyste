@@ -1,39 +1,10 @@
+# Pyste wrapper for ogg.
+# Daniel Holth <dholth@fastmail.fm>, Mar. 2004
+
 def document(element, blurb):
 	"""Add a docstring to a definition"""
 	element._Attribute('doc', blurb)
 
-Include("oggpy_wrappers.h")
-Include("oggcc.h")
-
-# oggpy    = AllFromHeader("oggcc.h")
-
-# exclude(oggpy.oggpack_base)
-# exclude(oggpy.oggpack_base.get_data)
-# exclude(oggpy.oggpack_base.get_buffer)
-# exclude(oggpy.oggpack.get_buffer)
-# exclude(oggpy.oggpack.get_data)
-# exclude(oggpy.oggpackB.get_buffer)
-# exclude(oggpy.oggpackB.get_data)
-# exclude(oggpy.packet.data)
-# exclude(oggpy.packet.get_data)
-# exclude(oggpy.page.data)
-# exclude(oggpy.page.get_data)
-# exclude(oggpy.stream.data)
-# exclude(oggpy.sync.buffer)
-# exclude(oggpy.sync.data)
-# exclude(oggpy.sync.wrote)
-# exclude(oggpy.userpacket.get_data)
-#
-# syncwrite = Function("ogg::sync_write", "oggpy_wrappers.h")
-# oggpy.syncwrite = syncwrite
-#
-# document(oggpy.sync, "Separate streams into ogg pages")
-# document(oggpy.sync.pageout, "Produce a page.")
-#
-# add_method(oggpy.sync, "sync_write")
-
-# New AllFromHeader-free version:
-    
 packet       = Class("ogg::packet", "oggcc.h")
 userpacket   = Class("ogg::userpacket", "oggcc.h")
 oggpack_base = Class("ogg::oggpack_base", "oggcc.h")

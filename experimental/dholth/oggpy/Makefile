@@ -3,9 +3,9 @@ BOOST_HEADER_DIR=/home/dholth/opt/include/boost-1_31
 
 all: module
 
-multiple: oggpy.pyste vorbispy.pyste theorapy.pyste
-	pyste --multiple --module=oggpy --out=oggpy -I. -I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I$(HOME)/include/theora \
-	oggpy.pyste vorbispy.pyste theorapy.pyste
+#multiple: oggpy.pyste vorbispy.pyste theorapy.pyste
+#	pyste --multiple --module=oggpy --out=oggpy -I. -I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I$(HOME)/include/theora \
+#	oggpy.pyste vorbispy.pyste theorapy.pyste
 
 oggpy.cpp: oggpy_wrappers.h oggcc.cc oggcc.h oggpy.pyste
 	pyste --module=oggpy --out=oggpy.cpp -I. -I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) oggpy.pyste
@@ -17,7 +17,10 @@ theorapy.cpp: oggcc.cc oggcc.h theoracc.h theorapy.pyste
 	pyste --module=theorapy --out=theorapy.cpp -I. \
 	-I$(PYTHON_HEADER_DIR) -I$(BOOST_HEADER_DIR) -I$(HOME)/include/theora  theorapy.pyste
 
-module: oggpy.cpp vorbispy.cpp theorapy.cpp oggcc.cc oggcc.h vorbispy_wrappers.cc vorbispy_wrappers.h
+module: theorapy.cpp oggpy.cpp vorbispy.cpp
+	python ./setup.py build
+
+bridge:
 	python ./setup.py build
 
 webcode: tests/*.py

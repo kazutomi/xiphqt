@@ -6,11 +6,10 @@
 # 20 Jan. 2004
 
 import oggpy
+import vorbispy
 import sys
 
-oggpy.sync.write = oggpy.sync_write
-
-def test(ogg = open("test.ogg", "rb")):
+def test(ogg = open("music.ogg", "rb")):
     sync = oggpy.sync()
     page = oggpy.page()
     pkt  = oggpy.packet()
@@ -21,8 +20,8 @@ def test(ogg = open("test.ogg", "rb")):
         raise "Input doesn't seem to be an ogg bitstream."
 
     strm = oggpy.stream(page.serialno())
-    info = oggpy.info()
-    cmt  = oggpy.comment()
+    info = vorbispy.info()
+    cmt  = vorbispy.comment()
 
     print "pagein",     strm.pagein(page)
     print "packetout",  strm.packetout(pkt)
@@ -44,8 +43,8 @@ def test(ogg = open("test.ogg", "rb")):
                 i = i + 1
         sync.write(ogg.read(4096))
 
-    print cmt.query_count("artist")
-    print oggpy.get_comments(cmt)
+    print cmt.query_count("artist"), " 'artist' tag[s]"
+    print cmt.get_comments()
 
 
 if __name__ == "__main__":
