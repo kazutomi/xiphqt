@@ -1,4 +1,4 @@
-- 0.0.2		2001-06-15
+- 0.1.0		2001-06-15
 	- Reencoder updated to new LAME API of 3.88.
 	- new option --with-xmlconfig when building to locate xml libraries
 	- configure looks for python 2
