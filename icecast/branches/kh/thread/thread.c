@@ -373,140 +373,18 @@ void thread_mutex_destroy (mutex_t *mutex)
 void thread_mutex_lock_c(mutex_t *mutex, int line, char *file)
 {
 #ifdef THREAD_DEBUG
+    LOG_DEBUG3("Lock on %s requested at %s:%d", mutex->name, file, line);
+#endif
+    _mutex_lock(mutex);
+#ifdef THREAD_DEBUG
     mutex->lock_start = get_count();
     mutex->file = strdup (file);
     mutex->line = line;
-#if 0
-    thread_type *th = thread_self();
-
-    if (!th) LOG_WARN("No mt record for %u in lock [%s:%d]", thread_self(), file, line);
-
-    LOG_DEBUG5("Locking %p (%s) on line %d in file %s by thread %d", mutex, mutex->name, line, file, th ? th->thread_id : -1);
-
-# ifdef CHECK_MUTEXES
-    /* Just a little sanity checking to make sure that we're locking
-    ** mutexes correctly
-    */
-
-    if (th) {
-        int locks = 0;
-        avl_node *node;
-        mutex_t *tmutex;
-
-        _mutex_lock(&_mutextree_mutex);
-
-        node = avl_get_first (_mutextree);
-        
-        while (node) {
-            tmutex = (mutex_t *)node->key;
-
-            if (tmutex->mutex_id == mutex->mutex_id) {
-                if (tmutex->thread_id == th->thread_id) { 
-                    /* Deadlock, same thread can't lock the same mutex twice */
-                    LOG_ERROR7("DEADLOCK AVOIDED (%d == %d) on mutex [%s] in file %s line %d by thread %d [%s]", 
-                         tmutex->thread_id, th->thread_id, mutex->name ? mutex->name : "undefined", file, line, th->thread_id, th->name);
-
-                    _mutex_unlock(&_mutextree_mutex);
-                    return;
-                }
-            } else if (tmutex->thread_id == th->thread_id) { 
-                /* Mutex locked by this thread (not this mutex) */
-                locks++;
-            }
-
-            node = avl_get_next(node);
-        }
-
-        if (locks > 0) { 
-            /* Has already got a mutex locked */
-            if (_multi_mutex.thread_id != th->thread_id) {
-                /* Tries to lock two mutexes, but has not got the double mutex, norty boy! */
-                LOG_WARN("(%d != %d) Thread %d [%s] tries to lock a second mutex [%s] in file %s line %d, without locking double mutex!",
-                     _multi_mutex.thread_id, th->thread_id, th->thread_id, th->name, mutex->name ? mutex->name : "undefined", file, line);
-            }
-        }
-        
-        _mutex_unlock(&_mutextree_mutex);
-    }
-# endif /* CHECK_MUTEXES */
-    
-    _mutex_lock(mutex);
-    
-    _mutex_lock(&_mutextree_mutex);
-
-    LOG_DEBUG2("Locked %p by thread %d", mutex, th ? th->thread_id : -1);
-    mutex->line = line;
-    if (th) {
-        mutex->thread_id = th->thread_id;
-    }
-
-    _mutex_unlock(&_mutextree_mutex);
-#endif
-    _mutex_lock(mutex);
-#endif /* DEBUG_MUTEXES */
+#endif /* THREAD_DEBUG */
 }
 
 void thread_mutex_unlock_c(mutex_t *mutex, int line, char *file)
 {
-#if 0
-    thread_type *th = thread_self();
-
-    if (!th) {
-        LOG_ERROR3("No record for %u in unlock [%s:%d]", thread_self(), file, line);
-    }
-
-    LOG_DEBUG5("Unlocking %p (%s) on line %d in file %s by thread %d", mutex, mutex->name, line, file, th ? th->thread_id : -1);
-
-    mutex->line = line;
-
-# ifdef CHECK_MUTEXES
-    if (th) {
-        int locks = 0;
-        avl_node *node;
-        mutex_t *tmutex;
-
-        _mutex_lock(&_mutextree_mutex);
-
-        while (node) {
-            tmutex = (mutex_t *)node->key;
-
-            if (tmutex->mutex_id == mutex->mutex_id) {
-                if (tmutex->thread_id != th->thread_id) {
-                    LOG_ERROR7("ILLEGAL UNLOCK (%d != %d) on mutex [%s] in file %s line %d by thread %d [%s]", tmutex->thread_id, th->thread_id, 
-                         mutex->name ? mutex->name : "undefined", file, line, th->thread_id, th->name);
-                    _mutex_unlock(&_mutextree_mutex);
-                    return;
-                }
-            } else if (tmutex->thread_id == th->thread_id) {
-                locks++;
-            }
-
-            node = avl_get_next (node);
-        }
-
-        if ((locks > 0) && (_multi_mutex.thread_id != th->thread_id)) {
-            /* Don't have double mutex, has more than this mutex left */
-        
-            LOG_WARN("(%d != %d) Thread %d [%s] tries to unlock a mutex [%s] in file %s line %d, without owning double mutex!",
-                 _multi_mutex.thread_id, th->thread_id, th->thread_id, th->name, mutex->name ? mutex->name : "undefined", file, line);
-        }
-
-        _mutex_unlock(&_mutextree_mutex);
-    }
-# endif  /* CHECK_MUTEXES */
-
-    _mutex_unlock(mutex);
-
-    _mutex_lock(&_mutextree_mutex);
-
-    LOG_DEBUG2("Unlocked %p by thread %d", mutex, th ? th->thread_id : -1);
-    mutex->line = -1;
-    if (mutex->thread_id == th->thread_id) {
-        mutex->thread_id = MUTEX_STATE_NOTLOCKED;
-    }
-
-    _mutex_unlock(&_mutextree_mutex);
-#endif /* DEBUG_MUTEXES */
     _mutex_unlock(mutex);
 #ifdef THREAD_DEBUG
     LOG_DEBUG4 ("lock %s, at %s:%d lasted %llu", mutex->name, mutex->file,
