@@ -1,0 +1,14 @@
+
+Files claire.* are the origianl frames of claire
+sequence in QCIF format with 5 Hz frame rate
+(obtained by skipping 4 frames).
+
+Frames label_claire are the label images of segmentation
+of frames claire.*. Hence label_claire.1 is the segmentation
+of frame claire.1, etc. Segmentation frames are in unsigned
+char format and pixels of the same region are labelled using
+the same greylevel.
+
+Let us do some motion estimation
+
+Jacek Nieweglowski
