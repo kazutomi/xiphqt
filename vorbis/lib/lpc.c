@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
   function: LPC low level routines
-  last mod: $Id: lpc.c,v 1.37 2003/03/08 07:15:32 xiphmont Exp $
+  last mod: $Id: lpc.c,v 1.25 2000/08/23 10:16:57 xiphmont Exp $
 
  ********************************************************************/
 
@@ -58,31 +59,30 @@ Carsten Bormann
 /* Input : n elements of time doamin data
    Output: m lpc coefficients, excitation energy */
 
-float vorbis_lpc_from_data(float *data,float *lpci,int n,int m){
-  double *aut=alloca(sizeof(*aut)*(m+1));
-  double *lpc=alloca(sizeof(*lpc)*(m));
+double vorbis_lpc_from_data(double *data,double *lpc,int n,int m){
+  double *aut=alloca(sizeof(double)*(m+1));
   double error;
   int i,j;
 
   /* autocorrelation, p+1 lag coefficients */
+
   j=m+1;
   while(j--){
-    double d=0; /* double needed for accumulator depth */
-    for(i=j;i<n;i++)d+=(double)data[i]*data[i-j];
+    double d=0;
+    for(i=j;i<n;i++)d+=data[i]*data[i-j];
     aut[j]=d;
   }
   
   /* Generate lpc coefficients from autocorr values */
 
   error=aut[0];
+  if(error==0){
+    memset(lpc,0,m*sizeof(double));
+    return 0;
+  }
   
   for(i=0;i<m;i++){
-    double r= -aut[i+1];
-
-    if(error==0){
-      memset(lpci,0,m*sizeof(*lpci));
-      return 0;
-    }
+    double r=-aut[i+1];
 
     /* Sum up this iteration's reflection coefficient; note that in
        Vorbis we don't save it.  If anyone wants to recycle this code
@@ -97,37 +97,88 @@ float vorbis_lpc_from_data(float *data,float *lpci,int n,int m){
     lpc[i]=r;
     for(j=0;j<i/2;j++){
       double tmp=lpc[j];
-
       lpc[j]+=r*lpc[i-1-j];
       lpc[i-1-j]+=r*tmp;
     }
     if(i%2)lpc[j]+=lpc[j]*r;
-
-    error*=1.f-r*r;
+    
+    error*=1.0-r*r;
   }
-
-  for(j=0;j<m;j++)lpci[j]=(float)lpc[j];
-
+  
   /* we need the error value to know how big an impulse to hit the
      filter with later */
   
   return error;
 }
 
-void vorbis_lpc_predict(float *coeff,float *prime,int m,
-                     float *data,long n){
+/* Input : n element envelope spectral curve
+   Output: m lpc coefficients, excitation energy */
+
+double vorbis_lpc_from_curve(double *curve,double *lpc,lpc_lookup *l){
+  int n=l->ln;
+  int m=l->m;
+  double *work=alloca(sizeof(double)*(n+n));
+  double fscale=.5/n;
+  int i,j;
+  
+  /* input is a real curve. make it complex-real */
+  /* This mixes phase, but the LPC generation doesn't care. */
+  for(i=0;i<n;i++){
+    work[i*2]=curve[i]*fscale;
+    work[i*2+1]=0;
+  }
+  work[n*2-1]=curve[n-1]*fscale;
+  
+  n*=2;
+  drft_backward(&l->fft,work);
+
+  /* The autocorrelation will not be circular.  Shift, else we lose
+     most of the power in the edges. */
+  
+  for(i=0,j=n/2;i<n/2;){
+    double temp=work[i];
+    work[i++]=work[j];
+    work[j++]=temp;
+  }
+  
+  /* we *could* shave speed here by skimping on the edges (thus
+     speeding up the autocorrelation in vorbis_lpc_from_data) but we
+     don't right now. */
+
+  return(vorbis_lpc_from_data(work,lpc,n,m));
+}
+
+void lpc_init(lpc_lookup *l,long mapped, int m){
+  memset(l,0,sizeof(lpc_lookup));
+
+  l->ln=mapped;
+  l->m=m;
+
+  /* we cheat decoding the LPC spectrum via FFTs */  
+  drft_init(&l->fft,mapped*2);
+
+}
+
+void lpc_clear(lpc_lookup *l){
+  if(l){
+    drft_clear(&l->fft);
+  }
+}
+
+void vorbis_lpc_predict(double *coeff,double *prime,int m,
+                     double *data,long n){
 
   /* in: coeff[0...m-1] LPC coefficients 
          prime[0...m-1] initial values (allocated size of n+m-1)
     out: data[0...n-1] data samples */
 
   long i,j,o,p;
-  float y;
-  float *work=alloca(sizeof(*work)*(m+n));
+  double y;
+  double *work=alloca(sizeof(double)*(m+n));
 
   if(!prime)
     for(i=0;i<m;i++)
-      work[i]=0.f;
+      work[i]=0.;
   else
     for(i=0;i<m;i++)
       work[i]=prime[i];
@@ -142,8 +193,3 @@ void vorbis_lpc_predict(float *coeff,float *prime,int m,
     data[i]=work[o]=y;
   }
 }
-
-
-
-
-

@@ -19,7 +19,7 @@ size_t fread_func(void *ptr, size_t size, size_t nmemb, void *stream) {
 }
 
 
-int fseek_func(void *stream, ogg_int64_t offset, int whence) {
+int fseek_func(void *stream, int64_t offset, int whence) {
   int ret;
   InputStream* input=(InputStream*) stream;
 

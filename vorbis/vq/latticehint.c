@@ -1,17 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: utility main for building thresh/pigeonhole encode hints
- last mod: $Id: latticehint.c,v 1.12 2001/12/20 01:00:39 segher Exp $
+ last mod: $Id: latticehint.c,v 1.2 2000/08/15 09:09:44 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,6 +21,8 @@
 #include <math.h>
 #include <string.h>
 #include <errno.h>
+#include "vorbis/codebook.h"
+#include "../lib/sharedbook.h"
 #include "../lib/scales.h"
 #include "bookutil.h"
 #include "vqgen.h"
@@ -40,7 +43,7 @@
      to the threshhold hint 
 
    command line:
-   latticehint book.vqh [threshlist]
+   latticehint book.vqh
 
    latticehint produces book.vqh on stdout */
 
@@ -55,10 +58,10 @@ static int addtosearch(int entry,long **tempstack,long *tempcount,int add){
   if(ptr){
     while(i--)
       if(*ptr++==add)return(0);
-    tempstack[entry]=_ogg_realloc(tempstack[entry],
+    tempstack[entry]=realloc(tempstack[entry],
 			     (tempcount[entry]+1)*sizeof(long));
   }else{
-    tempstack[entry]=_ogg_malloc(sizeof(long));
+    tempstack[entry]=malloc(sizeof(long));
   }
 
   tempstack[entry][tempcount[entry]++]=add;
@@ -66,10 +69,10 @@ static int addtosearch(int entry,long **tempstack,long *tempcount,int add){
 }
 
 static void setvals(int dim,encode_aux_pigeonhole *p,
-		    long *temptrack,float *tempmin,float *tempmax,
+		    long *temptrack,double *tempmin,double *tempmax,
 		    int seqp){
   int i;
-  float last=0.f;
+  double last=0.;
   for(i=0;i<dim;i++){
     tempmin[i]=(temptrack[i])*p->del+p->min+last;
     tempmax[i]=tempmin[i]+p->del;
@@ -81,12 +84,12 @@ static void setvals(int dim,encode_aux_pigeonhole *p,
    quantize outside the pigeonmap are dropped and brute-forced.  So we
    can ignore the <0 and >=n boundary cases in min/max error */
 
-static float minerror(int dim,float *a,encode_aux_pigeonhole *p,
-		       long *temptrack,float *tempmin,float *tempmax){
+static double minerror(int dim,double *a,encode_aux_pigeonhole *p,
+		       long *temptrack,double *tempmin,double *tempmax){
   int i;
-  float err=0.f;
+  double err=0.;
   for(i=0;i<dim;i++){
-    float eval=0.f;
+    double eval=0.;
     if(a[i]<tempmin[i]){
       eval=tempmin[i]-a[i];
     }else if(a[i]>tempmax[i]){
@@ -97,17 +100,17 @@ static float minerror(int dim,float *a,encode_aux_pigeonhole *p,
   return(err);
 }
 
-static float maxerror(int dim,float *a,encode_aux_pigeonhole *p,
-		       long *temptrack,float *tempmin,float *tempmax){
+static double maxerror(int dim,double *a,encode_aux_pigeonhole *p,
+		       long *temptrack,double *tempmin,double *tempmax){
   int i;
-  float err=0.f,eval;
+  double err=0.,eval;
   for(i=0;i<dim;i++){
     if(a[i]<tempmin[i]){
       eval=tempmax[i]-a[i];
     }else if(a[i]>tempmax[i]){
       eval=a[i]-tempmin[i];
     }else{
-      float t1=a[i]-tempmin[i];
+      double t1=a[i]-tempmin[i];
       eval=tempmax[i]-a[i];
       if(t1>eval)eval=t1;
     }
@@ -120,16 +123,17 @@ int main(int argc,char *argv[]){
   codebook *b;
   static_codebook *c;
   int entries=-1,dim=-1;
-  float min,del;
+  double min,del;
   char *name;
   long i,j;
-  float *suggestions;
-  int suggcount=0;
+  long dB=0;
 
   if(argv[1]==NULL){
     fprintf(stderr,"Need a lattice book on the command line.\n");
     exit(1);
   }
+
+  if(argv[2])dB=1;
 
   {
     char *ptr;
@@ -162,27 +166,14 @@ int main(int argc,char *argv[]){
     /* yes. Discard any preexisting threshhold hint */
     long quantvals=_book_maptype1_quantvals(c);
     long **quantsort=alloca(quantvals*sizeof(long *));
-    encode_aux_threshmatch *t=_ogg_calloc(1,sizeof(encode_aux_threshmatch));
+    encode_aux_threshmatch *t=calloc(1,sizeof(encode_aux_threshmatch));
     c->thresh_tree=t;
 
     fprintf(stderr,"Adding threshold hint to %s...\n",name);
 
-    /* partial/complete suggestions */
-    if(argv[2]){
-      char *ptr=strdup(argv[2]);
-      suggestions=alloca(sizeof(float)*quantvals);
-			 
-      for(suggcount=0;ptr && suggcount<quantvals;suggcount++){
-	char *ptr2=strchr(ptr,',');
-	if(ptr2)*ptr2++='\0';
-	suggestions[suggcount]=atof(ptr);
-	ptr=ptr2;
-      }
-    }
-
     /* simplest possible threshold hint only */
-    t->quantthresh=_ogg_calloc(quantvals-1,sizeof(float));
-    t->quantmap=_ogg_calloc(quantvals,sizeof(int));
+    t->quantthresh=calloc(quantvals-1,sizeof(double));
+    t->quantmap=calloc(quantvals,sizeof(int));
     t->threshvals=quantvals;
     t->quantvals=quantvals;
 
@@ -193,37 +184,35 @@ int main(int argc,char *argv[]){
     /* ok, gen the map and thresholds */
     for(i=0;i<quantvals;i++)t->quantmap[i]=quantsort[i]-c->quantlist;
     for(i=0;i<quantvals-1;i++){
-      float v1=*(quantsort[i])*del+min;
-      float v2=*(quantsort[i+1])*del+min;
-      
-      for(j=0;j<suggcount;j++)
-	if(v1<suggestions[j] && suggestions[j]<v2){
-	  t->quantthresh[i]=suggestions[j];
-	  break;
-	}
-      
-      if(j==suggcount){
+      double v1=*(quantsort[i])*del+min;
+      double v2=*(quantsort[i+1])*del+min;
+      if(dB){
+	if(fabs(v1)<.01)v1=(v1+v2)*.5;
+	if(fabs(v2)<.01)v2=(v1+v2)*.5;
+	t->quantthresh[i]=fromdB((todB(v1)+todB(v2))*.5);
+	if(v1<0 || v2<0)t->quantthresh[i]*=-1;
+
+      }else{
 	t->quantthresh[i]=(v1+v2)*.5;
       }
     }
   }
 
   /* Do we want to gen a pigeonhole hint? */
-#if 0
   for(i=0;i<entries;i++)if(c->lengthlist[i]==0)break;
   if(c->q_sequencep || i<entries){
     long **tempstack;
     long *tempcount;
     long *temptrack;
-    float *tempmin;
-    float *tempmax;
+    double *tempmin;
+    double *tempmax;
     long totalstack=0;
     long pigeons;
     long subpigeons;
     long quantvals=_book_maptype1_quantvals(c);
     int changep=1,factor;
 
-    encode_aux_pigeonhole *p=_ogg_calloc(1,sizeof(encode_aux_pigeonhole));
+    encode_aux_pigeonhole *p=calloc(1,sizeof(encode_aux_pigeonhole));
     c->pigeon_tree=p;
 
     fprintf(stderr,"Adding pigeonhole hint to %s...\n",name);
@@ -248,18 +237,18 @@ int main(int argc,char *argv[]){
       for(i=0;i<quantvals;i++)if(max<c->quantlist[i])max=c->quantlist[i];
       p->mapentries=max;
     }
-    p->pigeonmap=_ogg_malloc(p->mapentries*sizeof(long));
+    p->pigeonmap=malloc(p->mapentries*sizeof(long));
     p->quantvals=(quantvals+factor-1)/factor;
 
     /* pigeonhole roughly on the boundaries of the quantvals; the
        exact pigeonhole grouping is an optimization issue, not a
        correctness issue */
     for(i=0;i<p->mapentries;i++){
-      float thisval=del*i+min; /* middle of the quant zone */
+      double thisval=del*i+min; /* middle of the quant zone */
       int quant=0;
-      float err=fabs(c->quantlist[0]*del+min-thisval);
+      double err=fabs(c->quantlist[0]*del+min-thisval);
       for(j=1;j<quantvals;j++){
-	float thiserr=fabs(c->quantlist[j]*del+min-thisval);
+	double thiserr=fabs(c->quantlist[j]*del+min-thisval);
 	if(thiserr<err){
 	  quant=j/factor;
 	  err=thiserr;
@@ -285,14 +274,14 @@ int main(int argc,char *argv[]){
     subpigeons=1;
     for(i=0;i<dim;i++)subpigeons*=p->mapentries;
     for(i=0;i<dim;i++)pigeons*=p->quantvals;
-    temptrack=_ogg_calloc(dim,sizeof(long));
-    tempmin=_ogg_calloc(dim,sizeof(float));
-    tempmax=_ogg_calloc(dim,sizeof(float));
-    tempstack=_ogg_calloc(pigeons,sizeof(long *));
-    tempcount=_ogg_calloc(pigeons,sizeof(long));
+    temptrack=calloc(dim,sizeof(long));
+    tempmin=calloc(dim,sizeof(double));
+    tempmax=calloc(dim,sizeof(double));
+    tempstack=calloc(pigeons,sizeof(long *));
+    tempcount=calloc(pigeons,sizeof(long));
 
     while(1){
-      float errorpost=-1;
+      double errorpost=-1;
       char buffer[80];
 
       /* map our current pigeonhole to a 'big pigeonhole' so we know
@@ -307,7 +296,7 @@ int main(int argc,char *argv[]){
          maximum error.  Record that error */
       for(i=0;i<entries;i++){
 	if(c->lengthlist[i]>0){
-	  float this=maxerror(dim,b->valuelist+i*dim,p,
+	  double this=maxerror(dim,b->valuelist+i*dim,p,
 			       temptrack,tempmin,tempmax);
 	  if(errorpost==-1 || this<errorpost)errorpost=this;
 	  spinnit(buffer,subpigeons);
@@ -340,7 +329,7 @@ int main(int argc,char *argv[]){
        improbable is determined by c->lengthlist; we assume that
        pigeonholing is in sync with the codeword cells, which it is */
     /*for(i=0;i<entries;i++){
-      float probability= 1.f/(1<<c->lengthlist[i]);
+      double probability= 1./(1<<c->lengthlist[i]);
       if(c->lengthlist[i]==0 || probability*entries<cutoff){
 	totalstack-=tempcount[i];
 	tempcount[i]=0;
@@ -349,7 +338,7 @@ int main(int argc,char *argv[]){
 
     /* pare the list of shortlists; merge contained and similar lists
        together */
-    p->fitmap=_ogg_malloc(pigeons*sizeof(long));
+    p->fitmap=malloc(pigeons*sizeof(long));
     for(i=0;i<pigeons;i++)p->fitmap[i]=-1;
     while(changep){
       char buffer[80];
@@ -399,8 +388,8 @@ int main(int argc,char *argv[]){
     
 
     p->fittotal=totalstack;
-    p->fitlist=_ogg_malloc((totalstack+1)*sizeof(long));
-    p->fitlength=_ogg_malloc(pigeons*sizeof(long));
+    p->fitlist=malloc((totalstack+1)*sizeof(long));
+    p->fitlength=malloc(pigeons*sizeof(long));
     {
       long usage=0;
       for(i=0;i<pigeons;i++){
@@ -421,7 +410,6 @@ int main(int argc,char *argv[]){
       }
     }
   }
-#endif
 
   write_codebook(stdout,name,c); 
   fprintf(stderr,"\r                                                     "
