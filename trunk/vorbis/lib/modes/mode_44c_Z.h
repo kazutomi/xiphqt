@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: predefined encoding modes; 44kHz stereo ~64kbps true VBR
- last mod: $Id: mode_44c_Z.h,v 1.4 2001/08/13 02:03:16 xiphmont Exp $
+ last mod: $Id: mode_44c_Z.h,v 1.5 2001/08/13 06:04:24 xiphmont Exp $
 
  ********************************************************************/
 
@@ -214,7 +214,7 @@ static vorbis_info_floor1 _floor_set_44c_Z={
   60,30,400,
   20,8,1,18.,
   20,600,
-  720};
+  704};
 
 static vorbis_info_residue0 _residue_set_44c_Z0={
   0,180, 12, 10,23,
