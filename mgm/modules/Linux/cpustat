@@ -95,7 +95,7 @@ sub module_init{
 	$toplevel->optionAdd("$xpath.bar.0.label", "cpus 0-".($numcpus-1),22);
     }else{
 	for(my$i=0;$i<$numcpus;$i++){
-	    $toplevel->optionAdd("$xpath.bar.$i.label", "cpu $i",22);
+	    $toplevel->optionAdd("$xpath.bar.$i.label", "cpu$i",22);
 	}
     }
 
@@ -107,3 +107,4 @@ sub module_init{
 }
 
 bless {};
+

@@ -25,7 +25,7 @@ sub module_init{
     $toplevel->optionAdd("$xpath.scalelenadj", 10,21); 
     $toplevel->optionAdd("$xpath*font",             
 			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-    $toplevel->optionAdd("$xpath*refresh",        80,20);      
+    $toplevel->optionAdd("$xpath*scalerefresh",        80,20);      
     $toplevel->optionAdd("$xpath*order",        0,20);
 
     # use our font and find the labelsize...

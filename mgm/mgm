@@ -39,12 +39,13 @@ $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
 $toplevel->optionAdd("$Xname*scale",            'true',20);
 $toplevel->optionAdd("$Xname*scalejustify",     '1',20);
-$toplevel->optionAdd("$Xname*scalethresh",      '10',20);
+$toplevel->optionAdd("$Xname*scalethresh",      '4',20);
 $toplevel->optionAdd("$Xname*scalelenadj",      '100',20);
 $toplevel->optionAdd("$Xname*scalewidadj",      '100',20);
 $toplevel->optionAdd("$Xname*scalecolor",       'yellow',20);
-$toplevel->optionAdd("$Xname*scroll",          'true',20);
-$toplevel->optionAdd("$Xname*refresh",          '250',20);
+$toplevel->optionAdd("$Xname*scalescroll",          'true',20);
+$toplevel->optionAdd("$Xname*scalerefresh",          '250',20);
+$toplevel->optionAdd("$Xname*scalereturn",           '8',20);  # 2 seconds
 
 
 $toplevel->optionAdd("$Xname*bar*dimbackground",'#313656',20);
@@ -355,7 +356,7 @@ sub build_and_run{
 		    $mod->{"widget"}=$ret; # must store the widget
 		    $ret->place('-x'=>$x,'-y'=>$y,-anchor=>'nw');
 
-		    my$refresh=$ret->optionGet("refresh","Refresh");
+		    my$refresh=$ret->optionGet("scalerefresh","");
 		    $ret->repeat($refresh,sub{$mod->module_update});
 
 		}

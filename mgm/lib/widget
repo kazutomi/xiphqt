@@ -349,6 +349,8 @@ sub new{
     my $ret=\%graph;
     bless $ret, 'MGM::Graph';
     $graph{"parent"}=$p->{"toplevel"};
+    $graph{"scaletimer"}=0;
+    $graph{"scalemax"}=0;
 
     $ret->configure(@_);
     $ret;
@@ -613,12 +615,12 @@ sub set{
     my$metermax;
     my$length=$this->{"barlength"};
     my$widget=$this->{"widget"};
-    my$ethresh=$widget->optionGet("scalethresh","");
+
     my$scalep=0;
     my$scrollp=1;
 
     $scalep=1 if ($widget->optionGet("scale","") eq 'true');
-    $scroll=0 if ($widget->optionGet("scroll","") eq 'false');
+    $scroll=0 if ($widget->optionGet("scalescroll","") eq 'false');
 
     # length is in barlength
     # current scale setting in rangecurrent
@@ -640,26 +642,51 @@ sub set{
     }
 
     if(!$this->{"fixed"}){
+    # scale hysteresis
+	my$ethresh=$widget->optionGet("scalethresh","");
+	my$scalereturn=$widget->optionGet("scalereturn","");
+	my$scaletimer=$this->{"scaletimer"}+1;
+	my$scalemax=$this->{"scalemax"};
+
 	my$flag=0;
-	if($metermax>$this->{"rangesetting"}){
+	while($metermax>$this->{"rangesetting"}){
 	    $this->{"rangesetting"}*=2;
-	    $this->{"rangediff"}=$this->{"rangesetting"}-$this->{"rangecurrent"};
+	    $scaletimer=0; # reset the timer
+	    $scalemax=$metermax;
 	    $flag=1;
 	}
 	
-	if($this->{"rangesetting"}>1 && 
-	   $metermax*$ethresh<$this->{"rangesetting"}){
-	    $this->{"rangesetting"}/=2;
-	    $this->{"rangesetting"}=1 if($this->{"rangesetting"}<1);
-	    $this->{"rangediff"}=$this->{"rangesetting"}-$this->{"rangecurrent"};
-	    $flag=1;
+	# check to see if we need to lower the scale.  first, have we 
+	# timed out?
+
+	if($scaletimer>=$scalereturn && 	       
+	   $this->{"rangesetting"}==$this->{"rangecurrent"}){
+	    # we have. compare against the largest value in the past
+	    # hysteresis period
+	    
+	    if($this->{"rangesetting"}>1 && 
+		  $scalemax*$ethresh<$this->{"rangesetting"}){
+		
+		$this->{"rangesetting"}/=2;
+		$this->{"rangesetting"}=1 if($this->{"rangesetting"}<1);
+		$flag=1;
+	    }
+	    
+	    $scaletimer=0; # reset the timer
+	    $scalemax=0;	    
 	}
+
 	if($flag){
 	    my$val=int($this->{'rangesetting'});
 	    
 	    $this->{"numlabel"}->destroy;
 	    $this->{"numlabel"}=$this->promptlabel($val,$this->{'prompt'});
+	    $this->{"rangediff"}=$this->{"rangesetting"}-
+		$this->{"rangecurrent"};
 	}
+	$scalemax=$metermax if($scalemax<$metermax);
+	$this->{"scaletimer"}=$scaletimer;
+	$this->{"scalemax"}=$scalemax;
     }
 
     if($this->{"rangecurrent"}!=$this->{"rangesetting"}){
@@ -669,7 +696,7 @@ sub set{
 	    if(abs($this->{"rangecurrent"}/$this->{"rangesetting"}-1)<.02){
 		$this->{"rangecurrent"}=$this->{"rangesetting"};
 	    }else{
-		$this->{"rangecurrent"}+=$this->{"rangediff"}*.05;
+		$this->{"rangecurrent"}+=$this->{"rangediff"}*.1;
 	    }
 	}
 	my $orient=$main::orient;
@@ -687,9 +714,10 @@ sub set{
     
     if($this->{"rangecurrent"}!=$this->{"rangesetting"}){
 	$this->{"anitimer"}->cancel if(defined($this->{"anitimer"}));
-	$this->{"anitimer"}=$this->{"widget"}->after(20,sub{$this->set;});
+	$this->{"anitimer"}=$this->{"widget"}->after(30,sub{$this->set;});
     }
 }
 
 1;
+
 
