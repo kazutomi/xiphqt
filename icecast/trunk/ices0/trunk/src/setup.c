@@ -180,7 +180,6 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
   ices_config->port = ICES_DEFAULT_PORT;
   ices_config->password = ices_util_strdup (ICES_DEFAULT_PASSWORD);
   ices_config->header_protocol = ICES_DEFAULT_HEADER_PROTOCOL;
-  ices_config->dumpfile = NULL; /* No dumpfile by default */
   ices_config->configfile = ices_util_strdup (ICES_DEFAULT_CONFIGFILE);
   ices_config->daemon = ICES_DEFAULT_DAEMON;
   ices_config->base_directory = ices_util_strdup (ICES_DEFAULT_BASE_DIRECTORY);
@@ -201,25 +200,26 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
 
 /* Place hardcoded defaults into an ices_stream_config object */
 void
-ices_setup_parse_stream_defaults (ices_stream_config_t* ices_stream_config)
+ices_setup_parse_stream_defaults (ices_stream_config_t* stream)
 {
-  ices_stream_config->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
+  stream->mount = ices_util_strdup (ICES_DEFAULT_MOUNT);
+  stream->dumpfile = NULL;
   
-  ices_stream_config->name = ices_util_strdup (ICES_DEFAULT_NAME);
-  ices_stream_config->genre = ices_util_strdup (ICES_DEFAULT_GENRE);
-  ices_stream_config->description = ices_util_strdup (ICES_DEFAULT_DESCRIPTION);
-  ices_stream_config->url = ices_util_strdup (ICES_DEFAULT_URL);
-  ices_stream_config->ispublic = ICES_DEFAULT_ISPUBLIC;
+  stream->name = ices_util_strdup (ICES_DEFAULT_NAME);
+  stream->genre = ices_util_strdup (ICES_DEFAULT_GENRE);
+  stream->description = ices_util_strdup (ICES_DEFAULT_DESCRIPTION);
+  stream->url = ices_util_strdup (ICES_DEFAULT_URL);
+  stream->ispublic = ICES_DEFAULT_ISPUBLIC;
 
-  ices_stream_config->bitrate = ICES_DEFAULT_BITRATE;
-  ices_stream_config->reencode = ICES_DEFAULT_REENCODE;
-  ices_stream_config->out_numchannels = -1;
-  ices_stream_config->out_samplerate = -1;
+  stream->bitrate = ICES_DEFAULT_BITRATE;
+  stream->reencode = ICES_DEFAULT_REENCODE;
+  stream->out_numchannels = -1;
+  stream->out_samplerate = -1;
 
-  ices_stream_config->encoder_state = NULL;
-  ices_stream_config->encoder_initialised = 0;
+  stream->encoder_state = NULL;
+  stream->encoder_initialised = 0;
 
-  ices_stream_config->next = NULL;
+  stream->next = NULL;
 }
 
 /* Frees ices_stream_config_t data (but not the object itself) */
@@ -227,6 +227,7 @@ static void
 ices_setup_free_stream (ices_stream_config_t* stream)
 {
   ices_util_free (stream->mount);
+  ices_util_free (stream->dumpfile);
 
   ices_util_free (stream->name);
   ices_util_free (stream->genre);
@@ -242,7 +243,6 @@ ices_setup_free_all_allocations (ices_config_t *ices_config)
 
   ices_util_free (ices_config->host);
   ices_util_free (ices_config->password);
-  ices_util_free (ices_config->dumpfile);
   ices_util_free (ices_config->configfile);
   ices_util_free (ices_config->base_directory);
 
@@ -374,8 +374,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  break;
         case 'f':
 	  arg++;
-	  ices_util_free (ices_config->dumpfile);
-	  ices_config->dumpfile = ices_util_strdup (argv[arg]);
+	  ices_util_free (stream->dumpfile);
+	  stream->dumpfile = ices_util_strdup (argv[arg]);
 	  break;
         case 'g':
 	  arg++;
@@ -486,7 +486,7 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     stream->conn.password = ices_config->password;
     stream->conn.icy_compat =
       ices_config->header_protocol == icy_header_protocol_e;
-    stream->conn.dumpfile = ices_config->dumpfile;
+    stream->conn.dumpfile = stream->dumpfile;
     stream->conn.name = stream->name;
     stream->conn.url = stream->url;
     stream->conn.genre = stream->genre;

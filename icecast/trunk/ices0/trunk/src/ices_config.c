@@ -175,6 +175,9 @@ ices_xml_parse_stream_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     } else if (strcmp (cur->name, "Mountpoint") == 0) {
       ices_util_free (stream->mount);
       stream->mount = ices_util_strdup (ices_xml_read_node (doc, cur));
+    } else if (strcmp (cur->name, "Dumpfile") == 0) {
+      ices_util_free (stream->dumpfile);
+      stream->dumpfile = ices_util_strdup (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Bitrate") == 0) {
       stream->bitrate = atoi (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Public") == 0) {
@@ -216,9 +219,6 @@ ices_xml_parse_server_nodes (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur, ices_co
     } else if (strcmp (cur->name, "Password") == 0) {
       ices_util_free (ices_config->password);
       ices_config->password = ices_util_strdup (ices_xml_read_node (doc, cur));
-    } else if (strcmp (cur->name, "Dumpfile") == 0) {
-      ices_util_free (ices_config->dumpfile);
-      ices_config->dumpfile = ices_util_strdup (ices_xml_read_node (doc, cur));
     } else if (strcmp (cur->name, "Protocol") == 0) {
       unsigned char *str = ices_xml_read_node (doc, cur);
       if (str && (str[0] == 'i' || str[0] == 'I'))

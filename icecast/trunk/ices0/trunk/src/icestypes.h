@@ -35,6 +35,7 @@ typedef struct ices_stream_config_St {
   int encoder_initialised;
 
   char* mount;
+  char* dumpfile;
 
   char* name;
   char* genre;
@@ -70,7 +71,6 @@ typedef struct {
   int daemon;
   int verbose;
   int reencode;
-  char *dumpfile;
   char *configfile;
   char *base_directory;
   FILE *logfile;

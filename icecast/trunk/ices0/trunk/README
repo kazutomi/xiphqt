@@ -225,10 +225,18 @@ L</ices:Description>
                  Use this to force liblame reencoding to output mp3 data
                  with this samplerate.
                o Execution Channels
-                 Command line option: -N <number of channel>
+                 Command line option: -N <number of channels>
                  Config file tag: Execution/Channels
                  Use this to force liblame reencoding to output mp3 data
                  with this many channels.
+               o Stream Mountpoint
+                 Command line option: -m <mount point>
+		 Config file tag: Stream/Mountpoint
+                 This is the name of the mountpoint for this stream on the
+                 icecast server. Clients can access this stream at
+		 http://host:port/<mount point>.
+                 NOTE: This option does nothing if you are running in shoutcast
+                 compatibility mode.
                o Stream Name
                  Command line option: -n <stream name>
                  Config file tag: Stream/Name
