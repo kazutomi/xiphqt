@@ -82,11 +82,10 @@ ices_reencode_reset (input_stream_t* source)
     lame_set_in_samplerate (lame, source->samplerate);
     /* lame_init_params isn't more specific about the problem */
     if (lame_init_params (lame) < 0) {
-      ices_log ("Lame: error resetting sample rate.");
+      ices_log ("LAME: error resetting sample rate.");
       lame_close (lame);
       ices_setup_shutdown ();
     }
-    ices_log_debug ("Lame: reset");
   }
 }
 
@@ -155,22 +154,22 @@ reencode_lame_init ()
       continue;
 
     if (! (stream->encoder_state = lame_init ())) {
-      ices_log ("Error resetting LAME.");
+      ices_log ("LAME: error initializing encoder.");
       ices_setup_shutdown ();
     }
 
     lame = (lame_global_flags*) stream->encoder_state;
 
     lame_set_brate (lame, stream->bitrate);
-    if (stream->out_numchannels > 0)
-      lame_set_num_channels (lame, stream->out_numchannels);
+    if (stream->out_numchannels == 1)
+      lame_set_mode (lame, MONO);
     if (stream->out_samplerate > 0)
       lame_set_out_samplerate (lame, stream->out_samplerate);
     lame_set_original (lame, 0);
 
     /* lame_init_params isn't more specific about the problem */
     if (lame_init_params (lame) < 0) {
-      ices_log ("Error setting LAME parameters. Check bitrate, channels, and "
+      ices_log ("LAME: Error setting parameters. Check bitrate, channels, and "
 		"sample rate.");
       lame_close (lame);
       ices_setup_shutdown ();
