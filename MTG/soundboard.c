@@ -1,3 +1,10 @@
+/* Assumptions (Bad things the code does that work here, but might not
+   work elsewhere):
+
+   the atomic execution sections are a hack that can only work on uniprocessor
+
+*/
+
 /* TODO:
 
    make Esc behavior correct in editing menus by using temp cue/tag storage
@@ -7,18 +14,21 @@
    logarhythmic fades
    proper printing out of file loading issues
    abstracted output
-   allow sample name/tag change in edit menus
-*/
+   allow sample name/tag change in edit menus */
+#define CACHE_SAMPLES 44100*10
 #define _REENTRANT 1
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/file.h>
 #define __USE_GNU 1
 #include <pthread.h>
 #include <string.h>
@@ -30,17 +40,52 @@
 #include <sys/soundcard.h>
 #include <sys/ioctl.h>
 
+/* we need some cooperative multitasking to eliminate locking (and
+   thus latency) in the realtime playback thread.
+   pthread_setschedparam can give us this by way of implementing
+   atomic execution blocks.  Convention here is that an 'atomic
+   execution block' is actually a section wrapped in a realtime
+   schedule change with a priority of 90; to be effective, this must
+   be the highest realtime priority used in the application */
+
+static int original_priority;
+static int original_policy;
+#define BEGIN_ATOMIC \
+   { \
+     struct sched_param param; \
+     pthread_getschedparam(pthread_self(), &original_policy, &param); \
+     if(param.sched_priority==90){ \
+       fprintf(stderr,"ATOMIC sections do not stack at line %ld\n",__LINE__); \
+       exit(1); \
+     } \
+     original_priority=param.sched_priority; \
+     param.sched_priority=90; \
+     pthread_setschedparam(pthread_self(), SCHED_FIFO, &param); \
+   }
+
+#define END_ATOMIC \
+   { \
+     struct sched_param param; \
+     param.sched_priority=original_priority; \
+     pthread_setschedparam(pthread_self(), original_policy, &param); \
+   }
+
+
+
 #define int16 short
 static char *tempdir="/tmp/beaverphonic/";
 static char *lockfile="/tmp/beaverphonic/lock";
 //static char *installdir="/usr/local/beaverphonic/";
 static char *installdir="/home/xiphmont/MotherfishCVS/MTG/";
-#define VERSION "20020203.0"
+#define VERSION "$Id: soundboard.c,v 1.13 2003/10/02 17:11:58 xiphmont Exp $"
 
 enum menutype {MENU_MAIN,MENU_KEYPRESS,MENU_ADD,MENU_EDIT,MENU_OUTPUT,MENU_QUIT};
 
-pthread_mutex_t master_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+pthread_mutex_t cache_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 pthread_mutex_t rec_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+pthread_mutex_t mmap_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+pthread_cond_t cache_cond=PTHREAD_COND_INITIALIZER;
+
 static long main_master_volume=50;
 char *program;
 static int playback_buffer_minfill=0;
@@ -57,12 +102,14 @@ int ttyfd;
 int ttypipe[2];
 
 static inline void _playback_remove(int i);
+static void _cache_remove(int i);
 
 pthread_t main_thread_id;
 pthread_t playback_thread_id;
 pthread_t record_thread_id;
 pthread_t record_disk_thread_id;
 pthread_t tty_thread_id;
+pthread_t cache_thread_id;
 
 void main_update_tags(int y);
 
@@ -161,7 +208,7 @@ void edit_label(int number,char *t){
   strcpy(label->text,t);
 }
 
-void aquire_label(int number){
+void acquire_label(int number){
   _alloc_label_if_needed(number);
   label_list[number].refcount++;
 }
@@ -246,11 +293,14 @@ typedef struct {
 
   /* state */
   int    activep;
+  int    cachep;
   
   long   sample_position;
   long   sample_lapping;
   long   sample_loop_start;
   long   sample_fade_start;
+
+  long   cache_fill;
 
   double master_vol_current;
   double master_vol_target;
@@ -273,6 +323,9 @@ static int         tag_count;
 static tag       **active_list;
 static int         active_count;
 
+static tag       **cache_list;
+static int         cache_count;
+
 int new_tag_number(){
   int i;
   for(i=0;i<tag_count;i++)
@@ -283,13 +336,14 @@ int new_tag_number(){
 static void _alloc_tag_if_needed(int number){
   if(number>=tag_count){
     int prev=tag_count;
-    pthread_mutex_lock(&master_mutex);
+    BEGIN_ATOMIC
     tag_count=number+1;
     tag_list=m_realloc(tag_list,sizeof(*tag_list)*tag_count);
     active_list=m_realloc(active_list,sizeof(*active_list)*tag_count);
+    cache_list=m_realloc(cache_list,sizeof(*cache_list)*tag_count);
     
     memset(tag_list+prev,0,sizeof(*tag_list)*(tag_count-prev));
-    pthread_mutex_unlock(&master_mutex);
+    END_ATOMIC
   }
 }
 
@@ -317,7 +371,13 @@ int load_sample(tag *t,const char *path){
   buffer=alloca(strlen(installdir)+strlen(tmp)+strlen(path)+20);  
   fprintf(stderr,"\tcopying/converting...\n");
   sprintf(buffer,"%sconvert.pl \'%s\' \'%s\'",installdir,path,tmp);
-  ret=system(buffer);
+
+  if(fork()){
+    wait(&ret);
+  }else{
+    setuid(getuid());
+    _exit(system(buffer));
+  }
   if(ret)goto out;
   
   /* our temp file is a host-ordered 44.1kHz 16 bit PCM file, n
@@ -326,7 +386,7 @@ int load_sample(tag *t,const char *path){
   {
     FILE *cheat=fopen(tmp,"rb");
     struct sample_header head;
-    int count,i;
+    int count;
     int fd;
     long length;
     if(!cheat){
@@ -385,6 +445,13 @@ int load_sample(tag *t,const char *path){
       ret=-1;goto out;
     }
     t->data=t->basemap+sizeof(head);
+    if(madvise(t->basemap, 
+	       t->samplelength*sizeof(int16)*t->channels+sizeof(head),
+	       MADV_RANDOM)){
+      fprintf(stderr,"madvise() failed for %s mmap:\n\t%d (%s)\n",
+	      tmp,errno,strerror(errno));
+      ret=-1;goto out;
+    }
   }
   fprintf(stderr,"\tDONE\n\n");
   
@@ -395,15 +462,17 @@ int load_sample(tag *t,const char *path){
 
 int unload_sample(tag *t){
   /* is this sample currently playing back? */
-  pthread_mutex_lock(&master_mutex);
+  int i;
   if(t->activep){
-    int i;
     for(i=0;i<active_count;i++)
       if(active_list[i]==t)_playback_remove(i);
   }
-  pthread_mutex_unlock(&master_mutex);
+  if(t->cachep){
+    for(i=0;i<cache_count;i++)
+      if(cache_list[i]==t)_cache_remove(i);
+  }
 
-  /* unmap */
+  pthread_mutex_lock(&mmap_mutex);
   if(t->basemap)
     munmap(t->basemap,
 	   t->samplelength*sizeof(int16)*
@@ -413,12 +482,12 @@ int unload_sample(tag *t){
   t->data=NULL;
   t->samplelength=0;
   t->channels=0;
+  pthread_mutex_unlock(&mmap_mutex);
+
   return(0);
 }
 
 int edit_tag(int number,tag t){
-  int ret;
-  int refcount;
   _alloc_tag_if_needed(number);
 
   tag_list[number]=t;
@@ -427,7 +496,7 @@ int edit_tag(int number,tag t){
   return(0);
 }
 
-void aquire_tag(int number){
+void acquire_tag(int number){
   if(number<0)return;
   _alloc_tag_if_needed(number);
   tag_list[number].refcount++;
@@ -479,7 +548,7 @@ int save_tags(FILE *f){
 
 int load_tag(FILE *f){
   tag t;
-  int len,count,number;
+  int count,number;
   memset(&t,0,sizeof(t));
   
   count=fscanf(f,":%d %d %d %ld %ld %ld %ld",
@@ -489,13 +558,13 @@ int load_tag(FILE *f){
     addnlstr("LOAD ERROR (TAG): too few fields.",80,' ');
     return(-1);
   }
-  aquire_label(t.sample_path);
+  acquire_label(t.sample_path);
   if(load_sample(&t,label_text(t.sample_path))){
     release_label(t.sample_path);
     return(-1);
   }
   edit_tag(number,t);
-  aquire_label(t.sample_desc);
+  acquire_label(t.sample_desc);
 
   return(0);
 }
@@ -524,31 +593,30 @@ int                cue_count;
 int                cue_storage;
 
 void add_cue(int n,cue c){
-  int i;
 
   if(cue_count==cue_storage){
-    pthread_mutex_lock(&master_mutex);
+    BEGIN_ATOMIC
     cue_storage++;
     cue_storage*=2;
     cue_list=m_realloc(cue_list,cue_storage*sizeof(*cue_list));
-    pthread_mutex_unlock(&master_mutex);
+    END_ATOMIC
   }
 
   /* copy insert */
-  pthread_mutex_lock(&master_mutex);
+  BEGIN_ATOMIC
   if(cue_count-n)
     memmove(cue_list+n+1,cue_list+n,sizeof(*cue_list)*(cue_count-n));
   cue_count++;
 
   cue_list[n]=c;
-  pthread_mutex_unlock(&master_mutex);
+  END_ATOMIC
 }
 
 /* inefficient.  delete one, shift-copy list, delete one, shift-copy
    list, delete one, gaaaah.  Not worth optimizing */
 static void _delete_cue_helper(int n){
   if(n>=0 && n<cue_count){
-    pthread_mutex_lock(&master_mutex);
+    BEGIN_ATOMIC
     release_label(cue_list[n].label);
     release_label(cue_list[n].cue_text);
     release_label(cue_list[n].cue_desc);
@@ -556,7 +624,7 @@ static void _delete_cue_helper(int n){
     cue_count--;
     if(n<cue_count)
       memmove(cue_list+n,cue_list+n+1,sizeof(*cue_list)*(cue_count-n));
-    pthread_mutex_unlock(&master_mutex);
+    END_ATOMIC
   }
 }
 
@@ -624,7 +692,7 @@ int save_cues(FILE *f){
 
 int load_cue(FILE *f){
   cue c;
-  int len,count,i,j;
+  int count,i,j;
   int maxchannels,maxwavch;
   memset(&c,0,sizeof(c));
   
@@ -648,7 +716,6 @@ int load_cue(FILE *f){
 
   for(i=0;i<maxchannels;i++){
     int v;
-    long lv;
     char ch=' ';
     count=fscanf(f,"%c",&ch);
     if(count<0 || ch!='<'){
@@ -671,11 +738,11 @@ int load_cue(FILE *f){
     }
   }
   
-  aquire_label(c.label);
-  aquire_label(c.cue_text);
-  aquire_label(c.cue_desc);
+  acquire_label(c.label);
+  acquire_label(c.cue_text);
+  acquire_label(c.cue_desc);
 
-  aquire_tag(c.tag);
+  acquire_tag(c.tag);
   add_cue(cue_count,c);
 
   return(0);
@@ -683,7 +750,7 @@ int load_cue(FILE *f){
 
 int load_val(FILE *f, long *val){
   int count;
-  int t;  
+  long t;  
   count=fscanf(f,": %ld",&t);
   if(count<1){
     addnlstr("LOAD ERROR (VAL): missing field.",80,' ');
@@ -754,8 +821,8 @@ int save_program(FILE *f){
 
 /*************** threaded record ****************************/
 
-#define REC_SAMPLE_BYTES 2
-#define REC_SAMPLE_FMT AFMT_S16_LE
+#define REC_SAMPLE_BYTES 3
+#define REC_SAMPLE_FMT AFMT_S24_LE
 #define REC_SAMPLE_CH 2
 #define REC_BLOCK (REC_SAMPLE_CH * REC_SAMPLE_BYTES * 512) 
 unsigned char recordbuffer[REC_BLOCK*512];
@@ -851,7 +918,7 @@ void *record_disk_thread(void *dummy){
       /* update counters, alert dma that we have space in ring buffer */
       pthread_mutex_lock(&rec_buffer_mutex);
       record_tail+=REC_BLOCK;
-      if(record_tail>=sizeof(recordbuffer))record_tail=0;
+      if((unsigned)record_tail>=sizeof(recordbuffer))record_tail=0;
       record_count-=REC_BLOCK;
       pthread_cond_signal(&rec_buffer_cond);
       pthread_mutex_unlock(&rec_buffer_mutex);
@@ -920,9 +987,8 @@ void *record_thread(void *dummy){
   int format=REC_SAMPLE_FMT;
   int channels=2;
   int rate=44100;
-  long last=0;
   long totalsize;
-  int count=0,ret;
+  int ret;
   audio_buf_info info;
 
   ret=ioctl(fd,SNDCTL_DSP_SETFMT,&format);
@@ -981,9 +1047,8 @@ void *record_thread(void *dummy){
     pthread_mutex_lock(&rec_mutex);
     for(i=record_head;i<record_head+REC_BLOCK;)
       for(j=0;j<REC_SAMPLE_CH;j++){
-	//int val=((recordbuffer[i]<<8)|(recordbuffer[i+1]<<16)|(recordbuffer[i+2]<<24))>>8;
-	int val=((recordbuffer[i]<<16)|
-		 (recordbuffer[i+1]<<24))>>8;
+	int val=((recordbuffer[i]<<8)|(recordbuffer[i+1]<<16)|(recordbuffer[i+2]<<24))>>8;
+	//int val=((recordbuffer[i]<<16)|(recordbuffer[i+1]<<24))>>8;
 	if(labs(val)>rchannel_list[j].peak)
 	  rchannel_list[j].peak=labs(val);
 	i+=REC_SAMPLE_BYTES;
@@ -995,7 +1060,7 @@ void *record_thread(void *dummy){
 
       pthread_mutex_lock(&rec_buffer_mutex);
       record_head+=REC_BLOCK;
-      if(record_head>=sizeof(recordbuffer))record_head=0;
+      if((unsigned)record_head>=sizeof(recordbuffer))record_head=0;
       record_count+=REC_BLOCK;
       pthread_cond_signal(&rec_buffer_cond);
       pthread_mutex_unlock(&rec_buffer_mutex);
@@ -1009,6 +1074,139 @@ void *record_thread(void *dummy){
   pthread_mutex_unlock(&rec_mutex);
   
   return(NULL);
+}
+
+/*************** threaded precache ****************************/
+
+static void wake_cache(){
+  /* signal the precache thread to wake up and work */
+  pthread_mutex_lock(&cache_mutex);
+  pthread_cond_signal(&cache_cond);
+  pthread_mutex_unlock(&cache_mutex);
+}
+
+/* master is singly locked upon call */
+static void _cache_tag_lockahead(int i){
+  tag *t=cache_list[i];
+  long fill=t->cache_fill;
+  long new;
+  long bytes=t->samplelength;
+  
+  pthread_mutex_lock(&mmap_mutex);
+  pthread_mutex_unlock(&cache_mutex);
+
+  fill*=2*t->channels;
+  new=fill+65536;
+  bytes*=2*t->channels;
+
+  if(new>bytes)new=bytes;
+  if(mlock(t->data,new)){
+    fprintf(stderr,"mlock failed: %s\n",strerror(errno));
+  }
+  new/=2;
+  new/=t->channels;
+
+  pthread_mutex_unlock(&mmap_mutex);
+  pthread_mutex_lock(&cache_mutex);
+  t->cache_fill=new;
+}
+
+static void _cache_remove(int i){
+  /* remove the tag from the precaching list, then free its cache;
+     this is the only place a cache free can happen, so we only need
+     lock/check against async read */
+
+  tag *t=cache_list[i];
+  cache_count--;
+  if(i<cache_count)
+    memmove(cache_list+i,
+	    cache_list+i+1,
+	    (cache_count-i)*sizeof(*cache_list));
+  t->cachep=0;
+  munlock(t->basemap,t->samplelength*sizeof(int16)*t->channels+sizeof(struct sample_header));
+}
+
+/* unlocks cache of all tags not currently active */
+static void cache_cull(){
+  int i;
+  pthread_mutex_lock(&cache_mutex);
+  for(i=cache_count-1;i>=0;i--)
+    if(!cache_list[i]->activep)_cache_remove(i);
+  pthread_mutex_unlock(&cache_mutex);
+  refresh();
+  write(ttypipe[1],"",1);
+}
+
+static void _cache_add(int tagnum){
+  tag *t=tag_list+tagnum;
+
+  if(!t->basemap)return;
+  if(t->cachep)return;
+  cache_list[cache_count]=t;
+  cache_count++;
+  t->cache_fill=0;
+  t->sample_position=0;
+  t->cachep=1;
+  refresh();
+  write(ttypipe[1],"",1);
+}
+
+static void *cache_thread(void *dummy){
+  /* complete our self-setup; we need to be a realtime thread just
+     behind playback and record */
+  int i;
+
+  struct sched_param param;
+  param.sched_priority=80;
+  if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
+    fprintf(stderr,"Could not set realtime priority for caching; am I suid root?\n");
+    exit(1);
+  }
+
+  pthread_mutex_lock(&cache_mutex);    
+  while(1){
+
+    /* scan tags; service lowest fill.  Active has priority over
+       precache */
+    {
+      long minfill_a=0;
+      long mintag_a=-1;
+      long minfill_p=0;
+      long mintag_p=-1;
+      for(i=0;i<cache_count;i++){
+	tag *t=cache_list[i];
+	if(t->cache_fill<t->samplelength){
+	  long minfill=t->cache_fill-t->sample_position;
+
+	  if(minfill<CACHE_SAMPLES){
+	    
+	    if(t->activep){
+	      if(mintag_a == -1 || t->cache_fill<minfill_a){
+		minfill_a=minfill;
+		mintag_a=i;
+	      }
+	    }else{
+	      if(mintag_p == -1 || t->cache_fill<minfill_p){
+		minfill_p=minfill;
+	      mintag_p=i;
+	      }
+	    }
+	  }
+	}
+	if(mintag_a>=0){
+	  _cache_tag_lockahead(mintag_a);
+	  continue;
+	}
+	if(mintag_p>=0){
+	  _cache_tag_lockahead(mintag_p);
+	  continue;
+	}
+      }
+    }
+    
+    /* if there was no work to do, we sleep and wait for a signal */
+    pthread_cond_wait(&cache_cond, &cache_mutex);
+  }
 }
 
 /*************** threaded playback ****************************/
@@ -1029,6 +1227,9 @@ static inline void _playback_remove(int i){
     memmove(active_list+i,
 	    active_list+i+1,
 	    (active_count-i)*sizeof(*active_list));
+  for(i=cache_count-1;i>=0;i--)
+    if(cache_list[i]==t)
+      _cache_remove(i);
   write(ttypipe[1],"",1);
 }
 
@@ -1056,17 +1257,31 @@ static inline void _playback_add(int tagnum,int cuenum){
 
   t->sample_fade_start=t->samplelength-t->fade_out*44.1;
   if(t->sample_fade_start<0)t->sample_fade_start=0;
-  t->master_vol_current=0;
+
+  if(c->mix.vol_ms==0)
+    t->master_vol_current=c->mix.vol_master;
+  else
+    t->master_vol_current=0;
 
   t->master_vol_target=c->mix.vol_master;
   t->master_vol_slew=_slew_ms(c->mix.vol_ms,0,c->mix.vol_master);
   			   
-  for(j=0;j<MAX_OUTPUT_CHANNELS;j++)
-    for(k=0;k<t->channels;k++){
-      t->outvol_current[k][j]=0;
-      t->outvol_target[k][j]=c->mix.outvol[k][j];
-      t->outvol_slew[k][j]=_slew_ms(c->mix.vol_ms,0,c->mix.outvol[k][j]);
-    }
+  if(c->mix.vol_ms==0)
+    for(j=0;j<MAX_OUTPUT_CHANNELS;j++)
+      for(k=0;k<t->channels;k++){
+	t->outvol_current[k][j]=c->mix.outvol[k][j];
+	t->outvol_target[k][j]=c->mix.outvol[k][j];
+	t->outvol_slew[k][j]=_slew_ms(c->mix.vol_ms,0,c->mix.outvol[k][j]);
+      }
+  else
+    for(j=0;j<MAX_OUTPUT_CHANNELS;j++)
+      for(k=0;k<t->channels;k++){
+	t->outvol_current[k][j]=0;
+	t->outvol_target[k][j]=c->mix.outvol[k][j];
+	t->outvol_slew[k][j]=_slew_ms(c->mix.vol_ms,0,c->mix.outvol[k][j]);
+      }
+
+  _cache_add(tagnum);
   write(ttypipe[1],"",1);
 }
 
@@ -1092,7 +1307,8 @@ static inline void _playback_mix(int i,int cuenum){
 
 static inline void _next_sample(int16 *out){
   int i,j,k;
-  int staging[MAX_OUTPUT_CHANNELS];
+  double staging[MAX_OUTPUT_CHANNELS];
+  double mmv=main_master_volume*.0001;
 
   memset(staging,0,sizeof(staging));
 
@@ -1102,6 +1318,10 @@ static inline void _next_sample(int16 *out){
     for(j=0;j<t->channels;j++){
       double value;
       int lappoint=t->samplelength-t->sample_lapping;
+
+      double *ov_slew=t->outvol_slew[j];
+      double *ov_target=t->outvol_target[j];
+      double *ov_current=t->outvol_current[j];
 
       /* get the base value, depending on loop or no */
       if(t->loop_p && t->sample_position>=lappoint){
@@ -1118,37 +1338,39 @@ static inline void _next_sample(int16 *out){
       }
 
       /* output split and mix */
+      value*=mmv;
       for(k=0;k<MAX_OUTPUT_CHANNELS;k++){
-	staging[k]+=value*t->outvol_current[j][k]*main_master_volume*.0001;
+	staging[k]+=value*ov_current[k];
 	
-	t->outvol_current[j][k]+=t->outvol_slew[j][k];
-	if(t->outvol_slew[j][k]>0 && 
-	   t->outvol_current[j][k]>t->outvol_target[j][k]){
-	  t->outvol_slew[j][k]=0;
-	  t->outvol_current[j][k]=t->outvol_target[j][k];
+	ov_current[k]+=ov_slew[k];
+	if(ov_slew[k]>0. && 
+	   ov_current[k]>ov_target[k]){
+	  ov_slew[k]=0.;
+	  ov_current[k]=ov_target[k];
 	}
-	t->outvol_current[j][k]+=t->outvol_slew[j][k];
-	if(t->outvol_slew[j][k]<0 && 
-	   t->outvol_current[j][k]<t->outvol_target[j][k]){
-	  t->outvol_slew[j][k]=0;
-	  t->outvol_current[j][k]=t->outvol_target[j][k];
+	if(ov_slew[k]<0. && 
+	   ov_current[k]<ov_target[k]){
+	  ov_slew[k]=0.;
+	  ov_current[k]=ov_target[k];
 	}
       }
     }
 
     /* update master volume */
-    t->master_vol_current+=t->master_vol_slew;
-    if(t->master_vol_slew>0 && t->master_vol_current>t->master_vol_target){
-      t->master_vol_slew=0;
-      t->master_vol_current=t->master_vol_target;
+    if(t->master_vol_slew){
+      t->master_vol_current+=t->master_vol_slew;
+      if(t->master_vol_slew>0 && t->master_vol_current>t->master_vol_target){
+	t->master_vol_slew=0;
+	t->master_vol_current=t->master_vol_target;
+      }
+      if(t->master_vol_slew<0 && t->master_vol_current<t->master_vol_target){
+	t->master_vol_slew=0;
+	t->master_vol_current=t->master_vol_target;
+      }
+      if(t->master_vol_current<0)
+	_playback_remove(i);
     }
-    if(t->master_vol_slew<0 && t->master_vol_current<t->master_vol_target){
-      t->master_vol_slew=0;
-      t->master_vol_current=t->master_vol_target;
-    }
-    if(t->master_vol_current<0)
-      _playback_remove(i);
-    
+
     /* determine if fade out has begun */
     if(t->sample_position==t->sample_fade_start && !t->loop_p){
       /* effect a master volume slew *now* */
@@ -1185,6 +1407,10 @@ static inline void _next_sample(int16 *out){
 static int playback_active=0;
 static int playback_exit=0;
 
+/* NO LOCKING in the playback thread.  We're the highest priority
+   thread and will not be preempted.  The data structures we depend on
+   are 'locked' at lower levels by atomic assignment blocks. */
+
 void *playback_thread(void *dummy){
   /* sound device startup */
   audio_buf_info info;
@@ -1197,7 +1423,17 @@ void *playback_thread(void *dummy){
   long totalsize;
   int fragment=0x7fff000d;
   int16 audiobuf[256*MAX_OUTPUT_CHANNELS];
-  int count=0,ret;
+  int ret;
+
+  /* realtime schedule setup */
+  {
+    struct sched_param param;
+    param.sched_priority=89;
+    if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &param)){
+      fprintf(stderr,"Could not set realtime priority for playback; am I suid root?\n");
+      exit(1);
+    }
+  }
 
   ioctl(fd,SNDCTL_DSP_SETFRAGMENT,&fragment);
   ret=ioctl(fd,SNDCTL_DSP_SETFMT,&format);
@@ -1218,9 +1454,7 @@ void *playback_thread(void *dummy){
   }
 
   ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
-  pthread_mutex_lock(&master_mutex);
   playback_buffer_minfill=totalsize=info.fragstotal*info.fragsize;
-  pthread_mutex_unlock(&master_mutex);
 
   while(!playback_exit){
     int samples;
@@ -1231,22 +1465,22 @@ void *playback_thread(void *dummy){
       delay=0;
       ioctl(fd,SNDCTL_DSP_GETOSPACE,&info);
 
-
-      pthread_mutex_lock(&master_mutex);
       playback_bufsize=totalsize;      
       samples=playback_bufsize-info.bytes;
       if(playback_buffer_minfill>samples)
 	playback_buffer_minfill=samples-64; // sample fragment
-      pthread_mutex_unlock(&master_mutex);
 
     }
 
-    pthread_mutex_lock(&master_mutex);
     for(i=0;i<256;i++)
       _next_sample(audiobuf+i*MAX_OUTPUT_CHANNELS);
-    pthread_mutex_unlock(&master_mutex);
 
-    ret=fwrite(audiobuf,2*MAX_OUTPUT_CHANNELS,256,playfd);
+    /* this is a calculated race; the race would not trip except in
+       situations where our locking latency would also cause the
+       realtime house of cards to come crashing down anyway */
+    pthread_cond_signal(&cache_cond);
+
+    fwrite(audiobuf,2*MAX_OUTPUT_CHANNELS,256,playfd);
     
     {
       struct timeval tv;
@@ -1260,57 +1494,81 @@ void *playback_thread(void *dummy){
 
   }
   
-  pthread_mutex_lock(&master_mutex);
   playback_active=0;
   
   /* sound device shutdown */
   
   ioctl(fd,SNDCTL_DSP_RESET);
-  //pthread_mutex_unlock(&master_mutex);
   fprintf(stderr,"Playback thread exit...\n");
-  pthread_mutex_unlock(&master_mutex);
-
   return(NULL);
 }
 
 /* cuenum is the base number */ 
+/* add new tags before new mixes */
 int play_cue(int cuenum){
-  pthread_mutex_lock(&master_mutex);
+  int x=cuenum;
+  BEGIN_ATOMIC
+  while(1){
+    cue *c=cue_list+x;
+    if(c->tag>=0){
+      if(c->tag_create_p)
+	_playback_add(c->tag,x);
+    }
+    x++;
+    if(x>=cue_count || cue_list[x].tag==-1)break;
+  }
   while(1){
     cue *c=cue_list+cuenum;
     if(c->tag>=0){
-      if(c->tag_create_p)
-	_playback_add(c->tag,cuenum);
-      else
+      if(!c->tag_create_p)
 	_playback_mix(c->tag,cuenum);
     }
     cuenum++;
     if(cuenum>=cue_count || cue_list[cuenum].tag==-1)break;
   }
-  pthread_mutex_unlock(&master_mutex);
+  END_ATOMIC
+  return(0);
+}
+
+/* caches new queue.  cache cleanup is handled in caching thread */
+int cache_cue(int cuenum){
+  pthread_mutex_lock(&cache_mutex);
+
+  while(1){
+    cue *c=cue_list+cuenum;
+    if(c->tag>=0){
+      if(c->tag_create_p)
+	_cache_add(c->tag);
+    }
+    cuenum++;
+    if(cuenum>=cue_count || cue_list[cuenum].tag==-1)break;
+  }
+
+  pthread_mutex_unlock(&cache_mutex);
+
+  wake_cache();
   return(0);
 }
 
 int play_sample(int cuenum){
   cue *c=cue_list+cuenum;
-  pthread_mutex_lock(&master_mutex);
+  BEGIN_ATOMIC
   if(c->tag>=0){
     if(c->tag_create_p)
       _playback_add(c->tag,cuenum);
-      else
-	_playback_mix(c->tag,cuenum);
+    else
+      _playback_mix(c->tag,cuenum);
   }
-  
-  pthread_mutex_unlock(&master_mutex);
+
+  END_ATOMIC
   return(0);
 }
 
 int halt_playback(){
   int i;
-  pthread_mutex_lock(&master_mutex);
+  BEGIN_ATOMIC
   for(i=0;i<tag_count;i++){
     tag *t=tag_list+i;
-    int j,k;
 
     if(t->activep){
 
@@ -1319,7 +1577,7 @@ int halt_playback(){
       
     }
   }
-  pthread_mutex_unlock(&master_mutex);
+  END_ATOMIC
   return(0);
 }
 
@@ -1424,7 +1682,7 @@ void draw_field(formfield *f,int edit,int focus){
       {
 	long var=*(long *)(f->var);
 	char buf[80];
-	snprintf(buf,80,"%*d",f->width-2,var);
+	snprintf(buf,80,"%*ld",f->width-2,var);
 	addstr(buf);
       }
       break;
@@ -1547,7 +1805,7 @@ int form_handle_char(form *f,int c){
     break;
   default:
     if(f->edit){
-      pthread_mutex_lock(&master_mutex);
+      BEGIN_ATOMIC
       switch(ff->type){
       case FORM_YESNO:
 	{
@@ -1708,7 +1966,7 @@ int form_handle_char(form *f,int c){
 	ret=c;
 	break;
       }
-      pthread_mutex_unlock(&master_mutex);
+      END_ATOMIC
 
     }else{
       ret=c;
@@ -1725,13 +1983,11 @@ void main_update_master(int n,int y){
     if(n>300)n=300;
     if(n<0)n=0;
 
-    pthread_mutex_lock(&master_mutex);
     main_master_volume=n;
-    pthread_mutex_unlock(&master_mutex);
     
     move(y,8);
     addstr("master: ");
-    sprintf(buf,"%3d%%",main_master_volume);
+    sprintf(buf,"%3ld%%",main_master_volume);
     addstr(buf);
   }
 }
@@ -1744,10 +2000,8 @@ void main_update_playbuffer(int y){
     static int starver1=0;
     static int starver2=0;
 
-    pthread_mutex_lock(&master_mutex);
     n=playback_buffer_minfill;
     playback_buffer_minfill=playback_bufsize;
-    pthread_mutex_unlock(&master_mutex);
     
     if(n==0){
       starve=15;
@@ -1774,11 +2028,12 @@ void main_update_playbuffer(int y){
     {
       int state=0;
       pthread_mutex_lock(&rec_mutex);
-      if(rec_flush_req)
+      if(rec_flush_req){
 	if(rec_flush_ok)
 	  state=2;
 	else
 	  state=1;
+      }
       pthread_mutex_unlock(&rec_mutex);
     
       switch(state){
@@ -1837,11 +2092,11 @@ static int dBmap[100]={0,0,1,1,1,1,1,1,1,1,
 		    1,1,1,1,1,1,1,1,1,1,
 		    1,1,1,1,1,2,2,2,2,2,
 		    2,2,2,2,2,2,2,2,2,2,
-		    2,2,2,2,2,2,2,2,2,2,
 		    3,3,3,3,3,3,3,3,3,3,
-		    3,3,3,3,3,3,3,3,3,3,
-		    4,4,4,4,4,5,5,5,5,5,
-		    6,6,6,6,8,8,8,9,9,10};
+		    3,3,4,4,4,4,4,4,4,4,
+		    4,4,5,5,5,5,5,5,5,5,
+		    6,6,6,6,6,6,7,7,7,7,
+		    7,8,8,8,8,9,9,9,10,10};
 
 static int clip[MAX_OUTPUT_CHANNELS];
 void main_update_outchannel_levels(int y){
@@ -1850,10 +2105,10 @@ void main_update_outchannel_levels(int y){
     for(i=0;i<MAX_OUTPUT_CHANNELS;i++){
       int val;
       char buf[11];
-      pthread_mutex_lock(&master_mutex);
+      BEGIN_ATOMIC
       val=channel_list[i].peak;
       channel_list[i].peak=0;
-      pthread_mutex_unlock(&master_mutex);
+      END_ATOMIC
       
       move(y+i+1,17);
       if(val>=32767){
@@ -1931,15 +2186,13 @@ void main_update_channel_labels(int y){
   if(menu==MENU_MAIN){
     for(i=0;i<MAX_OUTPUT_CHANNELS;i++){
       move(y+i+1,4);
-      sprintf(buf,"-[          ]+0dB ",i);
+      sprintf(buf,"-[          ]+0dB ");
       addstr(buf);
-      pthread_mutex_lock(&master_mutex);
       addstr(channel_list[i].label);
-      pthread_mutex_unlock(&master_mutex);
     }
     for(i=0;i<2;i++){
       move(y+i+1,42);
-      sprintf(buf,"-[          ]+0dB ",i);
+      sprintf(buf,"-[          ]+0dB ");
       addstr(buf);
       pthread_mutex_lock(&rec_mutex);
       addstr(rchannel_list[i].label);
@@ -1956,7 +2209,6 @@ void main_update_cues(int y){
     int cn=cue_list_number-1,i;
 
     for(i=-1;i<2;i++){
-      char buf[80];
       move(y+i*3+3,0);
       if(i==0){
 	addstr("NEXT => ");
@@ -2010,9 +2262,9 @@ void main_update_tags(int y){
 
     move(y,0);
     
-    pthread_mutex_lock(&master_mutex);
+    BEGIN_ATOMIC
+
     if(active_count){
-      int len;
       addstr("playing tags:");
 
       for(i=0;i<active_count;i++){
@@ -2034,6 +2286,7 @@ void main_update_tags(int y){
 	addstr(buf);
 	addnlstr(label_text(path),60,' ');
       }
+
     }else{
       addstr("             ");
     }
@@ -2044,7 +2297,7 @@ void main_update_tags(int y){
     }
 
     last_tags=active_count;
-    pthread_mutex_unlock(&master_mutex);
+    END_ATOMIC
   }
 }
 
@@ -2067,6 +2320,9 @@ void move_next_cue(){
       if(cue_list[cue_list_number].tag==-1)break;
     cue_list_position++;
   }
+  cache_cull();
+  cache_cue(cue_list_number);
+  wake_cache();
   main_update_cues(10+MAX_OUTPUT_CHANNELS);
 }
 
@@ -2076,6 +2332,9 @@ void move_prev_cue(){
       if(cue_list[cue_list_number].tag==-1)break;
     cue_list_position--;
   }
+  cache_cull();
+  cache_cue(cue_list_number);
+  wake_cache();
   main_update_cues(10+MAX_OUTPUT_CHANNELS);
 }
 
@@ -2094,7 +2353,7 @@ int save_top_level(char *fn){
   f=fopen(fn,"w");
   if(f==NULL){
     char buf[80];
-    sprintf(buf,"SAVE FAILED: %s",strerror(ferror(f)));
+    sprintf(buf,"SAVE FAILED: %s",strerror(errno));
     addnlstr(buf,80,' ');
     attroff(A_BOLD);
     return(1);
@@ -2162,7 +2421,6 @@ int main_menu(){
 
   while(1){
     int ch=getch();
-    const char *ctrl=unctrl(ch);
     switch(ch){
     case '?':
       return(MENU_KEYPRESS);
@@ -2321,7 +2579,6 @@ int main_keypress_menu(){
 }
 
 int add_cue_menu(){
-  int tnum=new_tag_number();
   form f;
 
   char label[13]="";
@@ -2363,16 +2620,16 @@ int add_cue_menu(){
     unsaved=1;
     memset(&c,0,sizeof(c));
     c.tag=-1; /* placeholder cue for this cue bank */
-	/* aquire label locks, populate */
+	/* acquire label locks, populate */
     c.label=new_label_number();
     edit_label(c.label,label);
-    aquire_label(c.label);
+    acquire_label(c.label);
     c.cue_text=new_label_number();
     edit_label(c.cue_text,text);
-    aquire_label(c.cue_text);
+    acquire_label(c.cue_text);
     c.cue_desc=new_label_number();
     edit_label(c.cue_desc,desc);
-    aquire_label(c.cue_desc);
+    acquire_label(c.cue_desc);
     
     add_cue(cue_list_number,c);
     move_next_cue();
@@ -2698,11 +2955,11 @@ int add_sample_menu(){
   /* finish the tag */
   {
     t.sample_path=new_label_number();
-    aquire_label(t.sample_path);
+    acquire_label(t.sample_path);
     edit_label(t.sample_path,path);
 
     t.sample_desc=new_label_number();
-    aquire_label(t.sample_desc);
+    acquire_label(t.sample_desc);
     edit_label(t.sample_desc,"");
     t.loop_p=0;
     t.loop_start=0;
@@ -2712,16 +2969,16 @@ int add_sample_menu(){
     
     tagno=new_tag_number();
     edit_tag(tagno,t);
-    aquire_tag(tagno);
+    acquire_tag(tagno);
   }
 
   /* got it, add a new cue */
   {
     cue c;
     
-    aquire_label(c.label=cue_list[cue_list_number].label);
-    aquire_label(c.cue_text=cue_list[cue_list_number].cue_text);
-    aquire_label(c.cue_desc=cue_list[cue_list_number].cue_desc);
+    acquire_label(c.label=cue_list[cue_list_number].label);
+    acquire_label(c.cue_text=cue_list[cue_list_number].cue_text);
+    acquire_label(c.cue_desc=cue_list[cue_list_number].cue_desc);
     c.tag=tagno;
     c.tag_create_p=1;
     memset(&c.mix,0,sizeof(mix));
@@ -2801,10 +3058,10 @@ int add_mix_menu(){
     int createno=tagno_to_cueno(tagno);
     unsaved=1;
 
-    aquire_tag(tagno);
-    aquire_label(c.label=cue_list[cue_list_number].label);
-    aquire_label(c.cue_text=cue_list[cue_list_number].cue_text);
-    aquire_label(c.cue_desc=cue_list[cue_list_number].cue_desc);
+    acquire_tag(tagno);
+    acquire_label(c.label=cue_list[cue_list_number].label);
+    acquire_label(c.cue_text=cue_list[cue_list_number].cue_text);
+    acquire_label(c.cue_desc=cue_list[cue_list_number].cue_desc);
     c.tag=tagno;
     c.tag_create_p=0;
     memset(&c.mix,0,sizeof(mix));
@@ -2949,6 +3206,9 @@ int menu_output(){
 
 int main_loop(){
   
+  cache_cue(0);
+  wake_cache();
+
   while(running){
     switch(menu){
     case MENU_MAIN:
@@ -2971,6 +3231,7 @@ int main_loop(){
       break;
     }
   }
+  return 0;
 }
 
 pthread_mutex_t pipe_mutex=PTHREAD_MUTEX_INITIALIZER;
@@ -2984,17 +3245,13 @@ void *tty_thread(void *dummy){
       write(ttypipe[1],&buf,1);
     }
     
-    pthread_mutex_lock(&master_mutex);
     if(playback_exit)break;
-    pthread_mutex_unlock(&master_mutex);
   }
-  pthread_mutex_unlock(&master_mutex);
-
+  return NULL;
 }
 
 int main(int gratuitously,char *different[]){
   int lf;
-  int flags;
 
   if(gratuitously<2){
     fprintf(stderr,"Usage: beaverphonic <settingfile>\n");
@@ -3012,7 +3269,7 @@ int main(int gratuitously,char *different[]){
   
   if(flock(lf,LOCK_EX|LOCK_NB)){
     fprintf(stderr,"Another Beaverphonic process is running.\n"
-	    "  (could not aquire lockfile)\n");
+	    "  (could not acquire lockfile)\n");
     exit(1);
   }
 
@@ -3055,6 +3312,7 @@ int main(int gratuitously,char *different[]){
     pthread_t dummy;
     playback_active=1;
     pthread_create(&playback_thread_id,NULL,playback_thread,NULL);
+    pthread_create(&cache_thread_id,NULL,cache_thread,NULL);
   }
   {
     pthread_t dummy;
@@ -3063,6 +3321,7 @@ int main(int gratuitously,char *different[]){
     pthread_create(&record_thread_id,NULL,record_thread,NULL);
   }
 
+  pthread_create(&cache_thread_id,NULL,cache_thread,NULL);
 
   /* load the sound config if the file exists, else create it */
   initscr(); cbreak(); noecho();
@@ -3093,9 +3352,7 @@ int main(int gratuitously,char *different[]){
   endwin();                  /* restore original tty modes */  
   close(lf);
   halt_playback();
-  pthread_mutex_lock(&master_mutex);
   playback_exit=1;
-  pthread_mutex_unlock(&master_mutex);
   pthread_mutex_lock(&rec_mutex);
   rec_exit=1;
   pthread_mutex_unlock(&rec_mutex);
@@ -3106,12 +3363,9 @@ int main(int gratuitously,char *different[]){
   pthread_mutex_unlock(&rec_buffer_mutex);
 
   while(1){
-    pthread_mutex_lock(&master_mutex);
     if(!playback_active)break;
-    pthread_mutex_unlock(&master_mutex);
     sched_yield();
   }
-  pthread_mutex_unlock(&master_mutex);
 
   while(1){
     pthread_mutex_lock(&rec_mutex);
@@ -3124,6 +3378,7 @@ int main(int gratuitously,char *different[]){
   fclose(recfd);
 
   unlink(lockfile);
+  return 0;
 }  
 
 
