@@ -106,8 +106,11 @@ ices_stream_loop (void)
     source.readpcm = NULL;
     source.close = NULL;
 
-    if (stream_open_source (&source) < 0)
+    if (stream_open_source (&source) < 0) {
+      ices_util_free (file);
       consecutive_errors++;
+      continue;
+    }
 
     if (!source.read)
       for (stream = ices_config.streams; stream; stream = stream->next)
