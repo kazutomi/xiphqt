@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec_internal.h,v 1.12 2001/12/20 01:00:26 segher Exp $
+ last mod: $Id: codec_internal.h,v 1.12.2.1 2002/01/01 02:27:23 xiphmont Exp $
 
  ********************************************************************/
 
@@ -118,7 +118,13 @@ typedef struct highlevel_encode_setup {
   double trigger_quality;
 
   highlevel_block blocktype[4]; /* impulse, padding, trans, long */
-  
+
+  /* noise normalization for low bitrate */
+  int       normalize_noise_p;
+  float     normalize_noise_minimum_upgrade;
+  float     normalize_noise_unit_weight;
+
+  int set_in_stone;
 } highlevel_encode_setup;
 
 /* codec_setup_info contains all the setup information specific to the

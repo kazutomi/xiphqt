@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: PCM data vector blocking, windowing and dis/reassembly
- last mod: $Id: block.c,v 1.55 2001/12/23 11:53:52 xiphmont Exp $
+ last mod: $Id: block.c,v 1.55.2.1 2002/01/01 02:27:23 xiphmont Exp $
 
  Handle windowing, overlap-add, etc of the PCM vectors.  This is made
  more amusing by Vorbis' current two allowed block sizes.
@@ -477,6 +477,7 @@ int vorbis_analysis_wrote(vorbis_dsp_state *v, int vals){
 
 /* do the deltas, envelope shaping, pre-echo and determine the size of
    the next block on which to continue analysis */
+#include<stdio.h>
 int vorbis_analysis_blockout(vorbis_dsp_state *v,vorbis_block *vb){
   int i;
   vorbis_info *vi=v->vi;
@@ -538,15 +539,21 @@ int vorbis_analysis_blockout(vorbis_dsp_state *v,vorbis_block *vb){
   }
 
   if(v->W){
-    if(!v->lW || !v->nW)
+    if(!v->lW || !v->nW){
       vbi->blocktype=BLOCKTYPE_TRANSITION;
-    else
+      fprintf(stderr,"-");
+    }else{
       vbi->blocktype=BLOCKTYPE_LONG;
+      fprintf(stderr,"_");
+    }
   }else{
-    if(_ve_envelope_mark(v))
+    if(_ve_envelope_mark(v)){
       vbi->blocktype=BLOCKTYPE_IMPULSE;
-    else
+      fprintf(stderr,"|");
+    }else{
       vbi->blocktype=BLOCKTYPE_PADDING;
+      fprintf(stderr,".");
+    }
   }
  
   vb->vd=v;
