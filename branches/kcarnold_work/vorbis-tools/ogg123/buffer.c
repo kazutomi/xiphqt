@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.19 2001/08/29 00:13:41 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.20 2001/08/29 00:20:44 kcarnold Exp $
 
  ********************************************************************/
 
@@ -34,7 +34,7 @@
 #include "ogg123.h"
 #include "buffer.h"
 
-#define DEBUG_BUFFER
+#undef DEBUG_BUFFER
 #undef DEADLOCK_PROTECTION
 
 #ifdef DEBUG_BUFFER
