@@ -174,7 +174,7 @@ ices_log_open_logfile (void)
   snprintf (namespace, sizeof (namespace), "%s/ices.log",
 	    ices_config.base_directory);
 
-  logfp = ices_util_fopen_for_writing (namespace);
+  logfp = fopen (namespace, "a");
 
   if (!logfp) {
     ices_log_error ("Error while opening %s, error: %s", namespace,
