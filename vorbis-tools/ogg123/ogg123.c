@@ -14,12 +14,13 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.5 2001/06/24 01:24:56 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.6 2001/08/06 21:35:40 volsung Exp $
 
  ********************************************************************/
 
 /* FIXME : That was a messy message. Fix it. */
 
+#include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,8 +35,9 @@
 
 #include "ogg123.h"
 
-char convbuffer[4096];		/* take 8k out of the data segment, not the stack */
-int convsize = 4096;
+/* take buffer out of the data segment, not the stack */
+char convbuffer[BUFFER_CHUNK_SIZE];
+int convsize = BUFFER_CHUNK_SIZE;
 buf_t * buffer = NULL;
 
 static char skipfile_requested;
@@ -63,6 +65,7 @@ struct option long_options[] = {
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
     {"device", required_argument, 0, 'd'},
+    {"file", required_argument, 0, 'f'},
     {"skip", required_argument, 0, 'k'},
     {"device-option", required_argument, 0, 'o'},
     {"verbose", no_argument, 0, 'v'},
@@ -78,8 +81,9 @@ struct option long_options[] = {
 
 void usage(void)
 {
-    FILE *o;
-    o = stderr;
+    FILE *o = stderr;
+    int i, driver_count;
+    ao_info **devices = ao_driver_info_list(&driver_count);
 
     fprintf(o,
 	    "Ogg123 from " PACKAGE " " VERSION "\n"
@@ -88,14 +92,22 @@ void usage(void)
 	    "  -h, --help     this help\n"
 	    "  -V, --version  display Ogg123 version\n"
 	    "  -d, --device=d uses 'd' as an output device\n"
-	    "      Possible devices are (some may not be compiled):\n"
-	    "      null (output nothing), oss (for Linux and *BSD),\n"
-	    "      irix, solaris, wav (write to a .WAV file)\n"
+	    "      Possible devices are:\n"
+	    "        ");
+
+    for(i = 0; i < driver_count; i++)
+      fprintf(o,"%s ",devices[i]->short_name);
+
+    fprintf(o,"\n");
+
+    fprintf(o,
+	    "  -f, --file=filename  Set the output filename for a previously\n"
+	    "      specified file device (with -d).\n"
 	    "  -k n, --skip n  Skip the first 'n' seconds\n"
 	    "  -o, --device-option=k:v passes special option k with value\n"
 	    "      v to previously specified device (with -d).  See\n"
 	    "      man page for more info.\n"
-	    "  -b n, --buffer n  use a buffer of 'n' chunks (4096 bytes)\n"
+	    "  -b n, --buffer n  use a buffer of approximately 'n' kilobytes\n"
 	    "  -v, --verbose  display progress and other useful stuff\n"
 	    "  -q, --quiet    don't display anything (no title)\n"
 	    "  -z, --shuffle  shuffle play\n"
@@ -110,12 +122,14 @@ int main(int argc, char **argv)
     ogg123_options_t opt;
     int ret;
     int option_index = 1;
-    ao_option_t *temp_options = NULL;
-    ao_option_t ** current_options = &temp_options;
+    ao_option *temp_options = NULL;
+    ao_option ** current_options = &temp_options;
+    ao_info *info;
     int temp_driver_id = -1;
     devices_t *current;
 
     memset (&opt, 0, sizeof(opt));
+
     opt.delay = 1;
     opt.nth = 1;
     opt.ntimes = 1;
@@ -124,7 +138,7 @@ int main(int argc, char **argv)
     signal (SIGINT, signal_quit);
     ao_initialize();
 
-    while (-1 != (ret = getopt_long(argc, argv, "b:d:hl:k:o:p:qvVx:y:z",
+    while (-1 != (ret = getopt_long(argc, argv, "b:d:f:hl:k:o:p:qvVx:y:z",
 				    long_options, &option_index))) {
 	switch (ret) {
 	case 0:
@@ -132,18 +146,30 @@ int main(int argc, char **argv)
 		    "Internal error: long option given when none expected.\n");
 	    exit(1);
 	case 'b':
-	  opt.buffer_size = atoi (optarg);
+	  opt.buffer_size = atoi(optarg) / (BUFFER_CHUNK_SIZE / 1024);
 	  break;
 	case 'd':
-	    temp_driver_id = ao_get_driver_id(optarg);
+	    temp_driver_id = ao_driver_id(optarg);
 	    if (temp_driver_id < 0) {
 		fprintf(stderr, "No such device %s.\n", optarg);
 		exit(1);
 	    }
-	    current = append_device(opt.outdevices, temp_driver_id, NULL);
+	    current = append_device(opt.outdevices, temp_driver_id, 
+				    NULL, NULL);
 	    if(opt.outdevices == NULL)
 		    opt.outdevices = current;
 	    current_options = &current->options;
+	    break;
+	case 'f':
+	    info = ao_driver_info(temp_driver_id);
+	    if (info->type == AO_TYPE_FILE) {
+	        free(current->filename);
+		current->filename = strdup(optarg);
+	    } else {
+	        fprintf(stderr, "Driver %s is not a file output driver.\n",
+			info->short_name);
+	        exit(1);
+	    }
 	    break;
 	case 'k':
 	    opt.seekpos = atof(optarg);
@@ -196,14 +222,15 @@ int main(int argc, char **argv)
     if (temp_driver_id < 0) {
 	temp_driver_id = get_default_device();
 	if(temp_driver_id < 0) {
-		temp_driver_id = ao_get_driver_id(NULL);
+		temp_driver_id = ao_default_driver_id();
 	}
 	if (temp_driver_id < 0) {
 	    fprintf(stderr,
 		    "Could not load default driver and no ~/.ogg123rc found. Exiting.\n");
 	    exit(1);
 	}
-	opt.outdevices = append_device(opt.outdevices, temp_driver_id, temp_options);
+	opt.outdevices = append_device(opt.outdevices, temp_driver_id, 
+				       temp_options, NULL);
     }
 
     if (optind == argc) {
@@ -585,7 +612,8 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
 {
   static int prevrate=0, prevchan=0;
   devices_t *current;
-  
+  ao_sample_format format;
+
   if(prevrate == rate && prevchan == channels)
     return 0;
   
@@ -603,12 +631,14 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
 	  }
 	}
   
-  prevrate = rate;
-  prevchan = channels;
-  
+  format.rate = prevrate = rate;
+  format.channels = prevchan = channels;
+  format.bits = 16;
+  format.byte_format = AO_FMT_NATIVE;
+
   current = opt->outdevices;
   while (current != NULL) {
-    ao_info_t *info = ao_get_driver_info(current->driver_id);
+    ao_info *info = ao_driver_info(current->driver_id);
     
     if (opt->verbose > 0) {
       fprintf(stderr, "Device:   %s\n", info->name);
@@ -617,10 +647,47 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
       fprintf(stderr, "\n");	
     }
     
-    current->device = ao_open(current->driver_id, 16, rate, channels,
-			      current->options);
+    if (current->filename == NULL)
+      current->device = ao_open_live(current->driver_id, &format,
+				     current->options);
+    else
+      current->device = ao_open_file(current->driver_id, current->filename,
+				     0, &format, current->options);
+
     if (current->device == NULL) {
-      fprintf(stderr, "Error opening device.\n");
+      switch (errno) {
+      case AO_ENODRIVER:
+	fprintf(stderr, "Error: No device not available.\n");
+	break;
+      case AO_ENOTLIVE:
+	fprintf(stderr, "Error: %s requires an output filename to be specified with -f.\n", info->short_name);
+	break;
+      case AO_EBADOPTION:
+	fprintf(stderr, "Error: Unsupported option value to %s device.\n",
+		info->short_name);
+	break;
+      case AO_EOPENDEVICE:
+	fprintf(stderr, "Error: Cannot open device %s.\n",
+		info->short_name);
+	break;
+      case AO_EFAIL:
+	fprintf(stderr, "Error: Device failure.\n");
+	break;
+      case AO_ENOTFILE:
+	fprintf(stderr, "Error: An output file cannot be given for %s device.\n", info->short_name);
+	break;
+      case AO_EOPENFILE:
+	fprintf(stderr, "Error: Cannot open file %s for writing.\n",
+		current->filename);
+	break;
+      case AO_EFILEEXISTS:
+	fprintf(stderr, "Error: File %s already exists.\n", current->filename);
+	break;
+      default:
+	fprintf(stderr, "Error: This error should never happen.  Panic!\n");
+	break;
+      }
+	
       return -1;
     }
     current = current->next_device;

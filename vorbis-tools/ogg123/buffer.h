@@ -4,13 +4,15 @@
 #define __BUFFER_H
 
 #include "ogg123.h"
-
 #include <sys/types.h>
+
+/* 4096 is the chunk size we request from libvorbis. */
+#define BUFFER_CHUNK_SIZE 4096
 
 typedef struct chunk_s
 {
   long len; /* Length of the chunk (for if we only got partial data) */
-  char data[4096]; /* Data. 4096 is the chunk size we request from libvorbis. */
+  char data[BUFFER_CHUNK_SIZE]; 
 } chunk_t;
 
 typedef struct buf_s
