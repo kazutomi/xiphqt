@@ -1,87 +1,96 @@
 # -*-Perl-*-
+
+# this is the only fully object-ized module.  The others use local storge.
+
 use Tk;
 
 package MGMmodule::hostlogo;
-$name="hostlogo";
-%module;
 
-$main::toplevel->optionAdd("$main::Xname.$name*font",             
-			   "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
-$main::toplevel->optionAdd("$main::Xname.$name*refresh",        80,20);      
-$main::toplevel->optionAdd("$main::Xname.$name*order",        0,20);
+sub module_name{
+    "hostlogo";
+}
 
-# center the widget      
-$main::toplevel->optionAdd("$main::Xname.$name.scalejustify", 0,20);      
+sub module_init{
+    my($this,$toplevel,$xpath)=@_;
 
-$logo=$main::toplevel->Pixmap(-file => "$main::libdir/fishframe.xpm");
+    my$logo=$this->{"logo"}=
+	$toplevel->Pixmap(-file => "$main::libdir/fishframe.xpm");
+    my$logoframes=$this->{"logoframes"}=12;
+    my$logowidth=$this->{"logowidth"}=$logo->width/12;
+    my$logoheight=$this->{"logoheight"}=$logo->height;
+    my$hostname=`hostname`;
+    chop$hostname;
+    $hostname=~s{^([^\.]+).*}{$1};
+    $this->{"hostname"}=$hostname;
+    
+    # use our font and find the labelsize...
+    my$testlabel=$this->{"widget"}->Label(-text=>$hostname,
+					 -borderwidth=>0,
+					 -padx=>1,-pady=>1);
+    
+    my$textheight=$this->{"textheight"}=$testlabel->reqheight;
+    my$textwidth=$this->{"textwidth"}=$testlabel->reqwidth;
+    $testlabel->destroy;
 
-$logoframes=12;
-$logowidth=$logo->width/$logoframes;
-$logoheight=$logo->height;
-$hostname=`hostname`;
-chop$hostname;
-$hostname=~s{^([^\.]+).*}{$1};
+    my$minx=($logowidth>$textwidth?$logowidth:$textwidth);
+    my$miny=$logoheight+$textheight;
 
-# dummy; Tk doesn't let us look up resources for windows that don't exist.
-# use our font and find the labelsize...
-$testlabel=$main::toplevel->Label(Name=>$name,
-				  -text=>$hostname,
-				  -borderwidth=>0,
-				  -padx=>1,-pady=>1);
+    $toplevel->optionAdd("$xpath.minx", $minx,21);      
+    $toplevel->optionAdd("$xpath.miny", $miny,21);      
+    $toplevel->optionAdd("$xpath.widdemand",   5,21);
+    $toplevel->optionAdd("$xpath.lendemand",   10,21);      
+    $toplevel->optionAdd("$xpath*font",             
+			 "-*-helvetica-*-r-*-*-10-*-*-*-*-*-*-*",20);
+    $toplevel->optionAdd("$xpath*refresh",        80,20);      
+    $toplevel->optionAdd("$xpath*order",        0,20);
 
-$textheight=$testlabel->reqheight;
-$textwidth=$testlabel->reqwidth;
-$testlabel->destroy;
-undef $testlabel;
+    # center the widget      
+    $toplevel->optionAdd("$xpath.scalejustify", 0,20);      
+    1;
+}
 
 sub module_construct{
-    my($this,$width,$height)=@_;
+    my($this,$toplevel,$width,$height)=@_;
 
+    my$logowidth=$this->{"logowidth"};
+    my$textwidth=$this->{"textwidth"};
+    my$logoheight=$this->{"logoheight"};
+    my$textheight=$this->{"textheight"};
     my$logopad=($width-$logowidth)/2;
     my$textpad=($width-$textwidth)/2;
     my$vpad=($height-$logoheight-$textheight)/2;
 
-    $widget=$main::toplevel->Frame(Name=>$name,
-				   borderwidth=>0,
-				   highlightthickness=>0,
-				   width=>$width,height=>$height);
-    $logowidget=$widget->Canvas(Name=>$name,
-				borderwidth=>0,
+    $widget=$toplevel->Frame(Name=>$this->module_name,
+			     borderwidth=>0,
+			     highlightthickness=>0,
+			     width=>$width,height=>$height);
+    $this->{"logowidget"}=$widget->Canvas(borderwidth=>0,
 				highlightthickness=>0,
-				width=>$logowidth,height=>$logoheight)->
-				    place(-x=>$logopad,-y=>$vpad,-anchor=>'nw');
-    $logowidget->createImage(0,0,-image=>$logo,-anchor=>'ne',
-			     -tags=>["logo"]);
+				width=>$this->{"logowidth"},
+				height=>$this->{"logoheight"})->
+				    place('-x'=>$logopad,
+					  '-y'=>$vpad,-anchor=>'nw');
+    $this->{"logowidget"}->createImage(0,0,-image=>$this->{"logo"},
+				       -anchor=>'ne',-tags=>["logo"]);
 
-    $widget->Label(-text=>$hostname,
+    $widget->Label(-text=>$this->{"hostname"},
 		   -borderwidth=>0,
 		   -padx=>1,-pady=>1)->
-		       place(-x=>$textpad,-y=>$vpad+$logoheight,
+		       place('-x'=>$textpad,'-y'=>$vpad+$this->{"logoheight"},
 			     -anchor=>'nw');
-    
-    my$refresh=$widget->optionGet("refresh","Refresh");
-    $widget->repeat($refresh,\&twirlback);
-
+    $this->{"counter"}=0;
     $this->{"widget"}=$widget;
 }
 
-$counter=0;
-sub twirlback{
-    $counter++;
-    if($counter>=12){$counter=0;}
- 
-    $math=$logowidth*$logoframes-$counter*$logowidth;
-    $logowidget->coords('logo',$math,0);
+sub module_update{
+    my($this)=@_;
+
+    my$counter=$this->{"counter"}+1;
+    my$logowidth=$this->{"logowidth"};
+    if($counter>=$this->{"logoframes"}){$counter=0;}
+    my$math=$logowidth*$this->{"logoframes"}-$counter*$logowidth;
+    $this->{"logowidget"}->coords('logo',$math,0);
+    $this->{"counter"}=$counter;
 }
 
-$minx=($logowidth>$textwidth?$logowidth:$textwidth);
-$miny=$logoheight+$textheight;
-
-$module{"mgm_module_name"}=$name;
-$module{"mgm_module_minx"}=$minx;
-$module{"mgm_module_miny"}=$miny;
-$module{"mgm_module_wdemand"}=5;
-$module{"mgm_module_ldemand"}=5;
-$module{"mgm_module_construct"}=\&module_construct;
-
-\%module;
+bless {};
