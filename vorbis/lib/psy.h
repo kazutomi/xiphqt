@@ -12,19 +12,28 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.11 2000/02/12 08:33:08 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.11.2.2 2000/03/29 20:08:49 xiphmont Exp $
 
  ********************************************************************/
 
 #ifndef _V_PSY_H_
 #define _V_PSY_H_
+#include "smallft.h"
+
+#ifndef EHMER_MAX
+#define EHMER_MAX 56
+#endif
 
 typedef struct {
   int n;
   struct vorbis_info_psy *vi;
 
-  double *maskthresh;
-  double *barknum;
+  double ***curves;
+
+  double *ath;
+  int *pre;
+  double *octave;
+  int *post;
 
 } vorbis_look_psy;
 
@@ -32,9 +41,9 @@ extern void   _vp_psy_init(vorbis_look_psy *p,vorbis_info_psy *vi,int n,long rat
 extern void   _vp_psy_clear(vorbis_look_psy *p);
 extern void  *_vi_psy_dup(void *source);
 extern void   _vi_psy_free(vorbis_info_psy *i);
+extern void   _vp_tone_tone_mask(vorbis_look_psy *p,double *f, double *floor, 
+				 int athp, int decayp, double *decay);
 
-extern void   _vp_mask_floor(vorbis_look_psy *p,double *pcm,double *floor,
-			     int attp);
 #endif
 
 

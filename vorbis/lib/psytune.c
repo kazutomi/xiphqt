@@ -13,7 +13,7 @@
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c,v 1.1 2000/02/25 11:05:32 xiphmont Exp $
+ last mod: $Id: psytune.c,v 1.1.2.2 2000/03/29 20:08:49 xiphmont Exp $
 
  ********************************************************************/
 
@@ -26,35 +26,150 @@
 #include "psy.h"
 #include "mdct.h"
 #include "window.h"
+#include "scales.h"
+#include "lpc.h"
 
 static vorbis_info_psy _psy_set0={
-  {-20, -20, -14, -14, -14, -14, -14, -14, -14, -14,
-   -14, -14, -16, -16, -16, -16, -18, -18, -16, -16,
-   -12, -10, -6, -3, -1, -1, -0}, 0., (.6/1024), 10,4
+  -130.,
+
+  {-35.,-40.,-60.,-80.,-85.},
+  {-35.,-40.,-60.,-80.,-100.},
+  {-35.,-40.,-60.,-80.,-100.},
+  {-35.,-40.,-60.,-80.,-100.},
+  {-35.,-40.,-60.,-80.,-100.},
+  {-35.,-40.,-60.,-80.,-100.},
+
+  /*{-99,-99,-99,-99,-99},
+  {-99,-99,-99,-99,-99},
+  {-99,-99,-99,-99,-99},
+  {-99,-99,-99,-99,-99},
+  {-99,-99,-99,-99,-99},
+  {-99,-99,-99,-99,-99},*/
+  {-8.,-12.,-18.,-20.,-24.},
+  {-8.,-12.,-18.,-20.,-24.},
+  {-8.,-12.,-18.,-20.,-24.},
+  {-8.,-12.,-18.,-20.,-24.},
+  {-8.,-12.,-18.,-20.,-24.},
+  {-8.,-12.,-18.,-20.,-24.},
+  -25.,-12.,
+
+  110.,
+
+  .9998, .9997  /* attack/decay control */
 };
+
+static int noisy=0;
+void analysis(char *base,int i,double *v,int n,int bark,int dB){
+  if(noisy){
+    int j;
+    FILE *of;
+    char buffer[80];
+    sprintf(buffer,"%s_%d.m",base,i);
+    of=fopen(buffer,"w");
+
+    for(j=0;j<n;j++){
+      if(dB && v[j]==0)
+	  fprintf(of,"\n\n");
+      else{
+	if(bark)
+	  fprintf(of,"%g ",toBARK(22050.*j/n));
+	else
+	  fprintf(of,"%g ",(double)j);
+      
+	if(dB){
+	  fprintf(of,"%g\n",todB(fabs(v[j])));
+	}else{
+	  fprintf(of,"%g\n",v[j]);
+	}
+      }
+    }
+    fclose(of);
+  }
+}
+
+long frameno=0;
 
 int main(int argc,char *argv[]){
   int eos=0;
+  double nonz=0.;
   double acc=0.;
   double tot=0.;
-  int framesize=argv[1]?atoi(argv[1]):2048;
-  double *pcm[2],*out[2],*window,*mask,*decay[2];
+
+  int framesize=2048;
+  int order=32;
+
+  double *pcm[2],*out[2],*window,*mask,*maskwindow,*decay[2],*lpc,*floor;
   signed char *buffer,*buffer2;
   mdct_lookup m_look;
   vorbis_look_psy p_look;
+  long i,j,k;
 
+  lpc_lookup lpc_look;
+
+  int ath=0;
+  int decayp=0;
+
+  argv++;
+  while(*argv){
+    if(*argv[0]=='-'){
+      /* option */
+      if(argv[0][1]=='v'){
+	noisy=0;
+      }
+      if(argv[0][1]=='A'){
+	ath=0;
+      }
+      if(argv[0][1]=='D'){
+	decayp=0;
+      }
+      if(argv[0][1]=='X'){
+	ath=0;
+	decayp=0;
+      }
+    }else
+      if(*argv[0]=='+'){
+	/* option */
+	if(argv[0][1]=='v'){
+	  noisy=1;
+	}
+	if(argv[0][1]=='A'){
+	  ath=1;
+	}
+	if(argv[0][1]=='D'){
+	  decayp=1;
+	}
+	if(argv[0][1]=='X'){
+	  ath=1;
+	  decayp=1;
+	}
+      }else
+	framesize=atoi(argv[0]);
+    argv++;
+  }
+  
   pcm[0]=malloc(framesize*sizeof(double));
   pcm[1]=malloc(framesize*sizeof(double));
   out[0]=calloc(framesize/2,sizeof(double));
   out[1]=calloc(framesize/2,sizeof(double));
   decay[0]=calloc(framesize/2,sizeof(double));
   decay[1]=calloc(framesize/2,sizeof(double));
-  mask=malloc(framesize/2*sizeof(double));
+  mask=malloc(framesize*sizeof(double));
+  floor=malloc(framesize*sizeof(double));
+  lpc=malloc(order*sizeof(double));
   buffer=malloc(framesize*4);
   buffer2=buffer+framesize*2;
   window=_vorbis_window(0,framesize,framesize/2,framesize/2);
+  maskwindow=_vorbis_window(0,framesize,framesize/2,framesize/2);
   mdct_init(&m_look,framesize);
   _vp_psy_init(&p_look,&_psy_set0,framesize/2,44100);
+  lpc_init(&lpc_look,framesize/2,256,44100,order);
+
+  for(i=0;i<11;i++)
+    for(j=0;j<9;j++)
+      analysis("Pcurve",i*10+j,p_look.curves[i][j],EHMER_MAX,0,1);
+
+  for(j=0;j<framesize;j++)
+    maskwindow[j]*=maskwindow[j];
 
   /* we cheat on the WAV header; we just bypass 44 bytes and never
      verify that it matches 16bit/stereo/44.1kHz. */
@@ -63,10 +178,11 @@ int main(int argc,char *argv[]){
   fwrite(buffer,1,44,stdout);
   memset(buffer,0,framesize*2);
 
+  analysis("window",0,window,framesize,0,0);
+
   fprintf(stderr,"Processing for frame size %d...\n",framesize);
 
   while(!eos){
-    long i,j,k;
     long bytes=fread(buffer2,1,framesize*2,stdin); 
     if(bytes<framesize*2)
       memset(buffer2+bytes,0,framesize*2-bytes);
@@ -82,32 +198,111 @@ int main(int argc,char *argv[]){
       }
       
       for(i=0;i<2;i++){
+
+	analysis("pre",frameno,pcm[i],framesize,0,0);
+	
+	/* do the psychacoustics */
+	memset(mask,0,sizeof(double)*framesize/2);
 	for(j=0;j<framesize;j++)
-	  pcm[i][j]*=window[j];
+	  mask[j]=pcm[i][j]*maskwindow[j];
+
+	mdct_forward(&m_look,mask,mask);
+
+	analysis("maskmdct",frameno,mask,framesize/2,1,1);
+
+	{
+	  double *iter=malloc(sizeof(double)*framesize/2);
+
+	  _vp_tone_tone_mask(&p_look,mask,floor,
+			     ath,0,decay[i]);
+	
+	  memcpy(iter,mask,sizeof(double)*framesize/2);
+	  for(j=0;j<framesize/2;j++)
+	    if(fabs(iter[j])<fromdB(floor[j]))iter[j]=0.;
+	  _vp_tone_tone_mask(&p_look,iter,iter,
+			     ath,0,decay[i]);
+	  for(j=0;j<framesize/2;j++)
+	    floor[j]=(floor[j]+iter[j])/2.;
+
+	  memcpy(iter,mask,sizeof(double)*framesize/2);
+	  for(j=0;j<framesize/2;j++)
+	    if(fabs(iter[j])<fromdB(floor[j]))iter[j]=0.;
+	  _vp_tone_tone_mask(&p_look,iter,iter,
+			     ath,0,decay[i]);
+	  for(j=0;j<framesize/2;j++)
+	    floor[j]=(floor[j]+iter[j])/2.;
+	  
+	  memcpy(iter,mask,sizeof(double)*framesize/2);
+	  for(j=0;j<framesize/2;j++)
+	    if(fabs(iter[j])<fromdB(floor[j]))iter[j]=0.;
+	  _vp_tone_tone_mask(&p_look,iter,mask,
+			     ath,0,decay[i]);
+	}	  
+
+
+	analysis("mask",frameno,mask,framesize/2,1,0);
+	analysis("lmask",frameno,mask,framesize/2,0,0);
+	analysis("decay",frameno,decay[i],framesize/2,1,1);
+	analysis("ldecay",frameno,decay[i],framesize/2,0,1);
+	
+	for(j=0;j<framesize;j++)
+	  pcm[i][j]=pcm[i][j]*window[j];
+	analysis("pcm",frameno,pcm[i],framesize,0,0);
 
 	mdct_forward(&m_look,pcm[i],pcm[i]);
+	analysis("mdct",frameno,pcm[i],framesize/2,1,1);
+	analysis("lmdct",frameno,pcm[i],framesize/2,0,1);
 
-	/* do the psychacoustics */
+	/* floor */
+	{
+	  double amp;
 
-	memset(mask,0,sizeof(double)*framesize/2);
-	_vp_mask_floor(&p_look,pcm[i],mask,decay[i],1);
+	  for(j=0;j<framesize/2;j++)floor[j]=mask[j]+DYNAMIC_RANGE_dB;
+	  amp=sqrt(vorbis_curve_to_lpc(floor,lpc,&lpc_look));
+	  fprintf(stderr,"amp=%g\n",amp);
+	  vorbis_lpc_to_curve(floor,lpc,amp,&lpc_look);
+	  for(j=0;j<framesize/2;j++)floor[j]-=DYNAMIC_RANGE_dB;
+	  analysis("floor",frameno,floor,framesize/2,1,0);
+
+	}
+
 
 	/* quantize according to masking */
 	for(j=0;j<framesize/2;j++){
 	  double val;
 	  if(mask[j]==0)
 	    val=0;
-	  else
-	    val=rint(pcm[i][j]/mask[j]);
+	  else{
+	    val=rint((todB(pcm[i][j])-floor[j]));
+	    if(val<0.){
+	      val=0.;
+	    }else{
+	      nonz+=1;
+	      val+=1;
+	      if(pcm[i][j]<0)val= -val;
+	    }
+	  }
+	  
 	  acc+=log(fabs(val)*2.+1.)/log(2);
 	  tot++;
-	  pcm[i][j]=val*mask[j];
+	  if(val==0)
+	    pcm[i][j]=0.;
+	  else{
+	    if(val>0)
+	      pcm[i][j]=fromdB((val-1.)+floor[j]);
+	    else
+	      pcm[i][j]=-fromdB(floor[j]-(val+1.));
+	  }
 	}
+
+	analysis("final",frameno,pcm[i],framesize/2,1,1);
 
 	/* take it back to time */
 	mdct_backward(&m_look,pcm[i],pcm[i]);
 	for(j=0;j<framesize/2;j++)
 	  out[i][j]+=pcm[i][j]*window[j];
+
+	frameno++;
       }
            
       /* write data.  Use the part of buffer we're about to shift out */
@@ -136,6 +331,8 @@ int main(int argc,char *argv[]){
       eos=1;
   }
   fprintf(stderr,"average raw bits of entropy: %.03g/sample\n",acc/tot);
+  fprintf(stderr,"average nonzero samples: %.03g/%d\n",nonz/tot*framesize/2,
+	  framesize/2);
   fprintf(stderr,"Done\n\n");
   return 0;
 }
