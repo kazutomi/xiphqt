@@ -19,7 +19,7 @@
 
 #include "definitions.h"
 
-#define INITDELAY 2000000
+#define INITDELAY 1000000
 
 extern ices_config_t ices_config;
 
