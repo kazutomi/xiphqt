@@ -1,4 +1,4 @@
-.TH "ices" "1" "January 2003" "ices @VERSION@" "Icecast media streaming system"
+.TH "ices" "1" "June 2003" "ices @VERSION@" "Icecast media streaming system"
 .SH NAME
 ices \- stream MP3 audio to an icecast server
 

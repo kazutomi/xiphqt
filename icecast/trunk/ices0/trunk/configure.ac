@@ -1,5 +1,5 @@
 # configure script for ices
-# $Id: configure.ac,v 1.8 2003/06/13 19:22:15 brendan Exp $
+# $Id: configure.ac,v 1.9 2003/06/22 02:04:24 brendan Exp $
 
 m4_define(ICES_MAJOR, 0)
 m4_define(ICES_MINOR, 2)
@@ -11,8 +11,8 @@ AC_INIT([ices], ICES_VERSION, [icecast@xiph.org])
 AC_PREREQ(2.52)
 AC_CONFIG_SRCDIR([src/ices.c])
 
-AC_CONFIG_FILES([Makefile src/Makefile src/playlist/Makefile
-  conf/Makefile conf/ices.conf.dist doc/Makefile doc/ices.1])
+AC_CONFIG_FILES([Makefile src/Makefile src/playlist/Makefile conf/Makefile
+ conf/ices.conf.dist doc/Makefile])
 
 VERSION=ICES_VERSION
 
