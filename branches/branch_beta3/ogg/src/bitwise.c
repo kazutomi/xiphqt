@@ -12,7 +12,7 @@
  ********************************************************************
 
   function: packing variable sized words into an octet stream
-  last mod: $Id: bitwise.c,v 1.2.2.1 2000/11/04 06:17:23 xiphmont Exp $
+  last mod: $Id: bitwise.c,v 1.2.2.2 2000/11/04 06:43:28 xiphmont Exp $
 
  ********************************************************************/
 
@@ -36,7 +36,7 @@ static unsigned long mask[]=
 
 void oggpack_writeinit(oggpack_buffer *b){
   memset(b,0,sizeof(oggpack_buffer));
-  b->ptr=b->buffer=malloc(BUFFER_INCREMENT);
+  b->ptr=b->buffer=_ogg_malloc(BUFFER_INCREMENT);
   b->buffer[0]='\0';
   b->storage=BUFFER_INCREMENT;
 }
@@ -61,7 +61,7 @@ void oggpack_readinit(oggpack_buffer *b,unsigned char *buf,int bytes){
 /* Takes only up to 32 bits. */
 void oggpack_write(oggpack_buffer *b,unsigned long value,int bits){
   if(b->endbyte+4>=b->storage){
-    b->buffer=realloc(b->buffer,b->storage+BUFFER_INCREMENT);
+    b->buffer=_ogg_realloc(b->buffer,b->storage+BUFFER_INCREMENT);
     b->storage+=BUFFER_INCREMENT;
     b->ptr=b->buffer+b->endbyte;
   }
