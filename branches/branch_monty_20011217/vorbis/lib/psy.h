@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h,v 1.25 2001/12/12 09:45:25 xiphmont Exp $
+ last mod: $Id: psy.h,v 1.25.2.1 2001/12/17 05:39:24 xiphmont Exp $
 
  ********************************************************************/
 
@@ -116,7 +116,7 @@ typedef struct {
 
   float *ath;
   long  *octave;             /* in n.ocshift format */
-  unsigned long *bark;
+  long  *bark;
 
   long  firstoc;
   long  shiftoc;

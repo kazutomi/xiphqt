@@ -62,7 +62,7 @@ host_triplet = powerpc-unknown-linux-gnu
 AS = @AS@
 CC = gcc
 CPP = gcc -E
-DEBUG = -g -Wall -D_REENTRANT -D__NO_MATH_INLINES -fsigned-char
+DEBUG = -g -Wall -W -D_REENTRANT -D__NO_MATH_INLINES -fsigned-char
 DLLTOOL = @DLLTOOL@
 ECHO = echo
 EXEEXT = 
@@ -78,7 +78,7 @@ PACKAGE = libvorbis
 PROFILE = -pg -g -O20 -ffast-math -D_REENTRANT -fsigned-char
 RANLIB = ranlib
 STRIP = strip
-VERSION = 1.0rc2
+VERSION = 1.0rc3
 VE_LIB_AGE = 0
 VE_LIB_CURRENT = 0
 VE_LIB_REVISION = 1
@@ -123,7 +123,7 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES =  $(lib_LTLIBRARIES)
 
 
-DEFS =  -DPACKAGE=\"libvorbis\" -DVERSION=\"1.0rc2\" -DHAVE_DLFCN_H=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DHAVE_SQRTF=1 -DHAVE_LOGF=1 -DHAVE_EXPF=1 -DHAVE_ACOSF=1 -DHAVE_ATANF=1 -DHAVE_FREXPF=1 -DHAVE_RINTF=1  -I. -I$(srcdir) -DTRAIN_RES
+DEFS =  -DPACKAGE=\"libvorbis\" -DVERSION=\"1.0rc3\" -DHAVE_DLFCN_H=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DHAVE_SQRTF=1 -DHAVE_LOGF=1 -DHAVE_EXPF=1 -DHAVE_ACOSF=1 -DHAVE_ATANF=1 -DHAVE_FREXPF=1 -DHAVE_RINTF=1  -I. -I$(srcdir) 
 CPPFLAGS = 
 LDFLAGS =  
 libvorbis_la_LIBADD = 
@@ -500,7 +500,7 @@ mostlyclean distclean maintainer-clean
 
 
 debug:
-	$(MAKE) all CFLAGS="-g -Wall -D_REENTRANT -D__NO_MATH_INLINES -fsigned-char"
+	$(MAKE) all CFLAGS="-g -Wall -W -D_REENTRANT -D__NO_MATH_INLINES -fsigned-char"
 
 profile:
 	$(MAKE) all CFLAGS="-pg -g -O20 -ffast-math -D_REENTRANT -fsigned-char"
