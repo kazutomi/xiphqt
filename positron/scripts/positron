@@ -32,7 +32,7 @@ import positron.cmd_rebuild
 
 import positron.ports
 
-version = "Xiph.org Positron version 0.1"
+version = "Xiph.org Positron version 1.0b1"
 
 # Hash table of commands.  The first value in the tuple is the module
 # where the command is stored.  The second value is the order to
