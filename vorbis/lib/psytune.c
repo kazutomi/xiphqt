@@ -1,18 +1,19 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU PUBLIC LICENSE 2, WHICH IS INCLUDED WITH THIS SOURCE.    *
+ * PLEASE READ THESE TERMS DISTRIBUTING.                            *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggSQUISH SOURCE CODE IS (C) COPYRIGHT 1994-2000             *
+ * by Monty <monty@xiph.org> and The XIPHOPHORUS Company            *
+ * http://www.xiph.org/                                             *
  *                                                                  *
  ********************************************************************
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c,v 1.20 2003/03/04 21:22:11 xiphmont Exp $
+ last mod: $Id: psytune.c,v 1.1.2.2.2.9 2000/05/08 08:25:43 xiphmont Exp $
 
  ********************************************************************/
 
@@ -22,178 +23,45 @@
 #include <math.h>
 
 #include "vorbis/codec.h"
-#include "codec_internal.h"
 #include "os.h"
-#include "misc.h"
 #include "psy.h"
 #include "mdct.h"
-#include "smallft.h"
 #include "window.h"
 #include "scales.h"
 #include "lpc.h"
-#include "lsp.h"
-#include "masking.h"
-#include "registry.h"
-
-static vorbis_info_psy_global _psy_set0G={
-  0,   /* decaydBpms */
-  8,   /* lines per eighth octave */
-  
-  /* thresh sample period, preecho clamp trigger threshhold, range, minenergy */
-  256, {26.f,26.f,26.f,30.f}, {-90.f,-90.f,-90.f,-90.f}, -90.f,
-  -6.f, 
-  
-  0,
-
-  0.,
-  0.,
-};
-
-static vp_part _vp_part0[]={
-  {    1,9e10f, 9e10f,       1.f,9999.f},
-  { 9999,  .75f, 9e10f,       .5f,9999.f},
-/*{ 9999, 1.5f, 9e10f,       .5f,9999.f},*/
-  {   18,9e10f, 9e10f,       .5f,  30.f},
-  { 9999,9e10f, 9e10f,       .5f,  30.f}
-};
-
-static vp_couple _vp_couple0[]={
-  {    1,  {9e10f,9e10f,0}, {   0.f,   0.f,0}, {   0.f, 0.f,0}, {0.f,0.f,0}},
-  {   18,  {9e10f,9e10f,0}, {   0.f,   0.f,0}, {   0.f, 0.f,0}, {0.f,0.f,0}},
-  { 9999,  {9e10f,9e10f,0}, {   0.f, 9e10f,0}, {   0.f,22.f,1}, {0.f,0.f,0}}
-};
 
 static vorbis_info_psy _psy_set0={
-  ATH_Bark_dB_lineaggressive,
-  
-  -100.f,
-  -140.f,
-  6.f, /* floor master att */
+  1,/*athp*/
+  1,/*decayp*/
+  1,/*smoothp*/
+  1,8,0.,
 
-  /*     0  1  2   3   4   5   6   7   8   9  10  11  12  13  14  15   16   */
-  /* x: 63 88 125 175 250 350 500 700 1k 1.4k 2k 2.8k 4k 5.6k 8k 11.5k 16k Hz */
-  /* y: 0 10 20 30 40 50 60 70 80 90 100 dB */
-   1,  /* tonemaskp */
-  0.f, /* tone master att */
-  /*  0   10   20   30   40   50   60   70   80   90   100 */
-  {
-   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f}, /*63*/
-   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f}, /*88*/
-   {-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f,-999.f}, /*125*/
+  -130.,
 
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*175*/
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*250*/
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*350*/
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*500*/
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*700*/
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*1000*/
-   {-30.f,-30.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*1400*/
-   {-40.f,-40.f,-40.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*2000*/
-   {-40.f,-40.f,-40.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*2800*/
-   {-40.f,-40.f,-40.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*4000*/
+  1,/* tonemaskp*/
+  {-35.,-40.,-60.,-80.,-80.}, /* remember that el 4 is an 80 dB curve, not 100 */
+  {-35.,-40.,-60.,-80.,-95.},
+  {-35.,-40.,-60.,-80.,-95.},
+  {-35.,-40.,-60.,-80.,-95.},
+  {-35.,-40.,-60.,-80.,-95.},
+  {-65.,-60.,-60.,-80.,-90.},  /* remember that el 1 is a 60 dB curve, not 40 */
 
-   {-30.f,-35.f,-35.f,-40.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*5600*/
+  1,/*noisemaskp*/
+  {-100.,-100.,-100.,-200.,-200.}, /* this is the 500 Hz curve, which
+                                      is too wrong to work */
+  {-60.,-60.,-60.,-80.,-80.},
+  {-60.,-60.,-60.,-80.,-80.},
+  {-60.,-60.,-60.,-80.,-80.},
+  {-60.,-60.,-60.,-80.,-80.},
+  {-50.,-55.,-60.,-80.,-80.},
 
-   {-30.f,-30.f,-33.f,-35.f,-40.f,-50.f,-60.f,-70.f,-80.f,-90.f,-100.f}, /*8000*/
-   {-30.f,-30.f,-33.f,-35.f,-40.f,-45.f,-50.f,-60.f,-70.f,-85.f,-100.f}, /*11500*/
-   {-24.f,-24.f,-26.f,-32.f,-32.f,-42.f,-50.f,-60.f,-70.f,-85.f,-100.f}, /*16000*/
+  110.,
 
-  },
-
-  1,/* peakattp */
-  {{-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*63*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*88*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*125*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*175*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*250*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*350*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*500*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*700*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*1000*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*1400*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*2000*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*2800*/
-   {-14.f,-20.f,-20.f,-20.f,-26.f,-32.f,-40.f,-40.f,-40.f,-40.f,-40.f},/*4000*/
-   {-10.f,-12.f,-14.f,-16.f,-16.f,-20.f,-24.f,-30.f,-32.f,-40.f,-40.f},/*5600*/
-   {-10.f,-12.f,-14.f,-16.f,-16.f,-20.f,-24.f,-30.f,-32.f,-40.f,-40.f},/*8000*/
-   {-10.f,-10.f,-10.f,-12.f,-14.f,-18.f,-22.f,-28.f,-32.f,-40.f,-40.f},/*11500*/
-   {-10.f,-10.f,-10.f,-12.f,-14.f,-18.f,-22.f,-28.f,-32.f,-40.f,-40.f},/*16000*/
-  },
-
-  1,/*noisemaskp */
-  -10.f,  /* suppress any noise curve over maxspec+n */
-  .5f,   /* low window */
-  .5f,   /* high window */
-  10,
-  10,
-  25,
-  {.000f, 0.f, /*63*/
-   .000f, 0.f, /*88*/
-   .000f, 0.f, /*125*/
-   .000f, 0.f, /*175*/
-   .000f, 0.f, /*250*/
-   .000f, 0.f, /*350*/
-   .000f, 0.f, /*500*/
-   .000f, 0.f, /*700*/
-   .000f, 0.f, /*1000*/
-   .300f, 0.f, /*1400*/
-   .300f, 0.f, /*2000*/
-   .300f, 0.f, /*2800*/
-   .500f, 0.f, /*4000*/
-   .700f, 0.f, /*5600*/
-   .850f, 0.f, /*8000*/
-   .900f, 0.f, /*11500*/
-   .900f, 1.f, /*16000*/
-  },
- 
-  95.f,  /* even decade + 5 is important; saves an rint() later in a
-            tight loop) */
-  -44.,
-
-  32,
-  _vp_part0,_vp_couple0
+  .9998, .9997  /* attack/decay control */
 };
 
-static vorbis_info_floor1 _floor_set0={1,
-					{0},
-					
-					{32},
-					{0},
-					{0},
-					{{-1}},
-
-					2,
-					{0,1024,
-
-					 88,31,243,
-
-					 14,54,143,460,
-					 
-					 6,3,10, 22,18,26, 41,36,47, 
-					 69,61,78, 112,99,126, 185,162,211,  
-					 329,282,387, 672,553,825
-					 },
-					
-					60,30,400,
-					20,8,1,18.,
-					20,600,
-					960};
-
-
-static vorbis_info_mapping0 mapping_info={1,{0,1},{0},{0},{0},0, 1, {0},{1}};
-static codec_setup_info codec_setup0={ {0,0}, 
-				       1,1,1,1,1,0,1,	
-				       {NULL},
-				       {0},{&mapping_info},
-				       {0},{NULL},
-				       {1},{&_floor_set0},
-				       {2},{NULL},
-				       {NULL},
-				       {&_psy_set0},
-				       &_psy_set0G};
-				       
 static int noisy=0;
-void analysis(char *base,int i,float *v,int n,int bark,int dB){
+void analysis(char *base,int i,double *v,int n,int bark,int dB){
   if(noisy){
     int j;
     FILE *of;
@@ -206,12 +74,12 @@ void analysis(char *base,int i,float *v,int n,int bark,int dB){
 	  fprintf(of,"\n\n");
       else{
 	if(bark)
-	  fprintf(of,"%g ",toBARK(22050.f*j/n));
+	  fprintf(of,"%g ",toBARK(22050.*j/n));
 	else
-	  fprintf(of,"%g ",(float)j);
+	  fprintf(of,"%g ",(double)j);
       
 	if(dB){
-	  fprintf(of,"%g\n",todB(v+j));
+	  fprintf(of,"%g\n",todB(fabs(v[j])));
 	}else{
 	  fprintf(of,"%g\n",v[j]);
 	}
@@ -221,30 +89,58 @@ void analysis(char *base,int i,float *v,int n,int bark,int dB){
   }
 }
 
+typedef struct {
+  long n;
+  int ln;
+  int  m;
+  int *linearmap;
+
+  vorbis_info_floor0 *vi;
+  lpc_lookup lpclook;
+} vorbis_look_floor0;
+
+extern double _curve_to_lpc(double *curve,double *lpc,vorbis_look_floor0 *l,
+			    long frameno);
+extern void _lpc_to_curve(double *curve,double *lpc,double amp,
+			  vorbis_look_floor0 *l,char *name,long frameno);
+
 long frameno=0;
 
-/****************************************************************/
+/* hacked from floor0.c */
+static void floorinit(vorbis_look_floor0 *look,int n,int m,int ln){
+  int j;
+  double scale;
+  look->m=m;
+  look->n=n;
+  look->ln=ln;
+  lpc_init(&look->lpclook,look->ln,look->m);
+
+  scale=look->ln/toBARK(22050.);
+
+  look->linearmap=malloc(look->n*sizeof(int));
+  for(j=0;j<look->n;j++){
+    int val=floor( toBARK(22050./n*j) *scale);
+    if(val>look->ln)val=look->ln;
+    look->linearmap[j]=val;
+  }
+}
 
 int main(int argc,char *argv[]){
   int eos=0;
-  float nonz=0.f;
-  float acc=0.f;
-  float tot=0.f;
-  float ampmax=-9999,newmax;
-  float local_ampmax[2];
+  double nonz=0.;
+  double acc=0.;
+  double tot=0.;
 
   int framesize=2048;
-  float ampmax_att_per_sec=-6.;
+  int order=32;
 
-  float *pcm[2],*out[2],*window,*flr[2],*mask[2],*work[2];
+  double *pcm[2],*out[2],*window,*decay[2],*lpc,*floor,*mask;
   signed char *buffer,*buffer2;
   mdct_lookup m_look;
-  drft_lookup f_look;
   vorbis_look_psy p_look;
-  vorbis_look_psy_global *pg_look;
-  vorbis_look_floor *floor_look;
-  vorbis_info vi;
   long i,j,k;
+
+  vorbis_look_floor0 floorlook;
 
   int ath=0;
   int decayp=0;
@@ -256,36 +152,59 @@ int main(int argc,char *argv[]){
       if(argv[0][1]=='v'){
 	noisy=0;
       }
+      if(argv[0][1]=='A'){
+	ath=0;
+      }
+      if(argv[0][1]=='D'){
+	decayp=0;
+      }
+      if(argv[0][1]=='X'){
+	ath=0;
+	decayp=0;
+      }
     }else
       if(*argv[0]=='+'){
 	/* option */
 	if(argv[0][1]=='v'){
 	  noisy=1;
 	}
+	if(argv[0][1]=='A'){
+	  ath=1;
+	}
+	if(argv[0][1]=='D'){
+	  decayp=1;
+	}
+	if(argv[0][1]=='X'){
+	  ath=1;
+	  decayp=1;
+	}
       }else
 	framesize=atoi(argv[0]);
     argv++;
   }
   
-  vi.channels=2;
-  vi.codec_setup=&codec_setup0;
-
-  pcm[0]=_ogg_malloc(framesize*sizeof(float));
-  pcm[1]=_ogg_malloc(framesize*sizeof(float));
-  out[0]=_ogg_calloc(framesize/2,sizeof(float));
-  out[1]=_ogg_calloc(framesize/2,sizeof(float));
-  work[0]=_ogg_calloc(framesize,sizeof(float));
-  work[1]=_ogg_calloc(framesize,sizeof(float));
-  flr[0]=_ogg_calloc(framesize/2,sizeof(float));
-  flr[1]=_ogg_calloc(framesize/2,sizeof(float));
-  buffer=_ogg_malloc(framesize*4);
+  pcm[0]=malloc(framesize*sizeof(double));
+  pcm[1]=malloc(framesize*sizeof(double));
+  out[0]=calloc(framesize/2,sizeof(double));
+  out[1]=calloc(framesize/2,sizeof(double));
+  decay[0]=calloc(framesize/2,sizeof(double));
+  decay[1]=calloc(framesize/2,sizeof(double));
+  floor=malloc(framesize*sizeof(double));
+  mask=malloc(framesize*sizeof(double));
+  lpc=malloc(order*sizeof(double));
+  buffer=malloc(framesize*4);
   buffer2=buffer+framesize*2;
-  window=_vorbis_window_create(0,framesize,framesize/2,framesize/2);
+  window=_vorbis_window(0,framesize,framesize/2,framesize/2);
   mdct_init(&m_look,framesize);
-  drft_init(&f_look,framesize);
-  _vp_psy_init(&p_look,&_psy_set0,&_psy_set0G,framesize/2,44100);
-  pg_look=_vp_global_look(&vi);
-  floor_look=_floor_P[1]->look(NULL,NULL,&_floor_set0);
+  _vp_psy_init(&p_look,&_psy_set0,framesize/2,44100);
+  floorinit(&floorlook,framesize/2,order,framesize/8);
+
+  for(i=0;i<11;i++)
+    for(j=0;j<9;j++)
+      analysis("Ptonecurve",i*10+j,p_look.tonecurves[i][j],EHMER_MAX,0,1);
+  for(i=0;i<11;i++)
+    for(j=0;j<9;j++)
+      analysis("Pnoisecurve",i*10+j,p_look.noisecurves[i][j],EHMER_MAX,0,1);
 
   /* we cheat on the WAV header; we just bypass 44 bytes and never
      verify that it matches 16bit/stereo/44.1kHz. */
@@ -304,204 +223,79 @@ int main(int argc,char *argv[]){
       memset(buffer2+bytes,0,framesize*2-bytes);
     
     if(bytes!=0){
-      int nonzero[2];
 
       /* uninterleave samples */
       for(i=0;i<framesize;i++){
         pcm[0][i]=((buffer[i*4+1]<<8)|
-                      (0x00ff&(int)buffer[i*4]))/32768.f;
+                      (0x00ff&(int)buffer[i*4]))/32768.;
         pcm[1][i]=((buffer[i*4+3]<<8)|
-		   (0x00ff&(int)buffer[i*4+2]))/32768.f;
+		   (0x00ff&(int)buffer[i*4+2]))/32768.;
       }
       
-      {
-	float secs=framesize/44100.;
-	
-	ampmax+=secs*ampmax_att_per_sec;
-	if(ampmax<-9999)ampmax=-9999;
-      }
-
       for(i=0;i<2;i++){
-	float scale=4.f/framesize;
-	float *fft=work[i];
-	float *mdct=pcm[i];
-	float *logmdct=mdct+framesize/2;
+	double amp;
 
-	analysis("pre",frameno+i,pcm[i],framesize,0,0);
+	analysis("pre",frameno,pcm[i],framesize,0,0);
 	
-	/* fft and mdct transforms  */
+	/* do the psychacoustics */
 	for(j=0;j<framesize;j++)
-	  fft[j]=pcm[i][j]*=window[j];
+	  pcm[i][j]*=window[j];
+
+	mdct_forward(&m_look,pcm[i],pcm[i]);
+
+	analysis("mdct",frameno,pcm[i],framesize/2,1,1);
+
+	_vp_compute_mask(&p_look,pcm[i],floor,mask,decay[i]);
 	
-	drft_forward(&f_look,fft);
-
-	local_ampmax[i]=-9999.f;
-	fft[0]*=scale;
-	fft[0]=todB(fft);
-	for(j=1;j<framesize-1;j+=2){
-	  float temp=scale*FAST_HYPOT(fft[j],fft[j+1]);
-	  temp=fft[(j+1)>>1]=todB(&temp);
-	  if(temp>local_ampmax[i])local_ampmax[i]=temp;
-	}
-	if(local_ampmax[i]>ampmax)ampmax=local_ampmax[i];
+	analysis("prefloor",frameno,floor,framesize/2,1,1);
+	analysis("mask",frameno,mask,framesize/2,1,1);
+	analysis("decay",frameno,decay[i],framesize/2,1,1);
 	
-	mdct_forward(&m_look,pcm[i],mdct);
-	for(j=0;j<framesize/2;j++)
-	  logmdct[j]=todB(mdct+j);
+	amp=_curve_to_lpc(floor,lpc,&floorlook,frameno);
+	_lpc_to_curve(floor,lpc,sqrt(amp),&floorlook,"Ffloor",frameno);
+	analysis("floor",frameno,floor,framesize/2,1,1);
 
-	analysis("mdct",frameno+i,logmdct,framesize/2,1,0);
-	analysis("fft",frameno+i,fft,framesize/2,1,0);
-      }
+	_vp_apply_floor(&p_look,pcm[i],floor,mask);
+	analysis("quant",frameno,pcm[i],framesize/2,1,1);
 
-      for(i=0;i<2;i++){
-	float amp;
-	float *fft=work[i];
-	float *logmax=fft;
-	float *mdct=pcm[i];
-	float *logmdct=mdct+framesize/2;
-	float *mask=fft+framesize/2;
-
-	/* floor psychoacoustics */
-	_vp_compute_mask(&p_look,
-			 pg_look,
-			 i,
-			 fft,
-			 logmdct,
-			 mask,
-			 ampmax,
-			 local_ampmax[i],
-			 framesize/2);
-
-	analysis("mask",frameno+i,mask,framesize/2,1,0);
-
-	{
-	  vorbis_block vb;
-	  vorbis_dsp_state vd;
-	  memset(&vd,0,sizeof(vd));
-	  vd.vi=&vi;
-	  vb.vd=&vd;
-	  vb.pcmend=framesize;
-
-	  /* floor quantization/application */
-	  nonzero[i]=_floor_P[1]->forward(&vb,floor_look,
-					  mdct,
-					  logmdct,
-					  mask,
-					  logmax,
-					  
-					  flr[i]);
-	}
-
-	_vp_remove_floor(&p_look,
-			 pg_look,
-			 logmdct,
-			 mdct,
-			 flr[i],
-			 pcm[i],
-			 local_ampmax[i]);
-
-	for(j=0;j<framesize/2;j++)
-	  if(fabs(pcm[i][j])>1500)
-	    fprintf(stderr,"%ld ",frameno+i);
-	
-	analysis("res",frameno+i,pcm[i],framesize/2,1,0);
-	analysis("codedflr",frameno+i,flr[i],framesize/2,1,1);
-      }
-
-      /* residue prequantization */
-      _vp_partition_prequant(&p_look,
-			     &vi,
-			     pcm,
-			     nonzero);
-	
-      for(i=0;i<2;i++)
-	analysis("quant",frameno+i,pcm[i],framesize/2,1,0);
-
-      /* channel coupling / stereo quantization */
-
-      _vp_couple(&p_look,
-		 &mapping_info,
-		 pcm,
-		 nonzero);
-  
-      for(i=0;i<2;i++)
-	analysis("coupled",frameno+i,pcm[i],framesize/2,1,0);
-
-      /* decoupling */
-      for(i=mapping_info.coupling_steps-1;i>=0;i--){
-	float *pcmM=pcm[mapping_info.coupling_mag[i]];
-	float *pcmA=pcm[mapping_info.coupling_ang[i]];
-	
+	/* re-add floor */
 	for(j=0;j<framesize/2;j++){
-	  float mag=pcmM[j];
-	  float ang=pcmA[j];
-	  
-	  if(mag>0)
-	    if(ang>0){
-	      pcmM[j]=mag;
-	      pcmA[j]=mag-ang;
-	    }else{
-	      pcmA[j]=mag;
-	      pcmM[j]=mag+ang;
-	    }
-	  else
-	    if(ang>0){
-	      pcmM[j]=mag;
-	      pcmA[j]=mag+ang;
-	    }else{
-	      pcmA[j]=mag;
-	      pcmM[j]=mag-ang;
-	    }
+	  double val=rint(pcm[i][j]);
+	  tot++;
+	  if(val){
+	    nonz++;
+	    acc+=log(fabs(val)*2.+1.)/log(2);
+	    pcm[i][j]=val*floor[j];
+	  }else{
+	    pcm[i][j]=0;
+	  }
 	}
-      }
-    
-      for(i=0;i<2;i++)
-	analysis("decoupled",frameno+i,pcm[i],framesize/2,1,0);
-
-      for(i=0;i<2;i++){
-	float amp;
-
-	for(j=0;j<framesize/2;j++)
-	  pcm[i][j]*=flr[i][j];
-
-	analysis("final",frameno+i,pcm[i],framesize/2,1,1);
+	
+	analysis("final",frameno,pcm[i],framesize/2,1,1);
 
 	/* take it back to time */
 	mdct_backward(&m_look,pcm[i],pcm[i]);
-
 	for(j=0;j<framesize/2;j++)
 	  out[i][j]+=pcm[i][j]*window[j];
 
-	analysis("out",frameno+i,out[i],framesize/2,0,0);
-
-
+	frameno++;
       }
            
       /* write data.  Use the part of buffer we're about to shift out */
       for(i=0;i<2;i++){
-	char  *ptr=buffer+i*2;
-	float *mono=out[i];
-	int flag=0;
+	char *ptr=buffer+i*2;
+	double  *mono=out[i];
 	for(j=0;j<framesize/2;j++){
 	  int val=mono[j]*32767.;
 	  /* might as well guard against clipping */
-	  if(val>32767){
-	    if(!flag)fprintf(stderr,"clipping in frame %ld ",frameno+i);
-	    flag=1;
-	    val=32767;
-	  }
-	  if(val<-32768){
-	    if(!flag)fprintf(stderr,"clipping in frame %ld ",frameno+i);
-	    flag=1;
-	    val=-32768;
-	  }
+	  if(val>32767)val=32767;
+	  if(val<-32768)val=-32768;
 	  ptr[0]=val&0xff;
 	  ptr[1]=(val>>8)&0xff;
 	  ptr+=4;
 	}
       }
  
-      fprintf(stderr,"*");
       fwrite(buffer,1,framesize*2,stdout);
       memmove(buffer,buffer2,framesize*2);
 
@@ -509,7 +303,6 @@ int main(int argc,char *argv[]){
 	for(j=0,k=framesize/2;j<framesize/2;j++,k++)
 	  out[i][j]=pcm[i][k]*window[k];
       }
-      frameno+=2;
     }else
       eos=1;
   }
