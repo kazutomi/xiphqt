@@ -642,65 +642,59 @@ static void queue_task(void (*f)(void)){
 }
 
 static void OpenOutputFile(){
-  if(outfile_fd!=2){
+  if(outfile_fd!=-2){
     if(!strcmp(outpath,"-")){
       outfile_fd=STDOUT_FILENO;
       if(debug)fprintf(stderr,"    ...: Capturing to stdout\n");
     }else{
       struct stat buf;
       int ret=stat(outpath,&buf);
-      if(ret){
-	fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
-		"         %s: %s\n\n",outpath,strerror(errno));
-	outfile_fd=-2;
-      }else{
-	if(S_ISDIR(buf.st_mode)){
-	  /* construct a new filename */
-	  struct tm *now;
-	  char buf2[256];
-	  char buf1[256];
-	  time_t nows;
-	  nows=time(NULL);
-	  now=localtime(&nows);
-	  strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
-	  if(videocount){
-	    if(audio_channels){
-	      sprintf(buf2,"%s_%s%dHz_%dx%d_AV.snatch",
-		      buf1,
-		      (audio_channels==1?"mono":"stereo"),
-		      audio_rate,
-		      video_width,
-		      video_height);
-	    }else{
-	      sprintf(buf2,"%s_%dx%d_V.snatch",
-		      buf1,
-		      video_width,
-		      video_height);
-	    }
-	  }else{
-	    sprintf(buf2,"%s_%s%dHz_A.snatch",
+      if(!ret && S_ISDIR(buf.st_mode)){
+	/* construct a new filename */
+	struct tm *now;
+	char buf2[256];
+	char buf1[256];
+	time_t nows;
+	nows=time(NULL);
+	now=localtime(&nows);
+	strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
+	if(videocount){
+	  if(audio_channels){
+	    sprintf(buf2,"%s_%s%dHz_%dx%d_AV.snatch",
 		    buf1,
 		    (audio_channels==1?"mono":"stereo"),
-		    audio_rate);
-	  }
-      	  
-	  outfile_fd=(*libc_open)(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
-	  if(outfile_fd<0){
-	    fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
-		    "         %s: %s\n\n",buf2,strerror(errno));
-	    outfile_fd=-2;
-	  }else
-	    if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
-	  
-	}else{
-	  outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
-	  if(outfile_fd<0){
-	    fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
-		    "         %s: %s\n\n",outpath,strerror(errno));
-	    outfile_fd=-2;
+		    audio_rate,
+		    video_width,
+		    video_height);
 	  }else{
-	    if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
+	    sprintf(buf2,"%s_%dx%d_V.snatch",
+		    buf1,
+		    video_width,
+		    video_height);
 	  }
+	}else{
+	  sprintf(buf2,"%s_%s%dHz_A.snatch",
+		  buf1,
+		  (audio_channels==1?"mono":"stereo"),
+		  audio_rate);
+	}
+	
+	outfile_fd=(*libc_open)(buf2,O_RDWR|O_CREAT|O_APPEND,0770);
+	if(outfile_fd<0){
+	  fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
+		  "         %s: %s\n\n",buf2,strerror(errno));
+	  outfile_fd=-2;
+	}else
+	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",buf2);
+	
+      }else{
+	outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
+	if(outfile_fd<0){
+	  fprintf(stderr,"**ERROR: Could not stat requested output path!\n"
+		  "         %s: %s\n\n",outpath,strerror(errno));
+	  outfile_fd=-2;
+	}else{
+	  if(debug)fprintf(stderr,"    ...: Capturing to file %s\n",outpath);
 	}
       }
     }
