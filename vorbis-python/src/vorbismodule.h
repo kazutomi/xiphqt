@@ -17,12 +17,6 @@ extern char py_vinfo_doc[];
 extern char py_vcomment_doc[];
 extern char py_dsp_doc[];
 
-/* Module-accessible functions */
-
-PyObject *py_file_new(PyObject *, PyObject *);
-PyObject *py_info_new(PyObject *, PyObject *, PyObject *);
-PyObject *py_comment_new(PyObject *, PyObject *);
-
 /* Utility functions/macros */
 
 PyObject *v_error_from_code(int, char*);

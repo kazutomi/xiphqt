@@ -1,3 +1,8 @@
+2002-07-16  Andrew H. Chatham <andrew@andrewchatham.com>
+	* pyvorbisinfo.c: Can now create comments from dictionaries 
+	(a MUCH better interface)
+	* vorbismodule.h: Removed unneeded declarations
+
 2002-05-21  Andrew H. Chatham <andrew.chatham@duke.edu>
 	* pyvorbisinfo.c: Don't crash if comments are not valid UTF-8
 
