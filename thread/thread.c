@@ -28,9 +28,6 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/time.h>
-#else
-#include <windows.h>
-#include <winbase.h>
 #endif
 
 #include <pthread.h>
@@ -40,10 +37,6 @@
 #include "log.h"
 #include "thread.h"
 #include "avl.h"
-
-#ifdef _WIN32
-#define __FUNCTION__ __FILE__ ":" __LINE__
-#endif
 
 #define CATMODULE "thread"
 #define LOG_ERROR(y) log_write(_logid, 1, CATMODULE "/" __FUNCTION__, y)
