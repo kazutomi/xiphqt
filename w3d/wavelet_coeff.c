@@ -3,15 +3,30 @@
 #include "rle.h"
 
 
+#define GRAY_CODES 1
+
+#if defined(GRAY_CODES)
+static inline
+uint16_t binary_to_gray (uint16_t x) { return  x ^ (x >> 1); }
+
+static inline
+uint16_t gray_to_binary (uint16_t x)
+{ int i; for (i=1; i<16; i+=i) x ^= x >> i; return x; }
+#endif
+
 
 static inline
 void encode_coeff (ENTROPY_CODER significand_bitstream [],
                    ENTROPY_CODER insignificand_bitstream [],
                    TYPE coeff)
 {
-   static TYPE mask [2] = { 0, ~0 };
    int sign = (coeff >> (8*sizeof(TYPE)-1)) & 1;
+#if defined(GRAY_CODES)
+   TYPE significance = binary_to_gray(coeff);
+#else
+   static TYPE mask [2] = { 0, ~0 };
    TYPE significance = coeff ^ mask[sign];
+#endif
    int i = TYPE_BITS;
 
    do {
@@ -31,7 +46,9 @@ static inline
 TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
                    ENTROPY_CODER insignificand_bitstream [])
 {
+#if !defined(GRAY_CODES)
    static TYPE mask [2] = { 0, ~0 };
+#endif
    TYPE significance = 0;
    int sign;
    int i = TYPE_BITS;
@@ -50,7 +67,12 @@ TYPE decode_coeff (ENTROPY_CODER significand_bitstream [],
    while (--i >= 0)
       significance |= INPUT_BIT(&insignificand_bitstream[i]) << i;
 
+#if defined(GRAY_CODES)
+   significance |= sign << (8*sizeof(TYPE)-1);
+   return gray_to_binary(significance);
+#else
    return (significance ^ mask[sign]);
+#endif
 }
 
 
