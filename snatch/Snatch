@@ -677,21 +677,15 @@ sub TimerWatch{
     if($mode=~/timer/){
 	my$now=time();
 
-	print "mode=timer\n";
-
 	if($TIMER_ENDTIMES[$TIMER_SORTED[$#TIMER]]<$now){
-	    print "stopping\n";
 	    Robot_Stop();
 	    Robot_Inactive();
 	    ButtonConfig();
 	}else{
 	    
 	    if($now>=$next_timer_event){
-		print "setting up\n";
 		SetupTimerDispatch();
 	    }else{
-		print "recording\n";
-
 		my$waiting_seconds=$next_timer_event-$now;
 		
 		my$waiting_minutes=int($waiting_seconds/60);
