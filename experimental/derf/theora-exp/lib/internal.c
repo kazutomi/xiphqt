@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 #include "internal.h"
 #include "idct.h"
@@ -108,10 +109,17 @@ int oc_ilog(unsigned _v){
            blocks are to be ended.*/
 typedef (*oc_token_skip_func)(int _token,int _extra_bits);
 
-/*Handles the end of block tokens.*/
+/*Handles the simple end of block tokens.*/
 static int oc_token_skip_eob(int _token,int _extra_bits){
   static const int NBLOCKS_ADJUST[OC_NDCT_EOB_TOKEN_MAX]={1,2,3,4,8,16,0};
   return -_extra_bits-NBLOCKS_ADJUST[_token];
+}
+
+/*The last EOB token has a special case, where an EOB run of size zero ends all
+   the remaining blocks in the frame.*/
+static int oc_token_skip_eob6(int _token,int _extra_bits){
+  if(!_extra_bits)return -INT_MAX;
+  return -_extra_bits;
 }
 
 /*Handles the pure zero run tokens.*/
@@ -152,7 +160,7 @@ static const oc_token_skip_func OC_TOKEN_SKIP_TABLE[OC_NDCT_TOKENS]={
   oc_token_skip_eob,
   oc_token_skip_eob,
   oc_token_skip_eob,
-  oc_token_skip_eob,
+  oc_token_skip_eob6,
   oc_token_skip_zrl,
   oc_token_skip_zrl,
   (oc_token_skip_func)oc_token_skip_val,
@@ -187,7 +195,9 @@ static const oc_token_skip_func OC_TOKEN_SKIP_TABLE[OC_NDCT_TOKENS]={
   Return: A positive value indicates that number of coefficients are to be
            skipped in the current block.
           Otherwise, the negative of the return value indicates that number of
-           blocks are to be ended.*/
+           blocks are to be ended.
+          0 will never be returned, so that at least one coefficient in one
+           block will always be decoded for every token.*/
 int oc_dct_token_skip(int _token,int _extra_bits){
   return (*OC_TOKEN_SKIP_TABLE[_token])(_token,_extra_bits);
 }

@@ -18,7 +18,7 @@ static int oc_mini(int _a,int _b){
 #define OC_MAXI(_a,_b)      ((_a)<(_b)?(_b):(_a))
 #define OC_MINI(_a,_b)      ((_a)>(_b)?(_b):(_a))
 #define OC_CLAMPI(_a,_b,_c) (OC_MAXI(_a,OC_MINI(_b,_c)))
-/*Divides an integer by a power of two, rounding towards 0.
+/*Divides an integer by a power of two, truncating towards 0.
   _dividend: The integer to divide.
   _shift:    The non-negative power of two to divide by.
   _rmask:    (1<<_shift)-1*/
@@ -35,7 +35,7 @@ static int oc_mini(int _a,int _b){
 /*Right shifts _dividend by _shift, adding _rval, and subtracting one for
    negative dividends first..
   When _rval is (1<<_shift-1), this is equivalent to division with rounding
-   away from zero.*/
+   ties towards positive infinity.*/
 #define OC_DIV_ROUND_POW2(_dividend,_shift,_rval)\
   ((_dividend)+((_dividend)>>sizeof(_dividend)*8-1)+(_rval)>>(_shift))
 /*Swaps two integers _a and _b if _a>_b.*/

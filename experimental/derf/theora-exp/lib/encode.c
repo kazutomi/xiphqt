@@ -2537,7 +2537,9 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
       ncoded=_enc->state.ncoded_fragis[0]+_enc->state.ncoded_fragis[1]+
        _enc->state.ncoded_fragis[2];
       nuncoded=_enc->state.nfrags-ncoded;
-      if(ncoded<nuncoded){
+      if(ncoded<nuncoded&&
+       _enc->state.ref_frame_idx[OC_FRAME_PREV]!=
+       _enc->state.ref_frame_idx[OC_FRAME_GOLD]){
         plfragis[0]=_enc->state.coded_fragis;
         plfragis[1]=plfragis[0]+_enc->state.ncoded_fragis[0];
         plfragis[2]=plfragis[1]+_enc->state.ncoded_fragis[1];
@@ -2556,6 +2558,7 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
          _enc->state.ref_frame_idx[OC_FRAME_SELF];
       }
     }
+    /*Filter block edges.*/
     oc_state_loop_filter(&_enc->state,OC_FRAME_PREV);
 #if defined(OC_DUMP_IMAGES)
     oc_state_dump_frame(&_enc->state,OC_FRAME_PREV);

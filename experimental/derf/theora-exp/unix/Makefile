@@ -15,17 +15,17 @@ MAKEDEPEND = gcc -MM
 # The location of include files.
 # Modify these to point to your Ogg and Vorbis include directories if they are
 #  not installed in a standard location.
-CINCLUDE = -I../include -I/usr/include/SDL -D_REENTRANT
+CINCLUDE = -I/usr/include/SDL -D_REENTRANT
 # Extra compilation flags.
 # You may get speed increases by including flags such as -O2 or -O3 or
 #  -ffast-math, or additional flags, depending on your system and compiler.
 # The -g flag will generally include debugging information.
-CFLAGS = -funroll-loops -pg -fno-inline-functions
+CFLAGS =
 # Libraries to link with, and the location of library files.
 LIBS = -logg -lvorbis -lvorbisenc
 
 # ANYTHING BELOW THIS LINE PROBABLY DOES NOT NEED EDITING
-CINCLUDE+=
+CINCLUDE := -I../include ${CINCLUDE}
 LIBSRCDIR = ../lib
 BINSRCDIR = ../examples
 WORKDIR = objs
@@ -92,7 +92,8 @@ PLAYER_EXAMPLE_TARGET:= ${TARGETBINDIR}/${PLAYER_EXAMPLE_TARGET}
 
 # Targets:
 # Everything (default)
-all: ${LIBTHEORA_TARGET} ${DUMP_VIDEO_TARGET} ${ENCODER_EXAMPLE_TARGET} ${PLAYER_EXAMPLE_TARGET}
+all: ${LIBTHEORA_TARGET} ${DUMP_VIDEO_TARGET} ${ENCODER_EXAMPLE_TARGET}\
+      ${PLAYER_EXAMPLE_TARGET}
 
 # libtheora
 ${LIBTHEORA_TARGET}: ${LIBTHEORA_OBJS}
@@ -121,7 +122,7 @@ clean:
 	-rm ${LIBTHEORA_OBJS} ${LIBTHEORA_TARGET}          \
          ${DUMP_VIDEO_OBJS} ${DUMP_VIDEO_TARGET}           \
          ${ENCODER_EXAMPLE_OBJS} ${ENCODER_EXAMPLE_TARGET} \
-	 ${PLAYER_EXAMPLE_OBJS} ${PLAYER_EXAMPLE_TARGET}
+         ${PLAYER_EXAMPLE_OBJS} ${PLAYER_EXAMPLE_TARGET}
 	-rmdir ${WORKDIR}
 
 # Make the dependency list.
@@ -131,7 +132,7 @@ clean:
 depend: ${LIBTHEORA_CSOURCES} ${LIBTHEORA_CHEADERS} \
          ${DUMP_VIDEO_CSOURCES}                     \
          ${ENCODER_EXAMPLE_CSOURCES}                \
-	 ${PLAYER_EXAMPLE_CSOURCES}
+         ${PLAYER_EXAMPLE_CSOURCES}
 	${MAKEDEPEND} ${CINCLUDE} ${CFLAGS} ${LIBTHEORA_CSOURCES} > $@
 
 # Specify which targets are phony for GNU make

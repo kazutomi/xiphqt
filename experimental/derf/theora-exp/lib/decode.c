@@ -980,6 +980,10 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
       eobs=oc_dec_ac_coeff_unpack(_dec,zzi,huff_idxs,ntoks_left);
     }
   }
+  /*TODO: eobs should be exactly zero, or 4096 or greater.
+    The second case occurs when an EOB run of size zero is encountered, which
+     gets treated as an infinite EOB run (where infinity is INT_MAX).
+    If neither of these conditions holds, then a warning should be issued.*/
 }
 
 
@@ -1302,7 +1306,9 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     ncoded=_dec->state.ncoded_fragis[0]+_dec->state.ncoded_fragis[1]+
      _dec->state.ncoded_fragis[2];
     nuncoded=_dec->state.nfrags-ncoded;
-    if(ncoded<nuncoded){
+    if(ncoded<nuncoded&&
+     _dec->state.ref_frame_idx[OC_FRAME_PREV]!=
+     _dec->state.ref_frame_idx[OC_FRAME_GOLD]){
       plfragis[0]=_dec->state.coded_fragis;
       plfragis[1]=plfragis[0]+_dec->state.ncoded_fragis[0];
       plfragis[2]=plfragis[1]+_dec->state.ncoded_fragis[1];
