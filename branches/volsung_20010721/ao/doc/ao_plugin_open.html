@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>libao - function - plugin_set_option</title>
+<title>libao - function - ao_plugin_open</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
@@ -13,22 +13,22 @@
 </tr>
 </table>
 
-<h1>plugin_set_option</h1>
+<h1>ao_plugin_open</h1>
 
 <p><i>declared in "ao/plugin.h";</i></p>
 
-<p>Set a new option key-value pair for a device.  This will only be
-called after <a
-href="plugin_device_init.html">plugin_device_init()</a> is called.
-Unrecognized option keys are silently ignored, but invalid option
-values will cause the function to return a failing error code.
+<p>Open the device for playback.  All of the device options will have
+already been set by previous calls to <a
+href="ao_plugin_set_option.html">ao_plugin_set_option()</a>.  If this is a
+file output driver, the file itself will have be already opened and a
+pointer to a <tt>FILE</tt> structure stored in <tt>device->file</tt>.
 
 <br><br>
 <table border=0 color=black cellspacing=0 cellpadding=7>
 <tr bgcolor=#cccccc>
 	<td>
 <pre><b>
-int plugin_set_option(<a href="ao_device.html">ao_device</a> *device, const char *key, const char *value);
+int ao_plugin_open(<a href="ao_device.html">ao_device</a> *device, <a href="ao_sample_format.html">ao_sample_format</a> *format);
 </b></pre>
 	</td>
 </tr>
@@ -37,21 +37,19 @@ int plugin_set_option(<a href="ao_device.html">ao_device</a> *device, const char
 <h3>Parameters</h3>
 <dl>
 <dt><i>device</i></dt>
-<dd>Pointer to the device structure.</dd>
-<dt><i>key</i></dt>
-<dd>A string holding the option key.  The calling function retains ownership
-of this memory.</dd>
-<dt><i>value</i></dt>
-<dd>A string holding the option value.  The calling function retains ownership
-of this memory.</dd>
+<dd>Pointer to pre-allocated device structure.  The plugin should
+set its desired byte format in <tt>device->driver_byte_format</tt>.</dd>
+<dt><i>format</i></dt>
+<dd>Output device sample format.  <tt>format->byte_format</tt> should be
+ignored as it is relevant only to the library core.</dd>
 </dl>
 
 <h3>Return Values</h3>
 <blockquote>
 <li>1 indicates success.</li>
 
-<li>0 indicates failure.  <a
-href="plugin_device_clear.html">plugin_device_clear()</a> should be
+<li>0 indicates failure to open the device.
+<a href="ao_plugin_device_clear.html">ao_plugin_device_clear()</a> should be
 called to ensure the deallocate of all private data structures.</li>
 </blockquote>
 <p>

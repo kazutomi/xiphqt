@@ -55,7 +55,7 @@ typedef struct ao_esd_internal
 } ao_esd_internal;
 
 
-int plugin_test()
+int ao_plugin_test()
 {
 	int sock;
 
@@ -69,13 +69,13 @@ int plugin_test()
 }
 
 
-ao_info *plugin_driver_info(void)
+ao_info *ao_plugin_driver_info(void)
 {
 	return &ao_esd_info;
 }
 
 
-int plugin_device_init(ao_device *device)
+int ao_plugin_device_init(ao_device *device)
 {
 	ao_esd_internal *internal;
 
@@ -91,7 +91,7 @@ int plugin_device_init(ao_device *device)
 	return 1; /* Memory alloc successful */
 }
 
-int plugin_set_option(ao_device *device, const char *key, const char *value)
+int ao_plugin_set_option(ao_device *device, const char *key, const char *value)
 {
 	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
 
@@ -103,7 +103,7 @@ int plugin_set_option(ao_device *device, const char *key, const char *value)
 	return 1;
 }
 
-int plugin_open(ao_device *device, ao_sample_format *format)
+int ao_plugin_open(ao_device *device, ao_sample_format *format)
 {
 	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
 	int esd_bits;
@@ -143,7 +143,7 @@ int plugin_open(ao_device *device, ao_sample_format *format)
 	return 1;
 }
 
-int plugin_play(ao_device *device, const char* output_samples, 
+int ao_plugin_play(ao_device *device, const char* output_samples, 
 		uint_32 num_bytes)
 {
 	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
@@ -155,7 +155,7 @@ int plugin_play(ao_device *device, const char* output_samples,
 }
 
 
-int plugin_close(ao_device *device)
+int ao_plugin_close(ao_device *device)
 {
 	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
 
@@ -165,7 +165,7 @@ int plugin_close(ao_device *device)
 }
 
 
-void plugin_device_clear(ao_device *device)
+void ao_plugin_device_clear(ao_device *device)
 {
 	ao_esd_internal *internal = (ao_esd_internal *) device->internal;
 

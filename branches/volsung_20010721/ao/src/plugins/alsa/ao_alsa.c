@@ -62,17 +62,7 @@ typedef struct ao_alsa_internal
 } ao_alsa_internal;
 
 
-static int _is_big_endian(void)
-{
-        uint_16 pattern = 0xbabe;
-        unsigned char *bytewise = (unsigned char *)&pattern;
-
-        if (bytewise[0] == 0xba) return 1;
-        return 0;
-}
-
-
-int plugin_test()
+int ao_plugin_test()
 {
 	snd_pcm_t *handle;
 
@@ -86,13 +76,13 @@ int plugin_test()
 }
 
 
-ao_info *plugin_driver_info(void)
+ao_info *ao_plugin_driver_info(void)
 {
 	return &ao_alsa_info;
 }
 
 
-int plugin_device_init(ao_device *device)
+int ao_plugin_device_init(ao_device *device)
 {
 	ao_alsa_internal *internal;
 
@@ -111,7 +101,7 @@ int plugin_device_init(ao_device *device)
 }
 
 
-int plugin_set_option(ao_device *device, const char *key, const char *value)
+int ao_plugin_set_option(ao_device *device, const char *key, const char *value)
 {
 	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
 	if (!strcmp(key, "card"))
@@ -124,7 +114,7 @@ int plugin_set_option(ao_device *device, const char *key, const char *value)
 	return 1;
 }
 
-int plugin_open(ao_device *device, ao_sample_format *format)
+int ao_plugin_open(ao_device *device, ao_sample_format *format)
 {
 	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
 
@@ -229,7 +219,7 @@ int _alsa_write_buffer(ao_alsa_internal *s)
 }	
 
 
-int plugin_play(ao_device *device, const char *output_samples, 
+int ao_plugin_play(ao_device *device, const char *output_samples, 
 		uint_32 num_bytes)
 {
 	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
@@ -259,7 +249,7 @@ int plugin_play(ao_device *device, const char *output_samples,
 }
 
 
-int plugin_close(ao_device *device)
+int ao_plugin_close(ao_device *device)
 {
 	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
 	int result;
@@ -273,7 +263,7 @@ int plugin_close(ao_device *device)
 }
 
 
-void plugin_device_clear(ao_device *device)
+void ao_plugin_device_clear(ao_device *device)
 {
 	ao_alsa_internal *internal = (ao_alsa_internal *) device->internal;
 

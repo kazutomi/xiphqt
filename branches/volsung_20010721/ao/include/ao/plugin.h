@@ -19,7 +19,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with GNU Make; see the file COPYING.  If not, write to
- *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.	
+ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
 #ifndef __PLUGIN_H__
@@ -33,15 +33,15 @@ extern "C"
 #include <stdlib.h>
 #include "os_types.h"
 
-int plugin_test();
-ao_info *plugin_driver_info();
-int plugin_device_init(ao_device *device);
-int plugin_set_option(ao_device *device, const char *key, const char *value);
-int plugin_open(ao_device *device, ao_sample_format *format);
-int plugin_play(ao_device *device, const char *output_samples, 
+int ao_plugin_test();
+ao_info *ao_plugin_driver_info();
+int ao_plugin_device_init(ao_device *device);
+int ao_plugin_set_option(ao_device *device, const char *key, const char *value);
+int ao_plugin_open(ao_device *device, ao_sample_format *format);
+int ao_plugin_play(ao_device *device, const char *output_samples, 
 		uint_32 num_bytes);
-int plugin_close(ao_device *device);
-void plugin_device_clear(ao_device *device);
+int ao_plugin_close(ao_device *device);
+void ao_plugin_device_clear(ao_device *device);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>libao - function - plugin_device_init</title>
+<title>libao - function - ao_plugin_device_init</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
@@ -13,13 +13,13 @@
 </tr>
 </table>
 
-<h1>plugin_device_init</h1>
+<h1>ao_plugin_device_init</h1>
 
 <p><i>declared in "ao/plugin.h";</i></p>
 
 <p>Initialize the private device data structures.  Memory should be
 allocated, and default values set if necessary, but devices should not
-be opened until <a href="plugin_open.html">plugin_open()</a> is
+be opened until <a href="ao_plugin_open.html">ao_plugin_open()</a> is
 called.
 
 <br><br>
@@ -27,7 +27,7 @@ called.
 <tr bgcolor=#cccccc>
 	<td>
 <pre><b>
-int plugin_device_init(<a href="ao_device.html">ao_device</a> *device);
+int ao_plugin_device_init(<a href="ao_device.html">ao_device</a> *device);
 </b></pre>
 	</td>
 </tr>
@@ -45,7 +45,7 @@ store the address of its private memory in <tt>device->internal</tt>.</dd>
 <li>1 indicates success.</li>
 
 <li>0 indicates failure, probably due to memory allocation problems.
-<a href="plugin_device_clear.html">plugin_device_clear()</a> should be
+<a href="ao_plugin_device_clear.html">ao_plugin_device_clear()</a> should be
 called to ensure the deallocate of all private data structures.</li>
 </blockquote>
 <p>

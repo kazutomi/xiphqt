@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>libao - function - plugin_driver_info</title>
+<title>libao - function - ao_plugin_close</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
@@ -13,29 +13,36 @@
 </tr>
 </table>
 
-<h1>plugin_driver_info</h1>
+<h1>ao_plugin_close</h1>
 
 <p><i>declared in "ao/plugin.h";</i></p>
 
-<p>Get the driver information structure.
+<p>Close the device.  Private data structures are not deallocated yet.
 
 <br><br>
 <table border=0 color=black cellspacing=0 cellpadding=7>
 <tr bgcolor=#cccccc>
 	<td>
 <pre><b>
-<a href="ao_info.html">ao_info*</a> plugin_driver_info();
+int ao_plugin_close(<a href="ao_device.html">ao_device</a> *device);
 </b></pre>
 	</td>
 </tr>
 </table>
 
+<h3>Parameters</h3>
+<dl>
+<dt><i>device</i></dt>
+<dd>Pointer to pre-allocated device structure.</dd>
+</dl>
+
 <h3>Return Values</h3>
 <blockquote>
-<li>Pointer to the driver information structure.  This structure should
-not be modified. </li>
+<li>1 indicates remaining data written correctly and device
+closed.</li>
+<li>0 indicates an error while the device was being closed.  If this
+device was writing to a file, the file may be corrupted.</li>
 </blockquote>
-<p>
 
 <br><br>
 <hr noshade>

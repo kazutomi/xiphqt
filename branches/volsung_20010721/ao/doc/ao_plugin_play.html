@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>libao - function - plugin_close</title>
+<title>libao - function - ao_plugin_play</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
@@ -13,18 +13,20 @@
 </tr>
 </table>
 
-<h1>plugin_close</h1>
+<h1>ao_plugin_play</h1>
 
 <p><i>declared in "ao/plugin.h";</i></p>
 
-<p>Close the device.  Private data structures are not deallocated yet.
+<p>Write samples to the device.  Channels are interleaved, and samples
+have the byte order requested by the plugin
+(<tt>device->driver_byte_format</tt>).
 
 <br><br>
 <table border=0 color=black cellspacing=0 cellpadding=7>
 <tr bgcolor=#cccccc>
 	<td>
 <pre><b>
-int plugin_close(<a href="ao_device.html">ao_device</a> *device);
+int ao_plugin_play(<a href="ao_device.html">ao_device</a> *device, void *output_samples, uint_32 num_bytes);
 </b></pre>
 	</td>
 </tr>
@@ -33,16 +35,23 @@ int plugin_close(<a href="ao_device.html">ao_device</a> *device);
 <h3>Parameters</h3>
 <dl>
 <dt><i>device</i></dt>
-<dd>Pointer to pre-allocated device structure.</dd>
+<dd>Pointer to pre-allocated device structure.  The plugin should
+set its desired byte format in <tt>device->driver_byte_format</tt>.</dd>
+<dt><i>output_samples</i></dt>
+<dd>Pointer to audio sample buffer.</dd>
+<dt><i>num_bytes</i></dt>
+<dd>Number of bytes in buffer.</dd>
 </dl>
 
 <h3>Return Values</h3>
 <blockquote>
-<li>1 indicates remaining data written correctly and device
-closed.</li>
-<li>0 indicates an error while the device was being closed.  If this
-device was writing to a file, the file may be corrupted.</li>
+<li>1 indicates success.</li>
+
+<li>0 indicates failure to send the samples to the device.
+<a href="ao_plugin_close.html">ao_plugin_close()</a> should be
+called.</li>
 </blockquote>
+<p>
 
 <br><br>
 <hr noshade>

@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>libao - function - plugin_device_clear</title>
+<title>libao - function - ao_plugin_driver_info</title>
 <link rel=stylesheet href="style.css" type="text/css">
 </head>
 
@@ -13,28 +13,29 @@
 </tr>
 </table>
 
-<h1>plugin_device_clear</h1>
+<h1>ao_plugin_driver_info</h1>
 
 <p><i>declared in "ao/plugin.h";</i></p>
 
-<p>Deallocate the private device data structures.
+<p>Get the driver information structure.
 
 <br><br>
 <table border=0 color=black cellspacing=0 cellpadding=7>
 <tr bgcolor=#cccccc>
 	<td>
 <pre><b>
-void plugin_device_clear(<a href="ao_device.html">ao_device</a> *device);
+<a href="ao_info.html">ao_info*</a> ao_plugin_driver_info();
 </b></pre>
 	</td>
 </tr>
 </table>
 
-<h3>Parameters</h3>
-<dl>
-<dt><i>device</i></dt>
-<dd>Pointer to pre-allocated device structure.</dd>
-</dl>
+<h3>Return Values</h3>
+<blockquote>
+<li>Pointer to the driver information structure.  This structure should
+not be modified. </li>
+</blockquote>
+<p>
 
 <br><br>
 <hr noshade>
