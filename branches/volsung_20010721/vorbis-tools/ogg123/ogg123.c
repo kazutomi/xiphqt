@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.40.2.1 2001/07/22 21:25:21 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.40.2.2 2001/07/23 12:59:55 volsung Exp $
 
  ********************************************************************/
 
@@ -602,7 +602,39 @@ int open_audio_devices(ogg123_options_t *opt, int rate, int channels, buf_t **bu
 				     0, &format, current->options);
 
     if (current->device == NULL) {
-      fprintf(stderr, "Error opening device.\n");
+      switch (errno) {
+      case AO_ENODRIVER:
+	fprintf(stderr, "Error: No device not available.\n");
+	break;
+      case AO_ENOTLIVE:
+	fprintf(stderr, "Error: %s requires an ouput filename to be specified with -f.\n", info->short_name);
+	break;
+      case AO_EBADOPTION:
+	fprintf(stderr, "Error: Unsupported option value to %s device.\n",
+		info->short_name);
+	break;
+      case AO_EOPENDEVICE:
+	fprintf(stderr, "Error: Cannot open device %s.\n",
+		info->short_name);
+	break;
+      case AO_EFAIL:
+	fprintf(stderr, "Error: Device failure.\n");
+	break;
+      case AO_ENOTFILE:
+	fprintf(stderr, "Error: An output file cannot be given for %s device.\n", info->short_name);
+	break;
+      case AO_EOPENFILE:
+	fprintf(stderr, "Error: Cannot open file %s for writing.\n",
+		current->filename);
+	break;
+      case AO_EFILEEXISTS:
+	fprintf(stderr, "Error: File %s already exists.\n", current->filename);
+	break;
+      default:
+	fprintf(stderr, "Error: This error should never happen.  Panic!\n");
+	break;
+      }
+	
       return -1;
     }
     current = current->next_device;
