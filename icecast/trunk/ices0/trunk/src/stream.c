@@ -180,6 +180,7 @@ stream_send (ices_config_t* config, input_stream_t* source)
 #endif
 
 #ifdef HAVE_LIBLAME
+  obuf.data = NULL;
   obuf.len = 0;
 
   if (config->reencode)
@@ -296,13 +297,15 @@ stream_send (ices_config_t* config, input_stream_t* source)
 	rc = shout_send (stream->conn, obuf.data, len);
     }
 
-  free(obuf.data);
+  if (obuf.data)
+    free(obuf.data);
 #endif
 
   return 0;
 err:
 #ifdef HAVE_LIBLAME
-  free(obuf.data);
+  if (obuf.data)
+    free(obuf.data);
 #endif
   return -1;
 }
