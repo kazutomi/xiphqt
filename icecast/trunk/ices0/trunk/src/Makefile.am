@@ -2,7 +2,11 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = playlist_builtin interpreter xml
+SUBDIRS = @ICES_SUBDIRS@ playlist_builtin interpreter
+
+if NEED_XML
+XML_LIBS = xml/libicesxml.a
+endif
 
 if NEED_SHOUT
 SHOUT_LIBS = ../libshout/libices.la
@@ -20,9 +24,9 @@ ices_SOURCES = ices.c log.c setup.c stream.c util.c playlist.c dj.c mp3.c \
 
 EXTRA_ices_SOURCES = in_vorbis.c reencode.c
 
-ices_LDADD = @ICES_OBJECTS@ playlist_builtin/libplaylist.a \
-	interpreter/libinterpreter.a xml/libicesxml.a \
-	../resolver/libresolver.a ../thread/libicethread.a ../avl/libiceavl.a \
+ices_LDADD = @ICES_OBJECTS@ $(XML_LIBS) playlist_builtin/libplaylist.a \
+	interpreter/libinterpreter.a ../resolver/libresolver.a \
+	../thread/libicethread.a ../avl/libiceavl.a \
 	../log/libicelog.a $(SHOUT_LIBS)
 
 ices_DEPENDENCIES = @ICES_OBJECTS@

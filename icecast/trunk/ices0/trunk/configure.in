@@ -489,16 +489,19 @@ then
     AC_DEFINE(HAVE_LIBXML, 1, [ Define if you have the GNOME XML library ])
     LIBS="$LIBS `$XMLCONFIG --libs`"
     CPPFLAGS="$CPPFLAGS `$XMLCONFIG --cflags`"
+    ICES_SUBDIRS="$ICES_SUBDIRS xml"
     AC_CHECK_HEADERS([libxml/parser.h gnome-xml/parser.h parser.h])
   else
     AC_MSG_RESULT([Compiling without libxml support - no configfiles])
   fi
 fi
+AM_CONDITIONAL(NEED_XML, test -n "$XMLCONFIG")
 
 dnl -- and finish up --
 
 LIBS="$LIBS $LIBM $LIBDL"
 AC_SUBST(ICES_OBJECTS)
+AC_SUBST(ICES_SUBDIRS)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile 
   conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile

@@ -25,7 +25,9 @@
 /* Local function declarations */
 static void ices_setup_parse_options (ices_config_t *ices_config);
 static void ices_setup_parse_defaults (ices_config_t *ices_config);
+#ifdef HAVE_LIBXML
 static void ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile);
+#endif
 static void ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_parse_command_line_for_new_configfile (ices_config_t *ices_config, char **argv, int argc);
 static void ices_setup_activate_libshout_changes (const ices_config_t *ices_config);
@@ -163,9 +165,11 @@ ices_setup_parse_options (ices_config_t *ices_config)
 
 	/* Look for given configfile on the commandline */
 	ices_setup_parse_command_line_for_new_configfile (ices_config, ices_util_get_argv(), ices_util_get_argc ());
-	
+
+#ifdef HAVE_LIBXML
 	/* Parse the configfile */
 	ices_setup_parse_config_file (ices_config, ices_config->configfile);
+#endif
 	
 	/* Parse the commandline */
 	ices_setup_parse_command_line (ices_config, ices_util_get_argv(), ices_util_get_argc());
@@ -257,6 +261,7 @@ ices_setup_free_all_allocations (ices_config_t *ices_config)
   }
 }
 
+#ifdef HAVE_LIBXML
 /* Tell the xml module to parse the config file. */
 static void
 ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile)
@@ -285,6 +290,7 @@ ices_setup_parse_config_file (ices_config_t *ices_config, const char *configfile
 		}
 	}
 }
+#endif
 
 /* This function looks through the command line options for a new
  * configfile. */
