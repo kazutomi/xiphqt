@@ -56,7 +56,6 @@ decinfo.c \
 decode.c \
 dequant.c \
 huffdec.c \
-mcdec.c \
 
 LIBTHEORADEC_CHEADERS =   \
 ${LIBTHEORABASE_CHEADERS} \
@@ -157,7 +156,7 @@ ${ENCODER_EXAMPLE_TARGET}: ${ENCODER_EXAMPLE_OBJS} ${LIBTHEORABASE_TARGET} \
 ${PLAYER_EXAMPLE_TARGET}: ${PLAYER_EXAMPLE_OBJS} ${LIBTHEORABASE_TARGET} \
                            ${LIBTHEORADEC_TARGET}
 	mkdir -p ${TARGETBINDIR}
-	${CC} ${CFLAGS} -o $@ ${PLAYER_EXAMPLE_OBJS} ${LIBS} -lSDL -lpthread \
+	${CC} ${CFLAGS} -o $@ ${PLAYER_EXAMPLE_OBJS} ${LIBS} \
          ${LIBTHEORADEC_TARGET} ${LIBTHEORABASE_TARGET}
 
 # Remove all targets.
