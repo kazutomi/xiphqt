@@ -1,0 +1,221 @@
+/* playlist_perl.c
+ * - Interpreter functions for perl
+ * Copyright (c) 2000 Chad Armstrong, Alexander Haväng
+ * Copyright (c) 2001 Brendan Cully
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ */
+
+#include "definitions.h"
+
+/* Stupid automake and STUPID perl */
+#ifdef PACKAGE
+#undef PACKAGE
+#endif
+
+#include <EXTERN.h>
+#include <perl.h>
+
+extern ices_config_t ices_config;
+
+static PerlInterpreter *my_perl = NULL;
+
+/* This is needed for dynamicly loading perl modules in the perl scripts.
+ * E.g "use somemodule;"
+ */
+extern void boot_DynaLoader ();
+
+/* -- local prototypes -- */
+static int playlist_perl_get_lineno (void);
+static char* playlist_perl_get_next (void);
+static char* playlist_perl_get_metadata (void);
+static void playlist_perl_shutdown (void);
+
+static int pl_perl_init_perl (void);
+static void pl_perl_shutdown_perl (void);
+static char* pl_perl_eval (const char* func);
+static void xs_init (void);
+
+int
+ices_playlist_perl_initialize (playlist_module_t* pm)
+{
+  char *str;
+  int ret = 0;
+
+  pm->get_next = playlist_perl_get_next;
+  pm->get_metadata = playlist_perl_get_metadata;
+  pm->get_lineno = playlist_perl_get_lineno;
+  pm->shutdown = playlist_perl_shutdown;
+
+  if (pl_perl_init_perl () < 0)
+    return 0;
+
+  str = pl_perl_eval ("ices_perl_initialize");
+  ret = atoi (str);	/* allocated in perl.c */
+  ices_util_free (str);	/* clean up after yourself! */
+		
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
+
+  return ret;
+}
+
+static int
+playlist_perl_get_lineno (void)
+{
+  char *str;
+  int ret = 0;
+
+  str = pl_perl_eval ("ices_perl_get_current_lineno");
+  ret = atoi (str); 	/* allocated in perl.c */
+  ices_util_free (str);	/* clean up after yourself! */
+
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pm failed");
+
+  return ret;
+}
+
+static char *
+playlist_perl_get_next (void)
+{
+  return pl_perl_eval ("ices_perl_get_next");
+  /* implied free(str), this is called higher up */
+}
+
+static char*
+playlist_perl_get_metadata (void)
+{
+  return pl_perl_eval ("ices_perl_get_metadata");
+}
+
+static void
+playlist_perl_shutdown (void)
+{
+  char *str;
+  int ret = 0;
+			                  
+  str = pl_perl_eval ("ices_perl_shutdown");
+  ret = atoi (str);
+  ices_util_free (str);
+
+  if (!ret) 
+    ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
+
+  pl_perl_shutdown_perl ();
+
+  return;
+}
+
+static void
+xs_init (void)
+{
+	char *file = __FILE__;
+	printf ("Including dynaloader\n");
+	newXS ("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
+}
+
+/* most of the following is almost ripped straight out of 'man perlcall'
+ * or 'man perlembed' 
+ *
+ * my_perl is left resident, and we do not reload the perl module file
+ * when it changes.
+ * shutdown() will clean up anything allocated at this point
+ */
+
+static int
+pl_perl_init_perl (void)
+{
+	static char *my_argv[2] = {"", NULL}; 	/* dummy arguments */
+	static char module_space[255];
+
+	strncpy (module_space, ices_config.pm.module, 251);
+	module_space[251] = '\0'; /* Just to make sure */
+	strcat (module_space, ".pm");
+	my_argv[1] = module_space;
+
+	ices_log_debug ("Importing Perl module %s", my_argv[1]);
+
+	if((my_perl = perl_alloc()) == NULL) {
+		ices_log_debug ("perl_alloc() error: (no memory!)");
+		return -1;
+	}
+	perl_construct(my_perl);
+
+	if (perl_parse(my_perl, xs_init, 2, my_argv, NULL)) {
+		ices_log_debug ("perl_parse() error: parse problem");
+		return -1;
+	}
+
+	return 0;
+}
+
+/* cleanup time! */
+static void
+pl_perl_shutdown_perl (void)
+{
+	if (my_perl != NULL){
+		perl_destruct(my_perl);
+		perl_free(my_perl);
+	}
+}
+
+
+/*
+ *  Here be magic...
+ *  man perlcall gave me the following steps, to be
+ *  able to handle getting return values from the
+ *  embedded perl calls.
+ */	
+static char*
+pl_perl_eval (const char *functionname)
+{
+	int retcount = 0;
+	char *retstr = NULL;
+	dSP;				/* initialize stack pointer      */
+	
+	ices_log_debug ("Interpreting [%s]", functionname);
+	
+	ENTER;				/* everything created after here */
+	SAVETMPS;			/* ...is a temporary variable.   */
+	PUSHMARK(SP);			/* remember the stack pointer    */
+	PUTBACK;			/* make local stack pointer global */
+
+	/* G_SCALAR: get a scalar return | G_EVAL: Trap errors */
+	retcount = perl_call_pv(functionname, G_SCALAR | G_EVAL);
+	
+	SPAGAIN;			/* refresh stack pointer         */
+
+	/* Check for errors in execution */
+	if (SvTRUE (ERRSV)) {
+	  STRLEN n_a;
+	  ices_log_debug ("Perl error: %s", SvPV (ERRSV, n_a));
+	  (void) POPs;
+	} else if (retcount) {
+	  /* we're calling strdup here, free() this later! */
+	  retstr = ices_util_strdup (POPp);/* pop the return value from stack */        
+	  ices_log_debug ("perl [%s] returned %d values, last [%s]", functionname, retcount, retstr);
+	} else
+	  ices_log_debug ("Perl call returned nothing");
+
+	PUTBACK;
+	FREETMPS;			/* free that return value        */
+	LEAVE;				/* ...and the XPUSHed "mortal" args.*/
+	
+	ices_log_debug ("Done interpreting [%s]", functionname);
+	
+	return retstr;
+}
