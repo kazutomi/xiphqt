@@ -157,9 +157,9 @@ sub write{
     }
     
     $out="/* XPM */\nstatic char * mgm_xpm[] = {\n".
-	"\"$width $height 32 1";
+	"\"$width $height 33 1";
     
-    foreach $key (0..31){
+    foreach $key (0..32){
 	$c=chr($key+65);
 	$out.="\",\n\"$c  $type ";
 	if("#$key" eq 'transp'){
