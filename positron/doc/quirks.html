@@ -35,8 +35,8 @@ Of course, this list is hardly exhaustive.  Please send me more reports!
 <h3>USB Issues with MacOS X</h3>
 
 <p>
-Another class of problems is cause by a buglet in the USB code on the
-Neuros.  The Neuros does not responding to the "Mode Sense" command
+Another class of problems is caused by a buglet in the USB code on the
+Neuros.  The Neuros does not respond to the "Mode Sense" command
 defined in the USB Mass Storage Class standard.  The Mode Sense
 command is used by the host to determine if the USB device is
 read-only or read-write.  When the host computer sends a Mode Sense
@@ -46,7 +46,7 @@ way.
 
 <p>
 Different operating systems appear to deal with this failure in
-different ways.  Linux, and presumably Windows, just assume the device
+different ways.  Linux and Windows just assume the device
 is read-write.  OS X assumes the device is read-only.  The result is
 that it is impossible to update the database on OS X because the
 Neuros cannot be written to.  Because Linux and Windows assume the
