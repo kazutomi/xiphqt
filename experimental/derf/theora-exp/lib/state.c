@@ -949,7 +949,8 @@ void oc_state_loop_filter(oc_theora_state *_state,int _frame){
 }
 
 #if defined(OC_DUMP_IMAGES)
-int oc_state_dump_frame(const oc_theora_state *_state,int _frame){
+int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
+ const char *_suf){
   /*Dump a PNG of the reconstructed image.*/
   png_structp    png;
   png_infop      info;
@@ -976,7 +977,7 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame){
   height=_state->info.height;
   iframe=_state->granpos>>_state->info.keyframe_granule_shift;
   pframe=_state->granpos-(iframe<<_state->info.keyframe_granule_shift);
-  sprintf(fname,"%08irec.png",(int)(iframe+pframe));
+  sprintf(fname,"%08i%s.png",(int)(iframe+pframe),_suf);
   fp=fopen(fname,"wb");
   if(fp==NULL)return OC_FAULT;
   image=(png_bytep *)oc_malloc_2d(height,6*width,sizeof(image[0][0]));

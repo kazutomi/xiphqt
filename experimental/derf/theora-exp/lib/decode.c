@@ -1871,7 +1871,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
 int theora_decode_ycbcr_out(theora_dec_ctx *_dec,theora_ycbcr_buffer _ycbcr){
   oc_ycbcr_buffer_flip(_ycbcr,_dec->pp_frame_buf);
 #if defined(OC_DUMP_IMAGES)
-  oc_state_dump_frame(&_dec->state,OC_FRAME_SELF);
+  oc_state_dump_frame(&_dec->state,OC_FRAME_SELF,"dec");
 #endif
   return 0;
 }

@@ -2273,6 +2273,11 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   inter_bits+=oc_enc_coded_block_flags_pack(_enc);
   if(intra_bits>inter_bits){
     _enc->est_bits=inter_bits;
+    /*Select the quantizer list for INTER frames.*/
+    _enc->state.nqis=_enc->nqis[OC_INTER_FRAME];
+    for(qii=0;qii<_enc->state.nqis;qii++){
+      _enc->state.qis[qii]=_enc->qis[OC_INTER_FRAME][qii];
+    }
     return OC_INTER_FRAME;
   }
   /*All INTRA mode is smaller, but we haven't counted up the cost of all the
@@ -2624,7 +2629,7 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
     /*Filter block edges.*/
     oc_state_loop_filter(&_enc->state,OC_FRAME_PREV);
 #if defined(OC_DUMP_IMAGES)
-    oc_state_dump_frame(&_enc->state,OC_FRAME_PREV);
+    oc_state_dump_frame(&_enc->state,OC_FRAME_PREV,"rec");
 #endif
     /*Fill in the borders from the reconstructed version of the last encoded
        frame.*/
