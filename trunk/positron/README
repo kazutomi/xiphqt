@@ -30,10 +30,38 @@ copy files and update the Neuros database so those files are playable.
 
 INSTALLATION
 
-First, you need to install positron on your computer.  Untar the
-positron source and cd into the "positron" directory.  Then run the
-following commands:
-[Insert weird python distutils commands here]
+First, you need to install positron on your computer.  You can do this
+by installing the binary packages in the usual way:
+
+For RPM based systems   : rpm -ivh positron*.rpm
+For Debian based systems: 
+   Add the following lines to your /etc/apt/sources.list:
+      deb http://i.cantcode.com/~jack/debian unstable main contrib
+      deb-src http://i.cantcode.com/~jack/debian unstable main contrib
+
+   And type:  apt-get update
+              apt-get install positron
+
+
+To install from the source tarball, unpack the positron source and 
+cd into the resulting directory.  Then run the following commands:
+
+  python setup.py install
+
+You will probably need to become root in order to do this.  If you want to install somewhere other than the default location of /usr you can type:
+
+  python setup.py install --prefix=/some/prefix
+
+or:
+
+  python setup.py install --home=/some/prefix
+
+Please see "Installing Python Modules" at 
+http://www.python.org/doc/current/inst/inst.html
+for more information on how to use distutils.
+
+
+CONFIGURING
 
 Next, you will need to configure your system to work with USB Mass
 Storage devices.  The work required to do this varies depending upon
@@ -47,18 +75,18 @@ your particular distribution, but here are some general hints:
   command should show the Neuros being recognized by the USB subsystem
   and the assignment of a SCSI device (like "sda", for example).
 
-* Create a directory to mount your Neuros under, like "/mnt/neuros"
+* Create a directory to mount your Neuros under, like "/neuros"
 
 * Now you can edit your /etc/fstab file and add a line like:
 
-/dev/sda1 /mnt/neuros vfat user,noauto,umask=0	0 0
+/dev/sda1 /neuros vfat user,noauto,umask=0	0 0
 
 This is assuming that the Neuros was registered as "sda" when it was
 discovered by the kernel.  You may have to adjust it.  The Neuros
 filesystem, however, is always on partition 1.
 
-* Test your setup by running "mount /mnt/neuros" as a normal user.
-  You should be able to go browse around the contents of /mnt/neuros.
+* Test your setup by running "mount /neuros" as a normal user.
+  You should be able to go browse around the contents of /neuros.
   (There will be something there, even if your Neuros is brand new and
   "empty".)
 
@@ -109,9 +137,9 @@ CONTACT INFO
 We strongly encourage bug reports and feature requests.  You can contact
 us in one of the following ways:
 
-* Bugzilla: http://bugs.xiph.org -- We strongly encourage bug reports
-to be filed this way.
-* Mailing list: 
+* To report bugs use Bugzilla at http://bugs.xiph.org. We strongly 
+  encourage bug reports to be filed this way.
+* Mailing list: http://www.xiph.org/archives.  Look for the positron list.
 * IRC: #positron on irc.xiph.org.
 
 
@@ -125,7 +153,7 @@ Special thanks go out to:
 
 and most especially:
   * the awesome folks at Digital Innovations, who answered many
-  questions, and were willing to open source positron.
+    questions, and were willing to open source positron.
 
 Without valuable support from all these people, this software would not have
 been possible.
