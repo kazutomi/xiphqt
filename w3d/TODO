@@ -1,7 +1,0 @@
- - write avitow3d/quicktimetow3d/player/recorder (a libsndfile/libaudiofile alike video library would be great !)
- - (4,4) - Wavelets
- - arithmetic binary entropy coders may be faster, simpler and more efficient
- - profile
- - rewrite wavelet xform code, the current implementation forces cache misses
- - introduce fast paths in coefficient decoder if (mps == 0)
- - mmx/3dnow/sse/altivec
