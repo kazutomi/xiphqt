@@ -270,18 +270,11 @@ int infoDlg(char *fn, HWND hwnd)
 char *generate_title(vorbis_comment *comment, char *fn)
 {/* Later, extend this to be configurable like the mp3 player */
 	char buff[1024];
-	char *title = NULL, *artist = NULL, *finaltitle = NULL;
-	int i;
+	char *title, *artist, *finaltitle;
 
-	for(i=0;i<comment->comments;i++)
-	{
-		if(!strnicmp("TITLE=",comment->user_comments[i],6))
-			title = comment->user_comments[i] + 6;
-		else if(!strnicmp("ARTIST=", comment->user_comments[i],7))
-			artist = comment->user_comments[i] + 7;
-	}
+	title = vorbis_comment_query(comment, "title", 0);
+	artist = vorbis_comment_query(comment, "artist", 0);
 
-	
 	if(artist && title)
 		_snprintf(buff, 1024, "%s - %s", artist, title);
 	else if(title)
