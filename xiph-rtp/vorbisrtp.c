@@ -76,6 +76,15 @@ int rtpsocket;
 
 /*****************************************************************************/
 /*  Vorbis packet header                                                     */
+/*                                                                           */
+/*  fragmentation flags work like so:                                        */
+/*                                                                           */
+/*  C F                                                                      */
+/*  0 0  Unfragmented packet (aka multi-packet..packet)                      */
+/*  0 1  First fragmented packet                                             */
+/*  1 0  Middle fragment                                                     */
+/*  1 1  Last fragment.                                                      */
+/*                                                                           */
 /*****************************************************************************/
 
 struct VorbisBitfields {
@@ -197,31 +206,31 @@ void progressmarker (int type)
 
     switch (type) {
         case 0:
-            fprintf (stdout, ".");
+            fprintf (stdout, "."); /* normal */
         break;
 
         case 1:
-            fprintf (stdout, "+");
+            fprintf (stdout, "+"); /* fragment */
         break;
 
         case 2:
-            fprintf (stdout, "|");
+            fprintf (stdout, "|"); /* final fragment */
         break;
 
         case 3:
-            fprintf (stdout, "m");
+            fprintf (stdout, "m"); /* metadata packet */
         break;
 
         case 4:
-            fprintf (stdout, "b");
+            fprintf (stdout, "b"); /* setup header */
         break;
 
         case 5:
-            fprintf (stdout, "p");
+            fprintf (stdout, "p"); /* packed */
         break;
 
         case 6:
-            fprintf (stdout, "c");
+            fprintf (stdout, "c"); /* info header */
         break;
     };
 
@@ -349,7 +358,7 @@ int makevorbisheader (unsigned char *packet, int length, struct VorbisBitfields 
 
 void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisBitfields *vorbheader, int type)
 {
-    int sleeptime, frag = 0, position = 0;
+    int sleeptime, frag, cont, position = 0;
     unsigned char framesize;
     unsigned char *packet;
 
@@ -361,10 +370,10 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 /*  Test Codebook Ident (used for debug)                                     */
 /*===========================================================================*/
 
-    vorbheader -> cbident = htonl (0xc0deb00c);
+/*    vorbheader -> cbident = htonl (0xc0deb00c); */
 
 /*===========================================================================*/
-/*  Set sleeptime value                                                      */
+/*  Set sleeptime value (todo: this should use the granulepos)                                                     */
 /*===========================================================================*/
 
     sleeptime = ((1 / (float) bitrate) * 1000000);
@@ -374,9 +383,11 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 /*===========================================================================*/
 
     if (length > 256) {
+        cont = 0;
+        frag = 1;
         while (length > 256) {        
             /*  Set Vorbis header flags  */
-            vorbheader -> continuation = 1;
+            vorbheader -> continuation = cont;
             vorbheader -> fragment = frag;
             vorbheader -> reserved = 0;
             vorbheader -> pkts = 0;
@@ -397,7 +408,8 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
             length -= 256;
             position += 256;
-            frag = 1;
+            cont = 1;
+            frag = 0;
 
             RTPHeaders.sequence = RTPHeaders.sequence + 1;
 
@@ -458,8 +470,8 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
         if (length + stacksize > 256 || stackcount > 15) {
 
             /*  Set Vorbis header flags  */
-            vorbheader -> continuation = 1;
-            vorbheader -> fragment = 1;
+            vorbheader -> continuation = 0;
+            vorbheader -> fragment = 0;
             vorbheader -> reserved = 0;
             vorbheader -> pkts = stackcount;
 
@@ -504,7 +516,7 @@ void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisB
 
         /*  Set Vorbis header flags  */
         vorbheader -> continuation = 0;
-        vorbheader -> fragment = 1;
+        vorbheader -> fragment = 0;
         vorbheader -> reserved = 0;
         vorbheader -> pkts = 1;
 
