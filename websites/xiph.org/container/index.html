@@ -7,7 +7,7 @@ Media Container Formats
 <!--#include virtual="/xiphmid.include" -->
 <style>
 <!--
-.shift {margin-left: 15px;
+.shift {margin-left: 15px;}
 -->
 </style>
 
@@ -83,28 +83,22 @@ source alternatives, this document is best place to start with.
 	<h2>Ogg</h2>
 	<p>
 	Ogg Media Container is developed by <a href="http://www.xiph.org/">
-	Xiph</a>. The Ogg bitstream is defined in RFC 3533 and its MIME
-	media type (application/ogg) in RFC 3534. 
-	This format was designed with main aim of media streaming (which 
-	does not mean it is not good for other uses). More
-	information about ogg can be found <a
-	href="http://www.xiph.org/ogg/doc/">here</a> (probably outdated).
-	</p>
-	<p><b>Using Ogg</b>: Ogg (and theora and vorbis) are very well
-	supported by GNU/Linux (mplayer, xine etc ..). For windows you
-	can install directshow <a href="http://www.illiminable.com/ogg/">plugins</a>.
+	Xiph</a> as the framework of a larger initiative aimed at
+	developing a set of components for the coding and decoding of multimedia
+	content which are both freely available and freely re-implementable in
+	software. The Ogg bitstream is defined in <a
+	href="http://www.faqs.org/rfcs/rfc3533.html">RFC 3533</a> and its MIME
+	media type (application/ogg) in <a
+	href="http://www.faqs.org/rfcs/rfc3534.html">RFC 3534</a>. 
+	This format was designed with main aim of media streaming (but is
+	good for all common needs). More information about ogg can be found <a
+	href="http://www.xiph.org/ogg/doc/">here</a> (which is probably outdated).
 	</p>
 	<p>
-	<b>Creation of Ogg files</b>: To create audio-only-vorbis files,
-	you can use command line utility <a
-	href="http://www.gnu.org/directory/audio/ogg/OggEnc.html">oggenc</a>. 
-	To encode theora-video + vorbis-audio in Ogg, libtheora provides
-	a command line utility (encoder_example) which can be used as shown
-	in following <a
-href="http://www.dogphilosophy.net/SECTION-Technical_Stuff/ogg-theora-microhowto.html">
-	document</a>. On windows, just follow instructions mentioned <a
-	href="http://www.illiminable.com/ogg/enc_theora_graphedit.html">here</a>.
+	To start using Ogg, just read <a href="../ogg/howto/">Ogg
+	howto</a>.
 	</p>
+
 	<a name="ogm-container">
 	<h2>OGM</h2>
 	<p>
@@ -191,18 +185,13 @@ compression) and Tarkin (experimental video compression).
 <a name="more-about-ogg"></a>
 <h2>Tell me more about Ogg Project?</h2>
 <div class="shift">
-Ogg project aims at creating open standards for multimedia content on
-internet. We have developed audio and video compression formats that are
-ready for use (like streaming video). For more info go to <a
+Ogg is the umbrella for a group of several related multimedia and signal
+processing projects that are open source and royalty free. Development of
+these projects is controlled by Xiph.org. For more information go to <a
 href="http://www.xiph.org/ogg/">Ogg project page</a>.
 <br>
-Using Ogg files on Linux should not be a problem as most of the players
-support them. On windows, you can play audio files in winamp or install
-direct show plugins. Ogg video files are also playable on windows if you
-install appropriate filters from <a
-href="http://www.illuminable.org/ogg/">http://www.illuminable.org/ogg/</a>.
-<br>
-To create Ogg files, please read following <a href="i-have-to-write-it">howto</a>.
+Ogg files can be easily used on both Linux and Windows. Just read 
+<a href="../ogg/howto/">Ogg howto</a> and start using Ogg.
 </div>
 
 
