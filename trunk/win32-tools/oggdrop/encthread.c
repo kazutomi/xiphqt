@@ -192,6 +192,7 @@ DWORD WINAPI encode_thread(LPVOID arg)
 					break;
 				}
 				j++;
+        (void)fseek(in, 0, SEEK_SET);
 			}
 
 			if (!foundformat) {
@@ -205,6 +206,7 @@ DWORD WINAPI encode_thread(LPVOID arg)
 			if(out == NULL) {
 				error_handler("Error opening/writing to output file %s", out_fn);
 				numfiles--;
+        (void)fclose(in);
 				continue;
 			}	
 
