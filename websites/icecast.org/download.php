@@ -78,7 +78,12 @@ All older releases can be found here:
 </div>
 <div class="newscontent">
 <h4>Nightly Snapshots</h4>
-Nighly snapshots are currently disabled
+<ul>
+  <li><a href="http://people.xiph.org/~brendan/snapshots/icecast/">icecast</a></li>
+  <li><a href="http://people.xiph.org/~brendan/snapshots/libshout/">libshout</a></li>
+  <li><a href="http://people.xiph.org/~brendan/snapshots/ices2/">ices2</a></li>
+  <li><a href="http://people.xiph.org/~brendan/snapshots/ices0/">ices0</a></li>
+</ul>
 </div>
 <div class="roundbottom">
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
@@ -107,5 +112,3 @@ We still provide download links to builds and utilities that we no longer suppor
 </div>
 <br><br>
 <? include "common/footer.php"; ?>
-
-
