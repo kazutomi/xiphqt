@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.20 2001/08/29 00:20:44 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.21 2001/08/31 15:18:53 kcarnold Exp $
 
  ********************************************************************/
 
@@ -385,7 +385,7 @@ void _SubmitDataChunk (buf_t *buf, chunk *data, size_t size)
 
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb)
 {
-  int i, s, writeSize;
+  int i, s;
   size *= nmemb;
   for (i = 0; i < size; i += buf->OptimalWriteSize) {
     s = i + buf->OptimalWriteSize <= size ? buf->OptimalWriteSize : size - i;
