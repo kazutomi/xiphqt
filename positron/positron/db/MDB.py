@@ -68,7 +68,7 @@ def _escape_string(str):
 
     for i in range(0, len(str), 2):
         word = str[i:i+2]
-        if new in (Special.FIELD_DELIM, Special.END_OF_RECORD,
+        if word in (Special.FIELD_DELIM, Special.END_OF_RECORD,
                    Special.BAG_DELIM, Special.ESCAPER):
             new += Special.ESCAPER
         new += word
@@ -77,7 +77,7 @@ def _escape_string(str):
 
 def _pack_field(field):
     """Packs a field (list of values) with bag delimiters as needed"""
-    str = field[0]
+    str = _escape_string(field[0])
     for item in field[1:]:
         str +=  Special.BAG_DELIM + _escape_string(item)
 
