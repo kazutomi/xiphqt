@@ -375,7 +375,7 @@ int main(int argc, char * argv[])
 				sendYPResponse(0, "SID blank", ICECAST2_RESPONSE);
 				goto endofcall;
 			}
-			ret = touchServer(sid, listing_ip, cluster_password, st, listeners, "", "", "", "", "", "", error, NORMAL_TOUCH);
+			ret = touchServer(sid, listing_ip, cluster_password, st, listeners, "", "", "", "", server_subtype, "", "", error, NORMAL_TOUCH);
 			if (ret == YP_TOUCHED) {
 				Log(LOG_INFO, "YP_TOUCH successfull sid (%s)", sid);
 				sendYPResponse(1, "Successfull Touch", ICECAST2_RESPONSE);

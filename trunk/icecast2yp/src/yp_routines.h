@@ -32,7 +32,7 @@ double  GetCurrentTime();
 int genSID(char *sid, char *error);
 int connectToDB() ;
 int addServer(char *server_name, char *genre, char *cluster_password, char *desc, char *url, char *listenurl, char *server_type, char *server_subtype, char *bitrate, char *listing_ip, char *sid, char *samplerate, char *channels, char *error);
-int touchServer(char *sid, char *touchip, char *cluster_password, char *song, char *listeners, char *genre, char *desc, char *listenurl, char *server_type, char *bitrate, char *server_name, char *error, int touchType);
+int touchServer(char *sid, char *touchip, char *cluster_password, char *song, char *listeners, char *genre, char *desc, char *listenurl, char *server_type, char *server_subtype, char *bitrate, char *server_name, char *error, int touchType);
 int removeServer(char *sid, char *removeip, char *cluster_password, char *error);
 void sendOK();
 void sendHTML(char *html);

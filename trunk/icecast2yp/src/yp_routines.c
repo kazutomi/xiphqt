@@ -825,7 +825,7 @@ Error:
 }
 
 
-int touchServer(char *sid, char *touchip, char *cluster_password, char *song, char *listeners, char *genre, char *desc, char *listenurl, char *server_type, char *bitrate, char *server_name, char *error, int touchType)
+int touchServer(char *sid, char *touchip, char *cluster_password, char *song, char *listeners, char *genre, char *desc, char *listenurl, char *server_type, char *server_subtype, char *bitrate, char *server_name, char *error, int touchType)
 {
 	char	sql[8096];
 	int	i;
@@ -836,6 +836,7 @@ int touchServer(char *sid, char *touchip, char *cluster_password, char *song, ch
 	char	*genre_esc = NULL;
 	char	*listenurl_esc = NULL;
 	char	*server_type_esc = NULL;
+	char	*server_subtype_esc = NULL;
 	char	*bitrate_esc = NULL;
 	char	*desc_esc = NULL;
 	char	*server_name_esc = NULL;
@@ -879,7 +880,11 @@ int touchServer(char *sid, char *touchip, char *cluster_password, char *song, ch
 		memset(song_esc, '\000', strlen(song)*2 + 1);
 		mysql_real_escape_string(&dbase, song_esc, song, strlen(song));
 
-		sprintf(sql,"update server_details set current_song = \'%s\', listeners = %d where id = %s", song_esc, atol(listeners), detail_id);
+		server_subtype_esc = malloc(strlen(server_subtype)*2 + 1);
+		memset(server_subtype_esc, '\000', strlen(server_subtype)*2 + 1);
+		mysql_real_escape_string(&dbase, server_subtype_esc, server_subtype, strlen(server_subtype));
+
+		sprintf(sql,"update server_details set current_song = \'%s\', server_subtype = \'%s\', listeners = %d where id = %s", song_esc, server_subtype_esc, atol(listeners), detail_id);
 	
 		Log(LOG_DEBUG, sql);
 		if (mysql_real_query(&dbase,sql,strlen(sql))) {
@@ -962,6 +967,9 @@ int touchServer(char *sid, char *touchip, char *cluster_password, char *song, ch
 		}
 		if (server_type_esc) {
 			free(server_type_esc);
+		}
+		if (server_subtype_esc) {
+			free(server_subtype_esc);
 		}
 		if (bitrate_esc) {
 			free(bitrate_esc);
