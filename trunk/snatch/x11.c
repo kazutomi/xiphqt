@@ -7,10 +7,6 @@
 #include <X11/Xlib.h>
 #include "snatchppm.h"
 #include "waitppm.h"
-static int savefile=-1;
-
-static unsigned long window_id_base=0;
-static unsigned long window_id_mask=0;
 
 static unsigned long root_window=0;
 static unsigned long rpshell_window=0;
@@ -31,8 +27,7 @@ static unsigned long play_blacklower=-1;
 
 static unsigned long rpvideo_window=0;
 static int video_width=-1;
-static int video_length=-1;
-static int bigendian_p=0;
+static int video_height=-1;
 
 static unsigned long rpauth_shell=0;
 static unsigned long rpauth_main=0;
@@ -57,27 +52,8 @@ static unsigned long rpfile_entry=0;
 static int rpfile_lowest=0;
 
 static void queue_task(void (*f)(void));
+static void initialize();
 
-/* Built out of a few pieces of xscope by James Peterson, 1988 
-   xscope is (c) Copyright MCC, 1988 */
-
-static int littleEndian;
-
-static unsigned long ILong(unsigned char *buf){
-  if(littleEndian)
-    return((((((buf[3] << 8) | buf[2]) << 8) | buf[1]) << 8) | buf[0]);
-  return((((((buf[0] << 8) | buf[1]) << 8) | buf[2]) << 8) | buf[3]);
-}
-
-static unsigned short IShort(unsigned char *buf){
-  if(littleEndian)
-    return (buf[1] << 8) | buf[0];
-  return((buf[0] << 8) | buf[1]);
-}
-
-static unsigned short IByte (unsigned char *buf){
-  return(buf[0]);
-}
 
 static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
   int x=0;
@@ -100,6 +76,8 @@ static void XGetGeometryRoot(unsigned long id,int *root_x,int *root_y){
   *root_x=x;
   *root_y=y;
 }
+
+/* Robot events *********************************************************/
 
 static void FakeKeycode(int keycode, int modmask, unsigned long window){
   XKeyEvent event;
@@ -183,26 +161,6 @@ void FakeTypeString(unsigned char *buf,unsigned long window){
   }
 }
 
-static void SetUpReply(unsigned char *buf){
-  if(IByte(&buf[0])){
-    window_id_base=ILong(&buf[12]);
-    window_id_mask=ILong(&buf[16]);
-    bigendian_p=IByte(&buf[30]);
-    
-    if(debug){
-      fprintf(stderr,
-	      "    ...: RealPlayer X setup\n"
-	      "           window id base = %lx\n"
-	      "           window id mask = %lx\n"
-	      "           server image endianness = %s\n"
-	      "           client endianness = %s\n",
-	      window_id_base,window_id_mask,
-	      (bigendian_p?"big":"small"),
-	      (littleEndian?"small":"big"));
-    }
-  }
-}
-
 static void UsernameAndPassword(void){
 
   fprintf(stderr,"    ...: filling in username and password...\n");
@@ -258,10 +216,29 @@ static void FileEntry(void){
   
 }
 
-static void PolySegment(unsigned char *buf){
-  /* we assume the auth window is ready when we see the last polylines put
-     into the cancel window */
-  unsigned long id=ILong(&buf[4]);
+/* captured calls ******************************************************/
+
+Display *XOpenDisplay(const char *d){
+  initialize();
+
+  if(!XInitThreads()){
+    fprintf(stderr,"**ERROR: Unable to set multithreading support in Xlib.\n"
+	    "         exit(1)ing...\n\n");
+    exit(1);
+  }
+  Xdisplay=(*xlib_xopen)(d);
+  pthread_mutex_lock(&display_mutex);
+  pthread_cond_signal(&display_cond);
+  pthread_mutex_unlock(&display_mutex);
+  return(Xdisplay);
+}
+
+/* we assume the * window is ready when we see the last polylines put
+   into the chosen button window */
+int XDrawSegments(Display *display, Drawable id, GC gc, XSegment *segments, int nsegments){
+
+  int ret=(*xlib_xdrawsegments)(display, id, gc, segments, nsegments);
+
   if(id==rpauth_cancel){
     rpauth_cancel=0;
     queue_task(UsernameAndPassword);
@@ -276,165 +253,153 @@ static void PolySegment(unsigned char *buf){
     rpfile_shell=0;
     queue_task(FileEntry);
   }
+  return(ret);
 }
 
-static void CreateWindow(unsigned char *buf){
-  unsigned long id=ILong(&buf[4]);
-  unsigned long parent=ILong(&buf[8]);
-   
-  if((id & ~window_id_mask) == window_id_base){
-    if(!root_window)
-      root_window=parent;
+Window XCreateWindow(Display *display,Window parent,
+		     int x, int y,
+		     unsigned int width, unsigned int height,
+		     unsigned int border_width,
+		     int depth,
+		     unsigned int class,
+		     Visual *visual,
+		     unsigned long valuemask,
+		     XSetWindowAttributes *attributes){
 
-    /* Main player windows */
-    if(parent==rpshell_window){
-      rpmain_window=id;
-      rpplay_window=0;
-      if(debug)
-	fprintf(stderr,
-		"    ...: RealPlayer main window id=%lx\n",rpmain_window);
+  Window id=(*xlib_xcreatewindow)(display,parent,x,y,width,height,border_width,
+				  depth,class,visual,valuemask,attributes);
+
+  if(!root_window)
+    root_window=parent;
+
+  /* Main player windows */
+  if(parent==rpshell_window){
+    rpmain_window=id;
+    rpplay_window=0;
+    if(debug)
+      fprintf(stderr,
+	      "    ...: RealPlayer main window id=%lx\n",rpmain_window);
       
-    }else if(rpshell_window){
-      if(parent==rpmain_window){
-	if(!rpplay_window){
-	  rpplay_window=id;
-
-	  if(debug)
-	    fprintf(stderr,
-		    "    ...: RealPlayer console window id=%lx\n",rpplay_window);
-	}else{
-	  rpmenu_window=id;
-	}
-      }else if(parent==rpplay_window){
-	rpvideo_window=id;
+  }else if(rpshell_window){
+    if(parent==rpmain_window){
+      if(!rpplay_window){
+	rpplay_window=id;
+	
 	if(debug)
 	  fprintf(stderr,
-		  "    ...: RealPlayer video window id=%lx\n",rpvideo_window);
+		  "    ...: RealPlayer console window id=%lx\n",rpplay_window);
+      }else{
+	rpmenu_window=id;
       }
-    }
-    
-    /* Auth dialog windows */
-    if(parent==rpauth_shell){
-	rpauth_main=id;
-    }
-    if(parent==rpauth_main){
-      switch(rpauth_count++){
-      case 5:
-	rpauth_username=id;
-	fprintf(stderr,"    ...: username window: %lx\n",id);
-	break;
-      case 3:
-	rpauth_password=id;
-	fprintf(stderr,"    ...: password window: %lx\n",id);
-	break;
-      case 1:
-	rpauth_okbutton=id;
-	fprintf(stderr,"    ...: OK button: %lx\n",id);
-	break;
-      case 0:
-	rpauth_cancel=id;
-	fprintf(stderr,"    ...: cancel button: %lx\n",id);
-	break;
-      }
-    }
-
-    /* Location dialog windows */
-    if(parent==rploc_shell){
-      rploc_main=id;
-    }
-    if(parent==rploc_main || parent==rploc_button){
-      switch(rploc_count++){
-      case 0:
-	rploc_button=id;
-	break;
-      case 1:
-	fprintf(stderr,"    ...: clear button: %lx\n",id);
-	rploc_clear=id;
-	break;
-      case 3:
-	fprintf(stderr,"    ...: ok button: %lx\n",id);
-	rploc_ok=id;
-	break;
-      case 5:
-	rploc_main=id;
-	break;
-      case 7:
-	fprintf(stderr,"    ...: text entry: %lx\n",id);
-	rploc_entry=id;
-	break;
-      }
-    }
-
-    /* File dialog windows */
-    if(parent==rpfile_shell){
-      rpfile_main=id;
-      rpfile_lowest=0;
-    }
-    if(parent==rpfile_main){
-      int y=IShort(&buf[14]);
-      if(y>rpfile_lowest){
-	rpfile_entry=id;
-	rpfile_lowest=y;
-      }
+    }else if(parent==rpplay_window){
+      rpvideo_window=id;
+      if(debug)
+	fprintf(stderr,
+		"    ...: RealPlayer video window id=%lx\n",rpvideo_window);
     }
   }
+  
+  /* Auth dialog windows */
+  if(parent==rpauth_shell){
+	rpauth_main=id;
+  }
+  if(parent==rpauth_main){
+    switch(rpauth_count++){
+    case 5:
+      rpauth_username=id;
+      fprintf(stderr,"    ...: username window: %lx\n",id);
+      break;
+    case 3:
+      rpauth_password=id;
+      fprintf(stderr,"    ...: password window: %lx\n",id);
+      break;
+    case 1:
+      rpauth_okbutton=id;
+      fprintf(stderr,"    ...: OK button: %lx\n",id);
+      break;
+    case 0:
+      rpauth_cancel=id;
+      fprintf(stderr,"    ...: cancel button: %lx\n",id);
+      break;
+    }
+  }
+  
+  /* Location dialog windows */
+  if(parent==rploc_shell){
+    rploc_main=id;
+  }
+  if(parent==rploc_main || parent==rploc_button){
+    switch(rploc_count++){
+    case 0:
+      rploc_button=id;
+      break;
+    case 1:
+      fprintf(stderr,"    ...: clear button: %lx\n",id);
+      rploc_clear=id;
+      break;
+    case 3:
+      fprintf(stderr,"    ...: ok button: %lx\n",id);
+      rploc_ok=id;
+      break;
+    case 5:
+      rploc_main=id;
+      break;
+    case 7:
+      fprintf(stderr,"    ...: text entry: %lx\n",id);
+      rploc_entry=id;
+      break;
+    }
+  }
+  
+  /* File dialog windows */
+  if(parent==rpfile_shell){
+    rpfile_main=id;
+    rpfile_lowest=0;
+  }
+  if(parent==rpfile_main){
+    if(y>rpfile_lowest){
+      rpfile_entry=id;
+      rpfile_lowest=y;
+    }
+  }
+
+  return(id);
 }
 
-/*
-  13.49: Client -->   16 bytes
-         ............REQUEST: ChangeWindowAttributes
-             sequence number: 00000c7f
-              request length: 0004
-                      window: WIN 012000ce
-                  value-mask: event-mask
-                  value-list:
-                          event-mask: KeyPress | ButtonPress | ButtonRelease |                                       EnterWindow | LeaveWindow | 
-			              ButtonMotion | Exposure | FocusChange
-
-*/
-
-static void ConfigureWindow(unsigned char *buf){
-  unsigned long id=ILong(&buf[4]);
+int XConfigureWindow(Display *display,Window id,unsigned int bitmask,XWindowChanges *values){
+  
+  int ret=(*xlib_xconfigurewindow)(display, id, bitmask, values);
 
   if(id==rpplay_window){
-    unsigned long bitmask=IShort(&buf[8]);
-    int i,count=0;
-    
-    for(i=0;i<16;i++){
-      unsigned long testmask=1<<i;
-      unsigned long val;
-      if(bitmask & testmask){
-	if(littleEndian)
-	  val=IShort(&buf[12+count]);
-	else
-	  val=IShort(&buf[12+count+2]);
 
-	if(testmask==0x4){ /* width */
-	  rpplay_width=val;
-	}
-	if(testmask==0x8){ /* height */
-	  rpplay_height=val;
-	  logo_y=-1;
-	}
-	count+=4;
-      }
+    if(bitmask & CWHeight){
+      rpplay_height=values->height;
+      logo_y=-1;
+    }
+    if(bitmask & CWWidth){
+      rpplay_width=values->width;
+      logo_y=-1;
     }
   }
+
+  if(id==rpvideo_window){
+    if(bitmask & CWHeight){
+      video_height=values->height;
+    }
+    if(bitmask & CWWidth){
+      video_width=values->width;
+    }
+  }
+
+  return(ret);
 }
 
-static void ChangeProperty(unsigned char *buf){
-  long    n;
+int XChangeProperty(Display *display,Window id,Atom property,Atom type,int format,int mode,
+		const unsigned char *data,int n){
 
-  unsigned long id=ILong(&buf[4]);
-  long property=ILong(&buf[8]);
-  long type=ILong(&buf[12]);
-  long format=ILong(&buf[16]);
-  char *data;
-
-  if(property!=67 || type!=31)return;  /* not interested if not
-                                          WM_CLASS and STRING */
-  n = ILong(&buf[20])*format/8;
-  data=&buf[24];
+  int ret=(*xlib_xchangeproperty)(display, id, property, type, format, mode, data, n);
+  
+  if(property!=67 || type!=31)return(ret);  /* not interested if not WM_CLASS and STRING */
   
   /* look for the RealPlayer shell window; the other player windows
      descend from it in a predicatble pattern */
@@ -444,7 +409,7 @@ static void ChangeProperty(unsigned char *buf){
       fprintf(stderr,
 	      "    ...: looking for our shell window...\n"
 	      "           candidate: id=%lx, name=%s class=%s\n",
-	      id,(data?data:""),(data?strchr(data,'\0')+1:""));
+	      id,(data?(char *)data:""),(data?strchr((char *)data,'\0')+1:""));
     
     if(n>26 &&  !memcmp(data,"RealPlayer\0RCACoreAppShell\0",27)){
       /* it's our shell window above the WM parent */
@@ -463,7 +428,7 @@ static void ChangeProperty(unsigned char *buf){
       
       rpvideo_window=0;
       video_width=-1;
-      video_length=-1;
+      video_height=-1;
       
       if(debug)
 	fprintf(stderr,"           GOT IT!\n");
@@ -517,126 +482,81 @@ static void ChangeProperty(unsigned char *buf){
       rpfile_main=0;
     }
   }
+  return(ret);
 }
 
-static void PutImage(unsigned char *header,unsigned char *data){
-  int id=ILong(&header[4]);
-  if(snatch_active && id==rpvideo_window){
-    int width=IShort(&header[12])+IByte(&header[20]);
-    int height=IShort(&header[14]);
-    int n = width*height*4,i,j;
-    unsigned char *work=alloca(n+1),*ptr=data,charbuf[80]; 
-    
-    static long ZeroTime1 = -1;
-    static long ZeroTime2 = -1;
-    static struct timeval   tp;
-    static long lastsec = 0;
-    long    sec /* seconds */ ;
-    long    hsec /* hundredths of a second */ ;
-    
-    //if(savefile==-1)
-    //savefile=open("realplayer-out.ppm",O_RDWR|O_APPEND|O_CREAT,0770);
 
-    (void)gettimeofday(&tp, (struct timezone *)NULL);
-    if (ZeroTime1 == -1 || (tp.tv_sec - lastsec) >= 1000)
-      {
-	ZeroTime1 = tp.tv_sec;
-	ZeroTime2 = tp.tv_usec / 10000;
-      }
-    
-    lastsec = tp.tv_sec;
-    sec = tp.tv_sec - ZeroTime1;
-    hsec = tp.tv_usec / 10000 - ZeroTime2;
-    if (hsec < 0)
-      {
-	hsec += 100;
-	sec -= 1;
-      }
+int XPutImage(Display *display,Drawable id,GC gc,XImage *image,
+	      int src_x,int src_y,
+	      int x, int y,
+	      unsigned int d_width, 
+	      unsigned int d_height){
 
-    sprintf(charbuf,"P6\n# time %ld.%08ld\n%d %d 255\n",sec,hsec,width, height);
-    //write(savefile,charbuf,strlen(charbuf));
-    
-    for(i=0,j=0;i<n;i+=4){
-      work[j++]=ptr[i+2];
-      work[j++]=ptr[i+1];
-      work[j++]=ptr[i];
-    }
-    work[j++]='\n';
-    
-    //write(savefile,work,j);
+  int ret;
+
+  if(snatch_active==1 && id==rpvideo_window){
+    fprintf(stderr,"putimage");
   }
-  
+
   /* Subvert the Real sign on logo; paste the Snatch logo in.
      Although this might seem like a vanity issue, the primary reason
      for doing this is to give the user a clear indication Snatch is
      working properly, so some care should be taken to get it right. */
+
+  /* Real uses putimage here even on the local display with MIT-SHM support */
   
   if(id==rpplay_window){
-    int width=IShort(&header[12])+IByte(&header[20]);
-    int height=IShort(&header[14]);
-    int x=IShort(&header[16]);
-    int y=IShort(&header[18]);
+    int width=image->width;
+    int height=image->height;
+    int depth=image->depth;
+    int endian=image->byte_order;
 
-    unsigned char *ptr=data;
+    char *ptr=image->data;
     long i,j,k;
+    
+    /* after a resize, look where to put the logo... */
+    if(logo_y==-1 && height==rpplay_height && width==rpplay_width){
+      int test;      
 
-    if(x==0 && width==rpplay_width){
-      if(y==0){
-	play_blackupper=42;
-	play_blacklower=-1;
-	play_blackleft=-1;
-	play_blackright=-1;
-      }
-
-      if(y<=play_blackupper && y+width>play_blackupper){
-	for(play_blackleft=20;play_blackleft>0;play_blackleft--)
-	  if(ptr[(play_blackupper-y)*width*4+play_blackleft*4+1]!=0)break;
-	play_blackleft++;
-	for(play_blackright=width-20;play_blackright<width;play_blackright++)
-	  if(ptr[(play_blackupper-y)*width*4+play_blackright*4+1]!=0)break;
-      }
+      play_blackupper=42;
+      play_blacklower=-1;
+      play_blackleft=-1;
+      play_blackright=-1;
+      
+      for(play_blackleft=20;play_blackleft>0;play_blackleft--)
+	if(ptr[play_blackupper*width*4+play_blackleft*4+1]!=0)break;
+      play_blackleft++;
+      for(play_blackright=width-20;play_blackright<width;play_blackright++)
+	if(ptr[play_blackupper*width*4+play_blackright*4+1]!=0)break;
 
       if(play_blacklower==-1){
 	play_blacklower=42;
-	if(y>play_blacklower)play_blacklower=y;
-	for(;play_blacklower<y+height;play_blacklower++)
-	  if(ptr[(play_blacklower-y)*width*4+81]!=0)break;
+	for(;play_blacklower<height;play_blacklower++)
+	  if(ptr[play_blacklower*width*4+81]!=0)break;
 	
-	if(play_blacklower==y+height)play_blacklower=-1;
+	if(play_blacklower==height)play_blacklower=-1;
       }
-    }
-
-    /* after a resize, look where to put the logo... */
-    if(x==0 && y<rpplay_height/2 && width==rpplay_width){
-      if(logo_y==-1){
-	/* look for the real logo in the data; it's in the middle of the
-	   big black block */
-	int test;
+      
+      for(test=play_blackupper;test<height;test++)
+	if(ptr[test*width*4+(width/2*4)+1]!=0)break;
+      
+      if(test<height && test+snatchheight<play_blacklower){
+	logo_y=test;
 	
-	for(test=play_blackupper;test<height+y;test++)
-	  if(test>=y)
-	    if(ptr[(test-y)*width*4+(width/2*4)+1]!=0)break;
-	
-	if(test<height+y && 
-	   (test+snatchheight<play_blacklower || play_blacklower==-1) && 
-	   test!=y){
-	  logo_y=test;
+	/* verify enough room to display... */
+	if(test<50){
+	  long blacklower;
 	  
-	  /* verify enough room to display... */
-	  if(test<50){
-	    long blacklower;
-	    
-	    for(blacklower=test;blacklower<y+height;blacklower++)
-	    if(ptr[(blacklower-y)*width*4+(20*4)+1]!=0)break;
-	    
-	    if(blacklower-test<snatchheight)logo_y=-1;
-	  }
+	  for(blacklower=test;blacklower<height;blacklower++)
+	    if(ptr[blacklower*width*4+(20*4)+1]!=0)break;
+	  
+	  if(blacklower-test<snatchheight)logo_y=-1;
 	}
       }
-      logo_prev=y;
       logo_x=(width/2)-(snatchwidth/2);
-    }
 
+    }
+      
     /* blank background */
     if(snatch_active){
       unsigned char *bptr;
@@ -645,59 +565,46 @@ static void PutImage(unsigned char *header,unsigned char *data){
 	bptr=snatchppm;
       else
 	bptr=waitppm;
-
-      if(bigendian_p){
-	int lower=(play_blacklower==-1?y+height:play_blacklower);
-	for(i=play_blackupper;i<lower;i++)
-	  if(i>=y && i<y+height)
-	    for(j=play_blackleft;j<play_blackright;j++)
-	      if(j>=x && j<x+width){
-		ptr[(i-y)*width*4+(j-x)*4]=0x00;
-		ptr[(i-y)*width*4+(j-x)*4+1]=bptr[0];
-		ptr[(i-y)*width*4+(j-x)*4+2]=bptr[1];
-		ptr[(i-y)*width*4+(j-x)*4+3]=bptr[2];
-	      }
+      
+      if(endian){
+	for(i=play_blackupper;i<play_blacklower;i++)
+	  for(j=play_blackleft;j<play_blackright;j++){
+	    ptr[i*width*4+j*4]=0x00;
+	    ptr[i*width*4+j*4+1]=bptr[0];
+	    ptr[i*width*4+j*4+2]=bptr[1];
+	    ptr[i*width*4+j*4+3]=bptr[2];
+	  }
       }else{
-	int lower=(play_blacklower==-1?y+height:play_blacklower);
-	for(i=play_blackupper;i<lower;i++)
-	  if(i>=y && i<y+height)
-	    for(j=play_blackleft;j<play_blackright;j++)
-	      if(j>=x && j<x+width){
-		ptr[(i-y)*width*4+(j-x)*4+3]=0x00;
-		ptr[(i-y)*width*4+(j-x)*4+2]=bptr[0];
-		ptr[(i-y)*width*4+(j-x)*4+1]=bptr[1];
-		ptr[(i-y)*width*4+(j-x)*4]=bptr[2];
-	      }
+	for(i=play_blackupper;i<play_blacklower;i++)
+	  for(j=play_blackleft;j<play_blackright;j++){
+	    ptr[i*width*4+j*4+3]=0x00;
+	    ptr[i*width*4+j*4+2]=bptr[0];
+	    ptr[i*width*4+j*4+1]=bptr[1];
+	    ptr[i*width*4+j*4]=bptr[2];
+	  }
       }
-    
+      
       /* paint logo */
       if(logo_y!=-1){
 	for(i=0;i<snatchheight;i++){
-	  if(i+logo_y>=y && i+logo_y<height+y){
+	  if(i+logo_y<height){
 	    char *snatch;
 	    char *real;
-	    long end;
 	    
-	    k=x-logo_x;
-	    if(k<0)k=0;
-	    end=x+snatchwidth-logo_x;
-	    j=(logo_x-x)*4;
-	    if(j<0)j=0;
-	    
-	    real=ptr+width*4*(i+logo_y-y);
+	    real=ptr+width*4*(i+logo_y)+logo_x*4;
 	    snatch=(snatch_active==1?snatchppm:waitppm)+snatchwidth*3*i;
 	    
-	    if(bigendian_p){
-	      for(k*=3;k<snatchwidth*3 && j<width*4;){
+	    if(endian){
+
+	      for(k=0,j=0;k<snatchwidth*3 && j<width*4;){
 		real[++j]=snatch[k++];
 		real[++j]=snatch[k++];
 		real[++j]=snatch[k++];
 		++j;
 	      }
-	      
-	      
+	      	      
 	    }else{
-	      for(k*=3;k<snatchwidth*3 && j<width*4;j+=4){
+	      for(k=0,j=0;k<snatchwidth*3 && j<width*4;j+=4){
 		real[j+2]=snatch[k++];
 		real[j+1]=snatch[k++];
 		real[j]=snatch[k++];
@@ -708,278 +615,26 @@ static void PutImage(unsigned char *header,unsigned char *data){
       }
     }
   }
-}
- 
-/* Client-to-Server and Server-to-Client interception processing */
-/* Here are the most in-tact bits of xscope */
-struct ConnState {
-  unsigned char   *SavedBytes;
-  long    SizeofSavedBytes;
-  long    NumberofSavedBytes;
-  long    NumberofBytesNeeded;
-  long    (*ByteProcessing)();
 
-  /* a hack to optimize the video PutImage; this is the only case
-     where we actually care much about copies.  Most X requests are
-     either very infrequent or tiny.  PutImage, on the other hand, is
-     blasting several MB a second to do video.  So, this is ugly, but
-     needed. */
-  unsigned char PutImageHeader[24];
-  int PutImageUsed;
-};
- 
-static struct ConnState serverCS;
-static struct ConnState clientCS;
+  ret=(*xlib_xputimage)(display,id,gc,image,src_x,src_y,x,y,d_width,d_height);
 
-static void DecodeRequest(unsigned char *pih,int pi,
-			  unsigned char *buf,long n){
-  if(pi){
-    PutImage(pih,buf);
-  }else{
-    int   Request = IByte (&buf[0]);
-    switch (Request){
-    case 1:
-      CreateWindow(buf);
-      break;
-    case 12:
-      ConfigureWindow(buf);
-      break;
-    case 18:
-      ChangeProperty(buf);
-      break;
-    case 66:
-      PolySegment(buf);
-      break;
-    case 72:
-      PutImage(buf,buf+24);
-      break;
-    }
-  }
-}
-
-static long DataToServer(unsigned char *buf,long n){
-  long togo=n;
-  unsigned char *p=buf;
-  
-  if(n){
-    while(togo>0){
-      int bw=(*libc_write)(X_fd,p,togo);
-
-      if(bw<0 && (errno==EAGAIN || errno==EINTR))bw=0;
-      if(bw>=0)
-	p+=bw;
-      else{
-	return(bw);
-      }
-      togo-=bw;
-    }
-  }
-
-  return(0);
-}
-
-static void SaveBytes(struct ConnState *cs,unsigned char *buf,long n){
-
-  /* a hack to avoid huge copies in PutImage */
-  if(cs->NumberofSavedBytes==0 && 
-     n>=24 && 
-     cs->PutImageUsed==0 && 
-     IByte(&buf[0])==72){
-
-    unsigned long id=ILong(&buf[4]);
-    /* other putimage requests have side effects and we don't want to
-       write into Xlib maintained memory.  Besides, the only case we
-       really need to optimize is the video window (which we currently
-       don't alter) */
-    if(id==rpvideo_window){
-      memcpy(cs->PutImageHeader,buf,24);
-      cs->PutImageUsed=24;
-      n-=cs->PutImageUsed;
-    }
-  }
-
-  /* In fact,t he way Xlib flushes events, this will practically never
-     be needed, but is good to have around */
-  
-  /* check if there is enough space to hold the bytes we want */
-  if(n>0){
-    if (cs->NumberofSavedBytes + n > cs->SizeofSavedBytes){
-      long    SizeofNewBytes = (cs->NumberofSavedBytes + n + 1);
-      if(cs->SavedBytes)
-	cs->SavedBytes = realloc(cs->SavedBytes,SizeofNewBytes);
-      else
-	cs->SavedBytes = malloc(SizeofNewBytes);
-      
-    cs->SizeofSavedBytes = SizeofNewBytes;
-    }
-    
-    /* now copy the new bytes onto the end of the old bytes */
-    memcpy(cs->SavedBytes + cs->NumberofSavedBytes,buf,n);
-    cs->NumberofSavedBytes += n;
-  }
-}
-
-static long RemoveHeader(struct ConnState *cs){
-  long ret=cs->PutImageUsed;
-  cs->PutImageUsed=0;
   return(ret);
 }
+ 
+int XShmPutImage(Display *display,Drawable id,GC gc,XImage *image,
+		 int src_x, int src_y, int dest_x, int dest_y,
+		 unsigned int width, unsigned int height,
+		 Bool send_event){
 
-static void RemoveSavedBytes(struct ConnState *cs,long n){
-  /* check if all bytes are being removed -- easiest case */
-  if (cs->NumberofSavedBytes <= n)
-    cs->NumberofSavedBytes = 0;
-  else if (n == 0)
-    return;
-  else{
-    /* not all bytes are being removed -- shift the remaining ones down  */
-    memmove(cs->SavedBytes,cs->SavedBytes+n,cs->NumberofSavedBytes - n);
-    cs->NumberofSavedBytes -= n;
-  }
-}
+  int ret=(*xlib_xshmputimage)(display, id, gc, image, src_x, src_y,
+			       dest_x, dest_y, width, height, send_event);
 
-static long pad(long n){
-  return((n + 3) & ~0x3);
-}
 
-static long FinishRequest(struct ConnState *cs,unsigned char *buf,long n);
-
-static long StartRequest(struct ConnState *cs,unsigned char *buf,long n){
-  unsigned short requestlength;
-
-  /* bytes 0,1 are ignored now; bytes 2,3 tell us the request length */
-  requestlength = IShort(&buf[2]);
-  cs->ByteProcessing = FinishRequest;
-  cs->NumberofBytesNeeded = 4 * requestlength;
-  return(0);
-}
-
-static long FinishSetUpMessage(struct ConnState *cs,unsigned char *buf,long n){
-  littleEndian = (buf[0] == 'l');
-  cs->ByteProcessing = StartRequest;
-  cs->NumberofBytesNeeded = 4;
-  return(n);
-}
-
-static long StartSetUpMessage(struct ConnState *cs,unsigned char *buf,long n){
-  short   namelength;
-  short   datalength;
-
-  namelength = IShort(&buf[6]);
-  datalength = IShort(&buf[8]);
-  cs->ByteProcessing = FinishSetUpMessage;
-  cs->NumberofBytesNeeded = n + pad((long)namelength) + pad((long)datalength);
-  return(0);
-}
-
-static long FinishRequest(struct ConnState *cs,unsigned char *buf,long n){
-  DecodeRequest(cs->PutImageHeader,cs->PutImageUsed,buf, n);
-  cs->ByteProcessing = StartRequest;
-  cs->NumberofBytesNeeded = 4;
-  return(n);
-}
-
-/* ************************************************************ */
-
-static long FinishSetUpReply(struct ConnState *cs,unsigned char *buf,long n){
-  SetUpReply(buf);
-  cs->ByteProcessing = NULL; /* no further reason to watch the stream */
-  cs->NumberofBytesNeeded = 0;
-  return(n);
-}
-
-static long StartSetUpReply(struct ConnState *cs,unsigned char *buf,long n){
-  int replylength = IShort(&buf[6]);
-  cs->ByteProcessing = FinishSetUpReply;
-  cs->NumberofBytesNeeded = n + 4 * replylength;
-  return(0);
-}
-
-static void StartClientConnection(void){
-  memset(&clientCS,0,sizeof(clientCS));
-  clientCS.ByteProcessing = StartSetUpMessage;
-  clientCS.NumberofBytesNeeded = 12;
-}
-
-static void StopClientConnection(void){
-  if (clientCS.SizeofSavedBytes > 0)
-    free(clientCS.SavedBytes);
-  memset(&clientCS,0,sizeof(clientCS));
-}
-
-static void StartServerConnection(void){
-  memset(&serverCS,0,sizeof(clientCS));
-  serverCS.ByteProcessing = StartSetUpReply;
-  serverCS.NumberofBytesNeeded = 8;
-}
-
-static void StopServerConnection(void){
-  if(serverCS.SizeofSavedBytes > 0)
-    free(serverCS.SavedBytes);
-  memset(&serverCS,0,sizeof(clientCS));
-}
-
-static void ProcessBuffer(struct ConnState *cs,unsigned char *buf,long n,
-		     long (*w)(unsigned char *,long)){
-  unsigned char   *BytesToProcess;
-  long             NumberofUsedBytes;
+  fprintf(stderr,"shm");
   
-  while (cs->ByteProcessing && /* we turn off watching replies from
-				    the server after grabbing set up */	 
-	 cs->NumberofSavedBytes + n + cs->PutImageUsed >= 
-	 cs->NumberofBytesNeeded){
-
-    if (cs->NumberofSavedBytes == 0){
-      /* no saved bytes, so just process the first bytes in the
-	 read buffer */
-      BytesToProcess = buf /* address of request bytes */;
-    }else{
-      if (cs->NumberofSavedBytes < cs->NumberofBytesNeeded){
-	/* first determine the number of bytes we need to
-	   transfer; then transfer them and remove them from
-	   the read buffer. (there may be additional requests
-	   in the read buffer) */
-	long    m;
-	m = cs->NumberofBytesNeeded - cs->NumberofSavedBytes;
-	SaveBytes(cs, buf, m);
-	buf += m;
-	n -= m;
-      }
-      BytesToProcess = cs->SavedBytes /* address of request bytes */;
-    }
-    
-    NumberofUsedBytes = (*cs->ByteProcessing)
-      (cs, BytesToProcess, cs->NumberofBytesNeeded);
-    
-    /* *After* we've processed the buffer (and possibly caused side
-       effects), we ship the request off to the recipient */
-    if(w){
-      (*w)(cs->PutImageHeader,cs->PutImageUsed);
-      (*w)(BytesToProcess,NumberofUsedBytes-cs->PutImageUsed);
-    }
-
-    /* the number of bytes that were actually used is normally (but not
-       always) the number of bytes needed.  Discard the bytes that were
-       actually used, not the bytes that were needed. The number of used
-       bytes must be less than or equal to the number of needed bytes. */
-    
-    if (NumberofUsedBytes > 0){
-      n-=RemoveHeader(cs);
-
-      if (cs->NumberofSavedBytes > 0)
-	RemoveSavedBytes(cs, NumberofUsedBytes);
-      else{
-	/* there are no saved bytes, so the bytes that were
-	   used must have been in the read buffer */
-	buf += NumberofUsedBytes;
-	n -= NumberofUsedBytes;
-      }
-    }
-  } /* end of while (NumberofSavedBytes + n >= NumberofBytesNeeded) */
-
-  /* not enough bytes -- just save the new bytes for more later */
-  if (cs->ByteProcessing && n > 0)
-    SaveBytes(cs, buf, n);
-  return;
+  if(snatch_active==1 && id==rpvideo_window){
+    fprintf(stderr,"putimage");
+  }
+  
+  return(ret);
 }
-

@@ -36,27 +36,38 @@
 #include <linux/soundcard.h>
 #include <pthread.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XShm.h>
 
-static int    (*libc_open)(const char *,int,mode_t);
-static int    (*libc_connect)(int sockfd, const struct sockaddr *serv_addr,
-			      socklen_t addrlen);
-static int    (*libc_close)(int);
-static size_t (*libc_read)(int,void *,size_t);
-static size_t (*libc_write)(int,const void *,size_t);
-static int    (*libc_readv)(int,const struct iovec *,int);
-static int    (*libc_writev)(int,const struct iovec *,int);
-static int    (*libc_ioctl)(int,int,void *);
-static pid_t  (*libc_fork)(void);
+static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t display_mutex=PTHREAD_MUTEX_INITIALIZER;
+
+static int      (*libc_open)(const char *,int,mode_t);
+static int      (*libc_close)(int);
+static size_t   (*libc_write)(int,const void *,size_t);
+static int      (*libc_writev)(int,const struct iovec *,int);
+static int      (*libc_ioctl)(int,int,void *);
+static pid_t    (*libc_fork)(void);
 
 static Display *(*xlib_xopen)(const char *);
+static int      (*xlib_xdrawsegments)(Display *,Drawable,GC,XSegment *,int);
+static Window   (*xlib_xcreatewindow)(Display *,Window,int,int,unsigned int,unsigned int,
+				      unsigned int,int,unsigned int,Visual*,unsigned long,
+				      XSetWindowAttributes *);
+static int      (*xlib_xconfigurewindow)(Display *,Window,unsigned int,XWindowChanges *);
+static int      (*xlib_xchangeproperty)(Display *,Window,Atom,Atom,int,int,const unsigned char *,int);
+static int      (*xlib_xputimage)(Display *,Drawable,GC,XImage *,int,int,int,int,
+				  unsigned int,unsigned int);
+static int      (*xlib_xshmputimage)(Display *,Drawable,GC,XImage *,int,int,int,int,
+				     unsigned int,unsigned int,Bool);
+
+
 static Display *Xdisplay;
 
 static int debug;
 static char *outpath;
 static char *audioname;
-static char *Xname;
-static unsigned long Xinet_port;
-static char *Xunix_socket;
 
 static FILE *backchannel_fd=NULL;
 
@@ -64,8 +75,6 @@ static int audio_fd=-1;
 static int audio_channels=-1;
 static int audio_rate=-1;
 static int audio_format=-1;
-
-static int X_fd=-1;
 
 static pthread_t snatch_backchannel_thread;
 static pthread_t snatch_event_thread;
@@ -80,6 +89,8 @@ static int fake_audiop=0;
 static int fake_videop=0;
 
 static void (*QueuedTask)(void);
+
+static int outfile_fd=-1;
 
 #include "x11.c" /* yeah, ugly, but I don't want to leak symbols. 
 		    Oh and I'm lazy. */
@@ -131,11 +142,6 @@ void *get_me_symbol(char *symbol){
 
   return(ret);
 }
-
-static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t display_mutex=PTHREAD_MUTEX_INITIALIZER;
 
 void *event_thread(void *dummy){
   if(debug)
@@ -267,14 +273,17 @@ void initialize(void){
     /* get handles to the libc symbols we're subverting */
     libc_open=get_me_symbol("open");
     libc_close=get_me_symbol("close");
-    libc_read=get_me_symbol("read");
-    libc_readv=get_me_symbol("readv");
     libc_write=get_me_symbol("write");
     libc_writev=get_me_symbol("writev");
-    libc_connect=get_me_symbol("connect");
     libc_ioctl=get_me_symbol("ioctl");
     libc_fork=get_me_symbol("fork");
     xlib_xopen=get_me_symbol("XOpenDisplay");
+    xlib_xdrawsegments=get_me_symbol("XDrawSegments");
+    xlib_xcreatewindow=get_me_symbol("XCreateWindow");
+    xlib_xconfigurewindow=get_me_symbol("XConfigureWindow");
+    xlib_xchangeproperty=get_me_symbol("XChangeProperty");
+    xlib_xputimage=get_me_symbol("XPutImage");
+    xlib_xshmputimage=get_me_symbol("XShmPutImage");
 
     /* output path? */
     outpath=nstrdup(getenv("SNATCH_OUTPUT_PATH"));
@@ -333,63 +342,6 @@ void initialize(void){
     if(debug)
       fprintf(stderr,"    ...: Now watching for RealPlayer audio output.\n");
 
-    /* X socket? */
-    Xname=getenv("SNATCH_X_PORT");
-    if(!Xname){
-      char *display=getenv("DISPLAY");
-      
-      if(!display){
-	fprintf(stderr,
-		"**ERROR: DISPLAY environment variable not set, and no explicit\n"
-		"         socket/host/port set via SNATCH_X_PORT. exit(1)ing...\n\n");
-	exit(1);
-      }
-
-      Xname=display;	
-
-      if(debug)
-	fprintf(stderr,
-		"----env: SNATCH_X_PORT\n"
-		"           not set. Using DISPLAY value (%s).\n",display);
-    }else{
-      if(debug)
-	fprintf(stderr,
-		"----env: SNATCH_X_PORT\n"
-		"           set (%s)\n",Xname);
-    }
-    
-    if(Xname[0]==':'){
-      /* local display */
-      Xunix_socket=nstrdup("/tmp/.X11-unix/X                          ");
-      sprintf(Xunix_socket+16,"%d",atoi(Xname+1));
-
-      if(debug)
-	fprintf(stderr,
-		"    ...: Now watching for RealPlayer X connection on\n"
-		"         local AF_UNIX socket %s\n",Xunix_socket);
-
-    }else if(Xname[0]=='/'){
-      Xunix_socket=nstrdup(Xname);
-
-      if(debug)
-	fprintf(stderr,
-		"    ...: Now watching for RealPlayer X connection on\n"
-		"         local AF_UNIX socket %s\n",Xunix_socket);
-    }else{
-      /* named host/port.  We only pay attention to port. */
-      char *colonpos=strchr(Xname,':');
-
-      if(!colonpos)
-	Xinet_port=6000;
-      else
-	Xinet_port=atoi(colonpos)+6000;
-
-      if(debug)
-	fprintf(stderr,
-		"    ...: Now watching for RealPlayer X connection on\n"
-		"         AF_INET socket *.*.*.*:%ld\n",Xinet_port);
-      
-    }
 
     {
       int ret;
@@ -421,7 +373,7 @@ void initialize(void){
 	addr.sun_family=AF_UNIX;
 	strcpy(addr.sun_path,backchannel_socket);
 
-	if((*libc_connect)(temp_fd,(struct sockaddr *)&addr,sizeof(addr))<0){
+	if(connect(temp_fd,(struct sockaddr *)&addr,sizeof(addr))<0){
 	  fprintf(stderr,
 		  "**ERROR: connect() call for backchannel failed.\n"
 		  "         returned error %d: %s\n"
@@ -469,9 +421,6 @@ void initialize(void){
 		  "         not set \n");
 
     }
-
-    StartClientConnection();
-    StartServerConnection();
   }
 }
 
@@ -545,45 +494,6 @@ int open(const char *pathname,int flags,...){
   return(ret);
 }
 
-/* The X channel is subverted through connect */
-int connect(int sockfd,const struct sockaddr *serv_addr,socklen_t addrlen){
-  int ret;
-  initialize();
-
-  ret=(*libc_connect)(sockfd,serv_addr,addrlen);
-
-  if(ret>-1){
-    if(serv_addr->sa_family==AF_UNIX){
-      struct sockaddr_un *addr=(struct sockaddr_un *)serv_addr;
-      if(!strcmp(Xunix_socket,addr->sun_path)){
-      	X_fd=sockfd;
-	if(debug)
-	  fprintf(stderr,
-		  "    ...: Caught RealPlayer connecting to X server\n"
-		  "         local socket %s (fd %d).\n",
-		  Xunix_socket,ret);
-      } 
-    }
-    
-    if(Xinet_port && serv_addr->sa_family==AF_INET){
-      struct sockaddr_in *addr=(struct sockaddr_in *)serv_addr;
-      unsigned int port=ntohs(addr->sin_port);
-      unsigned long host=ntohl(addr->sin_addr.s_addr);
-      if(Xinet_port==port){
-	X_fd=sockfd;
-	if(debug)
-	  fprintf(stderr,
-		  "    ...: Caught RealPlayer connecting to X server\n"
-		  "         on host %ld.%ld.%ld.%ld port %d (fd %d).\n",
-		  (host>>24)&0xff,(host>>16)&0xff,(host>>8)&0xff,	host&0xff,
-		  port,ret);
-      }
-    }
-  }
-
-  return(ret);
-}
-
 int close(int fd){
   int ret;
 
@@ -597,60 +507,22 @@ int close(int fd){
       fprintf(stderr,
 	      "    ...: RealPlayer closed audio playback fd %d\n",fd);
   }
-  if(fd==X_fd){
-    X_fd=-1;
-    if(debug)
-      fprintf(stderr,
-	      "    ...: RealPlayer shut down X socket fd %d\n",fd);
-
-    StopClientConnection();
-    StopServerConnection();
-    (*libc_close)(STDERR_FILENO);
-
-  }
   
   return(ret);
 }
 
 ssize_t write(int fd, const void *buf,size_t count){
-  if(fd==X_fd){
-    ProcessBuffer(&clientCS,(void *)buf,count,DataToServer);
-    return(count);
+  if(fd==audio_fd){
+    fprintf(stderr,"audio");
+
+    if(fake_audiop)return(count);
   }
 
   return((*libc_write)(fd,buf,count));
 }
 
-ssize_t read(int fd, void *buf,size_t count){
-  int ret;
-  initialize();
-
-  ret=(*libc_read)(fd,buf,count);
-
-  if(ret>0)
-    if(fd==X_fd)
-      ProcessBuffer(&serverCS,buf,ret,NULL);
-  
-  return(ret);
-}
-
-int readv(int fd,const struct iovec *v,int n){
-  if(fd==audio_fd || fd==X_fd){
-    int i,ret,count=0;
-    for(i=0;i<n;i++){
-      ret=read(fd,v[i].iov_base,v[i].iov_len);
-      if(ret<0 && count==0)return(ret);
-      if(ret<0)return(count);
-      count+=ret;
-      if(ret<v[i].iov_len)return(count);
-    }
-    return(count);
-  }else
-    return((*libc_readv)(fd,v,n));
-}
-
 int writev(int fd,const struct iovec *v,int n){
-  if(fd==audio_fd || fd==X_fd){
+  if(fd==audio_fd){
     int i,ret,count=0;
     for(i=0;i<n;i++){
       ret=write(fd,v[i].iov_base,v[i].iov_len);
@@ -716,24 +588,48 @@ int ioctl(int fd,unsigned long int rq, ...){
   return((*libc_ioctl)(fd,rq,arg));
 }
 
-Display *XOpenDisplay(const char *d){
-  initialize();
-
-  if(!XInitThreads()){
-    fprintf(stderr,"**ERROR: Unable to set multithreading support in Xlib.\n"
-	    "         exit(1)ing...\n\n");
-    exit(1);
-  }
-  Xdisplay=(*xlib_xopen)(d);
-  pthread_mutex_lock(&display_mutex);
-  pthread_cond_signal(&display_cond);
-  pthread_mutex_unlock(&display_mutex);
-  return(Xdisplay);
-}
-
 static void queue_task(void (*f)(void)){
   pthread_mutex_lock(&event_mutex);
   QueuedTask=f;
   pthread_cond_signal(&event_cond);
   pthread_mutex_unlock(&event_mutex);
 }
+
+#if 0
+static void OpenOutputFile(){
+  if(strcmp(outpath,"-")){
+    outfile_fd=STDOUT_FILENO;
+  }else{
+    struct stat buf;
+    int ret=stat(outpath,&buf);
+    if(ret){
+      fprintf("**ERROR: Could not stat requested output path!\n"
+	      "         %s: %s\n\n",outpath,strerror(errno));
+      outfile_fd=-2;
+    }else{
+      if(S_ISDIR(buf.st_mode)){
+	/* construct a new filename */
+	struct tm *now;
+	char buf2[256];
+	char buf1[256];
+	now=localtime(time(NULL));
+	strftime(buf1,256,"%Y%m%d_%H:%M:%S",now);
+	//if(
+	//sprintf(buf2,"%s_%s%dHz_%dx%d.snatch",buf1,
+
+	/****** XXXXX */
+	
+      }else{
+	outfile_fd=(*libc_open)(outpath,O_RDWR|O_CREAT|O_APPEND,0770);
+	if(outfile_fd<0){
+	  fprintf("**ERROR: Could not stat requested output path!\n"
+		  "         %s: %s\n\n",outpath,strerror(errno));
+	  outfile_fd=-2;
+	}
+      }
+    }
+  }
+}
+
+
+#endif
