@@ -29,7 +29,7 @@
 from neuros import Neuros
 import neuros as neuros_module
 import util
-
+from os import path
     
 def run(config, neuros, args):
     if len(args) == 0:
