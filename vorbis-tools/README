@@ -4,46 +4,20 @@ This source distribution includes the vorbis tools and nothing else.  Other
 modules (eg, the modules vorbis, vorbis-tools and vorbis-plugins for the 
 Vorbis codec) contain the codec libraries for use with Ogg bitstreams.
 
-DIRECTORIES:
+Directory:
 
-debian/		debian packaging stuff
-include/	header files shared between the tools
-intl/		GNU gettext library from gettext-0.10.40 (for i18n support)
-ogg123/		an ogg vorbis command line audio player
-oggenc/		the ogg vorbis encoder
-oggdec/		a simple, portable command line decoder (to wav and raw)
-ogginfo/	provides information (tags, bitrate, length, etc.) about 
-		an ogg vorbis file
-po/		translations for non-English languages
-share/		code shared between the tools
-vcut/		cuts an ogg vorbis file into two parts at a particular point
-vorbiscomment/	edits the comments in an ogg vorbis file
-win32/		Win32 build stuff
+./oggenc  	the ogg vorbis encoder
 
-DEPENDENCIES:
+./ogg123	an ogg vorbis commandline audio player
 
-All of the tools require libogg and libvorbis to be installed (along
-with the header files).  Additionally, ogg123 requires libao, libcurl,
-and a POSIX-compatible thread library.  Ogg123 can optionally compiled
-to use libFLAC, libOggFLAC, and libspeex.  Oggenc can be optionally
-compiled with libFLAC and libOggFLAC.  The libraries libogg,
-libvorbis, and libao are all available at
-  http://www.vorbis.com/download.psp
+./vorbiscomment a comment editor
 
-The libcurl library is packaged with most Linux distributions.  The
-source code can also be downloaded from:
-  http://curl.haxx.se/libcurl/
-
-FLAC is available at:
-  http://flac.sourceforge.net
-
-Speex is available at:
-  http://www.speex.org/
+./debian	debian packaging stuff
 
 CONTACT:
 
-The Ogg Vorbis homepage is located at 'http://www.vorbis.com'. Up to
-date technical documents, contact information, source code and
+The Ogg Vorbis homepage is located at 'http://www.xiph.org/ogg/vorbis/'.
+Up to date technical documents, contact information, source code and
 pre-built utilities may be found there.
 
 BUILDING FROM CVS:
@@ -55,8 +29,9 @@ and as root if desired :
 
 make install
 
-This will install the tools into /usr/local/bin and manpages into
-/usr/local/man.
+This will install the Ogg libraries (static and shared) into
+/usr/local/lib, includes into /usr/local/include and API manpages
+(once we write some) into /usr/local/man.
 
 BUILDING FROM TARBALL DISTRIBUTIONS:
 

@@ -1,19 +1,3 @@
-/********************************************************************
- *                                                                  *
- * THIS FILE IS PART OF THE OGG VORBIS PROJECT SOURCE CODE.         *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
- *                                                                  *
- * THE OGG VORBIS PROJECT SOURCE CODE IS (C) COPYRIGHT 1994-2001    *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
-
- ********************************************************************
-
- function: headers of the file format plugin for RealSystem
-
- ********************************************************************/
-
 #ifndef __FVORBIS_H__
 #define __FVORBIS_H__
 
@@ -27,9 +11,6 @@
 #define STREAM_NO 0
 #define STREAM_MIME_TYPE "application/x-ogg"
 #define READ_LENGTH 4096
-#ifdef _WIN32
-#define strncasecmp strnicmp
-#endif
 
 typedef enum
 {

@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#ifdef HAVE_ALLOCA_H
+#ifdef __sun
 #include <alloca.h>
 #endif
 
@@ -16,16 +16,12 @@
 #if defined(_WIN32) || defined(__OS2__)
 #include <malloc.h>
 
+char *rindex(char *s, int c);
 void setbinmode(FILE *);
-
-#define DEFAULT_NAMEFMT_REMOVE "/\\:<>|"
-#define DEFAULT_NAMEFMT_REPLACE NULL
 
 #else /* Unix, mostly */
 
 #define setbinmode(x) {}
-#define DEFAULT_NAMEFMT_REMOVE "/"
-#define DEFAULT_NAMEFMT_REPLACE NULL
 
 #endif
 

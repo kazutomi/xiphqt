@@ -1,9 +1,9 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: train a VQ codebook 
- last mod: $Id: vqgen.c,v 1.41 2002/10/11 07:44:28 xiphmont Exp $
+ last mod: $Id: vqgen.c,v 1.38 2001/02/02 03:52:27 xiphmont Exp $
 
  ********************************************************************/
 
@@ -83,7 +83,8 @@ void _vqgen_seed(vqgen *v){
 int directdsort(const void *a, const void *b){
   float av=*((float *)a);
   float bv=*((float *)b);
-  return (av<bv)-(av>bv);
+  if(av>bv)return(-1);
+  return(1);
 }
 
 void vqgen_cellmetric(vqgen *v){

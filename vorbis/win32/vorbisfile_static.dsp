@@ -25,7 +25,7 @@ CFG=vorbisfile_static - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "vorbisfile_static - Win32 Release"
@@ -37,11 +37,11 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "VorbisFile_Static_Release"
-# PROP Intermediate_Dir "VorbisFile_Static_Release"
+# PROP Output_Dir "Static_Release"
+# PROP Intermediate_Dir "Static_Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /GB /MT /W3 /GX /O2 /Ob1 /I "..\include" /I "..\..\ogg\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_WIN32" /YX /FD /O3 /QaxK /Qsox- /Qip /c
+# ADD CPP /nologo /MD /W2 /GX /O2 /I "..\include" /I "..\..\ogg\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_WIN32" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -60,11 +60,11 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "VorbisFile_Static_Debug"
-# PROP Intermediate_Dir "VorbisFile_Static_Debug"
+# PROP Output_Dir "Static_Debug"
+# PROP Intermediate_Dir "Static_Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\include" /I "..\..\ogg\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\include" /I "..\..\ogg\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_WIN32" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -72,7 +72,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"VorbisFile_Static_Debug\vorbisfile_static_d.lib"
+# ADD LIB32 /nologo
 
 !ENDIF 
 
@@ -91,10 +91,6 @@ SOURCE=..\lib\vorbisfile.c
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=..\include\vorbis\vorbisfile.h
-# End Source File
 # End Group
 # End Target
 # End Project

@@ -1,3 +1,6 @@
 README
 TODO
-debian/tmp/usr/share/doc/libao-*/*
+doc/API
+doc/DRIVERS
+doc/USAGE
+doc/WANTED

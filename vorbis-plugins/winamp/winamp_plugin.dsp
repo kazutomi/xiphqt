@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ogg_static.lib vorbis_static.lib vorbisfile_static.lib ws2_32.lib /nologo /dll /machine:I386 /out:"Release\in_vorbis.dll" /libpath:"c:\src\ogg\win32\Static_Release" /libpath:"c:\src\vorbis\win32\Static_Release"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ogg_static.lib vorbis_static.lib vorbisfile_static.lib /nologo /dll /machine:I386 /out:"Release\in_vorbis.dll" /libpath:"c:\src\ogg\win32\Static_Release" /libpath:"c:\src\vorbis\win32\Static_Release"
 
 !ELSEIF  "$(CFG)" == "winamp_plugin - Win32 Debug"
 
@@ -79,8 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ogg_static.lib vorbis_static.lib vorbisfile_static.lib ws2_32.lib /nologo /dll /debug /machine:I386 /out:"Debug\in_vorbis.dll" /pdbtype:sept /libpath:"c:\src\ogg\win32\Static_Debug" /libpath:"c:\src\vorbis\win32\Static_Debug"
-# SUBTRACT LINK32 /nodefaultlib
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ogg_static.lib vorbis_static.lib vorbisfile_static.lib /nologo /dll /debug /machine:I386 /out:"Debug\in_vorbis.dll" /pdbtype:sept /libpath:"c:\src\ogg\win32\Static_Debug" /libpath:"c:\src\vorbis\win32\Static_Debug"
 
 !ENDIF 
 
@@ -93,10 +92,6 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\httpstream.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\vorbis.c
 # End Source File
 # End Group
@@ -105,28 +100,16 @@ SOURCE=.\vorbis.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\httpstream.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\In2.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\Out.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\resource.h
-# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# Begin Source File
-
-SOURCE=.\resource.rc
-# End Source File
 # End Group
 # End Target
 # End Project

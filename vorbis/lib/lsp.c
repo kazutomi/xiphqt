@@ -1,24 +1,23 @@
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS SOURCE IS GOVERNED BY *
+ * THE GNU LESSER/LIBRARY PUBLIC LICENSE, WHICH IS INCLUDED WITH    *
+ * THIS SOURCE. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.        *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
  * by the XIPHOPHORUS Company http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
   function: LSP (also called LSF) conversion routines
-  last mod: $Id: lsp.c,v 1.24 2002/10/16 07:44:21 xiphmont Exp $
+  last mod: $Id: lsp.c,v 1.15 2001/02/02 03:51:56 xiphmont Exp $
 
   The LSP generation code is taken (with minimal modification and a
   few bugfixes) from "On the Computation of the LSP Frequencies" by
-  Joseph Rothweiler (see http://www.rothweiler.us for contact info).
-  The paper is available at:
-
-  http://www.myown1.com/joe/lsf
+  Joseph Rothweiler <rothwlr@altavista.net>, available at:
+  
+  http://www2.xtdl.com/~rothwlr/lsfpaper/lsfpage.html 
 
  ********************************************************************/
 
@@ -52,7 +51,7 @@
    ARM family. */
 
 /* undefine both for the 'old' but more precise implementation */
-#define   FLOAT_LOOKUP
+#undef   FLOAT_LOOKUP
 #undef    INT_LOOKUP
 
 #ifdef FLOAT_LOOKUP
@@ -105,7 +104,7 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 			ampoffset);
 
     do{
-      curve[i++]*=q;
+      curve[i++]=q;
     }while(map[i]==k);
   }
   vorbis_fpu_restore(fpu);
@@ -145,7 +144,7 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
   int i;
   int ampoffseti=rint(ampoffset*4096.f);
   int ampi=rint(amp*16.f);
-  long *ilsp=alloca(m*sizeof(*ilsp));
+  long *ilsp=alloca(m*sizeof(long));
   for(i=0;i<m;i++)ilsp[i]=vorbis_coslook_i(lsp[i]/M_PI*65536.f+.5f);
 
   i=0;
@@ -195,6 +194,9 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
       pi*=(1<<14)-((wi*wi)>>14);
       qi+=pi>>14;
 
+      //q*=ftmp[0]-w;
+      //q*=q;
+      //p*=p*(1.f-w*w);
     }else{
       /* even order filter; still symmetric */
 
@@ -232,8 +234,8 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 			                              /*  m.8, m+n<=8 */
 			    ampoffseti);              /*  8.12[0]     */
 
-    curve[i]*=amp;
-    while(map[++i]==k)curve[i]*=amp;
+    curve[i]=amp;
+    while(map[++i]==k)curve[i]=amp;
   }
 }
 
@@ -274,8 +276,8 @@ void vorbis_lsp_to_curve(float *curve,int *map,int n,int ln,float *lsp,int m,
 
     q=fromdB(amp/sqrt(p+q)-ampoffset);
 
-    curve[i]*=q;
-    while(map[++i]==k)curve[i]*=q;
+    curve[i]=q;
+    while(map[++i]==k)curve[i]=q;
   }
 }
 
@@ -295,119 +297,106 @@ static void cheby(float *g, int ord) {
 }
 
 static int comp(const void *a,const void *b){
-  return (*(float *)a<*(float *)b)-(*(float *)a>*(float *)b);
+  if(*(float *)a<*(float *)b)
+    return(1);
+  else
+    return(-1);
 }
 
-/* Newton-Raphson-Maehly actually functioned as a decent root finder,
-   but there are root sets for which it gets into limit cycles
-   (exacerbated by zero suppression) and fails.  We can't afford to
-   fail, even if the failure is 1 in 100,000,000, so we now use
-   Laguerre and later polish with Newton-Raphson (which can then
-   afford to fail) */
+/* This is one of those 'mathemeticians should not write code' kind of
+   cases.  Newton's method of polishing roots is straightforward
+   enough... except in those cases where it just fails in the real
+   world.  In our case below, we're worried about a local mini/maxima
+   shooting a root estimation off to infinity, or the new estimation
+   chaotically oscillating about convergence (shouldn't actually be a
+   problem in our usage.
 
-#define EPSILON 10e-7
-static int Laguerre_With_Deflation(float *a,int ord,float *r){
-  int i,m;
-  double lastdelta=0.f;
-  double *defl=alloca(sizeof(*defl)*(ord+1));
-  for(i=0;i<=ord;i++)defl[i]=a[i];
+   Maehly's modification (zero suppression, to prevent two tenative
+   roots from collapsing to the same actual root) similarly can
+   temporarily shoot a root off toward infinity.  It would come
+   back... if it were not for the fact that machine representation has
+   limited dynamic range and resolution.  This too is guarded by
+   limiting delta.
 
-  for(m=ord;m>0;m--){
-    double new=0.f,delta;
+   Last problem is convergence criteria; we don't know what a 'double'
+   is on our hardware/compiler, and the convergence limit is bounded
+   by roundoff noise.  So, we hack convergence:
 
-    /* iterate a root */
-    while(1){
-      double p=defl[m],pp=0.f,ppp=0.f,denom;
-      
-      /* eval the polynomial and its first two derivatives */
-      for(i=m;i>0;i--){
-	ppp = new*ppp + pp;
-	pp  = new*pp  + p;
-	p   = new*p   + defl[i-1];
-      }
-      
-      /* Laguerre's method */
-      denom=(m-1) * ((m-1)*pp*pp - m*p*ppp);
-      if(denom<0)
-	return(-1);  /* complex root!  The LPC generator handed us a bad filter */
+   Require at most 1e-6 mean squared error for all zeroes.  When
+   converging, start the clock ticking at 1e-6; limit our polishing to
+   as many more iterations as took us to get this far, 100 max.
 
-      if(pp>0){
-	denom = pp + sqrt(denom);
-	if(denom<EPSILON)denom=EPSILON;
-      }else{
-	denom = pp - sqrt(denom);
-	if(denom>-(EPSILON))denom=-(EPSILON);
-      }
+   Past max iters, quit when MSE is no longer decreasing *or* we go
+   below ~1e-20 MSE, whichever happens first. */
 
-      delta  = m*p/denom;
-      new   -= delta;
+static void Newton_Raphson_Maehly(float *a,int ord,float *r){
+  int i, k, count=0, maxiter=0;
+  double error=1.,besterror=1.;
+  double *root=alloca(ord*sizeof(double));
 
-      if(delta<0.f)delta*=-1;
-
-      if(fabs(delta/new)<10e-12)break; 
-      lastdelta=delta;
-    }
-
-    r[m-1]=new;
-
-    /* forward deflation */
-    
-    for(i=m;i>0;i--)
-      defl[i-1]+=new*defl[i];
-    defl++;
-
-  }
-  return(0);
-}
-
-
-/* for spit-and-polish only */
-static int Newton_Raphson(float *a,int ord,float *r){
-  int i, k, count=0;
-  double error=1.f;
-  double *root=alloca(ord*sizeof(*root));
-
-  for(i=0; i<ord;i++) root[i] = r[i];
+  for(i=0; i<ord;i++) root[i] = 2.0 * (i+0.5) / ord - 1.0;
   
   while(error>1e-20){
     error=0;
     
     for(i=0; i<ord; i++) { /* Update each point. */
-      double pp=0.,delta;
+      double ac=0.,pp=0.,delta;
       double rooti=root[i];
       double p=a[ord];
       for(k=ord-1; k>= 0; k--) {
 
 	pp= pp* rooti + p;
-	p = p * rooti + a[k];
+	p = p * rooti+ a[k];
+	if (k != i) ac += 1./(rooti - root[k]);
       }
+      ac=p*ac;
 
-      delta = p/pp;
+      delta = p/(pp-ac);
+
+      /* don't allow the correction to scream off into infinity if we
+         happened to polish right at a local mini/maximum */
+
+      if(delta<-3.)delta=-3.;
+      if(delta>3.)delta=3.; /* 3 is not a random choice; it's large
+                               enough to make sure the first pass
+                               can't accidentally limit two poles to
+                               the same value in a fatal nonelastic
+                               collision.  */
+
       root[i] -= delta;
-      error+= delta*delta;
+      error += delta*delta;
     }
     
-    if(count>40)return(-1);
-     
+    if(maxiter && count>maxiter && error>=besterror)break;
+
+    /* anything to help out the polisher; converge using doubles */
+    if(!count || error<besterror){
+      for(i=0; i<ord; i++) r[i]=root[i]; 
+      besterror=error;
+      if(error<1e-6){ /* rough minimum criteria */
+	maxiter=count*2+10;
+	if(maxiter>100)maxiter=100;
+      }
+    }
+
     count++;
   }
 
   /* Replaced the original bubble sort with a real sort.  With your
      help, we can eliminate the bubble sort in our lifetime. --Monty */
+  
+  qsort(r,ord,sizeof(float),comp);
 
-  for(i=0; i<ord;i++) r[i] = root[i];
-  return(0);
 }
 
-
 /* Convert lpc coefficients to lsp coefficients */
-int vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
+void vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
   int order2=(m+1)>>1;
   int g1_order,g2_order;
-  float *g1=alloca(sizeof(*g1)*(order2+1));
-  float *g2=alloca(sizeof(*g2)*(order2+1));
-  float *g1r=alloca(sizeof(*g1r)*(order2+1));
-  float *g2r=alloca(sizeof(*g2r)*(order2+1));
+  float *g1=alloca(sizeof(float)*(order2+1));
+  float *g2=alloca(sizeof(float)*(order2+1));
+  float *g1r=alloca(sizeof(float)*(order2+1));
+  float *g2r=alloca(sizeof(float)*(order2+1));
   int i;
 
   /* even and odd are slightly different base cases */
@@ -436,20 +425,14 @@ int vorbis_lpc_to_lsp(float *lpc,float *lsp,int m){
   cheby(g2,g2_order);
 
   /* Find the roots of the 2 even polynomials.*/
-  if(Laguerre_With_Deflation(g1,g1_order,g1r) ||
-     Laguerre_With_Deflation(g2,g2_order,g2r))
-    return(-1);
-
-  Newton_Raphson(g1,g1_order,g1r); /* if it fails, it leaves g1r alone */
-  Newton_Raphson(g2,g2_order,g2r); /* if it fails, it leaves g2r alone */
-
-  qsort(g1r,g1_order,sizeof(*g1r),comp);
-  qsort(g2r,g2_order,sizeof(*g2r),comp);
+  
+  Newton_Raphson_Maehly(g1,g1_order,g1r);
+  Newton_Raphson_Maehly(g2,g2_order,g2r);
 
   for(i=0;i<g1_order;i++)
     lsp[i*2] = acos(g1r[i]);
 
   for(i=0;i<g2_order;i++)
     lsp[i*2+1] = acos(g2r[i]);
-  return(0);
+  
 }

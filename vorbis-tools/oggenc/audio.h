@@ -5,13 +5,6 @@
 #include "encode.h"
 #include <stdio.h>
 
-int setup_resample(oe_enc_opt *opt);
-void clear_resample(oe_enc_opt *opt);
-void setup_downmix(oe_enc_opt *opt);
-void clear_downmix(oe_enc_opt *opt);
-void setup_scaler(oe_enc_opt *opt, float scale);
-void clear_scaler(oe_enc_opt *opt);
-
 typedef struct
 {
 	int (*id_func)(unsigned char *buf, int len); /* Returns true if can load file */
@@ -34,7 +27,6 @@ typedef struct {
 
 typedef struct {
 	short channels;
-	short samplesize;
 	long totalsamples;
 	long samplesread;
 	FILE *f;
@@ -63,7 +55,6 @@ void wav_close(void *);
 void raw_close(void *);
 
 long wav_read(void *, float **buffer, int samples);
-long wav_ieee_read(void *, float **buffer, int samples);
 long raw_read_stereo(void *, float **buffer, int samples);
 
 #endif /* __AUDIO_H */

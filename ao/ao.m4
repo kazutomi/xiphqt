@@ -1,46 +1,24 @@
-# ao.m4
 # Configure paths for libao
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
 
-dnl XIPH_PATH_AO([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+dnl AM_PATH_AO([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl Test for libao, and define AO_CFLAGS and AO_LIBS
 dnl
-AC_DEFUN(XIPH_PATH_AO,
+AC_DEFUN(AM_PATH_AO,
 [dnl 
 dnl Get the cflags and libraries
 dnl
-AC_ARG_WITH(ao,[  --with-ao=PFX   Prefix where libao is installed (optional)], ao_prefix="$withval", ao_prefix="")
-AC_ARG_WITH(ao-libraries,[  --with-ao-libraries=DIR   Directory where libao library is installed (optional)], ao_libraries="$withval", ao_libraries="")
-AC_ARG_WITH(ao-includes,[  --with-ao-includes=DIR   Directory where libao header files are installed (optional)], ao_includes="$withval", ao_includes="")
+AC_ARG_WITH(ao-prefix,[  --with-ao-prefix=PFX   Prefix where libao is installed (optional)], ao_prefix="$withval", ao_prefix="")
 AC_ARG_ENABLE(aotest, [  --disable-aotest       Do not try to compile and run a test ao program],, enable_aotest=yes)
 
-
-  if test "x$ao_libraries" != "x" ; then
-    AO_LIBS="-L$ao_libraries"
-  elif test "x$ao_prefix" != "x"; then
-    AO_LIBS="-L$ao_prefix/lib"
-  elif test "x$prefix" != "xNONE"; then
-    AO_LIBS="-L$prefix/lib"
-  fi
-
-  if test "x$ao_includes" != "x" ; then
-    AO_CFLAGS="-I$ao_includes"
-  elif test "x$ao_prefix" != "x"; then
+  if test x$ao_prefix != x ; then
+    ao_args="$ao_args --prefix=$ao_prefix"
     AO_CFLAGS="-I$ao_prefix/include"
-  elif test "x$prefix" != "xNONE"; then
-    AO_CFLAGS="-I$prefix/include"
+    AO_LIBS="-L$ao_prefix/lib"
   fi
 
-  # see where dl* and friends live
-  AC_CHECK_FUNCS(dlopen, [AO_DL_LIBS=""], [
-    AC_CHECK_LIB(dl, dlopen, [AO_DL_LIBS="-ldl"], [
-      AC_MSG_WARN([could not find dlopen() needed by libao sound drivers
-      your system may not be supported.])
-    ])
-  ])
-
-  AO_LIBS="$AO_LIBS -lao $AO_DL_LIBS"
+  AO_LIBS="$AO_LIBS -lao -ldl"
 
   AC_MSG_CHECKING(for ao)
   no_ao=""
@@ -72,7 +50,7 @@ int main ()
        LIBS="$ac_save_LIBS"
   fi
 
-  if test "x$no_ao" = "x" ; then
+  if test "x$no_ao" = x ; then
      AC_MSG_RESULT(yes)
      ifelse([$1], , :, [$1])     
   else

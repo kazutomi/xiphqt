@@ -20,13 +20,9 @@
 
 #include "in2.h"
 
-#error Don't use this plugin, it's deprecated. 
-
 
 // post this to the main window at end of file (after playback has stopped)
 #define WM_WA_MPEG_EOF WM_USER + 2
-
-#define UTF8_ILSEQ	-1
 
 In_Module mod; // the output module (declared near the bottom of this file)
 char lastfn[MAX_PATH]; // currently playing file (used for getting info on the current file)
@@ -78,87 +74,6 @@ int isourfile(char *fn)
 
     return isOggUrl(fn);
 } 
-
-/* Converts a UTF-8 character sequence to a UCS-4 character */
-int _utf8_to_ucs4(unsigned int *target, const char *utf8, int n)
-{
-	unsigned int result = 0;
-	int count;
-	int i;
-
-	/* Determine the number of characters in sequence */
-	if ((*utf8 & 0x80) == 0)
-		count = 1;
-	else if ((*utf8 & 0xE0) == 0xC0)
-		count = 2;
-	else if ((*utf8 & 0xF0) == 0xE0)
-		count = 3;
-	else if ((*utf8 & 0xF8) == 0xF0)
-		count = 4;
-	else if ((*utf8 & 0xFC) == 0xF8)
-		count = 5;
-	else if ((*utf8 & 0xFE) == 0xFC)
-		count = 6;
-	else
-		return UTF8_ILSEQ; /* Invalid start byte */
-
-	if (n < count)
-		return UTF8_ILSEQ; /* Not enough characters */
-
-	if (count == 2 && (*utf8 & 0x1E) == 0)
-		return UTF8_ILSEQ; /* Overlong sequence */
-
-	/* Convert the first character */
-	if (count == 1)
-		result = *utf8;
-	else
-		result = (0xFF >> (count +1)) & *utf8;
-
-	/* Convert the continuation bytes */
-	for (i = 1; i < count; i++)
-	{
-		if ((utf8[i] & 0xC0) != 0x80)
-			return UTF8_ILSEQ; /* Not a continuation byte */
-		if (result == 0 &&
-			i == 2 &&
-			((utf8[i] & 0x7F) >> (7 - count)) == 0)
-			return UTF8_ILSEQ; /* Overlong sequence */
-		result = (result << 6) | (utf8[i] & 0x3F);
-	}
-
-	if (target != 0)
-		*target = result;
-
-	return count;
-}
-
-/* Converts a UTF-8 string to a WCHAR string */
-int UTF8ToWideChar(LPWSTR target, LPCSTR utf8, WCHAR unknown)
-{
-	int wcount = 0;
-	int conv;
-	unsigned int ucs4;
-	int count = lstrlenA(utf8) +1;
-
-	while (count != 0)
-	{
-		conv = _utf8_to_ucs4(&ucs4, utf8, count);
-		if (conv == UTF8_ILSEQ) return UTF8_ILSEQ;
-		if (target != 0)
-		{
-			if (ucs4 > 0xFFFF)
-				*target = unknown; /* Can only handle BMP */
-			else
-				*target = (WCHAR) ucs4;
-			target++;
-		}
-		wcount++;
-		count -= conv;
-		utf8 += conv;
-	}
-
-	return wcount;
-}
 
 size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
@@ -382,64 +297,18 @@ int infoDlg(char *fn, HWND hwnd)
 
 char *generate_title(vorbis_comment *comment, char *fn)
 {/* Later, extend this to be configurable like the mp3 player */
-	int len;
 	char buff[1024];
 	char *title, *artist, *finaltitle;
-	LPWSTR titleW, artistW;
-	LPSTR titleL = NULL, artistL = NULL;
 
 	title = vorbis_comment_query(comment, "title", 0);
 	artist = vorbis_comment_query(comment, "artist", 0);
 
-	if (title)
-	{
-		/* Convert the UTF-8 title to the system code page */
-		len = UTF8ToWideChar(NULL, title, '?');
-		if (len == UTF8_ILSEQ)
-		{
-			/* Fallback to ascii */
-			titleL = strdup(title);
-		}
-		else
-		{
-			/* Convert the UTF-8 string */
-			titleL = calloc(len, sizeof(CHAR));
-			titleW = calloc(len, sizeof(WCHAR));
-			UTF8ToWideChar(titleW, title, '?');
-			WideCharToMultiByte(CP_ACP, 0, titleW, -1, titleL,
-			                    len, "?", NULL);
-			free(titleW);
-		}
-	}
-
-	if (artist)
-	{
-		/* Convert the UTF-8 artist to the system code page */
-		len = UTF8ToWideChar(NULL, artist, '?');
-		if (len == UTF8_ILSEQ)
-		{
-			/* Fallback to ascii */
-			artistL = strdup(artist);
-		}
-		else
-		{
-			/* Convert the UTF-8 string */
-			artistL = calloc(len, sizeof(CHAR));
-			artistW = calloc(len, sizeof(WCHAR));
-			UTF8ToWideChar(artistW, artist, '?');
-			WideCharToMultiByte(CP_ACP, 0, artistW, -1, artistL,
-			                    len, "?", NULL);
-			free(artistW);
-		}
-	}
-
-
 	if(artist && title)
-		_snprintf(buff, 1024, "%s - %s", artistL, titleL);
+		_snprintf(buff, 1024, "%s - %s", artist, title);
 	else if(title)
-		_snprintf(buff, 1024, "%s", titleL);
+		_snprintf(buff, 1024, "%s", title);
 	else if(artist)
-		_snprintf(buff, 1024, "%s - unknown", artistL);
+		_snprintf(buff, 1024, "%s - unknown", artist);
 	else
     {
 	    if (title = httpGetTitle(fn))
@@ -448,8 +317,6 @@ char *generate_title(vorbis_comment *comment, char *fn)
 		_snprintf(buff, 1024, "%s (no title)", fn);
     }
 
-	free(artistL);
-	free(titleL);
 	finaltitle = strdup(buff);
 
 	return finaltitle;

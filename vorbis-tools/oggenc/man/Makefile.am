@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-mans = oggenc.1
+mandir = $(datadir)/man
+man_MANS = oggenc.1
 
-mandir = @MANDIR@
-dist_man_MANS = $(mans)
+EXTRA_DIST = $(man_MANS)
