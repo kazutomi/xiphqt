@@ -26,21 +26,28 @@ void usage (const char *program_name)
 }
 
 
+#define ABS(x) ((x) < 0 ? (-x) : (x))
+
 
 int main (int argc, char **argv)
 {
+   int n_chan1, n_chan;
    uint8_t *rgb1, *rgb2, *diff;
-   uint32_t width, height, width1, height1, n_chan1, n_chan;
+   uint32_t width, height, width1, height1;
    uint32_t i;
 
    if (argc != 3)
       usage (argv[0]);
 
-   if ((n_chan1 = read_pnm_header (argv[1], &width1, &height1)) < 0)
+   if ((n_chan1 = read_pnm_header (argv[1], &width1, &height1)) < 0) {
+      printf ("error opening '%s' !!\n", argv[1]);
       exit (-1);
+   }
 
-   if ((n_chan = read_pnm_header (argv[2], &width, &height)) < 0)
+   if ((n_chan = read_pnm_header (argv[2], &width, &height)) < 0) {
+      printf ("error opening '%s' !!\n", argv[2]);
       exit (-1);
+   }
 
    if (!(width1 == width && height1 == height && n_chan1 == n_chan)) {
       printf ("image sizes differ !!\n");
@@ -63,16 +70,18 @@ int main (int argc, char **argv)
       exit(-1);
    }
 
-   for (i=0; i<width*height*3; i++) {
+   for (i=0; i<width*height*n_chan; i++) {
       diff[i] = (rgb1[i] == rgb2[i]) ? 0 : 255;
-      if (diff[i]) {
-         printf("%i: %i <-> %i\n", i, rgb1[i], rgb2[i]);
+//      diff[i] = ((int) rgb1[i] - rgb2[i])*64 + 128;
+      if (diff[i] != 0/*128*/) {
+         printf("%i/%i: %u <-> %u  -- diff == %i\n",
+                i, width*height*n_chan-1, rgb1[i], rgb2[i], diff[i] - 128);
          bit_print(rgb1[i]);
          bit_print(rgb2[i]);
       }
    }
 
-   write_pnm ("diff.ppm", diff, width, height);
+   write_pnm (n_chan == 1 ? "diff.pgm" : "diff.ppm", diff, width, height);
 
    FREE (rgb1);
    FREE (rgb2);
@@ -80,4 +89,5 @@ int main (int argc, char **argv)
 
    return 0;
 }
+
 
