@@ -252,7 +252,6 @@ void stop()
 			MessageBox(mod.hMainWindow, "error asking thread to die!\n", "error killing decode thread", 0);
 			TerminateThread(thread_handle, 0);
 		}
-		CloseHandle(thread_handle);
 		ov_clear(&input_file);
 		thread_handle = INVALID_HANDLE_VALUE;
 
