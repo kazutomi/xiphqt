@@ -5,7 +5,7 @@
 .\" the Free Software Foundation; either version 2 of the License, or
 .\" (at your option) any later version.
 
-.TH oggsplit 1 "August 7, 2003"
+.TH oggsplit 1 "November 30, 2003"
 .\" Please update the above date whenever this man page is modified.
 
 .SH NAME
@@ -47,6 +47,11 @@ Only split chained streams.
 Only split grouped streams. This  will cause only the first link to be
 processed, and the names of the output files will be slightly simpler.
 .TP
+.B \-n, \-\-dry-run
+Just print the streams that would be extracted, but do not extract them.
+This can be used to analyse the structure of an Ogg, without actually
+getting the files.
+.TP
 .BI "-o, --outdir " "<directory>"
 Create all output files in the specified directory. The default is to create
 all output files in the current directory.
@@ -58,4 +63,4 @@ Show oggsplit version.
 Show summary of options.
 
 .SH AUTHOR
-Philip Jägenstedt <philipj@telia.com>.
+Philip Jägenstedt <philip@lysator.liu.se>.

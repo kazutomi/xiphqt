@@ -34,6 +34,7 @@
 
 int unchain=1;
 int ungroup=1;
+int dryrun=0;
 char *outdir=NULL;
 
 const char *broken_ogg = \
@@ -44,10 +45,11 @@ const char *broken_ogg = \
 "  files procuduces by this invocation of OggSplit may also be\n"
 "  invalid Ogg files.\n\n";
 
-const char *optstring="cgo:uVh";
+const char *optstring="cgno:uVh";
 struct option options [] = {
   {"unchain", no_argument,       NULL, 'c'},
   {"ungroup", no_argument,       NULL, 'g'},
+  {"dry-run", no_argument,       NULL, 'n'},
   {"outdir",  required_argument, NULL, 'o'},
   {"version", no_argument,       NULL, 'V'},
   {"help",    no_argument,       NULL, 'h'},
@@ -63,6 +65,8 @@ static void usage(void)
 	  "                    split both grouped and chained streams.\n"
 	  "  -g --ungroup   Only split grouped streams. This will cause only\n"
 	  "                    the first link to be processed.\n"
+	  "  -n --dry-run   Print the streams that would be extracted, but do\n"
+	  "                    not extract them.\n"
 	  "  -o --outdir <directory>\n"
 	  "                 Create all output files in the specified directory.\n"
 	  "  -V --version   Show OggSplit version.\n"
@@ -134,12 +138,12 @@ static int process_file(const char *pathname)
 	  /* new chain link, create new output */
 	  if(unchain)chain_c++;
 	  if(ungroup)group_c++;
-	  stream->op=output_ctrl_output_new(&oc, chain_c, group_c);
+	  stream->op=output_ctrl_output_new(&oc, chain_c, group_c, dryrun);
 	  chain_state=1;
 	  break;
 	case 1:
 	  if(ungroup){
-	    stream->op=output_ctrl_output_new(&oc, chain_c, ++group_c);
+	    stream->op=output_ctrl_output_new(&oc, chain_c, ++group_c, dryrun);
 	  }else{
 	    /* use previously opened output */
 	    stream->op=oc.outputs[oc.outputs_used-1];
@@ -149,8 +153,9 @@ static int process_file(const char *pathname)
 	}
 
 	printf("Ogg logical stream (serial %08x): type %s\n"
-	       "  writing stream to `%s'\n\n",
+	       "  %s `%s'\n\n",
 	       stream->serial, stream_type_name(stream),
+	       dryrun ? "would write stream to" : "writing stream to",
 	       stream->op->filename);
 
       }else{
@@ -161,7 +166,7 @@ static int process_file(const char *pathname)
 	  /* there's junk in the file! */
 	  if(junk==NULL){
 	    /* call with 0, 0 to get the junk file */
-	    junk=output_ctrl_output_new(&oc, 0, 0);
+	    junk=output_ctrl_output_new(&oc, 0, 0, dryrun);
 	    fprintf(stderr,
 		    "WARNING: An Ogg stream (serial %08x) with no header was encountered\n"
 		    "  in `%s'.\n"
@@ -242,6 +247,9 @@ int main(int argc, char **argv)
 
       if(outdir!=NULL)free(outdir);
       outdir=xstrdup(optarg);
+      break;
+    case 'n':
+      dryrun=1;
       break;
     case 'V':
       printf("OggSplit %s\n", VERSION);

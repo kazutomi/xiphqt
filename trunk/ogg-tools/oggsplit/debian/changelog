@@ -1,3 +1,9 @@
+oggsplit (0.1.2-1) unstable; urgency=low
+
+  * Upstream release.
+
+ -- Philip Jägenstedt <philip@lysator.liu.se>  Mon,  1 Dec 2003 00:45:48 +0100
+
 oggsplit (0.1.0-1) unstable; urgency=low
 
   * Initial Release.
