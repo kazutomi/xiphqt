@@ -3,22 +3,35 @@
 body {
 	margin: 0;
 	border: 0;
-	padding: 0;
+	padding: 0 0 1.5em 0;
 	font-family: Arial, Helvetica, sans-serif;
 	color: #333333;
+	background-color: #666666;
 }
 
 a {
 	color: #064C84;
 }
 
+.bodyborder {
+	margin: 0;
+	border: 0;
+	padding: 0 0 3em 0;
+	background-color: #FFFFFF;
+	height: 100%;
+}
+
+
 .logos {
-	padding: 72px 0 0 47px;
+	padding: 72px 465px 0 0;
+	text-align: center;
 }
 
 .contenttable {
+	margin-left: auto;
+	margin-right: auto;
 	border-collapse: collapse;
-	width: 700px;
+	width: 50em;
 }
 
 .leftside {
@@ -33,7 +46,7 @@ a {
 .leftside ul {
 	margin: 0;
 	padding: 0;
-	width: 185px;
+	width: 120px;
 }
 
 .leftside li {

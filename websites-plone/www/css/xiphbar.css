@@ -5,12 +5,19 @@ body {
 }
 
 .xiphbar {
-	background-color: #606160;
+	background-color: #666666;
+}
+
+.xiphbar div {
+	width: 50em;
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 800px;
 }
 
 
 .xiphbar img {
-	margin: 0;
+	margin: 0 0 0 0;
 	border: 0;
 	padding: .4em 0 0 12px;
 	float: left;
@@ -36,7 +43,7 @@ body {
 }
 
 .xiphbar li a {
-	color: #FFCE67;
+	color: #FFCC66;
 	text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: .6em;
