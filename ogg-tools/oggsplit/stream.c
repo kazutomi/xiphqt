@@ -19,14 +19,9 @@
 */
 
 #include <stdio.h>
-#include <sys/types.h>
-#include "system.h"
 
 #include "stream.h"
-
-char *xmalloc();
-char *xrealloc();
-char *xstrdup();
+#include "common.h"
 
 const char *magic_vorbis = "\x01vorbis";
 const char *magic_theora = "\x80theora";
@@ -36,7 +31,7 @@ const char *magic_flac   = "fLaC";
 int stream_ctrl_init(stream_ctrl_t *sc)
 {
   /* begin with 2 stream_t:s */
-  sc->streams=(stream_t *)xmalloc(sizeof(stream_t)*2);
+  sc->streams=xmalloc(sizeof(stream_t)*2);
 
   sc->streams_size=2;
   sc->streams_used=0;
@@ -55,7 +50,7 @@ stream_t *stream_ctrl_stream_new(stream_ctrl_t *sc, ogg_page *og)
 
   if(sc->streams_used==sc->streams_size){
     /* we need more streams, alloc 2 more */
-    sc->streams=(stream_t *)xrealloc(sc->streams,sizeof(stream_t)*(sc->streams_size+2));
+    sc->streams=xrealloc(sc->streams,sizeof(stream_t)*(sc->streams_size+2));
     sc->streams_size+=2;
   }
 

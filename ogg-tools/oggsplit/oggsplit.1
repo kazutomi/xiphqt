@@ -1,0 +1,68 @@
+.\"                              hey, Emacs:   -*- nroff -*-
+.\" oggsplit is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; see the file COPYING.  If not, write to
+.\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.TH oggsplit 1 "August 4, 2003"
+.\" Please update the above date whenever this man page is modified.
+
+.SH NAME
+oggsplit \- splits multiplexed Ogg files
+.SH SYNOPSIS
+.B oggsplit
+[
+.B -cgVh
+]
+[
+.B -o
+.I <directory>
+]
+.I input_files \fR...
+
+.SH DESCRIPTION
+\fBoggsplit\fP splits multiplexed Ogg files into separate files. Both grouped
+and chained logical streams are are supported.
+.PP
+Grouping (concurrent multiplexing) is when two streams run alongside in the
+file, as is the case in a theora+vorbis Ogg file. Chaining (sequential
+multiplexing) is when complete physical bitstreams are strung one after the
+other. Such a file is created by simply joining two complete files with
+\fBcat(1)\fP or a similar tool.
+.PP
+By default \fBoggsplit\fP extracts all streams, chained as well as grouped.
+Since \fBoggsplit\fP does not care about about stream formats and thus works
+with any type of stream. For the same reason, it cannot split the file at an
+arbitrary point. For such functionality, use a specialized tool like
+\fBvcut(1)\fP.
+
+.SH OPTIONS
+\fBoggsplit\fP accepts the following options:
+.TP
+.B \-c, \-\-unchain
+Only split chained streams.
+.TP
+.B \-g, \-\-ungroup
+Only split grouped streams. This  will cause only the first link to be
+processed, and the names of the output files will be slightly simpler.
+.TP
+.BI "-o, --outdir " "<directory>"
+Create all output files in the specified directory.
+.TP
+.B \-V, \-\-version
+Show oggsplit version.
+.TP
+.B \-h, \-\-help
+Show summary of options.
+
+.SH AUTHOR
+Philip Jägenstedt <philipj@telia.com>.

@@ -12,12 +12,12 @@ dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_CC
 
+dnl Checks for Ogg libraries and headers.
+XIPH_PATH_OGG()
+
 dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
-
-dnl Checks for Ogg libraries and header files.
-XIPH_PATH_OGG()
 
 AC_OUTPUT(Makefile)

@@ -19,18 +19,16 @@
 */
 
 #include <stdio.h>
-#include <sys/types.h>
 #include <getopt.h>
-#include "system.h"
+#include <errno.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include <ogg/ogg.h>
 
 #include "stream.h"
 #include "output.h"
-
-char *xmalloc();
-char *xrealloc();
-char *xstrdup();
+#include "common.h"
 
 #define CHUNK_SIZE 4096
 
@@ -247,7 +245,9 @@ static int process_file(const char *pathname)
 
 int main(int argc, char **argv)
 {
-  int c;
+  DIR *test;
+  int c, outdir_len;
+
   while((c=getopt_long(argc,argv,optstring,options,NULL))!=EOF){
     switch(c){
     case 'c':
@@ -257,16 +257,22 @@ int main(int argc, char **argv)
       unchain=0;
       break;
     case 'o':
-      {
-	int outdir_len;
-	if(outdir!=NULL)free(outdir);
-	outdir_len=strlen(optarg)+2;
+      if((test=opendir(optarg))==NULL){
+	fprintf(stderr, "ERROR: Cannot use output directory `%s': %s\n",
+		optarg, strerror(errno));
+	exit(1);
+      }
+      closedir(test);
+
+      outdir_len=strlen(optarg)+2;
+      if(outdir==NULL)
 	outdir=xmalloc(outdir_len);
-	strcpy(outdir, optarg);
-	if(outdir[outdir_len-3]!='/'){
-	  outdir[outdir_len-2]='/';
-	  outdir[outdir_len-1]='\0';
-	}
+      else
+	outdir=xrealloc(outdir, outdir_len);
+      strcpy(outdir, optarg);
+      if(outdir[outdir_len-3]!='/'){
+	outdir[outdir_len-2]='/';
+	outdir[outdir_len-1]='\0';
       }
       break;
     case 'V':

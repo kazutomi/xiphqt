@@ -19,14 +19,10 @@
 */
 
 #include <stdio.h>
-#include <sys/types.h>
-#include "system.h"
+#include <errno.h>
 
 #include "output.h"
-
-char *xmalloc();
-char *xrealloc();
-char *xstrdup();
+#include "common.h"
 
 int output_ctrl_init(output_ctrl_t *oc,
 		     char *dirname, char *filename)
@@ -36,7 +32,7 @@ int output_ctrl_init(output_ctrl_t *oc,
    * address of the output_t objects musn't change (they are referenced
    * directly in the stream objects).
    */
-  oc->outputs=(output_t **)xmalloc(sizeof(output_t *)*8);
+  oc->outputs=xmalloc(sizeof(output_t *)*8);
 
   oc->dirname=xstrdup(dirname);
 
@@ -78,11 +74,11 @@ output_t *output_ctrl_output_new(output_ctrl_t *oc, int chain_c, int group_c)
 
   if(oc->outputs_used==oc->outputs_size){
     /* allocate room for 8 more (output_t *):s */
-    oc->outputs=(output_t **)xrealloc(oc->outputs, sizeof(output_t *)*(oc->outputs_size+8));
+    oc->outputs=xrealloc(oc->outputs, sizeof(output_t *)*(oc->outputs_size+8));
     oc->outputs_size+=8;
   }
 
-  op=(output_t *)xmalloc(sizeof(output_t));
+  op=xmalloc(sizeof(output_t));
 
   fnlen=strlen(oc->dirname)+strlen(oc->basename)+16;
   op->filename=xmalloc(fnlen);
