@@ -12,7 +12,7 @@ static int py_ogg_packet_setattr(PyObject *, char *, PyObject *);
 static PyObject *py_ogg_packet_repr(PyObject *self);
 
 PyTypeObject py_ogg_packet_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "OggPacket",
   sizeof(py_ogg_packet),

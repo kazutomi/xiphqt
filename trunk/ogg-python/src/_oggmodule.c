@@ -7,6 +7,7 @@
 #include "pyoggsyncstate.h"
 #include "pyoggpacket.h"
 #include "pyoggpackbuff.h"
+#include "pyoggpage.h"
 
 static PyMethodDef Ogg_methods[] = {
   {"OggStreamState", py_ogg_stream_state_new, 
@@ -34,6 +35,12 @@ void
 init_ogg(void)
 {
   PyObject *module, *dict, *Py_module_info;
+
+  py_oggpack_buffer_type.ob_type = &PyType_Type;
+  py_ogg_packet_type.ob_type = &PyType_Type;
+  py_ogg_page_type.ob_type = &PyType_Type;
+  py_ogg_stream_state_type.ob_type = &PyType_Type;
+  py_ogg_sync_state_type.ob_type = &PyType_Type;
   
   module = Py_InitModule("_ogg", Ogg_methods);
   dict = PyModule_GetDict(module);

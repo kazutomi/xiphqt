@@ -21,7 +21,7 @@ FDEF(ogg_sync_bytesin) "Append bytes to the sync state buffer.";
 FDEF(ogg_sync_pageseek) "Synchronize with the given OggPage.";
 
 PyTypeObject py_ogg_sync_state_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "OggSyncState",
   sizeof(py_ogg_sync_state),

@@ -34,7 +34,7 @@ The first parameterf is an integer from which the bits will be extracted.\n\
 The second parameter is the number of bits to write (defaults to 32)";
 
 PyTypeObject py_oggpack_buffer_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "Oggpack_Buffer",
   sizeof(py_oggpack_buffer),

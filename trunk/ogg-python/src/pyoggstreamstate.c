@@ -25,7 +25,7 @@ FDEF(ogg_stream_pagein) "Write a page to the stream";
 FDEF(ogg_stream_packetout) "Extract a packet from the stream";
 
 PyTypeObject py_ogg_stream_state_type = {
-  PyObject_HEAD_INIT(&PyType_Type)
+  PyObject_HEAD_INIT(NULL)
   0,
   "OggStreamState",
   sizeof(py_ogg_stream_state),
