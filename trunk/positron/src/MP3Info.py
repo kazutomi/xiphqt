@@ -296,40 +296,42 @@ class MPEG:
         self._parse_xing(file)
         
 
-    def _find_header(self, file):                                                                                 
-        file.seek(0, 0)                                                                                           
-        amount_read = 0                                                                                           
-                                                                                                                  
-        # see if we get lucky with the first four bytes                                                           
-        amt = 4                                                                                                   
-                                                                                                                  
-        while amount_read < _MP3_HEADER_SEEK_LIMIT:                                                               
-            header = file.read(amt)                                                                               
-            if len(header) < amt:                                                                                 
-                # awfully short file. just give up.                                                               
-                return -1, None                                                                                   
-                                                                                                                  
-            amount_read = amount_read + len(header)                                                               
-                                                                                                                  
-            # on the next read, grab a lot more                                                                   
-            amt = 500                                                                                             
-                                                                                                                  
-            # look for the sync byte                                                                              
-            offset = string.find(header, chr(255))                                                                
-            if offset == -1:                                                                                      
-                continue                                                                                          
-            ### maybe verify more sync bits in next byte?                                                         
-                                                                                                                  
-            if offset + 4 > len(header):                                                                          
-                more = file.read(4)                                                                               
-                if len(more) < 4:                                                                                 
-                    # end of file. can't find a header                                                                          
-                    return -1, None                                                                                             
-                amount_read = amount_read + 4                                                                                   
-                header = header + more                                                                                          
-            return amount_read - len(header) + offset, header[offset:offset+4]                                                  
-                                                                                                                                
-        # couldn't find the header                                                                                    
+    def _find_header(self, file):
+        file.seek(0, 0)
+        amount_read = 0
+
+        # see if we get lucky with the first four bytes
+        amt = 4
+
+        while amount_read < _MP3_HEADER_SEEK_LIMIT:
+            header = file.read(amt)
+            if len(header) < amt:
+                # awfully short file. just give up.
+                return -1, None
+            
+            amount_read = amount_read + len(header)
+            
+            # on the next read, grab a lot more
+            amt = 500
+            
+            # look for the sync byte
+            offset = string.find(header, chr(255))
+            if offset == -1:
+                continue
+            
+            if offset + 4 > len(header):
+                more = file.read(4)
+                if len(more) < 4:
+                    # end of file. can't find a header
+                    return -1, None
+                elif more[0] & 0xE0 != 0xE0:
+                    return -1, None  # Last three sync bits not present
+                
+                amount_read = amount_read + 4
+                header = header + more
+            return amount_read - len(header) + offset, header[offset:offset+4]
+        
+        # couldn't find the header
         return -1, None
 
     def _parse_header(self, header):
@@ -378,14 +380,17 @@ class MPEG:
         self.original = original
         self.emphasis = _emphases[emphasis]
 
-        if self.layer == 1:
-            self.framelength = ((  12 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit) * 4
-            self.samplesperframe = 384.0
-        else:
-            self.framelength =  ( 144 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit
-            self.samplesperframe = 1152.0
-        self.length = int(round((self.filesize / self.framelength) * (self.samplesperframe / self.samplerate)))
-
+        try:
+            if self.layer == 1:
+                self.framelength = ((  12 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit) * 4
+                self.samplesperframe = 384.0
+            else:
+                self.framelength =  ( 144 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit
+                self.samplesperframe = 1152.0
+            self.length = int(round((self.filesize / self.framelength) * (self.samplesperframe / self.samplerate)))
+        except ZeroDivisionError:
+            return  # Division by zero means the header is bad
+        
         self.valid = 1
 
     def _parse_xing(self, file):
@@ -417,6 +422,11 @@ class MP3Info:
         self.id3 = None
         self.mpeg = None
 
+        # No sense in making clients guess whether these variables exists
+        self.title = self.artist = self.track = self.year = \
+                     self.comment = self.composer = self.album = \
+                     self.disc = self.genre = self.encoder = None
+
         id3 = ID3v1(file)
         if id3.valid:
             self.id3 = id3
@@ -430,11 +440,6 @@ class MP3Info:
 
         if self.id3 is None:
             return
-
-        # No sense in making clients guess whether these variables exists
-        self.title = self.artist = self.track = self.year = \
-                     self.comment = self.composer = self.album = \
-                     self.disc = self.genre = self.encoder = None
         
         for tag in self.id3.tags.keys():
             if tag == 'TT2' or tag == 'TIT2':
