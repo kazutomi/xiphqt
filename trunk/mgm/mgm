@@ -15,7 +15,7 @@ require "$libdir/widget";
 $|=1;
 &doit(@ARGV);
 
-&{$modules{"hostlogo"}->{"mgm_module_construct"}}($modules{"hostlogo"},50,50)->
+&{$modules{"hostlogo"}->{"mgm_module_construct"}}($modules{"hostlogo"},$reqx,$reqy)->
     place(-x=>0,-y=>0,-anchor=>'nw');
 
 Tk::MainLoop();
@@ -29,7 +29,7 @@ sub doit{
     $Xname=$toplevel->Class;
 
     $toplevel->optionAdd("$Xname*background",  '#202020',20);
-    $toplevel->optionAdd("$Xname*foreground",  '#cccccc',20);
+    $toplevel->optionAdd("$Xname*foreground",  '#a0a0a0',20);
 
     $toplevel->optionAdd("$Xname.stack",       'horizontal',20);
     $toplevel->optionAdd("$Xname.bars",        'vertical',20);
@@ -78,7 +78,7 @@ sub doit{
 
     # set up desired/min geometry, add a default geometry setting
 	
-    my($minx,$miny,$reqx,$reqy)=&geometries;
+    ($minx,$miny,$reqx,$reqy)=&geometries;
     $toplevel->optionAdd("$Xname.geometry",    $reqx.'x'.$reqy,20);
 	
     my $geometry=$toplevel->optionGet("geometry","Geometry");
@@ -178,7 +178,7 @@ sub LoadModule{
 	
 	# set default module options
 	$toplevel->optionAdd("$Xname.$name.name",             "$name",19);
-	$toplevel->optionAdd("$Xname.$name.active",             "true",19);
+	$toplevel->optionAdd("$Xname.$name.active",           "true",19);
 	1;
     }else{
 	print "Error loading module $path/$filename: $!\n";
@@ -190,26 +190,37 @@ sub geometries{
 
     my$minx=0;
     my$miny=0;
-    my$reqx=50;
-    my$reqy=50;
+    my$reqx=0;
+    my$reqy=0;
 
     while(my$key=pop(@modlist)){
 
 	my $mod=$modules{$key};
 	my $name=$mod->{"mgm_module_name"};
-	my $active=$toplevel->optionGet("$name.active","$name.Active");
+	my $Name=ucfirst $name;
+	my $active=$toplevel->optionGet("active","$Name.Active");
 
 	print "$name=$active\n";
-	if($stack eq 'vertical'){
-	    
-
-	}else{
-
-
+	if($active eq 'true'){
+	    if($stack eq 'vertical'){
+		$minx=$mod->{"mgm_module_minx"}if
+		    ($minx<$mod->{"mgm_module_minx"});
+		$reqx=$mod->{"mgm_module_reqx"}if
+		    ($reqx<$mod->{"mgm_module_reqx"});
+		$miny+=$mod->{"mgm_module_miny"};
+		$reqy+=$mod->{"mgm_module_reqy"};
+	    }else{
+		$miny=$mod->{"mgm_module_miny"}if
+		    ($miny<$mod->{"mgm_module_miny"});
+		$reqy=$mod->{"mgm_module_reqy"}if
+		    ($reqy<$mod->{"mgm_module_reqy"});
+		$minx+=$mod->{"mgm_module_minx"};
+		$reqx+=$mod->{"mgm_module_reqx"};
+	    }
 	}
     }
 
-    ($minx,$miny,$reqx,$reqy);
+    ($minx,$miny,$reqx+2,$reqy+2);
 }
 
 
