@@ -53,18 +53,10 @@ class MP3File(AudioFile):
         header = mp3info.mpeg
         info = { "size" : header.filesize,
                  "length" : header.length,
-                 "title" : None,
-                 "artist" : None,
-                 "album" : None,
-                 "genre" : None }
-
-        if mp3info.id3 != None:
-            id3 = mp3info.id3
-
-            info["title"] = id3.title
-            info["artist"] = id3.artist
-            info["album"] = id3.album
-            info["genre"] = id3.genre
+                 "title" : mp3info.title,
+                 "artist" : mp3info.artist,
+                 "album" : mp3info.album,
+                 "genre" : mp3info.genre }
 
         # Convert empty string entries to nulls
         for key in info.keys():
