@@ -5,8 +5,10 @@
 #
 # Daniel Holth <dholth@fastmail.fm>, 2004
 
-import oggpy
+import oss
 import sys
+import oggpy
+import vorbispy
 import numarray
 
 BUFSIZE=8192
@@ -17,14 +19,20 @@ def test(ogg, outfile=file("decode.raw", "w")):
     oy = oggpy.sync()
     og = oggpy.page()
     op = oggpy.packet()
-    vi = oggpy.info()
-    vd = oggpy.dsp()
-    vb = oggpy.block()
-    vc = oggpy.comment()
+    
+    vi = vorbispy.info()
+    vd = vorbispy.dsp()
+    vb = vorbispy.block()
+    vc = vorbispy.comment()
+
+    audio = oss.open_audio()
+    audio.stereo(1)
+    audio.format(oss.AFMT_S16_LE)
+    audio.speed(44100)
 
     while 1:
         buffer = ogg.read(BUFSIZE)
-        oggpy.sync_write(oy, buffer)
+        oy.write(buffer)
 
         if oy.pageout(og) != 1:
             if len(buffer) < BUFSIZE: break
@@ -66,9 +74,9 @@ def test(ogg, outfile=file("decode.raw", "w")):
                 print >> sys.stderr, "EOF before finding all vorbis headers!"
                 sys.exit(1)
 
-            oggpy.sync_write(oy, buffer)
+            oy.write(buffer)
 
-        print >> sys.stderr, oggpy.get_comments(vc)
+        print >> sys.stderr, vorbispy.get_comments(vc)
 
         vd.synthesis_init(vi)
         vd.block_init(vb)
@@ -91,25 +99,33 @@ def test(ogg, outfile=file("decode.raw", "w")):
                             if vb.synthesis(op) == 0:
                                 vd.synthesis_blockin(vb)
                                                         
-                            samples = oggpy.oggpy_synthesis_pcmout(vd)
+                            samples = vorbispy.oggpy_synthesis_pcmout(vd)
                             while samples != None:
                                 samples *= 32767;
                                 wav = samples.astype('Int16')
                                 
                                 interleaved = numarray.zeros(samples.shape[1]*2, numarray.Int16)
+
                                 interleaved[0::2] = wav[0]
                                 interleaved[1::2] = wav[1]
-                                interleaved.tofile(outfile)
+                                
+                                # interleaved.tofile(outfile)
+                                audio.write(interleaved.tostring())
                                         
-                                samples = oggpy.oggpy_synthesis_pcmout(vd)
+                                samples = vorbispy.oggpy_synthesis_pcmout(vd)
                                 
                 if og.eos(): eos = True
             if not eos:
                 buffer = ogg.read(BUFSIZE)
-                oggpy.sync_write(oy, buffer)
+                oy.write(buffer)
                 if len(buffer) == 0: eos = True
         
 
 if __name__ == "__main__":
-    # test(sys.stdin)
-    test(file("music.ogg", "r"))
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-":
+            test(sys.stdin)
+        else:
+            test(file(sys.argv[1], "rb"))
+    else:
+        test(file("music.ogg", "rb"))

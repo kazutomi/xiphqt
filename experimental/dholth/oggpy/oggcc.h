@@ -5,6 +5,8 @@
  * @author Daniel Holth <dholth@fastmail.fm>
  */
 
+// #include "oggpy_wrappers.h"
+
 #ifndef OGGCC_H
 #define OGGCC_H
 
@@ -50,7 +52,7 @@ namespace ogg {
             userpacket(std::string bytes, ogg_int64_t granulepos, bool bos = false, bool eos = false)
             {
                 this->bytes = bytes;
-                (const char*)(this->get_data()->packet)     = bytes.c_str();
+                (const char*)(this->get_data()->packet) = bytes.c_str();
                 this->get_data()->granulepos = granulepos;
                 this->get_data()->bytes      = bytes.size();
                 this->get_data()->b_o_s      = bos;
@@ -90,12 +92,19 @@ namespace ogg {
             }
             
             void writeinit ( )                  { oggpack_writeinit ( this->get_data() );  }
+
+            /// Probably inefficient at the moment, but it's for a Python wraper.
+            ogg::packet packetout(ogg_int64_t granulepos, bool bos=false, bool eos=false) { 
+                oggpack_buffer *opb = this->get_data();
+                return ogg::userpacket(std::string((const char*)opb->buffer,
+                                                   oggpack_bytes(opb)), granulepos, bos, eos);
+            }
     };
 
 
     /// Little-endian bitpacker.
     class oggpack : public oggpack_base {
-
+        public:
             long bits   ( )             { return oggpack_bits   ( this->get_data() );  }
             long bytes  ( )             { return oggpack_bytes  ( this->get_data() );  }
             long look   ( int bits )    { return oggpack_look   ( this->get_data(), bits );  }
@@ -118,7 +127,7 @@ namespace ogg {
     
     /// Big-endian bitpacker
     class oggpackB : public oggpack_base {
-
+        public:
             long bits   ( )             { return oggpackB_bits   ( this->get_data() );  }
             long bytes  ( )             { return oggpackB_bytes  ( this->get_data() );  }
             long look   ( int bits )    { return oggpackB_look   ( this->get_data(), bits );  }
