@@ -43,7 +43,7 @@ def find_ogg(ogg_prefix = '/usr/local', enable_oggtest = 1):
     ogg_cflags = []
     ogg_libs = []
     
-    ogg_include_dir = ogg_prefix + '/include -pthreads'
+    ogg_include_dir = ogg_prefix + '/include'
     ogg_lib_dir = ogg_prefix + '/lib'
     ogg_libs = 'ogg2'
 
