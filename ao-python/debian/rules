@@ -42,7 +42,7 @@ install: build
 	dh_clean -k
 	dh_installdirs
 
-	python setup.py install --prefix $(CURDIR)/debian/ao-python/usr
+	python setup.py install --prefix $(CURDIR)/debian/pyao/usr
 
 
 # Build architecture-independent files here.
