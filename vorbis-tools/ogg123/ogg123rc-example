@@ -1,3 +1,0 @@
-# Copy this to ~/.ogg123rc and edit as necessary. The current
-# parser cannot handle comments, so remove these lines also.
-default_device=oss
