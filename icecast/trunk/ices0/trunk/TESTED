@@ -1,8 +1,0 @@
-Since the autoconf system has been largely rewritten I've removed all the
-previously tested configurations. But it works on my systems:
-
-Mac OS X 10.2.4/lame 3.93/python 2.3
-x86 Linux 2.4.20/lame 3.92/python 2.2
-
-If you've successfully built and run it on other systems, please send details
-to me at <brendan@xiph.org>, and I'll update this list.
