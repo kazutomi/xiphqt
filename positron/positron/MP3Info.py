@@ -372,14 +372,13 @@ class MPEG:
                     next_off, next_header = \
                               self._find_header(file, seeklimit=0,
                                         seekstart=seekstart+offset
-                                                  +int(self.framelength),
+                                                  +self.framelength,
                                         check_next_header=check_next_header-1)
 
                     # Move the file pointer back
                     file.seek(file_pos,0)
                     
                     if next_off != -1:
-#                        print file.name, seekstart, seeklimit, offset, self.framelength
                         return seekstart+offset, header[offset:offset+4]
                     else:
                         curr_pos = offset+2
@@ -450,11 +449,22 @@ class MPEG:
 
         try:
             if self.layer == 1:
-                self.framelength = ((  12 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit) * 4
+                self.framelength = (12000 * self.bitrate // self.samplerate + padding_bit) * 4
                 self.samplesperframe = 384.0
-            else:
-                self.framelength =  ( 144 * (self.bitrate * 1000.0)/self.samplerate) + padding_bit
+            elif self.layer == 2:
+                self.framelength =  144000 * self.bitrate // self.samplerate + padding_bit
                 self.samplesperframe = 1152.0
+            else:
+                # MPEG 2 and 2.5 calculate framelength different
+                # (discovered in LAME source)
+                if mpeg_version == 0 or mpeg_version == 2:
+                    fake_samplerate = self.samplerate << 1
+                else:
+                    fake_samplerate = self.samplerate
+                    
+                self.framelength = 144000 * self.bitrate // fake_samplerate + padding_bit
+                self.samplesperframe = 1152.0 # This might be wrong
+                
             self.length = int(round((self.filesize / self.framelength) * (self.samplesperframe / self.samplerate)))
         except ZeroDivisionError:
             return  # Division by zero means the header is bad
