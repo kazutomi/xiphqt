@@ -33,9 +33,9 @@ interpreter_playlist_perl_get_current_lineno ()
 	int ret=0;
 	
 	str = interpreter_perl_eval_function ("ices_perl_get_current_lineno");
-	ret = atoi(str);
-	ices_util_free(str);
-	if (!ret) ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pl failed");
+	ret = atoi(str); 	/* allocated in perl.c */
+	ices_util_free(str);	/* clean up after yourself! */
+	if (!ret) ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pm failed");
 	return ret;
 }
 
@@ -43,7 +43,7 @@ char *
 interpreter_playlist_perl_get_next ()
 {
 	return interpreter_perl_eval_function ("ices_perl_get_next");
-	// implied free(str)
+	/* implied free(str), this is called higher up */
 }
 
 int
@@ -53,10 +53,10 @@ interpreter_playlist_perl_initialize (ices_config_t *ices_config)
         int ret=0;
 			
         str = interpreter_perl_eval_function ("ices_perl_initialize");
-        ret = atoi(str);
-	ices_util_free(str);
+        ret = atoi(str);	/* allocated in perl.c */
+	ices_util_free(str);	/* clean up after yourself! */
 		
-        if (!ret) ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pl failed");
+        if (!ret) ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pm failed");
         return ret;
 
 }
@@ -72,7 +72,7 @@ interpreter_playlist_perl_shutdown (ices_config_t *ices_config)
 	ret = atoi(str);
 	ices_util_free(str);
 
-        if (!ret) ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pl failed");
+        if (!ret) ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pm failed");
         return ret;
 }
 
