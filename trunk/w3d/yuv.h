@@ -2,8 +2,8 @@
 #ifndef __YUV_H
 #define __YUV_H
 
-#include <stdint.h>
 #include "wavelet.h"
+#include "w3dtypes.h"
 
 extern void rgb24_to_yuv (uint8_t *rgb, Wavelet3DBuf *yuv [], uint32_t frame);
 extern void yuv_to_rgb24 (Wavelet3DBuf *yuv [], uint8_t *rgb, uint32_t frame);

@@ -1,7 +1,7 @@
 #include "mem.h"
 #include <assert.h>
 #include "wavelet.h"
-
+#include "w3dtypes.h"
 
 
 static

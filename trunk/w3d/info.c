@@ -11,13 +11,14 @@
  ********************************************************************
 
  function: maintain the info structure, info <-> header packets
- last mod: $Id: info.c,v 1.2 2001/11/10 04:12:51 giles Exp $
+ last mod: $Id: info.c,v 1.3 2002/03/11 09:24:17 holger Exp $
 
  ********************************************************************/
 
 /* general handling of the header and the TarkinInfo structure (and
    substructures) */
 
+#include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>

@@ -3,9 +3,10 @@
  *   CR/LF safe ! 
  */
 
-#include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "w3dtypes.h"
 #include "mem.h"
 
 
@@ -80,7 +81,7 @@ int read_pnm_header_internal (FILE *fp, int *w, int *h)
 int read_pnm_header (char *fname, int *w, int *h)
 {
    int type;
-   FILE *fp = fopen(fname, "r");
+   FILE *fp = fopen(fname, "rb");
 
    if (!fp)
       return -1;
@@ -95,7 +96,7 @@ int read_pnm_header (char *fname, int *w, int *h)
 
 int read_pnm (char *fname, uint8_t *buf)
 {
-   FILE *fp = fopen(fname, "r");
+   FILE *fp = fopen(fname, "rb");
    int type;
    int w, h;
 
@@ -127,7 +128,7 @@ void write_pnm (char *fname, uint8_t *rgb, int w, int h)
 {
    FILE *outfile;
 
-   outfile = fopen (fname, "w");
+   outfile = fopen (fname, "wb");
 
    if (!outfile) {
       fprintf (stderr, "error opening '%s' for writing !!!\n", fname);
@@ -164,7 +165,7 @@ void write_pgm16 (char *fname, int16_t *rgb, int w, int h, int16_t offset)
    int i;
    FILE *outfile;
 
-   outfile = fopen (fname, "w");
+   outfile = fopen (fname, "wb");
 
    if (!outfile) {
       printf ("error opening '%s' for writing !!!\n", fname);

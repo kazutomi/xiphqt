@@ -1,7 +1,7 @@
 #ifndef __WAVELET_H
 #define __WAVELET_H
 
-#include <stdint.h>
+#include "w3dtypes.h"
 
 
 typedef struct {
@@ -49,7 +49,7 @@ extern void wavelet_3d_buf_dump (char *fmt,
                                  Wavelet3DBuf* buf,
                                  int16_t offset);
 #else
-#define wavelet_3d_buf_dump(x...)
+#define wavelet_3d_buf_dump(fmt,f,id,buf,offset)
 #endif
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef __PPM_H
 #define __PPM_H
 
+#include "w3dtypes.h"
 
 /**
  *   Returns number of color channels (1 == grayscale, 3 == rgb)

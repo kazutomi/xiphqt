@@ -1,11 +1,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <stdint.h>
+
 #include "mem.h"
 #include "tarkin.h"
 #include "pnm.h"
+#include "w3dtypes.h"
 
 
 static
@@ -94,7 +94,7 @@ int main (int argc, char **argv)
    layer[0].format = (type == 3) ? TARKIN_RGB24 : TARKIN_GRAYSCALE;
 
 
-   if ((te.fd = open ("stream.ogg", O_CREAT | O_RDWR | O_TRUNC, 0644)) < 0) {
+   if ((te.fd = open ("stream.ogg", O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644)) < 0) {
       printf ("error opening '%s' for writing !\n", "stream.ogg");
       usage (argv[0]);
    }
