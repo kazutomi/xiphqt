@@ -1,7 +1,7 @@
 ﻿<!--#include virtual="/SSI/topofhead.inc"-->
 <title>Xiph.org: Speex</title>
 <!--#include virtual="/projects/audio/speex/SSI/inhead.inc"-->
-<style type="text/css" media="screen">li#home { background: no-repeat url(/Images/logos/speex/20x35.png) left #88c24d; }</style>
+<style type="text/css" media="screen">li#docs { background: #88c24d; }</style>
 <!--#include virtual="/SSI/topofbody.inc"-->
 <!--#include virtual="/projects/audio/speex/SSI/leftside.inc"-->
 <!--#include virtual="/SSI/rightside.inc"-->
