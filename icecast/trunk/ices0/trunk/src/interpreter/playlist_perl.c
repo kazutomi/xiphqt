@@ -34,7 +34,7 @@ interpreter_playlist_perl_get_current_lineno ()
 	
 	str = interpreter_perl_eval_function ("ices_perl_get_current_lineno");
 	ret = atoi(str);
-	
+	ices_util_free(str);
 	if (!ret) ices_log_error ("Execution of 'ices_perl_get_current_lineno()' in ices.pl failed");
 	return ret;
 }
@@ -43,6 +43,7 @@ char *
 interpreter_playlist_perl_get_next ()
 {
 	return interpreter_perl_eval_function ("ices_perl_get_next");
+	// implied free(str)
 }
 
 int
@@ -53,7 +54,8 @@ interpreter_playlist_perl_initialize (ices_config_t *ices_config)
 			
         str = interpreter_perl_eval_function ("ices_perl_initialize");
         ret = atoi(str);
-
+	ices_util_free(str);
+		
         if (!ret) ices_log_error ("Execution of 'ices_perl_initialize()' in ices.pl failed");
         return ret;
 
@@ -67,8 +69,8 @@ interpreter_playlist_perl_shutdown (ices_config_t *ices_config)
         int ret=0;
 			                  
         str = interpreter_perl_eval_function ("ices_perl_shutdown");
-
 	ret = atoi(str);
+	ices_util_free(str);
 
         if (!ret) ices_log_error ("Execution of 'ices_perl_shutdown()' in ices.pl failed");
         return ret;
