@@ -269,38 +269,31 @@ int infoDlg(char *fn, HWND hwnd)
 
 char *generate_title(vorbis_comment *comment, char *fn)
 {/* Later, extend this to be configurable like the mp3 player */
-	char *title = NULL;
 	char buff[1024];
+	char *title = NULL, *artist = NULL, *finaltitle = NULL;
+	int i;
 
-	if (comment->comments >= 1) {
-		char *title = NULL, *artist = NULL;
-		int i;
-
-		for(i=0;i<comment->comments;i++)
-		{
-			if(!strnicmp("TITLE=",comment->user_comments[i],6))
-				title = comment->user_comments[i] + 6;
-			else if(!strnicmp("ARTIST=", comment->user_comments[i],7))
-				artist = comment->user_comments[i] + 7;
-		}
-
-		
-		if(artist && title)
-			_snprintf(buff, 1024, "%s - %s", artist, title);
-		else if(title)
-			_snprintf(buff, 1024, "%s", title);
-		else if(artist)
-			_snprintf(buff, 1024, "%s - unknown", artist);
-		else
-			_snprintf(buff, 1024, "Unknown track (encoded by %s)", comment->vendor);
-
-	} else {
-		_snprintf(buff, 1024, "%s (no title)", fn);
+	for(i=0;i<comment->comments;i++)
+	{
+		if(!strnicmp("TITLE=",comment->user_comments[i],6))
+			title = comment->user_comments[i] + 6;
+		else if(!strnicmp("ARTIST=", comment->user_comments[i],7))
+			artist = comment->user_comments[i] + 7;
 	}
 
-	title = strdup(buff);
+	
+	if(artist && title)
+		_snprintf(buff, 1024, "%s - %s", artist, title);
+	else if(title)
+		_snprintf(buff, 1024, "%s", title);
+	else if(artist)
+		_snprintf(buff, 1024, "%s - unknown", artist);
+	else
+		_snprintf(buff, 1024, "%s (no title)", fn);
 
-	return title;
+	finaltitle = strdup(buff);
+
+	return finaltitle;
 }
 
 void getfileinfo(char *filename, char *title, int *length_in_ms)
