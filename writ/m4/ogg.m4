@@ -28,7 +28,7 @@ AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run 
     OGG_CFLAGS="-I$ogg_includes"
   elif test "x$ogg_prefix" != "x" ; then
     OGG_CFLAGS="-I$ogg_prefix/include"
-  elif test "x$prefix" != "xNONE"; then
+  elif test "$prefix" != "xNONE"; then
     OGG_CFLAGS="-I$prefix/include"
   fi
 
@@ -49,7 +49,7 @@ dnl
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ogg/ogg.h>
+#include <ogg2/ogg.h>
 
 int main ()
 {
@@ -75,7 +75,7 @@ int main ()
        LIBS="$LIBS $OGG_LIBS"
        AC_TRY_LINK([
 #include <stdio.h>
-#include <ogg/ogg.h>
+#include <ogg2/ogg.h>
 ],     [ return 0; ],
        [ echo "*** The test program compiled, but did not run. This usually means"
        echo "*** that the run-time linker is not finding Ogg or finding the wrong"
