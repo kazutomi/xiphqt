@@ -25,7 +25,7 @@ extern PyTypeObject py_block_type;
 PyObject *py_dsp_from_dsp(vorbis_dsp_state *vd, PyObject *parent);
 PyObject *py_block_from_block(vorbis_block *vb, PyObject *parent);
 
-#endif //__VORBISCODEC_H__
+#endif /* __VORBISCODEC_H__ */
 
 
 

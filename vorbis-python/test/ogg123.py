@@ -100,7 +100,6 @@ class AOPlayer(Player):
         if id is None:
             id = ao.get_driver_id('esd')
         self.dev = ao.AudioDevice(id)
-        print "Hey"
 
     def write(self, buff, bytes):
         self.dev.play(buff, bytes)

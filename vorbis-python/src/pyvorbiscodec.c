@@ -150,13 +150,13 @@ py_vorbis_analysis_headerout(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
-  // Takes a comment object as the argument.
-  // I'll just give them an empty one if they don't provied one.
+  /* Takes a comment object as the argument.
+     I'll just give them an empty one if they don't provied one. */
   if (!PyArg_ParseTuple(args, "|O!", &py_vcomment_type, &comm))
     return NULL;
   
   if (comm == NULL) {
-    vorbis_comment_init(&vc); // Initialize an empty comment struct
+    vorbis_comment_init(&vc); /* Initialize an empty comment struct */
   } else {
     vc = comm->vc;
   }
@@ -167,7 +167,7 @@ py_vorbis_analysis_headerout(PyObject *self, PyObject *args)
     goto finish;
   }
   
-  // Returns a tuple of oggpackets (header, header_comm, header_code)
+  /* Returns a tuple of oggpackets (header, header_comm, header_code) */
   
   pyheader = modinfo->ogg_packet_from_packet(&header);
   pyheader_comm = modinfo->ogg_packet_from_packet(&header_comm);
@@ -181,7 +181,7 @@ py_vorbis_analysis_headerout(PyObject *self, PyObject *args)
   PyTuple_SET_ITEM(ret, 2, pyheader_code);
   
  finish:
-  if (comm == NULL) // Get rid of it if we created it
+  if (comm == NULL) /* Get rid of it if we created it */
     vorbis_comment_clear(&vc);
   return ret;
  error:
@@ -208,9 +208,9 @@ py_vorbis_block_init(PyObject *self, PyObject *args)
   return ret;
 }
 
-// Returns "len" if all arguments are strings of the same length, 
-// -1 if one or more are not strings
-// -2 if they have different lengths
+/* Returns "len" if all arguments are strings of the same length, 
+   -1 if one or more are not strings
+   -2 if they have different lengths */
 
 #define NON_STRING -1
 #define DIFF_LENGTHS -2
@@ -227,7 +227,7 @@ string_size(PyObject *args, int size)
     if (!PyString_Check(cur))
       return NON_STRING;
 
-    // make sure the lengths are uniform
+    /* make sure the lengths are uniform */
     if (len == -1)
       len = PyString_Size(cur);
     else
@@ -289,7 +289,7 @@ py_dsp_write(PyObject *self, PyObject *args)
   
   vorbis_analysis_wrote(&dsp_self->vd, samples);
 
-  return PyInt_FromLong(samples); // return the number of samples written
+  return PyInt_FromLong(samples); /* return the number of samples written */
 }
 
 static PyObject *
@@ -369,7 +369,7 @@ py_vorbis_analysis(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
 
-  vorbis_analysis(&b_self->vb, &op); //TODO error code
+  vorbis_analysis(&b_self->vb, &op); /* TODO error code */
   return modinfo->ogg_packet_from_packet(&op);
 }
 

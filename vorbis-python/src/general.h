@@ -14,7 +14,7 @@ ogg_int64_t arg_to_64(PyObject *longobj);
 #define FDEF(x) static PyObject *py_##x (PyObject *self, PyObject *args); \
 static char py_##x##_doc[] = 
 
-#endif // __GENERAL_H__
+#endif /* __GENERAL_H__ */
 
 
 
