@@ -65,7 +65,7 @@ sub module_update{
 
     # what a great hack
     $proc{"cpu"}=~m/(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
-    $lastmod=$1+$2+$3+$4; # 100ths of a second
+    $lastmod=$1+$2+$3+$4; # 100ths of a second, even with broken 2.0 SMP proc
 }
 
 bless {};
