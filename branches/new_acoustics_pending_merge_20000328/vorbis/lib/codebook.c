@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: basic codebook pack/unpack/code/decode operations
- last mod: $Id: codebook.c,v 1.11 2000/02/23 09:24:26 xiphmont Exp $
+ last mod: $Id: codebook.c,v 1.11.4.1 2000/04/01 12:51:32 xiphmont Exp $
 
  ********************************************************************/
 
@@ -21,6 +21,7 @@
 #include "vorbis/codec.h"
 #include "vorbis/codebook.h"
 #include "bitwise.h"
+#include "scales.h"
 #include "bookinternal.h"
 
 /**** pack/unpack helpers ******************************************/
@@ -158,9 +159,35 @@ static double *_book_unquantize(const static_codebook *b){
     for(j=0;j<b->entries;j++){
       double last=0.;
       for(k=0;k<b->dim;k++){
-	double val=b->quantlist[j*b->dim+k]*delta+last+mindel;
+	double val=b->quantlist[j*b->dim+k];
+	if(val!=0){
+	  val=(labs(b->quantlist[j*b->dim+k])-1)*delta+last+mindel;
+	  if(b->q_log)val=fromdB(val);
+	  if(b->quantlist[j*b->dim+k]<0)val= -val;
+	}
+
 	r[j*b->dim+k]=val;
 	if(b->q_sequencep)last=val;
+      }
+    }
+    return(r);
+  }else
+    return(NULL);
+}
+
+/* on the encode side of a log scale, we need both the linear
+   representation (done by unquantize above) but also a log version to
+   speed error metric computation */
+static double *_book_logdist(const static_codebook *b,double *vals){
+  long j;
+  if(b->quantlist && b->q_log){
+    double *r=malloc(sizeof(double)*b->entries*b->dim);
+    for(j=0;j<b->entries;j++){
+      if(vals[j]==0){
+	r[j]=0.;
+      }else{
+	r[j]=todB(vals[j])+b->q_encodebias;
+	if(vals[j]<0)r[j]= -r[j];
       }
     }
     return(r);
@@ -192,6 +219,7 @@ void vorbis_book_clear(codebook *b){
     free(b->decode_tree);
   }
   if(b->valuelist)free(b->valuelist);
+  if(b->logdist)free(b->logdist);
   if(b->codelist)free(b->codelist);
   memset(b,0,sizeof(codebook));
 }
@@ -203,6 +231,7 @@ int vorbis_book_init_encode(codebook *c,const static_codebook *s){
   c->dim=s->dim;
   c->codelist=_make_words(s->lengthlist,s->entries);
   c->valuelist=_book_unquantize(s);
+  c->logdist=_book_logdist(s,c->valuelist);
   return(0);
 }
 
@@ -278,11 +307,35 @@ int vorbis_staticbook_pack(const static_codebook *c,oggpack_buffer *opb){
     _oggpack_write(opb,c->q_delta,24);
     _oggpack_write(opb,c->q_quant-1,4);
     _oggpack_write(opb,c->q_sequencep,1);
+    _oggpack_write(opb,c->q_log,1);
+    if(c->q_log){
+      _oggpack_write(opb,c->q_zeroflag,1);
+      _oggpack_write(opb,c->q_negflag,1);
+    }
 
     /* quantized values */
-    for(i=0;i<c->entries*c->dim;i++)
-      _oggpack_write(opb,c->quantlist[i],c->q_quant);
+    for(i=0;i<c->entries*c->dim;i++){
+      if(c->quantlist[i]==0){
+	if(c->q_zeroflag&&c->q_log)
+	  _oggpack_write(opb,0,1);
+	else{
+	  /* serious failure; this is an invalid codebook */
+	  return(1);
+	}
+      }else{
+	if(c->q_zeroflag&&c->q_log)
+	  _oggpack_write(opb,1,1);
 
+	_oggpack_write(opb,labs(c->quantlist[i])-1,c->q_quant);
+	if(c->q_negflag&&c->q_log){
+	  if(c->quantlist[i]>0){
+	    _oggpack_write(opb,0,1);
+	  }else{
+	    _oggpack_write(opb,1,1);
+	  }
+	}
+      }
+    }
   }else{
     /* no mapping. */
     _oggpack_write(opb,0,1);
@@ -345,12 +398,36 @@ int vorbis_staticbook_unpack(oggpack_buffer *opb,static_codebook *s){
     s->q_delta=_oggpack_read(opb,24);
     s->q_quant=_oggpack_read(opb,4)+1;
     s->q_sequencep=_oggpack_read(opb,1);
+    s->q_log=_oggpack_read(opb,1);
+    if(s->q_log){
+      s->q_zeroflag=_oggpack_read(opb,1);
+      s->q_negflag=_oggpack_read(opb,1);
+    }else{
+      /* zero/negflag must be zero if log is */
+      s->q_zeroflag=0;
+      s->q_negflag=0;
+    }
 
     /* quantized values */
     s->quantlist=malloc(sizeof(double)*s->entries*s->dim);
-    for(i=0;i<s->entries*s->dim;i++)
+    for(i=0;i<s->entries*s->dim;i++){
+      if(s->q_zeroflag)
+	if(_oggpack_read(opb,1)==0){
+	  s->quantlist[i]=0;
+	  continue;
+	}
+
       s->quantlist[i]=_oggpack_read(opb,s->q_quant);
-    if(s->quantlist[i-1]==-1)goto _eofout;
+      if(s->quantlist[i]==-1)goto _eofout;
+      s->quantlist[i]++;
+
+      /* if we're log scale, a negative dB value is a positive linear
+         value (just < 1.)  We need an additional bit to set
+         positive/negative linear side. */
+      if(s->q_negflag)
+	if(_oggpack_read(opb,1))
+	  s->quantlist[i]= -s->quantlist[i];
+    }
   }
 
   /* all set */
@@ -368,18 +445,52 @@ int vorbis_book_encode(codebook *book, int a, oggpack_buffer *b){
   return(book->c->lengthlist[a]);
 }
 
-static int  _best(codebook *book, double *a){
+static int  _best(codebook *book, double *a, int step){
   encode_aux *t=book->c->encode_tree;
   int dim=book->dim;
-  int ptr=0,k;
-  /* optimized, using the decision tree */
+  int ptr=0,k,o;
+
+  /* optimized using the decision tree */
   while(1){
     double c=0.;
     double *p=book->valuelist+t->p[ptr];
     double *q=book->valuelist+t->q[ptr];
     
+    for(k=0,o=0;k<dim;k++,o+=step)
+      c+=(p[k]-q[k])*(a[o]-(p[k]+q[k])*.5);
+    
+    if(c>0.) /* in A */
+      ptr= -t->ptr0[ptr];
+    else     /* in B */
+      ptr= -t->ptr1[ptr];
+    if(ptr<=0)break;
+  }
+  return(-ptr);
+}
+
+static int  _logbest(codebook *book, double *a, int step){
+  encode_aux *t=book->c->encode_tree;
+  int dim=book->dim;
+  int ptr=0,k,o;
+  double *loga=alloca(sizeof(double)*dim);
+  double bias=book->c->q_encodebias;
+  
+  for(k=0,o=0;k<dim;k++,o+=step)
+    if(a[o]==0.)
+      loga[k]=0.;
+    else{
+      loga[k]=todB(a[o])+bias;
+      if(a[o]<0)loga[k]= -loga[k];
+    }
+
+  /* optimized using the decision tree */
+  while(1){
+    double c=0.;
+    double *p=book->logdist+t->p[ptr];
+    double *q=book->logdist+t->q[ptr];
+    
     for(k=0;k<dim;k++)
-      c+=(p[k]-q[k])*(a[k]-(p[k]+q[k])*.5);
+      c+=(p[k]-q[k])*(loga[k]-(p[k]+q[k])*.5);
     
     if(c>0.) /* in A */
       ptr= -t->ptr0[ptr];
@@ -391,26 +502,36 @@ static int  _best(codebook *book, double *a){
 }
 
 /* returns the number of bits and *modifies a* to the quantization value *****/
+int vorbis_book_encodevs(codebook *book,double *a,oggpack_buffer *b,int step){
+  int dim=book->dim,k,o;
+  int best=(book->c->q_log?_logbest(book,a,step):_best(book,a,step));
+  for(k=0,o=0;k<dim;k++,o+=step)
+    a[o]=(book->valuelist+best*dim)[k];
+  return(vorbis_book_encode(book,best,b));
+}
+
 int vorbis_book_encodev(codebook *book, double *a, oggpack_buffer *b){
-  int dim=book->dim;
-  int best=_best(book,a);
-  memcpy(a,book->valuelist+best*dim,dim*sizeof(double));
-  return(vorbis_book_encode(book,best,b));}
+  return vorbis_book_encodevs(book,a,b,1);
+}
 
 /* returns the number of bits and *modifies a* to the quantization error *****/
-int vorbis_book_encodevE(codebook *book, double *a, oggpack_buffer *b){
-  int dim=book->dim,k;
-  int best=_best(book,a);
-  for(k=0;k<dim;k++)
-    a[k]-=(book->valuelist+best*dim)[k];
+int vorbis_book_encodevEs(codebook *book,double *a,oggpack_buffer *b,int step){
+  int dim=book->dim,k,o;
+  int best=(book->c->q_log?_logbest(book,a,step):_best(book,a,step));
+  for(k=0,o=0;k<dim;k++,o+=step)
+    a[o]-=(book->valuelist+best*dim)[k];
   return(vorbis_book_encode(book,best,b));
+}
+
+int vorbis_book_encodevE(codebook *book,double *a,oggpack_buffer *b){
+  return vorbis_book_encodevEs(book,a,b,1);
 }
 
 /* returns the total squared quantization error for best match and sets each 
    element of a to local error ***************/
 double vorbis_book_vE(codebook *book, double *a){
   int dim=book->dim,k;
-  int best=_best(book,a);
+  int best=(book->c->q_log?_logbest(book,a,1):_best(book,a,1));
   double acc=0.;
   for(k=0;k<dim;k++){
     double val=(book->valuelist+best*dim)[k];
@@ -440,13 +561,19 @@ long vorbis_book_decode(codebook *book, oggpack_buffer *b){
 }
 
 /* returns the entry number or -1 on eof *************************************/
-long vorbis_book_decodev(codebook *book, double *a, oggpack_buffer *b){
+long vorbis_book_decodevs(codebook *book,double *a,oggpack_buffer *b,int step){
   long entry=vorbis_book_decode(book,b);
-  int i;
+  int i,o;
   if(entry==-1)return(-1);
-  for(i=0;i<book->dim;i++)a[i]+=(book->valuelist+entry*book->dim)[i];
+  for(i=0,o=0;i<book->dim;i++,o+=step)
+    a[o]+=(book->valuelist+entry*book->dim)[i];
   return(entry);
 }
+
+long vorbis_book_decodev(codebook *book, double *a, oggpack_buffer *b){
+  return vorbis_book_decodevs(book,a,b,1);
+}
+
 
 #ifdef _V_SELFTEST
 
