@@ -281,6 +281,8 @@ Tk::MainLoop();
 
 
 sub ThrowRealPlayer{
+    $SIG{CHLD}='IGNORE';
+
     Status("Starting RealPlayer...");
     # set up the environment
 
@@ -296,7 +298,7 @@ sub ThrowRealPlayer{
     }
 
     die "pipe call failed unexpectedly: $!" unless pipe REAL_STDERR,WRITEH;
-    $realpid=open3("<&STDIN",">&STDOUT",">&WRITEH",@list[0]);
+    $realpid=open3("STDIN",">&STDOUT",">&WRITEH",@list[0]);
     close WRITEH;
 
     # a select loop until we have the socket accepted
@@ -316,6 +318,7 @@ sub ThrowRealPlayer{
 	    $time--;
 	    Status("Waiting for rendevous... [$time]");
 	}else{
+	    $toplevel->update();
 	    if(vec($rout,fileno(REAL_STDERR),1)){
 		$bytes=sysread REAL_STDERR, my$scalar, 4096;
 		$stderr_output.=$scalar;
@@ -328,14 +331,12 @@ sub ThrowRealPlayer{
 			  "attempt:",
 			  $stderr_output);
 
-		    print "EOF on REAL_STDERR!\n";
 		    return;
 		}
 	    }
 	    if(vec($rout,fileno(LISTEN_SOCK),1)){
 		# socket has a request
 		$status=accept(COMM_SOCK,LISTEN_SOCK);
-		Status("libsnatch contacted");
 		$comm_ready=1;
 		$time=0;
 	    }
@@ -344,10 +345,18 @@ sub ThrowRealPlayer{
 
 
     # configure
+    Status("RealPlayer started...");
+    $window_active->configure(state=>normal);
+    $window_timer->configure(state=>normal);
+    $window_inactive->configure(state=>normal);
+
+    $window_amute->configure(state=>normal);
+    $window_vmute->configure(state=>normal);
+    $toplevel->fileevent(REAL_STDERR,'readable'=>[sub{ReadStderr();}]);
     send_string("F",$CONFIG{'OUTPUT_PATH'});
     send_string("D",$CONFIG{'AUDIO_DEVICE'});
-    Robot_Audio($global_audio_setting);
-    Robot_Video($global_video_setting);
+    Robot_Active();
+
 }
 
 sub BindSocket{
@@ -389,6 +398,7 @@ sub AcceptSocket{
 
 sub Shutdown{
 # save the config/history
+    Robot_Exit();
     ReleaseSocket();
 
     die $! unless open CFILE, ">$configfile".".tmp";
@@ -451,8 +461,6 @@ sub Robot_Exit{
     my $exitcode=join "",("Kx",pack ("S",4));
     syswrite COMM_SOCK,$playcode;
     close COMM_SOCK;
-    Status("Waiting for RealPlayer exit...");
-    waitpid $realpid, 0
 }
 
 sub Robot_Active{
@@ -462,18 +470,18 @@ sub Robot_Active{
     send_string("O","");
     send_string("L","");
     syswrite COMM_SOCK,'A';
-    Amute($global_audio_setting);
-    Vmute($global_video_setting);
-    Status("Recording ACTIVE: Idle/Nominal");
+    Robot_Audio($global_audio_setting);
+    Robot_Video($global_video_setting);
+    Status("Active/Nominal");
 }
 
-sub Robot_Inctive{
+sub Robot_Inactive{
     send_string("U","");
     send_string("P","");
     send_string("O","");
     send_string("L","");
-    Amute($global_audio_setting);
-    Vmute($global_video_setting);
+    Robot_Audio($global_audio_setting);
+    Robot_Video($global_video_setting);
     syswrite COMM_SOCK,'I';
     Status("Recording off");
 }
@@ -483,8 +491,8 @@ sub Robot_Timer{
     send_string("P","");
     send_string("O","");
     send_string("L","");
-    Amute($global_audio_setting);
-    Vmute($global_video_setting);
+    Robot_Audio($global_audio_setting);
+    Robot_Video($global_video_setting);
     syswrite COMM_SOCK,'T';
     Status("Inactive [Timer]");
 }
@@ -718,10 +726,23 @@ sub Alert{
     $modal_exit->configure(-command=>[sub{$modal->destroy();undef $modal}]);
 }
 
+sub ReadStderr{
+    $bytes=sysread REAL_STDERR, my$scalar, 4096;
+    if($bytes==0){
+	Alert("RealPlayer unexpectedly exited!","Attempting to start a new copy...\n");
+	$toplevel->fileevent(REAL_STDERR,'readable' => ''); 
+	close REAL_STDERR;
+	ThrowRealPlayer();
+    }
 
-
-
-
+    if($scalar=~/shut down X/){
+	$toplevel->fileevent(REAL_STDERR,'readable' => ''); 
+	close REAL_STDERR;
+	close COMM_SOCK;
+      Tk::exit(0);
+    }	
+    print $scalar;
+}
 
 
 

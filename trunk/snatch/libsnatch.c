@@ -104,6 +104,11 @@ static char *formatname(int format){
   return(audio_fmts[0]);
 }
 
+static char *nstrdup(char *s){
+  if(s)return strdup(s);
+  return NULL;
+}
+
 /* although RealPlayer is both multiprocess and multithreaded, we
 don't lock because we assume only one thread/process will be mucking
 with a specific X drawable or audio device at a time */
@@ -129,6 +134,8 @@ void *get_me_symbol(char *symbol){
 
 static pthread_cond_t event_cond=PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t event_mutex=PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t display_cond=PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t display_mutex=PTHREAD_MUTEX_INITIALIZER;
 
 void *event_thread(void *dummy){
   if(debug)
@@ -153,12 +160,17 @@ void *backchannel_thread(void *dummy){
     fprintf(stderr,"    ...: Backchannel thread %lx reporting for duty!\n",
 	    (unsigned long)pthread_self());
 
+  pthread_mutex_lock(&display_mutex);
+  if(!Xdisplay)
+    pthread_cond_wait(&display_cond,&display_mutex);
+  pthread_mutex_unlock(&display_mutex);
+
   while(1){
     char rq;
     size_t ret=fread(&rq,1,1,backchannel_fd);
     short length;
     char *buf=NULL;
-    
+
     if(ret<=0){
       fprintf(stderr,"**ERROR: Backchannel lost!  exit(1)ing...\n");
       exit(1);
@@ -205,8 +217,8 @@ void *backchannel_thread(void *dummy){
 	    openfile=buf;
 	    break;
 	  case 'F':
-	    if(outfile)free(outfile);
-	    outfile=buf;
+	    if(outpath)free(outpath);
+	    outpath=buf;
 	    break;
 	  case 'D':
 	    if(audioname)free(audioname);
@@ -265,13 +277,13 @@ void initialize(void){
     xlib_xopen=get_me_symbol("XOpenDisplay");
 
     /* output path? */
-    outpath=strdup(getenv("SNATCH_OUTPUT_PATH"));
+    outpath=nstrdup(getenv("SNATCH_OUTPUT_PATH"));
     if(!outpath){
       if(debug)
 	fprintf(stderr,
 		"----env: SNATCH_OUTPUT_PATH\n"
 		"           not set. Using current working directory.\n");
-      outpath=strdup(".");
+      outpath=nstrdup(".");
     }else{
       if(debug)
 	fprintf(stderr,
@@ -280,13 +292,13 @@ void initialize(void){
     }
 
     /* audio device? */
-    audioname=strdup(getenv("SNATCH_AUDIO_DEVICE"));
+    audioname=nstrdup(getenv("SNATCH_AUDIO_DEVICE"));
     if(!audioname){
       if(debug)
 	fprintf(stderr,
 		"----env: SNATCH_AUDIO_DEVICE\n"
 		"           not set. Using default (/dev/dsp*).\n");
-      audioname=strdup("/dev/dsp*");
+      audioname=nstrdup("/dev/dsp*");
     }else{
       if(debug)
 	fprintf(stderr,
@@ -348,7 +360,7 @@ void initialize(void){
     
     if(Xname[0]==':'){
       /* local display */
-      Xunix_socket=strdup("/tmp/.X11-unix/X                          ");
+      Xunix_socket=nstrdup("/tmp/.X11-unix/X                          ");
       sprintf(Xunix_socket+16,"%d",atoi(Xname+1));
 
       if(debug)
@@ -357,7 +369,7 @@ void initialize(void){
 		"         local AF_UNIX socket %s\n",Xunix_socket);
 
     }else if(Xname[0]=='/'){
-      Xunix_socket=strdup(Xname);
+      Xunix_socket=nstrdup(Xname);
 
       if(debug)
 	fprintf(stderr,
@@ -593,6 +605,8 @@ int close(int fd){
 
     StopClientConnection();
     StopServerConnection();
+    (*libc_close)(STDERR_FILENO);
+
   }
   
   return(ret);
@@ -702,12 +716,18 @@ int ioctl(int fd,unsigned long int rq, ...){
 }
 
 Display *XOpenDisplay(const char *d){
+  initialize();
+
   if(!XInitThreads()){
     fprintf(stderr,"**ERROR: Unable to set multithreading support in Xlib.\n"
 	    "         exit(1)ing...\n\n");
     exit(1);
   }
-  return(Xdisplay=(*xlib_xopen)(d));
+  Xdisplay=(*xlib_xopen)(d);
+  pthread_mutex_lock(&display_mutex);
+  pthread_cond_signal(&display_cond);
+  pthread_mutex_unlock(&display_mutex);
+  return(Xdisplay);
 }
 
 static void queue_task(void (*f)(void)){
