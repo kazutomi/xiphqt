@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.8 2001/08/11 02:10:09 kcarnold Exp $
+ last mod: $Id: buffer.h,v 1.2.2.9 2001/08/11 02:55:37 kcarnold Exp $
  
 ********************************************************************/
 
@@ -28,7 +28,7 @@ typedef struct buf_s
 {
   /* generic buffer interface */
   void * data;
-  size_t (*write_func) (chunk *ptr, size_t size, size_t nmemb, void * d);
+  size_t (*write_func) (chunk *ptr, size_t size, size_t nmemb, void * d, char iseos);
 
   void * initData;
   int (*init_func) (void *);
@@ -46,6 +46,7 @@ typedef struct buf_s
   long size;         /* buffer size, for reference */
   long curfill;      /* how much the buffer is currently filled */
   long prebuffer;    /* number of chunks to prebuffer */
+  char eos;        /* set if reader is at end of stream */
   chunk *reader;   /* Chunk the reader is busy with */
   chunk *writer;   /* Chunk the writer is busy with */
   chunk *end;      /* Last chunk in the buffer (for convenience) */
@@ -59,9 +60,10 @@ typedef struct buf_s
 #define TARGET_WRITE_SIZE 4096 /* to agree with other mechanisms used in ogg123 */
 
 buf_t *StartBuffer (long size, long prebuffer, void *data, 
-		    size_t (*write_func) (void *, size_t, size_t, void *),
+		    size_t (*write_func) (void *, size_t, size_t, void *, char),
 		    void *initData, int (*init_func) (void*));
 void SubmitData (buf_t *buf, chunk *data, size_t size, size_t nmemb);
+void buffer_MarkEOS (buf_t *buf);
 void buffer_shutdown (buf_t *buf);
 void buffer_cleanup (buf_t *buf);
 void buffer_flush (buf_t *buf);

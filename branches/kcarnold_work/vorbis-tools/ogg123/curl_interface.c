@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.c,v 1.1.2.1 2001/08/11 02:10:09 kcarnold Exp $
+ last mod: $Id: curl_interface.c,v 1.1.2.2 2001/08/11 02:55:37 kcarnold Exp $
  
 ********************************************************************/
 
@@ -31,7 +31,7 @@ size_t CurlWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
   return size*nmemb;
 }
 
-size_t BufferWriteChunk (void *ptr, size_t size, void *arg)
+size_t BufferWriteChunk (void *ptr, size_t size, void *arg, char iseos)
 {
   StreamInputBufferData_t *data = arg;
 
@@ -65,6 +65,9 @@ size_t BufferWriteChunk (void *ptr, size_t size, void *arg)
       data->ExcessDataSize = size;
       
       debug ("signalling successful read\n");
+      data->EOS = iseos;
+      if (iseos)
+	debug ("End of stream.\n");
       pthread_mutex_unlock (&data->ReadDataMutex);
       pthread_cond_signal (&data->ReadDoneCondition);
     }
@@ -73,12 +76,15 @@ size_t BufferWriteChunk (void *ptr, size_t size, void *arg)
   return size;
 }
 
-size_t BufferWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg)
+size_t BufferWriteFunction (void *ptr, size_t size, size_t nmemb, void *arg, char iseos)
 {
   size_t written = 0;
   while (nmemb > 0)
     {
-      written += BufferWriteChunk (ptr, size, arg);
+      if (nmemb == 1)
+	written += BufferWriteChunk (ptr, size, arg, iseos);
+      else
+	written += BufferWriteChunk (ptr, size, arg, 0);
       nmemb--;
     }
   return written;
@@ -126,7 +132,7 @@ void* CurlGo (void *arg)
   fprintf (stderr, "CurlGo\n");
   ret = curl_easy_perform ((CURL*) data->CurlHandle);
   debug ("curl done.\n");
-  data->EOFAt = buf->curfill;
+  buffer_MarkEOS (buf);
   return (void*) ret;
 }
 
@@ -201,7 +207,16 @@ size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg)
       memmove (ptr, data->ExcessData, data->ExcessDataSize);
       ptr += data->ExcessDataSize;
       size -= data->ExcessDataSize;
-      data->ExcessDataSize = 0;
+      if (data->EOS)
+	{
+	  ret = data->ExcessDataSize;
+	  debug ("Data marked EOS, so returning just excess data\n");
+	  pthread_mutex_unlock (&data->ReadDataMutex);
+	  data->ExcessDataSize = 0;
+	  return ret;
+	}
+      else
+	data->ExcessDataSize = 0;
       
       data->BytesRequested = size;
       data->WriteTarget = data->CurWritePtr = ptr;
