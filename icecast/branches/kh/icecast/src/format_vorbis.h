@@ -10,15 +10,12 @@
  *                      and others (see AUTHORS for details).
  */
 
-/* format_vorbis.h
-**
-** vorbis format plugin header
-**
-*/
-#ifndef __FORMAT_VORBIS_H__
-#define __FORMAT_VORBIS_H__
 
-int format_ogg_get_plugin (source_t *source);
-void format_ogg_initialise (void);
+#ifndef __FORMAT_VORBIS_H
+#define __FORMAT_VORBIS_H
 
-#endif  /* __FORMAT_VORBIS_H__ */
+#include "format_ogg.h"
+
+ogg_codec_t *initial_vorbis_page (format_plugin_t *plugin, ogg_page *page);
+
+#endif /* __FORMAT_VORBIS_H */
