@@ -26,7 +26,7 @@
 
 vorbis_info predef_modes[]={
   /* CD quality stereo, no channel coupling */
-  { 2, 44100, 0, NULL, 0, NULL, 512, 2048, 64, 2, 30, 5, 2, 0, 0, 10, .5,
+  { 2, 44100, 0, NULL, 0, NULL, {512, 2048}, {30,30}, {5,5}, 64,2,2, 10, .5,
                                             NULL,NULL,NULL},
 
 };
