@@ -15,21 +15,8 @@
 #include <io.h>
 #include <stdlib.h>
 #include <time.h>
+
 #include "encode.h"
-
-/* This doesn't seem to exist on windows */
-char *rindex(char *s, int c)
-{
-	char *ret = NULL;
-
-	while(*s) {
-		if (*s == (char)c)
-			ret = s;
-		s++;
-	}
-
-	return ret;
-}
 
 void *timer_start(void)
 {
@@ -45,7 +32,6 @@ double timer_time(void *timer)
 
 	return (double)(now-start);
 }
-
 
 void timer_clear(void *timer)
 {
