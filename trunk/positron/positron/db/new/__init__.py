@@ -47,7 +47,7 @@ def unpack(dbname, target_dir):
     zip = zipfile.ZipFile(f)
 
     for item in zip.namelist():
-        fullpath = path.join(target_dir, item)
+        fullpath = path.join(target_dir, item.lower())
 
         if fullpath.endswith("/"):
             os.mkdir(fullpath)
