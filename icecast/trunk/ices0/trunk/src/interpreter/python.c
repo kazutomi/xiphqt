@@ -67,7 +67,8 @@ interpreter_python_setup_path ()
 
 	if (pythonpath && (strlen (pythonpath) > 900)) {
 		ices_log ("Environment variable PYTHONPATH is too long, please rectify!");
-		exit (0);
+		ices_setup_shutdown ();
+		return;
 	}
 
 	if (pythonpath) {

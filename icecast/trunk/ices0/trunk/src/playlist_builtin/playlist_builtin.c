@@ -86,7 +86,8 @@ ices_playlist_builtin_initialize (ices_config_t *ices_config)
 
 	if (!playlist_builtin_verify_playlist (ices_config)) {
 		ices_log ("Could not find a valid playlist, and I can't bloody well make up the music myself.");
-		exit (0);
+		ices_setup_shutdown (0);
+		return -1;
 	}
 	
 	strncpy (playlist_file, ices_config->playlist_file, 1024);

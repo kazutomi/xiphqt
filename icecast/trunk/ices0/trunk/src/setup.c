@@ -259,7 +259,8 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv, int argc
 			if ((strchr ("RrivBzx", s[1]) == NULL) && arg >= (argc - 1)) {
 				ices_log ("Option %c requires an argument!\n", s[1]);
 				ices_setup_usage ();
-				exit (1);
+				ices_setup_shutdown ();
+				return;
 			}
 			
 			switch (s[1]) {
