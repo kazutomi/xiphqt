@@ -14,6 +14,8 @@ Behind the Scenes
 
 *	Prefer <x y='z'> to <x y="z">. <x y=z> is an absolute no-no.
 
+*	use camelCase for id and class attribute values.
+
 *	Close tags that need closing. <p>-as-paragraph-separator has gone the way of the dodo.
 
 *	Prefer the equals-sign-underline for h1 to the single #. The latter method doesn't offer
