@@ -1,5 +1,6 @@
 @echo off
-rem $Id: mfmacro.bat,v 1.3 2001/09/14 03:16:13 cwolf Exp $
+rem $Id: mfmacro.bat,v 1.4 2001/09/15 06:48:57 cwolf Exp $
+rem
 rem Creates and installs VC macro for exporting makefiles from 
 rem the command line.
 rem
