@@ -39,14 +39,21 @@ struct theora_dec_ctx{
   oggpack_buffer           opb;
   /*Huffman decode trees.*/
   oc_huff_node            *huff_tables[OC_NHUFFMAN_TABLES];
-  /*The number of DCT tokens for each coefficient for each plane.*/
-  int                      ndct_tokens[3][64];
+  /*The index of one past the last token in each plane for each coefficient.
+    The final entries are the total number of tokens for each coefficient.*/
+  int                      ti0[3][64];
+  /*The index of one past the last extra bits entry in each plane for each
+     coefficient.
+    The final entries are the total number of extra bits entries for each
+     coefficient.*/
+  int                      ebi0[3][64];
+  /*The number of outstanding EOB runs at the start of each coefficient in each
+     plane.*/
+  int                      eob_runs[3][64];
   /*The DCT token lists.*/
   unsigned char          **dct_tokens;
   /*The extra bits associated with DCT tokens.*/
   ogg_uint16_t           **extra_bits;
-  /*The number of outstanding EOB runs at the start of each coefficient.*/
-  int                      eob_runs[64];
   /*The out-of-loop post-processing level.*/
   int                      pp_level;
   /*The DC scale used for out-of-loop deblocking.*/
@@ -65,22 +72,22 @@ struct theora_dec_ctx{
   theora_ycbcr_buffer      pp_frame_buf;
 };
 
-/*Fix-ups for the libogg1 API, which returns -1 when there are insufficient bits
-   left in the packet as the value read.
+/*Fix-ups for the libogg1 API, which returns -1 when there are insufficient
+   bits left in the packet as the value read.
   This has two problems:
-  a) Cannot distinguish between reading 32 1 bits and failing to have sufficient
-   bits left in the packet.
-  b) Returns values that are outside the range [0..(1<<nbits)-1], which can crash
-   code that uses such values as indexes into arrays, etc.
+  a) Cannot distinguish between reading 32 1 bits and failing to have
+   sufficient bits left in the packet.
+  b) Returns values that are outside the range [0..(1<<nbits)-1], which can
+   crash code that uses such values as indexes into arrays, etc.
 
   We solve the first problem by doing two reads and combining the results.
-  We solve the second problem by masking out the result based on the sign bit of
-   the return value.
+  We solve the second problem by masking out the result based on the sign bit
+   of the return value.
   It's a little more work, but branchless, so it should not slow us down much.
 
   The libogg2 API does not have these problems, and the definitions of the
    functions below can be replaced by direct libogg2 calls.
-   
+
   One issue remaining is that in libogg2, the return value and the number of
    bits parameters are swapped between the read and write functions.
   This can cause some confusion.

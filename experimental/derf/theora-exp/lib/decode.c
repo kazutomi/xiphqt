@@ -859,6 +859,7 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
   for(pli=0;pli<3;pli++){
     coded_fragi_end+=_dec->state.ncoded_fragis[pli];
     memset(run_counts,0,sizeof(run_counts));
+    _dec->eob_runs[pli][0]=eobs;
     /*Continue any previous EOB run, if there was one.*/
     for(eobi=eobs;eobi-->0&&coded_fragi<coded_fragi_end;){
       _dec->state.frags[*coded_fragi++].dc=0;
@@ -895,7 +896,8 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
         _dec->state.frags[*coded_fragi++].dc=oc_dct_token_dec1val(token,eb);
       }
     }
-    _dec->ndct_tokens[pli][0]=ti;
+    _dec->ti0[pli][0]=ti;
+    _dec->ebi0[pli][0]=ebi;
     /*Set the EOB count to the portion of the last EOB run which extends past
        this coefficient.*/
     eobs=eobs+cfi-_ntoks_left[pli][0];
@@ -918,29 +920,30 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
   _ntoks_left: The number of tokens left to be decoded in each color plane for
                 each coefficient.
                This is updated as EOB tokens and zero run tokens are decoded.
+  _eobs:       The length of any outstanding EOB run from previous
+                coefficients.
   Return: The length of any outstanding EOB run.*/
 static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
- int _ntoks_left[3][64]){
+ int _ntoks_left[3][64],int _eobs){
   long val;
   int  run_counts[64];
   int  cfi;
-  int  eobs;
   int  ti;
   int  ebi;
   int  pli;
   int  rli;
-  eobs=_dec->eob_runs[_zzi];
   ti=ebi=0;
   for(pli=0;pli<3;pli++){
     memset(run_counts,0,sizeof(run_counts));
+    _dec->eob_runs[pli][_zzi]=_eobs;
     cfi=0;
-    while(eobs<_ntoks_left[pli][_zzi]-cfi){
+    while(_eobs<_ntoks_left[pli][_zzi]-cfi){
       int token;
       int neb;
       int eb;
       int skip;
-      cfi+=eobs;
-      run_counts[63]+=eobs;
+      cfi+=_eobs;
+      run_counts[63]+=_eobs;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
       _dec->dct_tokens[_zzi][ti++]=(char)token;
@@ -952,18 +955,18 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
       }
       else eb=0;
       skip=oc_dct_token_skip(token,eb);
-      if(skip<0)eobs=-skip;
+      if(skip<0)_eobs=-skip;
       else{
         run_counts[skip-1]++;
         cfi++;
-        eobs=0;
+        _eobs=0;
       }
     }
-    /*TODO: We don't actually use these values for anything, yet.*/
-    _dec->ndct_tokens[pli][_zzi]=ti;
+    _dec->ti0[pli][_zzi]=ti;
+    _dec->ebi0[pli][_zzi]=ebi;
     /*Set the EOB count to the portion of the last EOB run which extends past
        this coefficient.*/
-    eobs=eobs+cfi-_ntoks_left[pli][_zzi];
+    _eobs=_eobs+cfi-_ntoks_left[pli][_zzi];
     /*Add the portion of the last EOB which was included in this coefficient to
        to the longest run length.*/
     run_counts[63]+=_ntoks_left[pli][_zzi]-cfi;
@@ -973,7 +976,7 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
        accounted for by runs started in this coefficient.*/
     for(rli=64-_zzi;rli-->0;)_ntoks_left[pli][_zzi+rli]-=run_counts[rli];
   }
-  return eobs;
+  return _eobs;
 }
 
 /*Tokens describing the DCT coefficients that belong to each fragment are
@@ -989,7 +992,11 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
    token (generally far fewer than the number of coefficients, due to EOB
    tokens and zero runs), and which requires us to only maintain a counter for
    each of the 64 coefficients, instead of a counter for every fragment to
-   determine where the next token goes.*/
+   determine where the next token goes.
+  Actually, we use 3 counters per coefficient, one for each color plane, so we
+   can decode all color planes simultaneously.
+  This lets us color conversion, etc., be done as soon as a full MCU (one or
+   two super block rows) is decoded, while the image data is still in cache.*/
 static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   static const int OC_HUFF_LIST_MAX[5]={1,6,15,28,64};
   long val;
@@ -1010,7 +1017,7 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   huffi_c=(int)val;
   huff_idxs[0]=huffi_y;
   huff_idxs[1]=huff_idxs[2]=huffi_c;
-  _dec->eob_runs[0]=0;
+  _dec->eob_runs[0][0]=0;
   eobs=oc_dec_dc_coeff_unpack(_dec,huff_idxs,ntoks_left);
   theora_read(&_dec->opb,4,&val);
   huffi_y=(int)val;
@@ -1021,8 +1028,7 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
     huff_idxs[0]=huffi_y+(hgi<<4);
     huff_idxs[1]=huff_idxs[2]=huffi_c+(hgi<<4);
     for(;zzi<OC_HUFF_LIST_MAX[hgi];zzi++){
-      _dec->eob_runs[zzi]=eobs;
-      eobs=oc_dec_ac_coeff_unpack(_dec,zzi,huff_idxs,ntoks_left);
+      eobs=oc_dec_ac_coeff_unpack(_dec,zzi,huff_idxs,ntoks_left,eobs);
     }
   }
   /*TODO: eobs should be exactly zero, or 4096 or greater.
@@ -1175,49 +1181,112 @@ static void oc_dct_token_expand(int _token,int _extra_bits,
 
 
 
-/*Reconstructs all coded fragments.
+typedef struct{
+  int  ti[3][64];
+  int  ebi[3][64];
+  int  eob_runs[3][64];
+  int *coded_fragis[3];
+  int *uncoded_fragis[3];
+  int  pred_last[3][3];
+  int  mcu_nvfrags;
+  int  cur_fragy;
+}oc_dec_pipeline_state;
+
+
+
+/*Initialize the main decoding pipeline.*/
+static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
+ oc_dec_pipeline_state *_pipe){
+  int *coded_fragi_end;
+  int *uncoded_fragi_end;
+  int  pli;
+  /*If chroma is sub-sampled in the vertical direction, we have to decode two
+     super block rows of Y' for each super block row of Cb and Cr.*/
+  _pipe->mcu_nvfrags=4<<!(_dec->state.info.pixel_fmt&2);
+  _pipe->cur_fragy=0;
+  /*Initialize the token and extra bits indices for each plane and
+     coefficient.*/
+  memset(_pipe->ti[0],0,sizeof(_pipe->ti[0]));
+  memset(_pipe->ebi[0],0,sizeof(_pipe->ebi[0]));
+  for(pli=1;pli<3;pli++){
+    memcpy(_pipe->ti[pli],_dec->ti0[pli-1],sizeof(_pipe->ti[0]));
+    memcpy(_pipe->ebi[pli],_dec->ebi0[pli-1],sizeof(_pipe->ebi[0]));
+  }
+  /*Also copy over the initial the EOB run counts.*/
+  memcpy(_pipe->eob_runs,_dec->eob_runs,sizeof(_pipe->eob_runs));
+  /*Set up per-plane pointers to the coded and uncoded fragments lists.*/
+  coded_fragi_end=_dec->state.coded_fragis;
+  uncoded_fragi_end=_dec->state.uncoded_fragis;
+  for(pli=0;pli<3;pli++){
+    _pipe->coded_fragis[pli]=coded_fragi_end;
+    _pipe->uncoded_fragis[pli]=uncoded_fragi_end;
+    coded_fragi_end+=_dec->state.ncoded_fragis[pli];
+    uncoded_fragi_end-=_dec->state.nuncoded_fragis[pli];
+  }
+  /*Set the previous DC predictor to 0 for all color planes and frame types.*/
+  memset(_pipe->pred_last,0,sizeof(_pipe->pred_last));
+}
+
+/*Reconstructs all coded fragments in a single MCU (one or two super block
+   rows).
   This requires that each coded fragment have a proper macro block mode and
    motion vector (if not in INTRA mode), and have it's raw DC value decoded.
-  The token lists for each coefficient should also be filled in, along with
-   initial EOB run counts.*/
-static void oc_dec_frags_recon(oc_dec_ctx *_dec){
+  The token lists for each color plane and coefficient should also be filled
+   in, along with initial token offsets, extra bits offsets, and EOB run
+   counts.*/
+static void oc_dec_frags_recon_mcu(oc_dec_ctx *_dec,
+ oc_dec_pipeline_state *_pipe){
   oc_fragment *frag;
-  int         *coded_fragi;
-  int         *coded_fragi_end;
-  int          eob_runs[64];
-  int          ti[64];
-  int          ebi[64];
+  int          ncoded_fragis[3];
+  int          nuncoded_fragis[3];
   int          pli;
   /*First, undo the DC prediction.*/
-  frag=_dec->state.frags;
   for(pli=0;pli<3;pli++){
     oc_fragment_plane *fplane;
-    int                pred_last[3];
+    int               *pred_last;
     int                fragx;
     int                fragy;
-    pred_last[OC_FRAME_GOLD]=0;
-    pred_last[OC_FRAME_PREV]=0;
-    pred_last[OC_FRAME_SELF]=0;
+    int                fragy0;
+    int                fragy_end;
+    int                frag_shift;
     fplane=_dec->state.fplanes+pli;
-    for(fragy=0;fragy<fplane->nvfrags;fragy++){
+    /*Compute the first and last fragment row of the current MCU for this
+       plane.*/
+    frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
+    fragy0=_pipe->cur_fragy>>frag_shift;
+    fragy_end=OC_MINI(fragy0+(_pipe->mcu_nvfrags>>frag_shift),fplane->nvfrags);
+    ncoded_fragis[pli]=0;
+    pred_last=_pipe->pred_last[pli];
+    frag=_dec->state.frags+fplane->froffset+(fragy0*fplane->nhfrags);
+    for(fragy=fragy0;fragy<fragy_end;fragy++){
       for(fragx=0;fragx<fplane->nhfrags;fragx++,frag++){
         if(!frag->coded)continue;
         pred_last[OC_FRAME_FOR_MODE[frag->mbmode]]=frag->dc+=
          oc_frag_pred_dc(frag,fplane,fragx,fragy,pred_last);
+        ncoded_fragis[pli]++;
       }
     }
+    /*Also save the number of uncoded fragments so we know how many to copy.*/
+    nuncoded_fragis[pli]=(fragy_end-fragy0)*fplane->nhfrags-ncoded_fragis[pli];
   }
   /*Now decode the rest of the coefficients.*/
-  memset(ti,0,sizeof(ti));
-  memset(ebi,0,sizeof(ebi));
-  memcpy(eob_runs,_dec->eob_runs,sizeof(eob_runs));
-  coded_fragi_end=coded_fragi=_dec->state.coded_fragis;
   for(pli=0;pli<3;pli++){
-    coded_fragi_end+=_dec->state.ncoded_fragis[pli];
+    int *ti;
+    int *ebi;
+    int *eob_runs;
+    int *coded_fragi;
+    int *coded_fragi_end;
+    ti=_pipe->ti[pli];
+    ebi=_pipe->ebi[pli];
+    eob_runs=_pipe->eob_runs[pli];
+    coded_fragi_end=coded_fragi=_pipe->coded_fragis[pli];
+    coded_fragi_end+=ncoded_fragis[pli];
     for(;coded_fragi<coded_fragi_end;coded_fragi++){
       oc_quant_table  *iquants;
-      /*This array is made bigger than necessary so that an invalid zero run
-         cannot cause a buffer overflow.*/
+      /*This array is made one bigger than necessary so that an invalid zero
+         run cannot cause a buffer overflow.
+        The inverse zig-zag mapping sends all out of range indices to the last
+         entry of this array, where they are ignored.*/
       ogg_int16_t      dct_coeffs[65];
       int              fragi;
       int              zzi;
@@ -1252,7 +1321,22 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
       oc_state_frag_recon(&_dec->state,frag,pli,dct_coeffs,last_zzi,zzi,
        iquants[_dec->state.qis[0]][0],iquants[frag->qi]);
     }
+    _pipe->coded_fragis[pli]=coded_fragi;
   }
+  /*Right now the reconstructed MCU has only the coded blocks in it.*/
+  /*TODO: We make the decision here to always copy the uncoded blocks into it
+     from the reference frame.
+    We could also copy the coded blocks back over the reference frame, if we
+     wait for an additional MCU to be decoded, which might be faster if only a
+     small number of blocks are coded.
+    However, this introduces more latency, creating a larger cache footprint.
+    It's unknown which decision is better, but this one results in simpler
+     code, and the hard case (high bitrate, high resolution) is handled
+     correctly.*/
+  /*Copy the uncoded blocks from the previous reference frame.*/
+  for(pli=0;pli<3;pli++)_pipe->uncoded_fragis[pli]-=nuncoded_fragis[pli];
+  oc_state_frag_copy(&_dec->state,_pipe->uncoded_fragis,nuncoded_fragis,
+   OC_FRAME_SELF,OC_FRAME_PREV);
 }
 
 /*Filter a horizontal block edge.*/
@@ -1755,6 +1839,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
      like an inter frame with no coded blocks.
     Only proceed if we have a non-empty packet.*/
   if(_op->bytes!=0){
+    oc_dec_pipeline_state pipe;
     oggpackB_readinit(&_dec->opb,_op->packet,_op->bytes);
     ret=oc_dec_frame_header_unpack(_dec);
     if(ret<0)return ret;
@@ -1812,49 +1897,28 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
        resulting in big performance improvements.
       An application callback to allow it to process each super-block row as it
        is decoded is also a good idea.*/
-    oc_dec_frags_recon(_dec);
-    /*Right now the reconstructed frame has only the coded blocks in it.
-      We either need to copy all the other blocks into it, or copy the
-       reconstructed blocks back into the previous frame, whichever is
-       faster.*/
+    oc_dec_pipeline_init(_dec,&pipe);
+    do{
+      oc_dec_frags_recon_mcu(_dec,&pipe);
+      /*TODO: Loop filter.*/
+      /*TODO: Fill borders.*/
+      /*TODO: Out-of-loop post-processing.
+        What is the required latency of this?*/
+      pipe.cur_fragy+=pipe.mcu_nvfrags;
+    }
+    while(pipe.cur_fragy<_dec->state.fplanes[0].nvfrags);
+    /*Update the reference frame indices.*/
     if(_dec->state.frame_type==OC_INTRA_FRAME){
-      /*Intra frames always code all fragments, so there is nothing to copy.
-        The new frame becomes both the previous and gold reference frames.*/
+      /*The new frame becomes both the previous and gold reference frames.*/
       _dec->state.keyframe_num=_dec->state.curframe_num;
       _dec->state.ref_frame_idx[OC_FRAME_GOLD]=
        _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
     else{
-      int *plfragis[3];
-      int  ncoded;
-      int  nuncoded;
-      ncoded=_dec->state.ncoded_fragis[0]+_dec->state.ncoded_fragis[1]+
-       _dec->state.ncoded_fragis[2];
-      nuncoded=_dec->state.nfrags-ncoded;
-      /*Pick which way the copy goes based on the number of fragments that have
-         to be copied, but make sure we don't overwrite the golden reference
-         frame.*/
-      if(ncoded<nuncoded&&
-       _dec->state.ref_frame_idx[OC_FRAME_PREV]!=
-       _dec->state.ref_frame_idx[OC_FRAME_GOLD]){
-        plfragis[0]=_dec->state.coded_fragis;
-        plfragis[1]=plfragis[0]+_dec->state.ncoded_fragis[0];
-        plfragis[2]=plfragis[1]+_dec->state.ncoded_fragis[1];
-        oc_state_frag_copy(&_dec->state,plfragis,_dec->state.ncoded_fragis,
-         OC_FRAME_PREV,OC_FRAME_SELF);
-        _dec->state.ref_frame_idx[OC_FRAME_SELF]=
-         _dec->state.ref_frame_idx[OC_FRAME_PREV];
-      }
-      else{
-        plfragis[0]=_dec->state.uncoded_fragis-_dec->state.nuncoded_fragis[0];
-        plfragis[1]=plfragis[0]-_dec->state.nuncoded_fragis[1];
-        plfragis[2]=plfragis[1]-_dec->state.nuncoded_fragis[2];
-        oc_state_frag_copy(&_dec->state,plfragis,_dec->state.nuncoded_fragis,
-         OC_FRAME_SELF,OC_FRAME_PREV);
-        _dec->state.ref_frame_idx[OC_FRAME_PREV]=
-         _dec->state.ref_frame_idx[OC_FRAME_SELF];
-      }
+      /*Otherwise, just replace the previous reference frame.*/
+      _dec->state.ref_frame_idx[OC_FRAME_PREV]=
+       _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
     /*Filter block edges.*/
     oc_state_loop_filter(&_dec->state,OC_FRAME_PREV);
