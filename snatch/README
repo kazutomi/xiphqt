@@ -1,4 +1,4 @@
-Snatch 20011114
+Snatch 20011125
 
 "The only intuitive interface is the nipple. After that, it's all 
  learned."
@@ -17,11 +17,10 @@ and video as RealPlayer sends it off to the sound device and X server.
 This technique has the advantages of a) always working, with audio,
 video and live streams and b) being undetectable at the Real Server.
 
-But grabbing the sound and video is relatively trivial (four hours
-begin to end).  Putting it into an easy to use application is what
-took about two weeks.  Snatch also includes a Robot that can issue
-commands to RealPlayer via synthetic X events, allowing a user to set
-up preprogrammed timed recording.
+Grabbing the sound and video is relatively trivial.  Putting it into
+an easy to use application is what took about two weeks.  Snatch also
+includes a Robot that can issue commands to RealPlayer via synthetic X
+events, allowing a user to set up preprogrammed timed recording.
 
 Snatch does not modify, patch or 'crack' RealPlayer in any way and
 [should] work with any RealPlayer8 on any architecture for Linux.
@@ -30,12 +29,20 @@ transactions and sound writes after they leave RealPlayer and before
 they get to the OS, saving the data in a raw format capture file.
 It's important to note that this capture output is *uncompressed* and
 a considerable amount of both disk space and I/O bandwidth is
-necessary for useful capturing.  Five minutes of 240x180 video at
-15fps will eat about a gigabyte of disk space.
-
+necessary for useful capturing.  A half hour of 240x180 video at 15fps
+will eat about two gigabytes of disk space (of course, it's then easy
+to convert to something much smaller.  Snatch doesn't do this during
+capture because a) few machines could keep up and b) it gives the user
+flexibility about encoding in whatever format they prefer later).
 Once saved to disk, the output can be transcoded into any other
-format.  MPEG video is a popular choice, and a convenient filter set
-for the 'mjpeg' tools suite is available.  
+format.  
+
+MPEG-2 video is a popular choice, and a convenient filter set for the
+'mjpeg' tools suite is available.  Although it's true that MPEG-2
+video is not as space efficient as Real, the above mentioned 240x180
+15 fps stream, encoded in Real at 220kbps, will encode into 240x180
+30fps VBR MPEG-2 at 350kbps quite nicely using the mjpeg MPEG-2
+encoder.
 
 <<<****>>> See README-MJPEG for easy directions and pre-patched
 software for encoding Snatch directly to MPEG1/2.
