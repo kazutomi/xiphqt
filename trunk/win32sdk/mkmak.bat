@@ -1,5 +1,5 @@
-rem @echo off
-rem $Id: mkmak.bat,v 1.3 2001/09/17 01:25:38 cwolf Exp $
+@echo off
+rem $Id: mkmak.bat,v 1.4 2001/09/17 01:25:56 cwolf Exp $
 rem
 rem This can't be called from the build script because 
 rem it runs asychronously.
