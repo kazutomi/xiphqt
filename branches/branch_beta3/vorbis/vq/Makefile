@@ -1,29 +1,22 @@
-# $Id: Makefile.in,v 1.14 2000/07/17 12:55:37 xiphmont Exp $
+# $Id: Makefile,v 1.1.2.1 2000/10/31 08:25:17 xiphmont Exp $
 
 ###############################################################################
 #                                                                             #
-# To build a production vorbis (preferrably using gmake), just type 'make'.   #
-# To build with debugging or profiling information, use 'make debug' or       #
-# 'make profile' respectively.  'make clean' is a good idea between builds    #
-# with different target names, or before a final build.                       #
+# These are vq codebook generation tools for use by team members.  This       #
+# makefile assumes gcc.                                                       #
+#                                                                             #
+# One need not build these utils to make libvorbis                            #
 #                                                                             #
 ###############################################################################
 
-
-# DO NOT EDIT BELOW! ##########################################################
-# (unless, of course, you know what you are doing :) ##########################
-
-@SET_MAKE@
-FLAGS=-I. -I../include @CFLAGS@
-OPT=@OPT@ $(FLAGS)
-DEBUG=@DEBUG@ $(FLAGS)
-PROFILE=@PROFILE@ $(FLAGS)
-CC=@CC@
-LD=@CC@
-LDFLAGS=@LDFLAGS@ $(FLAGS)
-AR=@AR@
-RANLIB=@RANLIB@
-LIBS=@LIBS@ 
+FLAGS=-I. -I../include 
+OPT=-O20 $(FLAGS)
+DEBUG=-g -Wall $(FLAGS)
+PROFILE=-g -pg -O20 $(FLAGS)
+CC=gcc
+LD=gcc
+LDFLAGS=$(FLAGS)
+LIBS=-lm 
 
 HFILES =	../include/vorbis/codebook.h vqgen.h vqext.h bookutil.h
 
@@ -41,7 +34,7 @@ debug:
 profile: 
 	$(MAKE) target CFLAGS="$(PROFILE)"
 
-target:	lspvqtrain genericvqtrain residuevqtrain vqbuild vqcascade vqmetrics latticebuild latticepare latticehint latticetune
+target:	lspvqtrain genericvqtrain residuevqtrain vqbuild vqcascade vqmetrics latticebuild latticepare latticehint latticetune huffbuild residuesplit
 
 lspvqtrain:	$(OFILES) lspdata.o train.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
@@ -73,6 +66,12 @@ latticepare:	$(OFILES) latticepare.o
 latticetune:	$(OFILES) latticetune.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
+huffbuild:	$(OFILES) huffbuild.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
+
+residuesplit:	$(OFILES) residuesplit.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
+
 
 $(ALLOFILES): 	$(HFILES)
 
@@ -84,7 +83,8 @@ $(OFILES):	$(HFILES)
 clean:
 	-rm -f *.o *.a test* *~ *.out *.m config.* \
 		lspvqtrain genericvqtrain residuevqtrain\
-		vqbuild vqmetrics latticebuild vqcascade latticepare
+		vqbuild vqmetrics latticebuild vqcascade latticepare\
+		huffbuild residuesplit
 
 distclean:	clean
 	-rm -f Makefile

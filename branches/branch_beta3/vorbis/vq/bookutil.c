@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility functions for loading .vqh and .vqd files
- last mod: $Id: bookutil.c,v 1.17 2000/10/12 03:13:01 xiphmont Exp $
+ last mod: $Id: bookutil.c,v 1.17.2.1 2000/10/31 08:25:17 xiphmont Exp $
 
  ********************************************************************/
 
@@ -308,7 +308,7 @@ codebook *codebook_load(char *filename){
     /* how big? */
     c->pigeon_tree=p=calloc(1,sizeof(encode_aux_pigeonhole));
     line=get_line(in);
-    if(sscanf(line,"%lf, %lf, %d, %d",&(p->min),&(p->del),
+    if(sscanf(line,"%f, %f, %d, %d",&(p->min),&(p->del),
 	      &(p->mapentries),&(p->quantvals))!=4){
       fprintf(stderr,"5: syntax in %s in line:\t %s",filename,line);
       exit(1);

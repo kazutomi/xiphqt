@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: hufftree builder
- last mod: $Id: huffbuild.c,v 1.5 2000/10/12 03:13:01 xiphmont Exp $
+ last mod: $Id: huffbuild.c,v 1.5.2.1 2000/10/31 08:25:17 xiphmont Exp $
 
  ********************************************************************/
 
@@ -20,11 +20,11 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-#include "../vq/bookutil.h"
+#include "bookutil.h"
 
 static int nsofar=0;
 static int getval(FILE *in,int begin,int n,int group,int max){
-  double v;
+  float v;
   int i;
   long val=0;
 
