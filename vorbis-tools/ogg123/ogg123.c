@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.16 2001/08/13 01:46:43 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.17 2001/08/13 03:08:30 kcarnold Exp $
 
  ********************************************************************/
 
@@ -456,20 +456,20 @@ int main(int argc, char **argv)
 	if (temp_driver_id < 0 && Options.statOpts.quiet < 2)
 	  fprintf (stderr, "Warning: driver %s specified in configuration file invalid.\n", Options.outputOpts.default_device);
       }
-    }
+      
+      if (temp_driver_id < 0) {
+	temp_driver_id = ao_default_driver_id();
+      }
+      
+      if (temp_driver_id < 0) {
+	fprintf(stderr,
+		"Could not load default driver and no driver specified in config file. Exiting.\n");
+	exit(1);
+      }
 
-    if (temp_driver_id < 0) {
-      temp_driver_id = ao_default_driver_id();
+      Options.outputOpts.devices = append_device(Options.outputOpts.devices, temp_driver_id, 
+						 temp_options, NULL);
     }
-
-    if (temp_driver_id < 0) {
-      fprintf(stderr,
-	      "Could not load default driver and no driver specified in config file. Exiting.\n");
-      exit(1);
-    }
-
-    Options.outputOpts.devices = append_device(Options.outputOpts.devices, temp_driver_id, 
-				   temp_options, NULL);
 
     Options.inputOpts.BufferSize *= 1024;
 
