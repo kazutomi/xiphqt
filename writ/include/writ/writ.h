@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: toplevel libwrit include
- last mod: $Id: writ.h,v 1.6 2003/12/09 06:38:43 arc Exp $
+ last mod: $Id: writ.h,v 1.7 2003/12/09 07:11:30 arc Exp $
 
  ********************************************************************/
 
@@ -25,10 +25,11 @@ typedef struct writ_text {
   char  *string;
 } writ_text;
 
+
 typedef struct writ_language {
   writ_text language_name;
   writ_text language_desc;
-} writ_langdef;
+} writ_language;
 
 
 typedef struct writ_window {
@@ -92,18 +93,18 @@ extern int writ_encode_wind_add(writ_state *ws, int left, int top,
                                 int width, int height, 
                                 int align_x, int align_y);
 extern int writ_encode_get_header(writ_state *ws, int packets,
-                                  **ogg_packet);
+                                  ogg_packet *op);
 
 /* A different call for each subversion, the best way? */
 extern int writ_encode_phrase0(writ_state *ws, ogg_packet *ogg_packet,
                                ogg_int64_t start, ogg_uint32_t duration, 
-                               *text);
+                               char *text);
 extern int writ_encode_phrase1(writ_state *ws, ogg_packet *ogg_packet,
                                ogg_int64_t start, ogg_uint32_t duration, 
-                               **text);
+                               char **text);
 extern int writ_encode_phrase2(writ_state *ws, ogg_packet *ogg_packet,
                                ogg_int64_t start, ogg_uint32_t duration, 
-                               **text, int window_id);
+                               char **text, int window_id);
 
 
 extern int ilog(unsigned int v);	/* src/format.c */
