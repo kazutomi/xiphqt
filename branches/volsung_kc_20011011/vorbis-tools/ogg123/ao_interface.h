@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: ao_interface.h,v 1.1.2.3 2001/08/12 18:34:46 kcarnold Exp $
+ last mod: $Id: ao_interface.h,v 1.1.2.3.2.1 2001/10/14 05:42:51 volsung Exp $
  
 ********************************************************************/
 
@@ -33,7 +33,7 @@ typedef struct devices_s {
 
 devices_t *append_device(devices_t * devices_list, int driver_id,
                          ao_option * options, char *filename);
-size_t devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d);
+int devices_write(void *ptr, size_t size, size_t nmemb, devices_t * d);
 int add_option(ao_option ** op_h, const char *optstring);
 void ao_onexit (int exitcode, void *devices);
 void close_audio_devices (devices_t *devices);
