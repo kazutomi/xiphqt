@@ -1,6 +1,7 @@
 /* icestypes.h
  * - Datatypes for ices
  * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2001-2 Brendan Cully <brendan@icecast.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -67,6 +68,7 @@ typedef struct {
   char* (*get_next) (void);     /* caller frees result */
   char* (*get_metadata) (void); /* caller frees result */
   int (*get_lineno) (void);
+  int (*reload) (void);
   void (*shutdown) (void);
 } playlist_module_t;
 

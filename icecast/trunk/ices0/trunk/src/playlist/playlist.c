@@ -1,7 +1,7 @@
 /* playlist.c
  * - Functions for playlist handling
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -67,6 +67,8 @@ ices_playlist_initialize (void)
 
   ices_log_debug ("Initializing playlist handler...");
 
+  ices_config.pm.reload = NULL;
+
   switch (ices_config.pm.playlist_type) {
     case ices_playlist_builtin_e:
       rc = ices_playlist_builtin_initialize (&ices_config.pm);
@@ -97,6 +99,16 @@ ices_playlist_initialize (void)
 
   playlist_init = 1;
   return rc;
+}
+
+/* Reload the playlist module */
+int
+ices_playlist_reload (void)
+{
+  if (ices_config.pm.reload)
+    return ices_config.pm.reload ();
+
+  return 0;
 }
 
 /* Shutdown the playlist handler */

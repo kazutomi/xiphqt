@@ -1,7 +1,7 @@
 /* playlist_python.c
  * - Interpreter functions for python
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -46,6 +46,7 @@ static PyThreadState *mainthreadstate = NULL;
 static int playlist_python_get_lineno (void);
 static char* playlist_python_get_next (void);
 static char* playlist_python_get_metadata (void);
+static int playlist_python_reload (void);
 static void playlist_python_shutdown (void);
 
 static int python_init (void);
@@ -58,7 +59,7 @@ static void python_shutdown_thread (PyThreadState *threadstate);
 #endif
 static char* python_find_attr (PyObject* module, char* f1, char* f2);
 
-/* Call python function to inialize the python script */
+/* Call python function to initialize the python script */
 int
 ices_playlist_python_initialize (playlist_module_t* pm)
 {
@@ -68,6 +69,7 @@ ices_playlist_python_initialize (playlist_module_t* pm)
   pm->get_next = playlist_python_get_next;
   pm->get_metadata = playlist_python_get_metadata;
   pm->get_lineno = playlist_python_get_lineno;
+  pm->reload = playlist_python_reload;
   pm->shutdown = playlist_python_shutdown;
 
   if (python_init () < 0)
@@ -137,6 +139,28 @@ playlist_python_get_metadata (void)
   }
 
   return rc;
+}
+
+/* Attempt to reload the playlist module */
+static int
+playlist_python_reload (void)
+{
+  PyObject* new_module;
+
+  PyEval_AcquireLock ();
+  if (!(new_module = PyImport_ReloadModule (python_module))) {
+    PyEval_ReleaseLock ();
+    ices_log_error ("Playlist module reload failed");
+    PyErr_Print ();
+    
+    return -1;
+  }
+  PyEval_ReleaseLock ();
+
+  python_module = new_module;
+  ices_log_debug("Playlist module reloaded");
+
+  return 0;
 }
 
 /* Call python function to shutdown the script */

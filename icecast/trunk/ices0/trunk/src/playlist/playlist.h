@@ -1,7 +1,7 @@
 /* playlist.h
  * - playlist function declarations for ices
  * Copyright (c) 2000 Alexander Haväng
- * Copyright (c) 2001 Brendan Cully
+ * Copyright (c) 2001-2 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ int ices_playlist_get_current_lineno (void);
 char *ices_playlist_get_next (void);
 char* ices_playlist_get_metadata (void);
 int ices_playlist_initialize (void);
+int ices_playlist_reload (void);
 void ices_playlist_shutdown (void);
 
 int ices_playlist_builtin_initialize (playlist_module_t* pm);

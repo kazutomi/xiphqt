@@ -96,12 +96,13 @@ signals_int (const int sig)
   ices_setup_shutdown ();
 }
 			
-/* SIGHUP caught, let's cycle logfiles */
+/* SIGHUP caught, let's cycle logfiles and try to reload the playlist module */
 static RETSIGTYPE
 signals_hup (const int sig)
 {
-  ices_log_debug ("Caught SIGHUP, cycling logfiles...");
+  ices_log_debug ("Caught SIGHUP, cycling logfiles and reloading playlist...");
   ices_log_reopen_logfile ();
+  ices_playlist_reload ();
 }
 
 /* I'm not sure whether I'll keep this... */
