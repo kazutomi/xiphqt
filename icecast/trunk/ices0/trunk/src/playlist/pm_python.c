@@ -123,7 +123,7 @@ playlist_python_get_metadata (void)
 
   Py_XDECREF (res);
 
-  return NULL;
+  return rc;
 }
 
 /* Call python function to shutdown the script */
