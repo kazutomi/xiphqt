@@ -125,7 +125,9 @@ unsigned int crc32_fine (unsigned int state);
 int createsocket (struct RTPHeaders *RTPHeaders, struct sockaddr_in *sockAddr, char *addr, unsigned int port, unsigned char TTL);
 void creatertp (unsigned char* vorbdata, int length, int bitrate, struct VorbisBitfields *vorbheader, int type);
 int sendrtp (struct RTPHeaders *RTPHeaders, int fd, struct sockaddr_in *sockAddr, const void *data, int len);
-void configpacket (struct VorbisConfig *Config, int bsz0, int bsz1, vorbis_info vi);
+
+int makevorbisheader (unsigned char *packet, int length, struct VorbisBitfields *vorbheader);
+int ogg_copy_packet(ogg_packet *dst, ogg_packet *src);
 
 /*****************************************************************************/
 /*  Calculate CRC32                                                          */
