@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: PCM data envelope analysis and manipulation
- last mod: $Id: envelope.c,v 1.38 2001/10/02 00:14:30 segher Exp $
+ last mod: $Id: envelope.c,v 1.38.2.1 2001/12/05 08:03:17 xiphmont Exp $
 
  Preecho calculation.
 
@@ -82,7 +82,7 @@ static float cheb_bandpass1k_A[]={
 
 void _ve_envelope_init(envelope_lookup *e,vorbis_info *vi){
   codec_setup_info *ci=vi->codec_setup;
-  vorbis_info_psy_global *gi=ci->psy_g_param;
+  vorbis_info_psy_global *gi=&ci->psy_g_param;
   int ch=vi->channels;
   int window=gi->envelopesa;
   int i;
@@ -151,7 +151,7 @@ static float _ve_deltai(envelope_lookup *ve,float *pre,float *post){
 long _ve_envelope_search(vorbis_dsp_state *v,long searchpoint){
   vorbis_info *vi=v->vi;
   codec_setup_info *ci=vi->codec_setup;
-  vorbis_info_psy_global *gi=ci->psy_g_param;
+  vorbis_info_psy_global *gi=&ci->psy_g_param;
   envelope_lookup *ve=((backend_lookup_state *)(v->backend_state))->ve;
   long i,j,k;
 
