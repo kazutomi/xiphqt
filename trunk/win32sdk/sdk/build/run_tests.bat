@@ -1,10 +1,13 @@
 @echo off
-rem $Id: run_tests.bat,v 1.1 2001/09/15 07:25:36 cwolf Exp $
+rem $Id: run_tests.bat,v 1.2 2001/09/15 08:09:25 cwolf Exp $
 rem
 rem  Not using setlocal, so it will work on windows 9x
 set OLDPATH=%PATH%
 set PATH=..\bin
 rem
+if not exist ..\bin\ goto nosdk
+if not exist ..\bin\encoder_static_d.exe goto notbuilt
+
 echo **** encoder_static_d ****
 encoder_static_d test.wav out.ogg
 
@@ -64,6 +67,16 @@ seeking_d test.ogg
 
 echo **** seeking ****
 seeking test.ogg
+goto done
 
+:nosdk
+echo Error: must build sdk, run win32sdk\makesdk.bat
+goto done
+
+:notbuilt
+echo Error: must build example programs, run build_all.bat
+goto done
+
+:done
 rem not using endlocal, so it will work on windows 9x
 set PATH=%OLDPATH%

@@ -1,4 +1,4 @@
-$Id: README.win32sdk,v 1.2 2001/09/14 03:26:57 cwolf Exp $
+$Id: README.win32sdk,v 1.3 2001/09/15 08:09:23 cwolf Exp $
 $Name:  $
 
 win32sdk Readme, 13 September, 2001 Chris Wolf
@@ -33,26 +33,33 @@ BUILDING
   This script will:
 
 	1.) create "include", "lib", "bin", "doc" and "examples" 
-      directories and copy the required files from the cvs modules.
+      directories and copy the required files from the dependent 
+      cvs modules (ogg and vorbis libraries).
 
   2.) Using nmake, build the static and dynamic (DLL) libraries 
       and copy them to the sdk\lib directory.  This is accomplished
-      by "makesdk.bat" invoking the "build_all.bat" script.
+      in "makesdk.bat" by invoking the "build_all.bat" script.
 
   Note that the makefiles are generated from the IDE, and are thus a
-  reflection of the workspace and project file states.  It is strongly
+  reflection of the workspace and project file states.  It id strongly
   recommended to make changes via the IDE and export the makefiles,
   rather than tweaking the makefiles directly.
 
 
+  N.B. The script "mkmak.bat" invokes msdev using an automation macro;
+       once invoked, the process runs in the background, so a sleep
+       is added to make sure that all the makefiles are generated before
+       the user attempts to run build_all.bat.  Some slower machines
+       may require more time.
 
-  The following steps are optional and only builds the libraries in place.
-  The purpose of this step is for libaray development under win32.
+  The following steps are optional. They are for building the libraries
+  in place. The purpose of this step is for libaray development under
+  win32.
 
   IDE build:
 
   Load the "all.dsw" workspace.  This workspace loads and manages the
-  the dependent project files.  To perform a build, from the "build"
+  the dependent library project files.  To perform a build, from the "build"
   menu, select the "build" menu item.  This will build all the dependent
   libaries, but not copy them.
 
@@ -60,6 +67,17 @@ BUILDING
   this purpose.
 
 INSTALLING
+
   Once prepared, the tree rooted in "sdk" can be used to build
   win32 applications based on Ogg/Vorbis.  See the README in 
-  sdk\examples for further information.
+  sdk\build for further information.
+  
+OTHER SCRIPTS
+
+  clean_all.bat - performs a make clean for each library target in
+                  ogg and vorbis.
+ 
+  clean_libs_mak.bat - deletes the makefiles and their dependecy files
+                       (*.mak, *.dep) in ogg and vorbis
+
+  clean_dist.bat - restores win32sdk to it's freshly checked out state,

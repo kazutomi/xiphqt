@@ -1,7 +1,7 @@
-$Id: README.examples,v 1.1 2001/09/14 03:16:14 cwolf Exp $
+$Id: README.examples,v 1.2 2001/09/15 08:09:25 cwolf Exp $
 $Name:  $
 =======================================================================
-The SDKHOME directory must be set to where the SDK is rooted,
+The SDKHOME environment variable must be set to where the SDK is rooted,
 including the "sdk" part of the path. 
 e.g. "c:\src\xiph\sdk"
 
@@ -15,5 +15,9 @@ release versions.
 
 For a command line build, first run "mkmak.bat" to generate
 the makefiles, them run "build_all.bat"
+
+"run_tests.bat" will run each version, of each example program,
+against test data.  The versions are debug-static, release-static,
+debug DLL and release DLL.
 
 "clean_all.bat" will run all the clean targets.
