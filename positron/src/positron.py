@@ -10,7 +10,6 @@ import cmd_del
 import cmd_list
 import cmd_clear
 import cmd_pack
-import cmd_config
 
 import ports
 
