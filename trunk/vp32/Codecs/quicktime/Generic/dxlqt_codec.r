@@ -1,11 +1,13 @@
 #define SystemSevenOrLater 1
 #define UseExtendedThingResource 1
 
-#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\ConditionalMacros.r"
-#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\MacTypes.r"
-#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\Components.r"
-#include "c:\\bench\\qt501sdk\\sdk\\rincludes\\ImageCodec.r"
+
+#include "ConditionalMacros.r"
+#include "MacTypes.r"
+#include "Components.r"
+#include "ImageCodec.r"
 #include "Common.h"
+
 
 #if TARGET_OS_MAC
 #define Target_PlatformType      platformPowerPC
@@ -37,8 +39,8 @@ resource 'STR ' (130) {
 //*************************************************************************
 //	Version INFO
 //*************************************************************************
-#define SHORTVERSIONSTRING "3.2.2.0"
-#define LONGVERSIONSTRING "On2 VP3 Video Codec 3.2.2.0\nOn2 Technologies, The Duck Corporation 2001"
+#define SHORTVERSIONSTRING "3.2.6.1"
+#define LONGVERSIONSTRING "VP3 Video Codec 3.2.6.1\nOn2 Technologies, The Duck Corporation 2001\nXiph.Org 2003"
 
  resource 'vers' (1, purgeable) {
     0x03, 0x20, final, 0x03, verUS,
