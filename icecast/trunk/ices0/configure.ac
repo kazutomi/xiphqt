@@ -251,7 +251,7 @@ then
 fi
 
 AC_ARG_WITH(vorbis,
-  [[  --with-vorbis[=DIR]     support for vorbis using libvorbisfile [in DIR]]])
+  [[  --with-vorbis[=DIR]     support for vorbis transcoding using libvorbisfile [in DIR]]])
 
 if test "$have_LAME" != "yes"
 then
@@ -296,6 +296,52 @@ then
   fi
 fi
 
+AC_ARG_WITH(faad,
+  [[  --with-faad[=DIR]     support for MP4 (AAC) transcoding using libfaad [in DIR]]])
+
+if test "$have_LAME" != "yes"
+then
+  if test -n "$with_faad" -a "$with_faad" != "no"
+  then
+    AC_MSG_ERROR([MP4 transcoding cannot be enabled without LAME])
+  elif test "$with_faad" != "no"
+  then
+    AC_MSG_RESULT([MP4 transcoding is disabled because LAME is not enabled])
+    with_faad="no"
+  fi
+fi
+
+have_faad="no"
+if test "$with_faad" != "no"
+then
+  if test -n "$with_faad" -a "$with_faad" != "yes"
+  then
+    CPPFLAGS="$CPPFLAGS -I$with_faad/include"
+    LDFLAGS="$LDFLAGS -L$with_faad/lib"
+  fi
+
+  AC_CHECK_HEADER(faad.h, have_faad="maybe")
+  if test "$have_faad" != "no"
+  then
+    AC_CHECK_LIB(mp4v2, MP4Read, [
+      LIBS="$LIBS -lmp4v2 -lfaad"
+      AC_DEFINE(HAVE_LIBFAAD, 1, [Define if you have libfaad])
+      ICES_OBJECTS="$ICES_OBJECTS in_mp4.o"
+      have_faad="yes"
+    ],[have_faad="no"])
+  fi
+fi
+
+if test "$with_faad" != "no" -a "$have_faad" != "yes"
+then
+  if test -n "$with_faad"
+  then
+    AC_MSG_ERROR([Could not find libfaad])
+  else
+    AC_MSG_RESULT([Could not find libfaad, MP4 transcoding disabled])
+  fi
+fi
+
 dnl -- and finish up --
 
 LIBS="$LIBS $LIBM $LIBDL"
@@ -312,3 +358,4 @@ AC_MSG_RESULT([  Python  : $have_python])
 AC_MSG_RESULT([  Perl    : $have_perl])
 AC_MSG_RESULT([  LAME    : $have_LAME])
 AC_MSG_RESULT([  Vorbis  : $have_vorbis])
+AC_MSG_RESULT([  MP4     : $have_faad])

@@ -352,6 +352,15 @@ stream_open_source (input_stream_t* source)
     return -1;
   }
 
+  #ifdef HAVE_LIBFAAD
+  if (!(rc = ices_mp4_open (source, buf, len)))
+    return 0;
+  if (rc < 0) {
+    close(fd);
+    return -1;
+  }
+  #endif
+
   if (!(rc = ices_mp3_open (source, buf, len)))
     return 0;
   if (rc < 0) {

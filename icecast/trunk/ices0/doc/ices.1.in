@@ -68,7 +68,8 @@ media-delivery system as you can think up.
 On-the-fly reencoding of your source audio to a different bitrate,
 number of channels and/or sample rate. ices can also decode Ogg Vorbis
 files and reencode them on the fly as MP3, for the benefit of older
-listening software.
+listening software. This just in: it can transcode MP4 (AAC) files now
+too.
 .IP \(bu
 Crossfading between tracks. This is a new feature, and requires
 reencoding support.

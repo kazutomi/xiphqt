@@ -9,6 +9,8 @@
          2. Signal Handling 
          3. Playlist Handling 
          4. Reencoding 
+	 5. Vorbis and MP4 transcoding
+	 6. Crossfading
     D. Configuring 
          1. Command line options 
          2. Configuration file (ices.conf) 
@@ -92,6 +94,13 @@
             init, shutdown, get_next, and get_current_lineno. I suggest
             you take a look in the distributed module files and just
             expand on that.
+	 5. Vorbis and MP4 transcoding
+            If compiled with the appropriate libraries, ices can transcode
+            Ogg Vorbis and MP4 (AAC) audio files to MP3 on the fly. Keep your
+	    sources in whatever format you like best.
+	 6. Crossfading
+	    If compiled with reencoding support, ices can also crossfade
+            between tracks, giving you that pro radio station sound.
     D. Configuring
        ices can do everything shout could do, and more. It can be
        configured through hard coded defaults, a configfile, and command
@@ -103,6 +112,7 @@
             Options:
                o -B (Background (daemon mode))
                o -b <stream bitrate>
+               o -C <crossfade seconds>
                o -c <configfile>
                o -D <base directory>
                o -d <stream description>
@@ -129,37 +139,38 @@
                         <?xml version="1.0"?>
                         <ices:Configuration xmlns:ices="http://www.icecast.org/
 projects/ices">
-                        <ices:Playlist>
-                                <ices:File>apan.txt</ices:File>
-                                <ices:Randomize>1</ices:Randomize>
-                                <ices:Type>builtin</ices:Type>
-                                <ices:Module>ices</ices:Module>
-                        </ices:Playlist>
-                        <ices:Server>
-                                <ices:Hostname>localhost</ices:Hostname>
-                                <ices:Port>8000</ices:Port>
-                                <ices:Password>letmein</ices:Password>
-                                <ices:Protocol>xaudiocast</ices:Protocol>
-                        </ices:Server>
-                        <ices:Execution>
-                                <ices:Background>0</ices:Background>
-                                <ices:Verbose>1</ices:Verbose>
-                                <ices:BaseDirectory>/tmp</ices:BaseDirectory>
-                                <ices:Reencode>0</ices:Reencode>
-                                <ices:Samplerate>-1</ices:Samplerate>
-                                <ices:Channels>-1</ices:Channels>
-                        </ices:Execution>
-                        <ices:Stream>
-                                <ices:Name>Cool ices default name from XML</ice
+                        <Playlist>
+                                <File>apan.txt</File>
+                                <Randomize>1</Randomize>
+                                <Type>builtin</Type>
+                                <Module>ices</Module>
+				<Crossfade>0</Crossfade>
+                        </Playlist>
+                        <Server>
+                                <Hostname>localhost</Hostname>
+                                <Port>8000</Port>
+                                <Password>letmein</Password>
+                                <Protocol>http</Protocol>
+                        </Server>
+                        <Execution>
+                                <Background>0</Background>
+                                <Verbose>1</Verbose>
+                                <BaseDirectory>/tmp</BaseDirectory>
+                                <Reencode>0</Reencode>
+                                <Samplerate>-1</Samplerate>
+                                <Channels>-1</Channels>
+                        </Execution>
+                        <Stream>
+                                <Name>Cool ices default name from XML</ice
 s:Name>
-                                <ices:Genre>Cool ices genre from XML</ices:Genr
+                                <Genre>Cool ices genre from XML</Genr
 e>
-                                <ices:Description>Cool ices description from XM
-L</ices:Description>
-                                <ices:URL>Cool ices URL from XML</ices:URL>
-                                <ices:Bitrate>128</ices:Bitrate>
-                                <ices:Public>1</ices:Public>
-                        </ices:Stream>
+                                <Description>Cool ices description from XM
+L</Description>
+                                <URL>Cool ices URL from XML</URL>
+                                <Bitrate>128</Bitrate>
+                                <Public>1</Public>
+                        </Stream>
                         </ices:Configuration>
                          3. Configurations options
             This describes all the different options in ices.
@@ -300,6 +311,11 @@ L</ices:Description>
                  ices.pm, although do NOT specify the file extension for
                  the module. Use 'whatever' instead of 'whatever.pm' or
                  'whatever.py'
+	       o Playlist Crossfade
+                 Command line option: -C <crossfade secs>
+                 Config file tag: Playlist/Crossfade
+                 If this is greater than zero, and you have reencoding support,
+                 ices will crossfade the specified number of seconds between tracks.
     E. Licensing
        ices is licensed under the Gnu General Public License, and for
        more info about that I suggest you read the file named COPYING.
@@ -308,4 +324,4 @@ L</ices:Description>
        nice streaming mp3 client, go to developer.icecast.org.
                                   _______
    
-          This document is written by Alexander Haväng [eel@icecast.org].
+    This document was originally written by Alexander Haväng [eel@icecast.org].
