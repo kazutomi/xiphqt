@@ -323,6 +323,18 @@ fi
 AC_ARG_WITH(vorbis,
 [  --with-vorbis[=DIR]         support for vorbis using libvorbisfile [in DIR]])
 
+if test "$have_LAME" != "yes"
+then
+  if test -n "$with_vorbis" -a "$with_vorbis" != "no"
+  then
+    AC_MSG_ERROR([Vorbis cannot be enabled without LAME])
+  elif test "$with_vorbis" != "no"
+  then
+    AC_MSG_RESULT([Vorbis is disabled because LAME is not enabled])
+    with_vorbis="no"
+  fi
+fi
+
 if test "$with_vorbis" != "no"
 then
   AC_CACHE_SAVE

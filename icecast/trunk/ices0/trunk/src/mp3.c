@@ -201,6 +201,7 @@ ices_mp3_read (input_stream_t* self, void* buf, size_t len)
   return read (mp3_data->fd, buf, len);
 }
 
+#ifdef HAVE_LIBLAME
 ssize_t
 ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
 		  int16_t* right)
@@ -219,6 +220,7 @@ ices_mp3_readpcm (input_stream_t* self, size_t len, int16_t* left,
 
   return nsamples;
 }
+#endif
 
 int
 ices_mp3_close (input_stream_t* self)

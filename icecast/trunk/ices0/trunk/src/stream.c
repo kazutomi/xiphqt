@@ -36,9 +36,6 @@ extern ices_config_t ices_config;
 static int ices_stream_send_file (const char *file);
 static int ices_stream_open_source (input_stream_t* source);
 
-static int16_t left[INPUT_BUFSIZ * 30];
-static int16_t right[INPUT_BUFSIZ * 30];
-
 /* Public function definitions */
 
 /* Top level streaming function, called once from main() to
@@ -154,6 +151,10 @@ ices_stream_send_file (const char *file)
   char namespace[1024];
   ssize_t len;
   int rc;
+#ifdef HAVE_LIBLAME
+  static int16_t left[INPUT_BUFSIZ * 30];
+  static int16_t right[INPUT_BUFSIZ * 30];
+#endif
 
   source.path = file;
 
@@ -285,49 +286,6 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
   return 1;
 }
 
-/* This function is used when streaming from fifo or pipe */
-static int
-ices_stream_fd_until_eof (int fd, const char *file)
-{
-  ices_stream_config_t* stream;
-  int file_bytes_read, read_bytes, ret;
-  unsigned char buff[4096];
-  char namespace[1024];
-
-  ices_log ("Streaming from %s until EOF..", file);
-	
-  file_bytes_read = 0;
-	
-  while (1) {
-    read_bytes = read (fd, buff, 4096);
-		
-    if (read_bytes > 0) {
-			
-      file_bytes_read = file_bytes_read + read_bytes;
-
-      for (stream = ices_config.streams; stream; stream = stream->next) {
-	ret = shout_send_data (&stream->conn, buff, read_bytes);
-			
-	if (!ret) {
-	  ices_log_error ("Libshout reported send error: %s", shout_strerror (&stream->conn, stream->conn.error, namespace, 1024));
-	  break;
-	}
-      }
-			
-    } else if (read_bytes == 0) {
-      if (feof (fd)) 
-	return 1;
-    } else {
-      ices_log_error ("Read error while reading %s: %s", file, ices_util_strerror (errno, namespace, 1024));
-      return 0;
-    }
-
-    for (stream = ices_config.streams; stream; stream = stream->next)
-      shout_sleep(&stream->conn);
-  }
-  return 1;
-}
-
 #endif
 
 /* open up path, figure out what kind of input it is, and set up source */
@@ -380,7 +338,9 @@ ices_stream_open_source (input_stream_t* source)
   source->data = mp3_data;
 
   source->read = ices_mp3_read;
+#ifdef HAVE_LIBLAME
   source->readpcm = ices_mp3_readpcm;
+#endif
   source->close = ices_mp3_close;
 
   return 0;
