@@ -22,8 +22,7 @@ from os.path import isfile
 from distutils.core import setup
 from setupext import install_data_ext
 
-# FIXME: Jack!  Save me from the distutils monster!
-docdirbase  = 'share/doc/positron-1.0b2'
+docdirbase  = 'share/doc/positron'
 manpagebase = 'share/man/man1'
 docfiles    = filter(isfile, glob('doc/*.html')) + \
               filter(isfile, glob('doc/*.png')) + ['README', 'COPYING']
@@ -31,7 +30,7 @@ manpages    = filter(isfile, glob('doc/*.1.gz'))
 examfiles   = filter(isfile, glob('doc/examples/*'))
 
 setup(name="positron",
-      version="1.0b2",
+      version="1.0",
       description="A synchronization manager for the Neuros Audio Computer",
       long_description="positron is the synchronization manager for the Neuros Audio Computer.\nIt supports adding, removing, and syncing files to/from the Neuros\ndevice.",
       license="BSD",
