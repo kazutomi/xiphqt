@@ -8,6 +8,7 @@ am_opt="--foreign"
 DIE=0
 
 # try to guess the proper treetop
+olddir=`pwd`
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 (test -f $srcdir/configure.in \
@@ -123,6 +124,7 @@ done
 #conf_flags="--enable-maintainer-mode --enable-debug " 
 
 if test x$NOCONFIGURE = x; then
+  cd $olddir
   echo Running $srcdir/configure $conf_flags "$@" ...
   $srcdir/configure $conf_flags "$@" 
 else

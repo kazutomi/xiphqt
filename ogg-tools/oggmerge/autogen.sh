@@ -4,6 +4,7 @@
 
 package="oggmerge"
 
+olddir=`pwd`
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
@@ -53,4 +54,5 @@ echo "  aclocal $ACLOCAL_FLAGS" && aclocal $ACLOCAL_FLAGS
 echo "  autoconf" && autoconf
 echo "  automake --add-missing" && automake --add-missing 
 
+cd $olddir
 $srcdir/configure "$@" && echo
