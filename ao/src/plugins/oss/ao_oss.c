@@ -105,7 +105,7 @@ int _open_default_oss_device (char **dev_path)
 }
 
 
-int plugin_test()
+int ao_plugin_test()
 {
 	char *dev_path;
 	int fd;
@@ -119,13 +119,13 @@ int plugin_test()
 }
 
 
-ao_info *plugin_driver_info(void)
+ao_info *ao_plugin_driver_info(void)
 {
 	return &ao_oss_info;
 }
 
 
-int plugin_device_init(ao_device *device)
+int ao_plugin_device_init(ao_device *device)
 {
 	ao_oss_internal *internal;
 
@@ -141,7 +141,7 @@ int plugin_device_init(ao_device *device)
 	return 1; /* Memory alloc successful */
 }
 
-int plugin_set_option(ao_device *device, const char *key, const char *value)
+int ao_plugin_set_option(ao_device *device, const char *key, const char *value)
 {
 	ao_oss_internal *internal = (ao_oss_internal *) device->internal;
 
@@ -159,7 +159,7 @@ int plugin_set_option(ao_device *device, const char *key, const char *value)
 /*
  * open the audio device for writing to
  */
-int plugin_open(ao_device *device, ao_sample_format *format)
+int ao_plugin_open(ao_device *device, ao_sample_format *format)
 {
 	ao_oss_internal *internal = (ao_oss_internal *) device->internal;
 	int tmp;
@@ -225,7 +225,7 @@ int plugin_open(ao_device *device, ao_sample_format *format)
 /*
  * play the sample to the already opened file descriptor
  */
-int plugin_play(ao_device *device, const char *output_samples, 
+int ao_plugin_play(ao_device *device, const char *output_samples, 
 		uint_32 num_bytes)
 {
 	ao_oss_internal *internal = (ao_oss_internal *) device->internal;
@@ -237,7 +237,7 @@ int plugin_play(ao_device *device, const char *output_samples,
 }
 
 
-int plugin_close(ao_device *device)
+int ao_plugin_close(ao_device *device)
 {
 	ao_oss_internal *internal = (ao_oss_internal *) device->internal;
 	close(internal->fd);
@@ -246,7 +246,7 @@ int plugin_close(ao_device *device)
 }
 
 
-void plugin_device_clear(ao_device *device)
+void ao_plugin_device_clear(ao_device *device)
 {
 	ao_oss_internal *internal = (ao_oss_internal *) device->internal;
 

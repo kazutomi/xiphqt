@@ -50,7 +50,7 @@ typedef struct ao_arts_internal
 } ao_arts_internal;
 
 
-int plugin_test()
+int ao_plugin_test()
 {
 	if (arts_init() == 0) {
 		arts_free();
@@ -60,13 +60,13 @@ int plugin_test()
 }
 
 
-ao_info *plugin_driver_info(void)
+ao_info *ao_plugin_driver_info(void)
 {
 	return &ao_arts_info;
 }
 
 
-int plugin_device_init(ao_device *device)
+int ao_plugin_device_init(ao_device *device)
 {
 	ao_arts_internal *internal;
 
@@ -81,12 +81,12 @@ int plugin_device_init(ao_device *device)
 }
 
 
-int plugin_set_option(ao_device *device, const char *key, const char *value)
+int ao_plugin_set_option(ao_device *device, const char *key, const char *value)
 {
 	return 1; /* No options */
 }
 
-int plugin_open(ao_device *device, ao_sample_format *format)
+int ao_plugin_open(ao_device *device, ao_sample_format *format)
 {
 	ao_arts_internal *internal = (ao_arts_internal *) device->internal;
 	int errorcode;
@@ -108,7 +108,7 @@ int plugin_open(ao_device *device, ao_sample_format *format)
 }
 
 
-int plugin_play(ao_device *device, const char *output_samples, 
+int ao_plugin_play(ao_device *device, const char *output_samples, 
 		uint_32 num_bytes)
 {
 	ao_arts_internal *internal = (ao_arts_internal *) device->internal;
@@ -121,7 +121,7 @@ int plugin_play(ao_device *device, const char *output_samples,
 }
 
 
-int plugin_close(ao_device *device)
+int ao_plugin_close(ao_device *device)
 {
 	ao_arts_internal *internal = (ao_arts_internal *) device->internal;
 	arts_close_stream(internal->stream);
@@ -131,7 +131,7 @@ int plugin_close(ao_device *device)
 }
 
 
-void plugin_device_clear(ao_device *device)
+void ao_plugin_device_clear(ao_device *device)
 {
 	ao_arts_internal *internal = (ao_arts_internal *) device->internal;
 

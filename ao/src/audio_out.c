@@ -109,32 +109,32 @@ driver_list *_get_plugin(char *plugin_file)
 			return NULL;
 		}
 
-		dt->functions->test = dlsym(dt->handle, "plugin_test");
+		dt->functions->test = dlsym(dt->handle, "ao_plugin_test");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->driver_info = 
-		  dlsym(dt->handle, "plugin_driver_info");
+		  dlsym(dt->handle, "ao_plugin_driver_info");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->device_init = 
-		  dlsym(dt->handle, "plugin_device_init");
+		  dlsym(dt->handle, "ao_plugin_device_init");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->set_option = 
-		  dlsym(dt->handle, "plugin_set_option");
+		  dlsym(dt->handle, "ao_plugin_set_option");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
-		dt->functions->open = dlsym(dt->handle, "plugin_open");
+		dt->functions->open = dlsym(dt->handle, "ao_plugin_open");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
-		dt->functions->play = dlsym(dt->handle, "plugin_play");
+		dt->functions->play = dlsym(dt->handle, "ao_plugin_play");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
-		dt->functions->close = dlsym(dt->handle, "plugin_close");
+		dt->functions->close = dlsym(dt->handle, "ao_plugin_close");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 		dt->functions->device_clear = 
-		  dlsym(dt->handle, "plugin_device_clear");
+		  dlsym(dt->handle, "ao_plugin_device_clear");
 		if (dlerror()) { free(dt->functions); free(dt); return NULL; }
 
 
