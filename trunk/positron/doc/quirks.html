@@ -1,5 +1,6 @@
 <html>
 <head>
+  <link rel="stylesheet" type="text/css" href="style.css" />
   <title>Positron Documentation: Quirks and other Common Pitfalls</title>
 </head>
 <body>
@@ -70,7 +71,7 @@ The Neuros uses a FAT32 filesystem, so there are several things to
 consider while working with it from a UNIX system:
 </p>
 
-<ul>
+<ul class="biglist">
 
   <li>Filenames are not case sensitive and the Linux vfat drivers
   don't necessarily preserve case.  This most often causes problem
@@ -78,7 +79,7 @@ consider while working with it from a UNIX system:
   case-insensitive comparison should be used.  You can open files with
   any case you want, but directory listings will return filenames with
   cases that depend on the mount options.  See the vfat part of the
-  mount manpage for details.</p>
+  mount manpage for details.</li>
 
   <li>Some characters are disallowed in FAT filenames and will be
   rejected by the Linux vfat drivers.  These include: <tt>\ / : * ?
@@ -95,7 +96,7 @@ consider while working with it from a UNIX system:
 
 <h2>Database</h2>
 
-<ul>
+<ul class="biglist">
   <li>Just as with filenames, extended ASCII should also be avoided in
   data fields.  The Neuros cannot display it, though the issue has
   been acknowledged by DI and they plan to release a future firmware
@@ -103,7 +104,7 @@ consider while working with it from a UNIX system:
 
   <li>Some versions (maybe all?) of the firmware, when required to
   generate new database files from scratch, produce incorrect
-  databases.  The some of the databases will have SAI files with
+  databases.  Some of the databases will have SAI files with
   incorrect pointers, or MDB files with the wrong number of fields.
   Fortunately, this only occurs if the Neuros is booted with missing
   databases or if the disk is formatted.  The solution is to
