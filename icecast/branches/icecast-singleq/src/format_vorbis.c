@@ -101,7 +101,7 @@ int format_vorbis_get_plugin(source_t *source)
 void format_vorbis_free_plugin(format_plugin_t *self)
 {
     vstate_t *state = (vstate_t *)self->_state;
-    refbuf_t *header;
+    refbuf_t *header = state->header_pages;
 
     /* free memory associated with this plugin instance */
 
