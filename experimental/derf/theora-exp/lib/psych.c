@@ -2240,8 +2240,8 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
           groupi=OC_MASK_GROUP[i];
           mask=group_sums[groupi]-maskw[i];
           efrag->tols[i]=(ogg_uint16_t)OC_MINI(65535,(int)(
-           ((OC_CSF_NOISE_LEVEL+abs(efrag->dct_coeffs[i]))/**
-           (1+OC_MASK_WEIGHTS[groupi]*mask)*/)/
+           ((OC_CSF_NOISE_LEVEL+abs(efrag->dct_coeffs[i]))*
+           (1+OC_MASK_WEIGHTS[groupi]*mask))/
            (fscale*(csf_offset[i]+csfw[i]))));
         }
         /*Select minimum qi values for each quantizer type.*/

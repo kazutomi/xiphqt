@@ -1808,65 +1808,68 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
       sb->coded_partially=0;
       for(quadi=0;quadi<4;quadi++)if(sb->quad_valid&1<<quadi){
         int bi;
-        for(bi=0;bi<4;bi++)if(sb->map[quadi][bi]>=0){
-          oc_fragment *frag;
-          int          fragi;
-          int          flag;
+        for(bi=0;bi<4;bi++){
+          int fragi;
           fragi=sb->map[quadi][bi];
-          frag=_enc->state.frags+fragi;
-          if(frag->invalid){
-            frag->coded=0;
-            *(_enc->state.uncoded_fragis-++nuncoded_fragis)=fragi;
-          }
-          else{
-            oc_fragment_enc_info *efrag;
-            ogg_int16_t           dct_buf[64];
-            int                   ci;
-            /*Check to see if the fragment can be skipped.
-              It is assumed that a skipped fragment always takes fewer bits
-               than a coded fragment, though this may not necessarily be true.
-              A single skipped fragment could take up to 34 bits to encode its
-               location in the RLE scheme Theora uses */
-            oc_enc_frag_intra_fdct(_enc,frag,dct_buf,ystride,prev_refi);
-            efrag=_enc->frinfo+fragi;
-            /*The comparison against OC_DC_QUANT_MIN and OC_AC_QUANT_MIN
-               ensures we mark a fragment as skipped if it would be quantized
-               to all zeros in OC_MODE_INTER_NOMV.
-              These minimum quantizers represent the maximum quality the
-               format is capable of, and can be larger than our tolerances.
-              The minimum for INTER modes is twice the minimum for INTRA
-               modes, so technically if the tolerances are below this
-               threshold, we might be able to do a better job representing
-               this fragment by coding it in INTRA mode.
-              But the number of extra bits required to do that would be
-               ridiculous, so we give up our devotion to minimum quality just
-               this once.
-
-              Note: OC_DC_QUANT_MIN[0] should actually be
-               OC_DC_QUANT_MIN[1]>>1, but in this case those are equivalent.*/
-            ci=0;
-            if((unsigned)abs(dct_buf[0]-efrag->dct_coeffs[0])>
-             OC_MAXI(efrag->tols[0],OC_DC_QUANT_MIN[0])){
-              for(ci++;ci<64;ci++){
-                if((unsigned)abs(dct_buf[ci]-efrag->dct_coeffs[ci])>
-                 OC_MAXI(efrag->tols[ci],OC_AC_QUANT_MIN[0])){
-                  break;
-                }
-              }
-            }
-            if(ci>=64){
+          if(fragi>=0){
+            oc_fragment *frag;
+            int          flag;
+            frag=_enc->state.frags+fragi;
+            if(frag->invalid){
               frag->coded=0;
               *(_enc->state.uncoded_fragis-++nuncoded_fragis)=fragi;
             }
             else{
-              frag->coded=1;
-              _enc->state.coded_fragis[ncoded_fragis++]=fragi;
+              oc_fragment_enc_info *efrag;
+              ogg_int16_t           dct_buf[64];
+              int                   ci;
+              /*Check to see if the fragment can be skipped.
+                It is assumed that a skipped fragment always takes fewer bits
+                 than a coded fragment, though this may not necessarily be true.
+                A single skipped fragment could take up to 34 bits to encode
+                 its location in the RLE scheme Theora uses */
+              oc_enc_frag_intra_fdct(_enc,frag,dct_buf,ystride,prev_refi);
+              efrag=_enc->frinfo+fragi;
+              /*The comparison against OC_DC_QUANT_MIN and OC_AC_QUANT_MIN
+                 ensures we mark a fragment as skipped if it would be quantized
+                 to all zeros in OC_MODE_INTER_NOMV.
+                These minimum quantizers represent the maximum quality the
+                 format is capable of, and can be larger than our tolerances.
+                The minimum for INTER modes is twice the minimum for INTRA
+                 modes, so technically if the tolerances are below this
+                 threshold, we might be able to do a better job representing
+                 this fragment by coding it in INTRA mode.
+                But the number of extra bits required to do that would be
+                 ridiculous, so we give up our devotion to minimum quality just
+                 this once.
+
+                Note: OC_DC_QUANT_MIN[0] should actually be
+                 OC_DC_QUANT_MIN[1]>>1, but in this case those are
+                 equivalent.*/
+              ci=0;
+              if((unsigned)abs(dct_buf[0]-efrag->dct_coeffs[0])>
+               OC_MAXI(efrag->tols[0],OC_DC_QUANT_MIN[0])){
+                for(ci++;ci<64;ci++){
+                  if((unsigned)abs(dct_buf[ci]-efrag->dct_coeffs[ci])>
+                   OC_MAXI(efrag->tols[ci],OC_AC_QUANT_MIN[0])){
+                    break;
+                  }
+                }
+              }
+              if(ci>=64){
+                frag->coded=0;
+                *(_enc->state.uncoded_fragis-++nuncoded_fragis)=fragi;
+              }
+              else{
+                frag->coded=1;
+                _enc->state.coded_fragis[ncoded_fragis++]=fragi;
+              }
             }
+            flag=frag->coded;
+            sb->coded_fully&=flag;
+            sb->coded_partially|=flag;
+            _enc->block_coded_flags[bli++]=(char)flag;
           }
-          flag=frag->coded;
-          sb->coded_fully&=flag;
-          sb->coded_partially|=flag;
-          _enc->block_coded_flags[bli++]=(char)flag;
         }
       }
       /*If this is a partially coded super block, keep the entries just added

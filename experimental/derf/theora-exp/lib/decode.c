@@ -566,7 +566,7 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
   for(;mb<mb_end;mb++)if(mb->mode!=OC_MODE_INVALID){
     oc_fragment *frag;
     char         mbmv[2];
-    int          coded[12];
+    int          coded[13];
     int          codedi;
     int          ncoded;
     int          mapi;
@@ -585,6 +585,8 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
       case OC_MODE_INTER_MV_FOUR:{
         char lbmvs[4][2];
         int  bi;
+        /*Mark the tail of the list, so we don't accidentally go past it.*/
+        coded[ncoded]=-1;
         for(bi=codedi=0;bi<4;bi++){
           if(coded[codedi]==bi){
             codedi++;
