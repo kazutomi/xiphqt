@@ -322,8 +322,8 @@ int oss_open_module(input_module_t *mod)
 	}
 	if(rate != s->samplerate)
 	{
-		LOG_ERROR0("Couldn't set sampling rate");
-		goto fail;
+        LOG_WARN2("Could not set sampling rate to %d, using %d instead", s->samplerate, rate);
+        s->samplerate = rate;
 	}
 
 	/* We're done, and we didn't fail! */
