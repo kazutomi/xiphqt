@@ -253,6 +253,9 @@ typedef struct{
   int          nbits;
 }theora_huff_code;
 
+/*The Huffman tables used by VP3.*/
+const theora_huff_code OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+
 /*The quantization parameters.
   The quantizer for each coefficient is calculated as:
     Q=MAX(MIN(qmin[qti][ci!=0],scale[ci!=0][qi]*base[qti][pli][qi][ci]/100),
@@ -314,6 +317,9 @@ typedef struct{
   unsigned char       loop_filter_limits[64];
   theora_quant_ranges qi_ranges[2][3];
 }theora_quant_info;
+
+/*The quantization parameters used by VP3.*/
+const theora_quant_info OC_VP31_QUANT_INFO;
 
 /*The comment information.*/
 typedef struct theora_comment{

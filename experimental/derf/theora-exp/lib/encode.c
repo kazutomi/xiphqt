@@ -224,7 +224,7 @@ static int oc_block_run_pack(oggpack_buffer *_opb,int _value){
   Finally, scheme 7 just encodes each mode directly in 3 bits.
   Be warned that the number assigned to each mode is slightly different in the
    bitstream than in this implementation, so a translation needs to be done.
-   
+
   Mode name:                 Source-code index;  Bit-stream index:
   OC_MODE_INTRA              0                   1
   OC_MODE_INTER_NOMV         1                   0
@@ -234,7 +234,7 @@ static int oc_block_run_pack(oggpack_buffer *_opb,int _value){
   OC_MODE_INTER_MV_FOUR      5                   6
   OC_MODE_GOLDEN_NOMV        6                   7
   OC_MODE_GOLDEN_MV          7                   5
-  
+
   The bit stream indices come from the constants assigned to each mode in the
    original VP3 source.*/
 static void oc_mode_scheme_chooser_init(oc_mode_scheme_chooser *_chooser){
@@ -447,6 +447,16 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
   }
 }
 
+/*Sets the Huffman codes to use for the DCT tokens.
+  This may only be called before the setup header is written.
+  If it is called multiple times, only the last call has any effect.
+  _codes: An array of 80 Huffman tables with 32 elements each.
+          This may be NULL, in which case the default Huffman codes will be
+           used.
+  Return: 0 on success, or a negative value on error.
+          OC_FAULT if _enc is NULL
+          OC_EINVAL if the setup header has already been written, the code is
+           not prefix free, or does not form a full binary tree.*/
 static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
  const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]){
   int ret;
@@ -461,6 +471,18 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
   return 0;
 }
 
+/*Sets the quantization parameters to use.
+  This may only be called before the setup header is written.
+  If it is called multiple times, only the last call has any effect.
+  _qinfo: The quantization parameters.
+          These are described in more detail in theora.h.
+          This can be NULL, in which case the default quantization parameters
+           will be used.*
+  Return: 0 on success, or a negative value on error.
+          OC_FAULT if _enc is NULL.
+          OC_EINVAL if the setup header has already been written, or it cannot
+           be verified that the quantization level of for a particular qti,
+           pli, and ci never increases as qi increases.*/
 static int oc_enc_set_quant_params(theora_enc_ctx *_enc,
  const theora_quant_info *_qinfo){
   int qti;
@@ -580,23 +602,23 @@ static void oc_enc_quant_sel_quality(oc_enc_ctx *_enc,int _intra_only){
     /*Convert this into a moment table.*/
     for(qi=63;qi-->0;)nqis[qi]+=nqis[qi+1];
     for(qi0=64;qi0-->0&&nqis[qi0]<=0;);
-    for(qi1=qi0;qi1>=0&&nqis[qi1]<=nqis[qi0];qi1--);
+    for(qi1=qi0-1;qi1>=0&&nqis[qi1]<=nqis[qi0];qi1--);
     /*Test to make sure there are even two unique quantizers.*/
-    if(qi1<qi0){
+    if(qi1>=0){
       ogg_int64_t best_metric;
       ogg_int64_t metric;
       int         best_qi1;
       int         best_qi2;
       int         qii;
-      for(qi2=qi1;qi2>=0&&nqis[qi2]<=nqis[qi1];qi2--);
+      for(qi2=qi1-1;qi2>=0&&nqis[qi2]<=nqis[qi1];qi2--);
       /*Test to make sure there are three unique quantizers.*/
-      if(qi2<qi1){
+      if(qi2>=0){
         best_metric=(ogg_int64_t)(nqis[0]-nqis[qi2+1])*
          (nqis[qi2+1]-nqis[qi1+1])*nqis[qi1+1];
         best_qi1=qi1;
         best_qi2=qi2;
-        for(;nqis[qi1]<nqis[0];qi1--){
-          for(qi2=qi1;nqis[qi2--]<nqis[0];){
+        for(;nqis[qi1]<nqis[1];qi1--){
+          for(qi2=qi1-1;nqis[qi2]<nqis[0];qi2--){
             metric=(ogg_int64_t)(nqis[0]-nqis[qi2+1])*
              (nqis[qi2+1]-nqis[qi1+1])*nqis[qi1+1];
             if(metric>=best_metric){
@@ -614,7 +636,7 @@ static void oc_enc_quant_sel_quality(oc_enc_ctx *_enc,int _intra_only){
       else{
         best_metric=(ogg_int64_t)(nqis[0]-nqis[qi1+1])*nqis[qi1+1];
         best_qi1=qi1;
-        while(qi1-->0){
+        if(qi1>0)for(qi1--;nqis[qi1]<nqis[0];qi1--){
           metric=(ogg_int64_t)(nqis[0]-nqis[qi1+1])*nqis[qi1+1];
           if(metric>best_metric){
             best_qi1=qi1;
@@ -690,15 +712,15 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
     fplane=_enc->state.fplanes+pli;
     sb_end+=fplane->nsbs;
     for(;sb<sb_end;sb++){
-      int mbi;
-      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
+      int quadi;
+      for(quadi=0;quadi<4;quadi++)if(sb->quad_valid&1<<quadi){
         int bi;
-        for(bi=0;bi<4;bi++)if(sb->map[mbi][bi]>=0){
+        for(bi=0;bi<4;bi++)if(sb->map[quadi][bi]>=0){
           oc_fragment_enc_info *efrag;
           oc_fragment          *frag;
           int                   fragi;
           int                   best_qii;
-          fragi=sb->map[mbi][bi];
+          fragi=sb->map[quadi][bi];
           frag=_enc->state.frags+fragi;
           frag->coded=1;
           frag->mbmode=OC_MODE_INTRA;
@@ -711,7 +733,7 @@ static void oc_enc_mark_all_intra(oc_enc_ctx *_enc){
             }
           }
           efrag->qii=(unsigned char)best_qii;
-          frag->qi=_enc->state.qis[qii];
+          frag->qi=_enc->state.qis[best_qii];
           _enc->state.coded_fragis[ncoded_fragis++]=fragi;
 #if defined(OC_BITRATE_STATS)
           /*Compute the error function used for intra mode fragments.
@@ -1781,16 +1803,16 @@ static void oc_enc_mark_coded(oc_enc_ctx *_enc){
     prev_refi=_enc->state.ref_frame_idx[OC_FRAME_PREV];
     ystride=_enc->state.ref_frame_bufs[prev_refi][pli].ystride;
     for(;sb<sb_end;sb++){
-      int mbi;
+      int quadi;
       sb->coded_fully=1;
       sb->coded_partially=0;
-      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
+      for(quadi=0;quadi<4;quadi++)if(sb->quad_valid&1<<quadi){
         int bi;
-        for(bi=0;bi<4;bi++)if(sb->map[mbi][bi]>=0){
+        for(bi=0;bi<4;bi++)if(sb->map[quadi][bi]>=0){
           oc_fragment *frag;
           int          fragi;
           int          flag;
-          fragi=sb->map[mbi][bi];
+          fragi=sb->map[quadi][bi];
           frag=_enc->state.frags+fragi;
           if(frag->invalid){
             frag->coded=0;
@@ -2496,7 +2518,7 @@ void theora_encode_free(theora_enc_ctx *_enc){
 
 typedef theora_huff_code theora_huff_table[OC_NDCT_TOKENS];
 
-int theora_encoder_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
+int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
  size_t _buf_sz){
   switch(_req){
     case OC_ENCCTL_SET_HUFFMAN_CODES:{

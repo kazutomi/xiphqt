@@ -11,15 +11,15 @@
 
 /*Returns the fragment index of the top-left block in a macro block.
   This can be used to test whether or not the whole macro block is coded.
-  _sb: The super block.
-  _mb: The macro block number.
+  _sb:    The super block.
+  _quadi: The quadrant number.
   Return: The index of the fragment of the upper left block in the macro
    block, or -1 if the block lies outside the coded frame.*/
-static int oc_sb_mb_top_left_frag(const oc_sb *_sb,int _mb){
+static int oc_sb_quad_top_left_frag(const oc_sb *_sb,int _quadi){
   /*It so happens that under the Hilbert curve ordering described below, the
      upper-left block in each macro block is at index 0, except in macro block
      3, where it is at index 2.*/
-  return _sb->map[_mb][_mb&_mb<<1];
+  return _sb->map[_quadi][_quadi&_quadi<<1];
 }
 
 /*Fills in the mapping from block positions to fragment numbers for a single
@@ -62,7 +62,7 @@ static void oc_sb_create_plane_mapping(oc_sb _sbs[],int _frag0,int _hfrags,
     for(x=0;;x+=4,sb++){
       int    xfrag;
       int    jmax;
-      int    mbi;
+      int    quadi;
       int    i;
       /*Figure out how many rows of blocks in this super block lie within the
          image.*/
@@ -80,9 +80,9 @@ static void oc_sb_create_plane_mapping(oc_sb _sbs[],int _frag0,int _hfrags,
         }
         xfrag+=_hfrags;
       }
-      /*Mark which macro blocks in this super block lie within the image.*/
-      for(mbi=0;mbi<4;mbi++){
-        sb->mb_valid|=(oc_sb_mb_top_left_frag(sb,mbi)>=0)<<mbi;
+      /*Mark which quadrants of this super block lie within the image.*/
+      for(quadi=0;quadi<4;quadi++){
+        sb->quad_valid|=(oc_sb_quad_top_left_frag(sb,quadi)>=0)<<quadi;
       }
     }
     yfrag+=_hfrags<<2;
@@ -515,7 +515,7 @@ int oc_state_init(oc_theora_state *_state,const theora_info *_info){
    _info->pixel_fmt<0||_info->pixel_fmt>=OC_PF_NFORMATS){
     return OC_EINVAL;
   }
-  memset(_state,0,sizeof(_state));
+  memset(_state,0,sizeof(*_state));
   memcpy(&_state->info,_info,sizeof(*_info));
   /*Invert the sense of offset_y to match Theora's right-handed coordinate
      system.*/

@@ -106,11 +106,10 @@ typedef int oc_mb_map[3][4];
 /*Super block information.
   Super blocks are 32x32 segments of pixels in a single color plane indexed
    in image order.
-  Internally, super blocks are broken up into a 2x2 pattern of macro blocks,
-   each of which contains a 2x2 pattern of blocks, each of which is an 8x8
-   block of pixels.
-  Macro blocks, and the blocks within them, are indexed in a special order
-   called a "Hilbert curve" within the super block.
+  Internally, super blocks are broken up into four quadrants, each of which
+   contains a 2x2 pattern of blocks, each of which is an 8x8 block of pixels.
+  Quadrants, and the blocks within them, are indexed in a special order called
+   a "Hilbert curve" within the super block.
 
   In order to differentiate between the Hilbert-curve indexing strategy and
    the regular image order indexing strategy, blocks indexed in image order
@@ -120,16 +119,17 @@ typedef int oc_mb_map[3][4];
 typedef struct{
   unsigned  coded_fully:1;
   unsigned  coded_partially:1;
-  unsigned  mb_valid:4;
+  unsigned  quad_valid:4;
   oc_sb_map map;
 }oc_sb;
 
 
 
 /*Macro block information.
-  Only macro blocks in the Y plane matter.
-  Fragments in the chroma planes inherit their mode and motion vectors from
-   the co-located macro block in the Y plane.
+  The co-located fragments in all image planes corresponding to the location of
+   a single luma plane super block quadrant forms a macro block.
+  Thus there is only a single set of macro blocks for all planes, which
+   contains between 6 and 12 fragments, depending on the pixel format.
   Therefore macro block information is kept in a separate array from super
    blocks, to avoid unused space in the other planes.*/
 typedef struct{
@@ -242,8 +242,8 @@ typedef struct{
   /*The total number of macro blocks.*/
   int                   nmbs;
   /*The list of macro blocks, indexed in super block order.
-    That is, the macro block corresponding to the macro block mbi in super
-     block sbi is (sbi<<2|mbi).*/
+    That is, the macro block corresponding to the macro block mbi in (luma
+     plane) super block sbi is (sbi<<2|mbi).*/
   oc_mb                *mbs;
   /*The list of coded fragments, in coded order.*/
   int                  *coded_fragis;

@@ -831,6 +831,7 @@ static oc_seg_pair *oc_seg_create_pair(oc_seg_ctx *_seg,int _regi0,
   reg0->link.next->prev=pair->links+1;
   reg0->link.next=pair->links+1;
   pair->heapi=-1;
+  pair->dbic=0;
   return pair;
 }
 
@@ -1766,24 +1767,24 @@ static void oc_impmap_scan(oc_impmap_ctx *_impmap,int _width,int _height){
     iregions[regi].nedge++;
   }
   /*Handle the interior edge(s):*/
-  for(x=1;x<_width-2;x++){
+  for(x=1;x<_width-1;x++){
     regi=labels[0][x]=relabels[labels[0][x]];
     iregions[regi].nborder++;
     iregions[regi].nedge++;
   }
-  for(y=1;y<_height-2;y++){
+  for(y=1;y<_height-1;y++){
     regi=labels[y][0]=relabels[labels[y][0]];
     iregions[regi].nborder++;
     iregions[regi].nedge++;
   }
   /*Note: we DON'T store the new label for this edge.
     See below.*/
-  if(_height>1)for(x=1;x<_width-2;x++){
+  if(_height>1)for(x=1;x<_width-1;x++){
     regi=relabels[labels[_height-1][x]];
     iregions[regi].nborder++;
     iregions[regi].nedge++;
   }
-  if(_width>1)for(y=1;y<_height-2;y++){
+  if(_width>1)for(y=1;y<_height-1;y++){
     regi=labels[y][_width-1]=relabels[labels[y][_width-1]];
     iregions[regi].nborder++;
     iregions[regi].nedge++;
@@ -1797,9 +1798,9 @@ static void oc_impmap_scan(oc_impmap_ctx *_impmap,int _width,int _height){
     That's why we skipped relabeling the last row above.
     But first, we must relabel the first row of the interior, because that
      was not done above.*/
-  if(_height>1)for(x=1;x<_width-2;x++)labels[1][x]=relabels[labels[1][x]];
+  if(_height>1)for(x=1;x<_width-1;x++)labels[1][x]=relabels[labels[1][x]];
   /*Now we proceed with the main interior loop.*/
-  for(y=1;y<_height-2;y++)for(x=1;x<_width-2;x++){
+  for(y=1;y<_height-1;y++)for(x=1;x<_width-1;x++){
     int border;
     regi=labels[y][x];
     border=regi^labels[y][x-1];

@@ -277,12 +277,12 @@ static void oc_dec_mark_all_intra(oc_dec_ctx *_dec){
     fplane=_dec->state.fplanes+pli;
     sb_end+=fplane->nsbs;
     for(;sb<sb_end;sb++){
-      int mbi;
-      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
+      int quadi;
+      for(quadi=0;quadi<4;quadi++)if(sb->quad_valid&1<<quadi){
         int bi;
         for(bi=0;bi<4;bi++){
           int fragi;
-          fragi=sb->map[mbi][bi];
+          fragi=sb->map[quadi][bi];
           if(fragi>=0){
             oc_fragment *frag;
             frag=_dec->state.frags+fragi;
@@ -399,12 +399,12 @@ static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
     fplane=_dec->state.fplanes+pli;
     sb_end+=fplane->nsbs;
     for(;sb<sb_end;sb++){
-      int mbi;
-      for(mbi=0;mbi<4;mbi++)if(sb->mb_valid&1<<mbi){
+      int quadi;
+      for(quadi=0;quadi<4;quadi++)if(sb->quad_valid&1<<quadi){
         int bi;
         for(bi=0;bi<4;bi++){
           int fragi;
-          fragi=sb->map[mbi][bi];
+          fragi=sb->map[quadi][bi];
           if(fragi>=0){
             oc_fragment *frag;
             frag=_dec->state.frags+fragi;
@@ -598,8 +598,8 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
         if(codedi>0){
           last_mv[1][0]=last_mv[0][0];
           last_mv[1][1]=last_mv[0][1];
-          last_mv[0][0]=lbmvs[codedi-1][0];
-          last_mv[0][1]=lbmvs[codedi-1][1];
+          last_mv[0][0]=lbmvs[coded[codedi-1]][0];
+          last_mv[0][1]=lbmvs[coded[codedi-1]][1];
         }
         if(codedi<ncoded){
           (*set_chroma_mvs)(cbmvs,lbmvs);
