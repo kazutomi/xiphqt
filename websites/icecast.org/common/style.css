@@ -77,6 +77,24 @@ h2 {
     font-size: 85%;
     color: #FFFFFF;
 }
+#listen {
+	margin: 2px 2px 2px 2px;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #7B96C6;
+	background-color: #dddddd;
+}
+.listen_a {
+    text-decoration: none;
+    font-weight: normal;
+    background-color: #dddddd;
+    color: #000;
+}
+.listen_a:hover {
+    text-decoration: none;
+    font-weight: normal;
+    color: #0000ff;
+}
 
 .streamtd_alt_2 {
     font-family: Verdana, sans-serif;
