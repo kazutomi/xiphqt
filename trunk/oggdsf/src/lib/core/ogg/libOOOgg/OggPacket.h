@@ -37,33 +37,37 @@ using namespace std;
 class LIBOOOGG_API OggPacket
 {
 public:
+	//Constructors
 	OggPacket(void);
 	OggPacket(unsigned char* inPackData, unsigned long inPacketSize, bool inIsComplete);
 	virtual ~OggPacket(void);
+	virtual OggPacket* clone();
 
 	static const unsigned long HEX_DUMP_LINE_LENGTH = 16;
-
-
 					
-	virtual OggPacket* clone();
-	unsigned long packetSize();
+	//Packet accessors
+	unsigned long packetSize() const;
 	unsigned char* packetData();
-	bool isComplete();
+	bool isComplete() const;
 
+	//Packet Mutators
 	void setIsComplete (bool inIsComplete );
 	void setPacketSize (unsigned long inPacketSize );
 	void setPacketData (unsigned char* inPacketData );
 
+	//Merge function
 	virtual void merge(OggPacket* inMorePacket);
+
+	//TODO::: Should this be here ?
 	string toPackDumpString();
 	
 protected:
+	//Packet member data
 	unsigned long mPacketSize;
 	unsigned char* mPacketData;
 	bool mIsComplete;
 
-
-
+	//TODO::Should these be here ?
 	string OggPacket::dumpNCharsToString(unsigned char* inStartPoint, unsigned long inNumChars) ;
 	string OggPacket::padField(string inString, unsigned long inPadWidth, unsigned char inPadChar);
 	
