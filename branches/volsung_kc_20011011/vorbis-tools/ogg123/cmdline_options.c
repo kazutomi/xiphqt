@@ -11,16 +11,16 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: cmdline_options.c,v 1.1.2.2 2001/12/11 18:46:23 volsung Exp $
+ last mod: $Id: cmdline_options.c,v 1.1.2.3 2001/12/16 04:38:36 volsung Exp $
 
  ********************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <ao/ao.h>
 
+#include "getopt.h"
 #include "cmdline_options.h"
 #include "status.h"
 

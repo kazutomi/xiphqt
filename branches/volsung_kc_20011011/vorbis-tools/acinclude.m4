@@ -102,68 +102,6 @@ int main ()
   rm -f conf.oggtest
 ])
 
-dnl Shamelessly stolen from Joerg Schilling's star.
-dnl Copyright 1998 J. Schilling
-
-dnl Checks if mmap() works to get shared memory
-dnl Defines HAVE_SMMAP on success.
-AC_DEFUN(AC_FUNC_SMMAP,
-[AC_CACHE_CHECK([if mmap works to get shared memory], ac_cv_func_smmap,
-                [AC_TRY_RUN([
-#include <sys/types.h>
-#include <sys/mman.h>
-
-char *
-mkshare()
-{
-        int     size = 8192;
-        int     f;
-        char    *addr;
-
-        if ((f = open("/dev/zero", 2)) < 0)
-                exit(1);
-        addr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, f, 0);
-        if (addr == (char *)-1)
-                exit(1);
-        close(f);
-
-        return (addr);
-}
-
-main()
-{
-        char    *addr;
-        
-        addr = mkshare(8192);
-        *addr = 'I';
-
-        switch (fork()) {
-
-        case -1:
-                printf("help\n"); exit(1);
-
-        case 0: /* child */
-                *addr = 'N';
-                _exit(0);
-                break;
-        default: /* parent */
-                wait(0);
-                sleep(1);
-                break;
-        }
-
-        if (*addr != 'N')
-                exit(1);
-        exit(0);
-}
-], 
-                [ac_cv_func_smmap=yes],
-                [ac_cv_func_smmap=no],
-                [ac_cv_func_smmap=no])])
-if test $ac_cv_func_smmap = yes; then
-  AC_DEFINE(HAVE_SMMAP)
-fi])
-
 # Configure paths for libvorbis
 # Jack Moffitt <jack@icecast.org> 10-21-2000
 # Shamelessly stolen from Owen Taylor and Manish Singh
@@ -471,4 +409,103 @@ AC_DEFUN([AM_LANGINFO_CODESET],
     AC_DEFINE(HAVE_LANGINFO_CODESET, 1,
       [Define if you have <langinfo.h> and nl_langinfo(CODESET).])
   fi
+])
+
+dnl AM_PATH_CURL([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+dnl Test for libcurl, and define CURL_CFLAGS and CURL_LIBS
+dnl
+AC_DEFUN(AM_PATH_CURL,
+[dnl 
+dnl Get the cflags and libraries
+dnl
+AC_ARG_WITH(curl,[  --with-curl=PFX   Prefix where libcurl is installed (optional)], curl_prefix="$withval", curl_prefix="")
+AC_ARG_WITH(curl-libraries,[  --with-curl-libraries=DIR   Directory where libcurl library is installed (optional)], curl_libraries="$withval", curl_libraries="")
+AC_ARG_WITH(curl-includes,[  --with-curl-includes=DIR   Directory where libcurl header files are installed (optional)], curl_includes="$withval", curl_includes="")
+AC_ARG_ENABLE(curltest, [  --disable-curltest       Do not try to compile and run a test libcurl program],, enable_curltest=yes)
+
+  if test "x$curl_libraries" != "x" ; then
+    CURL_LIBS="-L$curl_libraries"
+  elif test "x$curl_prefix" != "x" ; then
+    CURL_LIBS="-L$curl_prefix/lib"
+  elif test "x$prefix" != "xNONE" ; then
+    CURL_LIBS="-L$prefix/lib"
+  fi
+
+  CURL_LIBS="$CURL_LIBS -lcurl"
+
+  if test "x$curl_includes" != "x" ; then
+    CURL_CFLAGS="-I$curl_includes"
+  elif test "x$curl_prefix" != "x" ; then
+    CURL_CFLAGS="-I$curl_prefix/include"
+  elif test "$prefix" != "xNONE"; then
+    CURL_CFLAGS="-I$prefix/include"
+  fi
+
+  AC_MSG_CHECKING(for libcurl)
+  no_curl=""
+
+
+  if test "x$enable_curltest" = "xyes" ; then
+    ac_save_CFLAGS="$CFLAGS"
+    ac_save_LIBS="$LIBS"
+    CFLAGS="$CFLAGS $CURL_CFLAGS"
+    LIBS="$LIBS $CURL_LIBS"
+dnl
+dnl Now check if the installed libcurl is sufficiently new.
+dnl
+      rm -f conf.curltest
+      AC_TRY_RUN([
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <curl/curl.h>
+
+int main ()
+{
+  system("touch conf.curltest");
+  return 0;
+}
+
+],, no_curl=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+       CFLAGS="$ac_save_CFLAGS"
+       LIBS="$ac_save_LIBS"
+  fi
+
+  if test "x$no_curl" = "x" ; then
+     AC_MSG_RESULT(yes)
+     ifelse([$1], , :, [$1])     
+  else
+     AC_MSG_RESULT(no)
+     if test -f conf.curltest ; then
+       :
+     else
+       echo "*** Could not run libcurl test program, checking why..."
+       CFLAGS="$CFLAGS $CURL_CFLAGS"
+       LIBS="$LIBS $CURL_LIBS"
+       AC_TRY_LINK([
+#include <stdio.h>
+#include <curl/curl.h>
+],     [ return 0; ],
+       [ echo "*** The test program compiled, but did not run. This usually means"
+       echo "*** that the run-time linker is not finding libcurl or finding the wrong"
+       echo "*** version of libcurl. If it is not finding libcurl, you'll need to set your"
+       echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
+       echo "*** to the installed location  Also, make sure you have run ldconfig if that"
+       echo "*** is required on your system"
+       echo "***"
+       echo "*** If you have an old version installed, it is best to remove it, although"
+       echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
+       [ echo "*** The test program failed to compile or link. See the file config.log for the"
+       echo "*** exact error that occured. This usually means libcurl was incorrectly installed"
+       echo "*** or that you have moved libcurl since it was installed." ])
+       CFLAGS="$ac_save_CFLAGS"
+       LIBS="$ac_save_LIBS"
+     fi
+     CURL_CFLAGS=""
+     CURL_LIBS=""
+     ifelse([$2], , :, [$2])
+  fi
+  AC_SUBST(CURL_CFLAGS)
+  AC_SUBST(CURL_LIBS)
+  rm -f conf.curltest
 ])
