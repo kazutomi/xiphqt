@@ -6,7 +6,6 @@
 
 typedef struct oc_fragment_enc_info   oc_fragment_enc_info;
 typedef struct oc_mb_enc_info         oc_mb_enc_info;
-typedef struct oc_border_enc_info     oc_border_enc_info;
 typedef struct oc_mode_scheme_chooser oc_mode_scheme_chooser;
 typedef struct oc_impmap_ctx          oc_impmap_ctx;
 typedef struct oc_mcenc_ctx           oc_mcenc_ctx;
@@ -76,19 +75,6 @@ struct oc_mb_enc_info{
   int           aerror4mv;
 };
 
-/*Information used to extend fragments which straddle the cropping border in
-   an optimal manner.*/
-struct oc_border_enc_info{
-  /*The indices of pixels with valid values first and then padding pixels.*/
-  unsigned char   pi[64];
-  /*The amount to scale pixel values by before multiplying by the extension
-     matrix.*/
-  int             shift;
-  /*The matrix used to extend the fragment into the padding region, in signed
-     1.15 fixed-point format.*/
-  ogg_int16_t   **ext_matrix;
-};
-
 /*A structure used to track the optimal mode coding scheme, for use in
    estimating the cost of coding each mode label during the mode selection
    process.*/
@@ -143,8 +129,6 @@ struct theora_enc_ctx{
   oc_fragment_enc_info    *frinfo;
   /*Encoder-specific macro block information.*/
   oc_mb_enc_info          *mbinfo;
-  /*Encoder-specific border information.*/
-  oc_border_enc_info       border_info[16];
   /*Minimum psychovisual tolerance for the DC coefficients in each plane.*/
   unsigned                 dc_tol_mins[3];
   /*The qi value lists selected for each potential frame type.*/

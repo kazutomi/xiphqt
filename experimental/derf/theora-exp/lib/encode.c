@@ -850,7 +850,6 @@ void oc_enc_frag_intra_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
      pixels.*/
   if(_frag->border!=NULL){
     ogg_int64_t mask;
-    int         bii;
     mask=_frag->border->mask;
     for(pixi=y=0;y<8;y++){
       for(x=0;x<8;x++,pixi++){
@@ -868,8 +867,7 @@ void oc_enc_frag_intra_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
       }
       pixels+=_ystride;
     }
-    bii=_frag->border-_enc->state.borders;
-    oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,pix_buf);
+    oc_fdct8x8_border(_frag->border,_dct_vals,pix_buf);
   }
   /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
   else{
@@ -897,7 +895,6 @@ static void oc_enc_frag_inter_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
   int            ref_framei;
   int            mvoffset0;
   int            mvoffset1;
-  int            bii;
   int            y;
   int            x;
   src_ystride=_enc->state.input[_pli].ystride;
@@ -921,9 +918,7 @@ static void oc_enc_frag_inter_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
         ref0+=ref_ystride;
         ref1+=ref_ystride;
       }
-      bii=_frag->border-_enc->state.borders;
-      oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,
-       pix_buf);
+      oc_fdct8x8_border(_frag->border,_dct_vals,pix_buf);
     }
     else{
       for(pixi=y=0;y<8;y++){
@@ -950,9 +945,7 @@ static void oc_enc_frag_inter_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
         src+=src_ystride;
         ref0+=ref_ystride;
       }
-      bii=_frag->border-_enc->state.borders;
-      oc_fdct8x8_border(_frag->border,_enc->border_info+bii,_dct_vals,
-       pix_buf);
+      oc_fdct8x8_border(_frag->border,_dct_vals,pix_buf);
     }
     else{
       for(pixi=y=0;y<8;y++){
@@ -2437,24 +2430,30 @@ static void oc_enc_mvs_pack(oc_enc_ctx *_enc){
 }
 
 static int oc_enc_deltaframe(oc_enc_ctx *_enc){
-  oc_enc_mark_coded(_enc);
-  oc_enc_quant_sel_quality(_enc,0);
-  _enc->state.frame_type=oc_enc_choose_mbmodes(_enc);
-  if(_enc->state.frame_type==OC_INTER_FRAME)oc_enc_do_inter_dcts(_enc);
-  oc_enc_quant_dc(_enc);
-  oc_enc_residual_tokenize(_enc);
   oggpackB_reset(&_enc->opb);
-  oc_enc_frame_header_pack(_enc);
-  if(_enc->state.frame_type==OC_INTER_FRAME){
-    oggpackB_writecopy(&_enc->opb,
-     oggpackB_get_buffer(&_enc->opb_coded_flags),
-     oggpackB_bits(&_enc->opb_coded_flags));
-    oc_enc_mb_modes_pack(_enc);
-    oc_enc_mvs_pack(_enc);
+  oc_enc_mark_coded(_enc);
+  /*Only proceed if we have some coded blocks.
+    No coded blocks -> dropped frame -> 0 byte packet.*/
+  if(_enc->state.ncoded_fragis[0]!=0||
+   _enc->state.ncoded_fragis[1]!=0||
+   _enc->state.ncoded_fragis[2]!=0){
+    oc_enc_quant_sel_quality(_enc,0);
+    _enc->state.frame_type=oc_enc_choose_mbmodes(_enc);
+    if(_enc->state.frame_type==OC_INTER_FRAME)oc_enc_do_inter_dcts(_enc);
+    oc_enc_quant_dc(_enc);
+    oc_enc_residual_tokenize(_enc);
+    oc_enc_frame_header_pack(_enc);
+    if(_enc->state.frame_type==OC_INTER_FRAME){
+      oggpackB_writecopy(&_enc->opb,
+       oggpackB_get_buffer(&_enc->opb_coded_flags),
+       oggpackB_bits(&_enc->opb_coded_flags));
+      oc_enc_mb_modes_pack(_enc);
+      oc_enc_mvs_pack(_enc);
+    }
+    oc_enc_block_qis_pack(_enc);
+    /*Pack the quantized DCT coefficients.*/
+    oc_enc_residual_tokens_pack(_enc);
   }
-  oc_enc_block_qis_pack(_enc);
-  /*Pack the quantized DCT coefficients.*/
-  oc_enc_residual_tokens_pack(_enc);
   /*Success: Mark the packet as ready to be flushed.*/
   _enc->packet_state=OC_PACKET_READY;
   return 0;
@@ -2462,17 +2461,12 @@ static int oc_enc_deltaframe(oc_enc_ctx *_enc){
 
 
 static int oc_enc_init(oc_enc_ctx *_enc,const theora_info *_info){
-  int bii;
   int ret;
   /*Initialize the shared encoder/decoder state.*/
   ret=oc_state_init(&_enc->state,_info);
   if(ret<0)return ret;
   _enc->block_coded_flags=_ogg_calloc(_enc->state.nfrags,
    sizeof(_enc->block_coded_flags[0]));
-  /*Compute the matrices needed to extend the frame into the border regions.*/
-  for(bii=0;bii<_enc->state.nborders;bii++){
-    oc_border_enc_info_init(_enc->border_info+bii,_enc->state.borders+bii);
-  }
   /*Initialize our packet buffers.*/
   oggpackB_writeinit(&_enc->opb);
   oggpackB_writeinit(&_enc->opb_coded_flags);
