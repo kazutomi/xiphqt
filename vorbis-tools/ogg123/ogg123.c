@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.15 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.16 2001/08/13 01:46:43 kcarnold Exp $
 
  ********************************************************************/
 
@@ -778,6 +778,8 @@ void play_file()
     
     ov_clear(&vf);
     
+    buffer_MarkEOS (Options.outputOpts.buffer);
+
     if (Options.statOpts.quiet < 1)
       fprintf(stderr, "\nDone.\n");
     

@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: buffer.c,v 1.7.2.12 2001/08/13 00:43:20 kcarnold Exp $
+ last mod: $Id: buffer.c,v 1.7.2.13 2001/08/13 01:46:42 kcarnold Exp $
 
  ********************************************************************/
 
@@ -119,8 +119,8 @@ void* BufferFunc (void *arg)
 
   while (1)
     {
-    checkPlaying:
       LOCK_MUTEX (buf->SizeMutex);
+    checkPlaying:
       while (!(buf->StatMask & STAT_PLAYING) ||
 	     (buf->StatMask & STAT_PREBUFFERING)) {
 	DEBUG1 ("waiting on !playing || prebuffering (stat=%d)", buf->StatMask);
@@ -159,9 +159,9 @@ void* BufferFunc (void *arg)
 	Prebuffer (buf);
 	if (buf->FlushPending)
 	  goto flushing;
-	UNLOCK_MUTEX (buf->SizeMutex);
 	if (!buf->ReaderActive) {
 	  /* if we never reported EOS to the output, now or never... */
+	  UNLOCK_MUTEX (buf->SizeMutex);
 	  buf->write_func (buf->writer, 0, 0, buf->data, 1);
 	  pthread_exit (NULL);
 	}
