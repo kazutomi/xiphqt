@@ -10,7 +10,6 @@ OGM<br><br>
 </style>
 <font color="red">OGM is not Ogg. Xiph.org does not support OGM.</font>
 <br><br>
-(needs to be updated)
 <p>
 <i>What is this OGM stuff, anyway?</i>
 <p>
@@ -85,35 +84,27 @@ proliferation of OGM equates to a measurable drain on our resources.
 <p>
 <i>Tell me more about technical differences between Ogg ans OGM</i>
 </p>
-<p class="excerpt">
+<p>
 Ogg Vs Ogm
-File format is the same, the main
-difference is the first header in each stream... ogm uses several
+file format are the same, the main
+difference is the first header in each stream. OGM uses several
 standardised header formats, audio, video and text, in order to make
 identifying unknown codecs easier in directshow (and subsequently other
 frameworks). ie with those three headers you can use any audio or video
 format you choose without have to write custom header parsing routines
 for each codec in the demuxer.
 </p>
-<p class="excerpt">
-Correct. I would also say that the ogmtools provides the standard du
+<p>
+In other words ogmtools provides the standard du
 jeur for encapsulating various common-in-avi codecs in an Ogg bitstream,
 like 'divx', 'mp3' and so on.
 </p>
 
 
 <p><i>Okay, and what is status of OGM?</i></p>
-<p class="excerpt">
-The original oggds codebase
-by tobias is pretty stagnant... but i think some folk at doom9 have started
-maintaining it.
-</p>
-<p class="excerpt">
-I understand it's in wide use by the anime fansub community. We
-officially and actively don't recommend it, both because it doesn't
-match our technical philosophy for Ogg, and because our whole raison
-d'etre is to provide free alternatives to mp3 and divx. So please don't
-encourage people to add support. :)
+<p>
+The original oggds codebase by Tobias is pretty stagnant, but i think 
+some folk at doom9 have started maintaining it.
 </p>
 7th July, 2004.
 

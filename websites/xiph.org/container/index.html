@@ -32,7 +32,7 @@ source alternatives, this document is best place to start with.
 	</p>
 	<h3>Explaination</h3>
 	<p>
-	 A compression formate is a algorithm used to compress audio/video data.
+	 A compression format is a algorithm used to compress audio/video data.
 	MP3 is a popular audio compression format. Simmiliarly, DivX, MPEG-4 etc
 	are common video compression formats. <a
 	href="http://en.wikipedia.org/wiki/Codec">Codec</a> (abbreivation of
@@ -85,20 +85,26 @@ source alternatives, this document is best place to start with.
 	Ogg Media Container is developed by <a href="http://www.xiph.org/">
 	Xiph</a>. The Ogg bitstream is defined in RFC 3533 and its MIME
 	media type (application/ogg) in RFC 3534. 
-	This formate was designed with main aim of media streaming (which 
-	does not mean it is not good for other kind of uses). More
+	This format was designed with main aim of media streaming (which 
+	does not mean it is not good for other uses). More
 	information about ogg can be found <a
 	href="http://www.xiph.org/ogg/doc/">here</a> (probably outdated).
 	</p>
+	<p><b>Using Ogg</b>: Ogg (and theora and vorbis) are very well
+	supported by GNU/Linux (mplayer, xine etc ..). For windows you
+	can install directshow <a href="http://www.illiminable.com/ogg/">plugins</a>.
+	</p>
 	<p>
 	<b>Creation of Ogg files</b>: To create audio-only-vorbis files,
-	you can use <a href="http://www.vorbis.com">oggenc</a> (provided by
-	libogg). You can also encode Ogg containing video (presently only MNG video is 
-	supported) and audio(Vorbis) using command line utility <a
-	href="http://svn.xiph.org/trunk/oggtools/">oggmerge</a>. libogg can
-	be used to encode theora-video + vorbis-audio in Ogg.
+	you can use command line utility<a
+	href="http://www.gnu.org/directory/audio/ogg/OggEnc.html">oggenc</a>. 
+	To encode theora-video + vorbis-audio in Ogg, libtheora provides
+	a command line utility (encoder_example) which can be used as shown
+	in following <a
+href="http://www.dogphilosophy.net/SECTION-Technical_Stuff/ogg-theora-microhowto.html">
+	document</a>. On windows, just follow instructions mentioned <a
+	href="http://www.illiminable.com/ogg/enc_theora_graphedit.html">here</a>.
 	</p>
-
 	<a name="ogm-container">
 	<h2>OGM</h2>
 	<p>
@@ -109,22 +115,33 @@ source alternatives, this document is best place to start with.
 	filters are an extension to the Ogg Multimedia Framework that lies outside
 	of the Ogg specification. So, while it is certainly useful, it's not really
 	'Ogg.' As it is important to maintain control of the specification in
-	these matters <b>Xiph does not support OGM. OGM and Ogg are not same.</b>
+	these matters <font color="red">Xiph does not support OGM. OGM and Ogg are not same.
+	</font>
 	</p>
 	<p>
 	Please read <a href="ogm.html">more about OGM</a> to know more
 	about OGMs.
 	</p>
 
-	<a name="matroska-container">
-	<h2>Matroska</h2>
-	<p>
-	</p>
-
 	<a name="mcf-container">
 	<h2>MCF</h2>
 	<p>
+	Meida Container Format (<a href="http://mcf.sf.net/">MCF</a>) is
+	yet another open source project aiming to become the standard of
+	Multimedia Container Formats one day. But MCF is more or less a
+	dead project now.
 	</p>
+
+	<a name="matroska-container">
+	<h2>Matroska</h2>
+	<p>
+	Matroska is derived from MCF and is aiming to compete with
+	Quicktime and MOV (and replace AVI) as a general use container with
+	a clear focus on video and audio editing. More information about
+	matroska can be obtained from <a href="http://www.matroska.org"> 
+	http://www.matroska.org</a>.
+	</p>
+
 	
 </div>
 
@@ -132,7 +149,13 @@ source alternatives, this document is best place to start with.
 <a name="ogg-vs-matroska"></a>
 <h2>Ogg Vs Matroska?</h2>
 <div class="shift">
-
+ Ogg and Matroska have different philosophies. Ogg is focussing on high
+compatibility and playability, making it ideal for content
+distribution, as well as streaming. matroska on the other hand is competing
+with MOV and Quicktime, and aiming to replace AVI and VfW/Dshow, as a
+general use container ( kitchen sink format ) with a clear focus on video and audio
+editing. You can continue reading <a href="ogg-vs-matroska.html">Ogg Vs
+Matroska</a>.
 </div>
 
 <a name="ogg-vs-ogm"></a>
@@ -144,32 +167,30 @@ source alternatives, this document is best place to start with.
 <a name="extension"></a>
 <h2>What file extensions to use with Ogg?</h2>
 <div class="shift">
-
+A controversial issue, I will write about it sometime later.
 </div>
 
 <a name="subtitle"></a>
 <h2>What about subtitles in Ogg?</h2>
 <div class="shift">
-(i don't know much, may be someone who knows can update it).
-</div>
-
-<a name="more-about-ogg"></a>
-<h2>Tell me more about Ogg?</h2>
-<div class="shift">
-
+I don't know much about subtitles, may be someone who knows can update it.
 </div>
 
 <a name="codecs"></a>
 <h2>What compression formats are available open source?</h2>
 <div class="shift">
-
+As of now, we recommend you to use <br>
+<a href="http://www.vorbis.com/">Ogg Vorbis</a> for audio compression and<br>
+<a href="http://www.theora.org/">Ogg Theora</a> for video compression.<br>
 </div>
 
+<a name="more-about-ogg"></a>
+<h2>Tell me more about Ogg Project?</h2>
+<div class="shift">
+</div>
+
+
 <br>
-<!--
-This document is written by <a href="http://www.cse.iitb.ac.in/nilesh/">
-Nilesh Bansal</a> &lt;nilesh AT iitb DOT ac DOT in&gt;.
--->
 7th July, 2004
 <br>
 PS: Please ignore spelling/grammatical mistakes, as I am not good at
