@@ -18,8 +18,8 @@ sub module_init{
     my$hostname=`hostname`;
     chop$hostname;
     $hostname=~s{^([^\.]+).*}{$1};
-    $this->{"hostname"}=$hostname;
     $toplevel->optionAdd("$xclass.order",               0,20);
+    $toplevel->optionAdd("$xclass.label",       $hostname,20);
     $this;
 }
 
@@ -35,13 +35,20 @@ sub module_instance{
     $widget->optionAdd("$xpath.borderwidth", 1,20);      
 
     # use our font and find the labelsize...
+    $this->{"hostname"}=$widget->optionGet('label','');
     my$testlabel=$this->{"widget"}->Label(-text=>$this->{"hostname"},
 					 -borderwidth=>0,
 					 -padx=>1,-pady=>1);
-    
-    my$textheight=$this->{"textheight"}=$testlabel->reqheight;
-    my$textwidth=$this->{"textwidth"}=$testlabel->reqwidth;
+    my$textheight=0;
+    my$textwidth=0;
+    if(length($this->{"hostname"})){
+	$textheight=$testlabel->reqheight;
+	$textwidth=$testlabel->reqwidth;
+    }
+    $this->{"textheight"}=$textheight;
+    $this->{"textwidth"}=$textwidth;
     $testlabel->destroy;
+
     my$borderwidth=$this->{"borderwidth"}=$widget->optionGet('borderwidth','');
     $this->{"relief"}=$widget->optionGet('relief','');
     
@@ -114,12 +121,13 @@ sub module_run{
 						    -bordermode=>'outside');
     $this->{"logowidget"}->createImage(0,0,-image=>$this->{"logo"},
 				       -anchor=>'ne',-tags=>["logo"]);
-    
-    $widget->Label(-text=>$this->{"hostname"},
-		   -borderwidth=>0,
-		   -padx=>1,-pady=>1)->
-		       place('-x'=>$textpad,'-y'=>$vpad+$this->{"logoheight"},
-			     -anchor=>'nw',-bordermode=>'outside');
+    if(length($this->{"hostname"})){
+	$widget->Label(-text=>$this->{"hostname"},
+		       -borderwidth=>0,
+		       -padx=>1,-pady=>1)->
+			   place('-x'=>$textpad,'-y'=>$vpad+$this->{"logoheight"},
+				 -anchor=>'nw',-bordermode=>'outside');
+    }
     $this->{"counter"}=0;
 #    $this->module_update;
     $this->{"widget"}=$widget;
