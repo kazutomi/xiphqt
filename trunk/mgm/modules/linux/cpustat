@@ -71,7 +71,8 @@ sub module_instance{
 sub module_run{
     my($this)=@_;
     $graph=MGM::Graph->new($this,num=>$statcpus,fixed=>'1',
-			   prompt=>"%",rangecurrent=>100,rangesetting=>'100');
+			   prompt=>"%",rangecurrent=>100*$numcpus,
+			   rangesetting=>100*$numcpus);
     $lastmod=-1;
     $graph->{"widget"};        # must return widget
 }
@@ -92,7 +93,7 @@ sub module_update{
 		my$tot=$total[0]-$prevtotal[0];
 		if($tot>0){
 		    $vals[0]=100*($load[0]-$prevload[0])/$tot;
-		    $vals[0]=100 if $vals[0]>100;
+		    $vals[0]=100*$numcpus if $vals[0]>100*$numcpus;
 		}else{
 		    $vals[0]=0;
 		}
