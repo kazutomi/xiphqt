@@ -11,6 +11,10 @@ Features
 * Proper detection of valid music file attributes (title, genre, time,
 etc) in MP3 and Ogg Vorbis files.
 
+* General music format framework and API for both detecting music info
+and transcoding to a format the Neuros supports.  Needs to be
+flexible enough to support firmware that only does MP3 as well as
+firmware that can do both MP3 and Ogg.
 
 Spec Questions
 --------------
@@ -78,3 +82,5 @@ updating core OS components in OS X.)
 My best guess, (again, watching USB debug messages in Linux) is this
 is because the Neuros also does not respond to a USB Mass Storage
 command, which Linux can deal with, but OS X chokes on.
+
+* Does NetBSD have USB code which can help?
