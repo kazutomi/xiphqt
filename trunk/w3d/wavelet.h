@@ -14,6 +14,7 @@ typedef struct {
    uint32 *h;
    uint32 *f;
    TYPE *minmax;
+   TYPE *scratchbuf;
 } Wavelet3DBuf;
 
 
@@ -24,6 +25,5 @@ extern void wavelet_3d_buf_destroy (Wavelet3DBuf* buf);
 
 extern void wavelet_3d_buf_fwd_xform (Wavelet3DBuf* buf);
 extern void wavelet_3d_buf_inv_xform (Wavelet3DBuf* buf);
-
 
 #endif
