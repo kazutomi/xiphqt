@@ -11,7 +11,8 @@ package MGMmodule::battery;
 use IO::Seekable;
 use Socket;
 use vars qw(@percent @battstatus @gstate $ac $lstate $graph $widget 
-	    $xpath $openp $openf $opena $batteries $ac $active $lastbat);
+	    $xpath $openp $openf $openapm $openacpi $batteries $ac $active $lastbat
+	    @acpi_battery_dirs $acpi_adapter_dir);
 
 sub module_init{
     my$this=shift;
@@ -21,7 +22,9 @@ sub module_init{
     $active=0;
     $openp=0;
     $openf=0;
-    $opena=0;
+    $openapm=0;
+    $openacpi=0;
+
     $this->read_proc;
     if($active==0){
 	$toplevel->optionAdd("$xclass.active",        'false',21);      
@@ -112,9 +115,12 @@ sub read_proc{
     my$test;
     my$this=shift;
 
-    if($opena){return $this->read_proc_apm;}
+    if($openacpi){return $this->read_proc_acpi;}
+    if($openapm){return $this->read_proc_apm;}
     if($openp || $openf){return $this->read_proc_mac;}
 
+    $test=$this->read_proc_acpi;
+    if(defined($test)){return $test;}
     $test=$this->read_proc_apm;
     if(defined($test)){return $test;}
     $this->read_proc_mac;
@@ -248,8 +254,7 @@ sub read_proc_mac{
     }
 }
 
-# PC style power management.  Of course they're not the same
-# interface.  This is linux.
+# PC APM style power management.
 # /proc/apm only reports one line for all batteries
 sub read_proc_apm{
     my$this=shift;
@@ -295,7 +300,7 @@ sub read_proc_apm{
     $batteries=0;
     if(open(PROC,"/proc/apm")){
 	$active=1;
-	$opena=1;
+	$openapm=1;
 	sysread PROC,$_,1024;
 	if(m/^\S+\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+([^ \%]+)\%/){
 	    if($1 eq '0xff'){
@@ -313,6 +318,91 @@ sub read_proc_apm{
 	close PROC;
     }
     $percent;
+}
+
+sub list_subdirs{
+    my@dirs;
+    my$path=shift;
+    if(opendir(DIR,$path)){
+	@dirs = map ("$path/$_", grep { /^[^\.]/ && -d "$path/$_" } readdir(DIR));
+	close DIR;
+	return @dirs;
+    }
+    return;
+}
+
+# PC ACPI style power management.
+sub read_proc_acpi{
+    my$this=shift;
+    my$percent;
+
+    $batteries=0;
+
+    if($openacpi==0){
+	# initialize
+	@acpi_battery_dirs=(list_subdirs("/proc/acpi/battery"));
+	my @adapdir=(list_subdirs("/proc/acpi/ac_adapter"));
+	$acpi_adapter_dir=$adapdir[0];
+
+    }
+	    
+    foreach my$dir (@acpi_battery_dirs) {
+
+	if(open(PROC,"$dir/info")){
+	    if(open(PROC2,"$dir/state")){
+		
+		$active=1;
+		$openacpi=1;
+		my$total=0;
+		
+		$battstatus[$batteries]=-1;
+		$percent[$batteries]=0;
+		while(<PROC>){
+		    if(m/^last full capacity:\s+(\d)/){
+			$total=$1;
+		    }
+		    if(m/^present:\s+yes/){
+			$battstatus[$batteries] = 0 if($battstatus[$batteries]==-1);
+		    }
+		}
+		
+		while(<PROC2>){
+		    if(m/^remaining capacity:\s+(\d)/){
+			$percent[$batteries]=$1*100/$total;
+		    }
+		    if(m/^charging state:\s+charging/){
+			$battstatus[$batteries]=1;
+		    }
+		    if(m/^charging state:\s+discharging/){
+			$battstatus[$batteries]=0;
+		    }
+		    if(m/^present:\s+yes/){
+			$battstatus[$batteries] = 0 if($battstatus[$batteries]==-1);
+		    }
+		}
+		close PROC2;
+	    }
+	    close PROC;
+	    
+	    
+	    $batteries++;
+	}
+	
+    }
+    
+    if($batteries && defined($acpi_adapter_dir)){
+	$ac=0;
+	if(open(PROC,"$acpi_adapter_dir/state")){
+	    while(<PROC>){
+		if(m/^state:\s+on-line/){
+		    $ac=1;
+		}
+	    }
+	    close PROC;
+	}
+    }
+
+    $batteries;
 }
 
 sub module_update{ 
