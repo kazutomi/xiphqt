@@ -14,7 +14,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.30.2.2 2001/10/15 05:56:55 volsung Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.30.2.3 2001/10/17 16:58:14 volsung Exp $
 
  ********************************************************************/
 
@@ -218,9 +218,9 @@ void SetBuffersStats ()
   Stat_t *stats = Options.statOpts.stats;
 
   memset (strbuf, 0, 80);
-  if (Options.inputOpts.buffer) {
-    SetBufferStats (Options.inputOpts.buffer, strbuf);
-    stats[6].arg.doublearg = (double) buffer_full(Options.inputOpts.buffer) / (double) Options.inputOpts.buffer->size * 100.0f;
+  if (Options.inputOpts.data->buf) {
+    SetBufferStats (Options.inputOpts.data->buf, strbuf);
+    stats[6].arg.doublearg = (double) buffer_full(Options.inputOpts.data->buf) / (double) Options.inputOpts.data->buf->size * 100.0f;
   }
   if (stats[7].arg.stringarg)
     free (stats[7].arg.stringarg);
@@ -650,8 +650,8 @@ void play_file()
       VorbisfileCallbacks.tell_func = StreamBufferTell;
       
       Options.inputOpts.URL = Options.playOpts.read_file;
-      Options.inputOpts.buffer = InitStream (Options.inputOpts);
-      if ((ov_open_callbacks (Options.inputOpts.buffer->data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
+      Options.inputOpts.data = InitStream (Options.inputOpts);
+      if ((ov_open_callbacks (Options.inputOpts.data, &vf, NULL, 0, VorbisfileCallbacks)) < 0) {
 	Error ("=== Input not an Ogg Vorbis audio stream.\n");
 	return;
       }
@@ -686,59 +686,59 @@ void play_file()
 	return;
       }
     }
+  
+  /* Setup so that pressing ^C in the first second of playback
+   * interrupts the program, but after the first second, skips
+   * the song.  This functionality is similar to mpg123's abilities. */
+  
+  if (Options.playOpts.delay > 0) {
+    skipfile_requested = 0;
+    signal(SIGALRM,signal_activate_skipfile);
+    alarm(Options.playOpts.delay);
+  }
+  
+  exit_requested = 0;
+  pause_requested = 0;
+  
+  while (!eof && !exit_requested) {
+    int i;
+    vorbis_comment *vc = ov_comment(&vf, -1);
+    vorbis_info *vi = ov_info(&vf, -1);
     
-    /* Setup so that pressing ^C in the first second of playback
-     * interrupts the program, but after the first second, skips
-     * the song.  This functionality is similar to mpg123's abilities. */
+    Options.outputOpts.rate = vi->rate;
+    Options.outputOpts.channels = vi->channels;
+    if(open_audio_devices() < 0)
+      exit(1);
     
-    if (Options.playOpts.delay > 0) {
-      skipfile_requested = 0;
-      signal(SIGALRM,signal_activate_skipfile);
-      alarm(Options.playOpts.delay);
+    for (i = 0; i < vc->comments; i++) {
+      char *cc = vc->user_comments[i];	/* current comment */
+      int j;
+      
+      for (j = 0; ogg_comment_keys[j].key != NULL; j++)
+	if (!strncasecmp
+	    (ogg_comment_keys[j].key, cc,
+	     strlen(ogg_comment_keys[j].key))) {
+	  ShowMessage (1, 0, 1, ogg_comment_keys[j].formatstr,
+		       cc + strlen(ogg_comment_keys[j].key));
+	  break;
+	}
+      if (ogg_comment_keys[j].key == NULL)
+	ShowMessage (1, 0, 1, "Unrecognized comment: '%s'", cc);
     }
-        
-    exit_requested = 0;
-    pause_requested = 0;
-
-    while (!eof && !exit_requested) {
-      int i;
-      vorbis_comment *vc = ov_comment(&vf, -1);
-      vorbis_info *vi = ov_info(&vf, -1);
+    
+    ShowMessage (3, 0, 1, "Version is %d", vi->version);
+    ShowMessage (3, 0, 1, "Bitrate Hints: upper=%ld nominal=%ld lower=%ld window=%ld",
+		 vi->bitrate_upper, vi->bitrate_nominal, vi->bitrate_lower, vi->bitrate_window);
+    ShowMessage (2, 0, 1, "Bitstream is %d channel, %ldHz",
+		 vi->channels, vi->rate);
+    ShowMessage (2, 0, 1, "Encoded by: %s", vc->vendor);
+    
+    if (ov_seekable (&vf)) {
+      if ((realseekpos > ov_time_total(&vf, -1)) || (realseekpos < 0))
+	/* If we're out of range set it to right before the end. If we set it
+	 * right to the end when we seek it will go to the beginning of the song */
+	realseekpos = ov_time_total(&vf, -1) - 0.01;
       
-      Options.outputOpts.rate = vi->rate;
-      Options.outputOpts.channels = vi->channels;
-      if(open_audio_devices() < 0)
-	exit(1);
-      
-      for (i = 0; i < vc->comments; i++) {
-	char *cc = vc->user_comments[i];	/* current comment */
-	int j;
-	
-	for (j = 0; ogg_comment_keys[j].key != NULL; j++)
-	  if (!strncasecmp
-	      (ogg_comment_keys[j].key, cc,
-	       strlen(ogg_comment_keys[j].key))) {
-	    ShowMessage (1, 0, 1, ogg_comment_keys[j].formatstr,
-			 cc + strlen(ogg_comment_keys[j].key));
-	    break;
-	  }
-	if (ogg_comment_keys[j].key == NULL)
-	  ShowMessage (1, 0, 1, "Unrecognized comment: '%s'", cc);
-      }
-      
-      ShowMessage (3, 0, 1, "Version is %d", vi->version);
-      ShowMessage (3, 0, 1, "Bitrate Hints: upper=%ld nominal=%ld lower=%ld window=%ld",
-		   vi->bitrate_upper, vi->bitrate_nominal, vi->bitrate_lower, vi->bitrate_window);
-      ShowMessage (2, 0, 1, "Bitstream is %d channel, %ldHz",
-		   vi->channels, vi->rate);
-      ShowMessage (2, 0, 1, "Encoded by: %s", vc->vendor);
-      
-      if (ov_seekable (&vf)) {
-	if ((realseekpos > ov_time_total(&vf, -1)) || (realseekpos < 0))
-	  /* If we're out of range set it to right before the end. If we set it
-	   * right to the end when we seek it will go to the beginning of the song */
-	  realseekpos = ov_time_total(&vf, -1) - 0.01;
-	
 	Options.inputOpts.seekable = 1;
 	Options.inputOpts.totalTime = ov_time_total(&vf, -1);
 	Options.inputOpts.totalSamples = ov_pcm_total(&vf, -1);
@@ -749,99 +749,99 @@ void play_file()
 	
 	if (realseekpos > 0)
 	  ov_time_seek(&vf, realseekpos);
-      }
-      else
-	Options.inputOpts.seekable = 0;
-
-      /* Ready to start sending data to the audio playback thread */
-
-      if (Options.outputOpts.buffer)
-	buffer_thread_start (Options.outputOpts.buffer);
-
-      eos = 0;
+    }
+    else
+      Options.inputOpts.seekable = 0;
+    
+    /* Ready to start sending data to the audio playback thread */
+    
+    if (Options.outputOpts.buffer)
+      buffer_thread_start (Options.outputOpts.buffer);
+    
+    eos = 0;
+    
+    while (!eos && !exit_requested) {
       
-      while (!eos && !exit_requested) {
-	
-	if (skipfile_requested) {
-	  eof = eos = 1;
-	  signal(SIGALRM,signal_activate_skipfile);
+      if (skipfile_requested) {
+	eof = eos = 1;
+	signal(SIGALRM,signal_activate_skipfile);
 	  alarm(Options.playOpts.delay);
 	  break;
-	}
+      }
 
-	if (pause_requested) {
-	  buffer_thread_pause (Options.outputOpts.buffer);
-	  kill (getpid(), SIGSTOP); /* We stall here */
-	  
-	  /* Done pausing */
-	  buffer_thread_unpause (Options.outputOpts.buffer);
-	  pause_requested = 0;
-	}
-
-
-	old_section = current_section;
-	ret =
-	  ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
+      if (pause_requested) {
+	buffer_thread_pause (Options.outputOpts.buffer);
+	kill (getpid(), SIGSTOP); /* We stall here */
+	
+	/* Done pausing */
+	buffer_thread_unpause (Options.outputOpts.buffer);
+	pause_requested = 0;
+      }
+      
+      
+      old_section = current_section;
+      ret =
+	ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
 		  2, 1, &current_section);
-	if (ret == 0) {
-	  /* End of file */
-	  eof = eos = 1;
-	} else if (ret == OV_HOLE) {
-	  if (Options.statOpts.verbose > 1) 
-	    /* we should be able to resync silently; if not there are 
-	       bigger problems. */
-	    Error ("--- Hole in the stream; probably harmless\n");
-	} else if (ret < 0) {
-	  /* Stream error */
-	  Error ("=== Vorbis library reported a stream error.\n");
-	} else {
-	  /* did we enter a new logical bitstream */
-	  if (old_section != current_section && old_section != -1)
-	    eos = 1;
-	  
-	  Options.statOpts.stats[4].arg.doublearg = (double) ov_bitrate_instant (&vf) / 1000.0f;
-
-	  do {
-	    if (nthc-- == 0) {
-	      if (Options.outputOpts.buffer) {
-		buffer_submit_data (Options.outputOpts.buffer, 
-				    convbuffer, ret, 1);
-		Ogg123UpdateStats();
+      if (ret == 0) {
+	/* End of file */
+	eof = eos = 1;
+      } else if (ret == OV_HOLE) {
+	if (Options.statOpts.verbose > 1) 
+	  /* we should be able to resync silently; if not there are 
+	     bigger problems. */
+	  Error ("--- Hole in the stream; probably harmless\n");
+      } else if (ret < 0) {
+	/* Stream error */
+	Error ("=== Vorbis library reported a stream error.\n");
+      } else {
+	/* did we enter a new logical bitstream */
+	if (old_section != current_section && old_section != -1)
+	  eos = 1;
+	
+	Options.statOpts.stats[4].arg.doublearg = (double) ov_bitrate_instant (&vf) / 1000.0f;
+	
+	do {
+	  if (nthc-- == 0) {
+	    if (Options.outputOpts.buffer) {
+	      buffer_submit_data (Options.outputOpts.buffer, 
+				  convbuffer, ret, 1);
+	      Ogg123UpdateStats();
 	      }
-	      else
-		OutBufferWrite (convbuffer, ret, 1, &Options, 0);
-	      nthc = Options.playOpts.nth - 1;
+	    else
+	      OutBufferWrite (convbuffer, ret, 1, &Options, 0);
+	    nthc = Options.playOpts.nth - 1;
 	    }
-	  } while (++ntimesc < Options.playOpts.ntimes);
-	  ntimesc = 0;
-	  
-	}
+	} while (++ntimesc < Options.playOpts.ntimes);
+	ntimesc = 0;
+	
       }
-
-      /* Done playing this logical bitstream.  Now we cleanup. */
-      if (Options.outputOpts.buffer) {
-	fprintf(stderr, "exit requested = %d", exit_requested);
-
-	if (!exit_requested && !skipfile_requested) {
-	  buffer_mark_eos (Options.outputOpts.buffer);
-	  buffer_wait_for_empty (Options.outputOpts.buffer);
-	}
-
-	buffer_thread_kill (Options.outputOpts.buffer);
-      }
-
     }
     
-    alarm(0);
-    signal(SIGALRM,SIG_DFL);
-    signal(SIGINT,SigHandler);
+    /* Done playing this logical bitstream.  Now we cleanup. */
+    if (Options.outputOpts.buffer) {
+      fprintf(stderr, "exit requested = %d", exit_requested);
+      
+      if (!exit_requested && !skipfile_requested) {
+	buffer_mark_eos (Options.outputOpts.buffer);
+	buffer_wait_for_empty (Options.outputOpts.buffer);
+      }
+      
+      buffer_thread_kill (Options.outputOpts.buffer);
+    }
     
-    ov_clear(&vf);
+  }
     
-    ShowMessage (1, 1, 1, "Done.");
-    
-    if (exit_requested)
-      exit (0);
+  alarm(0);
+  signal(SIGALRM,SIG_DFL);
+  signal(SIGINT,SigHandler);
+  
+  ov_clear(&vf);
+  
+  ShowMessage (1, 1, 1, "Done.");
+  
+  if (exit_requested)
+    exit (0);
 }
 
 int open_audio_devices()
@@ -926,9 +926,9 @@ int open_audio_devices()
 
 void ogg123_onexit (int exitcode, void *arg)
 {
-  if (Options.inputOpts.buffer) {
-    StreamInputCleanup (Options.inputOpts.buffer);
-    Options.inputOpts.buffer = NULL;
+  if (Options.inputOpts.data) {
+    StreamCleanup (Options.inputOpts.data);
+    Options.inputOpts.data = NULL;
   }
       
   if (Options.outputOpts.buffer) {

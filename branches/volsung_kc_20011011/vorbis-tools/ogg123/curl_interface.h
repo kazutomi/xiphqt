@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: curl_interface.h,v 1.1.2.7 2001/08/31 18:01:12 kcarnold Exp $
+ last mod: $Id: curl_interface.h,v 1.1.2.7.2.1 2001/10/17 16:58:14 volsung Exp $
  
 ********************************************************************/
 
@@ -25,8 +25,19 @@
 
 #include "buffer.h"
 
+typedef struct StreamInputBufferData_s {
+  buf_t *buf;
+
+  pthread_t CurlThread;
+
+  CURL * CurlHandle;
+
+  FILE *SavedStream;
+} StreamInputBufferData_t;
+
 typedef struct InputOpts_s {
-  buf_t *buffer;
+  StreamInputBufferData_t *data;
+
   /* Input buffer options */
   long BufferSize;
   long Prebuffer;
@@ -51,26 +62,7 @@ typedef struct InputOpts_s {
 
 #define VORBIS_CHUNKIN_SIZE (8500)
 
-typedef struct StreamInputBufferData_s {
-  pthread_t CurlThread;
-  pthread_mutex_t ReadDataMutex;
-  pthread_cond_t ReadRequestedCondition;
-  pthread_cond_t ReadDoneCondition;
-
-  CURL * CurlHandle;
-
-  char EOS;
-  char ShuttingDown;
-
-  size_t BytesRequested;
-  unsigned char *WriteTarget;
-  unsigned char *CurWritePtr;
-  unsigned char ExcessData[VORBIS_CHUNKIN_SIZE];
-  size_t ExcessDataSize;
-  FILE *SavedStream;
-} StreamInputBufferData_t;
-
-buf_t *InitStream (InputOpts_t inputOpts);
+StreamInputBufferData_t *InitStream (InputOpts_t inputOpts);
 size_t StreamBufferRead (void *ptr, size_t size, size_t nmemb, void *arg);
 int StreamBufferSeek (void *arg, ogg_int64_t offset, int whence);
 int StreamBufferClose (void *arg);

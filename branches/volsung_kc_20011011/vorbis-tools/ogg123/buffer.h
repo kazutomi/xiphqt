@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
  
- last mod: $Id: buffer.h,v 1.2.2.16.2.1 2001/10/14 05:42:51 volsung Exp $
+ last mod: $Id: buffer.h,v 1.2.2.16.2.2 2001/10/17 16:58:14 volsung Exp $
  
 ********************************************************************/
 
@@ -78,6 +78,8 @@ void buffer_thread_kill    (buf_t *buf);
 
 /* --- Data buffering functions --- */
 void buffer_submit_data (buf_t *buf, chunk *data, size_t size, size_t nmemb);
+size_t buffer_get_data (buf_t *buf, chunk *data, size_t size, size_t nmemb);
+
 void buffer_mark_eos (buf_t *buf);
 
 /* --- Buffer status functions --- */
