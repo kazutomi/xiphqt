@@ -36,7 +36,6 @@ typedef struct {
 
 
   int     *lacing_vals;      /* The values that will go to the segment table */
-  long    *page_vals;        /* track the pages packets come from */
   ogg_int64_t *granule_vals; /* granulepos values for headers. Not compact
 				this way, but it is simple coupled to the
 				lacing fifo */
@@ -79,8 +78,6 @@ typedef struct {
 				but we need coupling so that the codec
 				(which is in a seperate abstraction
 				layer) also knows about the gap */
-  long         pageno;       /* Sequence number of the page this
-				packet completed on. */
 } ogg_packet;
 
 typedef struct {
