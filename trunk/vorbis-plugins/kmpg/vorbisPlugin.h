@@ -14,11 +14,10 @@
 #ifndef __VORBISPLUGIN_H
 #define __VORBISPLUGIN_H
 
-#include <kmpg/playerPlugin/playerPlugin.h>
-#include <kmpg/outPlugin/outputStream.h>
-#include <kmpg/inputPlugin/inputStream.h>
+#include <mpeglib/decoder/decoderPlugin.h>
+#include <mpeglib/output/outputStream.h>
+#include <mpeglib/input/inputStream.h>
 
-#include <kmpg/playerutil/timeStamp.h>
 #include <stdio.h>
 #include <math.h>
 #include <vorbis/codec.h>
@@ -40,7 +39,7 @@ extern long    ftell_func  (FILE *stream);
 
 
 
-class VorbisPlugin : public PlayerPlugin {
+class VorbisPlugin : public DecoderPlugin {
   
   OggVorbis_File vf;
 
@@ -49,9 +48,12 @@ class VorbisPlugin : public PlayerPlugin {
   
 
   int lnoLength;
-  int lfirst;
   int lAutoPlay;
   TimeStamp* timeDummy;
+  char* pcmout;           // temporay pcm buffer
+  int last_section;
+  int current_section;
+ 
 
  public:
   VorbisPlugin();
@@ -62,6 +64,7 @@ class VorbisPlugin : public PlayerPlugin {
   void config(char* key, char* value);
  
  private:
+  int processVorbis(vorbis_info* vi,vorbis_comment* comment);
   int getSongLength(OggVorbis_File* vf);
   int init();
 
@@ -69,7 +72,7 @@ class VorbisPlugin : public PlayerPlugin {
 
 
 extern "C" {
-  extern PlayerPlugin* getVorbisPlayer() {
+  extern DecoderPlugin* getVorbisPlayer() {
     return new VorbisPlugin();
   }
 }
