@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: options.h,v 1.1.2.1 2001/08/12 03:59:31 kcarnold Exp $
+ last mod: $Id: options.h,v 1.1.2.2 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
 
@@ -44,8 +44,8 @@ typedef enum {
 
 typedef struct Option_s {
   char found;
-  char *name;
-  char *desc;
+  const char *name;
+  const char *desc;
   OptionType type;
   void *ptr;
   void *dfl;
@@ -53,7 +53,7 @@ typedef struct Option_s {
 
 void InitOpts (Option_t opts[]);
 ParseCode ParseLine (Option_t opts[], char *line);
-ParseCode ParseFile (Option_t opts[], char *filename, int (*errfunc) (void *, ParseCode, int, char*, char*), void *arg);
+ParseCode ParseFile (Option_t opts[], const char *filename, int (*errfunc) (void *, ParseCode, int, const char*, char*), void *arg);
 const char *ParseErr (ParseCode pcode);
 void DescribeOptions (Option_t opts[], FILE *outfile);
 

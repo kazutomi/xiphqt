@@ -11,7 +11,7 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.h,v 1.1.2.3 2001/08/22 16:42:31 kcarnold Exp $
+ last mod: $Id: status.h,v 1.1.2.4 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
 
@@ -25,7 +25,7 @@
 typedef struct {
   int prio;
   char enabled;
-  char *formatstr;
+  const char *formatstr;
   enum {
     stat_noarg = 0,
     stat_intarg,
@@ -42,8 +42,8 @@ typedef struct {
 } Stat_t;
 
 void UpdateStats (Stat_t stats[]);
-void ShowMessage (int prio, char keepStatusLine, char addNewline, char *fmt, ...);
-void Error (char *fmt, ...);
+void ShowMessage (int prio, char keepStatusLine, char addNewline, const char *fmt, ...);
+void Error (const char *fmt, ...);
 void SetPriority (int prio);
 
 #endif /* __STATUS_H */

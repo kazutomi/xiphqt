@@ -11,11 +11,13 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: status.c,v 1.1.2.6 2001/08/22 16:42:31 kcarnold Exp $
+ last mod: $Id: status.c,v 1.1.2.7 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
 
 /* status interface */
+
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,7 @@
 /* a few globals */
 /* stderr is thread-global, so status vars should be also; caller must
  * ensure that status functions are not called concurrently */
-int buflen = 100; /* guess max length to be 100 */
+size_t buflen = 100; /* guess max length to be 100 */
 char *tmpbuf = NULL; /* global so updating quick after size determined */
 int LastLineLen = 0;
 int MaxPrio = 0;
@@ -38,9 +40,10 @@ void ClearLine ()
   fputc ('\r', stderr);
 }
 
-int AppendString (int len, char *fmt, ...) {
+int AppendString (int len, const char *fmt, ...) {
   va_list ap;
-  int n = -1, size;
+  int n = -1;
+  size_t size;
 
   while (n == -1) {
     size = buflen - len - 1;
@@ -113,7 +116,7 @@ void UpdateStats (Stat_t stats[])
   LastLineLen = len;
 }
 
-void ShowMessage (int prio, char keepLastLine, char addNewline, char *fmt, ...)
+void ShowMessage (int prio, char keepLastLine, char addNewline, const char *fmt, ...)
 {
   va_list ap;
 
@@ -133,7 +136,7 @@ void ShowMessage (int prio, char keepLastLine, char addNewline, char *fmt, ...)
 }
 
 /* a degenerate ShowMessage specifically for spitting out an error. fmt has a newline. */
-void Error (char *fmt, ...)
+void Error (const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);

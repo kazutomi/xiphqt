@@ -14,9 +14,11 @@
  *                                                                  *
  ********************************************************************
 
- last mod: $Id: ogg123.c,v 1.39.2.26 2001/08/31 15:18:53 kcarnold Exp $
+ last mod: $Id: ogg123.c,v 1.39.2.27 2001/08/31 18:01:12 kcarnold Exp $
 
  ********************************************************************/
+
+#define _GNU_SOURCE
 
 #include <sys/types.h>
 #include <string.h>
@@ -37,18 +39,18 @@
 
 /* take buffer out of the data segment, not the stack */
 #define BUFFER_CHUNK_SIZE 4096
-char convbuffer[BUFFER_CHUNK_SIZE];
+unsigned char convbuffer[BUFFER_CHUNK_SIZE];
 int convsize = BUFFER_CHUNK_SIZE;
 
 /* take big options structure from the data segment */
 ogg123_options_t Options;
 
-static char skipfile_requested;
-static char exit_requested;
+char skipfile_requested;
+char exit_requested;
 
 struct {
-    char *key;			/* includes the '=' for programming convenience */
-    char *formatstr;		/* formatted output */
+    const char *key;			/* includes the '=' for programming convenience */
+    const char *formatstr;		/* formatted output */
 } ogg_comment_keys[] = {
   {"ARTIST=", "Artist: %s"},
   {"ALBUM=", "Album: %s"},
@@ -87,7 +89,7 @@ struct option long_options[] = {
 };
 
 /* configuration interface */
-int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, char *filename, char *line)
+int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, const char *filename, char *line)
 {
   if (pcode == parse_syserr)
     {
@@ -102,7 +104,7 @@ int ConfigErrorFunc (void *arg, ParseCode pcode, int lineno, char *filename, cha
     }
 }
 
-ParseCode ReadConfig (Option_t opts[], char *filename)
+ParseCode ReadConfig (Option_t opts[], const char *filename)
 {
   return ParseFile (opts, filename, ConfigErrorFunc, NULL);
 }
@@ -157,9 +159,9 @@ void InitOgg123Stats (Stat_t stats[])
 
 void SetTime (Stat_t stats[], ogg_int64_t sample)
 {
-  double time = (double) sample / (double) Options.outputOpts.rate;
-  long c_min = (long) time / (long) 60;
-  double c_sec = time - 60.0f * c_min;
+  double CurTime = (double) sample / (double) Options.outputOpts.rate;
+  long c_min = (long) CurTime / (long) 60;
+  double c_sec = CurTime - 60.0f * c_min;
   long r_min, t_min;
   double r_sec, t_sec;
 
@@ -167,13 +169,13 @@ void SetTime (Stat_t stats[], ogg_int64_t sample)
     if (sample > Options.inputOpts.totalSamples) {
       /* file probably grew while playing; update total time */
       Options.inputOpts.totalSamples = sample;
-      Options.inputOpts.totalTime = time;
+      Options.inputOpts.totalTime = CurTime;
       stats[3].arg.stringarg[0] = '\0';
       r_min = 0;
       r_sec = 0.0f;
     } else {
-      r_min = (long) (Options.inputOpts.totalTime - time) / (long) 60;
-      r_sec = ((double) Options.inputOpts.totalTime - time) - 60.0f * (double) r_min;
+      r_min = (long) (Options.inputOpts.totalTime - CurTime) / (long) 60;
+      r_sec = ((double) Options.inputOpts.totalTime - CurTime) - 60.0f * (double) r_min;
     }
     sprintf (stats[2].arg.stringarg, "[%02li:%05.2f]", r_min, r_sec);
     if (stats[3].arg.stringarg[0] == '\0') {
@@ -239,6 +241,12 @@ void SetBuffersStats ()
   stats[9].arg.stringarg = strdup (strbuf);
 }
 
+void Ogg123UpdateStats (void)
+{
+  SetBuffersStats ();
+  UpdateStats (Options.statOpts.stats);
+}
+
 /* /status interface */
 
 /* buffer interface */
@@ -246,7 +254,7 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
 {
   static ogg_int64_t cursample = 0;
   static unsigned char RechunkBuffer[BUFFER_CHUNK_SIZE];
-  static int curBuffered = 0;
+  static size_t curBuffered = 0;
   size_t origSize;
   unsigned char *data = ptr;
 
@@ -254,8 +262,7 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   origSize = size;
   
   SetTime (Options.statOpts.stats, cursample);
-  SetBuffersStats ();
-  UpdateStats (Options.statOpts.stats);
+  Ogg123UpdateStats();
   cursample += Options.playOpts.nth * size * nmemb / Options.outputOpts.channels / 2 / Options.playOpts.ntimes; /* locked to 16-bit */
 
   /* optimized fast path */
@@ -264,7 +271,7 @@ size_t OutBufferWrite(void *ptr, size_t size, size_t nmemb, void *arg, char iseo
   else
     /* don't actually write until we have a full chunk, or of course EOS */
     while (size) {
-      int toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? BUFFER_CHUNK_SIZE - curBuffered : size;
+      size_t toChunkNow = BUFFER_CHUNK_SIZE - curBuffered <= size ? BUFFER_CHUNK_SIZE - curBuffered : size;
       memmove (RechunkBuffer + curBuffered, data, toChunkNow);
       size -= toChunkNow;
       data += toChunkNow;
@@ -327,6 +334,14 @@ void usage(void)
 	 "  -l, --delay=s  set s (default 1). If s=-1, disable song skip.\n");
 }
 
+#define INIT(type, value) type type##_##value = value
+char char_n = 'n';
+float float_50f = 50.0f;
+float float_0f = 0.0f;
+INIT(int, 10000);
+INIT(int, 1);
+INIT(int, 0);
+
 int main(int argc, char **argv)
 {
   int ret;
@@ -336,14 +351,6 @@ int main(int argc, char **argv)
   ao_info *info;
   int temp_driver_id = -1;
   devices_t *current;
-
-  /* data used just to initialize the pointers */
-  char char_n = 'n';
-  long int_10000 = 10000;
-  float float_50f = 50.0f;
-  float float_0f = 0.0f;
-  long int_1 = 1;
-  long int_0 = 0;
 
   /* *INDENT-OFF* */
   Option_t opts[] = {
@@ -717,17 +724,17 @@ void play_file()
       
       for (i = 0; i < vc->comments; i++) {
 	char *cc = vc->user_comments[i];	/* current comment */
-	int i;
+	int j;
 	
-	for (i = 0; ogg_comment_keys[i].key != NULL; i++)
+	for (j = 0; ogg_comment_keys[j].key != NULL; j++)
 	  if (!strncasecmp
-	      (ogg_comment_keys[i].key, cc,
-	       strlen(ogg_comment_keys[i].key))) {
-	    ShowMessage (1, 0, 1, ogg_comment_keys[i].formatstr,
-			 cc + strlen(ogg_comment_keys[i].key));
+	      (ogg_comment_keys[j].key, cc,
+	       strlen(ogg_comment_keys[j].key))) {
+	    ShowMessage (1, 0, 1, ogg_comment_keys[j].formatstr,
+			 cc + strlen(ogg_comment_keys[j].key));
 	    break;
 	  }
-	if (ogg_comment_keys[i].key == NULL)
+	if (ogg_comment_keys[j].key == NULL)
 	  ShowMessage (1, 0, 1, "Unrecognized comment: '%s'", cc);
       }
       
@@ -774,7 +781,7 @@ void play_file()
 
 	old_section = current_section;
 	ret =
-	  ov_read(&vf, convbuffer, sizeof(convbuffer), is_big_endian,
+	  ov_read(&vf, (char *) convbuffer, sizeof(convbuffer), is_big_endian,
 		  2, 1, &current_section);
 	if (ret == 0) {
 	  /* End of file */
