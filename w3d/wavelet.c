@@ -268,6 +268,28 @@ void encode_coefficients (const Wavelet3DBuf* buf,
       encode_coeff(s_stream, i_stream, buf->data[i]);
 }
 
+
+static inline
+uint32_t skip_0coeffs (Wavelet3DBuf* buf,
+                       ENTROPY_CODER s_stream [],
+                       uint32_t start)
+{
+   int i;
+   uint32_t min = ~0;
+
+   for (i=1; i<10; i++) {
+      if (ENTROPY_CODER_MPS(&s_stream[i]) == 0) {
+         uint32_t runlength = ENTROPY_CODER_RUNLENGTH(&s_stream[i]);
+
+         if (runlength < min)
+            min = runlength;
+      }
+   }
+
+   return min;
+}
+
+
 static
 void decode_coefficients (Wavelet3DBuf* buf,
                           ENTROPY_CODER s_stream [],
@@ -275,8 +297,15 @@ void decode_coefficients (Wavelet3DBuf* buf,
 {
    uint32_t i;
 
-   for (i=0; i<buf->width*buf->height*buf->frames; i++)
+   for (i=0; i<buf->width*buf->height*buf->frames; i++) {
+      int skip = skip_0coeffs (buf, s_stream, i);
+
+      if (skip > buf->width*buf->height*buf->frames - i)
+         return;
+
+      i += skip;
       buf->data[i] = decode_coeff(s_stream, i_stream);
+   }
 }
 #endif
 

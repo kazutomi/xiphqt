@@ -33,7 +33,7 @@ typedef struct {
    uint32_t width;
    uint32_t height;
    uint32_t frames_per_buf;
-   uint32_t bitrate;                    /*  per color component */
+   uint32_t bitstream_len;              /*  for all color components, bytes */
    TarkinColorFormat format;
 } TarkinVideoLayerDesc;
 
@@ -43,8 +43,6 @@ typedef struct {
    uint32_t n_comp;                     /*  number of color components */
    Wavelet3DBuf **waveletbuf;
    uint32_t current_frame_in_buf;
-
-   uint32_t bitstream_len;
 
    void (*color_fwd_xform) (uint8_t *rgba, Wavelet3DBuf *yuva [], uint32_t count);
    void (*color_inv_xform) (Wavelet3DBuf *yuva [], uint8_t *rgba, uint32_t count);
