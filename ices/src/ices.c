@@ -1,7 +1,7 @@
 /* ices.c
  * - Main startup, thread launching, and cleanup code.
  *
- * $Id: ices.c,v 1.4.2.2 2002/02/08 11:14:03 msmith Exp $
+ * $Id: ices.c,v 1.4.2.3 2002/02/09 05:07:01 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 	** make it so you can specify all parameters on the commandline
 	** too.
 	*/
-	if (config_read(argv[1]) <= 0) 
+	if (config_read(argv[1]) < 0) 
 	{
 		fprintf(stderr, "Failed to read config file \"%s\"\n", argv[1]);
 		goto fail;

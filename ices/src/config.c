@@ -1,7 +1,7 @@
 /* config.c
  * - config file reading code, plus default settings.
  *
- * $Id: config.c,v 1.6.2.2 2002/02/08 11:14:03 msmith Exp $
+ * $Id: config.c,v 1.6.2.3 2002/02/09 05:07:01 msmith Exp $
  *
  * Copyright (c) 2001-2002 Michael Smith <msmith@labyrinth.net.au>
  *
@@ -165,7 +165,7 @@ static process_chain_element *_parse_module(xmlDocPtr doc, xmlNodePtr node,
     }
 }
 
-static void _parse_instance(config_t *config, xmlDocPtr doc, xmlNodePtr node)
+static int _parse_instance(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 {
     process_chain_element *chain = NULL;
     instance_t *instance = calloc(1, sizeof(instance_t));
@@ -180,14 +180,15 @@ static void _parse_instance(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 
         if (strcmp(node->name, "maxqueuelength") == 0)
             SET_INT(instance->max_queue_length);
-		if (strcmp(node->name, "module") == 0)
+		if (strcmp(node->name, "module") == 0) {
             chain = _parse_module(doc, node, chain);
+            if(!chain) {
+                fprintf(stderr, "Couldn't create processing chain\n");
+                return -1;
+            }
+        }
 	} while ((node = node->next));
 
-    if(!chain) {
-        fprintf(stderr, "Couldn't create processing chain\n");
-        return;
-    }
 
     instance->next = NULL;
     instance->output_chain = chain;
@@ -203,9 +204,11 @@ static void _parse_instance(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 
         prev->next = instance;
     }
+
+    return 0;
 }
 
-static void _parse_input(config_t *config, xmlDocPtr doc, xmlNodePtr node)
+static int _parse_input(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 {
     process_chain_element *chain = NULL;
 
@@ -219,24 +222,36 @@ static void _parse_input(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 	} while ((node = node->next));
 
     config->input_chain = chain;
+
+    if(!chain) {
+        fprintf(stderr, "Could not create input processing chain.\n");
+        return -1;
+    }
+
+    return 0;
 }
 
-static void _parse_stream(config_t *config, xmlDocPtr doc, xmlNodePtr node)
+static int _parse_stream(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 {
+    int ret = 0;
 	do 
 	{
 		if (node == NULL) break;
 		if (xmlIsBlankNode(node)) continue;
 
 		if (strcmp(node->name, "input") == 0)
-			_parse_input(config, doc, node->xmlChildrenNode);
+			ret = _parse_input(config, doc, node->xmlChildrenNode);
 		else if (strcmp(node->name, "instance") == 0)
-			_parse_instance(config, doc, node->xmlChildrenNode);
-	} while ((node = node->next));
+			ret = _parse_instance(config, doc, node->xmlChildrenNode);
+	} while (!ret && (node = node->next));
+
+    return ret;
 }
 
-static void _parse_root(config_t *config, xmlDocPtr doc, xmlNodePtr node)
+static int _parse_root(config_t *config, xmlDocPtr doc, xmlNodePtr node)
 {
+    int ret = -1;
+
 	do 
 	{
 		if (node == NULL) break;
@@ -253,8 +268,10 @@ static void _parse_root(config_t *config, xmlDocPtr doc, xmlNodePtr node)
         else if (strcmp(node->name, "consolelog") == 0)
             SET_INT(config->log_stderr);
 		else if (strcmp(node->name, "stream") == 0)
-			_parse_stream(config, doc, node->xmlChildrenNode);
+			ret = _parse_stream(config, doc, node->xmlChildrenNode);
 	} while ((node = node->next));
+
+    return ret;
 }
 
 void config_initialise(void)
@@ -275,6 +292,7 @@ int config_read(const char *fn)
 {
 	xmlDocPtr doc;
 	xmlNodePtr node;
+    int ret;
 
 	if (fn == NULL || strcmp(fn, "") == 0) return -1;
 
@@ -285,14 +303,14 @@ int config_read(const char *fn)
 	if (node == NULL || strcmp(node->name, "ices") != 0) 
 	{
 		xmlFreeDoc(doc);
-		return 0;
+		return -1;
 	}
 
-	_parse_root(ices_config, doc, node->xmlChildrenNode);
+	ret = _parse_root(ices_config, doc, node->xmlChildrenNode);
 
 	xmlFreeDoc(doc);
 
-	return 1;
+	return ret;
 }
 
 
