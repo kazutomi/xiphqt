@@ -7,6 +7,7 @@ from neuros import Neuros
 import neuros
 from cmd_add import cmd_add
 from cmd_del import cmd_del
+from cmd_list import cmd_list
 from cmd_clear import cmd_clear
 from cmd_pack import cmd_pack
 
@@ -77,6 +78,8 @@ def main(argv):
             cmd_add(config, myNeuros, remaining[1:])
         elif remaining[0] == "del":
             cmd_del(config, myNeuros, remaining[1:])
+        elif remaining[0] == "list":
+            cmd_list(config, myNeuros, remaining[1:])
         elif remaining[0] == "clear":
             cmd_clear(config, myNeuros, remaining[1:])
         elif remaining[0] == "pack":
