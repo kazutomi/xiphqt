@@ -239,11 +239,11 @@ int main (int argc, char **argv)
          rgb [3*i]   = (y->data[i] == y2->data [i]) ? 0 : ~0;
          rgb [3*i+1] = (u->data[i] == u2->data [i]) ? 0 : ~0;
          rgb [3*i+2] = (v->data[i] == v2->data [i]) ? 0 : ~0;
-if (y->data[i] != y2->data [i]) {
+/*if (y->data[i] != y2->data [i]) {
    printf ("%i: %i <-> %i\n", i, y->data[i], y2->data[i]);
 bit_print (y->data[i]);
 bit_print (y2->data[i]);
-}
+}*/
       }
 
       save_ppm ("coeffdiff%i.ppm", rgb, width, height, frame, frames);
