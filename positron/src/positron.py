@@ -2,72 +2,81 @@ import sys
 from os import path
 import getopt
 from ConfigParser import ConfigParser
+from neuros import Neuros
+import neuros
+from cmd_add import cmd_add
 
-import progress
 import ports
 
+version = "Xiph.org Positron version 0.1"
+
 def usage():
-    pass
+    print version
+    print
+    print "positron add: Add files to the Neuros, copying as needed"
 
-def cmd_sync(econtrol, args):
-    pass
 
-def cmd_add(econtrol
+def set_config_defaults(config):
+    config.add_section("general")
+    config.set("general", "musicdir", "MUSIC")
 
 def main(argv):
-    options = "c:i:hv"
+    options = "c:hm:v"
     long_options = ("config=", "help", "mount-point=", "version")
 
     # parse global options
     try:
         opts, remaining = getopt.getopt(argv[1:], options, long_options)
-    except getopt.GetoptError:
-        print "Invalid option"
+    except getopt.GetoptError, e:
+        print "Error:", e
         usage()
         sys.exit()
 
-    config_file = ports.config_file_path()
-    config_defaults = { "mount-point" => None }
-
+    config_file = None
+    mountpoint = None
     for o,a in opts:
         if o in ("-v", "--version"):
-            print "Xiph.org positron version 0.1"
+            print version
             sys.exit()
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
         elif o in ("-c", "--config"):
-            config_dir = a
+            config_file = a
         elif o in ("-m", "--mount-point"):
-            mount_point = a
+            mountpoint = a
 
+    # Open config file
     config = ConfigParser()
-    
+    set_config_defaults(config)
+    if config_file != None:
+        config.read(config_file)
+    else:
+        config.read([ports.site_config_file_path(), ports.user_config_file_path()])
 
-    # now select major command
-    if len(remaining) == 0:
-        usage()
-    elif remaining[0] == "set":
-        cmd_set(econtrol, remaining[1:])
-    elif remaining[0] == "list":
-        if len(remaining) == 1:
-            list_usage()
-        elif remaining[1].startswith("dir"):
-            cmd_list_directories(econtrol, remaining[2:])
-        elif remaining[1].startswith("chan"):
-            cmd_list_channels(econtrol, remaining[2:])
-        elif remaining[1] == "new":
-            cmd_list_new(econtrol, remaining[2:])
-    elif remaining[0] == "add":
-        cmd_add(econtrol, remaining[1:])
-    elif remaining[0] == "subscribe":
-        cmd_subscribe(econtrol, remaining[1:])
-    elif remaining[0] == "unsubscribe":
-        cmd_unsubscribe(econtrol, remaining[1:])
-    elif remaining[0] == "download":
-        cmd_download(econtrol, remaining[1:])
+    # Override config file settings with command line options
+    if mountpoint != None:
+        config.set("general","mountpoint",mountpoint)
 
-    sys.exit()
+    # Sanity check
+    if not config.has_option("general","mountpoint"):
+        print "Error: Neuros mountpoint not set with -m and not present in config file."
+
+    try:
+        myNeuros = Neuros(config.get("general", "mountpoint"))
+        
+        # now select major command
+        if len(remaining) == 0:
+            usage()
+        elif remaining[0] == "add":
+            cmd_add(config, myNeuros, remaining[1:])
+
+        exit_value = 0
+    except neuros.Error, e:
+        print "Error:", e
+        exit_val = 1
+
+    sys.exit(exit_value)
 
     
 if __name__ == "__main__":
