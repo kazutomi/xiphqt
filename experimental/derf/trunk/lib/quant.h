@@ -3,7 +3,8 @@
 # include "theora/theora.h"
 # include "ocintrin.h"
 
-typedef ogg_uint16_t oc_quant_tables[64][64];
+typedef ogg_uint16_t   oc_quant_table[64];
+typedef oc_quant_table oc_quant_tables[64];
 
 
 
@@ -21,7 +22,7 @@ extern unsigned OC_AC_QUANT_MIN[2];
 
 
 
-void oc_dequant_tables_init(oc_quant_tables *_dequant[2][3],
+void oc_dequant_tables_init(oc_quant_table *_dequant[2][3],
  int _pp_dc_scale[64],const theora_quant_info *_qinfo);
 
 #endif

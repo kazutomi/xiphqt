@@ -810,6 +810,7 @@ const theora_huff_code OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]={
 };
 
 
+
 /*A description of a Huffman code value used when encoding the tree.*/
 typedef struct{
   /*The bit pattern, left-shifted so that the MSB of all patterns is
@@ -820,6 +821,8 @@ typedef struct{
   /*The token this bit pattern represents.*/
   int          token;
 }oc_huff_entry;
+
+
 
 /*Compares two oc_huff_entry structures by their bit patterns.
   _c1: The first entry to compare.
@@ -842,7 +845,7 @@ static int huff_entry_cmp(const void *_c1,const void *_c2){
    code, since the binary tree is assumed to be full.
   _opb:   The buffer to store the tree in.
   _codes: The Huffman tables to pack.
-  Return: 0 on success, or a negative value if one of the given huffman tables
+  Return: 0 on success, or a negative value if one of the given Huffman tables
    does not form a full, prefix-free code.*/
 int oc_huff_codes_pack(oggpack_buffer *_opb,
  const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]){

@@ -23,7 +23,7 @@ int theora_read32(oggpack_buffer *_opb,long *_ret){
   return (int)mask;
 }
 
-/*Read n bits, where N <= 31 for libogg1.
+/*Read n bits, where n <= 31 for libogg1.
   *_ret is set to 0 on failure.
   Return: 0 on success, or a negative value on failure.*/
 int theora_read(oggpack_buffer *_opb,int _nbits,long *_ret){
@@ -167,7 +167,7 @@ static void oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
   oc_huff_trees_copy(_dec->huff_tables,_setup->huff_tables);
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
     _dec->state.dequant_tables[qti][pli]=
-     _dec->state.dequant_table_data[qti]+pli;
+     _dec->state.dequant_table_data[qti][pli];
   }
   oc_dequant_tables_init(_dec->state.dequant_tables,_dec->pp_dc_scale,
    &_setup->qinfo);
@@ -621,6 +621,7 @@ static void oc_dec_block_qis_unpack(oc_dec_ctx *_dec){
   int          ncoded_fragis;
   ncoded_fragis=_dec->state.ncoded_fragis[0]+
    _dec->state.ncoded_fragis[1]+_dec->state.ncoded_fragis[2];
+  if(ncoded_fragis<=0)return;
   coded_fragi=_dec->state.coded_fragis;
   coded_fragi_end=coded_fragi+ncoded_fragis;
   if(_dec->state.nqis==1){
@@ -989,7 +990,8 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   It CANNOT be called for any of the EOB tokens.
   _token:      The token value to expand.
   _extra_bits: The extra bits associated with the token.
-  _dct_coeffs: The current list of coefficients, in zig-zag order.
+  _dct_coeffs: The current list of coefficients, NOT in zig-zag order, but in
+                the natural order.
   _zzi:        A pointer to the zig-zag index of the next coefficient to write
                 to.
                This is updated before the function returns.*/
@@ -1164,7 +1166,7 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
   for(pli=0;pli<3;pli++){
     coded_fragi_end+=_dec->state.ncoded_fragis[pli];
     for(;coded_fragi<coded_fragi_end;coded_fragi++){
-      oc_quant_tables *iquants;
+      oc_quant_table  *iquants;
       /*This array is made bigger than necessary so that an invalid zero run
          cannot cause a buffer overflow.*/
       ogg_int16_t      dct_coeffs[65];
@@ -1180,20 +1182,24 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
           break;
         }
         else{
+          int ebflag;
           token=_dec->dct_tokens[zzi][ti[zzi]++];
-          eb=OC_DCT_TOKEN_EXTRA_BITS[token]?
-           _dec->extra_bits[zzi][ebi[zzi]++]:0;
+          ebflag=OC_DCT_TOKEN_EXTRA_BITS[token]!=0;
+          eb=_dec->extra_bits[zzi][ebi[zzi]]&-ebflag;
+          ebi[zzi]+=ebflag;
           if(token<OC_NDCT_EOB_TOKEN_MAX){
             eob_runs[zzi]=-oc_dct_token_skip(token,eb);
           }
           else oc_dct_token_expand(token,eb,dct_coeffs,&zzi);
         }
       }
+      /*TODO: zzi should be exactly 64 here.
+        If it's not, we should report some kind of warning.*/
       zzi=OC_MINI(zzi,64);
       dct_coeffs[0]=(ogg_int16_t)frag->dc;
       iquants=_dec->state.dequant_tables[frag->mbmode!=OC_MODE_INTRA][pli];
       oc_state_frag_recon(&_dec->state,frag,pli,dct_coeffs,zzi,
-       iquants[0][_dec->state.qis[0]][0],iquants[0][frag->qi]);
+       iquants[_dec->state.qis[0]][0],iquants[frag->qi]);
     }
   }
 }
@@ -1323,6 +1329,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     oc_state_borders_fill(&_dec->state,
      _dec->state.ref_frame_idx[OC_FRAME_PREV]);
   }
+  /*TODO: out-of-loop post-processing.*/
   _dec->state.granpos=
    (_dec->state.keyframe_num<<_dec->state.info.keyframe_granule_shift)+
    (_dec->state.curframe_num-_dec->state.keyframe_num);

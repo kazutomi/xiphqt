@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: example dumpvid application; dumps  Theora streams
-  last mod: $Id: dump_video.c,v 1.1 2004/03/15 22:17:32 derf Exp $
+  last mod: $Id: dump_video.c,v 1.2 2004/03/24 19:12:42 derf Exp $
 
  ********************************************************************/
 
@@ -89,47 +89,25 @@ static void open_video(void){
 }
 
 static void video_write(void){
+  int pli;
   int i;
 
   theora_ycbcr_buffer ycbcr;
   theora_decode_ycbcr_out(td,ycbcr);
 
-  for(i=0;i<ycbcr[0].height;i++)
-    fwrite(ycbcr[0].data+ycbcr[0].ystride*i, 1, ycbcr[0].width, outfile);
-  for(i=0;i<ycbcr[1].height;i++)
-    fwrite(ycbcr[1].data+ycbcr[1].ystride*i, 1, ycbcr[1].width, outfile);
-  for(i=0;i<ycbcr[2].height;i++)
-    fwrite(ycbcr[2].data+ycbcr[2].ystride*i, 1, ycbcr[2].width, outfile);
-
-}
-/* dump the theora (or vorbis) comment header */
-static int dump_comments(theora_comment *tc){
-  int i, len;
-  char *value;
-  FILE *out=stdout;
-
-  fprintf(out,"Encoded by %s\n",tc->vendor);
-  if(tc->comments){
-    fprintf(out, "theora comment header:\n");
-    for(i=0;i<tc->comments;i++){
-      if(tc->user_comments[i]){
-        len=tc->comment_lengths[i];
-        value=malloc(len+1);
-        memcpy(value,tc->user_comments[i],len);
-        value[len]='\0';
-        fprintf(out, "\t%s\n", value);
-        free(value);
-      }
+  for(pli=0;pli<3;pli++){
+    for(i=0;i<ycbcr[pli].height;i++){
+      fwrite(ycbcr[pli].data+ycbcr[pli].ystride*i, 1,
+       ycbcr[pli].width, outfile);
     }
   }
-  return(0);
 }
 
 /* helper: push a page into the appropriate steam */
 /* this can be done blindly; a stream won't accept a page
                 that doesn't belong to it */
 static int queue_page(ogg_page *page){
-  if(theora_p)ogg_stream_pagein(&to,&og);
+  if(theora_p)ogg_stream_pagein(&to,page);
   return 0;
 }
 

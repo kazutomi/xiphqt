@@ -67,13 +67,20 @@ struct theora_dec_ctx{
   It's a little more work, but branchless, so it should not slow us down much.
 
   The libogg2 API does not have these problems, and the definitions of the
-   functions below can be replaced by direct libogg2 calls.*/
+   functions below can be replaced by direct libogg2 calls.
+   
+  One issue remaining is that in libogg2, the return value and the number of
+   bits parameters are swapped between the read and write functions.
+  This can cause some confusion.
+  We could fix that in our wrapper here, but then we would be swapped from the
+   normal libogg2 calls, which could also cause confusion.
+  For the moment we keep the libogg2 parameter ordering.*/
 
 /*Read 32 bits.
   *_ret is set to 0 on failure.
   Return: 0 on success, or a negative value on failure.*/
 extern int theora_read32(oggpack_buffer *_opb,long *_ret);
-/*Read n bits, where N <= 31 for libogg1.
+/*Read n bits, where n <= 31 for libogg1.
   *_ret is set to 0 on failure.
   Return: 0 on success, or a negative value on failure.*/
 extern int theora_read(oggpack_buffer *_opb,int _nbits,long *_ret);

@@ -11,9 +11,9 @@ unsigned OC_AC_QUANT_MIN[2]={2<<2,4<<2};
 
 
 /*Initializes the dequantization tables from a set of quantizer info.
-  Currently the dequantizer (and elsewhere enquantizer tables) tables are
-   expected to be initialized as pointing to the storage reserved for them in
-   the oc_theora_state (resp. oc_enc_ctx) structure.
+  Currently the dequantizer (and elsewhere enquantizer) tables are expected to
+   be initialized as pointing to the storage reserved for them in the
+   oc_theora_state (resp. oc_enc_ctx) structure.
   If some tables are duplicates of others, the pointers will be adjusted to
    point to a single copy of the tables, but the storage for them will not be
    freed.
@@ -23,7 +23,7 @@ unsigned OC_AC_QUANT_MIN[2]={2<<2,4<<2};
   However, a much, much better option is to only store the quantization
    matrices being used for the current frame, and to recalculate these as the
    qi values change between frames (this is what VP3 did).*/
-void oc_dequant_tables_init(oc_quant_tables *_dequant[2][3],
+void oc_dequant_tables_init(oc_quant_table *_dequant[2][3],
  int _pp_dc_scale[64],const theora_quant_info *_qinfo){
   int          qti;
   int          pli;
@@ -68,12 +68,12 @@ void oc_dequant_tables_init(oc_quant_tables *_dequant[2][3],
         if(_pp_dc_scale!=NULL)_pp_dc_scale[qi]=(int)(qfac/160);
         q=(qfac/100)<<2;
         q=OC_CLAMPI(OC_DC_QUANT_MIN[qti],q,OC_QUANT_MAX);
-        _dequant[qti][pli][0][qi][0]=(ogg_uint16_t)q;
+        _dequant[qti][pli][qi][0]=(ogg_uint16_t)q;
         /*Now scale AC coefficients from the proper table.*/
         for(ci=1;ci<64;ci++){
           q=((ogg_uint32_t)_qinfo->ac_scale[qi]*base[ci]/100)<<2;
           q=OC_CLAMPI(OC_AC_QUANT_MIN[qti],q,OC_QUANT_MAX);
-          _dequant[qti][pli][0][qi][ci]=(ogg_uint16_t)q;
+          _dequant[qti][pli][qi][ci]=(ogg_uint16_t)q;
         }
         if(++qi>=qi_end)break;
         /*Interpolate the next base matrix.*/

@@ -6,14 +6,14 @@
 
 
 
-void oc_quant_params_unpack(oggpack_buffer *_opb,
+int oc_quant_params_unpack(oggpack_buffer *_opb,
  theora_quant_info *_qinfo){
   theora_quant_base *base_mats;
   long               val;
   int                nbase_mats;
   int                sizes[64];
   int                indices[64];
-  int                index_nbits;
+  int                nbits;
   int                bmi;
   int                ci;
   int                qti;
@@ -21,16 +21,22 @@ void oc_quant_params_unpack(oggpack_buffer *_opb,
   int                qri;
   int                qi;
   int                i;
+  theora_read(_opb,3,&val);
+  nbits=(int)val;
   for(qi=0;qi<64;qi++){
-    theora_read(_opb,7,&val);
+    theora_read(_opb,nbits,&val);
     _qinfo->loop_filter_limits[qi]=(unsigned char)val;
   }
+  theora_read(_opb,4,&val);
+  nbits=(int)val+1;
   for(qi=0;qi<64;qi++){
-    theora_read(_opb,16,&val);
+    theora_read(_opb,nbits,&val);
     _qinfo->ac_scale[qi]=(ogg_uint16_t)val;
   }
+  theora_read(_opb,4,&val);
+  nbits=(int)val+1;
   for(qi=0;qi<64;qi++){
-    theora_read(_opb,16,&val);
+    theora_read(_opb,nbits,&val);
     _qinfo->dc_scale[qi]=(ogg_uint16_t)val;
   }
   theora_read(_opb,9,&val);
@@ -42,7 +48,7 @@ void oc_quant_params_unpack(oggpack_buffer *_opb,
       base_mats[bmi][ci]=(unsigned char)val;
     }
   }
-  index_nbits=oc_ilog(nbase_mats-1);
+  nbits=oc_ilog(nbase_mats-1);
   for(i=0;i<6;i++){
     theora_quant_ranges *qranges;
     theora_quant_base   *qrbms;
@@ -74,14 +80,20 @@ void oc_quant_params_unpack(oggpack_buffer *_opb,
         continue;
       }
     }
-    theora_read(_opb,index_nbits,&val);
+    theora_read(_opb,nbits,&val);
     indices[0]=(int)val;
     for(qi=qri=0;qi<63;){
       theora_read(_opb,oc_ilog(63-qi),&val);
       sizes[qri]=(int)val+1;
       qi+=(int)val+1;
-      theora_read(_opb,index_nbits,&val);
+      theora_read(_opb,nbits,&val);
       indices[++qri]=(int)val;
+    }
+    /*Note: The caller is responsible for cleaning up any partially
+       constructed qinfo.*/
+    if(qi>63){
+      _ogg_free(base_mats);
+      return OC_BADHEADER;
     }
     qranges->nranges=qri;
     qranges->sizes=qrsizes=_ogg_malloc(qri*sizeof(qrsizes[0]));
@@ -91,6 +103,7 @@ void oc_quant_params_unpack(oggpack_buffer *_opb,
     while(qri-->0);
   }
   _ogg_free(base_mats);
+  return 0;
 }
 
 void oc_quant_params_clear(theora_quant_info *_qinfo){

@@ -2049,11 +2049,10 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   oc_fragment_plane    *fplane;
   oc_fragment          *frags;
   oc_fragment_enc_info *efrags;
+  oc_fragment_enc_info *efrag;
   oc_mask_block        *maskg_row;
   oc_weight_block      *maskw_row;
   oc_weight_block      *csfw_row;
-  ogg_int16_t          *coeff;
-  ogg_uint16_t         *tol_min;
   float                *csfw;
   float                *maskw;
   float                *maskg;
@@ -2076,13 +2075,13 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
   int                   cfragj;
   int                   mfragi;
   int                   mfragj;
+  int                   qti;
   int                   i;
   int                   j;
   int                   k;
   csf_offset=_psych->csf_offsets[_pli];
-  /*Initialize the minimum psychovisual weight array.*/
-  tol_min=_psych->enc->tol_mins[_pli];
-  for(i=0;i<64;i++)tol_min[i]=32767;
+  /*Initialize the minimum psychovisual tolerance for the DC coefficient.*/
+   _psych->enc->dc_tol_mins[_pli]=32767;
   /*Select the filter sets we're going to use.*/
   vfilti=_pli<<1;
   hfilti=_pli>0?(_pli<<1)-1:0;
@@ -2223,26 +2222,43 @@ static void oc_psych_scan_plane(oc_psych_ctx *_psych,int _pli){
           The DC coefficient has a different offset added than the others,
            because the pixel values have 128 subtracted from them before the
            DCT is performed, which offsets the DC coefficient by 4096.*/
-        coeff=efrags[mfragi].dct_coeffs;
+        efrag=efrags+mfragi;
         csfw=_psych->csf_weights[0][fragx];
         maskw=maskw_row[fragx];
         /*Compute the scaling value for this fragment.*/
-        fscale=pscale*efrags[mfragi].imp_weight/_psych->enc->qscale;
+        fscale=pscale*efrag->imp_weight/_psych->enc->qscale;
         /*The DC coefficient is not masked.*/
-        efrags[mfragi].tols[0]=(ogg_uint16_t)OC_MINI(65535,(int)(
-         (OC_CSF_DC_SHIFT+abs(coeff[0]))/(fscale*(csf_offset[0]+csfw[0]))));
-        tol_min[0]=(ogg_uint16_t)OC_MINI(tol_min[0],efrags[mfragi].tols[0]);
+        efrag->tols[0]=(ogg_uint16_t)OC_MINI(65535,(int)(
+         (OC_CSF_DC_SHIFT+abs(efrag->dct_coeffs[0]))/
+         (fscale*(csf_offset[0]+csfw[0]))));
+        _psych->enc->dc_tol_mins[_pli]=(unsigned)OC_MINI(
+         _psych->enc->dc_tol_mins[_pli],efrag->tols[0]);
         /*The remaining coefficients are masked.*/
         for(i=1;i<64;i++){
           float mask;
           int   groupi;
           groupi=OC_MASK_GROUP[i];
           mask=group_sums[groupi]-maskw[i];
-          efrags[mfragi].tols[i]=(ogg_uint16_t)OC_MINI(65535,(int)(
-           ((OC_CSF_NOISE_LEVEL+abs(coeff[i]))/**
+          efrag->tols[i]=(ogg_uint16_t)OC_MINI(65535,(int)(
+           ((OC_CSF_NOISE_LEVEL+abs(efrag->dct_coeffs[i]))/**
            (1+OC_MASK_WEIGHTS[groupi]*mask)*/)/
            (fscale*(csf_offset[i]+csfw[i]))));
-          tol_min[i]=(ogg_uint16_t)OC_MINI(tol_min[i],efrags[mfragi].tols[i]);
+        }
+        /*Select minimum qi values for each quantizer type.*/
+        for(qti=2;qti-->0;){
+          unsigned qmin;
+          int      qi_min;
+          /*This is the minimum quantizer Theora allows.
+            Don't inflate the qi unnecessarily if we have a tolerance less
+             than this.*/
+          qmin=OC_AC_QUANT_MIN[qti];
+          qi_min=qti?0:efrag->qi_min[1];
+          for(i=0;qi_min<63;qi_min++){
+            while(_psych->enc->state.dequant_tables[qti][_pli][qi_min][i]<=
+             OC_MAXI(2U*efrag->tols[i],qmin)&&++i<64);
+            if(i==64)break;
+          }
+          efrag->qi_min[qti]=(unsigned char)qi_min;
         }
         /*Remove the parts of the group neighborhoods that are old.*/
         for(i=0;i<OC_MASK_NFULL_GROUPS;i++){

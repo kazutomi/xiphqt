@@ -64,8 +64,8 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   if(!bits){
     int ret;
     binode=oc_huff_node_alloc(1);
-    ret=oc_huff_tree_unpack(_opb,&binode->nodes[0],_depth);
-    if(ret>=0)ret=oc_huff_tree_unpack(_opb,&binode->nodes[1],_depth);
+    ret=oc_huff_tree_unpack(_opb,binode->nodes,_depth);
+    if(ret>=0)ret=oc_huff_tree_unpack(_opb,binode->nodes+1,_depth);
     if(ret<0){
       oc_huff_tree_free(binode);
       return ret;
@@ -165,7 +165,7 @@ int oc_huff_trees_unpack(oggpack_buffer *_opb,
   int i;
   for(i=0;i<OC_NHUFFMAN_TABLES;i++){
     int ret;
-    ret=oc_huff_tree_unpack(_opb,&_nodes[i],0);
+    ret=oc_huff_tree_unpack(_opb,_nodes+i,0);
     if(ret<0)return ret;
     _nodes[i]=oc_huff_tree_collapse(_nodes[i]);
   }

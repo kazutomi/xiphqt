@@ -287,7 +287,7 @@ typedef struct{
   /*The number of quality indices used in the current frame.*/
   int                   nqis;
   /*The dequantization tables.*/
-  oc_quant_tables      *dequant_tables[2][3];
+  oc_quant_table       *dequant_tables[2][3];
   oc_quant_tables       dequant_table_data[2][3];
   /*Loop filter strength parameters.*/
   unsigned char         loop_filter_limits[64];

@@ -463,7 +463,7 @@ int main(void){
     }
     for(qi=0;qi<64;qi++)for(ci=0;ci<64;ci++){
       fbase_matrices[pci][qi][ci]=
-       1/(OC_YCbCr_SCALE[pli]*DCT_SCALE*DCT_SCALE*
+       2/(DCT_SCALE*DCT_SCALE*OC_YCbCr_SCALE[pli]*
        filters[chx][qi][ci&7]*filters[chy][qi][ci>>3]);
     }
   }

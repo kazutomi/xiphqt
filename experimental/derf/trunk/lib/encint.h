@@ -44,6 +44,10 @@ struct oc_fragment_enc_info{
   float           imp_weight;
   /*The actual error encoded by the residual after mode selection.*/
   int             eerror;
+  /*The minimum quantizer allowed for each quantizer type.*/
+  unsigned char   qi_min[2];
+  /*The qi index selected for this fragment.*/
+  unsigned char   qii;
 };
 
 /*Macro block information specific to encoding.*/
@@ -127,11 +131,11 @@ struct theora_enc_ctx{
   oggpack_buffer           opb;
   /*The list of flags indicating which blocks are coded in all partially coded
      super blocks.*/
-  char                 *block_coded_flags;
+  char                    *block_coded_flags;
   /*The number of block coded flags in the list.
     This is 16 times the number of super blocks with their partially coded
      flag set.*/
-  int                   nblock_coded_flags;
+  int                      nblock_coded_flags;
   /*Special buffer used for the coded fragment flags.*/
   oggpack_buffer           opb_coded_flags;
   /*The estimated bit cost of the current frame.*/
@@ -142,8 +146,12 @@ struct theora_enc_ctx{
   oc_mb_enc_info          *mbinfo;
   /*Encoder-specific border information.*/
   oc_border_enc_info       border_info[16];
-  /*Minimum psychovisual tolerances for each coefficient in each plane.*/
-  ogg_uint16_t             tol_mins[3][64];
+  /*Minimum psychovisual tolerance for the DC coefficients in each plane.*/
+  unsigned                 dc_tol_mins[3];
+  /*The qi value lists selected for each potential frame type.*/
+  int                      qis[2][3];
+  /*The number of qi values in the list for each frame type.*/
+  int                      nqis[2];
   /*The macro-block mode scheme chooser.*/
   oc_mode_scheme_chooser   mode_scheme_chooser;
   /*The motion vector scheme chosen.*/
@@ -161,7 +169,7 @@ struct theora_enc_ctx{
   /*The quantization parameters in use.*/
   theora_quant_info        qinfo;
   /*Pointers to the quantization tables in use.*/
-  oc_quant_tables         *enquant_tables[2][3];
+  oc_quant_table          *enquant_tables[2][3];
   /*Storage for the actual quantization tables.*/
   oc_quant_tables          enqaunt_table_data[2][3];
   /*The offset of the first DCT token for each coefficient for each plane.*/

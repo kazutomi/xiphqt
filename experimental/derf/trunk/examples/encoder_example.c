@@ -12,7 +12,7 @@
 
   function: example encoder application; makes an Ogg Theora/Vorbis
             file from YUV4MPEG2 and WAV input
-  last mod: $Id: encoder_example.c,v 1.9 2004/03/15 22:17:32 derf Exp $
+  last mod: $Id: encoder_example.c,v 1.10 2004/03/24 19:12:42 derf Exp $
 
  ********************************************************************/
 
@@ -360,7 +360,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
   static theora_ycbcr_buffer ycbcr;
   unsigned char             *line;
   ogg_packet                 op;
-  int i, e,f;
+  int i, e;
 
   if(state==-1){
         /* initialize the double frame buffer */
@@ -464,6 +464,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       {
         int cboffset=video_x*video_y;
         int croffset=cboffset+(video_x/2)*(video_y/2);
+        int f;
 
         ycbcr[1].width=video_x;
         ycbcr[1].height=video_y;
@@ -595,6 +596,8 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       {
         int cboffset=video_x*video_y;
         int croffset=cboffset+(video_x/2)*(video_y/2);
+        int f;
+
         ycbcr[1].width=video_x/2;
         ycbcr[1].height=video_y;
         ycbcr[1].ystride=video_x/2;

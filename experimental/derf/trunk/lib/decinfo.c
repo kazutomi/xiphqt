@@ -109,8 +109,10 @@ static int oc_comment_unpack(oggpack_buffer *_opb,theora_comment *_tc){
 }
 
 static int oc_setup_unpack(oggpack_buffer *_opb,theora_setup_info *_setup){
+  int ret;
   /*Read the quantizer tables.*/
-  oc_quant_params_unpack(_opb,&_setup->qinfo);
+  ret=oc_quant_params_unpack(_opb,&_setup->qinfo);
+  if(ret<0)return ret;
   /*Read the Huffman trees.*/
   return oc_huff_trees_unpack(_opb,_setup->huff_tables);
 }
