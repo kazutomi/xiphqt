@@ -79,7 +79,7 @@ def main(argv):
         sys.exit()
 
     config = Config()
-    
+    mountpoint = None
     for o,a in opts:
         if o in ("-v", "--version"):
             print version
@@ -122,6 +122,10 @@ def main(argv):
               % (e,)
         print "You can create or modify the configuration file with \"positron config\""
         sys.exit(1)
+
+    # Allow mountpoint override
+    if mountpoint != None:
+        config.mountpoint = mountpoint
 
     # Sanity check
     if not config.mountpoint:
