@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: utility main for building codebooks from training sets
- last mod: $Id: build.c,v 1.13 2000/05/08 20:49:50 xiphmont Exp $
+ last mod: $Id: build.c,v 1.13.2.1 2000/06/12 00:31:15 xiphmont Exp $
 
  ********************************************************************/
 
@@ -133,7 +133,7 @@ int main(int argc,char *argv[]){
   }
   
   /* just use it to allocate mem */
-  vqgen_init(&v,dim,0,entries,0.,NULL,NULL);
+  vqgen_init(&v,dim,0,entries,0.,NULL,NULL,0);
   
   /* quant */
   line=rline(in,out);
