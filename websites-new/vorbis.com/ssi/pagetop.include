@@ -6,13 +6,13 @@
 <div class="navbar">
 	<ul>
 		<li id="setup_"><a href="/setup/">Get Set Up</a></li>
-		<li id="faq_"><a href="/">FAQ</a></li>
+		<li id="faq_"><a href="/faq/">FAQ</a></li>
 		<li id="donate_"><a href="/">Donate</a></li>
 		<li id="music_"><a href="/">Music</a></li>
 		<li id="musicsites_"><a href="/">Music Sites</a></li>
 		<li id="downloads_"><a href="/">3rd Party Software</a></li>
 		<li id="developers_"><a href="http://trac.xiph.org/cgi-bin/trac.cgi/">For Developers</a></li>
-		<li id="contact_"><a href="/">Contact</a></li>
+		<li id="contact_"><a href="/contact/">Contact</a></li>
 	</ul>
 </div>
 
