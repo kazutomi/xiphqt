@@ -3,8 +3,6 @@ Positron TODO List
 Bugs
 ----
 
-* Sorting entries in PAI modules.
-
 * A file can be added to the database twice if the file is removed
   from disk but not the database, then it is added again.
 
@@ -13,14 +11,6 @@ Bugs
 
 Features
 --------
-
-* Proper detection of valid music file attributes (title, genre, time,
-etc) in Ogg Vorbis files.
-
-* General music format framework and API for both detecting music info
-and transcoding to a format the Neuros supports.  Needs to be
-flexible enough to support firmware that only does MP3 as well as
-firmware that can do both MP3 and Ogg.
 
 * HiSi identification support
 
