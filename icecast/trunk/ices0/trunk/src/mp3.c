@@ -23,13 +23,14 @@
 
 #define MPG_MD_MONO 3
 
-typedef struct mp3_headerSt
-{
-  int lay;
+#define MP3_BUFFER_SIZE 4096
+
+typedef struct {
   int version;
+  int layer;
   int error_protection;
-  int bitrate_index;
-  int sampling_frequency;
+  int bitrate;
+  int samplerate;
   int padding;
   int extension;
   int mode;
@@ -37,7 +38,7 @@ typedef struct mp3_headerSt
   int copyright;
   int original;
   int emphasis;
-  int stereo;
+  int channels;
 } mp3_header_t;
 
 typedef struct {
@@ -84,20 +85,20 @@ static ssize_t ices_mp3_readpcm (input_stream_t* self, size_t len,
 				 int16_t* left, int16_t* right);
 #endif
 static int ices_mp3_close (input_stream_t* self);
+static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header);
 
 /* Global function definitions */
 
 /* Parse mp3 file for header information; bitrate, channels, mode, sample_rate.
  */
-int
-ices_mp3_parse (input_stream_t* source)
+static int ices_mp3_parse (input_stream_t* source)
 {
   ices_mp3_in_t* mp3_data = (ices_mp3_in_t*) source->data;
   unsigned char *buffer;
-  unsigned short temp;
   mp3_header_t mh;
-  size_t len;
+  size_t len, rlen;
   int rc = 1;
+  int off = 0;
 
   if (! mp3_data->len)
     return 1;
@@ -114,73 +115,61 @@ ices_mp3_parse (input_stream_t* source)
     rc = -1;
   }
 
-  len = mp3_data->len;
-  buffer = mp3_data->buf + mp3_data->pos;
-
-  /* ID3v2 may have consumed the buffer */
-  if (! len) {
-    buffer = (unsigned char*) malloc (1024);
-    len = source->read (source, buffer, 1024);
-    mp3_data->buf = buffer;
-    mp3_data->len = len;
-    mp3_data->pos = 0;
-  }
-
+  /* seek past garbage if necessary */
   do {
-    temp = ((buffer[0] << 4) & 0xFF0) | ((buffer[1] >> 4) & 0xE);
-    buffer++;
-    len--;
-  } while ((temp != 0xFFE) && (len-4 > 0));
+    len = mp3_data->len;
+    buffer = mp3_data->buf;
 
-  if (temp != 0xFFE) {
+    if (!len) {
+      buffer = (unsigned char*) malloc (MP3_BUFFER_SIZE);
+      len = source->read (source, buffer, MP3_BUFFER_SIZE);
+      mp3_data->buf = buffer;
+      mp3_data->len = len;
+      mp3_data->pos = 0;
+    }
+    /* we must be able to read at least 4 bytes of header */
+
+    while (!(rc = mp3_parse_frame(buffer + mp3_data->pos, &mh)) && (mp3_data->len >= 4)) {
+      mp3_data->pos++;
+      mp3_data->len--;
+      off++;
+    }
+
+    len = mp3_data->len;
+    /* copy remaining bits to front, refill buffer without malloc/free */
+    if (len && len < 4) {
+      memcpy (buffer, buffer + mp3_data->pos, len);
+      /* make read fetch from source instead of buffer */
+      mp3_data->len = 0;
+      rlen = source->read(source, buffer + len, MP3_BUFFER_SIZE - len);
+      mp3_data->len = len + rlen;
+      mp3_data->pos = 0;
+      len = rlen;
+    }
+  } while (!rc && len);
+
+  if (!rc) {
     ices_log_error ("Couldn't find synch");
-    return rc;
+    return -1;
   }
 
-  buffer--;
-  switch ((buffer[1] >> 3 & 0x3)) {
-    case 3:
-      mh.version = 0;
-      break;
-    case 2:
-      mh.version = 1;
-      break;
-    case 0:
-      mh.version = 2;
-      break;
-    default:
-      return rc;
-      break;
-  }
+  if (off)
+    ices_log_debug("Skipped %d bytes of garbage before MP3", off);
 
-  mh.lay = 4 - ((buffer[1] >> 1) & 0x3);
-  mh.error_protection = !(buffer[1] & 0x1);
-  mh.bitrate_index = (buffer[2] >> 4) & 0x0F;
-  mh.sampling_frequency = (buffer[2] >> 2) & 0x3;
-  mh.padding = (buffer[2] >> 1) & 0x01;
-  mh.extension = buffer[2] & 0x01;
-  mh.mode = (buffer[3] >> 6) & 0x3;
-  mh.mode_ext = (buffer[3] >> 4) & 0x03;
-  mh.copyright = (buffer[3] >> 3) & 0x01;
-  mh.original = (buffer[3] >> 2) & 0x1;
-  mh.emphasis = (buffer[3]) & 0x3;
-  mh.stereo = (mh.mode == MPG_MD_MONO) ? 1 : 2;
-
-  source->bitrate = bitrates[mh.version][mh.lay -1][mh.bitrate_index];
+  source->samplerate = mh.samplerate;
+  source->bitrate = mh.bitrate;
   if (! source->bitrate) {
     ices_log_error ("Bitrate is 0");
     return rc;
   }
-  source->samplerate = s_freq[mh.version][mh.sampling_frequency];
 
-  ices_log_debug ("Layer: %s\t\tVersion: %s\tFrequency: %d", layer_names[mh.lay - 1],
-                  version_names[mh.version], source->samplerate);
-  ices_log_debug ("Bitrate: %d kbit/s\tPadding: %d\tMode: %s", source->bitrate, mh.padding,
-                  mode_names[mh.mode]);
+  ices_log_debug ("%s layer %s, %d kbps, %d Hz", version_names[mh.version],
+                  layer_names[mh.layer - 1], mh.bitrate, mh.samplerate);
+  ices_log_debug ("Mode: %s, %d channels", mode_names[mh.mode], mh.channels);
   ices_log_debug ("Ext: %d\tMode_Ext: %d\tCopyright: %d\tOriginal: %d", mh.extension,
                   mh.mode_ext, mh.copyright, mh.original);
-  ices_log_debug ("Error Protection: %d\tEmphasis: %d\tStereo: %d", mh.error_protection,
-                  mh.emphasis, mh.stereo);
+  ices_log_debug ("Error Protection: %d\tEmphasis: %d\tPadding: %d", mh.error_protection,
+                  mh.emphasis, mh.padding);
 
   return 0;
 }
@@ -290,4 +279,48 @@ ices_mp3_close (input_stream_t* self)
   free (self->data);
 
   return close (self->fd);
+}
+
+static int mp3_parse_frame(const unsigned char* buf, mp3_header_t* header) {
+  int bitrate_idx, samplerate_idx;
+
+  if (((buf[0] << 4) | ((buf[1] >> 4) & 0xE)) != 0xFFE)
+    return 0;
+
+  switch ((buf[1] >> 3 & 0x3)) {
+    case 3:
+      header->version = 0;
+      break;
+    case 2:
+      header->version = 1;
+      break;
+    case 0:
+      header->version = 2;
+      return 0;
+    default:
+      return 0;
+      break;
+  }
+
+  bitrate_idx = (buf[2] >> 4) & 0xF;
+  samplerate_idx = (buf[2] >> 2) & 0x3;
+  header->mode = (buf[3] >> 6) & 0x3;
+  header->layer = 4 - ((buf[1] >> 1) & 0x3);
+
+  if ((bitrate_idx == 0xF) || (samplerate_idx == 0x3) || (header->layer == 0))
+    return 0;
+
+  header->error_protection = !(buf[1] & 0x1);
+  header->bitrate = bitrates[header->version][header->layer-1][bitrate_idx];
+  header->samplerate = s_freq[header->version][samplerate_idx];
+  header->padding = (buf[2] >> 1) & 0x01;
+  header->extension = buf[2] & 0x01;
+  header->mode = (buf[3] >> 6) & 0x3;
+  header->mode_ext = (buf[3] >> 4) & 0x03;
+  header->copyright = (buf[3] >> 3) & 0x01;
+  header->original = (buf[3] >> 2) & 0x1;
+  header->emphasis = (buf[3]) & 0x3;
+  header->channels = (header->mode == MPG_MD_MONO) ? 1 : 2;
+
+  return 1;
 }
