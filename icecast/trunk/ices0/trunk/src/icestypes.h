@@ -39,7 +39,6 @@ typedef struct ices_stream_St {
   time_t connect_delay;
   int errs;
   void* encoder_state;
-  int encoder_initialised;
 
   char *host;
   int port;

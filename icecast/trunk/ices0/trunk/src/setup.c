@@ -191,7 +191,6 @@ ices_setup_parse_stream_defaults (ices_stream_t* stream)
   stream->out_samplerate = -1;
 
   stream->encoder_state = NULL;
-  stream->encoder_initialised = 0;
   stream->connect_delay = 0;
 
   stream->next = NULL;

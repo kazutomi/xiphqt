@@ -29,9 +29,6 @@
 
 extern ices_config_t ices_config;
 
-/* -- local prototypes -- */
-static void reencode_lame_init (void);
-
 /* Global function definitions */
 
 /* Initialize the reencoding engine in ices, initialize
@@ -51,33 +48,52 @@ ices_reencode_initialize (void)
   if (! ices_config.reencode)
     return;
 
-  reencode_lame_init ();
-
   ices_log_debug ("Using LAME version %s\n", get_lame_version ());
 }
 
-/* For each song, reset the liblame engine, otherwize it craps out if
+/* For each song, reset the liblame engine, otherwise it craps out if
  * the bitrate or sample rate changes */
 void
 ices_reencode_reset (input_stream_t* source) 
 {
   ices_stream_t* stream;
   lame_global_flags* lame;
+  static int decoder_init = 0;
 
-  if (lame_decode_init () < 0) {
-    ices_log ("Error: initialization of liblame's decoder failed!");
-    ices_setup_shutdown ();
+  if (decoder_init) {
+    if (lame_decode_exit () < 0) {
+      ices_log ("LAME: error resetting decoder");
+      ices_setup_shutdown ();
+    }
+    decoder_init = 0;
   }
 
-  /* notify lame if incoming sample rate changes */
+  if (lame_decode_init () < 0) {
+    ices_log ("LAME: error initialising decoder");
+    ices_setup_shutdown ();
+  }
+  decoder_init = 1;
+
   for (stream = ices_config.streams; stream; stream = stream->next) {
     if (! stream->reencode)
       continue;
 
+    if (stream->encoder_state)
+      lame_close ((lame_global_flags*)stream->encoder_state);
+
+    if (! (stream->encoder_state = lame_init ())) {
+      ices_log ("LAME: error resetting encoder.");
+      ices_setup_shutdown ();
+    }
+
     lame = (lame_global_flags*)stream->encoder_state;
 
-    if (lame_get_in_samplerate (lame) == source->samplerate)
-      continue;
+    lame_set_brate (lame, stream->bitrate);
+    if (stream->out_numchannels == 1)
+      lame_set_mode (lame, MONO);
+    if (stream->out_samplerate > 0)
+      lame_set_out_samplerate (lame, stream->out_samplerate);
+    lame_set_original (lame, 0);
 
     lame_set_in_samplerate (lame, source->samplerate);
     /* lame_init_params isn't more specific about the problem */
@@ -96,8 +112,10 @@ ices_reencode_shutdown (void)
   ices_stream_t* stream;
 
   for (stream = ices_config.streams; stream; stream = stream->next)
-    if (stream->encoder_initialised)
+    if (stream->encoder_state) {
       lame_close ((lame_global_flags*) stream->encoder_state);
+      stream->encoder_state = NULL;
+    }
 }
 
 /* decode buffer, of length buflen, into left and right. Stream-independent
@@ -128,53 +146,7 @@ ices_reencode_flush (ices_stream_t* stream, unsigned char *outbuf,
   lame_global_flags* lame = (lame_global_flags*) stream->encoder_state;
   int rc;
 
-  /* nogap will cause problems if the next track isn't being reencoded */
-#  if 0
-  rc = lame_encode_flush_nogap (lame, (char *)outbuf, maxlen);
-#  else
   rc = lame_encode_flush (lame, (char *)outbuf, maxlen);
-#  endif
 
   return rc;
-}
-
-/* Resets the lame engine. Depending on which version of LAME we have, we must
- * do this either only at startup or between each song */
-static void
-reencode_lame_init ()
-{
-  ices_stream_t* stream;
-  lame_global_flags* lame;
-
-  if (! ices_config.reencode)
-    return;
-
-  for (stream = ices_config.streams; stream; stream = stream->next) {
-    if (! stream->reencode)
-      continue;
-
-    if (! (stream->encoder_state = lame_init ())) {
-      ices_log ("LAME: error initializing encoder.");
-      ices_setup_shutdown ();
-    }
-
-    lame = (lame_global_flags*) stream->encoder_state;
-
-    lame_set_brate (lame, stream->bitrate);
-    if (stream->out_numchannels == 1)
-      lame_set_mode (lame, MONO);
-    if (stream->out_samplerate > 0)
-      lame_set_out_samplerate (lame, stream->out_samplerate);
-    lame_set_original (lame, 0);
-
-    /* lame_init_params isn't more specific about the problem */
-    if (lame_init_params (lame) < 0) {
-      ices_log ("LAME: Error setting parameters. Check bitrate, channels, and "
-		"sample rate.");
-      lame_close (lame);
-      ices_setup_shutdown ();
-    }
-
-    stream->encoder_initialised = 1;
-  }
 }
