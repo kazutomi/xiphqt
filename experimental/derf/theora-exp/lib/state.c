@@ -735,16 +735,40 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 }
 
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _ncoefs,ogg_uint16_t _dc_iquant,
- const ogg_uint16_t _ac_iquant[64]){
+ int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]){
   ogg_int16_t dct_buf[64];
   ogg_int16_t res_buf[64];
   int dst_framei;
   int dst_ystride;
   int zzi;
   int ci;
+  /*_last_zzi is subtly different from an actual count of the number of
+     coefficients we decoded for this block.
+    It contains the value of zzi BEFORE the final token in the block was
+     decoded.
+    In most cases this is an EOB token (the continuation of an EOB run from a
+     previous block counts), and so this is the same as the coefficient count.
+    However, in the case that the last token was NOT an EOB token, but filled
+     the block up with exactly 64 coefficients, _last_zzi will be less than 64.
+    Provided the last token was not a pure zero run, the minimum value it can
+     be is 46, and so that doesn't affect any of the cases in this routine.
+    However, if the last token WAS a pure zero run of length 63, then _last_zzi
+     will be 1 while the number of coefficients decoded is 64.
+    Thus, we will trigger the following special case, where a pure coefficient
+     count would not.
+    Note also that a zero run of length 64 will give _last_zzi a value of 0,
+     but we still process the DC coefficient, which might have a non-zero value
+     due to DC prediction.
+    Although convoluted, this is arguably the correct behavior: it allows us to
+     dequantize fewer coefficients and use a smaller transform when the block
+     ends with a long zero run instead of a normal EOB token.
+    It could be smarter... multiple separate zero runs at the end of a block
+     will fool it, but an encoder that generates these really deserves what it
+     gets.
+    Needless to say we inherited this approach from VP3.*/
   /*Special case only having a DC component.*/
-  if(_ncoefs<2){
+  if(_last_zzi<2){
     ogg_int16_t p;
     /*Why is the iquant product rounded in this case and no others?
       Who knows.*/
@@ -761,7 +785,7 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
     }
     /*Then, fill in the remainder of the coefficients with 0's, and perform
        the iDCT.*/
-    if(_ncoefs<10){
+    if(_last_zzi<10){
       for(;zzi<10;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
       oc_idct8x8_10(res_buf,dct_buf);
     }

@@ -363,8 +363,8 @@ int oc_state_mbi_for_pos(oc_theora_state *_state,int _mbx,int _mby);
 int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
  int *_offset1,int _dx,int _dy,int _ystride,int _pli);
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _ncoefs,ogg_uint16_t _dc_iquant,
- const ogg_uint16_t _ac_iquant[64]);
+ int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
 void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis[3],
  int _nfragis[3],int _dst_frame,int _src_frame);
 void oc_state_loop_filter(oc_theora_state *_state,int _frame);

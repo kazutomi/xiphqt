@@ -824,11 +824,13 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
       _dec->state.frags[*coded_fragi++].dc=0;
     }
     cfi=0;
-    while(cfi+eobs<_ntoks_left[pli][0]){
+    while(eobs<_ntoks_left[pli][0]-cfi){
       int token;
       int neb;
       int eb;
       int skip;
+      cfi+=eobs;
+      run_counts[63]+=eobs;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
       _dec->dct_tokens[0][ti++]=(char)token;
@@ -841,8 +843,7 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
       else eb=0;
       skip=oc_dct_token_skip(token,eb);
       if(skip<0){
-        eobi=-skip;
-        eobs+=eobi;
+        eobs=eobi=-skip;
         while(eobi-->0&&coded_fragi<coded_fragi_end){
           _dec->state.frags[*coded_fragi++].dc=0;
         }
@@ -850,6 +851,7 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
       else{
         run_counts[skip-1]++;
         cfi++;
+        eobs=0;
         _dec->state.frags[*coded_fragi++].dc=oc_dct_token_dec1val(token,eb);
       }
     }
@@ -857,8 +859,8 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
     /*Set the EOB count to the portion of the last EOB run which extends past
        this coefficient.*/
     eobs=eobs+cfi-_ntoks_left[pli][0];
-    /*Add the total number of EOBs decoded in this coefficient to the longest
-       run length.*/
+    /*Add the portion of the last EOB which was included in this coefficient to
+       to the longest run length.*/
     run_counts[63]+=_ntoks_left[pli][0]-cfi;
     /*And convert the run_counts array to a moment table.*/
     for(rli=63;rli-->0;)run_counts[rli]+=run_counts[rli+1];
@@ -892,11 +894,13 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
   for(pli=0;pli<3;pli++){
     memset(run_counts,0,sizeof(run_counts));
     cfi=0;
-    while(cfi+eobs<_ntoks_left[pli][_zzi]){
+    while(eobs<_ntoks_left[pli][_zzi]-cfi){
       int token;
       int neb;
       int eb;
       int skip;
+      cfi+=eobs;
+      run_counts[63]+=eobs;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
       _dec->dct_tokens[_zzi][ti++]=(char)token;
@@ -908,10 +912,11 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
       }
       else eb=0;
       skip=oc_dct_token_skip(token,eb);
-      if(skip<0)eobs-=skip;
+      if(skip<0)eobs=-skip;
       else{
         run_counts[skip-1]++;
         cfi++;
+        eobs=0;
       }
     }
     /*TODO: We don't actually use these values for anything, yet.*/
@@ -919,8 +924,8 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
     /*Set the EOB count to the portion of the last EOB run which extends past
        this coefficient.*/
     eobs=eobs+cfi-_ntoks_left[pli][_zzi];
-    /*Add the total number of EOBs decoded in this coefficient to the longest
-       run length.*/
+    /*Add the portion of the last EOB which was included in this coefficient to
+       to the longest run length.*/
     run_counts[63]+=_ntoks_left[pli][_zzi]-cfi;
     /*And convert the run_counts array to a moment table.*/
     for(rli=63;rli-->0;)run_counts[rli]+=run_counts[rli+1];
@@ -1176,11 +1181,13 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
       ogg_int16_t      dct_coeffs[65];
       int              fragi;
       int              zzi;
+      int              last_zzi;
       fragi=*coded_fragi;
       frag=_dec->state.frags+fragi;
       for(zzi=0;zzi<64;){
         int token;
         int eb;
+        last_zzi=zzi;
         if(eob_runs[zzi]){
           eob_runs[zzi]--;
           break;
@@ -1202,7 +1209,7 @@ static void oc_dec_frags_recon(oc_dec_ctx *_dec){
       zzi=OC_MINI(zzi,64);
       dct_coeffs[0]=(ogg_int16_t)frag->dc;
       iquants=_dec->state.dequant_tables[frag->mbmode!=OC_MODE_INTRA][pli];
-      oc_state_frag_recon(&_dec->state,frag,pli,dct_coeffs,zzi,
+      oc_state_frag_recon(&_dec->state,frag,pli,dct_coeffs,last_zzi,zzi,
        iquants[_dec->state.qis[0]][0],iquants[frag->qi]);
     }
   }
