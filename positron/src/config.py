@@ -72,7 +72,7 @@ class Config:
             "recordings" : path.join(self.config_dir, "recordings") }
 
     def create_new_config(self):
-        if not path.exists:
+        if not path.exists(self.config_dir):
             os.makedirs(self.config_dir)
         
         self.write_config_file()

@@ -100,8 +100,8 @@ def main(argv):
     try:
         config.read_config_file()
     except IOError,e:
-        print "Error opening configuration file \"%s\":\n  %s" \
-              % (config.config_filenames["config"], e)
+        print "Error opening config file:\n  %s" \
+              % (e,)
         print "You can create or modify the configuration file with \"positron config\""
         sys.exit(1)
 
