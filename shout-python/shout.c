@@ -85,7 +85,7 @@ static char docstring[] = "Shout library v2 interface\n\n"
   "                     the time it takes to play data sent since last sync\n"
   "           delay() - return milliseconds to wait before sending more data\n"
   "set_metadata(dict) - update stream metadata on server (current known key is\n"
-  "                     \"song\". Not currently supported for vorbis.\n\n"
+  "                     \"song\". Not currently supported for ogg.\n\n"
   "Attributes:\n"
   "       host - name or address of destination server\n"
   "       port - port of destination server\n"
@@ -94,15 +94,15 @@ static char docstring[] = "Shout library v2 interface\n\n"
   "      mount - mount point on server (relative URL, eg \"/stream.ogg\")\n"
   "   protocol - server protocol: \"http\" (the default) for icecast 2,\n"
   "              \"xaudiocast\" for icecast 1, or \"icy\" for shoutcast\n"
-  "     format - audio format: \"vorbis\" (the default) or \"mp3\"\n"
+  "     format - audio format: \"ogg\" (the default) or \"mp3\"\n"
   "       name - stream name\n"
   "        url - stream web page\n"
   "      genre - stream genre\n"
   "description - longer stream description\n"
   " audio_info - dictionary of stream audio parameters, for YP information.\n"
   "              Useful keys include \"bitrate\" (in kbps), \"samplerate\"\n"
-  "              (in Hz), \"channels\" and \"quality\" (vorbis encoding\n"
-  "              quality. All dictionary values should be strings. The known\n"
+  "              (in Hz), \"channels\" and \"quality\" (Ogg encoding\n"
+  "              quality). All dictionary values should be strings. The known\n"
   "              keys are defined as the SHOUT_AI_* constants, but any other\n"
   "              will be passed along to the server as well.\n"
   "   dumpfile - file name to record stream to on server (not supported on\n"
@@ -169,8 +169,9 @@ static kv_strint ShoutProtocolMap[] = {
 };
 
 static kv_strint ShoutFormatMap[] = {
-  { "vorbis", SHOUT_FORMAT_VORBIS },
+  { "ogg",    SHOUT_FORMAT_OGG },
   { "mp3",    SHOUT_FORMAT_MP3 },
+  { "vorbis", SHOUT_FORMAT_OGG }, /* for backwards compatability */
   { NULL, 0 }
 };
 
