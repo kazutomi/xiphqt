@@ -5,6 +5,7 @@ TARGETLIBDIR = .
 # Name of the targets
 LIBTHEORA_TARGET = libtheora.a
 DUMP_VIDEO_TARGET = dump_video
+PLAYER_EXAMPLE_TARGET = player_example
 ENCODER_EXAMPLE_TARGET = encoder_example
 # The compiler to use
 CC = gcc
@@ -14,17 +15,17 @@ MAKEDEPEND = gcc -MM
 # The location of include files.
 # Modify these to point to your Ogg and Vorbis include directories if they are
 #  not installed in a standard location.
-CINCLUDE =
+CINCLUDE = -I../include -I/usr/include/SDL -D_REENTRANT
 # Extra compilation flags.
 # You may get speed increases by including flags such as -O2 or -O3 or
 #  -ffast-math, or additional flags, depending on your system and compiler.
 # The -g flag will generally include debugging information.
-CFLAGS =
+CFLAGS = -funroll-loops -pg -fno-inline-functions
 # Libraries to link with, and the location of library files.
 LIBS = -logg -lvorbis -lvorbisenc
 
 # ANYTHING BELOW THIS LINE PROBABLY DOES NOT NEED EDITING
-CINCLUDE+= -I../include
+CINCLUDE+=
 LIBSRCDIR = ../lib
 BINSRCDIR = ../examples
 WORKDIR = objs
@@ -70,24 +71,28 @@ psych.h
 
 DUMP_VIDEO_CSOURCES = dump_video.c
 ENCODER_EXAMPLE_CSOURCES = encoder_example.c
+PLAYER_EXAMPLE_CSOURCES = player_example.c
 
 # Create object file list.
 LIBTHEORA_OBJS:= ${LIBTHEORA_CSOURCES:%.c=${WORKDIR}/%.o}
 DUMP_VIDEO_OBJS:= ${DUMP_VIDEO_CSOURCES:%.c=${WORKDIR}/%.o}
 ENCODER_EXAMPLE_OBJS:= ${ENCODER_EXAMPLE_CSOURCES:%.c=${WORKDIR}/%.o}
+PLAYER_EXAMPLE_OBJS:= ${PLAYER_EXAMPLE_CSOURCES:%.c=${WORKDIR}/%.o}
 # Prepend source path to file names.
 LIBTHEORA_CSOURCES:= ${LIBTHEORA_CSOURCES:%=${LIBSRCDIR}/%}
 LIBTHEORA_CHEADERS:= ${LIBTHEORA_CHEADERS:%=${LIBSRCDIR}/%}
 DUMP_VIDEO_CSOURCES:= ${DUMP_VIDEO_CSOURCES:%=${BINSRCDIR}/%}
 ENCODER_EXAMPLE_CSOURCES:= ${ENCODER_EXAMPLE_CSOURCES:%=${BINSRCDIR}/%}
+PLAYER_EXAMPLE_CSOURCES:= ${PLAYER_EXAMPLE_CSOURCES:%=${BINSRCDIR}/%}
 # Prepand target path to file names.
 LIBTHEORA_TARGET:= ${TARGETLIBDIR}/${LIBTHEORA_TARGET}
 DUMP_VIDEO_TARGET:= ${TARGETBINDIR}/${DUMP_VIDEO_TARGET}
 ENCODER_EXAMPLE_TARGET:= ${TARGETBINDIR}/${ENCODER_EXAMPLE_TARGET}
+PLAYER_EXAMPLE_TARGET:= ${TARGETBINDIR}/${PLAYER_EXAMPLE_TARGET}
 
 # Targets:
 # Everything (default)
-all: ${LIBTHEORA_TARGET} ${DUMP_VIDEO_TARGET} ${ENCODER_EXAMPLE_TARGET}
+all: ${LIBTHEORA_TARGET} ${DUMP_VIDEO_TARGET} ${ENCODER_EXAMPLE_TARGET} ${PLAYER_EXAMPLE_TARGET}
 
 # libtheora
 ${LIBTHEORA_TARGET}: ${LIBTHEORA_OBJS}
@@ -105,11 +110,18 @@ ${ENCODER_EXAMPLE_TARGET}: ${ENCODER_EXAMPLE_OBJS} ${LIBTHEORA_TARGET}
 	${CC} ${CFLAGS} -o $@ ${ENCODER_EXAMPLE_OBJS} ${LIBS} \
          ${LIBTHEORA_TARGET}
 
+# player_example
+${PLAYER_EXAMPLE_TARGET}: ${PLAYER_EXAMPLE_OBJS} ${LIBTHEORA_TARGET}
+	mkdir -p ${TARGETBINDIR}
+	${CC} ${CFLAGS} -o $@ ${PLAYER_EXAMPLE_OBJS} ${LIBS} -lSDL -lpthread \
+	 ${LIBTHEORA_TARGET}
+
 # Remove all targets.
 clean:
 	-rm ${LIBTHEORA_OBJS} ${LIBTHEORA_TARGET}          \
          ${DUMP_VIDEO_OBJS} ${DUMP_VIDEO_TARGET}           \
-         ${ENCODER_EXAMPLE_OBJS} ${ENCODER_EXAMPLE_TARGET}
+         ${ENCODER_EXAMPLE_OBJS} ${ENCODER_EXAMPLE_TARGET} \
+	 ${PLAYER_EXAMPLE_OBJS} ${PLAYER_EXAMPLE_TARGET}
 	-rmdir ${WORKDIR}
 
 # Make the dependency list.
@@ -118,7 +130,8 @@ clean:
 # Only tracks dependencies on headers in this project, not libraries.
 depend: ${LIBTHEORA_CSOURCES} ${LIBTHEORA_CHEADERS} \
          ${DUMP_VIDEO_CSOURCES}                     \
-         ${ENCODER_EXAMPLE_CSOURCES}
+         ${ENCODER_EXAMPLE_CSOURCES}                \
+	 ${PLAYER_EXAMPLE_CSOURCES}
 	${MAKEDEPEND} ${CINCLUDE} ${CFLAGS} ${LIBTHEORA_CSOURCES} > $@
 
 # Specify which targets are phony for GNU make
