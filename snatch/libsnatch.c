@@ -553,53 +553,64 @@ int ioctl(int fd,unsigned long int rq, ...){
   va_end(optional);
   
   if(fd==audio_fd){
-      fprintf(stderr,"ioctl %lx ",rq);
-      
+
     if(rq==SNDCTL_DSP_SPEED ||
        rq==SNDCTL_DSP_CHANNELS ||
        rq==SNDCTL_DSP_GETODELAY ||
+       rq==SNDCTL_DSP_GETOSPACE ||
        rq==SNDCTL_DSP_SETFMT){
 
       if(!fake_audiop)
         ret=(*libc_ioctl)(fd,rq,arg);
 
-      if(ret==0  || rq==SNDCTL_DSP_GETODELAY){
-	switch(rq){
-	case SNDCTL_DSP_SPEED:
-	  audio_rate=*(int *)arg;
-	  if(debug)
-	    fprintf(stderr,
-		    "    ...: Audio output sampling rate set to %dHz.\n",
+      switch(rq){
+      case SNDCTL_DSP_SPEED:
+	audio_rate=*(int *)arg;
+	if(debug)
+	  fprintf(stderr,
+		  "    ...: Audio output sampling rate set to %dHz.\n",
 		    audio_rate);
-	  break;
-	case SNDCTL_DSP_CHANNELS:
-	  audio_channels=*(int *)arg;
+	break;
+      case SNDCTL_DSP_CHANNELS:
+	audio_channels=*(int *)arg;
+	if(debug)
+	  fprintf(stderr,
+		  "    ...: Audio output set to %d channels.\n",
+		  audio_channels);
+	break;
+      case SNDCTL_DSP_SETFMT:
+	audio_format=*(int *)arg;
+	if(debug)
+	  fprintf(stderr,
+		  "    ...: Audio output format set to %s.\n",
+		  formatname(audio_format));
+	break;
+      case SNDCTL_DSP_GETOSPACE:
+	if(fake_audiop){
+	  audio_buf_info *temp=arg;
+	  temp->fragments=32;
+	  temp->fragstotal=32;
+	  temp->fragsize=2048;
+	  temp->bytes=64*1024;
+
 	  if(debug)
-	    fprintf(stderr,
-		    "    ...: Audio output set to %d channels.\n",
-		    audio_channels);
-	  break;
-	case SNDCTL_DSP_SETFMT:
-	  audio_format=*(int *)arg;
-	  if(debug)
-	    fprintf(stderr,
-		    "    ...: Audio output format set to %s.\n",
-		    formatname(audio_format));
-	  break;
-	case SNDCTL_DSP_GETODELAY: /* Must reject the ODELAY if we're not going to track 
-				      audio bytes and timing! */
-	  {
-	    int foo=*(int *)arg;
-	    if(debug)
-	      fprintf(stderr,
-		      "    ...: Audio output delay returned %d %d.\n",
-		      ret,foo);
-	    *(int *)arg=0;
-	    ret=-1;
-	  }
-	  break;
+	    fprintf(stderr,"    ...: Audio output buffer size requested; faking 64k\n");
+	  ret=0;
 	}
+	break;
+      case SNDCTL_DSP_GETODELAY: /* Must reject the ODELAY if we're not going to track 
+				    audio bytes and timing! */
+	if(fake_audiop){
+	  int foo=*(int *)arg;
+	  if(debug)
+	    fprintf(stderr,
+		    "    ...: Rejecting SNDCTL_DSP_GETODELAY ioctl()\n");
+	  *(int *)arg=0;
+	  ret=-1;
+	}
+	break;
       }
+    
       return(ret);
     }else
       if(fake_audiop)return(0);
