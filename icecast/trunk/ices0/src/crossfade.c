@@ -1,6 +1,6 @@
 /* crossfade.c
  * Crossfader plugin
- * Copyright (c) 2004 Brendan Cully
+ * Copyright (c) 2004 Brendan Cully <brendan@xiph.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,13 +33,13 @@ static ices_plugin_t Crossfader = {
   NULL
 };
 
-static int NewTrack = 0;
 static int FadeSamples;
 static int16_t* FL;
 static int16_t* FR;
 static int fpos = 0;
 static int flen = 0;
-static int skipnext = 0;
+
+static int NewTrack = 0;
 
 /* public functions */
 ices_plugin_t *crossfade_plugin(int secs) {
@@ -53,7 +53,14 @@ ices_plugin_t *crossfade_plugin(int secs) {
 
 /* private functions */
 static void cf_new_track(input_stream_t *source) {
+  static int skipnext = 0;
+  static input_stream_t lasttrack;
   int filesecs;
+
+  if (lasttrack.samplerate && lasttrack.samplerate != source->samplerate)
+    skipnext = 1;
+
+  memcpy(&lasttrack, source, sizeof(lasttrack));
 
   /* turn off crossfading for tracks less than twice the length of the fade */
   if (skipnext) {
