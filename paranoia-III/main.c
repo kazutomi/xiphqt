@@ -21,26 +21,16 @@
  *   22.01.98 - first version
  *   15.02.98 - alpha 2: juggled two includes from interface/low_interface.h
  *                       that move contents in Linux 2.1
+ *
  *                       Linked status bar to isatty to avoid it appearing
  *                       in a redirected file.
+ *                       (suggested by Matija Nalis <mnalis@public.srce.hr>)
+ * 
  *                       Played with making TOC less verbose.
- *   04.04.98 - alpha 3: zillions of bugfixes, also added MMC and IDE_SCSI
+ *    4.04.98 - alpha 3: zillions of bugfixes, also added MMC and IDE_SCSI
  *                       emulation support
- *   05.04.98 - alpha 4: Segfault fix, cosmetic repairs
- *   05.04.98 - alpha 5: another segfault fix, cosmetic repairs, 
- *                       Gadi Oxman provided code to identify/fix nonstandard
- *                       ATAPI CDROMs 
- *   07.04.98 - alpha 6: Bugfixes to autodetection
- *   18.06.98 - alpha 7: Additional SCSI error handling code
- *                       cosmetic fixes
- *                       segfault fixes
- *                       new sync/silence code, smaller fft      
- *   15.07.98 - alpha 8: More new SCSI code, better error recovery
- *                       more segfault fixes (two linux bugs, one my fault)
- *                       Fixup reporting fixes, smilie fixes.
- *                       AIFF support (in addition to AIFC)
- *                       Path parsing fixes
- *   Changes are becoming TNTC. Will resume the log at beta.
+ *    4.05.98 - alpha 4: Segfault fix, cosmetic repairs
+ *                       
  */
 
 #include <stdio.h>
@@ -95,7 +85,7 @@ static long parse_offset(cdrom_drive *d, char *offset, int begin){
     if(chars>0){
       offset[chars]='\0';
       track=atoi(offset);
-      if(track<0 || track>d->tracks){ /*take track 0 as pre-gap of 1st track*/
+      if(track<1 || track>d->tracks){
 	char buffer[256];
 	sprintf(buffer,"Track #%ld does not exist.",track);
 	report(buffer);
@@ -189,7 +179,6 @@ static long parse_offset(cdrom_drive *d, char *offset, int begin){
 }
 
 static void display_toc(cdrom_drive *d){
-  long audiolen=0;
   int i;
   report("\nTable of contents (audio tracks only):\n"
 	 "track        length               begin        copy pre ch\n"
@@ -211,21 +200,13 @@ static void display_toc(cdrom_drive *d){
 	      cdda_track_preemp(d,i)?" yes":"  no",
 	      cdda_track_channels(d,i)==2?" 2":" 4");
       report(buffer);
-      audiolen+=off;
     }
-  {
-    char buffer[256];
-    sprintf(buffer, "TOTAL %7ld [%02d:%02d.%02d]    (audio only)",
-	    audiolen,(int)(audiolen/(60*75)),(int)((audiolen/75)%60),
-	    (int)(audiolen%75));
-      report(buffer);
-  }
   report("");
 }
 
 static void usage(FILE *f){
   fprintf( f,
-VERSION"\n"
+VERSION"\n\n"
 
 "USAGE:\n"
 "  cdparanoia [options] <span> [outfile]\n\n"
@@ -233,12 +214,8 @@ VERSION"\n"
 "OPTIONS:\n"
 "  -v --verbose                    : extra verbose operation\n"
 "  -q --quiet                      : quiet operation\n"
-"  -e --stderr-progress            : force output of progress information to\n"
-"                                    stderr (for wrapper scripts)\n"
 "  -V --version                    : print version info and quit\n"
 "  -Q --query                      : autosense drive, query disc and quit\n"
-"  -B --batch                      : 'batch' mode (saves each track to a\n"
-"                                    seperate file.\n"
 "  -s --search-for-drive           : do an exhaustive search for drive\n"
 "  -h --help                       : print help\n\n"
 
@@ -246,58 +223,24 @@ VERSION"\n"
 "                                    order\n"
 "  -r --output-raw-little-endian   : output raw 16 bit little-endian PCM\n"
 "  -R --output-raw-big-endian      : output raw 16 bit big-endian PCM\n"
-"  -w --output-wav                 : output as WAV file (default)\n"
-"  -f --output-aiff                : output as AIFF file\n"
-"  -a --output-aifc                : output as AIFF-C file\n\n"
+"  -w --output-wav                 : output as wav file (default)\n"
+"  -a --output-aifc                : output as aifc file\n"
+"  -i --output-info <file>         : output human readable ripping info to\n"
+"                                    file\n\n"
 
 "  -c --force-cdrom-little-endian  : force treating drive as little endian\n"
 "  -C --force-cdrom-big-endian     : force treating drive as big endian\n"
-"  -n --force-default-sectors <n>  : force default number of sectors in read\n"
+"  -n --force-default-sectors  <n> : force default number of sectors in read\n"
 "                                    to n sectors\n"
-"  -o --force-search-overlap  <n>  : force minimum overlap search during\n"
-"                                    verification to n sectors\n"
 "  -d --force-cdrom-device   <dev> : use specified device; disallow \n"
 "                                    autosense\n"
-"  -g --force-generic-device <dev> : use specified generic scsi device\n"
-"  -S --force-read-speed <n>       : read from device at specified speed\n"
-"  -t --toc-offset <n>             : Add <n> sectors to the values reported\n"
-"                                    when addressing tracks. May be negative\n"
-"  -T --toc-bias                   : Assume that the beginning offset of \n"
-"                                    track 1 as reported in the TOC will be\n"
-"                                    addressed as LBA 0.  Necessary for some\n"
-"                                    Toshiba drives to get track boundaries\n"
-"                                    correct\n"
-"  -O --sample-offset <n>          : Add <n> samples to the offset when\n"
-"                                    reading data.  May be negative.\n"
-"  -z --never-skip[=n]             : never accept any less than perfect\n"
-"                                    data reconstruction (don't allow 'V's)\n"
-"                                    but if [n] is given, skip after [n]\n"
-"                                    retries without progress.\n"
+"  -g --force-generic-device <dev> : use specified generic scsi device\n\n"
+
 "  -Z --disable-paranoia           : disable all paranoia checking\n"
 "  -Y --disable-extra-paranoia     : only do cdda2wav-style overlap checking\n"
-"  -X --abort-on-skip              : abort on imperfect reads/skips\n\n"
+"  -X --disable-scratch-detection  : do not look for scratches\n"
+"  -W --disable-scratch-repair     : disable scratch repair (still detect)\n\n"
 
-"OUTPUT SMILIES:\n"
-"  :-)   Normal operation, low/no jitter\n"
-"  :-|   Normal operation, considerable jitter\n"
-"  :-/   Read drift\n"
-"  :-P   Unreported loss of streaming in atomic read operation\n"
-"  8-|   Finding read problems at same point during reread; hard to correct\n"
-"  :-0   SCSI/ATAPI transport error\n"
-"  :-(   Scratch detected\n"
-"  ;-(   Gave up trying to perform a correction\n"
-"  8-X   Aborted (as per -X) due to a scratch/skip\n"
-"  :^D   Finished extracting\n\n"
-
-"PROGRESS BAR SYMBOLS:\n"
-"<space> No corrections needed\n"
-"   -    Jitter correction required\n"
-"   +    Unreported loss of streaming/other error in read\n"
-"   !    Errors are getting through stage 1 but corrected in stage2\n"
-"   e    SCSI/ATAPI transport error (corrected)\n"
-"   V    Uncorrected error/skip\n\n"
-
-"SPAN ARGUMENT:\n"
 "The span argument may be a simple track number or a offset/span\n"
 "specification.  The syntax of an offset/span takes the rough form:\n\n"
   
@@ -331,280 +274,126 @@ VERSION"\n"
 
 "Don't forget to protect square brackets and preceeding hyphens from\n"
 "the shell...\n\n"
-"A few examples, protected from the shell:\n"
-"  A) query only with exhaustive search for a drive and full reporting\n"
-"     of autosense:\n"
-"       cdparanoia -vsQ\n\n"
-"  B) extract up to and including track 3, putting each track in a seperate\n"
-"     file:\n"
-"       cdparanoia -B -- \"-3\"\n\n"
-"  C) extract from track 1, time 0:30.12 to 1:10.00:\n"
-"       cdparanoia \"1[:30.12]-1[1:10]\"\n\n"
 
-"Submit bug reports to xiphmont@mit.edu\n\n");
+"Bug reports should go to xiphmont@mit.edu\n\n");
 }
 
 long callbegin;
 long callend;
-long callscript=0;
 
-static char *callback_strings[15]={"wrote",
-                                   "finished",
-				   "read",
-				   "verify",
-				   "jitter",
-				   "correction",
-				   "scratch",
-				   "scratch repair",
-				   "skip",
-				   "drift",
-				   "backoff",
-				   "overlap",
-				   "dropped",
-				   "duped",
-				   "transport error"};
+static void callback(long sector, int function){
 
-static int skipped_flag=0;
-static int abort_on_skip=0;
-static void callback(long inpos, int function){
-  /*
+  /* (== PROGRESS == [--+:---x-------------->           ] == 000000 == . ==) */
 
- (== PROGRESS == [--+!---x-------------->           | 007218 01 ] == :-) . ==) 
-
- */
-
-  int graph=30;
   char buffer[256];
   static long c_sector=0,v_sector=0;
   static char dispcache[30]="                              ";
   static int last=0;
   static long lasttime=0;
-  long sector,osector=0;
   struct timeval thistime;
-  static char heartbeat=' ';
+  int graph=30;
+  char heartbeat=' ';
   int position=0,aheadposition=0;
-  static int overlap=0;
-  static int printit=-1;
 
-  static int slevel=0;
-  static int slast=0;
-  static int stimeout=0;
-  char *smilie="= :-)";
-  
-  if(callscript)
-    fprintf(stderr,"##: %d [%s] @ %ld\n",
-	    function,(function>=-2&&function<=13?callback_strings[function+2]:
-		      ""),inpos);
+  sector/=CD_FRAMESIZE_RAW/2;
 
-  if(!quiet){
-    long test;
-    osector=inpos;
-    sector=inpos/CD_FRAMEWORDS;
+  if(isatty(STDERR_FILENO)){  /* else don;t bother; it's probably being 
+				 redirected */
+    position=((float)(sector-callbegin)/
+	      (callend-callbegin))*graph;
     
-    if(printit==-1){
-      if(isatty(STDERR_FILENO)){
-	printit=1;
-      }else{
-	printit=0;
-      }
+    aheadposition=((float)(c_sector-callbegin)/
+		   (callend-callbegin))*graph;
+    
+    if(function==-2){
+      v_sector=sector;
+      return;
     }
-
-    if(printit==1){  /* else don't bother; it's probably being 
-			redirected */
-      position=((float)(sector-callbegin)/
-		(callend-callbegin))*graph;
-      
-      aheadposition=((float)(c_sector-callbegin)/
-		     (callend-callbegin))*graph;
-      
-      if(function==-2){
-	v_sector=sector;
-	return;
-      }
-      if(function==-1){
-	last=8;
-	heartbeat='*';
-	slevel=0;
-	v_sector=sector;
-      }else
-	if(position<graph && position>=0)
-	  switch(function){
-	  case PARANOIA_CB_VERIFY:
-	    if(stimeout>=30){
-	      if(overlap>CD_FRAMEWORDS)
-		slevel=2;
-	      else
-		slevel=1;
-	    }
-	    break;
-	  case PARANOIA_CB_READ:
-	    if(sector>c_sector)c_sector=sector;
-	    break;
-	    
-	  case PARANOIA_CB_FIXUP_EDGE:
-	    if(stimeout>=5){
-	      if(overlap>CD_FRAMEWORDS)
-		slevel=2;
-	      else
-		slevel=1;
-	    }
-	    if(dispcache[position]==' ') 
-	      dispcache[position]='-';
-	    break;
-	  case PARANOIA_CB_FIXUP_ATOM:
-	    if(slevel<3 || stimeout>5)slevel=3;
-	    if(dispcache[position]==' ' ||
-	       dispcache[position]=='-')
-	      dispcache[position]='+';
-	    break;
-	  case PARANOIA_CB_READERR:
-	    slevel=6;
-	    if(dispcache[position]!='V')
-	      dispcache[position]='e';
-	    break;
-	  case PARANOIA_CB_SKIP:
-	    slevel=8;
-	    dispcache[position]='V';
-	    break;
-	  case PARANOIA_CB_OVERLAP:
-	    overlap=osector;
-	    break;
-	  case PARANOIA_CB_SCRATCH:
-	    slevel=7;
-	    break;
-	  case PARANOIA_CB_DRIFT:
-	    if(slevel<4 || stimeout>5)slevel=4;
-	    break;
-	  case PARANOIA_CB_FIXUP_DROPPED:
-	  case PARANOIA_CB_FIXUP_DUPED:
-	    slevel=5;
-	    if(dispcache[position]==' ' ||
-	       dispcache[position]=='-' ||
-	       dispcache[position]=='+')
-	      dispcache[position]='!';
-	    break;
-	  }
+    if(function==-1){
+      last=8;
+      heartbeat='*';
+    }else
+      if(position<graph && position>=0)
+	switch(function){
+	case PARANOIA_CB_VERIFY:
+	  break;
+	case PARANOIA_CB_READ:
+	  if(sector>c_sector)c_sector=sector;
+	  break;
+	case PARANOIA_CB_FIXUP_EDGE:
+	  if(dispcache[position]==' ') 
+	    dispcache[position]='-';
+	  break;
+	case PARANOIA_CB_FIXUP_ATOM:
+	  if(dispcache[position]==' ' ||
+	     dispcache[position]=='-')
+	    dispcache[position]='+';
+	  break;
+	case PARANOIA_CB_SKIP:
+	  dispcache[position]='V';
+	  break;
+	}
     
-      switch(slevel){
-      case 0:  /* finished, or no jitter */
-	if(skipped_flag)
-	  smilie=" 8-X";
-	else
-	  smilie=" :^D";
-	break;
-      case 1:  /* normal.  no atom, low jitter */
-	smilie=" :-)";
-	break;
-      case 2:  /* normal, overlap > 1 */
-	smilie=" :-|";
-	break; 
-      case 4:  /* drift */
-	smilie=" :-/";
-	break;
-      case 3:  /* unreported loss of streaming */
-	smilie=" :-P";
-	break;
-      case 5:  /* dropped/duped bytes */
-	smilie=" 8-|";
-	break;
-      case 6:  /* scsi error */
-	smilie=" :-0";
-	break;
-      case 7:  /* scratch */
-	smilie=" :-(";
-	break;
-      case 8:  /* skip */
-	smilie=" ;-(";
-	skipped_flag=1;
-	break;
-	
-      }
-      
+    switch(last){
+    case 0:
+      heartbeat=' ';
+      break;
+    case 1:case 7:
+      heartbeat='.';
+    break;
+    case 2:case 6:
+      heartbeat='o';
+      break;
+    case 3:case 5:  
+      heartbeat='0';
+      break;
+    case 4:
+      heartbeat='O';
+      break;
+    }
+    
+    if(!quiet){
+      long test;
       gettimeofday(&thistime,NULL);
       test=thistime.tv_sec*10+thistime.tv_usec/100000;
-
-      if(lasttime!=test || function==-1 || slast!=slevel){
-	if(lasttime!=test || function==-1){
-	  last++;
-	  lasttime=test;
-	  if(last>7)last=0;
-	  stimeout++;
-	  switch(last){
-	  case 0:
-	    heartbeat=' ';
-	    break;
-	  case 1:case 7:
-	    heartbeat='.';
-	    break;
-	  case 2:case 6:
-	    heartbeat='o';
-	    break;
-	  case 3:case 5:  
-	    heartbeat='0';
-	    break;
-	  case 4:
-	    heartbeat='O';
-	    break;
-	  }
-	  if(function==-1)
-	    heartbeat='*';
-
-	}
-	if(slast!=slevel){
-	  stimeout=0;
-	}
-	slast=slevel;
+      
+      if(lasttime!=test || function==-1){
+	last++;
+	lasttime=test;
+	if(last>7)last=0;
 	
-	if(abort_on_skip && skipped_flag && function !=-1){
+	if(v_sector==0)
 	  sprintf(buffer,
-		  "\r (== PROGRESS == [%s| %06ld %02d ] ==%s %c ==)   ",
-		  "  ...aborting; please wait... ",
-		  v_sector,overlap/CD_FRAMEWORDS,smilie,heartbeat);
-	}else{
-	  if(v_sector==0)
-	    sprintf(buffer,
-		    "\r (== PROGRESS == [%s| ...... %02d ] ==%s %c ==)   ",
-		    dispcache,overlap/CD_FRAMEWORDS,smilie,heartbeat);
-	  
-	  else
-	    sprintf(buffer,
-		    "\r (== PROGRESS == [%s| %06ld %02d ] ==%s %c ==)   ",
-		    dispcache,v_sector,overlap/CD_FRAMEWORDS,smilie,heartbeat);
-	  
-	  if(aheadposition>=0 && aheadposition<graph && !(function==-1))
-	    buffer[aheadposition+19]='>';
-	}
-   
+		  "\r  (== PROGRESS == [%s] == ...... == %c ==)     ",
+		  dispcache,heartbeat);
+	
+	else
+	  sprintf(buffer,
+		  "\r  (== PROGRESS == [%s] == %06ld == %c ==)     ",
+		  dispcache,v_sector,heartbeat);
+	
+	if(aheadposition>=0 && aheadposition<graph && !(function==-1))
+	  buffer[aheadposition+20]='>';
+	
 	fprintf(stderr,buffer);
       }
     }
   }
-
-  /* clear the indicator for next batch */
-  if(function==-1)
-    memset(dispcache,' ',graph);
 }
 
-const char *optstring = "escCn:o:O:d:g:S:prRwafvqVQhZz::YXWBi:Tt:";
+const char *optstring = "scCn:d:g:prRwavqVQhZYXWB";
 
 struct option options [] = {
-	{"stderr-progress",no_argument,NULL,'e'},
 	{"search-for-drive",no_argument,NULL,'s'},
 	{"force-cdrom-little-endian",no_argument,NULL,'c'},
 	{"force-cdrom-big-endian",no_argument,NULL,'C'},
 	{"force-default-sectors",required_argument,NULL,'n'},
-	{"force-search-overlap",required_argument,NULL,'o'},
 	{"force-cdrom-device",required_argument,NULL,'d'},
 	{"force-generic-device",required_argument,NULL,'g'},
-	{"force-read-speed",required_argument,NULL,'S'},
-	{"sample-offset",required_argument,NULL,'O'},
-	{"toc-offset",required_argument,NULL,'t'},
-	{"toc-bias",no_argument,NULL,'T'},
 	{"output-raw",no_argument,NULL,'p'},
 	{"output-raw-little-endian",no_argument,NULL,'r'},
 	{"output-raw-big-endian",no_argument,NULL,'R'},
 	{"output-wav",no_argument,NULL,'w'},
-	{"output-aiff",no_argument,NULL,'f'},
 	{"output-aifc",no_argument,NULL,'a'},
 	{"batch",no_argument,NULL,'B'},
 	{"verbose",no_argument,NULL,'v'},
@@ -614,10 +403,9 @@ struct option options [] = {
 	{"help",no_argument,NULL,'h'},
 	{"disable-paranoia",no_argument,NULL,'Z'},
 	{"disable-extra-paranoia",no_argument,NULL,'Y'},
-	{"abort-on-skip",no_argument,NULL,'X'},
-	{"disable-fragmentation",no_argument,NULL,'F'},
+	{"disable-scratch-detection",no_argument,NULL,'X'},
+	{"disable-scratch-repair",no_argument,NULL,'W'},
 	{"output-info",required_argument,NULL,'i'},
-	{"never-skip",optional_argument,NULL,'z'},
 
 	{NULL,0,NULL,0}
 };
@@ -627,11 +415,8 @@ long blocking_write(int outf, char *buffer, long num){
 
   while(words<num){
     temp=write(outf,buffer+words,num-words);
-    if(temp==-1){
-      if(errno!=EINTR && errno!=EAGAIN)
-	return(-1);
-      temp=0;
-    }
+    if(temp==-1 && errno!=EINTR && errno!=EAGAIN)
+      return(-1);
     words+=temp;
   }
   return(0);
@@ -646,24 +431,17 @@ static void cleanup(void){
 }
 
 int main(int argc,char *argv[]){
-  int toc_bias=0;
-  int toc_offset=0;
-  int sample_offset=0;
   int force_cdrom_endian=-1;
   int force_cdrom_sectors=-1;
-  int force_cdrom_overlap=-1;
   char *force_cdrom_device=NULL;
   char *force_generic_device=NULL;
-  int force_cdrom_speed=-1;
-  int max_retries=20;
   char *span=NULL;
   int output_type=1; /* 0=raw, 1=wav, 2=aifc */
   int output_endian=0; /* -1=host, 0=little, 1=big */
   int query_only=0;
-  int batch=0,i;
+  int batch=0;
 
-  /* full paranoia, but allow skipping */
-  int paranoia_mode=PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP; 
+  int paranoia_mode=PARANOIA_MODE_FULL; /* full paranoia */
 
   char *info_file=NULL;
   int out;
@@ -687,9 +465,6 @@ int main(int argc,char *argv[]){
     case 'n':
       force_cdrom_sectors=atoi(optarg);
       break;
-    case 'o':
-      force_cdrom_overlap=atoi(optarg);
-      break;
     case 'd':
       if(force_cdrom_device)free(force_cdrom_device);
       force_cdrom_device=copystring(optarg);
@@ -697,9 +472,6 @@ int main(int argc,char *argv[]){
     case 'g':
       if(force_generic_device)free(force_generic_device);
       force_generic_device=copystring(optarg);
-      break;
-    case 'S':
-      force_cdrom_speed=atoi(optarg);
       break;
     case 'p':
       output_type=0;
@@ -721,10 +493,6 @@ int main(int argc,char *argv[]){
       output_type=2;
       output_endian=1;
       break;
-    case 'f':
-      output_type=3;
-      output_endian=1;
-      break;
     case 'v':
       verbose=CDDA_MESSAGE_PRINTIT;
       quiet=0;
@@ -736,13 +504,9 @@ int main(int argc,char *argv[]){
       verbose=CDDA_MESSAGE_FORGETIT;
       quiet=1;
       break;
-    case 'e':
-      callscript=1;
-      fprintf(stderr,"Sending all callcaks to stderr for wrapper script\n");
-      break;
     case 'V':
       fprintf(stderr,VERSION);
-      fprintf(stderr,"\n");
+      fprintf(stderr,"\n\n");
       exit(0);
       break;
     case 'Q':
@@ -754,41 +518,19 @@ int main(int argc,char *argv[]){
     case 'Z':
       paranoia_mode=PARANOIA_MODE_DISABLE; 
       break;
-    case 'z':
-      if (optarg) {
-        max_retries = atoi (optarg);
-        paranoia_mode&=~PARANOIA_MODE_NEVERSKIP;
-      } else {
-        paranoia_mode|=PARANOIA_MODE_NEVERSKIP;
-      }
-      break;
     case 'Y':
-      paranoia_mode|=PARANOIA_MODE_OVERLAP; /* cdda2wav style overlap 
+      paranoia_mode=PARANOIA_MODE_OVERLAP; /* cdda2wav style overlap 
 						check only */
-      paranoia_mode&=~PARANOIA_MODE_VERIFY;
       break;
     case 'X':
-      /*paranoia_mode&=~(PARANOIA_MODE_SCRATCH|PARANOIA_MODE_REPAIR);*/
-      abort_on_skip=1;
+      paranoia_mode&=~(PARANOIA_MODE_SCRATCH|PARANOIA_MODE_REPAIR);
       break;
     case 'W':
-      paranoia_mode&=~PARANOIA_MODE_REPAIR;
-      break;
-    case 'F':
-      paranoia_mode&=~(PARANOIA_MODE_FRAGMENT);
+      paranoia_mode&=PARANOIA_MODE_REPAIR;
       break;
     case 'i':
       if(info_file)free(info_file);
       info_file=copystring(info_file);
-      break;
-    case 'T':
-      toc_bias=-1;
-      break;
-    case 't':
-      toc_offset=atoi(optarg);
-      break;
-    case 'O':
-      sample_offset=atoi(optarg);
       break;
     default:
       usage(stderr);
@@ -797,15 +539,11 @@ int main(int argc,char *argv[]){
   }
 
   if(optind>=argc && !query_only){
-    if(batch)
-      span=NULL;
-    else{
-      /* D'oh.  No span. Fetch me a brain, Igor. */
-      usage(stderr);
-      exit(1);
-    }
-  }else
-    span=copystring(argv[optind]);
+    /* D'oh.  No span. Fetch me a brain, Igor. */
+    usage(stderr);
+    exit(1);
+  }
+  span=copystring(argv[optind]);
 
   report(VERSION);
 
@@ -829,13 +567,8 @@ int main(int argc,char *argv[]){
 	  d=cdda_identify("/dev/cdrom",verbose,NULL);
 	  if(d==NULL  && !verbose){
 	    verbose=1;
-	    report("\n/dev/cdrom exists but isn't accessible.  By default,\n"
-		   "cdparanoia stops searching for an accessible drive here.\n"
-		   "Consider using -sv to force a more complete autosense\n"
-		   "of the machine.\n\nMore information about /dev/cdrom:");
-
+	    report("/dev/cdrom exists but isn't accessible.  More information:\n");
 	    d=cdda_identify("/dev/cdrom",CDDA_MESSAGE_PRINTIT,NULL);
-	    report("\n");
 	    exit(1);
 	  }else
 	    report("");
@@ -867,7 +600,7 @@ int main(int argc,char *argv[]){
   }
   if(force_cdrom_sectors!=-1){
     if(force_cdrom_sectors<0 || force_cdrom_sectors>100){
-      report("Default sector read size must be 1<= n <= 100\n");
+      report("Default sector read size must be 1<= n <= 10\n");
       cdda_close(d);
       d=NULL;
       exit(1);
@@ -879,20 +612,6 @@ int main(int argc,char *argv[]){
       report(buffer);
       d->nsectors=force_cdrom_sectors;
       d->bigbuff=force_cdrom_sectors*CD_FRAMESIZE_RAW;
-    }
-  }
-  if(force_cdrom_overlap!=-1){
-    if(force_cdrom_overlap<0 || force_cdrom_overlap>75){
-      report("Search overlap sectors must be 0<= n <=75\n");
-      cdda_close(d);
-      d=NULL;
-      exit(1);
-    }
-    {
-      char buffer[256];
-      sprintf(buffer,"Forcing search overlap to %d sectors; "
-	      "ignoring autosense",force_cdrom_overlap);
-      report(buffer);
     }
   }
 
@@ -914,28 +633,18 @@ int main(int argc,char *argv[]){
   if(query_only || verbose)display_toc(d);
   if(query_only)exit(0);
 
-  /* bias the disc.  A hack.  Of course. */
-  /* we may need to read before or past user area; this is never
-     default, and we do it because the [allegedly informed] user told
-     us to */
-  if(sample_offset){
-    toc_offset+=sample_offset/588;
-    sample_offset%=588;
-    if(sample_offset<0){
-      sample_offset+=588;
-      toc_offset--;
-    }
-  }
-
-  if(toc_bias){
-    toc_offset=-cdda_track_firstsector(d,1);
-  }
-  for(i=0;i<d->tracks+1;i++)
-    d->disc_toc[i].dwStartSector+=toc_offset;
-
-
-  if(force_cdrom_speed!=-1){
-    cdda_speed_set(d,force_cdrom_speed);
+  if(d->interface==GENERIC_SCSI && d->bigbuff<=CD_FRAMESIZE_RAW){
+    report("WARNING: You kernel does not have generic SCSI 'SG_BIG_BUFF'\n"
+	   "         set, or it is set to a very small value.  Paranoia\n"
+	   "         will only be able to perform single sector reads\n"
+	   "         making it very unlikely Paranoia can work.\n\n"
+	   "         To correct this problem, the SG_BIG_BUFF define\n"
+	   "         must be set in /usr/src/linux/include/scsi/sg.h\n"
+	   "         by placing, for example, the following line just\n"
+	   "         before the last #endif:\n\n"
+	   "         #define SG_BIG_BUFF 65536\n\n"
+	   "         and then recompiling the kernel.\n\n"
+	   "         Attempting to continue...\n\n");
   }
 
   if(d->nsectors==1){
@@ -954,49 +663,44 @@ int main(int argc,char *argv[]){
     long batch_last;
     int batch_track;
 
-    if(span){
-      /* look for the hyphen */ 
-      char *span2=strchr(span,'-');
-      if(strrchr(span,'-')!=span2){
+    /* look for the hyphen */ 
+    char *span2=strchr(span,'-');
+    if(strrchr(span,'-')!=span2){
+      report("Error parsing span argument");
+      cdda_close(d);
+      d=NULL;
+      exit(1);
+    }
+
+    if(span2!=NULL){
+      *span2='\0';
+      span2++;
+    }
+
+    first_sector=parse_offset(d,span,-1);
+    if(first_sector==-1)
+      last_sector=parse_offset(d,span2,cdda_disc_firstsector(d));
+    else
+      last_sector=parse_offset(d,span2,first_sector);
+
+    if(first_sector==-1){
+      if(last_sector==-1){
 	report("Error parsing span argument");
 	cdda_close(d);
 	d=NULL;
 	exit(1);
-      }
-      
-      if(span2!=NULL){
-	*span2='\0';
-	span2++;
-      }
-      
-      first_sector=parse_offset(d,span,-1);
-      if(first_sector==-1)
-	last_sector=parse_offset(d,span2,cdda_disc_firstsector(d));
-      else
-	last_sector=parse_offset(d,span2,first_sector);
-      
-      if(first_sector==-1){
-	if(last_sector==-1){
-	  report("Error parsing span argument");
-	  cdda_close(d);
-	  d=NULL;
-	  exit(1);
-	}else{
-	  first_sector=cdda_disc_firstsector(d);
-	}
       }else{
-	if(last_sector==-1){
-	  if(span2){ /* There was a hyphen */
-	    last_sector=cdda_disc_lastsector(d);
-	  }else{
-	    last_sector=
-	      cdda_track_lastsector(d,cdda_sector_gettrack(d,first_sector));
-	  }
-	}
+	first_sector=cdda_disc_firstsector(d);
       }
     }else{
-      first_sector=cdda_disc_firstsector(d);
-      last_sector=cdda_disc_lastsector(d);
+      if(last_sector==-1){
+	if(span2){ /* There was a hyphen */
+	  last_sector=cdda_disc_lastsector(d);
+	}else{
+	  last_sector=
+	    cdda_track_lastsector(d,cdda_sector_gettrack(d,first_sector));
+	}
+      }
     }
 
     {
@@ -1024,35 +728,17 @@ int main(int argc,char *argv[]){
 
     {
       long cursor;
-      int16_t offset_buffer[1176];
-      int offset_buffer_used=0;
-      int offset_skip=sample_offset*4;
-
-      p=paranoia_init(d);
+      p=paranoia_init(d,3L*1024L*1024L,50); /* big! ~5M av */
       paranoia_modeset(p,paranoia_mode);
-      if(force_cdrom_overlap!=-1)paranoia_overlapset(p,force_cdrom_overlap);
-
+      
       if(verbose)
 	cdda_verbose_set(d,CDDA_MESSAGE_LOGIT,CDDA_MESSAGE_LOGIT);
       else
-	cdda_verbose_set(d,CDDA_MESSAGE_FORGETIT,CDDA_MESSAGE_FORGETIT);
+	cdda_verbose_set(d,CDDA_MESSAGE_LOGIT,CDDA_MESSAGE_FORGETIT);
       
       paranoia_seek(p,cursor=first_sector,SEEK_SET);      
 
-      /* this is probably a good idea in general */
-      seteuid(getuid());
-      setegid(getgid());
-
-      /* we'll need to be able to read one sector past user data if we
-	 have a sample offset in order to pick up the last bytes.  We
-	 need to set the disc length forward here so that the libs are
-	 willing to read past, assuming that works on the hardware, of
-	 course */
-      if(sample_offset)
-	d->disc_toc[d->tracks].dwStartSector++;
-
       while(cursor<=last_sector){
-	char outfile_name[256];
 	if(batch){
 	  batch_first=cursor;
 	  batch_last=
@@ -1076,118 +762,86 @@ int main(int argc,char *argv[]){
 	    if(batch)report("Are you sure you wanted 'batch' "
 			    "(-B) output with stdout?");
 	    report("outputting to stdout\n");
-	    outfile_name[0]='\0';
 	  }else{
-	    char path[256];
+	    char buffer[256];
 
-	    char *post=strrchr(argv[optind+1],'/');
-	    int pos=(post?post-argv[optind+1]+1:0);
-	    char *file=argv[optind+1]+pos;
+	    if(batch){
+	      char path[128];
+	      char file[128];
+	      
+	      char *post=strrchr(argv[optind+1],'/');
+	      int pos=(post?post-argv[optind+1]:0);
+	      
+	      path[0]='\0';
+	      file[0]='\0';
+	      if(pos && pos<100)
+		strncat(path,argv[optind+1],pos);
+	      strncat(file,argv[optind+1]+pos,100);
+	      
+	      sprintf(buffer,"%strack%d.%s",path,batch_track,file);
+	    }else
+	      sprintf(buffer,"%s",argv[optind+1]);
 	    
-	    path[0]='\0';
-
-	    if(pos)
-	      strncat(path,argv[optind+1],pos>256?256:pos);
-
-	    if(batch)
-	      snprintf(outfile_name,246,"%strack%02d.%s",path,batch_track,file);
-	    else
-	      snprintf(outfile_name,246,"%s%s",path,file);
-
-	    if(file[0]=='\0'){
-	      switch(output_type){
-	      case 0: /* raw */
-		strcat(outfile_name,"cdda.raw");
-		break;
-	      case 1:
-		strcat(outfile_name,"cdda.wav");
-		break;
-	      case 2:
-		strcat(outfile_name,"cdda.aifc");
-		break;
-	      case 3:
-		strcat(outfile_name,"cdda.aiff");
-		break;
-	      }
-	    }
-	    
-	    out=open(outfile_name,O_RDWR|O_CREAT|O_TRUNC,0666);
+	    out=open(buffer,O_RDWR|O_CREAT|O_TRUNC,0660);
 	    if(out==-1){
-	      report3("Cannot open specified output file %s: %s",outfile_name,
+	      report3("Cannot open specified output file %s: %s",buffer,
 		      strerror(errno));
 	      cdda_close(d);
 	      d=NULL;
 	      exit(1);
 	    }
-	    report2("outputting to %s\n",outfile_name);
+	    report2("outputting to %s\n",buffer);
 	  }
 	}else{
 	  /* default */
+	  char buffer[32];
 	  if(batch)
-	    sprintf(outfile_name,"track%02d.",batch_track);
+	    sprintf(buffer,"track%d.",batch_track);
 	  else
-	    outfile_name[0]='\0';
+	    buffer[0]='\0';
 	  
 	  switch(output_type){
 	  case 0: /* raw */
-	    strcat(outfile_name,"cdda.raw");
+	    strcat(buffer,"cdda.raw");
 	    break;
 	  case 1:
-	    strcat(outfile_name,"cdda.wav");
+	    strcat(buffer,"cdda.wav");
 	    break;
 	  case 2:
-	    strcat(outfile_name,"cdda.aifc");
-	    break;
-	  case 3:
-	    strcat(outfile_name,"cdda.aiff");
+	    strcat(buffer,"cdda.aifc");
 	    break;
 	  }
 	  
-	  out=open(outfile_name,O_RDWR|O_CREAT|O_TRUNC,0666);
+	  out=open(buffer,O_RDWR|O_CREAT|O_TRUNC,0660);
 	  if(out==-1){
-	    report3("Cannot open default output file %s: %s",outfile_name,
+	    report3("Cannot open default output file %s: %s",buffer,
 		    strerror(errno));
 	    cdda_close(d);
 	    d=NULL;
 	    exit(1);
 	  }
-	  report2("outputting to %s\n",outfile_name);
+	  report2("outputting to %s\n",buffer);
 	}
 	
 	switch(output_type){
 	case 0: /* raw */
 	  break;
 	case 1: /* wav */
-	  WriteWav(out,(batch_last-batch_first+1)*CD_FRAMESIZE_RAW);
+	  WriteWav(out,(last_sector-first_sector+1)*CD_FRAMESIZE_RAW);
 	  break;
 	case 2: /* aifc */
-	  WriteAifc(out,(batch_last-batch_first+1)*CD_FRAMESIZE_RAW);
-	  break;
-	case 3: /* aiff */
-	  WriteAiff(out,(batch_last-batch_first+1)*CD_FRAMESIZE_RAW);
+	  WriteAifc(out,(last_sector-first_sector+1)*CD_FRAMESIZE_RAW);
 	  break;
 	}
 	
 	/* Off we go! */
-
-	if(offset_buffer_used){
-	  /* partial sector from previous batch read */
-	  cursor++;
-	  if(buffering_write(out,
-			     ((char *)offset_buffer)+offset_buffer_used,
-			     CD_FRAMESIZE_RAW-offset_buffer_used)){
-	    report2("Error writing output: %s",strerror(errno));
-	    exit(1);
-	  }
-	}
 	
-	skipped_flag=0;
 	while(cursor<=batch_last){
 	  /* read a sector */
-	  int16_t *readbuf=paranoia_read_limited(p,callback,max_retries);
+	  size16 *readbuf=paranoia_read(p,1,callback);
 	  char *err=cdda_errors(d);
 	  char *mes=cdda_messages(d);
-
+	  
 	  if(mes || err)
 	    fprintf(stderr,"\r                               "
 		    "                                           \r%s%s\n",
@@ -1196,16 +850,12 @@ int main(int argc,char *argv[]){
 	  if(err)free(err);
 	  if(mes)free(mes);
 	  if(readbuf==NULL){
-	    skipped_flag=1;
 	    report("\nparanoia_read: Unrecoverable error, bailing.\n");
-	    break;
-	  }
-	  if(skipped_flag && abort_on_skip){
 	    cursor=batch_last+1;
+	    paranoia_seek(p,cursor,SEEK_SET);      
 	    break;
 	  }
 
-	  skipped_flag=0;
 	  cursor++;
 	  
 	  if(output_endian!=bigendianp()){
@@ -1213,75 +863,20 @@ int main(int argc,char *argv[]){
 	    for(i=0;i<CD_FRAMESIZE_RAW/2;i++)readbuf[i]=swap16(readbuf[i]);
 	  }
 	  
-	  callback(cursor*(CD_FRAMEWORDS)-1,-2);
+	  callback(cursor*(CD_FRAMESIZE_RAW/2)-1,-2);
 
-	  if(buffering_write(out,((char *)readbuf)+offset_skip,
-			     CD_FRAMESIZE_RAW-offset_skip)){
+	  if(blocking_write(out,(char *)readbuf,CD_FRAMESIZE_RAW)){
 	    report2("Error writing output: %s",strerror(errno));
 	    exit(1);
 	  }
-	  offset_skip=0;
 	  
 	  if(output_endian!=bigendianp()){
 	    int i;
 	    for(i=0;i<CD_FRAMESIZE_RAW/2;i++)readbuf[i]=swap16(readbuf[i]);
 	  }
-
-	  /* One last bit of silliness to deal with sample offsets */
-	  if(sample_offset && cursor>batch_last){
-	    int i;
-	    /* read a sector and output the partial offset.  Save the
-               rest for the next batch iteration */
-	    readbuf=paranoia_read_limited(p,callback,max_retries);
-	    err=cdda_errors(d);mes=cdda_messages(d);
-
-	    if(mes || err)
-	      fprintf(stderr,"\r                               "
-		      "                                           \r%s%s\n",
-		      mes?mes:"",err?err:"");
-	  
-	    if(err)free(err);if(mes)free(mes);
-	    if(readbuf==NULL){
-	      skipped_flag=1;
-	      report("\nparanoia_read: Unrecoverable error reading through "
-		     "sample_offset shift\n\tat end of track, bailing.\n");
-	      break;
-	    }
-	    if(skipped_flag && abort_on_skip)break;
-	    skipped_flag=0;
-	    /* do not move the cursor */
-	  
-	    if(output_endian!=bigendianp())
-	      for(i=0;i<CD_FRAMESIZE_RAW/2;i++)
-		offset_buffer[i]=swap16(readbuf[i]);
-	    else
-	      memcpy(offset_buffer,readbuf,CD_FRAMESIZE_RAW);
-	    offset_buffer_used=sample_offset*4;
-	  
-	    callback(cursor*(CD_FRAMEWORDS),-2);
-
-	    if(buffering_write(out,(char *)offset_buffer,
-			       offset_buffer_used)){
-	      report2("Error writing output: %s",strerror(errno));
-	      exit(1);
-	    }
-	  }
 	}
 	callback(cursor*(CD_FRAMESIZE_RAW/2)-1,-1);
-	buffering_close(out);
-	if(skipped_flag){
-	  /* remove the file */
-	  report2("\nRemoving aborted file: %s",outfile_name);
-	  unlink(outfile_name);
-	  /* make the cursor correct if we have another track */
-	  if(batch_track!=-1){
-	    batch_track++;
-	    cursor=cdda_track_firstsector(d,batch_track);
-	    paranoia_seek(p,cursor,SEEK_SET);      
-	    offset_skip=sample_offset*4;
-	    offset_buffer_used=0;
-	  }
-	}
+	close(out);
 	report("\n");
       }
 

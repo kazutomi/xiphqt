@@ -1,327 +1,147 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include "p_block.h"
 #include "../interface/cdda_interface.h"
 #include "cdda_paranoia.h"
+#include "p_block.h"
 
-linked_list *new_list(void *(*newp)(void),void (*freep)(void *)){
-  linked_list *ret=calloc(1,sizeof(linked_list));
-  ret->new_poly=newp;
-  ret->free_poly=freep;
-  return(ret);
-}
+void release_p_block(p_block *b){
+  cdrom_paranoia *p=b->p;
 
-linked_element *add_elem(linked_list *l,void *elem){
+  /* yeah, not really needed */
+  b->begin=-1;
+  b->end=-1;
+  b->verifybegin=-1;
+  b->verifyend=-1;
 
-  linked_element *ret=calloc(1,sizeof(linked_element));
-  ret->stamp=l->current++;
-  ret->ptr=elem;
-  ret->list=l;
+  if(b->buffer){
+    free(b->buffer);
+    b->p->total_bufsize-=b->size;
+    b->buffer=NULL;
+  }
+  b->size=0;
 
-  if(l->head)
-    l->head->prev=ret;
-  else
-    l->tail=ret;    
-  ret->next=l->head;
-  ret->prev=NULL;
-  l->head=ret;
-  l->active++;
-
-  return(ret);
-}
-
-linked_element *new_elem(linked_list *list){
-  void *new=list->new_poly();
-  return(add_elem(list,new));
-}
-
-void free_elem(linked_element *e,int free_ptr){
-  linked_list *l=e->list;
-  if(free_ptr)l->free_poly(e->ptr);
-
-  if(e==l->head)
-    l->head=e->next;
-  if(e==l->tail)
-    l->tail=e->prev;
+  if(b!=&(p->root)){
+    if(b==p->fragments)
+      p->fragments=b->next;
+    if(b==p->tail)
+      p->tail=b->prev;
     
-  if(e->prev)
-    e->prev->next=e->next;
-  if(e->next)
-    e->next->prev=e->prev;
-
-  l->active--;
-  free(e);
-} 
-
-void free_list(linked_list *list,int free_ptr){
-  while(list->head)
-    free_elem(list->head,free_ptr);
-  free(list);
-}
-
-void *get_elem(linked_element *e){
-  return(e->ptr);
-}
-
-linked_list *copy_list(linked_list *list){
-  linked_list *new=new_list(list->new_poly,list->free_poly);
-  linked_element *i=list->tail;
-
-  while(i){
-    add_elem(new,i->ptr);
-    i=i->prev;
-  }
-  return(new);
-}
-
-/**** C_block stuff ******************************************************/
-
-static c_block *i_cblock_constructor(cdrom_paranoia *p){
-  c_block *ret=calloc(1,sizeof(c_block));
-  return(ret);
-}
-
-void i_cblock_destructor(c_block *c){
-  if(c){
-    if(c->vector)free(c->vector);
-    if(c->flags)free(c->flags);
-    c->e=NULL;
-    free(c);
+    if(b->prev)
+      b->prev->next=b->next;
+    if(b->next)
+      b->next->prev=b->prev;
+    
+    b->next=p->free;
+    p->free=b;
   }
 }
 
-c_block *new_c_block(cdrom_paranoia *p){
-  linked_element *e=new_elem(p->cache);
-  c_block *c=e->ptr;
-  c->e=e;
-  c->p=p;
-  return(c);
-}
+/* Get a new block and chain it */
+p_block *new_p_block(cdrom_paranoia *p){
+  p_block *b;
 
-void free_c_block(c_block *c){
-  /* also rid ourselves of v_fragments that reference this block */
-  v_fragment *v=v_first(c->p);
-  
-  while(v){
-    v_fragment *next=v_next(v);
-    if(v->one==c)free_v_fragment(v);
-    v=next;
+  /* Are we at/over our allowed cache size? */
+  while(p->total_bufsize>p->cachemark){
+    /* cull from the tail of the list */
+    release_p_block(p->tail);
   }    
 
-  free_elem(c->e,1);
-}
+  if(!p->free){
+    /* Oops, need to add a link block. */
+    int addto=32;
 
-static v_fragment *i_vfragment_constructor(void){
-  v_fragment *ret=calloc(1,sizeof(v_fragment));
-  return(ret);
-}
+    if(p->ptr)
+      /* add link blocks */
+      p->ptr=realloc(p->ptr,sizeof(p_block *)*(p->ptrblocks+1));
+    else
+      /* no link blocks yet */
+      p->ptr=malloc(sizeof(p_block *));
 
-static void i_v_fragment_destructor(v_fragment *v){
-  free(v);
-}
+    p->ptr[p->ptrblocks]=p->free=calloc(addto,sizeof(p_block));
 
-v_fragment *new_v_fragment(cdrom_paranoia *p,c_block *one,
-			   long begin, long end, int last){
-  linked_element *e=new_elem(p->fragments);
-  v_fragment *b=e->ptr;
-  
-  b->e=e;
-  b->p=p;
+    {
+      int i;
+      for(i=0;i<addto-1;i++){
+	p->free[i].next=p->free+i+1;
+	p->free[i].p=p;
+	p->free[i].stamp=p->ptrblocks*addto+i+1;
+      }
+      p->free[i].p=p;
+      p->free[i].stamp=p->ptrblocks*addto+i+1;
+    }
+    p->ptrblocks++;
+  }
 
-  b->one=one;
-  b->begin=begin;
-  b->vector=one->vector+begin-one->begin;
-  b->size=end-begin;
-  b->lastsector=last;
+  b=p->free;
+  p->free=b->next;
+
+  if(p->fragments)
+    p->fragments->prev=b;
+  else
+    p->tail=b;
+    
+  b->next=p->fragments;
+  b->prev=NULL;
+  p->fragments=b;
+
+  b->begin=-1;
+  b->end=-1;
+  b->verifybegin=-1;
+  b->verifyend=-1;
+  b->size=0;
+  b->silence=-1;
+  b->offset=0;
+  b->lastsector=0;
+  b->done=0;
 
   return(b);
 }
 
-void free_v_fragment(v_fragment *v){
-  free_elem(v->e,1);
+void swap_p_block(p_block *a,p_block *b){
+  p_block t[1];
+
+  /* I set things up so a straight memcpy isn't easy.  I'll fix that */
+  t->buffer=a->buffer;
+  t->size=a->size;
+  t->begin=a->begin;
+  t->end=a->end;
+  t->verifybegin=a->verifybegin;
+  t->verifyend=a->verifyend;
+  t->silence=a->silence;
+  t->lastsector=a->lastsector;
+  t->done=a->done;
+  t->offset=a->offset;
+
+  a->buffer=b->buffer;
+  a->size=b->size;
+  a->begin=b->begin;
+  a->end=b->end;
+  a->verifybegin=b->verifybegin;
+  a->verifyend=b->verifyend;
+  a->silence=b->silence;
+  a->lastsector=b->lastsector;
+  a->done=b->done;
+  a->offset=b->offset;
+
+  b->buffer=t->buffer;
+  b->size=t->size;
+  b->begin=t->begin;
+  b->end=t->end;
+  b->verifybegin=t->verifybegin;
+  b->verifyend=t->verifyend;
+  b->silence=t->silence;
+  b->lastsector=t->lastsector;
+  b->done=t->done;
+  b->offset=t->offset;
 }
 
-c_block *c_first(cdrom_paranoia *p){
-  if(p->cache->head)
-    return(p->cache->head->ptr);
-  return(NULL);
-}
-
-c_block *c_last(cdrom_paranoia *p){
-  if(p->cache->tail)
-    return(p->cache->tail->ptr);
-  return(NULL);
-}
-
-c_block *c_next(c_block *c){
-  if(c->e->next)
-    return(c->e->next->ptr);
-  return(NULL);
-}
-
-c_block *c_prev(c_block *c){
-  if(c->e->prev)
-    return(c->e->prev->ptr);
-  return(NULL);
-}
-
-v_fragment *v_first(cdrom_paranoia *p){
-  if(p->fragments->head){
-    return(p->fragments->head->ptr);
+void p_buffer(p_block *b,size16 *buffer,long size){
+  if(b->buffer){
+    free(b->buffer);
+    b->p->total_bufsize-=b->size;
   }
-  return(NULL);
-}
 
-v_fragment *v_last(cdrom_paranoia *p){
-  if(p->fragments->tail)
-    return(p->fragments->tail->ptr);
-  return(NULL);
-}
-
-v_fragment *v_next(v_fragment *v){
-  if(v->e->next)
-    return(v->e->next->ptr);
-  return(NULL);
-}
-
-v_fragment *v_prev(v_fragment *v){
-  if(v->e->prev)
-    return(v->e->prev->ptr);
-  return(NULL);
-}
-
-void recover_cache(cdrom_paranoia *p){
-  linked_list *l=p->cache;
-
-  /* Are we at/over our allowed cache size? */
-  while(l->active>p->cache_limit)
-    /* cull from the tail of the list */
-    free_c_block(c_last(p));
-
-}
-
-int16_t *v_buffer(v_fragment *v){
-  if(!v->one)return(NULL);
-  if(!cv(v->one))return(NULL);
-  return(v->vector);
-}
-
-/* alloc a c_block not on a cache list */
-c_block *c_alloc(int16_t *vector,long begin,long size){
-  c_block *c=calloc(1,sizeof(c_block));
-  c->vector=vector;
-  c->begin=begin;
-  c->size=size;
-  return(c);
-}
-
-void c_set(c_block *v,long begin){
-  v->begin=begin;
-}
-
-/* pos here is vector position from zero */
-void c_insert(c_block *v,long pos,int16_t *b,long size){
-  int vs=cs(v);
-  if(pos<0 || pos>vs)return;
-
-  if(v->vector)
-    v->vector=realloc(v->vector,sizeof(int16_t)*(size+vs));
-  else
-    v->vector=malloc(sizeof(int16_t)*size);
-  
-  if(pos<vs)memmove(v->vector+pos+size,v->vector+pos,
-		       (vs-pos)*sizeof(int16_t));
-  memcpy(v->vector+pos,b,size*sizeof(int16_t));
-
-  v->size+=size;
-}
-
-void c_remove(c_block *v,long cutpos,long cutsize){
-  int vs=cs(v);
-  if(cutpos<0 || cutpos>vs)return;
-  if(cutpos+cutsize>vs)cutsize=vs-cutpos;
-  if(cutsize<0)cutsize=vs-cutpos;
-  if(cutsize<1)return;
-
-  memmove(v->vector+cutpos,v->vector+cutpos+cutsize,
-            (vs-cutpos-cutsize)*sizeof(int16_t));
-  
-  v->size-=cutsize;
-}
-
-void c_overwrite(c_block *v,long pos,int16_t *b,long size){
-  int vs=cs(v);
-
-  if(pos<0)return;
-  if(pos+size>vs)size=vs-pos;
-
-  memcpy(v->vector+pos,b,size*sizeof(int16_t));
-}
-
-void c_append(c_block *v, int16_t *vector, long size){
-  int vs=cs(v);
-
-  /* update the vector */
-  if(v->vector)
-    v->vector=realloc(v->vector,sizeof(int16_t)*(size+vs));
-  else
-    v->vector=malloc(sizeof(int16_t)*size);
-  memcpy(v->vector+vs,vector,sizeof(int16_t)*size);
-
-  v->size+=size;
-}
-
-void c_removef(c_block *v, long cut){
-  c_remove(v,0,cut);
-  v->begin+=cut;
-}
-
-
-
-/**** Initialization *************************************************/
-
-void i_paranoia_firstlast(cdrom_paranoia *p){
-  int i;
-  cdrom_drive *d=p->d;
-  p->current_lastsector=-1;
-  for(i=cdda_sector_gettrack(d,p->cursor);i<cdda_tracks(d);i++)
-    if(!cdda_track_audiop(d,i))
-      p->current_lastsector=cdda_track_lastsector(d,i-1);
-  if(p->current_lastsector==-1)
-    p->current_lastsector=cdda_disc_lastsector(d);
-
-  p->current_firstsector=-1;
-  for(i=cdda_sector_gettrack(d,p->cursor);i>0;i--)
-    if(!cdda_track_audiop(d,i))
-      p->current_firstsector=cdda_track_firstsector(d,i+1);
-  if(p->current_firstsector==-1)
-    p->current_firstsector=cdda_disc_firstsector(d);
-
-}
-
-cdrom_paranoia *paranoia_init(cdrom_drive *d){
-  cdrom_paranoia *p=calloc(1,sizeof(cdrom_paranoia));
-
-  p->cache=new_list((void *)&i_cblock_constructor,
-		    (void *)&i_cblock_destructor);
-
-  p->fragments=new_list((void *)&i_vfragment_constructor,
-			(void *)&i_v_fragment_destructor);
-
-  p->readahead=150;
-  p->sortcache=sort_alloc(p->readahead*CD_FRAMEWORDS);
-  p->d=d;
-  p->dynoverlap=MAX_SECTOR_OVERLAP*CD_FRAMEWORDS;
-  p->cache_limit=JIGGLE_MODULO;
-  p->enable=PARANOIA_MODE_FULL;
-  p->cursor=cdda_disc_firstsector(d);
-  p->lastread=LONG_MAX;
-
-  /* One last one... in case data and audio tracks are mixed... */
-  i_paranoia_firstlast(p);
-
-  return(p);
+  b->buffer=buffer;
+  b->size=size;
+  b->p->total_bufsize+=size;
 }
 
