@@ -1,0 +1,489 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction to CELP Coding</TITLE>
+<META NAME="description" CONTENT="Introduction to CELP Coding">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node6.html">
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node6.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html184"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html180"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html174"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html182"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html185"
+  HREF="node6.html">Speex narrowband mode</A>
+<B> Up:</B> <A NAME="tex2html181"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html175"
+  HREF="node4.html">Introduction to Speex</A>
+ &nbsp <B>  <A NAME="tex2html183"
+  HREF="node2.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html186"
+  HREF="node5.html#SECTION00051000000000000000">Linear Prediction</A>
+<LI><A NAME="tex2html187"
+  HREF="node5.html#SECTION00052000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html188"
+  HREF="node5.html#SECTION00053000000000000000">Innovation Codebook</A>
+<LI><A NAME="tex2html189"
+  HREF="node5.html#SECTION00054000000000000000">Analysis-by-Synthesis and Error Weighting</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00050000000000000000">
+Introduction to CELP Coding</A>
+</H1>
+
+<P>
+Speex is based on CELP, which stands for Code Excited Linear Prediction.
+This section attempts to introduce the principles behind CELP, so
+if you are already familiar with CELP, you can safely skip to section
+<A HREF="node6.html#sec:Speex-narrowband-mode">3</A>. The CELP technique is based on three
+ideas:
+
+<P>
+
+<OL>
+<LI>The use of a linear prediction (LP) model to model the vocal tract
+</LI>
+<LI>The use of (adaptive and fixed) codebook entries as input (excitation)
+of the LP model
+</LI>
+<LI>The search performed in closed-loop in a ``perceptually weighted
+domain''
+</LI>
+</OL>
+
+<P>
+
+<H2><A NAME="SECTION00051000000000000000">
+Linear Prediction</A>
+</H2>
+
+<P>
+The linear prediction model represents each speech sample as linear
+combination of past samples, plus an error signal called the excitation
+(or residual).<!-- MATH
+ \begin{displaymath}
+x(n)=\sum _{i=1}^{N}a_{i}x(n-i)+e(n)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="200" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\displaystyle x(n)=\sum _{i=1}^{N}a_{i}x(n-i)+e(n)$">
+</DIV><P></P>
+
+<P>
+In the <I>z</I>-domain, this can be expressed as
+
+<P>
+<!-- MATH
+ \begin{displaymath}
+x(z)=\frac{1}{A(z)}\: e(z)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="122" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\displaystyle x(z)=\frac{1}{A(z)}\: e(z)$">
+</DIV><P></P>
+
+<P>
+where <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$"> is defined as
+
+<P>
+<!-- MATH
+ \begin{displaymath}
+A(z)=1-\sum _{i=1}^{N}a_{i}z^{-i}
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="148" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$\displaystyle A(z)=1-\sum _{i=1}^{N}a_{i}z^{-i}$">
+</DIV><P></P>
+
+<P>
+We usually refer to <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$"> as the analysis filter and <IMG
+ WIDTH="52" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$ 1/A(z)$"> as
+the synthesis filter.
+
+<P>
+The <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$"> filter is computed using the Levinson-Durbin algorithm,
+which starts from the auto-correlation <IMG
+ WIDTH="43" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$ R(m)$"> of the signal <IMG
+ WIDTH="35" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$ x(n)$">.
+
+<P>
+<!-- MATH
+ \begin{displaymath}
+r(m)=\sum _{i=0}^{N-1}x(i)x(i-m)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="177" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img8.png"
+ ALT="$\displaystyle r(m)=\sum _{i=0}^{N-1}x(i)x(i-m)$">
+</DIV><P></P>
+
+<P>
+For an order <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img9.png"
+ ALT="$ N$"> filter, we have:<!-- MATH
+ \begin{displaymath}
+\mathbf{R}=\left[\begin{array}{cccc}
+ r(0) & r(1) & \cdots  & r(N-1)\\
+ r(1) & r(0) & \cdots  & r(N-2)\\
+ \vdots  & \vdots  & \ddots  & \vdots \\
+ r(N-1) & r(N-2) & \cdots  & r(0)\end{array}
+\right]
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="331" HEIGHT="102" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$\displaystyle \mathbf{R}=\left[\begin{array}{cccc}
+r(0) &amp; r(1) &amp; \cdots &amp; r(N-1...
+... \vdots &amp; \ddots &amp; \vdots \\
+r(N-1) &amp; r(N-2) &amp; \cdots &amp; r(0)\end{array}\right]$">
+</DIV><P></P>
+<!-- MATH
+ \begin{displaymath}
+\mathbf{r}=\left[\begin{array}{c}
+ r(1)\\
+ r(2)\\
+ \vdots \\
+ R(N)\end{array}
+\right]
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="109" HEIGHT="102" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$\displaystyle \mathbf{r}=\left[\begin{array}{c}
+r(1)\\
+r(2)\\
+\vdots \\
+R(N)\end{array}\right]$">
+</DIV><P></P>
+
+<P>
+The filter coefficients <IMG
+ WIDTH="18" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$ a_{i}$"> are found by solving the system <!-- MATH
+ $\mathbf{Ra}=\mathbf{r}$
+ -->
+<IMG
+ WIDTH="55" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img13.png"
+ ALT="$ \mathbf{Ra}=\mathbf{r}$">.
+What the Levinson-Durbin algorithm does here is making the solution
+to the problem <!-- MATH
+ $\mathcal{O}\left(N^{2}\right)$
+ -->
+<IMG
+ WIDTH="56" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ \mathcal{O}\left(N^{2}\right)$"> instead of <!-- MATH
+ $\mathcal{O}\left(N^{3}\right)$
+ -->
+<IMG
+ WIDTH="56" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img15.png"
+ ALT="$ \mathcal{O}\left(N^{3}\right)$">
+by exploiting the fact that matrix <!-- MATH
+ $\mathbf{R}$
+ -->
+<IMG
+ WIDTH="18" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img16.png"
+ ALT="$ \mathbf{R}$"> is toeplitz hermitian.
+Also, it can be proved that all the roots of <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$"> are withing the
+unit circle, which means that <IMG
+ WIDTH="52" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$ 1/A(z)$"> is always stable. This is
+in theory; in practice because of finite precision, there are two
+commonly used techniques to make sure we have a stable filter. First,
+we multiply <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img17.png"
+ ALT="$ r(0)$"> by a number slightly above one (such as 1.0001),
+which is equivalent to adding noise to the signal. Also, we can apply
+a window the the auto-correlation, which is equivalent to filtering
+in the frequency domain, reducing sharp resonances.
+
+<P>
+Because LPC coefficients have very little robustness to quantization,
+they are converted to Line Spectral Pair (LSP) coefficients which
+have a much better behaviour with quantization, one of them being
+that it's easy to keep the filter stable. 
+
+<P>
+
+<H2><A NAME="SECTION00052000000000000000">
+Pitch Prediction</A>
+</H2>
+
+<P>
+During voiced segments, the speech signal is very periodic, so it
+is possible to take advantage of that by expressing the excitation
+signal <IMG
+ WIDTH="33" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img18.png"
+ ALT="$ e(n)$"> as
+
+<P>
+<!-- MATH
+ \begin{displaymath}
+e(n)=\beta e(n-T)+c(n)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="173" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$\displaystyle e(n)=\beta e(n-T)+c(n)$">
+</DIV><P></P>
+
+<P>
+where <IMG
+ WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img20.png"
+ ALT="$ T$"> is the pitch period, <IMG
+ WIDTH="14" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \beta $"> is the pitch gain and <IMG
+ WIDTH="33" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ c(n)$">
+is taken from the <I>innovation codebook</I>. In the <I>z</I>-domain,
+the excitation can be expressed as:
+
+<P>
+<!-- MATH
+ \begin{displaymath}
+e(z)=\frac{1}{1-\beta z^{-T}}\: c(z)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="153" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$\displaystyle e(z)=\frac{1}{1-\beta z^{-T}}\: c(z)$">
+</DIV><P></P>
+
+<P>
+
+<H2><A NAME="SECTION00053000000000000000">
+Innovation Codebook</A>
+</H2>
+
+<P>
+This is where most of the bits in a CELP codec are allocated. It represents
+the information that couldn't be obtained either from linear prediction
+or pitch prediction.
+
+<P>
+
+<H2><A NAME="SECTION00054000000000000000">
+Analysis-by-Synthesis and Error Weighting</A>
+</H2>
+
+<P>
+Most (if not all) modern audio codecs attempt to <I>shape</I> the
+noise so that it is the hardest to detect with the ear. That means
+that more noise can be tolerated in parts of the spectrum that are
+louder and <I>vice versa</I>. That's why the error is minimized for
+the perceptually weighted signal<!-- MATH
+ \begin{displaymath}
+X_{w}(z)=W(z)X(z)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="142" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$\displaystyle X_{w}(z)=W(z)X(z)$">
+</DIV><P></P>
+where <IMG
+ WIDTH="42" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$ W(z)$"> is the weighting filter, usually of the form
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER"><A NAME="eq:weighting_filter"></A><!-- MATH
+ \begin{equation}
+W(z)=\frac{A\left(\frac{z}{\gamma _{1}}\right)}{A\left(\frac{z}{\gamma _{2}}\right)}
+\end{equation}
+ -->
+<TABLE CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><IMG
+ WIDTH="117" HEIGHT="77" ALIGN="MIDDLE" BORDER="0"
+ SRC="img26.png"
+ ALT="$\displaystyle W(z)=\frac{A\left(\frac{z}{\gamma _{1}}\right)}{A\left(\frac{z}{\gamma _{2}}\right)}$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+(1)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+with control parameters <!-- MATH
+ $\gamma _{1}>\gamma _{2}$
+ -->
+<IMG
+ WIDTH="56" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img27.png"
+ ALT="$ \gamma _{1}&gt;\gamma _{2}$">. If the noise is
+white in the perceptually weighted domain, then in the signal domain
+its spectral shape will be of the form<!-- MATH
+ \begin{displaymath}
+A_{noise}(z)=\frac{1}{W(z)}=\frac{A\left(\frac{z}{\gamma _{2}}\right)}{A\left(\frac{z}{\gamma _{1}}\right)}
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="206" HEIGHT="77" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$\displaystyle A_{noise}(z)=\frac{1}{W(z)}=\frac{A\left(\frac{z}{\gamma _{2}}\right)}{A\left(\frac{z}{\gamma _{1}}\right)}$">
+</DIV><P></P>
+
+<P>
+If a filter <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$"> has (complex) poles at <IMG
+ WIDTH="17" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ p_{i}$"> in the <IMG
+ WIDTH="12" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img30.png"
+ ALT="$ z$">-plane,
+the filter <!-- MATH
+ $A(z/\gamma )$
+ -->
+<IMG
+ WIDTH="54" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$ A(z/\gamma )$"> filter will have its poles at <!-- MATH
+ $p_{i}^{'}=\gamma p_{i}$
+ -->
+<IMG
+ WIDTH="61" HEIGHT="37" ALIGN="MIDDLE" BORDER="0"
+ SRC="img32.png"
+ ALT="$ p_{i}^{'}=\gamma p_{i}$">,
+making it a flatter version of <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$">.
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html184"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html180"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html174"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html182"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html185"
+  HREF="node6.html">Speex narrowband mode</A>
+<B> Up:</B> <A NAME="tex2html181"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html175"
+  HREF="node4.html">Introduction to Speex</A>
+ &nbsp <B>  <A NAME="tex2html183"
+  HREF="node2.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2002-10-10
+</ADDRESS>
+</BODY>
+</HTML>

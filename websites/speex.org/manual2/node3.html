@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction to Speex</TITLE>
+<META NAME="description" CONTENT="Introduction to Speex">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node4.html">
+<LINK REL="previous" HREF="node2.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node4.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html206"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html200"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html194"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html202"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html204"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html207"
+  HREF="node4.html">Feature description</A>
+<B> Up:</B> <A NAME="tex2html201"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html195"
+  HREF="node2.html">List of Tables</A>
+ &nbsp <B>  <A NAME="tex2html203"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html205"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00030000000000000000">
+Introduction to Speex</A>
+</H1>
+
+<P>
+The Speex project (<TT>http://www.speex.org/</TT>) has been started
+because there was a need for a speech codec that was open-source and
+free from software patents. These are essential conditions for being
+used by any open-source software. There is already Vorbis that does
+general audio, but it is not really suitable for speech. Also, unlike
+many other speech codecs, Speex is not targeted at cell phones (not
+many open-source cell phones anyway :-) ) but rather at voice over
+IP (VoIP) and file-based compression. 
+
+<P>
+As design goals, we wanted to have a codec that would allow both very
+good quality speech and low bit-rate (unfortunately not at the same
+time!), which led us to developing a codec with multiple bit-rates.
+Of course very good quality also meant we had to do wideband (16 kHz
+sampling rate) in addition to narrowband (telephone quality, 8 kHz
+sampling rate).
+
+<P>
+Designing for VoIP instead of cell phone use means that Speex must
+be robust to lost packets, but not to corrupted ones since packets
+either arrive unaltered or don't arrive at all. Also, the idea was
+to have a reasonable complexity and memory requirement without compromising
+too much on the efficiency of the codec.
+
+<P>
+All this led us to the choice of CELP<A NAME="36"></A> as the encoding
+technique to use for Speex. One of the main reasons is that CELP has
+long proved that it could do the job and scale well to both low bit-rates
+(think DoD CELP @ 4.8 kbps) and high bit-rates (think G.728 @ 16 kbps). 
+
+<P>
+The main characteristics can be summarized as follows:
+
+<P>
+
+<UL>
+<LI>Free software/open-source<A NAME="38"></A>, patent<A NAME="39"></A>
+and royalty-free
+</LI>
+<LI>Integration of narrowband<A NAME="40"></A> and wideband<A NAME="41"></A>
+in the same bit-stream
+</LI>
+<LI>Wide range of bit-rates available (from 2 kbps to 44 kbps)
+</LI>
+<LI>Dynamic bit-rate switching and Variable Bit-Rate<A NAME="42"></A>
+(VBR)
+</LI>
+<LI>Voice Activity Detection<A NAME="43"></A> (VAD, integrated
+with VBR)
+</LI>
+<LI>Variable complexity<A NAME="44"></A>
+</LI>
+<LI>Ultra-wideband mode at 32 kHz (up to 48 kHz)
+</LI>
+<LI>Intensity stereo encoding option
+</LI>
+</UL>
+This document is divided in the following way. Section <A HREF="node4.html#sec:Feature-description">2</A>
+describes the different Speex features and defines some terms that
+will be used in later sections. Section <A HREF="node5.html#sec:Command-line-encoder_decoder">3</A>
+provides information about the standard command-line tools, while
+<A HREF="node6.html#sec:Programming-with-Speex">4</A> contains information about programming
+using the Speex API. Section <A HREF="node7.html#sec:Formats-and-standards">5</A> has
+some information related to Speex and standards. The three last sections
+describe the internals of the codec and require some signal processing
+knowledge. Section <A HREF="node8.html#sec:Introduction-to-CELP">6</A> explains the general
+idea behind CELP, while sections <A HREF="node9.html#sec:Speex-narrowband-mode">7</A>
+and <A HREF="node10.html#sec:Speex-wideband-mode">8</A> are specific to Speex. Note that
+if you are only interested in using Speex, those three last sections
+are not required.
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html206"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html200"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html194"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html202"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html204"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html207"
+  HREF="node4.html">Feature description</A>
+<B> Up:</B> <A NAME="tex2html201"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html195"
+  HREF="node2.html">List of Tables</A>
+ &nbsp <B>  <A NAME="tex2html203"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html205"
+  HREF="node15.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Command-line encoder/decoder</TITLE>
+<META NAME="description" CONTENT="Command-line encoder/decoder">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node9.html">
+<LINK REL="previous" HREF="node7.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node9.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html233"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html229"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html223"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html231"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html234"
+  HREF="node9.html">Programming with Speex (the</A>
+<B> Up:</B> <A NAME="tex2html230"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html224"
+  HREF="node7.html">Speex wideband mode (sub-band</A>
+ &nbsp <B>  <A NAME="tex2html232"
+  HREF="node2.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html235"
+  HREF="node8.html#SECTION00081000000000000000"><I>speexenc</I></A>
+<LI><A NAME="tex2html236"
+  HREF="node8.html#SECTION00082000000000000000"><I>speexdec</I></A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00080000000000000000">
+Command-line encoder/decoder</A>
+</H1>
+
+<P>
+The base Speex distribution includes a command-line encoder (<I>speexenc</I>)
+and decoder (<I>speexdec</I>).
+
+<P>
+
+<H2><A NAME="SECTION00081000000000000000">
+<I>speexenc</I></A>
+</H2>
+
+<P>
+The encoder takes the following options:
+
+<P>
+<DL>
+<DT><STRONG>-narrowband&nbsp;(-n)</STRONG></DT>
+<DD>Tell Speex to treat the input as narrowband (8
+kHz). This is the default
+</DD>
+<DT><STRONG>-wideband&nbsp;(-w)</STRONG></DT>
+<DD>Tell Speex to treat the input as wideband (16 kHz)
+</DD>
+<DT><STRONG>-quality&nbsp;n</STRONG></DT>
+<DD>Set the encoding quality (0-10)
+</DD>
+<DT><STRONG>-vbr</STRONG></DT>
+<DD>Enable VBR (Variable Bit-Rate), disabled by default
+</DD>
+<DT><STRONG>-nframes&nbsp;n</STRONG></DT>
+<DD>Pack n frames in each Ogg packet (this saves space
+at low bit-rates)
+</DD>
+<DT><STRONG>-comp&nbsp;n</STRONG></DT>
+<DD>Set encoding speed/quality tradeoff. The higher the value
+of n, the slower the encoding (default is 3)
+</DD>
+<DT><STRONG>-V</STRONG></DT>
+<DD>Verbose operation, print bit-rate currently in use
+</DD>
+<DT><STRONG>-help&nbsp;(-h)</STRONG></DT>
+<DD>Print the help
+</DD>
+<DT><STRONG>-version&nbsp;(-v)</STRONG></DT>
+<DD>Print version information
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00082000000000000000">
+<I>speexdec</I></A>
+</H2>
+
+<P>
+The decoder takes the following options:
+
+<P>
+<DL>
+<DT><STRONG>-enh</STRONG></DT>
+<DD>enable post-filter
+</DD>
+<DT><STRONG>-no-enh</STRONG></DT>
+<DD>disable post-filter (default)
+</DD>
+<DT><STRONG>-packet-loss&nbsp;n</STRONG></DT>
+<DD>Simulate n % random packet loss
+</DD>
+<DT><STRONG>-V</STRONG></DT>
+<DD>Verbose operation, print bit-rate currently in use
+</DD>
+<DT><STRONG>-help&nbsp;(-h)</STRONG></DT>
+<DD>Print the help
+</DD>
+<DT><STRONG>-version&nbsp;(-v)</STRONG></DT>
+<DD>Print version information
+</DD>
+</DL>
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html233"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html229"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html223"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html231"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html234"
+  HREF="node9.html">Programming with Speex (the</A>
+<B> Up:</B> <A NAME="tex2html230"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html224"
+  HREF="node7.html">Speex wideband mode (sub-band</A>
+ &nbsp <B>  <A NAME="tex2html232"
+  HREF="node2.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2002-10-10
+</ADDRESS>
+</BODY>
+</HTML>

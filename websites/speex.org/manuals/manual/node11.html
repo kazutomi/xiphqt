@@ -1,0 +1,319 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>FAQ</TITLE>
+<META NAME="description" CONTENT="FAQ">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node12.html">
+<LINK REL="previous" HREF="node10.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node12.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html278"
+  HREF="node12.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html274"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html268"
+  HREF="node10.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html276"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html279"
+  HREF="node12.html">GNU Free Documentation License</A>
+<B> Up:</B> <A NAME="tex2html275"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html269"
+  HREF="node10.html">Formats and standards</A>
+ &nbsp <B>  <A NAME="tex2html277"
+  HREF="node2.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html280"
+  HREF="node11.html#SECTION000111000000000000000">Vorbis is open-source and patent-free, why do we need Speex?</A>
+<LI><A NAME="tex2html281"
+  HREF="node11.html#SECTION000112000000000000000">Ogg, Speex, Vorbis, what's the difference?</A>
+<LI><A NAME="tex2html282"
+  HREF="node11.html#SECTION000113000000000000000">Can I use Speex for compressing music?</A>
+<LI><A NAME="tex2html283"
+  HREF="node11.html#SECTION000114000000000000000">I converted some MP3's to Speex and the quality is bad. What's wrong?</A>
+<LI><A NAME="tex2html284"
+  HREF="node11.html#SECTION000115000000000000000">Does Speex run on Windows?</A>
+<LI><A NAME="tex2html285"
+  HREF="node11.html#SECTION000116000000000000000">Why is encoding so slow compared to decoding?</A>
+<LI><A NAME="tex2html286"
+  HREF="node11.html#SECTION000117000000000000000">Why is Speex so slow on my iPaq (or insert any platform without an
+FPU)?</A>
+<LI><A NAME="tex2html287"
+  HREF="node11.html#SECTION000118000000000000000">I'm getting unusual background noise (hiss) when using libspeex in
+my application. How do I fix that?</A>
+<LI><A NAME="tex2html288"
+  HREF="node11.html#SECTION000119000000000000000">I get very distorted speech when using libspeex in my application.
+What's wrong?</A>
+<LI><A NAME="tex2html289"
+  HREF="node11.html#SECTION0001110000000000000000">Can Speex pass DTMF?</A>
+<LI><A NAME="tex2html290"
+  HREF="node11.html#SECTION0001111000000000000000">Can Speex pass V.9x modem signals correctly?</A>
+<LI><A NAME="tex2html291"
+  HREF="node11.html#SECTION0001112000000000000000">What is your (Jean-Marc) relationship with the University of Sherbrooke
+and how does Speex fit into that?</A>
+<LI><A NAME="tex2html292"
+  HREF="node11.html#SECTION0001113000000000000000">CELP, ACELP, what's the difference?</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000110000000000000000">
+FAQ</A>
+</H1>
+
+<P>
+
+<H2><A NAME="SECTION000111000000000000000">
+Vorbis is open-source and patent-free, why do we need Speex?</A>
+</H2>
+
+<P>
+Vorbis is a great project but its goals are not the same as Speex.
+Vorbis is mostly aimed at compressing music and audio in general,
+while Speex targets speech only. For that reason Speex can achieve
+much better results than Vorbis on speech, typically 2-4 times higher
+compression at equal quality.
+
+<P>
+
+<H2><A NAME="SECTION000112000000000000000">
+Ogg, Speex, Vorbis, what's the difference?</A>
+</H2>
+
+<P>
+Ogg is a ``file format'' for holding multimedia data. Vorbis is
+an audio codec that uses Ogg to store its bit-streams as files, hence
+the name Ogg Vorbis. Speex also uses the Ogg format to store its bit-streams
+as files, so technically they would be ``Ogg Speex'' files (I
+prefer to call them just Speex files). One difference with Vorbis
+however, is that Speex is less tied with Ogg. Actually, if what you
+do is Voice of IP (VoIP), you don't need Ogg at all.
+
+<P>
+
+<H2><A NAME="SECTION000113000000000000000">
+Can I use Speex for compressing music?</A>
+</H2>
+
+<P>
+Just like Vorbis is not really adapted to speech, Speex is really
+not adapted for music. In most cases, you'll be better of with Vorbis
+when it comes to music.
+
+<P>
+
+<H2><A NAME="SECTION000114000000000000000">
+I converted some MP3's to Speex and the quality is bad. What's wrong?</A>
+</H2>
+
+<P>
+This is called transcoding and it will always result in much poorer
+quality than the original MP3. Unless you have a really good (size)
+reason to do so, never transcode speech. This is even valid for self
+transcoding (tandeming), i.e. If you decode a Speex file and re-encode
+it again at the same bit-rate, you will lose quality.
+
+<P>
+
+<H2><A NAME="SECTION000115000000000000000">
+Does Speex run on Windows?</A>
+</H2>
+
+<P>
+As of 0.8.0, Speex can now compile on Windows, though limited testing
+has been done so far.
+
+<P>
+
+<H2><A NAME="SECTION000116000000000000000">
+Why is encoding so slow compared to decoding?</A>
+</H2>
+
+<P>
+For most kinds of compression, encoding is inherently slower than
+decoding. In the case of Speex, encoding consists of finding, for
+each vector of 5 to 10 samples, the entry that matches the best within
+a codebook consisting of 16 to 256 entries. On the other hand, at
+decoding all that needs to be done is lookup the right entry in the
+codebook using the encoded index. Since a lookup is much faster than
+a search, the decoder works much faster than the encoder.
+
+<P>
+
+<H2><A NAME="SECTION000117000000000000000">
+Why is Speex so slow on my iPaq (or insert any platform without an
+FPU)?</A>
+</H2>
+
+<P>
+Well the parenthesis provides the answer: no FPU (floating-point unit).
+The Speex code makes heavy use of floating-point operations. On devices
+with no FPU, all floating-point instructions need to be emulated.
+This is a very time consuming operation.
+
+<P>
+
+<H2><A NAME="SECTION000118000000000000000">
+I'm getting unusual background noise (hiss) when using libspeex in
+my application. How do I fix that?</A>
+</H2>
+
+<P>
+One of the cause could be scaling of the input speech. Speex expects
+signals to have a <!-- MATH
+ $\pm 2^{16}$
+ -->
+<IMG
+ WIDTH="38" HEIGHT="33" ALIGN="MIDDLE" BORDER="0"
+ SRC="img47.png"
+ ALT="$ \pm 2^{16}$"> (signed short) dynamic range. If the
+dynamic range of your signals is too small (e.g. <IMG
+ WIDTH="37" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img48.png"
+ ALT="$ \pm 1.0$">), you
+will suffer important quantization noise. A good target is to have
+a dynamic range around <IMG
+ WIDTH="48" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img49.png"
+ ALT="$ \pm 8000$"> which is large enough, but small
+enough to make sure there's no clipping when converting back to signed
+short.
+
+<P>
+
+<H2><A NAME="SECTION000119000000000000000">
+I get very distorted speech when using libspeex in my application.
+What's wrong?</A>
+</H2>
+
+<P>
+There are many possible causes for that. One of them is errors in
+the way the bits are manipulated. Another possible cause is the use
+of the same encoder or decoder state for more than one audio stream
+(channel), which produces strange effects with the filter memories.
+If the input speech has an amplitude close to <IMG
+ WIDTH="26" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img50.png"
+ ALT="$ 2^{16}$">, it is possible
+that at decoding, the amplitude be a bit higher than that, causing
+clipping when saving as 16-bit PCM.
+
+<P>
+
+<H2><A NAME="SECTION0001110000000000000000">
+Can Speex pass DTMF?</A>
+</H2>
+
+<P>
+I guess it all depends on the bit-rate used. Though no formal testing
+has yet been performed, I'd say don't go below the 15 kbps mode if
+you want DTMF to be transmitted correctly. Also, make sure you don't
+use the lowest complexity (see SPEEX_SET_COMPLEXITY or -comp option),
+as it causes important noise.
+
+<P>
+
+<H2><A NAME="SECTION0001111000000000000000">
+Can Speex pass V.9x modem signals correctly?</A>
+</H2>
+
+<P>
+If I could to that I'd be very rich by now :-)
+
+<P>
+
+<H2><A NAME="SECTION0001112000000000000000">
+What is your (Jean-Marc) relationship with the University of Sherbrooke
+and how does Speex fit into that?</A>
+</H2>
+
+<P>
+I am currently (2002/08/13) doing a Ph.D. at the University of Sherbrooke
+in mobile robotics. Although I did my master with the Sherbrooke speech
+coding group (in speech enhancement, not coding), I am not associated
+with them anymore. It should <B>not</B> be understood that they
+or the University of Sherbrooke endorse the Speex project in any way.
+Furthermore, Speex does not make use of any code or proprietary technology
+developed in the Sherbrooke speech coding group. 
+
+<P>
+
+<H2><A NAME="SECTION0001113000000000000000">
+CELP, ACELP, what's the difference?</A>
+</H2>
+
+<P>
+CELP stands for ``Code Excited Linear Prediction'', while ACELP
+stands for ``<I>Algebraic</I> Code Excited Linear Prediction''.
+That means ACELP is a CELP technique that uses an algebraic codebook
+represented as a sum of unit pulses, thus making the codebook search
+much more efficient. This technique was invented at the University
+of Sherbrooke and is now one of the most widely used form of CELP.
+Unfortunately, since it is patented, it cannot be used in Speex.
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html278"
+  HREF="node12.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html274"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html268"
+  HREF="node10.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html276"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html279"
+  HREF="node12.html">GNU Free Documentation License</A>
+<B> Up:</B> <A NAME="tex2html275"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html269"
+  HREF="node10.html">Formats and standards</A>
+ &nbsp <B>  <A NAME="tex2html277"
+  HREF="node2.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2002-10-10
+</ADDRESS>
+</BODY>
+</HTML>

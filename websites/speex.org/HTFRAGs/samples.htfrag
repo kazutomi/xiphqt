@@ -1,0 +1,41 @@
+<html>
+<head><title>Samples</title></head>
+<body>
+    <div id='h'>Samples</div>
+    <p>
+        Note: these samples were encoded using Speex version 0.7.0.
+        The quality has improved slightly since then.
+    </p>
+    <h1>Narrowband</h1>
+    <p>These samples are coded using the narrowband Speex mode:</p>
+    <h2>Male Sample</h2>
+    <ul class='sampleset'>
+        <li class='original'><a href='male.wav'>Original</a></li>
+        <li><a href='male_speex_8.wav'>coded 8 kbps</a></li>
+        <li><a href='male_speex_8_vbr.wav'>coded 8 kbps VBR</a></li>
+        <li><a href='male_speex_11.wav'>coded 11 kbps</a></li>
+        <li><a href='male_speex_15.wav'>coded 15 kbps</a></li>
+    </ul>
+
+    <h2>Female Sample</h2>
+    <ul class='sampleset'>
+        <li class='original'><a href='female.wav'>Original</a></li>
+        <li><a href='female_speex_8.wav'>coded 8 kbps</a></li>
+        <li><a href='female_speex_8_vbr.wav'>coded 8 kbps VBR</a></li>
+        <li><a href='female_speex_11.wav'>coded 11 kbps</a></li>
+        <li><a href='female_speex_15.wav'>coded 15 kbps</a></li>
+    </ul>
+
+    <h1>Wideband</h1>
+    <p>These samples are coded using the wideband Speex mode:</p>
+    <ul class='sampleset'>
+        <li class='original'><a href='wb_male.wav'>Original</a></li>
+        <li><a href='wb_male_speex_17.wav'>coded 17 kbps</a></li>
+        <li><a href='wb_male_speex_28.wav'>coded 28 kbps</a></li>
+    </ul>
+
+</body>
+</html>
+<!--
+ vim: ft=html
+ -->

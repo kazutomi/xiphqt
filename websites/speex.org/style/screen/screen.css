@@ -1,0 +1,249 @@
+body {
+    font-family:      Georgia, serif;
+    margin: 0;
+    background: #eee;
+    color:            #000;
+}
+
+#h, h1, h2, h3, h4, h5, h6, dl#headlines dt {
+    font-family:       "Trebuchet MS", Verdana, sans-serif;
+    margin-bottom: -.3em;
+}
+
+#h {
+    font-size: xx-large;
+    font-weight: bold;
+    text-align: center;
+}
+
+a:link {
+    color: #15e;
+}
+a:visited {
+    color: #740;
+}
+a:hover {
+    color: #f00;
+}
+
+#skiplinks {
+    display: none;
+}
+
+#ahem {
+    display: none;
+}
+
+img.separator {
+    text-align: center;
+}
+div#footer {
+    font-size: smaller;
+    text-align: right;
+}
+div#footer p {
+    text-align: right;
+}
+
+#main {
+    margin: .5em;
+}
+
+img {
+    border: none;
+}
+
+p {
+    text-align: justify;
+    text-indent: 2em;
+}
+
+
+code, kbd, pre {
+    font-family: "Andale Mono", "Monotype.com", "Lucida Console", monospace;
+}
+
+
+/* http://alistapart.com/stories/practicalcss/ - Splitting the Difference */
+div#banner {
+    font-family: Verdana, sans-serif;
+    font-size: smaller;
+    padding:    .25em;
+    margin-bottom:  .25em;
+    border-bottom:  1px solid #000;
+    color: #000;
+    background: #aaa;
+}
+div#banner a:visited, div#banner a:link {
+    text-decoration: none;
+    color: #000;
+}
+
+/* If the contents of the two spans change, then
+   you'll probably need to change the split of the
+   two spans - otherwise one'll have to cave long
+   before the other.
+   A 3/5:2/5 split (60%/39%) split looks fine for
+   Georgia on Windows. YMMV.
+*/
+
+div#banner span#left {
+    text-transform: uppercase;
+    float:      left;
+    text-align: left;
+    width: 60%;
+}
+div#banner span#right {
+    float: right;
+    text-align: right;
+    width: 39%;
+}
+div#banner div.spacer {
+    clear: both;
+}
+
+/* glish.com nested float */
+
+#main #nav {
+    border:   1px solid #000;
+    float:          right;
+    width:          10em; 
+    margin:         0px 0px 10px 10px;
+    background-color: #ccc;
+    background: #ccc;
+}
+
+#main #nav h1, #main #nav h2 {
+    text-align: center;
+    margin-bottom: -.6em;
+}
+#main #nav h1 {
+    font-size:  larger;
+}
+#main #nav h2 {
+    font-size: medium;
+}
+
+#main #nav ul {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 1em;
+    list-style: none;
+}
+
+#main #nav ul li {
+    margin: 0;
+    padding: 0;
+}
+#main #nav ul a {
+    font-family:    Verdana, sans-serif;
+    font-weight: bold;
+    font-size: smaller;
+    text-decoration: none;
+}
+
+/**********************
+ * page-specific stuff
+ *********************/
+/* index.html */
+
+div#headlines {
+    margin-top:     1em;
+    margin-bottom:  .5em;
+}
+/* the next three selectors stagger alternating elements.
+   Keep your eye on the CSS3 nth-child() pseudoclass!*/
+
+/* takes care of general settings (and in case the CSS support doesn't
+   include '+' support... IE!*/
+ 
+div#headlines .newsitem {
+    background-color: #efe;
+    margin:          .5em 3em;
+    border:    2px dotted #000;
+}
+
+/* takes care of the first, third, fifth, and seventh postings */
+ 
+div#headlines .newsitem, 
+div#headlines .newsitem+.newsitem+.newsitem, 
+div#headlines .newsitem+.newsitem+.newsitem+.newsitem+.newsitem, 
+div#headlines .newsitem+.newsitem+.newsitem+.newsitem+.newsitem+.newsitem+.newsitem {
+    margin: -.9em 2em 0 1em;
+    background: #efe;
+}
+
+/* ditto for second, fourth, and sixth */
+div#headlines .newsitem+.newsitem, 
+div#headlines .newsitem+.newsitem+.newsitem+.newsitem, 
+div#headlines .newsitem+.newsitem+.newsitem+.newsitem+.newsitem+.newsitem {
+    margin: -.9em 1em 0 2em;
+    background: #eff;
+}
+
+.hlheader {
+    font-family: "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}    
+.hlheader .title {
+    font-weight: bold;
+    margin-bottom: .1em;
+}
+
+.hlheader .meta {
+    text-align: left;
+    font-size: smaller;
+}
+
+.newsitem .hlcontent {
+    border-top: 1px solid #000;
+    padding-bottom: .125em;  /* Konq needs a bit more space...*/
+}
+
+.readmorenews {
+    margin-top: .1em;
+    text-align: center;
+}
+
+/* end index.html */
+/* download.html */
+dl.releases dt {
+    font-family:       "Trebuchet MS", Verdana, sans-serif;
+    font-size: larger;
+    font-weight: bold;
+}
+
+dl.releases dd ul {
+    padding-left: 0;
+}  
+
+/* end download.html */
+
+/* news.html */
+
+.newsitem {
+    border: 1px solid #000;
+    margin: 1em 11em 1em 2em;
+    padding: .1em .25em;
+    background-color: #efe;
+}
+
+.newsheader {
+    font-weight: bold;
+    font-family: "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.newsheader .title {
+    
+}
+
+.newsheader .meta {
+    font-size: smaller;
+
+}
+
+.newsitem .newscontent {
+    border-top: 1px dotted #000;
+
+}
+
+/* end news.html */

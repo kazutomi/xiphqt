@@ -1,0 +1,13 @@
+<html>
+<head><title>Standards</title></head>
+<body>
+    <h1>Standards</h1>
+    <p>
+		The <abbr title='realtime protocol'>RTP</abbr> Drafts have been
+		moved to the <a href='docs.html'>Documentation</a> page.
+	</p>
+</body>
+</html>
+<!--
+ vim: ft=html
+ -->

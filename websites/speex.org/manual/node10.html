@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Speex wideband mode (sub-band CELP)</TITLE>
+<META NAME="description" CONTENT="Speex wideband mode (sub-band CELP)">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node11.html">
+<LINK REL="previous" HREF="node9.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node11.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html334"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html328"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html322"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html330"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html332"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html335"
+  HREF="node11.html">FAQ</A>
+<B> Up:</B> <A NAME="tex2html329"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html323"
+  HREF="node9.html">Speex narrowband mode</A>
+ &nbsp <B>  <A NAME="tex2html331"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html333"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html336"
+  HREF="node10.html#SECTION000101000000000000000">Linear Prediction</A>
+<LI><A NAME="tex2html337"
+  HREF="node10.html#SECTION000102000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html338"
+  HREF="node10.html#SECTION000103000000000000000">Excitation Quantization</A>
+<LI><A NAME="tex2html339"
+  HREF="node10.html#SECTION000104000000000000000">Bit allocation</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000100000000000000000"></A><A NAME="420"></A><A NAME="sec:Speex-wideband-mode"></A>
+<BR>
+Speex wideband mode (sub-band CELP)
+</H1>
+
+<P>
+For wideband, the Speex approach uses a <I>q</I>uadrature <I>m</I>irror
+<I>f</I>ilter<A NAME="425"></A> (QMF) to split the
+band in two. The 16 kHz signal is thus divided into two 8 kHz signals,
+one representing the low band (0-4 kHz), the other the high band (4-8
+kHz). The low band is encoded with the narrowband mode described in
+section <A HREF="node9.html#sec:Speex-narrowband-mode">7</A> in such a way that the resulting
+``embedded narrowband bit-stream'' can also be decoded with the
+narrowband decoder. Since the low band encoding has already been described,
+only the high band encoding is described in this section.
+
+<P>
+
+<H2><A NAME="SECTION000101000000000000000">
+Linear Prediction</A>
+</H2>
+
+<P>
+The linear prediction part used for the high-band is very similar
+to what is done for narrowband. The only difference is that we use
+only 12 bits to encode the high-band LSP's using a multi-stage vector
+quantizer (MSVQ). The first level quantizes the 10 coefficients with
+6 bits and the error is then quantized using 6 bits, too.
+
+<P>
+
+<H2><A NAME="SECTION000102000000000000000">
+Pitch Prediction</A>
+</H2>
+
+<P>
+That part is easy: there's no pitch prediction for the high-band.
+There are two reasons for that. First, there is usually little harmonic
+structure in this band (above 4 kHz). Second, it would be very hard
+to implement since the QMF folds the 4-8 kHz band into 4-0 kHz (reversing
+the frequency axis), which means that the location of the harmonics
+is no longer at multiples of the fundamental (pitch).
+
+<P>
+
+<H2><A NAME="SECTION000103000000000000000">
+Excitation Quantization</A>
+</H2>
+
+<P>
+The high-band excitation is coded in the same way as for narrowband. 
+
+<P>
+
+<H2><A NAME="SECTION000104000000000000000">
+Bit allocation</A>
+</H2>
+
+<P>
+For the wideband mode, the entire narrowband frame is packed before
+the high-band is encoded. The narrowband part of the bit-stream is
+as defined in table <A HREF="#cap:bits-narrowband">3</A>. The high-band follows,
+as described in table <A HREF="#cap:bits-wideband">5</A>. This also means that
+a wideband frame may be correctly decoded by a narrowband decoder
+with the only caveat that if more than one frame is packed in the
+same packet, the decoder will need to skip the high-band parts in
+order to sync with the bit-stream.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="603"></A>
+<TABLE>
+<CAPTION><STRONG>Table 5:</STRONG>
+Bit allocation for high-band in wideband mode</CAPTION>
+<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Parameter</TD>
+<TD ALIGN="CENTER">Update rate</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">2</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Wideband bit</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Mode ID</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">3</TD>
+</TR>
+<TR><TD ALIGN="CENTER">LSP</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">12</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Excitation gain</TD>
+<TD ALIGN="CENTER">sub-frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Excitation VQ</TD>
+<TD ALIGN="CENTER">sub-frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">20</TD>
+<TD ALIGN="CENTER">40</TD>
+<TD ALIGN="CENTER">80</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Total</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">36</TD>
+<TD ALIGN="CENTER">112</TD>
+<TD ALIGN="CENTER">192</TD>
+<TD ALIGN="CENTER">352</TD>
+</TR>
+</TABLE>
+
+<P>
+</TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+
+<P>
+
+<P>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html334"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html328"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html322"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html330"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html332"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html335"
+  HREF="node11.html">FAQ</A>
+<B> Up:</B> <A NAME="tex2html329"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html323"
+  HREF="node9.html">Speex narrowband mode</A>
+ &nbsp <B>  <A NAME="tex2html331"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html333"
+  HREF="node15.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>

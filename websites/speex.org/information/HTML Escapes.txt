@@ -1,0 +1,19 @@
+﻿&#x2014;    —, em dash
+&#x2018;    ‘, left '
+&#x2019;    ’, right ' (apostrophe)
+&#x201c;    “, left "
+&#x201d;    ”, right "
+&#x2026;    … (ellipsis)
+&#x00a9;    copyright sign
+&#x00b0;    degree sign
+&#x00b5;    micro sign
+
+math
+&#x2202;    ∂, partial differential
+&#x2206;    ∆, increment (delta sign?)
+&#x220f;    Pi (N-Ary product)
+&#x2211;    Sigma (N-ary summation)
+&#x2212;    −, (minus sign)
+&#x2248;    ≈, about equal to
+
+in vim: type ^v u 2014

@@ -1,0 +1,30 @@
+/* http://alistapart.com/stories/practicalcss/ - Splitting the Difference */
+div#banner {
+    font-family: Verdana, sans-serif;
+	font-size: small;
+    padding:    .25em;
+    margin-bottom:  .5em;
+    border-bottom:  1px solid #000;
+    color: #000;
+    background: #aaa;
+}
+div#banner a:visited, div#banner a:link {
+    text-decoration: none;
+    color: #000;
+}
+
+div#banner span.left {
+    text-transform: uppercase;
+    float:      left;
+    text-align: left;
+    width: 60%;
+}
+div#banner span.right {
+    float: right;
+    text-align: right;
+    width: 39%;
+}
+div#banner div.spacer {
+    clear: both;
+}
+

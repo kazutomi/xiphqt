@@ -1,0 +1,39 @@
+<html>
+<head><title>Roadmap</title></head>
+<body>
+    <h1>Roadmap</h1>
+	<h2>What We’re Doing</h2>
+	<p>
+		We’re still tuning and squashing the odd bug that may have slipped
+		through the release candidates.
+	</p>
+	<h2>How You Can Help</h2>
+	<p>
+		Now that Speex has reached the 1.0 milestone, there’s not a whole
+		lot that needs to be done on our end. If you want to further promote
+		Speex use, consider…
+	</p>
+	<ul class='ellipsised'>
+		<li>writing a plugin for your favorite audio player</li>
+
+		<li>writing an <abbr>ACM</abbr> “codec” so Speex can be used with 
+			Microsoft NetMeeting.
+		</li>
+		
+		<li>helping make Speex a more widely recognized standard;
+			work is already underway to make Speex an
+			<abbr title='Internet Engineering Task Force'>IETF</abbr>-blessed
+			standard, but work still remains in that arena.
+			If you know of an organization that standardizes (on) audio compression
+			codecs, consider proposing Speex as an option.
+		</li>
+		<li>writing, or paying to have written, a Free/Open Source
+			fixed-point version of Speex.
+		</li>
+	</ul>
+	
+</body>
+</html>
+<!--
+ vim: ft=html
+ -->

@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Sample code</TITLE>
+<META NAME="description" CONTENT="Sample code">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node13.html">
+<LINK REL="previous" HREF="node11.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node13.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html383"
+  HREF="node13.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html377"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html371"
+  HREF="node11.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html379"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html381"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html384"
+  HREF="node13.html">IETF RTP Profile</A>
+<B> Up:</B> <A NAME="tex2html378"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html372"
+  HREF="node11.html">FAQ</A>
+ &nbsp <B>  <A NAME="tex2html380"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html382"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html385"
+  HREF="node12.html#SECTION000121000000000000000">sampleenc.c</A>
+<LI><A NAME="tex2html386"
+  HREF="node12.html#SECTION000122000000000000000">sampledec.c</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION000120000000000000000"></A><A NAME="sec:Sample-code"></A>
+<BR>
+Sample code
+</H1>
+
+<P>
+This section shows sample code for encoding and decoding speech using
+the Speex API. The commands can be used to encode and decode a file
+by calling:&nbsp;
+<BR><TT>% sampleenc in_file.sw | sampledec out_file.sw</TT>
+<BR>
+where both files are raw (no header) files encoded at 16 bits per
+sample (in the machine natural endianness).
+
+<P>
+
+<H2><A NAME="SECTION000121000000000000000">
+sampleenc.c</A>
+</H2>
+
+<P>
+sampleenc takes a raw 16 bits/sample file, encodes it and outputs
+a Speex stream to stdout. Note that the packing used is NOT compatible
+with that of speexenc/speexdec.
+
+<P>
+<BR>
+<PRE>#include &lt;speex.h&gt;
+#include &lt;stdio.h&gt;
+
+/*The frame size in hardcoded for this sample code but it doesn't have to be*/
+#define FRAME_SIZE 160
+int main(int argc, char **argv)
+{
+   char *inFile;
+   FILE *fin;
+   short in[FRAME_SIZE];
+   float input[FRAME_SIZE];
+   char cbits[200];
+   int nbBytes;
+   /*Holds the state of the encoder*/
+   void *state;
+   /*Holds bits so they can be read and written to by the Speex routines*/
+   SpeexBits bits;
+   int i, tmp;
+
+   /*Create a new encoder state in narrowband mode*/
+   state = speex_encoder_init(&amp;speex_nb_mode);
+
+   /*Set the quality to 8 (15 kbps)*/
+   tmp=8;
+   speex_encoder_ctl(state, SPEEX_SET_QUALITY, &amp;tmp);
+
+   inFile = argv[1];
+   fin = fopen(inFile, "r");
+
+   /*Initialization of the structure that holds the bits*/
+   speex_bits_init(&amp;bits);
+   while (1)
+   {
+      /*Read a 16 bits/sample audio frame*/
+      fread(in, sizeof(short), FRAME_SIZE, fin);
+      if (feof(fin))
+         break;
+      /*Copy the 16 bits values to float so Speex can work on them*/
+      for (i=0;i&lt;FRAME_SIZE;i++)
+         input[i]=in[i];
+
+      /*Flush all the bits in the struct so we can encode a new frame*/
+      speex_bits_reset(&amp;bits);
+
+      /*Encode the frame*/
+      speex_encode(state, input, &amp;bits);
+      /*Copy the bits to an array of char that can be written*/
+      nbBytes = speex_bits_write(&amp;bits, cbits, 200);
+
+      /*Write the size of the frame first. This is what sampledec expects but
+       it's likely to be different in your own application*/
+      fwrite(&amp;nbBytes, sizeof(int), 1, stdout);
+      /*Write the compressed data*/
+      fwrite(cbits, 1, nbBytes, stdout);
+      
+   }
+   
+   /*Destroy the encoder state*/
+   speex_encoder_destroy(state);
+   /*Destroy the bit-packing struct*/
+   speex_bits_destroy(&amp;bits);
+   fclose(fin);
+   return 0;
+}
+</PRE>
+<P>
+
+<H2><A NAME="SECTION000122000000000000000">
+sampledec.c</A>
+</H2>
+
+<P>
+sampledec reads a Speex stream from stdin, decodes it and outputs
+it to a raw 16 bits/sample file. Note that the packing used is NOT
+compatible with that of speexenc/speexdec.
+
+<P>
+<BR>
+<PRE>#include &lt;speex.h&gt;
+#include &lt;stdio.h&gt;
+
+/*The frame size in hardcoded for this sample code but it doesn't have to be*/
+#define FRAME_SIZE 160
+int main(int argc, char **argv)
+{
+   char *outFile;
+   FILE *fout;
+   /*Holds the audio that will be written to file (16 bits per sample)*/
+   short out[FRAME_SIZE];
+   /*Speex handle samples as float, so we need an array of floats*/
+   float output[FRAME_SIZE];
+   char cbits[200];
+   int nbBytes;
+   /*Holds the state of the decoder*/
+   void *state;
+   /*Holds bits so they can be read and written to by the Speex routines*/
+   SpeexBits bits;
+   int i, tmp;
+
+   /*Create a new decoder state in narrowband mode*/
+   state = speex_decoder_init(&amp;speex_nb_mode);
+
+   /*Set the perceptual enhancement on*/
+   tmp=1;
+   speex_decoder_ctl(state, SPEEX_SET_ENH, &amp;tmp);
+
+   outFile = argv[1];
+   fout = fopen(outFile, "w");
+
+   /*Initialization of the structure that holds the bits*/
+   speex_bits_init(&amp;bits);
+   while (1)
+   {
+      /*Read the size encoded by sampleenc, this part will likely be 
+        different in your application*/
+      fread(&amp;nbBytes, sizeof(int), 1, stdin);
+      fprintf (stderr, "nbBytes: %d\n", nbBytes);
+      if (feof(stdin))
+         break;
+      
+      /*Read the "packet" encoded by sampleenc*/
+      fread(cbits, 1, nbBytes, stdin);
+      /*Copy the data into the bit-stream struct*/
+      speex_bits_read_from(&amp;bits, cbits, nbBytes);
+
+      /*Decode the data*/
+      speex_decode(state, &amp;bits, output);
+
+      /*Copy from float to short (16 bits) for output*/
+      for (i=0;i&lt;FRAME_SIZE;i++)
+         out[i]=output[i];
+
+      /*Write the decoded audio to file*/
+      fwrite(out, sizeof(short), FRAME_SIZE, fout);
+   }
+   
+   /*Destroy the decoder state*/
+   speex_encoder_destroy(state);
+   /*Destroy the bit-stream truct*/
+   speex_bits_destroy(&amp;bits);
+   fclose(fout);
+   return 0;
+}
+</PRE>
+<P>
+
+<BR><HR>
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>

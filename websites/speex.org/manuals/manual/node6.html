@@ -1,0 +1,559 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Speex narrowband mode</TITLE>
+<META NAME="description" CONTENT="Speex narrowband mode">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node7.html">
+<LINK REL="previous" HREF="node5.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node7.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html200"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html196"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html190"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html198"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html201"
+  HREF="node7.html">Speex wideband mode (sub-band</A>
+<B> Up:</B> <A NAME="tex2html197"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html191"
+  HREF="node5.html">Introduction to CELP Coding</A>
+ &nbsp <B>  <A NAME="tex2html199"
+  HREF="node2.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html202"
+  HREF="node6.html#SECTION00061000000000000000">LPC Analysis</A>
+<LI><A NAME="tex2html203"
+  HREF="node6.html#SECTION00062000000000000000">Pitch Prediction (adaptive codebook)</A>
+<LI><A NAME="tex2html204"
+  HREF="node6.html#SECTION00063000000000000000">Innovation Codebook</A>
+<LI><A NAME="tex2html205"
+  HREF="node6.html#SECTION00064000000000000000">Bit allocation</A>
+<LI><A NAME="tex2html206"
+  HREF="node6.html#SECTION00065000000000000000">Perceptual enhancement</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00060000000000000000"></A><A NAME="sec:Speex-narrowband-mode"></A>
+<BR>
+Speex narrowband mode
+</H1>
+
+<P>
+This section looks at how Speex works for narrowband (<!-- MATH
+ $8\: \mathrm{kHz}$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img33.png"
+ ALT="$ 8\: \mathrm{kHz}$">
+sampling rate) operation. The frame size for this mode is <!-- MATH
+ $20\: \mathrm{ms}$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img34.png"
+ ALT="$ 20\: \mathrm{ms}$">,
+corresponding to 160 samples. Each frame is also subdivided into 4
+sub-frames of 40 samples each.
+
+<P>
+Also many design decisions were based on the original goals and assumptions:
+
+<P>
+
+<UL>
+<LI>Minimizing the amount of information extracted from past frames (for
+robustness to packet loss)
+</LI>
+<LI>Dynamically-selectable codebooks (LSP, pitch and innovation)
+</LI>
+<LI>G.728-like fixed codebooks (without backward-adaptive grains because
+of patent issues)
+</LI>
+</UL>
+
+<P>
+
+<H2><A NAME="SECTION00061000000000000000">
+LPC Analysis</A>
+</H2>
+
+<P>
+An LPC analysis is first performed on a (Hamming) window that spans
+all the current frame and half a frame in advance. The LPC coefficients
+are then converted to Line Spectral Pair (LSP), a representation that
+is more robust to quantization. The LSP's are considered to be associated
+to the <IMG
+ WIDTH="25" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img35.png"
+ ALT="$ 4^{th}$"> sub-frames and the LSP's associated to the first
+3 sub-frames are linearly interpolated using the current and previous
+LSP's.
+
+<P>
+The LSP's are encoded using 30 bits for higher quality modes and 18
+bits for lower quality, through the use of a multi-stage split-vector
+quantizer. For the lower quality modes, the 10 coefficients are first
+quantized with 6 bits and the error is then divided in two 5-coefficient
+sub-vectors. Each of them is quantized with 6 bits, for a total of
+18 bits. For the higher quality modes, the remaining error on both
+sub-vectors is turther quantized with 6 bits each, for a total of
+30 bits.
+
+<P>
+The perceptual weighting filter <IMG
+ WIDTH="42" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$ W(z)$"> used by Speex is derived from
+the LPC analysis and corresponds to the one described by eq. <A HREF="node5.html#eq:weighting_filter">1</A>
+with <!-- MATH
+ $\gamma _{1}=0.9$
+ -->
+<IMG
+ WIDTH="61" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$ \gamma _{1}=0.9$"> and <!-- MATH
+ $\gamma _{2}=0.6$
+ -->
+<IMG
+ WIDTH="61" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img37.png"
+ ALT="$ \gamma _{2}=0.6$">. We can use the unquantized
+<IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ A(z)$"> filter since the weighting filter is only used in the encoder.
+
+<P>
+
+<H2><A NAME="SECTION00062000000000000000">
+Pitch Prediction (adaptive codebook)</A>
+</H2>
+
+<P>
+Speex uses a 3-tap prediction for pitch. That is, 
+
+<P>
+<!-- MATH
+ \begin{displaymath}
+e(n)=\beta _{0}e(n-T-1)+\beta _{1}e(n-T)+\beta _{2}e(n-T+1)+c(n)
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="426" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img38.png"
+ ALT="$\displaystyle e(n)=\beta _{0}e(n-T-1)+\beta _{1}e(n-T)+\beta _{2}e(n-T+1)+c(n)$">
+</DIV><P></P>
+
+<P>
+where <IMG
+ WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img20.png"
+ ALT="$ T$"> is the pitch period and the <!-- MATH
+ $\beta _{i}$
+ -->
+<IMG
+ WIDTH="18" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img39.png"
+ ALT="$ \beta _{i}$"> are the prediction
+(filter) taps. The period and quantized gains are determined in closed
+loop.
+
+<P>
+
+<H2><A NAME="SECTION00063000000000000000">
+Innovation Codebook</A>
+</H2>
+
+<P>
+In Speex, the innovation signal is quantized using shape-only vector
+quantization (VQ). That means that the codebooks that are used represent
+both the shape and the gain at the same time. This save many bits
+that would otherwise be allocated for a separate gain at the price
+of a slight increase in complexity. Except for the absence of (backward-adaptive)
+gain, the technique used in Speex is similar to G.728 (LD-CELP). However
+since we do not have a low-delay constraint, the search can be made
+more ``global'' and make use of the whole information available
+for a sub-frame.
+
+<P>
+
+<H2><A NAME="SECTION00064000000000000000">
+Bit allocation</A>
+</H2>
+
+<P>
+There are 7 different narrowband bit-rates defined for Speex, ranging
+from 200 bps to 18.15 kbps, although the modes below 5.9 kbps should
+not be used for speech. The bit-allocation for each mode is detailed
+in table <A HREF="#cap:bits-narrowband">1</A>. Each frame starts with the mode
+ID encoded with 4 bits which allows a range from 0 to 15, though only
+the first 7 values are used (the others are reserved). The parameters
+are listed in the table in the order they are packed in the bit-stream.
+All frame-based parameters are packed before sub-frame parameters.
+The parameters for a certain sub-frame are all packed before the following
+sub-frame is packed. Note that the ``OL'' in the parameter description
+means the the parameter is an open loop estimation based on the whole
+frame.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="412"></A>
+<TABLE>
+<CAPTION><STRONG>Table 1:</STRONG>
+Bit allocation for narrowband modes</CAPTION>
+<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Parameter</TD>
+<TD ALIGN="CENTER">Update rate</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">2</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">7</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Wideband bit</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Mode ID</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">LSP</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">18</TD>
+<TD ALIGN="CENTER">18</TD>
+<TD ALIGN="CENTER">18</TD>
+<TD ALIGN="CENTER">18</TD>
+<TD ALIGN="CENTER">30</TD>
+<TD ALIGN="CENTER">30</TD>
+<TD ALIGN="CENTER">30</TD>
+</TR>
+<TR><TD ALIGN="CENTER">OL pitch</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">OL pitch gain</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">OL Exc gain</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Fine pitch</TD>
+<TD ALIGN="CENTER">sub-frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Pitch gain</TD>
+<TD ALIGN="CENTER">sub-frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">7</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Innovation gain</TD>
+<TD ALIGN="CENTER">sub-frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">3</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Innovation VQ</TD>
+<TD ALIGN="CENTER">sub-frame</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">16</TD>
+<TD ALIGN="CENTER">20</TD>
+<TD ALIGN="CENTER">35</TD>
+<TD ALIGN="CENTER">48</TD>
+<TD ALIGN="CENTER">64</TD>
+<TD ALIGN="CENTER">96</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Total</TD>
+<TD ALIGN="CENTER">frame</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">43</TD>
+<TD ALIGN="CENTER">119</TD>
+<TD ALIGN="CENTER">160</TD>
+<TD ALIGN="CENTER">220</TD>
+<TD ALIGN="CENTER">300</TD>
+<TD ALIGN="CENTER">364</TD>
+<TD ALIGN="CENTER">492</TD>
+</TR>
+</TABLE>
+
+<P>
+</TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+So far, no MOS (mean opinion score) subjective evaluation has been
+performed for Speex. In order to give an idea of the quality achivable
+with it, table <A HREF="#cap:quality_vs_bps">2</A> presents my own subjective
+opinion on it. It sould be noted that different people will perceive
+the quality differently and that the person that designed the codec
+often has a bias (one way or another) when it comes to subjective
+evaluation. Last thing, it should be noted that for most codecs (including
+Speex) encoding quality sometimes varies depending on the input.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="413"></A>
+<TABLE>
+<CAPTION><STRONG>Table 2:</STRONG>
+Quality versus bit-rate</CAPTION>
+<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Mode</TD>
+<TD ALIGN="CENTER">Bitrate (bps)</TD>
+<TD ALIGN="CENTER">Quality/description</TD>
+</TR>
+<TR><TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">250</TD>
+<TD ALIGN="CENTER">No sound (VBR only)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">2,150</TD>
+<TD ALIGN="CENTER">Comfort noise only (VBR only)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">2</TD>
+<TD ALIGN="CENTER">5,950</TD>
+<TD ALIGN="CENTER">Very noticeable artifacts/noise, good intelligibility</TD>
+</TR>
+<TR><TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">8,000</TD>
+<TD ALIGN="CENTER">Artifacts/noise sometimes noticeable</TD>
+</TR>
+<TR><TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">11,000</TD>
+<TD ALIGN="CENTER">Artifacts usually noticeable only with headphones</TD>
+</TR>
+<TR><TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">15,000</TD>
+<TD ALIGN="CENTER">Need good headphones to tell the difference</TD>
+</TR>
+<TR><TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">18,200</TD>
+<TD ALIGN="CENTER">Hard to tell the difference even with good headphones</TD>
+</TR>
+<TR><TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">24,600</TD>
+<TD ALIGN="CENTER">Completely transparent for voice, good quality music</TD>
+</TR>
+<TR><TD ALIGN="CENTER">8</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">(Tones/DTMF to be implemented)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">9</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">10</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">13</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">Application-defined, interpreted by callback or skipped</TD>
+</TR>
+<TR><TD ALIGN="CENTER">14</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">Speex in-band signaling</TD>
+</TR>
+<TR><TD ALIGN="CENTER">15</TD>
+<TD ALIGN="CENTER">N/A</TD>
+<TD ALIGN="CENTER">Terminator code</TD>
+</TR>
+</TABLE>
+
+<P>
+</TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+
+<H2><A NAME="SECTION00065000000000000000">
+Perceptual enhancement</A>
+</H2>
+
+<P>
+This part of the codec only applies to the decoder and can even be
+changed without affecting inter-operability. For that reason, the
+implementation provided and described here should only be considered
+as a reference implementation. The enhancement system is devided in
+two parts. First, the synthesis filter <!-- MATH
+ $S(z)=1/A(z)$
+ -->
+<IMG
+ WIDTH="104" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img40.png"
+ ALT="$ S(z)=1/A(z)$"> is replaced
+by an enhanced filter<!-- MATH
+ \begin{displaymath}
+S'(z)=\frac{A\left(z/a_{2}\right)A\left(z/a_{3}\right)}{A\left(z\right)A\left(z/a_{1}\right)}
+\end{displaymath}
+ -->
+<P></P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="185" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img41.png"
+ ALT="$\displaystyle S'(z)=\frac{A\left(z/a_{2}\right)A\left(z/a_{3}\right)}{A\left(z\right)A\left(z/a_{1}\right)}$">
+</DIV><P></P>
+where <IMG
+ WIDTH="20" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img42.png"
+ ALT="$ a_{1}$"> and <IMG
+ WIDTH="20" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img43.png"
+ ALT="$ a_{2}$"> depend on the mode in use and <!-- MATH
+ $a_{3}=\frac{1}{r}\left(1-\frac{1-ra_{1}}{1-ra_{2}}\right)$
+ -->
+<IMG
+ WIDTH="140" HEIGHT="44" ALIGN="MIDDLE" BORDER="0"
+ SRC="img44.png"
+ ALT="$ a_{3}=\frac{1}{r}\left(1-\frac{1-ra_{1}}{1-ra_{2}}\right)$">
+with <IMG
+ WIDTH="45" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img45.png"
+ ALT="$ r=.9$">. The second part of the enhancement consists of using
+a comb filter to enhance the pitch in the excitation domain. 
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html200"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html196"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html190"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html198"
+  HREF="node2.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html201"
+  HREF="node7.html">Speex wideband mode (sub-band</A>
+<B> Up:</B> <A NAME="tex2html197"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html191"
+  HREF="node5.html">Introduction to CELP Coding</A>
+ &nbsp <B>  <A NAME="tex2html199"
+  HREF="node2.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2002-10-10
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,184 @@
+<html>
+<head>
+  <title>Codec comparison</title>
+</head>
+<body>
+    <table border='2' cellpadding='2' width='100%'>
+        <thead>
+			<tr>
+				<th>Codec</th>
+				<th>Rate (kHz)</th>
+				<th>bitrate (kbps)</th>
+				<th>delay (ms)</th>
+				<th>multi-rate</th>
+				<th>embedded</th>
+				<th>VBR</th>
+				<th><abbr title='Frame Erasure Recovery'>FE</abbr></th>
+				<th>bit-robust</th>
+				<th>license</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr class='speex'>
+				<td>Speex</td>
+				<td>8, 16, 32</td>
+				<td>
+					2.15-24.6 (<abbr title='narrowband'>NB</abbr>)<br/>
+					4-44.2    (<abbr title='wideband'>WB</abbr>)
+				</td>
+				<td>
+					30 (<abbr title='narrowband'>NB</abbr>)<br/>
+					34 (<abbr title='wideband'>WB</abbr>)
+				</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>no</td>
+				<td>open-source/ free software</td>
+			</tr>
+			<tr>
+				<td>iLBC</td>
+				<td>8</td>
+				<td>13.3</td>
+				<td>30</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>yes*</td>
+				<td>no</td>
+				<td>no charge, but not open-source</td>
+			</tr>
+			<tr>
+				<td>AMR-NB</td>
+				<td>8</td>
+				<td>4.75-12.2</td>
+				<td>20</td>
+				<td>yes</td>
+				<td>no</td>
+				<td>no</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>proprietary</td>
+			</tr>
+			<tr>
+				<td>AMR-<abbr title='wideband'>WB</abbr><br/>(G.722.2)</td>
+				<td>16</td>
+				<td>6.6-23.85</td>
+				<td>20</td>
+				<td>yes</td>
+				<td>no</td>
+				<td>no</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>proprietary</td>
+			</tr>
+			<tr>
+				<td>G.729</td>
+				<td>8</td>
+				<td>8</td>
+				<td>15</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>proprietary</td>
+			</tr>
+			<tr>
+				<td>GSM-FR</td>
+				<td>8</td>
+				<td>13</td>
+				<td>20</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>?</td>
+				<td>?</td>
+				<td>patented?</td>
+			</tr>
+			<tr>
+				<td>GSM-EFR</td>
+				<td>8</td>
+				<td>12.2</td>
+				<td>20</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>yes</td>
+				<td>yes</td>
+				<td>proprietary</td>
+			</tr>
+			<tr>
+				<td>G.723.1</td>
+				<td>8</td>
+				<td>5.3 6.3</td>
+				<td>37.5</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>yes</td>
+				<td>?</td>
+				<td>proprietary</td>
+			</tr>
+			<tr>
+				<td>G.728</td>
+				<td>8</td>
+				<td>16</td>
+				<td>0.625</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>no</td>
+				<td>proprietary</td>
+			</tr>
+			<tr>
+				<td>G.722</td>
+				<td>16</td>
+				<td>48 56 64</td>
+				<td>?</td>
+				<td>no</td>
+				<td>yes</td>
+				<td>no</td>
+				<td>no</td>
+				<td>?</td>
+				<td>?</td>
+			</tr>
+		</tbody>
+    </table>
+       </td>
+       <td valign="top" align="center"><br>
+       </td>
+       <td valign="top" align="center">?<br>
+       </td>
+       <td valign="top">?<br>
+       </td>
+     </tr>
+   
+  </tbody> 
+</table>
+ <br>
+Definitions:<br>
+multi-rate: Allows the codec to change bit-rate dynamically at any moment<br>
+embedded: Allows decoding of only the narrowband part from a wideband stream<br>
+VBR: Variable bit-rate<br>
+FE: Robust to frame erasure (aka packet loss)<br>
+bit-robust: Handles bit corruption gracefully (applies to wireless, but not
+IP)<br>
+<br>
+ Special features:<br>
+ <br>
+ Speex<br>
+Support for intensity stereo encoding<br>
+Support for 32 kHz sampling<br>
+ <br>
+ iLBC<br>
+With iLBC, all frames are encoded completely independently. While this provides
+better quality at extreme packet conditions (&gt;10%), it makes the codec
+sub-optimal in "clean" conditions.<br>
+</body>
+</html>
+<!--
+    vim:set ft=html
+-->

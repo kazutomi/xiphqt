@@ -1,0 +1,35 @@
+<html>
+<head><title>Contact</title></head>
+<body>
+    <h1>Contact</h1>
+	
+    <h2 id='ml'>The Speex Development List</h2>
+    <p>The <a href='mailto:speex-dev@xiph.org'>speex-dev@xiph.org</a>
+        mailing list is intended for Speex developers
+        to coordinate development of the Speex specification and software
+        libraries. Please restrict discussion on the speex-dev lists to
+        those topics.
+	</p>
+    <p>
+		<b>To subscribe:</b> send a message containing only “subscribe”
+		<strong>in the body</strong> to
+        <a href='mailto:speex-dev-request@xiph.org'
+            >speex-dev-request@xiph.org</a>.
+        Do not send subscription requests directly to the main list; they
+        will be silently ignored.
+	</p>
+    <p>
+		The list is archived along with the rest of the
+        <a href='http://www.xiph.org/archives/'>xiph.org mailing list archives</a>.
+	</p>
+
+	<h2>E-mail</h2>
+	<p>
+		Have a question about this website? Send an e-mail to
+		<a href='mailto:webmaster@speex.org'>webmaster@speex.org</a>.
+	</p>
+</body>
+</html>
+<!--
+ vim: ft=html
+ -->

@@ -1,0 +1,102 @@
+<html>
+<head><title>Plugins &amp; Other Software</title></head>
+<body>
+<h1>Plugins &amp; Other Software</h1>
+
+<p class='note'>
+	We haven’t played with all of these plugins, so don’t blame us if any
+	of them eat your computer. Okay?
+</p>
+
+<h2>Applications</h2>
+
+<dl class='appList'>
+    <dt><a href='http://www.linphone.org'>LinPhone</a></dt>
+    <dd>A <abbr title='Session Initiation Protocol'>SIP</abbr>-based
+        <abbr title='Voice over IP'>VoIP</abbr>
+        phone for <a href='http://www.gnome.org'>GNOME</a></dd>
+    
+    <dt><a href='http://www.openh323.org'>OpenH323</a></dt>
+    <dd>An open-source H.323 stack</dd>
+    
+    <dt><a href='http://www.gnomemeeting.org'>GnomeMeeting</a></dt>
+    <dd>An H.323 videoconferencing program</dd>
+
+    <dt><a href='http://homepage.ntlworld.com/jfe1205/others.html'
+        >Windows builds of Speex utilities</a></dt>
+    <dd>Windows builds of speexenc, speexdec, and speexdrop</dd>
+
+    <dt><a href='http://home.wanadoo.nl/~w.speek/speex.htm'
+        >Speex Frontend</a></dt>
+    <dd><a href='http://home.wanadoo.nl/~w.speek/'>Speek</a>
+        (no relation to Speex) has written a frontend to
+        speexenc and speexdec</dd>
+
+    <dt><a href='http://www.jcraft.com/jroar/'>JRoar</a></dt>
+    <dd>JRoar, a streaming
+        server written entirely in Java, supports Speex in addition to
+        <a href='http://www.vorbis.com/'>Ogg Vorbis</a></dd>
+    
+    <dt><a href='http://www.metadecks.org/software/sweep/'>Sweep</a></dt>
+    <dd>Sweep
+        is a full-featured digital audio editor for GNU/Linux, the BSDs, and
+        compatible systems</dd>
+    <dt><a href='http://www.asteriskpbx.org'>Asterisk</a></dt>
+    <dd>
+		Asterisk is an open-source
+        <abbr title='private branch exchange'>PBX</abbr>
+	</dd>
+</dl>
+
+<h2>Player Plugins &amp; Code Examples</h2>
+<dl class='appList'>
+    <dt><a href='http://www.saunalahti.fi/~cse/html/other.html'
+        >Winamp and Cool Edit Plugins</a></dt>
+    <dd>Written by Case</dd>
+    <dt><a href='download/speex-xmms-nightly.tar.gz'>Speex XMMS plugin</a></dt>
+    <dd>Written by Jens Burkal,
+		&lt;<a href='mailto:jzb@rapanden.dk'>jzb@rapanden.dk</a>&gt;
+		(Note: Although this file is hosted on this server, it’s our
+		only copy of the plugin that we had around
+		before jzb.rapanden.dk became inaccessible. No guarantees.)</dd>
+	<dt>
+		<a href='download/speexDS_setup.zip'>DirectShow filters</a>
+		<a href='download/speexDS_source.zip'>(source)</a>
+	</dt>
+	<dd>Written by Jean-François Émond,
+		&lt;<a href='mailto:emondjf@yahoo.com'>emondjf@yahoo.com</a>&gt;</dd>
+	
+	<dt><a href='download/Speex_Delphi_Demo.zip'>An Encoder written in Delphi</a></dt>
+	<dd>Smallish Delphi example written by John Villar</dd>
+    
+</dl>
+<h2>Other Implementations &amp; Language Bindings</h2>
+<dl class='appList'>
+	<dt><a href='download/jspeex.zip'>Jspeex</a></dt>
+	<dd>
+		written by Boyd Ebsworthy
+		&lt;<a href='mailto:bebsworthy@entreview.com'>bebsworthy@entreview.com</a>&gt;
+	</dd>
+		
+	<dt><a href='download/jspxdec.zip'>Java Implementation of Speex</a></dt>
+	<dd>
+		Written by James Lawrence
+		&lt;<a href='mailto:james.lawrence@hellonetwork.com'
+		>james.lawrence@hellonetwork.com</a>&gt;
+		of
+		<a href='http://www.hellonetwork.com'>hello Network</a>
+	</dd>
+	
+	<dt><a href='download/PySpeex.tar.gz'>PySpeex</a></dt>
+	<dd>Python bindings by David McNab</dd>
+</dl>
+<!--
+<h2>Projects with Planned Speex Support</h2>
+<dl>
+</dl>
+-->
+</body>
+</html>
+<!--
+ vim: ft=html
+ -->

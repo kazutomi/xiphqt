@@ -1,0 +1,43 @@
+<html>
+<head><title>Mailing Lists</title></head>
+<body>
+    <h1>Mailing Lists</h1>
+    <h2>The Speex Development List</h2>
+    <p>The <a href='mailto:speex-dev@xiph.org'>speex-dev@xiph.org</a>
+        mailing list is intended for Speex developers
+        to coordinate development of the Speex specification and software
+        libraries. Please restrict discussion on the speex-dev lists to
+        those topics.</p>
+    <h3>Subscribing</h3>
+    <p>Assuming that the email preferences in your web browser are set up
+        correctly, the following button sends a subscription request
+        directly to xiph.org. You'll get an E-mail back with the result;
+        The submit button does not take you to another page.</p>
+        
+    <form enctype='text/plain' action="mailto:majordomo@xiph.org">
+        <p>
+            <input type='hidden' name="# Speex dev list"
+                   value="subscribe speex-dev"/>
+            <input type='submit'
+                   value="Subscribe to the Speex developers mailing list"/>
+        </p>
+    </form>
+
+    <p>Alternatively, use the traditional method: send a message containing
+        only “subscribe” in the body to
+        <a href='mailto:speex-dev-request@xiph.org'
+            >speex-dev-request@xiph.org</a>.
+        Do not send subscription requests directly to the main list; they
+        will be silently ignored.</p>
+    <p>The list is archived on the
+        <a href='http://www.xiph.org/archives/'>xiph.org mailing list archives</a>
+        page. In addition, the (very)
+        <a href='http://sourceforge.net/mailarchive/forum.php?forum_id=7775'
+        >old mailing list archive</a> is available on
+        <a href='http://sourceforge.net'>SourceForge</a>.</p>
+       
+</body>
+</html>
+<!--
+ vim: ft=html
+ -->

@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Formats and standards</TITLE>
+<META NAME="description" CONTENT="Formats and standards">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node8.html">
+<LINK REL="previous" HREF="node6.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node8.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html280"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html274"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html268"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html276"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html278"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html281"
+  HREF="node8.html">Introduction to CELP Coding</A>
+<B> Up:</B> <A NAME="tex2html275"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html269"
+  HREF="node6.html">Programming with Speex (the</A>
+ &nbsp <B>  <A NAME="tex2html277"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html279"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html282"
+  HREF="node7.html#SECTION00071000000000000000">RTP Payload Format </A>
+<LI><A NAME="tex2html283"
+  HREF="node7.html#SECTION00072000000000000000">MIME Type</A>
+<LI><A NAME="tex2html284"
+  HREF="node7.html#SECTION00073000000000000000">Ogg file format</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00070000000000000000"></A><A NAME="229"></A><A NAME="sec:Formats-and-standards"></A>
+<BR>
+Formats and standards
+</H1>
+
+<P>
+Speex can encode speech in both narrowband and wideband and provides
+different bit-rates. However, not all features need to be supported
+by a certain implementation or device. In order to be called ``Speex
+compatible'' (whatever that means), an implementation must implement
+at least a basic set of features.
+
+<P>
+At the minimum, all narrowband modes of operation MUST be supported
+at the decoder. This includes the decoding of a wideband bit-stream
+by the narrowband decoder<A NAME="tex2html2"
+  HREF="footnode.html#foot232"><SUP>1</SUP></A>. If present, a wideband decoder MUST be able to decode a narrowband
+stream, and MAY either be able to decode all wideband modes or be
+able to decode the embedded narrowband part of all modes (which includes
+ignoring the high-band bits).
+
+<P>
+For encoders, at least one narrowband or wideband mode MUST be supported.
+The main reason why all encoding modes do not have to be supported
+is that some platforms may not be able to handle the complexity of
+encoding in some modes.
+
+<P>
+
+<H2><A NAME="SECTION00071000000000000000"></A><A NAME="233"></A>
+<BR>
+RTP Payload Format 
+</H2>
+
+<P>
+The RTP payload draft is included in appendix <A HREF="node13.html#sec:IETF-draft">C</A>
+and the latest version is available at http://www.speex.org/drafts/latest.
+This draft has been sent (2003/02/26) to the Internet Engineering
+Task Force (IETF) and will be discussed at the March 18th meeting
+in San Francisco. 
+
+<P>
+
+<H2><A NAME="SECTION00072000000000000000">
+MIME Type</A>
+</H2>
+
+<P>
+For now, you should use the MIME type audio/x-speex for Speex. We
+will apply for type <TT>audio/speex</TT> in the near future.
+
+<P>
+
+<H2><A NAME="SECTION00073000000000000000"></A><A NAME="238"></A>
+<BR>
+Ogg file format
+</H2>
+
+<P>
+Speex bit-streams can be stored in Ogg files. In this case, the first
+packet of the Ogg file contains the Speex header described in table
+<A HREF="#cap:ogg_speex_header">2</A>. All integer fields in the headers are
+stored as little-endian. The <TT>speex_string</TT> field must contain
+the ``<TT>Speex</TT>&nbsp;&nbsp;&nbsp;`` (with 3 training spaces), which
+identifies the bit-stream. The next field, <TT>speex_version</TT>
+contains the version of Speex that encoded the file. For now, refer
+to speex_header.[ch] for more info. The <I>beginning of stream</I>
+(<TT>b_o_s</TT>) flag is set to 1 for the header. The header packet
+has <TT>packetno=0</TT> and <TT>granulepos=0</TT>.
+
+<P>
+The second packet contains the Speex comment header. The format used
+is the Vorbis comment format described here: http://www.xiph.org/ogg/vorbis/doc/v-comment.html
+. This packet has <TT>packetno=1</TT> and <TT>granulepos=0</TT>.
+
+<P>
+The third and subsequent packets each contain one or more (number
+found in header) Speex frames. These are identified with <TT>packetno</TT>
+starting from 2 and the <TT>granulepos</TT> is the number of the last
+sample encoded in that packet. The last of these packets has the <I>end
+of stream</I> (<TT>e_o_s</TT>) flag is set to 1.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="579"></A>
+<TABLE>
+<CAPTION><STRONG>Table 2:</STRONG>
+Ogg/Speex header packet</CAPTION>
+<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Field</TD>
+<TD ALIGN="CENTER">Type</TD>
+<TD ALIGN="CENTER">Size</TD>
+</TR>
+<TR><TD ALIGN="CENTER">speex_string</TD>
+<TD ALIGN="CENTER">char[]</TD>
+<TD ALIGN="CENTER">8</TD>
+</TR>
+<TR><TD ALIGN="CENTER">speex_version</TD>
+<TD ALIGN="CENTER">char[]</TD>
+<TD ALIGN="CENTER">20</TD>
+</TR>
+<TR><TD ALIGN="CENTER">speex_version_id</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">header_size</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">rate</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">mode</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">mode_bitstream_version</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">nb_channels</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">bitrate</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">frame_size</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">vbr</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">frames_per_packet</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">extra_headers</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">reserved1</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+<TR><TD ALIGN="CENTER">reserved2</TD>
+<TD ALIGN="CENTER">int</TD>
+<TD ALIGN="CENTER">4</TD>
+</TR>
+</TABLE>
+
+<P>
+</TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html280"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html274"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html268"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html276"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html278"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html281"
+  HREF="node8.html">Introduction to CELP Coding</A>
+<B> Up:</B> <A NAME="tex2html275"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html269"
+  HREF="node6.html">Programming with Speex (the</A>
+ &nbsp <B>  <A NAME="tex2html277"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html279"
+  HREF="node15.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>
