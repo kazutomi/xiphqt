@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c,v 1.27 2001/02/26 13:31:31 xiphmont Exp $
+ last mod: $Id: mapping0.c,v 1.27.4.1 2001/04/29 22:21:04 xiphmont Exp $
 
  ********************************************************************/
 
@@ -264,7 +264,7 @@ static int mapping0_forward(vorbis_block *vb,vorbis_look_mapping *l){
 			 floor[i],NULL,vbi->ampmax);
     if(ret>newmax)newmax=ret;
 
-    _analysis_output("prefloor",seq,floor[i],n/2,0,0);
+    _analysis_output_always("mask",seq,floor[i],n/2,0,0);
     
     /* perform floor encoding */
     nonzero[i]=look->floor_func[submap]->

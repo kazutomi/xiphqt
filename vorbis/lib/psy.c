@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: psychoacoustics not including preecho
- last mod: $Id: psy.c,v 1.44 2001/03/21 07:44:46 msmith Exp $
+ last mod: $Id: psy.c,v 1.44.4.1 2001/04/29 22:21:04 xiphmont Exp $
 
  ********************************************************************/
 
@@ -679,9 +679,14 @@ float _vp_compute_mask(vorbis_look_psy *p,
   /* doing this here is clean, but we need to find a faster way to do
      it than to just tack it on */
 
-  for(i=0;i<n;i++)if(mdct[i]>=flr[i])break;
-  if(i==n)for(i=0;i<n;i++)flr[i]=NEGINF;
-
+  if(p->vi->floor_cullp){
+    for(i=0;i<n;i++)
+      if(mdct[i]+6.<flr[i])
+	flr[i]=NEGINF;
+  }else{
+    for(i=0;i<n;i++)if(mdct[i]>=flr[i])break;
+    if(i==n)for(i=0;i<n;i++)flr[i]=NEGINF;
+  }
 
   seq++;
 
