@@ -217,8 +217,6 @@ parse_server_node (xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
       if (str && (strcasecmp(str, "icy") == 0))
 	ices_config->header_protocol = icy_header_protocol_e;
-      else if (str && (strcasecmp(str, "ice") == 0))
-	ices_config->header_protocol = ice_header_protocol_e;
       else if (str && (strcasecmp(str, "http") == 0))
 	ices_config->header_protocol = http_header_protocol_e;
       else

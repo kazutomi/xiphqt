@@ -25,7 +25,6 @@
 typedef enum {
   icy_header_protocol_e,
   xaudiocast_header_protocol_e,
-  ice_header_protocol_e,
   http_header_protocol_e
 } header_protocol_t;
 

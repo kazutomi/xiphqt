@@ -460,6 +460,10 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
   ices_stream_t* stream;
   shout_t* conn;
   int streamno = 0;
+  char useragent[64];
+
+  snprintf(useragent, sizeof(useragent), "ices/" VERSION " (libshout/%s)",
+    shout_version(NULL, NULL, NULL));
 
   for (stream = ices_config->streams; stream; stream = stream->next) {
     conn = stream->conn;
@@ -470,8 +474,6 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     shout_set_format (conn, SHOUT_FORMAT_MP3);
     if (stream->header_protocol == icy_header_protocol_e)
       shout_set_protocol(conn, SHOUT_PROTOCOL_ICY);
-    else if (stream->header_protocol == ice_header_protocol_e)
-      shout_set_protocol(conn, SHOUT_PROTOCOL_ICE);
     else if (stream->header_protocol == http_header_protocol_e)
       shout_set_protocol(conn, SHOUT_PROTOCOL_HTTP);
     else
@@ -487,6 +489,7 @@ ices_setup_activate_libshout_changes (const ices_config_t *ices_config)
     shout_set_bitrate (conn, stream->bitrate);
     shout_set_public (conn, stream->ispublic);
     shout_set_mount (conn, stream->mount);
+    shout_set_agent (conn, useragent);
 
     ices_log_debug ("Sending following information to libshout:");
     ices_log_debug ("Stream: %d", streamno);
