@@ -102,7 +102,7 @@ this document, and throughout all the documentation in the streaming system.
 		<p>
 			If compiled with support for reencoding using liblame, and you supply the -R command line option or set the Execution/Reencode to 1 in the XML config
 			file, then ices will start reencoding your files on the fly to the bitrate you specified with the -b option or the Stream/Bitrate tag.<br>
-			The sample rate, number of channels, etc, will be chosen on the fly by lame itself, you have no control over this.<br> 
+			The sample rate, number of channels, etc, will be chosen on the fly by lame itself, unless you specify something using the -H and -N options.<br>
 			If you want to change it, I suggest you add support for this to ices and mail me a patch.<br>
 			I think you should be fine with whatever lame chooses though.<br>
 			Also, please make sure that your files are ok before you start reencoding them with ices. This is because the mpglib part of lame (what does the decoding) is
@@ -170,6 +170,8 @@ some options have been renamed.
 			<li>-s (private stream)</li>
 			<li>-S &lt;perl|python|builtin&gt;</li>
 			<li>-u &lt;stream url&gt;</li>
+			<li>-N &lt;Reencoded number of channels&gt;</li>
+			<li>-H &lt;Reencoded sample rate&gt;</li>
 		</ul>
 	      </p>
 	     </li>
@@ -198,6 +200,8 @@ some options have been renamed.
 				&lt;ices:Verbose&gt;1&lt;/ices:Verbose&gt;
 				&lt;ices:Base_Directory&gt;/tmp&lt;/ices:Base_Directory&gt;
 				&lt;ices:Reencode&gt;0&lt;/ices:Reencode&gt;
+				&lt;ices:Samplerate&gt;-1&lt;/ices:Samplerate&gt;
+				&lt;ices:Channels&gt;-1&lt;/ices:Channels&gt;
 			&lt;/ices:Execution&gt;
 			&lt;ices:Stream&gt;
 				&lt;ices:Name&gt;Cool ices default name from XML&lt;/ices:Name&gt;
@@ -272,6 +276,18 @@ some options have been renamed.
 				I suggest you check your files with mp3check or some other mp3 verification program before you add them to your playlist.
 				Just popping them into your favourite player and checking the sound is definately not enough.<br>
 				For legal reasons, this option is not available on the binary distributions.  
+			</li>
+
+			<li> Execution Samplerate <br>
+				Command line option: -H &lt;samplerate&gt; <br>
+				Config file tag: Execution/Samplerate <br>
+				Use this to force liblame reencoding to output mp3 data with this samplerate.
+			</li>
+
+			<li> Execution Channels <br>
+				Command line option: -N &lt;number of channel&gt; <br>
+				Config file tag: Execution/Channels <br>
+				Use this to force liblame reencoding to output mp3 data with this many channels.
 			</li>
 
 			<li> Stream Name <br>
@@ -370,7 +386,7 @@ some options have been renamed.
 
 <p align=right> This document is written by Alexander Haväng [eel@icecast.org].<br>
 <!-- hhmts start -->
-Last modified: Thu Aug 08 16:05:03 PDT 2000
+Last modified: Thu Aug 24 13:01:27 PDT 2000
 <!-- hhmts end -->
 </p>
 

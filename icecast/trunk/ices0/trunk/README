@@ -1,7 +1,7 @@
 
                                   Ices Manual
    __________
-
+   
     A. Introduction
     B. What's it for?
     C. What can it do?
@@ -15,7 +15,7 @@
     E. Licensing 
     F. Developers resources 
                                   _______
-
+   
     A. Introduction
        For a very long time, the only good streaming tool for command
        line systems was shout. Shout had a lot of issues, it was a quick
@@ -66,7 +66,8 @@
             will start reencoding your files on the fly to the bitrate
             you specified with the -b option or the Stream/Bitrate tag.
             The sample rate, number of channels, etc, will be chosen on
-            the fly by lame itself, you have no control over this.
+            the fly by lame itself, unless you specify something using
+            the -H and -N options.
             If you want to change it, I suggest you add support for this
             to ices and mail me a patch.
             I think you should be fine with whatever lame chooses though.
@@ -119,6 +120,8 @@
                o -s (private stream)
                o -S <perl|python|builtin>
                o -u <stream url>
+               o -N <Reencoded number of channels>
+               o -H <Reencoded sample rate>
          2. Configuration file (icec.conf)
             Here's a sample configuration file. It's the same as the
             ices.conf.dist that is included in the ices distribution.
@@ -143,6 +146,8 @@ projects/ices">
                                 <ices:Verbose>1</ices:Verbose>
                                 <ices:Base_Directory>/tmp</ices:Base_Directory>
                                 <ices:Reencode>0</ices:Reencode>
+                                <ices:Samplerate>-1</ices:Samplerate>
+                                <ices:Channels>-1</ices:Channels>
                         </ices:Execution>
                         <ices:Stream>
                                 <ices:Name>Cool ices default name from XML</ice
@@ -214,6 +219,16 @@ L</ices:Description>
                  definately not enough.
                  For legal reasons, this option is not available on the
                  binary distributions.
+               o Execution Samplerate
+                 Command line option: -H <samplerate>
+                 Config file tag: Execution/Samplerate
+                 Use this to force liblame reencoding to output mp3 data
+                 with this samplerate.
+               o Execution Channels
+                 Command line option: -N <number of channel>
+                 Config file tag: Execution/Channels
+                 Use this to force liblame reencoding to output mp3 data
+                 with this many channels.
                o Stream Name
                  Command line option: -n <stream name>
                  Config file tag: Stream/Name
@@ -284,6 +299,6 @@ L</ices:Description>
        If you want to write your own streaming software, or perhaps a
        nice streaming mp3 client, go to developer.icecast.org.
                                   _______
-
+   
           This document is written by Alexander Haväng [eel@icecast.org].
-                              Last modified: Thu Aug 08 16:05:03 PDT 2000
+                              Last modified: Thu Aug 24 13:01:27 PDT 2000

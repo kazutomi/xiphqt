@@ -161,6 +161,14 @@ ices_id3_get_filename (char *namespace, int maxlen)
 static void
 ices_id3_update_metadata (const char *filename, int file_bytes)
 {
+	static int first = 0;
+
+	if (first == 0) {
+		ices_log_debug ("Initially delaying metadata update...");
+		thread_sleep (3000000);
+		first = 1;
+	}
+
 	if (thread_create ("Metadata Update Thread", ices_id3_update_thread, NULL) == -1) {
 		ices_log ("Error: Could not create metadata update thread!");
 	}
@@ -193,13 +201,6 @@ ices_id3_update_thread (void *arg)
 	else
 		sprintf (metastring, "%s", song); /* This should have length as well but libshout doesn't handle it correctly */
 
-	/* If we just started, let's give the icecast server a while to
-           accept and mount the source */
-	if (ices_playlist_get_current_lineno () <= 1) {
-		ices_log_debug ("Initially delaying metadata update...");
-		thread_sleep (3000000);
-	}
-
 	ret = shout_update_metadata (&conn, metastring);
 	
 	if (ret != 1)
@@ -221,6 +222,9 @@ ices_id3_parse (const char *filename, int file_bytes)
 	char artist[31];
 	char genre[31];
 	char namespace[1024];
+
+	ices_id3_file_size = file_bytes;
+	ices_id3_filename = ices_util_strdup (filename);
 
 	if (!(temp = ices_util_fopen_for_reading (filename))) {
 		ices_log ("Error while opening file %s for id3 tag parsing. Error: %s", filename, ices_util_strerror (errno, namespace, 1024));
@@ -268,9 +272,6 @@ ices_id3_parse (const char *filename, int file_bytes)
 		}
 	}
 
-	ices_id3_file_size = file_bytes;
-	ices_id3_filename = ices_util_strdup (filename);
-
 	ices_util_fclose (temp);
 
 	return 1;
@@ -307,9 +308,17 @@ ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize)
 {
 	char *ptr =NULL;
 
-	ices_log_debug ("Filename before cleanup: [%s]", oldname);
+	ices_log_debug ("Filename before cleanup: [%s]", ices_util_nullcheck (oldname));
 
-	if ((ptr = strrchr (oldname, '/')) && (strlen (ptr) > 0)) {
+	if (!oldname || !namespace) {
+		ices_log ("ERROR: Polluted strings sent to filename cleanup.");
+		return NULL;
+	}
+
+	/* Find last slash */
+	ptr = strrchr (oldname, '/');
+
+	if (ptr && strlen (ptr) > 0) {
 		strncpy (namespace, ptr + 1, maxsize);
 	} else {
 		strncpy (namespace, oldname, maxsize);
@@ -319,6 +328,7 @@ ices_id3_filename_cleanup (const char *oldname, char *namespace, int maxsize)
 		*ptr = '\0';
 	}
 
-	ices_log_debug ("Filename cleaned up from [%s] to [%s]", oldname, namespace);
+	ices_log_debug ("Filename cleaned up from [%s] to [%s]", ices_util_nullcheck (oldname), 
+								 ices_util_nullcheck (namespace));
 	return namespace;
 }

@@ -128,6 +128,13 @@ ices_stream_send_file (const char *file)
 
 	/* Check the size of the file to stream */
 	if ((file_bytes = ices_util_fd_size (fd)) == -1) {
+		ices_log_error ("Unable to get filesize for file %s", file);
+		ices_util_close (fd);
+		return 0;
+	}
+
+	if (file_bytes == 0) {
+		ices_log_error ("Zero sized file %s", file);
 		ices_util_close (fd);
 		return 0;
 	}
@@ -192,9 +199,6 @@ ices_stream_fd_size (int fd, const char *file, int file_bytes)
 
 #ifdef HAVE_LIBLAME
 	if (ices_config.reencode) {
-		ices_reencode_set_channels (ices_mp3_get_channels ());
-		ices_reencode_set_mode (ices_mp3_get_mode ());
-		ices_reencode_set_sample_rate (ices_mp3_get_sample_rate ());
 		ices_reencode_reset ();
 	}
 #endif
