@@ -17,6 +17,7 @@ extern vector signed short vp3_vConst1;
 
 void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 {
+	register vector unsigned int alpha = (vector unsigned int)(0xff000000, 0xff000000, 0xff000000, 0xff000000);
 
 	/* only use this loop if the dest starts on a 16byte boundary and the pitch is a multiple of 16 */
 	if((!((unsigned long)_ptrScreen & 0xf)) && !(thisPitch & 0xf))
@@ -155,9 +156,13 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			vsubshs		v14,v14,v11									//second g's
 			vmrghw		v10,v21,v21									//double h pixels
 			
+			vor         v10,v10,alpha
+			
 			stvx 		v10,r3,r26
 			vmrglw		v21,v21,v21									//double l pixels
 			addi		r26,r26,16
+			
+			vor         v21,v21,alpha
 			
 			stvx 		v21,r3,r26
 			vpkshus		v15,v15,v15									//8 r's
@@ -170,10 +175,13 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			vmrghw		v10,v20,v20									//double h pixels
 
 			vmrglw		v20,v20,v20									//double l pixels
+			vor         v10,v10,alpha
 
 			stvx 		v10,r3,r26
 			vmrghb		v11,v7,v15									//0 r 0 r 0 r 0 r 0 r 0 r 0 r 0 r
 			addi		r26,r26,16
+			
+			vor         v20,v20,alpha
 			
 			stvx 		v20,r3,r26
 			vmrghb		v14,v14,v16									//g b g b g b g b g b g b g b g b 
@@ -184,18 +192,26 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			vmrglh		v11,v11,v14									//0 r g b 0 r g b 0 r g b 0 r g b
 			
 			vmrghw		v10,v12,v12									//double h pixels
+			
+			vor         v10,v10,alpha
 
 			stvx 		v10,r3,r26
 			vmrglw		v12,v12,v12									//double l pixels
 			addi		r26,r26,16
+			
+			vor         v12,v12,alpha
 
 			stvx 		v12,r3,r26
 			vmrghw		v10,v11,v11									//double h pixels
 			addi		r26,r26,16
+			
+			vor         v10,v10,alpha
 
 			stvx 		v10,r3,r26
 			vmrglw		v11,v11,v11									//double l pixels
 			addi		r26,r26,16
+			
+			vor         v11,v11,alpha
 
 			stvx 		v11,r3,r26
 			addi		r26,r26,16
@@ -361,6 +377,8 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 
 			vperm		v21,v21,v21,v10
 			vperm		v8,v8,v8,v10
+			
+			vor         v21,v21,alpha
 
 			stvewx		v21,r3,r26									//pixel 0
 //			vperm		v20,v20,v20,v10
@@ -377,6 +395,8 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			stvewx		v21,r3,r26									//pixel 3
 			vpkshus		v14,v14,v14									//8 g's
 			addi		r26,r26,4
+			
+			vor         v8,v8,alpha
 
 			stvewx		v8,r3,r26									//pixel 4
 			vmrghb		v11,v7,v15									//0 r 0 r 0 r 0 r 0 r 0 r 0 r 0 r
@@ -401,6 +421,8 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			vmrghw		v20,v20,v20							
 
 			vperm		v20,v20,v20,v10
+			
+			vor         v20,v20,alpha
 
 			stvewx		v20,r3,r26									//pixel 8
 			vperm		v9,v9,v9,v10
@@ -408,6 +430,7 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			addi		r26,r26,4
 
 			stvewx		v20,r3,r26									//pixel 9
+			vor         v9,v9,alpha
 			addi		r26,r26,4
 
 			stvewx		v20,r3,r26									//pixel 10
@@ -433,7 +456,9 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			lvsr		v10,r3,r26									//store alignment vector
 
 			vperm		v12,v12,v12,v10
-//
+
+			vor         v12,v12,alpha
+			
 			stvewx		v12,r3,r26									//pixel 16
 			vperm		v8,v8,v8,v10
 //			vperm		v11,v11,v11,v10
@@ -448,6 +473,7 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			addi		r26,r26,4
 
 			stvewx		v12,r3,r26									//pixel 19
+			vor         v8,v8,alpha
 			addi		r26,r26,4
 
 			stvewx		v8,r3,r26									//pixel 20
@@ -466,13 +492,15 @@ void bct10av(unsigned char *_ptrScreen, int thisPitch, YUV_BUFFER_CONFIG *src)
 			lvsr		v10,r3,r26									//store alignment vector
 
 			vperm		v11,v11,v11,v10
-//
+
+			vor         v11,v11,alpha
 
 			stvewx		v11,r3,r26									//pixel 24
 			vperm		v9,v9,v9,v10
 			addi		r26,r26,4
 
 			stvewx		v11,r3,r26									//pixel 25
+			vor         v9,v9,alpha
 			addi		r26,r26,4
 
 			stvewx		v11,r3,r26									//pixel 26

@@ -94,17 +94,18 @@ w_loop:
     rlwinm      r27,r13,17,23,30        ;get y1 * 2
 
     lhax        r22,r9,r22              ;Y0
-	xor			r12,r12,r12				;used to mask alpha
+	addis       r12,0,65280             ;r12 = 0xff000000 for solid alpha
 
     lhax        r24,r11,r24             ;CrforG
-    add         r28,r26,r22             ;R0
     add         r29,r25,r22             ;B0
-
-    lbzx        r28,r28,r20             ;get the real R0
-    add         r23,r23,r24             ;CrforG + CbforG
+    add         r28,r26,r22             ;R0
 
     lbzx        r29,r29,r20             ;get the real B0
+    add         r23,r23,r24             ;CrforG + CbforG
+
+    lbzx        r28,r28,r20             ;get the real R0
     subf        r22,r23,r22             ;G0
+    or          r29,r29,r12             ;set alpha to 0xff
 
     lbzx        r0,r22,r20              ;get the real G0
     insrwi      r29,r28,8,8             ;insert R0
@@ -146,17 +147,18 @@ w_loop:
     rlwinm      r27,r13,1,23,30         ;get y3 * 2
 
     lhax        r22,r9,r22              ;Y0
-	xor			r12,r12,r12
+	addis       r12,0,65280             ;r12 = 0xff000000 for solid alpha
 
     lhax        r24,r11,r24             ;CrforG
-    add         r28,r26,r22             ;R0
     add         r29,r25,r22             ;B0
-
-    lbzx        r28,r28,r20             ;get the real R0
-    add         r23,r23,r24             ;CrforG + CbforG
+    add         r28,r26,r22             ;R0
 
     lbzx        r29,r29,r20             ;get the real B0
+    add         r23,r23,r24             ;CrforG + CbforG
+
+    lbzx        r28,r28,r20             ;get the real R0
     subf        r22,r23,r22             ;G0
+    or          r29,r29,r12             ;set alpha to 0xff
 
     lbzx        r0,r22,r20              ;get the real G0
     insrwi      r29,r28,8,8             ;insert R0

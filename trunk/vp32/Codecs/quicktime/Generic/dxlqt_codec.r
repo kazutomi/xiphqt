@@ -39,8 +39,8 @@ resource 'STR ' (130) {
 //*************************************************************************
 //	Version INFO
 //*************************************************************************
-#define SHORTVERSIONSTRING "3.2.6.1"
-#define LONGVERSIONSTRING "VP3 Video Codec 3.2.6.1\nOn2 Technologies, The Duck Corporation 2001\nXiph.Org 2003"
+#define SHORTVERSIONSTRING "3.2.7.0"
+#define LONGVERSIONSTRING "VP3 Video Codec 3.2.7.0\nOn2 Technologies, The Duck Corporation 2001\nXiph.Org 2003"
 
  resource 'vers' (1, purgeable) {
     0x03, 0x20, final, 0x03, verUS,
