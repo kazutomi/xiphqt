@@ -1,5 +1,5 @@
 #! /bin/sh
-# prerm script for ao-python
+# prerm script for pyao
 #
 # see: dh_installdeb(1)
 
@@ -17,7 +17,6 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-#       install-info --quiet --remove /usr/info/ao-python.info.gz
         ;;
     failed-upgrade)
         ;;
