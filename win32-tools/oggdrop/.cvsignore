@@ -4,3 +4,5 @@ Release
 *.opt
 *.plg
 *.aps
+*.mak
+*.dep
