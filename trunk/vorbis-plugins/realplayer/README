@@ -7,7 +7,7 @@ only stereo 44.1kHz files are supported.
 Streaming doesn't seem to work but should soon.
 
 Since the RMA SDK is hard to find at realnetworks.com, you can find it here:
-http://i.cantcode.com/~jack/rsg2sdk_r4.tar.gz
+http://proforma.real.com/rn/misc/g2sdk/
 
 You can find RealPlayer8 at www.real.com or www.realnetworks.com, although
 this plugin should work any g2 player i think.
