@@ -267,7 +267,7 @@ AC_ARG_WITH(lame-includes,
 [  --with-lame-includes=DIR Directory to find lame.h])
 
 AC_ARG_WITH(lame-libraries,
-[  --with-python-libraries=DIR Directory to find lame library])
+[  --with-lame-libraries=DIR Directory to find lame library])
 
 if test "$with_lame_includes"; then
 	if test -f "$with_lame_includes/lame.h"; then
@@ -293,6 +293,45 @@ if test "x$with_lame" = "xyes"; then
                 done
         fi
 fi
+
+AC_ARG_WITH(perl,
+[  --with-perl[=ARG]	      enable support for the perl embedded interpreter [ARG=yes]])
+
+AC_ARG_WITH(perl-includes,
+[  --with-perl-includes=DIR Perl include files are in DIR (look for perl.h)])
+
+AC_ARG_WITH(perl-libraries,
+[  --with-perl-libraries=DIR Perl libraries are in DIR (look for libperl.a)])
+
+if test "$with_perl_includes"; then
+	CPPFLAGS="$CPPFLAGS -I$with_perl_includes"
+elif test "$with_perl"; then
+	COREDIR=`perl -MConfig -e 'print $Config{archlib}'`/CORE
+	EXTRAFLAGS=`perl -MConfig -e 'print $Config{ccflags}'`
+	CPPFLAGS="$CPPFLAGS -I$COREDIR $EXTRAFLAGS"
+fi
+
+if test "$with_perl_libraries"; then
+	LIBS="$LIBS -L$with_perl_libraries"
+elif test "$with_perl"; then
+	COREDIR=`perl -MConfig -e 'print $Config{archlib}'`/CORE
+	EXTRALIBS=`perl -MConfig -e 'print $Config{libs}'`
+	LIBS="$LIBS -L$COREDIR $EXTRALIBS"
+fi
+
+if test "$with_perl"; then
+dnl I can't say for sure what libs we need for perl, let's hope this works
+AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_FUNCS(perl_construct)
+        if test "$ac_cv_func_perl_construct" = no; then
+                for lib in perl; do
+                        if test "$HAVE_LIBPERL" != 1; then
+                                AC_CHECK_LIB($lib, perl_construct, LIBS="$LIBS -l$lib";HAVE_LIBPERL=1;AC_DEFINE(HAVE_LIBPERL))
+                        fi
+                done
+        fi
+fi
+
 
 AC_ARG_WITH(python,
 [  --with-python[=ARG]        enable usage of the python interpreter [ARG=yes]])
@@ -362,7 +401,7 @@ else
 	echo "xml-config program not found, compiling without libxml support. (This means no support for configfiles)"
 fi
 
-AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h)
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h assert.h sys/resource.h math.h signal.h sys/signal.h errno.h Python.h perl.h)
 AC_CHECK_FUNCS(gettimeofday strstr snprintf vsnprintf rename setpgid basename setsockopt umask inet_addr inet_aton inet_ntoa sigaction)
 
 AC_OUTPUT([Makefile src/Makefile src/playlist_builtin/Makefile conf/Makefile conf/ices.conf.dist doc/Makefile resolver/Makefile thread/Makefile thread/avl/Makefile src/interpreter/Makefile src/xml/Makefile])

@@ -43,3 +43,4 @@
 #undef HAVE_LIBPYTHON
 #undef HAVE_LIBXML
 #undef HAVE_LIBLAME
+#undef HAVE_LIBPERL

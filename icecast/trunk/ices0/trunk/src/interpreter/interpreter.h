@@ -26,9 +26,9 @@ void interpreter_shutdown ();
 #if defined(HAVE_PYTHON_H) && defined(HAVE_LIBPYTHON)
 void *interpreter_python_eval_function (char *functionname);
 char *interpreter_playlist_python_get_next ();
-int interpreter_playlist_python_initialize (ices_config_t *ices_config);
-int interpreter_playlist_python_shutdown (ices_config_t *ices_config);
-int interpreter_playlist_python_get_current_lineno ();
+int interpreter_playlist_perl_initialize (ices_config_t *ices_config);
+int interpreter_playlist_perl_shutdown (ices_config_t *ices_config);
+int interpreter_playlist_perl_get_current_lineno ();
 #endif
 #endif
 
