@@ -1,1 +1,0 @@
-#define inline __inline
