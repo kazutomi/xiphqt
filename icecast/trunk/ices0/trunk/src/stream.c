@@ -65,8 +65,6 @@ void
 ices_stream_loop (ices_config_t* config)
 {
   int consecutive_errors = 0;
-  int linenum_old = 0;
-  int linenum_new = 0;
   input_stream_t source;
   ices_stream_t* stream;
   int rc;
@@ -79,16 +77,7 @@ ices_stream_loop (ices_config_t* config)
 
     source.path = ices_playlist_get_next ();
 
-    /* keep track of the line numbers */
-    linenum_old = linenum_new;
-    linenum_new = ices_playlist_get_current_lineno ();
-    ices_cue_set_lineno (linenum_new);
-
-    /* we quit if we're told not to loop and the the new line num is lower than the old */
-    if ( !config->pm.loop_playlist && ( linenum_new < linenum_old ) ) {
-      ices_log ("Info: next playlist line number less than previous and looping disabled: quitting.");
-      ices_setup_shutdown ();
-    }
+    ices_cue_set_lineno (ices_playlist_get_current_lineno ());
 
     /* We quit if the playlist handler gives us a NULL filename */
     if (!source.path) {

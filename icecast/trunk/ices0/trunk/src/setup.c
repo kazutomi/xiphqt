@@ -158,7 +158,6 @@ ices_setup_parse_defaults (ices_config_t *ices_config)
     ices_util_strdup (ICES_DEFAULT_PLAYLIST_FILE);
   ices_config->pm.module = ices_util_strdup (ICES_DEFAULT_MODULE);
   ices_config->pm.randomize = ICES_DEFAULT_RANDOMIZE_PLAYLIST;
-  ices_config->pm.loop_playlist = ICES_DEFAULT_LOOP_PLAYLIST;
   ices_config->pm.playlist_type = ICES_DEFAULT_PLAYLIST_TYPE;
 
   ices_config->streams = (ices_stream_t*) malloc (sizeof (ices_stream_t));
@@ -315,7 +314,7 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
     s = argv[arg];
 
     if (s[0] == '-') {
-      if ((strchr ("BilRrsVv", s[1]) == NULL) && arg >= (argc - 1)) {
+      if ((strchr ("BiRrsVv", s[1]) == NULL) && arg >= (argc - 1)) {
 	fprintf (stderr, "Option %c requires an argument!\n", s[1]);
 	ices_setup_usage ();
 	ices_setup_shutdown ();
@@ -369,9 +368,6 @@ ices_setup_parse_command_line (ices_config_t *ices_config, char **argv,
 	  break;
         case 'i':
 	  stream->protocol = icy_protocol_e;
-	  break;
-        case 'l':
-                    ices_config->pm.loop_playlist = 0;
 	  break;
         case 'M':
 	  arg++;
@@ -526,7 +522,6 @@ ices_setup_usage (void)
   printf ("\t-g <stream genre>\n");
   printf ("\t-h <host>\n");
   printf ("\t-i (use icy headers)\n");
-  printf ("\t-l (don't restart the playlist (no looping))\n");
   printf ("\t-M <interpreter module>\n");
   printf ("\t-m <mountpoint>\n");
   printf ("\t-n <stream name>\n");

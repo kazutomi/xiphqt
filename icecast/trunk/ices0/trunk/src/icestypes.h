@@ -65,7 +65,6 @@ typedef struct ices_stream_St {
 typedef struct {
   playlist_type_t playlist_type;
   int randomize;
-  int loop_playlist;
   char* playlist_file;
   char* module;
 
