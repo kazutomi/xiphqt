@@ -1,31 +1,57 @@
-deps = {'libogg 1':{'libs':['ogg'],
-                    'headers':['ogg/ogg.h', 'ogg/os_types.h']},
-        'libvorbis':{'libs':['vorbis'],
-                     'headers':['vorbis/codec.h', 'vorbis/vorbisenc.h',
-                                'vorbis/vorbisfile.h']},
-        'libtheora':{'libs':['theora'],
-                     'headers':['theora/theora.h']},
-        'libshout':{'libs':['shout'],
-                    'headers':['shout/shout.h']}}
+deps = {'libogg':{'libs':('ogg',),
+                    'headers':('ogg/ogg.h', 'ogg/os_types.h')},
+        'libvorbis':{'libs':('vorbis',),
+                     'headers':('vorbis/codec.h', 'vorbis/vorbisenc.h',
+                                'vorbis/vorbisfile.h')},
+        'libtheora':{'libs':('theora',),
+                     'headers':('theora/theora.h',)},
+        'libshout':{'libs':('shout',),
+                    'headers':('shout/shout.h',)},
+        'v4l':{'headers':('linux/videodev.h',)},
+        'jpeg':{'libs':('jpeg',)}}
+        # Broken, but should also: 'headers':('jpeglib.h',)
 
-
-env = Environment()
-conf = Configure(env)
-
-checks = {'funcs':conf.CheckFunc, 
-          'libs':conf.CheckLib, 
-          'headers':conf.CheckCHeader}
 libs = []
 cpppath = ['include']
 
-for dep in deps :
-  for check in checks:
-    if deps[dep].has_key(check) :
-      for test in deps[dep][check] :
-        if not checks[check](test) :
-          print 'Could not find %s, exiting.' % test
-          Exit(1)
-        if check == 'libs' : libs.append(test)
+modules = ['v4l_jpeg']
+modulesrcs = {'v4l_jpeg':['modules/v4l_jpeg.c']}
+moduledeps = {'v4l_jpeg':('v4l', 'jpeg')}
+modulelibs = {'v4l_jpeg':[]}
+
+# Shouldn't have to edit anything below this line
+
+def checkdeps(ds, l):
+  for dep in ds :
+    for check in checks:
+      if deps[dep].has_key(check) :
+        for test in deps[dep][check] :
+          if not checks[check](test) :
+            return test
+          if check == 'libs' : l.append(test)
+  return None
+
+env = Environment()
+conf = Configure(env)
+checks = {'funcs':conf.CheckFunc, 
+          'libs':conf.CheckLib, 
+          'headers':conf.CheckCHeader}
+
+test = checkdeps(('libogg','libvorbis','libtheora','libshout'), libs)
+if test:
+  print 'Could not find %s, exiting.' % test
+  Exit(1)
+
+for module in modules:
+  test = checkdeps(moduledeps[module], modulelibs[module])
+  if test:
+    print 'Could not find %s, not building %s module' % (test, module)
+    modules.remove(module)
+
 env = conf.Finish()
 
 Program('dryice', 'src/core.c', CPPPATH=cpppath, LIBS=libs)
+for module in modules:
+  Library(module, modulesrcs[module], 
+          CPPPATH=cpppath, LIBS=modulelibs[module])
+
