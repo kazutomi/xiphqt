@@ -21,7 +21,7 @@ modulelibs = {'v4l_jpeg':[]}
 
 # Shouldn't have to edit anything below this line
 
-def checkdeps(ds, l):
+def checkdeps(ds, l, checks):
   for dep in ds :
     for check in checks:
       if deps[dep].has_key(check) :
@@ -31,27 +31,69 @@ def checkdeps(ds, l):
           if check == 'libs' : l.append(test)
   return None
 
-env = Environment()
-conf = Configure(env)
-checks = {'funcs':conf.CheckFunc, 
-          'libs':conf.CheckLib, 
-          'headers':conf.CheckCHeader}
-
-test = checkdeps(('libogg','libvorbis','libtheora','libshout'), libs)
-if test:
-  print 'Could not find %s, exiting.' % test
-  Exit(1)
-
-for module in modules:
-  test = checkdeps(moduledeps[module], modulelibs[module])
+def configure():
+  global env
+  conf = Configure(env)
+  checks = {'funcs':conf.CheckFunc, 
+            'libs':conf.CheckLib, 
+            'headers':conf.CheckCHeader}
+  test = checkdeps(('libogg','libvorbis','libtheora','libshout'), 
+                   libs, checks)
   if test:
-    print 'Could not find %s, not building %s module' % (test, module)
-    modules.remove(module)
+    print 'Could not find %s, exiting.' % test
+    Exit(1)
+  for module in modules:
+    test = checkdeps(moduledeps[module], modulelibs[module], checks)
+    if test:
+      print 'Could not find %s, not building %s module' % (test, module)
+      modules.remove(module)
+  env = conf.Finish()
 
-env = conf.Finish()
+def saveconfig():
+  f = open('config.cache','w')
+  f.write('libs=%s\n' % str(libs))
+  f.write('cpppath=%s\n' % str(cpppath))
+  f.write('modules=%s\n' % str(modules))
+  f.close()
 
-Program('dryice', 'src/core.c', CPPPATH=cpppath, LIBS=libs)
-for module in modules:
-  Library(module, modulesrcs[module], 
-          CPPPATH=cpppath, LIBS=modulelibs[module])
+def loadconfig():
+  # There has *GOT* to be a simpler way to do this!
+  # ... but at least it's more secure.
+  local_libs = []
+  local_cpppath = ['include']
+  local_modules = []
+  from os.path import exists
+  if exists('config.cache'):
+    f = open('config.cache','r')
+    b = f.read().splitlines()
+    for l in b:
+      exec 'local_'+l
+    f.close()
+    global libs, cpppath, modules
+    libs = local_libs
+    cpppath = local_cpppath
+    modules = local_modules
+  else :
+    configure()
 
+def build():
+  Program('dryice', 'src/core.c', CPPPATH=cpppath, LIBS=libs)
+  for module in modules:
+    Library(module, modulesrcs[module], 
+            CPPPATH=cpppath, LIBS=modulelibs[module])
+
+env = Environment()
+do = ARGUMENTS.get('do', None)
+
+if do=='config' :
+  configure()
+  saveconfig()
+
+elif do=='build' :
+  loadconfig()
+  build()
+
+else :
+  configure()
+  saveconfig()
+  build()
