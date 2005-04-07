@@ -1,0 +1,31 @@
+deps = {'libogg 1':{'libs':['ogg'],
+                    'headers':['ogg/ogg.h', 'ogg/os_types.h']},
+        'libvorbis':{'libs':['vorbis'],
+                     'headers':['vorbis/codec.h', 'vorbis/vorbisenc.h',
+                                'vorbis/vorbisfile.h']},
+        'libtheora':{'libs':['theora'],
+                     'headers':['theora/theora.h']},
+        'libshout':{'libs':['shout'],
+                    'headers':['shout/shout.h']}}
+
+
+env = Environment()
+conf = Configure(env)
+
+checks = {'funcs':conf.CheckFunc, 
+          'libs':conf.CheckLib, 
+          'headers':conf.CheckCHeader}
+libs = []
+cpppath = ['include']
+
+for dep in deps :
+  for check in checks:
+    if deps[dep].has_key(check) :
+      for test in deps[dep][check] :
+        if not checks[check](test) :
+          print 'Could not find %s, exiting.' % test
+          Exit(1)
+        if check == 'libs' : libs.append(test)
+env = conf.Finish()
+
+Program('dryice', 'src/core.c', CPPPATH=cpppath, LIBS=libs)
