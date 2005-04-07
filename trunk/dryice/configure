@@ -1,0 +1,9 @@
+#! /bin/sh
+
+echo 'DryIce uses SCons instead of a traditional GNU Autotools environment.'
+echo ''
+echo 'You will need to have SCons installed in order to compile it, and you'
+echo 'can save yourself some time by running "scons" by itself instead of a'
+echo '"./configure" then "make" (which mearly run scons for you in pieces).'
+echo ''
+scons -Q do=config
