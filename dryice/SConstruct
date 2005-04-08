@@ -8,18 +8,23 @@ deps = {'libogg':{'libs':('ogg',),
         'libshout':{'libs':('shout',),
                     'headers':('shout/shout.h',)},
         'v4l':{'headers':('linux/videodev.h',)},
-        'jpeg':{'libs':('jpeg',)}}
-        # Broken, but should also: 'headers':('jpeglib.h',)
+        'jpeg':{'libs':('jpeg',),
+                'headers':('jpeglib.h',)}}
 
 libs = []
 cpppath = ['include']
 
-modules = ['v4l_jpeg']
-modulesrcs = {'v4l_jpeg':['modules/v4l_jpeg.c']}
-moduledeps = {'v4l_jpeg':('v4l', 'jpeg')}
-modulelibs = {'v4l_jpeg':[]}
+modules = ['null_cam', 'v4l_jpeg']
+modulesrcs = {'null_cam':['modules/null_cam.c'] , 
+              'v4l_jpeg':['modules/v4l_jpeg.c']}
+moduledeps = {'null_cam':(),
+              'v4l_jpeg':('v4l', 'jpeg')}
+modulelibs = {'null_cam':[],
+              'v4l_jpeg':[]}
 
-# Shouldn't have to edit anything below this line
+#########################################################################
+#            Shouldn't have to edit anything below this line            # 
+#########################################################################
 
 def checkdeps(ds, l, checks):
   for dep in ds :
@@ -79,7 +84,7 @@ def loadconfig():
 def build():
   Program('dryice', 'src/core.c', CPPPATH=cpppath, LIBS=libs)
   for module in modules:
-    Library(module, modulesrcs[module], 
+    SharedLibrary('modules/'+module, modulesrcs[module], 
             CPPPATH=cpppath, LIBS=modulelibs[module])
 
 env = Environment()
