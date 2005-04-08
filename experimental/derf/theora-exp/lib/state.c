@@ -2,12 +2,21 @@
 #include <string.h>
 #include "internal.h"
 #include "idct.h"
+#if defined(OC_X86ASM)
+# include "x86/x86int.h"
+#endif
 #if defined(OC_DUMP_IMAGES)
 # include <stdio.h>
 # include "png.h"
 #endif
 
 
+
+void oc_restore_fpu(const oc_theora_state *_state){
+  _state->opt_vtable.restore_fpu();
+}
+
+void oc_restore_fpu_c(void){}
 
 /*Returns the fragment index of the top-left block in a macro block.
   This can be used to test whether or not the whole macro block is coded.
@@ -497,6 +506,25 @@ static void oc_state_ref_bufs_clear(oc_theora_state *_state){
   _ogg_free(_state->ref_frame_data);
 }
 
+
+void oc_state_vtable_init_c(oc_theora_state *_state){
+  _state->opt_vtable.frag_recon_intra=oc_frag_recon_intra_c;
+  _state->opt_vtable.frag_recon_inter=oc_frag_recon_inter_c;
+  _state->opt_vtable.frag_recon_inter2=oc_frag_recon_inter2_c;
+  _state->opt_vtable.state_frag_copy=oc_state_frag_copy_c;
+  _state->opt_vtable.restore_fpu=oc_restore_fpu_c;
+}
+
+/*Initialize the accelerated function pointers.*/
+void oc_state_vtable_init(oc_theora_state *_state){
+#if defined(OC_X86ASM)
+  oc_state_vtable_init_x86(_state);
+#else
+  oc_state_vtable_init_c(_state);
+#endif
+}
+
+
 int oc_state_init(oc_theora_state *_state,const theora_info *_info){
   /*First validate the parameters.*/
   if(_info==NULL)return OC_FAULT;
@@ -525,6 +553,7 @@ int oc_state_init(oc_theora_state *_state,const theora_info *_info){
      system.*/
   _state->info.pic_y=_info->frame_height-_info->pic_height-_info->pic_y;
   _state->frame_type=OC_UNKWN_FRAME;
+  oc_state_vtable_init(_state);
   oc_state_frarray_init(_state);
   oc_state_ref_bufs_init(_state);
   /*If the keyframe_granule_shift is out of range, use the maximum allowable
@@ -820,7 +849,7 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
   dst_ystride=_state->ref_frame_bufs[dst_framei][_pli].ystride;
   /*For now ystride values in all ref frames assumed to be equal.*/
   if(_frag->mbmode==OC_MODE_INTRA){
-    oc_frag_recon_intra(_frag->buffer[dst_framei],dst_ystride,res_buf);
+    oc_frag_recon_intra(_state,_frag->buffer[dst_framei],dst_ystride,res_buf);
   }
   else{
     int ref_framei;
@@ -831,15 +860,16 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
     ref_ystride=_state->ref_frame_bufs[ref_framei][_pli].ystride;
     if(oc_state_get_mv_offsets(_state,&mvoffset0,&mvoffset1,_frag->mv[0],
      _frag->mv[1],ref_ystride,_pli)>1){
-      oc_frag_recon_inter2(_frag->buffer[dst_framei],dst_ystride,
+      oc_frag_recon_inter2(_state,_frag->buffer[dst_framei],dst_ystride,
        _frag->buffer[ref_framei]+mvoffset0,ref_ystride,
        _frag->buffer[ref_framei]+mvoffset1,ref_ystride,res_buf);
     }
     else{
-      oc_frag_recon_inter(_frag->buffer[dst_framei],dst_ystride,
+      oc_frag_recon_inter(_state,_frag->buffer[dst_framei],dst_ystride,
        _frag->buffer[ref_framei]+mvoffset0,ref_ystride,res_buf);
     }
   }
+  oc_restore_fpu(_state);
 }
 
 /*Copies the fragments specified by the lists of fragment indices from one
@@ -850,6 +880,12 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
   _src_frame: The reference frame to copy from.
   _pli:       The color plane the fragments lie in.*/
 void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
+ int _nfragis,int _dst_frame,int _src_frame,int _pli){
+  _state->opt_vtable.state_frag_copy(_state,_fragis,_nfragis,_dst_frame,
+   _src_frame,_pli);
+}
+
+void oc_state_frag_copy_c(const oc_theora_state *_state,const int *_fragis,
  int _nfragis,int _dst_frame,int _src_frame,int _pli){
   const int *fragi;
   const int *fragi_end;

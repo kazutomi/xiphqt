@@ -22,9 +22,10 @@ CINCLUDE = `sdl-config --cflags` -D_REENTRANT
 # You may get speed increases by including flags such as -O2 or -O3 or
 #  -ffast-math, or additional flags, depending on your system and compiler.
 # The -g flag will generally include debugging information.
+#CFLAGS = -O3 -fforce-addr -fomit-frame-pointer -DOC_X86ASM
 CFLAGS = -g
 # Libraries to link with, and the location of library files.
-# Add -lpng -lz if you want to enable OC_DUMP_IMAGES.
+# Add -lpng -lz if you want to use -DOC_DUMP_IMAGES.
 LIBS = -logg -lvorbis -lvorbisenc `sdl-config --libs`
 
 # ANYTHING BELOW THIS LINE PROBABLY DOES NOT NEED EDITING
@@ -41,6 +42,10 @@ info.c \
 internal.c \
 quant.c \
 state.c \
+x86/mmxstate.c \
+x86/x86state.c \
+x86/mmxfrag.c \
+x86/cpu.c \
 
 LIBTHEORABASE_CHEADERS = \
 dct.h \

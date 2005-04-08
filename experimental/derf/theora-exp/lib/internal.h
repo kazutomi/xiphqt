@@ -95,6 +95,9 @@
 
 
 
+typedef struct oc_theora_state oc_theora_state;
+
+
 
 /*A map from a super block to fragment numbers.*/
 typedef int oc_sb_map[4][4];
@@ -221,10 +224,30 @@ typedef struct{
 
 
 
-/*Common state information between the encoder and decoder.*/
+/*The shared (encoder and decoder) functions that have accelerated variants.*/
 typedef struct{
+  void (*frag_recon_intra)(unsigned char *_dst,int _dst_ystride,
+   const ogg_int16_t *_residue);
+  void (*frag_recon_inter)(unsigned char *_dst,int _dst_ystride,
+   const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue);
+  void (*frag_recon_inter2)(unsigned char *_dst,int _dst_ystride,
+   const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
+   int _src2_ystride,const ogg_int16_t *_residue);
+  void (*state_frag_copy)(const oc_theora_state *_state,
+   const int *_fragis,int _nfragis,int _dst_frame,int _src_frame,int _pli);
+  void (*restore_fpu)(void);
+}oc_base_opt_vtable;
+
+
+
+/*Common state information between the encoder and decoder.*/
+struct oc_theora_state{
   /*The stream information.*/
   theora_info           info;
+  /*Table for shared accelerated functions.*/
+  oc_base_opt_vtable    opt_vtable;
+  /*CPU flags to detect the presence of extended instruction sets.*/
+  ogg_uint32_t          cpu_flags;
   /*The fragment plane descriptions.*/
   oc_fragment_plane     fplanes[3];
   /*The total number of fragments in a single frame.*/
@@ -291,7 +314,7 @@ typedef struct{
   oc_quant_tables       dequant_table_data[2][3];
   /*Loop filter strength parameters.*/
   unsigned char         loop_filter_limits[64];
-}oc_theora_state;
+};
 
 
 
@@ -344,18 +367,12 @@ void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
 
 int oc_dct_token_skip(int _token,int _extra_bits);
 
-void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
- const ogg_int16_t *_residue);
-void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
- const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue);
-void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
- const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
- int _src2_ystride,const ogg_int16_t *_residue);
 int oc_frag_pred_dc(const oc_fragment *_frag,
  const oc_fragment_plane *_fplane,int _x,int _y,int _pred_last[3]);
 
 int oc_state_init(oc_theora_state *_state,const theora_info *_info);
 void oc_state_clear(oc_theora_state *_state);
+void oc_state_vtable_init_c(oc_theora_state *_state);
 void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
  int _y0,int _yend);
 void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli);
@@ -368,8 +385,7 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
-void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
- int _nfragis,int _dst_frame,int _src_frame,int _pli);
+
 int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv);
 void oc_state_loop_filter(oc_theora_state *_state,int _frame);
 void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
@@ -378,5 +394,29 @@ void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
 int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
  const char *_suf);
 #endif
+
+/*Shared accelerated functions.*/
+void oc_frag_recon_intra(const oc_theora_state *_state,unsigned char *_dst,int _dst_ystride,
+ const ogg_int16_t *_residue);
+void oc_frag_recon_inter(const oc_theora_state *_state,unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue);
+void oc_frag_recon_inter2(const oc_theora_state *_state,unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
+ int _src2_ystride,const ogg_int16_t *_residue);
+void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
+ int _nfragis,int _dst_frame,int _src_frame,int _pli);
+void oc_restore_fpu(const oc_theora_state *_state);
+
+/*Default pure-C implementations.*/
+void oc_frag_recon_intra_c(unsigned char *_dst,int _dst_ystride,
+ const ogg_int16_t *_residue);
+void oc_frag_recon_inter_c(unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue);
+void oc_frag_recon_inter2_c(unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
+ int _src2_ystride,const ogg_int16_t *_residue);
+void oc_state_frag_copy_c(const oc_theora_state *_state,const int *_fragis,
+ int _nfragis,int _dst_frame,int _src_frame,int _pli);
+void oc_restore_fpu_c(void);
 
 #endif

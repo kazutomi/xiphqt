@@ -1,6 +1,11 @@
 #include "internal.h"
 
-void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
+void oc_frag_recon_intra(const oc_theora_state *_state,unsigned char *_dst,
+ int _dst_ystride,const ogg_int16_t *_residue){
+  _state->opt_vtable.frag_recon_intra(_dst,_dst_ystride,_residue);
+}
+
+void oc_frag_recon_intra_c(unsigned char *_dst,int _dst_ystride,
  const ogg_int16_t *_residue){
   int i;
   for(i=0;i<8;i++){
@@ -10,7 +15,14 @@ void oc_frag_recon_intra(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
+void oc_frag_recon_inter(const oc_theora_state *_state,unsigned char *_dst,
+ int _dst_ystride,const unsigned char *_src,int _src_ystride,
+ const ogg_int16_t *_residue){
+  _state->opt_vtable.frag_recon_inter(_dst,_dst_ystride,_src,_src_ystride,
+   _residue);
+}
+
+void oc_frag_recon_inter_c(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src,int _src_ystride,const ogg_int16_t *_residue){
   int i;
   for(i=0;i<8;i++){
@@ -21,7 +33,14 @@ void oc_frag_recon_inter(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-void oc_frag_recon_inter2(unsigned char *_dst,int _dst_ystride,
+void oc_frag_recon_inter2(const oc_theora_state *_state,unsigned char *_dst,
+ int _dst_ystride,const unsigned char *_src1,int _src1_ystride,
+ const unsigned char *_src2,int _src2_ystride,const ogg_int16_t *_residue){
+  _state->opt_vtable.frag_recon_inter2(_dst,_dst_ystride,_src1,_src1_ystride,
+   _src2,_src2_ystride,_residue);
+}
+
+void oc_frag_recon_inter2_c(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
  int _src2_ystride,const ogg_int16_t *_residue){
   int i;
