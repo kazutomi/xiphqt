@@ -782,8 +782,8 @@ extern int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
 extern int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos);
 /**Outputs the next available frame of decoded Y'CbCr data.
- * If a striped decode callback has been set with #OC_DECCTL_STRIPE_CB, then
- *  the application does not need to call this function.
+ * If a striped decode callback has been set with #OC_DECCTL_SET_STRIPE_CB,
+ *  then the application does not need to call this function.
  * \param _dec   A #theora_dec_ctx handle.
  * \param _ycbcr A video buffer structure to fill in.
  *               <tt>libtheora</tt> will fill in all the members of this
