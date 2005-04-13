@@ -201,7 +201,7 @@ typedef enum{
 #define OC_DECCTL_SET_GRANPOS (5)
 /**Sets the striped decode callback function.
  * If set, this function will be called as each piece of a frame is fully
- *  decoded.
+ *  decoded in theora_decode_packetin().
  * You can pass in a #theora_stripe_callback with
  *  theora_stripe_callback#stripe_decoded set to <tt>NULL</tt> to disable the
  *  callbacks at any point.
@@ -254,7 +254,8 @@ typedef theora_img_plane theora_ycbcr_buffer[3];
 
 /**A callback function for striped decode.
  * This is a function pointer to an application-provided function that will be
- *  called each time a section of the image is fully decoded.
+ *  called each time a section of the image is fully decoded in
+ *  theora_decode_packetin().
  * This allows the application to process the section immediately, while it is
  *  still in cache.
  * Note that the frame is decoded bottom to top, so \a _yfrag0 will steadily
@@ -781,6 +782,8 @@ extern int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
 extern int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos);
 /**Outputs the next available frame of decoded Y'CbCr data.
+ * If a striped decode callback has been set with #OC_DECCTL_STRIPE_CB, then
+ *  the application does not need to call this function.
  * \param _dec   A #theora_dec_ctx handle.
  * \param _ycbcr A video buffer structure to fill in.
  *               <tt>libtheora</tt> will fill in all the members of this
