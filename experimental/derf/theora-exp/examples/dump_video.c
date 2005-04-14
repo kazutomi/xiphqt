@@ -108,7 +108,7 @@ static void open_video(void){
   /*Here we allocate a buffer so we can use the striped decode feature.
     There's no real reason to do this in this application, because we want to
      write to the file top-down, but the frame gets decoded bottom up, so we
-     have to bufer it all anyway.
+     have to buffer it all anyway.
     But this illustrates how the API works.*/
   for(pli=0;pli<3;pli++){
     int xshift;
