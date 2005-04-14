@@ -444,6 +444,9 @@ int main(int argc,char *argv[]){
 
   FILE *infile = stdin;
 
+  int frames = 0;
+  int dropped = 0;
+
 #ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
   /* Beware the evil ifdef. We avoid these where we can, but this one we
      cannot. Don't add any more, you'll probably go to hell if you do. */
@@ -678,6 +681,7 @@ int main(int argc,char *argv[]){
         }
         if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
           videobuf_time=theora_granule_time(td,videobuf_granulepos);
+          frames++;
 
           /* is it already too old to be useful?  This is only actually
              useful cosmetically after a SIGSTOP.  Note that we have to
@@ -687,8 +691,11 @@ int main(int argc,char *argv[]){
 
           if(videobuf_time>=get_time())
             videobuf_ready=1;
-          /*If we are too slow, reduce the pp level.*/
-          else pp_inc=pp_level>0?-1:0;
+          else{
+            /*If we are too slow, reduce the pp level.*/
+	    pp_inc=pp_level>0?-1:0;
+            dropped++;
+          }
         }
 
       }else
@@ -792,8 +799,12 @@ int main(int argc,char *argv[]){
   if(infile && infile!=stdin)fclose(infile);
 
   fprintf(stderr,
-          "\r                                                              "
-          "\nDone.\n");
+          "\r                                                             \r");
+  fprintf(stderr, "%d frames", frames);
+  if (dropped) fprintf(stderr, " (%d dropped)", dropped);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "\nDone.\n");
+
   return(0);
 
 }

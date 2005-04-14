@@ -173,6 +173,7 @@ int main(int argc,char *argv[]){
   FILE *infile = stdin;
   outfile = stdout;
 
+  int frames = 0;
 
 #ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
   /* Beware the evil ifdef. We avoid these where we can, but this one we
@@ -330,6 +331,7 @@ int main(int argc,char *argv[]){
         if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
           videobuf_time=theora_granule_time(td,videobuf_granulepos);
           videobuf_ready=1;
+	  frames++;
         }
 
       }else
@@ -365,8 +367,10 @@ int main(int argc,char *argv[]){
   if(outfile && outfile!=stdout)fclose(outfile);
 
   fprintf(stderr,
-          "\r                                                              "
-          "\nDone.\n");
+          "\r                                                              \r");
+  fprintf(stderr, "%d frames\n", frames);
+  fprintf(stderr, "\nDone.\n");
+
   return(0);
 
 }
