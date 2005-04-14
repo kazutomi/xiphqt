@@ -1883,6 +1883,71 @@ int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
   }
 }
 
+static void oc_pipe_advance(theora_dec_ctx *_dec, 
+  oc_dec_pipeline_state *pipe, int refi, int pli,
+  int *avail_fragy0, int *avail_fragy_end, int stripe_fragy,
+  int notstart, int notdone){
+        oc_fragment_plane *fplane;
+        int                frag_shift;
+        int                pp_offset;
+        int                sdelay;
+        int                edelay;
+        fplane=_dec->state.fplanes+pli;
+        /*Compute the first and last fragment row of the current MCU for this
+           plane.*/
+        frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
+        pipe->fragy0[pli]=stripe_fragy>>frag_shift;
+        pipe->fragy_end[pli]=OC_MINI(fplane->nvfrags,
+         pipe->fragy0[pli]+(pipe->mcu_nvfrags>>frag_shift));
+        oc_dec_dc_unpredict_mcu_plane(_dec,pipe,pli);
+        oc_dec_frags_recon_mcu_plane(_dec,pipe,pli);
+        sdelay=edelay=0;
+        if(pipe->loop_filter){
+          sdelay+=notstart;
+          edelay+=notdone;
+          oc_state_loop_filter_frag_rows(&_dec->state,pipe->bounding_values+256,
+           refi,pli,pipe->fragy0[pli]-sdelay,pipe->fragy_end[pli]-edelay);
+        }
+        /*To fill the borders, we have an additional two pixel delay, since a
+           fragment in the next row could filter its top edge, using two pixels
+           from a fragment in this row.
+          But there's no reason to delay a full fragment between the two.*/
+        oc_state_borders_fill_rows(&_dec->state,refi,pli,
+         (pipe->fragy0[pli]-sdelay<<3)-(sdelay<<1),
+         (pipe->fragy_end[pli]-edelay<<3)-(edelay<<1));
+        /*Out-of-loop post-processing.*/
+        pp_offset=3*(pli!=0);
+        if(pipe->pp_level>=OC_PP_LEVEL_DEBLOCKY+pp_offset){
+          /*Perform de-blocking in one plane.*/
+          sdelay+=notstart;
+          edelay+=notdone;
+          oc_dec_deblock_frag_rows(_dec,_dec->pp_frame_buf,
+           _dec->state.ref_frame_bufs[refi],pli,
+           pipe->fragy0[pli]-sdelay,pipe->fragy_end[pli]-edelay);
+          if(pipe->pp_level>=OC_PP_LEVEL_DERINGY+pp_offset){
+            /*Perform de-ringing in one plane.*/
+            sdelay+=notstart;
+            edelay+=notdone;
+            oc_dec_dering_frag_rows(_dec,_dec->pp_frame_buf,pli,
+             pipe->fragy0[pli]-sdelay,pipe->fragy_end[pli]-edelay);
+          }
+        }
+        /*If no post-processing is done, we still need to delay a row for the
+           loop filter, thanks to the strange filtering order VP3 chose.*/
+        else if(pipe->loop_filter){
+          sdelay+=notstart;
+          edelay+=notdone;
+        }
+        /*Compute the intersection of the available rows in all planes.
+          If chroma is sub-sampled, the effect of each of its delays is
+           doubled, but luma might have more post-processing filters enabled
+           than chroma, so we don't know up front which one is the limiting
+           factor.*/
+        *avail_fragy0=OC_MINI(*avail_fragy0,pipe->fragy0[pli]-sdelay<<frag_shift);
+        *avail_fragy_end=OC_MINI(*avail_fragy_end,
+         pipe->fragy_end[pli]-edelay<<frag_shift);
+}
+
 int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos){
   int ret;
@@ -1984,65 +2049,8 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
       avail_fragy0=avail_fragy_end=_dec->state.fplanes[0].nvfrags;
       notdone=stripe_fragy+pipe.mcu_nvfrags<avail_fragy_end;
       for(pli=0;pli<3;pli++){
-        oc_fragment_plane *fplane;
-        int                frag_shift;
-        int                pp_offset;
-        int                sdelay;
-        int                edelay;
-        fplane=_dec->state.fplanes+pli;
-        /*Compute the first and last fragment row of the current MCU for this
-           plane.*/
-        frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
-        pipe.fragy0[pli]=stripe_fragy>>frag_shift;
-        pipe.fragy_end[pli]=OC_MINI(fplane->nvfrags,
-         pipe.fragy0[pli]+(pipe.mcu_nvfrags>>frag_shift));
-        oc_dec_dc_unpredict_mcu_plane(_dec,&pipe,pli);
-        oc_dec_frags_recon_mcu_plane(_dec,&pipe,pli);
-        sdelay=edelay=0;
-        if(pipe.loop_filter){
-          sdelay+=notstart;
-          edelay+=notdone;
-          oc_state_loop_filter_frag_rows(&_dec->state,pipe.bounding_values+256,
-           refi,pli,pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
-        }
-        /*To fill the borders, we have an additional two pixel delay, since a
-           fragment in the next row could filter its top edge, using two pixels
-           from a fragment in this row.
-          But there's no reason to delay a full fragment between the two.*/
-        oc_state_borders_fill_rows(&_dec->state,refi,pli,
-         (pipe.fragy0[pli]-sdelay<<3)-(sdelay<<1),
-         (pipe.fragy_end[pli]-edelay<<3)-(edelay<<1));
-        /*Out-of-loop post-processing.*/
-        pp_offset=3*(pli!=0);
-        if(pipe.pp_level>=OC_PP_LEVEL_DEBLOCKY+pp_offset){
-          /*Perform de-blocking in one plane.*/
-          sdelay+=notstart;
-          edelay+=notdone;
-          oc_dec_deblock_frag_rows(_dec,_dec->pp_frame_buf,
-           _dec->state.ref_frame_bufs[refi],pli,
-           pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
-          if(pipe.pp_level>=OC_PP_LEVEL_DERINGY+pp_offset){
-            /*Perform de-ringing in one plane.*/
-            sdelay+=notstart;
-            edelay+=notdone;
-            oc_dec_dering_frag_rows(_dec,_dec->pp_frame_buf,pli,
-             pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
-          }
-        }
-        /*If no post-processing is done, we still need to delay a row for the
-           loop filter, thanks to the strange filtering order VP3 chose.*/
-        else if(pipe.loop_filter){
-          sdelay+=notstart;
-          edelay+=notdone;
-        }
-        /*Compute the intersection of the available rows in all planes.
-          If chroma is sub-sampled, the effect of each of its delays is
-           doubled, but luma might have more post-processing filters enabled
-           than chroma, so we don't know up front which one is the limiting
-           factor.*/
-        avail_fragy0=OC_MINI(avail_fragy0,pipe.fragy0[pli]-sdelay<<frag_shift);
-        avail_fragy_end=OC_MINI(avail_fragy_end,
-         pipe.fragy_end[pli]-edelay<<frag_shift);
+	oc_pipe_advance(_dec, &pipe, refi, pli, &avail_fragy0, &avail_fragy_end,
+	 stripe_fragy, notstart, notdone);
       }
       if(_dec->stripe_cb.stripe_decoded!=NULL){
         /*Make the callback, ensuring we flip the sense of the "start" and
