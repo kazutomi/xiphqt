@@ -5,7 +5,7 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2003                *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2005                *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -48,6 +48,9 @@
 #include <fcntl.h>
 #include <math.h>
 #include <signal.h>
+#ifdef HAVE_PTHREAD 
+# include <pthread.h> /* should use SDL threads instead? */
+#endif
 #include "theora/theora.h"
 #include "vorbis/codec.h"
 #include <SDL.h>
@@ -106,6 +109,9 @@ SDL_Rect rect;
 int          videobuf_ready=0;
 ogg_int64_t  videobuf_granulepos=-1;
 double       videobuf_time=0;
+#ifdef HAVE_PTHREAD
+pthread_mutex_t videobuf_mutex; /* clear when ready to show a frame */
+#endif
 
 /* single audio fragment audio buffering */
 int          audiobuf_fill=0;
@@ -297,7 +303,61 @@ static void sigint_handler (int signal) {
   got_sigint = 1;
 }
 
+static void video_stripe_copy(void *_ctx, theora_ycbcr_buffer _src,
+ int _fragy0, int _fragy_end){
+  static const int planemap[3] = {0,2,1};
+  int pli;
+  int wscale, hscale;
+  int crop_offset;
+  int y, ystart, yend;
+
+  /* Lock SDL overlay */
+  if (SDL_LockYUVOverlay(yuv_overlay) < 0) return;
+
+  /* copy the stripe into the SDL buffer */
+  for(pli=0;pli<3;pli++){
+    wscale = _src[0].width / _src[pli].width;
+    hscale = _src[0].height / _src[pli].height;
+    ystart = _fragy0*8/hscale;
+    yend = _fragy_end*8/hscale;
+    crop_offset = (ti.pic_x / wscale)
+                + (_src[pli].ystride)
+                * (ti.pic_y / hscale);
+    for(y=ystart;y<yend;y++)
+      memcpy(yuv_overlay->pixels[planemap[pli]]
+                      + yuv_overlay->pitches[planemap[pli]]*y,
+             _src[pli].data+crop_offset+_src[pli].ystride*y,
+             yuv_overlay->w / wscale); 
+  }
+
+  /* Unlock SDL overlay */
+  SDL_UnlockYUVOverlay(yuv_overlay);
+
+}
+
+#ifdef HAVE_PTHREAD
+static void *video_write_loop(void *arg){
+  int min_delay = 1000.0 * ti.fps_denominator/ti.fps_numerator;
+  while(1){
+    /* wait until a frame is ready */
+    pthread_mutex_lock(&videobuf_mutex);
+    if(videobuf_ready){
+      /* Show, baby, show! */
+      SDL_DisplayYUVOverlay(yuv_overlay, &rect);
+      videobuf_ready=0;
+      pthread_mutex_unlock(&videobuf_mutex);
+    }else{
+      pthread_mutex_unlock(&videobuf_mutex);
+      SDL_Delay(min_delay);
+    }
+  }
+  return NULL;
+}
+#endif
+
 static void open_video(void){
+  theora_stripe_callback cb;
+
   if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
     fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
     exit(1);
@@ -322,6 +382,11 @@ static void open_video(void){
   rect.y = 0;
   rect.w = ti.pic_width;
   rect.h = ti.pic_height;
+
+  /* install stripe callback */
+  cb.ctx = yuv_overlay;
+  cb.stripe_decoded=(theora_stripe_decoded_func)video_stripe_copy;
+  theora_decode_ctl(td,OC_DECCTL_SET_STRIPE_CB,&cb,sizeof(cb));
 
   SDL_DisplayYUVOverlay(yuv_overlay, &rect);
 }
@@ -443,6 +508,13 @@ int main(int argc,char *argv[]){
   ogg_packet op;
 
   FILE *infile = stdin;
+
+  int frames = 0;
+  int dropped = 0;
+
+#ifdef HAVE_PTHREAD
+  pthread_t video_thread;
+#endif
 
 #ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
   /* Beware the evil ifdef. We avoid these where we can, but this one we
@@ -601,6 +673,17 @@ int main(int argc,char *argv[]){
     vorbis_comment_clear(&vc);
   }
 
+  /* initialize video playback thread */
+#ifdef HAVE_PTHREAD
+  pthread_mutex_init(&videobuf_mutex, NULL);
+  /* hold for a video frame */
+  pthread_mutex_lock(&videobuf_mutex);
+  videobuf_ready = 0;
+  /* spawn the display loop */
+  pthread_create(&video_thread, NULL, video_write_loop, NULL);
+  pthread_mutex_unlock(&videobuf_mutex);
+#endif
+
   /* open audio */
   if(vorbis_p)open_audio();
 
@@ -678,6 +761,7 @@ int main(int argc,char *argv[]){
         }
         if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
           videobuf_time=theora_granule_time(td,videobuf_granulepos);
+	  frames++;
 
           /* is it already too old to be useful?  This is only actually
              useful cosmetically after a SIGSTOP.  Note that we have to
@@ -685,10 +769,16 @@ int main(int argc,char *argv[]){
              keyframing.  Soon enough libtheora will be able to deal
              with non-keyframe seeks.  */
 
-          if(videobuf_time>=get_time())
+          if(videobuf_time-get_time()>=0){
+#ifdef HAVE_PTHREAD
+	    pthread_mutex_lock(&videobuf_mutex);
+#endif
             videobuf_ready=1;
-          /*If we are too slow, reduce the pp level.*/
-          else pp_inc=pp_level>0?-1:0;
+          }else{
+            /*If we are too slow, reduce the pp level.*/
+            pp_inc=pp_level>0?-1:0;
+	    dropped++;
+          }
         }
 
       }else
@@ -710,8 +800,12 @@ int main(int argc,char *argv[]){
 
     /* are we at or past time for this video frame? */
     if(stateflag && videobuf_ready && videobuf_time<=get_time()){
-      video_write();
+#ifdef HAVE_PTHREAD
+      pthread_mutex_unlock(&videobuf_mutex);
+#else
+      SDL_DisplayYUVOverlay(yuv_overlay, &rect);
       videobuf_ready=0;
+#endif
     }
 
     if(stateflag &&
@@ -792,8 +886,12 @@ int main(int argc,char *argv[]){
   if(infile && infile!=stdin)fclose(infile);
 
   fprintf(stderr,
-          "\r                                                              "
-          "\nDone.\n");
+          "\r                                                              \r");
+  fprintf(stderr, "%d frames", frames);
+  if (dropped) fprintf(stderr, " (%d dropped)", dropped);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "\nDone.\n");
+
   return(0);
 
 }
