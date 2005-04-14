@@ -1,0 +1,283 @@
+(***********************************************************************
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used on any computer system with Mathematica 3.0,
+MathReader 3.0, or any compatible application. The data for the notebook 
+starts with the line of stars above.
+
+To get the notebook into a Mathematica-compatible application, do one of 
+the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing the 
+word CacheID, otherwise Mathematica-compatible applications may try to 
+use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+***********************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[      7352,        208]*)
+(*NotebookOutlinePosition[      8005,        231]*)
+(*  CellTagsIndexPosition[      7961,        227]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+    \(Simplify[
+      Solve[{\((1 + \[Epsilon])\)*\((\[Delta]^\[Beta])\) - \[Epsilon] == 
+            \[Alpha]*\[Delta], 
+          \[Beta]*\((1 + \[Epsilon])\)*\((\[Delta]^\((\[Beta] - 1)\))\) == 
+            \[Alpha]}, {\[Alpha], \[Epsilon]}]]\)], "Input"],
+
+Cell[BoxData[
+    \({{\[Alpha] \[Rule] 
+          \(\[Beta]\ \[Delta]\^\(\(-1\) + \[Beta]\)\)\/\(1 + 
+              \((\(-1\) + \[Beta])\)\ \[Delta]\^\[Beta]\), 
+        \[Epsilon] \[Rule] 
+          \(-\(\(\((\(-1\) + \[Beta])\)\ \[Delta]\^\[Beta]\)\/\(1 + 
+                  \((\(-1\) + \[Beta])\)\ \[Delta]\^\[Beta]\)\)\)}}\)], 
+  "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(rgb2xyz[c_] := 
+      Block[{f, s}, \n\t\t
+        f := {{c[\([1, 1]\)]/c[\([1, 2]\)], c[\([2, 1]\)]/c[\([2, 2]\)], 
+              c[\([3, 1]\)]/c[\([3, 2]\)]}, {1, 1, 1}, {
+              \((1 - c[\([1, 1]\)] - c[\([1, 2]\)])\)/c[\([1, 2]\)], 
+              \((1 - c[\([2, 1]\)] - c[\([2, 2]\)])\)/c[\([2, 2]\)], 
+              \((1 - c[\([3, 1]\)] - c[\([3, 2]\)])\)/c[\([3, 2]\)]}}; \n\t\t
+        s := Inverse[
+              f].{{c[\([4, 1]\)]/c[\([4, 2]\)]}, {1}, {
+                \((1 - c[\([4, 1]\)] - c[\([4, 2]\)])\)/c[\([4, 2]\)]}}; \n
+        \t\t{{f[\([1, 1]\)]*s[\([1, 1]\)], f[\([1, 2]\)]*s[\([2, 1]\)], 
+            f[\([1, 3]\)]*s[\([3, 1]\)]}, {f[\([2, 1]\)]*s[\([1, 1]\)], 
+            f[\([2, 2]\)]*s[\([2, 1]\)], f[\([2, 3]\)]*s[\([3, 1]\)]}, {
+            f[\([3, 1]\)]*s[\([1, 1]\)], f[\([3, 2]\)]*s[\([2, 1]\)], 
+            f[\([3, 3]\)]*s[\([3, 1]\)]}}]\)], "Input"],
+
+Cell[BoxData[
+    \(rgb2xyz470m := 
+      rgb2xyz[{{0.67, 0.33}, {0.21, 0.71}, {0.14, 0.08}, {0.31006, 0.31616}}]
+        \)], "Input"],
+
+Cell[BoxData[
+    \(rgb2xyz470bg := 
+      rgb2xyz[{{0.64, 0.33}, {0.29, 0.60}, {0.15, 0.06}, {0.312713, 
+            0.329016}}]\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Inverse[rgb2xyz470m].rgb2xyz470bg\)], "Input"],
+
+Cell[BoxData[
+    \({{0.698396023265322796`, 0.238769879837914045`, 
+        0.0319418141018277257`}, {0.0193016340794852858`, 
+        1.07270629882618173`, \(-0.0595741939777363604`\)}, {
+        0.0169397711000759425`, 0.0525463647870810568`, 
+        0.844972920358327428`}}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \({{0.698396023265322796`, 0.238769879837914045`, 
+        0.0319418141018277257`}, {0.0193016340794852858`, 
+        1.07270629882618173`, \(-0.0595741939777363604`\)}, {
+        0.0169397711000759425`, 0.0525463647870810568`, 
+        0.844972920358327428`}}\)], "Input"],
+
+Cell[BoxData[
+    \({{0.698396023265322796`, 0.238769879837914045`, 
+        0.0319418141018277257`}, {0.0193016340794852858`, 
+        1.07270629882618173`, \(-0.0595741939777363604`\)}, {
+        0.0169397711000759425`, 0.0525463647870810568`, 
+        0.844972920358327428`}}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Inverse[rgb2xyz470bg].rgb2xyz470m\)], "Input"],
+
+Cell[BoxData[
+    \({{1.44248717582308438`, \(-0.317311108580498713`\), 
+        \(-0.0769009386960246565`\)}, {\(-0.0274664218099758317`\), 
+        0.93505506441107542`, 0.0669636597378669851`}, {
+        \(-0.0272105074605999508`\), \(-0.051786945959321704`\), 
+        1.18084729506325203`}}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \({{1.44248717582308438`, \(-0.317311108580498713`\), 
+        \(-0.0769009386960246565`\)}, {\(-0.0274664218099758317`\), 
+        0.93505506441107542`, 0.0669636597378669851`}, {
+        \(-0.0272105074605999508`\), \(-0.051786945959321704`\), 
+        1.18084729506325203`}}\)], "Input"],
+
+Cell[BoxData[
+    \({{1.44248717582308438`, \(-0.317311108580498713`\), 
+        \(-0.0769009386960246565`\)}, {\(-0.0274664218099758317`\), 
+        0.93505506441107542`, 0.0669636597378669851`}, {
+        \(-0.0272105074605999508`\), \(-0.051786945959321704`\), 
+        1.18084729506325203`}}\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(yuv2rgb[kb_, kr_]
+         := {{1, 0, 2*\((1 - kr)\)}, {1, 
+          2*\((\((kb - 1)\)*kb/\((1 - kb - kr)\))\), 
+          2*\((\((kr - 1)\)*kr/\((1 - kb - kr)\))\)}, {1, 2*\((1 - kb)\), 0}}
+        \)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(yuv2rgb[0.114, 0.299] // MatrixForm\)], "Input"],
+
+Cell[BoxData[
+    TagBox[
+      RowBox[{"(", GridBox[{
+            {"1", "0", "1.40200000000000013`"},
+            {"1", \(-0.344136286201022167`\), \(-0.714136286201022052`\)},
+            {"1", "1.77200000000000006`", "0"}
+            }], ")"}],
+      (MatrixForm[ #]&)]], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(rgb2yuv[kb_, kr_]
+         := {{kr, \((1 - kr - kb)\), kb}, {
+          \((1/2)\)*\((\(-kr\))\)/\((1 - kb)\), 
+          \((1/2)\)*\((kr + kb - 1)\)/\((1 - kb)\), 
+          \((1/2)\)*\((1 - kb)\)/\((1 - kb)\)}, {
+          \((1/2)\)*\((1 - kr)\)/\((1 - kr)\), 
+          \((1/2)\)*\((kr + kb - 1)\)/\((1 - kr)\), 
+          \((1/2)\)*\((\(-kb\))\)/\((1 - kr)\)}}\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(rgb2yuv[0.114, 0.299] // MatrixForm\)], "Input"],
+
+Cell[BoxData[
+    TagBox[
+      RowBox[{"(", GridBox[{
+            {
+              StyleBox["0.298999999999999985`",
+                StyleBoxAutoDelete->True,
+                PrintPrecision->3], "0.587000000000000099`", 
+              StyleBox["0.114000000000000012`",
+                StyleBoxAutoDelete->True,
+                PrintPrecision->3]},
+            {\(-0.16873589164785554`\), \(-0.331264108352144504`\), "0.5`"},
+            {"0.5`", \(-0.418687589158345119`\), \(-0.0813124108416547741`\)}
+            }], ")"}],
+      (MatrixForm[ #]&)]], "Output"]
+}, Open  ]]
+},
+FrontEndVersion->"Microsoft Windows 3.0",
+ScreenRectangle->{{0, 1600}, {0, 1142}},
+WindowSize->{463, 704},
+WindowMargins->{{436, Automatic}, {47, Automatic}}
+]
+
+
+(***********************************************************************
+Cached data follows.  If you edit this Notebook file directly, not using
+Mathematica, you must remove the line containing CacheID at the top of 
+the file.  The cache data will then be recreated when you save this file 
+from within Mathematica.
+***********************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[1731, 51, 272, 5, 48, "Input"],
+Cell[2006, 58, 343, 7, 48, "Output"]
+}, Open  ]],
+Cell[2364, 68, 911, 15, 200, "Input"],
+Cell[3278, 85, 135, 3, 48, "Input"],
+Cell[3416, 90, 142, 3, 48, "Input"],
+
+Cell[CellGroupData[{
+Cell[3583, 97, 66, 1, 29, "Input"],
+Cell[3652, 100, 292, 5, 67, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3981, 110, 291, 5, 105, "Input"],
+Cell[4275, 117, 292, 5, 67, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4604, 127, 66, 1, 29, "Input"],
+Cell[4673, 130, 309, 5, 67, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5019, 140, 308, 5, 105, "Input"],
+Cell[5330, 147, 309, 5, 67, "Output"]
+}, Open  ]],
+Cell[5654, 155, 233, 5, 67, "Input"],
+
+Cell[CellGroupData[{
+Cell[5912, 164, 68, 1, 29, "Input"],
+Cell[5983, 167, 284, 7, 73, "Output"]
+}, Open  ]],
+Cell[6282, 177, 396, 8, 86, "Input"],
+
+Cell[CellGroupData[{
+Cell[6703, 189, 68, 1, 29, "Input"],
+Cell[6774, 192, 562, 13, 73, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+
+
+
+(***********************************************************************
+End of Mathematica Notebook file.
+***********************************************************************)
+
