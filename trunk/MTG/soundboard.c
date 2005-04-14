@@ -3844,7 +3844,8 @@ int main(int gratuitously,char *different[]){
   dup2(ttypipe[0],0);
 
   pthread_create(&tty_thread_id,NULL,tty_thread,NULL);
-  
+
+#if (MAX_OUTPUT_CHANNELS)  
   {
     pthread_t dummy;
     playback_active=1;
@@ -3860,8 +3861,6 @@ int main(int gratuitously,char *different[]){
     pthread_create(&record_thread_id,NULL,record_thread,NULL);
   }
 #endif
-
-  pthread_create(&cache_thread_id,NULL,cache_thread,NULL);
 
   /* load the sound config if the file exists, else create it */
   initscr(); cbreak(); noecho();
