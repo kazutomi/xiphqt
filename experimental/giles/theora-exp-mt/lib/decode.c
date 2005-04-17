@@ -2073,7 +2073,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
       avail_fragy0=avail_fragy_end=_dec->state.fplanes[0].nvfrags;
       notdone=stripe_fragy+pipe.mcu_nvfrags<avail_fragy_end;
       pthread_mutex_init(&lock, NULL);
-      for(pli=0;pli<3;pli++){
+      for(pli=3;pli-->0;){
         stripes[pli].dec = _dec;
         stripes[pli].pipe = &pipe;
         stripes[pli].refi = refi;
@@ -2084,10 +2084,13 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
         stripes[pli].notstart = notstart;
         stripes[pli].notdone = notdone;
         stripes[pli].lock = &lock;
-	pthread_create(&threads[pli], NULL, oc_pipe_advance, 
-         (void*)&stripes[pli]);
+        if(pli>0){
+          pthread_create(&threads[pli], NULL, oc_pipe_advance, 
+           (void*)&stripes[pli]);
+        }
+        else oc_pipe_advance(stripes+pli);
       }
-      for(pli=0;pli<3;pli++)
+      for(pli=1;pli<3;pli++)
         pthread_join(threads[pli],NULL);
       if(_dec->stripe_cb.stripe_decoded!=NULL){
         /*Make the callback, ensuring we flip the sense of the "start" and
