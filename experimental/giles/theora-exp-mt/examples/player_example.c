@@ -81,6 +81,7 @@ int buffer_data(FILE *in,ogg_sync_state *oy){
 }
 
 /* never forget that globals are a one-way ticket to Hell */
+/* once you start, you'll just add more and more...       */
 /* Ogg and codec state for demux/decode */
 ogg_sync_state   oy;
 ogg_page         og;
@@ -109,8 +110,20 @@ SDL_Rect rect;
 int          videobuf_ready=0;
 ogg_int64_t  videobuf_granulepos=-1;
 double       videobuf_time=0;
+
 #ifdef HAVE_PTHREAD
-pthread_mutex_t videobuf_mutex; /* clear when ready to show a frame */
+/* background stripe copy thread */
+pthread_t stripe_copy_thread;
+pthread_mutex_t stripe_mutex;
+pthread_cond_t stripe_ready_cond;
+int stripe_fragy0 = 0;
+int stripe_fragy_end = 0;
+theora_ycbcr_buffer videobuf_src;
+
+/* background frame display thread */
+pthread_t video_display_thread;
+pthread_mutex_t videobuf_mutex;
+pthread_cond_t videobuf_ready_cond;
 #endif
 
 /* single audio fragment audio buffering */
@@ -336,24 +349,47 @@ static void video_stripe_copy(void *_ctx, theora_ycbcr_buffer _src,
 }
 
 #ifdef HAVE_PTHREAD
+static void video_stripe_mark(void *_ctx, theora_ycbcr_buffer _src,
+                              int _fragy0, int _fragy_end){
+  /* mark data stripe as available */
+  pthread_mutex_lock(&stripe_mutex);
+  memcpy(videobuf_src, _src, sizeof(theora_ycbcr_buffer));
+  stripe_fragy0 = _fragy0;
+  stripe_fragy_end = _fragy_end;
+
+  /* notify data copy thread */
+  pthread_cond_signal(&stripe_ready_cond);
+  pthread_mutex_unlock(&stripe_mutex);
+}
+
+/* loop, copying decoded data to the overlay */
 static void *video_write_loop(void *arg){
-  int min_delay = 1000.0 * ti.fps_denominator/ti.fps_numerator;
   while(1){
-    /* wait until a frame is ready */
-    pthread_mutex_lock(&videobuf_mutex);
-    if(videobuf_ready){
-      /* Show, baby, show! */
-      SDL_DisplayYUVOverlay(yuv_overlay, &rect);
-      videobuf_ready=0;
-      pthread_mutex_unlock(&videobuf_mutex);
-    }else{
-      pthread_mutex_unlock(&videobuf_mutex);
-      SDL_Delay(min_delay);
-    }
+    pthread_mutex_lock(&stripe_mutex);
+    /* wait until stripe data is ready */
+    pthread_cond_wait(&stripe_ready_cond, &stripe_mutex);
+    video_stripe_copy(NULL, videobuf_src, stripe_fragy0, stripe_fragy_end);
+    pthread_mutex_unlock(&stripe_mutex);
   }
   return NULL;
 }
-#endif
+
+/* loop, showing the current frame when we get a signal */
+static void *video_display_loop(void *arg){
+  pthread_mutex_lock(&videobuf_mutex);
+  while (!videobuf_ready) {
+    pthread_cond_wait(&videobuf_ready_cond, &videobuf_mutex);
+    /* we could lock stripe_mutex here too, to make sure the
+       video write thread isn't active, but the way we're
+       called from outside theora_decode_packetin() makes that
+       unnecessary */
+    SDL_DisplayYUVOverlay(yuv_overlay, &rect);
+    videobuf_ready = 0;
+  }
+  pthread_mutex_unlock(&videobuf_mutex);
+  return NULL;
+}
+#endif /* HAVE_PTHREAD */
 
 static void open_video(void){
   theora_stripe_callback cb;
@@ -383,14 +419,32 @@ static void open_video(void){
   rect.w = ti.pic_width;
   rect.h = ti.pic_height;
 
+  /* initialize video playback threads */
+#ifdef HAVE_PTHREAD
+  /* spawn the display loop */
+  pthread_mutex_init(&videobuf_mutex, NULL);
+  pthread_cond_init(&videobuf_ready_cond, NULL);
+  pthread_create(&video_display_thread, NULL, video_display_loop, NULL);
+  /* spawn the stripe-copy loop */
+  pthread_mutex_init(&stripe_mutex, NULL);
+  pthread_cond_init(&stripe_ready_cond, NULL);
+  pthread_create(&stripe_copy_thread, NULL, video_write_loop, NULL);
   /* install stripe callback */
+  cb.ctx = yuv_overlay;
+  cb.stripe_decoded=(theora_stripe_decoded_func)video_stripe_mark;
+  theora_decode_ctl(td,OC_DECCTL_SET_STRIPE_CB,&cb,sizeof(cb));
+#else
+  /* just copy stripe data directly in the callback */
   cb.ctx = yuv_overlay;
   cb.stripe_decoded=(theora_stripe_decoded_func)video_stripe_copy;
   theora_decode_ctl(td,OC_DECCTL_SET_STRIPE_CB,&cb,sizeof(cb));
+#endif /* HAVE_PTHREAD */
 
   SDL_DisplayYUVOverlay(yuv_overlay, &rect);
 }
 
+/* Full frame copy and display. To use, set a null stripe callback
+   and call this instead after theora_decode_packetin() returns */
 static void video_write(void){
   static const int planemap[3] = {0,2,1};
   int pli;
@@ -402,9 +456,6 @@ static void video_write(void){
   theora_decode_ycbcr_out(td,ycbcr);
 
   /* Lock SDL_yuv_overlay */
-  if ( SDL_MUSTLOCK(screen) ) {
-    if ( SDL_LockSurface(screen) < 0 ) return;
-  }
   if (SDL_LockYUVOverlay(yuv_overlay) < 0) return;
 
   /* let's draw the data on a SDL screen (*screen) */
@@ -426,16 +477,12 @@ static void video_write(void){
   }
 
   /* Unlock SDL_yuv_overlay */
-  if ( SDL_MUSTLOCK(screen) ) {
-    SDL_UnlockSurface(screen);
-  }
   SDL_UnlockYUVOverlay(yuv_overlay);
-
 
   /* Show, baby, show! */
   SDL_DisplayYUVOverlay(yuv_overlay, &rect);
-
 }
+
 /* dump the theora (or vorbis) comment header */
 static int dump_comments(theora_comment *tc){
   int i, len;
@@ -511,10 +558,6 @@ int main(int argc,char *argv[]){
 
   int frames = 0;
   int dropped = 0;
-
-#ifdef HAVE_PTHREAD
-  pthread_t video_thread;
-#endif
 
 #ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
   /* Beware the evil ifdef. We avoid these where we can, but this one we
@@ -673,17 +716,6 @@ int main(int argc,char *argv[]){
     vorbis_comment_clear(&vc);
   }
 
-  /* initialize video playback thread */
-#ifdef HAVE_PTHREAD
-  pthread_mutex_init(&videobuf_mutex, NULL);
-  /* hold for a video frame */
-  pthread_mutex_lock(&videobuf_mutex);
-  videobuf_ready = 0;
-  /* spawn the display loop */
-  pthread_create(&video_thread, NULL, video_write_loop, NULL);
-  pthread_mutex_unlock(&videobuf_mutex);
-#endif
-
   /* open audio */
   if(vorbis_p)open_audio();
 
@@ -773,7 +805,7 @@ int main(int argc,char *argv[]){
 #ifdef HAVE_PTHREAD
 	    pthread_mutex_lock(&videobuf_mutex);
 #endif
-            videobuf_ready=1;
+	    videobuf_ready=1;
           }else{
             /*If we are too slow, reduce the pp level.*/
             pp_inc=pp_level>0?-1:0;
@@ -801,6 +833,8 @@ int main(int argc,char *argv[]){
     /* are we at or past time for this video frame? */
     if(stateflag && videobuf_ready && videobuf_time<=get_time()){
 #ifdef HAVE_PTHREAD
+      /* signal the display thread to show the frame */
+      pthread_cond_signal(&videobuf_ready_cond);
       pthread_mutex_unlock(&videobuf_mutex);
 #else
       SDL_DisplayYUVOverlay(yuv_overlay, &rect);
