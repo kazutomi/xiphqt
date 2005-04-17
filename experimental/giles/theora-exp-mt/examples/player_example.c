@@ -695,7 +695,10 @@ int main(int argc,char *argv[]){
     dump_comments(&tc);
     theora_decode_ctl(td,OC_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
      sizeof(pp_level_max));
-    pp_level=pp_level_max;
+    /* start with no preprocessing to avoid dropping initial frames
+       on cpu-bound streams. A real decoder would keep a heuristic
+       table based on the uncompressed data rate for initialization */
+    pp_level=0;
     theora_decode_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
     pp_inc=0;
   }else{
