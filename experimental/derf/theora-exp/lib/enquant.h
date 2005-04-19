@@ -1,6 +1,5 @@
 #if !defined(_enquant_H)
 # define _enquant_H (1)
-# include "theora/theora.h"
 # include "quant.h"
 
 /*The amount to scale the forward quantizer value by.*/

@@ -1,7 +1,7 @@
 #include <limits.h>
 #if !defined(_decint_H)
 # define _decint_H (1)
-# include "theora/theora.h"
+# include "theora/theoradec.h"
 # include "internal.h"
 
 typedef struct theora_setup_info oc_setup_info;

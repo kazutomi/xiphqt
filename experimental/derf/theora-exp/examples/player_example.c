@@ -48,7 +48,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <signal.h>
-#include "theora/theora.h"
+#include "theora/theoradec.h"
 #include "vorbis/codec.h"
 #include <SDL.h>
 

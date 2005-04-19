@@ -15,15 +15,13 @@ These include:
 - Support for additional pixel foramts: 4:4:4 and 4:2:2 (in addition to the
    4:2:0 format supported by VP3).
 - Support for block-level qi values.
+- Striped decoding API (decoding is pipelined and clients receive decoded frame
+   data as soon as it is available).
 Currently missing features:
-- Advanced buffering API: Client-specified buffers and piplined (striped)
-   decode.
+- Advanced buffering API: Client-specified buffers.
   Clients could provide external buffers to decode into when out-of-loop
    post-processing is enabled (if it isn't enabled, a copy has to be done
    anyway).
-  Pipelined decode would combine the reconstruction, copy-back frags, loop
-   filtering and post-processing stages, and expose the decoded frame to
-   clients a super-block row at a time, minimizing cache footprint.
 
 Encoder:
 The encoder is highly experimental.
@@ -32,7 +30,19 @@ It currently generates bitstreams using ALL of the decoder features supported
 There are still a few outstanding bugs, and the HVS model is very experimental.
 
 Building:
-A simple GNU Makefile and MSVC++ 6 project files are provided.
-Edit both to taste.
-The Windows workspaces are probably currently broken due to the move to
- Subversion and subsequent reorganization.
+On Unix or Cygwin, building through automake is now supported.
+You may wish to set the CFLAGS environment variable before beginning, e.g.:
+CFLAGS=-O3 -fforce-addr -fomit-frame-pointer
+On a fresh checkout, run:
+./autogen.sh
+From a distribution tarball, run:
+./configure
+Then run:
+make
+make install
+
+For Windows, MSVC++ 6 project files are provided.
+
+A simple GNU Makefile is also provided.
+Edit to taste.
+This will likely disappear in a future version.

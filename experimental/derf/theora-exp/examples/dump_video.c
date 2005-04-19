@@ -38,7 +38,7 @@
 #include <math.h>
 #include <signal.h>
 #include "getopt.h"
-#include "theora/theora.h"
+#include "theora/theoradec.h"
 
 
 

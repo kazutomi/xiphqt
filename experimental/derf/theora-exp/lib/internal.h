@@ -1,7 +1,7 @@
 #if !defined(_internal_H)
 # define _internal_H (1)
 # include <stdlib.h>
-# include "theora/theora.h"
+# include "theora/codec.h"
 # include "ocintrin.h"
 # include "huffman.h"
 # include "quant.h"

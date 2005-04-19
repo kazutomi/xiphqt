@@ -31,7 +31,7 @@
 #include <getopt.h>
 #include <time.h>
 #include <math.h>
-#include "theora/theora.h"
+#include "theora/theoraenc.h"
 #include "vorbis/codec.h"
 #include "vorbis/vorbisenc.h"
 

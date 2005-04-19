@@ -1,6 +1,5 @@
 #if !defined(_dequant_H)
 # define _dequant_H (1)
-# include "theora/theora.h"
 # include "quant.h"
 
 int oc_quant_params_unpack(oggpack_buffer *_opb,

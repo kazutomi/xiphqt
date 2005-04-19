@@ -475,7 +475,7 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
   This may only be called before the setup header is written.
   If it is called multiple times, only the last call has any effect.
   _qinfo: The quantization parameters.
-          These are described in more detail in theora.h.
+          These are described in more detail in theoraenc.h.
           This can be NULL, in which case the default quantization parameters
            will be used.*
   Return: 0 on success, or a negative value on error.

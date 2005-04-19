@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "theora/theora.h"
 #include "internal.h"
 
 

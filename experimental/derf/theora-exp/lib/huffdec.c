@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <ogg/ogg.h>
-#include "theora/theora.h"
 #include "huffdec.h"
 #include "decint.h"
 

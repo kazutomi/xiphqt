@@ -1,7 +1,7 @@
 #include <limits.h>
 #if !defined(_encint_H)
 # define _encint_H (1)
-# include "theora/theora.h"
+# include "theora/theoraenc.h"
 # include "internal.h"
 
 typedef struct oc_fragment_enc_info   oc_fragment_enc_info;
