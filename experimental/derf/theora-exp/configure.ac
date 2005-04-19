@@ -126,5 +126,6 @@ AC_OUTPUT([
   Makefile lib/Makefile 
   include/Makefile include/theora/Makefile
   examples/Makefile
-  theora-exp.pc
+  theoradec.pc
+  theoraenc.pc
 ])

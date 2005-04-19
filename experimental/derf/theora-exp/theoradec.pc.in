@@ -5,10 +5,10 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: theora-exp
+Name: theoradec
 Description: Theora experimental video codec
 Version: @VERSION@
 Requires: ogg >= 1.1.1
 Conflicts:
-Libs: -L${libdir} -ltheorabase -ltheoraenc -ltheoraadec
+Libs: -L${libdir} -ltheorabase -ltheoradec
 Cflags: -I${includedir}
