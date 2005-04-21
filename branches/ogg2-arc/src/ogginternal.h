@@ -18,7 +18,7 @@
 #ifndef _OGG2I_H
 #define _OGG2I_H
 
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "mutex.h"
 
 struct ogg2_buffer_state{
