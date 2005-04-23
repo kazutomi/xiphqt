@@ -35,7 +35,7 @@ Algorithmic optimizations:
    coefficients, yielding a reduced memory footprint and increased cache
    coherency.
 - Striped decoding API.
-  After the tokens are decoded, the remainig steps are pipelined and clients
+  After the tokens are decoded, the remaining steps are pipelined and clients
    receive decoded frame data as soon as it is available, while it is still in
    cache.
 Currently missing features:
