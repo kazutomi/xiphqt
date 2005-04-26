@@ -49,7 +49,7 @@ static double rint(double x)
 }
 #endif
 
-const char *optstring = "o:a:A:v:V:s:S:f:F:";
+const char *optstring = "o:a:A:v:V:s:S:f:F:c";
 struct option options [] = {
   {"output",required_argument,NULL,'o'},
   {"audio-rate-target",required_argument,NULL,'A'},
@@ -60,6 +60,7 @@ struct option options [] = {
   {"aspect-denominator",optional_argument,NULL,'S'},
   {"framerate-numerator",optional_argument,NULL,'f'},
   {"framerate-denominator",optional_argument,NULL,'F'},
+  {"vp3-compatible",0,NULL,'c'},
   {NULL,0,NULL,0}
 };
 
@@ -73,6 +74,7 @@ int audio_hz=0;
 
 float audio_q=.1F;
 int audio_r=-1;
+int vp3_compatible=0;
 
 int frame_w=0;
 int frame_h=0;
@@ -1152,6 +1154,10 @@ int main(int argc,char *argv[]){
       video_fps_d=(int)rint(atof(optarg));
       break;
 
+    case 'c':
+      vp3_compatible=1;
+      break;
+
     default:
       usage();
     }
@@ -1206,6 +1212,19 @@ int main(int argc,char *argv[]){
 
   td=theora_encode_alloc(&ti);
   theora_info_clear(&ti);
+
+  if(vp3_compatible){
+    ret=theora_encode_ctl(td,OC_ENCCTL_SET_VP3_COMPATIBLE,&vp3_compatible,
+     sizeof(vp3_compatible));
+    if(ret<0||!vp3_compatible){
+      fprintf(stderr,"Could not enable strict VP3 compatibility.\n");
+      if(ret>=0){
+        fprintf(stderr,"Ensure your source format is supported by VP3.\n");
+        fprintf(stderr,
+         "(4:2:0 pixel format, width and height multiples of 16).\n");
+      }
+    }
+  }
 
   /* initialize Vorbis too, assuming we have audio to compress. */
   if(audio){
