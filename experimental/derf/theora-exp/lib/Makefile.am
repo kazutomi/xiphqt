@@ -1,23 +1,8 @@
 lib_LTLIBRARIES = libtheorabase.la libtheoraenc.la libtheoradec.la
 
 INCLUDES = -I $(top_srcdir)/include
-AM_CFLAGS = $(OGG_CFLAGS) @OPTIMIZATION_CFLAGS@
+AM_CFLAGS = $(OGG_CFLAGS)
 
-if OC_X86ASM
-X86ASMSOURCES = \
-	x86/mmxstate.c \
-	x86/x86state.c \
-	x86/mmxfrag.c \
-	x86/cpu.c 
-X86ASMHEADERS = 
-else
-X86ASMSOURCES = 
-X86ASMHEADERS = \
-	x86/mmxstate.c \
-	x86/x86state.c \
-	x86/mmxfrag.c \
-	x86/cpu.c 
-endif
 noinst_HEADERS = \
 	dct.h \
 	decint.h \
@@ -32,11 +17,7 @@ noinst_HEADERS = \
 	internal.h \
 	ocintrin.h \
 	psych.h \
-	quant.h \
-	x86/x86int.h \
-	x86/cpu.h \
-	$(X86ASMHEADERS)
-
+	quant.h 
 
 libtheorabase_la_SOURCES = \
 	fragment.c \
@@ -44,9 +25,7 @@ libtheorabase_la_SOURCES = \
 	info.c \
 	internal.c \
 	quant.c \
-	state.c \
-	$(X86ASMSOURCES)
-
+	state.c
 
 libtheorabase_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@
 
@@ -70,3 +49,4 @@ libtheoradec_la_SOURCES = \
 	huffdec.c
 
 libtheoradec_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@
+
