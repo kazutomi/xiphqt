@@ -151,6 +151,8 @@ struct theora_enc_ctx{
   theora_huff_code         huff_codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
   /*The scale factor for the current quality setting.*/
   float                    qscale;
+  /*Whether or not VP3-compatibility is enabled.*/
+  int                      vp3_compatible;
   /*The quantization parameters in use.*/
   theora_quant_info        qinfo;
   /*Pointers to the quantization tables in use.*/

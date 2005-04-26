@@ -82,6 +82,34 @@ extern "C" {
  * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(ogg_uint32_t)</tt>.
  * \retval OC_IMPL   Not supported by this implementation.*/
 #define OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
+/**Disables any encoder features that would prevent lossless transcoding back
+ *  to VP3.
+ * This primarily means disabling block-level QI values and not using 4MV mode
+ *  when any of the luma blocks in a macro block are not coded.
+ * It also includes using the VP3 quantization tables and Huffman codes; if you
+ *  set them explicitly after calling this function, the resulting stream will
+ *  not by VP3-compatible.
+ * If you enable VP3-compatibility when encoding 4:2:2 or 4:4:4 source
+ *  material, or when using a picture region smaller than the full frame (e.g.
+ *  a non-multiple-of-16 width or height), then non-VP3 bitstream features will
+ *  still be disabled, but the stream will still not be VP3-compatible, as VP3
+ *  was not capable of encoding such formats.
+ * If you call this after encoding has already begun, then the quantization
+ *  tables and codebooks cannot be changed, but the frame-level features will
+ *  be enabled or disabled as requested.
+ *
+ * \param[in]  _buf <tt>int</tt>: a non-zero value to enable VP3 compatibility,
+ *                   or 0 to disable it (the default).
+ * \param[out] _buf <tt>int</tt>: 1 if all bitstream features required for
+ *                   VP3-compatibility could be set, and 0 otherwise.
+ *                  The latter will be returned if with pixel format is not
+ *                   4:2:0, the picture region is smaller than the full frame,
+ *                   or if encoding has begun, preventing the quantization
+ *                   tables and codebooks from being set.
+ * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
+ * \retval OC_IMPL   Not supported by this implementation.*/
+#define OC_ENCCTL_SET_VP3_COMPATIBLE (10)
 /*@}*/
 
 

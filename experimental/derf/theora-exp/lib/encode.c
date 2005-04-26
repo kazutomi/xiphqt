@@ -660,6 +660,8 @@ static void oc_enc_quant_sel_quality(oc_enc_ctx *_enc,int _intra_only){
       _enc->qis[fti][0]=qi0;
       _enc->nqis[fti]=1;
     }
+    /*If we're in VP3 compatibility mode, just use the first quantizer.*/
+    if(_enc->vp3_compatible)_enc->nqis[fti]=1;
   }
 }
 
@@ -2154,6 +2156,11 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       /*Finally, pick the mode with the cheapest estimated bit cost.*/
       mb->mode=0;
       for(modei=1;modei<OC_NMODES;modei++)if(bits[modei]<bits[mb->mode]){
+        /*Do not select 4MV mode when not all the luma blocks are coded when
+           we're in VP3 compatibility mode.*/
+        if(_enc->vp3_compatible&&modei==OC_MODE_INTER_MV_FOUR&&ncoded_luma<4){
+          continue;
+        }
         mb->mode=modei;
       }
 #if defined(OC_BITRATE_STATS)
@@ -2201,8 +2208,6 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           last_mv[0][1]=mbmv[1];
         }break;
         case OC_MODE_INTER_MV_FOUR:{
-          /*TODO: Handle the case when less than 4 luma blocks are being
-             coded.*/
           mvbitsa+=mb4mvbitsa;
           mvbitsb+=mb4mvbitsb;
           if(ncoded_luma>0){
@@ -2492,6 +2497,8 @@ static int oc_enc_init(oc_enc_ctx *_enc,const theora_info *_info){
   _enc->psych=oc_psych_alloc(_enc);
   /*Reset the packet-out state machine.*/
   _enc->packet_state=OC_PACKET_INFO_HDR;
+  /*Mark us as not VP3-compatible.*/
+  _enc->vp3_compatible=0;
   /*Set the Huffman codes and quantization parameters to the defaults.*/
   memcpy(_enc->huff_codes,OC_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
   oc_enc_set_quant_params(_enc,NULL);
@@ -2545,27 +2552,54 @@ int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
       return oc_enc_set_huffman_codes(_enc,(theora_huff_table *)_buf);
     }break;
     case OC_ENCCTL_SET_QUANT_PARAMS:{
-       if(_buf==NULL&&_buf_sz!=0||
-        _buf!=NULL&&_buf_sz!=sizeof(theora_quant_info)){
-         return OC_EINVAL;
-       }
-       return oc_enc_set_quant_params(_enc,(theora_quant_info *)_buf);
+      if(_buf==NULL&&_buf_sz!=0||
+       _buf!=NULL&&_buf_sz!=sizeof(theora_quant_info)){
+        return OC_EINVAL;
+      }
+      return oc_enc_set_quant_params(_enc,(theora_quant_info *)_buf);
     }break;
     case OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE:{
-       ogg_uint32_t keyframe_frequency_force;
-       if(_enc==NULL||_buf==NULL)return OC_FAULT;
-       if(_buf_sz!=sizeof(ogg_uint32_t))return OC_EINVAL;
-       keyframe_frequency_force=*(ogg_uint32_t *)_buf;
-       if(_enc->packet_state==OC_PACKET_INFO_HDR){
-         /*It's still early enough to enlarge keyframe_granule_shift.*/
-         _enc->state.info.keyframe_granule_shift=
-          OC_MAXI(_enc->state.info.keyframe_granule_shift,
-          OC_MINI(31,oc_ilog(keyframe_frequency_force-1)));
-       }
-       _enc->keyframe_frequency_force=OC_MINI(keyframe_frequency_force,
-        1U<<_enc->state.info.keyframe_granule_shift);
-       (*(ogg_uint32_t *)_buf)=_enc->keyframe_frequency_force;
-       return 0;
+      ogg_uint32_t keyframe_frequency_force;
+      if(_enc==NULL||_buf==NULL)return OC_FAULT;
+      if(_buf_sz!=sizeof(ogg_uint32_t))return OC_EINVAL;
+      keyframe_frequency_force=*(ogg_uint32_t *)_buf;
+      if(_enc->packet_state==OC_PACKET_INFO_HDR){
+        /*It's still early enough to enlarge keyframe_granule_shift.*/
+        _enc->state.info.keyframe_granule_shift=
+         OC_MAXI(_enc->state.info.keyframe_granule_shift,
+         OC_MINI(31,oc_ilog(keyframe_frequency_force-1)));
+      }
+      _enc->keyframe_frequency_force=OC_MINI(keyframe_frequency_force,
+       1U<<_enc->state.info.keyframe_granule_shift);
+      (*(ogg_uint32_t *)_buf)=_enc->keyframe_frequency_force;
+      return 0;
+    }break;
+    case OC_ENCCTL_SET_VP3_COMPATIBLE:{
+      int vp3_compatible;
+      int ret;
+      if(_enc==NULL||_buf==NULL)return OC_FAULT;
+      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+      vp3_compatible=*(int *)_buf;
+      _enc->vp3_compatible=vp3_compatible;
+      ret=oc_enc_set_huffman_codes(_enc,OC_VP31_HUFF_CODES);
+      if(ret<0)vp3_compatible=0;
+      ret=oc_enc_set_quant_params(_enc,&OC_VP31_QUANT_INFO);
+      if(ret<0)vp3_compatible=0;
+      if(_enc->state.info.pixel_fmt!=OC_PF_420||
+       _enc->state.info.pic_width<_enc->state.info.frame_width||
+       _enc->state.info.pic_height<_enc->state.info.frame_height||
+      /*If we have more than 4095 super blocks, VP3's RLE coding might
+         overflow.
+        We could overcome this by ensuring we flip the coded/not-coded flags on
+         at lease one super block in the frame, but we pick the simple solution
+         of just marking the stream incompatible instead.
+        It's unlikely the old VP3 codec would be able to decode streams at this
+         resolution in real time in the first place.*/
+       _enc->state.nsbs>4095){
+        vp3_compatible=0;
+      }
+      *((int *)_buf)=vp3_compatible;
+      return 0;
     }break;
     default:return OC_IMPL;
   }
