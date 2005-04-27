@@ -1,11 +1,14 @@
 #include <limits.h>
+#include <pthread.h>
 #if !defined(_decint_H)
 # define _decint_H (1)
 # include "theora/theora.h"
 # include "internal.h"
 
-typedef struct theora_setup_info oc_setup_info;
-typedef struct theora_dec_ctx    oc_dec_ctx;
+typedef struct theora_setup_info     oc_setup_info;
+typedef struct oc_dec_pipeline_state oc_dec_pipeline_state;
+typedef struct oc_dec_pipeline_plane oc_dec_pipeline_plane;
+typedef struct theora_dec_ctx        oc_dec_ctx;
 
 # include "idct.h"
 # include "huffdec.h"
@@ -24,6 +27,41 @@ struct theora_setup_info{
   /*The quantization parameters.*/
   theora_quant_info  qinfo;
 };
+
+
+
+struct oc_dec_pipeline_plane{
+  oc_dec_ctx    *dec;
+  int            done;
+  int            pli;
+  int            avail_fragy0;
+  int            avail_fragy_end;
+};
+
+
+
+struct oc_dec_pipeline_state{
+  int                   ti[3][64];
+  int                   ebi[3][64];
+  int                   eob_runs[3][64];
+  int                   bounding_values[512];
+  int                  *coded_fragis[3];
+  int                  *uncoded_fragis[3];
+  int                   fragy0[3];
+  int                   fragy_end[3];
+  int                   ncoded_fragis[3];
+  int                   nuncoded_fragis[3];
+  int                   pred_last[3][3];
+  int                   mcu_nvfrags;
+  int                   loop_filter;
+  int                   pp_level;
+  int                   stripe_fragy;
+  int                   refi;
+  int                   notstart;
+  int                   notdone;
+  oc_dec_pipeline_plane pplanes[3];
+};
+
 
 
 
@@ -72,6 +110,14 @@ struct theora_dec_ctx{
   theora_ycbcr_buffer      pp_frame_buf;
   /*The striped decode callback function.*/
   theora_stripe_callback   stripe_cb;
+  /*The striped decoding pipeline.*/
+  oc_dec_pipeline_state    pipe;
+  /*Mutex for parallel pipelined decode.*/
+  pthread_mutex_t          pipe_lock;
+  /*The auxilliary decoder threads.*/
+  pthread_t                pipe_thread[2];
+  /*Condition variables for the auxilliary decoder threads.*/
+  pthread_cond_t           pipe_cond[2];
 };
 
 /*Fix-ups for the libogg1 API, which returns -1 when there are insufficient
