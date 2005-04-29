@@ -14,6 +14,17 @@
 		<li id="links_"><a href="/links/">Links</a></li>
 		<li id="developers_"><a href="/developers/">Developers</a></li>
 	</ul>
+
+	<ul id="languages">
+		<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en">English</a></li><!--#endif -->
+		<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en"><img src="/images/flags/flag-uk.gif"/ title="English translation" alt="English translation"/></a></li><!--#endif -->
+		<!--#if expr="$rus" --><li id="russian"><a href="index.shtml.ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</a></li><!--#endif -->
+		<!--#if expr="$rus" --><li><a href="index.shtml.ru"><img src="/images/flags/flag-russia.gif"/ title="&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;" alt="&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;"></a></li><!--#endif -->
+		<!--#if expr="$spa" --><li id="spanish"><a href="/">Spanish</a></li><!--#endif -->
+		<!--#if expr="$fre" --><li id="french"><a href="index.shtml.fr">French</a></li><!--#endif -->
+		<!--#if expr="$jpn" --><li id="japanese"><a href="index.shtml.ru">Japanese</a></li><!--#endif -->
+	</ul>
+
 </div>
 
 <div id="banners">

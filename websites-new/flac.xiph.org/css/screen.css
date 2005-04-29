@@ -71,7 +71,11 @@ img {
 
 #navbar #developers_ {
 	padding-right: 0;
-	background: none ;
+	background: none;
+}
+
+#languages li {
+	background: none;
 }
 
 #banners {

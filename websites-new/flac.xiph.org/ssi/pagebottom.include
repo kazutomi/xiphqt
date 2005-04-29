@@ -4,6 +4,7 @@
 <div id="copyright">
 	<p>The Xiph Fish Logo and the FLAC logos are trademarks (&trade;) of Xiph.Org and Josh Coalson respectively.</p>
 	<p>These pages &copy; 1994 - 2005 Josh Coalson. All rights reserved.</p>
+	<p> This file last modified <!--#echo var="LAST_MODIFIED" --></p>
 </div>
 
 </div>
