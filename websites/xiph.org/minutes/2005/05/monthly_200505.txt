@@ -1,0 +1,67 @@
+--> Mirv (~tajyrink@Mirv.active.supporter.pdpc) has joined #xiphmeet
+<boxofpurpleducks> Anyone except Mirv here non-idle?  We're about to begin the meeting.
+<derf_> I'm here.
+<boxofpurpleducks> I knew attendance today would be low... just want to know if it's > me.
+<boxofpurpleducks> Hi derf.
+<derf_> Hi.
+<boxofpurpleducks> OK, I have meeting time.  Let's begin.  I'd like to get back to sleep :-)
+<derf_> Sure, so would I.
+<boxofpurpleducks> I'm your lovely chair today.
+<boxofpurpleducks> First a proxy from jEan-MArc:
+<boxofpurpleducks> [02:58:06] <jmspeex> Been mainly busy writing my thesis lately, but I've got 1.0.5 and 1.1.8 ready to release.
+<boxofpurpleducks> [02:59:05] <jmspeex> 1.1.8 has mainly some speed and memory optimizations, as well as a few bug fixes.
+<boxofpurpleducks> [03:04:39] <jmspeex> It's a bit old news, but I also finished my ARM optimization contract. Speex now runs twice as fast on ARM and about half of the improvement is generic, so all archs got faster.
+<boxofpurpleducks> That summarises speex.
+<boxofpurpleducks> Next, I'll go.
+<boxofpurpleducks> I have nothing to report; as expected, I got a full night's sleep exactly three times between the beginning of SXSW in March and the middle of last week.
+<boxofpurpleducks> ...none of it due to Xiph work.
+<boxofpurpleducks> I've just returned from that month of Hell and am getting back to work.  Beginning with completing the Mercora contract.
+<boxofpurpleducks> (Which gives them an encoder 6x faster than reference in the end)
+<illi> that's pretty impressive
+<boxofpurpleducks> When I get back to work, it will be on Vorbis reference, new Vorbis R&D and Postfish.
+<derf_> Is that encoder integer-only?
+<boxofpurpleducks> No.
+<boxofpurpleducks> FP.
+<derf_> Okay, I wasn't sure.
+<boxofpurpleducks> Some of it is paring down from reference, some of it is just more cleaver than reference.
+<boxofpurpleducks> lever
+<boxofpurpleducks> clever
+<boxofpurpleducks> The VBR modes are not quite as good as ref; the ABR modes are actually somewhat better.
+<boxofpurpleducks> in any case, I'm done.
+<boxofpurpleducks> derf_: you next
+--> karlH (~karl@82-38-34-147.cable.ubr02.brad.blueyonder.co.uk) has joined #xiphmeet
+<derf_> Okay.
+<derf_> So, the experimental branch has gotten some autofoo support.
+<derf_> Also, I've done a few bug fixes and minor additional features to make sure I'm familiar with the codebase again in anticipation of more involved work on it this month.
+<boxofpurpleducks> Is good.  What is the general state of the experimental Theora branch?
+<derf_> The decoder support is faster, more featureful, and more secure than mainline.
+<derf_> The encoder support is the "experimental" bit, and that's what I plan to work on.
+<boxofpurpleducks> OK.
+<boxofpurpleducks> More to say?
+<derf_> j^ helped work up an mplayer patch to support it, but they haven't applied it yet.
+<derf_> I think that about covers it for Theora.
+<derf_> Ralph has been working on moving the RTP stuff forward again.
+<boxofpurpleducks> Yes, Ralph has made a few 'executive decisions' to get RTP done.
+<boxofpurpleducks> He commented that all the in-band decisions are made, he just needs to finish the out-of-band work.
+<derf_> Yes, that was my appreciation of the current status as well.
+<boxofpurpleducks> OK, I've seen stirrings from only two other nicks, Mirv and karlH.  Either of you got anything to add to this shortest of Xiph meets?
+<illi> I have nothing to report, busy with work and school... maybe we should keep the meetings to the other time... seems this one is worse for most people,  seems i'm the only one it's better for
+<Mirv> nope, just observing
+<karlH> just that the LAC conference files are up on http://www.linuxdj.com/audio/lad/contrib/zkm_meeting_2005/
+<boxofpurpleducks> Ah, illi is here, right.
+<boxofpurpleducks> illi: you're not the only one, thomasvs usually wants early meets too.
+<boxofpurpleducks> The early meeting times *are* useful, it's just that it's a bad time for any core people to chair it.
+<boxofpurpleducks> karlH: thanks
+<derf_> Unfortunately, thomasvs said he couldn't make it this month.
+<boxofpurpleducks> anyway, April was a busy non-Xiph month for most of us.
+<derf_> Yes, I had approximately as many nights of full sleep as you did.
+<boxofpurpleducks> Some of May will be catching up from that.  I look forward to getting back to official Xiph work as opposed to things related to Xiph.
+<derf_> Where "full" is more than 5 hours.
+<boxofpurpleducks> derf_: same here.  Set my personal sleepless record at a shade over 70 hours.
+<boxofpurpleducks> OK, anyway, we're done.  
+<boxofpurpleducks> [gavel]
+<derf_> Seconded.
+<boxofpurpleducks> Meeting minutes will be up later... after I've slept.
+<boxofpurpleducks> Re-good-night y'all, see you in this channel again next month (and in the other channels on a daily basis)
+<boxofpurpleducks> Next meeting is 23:59 GMT on June 1st.
+

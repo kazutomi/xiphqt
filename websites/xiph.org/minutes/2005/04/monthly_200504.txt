@@ -1,0 +1,401 @@
+--- Log opened Wed Apr 06 17:01:19 2005
+17:01 -!- xiphlog [~giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+17:01 -!- Topic for #xiphmeet: Welcome to the Xiph.org meeting and discussion channel | Next monthly meeting at 23:59 GMT April 6 : http://wiki.xiph.org/MonthlyMeeting200504 | log of the last meeting at http://www.xiph.org/minutes/2005/march/raw/index.txt
+17:01 -!- Topic set by rillian [] [Wed Apr  6 11:20:43 2005]
+17:01 [Users #xiphmeet]
+17:01 [ adiabatic] [ derf_ ] [ HackRip ] [ J_Bullet] [ rillian    ] [ xiphlog] 
+17:01 [ Atamido  ] [ edrz  ] [ illi    ] [ karlH   ] [ thomasvs   ] 
+17:01 [ blanu    ] [ ginger] [ Intangir] [ kfish   ] [ vanguardist] 
+17:01 -!- Irssi: #xiphmeet: Total of 16 nicks [0 ops, 0 halfops, 0 voices, 16 normal]
+17:01 -!- Channel #xiphmeet created Wed Dec  1 06:43:50 2004
+17:01 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+17:02 -!- SebastianG [[U2FsdGVkX@albarino.cs.upb.de] has joined #xiphmeet
+17:02 -!- rillian changed the topic of #xiphmeet to: Welcome to the Xiph.org meeting and discussion channel | Next monthly meeting at 23:59 GMT April 6 : http://wiki.xiph.org/MonthlyMeeting200504 | live log at http://westfish.xiph.org/~giles/200504_meeting.txt
+17:03 < rillian> hi everyone
+17:03 < J_Bullet> hi!
+17:03 < rillian> let's wait a couple of minutes and see if monty shows up
+17:04 -!- GarfTop [Garf@Garf.active.supporter.pdpc] has joined #xiphmeet
+17:04 < rillian> hi Garf, J_Bullet 
+17:05 < rillian> well ok. I suppose I'll chair this time
+17:05 < rillian> Hi everybody, thanks for coming!
+17:05 < rillian> first item on the agenda is the new website
+17:05 < rillian> melissa finished the templates last month
+17:05 < rillian> (except for the theora logo, which is still pending)
+17:06 < rillian> and Atamido did a great job turning it into CSS
+17:06 < rillian> Atamido: what's new since then?
+17:07 < derf_> 19:32:39 < Atamido> When the meeting does start, would someone mention these sites?  http://xiph.org.commo.de/ http://vorbis.com.commo.de/ http://flac.xiph.org.commo.de/
+17:07 < derf_> 19:33:09 < Atamido> Oh, and http://xspf.org.commo.de/
+17:07 < derf_> 19:33:24 < Atamido> Need to know what exactly I am supposed to be doing.
+17:07 < derf_> 19:33:40 < Atamido> Also if anyone has anything in particular they need to comment on about the sites.
+17:07 < rillian> there we go, voices of the past preserved through the magic of modern technology
+17:07 < derf_> Not sure if he's going to be here in person, but that's what he said earlier.
+17:08 < rillian> IIRC we're stalled on people porting the content from the old site to the new site design in http://svn.xiph.org/websites-new/
+17:08 < rillian> a current live example of which is at atamidos links earlier
+17:08 < rillian> so if anyone is inspired to do so, please chip in
+17:08 < rillian> and help atamido with formatting and layout comments as requested
+17:09 < rillian> any questions on the website?
+17:09 < adiabatic> When'll something go up on any one of the website?
+17:09 < adiabatic> Is there much left at all?
+17:09 < adiabatic> (that is, for one website to be replaced)
+17:09 < rillian> adiabatic: there's quite a lot of content to port
+17:10 < rillian> vorbis.com is slightly smaller than xiph.org I think
+17:10 < rillian> but there wasn't much done besides the front pages last I looked
+17:11 < rillian> Ok. next item is SXSW
+17:11 < rillian> Jack, Monty, Atamido and I attended
+17:11 < rillian> we had a small booth in the trade show
+17:11 < rillian> and it was good to meet everyone in person
+17:11 < adiabatic> Any photo galleries, incidentally?
+17:11 < rillian> one contact with a film maker
+17:12 < rillian> you can see jack and I here: http://people.xiph.org/~giles/2005/sxsw/sterling-audience-markup.jpg :)
+17:12 < rillian> I don't think anyone put up a full gallery
+17:12 < rillian> but it was my first time there, and I really enjoyed it
+17:13 < rillian> was good to meet some of the regulars.
+17:13 < rillian> We ended up not doing the streaming, but the company that did was using icecast :)
+17:13 -!- GShang [geoff@CPE-60-226-28-201.qld.bigpond.net.au] has joined #xiphmeet
+17:13 < rillian> Monty brought the new marketing materials, and they look nice
+17:13 < rillian> gave out a couple
+17:14 < rillian> Sony declined to make a promotional donation of one of the HDV cameras they were pushing
+17:14 < J_Bullet> good clear picture of you guys...
+17:15 < rillian> I took some pictures. I'll put them up later since people are interested.
+17:15 < rillian> J_Bullet: that's from bruce sterling's celphone, I think
+17:15 -!- brendan [~user@albatross.kublai.com] has joined #xiphmeet
+17:15 < rillian> hi brendan!
+17:15 < rillian> anyway, that's all I have to say about it
+17:15 < brendan> hi :)
+17:16 < rillian> On to the project updates
+17:16 < rillian> I talked to monty about the libogg2 api
+17:16 < rillian> so I have a much better idea how it's supposed to work now
+17:16 < rillian> and increasing the number of people who could write the docs by one :)
+17:17 < adiabatic> Huzzah.
+17:17 < rillian> unfortunately we found some holes in it, so there's a bit more work to do
+17:17 < rillian> anything new with vorbis?
+17:17 < rillian> Monty mentioned looking at the aotuv b3 encoder and liking it
+17:18 < rillian> anyone else feel free to chime in with relevent news :)
+17:18 < karlH> I hear there is b4 coming out soon if not already
+17:18 < rillian> karlH: ah, excellent
+17:18 < rillian> Speex, jm has continued to tune the fixed point implementation
+17:18 < rillian> and there's been a steady stream of application developer questions, including a lot of embedded stuff
+17:19 < rillian> FLAC I haven't seen anything new
+17:19 < rillian> oh, illi: there was a complaint on the flac list from someone who couldn't get playback to work with your filters, but the codecodec ones did
+17:19 < rillian> it wasn't properly diagnosed though
+17:20 < rillian> Theora:
+17:20 < rillian> ruik did some mmx optimization on derf's experimental decoder
+17:20 < rillian> derf_: he got around 20% so far, is that right?
+17:20 < derf_> 11%, I think it was, actually.
+17:21 < rillian> but he hasn't done the dct yet?
+17:21 < derf_> But he hasn't done the iDCT yet, or the loop filter, so there's still room for improvement.
+17:21 < rillian> ok
+17:21 < rillian> So that was something
+17:21 < derf_> The iDCT should be straightforward, but the loop filter is looking challenging.
+17:21 < derf_> Not sure how much he can get out of that part.
+17:22 < rillian> A couple of conferences, including the drupal sections of FOSDEM and the Fedora Users and Developer Conference released their talks in theora
+17:22 < rillian> derf_: right
+17:22 < rillian> The big excitement in theoraland was of course elphel.com's theora cameras
+17:23 < derf_> Yes, nice bit of work there.
+17:23 < rillian> they do 1280x1024 30fps theora at 1-2 Mbps
+17:23 < derf_> The resolution of which has spurred on this optimization work.
+17:23 < GShang> nice.
+17:23 < rillian> with an open source hardware fpga encoder
+17:23 < rillian> the irony is that the encoder draws about 3 watts
+17:23 < rillian> but no one's managed to play back the streams at full speed on *any* hardware
+17:24 < rillian> so we need some serious decoder optimizations to demonstrate that
+17:24 < rillian> Also, Andrey Filippov, the guy behind it is a very strong open source supporter
+17:24 < rillian> and he's donated two of the camera to xiph.org for testing/development/evangelism purposes
+17:25 < derf_> Yes, and he's published at least one article so far about the cameras, pushing the open-source aspect.
+17:25 < rillian> I received them today, and will get a stream going asap
+17:26 < rillian> plan is for me to take at least one to guadec, LSM, and my visit with fluendo in barcelona this summer
+17:26 < rillian> but if anyone else has a compelling case for borrowing one, please let me know
+17:26 < rillian> Any questions on all that?
+17:26 < ginger> sounds interesting
+17:26 < rillian> ginger: they're way cool.
+17:26 < ginger> if we had it before next week, we could use if for streaming at Linux conf
+17:27 < rillian> they're designed as security cameras, so the image quality isn't great
+17:27 < rillian> but they're *tiny*
+17:27 < ginger> oh :)
+17:27 < rillian> ginger: you can always ask him
+17:27 -!- edrz [~rzewnicki@peter.rfa.org] has quit ["Download Gaim [http://gaim.sourceforge.net/]"]
+17:27 < ginger> I guess we want a bit better quality for the conference then
+17:28 < rillian> the streaming part doesn't work yet though, so someone would have to stay up a few nights for you to use them
+17:28 < rillian> ginger: well, the resolution makes up for a lot
+17:28 < ginger> we'll keep it in mind for future stuff I guess
+17:28 < rillian> but you'd probably be better off with a good quality minidv camera
+17:28 < rillian> brendan, karlH: what's new with icecast?
+17:28 < ginger> we've got a camera setup already with dv
+17:29 < ginger> streaming theora with flumotion then
+17:29 < karlH> nothing much, people have been busy elsewhere
+17:29 < rillian> ginger: cool. thomas will be happy
+17:29 < rillian> karlH: what's next on the roadmap?
+17:29 < karlH> I'm looking into extending the listener auth side of things initially
+17:30 < rillian> that's the private stream stuff people have been requesting?
+17:30 < karlH> then mering the on-demand relay support
+17:30 < karlH> *merging
+17:31 < karlH> yeah, thing like subscription streams or part of portals
+17:32 < GShang> Quite a few new user posts lately which is a good sign.
+17:32 < rillian> GShang: yay
+17:32 < karlH> the stream directory seems to be running fine as well
+17:32 < GShang> Karl, I filed a bug the other day, should I post about it too or is there no need?
+17:33 < rillian> yeah, that's gone surprisingly smoothly. I kept expecting it to always break on upgrades like it used to. :)
+17:33 < karlH> if it's in trac then it's fine
+17:33 < GShang> Karl, ok.
+17:33 < rillian> if that's it for icecast, next project is the RTP stuff
+17:33 < karlH> yeah
+17:33 < GShang> Oddsock's stream dir at least was down a few days ago with his website move, induced a crash in a server i maintain.  but that's a known problem I think.
+17:34 < rillian> Phil Kerr couldn't make it, but sent a report
+17:34 < rillian> RTP wise this month as seen the submitting of the Speex draft.  There
+17:34 < rillian> was a problem with the versioning number, I submitted an -03 draft and
+17:34 < rillian> the IETF knocked it back saying it should be an -02 version.
+17:34 < rillian> It is the same as the one submitted a few weeks ago, which was bounced due to the
+17:34 < rillian> IETF meeting.  This should be out of the submission queue today or
+17:34 < rillian> tomorrow and I'll send an email when I see it.  Vorbis and Theora, need
+17:34 < rillian> to nail the protocol specs down *hard*, so the only changes are small
+17:34 < rillian> ones from here on in.  Haven't had chance to look at the FLAC-RTP draft yet.
+17:34 < rillian> so speex draft submitted
+17:34 < rillian> the vorbis and theora drafts were stalled on the decoder setup id field
+17:35 < rillian> phil had proposed a CRC32 of the setup data
+17:35 < rillian> but derf worried about collisions, at least with theora
+17:35 -!- InfiniteLoop [~dev@pcp02122763pcs.waldlk01.mi.comcast.net] has joined #xiphmeet
+17:35 < rillian> I proposed a compromise last night to try and get the ball rolling again
+17:35 < rillian> but no one has commented yet
+17:35 < rillian> once we settle that we can have a draft that people can start implementing
+17:36 < rillian> and work out the codebook delivery mechanisms
+17:36 < GShang> Is there a speex implmementation?
+17:36 < rillian> Andrey was also interested in RTP theora for the camera
+17:36 < rillian> GShang: I think gnomemeeting and a number of the sip phones use speex-over-rtp
+17:36 < rillian> I don't know which draft they implement
+17:37 -!- acolwell [~acolwell@vp135.atm01.sea.blarg.net] has joined #xiphmeet
+17:38 < rillian> acolwell: we just finished the RTP update
+17:38 < acolwell> ok. Looking at the log right now
+17:38 < rillian> any comments?
+17:40 < acolwell> nothing specific at the moment. I'd like to nail down the RTP specs for Theora and Vorbis as soon as we can. Where can I find the most up to date versions of the drafts?
+17:40 < rillian> I don't think there are newer versions than what's in svn
+17:40 < rillian> but there's a bunch of consensus that needs to be rolled into them
+17:40 < rillian> phil's site is http://www.plus24.com/xiph/
+17:40 < acolwell> I guess I was hoping that had already been done
+17:41 < rillian> alas, no
+17:41 < rillian> feel free to send letters of encouragement :)
+17:41 < rillian> Ok, XSPF
+17:41 < rillian> They're joining xiph
+17:41 < rillian> and still trying to figure out what that means
+17:41 < rillian> but we have their spec work in svn
+17:41 < rillian> and have transferred ownership of the domain
+17:42 < rillian> we have a legal volunteer drawing up a formal agreement to back up the informal one
+17:42 < rillian> hope to have all that tied up by the end of the month
+17:42 < rillian> I don't think any xspf people are here
+17:43 < rillian> illi, kfish: what's new with the directshow filters?
+17:43 < rillian> as far as the last three items go (iceshare, postfish, cdparanoia) I'm not aware of any progress since last month, so if no one has anything we can move on to the next section of the agenda
+17:44 < ginger> I suppose illi has not had much chance to do much work on them
+17:44 < rillian> ginger: seems so. he's busy with other things?
+17:44 < ginger> yeah: uni and a different contract
+17:44 < rillian> fair enough, but too bad
+17:45 < ginger> also: it's 7am in Perth and this isn't his time of day :)
+17:45 < rillian> ginger: do you want to give us an update on CMML and annodex?
+17:45 < ginger> sure
+17:45 < ginger> we've just put new internet-drafts on annodex, CMML and the timed URI queries up to IETF
+17:46 < ginger> all of our code about Annodex has moved to version 3
+17:46 < ginger> which is the one supporting skeleton
+17:47 < ginger> skeleton has turned out to be an excellent decision and if anybody wants to do flexible multitrack ogg, feel free to use it
+17:47 < rillian> ah great
+17:47 < ginger> also, CMML is growing up 
+17:47 < kfish> http://wiki.xiph.org/index.php/OggSkeleton
+17:47 < rillian> kfish: nice to have the new spec on annodex.net too
+17:47 < derf_> Yeah, the skeleton stuff looked really nice, from what I've seen of it.
+17:48 < ginger> we're workin on a version 3 for that which will include style sheet formatting and external links
+17:48 < ginger> as it stands now, CMML 2 is really stable and nice
+17:49 < ginger> if you've installed the Firefox plugin for annodex, you can see all the text and structure around the video which all comes out of cmml
+17:49 < ginger> firefox plugins are available for windows, os x, and linux now
+17:49 < rillian> yeah, I've played with that some
+17:49 < ginger> http://www.annodex.net/
+17:49 < rillian> it's very much the web-assisted tv interface
+17:50 < kfish> or the tv-assisted web interface!
+17:50 < ginger> but with hyperlinks!
+17:50 -!- GarfTop [Garf@Garf.active.supporter.pdpc] has quit ["The flower would also have been acceptable."]
+17:50 < ginger> and search engine
+17:50 < rillian> ginger: exactly
+17:50 < ginger> and kfish has improved mod_annodex heaps
+17:50 < rillian> I don't know if you've watched the Nova program produced by the PBS network in the US, but they're always trying to do this sort of thing
+17:50 < rillian> only without the functional web part
+17:51 < ginger> I bbelieve it will also do time offsets for ogg theora or ogg vorbis
+17:51 < ginger> rillian, no I don't know Nova
+17:51 < rillian> kfish: btw, could you put the proposal you had for how to mark MNG overlays for theora and such in the wiki?
+17:52 -!- acolwell_ [~acolwell@vp135.atm01.sea.blarg.net] has joined #xiphmeet
+17:52 < kfish> rillian: yeah sure, got to dig that up :)
+17:52 < rillian> ta
+17:52 < ginger> kfish, tell us about python ;)
+17:52 < rillian> ginger: they often do overlays on the broadcast stream in the same general idea
+17:52 < ginger> oh!
+17:52 < rillian> and have awebsite for each show
+17:53 < ginger> but online and interactive and searchable is much better
+17:53 < rillian> http://www.pbs.org/wgbh/nova/
+17:53 < rillian> ginger: of course
+17:53 < rillian> unfortunately PBS, despite its name, isn't a very public-friendly network
+17:53 < ginger> is nova a bit like the discovery channel?
+17:54 < rillian> other way around, but yeah
+17:54 < ginger> oh :)
+17:54 < rillian> general science programming
+17:54  * ginger doesn't watch tv much
+17:54 < rillian> 's ok
+17:54 < rillian> different country
+17:54 < rillian> but I grew up watching them
+17:54 < rillian> anyway, we've drifted off topic
+17:54 < rillian> kfish: python?
+17:55 < kfish> ah, i've been playing with pyannodex a lot, for dynamic content generation
+17:55 < rillian> ginger: is it true kfish is coming to guadec as well?
+17:55 < kfish> ie. cgi scripts that recompose media and insert metadata on the fly
+17:55 < kfish> i'll be doing a tute on 'building dynamic video webs' at w3c in chiba in may
+17:55 -!- GShang [geoff@CPE-60-226-28-201.qld.bigpond.net.au] has quit [Read error: 110 (Connection timed out)]
+17:55 < ginger> you should mention that your cgi script does time offsets for all ogg formats
+17:55 < kfish> ginger: you just did :)
+17:55 < kfish> and hopefully will be able to make it to guadec, yes :)
+17:56 < ginger> nah, I said mod_annodex does
+17:56 < ginger> but in cgi i'ts even better
+17:56 < rillian> kfish: cool
+17:56 < kfish> well, it took about 3 minutes to code in python, but that's after putting all the nasty bits in C first :-)
+17:57 < rillian> thomas will be happy :)
+17:57 < kfish> another (more general) thing i might mention is the oggzinfo and oggz-validate commandline tools, which will be in the next liboggz release
+17:57 < ginger> you could address a theora video as in http://media.xiph.org/video.ogg?t=20
+17:57 < ginger> and get 20 sec into it for serving
+17:58 < kfish> and it delivers video from the previous keyframe etc.
+17:58 < kfish> http://www.annodex.net/software/mod_annodex/ describes that kind of functionality
+17:58 < rillian> oh, speaking of python, and in the interests of cross-polination, the v2v(.cc) project has been working the the drupal cms people to integrate bittorrent propagation of theora video between websites
+17:59 < ginger> nice
+17:59 < rillian> might be some intersection with annodex there
+17:59 < rillian> then we just have to get archive.org to see the light :)
+17:59 -!- GShang [geoff@CPE-60-226-18-128.qld.bigpond.net.au] has joined #xiphmeet
+17:59 -!- acolwell [~acolwell@vp135.atm01.sea.blarg.net] has quit [Connection timed out]
+17:59 < rillian> http://v2v.cc/htdocs/
+18:00 < rillian> Anyway, in the interests of time, how about we move on
+18:00 < rillian> mailing list administration
+18:00 < rillian> anyone have anything specific?
+18:00 < GShang> ah, I see my cable connectioncame back at the right time
+18:00 < rillian> Now that mike's on vacation, we need moderators
+18:01 < GShang> I took over the icecast lists.
+18:01 < rillian> otherwise, non-member list posts will just get dropped in the bit bucket
+18:01 < rillian> GShang: excellent, thanks
+18:01 < rillian> I clear some of the lists when I think about it
+18:01 < GShang> A lot of spam allegedly comes from .ru domains (mail.ru, subscribe.ru, rambler.ru, etc).
+18:01 < GShang> There is an antispam link on www.subscribe.ru but I don't speak the language so I don't know if there's anything useful there.
+18:01 < rillian> a lot spam our filters don't catch anyway
+18:02 < rillian> remember you're just seeing what makes it into the maybe pile :)
+18:02 < rillian> anyway, if you'd like to help Geoff and I out, see the list at http://wiki.xiph.org/index.php/MailingLists
+18:02 < rillian> and email me for access
+18:02 < GShang> A lot of these messages are quite large and go to both icecast and icecast-dev.  Not sure if we can do anything to reduce the list admin work for these - are we doing any spam blocking?
+18:03 < rillian> GShang: iirc there's upstream spam blocking at osuosl
+18:03 < GShang> ah so they run it.
+18:03 < rillian> we could try lowering the max message size
+18:03 < rillian> but that sometimes interferes with patches
+18:03 < rillian> Webforums: anyone done anything on this?
+18:03 < GShang> It's just that a lot ofthese look so simimlar that surely something could be done about them.
+18:04 < rillian> I don't think anything's happened with the web forums
+18:05 < rillian> bounties: I suppose I've pledged $300 for qt components that include ogg theora export and playback
+18:05 < rillian> but otherwise, no
+18:06 < rillian> if someone can ask an accountant (US CPA) about the collecting targeted donations rules, that would help
+18:06 < rillian> I didn't get around to asking my aunt until tax season had started
+18:06 < rillian> Any comments or questions?
+18:07 < rillian> item 5 is migrate wiki to trac
+18:07 < rillian> this would be nice because you can link to bugs from the wiki and vice versa
+18:07 < GShang> I asked a couple of meetings back if we need to do anything to get this bounty stuff going.
+18:07 < GShang> last time I looked, the various tasks were listed, but there didn't seem to be any way to donate/pledge money, etc.
+18:08 < rillian> otoh, mediawiki that we're using for wiki.xiph.org is a nicer wiki
+18:08 < rillian> so I'm inclined to keep the split for now
+18:08 < rillian> can whoever put this on the agenda comment?
+18:08 < rillian> GShang: yeah, that's what the question was about
+18:09 < rillian> We also have to get board approval for an initial budget
+18:09 < rillian> I think we have about $1k to split
+18:09 < rillian> but none of them are here
+18:10 < derf_> rillian: Re: moving the Wiki to Trac, that was Arc, who doesn't appear to be here.
+18:10 < rillian> derf_: ok. recall any arguments?
+18:10 < derf_> No, I just got that out of the revision log.
+18:10 < GShang> re the WIKI, I've not seen a trac WIKI, but if the current one we have is better then I think we should consider sticking with it since sacrificing functionality/usability for this bug linking feature would seem not to be a good idea.
+18:11 < rillian> GShang: ok, that's two nay votes :)
+18:11 < rillian> derf_: aha, thanks
+18:11 < derf_> Also, MikeS strongly dislikes Trac, and I'm sure he'd rather not see it become more strongly entrenched.
+18:11 < rillian> Right
+18:12 < GShang> Since you can use WIKI formatting anyway in trac entries, couldn't you manually link to WIKI pages?
+18:12 < rillian> Monty also strongly dislikes trac, but only because it's different, not because he actually thinks it's inferior
+18:12 < rillian> GShang: you can. it's just the autolinking that's nice
+18:12 < rillian> and of course there's some duplicate admin effort having both systems up
+18:13 < rillian> I'm tired of hearing myself talk, but item 6 was mine
+18:13 < GShang> As a bug tracker, I personally find the UI a lot easier than what we had previously, but not all versions of all components seem to be available to choose from.
+18:13 < rillian> the issue of ogg123 not playing all our formats came up recently
+18:13 < rillian> last time we talked about it, consensus was that ogg123 should remain vorbis-only, despite the name
+18:14 < GShang> well, it already does speex and FLAC, doesn't it?
+18:14 < rillian> but I was curious if people felt any different now
+18:14 < rillian> GShang: does it? that would be good
+18:14 < rillian> and just leave theora
+18:15 < GShang> I wouldn't mind if it would play the audio of a theora/vorbis bitstream, but not sure if it can currently do that.
+18:15 < rillian> GShang: (re trac) yes, that's pretty much why we switched. it doesn't handle multiple projects/components as well as bugzilla, but that's really the only thing I miss
+18:15 < rillian> GShang: it can't because it uses vorbisfile, which chokes on multiplexed streams
+18:16 < rillian> so fixing that would be a great step in itself
+18:16 < GShang> ah ok.  fair enough.
+18:16 < rillian> the problem with adding theora, really, is that having video out capabilities is a big change
+18:16 < rillian> they can be optional
+18:16 < rillian> and there's always libaa (or now libcaca I guess) for running in a terminal
+18:17 < GShang> I suppose it really all depends if Xiph wants to have its own player implementation.  It's arguable there's really no need.  Of course, we do have the directshow filters already.
+18:18 < rillian> I think there is a real need
+18:18 < rillian> we spent quite a lot of time waiting for people to build awesome tools around our codec implementations
+18:19 < rillian> and it didn't really happen
+18:19 < kfish> huh?
+18:19 < rillian> so I think we need to really push both framework plugins like illi's work, and our own stand alone players if we want to foster adoption
+18:19 < GShang> well, ogg123 doesn't really seem to have a maintainer currently, am I right?
+18:19 < rillian> kfish: present company excepted, of cource
+18:19 < rillian> course
+18:19 < rillian> GShang: there is that
+18:20 < rillian> but we need to write a theoraplay
+18:20 < kfish> rillian: no, i don't get it -- there are already too many free media players, and they all already support ogg formats -- what's the problem, and why should we make it worse?
+18:20 < rillian> my question is really, should it be called theoraplay, or ogg123
+18:21 < rillian> kfish: among other things, there's nothing crossplatform we can ship as a demo
+18:21 < rillian> hxplay for linux is the only option that plays theora, but doesn't also play patented formats
+18:22 < kfish> ok, so we should put all our copious free time into helping vlc, gstreamer, xine etc. with portability
+18:22 < rillian> well, and totem-gstreamer
+18:22 < ginger> and the firefox plugin of course ;)
+18:22 < rillian> kfish: and modularity
+18:22 < kfish> portability and removal of free codecs
+18:22 < rillian> ginger: there is that :)
+18:22 < rillian> there are several competing firefox plugins, aren't there?
+18:22 < rillian> I saw something about a totem one on advogato
+18:22 < blanu> I use vlc for all of my theora demos. You can compile it without support for other formats.
+18:23 < rillian> blanu: oh? that's great new. stan said you couldn't easily remove mpeg
+18:23 < rillian> nes
+18:23 < rillian> news :P
+18:23 < rillian> (and hey! was nice to meet you a sxsw)
+18:23 < acolwell_> rillian: Helix's splay can also play Theora and I believe it builds for Mac, Windows, and Linux. I don't know if we have a regular distribution package for it though
+18:23 < blanu> rillian: You too. I want to show you a demo of our stuff soon.
+18:23  * ginger has not heard about a totem firefox plugin for theora
+18:24 < blanu> Anyway, we're probably going to be packaging our own stripped down VLC without the stuff like CSS that makes it so it can't be distributed in the US.
+18:24 < vanguardist> hhmm
+18:25 < vanguardist> was needed a free VLC for linux/win/macosx for our demo cd
+18:25 < rillian> yup
+18:25 < vanguardist> we found that making it totally clean was too hard/impossible
+18:25 < vanguardist> stan tried for a long time
+18:25 < blanu> The reason I can see for making your own player is mainly so you can show off the crazy multi-track video playback. VLC isn't going to do that. I can't even get them to play back chained streams fullscreen without flickering in between each stream.
+18:26 < ginger> too hard to fix?
+18:26 < rillian> blanu: good point. having a testbed for new features is also a good reason to have *something*
+18:26 < vanguardist> well, if you can make us a vlc that plays vorbis/speex/theora exclusively, that would be nice :)
+18:27 < rillian> (and flac)
+18:27 < kfish> vanguardist: that can be configured at build time -- the annodex firefox extension is built like that
+18:27 < kfish> with vlc
+18:28 < kfish> for windows,mac,linux
+18:28 < vanguardist> well, i'll have to see what stan told me
+18:28 < kfish> however for multitrack video you'd be better off starting with say gstreamer :)
+18:28 < vanguardist> he said that even configured to the minimum and just for those 3 formats, it could play mpeg4
+18:28 < vanguardist> and there were other bits still hardcoded in there
+18:28 < blanu> gstreamer only really works on Linux.
+18:28 < vanguardist> making it not xiph compatible
+18:29 < kfish> vanguardist: eww :( we'd better check
+18:29 < vanguardist> heh
+18:29 < blanu> I don't understand why you feel it's necessary to purge all other codecs. The important thing there to be is to just remove any proprietary or illegal code which would keep you from freely distributing your ogg-only version.
+18:30 < vanguardist> please do. this was the main reason holing up our fantastic demo CD/DVD
+18:31 < rillian> blanu: you mean leave the code in but disable it?
+18:31 < rillian> that would be a lawyer question, I think :)
+18:32 < rillian> anyway, this has been a nice discussion
+18:32 < rillian> but I think we should wrap up the official meeting
+18:32 < rillian> anyone second adjournment?
+18:32 < derf_> I'll second.
+18:32 < GShang> Seconded
+18:32 < rillian> ok, we're done
+18:33 < rillian> thanks everyone for coming
+18:33 < ginger> thanks for holding it
+18:33 < rillian> next meeting is 12:00 GMT, May 4
+18:33 < rillian> we now return you to regular irc
+18:33 < xiphlog> quit
+--- Log closed Wed Apr 06 18:33:45 2005
