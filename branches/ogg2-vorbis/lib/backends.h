@@ -1,18 +1,18 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: libvorbis backend and mapping structures; needed for 
            static mode headers
- last mod: $Id: backends.h,v 1.15 2003/12/30 11:02:22 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
 
@@ -28,8 +28,8 @@
 /* this would all be simpler/shorter with templates, but.... */
 /* Floor backend generic *****************************************/
 typedef struct{
-  void                   (*pack)  (vorbis_info_floor *,oggpack_buffer *);
-  vorbis_info_floor     *(*unpack)(vorbis_info *,oggpack_buffer *);
+  void                   (*pack)  (vorbis_info_floor *,ogg2pack_buffer *);
+  vorbis_info_floor     *(*unpack)(vorbis_info *,ogg2pack_buffer *);
   vorbis_look_floor     *(*look)  (vorbis_dsp_state *,vorbis_info_floor *);
   void (*free_info) (vorbis_info_floor *);
   void (*free_look) (vorbis_look_floor *);
@@ -86,15 +86,15 @@ typedef struct{
 
 /* Residue backend generic *****************************************/
 typedef struct{
-  void                 (*pack)  (vorbis_info_residue *,oggpack_buffer *);
-  vorbis_info_residue *(*unpack)(vorbis_info *,oggpack_buffer *);
+  void                 (*pack)  (vorbis_info_residue *,ogg2pack_buffer *);
+  vorbis_info_residue *(*unpack)(vorbis_info *,ogg2pack_buffer *);
   vorbis_look_residue *(*look)  (vorbis_dsp_state *,
 				 vorbis_info_residue *);
   void (*free_info)    (vorbis_info_residue *);
   void (*free_look)    (vorbis_look_residue *);
   long **(*class)      (struct vorbis_block *,vorbis_look_residue *,
 			float **,int *,int);
-  int  (*forward)      (oggpack_buffer *,struct vorbis_block *,
+  int  (*forward)      (ogg2pack_buffer *,struct vorbis_block *,
 			vorbis_look_residue *,
 			float **,float **,int *,int,long **);
   int  (*inverse)      (struct vorbis_block *,vorbis_look_residue *,
@@ -121,8 +121,8 @@ typedef struct vorbis_info_residue0{
 /* Mapping backend generic *****************************************/
 typedef struct{
   void                 (*pack)  (vorbis_info *,vorbis_info_mapping *,
-				 oggpack_buffer *);
-  vorbis_info_mapping *(*unpack)(vorbis_info *,oggpack_buffer *);
+				 ogg2pack_buffer *);
+  vorbis_info_mapping *(*unpack)(vorbis_info *,ogg2pack_buffer *);
   void (*free_info)    (vorbis_info_mapping *);
   int  (*forward)      (struct vorbis_block *vb);
   int  (*inverse)      (struct vorbis_block *vb,vorbis_info_mapping *);
@@ -142,5 +142,3 @@ typedef struct vorbis_info_mapping0{
 } vorbis_info_mapping0;
 
 #endif
-
-

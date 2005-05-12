@@ -1,17 +1,17 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: libvorbis codec headers
- last mod: $Id: codec_internal.h,v 1.18 2003/12/30 11:02:22 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
 
@@ -33,10 +33,11 @@ typedef struct vorbis_block_internal{
   float  ampmax;
   int    blocktype;
 
-  oggpack_buffer *packetblob[PACKETBLOBS]; /* initialized, must be freed; 
-					      blob [PACKETBLOBS/2] points to
-					      the oggpack_buffer in the 
-					      main vorbis_block */
+  ogg2pack_buffer *packetblob[PACKETBLOBS]; /* initialized, must be freed; 
+					       blob [PACKETBLOBS/2] points to
+					       the ogg2pack_buffer in the 
+					       main vorbis_block */
+  ogg2_buffer_state 	*ogg2bufferstate;
 } vorbis_block_internal;
 
 typedef void vorbis_look_floor;
