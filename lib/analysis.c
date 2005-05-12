@@ -1,24 +1,24 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: single-block PCM analysis mode dispatch
- last mod: $Id: analysis.c,v 1.56 2003/12/30 11:02:22 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
 
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <ogg/ogg.h>
+#include <ogg/ogg2.h>
 #include "vorbis/codec.h"
 #include "codec_internal.h"
 #include "registry.h"
@@ -29,7 +29,7 @@
 int analysis_noisy=1;
 
 /* decides between modes, dispatches to the appropriate mapping. */
-int vorbis_analysis(vorbis_block *vb, ogg_packet *op){
+int vorbis_analysis(vorbis_block *vb, ogg2_packet *op){
   int ret,i;
   vorbis_block_internal *vbi=vb->internal;
 
@@ -40,8 +40,8 @@ int vorbis_analysis(vorbis_block *vb, ogg_packet *op){
 
   /* first things first.  Make sure encode is ready */
   for(i=0;i<PACKETBLOBS;i++)
-    oggpack_reset(vbi->packetblob[i]);
-  
+    ogg2pack_writeinit(vbi->packetblob[i], vbi->ogg2bufferstate);
+
   /* we only have one mapping type (0), and we let the mapping code
      itself figure out what soft mode to use.  This allows easier
      bitrate management */
@@ -55,11 +55,13 @@ int vorbis_analysis(vorbis_block *vb, ogg_packet *op){
          bitrate management interface. */
       return(OV_EINVAL);
     
-    op->packet=oggpack_get_buffer(&vb->opb);
-    op->bytes=oggpack_bytes(&vb->opb);
+    op->packet=ogg2pack_writebuffer(&vb->opb);
+    op->bytes=ogg2pack_bytes(&vb->opb);
     op->b_o_s=0;
     op->e_o_s=vb->eofflag;
-    op->granulepos=vb->granulepos;
+    # This should be the first granule, this is a temporary cheat
+    op->top_granule=0;
+    op->end_granule=vb->granulepos;
     op->packetno=vb->sequence; /* for sake of completeness */
   }
   return(0);
@@ -106,16 +108,3 @@ void _analysis_output(char *base,int i,float *v,int n,int bark,int dB,
 		      ogg_int64_t off){
   if(analysis_noisy)_analysis_output_always(base,i,v,n,bark,dB,off);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,12 +1,12 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <ogg/ogg.h>
+#include <ogg/ogg2.h>
 #include "vorbis/codec.h"
 #include "codec_internal.h"
 #include "os.h"
@@ -81,7 +81,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
   bitrate_manager_info  *bi=&ci->bi;
 
   int  choice=rint(bm->avgfloat);
-  long this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+  long this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
   long min_target_bits=(vb->W?bm->min_bitsper*bm->short_per_long:bm->min_bitsper);
   long max_target_bits=(vb->W?bm->max_bitsper*bm->short_per_long:bm->max_bitsper);
   int  samples=ci->blocksizes[vb->W]>>1;
@@ -119,13 +119,13 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
       while(choice>0 && this_bits>avg_target_bits &&
 	    bm->avg_reservoir+(this_bits-avg_target_bits)>desired_fill){
 	choice--;
-	this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+	this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
       }
     }else if(bm->avg_reservoir+(this_bits-avg_target_bits)<desired_fill){
       while(choice+1<PACKETBLOBS && this_bits<avg_target_bits &&
 	    bm->avg_reservoir+(this_bits-avg_target_bits)<desired_fill){
 	choice++;
-	this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+	this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
       }
     }
 
@@ -133,7 +133,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
     if(slew<-slewlimit)slew=-slewlimit;
     if(slew>slewlimit)slew=slewlimit;
     choice=rint(bm->avgfloat+= slew/vi->rate*samples);
-    this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+    this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
   }
 
 
@@ -145,7 +145,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
       while(bm->minmax_reservoir-(min_target_bits-this_bits)<0){
 	choice++;
 	if(choice>=PACKETBLOBS)break;
-	this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+	this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
       }
     }
   }
@@ -157,7 +157,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
       while(bm->minmax_reservoir+(this_bits-max_target_bits)>bi->reservoir_bits){
 	choice--;
 	if(choice<0)break;
-	this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+	this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
       }
     }
   }
@@ -171,10 +171,10 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
     long maxsize=(max_target_bits+(bi->reservoir_bits-bm->minmax_reservoir))/8;
     bm->choice=choice=0;
     
-    if(oggpack_bytes(vbi->packetblob[choice])>maxsize){
-      
-      oggpack_writetrunc(vbi->packetblob[choice],maxsize*8);
-      this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+    if(ogg2pack_bytes(vbi->packetblob[choice])>maxsize){
+/*!!! I have no idea how to implement this with libogg2       
+      oggpack_writetrunc(vbi->packetblob[choice],maxsize*8); !!!*/
+      this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
     }
   }else{
     long minsize=(min_target_bits-bm->minmax_reservoir+7)/8;
@@ -184,9 +184,9 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
     bm->choice=choice;
 
     /* prop up bitrate according to demand. pad this frame out with zeroes */
-    minsize-=oggpack_bytes(vbi->packetblob[choice]);
-    while(minsize-->0)oggpack_write(vbi->packetblob[choice],0,8);
-    this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+    minsize-=ogg2pack_bytes(vbi->packetblob[choice]);
+    while(minsize-->0)ogg2pack_write(vbi->packetblob[choice],0,8);
+    this_bits=ogg2pack_bytes(vbi->packetblob[choice])*8;
 
   }
 
@@ -227,7 +227,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
   return(0);
 }
 
-int vorbis_bitrate_flushpacket(vorbis_dsp_state *vd,ogg_packet *op){
+int vorbis_bitrate_flushpacket(vorbis_dsp_state *vd,ogg2_packet *op){
   private_state         *b=vd->backend_state;
   bitrate_manager_state *bm=&b->bms;
   vorbis_block          *vb=bm->vb;
@@ -240,11 +240,13 @@ int vorbis_bitrate_flushpacket(vorbis_dsp_state *vd,ogg_packet *op){
     if(vorbis_bitrate_managed(vb))
       choice=bm->choice;
 
-    op->packet=oggpack_get_buffer(vbi->packetblob[choice]);
-    op->bytes=oggpack_bytes(vbi->packetblob[choice]);
+    op->packet=ogg2pack_writebuffer(vbi->packetblob[choice]);
+    op->bytes=ogg2pack_bytes(vbi->packetblob[choice]);
     op->b_o_s=0;
     op->e_o_s=vb->eofflag;
-    op->granulepos=vb->granulepos;
+    # This should be the first granule, this is a temporary cheat
+    op->top_granule=0;
+    op->end_granule=vb->granulepos;
     op->packetno=vb->sequence; /* for sake of completeness */
   }
   

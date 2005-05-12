@@ -1,17 +1,17 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c,v 1.61 2003/12/30 11:02:22 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
 
@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <ogg/ogg.h>
+#include <ogg/ogg2.h>
 #include "vorbis/codec.h"
 #include "codec_internal.h"
 #include "codebook.h"

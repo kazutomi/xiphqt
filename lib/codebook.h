@@ -1,24 +1,24 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: basic shared codebook operations
- last mod: $Id: codebook.h,v 1.13 2002/06/28 22:19:35 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
 
 #ifndef _V_CODEBOOK_H_
 #define _V_CODEBOOK_H_
 
-#include <ogg/ogg.h>
+#include <ogg/ogg2.h>
 
 /* This structure encapsulates huffman and VQ style encoding books; it
    doesn't do anything specific to either.
