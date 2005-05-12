@@ -1,12 +1,12 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Vorbis SOFTWARE CODEC SOURCE CODE.  *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE Ogg Vorbis SOURCE CODE IS (C) COPYRIGHT 1994-2005            *
+ * by the Xiph.org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
@@ -54,7 +54,7 @@ typedef struct OggVorbis_File {
   int              seekable;
   ogg_int64_t      offset;
   ogg_int64_t      end;
-  ogg_sync_state   oy;
+  ogg2_sync_state *oy;
 
   /* If the FILE handle isn't seekable (eg, a pipe), only the current
      stream appears */
@@ -77,8 +77,8 @@ typedef struct OggVorbis_File {
   double           bittrack;
   double           samptrack;
 
-  ogg_stream_state os; /* take physical pages, weld into a logical
-                          stream of packets */
+  ogg2_stream_state *os; /* take physical pages, weld into a logical
+                            stream of packets */
   vorbis_dsp_state vd; /* central working state for the packet->PCM decoder */
   vorbis_block     vb; /* local working space for packet->PCM decode */
 
