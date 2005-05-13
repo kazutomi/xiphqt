@@ -17,7 +17,7 @@
 	</ul>
 
 	<div id="translations" <!--#if expr="$translations" -->style="display: block;"<!--#endif -->>
-		<h3>Translations</h3>
+		<h2>Translations</h2>
 		<ul id="languages">
 			<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en">English <img src="/images/flags/flag-uk.gif" title="English translation" alt="English translation"/></a></li><!--#endif -->
 			<!--#if expr="$rus" --><li id="russian"><a href="index.shtml.ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</a></li><!--#endif -->
