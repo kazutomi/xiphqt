@@ -1,0 +1,37 @@
+﻿<div id="thepage">
+<div id="logos">
+	<a href="http://www.speex.org/"><img src="/images/logos/parrot_speex_org-2.png" alt="Speex: a free codec for free speech"/></a>
+</div>
+
+<div id="navbar">
+	<ul>
+		<li id="home_"><a href="/">Home</a></li>
+		<li id="news_"><a href="/news/">News</a></li>
+		<li id="comparison_"><a href="/comparison/">Comparison</a></li>
+		<li id="samples_"><a href="/samples/">Samples</a></li>
+		<li id="download_"><a href="/download/">Download</a></li>
+		<li id="docs_"><a href="/docs/">Documentation</a></li>
+		<li id="roadmap_"><a href="/roadmap/">Roadmap</a></li>
+		<li id="software_"><a href="/software/">Plugins & Software</a></li>
+		<li id="contact_"><a href="/contact/">Contact</a></li>
+	</ul>
+
+	<div id="translations" <!--#if expr="$translations" -->style="display: block;"<!--#endif -->>
+		<h3>Translations</h3>
+		<ul id="languages">
+			<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en">English <img src="/images/flags/flag-uk.gif" title="English translation" alt="English translation"/></a></li><!--#endif -->
+			<!--#if expr="$rus" --><li id="russian"><a href="index.shtml.ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</a></li><!--#endif -->
+			<!--#if expr="$rus" --><li><a href="index.shtml.ru"><img src="/images/flags/flag-russia.gif" title="&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;" alt="&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;"></a></li><!--#endif -->
+			<!--#if expr="$spa" --><li id="spanish"><a href="/">Spanish</a></li><!--#endif -->
+			<!--#if expr="$fre" --><li id="french"><a href="index.shtml.fr">Français <img src="/images/flags/flag-france.gif" title="French translation" alt="French translation"/></a></li><!--#endif -->
+			<!--#if expr="$jpn" --><li id="japanese"><a href="index.shtml.ru">Japanese</a></li><!--#endif -->
+		</ul>
+	</div>
+</div>
+
+<div id="banners">
+	<!-- Visualize a banner here. <img src="/images/banners/try_it.png" alt="Try it out!"/> -->
+</div>
+
+<div id="main">
+<div id="content">

@@ -1,7 +1,7 @@
 
 <div id="thepage">
 <div id="logos">
-	<img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/>
+	<a href="http://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
 </div>
 
 <div id="navbar">

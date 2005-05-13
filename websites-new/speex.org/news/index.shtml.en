@@ -1,0 +1,40 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Speex:  A free codec for free speech</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Speex News</h1>
+
+<ul>
+	<li>
+		<h3>Speex 1.1.8 Released</h3>
+		<div><span class="submitdate">May 7, 2005</span> <span class="updatedate"></span></div>
+		<div class="description">
+			<p>Lots of changes in this release. Initial TI C5x port, some fixed-point improvements and fixes, better temporary memory allocation (smaller), and the size of integer types are now detected automatically.</p>
+			<p>There is also a new SPEEX_PLC_TUNING option.</p>
+		</div>
+	</li>
+
+	<li>
+		<h3>Speex 1.0.5 Released</h3>
+		<div><span class="submitdate">May 6, 2005</span> <span class="updatedate">May 6, 2005</span></div>
+		<div class="description">
+			<p>The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.</p>
+		</div>
+	</li>
+</ul>
+
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->

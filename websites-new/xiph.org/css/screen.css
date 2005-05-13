@@ -13,6 +13,10 @@ a {
 	color: #064C84;
 }
 
+img {
+	border: 0;
+}
+
 #bodyborder {
 	margin: 0;
 	border: 0;
