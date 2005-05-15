@@ -5,7 +5,7 @@
 <style type="text/css">
 <!--
 #navlink_ a {
-	text-decoration: underline;
+	text-decoration: underline !important;
 }
 -->
 </style>
