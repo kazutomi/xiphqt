@@ -1,13 +1,16 @@
 body              {
-                   background-image: url(/images/gray-bg.png); 
+                   background-image: url(http://xspf.org/images/gray-bg.png); 
                    font-family: tahoma, verdana, ariel, helvetica; 
                   }
-p, ul, ol         {
-                   font-size: 10pt; 
+p, ul, ol, dl         {
+                   font-size: 12pt; 
                   }
 h1                {
                    font-size: 14pt; 
                    font-weight: bold; 
+                  }
+h2                {
+                   font-size: 12pt;
                   }
 a                 {
                    color: #780D0D; 
@@ -32,7 +35,7 @@ a:visited         {
 #title            { 
                    padding: 13px 10px 10px 10px; 
                    background-color: #A11414; 
-                   background-image: url(/images/xspf-logo-3.png);
+                   background-image: url(http://xspf.org/images/xspf-logo-3.png);
                    background-repeat: no-repeat;
                    border-style: solid; 
                    border-width: 0 0 1px 0;  
