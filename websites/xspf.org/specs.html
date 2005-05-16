@@ -13,8 +13,8 @@
 <span class="selectedMenuItem">specs</span> |
 <a class="menuItem" href="schema.html">schema</a> |
 <a class="menuItem" href="apps.html">applications</a> |
-<a class="menuItem" href="list.html">mailing list</a> |
-<a class="menuItem" href="http://playlist.musicbrainz.org/playlist/moin.cgi/">wiki</a> |
+<a class="menuItem" href="http://lists.musicbrainz.org/mailman/listinfo/playlist">mailing list</a> |
+<a class="menuItem" href="http://wiki.xiph.org/index.php/XSPF">wiki</a> |
 <a class="menuItem" href="about.html">about us</a>
 </div>
 
@@ -22,13 +22,29 @@
 
 <h1>Specifications</h1>
 
-<p>
-Current version: 1
-</p>
+<p>XSPF version 0 was finished and frozen in late April 2004.  XSPF
+version 1 was finished and frozen in March 2005.  The differences
+between them are subtle and fairly minor, so <em>please use version 1</em>
+unless you have a compelling reason not to.</p>
 
-<p>
-The latest specification is <a href="http://gonze.com/xspf/xspf-v1.html">XSPF Specification Version 1</a>.
-</p>
+<ul>
+  <li><a href="xspf-v0.html">Specification for XSPF version 0</a></li>
+  <li><a href="xspf-v1.html">Specification for XSPF version 1</a> (recommended)</li>
+</ul>
+
+<h2>Differences between version 0 and version 1</h2>
+
+<ul>
+  <li><code>trackList</code> may be empty.</li>
+  <li><code>extension</code> added.</li>
+  <li><code>date</code> changed from ISO 8601 to xsd:dateTime.</li>
+  <li><code>version</code> incremented.</li>
+</ul>
+
+<h2>Mime type</h2>
+
+<div>The mime type for XSPF playlists is <code>application/xspf+xml</code>.
+</div>
 
 </div>
 </div>
