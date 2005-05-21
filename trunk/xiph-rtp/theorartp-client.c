@@ -200,19 +200,28 @@ int dump_packet_rtp_theora(rtp_header *rtp, FILE *out)
 {
   const unsigned char *payload = rtp->payload;
   unsigned int ident;
+  unsigned char reserved;
   int C,F,R,pkts;
   int offset, length;
   int i;
 
-  /* parse Theora payload header */
+  /* parse 4 byte Theora payload header */
+  /* || setup ident || reserved || C | F | R | #pkts || */
+  /*   C F flag interpretation 
+   *   0 0  Unfragmented packet (aka multi-packet..packet)
+   *   0 1  First fragmented packet
+   *   1 0  Middle fragment
+   *   1 1  Last fragment.
+   */
   offset = rtp->offset;
-  ident = ntohl(*(unsigned int *)payload);
+  ident = ntohs(*(unsigned short *)payload);
+  reserved = payload[2];
+  C = (payload[3] & 0x80) >> 7;
+  F = (payload[3] & 0x40) >> 6;
+  R = (payload[3] & 0x20) >> 5;
+  pkts = (payload[3] & 0x1F);
   offset += 4;
-  C = (payload[offset] & 0x80) >> 7;
-  F = (payload[offset] & 0x40) >> 6;
-  R = (payload[offset] & 0x20) >> 5;
-  pkts = (payload[offset] & 0x1F);
-  offset++;
+
 
   fprintf(out, " Theora payload ident 0x%08x  C:%d F:%d R:%d",
     ident, C, F, R);
@@ -225,6 +234,25 @@ int dump_packet_rtp_theora(rtp_header *rtp, FILE *out)
     fprintf(out, " frag cont.\n");
   else /* C == 1 && F == 1 */
     fprintf(out, " frag end\n");
+
+  for (i = 0; i < pkts; i++) {
+    if (offset >= rtp->plen) {
+      fprintf(stderr, "payload length overflow. corrupt packet?\n");
+      return -1;
+    }
+    length = payload[offset++];
+    fprintf(out, "  data: %d bytes in block %d\n", length, i);
+    offset += length;
+  }
+  if (pkts == 0) {
+    length = payload[offset++];
+    fprintf(out, "  data: %d bytes in fragment\n", length);
+    offset += length;
+  }
+
+  if (rtp->plen - offset > 0)
+    fprintf(out, "  %d unused bytes at the end of the packet!\n", 
+      rtp->plen - offset);
 
   return 0;
 }
@@ -260,7 +288,6 @@ int dump_packet_rtp(const unsigned char *data, const int len, FILE *out)
 int main(int argc, char *argv[])
 {
   int RTPSocket, ret;
-  int optval = 0;
   struct sockaddr_in us, them;
   struct ip_mreq group;
   unsigned char data[MAX_PACKET];
