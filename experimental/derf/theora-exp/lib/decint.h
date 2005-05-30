@@ -109,5 +109,13 @@ extern int theora_read(oggpack_buffer *_opb,int _nbits,long *_ret);
   *_ret is set to 0 on failure.
   Return: 0 on success, or a negative value on failure.*/
 extern int theora_read1(oggpack_buffer *_opb,long *_ret);
+/*Look ahead n bits, where n <= 31 for libogg1.
+  In the event that there are some bits remaining, but fewer than n, then the
+   remaining bits are returned, with the missing bits set to 0, and the
+   function succeeds.
+  The stream can be advanced afterwards with oggpackB_adv().
+  *_ret is set to 0 on failure.
+  Return: 0 on success, or a negative value on failure.*/
+extern int theora_look(oggpack_buffer *_opb,int _nbits,long *_ret);
 
 #endif

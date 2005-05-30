@@ -64,6 +64,35 @@ int theora_read1(oggpack_buffer *_opb,long *_ret){
   return mask;
 }
 
+/*Look ahead n bits, where n <= 31 for libogg1.
+  In the event that there are some bits remaining, but fewer than n, then the
+   remaining bits are returned, with the missing bits set to 0, and the
+   function succeeds.
+  The stream can be advanced afterwards with oggpackB_adv().
+  *_ret is set to 0 on failure.
+  Return: 0 on success, or a negative value on failure.*/
+int theora_look(oggpack_buffer *_opb,int _nbits,long *_ret){
+  int nbits;
+  *_ret=oggpackB_look(_opb,_nbits);
+  if(*_ret>=0)return 0;
+  /*libogg1 fails if we try to look past the end of the stream.
+    We might be looking ahead more bits than we actually need, however, and so
+     we must return the ones that are actually there.*/
+  /*There's no accessor for the storage field, which we need to figure out
+     how many bits _are_ left in the buffer (without resorting to trial and
+     error, which would be silly).*/
+  nbits=(_opb->storage<<3)-oggpackB_bits(_opb);
+  if(nbits>0){
+    /*If there are some bits left, return them.*/
+    *_ret=oggpackB_look(_opb,nbits)<<_nbits-nbits;
+    /*Success should be guaranteed.*/
+    return 0;
+  }
+  /*If there are no bits left, then we truly should fail.*/
+  *_ret=0;
+  return -1;
+}
+
 
 /*The mode alphabets for the various mode coding schemes.
   Scheme 0 uses a custom alphabet, which is not stored in this table.*/
