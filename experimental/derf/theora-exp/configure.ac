@@ -122,6 +122,23 @@ AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(gettimeofday select strstr)
 
+dnl Check for optimization
+AC_ARG_ENABLE(x86asm,
+    AS_HELP_STRING([--enable-x86asm],
+    [enable x86 assambler optimization, default=disabled]),
+    AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+)
+
+if test "$enable_x86asm" = "yes"; then
+    AM_CONDITIONAL(OC_X86ASM,true)
+else
+    AM_CONDITIONAL(OC_X86ASM,false)
+fi
+
+dnl Enable some opzimization for gcc
+OPTIMIZATION_CFLAGS="-O3 -fforce-addr -fomit-frame-pointer"
+AC_SUBST(OPTIMIZATION_CFLAGS)
+
 AC_OUTPUT([
   Makefile lib/Makefile 
   include/Makefile include/theora/Makefile

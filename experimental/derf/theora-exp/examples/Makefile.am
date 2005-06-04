@@ -1,6 +1,6 @@
 INCLUDES = -I $(top_srcdir)/include
 
-AM_CFLAGS = $(SDL_CFLAGS) $(OGG_CFLAGS)
+AM_CFLAGS = $(SDL_CFLAGS) $(OGG_CFLAGS) $(OPTIMIZATION_CFLAGS)
 
 LDADD = ../lib/libtheoradec.la ../lib/libtheoraenc.la ../lib/libtheorabase.la -lm $(OGG_LIBS)
 

@@ -1,6 +1,9 @@
 #if !defined(_internal_H)
 # define _internal_H (1)
 # include <stdlib.h>
+# if defined(HAVE_CONFIG_H)
+#  include <config.h>
+# endif
 # include "theora/codec.h"
 # include "ocintrin.h"
 # include "huffman.h"
