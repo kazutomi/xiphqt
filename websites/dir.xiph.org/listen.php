@@ -7,7 +7,7 @@ $pid = $_GET["pid"];
 $link = mysql_connect("localhost", $username, $password);
 mysql_select_db($database);
 
-header("Content-type: audio/m3u");
+header("Content-type: audio/x-mpegurl");
 if (preg_match("/MSIE 5.5/", $HTTP_USER_AGENT)) {
 	header("Content-Disposition: filename=\"listen.m3u\"");
 }
