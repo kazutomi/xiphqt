@@ -27,8 +27,13 @@
 
 /* simple script example for the rogg library */
 
+/* compile with
+   gcc -O2 -g -Wall -I. -o rogg_pagedump rogg.c rogg_pagedump.c
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 
 #include <sys/types.h>
@@ -53,7 +58,7 @@ void print_header_info(FILE *out, rogg_page_header *header)
 int main(int argc, char *argv[])
 {
   int f, i;
-  unsigned char *p, *q, *e;
+  unsigned char *p, *q, *o, *e;
   struct stat s;
   rogg_page_header header;
 
@@ -77,11 +82,26 @@ int main(int argc, char *argv[])
     }
     fprintf(stdout, "Dumping Ogg file '%s'\n", argv[i]);
     e = p + s.st_size;
-    q = p;
-    while (q < e) {
+    q = rogg_scan(p, s.st_size);
+    if (q == NULL) {
+	fprintf(stdout, "couldn't find ogg data!\n");
+    } else {
+      if (q > p) {
+	fprintf(stdout, "skipping %d garbage bytes at the start\n", q-p);
+      } 
+      while (q < e) {
+	o = rogg_scan(q, e-q);
+	if (o > q) {
+	  fprintf(stdout, "Hole in data! skipped %d bytes\n", o - q);
+	   q = o;
+	} else if (o == NULL) {
+	  fprintf(stdout, "Skipped %d garbage bytes as the end\n", e-q);
+	  break;
+	}
 	rogg_parse_header(q, &header);
 	print_header_info(stdout, &header);
 	q += header.length;
+      }
     }
     munmap(p, s.st_size);
     close(f);

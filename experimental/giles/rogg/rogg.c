@@ -109,6 +109,21 @@ void rogg_get_length(unsigned char *p, int *length)
   }
 }
 
+/* scan for the capture pattern */
+unsigned char *rogg_scan(unsigned char *p, int len)
+{
+  unsigned char *end = p + len - 4;
+
+  while (p < end) {
+    if (*p == 'O') {
+      if ((p[1] == 'g') && (p[2] == 'g') && (p[3] == 'S')) return p;
+    }
+    p++;
+  }
+
+  return NULL;
+}
+
 /* parse out the header fields of the page starting at p */
 void rogg_parse_header(unsigned char *p, rogg_page_header *header)
 {
