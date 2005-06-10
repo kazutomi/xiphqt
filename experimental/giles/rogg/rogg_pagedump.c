@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "couldn't find ogg data!\n");
     } else {
       if (q > p) {
-	fprintf(stdout, "skipping %d garbage bytes at the start\n", q-p);
+	fprintf(stdout, "Skipped %d garbage bytes at the start\n", q-p);
       } 
       while (q < e) {
 	o = rogg_scan(q, e-q);
