@@ -82,6 +82,7 @@ streamref *streamref_get(streamref *head, rogg_page_header *page)
 
   while(ref != NULL) {
     if (ref->serialno == page->serialno) return ref;
+    ref = ref->next;
   }
 
   return NULL;
@@ -94,6 +95,8 @@ streamref *streamref_update(streamref *head, rogg_page_header *page)
 
   ref = streamref_get(head, page);
   if (ref == NULL) {
+	fprintf(stderr, "new logical stream serialno %08x\n", 
+		page->serialno);
 	ref = streamref_new(head, page);
 	newhead = 1;
   }
@@ -157,7 +160,7 @@ int main(int argc, char *argv[])
 	close(f);
 	continue;
     }
-    fprintf(stdout, "Dumping Ogg file '%s'\n", argv[i]);
+    fprintf(stdout, "Checking Ogg file '%s'\n", argv[i]);
     e = p + s.st_size;
     q = rogg_scan(p, s.st_size);
     refs = NULL;
@@ -177,19 +180,25 @@ int main(int argc, char *argv[])
 	  break;
 	}
 	rogg_parse_header(q, &header);
+#ifdef VERBOSE
 	print_header_info(stdout, &header);
+#endif
 #ifdef STRIP_EOS
 	if (header.eos) {
 	  /* unset any eos flags */
 	  q[ROGG_OFFSET_FLAGS] &= ~0x04;
 	  rogg_update_crc(q);
+	  fprintf(stderr, "Removed eos flag on stream %08x\n", 
+		header.serialno);
         }
 #endif
 	refs = streamref_update(refs, &header);
 	q += header.length;
       }
     }
+#ifndef STRIP_EOS
     streamref_seteos(refs);
+#endif
     streamref_free(refs);
     munmap(p, s.st_size);
     close(f);
