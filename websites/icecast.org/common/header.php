@@ -14,6 +14,7 @@
 <tr>
 <td class="xiphnav"><a class="xiphnav_a" href="http://www.xiph.org/">XIPH.ORG</a></td>
 <td class="xiphnav"><a class="xiphnav_a" href="http://www.vorbis.com/">VORBIS.COM</a></td>
+<td class="xiphnav"><a class="xiphnav_a" href="http://www.theora.org/">THEORA.ORG</a></td>
 <td class="xiphnav"><a class="xiphnav_a" href="http://www.icecast.org/">ICECAST.ORG</a></td>
 <td class="xiphnav"><a class="xiphnav_a" href="http://www.speex.org/">SPEEX.ORG</a></td>
 <td class="xiphnav" align="right">Open Standards for Internet Multimedia</td>
@@ -36,6 +37,7 @@
 	    <a class="nav" href="<? print $iceroot; ?>3rdparty.php">3rd Party Apps</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 	    <a class="nav" href="<? print $iceroot; ?>ices.php">Ices</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 	    <a class="nav" href="<? print $iceroot; ?>mailinglist.php">Mailing List</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+	    <a class="nav" href="http://forum.icecast.org/">Forums</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 	    <a class="nav" href="<? print $iceroot; ?>contact.php">Contact</a>
 	    </td></tr>
 	</table>
