@@ -17,8 +17,8 @@ self.write(box.start())
 <center>
 <h3>Select your operating system below to see the available direct downloads.</h3>
 
-<a href="/download_unix_1.0.1.psp">Unix / Linux</a><br>
-<a href="/download_win_1.0.1.psp">Windows</a><br>
+<a href="/download_unix_1.1.psp">Unix / Linux</a><br>
+<a href="/download_win_1.1.psp">Windows</a><br>
 <br>
 <br>
 <p style='font-weight: bold;'>
