@@ -9,7 +9,8 @@
 lib_LTLIBRARIES = libghost.la
 
 # Sources for compilation in the library
-libghost_la_SOURCES = ghost.c
+libghost_la_SOURCES = ghost.c \
+			sinusoids.c
 
 #noinst_HEADERS =
 
