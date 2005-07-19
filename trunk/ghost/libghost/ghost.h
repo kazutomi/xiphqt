@@ -32,6 +32,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifndef _GHOST_H
+#define _GHOST_H
 
 typedef struct {
    float *pcm_buf;
@@ -44,3 +46,5 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate);
 void ghost_encoder_state_destroy(GhostEncState *st);
 
 void ghost_encode(GhostEncState *st, float *pcm);
+
+#endif

@@ -59,7 +59,7 @@ void extract_sinusoids(float *x, float *w, float *ai, float *bi, float *y, int N
    for (i=0;i<N;i++)
       ai[i] = bi[i] = 0;
 
-   for (iter=0;iter<3;iter++)
+   for (iter=0;iter<5;iter++)
    {
       for (i=0;i<N;i++)
       {
