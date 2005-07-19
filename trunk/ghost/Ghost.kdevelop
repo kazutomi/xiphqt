@@ -7,15 +7,26 @@
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C</primarylanguage>
     <ignoreparts/>
+    <projectdirectory>.</projectdirectory>
+    <absoluteprojectpath>false</absoluteprojectpath>
+    <description></description>
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/Ghost</activetarget>
+      <activetarget>libghost/libghost.la</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>
-      <mainprogram>src/Ghost</mainprogram>
+      <mainprogram>libghost/testghost</mainprogram>
       <directoryradio>executable</directoryradio>
+      <runarguments>
+        <testghost></testghost>
+      </runarguments>
+      <customdirectory>/</customdirectory>
+      <programargs></programargs>
+      <terminal>false</terminal>
+      <autocompile>true</autocompile>
+      <envvars/>
     </run>
     <configurations>
       <optimized>
@@ -44,7 +55,20 @@
   <kdevdebugger>
     <general>
       <dbgshell>libtool</dbgshell>
+      <programargs></programargs>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
+      <breakonloadinglibs>true</breakonloadinglibs>
+      <separatetty>false</separatetty>
+      <floatingtoolbar>false</floatingtoolbar>
     </general>
+    <display>
+      <staticmembers>false</staticmembers>
+      <demanglenames>true</demanglenames>
+      <outputradix>10</outputradix>
+    </display>
   </kdevdebugger>
   <kdevdoctreeview>
     <ignoretocs>
@@ -115,6 +139,14 @@
       <argumentsHintDelay>400</argumentsHintDelay>
       <headerCompletionDelay>250</headerCompletionDelay>
     </codecompletion>
+    <creategettersetter>
+      <prefixGet></prefixGet>
+      <prefixSet>set</prefixSet>
+      <prefixVariable>m_,_</prefixVariable>
+      <parameterName>theValue</parameterName>
+      <inlineGet>true</inlineGet>
+      <inlineSet>true</inlineSet>
+    </creategettersetter>
   </kdevcppsupport>
   <kdevfileview>
     <groups>
@@ -126,4 +158,10 @@
       <hidenonprojectfiles>false</hidenonprojectfiles>
     </tree>
   </kdevfileview>
+  <cppsupportpart>
+    <filetemplates>
+      <interfacesuffix>.h</interfacesuffix>
+      <implementationsuffix>.cpp</implementationsuffix>
+    </filetemplates>
+  </cppsupportpart>
 </kdevelop>
