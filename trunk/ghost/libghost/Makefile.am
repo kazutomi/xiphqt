@@ -9,10 +9,10 @@
 lib_LTLIBRARIES = libghost.la
 
 # Sources for compilation in the library
-libghost_la_SOURCES = ghost.c \
-			sinusoids.c
+libghost_la_SOURCES = ghost.c 			sinusoids.c pitch.c
 
 #noinst_HEADERS =
 
 libghost_la_LDFLAGS = -version-info @GHOST_LT_CURRENT@:@GHOST_LT_REVISION@:@GHOST_LT_AGE@
 
+noinst_HEADERS = ghost.h pitch.h

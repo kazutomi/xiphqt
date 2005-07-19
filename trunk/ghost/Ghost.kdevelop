@@ -1,22 +1,22 @@
-<?xml version="1.0"?>
+<?xml version = '1.0'?>
 <kdevelop>
- <general>
-  <author>Jean-Marc Valin</author>
-  <email>jean-marc.valin@usherbrooke.ca</email>
-  <version>$VERSION$</version>
-  <projectmanagement>KDevAutoProject</projectmanagement>
-  <primarylanguage>C</primarylanguage>
-  <ignoreparts>
-  </ignoreparts>
- </general>
- <kdevautoproject>
   <general>
-   <activetarget>src/Ghost</activetarget>
-   <useconfiguration>debug</useconfiguration>
+    <author>Jean-Marc Valin</author>
+    <email>jean-marc.valin@usherbrooke.ca</email>
+    <version>$VERSION$</version>
+    <projectmanagement>KDevAutoProject</projectmanagement>
+    <primarylanguage>C</primarylanguage>
+    <ignoreparts/>
   </general>
-  <run>
-   <mainprogram>src/Ghost</mainprogram>
-  </run>
+  <kdevautoproject>
+    <general>
+      <activetarget>src/Ghost</activetarget>
+      <useconfiguration>default</useconfiguration>
+    </general>
+    <run>
+      <mainprogram>src/Ghost</mainprogram>
+      <directoryradio>executable</directoryradio>
+    </run>
     <configurations>
       <optimized>
         <builddir>optimized</builddir>
@@ -34,13 +34,19 @@
         <cflags>-O0 -g3</cflags>
       </debug>
     </configurations>
- </kdevautoproject>
- <kdevdebugger>
-  <general>
-   <dbgshell>libtool</dbgshell>
-  </general>
- </kdevdebugger>
- <kdevdoctreeview>
+    <make>
+      <envvars>
+        <envvar value="1" name="WANT_AUTOCONF_2_5" />
+        <envvar value="1" name="WANT_AUTOMAKE_1_6" />
+      </envvars>
+    </make>
+  </kdevautoproject>
+  <kdevdebugger>
+    <general>
+      <dbgshell>libtool</dbgshell>
+    </general>
+  </kdevdebugger>
+  <kdevdoctreeview>
     <ignoretocs>
       <toc>ada</toc>
       <toc>ada_bugs_gcc</toc>
@@ -87,7 +93,7 @@
     <ignoredoxygen>
       <toc>KDE Libraries (Doxygen)</toc>
     </ignoredoxygen>
- </kdevdoctreeview>
+  </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes/>
     <useglobaltypes>
@@ -95,4 +101,29 @@
       <type ext="h" />
     </useglobaltypes>
   </kdevfilecreate>
+  <kdevcppsupport>
+    <references/>
+    <codecompletion>
+      <includeGlobalFunctions>true</includeGlobalFunctions>
+      <includeTypes>true</includeTypes>
+      <includeEnums>true</includeEnums>
+      <includeTypedefs>false</includeTypedefs>
+      <automaticCodeCompletion>true</automaticCodeCompletion>
+      <automaticArgumentsHint>true</automaticArgumentsHint>
+      <automaticHeaderCompletion>true</automaticHeaderCompletion>
+      <codeCompletionDelay>250</codeCompletionDelay>
+      <argumentsHintDelay>400</argumentsHintDelay>
+      <headerCompletionDelay>250</headerCompletionDelay>
+    </codecompletion>
+  </kdevcppsupport>
+  <kdevfileview>
+    <groups>
+      <hidenonprojectfiles>false</hidenonprojectfiles>
+      <hidenonlocation>false</hidenonlocation>
+    </groups>
+    <tree>
+      <hidepatterns>*.o,*.lo,CVS</hidepatterns>
+      <hidenonprojectfiles>false</hidenonprojectfiles>
+    </tree>
+  </kdevfileview>
 </kdevelop>
