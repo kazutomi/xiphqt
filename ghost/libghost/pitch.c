@@ -1,7 +1,7 @@
 /* Copyright (C) 2005 */
 /**
-   @file ghost.c
-   @brief Main codec file
+   @file pitch.c
+   @brief Pitch analysis
 */
 /*
    Redistribution and use in source and binary forms, with or without
@@ -32,35 +32,35 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include "ghost.h"
-#include "pitch.h"
-#include "sinusoids.h"
-
-#define PCM_BUF_SIZE 2048
-
-GhostEncState *ghost_encoder_state_new(int sampling_rate)
+float inner_prod(float *x, float *y, int len)
 {
-   GhostEncState *st = calloc(1,sizeof(GhostEncState));
-   st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - 256;
-   return st;
+   float sum=0;
+   int i;
+   for (i=0;i<len;i++)
+   {
+      sum += x[i]*y[i];
+   }
+   return sum;
 }
 
-void ghost_encoder_state_destroy(GhostEncState *st)
-{
-   free(st);
-}
-
-void ghost_encode(GhostEncState *st, float *pcm)
+void find_pitch(float *x, float *gain, int *pitch, int start, int end, int len)
 {
    int i;
-   float gain;
-   int pitch;
-   for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->current_pcm[i+st->frame_size];
-   for (i=0;i<st->frame_size;i++)
-      st->current_pcm[i]=pcm[i];
-   find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   printf ("%d %f\n", pitch, gain);
+   float max_score = -1;
+   for (i=start;i<end;i++)
+   {
+      float corr, score, E;
+      corr = inner_prod(x,x-i,len);
+      E = inner_prod(x-i,x-i,len);
+      score = corr*corr/(1+E);
+      if (score > max_score)
+      {
+         *pitch = i;
+         max_score = score;
+         *gain = corr/(1+E);
+      }
+   }
 }
+
+
+

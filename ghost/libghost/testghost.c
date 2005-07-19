@@ -1,7 +1,7 @@
 /* Copyright (C) 2005 */
 /**
    @file ghost.c
-   @brief Main codec file
+   @brief Sinusoid extraction/synthesis
 */
 /*
    Redistribution and use in source and binary forms, with or without
@@ -32,35 +32,27 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include "ghost.h"
-#include "pitch.h"
+#include <math.h>
 #include "sinusoids.h"
+#include <stdio.h>
 
-#define PCM_BUF_SIZE 2048
-
-GhostEncState *ghost_encoder_state_new(int sampling_rate)
+int main(int argc, char **argv)
 {
-   GhostEncState *st = calloc(1,sizeof(GhostEncState));
-   st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - 256;
-   return st;
-}
-
-void ghost_encoder_state_destroy(GhostEncState *st)
-{
-   free(st);
-}
-
-void ghost_encode(GhostEncState *st, float *pcm)
-{
+   float x[256];
+   float y[256];
+   float w[2] = {.05, .2};
+   float ai[2], bi[2];
    int i;
-   float gain;
-   int pitch;
-   for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->current_pcm[i+st->frame_size];
-   for (i=0;i<st->frame_size;i++)
-      st->current_pcm[i]=pcm[i];
-   find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   printf ("%d %f\n", pitch, gain);
+   for (i=0;i<256;i++)
+   {
+      x[i] = cos(.05*i+2) + .2*cos(.2*i+1.1);
+   }
+   extract_sinusoids(x, w, ai, bi, y, 2, 256);
+   printf ("%f %f\n", ai[0], bi[0]);
+   printf ("%f %f\n", ai[1], bi[1]);
+   
+   /*for (i=0;i<256;i++)
+      printf ("%f %f\n", x[i], y[i]);*/
+   return 0;
 }
+

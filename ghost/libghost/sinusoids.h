@@ -1,7 +1,7 @@
 /* Copyright (C) 2005 */
 /**
-   @file ghost.c
-   @brief Main codec file
+   @file sinusoids.h
+   @brief Sinusoid extraction/synthesis
 */
 /*
    Redistribution and use in source and binary forms, with or without
@@ -32,35 +32,5 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include "ghost.h"
-#include "pitch.h"
-#include "sinusoids.h"
+void extract_sinusoids(float *x, float *w, float *ai, float *bi, float *y, int N, int len);
 
-#define PCM_BUF_SIZE 2048
-
-GhostEncState *ghost_encoder_state_new(int sampling_rate)
-{
-   GhostEncState *st = calloc(1,sizeof(GhostEncState));
-   st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - 256;
-   return st;
-}
-
-void ghost_encoder_state_destroy(GhostEncState *st)
-{
-   free(st);
-}
-
-void ghost_encode(GhostEncState *st, float *pcm)
-{
-   int i;
-   float gain;
-   int pitch;
-   for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->current_pcm[i+st->frame_size];
-   for (i=0;i<st->frame_size;i++)
-      st->current_pcm[i]=pcm[i];
-   find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   printf ("%d %f\n", pitch, gain);
-}
