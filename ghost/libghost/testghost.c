@@ -33,12 +33,16 @@
 */
 
 #include <math.h>
-#include "sinusoids.h"
 #include <stdio.h>
+#include "sinusoids.h"
+#include "ghost.h"
+#include "pitch.h"
 
 int main(int argc, char **argv)
 {
-   float x[256];
+   GhostEncState *state;
+   FILE *fin;
+   /*float x[256];
    float y[256];
    float w[2] = {.05, .2};
    float ai[2], bi[2];
@@ -50,6 +54,25 @@ int main(int argc, char **argv)
    extract_sinusoids(x, w, ai, bi, y, 2, 256);
    printf ("%f %f\n", ai[0], bi[0]);
    printf ("%f %f\n", ai[1], bi[1]);
+   */
+   fin = fopen("test.sw", "r");
+   state = ghost_encoder_state_new(48000);
+   while (1)
+   {
+      int i;
+      float float_in[256];
+      short short_in[256];
+      fread(short_in, sizeof(short), 256, fin);
+      //printf ("%d ", short_in[0]);
+
+      if (feof(fin))
+         break;
+      for (i=0;i<256;i++)
+         float_in[i] = short_in[i];
+      ghost_encode(state, float_in);
+      
+   }
+   ghost_encoder_state_destroy(state);
    
    /*for (i=0;i<256;i++)
       printf ("%f %f\n", x[i], y[i]);*/

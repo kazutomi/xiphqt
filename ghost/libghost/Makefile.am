@@ -16,3 +16,6 @@ libghost_la_SOURCES = ghost.c 			sinusoids.c pitch.c
 libghost_la_LDFLAGS = -version-info @GHOST_LT_CURRENT@:@GHOST_LT_REVISION@:@GHOST_LT_AGE@
 
 noinst_HEADERS = ghost.h pitch.h
+noinst_PROGRAMS = testghost
+testghost_SOURCES = testghost.c
+testghost_LDADD = $(top_builddir)/libghost/libghost.la

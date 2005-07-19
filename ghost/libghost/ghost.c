@@ -32,18 +32,21 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
 #include "ghost.h"
 #include "pitch.h"
 #include "sinusoids.h"
-
 #define PCM_BUF_SIZE 2048
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate)
 {
    GhostEncState *st = calloc(1,sizeof(GhostEncState));
+   st->frame_size = 256;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - 256;
+   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->frame_size;
    return st;
 }
 
@@ -56,11 +59,26 @@ void ghost_encode(GhostEncState *st, float *pcm)
 {
    int i;
    float gain;
-   int pitch;
+   float pitch;
+   float w;
    for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->current_pcm[i+st->frame_size];
+      st->pcm_buf[i] = st->pcm_buf[i+st->frame_size];
    for (i=0;i<st->frame_size;i++)
       st->current_pcm[i]=pcm[i];
    find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   printf ("%d %f\n", pitch, gain);
+   //printf ("%d %f\n", pitch, gain);
+   w = 2*M_PI/pitch;
+   {
+      float wi[45];
+      float y[256];
+      float ai[45], bi[45];
+      for (i=0;i<45;i++)
+         wi[i] = w*(i+1);
+      extract_sinusoids(st->current_pcm, wi, ai, bi, y, 20, 256);
+      short out[256];
+      for (i=0;i<256;i++)
+         out[i] = y[i];
+      fwrite(out, sizeof(short), 256, stdout);
+   }
+   
 }

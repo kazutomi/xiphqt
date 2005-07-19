@@ -32,6 +32,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <stdio.h>
+#include <math.h>
+
 float inner_prod(float *x, float *y, int len)
 {
    float sum=0;
@@ -43,22 +46,33 @@ float inner_prod(float *x, float *y, int len)
    return sum;
 }
 
-void find_pitch(float *x, float *gain, int *pitch, int start, int end, int len)
+void find_pitch(float *x, float *gain, float *pitch, int start, int end, int len)
 {
    int i;
    float max_score = -1;
-   for (i=start;i<end;i++)
+   float sc[end+1];
+   int p=0;
+   for (i=start;i<=end;i++)
    {
       float corr, score, E;
       corr = inner_prod(x,x-i,len);
       E = inner_prod(x-i,x-i,len);
-      score = corr*corr/(1+E);
+      //E = inner_prod(x,x,len);
+      //printf ("%f ", E);
+      score = corr*fabs(corr)/(1e4+E);
+      sc[i] = score;
       if (score > max_score)
       {
-         *pitch = i;
+         p = i;
          max_score = score;
          *gain = corr/(1+E);
       }
+   }
+   if (p == start || p == end)
+   {
+      *pitch = p;
+   } else {
+      *pitch = p+.5*(sc[p+1]-sc[p-1])/(2*sc[p]-sc[p-1]-sc[p+1]);
    }
 }
 
