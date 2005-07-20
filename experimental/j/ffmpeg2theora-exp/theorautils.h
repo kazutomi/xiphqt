@@ -18,7 +18,8 @@
  */
 
 #include <stdint.h>
-#include "theora/theora.h"
+#include "theora/codec.h"
+#include "theora/theoraenc.h"
 #include "vorbis/codec.h"
 #include "vorbis/vorbisenc.h"
 
@@ -114,8 +115,7 @@ typedef struct
     theora_info ti;
     theora_comment tc;
     
-    theora_state td;
-
+    theora_enc_ctx  *td;
 
     vorbis_info vi;       /* struct that stores all the static vorbis bitstream settings */
     vorbis_comment vc;    /* struct that stores all the user comments */

@@ -27,10 +27,6 @@
 #include <string.h>
 #include <getopt.h>
 
-#include "theora/theora.h"
-#include "vorbis/codec.h"
-#include "vorbis/vorbisenc.h"
-
 #ifdef WIN32
 #include "fcntl.h"
 #endif
@@ -364,13 +360,13 @@ void ff2theora_output(ff2theora this) {
             /* config file? commandline options? v2v presets? */
             
             theora_info_init (&info.ti);
-            
-            info.ti.width = this->frame_width;
-            info.ti.height = this->frame_height;
-            info.ti.frame_width = this->picture_width;
-            info.ti.frame_height = this->picture_height;
-            info.ti.offset_x = this->frame_x_offset;
-            info.ti.offset_y = this->frame_y_offset;
+
+            info.ti.frame_width = this->frame_width;
+            info.ti.frame_height = this->frame_height;
+            info.ti.pic_width = this->picture_width;
+            info.ti.pic_height = this->picture_height;
+            info.ti.pic_x = this->frame_x_offset;
+            info.ti.pic_y = this->frame_y_offset;
             if(this->force_input_fps) {
                 info.ti.fps_numerator = 1000000 * (this->fps);    /* fps= numerator/denominator */
                 info.ti.fps_denominator = 1000000;
@@ -394,7 +390,7 @@ void ff2theora_output(ff2theora this) {
 
             info.ti.target_bitrate = this->video_bitrate; 
             info.ti.quality = this->video_quality;
-            info.ti.dropframes_p = 1;
+/*            info.ti.dropframes_p = 1;
             info.ti.quick_p = 1;
             info.ti.keyframe_auto_p = 1;
             info.ti.keyframe_frequency = this->keyint;
@@ -405,7 +401,9 @@ void ff2theora_output(ff2theora this) {
             info.ti.noise_sensitivity = 1;
             // range 0-2, 0 sharp, 2 less sharp,less bandwidth
             info.ti.sharpness = this->sharpness;
-            
+*/
+            info.ti.pixel_fmt=OC_PF_420;
+            info.ti.keyframe_granule_shift=6;
         }
         /* audio settings here */
         info.channels = this->channels;

@@ -26,10 +26,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "theora/theora.h"
-#include "vorbis/codec.h"
-#include "vorbis/vorbisenc.h"
-
 #include "theorautils.h"
 
 
@@ -49,8 +45,8 @@ void init_info(theoraframes_info *info) {
     info->debug = 0;
 }
 
-
 void theoraframes_init (theoraframes_info *info){
+    int ret = 0;
     info->audio_bytesout = 0;
     info->video_bytesout = 0;
 
@@ -60,14 +56,13 @@ void theoraframes_init (theoraframes_info *info){
     
     if(!info->audio_only){
         ogg_stream_init (&info->to, rand ());    /* oops, add one ot the above */
-        theora_encode_init (&info->td, &info->ti);
+        info->td=theora_encode_alloc(&info->ti);
         theora_info_clear (&info->ti);
     }
     /* init theora done */
 
     /* initialize Vorbis too, if we have audio. */
     if(!info->video_only){
-        int ret;
         vorbis_info_init (&info->vi);
         /* Encoding using a VBR quality mode.  */
         if(info->vorbis_quality>-99) 
@@ -95,22 +90,31 @@ void theoraframes_init (theoraframes_info *info){
 
     /* first packet will get its own page automatically */
     if(!info->audio_only){
-        theora_encode_header (&info->td, &info->op);
-        ogg_stream_packetin (&info->to, &info->op);
-        if (ogg_stream_pageout (&info->to, &info->og) != 1){
-            fprintf (stderr, "Internal Ogg library error.\n");
-            exit (1);
-        }
-        fwrite (info->og.header, 1, info->og.header_len, info->outfile);
-        fwrite (info->og.body, 1, info->og.body_len, info->outfile);
+      theora_comment_init(&info->tc);
+      theora_comment_add_tag (&info->tc, "ENCODER",PACKAGE_STRING);
 
-        /* create the remaining theora headers */
-        /* theora_comment_init (&info->tc); is called in main() prior to parsing options */
-        theora_comment_add_tag (&info->tc, "ENCODER",PACKAGE_STRING);
-        theora_encode_comment (&info->tc, &info->op);
-        ogg_stream_packetin (&info->to, &info->op);
-        theora_encode_tables (&info->td, &info->op);
-        ogg_stream_packetin (&info->to, &info->op);
+      if(theora_encode_flushheader(info->td,&info->tc,&info->op)<=0){
+        fprintf(stderr,"Internal Theora library error.\n");
+        exit(1);
+      }
+      ogg_stream_packetin(&info->to,&info->op);
+      if(ogg_stream_pageout(&info->to,&info->og)!=1){
+        fprintf(stderr,"Internal Ogg library error.\n");
+        exit(1);
+      }
+      fwrite(info->og.header, 1, info->og.header_len, info->outfile);
+      fwrite(info->og.body, 1, info->og.body_len, info->outfile);
+
+      /* create the remaining theora headers */
+      for(;;){
+        ret = theora_encode_flushheader(info->td,&info->tc,&info->op);
+        if(ret<0){
+          fprintf(stderr,"Internal Theora library error.\n");
+          exit(1);
+        }
+        else if(!ret)break;
+        ogg_stream_packetin(&info->to,&info->op);
+      }
     }
     if(!info->video_only){
         ogg_packet header;
@@ -174,26 +178,32 @@ void theoraframes_init (theoraframes_info *info){
  */
 int theoraframes_add_video (ff2theora this, theoraframes_info *info, AVFrame * avframe, int e_o_s){
     /* pysical pages */
-    yuv_buffer yuv;
+    static theora_ycbcr_buffer ycbcr;
     /* Theora is a one-frame-in,one-frame-out system; submit a frame
      * for compression and pull out the packet */
-    {
-        yuv.y_width = this->frame_width;
-        yuv.y_height = this->frame_height;
-        yuv.y_stride = avframe->linesize[0];
 
-        yuv.uv_width = this->frame_width / 2;
-        yuv.uv_height = this->frame_height / 2;
-        yuv.uv_stride = avframe->linesize[1];
+    ycbcr[0].width = this->frame_width;
+    ycbcr[0].height = this->frame_height;
+    ycbcr[0].ystride = avframe->linesize[0];
 
-        yuv.y = avframe->data[0];
-        yuv.u = avframe->data[1];
-        yuv.v = avframe->data[2];
+    ycbcr[1].width = this->frame_width / 2;
+    ycbcr[1].height = this->frame_height / 2;
+    ycbcr[1].ystride = avframe->linesize[1];
 
+    ycbcr[2].width = this->frame_width / 2;
+    ycbcr[2].height = this->frame_height / 2;
+    ycbcr[2].ystride = avframe->linesize[1];
+
+
+    ycbcr[0].data = avframe->data[0];
+    ycbcr[1].data = avframe->data[1];
+    ycbcr[2].data = avframe->data[2];
+
+    theora_encode_ycbcr_in(info->td,ycbcr);
+    while(theora_encode_packetout(info->td, e_o_s, &info->op)) {
+        ogg_stream_packetin (&info->to, &info->op);
     }
-    theora_encode_YUVin (&info->td, &yuv);
-    theora_encode_packetout (&info->td, e_o_s, &info->op);
-    ogg_stream_packetin (&info->to, &info->op);
+
     info->videoflag=1;
     return 0;
 }
@@ -276,16 +286,14 @@ void theoraframes_flush (theoraframes_info *info, int e_o_s){
     while(flushloop){
         int video = -1;
         flushloop=0;
-        //some debuging 
-        //fprintf(stderr,"\ndiff: %f\n",info->audiotime-info->videotime);
         while(!info->audio_only && (e_o_s || 
             ((info->videotime <= info->audiotime || info->video_only) && info->videoflag == 1))){
                 
             info->videoflag = 0;
             while(ogg_stream_pageout (&info->to, &info->videopage) > 0){
                 info->videotime =
-                    theora_granule_time (&info->td,ogg_page_granulepos(&info->videopage));
-                
+                    theora_granule_time (info->td,ogg_page_granulepos(&info->videopage));
+
                 /* flush a video page */
                 info->video_bytesout +=
                     fwrite (info->videopage.header, 1,info->videopage.header_len, info->outfile);
@@ -336,7 +344,7 @@ void theoraframes_close (theoraframes_info *info){
     vorbis_info_clear (&info->vi);
 
     ogg_stream_clear (&info->to);
-    theora_clear (&info->td);
+    theora_encode_free (info->td);
 
     if (info->outfile && info->outfile != stdout)
         fclose (info->outfile);
