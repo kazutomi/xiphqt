@@ -42,10 +42,12 @@ info.c \
 internal.c \
 quant.c \
 state.c \
+$(if $(findstring -DOC_X86ASM,${CFLAGS}), \
 x86/mmxstate.c \
 x86/x86state.c \
 x86/mmxfrag.c \
 x86/cpu.c \
+)
 
 LIBTHEORABASE_CHEADERS = \
 dct.h \
