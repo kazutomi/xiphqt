@@ -20,6 +20,25 @@ ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t ecx;
   ogg_uint32_t edx;
   ogg_uint32_t flags;
+
+#if (defined(__amd64__) || defined(__x86_64__))
+
+#define cpuid(op,eax,ebx,ecx,edx) \
+  __asm__ __volatile__( \
+   "push %%rbx   \n\t" \
+   "cpuid         \n\t" \
+   "movl %%ebx,%1 \n\t" \
+   "pop %%rbx" \
+   :"=a" (eax), \
+    "=r" (ebx), \
+    "=c" (ecx), \
+    "=d" (edx) \
+   :"a" (op) \
+   :"cc" \
+  )
+
+#else
+
 #define cpuid(op,eax,ebx,ecx,edx) \
   __asm__ __volatile__( \
    "pushl %%ebx   \n\t" \
@@ -51,6 +70,7 @@ ogg_uint32_t oc_cpu_flags_get(void){
   );
   /*No cpuid.*/
   if(eax==ebx)return 0;
+#endif
   cpuid(0,eax,ebx,ecx,edx);
   if(ebx==0x756e6547&&edx==0x49656e69&&ecx==0x6c65746e){
     /*Intel:*/

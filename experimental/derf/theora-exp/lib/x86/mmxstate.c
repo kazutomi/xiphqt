@@ -39,6 +39,37 @@ void oc_state_frag_copy_mmx(const oc_theora_state *_state,const int *_fragis,
     frag=_state->frags+*fragi;
     dst=frag->buffer[dst_framei];
     src=frag->buffer[src_framei];
+
+#if (defined(__amd64__) || defined(__x86_64__))
+    __asm__ __volatile__(
+     "  lea         (%3, %3, 2), %%rsi   \n\t"  /* esi=src_stride*3 */
+     "  movq        (%1),        %%mm0   \n\t"  /* src */
+     "  lea         (%2, %2, 2), %%rdi   \n\t"  /* edi=dst_stride*3 */
+     "  movq        (%1, %3),    %%mm1   \n\t"  /* src+1x stride */
+     "  movq        (%1, %3, 2), %%mm2   \n\t"  /* src+2x stride */
+     "  movq        (%1, %%rsi), %%mm3   \n\t"  /* src+3x stride */
+     "  movq        %%mm0,       (%0)    \n\t"  /* dst */
+     "  movq        %%mm1,       (%0, %2)\n\t"  /* dst+dst_stride */
+     "  lea         (%1,%3,4),   %1      \n\t"  /* pointer to next 4 */
+     "  movq        %%mm2,       (%0, %2, 2)      \n\t"  /*dst+2x dst_stride */
+     "  movq        %%mm3,       (%0, %%rdi)      \n\t"  /* 3x */
+     "  lea         (%0,%2,4),   %0      \n\t"  /* pointer to next 4 */
+     "  movq        (%1),        %%mm0   \n\t"  /* src */
+     "  movq        (%1, %3),    %%mm1   \n\t"  /* src+1x stride */
+     "  movq        (%1, %3, 2), %%mm2   \n\t"  /* src+2x stride */
+     "  movq        (%1, %%rsi), %%mm3   \n\t"  /* src+3x stride */
+     "  movq        %%mm0,       (%0)    \n\t"  /* dst */
+     "  movq        %%mm1,       (%0, %2)\n\t"  /* dst+dst_stride */
+     "  movq        %%mm2,       (%0, %2, 2)     \n\t"  /* dst+2x dst_stride */
+     "  movq        %%mm3,       (%0, %%rdi)     \n\t"  /* 3x */
+     :"+r" (dst) /* 0 */
+     :"r" (src),  /* 1 */
+      "r" ((long)dst_ystride), /* 2 */
+      "r" ((long)src_ystride) /* 3 */
+     :"memory", "rsi","rdi"
+    );
+  }
+#else
     __asm__ __volatile__(
      "  lea         (%3, %3, 2), %%esi   \n\t"  /* esi=src_stride*3 */
      "  movq        (%1),        %%mm0   \n\t"  /* src */
@@ -67,6 +98,7 @@ void oc_state_frag_copy_mmx(const oc_theora_state *_state,const int *_fragis,
      :"memory", "esi","edi"
     );
   }
+#endif
   /*This needs to be removed when decode specific functions are implemented:*/
   __asm__ __volatile__("emms\n\t");
 }

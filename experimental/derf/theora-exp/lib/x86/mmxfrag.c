@@ -20,7 +20,7 @@ void oc_frag_recon_intra_mmx(unsigned char *_dst,int _dst_ystride,
   __asm__ __volatile__(
    "  mov          $0x7, %%ecx  \n\t" /* 8x loop */
    "  .balign 16                \n\t"
-   "1:  movq     (V128), %%mm0  \n\t" /* Set mm0 to 0x0080008000800080 */
+   "1:movq           %3, %%mm0  \n\t" /* Set mm0 to 0x0080008000800080 */
    "  movq         (%1), %%mm2  \n\t" /* First four input values */
    "  movq        %%mm0, %%mm1  \n\t" /* Set mm1 == mm0 */
    "  movq        8(%1), %%mm3  \n\t" /* Next four input values */
@@ -34,8 +34,9 @@ void oc_frag_recon_intra_mmx(unsigned char *_dst,int _dst_ystride,
    "  jns 1b                    \n\t" /* loop */
    :"+r" (_dst)
    :"r" (_residue),
-    "r" (_dst_ystride)
-   :"memory", "ecx"
+    "r" ((long)_dst_ystride),
+    "m" (V128)
+   :"memory", "ecx", "cc"
   );
 }
 
@@ -61,12 +62,57 @@ void oc_frag_recon_inter_mmx(unsigned char *_dst,int _dst_ystride,
    "  jns         1b               \n\t" /* loop */
    :"+r" (_dst)
    :"r" (_residue), 
-    "r" (_dst_ystride),
-    "r" (_src_ystride),
+    "r" ((long)_dst_ystride),
+    "r" ((long)_src_ystride),
     "r" (_src)
-   :"memory", "eax"
+   :"memory", "eax", "cc"
   );
 }
+
+#if (defined(__amd64__) ||  defined(__x86_64__))
+
+void oc_frag_recon_inter2_mmx(unsigned char *_dst,int _dst_ystride,
+ const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
+ int _src2_ystride,const ogg_int16_t *_residue){
+
+  __asm__ __volatile__(
+   "  movl         $0x7,   %%eax   \n\t" /* 8x loop */
+   "  pxor         %%mm0,  %%mm0   \n\t" /* zero mm0 */
+   "  movq         (%4),   %%mm2   \n\t" /* load mm2 with _src1 */
+   "  .balign 16                   \n\t"
+   "1:movq         (%6),   %%mm4   \n\t" /* packed SRC2 */ 
+   "  movq         %%mm2,  %%mm3   \n\t" /* copy to mm3 */
+   "  movq         %%mm4,  %%mm5   \n\t" /* copy packed src2 to mm5 */
+   "  punpcklbw    %%mm0,  %%mm2   \n\t" /* expand low part of src1 to mm2 */
+   "  punpcklbw    %%mm0,  %%mm4   \n\t" /* low part expand of src2 to mm4 */
+   "  lea          (%4,%3), %4     \n\t" /*  _src1+_src1_ystride */
+   "  punpckhbw    %%mm0,  %%mm3   \n\t" /* expand high part of src1 to mm3 */
+   "  punpckhbw    %%mm0,  %%mm5   \n\t" /* high part expand of src2 to mm5 */
+   "  paddsw       %%mm2,  %%mm4   \n\t" /* add low parts of src1 and src2 */
+   "  paddsw       %%mm3,  %%mm5   \n\t" /* add high parts of src1 and src2 */
+   "  lea          (%6,%5), %6     \n\t" /* _src2+_src2_ystride */  
+   "  movq         (%4), %%mm2     \n\t" /* load mm2 with _src1 */
+   "  psrlw        $1,     %%mm4   \n\t" /* shift logical 1 to right o 2 dolu */
+   "  psrlw        $1,     %%mm5   \n\t" /* shift logical 1 to right */
+   "  paddsw       (%1),   %%mm4   \n\t" /* add low parts wwith low parts */
+   "  paddsw       8(%1),  %%mm5   \n\t" /* add highparts with high */
+   "  packuswb     %%mm5,  %%mm4   \n\t" /* pack saturate high to low */
+   "  lea          0x10(%1), %1    \n\t" /* _residuo+16 */
+   "  movq         %%mm4, (%0)     \n\t" /* write to src */
+   "  decl         %%eax           \n\t"
+   "  lea          (%0,%2), %0     \n\t" /* _dst+_dst_ystride */
+   "  jns          1b\n\t"
+   :"+r" (_dst) /* 0 */
+   :"r" (_residue), /* 1 */
+    "r" ((long)_dst_ystride), /* 2 */
+    "r" ((long)_src1_ystride), /* 3 */
+    "r" (_src1), /* 4 */
+    "r" ((long)_src2_ystride), /* 5 */
+    "r" (_src2) /* 6 */
+   : "memory", "cc", "eax"
+  );
+}
+#else
 
 void oc_frag_recon_inter2_mmx(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src1,int _src1_ystride,const unsigned char *_src2,
@@ -109,9 +155,11 @@ void oc_frag_recon_inter2_mmx(unsigned char *_dst,int _dst_ystride,
     "m" (_src2_ystride), /* 5 */
     "r" (_src2), /* 6 */
     "m" (i)
-   :"memory", "eax"
+   :"memory", "eax", "cc"
   );
 }
+
+#endif
 
 void oc_restore_fpu_mmx(void){
   __asm__ __volatile__(
