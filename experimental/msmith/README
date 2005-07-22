@@ -1,0 +1,5 @@
+These are some tools I wrote for diagnosing and fixing problems in ogg files.
+ogg-pageinfo is useful for figuring out what is actually on each ogg page.
+fix-* fix various problems, running them in the proper order is usually required
+play around if you want, there's no makefile, most of them require liboggz.
+
