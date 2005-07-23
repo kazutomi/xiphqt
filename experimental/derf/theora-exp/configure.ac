@@ -125,12 +125,24 @@ AC_CHECK_FUNCS(gettimeofday select strstr)
 dnl Check for optimization
 AC_ARG_ENABLE(x86asm,
     AS_HELP_STRING([--enable-x86asm],
-    [enable x86 assambler optimization, default=disabled]),
-    AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+    [enable x86 assambler optimization, default=autodetect]),
+    []
 )
 
-if test "$enable_x86asm" = "yes"; then
-    AM_CONDITIONAL(OC_X86ASM,true)
+if test "$enable_x86asm" != "no"; then
+    case "$target_cpu" in
+        i[[3456]]86)
+            AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+            AM_CONDITIONAL(OC_X86ASM,true)
+            ;;
+        x86_64) 
+            AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+            AM_CONDITIONAL(OC_X86ASM,true)
+            ;;
+        *) 
+            AM_CONDITIONAL(OC_X86ASM,false)
+            ;;
+    esac
 else
     AM_CONDITIONAL(OC_X86ASM,false)
 fi
