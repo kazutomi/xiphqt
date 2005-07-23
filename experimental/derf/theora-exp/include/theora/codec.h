@@ -252,11 +252,16 @@ typedef struct{
   /**The amount to shift to extract the last keyframe number from the granule
    *  position.
    * This can be at most 31.
+   * theora_info_init() will set this to a default value (currently <tt>6</tt>,
+   *  which is good for streaming applications), but you can set it to 0 to
+   *  make every frame a keyframe.
    * The maximum distance between key frames is
    *  <tt>1<<#keyframe_granule_shift</tt>.
-   * If you leave this at zero and do not set the keyframe frequency with
-   *  #OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, every frame will be encoded as a
-   *  keyframe.*/
+   * The keyframe frequency can be more finely controlled with
+   *  #OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, which can also be adjusted
+   *  during encoding (for example, to force the next frame to be a keyframe),
+   *  but it cannot be set larger than the amount permitted by this field after
+   *  the headers have been output.*/
   int                keyframe_granule_shift;
 }theora_info;
 
@@ -358,7 +363,7 @@ typedef struct{
       The bitstream is also capable of omitting an entire set of ranges and
        its associated matrices if they are the same as either the previous
        set (indexed in row-major order) or if the inter set is the same as the
-       inter set.
+       intra set.
 
     - Loop filter limit values.
       The same limits are used for the loop filter in all color planes, despite
