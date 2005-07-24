@@ -238,6 +238,9 @@ typedef struct{
    int _src2_ystride,const ogg_int16_t *_residue);
   void (*state_frag_copy)(const oc_theora_state *_state,
    const int *_fragis,int _nfragis,int _dst_frame,int _src_frame,int _pli);
+  void (*state_frag_recon)(oc_theora_state *_state,const oc_fragment *_frag,
+   int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+   ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
   void (*restore_fpu)(void);
 }oc_base_opt_vtable;
 
@@ -385,9 +388,6 @@ void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
 int oc_state_mbi_for_pos(oc_theora_state *_state,int _mbx,int _mby);
 int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
  int *_offset1,int _dx,int _dy,int _ystride,int _pli);
-void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
- ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
 
 int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv);
 void oc_state_loop_filter(oc_theora_state *_state,int _frame);
@@ -408,6 +408,9 @@ void oc_frag_recon_inter2(const oc_theora_state *_state,unsigned char *_dst,int 
  int _src2_ystride,const ogg_int16_t *_residue);
 void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
  int _nfragis,int _dst_frame,int _src_frame,int _pli);
+void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
+ int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
 void oc_restore_fpu(const oc_theora_state *_state);
 
 /*Default pure-C implementations.*/
@@ -420,6 +423,9 @@ void oc_frag_recon_inter2_c(unsigned char *_dst,int _dst_ystride,
  int _src2_ystride,const ogg_int16_t *_residue);
 void oc_state_frag_copy_c(const oc_theora_state *_state,const int *_fragis,
  int _nfragis,int _dst_frame,int _src_frame,int _pli);
+void oc_state_frag_recon_c(oc_theora_state *_state,const oc_fragment *_frag,
+ int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
 void oc_restore_fpu_c(void);
 
 #endif

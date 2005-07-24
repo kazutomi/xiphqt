@@ -208,7 +208,7 @@ static void idct8_1(ogg_int16_t *_y,const ogg_int16_t _x[1]){
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients. */
-void oc_idct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
+void oc_idct8x8_c(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   const ogg_int16_t *in;
   ogg_int16_t       *end;
   ogg_int16_t       *out;
@@ -236,7 +236,7 @@ void oc_idct8x8(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients. */
-void oc_idct8x8_10(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
+void oc_idct8x8_10_c(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   const ogg_int16_t *in;
   ogg_int16_t       *end;
   ogg_int16_t       *out;

@@ -13,6 +13,7 @@
  ********************************************************************/
 
 #include "cpu.h"
+#include "x86int.h"
 
 ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t eax;
@@ -20,49 +21,45 @@ ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t ecx;
   ogg_uint32_t edx;
   ogg_uint32_t flags;
-
 #if (defined(__amd64__) || defined(__x86_64__))
-
-#define cpuid(op,eax,ebx,ecx,edx) \
+# define cpuid(_op,_eax,_ebx,_ecx,_edx) \
   __asm__ __volatile__( \
-   "push %%rbx   \n\t" \
-   "cpuid         \n\t" \
-   "movl %%ebx,%1 \n\t" \
-   "pop %%rbx" \
-   :"=a" (eax), \
-    "=r" (ebx), \
-    "=c" (ecx), \
-    "=d" (edx) \
-   :"a" (op) \
+   "push %%rbx\n\t" \
+   "cpuid\n\t" \
+   "movl %%ebx,%1\n\t" \
+   "pop  %%rbx\n\t" \
+   :"=a" (_eax), \
+    "=r" (_ebx), \
+    "=c" (_ecx), \
+    "=d" (_edx) \
+   :"a" (_op) \
    :"cc" \
   )
-
 #else
-
-#define cpuid(op,eax,ebx,ecx,edx) \
+# define cpuid(_op,_eax,_ebx,_ecx,_edx) \
   __asm__ __volatile__( \
-   "pushl %%ebx   \n\t" \
-   "cpuid         \n\t" \
-   "movl %%ebx,%1 \n\t" \
-   "popl %%ebx" \
-   :"=a" (eax), \
-    "=r" (ebx), \
-    "=c" (ecx), \
-    "=d" (edx) \
-   :"a" (op) \
+   "pushl %%ebx\n\t" \
+   "cpuid\n\t" \
+   "movl  %%ebx,%1\n\t" \
+   "popl  %%ebx\n\t" \
+   :"=a" (_eax), \
+    "=r" (_ebx), \
+    "=c" (_ecx), \
+    "=d" (_edx) \
+   :"a" (_op) \
    :"cc" \
   )
   __asm__ __volatile__(
-   "pushfl              \n\t"
-   "pushfl              \n\t"
-   "popl %0             \n\t"
-   "movl %0,%1          \n\t"
-   "xorl $0x200000,%0   \n\t"
-   "pushl %0            \n\t"
-   "popfl               \n\t"
-   "pushfl              \n\t"
-   "popl %0             \n\t"
-   "popfl"
+   "pushfl\n\t"
+   "pushfl\n\t"
+   "popl          %0\n\t"
+   "movl          %0,%1\n\t"
+   "xorl   $0x200000,%0\n\t"
+   "pushl         %0\n\t"
+   "popfl\n\t"
+   "pushfl\n\t"
+   "popl          %0\n\t"
+   "popfl\n\t"
    :"=r" (eax),
     "=r" (ebx)
    :
@@ -82,7 +79,7 @@ inteltest:
     if(edx&0x04000000)flags|=OC_CPU_X86_SSE2;
   }
   else if(ebx==0x68747541&&edx==0x69746e65&&ecx==0x444d4163){
-    /*AMD.*/
+    /*AMD:*/
     cpuid(0x80000000,eax,ebx,ecx,edx);
     if(eax<0x80000001)goto inteltest;
     cpuid(0x80000001,eax,ebx,ecx,edx);

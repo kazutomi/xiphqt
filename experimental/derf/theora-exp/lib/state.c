@@ -512,6 +512,7 @@ void oc_state_vtable_init_c(oc_theora_state *_state){
   _state->opt_vtable.frag_recon_inter=oc_frag_recon_inter_c;
   _state->opt_vtable.frag_recon_inter2=oc_frag_recon_inter2_c;
   _state->opt_vtable.state_frag_copy=oc_state_frag_copy_c;
+  _state->opt_vtable.state_frag_recon=oc_state_frag_recon_c;
   _state->opt_vtable.restore_fpu=oc_restore_fpu_c;
 }
 
@@ -787,6 +788,13 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]){
+  _state->opt_vtable.state_frag_recon(_state,_frag,_pli,_dct_coeffs,
+   _last_zzi,_ncoefs,_dc_iquant,_ac_iquant);
+}
+
+void oc_state_frag_recon_c(oc_theora_state *_state,const oc_fragment *_frag,
+ int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]){
   ogg_int16_t dct_buf[64];
   ogg_int16_t res_buf[64];
   int dst_framei;
@@ -837,11 +845,11 @@ void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
        the iDCT.*/
     if(_last_zzi<10){
       for(;zzi<10;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
-      oc_idct8x8_10(res_buf,dct_buf);
+      oc_idct8x8_10_c(res_buf,dct_buf);
     }
     else{
       for(;zzi<64;zzi++)dct_buf[OC_FZIG_ZAG[zzi]]=0;
-      oc_idct8x8(res_buf,dct_buf);
+      oc_idct8x8_c(res_buf,dct_buf);
     }
   }
   /*Fill in the target buffer.*/

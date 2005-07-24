@@ -45,6 +45,7 @@ state.c \
 $(if $(findstring -DOC_X86ASM,${CFLAGS}), \
 x86/mmxstate.c \
 x86/x86state.c \
+x86/mmxidct.c \
 x86/mmxfrag.c \
 x86/cpu.c \
 )

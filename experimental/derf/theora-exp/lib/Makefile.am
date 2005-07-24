@@ -5,6 +5,7 @@ AM_CFLAGS = $(OGG_CFLAGS) $(OPTIMIZATION_CFLAGS)
 
 EXTRA_DIST = \
 	x86/cpu.c \
+	x86/mmxidct.c \
 	x86/mmxfrag.c \
 	x86/mmxstate.c \
 	x86/x86state.c
@@ -12,6 +13,7 @@ EXTRA_DIST = \
 if OC_X86ASM
 X86ASM_FILES = \
 	x86/cpu.c \
+	x86/mmxidct.c \
 	x86/mmxfrag.c \
 	x86/mmxstate.c \
 	x86/x86state.c
