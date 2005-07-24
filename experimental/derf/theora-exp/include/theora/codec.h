@@ -314,7 +314,7 @@ typedef struct{
      These must sum to 63.*/
   const int               *sizes;
   /**#nranges <tt>+1</tt> base matrices.
-     Matrices \a i and <tt>\a i +1</tt> form the endpoints of range \a i.*/
+     Matrices \a i and <tt>i+1</tt> form the endpoints of range \a i.*/
   const theora_quant_base *base_matrices;
 }theora_quant_ranges;
 
@@ -326,7 +326,7 @@ typedef struct{
    \endcode
 
    \a qti is the quantization type index: 0 for intra, 1 for inter.
-   <tt>\a ci !=0</tt> is 0 for the DC coefficient and 1 for the AC coefficient.
+   <tt>ci!=0</tt> is 0 for the DC coefficient and 1 for the AC coefficient.
    \a qi is the quality index, ranging between 0 (low quality) and 63 (high
     quality).
    \a pli is the color plane index: 0 for Y', 1 for Cb, 2 for Cr.
@@ -342,7 +342,7 @@ typedef struct{
    Parameters that can be stored in the bitstream are as follows:
     - The two scale matrices ac_scale and dc_scale.
       \code 
-      scale={dc_scale,ac_scale}.
+      scale[2][64]={dc_scale,ac_scale}.
       \endcode
     - The base matrices for each \a qi, \a qti and \a pli (up to 384 in all).
       In order to avoid storing a full 384 base matrices, only a sparse set of
@@ -351,8 +351,8 @@ typedef struct{
       For each \a qti and \a pli, a series of \a n \a qi ranges is defined.
       The size of each \a qi range can vary arbitrarily, but they must sum to
        63.
-      Then, <tt>\a n +1</tt> matrices are specified, one for each endpoint of
-       the ranges.
+      Then, <tt>n+1</tt> matrices are specified, one for each endpoint of the
+       ranges.
       For interpolation purposes, each range's endpoints are the first \a qi
        value it contains and one past the last \a qi value it contains.
       Fractional values are rounded to the nearest integer, with ties rounded

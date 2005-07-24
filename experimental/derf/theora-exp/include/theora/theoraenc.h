@@ -37,8 +37,8 @@ extern "C" {
  * Keep any experimental or vendor-specific values above \c 0x8000.*/
 /*@{*/
 /**Sets the Huffman tables to use.
- * The tables are copied, not of stored by reference, so they can be freed
- *  after this call.
+ * The tables are copied, not stored by reference, so they can be freed after
+ *  this call.
  * <tt>NULL</tt> may be specified to revert to the default tables.
  *
  * \param[in] _buf <tt>theora_huff_code[#OC_NHUFFMAN_TABLES][#OC_NDCT_TOKENS]</tt>
