@@ -66,6 +66,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
    for (i=0;i<st->frame_size;i++)
       st->current_pcm[i]=pcm[i];
    find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
+   //pitch = 256;
    //printf ("%d %f\n", pitch, gain);
    w = 2*M_PI/pitch;
    {
