@@ -1,8 +1,8 @@
 /* Copyright (C) 2005 */
 /**
-   @file ghost.c
-   @brief Main codec file
-*/
+   @file lifting.h
+   @brief Lifting wavelet transform
+ */
 /*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -32,54 +32,20 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#ifndef _LIFTING_H
+#define _LIFTING_H
 
-#include "ghost.h"
-#include "pitch.h"
-#include "sinusoids.h"
-#define PCM_BUF_SIZE 2048
+struct LiftingBasis {
+   float *predict;
+   int predict_length;
+   int predict_delay;
+   float *update;
+   int update_length;
+   int update_delay;
+};
 
-GhostEncState *ghost_encoder_state_new(int sampling_rate)
-{
-   GhostEncState *st = calloc(1,sizeof(GhostEncState));
-   st->frame_size = 256;
-   st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->frame_size;
-   return st;
-}
+void lifting_forward(float *x, struct LiftingBasis *basis, int len, int stride);
 
-void ghost_encoder_state_destroy(GhostEncState *st)
-{
-   free(st);
-}
+void lifting_backward(float *x, struct LiftingBasis *basis, int len, int stride);
 
-void ghost_encode(GhostEncState *st, float *pcm)
-{
-   int i;
-   float gain;
-   float pitch;
-   float w;
-   for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->pcm_buf[i+st->frame_size];
-   for (i=0;i<st->frame_size;i++)
-      st->current_pcm[i]=pcm[i];
-   find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   //pitch = 256;
-   //printf ("%d %f\n", pitch, gain);
-   w = 2*M_PI/pitch;
-   {
-      float wi[45];
-      float y[256];
-      float ai[45], bi[45];
-      for (i=0;i<45;i++)
-         wi[i] = w*(i+1);
-      extract_sinusoids(st->current_pcm, wi, ai, bi, y, 20, 256);
-      short out[256];
-      for (i=0;i<256;i++)
-         out[i] = y[i];
-      fwrite(out, sizeof(short), 256, stdout);
-   }
-   
-}
+#endif

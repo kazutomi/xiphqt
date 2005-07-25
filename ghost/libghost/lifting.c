@@ -1,8 +1,8 @@
 /* Copyright (C) 2005 */
 /**
-   @file ghost.c
-   @brief Main codec file
-*/
+   @file lifting.c
+   @brief Lifting wavelet transform
+ */
 /*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -32,54 +32,58 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include "lifting.h"
 
-#include "ghost.h"
-#include "pitch.h"
-#include "sinusoids.h"
-#define PCM_BUF_SIZE 2048
-
-GhostEncState *ghost_encoder_state_new(int sampling_rate)
+void lifting_forward(float *x, struct LiftingBasis *basis, int len, int stride)
 {
-   GhostEncState *st = calloc(1,sizeof(GhostEncState));
-   st->frame_size = 256;
-   st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->frame_size;
-   return st;
-}
-
-void ghost_encoder_state_destroy(GhostEncState *st)
-{
-   free(st);
-}
-
-void ghost_encode(GhostEncState *st, float *pcm)
-{
-   int i;
-   float gain;
-   float pitch;
-   float w;
-   for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->pcm_buf[i+st->frame_size];
-   for (i=0;i<st->frame_size;i++)
-      st->current_pcm[i]=pcm[i];
-   find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   //pitch = 256;
-   //printf ("%d %f\n", pitch, gain);
-   w = 2*M_PI/pitch;
+   int i,j;
+   float *r, *rstart; /* residue/modified value */
+   float *y; /* prediction start */
+   
+   /* Prediction */
+   if (basis->predict_delay > 1)
+      rstart = x-2*stride*(basis->predict_delay-1);
+   else
+      rstart = x;
+   r = rstart;
+   y = x + 1 - 2*stride*(basis->predict_length - basis->predict_delay);
+   
+   for (i=0;i<len;i++)
    {
-      float wi[45];
-      float y[256];
-      float ai[45], bi[45];
-      for (i=0;i<45;i++)
-         wi[i] = w*(i+1);
-      extract_sinusoids(st->current_pcm, wi, ai, bi, y, 20, 256);
-      short out[256];
-      for (i=0;i<256;i++)
-         out[i] = y[i];
-      fwrite(out, sizeof(short), 256, stdout);
+      float sum = 0;
+      float *p = basis->predict;
+      float *y2 = y;
+      for (j=0;j<basis->predict_length;j++)
+      {
+         sum += *p++ * *y2;
+         y2 += stride;
+      }
+      *r -= sum;
+      r += stride;
+      y += stride;
    }
    
+   r = rstart + 1 - 2*stride*basis->update_delay;
+   y = rstart - 2*stride*(basis->update_length - basis->update_delay - 1);
+
+   for (i=0;i<len;i++)
+   {
+      float sum = 0;
+      float *p = basis->update;
+      float *y2 = y;
+      for (j=0;j<basis->update_length;j++)
+      {
+         sum += *p++ * *y2;
+         y2 += stride;
+      }
+      *r += sum;
+      r += stride;
+      y += stride;
+   }
 }
+
+void lifting_backward(float *x, struct LiftingBasis *basis, int len, int stride)
+{
+   
+}
+
