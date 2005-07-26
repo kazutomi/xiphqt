@@ -5,10 +5,10 @@ exec_prefix=
 libdir=${pcfiledir}/src
 includedir=${pcfiledir}/include
 
-Name: ogg
-Description: ogg is a library for manipulating ogg bitstreams (not installed)
+Name: ogg2
+Description: ogg2 is a library for manipulating ogg bitstreams (not installed)
 Version: @VERSION@
 Requires:
 Conflicts:
-Libs: ${libdir}/libogg.la
+Libs: ${libdir}/libogg2.la
 Cflags: -I${includedir}
