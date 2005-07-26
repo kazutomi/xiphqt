@@ -4,4 +4,5 @@ AUTOMAKE_OPTIONS = foreign
 
 includedir = $(prefix)/include/ogg
 
-include_HEADERS = ogg.h os_types.h config_types.h ogg2.h
+include_HEADERS = ogg2.h os_types.h config_types.h
+
