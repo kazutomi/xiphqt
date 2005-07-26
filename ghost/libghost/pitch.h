@@ -1,6 +1,6 @@
 /**
-   @file ghost.h
-   @brief Main codec file
+   @file pitch.h
+   @brief Pitch analysis
  */
 
 /* Copyright (C) 2005
@@ -20,19 +20,12 @@
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _GHOST_H
-#define _GHOST_H
+#ifndef _PITCH_H
+#define _PITCH_H
 
-typedef struct {
-   float *pcm_buf;
-   float *current_pcm;
-   int frame_size;
-} GhostEncState;
+float inner_prod(float *x, float *y, int len);
 
-GhostEncState *ghost_encoder_state_new(int sampling_rate);
+void find_pitch(float *x, float *gain, float *pitch, int start, int end, int len);
 
-void ghost_encoder_state_destroy(GhostEncState *st);
-
-void ghost_encode(GhostEncState *st, float *pcm);
 
 #endif
