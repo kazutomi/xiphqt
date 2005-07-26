@@ -22,7 +22,7 @@ AC_ARG_ENABLE(oggtest, [  --disable-oggtest       Do not try to compile and run 
     OGG_LIBS="-L$prefix/lib"
   fi
 
-  OGG_LIBS="$OGG_LIBS -logg"
+  OGG_LIBS="$OGG_LIBS -logg2"
 
   if test "x$ogg_includes" != "x" ; then
     OGG_CFLAGS="-I$ogg_includes"

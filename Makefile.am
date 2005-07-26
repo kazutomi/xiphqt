@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = foreign dist-zip
+AUTOMAKE_OPTIONS = foreign 1.6 dist-zip
 
 SUBDIRS = src include doc win32 debian
 
@@ -9,6 +9,9 @@ m4data_DATA = ogg.m4
 
 EXTRA_DIST = README AUTHORS CHANGES COPYING libogg.spec ogg.m4 \
 	macos macosx
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = ogg.pc
 
 dist-hook:
 	rm -rf `find $(distdir)/macos -name CVS`

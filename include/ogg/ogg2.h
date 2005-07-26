@@ -21,7 +21,7 @@
 extern "C" {
 #endif
   
-#include <ogg2/os_types.h>
+#include <ogg/os_types.h>
   
 struct ogg2_buffer;
 struct ogg2_reference;
