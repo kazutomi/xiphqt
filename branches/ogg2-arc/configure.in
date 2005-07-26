@@ -3,6 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/sync.c)
 
 AM_INIT_AUTOMAKE(libogg,1.99-svn)
+AM_MAINTAINER_MODE
 
 dnl Library versioning
 
@@ -15,6 +16,8 @@ AC_SUBST(LIB_AGE)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL
+
+AM_CONFIG_HEADER([config.h])
 
 dnl Set some options based on environment
 
@@ -289,7 +292,7 @@ AC_SUBST(DEBUG)
 AC_SUBST(CFLAGS)
 AC_SUBST(PROFILE)
 
-AC_OUTPUT(
+AC_OUTPUT([
 Makefile
 src/Makefile
 doc/Makefile
@@ -297,8 +300,9 @@ doc/ogg2/Makefile
 include/Makefile
 include/ogg/Makefile
 include/ogg/config_types.h
-include/ogg2/Makefile
-include/ogg2/config_types.h
 win32/Makefile
 debian/Makefile
-)
+libogg.spec
+ogg.pc
+ogg-uninstalled.pc
+])

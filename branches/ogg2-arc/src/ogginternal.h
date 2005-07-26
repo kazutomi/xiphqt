@@ -18,6 +18,10 @@
 #ifndef _OGG2I_H
 #define _OGG2I_H
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <ogg/ogg2.h>
 #include "mutex.h"
 

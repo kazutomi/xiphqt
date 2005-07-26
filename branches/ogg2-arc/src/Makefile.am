@@ -2,6 +2,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+noinst_HEADERS = ogginternal.h mutex.h
+
 INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include
 
 lib_LTLIBRARIES = libogg2.la
