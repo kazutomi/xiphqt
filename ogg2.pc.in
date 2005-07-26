@@ -5,8 +5,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: ogg
-Description: ogg is a library for manipulating ogg bitstreams
+Name: ogg2
+Description: ogg2 is a library for manipulating ogg bitstreams
 Version: @VERSION@
 Requires:
 Conflicts:

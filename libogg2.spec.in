@@ -1,4 +1,4 @@
-Name:		libogg
+Name:		libogg2
 Version:	@VERSION@
 Release:	0.xiph.1
 Summary:	Ogg Bitstream Library.
@@ -70,14 +70,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc doc/ogg/*.html
 %doc doc/ogg/style.css
 %dir %{_includedir}/ogg
-%{_includedir}/ogg/ogg.h
+%{_includedir}/ogg/ogg2.h
 %{_includedir}/ogg/os_types.h
 %{_includedir}/ogg/config_types.h
-%{_libdir}/libogg.a
-%{_libdir}/libogg.la
-%{_libdir}/libogg.so
-%{_libdir}/pkgconfig/ogg.pc
-%{_datadir}/aclocal/ogg.m4
+%{_libdir}/libogg2.a
+%{_libdir}/libogg2.la
+%{_libdir}/libogg2.so
+%{_libdir}/pkgconfig/ogg2.pc
+%{_datadir}/aclocal/ogg2.m4
 
 %changelog
 * Thu Jun 10 2004 Thomas Vander Stichele <thomas at apestaart dot org>
