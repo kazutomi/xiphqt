@@ -686,6 +686,7 @@ static gboolean button_release (GtkWidget        *widget,
   if(g->group_drag){
     move_selected_verticies(g->dragx,g->dragy);
     update_background(widget); // cheating
+    score_update(g);
     g->group_drag=0;
   }
 
