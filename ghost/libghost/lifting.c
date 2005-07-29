@@ -54,7 +54,7 @@ void lifting_forward(float *x, struct LiftingBasis *basis, int len, int stride)
    //return;
    /* Update */
    r = rstart + 1 - stride2*basis->update_delay;
-   y = rstart - stride2*(basis->update_length - basis->update_delay - 1);
+   y = rstart - stride2*(basis->update_length - basis->update_delay);
 
    for (i=0;i<len;i+=stride2)
    {
@@ -86,7 +86,7 @@ void lifting_backward(float *x, struct LiftingBasis *basis, int len, int stride)
 
    /* De-update */
    r = rstart + 1 - stride2*basis->update_delay;
-   y = rstart - stride2*(basis->update_length - basis->update_delay - 1);
+   y = rstart - stride2*(basis->update_length - basis->update_delay);
 
    for (i=0;i<len;i+=stride2)
    {
