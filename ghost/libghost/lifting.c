@@ -28,47 +28,47 @@ void lifting_forward(float *x, struct LiftingBasis *basis, int len, int stride)
    int i,j;
    float *r, *rstart; /* residue/modified value */
    float *y; /* prediction start */
-   
+   int stride2 = 2*stride;
    /* Prediction */
    if (basis->predict_delay > 1)
-      rstart = x-2*stride*(basis->predict_delay-1);
+      rstart = x-stride2*(basis->predict_delay-1);
    else
       rstart = x;
    r = rstart;
-   y = x + 1 - 2*stride*(basis->predict_length - basis->predict_delay);
+   y = x + 1 - stride2*(basis->predict_length - basis->predict_delay);
    
-   for (i=0;i<len;i++)
+   for (i=0;i<len;i+=stride2)
    {
       float sum = 0;
-      float *p = basis->predict;
+      const float *p = basis->predict;
       float *y2 = y;
       for (j=0;j<basis->predict_length;j++)
       {
          sum += *p++ * *y2;
-         y2 += stride;
+         y2 += stride2;
       }
       *r -= sum;
-      r += stride;
-      y += stride;
+      r += stride2;
+      y += stride2;
    }
-   
+   //return;
    /* Update */
-   r = rstart + 1 - 2*stride*basis->update_delay;
-   y = rstart - 2*stride*(basis->update_length - basis->update_delay - 1);
+   r = rstart + 1 - stride2*basis->update_delay;
+   y = rstart - stride2*(basis->update_length - basis->update_delay - 1);
 
-   for (i=0;i<len;i++)
+   for (i=0;i<len;i+=stride2)
    {
       float sum = 0;
-      float *p = basis->update;
+      const float *p = basis->update;
       float *y2 = y;
       for (j=0;j<basis->update_length;j++)
       {
          sum += *p++ * *y2;
-         y2 += stride;
+         y2 += stride2;
       }
       *r += sum;
-      r += stride;
-      y += stride;
+      r += stride2;
+      y += stride2;
    }
 }
 
@@ -77,11 +77,32 @@ void lifting_backward(float *x, struct LiftingBasis *basis, int len, int stride)
    int i,j;
    float *r, *rstart; /* residue/modified value */
    float *y; /* prediction start */
+   int stride2 = 2*stride;
 
    if (basis->predict_delay > 1)
       rstart = x-2*stride*(basis->predict_delay-1);
    else
       rstart = x;
 
+   /* De-update */
+   r = rstart + 1 - stride2*basis->update_delay;
+   y = rstart - stride2*(basis->update_length - basis->update_delay - 1);
+
+   for (i=0;i<len;i+=stride2)
+   {
+      float sum = 0;
+      const float *p = basis->update;
+      float *y2 = y;
+      for (j=0;j<basis->update_length;j++)
+      {
+         sum += *p++ * *y2;
+         y2 += stride2;
+      }
+      *r -= sum;
+      r += stride2;
+      y += stride2;
+   }
+
+   
 }
 
