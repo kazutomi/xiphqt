@@ -26,11 +26,20 @@
 #include "sinusoids.h"
 #include "ghost.h"
 #include "pitch.h"
+#include "lifting.h"
+#include <stdlib.h>
+
+const float predict[11] = {-0.00499385545085393, 0.0110380571786845, -0.018414597815401, 0.0275862067026581, -0.0393646739536688, 0.055303264488734, -0.0787612707745417, 0.118522526792966, -0.29689, 0.80484, 0.4211};
+const float update[11] = {-0.000749078317628089, 0.00165570857680267, -0.00276218967231015, 0.00413793100539871, -0.00590470109305032, 0.0082954896733101, -0.0118141906161813, 0.0226, -0.07844, 0.34242, 0.221};
+
 
 int main(int argc, char **argv)
 {
    GhostEncState *state;
    FILE *fin;
+   struct LiftingBasis bas;
+   float x[1200];
+   int i;
    /*float x[256];
    float y[256];
    float w[2] = {.05, .2};
@@ -44,6 +53,29 @@ int main(int argc, char **argv)
    printf ("%f %f\n", ai[0], bi[0]);
    printf ("%f %f\n", ai[1], bi[1]);
    */
+   bas.predict_delay=1;
+   bas.predict_length=11;
+   bas.update_delay=1;
+   bas.update_length=11;
+   bas.predict = predict;
+   bas.update = update;
+   for (i=0;i<1200;i++)
+   {
+      //x[i] = 2*((1.f*rand())/RAND_MAX) - 1;
+      x[i] = sin(.3*i);
+   }
+   for (i=0;i<1024;i++)
+      printf ("%f ", x[i+30]);
+   printf ("\n");
+   lifting_forward(x+30, &bas, 1024, 1);
+   for (i=0;i<1024;i++)
+      printf ("%f ", x[i+30]);
+   printf ("\n");
+   lifting_backward(x+30, &bas, 1024, 1);
+   for (i=0;i<1024;i++)
+      printf ("%f ", x[i+30]);
+   printf ("\n");
+   return 0;
    fin = fopen("test.sw", "r");
    state = ghost_encoder_state_new(48000);
    while (1)

@@ -24,10 +24,10 @@
 #define _LIFTING_H
 
 struct LiftingBasis {
-   float *predict;
+   const float *predict;
    int predict_length;
    int predict_delay;
-   float *update;
+   const float *update;
    int update_length;
    int update_delay;
 };
