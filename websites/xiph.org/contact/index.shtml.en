@@ -1,0 +1,50 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org: Contact Information</title>
+<style type="text/css">
+<!--
+
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Xiph.org: Contact Information</h1>
+
+<p>Xiph.org are:</p>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:monty@xiph.org">Christopher Montgomery</a>
+	<div class="role"><span>Founder</span> and <span>Lead Programmer</span></div>
+</div>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:jack@xiph.org">Jack Moffitt</a>
+	<div class="role"><span>Executive Contact</span></div>
+</div>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:manuel@xiph.org">Manuel Lora</a>
+	<div class="role"><span>Project Manager</span></div>
+</div>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:comatoast@xiph.org">Nathan Sharfi</a>
+	<div class="role"><span>Webmaster</span></div>
+</div>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:trosedale@brllegal.com">Tom Rosedale</a>
+	<div class="role"><span>Legal Counsel</span></div>
+	<div class="org"><a class="url" href="http://www.brllegal.com/">Browne, Rosedale, &amp; Lanouette LLP<a></div>
+</div>
+
+<div class="vcard">
+ <a class="email fn" href="mailto:"></a>
+ <div class="role"><span></span></div>
+</div>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
