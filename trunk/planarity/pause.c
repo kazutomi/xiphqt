@@ -272,11 +272,12 @@ static void draw_aboutbox(Gameboard *g){
     cairo_matrix_init_scale (&ma, 13.,14.);
     cairo_set_font_matrix (c,&ma);
     render_text_centered(c,"gPlanarity written by Monty <monty@xiph.org>",w/2,y);y+=17;
-    render_text_centered(c,"as a demonstration of Gtk+/Cairo (and so",w/2,y);y+=17;
-    render_text_centered(c,"he can play a version that actually works on",w/2,y);y+=17;
-    render_text_centered(c,"Linux.  Flash bugs, gah....)",w/2,y);y+=32;
+    render_text_centered(c,"as a demonstration of Gtk+/Cairo",w/2,y);y+=32;
+
     render_text_centered(c,"Original Flash version of Planarity by",w/2,y);y+=17;
-    render_text_centered(c,"John Tantalo <john.tantalo@case.edu>",w/2,y);
+    render_text_centered(c,"John Tantalo <john.tantalo@case.edu>",w/2,y);y+=32;
+
+    render_text_centered(c,"Original game concept by Mary Radcliffe",w/2,y);y+=17;
 
 
   }
