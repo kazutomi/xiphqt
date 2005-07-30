@@ -252,3 +252,22 @@ void path_button_check(cairo_t *c, double x, double y){
 
 }
 
+void path_button_play(cairo_t *c, double x, double y){
+  
+  cairo_save(c);
+  cairo_translate(c,x,y);
+  cairo_set_fill_rule(c,CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_set_line_width(c,1);
+
+  cairo_arc(c,0,0,14,0,2*M_PI);
+
+  cairo_move_to(c,-10,-8);
+  cairo_line_to(c,0,10);
+  cairo_line_to(c,-10,8);
+  cairo_close_path(c);
+ 
+  cairo_fill_preserve(c);
+  cairo_restore(c);
+
+}
+
