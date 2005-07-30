@@ -23,3 +23,4 @@ extern int paused_p();
 extern time_t get_elapsed();
 extern void set_timer(time_t off);
 extern int get_initial_intersections();
+extern int get_raw_score();

@@ -215,7 +215,7 @@ static void draw_finishbox(Gameboard *g){
     cairo_select_font_face (c, "Arial",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
-    snprintf(buffer,160,"Total score: %d",get_initial_intersections()+time_bonus);
+    snprintf(buffer,160,"Total score: %d",get_raw_score());
     render_text_centered(c,buffer, w/2,y);
 
   }
