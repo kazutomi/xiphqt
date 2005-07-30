@@ -7,6 +7,7 @@
 #include "gamestate.h"
 #include "buttons.h"
 #include "buttonbar.h"
+#include "finish.h"
 
 Gameboard *gameboard;
 
@@ -223,7 +224,7 @@ void finish_board(){
     if(get_elapsed()<initial_intersections)
       score+=initial_intersections-get_elapsed();
     level++;
-    undeploy_buttonbar(gameboard,setup_board);
+    undeploy_buttonbar(gameboard,finish_level_dialog);
   }
 }
 
@@ -233,6 +234,10 @@ void quit(){
 
 int get_score(){
   return score + initial_intersections-get_num_intersections();
+}
+
+int get_initial_intersections(){
+  return initial_intersections;
 }
 
 int get_objective(){
@@ -248,7 +253,7 @@ int get_level(){
 }
 
 char *get_level_string(){
-  return "\"original level\"";
+  return "original-style";
 }
 
 int main(int argc, char *argv[]){
