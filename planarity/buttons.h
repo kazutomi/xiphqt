@@ -23,6 +23,7 @@ extern void path_button_shrink(cairo_t *c, double x, double y);
 extern void path_button_lines(cairo_t *c, double x, double y);
 extern void path_button_int(cairo_t *c, double x, double y);
 extern void path_button_check(cairo_t *c, double x, double y);
+extern void path_button_play(cairo_t *c, double x, double y);
  
 
 #define BUTTON_QUIT_IDLE_FILL   .7,.1,.1,.3

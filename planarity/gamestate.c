@@ -6,6 +6,7 @@
 #include "generate.h"
 #include "gamestate.h"
 #include "buttons.h"
+#include "buttonbar.h"
 
 Gameboard *gameboard;
 
@@ -48,7 +49,7 @@ void setup_board(){
   gameboard_reset(gameboard);
 
   //gdk_flush();
-  deploy_buttons(gameboard);
+  deploy_buttonbar(gameboard);
 }
 
 #define RESET_DELTA 2;
@@ -183,12 +184,12 @@ void finish_board(){
   if(get_num_intersections()<=initial_intersections){
     score+=initial_intersections;
     level++;
-    undeploy_buttons(gameboard,setup_board);
+    undeploy_buttonbar(gameboard,setup_board);
   }
 }
 
 void quit(){
-  undeploy_buttons(gameboard,gtk_main_quit);
+  undeploy_buttonbar(gameboard,gtk_main_quit);
 }
 
 int get_score(){

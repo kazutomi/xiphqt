@@ -16,9 +16,9 @@ MANDIR  = $(PREFIX)/man
 # work for on most modern linux distros without any of the
 # bleeding-edge GTK 2.7/2.8 libs installed.
 
-SRC  = graph.c arrange.c gameboard.c generate.c gamestate.c\
+SRC  = graph.c arrange.c gameboard.c generate.c gamestate.c button_base.c\
 	buttons.c buttonbar.c box.c
-OBJ  = graph.o arrange.o gameboard.o generate.o gamestate.o\
+OBJ  = graph.o arrange.o gameboard.o generate.o gamestate.o button_base.o\
 	buttons.o buttonbar.o box.o
 GCF  = `pkg-config --static --cflags "gtk+-2.0 >= 2.7.2"`
 
