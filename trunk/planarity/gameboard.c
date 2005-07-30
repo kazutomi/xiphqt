@@ -551,10 +551,12 @@ static gint mouse_motion(GtkWidget        *widget,
 			 GdkEventMotion   *event){
   Gameboard *g = GAMEBOARD (widget);
 
-  if(g->button_grabbed){
+  if(g->button_grabbed || paused_p()){
     g->button_grabbed = 
       button_motion_event(g,event,
 			  (!g->lit_vertex && !g->grabbed_vertex && !g->selection_grab));
+
+    if(paused_p())return TRUE;
   }
 
   if(!g->button_grabbed){
@@ -627,6 +629,13 @@ static gboolean button_press (GtkWidget        *widget,
   vertex *v = find_vertex((int)event->x,(int)event->y);
   g->button_grabbed=0;
 
+  if(paused_p()){
+    // only buttongrabs
+    if(button_button_press(g,event,1))
+      g->button_grabbed=1;
+    return TRUE;
+  }
+     
   if(!g->group_drag && event->state&GDK_SHIFT_MASK){
     if(v){
       if(v->selected){
@@ -715,6 +724,7 @@ static gboolean button_release (GtkWidget        *widget,
   Gameboard *g = GAMEBOARD (widget);
 
   button_button_release(g,event,1);
+  if(paused_p())return TRUE;
 
   if(g->grabbed_vertex){
     ungrab_vertex(g->grabbed_vertex);
@@ -806,6 +816,55 @@ static void expose_intersections(Gameboard *g,cairo_t *c,
   }
 }
 
+void pop_background(Gameboard *g){
+  if(g->pushed_background){
+    g->pushed_background=0;
+    update_full(g);
+  }
+}
+
+void push_background(Gameboard *g){
+  cairo_t *c = cairo_create(g->background);
+  int w = g->w.allocation.width;
+  int h = g->w.allocation.height;
+
+  if(g->pushed_background)
+    pop_background(g);
+
+  foreground_draw(g,c,0,0,w,h);
+
+  // copy in the score and button surfaces
+  cairo_set_source_surface(c,g->forescore,0,0);
+  cairo_rectangle(c, 0,0,w,
+		  min(SCOREHEIGHT,h));
+  cairo_fill(c);
+
+  cairo_set_source_surface(c,g->forebutton,0,g->w.allocation.height-SCOREHEIGHT);
+  cairo_rectangle(c, 0,0,w,h);
+  cairo_fill(c);
+
+  if(g->curtain_alpha>0.){ 
+    cairo_set_source (c, g->curtainp);
+    cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
+    cairo_fill (c);
+  }else{
+    expose_intersections(g,c,0,0,w,h);
+  }
+
+  cairo_destroy(c);
+
+  g->pushed_background=1;
+  {
+    GdkRectangle r;
+    r.x=0;
+    r.y=0;
+    r.width=w;
+    r.height=h;
+    
+    gdk_window_invalidate_rect (g->w.window, &r, FALSE);
+  }
+}
+
 void run_immediate_expose(Gameboard *g,
 			  int x, int y, int w, int h){
 
@@ -819,30 +878,33 @@ void run_immediate_expose(Gameboard *g,
   cairo_set_source_surface(c,g->background,0,0);
   cairo_rectangle(c,x,y,w,h);
   cairo_fill(c);
-  foreground_draw(g,c,x,y,w,h);
 
-  // copy in any of the score or button surfaces?
-  if(y<SCOREHEIGHT){
-    cairo_set_source_surface(c,g->forescore,0,0);
-    cairo_rectangle(c, x,y,w,
-		    min(SCOREHEIGHT-y,h));
-    cairo_fill(c);
+  if(!g->pushed_background){
+    foreground_draw(g,c,x,y,w,h);
+
+    // copy in any of the score or button surfaces?
+    if(y<SCOREHEIGHT){
+      cairo_set_source_surface(c,g->forescore,0,0);
+      cairo_rectangle(c, x,y,w,
+		      min(SCOREHEIGHT-y,h));
+      cairo_fill(c);
+    }
+    if(y+h>g->w.allocation.height-SCOREHEIGHT){
+      cairo_set_source_surface(c,g->forebutton,0,g->w.allocation.height-SCOREHEIGHT);
+      cairo_rectangle(c, x,y,w,h);
+      cairo_fill(c);
+    }
+    
+    if(g->curtain_alpha>0.){ 
+      cairo_set_source (c, g->curtainp);
+      cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
+      cairo_fill (c);
+    }else{
+      expose_intersections(g,c,x,y,w,h);
+    }
   }
-  if(y+h>g->w.allocation.height-SCOREHEIGHT){
-     cairo_set_source_surface(c,g->forebutton,0,g->w.allocation.height-SCOREHEIGHT);
-     cairo_rectangle(c, x,y,w,h);
-     cairo_fill(c);
-  }
+
   expose_buttons(g,c,x,y,w,h);
-
-  if(g->curtain_alpha>0.){ 
-    cairo_set_source (c, g->curtainp);
-    cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
-    cairo_fill (c);
-
-  }else{
-    expose_intersections(g,c,x,y,w,h);
-  }
 
   cairo_destroy(c);
   

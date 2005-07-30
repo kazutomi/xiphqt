@@ -19,6 +19,23 @@ static int score=0;
 static int initial_intersections;
 static int objective=0;
 static int objective_lessthan=0;
+static int paused=0;
+static time_t begin_time_add=0;
+static time_t begin_time;
+
+time_t get_elapsed(){
+  if(paused)
+    return begin_time_add;
+  else{
+    time_t ret = time(NULL);
+    return ret - begin_time + begin_time_add;
+  }
+}
+
+void set_timer(time_t off){
+  begin_time_add = off;
+  begin_time = time(NULL);
+}
 
 static gboolean key_press(GtkWidget *w,GdkEventKey *event,gpointer in){
 
@@ -50,6 +67,8 @@ void setup_board(){
 
   //gdk_flush();
   deploy_buttonbar(gameboard);
+  set_timer(0);
+  unpause();
 }
 
 #define RESET_DELTA 2;
@@ -110,7 +129,24 @@ void reset_board(){
     undeploy_check(gameboard);
   }
   update_full(gameboard);
+  
   // reset timer
+  set_timer(0);
+  unpause();
+}
+
+void pause(){
+  begin_time_add = get_elapsed();
+  paused=1;
+}
+
+void unpause(){
+  paused=0;
+  set_timer(begin_time_add);
+}
+
+int paused_p(){
+  return paused;
 }
 
 void scale(double scale){
@@ -182,6 +218,7 @@ void mark_intersections(){
 
 void finish_board(){
   if(get_num_intersections()<=initial_intersections){
+    pause();
     score+=initial_intersections;
     level++;
     undeploy_buttonbar(gameboard,setup_board);

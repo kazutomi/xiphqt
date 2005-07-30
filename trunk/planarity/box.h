@@ -12,3 +12,5 @@
 
 extern void topbox (cairo_t *c, double w, double h);
 extern void bottombox (cairo_t *c, double w, double h);
+extern void centerbox (cairo_t *c, int x, int y, double w, double h);
+extern void borderbox_path (cairo_t *c, int x, int y, double w, double h);

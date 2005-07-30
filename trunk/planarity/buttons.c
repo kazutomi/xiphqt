@@ -261,9 +261,9 @@ void path_button_play(cairo_t *c, double x, double y){
 
   cairo_arc(c,0,0,14,0,2*M_PI);
 
-  cairo_move_to(c,-10,-8);
-  cairo_line_to(c,0,10);
-  cairo_line_to(c,-10,8);
+  cairo_move_to(c,-8,-8);
+  cairo_line_to(c,10,0);
+  cairo_line_to(c,-8,8);
   cairo_close_path(c);
  
   cairo_fill_preserve(c);
