@@ -12,21 +12,30 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Getting in touch</h2>
 <p>
-	Xiph.org are:
+The best way to contact members of the Xiph.org Foundation and community 
+is to post to one of the <a 
+href="http://lists.xiph.org/mailman/listinfo/">mailing lists</a> or find
+us on IRC on <a href="http://freenode.net/">irc.freenode.net</a>.
+Try the channels <tt>#xiph</tt> for general information, or the 
+general project channels: <tt>#vorbis</tt>, <tt>#theora</tt>, 
+<tt>#icecast</tt> and <tt>#speex</tt>.
+</p>
+
+<h2>Xiph.org are:</h2>
+<p>
+Below are some point contacts for particular people in the organization.
 </p>
 <dl class='people'>
-	<dt>Christopher Montgomery &lt;<a href='mailto:monty@xiph.org'>monty@xiph.org</a>&gt;</dt>
-	<dd>Founder and Lead Programmer</dd>
+	<dt>Webmaster &lt;<a href='mailto:webmaster@xiph.org'>webmaster@xiph.org</a>&gt;</dt>
+	<dd>Contact for website-related issues</dd>
 
-	<dt>Jack Moffitt &lt;<a href='mailto:jack@xiph.org'>jack@xiph.org</a>&gt;</dt>
-	<dd>Executive Contact</dd>
+	<dt>Christopher Montgomery &lt;<a href='mailto:monty@xiph.org'>monty@xiph.org</a>&gt;</dt>
+	<dd>Founder and Executive Contact</dd>
 
 	<dt>Manuel Lora &lt;<a href='mailto:manuel@xiph.org'>manuel@xiph.org</a>&gt;</dt>
 	<dd>Project Manager</dd>
-
-	<dt>Nathan Sharfi &lt;<a href='mailto:comatoast@xiph.org'>comatoast@xiph.org</a>&gt;</dt>
-	<dd>Webmaster</dd>
 
 	<dt>Tom Rosedale &lt;<a href='mailto:trosedale@brllegal.com'>trosedale@brllegal.com</a>&gt;</dt>
 	<dd>Legal Counsel (<a href='http://www.brllegal.com/'>Browne, Rosedale, &amp; Lanouette LLP</a>)</dd>
