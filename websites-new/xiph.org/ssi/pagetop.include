@@ -8,7 +8,7 @@
 	<ul>
 		<li id="about_"><a href="/about/">About</a></li>
 		<li id="press_"><a href="/">Press</a></li>
-		<li id="donate_"><a href="/">Donate</a></li>
+		<li id="donate_"><a href="/donate/">Donate</a></li>
 		<li id="contact_"><a href="/">Contact</a></li>
 		<li id="wiki_"><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
 		<li id="downloads_"><a href="/">Downloads</a></li>
