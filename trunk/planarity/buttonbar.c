@@ -105,6 +105,7 @@ void setup_buttonbar(Gameboard *g){
   states[0].callback = quit;
   states[2].callback = reset_board;
   states[3].callback = pause_game;
+  states[4].callback = about_game;
   states[5].callback = expand;
   states[6].callback = shrink;
   states[7].callback = hide_show_lines;

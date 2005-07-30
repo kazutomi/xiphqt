@@ -220,6 +220,8 @@ void finish_board(){
   if(get_num_intersections()<=initial_intersections){
     pause();
     score+=initial_intersections;
+    if(get_elapsed()<initial_intersections)
+      score+=initial_intersections-get_elapsed();
     level++;
     undeploy_buttonbar(gameboard,setup_board);
   }

@@ -72,7 +72,7 @@ static void local_quit (Gameboard *g){
 }
 
 /* initialize the rather weird little animation engine */
-static void setup_pause_buttons(Gameboard *g){
+static void setup_pause_buttons(Gameboard *g,int bw, int bh){
   int i;
   int w=get_board_width();
   int h=get_board_height();
@@ -95,9 +95,9 @@ static void setup_pause_buttons(Gameboard *g){
       b->x_active=
       b->target_x_active=
       b->target_x= 
-      w/2 - PAUSEBOX_WIDTH/2 + PAUSE_BUTTON_BORDER;
+      w/2 - bw/2 + PAUSE_BUTTON_BORDER;
     b->x=b->target_x_inactive=b->x_inactive=b->target_x - BUTTON_EXPOSE;
-    b->y = h/2 + PAUSEBOX_HEIGHT/2 - PAUSE_BUTTON_Y;
+    b->y = h/2 + bh/2 - PAUSE_BUTTON_Y;
   }
 
   {
@@ -106,9 +106,9 @@ static void setup_pause_buttons(Gameboard *g){
       b->x_active=
       b->target_x_active=
       b->target_x= 
-      w/2 + PAUSEBOX_WIDTH/2 - PAUSE_BUTTON_BORDER;
+      w/2 + bw/2 - PAUSE_BUTTON_BORDER;
     b->x=b->target_x_inactive=b->x_inactive=b->target_x + BUTTON_EXPOSE;
-    b->y = h/2 + PAUSEBOX_HEIGHT/2 - PAUSE_BUTTON_Y;
+    b->y = h/2 + bh/2 - PAUSE_BUTTON_Y;
   }
 
   for(i=0;i<NUMBUTTONS;i++)
@@ -187,7 +187,7 @@ static void draw_pausebox(Gameboard *g){
 
 static void pause_game_post_undeploy(Gameboard *g){
   // set up new buttons
-  setup_pause_buttons(g);
+  setup_pause_buttons(g,PAUSEBOX_WIDTH, PAUSEBOX_HEIGHT);
 
   // draw pausebox
   draw_pausebox(g);
@@ -204,4 +204,105 @@ void pause_game(Gameboard *g){
 
   // undeploy buttonbar
   undeploy_buttonbar(g,pause_game_post_undeploy);
+}
+
+// the 'about' box is nearly identical, including the fact it pauses the game.
+// we just piggyback it here
+
+static void draw_aboutbox(Gameboard *g){
+  int w= get_board_width();
+  int h= get_board_height();
+
+  push_background(g);
+  
+  cairo_t *c = cairo_create(g->background);
+  borderbox_path(c,
+		 w/2 - ABOUTBOX_WIDTH/2,
+		 h/2 - ABOUTBOX_HEIGHT/2,
+		 ABOUTBOX_WIDTH,
+		 ABOUTBOX_HEIGHT);
+  cairo_set_source_rgb(c,1,1,1);
+  cairo_fill(c);
+
+  centerbox(c,
+	    w/2 - ABOUTBOX_WIDTH/2,
+	    h/2 - ABOUTBOX_HEIGHT/2,
+	    ABOUTBOX_WIDTH,
+	    SCOREHEIGHT);
+
+  centerbox(c,
+	    w/2 - ABOUTBOX_WIDTH/2 ,
+	    h/2 + ABOUTBOX_HEIGHT/2 - SCOREHEIGHT,
+	    ABOUTBOX_WIDTH,
+	    SCOREHEIGHT);
+
+  {
+    cairo_matrix_t ma;
+    int y = h/2-ABOUTBOX_HEIGHT/2+SCOREHEIGHT/2;
+    cairo_select_font_face (c, "Arial",
+			    CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_BOLD);
+
+    cairo_matrix_init_scale (&ma, 18.,18.);
+    cairo_set_font_matrix (c,&ma);
+    cairo_set_source_rgba (c, TEXT_COLOR);
+
+    render_text_centered(c,"gPlanarity", w/2,y);
+    cairo_select_font_face (c, "Arial",
+			    CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    y+=45;
+    render_text_centered(c,"Untangle the mess!", w/2,y);
+    y+=30;
+
+    cairo_matrix_init_scale (&ma, 14.,14.);
+    cairo_set_font_matrix (c,&ma);
+    render_text_centered(c,"Drag verticies to eliminate crossed lines.", w/2,y); y+=16;
+    render_text_centered(c,"The objective may be a complete solution or", w/2,y); y+=16;
+    render_text_centered(c,"getting as close as possible to solving an", w/2,y); y+=16;
+    render_text_centered(c,"unsolvable puzzle.  Work quickly and", w/2,y); y+=16;
+    render_text_centered(c,"exceed the objective for bonus points!", w/2,y); y+=16;
+
+    y+=16;
+    cairo_move_to (c, w/2-100,y);
+    cairo_line_to (c, w/2+100,y);
+    cairo_stroke(c);
+    y+=32;
+
+    cairo_matrix_init_scale (&ma, 13.,14.);
+    cairo_set_font_matrix (c,&ma);
+    render_text_centered(c,"gPlanarity written by Monty <monty@xiph.org>",w/2,y);y+=17;
+    render_text_centered(c,"as a demonstration of Gtk+/Cairo (and so",w/2,y);y+=17;
+    render_text_centered(c,"he can play a version that actually works on",w/2,y);y+=17;
+    render_text_centered(c,"Linux.  Flash bugs, gah....)",w/2,y);y+=32;
+    render_text_centered(c,"Original Flash version of Planarity by",w/2,y);y+=17;
+    render_text_centered(c,"John Tantalo <john.tantalo@case.edu>",w/2,y);
+
+
+  }
+
+  cairo_destroy(c);
+}
+
+
+
+static void about_game_post_undeploy(Gameboard *g){
+  // set up new buttons
+  setup_pause_buttons(g,ABOUTBOX_WIDTH,ABOUTBOX_HEIGHT);
+
+  // draw about box
+  draw_aboutbox(g);
+
+  // deploy new buttons
+  callback=0;
+  timer = g_timeout_add(BUTTON_ANIM_INTERVAL, pause_animate_buttons, (gpointer)g);
+  buttons_ready=1;
+}
+
+void about_game(Gameboard *g){
+  // grab timer state
+  pause();
+
+  // undeploy buttonbar
+  undeploy_buttonbar(g,about_game_post_undeploy);
 }
