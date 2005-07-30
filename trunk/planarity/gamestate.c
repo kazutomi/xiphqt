@@ -236,6 +236,10 @@ int get_score(){
   return score + initial_intersections-get_num_intersections();
 }
 
+int get_raw_score(){
+  return score;
+}
+
 int get_initial_intersections(){
   return initial_intersections;
 }
