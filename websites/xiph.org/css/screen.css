@@ -1,0 +1,130 @@
+@import url(xiphbar.css);
+
+body {
+	margin: 0;
+	border: 0;
+	padding: 0 0 1.5em 0;
+	font-family: Arial, Helvetica, sans-serif;
+	color: #333333;
+	background-color: #666666;
+}
+
+a {
+	color: #064C84;
+}
+
+img {
+	border: 0;
+}
+
+#bodyborder {
+	margin: 0;
+	border: 0;
+	padding: 0 0 3em 0;
+	background-color: #FFFFFF;
+	height: 100%;
+}
+
+#thepage {
+	margin-left: auto;
+	margin-right: auto;
+	width: 50em;
+}
+
+#logos {
+	padding: 72px 465px 0 0;
+	text-align: center;
+}
+
+#navbar {
+	margin: 0;
+	border: 0;
+	padding: 1em;
+	float: left;
+	min-height: 15em;
+	vertical-align: top;
+}
+
+#navbar ul {
+	margin: 0;
+	padding: 0;
+	width: 8em;
+}
+
+#navbar li {
+	text-align: right;
+	font-size: .7em;
+	line-height: 1.4;
+	list-style: none;
+}
+
+#navbar li a {
+	font-weight: bold;
+	color: #3366CC;
+	text-decoration: none;
+	line-height: 0;
+}
+
+#navbar li a:hover {
+	text-decoration: underline;
+}
+
+#wiki_ {
+	padding-bottom: 1.3em;
+}
+
+#documentation_ {
+	padding-bottom: 1.3em;
+}
+
+#copyright {
+	margin: 0;
+	border: 0;
+	padding: 3em 1em 1em 1em;
+	font-size: .6em;
+	color: #999999;
+	clear: both;
+	text-align: center;
+}
+
+#banners {
+	display:none;
+}
+
+#main {
+	margin-left: 10em;
+}
+
+#content {
+	margin: 0;
+	padding: 1em;
+	vertical-align: top;
+	border-left: 1px solid #9FC0D7;
+	font-size: .75em;
+}
+
+/* So that Gecko based browsers have the same starting paragraph position as IE */
+#content > :first-child {
+	margin-top: 0;
+}
+
+#content p {
+	line-height: 1.5;
+}
+
+h1 {
+	font-size: 1.2em;
+	color: #FF9900;
+}
+
+h2 {
+	font-size: 1em;
+	color: #FF9900;
+}
+
+h3 {
+	font-size: .94em;
+	color: #FF9900;
+}
+
+
