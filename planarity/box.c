@@ -163,3 +163,89 @@ void bottombox (cairo_t *c, double w, double h){
 
 }
 
+void centerbox (cairo_t *c, int x, int y, double w, double h){
+  
+  double x0 = B_BORDER+B_RADIUS;
+  double y0 = h-B_BORDER;
+
+  double x1 = B_BORDER;
+  double y1 = h-B_BORDER-B_RADIUS;
+
+  double x2 = B_BORDER;
+  double y2 = B_BORDER+B_RADIUS;
+
+  double x3 = B_BORDER+B_RADIUS;
+  double y3 = B_BORDER;
+
+  double x8 = w - B_BORDER -B_RADIUS;
+  double y8 = B_BORDER;
+
+  double x9 = w - B_BORDER;
+  double y9 = B_BORDER+B_RADIUS;
+
+  double x10 = w - B_BORDER;
+  double y10 = h- B_BORDER -B_RADIUS;
+
+  double x11 = w - B_BORDER-B_RADIUS;
+  double y11 = h-B_BORDER;
+
+  cairo_save(c);
+  cairo_translate(c,x,y);
+  cairo_set_line_width(c,B_LINE);
+
+  cairo_move_to  (c, x0, y0);
+  cairo_curve_to (c, x1,y0, x1,y0, x1,y1);
+  cairo_line_to (c, x2,y2);
+  cairo_curve_to (c, x2,y3, x2,y3, x3,y3);
+  cairo_line_to (c, x8,y8);
+  cairo_curve_to (c, x9,y8, x9,y8, x9,y9);
+  cairo_line_to  (c, x10,y10);
+  cairo_curve_to (c, x10,y11, x10,y11, x11,y11);
+  cairo_close_path (c);
+
+  cairo_set_source_rgba (c, B_COLOR);
+  cairo_fill_preserve (c);
+  cairo_set_source_rgba (c, B_LINE_COLOR);
+  cairo_stroke (c);
+
+  cairo_restore(c);
+}
+
+void borderbox_path (cairo_t *c, int x, int y, double w, double h){
+  
+  double x0 = x+ B_RADIUS;
+  double y0 = y+ h;
+
+  double x1 = x;
+  double y1 = y+ h-B_RADIUS;
+
+  double x2 = x;
+  double y2 = y+ B_RADIUS;
+
+  double x3 = x+ B_RADIUS;
+  double y3 = y;
+
+  double x8 = x+ w -B_RADIUS;
+  double y8 = y;
+
+  double x9 = x+ w;
+  double y9 = y+ B_RADIUS;
+
+  double x10 = x+ w;
+  double y10 = y+ h -B_RADIUS;
+
+  double x11 = x+ w -B_RADIUS;
+  double y11 = y+h;
+
+  cairo_move_to  (c, x0, y0);
+  cairo_curve_to (c, x1,y0, x1,y0, x1,y1);
+  cairo_line_to (c, x2,y2);
+  cairo_curve_to (c, x2,y3, x2,y3, x3,y3);
+  cairo_line_to (c, x8,y8);
+  cairo_curve_to (c, x9,y8, x9,y8, x9,y9);
+  cairo_line_to  (c, x10,y10);
+  cairo_curve_to (c, x10,y11, x10,y11, x11,y11);
+  cairo_close_path (c);
+
+}
+

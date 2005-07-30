@@ -1,3 +1,4 @@
+#include <time.h>
 
 extern void resize_board(int x, int y);
 extern int get_board_width();
@@ -15,3 +16,9 @@ extern char *get_objective_string();
 extern int get_level();
 extern char *get_level_string();
 extern void quit();
+
+extern void pause();
+extern void unpause();
+extern int paused_p();
+extern time_t get_elapsed();
+extern void set_timer(time_t off);

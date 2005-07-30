@@ -35,6 +35,8 @@ typedef struct _GameboardClass  GameboardClass;
 struct _Gameboard{
   GtkWidget w;
 
+  int pushed_background;
+
   cairo_t         *wc;
   cairo_surface_t *vertex;
   cairo_surface_t *vertex_lit;
@@ -100,3 +102,5 @@ extern int selected(Gameboard *g);
 extern void update_full(Gameboard *g);
 extern double get_curtain(Gameboard *g);
 extern void set_curtain(Gameboard *g, double alpha);
+extern void pop_background(Gameboard *g);
+extern void push_background(Gameboard *g);

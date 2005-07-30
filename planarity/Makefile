@@ -17,9 +17,9 @@ MANDIR  = $(PREFIX)/man
 # bleeding-edge GTK 2.7/2.8 libs installed.
 
 SRC  = graph.c arrange.c gameboard.c generate.c gamestate.c button_base.c\
-	buttons.c buttonbar.c box.c
+	buttons.c buttonbar.c box.c pause.c
 OBJ  = graph.o arrange.o gameboard.o generate.o gamestate.o button_base.o\
-	buttons.o buttonbar.o box.o
+	buttons.o buttonbar.o box.o pause.o
 GCF  = `pkg-config --static --cflags "gtk+-2.0 >= 2.7.2"`
 
 # uncomment below for a normal dynamic build

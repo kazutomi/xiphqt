@@ -8,6 +8,7 @@
 #include "gamestate.h"
 #include "button_base.h"
 #include "buttonbar.h"
+#include "pause.h"
 
 /************************ the lower button bar *********************/
 
@@ -103,6 +104,7 @@ void setup_buttonbar(Gameboard *g){
 
   states[0].callback = quit;
   states[2].callback = reset_board;
+  states[3].callback = pause_game;
   states[5].callback = expand;
   states[6].callback = shrink;
   states[7].callback = hide_show_lines;
@@ -148,15 +150,17 @@ void setup_buttonbar(Gameboard *g){
       b->x_active=b->target_x_active=count;
       b->x_inactive=b->target_x_inactive=count+BUTTON_EXPOSE;
       b->y = h - BUTTONBAR_Y_FROM_BOTTOM;
-      if(i!=9) // special-case the checkbutton
+      if(i!=9 || checkbutton_deployed) // special-case the checkbutton
 	count -= BUTTONBAR_SPACING;
     }
   }
   
   // special-case the checkbutton
-  states[9].target_x_inactive=states[9].target_x_active+BUTTONBAR_SPACING;
-  states[9].x_inactive=states[9].target_x_inactive;
-  states[9].target_x=states[9].target_x_inactive;
+  if(!checkbutton_deployed){
+    states[9].target_x_inactive=states[9].target_x_active+BUTTONBAR_SPACING;
+    states[9].x_inactive=states[9].target_x_inactive;
+    states[9].target_x=states[9].target_x_inactive;
+  }
 
   for(i=0;i<NUMBUTTONS;i++)
     if(states[i].position)
@@ -167,10 +171,13 @@ void setup_buttonbar(Gameboard *g){
 /* effects animated 'rollout' of buttons when level begins */
 void deploy_buttonbar(Gameboard *g){
   if(!buttons_ready ){
+    if(get_num_intersections() <= get_objective())
+      checkbutton_deployed=1;
+    else
+      checkbutton_deployed=0;
     setup_buttonbar(g);
     timer = g_timeout_add(BUTTON_ANIM_INTERVAL, buttonbar_animate_buttons, (gpointer)g);
     buttons_ready=1;
-    checkbutton_deployed=0;
   }
 
 }
