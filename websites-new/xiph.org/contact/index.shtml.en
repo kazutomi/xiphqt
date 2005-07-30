@@ -1,0 +1,36 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org</title>
+<style type="text/css">
+<!--
+
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<p>
+	Xiph.org are:
+</p>
+<dl class='people'>
+	<dt>Christopher Montgomery &lt;<a href='mailto:monty@xiph.org'>monty@xiph.org</a>&gt;</dt>
+	<dd>Founder and Lead Programmer</dd>
+
+	<dt>Jack Moffitt &lt;<a href='mailto:jack@xiph.org'>jack@xiph.org</a>&gt;</dt>
+	<dd>Executive Contact</dd>
+
+	<dt>Manuel Lora &lt;<a href='mailto:manuel@xiph.org'>manuel@xiph.org</a>&gt;</dt>
+	<dd>Project Manager</dd>
+
+	<dt>Nathan Sharfi &lt;<a href='mailto:comatoast@xiph.org'>comatoast@xiph.org</a>&gt;</dt>
+	<dd>Webmaster</dd>
+
+	<dt>Tom Rosedale &lt;<a href='mailto:trosedale@brllegal.com'>trosedale@brllegal.com</a>&gt;</dt>
+	<dd>Legal Counsel (<a href='http://www.brllegal.com/'>Browne, Rosedale, &amp; Lanouette LLP</a>)</dd>
+</dl>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
