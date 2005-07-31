@@ -128,8 +128,6 @@ static void draw_pausebox(Gameboard *g){
   int w= get_board_width();
   int h= get_board_height();
 
-  push_background(g);
-  
   cairo_t *c = cairo_create(g->background);
   borderbox_path(c,
 		 w/2 - PAUSEBOX_WIDTH/2,
@@ -190,7 +188,7 @@ static void pause_game_post_undeploy(Gameboard *g){
   setup_pause_buttons(g,PAUSEBOX_WIDTH, PAUSEBOX_HEIGHT);
 
   // draw pausebox
-  draw_pausebox(g);
+  push_background(g,draw_pausebox);
 
   // deploy new buttons
   callback=0;
@@ -213,8 +211,6 @@ static void draw_aboutbox(Gameboard *g){
   int w= get_board_width();
   int h= get_board_height();
 
-  push_background(g);
-  
   cairo_t *c = cairo_create(g->background);
   borderbox_path(c,
 		 w/2 - ABOUTBOX_WIDTH/2,
@@ -301,7 +297,7 @@ static void about_game_post_undeploy(Gameboard *g){
   setup_pause_buttons(g,ABOUTBOX_WIDTH,ABOUTBOX_HEIGHT);
 
   // draw about box
-  draw_aboutbox(g);
+  push_background(g,draw_aboutbox);
 
   // deploy new buttons
   callback=0;
