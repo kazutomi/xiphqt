@@ -8,6 +8,7 @@
 #include "buttons.h"
 #include "buttonbar.h"
 #include "finish.h"
+#include "version.h"
 
 Gameboard *gameboard;
 
@@ -23,6 +24,7 @@ static int objective_lessthan=0;
 static int paused=0;
 static time_t begin_time_add=0;
 static time_t begin_time;
+static char *version = "";
 
 time_t get_elapsed(){
   if(paused)
@@ -260,10 +262,30 @@ char *get_level_string(){
   return "original-style";
 }
 
+char *get_version_string(){
+  return version;
+}
+
 int main(int argc, char *argv[]){
   GtkWidget *window;
+
+  version=strstr(VERSION,"version.h");
+  if(version){
+    char *versionend=strchr(version,' ');
+    if(versionend)versionend=strchr(versionend+1,' ');
+    if(versionend)versionend=strchr(versionend+1,' ');
+    if(versionend)versionend=strchr(versionend+1,' ');
+    if(versionend){
+      int len=versionend-version-9;
+      version=strdup(version+10);
+      version[len-1]=0;
+    }
+  }else{
+    version="";
+  }
+
   gtk_init (&argc, &argv);
-  
+
   window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (G_OBJECT (window), "delete-event",
                     G_CALLBACK (gtk_main_quit), NULL);

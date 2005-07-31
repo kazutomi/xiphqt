@@ -280,6 +280,15 @@ static void draw_aboutbox(Gameboard *g){
     render_text_centered(c,"Original game concept by Mary Radcliffe",w/2,y);y+=17;
 
 
+    y = h/2+ABOUTBOX_HEIGHT/2-SCOREHEIGHT/2;
+    cairo_select_font_face (c, "Arial",
+			    CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_BOLD);
+
+    cairo_matrix_init_scale (&ma, 10.,11.);
+    cairo_set_font_matrix (c,&ma);
+    render_text_centered(c,get_version_string(), w/2,y);
+
   }
 
   cairo_destroy(c);
