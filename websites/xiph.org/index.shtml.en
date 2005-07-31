@@ -90,8 +90,8 @@
 		<div class="codecs">
 			<h3>Codecs</h3>
 			<ul>
-				<li><a href="#">Vorbis:</a> Audio codec</li>
-				<li><a href="#">Tremor:</a> Fixed-point decoder</li>
+				<li><a href="/vorbis/">Vorbis:</a> Audio codec</li>
+				<li><a href="/vorbis/">Tremor:</a> Fixed-point decoder</li>
 				<li><a href="http://theora.org/">Theora:</a> Video codec</li>
 				<li><a href="http://flac.sourceforge.net">FLAC:</a> Free Lossless Audio Codec</li>
 				<li><a href="http://speex.org/">Speex:</a> Speech codec</li>
