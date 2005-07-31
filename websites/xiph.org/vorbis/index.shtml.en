@@ -24,6 +24,12 @@ and similar to, but higher performance than MPEG-1/2 audio layer 3,
 MPEG-4 audio (TwinVQ), WMA and PAC.
 </p>
 
+<p>
+The bitstream format for Vorbis I was frozen Monday, May 8th 2000. 
+All bitstreams encoded since will remain compatible with all future 
+releases of Vorbis.
+</p>
+
 <h2>Resources</h2>
 
 <ul>
