@@ -20,7 +20,6 @@ static int height=0;
 static int allclear=1; // actually just a shirt-circuit
 static buttonstate *grabbed=0;
 
-
 /* determine the x/y/w/h box around the rollover text */
 static GdkRectangle rollover_box(buttonstate *b){
   GdkRectangle r;
@@ -500,6 +499,12 @@ void resize_buttons(int w,int h){
 
   dx=w-width;
   dy=h-height;
+
+  for(i=0;i<NUMBUTTONS;i++){
+    if(states[i].position == 1){
+      states[i].y+=dy;
+    }
+  }
 
   for(i=0;i<NUMBUTTONS;i++){
     if(states[i].position == 3){

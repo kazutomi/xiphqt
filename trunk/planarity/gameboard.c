@@ -823,13 +823,15 @@ void pop_background(Gameboard *g){
   }
 }
 
-void push_background(Gameboard *g){
+void push_background(Gameboard *g, void(*redraw_callback)(Gameboard *g)){
   cairo_t *c = cairo_create(g->background);
   int w = g->w.allocation.width;
   int h = g->w.allocation.height;
 
   if(g->pushed_background)
     pop_background(g);
+
+  g->redraw_callback=redraw_callback;
 
   foreground_draw(g,c,0,0,w,h);
 
@@ -850,8 +852,9 @@ void push_background(Gameboard *g){
   }else{
     expose_intersections(g,c,0,0,w,h);
   }
-
   cairo_destroy(c);
+
+  if(redraw_callback)redraw_callback(g);
 
   g->pushed_background=1;
   {
@@ -1074,10 +1077,18 @@ static void gameboard_size_allocate (GtkWidget     *widget,
     // also verifies all verticies are onscreen
     resize_board(allocation->width,allocation->height);
 
-    update_background(widget);
-    paint_bottom_box(g);
-    score_update(g);
-    resize_buttons(widget->allocation.width,widget->allocation.height);
+    {
+      int flag = g->pushed_background;
+      if(flag)pop_background(g);
+
+      update_background(widget);
+      paint_bottom_box(g);
+      score_update(g);
+      resize_buttons(widget->allocation.width,widget->allocation.height);
+
+      if(flag)push_background(g,g->redraw_callback);
+
+    }
   }
 }
 

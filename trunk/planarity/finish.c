@@ -144,8 +144,6 @@ static void draw_finishbox(Gameboard *g){
   int w= get_board_width();
   int h= get_board_height();
 
-  push_background(g);
-  
   cairo_t *c = cairo_create(g->background);
   borderbox_path(c,
 		 w/2 - FINISHBOX_WIDTH/2,
@@ -228,7 +226,7 @@ static void finish_post_undeploy(Gameboard *g){
   setup_finish_buttons(g,FINISHBOX_WIDTH, FINISHBOX_HEIGHT);
 
   // draw pausebox
-  draw_finishbox(g);
+  push_background(g,draw_finishbox);
 
   // deploy new buttons
   callback=0;

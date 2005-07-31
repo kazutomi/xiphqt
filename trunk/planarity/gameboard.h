@@ -36,6 +36,7 @@ struct _Gameboard{
   GtkWidget w;
 
   int pushed_background;
+  void (*redraw_callback)(Gameboard *g);
 
   cairo_t         *wc;
   cairo_surface_t *vertex;
@@ -103,4 +104,4 @@ extern void update_full(Gameboard *g);
 extern double get_curtain(Gameboard *g);
 extern void set_curtain(Gameboard *g, double alpha);
 extern void pop_background(Gameboard *g);
-extern void push_background(Gameboard *g);
+extern void push_background(Gameboard *g, void (*callback)(Gameboard *g));
