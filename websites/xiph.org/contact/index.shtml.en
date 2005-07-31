@@ -5,34 +5,45 @@
 <style type="text/css">
 <!--
 
+.vcard {
+	padding-bottom: 1.2em;
+}
+
 -->
 </style>
 
 <!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
-<h1>Xiph.org: Contact Information</h1>
 
-<p>Xiph.org are:</p>
+<h1>Getting in touch</h1>
+<p>
+The best way to contact members of the Xiph.org Foundation and community 
+is to post to one of the <a 
+href="http://lists.xiph.org/mailman/listinfo/">mailing lists</a> or find
+us on IRC on <a href="http://freenode.net/">irc.freenode.net</a>.
+Try the channels <tt>#xiph</tt> for general information, or the 
+general project channels: <tt>#vorbis</tt>, <tt>#theora</tt>, 
+<tt>#icecast</tt> and <tt>#speex</tt>.
+</p>
+
+<p>
+Below are some point contacts for particular people in the organization.
+</p>
 
 <div class="vcard">
-	<a class="email fn" href="mailto:monty@xiph.org">Christopher Montgomery</a>
-	<div class="role"><span>Founder</span> and <span>Lead Programmer</span></div>
+	<a class="email fn" href="mailto:webmaster@xiph.org">Webmaster</a>
+	<div class="role"><span>contact for website-related issues</span></div>
 </div>
 
 <div class="vcard">
-	<a class="email fn" href="mailto:jack@xiph.org">Jack Moffitt</a>
-	<div class="role"><span>Executive Contact</span></div>
+	<a class="email fn" href="mailto:monty@xiph.org">Christopher Montgomery</a>
+	<div class="role"><span>Founder</span> and <span>Executive Contact</span></div>
 </div>
 
 <div class="vcard">
 	<a class="email fn" href="mailto:manuel@xiph.org">Manuel Lora</a>
 	<div class="role"><span>Project Manager</span></div>
-</div>
-
-<div class="vcard">
-	<a class="email fn" href="mailto:comatoast@xiph.org">Nathan Sharfi</a>
-	<div class="role"><span>Webmaster</span></div>
 </div>
 
 <div class="vcard">
