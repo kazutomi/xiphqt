@@ -1,2 +1,2 @@
-/* DO NOT EDIT: Automated versioning hack [Thu Jul 21 05:46:15 EDT 2005] */
-/* DO NOT EDIT: Automated versioning hack [Sat Jul 30 06:56:05 EDT 2005] */
+#define VERSION "$Id: version.h 8581 2005-01-03 03:41:05Z xiphmont $ "
+/* DO NOT EDIT: Automated versioning hack [Sun Jul 31 02:39:35 EDT 2005] */
