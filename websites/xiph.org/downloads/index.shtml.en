@@ -1,0 +1,40 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org: Downloads</title>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Downloads</h1>
+
+<p>
+Find some of our most-downloaded things linked directly here, or visit
+each of the project pages for more details.
+</p>
+
+<h2>DirectShow filters</h2>
+
+<p>
+If you are a Windows user who wants to be able to listen to .ogg files in
+Windows Media Player, then this is what you want.  Illiminable's DS filters
+support the following Ogg codecs: Vorbis, Speex, Theora, and FLAC.
+</p>
+
+<ul>
+	<li><a href="http://www.illiminable.com/ogg/oggcodecs_0.69.8924.exe">Ogg
+	Codecs for any version of Windows</a>, version 0.69.8924, 2005-02-15
+</ul>
+
+<p>
+Make sure to uninstall any previous versions (remove "oggcodecs" from
+Add/Remove Programs), and make sure Windows Media Player (or any other
+DirectShow application) is closed before installing.  To check for any
+newer versions, or for more information or source code, visit the project
+site: <a href="http://www.illiminable.com/ogg/">illiminable Ogg Directshow
+Filters for Speex, Vorbis, Theora and FLAC</a>.
+</p>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
