@@ -7,34 +7,125 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>Downloads</h1>
+<h1>Downloads - Third-Party Projects</h1>
 
 <p>
-Find some of our most-downloaded things linked directly here, or visit
-each of the project pages for more details.
+Xiph.org does not often create software directly for the end-user.
+Usually, we create specifications, reference implementations, libraries,
+and documentation for all of the above.  We try to make it easy for
+developers to include support for the xiph family of codecs.  Thus most of
+the popular software linked below was written by someone else, using our
+libraries.  However, if you are a developer or sophisticated end user, you
+are welcome to download source code either from the individual project
+pages above or from the links further down this page.
 </p>
 
-<h2>DirectShow filters</h2>
+<h2>DirectShow filters - play back .ogg files in Media Player</h2>
 
 <p>
 If you are a Windows user who wants to be able to listen to .ogg files in
-Windows Media Player, then this is what you want.  Illiminable's DS filters
-support the following Ogg codecs: Vorbis, Speex, Theora, and FLAC.
+Windows Media Player, then this is what you want.  Illiminable's DirectShow
+filters support playing of files encoded with Vorbis, Speex, Theora, and/or
+FLAC.
+</p>
+
+<p>
+Make sure to uninstall any previous versions (remove "oggcodecs" from
+Add/Remove Programs), and make sure Windows Media Player (or any other
+DirectShow application) is closed before installing.
 </p>
 
 <ul>
 	<li><a href="http://www.illiminable.com/ogg/oggcodecs_0.69.8924.exe">Ogg
 	Codecs for any version of Windows</a>, version 0.69.8924, 2005-02-15
+	<li><a href="http://www.illiminable.com/ogg/">project page</a> - for
+	newer versions, source code, or more information
+</ul>
+
+<h2>oggdropXPd - easily create Ogg Vorbis files in Windows</h2>
+
+<p>
+If you are a Windows user looking to easily create your own Ogg Vorbis files
+from a .WAV file or losslessly compressed file using an easy drag-and-drop
+GUI, rarewares' oggdrop is for you.
+</p>
+
+<ul>
+	<li><a href="http://rarewares.org/dancer/dancer.php?f=34">oggdropXPd</a>,
+	version 1.8.6 using libVorbis 1.1.1, 2005-07-14
+	<li><a href="http://www.rarewares.org/ogg.html">rarewares : Ogg
+	Vorbis project page</a> - for source code, a version optimized for a
+	particular processor family, or more information
+</ul>
+
+<h2>VLC - play back multimedia files</h2>
+
+<p>
+"VLC (initially VideoLAN Client) is a highly portable multimedia player
+for various audio and video formats (MPEG-1, MPEG-2, MPEG-4, DivX, mp3,
+Ogg Vorbis, ...) as well as DVDs, VCDs, and various streaming protocols. It
+can also be used as a server to stream in unicast or multicast in IPv4
+or IPv6 on a high-bandwidth network."
+</p>
+
+<ul>
+	<li><a href="http://www.videolan.org/vlc/">VLC</a> project page -
+	download precompiled binaries for Windows, Mac OS X, and various Linux
+	distros, or get source code or other information
+</ul>
+
+<h2>Helix Player - play back streaming multimedia in Linux</h2>
+
+<p>
+Helix Player is a multimedia player designed for streaming audio and video,
+and available for Linux and cell phones running the Symbian OS.
+</p>
+
+<ul>
+	<li><a href="https://player.helixcommunity.org/">Helix Player</a>
+	project page - download precompiled binaries for Linux, Solaris, or
+	Symbian, or get source code or other information
+</ul>
+
+<hr>
+
+<h1>Downloads - Xiph.org Projects</h1>
+
+<p>
+These are all "official" projects of Xiph.org, in no particular order.
+</p>
+
+<ul>
+	<li><a href="http://flac.sourceforge.net/">[project page]</a>
+	<a href="http://flac.sourceforge.net/download.html">[downloads]</a>
+	FLAC - lossless codec for compressed audio.  Newest release is 1.1.2,
+	from 2005-02-05
+	<li><a href="http://www.speex.org/">[project page]</a>
+	<a href="http://www.speex.org/download.html">[downloads]</a>
+	Speex - lossy audio codec optimized for speech and ultra-low bitrates.
+	Newest release is 1.1.10, from 2005-06-11
+	<li><a href="http://www.icecast.org/">[project page]</a>
+	<a href="http://www.icecast.org/download.php">[downloads]</a>
+	Icecast - a collection of programs and libraries for streaming audio
+	over the Internet.  Newest release is 2.2.0, from 2004-12-21
+	<li><a href="http://www.theora.org/">[project page]</a>
+	<a href="http://www.theora.org/download.html">[downloads]</a>
+	Theora - lossy video codec originally based on VP3.  Newest release is
+	1.0alpha4, from 2004-12-15 
+	<li><a href="http://www.xiph.org/paranoia/">[project page]</a>
+	<a href="http://www.xiph.org/paranoia/down.html">[downloads]</a>
+	cdparanoia - audio CD digital audio extraction (ripping ) application
+	for Linux.  "Newest" release is 9.8, from 2001-03-27
+	<li><a href="http://www.vorbis.com/">[project page]</a>
+	<a href="http://downloads.xiph.org/releases/vorbis/">[downloads]</a>
+	Vorbis - lossy audio codec optimized for music, and Xiph.org's flagship
+	codec.  Newest release is 1.1.1, from 2005-06-28
 </ul>
 
 <p>
-Make sure to uninstall any previous versions (remove "oggcodecs" from
-Add/Remove Programs), and make sure Windows Media Player (or any other
-DirectShow application) is closed before installing.  To check for any
-newer versions, or for more information or source code, visit the project
-site: <a href="http://www.illiminable.com/ogg/">illiminable Ogg Directshow
-Filters for Speex, Vorbis, Theora and FLAC</a>.
+If you prefer less hand-holding and just want to be turned loose on the
+directories, or for libao, libogg, libshout or other libraries, just browse
+the <a href="http://downloads.xiph.org/releases/">download directory</a>.
 </p>
-
 
 <!--#include virtual="/ssi/pagebottom.include" -->
