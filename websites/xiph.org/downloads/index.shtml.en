@@ -98,27 +98,27 @@ These are all "official" projects of Xiph.org, in no particular order.
 <ul>
 	<li><a href="http://flac.sourceforge.net/">[project page]</a>
 	<a href="http://flac.sourceforge.net/download.html">[downloads]</a>
-	FLAC - lossless codec for compressed audio.  Newest release is 1.1.2,
-	from 2005-02-05
+	<strong>FLAC</strong> - lossless codec for compressed audio.
+	Newest release is 1.1.2, from 2005-02-05
 	<li><a href="http://www.speex.org/">[project page]</a>
 	<a href="http://www.speex.org/download.html">[downloads]</a>
-	Speex - lossy audio codec optimized for speech and ultra-low bitrates.
+	<strong>Speex</strong> - lossy audio codec optimized for speech and ultra-low bitrates.
 	Newest release is 1.1.10, from 2005-06-11
 	<li><a href="http://www.icecast.org/">[project page]</a>
 	<a href="http://www.icecast.org/download.php">[downloads]</a>
-	Icecast - a collection of programs and libraries for streaming audio
+	<strong>Icecast</strong> - a collection of programs and libraries for streaming audio
 	over the Internet.  Newest release is 2.2.0, from 2004-12-21
 	<li><a href="http://www.theora.org/">[project page]</a>
 	<a href="http://www.theora.org/download.html">[downloads]</a>
-	Theora - lossy video codec originally based on VP3.  Newest release is
+	<strong>Theora</strong> - lossy video codec originally based on VP3.  Newest release is
 	1.0alpha4, from 2004-12-15 
 	<li><a href="http://www.xiph.org/paranoia/">[project page]</a>
 	<a href="http://www.xiph.org/paranoia/down.html">[downloads]</a>
-	cdparanoia - audio CD digital audio extraction (ripping ) application
+	<strong>cdparanoia</strong> - audio CD digital audio extraction (ripping ) application
 	for Linux.  "Newest" release is 9.8, from 2001-03-27
 	<li><a href="http://www.vorbis.com/">[project page]</a>
 	<a href="http://downloads.xiph.org/releases/vorbis/">[downloads]</a>
-	Vorbis - lossy audio codec optimized for music, and Xiph.org's flagship
+	<strong>Vorbis</strong> - lossy audio codec optimized for music, and Xiph.org's flagship
 	codec.  Newest release is 1.1.1, from 2005-06-28
 </ul>
 
