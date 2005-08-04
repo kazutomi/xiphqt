@@ -1,0 +1,156 @@
+--- Log opened Wed Aug 03 17:09:42 2005
+17:09 -!- xiphlog [~giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+17:09 -!- Topic for #xiphmeet: August organizational meeting at 23:59 GMT today
+17:09 -!- Topic set by rillian [] [Wed Aug  3 16:41:07 2005]
+17:09 [Users #xiphmeet]
+17:09 [ Atamido] [ Garf   ] [ homeas] [ rillian] [ tris       ] [ xiphlog] 
+17:09 [ derf_  ] [ HackRip] [ j^    ] [ thomas_] [ vanguardist] 
+17:09 -!- Irssi: #xiphmeet: Total of 11 nicks [0 ops, 0 halfops, 0 voices, 11 normal]
+17:09 -!- Channel #xiphmeet created Sun Jul 10 23:40:41 2005
+17:09 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+17:09 -!- karlH [~karl@82-38-34-147.cable.ubr02.brad.blueyonder.co.uk] has joined #xiphmeet
+17:10 -!- rillian changed the topic of #xiphmeet to: August organizational meeting at 23:59 GMT today | live log at http://westfish.xiph.org/~giles/200508_meeting.txt
+17:10 < rillian> hi thomas_, karlH 
+17:10 < rillian> glad you could make it
+17:10 < rillian> shall we start?
+17:10 < karlH> hi
+17:10 < rillian> the only thing on the agenda is "project reports"
+17:11 < rillian> I guess I'll start with ogg and vorbis, but please chime in if I forget something
+17:11 < rillian> I made a new libvorbis 1.1.1 release last month
+17:11 < rillian> along with a corresponding vorbis-tools 1.1.1 release
+17:12 < rillian> thanks to mike for helping with that
+17:12 < rillian> we've since found a few more bugs there, and in libogg
+17:12 < rillian> so we're looking at doing another point release of everything soon
+17:12 < rillian> also aotuv merged the 1.1.1 changes into their excellent beta4 tuned release
+17:12 < rillian> so that's good
+17:13 < rillian> um, speex has been poking along, I didn't notice anything special there
+17:13 < rillian> flac has been quiet
+17:13 < rillian> theora is starting to pick up
+17:13 < thomas_> josh has been away for a while - he notified me he didn't drop my patches but was finding time
+17:14 < rillian> thomas_: cool
+17:14 < rillian> did you notice if he applied the sun guy's patches?
+17:14 -!- homeas [~thomas@34.Red-81-38-188.pooles.rima-tde.net] has quit [Read error: 110 (Connection timed out)]
+17:14 < rillian> I spent some time trying to add the missing decoder bits to the reference theora implementation
+17:14 < thomas_> no - not following actively, waiting for him or the buildbot to tell me that he commited my patches
+17:14 < rillian> but didn't finish
+17:14 < rillian> so that's completely up for grabs now
+17:15 < rillian> but I'll keep plugging on it as I have time
+17:15 < rillian> turned out to be more work than I'd thought, like many of these things that never get done :)
+17:15 < thomas_> rillian, is that essential for a beta1 release ?
+17:15 < rillian> right, so the new plan, as worked out between thomas and myself, mostly
+17:15 < thomas_> (I don't remember what the definite blockers are)
+17:15 < rillian> was to punt on the api changes
+17:16 < rillian> add the remaining bits of new spec to the reference decoder and call that beta 1
+17:16 < rillian> the new new plan I was thinking of is just to call what we have beta 1
+17:16 < rillian> because I think the alpha name is hurting more than it's helping
+17:16 < rillian> the decoder stuff is still essential for 1.0
+17:17 < rillian> but adding some missing features isn't worse than the stuff we did in the endless libvorbis betas
+17:17 < rillian> any comments on that idea?
+17:17 < rillian> in other theora news, there's been some motion on asm optimization
+17:18 < rillian> ruik has done more work on theora-exp, including x86_64 version of his mmx patches
+17:18 < rillian> it's now something like 33% faster than trunk libtheora
+17:18 < thomas_> excellent news
+17:18 < rillian> and j, ds, and others have been putting together a theora-mmx/liboil patch set, which I haven't looked at
+17:19 < rillian> so there's a fair bit going on
+17:19 < rillian> thomas_: what do you think about the beta-as-is idea?
+17:20 < thomas_> rillian, I like it - the only thing I still feel is open is the granulepos thing, but I should write down a decent argument for it
+17:20 < rillian> ah, yes, that's a point
+17:20 < rillian> writing that up would help
+17:20 < thomas_> I found some notes in oggmuxing.html or whatever it's called that show that monty really did intend all granulepos to mean
+17:20 < thomas_> "count of number of decodable units up to this point"
+17:21 < rillian> should update the todo in the wiki for coordinating all this
+17:21 < rillian> thomas_: yeah, I'm generally in favor
+17:21 < thomas_> is it correct that a bitstream rev could be made in theora, and code would just do +1 if bitrev < the one we would rev to ?
+17:21 < thomas_> so that it would be a one-liner fix for code using theora ?
+17:22 < thomas_> or even, a convenience function doing this from libtheora itself ?
+17:22 < rillian> thomas_: we could key on the tiny version, yes
+17:22 < rillian> 3.2.0 starts at 0, 3.2.1 starts at 1
+17:22 < thomas_> ok, then I think we should do it, since it's easy, makes future streams correct, and doesn't break backwards
+17:22 < thomas_> I'll still write it up, I just need to find a whole day to do it in
+17:23 < rillian> and just make theora_granule_* return the new-style index/time in all cases
+17:23 < rillian> excellent
+17:23 < rillian> ok
+17:23 < rillian> other new thing is that jmspeex has been working on a new audio codec
+17:23 < rillian> with some help from monty
+17:23 < rillian> the idea is to do a very-low-latency general audio codec
+17:24 < rillian> e.g. for internet jam sessions
+17:24 < rillian> I gather this will be part of his work at CSIRO
+17:24 < rillian> but it's an interesting test bed for the new ideas he and monty have had
+17:24 < rillian> since doing their established codecs
+17:25 < rillian> so that should be interesting
+17:25 < rillian> I think that's it for codec news
+17:25 < rillian> karlH: can you tell us what's new with icecast?
+17:25 < karlH> things are being merged now, after some testing in -kh
+17:25 < karlH> a few more bits to go in, auth mainly
+17:26 < rillian> any schedule for 2.3?
+17:26 < karlH> soon after those bits
+17:26 < karlH> the forum is doing well
+17:26 < rillian> that's good to hear
+17:27 < karlH> and the YP server seems to be working much better now
+17:27 < rillian> yes, we did some tuning on the server so it's a little faster
+17:27 < rillian> the design needs to be smartened though
+17:27 < rillian> we're not going to be able to keep up with the recent level of growth on dir.xiph.org
+17:28 < karlH> well the problem that some saw was response times, now it's far better
+17:28 < rillian> oh
+17:29 < rillian> another thing that came up when I was visiting fluendo
+17:29 < karlH> there are some features that may go into 2.3 but haven't been decided on yet, like SSL connections
+17:29 < rillian> I heard quite a few complaints about icecast not scaling to 1000s of listeners
+17:29 < rillian> which is someting 1.x had no trouble with
+17:29 < rillian> so you might want to look at that
+17:29 < rillian> if you don't want to lose more people to flumotion :)
+17:30 < karlH> any references to that problem ?
+17:30 < thomas_> karlH, I can get you in touch with one of my friends who has it
+17:30 < thomas_> karlH, he has 5 machines to serve 6000+ clients, at least one of them segfaults a day
+17:30 < rillian> sounds like a good test bed
+17:30 < rillian> thomas_: how many unique streams is that?
+17:31 < thomas_> rillian, good question - belgian national radios, so I'd think four or five
+17:31 < karlH> it may be better to pass info outside of the meeting, but I'm interested
+17:31 < rillian> ok
+17:31 < thomas_> karlH, yeah, poke or mail me
+17:31 < karlH> that's it for me
+17:31 < rillian> I just rememeber in 1.x the limit was always bandwidth, not cpu
+17:32 < thomas_> rillian, well, it's a 3.5 gbit content delivery network
+17:32 < rillian> so one recent machine on gig-E should be able to serve 6000 90 kbps streams
+17:32 < rillian> exactly. shouldn't need 5 boxes, except for redundancy
+17:32 < thomas_> rillian, it needs five boxes because of the high CPU load starting close to 1000 connected clients
+17:32 < rillian> ok, moving on
+17:33 < rillian> I took the plunge and switched the xiph.org front page to melissa's new design, as implemented by Atamido
+17:33 < rillian> there's still tonnes of content that needs porting/updating/rewriting
+17:33 < rillian> there and on the other sites
+17:34 < rillian> but the hope was that people would be more inspired to pitch in when every little bit you do obviously helps
+17:34 < rillian> instead of having the big pile of work going on in a branch like we did before
+17:34 < rillian> so if anyone wants to help with that, the website lives in http://svn.xiph.org/websites/xiph.org/
+17:35 < rillian> next targets for conversion are vorbis.com and speex.org, currently staged in http://svn.xiph.org/websites-new/
+17:36 < rillian> Nehal did some good work on vorbis.com, but then left in a huff when Atamido threw his ego around
+17:36 < rillian> so one is officially encouraged to ignore him now :)
+17:36 < rillian> that's it for me
+17:36 < rillian> thomas_: anything going on with fluendo you'd like to share?
+17:37 < thomas_> three things
+17:37 < thomas_> we have someone who is going to start this month doing theora for the i770 nokia tablet
+17:37 < thomas_> second, I think mikes is also in favour of having alternate timings for xiphmeets :)
+17:37 < thomas_> third, I'm looking for input what people would want from the buildbots up at mf3.xiph.org:8090
+17:38 < rillian> next month is at 12:00 GMT is that any better?
+17:38 < thomas_> rillian, yeah, perfect
+17:38 < rillian> it's too early for me
+17:38 < thomas_> mainly, I want to know if people are interested in having relevant bots on one page for their subprojects
+17:38 < rillian> I'd absolutely like to see that
+17:38 < thomas_> (re. timing, 6:00 PM GMT is fine too for example, it doesn't need to be 12 hours off)
+17:39 < thomas_> the other thing we do is have the bots actually tell us when someone breaks the build, but don't know if people in xiph would like that
+17:39 < rillian> (right, that would work much better. iirc it sucks for .au, but mike's moved, and the csiro people don't usually make these times either)
+17:39 < thomas_> anyways, the build is doing pretty well, and there are some nice slaves running, and lots of stuff compiles cleanly now, so it definately seems to be ready for primetime
+17:39 < rillian> thomas_: the insult thing in #fluendo is too much
+17:40 < rillian> but a simple state-change notification on irc would be helpful
+17:40 < thomas_> rillian, yeah, I can imagine - but it can be pared down to just a note that the build is broken.
+17:40 < rillian> 'libtheora build failed on foo and bar'
+17:40 < thomas_> ok.  maybe I should mail ogg-dev so people know about this and can offer suggestions ?
+17:40 < rillian> 'libtheora-exp build working again on macosx-ppc'
+17:41 < rillian> and/or the other -dev lists
+17:41 < rillian> please
+17:41 < rillian> and thanks for setting that up
+17:41 < thomas_> no problem, glad to help
+17:41 < rillian> anyone else have anything?
+17:43 < rillian> no?
+17:43 < rillian> ok, I move we adjourn
+17:43 -!- HackRip [HackRip@ip-7.net-81-220-227.henin.rev.numericable.fr] has quit ["Leaving"]
+17:43 < rillian> thanks everyone for coming
+--- Log closed Wed Aug 03 17:44:03 2005
