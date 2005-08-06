@@ -41,6 +41,7 @@ typedef struct {
 } mp4_in_t;
 
 /* -- static prototypes -- */
+static void ices_mp4_read_metadata (MP4FileHandle mp4file);
 static int ices_mp4_readpcm (input_stream_t* self, size_t len,
 				int16_t* left, int16_t* right);
 static int ices_mp4_close (input_stream_t* self);
@@ -68,7 +69,9 @@ ices_mp4_open (input_stream_t* self, char* buf, size_t len)
   if (! self->filesize)
     return 1;
 
-  if ((mp4file = MP4Read(self->path, 0)) == MP4_INVALID_FILE_HANDLE)
+  if ((mp4file = MP4Read(self->path, 0)) != MP4_INVALID_FILE_HANDLE) {
+    ices_mp4_read_metadata(mp4file);
+  } else
     return 1;
 
   /* find audio stream */
@@ -139,6 +142,27 @@ errMP4:
 
   return -1;
 }
+
+static void 
+ices_mp4_read_metadata (MP4FileHandle mp4file)
+{
+  char *artist = NULL, *title = NULL;
+
+  if (MP4GetMetadataName(mp4file, &title) && title != NULL)
+    ices_log_debug("Title: %s", title);
+
+  if (MP4GetMetadataArtist(mp4file, &artist) && artist != NULL)
+    ices_log_debug("Artist: %s", artist);
+
+  ices_metadata_set(artist, title);
+  if (artist)
+    ices_util_free(artist);
+  if (title)
+    ices_util_free(title);
+
+  return;
+}
+
 
 static int
 ices_mp4_readpcm (input_stream_t* self, size_t olen, int16_t* left,
