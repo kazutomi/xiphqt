@@ -190,3 +190,52 @@ img.corner {
 }
 
 
+#xiphbar {
+	background-color: #666666;
+	min-height: 29px;
+}
+
+#xiphbar div {
+	width: 50em;
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 800px;
+}
+
+
+#xiphbar img {
+	margin: 0 0 0 0;
+	border: 0;
+	padding: .4em 0 0 12px;
+	float: left;
+	text-transform: lowercase;
+	width: 231;
+	height: 17px;
+}
+
+#xiphbar ul {
+	margin: 0;
+	border: 0;
+	padding: .23em 12px .45em 0;
+	text-align: right;
+	text-transform: uppercase;
+}
+
+#xiphbar li {
+	margin: 0;
+	border: 0;
+	padding: 0 10px 0 0;
+	display: inline;
+	list-style: none;
+}
+
+#xiphbar li a {
+	color: #FFCC66;
+	text-decoration: none;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10px;
+}
+
+#xiphbar li a:hover {
+	color: #FFE6B3;
+}

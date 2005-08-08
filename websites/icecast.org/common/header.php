@@ -10,16 +10,20 @@
 <link rel="stylesheet" type="text/css" href="common/style.css" />
 </head>
 <body bgcolor="black">
-<table width="100%" border=0 cellpadding=0 cellspacing=0 >
-<tr>
-<td class="xiphnav"><a class="xiphnav_a" href="http://www.xiph.org/">XIPH.ORG</a></td>
-<td class="xiphnav"><a class="xiphnav_a" href="http://www.vorbis.com/">VORBIS.COM</a></td>
-<td class="xiphnav"><a class="xiphnav_a" href="http://www.theora.org/">THEORA.ORG</a></td>
-<td class="xiphnav"><a class="xiphnav_a" href="http://www.icecast.org/">ICECAST.ORG</a></td>
-<td class="xiphnav"><a class="xiphnav_a" href="http://www.speex.org/">SPEEX.ORG</a></td>
-<td class="xiphnav" align="right">Open Standards for Internet Multimedia</td>
-</tr>
-</table>
+<div id="xiphbar">
+	<div>
+	<img src="/images/xiphbar.png" alt="Xiph logo"/>
+	<ul>
+		<li id="xiph_"><a href="http://www.xiph.org/">Xiph.org</a></li>
+		<li id="vorbis_"><a href="http://www.vorbis.com/">Vorbis</a></li>
+		<li id="theora_"><a href="http://www.theora.org/">Theora</a></li>
+
+		<li id="icecast"><a href="http://www.icecast.org/">Icecast</a></li>
+		<li id="speex_"><a href="http://www.speex.org/">Speex</a></li>
+		<li id="flac_"><a href="http://flac.sourceforge.net/">FLAC</a></li>
+	</ul>
+	</div>
+</div>
 <table width="100%" border=0 cellpadding=0 cellspacing=0 bgcolor=black>
 <tr><td colspan=3><img alt="Icecast Logo" src="images/icecast.png"></td></tr>
 <tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
