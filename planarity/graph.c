@@ -8,6 +8,7 @@
 
 /* mesh/board state */
 static vertex *verticies=0;
+static int     vertex_num=0;
 static vertex *vertex_pool=0;
 static edge *edges=0;
 static edge *edge_pool=0;
@@ -150,7 +151,6 @@ edge *add_edge(vertex *A, vertex *B){
   ret->A=A;
   ret->B=B;
   ret->active=0;
-  ret->foreground=0;
   ret->i.next=0;
   ret->next=edges;
   edges=ret;
@@ -348,7 +348,7 @@ int exists_edge(vertex *a, vertex *b){
 }
 
 /*********************** vertex maint operations *************************/
-static vertex *get_vertex(){
+vertex *get_vertex(){
   vertex *ret;
   
   if(vertex_pool==0){
@@ -369,7 +369,11 @@ static vertex *get_vertex(){
   ret->grabbed=0;
   ret->attached_to_grabbed=0;
   ret->edges=0;
-  ret->next=0;
+  ret->num=vertex_num++;
+
+  ret->next=verticies;
+  verticies=ret;
+
   return ret;
 }
 
@@ -389,13 +393,11 @@ static void set_num_verticies(int num){
     v=next;
   }
   verticies=0;
+  vertex_num=0;
   release_edges();
 
-  while(num--){
-    v=get_vertex();
-    v->next=verticies;
-    verticies=v;
-  }
+  while(num--)
+    get_vertex();
 }
 
 void activate_vertex(vertex *v){
