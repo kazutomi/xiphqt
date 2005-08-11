@@ -6,6 +6,7 @@
 
 
 typedef struct vertex {
+  int num;
   int x;
   int y;
   int orig_x;
@@ -33,7 +34,6 @@ typedef struct edge{
   vertex *B;
 
   int active;
-  int foreground;
 
   intersection i; // correct, not a pointer
   struct edge *next;
@@ -69,3 +69,4 @@ extern int get_max_intersections();
 extern void check_verticies();
 extern void impress_location();
 extern void commit_volatile_selection();
+extern vertex *get_vertex();
