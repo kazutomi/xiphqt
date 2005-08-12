@@ -15,14 +15,14 @@
 buttonstate states[NUMBUTTONS];
 
 int buttons_ready=0;
-static int width=0;
-static int height=0;
 static int allclear=1; // actually just a shirt-circuit
 static buttonstate *grabbed=0;
 
 /* determine the x/y/w/h box around the rollover text */
 static GdkRectangle rollover_box(buttonstate *b){
   GdkRectangle r;
+  int width = get_board_width();
+  int height = get_board_height();
 
   int x = b->x - b->ex.width/2 + b->ex.x_bearing -2;
   int y = b->y - BUTTON_RADIUS - BUTTON_TEXT_BORDER + b->ex.y_bearing -2;
@@ -389,8 +389,6 @@ void init_buttons(Gameboard *g){
   states[10].lit = cache_button(g, path_button_play, 
 				BUTTON_CHECK_LIT_PATH,
 				BUTTON_CHECK_LIT_FILL);
-  width = get_board_width();
-  height = get_board_height();
 }
 
 /* cache the text extents of a rollover */
@@ -480,10 +478,10 @@ void expose_buttons(Gameboard *g,cairo_t *c, int x,int y,int w,int h){
 }
 
 /* resize the button bar; called from master resize in gameboard */
-void resize_buttons(int w,int h){
+void resize_buttons(int oldw,int oldh,int w,int h){
   int i;
-  int dx=w/2-width/2;
-  int dy=h/2-height/2;
+  int dx=w/2-oldw/2;
+  int dy=h/2-oldh/2;
 
   for(i=0;i<NUMBUTTONS;i++){
     if(states[i].position == 2){
@@ -497,8 +495,8 @@ void resize_buttons(int w,int h){
     }
   }
 
-  dx=w-width;
-  dy=h-height;
+  dx=w-oldw;
+  dy=h-oldh;
 
   for(i=0;i<NUMBUTTONS;i++){
     if(states[i].position == 1){
@@ -517,9 +515,6 @@ void resize_buttons(int w,int h){
       states[i].y+=dy;
     }
   }
-
-  width=w;
-  height=h;
 }
 
 /* clear all buttons to unpressed/unlit */

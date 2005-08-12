@@ -1,2 +1,2 @@
-extern void arrange_verticies_circle(int n);
-extern void arrange_verticies_mesh(int width, int height);
+extern void arrange_verticies_circle(graph *g);
+extern void arrange_verticies_mesh(graph *g, int width, int height);

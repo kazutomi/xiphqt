@@ -34,8 +34,10 @@ typedef struct _GameboardClass  GameboardClass;
 
 struct _Gameboard{
   GtkWidget w;
+  graph *g;
 
   int pushed_background;
+  int pushed_curtain;
   void (*redraw_callback)(Gameboard *g);
 
   cairo_t         *wc;
@@ -86,7 +88,7 @@ struct _GameboardClass{
 };
 
 GType          gameboard_get_type        (void);
-Gameboard*     gameboard_new             (void);
+Gameboard*     gameboard_new             (graph *g);
 
 G_END_DECLS
 
@@ -105,3 +107,6 @@ extern double get_curtain(Gameboard *g);
 extern void set_curtain(Gameboard *g, double alpha);
 extern void pop_background(Gameboard *g);
 extern void push_background(Gameboard *g, void (*callback)(Gameboard *g));
+extern void push_curtain(Gameboard *g, void (*callback)(Gameboard *g));
+extern int gameboard_write(FILE *f, Gameboard *g);
+extern int gameboard_read(FILE *f, Gameboard *g);

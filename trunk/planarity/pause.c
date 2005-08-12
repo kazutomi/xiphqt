@@ -11,6 +11,8 @@
 #include "pause.h"
 #include "box.h"
 
+static int ui_paused=0;
+static int ui_about=0;
 static gint timer;
 static void (*callback)(Gameboard *);
 
@@ -38,6 +40,8 @@ static void unpause_post (Gameboard *g){
   pop_background(g);
   deploy_buttonbar(g);
   unpause();
+  ui_paused=0;
+  ui_about=0;
 } 
 
 static void unpause_quit (Gameboard *g){
@@ -188,7 +192,7 @@ static void pause_game_post_undeploy(Gameboard *g){
   setup_pause_buttons(g,PAUSEBOX_WIDTH, PAUSEBOX_HEIGHT);
 
   // draw pausebox
-  push_background(g,draw_pausebox);
+  push_curtain(g,draw_pausebox);
 
   // deploy new buttons
   callback=0;
@@ -198,8 +202,10 @@ static void pause_game_post_undeploy(Gameboard *g){
 
 void pause_game(Gameboard *g){
   // grab timer state
+  ui_paused=1;
   pause();
 
+  push_background(g,0);
   // undeploy buttonbar
   undeploy_buttonbar(g,pause_game_post_undeploy);
 }
@@ -235,7 +241,7 @@ static void draw_aboutbox(Gameboard *g){
   {
     cairo_matrix_t ma;
     int y = h/2-ABOUTBOX_HEIGHT/2+SCOREHEIGHT/2;
-    cairo_select_font_face (c, "Arial",
+    cairo_select_font_face (c, "Sans",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
 
@@ -244,14 +250,14 @@ static void draw_aboutbox(Gameboard *g){
     cairo_set_source_rgba (c, TEXT_COLOR);
 
     render_text_centered(c,"gPlanarity", w/2,y);
-    cairo_select_font_face (c, "Arial",
+    cairo_select_font_face (c, "Sans",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
     y+=45;
     render_text_centered(c,"Untangle the mess!", w/2,y);
     y+=30;
 
-    cairo_matrix_init_scale (&ma, 14.,14.);
+    cairo_matrix_init_scale (&ma, 13.,13.);
     cairo_set_font_matrix (c,&ma);
     render_text_centered(c,"Drag verticies to eliminate crossed lines.", w/2,y); y+=16;
     render_text_centered(c,"The objective may be a complete solution or", w/2,y); y+=16;
@@ -265,7 +271,7 @@ static void draw_aboutbox(Gameboard *g){
     cairo_stroke(c);
     y+=32;
 
-    cairo_matrix_init_scale (&ma, 13.,14.);
+    cairo_matrix_init_scale (&ma, 12.,13.);
     cairo_set_font_matrix (c,&ma);
     render_text_centered(c,"gPlanarity written by Monty <monty@xiph.org>",w/2,y);y+=17;
     render_text_centered(c,"as a demonstration of Gtk+/Cairo",w/2,y);y+=32;
@@ -277,7 +283,7 @@ static void draw_aboutbox(Gameboard *g){
 
 
     y = h/2+ABOUTBOX_HEIGHT/2-SCOREHEIGHT/2;
-    cairo_select_font_face (c, "Arial",
+    cairo_select_font_face (c, "Sans",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_BOLD);
 
@@ -290,14 +296,12 @@ static void draw_aboutbox(Gameboard *g){
   cairo_destroy(c);
 }
 
-
-
 static void about_game_post_undeploy(Gameboard *g){
   // set up new buttons
   setup_pause_buttons(g,ABOUTBOX_WIDTH,ABOUTBOX_HEIGHT);
 
   // draw about box
-  push_background(g,draw_aboutbox);
+  push_curtain(g,draw_aboutbox);
 
   // deploy new buttons
   callback=0;
@@ -307,8 +311,18 @@ static void about_game_post_undeploy(Gameboard *g){
 
 void about_game(Gameboard *g){
   // grab timer state
+  ui_about=1;
   pause();
+  push_background(g,0);
 
   // undeploy buttonbar
   undeploy_buttonbar(g,about_game_post_undeploy);
+}
+
+int pause_dialog_active(){
+  return ui_paused;
+}
+
+int about_dialog_active(){
+  return ui_about;
 }

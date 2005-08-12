@@ -11,6 +11,7 @@
 #include "finish.h"
 #include "box.h"
 
+static int ui_next=0;
 static gint timer;
 static void (*callback)(Gameboard *);
 
@@ -35,6 +36,7 @@ static gboolean finish_animate_buttons(gpointer ptr){
 
 static void finish_post (Gameboard *g){
   // back to buttonbar activity!
+  ui_next=0;
   pop_background(g);
   setup_board(g);
 } 
@@ -226,7 +228,7 @@ static void finish_post_undeploy(Gameboard *g){
   setup_finish_buttons(g,FINISHBOX_WIDTH, FINISHBOX_HEIGHT);
 
   // draw pausebox
-  push_background(g,draw_finishbox);
+  push_curtain(g,draw_finishbox);
 
   // deploy new buttons
   callback=0;
@@ -236,6 +238,11 @@ static void finish_post_undeploy(Gameboard *g){
 
 void finish_level_dialog(Gameboard *g){
   // undeploy buttonbar
+  ui_next=1;
+  push_background(g,0);
   undeploy_buttonbar(g,finish_post_undeploy);
 }
 
+int finish_dialog_active(){
+  return ui_next;
+}

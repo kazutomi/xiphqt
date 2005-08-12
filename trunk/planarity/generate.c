@@ -126,7 +126,7 @@ static void filter_edges(neighbors_grid *ng,
   nl->num=count;
 }
 
-static void random_populate(int current, mesh *m, int min_connect, float prob){
+static void random_populate(graph *g, int current, mesh *m, int min_connect, float prob){
   int num_edges=0,i;
   neighbors_grid ng;
   neighbors_list nl;
@@ -144,7 +144,7 @@ static void random_populate(int current, mesh *m, int min_connect, float prob){
 
   while(num_edges<min_connect && nl.num){
     int choice = random() % nl.num;
-    add_edge(m->v[current], m->v[nl.vnum[choice]]);
+    add_edge(g,m->v[current], m->v[nl.vnum[choice]]);
     num_edges++;
     filter_intersections(&ng);
     filter_edges(&ng,&nl);
@@ -153,11 +153,11 @@ static void random_populate(int current, mesh *m, int min_connect, float prob){
   for(i=0;i<nl.num;i++)
     if(random()<RAND_MAX*prob){
       num_edges++;
-      add_edge(m->v[current], m->v[nl.vnum[i]]);
+      add_edge(g,m->v[current], m->v[nl.vnum[i]]);
     }
 }
 
-static void span_depth_first(int current, mesh *m){
+static void span_depth_first(graph *g,int current, mesh *m){
   neighbors_grid ng;
   neighbors_list nl;
 
@@ -170,14 +170,14 @@ static void span_depth_first(int current, mesh *m){
     
     {
       int choice = random() % nl.num;
-      add_edge(m->v[current], m->v[nl.vnum[choice]]);
+      add_edge(g,m->v[current], m->v[nl.vnum[choice]]);
       
-      span_depth_first(nl.vnum[choice], m);
+      span_depth_first(g,nl.vnum[choice], m);
     }
   }
 }
 
-void generate_mesh_1(int order){
+void generate_mesh_1(graph *g, int order){
   int flag=0;
   mesh m;
   m.width=3;
@@ -196,7 +196,7 @@ void generate_mesh_1(int order){
     }
   }
 
-  vlist=new_board(m.width * m.height);
+  vlist=new_board(g, m.width * m.height);
 
   /* a flat vector is easier to address while building the mesh */
   {
@@ -210,17 +210,17 @@ void generate_mesh_1(int order){
   }
 
   /* first walk a random spanning tree */
-  span_depth_first(0, &m);
+  span_depth_first(g, 0, &m);
   
   /* now iterate the whole mesh adding random edges */
   {
     int i;
     for(i=0;i<m.width*m.height;i++)
-      random_populate(i, &m, 2, .25);
+      random_populate(g, i, &m, 2, .25);
   }
 
-  randomize_verticies(vlist);
-  arrange_verticies_circle(m.width*m.height);
+  randomize_verticies(g);
+  arrange_verticies_circle(g);
 
   //arrange_verticies_mesh(m.width,m.height);
 }

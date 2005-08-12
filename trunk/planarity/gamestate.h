@@ -3,6 +3,8 @@
 extern void resize_board(int x, int y);
 extern int get_board_width();
 extern int get_board_height();
+extern int get_orig_width();
+extern int get_orig_height();
 extern void setup_board();
 extern void finish_board();
 extern void hide_show_lines();
