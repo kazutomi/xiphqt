@@ -37,7 +37,7 @@ extern void init_buttons(Gameboard *g);
 extern void rollover_extents(Gameboard *g, buttonstate *b);
 extern gboolean animate_button_frame(gpointer ptr);
 extern void expose_buttons(Gameboard *g,cairo_t *c,int x, int y, int w, int h);
-extern void resize_buttons(int w,int h);
+extern void resize_buttons(int oldw,int oldh,int w,int h);
 extern int button_motion_event(Gameboard *g, GdkEventMotion *event, int focusable);
 extern int button_button_press(Gameboard *g, GdkEventButton *event, int focusable);
 extern int button_button_release(Gameboard *g, GdkEventButton *event, int focusable);

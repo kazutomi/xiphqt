@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 #include <gdk/gdk.h>
@@ -10,7 +11,8 @@
 #include "graph.h"
 #include "gameboard.h"
 #include "gamestate.h"
-#include "buttons.h"
+#include "button_base.h"
+#include "buttonbar.h"
 #include "box.h"
 
 static GtkWidgetClass *parent_class = NULL;
@@ -82,7 +84,7 @@ static void invalidate_region_selection(GtkWidget *widget){
 // invalidate the selection box plus enough area to catch any verticies
 static void invalidate_region_verticies_selection(GtkWidget *widget){
   Gameboard *g = GAMEBOARD (widget);
-  vertex *v=get_verticies();
+  vertex *v=g->g->verticies;
   while(v){
     if(v->selected)
       invalidate_region_vertex_off(widget,v,g->dragx,g->dragy);
@@ -265,7 +267,7 @@ static void midground_draw(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
   
   /* verticies are drawn in the foreground */
   {
-    vertex *v = get_verticies();
+    vertex *v = g->g->verticies;
     int clipx = x-V_RADIUS;
     int clipw = x+w+V_RADIUS;
     int clipy = y-V_RADIUS;
@@ -297,7 +299,7 @@ static void midground_draw(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
 static void background_draw(Gameboard *g,cairo_t *c){
   int width=get_board_width();
   int height=get_board_height();
-  edge *e=get_edges();
+  edge *e=g->g->edges;
 
   cairo_set_source_rgb(c,1,1,1);
   cairo_paint(c);
@@ -341,7 +343,7 @@ static void foreground_draw(Gameboard *g,cairo_t *c,
   /* if a group drag is in progress, draw the group ghosted in the foreground */
 
   if(g->group_drag){ 
-    vertex *v = get_verticies();
+    vertex *v = g->g->verticies;
     while(v){
       
       if( v->selected ){
@@ -405,7 +407,7 @@ static void update_background_delayed(GtkWidget *widget){
 
 static void check_lit(GtkWidget *widget,int x, int y){
   Gameboard *g = GAMEBOARD (widget);
-  vertex *v = find_vertex(x,y);
+  vertex *v = find_vertex(g->g,x,y);
   if(v!=g->lit_vertex){
     invalidate_region_vertex(g,v);
     invalidate_region_vertex(g,g->lit_vertex);
@@ -427,7 +429,7 @@ static void score_update(Gameboard *g){
 
   cairo_t *c = cairo_create(g->forescore);
 
-  if(get_num_intersections() <= get_objective()){
+  if(g->g->active_intersections <= get_objective()){
     deploy_check(g);
   }else{
     undeploy_check(g);
@@ -453,7 +455,7 @@ static void score_update(Gameboard *g){
 
   snprintf(level_string,160,"Level %d: \"%s\"",get_level()+1,get_level_string());
   snprintf(score_string,160,"Score: %d",get_score());
-  snprintf(int_string,160,"Intersections: %d",get_num_intersections());
+  snprintf(int_string,160,"Intersections: %d",g->g->active_intersections);
   snprintf(obj_string,160,"Objective: %s",get_objective_string());
 
   cairo_text_extents (c, level_string, &extentsL);
@@ -568,7 +570,7 @@ static gint mouse_motion(GtkWidget        *widget,
       
       invalidate_region_vertex(g,g->grabbed_vertex);
       invalidate_region_edges(widget,g->grabbed_vertex);
-      move_vertex(g->grabbed_vertex,x+g->graboffx,y+g->graboffy);
+      move_vertex(g->g,g->grabbed_vertex,x+g->graboffx,y+g->graboffy);
       invalidate_region_vertex(g,g->grabbed_vertex);
       invalidate_region_edges(widget,g->grabbed_vertex);
     }else if (g->selection_grab){
@@ -578,7 +580,8 @@ static gint mouse_motion(GtkWidget        *widget,
       g->selectionw = labs(g->grabx - event->x);
       g->selectiony = min(g->graby, event->y);
       g->selectionh = labs(g->graby - event->y);
-      select_verticies(g->selectionx,g->selectiony,
+      select_verticies(g->g,
+		       g->selectionx,g->selectiony,
 		       g->selectionx+g->selectionw-1,
 		       g->selectiony+g->selectionh-1);
       
@@ -591,7 +594,7 @@ static gint mouse_motion(GtkWidget        *widget,
       // if this puts any of the dragged offscreen adjust the drag back
       // onscreen.  It will avoid confusing/concerning users
       {
-	vertex *v=get_verticies();
+	vertex *v=g->g->verticies;
 	int w=get_board_width();
 	int h=get_board_height();
 	
@@ -626,7 +629,7 @@ static gboolean button_press (GtkWidget        *widget,
 			      GdkEventButton   *event){
   Gameboard *g = GAMEBOARD (widget);
 
-  vertex *v = find_vertex((int)event->x,(int)event->y);
+  vertex *v = find_vertex(g->g,(int)event->x,(int)event->y);
   g->button_grabbed=0;
 
   if(paused_p()){
@@ -659,7 +662,7 @@ static gboolean button_press (GtkWidget        *widget,
   }else{
 
     if(g->selection_active){
-      vertex *v = find_vertex((int)event->x,(int)event->y);
+      vertex *v = find_vertex(g->g,(int)event->x,(int)event->y);
       if(v && v->selected){
 	// group drag
 	g->group_drag=1;
@@ -674,7 +677,7 @@ static gboolean button_press (GtkWidget        *widget,
 	if(button_button_press(g,event,1)){
 	  g->button_grabbed=1;
 	}else{
-	  deselect_verticies();
+	  deselect_verticies(g->g);
 	  update_background(widget); 
 	  g->selection_active=0;
 	  g->group_drag=0;
@@ -691,7 +694,7 @@ static gboolean button_press (GtkWidget        *widget,
       g->graboffx = g->grabbed_vertex->x-g->grabx;
       g->graboffy = g->grabbed_vertex->y-g->graby;
       
-      grab_vertex(g->grabbed_vertex);
+      grab_vertex(g->g,g->grabbed_vertex);
       invalidate_region_attached(widget,g->grabbed_vertex);
       invalidate_region_edges(widget,g->grabbed_vertex);
       
@@ -727,7 +730,7 @@ static gboolean button_release (GtkWidget        *widget,
   if(paused_p())return TRUE;
 
   if(g->grabbed_vertex){
-    ungrab_vertex(g->grabbed_vertex);
+    ungrab_vertex(g->g,g->grabbed_vertex);
     update_background_addv(widget,g->grabbed_vertex);
     score_update(g);
     g->grabbed_vertex = 0;
@@ -737,17 +740,17 @@ static gboolean button_release (GtkWidget        *widget,
     invalidate_region_selection(widget);
     g->selection_grab=0;
     // are there selected verticies? Avoid accidentally misgrabbing one.
-    if(num_selected_verticies()<=1){
+    if(num_selected_verticies(g->g)<=1){
       g->selection_active=0;
-      deselect_verticies(); // could have grabbed just one
+      deselect_verticies(g->g); // could have grabbed just one
     }else{
       commit_volatile_selection();
-      g->selection_active=num_selected_verticies();
+      g->selection_active=num_selected_verticies(g->g);
     }
   }
 
   if(g->group_drag){
-    move_selected_verticies(g->dragx,g->dragy);
+    move_selected_verticies(g->g,g->dragx,g->dragy);
     update_background(widget); // cheating
     score_update(g);
     g->group_drag=0;
@@ -761,8 +764,8 @@ static gboolean button_release (GtkWidget        *widget,
 
 static void size_request (GtkWidget *widget,GtkRequisition *requisition){
 
-  requisition->width = get_board_width();
-  requisition->height = get_board_height();
+  requisition->width = get_orig_width();
+  requisition->height = get_orig_height();
 
 }
 
@@ -798,7 +801,7 @@ static void expose_intersections(Gameboard *g,cairo_t *c,
     double y2=h+y+(INTERSECTION_LINE_WIDTH + INTERSECTION_RADIUS*2);
 
     // walk the intersection list of all edges; draw if paired is a higher pointer
-    edge *e=get_edges();
+    edge *e=g->g->edges;
     while(e){
       intersection *i = e->i.next;
       while(i){
@@ -819,6 +822,7 @@ static void expose_intersections(Gameboard *g,cairo_t *c,
 void pop_background(Gameboard *g){
   if(g->pushed_background){
     g->pushed_background=0;
+    g->pushed_curtain=0;
     update_full(g);
   }
 }
@@ -845,13 +849,7 @@ void push_background(Gameboard *g, void(*redraw_callback)(Gameboard *g)){
   cairo_rectangle(c, 0,0,w,h);
   cairo_fill(c);
 
-  if(g->curtain_alpha>0.){ 
-    cairo_set_source (c, g->curtainp);
-    cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
-    cairo_fill (c);
-  }else{
-    expose_intersections(g,c,0,0,w,h);
-  }
+  expose_intersections(g,c,0,0,w,h);
   cairo_destroy(c);
 
   if(redraw_callback)redraw_callback(g);
@@ -865,6 +863,36 @@ void push_background(Gameboard *g, void(*redraw_callback)(Gameboard *g)){
     r.height=h;
     
     gdk_window_invalidate_rect (g->w.window, &r, FALSE);
+  }
+}
+
+void push_curtain(Gameboard *g,void(*redraw_callback)(Gameboard *g)){
+  if(g->pushed_background){
+    if(!g->pushed_curtain){ 
+      cairo_t *c = cairo_create(g->background);
+      int w = g->w.allocation.width;
+      int h = g->w.allocation.height;
+      g->pushed_curtain=1;
+
+      g->redraw_callback=redraw_callback;
+      cairo_set_source (c, g->curtainp);
+      cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
+      cairo_fill (c);
+      cairo_destroy(c);
+
+      if(redraw_callback)redraw_callback(g);
+
+      {
+	GdkRectangle r;
+	r.x=0;
+	r.y=0;
+	r.width=w;
+	r.height=h;
+	
+	gdk_window_invalidate_rect (g->w.window, &r, FALSE);
+      }
+
+    }
   }
 }
 
@@ -897,13 +925,15 @@ void run_immediate_expose(Gameboard *g,
       cairo_rectangle(c, x,y,w,h);
       cairo_fill(c);
     }
-    
+
+    expose_intersections(g,c,x,y,w,h);
+  }
+  
+  if(!g->pushed_curtain){
     if(g->curtain_alpha>0.){ 
       cairo_set_source (c, g->curtainp);
       cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
       cairo_fill (c);
-    }else{
-      expose_intersections(g,c,x,y,w,h);
     }
   }
 
@@ -1063,7 +1093,7 @@ static void gameboard_size_allocate (GtkWidget     *widget,
 
     // recenter all the verticies; doesn't require recomputation
     {
-      vertex *v=get_verticies();
+      vertex *v=g->g->verticies;
       int xd=(widget->allocation.width-oldw)*.5;
       int yd=(widget->allocation.height-oldh)*.5;
 
@@ -1084,7 +1114,7 @@ static void gameboard_size_allocate (GtkWidget     *widget,
       update_background(widget);
       paint_bottom_box(g);
       score_update(g);
-      resize_buttons(widget->allocation.width,widget->allocation.height);
+      resize_buttons(oldw,oldh,widget->allocation.width,widget->allocation.height);
 
       if(flag)push_background(g,g->redraw_callback);
 
@@ -1140,9 +1170,10 @@ GType gameboard_get_type (void){
   return gameboard_type;
 }
 
-Gameboard *gameboard_new (void) {
+Gameboard *gameboard_new (graph *gr) {
   GtkWidget *g = GTK_WIDGET (g_object_new (GAMEBOARD_TYPE, NULL));
   Gameboard *gb = GAMEBOARD (g);
+  gb->g=gr;
   return gb;
 }
 
@@ -1154,7 +1185,7 @@ void gameboard_reset (Gameboard *g) {
   g->group_drag=0;
   g->button_grabbed=0;
   g->selection_grab=0;
-  g->selection_active=0;
+  g->selection_active=num_selected_verticies(g->g);
 
   update_background(&g->w);
   score_update(g);
@@ -1192,4 +1223,40 @@ void hide_intersections(Gameboard *g){
 
 int selected(Gameboard *g){
   return g->selection_active;
+}
+
+/***************** save/load gameboard the widget state we want to be persistent **************/
+
+// there are only a few things; lines, intersections
+int gameboard_write(FILE *f, Gameboard *g){
+  
+  if(g->hide_lines)
+    fprintf(f,"hide_lines 1\n");
+  if(g->show_intersections)
+    fprintf(f,"show_intersections 1\n");
+  
+  return 0;
+}
+
+int gameboard_read(FILE *f, Gameboard *g){
+  char *line=NULL;
+  size_t n=0;
+  int i;
+
+  g->hide_lines = 0;
+  g->show_intersections = 0;
+  
+  while(getline(&line,&n,f)>0){
+    if (sscanf(line,"hide_lines %d",&i)==1)
+      if(i)
+	g->hide_lines = 1;
+    
+    if (sscanf(line,"show_intersections %d",&i)==1)
+      if(i)
+	g->show_intersections = 1;
+  }
+
+  free(line);
+
+  return 0;
 }

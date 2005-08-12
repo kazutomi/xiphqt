@@ -172,7 +172,7 @@ void setup_buttonbar(Gameboard *g){
 /* effects animated 'rollout' of buttons when level begins */
 void deploy_buttonbar(Gameboard *g){
   if(!buttons_ready ){
-    if(get_num_intersections() <= get_objective())
+    if(g->g->active_intersections <= get_objective())
       checkbutton_deployed=1;
     else
       checkbutton_deployed=0;

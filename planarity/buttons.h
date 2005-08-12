@@ -1,18 +1,3 @@
-extern void go_buttons(Gameboard *g);
-extern void init_buttons(Gameboard *g);
-extern void expose_buttons(Gameboard *g,cairo_t *c,int x, int y, int w, int h);
-extern void deploy_buttons(Gameboard *g);
-extern void undeploy_buttons(Gameboard *g, void (*callback)());
-extern void resize_buttons(int w,int h);
-extern void deploy_check(Gameboard *g);
-extern void undeploy_check(Gameboard *g);
-
-extern int button_motion_event(Gameboard *g, GdkEventMotion *event, int focusable);
-extern int button_button_press(Gameboard *g, GdkEventButton *event, int focusable);
-extern int button_button_release(Gameboard *g, GdkEventButton *event, int focusable);
-
-
-
 extern void path_button_help(cairo_t *c, double x, double y);
 extern void path_button_back(cairo_t *c, double x, double y);
 extern void path_button_reset(cairo_t *c, double x, double y);

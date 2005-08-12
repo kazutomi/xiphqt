@@ -16,13 +16,18 @@
 #include "buttonbar.h"
 #include "finish.h"
 #include "version.h"
+#include "pause.h"
 
 #define boardstate "/.gPlanarity/boards/"
 #define mainstate "/.gPlanarity/"
 Gameboard *gameboard;
+GtkWidget *toplevel_window;
+graph maingraph;
 
 static int width=800;
 static int height=640;
+static int orig_width=800;
+static int orig_height=640;
 
 static int level=0;
 static int score=0;
@@ -76,10 +81,19 @@ int get_board_height(){
   return height;
 }
 
+// graphs are originally generated to a 'nominal' minimum sized board.
+int get_orig_width(){
+  return orig_width;
+}
+
+int get_orig_height(){
+  return orig_height;
+}
+
 void setup_board(){
-  generate_mesh_1(level);
-  impress_location();
-  initial_intersections = get_num_intersections();
+  generate_mesh_1(&maingraph,level);
+  impress_location(&maingraph);
+  initial_intersections = maingraph.original_intersections;
   gameboard_reset(gameboard);
 
   //gdk_flush();
@@ -95,34 +109,39 @@ void reset_board(){
   int hide_state = get_hide_lines(gameboard);
   hide_lines(gameboard);
 
-  vertex *v=get_verticies();
+  vertex *v=maingraph.verticies;
   while(v){
-    deactivate_vertex(v);
+    deactivate_vertex(&maingraph,v);
     v=v->next;
   }
 
   while(flag){
     flag=0;
 
-    v=get_verticies();
+    v=maingraph.verticies;
     while(v){
-      if(v->x != v->orig_x || v->y != v->orig_y){
+      int bxd = (width - orig_width) >>1;
+      int byd = (height - orig_height) >>1;
+      int vox = v->orig_x + bxd;
+      int voy = v->orig_y + byd;
+
+      if(v->x != vox || v->y != voy){
 	flag=1;
       
 	invalidate_region_vertex(gameboard,v);
-	if(v->x<v->orig_x){
+	if(v->x<vox){
 	  v->x+=RESET_DELTA;
-	  if(v->x>v->orig_x)v->x=v->orig_x;
+	  if(v->x>vox)v->x=vox;
 	}else{
 	  v->x-=RESET_DELTA;
-	  if(v->x<v->orig_x)v->x=v->orig_x;
+	  if(v->x<vox)v->x=vox;
 	}
-	if(v->y<v->orig_y){
+	if(v->y<voy){
 	  v->y+=RESET_DELTA;
-	  if(v->y>v->orig_y)v->y=v->orig_y;
+	  if(v->y>voy)v->y=voy;
 	}else{
 	  v->y-=RESET_DELTA;
-	  if(v->y<v->orig_y)v->y=v->orig_y;
+	  if(v->y<voy)v->y=voy;
 	}
 	invalidate_region_vertex(gameboard,v);
       }
@@ -133,14 +152,14 @@ void reset_board(){
     
   }
 
-  v=get_verticies();
+  v=maingraph.verticies;
   while(v){
-    activate_vertex(v);
+    activate_vertex(&maingraph,v);
     v=v->next;
   }
 
   if(!hide_state)show_lines(gameboard);
-  if(get_num_intersections() <= get_objective()){
+  if(maingraph.active_intersections <= get_objective()){
     deploy_check(gameboard);
   }else{
     undeploy_check(gameboard);
@@ -172,7 +191,7 @@ void scale(double scale){
   int sel = selected(gameboard);
   // if selected, expand from center of selected mass
   if(sel){
-    vertex *v=get_verticies();
+    vertex *v=maingraph.verticies;
     double xac=0;
     double yac=0;
     while(v){
@@ -186,7 +205,7 @@ void scale(double scale){
     y = yac / selected(gameboard);
   }
 
-  vertex *v=get_verticies();
+  vertex *v=maingraph.verticies;
   while(v){
   
     if(!sel || v->selected){
@@ -198,16 +217,16 @@ void scale(double scale){
       if(ny<0)ny=0;
       if(ny>=height)ny=height-1;
 
-      deactivate_vertex(v);
+      deactivate_vertex(&maingraph,v);
       v->x = nx;
       v->y = ny;
     }
     v=v->next;
   }
   
-  v=get_verticies();
+  v=maingraph.verticies;
   while(v){
-    activate_vertex(v);
+    activate_vertex(&maingraph,v);
     v=v->next;
   }
 
@@ -234,7 +253,7 @@ void mark_intersections(){
 }
 
 void finish_board(){
-  if(get_num_intersections()<=initial_intersections){
+  if(maingraph.active_intersections<=initial_intersections){
     pause();
     score+=initial_intersections;
     if(get_elapsed()<initial_intersections)
@@ -245,11 +264,12 @@ void finish_board(){
 }
 
 void quit(){
+  pause();
   undeploy_buttonbar(gameboard,gtk_main_quit);
 }
 
 int get_score(){
-  return score + initial_intersections-get_num_intersections();
+  return score + initial_intersections-maingraph.active_intersections;
 }
 
 int get_raw_score(){
@@ -296,8 +316,6 @@ static int dir_create(char *name){
 }     
 
 int write_board(char *basename){
-  vertex *v=get_verticies();
-  edge *e=get_edges();
   char *name;
   FILE *f;
 
@@ -313,25 +331,25 @@ int write_board(char *basename){
     return errno;
   }
 
-  while(v){
-    fprintf(f,"vertex %d %d %d %d %d\n",
-	    v->orig_x,v->orig_y,v->x,v->y,v->selected);
-    v=v->next;
-  }
-
-  while(e){
-    fprintf(f,"edge %d %d\n",e->A->num,e->B->num); 
-    e=e->next;
-  }
+  graph_write(&maingraph,f);
 
   fprintf(f,"objective %c %d\n",
 	  (objective_lessthan?'*':'='),objective);
   fprintf(f,"scoring %d %f %f %ld\n",
 	  initial_intersections,intersection_mult,objective_mult,(long)get_elapsed());
-  fprintf(f,"board %d %d\n",
-	  width,height);
+  fprintf(f,"board %d %d %d %d\n",
+	  width,height,orig_width,orig_height);
+
+  if(about_dialog_active())
+    fprintf(f,"about 1\n");
+  if(pause_dialog_active())
+    fprintf(f,"pause 1\n");
+  if(finish_dialog_active())
+    fprintf(f,"finish 1\n");
+  //if(level_dialog_active())
+  //fprintf(f,"level 1\n");
 	  
-  //gameboard_write(f);
+  gameboard_write(f, gameboard);
 
   fclose(f);
 
@@ -345,7 +363,6 @@ int write_board(char *basename){
   //gameboard_write_icon(f);
   
   fclose(f);
-
   return 0;
 }
 
@@ -354,6 +371,10 @@ int read_board(char *basename){
   char *name;
   char *line=NULL;
   size_t n=0;
+
+  int aboutflag=0;
+  int pauseflag=0;
+  int finishflag=0;
 
   name=alloca(strlen(boarddir)+strlen(basename)+3);
   name[0]=0;
@@ -369,80 +390,73 @@ int read_board(char *basename){
     return errno;
   }
   
-  // successful open 
-  // read the board
-  new_board(0);
+  graph_read(&maingraph,f);
 
-  {
-    int i,x,y,ox,oy,sel,count=0,A,B;
-    vertex **flat,*v;
-
-    // get all verticies first
-    while(getline(&line,&n,f)>0){
-      
-      {
-	if(sscanf(line,"vertex %d %d %d %d %d\n",
-		  &ox,&oy,&x,&y,&sel)==5){
-	  
-	  v=get_vertex();
-	  v->orig_x=ox;
-	  v->orig_y=oy;
-	  v->x=x;
-	  v->y=y;
-	  v->selected=sel;
-	  v->num=count++;
-	}
-      }
-    }
+  // get local game state
+  while(getline(&line,&n,f)>0){
+    int o;
+    char c;
+    long l;
     
-    rewind(f);
-    flat=alloca(count*sizeof(*flat));
-    v=get_verticies();
-    i=0;
-    while(v){
-      flat[i++]=v;
-      v=v->next;
-    }
-
-    // get edges and other next
-    while(getline(&line,&n,f)>0){
-      int o;
-      char c;
-      long l;
-
-      if(sscanf(line,"edge %d %d\n",&A,&B)==2){
-	if(A>=0 && A<count && B>=0 && B<count)
-	  add_edge(flat[A],flat[B]);
-	else
-	  fprintf(stderr,"WARNING: edge references out of range vertex in save file\n");
-	
-      }else if (sscanf(line,"objective %c %d\n",&c,&o)==2){
-	
-	objective_lessthan = (c=='*');
-	objective = o;
+    if (sscanf(line,"objective %c %d",&c,&o)==2){
       
-      }else if (sscanf(line,"scoring %d %f %f %ld\n",
-		       &initial_intersections,&intersection_mult,
-		       &objective_mult,&l)==4){
-	paused=1;
-	begin_time_add = l;
-	
-      }else 
-	sscanf(line,"board %d %d\n",&width,&height);	
+      objective_lessthan = (c=='*');
+      objective = o;
+
+    }else if (sscanf(line,"scoring %d %f %f %ld",
+		     &initial_intersections,&intersection_mult,
+		     &objective_mult,&l)==4){
+      paused=1;
+      begin_time_add = l;
+      
+    }else{
+      sscanf(line,"board %d %d %d %d",&width,&height,&orig_width,&orig_height);	
+
+      if(sscanf(line,"about %d",&o)==1)
+	if(o==1)
+	  aboutflag=1;
+
+      if(sscanf(line,"pause %d",&o)==1)
+	if(o==1)
+	  pauseflag=1;
+
+      if(sscanf(line,"finish %d",&o)==1)
+	if(o==1)
+	  finishflag=1;
+	  
     }
   }
   
 
   rewind(f);
     
-  //read_gameboard(f);
+  gameboard_read(f,gameboard);
   fclose (f);
+  free(line);
+
+  gtk_window_resize(GTK_WINDOW(toplevel_window),width,height);
+  gameboard_reset(gameboard);
+
+  if(pauseflag){
+    pause_game(gameboard);
+
+  }else if (aboutflag){
+    about_game(gameboard);
+
+
+  }else if (finishflag){
+    finish_level_dialog(gameboard);
+
+  }else{
+    deploy_buttonbar(gameboard);
+    unpause();
+  }
+
   return 0;
 }
 
 
 int main(int argc, char *argv[]){
-  GtkWidget *window;
   char *homedir = getenv("home");
   if(!homedir)
     homedir = getenv("HOME");
@@ -485,19 +499,23 @@ int main(int argc, char *argv[]){
 
   gtk_init (&argc, &argv);
 
-  window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  g_signal_connect (G_OBJECT (window), "delete-event",
+  toplevel_window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  g_signal_connect (G_OBJECT (toplevel_window), "delete-event",
                     G_CALLBACK (gtk_main_quit), NULL);
-  g_signal_connect (G_OBJECT (window), "key-press-event",
-                    G_CALLBACK (key_press), window);
+  g_signal_connect (G_OBJECT (toplevel_window), "key-press-event",
+                    G_CALLBACK (key_press), toplevel_window);
   
-  gameboard = gameboard_new ();
+  gameboard = gameboard_new (&maingraph);
 
-  gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET(gameboard));
-  gtk_widget_show_all (window);
+  gtk_container_add (GTK_CONTAINER (toplevel_window), GTK_WIDGET(gameboard));
+  gtk_widget_show_all (toplevel_window);
+  memset(&maingraph,0,sizeof(maingraph));
 
-  setup_board(gameboard);
+  if(read_board("test"))
+    setup_board(gameboard);
 
   gtk_main ();
+
+  write_board("test");
   return 0;
 }

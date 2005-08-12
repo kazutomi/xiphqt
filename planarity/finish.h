@@ -4,4 +4,4 @@
 #define FINISHBOX_HEIGHT 300
 
 extern void finish_level_dialog(Gameboard *g);
-
+extern int finish_dialog_active();

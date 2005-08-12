@@ -2,25 +2,27 @@
 
 #include "graph.h"
 #include "arrange.h"
+#include "gamestate.h"
 
-void arrange_verticies_circle(int n){
-  vertex *v = get_verticies();
-  int bw=get_board_width();
-  int bh=get_board_height();
+void arrange_verticies_circle(graph *g){
+  vertex *v = g->verticies;
+  int n = g->vertex_num;
+  int bw=get_orig_width();
+  int bh=get_orig_height();
   int radius=min(bw,bh)*.45;
   int i;
   for(i=0;i<n;i++){
     int x = rint( radius * cos( i*M_PI*2./n));
     int y = rint( radius * sin( i*M_PI*2./n));
-    move_vertex(v,x+(bw>>1),y+(bh>>1));
+    move_vertex(g,v,x+(bw>>1),y+(bh>>1));
     v=v->next;
   }
 }
 
-void arrange_verticies_mesh(int width, int height){
-  vertex *v = get_verticies();
-  int bw=get_board_width();
-  int bh=get_board_height();
+void arrange_verticies_mesh(graph *g, int width, int height){
+  vertex *v = g->verticies;
+  int bw=get_orig_width();
+  int bh=get_orig_height();
   int spacing=min((float)bw/width,(float)bh/height)*.9;
   int x,y;
 
@@ -29,7 +31,7 @@ void arrange_verticies_mesh(int width, int height){
 
   for(y=0;y<height;y++){
     for(x=0;x<width;x++){
-      move_vertex(v,x*spacing+xpad,y*spacing+ypad);
+      move_vertex(g,v,x*spacing+xpad,y*spacing+ypad);
       v=v->next;
     }
   }

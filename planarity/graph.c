@@ -1,26 +1,20 @@
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "graph.h"
+#include "gamestate.h"
 #include "gameboard.h"
 #define CHUNK 64
 
-/* mesh/board state */
-static vertex *verticies=0;
-static int     vertex_num=0;
 static vertex *vertex_pool=0;
-static edge *edges=0;
 static edge *edge_pool=0;
 static edge_list *edge_list_pool=0;
 static intersection *intersection_pool=0;
 
-static int active_intersections=0;
-static int reported_intersections=0;
-
-static int num_edges=0;
-static int num_edges_active=0;
-
+/* mesh/board state */
 
 /************************ edge list maint operations ********************/
 static void add_edge_to_list(vertex *v, edge *e){
@@ -135,7 +129,7 @@ static int release_paired_intersection_list(edge *e){
 
 /************************ edge maint operations ******************************/
 /* also adds to the edge list */
-edge *add_edge(vertex *A, vertex *B){
+edge *add_edge(graph *g, vertex *A, vertex *B){
   edge *ret;
   
   if(edge_pool==0){
@@ -152,19 +146,19 @@ edge *add_edge(vertex *A, vertex *B){
   ret->B=B;
   ret->active=0;
   ret->i.next=0;
-  ret->next=edges;
-  edges=ret;
-
+  ret->next=g->edges;
+  g->edges=ret;
+  
   add_edge_to_list(A,ret);
   add_edge_to_list(B,ret);
 
-  num_edges++;
+  g->num_edges++;
 
   return ret;
 }
 
-static void release_edges(){
-  edge *e = edges;
+static void release_edges(graph *g){
+  edge *e = g->edges;
 
   while(e){
     edge *next=e->next;
@@ -173,9 +167,9 @@ static void release_edges(){
     edge_pool=e;
     e=next;
   }
-  edges=0;
-  num_edges=0;
-  num_edges_active=0;
+  g->edges=0;
+  g->num_edges=0;
+  g->num_edges_active=0;
 }
 
 static int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, double *yo){
@@ -305,34 +299,34 @@ static int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo
   return 1;
 }
 
-static void activate_edge(edge *e){
+static void activate_edge(graph *g, edge *e){
   /* computes all intersections */
   if(!e->active && e->A->active && e->B->active){
-    edge *test=edges;
+    edge *test=g->edges;
     while(test){
       if(test != e && test->active){
 	double x,y;
 	if(intersects(e->A,e->B,test->A,test->B,&x,&y)){
 	  add_paired_intersection(e,test,x,y);
-	  active_intersections++;
+	  g->active_intersections++;
 
 	}
       }
       test=test->next;
     }
     e->active=1;
-    num_edges_active++;
-    if(num_edges_active == num_edges)
-      reported_intersections = active_intersections;
+    g->num_edges_active++;
+    if(g->num_edges_active == g->num_edges && g->original_intersections==0)
+      g->original_intersections = g->active_intersections;
   }
 }
 
-static void deactivate_edge(edge *e){
+static void deactivate_edge(graph *g, edge *e){
   /* releases all associated intersections */
   if(e->active){
-    active_intersections -= 
+    g->active_intersections -= 
       release_paired_intersection_list(e);
-    num_edges_active--;
+    g->num_edges_active--;
     e->active=0;
   }
 }
@@ -348,7 +342,7 @@ int exists_edge(vertex *a, vertex *b){
 }
 
 /*********************** vertex maint operations *************************/
-vertex *get_vertex(){
+vertex *get_vertex(graph *g){
   vertex *ret;
   
   if(vertex_pool==0){
@@ -369,10 +363,10 @@ vertex *get_vertex(){
   ret->grabbed=0;
   ret->attached_to_grabbed=0;
   ret->edges=0;
-  ret->num=vertex_num++;
+  ret->num=g->vertex_num++;
 
-  ret->next=verticies;
-  verticies=ret;
+  ret->next=g->verticies;
+  g->verticies=ret;
 
   return ret;
 }
@@ -383,45 +377,54 @@ static void release_vertex(vertex *v){
   vertex_pool=v;
 }
 
-static void set_num_verticies(int num){
+static void set_num_verticies(graph *g, int num){
   /* do it the simple way; release all, link anew */
-  vertex *v=verticies;
+  vertex *v=g->verticies;
 
   while(v){
     vertex *next=v->next;
     release_vertex(v);
     v=next;
   }
-  verticies=0;
-  vertex_num=0;
-  release_edges();
+  g->verticies=0;
+  g->vertex_num=0;
+  release_edges(g);
 
   while(num--)
-    get_vertex();
+    get_vertex(g);
+  g->original_intersections = 0;
 }
 
-void activate_vertex(vertex *v){
+void activate_vertex(graph *g,vertex *v){
   edge_list *el=v->edges;
   v->active=1;
   while(el){
-    activate_edge(el->edge);
+    activate_edge(g,el->edge);
     el=el->next;
   }
 }
 
-void deactivate_vertex(vertex *v){
+void deactivate_vertex(graph *g, vertex *v){
   edge_list *el=v->edges;
   while(el){
     edge_list *next=el->next;
-    deactivate_edge(el->edge);
+    deactivate_edge(g,el->edge);
     el=next;
   }
   v->active=0;
 }
 
-void grab_vertex(vertex *v){
+void activate_verticies(graph *g){
+  vertex *v=g->verticies;
+  while(v){
+    activate_vertex(g,v);
+    v=v->next;
+  }
+}
+
+void grab_vertex(graph *g, vertex *v){
   edge_list *el=v->edges;
-  deactivate_vertex(v);
+  deactivate_vertex(g,v);
   while(el){
     edge_list *next=el->next;
     edge *e=el->edge;
@@ -432,9 +435,9 @@ void grab_vertex(vertex *v){
   v->grabbed=1;
 }
 
-void ungrab_vertex(vertex *v){
+void ungrab_vertex(graph *g,vertex *v){
   edge_list *el=v->edges;
-  activate_vertex(v);
+  activate_vertex(g,v);
   while(el){
     edge_list *next=el->next;
     edge *e=el->edge;
@@ -445,8 +448,8 @@ void ungrab_vertex(vertex *v){
   v->grabbed=0;
 }
 
-vertex *find_vertex(int x, int y){
-  vertex *v = verticies;
+vertex *find_vertex(graph *g, int x, int y){
+  vertex *v = g->verticies;
   vertex *match = 0;
 
   while(v){
@@ -460,7 +463,7 @@ vertex *find_vertex(int x, int y){
   return match;
 }
 
-static void check_vertex_helper(vertex *v, int reactivate){
+static void check_vertex_helper(graph *g, vertex *v, int reactivate){
   int flag=0;
 
   if(v->x>=get_board_width()){
@@ -481,43 +484,43 @@ static void check_vertex_helper(vertex *v, int reactivate){
   }
   if(flag){
     if(v->edges){
-      deactivate_vertex(v);
-      if(reactivate)activate_vertex(v);
+      deactivate_vertex(g,v);
+      if(reactivate)activate_vertex(g,v);
     }
   }
 }
 
-static void check_vertex(vertex *v){
-  check_vertex_helper(v,1);
+static void check_vertex(graph *g, vertex *v){
+  check_vertex_helper(g,v,1);
 }
 
-void check_verticies(){
-  vertex *v=verticies;
+void check_verticies(graph *g){
+  vertex *v=g->verticies;
   while(v){
     vertex *next=v->next;
-    check_vertex_helper(v,0);
+    check_vertex_helper(g,v,0);
     v=next;
   }
 
-  v=verticies;
+  v=g->verticies;
   while(v){
     vertex *next=v->next;
-    activate_vertex(v);
+    activate_vertex(g,v);
     v=next;
   }
 }
 
-void move_vertex(vertex *v, int x, int y){
-  if(!v->grabbed) deactivate_vertex(v);
+void move_vertex(graph *g, vertex *v, int x, int y){
+  if(!v->grabbed) deactivate_vertex(g,v);
   v->x=x;
   v->y=y;
-  check_vertex_helper(v,0);
-  if(!v->grabbed) activate_vertex(v);
+  check_vertex_helper(g,v,0);
+  if(!v->grabbed) activate_vertex(g,v);
 }
 
 // tenative selection; must be confirmed if next call should not clear
-void select_verticies(int x1, int y1, int x2, int y2){
-  vertex *v = verticies;
+void select_verticies(graph *g,int x1, int y1, int x2, int y2){
+  vertex *v = g->verticies;
 
   if(x1>x2){
     int temp=x1;
@@ -536,7 +539,7 @@ void select_verticies(int x1, int y1, int x2, int y2){
   y2+=V_RADIUS;
 
   while(v){
-    vertex *next=v->next;
+
     if(v->selected_volatile)v->selected=0;
 
     if(!v->selected){
@@ -546,12 +549,12 @@ void select_verticies(int x1, int y1, int x2, int y2){
       }
     }
 
-    v=next;
+    v=v->next;
   }
 }
 
-int num_selected_verticies(){
-  vertex *v = verticies;
+int num_selected_verticies(graph *g){
+  vertex *v = g->verticies;
   int count=0;
   while(v){
     if(v->selected)count++;
@@ -560,8 +563,8 @@ int num_selected_verticies(){
   return count;
 }
 
-void deselect_verticies(){
-  vertex *v = verticies;
+void deselect_verticies(graph *g){
+  vertex *v = g->verticies;
   
   while(v){
     v->selected=0;
@@ -571,8 +574,8 @@ void deselect_verticies(){
 
 }
 
-void commit_volatile_selection(){
-  vertex *v = verticies;
+void commit_volatile_selection(graph *g){
+  vertex *v = g->verticies;
   
   while(v){
     v->selected_volatile=0;
@@ -580,49 +583,49 @@ void commit_volatile_selection(){
   }
 }
 
-void move_selected_verticies(int dx, int dy){
-  vertex *v = verticies;
+void move_selected_verticies(graph *g,int dx, int dy){
+  vertex *v = g->verticies;
   /* deactivate selected verticies */
   while(v){
     vertex *next=v->next;
     if(v->selected)
-      deactivate_vertex(v);
+      deactivate_vertex(g,v);
     v=next;
   }
 
   /* move selected verticies and reactivate */
-  v=verticies;
+  v=g->verticies;
   while(v){
     vertex *next=v->next;
     if(v->selected){
       v->x+=dx;
       v->y+=dy;
-      check_vertex(v);
-      activate_vertex(v);
+      check_vertex(g,v);
+      activate_vertex(g,v);
     }
     v=next;
   }
 
 }
 
-void scale_verticies(float amount){
-  vertex *v=verticies;
+void scale_verticies(graph *g,float amount){
+  vertex *v=g->verticies;
   int x=get_board_width()/2;
   int y=get_board_height()/2;
 
   while(v){
     vertex *next=v->next;
-    deactivate_vertex(v);
+    deactivate_vertex(g,v);
     v->x=rint((v->x-x)*amount)+x;
     v->y=rint((v->y-y)*amount)+y;
     v=next;
   }
 
-  v=verticies;
+  v=g->verticies;
   while(v){
     vertex *next=v->next;
-    check_vertex(v);
-    activate_vertex(v);
+    check_vertex(g,v);
+    activate_vertex(g,v);
     v=next;
   }
 }
@@ -675,32 +678,105 @@ static vertex *randomize_helper(vertex *v){
   return v;
 }
 
-void randomize_verticies(){
-  verticies=randomize_helper(verticies);
+void randomize_verticies(graph *g){
+  g->verticies=randomize_helper(g->verticies);
 }
 
-int get_num_intersections(){
-  return reported_intersections;
+vertex *new_board(graph *g, int num_v){
+  set_num_verticies(g,num_v);
+  return g->verticies;
 }
 
-vertex *get_verticies(){
-  return verticies;
-}
+// take the mesh, which is always generated for a 'normal sized' board
+// (right now, 800x600), set the original vertex coordinates to the
+// 'nominal' board, and move the 'live' vertex positions to be
+// centered on what the current board size is.
 
-edge *get_edges(){
-  return edges;
-}
-
-vertex *new_board(int num_v){
-  set_num_verticies(num_v);
-  return verticies;
-}
-
-void impress_location(){
-  vertex *v=verticies;
+void impress_location(graph *g){
+  int xd = (get_board_width()-get_orig_width())>>1;
+  int yd = (get_board_height()-get_orig_height())>>1;
+  vertex *v=g->verticies;
   while(v){
     v->orig_x=v->x;
     v->orig_y=v->y;
+    v->x+=xd;
+    v->y+=yd;
     v=v->next;
   }
+}
+
+/******** read/write board **********/
+
+int graph_write(graph *g, FILE *f){
+  int i;
+  vertex *v=g->verticies;
+  edge *e=g->edges;
+  vertex **flat = alloca(g->vertex_num*sizeof(*flat));
+
+  while(v){
+    flat[v->num]=v;
+    v=v->next;
+  }
+
+  for(i=0;i<g->vertex_num;i++){
+    v = flat[i];
+    fprintf(f,"vertex %d %d %d %d %d\n",
+	    v->orig_x,v->orig_y,v->x,v->y,v->selected);
+  }
+
+  while(e){
+    fprintf(f,"edge %d %d\n",e->A->num,e->B->num); 
+    e=e->next;
+  }
+
+  return 0;
+}
+
+int graph_read(graph *g,FILE *f){
+  char *line=NULL;
+  int i,x,y,ox,oy,sel,A,B,n=0;
+  vertex **flat,*v;
+  
+  new_board(g,0);
+
+  // get all verticies first
+  while(getline(&line,&n,f)>0){
+    
+    if(sscanf(line,"vertex %d %d %d %d %d",
+	      &ox,&oy,&x,&y,&sel)==5){
+      
+      v=get_vertex(g);
+      v->orig_x=ox;
+      v->orig_y=oy;
+      v->x=x;
+      v->y=y;
+      v->selected=sel;
+    }
+  }
+    
+  rewind(f);
+  flat=alloca(g->vertex_num*sizeof(*flat));
+  v=g->verticies;
+  i=0;
+  while(v){
+    flat[v->num]=v;
+    v=v->next;
+  }
+  
+  // get edges next
+  while(getline(&line,&n,f)>0){
+    
+    if(sscanf(line,"edge %d %d",&A,&B)==2){
+      if(A>=0 && A<g->vertex_num && B>=0 && B<g->vertex_num)
+	add_edge(g,flat[A],flat[B]);
+      else
+	fprintf(stderr,"WARNING: edge references out of range vertex in save file\n");
+    }
+  }
+  
+  rewind(f);
+  free(line);
+  activate_verticies(g);
+
+  return 0;
 }
