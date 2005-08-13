@@ -51,7 +51,7 @@ h2 { font-weight: bold; color: #3366CC; }
 	<li><a href="#31">What is an Alpha Release?</a></li>
 	<li><a href="#32">What is Tarkin? </a></li>
 	<li><a href="#33">How can I help with development?</a></li>
-	<li><a href="#34"> How will Ogg Theora interoperate with [insert your favorite media architecture]?</a></li>
+	<li><a href="#34">How will Ogg Theora interoperate with [insert your favorite media architecture]?</a></li>
 	<li><a href="#35">How can I donate to these amazing projects?</a></li>
 </ul>
 <h2><a href="#working"><b>Using Theora</b></a></h2>
@@ -64,11 +64,10 @@ h2 { font-weight: bold; color: #3366CC; }
 <a href="#misc"><b>Misc and Credits</b></a>
 <ul>
 	<li><a href="#50">Who's in charge of Theora development?</a></li>
-	<li><a href="#51">Who designed this website? </a></li>
-	<li><a href="#52">Who is the webmaster of this site?</a></li>
 	<li><a href="#53">Who maintains The Glorious Theora FAQ?</a></li>
-	<li><a href="#54">When was this FAQ last updated?</a></li>
 </ul>
+
+<p>Last update 2005 August 13 by Ralph Giles.</p>
 
 <h1><a name="what"></a>What is Theora</h1>
 
@@ -124,12 +123,12 @@ supporting an open multimedia platform.
 <h2>Q. What is the license for Theora?</h2>
 <div class="answer">
 <p>
-Theora (and all associated technologies released by the Xiph.org
-Foundation) is released to the public via a BSD-style license. It is
-completely free for commercial or noncommercial use. That means that
-commercial developers may independently write Theora software which is
-compatible with the specification for no charge and without restrictions of
-any kind. 
+The Theora reference implementation (like all codecs published by the 
+Xiph.org Foundation) is distributed to the public under a 
+BSD-style license. It is completely free for commercial or noncommercial 
+use. That means that commercial developers may independently write 
+Theora software which is compatible with the specification for no charge 
+and without restrictions of any kind. 
 <p>
 </div>
 
@@ -158,12 +157,10 @@ Yes and No. Theora is a superset of VP3, so VP3 streams (with minor
 syntactic modifications) can be made into Theora streams without
 recompression (but not vice versa).
 </p><p>
- Theora will be almost entirely based upon the VP3 codec designed by On2.
-However, Theora video data will be delivered inside of the Ogg container
-format (with Vorbis for audio), so Ogg Theora files will not be the same as
-VP3 files. There also may be quite a few performance advantages to using
-Theora when 1.0 is complete; While our focus is integration, there will
-certainly be a lot of optimization involved, as well.
+Theora is based upon the VP3 codec designed by On2.
+However, in addition to the new featuers, some redundancy was removed 
+from the bitstream, so even for VP3-compatible Theora streams, the 
+binary packet formats are not identical.
 </p>
 </div>
 
@@ -193,7 +190,8 @@ client-side updates.
 <p>
 Because Theora is a 'superset' of VP3, tools can easily be created that
 will allow VP3 files to be losslessly transcoded into Ogg Theora format
-with no loss in quality.
+with no loss in quality. An example tool is included with the reference
+implementation.
 </p>
 </div>
 
@@ -242,9 +240,9 @@ from the On2 patents.
 <h2>Q. When will it all be finished? Can I use it right now?</h2>
 <div class="answer">
 <p>
-Theora alpha 3 is out and bitstream format is now frozen. So, files produced by 
-the alpha 3 reference encoder will be supported by all future decoders. But, still it
-is not complete and many bugs are yet to be fixed.
+Theora alpha 4 is out and bitstream format was frozen in 2004. So, files 
+produced by the alpha 3 and later reference encoder will be supported by 
+all future decoders. It's completely ready to use today.
 </p>
 </div>
 
@@ -253,15 +251,23 @@ is not complete and many bugs are yet to be fixed.
 <h2>Q. What is an Alpha Release?</h2>
 <div class="answer">
 <p>
-Typically when software is created at a software company, it goes through a number of stages 
-before it's released out to the world. You've probably heard of 'beta-testing' before. That's 
-when people take code that has been deemed 'not quite ready' and are testing it out so that 
+Typically when software is created at a software company, it goes 
+through a number of stages before it's released out to the world. You've 
+probably heard of 'beta-testing' before. That's when people take code 
+that has been deemed 'not quite ready' and are testing it out so that 
 the authors can fix bugs where necessary. 
 </p><p>
-'Alpha' code is strictly for internal development only, which is to say, 'No one sees this code, 
-it's not even close to being done yet.' At the Xiph.org Foundation, we release everything we do 
-so that people can help us move the codebase forward by reporting bugs and submitting patches. 
-So, even 'Alpha' code needs to get out to the world. 
+'Alpha' code is strictly for internal development only, which is to 
+say, 'No one sees this code, it's not even close to being done yet.' At 
+the Xiph.org Foundation, we release everything we do so that people can 
+help us move the codebase forward by reporting bugs and submitting patches. 
+So, even 'Alpha' code needs to get out to the world.
+</p><p>
+And like many open source projects, our 'alpha' code has in fact been 
+very stable since the alpha 3 release and is ready for real use. We're
+still calling it alpha more to indicate that it's not feature complete,
+and that we reserve the right to change some things, not that it's 
+buggy.
 </p><p>
 We encourage and depend on the open-source developer community to get
 involved early. We release Alpha builds to give these hearty souls a chance
@@ -275,10 +281,10 @@ you think you have the right stuff, please join the party at
 <h2>Q. What is Tarkin?</h2>
 <div class="answer">
 <p>
-Tarkin is essentially a proof-of-concept wavelet-based codec. Its
+Tarkin was essentially a proof-of-concept wavelet-based codec. Its
 experimental nature means it will not be ready for general use for some
 time. VP3 is a high-quality codec that can meet today's video needs now, so
-Xiph.org will be focusing its efforts on Theora for the near future.
+we are focusing our efforts on Theora for the moment.
 <p>
 </div>
 
@@ -350,6 +356,9 @@ file.
 with ffmpeg2theora.  It can be found at: <a href="http://www.v2v.cc/~j/ffmpeg2theora/"> 
 http://www.v2v.cc/~j/ffmpeg2theora/</a>
 </p>
+<p>The <a href="http://www.pitivi.org/">PiTiVi</a> video editor is 
+another nice way to make Ogg Theora videos. Just drag your source
+into the timeline and export.</p>
 <p>A way to both stream and encode theora format video is with videolan (VLC).  
 Example for streaming the video4linux device in ogg theora/vorbis: 
 </p>
@@ -386,34 +395,13 @@ Theora plugins</a> or <a href="http://www.mplayerhq.hu/">mplayer for windows</a>
 <h2>Q. Who's in charge of Theora development?</h2>
 <div class="answer">
 <p>
-The Xiph.org Foundation is the primary developer of Theora, but this is
-mainly an integration issue. The VP3 codec that serves as the base of
-Theora was written by a company called <a href="http://www.on2.com">On2 Technologies</a>. Xiph.org will be
-responsible for all aspects of the development. On2 will provide both
-monetary and technical support to Xiph.org throughout the project. On2 is
-also providing the source code of their implementation of the VP3 codec as
-well as some of their video tools.
-</p>
-</div>
-
-
-<a name="51"></a>
-<h2>Q. Who designed this website?</h2>
-<div class="answer">
-<p>
-This website is based on a design called 'Nutrition,' available for public
-download from <a href="http://www.oswd.org/">Open Source Web Design</a>. 
-The original author is known by the nickname of 'BrAInDeD-'.
-</p>
-</div>
-
-
-<a name="52"></a>
-<h2>Q. Who is the webmaster of this site?</h2>
-<div class="answer">
-<p>
-That would be <a href="mailto:manuel@xiph.org">Manuel Lora</a>, the greatest webmaster 
-on the face of the planet.
+The Xiph.org Foundation is the primary developer of Theora, but this 
+just means a group of volunteers; the process is open to anyone with
+good ideas who whats to contribute.
+</p><p> 
+The VP3 codec that served as the base of
+Theora was written by a company called <a href="http://www.on2.com">On2 Technologies</a>.
+Who donated the source code to the Xiph.org Foundation in 2002.
 </p>
 </div>
 
@@ -425,16 +413,9 @@ on the face of the planet.
 No one person at the moment. Send changes to the list if it needs them. It
 was originally written by Emmett Plant and Dan Miller. his FAQ wouldn't be
 here at all without the work of Slammin' Stan Seibert, to whom we are
-eternally grateful.
+eternally grateful. It has since been updated by a number of people.
 </p>
 </div>
-
-
-<a name="54"></a>
-<h2>Q. When was this FAQ last updated?</h2>
-<p>
-July 3rd, 2004 by <a href="http://www.cse.iitb.ac.in/nilesh/">Nilesh Bansal</a>. 
-</p>
 
 
 <!-- Close Content -->
