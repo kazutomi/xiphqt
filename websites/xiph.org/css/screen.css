@@ -49,6 +49,7 @@ img {
 #navbar ul {
 	margin: 0;
 	padding: 0;
+	padding-bottom: 0.9em;
 	width: 8em;
 }
 
@@ -68,14 +69,6 @@ img {
 
 #navbar li a:hover {
 	text-decoration: underline;
-}
-
-#wiki_ {
-	padding-bottom: 1.3em;
-}
-
-#documentation_ {
-	padding-bottom: 1.3em;
 }
 
 #copyright {

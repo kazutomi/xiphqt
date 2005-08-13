@@ -11,9 +11,13 @@
 		<li id="donate_"><a href="/donate/">Donate</a></li>
 		<li id="contact_"><a href="/contact/">Contact</a></li>
 		<li id="wiki_"><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
+	</ul>
+	<ul>
 		<li id="downloads_"><a href="http://downloads.xiph.org/releases/">Downloads</a></li>
 		<li id="bugs_"><a href="http://trac.xiph.org/">Bugs</a></li>
 		<li id="documentation_"><a href="/">Documentation</a></li>
+	</ul>
+	<ul>
 		<li id="resources_"><a href="/">Resources by Project</a></li>
 	</ul>
 </div>
