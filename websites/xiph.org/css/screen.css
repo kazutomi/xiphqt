@@ -43,6 +43,7 @@ img {
 	float: left;
 	min-height: 15em;
 	vertical-align: top;
+	border-right: 1px solid #9FC0D7;
 }
 
 #navbar ul {
