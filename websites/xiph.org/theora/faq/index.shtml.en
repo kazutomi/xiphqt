@@ -1,0 +1,443 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org :: theora faq</title>
+<style type="text/css">
+<!--
+
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+a.subtle {
+	text-decoration: none;
+	color: #333333;
+}
+a:hover.subtle {
+	text-decoration: underline;
+}
+
+h2 { font-weight: bold; color: #3366CC; }
+
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="../ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Theora FAQ</h1>
+
+<h2><a href="#what">What is Theora</a></h2>
+<ul>
+	<li><a href="#10">What is Theora?</a></li>
+	<li><a href="#11">Why use Theora?</a></li>
+	<li><a href="#12">What other video formats will Theora compete with?</a></li>
+	<li><a href="#13">What is Ogg? What is Vorbis? What is xiph.org?</a></li>
+	<li><a href="#14">What is the license for Theora?</a></li>
+	<li><a href="#15">Why the name 'Theora?'</a></li>
+</ul>
+<h2><a href="#VP3">Theora and VP3</a></h2>
+<ul>
+	<li><a href="#20">Is the Theora bitstream identical to VP3? </a></li>
+	<li><a href="#21">What can Theora do that VP3 couldn't do? </a></li>
+	<li><a href="#22">How will I transition my old VP3 files to the new format?</a></li>
+	<li><a href="#23">Can I convert Ogg Theora files into VP3?</a></li>
+	<li><a href="#24">Isn't VP3 a patented technology? </a></li>
+	<li><a href="#25">What if Xiph.org and On2 decide to break off their agreement? </a></li>
+</ul>
+<h2><a href="#development">Development</a></h2>
+<ul>
+	<li><a href="#30">When will it all be finished? Can I use it right now?</a></li>
+	<li><a href="#31">What is an Alpha Release?</a></li>
+	<li><a href="#32">What is Tarkin? </a></li>
+	<li><a href="#33">How can I help with development?</a></li>
+	<li><a href="#34"> How will Ogg Theora interoperate with [insert your favorite media architecture]?</a></li>
+	<li><a href="#35">How can I donate to these amazing projects?</a></li>
+</ul>
+<h2><a href="#working"><b>Using Theora</b></a></h2>
+<ul>
+	<li><a href="#40">What players currently support Theora?</a></li>
+	<li><a href="#41">How can I encode videos to Theora?</a></li>
+	<li><a href="#42">Is there any way to use Theora on Microsoft Windows at this point?</a></li>
+</ul>
+
+<a href="#misc"><b>Misc and Credits</b></a>
+<ul>
+	<li><a href="#50">Who's in charge of Theora development?</a></li>
+	<li><a href="#51">Who designed this website? </a></li>
+	<li><a href="#52">Who is the webmaster of this site?</a></li>
+	<li><a href="#53">Who maintains The Glorious Theora FAQ?</a></li>
+	<li><a href="#54">When was this FAQ last updated?</a></li>
+</ul>
+
+<h1><a name="what"></a>What is Theora</h1>
+
+<a name="10"></a>
+<h2>Q. What is Theora?</h2>
+<div class="answer">
+<p>Theora is an <strong>open</strong> video codec being developed by the 
+Xiph.org Foundation as part of their Ogg project (It is a project that aims to
+integrate On2's <a href="http://en.wikipedia.org/wiki/VP3">VP3</a> 
+video codec, Ogg <a href="http://www.vorbis.com/">Vorbis</a> audio codec 
+and Ogg multimedia container formats into a multimedia solution that can 
+compete with <a href="http://en.wikipedia.org/wiki/MPEG-4">MPEG-4</a> format).
+Theora is derived directly 
+from On2's VP3 codec; currently the two are nearly identical, varying 
+only in framing headers, but Theora will diverge and improve from 
+the main VP3 development lineage as time progresses. 
+</p>
+</div>
+
+<a name="11"></a>
+<h2>Q. Why use Theora?</h2>
+<div class="answer">
+<p>
+It's open and free. Do you need more reasons?
+</p>
+</div>
+
+<a name="12"></a>
+<h2>Q. What other video formats will Theora compete with?</h2>
+<div class="answer">
+<p>
+Theora is targeted at competing with MPEG-4 (e.g., XviD and DivX), 
+RealVideo, Windows Media Video, and similar lower-bitrate video 
+compression schemes.
+</p>
+</div>
+
+<a name="13"></a>
+<h2>Q. What is Ogg? What is Vorbis? What is Xiph.org?</h2>
+<div class="answer">
+<p><a href="http://www.vorbis.com/">Vorbis</a> is an audio codec, 
+Theora is a video codec. Ogg is the transport layer that both are stored in, 
+so a video file will be Theora-encoded data inside an Ogg file, while audio 
+is normally Vorbis-encoded data inside an ogg file. 
+</p><p>
+ The <a href="http://www.xiph.org/">Xiph.org</a> Foundation is a 
+Delaware non-profit company devoted to producing, maintaining and 
+supporting an open multimedia platform. 
+</p>
+</div>
+
+<a name="14"></a>
+<h2>Q. What is the license for Theora?</h2>
+<div class="answer">
+<p>
+Theora (and all associated technologies released by the Xiph.org
+Foundation) is released to the public via a BSD-style license. It is
+completely free for commercial or noncommercial use. That means that
+commercial developers may independently write Theora software which is
+compatible with the specification for no charge and without restrictions of
+any kind. 
+<p>
+</div>
+
+
+<a name="15"></a>
+<h2>Q. Why the name 'Theora?'</h2>
+<div class="answer">
+<p>
+Like other Xiph.org Foundation codec projects such as Vorbis or Tarkin,
+Theora is named after a fictional character. Theora Jones was the name of
+Edison Carter's 'controller' on the television series 
+<a href="http://imdb.com/title/tt0089568/" class="subtle">Max Headroom</a>. 
+She was played by <a href="http://imdb.com/name/nm0005301/" class="subtle">Amanda Pays</a>.
+</p>
+</div>
+
+
+<a name="VP3"></a>
+<h1>Theora and VP3</h1>
+
+<a name="20"></a>
+<h2>Q. Is the Theora bitstream identical to VP3?</h2>
+<div class="answer">
+<p>
+Yes and No. Theora is a superset of VP3, so VP3 streams (with minor
+syntactic modifications) can be made into Theora streams without
+recompression (but not vice versa).
+</p><p>
+ Theora will be almost entirely based upon the VP3 codec designed by On2.
+However, Theora video data will be delivered inside of the Ogg container
+format (with Vorbis for audio), so Ogg Theora files will not be the same as
+VP3 files. There also may be quite a few performance advantages to using
+Theora when 1.0 is complete; While our focus is integration, there will
+certainly be a lot of optimization involved, as well.
+</p>
+</div>
+
+
+<a name="21"></a>
+<h2>Q. What can Theora do that VP3 couldn't do?</h2>
+<div class="answer">
+<p>
+The major change from VP3 to Theora is architectural. VP3, like most
+codecs of today, makes certain assumptions about the nature of the material
+it compresses. These assumptions take the form of fixed sets of numeric
+values, such as quantization matrices, which control how different
+frequency components of the signal are handled, and token frequency tables,
+which control the efficiency of post-transform lossless coding. In Theora,
+we have leveraged the intrinsic flexibility of the Ogg multimedia framework
+to allow the encoder to modify these values appropriately for the material.
+This simple, powerful approach has already been proven effective in Vorbis,
+and will allow for a longer cycle of encoder optimization without requiring
+client-side updates.
+</p> 
+</div>
+
+
+<a name="22"></a>
+<h2>Q. How will I transition my old VP3 files to the new format?</h2>
+<div class="answer">
+<p>
+Because Theora is a 'superset' of VP3, tools can easily be created that
+will allow VP3 files to be losslessly transcoded into Ogg Theora format
+with no loss in quality.
+</p>
+</div>
+
+
+<a name="23"></a>
+<h2>Q. Can I convert Ogg Theora files into VP3?</h2>
+<div class="answer">
+<p>Why would you want to do something like that? Are you nuts?</p>
+</div>
+
+
+<a name="24"></a>
+<h2>Q. Isn't VP3 a patented technology?</h2>
+<div class="answer">
+<p>
+Yes, some portions of the VP3 codec are covered by patents. However, the
+Xiph.org Foundation has negotiated an irrevocable free license to the VP3
+codec for any purpose imaginable on behalf of the public. It is legal to
+use VP3 in any way you see fit (unless, of course, you're doing something
+illegal with it in your particular jurisdiction). You are free to download
+VP3, use it free of charge, implement it in a for-sale product, implement
+it in a free product, make changes to the source and distribute those
+changes, or print the source code out and wallpaper your spare room with
+it. 
+</p><p>
+For more information, check the VP3 Legal Terms on the SVN page.
+</p>
+</div>
+
+
+<a name="25"></a>
+<h2>Q. What if Xiph.org and On2 decide to break off their agreement?</h2>
+<div class="answer">
+<p>
+Because Theora is an Open Source project, the source code will continue to
+be available and development will continue. Users will still be protected
+from the On2 patents. 
+</p>
+</div>
+
+
+<a name="development"></a>
+<h1>Development </h1>
+
+<a name="30"></a>
+<h2>Q. When will it all be finished? Can I use it right now?</h2>
+<div class="answer">
+<p>
+Theora alpha 3 is out and bitstream format is now frozen. So, files produced by 
+the alpha 3 reference encoder will be supported by all future decoders. But, still it
+is not complete and many bugs are yet to be fixed.
+</p>
+</div>
+
+
+<a name="31"></a>
+<h2>Q. What is an Alpha Release?</h2>
+<div class="answer">
+<p>
+Typically when software is created at a software company, it goes through a number of stages 
+before it's released out to the world. You've probably heard of 'beta-testing' before. That's 
+when people take code that has been deemed 'not quite ready' and are testing it out so that 
+the authors can fix bugs where necessary. 
+</p><p>
+'Alpha' code is strictly for internal development only, which is to say, 'No one sees this code, 
+it's not even close to being done yet.' At the Xiph.org Foundation, we release everything we do 
+so that people can help us move the codebase forward by reporting bugs and submitting patches. 
+So, even 'Alpha' code needs to get out to the world. 
+</p><p>
+We encourage and depend on the open-source developer community to get
+involved early. We release Alpha builds to give these hearty souls a chance
+to see what's cooking, and perhaps to add some ingredients of their own. If
+you think you have the right stuff, please join the party at
+<a href="http://www.Theora.org/lists">www.Theora.org/lists</a>. 
+</div>
+
+
+<a name="32"></a>
+<h2>Q. What is Tarkin?</h2>
+<div class="answer">
+<p>
+Tarkin is essentially a proof-of-concept wavelet-based codec. Its
+experimental nature means it will not be ready for general use for some
+time. VP3 is a high-quality codec that can meet today's video needs now, so
+Xiph.org will be focusing its efforts on Theora for the near future.
+<p>
+</div>
+
+
+<a name="33"></a>
+<h2>Q. How can I help with development?</h2>
+<div class="answer">
+<p>
+Head on over to the <a href="http://www.Theora.org/svn.html">SVN</a>
+ page to grab the codebase, and hack away! Post your contributions online,
+ and tell us about it on the <a href="http://www.Theora.org/lists.html">Theora-dev
+</a> mailing list. 
+</p>
+</div>
+
+
+<a name="34"></a>
+<h2>Q. How will Ogg Theora interoperate with [insert your favorite media architecture]?</h2>
+<div class="answer">
+<p>
+As the Ogg Vorbis format has gained acceptance, components have become
+available to play Ogg files on practically all of the major media players.
+We expect a similar if not superior level of support for Ogg Theora.
+Developers wanted! (if you're interested, sign up for the
+Theora-codecs@xiph.org mailing list).
+</p>
+</div>
+
+
+<a name="35"></a>
+<h2>Q. How can I donate to these amazing projects?</h2>
+<div class="answer">
+<p>
+Wow, thanks! You can find more information on donating to the Xiph.org
+Foundation by following <a href="http://www.xiph.org/donate">
+this link</a>! Thanks in advance! 
+</p>
+</div>
+
+
+<a name="working"></a>
+<h1>Using Theora</h1>
+
+<a name="40"></a>
+<h2>Q. What players currently support Theora?</h2>
+<div class="answer">
+<p>
+Major players like <a href="http://www.mplayerhq.hu/">mplayer</a>,
+<a href="http://www.xinehq.de/">xine</a>, <a
+href="http://www.helixcommunity.org">helix player</a> and <a
+href="http://www.videolan.org/">VideoLAN</a> supports Theora. 
+Directshow <a href="http://www.illiminable.com/ogg/">filters</a>
+are also available for use on Windows platform.
+</p>
+</div>
+
+
+<a name="41"></a>
+<h2>Q. How can I encode videos to Theora?</h2>
+<div class="answer">
+<p>Have a look at <a
+href="http://www.dogphilosophy.net/SECTION-Technical_Stuff/ogg-theora-microhowto.html">
+ogg-theora-microhowto</a> and <a href="http://www.annodex.net/anx_theora.html">transcode
+</a>quicktime mov files to Theora files under Linux.
+You can use libogg, to wrap theora video with vorbis audio in Ogg
+file.
+</p>
+<p>A user-friendly way to convert .dv and .avi format video into Ogg Theora format is 
+with ffmpeg2theora.  It can be found at: <a href="http://www.v2v.cc/~j/ffmpeg2theora/"> 
+http://www.v2v.cc/~j/ffmpeg2theora/</a>
+</p>
+<p>A way to both stream and encode theora format video is with videolan (VLC).  
+Example for streaming the video4linux device in ogg theora/vorbis: 
+</p>
+<p><code>vlc v4l:/dev/video:input=3:norm=pal:size=384x288 --sout  \ 
+'#transcode{vcodec=theora,vb=300,acodec=vorb,ab=96}:std{access=http,mux=ogg,url=server.example.org:8000}'</code>
+</p>
+<p>Or, replace <code>v4l:/dev/video:input=3:norm=pal:size=384x288</code> 
+with a filename if you want to transcode.
+</p>
+For more on the vlc syntax, see: 
+<a href="http://videolan.org/doc/videolan-howto/en/ch09.html">http://videolan.org/doc/videolan-howto/en/ch09.html</a>
+</p>
+</div>
+
+
+<a name="42"></a>
+<h2>Q. Is there any way to use Theora on Microsoft Windows at this point?</h2>
+<div class="answer">
+<p>
+Yes, you can use your Theora files on windows using <a
+href="http://www.illiminable.com/ogg/">Directshow filters</a>. <a 
+href="http://ffdshow.sourceforge.net/">FFdshow</a> also has support for Theora. You 
+can also try <a href="http://www.videolan.org/">vlc</a>, realplayer <a 
+href="https://helixcommunity.org/project/showfiles.php?group_id=7">
+Theora plugins</a> or <a href="http://www.mplayerhq.hu/">mplayer for windows</a>.
+</p>
+</div>
+
+
+<a name="misc"></a>
+<h1>Misc and Credits </h1>
+
+<a name="50"></a>
+<h2>Q. Who's in charge of Theora development?</h2>
+<div class="answer">
+<p>
+The Xiph.org Foundation is the primary developer of Theora, but this is
+mainly an integration issue. The VP3 codec that serves as the base of
+Theora was written by a company called <a href="http://www.on2.com">On2 Technologies</a>. Xiph.org will be
+responsible for all aspects of the development. On2 will provide both
+monetary and technical support to Xiph.org throughout the project. On2 is
+also providing the source code of their implementation of the VP3 codec as
+well as some of their video tools.
+</p>
+</div>
+
+
+<a name="51"></a>
+<h2>Q. Who designed this website?</h2>
+<div class="answer">
+<p>
+This website is based on a design called 'Nutrition,' available for public
+download from <a href="http://www.oswd.org/">Open Source Web Design</a>. 
+The original author is known by the nickname of 'BrAInDeD-'.
+</p>
+</div>
+
+
+<a name="52"></a>
+<h2>Q. Who is the webmaster of this site?</h2>
+<div class="answer">
+<p>
+That would be <a href="mailto:manuel@xiph.org">Manuel Lora</a>, the greatest webmaster 
+on the face of the planet.
+</p>
+</div>
+
+
+<a name="53"></a>
+<h2>Q. Who maintains The Glorious Theora FAQ?</h2>
+<div class="answer">
+<p>
+No one person at the moment. Send changes to the list if it needs them. It
+was originally written by Emmett Plant and Dan Miller. his FAQ wouldn't be
+here at all without the work of Slammin' Stan Seibert, to whom we are
+eternally grateful.
+</p>
+</div>
+
+
+<a name="54"></a>
+<h2>Q. When was this FAQ last updated?</h2>
+<p>
+July 3rd, 2004 by <a href="http://www.cse.iitb.ac.in/nilesh/">Nilesh Bansal</a>. 
+</p>
+
+
+<!-- Close Content -->
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
