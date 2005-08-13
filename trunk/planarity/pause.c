@@ -45,7 +45,7 @@ static void unpause_post (Gameboard *g){
 } 
 
 static void unpause_quit (Gameboard *g){
-  quit();
+  gtk_main_quit();
 } 
 
 static void undeploy_buttons(Gameboard *g){

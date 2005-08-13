@@ -24,12 +24,6 @@ static gboolean buttonbar_animate_buttons(gpointer ptr){
 
   if(!g->first_expose)return 1;
 
-  if(get_curtain(g)>0.){
-    set_curtain(g,get_curtain(g)-.25);
-    return 1;
-  }
-  set_curtain(g,0);
-
   ret=animate_button_frame(g);
 
   if(!ret && timer!=0){
@@ -50,11 +44,11 @@ static gboolean buttonbar_deanimate_buttons(gpointer ptr){
   }else
     ret=1;
 
-  if(get_curtain(g)==0.){
-
+  {
+    
     int width=get_board_width();
     int w2=width/2;
-
+    
     for(i=0;i<NUMBUTTONS;i++){
       buttonstate *b=states+i;
       if(b->position){
@@ -67,13 +61,6 @@ static gboolean buttonbar_deanimate_buttons(gpointer ptr){
     ret|=animate_button_frame(ptr);
   }
   
-  if(!ret){
-    if(get_curtain(g)<.625){
-      set_curtain(g,get_curtain(g)+.25);
-      ret=1;
-    }
-  }
-
   if(!ret)
     // undeploy finished... call the undeploy callback
     undeploy_callback(g);
