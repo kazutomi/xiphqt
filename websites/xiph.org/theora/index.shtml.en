@@ -1,0 +1,81 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org :: theora main</title>
+<style type="text/css">
+<!--
+
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Theora video compression</h1>
+<p>
+Theora is a free and open video compression format from the 
+<span class="xiph">Xiph.org Foundation</span>. Like all our
+multimedia technology it can be used to distribute film and
+video online and on disc without the licensing and royalty
+fees or vendor lock-in associated with other formats.
+</p>
+
+<p>
+Theora scales from postage stamp to HD resolution and
+beyond, and is considered particularly competitive at low
+bitrates. It is in the same class as MPEG-4/DiVX, and like
+the <a href="http://xiph.org/vorbis/">Vorbis audio codec</a>
+it has lots of room for improvement and encoder technology
+develops.
+</p>
+
+<p>
+The bitstream format for Theora I was frozen Thursday, 2004 
+July 1. All bitstreams encoded since will remain compatible
+with future releases.
+</p>
+
+<h2>Source</h2>
+
+<ul>
+  <li>The <strong>libtheora</strong> reference implementation provides
+      the standard encoder and decoder under a BSD license.
+      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.gz">libtheora-1.0alpha4</a>]
+      [<a href="http://svn.xiph.org/trunk/theora/">SVN trunk</a>]
+  </li>
+  <li>The <strong>theora-exp</strong> project is a from-scratch 
+      implementation of the complete Theora I decoder and a 
+      more sophisticated but still experimental encoder.
+      [<a href="http://svn.xiph.org/experimental/derf/theora-exp/">SVN trunk</a>]
+  </li>
+</ul>
+
+<p>Both of implementations depend on the following libraries...</p>
+ <ul>
+  <li><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.2.tar.gz">libogg-1.1.2</a></li>
+  <li><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.1.tar.gz">libvorbis-1.1.1</a></li>
+  <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
+ </ul>
+
+<h2>Documenation</h2>
+
+<ul>
+  <li><a href="faq/">Frequently Asked Questions</a></li>
+  <li><a href="doc/Theora_I_spec.pdf">Theora I Format Specification</a></li>
+  <li><a href="doc/libtheora-1.0alpha4/">libtheora API reference</a></li>
+  <li><a href="http://people.xiph.org/~tterribe/doc/libtheora-exp/">theora-exp API reference</a>
+</ul>
+
+<h2>Binaries</h2>
+
+<p>Downloads to help you play or encode Ogg Theora files.</p>
+
+<ul>
+<li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a></li>
+<li><a href="http://videolan.org/">VLC player</a></li>
+<li><a href="https://player.helixcommunity.org/2005/downloads/">Helix Player</a></li>
+<li><a href="http://www.illiminable.com/ogg/">Windows Media plugins</a></li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
