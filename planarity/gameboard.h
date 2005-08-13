@@ -53,7 +53,7 @@ struct _Gameboard{
   cairo_surface_t *foreground;
   cairo_pattern_t *curtainp;
   cairo_surface_t *curtains;
-  double curtain_alpha;
+
   int delayed_background;
 
   vertex *grabbed_vertex;
@@ -103,8 +103,6 @@ extern void hide_intersections(Gameboard *g);
 extern void invalidate_region_vertex(Gameboard *g, vertex *v);
 extern int selected(Gameboard *g);
 extern void update_full(Gameboard *g);
-extern double get_curtain(Gameboard *g);
-extern void set_curtain(Gameboard *g, double alpha);
 extern void pop_background(Gameboard *g);
 extern void push_background(Gameboard *g, void (*callback)(Gameboard *g));
 extern void push_curtain(Gameboard *g, void (*callback)(Gameboard *g));

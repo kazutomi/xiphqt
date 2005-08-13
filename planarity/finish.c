@@ -42,7 +42,7 @@ static void finish_post (Gameboard *g){
 } 
 
 static void finish_quit (Gameboard *g){
-  quit();
+  gtk_main_quit();
 } 
 
 static void undeploy_buttons(Gameboard *g){

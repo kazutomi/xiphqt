@@ -498,55 +498,35 @@ static void score_update(Gameboard *g){
 
 #define CW 4
 static void cache_curtain(Gameboard *g){
-  cairo_surface_t *ret=
+  int x,y;
+  cairo_t *c;
+  g->curtains=
     cairo_surface_create_similar (cairo_get_target (g->wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  CW,CW);
-
-  g->curtains=ret;
-  g->curtain_alpha=0.;
-}
-
-void set_curtain(Gameboard *g, double alpha){
-  if(alpha != g->curtain_alpha){
-
-    if(g->curtainp)
-      cairo_pattern_destroy(g->curtainp);
-    g->curtainp=0;
-
-    if(alpha<1.){
-      cairo_t *c = cairo_create(g->curtains);
-      int x,y;
+  
+  c = cairo_create(g->curtains);
+  cairo_save(c);
+  cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
+  cairo_set_source_rgba (c, 1,1,1,1);
+  cairo_paint(c);
+  cairo_restore(c);
       
-      cairo_save(c);
-      cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
-      cairo_set_source_rgba (c, 1,1,1,1);
-      cairo_paint(c);
-      cairo_restore(c);
-      
-      cairo_set_line_width(c,1);
-      cairo_set_source_rgba (c, 0,0,0,alpha);
-      
-      for(y=0;y<CW;y++){
-	for(x=y&1;x<CW;x+=2){
-	  cairo_move_to(c,x+.5,y);
-	  cairo_rel_line_to(c,0,1);
-	}
-      }
-      cairo_stroke(c);
-      cairo_destroy(c);
-      
-      g->curtainp=cairo_pattern_create_for_surface (g->curtains);
-      cairo_pattern_set_extend (g->curtainp, CAIRO_EXTEND_REPEAT);
+  cairo_set_line_width(c,1);
+  cairo_set_source_rgba (c, 0,0,0,.5);
+  
+  for(y=0;y<CW;y++){
+    for(x=y&1;x<CW;x+=2){
+      cairo_move_to(c,x+.5,y);
+      cairo_rel_line_to(c,0,1);
     }
-    
-    run_immediate_expose(g,0,0,get_board_width(),get_board_height());
-    g->curtain_alpha=alpha;
   }
-}
+  cairo_stroke(c);
+  cairo_destroy(c);
+  
+  g->curtainp=cairo_pattern_create_for_surface (g->curtains);
+  cairo_pattern_set_extend (g->curtainp, CAIRO_EXTEND_REPEAT);
 
-double get_curtain(Gameboard *g){
-  return g->curtain_alpha;
 }
 
 static gint mouse_motion(GtkWidget        *widget,
@@ -867,31 +847,28 @@ void push_background(Gameboard *g, void(*redraw_callback)(Gameboard *g)){
 }
 
 void push_curtain(Gameboard *g,void(*redraw_callback)(Gameboard *g)){
-  if(g->pushed_background){
-    if(!g->pushed_curtain){ 
-      cairo_t *c = cairo_create(g->background);
-      int w = g->w.allocation.width;
-      int h = g->w.allocation.height;
-      g->pushed_curtain=1;
-
-      g->redraw_callback=redraw_callback;
-      cairo_set_source (c, g->curtainp);
-      cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
-      cairo_fill (c);
-      cairo_destroy(c);
-
-      if(redraw_callback)redraw_callback(g);
-
-      {
-	GdkRectangle r;
-	r.x=0;
-	r.y=0;
-	r.width=w;
-	r.height=h;
-	
-	gdk_window_invalidate_rect (g->w.window, &r, FALSE);
-      }
-
+  if(!g->pushed_background)push_background(g,0);
+  if(!g->pushed_curtain){ 
+    cairo_t *c = cairo_create(g->background);
+    int w = g->w.allocation.width;
+    int h = g->w.allocation.height;
+    g->pushed_curtain=1;
+    
+    g->redraw_callback=redraw_callback;
+    cairo_set_source (c, g->curtainp);
+    cairo_paint(c);
+    cairo_destroy(c);
+    
+    if(redraw_callback)redraw_callback(g);
+    
+    {
+      GdkRectangle r;
+      r.x=0;
+      r.y=0;
+      r.width=w;
+      r.height=h;
+      
+      gdk_window_invalidate_rect (g->w.window, &r, FALSE);
     }
   }
 }
@@ -929,14 +906,6 @@ void run_immediate_expose(Gameboard *g,
     expose_intersections(g,c,x,y,w,h);
   }
   
-  if(!g->pushed_curtain){
-    if(g->curtain_alpha>0.){ 
-      cairo_set_source (c, g->curtainp);
-      cairo_rectangle (c, 0, 0, get_board_width(), get_board_height());
-      cairo_fill (c);
-    }
-  }
-
   expose_buttons(g,c,x,y,w,h);
 
   cairo_destroy(c);
