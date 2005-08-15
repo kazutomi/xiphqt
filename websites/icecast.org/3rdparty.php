@@ -19,6 +19,7 @@
 <tr><td>Nicecast</td><td>Mac OSX</td><td><a href="http://www.rogueamoeba.com/nicecast/">http://www.rogueamoeba.com/nicecast/</a></td></tr>
 <tr><td>IceGenerator</td><td>Unix</td><td><a href="http://sourceforge.net/projects/icegenerator">http://sourceforge.net/projects/icegenerator</a></td></tr>
 <tr><td>Orban Opticodec-PC</td><td>Windows</td><td><a href="http://www.orban.com/orban/products/stream/1010_overview.html">http://www.orban.com/</a></td></tr>
+<tr><td>freej</td><td>Unix</td><td><a href="http://freej.org">http://freej.org/</a></td></tr>
 </table>
 </center>
 </div>
@@ -43,6 +44,9 @@
 <tr><td>winamp 2.x, 5.x (Not 3.x)(mp3 + ogg vorbis)</td><td>Windows 98/NT/2000/XP</td><td><a href="http://www.winamp.com">http://www.winamp.com</a></td></tr>
 <tr><td>XMMS(mp3 + ogg vorbis)</td><td>Unix</td><td><a href="http://www.xmms.org">http://www.xmms.org</a></td></tr>
 <tr><td>Zinf(mp3 + ogg vorbis)</td><td>Unix/Windows</td><td><a href="http://zinf.sourceforge.net">http://zinf.sourceforge.net</a></td></tr>
+<tr><td>MPlayer</td><td>Windows 98/NT/2000/XP Unix Mac OSX</td><td><a href="http://www.mplayerhq.hu">http://www.mplayerhq.hu</a></td></tr>
+<tr><td>Xine</td><td>Unix</td><td><a href="http://www.xinehq.de">http://www.xinehq.de</a></td></tr>
+<tr><td>VLC</td><td> Windows 98/NT/2000/XP Unix Mac OSX</td><td><a href="http://www.videolan.org">http://www.videolan.org</a></td></tr>
 </table>
 </center>
 </div>
