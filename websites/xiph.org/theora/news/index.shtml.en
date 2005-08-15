@@ -1,0 +1,623 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org</title>
+<style type="text/css">
+<!--
+
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<div class="content">	
+
+<h3>[ 2005 June 5 - Cinelerra edits Theora ]</h3>
+
+<p>The <a href="http://cinelerra.org">Cinelerra</a> video editor
+which has supported encoding to theora for some time, recently got
+decode support as well. This means you can edit theora video clips
+in Cinelerra!</p>
+
+<p>Thanks to Andraz for adding this new feature.</p>
+
+<h3>[ 2005 May 29 - Live streams of Guadec talks ]</h3>
+
+<p><a href="http://fluendo.com/">Fluendo</a> is again streaming
+all the talks from the <a href="http://2005.guadec.org">Guadec 
+conference</a> this year in Ogg Theora format.</p>
+
+<p>Live <a href="http://stream.fluendo.com/guadec/">streams are 
+available</a> and will be posted to the 
+<a href="http://stream.fluendo.com/archive/6uadec/">archive</a> 
+as they are available.</p>
+
+ 
+<h3>[ 2005 May 23 - systm episodes in Ogg Theora format ]</h3>
+
+<p><a href="http://www.kevinrose.com/">Kevin Rose</a> of <a 
+href="http://www.g4tv.com/screensavers/index.html">The Screen Savers</a> 
+and G4 tech tv, is doing <a href="http://systm.org/">a new show</a> for 
+direct internet distribution.
+The first episode is up and available in a number of formats, including 
+Ogg Theora.</p>
+
+<p>Here is a <a 
+href="http://www.prolexic.com/systm/systm--0001--warspyingbox--large.theora.ogg.torrent">torrent 
+link</a> to the large format 
+version.</p>
+
+<h3>[ 2005 May 14 - Cinelerra adds export support for Ogg Theora ]</h3>
+
+<p>The latest CVS version of <a href="http://cinelerra.org/">Cinelerra</a>
+non-linear edit and compositing tool for Linux supports exporting
+video in Ogg Theora format.</p>
+<p>See <a href="http://cvs.cinelerra.org">cvs.cinelerra.org</a> to
+try out the code.</p>
+
+<h3>[ 2005 Apr 23 - Elphel Theora camera in Xcell magazine ]</h3>
+
+<p>Andrey Filippov has an 
+<a href="http://xilinx.com/publications/xcellonline/xcell_53/xc_video53.htm">article</a> 
+on his FPGA Theora encoder in <a 
+href="http://xilinx.com/publications/xcellonline/">Xcell Journal</a> 
+this month. While the earlier <a 
+href="http://www.linuxdevices.com/articles/AT3888835064.html">article at LinuxDevices</a> 
+focussed on the software, this one covers in more detail the hardware 
+and use of the FPGA to achieve the elphel camera's remarkable encoding
+speed.</p>
+
+<p>Andrey and other hackers will be demonstrating the cameras at the <a 
+href="http://www.opensource-forum.ru/">Open Source Forum</a> in Moscow
+next weekend.</p>
+
+<h3>[ 2005 Apr 17 - Ogg Theora decoder ported to C# ]</h3>
+
+<p><a href="http://www.ogre3d.org/">Ogre</a> developer pjcast has a C# 
+port of the Ogg Theora decoder,
+based primarily on the <a href="http://www.jcraft.com/jorbis/">JOrbis</a> 
+and <a href="http://www.flumotion.net/jar/cortado/">Cortado</a> java 
+decoders.</p>
+
+<p>He reports both video and sound are working, and performance is 
+pretty good. The decoder components should be usable under any of
+the C# frameworks, but the example playback application is still
+a bit rough and not portable outside MS Windows.</p>
+
+<p>A <a href="http://www.wreckedgames.com/ogg.zip">development 
+snapshot</a> is available for those who would like to
+try out the code.</p>
+
+<h3>[ 2005 Mar 24 - Fedora Conference Video ]</h3>
+
+<p>Video from the <a href="http://fedoraproject.org/fudcon/">Fedora 
+Users & Develper Conference</a> last month in Boston is up in Ogg Theora 
+format. The files <a href="http://fedoraproject.org/wiki/FUDConVideos">are 
+available here</a>, or you can get a complete torrents of the 
+<a href="http://torrent.linux.duke.edu/FUDCon-devel-videos.torrent">Developer</a> 
+and <a href="http://torrent.linux.duke.edu/FUDCon-user-videos.torrent">User</a> 
+tracks. Versions with only Ogg Vorbis audio are also linked.</p>
+
+<p>It's great to see stuff like this going up.</p>
+
+<p><strong>Update</strong> as of 20050405, the direct file links no 
+longer work, but the torrent is still available.</p>
+
+<p>In related news, <a href="http://www.gnome.org/~seth/blog/">Seth 
+Nickell</a> has video of the experimental 
+<a href="http://cvs.gnome.org/viewcvs/luminocity/">Luminocity</a> OpenGL 
+compositing engine and window manager in Theora. <a 
+href="http://www.gnome.org/~seth/blog/xshots">Video screenshots!</a> 
+Quite cool.</p>
+
+<h3>[ 2005 Mar 23 - Elphel FPGA camera encodes Theora ]</h3>
+<p>
+Andrey Filippov <a 
+href="http://www.linuxdevices.com/articles/AT3888835064.html">has an 
+article</a> today on <a 
+href="http://www.linuxdevices.com/">LinuxDevices</a> describing his open 
+source hardware theora encoder, embedded in the reconfigurable network 
+camera he designed, which is also open source. Now this is what 
+computing should be like!</p>
+
+<h3>[ 2005 Mar 22 - JRoar streaming server ]</h3>
+<p>
+The <a href="http://www.jcraft.com/jroar/">JRoar</a> streaming server
+now supports Ogg Theora. Has for a while actually, but then have a
+nice set of <a href="http://jroar.jcraft.com:8800/">test streams</a>
+up.
+</p><p>
+JRoar is a pure Java Ogg streaming server from the folks at <a 
+href="http://www.jcraft.com/">JCraft</a>. I can serve static files,
+mirror external streams, or serve a source stream from a number of 
+clients. It can also serve the 
+<a href="http://www.jcraft.com/jorbis/">JOrbis</a> Ogg Vorbis player 
+directly, for a pure-url playback experience.
+</p><p>
+Thanks to the JRoar team for putting up such a nice demo of theora.
+</p>
+
+<h3>[ 2005 Jan 21 - Katiuska 0.7 for KDE released ]</h3>
+<p>
+Katiuska can now rip dvds by simply selecting subtitle and
+audio language + audio and video quality. Katiuska
+also allows you to transcode any video file to
+oggtheora.
+</p>
+<p>
+Requires:<br>
+KDE with kommander1.1development2 <br>
+mplayer <br>
+lsdvd
+</p>
+<p>
+Get it here: <br>
+<a href="http://kde-apps.org/content/show.php?content=17831">http://kde-apps.org/content/show.php?content=17831</a>
+</p>
+
+<h3>[ 2005 Jan 13 - Thoggen 0.2 released ]</h3>
+<p>
+Thoggen is a DVD backup utility ('DVD ripper') for Linux, based on Gtk+ and 
+GStreamer. It creates ogg/theora video files and features an extremely easy 
+and intuitively to use interface. Thoggen supports picture cropping and 
+resizing.
+</p>
+<p>
+Get Thoggen 0.2 from: <br>
+<a href="http://thoggen.net/download/">http://thoggen.net/download/</a>
+</p>
+
+<h3>[ 2005 Jan 3 - GeeXBox live CD supports theora playback ]</h3>
+<p>
+The <a href="http://geexbox.org/">GeeXboX</a> bootable CD media 
+player/linux distribution now supports Ogg Theora playback. Thanks guys!
+</p>
+
+<h3>[ 2004 Dec 24 - Cortado 0.1.0 released ]</h3>		
+<p>
+Fluendo announces the <a href="http://www.flumotion.net/src/cortado/cortado-0.1.0.tar.gz">first public release of Cortado</a>, a java-based media player applet.
+Since it's a first release, building it might still be rough around the edges, 
+but should be possible using at least Jikes with GCJ classpath libraries, or the Sun compiler. 
+You can also download <a href="http://www.flumotion.net/jar/cortado/">built .jar files</a> of this release.
+</p>
+<p>
+Visit <a href="http://mirror.fluendo.com/">Fluendo zoo</a> to have a look at cortado in action.<br />
+Merry Christmas and a Happy New Year from everyone at Fluendo !
+</p>
+
+<h3>[ 2004 Dec 15 - libtheora 1.0 alpha 4 release ]</h3>
+<p>We're pleased to announce a new release of the libtheora reference
+implemenation. This is an incremental update over alpha 3, in support
+of <a href="http://icecast.org/">Icecast's</a> use of some new utility
+calls to provide theora streaming support.</p>
+<blockquote>
+<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.bz2">
+  libtheora-1.0alpha4.tar.bz2
+</a><br><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.gz">
+  libtheora-1.0alpha4.tar.gz
+</a><br><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.zip">
+  libtheora-1.0alpha4.zip
+</a>
+</blockquote>
+<p>Changes since the alpha3 release:
+<ul>
+ <li>first draft of the Theora I Format Specification</li>
+ <li>API documentation generated from theora.h with Doxygen</li>
+ <li>fix a double-update bug in the motion analysis</li>
+ <li>apply the loop filter before filling motion vector border
+   in the reference frame</li>
+ <li>new utility functions:
+   <tt>theora_packet_isheader(),</tt>
+   <tt>theora_packet_iskeyframe()</tt>, and
+   <tt>theora_granule_frame()</tt></li>
+ <li>optional support for building without floating point</li>
+ <li>optional support for building without encode support</li>
+ <li>various build and packaging fixes</li>
+ <li>pkg-config support</li>
+ <li>SymbianOS build support</li>
+</ul>
+</p>
+<p>We still plan to make incompatible api changes before the first beta 
+release, but this new alpha provides a stable base including all the 
+work that has happened up to those changes.</p>
+<p>Thanks to everyone who contributed!</p>
+
+<h3>[ 2004 Dec 11 - Theora support in LiVES ]</h3>
+<p>Theora is now fully supported in LiVES is a Video Editing System (LiVES), as of version 0.9.1.
+If you are interested in having a nice, user friendly interface for 
+testing out theora, then download LiVES and try it.<br> 
+<a href="http://lives.sourceforge.net"> (http://lives.sourceforge.net)</a></p>
+
+<p>The encoder plugin for theora is written in Python and can be found here:
+<a href="http://cvs.sourceforge.net/viewcvs.py/lives/lives-plugins/marcos-encoders/theora_encoder.py"> http://cvs.sourceforge.net/viewcvs.py/lives/lives-plugins/marcos-encoders/theora_encoder.py</a></p>
+
+
+<h3>[ 2004 Dec 6 - Fluendo funds RTP streaming of Theora and Vorbis ]</h3>
+<p>Streaming media startup <a href="http://www.fluendo.com/">Fluendo.com</a>
+announced today they will be funding a spec and reference implementation
+for encapsulation of Theora video and Vorbis audio over the RTP streaming
+protocol, important for multicast, digital broadcast, and conferencing
+applications.</p>
+<p>A <a href="http://www.fluendo.com/press/releases/PR-2004-03.html">press 
+release</a> was issued this morning.</p>
+<p>While HTTP streaming of Ogg-encapsulated multimedia has been supported
+for most of the history of our free codecs, RTP support is an oft-requested
+feature that we've never had a good solution for. We're very happy to 
+see Fluendo driving this new work.</p>
+<p>Phil Kerr will be managing the developement of the new drafts. The 
+development process is open, with discussion taking place in the new
+<a href="http://lists.xiph.org/mailman/listinfo/xiph-rtp">xiph-rtp</a>
+mailing list. Please join if you're interested in these issues.
+</p>
+
+<h3>[ 2004 Nov 21 - Theora encoder, Katiuska 0.6.1, released ]</h3>
+<p>Katiuska is a theora encoder frontend that runs on KDE. It uses ffmpeg2theora, mencoder, 
+the encoder_example that comes with the theora libs and a little gpl bash script.   It can 
+encode mostly any kind of video that ffmpeg and mencoder can (avi, mpeg4 and 2, quicktime etc).</p>
+<p>On a KDE system, first install libtheora (see navigation links to the left).</p>
+<p>Make sure Kommander is installed: <br>
+<a href="http://prdownloads.sourceforge.net/kommander/kommander-executor-1.1devel2.tar.bz2?download">
+http://prdownloads.sourceforge.net/kommander/kommander-executor-1.1devel2.tar.bz2?download</a></p>
+<p>Then download Katiuska, and install it by unpacking it, change to the katiuska directory, use "su" to 
+login as root, and then enter the command "./setup.sh".  Katiuska can be downloaded from: <br>
+<a href="http://www.kde-apps.org/content/show.php?content=17831">http://www.kde-apps.org/content/show.php?content=17831</a>
+</p>
+
+<h3>[ 2004 Nov 20 - Windows installer for RealPlayer plugins ]</h3>
+<p>A Windows installer for version 0.5 of the Helix Theora & 
+Vorbis plugins for RealPlayer 10/10.5 and RealOne Player has been released. There are no code
+changes from the 0.5 zip file that was posted earlier. This just replaces the
+zip file with an installer. You can get the installer at:</p>
+<a href="https://helixcommunity.org/download.php/713/xiphplins_win32_0_5.exe">
+https://helixcommunity.org/download.php/713/xiphplins_win32_0_5.exe</a>
+<br>
+
+<h3>[ 2004 Nov 11 - Flumotion streaming media server updated ]</h3>
+<p>Flumotion 0.1.3, <a href="http://www.fluendo.com/">Fluendo</a>'s 
+streaming media server based on Theora, was 
+released today.</p>
+<p>It is available from <a 
+href="http://www.fluendo.com/downloads">http://www.fluendo.com/downloads</a>.</p>
+<p>Packages for FC3 are available from the GStreamer repository.</p>
+<p><i>This release features a lot of end-user polishing 
+based on the feedback from our brave testers.  If something didn't work 
+in a previous release, please try this one and give us some 
+feedback.</i></p>
+
+
+<h3>[ 2004 Oct 30 - new Theora and Vorbis plugins for RealPlayer 10 ]</h3>
+<p>New versions of the Helix Theora and Vorbis plugins are now available for 
+RealPlayer 10.  The major feature of this release is adding chaining support.</p>
+The new plugins can be downloaded at: <br>
+<a href="https://helixcommunity.org/project/showfiles.php?group_id=7&release_id=361"> 
+https://helixcommunity.org/project/showfiles.php?group_id=7&release_id=361</a>
+<br>
+
+<h3>[ 2004 Oct 29 - Kino 0.7.4 exports in Ogg Theora format ]</h3>
+<p>Kino, an actively developed non-linear video editing program for Linux, now supports the export of video in 
+Ogg Theora format.</p>
+The Kino website is at: <a href="http://kino.schirmacher.de/">http://kino.schirmacher.de/</a>
+<br>
+
+<h3>[ 2004 Oct 20 - Flumotion streaming media server ]</h3>
+<p>The first release for public consumption of Fluendo's Flumotion streaming media server 
+is available.</p>
+<p>Yes, there will be bugs.  Feel free to report them.  But there are also
+lots of cool features, for which Fluendo owes a debt of gratitude to both the
+GStreamer and Twisted developers.</p>
+The Fluendo website is at: <a href="http://www.fluendo.com">http://www.fluendo.com</a> <br>
+The development site is at <a href="https://core.fluendo.com/trac/cgi-bin/trac.cgi"> 
+https://core.fluendo.com/trac/cgi-bin/trac.cgi</a> <br>
+The tarball is at: <a href="http://www.fluendo.com/downloads/flumotion-0.1.0.tar.bz2"> 
+http://www.fluendo.com/downloads/flumotion-0.1.0.tar.bz2</a> 
+<br>
+
+<h3>[ 2004 Sept 30 - Fluendo test stream ]</h3>
+<p>Fluendo has posted a stable test stream for those wanting to try
+theora's network aspect. It's mostly just a webcam of their office,
+and often rather dull at night (or when the power is out) but it's nice 
+to have something that's generally available for testing. Thanks, 
+Fluendo!</p>
+<p>The stream url is
+<a 
+href="http://mirror.fluendo.com:8800/">http://mirror.fluendo.com:8800/</a>,
+or click <a href="fluendo-theoratest.pls">here</a> to open the stream in 
+your player application.
+</p>
+
+<h3>[ 2004 Sept 28 - v2v posts theora content ]</h3>
+<p>Florian Schneider has posted video from the <a 
+href="http://neuro.kein.org/">neuro</a> conference this past February in 
+Munich, all in theora format. This includes a <a 
+href="http://papaja.kein.org/download/v2v_neuro-img.ogg.torrent">panel 
+discussion</a> with Enno Patalas, revered film preservationist; Brian 
+Holmes; Sebastian L&uuml;tgert; and Ralph Giles, one of the theora 
+developers. General documentation of the conference and its other 
+sessions is available <a 
+href="http://eu.d-a-s-h.org/neurodoc">here</a>.</p>
+<p>Florian has also posted versions of a programme he produced for the 
+German French tv station arte. Torrents for <a 
+href="http://papaja.kein.org/download/v2v_wastun-unorg.ogg.torrent">unorg</a> 
+and <a 
+href="http://papaja.kein.org/download/v2v_wastun-world.ogg.torrent">world</a> 
+are available.</p>
+
+<h3>[ 2004  Sept 11 - interview with Fluendo CEO, Julien Moutte ]</h3>
+<p>OSNews has an in inteview with Julien Moutte discussing  upcoming 
+products and services based 
+on Ogg Theora, including a java version of the Theora client that 
+will allow viewing of Ogg Theora format video inside web browsing windows. <br>
+<a href="http://www.osnews.com/story.php?news_id=8218">http://www.osnews.com/story.php?news_id=8218</a>
+</p>
+
+<h3>[ 2004 Aug 28 - kfile_theora 0.2 announced ]</h3>
+
+<p>kfile_theora is a KDE kfile plugin that will display infos about ogg theora video files in konqueror & meta data dialog.<br>
+ Currently gives info about size, length, quality and some audio settings.<br>
+ Requires libogg, libvorbis and libtheora.
+ </p>
+ <p>For more information, please go to:<br>
+ <a href="http://www.kde-apps.org/content/show.php?content=15553">http://www.kde-apps.org/content/show.php?content=15553</a>
+ </p> 
+ 
+<h3>[ 2004 Aug 25 - Richard Stallman on software patents ]</h3>
+
+<p>Videos in Ogg Theora format of Richard Stallman of 
+FSF + Christian Engstr&ouml;m and Marco Schulze of FFII visiting the 
+Estonian Information Technology College, and 
+talking about the danger of patenting software have been put on the net.</p>
+
+<p>General info:<br>
+<a href="http://kwiki.ffii.org/Tallinn040722En">http://kwiki.ffii.org/Tallinn040722En</a><br>
+<a href="http://www.itcollege.ee/koostoo/avalikudloengudarhiiv.php">http://www.itcollege.ee/koostoo/avalikudloengudarhiiv.php</a></p>
+
+<p>Videos themselves:<br>
+<a href="http://www.itcollege.ee/dl/OGG/avaloeng10_1.ogg">http://www.itcollege.ee/dl/OGG/avaloeng10_1.ogg</a><br />
+<a href="http://www.itcollege.ee/dl/OGG/avaloeng10_2.ogg">http://www.itcollege.ee/dl/OGG/avaloeng10_2.ogg</a></p>
+
+<p>Mirror:<br>
+<a href="http://www.nightlabs.de/anti_swpat/BalticTour/040722/avaloeng10_1.ogg">http://www.nightlabs.de/anti_swpat/BalticTour/040722/avaloeng10_1.ogg</a><br>
+<a href="http://www.nightlabs.de/anti_swpat/BalticTour/040722/avaloeng10_2.ogg">http://www.nightlabs.de/anti_swpat/BalticTour/040722/avaloeng10_2.ogg</a></p>
+
+<p>Videos are encoded as described in ogg-theora-microhowto.  They are half of the 
+original size, and qualities are Vorbis: 2/10 and Theora: 4/10.</p>
+			
+<h3>[ 2004 Aug 21 -   aKademy broadcast in theora ]</h3>
+
+<p>Streaming startup <a href="http://fluendo.com/">fluendo.com</a> is doing it again.<br />
+This time live from the <a href="http://conference2004.kde.org/">KDE World summit</a> in Ludwigsburg, Germany.
+</p>
+<p>During the conference, the live streams are available from <a href="http://streamingserver.akademy.kde.org/">http://streamingserver.akademy.kde.org/</a> along with viewer suggestions.<br />
+Archives are available at <a href="http://ktown.kde.org/akademy/">http://ktown.kde.org/akademy/</a>
+</p>
+
+<h3>[ 2004 Jun 29 - Guadec broadcast in theora ]</h3>
+
+<p>Streaming startup <a href="http://fluendo.com/">fluendo.com</a> has 
+been demonstrating their encoding and server application at <a 
+href="http://guadec.org/">GUADEC</a> this year, broadcasting the 
+presentations <strong>live in theora</strong>. This is a great 
+demonstration of open media technology. Congratulations to fluendo and a 
+big thanks to everyone who made this possible!</p>
+<p>During the conference, the live streams are available from 
+<a href="http://stream1.hia.no/">http://stream1.hia.no/</a> along with 
+viewer suggestions. Archives are available at the same url if you
+missed something.</p>
+<p>What a change a year makes. Last year, we were very sad to see <a 
+href="2003.guadec.org">GU4DEC 2003</a> broadcasting the talks in 
+the proprietary RealVideo format. Now, not only are the talks in a free 
+video format, but you can <a 
+href="https://helixcommunity.org/project/showfiles.php?group_id=7">use 
+RealPlayer</a> to watch them!</p>
+
+<h3>[ 2004 Jun 15 - Creative Commons videos ]</h3>
+
+<p>
+In honor of our slashdotting, we've made torrents available for
+<a href="torrents/cc-theora-small.torrent">small</a> and
+<a href="torrents/cc-theora-large.torrent">large</a> versions of
+the top three winning promotion videos for the <a href="http://creativecommons.org/">Creative
+Commons</a> licenses, encoded in theora. Free content in a free format.
+</p><p>
+We also have a feature film, <a href="http://fourthwall.creativecommons.org/">David Ball's</a>
+edgy relationship drama <a
+href="http://fourthwall.creativecommons.org/honey/"><em>Honey</em></a>.
+You can download both <a href="torrents/Honey-small.torrent">small</a> and
+<a href="torrents/Honey-large.torrent">large</a> versions via bittorrent.
+These are distributed under an <a
+href="http://creativecommons.org/licenses/by-nd-nc/1.0/">Attribution-NoDerivs-NonCommercial</a>
+license.
+</p><p>
+Share and enjoy!
+</p>
+
+<h3>[ 2004 Jun 1 - Theora I bitstream freeze ]</h3>
+
+<p>
+Big news. The Theora I bitstream format is now frozen! This means it's safe
+to start distributing videos in the theora format.
+</p><p>
+<em>Files produced by the alpha 3 reference encoder will be supported by
+all future decoders</em>.
+</p><p>
+Beta 1 was going to be the official freeze point, but was delayed by 
+continuing work on the draft specification document; however
+we have reviewed enough of the design in writing the spec that we no
+longer need to reserve the right to make corrections to
+the encoder behavior.
+</p><p>
+So go ahead, there's no reason to delay adopting a free alternative any more!
+</p>
+<h3>[ 2004 Mar 20 - Theora alpha 3 release ]</h3>
+<p>
+We're pleased to announce the alpha 3 release of the theora reference
+implementation.</p>
+<blockquote>
+<a href="http://theora.org/files/libtheora-1.0alpha3.tar.bz2">
+    http://theora.org/files/libtheora-1.0alpha3.tar.bz2
+</a><br><a href="http://theora.org/files/libtheora-1.0alpha3.tar.gz">
+    http://theora.org/files/libtheora-1.0alpha3.tar.gz
+</a><br><a href="http://theora.org/files/libtheora-1.0alpha3.zip">
+    http://theora.org/files/libtheora-1.0alpha3.zip</a>
+</blockquote>
+<p>
+The main differences over alpha 2:
+</p>
+<ul>
+<li>    The encoded image has been flipped to match the sense used in VP3,
+    with the origin at the lower left. This allows lossless transcoding
+    of VP3 content.
+</li>
+<li>    The decoder data tables included in the bitstream header are more
+    complete and have more scope for future encoder improvements.
+</li>
+<li>    Some experimental tools are available in the win32 directory,
+    including a transcoder for avi vp3 files.
+</li>
+</ul>
+
+<p>
+We hope there were be no more incompatible bitstream changes, but as
+with previous alpha releases we make no promises that the format will
+not change again.
+</p><p>
+Experimental playback support is now available (separately) for
+Helix/Realplayer 10, Xine and mplayer; you might look at those if you
+want a more full-featured player. Be sure to use an alpha-3 compatible
+version. 
+</p>
+
+<h3>[ 2004 Mar 20 - source now in subversion ]</h3>
+
+<p>
+We've switched our version control system to <a 
+href="http://subversion.tigris.org/">subversion</a>
+from cvs, along with all the other Xiph.org projects.
+</p><p>
+Please make a fresh checkout if you're following the
+development tree:</p>
+<blockquote>
+<tt>svn checkout http://svn.xiph.org/trunk/theora</tt>
+</blockquote>
+<p>
+as cvs is no longer updated. You can also mount the
+dav url directly on your desktop for read-only access.
+</p>
+<p>
+See our <a href="svn.html">instruction page</a> for details.
+You can find more information about this great new tool at
+<a href="http://svnbook.red-bean.com/">definitive reference book's</a>
+website.
+</p>
+<h3>[ 2004 Jan 26 - status update ]</h3>
+<p>
+There hasn't been much progress of late. Derf has been working on a new encoder, and in doing so
+came up with some suggested bitstreams changes to increase the scope for future encoder
+improvements. These will be integrated into the reference encoder and released as 'alpha 3' for
+testing.
+<p>
+The main hold-up for the beta release is still a draft spec. Everyone's waiting for this because
+it means the format will be frozen and encoded files will be supported by future versions of the
+reference implementation. So if you want to help things along pull out the code and help with the
+documentation, or donate something to help pay for the work.
+<p>
+<div align="center"> <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
+method="post">
+<input type="hidden" name="cmd" value="_xclick">
+<input type="hidden" name="business" value="donate@xiph.org">
+<input type="hidden" name="item_name" value="theora donation">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
+name="submit" alt="Make a donation via PayPal">
+</form>
+</div>
+<h3>[ June 9, 2003 - Theora alpha 2 release ]</h3>
+<p>
+The libtheora reference implementation has reached its 'alpha 2' milestone.
+A lot of bugs have been fixed and new features added, including all the
+planned changes to the bitsteams format.</p>
+<p>
+This is more of an internal milestone than a public release, but we are
+making a <a href="/files/libtheora-1.0alpha2.tar.gz">source tarball</a> available
+for convenience. Nevertheless we recommend using the <a href="svn.html">svn</a> version if possible. This release also requires svn libogg and libvorbis to compile; you might try the <a href="http://www.xiph.org/ogg/vorbis/download/vorbis_nightly_svn.tgz">svn nightly tarball</a> if you don't
+already have these checked out. You will need to build and install the 'ogg' and 'vorbis' modules.
+</p>
+
+<h3>[ May 8, 2003 - VP3 Legacy Codec binaries ]</h3>
+<p>
+Mauricio Piacentini has been maintaining the original VP32 sources upon which theora is
+based. He's pooling his efforts with Xiph a bit and has decided to keep his work in xiph.org
+svn, in the 'vp32' module where the code was originally released. We hope this will help
+concentrate efforts related to theora and bring additional focus to both projects.
+<p>
+He is also making his binary builds for Quicktime 6 and Video for Windows available on
+this site. Please visit the <a href="http://people.xiph.org/~mauricio/">legacy VP3 page</a>
+for file links and complete information.
+</p>
+
+<h3>[ May 7, 2003 - Status update ]</h3>
+<p>
+Things have been slow for some time, so we just wanted to say what's been happening. 
+Monty's been busy with unrelated contract work since finishing the zero-copy libogg,
+and no one has stepped up to act as maintainer in the meantime. We've been working
+on a <a href="http://wiki.xiph.org/TheoraTodo">wiki todo</a> for theora and for
+<a href="http://wiki.xiph.org/">xiph generally</a>. So feel free to look (and contribute)
+there.
+</p>
+<h3>[ January 13th, 2003 - Test Suite ]</h3>
+<p>
+We've posted a <a href="http://www.theora.org/test/test.zip">test suite</a> for your encoding pleasure.
+Feel free to post comments and questions to the Theora
+<a href="http://www.theora.org/lists.html">mailing lists.</a>
+</p>
+<h3>[ December 16th, 2002 - Robot Roll Call ]</h3>
+<p>
+The first part of Theora Alpha Two, the delicious Video Layer FAQ is now 
+available on the <a href="http://www.theora.org/theorafaq.html">FAQ</a> 
+page, written by Dan Miller. The second part is libogg hacking, the 
+results of which will be posted just a little after December 27th. Alpha 
+Two is really more of an informational release than a big downloadable 
+install-fest, so don't fire up the testbeds just yet.
+<p>
+Welcome to theora.org, the official website for Ogg Theora, a video
+codec and integration project maintained and supported by the <a
+href="http://www.xiph.org">Xiph.org Foundation</a> for the benefit of
+all humankind.
+<p>
+What is Theora? Theora will be a video codec that builds upon On2's VP3 
+codec. While <a href="http://www.vorbis.com">Ogg Vorbis</a> has reached 
+1.0, Theora is currently being integrated into the Ogg multimedia framework, as well as being optimized 
+from the VP3 codebase at its heart.  
+<p>
+Theora will be released in June of 2003, with three major milestones, the 
+first being released today, September 25th, 2002. Today's piece is 
+available for download in the 'theora' module of the Xiph.org <a 
+href="http://www.theora.org/svn.html">SVN</a> repository, as 
+well as a UNIX tarball available <a 
+href="http://www.xiph.org/ogg/vorbis/download/theora_svn_snapshot.tgz">here</a>. 
+<p>
+There's a lot of useful information under the hood, so please have a
+look around by using the navigation links at the top of the page. If
+there's anything you think that we need on this page, please <a
+href="http://www.theora.org/contact.html">contact us</a> and let us
+know what you'd like to
+see.
+<p>
+For the legal terms on the usage of the VP3 codec, please check out the
+<a href="http://www.theora.org/svn.html">SVN</a> page. If you would like 
+to help sponsor the development of Theora and other open technologies from
+the Xiph.org Foundation, please consider a donation! More information is 
+available at <a 
+href="http://www.xiph.org/ogg/vorbis/donate.html">this link</a>.
+<p>
+Thanks for stopping by, and happy hacking!
+</p>
+
+</div>
+
+
+<!--  End page content -->
+<!--#include virtual="/ssi/pagebottom.include" -->
