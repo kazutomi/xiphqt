@@ -67,9 +67,10 @@
 	</div>
 	<p style="text-align: center; width: 461px; margin-top: 0; margin-left: auto; margin-right: auto; font-size: .75em;">In our effort to bring open-source ideals to the world of multimedia, the <b>Xiph.Org&nbsp;Foundation</b> and its open-source community develops a multitude of amazing products.</p>
 
-	<h1>Resources by Project</h1>
+	<h1 id="resources">Resources by Project</h1>
 
-	<div class="resources">		<div class="containers" style="padding-left: 1em; padding-bottom: 1em; float: right; width: 50%;">
+	<div class="resources">
+		<div class="containers" style="padding-left: 1em; padding-bottom: 1em; float: right; width: 50%;">
 			<h3>Container Formats</h3>
 			<ul>
 				<li><a href="/ogg/">Ogg:</a> Media container.  This is our native format and the recommended container for all Xiph codecs.</li>
