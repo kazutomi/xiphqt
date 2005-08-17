@@ -1,0 +1,50 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Xiph.org: Resources by Project</title>
+<style type="text/css">
+<!--
+
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+	<h1>Resources by Project</h1>
+
+	<div class="resources">
+		<div class="containers">
+			<h3>Container Formats</h3>
+			<ul>
+				<li><a href="/ogg/">Ogg:</a> Media container.  This is our native format and the recommended container for all Xiph codecs.</li>
+				<li><a href="#">Speex RTP:</a> RTP payload format for voice</li>
+				<li><a href="#">Vorbis RTP:</a> RTP payload format for audio</li>
+				<li><a href="#">Theora RTP:</a> RTP payload format for video</li>
+			</ul>
+		</div>
+		<div class="distribsoft">
+			<h3>Software for Distributing Media</h3>
+			<ul>
+				<li><a href="/paranoia/">CD Paranoia</a> Robust CD audio extraction </li>
+				<li><a href="http://icecast.org/">Icecast:</a> Streaming server</li>
+				<li><a href="http://icecast.org/ices.php">Ices:</a> Source client for Icecast Server</li>
+				<li><a href="http://wiki.xiph.org/IceShare">IceShare:</a> P2P for content distribution</li>
+			</ul>
+		</div>
+		<div class="codecs">
+			<h3>Codecs</h3>
+			<ul>
+				<li><a href="/vorbis/">Vorbis:</a> Audio codec</li>
+				<li><a href="/vorbis/">Tremor:</a> Fixed-point decoder</li>
+				<li><a href="http://theora.org/">Theora:</a> Video codec</li>
+				<li><a href="http://flac.sourceforge.net">FLAC:</a> Free Lossless Audio Codec</li>
+				<li><a href="http://speex.org/">Speex:</a> Speech codec</li>
+				<li><a href="http://wiki.xiph.org/OggWrit">OggWrit:</a> Text phrase codec (subtitles)</li>
+				<li><a href="http://wiki.xiph.org/Metadata">Ogg Metadata:</a> Arbitratry metadata format</li>
+			</ul>
+		</div>
+	</div>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
