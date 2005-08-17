@@ -9,6 +9,11 @@
 	padding-bottom: 1.2em;
 }
 
+.irc {
+	font-family: monospace;
+	font-size: 120%;
+}
+
 -->
 </style>
 
@@ -22,9 +27,9 @@ The best way to contact members of the Xiph.org Foundation and community
 is to post to one of the <a 
 href="http://lists.xiph.org/mailman/listinfo/">mailing lists</a> or find
 us on IRC on <a href="http://freenode.net/">irc.freenode.net</a>.
-Try the channels <tt>#xiph</tt> for general information, or the 
-general project channels: <tt>#vorbis</tt>, <tt>#theora</tt>, 
-<tt>#icecast</tt> and <tt>#speex</tt>.
+Try the channels <a class="irc" href="irc://irc.freenode.net/xiph">#xiph</a> for general information, or the 
+general project channels: <a class="irc" href="irc://irc.freenode.net/vorbis">#vorbis</a>, <a class="irc" href="irc://irc.freenode.net/theora">#theora</a>, 
+<a class="irc" href="irc://irc.freenode.net/icecast">#icecast</a> and <a class="irc" href="irc://irc.freenode.net/speex">#speex</a>.
 </p>
 
 <p>
