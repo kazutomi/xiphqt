@@ -9,10 +9,46 @@
 </style>
 
 <!--#include virtual="/ssi/xiphbar.include" -->
-<!--#include virtual="/ssi/pagetop.include" -->
+<!--#include virtual="../ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
 <div class="content">	
+
+<h1>Theora News</h1>
+
+<h3>[ 2005 August 20 - libtheora 1.0 alpha 5 release ]</h3>
+<p>We're pleased to announce a new release of the libtheora reference
+implemenation. This is an incremental update over alpha 4, to draw
+a line under recent work before we start adding optimization work.
+</p><p>
+<p>There are two important bugfixes as well, so we recommend upgrading
+to everyone. This release is source and binary compatible with
+1.0 alpha 4.</p>
+<blockquote>
+<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.bz2">  
+libtheora-1.0alpha5.tar.bz2
+</a><br><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">  
+libtheora-1.0alpha5.tar.gz
+</a><br><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.zip">
+libtheora-1.0alpha5.zip
+</a>
+</blockquote>
+<p>Changes since the 1.0 alpha 4 release:
+<ul>
+ <li>Fixed bitrate management bugs that caused popping and encode
+   errors.</li>
+ <li>Fixed a crash problem with the theora_state internals not
+   being intialized properly.</li>
+ <li>new theora_granule_shift() utility function</li>
+ <li>dump_video example now makes YUV4MPEG files by default, so
+   the results can be fed back to encoder_example and similar
+   tools. The old behavior is restored with the '-r' switch.</li>
+ <li>./configure now prints a summary</li>
+ <li>simple unit test of the comment api under 'make check'</li>
+ <li>misc code cleanup, warning and leak fixes</li>
+</ul>
+</p>
+<p>Thanks to everyone who contributed!</p>
 
 <h3>[ 2005 June 5 - Cinelerra edits Theora ]</h3>
 
