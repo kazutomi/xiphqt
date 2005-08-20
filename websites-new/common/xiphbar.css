@@ -1,8 +1,16 @@
-#xiphbar {
+#xiphbar_outer {
   background-color: #666666;
-  min-width: 850px;
+  min-width: 840px;
   width: 100%;
   height: 30px;
+}
+
+#xiphbar {
+  min-width: 840px;
+  width: 840px;
+  height: 30px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #xiphbar a {
