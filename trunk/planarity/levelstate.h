@@ -1,0 +1,10 @@
+extern int levelstate_write(char *statedir);
+extern int levelstate_read(char *statedir);
+extern long levelstate_total_hiscore();
+extern long levelstate_get_hiscore();
+extern void levelstate_next();
+extern void levelstate_prev();
+extern int get_level_num();
+extern char *get_level_name();
+extern void levelstate_finish();
+extern void levelstate_go();

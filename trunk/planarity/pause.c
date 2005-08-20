@@ -16,6 +16,8 @@ static int ui_about=0;
 static gint timer;
 static void (*callback)(Gameboard *);
 
+extern char *version;
+
 /* perform a single frame of animation for all pause dialog buttons/rollovers */
 static gboolean pause_animate_buttons(gpointer ptr){
   Gameboard *g=(Gameboard *)ptr;
@@ -289,7 +291,7 @@ static void draw_aboutbox(Gameboard *g){
 
     cairo_matrix_init_scale (&ma, 10.,11.);
     cairo_set_font_matrix (c,&ma);
-    render_text_centered(c,get_version_string(), w/2,y);
+    render_text_centered(c,version, w/2,y);
 
   }
 
