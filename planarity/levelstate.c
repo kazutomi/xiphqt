@@ -157,3 +157,41 @@ int levelstate_read(char *statedir, char *boarddir){
   return 0;
 }
 
+long levelstate_total_hiscore(){
+  long score=0;
+  levelstate *l=head;
+
+  while(l){
+    score+=l->highscore;
+    l=l->next;
+  }
+  return score;
+}
+
+long levelstate_get_hiscore(){
+  if(!curr)return 0;
+  return curr->highscore;
+}
+
+void levelstate_set_hiscore(long score){
+  if(curr)
+    curr->highscore=score;
+}
+
+void levelstate_next(){
+
+
+
+
+}
+
+void levelstate_prev(){
+
+
+
+}
+
+void levelstate_go(){
+
+
+}
