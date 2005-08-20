@@ -15,9 +15,10 @@
 <h1>What's in a name?</h1>
 
 <h2>
-<a href="index.html"><img src=white-xifish.gif 
-alt="Xiph.Org" border=0><img 
-src=xiphword2.gif alt="" border=0></a>
+	<a href="index.html">
+		<img src="/images/logos/white-xifish.gif" alt="Xiph.Org"/>
+		<img src="/images/logos/xiphword2.gif" alt=""/>
+	</a>
 </h2>
 
 <p>
@@ -41,9 +42,10 @@ favor [ksif]. Either is acceptable.
 
 
 <h2>
-<a href="ogg/index.html"><img 
-src=white-ogg.gif alt="OggSquish" border=0><img 
-src=oggword2.gif alt="" border=0></a>
+	<a href="/ogg/index.html">
+		<img src="/images/logos/white-ogg.gif" alt="OggSquish"/>
+		<img src="/images/logos/oggword2.gif" alt=""/>
+	</a>
 </h2>
 
 <p>
@@ -64,16 +66,16 @@ the early days, suggested the name 'OggSquish' as a replacement.
 
 <p>
 An 'Ogg' is a tactical maneuver from the network game 'Netrek' that
-has entered common usage in a wider sense.  From the definition:
+has entered common usage in a wider sense.  From the definition:</p>
 
 <blockquote>
-3. To do anything forcefully, possibly without consideration of the
+<p>3. To do anything forcefully, possibly without consideration of the
 drain on future resources. "I guess I'd better go ogg the problem set
 that's due tomorrow." "Whoops! I looked down at the map for a sec and
-almost ogged that oncoming car."
+almost ogged that oncoming car."</p>
 </blockquote>
 
-(see the
+<p>(see the
 <a href="http://web.archive.org/web/20010222120446/info.astrian.net/jargon/terms/o/ogg.html">rest of the</a> 
 <a href="http://www.catb.org/~esr/jargon/html/O/ogg.html">definition</a>
 for the original Netrek usage.)
@@ -106,9 +108,10 @@ J&ouml;rmungandr...  See, it all makes sense.
 </p>
 
 <h2>
-<a href="ogg/vorbis/index.html"><img 
-src=white-ogg.gif alt="Ogg Vorbis" border=0><img 
-src=vorbisword2.gif alt="" border=0></a>
+	<a href="ogg/vorbis/index.html">
+		<img src="/images/logos/white-ogg.gif" alt="Ogg Vorbis"/>
+		<img src="/images/logos/vorbisword2.gif" alt=""/>
+	</a>
 </h2>
 
 <p>
@@ -127,9 +130,10 @@ and has historically achieved comparable or better quality.
 </p>
 
 <h2>
-<a href="paranoia/index.html"><img 
-src=white-para.gif alt="paranoia IV" border=0><img 
-src=paraword2.gif alt="" border=0></a>
+	<a href="paranoia/index.html">
+		<img src="/images/logos/white-para.gif" alt="paranoia IV"/>
+		<img src="/images/logos/paraword2.gif" alt=""/>
+	</a>
 </h2>
 
 <p>
@@ -144,9 +148,10 @@ correction engines to cdparanoia series 10.
 </p>
 
 <h2>
-<a href="paranoia/index.html"><img 
-src=white-para.gif alt="cdparanoia" border=0><img 
-src=cdparaword2.gif alt="" border=0></a>
+	<a href="paranoia/index.html">
+		<img src="/images/logos/white-para.gif" alt="cdparanoia"/>
+		<img src="/images/logos/cdparaword2.gif" alt=""/>
+	</a>
 </h2>
 
 <p>
@@ -164,17 +169,17 @@ one dollar bill.
 </p>
 
 <p>
-An interesting note on the 'eye-in-the-pyramid' symbol from Nathan Myers:<br>
+An interesting note on the 'eye-in-the-pyramid' symbol from Nathan Myers:</p>
 <blockquote>
-In the [this] page, you can explain the
+<p>In the [this] page, you can explain the
 "eye in the pyramid" symbol as indicating that which
 exists solely because people believe it exists.
 (Money and gods are examples, so it being on the
-dollar bill is appropriate.)
+dollar bill is appropriate.)</p>
 </blockquote>
-
+<p>
 The eye is placed on a starburst pattern emanating from the hub area
-of a compact disc.<p>
+of a compact disc.</p>
 
 
 <!--#include virtual="/ssi/pagebottom.include" -->
