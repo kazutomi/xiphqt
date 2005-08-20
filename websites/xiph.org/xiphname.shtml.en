@@ -1,4 +1,4 @@
-<!--#include virtual="/ssi/header.include" -->
+﻿<!--#include virtual="/ssi/header.include" -->
 <!--  Enter custom page information and styles here -->
 
 <title>Xiph.org: naming</title>
@@ -22,7 +22,7 @@
 </h2>
 
 <p>
-<i>Xiphophorus helleri</i> is a small aquarium fish (the common
+<a href="http://en.wikipedia.org/wiki/Green_swordtail"><i>Xiphophorus helleri</i></a> is a small aquarium fish (the common
 Swordtail). What's special about it?  Not much, really.  The Xiph.Org
 logo doesn't even look anything like a real swordtail, but it's a logo
 that's been in use a long time.
@@ -36,7 +36,7 @@ impossible to spell is an added bonus.
 
 <p>
 The Xiphophorus name was later shortened to Xiph.org. English speakers 
-tend to pronounce this [Zif] (short /i/) while non-English speakers 
+tend to pronounce this [zĭf] (short /i/) while non-English speakers 
 favor [ksif]. Either is acceptable.
 </p>
 
@@ -65,7 +65,7 @@ the early days, suggested the name 'OggSquish' as a replacement.
 </p>
 
 <p>
-An 'Ogg' is a tactical maneuver from the network game 'Netrek' that
+An 'Ogg' (pronounced [ŏg]) is a tactical maneuver from the network game 'Netrek' that
 has entered common usage in a wider sense.  From the definition:</p>
 
 <blockquote>
@@ -121,7 +121,7 @@ significance, but it's an indirect, uninteresting story.
 </p>
 
 <p>
-<a href="ogg/vorbis/index.html">Ogg Vorbis</a> was the first CODEC in
+<a href="ogg/vorbis/index.html">Ogg Vorbis</a> (pronouned [vōr'bĭs]) was the first CODEC in
 developed as part of the Xiph.org multimedia project, begun
 immediately after <a href="about.html#fraunhofer">Fraunhofer issued
 its 'Letter of Infringement' to freeware MP3 encoder efforts</a>.
