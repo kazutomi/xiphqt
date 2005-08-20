@@ -1,0 +1,25 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com: Setup</title>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<div class="getsetupandlisten">
+  <img src="/images/banners/getsetupandlisten.png" height="121" width="483" alt="Choose your OS to get setup on" usemap="#map"/>
+  <map xml:lang="en" dir="ltr" name="map" id="map">
+    <area shape="rect" coords="20,75,109,105" href="setup_windows.shtml" alt="Get setup on Windows"/>
+    <area shape="rect" coords="118,75,218,105" href="setup_linux.shtml" alt="Get setup on Unix/Linux"/>
+    <area shape="rect" coords="227,75,313,105" href="setup_osx.shtml" alt="Get setup on Mac OSX"/>
+    <area shape="rect" coords="321,73,464,106" href="setup_other.shtml" alt="Get setup on other platforms"/>
+  </map>
+</div>
+
+<p>To get set up to listen to Ogg Vorbis music, begin by selecting
+your operating system above.</p>
+
+<p><b>To obtain the source code, please see the 
+<a href="">developers</a> page.</b>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

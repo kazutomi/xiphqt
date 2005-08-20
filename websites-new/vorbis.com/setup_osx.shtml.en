@@ -1,0 +1,33 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com: Mac OS X Setup</title>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Get Set Up To Listen: Mac OS X</h1>
+
+<h2>Playback:</h2>
+
+<ul>
+  <li><a href="http://www.videolan.org/vlc/">VLC media player</a>:
+  VLC is a highly portable multimedia player for various
+  audio and video formats.
+
+  <li><a href="">Ogg Drop</a>:
+  Ogg Drop will encode audio tracks and CD's into vorbis. It also
+  contains a QuickTime component that allows iTunes to play ogg
+  vorbis files. Ogg Drop is entirely free.</li>
+</ul>
+
+<h2>Encoding:</h2>
+
+<ul>
+  <li><a href="">Ogg Drop</a>:
+  Ogg Drop will encode audio tracks and CD's into vorbis. It also
+  contains a QuickTime component that allows iTunes to play ogg
+  vorbis files. Ogg Drop is entirely free.</li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

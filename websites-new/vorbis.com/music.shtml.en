@@ -1,0 +1,70 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com: Music</title>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+See the <a href="music_links.shtml">music sites page</a> for links to other sites that have Ogg Vorbis music.
+
+<p style="padding-top: 4px;"/>
+<table border="1" cellspacing="0" cellpadding="2" style="border-collapse: collapse; border-color: #cccccc">
+
+<tr>
+<td>Artist - Track</td>
+<td>Album</td>
+<td>Size (MB)</td>
+<td>Length</td>
+<td>Avg. Bitrate (kbps)</td>
+<td>Notes</td>
+</tr>
+
+<tr>
+<td><a href="http://www.vorbis.com/music/Epoq-Lepidoptera.ogg">Epoq - Lepidoptera</a></td>
+<td></td>
+<td>4.3</td>
+<td>5:02</td>
+<td>115</td>
+<td><a href="http://www.kahvi.org">Courtesy of Kahvi Collective</a></td>
+</tr>
+
+<tr>
+<td><a href="http://www.vorbis.com/music/Hydrate-Kenny_Beltrey.ogg">Kenny Beltrey - Hydrate</a></td>
+<td>Favorite Things</td>
+<td>3.9</td>
+<td>4:24</td>
+<td>117</td>
+<td><a href="http://www.kahvi.org">Courtesy of Kahvi Collective</a></td>
+</tr>
+
+<tr>
+<td><a href="http://www.vorbis.com/music/Lumme-Badloop.ogg">Badloop - Lumme</a></td>
+<td>Favorite Things</td>
+<td>5.8</td>
+<td>6:45</td>
+<td>115</td>
+<td><a href="http://www.kahvi.org">Courtesy of Kahvi Collective</a></td>
+</tr>
+
+<tr>
+<td><a href="http://www.vorbis.com/music/Mists_of_Time-4T.ogg">4T Thieves - Mists of Time</a></td>
+<td>Favorite Things</td>
+<td>5.8</td>
+<td>6:40</td>
+<td>116</td>
+<td><a href="http://www.kahvi.org">Courtesy of Kahvi Collective</a></td>
+</tr>
+
+<tr>
+<td><a href="http://www.vorbis.com/music/The_Abyss-4T.ogg">4T Thieves - The Abyss</a></td>
+<td>Favorite Things</td>
+<td>5.4</td>
+<td>6:20</td>
+<td>114</td>
+<td><a href="http://www.kahvi.org">Courtesy of Kahvi Collective</a></td>
+</tr>
+
+</table>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

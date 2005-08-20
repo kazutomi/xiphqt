@@ -1,0 +1,218 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com: Music Links</title>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+  <div class="ml_link"><a href="http://clickass.org/music/">theGREENzebra's Music Page</a></div>
+  <div class="ml_added">added on <i>2003-12-13 01:53:06.86</i></div>
+  <div class="ml_desc">theGREENzebra writes remixes, original, and videogame
+  music and offers it all in Ogg Vorbis.</div>
+
+  <div class="ml_link"><a href="http://www.magnatune.com">Magnatune</a></div>
+  <div class="ml_added">added on <i>2003-10-13 12:14:48.40</i></div>
+  <div class="ml_desc">Magnatune is an Internet record label, but they're not evil.
+  You can listen to all their entire albums. When you buy or license music, 50%
+  goes straight to the musician, and you can download OGG/FLAC/WAV/MP3-VBRs versions
+  of the album.  No DRM, ever.</div>
+
+  <div class="ml_link"><a href="http://www.devo.com/fabco">Fabco</a></div>
+  <div class="ml_added">added on <i>2003-07-07 13:50:24.88</i></div>
+  <div class="ml_desc">Fabco is an Austin, TX musical project mixing electronic,
+  rock, and experimental styles, and is a long time supporter of the Ogg Vorbis
+  format.</div>
+
+  <div class="ml_link"><a href="http://www.hoerstreich.de/">Hörstreich</a></div>
+  <div class="ml_added">added on <i>2003-02-13 06:38:04.32</i></div>
+  <div class="ml_desc">Hörstreich, a punk rock band from Augsburg, Germany offers
+  Ogg Vorbis downloads of their music.</div>
+
+  <div class="ml_link"><a href="http://www.machinaesupremacy.com">Machinae Supremacy</a></div>
+  <div class="ml_added">added on <i>2003-02-05 15:11:13.92</i></div>
+  <div class="ml_desc">Want some Swedish metal? Then, by all means, visit
+  <a href="http://www.machinaesupremacy.com">Machinae Supremacy</a>.</div>
+
+  <div class="ml_link"><a href="http://urn1350.net/">URN</a></div>
+  <div class="ml_added">added on <i>2003-02-02 11:02:37.25</i></div>
+  <div class="ml_desc">URN is a student radio station from Nottingham in the UK which
+  broadcasts a broad range of music styles from popular to the more alternative
+  and specialist, as well as speech based programmes.</div>
+
+  <div class="ml_link"><a href="http://www.wcpe.org">WCPE</a></div>
+  <div class="ml_added">added on <i>2002-11-15 10:55:10.18</i></div>
+  <div class="ml_desc">WCPE has started offering an Ogg Vorbis
+  <a href="http://wcpe.org/internet.shtml#Ogg">stream</a>. Now you can enjoy great
+  classical music 24 hours a day in the best format out there.</div>
+
+  <div class="ml_link"><a href="http://www.zentriertinsantlitz.de/">Zentriert ins Antlitz</a></div>
+  <div class="ml_added">added on <i>2002-11-15 10:34:16.40</i></div>
+  <div class="ml_desc">Zentriert ins Antlitz, an industrial german EBM band, has posted Ogg Vorbis files for download.</div>
+
+  <div class="ml_link"><a href="http://members.ozemail.com.au/~labrynthia">Temtris</a></div>
+  <div class="ml_added">added on <i>2002-10-29 01:27:46.50</i></div>
+  <div class="ml_desc">Australian Heavy Metal band Temtris offers a few original tracks from
+  their latest album 'Threshold' for download as low bitrate Oggs. (Glenalec updated these
+  samples using a 1.0 encoder to get them even smaller and improve the quality at the same
+  time. 45kbps stereo in the wild! IMHBCO, this band is really worth listening to if your
+  tastes run toward Metal. --ed)</div>
+
+  <div class="ml_link"><a href="http://www.moniquebrumby.com">Monique Brumby</a></div>
+  <div class="ml_added">added on <i>2002-10-29 00:08:48.57</i></div>
+  <div class="ml_desc">Monique Brumby left behind Sony Records to go indie on her second
+  album, Signal Hill... and at the same time replaced MP3 and WMA on her website with Ogg!</div>
+
+  <div class="ml_link"><a href="http://www.cancrena.tk/">Cancrena</a></div>
+  <div class="ml_added">added on <i>2002-10-28 23:56:55.24</i></div>
+  <div class="ml_desc">Cancrena's 1st CD is fully downloadable in Vorbis format
+  (32 KHz, mono) on their official website.</div>
+
+  <div class="ml_link"><a href="http://www.somewhereoutwest.com">Steam Powered Studio</a></div>
+  <div class="ml_added">added on <i>2002-07-31 10:54:31.17</i></div>
+  <div class="ml_desc">Steam Powered Studio releases rock, blues and Americana from a variety
+  of artists on a weekly basis.</div>
+
+  <div class="ml_link"><a href="http://www.numavox.com">Numavox Records</a></div>
+  <div class="ml_added">added on <i>2002-06-20 17:16:13.88</i></div>
+  <div class="ml_desc">Numavox Records records has announced they are offering
+  Ogg Vorbis downloads of their available music. Numavox is the record company
+  of Dove-award winning solo artist/producer, Kerry Livgren. Previously, Livgren
+  was the songwriter/guitarist for KANSAS, writing such classics as "Dust in the Wind"
+  and "Carry On, Wayward Son."</div>
+
+  <div class="ml_link"><a href="http://vorbis.kicks-ass.org/paj/">Pajama Crisis</a></div>
+  <div class="ml_added">added on <i>2002-05-01 16:30:51.91</i></div>
+  <div class="ml_desc">It's video-gamey goodness, straight from Philadelphia, PA.</div>
+
+  <div class="ml_link"><a href="http://stian.darkscape.net/">Stian Hole</a></div>
+  <div class="ml_added">added on <i>2002-04-01 21:26:16.79</i></div>
+  <div class="ml_desc">Norwegian Electronic composer Stian Hole has made several
+  original tracks freely available for download in Ogg format.</div>
+
+  <div class="ml_link"><a href="http://alittlespace.biz/">A Little Space</a></div>
+  <div class="ml_added">added on <i>2002-04-01 16:27:50.92</i></div>
+  <div class="ml_desc">A Little Space, a "modern american music" (jazz/funk/latin
+  flavored pop) recording group now offers users Icecast streaming as well as downloads
+  of full length audio files in Ogg Vorbis or MP3 format, as the user chooses. All
+  18 songs are freely available for streaming or download.
+  <br/>A worthy note: The second song listed, "Yes I Would" has been honored as a
+  winner in the 2001 John Lennon Songwriting Contest in the Jazz category.</div>
+
+  <div class="ml_link"><a href="http://www.skinflowers.org/">Skinflowers</a></div>
+  <div class="ml_added">added on <i>2002-02-12 11:58:45.00</i></div>
+  <div class="ml_desc">Full track downloads in Ogg Vorbis format by awkward rock
+  duo Skinflowers, UK-based band associated with the Wasp Factory Recordings label.</div>
+
+  <div class="ml_link"><a href="http://www.accidentprone.com/beatpoetz/">BeatPoetz</a></div>
+  <div class="ml_added">added on <i>2002-02-06 06:49:21.00</i></div>
+  <div class="ml_desc">BeatPoetz, a hip-hop group from San Diego, CA (on the SD local
+  record label accidentProne records), has put out several complete tracks in Ogg format!</div>
+
+  <div class="ml_link"><a href="http://jzo.de">jzo</a></div>
+  <div class="ml_added">added on <i>2001-10-20 20:10:26.00</i></div>
+  <div class="ml_desc">A youth-centre/club called 'Jugendzentrum Oerlinghausen'
+  located near Bielefeld in Germany now provides tracks on their website (exclusively
+  ogg-encoded) from the bands that play at their centre.</div>
+
+  <div class="ml_link"><a href="http://www.acidfanatic.com">acidfanatic</a></div>
+  <div class="ml_added">added on <i>2001-10-20 20:06:30.00</i></div>
+  <div class="ml_desc">A site dedicated to sharing and downloading music loops for
+  use in Sonic Foundry's ACID program now hosts all of their loops exclusively in
+  the Ogg Vorbis format.</div>
+
+  <div class="ml_link"><a href="http://free.superhits.ch/">Free Superhits</a></div>
+  <div class="ml_added">added on <i>2001-09-25 14:39:15.00</i></div>
+  <div class="ml_desc">A site for free music in Switzerland (in German). Music is
+  published under the EFFs Open Audio License and the site recommends encoding to
+  the Ogg Vorbis format. Anybody can publish his/her music under the OAL and user-rated
+  charts are generated.</div>
+
+  <div class="ml_link"><a href="http://www.realisation.org/">Realisation</a></div>
+  <div class="ml_added">added on <i>2001-09-19 07:54:33.00</i></div>
+  <div class="ml_desc">Realisation has some electronic music on their website in
+  the Ogg format ranging from ambient to house to breakbeat.</div>
+
+  <div class="ml_link"><a href="http://www.newsoundvision.com">terra @ustralis music</a></div>
+  <div class="ml_added">added on <i>2001-09-19 06:33:55.00</i></div>
+  <div class="ml_desc">After discovering Ogg Vorbis, terra @ustralis music is offering samples and some full length tracks of a wide range of music encompassing tibetan mantras, acid jazz, trance and more all in the Vorbis format.</div>
+
+  <div class="ml_link"><a href="http://dancemix.at/knusper2000">DJ Aphrodisiak Mixes</a></div>
+  <div class="ml_added">added on <i>2001-09-19 06:23:22.00</i></div>
+  <div class="ml_desc">DJ Aphrodisiak offers some house, techno and tech-house mixes
+  saved as Ogg on his site.</div>
+
+  <div class="ml_link"><a href="http://www.modernamericanmusic.com">Heart in my Hand</a></div>
+  <div class="ml_added">added on <i>2001-09-19 06:18:29.00</i></div>
+  <div class="ml_desc">Alan Gruskoff has produced a composition called "Heart In My Hand"
+  as a requiem for the victims of the Sept. 11 tragedy. This song is being made freely
+  available for use in any production regarding that event. This song, like all songs
+  on his site, are available to stream or download as Ogg Vorbis files.</div>
+
+  <div class="ml_link"><a href="http://kromaniaks.coleumes.org">Kro men CD</a></div>
+  <div class="ml_added">added on <i>2001-09-19 05:59:02.00</i></div>
+  <div class="ml_desc">The French band named Kro men have released their CD
+  entitled Phallussy in the Ogg format.</div>
+
+  <div class="ml_link"><a href="http://www.dusktilldawn.nl/">DuskTillDawn</a></div>
+  <div class="ml_added">added on <i>2001-09-19 05:53:48.00</i></div>
+  <div class="ml_desc">A Dutch band has released several full-length tracks
+  in the Ogg format.</div>
+
+  <div class="ml_link"><a href="http://www.mystraltide.com/">Mystral Tide</a></div>
+  <div class="ml_added">added on <i>2001-08-30 12:17:55.00</i></div>
+  <div class="ml_desc">Mystral Tide, a solo darkwave/industrial/EBM project, has
+  made several recent full-length tracks available in Ogg format.
+  Look under 'Downloads'.</div>
+
+  <div class="ml_link"><a href="http://www.gnu.org/philosophy/audio/audio.html">GNU.org Audio Archives</a></div>
+  <div class="ml_added">added on <i>2001-08-07 02:45:24.00</i></div>
+  <div class="ml_desc">Here you can find recorded speeches given by
+  Richard M. Stallman in Ogg Vorbis format.</div>
+
+  <div class="ml_link"><a href="http://www.linux4us.de/index.php">RadioTux</a></div>
+  <div class="ml_added">added on <i>2001-07-27 03:51:43.00</i></div>
+  <div class="ml_desc">German Linux Radio show that has broadcast and archives
+  available in Ogg Vorbis format.</div>
+
+  <div class="ml_link"><a href="http://deifecation.cjb.net/">Deifecation</a></div>
+  <div class="ml_added">added on <i>2001-07-27 03:51:43.00</i></div>
+  <div class="ml_desc">The band from the Netherlands has released their CD,
+  Dystopian Anthropotagonism, under the Open Audio License in Ogg Vorbis format.</div>
+
+  <div class="ml_link"><a href="http://www.classicalarts.net/espace.html">Jeff Harrington</a></div>
+  <div class="ml_added">added on <i>2001-07-07 15:56:28.00</i></div>
+  <div class="ml_desc">Jeff Harrington shares his original ambient electronic works in Ogg format.</div>
+
+  <div class="ml_link"><a href="http://www.cauterized.com/">Cauterized</a></div>
+  <div class="ml_added">added on <i>2001-07-07 15:51:22.00</i></div>
+  <div class="ml_desc">A Danish death metal band with Oggs online for listening.</div>
+
+  <div class="ml_link"><a href="http://www.network19.net/">network19</a></div>
+  <div class="ml_added">added on <i>2001-07-07 15:48:35.00</i></div>
+  <div class="ml_desc">A cool music site with samples and music in Ogg format.</div>
+
+  <div class="ml_link"><a href="http://www.supssp.com/">super stock productions</a></div>
+  <div class="ml_added">added on <i>2001-07-03 16:00:20.00</i></div>
+  <div class="ml_desc">ssp tries to capture the images and sounds that form in the
+  right hand side of the brain and now they've put them online in OGG format.</div>
+
+  <div class="ml_link"><a href="http://www.thelongslide.com/">The Long Slide</a></div>
+  <div class="ml_added">added on <i>2001-07-02 09:41:59.00</i></div>
+  <div class="ml_desc">The Long Slide is an unsigned band from Manchester in the
+  UK that has their tracks availabe in Ogg format.</div>
+
+  <div class="ml_link"><a href="http://tokyodawn.org/">Tokyo Dawn Records</a></div>
+  <div class="ml_added">added on <i>2001-06-30 22:10:43.00</i></div>
+  <div class="ml_desc">Electronic music available for free download in Vorbis.</div>
+
+  <div class="ml_link"><a href="http://www.nnr.to/">Neuro Net Records
+  Internet Music Archive</a></div>
+  <div class="ml_added">added on <i>2001-06-30 22:09:47.00</i></div>
+  <div class="ml_desc">Get full albums of Vorbis encoded tracks from Neuro Net Records.</div>
+
+  <div class="ml_link"><a href="http://www.oggmusic.de/">OggMusic.de</a></div>
+  <div class="ml_added">added on <i>2001-06-30 22:00:36.00</i></div>
+  <div class="ml_desc">A german site offering lots of music in Vorbis for download.</div>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

@@ -1,26 +1,46 @@
 <div id="thepage">
-<div id="logos">
-	<a href="http://www.vorbis.com/"><img src="/images/logos/vorbisdotcom.png" alt="Vorbis dot com logo"/></a>
+
+<div id="vorbislogo">
+  <a href="http://www.vorbis.com/"><img src="/images/logos/vorbisdotcom.png" alt="Vorbis dot com logo"/></a>
 </div>
 
-<div id="navbar">
-	<ul>
-		<li id="setup_"><a href="/setup/">Get Set Up</a></li>
-		<li id="faq_"><a href="/faq/">FAQ</a></li>
-		<li id="donate_"><a href="/">Donate</a></li>
-		<li id="music_"><a href="/">Music</a></li>
-		<li id="musicsites_"><a href="/">Music Sites</a></li>
-		<li id="downloads_"><a href="/">3rd Party Software</a></li>
-		<li id="developers_"><a href="http://trac.xiph.org/cgi-bin/trac.cgi/">For Developers</a></li>
-		<li id="contact_"><a href="/contact/">Contact</a></li>
-	</ul>
+<div class="navbar">
+  <table border="0" cellpadding="0" cellspacing="0" style="width: 840px; max-width: 100%;">
+  <tr>
+  <td>
+
+  <a href="setup.shtml">Get Set Up</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="faq.shtml">FAQ</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="http://www.xiph.org/donate/">Donate</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="music.shtml">Music</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="music_links.shtml">Music Sites</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="software.shtml">3rd Party Software</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="http://xiph.org/vorbis/">For Developers</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="contact.shtml">Contact</a>
+
+  </td>
+  </tr>
+  </table>
 </div>
 
 <div id="banners">
-	<a href="#"><img src="/images/banners/download_music.png" alt="Download music"/></a>
-	<a href="#"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
-	<a href="http://www.xiph.org/donate/"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
+  <a href="music.shtml"><img src="/images/banners/download_music.png" alt="Download music"/></a>
+  <a href="music_links.shtml"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
+  <a href="http://www.xiph.org/donate/"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
 </div>
 
-<div id="main">
 <div id="content">

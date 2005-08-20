@@ -1,0 +1,693 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com: 3rd Party Software</title>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+This is a list of various 3rd party software links that may 
+interest you. Please see the <a href="setup.shtml">get set up</a> page first.<p/>
+
+<p>Select your operating system:</p>
+
+<div class="softos_link"><a href="#windows">Windows</a></div>
+<div class="softos_link"><a href="#windows_devel">Windows Development</a></div>
+<div class="softos_link"><a href="#macosx">Mac OS X</a></div>
+<div class="softos_link"><a href="#macos9">Mac OS 9 (and earlier)</a></div>
+<div class="softos_link"><a href="#linux">Linux</a></div>
+<div class="softos_link"><a href="#linux_devel">Linux Development</a></div>
+<div class="softos_link"><a href="#java">Java</a></div>
+<div class="softos_link"><a href="#os2">OS/2</a></div>
+<div class="softos_link"><a href="#beos">BeOS</a></div>
+
+<hr style="margin: 10px 0 18px 0;"/>
+
+<h2><a name="windows">Windows</a></h2>
+
+<div class="sl_link"><a href="http://www.litexmedia.com">Advanced WMA Workshop</a></div>
+<div class="sl_added">added on <i>2001-07-07 15:53:54.00</i></div>
+<div class="sl_desc">This program can convert, encode, and decode
+many types of files, including Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.iluac.com/aeliom/">Aeliom</a></div>
+<div class="sl_added">added on <i>2002-09-25 03:57:23.55</i></div>
+<div class="sl_desc">Aeliom is a tool to create and to explore
+in real time virtual landscapes. With version 1.1 of Aeliom, the 3D
+sound engine includes Ogg Vorbis support.</div>
+
+<div class="sl_link"><a href="http://www.turnstyle.com/andromeda/home.asp">Andromeda</a></div>
+<div class="sl_added">added on <i>2002-03-22 10:48:23.10</i></div>
+<div class="sl_desc">Andromeda turns collections of Oggs and other files
+into easy-to-use, streaming web sites. It's great as a personal jukebox, over
+local networks, and even over the Internet.</div>
+
+<div class="sl_link"><a href="http://apollo.audiogalaxy.com/">Apollo general audio player</a></div>
+<div class="sl_added">added on <i>2001-09-12 14:38:03.00</i></div>
+<div class="sl_desc">The Apollo General Audio Player for Windows now has Ogg Vorbis support
+via a <a href="http://apollo.audiogalaxy.com/OggVorbis_Apollo.zip">downloadable plugin</a></div>
+
+<div class="sl_link"><a href="http://www.ashampoo.com/frontend/products/php/product.php?session_langid=2&amp;idstring=0014">Ashampoo Media Player+</a></div>
+<div class="sl_added">added on <i>2002-08-29 19:42:40.05</i></div>
+<div class="sl_desc">This player supports over 20 major audio formats,
+including Ogg Vorbis, with many more supported via free plug-ins.
+It can even play various video formats.</div>
+
+<div class="sl_link"><a href="http://audacity.sourceforge.net/">Audacity</a></div>
+<div class="sl_added">added on <i>2002-06-08 11:32:11.67</i></div>
+<div class="sl_desc">Audacity is a free audio editor for Linux, Mac and Windows.
+It can import, mix, play, and record audio in multiple formats, including Ogg Vorbis.
+It has a variety of plugins and effects.</div>
+
+<div class="sl_link"><a href="http://www.litexmedia.com/audio_wizard/">Audio Conversion Wizard</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:35:15.00</i></div>
+<div class="sl_desc">The Audio Conversion Wizard converts audio files from one format
+to another. It supports single and batch mode as well as MP3, WMA 8
+(Windows Media Audio), OGG Vorbis and WAV PCM formats, with ID3v2
+copying and creation.</div>
+
+<div class="sl_link"><a href="http://www.audiograbber.com-us.net/">Audiograbber</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:29:12.00</i></div>
+<div class="sl_desc">Audiograbber is a CD ripping program with features such
+as normalizing, silence deletion and support for many external codecs,
+including Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.blazemp.com/blaze_media_pro.asp">Blaze Media Pro</a></div>
+<div class="sl_added">added on <i>2002-10-29 01:52:30.77</i></div>
+<div class="sl_desc">Blaze Media Pro is powerful, all-in-one multimedia
+software supporting playback of all popular media formats, audio and video
+playlist, audio and video conversions, video construction and decompiling,
+audio editing and recording, audio and data CD recording, video processing
+(average, brightness, contrast, gamma, edge enhance, sharpen, soften,
+resizing, resample, dither, add border), video capture, media
+management... and of course Ogg.</div>
+
+<div class="sl_link"><a href="http://www.cajun.nu">CAJUN</a></div>
+<div class="sl_added">added on <i>2003-03-30 05:29:38.11</i></div>
+<div class="sl_desc">CAJUN is a project to turn an old computer you might
+have kicking around into the centerpiece of your car or home audio system.</div>
+
+<div class="sl_link"><a href="http://xtractor.sourceforge.net/">CD-DA X-Tractor</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:26:22.00</i></div>
+<div class="sl_desc">CD-DA X-Tractor is a ripper/encoder for Windows
+that support Vorbis, intelligent jitter correction, CDDB support
+and is Open Source.</div>
+
+<div class="sl_link"><a href="http://cdexos.sourceforge.net/">CDex</a></div>
+<div class="sl_added">added on <i>2001-09-12 14:59:03.00</i></div>
+<div class="sl_desc">CDex is an open source, full-featured Windows app
+that rips audio CDs directly to Ogg Vorbis format.</div>
+
+<div class="sl_link"><a href="http://www.vuplayer.com/files/cooledit_ogg.zip">Cool Edit Ogg Vorbis File Filter</a></div>
+<div class="sl_added">added on <i>2002-11-06 09:55:14.21</i></div>
+<div class="sl_desc">This is a file filter that adds read and write
+Ogg Vorbis support to Cool Edit 96/2000/Pro for Windows without
+having to use an external application or an extra step to encode or
+decode Ogg Vorbis files.</div>
+
+<div class="sl_link"><a href="http://www.dbpoweramp.com/">dBpowerAMP</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:32:06.00</i></div>
+<div class="sl_desc">An audio convertor and an audio player, both supporting
+Ogg Vorbis files</div>
+
+<div class="sl_link"><a href="http://djmixpro.com/djmixlite/djmixlite.html">DJ Mix Lite</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:34:40.00</i></div>
+<div class="sl_desc">DJ Mix Lite is designed to play continuous music with cross
+fading, beat matching mixes between songs. Use your Ogg files to be a DJ.</div>
+
+<div class="sl_link"><a href="http://djmixpro.com/djmixpro/djmixpro.html">DJ Mix Pro</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:36:12.00</i></div>
+<div class="sl_desc">Be a DJ with Vorbis! DJ Mix Pro is designed to let you
+choose the songs while it performs by itself quality cross fading, beat matching
+mixes between songs. DJ Mix Pro has built in Beatlock Technology, that makes it
+beat-aware. This technology does not alter your sound files, it just analyses
+them to find the BPM.</div>
+
+<div class="sl_link"><a href="http://dj-workstation.de">DJ-Workstation</a></div>
+<div class="sl_added">added on <i>2002-11-15 10:40:05.26</i></div>
+<div class="sl_desc">The DJ-Workstation is a player application for DJ-mixing.
+It supports multiple soundcards, streams with pitch-shifting, and real time
+time-stretching, autoplaying, autocueing, assignable cross-fading, etc.</div>
+
+<div class="sl_link"><a href="http://www.deliplayer.com/">DeliPlayer</a></div>
+<div class="sl_added">added on <i>2002-06-26 22:36:57.10</i></div>
+<div class="sl_desc">DeliPlayer is a multi format, free audio player for
+Windows 95/98/ME, Windows NT/2000 and Windows XP. Vorbis is one of the many
+formats that it supports.</div>
+
+<div class="sl_link"><a href="http://www.poikosoft.com/">Easy CD-DA Extractor</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:25:40.00</i></div>
+<div class="sl_desc">A windows ripper/encoder that support Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.exactaudiocopy.de/">Exact Audio Copy</a></div>
+<div class="sl_added">added on <i>2003-02-13 06:43:19.16</i></div>
+<div class="sl_desc">EAC is a high quality audio CD ripper for Windows with a
+large number of options and features. It supports Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.litexmedia.com/cd_ripper/">Fast CD Ripper</a></div>
+<div class="sl_added">added on <i>2001-10-20 20:19:34.00</i></div>
+<div class="sl_desc">A powerful and easy-to-use tool for converting your audio-CD
+collection to variety of most popular compressed audio formats now also includes
+Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://foobar2000.hydrogenaudio.org/">foobar2000</a></div>
+<div class="sl_added">added on <i>2003-02-27 13:53:32.13</i></div>
+<div class="sl_desc">foobar2000 offers best-of-breed masstagging and
+comment display formatting for Ogg Vorbis, FLAC and Speex.</div>
+
+<div class="sl_link"><a href="http://www.mgshareware.com/frmmain.shtml">FreeRip</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:41:53.00</i></div>
+<div class="sl_desc">FreeRip is an adware ripper/encoder that support Ogg
+Vorbis, with comments and CDDB support.</div>
+
+<div class="sl_link"><a href="http://www.goldwave.com/">GoldWave</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:43:10.00</i></div>
+<div class="sl_desc">GoldWave is a digital audio editor that can import
+and export Ogg Vorbis as well as convert from other file formats. A
+fully functional demonstration version is available.</div>
+
+<div class="sl_link"><a href="http://www.coyotes.bc.ca/">Groove Mechanic</a></div>
+<div class="sl_added">added on <i>2002-04-01 13:49:38.15</i></div>
+<div class="sl_desc">Groove Mechanic is software for encoding audio from vinyl
+LP along with sophisticated filtering to eliminate clicking, popping, scratching
+and rumble. Groove mechanic can output to WAV, Ogg or MP3.</div>
+
+<div class="sl_link"><a href="http://www.myriad-online.com/en/products/harmony.htm">Harmony Assistant</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:39:19.15</i></div>
+<div class="sl_desc">Harmony Assistant, "The All In One Music Software", is
+<a href="http://www.myriad-online.com/melody.htm">Melody Assistant</a>'s big brother.</div>
+
+<div class="sl_link"><a href="http://www.irfanview.com/">IrfanView</a></div>
+<div class="sl_added">added on <i>2003-03-31 09:35:22.41</i></div>
+<div class="sl_desc">IrfanView is a very fast, small, compact graphic
+viewer for Windows 9x/ME/NT/2000/XP. It can also hanlde multimedia
+files, such as Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.logipole.com/">Konvertor</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:45:25.00</i></div>
+<div class="sl_desc">File format convertor that supports 291
+file formats, including Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.mediajukebox.com/">Media Jukebox</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:49:03.00</i></div>
+<div class="sl_desc">A music organizer, encoder, player for Windows
+that supports Winamp skins.</div>
+
+<div class="sl_link"><a href="http://www.myriad-online.com/en/products/melody.htm">Melody Assistant</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:32:53.80</i></div>
+<div class="sl_desc">Melody Assistant bills itself as "The most complete
+music composition shareware ever".</div>
+
+<div class="sl_link"><a href="http://www.geocities.com/mpxplay/">Mpxplay and AudioCV</a></div>
+<div class="sl_added">added on <i>2002-02-05 06:56:24.00</i></div>
+<div class="sl_desc">Mpxplay is a DOS (yes, that's right... DOS!) audio
+player with Ogg support. AudioCV is the companion DOS encoder... also
+with Ogg support.</div>
+
+<div class="sl_link"><a href="http://musicutter.host.sk">MusiCutter</a></div>
+<div class="sl_added">added on <i>2002-07-31 10:40:37.00</i></div>
+<div class="sl_desc">MusiCutter is an audio joiner/cutter that supports
+Vorbis (without need to decode and reencode). Cut points can be imported
+from CUE sheets, XMCD files, or plain text.</div>
+
+<div class="sl_link"><a href="http://www.muzikbrowzer.com/">Muzikbrowzer</a></div>
+<div class="sl_added">added on <i>2003-02-13 06:22:37.74</i></div>
+<div class="sl_desc">Muzikbrowzer is an audio file player application that
+runs on Windows 2000 and XP and is designed for an entertainment PC.
+It has playlist management, tag editing, and can use a remote control.</div>
+
+<div class="sl_link"><a href="http://www.bitburners.com/option,com_remository/Itemid,40/func,fileinfo/filecatid,68/parent,category/">Nero Plugins by Mausau</a></div>
+<div class="sl_added">added on <i>2003-05-06 06:52:43.94</i></div>
+<div class="sl_desc">Vorbis, FLAC and Speex plugins for Nero Burning ROM, right here.</div>
+
+<div class="sl_link"><a href="http://osdevel.org/projects/show/7">OGGer Magus</a></div>
+<div class="sl_added">added on <i>2002-10-29 01:37:44.25</i></div>
+<div class="sl_desc">German GUI front end for vorbiscomment.exe. 
+Visual Basic source (GPL) and binaries both available for download.</div>
+
+<div class="sl_link"><a href="http://www.oddsock.org/tools/oddcastv2_wa2/">Oddcast DSP</a></div>
+<div class="sl_added">added on <i>2001-10-20 20:21:36.00</i></div>
+<div class="sl_desc">A DSP plugin for Winamp which allows you to use Winamp as a
+source to icecast2, thusly allowing you to create a vorbis stream.</div>
+
+<div class="sl_link"><a href="http://qtcomponents.sourceforge.net/">Ogg Quicktime Components</a></div>
+<div class="sl_added">added on <i>2002-02-05 16:08:44.00</i></div>
+<div class="sl_desc">What the title says. Allows Ogg encoding and playback
+in all MacOS and Win32 apps that use Apple Quicktime.</div>
+
+<div class="sl_link"><a href="http://sf.net/projects/mediaxw">Ogg Vorbis DirectShow Filters</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:29:04.00</i></div>
+<div class="sl_desc">These filters/plugins will allow you to play Ogg Vorbis files
+in Windows Media Player, as well as use Vorbis in many other DirectX
+applications. [This project is no longer being maintained. Please look
+at <a href="http://tobias.everwicked.com/oggds.htm">OggDS</a> for a maintained project.]</div>
+
+<div class="sl_link"><a href="http://homepage.ntlworld.com/jfe1205/OggVorbis/">OggDropXPd</a></div>
+<div class="sl_added">added on <i>2002-07-16 15:01:12.55</i></div>
+<div class="sl_desc">OggDropXPd is an encoder/decoder/player for the experienced
+user. It has quality and bitrate management modes and features such as gain,
+resampling, downmixing, and tagging control.</div>
+
+<div class="sl_link"><a href="http://tobias.everwicked.com/oggds.htm">OggDS Direct Show Filters</a></div>
+<div class="sl_added">added on <i>2002-07-19 17:06:51.02</i></div>
+<div class="sl_desc">OggDS is a collection of Direct Show filters for Windows
+Media Player that supports Ogg streams and Vorbis audio playback and encoding,
+as well as splitting and multiplexing.</div>
+
+<div class="sl_link"><a href="http://music.predixis.com/">Predixis MusicMagic Mixer</a></div>
+<div class="sl_added">added on <i>2003-10-26 15:59:32.89</i></div>
+<div class="sl_desc">Predixis MusicMagic Mixer supports both Ogg Vorbis and
+FLAC files and offers a dynamic playlist generator.</div>
+
+<div class="sl_link"><a href="http://www.quakeforge.net/">QuakeForge</a></div>
+<div class="sl_added">added on <i>2002-06-15 10:54:29.51</i></div>
+<div class="sl_desc">QuakeForge is a 3D graphics game engine based on id Software's
+legendary Quake and QuakeWorld game engine. They aim to improve the state of the
+game by improving the engine and making it accessable to the largest number of players.</div>
+
+<div class="sl_link"><a href="http://www.quinnware.com/">Quintessential Player</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:51:18.00</i></div>
+<div class="sl_desc">A nice looking media player that support Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.riptrax.com/">RipTrax</a></div>
+<div class="sl_added">added on <i>2002-04-01 19:25:59.71</i></div>
+<div class="sl_desc">RipTrax is a CD ripping application that reads CD
+audio data into Ogg Vorbis and WAV, among other formats. RipTrax supports
+CD audio C2 hardware error flag reading, allowing it to report additional
+information on whether or not a CD rip suffers from media damage.</div>
+
+<div class="sl_link"><a href="http://snackamp.sourceforge.net/">SnackAmp player</a></div>
+<div class="sl_added">added on <i>2002-10-28 23:38:20.99</i></div>
+<div class="sl_desc">SnackAmp is a multi-platform music player with
+normal music player abilities, multi-user support and a powerful
+auto-play list feature. Currently mp3, wav, ogg vorbis, and many
+other sound files are indexed by SnackAmp depending on user preferences.
+Both Tcl/Tk scripts and stand-alone executables (for Windows and
+Linux) are available.</div>
+
+<div class="sl_link"><a href="http://sonique.lycos.com/">Sonique</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:13:18.00</i></div>
+<div class="sl_desc">A unique looking media player for Windows that
+supports shaped skins and of course, Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.thekompany.com/projects/tkcoggripper/">tkcOggRipper</a></div>
+<div class="sl_added">added on <i>2003-01-08 13:43:33.14</i></div>
+<div class="sl_desc">This app is a user friendly, fast ripper
+for Ogg Vorbis. Get's Cd information from FreeDB. Runs on on
+Linux and Windows. OS X support being developed.</div>
+
+<div class="sl_link"><a href="http://klickitat.fial.com/bob/tOGGer/">tOGGer</a></div>
+<div class="sl_added">added on <i>2002-05-01 22:32:34.56</i></div>
+<div class="sl_desc">tOGGer is a Win 95/98/NT/2000/XP program for
+mass tagging Vorbis Ogg audio files. It is released under the GNU
+General Public License.</div>
+
+<div class="sl_link"><a href="http://www.highcriteria.com/">Total Recorder</a></div>
+<div class="sl_added">added on <i>2003-02-13 06:29:40.68</i></div>
+<div class="sl_desc">Total Recorder records streaming audio, Mic input,
+Line-in input as well as CDs and DVDs. The resulting files are saved on
+your computer's hard-drive. The latest version supports Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.virtuosa.com/">Virtuosa</a></div>
+<div class="sl_added">added on <i>2003-06-16 13:44:41.19</i></div>
+<div class="sl_desc">Virtuosa can play Ogg Vorbis files through a plugin
+available on their
+<a href="http://www.virtuosa.com/index.php?ref=23&amp;affiliate=&amp;styleid=&amp;partnerid=&amp;sp=plug_ff&amp;lang=en">file format plugins</a>
+page.</div>
+
+<div class="sl_link"><a href="http://vorbisext.sourceforge.net/">Vorbis Extension</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:55:26.00</i></div>
+<div class="sl_desc">VorbisExt is a property sheet shell extension that can
+edit the comments in vorbis (.ogg) files and display information about
+vorbis files. This app integrates Vorbis Comments right into your Windows desktop!</div>
+
+<div class="sl_link"><a href="http://www.vuplayer.com/vuplayer.php">vuplayer</a></div>
+<div class="sl_added">added on <i>2005-08-20</i></div>
+<div class="sl_desc">VUPlayer is a freeware multi-format audio player for Windows.</div>
+
+
+<div class="sl_link"><a href="http://www.winamp.com/">WinAmp</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:14:04.00</i></div>
+<div class="sl_desc">One of the original MP3 players has been updated
+to play Ogg Vorbis files.</div>
+
+<div class="sl_link"><a href="http://www.wincd.de/en/home.htm">WinCD</a></div>
+<div class="sl_added">added on <i>2002-11-03 20:08:13.18</i></div>
+<div class="sl_desc">WinCD is a multimedia player for Windows. It is
+able to play CDs, Ogg-Vorbis, MP3, and Wave-files. The play-back speed
+is changeable. The software also can digitally extract CD-Tracks and
+encode them into MP3. WinCD supports FreeDB and ID3-Tags.</div>
+
+<div class="sl_link"><a href="http://www.windac.de/">WinDAC</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:57:08.00</i></div>
+<div class="sl_desc">A CD ripper/encoder with plugins available for Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://www.un4seen.com/">XMPlay2</a></div>
+<div class="sl_added">added on <i>2001-11-13 18:09:28.00</i></div>
+<div class="sl_desc">XMPlay is a Windows music player, supporting the
+OGG / MP3 / MP2 / MP1 / MO3 / IT / XM / S3M / MTM / MOD / UMX audio
+formats, and PLS / M3U playlists.</div>
+
+<div class="sl_link"><a href="http://www.zinf.org/">Zinf</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:39:37.00</i></div>
+<div class="sl_desc">The Zinf audio player is a simple, but powerful
+audio player for Linux and Win32. It supports MP3, Ogg/Vorbis, WAV
+and Audio CD playback, SHOUTcast/Icecast HTTP streaming, RTP streaming,
+a powerful music browser, theme support and a download manager.</div>
+
+<h2><a name="windows_devel">Windows Development</a></h2>
+
+<div class="sl_link"><a href="http://www.un4seen.com/">BASS</a></div>
+<div class="sl_added">added on <i>2001-10-20 20:12:13.00</i></div>
+<div class="sl_desc">BASS is a sound system for use in Windows software;
+it provides developers with a set of powerful yet easy to use sample
+streams (Ogg Vorbis, WAV, etc.) and audio CD playback functions. BASS also
+allows 3D positioning of samples, streams and MOD music and supports A3D and EAX.</div>
+
+<div class="sl_link"><a href="http://www.clanlib.org/">ClanLib Game SDK</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:07:08.00</i></div>
+<div class="sl_desc">A game development suite for Windows and Linux that
+supports Ogg Vorbis files.</div>
+
+<div class="sl_link"><a href="http://www.fmod.org/">FMOD</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:08:39.00</i></div>
+<div class="sl_desc">FMOD is the fastest, most powerful and easiest
+to use sound system on Windows and Linux there is. Supporting 3d sound,
+midi, mods, mp3, ogg vorbis, wma, recording, geometry processing,
+cd playback, mmx, internet streaming, dsp effects, user created samples
+and streams, synchronization support, EAX 1&amp;2, A3D 3.0, C/C++/VB/Delphi/MASM
+and MORE you cant go wrong!</div>
+
+<div class="sl_link"><a href="http://sf.net/projects/mediaxw">Ogg Vorbis DirectShow Filters</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:29:04.00</i></div>
+<div class="sl_desc">These filters/plugins will allow you to play Ogg Vorbis files
+in Windows Media Player, as well as use Vorbis in many other DirectX
+applications. [This project is no longer being maintained. Please look
+at <a href="http://tobias.everwicked.com/oggds.htm">OggDS</a> for a maintained project.]</div>
+
+<div class="sl_link"><a href="http://tobias.everwicked.com/oggds.htm">OggDS Direct Show Filters</a></div>
+<div class="sl_added">added on <i>2002-07-19 17:06:51.02</i></div>
+<div class="sl_desc">OggDS is a collection of Direct Show filters for Windows
+Media Player that supports Ogg streams and Vorbis audio playback and encoding,
+as well as splitting and multiplexing.</div>
+
+<h2><a name="macosx">Mac OS X</a></h2>
+
+<div class="sl_link"><a href="http://www.hairersoft.com/Amadeus.html">Amadeus II</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:31:31.00</i></div>
+<div class="sl_desc">Amadeus II is a powerful tool designed to manipulate,
+create and analyze sounds. It is available in English, French and German and supports
+the Ogg Vorbis format.</div>
+
+<div class="sl_link"><a href="http://www.turnstyle.com/andromeda/home.asp">Andromeda</a></div>
+<div class="sl_added">added on <i>2002-03-22 10:48:23.10</i></div>
+<div class="sl_desc">Andromeda turns collections of Oggs and other files
+into easy-to-use, streaming web sites. It's great as a personal jukebox, over
+local networks, and even over the Internet.</div>
+
+<div class="sl_link"><a href="http://audacity.sourceforge.net/">Audacity</a></div>
+<div class="sl_added">added on <i>2002-06-08 11:32:11.67</i></div>
+<div class="sl_desc">Audacity is a free audio editor for Linux, Mac and Windows.
+It can import, mix, play, and record audio in multiple formats, including Ogg Vorbis.
+It has a variety of plugins and effects.</div>
+
+<div class="sl_link"><a href="http://www.panic.com/audion/">Audion 3</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:14:57.00</i></div>
+<div class="sl_desc">Play, Encode, And Perform with Style. 
+This player for MacOS and MacOS X work great with Vorbis files.</div>
+
+<div class="sl_link"><a href="http://www.myriad-online.com/en/products/harmony.htm">Harmony Assistant</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:39:19.15</i></div>
+<div class="sl_desc">Harmony Assistant, "The All In One Music Software", is
+<a href="http://www.myriad-online.com/melody.htm">Melody Assistant</a>'s big brother.</div>
+
+<div class="sl_link"><a href="http://www.bigblueamoeba.com/~pxr/pub/">MacAmp Lite</a></div>
+<div class="sl_added">added on <i>2002-07-31 11:09:33.26</i></div>
+<div class="sl_desc">MacAmp Lite is a MacOS X audio player that supports
+several formats, plugins, and is easily skinnable. It can also encode to
+Ogg Vorbis and be used as a source client for streaming.</div>
+
+<div class="sl_link"><a href="http://www.myriad-online.com/en/products/melody.htm">Melody Assistant</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:32:53.80</i></div>
+<div class="sl_desc">Melody Assistant bills itself as "The most complete
+music composition shareware ever".</div>
+
+<div class="sl_link"><a href="http://mint.unsanity.com">Mint Audio</a></div>
+<div class="sl_added">added on <i>2001-09-21 08:11:54.00</i></div>
+<div class="sl_desc">Mint Audio is a lightweight shareware audio player for
+MacOS and OS X that supports Ogg Vorbis playback.</div>
+
+<div class="sl_link"><a href="http://www.nouturn.com/oggdrop/">Ogg Drop</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:22:45.00</i></div>
+<div class="sl_desc">Ogg Drop will encode audio tracks and CD's into
+vorbis. It also contains a QuickTime component that allows iTunes to]
+play ogg vorbis files. Ogg Drop is entirely free.</div>
+
+<div class="sl_link"><a href="http://qtcomponents.sourceforge.net/">Ogg Quicktime Components</a></div>
+<div class="sl_added">added on <i>2002-02-05 16:08:44.00</i></div>
+<div class="sl_desc">What the title says. Allows Ogg encoding and playback
+in all MacOS and Win32 apps that use Apple Quicktime.</div>
+
+<h2><a name="macos9">Mac OS 9 (and earlier)</a></h2>
+
+<div class="sl_link"><a href="http://www.panic.com/audion/">Audion 3</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:14:57.00</i></div>
+<div class="sl_desc">Play, Encode, And Perform with Style. 
+This player for MacOS and MacOS X work great with Vorbis files.</div>
+
+<div class="sl_link"><a href="http://www.myriad-online.com/en/products/harmony.htm">Harmony Assistant</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:39:19.15</i></div>
+<div class="sl_desc">Harmony Assistant, "The All In One Music Software", is
+<a href="http://www.myriad-online.com/melody.htm">Melody Assistant</a>'s big brother.</div>
+
+<div class="sl_link"><a href="http://www.myriad-online.com/en/products/melody.htm">Melody Assistant</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:32:53.80</i></div>
+<div class="sl_desc">Melody Assistant bills itself as "The most complete
+music composition shareware ever".</div>
+
+<div class="sl_link"><a href="http://mint.unsanity.com">Mint Audio</a></div>
+<div class="sl_added">added on <i>2001-09-21 08:11:54.00</i></div>
+<div class="sl_desc">Mint Audio is a lightweight shareware audio player for
+MacOS and OS X that supports Ogg Vorbis playback.</div>
+
+<div class="sl_link"><a href="http://www.proteron.com/n2mp3pro/">N2MP3 Pro</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:19:24.00</i></div>
+<div class="sl_desc">A high quality Vorbis encoder for MacOS. Free download available.</div>
+
+<div class="sl_link"><a href="http://www.nouturn.com/oggdrop/">Ogg Drop for Mac</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:22:45.00</i></div>
+<div class="sl_desc">Ogg Drop is a freeware application that will encode AIFF and
+AIFC (.aif) sound files into an Ogg Vorbis (.ogg) stream. It's also an Ogg
+file player! Just Drag-n-Drop! Works in MacOS 9 and X. The latest release now
+includes the 1.0 and Jaguar support.</div>
+
+<div class="sl_link"><a href="http://qtcomponents.sourceforge.net/">Ogg Quicktime Components</a></div>
+<div class="sl_added">added on <i>2002-02-05 16:08:44.00</i></div>
+<div class="sl_desc">What the title says. Allows Ogg encoding and playback
+in all MacOS and Win32 apps that use Apple Quicktime.</div>
+
+<h2><a name="linux">Linux</a></h2>
+
+<div class="sl_link"><a href="http://www.alsaplayer.org/">AlsaPlayer</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:44:52.00</i></div>
+<div class="sl_desc">AlsaPlayer is a new type of PCM player. It is heavily
+multi-threaded and tries to exercise the ALSA library and driver quite
+a bit. It has some very interesting features unique to Linux/Unix
+players. The goal is to create a fully pluggable framework for playback
+of all sorts of media with the focus on PCM audio data.</div>
+
+<div class="sl_link"><a href="http://www.turnstyle.com/andromeda/home.asp">Andromeda</a></div>
+<div class="sl_added">added on <i>2002-03-22 10:48:23.10</i></div>
+<div class="sl_desc">Andromeda turns collections of Oggs and other files into
+easy-to-use, streaming web sites. It's great as a personal jukebox, over local
+networks, and even over the Internet.</div>
+
+<div class="sl_link"><a href="http://audacity.sourceforge.net/">Audacity</a></div>
+<div class="sl_added">added on <i>2002-06-08 11:32:11.67</i></div>
+<div class="sl_desc">Audacity is a free audio editor for Linux, Mac and Windows.
+It can import, mix, play, and record audio in multiple formats, including
+Ogg Vorbis. It has a variety of plugins and effects.</div>
+
+<div class="sl_link"><a href="http://www.cajun.nu">CAJUN</a></div>
+<div class="sl_added">added on <i>2003-03-30 05:29:38.11</i></div>
+<div class="sl_desc">CAJUN is a project to turn an old computer you might
+have kicking around into the centerpiece of your car or home audio system.</div>
+
+<div class="sl_link"><a href="http://bach.dynet.com/crip/">crip</a></div>
+<div class="sl_added">added on <i>2002-11-03 20:23:29.96</i></div>
+<div class="sl_desc">Crip is a terminal-based ripper/encoder/tagger
+tool for making Ogg Vorbis files. It is capable of doing group normalization
+(adjust the volume to be as loud as possible without losing information),
+group labelling, and CDDB.</div>
+
+<div class="sl_link"><a href="http://www.nostatic.org/grip/">GRIP</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:00:17.00</i></div>
+<div class="sl_desc">A popular ripper/encoder/tagger for Linux that supports
+Vorbis. Supports CDDB and has a built in CD player.</div>
+
+<div class="sl_link"><a href="http://gstreamer.freedesktop.org/">GStreamer</a></div>
+<div class="sl_added">added on <i>2002-01-02 01:12:45.00</i></div>
+<div class="sl_desc">GStreamer allows the construction of graphs of
+media-handling components, ranging from simple Ogg Vorbis playback to
+audio mixing and video processing.  Applications can take advantage of
+advances in codec and filter technology transparently.</div>
+
+<div class="sl_link"><a href="http://www.giantdisc.org/">GiantDisc</a></div>
+<div class="sl_added">added on <i>2003-01-05 05:41:45.66</i></div>
+<div class="sl_desc">GiantDisc is a package of software tools released under
+the GPL; it consists of Linux server scripts to manage and play MP3 and
+Ogg Vorbis files in addition to a Palm remote control application which
+controls the audio server.</div>
+
+<div class="sl_link"><a href="http://korbis.sourceforge.net/korbis.html">korbis</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:39:31.00</i></div>
+<div class="sl_desc">Korbis is a KDE front end for cdparanoia and oggenc</div>
+
+<div class="sl_link"><a href="http://noatun.kde.org/">Noatun</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:01:50.00</i></div>
+<div class="sl_desc">A KDE media player that supports Ogg Vorbis.</div>
+
+<div class="sl_link"><a href="http://sourceforge.net/projects/ovplayer/">ovplayer</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:41:54.00</i></div>
+<div class="sl_desc">Ogg Vorbis Player is a GTK+ based Vorbis File player.
+Current features are standard Play/Pause, FF, Rewind, etc. buttons. Graphical
+Output Levels. Planned features include Playlists and Streaming Internet
+audio. Requires SDL 1.1.8+, libogg, libvorbis</div>
+
+<div class="sl_link"><a href="http://www.quakeforge.net/">QuakeForge</a></div>
+<div class="sl_added">added on <i>2002-06-15 10:54:29.51</i></div>
+<div class="sl_desc">QuakeForge is a 3D graphics game engine based on id Software's
+legendary Quake and QuakeWorld game engine. They aim to improve the state of the
+game by improving the engine and making it accessable to the largest number of players.</div>
+
+<div class="sl_link"><a href="http://player.helixcommunity.org/">RealNetworks Helix Player</a></div>
+<div class="sl_added">added on <i>2004-01-21 00:03:25.04</i></div>
+<div class="sl_desc">The Helix Player is RealNetworks's Helix Community Project's
+player for UNIX (Linux and BSD included). Today, it supports Ogg Vorbis and Theora
+(as you'd expect) as well as Real's own formats, MPEG and pretty much any other
+kind of audio/video media you can think of. </div>
+
+<div class="sl_link"><a href="http://ripperx.sourceforge.net">RipperX</a></div>
+<div class="sl_added">added on <i>2002-11-15 08:28:03.11</i></div>
+<div class="sl_desc">RipperX is a GTK program to rip CD audio and encode
+in Ogg Vorbis format, among others. It can rip and encode in parallel
+and supports cdparanoia.</div>
+
+<div class="sl_link"><a href="http://snackamp.sourceforge.net/">SnackAmp player</a></div>
+<div class="sl_added">added on <i>2002-10-28 23:38:20.99</i></div>
+<div class="sl_desc">SnackAmp is a multi-platform music player with normal
+music player abilities, multi-user support and a powerful auto-play list
+feature. Currently mp3, wav, ogg vorbis, and many other sound files are indexed
+by SnackAmp depending on user preferences. Both Tcl/Tk scripts and stand-alone
+executables (for Windows and Linux) are available.</div>
+
+<div class="sl_link"><a href="http://rikkus.info/squelch.html">squelch</a></div>
+<div class="sl_added">added on <i>2001-09-19 07:38:09.00</i></div>
+<div class="sl_desc">s.q.u.e.l.c.h is an Ogg Vorbis audio player. It features
+a sophisticated, innovative playlist manager and an integrated Vorbis tag editor.</div>
+
+<div class="sl_link"><a href="http://www.metadecks.org/software/sweep/">Sweep</a></div>
+<div class="sl_added">added on <i>2002-12-01 16:04:33.61</i></div>
+<div class="sl_desc">Sweep is an audio editor and live playback tool for
+GNU/Linux, BSD and compatible systems. It supports many music and voice formats
+including WAV, AIFF, Ogg Vorbis, Speex and MP3 (read only), with multichannel
+editing and LADSPA effects plugins.</div>
+
+<div class="sl_link"><a href="http://www.thekompany.com/projects/tkcoggripper/">tkcOggRipper</a></div>
+<div class="sl_added">added on <i>2003-01-08 13:43:33.14</i></div>
+<div class="sl_desc">This app is a user friendly, fast ripper for Ogg Vorbis.
+Get's Cd information from FreeDB. Runs on on Linux and Windows. OS X support
+being developed.</div>
+
+<div class="sl_link"><a href="http://www.beastwithin.org/users/wwwwolf/code/util/vocoditor.html">Vocoditor</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:02:55.00</i></div>
+<div class="sl_desc">A GUI Ogg Vorbis comment editor for the Linux operating
+system. Vocoditor is written in Perl and uses GTK.</div>
+
+<div class="sl_link"><a href="http://www.xmms.org/">XMMS</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:03:45.00</i></div>
+<div class="sl_desc">The most popular media player for Linux. XMMS plays
+vorbis files, allows ogg comments, and supports vorbis streams.</div>
+
+<div class="sl_link"><a href="http://www.amb.org/xmcd">Xmcd</a></div>
+<div class="sl_added">added on <i>2002-12-13 20:53:58.01</i></div>
+<div class="sl_desc">Xmcd, is a CD player program that now also supports
+CD ripping to Ogg Vorbis and other formats. For Ogg Vorbis, xmcd links
+directly with the vorbis libraries for best performance and integration.</div>
+
+<div class="sl_link"><a href="http://www.zinf.org/">Zinf</a></div>
+<div class="sl_added">added on <i>2001-06-30 22:39:37.00</i></div>
+<div class="sl_desc">The Zinf audio player is a simple, but powerful audio player for Linux and Win32. It supports MP3, Ogg/Vorbis, WAV and Audio CD playback, SHOUTcast/Icecast HTTP streaming, RTP streaming, a powerful music browser, theme support and a download manager.</div>
+
+<h2><a name="linux_devel">Linux Development</a></h2>
+
+<div class="sl_link"><a href="http://www.clanlib.org/">ClanLib Game SDK</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:07:08.00</i></div>
+<div class="sl_desc">A game development suite for Windows and Linux that
+supports Ogg Vorbis files.</div>
+
+<div class="sl_link"><a href="http://www.fmod.org/">FMOD</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:08:39.00</i></div>
+<div class="sl_desc">FMOD is the fastest, most powerful and easiest
+to use sound system on Windows and Linux there is. Supporting 3d sound,
+midi, mods, mp3, ogg vorbis, wma, recording, geometry processing,
+cd playback, mmx, internet streaming, dsp effects, user created samples
+and streams, synchronization support, EAX 1&amp;2, A3D 3.0, C/C++/VB/Delphi/MASM
+and MORE you cant go wrong!</div>
+
+<div class="sl_link"><a href="http://gstreamer.freedesktop.org/">GStreamer</a></div>
+<div class="sl_added">added on <i>2002-01-02 01:12:45.00</i></div>
+<div class="sl_desc">GStreamer allows the construction of graphs of
+media-handling components, ranging from simple Ogg Vorbis playback to
+audio mixing and video processing. Applications can take advantage of
+advances in codec and filter technology transparently.</div>
+
+<h2><a name="java">Java</a></h2>
+
+<div class="sl_link"><a href="http://www.freedomaudio.com/">FreedomAudio</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:27:10.19</i></div>
+<div class="sl_desc">FreedomAudio is a webpage streaming audio player with XML
+playlist support and the ability to synchronize the display of information in
+the browser.</div>
+
+<div class="sl_link"><a href="http://www.j-ogg.de/">J-Ogg</a></div>
+<div class="sl_added">added on <i>2003-04-27 10:11:59.93</i></div>
+<div class="sl_desc">J-Ogg is a collection of Pure Java libraries for demuxing
+Ogg files and decoding different contained formats; at the moment Ogg Vorbis and
+Ogg FLAC are supported.</div>
+
+<div class="sl_link"><a href="http://www.javazoom.net/jlgui/jlgui.html">jlGui</a></div>
+<div class="sl_added">added on <i>2001-09-25 14:54:08.00</i></div>
+<div class="sl_desc">jlGui is a 100% Java graphical music player, winamp skin
+compliant, that supports MP3,WAV, AU, AIFF and OGG VORBIS. It's free and open
+source (GPL).</div>
+
+<div class="sl_link"><a href="http://www.webarts.bc.ca/jOggPlayer">jOggPlayer</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:26:59.00</i></div>
+<div class="sl_desc">An open source platform independant Graphical Vorbis Ogg Player!
+Developed using Java, so if your system has a Java VM you can use this app.</div>
+
+<div class="sl_link"><a href="http://www.jcraft.com/jorbis/">JOrbis</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:05:31.00</i></div>
+<div class="sl_desc">A pure java Ogg Vorbis decoder and player. 
+Now you can play Ogg files in your web browser.</div>
+
+<div class="sl_link"><a href="http://www.javazoom.net/vorbisspi/vorbisspi.html">VorbisSPI</a></div>
+<div class="sl_added">added on <i>2001-09-21 08:21:35.00</i></div>
+<div class="sl_desc">An Ogg Vorbis SPI (Service Provider Interface) for Java based
+on the JOrbis library, a "Vorbis Driver" that could be plugged to ANY Java music
+player. This project is free and open source</div>
+
+<h2><a name="os2">OS/2</a></h2>
+
+<div class="sl_link"><a href="http://silk.apana.org.au/vorbis/">Ogg Vorbis for OS/2</a></div>
+<div class="sl_added">added on <i>2001-06-30 23:11:44.00</i></div>
+<div class="sl_desc">Player, encoder, plugins for Ogg Vorbis on OS/2 operating systems.</div>
+
+<h2><a name="beos">BeOS</a></h2>
+
+<div class="sl_link"><a href="http://www.bebits.com/app/1058">Vorbis Tools</a></div>
+<div class="sl_added"><i>2001-06-30 23:10:39.00</i></div>
+<div class="sl_desc">Encoder, decoder and Cl-Amp plugin for Ogg Vorbis for BeOS.</div>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
