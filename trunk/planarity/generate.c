@@ -184,14 +184,15 @@ void generate_mesh_1(graph *g, int order){
   m.height=2;
   vertex *vlist;
 
+  srandom(order);
   {
     while(order--){
       if(flag){
 	flag=0;
-	m.width+=2;
+	m.height+=1;
       }else{
 	flag=1;
-	m.height+=1;
+	m.width+=2;
       }
     }
   }
