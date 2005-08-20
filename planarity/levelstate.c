@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include "levelstate.h"
+
 #define CHUNK 64
 #define SAVENAME "levelstate"
 
@@ -16,10 +19,10 @@ levelstate *tail;
 levelstate *curr;
 levelstate *pool;
 
-levelstate *new_level(){
+static levelstate *new_level(){
   levelstate *ret;
   
-  if(level_pool==0){
+  if(pool==0){
     int i;
     pool = calloc(CHUNK,sizeof(*pool));
     for(i=0;i<CHUNK-1;i++) /* last addition's next points to nothing */
@@ -48,7 +51,7 @@ levelstate *new_level(){
 }
 
 
-levelstate *find_level(char *name){
+static levelstate *find_level(char *name){
   int level=board_name_to_level(name);
 
   if(level<0)return 0;
@@ -79,7 +82,10 @@ int levelstate_write(char *statedir){
   name[0]=0;
   strcat(name,boarddir);
   strcat(name,levelstate);
-  
+
+  if(curr->in_progress)
+    write_board(curr->name);
+
   f = fopen(name,"wb");
   if(f==NULL){
     fprintf(stderr,"ERROR:  Could not save game state file \"%s\":\n\t%s\n",
@@ -99,14 +105,27 @@ int levelstate_write(char *statedir){
     }
   }
 
+  if(about_dialog_active())
+    fprintf(f,"about 1\n");
+  if(pause_dialog_active())
+    fprintf(f,"pause 1\n");
+  if(finish_dialog_active())
+    fprintf(f,"finish 1\n");
+  //if(level_dialog_active())
+  //fprintf(f,"select 1\n");
+	  
   return 0;
 }
 
-int levelstate_read(char *statedir, char *boarddir){
+int levelstate_read(char *statedir){
   char *cur_name;
   int count;
   char *line=NULL;
   size_t n=0;
+
+  int aboutflag=0;
+  int pauseflag=0;
+  int finishflag=0;
   
   // first get all levels we've seen.
   while(getline(&line,&n,f)>0){
@@ -149,10 +168,34 @@ int levelstate_read(char *statedir, char *boarddir){
 	}
       }
     }
+
+    if(sscanf(line,"about %d",&i)==1)
+      if(i==1)
+	aboutflag=1;
+    
+    if(sscanf(line,"pause %d",&i)==1)
+      if(i==1)
+	pauseflag=1;
+    
+    if(sscanf(line,"finish %d",&i)==1)
+      if(i==1)
+	finishflag=1;
+	  
   }
 
   if(!head)new_level();
   if(!curr)curr=head;
+  levelstate_go();
+
+  if(pauseflag){
+    pause_game();
+  }else if (aboutflag){
+    about_game();
+  }else if (finishflag){
+    finish_level_dialog();
+  }else{
+    gamestate_go();
+  }
 
   return 0;
 }
@@ -173,25 +216,39 @@ long levelstate_get_hiscore(){
   return curr->highscore;
 }
 
-void levelstate_set_hiscore(long score){
-  if(curr)
-    curr->highscore=score;
-}
-
 void levelstate_next(){
-
-
-
-
+  if(curr->next)
+    curr=curr->next;
 }
 
 void levelstate_prev(){
-
-
-
+  if(curr->prev)
+    curr=curr->prev;
 }
 
+int get_level_num(){
+  return curr->num;
+}
+
+char *get_level_name(){
+  return curr->name;
+}
+
+void levelstate_finish(){
+  curr->in_progress=0;
+  if(get_score() > curr->highscore)
+    curr->highscore = get_score();
+}
+
+/* commit to the currently selected level and set the game state to
+   readiness using it */
 void levelstate_go(){
 
+  if(!curr->in_progress || read_board(curr->name)){
+    /* not on disk or couldn't load it.  Get a fresh version */
+    gamestate_generate(curr->level)
+  }
+
+  curr->in_progress=1;
 
 }

@@ -38,7 +38,9 @@ static void finish_post (Gameboard *g){
   // back to buttonbar activity!
   ui_next=0;
   pop_background(g);
-  setup_board(g);
+  levelstate_next();
+  levelstate_go();
+  gamestate_go();
 } 
 
 static void finish_quit (Gameboard *g){

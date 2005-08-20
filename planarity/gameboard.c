@@ -11,6 +11,7 @@
 #include "graph.h"
 #include "gameboard.h"
 #include "gamestate.h"
+#include "levelstate.h"
 #include "button_base.h"
 #include "buttonbar.h"
 #include "box.h"
@@ -453,7 +454,7 @@ static void score_update(Gameboard *g){
   cairo_set_font_matrix (c,&m);
   cairo_set_source_rgba (c, TEXT_COLOR);
 
-  snprintf(level_string,160,"Level %d: \"%s\"",get_level()+1,get_level_string());
+  snprintf(level_string,160,"Level %d: \"%s\"",get_level_num()+1,get_level_name());
   snprintf(score_string,160,"Score: %d",get_score());
   snprintf(int_string,160,"Intersections: %d",g->g->active_intersections);
   snprintf(obj_string,160,"Objective: %s",get_objective_string());

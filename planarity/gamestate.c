@@ -4,10 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
 #include "graph.h"
 #include "gameboard.h"
 #include "generate.h"
@@ -15,37 +12,29 @@
 #include "buttons.h"
 #include "buttonbar.h"
 #include "finish.h"
-#include "version.h"
 #include "pause.h"
 
-#define boardstate "/.gPlanarity/boards/"
-#define mainstate "/.gPlanarity/"
-Gameboard *gameboard;
-GtkWidget *toplevel_window;
-graph maingraph;
+extern GtkWidget *toplevel_window;
+extern Gameboard *gameboard;
+extern graph maingraph;
 
 static int width=800;
 static int height=640;
 static int orig_width=800;
 static int orig_height=640;
 
-static int level=0;
-static int score=0;
-
 static int initial_intersections;
 static float intersection_mult=1.;
 static int objective=0;
 static int objective_lessthan=0;
+static char objective_string[80];
 static float objective_mult=1.;
 static int paused=0;
 static time_t begin_time_add=0;
 static time_t begin_time;
-static char *version = "";
 
-static char *boarddir;
-static char *statedir;
 
-time_t get_elapsed(){
+time_t get_timer(){
   if(paused)
     return begin_time_add;
   else{
@@ -57,14 +46,6 @@ time_t get_elapsed(){
 void set_timer(time_t off){
   begin_time_add = off;
   begin_time = time(NULL);
-}
-
-static gboolean key_press(GtkWidget *w,GdkEventKey *event,gpointer in){
-
-  if(event->keyval == GDK_q && event->state&GDK_CONTROL_MASK) 
-    gtk_main_quit();
-
-  return FALSE;
 }
 
 void resize_board(int x, int y){
@@ -90,16 +71,17 @@ int get_orig_height(){
   return orig_height;
 }
 
-void setup_board(){
-  generate_mesh_1(&maingraph,level);
-  impress_location(&maingraph);
-  initial_intersections = maingraph.original_intersections;
-  gameboard_reset(gameboard);
+void gamestate_generate(int level){
+    generate_mesh_1(&maingraph,level);
+    impress_location(&maingraph);
+    initial_intersections = maingraph.original_intersections;
+}
 
-  //gdk_flush();
-  deploy_buttonbar(gameboard);
-  set_timer(0);
-  unpause();
+void gamestate_go(){
+    gameboard_reset(gameboard);
+    set_timer(0);
+    deploy_buttonbar(gameboard);
+    unpause();
 }
 
 #define RESET_DELTA 2;
@@ -255,10 +237,7 @@ void mark_intersections(){
 void finish_board(){
   if(maingraph.active_intersections<=initial_intersections){
     pause();
-    score+=initial_intersections;
-    if(get_elapsed()<initial_intersections)
-      score+=initial_intersections-get_elapsed();
-    level++;
+    levelstate_finish();
     undeploy_buttonbar(gameboard,finish_level_dialog);
   }
 }
@@ -269,11 +248,29 @@ void quit(){
 }
 
 int get_score(){
-  return score + initial_intersections-maingraph.active_intersections;
+  float intersection_score = (initial_intersections- maingraph.active_intersections)*
+    intersection_mult;
+  
+  float obj_multiplier = 1;
+
+  if(objective_lessthan)
+    if(objective > maingraph.active_intersections)
+      obj_multiplier += (objective-maingraph.active_intersections)*objective_mult;
+
+  return rint( intersection_score * obj_multiplier );
 }
 
-int get_raw_score(){
-  return score;
+int get_bonus(){
+  float obj_multiplier = 1;
+
+  if(objective_lessthan)
+    if(objective > maingraph.active_intersections)
+      obj_multiplier += (objective-maingraph.active_intersections)*objective_mult;
+  
+  if(get_elapsed()<initial_intersections)
+    return rint ((initial_intersections-get_elapsed()) * obj_multiplier);
+  
+  return 0;
 }
 
 int get_initial_intersections(){
@@ -285,37 +282,23 @@ int get_objective(){
 }
 
 char *get_objective_string(){
-  return "zero intersections";
-}
-
-int get_level(){
-  return level;
-}
-
-char *get_level_string(){
-  return "original-style";
-}
-
-char *get_version_string(){
-  return version;
-}
-
-static int dir_create(char *name){
-  if(mkdir(name,0700)){
-    switch(errno){
-    case EEXIST:
-      // this is ok
-      return 0;
-    default:
-      fprintf(stderr,"ERROR:  Could not create directory (%s) to save game state:\n\t%s\n",
-	      name,strerror(errno));
-      return errno;
+  if(objective == 0)
+    return "zero intersections";
+  if(objective == 1){
+    if(objective_lessthan){
+      return "1 intersection or fewer";
+    }else{
+      return "1 intersection";
     }
+  }else{
+    snprintf(objective_string,80,"%d intersections%s",
+	     objective,(objective_lessthan?
+			" or fewer":""));
+    return objective_string;
   }
-  return 0;
-}     
+}
 
-int write_board(char *basename){
+int write_board(char *boarddir, char *basename){
   char *name;
   FILE *f;
 
@@ -340,15 +323,6 @@ int write_board(char *basename){
   fprintf(f,"board %d %d %d %d\n",
 	  width,height,orig_width,orig_height);
 
-  if(about_dialog_active())
-    fprintf(f,"about 1\n");
-  if(pause_dialog_active())
-    fprintf(f,"pause 1\n");
-  if(finish_dialog_active())
-    fprintf(f,"finish 1\n");
-  //if(level_dialog_active())
-  //fprintf(f,"level 1\n");
-	  
   gameboard_write(f, gameboard);
 
   fclose(f);
@@ -366,15 +340,11 @@ int write_board(char *basename){
   return 0;
 }
 
-int read_board(char *basename){
+int read_board(char *boarddir,char *basename){
   FILE *f;
   char *name;
   char *line=NULL;
   size_t n=0;
-
-  int aboutflag=0;
-  int pauseflag=0;
-  int finishflag=0;
 
   name=alloca(strlen(boarddir)+strlen(basename)+3);
   name[0]=0;
@@ -412,18 +382,6 @@ int read_board(char *basename){
     }else{
       sscanf(line,"board %d %d %d %d",&width,&height,&orig_width,&orig_height);	
 
-      if(sscanf(line,"about %d",&o)==1)
-	if(o==1)
-	  aboutflag=1;
-
-      if(sscanf(line,"pause %d",&o)==1)
-	if(o==1)
-	  pauseflag=1;
-
-      if(sscanf(line,"finish %d",&o)==1)
-	if(o==1)
-	  finishflag=1;
-	  
     }
   }
   
@@ -437,85 +395,6 @@ int read_board(char *basename){
   gtk_window_resize(GTK_WINDOW(toplevel_window),width,height);
   gameboard_reset(gameboard);
 
-  if(pauseflag){
-    pause_game(gameboard);
-
-  }else if (aboutflag){
-    about_game(gameboard);
-
-
-  }else if (finishflag){
-    finish_level_dialog(gameboard);
-
-  }else{
-    deploy_buttonbar(gameboard);
-    unpause();
-  }
-
   return 0;
 }
 
-
-int main(int argc, char *argv[]){
-  char *homedir = getenv("home");
-  if(!homedir)
-    homedir = getenv("HOME");
-  if(!homedir)
-    homedir = getenv("homedir");
-  if(!homedir)
-    homedir = getenv("HOMEDIR");
-  if(!homedir){
-    fprintf(stderr,"No homedir environment variable set!  gPlanarity will be\n"
-	    "unable to permanently save any progress or board state.\n");
-    boarddir=NULL;
-    statedir=NULL;
-  }else{
-    boarddir=calloc(strlen(homedir)+strlen(boardstate)+1,1);
-    strcat(boarddir,homedir);
-    strcat(boarddir,boardstate);
-
-    statedir=calloc(strlen(homedir)+strlen(mainstate)+1,1);
-    strcat(statedir,homedir);
-    strcat(statedir,mainstate);
-
-    dir_create(statedir);
-    dir_create(boarddir);
-  }
-
-  version=strstr(VERSION,"version.h");
-  if(version){
-    char *versionend=strchr(version,' ');
-    if(versionend)versionend=strchr(versionend+1,' ');
-    if(versionend)versionend=strchr(versionend+1,' ');
-    if(versionend)versionend=strchr(versionend+1,' ');
-    if(versionend){
-      int len=versionend-version-9;
-      version=strdup(version+10);
-      version[len-1]=0;
-    }
-  }else{
-    version="";
-  }
-
-  gtk_init (&argc, &argv);
-
-  toplevel_window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  g_signal_connect (G_OBJECT (toplevel_window), "delete-event",
-                    G_CALLBACK (gtk_main_quit), NULL);
-  g_signal_connect (G_OBJECT (toplevel_window), "key-press-event",
-                    G_CALLBACK (key_press), toplevel_window);
-  
-  gameboard = gameboard_new (&maingraph);
-
-  gtk_container_add (GTK_CONTAINER (toplevel_window), GTK_WIDGET(gameboard));
-  gtk_widget_show_all (toplevel_window);
-  memset(&maingraph,0,sizeof(maingraph));
-
-  if(read_board("test"))
-    setup_board(gameboard);
-
-  gtk_main ();
-
-  write_board("test");
-  return 0;
-}
