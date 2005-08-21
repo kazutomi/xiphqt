@@ -38,8 +38,8 @@
 </div>
 
 <div id="banners">
-  <a href="music.shtml"><img src="/images/banners/download_music.png" alt="Download music"/></a>
-  <a href="music_links.shtml"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
+  <a href="/music"><img src="/images/banners/download_music.png" alt="Download music"/></a>
+  <a href="/music_links"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
   <a href="http://www.xiph.org/donate/"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
 </div>
 

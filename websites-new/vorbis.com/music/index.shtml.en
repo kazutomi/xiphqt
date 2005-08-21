@@ -6,7 +6,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-See the <a href="music_links.shtml">music sites page</a> for links to other sites that have Ogg Vorbis music.
+See the <a href="/music_links">music sites page</a> for links to other sites that have Ogg Vorbis music.
 
 <p style="padding-top: 4px;"/>
 <table border="1" cellspacing="0" cellpadding="2" style="border-collapse: collapse; border-color: #cccccc">
