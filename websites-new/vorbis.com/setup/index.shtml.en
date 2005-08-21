@@ -9,10 +9,10 @@
 <div class="getsetupandlisten">
   <img src="/images/banners/getsetupandlisten.png" height="121" width="483" alt="Choose your OS to get setup on" usemap="#map"/>
   <map xml:lang="en" dir="ltr" name="map" id="map">
-    <area shape="rect" coords="20,75,109,105" href="setup_windows.shtml" alt="Get setup on Windows"/>
-    <area shape="rect" coords="118,75,218,105" href="setup_linux.shtml" alt="Get setup on Unix/Linux"/>
-    <area shape="rect" coords="227,75,313,105" href="setup_osx.shtml" alt="Get setup on Mac OSX"/>
-    <area shape="rect" coords="321,73,464,106" href="setup_other.shtml" alt="Get setup on other platforms"/>
+    <area shape="rect" coords="20,75,109,105" href="/setup_windows" alt="Get setup on Windows"/>
+    <area shape="rect" coords="118,75,218,105" href="/setup_linux" alt="Get setup on Unix/Linux"/>
+    <area shape="rect" coords="227,75,313,105" href="/setup_osx" alt="Get setup on Mac OSX"/>
+    <area shape="rect" coords="321,73,464,106" href="/setup_other" alt="Get setup on other platforms"/>
   </map>
 </div>
 

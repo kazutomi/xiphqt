@@ -9,28 +9,28 @@
   <tr>
   <td>
 
-  <a href="setup.shtml">Get Set Up</a>
+  <a href="/setup">Get Set Up</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="faq.shtml">FAQ</a>
+  <a href="/faq">FAQ</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="http://www.xiph.org/donate/">Donate</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="music.shtml">Music</a>
+  <a href="/music">Music</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="music_links.shtml">Music Sites</a>
+  <a href="/music_links">Music Sites</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="software.shtml">3rd Party Software</a>
+  <a href="/software">3rd Party Software</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="http://xiph.org/vorbis/">For Developers</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="contact.shtml">Contact</a>
+  <a href="/contact">Contact</a>
 
   </td>
   </tr>
