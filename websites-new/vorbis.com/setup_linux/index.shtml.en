@@ -14,7 +14,8 @@
   <li>libogg / libvorbis / vorbis-tools:
   These are the standard software that allows you to play
   and encode Ogg Vorbis files. They are included in most OSs.
-  If not you can compile from the <a href="">sources</a>.</li>
+  If not you can compile from the
+  <a href="http://www.xiph.org/downloads/">sources</a>.</li>
 
   <li><a href="http://www.videolan.org/vlc/">VLC media player</a>:
   VLC is a highly portable multimedia player for various
@@ -31,7 +32,8 @@
   <li>libogg / libvorbis / vorbis-tools:
   These are the standard software that allows you to play
   and encode Ogg Vorbis files. They are included in most OSs.
-  If not you can compile from the <a href="">sources</a>.</li>
+  If not you can compile from the
+  <a href="http://www.xiph.org/downloads/">sources</a>.</li>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
