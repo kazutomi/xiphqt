@@ -26,7 +26,7 @@ img {
 }
 
 #vorbislogo {
-  margin: 40px 0 0 10px;
+  margin: 30px 0 0 8px;
 }
 
 /* top navbar */
@@ -63,7 +63,7 @@ img {
 
 #banners {
   float: right;
-  padding: 0px 4px 0 4px;
+  padding-right: 8px;
 }
 
 #banners img {

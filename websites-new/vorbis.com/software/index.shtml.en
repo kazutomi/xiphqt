@@ -687,7 +687,7 @@ player. This project is free and open source</div>
 <h2><a name="beos">BeOS</a></h2>
 
 <div class="sl_link"><a href="http://www.bebits.com/app/1058">Vorbis Tools</a></div>
-<div class="sl_added"><i>2001-06-30 23:10:39.00</i></div>
+<div class="sl_added">added on <i>2001-06-30 23:10:39.00</i></div>
 <div class="sl_desc">Encoder, decoder and Cl-Amp plugin for Ogg Vorbis for BeOS.</div>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

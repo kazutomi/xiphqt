@@ -11,10 +11,11 @@
   height: 30px;
   margin-left: auto;
   margin-right: auto;
+  padding: 0 8px 0 8px;
 }
 
 #xiphbar a {
-  margin-right: 16px;
+  margin-left: 16px;
   color: #ffcc66;
   text-decoration: none;
   text-transform: uppercase;
@@ -26,7 +27,6 @@
 }
 
 #xiphbanner {
-  margin-left: 16px;
   float: left;
   vertical-align: middle;
 }

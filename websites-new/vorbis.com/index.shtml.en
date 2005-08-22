@@ -34,16 +34,18 @@
 </table>
 </div>
 
-<div style="border-top: 3px solid #D7E0E6; border-bottom: 3px solid #D7E0E6;">
-  <p style="font-size: 1.29em; font-weight:bold; margin-bottom: 0;">Vorbis is everywhere!</p>
+<div style="border-top: 3px solid #d7e0e6;">
+  <p style="font-size: 1.29em; font-weight: bold; margin-bottom: 0;">Vorbis is everywhere!</p>
   <p>View our list of <a href="/software">3rd Party Software</a> that uses Vorbis.</p>
 </div>
 
-<h2>News from Xiph.Org</h2>
-<ul class="newslist">
-  <li><a href="http://fluendo.com/press/releases/PR-2004-03.html">Fluendo funds RTP delivery effort for Xiph.org free multimedia codecs.</a> &raquo;</li>
-  <li><a href="http://fluendo.com/press/releases/PR-2004-03.html">Speex Goes 1.0; Xiph.Org now a 501(c)3 Non-Profit Organization</a> &raquo;</li>
-  <li><a href="http://fluendo.com/press/releases/PR-2004-03.html" style="font-weight: bold; ">more headlines</a> &raquo;</li>
-</ul>
+<!--
+<div style="border-top: 3px solid #d7e0e6;">
+  <h1>News</h1>
+  <ul>
+    <li>news item</li>
+  </ul>
+</div>
+-->
 
 <!--#include virtual="/ssi/pagebottom.include" -->
