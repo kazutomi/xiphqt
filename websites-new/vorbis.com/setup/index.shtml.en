@@ -16,10 +16,12 @@
   </map>
 </div>
 
+<p style="font-size: 1.2em;"><b>To obtain the source code, please see the 
+<a href="http://www.xiph.org/downloads/">xiph download page</a>.</b></p>
+
 <p>To get set up to listen to Ogg Vorbis music, begin by selecting
 your operating system above.</p>
 
-<p><b>To obtain the source code, please see the 
-<a href="http://www.xiph.org/downloads/">xiph download page</a>.</b></p>
+<p>For more downloads, see the <a href="/software">software</a> page.</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

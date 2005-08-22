@@ -16,7 +16,14 @@
     </map>
 </div>
 
-<p style="font-size: 1.25em; font-weight:bold;">Ogg Vorbis is a completely open, patent-free, professional audio encoding and streaming technology with all the benefits of Open Source.</p>
+<p style="font-size: 1.2em;"><b>To obtain the source code, please see the 
+<a href="http://www.xiph.org/downloads/">xiph download page</a>.</b></p>
+
+<div style="border-top: 3px solid #d7e0e6;">
+<p style="font-size: 1.25em; font-weight: bold;">
+Ogg Vorbis is a completely open, patent-free, professional audio encoding
+and streaming technology with all the benefits of Open Source.</p>
+</div>
 
 <div class="navbar" style="text-align: left; padding-top: 0;">
 <table border="0" cellpadding="0" cellspacing="0">
