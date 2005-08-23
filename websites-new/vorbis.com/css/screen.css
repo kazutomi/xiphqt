@@ -77,7 +77,6 @@ img {
   vertical-align: top;
   line-height: 1.5;
   font-size: .7em;
-  min-height: 380px;
 }
 
 h1 {
@@ -125,6 +124,7 @@ h3 a {
   text-align: center;
   font-size: .6em;
   color: #888888;
+  clear: both;
 }
 
 /* music links */
