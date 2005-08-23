@@ -9,28 +9,28 @@
   <tr>
   <td>
 
-  <a href="/setup">Get Set Up</a>
+  <a href="/setup/">Get Set Up</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="/faq">FAQ</a>
+  <a href="/faq/">FAQ</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="http://www.xiph.org/donate/">Donate</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="/music">Music</a>
+  <a href="/music/">Music</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="/music_links">Music Sites</a>
+  <a href="/music_links/">Music Sites</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="/software">3rd Party Software</a>
+  <a href="/software/">3rd Party Software</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="http://xiph.org/vorbis/">For Developers</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="/contact">Contact</a>
+  <a href="/contact/">Contact</a>
 
   </td>
   </tr>
@@ -38,8 +38,8 @@
 </div>
 
 <div id="banners">
-  <a href="/music"><img src="/images/banners/download_music.png" alt="Download music"/></a>
-  <a href="/music_links"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
+  <a href="/music/"><img src="/images/banners/download_music.png" alt="Download music"/></a>
+  <a href="/music_links/"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
   <a href="http://www.xiph.org/donate/"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
 </div>
 

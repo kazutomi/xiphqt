@@ -9,10 +9,10 @@
 <div id="getsetupandlisten">
   <img src="/images/banners/getsetupandlisten.png" height="121" width="483" alt="Choose your OS to get setup on" usemap="#map"/>
     <map xml:lang="en" dir="ltr" title="map" name="map" id="map">
-      <area shape="rect" coords="20,75,109,105" href="/setup_windows" alt="Get setup on Windows"/>
-      <area shape="rect" coords="118,75,218,105" href="/setup_linux" alt="Get setup on Unix/Linux"/>
-      <area shape="rect" coords="227,75,313,105" href="/setup_osx" alt="Get setup on Mac OSX"/>
-      <area shape="rect" coords="321,73,464,106" href="/setup_other" alt="Get setup on other platforms"/>
+      <area shape="rect" coords="20,75,109,105" href="/setup_windows/" alt="Get setup on Windows"/>
+      <area shape="rect" coords="118,75,218,105" href="/setup_linux/" alt="Get setup on Unix/Linux"/>
+      <area shape="rect" coords="227,75,313,105" href="/setup_osx/" alt="Get setup on Mac OSX"/>
+      <area shape="rect" coords="321,73,464,106" href="/setup_other/" alt="Get setup on other platforms"/>
     </map>
 </div>
 
@@ -29,13 +29,13 @@ and streaming technology with all the benefits of Open Source.</p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
 <td>
-  <a href="/faq">Learn More in the FAQ</a>
+  <a href="/faq/">Learn More in the FAQ</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="http://xiph.org/vorbis/">Information For Developers</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="/contact">Contact Us</a>
+  <a href="/contact/">Contact Us</a>
 </td>
 </tr>
 </table>
@@ -43,7 +43,7 @@ and streaming technology with all the benefits of Open Source.</p>
 
 <div style="border-top: 3px solid #d7e0e6;">
   <p style="font-size: 1.29em; font-weight: bold; margin-bottom: 0;">Vorbis is everywhere!</p>
-  <p>View our list of <a href="/software">3rd Party Software</a> that uses Vorbis.</p>
+  <p>View our list of <a href="/software/">3rd Party Software</a> that uses Vorbis.</p>
 </div>
 
 <!--
