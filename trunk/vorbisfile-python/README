@@ -1,0 +1,6 @@
+This is a complete api port of vorbisfile to python.  In particular you
+can use it to manipulate streams, not just files.
+
+However, I don't intend to work on it anymore.  It should work fine 
+though.  My planned improvents are listed in the TODO, if anyone
+wants to take this over.
