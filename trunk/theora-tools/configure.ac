@@ -74,34 +74,21 @@ dnl substitue the included getopt if the system doesn't support long options
 AC_CHECK_FUNC(getopt_long, [GETOPT_OBJS=''], [GETOPT_OBJS='getopt.$(OBJEXT) getopt1.$(OBJEXT)'])
 AC_SUBST(GETOPT_OBJS)
 
-XIPH_PATH_OGG(, AC_MSG_ERROR([
-    libogg is required to build this package!
-    please see http://www.xiph.org/ for how to
-    obtain a copy.
-]))
-CFLAGS="$CFLAGS $OGG_CFLAGS"
-LIBS="$LIBS $OGG_LIBS"
-AC_CHECK_FUNC(oggpackB_read, , [
-  AC_MSG_ERROR([newer libogg version (>1.0) required])
-])
+PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis theora)
+CFLAGS="$CFLGS $XIPH_CFLAGS"
+LIBS="$LIBS $XIPH_LIBS"
 
-AC_CHECK_LIB(theora, theora_version_string, [
-  AC_CHECK_HEADER(theora/theora.h, [HAVE_THEORA=yes])
-  ],,[-ltheora]
-)
-if test "x$HAVE_THEORA" != xyes; then
-	AC_MSG_ERROR([
-    	libtheora is required to build this package!
-    	please see http://www.xiph.org/ for how to
-    	obtain a copy.
-	])
-fi
-
+PKG_CHECK_MODULES(VORBISENC,vorbisenc)
+AC_SUBST(VORBISENC_CFLAGS)
+AC_SUBST(VORBISENC_LIBS)
 
 AM_PATH_SDL(,[
 	HAVE_SDL=yes
 	SDL_LIBS=`$SDL_CONFIG --libs`
+	SDL_CFLGAS=`$SDL_CONFIG --cflags`
 ],AC_MSG_WARN([*** Unable to find SDL -- Not compiling example players ***]))
+AC_SUBST(SDL_CFLAGS)
+AC_SUBST(SDL_LIBS)
 
 AC_CHECK_HEADERS([sys/soundcard.h soundcard.h machine/soundcard.h],[
   HAVE_OSS=yes
@@ -114,7 +101,10 @@ AC_CHECK_LIB(portaudio, Pa_OpenStream, [
 )
 if test "x$HAVE_PORTAUDIO" != xyes; then
   AC_MSG_WARN([portaudio not found -- not compiling splayer example])
+else
+PORTAUDIO_LIBS="-lportaudio -lpthread"
 fi
+AC_SUBST(PORTAUDIO_LIBS)
 
 if test x$HAVE_SDL = xyes -a x$HAVE_OSS = xyes; then
   THEORA123="theora123"
