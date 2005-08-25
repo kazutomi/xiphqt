@@ -40,7 +40,7 @@
 <div id="banners">
   <a href="/music/"><img src="/images/banners/download_music.png" alt="Download music"/></a>
   <a href="/music_links/"><img src="/images/banners/music_sites.png" alt="Music sites"/></a>
-  <a href="http://www.xiph.org/donate/"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
+  <a href="https://secure.paypal.com/xclick/business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.vorbis.com"><img src="/images/banners/donate_today.png" alt="Donate today"/></a>
 </div>
 
 <div id="content">
