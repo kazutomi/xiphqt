@@ -1,3 +1,5 @@
+/*MMX acceleration of Theora's iDCT.
+  Originally written by Rudolf Marek, based on code from On2's VP3.*/
 #include <ogg/ogg.h>
 #include "../dct.h"
 #include "../idct.h"

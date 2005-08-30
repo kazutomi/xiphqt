@@ -10,6 +10,8 @@
  *                                                                  *
  ********************************************************************
 */
+/*MMX acceleration of fragment reconstruction for motion compensation.
+  Originally written by Rudolf Marek.*/
 #include "x86int.h"
 
 static const __attribute__((aligned(8),used)) ogg_int64_t V128=

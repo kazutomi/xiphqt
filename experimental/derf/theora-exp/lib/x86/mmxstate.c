@@ -10,6 +10,8 @@
  *                                                                  *
  ********************************************************************
 */
+/*MMX acceleration of complete fragment reconstruction algorithm.
+  Originally written by Rudolf Marek.*/
 #include "x86int.h"
 #include "../internal.h"
 
