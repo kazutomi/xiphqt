@@ -42,10 +42,11 @@
 
 
 
-const char *optstring = "or:";
+const char *optstring = "o:r";
 struct option options [] = {
   {"output",required_argument,NULL,'o'},
-  {"raw",required_argument, NULL, 'r'}, /*  Disable YUV4MPEG2 headers if set */
+  /*Disable YUV4MPEG2 headers:*/
+  {"raw",no_argument, NULL,'r'},
   {NULL,0,NULL,0}
 };
 
@@ -140,8 +141,7 @@ static void video_write(void){
   /*Uncomment the following to do normal, non-striped decoding.
   theora_ycbcr_buffer ycbcr;
   theora_decode_ycbcr_out(td,ycbcr);*/
-  if(!raw)
-    fprintf(outfile, "FRAME\n");
+  if(!raw)fprintf(outfile, "FRAME\n");
 
   for(pli=0;pli<3;pli++){
     for(i=0;i<ycbcr[pli].height;i++){
@@ -196,14 +196,11 @@ int main(int argc,char *argv[]){
         exit(1);
       }
       break;
-      
+
       case 'r':
-      if(sscanf(optarg, "%u", &raw) != 1) {
-          fprintf(stderr, "Invalid option, assuming YUV4MPEG4 output\n");
-          raw = 0;
-      }
+      raw=1;
       break;
-      
+
       default:
         usage();
     }
@@ -322,10 +319,11 @@ int main(int argc,char *argv[]){
   /* open video */
   if(theora_p)open_video();
 
- if(!raw)
-     fprintf(outfile, "YUV4MPEG2 W%d H%d F%d:%d I%c A%d:%d\n",
-           ti.pic_width, ti.pic_height, ti.fps_numerator, ti.fps_denominator, 'p', 
-           ti.aspect_numerator, ti.aspect_denominator);
+  if(!raw){
+    fprintf(outfile, "YUV4MPEG2 W%d H%d F%d:%d I%c A%d:%d\n",
+     ti.pic_width,ti.pic_height,ti.fps_numerator,ti.fps_denominator,'p',
+     ti.aspect_numerator,ti.aspect_denominator);
+  }
 
   /* install signal handler */
   signal (SIGINT, sigint_handler);
