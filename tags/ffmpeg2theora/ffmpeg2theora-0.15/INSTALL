@@ -1,0 +1,24 @@
+compiling with configure/make
+---------------------------------
+you need
+- the latest version of libtheora ( http://www.theora.org/files )
+- ffmpeg-cvs ( http://ffmpeg.sf.net ) / by running ./get_ffmpeg_cvs.sh
+  configure it with i.e.
+  ./configure --disable-encoder --enable-faad --enable-pp --enable-a52  --enable-dts --enable-pthreads --disable-vhook --enable-gpl --enable-libogg --enable-vorbis --enable-theora
+
+if you did not install ffmpeg but want to staticly link it
+(recomended by ffmpeg developers) update PKG_CONFIG_PATH to
+point to your ffmpeg source:
+
+ export PKG_CONFIG_PATH=/path/to/ffmpeg_src:$PKG_CONFIG_PATH
+
+now you can build ffmpeg2theora:
+./configure
+make
+
+
+compinling on windows using mingw32:
+you have to compile libvorbis, libogg, libtheora
+configure ffmpeg like this:
+./configure --disable-encoder --enable-libogg --enable-vorbis --enable-theora \
+ --enable-pp --enable-a52  --enable-gpl
