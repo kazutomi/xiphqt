@@ -29,7 +29,7 @@ static const __attribute__((aligned(8),used)) int OC_FZIG_ZAGMMX[64]={
 
 
 void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]){
   ogg_int16_t  __attribute__((aligned(8))) res_buf[64];
   int dst_framei;
@@ -131,7 +131,7 @@ void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,
     for(zzi=1;zzi<_ncoefs;zzi++){
       int ci;
       ci=OC_FZIG_ZAG[zzi];
-      res_buf[OC_FZIG_ZAGMMX[zzi]]=(ogg_int16_t)((ogg_int32_t)_dct_coeffs[ci]*
+      res_buf[OC_FZIG_ZAGMMX[zzi]]=(ogg_int16_t)((ogg_int32_t)_dct_coeffs[zzi]*
        _ac_iquant[ci]);
     }
     if(_last_zzi<10){

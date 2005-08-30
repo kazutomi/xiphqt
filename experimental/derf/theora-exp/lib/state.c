@@ -786,14 +786,14 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 }
 
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]){
   _state->opt_vtable.state_frag_recon(_state,_frag,_pli,_dct_coeffs,
    _last_zzi,_ncoefs,_dc_iquant,_ac_iquant);
 }
 
 void oc_state_frag_recon_c(oc_theora_state *_state,const oc_fragment *_frag,
- int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
+ int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]){
   ogg_int16_t dct_buf[64];
   ogg_int16_t res_buf[64];
@@ -839,7 +839,7 @@ void oc_state_frag_recon_c(oc_theora_state *_state,const oc_fragment *_frag,
     for(zzi=1;zzi<_ncoefs;zzi++){
       int ci;
       ci=OC_FZIG_ZAG[zzi];
-      dct_buf[ci]=(ogg_int16_t)((ogg_int32_t)_dct_coeffs[ci]*_ac_iquant[ci]);
+      dct_buf[ci]=(ogg_int16_t)((ogg_int32_t)_dct_coeffs[zzi]*_ac_iquant[ci]);
     }
     /*Then, fill in the remainder of the coefficients with 0's, and perform
        the iDCT.*/

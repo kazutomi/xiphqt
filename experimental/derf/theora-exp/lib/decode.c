@@ -1077,59 +1077,57 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
   It CANNOT be called for any of the EOB tokens.
   _token:      The token value to expand.
   _extra_bits: The extra bits associated with the token.
-  _dct_coeffs: The current list of coefficients, NOT in zig-zag order, but in
-                the natural order.
+  _dct_coeffs: The current list of coefficients, in zig-zag order.
   _zzi:        A pointer to the zig-zag index of the next coefficient to write
                 to.
                This is updated before the function returns.*/
 typedef void (*oc_token_expand_func)(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi);
+ ogg_int16_t _dct_coeffs[128],int *_zzi);
 
 /*Expands a zero run token.*/
 void oc_token_expand_zrl(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi){
+ ogg_int16_t _dct_coeffs[128],int *_zzi){
   int zzi;
   zzi=*_zzi;
-  do _dct_coeffs[OC_FZIG_ZAG[zzi++]]=0;
+  do _dct_coeffs[zzi++]=0;
   while(_extra_bits-->0);
   *_zzi=zzi;
 }
 
 /*Expands a constant, single-value token.*/
 void oc_token_expand_const(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi){
-  _dct_coeffs[OC_FZIG_ZAG[(*_zzi)++]]=
-   (ogg_int16_t)oc_token_dec1val_const(_token);
+ ogg_int16_t _dct_coeffs[128],int *_zzi){
+  _dct_coeffs[(*_zzi)++]=(ogg_int16_t)oc_token_dec1val_const(_token);
 }
 
 /*Expands category 2 single-valued tokens.*/
 void oc_token_expand_cat2(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi){
-  _dct_coeffs[OC_FZIG_ZAG[(*_zzi)++]]=
+ ogg_int16_t _dct_coeffs[128],int *_zzi){
+  _dct_coeffs[(*_zzi)++]=
    (ogg_int16_t)oc_token_dec1val_cat2(_token,_extra_bits);
 }
 
 /*Expands category 3 through 8 single-valued tokens.*/
 void oc_token_expand_cati(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi){
-  _dct_coeffs[OC_FZIG_ZAG[(*_zzi)++]]=
+ ogg_int16_t _dct_coeffs[128],int *_zzi){
+  _dct_coeffs[(*_zzi)++]=
    (ogg_int16_t)oc_token_dec1val_cati(_token,_extra_bits);
 }
 
 /*Expands a category 1a zero run/value combo token.*/
 void oc_token_expand_run_cat1a(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi){
+ ogg_int16_t _dct_coeffs[128],int *_zzi){
   int zzi;
   int rl;
   zzi=*_zzi;
-  for(rl=_token-OC_DCT_RUN_CAT1A+1;rl-->0;)_dct_coeffs[OC_FZIG_ZAG[zzi++]]=0;
-  _dct_coeffs[OC_FZIG_ZAG[zzi++]]=(ogg_int16_t)(1-(_extra_bits<<1));
+  for(rl=_token-OC_DCT_RUN_CAT1A+1;rl-->0;)_dct_coeffs[zzi++]=0;
+  _dct_coeffs[zzi++]=(ogg_int16_t)(1-(_extra_bits<<1));
   *_zzi=zzi;
 }
 
 /*Expands all other zero run/value combo tokens.*/
 void oc_token_expand_run(int _token,int _extra_bits,
- ogg_int16_t _dct_coeffs[64],int *_zzi){
+ ogg_int16_t _dct_coeffs[128],int *_zzi){
   static const int NZEROS_ADJUST[OC_NDCT_RUN_MAX-OC_DCT_RUN_CAT1B]={
     6,10,1,2
   };
@@ -1154,11 +1152,11 @@ void oc_token_expand_run(int _token,int _extra_bits,
   _token-=OC_DCT_RUN_CAT1B;
   rl=(_extra_bits&NZEROS_MASK[_token])+NZEROS_ADJUST[_token];
   zzi=*_zzi;
-  while(rl-->0)_dct_coeffs[OC_FZIG_ZAG[zzi++]]=0;
+  while(rl-->0)_dct_coeffs[zzi++]=0;
   valsigned[0]=VALUE_ADJUST[_token]+
    (_extra_bits>>VALUE_SHIFT[_token]&VALUE_MASK[_token]);
   valsigned[1]=-valsigned[0];
-  _dct_coeffs[OC_FZIG_ZAG[zzi++]]=(ogg_int16_t)valsigned[
+  _dct_coeffs[zzi++]=(ogg_int16_t)valsigned[
    _extra_bits>>SIGN_SHIFT[_token]];
   *_zzi=zzi;
 }
@@ -1445,7 +1443,7 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
        run cannot cause a buffer overflow.
       The inverse zig-zag mapping sends all out of range indices to the last
        entry of this array, where they are ignored.*/
-    ogg_int16_t    dct_coeffs[65];
+    ogg_int16_t    dct_coeffs[128];
     int            fragi;
     int            zzi;
     int            last_zzi;

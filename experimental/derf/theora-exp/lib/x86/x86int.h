@@ -14,7 +14,7 @@ void oc_frag_recon_inter2_mmx(unsigned char *_dst,int _dst_ystride,
 void oc_state_frag_copy_mmx(const oc_theora_state *_state,const int *_fragis,
  int _nfragis,int _dst_frame,int _src_frame,int _pli);
 void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,                                               
- int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,                                                             
+ int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,                                                             
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
 void oc_restore_fpu_mmx(void);
 void oc_idct8x8_mmx(ogg_int16_t _y[64]);
