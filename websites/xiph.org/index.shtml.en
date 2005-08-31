@@ -1,9 +1,8 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
-<title>Xiph.org</title>
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org</title>
 <style type="text/css">
 <!--
-
 .newslist {
 	margin: 0 0 2.64em 0;
 	padding: 0;
@@ -42,11 +41,10 @@
 	font-size: .94em;
 	line-height: 1.4;
 }
-
 -->
 </style>
+<!--#include virtual="/common/xiphbar.include" -->
 
-<!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
@@ -101,6 +99,5 @@
 			</ul>
 		</div>
 	</div>
-
 
 <!--#include virtual="/ssi/pagebottom.include" -->

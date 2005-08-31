@@ -1,24 +1,10 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org: About</title>
+<!--#include virtual="/common/xiphbar.include" -->
 
-<title>Xiph.org: About</title>
-<style type="text/css">
-<!--
-.wiki_ {
-	margin-bottom: 1.4em;
-}
-
-.documentation_ {
-	margin-bottom: 1.4em;
-}
--->
-</style>
-
-
-<!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
-
 
 <h1>About Xiph</h1>
 <h2>A little bit about us, what we do, and why you should care</h2>

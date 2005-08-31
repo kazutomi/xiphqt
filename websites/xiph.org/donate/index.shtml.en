@@ -1,30 +1,24 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org: Fundraising</title>
+<!--#include virtual="/common/xiphbar.include" -->
 
-<title>Xiph.org: Fundraising</title>
-<style type="text/css">
-<!--
-
--->
-</style>
-
-<!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
 <p>If you can afford to donate some money and want to support the Xiph.org Foundation, you may do so via Paypal by clicking on the icon below.</p>
 
 <p style='text-align: center;'>
-	<a href="https://secure.paypal.com/xclick/business=donate@xiph.org&item_name=Donation&item_number=DONATE&return=http://www.xiph.org"><img src="http://www.paypal.com/images/lgo/logo3.gif"></a>
+	<a href="https://secure.paypal.com/xclick/business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.xiph.org"><img src="http://www.paypal.com/images/lgo/logo3.gif" alt="paypal logo"/></a>
 </p>
 
-<p>You can also send a check or money order to:    
-<center><b>Xiph.org Foundation</b>
-<br>c/o Jack Moffitt, Treasurer
-<br>1408 Adams St. NE
-<br>Albuquerque, NM 87110</center>
-<br><br>
-</p>
+<p>You can also send a check or money order to:</p><br/>
+<div style="text-align: center;">
+<b>Xiph.org Foundation</b><br/>
+c/o Jack Moffitt, Treasurer<br/>
+1408 Adams St. NE<br/>
+Albuquerque, NM 87110</div>
+<br/>
 
 <p>
 	Note that as of March 24, 2003, Xiph.Org is a 501(c)(3) Non-Profit
@@ -45,6 +39,5 @@ the margin from the sales help support the Xiph.org Foundation.
 </p>
 
 <p>Your contribution is greatly appreciated!</p>
-
 
 <!--#include virtual="/ssi/pagebottom.include" -->
