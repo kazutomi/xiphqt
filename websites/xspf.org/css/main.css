@@ -1,5 +1,9 @@
 body              {
-                   background-image: url(http://xspf.org/images/gray-bg.png); 
+                   background-image: url(http://www.tilemachine.com/tiles/2005.08/24/large.504986531.gif);
+
+/* best so far */
+x-background-image: url(images/swirl-bg.gif);
+
                    font-family: tahoma, verdana, ariel, helvetica; 
                   }
 p, ul, ol, dl         {
@@ -27,7 +31,7 @@ a:visited         {
                    padding: 1em 1.5em 1em 1.5em; 
                   }
 #container        { 
-                   margin: 0 5% 0 5%; 
+                   margin: 0 3px 0 3px; 
                    border-style: solid; 
                    border-width: 1px; 
                    background-color: white;  
