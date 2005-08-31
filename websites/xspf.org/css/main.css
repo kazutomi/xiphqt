@@ -1,8 +1,6 @@
 body              {
-                   background-image: url(http://www.tilemachine.com/tiles/2005.08/24/large.504986531.gif);
-
-/* best so far */
-x-background-image: url(images/swirl-bg.gif);
+/* should be http://xspf.org/images/images/swirl-bg.gif);, but svn isn't updating it to the mirror. */
+background-image: url(http://svn.xiph.org/websites/xspf.org/images/swirl-bg.png);
 
                    font-family: tahoma, verdana, ariel, helvetica; 
                   }
