@@ -1,14 +1,9 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
+<!-- Enter custom page information and styles here -->
 
 <title>Xiph.org: Ogg</title>
-<style type="text/css">
-<!--
+<!--#include virtual="/common/xiphbar.include" -->
 
--->
-</style>
-
-<!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
@@ -72,4 +67,5 @@ RFCs:</p>
 </ul>
 
 <p>
+
 <!--#include virtual="/ssi/pagebottom.include" -->
