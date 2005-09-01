@@ -6,7 +6,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>End-User Downloads</h1>
+<h1 style="margin-top: 0;">End-User Downloads</h1>
 
 <p>
 Xiph.org does not primarily create software for the end-user.
@@ -26,7 +26,7 @@ end-user download links are provided for convenience:
 
 <p>Also see the <a href="#third_party">Third-Party Downloads</a> below.</p>
 
-<h1 style="margin-top: 30px;">Developer Downloads</h1>
+<h1>Developer Downloads</h1>
 
 <table border="1" cellspacing="0" cellpadding="2" style="border-collapse: collapse; border-color: #cccccc; line-height: 1.4;">
 
@@ -105,7 +105,7 @@ the download directory if you are looking for another library or
 for a specific version.</p>
 
 <a name="third_party"></a>
-<h1 style="margin-top: 30px;">Third-Party Downloads</h1>
+<h1>Third-Party Downloads</h1>
 
 <h2>DirectShow filters - play back .ogg files in Media Player</h2>
 

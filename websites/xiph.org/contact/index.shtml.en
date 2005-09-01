@@ -20,7 +20,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>Getting in touch</h1>
+<h1 style="margin-top: 0;">Getting in touch</h1>
 <p>
 The best way to contact members of the Xiph.org Foundation and community 
 is to post to one of the <a 
