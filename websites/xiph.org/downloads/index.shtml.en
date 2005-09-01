@@ -1,131 +1,105 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org: Downloads</title>
+<!--#include virtual="/common/xiphbar.include" -->
 
-<title>Xiph.org: Downloads</title>
-
-<!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>Downloads - Third-Party Projects</h1>
+<h1>End-User Downloads</h1>
 
 <p>
-Xiph.org does not often create software directly for the end-user.
+Xiph.org does not primarily create software for the end-user.
 Usually, we create specifications, reference implementations, libraries,
-and documentation for all of the above.  We try to make it easy for
-developers to include support for the xiph family of codecs.  Thus most of
-the popular software linked below was written by someone else, using our
-libraries.  However, if you are a developer or sophisticated end user, you
-are welcome to download source code either from the individual project
-pages above or from the links further down this page.
+and documentation for all of the above. We try to make it easy for
+developers to include support for the xiph family of codecs. The following 
+end-user download links are provided for convenience:
 </p>
 
-<h2>DirectShow filters - play back .ogg files in Media Player</h2>
-
-<p>
-If you are a Windows user who wants to be able to listen to .ogg files in
-Windows Media Player, then this is what you want.  Illiminable's DirectShow
-filters support playing of files encoded with Vorbis, Speex, Theora, and/or
-FLAC.
-</p>
-
-<p>
-Make sure to uninstall any previous versions (remove "oggcodecs" from
-Add/Remove Programs), and make sure Windows Media Player (or any other
-DirectShow application) is closed before installing.
-</p>
-
-<ul>
-	<li><a href="http://www.illiminable.com/ogg/oggcodecs_0.69.8924.exe">Ogg
-	Codecs for any version of Windows</a>, version 0.69.8924, 2005-02-15
-	<li><a href="http://www.illiminable.com/ogg/">project page</a> - for
-	newer versions, source code, or more information
+<ul style="margin-bottom: 2.5em; line-height: 1.4;">
+  <li><a href="http://www.vorbis.com/setup/">Vorbis</a></li>
+  <li><a href="http://flac.sourceforge.net/download.html">FLAC</a></li>
+  <li><a href="http://www.theora.org/">Theora</a></li>
+  <li><a href="http://www.speex.org/download.html">Speex</a></li>
+  <li><a href="http://www.icecast.org/download.php">Icecast</a></li>
 </ul>
 
-<h2>oggdropXPd - easily create Ogg Vorbis files in Windows</h2>
+<h1>Developer Downloads</h1>
 
-<p>
-If you are a Windows user looking to easily create your own Ogg Vorbis files
-from a .WAV file or losslessly compressed file using an easy drag-and-drop
-GUI, rarewares' oggdrop is for you.
-</p>
+<table border="1" cellspacing="0" cellpadding="2" style="border-collapse: collapse; border-color: #cccccc; line-height: 1.4;">
 
-<ul>
-	<li><a href="http://rarewares.org/dancer/dancer.php?f=34">oggdropXPd</a>,
-	version 1.8.6 using libVorbis 1.1.1, 2005-07-14
-	<li><a href="http://www.rarewares.org/ogg.html">rarewares : Ogg
-	Vorbis project page</a> - for source code, a version optimized for a
-	particular processor family, or more information
-</ul>
+<tr style="font-weight: bold;">
+<td>Library</td>
+<td>Stable Version</td>
+<td>Download Link</td>
+<td>Size</td>
+<td>md5</td>
+</tr>
 
-<h2>VLC - play back multimedia files</h2>
+<tr>
+<td>libogg</td>
+<td>1.1.2</td>
+<td><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.2.tar.gz">libogg-1.1.2.tar.gz</a><br/>
+  <a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.2.zip">libogg-1.1.2.zip</a></td>
+<td>410K<br/>
+  509K</td>
+<td>4d82996517bf33bb912c97e9d0b635c4<br/>
+  5648d5f08f6012cded19d0e3a60ead39</td>
+</tr>
 
-<p>
-"VLC (initially VideoLAN Client) is a highly portable multimedia player
-for various audio and video formats (MPEG-1, MPEG-2, MPEG-4, DivX, mp3,
-Ogg Vorbis, ...) as well as DVDs, VCDs, and various streaming protocols. It
-can also be used as a server to stream in unicast or multicast in IPv4
-or IPv6 on a high-bandwidth network."
-</p>
+<tr>
+<td>libvorbis</td>
+<td>1.1.1</td>
+<td><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.1.tar.gz">libvorbis-1.1.1.tar.gz</a><br/>
+  <a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.1.zip">libvorbis-1.1.1.zip</a></td>
+<td>1.2M<br/>
+  1.4M</td>
+<td>b77270c24840af4de54bea5ad1c0b252<br/>
+  66529719d92a9835a98877901eb961b2</td>
+</tr>
 
-<ul>
-	<li><a href="http://www.videolan.org/vlc/">VLC</a> project page -
-	download precompiled binaries for Windows, Mac OS X, and various Linux
-	distros, or get source code or other information
-</ul>
+<tr>
+<td>vorbis-tools</td>
+<td>1.1.1</td>
+<td><a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.1.1.tar.gz">vorbis-tools-1.1.1.tar.gz</a><br/>
+  <a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.1.1.zip">vorbis-tools-1.1.1.zip</a></td>
+<td>927K<br/>
+  1.1K</td>
+<td>47845fd76f5f2354a3619c4097575487<br/>
+  0decca1643848f5784915e1e279ca14e</td>
+</tr>
 
-<h2>Helix Player - play back streaming multimedia in Linux</h2>
+<tr>
+<td>libtheora</td>
+<td>1.0alpha5</td>
+<td><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">libtheora-1.0alpha5.tar.gz</a><br/>
+  <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.zip">libtheora-1.0alpha5.zip</a></td>
+<td>1.8M<br/>
+  1.9M</td>
+<td>5add710b80b1cd8f3db9867d1fc9d151<br/>
+  aa471d76d2c245407752935b20cfc67f</td>
+</tr>
 
-<p>
-Helix Player is a multimedia player designed for streaming audio and video,
-and available for Linux and cell phones running the Symbian OS.
-</p>
+<tr>
+<td>libspeex</td>
+<td>1.0.5</td>
+<td><a href="http://downloads.xiph.org/releases/speex/speex-1.0.5.tar.gz">speex-1.0.5.tar.gz</a></td>
+<td>534K</td>
+<td>01d6a2de0a88a861304bf517615dea79</td>
+</tr>
 
-<ul>
-	<li><a href="https://player.helixcommunity.org/">Helix Player</a>
-	project page - download precompiled binaries for Linux, Solaris, or
-	Symbian, or get source code or other information
-</ul>
+<tr>
+<td>libflac</td>
+<td>1.1.2</td>
+<td><a href="http://downloads.xiph.org/releases/flac/flac-1.1.2.tar.gz">flac-1.1.2.tar.gz</a></td>
+<td>1.4M</td>
+<td>2bfc127cdda02834d0491ab531a20960</td>
+</tr>
 
-<hr>
+</table>
 
-<h1>Downloads - Xiph.org Projects</h1>
-
-<p>
-These are all "official" projects of Xiph.org, in no particular order.
-</p>
-
-<ul>
-	<li><a href="http://flac.sourceforge.net/">[project page]</a>
-	<a href="http://flac.sourceforge.net/download.html">[downloads]</a>
-	<strong>FLAC</strong> - lossless codec for compressed audio.
-	Newest release is 1.1.2, from 2005-02-05
-	<li><a href="http://www.speex.org/">[project page]</a>
-	<a href="http://www.speex.org/download.html">[downloads]</a>
-	<strong>Speex</strong> - lossy audio codec optimized for speech and ultra-low bitrates.
-	Newest release is 1.1.10, from 2005-06-11
-	<li><a href="http://www.icecast.org/">[project page]</a>
-	<a href="http://www.icecast.org/download.php">[downloads]</a>
-	<strong>Icecast</strong> - a collection of programs and libraries for streaming audio
-	over the Internet.  Newest release is 2.2.0, from 2004-12-21
-	<li><a href="http://www.theora.org/">[project page]</a>
-	<a href="http://www.theora.org/download.html">[downloads]</a>
-	<strong>Theora</strong> - lossy video codec originally based on VP3.  Newest release is
-	1.0alpha4, from 2004-12-15 
-	<li><a href="http://www.xiph.org/paranoia/">[project page]</a>
-	<a href="http://www.xiph.org/paranoia/down.html">[downloads]</a>
-	<strong>cdparanoia</strong> - audio CD digital audio extraction (ripping ) application
-	for Linux.  "Newest" release is 9.8, from 2001-03-27
-	<li><a href="http://www.vorbis.com/">[project page]</a>
-	<a href="http://downloads.xiph.org/releases/vorbis/">[downloads]</a>
-	<strong>Vorbis</strong> - lossy audio codec optimized for music, and Xiph.org's flagship
-	codec.  Newest release is 1.1.1, from 2005-06-28
-</ul>
-
-<p>
-If you prefer less hand-holding and just want to be turned loose on the
-directories, or for libao, libogg, libshout or other libraries, just browse
-the <a href="http://downloads.xiph.org/releases/">download directory</a>.
-</p>
+<p>You may also <a href="http://downloads.xiph.org/releases/">browse</a>
+the download directory if you are looking for another library or
+for a specific version.</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

@@ -13,7 +13,7 @@
     <li><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
   </ul>
   <ul>
-    <li><a href="http://downloads.xiph.org/releases/">Downloads</a></li>
+    <li><a href="/downloads/">Downloads</a></li>
     <li><a href="http://trac.xiph.org/">Bugs</a></li>
     <li><a href="/">Documentation</a></li>
   </ul>
