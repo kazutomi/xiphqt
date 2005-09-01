@@ -1,7 +1,6 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
-
-<title>Xiph.org :: theora faq</title>
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org :: theora faq</title>
 <style type="text/css">
 <!--
 
@@ -20,9 +19,9 @@ h2 { font-weight: bold; color: #3366CC; }
 
 -->
 </style>
+<!--#include virtual="/common/xiphbar.include" -->
 
-<!--#include virtual="/ssi/xiphbar.include" -->
-<!--#include virtual="../ssi/pagetop.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
 <h1>Theora FAQ</h1>
@@ -419,6 +418,5 @@ eternally grateful. It has since been updated by a number of people.
 
 
 <!-- Close Content -->
-
 
 <!--#include virtual="/ssi/pagebottom.include" -->

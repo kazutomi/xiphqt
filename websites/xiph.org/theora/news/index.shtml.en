@@ -1,15 +1,9 @@
 <!--#include virtual="/ssi/header.include" -->
 <!--  Enter custom page information and styles here -->
+  <title>Xiph.org</title>
 
-<title>Xiph.org</title>
-<style type="text/css">
-<!--
-
--->
-</style>
-
-<!--#include virtual="/ssi/xiphbar.include" -->
-<!--#include virtual="../ssi/pagetop.include" -->
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
 <div class="content">	
