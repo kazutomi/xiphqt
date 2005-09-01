@@ -61,19 +61,27 @@
 <link rel="stylesheet" type="text/css" href="common/style.css" />
 </head>
 <body bgcolor="black">
-<div id="xiphbar">
-	<div>
-	<img src="/images/xiphbar.png" alt="Xiph logo"/>
-	<ul>
-		<li id="xiph_"><a href="http://www.xiph.org/">Xiph.org</a></li>
-		<li id="vorbis_"><a href="http://www.vorbis.com/">Vorbis</a></li>
-		<li id="theora_"><a href="http://www.theora.org/">Theora</a></li>
+<div id="xiphbar_outer">
+<table id="xiphbar" border="0" cellpadding="0" cellspacing="0">
+<tr>
 
-		<li id="icecast"><a href="http://www.icecast.org/">Icecast</a></li>
-		<li id="speex_"><a href="http://www.speex.org/">Speex</a></li>
-		<li id="flac_"><a href="http://flac.sourceforge.net/">FLAC</a></li>
-	</ul>
-	</div>
+  <td>
+    <img id="xiphbanner" src="images/xiphbar.png" alt="Xiph logo" width="231" height="17"/>
+  </td>
+
+  <td id="xiphlinks" align="right">
+
+    <a href="http://www.xiph.org/">Xiph.org</a>
+    <a href="http://www.vorbis.com/">Vorbis</a>
+    <a href="http://www.theora.org/">Theora</a>
+    <a href="http://www.icecast.org/">Icecast</a>
+    <a href="http://www.speex.org/">Speex</a>
+    <a href="http://flac.sourceforge.net/">FLAC</a>
+
+  </td>
+
+</tr>
+</table>
 </div>
 <table width="100%" border=0 cellpadding=0 cellspacing=0 bgcolor=black>
 <tr><td colspan=3><img alt="Icecast Logo" src="images/icecast.png"></td></tr>
