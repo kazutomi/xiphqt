@@ -6,7 +6,8 @@
 <div id="navbar">
 	<ul>
 		<li id="home_"><a href="/">Home</a></li>
-		<li id="specs_"><a href="/specs/">Specs</a></li>
+		<li id="quickstart_"><a href="/quickstart/">Quick Start</a></li>
+		<li id="specs_"><a href="/specs/">Specification</a></li>
 		<li id="schema_"><a href="/schema/">Schema</a></li>
 		<li id="applications_"><a href="/applications/">Applications</a></li>
 		<li id="mailinglist_"><a href="http://lists.musicbrainz.org/mailman/listinfo/playlist">Mailing List</a></li>
