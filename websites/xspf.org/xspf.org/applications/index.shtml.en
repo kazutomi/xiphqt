@@ -1,0 +1,46 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>XSPF: XML Shareable Playlist Format: Applications</title>
+<style type="text/css">
+<!--
+#applications_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Applications</h1>
+<dl>
+<dt><a href="http://gnomoradio.org/">Gnomoradio</a> (GNU/Linux)</dt>
+<dd>A program that can find, fetch, share, and play music that is freely available for file sharing.</dd>
+<dt><a href="http://webjay.org">Webjay</a> (web)</dt>
+<dd>A playlist community site and playlist authoring tool which exports XSPF playlists.</dd>
+<dt><a href="http://mayhem-chaos.net/stuff/xspf-download-0.1.0.py">xspf-download-0.1.0.py</a> (GNU/Linux)</dt>
+<dd>A Python script that parses XSPF and M3U files and downloads the files to the local harddrive.</dd>
+<dt><a href="http://musicplayer.sourceforge.net/">Musicplayer</a> (web)</dt>
+<dd>A popular Flash-based application for playing music in web pages. Open source under the BSD license; can be used and modified by anyone, including for commercial purposes.</dd>
+<dt><a href="http://playr.hubmed.org/">Playr</a> (web)</dt>
+<dd>A web-based tool for screen-scraping web pages and emitting the results as a playlist. Says Playr creator Alf Eaton: <cite>There's a Flash/XSPF bookmarklet on the front page -- which you can use to directly play any page containing linked MP3s -- as well as 'Flash' links on the New Playlists page.</cite></dd>
+<dt><a href="http://jinzora.com">Jinzora</a> (web)</dt>
+<dd>A web based media streaming and management system, designed to stream audio and video files to any internet connected computer.</dd>
+<dt><a href="http://music.yahoo.com/musicengine/">Yahoo! Music Engine</a> (Windows)</dt>
+<dd>The Windows-based client software for Yahoo! Music, which uses XSPF as its native playlist format. Says Yahoo's Ian Rogers: <cite>We're trying to push forward an OPEN standard for playlisting, because it's ridiculous that it's 2005 and we're lacking even the basic currency for media exchange due to more than a decade of short-sighted proprietary verticals by media and software companies.</cite></dd>
+<dt><a href="http://s1x.homelinux.net/projects/serpentine/">Serpentine</a> (GNU/Linux)</dt>
+<dd>Software for mastering audio CDs. It uses XSPF playlists to set the CD content.</dd>
+<dt><a href="http://plurn.com/app/About/">Plurn</a> (web)</dt>
+<dd>A web-based playlist community modeled after Webjay.</dd>
+<dt><a href="http://www.draftlight.net/dnex/mp3player/free/">ultraPh0nZ FMP256</a> (web)</dt>
+<dd>A Flash application for playing music in web pages. Skinnable and slick.</dd>
+<dt><a href="http://plurn.com/app/Download">Spiffy</a> (Windows)</dt>
+<dd>A client application that downloads XSPF playlist content, effectively localizing the playlist. In an alpha state as of this writing (Jun 4, 2005), but potentially very useful when it grows up.</dd>
+<!-- template for new entries
+          <dt><a href=""></a></dt>
+          <dd></dd>
+--></dl>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
