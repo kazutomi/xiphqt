@@ -16,7 +16,7 @@ developers to include support for the xiph family of codecs. The following
 end-user download links are provided for convenience:
 </p>
 
-<ul style="margin-bottom: 2.5em; line-height: 1.4;">
+<ul>
   <li><a href="http://www.vorbis.com/setup/">Vorbis</a></li>
   <li><a href="http://flac.sourceforge.net/download.html">FLAC</a></li>
   <li><a href="http://www.theora.org/">Theora</a></li>
@@ -24,7 +24,9 @@ end-user download links are provided for convenience:
   <li><a href="http://www.icecast.org/download.php">Icecast</a></li>
 </ul>
 
-<h1>Developer Downloads</h1>
+<p>Also see the <a href="#third_party">Third-Party Downloads</a> below.</p>
+
+<h1 style="margin-top: 30px;">Developer Downloads</h1>
 
 <table border="1" cellspacing="0" cellpadding="2" style="border-collapse: collapse; border-color: #cccccc; line-height: 1.4;">
 
@@ -101,5 +103,73 @@ end-user download links are provided for convenience:
 <p>You may also <a href="http://downloads.xiph.org/releases/">browse</a>
 the download directory if you are looking for another library or
 for a specific version.</p>
+
+<a name="third_party"></a>
+<h1 style="margin-top: 30px;">Third-Party Downloads</h1>
+
+<h2>DirectShow filters - play back .ogg files in Media Player</h2>
+
+<p>If you are a Windows user who wants to be able to listen to .ogg files in
+Windows Media Player, then this is what you want.  Illiminable's DirectShow
+filters support playing of files encoded with Vorbis, Speex, Theora, and/or
+FLAC.</p>
+
+<p>
+Make sure to uninstall any previous versions (remove "oggcodecs" from
+Add/Remove Programs), and make sure Windows Media Player (or any other
+DirectShow application) is closed before installing.
+</p>
+
+<ul>
+	<li><a href="http://www.illiminable.com/ogg/oggcodecs_0.69.8924.exe">Ogg
+	Codecs for any version of Windows</a>, version 0.69.8924, 2005-02-15</li>
+	<li><a href="http://www.illiminable.com/ogg/">project page</a> - for
+	newer versions, source code, or more information</li>
+</ul>
+
+<h2>oggdropXPd - easily create Ogg Vorbis files in Windows</h2>
+
+<p>
+If you are a Windows user looking to easily create your own Ogg Vorbis files
+from a .WAV file or losslessly compressed file using an easy drag-and-drop
+GUI, rarewares' oggdrop is for you.
+</p>
+
+<ul>
+	<li><a href="http://rarewares.org/dancer/dancer.php?f=34">oggdropXPd</a>,
+	version 1.8.6 using libVorbis 1.1.1, 2005-07-14</li>
+	<li><a href="http://www.rarewares.org/ogg.html">rarewares : Ogg
+	Vorbis project page</a> - for source code, a version optimized for a
+	particular processor family, or more information</li>
+</ul>
+
+<h2>VLC - play back multimedia files</h2>
+
+<p>
+"VLC (initially VideoLAN Client) is a highly portable multimedia player
+for various audio and video formats (MPEG-1, MPEG-2, MPEG-4, DivX, mp3,
+Ogg Vorbis, ...) as well as DVDs, VCDs, and various streaming protocols. It
+can also be used as a server to stream in unicast or multicast in IPv4
+or IPv6 on a high-bandwidth network."
+</p>
+
+<ul>
+	<li><a href="http://www.videolan.org/vlc/">VLC</a> project page -
+	download precompiled binaries for Windows, Mac OS X, and various Linux
+	distros, or get source code or other information</li>
+</ul>
+
+<h2>Helix Player - play back streaming multimedia in Linux</h2>
+
+<p>
+Helix Player is a multimedia player designed for streaming audio and video,
+and available for Linux and cell phones running the Symbian OS.
+</p>
+
+<ul>
+	<li><a href="https://player.helixcommunity.org/">Helix Player</a>
+	project page - download precompiled binaries for Linux, Solaris, or
+	Symbian, or get source code or other information</li>
+</ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
