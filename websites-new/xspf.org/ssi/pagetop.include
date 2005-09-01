@@ -9,8 +9,8 @@
 		<li id="specs_"><a href="/specs/">Specs</a></li>
 		<li id="schema_"><a href="/schema/">Schema</a></li>
 		<li id="applications_"><a href="/applications/">Applications</a></li>
-		<li id="mailinglist_"><a href="/contact/">Mailing List</a></li>
-		<li id="wiki_"><a href="http://playlist.musicbrainz.org/playlist/moin.cgi/">Wiki</a></li>
+		<li id="mailinglist_"><a href="http://lists.musicbrainz.org/mailman/listinfo/playlist">Mailing List</a></li>
+		<li id="wiki_"><a href="http://wiki.xiph.org/index.php/XSPF">Wiki</a></li>
 		<li id="aboutus_"><a href="/aboutus/">About Us</a></li>
 	</ul>
 </div>
