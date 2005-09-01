@@ -8,7 +8,7 @@
 
 <a name="top"></a>
 
-<h2>What Is It?</h2>
+<h2 style="margin-top: 0;">What Is It?</h2>
 <ul>
   <li><a href="#what" id="_what">What is Ogg Vorbis?</a></li>
   <li><a href="#names" id="_names">What do all the names mean?</a></li>
