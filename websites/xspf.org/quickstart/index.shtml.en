@@ -10,6 +10,7 @@
 pre {
   margin-left: 3em;
   background-color: lightyellow;
+  font-size: 125%;
 }
 span.callout {
 background-color: #eeeeee;
