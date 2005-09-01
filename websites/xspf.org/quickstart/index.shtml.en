@@ -64,7 +64,7 @@ color: red;
 <h2>MIME type</h2>
 <div>The MIME type for XSPF documents is <code>application/xspf+xml</code>. It is <em>NOT</em> <code>text/plain</code>, <code>audio/xspf</code>, or <code>text/xml</code>. <em>THIS IS IMPORTANT</em>.</div>
 <h2>Metadata</h2>
-<div>In the follow section I'm going to show how to do standard metadata by giving example playlists for each item. I'll show each item by making a change in the following sample code:
+<div>In the following section I'm going to show how to do standard metadata by giving example playlists for each item. I'll show each item by making a change in the following sample code:
 <div>
 <pre>
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
