@@ -17,8 +17,8 @@
 <h1>Specifications</h1>
 <p>XSPF version 0 was finished and frozen in late April 2004. XSPF version 1 was finished and frozen in March 2005. The differences between them are subtle and fairly minor, so <em>please use version 1</em> unless you have a compelling reason not to.</p>
 <ul>
-<li><a href="xspf-v0.html">Specification for XSPF version 0</a></li>
-<li><a href="xspf-v1.html">Specification for XSPF version 1</a> (recommended)</li>
+<li><a href="/xspf-v0.html">Specification for XSPF version 0</a></li>
+<li><a href="/xspf-v1.html">Specification for XSPF version 1</a> (recommended)</li>
 </ul>
 <h2>Differences between version 0 and version 1</h2>
 <ul>
