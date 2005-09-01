@@ -68,16 +68,21 @@
 	<h1 id="resources">Resources by Project</h1>
 
 	<div class="resources">
-		<div class="containers" style="padding-left: 1em; padding-bottom: 1em; float: right; width: 50%;">
-			<h3>Container Formats</h3>
+		<div class="right" style="padding-left: 1em; padding-bottom: 1em; float: right; width: 50%;">
+			<h3 style="margin-top: 0;">Container Formats</h3>
 			<ul>
 				<li><a href="/ogg/">Ogg:</a> Media container.  This is our native format and the recommended container for all Xiph codecs.</li>
 				<li><a href="#">Speex RTP:</a> RTP payload format for voice</li>
 				<li><a href="#">Vorbis RTP:</a> RTP payload format for audio</li>
 				<li><a href="#">Theora RTP:</a> RTP payload format for video</li>
 			</ul>
+
+			<ul style="margin-top: 1.5em;">
+				<li><a href="http://www.xspf.org/">XSPF:</a> XSPF is the XML format for sharing playlists.</li>
+			</ul>
 		</div>
-		<div class="distribsoft">
+
+		<div class="left">
 			<h3>Software for Distributing Media</h3>
 			<ul>
 				<li><a href="/paranoia/">CD Paranoia</a> Robust CD audio extraction </li>
@@ -85,8 +90,7 @@
 				<li><a href="http://icecast.org/ices.php">Ices:</a> Source client for Icecast Server</li>
 				<li><a href="http://wiki.xiph.org/IceShare">IceShare:</a> P2P for content distribution</li>
 			</ul>
-		</div>
-		<div class="codecs">
+
 			<h3>Codecs</h3>
 			<ul>
 				<li><a href="/vorbis/">Vorbis:</a> Audio codec</li>
