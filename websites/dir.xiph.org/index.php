@@ -10,25 +10,8 @@
 <head>
 <title>Icecast.org</title>
 <link rel="stylesheet" type="text/css" href="common/style.css" />
-</head>
-<body bgcolor="black">
-<div id="xiphbar_outer">
-<table id="xiphbar" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td>
-    <img id="xiphbanner" src="/images/xiphbar.png" alt="Xiph logo" width="231" height="17"/>
-  </td>
-  <td id="xiphlinks" align="right">
-    <a href="http://www.xiph.org/">Xiph.org</a>
-    <a href="http://www.vorbis.com/">Vorbis</a>
-    <a href="http://www.theora.org/">Theora</a>
-    <a href="http://www.icecast.org/">Icecast</a>
-    <a href="http://www.speex.org/">Speex</a>
-    <a href="http://flac.sourceforge.net/">FLAC</a>
-  </td>
-</tr>
-</table>
-</div>
+<link rel="stylesheet" type="text/css" href="xiphcommon/xiphbar.css" />
+<? include "xiphcommon/xiphbar.include"; ?>
 <table width="100%" border=0 cellpadding=0 cellspacing=0 bgcolor=black>
 <tr><td colspan=3><img alt="Icecast Logo" src="images/icecast.png"></td></tr>
 <tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
