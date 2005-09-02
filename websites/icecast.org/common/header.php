@@ -6,83 +6,10 @@
 ?>
 <html>
 <head>
-<style>
-#xiphbar {
-	background-color: #666666;
-	min-height: 29px;
-}
-
-#xiphbar div {
-	width: 50em;
-	margin-left: auto;
-	margin-right: auto;
-	min-width: 800px;
-}
-
-
-#xiphbar img {
-	margin: 0 0 0 0;
-	border: 0;
-	padding: .4em 0 0 12px;
-	float: left;
-	text-transform: lowercase;
-	width: 231;
-	height: 17px;
-}
-
-#xiphbar ul {
-	margin: 0;
-	border: 0;
-	padding: .23em 12px .45em 0;
-	text-align: right;
-	text-transform: uppercase;
-}
-
-#xiphbar li {
-	margin: 0;
-	border: 0;
-	padding: 0 10px 0 0;
-	display: inline;
-	list-style: none;
-}
-
-#xiphbar li a {
-	color: #FFCC66;
-	text-decoration: none;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 10px;
-}
-
-#xiphbar li a:hover {
-	color: #FFE6B3;
-}
-</style>
 <title>Icecast.org</title>
 <link rel="stylesheet" type="text/css" href="common/style.css" />
-</head>
-<body bgcolor="black">
-<div id="xiphbar_outer">
-<table id="xiphbar" border="0" cellpadding="0" cellspacing="0">
-<tr>
-
-  <td>
-    <img id="xiphbanner" src="images/xiphbar.png" alt="Xiph logo" width="231" height="17"/>
-  </td>
-
-  <td id="xiphlinks" align="right">
-
-    <a href="http://www.xiph.org/">Xiph.org</a>
-    <a href="http://www.vorbis.com/">Vorbis</a>
-    <a href="http://www.theora.org/">Theora</a>
-    <a href="http://www.icecast.org/">Icecast</a>
-    <a href="http://www.speex.org/">Speex</a>
-    <a href="http://flac.sourceforge.net/">FLAC</a>
-
-  </td>
-
-</tr>
-</table>
-</div>
+<link rel="stylesheet" type="text/css" href="xiphcommon/xiphbar.css" />
+<? include "xiphcommon/xiphbar.include"; ?>
 <table width="100%" border=0 cellpadding=0 cellspacing=0 bgcolor=black>
 <tr><td colspan=3><img alt="Icecast Logo" src="images/icecast.png"></td></tr>
 <tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
