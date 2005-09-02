@@ -71,8 +71,10 @@
 				<li><a href="#">Theora RTP:</a> RTP payload format for video</li>
 			</ul>
 
-			<ul style="margin-top: 1.5em;">
+			<h3>Miscellaneous</h3>
+			<ul>
 				<li><a href="http://www.xspf.org/">XSPF:</a> XSPF is the XML format for sharing playlists.</li>
+				<li><a href="/ao/">libao:</a> A cross platform audio library.</li>
 			</ul>
 		</div>
 
