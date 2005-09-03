@@ -1,6 +1,0 @@
-AuthType Basic
-AuthName "Vorbis.com Content Management"
-AuthUserFile /www/www.vorbis.com/users
-AuthGroupFile /dev/null
-Require valid-user
-
