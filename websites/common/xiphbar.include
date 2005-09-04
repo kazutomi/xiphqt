@@ -3,7 +3,8 @@
 <tr>
 
   <td>
-    <img id="xiphbanner" src="/common/xiphbar.png" alt="Xiph logo" width="231" height="17"/>
+    <img id="xiphbanner" src="http://xiph.org/images/logos/xiphbar.png" 
+         alt="Xiph logo" width="231" height="17"/>
   </td>
 
   <td id="xiphlinks" align="right">
