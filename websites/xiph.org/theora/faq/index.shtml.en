@@ -19,6 +19,8 @@ h2 { font-weight: bold; color: #3366CC; }
 
 -->
 </style>
+</head>
+<body>
 <!--#include virtual="/common/xiphbar.include" -->
 
 <!--#include virtual="/ssi/pagetop.include" -->

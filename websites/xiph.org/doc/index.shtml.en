@@ -8,6 +8,8 @@
     padding-left: 0;
   }
   </style>
+</head>
+<body>
 <!--#include virtual="/common/xiphbar.include" -->
 
 <!--#include virtual="/ssi/pagetop.include" -->

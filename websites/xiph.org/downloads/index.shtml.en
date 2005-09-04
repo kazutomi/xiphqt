@@ -1,6 +1,8 @@
 <!--#include virtual="/ssi/header.include" -->
 <!-- Enter custom page information and styles here -->
   <title>Xiph.org: Downloads</title>
+</head>
+<body>
 <!--#include virtual="/common/xiphbar.include" -->
 
 <!--#include virtual="/ssi/pagetop.include" -->

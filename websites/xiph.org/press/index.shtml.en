@@ -8,6 +8,8 @@
 -->
 </style>
 
+</head>
+<body>
 <!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
