@@ -1,0 +1,67 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org: Documentation</title>
+  <style type="text/css">
+  .doc {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  </style>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+Here you will find links to documentation for
+various Xiph software.
+
+<h1>Ogg</h1>
+
+<ul class="doc">
+<li><a href="/ogg/doc/oggstream.html">Ogg logical and physical bitstream overview</a>
+(note: this is only an overview, please see the RFCs for more
+complete documentation)</li>
+<li><a href="/ogg/doc/framing.html">Ogg logical bitstream framing</a></li>
+<li><a href="/ogg/doc/ogg-multiplex.html">Ogg multi-stream multiplexing</a></li>
+</ul>
+
+<ul class="doc">
+<li><a href="/ogg/doc/rfc3533.txt">rfc3533</a>: The Ogg Encapsulation Format Version 0</li>
+<li><a href="/ogg/doc/rfc3534.txt">rfc3534</a>: The application/ogg Media Type</li>
+</ul>
+
+<h1>Vorbis</h1>
+
+<h3>Specification Documents</h3>
+
+<ul class="doc">
+<li><a href="/vorbis/doc/Vorbis_I_spec.html">Vorbis I Spec (HTML)</a></li>
+<li><a href="/vorbis/doc/Vorbis_I_spec.pdf">Vorbis I Spec (PDF)</a></li>
+<li><a href="/vorbis/doc/v-comment.html">Vorbis metadata format and standard tag set</a></li>
+<li><a href=""></a></li>
+</ul>
+
+<h3>API Documents</h3>
+
+<ul class="doc">
+<li><a href="/vorbis/doc/vorbisfile/index.html">vorbisfile</a></li>
+<li><a href="/vorbis/doc/vorbisenc/index.html">vorbisenc</a></li>
+</ul>
+
+<h3>Technical Documents</h3>
+
+<ul class="doc">
+<li><a href="/vorbis/doc/vorbis-fidelity.html">Fidelity measurement terminology</a></li>
+<li><a href="http://www.xiph.org/ogg/vorbis/doc/stereo.html">Vorbis channel coupling and stereo-specific application</a></li>
+</ul>
+
+<h1>Theora</h1>
+
+<ul class="doc">
+<li><a href="http://theora.org/doc/Theora_I_spec.pdf">Format Specification</a></li>
+<li><a href="http://theora.org/doc/libtheora-1.0alpha5/">libtheora API reference (HTML)</a></li>
+<li><a href="http://theora.org/doc/libtheora-1.0alpha5.pdf">libtheora API reference (PDF)</a></li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
