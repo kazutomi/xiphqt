@@ -1,14 +1,5 @@
-﻿    <p class='skipper'><a href="#content" accesskey="2">Skip to main content.</a></p>
-    <div id="xiphnav">
-		<span class="left">
-			<a href="http://www.xiph.org/">xiph.org</a> ·
-			<a href="http://www.vorbis.com/">vorbis.com</a> ·
-			<a href="http://www.icecast.org/">icecast.org</a> ·
-			<a href="http://www.speex.org/" accesskey="1">speex.org</a>
-		</span>
-		<span class="right">Open Standards for Internet Multimedia</span>
-		<div class='spacer'> </div>
-	</div>
+<p class='skipper'><a href="#content" accesskey="2">Skip to main content.</a></p>
+<br>
 	<div id="nav2">
 	<div id="nav">
 	<ul><li class="first"><a href="/" title="Return to the speex.org homepage.">Home</a></li>

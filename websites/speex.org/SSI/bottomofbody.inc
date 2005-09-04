@@ -5,7 +5,7 @@
 			  alt="say NO to corrupt audio discs"
 			  class="corruptaudio"/></a>
 	<p id="legalese">
-		These pages © 2003 Xiph.Org Foundation. All rights reserved.
+		These pages © 2003-2005 Xiph.Org Foundation. All rights reserved.
 	</p>
 	<p>
 		<a href="contact.html">Comments and questions</a>
