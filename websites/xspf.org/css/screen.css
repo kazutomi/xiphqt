@@ -120,6 +120,19 @@ h3 {
   clear: both;
 }
 
+#copyright p {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+#copyright .hiddenlinks {
+	visibility: hidden;
+}
+
+#copyright:hover .hiddenlinks {
+	visibility: visible;
+}
+
 .navbar {
 	margin: 0;
 	padding: 20px 0 25px 0;
