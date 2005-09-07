@@ -113,3 +113,11 @@ li {
   clear: both;
 }
 
+#copyright span {
+	visibility: hidden
+}
+
+#copyright:hover span {
+	visibility: visible;
+}
+
