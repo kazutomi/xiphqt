@@ -1,13 +1,12 @@
 </div><!-- content -->
 
 <div id="copyright">
-  The Xiph Fish Logo and the Vorbis.com many-fish logos are 
+  <p>The Xiph Fish Logo and the Vorbis.com many-fish logos are 
   trademarks (&trade;) of Xiph.Org.<br/>
 
-  These pages &copy; 1994 - 2005 Xiph.Org. All rights reserved.<br/>
+  These pages &copy; 1994 - 2005 Xiph.Org. All rights reserved.</p>
 
-	<span><!--#config timefmt="%B %d, %Y" -->Last Modified: <a href="http://trac.xiph.org/cgi-bin/trac.cgi/browser/websites/xiph.org<!--#echo var="DOCUMENT_URI" -->"><!--#echo var="LAST_MODIFIED" --></a></span><br/>
-	<span>Validate <a href="http://validator.w3.org/check?verbose=1&uri=http%3A//www.xiph.org<!--#echo var="DOCUMENT_URI" -->">XHTML</a> and <a href="http://jigsaw.w3.org/css-validator/validator?uri=http://www.xiph.org<!--#echo var="DOCUMENT_URI" -->">CSS</a></span>
+  <p><!--#config timefmt="%B %d, %Y" -->Last Modified: <!--#echo var="LAST_MODIFIED" --></p>
 </div>
 
 </div><!-- thepage -->

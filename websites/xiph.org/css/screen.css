@@ -112,12 +112,3 @@ li {
   color: #888888;
   clear: both;
 }
-
-#copyright span {
-	visibility: hidden
-}
-
-#copyright:hover span {
-	visibility: visible;
-}
-
