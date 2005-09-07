@@ -27,7 +27,7 @@ do not need these filters.</p>
 
 <h2>Players:</h2>
 
-DirectShow based players only need the Illiminable filters from above.<p/>
+<p>DirectShow based players only need the Illiminable filters from above.</p>
 
 <ul>
   <li><a href="http://sourceforge.net/project/showfiles.php?group_id=82303&amp;package_id=84358">Media Player Classic</a>: An OpenSource DirectShow player with a minimalist interface.</li>
@@ -45,7 +45,7 @@ DirectShow based players only need the Illiminable filters from above.<p/>
 
 <h2>Encoding:</h2>
 
-Lots of fun utilities.<p/>
+<p>Lots of fun utilities.</p>
 
 <ul>
   <li><a href="http://www.rarewares.org/ogg.html">OggDropXPd</a>: A graphical
@@ -58,8 +58,8 @@ Lots of fun utilities.<p/>
 
 <h2>Other:</h2>
 
-Here is a list of other filters and programs that people may try,
-but aren't in the main list for whatever reason.<p/>
+<p>Here is a list of other filters and programs that people may try,
+but aren't in the main list for whatever reason.</p>
 
 <ul>
   <li><a href="http://corevorbis.corecodec.org/">CoreVorbis</a>: A DirectShow
