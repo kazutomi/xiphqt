@@ -1,0 +1,415 @@
+--- Log opened Wed Sep 07 10:56:47 2005
+10:56 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+10:56 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2005 Sept 7 18h00 GMT | please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200509 | Starting in half an hour!
+10:56 -!- Topic set by MikeS [] [Wed Sep  7 10:23:20 2005]
+10:56 [Users #xiphmeet]
+10:56 [ Arc    ] [ dominikz] [ illi    ] [ Nehal    ] [ Skinkie ] 
+10:56 [ Atamido] [ donfede ] [ j^      ] [ pjones   ] [ thomasvs] 
+10:56 [ brendan] [ edrz    ] [ jcoalson] [ rillian  ] [ tris    ] 
+10:56 [ derf_  ] [ HackRip ] [ MikeS   ] [ Saoshyant] [ xiphlog ] 
+10:56 -!- Irssi: #xiphmeet: Total of 20 nicks [0 ops, 0 halfops, 0 voices, 20 normal]
+10:56 -!- Channel #xiphmeet created Mon Aug 29 04:34:00 2005
+10:56 -!- Irssi: Join to #xiphmeet was synced in 0 secs
+10:57 < Saoshyant> oh, xiphlog
+10:57 < Skinkie> 3 minutes remaining :o
+10:57 -!- rillian changed the topic of #xiphmeet to: Next xiph.org monthly meeting 2005 Sept 7 18h00 GMT | please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200509 | live log at http://westfish.xiph.org/~giles/200509_meeting.txt
+10:57 < edrz> Saoshyant: watch what you say, you're being recorded now. ;)
+10:58 < Saoshyant> good to know :)
+10:58 < Arc> recorded and publically archived on the web
+10:58 -!- Tesseract [n=tesserac@203-217-20-151.dyn.iinet.net.au] has joined #xiphmeet
+10:58 < Arc> and yes, people can google what you say
+10:58 < Saoshyant> I prefer clusty.com over google.com
+10:58 < MikeS> rillian: you know if monty's planning on making it?
+10:59 < rillian> I do not
+10:59 < rillian> that's why I suggested you chair :)
+11:00 < MikeS> I still think you do it better ;-)
+11:00  * Atamido notes that he logs the channel 24/7/365.
+11:00 < rillian> MikeS: all the more reason to practice :)
+11:00 < Skinkie> Someone can smash the hamer now...
+11:01 < Arc> we actually cling the tuning fork, hammers are too traditional :-)
+11:01 < Skinkie> 440Hz?
+11:02 < Saoshyant> Shall it begin, then?
+11:02 < Atamido> Total channel logs for the past 6 months is about 200KB.
+11:02 < Saoshyant> That's small.
+11:02 < MikeS> As chair, I cede leadership of the meeting to rillian :-)
+11:03 < rillian> bastard
+11:03 < Atamido> OGM!
+11:03 -!- ppin [n=nobody@fettuccine.tekno.chalmers.se] has joined #xiphmeet
+11:03 < rillian> ok, shall we begin?
+11:03 < brendan> hey, you're the boss
+11:03 < rillian> First item is, as usual project reports
+11:03 < rillian> nothing much has happened with ogg I think
+11:04 < rillian> we've got the vorbis breakage with the gcc4 optimizer fixed
+11:04 < Saoshyant> The container? I think it's much over the specifications of the format.
+11:04 < pjones> Monty and I have started plotting for a major rev of cdparanoia.
+11:04 < rillian> Saoshyant: didn't follow that
+11:04 < rillian> oh, high pjones
+11:04 < rillian> what's the plan?
+11:05 -!- Kato [n=peacef@ciant98.cesnet.cz] has joined #xiphmeet
+11:05 < MikeS> pjones: oh, really? I was just fielding some questions 'round the office a couple of days ago about the future of cdparanoia. 
+11:05 < rillian> otherwise we've had a few minor bug fixes to vorbis and tools
+11:05 < Atamido> I didn't realize it had a future.
+11:06 < pjones> redoing the transport layer to a) be more modular, b) work with newer kernel interfaces, c) work with newer atapi commands (flush cache!), reworking the paranoia layer to do both identification and error correction
+11:06 < Saoshyant> Heh, really EAC is winning the front CD-ripper wise.
+11:06 < pjones> saoshyant: in some ways yes in some ways very much no.
+11:06 < Saoshyant> Sorry, mind me not, please go on.
+11:06 < MikeS> I think we should do a vorbis release (and along with it ogg and vorbis-tools, all of them have had bugfixes since the last release) in the next week. The vorbis/gcc4/aliasing bug has hit quite a few people - I've seen the bug report from 3 different sources.
+11:06 < pjones> also trying to get a halfway sane library api out of it, to make things like rippers and gstreamer much easier to use
+11:07 < pjones> (and that should make things like language bindings much more reasonable)
+11:07 < MikeS> (including, for instance, SuSE, who hit it in a prerelease I think)
+11:07 < MikeS> sorry, I'll let pjones finish. 
+11:07 < rillian> pjones: sounds lovely. would this be "paranoia IV"?
+11:07 < pjones> I'm done ;)
+11:07 < pjones> rillian: I'm shooting for calling it "cdparanoia 1.0" ;)
+11:08 < rillian> hehe
+11:08 < rillian> speex has seen more cleanup work
+11:08 < MikeS> pjones: do you have a rough timeline (like 'when you intend to start actually writing it' and/or 'when you'd guess it might be ready')
+11:08 < pjones> I don't know what version we'll end up with, but I'm definitely going to argue for a more normal versioning scheme.
+11:08 < rillian> and discussion of DSP ports.
+11:08 < pjones> mikes: I started interface code yesterday, but as you might imagine I'm rather busy these days.
+11:08 < rillian> thomasvs: any news on the OMAP port for the nokia devices?
+11:08 < pjones> so no, I don't have a timeline -- but I might make one and attempt to use it to guide progress.
+11:09 -!- thomas_ [n=thomas@129.Red-83-32-68.pooles.rima-tde.net] has joined #xiphmeet
+11:09 < MikeS> I know people have been having real issues with cdparanoia and gnome lately - apparently cdparanoia does a poor job on many of the recent "copy-protected" "CDs", so they've changed the default cdripping backend to something not cdparanoia-based for the next gnome release.
+11:09 < MikeS> which is... today, or something.
+11:09 < rillian> thomas_: any news on the OMAP ports for the nokia devices?
+11:09 < thomas_> rillian, no, it's blocking on getting some feedback from the Nokia engineers on some questions our implementer has
+11:09 < pjones> MikeS: most of those "copy protected" CDs that have recently been noticed are probably DualDisc, which isn't a problem we can fix -- it's a purely physical problem.
+11:09 -!- dominikz [n=dominikz@deq148.neoplus.adsl.tpnet.pl] has quit ["Download Gaim: http://gaim.sourceforge.net/"]
+11:10 < pjones> (for some of them, this is not the case, and we may be able to do something if people can get monty and I example CDs)
+11:10 -!- dominikz [n=dominikz@deq148.neoplus.adsl.tpnet.pl] has joined #xiphmeet
+11:10 < MikeS> pjones: I haven't followed the discussions, but I've been told nth-hand that the other backend (whatever it is) works for cases cdparanoia doesn't - so an update would be very welcome.
+11:10 < MikeS> thomas was mentioning something about this, I think, maybe he knows more?
+11:10 < pjones> hrm, I'd be interested in seeing the thread -- can you find me a url to archives or somesuch?
+11:11 < rillian> theora, lots of optimization work got done, particularly the creation of the theora-oil branch. people seem to like liboil as a framework for doing asm opts
+11:11 < thomas_> MikeS, I don't know specifics, but yeah, people seem to be moving towards libcdio
+11:11 < rillian> that needs to be merged with trunk
+11:11 < MikeS> well, he was saying it to me in person, not in a mailing list or on irc, so...
+11:11  * pjones wonders. 
+11:11 < thomas_> (which iirc has two backends, one of which is cdparanoia)
+11:11 < rillian> and we need to figure out a way to make it work on MSVC
+11:11 < MikeS> pjones: anyway, I'll look for some details tomorrow or later tonight, and send it your way if I find anything useful
+11:11 < pjones> last I checked libcdio was cdparanoia code minus some features.
+11:11 < Nehal> rillian: make theora on MSVC?
+11:11 < pjones> ok, cool.
+11:11 < Nehal> rillian: i could probably work on that
+11:11 < rillian> Nehal: make theora asm/simd opts build on MSVC
+11:12 < Nehal> ok
+11:12 < rillian> another MSVC tester would be very valuable
+11:12 < thomas_> so would a buildbot on windows
+11:12 -!- GwenStef [i=BlackSun@languedoc-5-82-225-110-127.fbx.proxad.net] has joined #xiphmeet
+11:12 < MikeS> rillian: any progress on the theora reference implementation implementing all of theora?
+11:13 < Nehal> thomas_: what would this buildbot involve?
+11:13 < rillian> MikeS: I did a little bit a month ago, but have been swamped with other work
+11:13 < MikeS> Nehal: you have MSVC? And know how to use it?
+11:13 < thomas_> rillian, and can the oil branch be merged on head, or are there objectsion left ?
+11:13 < Nehal> MikeS: yes, version 6, and yes
+11:13 < rillian> contributions welcome
+11:13 < thomas_> Nehal, I'll talk to you about it on #theora; it involves installing some python code and that's it
+11:13 < derf_> I've been working on making the theora-exp encoder more usable, but have hit a laptop failure, and then a hdd failure on the desktop I migrated to this week.
+11:13 < Nehal> thomas_: ok
+11:13 < illi> v6 is 7 years old !
+11:13 < derf_> So, not quite on the schedule I wanted to be at.
+11:14 < MikeS> Nehal: as I noted earlier, we wanted to do a vorbis release soon - would you be willing and able to build the libraries, SDK, and tools for windows, so we can actually supply users with binaries this time around?
+11:14 < rillian> derf_: so that was your free week? :{
+11:14 < MikeS> and/or would illi?
+11:14 < derf_> rillian: Yeah.
+11:14 < derf_> I _did_ get stuff done, it's just not quite ready to commit yet.
+11:14 < derf_> By which I mean, it does't compile.
+11:14 < rillian> thomas_: I'd still like to see improvements, but they can happen in trunk
+11:14 < rillian> the main open question is how to support non-gcc compilers
+11:14 < illi> well i'm going to be working full time again on related stuff... and getting some of the optimistions in is something iwant to do in the next few weeks
+11:14 < Nehal> MikeS: certainly, what about mingw libraries etc, could we have that too? it may be useful to many
+11:15 < Nehal> illi: newer versions can import it
+11:15 < pjones> (oh, one other side note about cdparanoia development -- I intend for the transport/drive layer to be useful for recording CDs as well, though the commandset and such for that part won't be done initially)
+11:15 < illi> yes... but proper support for newer cpu's isn't there
+11:15 < derf_> Anyway, the point was to be able to replace the old libtheora lock, stock, and barrel.
+11:15 < derf_> rillian and thomas_ seem to be opposed until after 1.0, however.
+11:15 < MikeS> Nehal: if you want - it's crucial to have the MSVC stuff, mingw is less so. Most mingw users are capable of building it themselves, I'd think.
+11:15 < illi> but go ahead... since many people still use v6
+11:15 < Nehal> MikeS: that's true
+11:16 < thomas_> derf_, well, my opposition is that there's no reason to wait until -exp settles down.  there will always be reasons to delay a release.
+11:16 < rillian> derf_: yes, our roadmap was to release something under the current alpha api as 1.0, with full decoder support
+11:16 < rillian> and then change the api for 1.1
+11:16 < Atamido> illi:  Most people are idiots.  ;)
+11:16 < thomas_> also, changing api from alpha to beta completely seems poor engineering practice to me, but that's just me
+11:16 < rillian> since we have two code bases, we can do that simultaneously
+11:16 < MikeS> derf_: I'd be very much in favour of that if -exp is in a good enough state before -mainline is otherwise ready for a 1.0 release (i.e. I wouldn't want to further delay 1.0 just because of that)
+11:16 < illi> indeed... v6 has a very poor compiler compared to 2003 (7.1)
+11:17 < thomas_> rillian, granulepos change, is that going in now ?
+11:17 < illi> and 2005 is not far off
+11:17 < rillian> thomas_: right, I keep forgetting
+11:17 < rillian> I guess I'm convinced
+11:17 < rillian> I'm not sure anyone else is
+11:17 < MikeS> It might be interesting to see if we can do a hacky compatibility layer for the mainline/exp APIs (it wouldn't be 100%, of course) just so we don't break all the code out there.
+11:17 < rillian> would it help if I said "make it so"?
+11:18 < thomas_> rillian, sure :)
+11:18 < rillian> MikeS: that was kfish's suggestion as well
+11:18 < MikeS> illi: well, since you have the up-to-date tools, would you be willing to do library/SDK and tools builds for windows for the release some time in the next week or so? Shouldn't be more than a couple of hours work
+11:18 < rillian> I kind of hate it because we'll be lugging those stupid encoder parameters around the theora_info struct forever
+11:18 < derf_> Yes, that garbage has to go.
+11:18 < thomas_> are there any reasons why it would be bad to have two api's side by side ?
+11:19 < illi> mikes: 2 weeks definately... within a week maybe
+11:19 < thomas_> making a wrapper around exp seems the worst of two worlds to me
+11:19 < MikeS> rillian: right; we'd clearly mark it as a deprecated interface, and drop it in a future release, but changing the API completely between alpha and final is... not friendly to implementers.
+11:19 < derf_> thomas_: I've no problem with it if you can think of a good name for the second one.
+11:19 < Nehal> illi: what version do you have?
+11:19 < rillian> MikeS: hence my suggestion we just wait until 1.1
+11:19 < thomas_> derf_, is the name the only problem ?
+11:19 < derf_> MikeS: And my suggestion to get the pain over with as soon as possible.
+11:20 < illi> 2003 (7.1) and 2005 beta
+11:20 < rillian> right, we'd also like them to be parallel-linkable
+11:20 < derf_> thomas_: They already build to separate libraries, that can be installed independently.
+11:20 < MikeS> ok.
+11:20 < derf_> namespace issues are the only problem.
+11:20 < thomas_> derf_, right, I would keep that - so if you;re saying the writer's block of choosing a name is stopping us from going forward with two separate modules, then we should be able to fix that
+11:20 < MikeS> well, whether this is even possible depends almost entirely on when mainline and exp get to "feature-complete" (mainline needs to support the full decode spec, exp needs to work encode-side, right?) - I say we just make a decision when one of them gets there.
+11:20 < Nehal> illi: if you use 2003... will the resulting libraries work with 2002? it would be nice as many still might have that version...
+11:21 < thomas_> MikeS, sounds like the right thing to do
+11:21 < illi> nehal: no 2003 is not backwards compatible with 2002
+11:21 < MikeS> derf_: I thought -exp used a cleanly-seperated namespace anyway?
+11:21 < rillian> MikeS: and in fact, what we're doing :)
+11:21 < derf_> MikeS: It has its own theora_info, etc.
+11:21 < illi> so doing a v6 version is still not a bad idea...
+11:22 < illi> but you will probably see more performance just from using 7.1 vs 6 than the optimisations
+11:22 < MikeS> derf_: functions, or just structures? We don't need to be parallel-usable-within-the-same-C-file.
+11:22 < derf_> MikeS: Both.
+11:22 < MikeS> ok,.
+11:22 < derf_> The idea was to minimize the work to port an application from one API to the other.
+11:23 < derf_> But a few extra global search-and-replace's are no big deal, as far as I'm concerned.
+11:23 < Nehal> illi: maybe we can have both? i'm not sure what is best...
+11:23 < illi> nehal: having both is good... some people will still have old versions
+11:23 < Nehal> ok...
+11:24 < illi> so if you have v6 then go ahead
+11:24 < Nehal> yep
+11:24 < illi> i don't think i have it installed any more
+11:24 < derf_> MS has not given me a free compiler since v6.
+11:24 < illi> yes they have v 7.1 is free
+11:24 < illi> (command line)
+11:24 < derf_> Yeah, if I wanted a command-line compiler, I've got gcc.
+11:24 < rillian> illi: I've heard that compiler has some optimizations turned off. is that true?
+11:25 < illi> not that i know of
+11:25 < illi> 7.1 will produce much better windows code than gcc
+11:26 < illi> also 2005 beta was free for a while (full ide)
+11:26 < MikeS> ok. anything more there to discuss?
+11:26 < illi> and 2005 community edition or whatever it's called is also going to be free i think
+11:26 < MikeS> illi and Nehal will help out some time in the next two weeks to build windows stuff for new ogg/vorbis/vorbis-tools releases.
+11:27 < rillian> brendan: what's new with icecast?
+11:27 < illi> mikes: I thought we were talking theora ?
+11:27 < MikeS> theora: we'll defer final decisions depending on who has time to finish things first.
+11:27 < derf_> I'm going to be trying to get a friend of mine to help out with the -exp encoder in the next few weeks.
+11:27 < MikeS> illi: it was a mixed discussion :-)
+11:27 < derf_> We'll see how that pans out.
+11:28 < illi> mikes: so which is the one that currently doesn't build ?
+11:28 < rillian> illi: that was the code derf hasn't committed
+11:29 < MikeS> illi: eh? As far as I know it should all build - we just need someone who a) owns the tools, and b) knows how to use them to build the releases and test them (including - and this is where we've done really badly historically - building/testing the SDK, so people who just want to link libvorbis in on windows don't need to build it themselves)
+11:29 < illi> mikes: well i already have the setup to do that... just drop the new code into my project... if you just want .dll's
+11:30 < illi> mikes: I just get frustrated working with dependant projects that aren't all linked in a single solution (.sln)
+11:30 -!- GwenStef [i=BlackSun@languedoc-5-82-225-110-127.fbx.proxad.net] has quit ["Don't speak !"]
+11:31 < MikeS> illi: well, we want to be able to provide libvorbis, etc. without having to use directshow, and we want it to build from the standard source tree, not be a private copy somewhere else.
+11:31 < MikeS> (plus we want binaries for the actual tools - those should be trivial for you to do0
+11:32 < MikeS> notably, by not changing the fundamentals of how we provide the SDK, people should be able to just drop in new libraries to their applications, and have bugfixes/better-encoding-quality, without having to rebuild or do anything.
+11:32 < illi> hmmm... i'll see how i go with the tools... i remember doing it once before... and it wasn't fun
+11:32 < Nehal> there are dsw files in the trunk, i haven't tried them yet, i should test it...
+11:33 < illi> if they work... maybe do that...
+11:33 < MikeS> illi: really? Apart from ogg123 (not intended for windows), they should be very, very simple.
+11:33 < Nehal> should be simple, yes :)
+11:33 < illi> not that they aren't easy build in isolation... it's just tedious manually pointing dependancies around
+11:34 < illi> ie as compared to having everything in a single solution and going "build it all"
+11:35 < jcoalson> sorry to interrupt... I gotta check out in 5, anything you want to know about FLAC?
+11:35 < rillian> jcoalson: sorry, forgot about you
+11:35 < rillian> can you give us a project update?
+11:35 < MikeS> well, as for how you build the tools, I don't really care - if it's easier to do it in some weird way, fine. The libraries (which we ship to third party developers) need to "just work" the way they currently do, though. 
+11:35 < jcoalson> I'm just working on bugs as I get free time...
+11:35 < Nehal> illi: i think the proper way to do it is your vc++ settings to point to an extra include/lib directory, and put everything in there...
+11:35 < rillian> and any idea when you'd like to move repositories and websites?
+11:35 < jcoalson> (can follow along on http://cvs.sourceforge.net/viewcvs.py/*checkout*/flac/flac/doc/html/changelog.html?rev=HEAD)...
+11:36 < jcoalson> ... and a few new features, probably WAVEFORMATEX support and >4G samples in flac and plugins
+11:36 < jcoalson> about repositories...
+11:36 < jcoalson> probably after next release, which could be end of october depending on free time
+11:37 < rillian> ok, sounds good
+11:37 < rillian> how do you like the new website template?
+11:37 < rillian> should we be trying to find someone to do a port for you, or would you prefer to?
+11:37 < jcoalson> haven't really gone through it thoroughly but it looks clean
+11:38 < rillian> and how are the tshirt sales going?
+11:38 < jcoalson> I'm not quite ready for that yet.  tshirts should be going to print in about a week.
+11:38 < illi> nehal: in 2002+ solution files point to all the projects, so you don't need to dump everything in a big directory containing everything you've ever built.
+11:38 < jcoalson> I'll probably print 100-200 based on current reservations
+11:39 < derf_> illi: In MSVC6 workspace files do the same thing.
+11:39 < illi> more or less yeah
+11:39 < MikeS> illi: the biggest problem with your setup is that you have private copies of libvorbis, etc. in your repository - which means that things are guaranteed to get out of sync, and so we can't just say to someone "check this module out and hit "compile it all""
+11:39 < derf_> Yes.
+11:39 < Nehal> illi: yes, that is like workspace files, but is it good that a user has to have everything build? what if someone wants libvorbis but not libao?
+11:40 < illi> mikes: no it's not all the other stuff... it's just the fact that there is some framework to build in
+11:40 < illi> rather than a bunch of random projects
+11:40 < MikeS> ??
+11:40 < rillian> could we do the win32 sdk with a wrapper and svn:externals ?
+11:40 < illi> rillian: yes... very likely...
+11:41 < Nehal> but we can have different .sln files for each project, right?
+11:41 < illi> i want to get rid of the dupe copies i have in svn soon
+11:41 < MikeS> illi: it's a simple fact: you have private copies of libvorbis and everything else in your oggds repository. That's just broken.
+11:41 < illi> nehal: yes
+11:42 -!- dominikz [n=dominikz@deq148.neoplus.adsl.tpnet.pl] has left #xiphmeet []
+11:42 < illi> mikes: yes... it's not ideal... but i need particular build settings, which aren't necessarily what other user will want
+11:42 < derf_> Perhaps we can table the technical discussion for now, and move on to other administrative things.
+11:43 < illi> like the linking conventions i need are __stdcall... whereas most people will want libraries with __cdecl (normal c linking)
+11:43 < illi> derf_: yeah
+11:43 < MikeS> ok.
+11:43 < Nehal> what's next?
+11:43 < rillian> for icecast I can say karl's been checking in more auth-related stuff
+11:43 < rillian> any other project news?
+11:43 < jcoalson> gotta go, cya
+11:44 < rillian> jcoalson: thanks fro coming!
+11:44 -!- karlH [n=karl@82.38.34.147] has joined #xiphmeet
+11:44 < Saoshyant> bye josh
+11:44 < illi> cya
+11:44 < rillian> Mike already mentioned we need to do new libogg, libvorbis and vorbis-tools releases
+11:44 < rillian> I guess icecast has one coming up soon too?
+11:44 -!- jcoalson [n=jcoalson@mosquitoes.corp.yahoo.com] has quit ["using sirc version 2.211+KSIRC/1.3.10"]
+11:45 < karlH> yes
+11:46 < illi> i made an sdk framework for the regular xiph builds ages ago www.illiminable.com/th/XiphWinSDK.zip
+11:46 < illi> something with similar structure just needs some svn:external magic done to it
+11:47 < rillian> karlH: any schedule?
+11:48 < rillian> next agenda item is new website progress
+11:48 < rillian> which has been great
+11:48 < rillian> Nehal's done a lot of work to port the old site, and it's really starting to look good
+11:48 < rillian> lots of pages still to go
+11:48 < rillian> and of course the speex and flac sites
+11:48 < Nehal> most of the main stuff is done, the major stuff is, yes speex and flac, and also cd paranoia
+11:49 < rillian> right the paranoia pages need to be ported as well
+11:49 < rillian> pjones: see, it's even falling off my radar :(
+11:49 < Atamido> Will Paranoia be getting it's own page?
+11:49 < MikeS> illi: ok, that's great, I didn't realise.
+11:49 < Atamido> s/site/page
+11:49 < pjones> yeah, the paranoia page needs -serious- reworking.
+11:49 -!- dominikz [n=dominikz@deq148.neoplus.adsl.tpnet.pl] has joined #xiphmeet
+11:49 < rillian> Atamido: the current layout is fine, I think, should just be ported to the new layout
+11:50  * pjones doesn't think it's on his radar at all, for the time being.
+11:50 < pjones> :/
+11:50 < rillian> and the text cleaned up, of course :)
+11:50 < MikeS> illi: errmm... except it doesn't actually seem to include the libs at all. but I guess that's easy to do for a release?
+11:50 < pjones> Well, the text is almost completely outdated anyway
+11:50 < Atamido> But not a paranoia.xiph.org site, correct?
+11:50 < rillian> Atamido: correct
+11:50 < rillian> xiph.org/paranoia is fine
+11:50 < pjones> at some point I'd like to make that "cdparanoia" and fix the name confusion.
+11:51 < rillian> anything else on the websites?
+11:51 < rillian> pjones: there's another paranoia?
+11:51 < pjones> (but that should probably be timed with a new release)
+11:51 < rillian> pjones: ok
+11:51 < pjones> rillian: no, but the code, docs, and website refer to it both ways; we're not internally consistent,.
+11:51 < rillian> but we should start calling it 'cdparanoia' regardless then
+11:51 < illi> mikes: yeah... it's just the source, if those internal dirs linked with svn:externals to the actual libraries, it would be a "live" sdk tracking trunk (or whatever)
+11:51 < pjones> and most vendors package it as "cdparanoia"
+11:52 < rillian> item 4 on the agenda is theora optimizations. I think we've already talked about that
+11:52 < rillian> anyone have something else to add on theora?
+11:52 < MikeS> illi: right, and if we did that, you could hit something to actually build the libs easily so we could ship it? 
+11:52 < illi> yes
+11:52 < Skinkie> rilliian: points where mentioned
+11:52 < illi> then it would be easy ! :)
+11:53 < rillian> pjones: it's in svn as cdparanoia at least
+11:53 < pjones> yes.
+11:53 < illi> if someone can help me with the ins and outs of svn:externals, it would be fairly easy to do
+11:53 < MikeS> illi: great. so it's mostly doing that (we can help with the svn:externals stuff), and building the tools (which _should_ be pretty trivial - if it isn't, there's something badly wrong)
+11:53 < rillian> ok, item 5 is  "On demand encoding/streaming (ices/icecast)"
+11:53 < MikeS> items 4-6 were added by someone a couple of days ago, I don't know who.
+11:53 < Nehal> illi: i've done svn:externals many times, i could give you a rundown later on
+11:53 < rillian> can whoever added that speak on the subject?
+11:53 < Skinkie> MikeS: That was me
+11:53 < illi> ok..
+11:53 < karlH> rillian: just in case it hasn't been mentioned, the icecast 2.3 rc2 should be out this week
+11:53 < MikeS> Skinkie: ok, go ahead
+11:54 < rillian> karlH: well, that's something of a schedule :)
+11:54 < rillian> congrats
+11:54 < illi> mikes: It also needs the vs2003 directorys added into the trunk for the libraries containing the project files...
+11:54 < illi> and i'll shut up now :)
+11:54 < Skinkie> Currently we run our streaming servers on icecast, but basically it can be very silent sometimes or can be very busy. Though to the design of icecast you can't say... hey source please stop encoding until i say you should start again
+11:55 < MikeS> illi: sure, that's not a problem - you can either commit or send them to me to do so, but we can take continued discussion of the precise details elsewhere/elsewhen.
+11:55 < Skinkie> Encoding 4 types of different media consumes a lot of pc power
+11:56 < MikeS> Well, the on-demand stuff will be in 2.3 (as karlh just mentioned, we're doing another release candidate this week)
+11:56 < Skinkie> on-demand is for relays isn't it?
+11:56 < MikeS> that doesn't help with your actual encoders having to do the encoding... but there's no way, architecturally, for that to be done directly.
+11:56 < karlH> if you mean to dynamically kick off an encoder then it isn't in, I don't think it's even been requested
+11:57 < MikeS> One possibility would be a "pre/post-on-demand-startup/shutdown" script to run, you could then write a script to start/kill ices if it's running on a machine your icecast server has access to.
+11:57 < rillian> isn't there also a hook mechanism, where icecast can trigger an external script that turns the encoder on and off
+11:57 < rillian> ?
+11:57 < MikeS> I think karlh has done some stuff similar to that, I'm not sure if it's in 2.3 yet, or in his experimental tree.
+11:57 < rillian> MikeS: right, that's certainly come up before
+11:57 < Skinkie> consider the other way around too, a user wants a bitrate, ices makes that bitrate
+11:58 < thomas_> I thought the point of icecast was only to worry itself with the streaming part ?
+11:58 -!- dominikz [n=dominikz@deq148.neoplus.adsl.tpnet.pl] has left #xiphmeet []
+11:59 < MikeS> thomas_: it is. It provides some basic management hooks though, so people can set things up around it
+12:00 < karlH> I suppose something per-mount could be done, but it would be best to report it in trac
+12:01 < MikeS> Skinkie: ok, could you file that at http://bugs.xiph.org/, and we'll consider adding appropriate hooks in a future version?
+12:02 < Skinkie> oki i'll add the feature request
+12:02 < MikeS> Next item, also added by you: vorbis peeling.
+12:02 -!- _KonvIRC [i=javi@CZ1-1A-u-0799.mc.onolab.com] has joined #xiphmeet
+12:02 < rillian> do you have some volunteers?
+12:03 < Skinkie> It continues on this one, if a user was allowed to ask for a specific bitrate it would be quite nice if the system doesn't need to run vorbis encoding per mount. Peeling is bounty for a long time, could something happen as a group of volunteers?
+12:03 < rillian> on a related note, there's been some discussion of bitrate scalability with and without codebook switching in the context of Vorbis-over-RTP lately
+12:03 < Skinkie> I don't have volunteers behind me, but I would like to contribute
+12:04 < rillian> Skinkie: something could, but we need volunteers
+12:04 < rillian> and unfortunately it involves understanding the vorbis encoder
+12:04 < MikeS> Skinkie: sure, if you find the right volunteer(s). It requires an encoder written to create sensibly-peelable streams.
+12:04 < rillian> which is pretty steep learning curve
+12:04 < MikeS> Skinkie: it's not a simple task, nor one to be undertaken by a large group - it's something that needs one or two people that really understand vorbis.
+12:05 < Skinkie> i have heared of a perl program that peeled, does such thing exists as far as you know it?
+12:05 < Saoshyant> MikeS, did anyone consider asking Aoyumi to get involved?
+12:06 < MikeS> Basically, it's not going to happen unless someone actually writes it. The levels of 'bounty' being suggested are not enough to get someone to do it for that.
+12:06 < MikeS> Saoshyant: I have no idea. Have you asked him? 
+12:06 < Saoshyant> I have no authority in that field :|
+12:06 < Nehal> since we are on this subject, how possible would it be to losslessy convert mp3 to vorbis? is it worth it... would this require too much bitrate gain?
+12:06 < rillian> Skinkie: a perl script could do the actual peeling. the problem is the reference encoder doesn't produce usefully-peelable streams
+12:07 < rillian> Saoshyant: you don't need authority to ask :)
+12:07 < MikeS> well, we have no authority to tell him what to do, either. You're as able to ask as anyone, so if it's something you're interested in, go ahead and ask - the worst that can happen is that he says "no"
+12:07 < rillian> Nehal: it's not possible
+12:07 < Skinkie> so basically the 'default' reference codec should be replaced so it produced peelable streams?
+12:07 < rillian> it is possible to do a better job than mp3decoder | oggenc
+12:07 < MikeS> Nehal: impossible.
+12:08 < rillian> but no one's cared enough
+12:08 < Saoshyant> rillian, what I meant is that I am not part of xiph.org staff, so my request to him would seem kinda harsh considering his work on fine tuning the lower bitrates.
+12:08 < Nehal> ok
+12:08 < rillian> Nehal: we just suggest people re-encode from masters
+12:08 < MikeS> xiph.org doesn't really have a 'staff', just a bunch of people who do stuff. Go ahead and ask!
+12:08 < Nehal> true
+12:08 < rillian> Saoshyant: whether it's "harsh" only has to do with how you ask the question
+12:09 < Saoshyant> ok ok...
+12:09 < MikeS> I think we're coming towards the end here - anything else anyone wants to bring up
+12:09 < MikeS> ?
+12:09 < rillian> seriously, xiph is just a bunch of volunteers behind an idea, don't be afraid to participate
+12:09 < rillian> "which useful work moral authority accrues"
+12:09 < thomas_> I have one miscellaneous question
+12:09 < Nehal> MikeS: hmm, yes actually...
+12:10 < thomas_> I noticed recently that built docs got added to svn of some modules
+12:10 < thomas_> any particular reason ?
+12:10 < Saoshyant> rillian, it's hard to participate when things have all to be decided by the "staff" anyway. Monty for instance is the one who decides what goes on vorbis or not
+12:10 < rillian> thomas_: please read the commit message, and then put it back :)
+12:10 < MikeS> And a bonus three cheers for our website volunteers - finally bringing our website into the 21st century! :-)
+12:10 < thomas_> cheer!
+12:10 < derf_> It only took 4 years.
+12:10 < Saoshyant> yes, cheers for that
+12:10 < rillian> hooray!
+12:10 < MikeS> rillian: I don't think he removed it, he just reverted the accidently-committed change.
+12:11 -!- _KonvIRC [i=javi@CZ1-1A-u-0799.mc.onolab.com] has quit [Remote closed the connection]
+12:11 < Nehal> rillian: we were discussing about www.vorbis.com/files, you said "we're still serving Tobias' directshow filters from there", what is the decision on that?
+12:11 < Atamido> Yay for web people!
+12:11 < rillian> oh, right.
+12:11 < rillian> we're still actively serving tobias' directshow filters from vorbis.com
+12:12 < Atamido> Baaad.
+12:12 < MikeS> Nehal: details of the website we're happy to talk about, but not really appropriate for the meeting - it's too easy to get sidetracked. 
+12:12 < rillian> I wanted an opinion poll on whether we should stop or not
+12:12 < thomas_> one other question - if speex has an obvious build error, can I just fix that or should I file patches and stuff ?
+12:12 < MikeS> rillian: definately stop. illi's filters work, are maintained, etc.
+12:12 < Nehal> MikeS: rillian suggested to me to discuss this at the meeting :)
+12:12 < MikeS> thomas_: you're the BuildMasterExtroadinaire! Just commit.
+12:12 < MikeS> Nehal: oh, sorry, ok
+12:12 < Saoshyant> thomas_, I would say fixing.
+12:12 < rillian> MikeS: ok, that's an answer :)
+12:13 < MikeS> tobias's do less, aren't maintained, and don't work as well. AFAIK.
+12:13 < rillian> move to adjourn?
+12:13 < derf_> Second.
+12:13 < Nehal> wait!
+12:13 < rillian> ok, we're done
+12:13 < rillian> thanks for coming everyone
+12:13 < rillian> we now return you to regular discussion
+--- Log closed Wed Sep 07 12:13:48 2005
