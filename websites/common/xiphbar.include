@@ -1,4 +1,4 @@
-<div id="xiphbar_outer" style="/common/xiphbar.css">
+<div id="xiphbar_outer" style="@import url(/common/xiphbar.css);">
 <table id="xiphbar" border="0" cellpadding="0" cellspacing="0">
 <tr>
 
