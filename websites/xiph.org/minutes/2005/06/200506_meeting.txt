@@ -1,0 +1,166 @@
+19:48:54<@xiphmont> meeting in eight minutes by my clock.
+19:57:07<@xiphmont> Hello there, getting started shortly.
+19:58:06<@xiphmont> Heh, anyone actually awake?
+19:58:41< myidiym> Here, enjoying the suspenseful countdown to start time ;)
+19:59:09<@xiphmont> Oh, we're started.  But if I'm the only one here.... ;-)
+19:59:26< thomasvs> i live
+19:59:53<@xiphmont> Hrm, well, ok, this will be a mostly quiet meeting then ;-)
+20:00:01<@xiphmont> *bangs gavel* we're underway.
+20:00:22<@xiphmont> First an update from Ralph he wanted forwarded along:
+20:00:52<@xiphmont> S and I are both sick and exhausted, so I'm not going to stay up and
+20:00:53<@xiphmont> make the meeting.
+20:00:53<@xiphmont> Brief summary of Guadec:
+20:00:55<@xiphmont> Mike Smith, Conrad Parker and I all attended. Christian Schaller of
+20:00:57<@xiphmont> Fluendo put together a multimedia track at the conference this year that
+20:00:59<@xiphmont> was well attended; Conrad and I gave talks. Everything was webcast with
+20:01:01<@xiphmont> flumotion.
+20:01:03<@xiphmont> Number one complaint (or so thomasvs claims) was not being able to read
+20:01:05<@xiphmont> the slides on the webcast. Conrad and I will try and hammer out a spec
+20:01:07<@xiphmont> for specifying the MNG overlay stuff in the OggSkeleton (metaheader)
+20:01:09<@xiphmont> this weekend while we're both in Barcelona.
+20:01:11<@xiphmont> Other big news was Nokia's announcement of the 770 handheld. There were
+20:01:13<@xiphmont> quite a few of them there. My personal impression was that the screen
+20:01:15<@xiphmont> was extremely nice, but otherwise it was too slow and the battery life
+20:01:17<@xiphmont> isn't great. But it does run a gtk-based ui on linux, and the team that
+20:01:19<@xiphmont> put it together is doing their best to make it as open as the rest of
+20:01:21<@xiphmont> Nokia will let them. They've been contracting with Fluendo to do a lot
+20:01:25<@xiphmont> of the multimedia stuff, and with Imendio for a lot of the other open
+20:01:27<@xiphmont> source library work.
+20:01:29<@xiphmont> The device will ship with *both* gstreamer and helix playback engines,
+20:01:31<@xiphmont> each supporting a disjoint set of codecs. Our formats are not supported
+20:01:33<@xiphmont> at all, despite both frameworks being able to do so. The usual excuses
+20:01:35<@xiphmont> were made, but there seems to be positive interest in getting that
+20:01:37<@xiphmont> fixed. We're trying to arrange development hardware. The fixed point
+20:01:39<@xiphmont> codec implementations should be straighforward to get going on the ARM,
+20:01:41<@xiphmont> but for decent performance we'll need to get them running on the DSP.
+20:01:43<@xiphmont> The C54 port of Tremor Monty did for the neuros would hopefully be a
+20:01:45<@xiphmont> good start for vorbis if he can find the code. Joe Born at Neuros Audio
+20:01:47<@xiphmont> also indicated he might have a copy if we can't find ours. There's been
+20:01:55<@xiphmont> reports of getting speex working on the C55 on the list lately, so
+20:01:57<@xiphmont> hopefully the C version will work well enough there. Someone will have
+20:01:59<@xiphmont> to do Theora by hand though.
+20:02:01<@xiphmont> We also talked to some folks from the BBC quite a bit, who ga
+20:02:03<@xiphmont> ve a talk
+20:02:05<@xiphmont> on their dirac codec. They are still very much open source friendly, but
+20:02:07<@xiphmont> unfortunately have little influence on the creative archive project. It
+20:02:09<@xiphmont> may be worth pushing a little harder to get a clear statement on IP
+20:02:11<@xiphmont> issues for dirac and see if it's appropriate to adopt as our next-gen
+20:02:13<@xiphmont> video codec.
+20:02:15<@xiphmont> Oh, and Dirac really wants/needs help with optimization. You thought
+20:02:17<@xiphmont> libtheora was slow...
+20:02:19<@xiphmont> Cheers,
+20:02:21<@xiphmont>  -r
+20:02:25<@xiphmont> I'll let folks read that for a moment or two, then onto project updates.
+20:02:40< thomasvs> (please dig out the neuros code)
+20:02:54< thomasvs> (side note - we might actually have someone ready to do the theora dsp code for that device)
+20:03:33<@xiphmont> Excellent.  There's no real digging to do, I have it.
+20:03:52<@xiphmont> It's not the most recent versin of neuros; their guys continued dev work after I stopped working on it.
+20:03:53< thomasvs> xiphmont: super.  nokia also has a program for developers - 500 devices will be sold for 99$
+20:04:00<@xiphmont> But I still have the most recent version of what I did.
+20:04:06< thomasvs> so mail them, tell them you did ogg/vorbis, and that you are going to port it to their device
+20:04:32< thomasvs> that is, if you are :) otherwise someone else needs to pick it up
+20:05:16<@xiphmont> No, I have no time, can't even pretend.
+20:05:25<@xiphmont> embedded work like that sucks out your soul.
+20:06:10< thomasvs> do it for the children
+20:06:30< thomasvs> anyway, feel free to proceed
+20:06:51<@xiphmont> The children can go outside and play and get a little sunshine :-)
+20:07:17<@xiphmont> Vorbis update:
+20:07:44<@xiphmont> I finished the optimization work for Mercora.  It went amazingly well.  this is a for-hire work, but I like them enough to give them a little plug.
+20:08:02<@xiphmont> The encoder is 4.2x faster than reference on VBR, 9x faster than reference on ABR.
+20:08:42< thomasvs> whoa, that's pretty good.  is that going to be folded back ?
+20:08:49<@xiphmont> During the project, I got to think alot about Vorbis :-)  I'm mostly caught up with life again so getting back into it is on my mind.
+20:09:13<@xiphmont> It will be folded back someday; not yet.  And there was a small amount of quality hit, at least to the VBR.
+20:09:22<@xiphmont> The ABR was probbaly a little nicer than reference.
+20:10:42<@xiphmont> I'll also be getting back into postfish as well as us finishing the new branding and website.  That was a ball I knew would get dropped if it wasn't done by SXSW, and with a few wrenches thrown in, it had to be put aside for a few months.
+20:11:44<@xiphmont> that's it for me.  
+20:12:04<@xiphmont> Who else is here to give a project report?
+20:14:31<@xiphmont> nooobody.  OK, moving on.
+20:14:58<@xiphmont> Summer of Code.  I assume folks have been reading Slashdot?  I haven't actually, but the Audacity folks told me about it :-)
+20:15:15< thomasvs> I want to get a gnome bounty added doing xiph integration
+20:15:33< thomasvs> trouble is, I'd like some input from "xiph" on what sort of features they've always envisioned to be a part of a desktop
+20:15:58< thomasvs> if anyone wants to share some thoughts with me on that point, together with my own, maybe it'll be enough of a spec for a bounty, and I can get it on the gnome bounty list
+20:17:01<@xiphmont> Hm, I suspect much of Xiph is rather ludditeish about desktops, really.  Jack may be the only one to really embrace the concept ;-)
+20:17:36< thomasvs> well, I think it's a critical mistake - if I can call it that - to be an island and not team up with desktops
+20:17:39< thomasvs> does that make sense ?
+20:18:29< myidiym> Is there any reason why it would be a bad thing?  I can't think of one.
+20:18:30<@xiphmont> Oh, I agree.
+20:18:39< Arc> what about KDEs new multimedia framework?
+20:18:55< thomasvs> xiphmont: is there another way google's summer of code can be tied to something xiphy ?
+20:18:57<@xiphmont> I'm just saying, my computing experience is very text driven.  "X is great for having lots of xterms!"
+20:19:06< thomasvs> Arc: afaik it's audio only
+20:19:14< Arc> *nod*
+20:19:23< thomasvs> Arc: and it's not really an "audio framework", it's a bunch of codecs for arts
+20:19:33< thomasvs> xiphmont: heh, good point :)
+20:20:22< Arc> thomasvs: arts is out the window now, as ive been reading
+20:21:04< thomasvs> that'd be good news
+20:21:09<@xiphmont> Oh jesus.  
+20:21:49<@xiphmont> GET OUT OF MY HEAD!
+20:22:37<@xiphmont> [looks around]
+20:22:47<@xiphmont> OK, is lilo gone?  Good, we can continue.
+20:23:05<@xiphmont> ARGHHHHH
+20:23:06< Arc> *blink* are you O.K.?
+20:23:37<@xiphmont> you're blocking global notices is my guess.
+20:23:46< Arc> yes
+20:24:05<@xiphmont> I should probably do the same at this point.  lilo is spamming the whole net trying to recruit people for SoC.
+20:24:14< Arc> ah
+20:24:23-!- myidiym [~myidiym@204.248.129.186] has left #xiphmeet []
+20:24:39-!- myidiym [~myidiym@204.248.129.186] has joined #xiphmeet
+20:24:52<@xiphmont> The most obvious SoC possibilities would be, I think, Icecast and Postfish.  I was planning on doing somehting like it but locally and recruit a few new college minions here.
+20:25:08< Arc> what is SoC
+20:25:20< Arc> oh Summer of Code
+20:25:20< thomasvs> Arc: Summer of Code :)
+20:25:23<@xiphmont> Summer of Code
+20:25:37< thomasvs> ...cho ....cho ....ho
+20:26:22<@xiphmont> OK, anyway, just in case people were unaware.  
+20:27:07<@xiphmont> Argh, there's lilo again.
+20:27:40<@xiphmont> OK, given the spam, lack of attendance and more importantly lack of new code, I think we'll cut theis Monthly Meeting a bit short and simply have more to show/talk about next month.
+20:28:19<@xiphmont> Anything else attendees want to talka bout before we end this?
+20:29:17< myidiym> one year plan?
+20:29:19< Arc> xiphmont: did you read the email re: pushing libogg2 branch to trunk?
+20:29:36<@xiphmont> Arc: yes, saw it, and we can work together on that soon.
+20:29:49< thomasvs> any progress on phil's rtp work ?
+20:29:50< Arc> um, ok, soon as in..?
+20:30:02<@xiphmont> myidiym: too few people here to talk about it.  I essentially want to brainstorm goals for Xiph for one year out.
+20:30:11< myidiym> ah, ok
+20:30:19<@xiphmont> Arc: shall we schedule time to meet/work on it this weekend?
+20:30:29< Arc> sure
+20:30:36< Arc> how about Sunday afternoon?
+20:30:42<@xiphmont> (I'm essentially restricted to working on Xiph on weekends right now, also trying to carve out some fridays)
+20:30:43<@xiphmont> OK
+20:30:50< Arc> 2pm?
+20:30:52< Atamido> Wow how do I manage to miss every meeting?
+20:31:08<@xiphmont> Arc: can it be a bit later?  I want to have sunlight hours for Camilla.
+20:31:27< Arc> alright 
+20:31:42< Arc> um 5pm? or you choose the time
+20:31:56<@xiphmont> I'd say '6', but 5 is good if that's getting too late for you.
+20:32:13<@xiphmont> Atamido: shall we also schedule web time this Sunday?
+20:32:53< Atamido> Yeah, sounds good to me.
+20:33:20< Arc> 6 works.
+20:33:39<@xiphmont> Oh, getting back to Summer of Code:  The idea is Google will pay students $4500 to apprentice themselves to an OSS project.  Could be quite a boon, and we should think of ways it would be useful to Xiph.
+20:34:06<@xiphmont> But for now, just think.  Send mail with ideas (after reading about it on the google site)
+20:34:15<@xiphmont> Arc: OK.  6pm EDT.
+20:34:15< myidiym> which list?
+20:34:46<@xiphmont> the relevant project list or to me :-)
+20:35:32< myidiym> xiphmont: which email list would you suggest we send ideas... and is that also true for the one-year planning?  I've gotten myself off of all the list and need to get back on the right ones.
+20:36:13<@xiphmont> I think 'advocacy' would be the right default list.
+20:36:22< thomasvs> xiphmont: isn't the list of projects google is donating this to already decided ?
+20:37:40<@xiphmont> No, not yet.
+20:37:46<@xiphmont> June 14th is the deadline.
+20:38:08<@xiphmont> Really, it's not by project; a person involved in a project applies to 'mentor' a student.
+20:39:29<@xiphmont> OK, we set?
+20:39:49<@xiphmont> Thomas: I'll get you and ralph the Neuros Tremor code.
+20:40:21< myidiym> G'night
+20:40:42< Atamido> xiphmont:  Any specific time Sunday?
+20:40:54< thomasvs> xiphmont: great, thanks
+20:40:55<@xiphmont> I'll be online working with Arc.  
+20:41:00< thomasvs> night people
+20:41:18< Atamido> Night.
+20:41:21<@xiphmont> So, at first, I'll be concentrating on that, but can intertwine web stuff a bit, or handle after.
+20:41:27<@xiphmont> OK, we're done.
+20:41:33<@xiphmont> *BANG*  Thanks for coming.
+20:42:48< Atamido> xiphmont:  Bring keys to the server because the XSPF guys at least want to start using the new site design.
+20:43:06<@xiphmont> Atamido: OK
+20:43:13<@xiphmont> Hell, I do too!
+20:43:14 * Atamido leaves for a party.
+20:43:33<@xiphmont> have fun dude
+20:48:01< Arc> heh
