@@ -6,7 +6,7 @@
 
   These pages &copy; 1994 - 2005 Xiph.Org. All rights reserved.</p>
 
-  <p><!--#config timefmt="%B %d, %Y" -->Last Modified: <!--#echo var="LAST_MODIFIED" --></p>
+  <p style="color:#FFFFFF;"><!--#config timefmt="%B %d, %Y" -->Last Modified: <!--#echo var="LAST_MODIFIED" --></p>
 </div>
 
 </div><!-- thepage -->
