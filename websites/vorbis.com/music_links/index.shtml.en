@@ -8,11 +8,6 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-  <div class="ml_link"><a href="http://clickass.org/music/">theGREENzebra's Music Page</a></div>
-  <div class="ml_added">added on <i>2003-12-13 01:53:06.86</i></div>
-  <div class="ml_desc">theGREENzebra writes remixes, original, and videogame
-  music and offers it all in Ogg Vorbis.</div>
-
   <div class="ml_link"><a href="http://www.magnatune.com">Magnatune</a></div>
   <div class="ml_added">added on <i>2003-10-13 12:14:48.40</i></div>
   <div class="ml_desc">Magnatune is an Internet record label, but they're not evil.
@@ -20,11 +15,22 @@
   goes straight to the musician, and you can download OGG/FLAC/WAV/MP3-VBRs versions
   of the album.  No DRM, ever.</div>
 
+  <div class="ml_link"><a href="http://www.theclock.org/">the clock</a></div>
+  <div class="ml_added">added on <i>2005-09-12 16:41:13</i></div>
+  <div class="ml_desc">The Clock is an experimental project with 
+music freely available in the ogg format. Try the <a 
+href="http://www.theclock.org/lace/">seeding</a> link.</div>
+
   <div class="ml_link"><a href="http://www.devo.com/fabco">Fabco</a></div>
   <div class="ml_added">added on <i>2003-07-07 13:50:24.88</i></div>
   <div class="ml_desc">Fabco is an Austin, TX musical project mixing electronic,
   rock, and experimental styles, and is a long time supporter of the Ogg Vorbis
   format.</div>
+
+  <div class="ml_link"><a href="http://clickass.org/music/">theGREENzebra's Music Page</a></div>
+  <div class="ml_added">added on <i>2003-12-13 01:53:06.86</i></div>
+  <div class="ml_desc">theGREENzebra writes remixes, original, and videogame
+  music and offers it all in Ogg Vorbis.</div>
 
   <div class="ml_link"><a href="http://www.hoerstreich.de/">Hörstreich</a></div>
   <div class="ml_added">added on <i>2003-02-13 06:38:04.32</i></div>
