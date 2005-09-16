@@ -91,6 +91,9 @@ typedef struct {
     long thread_id;
     char *file;
     int line;
+
+    /* time the lock was taken */
+    unsigned long long lock_start;
 #endif
 
     pthread_rwlock_t sys_rwlock;
@@ -105,7 +108,7 @@ typedef struct {
 #define thread_cond_broadcast(x) thread_cond_broadcast_c(x,__LINE__,__FILE__)
 #define thread_cond_wait(x) thread_cond_wait_c(x,__LINE__,__FILE__)
 #define thread_cond_timedwait(x,t) thread_cond_wait_c(x,t,__LINE__,__FILE__)
-#define thread_rwlock_create(x) thread_rwlock_create_c(x,__LINE__,__FILE__)
+#define thread_rwlock_create(x) thread_rwlock_create_c(__FILE__,(x),__LINE__,__FILE__)
 #define thread_rwlock_rlock(x) thread_rwlock_rlock_c(x,__LINE__,__FILE__)
 #define thread_rwlock_wlock(x) thread_rwlock_wlock_c(x,__LINE__,__FILE__)
 #define thread_rwlock_unlock(x) thread_rwlock_unlock_c(x,__LINE__,__FILE__)
@@ -164,10 +167,10 @@ void thread_cond_broadcast_c(cond_t *cond, int line, char *file);
 void thread_cond_wait_c(cond_t *cond, int line, char *file);
 void thread_cond_timedwait_c(cond_t *cond, int millis, int line, char *file);
 void thread_cond_destroy(cond_t *cond);
-void thread_rwlock_create_c(rwlock_t *rwlock, int line, char *file);
-void thread_rwlock_rlock_c(rwlock_t *rwlock, int line, char *file);
-void thread_rwlock_wlock_c(rwlock_t *rwlock, int line, char *file);
-void thread_rwlock_unlock_c(rwlock_t *rwlock, int line, char *file);
+void thread_rwlock_create_c(const char *name, rwlock_t *rwlock, int line, const char *file);
+void thread_rwlock_rlock_c(rwlock_t *rwlock, int line, const char *file);
+void thread_rwlock_wlock_c(rwlock_t *rwlock, int line, const char *file);
+void thread_rwlock_unlock_c(rwlock_t *rwlock, int line, const char *file);
 void thread_rwlock_destroy(rwlock_t *rwlock);
 void thread_exit_c(long val, int line, char *file);
 
