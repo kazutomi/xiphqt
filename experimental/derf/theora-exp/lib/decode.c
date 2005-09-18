@@ -1260,7 +1260,7 @@ static int oc_dec_postprocess_init(oc_dec_ctx *_dec){
     size_t frame_sz;
     frame_sz=_dec->state.info.frame_width*_dec->state.info.frame_height;
     if(_dec->pp_level<OC_PP_LEVEL_DEBLOCKC){
-      _dec->variances=(ogg_uint32_t *)_ogg_realloc(_dec->variances,
+      _dec->variances=(int *)_ogg_realloc(_dec->variances,
        _dec->state.fplanes[0].nfrags*sizeof(_dec->variances[0]));
       _dec->pp_frame_data=(unsigned char *)_ogg_realloc( 
        _dec->pp_frame_data,frame_sz*sizeof(_dec->pp_frame_data[0]));
@@ -1474,6 +1474,8 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
     zzi=OC_MINI(zzi,64);
     dct_coeffs[0]=(ogg_int16_t)frag->dc;
     iquants=_dec->state.dequant_tables[frag->mbmode!=OC_MODE_INTRA][_pli];
+    /*last_zzi is always initialized.
+      If your compiler thinks otherwise, it is dumb.*/
     oc_state_frag_recon(&_dec->state,frag,_pli,dct_coeffs,last_zzi,zzi,
      iquants[_dec->state.qis[0]][0],iquants[frag->qi]);
   }
@@ -2103,13 +2105,13 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
     _dec->state.curframe_num++;
     if(_granpos!=NULL)*_granpos=_dec->state.granpos;
   }
+#if defined(OC_DUMP_IMAGES)
+  oc_state_dump_frame(&_dec->state,OC_FRAME_SELF,"dec");
+#endif
   return 0;
 }
 
 int theora_decode_ycbcr_out(theora_dec_ctx *_dec,theora_ycbcr_buffer _ycbcr){
   oc_ycbcr_buffer_flip(_ycbcr,_dec->pp_frame_buf);
-#if defined(OC_DUMP_IMAGES)
-  oc_state_dump_frame(&_dec->state,OC_FRAME_SELF,"dec");
-#endif
   return 0;
 }

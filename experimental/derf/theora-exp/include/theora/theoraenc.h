@@ -29,6 +29,53 @@ extern "C" {
 
 
 
+/**The configuration information for the VBR encoding mode.
+ * This mode attempts to encode the video with a constant psychovisual
+ *  quality.
+ * It can be enabled by calling theora_encode_ctl() with #OC_ENCCTL_SETUP_VBR.
+ * See the #theora_info struct documentation for details on how the default
+ *  encoding mode is chosen.*/
+typedef struct theora_vbr_cfg{
+  /**The target quality index.
+   * Valid values range from 0 to 63, inclusive, with higher values giving
+   *  higher quality.
+   * Note that, in this case, this corresponds to a <em>perceptual</em>
+   *  quality, and does not translate directly into a quantization setting.
+   * Limits on the admissible quantizers can be controlled below.*/
+  int qi;
+  /**The minimum quality to use for a keyframe.
+   * Valid values range from 0 to 63, inclusive, with higher values giving
+   *  higher quality.*/
+  int kf_qi_min;
+  /**The maximum quality to use for a keyframe.
+   * Valid values range from 0 to 63, inclusive, with higher values giving
+   *  higher quality.
+   * This must be at least as large as #kf_qi_max.*/
+  int kf_qi_max;
+  /**The minimum quality to use for a delta frame.
+   * Valid values range from 0 to 63, inclusive, with higher values giving
+   *  higher quality.*/
+  int df_qi_min;
+  /**The maximum quality to use for a delta frame.
+   * Valid values range from 0 to 63, inclusive, with higher values giving
+   *  higher quality.
+   * This must be at least as large as #df_qi_max.*/
+  int df_qi_max;
+}theora_vbr_cfg;
+
+/**The configuration information for the constant QI encoding mode.
+ * This mode encodes the video with a constant quality index.
+ * This is the fastest encoding mode.
+ * It can be enabled by calling theora_encode_ctl() with #OC_ENCCTL_SETUP_CQI.
+ * See the #theora_info struct documentation for details on how the default
+ *  encoding mode is chosen.*/
+typedef struct theora_cqi_cfg{
+  /**The target quality index.
+     Valid values range from 0 to 63, inclusive, with higher values giving
+      higher quality.*/
+  int qi;
+}theora_cqi_cfg;
+
 /**\name theora_encode_ctl() codes
  * \anchor encctlcodes
  * These are the available request codes for theora_encode_ctl().
@@ -41,7 +88,7 @@ extern "C" {
  *  this call.
  * <tt>NULL</tt> may be specified to revert to the default tables.
  *
- * \param[in] _buf <tt>theora_huff_code[#OC_NHUFFMAN_TABLES][#OC_NDCT_TOKENS]</tt>
+ * \param[in] _buf <tt>#theora_huff_code[#OC_NHUFFMAN_TABLES][#OC_NDCT_TOKENS]</tt>
  * \retval OC_FAULT  \a _enc_ctx is <tt>NULL</tt>.
  * \retval OC_EINVAL Encoding has already begun or one or more of the given
  *                     tables is not full or prefix-free, \a _buf is
@@ -88,7 +135,7 @@ extern "C" {
  *  when any of the luma blocks in a macro block are not coded.
  * It also includes using the VP3 quantization tables and Huffman codes; if you
  *  set them explicitly after calling this function, the resulting stream will
- *  not by VP3-compatible.
+ *  not be VP3-compatible.
  * If you enable VP3-compatibility when encoding 4:2:2 or 4:4:4 source
  *  material, or when using a picture region smaller than the full frame (e.g.
  *  a non-multiple-of-16 width or height), then non-VP3 bitstream features will
@@ -102,7 +149,7 @@ extern "C" {
  *                   or 0 to disable it (the default).
  * \param[out] _buf <tt>int</tt>: 1 if all bitstream features required for
  *                   VP3-compatibility could be set, and 0 otherwise.
- *                  The latter will be returned if with pixel format is not
+ *                  The latter will be returned if the pixel format is not
  *                   4:2:0, the picture region is smaller than the full frame,
  *                   or if encoding has begun, preventing the quantization
  *                   tables and codebooks from being set.
@@ -110,6 +157,69 @@ extern "C" {
  * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
  * \retval OC_IMPL   Not supported by this implementation.*/
 #define OC_ENCCTL_SET_VP3_COMPATIBLE (10)
+/**Gets the maximum speed level.
+ * Higher speed levels favor quicker encoding over better quality per bit.
+ * Depending on the encoding mode, and the internal algorithms used, quality
+ *  may actually improve, but bitrate will also increase, and overall
+ *  rate/distortion performance will likely decrease.
+ * The maximum value, and the meaning of each value, may change depending on
+ *  the current encoding mode (VBR vs. CQI, etc.).
+ *
+ * \param[out] _buf int: The maximum encoding speed level.
+ * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
+ * \retval OC_IMPL   Not supported by this implementation in the current
+ *                    encoding mode.*/
+#define OC_ENCCTL_GET_SPLEVEL_MAX (12)
+/**Sets the speed level.
+ * By default, the slowest speed (0) is used.
+ *
+ * \param[in] _buf int: The new encoding speed level.
+ *                      0 is slowest, larger values use less CPU.
+ * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
+ *                    encoding speed level is out of bounds.
+ *                   The maximum encoding speed level may be
+ *                    implementation- and encoding mode-specific, and can be
+ *                    obtained via #OC_ENCCTL_GET_SPLEVEL_MAX.
+ * \retval OC_IMPL   Not supported by this implementation in the current
+ *                    encoding mode.*/
+#define OC_ENCCTL_SET_SPLEVEL (14)
+/**Puts the encoder in VBR mode.
+ * This can be done at any time during the encoding process, with different
+ *  configuration parameters, to encode different regions of the video segment
+ *  with different qualities.
+ * See the #theora_info struct documentation for details on how the default
+ *  encoding mode is chosen.
+ *
+ * \param[in] _buf <tt>#theora_vbr_cfg</tt>: the configuration parameters.
+ *                 This may be <tt>NULL</tt>, in which the current VBR
+ *                  configuration is unchanged.
+ *                 The default is to use the QI setting passed in via the
+ *                  #theora_info struct when the encoder was initialized, with
+ *                  a full range of admissible quantizers.
+ * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
+ * \retval OC_EINVAL The configuration parameters  do not meet one of their
+ *                    stated requirements, \a _buf is <tt>NULL</tt> and
+ *                    \a _buf_sz is not zero, or \a _buf is non-<tt>NULL</tt>
+ *                    and \a _buf_sz is not <tt>sizeof(#theora_vbr_cfg)</tt>.
+ * \retval OC_IMPL   Not supported by this implementation.*/
+#define OC_ENCCTL_SETUP_VBR (16)
+/**Puts the encoder in CQI mode.
+ * This can be done at any time during the encoding process, with different QI
+ *  values.
+ * See the #theora_info struct documentation for details on how the default
+ *  encoding mode is chosen.
+ *
+ * \param[in] _buf <tt>#theora_cqi_cfg</tt>: the configuration parameters.
+ *                 This may be <tt>NULL</tt>, in which case the current CQI
+ *                  configuration is unchanged.
+ *                 The default is to use the QI setting passed in via the
+ *                  #theora_info struct when the encoder was initialized.
+ * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
+ * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(#theora_cqi_cfg)</tt>.
+ * \retval OC_IMPL   Not supported by this implementation.*/
+#define OC_ENCCTL_SETUP_CQI (18)
 /*@}*/
 
 

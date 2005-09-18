@@ -4,12 +4,13 @@
 #include "encint.h"
 
 struct oc_mcenc_ctx{
-  oc_enc_ctx *enc;
-  int         candidates[12][2];
-  int         setb0;
-  int         ncandidates;
-  ogg_int32_t mvapw1;
-  ogg_int32_t mvapw2;
+  oc_enc_ctx        *enc;
+  oc_enc_pipe_stage  pipe;
+  int                candidates[12][2];
+  int                setb0;
+  int                ncandidates;
+  ogg_int32_t        mvapw1[2];
+  ogg_int32_t        mvapw2[2];
 };
 
 /*The maximum Y plane SAD value for accepting the median predictor.*/
@@ -68,6 +69,8 @@ static void oc_mcenc_find_candidates(oc_mcenc_ctx *_mcenc,int _mbi,
  int _which_frame){
   oc_mb_enc_info *nemb;
   oc_mb_enc_info *emb;
+  ogg_int32_t     mvapw1;
+  ogg_int32_t     mvapw2;
   int             a[3][2];
   int             ncandidates;
   int             i;
@@ -116,15 +119,17 @@ static void oc_mcenc_find_candidates(oc_mcenc_ctx *_mcenc,int _mbi,
   /*Fill in set B: accelerated predictors for this and adjacent macro
      blocks.*/
   _mcenc->setb0=ncandidates;
+  mvapw1=_mcenc->mvapw1[_which_frame];
+  mvapw2=_mcenc->mvapw2[_which_frame];
   /*The first time through the loop use the current macro block.*/
   nemb=emb;
   for(i=0;;i++){
     _mcenc->candidates[ncandidates][0]=
-     OC_DIV_ROUND_POW2(nemb->mvs[1][_which_frame][0]*_mcenc->mvapw1-
-     nemb->mvs[2][_which_frame][0]*_mcenc->mvapw2,16,0x8000);
+     OC_DIV_ROUND_POW2(nemb->mvs[1][_which_frame][0]*mvapw1-
+     nemb->mvs[2][_which_frame][0]*mvapw2,16,0x8000);
     _mcenc->candidates[ncandidates][1]=
-     OC_DIV_ROUND_POW2(nemb->mvs[1][_which_frame][1]*_mcenc->mvapw1-
-     nemb->mvs[2][_which_frame][1]*_mcenc->mvapw2,16,0x8000);
+     OC_DIV_ROUND_POW2(nemb->mvs[1][_which_frame][1]*mvapw1-
+     nemb->mvs[2][_which_frame][1]*mvapw2,16,0x8000);
     _mcenc->candidates[ncandidates][0]=OC_CLAMPI(-31,
      _mcenc->candidates[ncandidates][0],31);
     _mcenc->candidates[ncandidates][1]=OC_CLAMPI(-31,
@@ -327,17 +332,6 @@ static int oc_mcenc_ysad_halfpel_brefine(oc_mcenc_ctx *_mcenc,
   return _best_err;
 }
 
-oc_mcenc_ctx *oc_mcenc_alloc(oc_enc_ctx *_enc){
-  oc_mcenc_ctx *mcenc;
-  mcenc=_ogg_calloc(1,sizeof(*mcenc));
-  mcenc->enc=_enc;
-  return mcenc;
-}
-
-void oc_mcenc_free(oc_mcenc_ctx *_mcenc){
-  _ogg_free(_mcenc);
-}
-
 /*Perform a motion vector search for this macro block against a single
    reference frame.
   As a bonus, individual block motion vectors are computed as well, as much of
@@ -351,7 +345,7 @@ void oc_mcenc_free(oc_mcenc_ctx *_mcenc){
   _error:    Returns the prediction error for the macro block motion vector.
   _error4mv: Returns sum of the prediction error for the individual block
               motion vectors.*/
-void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
+static void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
  char _bmvs[4][2],int *_error,int *_error4mv){
   oc_mb_enc_info *embs;
   oc_mb_enc_info *emb;
@@ -562,7 +556,8 @@ void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
    reference frame.
   The actual motion vector is stored in the appropriate place in the
    oc_mb_enc_info structure.
-  Block-level motion vectors are not computed.
+  This is like the above oc_mcenc_search() routine, except that block-level
+   motion vectors are not computed.
   _mcenc:    The motion compensation context.
   _mbi:      The macro block index.
   _frame:    The frame to search, either OC_FRAME_PREV or OC_FRAME_GOLD.
@@ -682,29 +677,109 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
   return best_err;
 }
 
-void oc_mcenc_analyze(oc_mcenc_ctx *_mcenc){
-  oc_mb_enc_info *embs;
-  oc_mb          *mbs;
-  ogg_int64_t     nframes;
-  int             nmbs;
-  int             mbi;
-  /*If there is no previous frame, then skip motion analysis: Every vector has
-     been initialized to (0,0).*/
-  if(_mcenc->enc->state.ref_frame_idx[OC_FRAME_PREV]<0)return;
-  /*Set up the accelerated MV weights for previous frame prediction.*/
-  _mcenc->mvapw1=(ogg_int32_t)1<<17;
-  _mcenc->mvapw2=(ogg_int32_t)1<<16;
-  mbs=_mcenc->enc->state.mbs;
-  embs=_mcenc->enc->mbinfo;
-  nmbs=_mcenc->enc->state.fplanes[0].nsbs<<2;
-  for(mbi=0;mbi<nmbs;mbi++)if(mbs[mbi].mode!=OC_MODE_INVALID){
+/*A pipe to perform a motion vector search for each macro block.*/
+
+static int oc_mcenc_pipe_start(oc_enc_pipe_stage *_stage){
+  oc_enc_ctx  *enc;
+  ogg_int64_t  nframes;
+  int          pli;
+  int          mbi;
+  for(pli=0;pli<3;pli++)_stage->y_procd[pli]=0;
+  /*Move the motion vector predictors back a frame.
+    We could pipeline this, too, but it's probably not worth it.*/
+  enc=_stage->enc;
+  for(mbi=enc->state.fplanes[0].nsbs<<2;mbi-->0;){
     oc_mb_enc_info *emb;
-    emb=embs+mbi;
-    oc_mcenc_search(_mcenc,mbi,OC_FRAME_PREV,emb->bmvs,&emb->aerror,
-     &emb->aerror4mv);
+    emb=enc->mbinfo+mbi;
+    memmove(emb->mvs+1,emb->mvs,2*sizeof(emb->mvs[0]));
   }
+  /*Set up the accelerated MV weights for previous frame prediction.*/
+  enc->mcenc->mvapw1[OC_FRAME_PREV]=(ogg_int32_t)1<<17;
+  enc->mcenc->mvapw2[OC_FRAME_PREV]=(ogg_int32_t)1<<16;
   /*Set up the accelerated MV weights for golden frame prediction.*/
-  nframes=_mcenc->enc->state.curframe_num-_mcenc->enc->state.keyframe_num;
-  _mcenc->mvapw1=(ogg_int32_t)(nframes!=1?(nframes<<17)/(nframes-1):0);
-  _mcenc->mvapw2=(ogg_int32_t)(nframes!=2?(nframes<<16)/(nframes-2):0);
+  nframes=enc->state.curframe_num-enc->state.keyframe_num;
+  enc->mcenc->mvapw1[OC_FRAME_GOLD]=(ogg_int32_t)(
+   nframes!=1?(nframes<<17)/(nframes-1):0);
+  enc->mcenc->mvapw2[OC_FRAME_GOLD]=(ogg_int32_t)(
+   nframes!=2?(nframes<<16)/(nframes-2):0);
+  return _stage->next!=NULL?(*_stage->next->pipe_start)(_stage->next):0;
+}
+
+static int oc_mcenc_pipe_process(oc_enc_pipe_stage *_stage,int _y_avail[3]){
+  oc_mcenc_ctx   *mcenc;
+  int             pli;
+  mcenc=_stage->enc->mcenc;
+  /*For now we ignore the chroma planes.*/
+  for(pli=1;pli<3;pli++)_stage->y_procd[pli]=_y_avail[pli];
+  /*Only do motion analysis if there is a previous frame; otherwise every
+     vector has already been initialized to (0,0).*/
+  if(mcenc->enc->state.ref_frame_idx[OC_FRAME_PREV]>=0){
+    int             y_avail;
+    y_avail=_y_avail[0];
+    /*Round to a super-block row, except for the last one, which may be
+       incomplete.*/
+    if(y_avail<(int)mcenc->enc->state.info.frame_height)y_avail&=~31;
+    while(_stage->y_procd[0]<y_avail){
+      oc_mb_enc_info *embs;
+      oc_mb          *mbs;
+      int             mbi;
+      int             mbi_end;
+      mbi=(_stage->y_procd[0]>>4)*mcenc->enc->state.fplanes[0].nhsbs;
+      mbi_end=mbi+mcenc->enc->state.fplanes[0].nhsbs<<1;
+      mbs=mcenc->enc->state.mbs;
+      embs=mcenc->enc->mbinfo;
+      for(;mbi<mbi_end;mbi++)if(mbs[mbi].mode!=OC_MODE_INVALID){
+        oc_mb_enc_info *emb;
+        emb=embs+mbi;
+        oc_mcenc_search(mcenc,mbi,OC_FRAME_PREV,emb->bmvs,&emb->aerror,
+         &emb->aerror4mv);
+      }
+      /*Chain to the next stage.*/
+      _stage->y_procd[0]=OC_MINI(_stage->y_procd[0]+32,y_avail);
+      if(_stage->next!=NULL){
+        int ret;
+        ret=_stage->next->pipe_proc(_stage->next,_stage->y_procd);
+        if(ret<0)return ret;
+      }
+    }
+  }
+  else{
+    _stage->y_procd[0]=_y_avail[0];
+    if(_stage->next!=NULL){
+      return _stage->next->pipe_proc(_stage->next,_stage->y_procd);
+    }
+  }
+  return 0;
+}
+
+static int oc_mcenc_pipe_end(oc_enc_pipe_stage *_stage){
+  return _stage->next!=NULL?(*_stage->next->pipe_end)(_stage->next):0;
+}
+
+/*Initialize the motion vector search stage of the pipeline.
+  _enc: The encoding context.*/
+static void oc_mcenc_pipe_init(oc_enc_pipe_stage *_stage,oc_enc_ctx *_enc){
+  _stage->enc=_enc;
+  _stage->next=NULL;
+  _stage->pipe_start=oc_mcenc_pipe_start;
+  _stage->pipe_proc=oc_mcenc_pipe_process;
+  _stage->pipe_end=oc_mcenc_pipe_end;
+}
+
+oc_mcenc_ctx *oc_mcenc_alloc(oc_enc_ctx *_enc){
+  oc_mcenc_ctx *mcenc;
+  mcenc=_ogg_calloc(1,sizeof(*mcenc));
+  mcenc->enc=_enc;
+  oc_mcenc_pipe_init(&mcenc->pipe,_enc);
+  return mcenc;
+}
+
+void oc_mcenc_free(oc_mcenc_ctx *_mcenc){
+  _ogg_free(_mcenc);
+}
+
+oc_enc_pipe_stage *oc_mcenc_prepend_to_pipe(oc_mcenc_ctx *_mcenc,
+ oc_enc_pipe_stage *_next){
+  _mcenc->pipe.next=_next;
+  return &_mcenc->pipe;
 }

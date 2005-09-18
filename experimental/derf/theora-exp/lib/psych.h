@@ -1,5 +1,6 @@
 #if !defined(_psych_H)
 # define _psych_H (1)
+# include "encvbr.h"
 
 /*The assumed screen resolution vs. viewing distance.
   This is taken to be constant under the assumption that viewers will sit

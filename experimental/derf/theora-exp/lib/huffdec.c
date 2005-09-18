@@ -84,7 +84,7 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   if(!bits){
     int ret;
     binode=oc_huff_node_alloc(1);
-    binode->depth=_depth>1;
+    binode->depth=(unsigned char)(_depth>1);
     ret=oc_huff_tree_unpack(_opb,binode->nodes,_depth);
     if(ret>=0)ret=oc_huff_tree_unpack(_opb,binode->nodes+1,_depth);
     if(ret<0){
@@ -96,7 +96,7 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   else{
     if(theora_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return OC_BADHEADER;
     binode=oc_huff_node_alloc(0);
-    binode->depth=_depth>1;
+    binode->depth=(unsigned char)(_depth>1);
     binode->token=(unsigned char)bits;
   }
   *_binode=binode;
@@ -112,7 +112,6 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
 static int oc_huff_tree_mindepth(oc_huff_node *_binode){
   int depth0;
   int depth1;
-  int cdepth;
   if(_binode->nbits==0)return 0;
   depth0=oc_huff_tree_mindepth(_binode->nodes[0]);
   depth1=oc_huff_tree_mindepth(_binode->nodes[1]);
@@ -127,9 +126,6 @@ static int oc_huff_tree_mindepth(oc_huff_node *_binode){
   Return: The number of entries that would be contained in a jump table of the
            given depth.*/
 static int oc_huff_tree_occupancy(oc_huff_node *_binode,int _depth){
-  int depth0;
-  int depth1;
-  int cdepth;
   if(_binode->nbits==0||_depth<=0)return 1;
   else{
     return oc_huff_tree_occupancy(_binode->nodes[0],_depth-1)+
@@ -156,7 +152,7 @@ static void oc_huff_node_fill(oc_huff_node **_nodes,
  oc_huff_node *_binode,int _level,int _depth){
   if(_level<=0||_binode->nbits==0){
     int i;
-    _binode->depth=_depth-_level;
+    _binode->depth=(unsigned char)(_depth-_level);
     _nodes[0]=oc_huff_tree_collapse(_binode);
     for(i=1;i<1<<_level;i++)_nodes[i]=_nodes[0];
   }
@@ -176,13 +172,10 @@ static void oc_huff_node_fill(oc_huff_node **_nodes,
   Return: The new root of the collapsed sub-tree.*/
 static oc_huff_node *oc_huff_tree_collapse(oc_huff_node *_binode){
   oc_huff_node *root;
-  int           nchildren;
   int           mindepth;
   int           depth;
   int           loccupancy;
   int           occupancy;
-  int           i;
-  int           inext;
   depth=mindepth=oc_huff_tree_mindepth(_binode);
   occupancy=1<<mindepth;
   do{

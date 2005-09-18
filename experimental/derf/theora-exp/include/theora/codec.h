@@ -151,6 +151,8 @@ typedef theora_img_plane theora_ycbcr_buffer[3];
  *  the initial 'info' header packet.
  * To initialize an encoder, the application fills in this structure and
  *  passes it to theora_encode_alloc().
+ * A default encoding mode is chosen based on the values of the #quality and
+ *  #target_bitrate fields.
  * On decode, it is filled in by theora_decode_headerin(), and then passed to
  *  theora_decode_alloc().
  * 
@@ -228,12 +230,18 @@ typedef struct{
   theora_colorspace  colorspace;
   /**The pixel format.*/
   theora_pixel_fmt   pixel_fmt;
-  /**The target bit-rate in bits per second. */
+  /**The target bit-rate in bits per second.
+     If initializing an encoder with this struct, set this field to a non-zero
+      value to activate CBR encoding by default.*/
   /*TODO: Current encoder does not support CBR mode, or anything like it.
     We also don't really know what nominal rate each quality level
      corresponds to yet.*/
   int                target_bitrate;
-  /**The target quality level.*/
+  /**The target quality level.
+     Valid values range from 0 to 63, inclusive, with higher values giving
+      higher quality.
+     If initializing an encoder with this struct, and #target_bitrate is set
+      to zero, VBR encoding at this quality will be activated by default.*/
   /*Currently this is set so that a qi of 0 corresponds to distortions of 24
      times the JND, and each increase by 16 halves that value.
     This gives us fine discrimination at low qualities, yet effective rate

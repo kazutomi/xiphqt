@@ -78,8 +78,10 @@ encode.c \
 enquant.c \
 fdct.c \
 huffenc.c \
-impmap.c \
 mcenc.c \
+encmsc.c \
+encvbr.c \
+impmap.c \
 psych.c \
 
 LIBTHEORAENC_CHEADERS =   \
@@ -88,6 +90,7 @@ encint.h \
 enquant.h \
 fdct.h \
 huffenc.h \
+encvbr.h \
 psych.h \
 
 DUMP_VIDEO_CSOURCES = dump_video.c

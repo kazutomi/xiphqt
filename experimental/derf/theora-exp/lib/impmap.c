@@ -343,6 +343,8 @@ struct oc_impmap_region{
 
 /*Importance map context information.*/
 struct oc_impmap_ctx{
+  /*The pipeline stage.*/
+  oc_enc_pipe_stage                  pipe;
   /*Segmentation information for the Y plane.
     Some day we may also wish to segment the chroma planes, or derive a
      segmentation using all 3 planes at once.*/
@@ -2106,42 +2108,7 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
   }
   return ret;
 }
-
-oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
-  theora_info   *info;
-  oc_impmap_ctx *impmap;
-  int            edge_sz;
-  int            width;
-  int            height;
-  info=&_enc->state.info;
-  width=info->pic_width;
-  height=info->pic_height;
-  impmap=(oc_impmap_ctx *)_ogg_malloc(sizeof(*impmap));
-  oc_seg_init(&impmap->seg,width,height);
-  impmap->inv_region_sz_max=100.0F/(width*height);
-  edge_sz=width>1?height>1?(width-2<<1)+(height<<1):width:height;
-  impmap->inv_edge_sz_max=2.0F/edge_sz;
-  impmap->pic_x=info->pic_x;
-  impmap->pic_y=info->pic_y;
-  impmap->imp_avg=0.5F;
-  /*Allocate space for the region stats and neighbor links.*/
-  impmap->regions=(oc_impmap_region *)_ogg_malloc(
-   impmap->seg.cregions*sizeof(impmap->regions[0]));
-  impmap->enc=_enc;
-  impmap->chroma_frag_weight=
-   OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[_enc->state.info.pixel_fmt];
-  return impmap;
-}
-
-void oc_impmap_free(oc_impmap_ctx *_impmap){
-  if(_impmap!=NULL){
-    oc_seg_clear(&_impmap->seg);
-    _ogg_free(_impmap->regions);
-    _ogg_free(_impmap);
-  }
-}
-
-void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
+static void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   theora_img_plane yplane;
   float            imp_sum;
   int              img_offset;
@@ -2228,4 +2195,93 @@ void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
     }
   }
 #endif
+}
+
+
+/*The importance map pipeline stage.
+  For now, for simplicity, this is not actually pipelined.
+  The quadtree segmentation algorithm does not really lend itself to it, and
+   even if an online segmentation algorithm were used, a full stall would be
+   created by the need to gather statistics over all the regions to assign
+   weights to any of them.*/
+
+static int oc_impmap_pipe_start(oc_enc_pipe_stage *_stage){
+  int pli;
+  for(pli=0;pli<3;pli++)_stage->y_procd[pli]=0;
+  return 0;
+}
+
+static int oc_impmap_pipe_process(oc_enc_pipe_stage *_stage,int _y_avail[3]){
+  int pli;
+  for(pli=0;pli<3;pli++)_stage->y_procd[pli]=_y_avail[pli];
+  return 0;
+}
+
+static int oc_impmap_pipe_end(oc_enc_pipe_stage *_stage){
+  oc_enc_ctx *enc;
+  enc=_stage->enc;
+  oc_impmap_fill(enc->vbr->impmap,
+   enc->state.info.fps_denominator/(float)enc->state.info.fps_numerator);
+  if(_stage->next!=NULL){
+    int ret;
+    ret=(*_stage->next->pipe_start)(_stage->next);
+    if(ret<0)return ret;
+    ret=(*_stage->next->pipe_proc)(_stage->next,_stage->y_procd);
+    if(ret<0)return ret;
+    return (*_stage->next->pipe_end)(_stage->next);
+  }
+  return 0;
+}
+
+/*Initialize the importance map stage of the pipeline.
+  _enc: The encoding context.*/
+static void oc_impmap_pipe_init(oc_enc_pipe_stage *_stage,oc_enc_ctx *_enc){
+  _stage->enc=_enc;
+  _stage->next=NULL;
+  _stage->pipe_start=oc_impmap_pipe_start;
+  _stage->pipe_proc=oc_impmap_pipe_process;
+  _stage->pipe_end=oc_impmap_pipe_end;
+}
+
+
+oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
+  theora_info   *info;
+  oc_impmap_ctx *impmap;
+  int            edge_sz;
+  int            width;
+  int            height;
+  info=&_enc->state.info;
+  width=info->pic_width;
+  height=info->pic_height;
+  impmap=(oc_impmap_ctx *)_ogg_malloc(sizeof(*impmap));
+  oc_seg_init(&impmap->seg,width,height);
+  impmap->inv_region_sz_max=100.0F/(width*height);
+  edge_sz=width>1?height>1?(width-2<<1)+(height<<1):width:height;
+  impmap->inv_edge_sz_max=2.0F/edge_sz;
+  impmap->pic_x=info->pic_x;
+  impmap->pic_y=info->pic_y;
+  impmap->imp_avg=0.5F;
+  /*Allocate space for the region stats and neighbor links.*/
+  impmap->regions=(oc_impmap_region *)_ogg_malloc(
+   impmap->seg.cregions*sizeof(impmap->regions[0]));
+  impmap->enc=_enc;
+  impmap->chroma_frag_weight=
+   OC_IMPMAP_CHROMA_FRAG_WEIGHT_TABLE[_enc->state.info.pixel_fmt];
+  oc_impmap_pipe_init(&impmap->pipe,_enc);
+  return impmap;
+}
+
+void oc_impmap_free(oc_impmap_ctx *_impmap){
+  if(_impmap!=NULL){
+    oc_seg_clear(&_impmap->seg);
+    _ogg_free(_impmap->regions);
+    _ogg_free(_impmap);
+  }
+}
+
+
+oc_enc_pipe_stage *oc_impmap_prepend_to_pipe(oc_impmap_ctx *_impmap,
+ oc_enc_pipe_stage *_next){
+  _impmap->pipe.next=_next;
+  return &_impmap->pipe;
 }

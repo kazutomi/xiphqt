@@ -316,3 +316,131 @@ void oc_fdct8x8_border(const oc_border_info *_border,ogg_int16_t _y[64],
   if(cext==NULL)for(in=w,out=_y,end=out+8;out<end;in+=8,out++)fdct8(out,in);
   else for(in=w,out=_y,end=out+8;out<end;in+=8,out++)fdct8_ext(out,in,cext);
 }
+
+/*Performs an fDCT on a given fragment.
+  _frag:     The fragment to perform the 2D DCT on.
+  _dct_vals: The output buffer for the DCT coefficients.
+  _ystride:  The Y stride of the plane the fragment belongs to.
+  _framei:   The picture buffer index to perform the DCT on.
+             Use OC_FRAME_IO for the current input frame.*/
+void oc_frag_intra_fdct(const oc_fragment *_frag,ogg_int16_t _dct_vals[64],
+ int _ystride,int _framei){
+  ogg_int16_t    pix_buf[64];
+  unsigned char *pixels;
+  int            pixi;
+  int            y;
+  int            x;
+  /*NOTE: 128 is subtracted from each pixel value to make it signed.
+    The original VP3 source claimed that, "this reduces the internal precision
+     requirments [sic] in the DCT transform."
+    This is of course not actually true.
+    The transform must still support input in the range [-255,255] to code
+     predicted fragments, since the same transform is used for both.
+    This actually _reduces_ the precision of the results, because larger
+     (absolute) values would have fewer significant bits chopped off when
+     rounding.
+    We're stuck with it, however.
+    At least it might reduce bias towards 0 when coding unpredicted DC
+     coefficients, but that's not what VP3 justified it with.*/
+  pixels=_frag->buffer[_framei];
+  /*For border fragments, only copy pixels that are in the displayable
+     region of the image.
+    The DCT function will compute optimal padding values for the other
+     pixels.*/
+  if(_frag->border!=NULL){
+    ogg_int64_t mask;
+    mask=_frag->border->mask;
+    for(pixi=y=0;y<8;y++){
+      for(x=0;x<8;x++,pixi++){
+        pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?pixels[x]-128:0);
+        /*This branchless code is (almost) equivalent to the previous line:
+            int pmask;
+            pmask=-(int)mask&1;
+            pix_buf[pixi]=(ogg_int16_t)(pmask&pixels[x]);
+          We don't use this code to allow the user to pass in a buffer that is
+           the exact size of the displayed image, not the size padded to a
+           multiple of 16.
+          In the latter case, we might segfault on pixels[x] if it is not
+           mapped to a valid page, even though we would discard the value
+           we were attempting to read.*/
+        mask>>=1;
+      }
+      pixels+=_ystride;
+    }
+    oc_fdct8x8_border(_frag->border,_dct_vals,pix_buf);
+  }
+  /*Otherwise, copy all the pixels in the fragment and do a normal DCT.*/
+  else{
+    for(pixi=y=0;y<8;y++){
+      for(x=0;x<8;x++,pixi++)pix_buf[pixi]=(ogg_int16_t)(pixels[x]-128);
+      pixels+=_ystride;
+    }
+    oc_fdct8x8(_dct_vals,pix_buf);
+  }
+}
+
+/*A pipline stage for applying an fDCT to each (non-motion compensated) block
+   in a frame.*/
+
+static int oc_fdct_pipe_start(oc_enc_pipe_stage *_stage){
+  int pli;
+  for(pli=0;pli<3;pli++)_stage->y_procd[pli]=0;
+  return _stage->next!=NULL?(*_stage->next->pipe_start)(_stage->next):0;
+}
+
+/*Does the fDCTs.
+  This pipeline stage proceeds in a planar fashion.*/
+static int oc_fdct_pipe_process(oc_enc_pipe_stage *_stage,int _y_avail[3]){
+  int pli;
+  for(pli=0;pli<3;pli++){
+    int y_procd;
+    int y_avail;
+    /*Compute how far we can get in complete fragment rows.*/
+    y_procd=_stage->y_procd[pli];
+    y_avail=_y_avail[pli]&~7;
+    /*If that's farther than we've already gotten, do some fDCTs.*/
+    if(y_avail>y_procd){
+      oc_fragment_plane    *fplane;
+      oc_fragment          *frags;
+      oc_fragment          *frag_end;
+      oc_fragment_enc_info *efrags;
+      int                   ystride;
+      int                   yfrag0;
+      int                   yrows;
+      fplane=_stage->enc->state.fplanes+pli;
+      ystride=_stage->enc->state.input[pli].ystride;
+      yfrag0=fplane->froffset+(y_procd>>3)*fplane->nhfrags;
+      yrows=y_avail-y_procd>>3;
+      frags=_stage->enc->state.frags+yfrag0;
+      efrags=_stage->enc->frinfo+yfrag0;
+      do{
+        for(frag_end=frags+fplane->nhfrags;frags<frag_end;frags++,efrags++){
+          oc_frag_intra_fdct(frags,efrags->dct_coeffs,ystride,OC_FRAME_IO);
+        }
+        _stage->y_procd[pli]+=8;
+        if(_stage->next!=NULL){
+          int ret;
+          ret=(*_stage->next->pipe_proc)(_stage->next,_stage->y_procd);
+          if(ret<0)return ret;
+        }
+      }
+      while(--yrows);
+    }
+  }
+  return 0;
+}
+
+static int oc_fdct_pipe_end(oc_enc_pipe_stage *_stage){
+  return _stage->next!=NULL?(*_stage->next->pipe_end)(_stage->next):0;
+}
+
+
+/*Initialize the fDCT stage of the pipeline.
+  _enc: The encoding context.*/
+void oc_fdct_pipe_init(oc_enc_pipe_stage *_stage,oc_enc_ctx *_enc){
+  _stage->enc=_enc;
+  _stage->next=NULL;
+  _stage->pipe_start=oc_fdct_pipe_start;
+  _stage->pipe_proc=oc_fdct_pipe_process;
+  _stage->pipe_end=oc_fdct_pipe_end;
+}

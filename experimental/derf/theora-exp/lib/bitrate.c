@@ -8197,9 +8197,13 @@ ogg_uint16_t OC_RES_BITRATES[64][3][OC_NMODES][16]={
   }
 };
 
+ogg_uint16_t OC_RES_DISTORTS[64][3][OC_NMODES][16];
+
 #if defined(OC_BITRATE_STATS)
 static ogg_int64_t OC_RES_BITRATE_ACCUM[64][3][OC_NMODES][16];
 static int         OC_RES_BITRATE_SAMPLES[64][3][OC_NMODES][16];
+static ogg_int64_t OC_RES_DISTORT_ACCUM[64][3][OC_NMODES][16];
+static ogg_int64_t OC_RES_DISTORT_SAMPLES[64][3][OC_NMODES][16];
 
 #include <stdio.h>
 
@@ -8209,6 +8213,8 @@ void oc_bitrate_stats_read(void){
   if(in==NULL)return;
   fread(OC_RES_BITRATE_ACCUM,sizeof(OC_RES_BITRATE_ACCUM),1,in);
   fread(OC_RES_BITRATE_SAMPLES,sizeof(OC_RES_BITRATE_SAMPLES),1,in);
+  fread(OC_RES_DISTORT_ACCUM,sizeof(OC_RES_DISTORT_ACCUM),1,in);
+  fread(OC_RES_DISTORT_SAMPLES,sizeof(OC_RES_DISTORT_SAMPLES),1,in);
   /*Update the current bitrate statistics in use.*/
   {
     int qi;
@@ -8221,9 +8227,16 @@ void oc_bitrate_stats_read(void){
           for(erri=0;erri<16;erri++){
             int n;
             n=OC_RES_BITRATE_SAMPLES[qi][pli][modei][erri];
-            if(!n)continue;
-            OC_RES_BITRATES[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
-             ((OC_RES_BITRATE_ACCUM[qi][pli][modei][erri]<<1)+n)/(n<<1));
+            if(n!=0){
+              OC_RES_BITRATES[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
+               ((OC_RES_BITRATE_ACCUM[qi][pli][modei][erri]<<1)+n)/(n<<1));
+            }
+            n=OC_RES_DISTORT_SAMPLES[qi][pli][modei][erri];
+            if(n!=0){
+              OC_RES_DISTORTS[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
+               ((OC_RES_DISTORT_ACCUM[qi][pli][modei][erri]<<OC_DIS_SCALE+1)+n)/
+               (n<<1));
+            }
           }
         }
       }
@@ -8236,6 +8249,8 @@ void oc_bitrate_stats_write(void){
   out=fopen("modedec.stats","wb");
   fwrite(OC_RES_BITRATE_ACCUM,sizeof(OC_RES_BITRATE_ACCUM),1,out);
   fwrite(OC_RES_BITRATE_SAMPLES,sizeof(OC_RES_BITRATE_SAMPLES),1,out);
+  fwrite(OC_RES_DISTORT_ACCUM,sizeof(OC_RES_DISTORT_ACCUM),1,out);
+  fwrite(OC_RES_DISTORT_SAMPLES,sizeof(OC_RES_DISTORT_SAMPLES),1,out);
 }
 
 void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
@@ -8251,6 +8266,7 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
   };
   ogg_uint32_t  eob_bits[64];
   int           eob_runs[64];
+  int           ref_idx;
   int           pli;
   int          *coded_fragi;
   int          *coded_fragi_end;
@@ -8330,8 +8346,13 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
      bit count per block.*/
   /*Go through the actual encoded tokens and assign the bits used by each to
      the fragment(s) they came from.*/
+  ref_idx=_enc->state.ref_frame_idx[OC_FRAME_SELF];
   coded_fragi_end=coded_fragi=_enc->state.coded_fragis;
   for(pli=0;pli<3;pli++){
+    int ref_ystride;
+    int cur_ystride;
+    cur_ystride=_enc->state.input[pli].ystride;
+    ref_ystride=_enc->state.ref_frame_bufs[ref_idx][pli].ystride;
     coded_fragi_end+=_enc->state.ncoded_fragis[pli];
     for(;coded_fragi<coded_fragi_end;coded_fragi++){
       oc_fragment *frag;
@@ -8375,10 +8396,43 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
         }
         err_bin=efrag->eerror>>(frag->mbmode==OC_MODE_INTRA?8:6);
         err_bin=OC_MINI(15,err_bin);
-        OC_RES_BITRATE_ACCUM[
-         frag->invalid?0:frag->qi][pli][frag->mbmode][err_bin]+=frag_bits;
-        OC_RES_BITRATE_SAMPLES[
-         frag->invalid?0:frag->qi][pli][frag->mbmode][err_bin]++;
+        if(!frag->invalid){
+          unsigned char *cur;
+          unsigned char *ref;
+          int            err;
+          int            i;
+          int            j;
+          OC_RES_BITRATE_ACCUM[frag->qi][pli][frag->mbmode][err_bin]+=frag_bits;
+          OC_RES_BITRATE_SAMPLES[frag->qi][pli][frag->mbmode][err_bin]++;
+          err=0;
+          cur=frag->buffer[OC_FRAME_IO];
+          ref=frag->buffer[ref_idx];
+          if(frag->border!=NULL){
+            ogg_int64_t mask;
+            mask=frag->border->mask;
+            for(i=0;i<8;i++){
+              for(j=0;j<8;j++){
+                if(mask&1){
+                  err+=abs(cur[j]-ref[j]);
+                }
+                mask>>=1;
+              }
+              cur+=cur_ystride;
+              ref+=ref_ystride;
+            }
+            OC_RES_DISTORT_SAMPLES[frag->qi][pli][frag->mbmode][err_bin]+=
+             frag->border->npixels;
+          }
+          else{
+            for(i=0;i<8;i++){
+              for(j=0;j<8;j++)err+=abs(cur[j]-ref[j]);
+              cur+=cur_ystride;
+              ref+=ref_ystride;
+            }
+            OC_RES_DISTORT_SAMPLES[frag->qi][pli][frag->mbmode][err_bin]+=64;
+          }
+          OC_RES_DISTORT_ACCUM[frag->qi][pli][frag->mbmode][err_bin]+=err;
+        }
       }
     }
   }
@@ -8393,9 +8447,16 @@ void oc_bitrate_update_stats(oc_enc_ctx *_enc,int _huff_idxs[5][3]){
           for(erri=0;erri<16;erri++){
             int n;
             n=OC_RES_BITRATE_SAMPLES[qi][pli][modei][erri];
-            if(!n)continue;
-            OC_RES_BITRATES[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
-             ((OC_RES_BITRATE_ACCUM[qi][pli][modei][erri]<<1)+n)/(n<<1));
+            if(n!=0){
+              OC_RES_BITRATES[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
+               ((OC_RES_BITRATE_ACCUM[qi][pli][modei][erri]<<1)+n)/(n<<1));
+            }
+            n=OC_RES_DISTORT_SAMPLES[qi][pli][modei][erri];
+            if(n!=0){
+              OC_RES_DISTORTS[qi][pli][modei][erri]=(ogg_uint16_t)OC_MINI(65535,
+               ((OC_RES_DISTORT_ACCUM[qi][pli][modei][erri]<<OC_DIS_SCALE+1)+n)/
+               (n<<1));
+            }
           }
         }
       }

@@ -105,6 +105,10 @@ SOURCE=..\..\lib\huffdec.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\..\include\theora\codec.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\decint.h
 # End Source File
 # Begin Source File
@@ -137,7 +141,7 @@ SOURCE=..\..\lib\quant.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\theora\theora.h
+SOURCE=..\..\include\theora\theoradec.h
 # End Source File
 # End Group
 # End Target

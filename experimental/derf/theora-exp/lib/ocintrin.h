@@ -21,6 +21,12 @@ static unsigned char oc_clamp255(int _x){
 
 #define OC_MAXI(_a,_b)      ((_a)<(_b)?(_b):(_a))
 #define OC_MINI(_a,_b)      ((_a)>(_b)?(_b):(_a))
+/*Clamps an integer into the given range.
+  If _a>_c, then the lower bound _a is respected over the upper bound _c (this
+   behavior is required to meet our documented API behavior).
+  _a: The lower bound.
+  _b: The value to clamp.
+  _c: The upper boud.*/
 #define OC_CLAMPI(_a,_b,_c) (OC_MAXI(_a,OC_MINI(_b,_c)))
 #define OC_CLAMP255(_x)     (oc_clamp255(_x))
 /*Divides an integer by a power of two, truncating towards 0.
