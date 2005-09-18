@@ -25,6 +25,7 @@ noinst_HEADERS = \
 	dequant.h \
 	encint.h \
 	enquant.h \
+	encvbr.h \
 	fdct.h \
 	huffdec.h \
 	huffenc.h \
@@ -52,6 +53,8 @@ libtheoraenc_la_SOURCES = \
 	bitrate.c \
 	encinfo.c \
 	encode.c \
+	encmsc.c \
+	encvbr.c \
 	enquant.c \
 	fdct.c \
 	huffenc.c \
