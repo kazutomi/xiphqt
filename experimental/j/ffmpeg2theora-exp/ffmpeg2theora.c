@@ -1,7 +1,7 @@
 /* -*- tab-width:4;c-file-style:"cc-mode"; -*- */
 /*
- * ffmpeg2theora.c -- Convert ffmpeg supported a/v files to  Ogg Theora
- * Copyright (C) 2003-2004 <j@v2v.cc>
+ * ffmpeg2theora.c -- Convert ffmpeg supported a/v files to  Ogg Theora / Ogg Vorbis
+ * Copyright (C) 2003-2005 <j@v2v.cc>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,81 @@
 
 #ifdef WIN32
 #include "fcntl.h"
+#define rindex  strrchr
 #endif
 
 #include "theorautils.h"
+
+#define DEINTERLACE_FLAG     1
+#define SYNC_FLAG            3
+#define NOSOUND_FLAG         4
+#define V4L_FLAG             5
+#define CROPTOP_FLAG         6
+#define CROPBOTTOM_FLAG      7
+#define CROPRIGHT_FLAG       8
+#define CROPLEFT_FLAG        9
+#define ASPECT_FLAG         10
+#define INPUTFPS_FLAG       11
+#define AUDIOSTREAM_FLAG    12
+
+
+
+#define V2V_PRESET_PRO 1
+#define V2V_PRESET_PREVIEW 2
+
+
+typedef struct ff2theora{
+    AVFormatContext *context;
+    int video_index;
+    int audio_index;
+    
+    int deinterlace;
+    int audiostream;
+    int sample_rate;
+    int channels;
+    int disable_audio;
+    float audio_quality;
+    int audio_bitrate;
+    int preset;
+
+    int picture_width;
+    int picture_height;
+    double fps;
+    ImgReSampleContext *img_resample_ctx; /* for image resampling/resizing */
+    ReSampleContext *audio_resample_ctx;
+    ogg_int32_t aspect_numerator;
+    ogg_int32_t aspect_denominator;
+    double    frame_aspect;
+
+    int video_quality;
+    int video_bitrate;
+    int sharpness;
+    int keyint;
+
+    double force_input_fps;
+    int sync;
+    
+    /* cropping */
+    int frame_topBand;
+    int frame_bottomBand;
+    int frame_leftBand;
+    int frame_rightBand;
+    
+    int frame_width;
+    int frame_height;
+    int frame_x_offset;
+    int frame_y_offset;
+
+    /* In seconds */
+    int start_time;
+    int end_time; 
+
+    double pts_offset; /* between given input pts and calculated output pts */
+    int64_t frame_count; /* total video frames output so far */
+    int64_t sample_count; /* total audio samples output so far */
+}
+*ff2theora;
+
 
 static double rint(double x) {
     if (x < 0.0)
@@ -40,7 +112,7 @@ static double rint(double x) {
         return (double)(int)(x + 0.5);
 }
 
-theoraframes_info info;
+oggmux_info info;
 
 static int using_stdin = 0;
 
@@ -93,7 +165,7 @@ ff2theora ff2theora_init (){
         this->video_quality=31.5; // video quality 5
         this->video_bitrate=0;
         this->sharpness=2;
-        this->keyint=1111;
+        this->keyint=64;
         this->force_input_fps=0;
         this->sync=0;
         this->aspect_numerator=0;
@@ -164,7 +236,7 @@ void ff2theora_output(ff2theora this) {
 
         this->fps = fps;
         
-        if(info.preset == V2V_PRESET_PREVIEW){
+        if(this->preset == V2V_PRESET_PREVIEW){
             // possible sizes 384/288,320/240
             int pal_width=384;
             int pal_height=288;
@@ -179,7 +251,7 @@ void ff2theora_output(ff2theora this) {
                 this->picture_height=ntsc_height;
             }
         }
-        else if(info.preset == V2V_PRESET_PRO){
+        else if(this->preset == V2V_PRESET_PRO){
             if(this->fps==25 && (venc->width!=720 || venc->height!=576) ){
                 this->picture_width=720;
                 this->picture_height=576;
@@ -360,13 +432,13 @@ void ff2theora_output(ff2theora this) {
             /* config file? commandline options? v2v presets? */
             
             theora_info_init (&info.ti);
-
-            info.ti.frame_width = this->frame_width;
-            info.ti.frame_height = this->frame_height;
-            info.ti.pic_width = this->picture_width;
-            info.ti.pic_height = this->picture_height;
-            info.ti.pic_x = this->frame_x_offset;
-            info.ti.pic_y = this->frame_y_offset;
+            
+            info.ti.frame_width = this->frame_width;  
+            info.ti.frame_height = this->frame_height;  
+            info.ti.pic_width = this->picture_width;  
+            info.ti.pic_height = this->picture_height;  
+            info.ti.pic_x = this->frame_x_offset;  
+            info.ti.pic_y = this->frame_y_offset;  
             if(this->force_input_fps) {
                 info.ti.fps_numerator = 1000000 * (this->fps);    /* fps= numerator/denominator */
                 info.ti.fps_denominator = 1000000;
@@ -374,7 +446,6 @@ void ff2theora_output(ff2theora this) {
             else {
                 info.ti.fps_numerator=vstream->r_frame_rate.num;
                 info.ti.fps_denominator = vstream->r_frame_rate.den;
-                info.fps = (double) vstream->r_frame_rate.num / vstream->r_frame_rate.den;
             }
             /* this is pixel aspect ratio */
             info.ti.aspect_numerator=this->aspect_numerator;
@@ -390,7 +461,7 @@ void ff2theora_output(ff2theora this) {
 
             info.ti.target_bitrate = this->video_bitrate; 
             info.ti.quality = this->video_quality;
-/*            info.ti.dropframes_p = 1;
+/*            info.ti.dropframes_p = 0; 
             info.ti.quick_p = 1;
             info.ti.keyframe_auto_p = 1;
             info.ti.keyframe_frequency = this->keyint;
@@ -410,13 +481,11 @@ void ff2theora_output(ff2theora this) {
         info.sample_rate = this->sample_rate;
         info.vorbis_quality = this->audio_quality;
         info.vorbis_bitrate = this->audio_bitrate;
-        theoraframes_init (&info);
-        /*seek to start time*/    
-#if LIBAVFORMAT_BUILD <= 4616
-        av_seek_frame( this->context, -1, (int64_t)AV_TIME_BASE*this->start_time);
-#else
-        av_seek_frame( this->context, -1, (int64_t)AV_TIME_BASE*this->start_time, 1);
-#endif
+        oggmux_init (&info);
+        /*seek to start time*/
+        if(this->start_time) {
+          av_seek_frame( this->context, -1, (int64_t)AV_TIME_BASE*this->start_time, 1);
+        }
         /*check for end time and caclulate number of frames to encode*/
         no_frames = fps*(this->end_time - this->start_time);
         if(this->end_time > 0 && no_frames <= 0){
@@ -431,8 +500,6 @@ void ff2theora_output(ff2theora this) {
         do{    
             if(no_frames > 0){
                 if(this->frame_count > no_frames){
-                    if(info.debug)
-                        fprintf(stderr,"\nreached end specified with --endtime\n");
                     break;
                 }
             }
@@ -451,7 +518,7 @@ void ff2theora_output(ff2theora this) {
                     int dups = 0;
                     if(len >0 &&
                         (len1 = avcodec_decode_video(vstream->codec,
-                                        frame,&got_picture, ptr, len))>0) {
+                                        frame, &got_picture, ptr, len))>0) {
                                         
                         if(got_picture){
                             // this is disabled by default since it does not work
@@ -512,13 +579,29 @@ void ff2theora_output(ff2theora this) {
                     }    
                     first=0;
                     //now output_resized
-                    do {
-                        if( theoraframes_add_video(this, &info, 
-                                             output_resized ,e_o_s) ){
-                            ret = -1;
-                            fprintf (stderr,"No theora frames available\n");
-                            break;
-                        }
+                    /* pysical pages */
+                    static theora_ycbcr_buffer ycbcr;
+                    /* Theora is a one-frame-in,one-frame-out system; submit a frame
+                     * for compression and pull out the packet */
+                    ycbcr[0].width = this->frame_width;
+                    ycbcr[0].height = this->frame_height;
+                    ycbcr[0].ystride = output_resized->linesize[0];
+
+                    ycbcr[1].width = this->frame_width / 2;
+                    ycbcr[1].height = this->frame_height / 2;
+                    ycbcr[1].ystride = output_resized->linesize[1];
+
+                    ycbcr[2].width = this->frame_width / 2;
+                    ycbcr[2].height = this->frame_height / 2;
+                    ycbcr[2].ystride = output_resized->linesize[2];
+
+
+                    ycbcr[0].data = output_resized->data[0];
+                    ycbcr[1].data = output_resized->data[1];
+                    ycbcr[2].data = output_resized->data[2];
+
+                    do {                        
+                        oggmux_add_video(&info, ycbcr ,e_o_s);
                         this->frame_count++;
                     } while(dups--);
                     if(e_o_s){
@@ -554,11 +637,8 @@ void ff2theora_output(ff2theora this) {
                                 resampled=audio_buf;
                         }
                     }
-                    if (theoraframes_add_audio(&info, resampled, 
-                        samples_out *(this->channels),samples_out,e_o_s)){
-                        ret = -1;
-                        fprintf (stderr,"No audio frames available\n");
-                    }
+                    oggmux_add_audio(&info, resampled, 
+                        samples_out *(this->channels),samples_out,e_o_s);
                     this->sample_count += samples_out;
                     if(e_o_s && len <= 0){
                         break;
@@ -567,11 +647,15 @@ void ff2theora_output(ff2theora this) {
 
             }
             /* flush out the file */
-            theoraframes_flush (&info, e_o_s);
+            oggmux_flush (&info, e_o_s);
             av_free_packet (&pkt);
         }
         while (ret >= 0);
+/*
+    lets takes this out for now, this way glic stops complaining.
+*/
 
+/*
         if(frame) av_free(frame);
         if(frame_tmp) av_free(frame_tmp);
         if(output) av_free(output);
@@ -584,13 +668,13 @@ void ff2theora_output(ff2theora this) {
                 av_free(resampled);
             av_free(audio_buf);
         }
-        
+
         if (this->img_resample_ctx)
             img_resample_close(this->img_resample_ctx);
         if (this->audio_resample_ctx)
             audio_resample_close(this->audio_resample_ctx);
-
-        theoraframes_close (&info);
+*/
+        oggmux_close (&info);
     }
     else{
         fprintf (stderr, "No video or audio stream found\n");
@@ -688,7 +772,7 @@ void print_usage (){
         "\t\t\t\t '"PACKAGE" -p info' for more informations\n"
     
         "\nInput options:\n"
-        "\t --deinterlace,-d \tforce deinterlace\n"
+        "\t --deinterlace \tforce deinterlace\n"
         "\t\t\t\t otherwise only material marked as interlaced \n"
         "\t\t\t\t will be deinterlaced\n"
         "\t --format,-f\t\tspecify input format\n"
@@ -714,16 +798,18 @@ void print_usage (){
 #ifndef _WIN32
         "\t --nice\t\t\tset niceness to n\n"
 #endif
-        "\t --debug\t\toutput some more information during encoding\n"
         "\t --help,-h\t\tthis message\n"
 
 
         "\n Examples:\n"
     
-        "\tffmpeg2theora videoclip.avi (will write output to videoclip.avi.ogg)\n\n"
+        "\tffmpeg2theora videoclip.avi (will write output to videoclip.ogg)\n\n"
         "\tcat something.dv | ffmpeg2theora -f dv -o output.ogg -\n\n"
-        "\tLive encoding from a DV camcorder (needs a fast machine)\n"
-        "\tdvgrab - | ffmpeg2theora -f dv -x 352 -y 288 -o output.ogg -\n"
+        "\tLive streaming from V4L Device:\n"
+        "\t ffmpeg2theora --v4l /dev/video0 --inputfps 15 -x 160 -y 128 -o - \\ \n"
+        "\t\t | oggfwd iccast2server 8000 password /theora.ogg\n\n"
+        "\tLive encoding from a DV camcorder (needs a fast machine):\n"
+        "\t dvgrab - | ffmpeg2theora -f dv -x 352 -y 288 -o output.ogg -\n"
         "\n\tLive encoding and streaming to icecast server:\n"
         "\t dvgrab --format raw - | \\\n"
         "\t  ffmpeg2theora -f dv -x 160 -y 128 -o /dev/stdout - | \\\n"
@@ -737,20 +823,11 @@ int main (int argc, char **argv){
     int  outputfile_set=0;
     char outputfile_name[255];
     char inputfile_name[255];
+    char *str_ptr;
     
-    static int croptop_flag=0;
-    static int cropbottom_flag=0;
-    static int cropright_flag=0;
-    static int cropleft_flag=0;    
-    static int nosound_flag=0;    
-    static int aspect_flag=0;
-    static int inputfps_flag=0;
+    static int flag=-1;
     static int metadata_flag=0;
-    static int deinterlace_flag=0;
-    static int audiostream_flag=0;
-    static int sync_flag=0;
-    static int v4l_flag=0;
-    
+
     AVInputFormat *input_fmt = NULL;
     AVFormatParameters *formatParams = NULL;
     
@@ -767,23 +844,23 @@ int main (int argc, char **argv){
       {"audiobitrate",required_argument,NULL,'A'},
       {"sharpness",required_argument,NULL,'S'},
       {"keyint",required_argument,NULL,'K'},
-      {"deinterlace",0,&deinterlace_flag,'d'},
+      {"deinterlace",0,&flag,DEINTERLACE_FLAG},
       {"samplerate",required_argument,NULL,'H'},
       {"channels",required_argument,NULL,'c'},
-      {"nosound",0,&nosound_flag,1},
-      {"v4l",required_argument,&v4l_flag,1},
-      {"aspect",required_argument,&aspect_flag,1},
+      {"nosound",0,&flag,NOSOUND_FLAG},
+      {"v4l",required_argument,&flag,V4L_FLAG},
+      {"aspect",required_argument,&flag,ASPECT_FLAG},
       {"v2v-preset",required_argument,NULL,'p'},
       {"nice",required_argument,NULL,'N'},
-      {"croptop",required_argument,&croptop_flag,1},
-      {"cropbottom",required_argument,&cropbottom_flag,1},
-      {"cropright",required_argument,&cropright_flag,1},
-      {"cropleft",required_argument,&cropleft_flag,1},
-      {"inputfps",required_argument,&inputfps_flag,1},
-      {"audiostream",required_argument,&audiostream_flag,1},
+      {"croptop",required_argument,&flag,CROPTOP_FLAG},
+      {"cropbottom",required_argument,&flag,CROPBOTTOM_FLAG},
+      {"cropright",required_argument,&flag,CROPRIGHT_FLAG},
+      {"cropleft",required_argument,&flag,CROPLEFT_FLAG},
+      {"inputfps",required_argument,&flag,INPUTFPS_FLAG},
+      {"audiostream",required_argument,&flag,AUDIOSTREAM_FLAG},
       {"starttime",required_argument,NULL,'s'},
       {"endtime",required_argument,NULL,'e'},
-      {"sync",0,&sync_flag,1},
+      {"sync",0,&flag,SYNC_FLAG},
   
       {"artist",required_argument,&metadata_flag,10},
       {"title",required_argument,&metadata_flag,11},
@@ -793,7 +870,6 @@ int main (int argc, char **argv){
       {"copyright",required_argument,&metadata_flag,15},
       {"license",required_argument,&metadata_flag,16},
 
-      {"debug",0,NULL,'D'},
       {"help",0,NULL,'h'},
       {NULL,0,NULL,0}
     };
@@ -812,53 +888,58 @@ int main (int argc, char **argv){
         switch(c)
         {
             case 0:
-                if (sync_flag){
-                    convert->sync=1;
-                    sync_flag=0;
+                if (flag) {
+                    switch (flag) 
+                    {
+                        case DEINTERLACE_FLAG:
+                            convert->deinterlace=1;
+                            flag=-1;
+                            break;
+                        case SYNC_FLAG:
+                            convert->sync=1;
+                            flag=-1;
+                            break;
+                        case NOSOUND_FLAG:
+                            convert->disable_audio=1;
+                            flag=-1;
+                            break;
+                        case V4L_FLAG:
+                            formatParams = malloc(sizeof(AVFormatParameters));
+                            formatParams->device = optarg;
+                            flag=-1;
+                            break;
+                /* crop */
+                        case CROPTOP_FLAG:
+                            convert->frame_topBand=crop_check(convert,"top",optarg);
+                            flag=-1;
+                            break;
+                        case CROPBOTTOM_FLAG:
+                            convert->frame_bottomBand=crop_check(convert,"bottom",optarg);
+                            flag=-1;
+                            break;
+                        case CROPRIGHT_FLAG:
+                            convert->frame_rightBand=crop_check(convert,"right",optarg);
+                            flag=-1;
+                            break;
+                        case CROPLEFT_FLAG:
+                            convert->frame_leftBand=crop_check(convert,"left",optarg);
+                            flag=-1;
+                            break;
+                        case ASPECT_FLAG:
+                            convert->frame_aspect=aspect_check(optarg);
+                            flag=-1;
+                            break;
+                        case INPUTFPS_FLAG:
+                            convert->force_input_fps=atof(optarg);
+                            flag=-1;
+                            break;
+                        case AUDIOSTREAM_FLAG:
+                            convert->audiostream=atoi(optarg);;
+                            flag=-1;
+                            break;
+                    }
                 }
 
-                if (nosound_flag){
-                    convert->disable_audio=1;
-                    nosound_flag=0;
-                }
-                if (v4l_flag) {
-                    formatParams = malloc(sizeof(AVFormatParameters));
-                    formatParams->device = optarg;
-                    v4l_flag = 0;
-                }
-                if (deinterlace_flag){
-                    convert->deinterlace=1;
-                    deinterlace_flag=0;
-                }
-                /* crop */
-                if (croptop_flag){
-                    convert->frame_topBand=crop_check(convert,"top",optarg);
-                    croptop_flag=0;
-                }
-                if (cropbottom_flag){
-                    convert->frame_bottomBand=crop_check(convert,"bottom",optarg);
-                    cropbottom_flag=0;
-                }
-                if (cropright_flag){
-                    convert->frame_rightBand=crop_check(convert,"right",optarg);
-                    cropright_flag=0;
-                }
-                if (cropleft_flag){
-                    convert->frame_leftBand=crop_check(convert,"left",optarg);
-                    cropleft_flag=0;
-                }
-                if (aspect_flag){
-                    convert->frame_aspect=aspect_check(optarg);
-                    aspect_flag=0;
-                }
-                if (inputfps_flag){
-                    convert->force_input_fps=atof(optarg);
-                    inputfps_flag=0;
-                }
-                if (audiostream_flag){
-                    convert->audiostream=atoi(optarg);;
-                    audiostream_flag=0;
-                }
                 /* metadata */
                 if (metadata_flag){
                     switch(metadata_flag) {
@@ -952,12 +1033,6 @@ int main (int argc, char **argv){
                     exit(1);
                 }
                 break;                        
-            case 'd':
-                if(!strcmp(optarg,"off"))
-                    convert->deinterlace=0;
-                else
-                    convert->deinterlace=1;
-                break;
             case 'H':
                 convert->sample_rate=atoi(optarg);
                 break;
@@ -973,7 +1048,7 @@ int main (int argc, char **argv){
                 }
                 else if(!strcmp(optarg, "pro")){
                     //need a way to set resize here. and not later
-                    info.preset=V2V_PRESET_PRO;
+                    convert->preset=V2V_PRESET_PRO;
                     convert->video_quality = rint(7*6.3);
                     convert->audio_quality=3*.099;
                     convert->channels=2;
@@ -982,7 +1057,7 @@ int main (int argc, char **argv){
                 }
                 else if(!strcmp(optarg,"preview")){
                     //need a way to set resize here. and not later
-                    info.preset=V2V_PRESET_PREVIEW;
+                    convert->preset=V2V_PRESET_PREVIEW;
                     convert->video_quality = rint(5*6.3);
                     convert->audio_quality=1*.099;
                     convert->channels=2;
@@ -1005,10 +1080,6 @@ int main (int argc, char **argv){
 #endif
                 }
                 break;
-            case 'D':
-                //enable debug informations
-                info.debug=1;
-                break;
             case 'h':
                 print_usage ();
                 exit(1);
@@ -1017,7 +1088,7 @@ int main (int argc, char **argv){
     //use PREVIEW as default setting
     if(argc==2){
         //need a way to set resize here. and not later
-        info.preset=V2V_PRESET_PREVIEW;
+        convert->preset=V2V_PRESET_PREVIEW;
         convert->video_quality = rint(5*6.3);
         convert->audio_quality=1*.099;
         convert->channels=2;
@@ -1031,7 +1102,16 @@ int main (int argc, char **argv){
             sprintf(inputfile_name,"pipe:");
         }
         if(outputfile_set!=1){
-            sprintf(outputfile_name,"%s.ogg",argv[optind]);
+            sprintf(outputfile_name, "%s", argv[optind]);
+            if(str_ptr = rindex(outputfile_name, '.')) {
+              sprintf(str_ptr, ".ogg");
+              if(!strcmp(inputfile_name, outputfile_name)){
+                sprintf(outputfile_name, "%s.ogg", inputfile_name);
+              }
+            }
+            else {
+                 sprintf(outputfile_name, "%s.ogg", outputfile_name);
+            }
             outputfile_set=1;
         }
         optind++;
