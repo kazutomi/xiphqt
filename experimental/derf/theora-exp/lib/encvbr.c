@@ -718,7 +718,7 @@ static void oc_enc_vbr_residual_tokenize(oc_enc_ctx *_enc){
   This also builds up the coded fragment and uncoded fragment lists.
   The coded MB list is not built up.
   That is done during mode decision.*/
-static void oc_enc_mark_coded(oc_enc_ctx *_enc){
+static void oc_enc_vbr_mark_coded(oc_enc_ctx *_enc){
   oc_sb *sb;
   oc_sb *sb_end;
   int    pli;
@@ -1303,7 +1303,7 @@ static int oc_vbr_pipe_end(oc_enc_pipe_stage *_stage){
     oc_enc_vbr_mark_all_intra(enc);
   }
   else{
-    oc_enc_mark_coded(enc);
+    oc_enc_vbr_mark_coded(enc);
     /*Only proceed if we have some coded blocks.
       No coded blocks -> dropped frame -> 0 byte packet.*/
     if(enc->ncoded_frags>0){
@@ -1365,7 +1365,7 @@ static int oc_enc_vbr_cfg(oc_enc_vbr_ctx *_vbr,theora_vbr_cfg *_cfg){
    _cfg->kf_qi_max<_cfg->kf_qi_min||_cfg->kf_qi_max>63||
    _cfg->df_qi_min<0||_cfg->df_qi_min>63||
    _cfg->df_qi_max<_cfg->df_qi_min||_cfg->df_qi_max>63){
-    return -OC_EINVAL;
+    return OC_EINVAL;
   }
   memcpy(&_vbr->cfg,_cfg,sizeof(_vbr->cfg));
   return 0;
