@@ -4,6 +4,27 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Load Test Report</h3>
+<p>We've done a load test of our soon-to-be released Icecast 2.3 to hopefully answer some 
+of the questions that have popped up recently about Icecast's ability to work in high 
+traffic situtations.</p>
+<p>This report can be found <a href="loadtest.php">Here</a></p>
+<div class="poster">
+Posted September 22, 2005 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Icecast Release 2.2.0</h3>
 <p>On the heels of version 2.1.0, we are releasing 2.2.0 with some new key features.
 </p>
