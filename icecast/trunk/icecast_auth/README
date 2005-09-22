@@ -1,0 +1,65 @@
+icecast_auth - README
+---------------------------------------------------------------------
+
+This is a fairly simple application created to show off some of the
+capabilities of icecast's url authenticator.  It's a set of PHP scripts
+for setting up and managing a simple subscription-based stream or set
+of streams.  I tried to include as much functionality as I could,
+without going overboard.  If you are finding that it doesn't have the
+features you need, then by all means, enhance it and share it with
+the community. 
+
+icecast_auth is distributed under the GNU GPL, version 2. A copy of this
+license is included with this software in the COPYING file.
+
+Prerequisites
+---------------------------------------------------------------------
+
+* php - I'm not much of a php'er, so I think php4 is required, but don't
+        quote me on that.
+* mysql - you need this to store your users and mountpoints.
+
+Setup
+---------------------------------------------------------------------
+You'll need to first create your database and tables needed by the
+scripts.  There is an icecast_auth.sql script in the distribution which
+has all the table definitions. You'll need to run it using something
+like phpmyAdmin.
+
+Edit and change the info in config.php.  The admin user/pass is what
+you will be logging in with.  The rest is info needed to connect to 
+whatever mysql db you have setup.
+
+Hit the main index.php page and login using the admin user/pass.
+
+You'll need to add mountpoints for each of your streams that you want
+to secure with the url authenticator, and then add your users one by one.
+Want a batch uploader ? Did I mention that this was a *simple* application ?
+
+I've included some reports that you can use for seeing what is going on,
+when your mounts are connecting/disconnecting, what your listeners are doing,
+how long they are doing it...yadda-yadda...
+
+Configuring your Icecast server to use it
+---------------------------------------------------------------------
+
+This part is pretty simple, you need to create a "mount specific" option 
+as such :
+
+<mount>
+	<mount-name>/stream.ogg</mount-name>
+	<authentication type="url">
+		<option name="add"    value="http://myauthserver.com/icecast_auth/action.php"/>
+		<option name="remove" value="http://myauthserver.com/icecast_auth/action.php"/>
+		<option name="start" value="http://myauthserver.com/icecast_auth/action.php"/>
+		<option name="end" value="http://myauthserver.com/icecast_auth/action.php"/>
+	</authentication>
+</mount>
+
+All actions (add, remove, start, and end) are handled by the single action.php script.
+
+You will need to explicitly name each mountpoint you want secured.  If you need more
+help than this, check out the icecast main documentation.
+
+
+- created by oddsock
