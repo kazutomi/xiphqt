@@ -4,6 +4,130 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Icecast Release 2.3.0</h3>
+<p>We are pleased to announce the next release of Icecast.
+</p>
+<p>
+Downloads:<br></br>
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.0.tar.gz">icecast-2.3.0.tar.gz</a></td></tr>
+<tr><td>SRPM    :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.0-0.src.rpm">icecast-2.3.0-0.src.rpm</a></td></tr>
+<tr><td>Windows Setup    :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_v2.3.0_setup.exe">icecast2_win32_v2.3.0_setup.exe</a></td></tr>
+</table>
+<i>please note that it may take a bit for the mirrors to propagate</i>.
+</center>
+
+<p>
+<font color=white size=4><b>New features for 2.3.0</b></font>
+<p>
+<font color=yellow>
+Streaming support for ogg speex, ogg flac, ogg midi
+</font><br></br>
+<br></br>
+<br></br>
+<font color=yellow>
+intro file support - per mount settable
+</font><br></br>
+   Intro files will play when a listener first connects to a stream.  This
+   is designed for station jingles and the like.  If you don't broadcast 
+   in ogg vorbis, you must make sure the bitrate/samplerate/number of 
+   channels match up to your stream.
+<br></br>
+<br></br>
+<font color=yellow>
+on-demand relays, global and per-relay settable
+</font><br></br>
+   On demand relays only connect to the relayed content when there are
+   listeners attached to the relay.  This can save bandwidth in certain cases.
+<br></br>
+<br></br>
+<font color=yellow>
+fallback to file, extends on the intro file handling.
+</font><br></br>
+   With this feature, you can specify a "fallback file" which will be played
+   in a loop and sent your currently connected listeners in the event of a
+   source client disconnect.  This means your listeners stay connected while
+   you fix your disconnect problem.  Same rules regarding bitrate/samplerate/
+   number of channels apply as with intro files.
+<br></br>
+<br></br>
+<font color=yellow>
+new mount-level settings
+</font><br></br>
+1. public, type/subtype, genre settings, stream description,
+      stream url, stream name, bitrate (override what is sent from the source
+      client)<br></br>
+2. mp3 metadata interval<br></br>
+3. on-[dis]connect scripts can be stated per-mount, invoked at source 
+      start/stop and take 1 arg which is the mountpoint.<br></br>
+<br></br>
+<br></br>
+
+<font color=yellow>
+New URL listener authenticator.
+</font><br></br>
+   This delegates your listener authorization to an external application.
+   URL calls are made on listener connect/disconnect as well as source
+   connect/disconnect.  It is meant for large broadcasters who have existing
+   authentication systems that need to be integrated into.  Included is 
+   an example php-based application that can be used in conjunction with 
+   the url authenticator to manage a simple subscription-based broadcast.
+<br></br>
+<br></br>
+
+<font color=yellow>
+HTPasswd authenticator uses in-memory structures now.
+</font><br></br>
+<br></br>
+<br></br>
+
+<font color=yellow>
+On demand files now can be fed through an authenticator
+</font><br></br>
+<br></br>
+<br></br>
+
+<font color=yellow>
+Update to admin/web xslt interface
+</font><br></br>
+<br></br>
+<br></br>
+
+<font color=yellow>
+Icecast can now be installed as a win32 service
+</font><br></br>
+<br></br>
+<br></br>
+</p>
+<p>
+<font color=white size=4><b>Fixes for 2.3.0</b></font><br></br>
+* real/helix works<br></br>
+* win32 access log correct<br></br>
+* stats client is stable now (curl -X STATS http://admin@host:port/)<br></br>
+* show mountpoints on stats that are inactive but have an active fallback<br></br>
+* more updates over HUP possible<br></br>
+* improved stability under heavy load<br></br>
+* moving clients will no longer sometimes deadlock the server<br></br>
+* avoid small writes to reduce TCP overhead.<br></br>
+</p>
+
+<div class="poster">
+Posted September 23, 2005 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Load Test Report</h3>
 <p>We've done a load test of our soon-to-be released Icecast 2.3 to hopefully answer some 
 of the questions that have popped up recently about Icecast's ability to work in high 
