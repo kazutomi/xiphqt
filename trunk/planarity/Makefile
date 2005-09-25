@@ -48,6 +48,7 @@ SLDF  = `pkg-config --static --libs-only-L "gtk+-2.0 >= 2.7.2"`
 GTK   = /usr/local/lib
 EXPAT= /usr/lib/libexpat.a
 XINERAMA = /usr/X11R6/lib/libXinerama.a
+PNG = /usr/lib/libpng.a
 PIXMAN = /usr/lib/libpixman.a
 SLIBS = $(GTK)/libgtk-x11-2.0.a \
 	$(GTK)/libgdk-x11-2.0.a $(GTK)/libgdk_pixbuf-2.0.a \
@@ -57,7 +58,8 @@ SLIBS = $(GTK)/libgtk-x11-2.0.a \
 	$(GTK)/libatk-1.0.a $(GTK)/libgmodule-2.0.a \
 	$(GTK)/libgobject-2.0.a $(GTK)/libglib-2.0.a \
 	-lpthread $(EXPAT) -lfreetype -lz -lm -lc \
-	-lXext -lXrandr $(XINERAMA) -lXcursor -lX11 $(PIXMAN) -lXft
+	-lXext -lXrandr $(XINERAMA) -lXcursor -lX11 $(PIXMAN)\
+	-lXft $(PNG)
 
 all:    
 	$(MAKE) target CFLAGS="-O2 -ffast-math $(GCF) $(ADD_DEF)"
