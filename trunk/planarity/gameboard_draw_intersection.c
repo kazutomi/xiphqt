@@ -71,9 +71,9 @@ void draw_intersections(Gameboard *b, graph *g, cairo_t *c,
 	  if(ix >= xx && ix <= x2 && iy >= yy && iy <= y2)
 	    draw_intersection(c,ix,iy);
 	}
-	cairo_stroke(c); // incremental stroke!  It's easy to run
-	// the path longer than the X server
-	// allows.
+	cairo_stroke(c); /* incremental stroke!  It's easy to run
+			    the path longer than the X server
+			    allows. */
 	i=i->next;
       }
       e=e->next;

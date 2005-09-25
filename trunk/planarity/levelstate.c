@@ -76,8 +76,8 @@ static levelstate *new_level(){
     // generate a graph we can use to make the icon
     graph g;
     memset(&g,0,sizeof(g));
-    g.width=gameboard->g.width;
-    g.height=gameboard->g.height;
+    g.width=gameboard->g.orig_width;
+    g.height=gameboard->g.orig_height;
     g.orig_width=gameboard->g.orig_width;
     g.orig_height=gameboard->g.orig_height;
 

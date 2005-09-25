@@ -250,3 +250,6 @@ extern void undeploy_buttons(Gameboard *g, void (*callback)(Gameboard *));
 extern GdkRectangle render_text_centered(cairo_t *c, char *s, int x, int y);
 extern GdkRectangle render_border_centered(cairo_t *c, char *s, int x, int y);
 extern GdkRectangle render_bordertext_centered(cairo_t *c, char *s, int x, int y);
+
+extern void gameboard_size_allocate (GtkWidget     *widget,
+				     GtkAllocation *allocation);
