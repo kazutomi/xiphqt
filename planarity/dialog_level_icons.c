@@ -89,8 +89,6 @@ static void draw_backward_arrow(graph *g,onelevel *l, cairo_t *c,int fill){
 }
 
 static void invalidate_icon(Gameboard *g,onelevel *l){
-  int w = l->w;
-  int h = l->h;
   int cx = g->g.width/2;
   int cy = g->g.height/2;
   GdkRectangle r;
