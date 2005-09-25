@@ -113,14 +113,17 @@ static void gameboard_realize (GtkWidget *widget){
   cache_curtain(g);
 }
 
-static void gameboard_size_allocate (GtkWidget     *widget,
-				     GtkAllocation *allocation){
+void gameboard_size_allocate (GtkWidget     *widget,
+			      GtkAllocation *allocation){
   Gameboard *g = GAMEBOARD (widget);
   widget->allocation = *allocation;
 
   if (GTK_WIDGET_REALIZED (widget)){
     int oldw=g->g.width;
     int oldh=g->g.height;
+
+    if(oldw == allocation->width &&
+       oldh == allocation->height) return;
 
     g->g.width = allocation->width;
     g->g.height = allocation->height;
@@ -171,21 +174,36 @@ static void gameboard_size_allocate (GtkWidget     *widget,
 
     cache_curtain(g);
 
-    // recenter all the verticies; doesn't require recomputation
     {
       vertex *v=g->g.verticies;
+      edge *e=g->g.edges;
       int xd=(widget->allocation.width-oldw)*.5;
       int yd=(widget->allocation.height-oldh)*.5;
 
+      // recenter all the verticies; doesn't require recomputation
       while(v){
 	v->x+=xd;
 	v->y+=yd;
 	v=v->next;
       }
+   
+      // recenter associated intersections as well; they all have
+      // cached location (used only for drawing)
+      while(e){
+	intersection *i = e->i.next;
+	while(i){
+	  if(i->paired > i){
+	    i->x+=xd;
+	    i->y+=yd;    
+	  }
+	  i=i->next;
+	}
+	e=e->next;
+      }
     }
 
     // verify all verticies are onscreen
-    check_verticies();
+    check_verticies(&g->g);
 
     draw_buttonbar_box(g);
     update_score(g);

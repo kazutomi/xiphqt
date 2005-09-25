@@ -40,7 +40,20 @@ static int dir_create(char *name){
 }     
 
 void request_resize(int width, int height){
+  GtkWidget *w = GTK_WIDGET(gameboard);
+
   gtk_window_resize(GTK_WINDOW(toplevel_window),width,height);
+
+  // the toplevel resize *could* fail, for example, if the
+  // windowmanager has forced 'maximize'.  In this case, our graph
+  // size is set to what it wanted to be, but the gameboard window size
+  // is unchanged.  Force the graph to resize itself to the window in
+  // this case.
+
+  if(w->allocation.width != width ||
+     w->allocation.height != height)
+    gameboard_size_allocate (GTK_WIDGET(gameboard),&w->allocation);
+
 }
 
 static void clean_exit(int sig){
@@ -115,7 +128,9 @@ int main(int argc, char *argv[]){
 
   levelstate_resume();
   signal(SIGINT,clean_exit);
-  signal(SIGSEGV,clean_exit);
+
+  //signal(SIGSEGV,clean_exit); /* would be a bad idea; corrupt state
+  //could prevent us from restarting */
 
   gtk_main ();
 

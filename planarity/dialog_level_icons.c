@@ -32,13 +32,13 @@ static GdkRectangle text2;
 static GdkRectangle text3;
 static GdkRectangle text4;
 
-static void draw_forward_arrow(onelevel *l, cairo_t *c,int fill){
+static void draw_forward_arrow(graph *g,onelevel *l, cairo_t *c,int fill){
   int w = l->w;
   int h = l->h;
   int cx = w/2;
   int cy = h/2;
   cairo_save(c);
-  cairo_translate(c,l->x+.5,l->y+.5);
+  cairo_translate(c,l->x+g->width/2+.5,l->y+g->height/2+.5);
 
   cairo_set_line_width(c,B_LINE);
 
@@ -60,13 +60,13 @@ static void draw_forward_arrow(onelevel *l, cairo_t *c,int fill){
   cairo_restore(c);
 }
 
-static void draw_backward_arrow(onelevel *l, cairo_t *c,int fill){
+static void draw_backward_arrow(graph *g,onelevel *l, cairo_t *c,int fill){
   int w = l->w;
   int h = l->h;
   int cx = w/2;
   int cy = h/2;
   cairo_save(c);
-  cairo_translate(c,l->x-.5,l->y+.5);
+  cairo_translate(c,l->x+g->width/2-.5,l->y+g->height/2+.5);
 
   cairo_set_line_width(c,B_LINE);
 
@@ -89,10 +89,14 @@ static void draw_backward_arrow(onelevel *l, cairo_t *c,int fill){
 }
 
 static void invalidate_icon(Gameboard *g,onelevel *l){
+  int w = l->w;
+  int h = l->h;
+  int cx = g->g.width/2;
+  int cy = g->g.height/2;
   GdkRectangle r;
   
-  r.x=l->x+center_x;
-  r.y=l->y;
+  r.x=l->x+cx+center_x;
+  r.y=l->y+cy;
   r.width=l->w;
   r.height=l->h;
 
@@ -109,8 +113,8 @@ static void onelevel_init(Gameboard *g, int num, onelevel *l){
 
   l->w  = ICON_WIDTH;
   l->h  = ICON_HEIGHT;  
-  l->x  =  (g->g.width/2) - (l->w*.5) + num*ICON_WIDTH*1.2;
-  l->y  = (g->g.height - LEVELBOX_HEIGHT) / 2 + 120;
+  l->x  = num*ICON_WIDTH*1.2 - (l->w*.5);
+  l->y  = 120 - (LEVELBOX_HEIGHT) / 2;
   
 }
 
@@ -201,8 +205,8 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
 	
 	int iw = l->w;
 	int ih = l->h;
-	int ix = l->x+center_x;	
-	int iy = l->y;
+	int ix = l->x+center_x+w/2;	
+	int iy = l->y+h/2;
 	
 	if( l->alpha == 0.) continue;
 
@@ -224,9 +228,9 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
 	  }
 
 	  if(i==1)
-	    draw_backward_arrow(l,c,i==level_lit);
+	    draw_backward_arrow(&g->g,l,c,i==level_lit);
 	  if(i==3)
-	    draw_forward_arrow(l,c,i==level_lit);
+	    draw_forward_arrow(&g->g,l,c,i==level_lit);
 	}
       }
     }
@@ -345,9 +349,14 @@ static gboolean animate_level_frame(gpointer ptr){
   return 1;
 }
 
-static int find_icon(int x, int y){
+static int find_icon(graph *g, int x, int y){
   int i;
-  
+  int w= g->width;
+  int h= g->height;
+
+  x-=w/2;
+  y-=h/2;
+
   for(i=1;i<4;i++){
     onelevel *l=level_icons+i;
     if(l->num>=0){
@@ -370,7 +379,7 @@ void local_reset (Gameboard *g){
 
 void level_mouse_motion(Gameboard *g, int x, int y){
 
-  int icon = find_icon(x,y);
+  int icon = find_icon(&g->g,x,y);
 
   if(icon != level_lit){
     invalidate_icon(g, level_icons+level_lit);

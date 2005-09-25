@@ -591,6 +591,8 @@ void deploy_buttons(Gameboard *g, void (*callback)(Gameboard *g)){
     g->b.sweeperd = 1;
 
     g->button_callback = callback;
+    if(g->gtk_timer!=0)
+      g_source_remove(g->gtk_timer);
     g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     g->b.buttons_ready=1;
   }
@@ -612,6 +614,8 @@ void undeploy_buttons(Gameboard *g, void (*callback)(Gameboard *ptr)){
     g->b.sweeperd = -1;
 
     g->button_callback = callback;
+    if(g->gtk_timer!=0)
+      g_source_remove(g->gtk_timer);
     g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
   }else
     callback(g);
