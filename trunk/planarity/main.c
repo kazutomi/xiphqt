@@ -114,8 +114,8 @@ int main(int argc, char *argv[]){
   gdk_flush();
 
   levelstate_resume();
-  //  signal(SIGINT,clean_exit);
-  //signal(SIGSEGV,clean_exit);
+  signal(SIGINT,clean_exit);
+  signal(SIGSEGV,clean_exit);
 
   gtk_main ();
 
