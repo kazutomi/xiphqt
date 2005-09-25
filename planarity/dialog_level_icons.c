@@ -27,6 +27,10 @@ static onelevel level_icons[5];
 static int center_x;
 static int level_lit;
 static int reset_deployed;
+static GdkRectangle text1;
+static GdkRectangle text2;
+static GdkRectangle text3;
+static GdkRectangle text4;
 
 static void draw_forward_arrow(onelevel *l, cairo_t *c,int fill){
   int w = l->w;
@@ -130,7 +134,7 @@ static void deploy_reset_button(Gameboard *g){
       g_source_remove(g->gtk_timer);
     g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
   }
-  
+
 }
 
 static void undeploy_reset_button(Gameboard *g){
@@ -174,6 +178,10 @@ void level_icons_init(Gameboard *g){
   if(levelstate_in_progress())
     deploy_reset_button(g);
 
+  memset(&text1,0,sizeof(text1));
+  memset(&text2,0,sizeof(text2));
+  memset(&text3,0,sizeof(text3));
+  memset(&text4,0,sizeof(text4));
 }
 
 void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh){
@@ -229,54 +237,70 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
       cairo_matrix_t ma;
 
       // above text
-      snprintf(buffer,160,"Level %d:",get_level_num()+1);
-      cairo_select_font_face (c, "Arial",
-			      CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_BOLD);
-      cairo_matrix_init_scale (&ma, 20.,20.);
-      cairo_set_font_matrix (c,&ma);
-      cairo_set_source_rgba (c, TEXT_COLOR);
-      render_bordertext_centered(c, buffer,w/2,y+45);
-
-      cairo_select_font_face (c, "Arial",
-			      CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_matrix_init_scale (&ma, 18.,18.);
-      cairo_set_font_matrix (c,&ma);
-      cairo_set_source_rgba (c, TEXT_COLOR);
-      render_bordertext_centered(c, get_level_desc(),w/2,y+70);
-
-      if(levelstate_get_hiscore()==0){
-      cairo_select_font_face (c, "Arial",
-			      CAIRO_FONT_SLANT_ITALIC,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-	snprintf(buffer,160,"[not yet completed]");
-      }else{
-      cairo_select_font_face (c, "Arial",
-			      CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-	snprintf(buffer,160,"level high score: %ld",levelstate_get_hiscore());
+      if(text1.width==0 || 
+	 (ey<text1.y+text1.height && ey2>text1.y)){
+	
+	snprintf(buffer,160,"Level %d:",get_level_num()+1);
+	cairo_select_font_face (c, "Arial",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_BOLD);
+	cairo_matrix_init_scale (&ma, 20.,20.);
+	cairo_set_font_matrix (c,&ma);
+	cairo_set_source_rgba (c, TEXT_COLOR);
+	text1=render_bordertext_centered(c, buffer,w/2,y+45);
+      }
+      
+      if(text2.width==0 || 
+	 (ey<text2.y+text2.height && ey2>text2.y)){
+	cairo_select_font_face (c, "Arial",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_matrix_init_scale (&ma, 18.,18.);
+	cairo_set_font_matrix (c,&ma);
+	cairo_set_source_rgba (c, TEXT_COLOR);
+	text2=render_bordertext_centered(c, get_level_desc(),w/2,y+70);
       }
 
-      cairo_matrix_init_scale (&ma, 18.,18.);
-      cairo_set_font_matrix (c,&ma);
-      cairo_set_source_rgba (c, TEXT_COLOR);
-      render_bordertext_centered(c, buffer,w/2,y+245);
+      if(text3.width==0 || 
+	 (ey<text3.y+text3.height && ey2>text3.y)){
+	
+	if(levelstate_get_hiscore()==0){
+	  cairo_select_font_face (c, "Arial",
+				  CAIRO_FONT_SLANT_ITALIC,
+				  CAIRO_FONT_WEIGHT_NORMAL);
+	  snprintf(buffer,160,"[not yet completed]");
+	}else{
+	  cairo_select_font_face (c, "Arial",
+				  CAIRO_FONT_SLANT_NORMAL,
+				  CAIRO_FONT_WEIGHT_NORMAL);
+	  snprintf(buffer,160,"level high score: %ld",levelstate_get_hiscore());
+	}
+	
+	cairo_matrix_init_scale (&ma, 18.,18.);
+	cairo_set_font_matrix (c,&ma);
+	cairo_set_source_rgba (c, TEXT_COLOR);
+	text3=render_bordertext_centered(c, buffer,w/2,y+245);
+      }
 
-      snprintf(buffer,160,"total score all levels: %ld",levelstate_total_hiscore());
-      
-      cairo_select_font_face (c, "Arial",
-			      CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_NORMAL);
-      cairo_matrix_init_scale (&ma, 18.,18.);
-      cairo_set_font_matrix (c,&ma);
-      cairo_set_source_rgba (c, TEXT_COLOR);
-      render_bordertext_centered(c, buffer,w/2,y+265);
+      if(text4.width==0 || 
+	 (ey<text4.y+text4.height && ey2>text4.y)){
 
-
-
-
-    }
+	snprintf(buffer,160,"total score all levels: %ld",levelstate_total_hiscore());
+	
+	cairo_select_font_face (c, "Arial",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_matrix_init_scale (&ma, 18.,18.);
+	cairo_set_font_matrix (c,&ma);
+	cairo_set_source_rgba (c, TEXT_COLOR);
+	text4=render_bordertext_centered(c, buffer,w/2,y+265);
+      }
+    }else{
+      memset(&text1,0,sizeof(text1));
+      memset(&text2,0,sizeof(text2));
+      memset(&text3,0,sizeof(text3));
+      memset(&text4,0,sizeof(text4));
+    }      
   }
 }
 
