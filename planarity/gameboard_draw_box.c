@@ -1,9 +1,10 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include "graph.h"
-#include "box.h"
+#include "gameboard.h"
+#include "gameboard_draw_button.h"
 
-void topbox (cairo_t *c, double w, double h){
+void topbox (Gameboard *g,cairo_t *c, double w, double h){
   
   double x0 = B_BORDER+B_RADIUS;
   double y0 = B_BORDER;
@@ -48,7 +49,7 @@ void topbox (cairo_t *c, double w, double h){
   cairo_line_to (c, x4,y4);
 
   {
-    double hh = get_board_height()*.5+50;
+    double hh = g->g.orig_height*.5+50;
 
     double radius = sqrt( (w*.5-x5) * (w*.5-x5) + (hh-y5) * (hh-y5));
     double siderad = atan( (x5-w*.5)/(hh-y5));
@@ -83,7 +84,7 @@ void topbox (cairo_t *c, double w, double h){
 
 }
 
-void bottombox (cairo_t *c, double w, double h){
+void bottombox (Gameboard *g, cairo_t *c, double w, double h){
   
   double x0 = B_BORDER+B_RADIUS;
   double y0 = h-B_BORDER;
@@ -128,7 +129,7 @@ void bottombox (cairo_t *c, double w, double h){
   cairo_line_to (c, x4,y4);
 
   {
-    double hh = get_board_height()*.5+50;
+    double hh = g->g.orig_height*.5+50;
 
     double radius = sqrt( (w*.5-x5) * (w*.5-x5) + (y5+hh-h) * (y5+hh-h));
     double siderad = atan( (x5-w*.5)/(y5+hh-h));
@@ -211,7 +212,7 @@ void centerbox (cairo_t *c, int x, int y, double w, double h){
   cairo_restore(c);
 }
 
-void borderbox_path (cairo_t *c, int x, int y, double w, double h){
+void borderbox_path (cairo_t *c, double x, double y, double w, double h){
   
   double x0 = x+ B_RADIUS;
   double y0 = y+ h;

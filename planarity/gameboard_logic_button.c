@@ -5,24 +5,16 @@
 
 #include "graph.h"
 #include "gameboard.h"
-#include "gamestate.h"
-#include "buttons.h"
-#include "button_base.h"
+#include "gameboard_draw_button.h"
 
 
 /************************ manage the buttons for buttonbar and dialogs *********************/
 
-buttonstate states[NUMBUTTONS];
-
-int buttons_ready=0;
-static int allclear=1; // actually just a shirt-circuit
-static buttonstate *grabbed=0;
-
 /* determine the x/y/w/h box around the rollover text */
-static GdkRectangle rollover_box(buttonstate *b){
+static GdkRectangle rollover_box(Gameboard *g, buttonstate *b){
   GdkRectangle r;
-  int width = get_board_width();
-  int height = get_board_height();
+  int width = g->g.width;
+  int height = g->g.height;
 
   int x = b->x - b->ex.width/2 + b->ex.x_bearing -2;
   int y = b->y - BUTTON_RADIUS - BUTTON_TEXT_BORDER + b->ex.y_bearing -2;
@@ -54,7 +46,7 @@ static void stroke_rollover(Gameboard *g, buttonstate *b, cairo_t *c){
   cairo_set_font_matrix (c,&m);
   
   {
-    GdkRectangle r=rollover_box(b);
+    GdkRectangle r=rollover_box(g,b);
 
     cairo_move_to (c, r.x - b->ex.x_bearing +2, r.y -b->ex.y_bearing+2 );
 
@@ -86,7 +78,7 @@ static void invalidate_button(Gameboard *g,buttonstate *b){
 
 /* request an expose for a rollover region*/
 static void invalidate_rollover(Gameboard *g,buttonstate *b){
-  GdkRectangle r = rollover_box(b);
+  GdkRectangle r = rollover_box(g,b);
   invalidate_button(g,b);
   gdk_window_invalidate_rect(g->w.window,&r,FALSE);
 }
@@ -121,8 +113,8 @@ static void expand_rectangle_button(buttonstate *b,GdkRectangle *r){
 }
 
 /* like invalidation, but just expands a rectangular region */
-static void expand_rectangle_rollover(buttonstate *b,GdkRectangle *r){
-  GdkRectangle rr = rollover_box(b);
+static void expand_rectangle_rollover(Gameboard *g,buttonstate *b,GdkRectangle *r){
+  GdkRectangle rr = rollover_box(g,b);
   int x=rr.x;
   int y=rr.y;
   int x2=x+rr.width;
@@ -148,50 +140,6 @@ static void expand_rectangle_rollover(buttonstate *b,GdkRectangle *r){
   if(ry2<y2)
     ry2=y2;
   r->height=ry2-r->y;
-}
-
-/* match x/y to a button if any */
-static buttonstate *find_button(int x,int y){
-  int i;
-  for(i=0;i<NUMBUTTONS;i++){
-    buttonstate *b=states+i;
-    if(b->position)
-      if( (b->x-x)*(b->x-x) + (b->y-y)*(b->y-y) <= BUTTON_RADIUS*BUTTON_RADIUS+4)
-	if(b->x != b->x_inactive)
-	  return b;
-  }
-  return 0;
-}
-
-/* set a button to pressed or lit */
-static void button_set_state(Gameboard *g, buttonstate *b, int rollover, int press){
-  int i;
-  
-  if(b->rollover == rollover && b->press == press)return;
-
-  for(i=0;i<NUMBUTTONS;i++){
-    buttonstate *bb=states+i;
-    if(bb->position){
-      if(bb!=b){
-	if(bb->rollover)
-	  invalidate_rollover(g,bb);
-	if(bb->press)
-	  invalidate_button(g,bb);
-	
-	bb->rollover=0;
-	bb->press=0;
-      }else{
-	if(bb->rollover != rollover)
-	  invalidate_rollover(g,bb);
-	if(bb->press != press)
-	  invalidate_button(g,bb);
-	
-	bb->rollover=rollover;
-	bb->press=press;
-      }
-    }
-  }
-  allclear=0;
 }
 
 /* cache buttons as small surfaces */
@@ -240,78 +188,104 @@ static GdkRectangle button_box(buttonstate *b){
   return r;
 }
 
-/* do the animation math for one button for one frame */
-static int animate_one(buttonstate *b, GdkRectangle *r){
+static int animate_x_axis(Gameboard *g, buttonstate *b, GdkRectangle *r){
   int ret=0;
 
-  if(b->target_x_active != b->x_active){
-    ret=1;
-    if(b->target_x_active > b->x_active){
-      b->x_active+=BUTTON_DELTA;
-      if(b->x_active>b->target_x_active)
-	b->x_active=b->target_x_active;
-    }else{
-      b->x_active-=BUTTON_DELTA;
-      if(b->x_active<b->target_x_active)
-	b->x_active=b->target_x_active;
-    }
-  }
-
-  if(b->target_x_inactive != b->x_inactive){
-    ret=1;
-    if(b->target_x_inactive > b->x_inactive){
-      b->x_inactive+=BUTTON_DELTA;
-      if(b->x_inactive>b->target_x_inactive)
-	b->x_inactive=b->target_x_inactive;
-    }else{
-      b->x_inactive-=BUTTON_DELTA;
-      if(b->x_inactive<b->target_x_inactive)
-	b->x_inactive=b->target_x_inactive;
-    }
-  }
-
-  if(b->target_x != b->x){
+  if(b->x_target != b->x){
     ret=1;
     expand_rectangle_button(b,r);
     if(b->rollover)
-      expand_rectangle_rollover(b,r);
+      expand_rectangle_rollover(g,b,r);
 
-    if(b->target_x > b->x){
-      b->x+=BUTTON_DELTA;
-      if(b->x>b->target_x)b->x=b->target_x;
+    if(b->x_target > b->x){
+      b->x+=DEPLOY_DELTA;
+      if(b->x>b->x_target)b->x=b->x_target;
     }else{
-      b->x-=BUTTON_DELTA;
-      if(b->x<b->target_x)b->x=b->target_x;
+      b->x-=DEPLOY_DELTA;
+      if(b->x<b->x_target)b->x=b->x_target;
     }
     expand_rectangle_button(b,r);
     if(b->rollover)
-      expand_rectangle_rollover(b,r);
+      expand_rectangle_rollover(g,b,r);
   }
 
-  if(b->alphad != b->x_active - b->x){
+  return ret;
+}
+static int animate_y_axis(Gameboard *g, buttonstate *b, GdkRectangle *r){
+  int ret=0;
+
+  if(b->y_target != b->y){
+    ret=1;
+    expand_rectangle_button(b,r);
+    if(b->rollover)
+      expand_rectangle_rollover(g,b,r);
+
+    if(b->y_target > b->y){
+      b->y+=DEPLOY_DELTA;
+      if(b->y>b->y_target)b->y=b->y_target;
+    }else{
+      b->y-=DEPLOY_DELTA;
+      if(b->y<b->y_target)b->y=b->y_target;
+    }
+    expand_rectangle_button(b,r);
+    if(b->rollover)
+      expand_rectangle_rollover(g,b,r);
+  }
+
+  if(b->alphad != b->y_active - b->y){
     double alpha=0;
-    if(b->x_inactive>b->x_active){
-      if(b->x<=b->x_active)
+    if(b->y_inactive>b->y_active){
+      if(b->y<=b->y_active)
 	alpha=1.;
-      else if (b->x>=b->x_inactive)
+      else if (b->y>=b->y_inactive)
 	alpha=0.;
       else
-	alpha = (double)(b->x_inactive-b->x)/(b->x_inactive-b->x_active);
-    }else if (b->x_inactive<b->x_active){
-      if(b->x>=b->x_active)
+	alpha = (double)(b->y_inactive-b->y)/(b->y_inactive-b->y_active);
+    }else if (b->y_inactive<b->y_active){
+      if(b->y>=b->y_active)
 	alpha=1.;
-      else if (b->x<=b->x_inactive)
+      else if (b->y<=b->y_inactive)
 	alpha=0.;
       else
-	alpha = (double)(b->x_inactive-b->x)/(b->x_inactive-b->x_active);
+	alpha = (double)(b->y_inactive-b->y)/(b->y_inactive-b->y_active);
     }
     if(alpha != b->alpha){
       ret=1;
       expand_rectangle_button(b,r);
       b->alpha=alpha;
     }
-    b->alphad = b->x_active - b->x;
+    b->alphad = b->y_active - b->y;
   }
+
+  return ret;
+}
+
+/* do the animation math for one button for one frame */
+static int animate_one(Gameboard *g,buttonstate *b, GdkRectangle *r){
+  int ret=0;
+
+  /* does this button need to be deployed? */
+  if(g->b.sweeperd>0){
+    if(b->y_target != b->y_active){
+      if(g->b.sweeper >= b->sweepdeploy){
+	b->y_target=b->y_active;
+	ret=1;
+      }
+    }
+  }
+  /* does this button need to be undeployed? */
+  if(g->b.sweeperd<0){
+    if(b->y_target != b->y_inactive){
+      if(-g->b.sweeper >= b->sweepdeploy){
+	b->y_target=b->y_inactive;
+	ret=1;
+      }
+    }
+  }
+
+  ret |= animate_x_axis(g,b,r);
+  ret |= animate_y_axis(g,b,r);
+  
   return ret;
 }
 
@@ -320,7 +294,8 @@ static int animate_one(buttonstate *b, GdkRectangle *r){
 /* initialize the persistent caches; called once when gameboard is
    first created */
 void init_buttons(Gameboard *g){
-  memset(states,0,sizeof(states));
+  buttonstate *states=g->b.states;
+  memset(g->b.states,0,sizeof(g->b.states));
 
   states[0].idle = cache_button(g, path_button_exit, 
 				BUTTON_QUIT_IDLE_PATH, 
@@ -391,6 +366,53 @@ void init_buttons(Gameboard *g){
 				BUTTON_CHECK_LIT_FILL);
 }
 
+/* match x/y to a button if any */
+buttonstate *find_button(Gameboard *g, int x,int y){
+  int i;
+  buttonstate *states=g->b.states;
+
+  for(i=0;i<NUMBUTTONS;i++){
+    buttonstate *b=states+i;
+    if(b->position)
+      if( (b->x-x)*(b->x-x) + (b->y-y)*(b->y-y) <= BUTTON_RADIUS*BUTTON_RADIUS+4)
+	if(b->y != b->y_inactive)
+	  return b;
+  }
+  return 0;
+}
+
+/* set a button to pressed or lit */
+void button_set_state(Gameboard *g, buttonstate *b, int rollover, int press){
+  int i;
+  buttonstate *states=g->b.states;
+  
+  if(b->rollover == rollover && b->press == press)return;
+
+  for(i=0;i<NUMBUTTONS;i++){
+    buttonstate *bb=states+i;
+    if(bb->position){
+      if(bb!=b){
+	if(bb->rollover)
+	  invalidate_rollover(g,bb);
+	if(bb->press)
+	  invalidate_button(g,bb);
+	
+	bb->rollover=0;
+	bb->press=0;
+      }else{
+	if(bb->rollover != rollover)
+	  invalidate_rollover(g,bb);
+	if(bb->press != press)
+	  invalidate_button(g,bb);
+	
+	bb->rollover=rollover;
+	bb->press=press;
+      }
+    }
+  }
+  g->b.allclear=0;
+}
+
 /* cache the text extents of a rollover */
 void rollover_extents(Gameboard *g, buttonstate *b){
   
@@ -413,9 +435,12 @@ void rollover_extents(Gameboard *g, buttonstate *b){
 gboolean animate_button_frame(gpointer ptr){
   Gameboard *g=(Gameboard *)ptr;
   GdkRectangle expose;
+  buttonstate *states=g->b.states;
   int ret=0,i,pos;
   
   if(!g->first_expose)return 1;
+
+  g->b.sweeper += g->b.sweeperd;
   
   /* avoid the normal expose event mechanism
      during the button animations.  This direct method is much faster as
@@ -426,14 +451,26 @@ gboolean animate_button_frame(gpointer ptr){
     memset(&expose,0,sizeof(expose));
     for(i=0;i<NUMBUTTONS;i++)
       if(states[i].position == pos)
-	ret|=animate_one(states+i,&expose);
+	ret|=animate_one(g,states+i,&expose);
     if(expose.width && expose.height)
-      run_immediate_expose(g,
-			   expose.x,
-			   expose.y,
-			   expose.width,
-			   expose.height);
+      gameboard_draw(g,
+		     expose.x,
+		     expose.y,
+		     expose.width,
+		     expose.height);
   }
+
+  if(!ret)g->b.sweeperd = 0;
+
+  if(!ret && g->gtk_timer!=0){
+    g_source_remove(g->gtk_timer);
+    g->gtk_timer=0;
+  }
+
+  if(!ret && g->button_callback)
+    // undeploy finished... call the undeploy callback
+    g->button_callback(g);
+
   return ret;
 }
 
@@ -441,13 +478,14 @@ gboolean animate_button_frame(gpointer ptr){
    widget's expose */
 void expose_buttons(Gameboard *g,cairo_t *c, int x,int y,int w,int h){
   int i;
+  buttonstate *states=g->b.states;
   
   for(i=0;i<NUMBUTTONS;i++){
 
     buttonstate *b=states+i;
 
     if(b->position){
-      GdkRectangle r = rollover_box(b);
+      GdkRectangle r = rollover_box(g,b);
       GdkRectangle br = button_box(b);
       
       if(x < br.x+br.width &&
@@ -466,7 +504,7 @@ void expose_buttons(Gameboard *g,cairo_t *c, int x,int y,int w,int h){
 	
       }
       
-      if(b->rollover || b->press)
+      if((b->rollover || b->press) && b->y_target!=b->y_inactive)
 	if(x < r.x+r.width &&
 	   y < r.y+r.height &&
 	   x+w > r.x &&
@@ -478,20 +516,22 @@ void expose_buttons(Gameboard *g,cairo_t *c, int x,int y,int w,int h){
 }
 
 /* resize the button bar; called from master resize in gameboard */
-void resize_buttons(int oldw,int oldh,int w,int h){
+void resize_buttons(Gameboard *g,int oldw,int oldh,int w,int h){
   int i;
   int dx=w/2-oldw/2;
   int dy=h/2-oldh/2;
+  buttonstate *states=g->b.states;
 
   for(i=0;i<NUMBUTTONS;i++){
     if(states[i].position == 2){
+
       states[i].x+=dx;
-      states[i].target_x+=dx;
-      states[i].x_active+=dx;
-      states[i].target_x_active+=dx;
-      states[i].x_inactive+=dx;
-      states[i].target_x_inactive+=dx;
+      states[i].x_target+=dx;
+
       states[i].y+=dy;
+      states[i].y_target+=dy;
+      states[i].y_active+=dy;
+      states[i].y_inactive+=dy;
     }
   }
 
@@ -499,20 +539,19 @@ void resize_buttons(int oldw,int oldh,int w,int h){
   dy=h-oldh;
 
   for(i=0;i<NUMBUTTONS;i++){
-    if(states[i].position == 1){
+    if(states[i].position==1 || 
+       states[i].position==3){
       states[i].y+=dy;
+      states[i].y_target+=dy;
+      states[i].y_active+=dy;
+      states[i].y_inactive+=dy;
     }
   }
-
+  
   for(i=0;i<NUMBUTTONS;i++){
     if(states[i].position == 3){
       states[i].x+=dx;
-      states[i].target_x+=dx;
-      states[i].x_active+=dx;
-      states[i].target_x_active+=dx;
-      states[i].x_inactive+=dx;
-      states[i].target_x_inactive+=dx;
-      states[i].y+=dy;
+      states[i].x_target+=dx;
     }
   }
 }
@@ -520,7 +559,9 @@ void resize_buttons(int oldw,int oldh,int w,int h){
 /* clear all buttons to unpressed/unlit */
 void button_clear_state(Gameboard *g){
   int i;
-  if(!allclear){
+  buttonstate *states=g->b.states;
+
+  if(!g->b.allclear){
     for(i=0;i<NUMBUTTONS;i++){
       buttonstate *bb=states+i;
       if(bb->position){
@@ -534,73 +575,45 @@ void button_clear_state(Gameboard *g){
       }
     }
   }
-  allclear=1;
-  grabbed=0;
+  g->b.allclear=1;
+  g->b.grabbed=0;
 }
 
-/* handles mouse motion events; called out of gameboard's master
-   motion handler; returns nonzero if it used focus */
-int button_motion_event(Gameboard *g, GdkEventMotion *event, int focusable){
-  buttonstate *b = find_button((int)event->x,(int)event->y);
+void deploy_buttons(Gameboard *g, void (*callback)(Gameboard *g)){
 
-  if(buttons_ready){
-    if(grabbed){
-      if(grabbed==b)
-	button_set_state(g,grabbed,1,1);
-      else
-	button_set_state(g,grabbed,0,0);
-      return 1;
-    }
+  if(!g->b.buttons_ready){
     
-    if(focusable && !grabbed){
-      
-      if(b){
-	button_set_state(g,b,1,0);
-	return 1;
-      }
-    }
+    // sweep across the buttons inward from the horizontal edges; when
+    // the sweep passes a button it is set to deploy by making the
+    // target y equal to the active y target.
+    
+    g->b.sweeper  = 0;
+    g->b.sweeperd = 1;
+
+    g->button_callback = callback;
+    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    g->b.buttons_ready=1;
+  }
+
+}
+
+void undeploy_buttons(Gameboard *g, void (*callback)(Gameboard *ptr)){
+
+  if(g->b.buttons_ready){
     
     button_clear_state(g);
-  }
-  return 0;
-}
+    g->b.buttons_ready=0;
 
-/* handles mouse button press events; called out of gameboard's master
-   mouse handler.  returns nonzero if grabbing focus */
-int button_button_press(Gameboard *g, GdkEventButton *event, int focusable){
+    // sweep across the buttons outward from the center; when
+    // the sweep passes a button it is set to undeploy by making the
+    // target y equal to the inactive y target.
 
-  if(buttons_ready){
-    if(focusable){
-      
-      buttonstate *b = find_button((int)event->x,(int)event->y);
-      if(b){
-	button_set_state(g,b,1,1);
-      grabbed = b;
-      return 1;
-      }
-    }
-    
-    button_clear_state(g);
-  }
-  return 0;  
-}
+    g->b.sweeper  = 0;
+    g->b.sweeperd = -1;
 
-/* handles mouse button press events; called out of gameboard's master
-   mouse handler. returns nonzero if grabbing focus */
-int button_button_release(Gameboard *g, GdkEventButton *event, int focusable){
-  if(focusable && buttons_ready){
-    
-    buttonstate *b = find_button((int)event->x,(int)event->y);
-    if(b && grabbed==b){
-      button_set_state(g,b,1,0);
-      
-      if(b->callback)
-	b->callback(g);
-      
-      
-    }
-  }
-  
-  grabbed=0;
-  return 0;  
+    g->button_callback = callback;
+    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+  }else
+    callback(g);
+
 }

@@ -16,10 +16,24 @@ MANDIR  = $(PREFIX)/man
 # work for on most modern linux distros without any of the
 # bleeding-edge GTK 2.7/2.8 libs installed.
 
-SRC  = graph.c arrange.c gameboard.c generate.c gamestate.c button_base.c\
-	buttons.c buttonbar.c box.c pause.c finish.c levelstate.c main.c
-OBJ  = graph.o arrange.o gameboard.o generate.o gamestate.o button_base.o\
-	buttons.o buttonbar.o box.o pause.o finish.o levelstate.o main.o
+SRC  = dialog_finish.c gameboard_logic.c dialog_pause.c gameboard_logic_button.c\
+	gameboard.c gameboard_logic_buttonbar.c gameboard_draw_box.c\
+	gameboard_logic_mouse.c gameboard_draw_button.c gameboard_logic_push.c\
+	gameboard_draw_buttonbar.c graph.c gameboard_draw_curtain.c\
+	graph_score.c graph_arrange.c gameboard_draw_edge.c graph_generate.c\
+	gameboard_draw_intersection.c graph_generate_mesh1.c gameboard_draw_main.c\
+	gameboard_draw_score.c main.c gameboard_draw_selection.c\
+	timer.c gameboard_draw_vertex.c levelstate.c dialog_level.c\
+	dialog_level_icons.c gameboard_draw_text.c
+OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o\
+	gameboard.o gameboard_logic_buttonbar.o gameboard_draw_box.o\
+	gameboard_logic_mouse.o gameboard_draw_button.o gameboard_logic_push.o\
+	gameboard_draw_buttonbar.o graph.o gameboard_draw_curtain.o\
+	graph_score.o graph_arrange.o gameboard_draw_edge.o graph_generate.o\
+	gameboard_draw_intersection.o graph_generate_mesh1.o gameboard_draw_main.o\
+	gameboard_draw_score.o main.o gameboard_draw_selection.o\
+	timer.o gameboard_draw_vertex.o levelstate.o dialog_level.o\
+	dialog_level_icons.o gameboard_draw_text.o
 GCF  = `pkg-config --static --cflags "gtk+-2.0 >= 2.7.2"`
 
 # uncomment below for a normal dynamic build
@@ -54,7 +68,7 @@ static:
 	$(STRIP) $(TARGET)
 
 debug:
-	$(MAKE) target CFLAGS="-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)"
+	$(MAKE) target CFLAGS="-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)" -lefence
 
 profile:
 	$(MAKE) target CFLAGS="-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper "
@@ -74,7 +88,7 @@ endif
 
 target:  $(OBJ) 
 	./touch-version
-	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(LIBS) $(LDF) 
+	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(LIBS) $(LDF)
 
 static-target: $(OBJ)
 	./touch-version

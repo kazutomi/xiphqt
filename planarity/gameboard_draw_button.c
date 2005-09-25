@@ -3,7 +3,7 @@
 
 #include "graph.h"
 #include "gameboard.h"
-#include "buttons.h"
+#include "gameboard_draw_button.h"
 
 
 /************************* simple round icon drawing *********************/

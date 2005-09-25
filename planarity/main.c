@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <gtk/gtk.h>
@@ -10,13 +11,13 @@
 #include "graph.h"
 #include "gameboard.h"
 #include "levelstate.h"
+#include "main.h"
 
 #define boardstate "/.gPlanarity/boards/"
 #define mainstate "/.gPlanarity/"
 
-static char *boarddir;
-static char *statedir;
-
+char *boarddir;
+char *statedir;
 Gameboard *gameboard;
 GtkWidget *toplevel_window;
 graph maingraph;
@@ -37,6 +38,21 @@ static int dir_create(char *name){
   }
   return 0;
 }     
+
+void request_resize(int width, int height){
+  gtk_window_resize(GTK_WINDOW(toplevel_window),width,height);
+}
+
+static void clean_exit(int sig){
+  signal(sig,SIG_IGN);
+  if(sig!=SIGINT)
+    fprintf(stderr,
+            "\nTrapped signal %d; saving state and exiting!\n",sig);
+
+  levelstate_write(statedir);
+  gtk_main_quit();
+  exit(0);
+}
 
 int main(int argc, char *argv[]){
   char *homedir = getenv("home");
@@ -85,16 +101,24 @@ int main(int argc, char *argv[]){
   g_signal_connect (G_OBJECT (toplevel_window), "delete-event",
                     G_CALLBACK (gtk_main_quit), NULL);
   
-  gameboard = gameboard_new (&maingraph);
+  gameboard = gameboard_new();
+  levelstate_read();
 
   gtk_container_add (GTK_CONTAINER (toplevel_window), GTK_WIDGET(gameboard));
   gtk_widget_show_all (toplevel_window);
   memset(&maingraph,0,sizeof(maingraph));
 
-  levelstate_read(statedir);
+  /* get the setup processed before we fire up animations */
+  while (gtk_events_pending ())
+    gtk_main_iteration ();
+  gdk_flush();
+
+  levelstate_resume();
+  //  signal(SIGINT,clean_exit);
+  //signal(SIGSEGV,clean_exit);
 
   gtk_main ();
 
-  levelstate_write(statedir);
+  levelstate_write();
   return 0;
 }

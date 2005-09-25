@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "graph.h"
-#include "gamestate.h"
+#include "timer.h"
 #include "gameboard.h"
 #define CHUNK 64
 
@@ -393,6 +393,13 @@ static void set_num_verticies(graph *g, int num){
   while(num--)
     get_vertex(g);
   g->original_intersections = 0;
+  g->active_intersections = 0;
+  g->num_edges=0;        // hopefully redundant
+  g->num_edges_active=0; // hopefully redundant
+}
+
+void graph_release(graph *g){
+  set_num_verticies(g,0);
 }
 
 void activate_vertex(graph *g,vertex *v){
@@ -463,61 +470,6 @@ vertex *find_vertex(graph *g, int x, int y){
   return match;
 }
 
-static void check_vertex_helper(graph *g, vertex *v, int reactivate){
-  int flag=0;
-
-  if(v->x>=get_board_width()){
-    v->x=get_board_width()-1;
-    flag=1;
-  }
-  if(v->x<0){
-    v->x=0;
-    flag=1;
-  }
-  if(v->y>=get_board_height()){
-    v->y=get_board_height()-1;
-    flag=0;
-  }
-  if(v->y<0){
-    v->y=0;
-    flag=1;
-  }
-  if(flag){
-    if(v->edges){
-      deactivate_vertex(g,v);
-      if(reactivate)activate_vertex(g,v);
-    }
-  }
-}
-
-static void check_vertex(graph *g, vertex *v){
-  check_vertex_helper(g,v,1);
-}
-
-void check_verticies(graph *g){
-  vertex *v=g->verticies;
-  while(v){
-    vertex *next=v->next;
-    check_vertex_helper(g,v,0);
-    v=next;
-  }
-
-  v=g->verticies;
-  while(v){
-    vertex *next=v->next;
-    activate_vertex(g,v);
-    v=next;
-  }
-}
-
-void move_vertex(graph *g, vertex *v, int x, int y){
-  if(!v->grabbed) deactivate_vertex(g,v);
-  v->x=x;
-  v->y=y;
-  check_vertex_helper(g,v,0);
-  if(!v->grabbed) activate_vertex(g,v);
-}
-
 // tenative selection; must be confirmed if next call should not clear
 void select_verticies(graph *g,int x1, int y1, int x2, int y2){
   vertex *v = g->verticies;
@@ -583,53 +535,6 @@ void commit_volatile_selection(graph *g){
   }
 }
 
-void move_selected_verticies(graph *g,int dx, int dy){
-  vertex *v = g->verticies;
-  /* deactivate selected verticies */
-  while(v){
-    vertex *next=v->next;
-    if(v->selected)
-      deactivate_vertex(g,v);
-    v=next;
-  }
-
-  /* move selected verticies and reactivate */
-  v=g->verticies;
-  while(v){
-    vertex *next=v->next;
-    if(v->selected){
-      v->x+=dx;
-      v->y+=dy;
-      check_vertex(g,v);
-      activate_vertex(g,v);
-    }
-    v=next;
-  }
-
-}
-
-void scale_verticies(graph *g,float amount){
-  vertex *v=g->verticies;
-  int x=get_board_width()/2;
-  int y=get_board_height()/2;
-
-  while(v){
-    vertex *next=v->next;
-    deactivate_vertex(g,v);
-    v->x=rint((v->x-x)*amount)+x;
-    v->y=rint((v->y-y)*amount)+y;
-    v=next;
-  }
-
-  v=g->verticies;
-  while(v){
-    vertex *next=v->next;
-    check_vertex(g,v);
-    activate_vertex(g,v);
-    v=next;
-  }
-}
-
 static vertex *split_vertex_list(vertex *v){
   vertex *half=v;
   vertex *prevhalf=v;
@@ -682,6 +587,108 @@ void randomize_verticies(graph *g){
   g->verticies=randomize_helper(g->verticies);
 }
 
+static void check_vertex_helper(graph *g, vertex *v, int reactivate){
+  int flag=0;
+
+  if(v->x>=g->width){
+    v->x=g->width-1;
+    flag=1;
+  }
+  if(v->x<0){
+    v->x=0;
+    flag=1;
+  }
+  if(v->y>=g->height){
+    v->y=g->height-1;
+    flag=0;
+  }
+  if(v->y<0){
+    v->y=0;
+    flag=1;
+  }
+  if(flag){
+    if(v->edges){
+      deactivate_vertex(g,v);
+      if(reactivate)activate_vertex(g,v);
+    }
+  }
+}
+
+static void check_vertex(graph *g, vertex *v){
+  check_vertex_helper(g,v,1);
+}
+
+void check_verticies(graph *g){
+  vertex *v=g->verticies;
+  while(v){
+    vertex *next=v->next;
+    check_vertex_helper(g,v,0);
+    v=next;
+  }
+
+  v=g->verticies;
+  while(v){
+    vertex *next=v->next;
+    activate_vertex(g,v);
+    v=next;
+  }
+}
+
+void move_vertex(graph *g, vertex *v, int x, int y){
+  if(!v->grabbed) deactivate_vertex(g,v);
+  v->x=x;
+  v->y=y;
+  check_vertex_helper(g,v,0);
+  if(!v->grabbed) activate_vertex(g,v);
+}
+
+void move_selected_verticies(graph *g,int dx, int dy){
+  vertex *v = g->verticies;
+  /* deactivate selected verticies */
+  while(v){
+    vertex *next=v->next;
+    if(v->selected)
+      deactivate_vertex(g,v);
+    v=next;
+  }
+
+  /* move selected verticies and reactivate */
+  v=g->verticies;
+  while(v){
+    vertex *next=v->next;
+    if(v->selected){
+      v->x+=dx;
+      v->y+=dy;
+      check_vertex(g,v);
+      activate_vertex(g,v);
+    }
+    v=next;
+  }
+
+}
+
+void scale_verticies(graph *g,float amount){
+  vertex *v=g->verticies;
+  int x=g->width/2;
+  int y=g->height/2;
+
+  while(v){
+    vertex *next=v->next;
+    deactivate_vertex(g,v);
+    v->x=rint((v->x-x)*amount)+x;
+    v->y=rint((v->y-y)*amount)+y;
+    v=next;
+  }
+
+  v=g->verticies;
+  while(v){
+    vertex *next=v->next;
+    check_vertex(g,v);
+    activate_vertex(g,v);
+    v=next;
+  }
+}
+
 vertex *new_board(graph *g, int num_v){
   set_num_verticies(g,num_v);
   return g->verticies;
@@ -693,8 +700,8 @@ vertex *new_board(graph *g, int num_v){
 // centered on what the current board size is.
 
 void impress_location(graph *g){
-  int xd = (get_board_width()-get_orig_width())>>1;
-  int yd = (get_board_height()-get_orig_height())>>1;
+  int xd = (g->width-g->orig_width)>>1;
+  int yd = (g->height-g->orig_height)>>1;
   vertex *v=g->verticies;
   while(v){
     v->orig_x=v->x;
@@ -712,20 +719,32 @@ int graph_write(graph *g, FILE *f){
   vertex *v=g->verticies;
   edge *e=g->edges;
   vertex **flat = alloca(g->vertex_num*sizeof(*flat));
+  int *iflat = alloca(g->vertex_num*sizeof(*iflat));
 
+  i=0;
   while(v){
     flat[v->num]=v;
+    iflat[v->num]=i++;
     v=v->next;
   }
 
-  for(i=0;i<g->vertex_num;i++){
-    v = flat[i];
+  fprintf(f,"scoring %ld %f %f %ld %c %d\n",
+	  g->original_intersections,
+	  g->intersection_mult, g->objective_mult, (long)get_timer(),
+	  (g->objective_lessthan?'*':'='),g->objective);
+
+  fprintf(f,"board %d %d %d %d\n",
+	  g->width,g->height,g->orig_width,g->orig_height);
+
+  v=g->verticies;
+  while(v){
     fprintf(f,"vertex %d %d %d %d %d\n",
 	    v->orig_x,v->orig_y,v->x,v->y,v->selected);
+    v=v->next;
   }
 
   while(e){
-    fprintf(f,"edge %d %d\n",e->A->num,e->B->num); 
+    fprintf(f,"edge %d %d\n",iflat[e->A->num],iflat[e->B->num]); 
     e=e->next;
   }
 
@@ -733,13 +752,15 @@ int graph_write(graph *g, FILE *f){
 }
 
 int graph_read(graph *g,FILE *f){
-  char *line=NULL;
-  int i,x,y,ox,oy,sel,A,B,n=0;
+  char *line=NULL,c;
+  int i,x,y,ox,oy,sel,A,B;
+  unsigned int n=0;
   vertex **flat,*v;
+  long l;
   
   new_board(g,0);
 
-  // get all verticies first
+  // get all verticies / scoring first
   while(getline(&line,&n,f)>0){
     
     if(sscanf(line,"vertex %d %d %d %d %d",
@@ -752,7 +773,23 @@ int graph_read(graph *g,FILE *f){
       v->y=y;
       v->selected=sel;
     }
-  }
+
+    if(sscanf(line,"scoring %ld %f %f %ld %c %d\n",
+	      &g->original_intersections,
+	      &g->intersection_mult, &g->objective_mult, &l,
+	      &c,&g->objective)==6){
+
+      pause_timer();
+      set_timer(l);
+      if(c == '*')
+	g->objective_lessthan = 1;
+      else
+	g->objective_lessthan = 0;
+    }
+ 
+    sscanf(line,"board %d %d %d %d",&g->width,&g->height,&g->orig_width,&g->orig_height);	
+
+ }
     
   rewind(f);
   flat=alloca(g->vertex_num*sizeof(*flat));
@@ -772,6 +809,7 @@ int graph_read(graph *g,FILE *f){
       else
 	fprintf(stderr,"WARNING: edge references out of range vertex in save file\n");
     }
+    sscanf(line,"int %ld",&g->original_intersections);
   }
   
   rewind(f);

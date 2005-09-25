@@ -6,8 +6,5 @@
 #define ABOUTBOX_WIDTH 320
 #define ABOUTBOX_HEIGHT 400
 
-extern void pause_game(Gameboard *g);
-extern void about_game(Gameboard *g);
-
-extern int pause_dialog_active();
-extern int about_dialog_active();
+extern void pause_dialog(Gameboard *g);
+extern void about_dialog(Gameboard *g);
