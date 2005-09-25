@@ -66,8 +66,8 @@ all:
 	$(STRIP) $(TARGET)
 
 static:    
-	$(MAKE) static-target CFLAGS="-g -Wall -ffast-math $(GCF) $(ADD_DEF) "	
-#	$(STRIP) $(TARGET)
+	$(MAKE) static-target CFLAGS="-O2 -ffast-math $(GCF) $(ADD_DEF) "	
+	$(STRIP) $(TARGET)
 
 debug:
 	$(MAKE) debug-target CFLAGS="-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)"
