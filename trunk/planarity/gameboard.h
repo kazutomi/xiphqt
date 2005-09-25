@@ -86,6 +86,32 @@ typedef struct {
   buttonstate *grabbed;
 } buttongroup;
 
+typedef struct {
+  int num;
+  double alpha;
+  cairo_surface_t *icon;
+
+  int x;
+  int y;
+  int w;
+  int h;
+
+} dialog_level_oneicon;
+
+typedef struct {
+
+  dialog_level_oneicon level_icons[5];
+  int center_x;
+  int level_lit;
+  int reset_deployed;
+  
+  GdkRectangle text1;
+  GdkRectangle text2;
+  GdkRectangle text3;
+  GdkRectangle text4;
+
+} dialog_level_state;
+
 struct _Gameboard{
   GtkWidget w;
 
@@ -118,6 +144,7 @@ struct _Gameboard{
   int level_dialog_active;
 
   buttongroup b;
+  dialog_level_state d;
 
   vertex *grabbed_vertex;
   vertex *lit_vertex;
