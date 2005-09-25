@@ -2,8 +2,9 @@
 #include <string.h>
 
 #include "graph.h"
-#include "generate.h"
-#include "arrange.h"
+#include "gameboard.h"
+#include "graph_generate.h"
+#include "graph_arrange.h"
 
 typedef struct {
   vertex **v;
@@ -186,7 +187,7 @@ void generate_mesh_1(graph *g, int order){
 
   srandom(order);
   {
-    while(order--){
+    while(--order){
       if(flag){
 	flag=0;
 	m.height+=1;

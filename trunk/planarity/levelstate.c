@@ -1,5 +1,17 @@
+#define _GNU_SOURCE
+#include <gtk/gtk.h>
+#include <gtk/gtkmain.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include "graph.h"
 #include "levelstate.h"
+#include "gameboard.h"
+#include "dialog_pause.h"
+#include "dialog_finish.h"
+#include "dialog_level.h"
+#include "main.h"
+#include "graph_generate.h"
 
 #define CHUNK 64
 #define SAVENAME "levelstate"
@@ -8,28 +20,42 @@ typedef struct levelstate{
   struct levelstate *prev;
   struct levelstate *next;
 
-  int num;
-  char *name;
-  long highscore;
+  graphmeta gm;
+
   int in_progress;
+  long highscore;
+  
 } levelstate;
 
-levelstate *head;
-levelstate *tail;
-levelstate *curr;
-levelstate *pool;
+static levelstate *head=0;
+static levelstate *tail=0;
+static levelstate *curr=0;
+static levelstate *pool=0;
+static int graph_dirty = 1;
 
+static int completed_boards = 0;
+static int aboutflag = 0;
+static int pauseflag = 0;
+static int finishflag = 0;
+static int selectflag = 0;
+ 
 static levelstate *new_level(){
   levelstate *ret;
-  
+  int num=0;
+
   if(pool==0){
     int i;
     pool = calloc(CHUNK,sizeof(*pool));
-    for(i=0;i<CHUNK-1;i++) /* last addition's next points to nothing */
+    for(i=0;i<CHUNK-1;i++) /* last addition's ->next points to nothing */
       pool[i].next=pool+i+1;
   }
 
   ret=pool;
+  if(tail)
+    num=tail->gm.num+1;
+
+  if(generate_get_meta(num, &ret->gm)) return 0;
+
   pool=ret->next;
 
   ret->next=0;
@@ -37,112 +63,153 @@ static levelstate *new_level(){
     
   if(tail){
     ret->prev->next=ret;
-    ret->num=ret->prev->num+1;
   }else{
     head=ret;
-    ret->num=0;
   }
-  
-  ret->name=board_level_to_name(ret->num);
+  tail=ret;
+
   ret->highscore=0;
   ret->in_progress=0;
+
+  /* write out a 'fresh' board icon if it doesn't already exist */
+  if(!gameboard_icon_exists(ret->gm.id,"1")){
+    // generate a graph we can use to make the icon
+    graph g;
+    memset(&g,0,sizeof(g));
+    g.width=gameboard->g.width;
+    g.height=gameboard->g.height;
+    g.orig_width=gameboard->g.orig_width;
+    g.orig_height=gameboard->g.orig_height;
+
+    generate_board(&g,num);
+    impress_location(&g);
+
+    gameboard_write_icon(ret->gm.id,"1",gameboard,&g,1,1);
+   
+    // releases the temporary graph memory
+    graph_release(&g);
+  }
+
   
   return ret;
 }
 
-
-static levelstate *find_level(char *name){
-  int level=board_name_to_level(name);
+static levelstate *ensure_level_num(int level){
 
   if(level<0)return 0;
 
   if(!tail)new_level();
 
-  if(level=<tail->num){
+  if(level <= tail->gm.num){
     // find it in the existing levels
     levelstate *l=tail;
     while(l){
-      if(level == l->num) return l;
+      if(level == l->gm.num) return l;
       l=l->prev;
     }
     return 0;
   }else{
     // make new levels to fill 
       
-    while(tail->num<level)
+    while(tail->gm.num<level)
       new_level();
 
     return tail;
   }
 }
 
-int levelstate_write(char *statedir){
-  FILE *f;
-  char *name=alloca(strlen(statedir)+strlen(levelstate)+1);
-  name[0]=0;
-  strcat(name,boarddir);
-  strcat(name,levelstate);
+static levelstate *ensure_level(char *name){
+  int level=generate_find_number(name);
+  return ensure_level_num(level);
+}
 
-  if(curr->in_progress)
-    write_board(curr->name);
+int levelstate_write(){
+  FILE *f;
+  char *name=alloca(strlen(statedir)+strlen(SAVENAME)+1);
+  name[0]=0;
+  strcat(name,statedir);
+  strcat(name,SAVENAME);
+
+  if(!graph_dirty && (curr->in_progress || gameboard->finish_dialog_active)){
+    gameboard_write(curr->gm.id,gameboard);
+    gameboard_write_icon(curr->gm.id,"2",gameboard,&gameboard->g,
+			 !gameboard->hide_lines,gameboard->show_intersections);
+
+  }
 
   f = fopen(name,"wb");
   if(f==NULL){
     fprintf(stderr,"ERROR:  Could not save game state file \"%s\":\n\t%s\n",
-	    name,strerror(errno));
+	    curr->gm.id,strerror(errno));
     return errno;
   }
   
-  fprintf(f,"current %d : %s\n",strlen(curr->name),curr->name);
+  fprintf(f,"current %d : %s\n",strlen(curr->gm.id),curr->gm.id);
 
   {
     levelstate *l=head;
     while(l){
-      fprintf(f,"level %ld %d %d %s\n",
+      fprintf(f,"level %ld %d %d : %s\n",
 	      l->highscore,l->in_progress,
-	      strlen(l->name),l->name);
+	      strlen(l->gm.id),l->gm.id);
       l=l->next;
     }
   }
 
-  if(about_dialog_active())
+  if(gameboard->about_dialog_active)
     fprintf(f,"about 1\n");
-  if(pause_dialog_active())
+  if(gameboard->pause_dialog_active)
     fprintf(f,"pause 1\n");
-  if(finish_dialog_active())
+  if(gameboard->finish_dialog_active)
     fprintf(f,"finish 1\n");
-  //if(level_dialog_active())
-  //fprintf(f,"select 1\n");
+  if(gameboard->level_dialog_active)
+    fprintf(f,"select 1\n");
 	  
+  fclose(f);
   return 0;
 }
 
-int levelstate_read(char *statedir){
-  char *cur_name;
-  int count;
+// also functions as the levelstate init; always called once upon startup
+int levelstate_read(){
   char *line=NULL;
   size_t n=0;
 
-  int aboutflag=0;
-  int pauseflag=0;
-  int finishflag=0;
+  FILE *f;
+  char *name=alloca(strlen(statedir)+strlen(SAVENAME)+1);
+  name[0]=0;
+  strcat(name,statedir);
+  strcat(name,SAVENAME);
+
+  if(!head)new_level();
+  if(!curr)curr=head;
+
+  f = fopen(name,"rb");
+  if(f==NULL){
+    if(errno!=ENOENT){ 
+      fprintf(stderr,"ERROR:  Could not read game state file \"%s\":\n\t%s\n",
+	      curr->gm.id,strerror(errno));
+    }
+    return errno;
+  }
   
-  // first get all levels we've seen.
+  // get all levels we've seen.
   while(getline(&line,&n,f)>0){
     long l;
-    int i,j;
+    int i;
+    unsigned int j;
     if (sscanf(line,"level %ld %d %d : ",&l,&i,&j)==3){
       char *name=strchr(line,':');
       // guard against bad edits
       if(name &&
 	 (strlen(line) - (name - line + 2) >= j)){
-	levelstate *l;
+	levelstate *le;
 	name += 2;
 	name[j]=0;
-	l = find_level(name);
-	if(l){
-	  l->highscore=l;
-	  l->in_progress=i;
+	le = ensure_level(name);
+	if(le){
+	  if(l>0)completed_boards++;
+	  le->highscore=l;
+	  le->in_progress=i;
 	}
       }
     }
@@ -157,15 +224,13 @@ int levelstate_read(char *statedir){
       char *name=strchr(line,':');
       // guard against bad edits
       if(name &&
-	 (strlen(line) - (name - line + 2) >= j)){
-	levelstate *l;
+	 (strlen(line) - (name - line + 2) >= (unsigned)i)){
+	levelstate *le;
 	name += 2;
-	name[j]=0;
-	l = find_level(name);
-	if(l){
-	  curr=l;
-	  break;
-	}
+	name[i]=0;
+	le = ensure_level(name);
+	if(le)
+	  curr=le;
       }
     }
 
@@ -180,24 +245,41 @@ int levelstate_read(char *statedir){
     if(sscanf(line,"finish %d",&i)==1)
       if(i==1)
 	finishflag=1;
+
+    if(sscanf(line,"select %d",&i)==1)
+      if(i==1)
+	selectflag=1;
 	  
   }
 
-  if(!head)new_level();
-  if(!curr)curr=head;
+  return 0;
+}
+
+void levelstate_resume(){
+
   levelstate_go();
 
   if(pauseflag){
-    pause_game();
+    prepare_reenter_game(gameboard);
+    pause_dialog(gameboard);
   }else if (aboutflag){
-    about_game();
+    prepare_reenter_game(gameboard);
+    about_dialog(gameboard);
   }else if (finishflag){
-    finish_level_dialog();
+    prepare_reenter_game(gameboard);
+    finish_level_dialog(gameboard);
+  }else if (selectflag){
+    prepare_reenter_game(gameboard);
+    level_dialog(gameboard,0);
   }else{
-    gamestate_go();
+    prepare_reenter_game(gameboard);
+    reenter_game(gameboard);
   }
+  aboutflag=0;
+  pauseflag=0;
+  finishflag=0;
+  selectflag=0;
 
-  return 0;
 }
 
 long levelstate_total_hiscore(){
@@ -216,39 +298,80 @@ long levelstate_get_hiscore(){
   return curr->highscore;
 }
 
-void levelstate_next(){
-  if(curr->next)
+int levelstate_next(){
+  if(!curr->next)
+    new_level();
+
+  if(curr->next){
     curr=curr->next;
+    graph_dirty=1;
+    return 1;
+  }
+  return 0;
 }
 
-void levelstate_prev(){
-  if(curr->prev)
+int levelstate_prev(){
+  if(curr->prev){
     curr=curr->prev;
+    graph_dirty=1;
+    return 1;
+  }
+  return 0;
 }
 
 int get_level_num(){
-  return curr->num;
+  return curr->gm.num;
 }
 
-char *get_level_name(){
-  return curr->name;
+char *get_level_desc(){
+  return curr->gm.desc;
 }
 
 void levelstate_finish(){
+  int score = graphscore_get_score(&gameboard->g) + 
+    graphscore_get_bonus(&gameboard->g);
   curr->in_progress=0;
-  if(get_score() > curr->highscore)
-    curr->highscore = get_score();
+  if(score > curr->highscore)
+    curr->highscore = score;
+}
+
+void levelstate_reset(){
+  curr->in_progress=0;
+  graph_dirty=1;
+}
+
+int levelstate_in_progress(){
+  return curr->in_progress;
 }
 
 /* commit to the currently selected level and set the game state to
    readiness using it */
 void levelstate_go(){
 
-  if(!curr->in_progress || read_board(curr->name)){
-    /* not on disk or couldn't load it.  Get a fresh version */
-    gamestate_generate(curr->level)
+  // we need to load the board if we're currently playing the board or sitting in the finish dialog right after
+  if(curr->in_progress || finishflag){
+    if(gameboard_read(curr->gm.id,gameboard)){
+      /* not on disk or couldn't load it.  clear level state flags and get a fresh version */
+      aboutflag=0;
+      pauseflag=0;
+      finishflag=0;
+      selectflag=0;
+      generate_board(&gameboard->g,curr->gm.num);
+      activate_verticies(&gameboard->g);
+      impress_location(&gameboard->g);
+    }
+  }else{
+    /* no board in progress; fetch a new board */
+    generate_board(&gameboard->g,curr->gm.num);
+    activate_verticies(&gameboard->g);
+    impress_location(&gameboard->g);
   }
-
   curr->in_progress=1;
+  graph_dirty=0;
+}
 
+cairo_surface_t *levelstate_get_icon(int num){
+  levelstate *l=ensure_level_num(num);
+  if(l==0)return 0;
+  return gameboard_read_icon(l->gm.id,(l->in_progress?"2":"1"),gameboard);
 }

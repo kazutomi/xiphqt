@@ -47,12 +47,32 @@ typedef struct graph {
   vertex *verticies;
   int     vertex_num;
   edge *edges;
-  int active_intersections;
-  int original_intersections;
+  long active_intersections;
 
   int num_edges;
   int num_edges_active;
+
+  int width;
+  int height;
+  int orig_width;
+  int orig_height;
+
+  // scoring related metadata
+  long  original_intersections;
+  float intersection_mult;
+  int   objective;
+  int   objective_lessthan;
+  float objective_mult;
+
 } graph;
+
+typedef struct graphmeta{
+  int num;
+  char *id;
+  char *desc;
+  void (*gen)(graph *,int arg);
+  int gen_arg;
+} graphmeta;
 
 #include <stdio.h>
 
@@ -70,8 +90,6 @@ extern void scale_verticies(graph *g, float amount);
 extern void randomize_verticies(graph *g);
 extern edge *add_edge(graph *g,vertex *A, vertex *B);
 extern int exists_edge(vertex *a, vertex *b);
-extern int get_board_width();
-extern int get_board_height();
 extern vertex *get_verticies();
 extern edge *get_edges();
 extern int num_selected_verticies(graph *g);
@@ -82,5 +100,10 @@ extern void impress_location();
 extern void commit_volatile_selection();
 extern vertex *get_vertex();
 extern void activate_verticies();
-extern int graph_write(graph *g,FILE *f);
-extern int graph_read(graph *g,FILE *f);
+extern int graph_write(graph *g, FILE *f);
+extern int graph_read(graph *g, FILE *f);
+extern void graph_release(graph *g);
+
+extern int graphscore_get_score(graph *g);
+extern int graphscore_get_bonus(graph *g);
+extern char *graphscore_objective_string(graph *g);

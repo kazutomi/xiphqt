@@ -42,4 +42,5 @@ extern void path_button_play(cairo_t *c, double x, double y);
 #define BUTTON_BORDER 35
 #define BUTTON_SPACING 35
 #define BUTTON_EXPOSE  50
-#define BUTTON_DELTA 3
+#define DEPLOY_DELTA 6
+#define SWEEP_DELTA 3
