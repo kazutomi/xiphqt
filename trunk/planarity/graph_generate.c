@@ -1,3 +1,29 @@
+/*
+ *
+ *  gPlanarity: 
+ *     The geeky little puzzle game with a big noodly crunch!
+ *    
+ *     gPlanarity copyright (C) 2005 Monty <monty@xiph.org>
+ *     Original Flash game by John Tantalo <john.tantalo@case.edu>
+ *     Original game concept by Mary Radcliffe
+ *
+ *  gPlanarity is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *   
+ *  gPlanarity is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *   
+ *  You should have received a copy of the GNU General Public License
+ *  along with Postfish; see the file COPYING.  If not, write to the
+ *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * 
+ */
+
 #define _GNU_SOURCE
 #include <string.h>
 #include <stdlib.h>
@@ -11,20 +37,17 @@ typedef struct {
   void (*gen)(graph *g, int num);
   float intersection_mult;
   float objective_mult;
+  int unlock;
 } gen_instance;
 
 #define FINITE_LEVELS 1
 static gen_instance i_list[FINITE_LEVELS]={ 
-  {"mesh1", 1, "\"original\" board number one",   generate_mesh_1, 1.,1. },
-  //{"mesh1", 2, "\"original\" board number two",   generate_mesh_1, 1.,1. },
-  //{"mesh1", 3, "\"original\" board number three", generate_mesh_1, 1.,1. },
-  //{"mesh1", 4, "\"original\" board number four",  generate_mesh_1, 1.,1. },
-  //{"mesh1", 5, "\"original\" board number five",  generate_mesh_1, 1.,1. },
+  {"mesh1", 1, "\"original\" board number one",   generate_mesh_1, 1.,1., 2 }, // 1
 };
 
 #define LOOP_LEVELS 1
 static gen_instance i_list_loop[LOOP_LEVELS]={ 
-  {"mesh1", 2, "\"original\" board number %d",    generate_mesh_1, 1.,1. },
+  {"mesh1", 2, "\"original\" board number %d",    generate_mesh_1, 1.,1., 2 }, // n
 };
 
 int generate_find_number(char *id){
@@ -66,6 +89,7 @@ int generate_get_meta(int num, graphmeta *gm){
 
     gm->num = num;
     gm->desc = i_list[num].desc;
+    gm->unlock_plus = i_list[num].unlock+1;
     if(asprintf(&gm->id,"%s %d",i_list[num].class,i_list[num].instancenum)==-1){
       fprintf(stderr,"Couldn't allocate memory for level name.\n");
       return -1;
@@ -79,6 +103,7 @@ int generate_get_meta(int num, graphmeta *gm){
       i_list_loop[classnum].instancenum;
     
     gm->num = num;
+    gm->unlock_plus = i_list_loop[classnum].unlock+1;
     if(asprintf(&gm->desc,i_list_loop[classnum].desc,ordernum)==-1){
       fprintf(stderr,"Couldn't allocate memory for level desciption.\n");
       return -1;

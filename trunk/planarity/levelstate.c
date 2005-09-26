@@ -1,3 +1,29 @@
+/*
+ *
+ *  gPlanarity: 
+ *     The geeky little puzzle game with a big noodly crunch!
+ *    
+ *     gPlanarity copyright (C) 2005 Monty <monty@xiph.org>
+ *     Original Flash game by John Tantalo <john.tantalo@case.edu>
+ *     Original game concept by Mary Radcliffe
+ *
+ *  gPlanarity is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *   
+ *  gPlanarity is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *   
+ *  You should have received a copy of the GNU General Public License
+ *  along with Postfish; see the file COPYING.  If not, write to the
+ *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * 
+ */
+
 #define _GNU_SOURCE
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
@@ -33,11 +59,12 @@ static levelstate *curr=0;
 static levelstate *pool=0;
 static int graph_dirty = 1;
 
-static int completed_boards = 0;
 static int aboutflag = 0;
 static int pauseflag = 0;
 static int finishflag = 0;
 static int selectflag = 0;
+
+static int level_limit = 1;
  
 static levelstate *new_level(){
   levelstate *ret;
@@ -207,9 +234,12 @@ int levelstate_read(){
 	name[j]=0;
 	le = ensure_level(name);
 	if(le){
-	  if(l>0)completed_boards++;
 	  le->highscore=l;
 	  le->in_progress=i;
+
+	  if(le->highscore)
+	    if(le->gm.unlock_plus + le->gm.num > level_limit)
+	      level_limit = le->gm.unlock_plus + le->gm.num;
 	}
       }
     }
@@ -333,6 +363,10 @@ void levelstate_finish(){
   curr->in_progress=0;
   if(score > curr->highscore)
     curr->highscore = score;
+
+  if(curr->gm.unlock_plus + curr->gm.num > level_limit)
+    level_limit = curr->gm.unlock_plus + curr->gm.num;
+
 }
 
 void levelstate_reset(){
@@ -342,6 +376,10 @@ void levelstate_reset(){
 
 int levelstate_in_progress(){
   return curr->in_progress;
+}
+
+int levelstate_limit(){
+  return level_limit;
 }
 
 /* commit to the currently selected level and set the game state to
