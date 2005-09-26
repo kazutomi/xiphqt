@@ -63,6 +63,7 @@ void prepare_reenter_game(Gameboard *g){
 void reenter_game(Gameboard *g){
   deploy_buttonbar(g);
   unpause_timer();
+  set_in_progress();
 }
 
 void enter_game(Gameboard *g){

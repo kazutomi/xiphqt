@@ -399,7 +399,7 @@ buttonstate *find_button(Gameboard *g, int x,int y){
 
   for(i=0;i<NUMBUTTONS;i++){
     buttonstate *b=states+i;
-    if(b->position)
+    if(b->position>0)
       if( (b->x-x)*(b->x-x) + (b->y-y)*(b->y-y) <= BUTTON_RADIUS*BUTTON_RADIUS+4)
 	if(b->y != b->y_inactive)
 	  return b;
@@ -416,7 +416,7 @@ void button_set_state(Gameboard *g, buttonstate *b, int rollover, int press){
 
   for(i=0;i<NUMBUTTONS;i++){
     buttonstate *bb=states+i;
-    if(bb->position){
+    if(bb->position>0){
       if(bb!=b){
 	if(bb->rollover)
 	  invalidate_rollover(g,bb);
@@ -510,7 +510,7 @@ void expose_buttons(Gameboard *g,cairo_t *c, int x,int y,int w,int h){
 
     buttonstate *b=states+i;
 
-    if(b->position){
+    if(b->position>0){
       GdkRectangle r = rollover_box(g,b);
       GdkRectangle br = button_box(b);
       
@@ -549,7 +549,7 @@ void resize_buttons(Gameboard *g,int oldw,int oldh,int w,int h){
   buttonstate *states=g->b.states;
 
   for(i=0;i<NUMBUTTONS;i++){
-    if(states[i].position == 2){
+    if(abs(states[i].position) == 2){
 
       states[i].x+=dx;
       states[i].x_target+=dx;
@@ -565,8 +565,8 @@ void resize_buttons(Gameboard *g,int oldw,int oldh,int w,int h){
   dy=h-oldh;
 
   for(i=0;i<NUMBUTTONS;i++){
-    if(states[i].position==1 || 
-       states[i].position==3){
+    if(abs(states[i].position)==1 || 
+       abs(states[i].position)==3){
       states[i].y+=dy;
       states[i].y_target+=dy;
       states[i].y_active+=dy;
@@ -575,7 +575,7 @@ void resize_buttons(Gameboard *g,int oldw,int oldh,int w,int h){
   }
   
   for(i=0;i<NUMBUTTONS;i++){
-    if(states[i].position == 3){
+    if(abs(states[i].position) == 3){
       states[i].x+=dx;
       states[i].x_target+=dx;
     }
