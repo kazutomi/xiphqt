@@ -254,31 +254,43 @@ static int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo
       
     }else{
       // L vertical, M not vertical
-      float y = Ma*L1->x + Mb;
+      
+      // needed if L is vertical and M is horizontal
+      if(L1->x < M1->x && L1->x < M2->x) return 0;
+      if(L1->x > M1->x && L1->x > M2->x) return 0;
 
-      if(y < L1->y && y < L2->y) return 0;
-      if(y > L1->y && y > L2->y) return 0;
-      if(y < M1->y && y < M2->y) return 0;
-      if(y > M1->y && y > M2->y) return 0;
-
-      *xo = L1->x;
-      *yo=y;
-
+      {
+	float y = Ma*L1->x + Mb;
+	
+	if(y < L1->y && y < L2->y) return 0;
+	if(y > L1->y && y > L2->y) return 0;
+	if(y < M1->y && y < M2->y) return 0;
+	if(y > M1->y && y > M2->y) return 0;
+	
+	*xo = L1->x;
+	*yo=y;
+      }
     }
   }else{
 
     if(M1->x == M2->x){
       // M vertical, L not vertical
-      float y = La*M1->x + Lb;
 
-      if(y < L1->y && y < L2->y) return 0;
-      if(y > L1->y && y > L2->y) return 0;
-      if(y < M1->y && y < M2->y) return 0;
-      if(y > M1->y && y > M2->y) return 0;
+      // needed if L is vertical and M is horizontal
+      if(M1->x < L1->x && M1->x < L2->x) return 0;
+      if(M1->x > L1->x && M1->x > L2->x) return 0;
 
-      *xo = M1->x;
-      *yo=y;
-
+      {
+	float y = La*M1->x + Lb;
+	
+	if(y < L1->y && y < L2->y) return 0;
+	if(y > L1->y && y > L2->y) return 0;
+	if(y < M1->y && y < M2->y) return 0;
+	if(y > M1->y && y > M2->y) return 0;
+	
+	*xo = M1->x;
+	*yo=y;
+      }
     }else{
 
       // L and M both have non-infinite slope
