@@ -274,3 +274,10 @@ void generate_mesh_1C(graph *g, int order){
   n=m.width*m.height;
   arrange_verticies_circle(g,M_PI/n - M_PI/2,M_PI/n - M_PI/2);
 }
+
+void generate_mesh_1S(graph *g, int order){
+  mesh m;
+  generate_mesh(g,&m,order,2);
+  randomize_verticies(g);
+  arrange_verticies_circle(g,0,0);
+}
