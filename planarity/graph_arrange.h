@@ -26,3 +26,4 @@
 
 extern void arrange_verticies_circle(graph *g, float off1, float off2);
 extern void arrange_verticies_mesh(graph *g, int width, int height);
+extern void arrange_verticies_cloud(graph *g);

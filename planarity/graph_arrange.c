@@ -27,6 +27,7 @@
 #include <math.h>
 
 #include "graph.h"
+#include "random.h"
 #include "gameboard.h"
 #include "graph_arrange.h"
 
@@ -61,4 +62,37 @@ void arrange_verticies_mesh(graph *g, int width, int height){
       v=v->next;
     }
   }
+}
+
+void arrange_verticies_cloud(graph *g){
+  vertex *v = g->verticies;
+  int n = g->vertex_num;
+  int bw=g->orig_width;
+  int bh=g->orig_height;
+  int radiusx=min(bw,bh)*.55;
+  int radiusy=min(bw,bh)*.40;
+  int i;
+  
+  // first half form an outer perimiter
+
+  for(i=0;i<n/2;i++){
+    v->x = rint( radiusx * cos( i*M_PI*4./n) + (bw>>1));
+    v->y = rint( radiusy * sin( i*M_PI*4./n) + (bh>>1));
+    v=v->next;
+  }
+
+  // second third form an inner perimiter
+
+  for(;i<n/2+n/3;i++){
+    v->x = rint( radiusx * .7 * cos( i*M_PI*6./n) + (bw>>1));
+    v->y = rint( radiusy * .7 * sin( i*M_PI*6./n) + (bh>>1));
+    v=v->next;
+  }
+
+  for(;i<n;i++){
+    v->x = rint( radiusx * .4 * cos( i*M_PI*12./n) + (bw>>1));
+    v->y = rint( radiusy * .4 * sin( i*M_PI*12./n) + (bh>>1));
+    v=v->next;
+  }
+
 }
