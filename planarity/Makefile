@@ -24,7 +24,7 @@ SRC  = dialog_finish.c gameboard_logic.c dialog_pause.c gameboard_logic_button.c
 	gameboard_draw_intersection.c graph_generate_mesh1.c gameboard_draw_main.c\
 	gameboard_draw_score.c main.c gameboard_draw_selection.c\
 	timer.c gameboard_draw_vertex.c levelstate.c dialog_level.c\
-	dialog_level_icons.c gameboard_draw_text.c random.c
+	dialog_level_icons.c gameboard_draw_text.c random.c graph_generate_data.c
 OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o\
 	gameboard.o gameboard_logic_buttonbar.o gameboard_draw_box.o\
 	gameboard_logic_mouse.o gameboard_draw_button.o gameboard_logic_push.o\
@@ -33,7 +33,7 @@ OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o
 	gameboard_draw_intersection.o graph_generate_mesh1.o gameboard_draw_main.o\
 	gameboard_draw_score.o main.o gameboard_draw_selection.o\
 	timer.o gameboard_draw_vertex.o levelstate.o dialog_level.o\
-	dialog_level_icons.o gameboard_draw_text.o random.o
+	dialog_level_icons.o gameboard_draw_text.o random.o graph_generate_data.o
 GCF  = `pkg-config --static --cflags "gtk+-2.0 >= 2.7.2"`
 
 # uncomment below for a normal dynamic build
