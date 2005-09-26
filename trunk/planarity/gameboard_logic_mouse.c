@@ -142,7 +142,7 @@ gint mouse_motion(GtkWidget        *widget,
       if(g->b.grabbed==b)
 	button_set_state(g,b,1,1);
       else
-	button_set_state(g,b,0,0);
+	button_set_state(g,g->b.grabbed,0,0);
     }else{
       /* no button is grabbed; any button may see a rollover */
       if(b)

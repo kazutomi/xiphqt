@@ -44,7 +44,7 @@ typedef struct {
 static gen_instance i_list[FINITE_LEVELS]={ 
   {"mesh1", 1, "A Small Beginning",           generate_mesh_1,  1.,1., 1 }, // 1
   {"mesh1", 2, "My First Real Level(tm)",     generate_mesh_1,  1.,1., 2 }, // 2
-  {"data" , 0, "My First Mission Impossible(tm)",  generate_data,    1.,1.5,3 }, // 3
+  {"data" , 0, "My First Mission Impossible(tm)",  generate_data, 20.,1.,3 }, // 3
   {"mesh1", 3, "Larger, Not Harder",          generate_mesh_1,  1.,1., 3 }, // 4
   {"meshC", 5, "The Trick Is It's Easy",      generate_mesh_1C, 1.,1., 2 }, // 5
   {"meshM", 6, "If You Squint, It's a Brick", generate_mesh_1M, 1.,1., 1 }, // 6
