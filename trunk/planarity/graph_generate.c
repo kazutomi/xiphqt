@@ -40,14 +40,17 @@ typedef struct {
   int unlock;
 } gen_instance;
 
-#define FINITE_LEVELS 1
+#define FINITE_LEVELS 3
 static gen_instance i_list[FINITE_LEVELS]={ 
-  {"mesh1", 1, "\"original\" board number one",   generate_mesh_1, 1.,1., 2 }, // 1
+  {"mesh1", 1, "a small beginning",        generate_mesh_1, 1.,1., 1 }, // 1
+  {"mesh1", 2, "a bit larger",             generate_mesh_1, 1.,1., 2 }, // 2
+  {"data" , 0, "canine... minus four",     generate_data,   1.,1.5,3 }, // 3
+  {"mesh1", 3, "much like level two",      generate_mesh_1, 1.,1., 3 }, // 4
 };
 
 #define LOOP_LEVELS 1
 static gen_instance i_list_loop[LOOP_LEVELS]={ 
-  {"mesh1", 2, "\"original\" board number %d",    generate_mesh_1, 1.,1., 2 }, // n
+  {"mesh1", 4, "\"original\" board number %d",    generate_mesh_1, 1.,1., 2 }, // n
 };
 
 int generate_find_number(char *id){
@@ -71,7 +74,7 @@ int generate_find_number(char *id){
 
 	  // class match, determine the level number
 	  int order = atoi(arg+1);
-	  return FINITE_LEVELS + (order - i_list_loop[i].instancenum)*FINITE_LEVELS + i;
+	  return FINITE_LEVELS + (order - i_list_loop[i].instancenum)*LOOP_LEVELS + i;
 	
 	
 	}
