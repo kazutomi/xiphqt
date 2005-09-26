@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "graph.h"
+#include "random.h"
 #include "gameboard.h"
 #include "graph_generate.h"
 #include "graph_arrange.h"
@@ -153,7 +154,7 @@ static void filter_edges(neighbors_grid *ng,
   nl->num=count;
 }
 
-static void random_populate(graph *g, int current, mesh *m, int min_connect, float prob){
+static void random_populate(graph *g, int current, mesh *m, int min_connect, int prob_128){
   int num_edges=0,i;
   neighbors_grid ng;
   neighbors_list nl;
@@ -170,7 +171,7 @@ static void random_populate(graph *g, int current, mesh *m, int min_connect, flo
   }
 
   while(num_edges<min_connect && nl.num){
-    int choice = random() % nl.num;
+    int choice = random_number() % nl.num;
     add_edge(g,m->v[current], m->v[nl.vnum[choice]]);
     num_edges++;
     filter_intersections(&ng);
@@ -178,7 +179,7 @@ static void random_populate(graph *g, int current, mesh *m, int min_connect, flo
   }
   
   for(i=0;i<nl.num;i++)
-    if(random()<RAND_MAX*prob){
+    if(random_yes(prob_128)){
       num_edges++;
       add_edge(g,m->v[current], m->v[nl.vnum[i]]);
     }
@@ -196,7 +197,7 @@ static void span_depth_first(graph *g,int current, mesh *m){
     if(nl.num == 0) break;
     
     {
-      int choice = random() % nl.num;
+      int choice = random_number() % nl.num;
       add_edge(g,m->v[current], m->v[nl.vnum[choice]]);
       
       span_depth_first(g,nl.vnum[choice], m);
@@ -211,7 +212,7 @@ void generate_mesh_1(graph *g, int order){
   m.height=2;
   vertex *vlist;
 
-  srandom(order);
+  random_seed(order);
   {
     while(--order){
       if(flag){
@@ -244,7 +245,7 @@ void generate_mesh_1(graph *g, int order){
   {
     int i;
     for(i=0;i<m.width*m.height;i++)
-      random_populate(g, i, &m, 2, .25);
+      random_populate(g, i, &m, 2, 32);
   }
 
   randomize_verticies(g);

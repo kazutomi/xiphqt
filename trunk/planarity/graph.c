@@ -31,6 +31,7 @@
 #include <math.h>
 
 #include "graph.h"
+#include "random.h"
 #include "timer.h"
 #include "gameboard.h"
 #define CHUNK 64
@@ -585,7 +586,7 @@ static vertex *randomize_helper(vertex *v){
     w=0;
 
     while(a && b){
-      if(random()&1){
+      if(random_yes(64)&1){
 	// pull off head of a
 	if(w)
 	  w=w->next=a;
