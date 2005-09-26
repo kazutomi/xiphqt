@@ -281,3 +281,10 @@ void generate_mesh_1S(graph *g, int order){
   randomize_verticies(g);
   arrange_verticies_circle(g,0,0);
 }
+
+void generate_mesh_1_cloud(graph *g, int order){
+  mesh m;
+  generate_mesh(g,&m,order,40);
+  randomize_verticies(g);
+  arrange_verticies_cloud(g);
+}

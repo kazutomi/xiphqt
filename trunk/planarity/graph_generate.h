@@ -32,5 +32,6 @@ extern void generate_mesh_1(graph *g, int order);
 extern void generate_mesh_1M(graph *g, int order);
 extern void generate_mesh_1C(graph *g, int order);
 extern void generate_mesh_1S(graph *g, int order);
+extern void generate_mesh_1_cloud(graph *g, int order);
 
 extern void generate_data(graph *g, int order);
