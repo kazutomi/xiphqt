@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "graph.h"
 #include "random.h"
@@ -205,11 +206,10 @@ static void span_depth_first(graph *g,int current, mesh *m){
   }
 }
 
-void generate_mesh_1(graph *g, int order){
+static void generate_mesh(graph *g, mesh *m, int order, int density_128){
   int flag=0;
-  mesh m;
-  m.width=3;
-  m.height=2;
+  m->width=3;
+  m->height=2;
   vertex *vlist;
 
   random_seed(order);
@@ -217,40 +217,60 @@ void generate_mesh_1(graph *g, int order){
     while(--order){
       if(flag){
 	flag=0;
-	m.height+=1;
+	m->height+=1;
       }else{
 	flag=1;
-	m.width+=2;
+	m->width+=2;
       }
     }
   }
 
-  vlist=new_board(g, m.width * m.height);
+  vlist=new_board(g, m->width * m->height);
 
   /* a flat vector is easier to address while building the mesh */
   {
     int i;
     vertex *v=vlist;
-    m.v=alloca(m.width*m.height * sizeof(*m.v));
-    for(i=0;i<m.width*m.height;i++){
-      m.v[i]=v;
+    m->v=alloca(m->width*m->height * sizeof(*m->v));
+    for(i=0;i<m->width*m->height;i++){
+      m->v[i]=v;
       v=v->next;
     }
   }
 
   /* first walk a random spanning tree */
-  span_depth_first(g, 0, &m);
+  span_depth_first(g, 0, m);
   
   /* now iterate the whole mesh adding random edges */
   {
     int i;
-    for(i=0;i<m.width*m.height;i++)
-      random_populate(g, i, &m, 2, 32);
+    for(i=0;i<m->width*m->height;i++)
+      random_populate(g, i, m, 2, density_128);
   }
 
-  randomize_verticies(g);
-  arrange_verticies_circle(g);
+  g->objective=0;
+  g->objective_lessthan=0;
 
-  //arrange_verticies_mesh(m.width,m.height);
 }
 
+void generate_mesh_1(graph *g, int order){
+  mesh m;
+  generate_mesh(g,&m,order,32);
+  randomize_verticies(g);
+  arrange_verticies_circle(g,0,0);
+}
+
+void generate_mesh_1M(graph *g, int order){
+  mesh m;
+  generate_mesh(g,&m,order,32);
+  randomize_verticies(g);
+  arrange_verticies_mesh(g,m.width,m.height);
+}
+
+void generate_mesh_1C(graph *g, int order){
+  int n;
+  mesh m;
+  generate_mesh(g,&m,order,128);
+  n=m.width*m.height;
+  arrange_verticies_circle(g,M_PI/n - M_PI/2,M_PI/n - M_PI/2);
+}
