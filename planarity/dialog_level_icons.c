@@ -1,3 +1,29 @@
+/*
+ *
+ *  gPlanarity: 
+ *     The geeky little puzzle game with a big noodly crunch!
+ *    
+ *     gPlanarity copyright (C) 2005 Monty <monty@xiph.org>
+ *     Original Flash game by John Tantalo <john.tantalo@case.edu>
+ *     Original game concept by Mary Radcliffe
+ *
+ *  gPlanarity is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *   
+ *  gPlanarity is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *   
+ *  You should have received a copy of the GNU General Public License
+ *  along with Postfish; see the file COPYING.  If not, write to the
+ *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * 
+ */
+
 #include <math.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -178,7 +204,7 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
     for(i=0;i<5;i++){
       dialog_level_oneicon *l=g->d.level_icons+i;
       alpha_update(g,l);
-      if(l->num >= 0 && c){
+      if(l->num >= 0 && l->num < levelstate_limit() && c){
 	
 	int iw = l->w;
 	int ih = l->h;
@@ -336,7 +362,7 @@ static int find_icon(Gameboard *b,graph *g, int x, int y){
 
   for(i=1;i<4;i++){
     dialog_level_oneicon *l=b->d.level_icons+i;
-    if(l->num>=0){
+    if(l->num>=0 && l->num<levelstate_limit()){
       if(x >= l->x && 
 	 x <= l->x + l->w &&
 	 y >= l->y &&
