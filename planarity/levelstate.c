@@ -312,6 +312,10 @@ void levelstate_resume(){
 
 }
 
+void set_in_progress(){
+  curr->in_progress=1;
+}
+
 long levelstate_total_hiscore(){
   long score=0;
   levelstate *l=head;
@@ -404,7 +408,7 @@ void levelstate_go(){
     activate_verticies(&gameboard->g);
     impress_location(&gameboard->g);
   }
-  curr->in_progress=1;
+
   graph_dirty=0;
 }
 

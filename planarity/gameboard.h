@@ -79,6 +79,7 @@ typedef struct {
                 // 1 left
                 // 2 center
                 // 3 right
+                // negative indicates active but undeployed
   int x_target;
   int x;
 

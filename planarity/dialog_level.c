@@ -75,7 +75,7 @@ static void setup_level_buttons(Gameboard *g,int bw, int bh){
     states[i].position=0;
 
   states[0].position = 2; //center
-  states[2].position = 0; //undeployed by default (redundant)
+  states[2].position = -2; //undeployed by default (redundant)
   states[10].position = 2; //center
 
   {

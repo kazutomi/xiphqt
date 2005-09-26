@@ -37,5 +37,6 @@ extern void levelstate_finish();
 extern void levelstate_go();
 extern void levelstate_resume();
 extern void levelstate_reset();
+extern void set_in_progress();
 extern int levelstate_limit();
 extern cairo_surface_t* levelstate_get_icon(int num);
