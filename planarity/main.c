@@ -93,6 +93,17 @@ static void clean_exit(int sig){
   exit(0);
 }
 
+static void clean_exit_delete_post(Gameboard *g){
+  gameboard = 0;
+  gtk_main_quit();
+}
+
+static gint clean_exit_delete(gpointer p){
+  levelstate_write(statedir);
+  undeploy_buttons(gameboard,clean_exit_delete_post);
+  return 1;  // we're handling it, don't continue the delete chain
+}
+
 int main(int argc, char *argv[]){
   char *homedir = getenv("home");
   if(!homedir)
@@ -138,7 +149,7 @@ int main(int argc, char *argv[]){
 
   toplevel_window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (G_OBJECT (toplevel_window), "delete-event",
-                    G_CALLBACK (gtk_main_quit), NULL);
+                    G_CALLBACK (clean_exit_delete), NULL);
   
   gameboard = gameboard_new();
   levelstate_read();
@@ -160,6 +171,7 @@ int main(int argc, char *argv[]){
 
   gtk_main ();
 
-  levelstate_write();
+  if(gameboard !=0 )
+    levelstate_write();
   return 0;
 }
