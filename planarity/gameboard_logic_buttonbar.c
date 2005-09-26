@@ -146,6 +146,11 @@ void deploy_check(Gameboard *g){
     }
 
     states[9].position = 3; //activate it
+
+    states[9].x = states[9].x_target = g->g.width-BUTTONBAR_BORDER;
+    states[9].y_active = g->g.height - BUTTONBAR_Y_FROM_BOTTOM;
+    states[9].y = states[9].y_inactive = states[9].y_active + BUTTON_EXPOSE;
+    
     states[9].y_target = states[9].y_active;
     states[i].sweepdeploy = 0;
 
