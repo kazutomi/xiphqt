@@ -40,17 +40,20 @@ typedef struct {
   int unlock;
 } gen_instance;
 
-#define FINITE_LEVELS 3
+#define FINITE_LEVELS 7
 static gen_instance i_list[FINITE_LEVELS]={ 
-  {"mesh1", 1, "a small beginning",        generate_mesh_1, 1.,1., 1 }, // 1
-  {"mesh1", 2, "a bit larger",             generate_mesh_1, 1.,1., 2 }, // 2
-  {"data" , 0, "canine... minus four",     generate_data,   1.,1.5,3 }, // 3
-  {"mesh1", 3, "much like level two",      generate_mesh_1, 1.,1., 3 }, // 4
+  {"mesh1", 1, "A Small Beginning",           generate_mesh_1,  1.,1., 1 }, // 1
+  {"mesh1", 2, "My First Real Level(tm)",     generate_mesh_1,  1.,1., 2 }, // 2
+  {"data" , 0, "My First Mission Impossible(tm)",  generate_data,    1.,1.5,3 }, // 3
+  {"mesh1", 3, "Larger, Not Harder",          generate_mesh_1,  1.,1., 3 }, // 4
+  {"meshC", 5, "The Trick Is It's Easy",      generate_mesh_1C, 1.,1., 2 }, // 5
+  {"meshM", 6, "If You Squint, It's A Brick", generate_mesh_1M, 1.,1., 1 }, // 6
+  {"mesh1", 7, "Round But Straightforward",   generate_mesh_1,  1.,1., 3 }, // 7
 };
 
 #define LOOP_LEVELS 1
 static gen_instance i_list_loop[LOOP_LEVELS]={ 
-  {"mesh1", 4, "\"original\" board number %d",    generate_mesh_1, 1.,1., 2 }, // n
+  {"mesh1", 8, "\"Original\" Board Number %d",    generate_mesh_1, 1.,1., 2 }, // n
 };
 
 int generate_find_number(char *id){

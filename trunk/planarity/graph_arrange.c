@@ -30,7 +30,7 @@
 #include "gameboard.h"
 #include "graph_arrange.h"
 
-void arrange_verticies_circle(graph *g){
+void arrange_verticies_circle(graph *g, float off1, float off2){
   vertex *v = g->verticies;
   int n = g->vertex_num;
   int bw=g->orig_width;
@@ -38,8 +38,8 @@ void arrange_verticies_circle(graph *g){
   int radius=min(bw,bh)*.45;
   int i;
   for(i=0;i<n;i++){
-    v->x = rint( radius * cos( i*M_PI*2./n) + (bw>>1));
-    v->y = rint( radius * sin( i*M_PI*2./n) + (bh>>1));
+    v->x = rint( radius * cos( i*M_PI*2./n +off1) + (bw>>1));
+    v->y = rint( radius * sin( i*M_PI*2./n +off2) + (bh>>1));
     v=v->next;
   }
 }

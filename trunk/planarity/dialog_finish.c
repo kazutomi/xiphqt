@@ -174,7 +174,7 @@ static void draw_finishbox(Gameboard *g){
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
 
-    snprintf(buffer,160,"Objective: %d points",graphscore_get_score(&g->g));
+    snprintf(buffer,160,"Base score: %d points",graphscore_get_score(&g->g));
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
     snprintf(buffer,160,"Time bonus: %d points",time_bonus);
