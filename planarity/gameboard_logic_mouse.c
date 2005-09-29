@@ -239,7 +239,7 @@ gboolean mouse_press (GtkWidget        *widget,
 	grab_vertex(&g->g,g->grabbed_vertex);
 	invalidate_attached(widget,g->grabbed_vertex);
 	invalidate_edges(widget,g->grabbed_vertex);
-	
+	fade_cancel(g);
 	// highlight vertex immediately; update the background after the
 	// vertex change
 	update_full_delayed(g);
@@ -299,6 +299,7 @@ gboolean mouse_release (GtkWidget        *widget,
     if(g->grabbed_vertex){
       ungrab_vertex(&g->g,g->grabbed_vertex);
       update_add_vertex(g,g->grabbed_vertex);
+      fade_attached(g,g->grabbed_vertex);
       update_score(g);
       g->grabbed_vertex = 0;
 

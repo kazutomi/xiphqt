@@ -149,9 +149,9 @@ void deploy_check(Gameboard *g){
     states[9].y_target = states[9].y_active;
     states[i].sweepdeploy = 0;
 
-    if(g->gtk_timer!=0)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    if(g->button_timer!=0)
+      g_source_remove(g->button_timer);
+    g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     g->checkbutton_deployed=1;
   }
 }
@@ -167,9 +167,9 @@ void undeploy_check(Gameboard *g){
     }
     states[9].y_target=states[9].y_inactive;
 
-    if(g->gtk_timer!=0)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    if(g->button_timer!=0)
+      g_source_remove(g->button_timer);
+    g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     g->checkbutton_deployed=0;
   }
 }

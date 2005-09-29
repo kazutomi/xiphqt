@@ -131,17 +131,13 @@ static void deploy_reset_button(Gameboard *g){
     states[2].y_target = states[2].y_active;
    
     g->d.reset_deployed=1;
+    
+    if(g->b.buttons_ready){
+      if(g->button_timer!=0)
+	g_source_remove(g->button_timer);
+      g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    }
   }
-  
-  // even if the button is already 'deployed', the animation may
-  // have been interrupted.  Retrigger.
-
-  if(g->b.buttons_ready){
-    if(g->gtk_timer!=0)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
-  }
-
 }
 
 static void undeploy_reset_button(Gameboard *g){
@@ -153,15 +149,13 @@ static void undeploy_reset_button(Gameboard *g){
     states[2].y_target = states[2].y_inactive;
     
     g->d.reset_deployed=0;
-  }
 
-  // even if the button is already 'undeployed', the animation may
-  // have been interrupted.  Retrigger.
-  if(g->b.buttons_ready){
-    if(g->gtk_timer!=0)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
-  } 
+    if(g->b.buttons_ready){
+      if(g->button_timer!=0)
+	g_source_remove(g->button_timer);
+      g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    } 
+  }
 }
 
 static void alpha_update(Gameboard *g,dialog_level_oneicon *l){
@@ -316,13 +310,11 @@ static gboolean animate_level_frame(gpointer ptr){
   int i;
 
   if(g->d.center_x == 0){
-    g_source_remove(g->gtk_timer);
-    g->gtk_timer=0;
+    g_source_remove(g->d.icon_timer);
+    g->d.icon_timer=0;
 
     if(levelstate_in_progress())
       deploy_reset_button(g);
-    else
-      undeploy_reset_button(g);
     
     expose_full(g);
     return 0;
@@ -398,6 +390,10 @@ void level_mouse_press(Gameboard *g, int x, int y){
 
   if(g->d.level_lit == 1){
     if(levelstate_prev()){
+
+    if(!levelstate_in_progress())
+      undeploy_reset_button(g);
+
       if(g->d.level_icons[4].icon)
 	cairo_surface_destroy(g->d.level_icons[4].icon);
       for(i=4;i>=1;i--){
@@ -415,6 +411,9 @@ void level_mouse_press(Gameboard *g, int x, int y){
   
   if(g->d.level_lit == 3){
     if(levelstate_next()){
+
+      if(!levelstate_in_progress())
+	undeploy_reset_button(g);
       
       if(g->d.level_icons[0].icon)
 	cairo_surface_destroy(g->d.level_icons[0].icon);
@@ -433,9 +432,9 @@ void level_mouse_press(Gameboard *g, int x, int y){
   }
 
   if(g->d.center_x){
-    if(g->gtk_timer)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_level_frame, (gpointer)g);
+    if(g->d.icon_timer)
+      g_source_remove(g->d.icon_timer);
+    g->d.icon_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_level_frame, (gpointer)g);
   }
 
 }

@@ -47,6 +47,14 @@ void draw_vertex(cairo_t *c,vertex *v,cairo_surface_t *s){
   cairo_paint(c);
 }      
 
+void draw_vertex_with_alpha(cairo_t *c,vertex *v,cairo_surface_t *s,float alpha){
+  cairo_set_source_surface(c,
+			   s,
+			   v->x-V_LINE-V_RADIUS,
+			   v->y-V_LINE-V_RADIUS);
+  cairo_paint_with_alpha(c,alpha);
+}      
+
 // normal unlit vertex
 cairo_surface_t *cache_vertex(Gameboard *g){
   cairo_surface_t *ret=

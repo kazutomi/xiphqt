@@ -124,11 +124,18 @@ static void scale(Gameboard *g,double scale){
 }
 
 static void gtk_main_quit_wrapper(Gameboard *g){
+  fade_cancel(g);
   gtk_main_quit();
 }
 
 static void level_wrapper(Gameboard *g){
+  fade_cancel(g);
   level_dialog(g,0);
+}
+
+static void finish_wrapper(Gameboard *g){
+  fade_cancel(g);
+  finish_level_dialog(g);
 }
 
 /* toplevel main gameboard action entry points; when a button is
@@ -150,7 +157,7 @@ void finish_action(Gameboard *g){
   if(g->g.active_intersections<=g->g.original_intersections){
     pause_timer();
     levelstate_finish();
-    undeploy_buttons(g,finish_level_dialog);
+    undeploy_buttons(g,finish_wrapper);
   }
 }
 
