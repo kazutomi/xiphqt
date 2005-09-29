@@ -73,6 +73,9 @@ static void draw_midground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
   /* verticies drawn over the edges */
   {
     vertex *v = g->g.verticies;
+    fade_list *f = g->fade.head;
+    float alpha = 1.*g->fade.count/FADE_FRAMES;
+
     int clipx = x-V_RADIUS;
     int clipw = x+w+V_RADIUS;
     int clipy = y-V_RADIUS;
@@ -97,6 +100,25 @@ static void draw_midground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
       }
       
       v=v->next;
+    }
+
+    while(f){
+      v=f->v;
+
+      /* is the vertex in the expose rectangle? */
+      if(v->x>=clipx && v->x<=clipw &&
+	 v->y>=clipy && v->y<=cliph){
+
+	/* only fade if not specially lit */
+	if(!(v == g->grabbed_vertex && !g->group_drag) &&
+	   !(v->selected) &&
+	   !(v==g->lit_vertex) &&
+	   !(v->attached_to_grabbed && !g->group_drag))
+     
+	  draw_vertex_with_alpha(c,v,g->vertex_attached,alpha);
+
+      }
+      f=f->next;
     }
   }
 }

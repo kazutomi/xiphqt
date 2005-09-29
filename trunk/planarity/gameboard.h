@@ -61,6 +61,9 @@
 #define ICON_WIDTH  160
 #define ICON_HEIGHT 120
 
+#define FADE_FRAMES 50
+#define FADE_ANIM_INTERVAL 100
+
 G_BEGIN_DECLS
 
 #define GAMEBOARD_TYPE            (gameboard_get_type ())
@@ -71,6 +74,17 @@ G_BEGIN_DECLS
 
 typedef struct _Gameboard       Gameboard;
 typedef struct _GameboardClass  GameboardClass;
+
+typedef struct fade_list{
+  vertex *v;
+  struct fade_list *next;
+} fade_list;
+
+typedef struct {
+  fade_list *head;
+  int count;
+  gint fade_timer;
+} fade_state;
 
 #define NUMBUTTONS 11
 
@@ -137,6 +151,7 @@ typedef struct {
   GdkRectangle text3;
   GdkRectangle text4;
 
+  gint icon_timer; // used for buttons and icons
 } dialog_level_state;
 
 struct _Gameboard{
@@ -172,6 +187,7 @@ struct _Gameboard{
 
   buttongroup b;
   dialog_level_state d;
+  fade_state fade;
 
   vertex *grabbed_vertex;
   vertex *lit_vertex;
@@ -195,7 +211,7 @@ struct _Gameboard{
   int checkbutton_deployed;
   int buttonbar_sweeper;
   
-  gint gtk_timer;
+  gint button_timer; // used for buttons and icons
   void (*button_callback)(Gameboard *);
 
 };
@@ -266,6 +282,7 @@ extern void draw_score(Gameboard *g);
 extern void update_score(Gameboard *g);
 
 extern void draw_vertex(cairo_t *c,vertex *v,cairo_surface_t *s);
+extern void draw_vertex_with_alpha(cairo_t *c,vertex *v,cairo_surface_t *s,float alpha);
 extern cairo_surface_t *cache_vertex(Gameboard *g);
 extern cairo_surface_t *cache_vertex_sel(Gameboard *g);
 extern cairo_surface_t *cache_vertex_grabbed(Gameboard *g);
@@ -307,3 +324,7 @@ extern GdkRectangle render_bordertext_centered(cairo_t *c, char *s, int x, int y
 
 extern void gameboard_size_allocate (GtkWidget     *widget,
 				     GtkAllocation *allocation);
+
+extern void fade_cancel(Gameboard *g);
+extern void fade_attached(Gameboard *g,vertex *v);
+

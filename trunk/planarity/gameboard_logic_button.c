@@ -26,6 +26,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
@@ -488,9 +489,9 @@ gboolean animate_button_frame(gpointer ptr){
 
   if(!ret)g->b.sweeperd = 0;
 
-  if(!ret && g->gtk_timer!=0){
-    g_source_remove(g->gtk_timer);
-    g->gtk_timer=0;
+  if(!ret && g->button_timer!=0){
+    g_source_remove(g->button_timer);
+    g->button_timer=0;
   }
 
   if(!ret && g->button_callback)
@@ -617,9 +618,9 @@ void deploy_buttons(Gameboard *g, void (*callback)(Gameboard *g)){
     g->b.sweeperd = 1;
 
     g->button_callback = callback;
-    if(g->gtk_timer!=0)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    if(g->button_timer!=0)
+      g_source_remove(g->button_timer);
+    g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     g->b.buttons_ready=1;
   }
 
@@ -640,9 +641,9 @@ void undeploy_buttons(Gameboard *g, void (*callback)(Gameboard *ptr)){
     g->b.sweeperd = -1;
 
     g->button_callback = callback;
-    if(g->gtk_timer!=0)
-      g_source_remove(g->gtk_timer);
-    g->gtk_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
+    if(g->button_timer!=0)
+      g_source_remove(g->button_timer);
+    g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
   }else
     callback(g);
 
