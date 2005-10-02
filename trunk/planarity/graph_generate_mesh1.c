@@ -36,6 +36,7 @@
 
 typedef struct {
   vertex **v;
+  edge_list *embed_list;
   int width;
   int height;
 } mesh;
@@ -50,6 +51,89 @@ typedef struct {
   int vnum[8];
   int num;
 } neighbors_list;
+
+/* The 'embed_list' is a set of edges that don't obey or neighboring
+   intersection calculation mode and are thus tracked
+   seperately/explicitly.  They're added to the main graph after the
+   rest of the graph is generated. */
+
+/* add edge to the embed_list */
+static void embedlist_add_edge(mesh *m, vertex *A, vertex *B){
+  edge *e = new_edge(A,B);
+  m->embed_list = add_edge_to_list(m->embed_list,e);
+}
+
+/* move embed_list edges into the real graph */
+static void embedlist_add_to_mesh(graph *g, mesh *m){
+  edge_list *el = m->embed_list;
+
+  /* move the edges out of the embed_list and add them to the main graph */
+  while(el){
+    edge *e = el->edge;
+    el->edge = 0;
+
+    insert_edge(g,e);
+    el=el->next;
+  }
+
+  release_edge_list(m->embed_list);
+  m->embed_list=0; /* be pedantic */
+
+}
+
+static int embedlist_intersects(mesh *m, vertex *A, vertex *B){
+  edge_list *el = m->embed_list;
+  double dummy_x,dummy_y;
+  
+  while(el){
+    edge *e = el->edge;
+    
+    if(intersects(A,B,e->A,e->B,&dummy_x,&dummy_y))
+      return 1;
+
+    el=el->next;
+  }
+  return 0;
+
+}
+
+static void embedlist_filter_intersections(neighbors_grid *ng){
+  int i;
+  vertex *A = ng->center;
+
+  for(i=0;i<8;i++){
+    if(ng->vnum[i] != -1){
+      vertex *B = ng->m->v[ng->vnum[i]];
+
+      if(embedlist_intersects(ng->m,A,B))
+	ng->vnum[i]=-1;
+    }
+  }
+}
+
+static int embedlist_contains_vertex(mesh *m,vertex *v){
+  edge_list *el = m->embed_list;
+  
+  while(el){
+    edge *e = el->edge;
+
+    if(e->A == v) return 1;
+    if(e->B == v) return 1;
+
+    el=el->next;
+  }
+  return 0;
+}
+
+static int embedlist_vertex_poisoned(mesh *m, vertex *v){
+  return v->selected;
+}
+
+static void poison_vertex(mesh *m, vertex *v){
+  v->selected=1;
+}
+
+/* neighboring intersection model */
 
 static void populate_neighbors(int vnum, mesh *m, 
 			       neighbors_grid *ng){
@@ -136,9 +220,10 @@ static void filter_intersections(neighbors_grid *ng){
       break;
     } 
   }
+  embedlist_filter_intersections(ng);
 }
 
-// eliminate verticies we've already connected to
+/* eliminate verticies we've already connected to */
 static void filter_edges(neighbors_grid *ng,
 			 neighbors_list *nl){
 
@@ -206,13 +291,266 @@ static void span_depth_first(graph *g,int current, mesh *m){
   }
 }
 
-static void generate_mesh(graph *g, mesh *m, int order, int density_128){
+/* nastiness adds long edges along the outer perimeter to make it
+   harder to rely on verticies always being near each other; mesh 2
+   takes this further, but we can add some of the same flavor to
+   mesh1. */
+
+static void nasty_horizontal(graph *g, mesh *m, int A, int B, int limit){
+  if(limit == 0) return;
+  if(A+2 > B)return; /* adjacent is too close */
+
+  add_edge(g,m->v[A],m->v[B]);
+
+  A++;
+  B--;
+  nasty_horizontal(g,m,A,B,limit-1);
+}
+
+static void nasty_vertical(graph *g, mesh *m, int A, int B, int limit){
+  if(limit == 0) return;
+  if(A+(m->width*2) > B)return; /* adjacent is too close */
+
+  add_edge(g,m->v[A],m->v[B]);
+
+  A+=m->width;
+  B-=m->width;
+  nasty_vertical(g,m,A,B,limit-1);
+}
+
+/* Don't use this along with k5 embedding; the assumptions the
+   nastiness algorithm makes about solvable conditions won't always
+   coexist with the assumptions the k5 embedding makes about solvable
+   conditions. */
+static void mesh_nastiness(graph *g, mesh *m, int limit){
+
+  nasty_horizontal(g,m,0,m->width-1, limit);
+  nasty_horizontal(g,m,(m->height-1)*m->width,m->width*m->height-1, limit);
+
+  nasty_vertical(g,m,0,(m->height-1)*m->width,limit);
+  nasty_vertical(g,m,m->width-1,m->width*m->height-1, limit);
+}
+
+/* Embed one k5 in the solved graph */
+/* Don't use this along with 'nastiness'; the assumptions the
+   nastiness algorithm makes about solvable conditions won't always
+   coexist with the assumptions that non-planar embedding makes about
+   solvable conditions. */
+
+static void mesh_embed_k5(graph *g, mesh *m,int x, int y){
+
+  /* Add the k5s up front in their own special edge list; This list
+     will also be checked explicitly by the various neighboring
+     algorithms as the k5's edges don't all conceptually work within
+     the implicit neighboring algorithm we're using.  Also, by using a
+     special edge list and not adding the k5 edges to the vertex edge
+     lists up front, we can still use the unmodified initial spanning
+     walk algorithm. */
+
+  int w = m->width;
+
+  vertex *A = m->v[y*w+x+1];
+  vertex *B = m->v[(y+1)*w+x+1];
+  vertex *C = m->v[(y+1)*w+x+2];
+  vertex *D = m->v[(y+1)*w+x+3];
+  vertex *E = m->v[(y+2)*w+x];
+
+  // poisoned verticies are already inside another kernel (the regular
+  // mesh is deflectable and thus not really regular)
+  if(embedlist_vertex_poisoned(m,A))return;
+  if(embedlist_vertex_poisoned(m,B))return;
+  if(embedlist_vertex_poisoned(m,C))return;
+  if(embedlist_vertex_poisoned(m,D))return;
+  if(embedlist_vertex_poisoned(m,E))return;
+
+  // the way k5 works we don't need to poison the internal verticies
+
+  embedlist_add_edge(m, A,B);
+  embedlist_add_edge(m, A,C);
+  embedlist_add_edge(m, A,D);
+  embedlist_add_edge(m, A,E);
+  embedlist_add_edge(m, B,C);
+  embedlist_add_edge(m, B,D);
+  embedlist_add_edge(m, B,E);
+  embedlist_add_edge(m, C,D);
+  embedlist_add_edge(m, C,E);
+  embedlist_add_edge(m, D,E);
+  g->objective++;
+}
+
+/* Embed one k3,3 in the solved graph */
+/* Don't use this along with 'nastiness'; the assumptions the
+   nastiness algorithm makes about solvable conditions won't always
+   coexist with the assumptions that k5 embedding makes about solvable
+   conditions. */
+static void mesh_embed_k33(graph *g, mesh *m, int x, int y){
+
+  /* same disclaimers as k5 */
+  /* the k3,3 embedding works with the standard walk algorithm only
+     because an edge with an endpoint exactly on another edge is
+     considered an intersection. */
+  /* the way it is added, the walk/population can add additional edges
+     inside the embedded kernel; this is fine, the population will be
+     certain not to introduce intersections. */
+
+  int w = m->width;
+
+  vertex *A = m->v[y*w+x];
+  vertex *B = m->v[y*w+x+1];
+  vertex *C = m->v[y*w+x+2];
+  vertex *D = m->v[(y+1)*w+x];
+  vertex *E = m->v[(y+1)*w+x+1];
+  vertex *F = m->v[(y+1)*w+x+2];
+
+  // poisoned verticies are already inside another kernel (the regular
+  // mesh is deflectable and thus not really regular)
+  if(embedlist_vertex_poisoned(m,A))return;
+  if(embedlist_vertex_poisoned(m,B))return;
+  if(embedlist_vertex_poisoned(m,C))return;
+  if(embedlist_vertex_poisoned(m,D))return;
+  if(embedlist_vertex_poisoned(m,E))return;
+  if(embedlist_vertex_poisoned(m,F))return;
+
+  // check that verticies we want to poison ourselves are not already in use
+  if(embedlist_contains_vertex(m,B))return;
+  if(embedlist_contains_vertex(m,E))return;
+  /* B and E are internal according to x/y, but according to the
+     position in the mesh, they're on the outside.  Poison them so
+     that they're explicitly marked inside. */
+  poison_vertex(m,B);
+  poison_vertex(m,E);
+
+  /* need to mode two of the intersections to avoid  unwanted
+     intersections (not spurious; they are in fact intersections until
+     moved) */
+
+  B->y+=2;
+  E->y-=2;
+  
+  embedlist_add_edge(m, A,C);
+  embedlist_add_edge(m, A,D);
+  embedlist_add_edge(m, A,E);
+  embedlist_add_edge(m, B,C);
+  embedlist_add_edge(m, B,D);
+  embedlist_add_edge(m, B,E);
+  embedlist_add_edge(m, C,F);
+  embedlist_add_edge(m, D,F);
+  embedlist_add_edge(m, E,F);
+  g->objective++;
+
+}
+
+/* Embed one non-miminal k3,3 in the solved graph */
+/* Don't use this along with 'nastiness'; the assumptions the
+   nastiness algorithm makes about solvable conditions won't always
+   coexist with the assumptions that k5 embedding makes about solvable
+   conditions. */
+static void mesh_embed_bigk33(graph *g, mesh *m, int x, int y){
+
+  /* as above */
+
+  int w = m->width;
+
+  vertex *A = m->v[(y+2)*w+x];
+  vertex *B = m->v[(y+1)*w+x+2];
+  vertex *C = m->v[y*w+x+4];
+  vertex *D = m->v[(y+4)*w+x+1];
+  vertex *E = m->v[(y+3)*w+x+3];
+  vertex *F = m->v[(y+2)*w+x+5];
+
+  // poisoned verticies are already inside another kernel (the regular
+  // mesh is deflectable and thus not really regular)
+  if(embedlist_vertex_poisoned(m,A))return;
+  if(embedlist_vertex_poisoned(m,B))return;
+  if(embedlist_vertex_poisoned(m,C))return;
+  if(embedlist_vertex_poisoned(m,D))return;
+  if(embedlist_vertex_poisoned(m,E))return;
+  if(embedlist_vertex_poisoned(m,F))return;
+
+  // check that verticies we want to poison ourselves are not already in use
+  if(embedlist_contains_vertex(m,B))return;
+  if(embedlist_contains_vertex(m,E))return;
+  /* B and E are internal according to x/y, but according to the
+     position in the mesh, they're on the outside.  Poison them so
+     that they're explicitly marked inside. */
+  poison_vertex(m,B);
+  poison_vertex(m,E);
+
+  /* need to move two of the intersections to avoid  unwanted
+     intersections (not spurious; they are in fact intersections until
+     moved) */
+  
+  B->y+=2;
+  E->y-=2;
+
+  embedlist_add_edge(m, A,C);
+  embedlist_add_edge(m, A,D);
+  embedlist_add_edge(m, A,E);
+  embedlist_add_edge(m, B,C);
+  embedlist_add_edge(m, B,D);
+  embedlist_add_edge(m, B,E);
+  embedlist_add_edge(m, C,F);
+  embedlist_add_edge(m, D,F);
+  embedlist_add_edge(m, E,F);
+  
+  g->objective++;
+}
+
+static void mesh_embed_recurse(graph *g,mesh *m,int x, int y, int w, int h, int k5, int k33, int bigk33){
+  int xd,yd,wd,hd;
+
+  // not minimal spacing; the k33 needs vertical offset, but the others are larger just to space them out.
+  if( bigk33 && w>=6 && h>=5 ){
+    wd = 5;
+    hd = 4;
+    xd = random_number() % (w-wd);
+    yd = random_number() % (h-hd);
+    mesh_embed_bigk33(g,m,x+xd,y+yd);
+  }else if(k5 && w>=4 && h>=3){
+    wd = 3;
+    hd = 2;
+    xd = random_number() % (w-wd);
+    yd = random_number() % (h-hd);
+    mesh_embed_k5(g,m,x+xd,y+yd);
+  }else if(k33 && w>=3 && h>=2 ){
+    wd = 2;
+    hd = 1;
+    xd = random_number() % (w-wd);
+    yd = random_number() % (h-hd);
+    mesh_embed_k33(g,m,x+xd,y+yd);
+  }else
+    return;
+
+  mesh_embed_recurse(g,m, x,         y,       w,    yd+1, k5,k33,bigk33);
+  mesh_embed_recurse(g,m, x,   y+yd+hd,       w, h-yd-hd, k5,k33,bigk33);
+
+  mesh_embed_recurse(g,m, x,      y+yd,    xd+1,    hd+1, k5,k33,bigk33);
+  mesh_embed_recurse(g,m, x+xd+wd,y+yd, w-xd-wd,    hd+1, k5,k33,bigk33);
+}
+
+/* Embed k5s and k3,3s in the solved graph in such a way that we know each added
+   non-planar kernel adds exactly one and only one certain intersection. */
+/* Don't use this along with 'nastiness'; the assumptions the
+   nastiness algorithm makes about solvable conditions won't always
+   coexist with the assumptions that non-planar embedding makes about
+   solvable conditions. */
+
+
+static void mesh_embed_nonplanar(graph *g, mesh *m,int k5, int k33, int bigk33){
+  // selection is used as a poison flag during embedding
+  deselect_verticies(g);
+  mesh_embed_recurse(g, m, 0,0,m->width,m->height, k5,k33,bigk33);
+  deselect_verticies(g);
+}
+
+/* Initial generation setup */
+
+static void mesh_setup(graph *g, mesh *m, int order, int divis){
   int flag=0;
+  int wiggle=0;
+  int n;
   m->width=3;
   m->height=2;
-  vertex *vlist;
-
-  random_seed(order);
   {
     while(--order){
       if(flag){
@@ -224,19 +562,74 @@ static void generate_mesh(graph *g, mesh *m, int order, int density_128){
       }
     }
   }
+  n=m->width*m->height;
 
-  vlist=new_board(g, m->width * m->height);
+  // is this divisible by our requested divisor if any?
+  if(divis>0 && n%divis){
+    while(1){
+      wiggle++;
 
-  /* a flat vector is easier to address while building the mesh */
-  {
-    int i;
-    vertex *v=vlist;
-    m->v=alloca(m->width*m->height * sizeof(*m->v));
-    for(i=0;i<m->width*m->height;i++){
-      m->v[i]=v;
-      v=v->next;
+      if(!((n+wiggle)%divis)) break;
+
+      if(n-wiggle>6 && !((n-wiggle)%divis)){
+	wiggle = -wiggle;
+	break;
+      }
+    }
+
+    // refactor the rectangular mesh's dimensions.
+    {
+      int h = (int)sqrt(n+wiggle),w;
+
+      while( (n+wiggle)%h )h--;
+
+      if(h==1){
+	// double it and be content with a working result
+	h=2;
+	w=(n+wiggle);
+      }else{
+	// good factoring
+	w = (n+wiggle)/h;
+      }
+
+      m->width=w;
+      m->height=h;
     }
   }
+
+  new_board(g, m->width * m->height);
+  m->embed_list=0;
+
+  // used for rogue calcs
+  {
+    int x,y;
+    vertex *v = g->verticies;
+    for(y=0;y<m->height;y++)
+      for(x=0;x<m->width;x++){
+	v->x=x*50; // not a random number
+	v->y=y*50; // not a random number
+	v=v->next;
+      }
+  }
+
+  g->objective = 0;
+  g->objective_lessthan = 0;
+
+}
+
+static void mesh_flatten(graph *g,mesh *m){
+  /* a flat vector is easier to address while building the mesh */
+  int i;
+  vertex *v=g->verticies;
+  for(i=0;i<m->width*m->height;i++){
+    m->v[i]=v;
+    v=v->next;
+  }
+}
+
+static void generate_mesh(graph *g, mesh *m, 
+			  int order, 
+			  int density_128){
 
   /* first walk a random spanning tree */
   span_depth_first(g, 0, m);
@@ -247,44 +640,102 @@ static void generate_mesh(graph *g, mesh *m, int order, int density_128){
     for(i=0;i<m->width*m->height;i++)
       random_populate(g, i, m, 2, density_128);
   }
-
-  g->objective=0;
-  g->objective_lessthan=0;
-
 }
 
-void generate_mesh_1(graph *g, int order){
+void generate_simple(graph *g, int order){
   mesh m;
-  generate_mesh(g,&m,order,32);
-  randomize_verticies(g);
-  arrange_verticies_circle(g,0,0);
-}
+  random_seed(order);
+  mesh_setup(g,&m, order, 0);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
 
-void generate_mesh_1M(graph *g, int order){
-  mesh m;
-  generate_mesh(g,&m,order,32);
-  randomize_verticies(g);
-  arrange_verticies_mesh(g,m.width,m.height);
-}
-
-void generate_mesh_1C(graph *g, int order){
-  int n;
-  mesh m;
-  generate_mesh(g,&m,order,128);
-  n=m.width*m.height;
-  arrange_verticies_circle(g,M_PI/n - M_PI/2,M_PI/n - M_PI/2);
-}
-
-void generate_mesh_1S(graph *g, int order){
-  mesh m;
-  generate_mesh(g,&m,order,2);
-  randomize_verticies(g);
-  arrange_verticies_circle(g,0,0);
-}
-
-void generate_mesh_1_cloud(graph *g, int order){
-  mesh m;
   generate_mesh(g,&m,order,40);
   randomize_verticies(g);
-  arrange_verticies_cloud(g);
+
+  if((m.width*m.height)&1)
+    arrange_verticies_circle(g,0,0);
+  else
+    arrange_verticies_circle(g,M_PI/2,M_PI/2);
+}
+
+void generate_sparse(graph *g, int order){
+  mesh m;
+  random_seed(order);
+  mesh_setup(g,&m, order, 3);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
+
+  generate_mesh(g,&m,order,2);
+  mesh_nastiness(g,&m,-1);
+  randomize_verticies(g);
+  switch((order-1)%4){
+  case 0:
+    arrange_verticies_polygon(g,3,0,1.15,0,+65,1.1,1.);
+    break;
+  case 1:
+    arrange_verticies_polygon(g,3,-M_PI/2,1.,+40,0,1.1,1.);
+    break;
+  case 2:
+    arrange_verticies_polygon(g,3,-M_PI,1.15,0,-65,1.1,1.);
+    break;
+  case 3:
+    arrange_verticies_polygon(g,3,-M_PI*3/2,1.,-40,0,1.1,1.);
+    break;
+  }
+}
+
+void generate_nasty(graph *g, int order){
+  mesh m;
+  random_seed(order);
+  mesh_setup(g,&m, order,4);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
+
+  generate_mesh(g,&m,order,32);
+  mesh_nastiness(g,&m,-1);
+  randomize_verticies(g);
+  switch(order%2){
+  case 0:
+    arrange_verticies_polygon(g,4,0,1.,0,0,1.1,1.);
+    break;
+  case 1:
+    arrange_verticies_polygon(g,4,M_PI/4,1.,0,0,1.2,1.1);
+    break;
+  }
+}
+
+void generate_embed(graph *g, int order){
+  mesh m;
+  random_seed(order+347);
+  mesh_setup(g,&m, order, 6);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
+
+  mesh_embed_nonplanar(g,&m,1,1,1);
+  generate_mesh(g,&m,order,48);
+  embedlist_add_to_mesh(g,&m);
+
+  randomize_verticies(g);
+
+  switch(order%2){
+  case 0:
+    arrange_verticies_polygon(g,6,0,1.,0,0,1.1,1.);
+    break;
+  case 1:
+    arrange_verticies_polygon(g,6,M_PI/6,1.,0,0,1.1,1.);
+    break;
+  }
+}
+
+void generate_crest(graph *g, int order){
+  int n;
+  mesh m;
+  random_seed(order);
+  mesh_setup(g,&m, order,0);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
+
+  generate_mesh(g,&m,order,128);
+  n=m.width*m.height;
+  arrange_verticies_circle(g,M_PI/n,M_PI/n);
 }

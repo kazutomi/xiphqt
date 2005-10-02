@@ -28,10 +28,12 @@ extern int generate_find_number(char *id);
 extern int generate_get_meta(int num, graphmeta *gm);
 extern void generate_board(graph *g,int num);
 
-extern void generate_mesh_1(graph *g, int order);
-extern void generate_mesh_1M(graph *g, int order);
-extern void generate_mesh_1C(graph *g, int order);
-extern void generate_mesh_1S(graph *g, int order);
-extern void generate_mesh_1_cloud(graph *g, int order);
+extern void generate_simple(graph *g, int order);
+extern void generate_nasty(graph *g, int order);
+extern void generate_sparse(graph *g, int order);
+extern void generate_rogue(graph *g, int order);
+extern void generate_embed(graph *g, int order);
+extern void generate_crest(graph *g, int order);
+
 
 extern void generate_data(graph *g, int order);

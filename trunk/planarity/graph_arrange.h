@@ -25,5 +25,10 @@
  */
 
 extern void arrange_verticies_circle(graph *g, float off1, float off2);
+extern void arrange_verticies_polygon(graph *g, int sides, float angle, float rad, 
+				      int xoff, int yoff, float xa, float ya);
+
 extern void arrange_verticies_mesh(graph *g, int width, int height);
+extern void arrange_verticies_nastymesh(graph *g, int w, int h, vertex **flat);
+
 extern void arrange_verticies_cloud(graph *g);

@@ -44,7 +44,7 @@ static intersection *intersection_pool=0;
 /* mesh/board state */
 
 /************************ edge list maint operations ********************/
-static void add_edge_to_list(vertex *v, edge *e){
+edge_list *add_edge_to_list(edge_list *l, edge *e){
   edge_list *ret;
   
   if(edge_list_pool==0){
@@ -58,22 +58,26 @@ static void add_edge_to_list(vertex *v, edge *e){
   edge_list_pool=ret->next;
 
   ret->edge=e;
-  ret->next=v->edges;
-  v->edges=ret;
+  ret->next=l;
+  return ret;
 }
 
-static void release_edge_list(vertex *v){
-  edge_list *el=v->edges;
-
+/* releases the edge list but not the edges */
+void release_edge_list(edge_list *el){
   if(el){
     edge_list *end=el;
     while(end->next)end=end->next;
   
     end->next = edge_list_pool;
     edge_list_pool = el;
-    
-    v->edges=0;
   }
+}
+
+/* releases the edge list but not the edges */
+static void release_vertex_edge_list(vertex *v){
+  edge_list *el = v->edges;
+  release_edge_list(el);
+  v->edges=0;
 }
 
 /************************ intersection maint operations ********************/
@@ -155,8 +159,7 @@ static int release_paired_intersection_list(edge *e){
 }
 
 /************************ edge maint operations ******************************/
-/* also adds to the edge list */
-edge *add_edge(graph *g, vertex *A, vertex *B){
+edge *new_edge(vertex *A, vertex *B){
   edge *ret;
   
   if(edge_pool==0){
@@ -173,15 +176,45 @@ edge *add_edge(graph *g, vertex *A, vertex *B){
   ret->B=B;
   ret->active=0;
   ret->i.next=0;
+
+  return ret;
+}
+
+/* makes a new egde and adds it to the vertex and graph edge lists */
+edge *add_edge(graph *g, vertex *A, vertex *B){
+  edge *ret = new_edge(A,B);
+
   ret->next=g->edges;
   g->edges=ret;
   
-  add_edge_to_list(A,ret);
-  add_edge_to_list(B,ret);
+  A->edges=add_edge_to_list(A->edges,ret);
+  B->edges=add_edge_to_list(B->edges,ret);
 
   g->num_edges++;
 
   return ret;
+}
+
+/* adds existing edge to the vertex and graph edge lists, but only if
+   it's not already there */
+void insert_edge(graph *g, edge *e){
+  vertex *A = e->A;
+  vertex *B = e->B;
+  
+  if(exists_edge(A,B)){
+    // already a matching edge; release this one
+    release_intersection_list(e);
+    e->next=edge_pool;
+    edge_pool=e;
+  }else{
+    e->next=g->edges;
+    g->edges=e;
+    
+    A->edges=add_edge_to_list(A->edges,e);
+    B->edges=add_edge_to_list(B->edges,e);
+  
+    g->num_edges++;
+  }
 }
 
 static void release_edges(graph *g){
@@ -199,7 +232,7 @@ static void release_edges(graph *g){
   g->num_edges_active=0;
 }
 
-static int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, double *yo){
+int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, double *yo){
   /* y = ax + b */
   float La=0;
   float Lb=0;
@@ -401,6 +434,7 @@ vertex *get_vertex(graph *g){
   ret->selected_volatile=0;
   ret->grabbed=0;
   ret->attached_to_grabbed=0;
+  ret->fading=0;
   ret->edges=0;
   ret->num=g->vertex_num++;
 
@@ -411,7 +445,7 @@ vertex *get_vertex(graph *g){
 }
 
 static void release_vertex(vertex *v){
-  release_edge_list(v);
+  release_vertex_edge_list(v);
   v->next=vertex_pool;
   vertex_pool=v;
 }

@@ -282,6 +282,10 @@ int levelstate_read(){
 	  
   }
 
+  while(curr->gm.num >= level_limit){
+    levelstate_prev();
+  }
+
   return 0;
 }
 
