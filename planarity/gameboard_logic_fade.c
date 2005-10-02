@@ -45,6 +45,7 @@ static void fade_add_vertex(fade_state *f,vertex *v){
   pool=ret->next;
 
   ret->v=v;
+  v->fading=1;
 
   ret->next = f->head;
   f->head = ret;
@@ -76,6 +77,9 @@ void fade_cancel(Gameboard *g){
   
   while(l){
     fade_list *n = l->next;
+
+    /* unflag vertex */
+    l->v->fading=0;
 
     /* invalidate the vertex */
     invalidate_vertex(g,l->v);

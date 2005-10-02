@@ -40,6 +40,7 @@ typedef struct vertex {
   int selected;
   int grabbed;
   int attached_to_grabbed;
+  int fading;
   struct edge_list *edges;
   struct vertex *next;
 } vertex;
@@ -103,6 +104,15 @@ typedef struct graphmeta{
 
 extern vertex *new_board(graph *g, int num_v);
 extern vertex *find_vertex(graph *g, int x, int y);
+
+extern edge_list *add_edge_to_list(edge_list *l, edge *e);
+extern void release_edge_list(edge_list *el);
+extern edge *new_edge(vertex *A, vertex *B);
+extern void release_edge_list(edge_list *el);
+extern void insert_edge(graph *g, edge *e);
+extern int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, 
+		      double *xo, double *yo);
+
 extern void move_vertex(graph *g, vertex *v, int x, int y);
 extern void grab_vertex(graph *g, vertex *v);
 extern void ungrab_vertex(graph *g,vertex *v);

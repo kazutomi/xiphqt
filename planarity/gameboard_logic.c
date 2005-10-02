@@ -259,6 +259,9 @@ void reset_action(Gameboard *g){
   // reactivate all the verticies 
   activate_verticies(&g->g);
 
+  // update the score 
+  update_score(g);
+
   // it's a reset; show lines is default. This also has the side
   // effect of forcing a full board redraw and expose
   set_hide_lines(g,0);

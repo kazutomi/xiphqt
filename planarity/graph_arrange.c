@@ -39,11 +39,49 @@ void arrange_verticies_circle(graph *g, float off1, float off2){
   int radius=min(bw,bh)*.45;
   int i;
   for(i=0;i<n;i++){
-    v->x = rint( radius * cos( i*M_PI*2./n +off1) + (bw>>1));
-    v->y = rint( radius * sin( i*M_PI*2./n +off2) + (bh>>1));
+    v->x = rint( radius * sin( i*M_PI*2./n +off1) + (bw>>1));
+    v->y = rint( radius * -cos( i*M_PI*2./n +off2) + (bh>>1));
     v=v->next;
   }
 }
+
+void arrange_verticies_polygon(graph *g, int sides, float angle, float rad, 
+			       int xoff, int yoff, float xstretch, float ystretch){
+  vertex *v = g->verticies;
+  int n = g->vertex_num;
+  int bw=g->orig_width;
+  int bh=g->orig_height;
+  int radius=min(bw,bh)*rad*.45;
+  float perleg,del,acc=0;
+  int i;
+
+  for(i=0;i<sides;i++){
+    int xA = sin(M_PI*2/sides*i+angle)*radius+bw/2+xoff;
+    int yA = -cos(M_PI*2/sides*i+angle)*radius+bh/2+yoff;
+    int xB = sin(M_PI*2/sides*(i+1)+angle)*radius+bw/2+xoff;
+    int yB = -cos(M_PI*2/sides*(i+1)+angle)*radius+bh/2+yoff;
+
+    float xD,yD;
+
+    if(i==0){
+      perleg = hypot((xA-xB),(yA-yB));
+      del = perleg*sides / n;
+    }
+
+    xD = (xB-xA) / perleg;
+    yD = (yB-yA) / perleg;
+    
+    while(v && acc<=perleg){
+      v->x = rint(((xA + xD*acc) - bw/2) * xstretch + bw/2);
+      v->y = rint(((yA + yD*acc) - bh/2) * ystretch + bh/2);
+      v=v->next;
+      acc+=del;
+    }
+    acc-=perleg;
+  }
+
+}
+
 
 void arrange_verticies_mesh(graph *g, int width, int height){
   vertex *v = g->verticies;
@@ -61,6 +99,42 @@ void arrange_verticies_mesh(graph *g, int width, int height){
       v->y=y*spacing+ypad;
       v=v->next;
     }
+  }
+}
+
+void arrange_verticies_nastymesh(graph *g, int w, int h, vertex **flat){
+  int A = 0; 
+  int B = w-1;
+  int i;
+
+  arrange_verticies_mesh(g,w,h);
+
+  while(A<B){
+    for(i=0;i<=A;i++){
+      flat[i]->y-=10;
+      flat[B+i]->y-=10;
+
+      flat[i+(h-1)*w]->y+=10;
+      flat[B+i+(h-1)*w]->y+=10;
+    }
+    A++;
+    B--;
+  }
+
+  A = 0; 
+  B = (h-1)*w;
+
+  while(A<B){
+    for(i=0;i<=A;i+=w){
+      flat[i]->x-=10;
+      flat[B+i]->x-=10;
+
+      flat[i  +(w-1)]->x+=10;
+      flat[B+i+(w-1)]->x+=10;
+
+    }
+    A+=w;
+    B-=w;
   }
 }
 

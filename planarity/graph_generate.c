@@ -40,22 +40,41 @@ typedef struct {
   int unlock;
 } gen_instance;
 
-#define FINITE_LEVELS 9
+#define FINITE_LEVELS 16
 static gen_instance i_list[FINITE_LEVELS]={ 
-  {"mesh1", 1, "A Small Beginning",           generate_mesh_1,  1.,1., 1 }, // 1
-  {"mesh1", 2, "My First Real Level(tm)",     generate_mesh_1,  1.,1., 2 }, // 2
-  {"data" , 0, "My First Mission Impossible(tm)",  generate_data, 20.,1.,3 }, // 3
-  {"mesh1", 3, "Larger, Not Harder",          generate_mesh_1,  1.,1., 3 }, // 4
-  {"meshC", 5, "The Trick Is It's Easy",      generate_mesh_1C, 1.,1., 2 }, // 5
-  {"meshM", 6, "If You Squint, It's a Brick", generate_mesh_1M, 1.,1., 1 }, // 6
-  {"mesh1", 7, "Round but Straightforward",   generate_mesh_1,  1.,1., 4 }, // 7
-  {"meshS",10, "Tough and Stringy",           generate_mesh_1S, 2.,1., 3 }, // 8
-  {"cloud", 9, "More of a Mess Than Usual",   generate_mesh_1_cloud, 2.,1., 3 }, // 9
+  {"simple",   1, "A Small Beginning",                              generate_simple,    1.,1., 1 }, // 1
+  {"simple",   2, "My First Real Level(tm)",                        generate_simple,    1.,1., 2 }, // 2
+  {"data",     0, "My First Mission Impossible(tm)",                generate_data,     20.,1., 3 }, // 3
+  {"simple",   3, "Larger But Not Harder",                          generate_simple,    1.,1., 2 }, // 4
+  {"crest",    5, "The Trick Is It's Easy",                         generate_crest,     1.,1., 2 }, // 5
+
+  {"simple",   4, "Practice Before the Handbasket: One of Three",   generate_simple,    1.,1., 1 }, // 6
+  {"simple",   5, "Practice Before the Handbasket: Two of Three",   generate_simple,    1.,1., 1 }, // 7
+  {"simple",   6, "Practice Before the Handbasket: Three of Three", generate_simple,    1.,1., 1 }, // 8
+
+  {"sparse",   5, "Threadbare",                                     generate_sparse,    1.,1., 2 }, // 9
+
+  {"nasty",    4, "The Pointy Circles Are Slightly More Difficult", generate_nasty,    1.2,1., 3 }, // 10
+  {"nasty",    5, "If You Squint, It's a Brick",                    generate_nasty,    1.2,1., 3 }, // 11
+  {"nasty",    6, "It Can Roll! Granted, Not Very Well",            generate_nasty,    1.2,1., 3 }, // 12
+
+  {"embed",    4, "The Hexagon is a Subtle And Wily Beast",         generate_embed,    1.5,1.,  4 }, // 13
+  {"embed",    5, "No, Really, The Hexagon Puzzles Are Harder",     generate_embed,    2., 1.,  5 }, // 14
+  {"embed",    6, "Cursed?  Call 1-800-HEX-A-GON Today!",           generate_embed,    3., 1.,  6 }, // 15
+
+  {"simple",   7, "Round but Straightforward",                      generate_simple,    1.,1., 4 }, // 16
+
+
+  //{"meshS",10, "Tough and Stringy",           generate_mesh_1S, 2.,1., 3 }, // 8
+  //{"cloud", 9, "More of a Mess Than Usual",   generate_mesh_1_cloud, 2.,1., 3 }, // 9
 };
 
-#define LOOP_LEVELS 1
+#define LOOP_LEVELS 4
 static gen_instance i_list_loop[LOOP_LEVELS]={ 
-  {"mesh1", 10, "\"Original\" Board Number %d",    generate_mesh_1, 1.,1., 2 }, // n
+  {"simple", 8, "Algorithm: \"Original\" Order: %d",    generate_simple, 1.,1., 5 }, // n
+  {"sparse", 8, "Algorithm: \"Sparse\" Order: %d",    generate_sparse, 1.2,1., 5 }, // n
+  {"nasty",  8, "Algorithm: \"Nasty\" Order: %d",    generate_nasty, 1.5,1., 5 }, // n
+  {"embed",  8, "Algorithm: \"Embed\" Order: %d",    generate_embed, 4.,1., 5 }, // n
 };
 
 int generate_find_number(char *id){
@@ -117,7 +136,7 @@ int generate_get_meta(int num, graphmeta *gm){
       return -1;
     }
 
-    if(asprintf(&gm->id,"%s %d",i_list[classnum].class,ordernum)==-1){
+    if(asprintf(&gm->id,"%s %d",i_list_loop[classnum].class,ordernum)==-1){
       fprintf(stderr,"Couldn't allocate memory for level name.\n");
       return -1;
     }
