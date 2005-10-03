@@ -82,6 +82,71 @@ void arrange_verticies_polygon(graph *g, int sides, float angle, float rad,
 
 }
 
+void arrange_verticies_polycircle(graph *g, int sides, float angle, float split,
+				  int radplus,int xoff,int yoff){
+
+  vertex *v = g->verticies;
+  int n = g->vertex_num;
+  int bw=g->orig_width;
+  int bh=g->orig_height;
+  int radius=min(bw,bh)*.45+radplus;
+  float perleg,perarc,del,acc=0;
+  int i;
+
+  for(i=0;i<sides;i++){
+    float ang0 = M_PI*2/sides*i + angle;
+    float ang1 = M_PI*2/sides*i + (M_PI/sides*split) + angle;
+    float ang2 = M_PI*2/sides*(i+1) - (M_PI/sides*split) + angle;
+
+    int xA = sin(ang1)*radius+bw/2;
+    int yA = -cos(ang1)*radius+bh/2;
+    int xB = sin(ang2)*radius+bw/2;
+    int yB = -cos(ang2)*radius+bh/2;
+
+    float xD,yD,aD;
+
+    if(i==0){
+      perleg = hypot((xA-xB),(yA-yB));
+      perarc = 2*radius*M_PI * split / sides;
+      del = (perleg+perarc)*sides / n;
+    }
+
+    // populate the first arc segment
+    aD = (ang1-ang0)/perarc*2;
+    while(v && acc<=perarc/2){
+      v->x = rint( sin(ang0 + aD*acc)*radius+bw/2)+xoff;
+      v->y = rint(-cos(ang0 + aD*acc)*radius+bh/2)+yoff;
+      v=v->next;
+      acc+=del;
+    }
+    acc-=perarc/2;
+
+    // populate the line segment
+    xD = (xB-xA) / perleg;
+    yD = (yB-yA) / perleg;
+    
+    while(v && acc<=perleg){
+      v->x = rint(xA + xD*acc)+xoff;
+      v->y = rint(yA + yD*acc)+yoff;
+      v=v->next;
+      acc+=del;
+    }
+    acc-=perleg;
+
+    // populate the second arc segment
+    while(v && acc<=perarc/2){
+      v->x = rint( sin(ang2 + aD*acc)*radius+bw/2)+xoff;
+      v->y = rint(-cos(ang2 + aD*acc)*radius+bh/2)+yoff;
+      v=v->next;
+      acc+=del;
+    }
+    acc-=perarc/2;
+
+
+  }
+
+}
+
 
 void arrange_verticies_mesh(graph *g, int width, int height){
   vertex *v = g->verticies;

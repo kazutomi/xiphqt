@@ -40,10 +40,12 @@
 void draw_score(Gameboard *g){
   char level_string[160];
   char score_string[160];
+  char mult_string[160];
   char int_string[160];
   char obj_string[160];
   cairo_text_extents_t extentsL;
   cairo_text_extents_t extentsS;
+  cairo_text_extents_t extentsM;
   cairo_text_extents_t extentsO;
   cairo_text_extents_t extentsI;
   cairo_matrix_t m;
@@ -68,7 +70,8 @@ void draw_score(Gameboard *g){
   cairo_set_source_rgba (c, TEXT_COLOR);
 
   snprintf(level_string,160,"Level %d: %s",get_level_num()+1,get_level_desc());
-  snprintf(score_string,160,"Score: %d",graphscore_get_score(&g->g));
+  snprintf(score_string,160,"Score: %d",graphscore_get_raw_score(&g->g));
+  snprintf(mult_string,160,"x%d",graphscore_get_multiplier(&g->g));
   snprintf(int_string,160,"Intersections: %ld",g->g.active_intersections);
   snprintf(obj_string,160,"Objective: %s",graphscore_objective_string(&g->g));
 
@@ -76,6 +79,7 @@ void draw_score(Gameboard *g){
   cairo_text_extents (c, obj_string, &extentsO);
   cairo_text_extents (c, int_string, &extentsI);
   cairo_text_extents (c, score_string, &extentsS);
+  cairo_text_extents (c, mult_string, &extentsM);
 
   /*
   text_h = extentsL.height;
@@ -91,6 +95,13 @@ void draw_score(Gameboard *g){
   cairo_show_text (c, int_string);  
   cairo_move_to (c, 15, ty2);
   cairo_show_text (c, score_string);  
+  if(graphscore_get_multiplier(&g->g)>1){
+    cairo_save(c);
+    cairo_set_source_rgba (c, HIGH_COLOR);
+    cairo_move_to (c, 15 + extentsS.width+10, ty2);
+    cairo_show_text (c, mult_string);  
+    cairo_restore(c);
+  }
 
   cairo_move_to (c, g->g.width-extentsL.width-15, ty1);
   cairo_show_text (c, level_string);  

@@ -32,24 +32,28 @@
 
 static char objective_string[160];
 
-int graphscore_get_score(graph *g){
-  int intersection_score = (int)ceil((g->original_intersections- g->active_intersections)*
-				     g->intersection_mult);
+
+int graphscore_get_raw_score(graph *g){
+  return (int)ceil((g->original_intersections- g->active_intersections)*
+		   g->intersection_mult);
+}
+
+int graphscore_get_multiplier(graph *g){
   float obj_multiplier = 1;
   
   if(g->objective_lessthan)
     if(g->objective > g->active_intersections)
       obj_multiplier += (g->objective-g->active_intersections)*g->objective_mult;
 
-  return ceil( intersection_score * obj_multiplier );
+  return ceil( obj_multiplier );
+}
+
+int graphscore_get_score(graph *g){
+  return graphscore_get_raw_score(g)*graphscore_get_multiplier(g);
 }
 
 int graphscore_get_bonus(graph *g){
-  float obj_multiplier = 1;
-
-  if(g->objective_lessthan)
-    if(g->objective > g->active_intersections)
-      obj_multiplier += (g->objective-g->active_intersections)*g->objective_mult;
+  float obj_multiplier = graphscore_get_multiplier(g);
   
   if(get_timer()< g->original_intersections*g->intersection_mult)
     return ceil ((g->original_intersections*g->intersection_mult-get_timer()) * obj_multiplier);

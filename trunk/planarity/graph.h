@@ -140,5 +140,7 @@ extern int graph_read(graph *g, FILE *f);
 extern void graph_release(graph *g);
 
 extern int graphscore_get_score(graph *g);
+extern int graphscore_get_raw_score(graph *g);
+extern int graphscore_get_multiplier(graph *g);
 extern int graphscore_get_bonus(graph *g);
 extern char *graphscore_objective_string(graph *g);
