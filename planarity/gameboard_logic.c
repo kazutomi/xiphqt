@@ -99,17 +99,46 @@ static void scale(Gameboard *g,double scale){
   while(v){
   
     if(!sel || v->selected){
-      int nx = rint((v->x - x)*scale+x);
-      int ny = rint((v->y - y)*scale+y);
-      
-      if(nx<0)nx=0;
-      if(nx>=g->g.width)nx=g->g.width-1;
-      if(ny<0)ny=0;
-      if(ny>=g->g.height)ny=g->g.height-1;
+      float nx = (v->x - x)*scale+x;
+      float ny = (v->y - y)*scale+y;
+
+      if(nx<0 || nx>=g->g.width ||
+	 ny<0 || ny>=g->g.height){
+
+	float mag = hypot(nx-x,ny-y);
+	if(mag){
+	  float ang = acos((nx-x) / mag);
+	  if(ny-y>0) ang = 2*M_PI-ang;
+
+	  if(nx<0){
+	    mag *= -x/(nx-x);
+	    nx = cos(ang)*mag+x;
+	    ny = -sin(ang)*mag+y;
+	  }
+
+	  if(nx>=g->g.width){
+	    mag *= (g->g.width-x-1)/(nx-x);
+	    nx = cos(ang)*mag+x;
+	    ny = -sin(ang)*mag+y;
+	  }
+
+	  if(ny<0){
+	    mag *= -y/(ny-y);
+	    nx = cos(ang)*mag+x;
+	    ny = -sin(ang)*mag+y;
+	  }
+
+	  if(ny>=g->g.height){
+	    mag *= (g->g.height-y-1)/(ny-y);
+	    nx = cos(ang)*mag+x;
+	    ny = -sin(ang)*mag+y;
+	  }
+	}
+      }
 
       deactivate_vertex(&g->g,v);
-      v->x = nx;
-      v->y = ny;
+      v->x = rint(nx);
+      v->y = rint(ny);
     }
     v=v->next;
   }
