@@ -62,22 +62,18 @@ static gen_instance i_list[FINITE_LEVELS]={
 
   {"free",     4, "Something Only Subtly Different",                generate_freeform, 1.5,1., 3 }, // 14
   {"free",     5, "It Can Roll! Granted, Not Very Well",            generate_freeform, 1.5,1., 3 }, // 15
-  {"free",     6, "If you squint, It's a Rounded Brick",            generate_freeform, 1.5,1., 3 }, // 16
+  {"free",     6, "If You Squint, It's a Round Brick",              generate_freeform, 1.5,1., 3 }, // 16
 
   {"rogue",    5, "A New Objective",                                generate_rogue,    1.6,1., 3 }, // 17
   {"rogue",    6, "How Low Can You Go?",                            generate_rogue,    1.6,1., 3 }, // 18
   {"rogue",    7, "Industrial Military Complex",                    generate_rogue,    1.6,1., 4 }, // 19
 
-  {"embed",    4, "The Hexagon is a Subtle And Wily Beast",         generate_embed,     2.,1.,  4 }, // 20
+  {"embed",    4, "The Hexagon is a Subtle and Wily Beast",         generate_embed,     2.,1.,  4 }, // 20
   {"embed",    5, "No, Really, The Hexagon Puzzles Are Harder",     generate_embed,     3.,1.,  5 }, // 21
   {"embed",    6, "Cursed?  Call 1-800-HEX-A-GON Today!",           generate_embed,     4.,1.,  6 }, // 22
 
   {"simple",   7, "Round but Straightforward",                      generate_simple,    1.,1.,  4 }, // 23
 
-
-
-
-  //{"meshS",10, "Tough and Stringy",           generate_mesh_1S, 2.,1., 3 }, // 8
   //{"cloud", 9, "More of a Mess Than Usual",   generate_mesh_1_cloud, 2.,1., 3 }, // 9
 };
 
