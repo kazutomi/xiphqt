@@ -57,7 +57,7 @@ static gen_instance i_list[FINITE_LEVELS]={
   {"sparse",   5, "Threadbare",                                     generate_sparse,    1.2,1., 2 }, // 10
 
   {"nasty",    4, "The Bumpy Circles Are Slightly More Difficult",  generate_nasty,    1.5,1., 3 }, // 11
-  {"nasty",    5, "Three is a Magic Mumber",                        generate_nasty,    1.5,1., 3 }, // 12
+  {"nasty",    5, "Three is a Magic Number",                        generate_nasty,    1.5,1., 3 }, // 12
   {"nasty",    6, "Last Call For (Sort of) Triangles (For Now)",    generate_nasty,    1.5,1., 3 }, // 13
 
   {"free",     4, "Something Only Subtly Different",                generate_freeform, 1.5,1., 3 }, // 14
