@@ -31,9 +31,11 @@ extern void generate_board(graph *g,int num);
 extern void generate_simple(graph *g, int order);
 extern void generate_nasty(graph *g, int order);
 extern void generate_sparse(graph *g, int order);
+extern void generate_dense(graph *g, int order);
 extern void generate_rogue(graph *g, int order);
 extern void generate_embed(graph *g, int order);
 extern void generate_crest(graph *g, int order);
 
+extern void generate_freeform(graph *g, int order);
 
 extern void generate_data(graph *g, int order);

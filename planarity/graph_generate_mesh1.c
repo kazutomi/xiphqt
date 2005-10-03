@@ -543,6 +543,91 @@ static void mesh_embed_nonplanar(graph *g, mesh *m,int k5, int k33, int bigk33){
   deselect_verticies(g);
 }
 
+/* Rogues are added lines inserted between verticies on neighboring
+   rows/columns; the idea is to choose the longest ones that cross the
+   smallest number of lines. */
+/* Right now, the rogue insertion doesn't take embedded kernel
+   poisoning or niceness constraints into account, so don't mix
+   them */
+
+static int count_intersections(graph *g, vertex *A, vertex *B){
+  edge *e=g->edges;
+  double dummy_x,dummy_y;
+  int count=0;
+
+  while(e){
+    if(intersects(A,B,e->A,e->B,&dummy_x,&dummy_y))
+      count++;
+    e=e->next;
+  }
+  return count;
+}
+
+static void scan_rogue(graph *g, mesh *m, int aoff,int boff, int step, int end, 
+		       float *metric, edge *best, int *cross){
+  int a,b;
+
+  for(a=0;a+1<end;a++){
+    for(b=a+1;b<end;b++){
+      vertex *va = m->v[a*step+aoff];
+      vertex *vb = m->v[b*step+boff];
+
+      if(!va->selected && !vb->selected){
+	if(!exists_edge(va,vb)){
+	  int count = count_intersections(g,va,vb);
+	  if(count){
+	    float test = (b-a)/count;
+	    if(test>=*metric){
+	      *metric=test;
+	      best->A=va;
+	      best->B=vb;
+	      *cross=count;
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
+/* scan the entire mesh looking for the candidate edge with the highest rogue objective value */
+static void mesh_add_rogues(graph *g, mesh *m){
+  int w = m->width;
+  int h = m->height;
+
+  deselect_verticies(g);
+  while(1){
+    int i;
+    edge best;
+    float metric=2.1;
+    int cross = 0;
+    best.A=0;
+    best.B=0;
+
+    for(i=0;i+1<h;i++){
+      scan_rogue(g, m,(i+1)*w,i*w,1,w, &metric,&best,&cross);
+      scan_rogue(g, m,i*w,(i+1)*w,1,w,  &metric,&best,&cross);
+    }
+    
+    for(i=0;i+1<w;i++){
+      scan_rogue(g, m, i, i+1, w,h, &metric,&best,&cross);
+      scan_rogue(g, m, i+1, i, w,h, &metric,&best,&cross);
+    }
+    
+    if(best.A && best.B){
+      add_edge(g,best.A,best.B);
+      // poison verticies against later selection
+      best.A->selected=1;
+      best.B->selected=1;
+      g->objective+=cross;
+      g->objective_lessthan = 1;
+    }else{
+      break;
+    }
+  }
+  deselect_verticies(g);
+}
+
 /* Initial generation setup */
 
 static void mesh_setup(graph *g, mesh *m, int order, int divis){
@@ -606,8 +691,8 @@ static void mesh_setup(graph *g, mesh *m, int order, int divis){
     vertex *v = g->verticies;
     for(y=0;y<m->height;y++)
       for(x=0;x<m->width;x++){
-	v->x=x*50; // not a random number
-	v->y=y*50; // not a random number
+	v->x=x*50; // not a random number; other things depend on this
+	v->y=y*50; // not a random number; other things depend on this
 	v=v->next;
       }
   }
@@ -628,7 +713,6 @@ static void mesh_flatten(graph *g,mesh *m){
 }
 
 static void generate_mesh(graph *g, mesh *m, 
-			  int order, 
 			  int density_128){
 
   /* first walk a random spanning tree */
@@ -649,7 +733,7 @@ void generate_simple(graph *g, int order){
   m.v=alloca(m.width*m.height * sizeof(*m.v));
   mesh_flatten(g,&m);
 
-  generate_mesh(g,&m,order,40);
+  generate_mesh(g,&m,40);
   randomize_verticies(g);
 
   if((m.width*m.height)&1)
@@ -665,43 +749,61 @@ void generate_sparse(graph *g, int order){
   m.v=alloca(m.width*m.height * sizeof(*m.v));
   mesh_flatten(g,&m);
 
-  generate_mesh(g,&m,order,2);
+  generate_mesh(g,&m,2);
   mesh_nastiness(g,&m,-1);
   randomize_verticies(g);
-  switch((order-1)%4){
-  case 0:
-    arrange_verticies_polygon(g,3,0,1.15,0,+65,1.1,1.);
-    break;
-  case 1:
-    arrange_verticies_polygon(g,3,-M_PI/2,1.,+40,0,1.1,1.);
-    break;
-  case 2:
-    arrange_verticies_polygon(g,3,-M_PI,1.15,0,-65,1.1,1.);
-    break;
-  case 3:
-    arrange_verticies_polygon(g,3,-M_PI*3/2,1.,-40,0,1.1,1.);
-    break;
-  }
+
+  if((m.width*m.height)&1)
+    arrange_verticies_circle(g,0,0);
+  else
+    arrange_verticies_circle(g,M_PI/2,M_PI/2);
+}
+
+void generate_dense(graph *g, int order){
+  mesh m;
+  random_seed(order);
+  mesh_setup(g,&m, order, 3);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
+
+  generate_mesh(g,&m,96);
+  mesh_nastiness(g,&m,-1);
+  randomize_verticies(g);
+
+  if((m.width*m.height)&1)
+    arrange_verticies_circle(g,0,0);
+  else
+    arrange_verticies_circle(g,M_PI/2,M_PI/2);
 }
 
 void generate_nasty(graph *g, int order){
   mesh m;
-  random_seed(order);
+  random_seed(order+8236);
   mesh_setup(g,&m, order,4);
   m.v=alloca(m.width*m.height * sizeof(*m.v));
   mesh_flatten(g,&m);
 
-  generate_mesh(g,&m,order,32);
+  generate_mesh(g,&m,32);
   mesh_nastiness(g,&m,-1);
   randomize_verticies(g);
-  switch(order%2){
-  case 0:
-    arrange_verticies_polygon(g,4,0,1.,0,0,1.1,1.);
-    break;
-  case 1:
-    arrange_verticies_polygon(g,4,M_PI/4,1.,0,0,1.2,1.1);
-    break;
-  }
+  arrange_verticies_polycircle(g,3,0,.3,25,0,25);
+}
+
+void generate_rogue(graph *g, int order){
+  mesh m;
+  random_seed(order+3005);
+  mesh_setup(g,&m, order,5);
+  m.v=alloca(m.width*m.height * sizeof(*m.v));
+  mesh_flatten(g,&m);
+
+  generate_mesh(g,&m,24);
+  mesh_add_rogues(g,&m);
+  randomize_verticies(g);
+
+  if(order*.03<.3)
+    arrange_verticies_polycircle(g,5,0,order*.03,0,0,0);
+  else
+    arrange_verticies_polycircle(g,5,0,.3,0,0,0);
 }
 
 void generate_embed(graph *g, int order){
@@ -712,19 +814,16 @@ void generate_embed(graph *g, int order){
   mesh_flatten(g,&m);
 
   mesh_embed_nonplanar(g,&m,1,1,1);
-  generate_mesh(g,&m,order,48);
+  generate_mesh(g,&m,48);
   embedlist_add_to_mesh(g,&m);
 
   randomize_verticies(g);
+  
+  if(order*.03<.3)
+    arrange_verticies_polycircle(g,6,0,order*.03,0,0,0);
+  else
+    arrange_verticies_polycircle(g,6,0,.3,0,0,0);
 
-  switch(order%2){
-  case 0:
-    arrange_verticies_polygon(g,6,0,1.,0,0,1.1,1.);
-    break;
-  case 1:
-    arrange_verticies_polygon(g,6,M_PI/6,1.,0,0,1.1,1.);
-    break;
-  }
 }
 
 void generate_crest(graph *g, int order){
@@ -735,7 +834,7 @@ void generate_crest(graph *g, int order){
   m.v=alloca(m.width*m.height * sizeof(*m.v));
   mesh_flatten(g,&m);
 
-  generate_mesh(g,&m,order,128);
+  generate_mesh(g,&m,128);
   n=m.width*m.height;
   arrange_verticies_circle(g,M_PI/n,M_PI/n);
 }

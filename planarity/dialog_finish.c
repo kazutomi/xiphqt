@@ -174,8 +174,20 @@ static void draw_finishbox(Gameboard *g){
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
 
-    snprintf(buffer,160,"Base score: %d points",graphscore_get_score(&g->g));
+    snprintf(buffer,160,"Base score: %d points",graphscore_get_raw_score(&g->g));
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
+
+    if(graphscore_get_multiplier(&g->g)>1){
+      cairo_save(c);
+      cairo_select_font_face (c, "Arial",
+			      CAIRO_FONT_SLANT_NORMAL,
+			      CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_source_rgba (c, HIGH_COLOR);
+      
+      snprintf(buffer,160,"Objective Exceeded! x%d",graphscore_get_multiplier(&g->g));
+      render_bordertext_centered(c,buffer, w/2,y);y+=24;
+      cairo_restore(c);
+    }
 
     snprintf(buffer,160,"Time bonus: %d points",time_bonus);
     render_bordertext_centered(c,buffer, w/2,y);y+=35;
@@ -189,11 +201,11 @@ static void draw_finishbox(Gameboard *g){
 
     if(graphscore_get_score(&g->g)+time_bonus >= levelstate_get_hiscore()){
       cairo_set_source_rgba (c, HIGH_COLOR);
-      render_bordertext_centered(c,"A high score!", w/2,y);y+=45;
+      render_bordertext_centered(c,"A high score!", w/2,y);y+=43;
       cairo_set_source_rgba (c, TEXT_COLOR);
     }else{
       snprintf(buffer,160,"Previous best: %ld points",levelstate_get_hiscore());
-      render_bordertext_centered(c,buffer, w/2,y);y+=45;
+      render_bordertext_centered(c,buffer, w/2,y);y+=43;
     }
 
 
