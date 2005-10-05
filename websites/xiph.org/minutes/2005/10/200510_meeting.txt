@@ -1,0 +1,259 @@
+--- Log opened Tue Oct 04 22:39:06 2005
+23:00 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+23:00 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2005 Oct 5 06h00 GMT | please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200510
+23:00 -!- Topic set by rillian [] [Mon Oct  3 12:39:50 2005]
+23:00 [Users #xiphmeet]
+23:00 [ Atamido] [ HackRip] [ illi      ] [ jmspeex] [ nemo   ] [ tris   ] 
+23:00 [ derf_  ] [ homeas ] [ insoManiac] [ kfish  ] [ rillian] [ xiphlog] 
+23:00 -!- Irssi: #xiphmeet: Total of 12 nicks [0 ops, 0 halfops, 0 voices, 12 normal]
+23:00 -!- Channel #xiphmeet created Mon Aug 29 04:34:00 2005
+23:00 -!- Irssi: Join to #xiphmeet was synced in 0 secs
+23:00 -!- [freenode-info] if you need to send private messages, please register: http://freenode.net/faq.shtml#nicksetup
+23:01 -!- rillian changed the topic of #xiphmeet to: Next xiph.org monthly meeting 2005 Oct 5 06h00 GMT | please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200510 | live log at http://westfish.xiph.org/~giles/200510_meeting.txt
+23:03 -!- MikeS [n=msmith@84.77.166.75] has joined #xiphmeet
+23:08 -!- xiphmont [n=xiphmont@STARSHIP-SNOTFISH.MIT.EDU] has joined #xiphmeet
+23:08 < xiphmont> hi hi
+23:08 -!- homeas_ [n=kristien@80.Red-83-43-178.dynamicIP.rima-tde.net] has joined #xiphmeet
+23:09 < MikeS> Hey MOnty.
+23:11 < rillian> shall we star?
+23:11 < rillian> start?
+23:11 < rillian> MikeS: thanks for sending the announcements
+23:11 < MikeS> no problem. yeah, may as well start
+23:11 < rillian> MikeS: you're chairing this time, right?
+23:12 < MikeS> err. no
+23:12 < MikeS> I'm not awake yet
+23:12 < rillian> ha
+23:13 < rillian> ok. first item is project reports
+23:13 < rillian> I've been busy so haven't been keeping up
+23:13 < rillian> we haven't done the vorbis+ogg releases
+23:13 < rillian> but more bugs have gotten fixed
+23:13 < rillian> especially thanks to mike and kfish!
+23:13 < rillian> so that's good I guess :)
+23:13 < rillian> derf_: what's new with you?
+23:14 < derf_> I made some improvements to the theora-exp encoder architecture, including the ability to construct configurable encoding pipelines and basic API support for different encoding modes.
+23:15 -!- homeas_ [n=kristien@80.Red-83-43-178.dynamicIP.rima-tde.net] has quit [Read error: 104 (Connection reset by peer)]
+23:15 -!- homeas_ [n=kristien@105.Red-83-32-60.dynamicIP.rima-tde.net] has joined #xiphmeet
+23:15 < derf_> And I've turned a friend loose on making a simple constant-quantizer encoder as one of the modes.
+23:15 < rillian> derf_: nice. any progress on the working encoder part?
+23:15 -!- homeas [n=kristien@61.Red-81-38-169.dynamicIP.rima-tde.net] has quit [Read error: 110 (Connection timed out)]
+23:16 < derf_> rillian: Well, that was to be step one (it's not really that hard, and you could've gotten a horribly ineffecient constant-quantizer encoder by changing one #ifdef before), but it's mostly supposed to be educational so he can get up to speed.
+23:16 < derf_> Then we'll get down to the nitty-gritty of a CBR mode.
+23:17 < derf_> I have some ideas how to proceed in this regard, but at the moment they are still just ideas.
+23:18 < rillian> how big a window is this CBR mode?
+23:19 < derf_> The buffer size would be application-defined.
+23:19 < rillian> so it would work for fixed-size encoding for discs?
+23:19 < derf_> You could make it as little as the size of one frame, but then you have to special case keyframes like VP3 does.
+23:20 < derf_> rillian: Well, usually CBR is for streaming. For fixed-size encoding you want to do something two-pass.
+23:20 < rillian> jmspeex: anything new with speex or ghost? how's the move .au?
+23:20 < rillian> derf_: ok, you're just thinking about streaming. I just wasn't sure what you meant.
+23:20 < jmspeex> rillian: Move went relatively well
+23:20 < xiphmont> jmspeex has been working hard; I've not yet added much of anything.  Still popping things off my own stack.
+23:20 < derf_> The plan is to allow the library to expose enough information and control that an application could write its own two-pass routine.
+23:21 < jmspeex> I've started working on Speex again.
+23:21 < jmspeex> Next release should be out soon with several fixes and improvements to packet-loss concealment.
+23:22 < jmspeex> As for ghost, I've played a bit with many parts (sinusoid estimation, wavelets), but it's still very vague.
+23:22 < rillian> jmspeex: that includes the api change to the jitter buffer?
+23:23 < jmspeex> rillian: the change for jitter buffer is basically a one line change that happens to affect the API.
+23:23 < jmspeex> (it will likely change again before I release 1.2)
+23:23 < rillian> sure. don't forget to update the library versioning though :)
+23:23 < jmspeex> Now, I'm working on using the Vorbis psychoacoustic model on Speex so Monty and I can write a paper for AES in May.
+23:24 < rillian> oh cool
+23:24 < jmspeex> rillian: I haven't updated library version for 1.1 because I'm breaking it often (due to being unstable).
+23:24 < rillian> does that mean we'll get some documentation on the vorbis model finally?
+23:24 < jmspeex> monty says yes :-)
+23:24 < rillian> the faq will be happy :)
+23:25 < rillian> jmspeex: ok, that works too
+23:25 < xiphmont> Yes.  My next dev tasks are paper-writing :-)
+23:25 < rillian> MikeS: you want to report on icecast? 2.3 was released. How's that going?
+23:26 < MikeS> lots of bug reports, few of which get followed up on by the original reporter.
+23:26 < MikeS> Quality generally seems ok, though there are some minor issues.
+23:27 < MikeS> People seem happy with most of the new features, except that relaying is harder to use now.
+23:27 < MikeS> But yeah - the big news was that 2.3 went out.
+23:27 < rillian> someone reported that icecast was still scalable
+23:28 < rillian> contrary to what I heard this summer
+23:28 < MikeS> yeah, oddsock did some single-stream testing where it did pretty well (14 or 16k users in around 10-15% cpu)
+23:28 < MikeS> we haven't done multiple streams, nor large-scale testing for non-vorbis streams
+23:28 < xiphmont> It all depends on how good your net drivers are :-)
+23:28 < rillian> maybe the problem is with multistream?
+23:28 < rillian> could there be some contention problems?
+23:28 < rillian> would be nice to see a multistream test too
+23:28 < MikeS> xiphmont: yes. This was with gigE cards, I assume they do tcp offload.
+23:29 -!- tris [i=tristan@camel.ethereal.net] has quit [Read error: 104 (Connection reset by peer)]
+23:29 -!- tris [i=tristan@camel.ethereal.net] has joined #xiphmeet
+23:29 < MikeS> rillian: yes, there are probably contention problems. Much of the locking done is "do it the easy way, not the fast way", since the fast way tends to be rather platform-specific
+23:30 < rillian> well, there *is* a threading abstraction layer...
+23:30 < MikeS> notably, things like taking mutexes around refcounting, rather than using appropriate atomic instructions\
+23:30 -!- homeas__ [n=kristien@92.Red-83-32-59.dynamicIP.rima-tde.net] has joined #xiphmeet
+23:31 < rillian> ok, hopefully oddsock will do the test so we have some idea.
+23:31 < MikeS> And generally avoiding locking where possible. These would be easy things to fix, given resources on which to test the fixes, and some sign that the theoretical problems actually result in real-world performance issues
+23:31 < rillian> still, great news on single-stream
+23:31 < rillian> ok, anything else
+23:31 < rillian> xiphmont has been working on his planarity thing
+23:32 < rillian> if you have gtk 2.6 try it out :)
+23:32 < xiphmont> That's not xiph stuff
+23:32 < xiphmont> that's just stress relief :-)
+23:32 < rillian> true :)
+23:32 < xiphmont> and it needs gtk 2.8/cairo1.0
+23:32 < rillian> sorry, I meant 2.8
+23:33 < rillian> and it doesn't build out of svn either :)
+23:33 < rillian> ok, anything else?
+23:33 < rillian> next item is the website
+23:33 < rillian> we made good progress I think, thanks to Nehal
+23:34 < MikeS> rillian: it built from svn for me one or two days ago, but that's a bit offtopic
+23:34 < rillian> vorbis.com and large parts of xiph.org are ported
+23:34 < xiphmont> It builds fine out of SVN
+23:34 < jmspeex> what's the status for speex.org?
+23:34 < rillian> I have most of theora.org ported; I should have time to finish that and throw the switch this month
+23:35 < rillian> jmspeex: atamido had most of it done a couple of months ago, iirc
+23:35 < illi> re website: can i just point out again http://www.vorbis.com/setup/ and the use of directories names "banner"/ "banners" or anything similar with regards to many ad blocking software
+23:35 < rillian> if I get motivated I'll complete and throw the switch, but no promises
+23:35 < rillian> illi: right. apparently broken software breaks our layout
+23:36 < rillian> Unfortunately, Nehal's been busy with school (I assume) so that's slowed down for now
+23:36 < Atamido> rillian:  It still needs to be changed.
+23:36 < rillian> next item is: merging aotuv b4 and the opt-sort patch
+23:37 < rillian> number 1 depends on monty I think
+23:37 < Atamido> jmspeex, rillian:  Here is what I had from Speex.org.  http://speex.org.commo.de/
+23:37 < rillian> opt-sort could go in if someone wants to verify it's safe
+23:37 < Atamido> It is all in SVN, so it mostly just needs to be transfered.
+23:37 < rillian> xiphmont: any idea when you'd get around to looking at the latest aotuv?
+23:38 < rillian> Atamido: maybe you could summarize what's missing?
+23:38 < xiphmont> I got to look at b3 in some detail before
+23:38 < xiphmont> No idea about b4, really.
+23:38 < xiphmont> Probably falls into the docs splurge I need to do.
+23:38 < rillian> Atamido: documentation is the important one I think
+23:38 < Atamido> Speex.org, jmspeex doesn't like the logo, and a few pages such as "Documentation", etc.
+23:39 < xiphmont> which logo is being used?
+23:39 < rillian> jmspeex: what's this about the logo? you agreed it was ok
+23:39 < rillian> I don't think it's as good as sheryl's either, but we want unified branding
+23:39 < Atamido> Anyway, I haven't changed anything in SVN for this in quite a while.
+23:39 < xiphmont> If we want it tweaked, we should talk to melissa.
+23:40 < xiphmont> I'm not against changing it; I'm against just dropping the branding piecemeil.
+23:40 < rillian> xiphmont: agreed
+23:40 < rillian> (melissa is very busy with her day job lately though. I suggest we just use it as is and try and refine later if we're still unhappy)
+23:40 < xiphmont> Also agreed.
+23:41 < jmspeex> rillian: I just prefered the original parrot. If it's going to cause that much problem, let's just go with the new one and "fix" it at some point.
+23:41 < Atamido> I would just like to point out again that I can't move the site into production.
+23:41 < Atamido> Someone with authority has to do that.
+23:41 < rillian> jmspeex: great
+23:41 < rillian> Atamido: so if you could do the doc section, I'll make it live
+23:42 < rillian> jmspeex: you wanted to keep speex.org as the primary site and not switch to xiph.org/speex/ is that correct?
+23:42 < jmspeex> rillian: right
+23:42 < rillian> ok, we have a plan :)
+23:42 < rillian> next item: what's the state of the ogg2 transition
+23:43 < rillian> same as it was a year ago I think
+23:43 < xiphmont> yes.
+23:43 < rillian> we need: parallel linkability
+23:43 < rillian> and some api extensions iirc
+23:43 < rillian> plus porting libvorbis
+23:43 < xiphmont> ...but I can fix that in a week so long as we have release engineering ready.
+23:43 < xiphmont> oh, paralell linkability is more than a week :-)
+23:44 < rillian> xiphmont: yes
+23:44 < rillian> xiphmont: oh, and while you're here,
+23:44 < xiphmont> yes?
+23:44 < rillian> fluendo suggested it would be nice to add a libogg call to change the default page flush size
+23:44 < rillian> 4k is way too small for a lot of theora streams
+23:44 < xiphmont> That has been planned since day 1 in fact.
+23:44 < rillian> the question is where to hide the data so we don't break the ABI
+23:45 < xiphmont> I also wanted to make that setting also available by time.
+23:45 < MikeS> It's ugly to do it without breaking ABI, though.
+23:45 < xiphmont> Why?
+23:45 < rillian> MikeS suggested repurposing flags
+23:45 -!- homeas_ [n=kristien@105.Red-83-32-60.dynamicIP.rima-tde.net] has quit [Read error: 110 (Connection timed out)]
+23:45 < MikeS> xiphmont: because the structs it needs to live it are all public.
+23:45 < xiphmont> I was pretty sure I have internal blackbos state for that reason.
+23:45 < rillian> I suggested tacking an extra byte off the end of the lacing data, since that's opaquely allocated
+23:45 < xiphmont> Oh.
+23:45 < xiphmont> I can deal.
+23:45 < jmspeex> Are there any plans on supporting speex in oggenc so I can start phasing out speexenc/speexdec?
+23:46 < xiphmont> It's a minor problem with understandably large consequences.
+23:46 < MikeS> ogg2 may be different, but nobody is using that, so that deesn't help.
+23:46 < MikeS> jmspeex: sure, file a patch ;-)
+23:46 < xiphmont> right
+23:46 < rillian> xiphmont: any ideas or preferences?
+23:46 < jmspeex> MikeS: So you mean it'll never happen? ;-)
+23:46 < MikeS> jmspeex: I have no objections to adding codecs to oggenc, but I don't particularly intend to do it from scratch myself. 
+23:46 < xiphmont> I don't have the state in front of me.
+23:48 < jmspeex> MikeS: speexenc/speexdec are a complete mess (I'm to blame) and that's why I don't really want to maintain them...
+23:48 < illi> later this week, i am going to add a directory and a few windows build files into libogg, libvorbis, libspeex with updated project files for vs2003
+23:48 < rillian> xiphmont: maybe take a look and get back to us?
+23:48 < xiphmont> Yes.
+23:48 < illi> does anyone have any objections before i do that ?
+23:48 < rillian> illi: what's the directory called?
+23:48 < illi> and create a new sdk solution project which externals to libogg/vorbis/speex
+23:49 < rillian> jmspeex: we don't disagree. just someone has to volunteer to do the code
+23:49 < illi> it will be inside the existing win32 directory called VS2003
+23:49 < jmspeex> rillian: I know.
+23:49 < jmspeex> BTW, there's been no Win32 release of Speex for a while. Any taker?
+23:49 < rillian> illi: sounds fine. merging your build with trunk?
+23:49 < illi> i want to do that too yes
+23:49 < rillian> that would be swell :)
+23:50 < rillian> illi: but yeah, please go ahead. We'll yell if there's something we don't like
+23:50 < rillian> and thanks!
+23:50 < illi> though it will mean having project configurations specific to my project (but won't be default) in the projects of vorbis and speex
+23:50 < rillian> Final item: theora as a JPEG replacement
+23:50 < rillian> One could do this, of course
+23:51 < rillian> but I don't see any point
+23:51 < rillian> there's nothing wrong with JPEG
+23:51 < MikeS> I think whoever added this to the agenda was thinking of the Forgent stuff.
+23:51 < kfish> what's that?
+23:51 < jmspeex> rillian: I tought there were some vague patent threats about it.
+23:51 < rillian> aside from the ambiguous IP issues with JPEG 2000, it's not being adopted because the compression isn't sufficiently better than baseline JPEG to warrent switching
+23:51 < MikeS> In practice, JPEG is deeply entrenched everywhere, and theora would make a poor replacement anyway
+23:52 < rillian> theora has the same problems
+23:52 < MikeS> kfish: they're extorting tens of millions of dollars from various people based on very dubious patent claims on jpeg
+23:52 < rillian> and doesn't have the multi-channel and lossless support JPEG 2000 offers which make it useful for special applications
+23:52 < MikeS> last I heard, they'd collected $80M or soemthing
+23:52 < rillian> second, I don't believe the Forgent thing will stand up
+23:53 < rillian> they're going against many larger organizations with a bogus patent
+23:53 < rillian> that's not going to last too much longer
+23:53 < jmspeex> rillian: never underestimate the stupidity of US IP laws.
+23:53 < rillian> jmspeex: and courts
+23:53 < jmspeex> see Eolas
+23:54 < jmspeex> of course
+23:55 < derf_> The Forgent patent expires Oct. 6 of this year.
+23:55 -!- JD9797 [n=javadev9@host175-176.pool8251.interbusiness.it] has joined #xiphmeet
+23:55 < rillian> and the Forgent patent expires in another year or two, I think
+23:55 < derf_> Which is, tomorrow.
+23:55 < rillian> derf_: wired says 2006
+23:55 < MikeS> ok, so we should propose theora as a jpeg replacement until tomorrow. done ;-)
+23:55 < rillian> heh
+23:55 < derf_> rillian: Groklaw and PutPat.org say this year.
+23:55 < rillian> so yes, it's an option if things really go bad
+23:56 < homeas__> why not ask people to add their nick to any points they add to the agenda ?
+23:56 < rillian> but I don't expect it to be necessary
+23:56 < HackRip> people telling JPEG2000 is not worth it obviously don't know much about image compression ... the difference between JPG & JP2 is even bigger than the one between mp4 & mp3 ... people just don't care ... but people are wrong
+23:56 < rillian> homeas__: that would help
+23:56 < homeas__> and have them be here to make their point.  the meeting point is rather vague
+23:57 < rillian> the people who made the additions were at least logged in
+23:57 < rillian> but they're not always under the same nick
+23:57 < derf_> HackRip: No, the point is that for single images, the size difference doesn't matter.
+23:57 < HackRip> there is the same difference in efficiency between jp2 & jpg than between theora & dirac : huge
+23:57 < derf_> JPEG is well-entrenched.
+23:58 < derf_> Part of that is due to the fact that it requires no license.
+23:58 < MikeS> HackRip: jpeg2k doesn't make a big enough difference to compensate for the fact that jpeg support is everywhere, and I've never seen jpeg2k support in any application. Or a jpeg2k file in the wild. JPEG gives you plenty of quality, it just costs a little more space.
+23:58 < MikeS> and for still images, the space required is pretty small
+23:59 < rillian> ok, that's it for our agenda
+23:59 < HackRip> for a single image yes ... people should compare a dir of 1000 jpeg vs a dir of jp2000 at same quality ... then they would realize their mistake ... the gain is not in quality ... but in huge space saving ...
+23:59 < rillian> does anyone have anything else?
+23:59 < illi> i just have a general point
+23:59 < illi> re the new website layout...
+23:59 < illi> the windows setup... has resulted in about +500 downloads of oggcodecs per day
+--- Day changed Wed Oct 05 2005
+00:00 < illi> now at about 50,000+ per month
+00:00 < xiphmont> yay!
+00:00 < derf_> Your months have a lot of days.
+00:00 < xiphmont> I'll assume that's up not down :-)
+00:00 < illi> no... now 50,000 total
+00:01 < illi> not that 500/day = 50,000
+00:01 < MikeS> HackRip: eh? The only place I ever see enough photos that are large enough to be annoying is from digital cameras. And the main reason for that is that they compress pretty minimally, JPEG can do far more. Your argument falls down.
+00:01 < illi> so it's definately helping people find what they are looking for
+00:01 < rillian> illi: great, and thanks for the numbers
+00:02 < rillian> now we just have to get back up to the 75% of our bandwidth the tobias filters we taking two years ago :)
+00:02  * Atamido has never done any real testing with jpeg and jp2
+00:02 < rillian> ok, I think we're done
+00:02 < rillian> we are adjourned
+00:02 < rillian> thanks everyone for coming
+00:02 < rillian> we now return you to regular discussion
+00:02 < illi> 40-50Gigs is still a fair bit !
+00:02 < HackRip> no, you forget image based pdf scan ... which are 200 A4 resolution jpeg in a raw
+--- Log closed Wed Oct 05 00:02:45 2005
