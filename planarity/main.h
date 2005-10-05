@@ -24,8 +24,14 @@
  * 
  */
 
+#include <gtk/gtk.h>
+
 extern char *boarddir;
 extern char *statedir;
+extern char *fontface;
+extern char *version;
+
 extern Gameboard *gameboard;
 
 extern void request_resize(int width, int height);
+extern void set_font(cairo_t *c, float w, float h, int slant, int bold);

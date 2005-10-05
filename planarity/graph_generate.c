@@ -66,7 +66,7 @@ static gen_instance i_list[FINITE_LEVELS]={
 
   {"rogue",    5, "A New Objective",                                generate_rogue,    1.6,1., 3 }, // 17
   {"rogue",    6, "How Low Can You Go?",                            generate_rogue,    1.6,1., 3 }, // 18
-  {"rogue",    7, "Industrial Military Complex",                    generate_rogue,    1.6,1., 4 }, // 19
+  {"rogue",    7, "Military Industrial Complex",                    generate_rogue,    1.6,1., 4 }, // 19
 
   {"embed",    4, "The Hexagon is a Subtle and Wily Beast",         generate_embed,     2.,1.,  4 }, // 20
   {"embed",    5, "No, Really, The Hexagon Puzzles Are Harder",     generate_embed,     3.,1.,  5 }, // 21

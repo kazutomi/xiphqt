@@ -35,6 +35,7 @@
 
 #include "graph.h"
 #include "gameboard.h"
+#include "main.h"
 
 static void draw_intersection(cairo_t *c,double x, double y){
   cairo_move_to(c,x-INTERSECTION_RADIUS,y);
@@ -45,7 +46,6 @@ static void draw_intersection(cairo_t *c,double x, double y){
 }
 
 static void draw_many_intersection(Gameboard *g,cairo_t *c){
-  cairo_matrix_t ma;
   int x2 = g->g.width/2;
   int y2 = g->g.height/2;
   int r = INTERSECTION_RADIUS*10;
@@ -61,12 +61,7 @@ static void draw_many_intersection(Gameboard *g,cairo_t *c){
 
   cairo_stroke(c);
 
-  cairo_select_font_face (c, "Sans",
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_BOLD);
-  
-  cairo_matrix_init_scale (&ma, 30.,34.);
-  cairo_set_font_matrix (c,&ma);
+  set_font(c, 30., 34., 0,1);
   render_bordertext_centered(c,"rather many, really",x2,y2+r/4);
 
 }

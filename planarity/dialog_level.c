@@ -132,20 +132,10 @@ static void draw_levelbox(Gameboard *g){
 	    LEVELBOX_WIDTH,
 	    SCOREHEIGHT);
 
-  {
-    cairo_matrix_t ma;
-
-    cairo_select_font_face (c, "Arial",
-			    CAIRO_FONT_SLANT_NORMAL,
-			    CAIRO_FONT_WEIGHT_BOLD);
-    
-    cairo_matrix_init_scale (&ma, 18.,18.);
-    cairo_set_font_matrix (c,&ma);
-    cairo_set_source_rgba (c, TEXT_COLOR);
-
-    render_text_centered(c,"Available Levels", w/2,h/2-LEVELBOX_HEIGHT/2+SCOREHEIGHT/2);
-
-  }
+  set_font(c,18,18,0,1);
+  cairo_set_source_rgba (c, TEXT_COLOR);
+  
+  render_text_centered(c,"Available Levels", w/2,h/2-LEVELBOX_HEIGHT/2+SCOREHEIGHT/2);
 
   cairo_destroy(c);
 }

@@ -33,6 +33,7 @@
 #include "graph.h"
 #include "gameboard.h"
 #include "gameboard_draw_button.h"
+#include "main.h"
 
 
 /************************ manage the buttons for buttonbar and dialogs *********************/
@@ -63,14 +64,7 @@ static GdkRectangle rollover_box(Gameboard *g, buttonstate *b){
 
 /* draw the actual rollover */
 static void stroke_rollover(Gameboard *g, buttonstate *b, cairo_t *c){
-  cairo_matrix_t m;
-
-  cairo_select_font_face (c, "Arial",
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_BOLD);
-
-  cairo_matrix_init_scale (&m, BUTTON_TEXT_SIZE);
-  cairo_set_font_matrix (c,&m);
+  set_font(c, BUTTON_TEXT_SIZE, 0, 1);
   
   {
     GdkRectangle r=rollover_box(g,b);
@@ -443,16 +437,9 @@ void button_set_state(Gameboard *g, buttonstate *b, int rollover, int press){
 /* cache the text extents of a rollover */
 void rollover_extents(Gameboard *g, buttonstate *b){
   
-  cairo_matrix_t m;
-
   cairo_t *c = cairo_create(g->foreground);
-  cairo_select_font_face (c, "Arial",
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_BOLD);
-  
-  cairo_matrix_init_scale (&m, BUTTON_TEXT_SIZE);
-  cairo_set_font_matrix (c,&m);
-  
+
+  set_font(c, BUTTON_TEXT_SIZE, 0, 1);
   cairo_text_extents (c, b->rollovertext, &b->ex);
 
   cairo_destroy(c);
