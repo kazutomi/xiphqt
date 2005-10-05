@@ -50,10 +50,7 @@
    respectively.  These are prerendered surfaces that are blitted onto
    the foreground during exposes */
 
-/* the midground is a group of elements that may currently be animated
-   (thus rendered to the foreground) or not (thus rendered to the
-   background) */
-static void draw_midground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
+void draw_foreground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
 
   /* Edges attached to the grabbed vertex are drawn here */
 
@@ -63,9 +60,24 @@ static void draw_midground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
     while(el){
       edge *e=el->edge;
       /* no need to check rectangle; if they're to be drawn, they'll
-	 always be in the rect */
+	 always be in the rect due to expose combining */
       draw_edge(c,e);
       el=el->next;
+    }
+    finish_edge(c);
+  }
+
+  if(g->group_drag){
+    vertex *v = g->g.verticies;
+    setup_foreground_edge(c);
+
+    while(v){
+      if(v->grabbed){
+	/* no need to check rectangle; if they're to be drawn, they'll
+	   always be in the rect due to expose combining */
+	draw_edges(c,v,g->dragx,g->dragy);
+      }
+      v=v->next;
     }
     finish_edge(c);
   }
@@ -82,33 +94,46 @@ static void draw_midground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
     
     while(v){
 
-      /* is the vertex in the expose rectangle? */
-      if(v->x>=clipx && v->x<=clipw &&
-	 v->y>=clipy && v->y<=cliph){
-	
-	if(v == g->grabbed_vertex && !g->group_drag) {
-	  draw_vertex(c,v,g->vertex_grabbed);      
-	} else if( v->selected ){
-	  draw_vertex(c,v,g->vertex_sel);
-	} else if ( v == g->lit_vertex){
-	  draw_vertex(c,v,g->vertex_lit);
-	} else if (v->attached_to_grabbed && !g->group_drag){
-	  draw_vertex(c,v,g->vertex_attached);
-	}else{
-	  draw_vertex(c,v,g->vertex);
-	  if(v->fading)
-	    draw_vertex_with_alpha(c,v,g->vertex_attached,alpha);
+      if(v->grabbed && g->group_drag){
+	vertex tv;
+	tv.x=v->x+g->dragx;
+	tv.y=v->y+g->dragy;
+	/* is the vertex in the expose rectangle? */
+	if(tv.x>=clipx && tv.x<=clipw &&
+	   tv.y>=clipy && tv.y<=cliph){
+	  
+	  draw_vertex(c,&tv,g->vertex_ghost);
+	}
+      }else{ 
+	/* is the vertex in the expose rectangle? */
+	if(v->x>=clipx && v->x<=clipw &&
+	   v->y>=clipy && v->y<=cliph){
+	  
+	  if(v == g->grabbed_vertex && !g->group_drag) {
+	    draw_vertex(c,v,g->vertex_grabbed);      
+	  } else if( v->selected ){
+	    draw_vertex(c,v,g->vertex_sel);
+	  } else if ( v == g->lit_vertex){
+	    draw_vertex(c,v,g->vertex_lit);
+	  } else if (v->attached_to_grabbed && !g->group_drag){
+	    draw_vertex(c,v,g->vertex_attached);
+	  }else{
+	    draw_vertex(c,v,g->vertex);
+	    if(v->fading)
+	      draw_vertex_with_alpha(c,v,g->vertex_attached,alpha);
+	  }
 	}
       }
       
       v=v->next;
     }
   }
+
+  if(g->selection_grab)
+    draw_selection_rectangle(g,c);
 }
 
 static void draw_background(Gameboard *g,cairo_t *c){
-  int width=g->g.width;
-  int height=g->g.height;
   edge *e=g->g.edges;
 
   cairo_set_source_rgb(c,1,1,1);
@@ -124,41 +149,8 @@ static void draw_background(Gameboard *g,cairo_t *c){
     }
     finish_edge(c);
   }
-
-  // if there's a a group drag in progress, midground is drawn here
-  if(g->group_drag)
-    draw_midground(g,c,0,0,width,height);
-
 }
 
-/* This draws the nominal foreground, that is, the elements that are
-   always foreground except when a 'background push' (dialog and
-   curtain over the board) is in place. */
-void draw_foreground(Gameboard *g,cairo_t *c,
-		     int x,int y,int width,int height){
-  
-  /* if a group drag is in progress, draw the group 
-     ghosted in the foreground */
-
-  if(g->group_drag){ 
-    vertex *v = g->g.verticies;
-    while(v){
-      
-      if( v->selected ){
-	vertex tv;
-	tv.x=v->x+g->dragx;
-	tv.y=v->y+g->dragy;
-	draw_vertex(c,&tv,g->vertex_ghost);
-      }
-
-      v=v->next;
-    }
-  }else
-    draw_midground(g,c,x,y,width,height);    
-
-  if(g->selection_grab)
-    draw_selection_rectangle(g,c);
-}
 
 /* Several very-high-level drawing sequences triggered by various
    actions in the game *********************************************/

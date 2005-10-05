@@ -67,10 +67,10 @@ gint mouse_motion(GtkWidget        *widget,
     g->dragy = y-g->graby;
     
     invalidate_vertex(g,g->grabbed_vertex);
-    invalidate_edges(widget,g->grabbed_vertex);
+    invalidate_edges(widget,g->grabbed_vertex,0,0);
     move_vertex(&g->g,g->grabbed_vertex,x+g->graboffx,y+g->graboffy);
     invalidate_vertex(g,g->grabbed_vertex);
-    invalidate_edges(widget,g->grabbed_vertex);
+    invalidate_edges(widget,g->grabbed_vertex,0,0);
     return TRUE;
 
   }
@@ -93,7 +93,7 @@ gint mouse_motion(GtkWidget        *widget,
   }
 
   /* if a selected vertex is grabbed (group drag) we're dragging
-     the ghosted selection */
+     the whole selection and its lines */
   
   if(g->group_drag){
     invalidate_verticies_selection(widget);
@@ -211,8 +211,11 @@ gboolean mouse_press (GtkWidget        *widget,
 	g->graby = (int)event->y;
 	g->dragx = 0;
 	g->dragy = 0;
-	// put the verticies into the background for faster update
-	update_full(g); 
+	// highlight vertex immediately; update the background after the
+	// vertex change
+	grab_selected(&g->g);
+	invalidate_verticies_selection(widget);
+	update_full_delayed(g);
 	return TRUE;
       }
       
@@ -238,7 +241,7 @@ gboolean mouse_press (GtkWidget        *widget,
 	
 	grab_vertex(&g->g,g->grabbed_vertex);
 	invalidate_attached(widget,g->grabbed_vertex);
-	invalidate_edges(widget,g->grabbed_vertex);
+	invalidate_edges(widget,g->grabbed_vertex,0,0);
 	fade_cancel(g);
 	// highlight vertex immediately; update the background after the
 	// vertex change
@@ -330,9 +333,15 @@ gboolean mouse_release (GtkWidget        *widget,
     /* case: release a group drag */
     if(g->group_drag){
       move_selected_verticies(&g->g,g->dragx,g->dragy);
+      ungrab_verticies(&g->g);
       update_full(g); // cheating
       update_score(g);
       g->group_drag=0;
+
+      if(g->g.active_intersections<=g->g.objective)
+	deploy_check(g);
+      else
+	undeploy_check(g);
     }
   }
 

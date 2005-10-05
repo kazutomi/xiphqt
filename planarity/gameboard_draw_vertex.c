@@ -172,14 +172,18 @@ cairo_surface_t *cache_vertex_ghost(Gameboard *g){
   
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
-  cairo_set_source_rgba(c,V_LINE_COLOR,.2);
+  cairo_set_source_rgb(c,V_FILL_LIT_COLOR);
   cairo_fill_preserve(c);
-  cairo_set_source_rgba(c,V_LINE_COLOR,.4);
+  cairo_set_source_rgb(c,V_LINE_COLOR);
   cairo_stroke(c);
+  cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS*.5,0,2*M_PI);
+  cairo_set_source_rgb(c,V_FILL_ADJ_COLOR);
+  cairo_fill(c);
 
   cairo_destroy(c);
   return ret;
 }
+
 
 /* region invalidation operations; do exposes efficiently! **********/
 

@@ -58,20 +58,53 @@ void finish_edge(cairo_t *c){
   cairo_stroke(c);
 }
 
+void draw_edges(cairo_t *c, vertex *v, int offx, int offy){  
+  if(v){
+    edge_list *el=v->edges;
+    while (el){
+      edge *e=el->edge;
+
+      if(e->A->grabbed==0 || e->B->grabbed==0 || v==e->A){
+	if(e->A->grabbed)
+	  cairo_move_to(c,e->A->x+offx,e->A->y+offy);
+	else
+	  cairo_move_to(c,e->A->x,e->A->y);
+	
+	if(e->B->grabbed)
+	  cairo_line_to(c,e->B->x+offx,e->B->y+offy);
+	else
+	  cairo_line_to(c,e->B->x,e->B->y);
+      }
+      el=el->next;
+    }
+  }
+}
+
+
+
 /* invalidate edge region for efficient expose *******************/
 
-void invalidate_edges(GtkWidget *widget, vertex *v){
+void invalidate_edges(GtkWidget *widget, vertex *v, int offx, int offy){
   GdkRectangle r;
   
   if(v){
     edge_list *el=v->edges;
     while (el){
       edge *e=el->edge;
-      r.x = min(e->A->x,e->B->x) - E_LINE;
-      r.y = min(e->A->y,e->B->y) - E_LINE;
-      r.width  = labs(e->B->x - e->A->x) + 1 + E_LINE*2;
-      r.height = labs(e->B->y - e->A->y) + 1 + E_LINE*2;
-      gdk_window_invalidate_rect (widget->window, &r, FALSE);
+
+      if(e->A->grabbed==0 || e->B->grabbed==0 || v==e->A){
+	int Ax = e->A->x + (e->A->grabbed?offx:0);
+	int Ay = e->A->y + (e->A->grabbed?offy:0);
+	int Bx = e->B->x + (e->B->grabbed?offx:0);
+	int By = e->B->y + (e->B->grabbed?offy:0);
+	
+	r.x = min(Ax,Bx) - E_LINE;
+	r.y = min(Ay,By) - E_LINE;
+	r.width  = labs(Bx - Ax) + 1 + E_LINE*2;
+	r.height = labs(By - Ay) + 1 + E_LINE*2;
+	
+	gdk_window_invalidate_rect (widget->window, &r, FALSE);
+      }
       el=el->next;
     }
   }

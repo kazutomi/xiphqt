@@ -224,14 +224,12 @@ static void init_fonts(char *list){
     cairo_text_extents (c, test_string, &ex);
     adjust_x_normal = 1058 / ex.width;
     adjust_y_normal = -37 / ex.y_bearing;
-    fprintf(stderr,"%f,%f\n",ex.width,ex.y_bearing);
 
 
     cairo_set_font_face (c, bold_face);
     cairo_text_extents (c, test_string, &ex);
     adjust_x_bold = 1130 / ex.width;
     adjust_y_bold = -37 / ex.y_bearing;
-    fprintf(stderr,"%f,%f\n",ex.width,ex.y_bearing);
 
 
     cairo_destroy(c);

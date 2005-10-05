@@ -64,8 +64,10 @@ void invalidate_verticies_selection(GtkWidget *widget){
   Gameboard *g = GAMEBOARD (widget);
   vertex *v=g->g.verticies;
   while(v){
-    if(v->selected)
+    if(v->selected){
       invalidate_vertex_off(widget,v,g->dragx,g->dragy);
+      invalidate_edges(widget,v,g->dragx,g->dragy);
+    }
     v=v->next;
   }
 }
