@@ -36,6 +36,7 @@
 #include "levelstate.h"
 #include "dialog_finish.h"
 #include "dialog_level.h"
+#include "main.h"
 
 static void finish_post (Gameboard *g){
   // back to buttonbar activity!
@@ -146,29 +147,19 @@ static void draw_finishbox(Gameboard *g){
 	    SCOREHEIGHT);
 
   {
-    cairo_matrix_t ma;
     char *time = get_timer_string();
     char buffer[160];
     int time_bonus=graphscore_get_bonus(&g->g);
 
     int y;
 
-    cairo_select_font_face (c, "Arial",
-			    CAIRO_FONT_SLANT_NORMAL,
-			    CAIRO_FONT_WEIGHT_BOLD);
-
-    cairo_matrix_init_scale (&ma, 18.,18.);
-    cairo_set_font_matrix (c,&ma);
+    set_font(c,18,18,0,1);
     cairo_set_source_rgba (c, TEXT_COLOR);
 
     y=h/2-FINISHBOX_HEIGHT/2+SCOREHEIGHT/2;
     render_text_centered(c,"Level Complete!", w/2,y);y+=45;
 
-    cairo_select_font_face (c, "Arial",
-			    CAIRO_FONT_SLANT_NORMAL,
-			    CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_matrix_init_scale (&ma, 16.,16.);
-    cairo_set_font_matrix (c,&ma);
+    set_font(c,16,16,0,0);
 
     snprintf(buffer,160,"Elapsed: %s",time);
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
@@ -179,9 +170,7 @@ static void draw_finishbox(Gameboard *g){
 
     if(graphscore_get_multiplier(&g->g)>1){
       cairo_save(c);
-      cairo_select_font_face (c, "Arial",
-			      CAIRO_FONT_SLANT_NORMAL,
-			      CAIRO_FONT_WEIGHT_BOLD);
+      set_font(c,16,16,0,1);
       cairo_set_source_rgba (c, HIGH_COLOR);
       
       snprintf(buffer,160,"Objective Exceeded! x%d",graphscore_get_multiplier(&g->g));
@@ -192,9 +181,7 @@ static void draw_finishbox(Gameboard *g){
     snprintf(buffer,160,"Time bonus: %d points",time_bonus);
     render_bordertext_centered(c,buffer, w/2,y);y+=35;
 
-    cairo_select_font_face (c, "Arial",
-			    CAIRO_FONT_SLANT_NORMAL,
-			    CAIRO_FONT_WEIGHT_BOLD);
+    set_font(c,16,16,0,1);
 
     snprintf(buffer,160,"Final score: %d points",graphscore_get_score(&g->g)+time_bonus);
     render_bordertext_centered(c,buffer, w/2,y);y+=24;

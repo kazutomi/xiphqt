@@ -39,7 +39,7 @@ GdkRectangle render_text_centered(cairo_t *c, char *s, int x, int y){
   cairo_text_extents (c, s, &ex);
 
   r.x=x-(ex.width/2);
-  r.y=y-(ex.height/2);
+  r.y=y+(ex.y_bearing/2);
   r.width=ex.width;
   r.height=ex.height;
 
@@ -56,7 +56,7 @@ GdkRectangle render_border_centered(cairo_t *c, char *s, int x, int y){
   cairo_text_extents (c, s, &ex);
 
   r.x=x-(ex.width/2)-2;
-  r.y=y-(ex.height/2)-2;
+  r.y=y+(ex.y_bearing/2)-2;
   r.width=ex.width+5;
   r.height=ex.height+5;
 
@@ -76,3 +76,4 @@ GdkRectangle render_bordertext_centered(cairo_t *c, char *s, int x, int y){
   render_text_centered(c,s,x,y);
   return r;
 }
+

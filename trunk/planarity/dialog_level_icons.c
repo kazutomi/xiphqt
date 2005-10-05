@@ -235,29 +235,20 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
     // render level related text
     if(g->d.center_x == 0 && c){
       char buffer[160];
-      cairo_matrix_t ma;
 
       // above text
       if(g->d.text1.width==0 || 
 	 (ey<g->d.text1.y+g->d.text1.height && ey2>g->d.text1.y)){
 	
 	snprintf(buffer,160,"Level %d:",get_level_num()+1);
-	cairo_select_font_face (c, "Arial",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_BOLD);
-	cairo_matrix_init_scale (&ma, 20.,20.);
-	cairo_set_font_matrix (c,&ma);
+	set_font(c,20,20,0,1);
 	cairo_set_source_rgba (c, TEXT_COLOR);
 	g->d.text1=render_bordertext_centered(c, buffer,w/2,y+45);
       }
       
       if(g->d.text2.width==0 || 
 	 (ey<g->d.text2.y+g->d.text2.height && ey2>g->d.text2.y)){
-	cairo_select_font_face (c, "Arial",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_matrix_init_scale (&ma, 18.,18.);
-	cairo_set_font_matrix (c,&ma);
+	set_font(c,18,18,0,0);
 	cairo_set_source_rgba (c, TEXT_COLOR);
 	g->d.text2=render_bordertext_centered(c, get_level_desc(),w/2,y+70);
       }
@@ -266,19 +257,13 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
 	 (ey<g->d.text3.y+g->d.text3.height && ey2>g->d.text3.y)){
 	
 	if(levelstate_get_hiscore()==0){
-	  cairo_select_font_face (c, "Arial",
-				  CAIRO_FONT_SLANT_ITALIC,
-				  CAIRO_FONT_WEIGHT_NORMAL);
+	  set_font(c,18,18,1,0);
 	  snprintf(buffer,160,"[not yet completed]");
 	}else{
-	  cairo_select_font_face (c, "Arial",
-				  CAIRO_FONT_SLANT_NORMAL,
-				  CAIRO_FONT_WEIGHT_NORMAL);
+	  set_font(c,18,18,0,0);
 	  snprintf(buffer,160,"level high score: %ld",levelstate_get_hiscore());
 	}
 	
-	cairo_matrix_init_scale (&ma, 18.,18.);
-	cairo_set_font_matrix (c,&ma);
 	cairo_set_source_rgba (c, TEXT_COLOR);
 	g->d.text3=render_bordertext_centered(c, buffer,w/2,y+245);
       }
@@ -288,11 +273,7 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
 
 	snprintf(buffer,160,"total score all levels: %ld",levelstate_total_hiscore());
 	
-	cairo_select_font_face (c, "Arial",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_matrix_init_scale (&ma, 18.,18.);
-	cairo_set_font_matrix (c,&ma);
+	set_font(c,18,18,0,0);
 	cairo_set_source_rgba (c, TEXT_COLOR);
 	g->d.text4=render_bordertext_centered(c, buffer,w/2,y+265);
       }

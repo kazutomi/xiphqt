@@ -36,6 +36,7 @@
 #include "graph.h"
 #include "gameboard.h"
 #include "levelstate.h"
+#include "main.h"
 
 void draw_score(Gameboard *g){
   char level_string[160];
@@ -48,9 +49,11 @@ void draw_score(Gameboard *g){
   cairo_text_extents_t extentsM;
   cairo_text_extents_t extentsO;
   cairo_text_extents_t extentsI;
-  cairo_matrix_t m;
 
   cairo_t *c = cairo_create(g->forescore);
+  int xpx = 12;
+  int ty1 = 23;
+  int ty2 = 38;
 
   // clear the pane
   cairo_save(c);
@@ -61,35 +64,20 @@ void draw_score(Gameboard *g){
 
   topbox(g,c,g->g.width,SCOREHEIGHT);
 
-  cairo_select_font_face (c, "Arial",
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_BOLD);
-
-  cairo_matrix_init_scale (&m, 12.,15.);
-  cairo_set_font_matrix (c,&m);
-  cairo_set_source_rgba (c, TEXT_COLOR);
-
   snprintf(level_string,160,"Level %d: %s",get_level_num()+1,get_level_desc());
   snprintf(score_string,160,"Score: %d",graphscore_get_raw_score(&g->g));
   snprintf(mult_string,160,"x%d",graphscore_get_multiplier(&g->g));
   snprintf(int_string,160,"Intersections: %ld",g->g.active_intersections);
   snprintf(obj_string,160,"Objective: %s",graphscore_objective_string(&g->g));
 
-  cairo_text_extents (c, level_string, &extentsL);
+  set_font(c,xpx,15,0,1);
+  cairo_set_source_rgba (c, TEXT_COLOR);
+
   cairo_text_extents (c, obj_string, &extentsO);
   cairo_text_extents (c, int_string, &extentsI);
   cairo_text_extents (c, score_string, &extentsS);
   cairo_text_extents (c, mult_string, &extentsM);
 
-  /*
-  text_h = extentsL.height;
-  text_h = max(text_h,extentsO.height);
-  text_h = max(text_h,extentsI.height);
-  text_h = max(text_h,extentsS.height);
-  */
-
-  int ty1 = 23;
-  int ty2 = 38;
 
   cairo_move_to (c, 15, ty1);
   cairo_show_text (c, int_string);  
@@ -103,10 +91,22 @@ void draw_score(Gameboard *g){
     cairo_restore(c);
   }
 
-  cairo_move_to (c, g->g.width-extentsL.width-15, ty1);
-  cairo_show_text (c, level_string);  
   cairo_move_to (c, g->g.width-extentsO.width-15, ty2);
   cairo_show_text (c, obj_string);  
+
+
+  while(xpx){
+    cairo_text_extents (c, level_string, &extentsL);
+
+    if(extentsL.width > 300){
+      xpx--;
+      set_font(c,xpx,15,0,1);
+    }else
+      break;
+  }
+
+  cairo_move_to (c, g->g.width-extentsL.width-15, ty1);
+  cairo_show_text (c, level_string);  
 
   cairo_destroy(c);
 }
