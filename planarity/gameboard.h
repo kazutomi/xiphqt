@@ -272,6 +272,7 @@ extern void update_full(Gameboard *g);
 extern void expose_full(Gameboard *g);
 extern void update_full_delayed(Gameboard *g);
 extern void update_add_vertex(Gameboard *g, vertex *v);
+extern void update_add_selgroup(Gameboard *g);
 extern void gameboard_draw(Gameboard *g, int x, int y, int w, int h);
 extern void draw_foreground(Gameboard *g,cairo_t *c,
 			    int x,int y,int width,int height);
@@ -328,4 +329,5 @@ extern void gameboard_size_allocate (GtkWidget     *widget,
 
 extern void fade_cancel(Gameboard *g);
 extern void fade_attached(Gameboard *g,vertex *v);
+extern void fade_grabbed(Gameboard *g);
 

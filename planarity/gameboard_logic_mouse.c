@@ -215,6 +215,7 @@ gboolean mouse_press (GtkWidget        *widget,
 	// vertex change
 	grab_selected(&g->g);
 	invalidate_verticies_selection(widget);
+	fade_cancel(g);
 	update_full_delayed(g);
 	return TRUE;
       }
@@ -333,9 +334,11 @@ gboolean mouse_release (GtkWidget        *widget,
     /* case: release a group drag */
     if(g->group_drag){
       move_selected_verticies(&g->g,g->dragx,g->dragy);
+      fade_grabbed(g);
+      update_add_selgroup(g);
       ungrab_verticies(&g->g);
-      update_full(g); // cheating
       update_score(g);
+
       g->group_drag=0;
 
       if(g->g.active_intersections<=g->g.objective)
