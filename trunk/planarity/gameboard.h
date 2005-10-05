@@ -292,7 +292,7 @@ extern cairo_surface_t *cache_vertex_ghost(Gameboard *g);
 extern void invalidate_vertex_off(GtkWidget *widget, vertex *v, int dx, int dy);
 extern void invalidate_vertex(Gameboard *g, vertex *v);
 extern void invalidate_attached(GtkWidget *widget, vertex *v);
-extern void invalidate_edges(GtkWidget *widget, vertex *v);
+extern void invalidate_edges(GtkWidget *widget, vertex *v, int offx, int offy);
 extern void draw_selection_rectangle(Gameboard *g,cairo_t *c);
 extern void invalidate_selection(GtkWidget *widget);
 extern void invalidate_verticies_selection(GtkWidget *widget);
@@ -308,6 +308,7 @@ extern gboolean mouse_release (GtkWidget *widget,GdkEventButton *event);
 extern void setup_background_edge(cairo_t *c);
 extern void setup_foreground_edge(cairo_t *c);
 extern void draw_edge(cairo_t *c,edge *e);
+extern void draw_edges(cairo_t *c, vertex *v, int offx, int offy);
 extern void finish_edge(cairo_t *c);
 
 extern cairo_surface_t *gameboard_read_icon(char *filename, char *ext,Gameboard *b);

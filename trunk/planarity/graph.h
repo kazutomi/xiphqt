@@ -115,7 +115,9 @@ extern int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2,
 
 extern void move_vertex(graph *g, vertex *v, int x, int y);
 extern void grab_vertex(graph *g, vertex *v);
+extern void grab_selected(graph *g);
 extern void ungrab_vertex(graph *g,vertex *v);
+extern void ungrab_verticies(graph *g);
 extern void activate_vertex(graph *g, vertex *v);
 extern void deactivate_vertex(graph *g, vertex *v);
 extern void select_verticies(graph *g, int x1, int y1, int x2, int y2);

@@ -49,9 +49,9 @@ static gen_instance i_list[FINITE_LEVELS]={
   {"simple",   3, "Larger But Not Harder",                          generate_simple,    1.,1., 2 }, // 4
   {"crest",    5, "The Trick Is It's Easy",                         generate_crest,     1.,1., 2 }, // 5
 
-  {"simple",   4, "Practice Before the Handbasket: One of Three",   generate_simple,    1.,1., 1 }, // 6
-  {"simple",   5, "Practice Before the Handbasket: Two of Three",   generate_simple,    1.,1., 1 }, // 7
-  {"simple",   6, "Practice Before the Handbasket: Three of Three", generate_simple,    1.,1., 1 }, // 8
+  {"simple",   4, "Practice Before the Handbasket: One of Three",   generate_simple,    1.,1., 2 }, // 6
+  {"simple",   5, "Practice Before the Handbasket: Two of Three",   generate_simple,    1.,1., 2 }, // 7
+  {"simple",   6, "Practice Before the Handbasket: Three of Three", generate_simple,    1.,1., 2 }, // 8
 
   {"sparse",   4, "Tough and Stringy",                              generate_sparse,    1.2,1., 2 }, // 9
   {"sparse",   5, "Threadbare",                                     generate_sparse,    1.2,1., 2 }, // 10

@@ -515,6 +515,25 @@ void grab_vertex(graph *g, vertex *v){
   v->grabbed=1;
 }
 
+void grab_selected(graph *g){
+  vertex *v = g->verticies;
+  while(v){
+    if(v->selected){
+      //edge_list *el=v->edges;
+      deactivate_vertex(g,v);
+      //while(el){
+      //edge_list *next=el->next;
+      //edge *e=el->edge;
+      //vertex *other=(e->A==v?e->B:e->A);
+	//other->attached_to_grabbed=1;
+	//el=next;
+      //}
+      v->grabbed=1;
+    }
+    v=v->next;
+  }
+}
+
 void ungrab_vertex(graph *g,vertex *v){
   edge_list *el=v->edges;
   activate_vertex(g,v);
@@ -526,6 +545,25 @@ void ungrab_vertex(graph *g,vertex *v){
     el=next;
   }
   v->grabbed=0;
+}
+
+void ungrab_verticies(graph *g){
+  vertex *v = g->verticies;
+  while(v){
+    if(v->grabbed){
+      //edge_list *el=v->edges;
+      activate_vertex(g,v);
+      //while(el){
+      //edge_list *next=el->next;
+      //edge *e=el->edge;
+      //vertex *other=(e->A==v?e->B:e->A);
+	//other->attached_to_grabbed=1;
+	//el=next;
+      //}
+      v->grabbed=0;
+    }
+    v=v->next;
+  }
 }
 
 vertex *find_vertex(graph *g, int x, int y){
@@ -717,15 +755,7 @@ void move_vertex(graph *g, vertex *v, int x, int y){
 
 void move_selected_verticies(graph *g,int dx, int dy){
   vertex *v = g->verticies;
-  /* deactivate selected verticies */
-  while(v){
-    vertex *next=v->next;
-    if(v->selected)
-      deactivate_vertex(g,v);
-    v=next;
-  }
-
-  /* move selected verticies and reactivate */
+  /* move selected verticies; do not reactivate, done during ungrab */
   v=g->verticies;
   while(v){
     vertex *next=v->next;
@@ -733,7 +763,7 @@ void move_selected_verticies(graph *g,int dx, int dy){
       v->x+=dx;
       v->y+=dy;
       check_vertex(g,v);
-      activate_vertex(g,v);
+      //activate_vertex(g,v);
     }
     v=next;
   }
