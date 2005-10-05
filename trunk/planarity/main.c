@@ -242,13 +242,13 @@ void set_font (cairo_t *c, float w, float h, int slant, int bold){
 
   if(slant){
     cairo_set_font_face(c,ital_face);
-    cairo_matrix_init_scale (&m, rint(w*adjust_x_normal),rint(h*adjust_y_normal));
+    cairo_matrix_init_scale (&m, ceil(w*adjust_x_normal),ceil(h*adjust_y_normal));
   }else if (bold){
     cairo_set_font_face(c,bold_face);
-    cairo_matrix_init_scale (&m, rint(w*adjust_x_bold),rint(h*adjust_y_bold));
+    cairo_matrix_init_scale (&m, ceil(w*adjust_x_bold),ceil(h*adjust_y_bold));
   }else{
     cairo_set_font_face(c,font_face);
-    cairo_matrix_init_scale (&m, rint(w*adjust_x_normal),rint(h*adjust_y_normal));
+    cairo_matrix_init_scale (&m, ceil(w*adjust_x_normal),ceil(h*adjust_y_normal));
   }
   cairo_set_font_matrix (c,&m);
 

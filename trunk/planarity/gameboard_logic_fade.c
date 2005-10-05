@@ -119,3 +119,36 @@ void fade_attached(Gameboard *g,vertex *v){
   f->fade_timer = g_timeout_add(FADE_ANIM_INTERVAL, animate_fade, (gpointer)g);
 }
 
+void fade_grabbed(Gameboard *g){
+  fade_state *f = &g->fade;
+  vertex *v = g->g.verticies;
+
+  /* If a fade is already in progress, cancel it */
+  fade_cancel(g);
+
+  while(v){
+    if(v->grabbed){
+      edge_list *el=v->edges;
+      
+      
+      while(el){
+	edge *e=el->edge;
+	
+	if(v == e->A){
+	  if(!e->B->grabbed)
+	    fade_add_vertex(f,e->B);
+	}else{
+	  if(!e->A->grabbed)
+	    fade_add_vertex(f,e->A);
+	}
+	el=el->next;
+      }
+    }
+    v=v->next;
+  }
+
+  f->count = FADE_FRAMES;
+
+  f->fade_timer = g_timeout_add(FADE_ANIM_INTERVAL, animate_fade, (gpointer)g);
+}
+

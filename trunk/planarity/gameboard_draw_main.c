@@ -115,7 +115,7 @@ void draw_foreground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
 	    draw_vertex(c,v,g->vertex_sel);
 	  } else if ( v == g->lit_vertex){
 	    draw_vertex(c,v,g->vertex_lit);
-	  } else if (v->attached_to_grabbed && !g->group_drag){
+	  } else if (v->attached_to_grabbed){
 	    draw_vertex(c,v,g->vertex_attached);
 	  }else{
 	    draw_vertex(c,v,g->vertex);
@@ -220,8 +220,7 @@ void update_add_vertex(Gameboard *g, vertex *v){
     while(el){
       edge *e=el->edge;
       
-      if(e->active)
-	draw_edge(c,e);
+      draw_edge(c,e);
       
       el=el->next;
     }
@@ -230,6 +229,37 @@ void update_add_vertex(Gameboard *g, vertex *v){
   cairo_destroy(c);
 
   invalidate_attached(widget,v);    
+}
+
+/* as above for re-inserting group drag edges to the background.
+   Doesn't require a full redraw. */
+void update_add_selgroup(Gameboard *g){
+  if(!g->hide_lines){
+    GtkWidget *widget = GTK_WIDGET(g);
+    cairo_t *c = cairo_create(g->background);
+    vertex *v = g->g.verticies;
+    
+    setup_background_edge(c);
+    
+    while(v){
+      if(v->grabbed){
+	edge_list *el=v->edges;
+	while(el){
+	  edge *e=el->edge;
+	  
+	  // draw the edge only once if it spans two grabbed verticies
+	  if(e->A->grabbed==0 || e->B->grabbed==0 || v==e->A) 
+	    draw_edge(c,e);
+	  
+	  el=el->next;
+	}
+      }
+      invalidate_attached(widget,v);    
+      v=v->next;
+    }
+    finish_edge(c);
+    cairo_destroy(c);
+  }
 }
 
 /* top level draw function called by expose.  May also be called

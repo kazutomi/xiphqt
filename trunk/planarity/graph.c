@@ -519,15 +519,15 @@ void grab_selected(graph *g){
   vertex *v = g->verticies;
   while(v){
     if(v->selected){
-      //edge_list *el=v->edges;
+      edge_list *el=v->edges;
       deactivate_vertex(g,v);
-      //while(el){
-      //edge_list *next=el->next;
-      //edge *e=el->edge;
-      //vertex *other=(e->A==v?e->B:e->A);
-	//other->attached_to_grabbed=1;
-	//el=next;
-      //}
+      while(el){
+	edge_list *next=el->next;
+	edge *e=el->edge;
+	vertex *other=(e->A==v?e->B:e->A);
+	other->attached_to_grabbed=1;
+	el=next;
+      }
       v->grabbed=1;
     }
     v=v->next;
@@ -551,15 +551,15 @@ void ungrab_verticies(graph *g){
   vertex *v = g->verticies;
   while(v){
     if(v->grabbed){
-      //edge_list *el=v->edges;
+      edge_list *el=v->edges;
       activate_vertex(g,v);
-      //while(el){
-      //edge_list *next=el->next;
-      //edge *e=el->edge;
-      //vertex *other=(e->A==v?e->B:e->A);
-	//other->attached_to_grabbed=1;
-	//el=next;
-      //}
+      while(el){
+	edge_list *next=el->next;
+	edge *e=el->edge;
+	vertex *other=(e->A==v?e->B:e->A);
+	other->attached_to_grabbed=0;
+	el=next;
+      }
       v->grabbed=0;
     }
     v=v->next;
