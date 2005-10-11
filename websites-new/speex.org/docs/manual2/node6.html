@@ -1,0 +1,622 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Programming with Speex (the libspeex API)</TITLE>
+<META NAME="description" CONTENT="Programming with Speex (the libspeex API)">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node7.html">
+<LINK REL="previous" HREF="node5.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node7.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html261"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html255"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html249"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html257"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html259"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html262"
+  HREF="node7.html">Formats and standards</A>
+<B> Up:</B> <A NAME="tex2html256"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html250"
+  HREF="node5.html">Command-line encoder/decoder</A>
+ &nbsp <B>  <A NAME="tex2html258"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html260"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html263"
+  HREF="node6.html#SECTION00061000000000000000">Encoding</A>
+<LI><A NAME="tex2html264"
+  HREF="node6.html#SECTION00062000000000000000">Decoding</A>
+<LI><A NAME="tex2html265"
+  HREF="node6.html#SECTION00063000000000000000">Codec Options (speex_*_ctl)</A>
+<LI><A NAME="tex2html266"
+  HREF="node6.html#SECTION00064000000000000000">Mode queries</A>
+<LI><A NAME="tex2html267"
+  HREF="node6.html#SECTION00065000000000000000">Packing and in-band signalling</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00060000000000000000"></A><A NAME="103"></A><A NAME="104"></A><A NAME="sec:Programming-with-Speex"></A>
+<BR>
+Programming with Speex (the libspeex API)
+</H1>
+
+<P>
+This section explains how to use the Speex API. Examples of code can
+also be found in appendix <A HREF="node12.html#sec:Sample-code">B</A>.
+
+<P>
+
+<H2><A NAME="SECTION00061000000000000000">
+Encoding</A>
+</H2>
+
+<P>
+In order to encode speech using Speex, you first need to:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>#include&nbsp;&lt;speex.h&gt;
+</DD>
+</DL>You then need to declare a Speex bit-packing struct
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>SpeexBits&nbsp;bits;
+</DD>
+</DL>and a Speex encoder state
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>void&nbsp;*enc_state;
+</DD>
+</DL>The two are initialized by:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_bits_init(&amp;bits);
+
+<P>
+enc_state&nbsp;=&nbsp;speex_encoder_init(&amp;speex_nb_mode);
+</DD>
+</DL>For wideband coding, <I>speex_nb_mode</I> will be replaced by <I>speex_wb_mode</I>.
+In most cases, you will need to know the frame size used by the mode
+you are using. You can get that value in the <I>frame_size</I> variable
+with:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_encoder_ctl(enc_state,SPEEX_GET_FRAME_SIZE,&amp;frame_size);
+</DD>
+</DL>Once the initialization is done, for every input frame:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_bits_reset(&amp;bits);
+
+<P>
+speex_encode(enc_state,&nbsp;input_frame,&nbsp;&amp;bits);
+
+<P>
+nbBytes&nbsp;=&nbsp;speex_bits_write(&amp;bits,&nbsp;byte_ptr,&nbsp;MAX_NB_BYTES);
+</DD>
+</DL>where <I>input_frame</I> is a <I>(float *)</I> pointing to the
+beginning of a speech frame, <I>byte_ptr</I> is a <I>(char *)</I>
+where the encoded frame will be written, <I>MAX_NB_BYTES</I> is
+the maximum number of bytes that can be written to <I>byte_ptr</I>
+without causing an overflow and <I>nbBytes</I> is the number of bytes
+actually written to <I>byte_ptr</I> (the encoded size in bytes).
+Before calling speex_bits_write, it is possible to find the number
+of bytes that need to be written by calling <TT>speex_bits_nbytes(&amp;bits)</TT>,
+which returns a number of bytes. 
+
+<P>
+After you're done with the encoding, free all resources with:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_bits_destroy(&amp;bits);
+
+<P>
+speex_encoder_destroy(enc_state);
+</DD>
+</DL>That's about it for the encoder. 
+
+<P>
+
+<H2><A NAME="SECTION00062000000000000000">
+Decoding</A>
+</H2>
+
+<P>
+In order to encode speech using Speex, you first need to:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>#include&nbsp;&lt;speex.h&gt;
+</DD>
+</DL>You also need to declare a Speex bit-packing struct
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>SpeexBits&nbsp;bits;
+</DD>
+</DL>and a Speex encoder state
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>void&nbsp;*dec_state;
+</DD>
+</DL>The two are initialized by:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_bits_init(&amp;bits);
+
+<P>
+dec_state&nbsp;=&nbsp;speex_decoder_init(&amp;speex_nb_mode);
+</DD>
+</DL>For wideband decoding, <I>speex_nb_mode</I> will be replaced by
+<I>speex_wb_mode</I>. If you need to obtain the size of the frames
+that will be used by the decoder, you can get that value in the <I>frame_size</I>
+variable with:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_decoder_ctl(dec_state,&nbsp;SPEEX_GET_FRAME_SIZE,&nbsp;&amp;frame_size);&nbsp;
+</DD>
+</DL>There is also a parameter that can be set for the decoder: whether
+or not to use a perceptual post-filter. This can be set by: 
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_decoder_ctl(dec_state,&nbsp;SPEEX_SET_ENH,&nbsp;&amp;enh);&nbsp;
+</DD>
+</DL>where <I>enh</I> is an int that with value 0 to have the post-filter
+disabled and 1 to have it enabled.
+
+<P>
+Again, once the decoder initialization is done, for every input frame:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_bits_read_from(&amp;bits,&nbsp;input_bytes,&nbsp;nbBytes);
+
+<P>
+speex_decode(st,&nbsp;&amp;bits,&nbsp;output_frame);
+</DD>
+</DL>where input_bytes is a <I>(char *)</I> containing the bit-stream
+data received for a frame, <I>nbBytes</I> is the size (in bytes) of
+that bit-stream, and <I>output_frame</I> is a <I>(float *)</I>
+and points to the area where the decoded speech frame will be written.
+A NULL value as the first argument indicates that we don't have the
+bits for the current frame. When a frame is lost, the Speex decoder
+will do its best to &#34;guess&#34; the correct signal.
+
+<P>
+After you're done with the decoding, free all resources with:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_bits_destroy(&amp;bits);
+
+<P>
+speex_decoder_destroy(dec_state);
+</DD>
+</DL>
+<P>
+
+<H2><A NAME="SECTION00063000000000000000">
+Codec Options (speex_*_ctl)</A>
+</H2>
+
+<P>
+The Speex encoder and decoder support many options and requests that
+can be accessed through the <I>speex_encoder_ctl</I> and <I>speex_decoder_ctl</I>
+functions. These functions are similar to the <I>ioctl</I> system
+call and their prototypes are:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>void&nbsp;speex_encoder_ctl(void&nbsp;*encoder,&nbsp;int&nbsp;request,&nbsp;void&nbsp;*ptr);
+
+<P>
+void&nbsp;speex_decoder_ctl(void&nbsp;*encoder,&nbsp;int&nbsp;request,&nbsp;void&nbsp;*ptr);
+</DD>
+</DL>The different values of request allowed are (note that some only apply
+to the encoder or the decoder):
+
+<P>
+<DL>
+<DT><STRONG>SPEEX_SET_ENH**</STRONG></DT>
+<DD>Set perceptual enhancer<A NAME="176"></A>
+to on (1) or off (0) (integer)
+</DD>
+<DT><STRONG>SPEEX_GET_ENH**</STRONG></DT>
+<DD>Get perceptual enhancer status (integer)
+</DD>
+<DT><STRONG>SPEEX_GET_FRAME_SIZE</STRONG></DT>
+<DD>Get the frame size used for the current
+mode (integer)
+</DD>
+<DT><STRONG>SPEEX_SET_QUALITY*</STRONG></DT>
+<DD>Set the encoder speech quality (integer 0
+to 10)
+</DD>
+<DT><STRONG>SPEEX_GET_QUALITY*</STRONG></DT>
+<DD>Get the current encoder speech quality (integer
+0 to 10)
+</DD>
+<DT><STRONG>SPEEX_SET_MODE*<IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_GET_MODE*<IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_SET_LOW_MODE*<IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_GET_LOW_MODE*<IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_SET_HIGH_MODE*<IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_GET_HIGH_MODE*<IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_SET_VBR*</STRONG></DT>
+<DD>Set variable bit-rate (VBR) to on (1) or off
+(0) (integer)
+</DD>
+<DT><STRONG>SPEEX_GET_VBR*</STRONG></DT>
+<DD>Get variable bit-rate<A NAME="189"></A>
+(VBR) status (integer)
+</DD>
+<DT><STRONG>SPEEX_SET_VBR_QUALITY*</STRONG></DT>
+<DD>Set the encoder VBR speech quality (float
+0 to 10)
+</DD>
+<DT><STRONG>SPEEX_GET_VBR_QUALITY*</STRONG></DT>
+<DD>Get the current encoder VBR speech quality
+(float 0 to 10)
+</DD>
+<DT><STRONG>SPEEX_SET_COMPLEXITY*</STRONG></DT>
+<DD>Set the CPU resources allowed for the
+encoder (integer 1 to 10)
+</DD>
+<DT><STRONG>SPEEX_GET_COMPLEXITY*</STRONG></DT>
+<DD>Get the CPU resources allowed for the
+encoder (integer 1 to 10)
+</DD>
+<DT><STRONG>SPEEX_SET_BITRATE*</STRONG></DT>
+<DD>Set the bit-rate to use to the closest value
+not exceeding the parameter (integer in bps)
+</DD>
+<DT><STRONG>SPEEX_GET_BITRATE</STRONG></DT>
+<DD>Get the current bit-rate in use (integer in
+bps)
+</DD>
+<DT><STRONG>SPEEX_SET_SAMPLING_RATE</STRONG></DT>
+<DD>Set real sampling rate (integer in Hz)
+</DD>
+<DT><STRONG>SPEEX_GET_SAMPLING_RATE</STRONG></DT>
+<DD>Get real sampling rate (integer in Hz)
+</DD>
+<DT><STRONG>SPEEX_RESET_STATE</STRONG></DT>
+<DD>Reset the encoder/decoder state to its original
+state (zeros all memories)
+</DD>
+<DT><STRONG>SPEEX_SET_VAD*</STRONG></DT>
+<DD>Set voice activity detection<A NAME="196"></A>
+(VAD) to on (1) or off (0) (integer)
+</DD>
+<DT><STRONG>SPEEX_GET_VAD*</STRONG></DT>
+<DD>Get voice activity detection (VAD) status (integer)
+</DD>
+<DT><STRONG>SPEEX_SET_DTX*</STRONG></DT>
+<DD>Set discontinuous transmission<A NAME="199"></A>
+(DTX) to on (1) or off (0) (integer)
+</DD>
+<DT><STRONG>SPEEX_GET_DTX*</STRONG></DT>
+<DD>Get discontinuous transmission (DTX) status (integer)
+</DD>
+<DT><STRONG>SPEEX_SET_ABR*</STRONG></DT>
+<DD>Set average bit-rate<A NAME="202"></A>
+(ABR) to a value n in bits per second (integer in bps)
+</DD>
+<DT><STRONG>SPEEX_GET_ABR*</STRONG></DT>
+<DD>Get average bit-rate (ABR) setting (integer in
+bps)
+</DD>
+<DT><STRONG>*</STRONG></DT>
+<DD>applies only to the encoder
+</DD>
+<DT><STRONG>**</STRONG></DT>
+<DD>applies only to the decoder
+</DD>
+<DT><STRONG><IMG
+ WIDTH="11" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\dagger$"></STRONG></DT>
+<DD>normally only used internally
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00064000000000000000">
+Mode queries</A>
+</H2>
+
+<P>
+Speex modes have a query system similar to the speex_encoder_ctl
+and speex_decoder_ctl calls. Since modes are read-only, it is only
+possible to get information about a particular mode. The function
+used to do that is:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>void&nbsp;speex_mode_query(SpeexMode&nbsp;*mode,&nbsp;int&nbsp;request,&nbsp;void&nbsp;*ptr);
+</DD>
+</DL>The admissible values for request are (unless otherwise note, the
+values are returned through <I>ptr</I>):
+
+<P>
+<DL>
+<DT><STRONG>SPEEX_MODE_FRAME_SIZE</STRONG></DT>
+<DD>Get the frame size (in samples) for the
+mode
+</DD>
+<DT><STRONG>SPEEX_SUBMODE_BITRATE</STRONG></DT>
+<DD>Get the bit-rate for a submode number specified
+through <I>ptr</I> (integer in bps). 
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00065000000000000000"></A><A NAME="217"></A>
+<BR>
+Packing and in-band signalling
+</H2>
+
+<P>
+Sometimes it is desirable to pack more than one frame per packet (or
+other basic unit of storage). The proper way to do it is to call speex_encode
+<IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img2.png"
+ ALT="$N$"> times before writing the stream with speex_bits_write. In cases
+where the number of frames is not determined by an out-of-band mechanism,
+it is possible to include a terminator code. That terminator consists
+of the code 15 (decimal) encoded with 5 bits, as shown in figure <A HREF="#cap:quality_vs_bps">4</A>. 
+
+<P>
+It is also possible to send in-band ``messages'' to the other
+side. All these messages are encoded as ``pseudo-frames'' of mode
+14 which contain a 4-bit message type code, followed by the message.
+Table <A HREF="#cap:In-band-signalling-codes">1</A> lists the available codes,
+their meaning and the size of the message that follows. Most of these
+messages are requests that are sent to the encoder or decoder on the
+other end, which is free to comply or ignore them. By default, all
+in-band messages are ignored.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="575"></A>
+<TABLE>
+<CAPTION><STRONG>Table 1:</STRONG>
+In-band signalling codes</CAPTION>
+<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Code</TD>
+<TD ALIGN="CENTER">Size (bits)</TD>
+<TD ALIGN="CENTER">Content</TD>
+</TR>
+<TR><TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">Asks decoder to set perceptual enhancement off (0) or on(1)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">Asks (if 1) the encoder to be less ``agressive'' due to high packet
+loss</TD>
+</TR>
+<TR><TD ALIGN="CENTER">2</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">Asks encoder to switch to mode N</TD>
+</TR>
+<TR><TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">Asks encoder to switch to mode N for low-band</TD>
+</TR>
+<TR><TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">Asks encoder to switch to mode N for high-band</TD>
+</TR>
+<TR><TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">Asks encoder to switch to quality N for VBR</TD>
+</TR>
+<TR><TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">Request acknowloedge (0=no, 1=all, 2=only for in-band data)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">Asks encoder to set CBR (0), VAD(1), DTX(3), VBR(5), VBR+DTX(7)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">8</TD>
+<TD ALIGN="CENTER">8</TD>
+<TD ALIGN="CENTER">Transmit (8-bit) character to the other end</TD>
+</TR>
+<TR><TD ALIGN="CENTER">9</TD>
+<TD ALIGN="CENTER">8</TD>
+<TD ALIGN="CENTER">Intensity stereo information</TD>
+</TR>
+<TR><TD ALIGN="CENTER">10</TD>
+<TD ALIGN="CENTER">16</TD>
+<TD ALIGN="CENTER">Announce maximum bit-rate acceptable (N in bytes/second)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">16</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">32</TD>
+<TD ALIGN="CENTER">Acknowledge receiving packet N</TD>
+</TR>
+<TR><TD ALIGN="CENTER">13</TD>
+<TD ALIGN="CENTER">32</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">14</TD>
+<TD ALIGN="CENTER">64</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+<TR><TD ALIGN="CENTER">15</TD>
+<TD ALIGN="CENTER">64</TD>
+<TD ALIGN="CENTER">reserved</TD>
+</TR>
+</TABLE>
+
+<P>
+</TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+Finally, applications may define custom in-band messages using mode
+13. The size of the message in bytes is encoded with 5 bits, so that
+the decoder can skip it if it doesn't know how to interpret it.
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html261"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html255"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html249"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html257"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html259"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html262"
+  HREF="node7.html">Formats and standards</A>
+<B> Up:</B> <A NAME="tex2html256"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html250"
+  HREF="node5.html">Command-line encoder/decoder</A>
+ &nbsp <B>  <A NAME="tex2html258"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html260"
+  HREF="node15.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>

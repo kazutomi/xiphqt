@@ -1,0 +1,735 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction to CELP Coding</TITLE>
+<META NAME="description" CONTENT="Introduction to CELP Coding">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node9.html">
+<LINK REL="previous" HREF="node7.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node9.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html297"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html291"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html285"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html293"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html295"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html298"
+  HREF="node9.html">Speex narrowband mode</A>
+<B> Up:</B> <A NAME="tex2html292"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html286"
+  HREF="node7.html">Formats and standards</A>
+ &nbsp <B>  <A NAME="tex2html294"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html296"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html299"
+  HREF="node8.html#SECTION00081000000000000000">Linear Prediction (LPC)</A>
+<LI><A NAME="tex2html300"
+  HREF="node8.html#SECTION00082000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html301"
+  HREF="node8.html#SECTION00083000000000000000">Innovation Codebook</A>
+<LI><A NAME="tex2html302"
+  HREF="node8.html#SECTION00084000000000000000">Analysis-by-Synthesis and Error Weighting</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00080000000000000000"></A><A NAME="267"></A><A NAME="sec:Introduction-to-CELP"></A>
+<BR>
+Introduction to CELP Coding
+</H1>
+
+<P>
+Speex is based on CELP, which stands for Code Excited Linear Prediction.
+This section attempts to introduce the principles behind CELP, so
+if you are already familiar with CELP, you can safely skip to section
+<A HREF="node9.html#sec:Speex-narrowband-mode">7</A>. The CELP technique is based on three
+ideas:
+
+<P>
+
+<OL>
+<LI>The use of a linear prediction (LP) model to model the vocal tract
+</LI>
+<LI>The use of (adaptive and fixed) codebook entries as input (excitation)
+of the LP model
+</LI>
+<LI>The search performed in closed-loop in a ``perceptually weighted
+domain''
+</LI>
+</OL>
+This section describes the basic ideas behind CELP. Note that it's
+still incomplete.
+
+<P>
+
+<H2><A NAME="SECTION00081000000000000000"></A><A NAME="273"></A>
+<BR>
+Linear Prediction (LPC)
+</H2>
+
+<P>
+Linear prediction is at the base of many speech coding techniques,
+including CELP. The idea behind it is to predict the signal <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$x[n]$">
+using a linear combination of its past samples:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+y[n]=\sum_{i=1}^{N}a_{i}x[n-i]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="138" HEIGHT="56" BORDER="0"
+ SRC="img4.png"
+ ALT="\begin{displaymath}
+y[n]=\sum_{i=1}^{N}a_{i}x[n-i]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+where <IMG
+ WIDTH="31" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$y[n]$"> is the linear prediction of <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$x[n]$">. The prediction
+error is thus given by:
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+e[n]=x[n]-y[n]=x[n]-\sum_{i=1}^{N}a_{i}x[n-i]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="279" HEIGHT="56" BORDER="0"
+ SRC="img6.png"
+ ALT="\begin{displaymath}
+e[n]=x[n]-y[n]=x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+The goal of the LPC analysis is to find the best prediction coefficients
+<IMG
+ WIDTH="18" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$a_{i}$"> which minimize the quadratic error function:
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+E=\sum_{n=0}^{L-1}\left[e[n]\right]^{2}=\sum_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="315" HEIGHT="59" BORDER="0"
+ SRC="img8.png"
+ ALT="\begin{displaymath}
+E=\sum_{n=0}^{L-1}\left[e[n]\right]^{2}=\sum_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+That can be done by making all derivatives <!-- MATH
+ $\frac{\partial E}{\partial a_{i}}$
+ -->
+<IMG
+ WIDTH="27" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img9.png"
+ ALT="$\frac{\partial E}{\partial a_{i}}$">
+equal to zero:
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+\frac{\partial E}{\partial a_{i}}=\frac{\partial}{\partial a_{i}}\sum_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}=0
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="297" HEIGHT="59" BORDER="0"
+ SRC="img10.png"
+ ALT="\begin{displaymath}
+\frac{\partial E}{\partial a_{i}}=\frac{\partial}{\partial a...
+...um_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}=0\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+The <IMG
+ WIDTH="18" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$a_{i}$"> filter coefficients are computed using the Levinson-Durbin<A NAME="303"></A>
+algorithm, which starts from the auto-correlation<A NAME="304"></A>
+<IMG
+ WIDTH="43" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$R(m)$"> of the signal <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$x[n]$">.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+R(m)=\sum_{i=0}^{N-1}x[i]x[i-m]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="169" HEIGHT="56" BORDER="0"
+ SRC="img12.png"
+ ALT="\begin{displaymath}
+R(m)=\sum_{i=0}^{N-1}x[i]x[i-m]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+For an order <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img2.png"
+ ALT="$N$"> filter, we have:
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+\mathbf{R}=\left[\begin{array}{cccc}
+R(0) & R(1) & \cdots & R(N-1)\\
+R(1) & R(0) & \cdots & R(N-2)\\
+\vdots & \vdots & \ddots & \vdots\\
+R(N-1) & R(N-2) & \cdots & R(0)\end{array}\right]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="333" HEIGHT="93" BORDER="0"
+ SRC="img13.png"
+ ALT="\begin{displaymath}
+\mathbf{R}=\left[\begin{array}{cccc}
+R(0) &amp; R(1) &amp; \cdots &amp; ...
+...s &amp; \vdots\\
+R(N-1) &amp; R(N-2) &amp; \cdots &amp; R(0)\end{array}\right]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+\mathbf{r}=\left[\begin{array}{c}
+R(1)\\
+R(2)\\
+\vdots\\
+R(N)\end{array}\right]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="101" HEIGHT="93" BORDER="0"
+ SRC="img14.png"
+ ALT="\begin{displaymath}
+\mathbf{r}=\left[\begin{array}{c}
+R(1)\\
+R(2)\\
+\vdots\\
+R(N)\end{array}\right]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+The filter coefficients <IMG
+ WIDTH="18" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$a_{i}$"> are found by solving the system <!-- MATH
+ $\mathbf{Ra}=\mathbf{r}$
+ -->
+<IMG
+ WIDTH="55" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img15.png"
+ ALT="$\mathbf{Ra}=\mathbf{r}$">.
+What the Levinson-Durbin algorithm does here is making the solution
+to the problem <!-- MATH
+ $\mathcal{O}\left(N^{2}\right)$
+ -->
+<IMG
+ WIDTH="56" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img16.png"
+ ALT="$\mathcal{O}\left(N^{2}\right)$"> instead of <!-- MATH
+ $\mathcal{O}\left(N^{3}\right)$
+ -->
+<IMG
+ WIDTH="56" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img17.png"
+ ALT="$\mathcal{O}\left(N^{3}\right)$">
+by exploiting the fact that matrix <IMG
+ WIDTH="18" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img18.png"
+ ALT="$\mathbf{R}$"> is toeplitz hermitian.
+Also, it can be proven that all the roots of <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$A(z)$"> are within the
+unit circle, which means that <IMG
+ WIDTH="52" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$1/A(z)$"> is always stable. This is
+in theory; in practice because of finite precision, there are two
+commonly used techniques to make sure we have a stable filter. First,
+we multiply <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$R(0)$"> by a number slightly above one (such as 1.0001),
+which is equivalent to adding noise to the signal. Also, we can apply
+a window to the auto-correlation, which is equivalent to filtering
+in the frequency domain, reducing sharp resonances.
+
+<P>
+The linear prediction model represents each speech sample as a linear
+combination of past samples, plus an error signal called the excitation
+(or residual).
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+x[n]=\sum_{i=1}^{N}a_{i}x[n-i]+e[n]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="184" HEIGHT="56" BORDER="0"
+ SRC="img22.png"
+ ALT="\begin{displaymath}
+x[n]=\sum_{i=1}^{N}a_{i}x[n-i]+e[n]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+In the <I>z</I>-domain, this can be expressed as
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+x(z)=\frac{1}{A(z)}\: e(z)
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="117" HEIGHT="42" BORDER="0"
+ SRC="img23.png"
+ ALT="\begin{displaymath}
+x(z)=\frac{1}{A(z)}\: e(z)\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+where <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$A(z)$"> is defined as
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+A(z)=1-\sum_{i=1}^{N}a_{i}z^{-i}
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="143" HEIGHT="56" BORDER="0"
+ SRC="img24.png"
+ ALT="\begin{displaymath}
+A(z)=1-\sum_{i=1}^{N}a_{i}z^{-i}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+We usually refer to <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$A(z)$"> as the analysis filter and <IMG
+ WIDTH="52" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$1/A(z)$"> as
+the synthesis filter. The whole process is called short-term prediction
+as it predicts the signal <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$x[n]$"> using a prediction using only the
+<IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img2.png"
+ ALT="$N$"> past samples, where <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img2.png"
+ ALT="$N$"> is usually around 10.
+
+<P>
+Because LPC coefficients have very little robustness to quantization,
+they are converted to Line Spectral Pair<A NAME="333"></A>
+(LSP) coefficients which have a much better behaviour with quantization,
+one of them being that it's easy to keep the filter stable. 
+
+<P>
+
+<H2><A NAME="SECTION00082000000000000000"></A><A NAME="334"></A>
+<BR>
+Pitch Prediction
+</H2>
+
+<P>
+During voiced segments, the speech signal is periodic, so it is possible
+to take advantage of that property by approximating the excitation
+signal <IMG
+ WIDTH="30" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$e[n]$"> by a gain times the past of the excitation:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+e[n]\simeq p[n]=\beta e[n-T]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="160" HEIGHT="28" BORDER="0"
+ SRC="img26.png"
+ ALT="\begin{displaymath}
+e[n]\simeq p[n]=\beta e[n-T]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+where <IMG
+ WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img27.png"
+ ALT="$T$"> is the pitch period, <IMG
+ WIDTH="14" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$\beta$"> is the pitch gain. We call
+that long-term prediction since the excitation is predicted from <IMG
+ WIDTH="61" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$e[n-T]$">
+with <IMG
+ WIDTH="55" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$T\gg N$">.
+
+<P>
+
+<H2><A NAME="SECTION00083000000000000000">
+Innovation Codebook</A>
+</H2>
+
+<P>
+The final excitation <IMG
+ WIDTH="30" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$e[n]$"> will be the sum of the pitch prediction
+and an <I>innovation</I> signal <IMG
+ WIDTH="29" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$c[n]$"> taken from a fixed codebook,
+hence the name <I>Code</I> Excited Linear Prediction. The final excitation
+is given by:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+e[n]=p[n]+c[n]=\beta e[n-T]+c[n]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="249" HEIGHT="28" BORDER="0"
+ SRC="img32.png"
+ ALT="\begin{displaymath}
+e[n]=p[n]+c[n]=\beta e[n-T]+c[n]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+The quantization of <IMG
+ WIDTH="29" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$c[n]$"> is where most of the bits in a CELP codec
+are allocated. It represents the information that couldn't be obtained
+either from linear prediction or pitch prediction. In the <I>z</I>-domain
+we can represent the final signal <IMG
+ WIDTH="39" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img33.png"
+ ALT="$X(z)$"> as <BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+X(z)=\frac{C(z)}{A(z)\left(1-\beta z^{-T}\right)}
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="172" HEIGHT="44" BORDER="0"
+ SRC="img34.png"
+ ALT="\begin{displaymath}
+X(z)=\frac{C(z)}{A(z)\left(1-\beta z^{-T}\right)}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+
+<H2><A NAME="SECTION00084000000000000000"></A><A NAME="341"></A><A NAME="342"></A>
+<BR>
+Analysis-by-Synthesis and Error Weighting
+</H2>
+
+<P>
+Most (if not all) modern audio codecs attempt to ``shape'' the
+noise so that it appears mostly in the frequency regions where the
+ear cannot detect it. For example, the ear is more tolerant to noise
+in parts of the spectrum that are louder and <I>vice versa</I>. That's
+why instead of minimizing the simple quadratic error
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+E=\sum_{n}\left(x[n]-\overline{x}[n]\right)^{2}
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="152" HEIGHT="44" BORDER="0"
+ SRC="img35.png"
+ ALT="\begin{displaymath}
+E=\sum_{n}\left(x[n]-\overline{x}[n]\right)^{2}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+where <!-- MATH
+ $\overline{x}[n]$
+ -->
+<IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$\overline{x}[n]$"> is the encoder signal, we minimize the error
+for the perceptually weighted signal
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+X_{w}(z)=W(z)X(z)
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="137" HEIGHT="28" BORDER="0"
+ SRC="img37.png"
+ ALT="\begin{displaymath}
+X_{w}(z)=W(z)X(z)\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+where <IMG
+ WIDTH="42" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img38.png"
+ ALT="$W(z)$"> is the weighting filter, usually of the form
+
+<P>
+<BR>
+<DIV ALIGN="RIGHT">
+
+<!-- MATH
+ \begin{equation}
+W(z)=\frac{A\left(\frac{z}{\gamma_{1}}\right)}{A\left(\frac{z}{\gamma_{2}}\right)}
+\end{equation}
+ -->
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eq:weighting_filter"></A><IMG
+ WIDTH="112" HEIGHT="68" BORDER="0"
+ SRC="img39.png"
+ ALT="\begin{displaymath}
+W(z)=\frac{A\left(\frac{z}{\gamma_{1}}\right)}{A\left(\frac{z}{\gamma_{2}}\right)}
+\end{displaymath}"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(1)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P>
+
+<P>
+with control parameters <!-- MATH
+ $\gamma_{1}>\gamma_{2}$
+ -->
+<IMG
+ WIDTH="56" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img40.png"
+ ALT="$\gamma_{1}&gt;\gamma_{2}$">. If the noise is
+white in the perceptually weighted domain, then in the signal domain
+its spectral shape will be of the form
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+A_{noise}(z)=\frac{1}{W(z)}=\frac{A\left(\frac{z}{\gamma_{2}}\right)}{A\left(\frac{z}{\gamma_{1}}\right)}
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="201" HEIGHT="68" BORDER="0"
+ SRC="img41.png"
+ ALT="\begin{displaymath}
+A_{noise}(z)=\frac{1}{W(z)}=\frac{A\left(\frac{z}{\gamma_{2}}\right)}{A\left(\frac{z}{\gamma_{1}}\right)}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+If a filter <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$A(z)$"> has (complex) poles at <IMG
+ WIDTH="17" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img42.png"
+ ALT="$p_{i}$"> in the <IMG
+ WIDTH="12" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img43.png"
+ ALT="$z$">-plane,
+the filter <IMG
+ WIDTH="54" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img44.png"
+ ALT="$A(z/\gamma)$"> will have its poles at <!-- MATH
+ $p'_{i}=\gamma p_{i}$
+ -->
+<IMG
+ WIDTH="57" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img45.png"
+ ALT="$p'_{i}=\gamma p_{i}$">,
+making it a flatter version of <IMG
+ WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$A(z)$">.
+
+<P>
+Analysis-by-synthesis refers to the fact that when trying to find
+the best pitch parameters (<IMG
+ WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img27.png"
+ ALT="$T$">, <IMG
+ WIDTH="14" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$\beta$">) and innovation signal <IMG
+ WIDTH="29" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$c[n]$">,
+we do not work by making the excitation <IMG
+ WIDTH="30" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$e[n]$"> as close as the original
+one (which would be simpler), but apply the synthesis (and weighting)
+filter and try making <IMG
+ WIDTH="48" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img46.png"
+ ALT="$X_{w}(z)$"> as close to the original as possible.
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html297"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html291"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html285"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html293"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html295"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html298"
+  HREF="node9.html">Speex narrowband mode</A>
+<B> Up:</B> <A NAME="tex2html292"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html286"
+  HREF="node7.html">Formats and standards</A>
+ &nbsp <B>  <A NAME="tex2html294"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html296"
+  HREF="node15.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>

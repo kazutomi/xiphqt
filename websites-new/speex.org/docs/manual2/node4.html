@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Feature description</TITLE>
+<META NAME="description" CONTENT="Feature description">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html220"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html214"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html208"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html216"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html218"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html221"
+  HREF="node5.html">Command-line encoder/decoder</A>
+<B> Up:</B> <A NAME="tex2html215"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html209"
+  HREF="node3.html">Introduction to Speex</A>
+ &nbsp <B>  <A NAME="tex2html217"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html219"
+  HREF="node15.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html222"
+  HREF="node4.html#SECTION00041000000000000000">Sampling rate</A>
+<LI><A NAME="tex2html223"
+  HREF="node4.html#SECTION00042000000000000000">Quality</A>
+<LI><A NAME="tex2html224"
+  HREF="node4.html#SECTION00043000000000000000">Complexity (variable)</A>
+<LI><A NAME="tex2html225"
+  HREF="node4.html#SECTION00044000000000000000">Variable Bit-Rate (VBR)</A>
+<LI><A NAME="tex2html226"
+  HREF="node4.html#SECTION00045000000000000000">Average Bit-Rate (ABR)</A>
+<LI><A NAME="tex2html227"
+  HREF="node4.html#SECTION00046000000000000000">Voice Activity Detection (VAD)</A>
+<LI><A NAME="tex2html228"
+  HREF="node4.html#SECTION00047000000000000000">Discontinuous Transmission (DTX)</A>
+<LI><A NAME="tex2html229"
+  HREF="node4.html#SECTION00048000000000000000">Perceptual enhancement</A>
+<LI><A NAME="tex2html230"
+  HREF="node4.html#SECTION00049000000000000000">Algorithmic delay</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00040000000000000000"></A><A NAME="sec:Feature-description"></A>
+<BR>
+Feature description
+</H1>
+
+<P>
+This section explains the main Speex features, as well as some concepts
+in speech coding that help better understand the next sections. 
+
+<P>
+
+<H2><A NAME="SECTION00041000000000000000"></A><A NAME="54"></A>
+<BR>
+Sampling rate
+</H2>
+
+<P>
+Speex is mainly designed for 3 different sampling rates: 8 kHz, 16
+kHz, and 32 kHz. These are respectively refered to as narrowband<A NAME="55"></A>,
+wideband<A NAME="56"></A> and ultra-wideband<A NAME="57"></A>. 
+
+<P>
+
+<H2><A NAME="SECTION00042000000000000000"></A><A NAME="58"></A>
+<BR>
+Quality
+</H2>
+
+<P>
+Speex encoding is controlled most of the time by a quality parameter
+that ranges from 0 to 10. In constant bit-rate<A NAME="59"></A>
+(CBR) operation, the quality parameter is an integer, while for variable
+bit-rate (VBR), the parameter is a float. 
+
+<P>
+
+<H2><A NAME="SECTION00043000000000000000"></A><A NAME="60"></A>
+<BR>
+Complexity (variable)
+</H2>
+
+<P>
+With Speex, it is possible to vary the complexity allowed for the
+encoder. This is done by controlling how the search is performed with
+an integer ranging from 1 to 10 in a way that's similar to the -1
+to -9 options to <I>gzip</I> and <I>bzip2</I> compression utilities.
+For normal use, the noise level at complexity 1 is between 1 and 2
+dB higher than at complexity 10, but the CPU requirements for complexity
+10 is about 5 times higher than for complexity 1. In practice, the
+best trade-off is between complexity 2 and 4, though higher settings
+are often useful when encoding non-speech sounds like DTMF<A NAME="63"></A>
+tones.
+
+<P>
+
+<H2><A NAME="SECTION00044000000000000000"></A><A NAME="64"></A>
+<BR>
+Variable Bit-Rate (VBR)
+</H2>
+
+<P>
+Variable bit-rate (VBR) allows a codec to change its bit-rate dynamically
+to adapt to the ``difficulty'' of the audio being encoded. In
+the example of Speex, sounds like vowels and high-energy transients
+require a higher bit-rate to achieve good quality, while fricatives
+(e.g. s,f sounds) can be coded adequately with less bits. For this
+reason, VBR can achive lower bit-rate for the same quality, or a better
+quality for a certain bit-rate. Despite its advantages, VBR has two
+main drawbacks: first, by only specifying quality, there's no guaranty
+about the final average bit-rate. Second, for some real-time applications
+like voice over IP (VoIP), what counts is the maximum bit-rate, which
+must be low enough for the communication channel.
+
+<P>
+
+<H2><A NAME="SECTION00045000000000000000"></A><A NAME="66"></A>
+<BR>
+Average Bit-Rate (ABR)
+</H2>
+
+<P>
+Average bit-rate solves one of the problems of VBR, as it dynamically
+adjusts VBR quality in order to meet a specific target bit-rate. Because
+the quality/bit-rate is adjusted in real-time (open-loop), the global
+quality will be slightly lower than that obtained by encoding in VBR
+with exactly the right quality setting to meet the target average
+bit-rate.
+
+<P>
+
+<H2><A NAME="SECTION00046000000000000000"></A><A NAME="67"></A>
+<BR>
+Voice Activity Detection (VAD)
+</H2>
+
+<P>
+When enabled, voice activity detection detects whether the audio being
+encoded is speech or silence/background noise. VAD is always implicitly
+activated when encoding in VBR, so the option is only useful in non-VBR
+operation. In this case, Speex detects non-speech periods and encode
+them with just enough bits to reproduce the background noise. This
+is called ``comfort noise generation'' (CNG).
+
+<P>
+
+<H2><A NAME="SECTION00047000000000000000"></A><A NAME="69"></A>
+<BR>
+Discontinuous Transmission (DTX)
+</H2>
+
+<P>
+Discontinuous transmission is an addition to VAD/VBR operation, that
+allows to stop transmitting completely when the background noise is
+stationary. In file-based operation, since we cannot just stop writing
+to the file, only 5 bits are used for such frames (corresponding to
+250 bps).
+
+<P>
+
+<H2><A NAME="SECTION00048000000000000000"></A><A NAME="70"></A>
+<BR>
+Perceptual enhancement
+</H2>
+
+<P>
+Perceptual enhancement is a part of the decoder which, when turned
+on, tries to reduce (the perception of) the noise produced by the
+coding/decoding process. In most cases, perceptual enhancement make
+the sound further from the original <I>objectively</I> (if you use
+SNR), but in the end it still <I>sounds</I> better (subjective improvement).
+
+<P>
+
+<H2><A NAME="SECTION00049000000000000000"></A><A NAME="73"></A>
+<BR>
+Algorithmic delay
+</H2>
+
+<P>
+Every speech codec introduces a delay in the transmission. For Speex,
+this delay is equal to the frame size, plus some amount of ``look-ahead''
+required to process each frame. In narrowband operation (8 kHz), the
+delay is 30 ms, while for wideband (16 kHz), the delay is 34 ms. These
+values don't account for the CPU time it takes to encode or decode
+the frames.
+
+<P>
+
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html220"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html214"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html208"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html216"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html218"
+  HREF="node15.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html221"
+  HREF="node5.html">Command-line encoder/decoder</A>
+<B> Up:</B> <A NAME="tex2html215"
+  HREF="manual.html">The Speex Codec Manual</A>
+<B> Previous:</B> <A NAME="tex2html209"
+  HREF="node3.html">Introduction to Speex</A>
+ &nbsp <B>  <A NAME="tex2html217"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp <B>  <A NAME="tex2html219"
+  HREF="node15.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jean-Marc Valin
+2003-03-23
+</ADDRESS>
+</BODY>
+</HTML>

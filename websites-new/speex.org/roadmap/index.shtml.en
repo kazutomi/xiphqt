@@ -1,0 +1,42 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Speex:  A free codec for free speech</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Roadmap</h1>
+<h2>What We're Doing</h2>
+<p>
+	We're implementing and debugging new features such as a denoiser,
+	echo canceller, and a jitter buffer. In addition, we're testing out
+	a new <acronym title='voice activity detector'>VAD</acronym> and writing
+	a fixed-point version of the Speex libraries. 
+</p>
+
+<h2>How You Can Help</h2>
+<p>
+	Consider...
+</p>
+<ul>
+	<li>writing a plugin for your favorite audio player</li>
+	<li>helping make Speex a more widely recognized standard;
+	work is already underway to make Speex an
+	<abbr title="Internet Engineering Task Force">IETF</abbr>-blessed
+	standard, but work still remains in that arena.
+	If you know of an organization that standardizes (on) audio compression
+	codecs, consider proposing Speex as an option.
+	</li>
+	<li>helping finish our fixed-point version of the Speex libraries</li>
+
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

@@ -1,0 +1,61 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Speex:  A free codec for free speech: Documentation</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Documentation</h1>
+<p>
+	A FAQ is under development.
+</p>
+<h2>Manual</h2>
+<p>
+	The Speex manual provides an introduction to Speex and
+	<abbr title="Code Excited Linear Prediction">CELP</abbr> coding,
+	<span class="program">speexenc</span> and
+	<span class="program">speexdec</span> information, 
+	libspeex <abbr title="Application Programming Interface">API</abbr>
+
+	information,
+	and miscellaneous format information.
+</p>
+<ul>
+	<li><a href="manual.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
+	<li><a href="manual.ps">Postscript</a></li>
+	<li><a href="manual2/">HTML (online)</a></li>
+	<li><a href="manual.tar.gz">HTML (tarball)</a></li>
+</ul>
+
+<h2><abbr title="Application Programming Interface">API</abbr> Reference</h2>
+<p>
+	The Speex <abbr title="Application Programming Interface">API</abbr>
+	Reference Manual provides information on programming with libspeex.
+</p>
+<ul>
+	<li><a href="API/refman.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
+
+	<li><a href="API/refman.ps">Postscript</a></li>
+	<li><a href="API/refman/">HTML (online)</a></li>
+	<li><a href="API/refman.tar.gz">HTML (tarball)</a></li>
+</ul>
+
+<h2>Standards</h2>
+<p>
+	There are efforts underway to make Speex an
+	<abbr title="Internet Engineering Task Force">IETF</abbr>-blessed format;
+	A draft of "<a href="drafts/draft-herlein-speex-rtp-profile-02.txt"><abbr title="Realtime Protocol">RTP</abbr> Payload
+	Format for the Speex Codec</a>" is available.
+
+</p>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
