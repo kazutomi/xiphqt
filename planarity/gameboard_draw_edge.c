@@ -80,8 +80,6 @@ void draw_edges(cairo_t *c, vertex *v, int offx, int offy){
   }
 }
 
-
-
 /* invalidate edge region for efficient expose *******************/
 
 void invalidate_edges(GtkWidget *widget, vertex *v, int offx, int offy){

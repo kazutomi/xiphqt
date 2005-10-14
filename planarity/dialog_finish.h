@@ -26,7 +26,7 @@
 
 #define FINISH_BUTTON_BORDER 35
 #define FINISH_BUTTON_Y 25
-#define FINISHBOX_WIDTH 250
+#define FINISHBOX_WIDTH 270
 #define FINISHBOX_HEIGHT 330
 
 extern void finish_level_dialog(Gameboard *g);

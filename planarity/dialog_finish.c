@@ -168,12 +168,12 @@ static void draw_finishbox(Gameboard *g){
     snprintf(buffer,160,"Base score: %d points",graphscore_get_raw_score(&g->g));
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
-    if(graphscore_get_multiplier(&g->g)>1){
+    if(graphscore_get_multiplier_percent(&g->g)>100){
       cairo_save(c);
       set_font(c,16,16,0,1);
       cairo_set_source_rgba (c, HIGH_COLOR);
       
-      snprintf(buffer,160,"Objective Exceeded! x%d",graphscore_get_multiplier(&g->g));
+      snprintf(buffer,160,"Objective Exceeded! %d%%",graphscore_get_multiplier_percent(&g->g));
       render_bordertext_centered(c,buffer, w/2,y);y+=24;
       cairo_restore(c);
     }

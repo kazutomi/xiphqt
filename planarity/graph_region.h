@@ -24,19 +24,14 @@
  * 
  */
 
-extern int generate_find_number(char *id);
-extern int generate_get_meta(int num, graphmeta *gm);
-extern void generate_board(graph *g,int num);
+extern void region_init();
 
-extern void generate_simple(graph *g, int order);
-extern void generate_nasty(graph *g, int order);
-extern void generate_sparse(graph *g, int order);
-extern void generate_dense(graph *g, int order);
-extern void generate_rogue(graph *g, int order);
-extern void generate_embed(graph *g, int order);
-extern void generate_crest(graph *g, int order);
-
-
-extern void generate_data(graph *g, int order);
-extern void generate_freeform(graph *g, int order);
-extern void generate_shape(graph *g, int order);
+extern int region_intersects(edge *e);
+extern void region_layout(graph *g);
+extern void region_circle(int x,int y, float rad, int layout);
+extern void region_new_area(int x, int y, int layout);
+extern void region_line_to(int x,int y);
+extern void region_arc_to(int x,int y, float rad);
+extern void region_close_line();
+extern void region_close_arc(float rad);
+extern int have_region();

@@ -46,6 +46,7 @@
 #define INTERSECTION_LINE_WIDTH 2
 
 #define RESET_DELTA 2
+#define SCALE_DELTA 8
 
 #define B_LINE 1
 #define B_BORDER 6.5
@@ -143,6 +144,7 @@ typedef struct {
 
   dialog_level_oneicon level_icons[5];
   int center_x;
+  int center_done;
   int level_lit;
   int reset_deployed;
   
@@ -179,6 +181,7 @@ struct _Gameboard{
   int delayed_background;
   int first_expose;
   int hide_lines;
+  int realtime_background;
   int show_intersections;
   int finish_dialog_active;
   int about_dialog_active;
@@ -330,4 +333,4 @@ extern void gameboard_size_allocate (GtkWidget     *widget,
 extern void fade_cancel(Gameboard *g);
 extern void fade_attached(Gameboard *g,vertex *v);
 extern void fade_grabbed(Gameboard *g);
-
+extern void fade_marked(Gameboard *g);

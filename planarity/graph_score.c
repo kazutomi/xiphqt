@@ -38,25 +38,25 @@ int graphscore_get_raw_score(graph *g){
 		   g->intersection_mult);
 }
 
-int graphscore_get_multiplier(graph *g){
-  float obj_multiplier = 1;
+int graphscore_get_multiplier_percent(graph *g){
+  float obj_multiplier = 100;
   
   if(g->objective_lessthan)
     if(g->objective > g->active_intersections)
-      obj_multiplier += (g->objective-g->active_intersections)*g->objective_mult;
-
-  return ceil( obj_multiplier );
+      obj_multiplier +=  100.f * g->objective_mult / g->objective * (g->objective - g->active_intersections);
+  
+  return ceil(obj_multiplier);
 }
 
 int graphscore_get_score(graph *g){
-  return graphscore_get_raw_score(g)*graphscore_get_multiplier(g);
+  return graphscore_get_raw_score(g)*graphscore_get_multiplier_percent(g)/100;
 }
 
 int graphscore_get_bonus(graph *g){
-  float obj_multiplier = graphscore_get_multiplier(g);
+  int obj_multiplier = graphscore_get_multiplier_percent(g);
   
   if(get_timer()< g->original_intersections*g->intersection_mult)
-    return ceil ((g->original_intersections*g->intersection_mult-get_timer()) * obj_multiplier);
+    return ceil ((g->original_intersections*g->intersection_mult-get_timer()) * obj_multiplier / 100);
   
   return 0;
 }

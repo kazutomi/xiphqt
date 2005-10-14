@@ -88,7 +88,7 @@ static int embedlist_intersects(mesh *m, vertex *A, vertex *B){
   while(el){
     edge *e = el->edge;
     
-    if(intersects(A,B,e->A,e->B,&dummy_x,&dummy_y))
+    if(intersectsV(A,B,e->A,e->B,&dummy_x,&dummy_y))
       return 1;
 
     el=el->next;
@@ -556,7 +556,7 @@ static int count_intersections(graph *g, vertex *A, vertex *B){
   int count=0;
 
   while(e){
-    if(intersects(A,B,e->A,e->B,&dummy_x,&dummy_y))
+    if(intersectsV(A,B,e->A,e->B,&dummy_x,&dummy_y))
       count++;
     e=e->next;
   }

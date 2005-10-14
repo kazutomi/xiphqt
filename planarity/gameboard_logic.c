@@ -72,11 +72,109 @@ void enter_game(Gameboard *g){
   reenter_game(g);
 }
 
+static void animate_verticies(Gameboard *g, 
+			      int *x_target,
+			      int *y_target,
+			      float *delta){
+  int flag=1,count=0;
+  vertex *v=g->g.verticies;
+  float *tx=alloca(g->g.vertex_num * sizeof(*tx));
+  float *ty=alloca(g->g.vertex_num * sizeof(*ty));
+
+  // hide intersections now; deactivating the verticies below will hide them anyway
+  g->show_intersections = 0;
+  g->realtime_background = 1;
+  update_full(g);
+
+  // deactivate all the verticies so they can be moved en-masse
+  // without graph metadata updates at each move
+  v=g->g.verticies;
+  while(v){
+    deactivate_vertex(&g->g,v);
+    tx[count]=v->x;
+    ty[count++]=v->y;
+    v=v->next;
+  }
+
+  // animate
+  while(flag){
+    count=0;
+    flag=0;
+    
+    v=g->g.verticies;
+    while(v){
+      if(v->x!=x_target[count] || v->y!=y_target[count]){
+	
+	float xd = x_target[count] - tx[count];
+	float yd = y_target[count] - ty[count];
+	float m = hypot(xd,yd);
+
+	tx[count]+= xd/m*delta[count];
+	ty[count]+= yd/m*delta[count];
+	
+	invalidate_vertex(g,v);
+	invalidate_edges(GTK_WIDGET(g),v,0,0);
+
+	v->x = rint(tx[count]);
+	v->y = rint(ty[count]);
+
+	if( (v->x > x_target[count] && xd > 0) ||
+	    (v->x < x_target[count] && xd < 0) ||
+	    (v->y > y_target[count] && yd > 0) ||
+	    (v->y < y_target[count] && yd < 0) ){
+	  v->x = x_target[count];
+	  v->y = y_target[count];
+	}else
+	  flag=1;
+
+	invalidate_vertex(g,v);
+	invalidate_edges(GTK_WIDGET(g),v,0,0);
+
+      }	    
+      count++;
+      v=v->next;
+    }
+
+    gdk_window_process_all_updates();
+    gdk_flush();
+    
+  }
+
+  // reactivate all the verticies 
+  activate_verticies(&g->g);
+
+  // update the score 
+  update_score(g);
+
+  // it's a reset; show lines is default. This also has the side
+  // effect of forcing a full board redraw and expose
+  g->realtime_background=0;
+  update_full(g);
+
+  // possible
+  if(g->g.active_intersections <= g->g.objective){
+    deploy_check(g);
+  }else{
+    undeploy_check(g);
+  }
+
+}
+
+
 static void scale(Gameboard *g,double scale){
   int x=g->g.width/2;
   int y=g->g.height/2;
   int sel = num_selected_verticies(&g->g);
   vertex *v;
+  int *tx=alloca(g->g.vertex_num * sizeof(*tx));
+  int *ty=alloca(g->g.vertex_num * sizeof(*ty));
+  float *tm=alloca(g->g.vertex_num * sizeof(*ty));
+  int i=0;
+  int minx=0;
+  int maxx=g->g.width-1;
+  int miny=0;
+  int maxy=g->g.height-1;
+  int okflag=0;
 
   // if selected, expand from center of selected mass
   if(sel){
@@ -95,61 +193,63 @@ static void scale(Gameboard *g,double scale){
     y = yac / sel;
   }
 
-  v=g->g.verticies;
-  while(v){
-  
-    if(!sel || v->selected){
-      float nx = (v->x - x)*scale+x;
-      float ny = (v->y - y)*scale+y;
-
-      if(nx<0 || nx>=g->g.width ||
-	 ny<0 || ny>=g->g.height){
-
-	float mag = hypot(nx-x,ny-y);
-	if(mag){
-	  float ang = acos((nx-x) / mag);
-	  if(ny-y>0) ang = 2*M_PI-ang;
-
-	  if(nx<0){
-	    mag *= -x/(nx-x);
-	    nx = cos(ang)*mag+x;
-	    ny = -sin(ang)*mag+y;
-	  }
-
-	  if(nx>=g->g.width){
-	    mag *= (g->g.width-x-1)/(nx-x);
-	    nx = cos(ang)*mag+x;
-	    ny = -sin(ang)*mag+y;
-	  }
-
-	  if(ny<0){
-	    mag *= -y/(ny-y);
-	    nx = cos(ang)*mag+x;
-	    ny = -sin(ang)*mag+y;
-	  }
-
-	  if(ny>=g->g.height){
-	    mag *= (g->g.height-y-1)/(ny-y);
-	    nx = cos(ang)*mag+x;
-	    ny = -sin(ang)*mag+y;
-	  }
+  while(!okflag){
+    okflag=1;
+    i=0;
+    v=g->g.verticies;
+    while(v){
+      
+      if(!sel || v->selected){
+	float nx = rint((v->x - x)*scale+x);
+	float ny = rint((v->y - y)*scale+y);
+	float m = hypot(nx - v->x,ny-v->y)/5;
+	
+	if(nx<minx){
+	  scale = (float)(minx-x) / (v->x-x);
+	  okflag=0;
 	}
-      }
 
-      deactivate_vertex(&g->g,v);
-      v->x = rint(nx);
-      v->y = rint(ny);
+	if(nx>maxx){
+	  scale = (float)(maxx-x) / (v->x - x);
+	  okflag=0;
+	}
+
+	if(ny<miny){
+	  scale = (float)(miny-y) / (v->y-y);
+	  okflag=0;
+	}
+
+	if(ny>maxy){
+	  scale = (float)(maxy-y) / (v->y - y);
+	  okflag=0;
+	}
+	if(m<1)m=1;
+      
+	tx[i] = rint(nx);
+	ty[i] = rint(ny);
+	tm[i++] = m;
+      }else{
+	tx[i] = v->x;
+	ty[i] = v->y;
+	tm[i++] = 0;
+      }
+      v=v->next;
     }
-    v=v->next;
   }
   
-  v=g->g.verticies;
-  while(v){
-    activate_vertex(&g->g,v);
-    v=v->next;
+  if(scale>=.99999 && scale<=1.00001){
+    ungrab_verticies(&g->g);
+    v=g->g.verticies;
+    while(v){
+      if(v->x<2 || v->x>=g->g.width-3)v->grabbed=1;
+      if(v->y<2 || v->y>=g->g.height-3)v->grabbed=1;
+      v=v->next;
+    }
+    fade_marked(g);
+    ungrab_verticies(&g->g);
+  }else{
+    animate_verticies(g,tx,ty,tm);
   }
-
-  update_full(g);
 }
 
 static void gtk_main_quit_wrapper(Gameboard *g){
@@ -231,76 +331,20 @@ void toggle_show_intersections(Gameboard *g){
 }
 
 void reset_action(Gameboard *g){
-  int flag=1;
   vertex *v=g->g.verticies;
+  int *target_x = alloca(g->g.vertex_num * sizeof(*target_x));
+  int *target_y = alloca(g->g.vertex_num * sizeof(*target_y));
+  float *target_m = alloca(g->g.vertex_num * sizeof(*target_m));
+  int i=0;
 
-  // hide intersections now; deactivating the verticies below will hide them anyway
-  g->show_intersections = 0;
-  expose_full(g);
-  gdk_window_process_all_updates();
-  gdk_flush();
-
-  // deactivate all the verticies so they can be moved en-masse
-  // without graph metadata updates at each move
   while(v){
-    deactivate_vertex(&g->g,v);
+    target_x[i]=v->orig_x;
+    target_y[i]=v->orig_y;
+    target_m[i++]=RESET_DELTA;
     v=v->next;
   }
 
-  // animate
-  while(flag){
-    flag=0;
-
-    v=g->g.verticies;
-    while(v){
-      int bxd = (g->g.width - g->g.orig_width) >>1;
-      int byd = (g->g.height - g->g.orig_height) >>1;
-      int vox = v->orig_x + bxd;
-      int voy = v->orig_y + byd;
-
-      if(v->x != vox || v->y != voy){
-	flag=1;
-      
-	invalidate_vertex(g,v);
-	if(v->x<vox){
-	  v->x+=RESET_DELTA;
-	  if(v->x>vox)v->x=vox;
-	}else{
-	  v->x-=RESET_DELTA;
-	  if(v->x<vox)v->x=vox;
-	}
-	if(v->y<voy){
-	  v->y+=RESET_DELTA;
-	  if(v->y>voy)v->y=voy;
-	}else{
-	  v->y-=RESET_DELTA;
-	  if(v->y<voy)v->y=voy;
-	}
-	invalidate_vertex(g,v);
-      }
-      v=v->next;
-    }
-    gdk_window_process_all_updates();
-    gdk_flush();
-    
-  }
-
-  // reactivate all the verticies 
-  activate_verticies(&g->g);
-
-  // update the score 
-  update_score(g);
-
-  // it's a reset; show lines is default. This also has the side
-  // effect of forcing a full board redraw and expose
-  set_hide_lines(g,0);
-
-  // hey, the board could ahve come pre-solved
-  if(g->g.active_intersections <= g->g.objective){
-    deploy_check(g);
-  }else{
-    undeploy_check(g);
-  }
+  animate_verticies(g,target_x,target_y,target_m);
   
   // reset timer
   set_timer(0);
