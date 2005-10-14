@@ -110,9 +110,11 @@ extern void release_edge_list(edge_list *el);
 extern edge *new_edge(vertex *A, vertex *B);
 extern void release_edge_list(edge_list *el);
 extern void insert_edge(graph *g, edge *e);
-extern int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, 
+extern int intersectsV(vertex *L1, vertex *L2, vertex *M1, vertex *M2, 
+		       double *xo, double *yo);
+extern int intersects(int L1x, int L1y, int L2x, int L2y,
+		      int M1x, int M1y, int M2x, int M2y,
 		      double *xo, double *yo);
-
 extern void move_vertex(graph *g, vertex *v, int x, int y);
 extern void grab_vertex(graph *g, vertex *v);
 extern void grab_selected(graph *g);
@@ -141,8 +143,8 @@ extern int graph_write(graph *g, FILE *f);
 extern int graph_read(graph *g, FILE *f);
 extern void graph_release(graph *g);
 
-extern int graphscore_get_score(graph *g);
-extern int graphscore_get_raw_score(graph *g);
-extern int graphscore_get_multiplier(graph *g);
-extern int graphscore_get_bonus(graph *g);
+extern int   graphscore_get_score(graph *g);
+extern int   graphscore_get_raw_score(graph *g);
+extern int   graphscore_get_multiplier_percent(graph *g);
+extern int   graphscore_get_bonus(graph *g);
 extern char *graphscore_objective_string(graph *g);

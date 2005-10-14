@@ -25,7 +25,7 @@ SRC  = dialog_finish.c gameboard_logic.c dialog_pause.c gameboard_logic_button.c
 	gameboard_draw_score.c main.c gameboard_draw_selection.c\
 	timer.c gameboard_draw_vertex.c levelstate.c dialog_level.c\
 	dialog_level_icons.c gameboard_draw_text.c random.c graph_generate_data.c\
-	gameboard_logic_fade.c graph_generate_mesh2.c
+	gameboard_logic_fade.c graph_generate_mesh2.c graph_region.c
 OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o\
 	gameboard.o gameboard_logic_buttonbar.o gameboard_draw_box.o\
 	gameboard_logic_mouse.o gameboard_draw_button.o gameboard_logic_push.o\
@@ -35,7 +35,7 @@ OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o
 	gameboard_draw_score.o main.o gameboard_draw_selection.o\
 	timer.o gameboard_draw_vertex.o levelstate.o dialog_level.o\
 	dialog_level_icons.o gameboard_draw_text.o random.o graph_generate_data.o\
-	gameboard_logic_fade.o graph_generate_mesh2.o
+	gameboard_logic_fade.o graph_generate_mesh2.o graph_region.o
 CAIROVER =  >= 1.0.0
 GTKVER   =  >= 2.7.2
 GCF  = `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)"`
@@ -68,13 +68,16 @@ all:
 	$(STRIP) $(TARGET)
 
 static:    
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
 	$(MAKE) static-target CFLAGS="-O2 -ffast-math $(GCF) $(ADD_DEF) "	
 	$(STRIP) $(TARGET)
 
 debug:
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
 	$(MAKE) target CFLAGS="-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)"
 
 profile:
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
 	$(MAKE) target CFLAGS="-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper "
 
 clean:

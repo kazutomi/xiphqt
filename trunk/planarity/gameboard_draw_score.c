@@ -66,7 +66,7 @@ void draw_score(Gameboard *g){
 
   snprintf(level_string,160,"Level %d: %s",get_level_num()+1,get_level_desc());
   snprintf(score_string,160,"Score: %d",graphscore_get_raw_score(&g->g));
-  snprintf(mult_string,160,"x%d",graphscore_get_multiplier(&g->g));
+  snprintf(mult_string,160,"%d%%",graphscore_get_multiplier_percent(&g->g));
   snprintf(int_string,160,"Intersections: %ld",g->g.active_intersections);
   snprintf(obj_string,160,"Objective: %s",graphscore_objective_string(&g->g));
 
@@ -83,7 +83,7 @@ void draw_score(Gameboard *g){
   cairo_show_text (c, int_string);  
   cairo_move_to (c, 15, ty2);
   cairo_show_text (c, score_string);  
-  if(graphscore_get_multiplier(&g->g)>1){
+  if(graphscore_get_multiplier_percent(&g->g)>100){
     cairo_save(c);
     cairo_set_source_rgba (c, HIGH_COLOR);
     cairo_move_to (c, 15 + extentsS.width+10, ty2);

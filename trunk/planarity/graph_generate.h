@@ -36,6 +36,7 @@ extern void generate_rogue(graph *g, int order);
 extern void generate_embed(graph *g, int order);
 extern void generate_crest(graph *g, int order);
 
-extern void generate_freeform(graph *g, int order);
 
 extern void generate_data(graph *g, int order);
+extern void generate_freeform(graph *g, int order);
+extern void generate_shape(graph *g, int order);

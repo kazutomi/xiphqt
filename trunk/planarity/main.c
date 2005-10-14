@@ -132,7 +132,7 @@ static cairo_font_face_t *init_font(char *list, int slant,int bold){
   FcPattern *fc_pattern;
   FcBool scalable;
   
-  fc_pattern = FcNameParse(list);
+  fc_pattern = FcNameParse((unsigned char *)list);
 
   // load the system config
   FcConfigSubstitute(0, fc_pattern, FcMatchPattern);

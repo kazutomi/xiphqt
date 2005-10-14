@@ -135,6 +135,7 @@ static void deploy_reset_button(Gameboard *g){
     if(g->b.buttons_ready){
       if(g->button_timer!=0)
 	g_source_remove(g->button_timer);
+      g->button_callback=0;
       g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     }
   }
@@ -153,6 +154,7 @@ static void undeploy_reset_button(Gameboard *g){
     if(g->b.buttons_ready){
       if(g->button_timer!=0)
 	g_source_remove(g->button_timer);
+      g->button_callback = 0;
       g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     } 
   }
@@ -173,6 +175,7 @@ void level_icons_init(Gameboard *g){
     dialog_level_oneicon_init(g,i-2,g->d.level_icons+i);
 
   g->d.center_x = 0;
+  g->d.center_done=1;
   g->d.level_lit = 2;
   g->d.reset_deployed = 0;
 
@@ -212,12 +215,12 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
 	if( iy+ih < ey ) continue;
 	if( iy > ey2 ) continue;
 
-	if(l->icon){
+	if(l->icon && cairo_surface_status(l->icon)==CAIRO_STATUS_SUCCESS){
 	  cairo_set_source_surface(c,l->icon,ix,iy);
 	  cairo_paint_with_alpha(c,l->alpha);
 	}
 
-	if(g->d.center_x==0){
+	if(g->d.center_x==0 && g->d.center_done){
 	  if(i==2){
 	    cairo_set_source_rgba (c, B_COLOR);
 	    borderbox_path(c,ix+1.5,iy+1.5,iw-3,ih-3);
@@ -233,7 +236,7 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
     }
 
     // render level related text
-    if(g->d.center_x == 0 && c){
+    if(g->d.center_x == 0 && g->d.center_done && c){
       char buffer[160];
 
       // above text
@@ -291,6 +294,7 @@ static gboolean animate_level_frame(gpointer ptr){
   int i;
 
   if(g->d.center_x == 0){
+    g->d.center_done=1;
     g_source_remove(g->d.icon_timer);
     g->d.icon_timer=0;
 
@@ -301,6 +305,7 @@ static gboolean animate_level_frame(gpointer ptr){
     return 0;
   }
 
+  g->d.center_done=0;
   for(i=0;i<5;i++)
     if(g->d.level_icons[i].alpha)
       invalidate_icon(g, g->d.level_icons+i);
@@ -372,9 +377,9 @@ void level_mouse_press(Gameboard *g, int x, int y){
   if(g->d.level_lit == 1){
     if(levelstate_prev()){
 
-    if(!levelstate_in_progress())
-      undeploy_reset_button(g);
-
+      if(!levelstate_in_progress())
+	undeploy_reset_button(g);
+      
       if(g->d.level_icons[4].icon)
 	cairo_surface_destroy(g->d.level_icons[4].icon);
       for(i=4;i>=1;i--){
@@ -384,7 +389,7 @@ void level_mouse_press(Gameboard *g, int x, int y){
       g->d.level_icons[0].icon=0;
       dialog_level_oneicon_init(g,-2,g->d.level_icons);
       
-      if(g->d.center_x==0)expose_full(g); // only needed to 'undraw' the text
+      if(g->d.center_x==0 && g->d.center_done)expose_full(g); // only needed to 'undraw' the text
 
       g->d.center_x = g->d.level_icons[1].x - g->d.level_icons[2].x;
     }
@@ -405,7 +410,7 @@ void level_mouse_press(Gameboard *g, int x, int y){
       g->d.level_icons[4].icon=0;
       dialog_level_oneicon_init(g,2,g->d.level_icons+4);
       
-      if(g->d.center_x==0)expose_full(g); // only needed to 'undraw' the text
+      if(g->d.center_x==0 && g->d.center_done)expose_full(g); // only needed to 'undraw' the text
 
       g->d.center_x = g->d.level_icons[3].x - g->d.level_icons[2].x;
 

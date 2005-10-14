@@ -113,6 +113,8 @@ void draw_foreground(Gameboard *g,cairo_t *c,int x,int y,int w,int h){
 	    draw_vertex(c,v,g->vertex_grabbed);      
 	  } else if( v->selected ){
 	    draw_vertex(c,v,g->vertex_sel);
+	    if(v->fading)
+	      draw_vertex_with_alpha(c,v,g->vertex_ghost,alpha);
 	  } else if ( v == g->lit_vertex){
 	    draw_vertex(c,v,g->vertex_lit);
 	  } else if (v->attached_to_grabbed){
@@ -138,13 +140,51 @@ static void draw_background(Gameboard *g,cairo_t *c){
 
   cairo_set_source_rgb(c,1,1,1);
   cairo_paint(c);
-    
+  
   if(!g->hide_lines){
     setup_background_edge(c);
     while(e){
-      if(e->active){
+      if(e->active)
 	draw_edge(c,e);
+      e=e->next;
+    }
+    finish_edge(c);
+  }
+}
+
+static void draw_background_realpart(Gameboard *g,cairo_t *c,
+				     int x, int y, int w, int h){
+  edge *e=g->g.edges;
+  int x2 = x+w-1+E_LINE;
+  int y2 = y+h-1+E_LINE;
+  x-=E_LINE;
+  y-=E_LINE;
+
+  cairo_set_source_rgb(c,1,1,1);
+  cairo_paint(c);
+  
+  if(!g->hide_lines){
+    setup_background_edge(c);
+    while(e){
+      int ex1 = e->A->x;
+      int ex2 = e->B->x;
+      int ey1 = e->A->y;
+      int ey2 = e->B->y;
+
+      if(ex1<ex2){
+	if(x>ex2 || x2<ex1){e=e->next;continue;}
+      }else{
+	if(x>ex1 || x2<ex2){e=e->next;continue;}
       }
+
+      if(ey1<ey2){
+	if(y>ey2 || y2<ey1){e=e->next;continue;}
+      }else{
+	if(y>ey1 || y2<ey2){e=e->next;continue;}
+      }
+
+      draw_edge(c,e);
+
       e=e->next;
     }
     finish_edge(c);
@@ -268,15 +308,17 @@ void update_add_selgroup(Gameboard *g){
    operations where expose combining causes huge, slow in-server alpha
    blends that are undesirable) */
 void gameboard_draw(Gameboard *g, int x, int y, int w, int h){
-  
-  if (w==0 || h==0) return;
-  
   cairo_t *c = cairo_create(g->foreground);
-  
-  // copy background to foreground draw buffer
-  cairo_set_source_surface(c,g->background,0,0);
-  cairo_rectangle(c,x,y,w,h);
-  cairo_fill(c);
+  if (w==0 || h==0) return;
+
+  if(g->realtime_background){
+    draw_background_realpart(g,c,x,y,w,h);
+  }else{
+    // copy background to foreground draw buffer
+    cairo_set_source_surface(c,g->background,0,0);
+    cairo_rectangle(c,x,y,w,h);
+    cairo_fill(c);
+  }
 
   if(!g->pushed_curtain){
     draw_foreground(g,c,x,y,w,h);
@@ -324,7 +366,7 @@ cairo_surface_t *gameboard_read_icon(char *filename, char *ext, Gameboard *b){
   
   cairo_surface_t *s = cairo_image_surface_create_from_png(name);
 
-  if(s==NULL)
+  if(s==NULL || cairo_surface_status(s)!=CAIRO_STATUS_SUCCESS)
     fprintf(stderr,"ERROR:  Could not load board icon \"%s\"\n",
 	    name);
 

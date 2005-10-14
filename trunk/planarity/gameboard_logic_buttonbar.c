@@ -151,6 +151,7 @@ void deploy_check(Gameboard *g){
 
     if(g->button_timer!=0)
       g_source_remove(g->button_timer);
+    g->button_callback=0;
     g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     g->checkbutton_deployed=1;
   }
@@ -169,6 +170,7 @@ void undeploy_check(Gameboard *g){
 
     if(g->button_timer!=0)
       g_source_remove(g->button_timer);
+    g->button_callback=0;
     g->button_timer = g_timeout_add(BUTTON_ANIM_INTERVAL, animate_button_frame, (gpointer)g);
     g->checkbutton_deployed=0;
   }

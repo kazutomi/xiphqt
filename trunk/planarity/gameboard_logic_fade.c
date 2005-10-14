@@ -152,3 +152,21 @@ void fade_grabbed(Gameboard *g){
   f->fade_timer = g_timeout_add(FADE_ANIM_INTERVAL, animate_fade, (gpointer)g);
 }
 
+void fade_marked(Gameboard *g){
+  fade_state *f = &g->fade;
+  vertex *v = g->g.verticies;
+
+  /* If a fade is already in progress, cancel it */
+  fade_cancel(g);
+
+  while(v){
+    if(v->grabbed)
+      fade_add_vertex(f,v);
+    v=v->next;
+  }
+
+  f->count = FADE_FRAMES;
+
+  f->fade_timer = g_timeout_add(FADE_ANIM_INTERVAL, animate_fade, (gpointer)g);
+}
+

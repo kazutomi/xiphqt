@@ -33,4 +33,17 @@ extern void arrange_verticies_polycircle(graph *g, int sides, float angle, float
 extern void arrange_verticies_mesh(graph *g, int width, int height);
 extern void arrange_verticies_nastymesh(graph *g, int w, int h, vertex **flat);
 
-extern void arrange_verticies_cloud(graph *g);
+
+extern void arrange_region_star(graph *g);
+extern void arrange_region_rainbow(graph *g);
+extern void arrange_region_dashed_circle(graph *g);
+extern void arrange_region_bifur(graph *g);
+extern void arrange_region_dairyqueen(graph *g);
+extern void arrange_region_cloud(graph *g);
+extern void arrange_region_ring(graph *g);
+extern void arrange_region_storm(graph *g);
+extern void arrange_region_target(graph *g);
+extern void arrange_region_plus(graph *g);
+extern void arrange_region_hole3(graph *g);
+extern void arrange_region_hole4(graph *g);
+extern void arrange_region_ovals(graph *g);

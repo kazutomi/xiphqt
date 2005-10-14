@@ -232,51 +232,60 @@ static void release_edges(graph *g){
   g->num_edges_active=0;
 }
 
-int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, double *yo){
+int intersectsV(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, double *yo){
+  // edges that share a vertex don't intersect by definition
+  if(L1==M1) return 0;
+  if(L1==M2) return 0;
+  if(L2==M1) return 0;
+  if(L2==M2) return 0;
+
+  return intersects(L1->x,L1->y,L2->x,L2->y,M1->x,M1->y,M2->x,M2->y,xo,yo);
+}
+
+int intersects(int L1x, int L1y,
+		int L2x, int L2y,
+		int M1x, int M1y,
+		int M2x, int M2y,
+		double *xo, double *yo){
+
   /* y = ax + b */
   float La=0;
   float Lb=0;
   float Ma=0;
   float Mb=0;
 
-  // but first, edges that share a vertex don't intersect by definition
-  if(L1==M1) return 0;
-  if(L1==M2) return 0;
-  if(L2==M1) return 0;
-  if(L2==M2) return 0;
-
-  if(L1->x != L2->x){
-    La = (float)(L2->y - L1->y) / (L2->x - L1->x);
-    Lb = (L1->y - L1->x * La);
+  if(L1x != L2x){
+    La = (float)(L2y - L1y) / (L2x - L1x);
+    Lb = (L1y - L1x * La);
   }
   
-  if(M1->x != M2->x){
-    Ma = (float)(M2->y - M1->y) / (M2->x - M1->x);
-    Mb = (M1->y - M1->x * Ma);
+  if(M1x != M2x){
+    Ma = (float)(M2y - M1y) / (M2x - M1x);
+    Mb = (M1y - M1x * Ma);
   }
   
-  if(L1->x == L2->x){
+  if(L1x == L2x){
     // L is vertical line
 
-    if(M1->x == M2->x){
+    if(M1x == M2x){
       // M is also a vertical line
 
-      if(L1->x == M1->x){
+      if(L1x == M1x){
 	// L and M vertical on same x, overlap?
-	if(M1->y > L1->y && 
-	   M1->y > L2->y &&
-	   M2->y > L1->y &&
-	   M2->y > L2->y) return 0;
-	if(M1->y < L1->y && 
-	   M1->y < L2->y &&
-	   M2->y < L1->y &&
-	   M2->y < L2->y) return 0;
+	if(M1y > L1y && 
+	   M1y > L2y &&
+	   M2y > L1y &&
+	   M2y > L2y) return 0;
+	if(M1y < L1y && 
+	   M1y < L2y &&
+	   M2y < L1y &&
+	   M2y < L2y) return 0;
 
 	{
-	  double y1=max( min(M1->y,M2->y), min(L1->y, L2->y));
-	  double y2=min( max(M1->y,M2->y), max(L1->y, L2->y));
+	  double y1=max( min(M1y,M2y), min(L1y, L2y));
+	  double y2=min( max(M1y,M2y), max(L1y, L2y));
 
-	  *xo = M1->x;
+	  *xo = M1x;
 	  *yo = (y1+y2)*.5;
 
 	}
@@ -289,39 +298,39 @@ int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, doubl
       // L vertical, M not vertical
       
       // needed if L is vertical and M is horizontal
-      if(L1->x < M1->x && L1->x < M2->x) return 0;
-      if(L1->x > M1->x && L1->x > M2->x) return 0;
+      if(L1x < M1x && L1x < M2x) return 0;
+      if(L1x > M1x && L1x > M2x) return 0;
 
       {
-	float y = Ma*L1->x + Mb;
+	float y = Ma*L1x + Mb;
 	
-	if(y < L1->y && y < L2->y) return 0;
-	if(y > L1->y && y > L2->y) return 0;
-	if(y < M1->y && y < M2->y) return 0;
-	if(y > M1->y && y > M2->y) return 0;
+	if(y < L1y && y < L2y) return 0;
+	if(y > L1y && y > L2y) return 0;
+	if(y < M1y && y < M2y) return 0;
+	if(y > M1y && y > M2y) return 0;
 	
-	*xo = L1->x;
+	*xo = L1x;
 	*yo=y;
       }
     }
   }else{
 
-    if(M1->x == M2->x){
+    if(M1x == M2x){
       // M vertical, L not vertical
 
       // needed if L is vertical and M is horizontal
-      if(M1->x < L1->x && M1->x < L2->x) return 0;
-      if(M1->x > L1->x && M1->x > L2->x) return 0;
+      if(M1x < L1x && M1x < L2x) return 0;
+      if(M1x > L1x && M1x > L2x) return 0;
 
       {
-	float y = La*M1->x + Lb;
+	float y = La*M1x + Lb;
 	
-	if(y < L1->y && y < L2->y) return 0;
-	if(y > L1->y && y > L2->y) return 0;
-	if(y < M1->y && y < M2->y) return 0;
-	if(y > M1->y && y > M2->y) return 0;
+	if(y < L1y && y < L2y) return 0;
+	if(y > L1y && y > L2y) return 0;
+	if(y < M1y && y < M2y) return 0;
+	if(y > M1y && y > M2y) return 0;
 	
-	*xo = M1->x;
+	*xo = M1x;
 	*yo=y;
       }
     }else{
@@ -332,20 +341,20 @@ int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, doubl
 	if(Mb != Lb) return 0; 
 	
 	// two segments on same line...
-	if(M1->x > L1->x && 
-	   M1->x > L2->x &&
-	   M2->x > L1->x &&
-	   M2->x > L2->x) return 0;
-	if(M1->x < L1->x && 
-	   M1->x < L2->x &&
-	   M2->x < L1->x &&
-	   M2->x < L2->x) return 0;
+	if(M1x > L1x && 
+	   M1x > L2x &&
+	   M2x > L1x &&
+	   M2x > L2x) return 0;
+	if(M1x < L1x && 
+	   M1x < L2x &&
+	   M2x < L1x &&
+	   M2x < L2x) return 0;
 	
 	{
-	  double x1=max( min(M1->x,M2->x), min(L1->x, L2->x));
-	  double x2=min( max(M1->x,M2->x), max(L1->x, L2->x));
-	  double y1=max( min(M1->y,M2->y), min(L1->y, L2->y));
-	  double y2=min( max(M1->y,M2->y), max(L1->y, L2->y));
+	  double x1=max( min(M1x,M2x), min(L1x, L2x));
+	  double x2=min( max(M1x,M2x), max(L1x, L2x));
+	  double y1=max( min(M1y,M2y), min(L1y, L2y));
+	  double y2=min( max(M1y,M2y), max(L1y, L2y));
 	  
 	  *xo = (x1+x2)*.5;
 	  *yo = (y1+y2)*.5;
@@ -357,10 +366,10 @@ int intersects(vertex *L1, vertex *L2, vertex *M1, vertex *M2, double *xo, doubl
 	// finally typical case: L and M have different non-infinite slopes
 	float x = (Mb-Lb) / (La - Ma);
 	
-	if(x < L1->x && x < L2->x) return 0;
-	if(x > L1->x && x > L2->x) return 0;
-	if(x < M1->x && x < M2->x) return 0;
-	if(x > M1->x && x > M2->x) return 0;
+	if(x < L1x && x < L2x) return 0;
+	if(x > L1x && x > L2x) return 0;
+	if(x < M1x && x < M2x) return 0;
+	if(x > M1x && x > M2x) return 0;
 	
 	*xo = x;
 	*yo = La*x + Lb;
@@ -378,7 +387,7 @@ static void activate_edge(graph *g, edge *e){
     while(test){
       if(test != e && test->active){
 	double x,y;
-	if(intersects(e->A,e->B,test->A,test->B,&x,&y)){
+	if(intersectsV(e->A,e->B,test->A,test->B,&x,&y)){
 	  add_paired_intersection(e,test,x,y);
 	  g->active_intersections++;
 
