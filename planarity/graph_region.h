@@ -27,7 +27,7 @@
 extern void region_init();
 
 extern int region_intersects(edge *e);
-extern void region_layout(graph *g);
+extern int region_layout(graph *g);
 extern void region_circle(int x,int y, float rad, int layout);
 extern void region_new_area(int x, int y, int layout);
 extern void region_line_to(int x,int y);
@@ -35,3 +35,4 @@ extern void region_arc_to(int x,int y, float rad);
 extern void region_close_line();
 extern void region_close_arc(float rad);
 extern int have_region();
+extern void region_split_here();

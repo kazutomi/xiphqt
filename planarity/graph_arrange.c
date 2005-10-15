@@ -142,10 +142,7 @@ void arrange_verticies_polycircle(graph *g, int sides, float angle, float split,
       acc+=del;
     }
     acc-=perarc/2;
-
-
   }
-
 }
 
 
@@ -217,7 +214,6 @@ void arrange_region_star(graph *g){
   region_line_to(657,232);
   region_line_to(460,232);
   region_close_line();
-  region_layout(g);
 }
 
 void arrange_region_rainbow(graph *g){
@@ -227,7 +223,6 @@ void arrange_region_rainbow(graph *g){
   region_line_to(660,500);
   region_arc_to(200,500,M_PI);
   region_close_line();
-  region_layout(g);
 }
 
 void arrange_region_dashed_circle(graph *g){
@@ -248,7 +243,6 @@ void arrange_region_dashed_circle(graph *g){
     region_new_area(x1,y1,3);
     region_arc_to(x2,y2,M_PI/10);
   }
-  region_layout(g);
 }
 
 void arrange_region_bifur(graph *g){
@@ -265,9 +259,6 @@ void arrange_region_bifur(graph *g){
   region_line_to(bw/2-130,bh-60);
   region_arc_to(bw/2+130,bh-60,M_PI*.25);
   region_line_to(bw-21,bh-60);
-
-  region_layout(g);
-
 }
 
 void arrange_region_dairyqueen(graph *g){
@@ -293,8 +284,6 @@ void arrange_region_dairyqueen(graph *g){
   region_arc_to(x1,y2,-M_PI/2);
   region_line_to(50,bh/2);
   region_close_line();
-
-  region_layout(g);
 }
 
 void arrange_region_cloud(graph *g){
@@ -315,8 +304,6 @@ void arrange_region_cloud(graph *g){
     region_arc_to(x2,y2,M_PI*.7);
   }
   region_close_arc(M_PI*.7);
-
-  region_layout(g);
 }
 
 void arrange_region_ring(graph *g){
@@ -327,7 +314,6 @@ void arrange_region_ring(graph *g){
   region_init();
   region_circle(bw/2,bh/2,radius,3);
   region_circle(bw/2,bh/2,radius*.4,1);
-  region_layout(g);
 }
 
 void arrange_region_storm(graph *g){
@@ -351,8 +337,6 @@ void arrange_region_storm(graph *g){
   }
 
   region_circle(bw/2,bh/2,radius*.2,0);
-
-  region_layout(g);
 }
 
 void arrange_region_target(graph *g){
@@ -363,9 +347,8 @@ void arrange_region_target(graph *g){
   region_init();
   region_circle(bw/2,bh/2,radius,3);
   region_circle(bw/2,bh/2,radius*.5,1);
+  region_split_here();
   region_circle(bw/2,bh/2,radius*.35,3);
-
-  region_layout(g);
 }
 
 void arrange_region_plus(graph *g){
@@ -384,8 +367,6 @@ void arrange_region_plus(graph *g){
   region_arc_to(143,216,-M_PI*2/10);
   region_line_to(316,216);
   region_close_line();
-
-  region_layout(g);
 }
 
 void arrange_region_hole3(graph *g){
@@ -400,7 +381,6 @@ void arrange_region_hole3(graph *g){
   region_line_to(313,349);
   region_line_to(487,349);
   region_close_line();
-  region_layout(g);
 }
 
 void arrange_region_hole4(graph *g){
@@ -416,7 +396,6 @@ void arrange_region_hole4(graph *g){
   region_line_to(475,375);
   region_line_to(325,375);
   region_close_line();
-  region_layout(g);
 }
 
 void arrange_region_ovals(graph *g){
@@ -428,21 +407,19 @@ void arrange_region_ovals(graph *g){
   region_line_to(530,437);
   region_arc_to(270,437,-M_PI*.99);
   region_close_line();
+  region_split_here();
 
   region_new_area(80,263,2);
   region_arc_to(230,263,-M_PI*.99);
   region_line_to(230,337);
   region_arc_to(80,337,-M_PI*.99);
   region_close_line();
+  region_split_here();
 
   region_new_area(570,263,2);
   region_arc_to(720,263,-M_PI*.99);
   region_line_to(720,337);
   region_arc_to(570,337,-M_PI*.99);
   region_close_line();
-
-
-  region_layout(g);
-  
-
+  region_split_here();
 }
