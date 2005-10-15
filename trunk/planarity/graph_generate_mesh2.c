@@ -49,6 +49,8 @@ typedef struct {
   graph *g;
   int width;
   int height;
+  int active_current;
+  int active_max;
 } mesh;
 
 // check for intersections with other edges
@@ -59,16 +61,20 @@ static int check_intersects_edge(mesh *m, edge *e, int intersections){
   while(ge){
     double xo,yo;
 
-    // edges that share a vertex don't intersect by definition
-    if(ge->A!=e->A && ge->A!=e->B && ge->B!=e->A && ge->B!=e->B)
-      if(intersects(ge->A->orig_x,ge->A->orig_y,
-		    ge->B->orig_x,ge->B->orig_y,
-		    e->A->orig_x,e->A->orig_y,
-		    e->B->orig_x,e->B->orig_y,
-		    &xo,&yo)){
-	count++;
-	if(count>intersections)return 1;
-      }
+    // edges that aren't in this region don't exist (for
+    // now) by definition
+    if(ge->A->active == m->active_current || ge->B->active == m->active_current){
+      // edges that share a vertex don't intersect by definition
+      if(ge->A!=e->A && ge->A!=e->B && ge->B!=e->A && ge->B!=e->B)
+	if(intersects(ge->A->orig_x,ge->A->orig_y,
+		      ge->B->orig_x,ge->B->orig_y,
+		      e->A->orig_x,e->A->orig_y,
+		      e->B->orig_x,e->B->orig_y,
+		      &xo,&yo)){
+	  count++;
+	  if(count>intersections)return 1;
+	}
+    }
     ge=ge->next;
   }
   return 0;
@@ -108,7 +114,8 @@ static int check_intersects_vertex(mesh *m, edge *e){
   vertex *v = m->g->verticies;
 
   while(v){
-    if(v!=e->A && v!=e->B && sq_line_distance(e,v)<16)return 1;
+    if(v->active == m->active_current)
+      if(v!=e->A && v!=e->B && sq_line_distance(e,v)<16)return 1;
     v=v->next;
   }
 
@@ -179,19 +186,22 @@ static vertex *vertex_num_sel(graph *g,int num){
 static void prepopulate(mesh *m,int length_limit){
   // sort all verticies in ascending order by their number of potential edges 
   int i=0;
+  int num=0;
   insort index[m->g->vertex_num];
   vertex *v=m->g->verticies;
 
   while(v){
-    index[i].v=v;
-    index[i].metric = select_available(m,v,0,0);
-    i++;
+    if(v->active == m->active_current){
+      index[num].v=v;
+      index[num].metric = select_available(m,v,0,0);
+      num++;
+    }
     v=v->next;
   }
-  qsort(index,m->g->vertex_num,sizeof(*index),insort_c);
+  qsort(index,num,sizeof(*index),insort_c);
 
   // populate in ascending order
-  for(i=0;i<m->g->vertex_num;i++){
+  for(i=0;i<num;i++){
     int intersections=0;
     int edges=0;
     v = index[i].v;
@@ -311,7 +321,7 @@ static void span_depth_first2(mesh *m,vertex *current, float length_limit){
       
       // filter out already-walked edges 
       while(v){
-	if(v->grabbed && v->selected){ // grabbed is also overloaded to mean not walked
+	if(v->grabbed && v->selected){ // grabbed is also overloaded to mean walked
 	  v->selected = 0;
 	  count--;
 	}
@@ -343,7 +353,7 @@ static void random_populate(mesh *m,vertex *current,int dense_128, float length_
   if(count){
     vertex *v = m->g->verticies;
     while(v){
-      if(v->selected && random_yes(dense_128)){
+      if(v->active == m->active_current && v->selected && random_yes(dense_128)){
 	add_edge(m->g,v,current);
 	v->selected=0;
       }
@@ -425,51 +435,47 @@ static void mesh_setup(graph *g, mesh *m, int order, int divis){
 
   g->objective = 0;
   g->objective_lessthan = 0;
-
+  m->active_max=0;
 }
 
 static void generate_mesh2(mesh *m, int density_128, float length_limit){ 
   vertex *v;
+  int i;
 
   length_limit*=50;
   length_limit*=length_limit;
 
-  if(have_region())
-    prepopulate(m,0);
+  for(i=0;i<=m->active_max;i++){
+    m->active_current=i;
 
-  /* connect the graph into as few discrete sections as possible */
-  v = m->g->verticies;
-  while(v){
-    v->grabbed = 0;
+    if(have_region())
+      prepopulate(m,0);
+    
+    /* connect the graph into as few discrete sections as possible */
+    v = m->g->verticies;
+    while(v){
+      v->grabbed = 0;
+      v=v->next;
+    }
+    
+    v = m->g->verticies;
+    // make sure we walk all verticies
+    while(v){
+      if(v->active == m->active_current && !v->grabbed)
+	span_depth_first2(m, m->g->verticies, length_limit);
+      v=v->next;
+    }
+    
+    if(!have_region())
+      prepopulate(m,length_limit);
+    
+    /* now iterate the whole mesh adding random edges */
+    v=m->g->verticies;
+    while(v){
+      random_populate(m, v, density_128, length_limit);
     v=v->next;
+    }
   }
-
-  v = m->g->verticies;
-  // make sure we walk all verticies
-  while(v){
-    if(!v->grabbed)
-      span_depth_first2(m, m->g->verticies, length_limit);
-    v=v->next;
-  }
-
-  if(!have_region())
-    prepopulate(m,length_limit);
-
-  /* now iterate the whole mesh adding random edges */
-  v=m->g->verticies;
-  while(v){
-    random_populate(m, v, density_128, length_limit);
-    v=v->next;
-  }
-
-  /* clear out overloaded flags */
-  v=m->g->verticies;
-  while(v){
-    v->grabbed=0;
-    v=v->next;
-  }
-
-  deselect_verticies(m->g);
 }
 
 void generate_freeform(graph *g, int order){
@@ -529,7 +535,6 @@ void generate_shape(graph *g, int order){
     min = 12;
     break;
   case 12: // target
-    dens=128;
     min = 14;
     break;
   }
@@ -566,5 +571,6 @@ void generate_shape(graph *g, int order){
     arrange_region_target(g); break; //108
   }
 
+  m.active_max=region_layout(g);
   generate_mesh2(&m,dens,0);
 }

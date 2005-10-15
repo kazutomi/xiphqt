@@ -38,6 +38,8 @@
 typedef struct region_segment {
   int layout; /* 0 no layout, 1 left, 2 right, 3 layout-only */
   int cont;   /* is this continuous from last line? */
+  int split;  /* are we splitting the graph into interntionally
+		 seperate regions here? */
 
   float x1;
   float y1;
@@ -64,6 +66,7 @@ typedef struct region{
   int layout;
 
   int cont;
+  int split_next;
 } region;
 
 static region r;
@@ -93,9 +96,11 @@ static region_segment *new_segment(region *r, int x1,int y1,int x2, int y2){
   ret->x2=x2;
   ret->y2=y2;
   ret->cont = r->cont;
+  ret->split = r->split_next;
 
   r->l=ret;
-  
+  r->split_next=0;
+
   return ret;
 }
 
@@ -604,6 +609,7 @@ static void adjust_layout(){
 	region_segment *n=new_segment(&layout_adj,rint(x1),rint(y1),rint(x2),rint(y2));
 	n->layout=3;
 	n->cont=(s->cont || endpath_adj);
+	n->split = s->split;
 
 	if(radius){
 	  // circle; radius variable is treated as a flag
@@ -670,10 +676,11 @@ void region_init(){
   memset(&layout_adj,0,sizeof(layout_adj));
 }
 
-void region_layout(graph *g){
+int region_layout(graph *g){
   // count up the total length of the region segments used in layout
   float length=0,acc=0,ldel;
   int num_adj=g->vertex_num;
+  int activenum=0;
   region_segment *l;
   vertex *v = g->verticies;
 
@@ -714,6 +721,8 @@ void region_layout(graph *g){
     float snap_del = l->cont ? l->length/num_placed : l->length/(num_placed-1);
     float snap_acc=l->cont?snap_del:0;
     
+    if(l->split)activenum++;
+
     if(l->radius==0){
       float x1 = l->x1;
       float y1 = l->y1;
@@ -729,6 +738,7 @@ void region_layout(graph *g){
 	if(snap_acc)
 	  acc+=ldel;
 	snap_acc+=snap_del;
+	v->active=activenum;
 	v=v->next;
       }
     }else{
@@ -746,6 +756,7 @@ void region_layout(graph *g){
 	if(snap_acc)
 	  acc+=ldel;
 	snap_acc+=snap_del;
+	v->active=activenum;
 	v=v->next;
       }
     }
@@ -753,6 +764,7 @@ void region_layout(graph *g){
     acc-=l->length;  
     l=l->next;
   }
+  return activenum;
 }
 
 void region_circle(int x,int y, float rad, int layout){
@@ -802,7 +814,11 @@ void region_close_arc(float rad){
   r.y=r.oy;
   r.cont=0;
 }
- 
+
+void region_split_here(){
+  r.split_next=1;
+}
+
 int region_intersects(edge *e){
 
   region_segment *s=r.l;

@@ -235,6 +235,17 @@ void generate_board(graph *g,int num){
     gi->gen(g,ordernum);
   }
 
+  // clear out overloaded flags
+  {
+    vertex *v = g->verticies;
+    while(v){
+      v->active=0;
+      v->selected=0;
+      v->grabbed=0;
+      v=v->next;
+    }
+  }
+  
   g->objective_mult = gi->objective_mult;
   g->intersection_mult = gi->intersection_mult;
 }
