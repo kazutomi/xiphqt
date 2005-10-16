@@ -326,7 +326,7 @@ gboolean mouse_release (GtkWidget        *widget,
 	g->selection_active=0;
 	deselect_verticies(&g->g); // could have grabbed just one
       }else{
-	commit_volatile_selection();
+	commit_volatile_selection(&g->g);
 	g->selection_active=num_selected_verticies(&g->g);
       }
     }

@@ -423,7 +423,7 @@ int exists_edge(vertex *a, vertex *b){
 }
 
 /*********************** vertex maint operations *************************/
-vertex *get_vertex(graph *g){
+static vertex *get_vertex(graph *g){
   vertex *ret;
   
   if(vertex_pool==0){
