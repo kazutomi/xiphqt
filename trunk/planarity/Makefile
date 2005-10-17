@@ -64,21 +64,21 @@ SLIBS = $(GTK)/libgtk-x11-2.0.a \
 
 all:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
-	$(MAKE) target CFLAGS="-O2 -ffast-math $(GCF) $(ADD_DEF)"
+	$(MAKE) target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'
 	$(STRIP) $(TARGET)
 
 static:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
-	$(MAKE) static-target CFLAGS="-O2 -ffast-math $(GCF) $(ADD_DEF) "	
+	$(MAKE) static-target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'	
 	$(STRIP) $(TARGET)
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
-	$(MAKE) target CFLAGS="-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)"
+	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
 
 profile:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
-	$(MAKE) target CFLAGS="-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper "
+	$(MAKE) target CFLAGS='-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper'
 
 clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out $(TARGET)
