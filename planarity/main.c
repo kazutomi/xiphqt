@@ -34,7 +34,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <gtk/gtk.h>
-#include <cairo/cairo-ft.h>
+#include <cairo-ft.h>
 #include <fontconfig/fontconfig.h>
 #include "version.h"
 #include "graph.h"
