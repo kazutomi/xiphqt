@@ -118,14 +118,14 @@ dump_packet_rtp (unsigned char *data, const int len, FILE * out)
   fprintf (out, "RTP packet V:%d P:%d X:%d M:%d PT:%d", V, P, X, M, PT);
   fprintf (out, "   seq %d", sequence);
   fprintf (out, "   timestamp: %u\n", timestamp);
-  fprintf (out, " ssrc: 0x%08x\n", ssrc);
+  fprintf (out, " ssrc: 0x%08x", ssrc);
   if (CC)
     for (i = 0; i < CC; i++)
-      fprintf (out, " csrc: 0x%08x\n",
+      fprintf (out, " csrc: 0x%08x",
 	       ntohl (((unsigned int *) data)[3 + i]));
   else
-    fprintf (out, " no csrc\n");
-
+    fprintf (out, " no csrc");
+  fprintf (out, "\n");
   /* offset to payload header */
   offset = (3 + CC) * 4;
 
@@ -140,27 +140,7 @@ dump_packet_rtp (unsigned char *data, const int len, FILE * out)
   
   fprintf(out,"ident %06x, frag type %d, data type %d, pkts %d, size %d\n",
 		  ident,F,VDT,pkts,len-4*(CC+3));
- /* 
-  fprintf (out, "   packets:");
-  switch (F) {
-
-  case 0:
-    fprintf (out, " %d\n", pkts);
-    break;
-  case 1:
-    fprintf (out, " frag start\n");
-    break;
-  case 2:
-    fprintf (out, " frag cont\n");
-    break;
-  case 3:
-    fprintf (out, " frag end\n");
-    break;
-  default:
-    fprintf (out, " unknown!\n");
-    break;
-  }*/
-  
+ 
   for (i = 0; i < pkts; i++)
     {
       if (offset >= len)
@@ -192,38 +172,80 @@ int
 cfg_repack(ogg_context_t *ogg, FILE* out)
 {
   ogg_packet id,co,cb;
-  //FIXME bad hack
   char comment[] = 
-//  {3,118,111,114,98,105,115,29,0,0,0,88,105,112,104,46,79,114,103,32,108,105,98,86,111,114,98,105,115,32,73,32,50,48,48,50,48,55,49,55,5,0,0,0,18,0,0,0,65,114,116,105,115,116,61,76,97,99,117,110,97,32,67,111,105,108,10,0,0,0,84,105,116,108,101,61,67,111,108,100,18,0,0,0,65,108,98,117,109,61,73,110,32,97,32,82,101,118,101,114,105,101,15,0,0,0,71,101,110,114,101,61,72,97,114,100,32,82,111,99,107,9,0,0,0,89,101,97,114,61,49,57,57,57,1};
-  
-  { 3,'v','o','r','b','i','s', 1,0,0,0, 0, 1,0,0,0, 0, 1};
+/*  Example
+ *  {3,118,111,114,98,105,115,
+	  29,0,0,0,
+	  	88,105,112,104,46,79,114,103,32,108,105,98,86,111,114,98,105,115,32,73,32,50,48,48,50,48,55,49,55,
+	  5,0,0,0, 
+	  	18,0,0,0,
+			65,114,116,105,115,116,61,76,97,99,117,110,97,32,67,111,105,108,
+		10,0,0,0,
+			84,105,116,108,101,61,67,111,108,100,
+		18,0,0,0,
+			65,108,98,117,109,61,73,110,32,97,32,82,101,118,101,114,105,101,
+		15,0,0,0,
+			71,101,110,114,101,61,72,97,114,100,32,82,111,99,107,
+		9,0,0,0,
+			89,101,97,114,61,49,57,57,57,
+  1};
+*/
+   /*quite minimal comment*/
+   { 3,'v','o','r','b','i','s', 
+   	10,0,0,0, 
+   		'v','o','r','b','i','s','-','r','t','p',
+   		1,0,0,0, 
+   			1,0,0,0,
+   			0,
+   	1};
   
 /* get the identification packet*/
   id.packet = ogg->op.packet;
   id.bytes = 30;
-  id.b_o_s = -1;
+  id.b_o_s = 256;
+
+
 /* get the comment packet*/
   co.packet = comment;
   co.bytes = 135;
   co.granulepos = -1;
   co.packetno = -1;
+
 /* get the setup packet*/
   cb.packet = ogg->op.packet + 30;
   cb.bytes = ogg->op.bytes - 30;
+
 /* get the information required to decode blocksizes
  * from the info packet */
-  ogg->vi.rate=id.packet[8+4+1]<<24;
-  ogg->vi.rate+=id.packet[8+4+1+1]<<16;
-  ogg->vi.rate+=id.packet[8+4+1+2]<<8;
-  ogg->vi.rate=id.packet[8+4+1+3];
+  ogg->vi.rate=id.packet[12];
+  ogg->vi.rate+=id.packet[12+1]<<8;
+  ogg->vi.rate+=id.packet[12+2]<<8;
+  ogg->vi.rate+=id.packet[12+3]<<24;
   fprintf(stderr,"parsed rate: %d\n",ogg->vi.rate);
+#if CHECK
+  vorbis_info_init(&ogg->vi);
+  vorbis_comment_init(&ogg->vc);
+  if(vorbis_synthesis_headerin(&ogg->vi,&ogg->vc,&id)<0){
+	      /* error case; not a vorbis header */
+	  fprintf(stderr,"Not valid identification\n");
+  } else fprintf(stderr,"  Valid identification\n");
+  if(vorbis_synthesis_headerin(&ogg->vi,&ogg->vc,&co)<0){
+	      /* error case; not a vorbis header */
+	  fprintf(stderr,"Not valid comment\n");
+  } else fprintf(stderr,"  Valid comment\n");
+  if(vorbis_synthesis_headerin(&ogg->vi,&ogg->vc,&cb)<0){
+	      /* error case; not a vorbis header */
+	  fprintf(stderr,"Not valid setup\n");
+  } else fprintf(stderr,"  Valid setup\n");
+  fprintf(stderr,"decoded rate: %d\n",ogg->vi.rate);
+#endif
 /* start the ogg*/
   ogg_stream_init(&ogg->os,rand());
 
   ogg_stream_packetin(&ogg->os,&id);
   ogg_stream_packetin(&ogg->os,&co);
   ogg_stream_packetin(&ogg->os,&cb);
-  ogg->op.b_o_s=1;
+//  ogg->op.b_o_s=1;
   do{
     int result=ogg_stream_flush(&ogg->os,&ogg->og);
     if(result==0)break;
@@ -281,11 +303,6 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
   pkts = (data[offset] & 0x0F);
   offset++;
   
-/*  printf("ident %06x, frag type %d, data type %d, pkts %d, size %d\n",
-		  ident,F,VDT,pkts,len-4*(CC+3));
-  
-  fprintf (out, "   packets:");*/
-  
   switch (F) {
 
   case 0:
@@ -298,20 +315,20 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     length = data[offset++] << 8;
     length += data[offset++];
     op->packet = realloc (op->packet, length+op->bytes);
-    memcpy (op->packet + op->bytes, data, length);
+    memcpy (op->packet + op->bytes, data + offset, length);
     op->bytes += length;
     return 0;
   case 3:
     length = data[offset++] << 8;
     length += data[offset++];
     op->packet = realloc (op->packet, length+op->bytes);
-    memcpy (op->packet + op->bytes, data, length);
+    memcpy (op->packet + op->bytes, data + offset, length);
     op->bytes += length;
     pkts=1;
     break;
   default:
     fprintf (stderr, " unknown frament?!\n");
-    break;
+    return 0;
   }
   
   switch (VDT) {
@@ -327,7 +344,8 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       op->bytes = data[offset++]<<8;
       op->bytes += data[offset++];
       op->packet = &data[offset];
-      op->granulepos=(pkts==1)?timestamp/1000000L*ogg->vi.rate:-1;//bad hack
+      //FIXME should be a better way
+      op->granulepos+=timestamp*ogg->vi.rate/1000000L;
       op->packetno++;
       count += pkt_repack(ogg,out);
       offset += op->bytes;
@@ -346,9 +364,6 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
 
   return count;
 }
-
-
-
 
 int
 main (int argc, char *argv[])
@@ -393,6 +408,7 @@ main (int argc, char *argv[])
 	  /* Unknown option  */
 	case '?':
 	  fprintf (stderr, "\n||  Unknown option `-%c'.\n", optopt);
+	  fprintf (stderr, "||  Usage: vorbisrtp-client [-i ip address] [-p port] [-f filename]");
 	  return 1;
 	}
     }
@@ -466,7 +482,7 @@ main (int argc, char *argv[])
       dump_packet_rtp (data, ret, stderr);
       if (dump){
 	dump_packet_ogg (data, ret, file, &ogg);
-	fflush(file);
+	fflush(NULL);
       }
     }
 

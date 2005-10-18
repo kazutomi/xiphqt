@@ -69,7 +69,6 @@
 /*****************************************************************************/
 
 ogg_int16_t convbuffer [4096];
-int convsize = 4096;
 
 struct sockaddr_in rtpsock;
 int rtpsocket;
@@ -260,7 +259,7 @@ int createsocket (struct RTPHeaders *RTPHeaders, struct sockaddr_in *sockAddr, c
 int makevorbisheader (unsigned char *packet, int length, struct VorbisBitfields *vorbheader)
 {
     if (length < 6) return -1;
-    printf("||  ident %06x, frag type %d, data type %d, pkts %d, size %d\n",
+    printf("||  ident %06x, frag type %d, data type %d, pkts %02d, size %d\n",
 		    vorbheader->cbident, vorbheader -> frag_type,
 		    vorbheader -> data_type, vorbheader -> pkts,
 		    length);
@@ -521,9 +520,10 @@ int ogg_copy_packet(ogg_packet *dst, ogg_packet *src)
 
   dst->granulepos = src->granulepos;
   dst->packetno = src->packetno;
+#ifdef DEBUG
   printf("||  bytes %ld bos %ld eos %ld gp %lld pno %lld\n",
   dst->bytes, dst->b_o_s, dst->e_o_s, dst->granulepos, dst->packetno);
-  
+#endif
   return 0;
 }
 
@@ -715,7 +715,6 @@ int main (int argc, char **argv)
 
     VorbisBitfields.cbident = rand ();
     
-    convsize = 4096 / vi.channels;
     vorbis_synthesis_init (&vd, &vi);
     vorbis_block_init (&vd, &vb);
 
@@ -726,7 +725,7 @@ int main (int argc, char **argv)
     fprintf (stdout, "||  Bitstream is %d channel, %ldHz\n", vi.channels, vi.rate);
     fprintf (stdout, "||  Encoded by: %s\n", vc.vendor);
     fprintf (stdout, "||  Bitrates: min=%ld - nom=%ld - max=%ld\n", vi.bitrate_lower, vi.bitrate_nominal, vi.bitrate_upper);
-    fprintf (stdout, "||  Decode setup ident is 0x%08x\n", VorbisBitfields.cbident);
+    fprintf (stdout, "||  Decode setup ident is 0x%06x\n", VorbisBitfields.cbident);
     fprintf (stdout, "||\n");
     fprintf (stdout, "||---------------------------------------------------------------------------||\n");
     fprintf (stdout, "||  Processing\n");
@@ -736,14 +735,14 @@ int main (int argc, char **argv)
 /*===========================================================================*/
 {
 int conf_bytes = header[0].bytes+header[2].bytes;
-char conf_packet[conf_bytes];
-
+unsigned char *conf_packet=malloc(conf_bytes);
 
     memcpy (conf_packet,header[0].packet,header[0].bytes);
-    memcpy (&conf_packet[header[0].bytes],header[2].packet,header[2].bytes);
+    memcpy (conf_packet+header[0].bytes,header[2].packet,header[2].bytes);
     creatertp(conf_packet, conf_bytes, 0, &VorbisBitfields, 1);
     progressmarker (6);
 
+free(conf_packet);
 }
 
 /*===========================================================================*/
@@ -769,10 +768,12 @@ char conf_packet[conf_bytes];
                     if (result < 0) {
                         /* no reason to complain; already complained above  */
             	    } else {
+#ifdef DEBUG
 			printf("||  bytes %ld bos %ld eos %ld gp %lld pno %lld\n", op.bytes, op.b_o_s, op.e_o_s, op.granulepos, op.packetno);
-                        creatertp ( op.packet, op.bytes, 
+#endif
+			creatertp ( op.packet, op.bytes, 
 					timestamp, &VorbisBitfields, 0);
-			//FIXME
+			//FIXME: double check
 			timestamp = vorbis_packet_blocksize(&vi,&op)*1000000L/vi.rate;
 
             	    }
