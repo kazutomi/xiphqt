@@ -22,7 +22,7 @@ supports:
   <li>OSS (Open Sound System, used on Linux and FreeBSD</li>
   <li>ALSA (Advanced Linux Sound Architecture)</li>
   <li>polypaudio (next generation GNOME sound server)</li>
-  <li>esd (ESounD or Enlighten Sound Daemon)</li>
+  <li>esd (EsounD or Enlightened Sound Daemon)</li>
   <li>AIX</li>
   <li>Sun/NetBSD/OpenBSD</li>
   <li>IRIX</li>
@@ -92,7 +92,7 @@ from source.</p>
 <ul>
 <li>Incorporated OS X patches from the Fink team.</li>
 <li>AIX output plugin by Stefan Tibus.</li>
-<li>Improvements in plugin detection code by David Walser, especially when ESD or aRts are present.</li>
+<li>Improvements in plugin detection code by David Walser, especially when esd or aRts are present.</li>
 <li>NAS plugin from Antoine Mathys.</li>
 <li>Portability fixes for various platforms (including dlopen() bugs) including HP-UX and *BSD.</li>
 <li>Memory/resource leak fixes</li>
