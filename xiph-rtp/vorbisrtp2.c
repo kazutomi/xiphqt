@@ -294,15 +294,8 @@ void creatertp (unsigned char* vorbdata, int length, long timestamp, struct Vorb
     static unsigned char* framestack = NULL;
 
 /*===========================================================================*/
-/*  Test Codebook Ident (used for debug)                                     */
+/*  Set sleeptime value based on timestamp                                   */
 /*===========================================================================*/
-
-/*    vorbheader -> cbident = htonl (0xc0deb00c); */
-
-/*===========================================================================*/
-/*  Set sleeptime value (todo: this should use the granulepos)               */
-/*===========================================================================*/
-//vorbis_packet_blocksize should be used. <MikeS> Like "(blocksize(prev) + blocksize(current)) / 4"
 
 
 if (type)
@@ -431,7 +424,7 @@ else
             else
                 progressmarker (5);
 
-            usleep (sleeptime);
+            usleep (sleeptime/2);
 
             RTPHeaders.sequence++;
             RTPHeaders.timestamp += sleeptime;
