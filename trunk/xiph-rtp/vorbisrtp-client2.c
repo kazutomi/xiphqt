@@ -30,7 +30,8 @@
 
 /* sample RTP Vorbis client */
 
-/* compile with: gcc -g -O2 -Wall -o vorbisrtp-client vorbisrtp-client.c -logg */
+/* compile with: gcc -g -O2 -Wall -o vorbisrtp-client vorbisrtp-client.c -logg 
+ * append -DCHECK -lvorbis to enable header checks*/
 
 
 #include <stdio.h>
@@ -194,35 +195,38 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
    { 3,'v','o','r','b','i','s', 
    	10,0,0,0, 
    		'v','o','r','b','i','s','-','r','t','p',
-   		1,0,0,0, 
-   			1,0,0,0,
-   			0,
-   	1};
+   		0,0,0,0, 
+                1};
   
 /* get the identification packet*/
   id.packet = ogg->op.packet;
   id.bytes = 30;
-  id.b_o_s = 256;
+  id.b_o_s = 1;
+  id.e_o_s = 0;
+  id.granulepos = 0;
 
 
 /* get the comment packet*/
   co.packet = comment;
-  co.bytes = 135;
-  co.granulepos = -1;
-  co.packetno = -1;
+  co.bytes = sizeof(comment);
+  co.b_o_s = 0;
+  co.e_o_s = 0;
+  co.granulepos = 0;
 
 /* get the setup packet*/
   cb.packet = ogg->op.packet + 30;
   cb.bytes = ogg->op.bytes - 30;
+  cb.b_o_s = 0;
+  cb.e_o_s = 0;
+  cb.granulepos = 0;
 
-/* get the information required to decode blocksizes
- * from the info packet */
+/* get the sample rate from the info packet */
   ogg->vi.rate=id.packet[12];
   ogg->vi.rate+=id.packet[12+1]<<8;
   ogg->vi.rate+=id.packet[12+2]<<8;
   ogg->vi.rate+=id.packet[12+3]<<24;
-  fprintf(stderr,"parsed rate: %d\n",ogg->vi.rate);
 #if CHECK
+  fprintf(stderr,"parsed rate: %d\n",ogg->vi.rate);
   vorbis_info_init(&ogg->vi);
   vorbis_comment_init(&ogg->vc);
   if(vorbis_synthesis_headerin(&ogg->vi,&ogg->vc,&id)<0){
