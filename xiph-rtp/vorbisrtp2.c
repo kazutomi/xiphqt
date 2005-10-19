@@ -424,7 +424,7 @@ else
             else
                 progressmarker (5);
 
-            usleep (sleeptime/2);
+            usleep (sleeptime);
 
             RTPHeaders.sequence++;
             RTPHeaders.timestamp += sleeptime;
@@ -549,7 +549,7 @@ int main (int argc, char **argv)
     char *ip = "227.0.0.1";
     unsigned int port = 4044;
     unsigned int ttl  = 1;
-    long timestamp = 0;
+    long timestamp = 0, prev = 0;
 
     fprintf (stderr, "||---------------------------------------------------------------------------||\n");
     fprintf (stderr, "||  Vorbis RTP Server (draft-ietf-avt-vorbis-rtp-01)\n");	  
@@ -766,9 +766,8 @@ free(conf_packet);
 #endif
 			creatertp ( op.packet, op.bytes, 
 					timestamp, &VorbisBitfields, 0);
-			//FIXME: double check
-			timestamp = vorbis_packet_blocksize(&vi,&op)*1000000L/vi.rate;
-
+			timestamp = (vorbis_packet_blocksize(&vi,&op)+prev)/4*1000000L/vi.rate;
+			prev = vorbis_packet_blocksize(&vi,&op);
             	    }
                 }
 
