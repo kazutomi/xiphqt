@@ -386,7 +386,7 @@ main (int argc, char *argv[])
   fprintf (stderr,
 	   "||---------------------------------------------------------------------------||\n");
 
-  fprintf (stderr, "||  Vorbis RTP Client (draft-ietf-avt-vorbis-rtp-01)\n");
+  fprintf (stderr, "||  Vorbis RTP Client (draft-kerr-avt-vorbis-rtp-05)\n");
 
   while ((opt = getopt (argc, argv, "i:p:f:")) != -1)
     {

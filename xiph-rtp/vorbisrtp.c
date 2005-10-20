@@ -552,7 +552,7 @@ int main (int argc, char **argv)
     long timestamp = 0, prev = 0;
 
     fprintf (stderr, "||---------------------------------------------------------------------------||\n");
-    fprintf (stderr, "||  Vorbis RTP Server (draft-ietf-avt-vorbis-rtp-01)\n");	  
+    fprintf (stderr, "||  Vorbis RTP Server (draft-kerr-avt-vorbis-rtp-05)\n");	  
 
 /*===========================================================================*/
 /*  Command-line args processing                                             */
