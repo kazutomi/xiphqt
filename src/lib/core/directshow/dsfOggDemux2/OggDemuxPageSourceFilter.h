@@ -92,4 +92,8 @@ public:
 
 protected:
 	virtual HRESULT SetUpPins();
+
+	CCritSec* mSourceFileLock;
+	CCritSec* mDemuxLock;
+	CCritSec* mStreamLock;
 };
