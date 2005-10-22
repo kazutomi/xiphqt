@@ -145,3 +145,9 @@ STDMETHODIMP OggDemuxPageSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA
 	//TODO:::
 	return S_OK;
 }
+
+//IAMFilterMiscFlags Interface
+ULONG OggDemuxPageSourceFilter::GetMiscFlags(void) 
+{
+	return AM_FILTER_MISC_FLAGS_IS_SOURCE;
+}
