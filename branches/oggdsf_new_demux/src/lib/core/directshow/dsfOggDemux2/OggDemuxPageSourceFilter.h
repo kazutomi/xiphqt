@@ -33,7 +33,7 @@
 class OggDemuxPageSourceFilter
 	:	public CBaseFilter
 	//,	public CAMThread
-	//,	public IFileSourceFilter
+	,	public IFileSourceFilter
 	//,	public IOggCallback
 	//,	public BasicSeekPassThrough
 	//,	public ISpecifyPropertyPages
@@ -45,7 +45,7 @@ public:
 	virtual ~OggDemuxPageSourceFilter(void);
 
 	//Com Stuff
-	//DECLARE_IUNKNOWN
+	DECLARE_IUNKNOWN
 
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 	static CUnknown * WINAPI CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr);
@@ -54,5 +54,10 @@ public:
 	//PURE VIRTUALS From CBaseFilter
 	virtual int GetPinCount();
 	virtual CBasePin* GetPin(int inPinNo);
+
+	//IFileSource Interface
+	virtual STDMETHODIMP GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType);
+	virtual STDMETHODIMP Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType);
+
 
 };
