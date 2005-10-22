@@ -31,9 +31,11 @@
 #pragma once
 
 #include <libOOOgg/OggPage.h>
+#include <libOOOgg/IOggCallback.h>
 #include "IOggDecoder.h"
 class OggDemuxPageSourcePin
 	:	public CBaseOutputPin
+	,	public IOggCallback
 {
 public:
 	//OggDemuxPageSourcePin(void);
@@ -53,6 +55,12 @@ public:
 
 	unsigned long getSerialNo();
 	IOggDecoder* getDecoderInterface();
+	bool isStreamReady()							{		return mIsStreamReady;				}
+	void setIsStreamReady(bool inIsStreamReady)		{		mIsStreamReady = inIsStreamReady;	}
+
+	//IOggCallback Interface
+	virtual bool acceptOggPage(OggPage* inOggPage);
+
 	//CBasePin virtuals
 	virtual HRESULT GetMediaType(int inPosition, CMediaType* outMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType* inMediaType);
@@ -65,4 +73,6 @@ protected:
 	BYTE* mBOSAsFormatBlock;
 	OggPage* mBOSPage;
 	IOggDecoder* mDecoderInterface;
+
+	bool mIsStreamReady;
 };

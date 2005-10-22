@@ -41,6 +41,7 @@ OggDemuxPageSourcePin::	OggDemuxPageSourcePin(		TCHAR* inObjectName
 							,	&mFilterHR
 							,	L"Ogg Stream" )
 	,	mBOSPage(inBOSPage)
+	,	mIsStreamReady(false)
 {
 
 	mBOSAsFormatBlock = (BYTE*)inBOSPage->createRawPageData();
@@ -53,6 +54,11 @@ OggDemuxPageSourcePin::~OggDemuxPageSourcePin(void)
 	delete mBOSPage;
 }
 
+bool OggDemuxPageSourcePin::acceptOggPage(OggPage* inOggPage)
+{
+	//TODO:::
+	return true;
+}
 BYTE* OggDemuxPageSourcePin::getBOSAsFormatBlock()
 {
 	return mBOSAsFormatBlock;

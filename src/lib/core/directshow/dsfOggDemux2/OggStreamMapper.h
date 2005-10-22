@@ -30,6 +30,8 @@ public:
 
 	eStreamState streamState();
 
+	bool allStreamsReady();
+
 protected:
 	eStreamState mStreamState;
 	vector<OggDemuxPageSourcePin*> mPins;
@@ -37,4 +39,5 @@ protected:
 	CCritSec* mParentFilterLock;
 
 	bool addNewPin(OggPage* inOggPage);
+	OggDemuxPageSourcePin* getMatchingPin(unsigned long inSerialNo);
 };
