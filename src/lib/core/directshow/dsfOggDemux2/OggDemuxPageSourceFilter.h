@@ -30,11 +30,18 @@
 //===========================================================================
 #pragma once
 #include "BasicSeekPassThrough.h"
+#include "IFilterDataSource.h"
+//#include "OggStreamMapper.h"
+#include <libOOOgg/OggDataBuffer.h>
+#include "DataSourceFactory.h"
+
+class OggStreamMapper;
+
 class OggDemuxPageSourceFilter
 	:	public CBaseFilter
 	,	public CAMThread
 	,	public IFileSourceFilter
-	//,	public IOggCallback
+	,	public IOggCallback
 	,	public BasicSeekPassThrough
 	//,	public ISpecifyPropertyPages
 	,	public IAMFilterMiscFlags
@@ -54,6 +61,9 @@ public:
 	STDMETHODIMP Run(REFERENCE_TIME tStart);
 	STDMETHODIMP Pause(void);
 	STDMETHODIMP Stop(void);
+
+	//IOggCallback Interface
+	virtual bool acceptOggPage(OggPage* inOggPage);
 
 	//PURE VIRTUALS From CBaseFilter
 	virtual int GetPinCount();
@@ -91,9 +101,16 @@ public:
 	virtual STDMETHODIMP IsUsingTimeFormat(const GUID *pFormat);
 
 protected:
+	static const unsigned long SETUP_BUFFER_SIZE = 24;
 	virtual HRESULT SetUpPins();
 
 	CCritSec* mSourceFileLock;
 	CCritSec* mDemuxLock;
 	CCritSec* mStreamLock;
+
+	wstring mFileName;
+
+	OggDataBuffer mOggBuffer;
+	IFilterDataSource* mDataSource;
+	OggStreamMapper* mStreamMapper;
 };
