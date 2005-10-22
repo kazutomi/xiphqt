@@ -52,9 +52,9 @@ using namespace std;
 #define LIBOOOGG_API __declspec(dllimport)
 #endif
 
-#include "oggdemuxsourcefilter.h"
+#include "OggDemuxPageSourceFilter.h"
 #include "ds_guids.h"
-#include "OggDemuxSourcePin.h"
+#include "OggDemuxPageSourcePin.h"
 
 
 //#include "OggStream.h"
