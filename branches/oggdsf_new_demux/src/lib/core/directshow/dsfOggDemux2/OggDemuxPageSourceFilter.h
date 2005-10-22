@@ -29,13 +29,13 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #pragma once
-
+#include "BasicSeekPassThrough.h"
 class OggDemuxPageSourceFilter
 	:	public CBaseFilter
 	,	public CAMThread
 	,	public IFileSourceFilter
 	//,	public IOggCallback
-	//,	public BasicSeekPassThrough
+	,	public BasicSeekPassThrough
 	//,	public ISpecifyPropertyPages
 	,	public IAMFilterMiscFlags
 	//,	public IAMMediaContent

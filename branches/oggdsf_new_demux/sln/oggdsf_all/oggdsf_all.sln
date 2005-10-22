@@ -1199,6 +1199,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libTemporalURIDotNET", "..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOggDemux2", "..\..\src\lib\core\directshow\dsfOggDemux2\dsfOggDemux2.vcproj", "{304B710A-7355-471C-A4A8-9E8F6D640E6D}"
 	ProjectSection(ProjectDependencies) = postProject
+		{EA7091BB-9906-41DF-9738-F4858A136086} = {EA7091BB-9906-41DF-9738-F4858A136086}
 	EndProjectSection
 EndProject
 Global
