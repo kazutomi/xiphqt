@@ -151,3 +151,25 @@ ULONG OggDemuxPageSourceFilter::GetMiscFlags(void)
 {
 	return AM_FILTER_MISC_FLAGS_IS_SOURCE;
 }
+
+//CAMThread Stuff
+DWORD OggDemuxPageSourceFilter::ThreadProc(void) {
+	
+	//while(true) {
+	//	DWORD locThreadCommand = GetRequest();
+	//
+	//	switch(locThreadCommand) {
+	//		case THREAD_EXIT:
+	//
+	//			Reply(S_OK);
+	//			return S_OK;
+
+	//		case THREAD_RUN:
+	//
+	//			Reply(S_OK);
+	//			DataProcessLoop();
+	//			break;
+	//	}
+	//}
+	return S_OK;
+}
