@@ -57,6 +57,28 @@ BYTE* OggDemuxPageSourcePin::getBOSAsFormatBlock()
 {
 	return mBOSAsFormatBlock;
 }
+
+unsigned long OggDemuxPageSourcePin::getSerialNo()
+{
+	return mBOSPage->header()->StreamSerialNo();
+}
+
+IOggDecoder* OggDemuxPageSourcePin::getDecoderInterface()
+{
+	if (mDecoderInterface == NULL) {
+		IOggDecoder* locDecoder = NULL;
+		if (IsConnected()) {
+			IPin* locPin = GetConnected();
+			if (locPin != NULL) {
+				locPin->QueryInterface(IID_IOggDecoder, (void**)&locDecoder);
+			}
+		}
+
+		mDecoderInterface = locDecoder;
+	}
+	return mDecoderInterface;
+	
+}
 HRESULT OggDemuxPageSourcePin::GetMediaType(int inPosition, CMediaType* outMediaType) 
 {
 	//Put it in from the info we got in the constructor.

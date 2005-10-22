@@ -31,6 +31,7 @@
 #pragma once
 
 #include <libOOOgg/OggPage.h>
+#include "IOggDecoder.h"
 class OggDemuxPageSourcePin
 	:	public CBaseOutputPin
 {
@@ -49,6 +50,9 @@ public:
 	~OggDemuxPageSourcePin(void);
 
 	static const unsigned long NUM_PAGE_BUFFERS = 100;
+
+	unsigned long getSerialNo();
+	IOggDecoder* getDecoderInterface();
 	//CBasePin virtuals
 	virtual HRESULT GetMediaType(int inPosition, CMediaType* outMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType* inMediaType);
@@ -60,4 +64,5 @@ protected:
 	BYTE* getBOSAsFormatBlock();
 	BYTE* mBOSAsFormatBlock;
 	OggPage* mBOSPage;
+	IOggDecoder* mDecoderInterface;
 };
