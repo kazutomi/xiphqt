@@ -30,7 +30,7 @@
 //===========================================================================
 #include "StdAfx.h"
 #include "OggDemuxPageSourceFilter.h"
-
+#include "OggStreamMapper.h"
 
 // This template lets the Object factory create us properly and work with COM infrastructure.
 CFactoryTemplate g_Templates[] = 
@@ -98,6 +98,7 @@ STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, 
 }
 OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
 	:	CBaseFilter(NAME("OggDemuxPageSourceFilter"), NULL, m_pLock, CLSID_OggDemuxPageSourceFilter)
+	,	mDataSource(NULL)
 {
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
@@ -105,10 +106,13 @@ OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
 	mSourceFileLock = new CCritSec;
 	mDemuxLock = new CCritSec;
 	mStreamLock = new CCritSec;
+
+	mStreamMapper = new OggStreamMapper(this, m_pLock);
 }
 
 OggDemuxPageSourceFilter::~OggDemuxPageSourceFilter(void)
 {
+	delete mStreamMapper;
 	//TODO::: Delete the locks
 }
 //IMEdiaStreaming
@@ -163,8 +167,81 @@ STDMETHODIMP OggDemuxPageSourceFilter::Stop(void)
 	return E_NOTIMPL;
 
 }
+
+bool OggDemuxPageSourceFilter::acceptOggPage(OggPage* inOggPage)
+{
+	return mStreamMapper->acceptOggPage(inOggPage);
+}
 HRESULT OggDemuxPageSourceFilter::SetUpPins()
 {
+	CAutoLock locDemuxLock(mDemuxLock);
+	CAutoLock locSourceLock(mSourceFileLock);
+	
+	unsigned short locRetryCount = 0;
+	const unsigned short RETRY_THRESHOLD = 3;
+
+	//Create and open a data source
+	mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+	mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+	
+	//Error check
+	
+	//Register a callback
+	mOggBuffer.registerVirtualCallback(this);
+
+	char* locBuff = new char[SETUP_BUFFER_SIZE];
+	unsigned long locNumRead = 0;
+
+	//Feed the data in until we have seen all BOS pages.
+	while(!mStreamMapper->allStreamsReady()) {
+	
+		locNumRead = mDataSource->read(locBuff, SETUP_BUFFER_SIZE);
+	
+		if (locNumRead > 0) {
+			mOggBuffer.feed((const unsigned char*)locBuff, locNumRead);
+		}
+
+		if (mDataSource->isEOF() || mDataSource->isError()) {
+			if (mDataSource->isError() && (mDataSource->shouldRetryAt() != "") && (locRetryCount < RETRY_THRESHOLD)) {
+				mOggBuffer.clearData();
+				string locNewLocation = mDataSource->shouldRetryAt();
+				//debugLog<<"Retrying at : "<<locNewLocation<<endl;
+				delete mDataSource;
+				mDataSource = DataSourceFactory::createDataSource(locNewLocation.c_str());
+				mDataSource->open(locNewLocation.c_str());
+				locRetryCount++;
+			} else {
+				//debugLog<<"Bailing out"<<endl;
+				return VFW_E_CANNOT_RENDER;
+			}
+		}
+	}
+	
+	//mStreamMapper->setAllowDispatch(true);
+	//mStreamMapper->toStartOfData();			//Flushes all streams and sets them to ignore the right number of headers.
+	//mOggBuffer.clearData();
+	//mDataSource->seek(0);			//TODO::: This is bad for streams.
+
+	//debugLog<<"COMPLETED SETUP"<<endl;
+	delete[] locBuff;
+	return S_OK;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	//TODO:::
 	return S_OK;
 }
