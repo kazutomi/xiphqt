@@ -99,6 +99,9 @@ STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, 
 OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
 	:	CBaseFilter(NAME("OggDemuxPageSourceFilter"), NULL, m_pLock, CLSID_OggDemuxPageSourceFilter)
 	,	mDataSource(NULL)
+	,	mSeenAllBOSPages(false)
+	,	mSeenPositiveGranulePos(false)
+	,	mPendingPage(NULL)
 {
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
@@ -170,7 +173,23 @@ STDMETHODIMP OggDemuxPageSourceFilter::Stop(void)
 
 bool OggDemuxPageSourceFilter::acceptOggPage(OggPage* inOggPage)
 {
-	return mStreamMapper->acceptOggPage(inOggPage);
+	if (!mSeenAllBOSPages) {
+		if (!inOggPage->header()->isBOS()) {
+			mSeenAllBOSPages = true;
+			mBufferedPages.push_back(inOggPage);
+			return true;
+		} else {
+			return mStreamMapper->acceptOggPage(inOggPage);
+		}
+	} else if (!mSeenPositiveGranulePos) {
+		if (inOggPage->header()->GranulePos() > 0) {
+			mSeenPositiveGranulePos = true;
+		}
+		mBufferedPages.push_back(inOggPage);
+		return true;
+	} else {
+		return mStreamMapper->acceptOggPage(inOggPage);
+	}
 }
 HRESULT OggDemuxPageSourceFilter::SetUpPins()
 {
@@ -193,7 +212,7 @@ HRESULT OggDemuxPageSourceFilter::SetUpPins()
 	unsigned long locNumRead = 0;
 
 	//Feed the data in until we have seen all BOS pages.
-	while(!mStreamMapper->allStreamsReady()) {
+	while(!mSeenPositiveGranulePos) {			//mStreamMapper->allStreamsReady()) {
 	
 		locNumRead = mDataSource->read(locBuff, SETUP_BUFFER_SIZE);
 	
@@ -272,8 +291,8 @@ STDMETHODIMP OggDemuxPageSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDI
 STDMETHODIMP OggDemuxPageSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType) 
 {
 	////Initialise the file here and setup all the streams
-	//CAutoLock locLock(m_pLock);
-	//mFileName = inFileName;
+	CAutoLock locLock(m_pLock);
+	mFileName = inFileName;
 
 	//debugLog<<"Loading : "<<StringHelper::toNarrowStr(mFileName)<<endl;
 
@@ -281,10 +300,10 @@ STDMETHODIMP OggDemuxPageSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA
 	//mSeekTable = new AutoOggSeekTable(StringHelper::toNarrowStr(mFileName));
 	//mSeekTable->buildTable();
 	//
-	//return SetUpPins();
+	return SetUpPins();
 
 	//TODO:::
-	return S_OK;
+	//return S_OK;
 }
 
 //IAMFilterMiscFlags Interface

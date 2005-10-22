@@ -110,6 +110,11 @@ protected:
 
 	wstring mFileName;
 
+	bool mSeenAllBOSPages;
+	bool mSeenPositiveGranulePos;
+	OggPage* mPendingPage;
+	vector<OggPage*> mBufferedPages;
+
 	OggDataBuffer mOggBuffer;
 	IFilterDataSource* mDataSource;
 	OggStreamMapper* mStreamMapper;
