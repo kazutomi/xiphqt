@@ -1197,6 +1197,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libTemporalURIDotNET", "..\
 		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOggDemux2", "..\..\src\lib\core\directshow\dsfOggDemux2\dsfOggDemux2.vcproj", "{304B710A-7355-471C-A4A8-9E8F6D640E6D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -2746,6 +2750,26 @@ Global
 		{E36945ED-A48B-40EC-A1F3-B90EDFDD3F00}.Release_SSE.Build.0 = Release|Win32
 		{E36945ED-A48B-40EC-A1F3-B90EDFDD3F00}.Release_SSE2.ActiveCfg = Release|Win32
 		{E36945ED-A48B-40EC-A1F3-B90EDFDD3F00}.Release_SSE2.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Debug.ActiveCfg = Debug|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Debug.Build.0 = Debug|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Debug Unicode.ActiveCfg = Debug|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Debug Unicode.Build.0 = Debug|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Debug__cdecl.ActiveCfg = Debug|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Debug__cdecl.Build.0 = Debug|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.MakeFile.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.MakeFile.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release Unicode.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release Unicode.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release__cdecl.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release__cdecl.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_NoDotNET.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_NoDotNET.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE.Build.0 = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE2.ActiveCfg = Release|Win32
+		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE2.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
 	EndGlobalSection
