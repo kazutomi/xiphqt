@@ -123,9 +123,6 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\dsfOggDemux2.cpp">
-			</File>
-			<File
 				RelativePath=".\dsfOggDemux2.def">
 			</File>
 			<File
@@ -133,6 +130,12 @@
 			</File>
 			<File
 				RelativePath=".\OggDemuxPageSourcePin.cpp">
+			</File>
+			<File
+				RelativePath=".\oggdllstuff.cpp">
+			</File>
+			<File
+				RelativePath=".\RegWrap.cpp">
 			</File>
 			<File
 				RelativePath=".\stdafx.cpp">
@@ -165,6 +168,9 @@
 			</File>
 			<File
 				RelativePath=".\oggdllstuff.h">
+			</File>
+			<File
+				RelativePath=".\RegWrap.h">
 			</File>
 			<File
 				RelativePath=".\stdafx.h">
