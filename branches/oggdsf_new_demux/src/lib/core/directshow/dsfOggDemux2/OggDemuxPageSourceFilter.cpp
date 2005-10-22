@@ -37,8 +37,8 @@ CFactoryTemplate g_Templates[] =
 {
     { 
 		L"OggDemuxFilter",						// Name
-	    &CLSID_OggDemuxSourceFilter,            // CLSID
-	    OggDemuxSourceFilter::CreateInstance,	// Method to create an instance of MyComponent
+	    &CLSID_OggDemuxPageSourceFilter,            // CLSID
+	    OggDemuxPageSourceFilter::CreateInstance,	// Method to create an instance of MyComponent
         NULL,									// Initialization function
         NULL									// Set-up information (for filters)
     }
