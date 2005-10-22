@@ -32,6 +32,9 @@ public:
 
 	bool allStreamsReady();
 
+	unsigned long numPins()				{		return mPins.size();		}
+	OggDemuxPageSourcePin* getPinByIndex(unsigned long inIndex);
+
 protected:
 	eStreamState mStreamState;
 	vector<OggDemuxPageSourcePin*> mPins;

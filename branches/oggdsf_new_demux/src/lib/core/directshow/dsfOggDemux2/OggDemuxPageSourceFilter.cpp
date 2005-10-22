@@ -267,20 +267,22 @@ HRESULT OggDemuxPageSourceFilter::SetUpPins()
 int OggDemuxPageSourceFilter::GetPinCount() 
 {
 	//TODO::: Implement
-	return 0;//mStreamMapper->numStreams();
+	return mStreamMapper->numPins();
 }
 CBasePin* OggDemuxPageSourceFilter::GetPin(int inPinNo) 
 {
-	//TODO::: IMplement
-	return NULL;
+	if (inPinNo < 0) {
+		return NULL;
+	}
+	return mStreamMapper->getPinByIndex(inPinNo);
 }
 
 //IFileSource Interface
 STDMETHODIMP OggDemuxPageSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) 
 {
 	////Return the filename and mediatype of the raw data
-	//LPOLESTR x = SysAllocString(mFileName.c_str());
-	//*outFileName = x;
+	LPOLESTR x = SysAllocString(mFileName.c_str());
+	*outFileName = x;
 
 	//TODO:::
 	
