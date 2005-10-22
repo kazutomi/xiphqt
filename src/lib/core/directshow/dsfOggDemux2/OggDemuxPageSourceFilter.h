@@ -31,8 +31,28 @@
 #pragma once
 
 class OggDemuxPageSourceFilter
+	:	public CBaseFilter
+	//,	public CAMThread
+	//,	public IFileSourceFilter
+	//,	public IOggCallback
+	//,	public BasicSeekPassThrough
+	//,	public ISpecifyPropertyPages
+	//,	public IAMFilterMiscFlags
+	//,	public IAMMediaContent
 {
 public:
 	OggDemuxPageSourceFilter(void);
-	~OggDemuxPageSourceFilter(void);
+	virtual ~OggDemuxPageSourceFilter(void);
+
+	//Com Stuff
+	//DECLARE_IUNKNOWN
+
+	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
+	static CUnknown * WINAPI CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr);
+
+
+	//PURE VIRTUALS From CBaseFilter
+	virtual int GetPinCount();
+	virtual CBasePin* GetPin(int inPinNo);
+
 };
