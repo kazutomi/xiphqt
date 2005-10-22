@@ -156,7 +156,11 @@ STDMETHODIMP OggDemuxPageSourceFilter::Stop(void)
 	return E_NOTIMPL;
 
 }
-
+HRESULT OggDemuxPageSourceFilter::SetUpPins()
+{
+	//TODO:::
+	return S_OK;
+}
 int OggDemuxPageSourceFilter::GetPinCount() 
 {
 	//TODO::: Implement

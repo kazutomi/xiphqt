@@ -31,10 +31,85 @@
 #include "StdAfx.h"
 #include ".\oggdemuxpagesourcepin.h"
 
-OggDemuxPageSourcePin::OggDemuxPageSourcePin(void)
+OggDemuxPageSourcePin::	OggDemuxPageSourcePin(		TCHAR* inObjectName
+												,	OggDemuxPageSourceFilter* inParentFilter
+												,	CCritSec* inFilterLock
+												,	OggPage* inBOSPage)
+	:	CBaseOutputPin(			NAME("Ogg Demux Output Pin")
+							,	inParentFilter
+							,	inFilterLock
+							,	&mFilterHR
+							,	L"Ogg Stream" )
+	,	mBOSPage(inBOSPage)
 {
+
+	mBOSAsFormatBlock = (BYTE*)inBOSPage->createRawPageData();
+	
 }
 
 OggDemuxPageSourcePin::~OggDemuxPageSourcePin(void)
 {
+	delete[] mBOSAsFormatBlock;
+	delete mBOSPage;
+}
+
+BYTE* OggDemuxPageSourcePin::getBOSAsFormatBlock()
+{
+	return mBOSAsFormatBlock;
+}
+HRESULT OggDemuxPageSourcePin::GetMediaType(int inPosition, CMediaType* outMediaType) 
+{
+	//Put it in from the info we got in the constructor.
+	if (inPosition == 0) {
+		AM_MEDIA_TYPE locAMMediaType;
+		locAMMediaType.majortype = MEDIATYPE_OggPageStream;
+
+		locAMMediaType.subtype = MEDIASUBTYPE_None;
+		locAMMediaType.formattype = FORMAT_OggBOSPage;
+		locAMMediaType.cbFormat = mBOSPage->pageSize();
+		locAMMediaType.pbFormat = getBOSAsFormatBlock();
+		locAMMediaType.pUnk = NULL;
+	
+			
+	
+		CMediaType locMediaType(locAMMediaType);		
+		*outMediaType = locMediaType;
+		return S_OK;
+	} else {
+		return VFW_S_NO_MORE_ITEMS;
+	}
+}
+HRESULT OggDemuxPageSourcePin::CheckMediaType(const CMediaType* inMediaType) {
+	if (		(inMediaType->majortype == MEDIATYPE_OggPageStream) 
+			&&	(inMediaType->subtype == MEDIASUBTYPE_None)
+			&&	(inMediaType->formattype == FORMAT_OggBOSPage)) {
+			//&&	(inMediaType->cbFormat == mBOSPage->pageSize()) {
+
+		return S_OK;
+	} else {
+		return E_FAIL;
+	}
+}
+HRESULT OggDemuxPageSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest) 
+{
+	HRESULT locHR = S_OK;
+
+	ALLOCATOR_PROPERTIES locReqAlloc;
+	ALLOCATOR_PROPERTIES locActualAlloc;
+
+	locReqAlloc.cbAlign = 1;
+	locReqAlloc.cbBuffer = 65536; //BUFFER_SIZE;
+	locReqAlloc.cbPrefix = 0;
+	locReqAlloc.cBuffers = NUM_PAGE_BUFFERS; //NUM_BUFFERS;
+
+	locHR = inoutAllocator->SetProperties(&locReqAlloc, &locActualAlloc);
+
+	if (locHR != S_OK) {
+		return locHR;
+	}
+	
+	locHR = inoutAllocator->Commit();
+
+	return locHR;
+
 }

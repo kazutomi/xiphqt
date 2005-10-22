@@ -90,5 +90,6 @@ public:
 	virtual STDMETHODIMP GetPreroll(LONGLONG *pllPreroll);
 	virtual STDMETHODIMP IsUsingTimeFormat(const GUID *pFormat);
 
-
+protected:
+	virtual HRESULT SetUpPins();
 };
