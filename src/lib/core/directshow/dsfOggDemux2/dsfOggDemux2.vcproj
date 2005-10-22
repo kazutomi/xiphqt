@@ -161,6 +161,9 @@
 				RelativePath=".\ds_guids.h">
 			</File>
 			<File
+				RelativePath=".\IOggDecoder.h">
+			</File>
+			<File
 				RelativePath=".\OggDemuxPageSourceFilter.h">
 			</File>
 			<File
