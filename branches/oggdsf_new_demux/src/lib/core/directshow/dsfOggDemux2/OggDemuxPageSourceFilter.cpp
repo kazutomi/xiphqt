@@ -99,10 +99,17 @@ STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, 
 OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
 	:	CBaseFilter(NAME("OggDemuxPageSourceFilter"), NULL, m_pLock, CLSID_OggDemuxPageSourceFilter)
 {
+	//Why do we do this, should the base class do it ?
+	m_pLock = new CCritSec;
+
+	mSourceFileLock = new CCritSec;
+	mDemuxLock = new CCritSec;
+	mStreamLock = new CCritSec;
 }
 
 OggDemuxPageSourceFilter::~OggDemuxPageSourceFilter(void)
 {
+	//TODO::: Delete the locks
 }
 //IMEdiaStreaming
 STDMETHODIMP OggDemuxPageSourceFilter::Run(REFERENCE_TIME tStart) 
