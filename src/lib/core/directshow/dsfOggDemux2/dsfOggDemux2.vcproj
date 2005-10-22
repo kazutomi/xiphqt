@@ -123,7 +123,19 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath=".\DataSourceFactory.cpp">
+			</File>
+			<File
 				RelativePath=".\dsfOggDemux2.def">
+			</File>
+			<File
+				RelativePath=".\FilterFileSource.cpp">
+			</File>
+			<File
+				RelativePath=".\HTTPFileSource.cpp">
+			</File>
+			<File
+				RelativePath=".\HTTPSocket.cpp">
 			</File>
 			<File
 				RelativePath=".\OggDemuxPageSourceFilter.cpp">
@@ -139,6 +151,9 @@
 			</File>
 			<File
 				RelativePath=".\RegWrap.cpp">
+			</File>
+			<File
+				RelativePath=".\SingleMediaFileCache.cpp">
 			</File>
 			<File
 				RelativePath=".\stdafx.cpp">
@@ -161,7 +176,22 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
+				RelativePath=".\DataSourceFactory.h">
+			</File>
+			<File
 				RelativePath=".\ds_guids.h">
+			</File>
+			<File
+				RelativePath=".\FilterFileSource.h">
+			</File>
+			<File
+				RelativePath=".\HTTPFileSource.h">
+			</File>
+			<File
+				RelativePath=".\HTTPSocket.h">
+			</File>
+			<File
+				RelativePath=".\IFilterDataSource.h">
 			</File>
 			<File
 				RelativePath=".\IOggDecoder.h">
@@ -180,6 +210,9 @@
 			</File>
 			<File
 				RelativePath=".\RegWrap.h">
+			</File>
+			<File
+				RelativePath=".\SingleMediaFileCache.h">
 			</File>
 			<File
 				RelativePath=".\stdafx.h">
