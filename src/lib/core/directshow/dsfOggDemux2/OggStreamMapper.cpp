@@ -11,7 +11,14 @@ OggStreamMapper::OggStreamMapper(OggDemuxPageSourceFilter* inParentFilter, CCrit
 OggStreamMapper::~OggStreamMapper(void)
 {
 }
-
+OggDemuxPageSourcePin* OggStreamMapper::getPinByIndex(unsigned long inIndex)
+{
+	if (inIndex < mPins.size()) {
+		return mPins[inIndex];
+	} else {
+		return NULL;
+	}
+}
 bool OggStreamMapper::acceptOggPage(OggPage* inOggPage)
 {
 	
