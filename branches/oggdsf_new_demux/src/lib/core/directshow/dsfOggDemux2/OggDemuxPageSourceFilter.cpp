@@ -29,7 +29,7 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #include "StdAfx.h"
-#include ".\oggdemuxpagesourcefilter.h"
+#include "OggDemuxPageSourceFilter.h"
 
 
 // This template lets the Object factory create us properly and work with COM infrastructure.
@@ -58,11 +58,59 @@ CFactoryTemplate g_Templates[] =
 // Generic way of determining the number of items in the template
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]); 
 
+//COM Creator Function
+CUnknown* WINAPI OggDemuxPageSourceFilter::CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr) 
+{
+	OggDemuxPageSourceFilter *pNewObject = new OggDemuxPageSourceFilter();
+    if (pNewObject == NULL) {
+        *pHr = E_OUTOFMEMORY;
+    }
+    return pNewObject;
+} 
+//COM Interface query function
+STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, void **ppv)
+{
+	if (riid == IID_IFileSourceFilter) {
+		*ppv = (IFileSourceFilter*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+	/*} else if (riid == IID_IMediaSeeking) {
+		*ppv = (IMediaSeeking*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;*/
+	}/* else if (riid == IID_ISpecifyPropertyPages) {
+		*ppv = (ISpecifyPropertyPages*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+	}*/  else if (riid == IID_IAMFilterMiscFlags) {
+		*ppv = (IAMFilterMiscFlags*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+	//} else if (riid == IID_IAMMediaContent) {
+	//	//debugLog<<"Queries for IAMMediaContent///"<<endl;
+	//	*ppv = (IAMMediaContent*)this;
+	//	((IUnknown*)*ppv)->AddRef();
+	//	return NOERROR;
+	}
 
+	return CBaseFilter::NonDelegatingQueryInterface(riid, ppv); 
+}
 OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
+	:	CBaseFilter(NAME("OggDemuxPageSourceFilter"), NULL, m_pLock, CLSID_OggDemuxPageSourceFilter)
 {
 }
 
 OggDemuxPageSourceFilter::~OggDemuxPageSourceFilter(void)
 {
+}
+
+int OggDemuxPageSourceFilter::GetPinCount() 
+{
+	//TODO::: Implement
+	return 0;//mStreamMapper->numStreams();
+}
+CBasePin* OggDemuxPageSourceFilter::GetPin(int inPinNo) 
+{
+	//TODO::: IMplement
+	return NULL;
 }
