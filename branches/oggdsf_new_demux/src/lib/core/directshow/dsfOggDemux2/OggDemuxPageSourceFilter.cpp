@@ -173,3 +173,217 @@ DWORD OggDemuxPageSourceFilter::ThreadProc(void) {
 	//}
 	return S_OK;
 }
+
+
+
+
+STDMETHODIMP OggDemuxPageSourceFilter::GetCapabilities(DWORD* inCapabilities) 
+{
+	//if (mSeekTable->enabled())  {
+	//	//debugLog<<"GetCaps "<<mSeekingCap<<endl;
+	//	*inCapabilities = mSeekingCap;
+	//	return S_OK;
+	//} else {
+	//	//debugLog<<"Get Caps failed !!!!!!!"<<endl;
+	//	*inCapabilities = 0;
+	//	return S_OK;;
+	//}
+
+
+	//TODO:::
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetDuration(LONGLONG* outDuration) 
+{
+	//if (mSeekTable->enabled())  {
+	//	//debugLog<<"GetDuration = " << mSeekTable->fileDuration()<<" ds units"<<endl;
+	//	*outDuration = mSeekTable->fileDuration();
+	//	return S_OK;
+	//} else {
+	//	return E_NOTIMPL;
+	//}
+
+	//TODO:::
+	return E_NOTIMPL;
+
+}
+	 
+STDMETHODIMP OggDemuxPageSourceFilter::CheckCapabilities(DWORD *pCapabilities)
+{
+	//debugLog<<"CheckCaps	: Not impl"<<endl;
+
+	//TODO:::
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::IsFormatSupported(const GUID *pFormat)
+{
+	//ASSERT(pFormat != NULL);
+	//if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
+	//	//debugLog<<"IsFormatSupported	: TRUE"<<endl;
+	//	return S_OK;
+	//} else {
+	//	//debugLog<<"IsFormatSupported	: FALSE !!!"<<endl;
+	//	return S_FALSE;
+	//}
+
+	//TODO:::
+	return E_NOTIMPL;
+
+	
+}
+STDMETHODIMP OggDemuxPageSourceFilter::QueryPreferredFormat(GUID *pFormat){
+	//debugLog<<"QueryPrefferedTimeFormat	: MEDIA TIME"<<endl;
+	*pFormat = TIME_FORMAT_MEDIA_TIME;
+	return S_OK;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::SetTimeFormat(const GUID *pFormat){
+	//debugLog<<"SetTimeForamt : NOT IMPL"<<endl;
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetTimeFormat( GUID *pFormat){
+	*pFormat = TIME_FORMAT_MEDIA_TIME;
+	return S_OK;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetStopPosition(LONGLONG *pStop){
+	//if (mSeekTable->enabled())  {
+
+	//	//debugLog<<"GetStopPos = " << mSeekTable->fileDuration()<<" ds units"<<endl;
+	//	*pStop = mSeekTable->fileDuration();
+	//	return S_OK;
+	//} else {
+	//	//debugLog<<"GetStopPos NOT IMPL"<<endl;
+	//	return E_NOTIMPL;
+	//}
+
+	//TODO:::
+	return E_NOTIMPL;
+
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetCurrentPosition(LONGLONG *pCurrent)
+{
+	//TODO::: Implement this properly
+
+	//debugLog<<"GetCurrentPos = NOT_IMPL"<<endl;
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::ConvertTimeFormat(LONGLONG *pTarget, const GUID *pTargetFormat, LONGLONG Source, const GUID *pSourceFormat){
+	//debugLog<<"ConvertTimeForamt : NOT IMPL"<<endl;
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD dwCurrentFlags,LONGLONG *pStop,DWORD dwStopFlags){
+
+
+	//CAutoLock locLock(m_pLock);
+	////debugLog<<"Set Positions "<<*pCurrent<<" to "<<*pStop<<" with flags "<<dwCurrentFlags<<" and "<<dwStopFlags<<endl;
+	//if (mSeekTable->enabled())  {
+	//	//debugLog<<"SetPos : Current = "<<*pCurrent<<" Flags = "<<dwCurrentFlags<<" Stop = "<<*pStop<<" dwStopFlags = "<<dwStopFlags<<endl;
+	//	//debugLog<<"       : Delivering begin flush..."<<endl;
+
+	//
+	//	CAutoLock locSourceLock(mSourceFileLock);
+	//	mSetIgnorePackets = false;
+	//	DeliverBeginFlush();
+	//	//debugLog<<"       : Begin flush Delviered."<<endl;
+
+	//	//Find the byte position for this time.
+	//	OggSeekTable::tSeekPair locStartPos = mSeekTable->getStartPos(*pCurrent);
+	//	bool locSendExcess = false;
+
+	//	//FIX::: This code needs to be removed, and handle start seek case.
+	//	//.second is the file position.
+	//	//.first is the time in DS units
+	//	if (locStartPos.second == mStreamMapper->startOfData()) {
+	//		locSendExcess = true;
+	//		//GGFF:::
+	//		//mStreamMapper->toStartOfData();
+	//		mSetIgnorePackets = true;
+	//	}
+	//	
+	//	
+	//	//We have to save this here now... since time can't be reverted to granule pos in all cases
+	//	// we have to use granule pos timestamps in order for downstream codecs to work.
+	//	// Because of this we can't factor time bases after seeking into the sample times.
+	//	*pCurrent	= mSeekTimeBase 
+	//				= locStartPos.first;		//Time from seek pair.
+
+	//	//debugLog<<"Corrected pCurrent : "<<mSeekTimeBase<<endl;
+	//	for (unsigned long i = 0; i < mStreamMapper->numStreams(); i++) {
+	//		mStreamMapper->getOggStream(i)->setSendExcess(locSendExcess);		//Not needed
+	//		mStreamMapper->getOggStream(i)->setLastEndGranPos(*pCurrent);
+	//	}
+	//	{
+	//		//debugLog<<"       : Delivering End Flush..."<<endl;
+	//		DeliverEndFlush();
+	//		//debugLog<<"       : End flush Delviered."<<endl;
+	//		DeliverNewSegment(*pCurrent, mSeekTable->fileDuration(), 1.0);
+	//	}
+
+	//	//.second is the file position.
+	//	mDataSource->seek(locStartPos.second);
+	//
+	//	//debugLog<<"       : Seek complete."<<endl;
+	//} else {
+	//	//debugLog<<"Seek not IMPL"<<endl;
+	//	return E_NOTIMPL;
+	//}
+
+	//return S_OK;
+
+	//TODO:::
+	return E_NOTIMPL;
+
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetPositions(LONGLONG *pCurrent, LONGLONG *pStop)
+{
+	//debugLog<<"Getpos : Not IMPL"<<endl;
+	//debugLog<<"GetPos : Current = HARDCODED 2 secs , Stop = "<<mSeekTable->fileDuration()/UNITS <<" secs."<<endl;
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGLONG *pLatest){
+	//debugLog<<"****GetAvailable : NOT IMPL"<<endl;
+	//if (mSeekTable->enabled())  {
+	//	//debugLog<<"Get Avail ok"<<endl;
+	//	*pEarliest = 0;
+	//	//debugLog<<"+++++ Duration is "<<mSeekTable->fileDuration()<<endl;
+	//	*pLatest = mSeekTable->fileDuration();
+	//	return S_OK;
+	//} else {
+	//	return E_NOTIMPL;
+	//}
+
+	//TODO:::
+	return E_NOTIMPL;
+
+}
+STDMETHODIMP OggDemuxPageSourceFilter::SetRate(double dRate)
+{
+	//debugLog<<"Set RATE : NOT IMPL"<<endl;
+	return E_NOTIMPL;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetRate(double *dRate)
+{
+
+	*dRate = 1.0;
+	return S_OK;;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::GetPreroll(LONGLONG *pllPreroll)
+{
+
+	*pllPreroll = 0;
+	//debugLog<<"GetPreroll : HARD CODED TO 0"<<endl;
+	return S_OK;
+}
+STDMETHODIMP OggDemuxPageSourceFilter::IsUsingTimeFormat(const GUID *pFormat){
+	//if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
+	//	//debugLog<<"IsUsingTimeFormat : MEDIA TIME TRUE"<<endl;
+	//	return S_OK;
+	//} else {
+	//	//debugLog<<"IsUsingTimeFormat : MEDIA TIME FALSE !!!!"<<endl;
+	//	return S_FALSE;
+	//}
+
+	//TODO:::
+	return E_NOTIMPL;
+
+}
+
