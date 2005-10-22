@@ -118,6 +118,12 @@
 				RelativePath=".\dsfOggDemux2.cpp">
 			</File>
 			<File
+				RelativePath=".\OggDemuxPageSourceFilter.cpp">
+			</File>
+			<File
+				RelativePath=".\OggDemuxPageSourcePin.cpp">
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -139,6 +145,12 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath=".\ds_guids.h">
+			</File>
+			<File
+				RelativePath=".\OggDemuxPageSourceFilter.h">
+			</File>
+			<File
+				RelativePath=".\OggDemuxPageSourcePin.h">
 			</File>
 			<File
 				RelativePath=".\oggdllstuff.h">
