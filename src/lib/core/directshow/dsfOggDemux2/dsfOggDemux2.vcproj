@@ -135,6 +135,9 @@
 				RelativePath=".\oggdllstuff.cpp">
 			</File>
 			<File
+				RelativePath=".\OggStreamMapper.cpp">
+			</File>
+			<File
 				RelativePath=".\RegWrap.cpp">
 			</File>
 			<File
@@ -171,6 +174,9 @@
 			</File>
 			<File
 				RelativePath=".\oggdllstuff.h">
+			</File>
+			<File
+				RelativePath=".\OggStreamMapper.h">
 			</File>
 			<File
 				RelativePath=".\RegWrap.h">

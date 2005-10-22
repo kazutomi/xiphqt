@@ -30,9 +30,34 @@
 //===========================================================================
 #pragma once
 
+#include <libOOOgg/OggPage.h>
 class OggDemuxPageSourcePin
+	:	public CBaseOutputPin
 {
 public:
-	OggDemuxPageSourcePin(void);
+	//OggDemuxPageSourcePin(void);
+	OggDemuxPageSourcePin(	TCHAR* inObjectName, 
+							OggDemuxPageSourceFilter* inParentFilter,
+							CCritSec* inFilterLock,
+							OggPage* inBOSPage);
+							//StreamHeaders* inHeaderSource, 
+							//CMediaType* inMediaType,
+							//wstring inPinName,
+							//bool inAllowSeek,
+							//unsigned long inNumBuffers,
+							//unsigned long inBufferSize);
 	~OggDemuxPageSourcePin(void);
+
+	static const unsigned long NUM_PAGE_BUFFERS = 100;
+	//CBasePin virtuals
+	virtual HRESULT GetMediaType(int inPosition, CMediaType* outMediaType);
+	virtual HRESULT CheckMediaType(const CMediaType* inMediaType);
+	virtual HRESULT DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest);
+protected:
+	//What is this actually for ?
+	HRESULT mFilterHR;
+
+	BYTE* getBOSAsFormatBlock();
+	BYTE* mBOSAsFormatBlock;
+	OggPage* mBOSPage;
 };
