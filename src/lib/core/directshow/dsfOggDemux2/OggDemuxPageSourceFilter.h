@@ -37,7 +37,7 @@ class OggDemuxPageSourceFilter
 	//,	public IOggCallback
 	//,	public BasicSeekPassThrough
 	//,	public ISpecifyPropertyPages
-	//,	public IAMFilterMiscFlags
+	,	public IAMFilterMiscFlags
 	//,	public IAMMediaContent
 {
 public:
@@ -58,6 +58,9 @@ public:
 	//IFileSource Interface
 	virtual STDMETHODIMP GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType);
 	virtual STDMETHODIMP Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType);
+
+	//IAMFilterMiscFlags Interface
+	ULONG STDMETHODCALLTYPE GetMiscFlags(void);
 
 
 };
