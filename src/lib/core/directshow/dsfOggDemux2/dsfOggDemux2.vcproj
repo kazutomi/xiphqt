@@ -23,17 +23,21 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFOGGDEMUX2_EXPORTS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="4"
+				CallingConvention="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Strmbasd.lib Msvcrtd.lib Winmm.lib Strmiids.lib  Quartz.lib wsock32.lib shlwapi.lib"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;C:\DXSDK\Samples\C++\DirectShow\BaseClasses\Debug&quot;"
+				ModuleDefinitionFile="dsfOggDemux2.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/dsfOggDemux2.pdb"
 				SubSystem="2"
@@ -70,17 +74,19 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;C:\DXSDK\Samples\C++\DirectShow\BaseClasses&quot;;C:\DXSDK\Include;..\..\ogg;..\..\..\helper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFOGGDEMUX2_EXPORTS"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="3"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+				CallingConvention="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="1"
+				ModuleDefinitionFile="dsfOggDemux2.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -118,6 +124,9 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
 				RelativePath=".\dsfOggDemux2.cpp">
+			</File>
+			<File
+				RelativePath=".\dsfOggDemux2.def">
 			</File>
 			<File
 				RelativePath=".\OggDemuxPageSourceFilter.cpp">
