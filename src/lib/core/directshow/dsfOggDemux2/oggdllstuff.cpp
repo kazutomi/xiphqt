@@ -32,6 +32,7 @@
 #include "oggdllstuff.h"
 #include "RegWrap.h"
 
+#define DONT_TOUCH_REGISTRY
 
 
 extern "C" BOOL WINAPI DllEntryPoint(HINSTANCE, ULONG, LPVOID);
@@ -73,11 +74,11 @@ STDAPI DllRegisterServer()
         &OggDemuxPageSourceFilterReg								// Pointer to filter information.
     );
 
-
+#if (!defined(DONT_TOUCH_REGISTRY))
 	//Only call once... if you need multiple you have to fix the hack job in RegWrap !
 	RegWrap::addMediaPlayerDesc("Ogg File",  "*.ogg;*.ogv;*.oga;*.spx");
 	RegWrap::deleteKeyRecurse(HKEY_CLASSES_ROOT, ".OGG", "ShellEx");
-
+#endif
 
 
 
@@ -90,9 +91,10 @@ STDAPI DllRegisterServer()
 
 STDAPI DllUnregisterServer()
 {
+#if (!defined(DONT_TOUCH_REGISTRY))
 	//This is not a general purpose function.
 	RegWrap::removeMediaDesc();
-
+#endif
    HRESULT hr;
     IFilterMapper2* locFilterMapper = NULL;
 
