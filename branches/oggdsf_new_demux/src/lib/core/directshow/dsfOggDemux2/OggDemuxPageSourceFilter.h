@@ -50,6 +50,10 @@ public:
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 	static CUnknown * WINAPI CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr);
 
+	//Streaming MEthods
+	STDMETHODIMP Run(REFERENCE_TIME tStart);
+	STDMETHODIMP Pause(void);
+	STDMETHODIMP Stop(void);
 
 	//PURE VIRTUALS From CBaseFilter
 	virtual int GetPinCount();

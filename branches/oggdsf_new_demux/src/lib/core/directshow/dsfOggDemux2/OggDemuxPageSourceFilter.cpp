@@ -74,15 +74,16 @@ STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, 
 		*ppv = (IFileSourceFilter*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
-	/*} else if (riid == IID_IMediaSeeking) {
+	} else if (riid == IID_IMediaSeeking) {
 		*ppv = (IMediaSeeking*)this;
 		((IUnknown*)*ppv)->AddRef();
-		return NOERROR;*/
-	}/* else if (riid == IID_ISpecifyPropertyPages) {
+		return NOERROR;
+	/*} else if (riid == IID_ISpecifyPropertyPages) {
 		*ppv = (ISpecifyPropertyPages*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
-	}*/  else if (riid == IID_IAMFilterMiscFlags) {
+	*/
+	}  else if (riid == IID_IAMFilterMiscFlags) {
 		*ppv = (IAMFilterMiscFlags*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
@@ -102,6 +103,58 @@ OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
 
 OggDemuxPageSourceFilter::~OggDemuxPageSourceFilter(void)
 {
+}
+//IMEdiaStreaming
+STDMETHODIMP OggDemuxPageSourceFilter::Run(REFERENCE_TIME tStart) 
+{
+	//const REFERENCE_TIME A_LONG_TIME = UNITS * 1000;
+	//CAutoLock locLock(m_pLock);
+	//debugLog<<"Run  :  time = "<<tStart<<endl;
+	////DeliverNewSegment(tStart, tStart + A_LONG_TIME, 1.0);
+	//return CBaseFilter::Run(tStart);
+
+	//TODO:::
+	return E_NOTIMPL;
+	
+
+}
+STDMETHODIMP OggDemuxPageSourceFilter::Pause(void) 
+{
+	//CAutoLock locLock(m_pLock);
+	//debugLog << "** Pause called **"<<endl;
+	//if (m_State == State_Stopped) {
+	//	//debugLog << "Was in stopped state... starting thread"<<endl;
+	//	if (ThreadExists() == FALSE) {
+	//		Create();
+	//	}
+	//	CallWorker(THREAD_RUN);
+	//}
+	////debugLog<<"Was NOT is stopped state, not doing much at all..."<<endl;
+	//
+	//HRESULT locHR = CBaseFilter::Pause();
+	//
+	//return locHR;
+
+
+	//TODO:::
+	return E_NOTIMPL;
+	
+}
+STDMETHODIMP OggDemuxPageSourceFilter::Stop(void) 
+{
+	//CAutoLock locLock(m_pLock);
+	//debugLog<<"** Stop Called ** "<<endl;
+	//CallWorker(THREAD_EXIT);
+	//Close();
+	//DeliverBeginFlush();
+	//mSetIgnorePackets = true;
+	//DeliverEndFlush();
+	//
+	//return CBaseFilter::Stop();
+
+	//TODO:::
+	return E_NOTIMPL;
+
 }
 
 int OggDemuxPageSourceFilter::GetPinCount() 
