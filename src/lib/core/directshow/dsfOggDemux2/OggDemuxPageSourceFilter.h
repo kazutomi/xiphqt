@@ -32,7 +32,7 @@
 
 class OggDemuxPageSourceFilter
 	:	public CBaseFilter
-	//,	public CAMThread
+	,	public CAMThread
 	,	public IFileSourceFilter
 	//,	public IOggCallback
 	//,	public BasicSeekPassThrough
@@ -54,6 +54,9 @@ public:
 	//PURE VIRTUALS From CBaseFilter
 	virtual int GetPinCount();
 	virtual CBasePin* GetPin(int inPinNo);
+
+	//PURE VIRTUALS from CAMThread
+	virtual DWORD ThreadProc(void);
 
 	//IFileSource Interface
 	virtual STDMETHODIMP GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType);
