@@ -114,3 +114,34 @@ CBasePin* OggDemuxPageSourceFilter::GetPin(int inPinNo)
 	//TODO::: IMplement
 	return NULL;
 }
+
+//IFileSource Interface
+STDMETHODIMP OggDemuxPageSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) 
+{
+	////Return the filename and mediatype of the raw data
+	//LPOLESTR x = SysAllocString(mFileName.c_str());
+	//*outFileName = x;
+
+	//TODO:::
+	
+	return S_OK;
+}
+
+
+STDMETHODIMP OggDemuxPageSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType) 
+{
+	////Initialise the file here and setup all the streams
+	//CAutoLock locLock(m_pLock);
+	//mFileName = inFileName;
+
+	//debugLog<<"Loading : "<<StringHelper::toNarrowStr(mFileName)<<endl;
+
+	//debugLog << "Opening source file : "<<StringHelper::toNarrowStr(mFileName)<<endl;
+	//mSeekTable = new AutoOggSeekTable(StringHelper::toNarrowStr(mFileName));
+	//mSeekTable->buildTable();
+	//
+	//return SetUpPins();
+
+	//TODO:::
+	return S_OK;
+}
