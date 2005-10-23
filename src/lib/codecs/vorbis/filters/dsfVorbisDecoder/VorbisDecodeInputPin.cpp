@@ -54,16 +54,22 @@ VorbisDecodeInputPin::VorbisDecodeInputPin	(		AbstractTransformFilter* inFilter
 	,	mSampleRate(0)
 	,	mUptoFrame(0)
 	,	mSetupState(VSS_SEEN_NOTHING)
+	,	mDecodedBuffer(NULL)
+	,	mDecodedByteCount(0)
 		
 {
 	//debugLog.open("g:\\logs\\vorbislog.log", ios_base::out);
 	ConstructCodec();
+
+	mDecodedBuffer = new unsigned char[DECODED_BUFFER_SIZE];
 }
 
 VorbisDecodeInputPin::~VorbisDecodeInputPin(void)
 {
 	//debugLog.close();
 	DestroyCodec();
+	delete[] mDecodedBuffer;
+
 }
 //Is this needed ??
 STDMETHODIMP VorbisDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void **ppv)
@@ -129,42 +135,23 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 		}
 
 
+
 		unsigned long locActualSize = inFrames * locThis->mFrameSize;
 		unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
-		
-		//locThis->debugLog<<"m_tStart = "<<locThis->m_tStart<<endl;
-		//locThis->debugLog<<"mUptoFrame = "<<locThis->mUptoFrame<<endl;
-		//Make the start presentation time
-		REFERENCE_TIME locFrameStart = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
-
-		//Increment the frame counter
-		locThis->mUptoFrame += inFrames;
-
-		//Make the end presentation time
-		REFERENCE_TIME locFrameEnd = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
-
-		//locThis->debugLog<<"Sample time = "<<locFrameStart<<" - "<<locFrameEnd<<endl;
-		IMediaSample* locSample;
-		HRESULT locHR = locThis->mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, NULL);
-
-		if (locHR != S_OK) {
-			return -1;
-		}	
+		unsigned long locBufferRemaining = DECODED_BUFFER_SIZE - locThis->mDecodedByteCount;
 		
 
-		//Create pointers for the samples buffer to be assigned to
-		BYTE* locBuffer = NULL;
-		signed short* locShortBuffer = NULL;
+
+		//Create a pointer into the buffer		
+		signed short* locShortBuffer = (signed short*)locThis->mDecodedBuffer[locThis->mDecodedByteCount];
 		
-		locSample->GetPointer(&locBuffer);
-		locShortBuffer = (short *) locBuffer;
 		
 		signed short tempInt = 0;
 		float tempFloat = 0;
 		
 		//FIX:::Move the clipping to the abstract function
 
-		if (locSample->GetSize() >= locActualSize) {
+		if (locBufferRemaining >= locActualSize) {
 			//Do float to int conversion with clipping
 			const float SINT_MAX_AS_FLOAT = 32767.0f;
 			for (unsigned long i = 0; i < locTotalFrameCount; i++) {
@@ -185,22 +172,6 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 				locShortBuffer++;
 			}
 			
-			//Set the sample parameters.
-			locThis->SetSampleParams(locSample, locActualSize, &locFrameStart, &locFrameEnd);
-
-			{
-		
-				CAutoLock locLock(locThis->m_pLock);
-
-				//TODO::: Explain why we don't addref or release.
-				HRESULT locHR = ((VorbisDecodeOutputPin*)(locThis->mOutputPin))->mDataQueue->Receive(locSample);
-				if (locHR != S_OK) {
-					DbgLog((LOG_TRACE,1,TEXT("Queue rejected us...")));
-					return -1;
-				}
-			}
-
-			
 			return 0;
 		} else {
 			throw 0;
@@ -210,9 +181,211 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 		return -1;
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//unsigned long locActualSize = inFrames * locThis->mFrameSize;
+		//unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
+		//
+		////locThis->debugLog<<"m_tStart = "<<locThis->m_tStart<<endl;
+		////locThis->debugLog<<"mUptoFrame = "<<locThis->mUptoFrame<<endl;
+		////Make the start presentation time
+		//REFERENCE_TIME locFrameStart = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
+
+		////Increment the frame counter
+		//locThis->mUptoFrame += inFrames;
+
+		////Make the end presentation time
+		//REFERENCE_TIME locFrameEnd = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
+
+		////locThis->debugLog<<"Sample time = "<<locFrameStart<<" - "<<locFrameEnd<<endl;
+		//IMediaSample* locSample;
+		//HRESULT locHR = locThis->mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, NULL);
+
+		//if (locHR != S_OK) {
+		//	return -1;
+		//}	
+		//
+
+		////Create pointers for the samples buffer to be assigned to
+		//BYTE* locBuffer = NULL;
+		//signed short* locShortBuffer = NULL;
+		//
+		//locSample->GetPointer(&locBuffer);
+		//locShortBuffer = (short *) locBuffer;
+		//
+		//signed short tempInt = 0;
+		//float tempFloat = 0;
+		//
+		////FIX:::Move the clipping to the abstract function
+
+		//if (locSample->GetSize() >= locActualSize) {
+		//	//Do float to int conversion with clipping
+		//	const float SINT_MAX_AS_FLOAT = 32767.0f;
+		//	for (unsigned long i = 0; i < locTotalFrameCount; i++) {
+		//		//Clipping because vorbis puts out floats out of range -1 to 1
+		//		if (((float*)inPCM)[i] <= -1.0f) {
+		//			tempInt = SINT_MIN;	
+		//		} else if (((float*)inPCM)[i] >= 1.0f) {
+		//			tempInt = SINT_MAX;
+		//		} else {
+		//			//FIX:::Take out the unnescessary variable.
+		//			tempFloat = ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+		//			//ASSERT((tempFloat <= 32767.0f) && (tempFloat >= -32786.0f));
+		//			tempInt = (signed short)(tempFloat);
+		//			//tempInt = (signed short) ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+		//		}
+		//		
+		//		*locShortBuffer = tempInt;
+		//		locShortBuffer++;
+		//	}
+		//	
+		//	//Set the sample parameters.
+		//	locThis->SetSampleParams(locSample, locActualSize, &locFrameStart, &locFrameEnd);
+
+		//	{
+		//
+		//		CAutoLock locLock(locThis->m_pLock);
+
+		//		//TODO::: Explain why we don't addref or release.
+		//		HRESULT locHR = ((VorbisDecodeOutputPin*)(locThis->mOutputPin))->mDataQueue->Receive(locSample);
+		//		if (locHR != S_OK) {
+		//			DbgLog((LOG_TRACE,1,TEXT("Queue rejected us...")));
+		//			return -1;
+		//		}
+		//	}
+
+		//	
+		//	return 0;
+		//} else {
+		//	throw 0;
+		//}
+
+
 }
 
+STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample) 
+{
+	CAutoLock locLock(mStreamLock);
 
+	HRESULT locHR = CheckStreaming();
+
+	if (locHR == S_OK) {
+		BYTE* locBuff = NULL;
+		locHR = inSample->GetPointer(&locBuff);
+
+		if (locHR != S_OK) {
+			//TODO::: Do a debug dump or something here with specific error info.
+			return locHR;
+		} else {
+			REFERENCE_TIME locStart = -1;
+			REFERENCE_TIME locEnd = -1;
+			__int64 locSampleDuration = 0;
+			inSample->GetTime(&locStart, &locEnd);
+
+			HRESULT locResult = TransformData(locBuff, inSample->GetActualDataLength());
+			if (locResult != S_OK) {
+				return S_FALSE;
+			}
+			if (locEnd != -1) {
+				//Can dump it all downstream now	
+				IMediaSample* locSample;
+				unsigned long locBytesCopied = 0;
+				unsigned long locBytesToCopy = 0;
+
+				locStart = convertGranuleToTime(locEnd) - (((mDecodedByteCount / mFrameSize) * UNITS) / mSampleRate);
+				do {
+					HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
+					if (locHR != S_OK) {
+						return locHR;
+					}
+
+					BYTE* locBuffer = NULL;
+					locHR = locSample->GetPointer(&locBuffer);
+				
+					if (locHR != S_OK) {
+						return locHR;
+					}
+
+					locBytesToCopy = (mDecodedByteCount <= locSample->GetSize()) ? mDecodedByteCount : locSample->GetSize();
+
+					memcpy((void*)locBuffer, (const void*)&mDecodedBuffer[locBytesCopied], locBytesToCopy);
+					locBytesCopied += locBytesToCopy;
+
+					locSampleDuration = (((locBytesCopied/mFrameSize) * UNITS) / mSampleRate);
+					locEnd = locStart + locSampleDuration;
+
+					//Write the sample meta data
+					//TODO:: Seeking offset
+					locSample->SetTime(&locStart, &locEnd);
+					locSample->SetMediaTime(&locStart, &locEnd);
+					locSample->SetSyncPoint(TRUE);
+					locSample->SetActualDataLength(locBytesCopied);
+					locHR = ((VorbisDecodeOutputPin*)(mOutputPin))->mDataQueue->Receive(locSample);
+					if (locHR != S_OK) {
+						return locHR;
+					}
+					locStart += locSampleDuration;
+
+
+
+				
+				} while(locBytesCopied < mDecodedByteCount);
+
+				mDecodedByteCount = 0;
+				
+
+
+
+
+			}
+			return S_OK;
+
+		}
+	} else {
+		//Not streaming - Bail out.
+		return S_FALSE;
+	}
+}
 
 HRESULT VorbisDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes) 
 {
