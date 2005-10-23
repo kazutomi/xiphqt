@@ -113,6 +113,7 @@ protected:
 	virtual HRESULT SetUpPins();
 
 	void resetStream();
+	HRESULT DataProcessLoop();
 
 	void DeliverEOS();
 	void DeliverBeginFlush();

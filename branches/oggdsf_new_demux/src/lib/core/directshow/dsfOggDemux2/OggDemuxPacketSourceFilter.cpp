@@ -389,22 +389,84 @@ ULONG OggDemuxPacketSourceFilter::GetMiscFlags(void)
 //CAMThread Stuff
 DWORD OggDemuxPacketSourceFilter::ThreadProc(void) {
 	
-	//while(true) {
-	//	DWORD locThreadCommand = GetRequest();
-	//
-	//	switch(locThreadCommand) {
-	//		case THREAD_EXIT:
-	//
-	//			Reply(S_OK);
-	//			return S_OK;
+	while(true) {
+		DWORD locThreadCommand = GetRequest();
+	
+		switch(locThreadCommand) {
+			case THREAD_EXIT:
+	
+				Reply(S_OK);
+				return S_OK;
 
-	//		case THREAD_RUN:
-	//
-	//			Reply(S_OK);
-	//			DataProcessLoop();
-	//			break;
-	//	}
-	//}
+			case THREAD_RUN:
+	
+				Reply(S_OK);
+				DataProcessLoop();
+				break;
+		}
+	}
+	return S_OK;
+}
+HRESULT OggDemuxPacketSourceFilter::DataProcessLoop() 
+{
+	//Mess with the locking mechanisms at your own risk.
+
+	//debugLog<<"Starting DataProcessLoop :"<<endl;
+	DWORD locCommand = 0;
+	char* locBuff = new  char[4096];			//Deleted before function returns...
+	//TODO::: Make this a member variable ^^^^^
+	bool locKeepGoing = true;
+	unsigned long locBytesRead = 0;
+	bool locIsEOF = true;
+	{
+		CAutoLock locSourceLock(mSourceFileLock);
+		locIsEOF = mDataSource->isEOF();
+	}
+
+	while(true) {
+		if(CheckRequest(&locCommand) == TRUE) {
+			//debugLog<<"DataProcessLoop : Thread Command issued... leaving loop."<<endl;
+			delete[] locBuff;
+			return S_OK;
+		}
+		//debugLog<<"Looping..."<<endl;
+		{
+			CAutoLock locSourceLock(mSourceFileLock);
+
+			locBytesRead = mDataSource->read(locBuff, 4096);
+			mJustReset = false;
+		}
+		//debugLog <<"DataProcessLoop : gcount = "<<locBytesRead<<endl;
+		{
+			CAutoLock locDemuxLock(mDemuxLock);
+			//CAutoLock locStreamLock(mStreamLock);
+			if (mJustReset) {		//To avoid blocking problems... restart the loop if it was just reset while waiting for lock.
+				continue;
+			}
+			locKeepGoing = ((mOggBuffer.feed((const unsigned char*)locBuff, locBytesRead)) == (OggDataBuffer::FEED_OK));;
+		}
+		if (!locKeepGoing) {
+			//debugLog << "DataProcessLoop : Feed in data buffer said stop"<<endl;
+			//debugLog<<"DataProcessLoop : Exiting. Deliver EOS"<<endl;
+			DeliverEOS();
+		}
+		{
+			CAutoLock locSourceLock(mSourceFileLock);
+			locIsEOF = mDataSource->isEOF();
+		}
+		if (locIsEOF) {
+			//debugLog << "DataProcessLoop : EOF"<<endl;
+			//debugLog<<"DataProcessLoop : Exiting. Deliver EOS"<<endl;
+			DeliverEOS();
+		}
+	}
+
+	//debugLog<<"DataProcessLoop : Exiting. Deliver EOS"<<endl;
+
+	//Shuold we flush ehre ?
+	delete[] locBuff;
+	
+	//return value ??
 	return S_OK;
 }
 
