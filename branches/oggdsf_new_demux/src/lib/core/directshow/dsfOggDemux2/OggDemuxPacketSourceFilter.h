@@ -50,7 +50,11 @@ class OggDemuxPacketSourceFilter
 public:
 	OggDemuxPacketSourceFilter(void);
 	virtual ~OggDemuxPacketSourceFilter(void);
-
+	enum eThreadCommands {
+		THREAD_EXIT = 0,
+		THREAD_PAUSE = 1,
+		THREAD_RUN = 2
+	};
 	//Com Stuff
 	DECLARE_IUNKNOWN
 
@@ -108,6 +112,13 @@ protected:
 	static const unsigned long SETUP_BUFFER_SIZE = 24;
 	virtual HRESULT SetUpPins();
 
+	void resetStream();
+
+	void DeliverEOS();
+	void DeliverBeginFlush();
+	void DeliverEndFlush();
+	void DeliverNewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate);
+
 	CCritSec* mSourceFileLock;
 	CCritSec* mDemuxLock;
 	CCritSec* mStreamLock;
@@ -122,4 +133,7 @@ protected:
 	OggDataBuffer mOggBuffer;
 	IFilterDataSource* mDataSource;
 	OggStreamMapper* mStreamMapper;
+
+
+	bool mJustReset;
 };

@@ -102,6 +102,7 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	,	mSeenAllBOSPages(false)
 	,	mSeenPositiveGranulePos(false)
 	,	mPendingPage(NULL)
+	,	mJustReset(true)
 {
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
@@ -121,56 +122,120 @@ OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 //IMEdiaStreaming
 STDMETHODIMP OggDemuxPacketSourceFilter::Run(REFERENCE_TIME tStart) 
 {
-	//const REFERENCE_TIME A_LONG_TIME = UNITS * 1000;
-	//CAutoLock locLock(m_pLock);
-	//debugLog<<"Run  :  time = "<<tStart<<endl;
-	////DeliverNewSegment(tStart, tStart + A_LONG_TIME, 1.0);
-	//return CBaseFilter::Run(tStart);
+	CAutoLock locLock(m_pLock);
+	return CBaseFilter::Run(tStart);
 
-	//TODO:::
-	return E_NOTIMPL;
 	
 
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::Pause(void) 
 {
-	//CAutoLock locLock(m_pLock);
-	//debugLog << "** Pause called **"<<endl;
-	//if (m_State == State_Stopped) {
-	//	//debugLog << "Was in stopped state... starting thread"<<endl;
-	//	if (ThreadExists() == FALSE) {
-	//		Create();
-	//	}
-	//	CallWorker(THREAD_RUN);
-	//}
-	////debugLog<<"Was NOT is stopped state, not doing much at all..."<<endl;
-	//
-	//HRESULT locHR = CBaseFilter::Pause();
-	//
-	//return locHR;
-
-
-	//TODO:::
-	return E_NOTIMPL;
+	CAutoLock locLock(m_pLock);
+	if (m_State == State_Stopped) {
+		if (ThreadExists() == FALSE) {
+			Create();
+		}
+		CallWorker(THREAD_RUN);
+	}
+	HRESULT locHR = CBaseFilter::Pause();
+	
+	return locHR;
 	
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::Stop(void) 
 {
-	//CAutoLock locLock(m_pLock);
-	//debugLog<<"** Stop Called ** "<<endl;
-	//CallWorker(THREAD_EXIT);
-	//Close();
-	//DeliverBeginFlush();
+	CAutoLock locLock(m_pLock);
+	CallWorker(THREAD_EXIT);
+	Close();
+	DeliverBeginFlush();
 	//mSetIgnorePackets = true;
-	//DeliverEndFlush();
-	//
-	//return CBaseFilter::Stop();
+	DeliverEndFlush();
+	
+	return CBaseFilter::Stop();
 
-	//TODO:::
-	return E_NOTIMPL;
 
 }
+void OggDemuxPacketSourceFilter::DeliverBeginFlush() 
+{
+	CAutoLock locLock(m_pLock);
+	
+	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
+		mStreamMapper->getPinByIndex(i)->DeliverBeginFlush();
+	}
 
+	//Should this be here or endflush or neither ?
+	
+	//debugLog<<"Calling reset stream from begin flush"<<endl;
+	resetStream();
+}
+
+void OggDemuxPacketSourceFilter::DeliverEndFlush() 
+{
+	CAutoLock locLock(m_pLock);
+	
+	//if (mSetIgnorePackets == true) {
+	//	mStreamMapper->toStartOfData();
+	//	for (unsigned long i = 0; i < mStreamMapper->numStreams(); i++) {
+	//		//mStreamMapper->getOggStream(i)->flush();
+	//		mStreamMapper->getOggStream(i)->getPin()->DeliverEndFlush();
+	//	}
+
+	//} else {
+	//
+	//	for (unsigned long i = 0; i < mStreamMapper->numStreams(); i++) {
+	//		mStreamMapper->getOggStream(i)->flush();
+	//		mStreamMapper->getOggStream(i)->getPin()->DeliverEndFlush();
+	//	}
+	//}
+	//mSetIgnorePackets = false;
+}
+void OggDemuxPacketSourceFilter::DeliverEOS() 
+{
+	//mStreamMapper->toStartOfData();
+
+	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
+		//mStreamMapper->getOggStream(i)->flush();
+		mStreamMapper->getPinByIndex(i)->DeliverEndOfStream();
+		
+	}
+	//debugLog<<"Calling reset stream from DeliverEOS"<<endl;
+	resetStream();
+}
+
+void OggDemuxPacketSourceFilter::DeliverNewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate) 
+{
+	
+	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
+		mStreamMapper->getPinByIndex(i)->DeliverNewSegment(tStart, tStop, dRate);
+	}
+}
+
+void OggDemuxPacketSourceFilter::resetStream() {
+	{
+		CAutoLock locDemuxLock(mDemuxLock);
+		CAutoLock locSourceLock(mSourceFileLock);
+
+		//Close up the data source
+		mDataSource->clear();
+
+		mDataSource->close();
+		delete mDataSource;
+		mDataSource = NULL;
+		
+
+		mOggBuffer.clearData();
+
+		//Before opening make the interface
+		mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+
+		mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+		mDataSource->seek(0);   //Should always be zero for now.
+
+		//TODO::: Should be doing stuff with the demux state here ? or packetiser ?>?
+		
+		mJustReset = true;   //TODO::: Look into this !
+	}
+}
 bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
 {
 	if (!mSeenAllBOSPages) {
