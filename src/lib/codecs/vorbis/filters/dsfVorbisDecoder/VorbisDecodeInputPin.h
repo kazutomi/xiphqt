@@ -34,6 +34,10 @@
 #include <fstream>
 using namespace std;
 #include "vorbisdecoderdllstuff.h"
+
+
+
+#include "IOggDecoder.h"
 #include "AbstractTransformInputPin.h"
 #include "VorbisDecodeInputPin.h"
 
@@ -48,6 +52,7 @@ class VorbisDecodeOutputPin;
 
 class VorbisDecodeInputPin 
 	:	public AbstractTransformInputPin
+	,	public IOggDecoder
 {
 public:
 
@@ -65,8 +70,26 @@ public:
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
 
+	//IOggDecoder Interface
+	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
+	virtual IOggDecoder::eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket);
+	virtual string getCodecShortName();
+	virtual string getCodecIdentString();
+
+
+
 protected:
 	//fstream debugLog;
+
+	enum eVorbisSetupState {
+		VSS_SEEN_NOTHING,
+		VSS_SEEN_BOS,
+		VSS_SEEN_COMMENT,
+		VSS_ALL_HEADERS_SEEN,
+		VSS_ERROR
+	};
+
+	eVorbisSetupState mSetupState;
 
 	static const unsigned long VORBIS_IDENT_HEADER_SIZE = 30;
 	static const unsigned long VORBIS_NUM_BUFFERS = 75;

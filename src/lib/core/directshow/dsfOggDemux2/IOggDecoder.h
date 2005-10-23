@@ -1,4 +1,17 @@
 #pragma once
+//
+//#ifndef LOOG_INT64
+//# ifdef WIN32
+//#  define LOOG_INT64 signed __int64
+//# else  /* assume POSIX */
+//#  define LOOG_INT64 int64_t
+//# endif
+//#endif
+//
+
+#include <libOOOgg/libOOOgg.h>
+#include <string>
+using namespace std;
 class IOggDecoder 
 {
 public:

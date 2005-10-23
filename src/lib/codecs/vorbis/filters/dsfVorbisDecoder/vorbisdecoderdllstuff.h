@@ -40,7 +40,17 @@
 #include "VorbisDecodeOutputPin.h"
 #include "VorbisDecodeFilter.h"
 
+
 #include "libilliCore/iLE_Math.h"
+#include "libOOOgg/OggPacket.h"
+
+#ifndef LOOG_INT64
+# ifdef WIN32
+#  define LOOG_INT64 signed __int64
+# else  /* assume POSIX */
+#  define LOOG_INT64 int64_t
+# endif
+#endif
 
 #ifdef LIBOOOGG_EXPORTS
 #define LIBOOOGG_API __declspec(dllexport)

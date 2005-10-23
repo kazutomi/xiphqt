@@ -53,6 +53,7 @@ VorbisDecodeInputPin::VorbisDecodeInputPin	(		AbstractTransformFilter* inFilter
 	,	mFrameSize(0)
 	,	mSampleRate(0)
 	,	mUptoFrame(0)
+	,	mSetupState(VSS_SEEN_NOTHING)
 		
 {
 	//debugLog.open("g:\\logs\\vorbislog.log", ios_base::out);
@@ -264,3 +265,56 @@ HRESULT VorbisDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *out
 	return S_OK;
 }
 
+LOOG_INT64 VorbisDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
+{
+	if (mBegun) {	
+		return (inGranule * UNITS) / mSampleRate;
+	} else {
+		return -1;
+	}
+}
+IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacket* inCodecHeaderPacket)
+{
+	switch (mSetupState) {
+		case VSS_SEEN_NOTHING:
+			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\001vorbis", 7) == 0) {
+				//TODO::: Possibly verify version
+				mSetupState = VSS_SEEN_BOS;
+				return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+			} else {
+				return IOggDecoder::AHR_INVALID_HEADER;
+			}
+			break;
+		case VSS_SEEN_BOS:
+			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
+				
+				mSetupState = VSS_SEEN_COMMENT;
+				return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+			} else {
+				return IOggDecoder::AHR_INVALID_HEADER;
+			}
+			break;
+		case VSS_SEEN_COMMENT:
+			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\005vorbis", 7) == 0) {
+				
+				mSetupState = VSS_ALL_HEADERS_SEEN;
+				return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
+			} else {
+				return IOggDecoder::AHR_INVALID_HEADER;
+			}
+			break;
+		case VSS_ALL_HEADERS_SEEN:
+		case VSS_ERROR:
+		default:
+			return IOggDecoder::AHR_UNEXPECTED;
+	}
+}
+string VorbisDecodeInputPin::getCodecShortName()
+{
+	return "vorbis";
+}
+string VorbisDecodeInputPin::getCodecIdentString()
+{
+	//TODO:::
+	return "vorbis";
+}
