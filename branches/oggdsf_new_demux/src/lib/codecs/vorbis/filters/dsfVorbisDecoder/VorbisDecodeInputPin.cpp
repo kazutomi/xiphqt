@@ -56,6 +56,7 @@ VorbisDecodeInputPin::VorbisDecodeInputPin	(		AbstractTransformFilter* inFilter
 	,	mSetupState(VSS_SEEN_NOTHING)
 	,	mDecodedBuffer(NULL)
 	,	mDecodedByteCount(0)
+	,	mRateNumerator(RATE_DENOMINATOR)
 		
 {
 	//debugLog.open("g:\\logs\\vorbislog.log", ios_base::out);
@@ -111,8 +112,21 @@ STDMETHODIMP VorbisDecodeInputPin::NewSegment(REFERENCE_TIME inStartTime, REFERE
 	CAutoLock locLock(mStreamLock);
 	//debugLog<<"New segment "<<inStartTime<<" - "<<inStopTime<<endl;
 	mUptoFrame = 0;
+	mRateNumerator = RATE_DENOMINATOR * inRate;
+	if (mRateNumerator > RATE_DENOMINATOR) {
+		mRateNumerator = RATE_DENOMINATOR;
+	}
 	return AbstractTransformInputPin::NewSegment(inStartTime, inStopTime, inRate);
 	
+}
+
+STDMETHODIMP VorbisDecodeInputPin::EndFlush()
+{
+	CAutoLock locLock(m_pLock);
+	
+	HRESULT locHR = AbstractTransformInputPin::EndFlush();
+	mDecodedByteCount = 0;
+	return locHR;
 }
 
 int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer) 
@@ -371,7 +385,10 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 
 					//Write the sample meta data
 					//TODO:: Seeking offset
-					locSample->SetTime(&locStart, &locEnd);
+
+					REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
+					REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
+					locSample->SetTime(&locAdjustedStart, &locAdjustedEnd);
 					locSample->SetMediaTime(&locStart, &locEnd);
 					locSample->SetSyncPoint(TRUE);
 					locSample->SetActualDataLength(locBytesToCopy);

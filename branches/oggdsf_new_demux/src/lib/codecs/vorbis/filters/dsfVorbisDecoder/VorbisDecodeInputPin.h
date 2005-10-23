@@ -65,7 +65,7 @@ public:
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
 	virtual STDMETHODIMP NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate);
-
+	virtual STDMETHODIMP EndFlush();
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
@@ -117,6 +117,9 @@ protected:
 
 	unsigned char* mDecodedBuffer;
 	unsigned long mDecodedByteCount;
+
+	__int64 mRateNumerator;
+	static const __int64 RATE_DENOMINATOR = 65536;
 
 };
 
