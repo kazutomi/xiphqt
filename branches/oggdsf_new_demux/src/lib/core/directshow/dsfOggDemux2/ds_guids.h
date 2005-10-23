@@ -14,16 +14,16 @@
 //**********************************
 
 // {C9361F5A-3282-4944-9899-6D99CDC5370B}
-DEFINE_GUID(CLSID_OggDemuxPageSourceFilter, 
+DEFINE_GUID(CLSID_OggDemuxPacketSourceFilter, 
 0xc9361f5a, 0x3282, 0x4944, 0x98, 0x99, 0x6d, 0x99, 0xcd, 0xc5, 0x37, 0xb);
 
 
 // {60891713-C24F-4767-B6C9-6CA05B3338FC}
-DEFINE_GUID(MEDIATYPE_OggPageStream, 
+DEFINE_GUID(MEDIATYPE_OggPacketStream, 
 0x60891713, 0xc24f, 0x4767, 0xb6, 0xc9, 0x6c, 0xa0, 0x5b, 0x33, 0x38, 0xfc);
 
 // {95388704-162C-42a9-8149-C3577C12AAF9}
-DEFINE_GUID(FORMAT_OggBOSPage, 
+DEFINE_GUID(FORMAT_OggIdentHeader, 
 0x95388704, 0x162c, 0x42a9, 0x81, 0x49, 0xc3, 0x57, 0x7c, 0x12, 0xaa, 0xf9);
 
 // {43F0F818-10B0-4c86-B9F1-F6B6E2D33462}
@@ -75,7 +75,7 @@ DEFINE_GUID(IID_IOggDecoder,
 
 
 //Structure defining the registration details of the filter
-const REGFILTER2 OggDemuxPageSourceFilterReg = {
+const REGFILTER2 OggDemuxPacketSourceFilterReg = {
 		1,
 		MERIT_NORMAL,
 		0,

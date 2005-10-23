@@ -29,7 +29,7 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #include "StdAfx.h"
-#include "OggDemuxPageSourceFilter.h"
+#include "OggDemuxPacketSourceFilter.h"
 #include "OggStreamMapper.h"
 
 // This template lets the Object factory create us properly and work with COM infrastructure.
@@ -37,8 +37,8 @@ CFactoryTemplate g_Templates[] =
 {
     { 
 		L"OggDemuxFilter",						// Name
-	    &CLSID_OggDemuxPageSourceFilter,            // CLSID
-	    OggDemuxPageSourceFilter::CreateInstance,	// Method to create an instance of MyComponent
+	    &CLSID_OggDemuxPacketSourceFilter,            // CLSID
+	    OggDemuxPacketSourceFilter::CreateInstance,	// Method to create an instance of MyComponent
         NULL,									// Initialization function
         NULL									// Set-up information (for filters)
     }
@@ -59,16 +59,16 @@ CFactoryTemplate g_Templates[] =
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]); 
 
 //COM Creator Function
-CUnknown* WINAPI OggDemuxPageSourceFilter::CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr) 
+CUnknown* WINAPI OggDemuxPacketSourceFilter::CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr) 
 {
-	OggDemuxPageSourceFilter *pNewObject = new OggDemuxPageSourceFilter();
+	OggDemuxPacketSourceFilter *pNewObject = new OggDemuxPacketSourceFilter();
     if (pNewObject == NULL) {
         *pHr = E_OUTOFMEMORY;
     }
     return pNewObject;
 } 
 //COM Interface query function
-STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, void **ppv)
+STDMETHODIMP OggDemuxPacketSourceFilter::NonDelegatingQueryInterface(REFIID riid, void **ppv)
 {
 	if (riid == IID_IFileSourceFilter) {
 		*ppv = (IFileSourceFilter*)this;
@@ -96,8 +96,8 @@ STDMETHODIMP OggDemuxPageSourceFilter::NonDelegatingQueryInterface(REFIID riid, 
 
 	return CBaseFilter::NonDelegatingQueryInterface(riid, ppv); 
 }
-OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
-	:	CBaseFilter(NAME("OggDemuxPageSourceFilter"), NULL, m_pLock, CLSID_OggDemuxPageSourceFilter)
+OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
+	:	CBaseFilter(NAME("OggDemuxPacketSourceFilter"), NULL, m_pLock, CLSID_OggDemuxPacketSourceFilter)
 	,	mDataSource(NULL)
 	,	mSeenAllBOSPages(false)
 	,	mSeenPositiveGranulePos(false)
@@ -113,13 +113,13 @@ OggDemuxPageSourceFilter::OggDemuxPageSourceFilter(void)
 	mStreamMapper = new OggStreamMapper(this, m_pLock);
 }
 
-OggDemuxPageSourceFilter::~OggDemuxPageSourceFilter(void)
+OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 {
 	delete mStreamMapper;
 	//TODO::: Delete the locks
 }
 //IMEdiaStreaming
-STDMETHODIMP OggDemuxPageSourceFilter::Run(REFERENCE_TIME tStart) 
+STDMETHODIMP OggDemuxPacketSourceFilter::Run(REFERENCE_TIME tStart) 
 {
 	//const REFERENCE_TIME A_LONG_TIME = UNITS * 1000;
 	//CAutoLock locLock(m_pLock);
@@ -132,7 +132,7 @@ STDMETHODIMP OggDemuxPageSourceFilter::Run(REFERENCE_TIME tStart)
 	
 
 }
-STDMETHODIMP OggDemuxPageSourceFilter::Pause(void) 
+STDMETHODIMP OggDemuxPacketSourceFilter::Pause(void) 
 {
 	//CAutoLock locLock(m_pLock);
 	//debugLog << "** Pause called **"<<endl;
@@ -154,7 +154,7 @@ STDMETHODIMP OggDemuxPageSourceFilter::Pause(void)
 	return E_NOTIMPL;
 	
 }
-STDMETHODIMP OggDemuxPageSourceFilter::Stop(void) 
+STDMETHODIMP OggDemuxPacketSourceFilter::Stop(void) 
 {
 	//CAutoLock locLock(m_pLock);
 	//debugLog<<"** Stop Called ** "<<endl;
@@ -171,7 +171,7 @@ STDMETHODIMP OggDemuxPageSourceFilter::Stop(void)
 
 }
 
-bool OggDemuxPageSourceFilter::acceptOggPage(OggPage* inOggPage)
+bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
 {
 	if (!mSeenAllBOSPages) {
 		if (!inOggPage->header()->isBOS()) {
@@ -191,7 +191,7 @@ bool OggDemuxPageSourceFilter::acceptOggPage(OggPage* inOggPage)
 		return mStreamMapper->acceptOggPage(inOggPage);
 	}
 }
-HRESULT OggDemuxPageSourceFilter::SetUpPins()
+HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 {
 	CAutoLock locDemuxLock(mDemuxLock);
 	CAutoLock locSourceLock(mSourceFileLock);
@@ -264,12 +264,12 @@ HRESULT OggDemuxPageSourceFilter::SetUpPins()
 	//TODO:::
 	return S_OK;
 }
-int OggDemuxPageSourceFilter::GetPinCount() 
+int OggDemuxPacketSourceFilter::GetPinCount() 
 {
 	//TODO::: Implement
 	return mStreamMapper->numPins();
 }
-CBasePin* OggDemuxPageSourceFilter::GetPin(int inPinNo) 
+CBasePin* OggDemuxPacketSourceFilter::GetPin(int inPinNo) 
 {
 	if (inPinNo < 0) {
 		return NULL;
@@ -278,7 +278,7 @@ CBasePin* OggDemuxPageSourceFilter::GetPin(int inPinNo)
 }
 
 //IFileSource Interface
-STDMETHODIMP OggDemuxPageSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) 
+STDMETHODIMP OggDemuxPacketSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) 
 {
 	////Return the filename and mediatype of the raw data
 	LPOLESTR x = SysAllocString(mFileName.c_str());
@@ -290,7 +290,7 @@ STDMETHODIMP OggDemuxPageSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDI
 }
 
 
-STDMETHODIMP OggDemuxPageSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType) 
+STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType) 
 {
 	////Initialise the file here and setup all the streams
 	CAutoLock locLock(m_pLock);
@@ -309,13 +309,13 @@ STDMETHODIMP OggDemuxPageSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA
 }
 
 //IAMFilterMiscFlags Interface
-ULONG OggDemuxPageSourceFilter::GetMiscFlags(void) 
+ULONG OggDemuxPacketSourceFilter::GetMiscFlags(void) 
 {
 	return AM_FILTER_MISC_FLAGS_IS_SOURCE;
 }
 
 //CAMThread Stuff
-DWORD OggDemuxPageSourceFilter::ThreadProc(void) {
+DWORD OggDemuxPacketSourceFilter::ThreadProc(void) {
 	
 	//while(true) {
 	//	DWORD locThreadCommand = GetRequest();
@@ -339,7 +339,7 @@ DWORD OggDemuxPageSourceFilter::ThreadProc(void) {
 
 
 
-STDMETHODIMP OggDemuxPageSourceFilter::GetCapabilities(DWORD* inCapabilities) 
+STDMETHODIMP OggDemuxPacketSourceFilter::GetCapabilities(DWORD* inCapabilities) 
 {
 	//if (mSeekTable->enabled())  {
 	//	//debugLog<<"GetCaps "<<mSeekingCap<<endl;
@@ -355,7 +355,7 @@ STDMETHODIMP OggDemuxPageSourceFilter::GetCapabilities(DWORD* inCapabilities)
 	//TODO:::
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetDuration(LONGLONG* outDuration) 
+STDMETHODIMP OggDemuxPacketSourceFilter::GetDuration(LONGLONG* outDuration) 
 {
 	//if (mSeekTable->enabled())  {
 	//	//debugLog<<"GetDuration = " << mSeekTable->fileDuration()<<" ds units"<<endl;
@@ -370,14 +370,14 @@ STDMETHODIMP OggDemuxPageSourceFilter::GetDuration(LONGLONG* outDuration)
 
 }
 	 
-STDMETHODIMP OggDemuxPageSourceFilter::CheckCapabilities(DWORD *pCapabilities)
+STDMETHODIMP OggDemuxPacketSourceFilter::CheckCapabilities(DWORD *pCapabilities)
 {
 	//debugLog<<"CheckCaps	: Not impl"<<endl;
 
 	//TODO:::
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::IsFormatSupported(const GUID *pFormat)
+STDMETHODIMP OggDemuxPacketSourceFilter::IsFormatSupported(const GUID *pFormat)
 {
 	//ASSERT(pFormat != NULL);
 	//if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
@@ -393,20 +393,20 @@ STDMETHODIMP OggDemuxPageSourceFilter::IsFormatSupported(const GUID *pFormat)
 
 	
 }
-STDMETHODIMP OggDemuxPageSourceFilter::QueryPreferredFormat(GUID *pFormat){
+STDMETHODIMP OggDemuxPacketSourceFilter::QueryPreferredFormat(GUID *pFormat){
 	//debugLog<<"QueryPrefferedTimeFormat	: MEDIA TIME"<<endl;
 	*pFormat = TIME_FORMAT_MEDIA_TIME;
 	return S_OK;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::SetTimeFormat(const GUID *pFormat){
+STDMETHODIMP OggDemuxPacketSourceFilter::SetTimeFormat(const GUID *pFormat){
 	//debugLog<<"SetTimeForamt : NOT IMPL"<<endl;
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetTimeFormat( GUID *pFormat){
+STDMETHODIMP OggDemuxPacketSourceFilter::GetTimeFormat( GUID *pFormat){
 	*pFormat = TIME_FORMAT_MEDIA_TIME;
 	return S_OK;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetStopPosition(LONGLONG *pStop){
+STDMETHODIMP OggDemuxPacketSourceFilter::GetStopPosition(LONGLONG *pStop){
 	//if (mSeekTable->enabled())  {
 
 	//	//debugLog<<"GetStopPos = " << mSeekTable->fileDuration()<<" ds units"<<endl;
@@ -421,18 +421,18 @@ STDMETHODIMP OggDemuxPageSourceFilter::GetStopPosition(LONGLONG *pStop){
 	return E_NOTIMPL;
 
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetCurrentPosition(LONGLONG *pCurrent)
+STDMETHODIMP OggDemuxPacketSourceFilter::GetCurrentPosition(LONGLONG *pCurrent)
 {
 	//TODO::: Implement this properly
 
 	//debugLog<<"GetCurrentPos = NOT_IMPL"<<endl;
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::ConvertTimeFormat(LONGLONG *pTarget, const GUID *pTargetFormat, LONGLONG Source, const GUID *pSourceFormat){
+STDMETHODIMP OggDemuxPacketSourceFilter::ConvertTimeFormat(LONGLONG *pTarget, const GUID *pTargetFormat, LONGLONG Source, const GUID *pSourceFormat){
 	//debugLog<<"ConvertTimeForamt : NOT IMPL"<<endl;
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD dwCurrentFlags,LONGLONG *pStop,DWORD dwStopFlags){
+STDMETHODIMP OggDemuxPacketSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD dwCurrentFlags,LONGLONG *pStop,DWORD dwStopFlags){
 
 
 	//CAutoLock locLock(m_pLock);
@@ -495,13 +495,13 @@ STDMETHODIMP OggDemuxPageSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD dwC
 	return E_NOTIMPL;
 
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetPositions(LONGLONG *pCurrent, LONGLONG *pStop)
+STDMETHODIMP OggDemuxPacketSourceFilter::GetPositions(LONGLONG *pCurrent, LONGLONG *pStop)
 {
 	//debugLog<<"Getpos : Not IMPL"<<endl;
 	//debugLog<<"GetPos : Current = HARDCODED 2 secs , Stop = "<<mSeekTable->fileDuration()/UNITS <<" secs."<<endl;
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGLONG *pLatest){
+STDMETHODIMP OggDemuxPacketSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGLONG *pLatest){
 	//debugLog<<"****GetAvailable : NOT IMPL"<<endl;
 	//if (mSeekTable->enabled())  {
 	//	//debugLog<<"Get Avail ok"<<endl;
@@ -517,25 +517,25 @@ STDMETHODIMP OggDemuxPageSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGLON
 	return E_NOTIMPL;
 
 }
-STDMETHODIMP OggDemuxPageSourceFilter::SetRate(double dRate)
+STDMETHODIMP OggDemuxPacketSourceFilter::SetRate(double dRate)
 {
 	//debugLog<<"Set RATE : NOT IMPL"<<endl;
 	return E_NOTIMPL;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetRate(double *dRate)
+STDMETHODIMP OggDemuxPacketSourceFilter::GetRate(double *dRate)
 {
 
 	*dRate = 1.0;
 	return S_OK;;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::GetPreroll(LONGLONG *pllPreroll)
+STDMETHODIMP OggDemuxPacketSourceFilter::GetPreroll(LONGLONG *pllPreroll)
 {
 
 	*pllPreroll = 0;
 	//debugLog<<"GetPreroll : HARD CODED TO 0"<<endl;
 	return S_OK;
 }
-STDMETHODIMP OggDemuxPageSourceFilter::IsUsingTimeFormat(const GUID *pFormat){
+STDMETHODIMP OggDemuxPacketSourceFilter::IsUsingTimeFormat(const GUID *pFormat){
 	//if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
 	//	//debugLog<<"IsUsingTimeFormat : MEDIA TIME TRUE"<<endl;
 	//	return S_OK;

@@ -37,7 +37,7 @@
 
 class OggStreamMapper;
 
-class OggDemuxPageSourceFilter
+class OggDemuxPacketSourceFilter
 	:	public CBaseFilter
 	,	public CAMThread
 	,	public IFileSourceFilter
@@ -48,8 +48,8 @@ class OggDemuxPageSourceFilter
 	//,	public IAMMediaContent
 {
 public:
-	OggDemuxPageSourceFilter(void);
-	virtual ~OggDemuxPageSourceFilter(void);
+	OggDemuxPacketSourceFilter(void);
+	virtual ~OggDemuxPacketSourceFilter(void);
 
 	//Com Stuff
 	DECLARE_IUNKNOWN

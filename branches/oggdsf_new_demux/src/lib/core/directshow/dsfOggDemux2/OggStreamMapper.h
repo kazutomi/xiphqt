@@ -1,7 +1,7 @@
 #pragma once
 
-//#include "OggDemuxPageSourcePin.h"
-//#include "OggDemuxPageSourceFilter.h"
+//#include "OggDemuxPacketSourcePin.h"
+//#include "OggDemuxPacketSourceFilter.h"
 
 #include <libOOOgg/IOggCallback.h>
 #include <vector>
@@ -22,7 +22,7 @@ public:
 		STRMAP_ERROR
 
 	};
-	OggStreamMapper(OggDemuxPageSourceFilter* inParentFilter, CCritSec* inParentFilterLock);
+	OggStreamMapper(OggDemuxPacketSourceFilter* inParentFilter, CCritSec* inParentFilterLock);
 	virtual ~OggStreamMapper(void);
 
 	//IOggCallback Interface
@@ -33,14 +33,14 @@ public:
 	bool allStreamsReady();
 
 	unsigned long numPins()				{		return mPins.size();		}
-	OggDemuxPageSourcePin* getPinByIndex(unsigned long inIndex);
+	OggDemuxPacketSourcePin* getPinByIndex(unsigned long inIndex);
 
 protected:
 	eStreamState mStreamState;
-	vector<OggDemuxPageSourcePin*> mPins;
-	OggDemuxPageSourceFilter* mParentFilter;
+	vector<OggDemuxPacketSourcePin*> mPins;
+	OggDemuxPacketSourceFilter* mParentFilter;
 	CCritSec* mParentFilterLock;
 
 	bool addNewPin(OggPage* inOggPage);
-	OggDemuxPageSourcePin* getMatchingPin(unsigned long inSerialNo);
+	OggDemuxPacketSourcePin* getMatchingPin(unsigned long inSerialNo);
 };
