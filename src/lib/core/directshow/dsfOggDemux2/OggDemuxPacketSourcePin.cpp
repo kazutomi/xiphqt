@@ -60,6 +60,8 @@ OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 	//delete[] mBOSAsFormatBlock;
 	//delete mBOSPage;
 	delete mIdentHeader;
+
+
 }
 
 bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)

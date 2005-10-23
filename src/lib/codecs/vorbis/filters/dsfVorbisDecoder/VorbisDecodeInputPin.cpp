@@ -80,7 +80,7 @@ STDMETHODIMP VorbisDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void
 		return NOERROR;
 	} else if (riid == IID_IOggDecoder) {
 		*ppv = (IOggDecoder*)this;
-		((IUnknown*)*ppv)->AddRef();
+		//((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
 
 	}
