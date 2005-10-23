@@ -138,10 +138,10 @@
 				RelativePath=".\HTTPSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\OggDemuxPageSourceFilter.cpp">
+				RelativePath=".\OggDemuxPacketSourceFilter.cpp">
 			</File>
 			<File
-				RelativePath=".\OggDemuxPageSourcePin.cpp">
+				RelativePath=".\OggDemuxPacketSourcePin.cpp">
 			</File>
 			<File
 				RelativePath=".\oggdllstuff.cpp">
@@ -197,10 +197,10 @@
 				RelativePath=".\IOggDecoder.h">
 			</File>
 			<File
-				RelativePath=".\OggDemuxPageSourceFilter.h">
+				RelativePath=".\OggDemuxPacketSourceFilter.h">
 			</File>
 			<File
-				RelativePath=".\OggDemuxPageSourcePin.h">
+				RelativePath=".\OggDemuxPacketSourcePin.h">
 			</File>
 			<File
 				RelativePath=".\oggdllstuff.h">

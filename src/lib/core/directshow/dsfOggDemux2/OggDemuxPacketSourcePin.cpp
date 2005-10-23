@@ -34,24 +34,28 @@
 OggDemuxPacketSourcePin::	OggDemuxPacketSourcePin(		TCHAR* inObjectName
 												,	OggDemuxPacketSourceFilter* inParentFilter
 												,	CCritSec* inFilterLock
-												,	OggPage* inBOSPage)
+												,	OggPacket* inIdentHeader
+												,	unsigned long inSerialNo)
 	:	CBaseOutputPin(			NAME("Ogg Demux Output Pin")
 							,	inParentFilter
 							,	inFilterLock
 							,	&mFilterHR
 							,	L"Ogg Stream" )
-	,	mBOSPage(inBOSPage)
+	,	mIdentHeader(inIdentHeader)
+	,	mSerialNo(inSerialNo)
 	,	mIsStreamReady(false)
 {
 
-	mBOSAsFormatBlock = (BYTE*)inBOSPage->createRawPageData();
+	
+		//(BYTE*)inBOSPage->createRawPageData();
 	
 }
 
 OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 {
-	delete[] mBOSAsFormatBlock;
-	delete mBOSPage;
+	//delete[] mBOSAsFormatBlock;
+	//delete mBOSPage;
+	delete mIdentHeader;
 }
 
 bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)
@@ -59,14 +63,19 @@ bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)
 	//TODO:::
 	return true;
 }
-BYTE* OggDemuxPacketSourcePin::getBOSAsFormatBlock()
+BYTE* OggDemuxPacketSourcePin::getIdentAsFormatBlock()
 {
-	return mBOSAsFormatBlock;
+	return (BYTE*)mIdentHeader->packetData();
+}
+
+unsigned long OggDemuxPacketSourcePin::getIdentSize()
+{
+	return mIdentHeader->packetSize();
 }
 
 unsigned long OggDemuxPacketSourcePin::getSerialNo()
 {
-	return mBOSPage->header()->StreamSerialNo();
+	return mSerialNo;//mBOSPage->header()->StreamSerialNo();
 }
 
 IOggDecoder* OggDemuxPacketSourcePin::getDecoderInterface()
@@ -90,12 +99,12 @@ HRESULT OggDemuxPacketSourcePin::GetMediaType(int inPosition, CMediaType* outMed
 	//Put it in from the info we got in the constructor.
 	if (inPosition == 0) {
 		AM_MEDIA_TYPE locAMMediaType;
-		locAMMediaType.majortype = MEDIATYPE_OggPageStream;
+		locAMMediaType.majortype = MEDIATYPE_OggPacketStream;
 
 		locAMMediaType.subtype = MEDIASUBTYPE_None;
-		locAMMediaType.formattype = FORMAT_OggBOSPage;
-		locAMMediaType.cbFormat = mBOSPage->pageSize();
-		locAMMediaType.pbFormat = getBOSAsFormatBlock();
+		locAMMediaType.formattype = FORMAT_OggIdentHeader;
+		locAMMediaType.cbFormat = getIdentSize();
+		locAMMediaType.pbFormat = getIdentAsFormatBlock();
 		locAMMediaType.pUnk = NULL;
 	
 			
@@ -108,9 +117,9 @@ HRESULT OggDemuxPacketSourcePin::GetMediaType(int inPosition, CMediaType* outMed
 	}
 }
 HRESULT OggDemuxPacketSourcePin::CheckMediaType(const CMediaType* inMediaType) {
-	if (		(inMediaType->majortype == MEDIATYPE_OggPageStream) 
+	if (		(inMediaType->majortype == MEDIATYPE_OggPacketStream) 
 			&&	(inMediaType->subtype == MEDIASUBTYPE_None)
-			&&	(inMediaType->formattype == FORMAT_OggBOSPage)) {
+			&&	(inMediaType->formattype == FORMAT_OggIdentHeader)) {
 			//&&	(inMediaType->cbFormat == mBOSPage->pageSize()) {
 
 		return S_OK;
