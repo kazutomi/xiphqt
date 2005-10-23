@@ -76,6 +76,7 @@ public:
 protected:
 	//IStampedOggPacketSink
 	virtual bool acceptStampedOggPacket(StampedOggPacket* inPacket);
+	virtual bool dispatchPacket(StampedOggPacket* inPacket);
 
 	//What is this actually for ?
 	HRESULT mFilterHR;
@@ -83,9 +84,15 @@ protected:
 	BYTE* getIdentAsFormatBlock();
 	unsigned long getIdentSize();
 	unsigned long mSerialNo;
+
+	unsigned long mNumBuffers;
 	
 	OggPacket* mIdentHeader;
 	IOggDecoder* mDecoderInterface;
+	OggPacketiser mPacketiser;
+
+	COutputQueue* mDataQueue;
 
 	bool mIsStreamReady;
+	bool mAcceptingData;
 };
