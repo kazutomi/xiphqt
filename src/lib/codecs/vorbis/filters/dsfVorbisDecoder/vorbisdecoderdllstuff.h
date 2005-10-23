@@ -31,29 +31,10 @@
 
 #pragma once
 
-//***************************** Old imp
-//#ifdef DSFABSTRACOGGAUDIODECODER_EXPORTS
-//#pragma message("----> Exporting from Abstract Library...")
-//#define ABS_AUDIO_DEC_API __declspec(dllexport)
-//#else
-//#pragma message("<---- Importing from Abstract Library...")
-//#define ABS_AUDIO_DEC_API __declspec(dllimport)
-//#endif
-//
-//
-//
-//#include "AbstractAudioDecodeFilter.h"
-//#include "AbstractAudioDecodeInputPin.h"
-//#include "AbstractAudioDecodeOutputPin.h"
-//***************************** Old imp ends
-
-
-//**************************** New imp
 
 #include "AbstractTransformFilter.h"
 #include "AbstractTransformInputPin.h"
 #include "AbstractTransformOutputPin.h"
-//****************************** New imp ends
 
 #include "VorbisDecodeInputPin.h"
 #include "VorbisDecodeOutputPin.h"

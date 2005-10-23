@@ -33,14 +33,14 @@
 #include <libOOOgg/OggPage.h>
 #include <libOOOgg/IOggCallback.h>
 #include "IOggDecoder.h"
-class OggDemuxPageSourcePin
+class OggDemuxPacketSourcePin
 	:	public CBaseOutputPin
 	,	public IOggCallback
 {
 public:
-	//OggDemuxPageSourcePin(void);
-	OggDemuxPageSourcePin(	TCHAR* inObjectName, 
-							OggDemuxPageSourceFilter* inParentFilter,
+	//OggDemuxPacketSourcePin(void);
+	OggDemuxPacketSourcePin(	TCHAR* inObjectName, 
+							OggDemuxPacketSourceFilter* inParentFilter,
 							CCritSec* inFilterLock,
 							OggPage* inBOSPage);
 							//StreamHeaders* inHeaderSource, 
@@ -49,7 +49,7 @@ public:
 							//bool inAllowSeek,
 							//unsigned long inNumBuffers,
 							//unsigned long inBufferSize);
-	~OggDemuxPageSourcePin(void);
+	~OggDemuxPacketSourcePin(void);
 
 	static const unsigned long NUM_PAGE_BUFFERS = 100;
 

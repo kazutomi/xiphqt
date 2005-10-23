@@ -29,10 +29,10 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #include "StdAfx.h"
-#include ".\oggdemuxpagesourcepin.h"
+#include ".\OggDemuxPacketsourcepin.h"
 
-OggDemuxPageSourcePin::	OggDemuxPageSourcePin(		TCHAR* inObjectName
-												,	OggDemuxPageSourceFilter* inParentFilter
+OggDemuxPacketSourcePin::	OggDemuxPacketSourcePin(		TCHAR* inObjectName
+												,	OggDemuxPacketSourceFilter* inParentFilter
 												,	CCritSec* inFilterLock
 												,	OggPage* inBOSPage)
 	:	CBaseOutputPin(			NAME("Ogg Demux Output Pin")
@@ -48,28 +48,28 @@ OggDemuxPageSourcePin::	OggDemuxPageSourcePin(		TCHAR* inObjectName
 	
 }
 
-OggDemuxPageSourcePin::~OggDemuxPageSourcePin(void)
+OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 {
 	delete[] mBOSAsFormatBlock;
 	delete mBOSPage;
 }
 
-bool OggDemuxPageSourcePin::acceptOggPage(OggPage* inOggPage)
+bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)
 {
 	//TODO:::
 	return true;
 }
-BYTE* OggDemuxPageSourcePin::getBOSAsFormatBlock()
+BYTE* OggDemuxPacketSourcePin::getBOSAsFormatBlock()
 {
 	return mBOSAsFormatBlock;
 }
 
-unsigned long OggDemuxPageSourcePin::getSerialNo()
+unsigned long OggDemuxPacketSourcePin::getSerialNo()
 {
 	return mBOSPage->header()->StreamSerialNo();
 }
 
-IOggDecoder* OggDemuxPageSourcePin::getDecoderInterface()
+IOggDecoder* OggDemuxPacketSourcePin::getDecoderInterface()
 {
 	if (mDecoderInterface == NULL) {
 		IOggDecoder* locDecoder = NULL;
@@ -85,7 +85,7 @@ IOggDecoder* OggDemuxPageSourcePin::getDecoderInterface()
 	return mDecoderInterface;
 	
 }
-HRESULT OggDemuxPageSourcePin::GetMediaType(int inPosition, CMediaType* outMediaType) 
+HRESULT OggDemuxPacketSourcePin::GetMediaType(int inPosition, CMediaType* outMediaType) 
 {
 	//Put it in from the info we got in the constructor.
 	if (inPosition == 0) {
@@ -107,7 +107,7 @@ HRESULT OggDemuxPageSourcePin::GetMediaType(int inPosition, CMediaType* outMedia
 		return VFW_S_NO_MORE_ITEMS;
 	}
 }
-HRESULT OggDemuxPageSourcePin::CheckMediaType(const CMediaType* inMediaType) {
+HRESULT OggDemuxPacketSourcePin::CheckMediaType(const CMediaType* inMediaType) {
 	if (		(inMediaType->majortype == MEDIATYPE_OggPageStream) 
 			&&	(inMediaType->subtype == MEDIASUBTYPE_None)
 			&&	(inMediaType->formattype == FORMAT_OggBOSPage)) {
@@ -118,7 +118,7 @@ HRESULT OggDemuxPageSourcePin::CheckMediaType(const CMediaType* inMediaType) {
 		return E_FAIL;
 	}
 }
-HRESULT OggDemuxPageSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest) 
+HRESULT OggDemuxPacketSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest) 
 {
 	HRESULT locHR = S_OK;
 
