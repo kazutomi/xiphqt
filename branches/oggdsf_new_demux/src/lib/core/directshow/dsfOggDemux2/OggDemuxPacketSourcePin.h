@@ -73,6 +73,12 @@ public:
 	//Pin Conenction Methods
 	virtual HRESULT BreakConnect();
 	virtual HRESULT CompleteConnect(IPin *inReceivePin);
+
+	//Pin streaming methods
+	virtual HRESULT DeliverNewSegment(REFERENCE_TIME inStart, REFERENCE_TIME inStop, double inRate);
+	virtual HRESULT DeliverEndOfStream(void);
+	virtual HRESULT DeliverEndFlush(void);
+	virtual HRESULT DeliverBeginFlush(void);
 protected:
 	//IStampedOggPacketSink
 	virtual bool acceptStampedOggPacket(StampedOggPacket* inPacket);
