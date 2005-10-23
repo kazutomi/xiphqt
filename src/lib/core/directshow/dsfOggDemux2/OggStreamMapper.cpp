@@ -35,10 +35,12 @@ bool OggStreamMapper::acceptOggPage(OggPage* inOggPage)
 			//Partial fall through
 		case STRMAP_PARSING_BOS_PAGES:
 			//WARNING::: Partial fall through
-			if (inOggPage->header()->isBOS()) {
-				return addNewPin(inOggPage);
-			} else {
-				mStreamState = STRMAP_DATA;
+			if (!allStreamsReady()) {
+				if (inOggPage->header()->isBOS()) {
+					return addNewPin(inOggPage);
+				} else {
+					mStreamState = STRMAP_DATA;
+				}
 			}
 			//Partial fall through
 		case STRMAP_DATA:
