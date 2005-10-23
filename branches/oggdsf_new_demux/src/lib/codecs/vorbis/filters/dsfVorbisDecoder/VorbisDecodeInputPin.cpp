@@ -263,3 +263,4 @@ HRESULT VorbisDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *out
 
 	return S_OK;
 }
+

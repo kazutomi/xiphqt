@@ -64,6 +64,7 @@ public:
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
+
 protected:
 	//fstream debugLog;
 

@@ -100,6 +100,9 @@ public:
 	virtual STDMETHODIMP GetPreroll(LONGLONG *pllPreroll);
 	virtual STDMETHODIMP IsUsingTimeFormat(const GUID *pFormat);
 
+	vector<OggPage*> getMatchingBufferedPages(unsigned long inSerialNo);
+	void removeMatchingBufferedPages(unsigned long inSerialNo);
+
 protected:
 	static const unsigned long SETUP_BUFFER_SIZE = 24;
 	virtual HRESULT SetUpPins();

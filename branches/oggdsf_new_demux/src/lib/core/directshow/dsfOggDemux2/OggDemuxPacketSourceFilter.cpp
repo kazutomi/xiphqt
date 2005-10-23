@@ -246,24 +246,31 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	return S_OK;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	//TODO:::
-	return S_OK;
 }
+
+vector<OggPage*> OggDemuxPacketSourceFilter::getMatchingBufferedPages(unsigned long inSerialNo)
+{
+	vector<OggPage*> locList;
+	for (size_t i = 0; i < mBufferedPages.size(); i++) {
+		if (mBufferedPages[i]->header()->StreamSerialNo() == inSerialNo) {
+			locList.push_back(mBufferedPages[i]);
+		}
+	}
+	return locList;
+}
+void OggDemuxPacketSourceFilter::removeMatchingBufferedPages(unsigned long inSerialNo)
+{
+	int locSize = mBufferedPages.size();
+	for (vector<OggPage*>::iterator i = mBufferedPages.end(); i != mBufferedPages.begin(); i--) {
+		if ((*i)->header()->StreamSerialNo() == inSerialNo) {
+			mBufferedPages.erase(i); //.erase(i);
+		}
+	}
+
+}
+
+
+
 int OggDemuxPacketSourceFilter::GetPinCount() 
 {
 	//TODO::: Implement
