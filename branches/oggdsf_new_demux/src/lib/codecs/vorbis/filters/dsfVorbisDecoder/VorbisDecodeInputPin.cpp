@@ -171,6 +171,8 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 				*locShortBuffer = tempInt;
 				locShortBuffer++;
 			}
+
+			locThis->mDecodedByteCount += locActualSize;
 			
 			return 0;
 		} else {
@@ -359,12 +361,12 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 						return locHR;
 					}
 
-					locBytesToCopy = (mDecodedByteCount <= locSample->GetSize()) ? mDecodedByteCount : locSample->GetSize();
+					locBytesToCopy = ((mDecodedByteCount - locBytesCopied) <= locSample->GetSize()) ? (mDecodedByteCount - locBytesCopied) : locSample->GetSize();
 
 					memcpy((void*)locBuffer, (const void*)&mDecodedBuffer[locBytesCopied], locBytesToCopy);
 					locBytesCopied += locBytesToCopy;
 
-					locSampleDuration = (((locBytesCopied/mFrameSize) * UNITS) / mSampleRate);
+					locSampleDuration = (((locBytesToCopy/mFrameSize) * UNITS) / mSampleRate);
 					locEnd = locStart + locSampleDuration;
 
 					//Write the sample meta data
@@ -372,7 +374,7 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 					locSample->SetTime(&locStart, &locEnd);
 					locSample->SetMediaTime(&locStart, &locEnd);
 					locSample->SetSyncPoint(TRUE);
-					locSample->SetActualDataLength(locBytesCopied);
+					locSample->SetActualDataLength(locBytesToCopy);
 					locHR = ((VorbisDecodeOutputPin*)(mOutputPin))->mDataQueue->Receive(locSample);
 					if (locHR != S_OK) {
 						return locHR;
