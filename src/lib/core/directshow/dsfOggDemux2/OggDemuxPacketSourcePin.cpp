@@ -194,8 +194,14 @@ HRESULT OggDemuxPacketSourcePin::CompleteConnect(IPin *inReceivePin)
 		}
 
 		if (mIsStreamReady) {
-			mDataQueue = new COutputQueue (inReceivePin, &mFilterHR, FALSE, TRUE,1,TRUE, mNumBuffers);
-			return CBaseOutputPin::CompleteConnect(inReceivePin);
+			HRESULT locHR = CBaseOutputPin::CompleteConnect(inReceivePin);
+			if (locHR == S_OK) {
+				mDataQueue = new COutputQueue (inReceivePin, &mFilterHR, FALSE, TRUE,1,TRUE, mNumBuffers);
+				return S_OK;
+			}  else {
+				return locHR;
+			}
+			
 		}	
 
 		
