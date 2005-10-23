@@ -166,7 +166,7 @@ function getContentTypes() {
 	return $result_string;
 }
 function getTotalListeners() {
-	$query = "select sum(listeners) from servers";
+	$query = "select sum(listeners) from servers where yp_status = 'verified'";
 	$result = mysql_query($query);
 	if (!$result) {
 		print "<center><font color=red>Mysql Error: ".mysql_error()."!</center><br>";
@@ -178,7 +178,7 @@ function getTotalListeners() {
 	}
 }
 function getTotalServers() {
-	$query = "select count(*) from server_details";
+	$query = "select count(*) from servers a, server_details b where a.id = b.parent_id and a.yp_status = 'verified'";
 	$result = mysql_query($query);
 	if (!$result) {
 		print "<center><font color=red>Mysql Error: ".mysql_error()."!</center><br>";
@@ -323,19 +323,19 @@ $directory_data = '
 </tr>
 ';
  
-$query = "select id, server_name, listeners from servers order by rank desc";
+$query = "select id, server_name, listeners from servers where yp_status = 'verified' order by rank desc";
 $subquery = "";
 
 if ($sgenre) {
-	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and b.genre like '%$sgenre%' group by a.id, a.server_name, a.listeners order by a.rank desc";
+	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and b.genre like '%$sgenre%' and yp_status = 'verified' group by a.id, a.server_name, a.listeners order by a.rank desc";
 	$subquery = "and genre like '%$sgenre%'";
 }
 if ($stype) {
-	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and b.server_type like '%$stype%' group by a.id, a.server_name, a.listeners order by a.rank desc";
+	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and b.server_type like '%$stype%' and yp_status = 'verified' group by a.id, a.server_name, a.listeners order by a.rank desc";
 	$subquery = "and server_type like '%$stype%'";
 }
 if ($search) {
-	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and (a.server_name like '%$search%' or b.description like '%$search%' or b.current_song like '%$search%' or b.genre like '%$search%') group by a.id, a.server_name, a.listeners order by a.rank desc";
+	$query = "select a.id, a.server_name, a.listeners from servers a, server_details b where a.id = b.parent_id and (a.server_name like '%$search%' or b.description like '%$search%' or b.current_song like '%$search%' or b.genre like '%$search%') and yp_status = 'verified' group by a.id, a.server_name, a.listeners order by a.rank desc";
 	$subquery = "and (server_name like '%$search%' or description like '%$search%' or current_song like '%$search%' or genre like '%$search%')";
 }
 $result = mysql_query($query);
