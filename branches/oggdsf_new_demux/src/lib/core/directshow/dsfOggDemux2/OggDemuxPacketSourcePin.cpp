@@ -47,6 +47,7 @@ OggDemuxPacketSourcePin::	OggDemuxPacketSourcePin(		TCHAR* inObjectName
 	,	mAcceptingData(false)
 	,	mNumBuffers(0)
 	,	mDataQueue(NULL)
+	,	mFilterHR(S_OK)
 {
 
 	
