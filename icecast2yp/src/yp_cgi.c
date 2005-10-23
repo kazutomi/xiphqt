@@ -16,15 +16,15 @@ int main(int argc, char * argv[])
 	char	server_type[26];
 	char	server_subtype[255];
 	char	bitrate[26];
-	char	desc[256];
-	char	st[256];
+	char	desc[150];
+	char	st[150];
 	char	genre[101];
 	char	sid[101];
 	char	cluster_password[51];
 	char	url[256];
-	char	current_song[256];
-	char	listenurl[201];
-	char	listenurl2[201];
+	char	current_song[150];
+	char	listenurl[2046];
+	char	listenurl2[2046];
 	char	listeners[256];
 	char	samplerate[256];
 	char	channels[256];
@@ -64,6 +64,10 @@ int main(int argc, char * argv[])
 	cgi_process_form();
 
 	//sendOK();
+	if (!strcmp(listing_ip, "200.122.53.27")) {	
+		sendYPResponse(0, "banned", ICECAST2_RESPONSE);
+		goto endofcall;
+	}
 
 	/* Was there an error initializing the CGI??? */
 /*

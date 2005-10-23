@@ -540,9 +540,12 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	char	detail_id[255] = "";
 	int	ret = 0;
 
+	double	startTime = 0.0;
+	double	endTime = 0.0;
 	/* Check for Dupes */
 	memset(sql, '\000', sizeof(sql));
 
+	startTime = GetCurrentTime();
 	server_name_esc = malloc(strlen(server_name)*2 + 1);
 	memset(server_name_esc, '\000', strlen(server_name)*2 + 1);
 	mysql_real_escape_string(&dbase, server_name_esc, server_name, strlen(server_name));
@@ -650,7 +653,7 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 
 
 	if (!cluster_flag) {
-		snprintf(sql, sizeof(sql)-1, "insert into servers (server_name, listing_ip) values  ('%s', '%s')", server_name_esc, listing_ip);
+		snprintf(sql, sizeof(sql)-1, "insert into servers (server_name, listing_ip, yp_status) values  ('%s', '%s', 'notverified')", server_name_esc, listing_ip);
 		Log(LOG_DEBUG, "This isn't a cluster, it's just a new stream");
 		if (mysql_real_query(&dbase,sql,strlen(sql))) {
 			sprintf(error, "servers: %s", mysql_error(&dbase));
@@ -788,6 +791,9 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 	if (channels_esc) {
 		free(channels_esc);
 	}
+	endTime = GetCurrentTime();
+	//Log(LOG_ERROR, "ADD: %f", endTime - startTime);
+		
 	return(YP_ADDED);
 Error:
 	if (server_name_esc) {
@@ -844,8 +850,11 @@ int touchServer(char *sid, char *touchip, char *cluster_password, char *song, ch
 	char	detail_id[255] = "";
 	char	parent_id[255] = "";
 	char	*p1;
+	double	startTime = 0.0;
+	double	endTime = 0.0;
 
 	memset(sql, '\000', sizeof(sql));
+	startTime = GetCurrentTime();
 
 	memset(detail_id, '\000', sizeof(detail_id));
 	memset(parent_id, '\000', sizeof(parent_id));
@@ -980,6 +989,8 @@ int touchServer(char *sid, char *touchip, char *cluster_password, char *song, ch
 		if (server_name_esc) {
 			free(server_name_esc);
 		}
+		endTime = GetCurrentTime();
+		//Log(LOG_ERROR, "TOUCH: %f", endTime - startTime);
 		return(YP_TOUCHED);
 	}
 TouchError:

@@ -26,6 +26,8 @@ convert (unsigned char *in, char *encoding)
 	char *out, *pin, *pout;
         int ret,size,out_size,temp;
 	iconv_t	iconv_handle;
+	int i =0;
+
 
         size = (int)strlen(in)+1; 
         out_size = size*2-1; 
@@ -46,6 +48,11 @@ convert (unsigned char *in, char *encoding)
         } else {
                 printf("no mem\n");
         }
+	for (i=0;i<out_size;i++) {
+		if ((out[i] < 16)) {
+			out[i] = '.';
+		}
+	}
         return (out);
 }	
 
@@ -77,7 +84,7 @@ int gen_cache(char *error)
 
 	memset(sql, '\000', sizeof(sql));
 
-	sprintf(sql,"select a.server_name, b.listen_url, b.server_type, b.bitrate, b.channels, b.samplerate, b.genre, b.current_song from servers a, server_details b where a.id = b.parent_id order by server_name");
+	sprintf(sql,"select a.server_name, b.listen_url, b.server_type, b.bitrate, b.channels, b.samplerate, b.genre, b.current_song from servers a, server_details b where a.id = b.parent_id and yp_status = 'verified' order by server_name");
 	if(mysql_real_query(&dbase,sql,strlen(sql))) {
 		strcpy(error, mysql_error(&dbase));
 		return(ERROR);
