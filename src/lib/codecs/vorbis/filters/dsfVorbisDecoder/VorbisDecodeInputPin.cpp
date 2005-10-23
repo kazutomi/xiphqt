@@ -279,30 +279,36 @@ IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacke
 		case VSS_SEEN_NOTHING:
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\001vorbis", 7) == 0) {
 				//TODO::: Possibly verify version
-				mSetupState = VSS_SEEN_BOS;
-				return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
-			} else {
-				return IOggDecoder::AHR_INVALID_HEADER;
+				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
+					mSetupState = VSS_SEEN_BOS;
+					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+				}
 			}
-			break;
+			return IOggDecoder::AHR_INVALID_HEADER;
+			
+			
 		case VSS_SEEN_BOS:
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
+				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
+					mSetupState = VSS_SEEN_COMMENT;
+					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+				}
 				
-				mSetupState = VSS_SEEN_COMMENT;
-				return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
-			} else {
-				return IOggDecoder::AHR_INVALID_HEADER;
+				
 			}
-			break;
+			return IOggDecoder::AHR_INVALID_HEADER;
+			
+			
 		case VSS_SEEN_COMMENT:
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\005vorbis", 7) == 0) {
+				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
+					mSetupState = VSS_ALL_HEADERS_SEEN;
+					return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
+				}
 				
-				mSetupState = VSS_ALL_HEADERS_SEEN;
-				return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
-			} else {
-				return IOggDecoder::AHR_INVALID_HEADER;
 			}
-			break;
+			return IOggDecoder::AHR_INVALID_HEADER;
+			
 		case VSS_ALL_HEADERS_SEEN:
 		case VSS_ERROR:
 		default:
