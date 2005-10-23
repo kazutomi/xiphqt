@@ -103,6 +103,7 @@ public:
 	vector<OggPage*> getMatchingBufferedPages(unsigned long inSerialNo);
 	void removeMatchingBufferedPages(unsigned long inSerialNo);
 
+	CCritSec* streamLock()			{		return mStreamLock;		}
 protected:
 	static const unsigned long SETUP_BUFFER_SIZE = 24;
 	virtual HRESULT SetUpPins();

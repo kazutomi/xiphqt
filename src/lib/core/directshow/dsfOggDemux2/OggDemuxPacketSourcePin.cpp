@@ -44,11 +44,14 @@ OggDemuxPacketSourcePin::	OggDemuxPacketSourcePin(		TCHAR* inObjectName
 	,	mIdentHeader(inIdentHeader)
 	,	mSerialNo(inSerialNo)
 	,	mIsStreamReady(false)
+	,	mAcceptingData(false)
+	,	mNumBuffers(0)
+	,	mDataQueue(NULL)
 {
 
 	
 		//(BYTE*)inBOSPage->createRawPageData();
-	
+	mPacketiser.setPacketSink(this);
 }
 
 OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
@@ -60,8 +63,11 @@ OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 
 bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)
 {
-	//TODO:::
-	return true;
+	if (mIsStreamReady) {
+		mAcceptingData = true;
+		return mPacketiser.acceptOggPage(inOggPage);
+	}
+	return false;
 }
 BYTE* OggDemuxPacketSourcePin::getIdentAsFormatBlock()
 {
@@ -144,6 +150,8 @@ HRESULT OggDemuxPacketSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator,
 	if (locHR != S_OK) {
 		return locHR;
 	}
+
+	mNumBuffers = locActualAlloc.cBuffers;
 	
 	locHR = inoutAllocator->Commit();
 
@@ -155,6 +163,8 @@ HRESULT OggDemuxPacketSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator,
 //Pin Conenction Methods
 HRESULT OggDemuxPacketSourcePin::BreakConnect()
 {
+	delete mDataQueue;
+	mDataQueue = NULL;
 	return CBaseOutputPin::BreakConnect();
 }
 HRESULT OggDemuxPacketSourcePin::CompleteConnect(IPin *inReceivePin)
@@ -167,6 +177,7 @@ HRESULT OggDemuxPacketSourcePin::CompleteConnect(IPin *inReceivePin)
 		IOggDecoder::eAcceptHeaderResult locResult = mDecoderInterface->showHeaderPacket(mIdentHeader->clone());
 		if (locResult == IOggDecoder::AHR_ALL_HEADERS_RECEIVED) {
 			mIsStreamReady = true;
+
 		} else {
 			OggPacketiser locPacketiser;
 			locPacketiser.setPacketSink(this);
@@ -179,10 +190,13 @@ HRESULT OggDemuxPacketSourcePin::CompleteConnect(IPin *inReceivePin)
 
 			locParent->removeMatchingBufferedPages(mSerialNo);
 
-			if (mIsStreamReady) {
-				return CBaseOutputPin::CompleteConnect(inReceivePin);
-			}	
+			
 		}
+
+		if (mIsStreamReady) {
+			mDataQueue = new COutputQueue (inReceivePin, &mFilterHR, FALSE, TRUE,1,TRUE, mNumBuffers);
+			return CBaseOutputPin::CompleteConnect(inReceivePin);
+		}	
 
 		
 	}
@@ -190,16 +204,74 @@ HRESULT OggDemuxPacketSourcePin::CompleteConnect(IPin *inReceivePin)
 	
 }
 
+bool OggDemuxPacketSourcePin::dispatchPacket(StampedOggPacket* inPacket)
+{
+	CAutoLock locStreamLock(((OggDemuxPacketSourceFilter*)m_pFilter)->streamLock());
+
+
+	//Set up the sample info
+	IMediaSample* locSample = NULL;
+	REFERENCE_TIME locStart = inPacket->startTime();
+	REFERENCE_TIME locStop = inPacket->endTime();
+	
+	//Get a delivery buffer
+	HRESULT	locHR = GetDeliveryBuffer(&locSample, &locStart, &locStop, NULL);
+	
+	//Error checks
+	if (locHR != S_OK) {
+		//Stopping, fluching or error
+
+		delete inPacket;
+		return false;
+	}
+
+	//Set time stamps. These are granule pos, and may be -1
+	locSample->SetTime(&locStart, &locStop);
+	
+	locSample->SetMediaTime(&locStart, &locStop);
+	locSample->SetSyncPoint(TRUE);
+	
+
+	// Create a pointer for the samples buffer
+	BYTE* locBuffer = NULL;
+	locSample->GetPointer(&locBuffer);
+
+	if (locSample->GetSize() >= inPacket->packetSize()) {
+
+		memcpy((void*)locBuffer, (const void*)inPacket->packetData(), inPacket->packetSize());
+		locSample->SetActualDataLength(inPacket->packetSize());
+
+		locHR = mDataQueue->Receive(locSample);
+
+		if (locHR != S_OK) {
+			//debugLog << "Failure... Queue rejected sample..."<<endl;
+			//Stopping ??
+
+			delete inPacket;
+			return false;
+		} else {
+			delete inPacket;
+			return true;
+		}
+	} else {
+		//DbgLog((LOG_TRACE, 2, "* BUFFER TOO SMALL... FATALITY !!"));
+		throw 0;
+	}	
+}
 bool OggDemuxPacketSourcePin::acceptStampedOggPacket(StampedOggPacket* inPacket)
 {
-	//This handles callbacks with header packets
-	IOggDecoder::eAcceptHeaderResult locResult;
-	if ((mDecoderInterface != NULL) && (!mIsStreamReady)) {
-		locResult = mDecoderInterface->showHeaderPacket(inPacket);
-		if (locResult == IOggDecoder::AHR_ALL_HEADERS_RECEIVED) {
-			mIsStreamReady = true;
+	if (mAcceptingData) {
+		return dispatchPacket(inPacket);
+	} else {
+		//This handles callbacks with header packets
+		IOggDecoder::eAcceptHeaderResult locResult;
+		if ((mDecoderInterface != NULL) && (!mIsStreamReady)) {
+			locResult = mDecoderInterface->showHeaderPacket(inPacket);
+			if (locResult == IOggDecoder::AHR_ALL_HEADERS_RECEIVED) {
+				mIsStreamReady = true;
+			}
 		}
+		delete inPacket;
+		return true;
 	}
-	delete inPacket;
-	return true;
 }
