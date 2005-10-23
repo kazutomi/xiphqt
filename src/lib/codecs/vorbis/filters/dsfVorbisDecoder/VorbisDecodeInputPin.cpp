@@ -122,17 +122,17 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 	VorbisDecodeFilter* locFilter = reinterpret_cast<VorbisDecodeFilter*>(locThis->m_pFilter);
 
 	if (locThis->CheckStreaming() == S_OK) {
-		if (! locThis->mBegun) {
-			//locThis->debugLog<<"First Time"<<endl;
-			//Set up fishsound		
-			fish_sound_command (locThis->mFishSound, FISH_SOUND_GET_INFO, &(locThis->mFishInfo), sizeof (FishSoundInfo)); 
-			locThis->mBegun = true;
-			
-			locThis->mNumChannels = locThis->mFishInfo.channels;
-			locThis->mFrameSize = locThis->mNumChannels * SIZE_16_BITS;
-			locThis->mSampleRate = locThis->mFishInfo.samplerate;
+		//if (! locThis->mBegun) {
+		//	//locThis->debugLog<<"First Time"<<endl;
+		//	//Set up fishsound		
+		//	fish_sound_command (locThis->mFishSound, FISH_SOUND_GET_INFO, &(locThis->mFishInfo), sizeof (FishSoundInfo)); 
+		//	locThis->mBegun = true;
+		//	
+		//	locThis->mNumChannels = locThis->mFishInfo.channels;
+		//	locThis->mFrameSize = locThis->mNumChannels * SIZE_16_BITS;
+		//	locThis->mSampleRate = locThis->mFishInfo.samplerate;
 
-		}
+		//}
 
 
 
@@ -143,7 +143,7 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 
 
 		//Create a pointer into the buffer		
-		signed short* locShortBuffer = (signed short*)locThis->mDecodedBuffer[locThis->mDecodedByteCount];
+		signed short* locShortBuffer = (signed short*)&locThis->mDecodedBuffer[locThis->mDecodedByteCount];
 		
 		
 		signed short tempInt = 0;
@@ -310,6 +310,19 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 	HRESULT locHR = CheckStreaming();
 
 	if (locHR == S_OK) {
+		if (!mBegun) {
+			//locThis->debugLog<<"First Time"<<endl;
+			//Set up fishsound		
+			fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
+			mBegun = true;
+			
+			mNumChannels = mFishInfo.channels;
+			mFrameSize = mNumChannels * SIZE_16_BITS;
+			mSampleRate = mFishInfo.samplerate;
+
+		}
+
+
 		BYTE* locBuff = NULL;
 		locHR = inSample->GetPointer(&locBuff);
 
@@ -326,7 +339,7 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 			if (locResult != S_OK) {
 				return S_FALSE;
 			}
-			if (locEnd != -1) {
+			if (locEnd > 0) {
 				//Can dump it all downstream now	
 				IMediaSample* locSample;
 				unsigned long locBytesCopied = 0;
