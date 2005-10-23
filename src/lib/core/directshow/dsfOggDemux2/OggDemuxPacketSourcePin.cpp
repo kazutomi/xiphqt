@@ -309,5 +309,6 @@ HRESULT OggDemuxPacketSourcePin::DeliverEndFlush(void)
 HRESULT OggDemuxPacketSourcePin::DeliverBeginFlush(void)
 {
 	mDataQueue->BeginFlush();
+	mPacketiser.reset();
     return S_OK;
 }
