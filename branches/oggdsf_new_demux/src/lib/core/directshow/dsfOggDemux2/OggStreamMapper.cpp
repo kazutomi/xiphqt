@@ -10,6 +10,9 @@ OggStreamMapper::OggStreamMapper(OggDemuxPacketSourceFilter* inParentFilter, CCr
 
 OggStreamMapper::~OggStreamMapper(void)
 {
+	for (size_t i = 0; i < mPins.size(); i++) {
+		delete mPins[i];
+	}
 }
 OggDemuxPacketSourcePin* OggStreamMapper::getPinByIndex(unsigned long inIndex)
 {
