@@ -275,3 +275,30 @@ bool OggDemuxPacketSourcePin::acceptStampedOggPacket(StampedOggPacket* inPacket)
 		return true;
 	}
 }
+
+//Pin streaming methods
+HRESULT OggDemuxPacketSourcePin::DeliverNewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate)
+{
+	NewSegment(tStart, tStop, dRate);
+
+	mDataQueue->NewSegment(tStart, tStop, dRate);
+
+	return S_OK;
+}
+HRESULT OggDemuxPacketSourcePin::DeliverEndOfStream(void)
+{
+	mDataQueue->EOS();
+    return S_OK;
+}
+
+HRESULT OggDemuxPacketSourcePin::DeliverEndFlush(void)
+{
+	mDataQueue->EndFlush();
+    return S_OK;
+}
+
+HRESULT OggDemuxPacketSourcePin::DeliverBeginFlush(void)
+{
+	mDataQueue->BeginFlush();
+    return S_OK;
+}
