@@ -58,14 +58,18 @@ public:
 	static int __cdecl VorbisDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer);
 
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
-
+	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
 	virtual STDMETHODIMP NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate);
 
+
+	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
 protected:
 	//fstream debugLog;
 
-
+	static const unsigned long VORBIS_IDENT_HEADER_SIZE = 30;
+	static const unsigned long VORBIS_NUM_BUFFERS = 75;
+	static const unsigned long VORBIS_BUFFER_SIZE = 65536;
 
 	//Implementation of virtuals from AbstractTransform Filter
 	virtual bool ConstructCodec();

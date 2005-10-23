@@ -131,13 +131,13 @@ HRESULT OggDemuxPacketSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator,
 {
 	HRESULT locHR = S_OK;
 
-	ALLOCATOR_PROPERTIES locReqAlloc;
+	ALLOCATOR_PROPERTIES locReqAlloc = *inoutInputRequest;
 	ALLOCATOR_PROPERTIES locActualAlloc;
 
-	locReqAlloc.cbAlign = 1;
-	locReqAlloc.cbBuffer = 65536; //BUFFER_SIZE;
-	locReqAlloc.cbPrefix = 0;
-	locReqAlloc.cBuffers = NUM_PAGE_BUFFERS; //NUM_BUFFERS;
+	//locReqAlloc.cbAlign = 1;
+	//locReqAlloc.cbBuffer = 65536; //BUFFER_SIZE;
+	//locReqAlloc.cbPrefix = 0;
+	//locReqAlloc.cBuffers = NUM_PAGE_BUFFERS; //NUM_BUFFERS;
 
 	locHR = inoutAllocator->SetProperties(&locReqAlloc, &locActualAlloc);
 
