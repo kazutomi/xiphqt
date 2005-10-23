@@ -318,19 +318,23 @@ vector<OggPage*> OggDemuxPacketSourceFilter::getMatchingBufferedPages(unsigned l
 	vector<OggPage*> locList;
 	for (size_t i = 0; i < mBufferedPages.size(); i++) {
 		if (mBufferedPages[i]->header()->StreamSerialNo() == inSerialNo) {
-			locList.push_back(mBufferedPages[i]);
+			locList.push_back(mBufferedPages[i]->clone());
 		}
 	}
 	return locList;
 }
 void OggDemuxPacketSourceFilter::removeMatchingBufferedPages(unsigned long inSerialNo)
 {
+	vector<OggPage*> locNewList;
 	int locSize = mBufferedPages.size();
-	for (vector<OggPage*>::iterator i = mBufferedPages.end(); i != mBufferedPages.begin(); i--) {
-		if ((*i)->header()->StreamSerialNo() == inSerialNo) {
-			mBufferedPages.erase(i); //.erase(i);
+	for (int i = 0; i < locSize; i++) {
+		if (mBufferedPages[i]->header()->StreamSerialNo() != inSerialNo) {
+			locNewList.push_back(mBufferedPages[i]);
+		} else {
+			delete mBufferedPages[i];
 		}
 	}
+	mBufferedPages = locNewList;
 
 }
 
