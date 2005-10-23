@@ -50,6 +50,11 @@ STDMETHODIMP VorbisDecodeOutputPin::NonDelegatingQueryInterface(REFIID riid, voi
 		*ppv = (IMediaSeeking*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
+	} else if (riid == IID_IOggDecoder) {
+		*ppv = (IOggDecoder*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+
 	}
 
 	return CBaseOutputPin::NonDelegatingQueryInterface(riid, ppv); 
