@@ -232,12 +232,34 @@ HRESULT VorbisDecodeInputPin::SetMediaType(const CMediaType* inMediaType) {
 	//FIX:::Error checking
 	//RESOLVED::: Bit better.
 
-	if (inMediaType->subtype == MEDIASUBTYPE_Vorbis) {
-		((VorbisDecodeFilter*)mParentFilter)->setVorbisFormat((sVorbisFormatBlock*)inMediaType->pbFormat);
+	if (CheckMediaType(inMediaType) == S_OK) {
+		((VorbisDecodeFilter*)mParentFilter)->setVorbisFormat(inMediaType->pbFormat);
 		
 	} else {
 		throw 0;
 	}
 	return CBaseInputPin::SetMediaType(inMediaType);
 }
+HRESULT VorbisDecodeInputPin::CheckMediaType(const CMediaType *inMediaType)
+{
+	if (AbstractTransformInputPin::CheckMediaType(inMediaType) == S_OK) {
+		if (inMediaType->cbFormat == VORBIS_IDENT_HEADER_SIZE) {
+			if (strncmp((char*)inMediaType->pbFormat, "\001vorbis", 7) == 0) {
+				//TODO::: Possibly verify version
+				return S_OK;
+			}
+		}
+	}
+	return S_FALSE;
+	
+}
 
+HRESULT VorbisDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps)
+{
+	outRequestedProps->cbBuffer = VORBIS_BUFFER_SIZE;
+	outRequestedProps->cBuffers = VORBIS_NUM_BUFFERS;
+	outRequestedProps->cbAlign = 1;
+	outRequestedProps->cbPrefix = 0;
+
+	return S_OK;
+}

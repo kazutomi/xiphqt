@@ -84,10 +84,10 @@ bool VorbisDecodeFilter::ConstructPins()
 
 	//Setup the media Types for the input pin.
 	locAcceptMediaType = NULL;
-	locAcceptMediaType = new CMediaType(&MEDIATYPE_Audio);			//Deleted by pin
+	locAcceptMediaType = new CMediaType(&MEDIATYPE_OggPacketStream);			//Deleted by pin
 
-	locAcceptMediaType->subtype = MEDIASUBTYPE_Vorbis;
-	locAcceptMediaType->formattype = FORMAT_Vorbis;
+	locAcceptMediaType->subtype = MEDIASUBTYPE_None;
+	locAcceptMediaType->formattype = FORMAT_OggIdentHeader;
 
 	locAcceptableTypes.push_back(locAcceptMediaType);
 	
@@ -118,9 +118,17 @@ sVorbisFormatBlock* VorbisDecodeFilter::getVorbisFormatBlock()
 {
 	return mVorbisFormatInfo;
 }
-void VorbisDecodeFilter::setVorbisFormat(sVorbisFormatBlock* inFormatBlock) 
+void VorbisDecodeFilter::setVorbisFormat(BYTE* inFormatBlock) 
 {
 	delete mVorbisFormatInfo;
 	mVorbisFormatInfo = new sVorbisFormatBlock;				//Deleted in destructor.
-	*mVorbisFormatInfo = *inFormatBlock;
+	//*mVorbisFormatInfo = *inFormatBlock;
+
+	mVorbisFormatInfo->vorbisVersion = iLE_Math::charArrToULong(inFormatBlock + 7);
+	mVorbisFormatInfo->numChannels = inFormatBlock[11];
+	mVorbisFormatInfo->samplesPerSec = iLE_Math::charArrToULong(inFormatBlock + 12);
+	mVorbisFormatInfo->maxBitsPerSec = iLE_Math::charArrToULong(inFormatBlock + 16);
+	mVorbisFormatInfo->avgBitsPerSec = iLE_Math::charArrToULong(inFormatBlock + 20);
+	mVorbisFormatInfo->minBitsPerSec = iLE_Math::charArrToULong(inFormatBlock + 24);
+
 }

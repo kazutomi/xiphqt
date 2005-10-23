@@ -59,7 +59,7 @@ public:
 
 	//FIX::: Do we need these ? Aren't they all friends ??
 	virtual sVorbisFormatBlock* getVorbisFormatBlock();
-	virtual void setVorbisFormat(sVorbisFormatBlock* inFormatBlock);
+	virtual void setVorbisFormat(BYTE* inFormatBlock);
 
 protected:
 	//VIRTUAL FUNCTIONS - AbstractTransformFilter
