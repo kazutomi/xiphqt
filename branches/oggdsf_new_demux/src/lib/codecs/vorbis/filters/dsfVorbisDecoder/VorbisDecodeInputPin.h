@@ -69,6 +69,8 @@ public:
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
+	//Overriden from AbstractTransform input pin
+	STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample);
 
 	//IOggDecoder Interface
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
@@ -80,6 +82,8 @@ public:
 
 protected:
 	//fstream debugLog;
+
+	static const unsigned long DECODED_BUFFER_SIZE = 1<<20;		//1 Meg buffer
 
 	enum eVorbisSetupState {
 		VSS_SEEN_NOTHING,
@@ -110,6 +114,9 @@ protected:
 	int mFrameSize;
 	int mSampleRate;
 	unsigned int mUptoFrame;
+
+	unsigned char* mDecodedBuffer;
+	unsigned long mDecodedByteCount;
 
 };
 
