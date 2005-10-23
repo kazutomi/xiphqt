@@ -172,6 +172,11 @@ void OggDemuxPacketSourceFilter::DeliverBeginFlush()
 void OggDemuxPacketSourceFilter::DeliverEndFlush() 
 {
 	CAutoLock locLock(m_pLock);
+	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
+		//mStreamMapper->getOggStream(i)->flush();
+		mStreamMapper->getPinByIndex(i)->DeliverEndFlush();
+	}
+
 	
 	//if (mSetIgnorePackets == true) {
 	//	mStreamMapper->toStartOfData();
@@ -304,7 +309,7 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	//mStreamMapper->setAllowDispatch(true);
 	//mStreamMapper->();			//Flushes all streams and sets them to ignore the right number of headers.
 	mOggBuffer.clearData();
-	//mDataSource->seek(0);			//TODO::: This is bad for streams.
+	mDataSource->seek(0);			//TODO::: This is bad for streams.
 
 	//debugLog<<"COMPLETED SETUP"<<endl;
 	delete[] locBuff;
