@@ -150,3 +150,56 @@ HRESULT OggDemuxPacketSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator,
 	return locHR;
 
 }
+
+
+//Pin Conenction Methods
+HRESULT OggDemuxPacketSourcePin::BreakConnect()
+{
+	return CBaseOutputPin::BreakConnect();
+}
+HRESULT OggDemuxPacketSourcePin::CompleteConnect(IPin *inReceivePin)
+{
+	IOggDecoder* locDecoder = NULL;
+	inReceivePin->QueryInterface(IID_IOggDecoder, (void**)&locDecoder);
+	if (locDecoder != NULL) {
+		mDecoderInterface = locDecoder;
+
+		IOggDecoder::eAcceptHeaderResult locResult = mDecoderInterface->showHeaderPacket(mIdentHeader->clone());
+		if (locResult == IOggDecoder::AHR_ALL_HEADERS_RECEIVED) {
+			mIsStreamReady = true;
+		} else {
+			OggPacketiser locPacketiser;
+			locPacketiser.setPacketSink(this);
+			OggDemuxPacketSourceFilter* locParent = (OggDemuxPacketSourceFilter*)m_pFilter;
+			vector<OggPage*> locList = locParent->getMatchingBufferedPages(mSerialNo);
+			
+			for (size_t i = 0; i < locList.size(); i++) {
+				locPacketiser.acceptOggPage(locList[i]);
+			}
+
+			locParent->removeMatchingBufferedPages(mSerialNo);
+
+			if (mIsStreamReady) {
+				return CBaseOutputPin::CompleteConnect(inReceivePin);
+			}	
+		}
+
+		
+	}
+	return E_FAIL;
+	
+}
+
+bool OggDemuxPacketSourcePin::acceptStampedOggPacket(StampedOggPacket* inPacket)
+{
+	//This handles callbacks with header packets
+	IOggDecoder::eAcceptHeaderResult locResult;
+	if ((mDecoderInterface != NULL) && (!mIsStreamReady)) {
+		locResult = mDecoderInterface->showHeaderPacket(inPacket);
+		if (locResult == IOggDecoder::AHR_ALL_HEADERS_RECEIVED) {
+			mIsStreamReady = true;
+		}
+	}
+	delete inPacket;
+	return true;
+}

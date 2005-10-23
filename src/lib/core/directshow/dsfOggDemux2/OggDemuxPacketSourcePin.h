@@ -32,10 +32,12 @@
 
 #include <libOOOgg/OggPacket.h>
 #include <libOOOgg/IOggCallback.h>
+#include <libOOOgg/OggPacketiser.h>
 #include "IOggDecoder.h"
 class OggDemuxPacketSourcePin
 	:	public CBaseOutputPin
 	,	public IOggCallback
+	,	protected IStampedOggPacketSink
 {
 public:
 	//OggDemuxPacketSourcePin(void);
@@ -50,7 +52,7 @@ public:
 							//bool inAllowSeek,
 							//unsigned long inNumBuffers,
 							//unsigned long inBufferSize);
-	~OggDemuxPacketSourcePin(void);
+	virtual ~OggDemuxPacketSourcePin(void);
 
 	static const unsigned long NUM_PAGE_BUFFERS = 100;
 
@@ -62,11 +64,19 @@ public:
 	//IOggCallback Interface
 	virtual bool acceptOggPage(OggPage* inOggPage);
 
+
 	//CBasePin virtuals
 	virtual HRESULT GetMediaType(int inPosition, CMediaType* outMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType* inMediaType);
 	virtual HRESULT DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest);
+
+	//Pin Conenction Methods
+	virtual HRESULT BreakConnect();
+	virtual HRESULT CompleteConnect(IPin *inReceivePin);
 protected:
+	//IStampedOggPacketSink
+	virtual bool acceptStampedOggPacket(StampedOggPacket* inPacket);
+
 	//What is this actually for ?
 	HRESULT mFilterHR;
 

@@ -38,42 +38,7 @@ bool OggStreamMapper::acceptOggPage(OggPage* inOggPage)
 			if (inOggPage->header()->isBOS()) {
 				return addNewPin(inOggPage);
 			} else {
-				mStreamState = STRMAP_PARSING_HEADERS;
-			}
-			//Partial fall through
-		case STRMAP_PARSING_HEADERS:
-			if (!allStreamsReady()) {
-				OggDemuxPacketSourcePin* locPin = getMatchingPin(inOggPage->header()->StreamSerialNo());
-				//TODO::: NULL pointer check
-				IOggDecoder* locDecoder = locPin->getDecoderInterface();
-				if (locDecoder == NULL) {
-					mStreamState = STRMAP_ERROR;
-					delete inOggPage;
-				} else {
-					IOggDecoder::eAcceptHeaderResult locResult = locDecoder->acceptHeaderPage(inOggPage);
-					switch (locResult) {
-						case IOggDecoder::eAcceptHeaderResult::AHR_ALL_HEADERS_RECEIVED:
-							locPin->setIsStreamReady(true);
-							return true;
-						case IOggDecoder::eAcceptHeaderResult::AHR_INVALID_HEADER:
-							mStreamState = STRMAP_ERROR;
-							return false;
-						case IOggDecoder::eAcceptHeaderResult::AHR_MORE_HEADERS_TO_COME:
-							return true;
-						case IOggDecoder::eAcceptHeaderResult::AHR_NULL_POINTER:
-							mStreamState = STRMAP_ERROR;
-							return false;
-						case IOggDecoder::eAcceptHeaderResult::AHR_UNEXPECTED:
-							mStreamState = STRMAP_ERROR;
-							return false;
-						default:
-							return false;
-						
-					}
-				}
-			} else {
 				mStreamState = STRMAP_DATA;
-
 			}
 			//Partial fall through
 		case STRMAP_DATA:

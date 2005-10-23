@@ -11,7 +11,7 @@ public:
 
 	};
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule) = 0;
-	virtual eAcceptHeaderResult acceptHeaderPage(OggPage* inOggHeaderPage) = 0;
+	virtual eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket) = 0;
 	virtual string getCodecShortName() = 0;
 	virtual string getCodecIdentString() = 0;
 	
