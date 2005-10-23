@@ -30,7 +30,7 @@
 //===========================================================================
 #pragma once
 
-#include <libOOOgg/OggPage.h>
+#include <libOOOgg/OggPacket.h>
 #include <libOOOgg/IOggCallback.h>
 #include "IOggDecoder.h"
 class OggDemuxPacketSourcePin
@@ -42,7 +42,8 @@ public:
 	OggDemuxPacketSourcePin(	TCHAR* inObjectName, 
 							OggDemuxPacketSourceFilter* inParentFilter,
 							CCritSec* inFilterLock,
-							OggPage* inBOSPage);
+							OggPacket* inIdentHeader,
+							unsigned long inSerialNo);
 							//StreamHeaders* inHeaderSource, 
 							//CMediaType* inMediaType,
 							//wstring inPinName,
@@ -69,9 +70,11 @@ protected:
 	//What is this actually for ?
 	HRESULT mFilterHR;
 
-	BYTE* getBOSAsFormatBlock();
-	BYTE* mBOSAsFormatBlock;
-	OggPage* mBOSPage;
+	BYTE* getIdentAsFormatBlock();
+	unsigned long getIdentSize();
+	unsigned long mSerialNo;
+	
+	OggPacket* mIdentHeader;
 	IOggDecoder* mDecoderInterface;
 
 	bool mIsStreamReady;
