@@ -37,8 +37,8 @@ OggPacketiser::OggPacketiser(void)
 	,	mPacketiserState(PKRSTATE_OK)
 	,	mLooseMode(true)						//FIX::: This affects the validator.
 	,	mNumIgnorePackets(0)
-	,	mPrevGranPos(0)
-	,	mCurrentGranPos(0)
+	//,	mPrevGranPos(0)
+	//,	mCurrentGranPos(0)
 {
 	//debugLog.open("g:\\logs\\packetise.log", ios_base::out);
 
@@ -49,8 +49,8 @@ OggPacketiser::OggPacketiser(IStampedOggPacketSink* inPacketSink)
 	,	mPacketiserState(PKRSTATE_OK)
 	,	mLooseMode(true)						//FIX::: This affects the validator.
 	,	mNumIgnorePackets(0)
-	,	mPrevGranPos(0)
-	,	mCurrentGranPos(0)
+	//,	mPrevGranPos(0)
+	//,	mCurrentGranPos(0)
 {
 	//debugLog.open("g:\\logs\\packetise.log", ios_base::out);
 }
@@ -73,8 +73,8 @@ bool OggPacketiser::reset() {
 	mPendingPacket = NULL;
 	mNumIgnorePackets = 0;
 	mPacketiserState = PKRSTATE_OK;
-	mPrevGranPos = 0;
-	mCurrentGranPos = 0;
+	//mPrevGranPos = 0;
+	//mCurrentGranPos = 0;
 	return true;
 }
 bool OggPacketiser::acceptOggPage(OggPage* inOggPage) {				//AOP::: Needs closer look
@@ -88,15 +88,15 @@ bool OggPacketiser::acceptOggPage(OggPage* inOggPage) {				//AOP::: Needs closer
 	//debugLog<<"acceptOggPage : Gran = "<<inOggPage->header()->GranulePos()<<"Num packs = "<<inOggPage->numPackets()<<endl;
 
 	//If the page isn't a -1 page and it's got a different granpos save it.
-	if ( (inOggPage->header()->GranulePos() != -1) && (inOggPage->header()->GranulePos() != mCurrentGranPos)) {
-		mPrevGranPos = mCurrentGranPos;
+	//if ( (inOggPage->header()->GranulePos() != -1) && (inOggPage->header()->GranulePos() != mCurrentGranPos)) {
+	//	mPrevGranPos = mCurrentGranPos;
 
-		//If the previous is higher than the
-		if (mPrevGranPos > mCurrentGranPos) {
-			mPrevGranPos = -1;
-		}
-		mCurrentGranPos = inOggPage->header()->GranulePos();
-	}
+	//	//If the previous is higher than the
+	//	if (mPrevGranPos > mCurrentGranPos) {
+	//		mPrevGranPos = -1;
+	//	}
+	//	mCurrentGranPos = inOggPage->header()->GranulePos();
+	//}
 
 	//If the page header says its a continuation page...
 	if ((inOggPage->header()->HeaderFlags() & 1) == 1) {
@@ -341,9 +341,9 @@ bool OggPacketiser::dispatchStampedOggPacket(StampedOggPacket* inPacket) {	//Acc
 		return true;
 	} else {
 		//Modify the header packet to include the gran pos of previous page.
-		if (mPrevGranPos != -1) {
-			inPacket->setTimeStamp(mPrevGranPos, mCurrentGranPos, StampedOggPacket::OGG_BOTH);
-		}
+		//if (mPrevGranPos != -1) {
+		//	inPacket->setTimeStamp(mPrevGranPos, mCurrentGranPos, StampedOggPacket::OGG_BOTH);
+		//}
 		//Dispatch it.
 		return mPacketSink->acceptStampedOggPacket(inPacket);
 	}
