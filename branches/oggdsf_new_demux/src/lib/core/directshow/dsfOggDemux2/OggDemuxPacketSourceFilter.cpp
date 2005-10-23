@@ -302,8 +302,8 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	}
 	
 	//mStreamMapper->setAllowDispatch(true);
-	//mStreamMapper->toStartOfData();			//Flushes all streams and sets them to ignore the right number of headers.
-	//mOggBuffer.clearData();
+	//mStreamMapper->();			//Flushes all streams and sets them to ignore the right number of headers.
+	mOggBuffer.clearData();
 	//mDataSource->seek(0);			//TODO::: This is bad for streams.
 
 	//debugLog<<"COMPLETED SETUP"<<endl;
