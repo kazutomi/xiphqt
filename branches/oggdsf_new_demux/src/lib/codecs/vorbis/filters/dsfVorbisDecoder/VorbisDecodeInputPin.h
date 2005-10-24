@@ -74,6 +74,7 @@ public:
 
 	//IOggDecoder Interface
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
+	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule);
 	virtual IOggDecoder::eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket);
 	virtual string getCodecShortName();
 	virtual string getCodecIdentString();
