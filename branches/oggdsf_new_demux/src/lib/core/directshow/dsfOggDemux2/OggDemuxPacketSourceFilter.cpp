@@ -526,7 +526,7 @@ HRESULT OggDemuxPacketSourceFilter::DataProcessLoop()
 
 STDMETHODIMP OggDemuxPacketSourceFilter::GetCapabilities(DWORD* inCapabilities) 
 {
-	if (mSeekTable->enabled())  {
+	if ((mSeekTable != NULL) && (mSeekTable->enabled()))  {
 		//debugLog<<"GetCaps "<<mSeekingCap<<endl;
 		*inCapabilities = mSeekingCap;
 		return S_OK;
@@ -538,7 +538,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetCapabilities(DWORD* inCapabilities)
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetDuration(LONGLONG* outDuration) 
 {
-	if (mSeekTable->enabled())  {
+	if ((mSeekTable != NULL) && (mSeekTable->enabled())) {
 		//debugLog<<"GetDuration = " << mSeekTable->fileDuration()<<" ds units"<<endl;
 		*outDuration = mSeekTable->fileDuration();
 		return S_OK;
@@ -584,7 +584,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetTimeFormat( GUID *pFormat){
 	return S_OK;
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetStopPosition(LONGLONG *pStop){
-	if (mSeekTable->enabled())  {
+	if ((mSeekTable != NULL) && (mSeekTable->enabled()))  {
 
 		//debugLog<<"GetStopPos = " << mSeekTable->fileDuration()<<" ds units"<<endl;
 		*pStop = mSeekTable->fileDuration();
@@ -679,7 +679,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetPositions(LONGLONG *pCurrent, LONGLO
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGLONG *pLatest){
 	//debugLog<<"****GetAvailable : NOT IMPL"<<endl;
-	if (mSeekTable->enabled())  {
+	if ((mSeekTable != NULL) && (mSeekTable->enabled()))  {
 		//debugLog<<"Get Avail ok"<<endl;
 		*pEarliest = 0;
 		//debugLog<<"+++++ Duration is "<<mSeekTable->fileDuration()<<endl;
