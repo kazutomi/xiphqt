@@ -7,6 +7,7 @@ AutoOggChainGranuleSeekTable::AutoOggChainGranuleSeekTable(string inFilename)
 	,	mOggDemux(NULL)
 {
 	mOggDemux = new OggDataBuffer;
+	mOggDemux->registerVirtualCallback(this);
 
 }
 
