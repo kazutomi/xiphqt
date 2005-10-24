@@ -110,6 +110,8 @@ public:
 	void removeMatchingBufferedPages(unsigned long inSerialNo);
 
 	CCritSec* streamLock()			{		return mStreamLock;		}
+
+	virtual void notifyPinConnected();
 protected:
 	static const unsigned long SETUP_BUFFER_SIZE = 24;
 	virtual HRESULT SetUpPins();
