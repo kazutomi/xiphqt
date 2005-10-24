@@ -437,23 +437,31 @@ DWORD OggDemuxPacketSourceFilter::ThreadProc(void) {
 	}
 	return S_OK;
 }
+
+void OggDemuxPacketSourceFilter::notifyPinConnected()
+{
+	if (mStreamMapper->allStreamsReady()) {
+		//Setup the seek table.
+		if (mSeekTable == NULL) {
+			mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+			int locNumPins = GetPinCount();
+
+			OggDemuxPacketSourcePin* locPin = NULL;
+			for (int i = 0; i < locNumPins; i++) {
+				locPin = (OggDemuxPacketSourcePin*)GetPin(i);
+				
+				
+				mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
+			}
+			mSeekTable->buildTable();
+		}
+	}
+}
 HRESULT OggDemuxPacketSourceFilter::DataProcessLoop() 
 {
 	//Mess with the locking mechanisms at your own risk.
 
-	if (mSeekTable == NULL) {
-		mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
-		int locNumPins = GetPinCount();
 
-		OggDemuxPacketSourcePin* locPin = NULL;
-		for (int i = 0; i < locNumPins; i++) {
-			locPin = (OggDemuxPacketSourcePin*)GetPin(i);
-			
-			
-			mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
-		}
-		mSeekTable->buildTable();
-	}
 	//debugLog<<"Starting DataProcessLoop :"<<endl;
 	DWORD locCommand = 0;
 	char* locBuff = new  char[4096];			//Deleted before function returns...
