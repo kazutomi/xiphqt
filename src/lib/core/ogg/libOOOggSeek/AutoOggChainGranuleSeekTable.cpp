@@ -83,7 +83,7 @@ unsigned long AutoOggChainGranuleSeekTable::seekPos(LOOG_INT64 inTime)
 }
 LOOG_INT64 AutoOggChainGranuleSeekTable::fileDuration()
 {
-
+	return mDuration;
 }
 bool AutoOggChainGranuleSeekTable::acceptOggPage(OggPage* inOggPage)
 {
