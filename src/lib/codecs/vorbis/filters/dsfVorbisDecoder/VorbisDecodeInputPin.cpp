@@ -326,17 +326,17 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 	HRESULT locHR = CheckStreaming();
 
 	if (locHR == S_OK) {
-		if (!mBegun) {
-			//locThis->debugLog<<"First Time"<<endl;
-			//Set up fishsound		
-			fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
-			mBegun = true;
-			
-			mNumChannels = mFishInfo.channels;
-			mFrameSize = mNumChannels * SIZE_16_BITS;
-			mSampleRate = mFishInfo.samplerate;
+		//if (!mBegun) {
+		//	//locThis->debugLog<<"First Time"<<endl;
+		//	//Set up fishsound		
+		//	fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
+		//	mBegun = true;
+		//	
+		//	mNumChannels = mFishInfo.channels;
+		//	mFrameSize = mNumChannels * SIZE_16_BITS;
+		//	mSampleRate = mFishInfo.samplerate;
 
-		}
+		//}
 
 
 		BYTE* locBuff = NULL;
@@ -518,6 +518,16 @@ IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacke
 		case VSS_SEEN_COMMENT:
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\005vorbis", 7) == 0) {
 				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
+		
+					fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
+					//Is mBegun useful ?
+					mBegun = true;
+			
+					mNumChannels = mFishInfo.channels;
+					mFrameSize = mNumChannels * SIZE_16_BITS;
+					mSampleRate = mFishInfo.samplerate;
+
+		
 					mSetupState = VSS_ALL_HEADERS_SEEN;
 					return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
 				}
