@@ -71,7 +71,7 @@ public:
 	void setTheoraFormat(BYTE* inFormatBlock);
 protected:
 
-	static const unsigned long THEORA_IDENT_HEADER_SIZE = 50;
+	static const unsigned long THEORA_IDENT_HEADER_SIZE = 42;
 	virtual void ResetFrameCount();
 	void FillMediaType(CMediaType* outMediaType, unsigned long inSampleSize);
 	bool FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer);

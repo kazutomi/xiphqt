@@ -57,7 +57,7 @@ public:
 
 	//XTODO::: Add a new segment override to get an integer rate change
 	//XTODO::: Possibly add an endflush override to clear buffered data
-	//XTODO::: Implement IOggDecoder interface
+	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 	//XTODO::: Implement getallocator requirements to tell demux what buffers to use
 
 	//IOggDecoder Interface
@@ -69,6 +69,7 @@ public:
 	//fstream debugLog;
 
 protected:
+	static const unsigned long THEORA_NUM_BUFFERS = 50;
 	enum eTheoraSetupState {
 		VSS_SEEN_NOTHING,
 		VSS_SEEN_BOS,

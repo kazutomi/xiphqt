@@ -63,7 +63,20 @@ STDMETHODIMP TheoraDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void
 
 	return CBaseInputPin::NonDelegatingQueryInterface(riid, ppv); 
 }
+HRESULT TheoraDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps)
+{
+	TheoraDecodeFilter* locParent = (TheoraDecodeFilter*)m_pFilter;
+	unsigned long locBuffSize = ((unsigned long)locParent->mTheoraFormatInfo->outerFrameHeight * (unsigned long)locParent->mTheoraFormatInfo->outerFrameWidth * 3) >> 3;
+	if (locBuffSize < 65536) {
+		locBuffSize = 65536;
+	}
+	outRequestedProps->cbBuffer =  locBuffSize;
+	outRequestedProps->cBuffers = THEORA_NUM_BUFFERS;
+	outRequestedProps->cbAlign = 1;
+	outRequestedProps->cbPrefix = 0;
 
+	return S_OK;
+}
 HRESULT TheoraDecodeInputPin::BreakConnect() {
 	CAutoLock locLock(m_pLock);
 	//debugLog<<"Break conenct"<<endl;
