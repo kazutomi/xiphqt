@@ -526,32 +526,26 @@ HRESULT OggDemuxPacketSourceFilter::DataProcessLoop()
 
 STDMETHODIMP OggDemuxPacketSourceFilter::GetCapabilities(DWORD* inCapabilities) 
 {
-	//if (mSeekTable->enabled())  {
-	//	//debugLog<<"GetCaps "<<mSeekingCap<<endl;
-	//	*inCapabilities = mSeekingCap;
-	//	return S_OK;
-	//} else {
-	//	//debugLog<<"Get Caps failed !!!!!!!"<<endl;
-	//	*inCapabilities = 0;
-	//	return S_OK;;
-	//}
-
-
-	//TODO:::
-	return E_NOTIMPL;
+	if (mSeekTable->enabled())  {
+		//debugLog<<"GetCaps "<<mSeekingCap<<endl;
+		*inCapabilities = mSeekingCap;
+		return S_OK;
+	} else {
+		//debugLog<<"Get Caps failed !!!!!!!"<<endl;
+		*inCapabilities = 0;
+		return S_OK;;
+	}
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetDuration(LONGLONG* outDuration) 
 {
-	//if (mSeekTable->enabled())  {
-	//	//debugLog<<"GetDuration = " << mSeekTable->fileDuration()<<" ds units"<<endl;
-	//	*outDuration = mSeekTable->fileDuration();
-	//	return S_OK;
-	//} else {
-	//	return E_NOTIMPL;
-	//}
+	if (mSeekTable->enabled())  {
+		//debugLog<<"GetDuration = " << mSeekTable->fileDuration()<<" ds units"<<endl;
+		*outDuration = mSeekTable->fileDuration();
+		return S_OK;
+	} else {
+		return E_NOTIMPL;
+	}
 
-	//TODO:::
-	return E_NOTIMPL;
 
 }
 	 
@@ -565,16 +559,14 @@ STDMETHODIMP OggDemuxPacketSourceFilter::CheckCapabilities(DWORD *pCapabilities)
 STDMETHODIMP OggDemuxPacketSourceFilter::IsFormatSupported(const GUID *pFormat)
 {
 	//ASSERT(pFormat != NULL);
-	//if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
-	//	//debugLog<<"IsFormatSupported	: TRUE"<<endl;
-	//	return S_OK;
-	//} else {
-	//	//debugLog<<"IsFormatSupported	: FALSE !!!"<<endl;
-	//	return S_FALSE;
-	//}
+	if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
+		//debugLog<<"IsFormatSupported	: TRUE"<<endl;
+		return S_OK;
+	} else {
+		//debugLog<<"IsFormatSupported	: FALSE !!!"<<endl;
+		return S_FALSE;
+	}
 
-	//TODO:::
-	return E_NOTIMPL;
 
 	
 }
@@ -592,18 +584,17 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetTimeFormat( GUID *pFormat){
 	return S_OK;
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetStopPosition(LONGLONG *pStop){
-	//if (mSeekTable->enabled())  {
+	if (mSeekTable->enabled())  {
 
-	//	//debugLog<<"GetStopPos = " << mSeekTable->fileDuration()<<" ds units"<<endl;
-	//	*pStop = mSeekTable->fileDuration();
-	//	return S_OK;
-	//} else {
-	//	//debugLog<<"GetStopPos NOT IMPL"<<endl;
-	//	return E_NOTIMPL;
-	//}
+		//debugLog<<"GetStopPos = " << mSeekTable->fileDuration()<<" ds units"<<endl;
+		*pStop = mSeekTable->fileDuration();
+		return S_OK;
+	} else {
+		//debugLog<<"GetStopPos NOT IMPL"<<endl;
+		return E_NOTIMPL;
+	}
 
-	//TODO:::
-	return E_NOTIMPL;
+
 
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetCurrentPosition(LONGLONG *pCurrent)
@@ -688,18 +679,16 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetPositions(LONGLONG *pCurrent, LONGLO
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGLONG *pLatest){
 	//debugLog<<"****GetAvailable : NOT IMPL"<<endl;
-	//if (mSeekTable->enabled())  {
-	//	//debugLog<<"Get Avail ok"<<endl;
-	//	*pEarliest = 0;
-	//	//debugLog<<"+++++ Duration is "<<mSeekTable->fileDuration()<<endl;
-	//	*pLatest = mSeekTable->fileDuration();
-	//	return S_OK;
-	//} else {
-	//	return E_NOTIMPL;
-	//}
+	if (mSeekTable->enabled())  {
+		//debugLog<<"Get Avail ok"<<endl;
+		*pEarliest = 0;
+		//debugLog<<"+++++ Duration is "<<mSeekTable->fileDuration()<<endl;
+		*pLatest = mSeekTable->fileDuration();
+		return S_OK;
+	} else {
+		return E_NOTIMPL;
+	}
 
-	//TODO:::
-	return E_NOTIMPL;
 
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::SetRate(double dRate)
@@ -721,16 +710,14 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetPreroll(LONGLONG *pllPreroll)
 	return S_OK;
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::IsUsingTimeFormat(const GUID *pFormat){
-	//if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
-	//	//debugLog<<"IsUsingTimeFormat : MEDIA TIME TRUE"<<endl;
-	//	return S_OK;
-	//} else {
-	//	//debugLog<<"IsUsingTimeFormat : MEDIA TIME FALSE !!!!"<<endl;
-	//	return S_FALSE;
-	//}
+	if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
+		//debugLog<<"IsUsingTimeFormat : MEDIA TIME TRUE"<<endl;
+		return S_OK;
+	} else {
+		//debugLog<<"IsUsingTimeFormat : MEDIA TIME FALSE !!!!"<<endl;
+		return S_FALSE;
+	}
 
-	//TODO:::
-	return E_NOTIMPL;
 
 }
 
