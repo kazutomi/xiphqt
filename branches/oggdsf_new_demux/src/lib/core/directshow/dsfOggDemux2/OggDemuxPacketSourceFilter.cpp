@@ -390,17 +390,17 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MED
 	HRESULT locHR = SetUpPins();
 
 	if (locHR == S_OK) {
-		mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
-		int locNumPins = GetPinCount();
+		//mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+		//int locNumPins = GetPinCount();
 
-		OggDemuxPacketSourcePin* locPin = NULL;
-		for (int i = 0; i < locNumPins; i++) {
-			locPin = (OggDemuxPacketSourcePin*)GetPin(i);
-			
-			
-			mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
-		}
-		mSeekTable->buildTable();
+		//OggDemuxPacketSourcePin* locPin = NULL;
+		//for (int i = 0; i < locNumPins; i++) {
+		//	locPin = (OggDemuxPacketSourcePin*)GetPin(i);
+		//	
+		//	
+		//	mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
+		//}
+		//mSeekTable->buildTable();
 		return S_OK;
 	} else {
 		return locHR;
@@ -441,6 +441,19 @@ HRESULT OggDemuxPacketSourceFilter::DataProcessLoop()
 {
 	//Mess with the locking mechanisms at your own risk.
 
+	if (mSeekTable == NULL) {
+		mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+		int locNumPins = GetPinCount();
+
+		OggDemuxPacketSourcePin* locPin = NULL;
+		for (int i = 0; i < locNumPins; i++) {
+			locPin = (OggDemuxPacketSourcePin*)GetPin(i);
+			
+			
+			mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
+		}
+		mSeekTable->buildTable();
+	}
 	//debugLog<<"Starting DataProcessLoop :"<<endl;
 	DWORD locCommand = 0;
 	char* locBuff = new  char[4096];			//Deleted before function returns...
