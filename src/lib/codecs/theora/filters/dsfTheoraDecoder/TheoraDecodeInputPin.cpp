@@ -172,9 +172,10 @@ IOggDecoder::eAcceptHeaderResult TheoraDecodeInputPin::showHeaderPacket(OggPacke
 		case VSS_ALL_HEADERS_SEEN:
 		case VSS_ERROR:
 		default:
+			delete locStamped;
 			retResult = IOggDecoder::AHR_UNEXPECTED;
 	}
-	delete locStamped;
+	
 	return retResult;
 }
 string TheoraDecodeInputPin::getCodecShortName()
