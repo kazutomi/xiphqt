@@ -33,6 +33,8 @@
 #include "IFilterDataSource.h"
 //#include "OggStreamMapper.h"
 #include <libOOOgg/OggDataBuffer.h>
+
+#include <libOOOggSeek/AutoOggChainGranuleSeekTable.h>
 #include "DataSourceFactory.h"
 
 class OggStreamMapper;
@@ -134,6 +136,8 @@ protected:
 	OggDataBuffer mOggBuffer;
 	IFilterDataSource* mDataSource;
 	OggStreamMapper* mStreamMapper;
+
+	AutoOggChainGranuleSeekTable* mSeekTable;
 
 
 	bool mJustReset;

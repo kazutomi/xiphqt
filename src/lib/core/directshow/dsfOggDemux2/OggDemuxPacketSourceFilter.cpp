@@ -103,6 +103,7 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	,	mSeenPositiveGranulePos(false)
 	,	mPendingPage(NULL)
 	,	mJustReset(true)
+	,	mSeekTable(NULL)
 {
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
@@ -112,11 +113,14 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	mStreamLock = new CCritSec;
 
 	mStreamMapper = new OggStreamMapper(this, m_pLock);
+
+	
 }
 
 OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 {
 	delete mStreamMapper;
+	delete mSeekTable;
 	//TODO::: Delete the locks
 }
 //IMEdiaStreaming
@@ -383,7 +387,24 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MED
 	//mSeekTable = new AutoOggSeekTable(StringHelper::toNarrowStr(mFileName));
 	//mSeekTable->buildTable();
 	//
-	return SetUpPins();
+	HRESULT locHR = SetUpPins();
+
+	if (locHR == S_OK) {
+		mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+		int locNumPins = GetPinCount();
+
+		OggDemuxPacketSourcePin* locPin = NULL;
+		for (int i = 0; i < locNumPins; i++) {
+			locPin = (OggDemuxPacketSourcePin*)GetPin(i);
+			
+			
+			mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
+		}
+		mSeekTable->buildTable();
+		return S_OK;
+	} else {
+		return locHR;
+	}
 
 	//TODO:::
 	//return S_OK;

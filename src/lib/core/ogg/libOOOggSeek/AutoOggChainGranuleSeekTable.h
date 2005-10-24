@@ -5,7 +5,7 @@
 #include "IOggDecoderSeek.h"
 
 
-class AutoOggChainGranuleSeekTable
+class LIBOOOGGSEEK_API AutoOggChainGranuleSeekTable
 	:	public IOggCallback
 {
 public:

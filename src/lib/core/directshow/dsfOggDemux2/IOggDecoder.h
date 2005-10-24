@@ -10,9 +10,11 @@
 //
 
 #include <libOOOgg/libOOOgg.h>
+#include <libOOOggSeek/IOggDecoderSeek.h>
 #include <string>
 using namespace std;
 class IOggDecoder 
+	:	public IOggDecoderSeek
 {
 public:
 	enum eAcceptHeaderResult {
@@ -24,6 +26,7 @@ public:
 
 	};
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule) = 0;
+	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule) = 0;
 	virtual eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket) = 0;
 	virtual string getCodecShortName() = 0;
 	virtual string getCodecIdentString() = 0;

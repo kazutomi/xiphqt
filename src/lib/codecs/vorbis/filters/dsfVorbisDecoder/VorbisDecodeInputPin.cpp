@@ -483,6 +483,12 @@ LOOG_INT64 VorbisDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
 		return -1;
 	}
 }
+
+LOOG_INT64 VorbisDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
+{
+	//TODO::: Get adjustment from block size info... for now, it doesn't matter if no preroll
+	return inGranule;
+}
 IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacket* inCodecHeaderPacket)
 {
 	switch (mSetupState) {
