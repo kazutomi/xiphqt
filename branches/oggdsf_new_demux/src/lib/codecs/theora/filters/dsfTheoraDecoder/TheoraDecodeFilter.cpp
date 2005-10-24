@@ -134,16 +134,24 @@ bool TheoraDecodeFilter::FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer) {
 	return true;
 }
 
-HRESULT TheoraDecodeFilter::CheckInputType(const CMediaType* inMediaType) {
+HRESULT TheoraDecodeFilter::CheckInputType(const CMediaType* inMediaType) 
+{
+
 	
-	if	( (inMediaType->majortype == MEDIATYPE_Video) &&
-			(inMediaType->subtype == MEDIASUBTYPE_Theora) && (inMediaType->formattype == FORMAT_Theora)
+	if	( (inMediaType->majortype == MEDIATYPE_OggPacketStream) &&
+			(inMediaType->subtype == MEDIASUBTYPE_None) && (inMediaType->formattype == FORMAT_OggIdentHeader)
 		)
 	{
-		return S_OK;
-	} else {
-		return S_FALSE;
+		if (inMediaType->cbFormat == THEORA_IDENT_HEADER_SIZE) {
+			if (strncmp((char*)inMediaType->pbFormat, "\200theora", 7) == 0) {
+				//TODO::: Possibly verify version
+				return S_OK;
+			}
+		}
+
 	}
+	return S_FALSE;
+	
 }
 HRESULT TheoraDecodeFilter::CheckTransform(const CMediaType* inInputMediaType, const CMediaType* inOutputMediaType) {
 	if ((CheckInputType(inInputMediaType) == S_OK) &&
@@ -316,7 +324,9 @@ HRESULT TheoraDecodeFilter::GetMediaType(int inPosition, CMediaType* outOutputMe
 	}
 }
 
-void TheoraDecodeFilter::ResetFrameCount() {
+void TheoraDecodeFilter::ResetFrameCount() 
+{
+	//XTODO::: Maybe not needed
 	mFrameCount = 0;
 	
 }
@@ -614,18 +624,13 @@ int TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* ou
 HRESULT TheoraDecodeFilter::SetMediaType(PIN_DIRECTION inDirection, const CMediaType* inMediaType) {
 
 	if (inDirection == PINDIR_INPUT) {
-		if (inMediaType->subtype == MEDIASUBTYPE_Theora) {
+		if (CheckInputType(inMediaType) == S_OK) {
 			//debugLog<<"Setting format block"<<endl;
-			setTheoraFormat((sTheoraFormatBlock*)inMediaType->pbFormat);
+			setTheoraFormat(inMediaType->pbFormat);
 			
 			//Set some other stuff here too...
-			mXOffset = ((sTheoraFormatBlock*)inMediaType->pbFormat)->xOffset;
-			mYOffset = ((sTheoraFormatBlock*)inMediaType->pbFormat)->yOffset;
-			//mHeight = ((sTheoraFormatBlock*)inMediaType->pbFormat)->frameHeight;
-			//mWidth = ((sTheoraFormatBlock*)inMediaType->pbFormat)->frameWidth;
-			//debugLog<<"Setting height width to "<<mWidth<<" x "<<mHeight<<endl;
-			//debugLog<<"Frame Dims were "<<((sTheoraFormatBlock*)inMediaType->pbFormat)->frameWidth<<" x "<<((sTheoraFormatBlock*)inMediaType->pbFormat)->frameHeight<<endl;
-
+			mXOffset = mTheoraFormatInfo->xOffset;
+			mYOffset = mTheoraFormatInfo->xOffset;
 		} else {
 			//Failed... should never be here !
 			throw 0;
@@ -668,11 +673,48 @@ sTheoraFormatBlock* TheoraDecodeFilter::getTheoraFormatBlock()
 {
 	return mTheoraFormatInfo;
 }
-void TheoraDecodeFilter::setTheoraFormat(sTheoraFormatBlock* inFormatBlock) 
+void TheoraDecodeFilter::setTheoraFormat(BYTE* inFormatBlock) 
 {
+
 	delete mTheoraFormatInfo;
 	mTheoraFormatInfo = new sTheoraFormatBlock;			//Deelted in destructor.
-	*mTheoraFormatInfo = *inFormatBlock;
+
+	//0		-	55			theora ident						0	-	6
+	//56	-	63			ver major							7	-	7
+	//64	-	71			ver minor							8	-	8
+	//72	-	79			ver subversion						9	=	9
+	//80	-	95			width/16							10	-	11
+	//96	-	111			height/16							12	-	13
+	//112	-	135			framewidth							14	-	16
+	//136	-	159			frameheight							17	-	19
+	//160	-	167			xoffset								20	-	20
+	//168	-	175			yoffset								21	-	21
+	//176	-	207			framerateNum						22	-	25
+	//208	-	239			frameratedenom						26	-	29
+	//240	-	263			aspectNum							30	-	32
+	//264	-	287			aspectdenom							33	-	35
+	//288	-	295			colourspace							36	-	36
+	//296	-	319			targetbitrate						37	-	39
+	//320	-	325			targetqual							40	-	40.75
+	//326	-	330			keyframintlog						40.75-  41.375
+
+	unsigned char* locIdentHeader = inFormatBlock;
+	mTheoraFormatInfo->theoraVersion = (iBE_Math::charArrToULong(locIdentHeader + 7)) >>8;
+	mTheoraFormatInfo->outerFrameWidth = (iBE_Math::charArrToUShort(locIdentHeader + 10)) * 16;
+	mTheoraFormatInfo->outerFrameHeight = (iBE_Math::charArrToUShort(locIdentHeader + 12)) * 16;
+	mTheoraFormatInfo->pictureWidth = (iBE_Math::charArrToULong(locIdentHeader + 14)) >>8;
+	mTheoraFormatInfo->pictureHeight = (iBE_Math::charArrToULong(locIdentHeader + 17)) >>8;
+	mTheoraFormatInfo->xOffset = locIdentHeader[20];
+	mTheoraFormatInfo->yOffset = locIdentHeader[21];
+	mTheoraFormatInfo->frameRateNumerator = iBE_Math::charArrToULong(locIdentHeader + 22);
+	mTheoraFormatInfo->frameRateDenominator = iBE_Math::charArrToULong(locIdentHeader + 26);
+	mTheoraFormatInfo->aspectNumerator = (iBE_Math::charArrToULong(locIdentHeader + 30)) >>8;
+	mTheoraFormatInfo->aspectDenominator = (iBE_Math::charArrToULong(locIdentHeader + 33)) >>8;
+	mTheoraFormatInfo->colourSpace = locIdentHeader[36];
+	mTheoraFormatInfo->targetBitrate = (iBE_Math::charArrToULong(locIdentHeader + 37)) >>8;
+	mTheoraFormatInfo->targetQuality = (locIdentHeader[40]) >> 2;
+
+	mTheoraFormatInfo->maxKeyframeInterval= (((locIdentHeader[40]) % 4) << 3) + (locIdentHeader[41] >> 5);
 }
 
 CBasePin* TheoraDecodeFilter::GetPin(int inPinNo)

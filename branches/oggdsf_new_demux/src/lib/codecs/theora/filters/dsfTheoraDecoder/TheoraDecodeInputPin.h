@@ -30,8 +30,11 @@
 //===========================================================================
 
 #pragma once
+#include "IOggDecoder.h"
 #include "Theoradecoderdllstuff.h"
 #include "BasicSeekPassThrough.h"
+
+#include "TheoraDecodeFilter.h"
 
 #include <fstream>
 using namespace std;
@@ -52,5 +55,27 @@ public:
 	virtual HRESULT BreakConnect();
 	virtual HRESULT CompleteConnect (IPin *inReceivePin);
 
+	//XTODO::: Add a new segment override to get an integer rate change
+	//XTODO::: Possibly add an endflush override to clear buffered data
+	//XTODO::: Implement IOggDecoder interface
+	//XTODO::: Implement getallocator requirements to tell demux what buffers to use
+
+	//IOggDecoder Interface
+	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
+	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule);
+	virtual IOggDecoder::eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket);
+	virtual string getCodecShortName();
+	virtual string getCodecIdentString();
 	//fstream debugLog;
+
+protected:
+	enum eTheoraSetupState {
+		VSS_SEEN_NOTHING,
+		VSS_SEEN_BOS,
+		VSS_SEEN_COMMENT,
+		VSS_ALL_HEADERS_SEEN,
+		VSS_ERROR
+	};
+
+	eTheoraSetupState mSetupState;
 };

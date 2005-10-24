@@ -34,6 +34,8 @@
 #include "Theoradecoderdllstuff.h"
 #include "theoradecodeoutputpin.h"
 #include "theoradecodeinputpin.h"
+
+#include <libilliCore/iBE_Math.h>
 #include <math.h>
 //#include "DSStringer.h"
 #include "TheoraDecoder.h"
@@ -45,6 +47,7 @@ class TheoraDecodeFilter
 
 {
 public:
+	friend class TheoraDecodeInputPin;
 	TheoraDecodeFilter(void);
 	virtual ~TheoraDecodeFilter(void);
 
@@ -65,8 +68,10 @@ public:
 	virtual CBasePin* TheoraDecodeFilter::GetPin(int inPinNo);
 	//Helpers
 	sTheoraFormatBlock* getTheoraFormatBlock();
-	void setTheoraFormat(sTheoraFormatBlock* inFormatBlock);
+	void setTheoraFormat(BYTE* inFormatBlock);
 protected:
+
+	static const unsigned long THEORA_IDENT_HEADER_SIZE = 50;
 	virtual void ResetFrameCount();
 	void FillMediaType(CMediaType* outMediaType, unsigned long inSampleSize);
 	bool FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer);
