@@ -25,7 +25,7 @@ public:
 
 	bool addStream(unsigned long inSerialNo, IOggDecoderSeek* inSeekInterface);
 
-	unsigned long seekPos(LOOG_INT64 inTime);
+	OggGranuleSeekTable::tSeekPair seekPos(LOOG_INT64 inTime);
 protected:
 
 	struct sStreamMapping {

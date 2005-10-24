@@ -611,64 +611,43 @@ STDMETHODIMP OggDemuxPacketSourceFilter::ConvertTimeFormat(LONGLONG *pTarget, co
 STDMETHODIMP OggDemuxPacketSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD dwCurrentFlags,LONGLONG *pStop,DWORD dwStopFlags){
 
 
-	//CAutoLock locLock(m_pLock);
-	////debugLog<<"Set Positions "<<*pCurrent<<" to "<<*pStop<<" with flags "<<dwCurrentFlags<<" and "<<dwStopFlags<<endl;
-	//if (mSeekTable->enabled())  {
-	//	//debugLog<<"SetPos : Current = "<<*pCurrent<<" Flags = "<<dwCurrentFlags<<" Stop = "<<*pStop<<" dwStopFlags = "<<dwStopFlags<<endl;
-	//	//debugLog<<"       : Delivering begin flush..."<<endl;
+	CAutoLock locLock(m_pLock);
+	
+	if ((mSeekTable != NULL) && (mSeekTable->enabled()))  {
+	
+		CAutoLock locSourceLock(mSourceFileLock);
+		DeliverBeginFlush();
 
-	//
-	//	CAutoLock locSourceLock(mSourceFileLock);
-	//	mSetIgnorePackets = false;
-	//	DeliverBeginFlush();
-	//	//debugLog<<"       : Begin flush Delviered."<<endl;
+		//Find the byte position for this time.
+		if (*pCurrent > mSeekTable->fileDuration()) {
+			*pCurrent = mSeekTable->fileDuration();
+		} else if (*pCurrent < 0) {
+			*pCurrent = 0;
+		}
 
-	//	//Find the byte position for this time.
-	//	OggSeekTable::tSeekPair locStartPos = mSeekTable->getStartPos(*pCurrent);
-	//	bool locSendExcess = false;
+		OggGranuleSeekTable::tSeekPair locStartPos = mSeekTable->seekPos(*pCurrent);
+		
+		
+		//For now, seek to the position directly, later we will discard the preroll
+		*pCurrent = locStartPos.first;
 
-	//	//FIX::: This code needs to be removed, and handle start seek case.
-	//	//.second is the file position.
-	//	//.first is the time in DS units
-	//	if (locStartPos.second == mStreamMapper->startOfData()) {
-	//		locSendExcess = true;
-	//		//GGFF:::
-	//		//mStreamMapper->toStartOfData();
-	//		mSetIgnorePackets = true;
-	//	}
-	//	
-	//	
-	//	//We have to save this here now... since time can't be reverted to granule pos in all cases
-	//	// we have to use granule pos timestamps in order for downstream codecs to work.
-	//	// Because of this we can't factor time bases after seeking into the sample times.
-	//	*pCurrent	= mSeekTimeBase 
-	//				= locStartPos.first;		//Time from seek pair.
+		{
+			//debugLog<<"       : Delivering End Flush..."<<endl;
+			DeliverEndFlush();
+			//debugLog<<"       : End flush Delviered."<<endl;
+			DeliverNewSegment(*pCurrent, mSeekTable->fileDuration(), 1.0);
+		}
 
-	//	//debugLog<<"Corrected pCurrent : "<<mSeekTimeBase<<endl;
-	//	for (unsigned long i = 0; i < mStreamMapper->numStreams(); i++) {
-	//		mStreamMapper->getOggStream(i)->setSendExcess(locSendExcess);		//Not needed
-	//		mStreamMapper->getOggStream(i)->setLastEndGranPos(*pCurrent);
-	//	}
-	//	{
-	//		//debugLog<<"       : Delivering End Flush..."<<endl;
-	//		DeliverEndFlush();
-	//		//debugLog<<"       : End flush Delviered."<<endl;
-	//		DeliverNewSegment(*pCurrent, mSeekTable->fileDuration(), 1.0);
-	//	}
+		//.second is the file position.
+		mDataSource->seek(locStartPos.second.first);
+	
+		return S_OK;
+	} else {
+		//debugLog<<"Seek not IMPL"<<endl;
+		return E_NOTIMPL;
+	}
 
-	//	//.second is the file position.
-	//	mDataSource->seek(locStartPos.second);
-	//
-	//	//debugLog<<"       : Seek complete."<<endl;
-	//} else {
-	//	//debugLog<<"Seek not IMPL"<<endl;
-	//	return E_NOTIMPL;
-	//}
 
-	//return S_OK;
-
-	//TODO:::
-	return E_NOTIMPL;
 
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetPositions(LONGLONG *pCurrent, LONGLONG *pStop)
