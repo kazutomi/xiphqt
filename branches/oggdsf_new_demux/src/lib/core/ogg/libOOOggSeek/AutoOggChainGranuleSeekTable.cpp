@@ -6,6 +6,7 @@ AutoOggChainGranuleSeekTable::AutoOggChainGranuleSeekTable(string inFilename)
 	,	mFilePos(0)
 	,	mOggDemux(NULL)
 	,	mDuration(0)
+	,	mIsEnabled(false)
 {
 	mOggDemux = new OggDataBuffer;
 	mOggDemux->registerVirtualCallback(this);
@@ -40,7 +41,10 @@ bool AutoOggChainGranuleSeekTable::buildTable()
 		delete[] locBuff;
 
 		mFile.close();
+		mIsEnabled = true;
 		
+	} else {
+		mIsEnabled = false;
 	}
 	return true;
 }

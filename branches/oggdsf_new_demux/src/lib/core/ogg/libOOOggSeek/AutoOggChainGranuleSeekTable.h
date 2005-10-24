@@ -21,6 +21,8 @@ public:
 	/// The duration of the file, in DirectShow time units.
 	LOOG_INT64 fileDuration();
 
+	bool enabled()					{			return mIsEnabled;		}
+
 	bool addStream(unsigned long inSerialNo, IOggDecoderSeek* inSeekInterface);
 
 	unsigned long seekPos(LOOG_INT64 inTime);
@@ -33,6 +35,8 @@ protected:
 	};
 
 	vector<sStreamMapping> mStreamMaps;
+
+	bool mIsEnabled;
 
 	LOOG_INT64 mDuration;
 	sStreamMapping getMapping(unsigned long inSerialNo);
