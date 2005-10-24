@@ -34,6 +34,7 @@ protected:
 
 	vector<sStreamMapping> mStreamMaps;
 
+	LOOG_INT64 mDuration;
 	sStreamMapping getMapping(unsigned long inSerialNo);
 	fstream mFile;
 	string mFilename;

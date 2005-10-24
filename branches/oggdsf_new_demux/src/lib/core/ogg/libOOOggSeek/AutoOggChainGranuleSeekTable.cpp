@@ -5,6 +5,7 @@ AutoOggChainGranuleSeekTable::AutoOggChainGranuleSeekTable(string inFilename)
 	:	mFilename(inFilename)
 	,	mFilePos(0)
 	,	mOggDemux(NULL)
+	,	mDuration(0)
 {
 	mOggDemux = new OggDataBuffer;
 	mOggDemux->registerVirtualCallback(this);
@@ -76,7 +77,10 @@ unsigned long AutoOggChainGranuleSeekTable::seekPos(LOOG_INT64 inTime)
 	return retEarliestPos;
 
 }
+LOOG_INT64 AutoOggChainGranuleSeekTable::fileDuration()
+{
 
+}
 bool AutoOggChainGranuleSeekTable::acceptOggPage(OggPage* inOggPage)
 {
 	LOOG_INT64 locGranule = inOggPage->header()->GranulePos();
@@ -91,6 +95,9 @@ bool AutoOggChainGranuleSeekTable::acceptOggPage(OggPage* inOggPage)
 			locRealTime = locMapping.mSeekInterface->convertGranuleToTime(locGranule);
 			if (locRealTime >= 0) {
 				locMapping.mSeekTable->addSeekPoint(locRealTime, mFilePos, locGranule);
+				if (locRealTime > mDuration) {
+					mDuration = locRealTime;
+				}
 			}
 		}
 	}
