@@ -388,6 +388,9 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 
 					REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
 					REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
+
+					locAdjustedStart -= m_tStart;
+					locAdjustedEnd -= m_tStart;
 					locSample->SetTime(&locAdjustedStart, &locAdjustedEnd);
 					locSample->SetMediaTime(&locStart, &locEnd);
 					locSample->SetSyncPoint(TRUE);

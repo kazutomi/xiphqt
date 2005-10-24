@@ -48,7 +48,7 @@ bool AutoOggChainGranuleSeekTable::buildTable()
 	}
 	return true;
 }
-unsigned long AutoOggChainGranuleSeekTable::seekPos(LOOG_INT64 inTime)
+OggGranuleSeekTable::tSeekPair AutoOggChainGranuleSeekTable::seekPos(LOOG_INT64 inTime)
 {
 	unsigned long retEarliestPos = 4294967295UL;
 
@@ -57,6 +57,7 @@ unsigned long AutoOggChainGranuleSeekTable::seekPos(LOOG_INT64 inTime)
 
 
 	OggGranuleSeekTable::tSeekPair locSeekInfo;
+	OggGranuleSeekTable::tSeekPair retBestSeekInfo;
 	for (size_t i = 0; i < mStreamMaps.size(); i++) {
 
 		if ((mStreamMaps[i].mSeekTable != NULL) && (mStreamMaps[i].mSeekInterface != NULL)) {
@@ -73,12 +74,13 @@ unsigned long AutoOggChainGranuleSeekTable::seekPos(LOOG_INT64 inTime)
 			if (retEarliestPos >= locSeekInfo.second.first) {
 				//Update the earliest position
 				retEarliestPos = locSeekInfo.second.first;
+				retBestSeekInfo = locSeekInfo;
 				locGotAValidPos = true;
 			}
 		}
 	}	
 
-	return retEarliestPos;
+	return retBestSeekInfo;//retEarliestPos;
 
 }
 LOOG_INT64 AutoOggChainGranuleSeekTable::fileDuration()
