@@ -41,6 +41,7 @@ using namespace std;
 class TheoraDecodeInputPin 
 	:	public CTransformInputPin
 	,	public BasicSeekPassThrough
+	,	public IOggDecoder
 {
 public:
 
