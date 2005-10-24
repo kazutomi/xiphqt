@@ -629,7 +629,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD d
 		
 		
 		//For now, seek to the position directly, later we will discard the preroll
-		*pCurrent = locStartPos.first;
+		//*pCurrent = locStartPos.first;
 
 		{
 			//debugLog<<"       : Delivering End Flush..."<<endl;
