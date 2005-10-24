@@ -376,32 +376,47 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 					}
 
 					locBytesToCopy = ((mDecodedByteCount - locBytesCopied) <= locSample->GetSize()) ? (mDecodedByteCount - locBytesCopied) : locSample->GetSize();
-
-					memcpy((void*)locBuffer, (const void*)&mDecodedBuffer[locBytesCopied], locBytesToCopy);
-					locBytesCopied += locBytesToCopy;
+					//locBytesCopied += locBytesToCopy;
 
 					locSampleDuration = (((locBytesToCopy/mFrameSize) * UNITS) / mSampleRate);
 					locEnd = locStart + locSampleDuration;
 
-					//Write the sample meta data
-					//TODO:: Seeking offset
-
+					//Adjust the time stamps for rate and seeking
 					REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
 					REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
-
 					locAdjustedStart -= m_tStart;
 					locAdjustedEnd -= m_tStart;
-					locSample->SetTime(&locAdjustedStart, &locAdjustedEnd);
-					locSample->SetMediaTime(&locStart, &locEnd);
-					locSample->SetSyncPoint(TRUE);
-					locSample->SetActualDataLength(locBytesToCopy);
-					locHR = ((VorbisDecodeOutputPin*)(mOutputPin))->mDataQueue->Receive(locSample);
-					if (locHR != S_OK) {
-						return locHR;
+
+					__int64 locSeekStripOffset = 0;
+					if (locAdjustedEnd < 0) {
+						locSample->Release();
+					} else {
+						if (locAdjustedStart < 0) {
+							locSeekStripOffset = (-locAdjustedStart) * mSampleRate;
+							locSeekStripOffset *= mFrameSize;
+							locSeekStripOffset /= UNITS;
+							locSeekStripOffset += (mFrameSize - (locSeekStripOffset % mFrameSize));
+							__int64 locStrippedDuration = (((locSeekStripOffset/mFrameSize) * UNITS) / mSampleRate);
+							locAdjustedStart += locStrippedDuration;
+						}
+							
+
+					
+
+						memcpy((void*)locBuffer, (const void*)&mDecodedBuffer[locBytesCopied + locSeekStripOffset], locBytesToCopy - locSeekStripOffset);
+
+						locSample->SetTime(&locAdjustedStart, &locAdjustedEnd);
+						locSample->SetMediaTime(&locStart, &locEnd);
+						locSample->SetSyncPoint(TRUE);
+						locSample->SetActualDataLength(locBytesToCopy - locSeekStripOffset);
+						locHR = ((VorbisDecodeOutputPin*)(mOutputPin))->mDataQueue->Receive(locSample);
+						if (locHR != S_OK) {
+							return locHR;
+						}
+						locStart += locSampleDuration;
+
 					}
-					locStart += locSampleDuration;
-
-
+					locBytesCopied += locBytesToCopy;
 
 				
 				} while(locBytesCopied < mDecodedByteCount);
