@@ -62,6 +62,8 @@ public:
 	virtual HRESULT Transform(IMediaSample* inInputSample, IMediaSample* outOutputSample);
 
 	//Overrides
+	virtual HRESULT Receive(IMediaSample* inSample);
+
 	virtual HRESULT SetMediaType(PIN_DIRECTION inDirection, const CMediaType* inMediaType);
 	virtual HRESULT NewSegment(REFERENCE_TIME inStart, REFERENCE_TIME inEnd, double inRate);
 	//virtual BOOL ShouldSkipFrame(IMediaSample* inSample);
@@ -88,7 +90,7 @@ protected:
 	
 	vector<StampedOggPacket*> mBufferedPackets;
 
-	int TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame);
+	HRESULT TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd);
 
 
 	__int64 mSeekTimeBase;
