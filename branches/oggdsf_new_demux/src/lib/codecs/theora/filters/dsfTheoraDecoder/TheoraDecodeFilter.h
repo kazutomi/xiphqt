@@ -86,6 +86,7 @@ protected:
 	bool mBegun;
 	TheoraDecoder* mTheoraDecoder;
 	
+	vector<StampedOggPacket*> mBufferedPackets;
 
 	int TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame);
 
