@@ -340,9 +340,7 @@ HRESULT TheoraDecodeFilter::NewSegment(REFERENCE_TIME inStart, REFERENCE_TIME in
 }
 HRESULT TheoraDecodeFilter::Transform(IMediaSample* inInputSample, IMediaSample* outOutputSample) {
 
-	//CAutoLock locLock(mStreamLock);
-	//debugLog<<endl<<"Transform "<<endl;
-	//debugLog<<"outOutputSample Size = "<<outOutputSample->
+
 	HRESULT locHR;
 	BYTE* locBuff = NULL;
 	//Get a source poitner into the input buffer
@@ -420,11 +418,7 @@ HRESULT TheoraDecodeFilter::Transform(IMediaSample* inInputSample, IMediaSample*
 
 int TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame) 
 {
-	//debugLog<<"TheoraDecoded... #################### "<<endl;
-	
-		
 	if (!mBegun) {
-		//debugLog<<"First time..."<<endl;
 		mBegun = true;
 		
 		//How many UNITS does one frame take.
@@ -432,29 +426,8 @@ int TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* ou
 
 		mFrameSize = (mHeight * mWidth * 3) / 2;
 		mFrameCount = 0;
-		//debugLog<<"Frame Durn = "<<mFrameDuration<<endl;
-		//debugLog<<"FrameSize = "<<mFrameSize<<endl;
-		
-		
 	}
 
-
-	////TO DO::: Fix this up... needs to move around order and some only needs to be done once, move it into the block aboce and use member data
-
-
-	//-----------------------
-	//OLD CODE... FIXXX:::
-	//Timestamp hacks start here...
-			//unsigned long locMod = (unsigned long)pow(2, mTheoraFormatInfo->maxKeyframeInterval);
-			//unsigned long locInterFrameNo = (mLastSeenStartGranPos) % locMod;
-			//LONGLONG locAbsFramePos = ((mLastSeenStartGranPos >> mTheoraFormatInfo->maxKeyframeInterval)) + locInterFrameNo;
-			//REFERENCE_TIME locTimeBase = (locAbsFramePos * mFrameDuration) - mSeekTimeBase;
-			//REFERENCE_TIME locFrameStart = locTimeBase + (mFrameCount * mFrameDuration);
-			////Increment the frame counter
-			//mFrameCount++;
-			////Make the end frame counter
-			//REFERENCE_TIME locFrameEnd = locTimeBase + (mFrameCount * mFrameDuration);
-	//------------------------
 
 
 	REFERENCE_TIME locFrameStart = (mFrameCount * mFrameDuration);
@@ -464,45 +437,7 @@ int TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* ou
 	
 	debugLog<<"Sample times = "<<locFrameStart<<" to "<<locFrameEnd<<"  frame "<<mFrameCount<<" KF = "<<((inIsKeyFrame) ? "YES" : "NO")<<endl;
 	
-	//FILTER_STATE locFS;
-	//GetState(0, &locFS);
-	//debugLog<<"State Before = "<<locFS<<endl;
-	//HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, locFlags);
-	//GetState(0, &locFS);
-	//debugLog<<"State After = "<<locFS<<endl;
-	
-	
 
-	//Debuggin code
-	AM_MEDIA_TYPE* locMediaType = NULL;
-	outSample->GetMediaType(&locMediaType);
-	if (locMediaType == NULL) {
-		//debugLog<<"No dynamic change..."<<endl;
-	} else {
-		//debugLog<<"Attempting dynamic change..."<<endl;
-		if (locMediaType->majortype == MEDIATYPE_Video) {
-			//debugLog<<"Still MEDIATYPE_Video"<<endl;
-		}
-
-		if (locMediaType->subtype == MEDIASUBTYPE_YV12) {
-			//debugLog<<"Still MEDIASUBTYPE_YV12"<<endl;
-		}
-
-		if (locMediaType->formattype == FORMAT_VideoInfo) {
-			//debugLog<<"Still FORMAT_VideoInfo"<<endl;
-			VIDEOINFOHEADER* locVF = (VIDEOINFOHEADER*)locMediaType->pbFormat;
-			//debugLog<<"Size = "<<locVF->bmiHeader.biSizeImage<<endl;
-			//debugLog<<"Dim   = "<<locVF->bmiHeader.biWidth<<" x " <<locVF->bmiHeader.biHeight<<endl;
-		}
-
-		//debugLog<<"Major  : "<<DSStringer::GUID2String(&locMediaType->majortype);
-		//debugLog<<"Minor  : "<<DSStringer::GUID2String(&locMediaType->subtype);
-		//debugLog<<"Format : "<<DSStringer::GUID2String(&locMediaType->formattype);
-		//debugLog<<"Form Sz: "<<locMediaType->cbFormat;
-
-
-	}
-	//
 
 	////Create pointers for the samples buffer to be assigned to
 	BYTE* locBuffer = NULL;
@@ -510,9 +445,6 @@ int TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* ou
 	//
 	////Make our pointers set to point to the samples buffer
 	outSample->GetPointer(&locBuffer);
-	
-	
-
 
 	//Fill the buffer with yuv data...
 	//	
