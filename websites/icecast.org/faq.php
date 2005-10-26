@@ -61,7 +61,7 @@ Icecast is being developed on Linux and Windows, and is being tested with major 
 <p>How do I set up Icecast? </p>
 <table border=0 width=90% cellpadding=10>
 <tr><td width=25></td><td bgcolor="#222222">
-Go to the Icecast Download Page and follow the instructions there. 
+Go to the Icecast Documentation Page and follow the instructions for your version there. 
 </td></tr></table>
 </div>
 <div class="roundbottom">
