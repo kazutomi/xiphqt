@@ -16,5 +16,9 @@
   <li><a href="http://silk.apana.org.au/vorbis/">Ogg Vorbis for OS/2</a>:
   Player, encoder, plugins for Ogg Vorbis on OS/2 operating systems.</li>
 </ul>
+<h2>PocketPC:</h2>
+<ul>
+	<li><a href="http://hp.vector.co.jp/authors/VA032810/">GSPlayer</a>: Ogg Vorbis playback on PocketPC.</li>
+</ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
