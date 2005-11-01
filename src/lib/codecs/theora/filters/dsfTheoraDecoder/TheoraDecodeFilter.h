@@ -31,6 +31,8 @@
 
 #pragma once
 
+#define OGGCODECS_LOGGING
+
 #include "Theoradecoderdllstuff.h"
 #include "theoradecodeoutputpin.h"
 #include "theoradecodeinputpin.h"
@@ -75,6 +77,8 @@ protected:
 
 	static const unsigned long THEORA_IDENT_HEADER_SIZE = 42;
 	virtual void ResetFrameCount();
+
+	void deleteBufferedPacketsAfter(unsigned long inPacketIndex);
 	void FillMediaType(CMediaType* outMediaType, unsigned long inSampleSize);
 	bool FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer);
 	bool SetSampleParams(IMediaSample* outMediaSample, unsigned long inDataSize, REFERENCE_TIME* inStartTime, REFERENCE_TIME* inEndTime, BOOL inIsSync);

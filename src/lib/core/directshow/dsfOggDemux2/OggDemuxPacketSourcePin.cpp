@@ -50,6 +50,7 @@ OggDemuxPacketSourcePin::	OggDemuxPacketSourcePin(		TCHAR* inObjectName
 	,	mFilterHR(S_OK)
 {
 
+	mPacketiserLock = new CCritSec;
 	
 		//(BYTE*)inBOSPage->createRawPageData();
 	mPacketiser.setPacketSink(this);
@@ -61,11 +62,14 @@ OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 	//delete mBOSPage;
 	delete mIdentHeader;
 
+	delete mPacketiserLock;
+
 
 }
 
 bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)
 {
+	CAutoLock locPackLock(mPacketiserLock);
 	if (mIsStreamReady) {
 		mAcceptingData = true;
 		return mPacketiser.acceptOggPage(inOggPage);
@@ -303,8 +307,11 @@ HRESULT OggDemuxPacketSourcePin::DeliverEndOfStream(void)
 
 HRESULT OggDemuxPacketSourcePin::DeliverEndFlush(void)
 {
-	mPacketiser.reset();
+	CAutoLock locPackLock(mPacketiserLock);
+	
 	mDataQueue->EndFlush();
+
+	mPacketiser.reset();
     return S_OK;
 }
 
