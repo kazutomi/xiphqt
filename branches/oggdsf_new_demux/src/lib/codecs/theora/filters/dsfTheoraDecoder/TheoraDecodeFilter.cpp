@@ -408,8 +408,13 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 					}
 					debugLog<<"Theora::Receive - Output sample initialisation suceeded"<<endl;
 
+					//REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
+					//REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
+					REFERENCE_TIME locAdjustedStart = locStart - m_tStart;
+					REFERENCE_TIME locAdjustedEnd = locStart - m_tStart;
+
 					//Fill the sample info
-					if (TheoraDecoded(locYUV, locOutSample, locIsKeyFrame, locStart, locEnd) != S_OK) {
+					if (TheoraDecoded(locYUV, locOutSample, locIsKeyFrame, locAdjustedStart, locAdjustedEnd) != S_OK) {
 						
 						//XTODO::: We need to trash our buffered packets
 						locOutSample->Release();
