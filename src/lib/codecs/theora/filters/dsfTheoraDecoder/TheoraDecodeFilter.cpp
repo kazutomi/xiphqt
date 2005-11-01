@@ -401,54 +401,62 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 				bool locIsKeyFrame = mTheoraDecoder->isKeyFrame(mBufferedPackets[i]);
 				yuv_buffer* locYUV = mTheoraDecoder->decodeTheora(mBufferedPackets[i]);		//This accept the packet and deletes it
 				locEnd = locStart + mFrameDuration;
-				if (locYUV != NULL) {
-					IMediaSample* locOutSample = NULL;
-					debugLog<<"Theora::Receive - Pre output sample initialisation"<<endl;
-					locHR = InitializeOutputSample(inInputSample, &locOutSample);
-					if (locHR != S_OK) {
-						//XTODO::: We need to trash our buffered packets
-						debugLog<<"Theora::Receive - Output sample initialisation failed"<<endl;
-						
-						deleteBufferedPacketsAfter(i);
-						
-						return S_FALSE;
-					}
-					debugLog<<"Theora::Receive - Output sample initialisation suceeded"<<endl;
+				REFERENCE_TIME locAdjustedStart = locStart - mSegStart;
+				REFERENCE_TIME locAdjustedEnd = locEnd - mSegStart;
 
-					//REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
-					//REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
-					REFERENCE_TIME locAdjustedStart = locStart - mSegStart;
-					REFERENCE_TIME locAdjustedEnd = locEnd - mSegStart;
+				if (locAdjustedStart < 0) {
+					locAdjustedStart = 0;
+				}
 
-					//Fill the sample info
-					if (TheoraDecoded(locYUV, locOutSample, locIsKeyFrame, locAdjustedStart, locAdjustedEnd) != S_OK) {
-						
-						//XTODO::: We need to trash our buffered packets
-						locOutSample->Release();
-						deleteBufferedPacketsAfter(i);
-						return S_FALSE;
-					} else {
-						//Deliver the sample
-						debugLog<<"Theora::Receive - Delivering: "<<locAdjustedStart<<" to "<<locAdjustedEnd<<(locIsKeyFrame ? "KEYFRAME": " ")<<endl;
-						
-						locHR = m_pOutput->Deliver(locOutSample);
-						locOutSample->Release();
-						debugLog<<"Theora::Receive - Post delivery"<<endl;
+				if (locAdjustedEnd >= 0) { 
+					if (locYUV != NULL) {
+						IMediaSample* locOutSample = NULL;
+						debugLog<<"Theora::Receive - Pre output sample initialisation"<<endl;
+						locHR = InitializeOutputSample(inInputSample, &locOutSample);
 						if (locHR != S_OK) {
 							//XTODO::: We need to trash our buffered packets
-							debugLog<<"Theora::Receive - Delivery failed"<<endl;
+							debugLog<<"Theora::Receive - Output sample initialisation failed"<<endl;
+							
+							deleteBufferedPacketsAfter(i);
+							
+							return S_FALSE;
+						}
+						debugLog<<"Theora::Receive - Output sample initialisation suceeded"<<endl;
+
+						//REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
+						//REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
+
+
+						//Fill the sample info
+						if (TheoraDecoded(locYUV, locOutSample, locIsKeyFrame, locAdjustedStart, locAdjustedEnd) != S_OK) {
+							
+							//XTODO::: We need to trash our buffered packets
 							locOutSample->Release();
 							deleteBufferedPacketsAfter(i);
 							return S_FALSE;
-						}
-						debugLog<<"Theora::Receive - Delivery Suceeded"<<endl;
+						} else {
+							//Deliver the sample
+							debugLog<<"Theora::Receive - Delivering: "<<locAdjustedStart<<" to "<<locAdjustedEnd<<(locIsKeyFrame ? "KEYFRAME": " ")<<endl;
+							
+							locHR = m_pOutput->Deliver(locOutSample);
+							locOutSample->Release();
+							debugLog<<"Theora::Receive - Post delivery"<<endl;
+							if (locHR != S_OK) {
+								//XTODO::: We need to trash our buffered packets
+								debugLog<<"Theora::Receive - Delivery failed"<<endl;
+								locOutSample->Release();
+								deleteBufferedPacketsAfter(i);
+								return S_FALSE;
+							}
+							debugLog<<"Theora::Receive - Delivery Suceeded"<<endl;
 
+						}
+					} else {
+						//XTODO::: We need to trash our buffered packets
+						deleteBufferedPacketsAfter(i);
+						return S_FALSE;
 					}
-				} else {
-					//XTODO::: We need to trash our buffered packets
-					deleteBufferedPacketsAfter(i);
-					return S_FALSE;
-				}	
+				}
 				locStart = locEnd;
 			}
 
