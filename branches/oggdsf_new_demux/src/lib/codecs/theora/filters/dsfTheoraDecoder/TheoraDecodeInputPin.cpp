@@ -113,7 +113,7 @@ LOOG_INT64 TheoraDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
 	//LOOG_INT64 retTime ((((inGranule >> locParent->getTheoraFormatBlock()->maxKeyframeInterval) + locInterFrameNo) * UNITS) * locParent->getTheoraFormatBlock()->frameRateDenominator) / locParent->getTheoraFormatBlock()->frameRateNumerator;
 
 	LOOG_INT64 retTime = inGranule >> locParent->getTheoraFormatBlock()->maxKeyframeInterval;
-	retTime += locInterFrameNo;
+	retTime += locInterFrameNo + 1;
 	retTime *= UNITS;
 	retTime *= locParent->getTheoraFormatBlock()->frameRateDenominator;
 	retTime /= locParent->getTheoraFormatBlock()->frameRateNumerator;

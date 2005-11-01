@@ -65,6 +65,10 @@ TheoraDecodeFilter::TheoraDecodeFilter()
 	,	mBegun(false)
 	,	mSeekTimeBase(0)
 	,	mLastSeenStartGranPos(0)
+
+	,	mSegStart(0)
+	,	mSegEnd(0)
+	,	mPlaybackRate(0.0)
 	,	mTheoraFormatInfo(NULL)
 {
 #ifdef OGGCODECS_LOGGING
@@ -335,6 +339,9 @@ HRESULT TheoraDecodeFilter::NewSegment(REFERENCE_TIME inStart, REFERENCE_TIME in
 {
 	debugLog<<"Resetting frame count"<<endl;
 	ResetFrameCount();
+	mSegStart = inStart;
+	mSegEnd = inEnd;
+	mPlaybackRate = inRate;
 	return CTransformFilter::NewSegment(inStart, inEnd, inRate);
 
 }
@@ -410,8 +417,8 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 
 					//REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
 					//REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
-					REFERENCE_TIME locAdjustedStart = locStart - m_tStart;
-					REFERENCE_TIME locAdjustedEnd = locStart - m_tStart;
+					REFERENCE_TIME locAdjustedStart = locStart - mSegStart;
+					REFERENCE_TIME locAdjustedEnd = locEnd - mSegStart;
 
 					//Fill the sample info
 					if (TheoraDecoded(locYUV, locOutSample, locIsKeyFrame, locAdjustedStart, locAdjustedEnd) != S_OK) {
@@ -422,7 +429,7 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 						return S_FALSE;
 					} else {
 						//Deliver the sample
-						debugLog<<"Theora::Receive - Calling Deliver on outputPin"<<endl;
+						debugLog<<"Theora::Receive - Delivering: "<<locAdjustedStart<<" to "<<locAdjustedEnd<<(locIsKeyFrame ? "KEYFRAME": " ")<<endl;
 						
 						locHR = m_pOutput->Deliver(locOutSample);
 						locOutSample->Release();

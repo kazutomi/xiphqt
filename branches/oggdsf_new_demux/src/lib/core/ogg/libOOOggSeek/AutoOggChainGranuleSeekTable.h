@@ -43,5 +43,7 @@ protected:
 	fstream mFile;
 	string mFilename;
 	unsigned long mFilePos;
+
+	unsigned long mPreviousFilePos;
 	OggDataBuffer* mOggDemux;
 };

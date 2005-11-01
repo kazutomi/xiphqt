@@ -629,7 +629,9 @@ STDMETHODIMP OggDemuxPacketSourceFilter::SetPositions(LONGLONG *pCurrent,DWORD d
 		
 		
 		//For now, seek to the position directly, later we will discard the preroll
-		*pCurrent = locStartPos.first;
+		//Probably don't ever want to do this. We want to record the desired time,
+		//	and it will be up to the decoders to drop anything that falss before it.
+		//*pCurrent = locStartPos.first;
 
 		{
 			//debugLog<<"       : Delivering End Flush..."<<endl;
