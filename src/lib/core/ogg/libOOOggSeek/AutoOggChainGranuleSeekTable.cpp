@@ -6,6 +6,7 @@ AutoOggChainGranuleSeekTable::AutoOggChainGranuleSeekTable(string inFilename)
 	,	mFilePos(0)
 	,	mOggDemux(NULL)
 	,	mDuration(0)
+	,	mPreviousFilePos(0)
 	,	mIsEnabled(false)
 {
 	mOggDemux = new OggDataBuffer;
@@ -93,19 +94,49 @@ bool AutoOggChainGranuleSeekTable::acceptOggPage(OggPage* inOggPage)
 	unsigned long locSerialNo = inOggPage->header()->StreamSerialNo();
 	sStreamMapping locMapping = getMapping(locSerialNo);
 
-	//Exclude pages, with -1 granule pos, or that have only 1 packet and that packet is incomplete
-	if ((locGranule != -1) && (!((inOggPage->numPackets() <= 1) && (inOggPage->header()->isContinuation())))) {
+	//There can be upto 2 incomplete packets on any page, one at the end and one at the start
+	unsigned long locNumBrokenPacks = (inOggPage->header()->isContinuation() ? 1 : 0);
+	if (inOggPage->numPackets() > 0) {
+		locNumBrokenPacks += (inOggPage->getPacket(inOggPage->numPackets() - 1)->isTruncated() ? 1 : 0);
+	}
+	//Exclude pages, with -1 granule pos, or that have no complete packets
+	if (locGranule != -1) { 
 		LOOG_INT64 locRealTime = -1;
-		if ((locMapping.mSeekInterface != NULL) && (locMapping.mSeekTable != NULL)) {
-			//There is valid stream info
-			locRealTime = locMapping.mSeekInterface->convertGranuleToTime(locGranule);
-			if (locRealTime >= 0) {
-				locMapping.mSeekTable->addSeekPoint(locRealTime, mFilePos, locGranule);
-				if (locRealTime > mDuration) {
-					mDuration = locRealTime;
+		if ((inOggPage->numPackets() > locNumBrokenPacks)) {
+			
+			if ((locMapping.mSeekInterface != NULL) && (locMapping.mSeekTable != NULL)) {
+				//There is valid stream info
+				locRealTime = locMapping.mSeekInterface->convertGranuleToTime(locGranule);
+				if (locRealTime >= 0) {
+					locMapping.mSeekTable->addSeekPoint(locRealTime, mFilePos, locGranule);
+					if (locRealTime > mDuration) {
+						mDuration = locRealTime;
+					}
+				}
+			}
+		} else {
+			//If there's a granule pos, but no complete packets, there must at least be the end of a packet
+			//	so mark  the seek point with the previous filepos from a page that had a packet start on it
+			if ((locMapping.mSeekInterface != NULL) && (locMapping.mSeekTable != NULL)) {
+				//There is valid stream info
+				locRealTime = locMapping.mSeekInterface->convertGranuleToTime(locGranule);
+				if (locRealTime >= 0) {
+					locMapping.mSeekTable->addSeekPoint(locRealTime, mPreviousFilePos, locGranule);
+					if (locRealTime > mDuration) {
+						mDuration = locRealTime;
+					}
 				}
 			}
 		}
+	}
+
+	//Only remember the previous file position, if a packet started on this page, otherwise, we might
+	//	use the start point of the previous page, and that previous page may have not had any packets
+	//	on it.
+	//
+	//Any page that is not a continuation and has more than 1 packet, must have a packet starting on it
+	if (!(inOggPage->header()->isContinuation() && (inOggPage->numPackets() <= 1))) {
+		mPreviousFilePos = mFilePos;
 	}
 	mFilePos += inOggPage->pageSize();
 
