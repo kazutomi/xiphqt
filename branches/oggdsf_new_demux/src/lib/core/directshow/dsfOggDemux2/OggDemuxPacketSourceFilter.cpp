@@ -122,6 +122,10 @@ OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 	delete mStreamMapper;
 	delete mSeekTable;
 	//TODO::: Delete the locks
+
+	delete mDemuxLock;
+	delete mStreamLock;
+	delete mSourceFileLock;
 }
 //IMEdiaStreaming
 STDMETHODIMP OggDemuxPacketSourceFilter::Run(REFERENCE_TIME tStart) 
@@ -690,7 +694,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetPreroll(LONGLONG *pllPreroll)
 	//debugLog<<"GetPreroll : HARD CODED TO 0"<<endl;
 	return S_OK;
 }
-STDMETHODIMP OggDemuxPacketSourceFilter::IsUsingTimeFormat(const GUID *pFormat){
+STDMETHODIMP OggDemuxPacketSourceFilter::IsUsingTimeFormat(const GUID *pFormat) {
 	if (*pFormat == TIME_FORMAT_MEDIA_TIME) {
 		//debugLog<<"IsUsingTimeFormat : MEDIA TIME TRUE"<<endl;
 		return S_OK;

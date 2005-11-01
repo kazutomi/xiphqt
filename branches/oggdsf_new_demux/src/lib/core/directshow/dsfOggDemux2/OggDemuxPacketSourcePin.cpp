@@ -75,9 +75,13 @@ STDMETHODIMP OggDemuxPacketSourcePin::NonDelegatingQueryInterface(REFIID riid, v
 }
 OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 {
+	//Since we didn't addref the filter when we set the seek delegate onto it, we have to avoid
+	//	it getting released, so set it to NULL, to avoid the destructor releasing it.
+	SetDelegate(NULL);
 	//delete[] mBOSAsFormatBlock;
 	//delete mBOSPage;
 	delete mIdentHeader;
+	delete mDataQueue;
 
 	delete mPacketiserLock;
 
