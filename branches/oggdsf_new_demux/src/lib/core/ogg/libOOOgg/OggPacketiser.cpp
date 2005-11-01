@@ -148,6 +148,8 @@ bool OggPacketiser::acceptOggPage(OggPage* inOggPage) {				//AOP::: Needs closer
 						//Deliver the packet to the packet sink...
 						if (dispatchStampedOggPacket(mPendingPacket) == false) {
 							//debugLog<<"acceptOggPage : DELIVERY FAILED !"<<endl;
+							mPacketiserState = PKRSTATE_OK;
+							mPendingPacket = NULL;
 							delete inOggPage;
 							return false;
 						}
@@ -165,6 +167,7 @@ bool OggPacketiser::acceptOggPage(OggPage* inOggPage) {				//AOP::: Needs closer
 					//debugLog<<"acceptOggPage : INTERNAL ERROR - Header says cont but packet doesn't."<<endl;
 					//Header flag says continuation but first packet is not continued.
 					mPacketiserState = PKRSTATE_INVALID_STREAM;
+					
 					delete inOggPage;
 					throw 0;
 				}

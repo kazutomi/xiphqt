@@ -55,7 +55,7 @@ public:
 	//Quality control
 	virtual STDMETHODIMP Notify(IBaseFilter* inMessageSource, Quality inQuality);
 
-	virtual HRESULT Deliver(IMediaSample* inSample)	{	return m_pInputPin->Receive(inSample);	}
+	//virtual HRESULT Deliver(IMediaSample* inSample)	{	return m_pInputPin->Receive(inSample);	}
 
 	//fstream debugLog;
 };

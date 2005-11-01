@@ -91,6 +91,8 @@ protected:
 	unsigned long getIdentSize();
 	unsigned long mSerialNo;
 
+	CCritSec* mPacketiserLock;
+
 	unsigned long mNumBuffers;
 	
 	OggPacket* mIdentHeader;

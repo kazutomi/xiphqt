@@ -367,6 +367,8 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 		REFERENCE_TIME locEnd = 0;
 		inInputSample->GetTime(&locStart, &locEnd);
 
+		debugLog<<"Theora::Receive - Sample: Size = "<<inInputSample->GetActualDataLength()<<" Time: "<<locStart<<" - "<<locEnd<<endl;
+
 		//This packet is given to the decoder or buffered for later
 		StampedOggPacket* locPacket = new StampedOggPacket(locNewBuff, inInputSample->GetActualDataLength(), false, false, locStart, locEnd, StampedOggPacket::OGG_END_ONLY);
 
@@ -386,35 +388,53 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 
 			locStart = locGlobalStart;
 			
+			debugLog<<"Theora::Receive - "<<locNumBufferedFrames<<" frames buffered"<<endl;
 			for (unsigned long i = 0; i < locNumBufferedFrames; i++) {
+				debugLog<<"Theora::Receive - Processing buffered frame "<<i<<endl;
 				bool locIsKeyFrame = mTheoraDecoder->isKeyFrame(mBufferedPackets[i]);
 				yuv_buffer* locYUV = mTheoraDecoder->decodeTheora(mBufferedPackets[i]);		//This accept the packet and deletes it
 				locEnd = locStart + mFrameDuration;
 				if (locYUV != NULL) {
 					IMediaSample* locOutSample = NULL;
+					debugLog<<"Theora::Receive - Pre output sample initialisation"<<endl;
 					locHR = InitializeOutputSample(inInputSample, &locOutSample);
 					if (locHR != S_OK) {
 						//XTODO::: We need to trash our buffered packets
+						debugLog<<"Theora::Receive - Output sample initialisation failed"<<endl;
+						
+						deleteBufferedPacketsAfter(i);
+						
 						return S_FALSE;
 					}
+					debugLog<<"Theora::Receive - Output sample initialisation suceeded"<<endl;
 
 					//Fill the sample info
 					if (TheoraDecoded(locYUV, locOutSample, locIsKeyFrame, locStart, locEnd) != S_OK) {
 						
 						//XTODO::: We need to trash our buffered packets
+						locOutSample->Release();
+						deleteBufferedPacketsAfter(i);
 						return S_FALSE;
 					} else {
 						//Deliver the sample
+						debugLog<<"Theora::Receive - Calling Deliver on outputPin"<<endl;
 						
 						locHR = m_pOutput->Deliver(locOutSample);
+						locOutSample->Release();
+						debugLog<<"Theora::Receive - Post delivery"<<endl;
 						if (locHR != S_OK) {
 							//XTODO::: We need to trash our buffered packets
+							debugLog<<"Theora::Receive - Delivery failed"<<endl;
+							locOutSample->Release();
+							deleteBufferedPacketsAfter(i);
 							return S_FALSE;
 						}
+						debugLog<<"Theora::Receive - Delivery Suceeded"<<endl;
 
 					}
 				} else {
 					//XTODO::: We need to trash our buffered packets
+					deleteBufferedPacketsAfter(i);
 					return S_FALSE;
 				}	
 				locStart = locEnd;
@@ -429,6 +449,15 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 		}
 		
 	}
+}
+
+void TheoraDecodeFilter::deleteBufferedPacketsAfter(unsigned long inPacketIndex)
+{
+	for (size_t i = inPacketIndex + 1; i < mBufferedPackets.size(); i++) {
+		delete mBufferedPackets[i];
+	}
+
+	mBufferedPackets.clear();
 }
 HRESULT TheoraDecodeFilter::Transform(IMediaSample* inInputSample, IMediaSample* outOutputSample) 
 {
@@ -573,6 +602,8 @@ HRESULT TheoraDecodeFilter::Transform(IMediaSample* inInputSample, IMediaSample*
 	//	return S_OK;
 	//	
 	//}
+
+	debugLog<<"Theora::Transform NOT IMPLEMENTED"<<endl;
 
 	return E_NOTIMPL;
 	
