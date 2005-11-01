@@ -103,15 +103,29 @@ LOOG_INT64 TheoraDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
 	//} else {
 	//	return -1;
 	//}
+	TheoraDecodeFilter* locParent = (TheoraDecodeFilter*)m_pFilter;
 
-	//XTODO:::
-	return -1;
+
+	LOOG_INT64 locMod = ((LOOG_INT64)1)<<locParent->getTheoraFormatBlock()->maxKeyframeInterval; //(unsigned long)pow((double) 2, (double) mGranulePosShift);
+	LOOG_INT64 locInterFrameNo = (LOOG_INT64) ( inGranule % locMod );
+			
+
+	//LOOG_INT64 retTime ((((inGranule >> locParent->getTheoraFormatBlock()->maxKeyframeInterval) + locInterFrameNo) * UNITS) * locParent->getTheoraFormatBlock()->frameRateDenominator) / locParent->getTheoraFormatBlock()->frameRateNumerator;
+
+	LOOG_INT64 retTime = inGranule >> locParent->getTheoraFormatBlock()->maxKeyframeInterval;
+	retTime += locInterFrameNo;
+	retTime *= UNITS;
+	retTime *= locParent->getTheoraFormatBlock()->frameRateDenominator;
+	retTime /= locParent->getTheoraFormatBlock()->frameRateNumerator;
+	return retTime;
+
 }
 
 LOOG_INT64 TheoraDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
 {
-	//TODO::: Get adjustment from block size info... for now, it doesn't matter if no preroll
-	return inGranule;
+	TheoraDecodeFilter* locParent = (TheoraDecodeFilter*)m_pFilter;
+	LOOG_INT64 locShift = locParent->getTheoraFormatBlock()->maxKeyframeInterval;
+	return (inGranule >> locShift) << locShift;
 }
 IOggDecoder::eAcceptHeaderResult TheoraDecodeInputPin::showHeaderPacket(OggPacket* inCodecHeaderPacket)
 {
