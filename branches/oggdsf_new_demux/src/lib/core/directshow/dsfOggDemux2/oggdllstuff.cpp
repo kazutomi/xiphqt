@@ -32,7 +32,7 @@
 #include "oggdllstuff.h"
 #include "RegWrap.h"
 
-#define DONT_TOUCH_REGISTRY
+//#define DONT_TOUCH_REGISTRY
 
 
 extern "C" BOOL WINAPI DllEntryPoint(HINSTANCE, ULONG, LPVOID);
