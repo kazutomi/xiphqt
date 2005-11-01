@@ -54,8 +54,25 @@ OggDemuxPacketSourcePin::	OggDemuxPacketSourcePin(		TCHAR* inObjectName
 	
 		//(BYTE*)inBOSPage->createRawPageData();
 	mPacketiser.setPacketSink(this);
-}
 
+
+	//Subvert COM and do this directly... this way, the source filter won't expose the interface to the
+	// graph but we can still delegate to it.
+	IMediaSeeking* locSeeker = NULL;
+	locSeeker = (IMediaSeeking*)inParentFilter;
+	SetDelegate(locSeeker);
+}
+STDMETHODIMP OggDemuxPacketSourcePin::NonDelegatingQueryInterface(REFIID riid, void **ppv)
+{
+	if (riid == IID_IMediaSeeking) {
+		//debugLog<<"Pin queried for IMediaSeeking"<<endl;
+		*ppv = (IMediaSeeking*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+	}
+
+	return CBaseOutputPin::NonDelegatingQueryInterface(riid, ppv); 
+}
 OggDemuxPacketSourcePin::~OggDemuxPacketSourcePin(void)
 {
 	//delete[] mBOSAsFormatBlock;

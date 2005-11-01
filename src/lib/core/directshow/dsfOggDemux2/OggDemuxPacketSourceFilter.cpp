@@ -74,10 +74,10 @@ STDMETHODIMP OggDemuxPacketSourceFilter::NonDelegatingQueryInterface(REFIID riid
 		*ppv = (IFileSourceFilter*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
-	} else if (riid == IID_IMediaSeeking) {
-		*ppv = (IMediaSeeking*)this;
-		((IUnknown*)*ppv)->AddRef();
-		return NOERROR;
+	//} else if (riid == IID_IMediaSeeking) {
+	//	*ppv = (IMediaSeeking*)this;
+	//	((IUnknown*)*ppv)->AddRef();
+	//	return NOERROR;
 	/*} else if (riid == IID_ISpecifyPropertyPages) {
 		*ppv = (ISpecifyPropertyPages*)this;
 		((IUnknown*)*ppv)->AddRef();

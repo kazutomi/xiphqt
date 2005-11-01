@@ -36,10 +36,14 @@
 #include "IOggDecoder.h"
 class OggDemuxPacketSourcePin
 	:	public CBaseOutputPin
+	,	public BasicSeekPassThrough
 	,	public IOggCallback
 	,	protected IStampedOggPacketSink
 {
 public:
+
+	DECLARE_IUNKNOWN
+	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 	//OggDemuxPacketSourcePin(void);
 	OggDemuxPacketSourcePin(	TCHAR* inObjectName, 
 							OggDemuxPacketSourceFilter* inParentFilter,
