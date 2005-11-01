@@ -75,6 +75,7 @@ bool OggStreamMapper::allStreamsReady()
 bool OggStreamMapper::addNewPin(OggPage* inOggPage)
 {
 	OggDemuxPacketSourcePin* locNewPin = new OggDemuxPacketSourcePin(NAME("OggPageSourcePin"), mParentFilter, mParentFilterLock, inOggPage->getPacket(0)->clone(), inOggPage->header()->StreamSerialNo());
+	//locNewPin->AddRef();
 	delete inOggPage;
 	mPins.push_back(locNewPin);
 	return true;
