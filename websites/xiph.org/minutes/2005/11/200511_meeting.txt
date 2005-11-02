@@ -1,0 +1,231 @@
+--- Log opened Wed Nov 02 10:14:08 2005
+10:14 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+10:14 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2005 Nov 2 18h00 GMT | please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200511
+10:14 -!- Topic set by rillian [] [Wed Oct  5 00:30:13 2005]
+10:14 [Users #xiphmeet]
+10:14 [ Atamido] [ HackRip] [ jmspeex] [ MikeS  ] [ thomasvs] [ xiphlog] 
+10:14 [ derf_  ] [ JD9797 ] [ jmworx ] [ rillian] [ tris    ] 
+10:14 -!- Irssi: #xiphmeet: Total of 11 nicks [0 ops, 0 halfops, 0 voices, 11 normal]
+10:14 -!- Channel #xiphmeet created Mon Aug 29 04:34:00 2005
+10:14 -!- [freenode-info] help freenode weed out clonebots, please register your IRC nick and auto-identify: http://freenode.net/faq.shtml#nicksetup
+10:14 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+10:14 < rillian> right
+10:14 < rillian> I'm going to try and go
+10:14 < MikeS> When is that
+10:14 < MikeS> ?
+10:14 < rillian> next friday
+10:14 -!- illi [n=illimina@dsl-202-72-166-70.wa.westnet.com.au] has joined #xiphmeet
+10:14 < MikeS> Great.
+10:14 < rillian> jmspeex: can you brief me on what we want with respect to the speex draft?
+10:15 < MikeS> Other news: Arek's quicktime components are in SVN as of today
+10:15 < rillian> yay
+10:15 < illi> is this for latest qt ?
+10:15 < rillian> I'm also having lunch with the chairs early next week
+10:15 < MikeS> "jmspeex I'm not going to make it for the meeting" (#xiph, a few hours ago)
+10:15 < MikeS> illi: I believe so
+10:15 < rillian> MikeS: ok, I'll ask on the list
+10:15 < illi> sweet... i want :)
+10:15 -!- Kato [n=peacef@ciant98.cesnet.cz] has joined #xiphmeet
+10:16 < rillian> flac is still missing, but there's code checked in
+10:16 < rillian> I haven't tried it
+10:16 < MikeS> He says he'll write up a webpage or two, and we're going to put it on www.xiph.org somewhere.
+10:16 < MikeS> Any preference for where?
+10:16 < rillian> illi: if you wanted to do a win32 build, I think that would be apprecieated
+10:17 < MikeS> Also, can someone with the appropriate Magical Incantations put appropriate bits into trac for the quicktime stuff?
+10:17 < illi> i will have a look a bit later
+10:17 < MikeS> We may also want a mailing list; I told Arek to mail Ralph if he decided it was worthwhile.
+10:17 < rillian> MikeS: xiph.org/quicktime/ ?
+10:17 < rillian> MikeS: I'd prefer to use existing lists
+10:18 < rillian> every new one adds to the moderation load
+10:18 < MikeS> I suggested /ogg/qt/, but I don't actually care. Whatever you think is appropriate.
+10:18 < rillian> and every time I've bowed to "we need a new list" pressure lately it's ended up not being worth it
+10:18 < rillian> (e.g. ogg-dev)
+10:18 < MikeS> I moderated stuff that had been sitting there for a couple of months today! Sorry for the commits-list spam ;-)
+10:18 < MikeS> (the things stuck there were for being over the size threshold)
+10:18 < rillian> *nod*
+10:19 < MikeS> rillian: fine with me.
+10:19 < rillian> ok
+10:19 < rillian> re ietf, I'm also hoping to get some feedback on the new vorbis/theora RTP approach
+10:19 < rillian> and luca has been doing good work on that
+10:19 < MikeS> Yeah, that'd be good.
+10:19 < rillian> updating the draft
+10:19 < rillian> and the reference impl.
+10:20 < rillian> only other new thing I have:
+10:20 < rillian> (not really xiph-specific)
+10:20 < rillian> ruik is trying to set up a match-making service for open source projects and students looking for academic projects
+10:20 < MikeS> We still need to do new vorbis/vorbis-tools releases.
+10:20 < rillian> sort of like bounties, but you get paid in course credit
+10:21 < MikeS> sounds like a neat idea.
+10:21 < rillian> he has approval from his dept. to do this for real, so we're starting there
+10:21 < rillian> but the idea is to eventually make it happen at other schools
+10:21 < rillian> some ideas are up at http://wiki.xiph.org/EduPeer
+10:21 < rillian> if anyone's interested, or can offer comments
+10:21 < rillian> MikeS: yes, we need to do new releases
+10:22 < MikeS> it'd be good to get someone to take up maintaining ogg123, and do a  pass over open bug reports before we do a vorbis-tools release.
+10:22 < rillian> I should have some time for that this month
+10:22 < rillian> MikeS: indeed it would :)
+10:22 < MikeS> illi: you still willing to do the windows builds (tools, libs/SDK)?
+10:22 < illi> yes... they should be there
+10:22 < illi> well the build setup is... do you want binaries somewhere ?
+10:23 < rillian> illi: we've traditionally (tried to) supply and SDK with build libraries
+10:23 < MikeS> We will, yes. When we do a release - requires updating version numbers in all the appropriate places, tagging, etc before we do the final builds, though.
+10:23 < rillian> so people can compile their code against them without having to fiddle
+10:23 < rillian> (though in practice the runtime mismatches seem to have meant a lot of people have to fiddle anyway)
+10:24 < MikeS> Synchronising that with releases of directshow and quicktime components would be great.
+10:24 < MikeS> Though I don't know if your dshow stuff builds against the current version yet, or if you're still using imported copies (ugh).
+10:25 < illi> ok, is there new releases ? or you want builds of svn ?
+10:25 < rillian> illi: we want to coordinate with you so when we're ready we can do unix and win32 builds from the same tagged release
+10:25 < MikeS> That's what this discussion is about: doing a new release. It'll be tagged in svn, and also released as source tarballs and binaries.
+10:27 < illi> ok... so how do you want it distributed ?
+10:27 < illi> all in one sdk pack... or seperately for each codec ?
+10:27 < MikeS> Well, I don't think we're planning synchronised releases for all the codecs; this is just a vorbis release we're discussing.
+10:27 < rillian> or ogg+vorbis
+10:27 < MikeS> If you want to do a super-SDK that includes the most recent release of the others, that'd be fine
+10:27 < illi> ok... sorry missed some of the context before.. i was on the phone
+10:28 < MikeS> (note 'release', not 'random svn snapshot')
+10:28 < MikeS> Oh, also, jm says " Speex status: I'm about to release 1.1.11 with many fixes and a few improvements (e.g. better PLC)."
+10:28 < illi> ok... so i need to make a new set of externals then
+10:29 < rillian> illi: one approach is to make sure svn builds before we do the unix source release
+10:29 < MikeS> Plus binaries for vorbis-tools (at least oggenc and oggdec, maybe vorbiscomment as well?), so that end users can do something with the release.
+10:29 < rillian> and then do an sdk release on top of that, using as you say, svn-externals to the tagged source instead of trunk
+10:29 < illi> basically tell me which tags, and what packages and what in them, and i'll sort it out
+10:30 < illi> i haven't looked at vorbis-tools yet... so i'll need to look at that
+10:30 < rillian> some commandline tools
+10:30 < rillian> you could build oggdropXP if you were feeling ambitious
+10:30 -!- myidiym [n=myidiym@24-48-253-242.sbtnvt.adelphia.net] has joined #xiphmeet
+10:31 < rillian> illi: just remember you can't modify the tagged source
+10:31 < rillian> hi myidiym!
+10:31 < MikeS> well, the vorbis-tools stuff "just works", though the project files are probably very out of date. It should be extremely easy to get building; it wasn't hard when I last did that on visualC++
+10:31 < myidiym> hi
+10:31 < MikeS> (admittedly that was some time ago, and on a slightly older version of VC++)
+10:31 < illi> ok... so i'll try and sort it out nowish while i'm awake... after the meeting
+10:32 < illi> also, i can't really do anything about the vc6 project files
+10:32 < illi> but i will add vs2003 files like i've done for everything else
+10:32 < MikeS> ok
+10:32 < illi> and to spice it up a bit... i'll be upgrading to 2005 shortly... so i'm sure that will be totally non-backwards compatable too
+10:33 < illi> so anyway... i'll get everything building from the trunk... and then i'll let someone know when that's working
+10:34 < MikeS> Anyone else have last-minute agenda items to add?
+10:34 -!- j^ [n=j@cpe-69-204-224-108.nyc.res.rr.com] has joined #xiphmeet
+10:34 -!- j^ [n=j@cpe-69-204-224-108.nyc.res.rr.com] has quit [".oO°""]
+10:34 < illi> nope...
+10:34 < illi> just general info update
+10:34 < illi> ie sample accurate seeking in vorbis, and proper frame accurate seeking in theora
+10:35 < illi> be a little while before they get merged back into a release though
+10:36 < myidiym> I hate to drop in and then leave, but that's what I have to do.  Something just came up.  Sorry.  Next month hopefully.  In the meantime I'll read the Wiki to catch up on what's going on.  Cheers.
+10:37 -!- myidiym [n=myidiym@24-48-253-242.sbtnvt.adelphia.net] has left #xiphmeet []
+10:37 < MikeS> In other news, our Illustrious Founder is off on his honeymoon, so we'll forgive his absence this month :)
+10:37 < rillian> illi: cool
+10:37 < rillian> MikeS: oh? good for them
+10:38 -!- j^ [n=j@cpe-69-204-224-108.nyc.res.rr.com] has joined #xiphmeet
+10:38 < JD9797> A bit out: which macro diff exists theora<->vp7Flash  ?
+10:39 < rillian> JD9797: didn't follow that question
+10:39 < MikeS> JD9797: Theora is a derivative of VP3 (with a number of major extensions). VP7, as far as I know, is entirely undocumented, so we couldn't say what similarities it might have
+10:39 < rillian> hi j^
+10:40 < JD9797> but what doy think 
+10:41 < rillian> JD9797: what MikeS said
+10:41 < illi> actually i do have one more item i should have put on the agenda
+10:42 < MikeS> Go ahead, illi
+10:42 < illi> regarding a test document etc for ogg/xiph codecs...
+10:42 < illi> something i'd like to start putting together is pretty much a compliance document of sorts...
+10:43 < illi> with associated test data, so that we can start testing implementations to some sort of consistent standard
+10:44 < MikeS> One of the big items on my nebulous it'd-be-great-to-do-this-one-day list is a combination of a compliance document and some sort of 'embedded device profile' for vorbis.
+10:44 < illi> i'm going to start with stuff so that i can get the directshow stuff doing what it's supposed to... and would like to get some input when i start doing that about things that should be required/recommended for various type of implementations
+10:44 < illi> mikes: yeah... pretty much what i was thinking
+10:45 < MikeS> (since bits of vorbis that aren't used by modern encoders aren't very friendly to embedded implementations, and there are all sorts of things that in theory require more-or-less unbounded memory, a profile that specifies the minimum you need to implement would be very useful - lots of device developers have asked about this
+10:45 < MikeS> But it's a non-trivial amount of work, and it's also stuff where actual experience with doing this sort of embedded implementation is helpful for knowing what's important to define.
+10:45 < illi> exactly...
+10:46 < illi> but there's a certain amount of general test cases that can be done for non-embedded stuff, which is at least what i'm going to focus on
+10:47 < MikeS> If you've got time to spend on doing things like this, that'd be great. You can write up a document, and put "???" all over the place, and we can review it and fill in missing pieces, or something like that./
+10:47 < illi> i have a bunch of uncoordinated test files floating around... but it would be nice to have an actual test document and associated files
+10:48 < illi> well, it's not going to be done real soon... but as i start merging back the new stuff and releasing it, i want to start doing some heavy testing, which will require me to start generating some of this stuff anyway, so i might as well start correlating it as i go
+10:49 < derf_> j^ had started a test set.
+10:49 < derf_> http://www.v2v.cc/~j/theora_testsuite/index.php
+10:49 < j^> mini test set
+10:49 < j^> would be good to put all that on media.xiph.org
+10:49 < j^> and start with the document in the wiki.
+10:49 < illi> yes... that sort of thing... but in a lot more detail, hopefully covering as many aspects of the container and various codecs as possible
+10:50 < j^> would also be nice to have a way to test encoders
+10:51 < j^> oggz-validate is a start
+10:52 < illi> anyhow... that was my 2c
+10:53 -!- nessy [n=silvia@10.66.233.220.exetel.com.au] has joined #xiphmeet
+10:53 < rillian> hi nessy!
+10:53 < rillian> anything to report?
+10:53 < MikeS> Any more things people want to discuss? Any status updates for theora? Other projects?
+10:53 < nessy> hi rillian :)
+10:53 < nessy> uh, am, sure :)
+10:54 < nessy> have you guys heard that we're in the process of creating an Annodex Foundation?
+10:54 < MikeS> Nope.
+10:55 < nessy> Well, having open source, open standards but also proprietary work within CSIRO creates many confusions
+10:55 < rillian> yep
+10:55 < nessy> so, a few of us got together and thought we'd make it a clear cut and create an Annodex Foundation
+10:56 < rillian> cool. how's that going
+10:56 -!- nessy [n=silvia@10.66.233.220.exetel.com.au] has quit [Client Quit]
+10:56 < rillian> was it something I said?
+10:56 < MikeS> Not so well? ;-)
+10:56 < illi> hehe... nah... dodgy isp :)
+10:57 -!- nessy [n=silvia@10.66.233.220.exetel.com.au] has joined #xiphmeet
+10:57 < nessy> ups, laptop ran out of power
+10:58 < nessy> the foundation will take care of open source and standards
+10:58 < nessy> see annodex.org
+10:58 < HackRip> as far as I understood Illimi is gonna make a new win32 vorbis release soon, what are the main ogg/vorbis improvements that leaded to this new release, (in short is aotuvb4 swallowed at last) or is this minor bugs fixes ?
+10:58 < HackRip> wasn't Monty working on CDparanoia ?
+10:58 < rillian> minor bug fixes, and the amd64 fix
+10:58 < MikeS> HackRip: yes, some time in the 90s monty was indeed working on cdparanoia :)
+10:59 < HackRip> ok thks
+10:59 < MikeS> rillian: also major bug fixes, I thought.
+10:59 < nessy> we can have press releases and stuff more easily between xiph and the annodex foundation, rillian
+10:59 < rillian> ok, major bug fixes then
+11:00 < MikeS> nessy: sounds really cool! Maybe you should announce it on ogg-dev or somewhere, or even mention it on annodex.net?
+11:00 < nessy> yeah, annodex.net is in shambles
+11:00 < nessy> we're working on it
+11:00 < rillian> very cool indeed. congrats!
+11:00 < nessy> mentioned it on annodex-dev though and on #annodex :)
+11:00 < rillian> you're being way more organized about it than xiph ever was
+11:01 < nessy> but xiph already is a foundation!
+11:01 < MikeS> Ah, I guess I never subscribed to annodex-dev. Apparently only cvs-annodex. 
+11:01 < nessy> MikeS, no worries
+11:01 < rillian> but we don't have an org chart and three-level consitution in the wiki :)
+11:02 < HackRip> MikeS: recently I heard somewhere he was plotting an update with of cdparanoia due to caching drive  problem ... sorry if it was an hoax ...
+11:02 < rillian> nessy: are you going to be getting charitable status? should we send .au donators there?
+11:02 < nessy> feel free to subscribe to foundation@lists.annodex.net, which will make you a member of the foundation! :)
+11:02 < rillian> donors. ugh
+11:02 < MikeS> HackRip: Well, pjones was planning on rewriting much of cdparanoia. 
+11:02 < nessy> rillian, we'll try
+11:02 < nessy> am currently working on the constitution
+11:02 < MikeS> rillian: The word you were looking for is "Donaterators"
+11:03 < MikeS> nessy: will od.
+11:03 < rillian> MikeS: you are Evil
+11:03 < illi> doesn't non-profit status apply to outside country donations ?
+11:03 < MikeS> rillian: Yeah, but of bad luck there; I only got one bit in my entire brain flipped by a cosmic ray, and it happened to be the Evil Bit,
+11:04 < rillian> MikeS: we here on the side of light will wait patiently for it to flip back then
+11:04 < MikeS> illi: donating to a non-profit outside your own country is, I would presume, not tax-deductible, which takes away the benefits (to the donor) of the recipient being a non-profit
+11:05 < nessy> ah! sure, we can share donors around :)
+11:05  * MikeS now gets the extra complications of paying tax in a country in which he's no longer resident. But I got my tax return in 2 1/4 hours early!
+11:05 < rillian> MikeS: yay!
+11:05 < illi> hmmm... i would have thought would be required for those big save-the-starting-children charities
+11:05 < illi> starting=starving
+11:06 < MikeS> illi: the ones that all have sub-charities in lots of countries?
+11:06 < illi> ok... makes sense
+11:06 < rillian> illi: the org itself still doesn't have to pay tax on foreign donations, but otherwise what mike said
+11:06 < rillian> MikeS: I think that's how it works, yes
+11:06 < MikeS> rillian: How about we start working on xiph.ca, xiph.es, and xiph.au? ;-)
+11:06 < rillian> I've never found anyone involved in a multinational non-profit to ask about it
+11:06 < rillian> MikeS: that would be lovely
+11:07 < rillian> part of the problem is you have to round up 5 or so warm bodies for a board in most countries
+11:07 < rillian> and jm just moved away :)
+11:07 < nessy> ;)
+11:07 < HackRip> illi: thx for doing win32 builds, bye all
+11:07 < nessy> he's already volunteered to be on the annodex board
+11:07 -!- HackRip [i=HackRip@ip-7.net-81-220-227.henin.rev.numericable.fr] has quit ["Parti"]
+11:07 < rillian> nessy: do board members have to be local?
+11:08 < MikeS> I can pretend to be local if you want someone else to join in ;-)
+11:08 < nessy> hmm, not from what I'm trying to write
+11:08 < nessy> but I'm not a lawyer
+11:08 < MikeS> Anyway, that's interesting news, thanks for mentioning it. I'll subscribe to your list!
+11:09 < nessy> I think the representative officer (the person who talks to the department of commerce) has to be resident in AU
+11:09 < nessy> cool :)
+11:09 < MikeS> Last Call before the official end of the meeting (people should feel free to stick around and talk about stuff after though, if they want). Anything more?
+11:12  * MikeS bangs his gavel
+11:13 < nessy> anyone is invited to join the Annodex foundation of course :)
+11:13 < MikeS> Thanks for coming, all
+--- Log closed Wed Nov 02 11:15:25 2005
