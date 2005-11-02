@@ -1,3 +1,11 @@
+--- Prepended lines the logger missed
+--- thomas_ is now known as thomasvs
+??:?? <MikeS> I have summoned Ralph.
+??:?? <MikeS> My incantatioin was, it seems, successful.
+??:?? <rillian> yes, thanks. I completely forgot this month
+??:?? <MikeS> So did I until reminded a few hours ago
+??:?? <-- illi has quit (Read error: 104 (Connection reset by peer))
+??:?? <MikeS> Anyway, there's not much on the agenda: jm added something about presenting speex at the next IETF meeting
 --- Log opened Wed Nov 02 10:14:08 2005
 10:14 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
 10:14 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2005 Nov 2 18h00 GMT | please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200511
