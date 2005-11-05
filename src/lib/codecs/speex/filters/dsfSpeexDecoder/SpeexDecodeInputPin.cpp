@@ -199,6 +199,108 @@ int SpeexDecodeInputPin::SpeexDecoded (FishSound* inFishSound, float** inPCM, lo
 
 }
 
+STDMETHODIMP SpeexDecodeInputPin::Receive(IMediaSample* inSample) 
+{
+	CAutoLock locLock(mStreamLock);
+
+	HRESULT locHR = CheckStreaming();
+
+	if (locHR == S_OK) {
+
+
+		BYTE* locBuff = NULL;
+		locHR = inSample->GetPointer(&locBuff);
+
+		if (locHR != S_OK) {
+			//TODO::: Do a debug dump or something here with specific error info.
+			return locHR;
+		} else {
+			REFERENCE_TIME locStart = -1;
+			REFERENCE_TIME locEnd = -1;
+			__int64 locSampleDuration = 0;
+			inSample->GetTime(&locStart, &locEnd);
+
+			HRESULT locResult = TransformData(locBuff, inSample->GetActualDataLength());
+			if (locResult != S_OK) {
+				return S_FALSE;
+			}
+			if (locEnd > 0) {
+				//Can dump it all downstream now	
+				IMediaSample* locSample;
+				unsigned long locBytesCopied = 0;
+				unsigned long locBytesToCopy = 0;
+
+				locStart = convertGranuleToTime(locEnd) - (((mDecodedByteCount / mFrameSize) * UNITS) / mSampleRate);
+				do {
+					HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
+					if (locHR != S_OK) {
+						return locHR;
+					}
+
+					BYTE* locBuffer = NULL;
+					locHR = locSample->GetPointer(&locBuffer);
+				
+					if (locHR != S_OK) {
+						return locHR;
+					}
+
+					locBytesToCopy = ((mDecodedByteCount - locBytesCopied) <= locSample->GetSize()) ? (mDecodedByteCount - locBytesCopied) : locSample->GetSize();
+					//locBytesCopied += locBytesToCopy;
+
+					locSampleDuration = (((locBytesToCopy/mFrameSize) * UNITS) / mSampleRate);
+					locEnd = locStart + locSampleDuration;
+
+					//Adjust the time stamps for rate and seeking
+					REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
+					REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
+					locAdjustedStart -= m_tStart;
+					locAdjustedEnd -= m_tStart;
+
+					__int64 locSeekStripOffset = 0;
+					if (locAdjustedEnd < 0) {
+						locSample->Release();
+					} else {
+						if (locAdjustedStart < 0) {
+							locSeekStripOffset = (-locAdjustedStart) * mSampleRate;
+							locSeekStripOffset *= mFrameSize;
+							locSeekStripOffset /= UNITS;
+							locSeekStripOffset += (mFrameSize - (locSeekStripOffset % mFrameSize));
+							__int64 locStrippedDuration = (((locSeekStripOffset/mFrameSize) * UNITS) / mSampleRate);
+							locAdjustedStart += locStrippedDuration;
+						}
+							
+
+					
+
+						memcpy((void*)locBuffer, (const void*)&mDecodedBuffer[locBytesCopied + locSeekStripOffset], locBytesToCopy - locSeekStripOffset);
+
+						locSample->SetTime(&locAdjustedStart, &locAdjustedEnd);
+						locSample->SetMediaTime(&locStart, &locEnd);
+						locSample->SetSyncPoint(TRUE);
+						locSample->SetActualDataLength(locBytesToCopy - locSeekStripOffset);
+						locHR = ((SpeexDecodeOutputPin*)(mOutputPin))->mDataQueue->Receive(locSample);
+						if (locHR != S_OK) {
+							return locHR;
+						}
+						locStart += locSampleDuration;
+
+					}
+					locBytesCopied += locBytesToCopy;
+
+				
+				} while(locBytesCopied < mDecodedByteCount);
+
+				mDecodedByteCount = 0;
+				
+			}
+			return S_OK;
+
+		}
+	} else {
+		//Not streaming - Bail out.
+		return S_FALSE;
+	}
+}
 
 
 HRESULT SpeexDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes) 
@@ -246,5 +348,65 @@ HRESULT SpeexDecodeInputPin::CheckMediaType(const CMediaType *inMediaType)
 	}
 	return S_FALSE;
 	
+}
+
+LOOG_INT64 SpeexDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
+{
+	if (mBegun) {	
+		return (inGranule * UNITS) / mSampleRate;
+	} else {
+		return -1;
+	}
+}
+
+LOOG_INT64 SpeexDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
+{
+	//TODO::: Get adjustment from block size info... for now, it doesn't matter if no preroll
+	return inGranule;
+}
+IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket* inCodecHeaderPacket)
+{
+	switch (mSetupState) {
+		case VSS_SEEN_NOTHING:
+			if (strncmp((char*)inCodecHeaderPacket->packetData(), "speex   ", 8) == 0) {
+				//TODO::: Possibly verify version
+				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
+					mSetupState = VSS_SEEN_BOS;
+					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+				}
+			}
+			return IOggDecoder::AHR_INVALID_HEADER;
+			
+			
+		case VSS_SEEN_BOS:
+			//The comment packet can't be easily identified in speex.
+			//Just ignore the second packet we see, and hope fishsound does better.
+
+			//if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
+				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
+					mSetupState = VSS_ALL_HEADERS_SEEN;
+					return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
+				}
+				
+				
+			//}
+			return IOggDecoder::AHR_INVALID_HEADER;
+			
+			
+	
+		case VSS_ALL_HEADERS_SEEN:
+		case VSS_ERROR:
+		default:
+			return IOggDecoder::AHR_UNEXPECTED;
+	}
+}
+string SpeexDecodeInputPin::getCodecShortName()
+{
+	return "speex";
+}
+string SpeexDecodeInputPin::getCodecIdentString()
+{
+	//TODO:::
+	return "speex";
 }
 
