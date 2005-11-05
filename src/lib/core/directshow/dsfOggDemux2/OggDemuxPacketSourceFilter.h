@@ -143,4 +143,6 @@ protected:
 
 
 	bool mJustReset;
+
+	//double mPlaybackRate;
 };

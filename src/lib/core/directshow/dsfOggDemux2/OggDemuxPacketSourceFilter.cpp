@@ -679,6 +679,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetAvailable(LONGLONG *pEarliest, LONGL
 STDMETHODIMP OggDemuxPacketSourceFilter::SetRate(double dRate)
 {
 	//debugLog<<"Set RATE : NOT IMPL"<<endl;
+
 	return E_NOTIMPL;
 }
 STDMETHODIMP OggDemuxPacketSourceFilter::GetRate(double *dRate)
