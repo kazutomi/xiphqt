@@ -194,16 +194,38 @@ HRESULT SpeexDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes)
 
 
 
-HRESULT SpeexDecodeInputPin::SetMediaType(const CMediaType* inMediaType) {
+HRESULT SpeexDecodeInputPin::SetMediaType(const CMediaType* inMediaType) 
+{
 	//FIX:::Error checking
 	//RESOLVED::: Bit better.
-
-	if (inMediaType->subtype == MEDIASUBTYPE_Speex) {
-		((SpeexDecodeFilter*)mParentFilter)->setSpeexFormat((sSpeexFormatBlock*)inMediaType->pbFormat);
-
+	if (CheckMediaType(inMediaType) == S_OK) {
+		((SpeexDecodeFilter*)mParentFilter)->setSpeexFormat(inMediaType->pbFormat);
+		
 	} else {
 		throw 0;
 	}
 	return CBaseInputPin::SetMediaType(inMediaType);
+
+	//if (inMediaType->subtype == MEDIASUBTYPE_Speex) {
+	//	((SpeexDecodeFilter*)mParentFilter)->setSpeexFormat((sSpeexFormatBlock*)inMediaType->pbFormat);
+
+	//} else {
+	//	throw 0;
+	//}
+	//return CBaseInputPin::SetMediaType(inMediaType);
+}
+
+HRESULT SpeexDecodeInputPin::CheckMediaType(const CMediaType *inMediaType)
+{
+	if (AbstractTransformInputPin::CheckMediaType(inMediaType) == S_OK) {
+		if (inMediaType->cbFormat == SPEEX_IDENT_HEADER_SIZE) {
+			if (strncmp((char*)inMediaType->pbFormat, "Speex   ", 8) == 0) {
+				//TODO::: Possibly verify version
+				return S_OK;
+			}
+		}
+	}
+	return S_FALSE;
+	
 }
 

@@ -56,9 +56,12 @@ public:
 
 
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
+	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
 	virtual STDMETHODIMP NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate);
 
 protected:
+	static const unsigned long SPEEX_IDENT_HEADER_SIZE = 80;
+
 	//Implementation of pure virtuals from AbstractTransformInputPin
 	virtual bool ConstructCodec();
 	virtual void DestroyCodec();

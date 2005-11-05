@@ -457,9 +457,9 @@ HRESULT VorbisDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes)
 }
 
 
-HRESULT VorbisDecodeInputPin::SetMediaType(const CMediaType* inMediaType) {
+HRESULT VorbisDecodeInputPin::SetMediaType(const CMediaType* inMediaType) 
+{
 	//FIX:::Error checking
-	//RESOLVED::: Bit better.
 
 	if (CheckMediaType(inMediaType) == S_OK) {
 		((VorbisDecodeFilter*)mParentFilter)->setVorbisFormat(inMediaType->pbFormat);
