@@ -43,10 +43,16 @@ SpeexDecodeInputPin::SpeexDecodeInputPin(AbstractTransformFilter* inFilter, CCri
 	,	mUptoFrame(0)
 
 	,	mDecodedByteCount(0)
+	,	mDecodedBuffer(NULL)
+	,	mRateNumerator(RATE_DENOMINATOR)
+
+	,	mSetupState(VSS_SEEN_NOTHING)
 
 	,	mBegun(false)
 {
 	ConstructCodec();
+
+	mDecodedBuffer = new unsigned char[DECODED_BUFFER_SIZE];
 }
 
 bool SpeexDecodeInputPin::ConstructCodec() {
@@ -67,6 +73,8 @@ void SpeexDecodeInputPin::DestroyCodec() {
 SpeexDecodeInputPin::~SpeexDecodeInputPin(void)
 {
 	DestroyCodec();
+
+	delete mDecodedBuffer;
 }
 
 STDMETHODIMP SpeexDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void **ppv)
