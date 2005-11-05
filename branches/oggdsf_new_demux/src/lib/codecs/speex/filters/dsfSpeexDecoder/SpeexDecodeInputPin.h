@@ -31,6 +31,7 @@
 
 #pragma once
 #include "speexdecoderdllstuff.h"
+#include "IOggDecoder.h"
 #include "AbstractTransformInputPin.h"
 #include "SpeexDecodeInputPin.h"
 
@@ -61,6 +62,14 @@ public:
 	virtual STDMETHODIMP EndFlush();
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
+
+	//IOggDecoder Interface
+	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
+	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule);
+	virtual IOggDecoder::eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket);
+	virtual string getCodecShortName();
+	virtual string getCodecIdentString();
+
 
 protected:
 	static const unsigned long SPEEX_IDENT_HEADER_SIZE = 80;

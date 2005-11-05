@@ -30,6 +30,7 @@
 //===========================================================================
 
 #pragma once
+#include "libOOOgg/OggPacket.h"
 //#include <streams.h>
 //#include <pullpin.h>
 //#include <initguid.h>
