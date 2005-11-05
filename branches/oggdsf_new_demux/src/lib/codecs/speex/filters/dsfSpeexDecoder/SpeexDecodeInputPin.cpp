@@ -83,6 +83,11 @@ STDMETHODIMP SpeexDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void 
 		*ppv = (IMediaSeeking*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
+	} else if (riid == IID_IOggDecoder) {
+		*ppv = (IOggDecoder*)this;
+		//((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+
 	}
 
 	return CBaseInputPin::NonDelegatingQueryInterface(riid, ppv); 
@@ -445,7 +450,7 @@ IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket
 {
 	switch (mSetupState) {
 		case VSS_SEEN_NOTHING:
-			if (strncmp((char*)inCodecHeaderPacket->packetData(), "speex   ", 8) == 0) {
+			if (strncmp((char*)inCodecHeaderPacket->packetData(), "Speex   ", 8) == 0) {
 				//TODO::: Possibly verify version
 				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 					mSetupState = VSS_SEEN_BOS;
@@ -463,6 +468,7 @@ IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket
 				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 					mSetupState = VSS_ALL_HEADERS_SEEN;
 
+					fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
 					mBegun = true;
 			
 					mNumChannels = mFishInfo.channels;

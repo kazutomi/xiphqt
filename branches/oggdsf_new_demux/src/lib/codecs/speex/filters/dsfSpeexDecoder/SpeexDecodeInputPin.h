@@ -46,6 +46,7 @@ class SpeexDecodeOutputPin;
 
 class SpeexDecodeInputPin 
 	:	public AbstractTransformInputPin
+	,	public IOggDecoder
 {
 public:
 	DECLARE_IUNKNOWN
