@@ -1,19 +1,20 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2005 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: toplevel libogg include
- last mod: $Id: ogg.h,v 1.19 2002/09/15 23:48:02 xiphmont Exp $
+ last mod: $Id$
 
  ********************************************************************/
+
 #ifndef _OGG_H
 #define _OGG_H
 
