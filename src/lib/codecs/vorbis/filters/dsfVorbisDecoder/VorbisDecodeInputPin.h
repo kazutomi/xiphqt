@@ -70,7 +70,7 @@ public:
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
 	//Overriden from AbstractTransform input pin
-	STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample);
+	virtual STDMETHODIMP Receive(IMediaSample* inSample);
 
 	//IOggDecoder Interface
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);

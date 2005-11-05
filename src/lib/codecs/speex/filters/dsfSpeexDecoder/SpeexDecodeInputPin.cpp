@@ -42,6 +42,8 @@ SpeexDecodeInputPin::SpeexDecodeInputPin(AbstractTransformFilter* inFilter, CCri
 	,	mSampleRate(0)
 	,	mUptoFrame(0)
 
+	,	mDecodedByteCount(0)
+
 	,	mBegun(false)
 {
 	ConstructCodec();
@@ -86,6 +88,23 @@ STDMETHODIMP SpeexDecodeInputPin::NewSegment(REFERENCE_TIME inStartTime, REFEREN
 	
 }
 
+STDMETHODIMP SpeexDecodeInputPin::EndFlush()
+{
+	CAutoLock locLock(m_pLock);
+	
+	HRESULT locHR = AbstractTransformInputPin::EndFlush();
+	mDecodedByteCount = 0;
+	return locHR;
+}
+HRESULT SpeexDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps)
+{
+	outRequestedProps->cbBuffer = SPEEX_BUFFER_SIZE;
+	outRequestedProps->cBuffers = SPEEX_NUM_BUFFERS;
+	outRequestedProps->cbAlign = 1;
+	outRequestedProps->cbPrefix = 0;
+
+	return S_OK;
+}
 int SpeexDecodeInputPin::SpeexDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer) 
 {
 	//Do we need to delete the pcm structure ???? 

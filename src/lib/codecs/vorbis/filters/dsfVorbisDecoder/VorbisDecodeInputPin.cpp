@@ -136,19 +136,6 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 	VorbisDecodeFilter* locFilter = reinterpret_cast<VorbisDecodeFilter*>(locThis->m_pFilter);
 
 	if (locThis->CheckStreaming() == S_OK) {
-		//if (! locThis->mBegun) {
-		//	//locThis->debugLog<<"First Time"<<endl;
-		//	//Set up fishsound		
-		//	fish_sound_command (locThis->mFishSound, FISH_SOUND_GET_INFO, &(locThis->mFishInfo), sizeof (FishSoundInfo)); 
-		//	locThis->mBegun = true;
-		//	
-		//	locThis->mNumChannels = locThis->mFishInfo.channels;
-		//	locThis->mFrameSize = locThis->mNumChannels * SIZE_16_BITS;
-		//	locThis->mSampleRate = locThis->mFishInfo.samplerate;
-
-		//}
-
-
 
 		unsigned long locActualSize = inFrames * locThis->mFrameSize;
 		unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
@@ -197,126 +184,6 @@ int __cdecl VorbisDecodeInputPin::VorbisDecoded (FishSound* inFishSound, float**
 		return -1;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		//unsigned long locActualSize = inFrames * locThis->mFrameSize;
-		//unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
-		//
-		////locThis->debugLog<<"m_tStart = "<<locThis->m_tStart<<endl;
-		////locThis->debugLog<<"mUptoFrame = "<<locThis->mUptoFrame<<endl;
-		////Make the start presentation time
-		//REFERENCE_TIME locFrameStart = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
-
-		////Increment the frame counter
-		//locThis->mUptoFrame += inFrames;
-
-		////Make the end presentation time
-		//REFERENCE_TIME locFrameEnd = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
-
-		////locThis->debugLog<<"Sample time = "<<locFrameStart<<" - "<<locFrameEnd<<endl;
-		//IMediaSample* locSample;
-		//HRESULT locHR = locThis->mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, NULL);
-
-		//if (locHR != S_OK) {
-		//	return -1;
-		//}	
-		//
-
-		////Create pointers for the samples buffer to be assigned to
-		//BYTE* locBuffer = NULL;
-		//signed short* locShortBuffer = NULL;
-		//
-		//locSample->GetPointer(&locBuffer);
-		//locShortBuffer = (short *) locBuffer;
-		//
-		//signed short tempInt = 0;
-		//float tempFloat = 0;
-		//
-		////FIX:::Move the clipping to the abstract function
-
-		//if (locSample->GetSize() >= locActualSize) {
-		//	//Do float to int conversion with clipping
-		//	const float SINT_MAX_AS_FLOAT = 32767.0f;
-		//	for (unsigned long i = 0; i < locTotalFrameCount; i++) {
-		//		//Clipping because vorbis puts out floats out of range -1 to 1
-		//		if (((float*)inPCM)[i] <= -1.0f) {
-		//			tempInt = SINT_MIN;	
-		//		} else if (((float*)inPCM)[i] >= 1.0f) {
-		//			tempInt = SINT_MAX;
-		//		} else {
-		//			//FIX:::Take out the unnescessary variable.
-		//			tempFloat = ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
-		//			//ASSERT((tempFloat <= 32767.0f) && (tempFloat >= -32786.0f));
-		//			tempInt = (signed short)(tempFloat);
-		//			//tempInt = (signed short) ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
-		//		}
-		//		
-		//		*locShortBuffer = tempInt;
-		//		locShortBuffer++;
-		//	}
-		//	
-		//	//Set the sample parameters.
-		//	locThis->SetSampleParams(locSample, locActualSize, &locFrameStart, &locFrameEnd);
-
-		//	{
-		//
-		//		CAutoLock locLock(locThis->m_pLock);
-
-		//		//TODO::: Explain why we don't addref or release.
-		//		HRESULT locHR = ((VorbisDecodeOutputPin*)(locThis->mOutputPin))->mDataQueue->Receive(locSample);
-		//		if (locHR != S_OK) {
-		//			DbgLog((LOG_TRACE,1,TEXT("Queue rejected us...")));
-		//			return -1;
-		//		}
-		//	}
-
-		//	
-		//	return 0;
-		//} else {
-		//	throw 0;
-		//}
-
-
 }
 
 STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample) 
@@ -326,17 +193,6 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 	HRESULT locHR = CheckStreaming();
 
 	if (locHR == S_OK) {
-		//if (!mBegun) {
-		//	//locThis->debugLog<<"First Time"<<endl;
-		//	//Set up fishsound		
-		//	fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
-		//	mBegun = true;
-		//	
-		//	mNumChannels = mFishInfo.channels;
-		//	mFrameSize = mNumChannels * SIZE_16_BITS;
-		//	mSampleRate = mFishInfo.samplerate;
-
-		//}
 
 
 		BYTE* locBuff = NULL;
@@ -423,10 +279,6 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 
 				mDecodedByteCount = 0;
 				
-
-
-
-
 			}
 			return S_OK;
 
