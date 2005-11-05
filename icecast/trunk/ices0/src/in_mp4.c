@@ -194,7 +194,7 @@ ices_mp4_readpcm (input_stream_t* self, size_t olen, int16_t* left,
 
   }
   i = 0;
-  while (i < fi.samples * 2) {
+  while (i < fi.samples) {
     *left++ = ((int16_t*)decbuf)[i++];
     *right++ = ((int16_t*)decbuf)[i++];
   }
