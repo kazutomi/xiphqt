@@ -63,6 +63,8 @@ public:
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
+	virtual STDMETHODIMP Receive(IMediaSample* inSample);
+
 	//IOggDecoder Interface
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
 	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule);
@@ -72,6 +74,7 @@ public:
 
 
 protected:
+	static const unsigned long DECODED_BUFFER_SIZE = 1<<20;		//1 Meg buffer
 	static const unsigned long SPEEX_IDENT_HEADER_SIZE = 80;
 	static const unsigned long SPEEX_NUM_BUFFERS = 75;
 	static const unsigned long SPEEX_BUFFER_SIZE = 65536;
@@ -91,6 +94,23 @@ protected:
 
 	bool mBegun;
 
+	unsigned char* mDecodedBuffer;
+
 	unsigned long mDecodedByteCount;
+
+	enum eSpeexSetupState {
+		VSS_SEEN_NOTHING,
+		VSS_SEEN_BOS,
+		VSS_SEEN_COMMENT,
+		VSS_ALL_HEADERS_SEEN,
+		VSS_ERROR
+	};
+
+	eSpeexSetupState mSetupState;
+
+	__int64 mRateNumerator;
+	static const __int64 RATE_DENOMINATOR = 65536;
+
+
 
 };
