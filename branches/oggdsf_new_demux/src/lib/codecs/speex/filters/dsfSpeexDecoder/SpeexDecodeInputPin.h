@@ -58,9 +58,14 @@ public:
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
 	virtual STDMETHODIMP NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate);
+	virtual STDMETHODIMP EndFlush();
+
+	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 
 protected:
 	static const unsigned long SPEEX_IDENT_HEADER_SIZE = 80;
+	static const unsigned long SPEEX_NUM_BUFFERS = 75;
+	static const unsigned long SPEEX_BUFFER_SIZE = 65536;
 
 	//Implementation of pure virtuals from AbstractTransformInputPin
 	virtual bool ConstructCodec();
@@ -76,5 +81,7 @@ protected:
 	unsigned int mUptoFrame;
 
 	bool mBegun;
+
+	unsigned long mDecodedByteCount;
 
 };
