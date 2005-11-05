@@ -92,8 +92,12 @@ STDMETHODIMP SpeexDecodeInputPin::NewSegment(REFERENCE_TIME inStartTime, REFEREN
 	CAutoLock locLock(mStreamLock);
 	//debugLog<<"New segment "<<inStartTime<<" - "<<inStopTime<<endl;
 	mUptoFrame = 0;
-	return AbstractTransformInputPin::NewSegment(inStartTime, inStopTime, inRate);
-	
+
+	mRateNumerator = RATE_DENOMINATOR * inRate;
+	if (mRateNumerator > RATE_DENOMINATOR) {
+		mRateNumerator = RATE_DENOMINATOR;
+	}
+	return AbstractTransformInputPin::NewSegment(inStartTime, inStopTime, inRate);	
 }
 
 STDMETHODIMP SpeexDecodeInputPin::EndFlush()
@@ -115,95 +119,160 @@ HRESULT SpeexDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outR
 }
 int SpeexDecodeInputPin::SpeexDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer) 
 {
-	//Do we need to delete the pcm structure ???? 
-	//More of this can go to the abstract class.
 
-	//For convenience we do all these cast once and for all here.
 	SpeexDecodeInputPin* locThis = reinterpret_cast<SpeexDecodeInputPin*> (inThisPointer);
 	SpeexDecodeFilter* locFilter = reinterpret_cast<SpeexDecodeFilter*>(locThis->m_pFilter);
-	
 
-	if (! locThis->mBegun) {
-	
-		fish_sound_command (locThis->mFishSound, FISH_SOUND_GET_INFO, &(locThis->mFishInfo), sizeof (FishSoundInfo)); 
-		locThis->mBegun = true;
+	if (locThis->CheckStreaming() == S_OK) {
+
+		unsigned long locActualSize = inFrames * locThis->mFrameSize;
+		unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
+		unsigned long locBufferRemaining = DECODED_BUFFER_SIZE - locThis->mDecodedByteCount;
 		
-		locThis->mNumChannels = locThis->mFishInfo.channels;
-		locThis->mFrameSize = locThis->mNumChannels * SIZE_16_BITS;
-		locThis->mSampleRate = locThis->mFishInfo.samplerate;
-
-	}
-	
-	//TO DO::: Move this somewhere else
-	unsigned long locActualSize = inFrames * locThis->mFrameSize;
-	unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
-
-	REFERENCE_TIME locFrameStart = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
-	//Increment the frame counter
-	locThis->mUptoFrame += inFrames;
-	//Make the end frame counter
-
-	
-	REFERENCE_TIME locFrameEnd = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
 
 
-	IMediaSample* locSample;
-	HRESULT locHR = locThis->mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, NULL);
+		//Create a pointer into the buffer		
+		signed short* locShortBuffer = (signed short*)&locThis->mDecodedBuffer[locThis->mDecodedByteCount];
+		
+		
+		signed short tempInt = 0;
+		float tempFloat = 0;
+		
+		//FIX:::Move the clipping to the abstract function
 
-	if (locHR != S_OK) {
-		return locHR;
-	}	
-	
-	//Create pointers for the samples buffer to be assigned to
-	BYTE* locBuffer = NULL;
-	signed short* locShortBuffer = NULL;
-	
-	//Make our pointers set to point to the samples buffer
-	locSample->GetPointer(&locBuffer);
-	locShortBuffer = (short *) locBuffer;
-	
-	signed short tempInt = 0;
-	float tempFloat = 0;
-	
-	//FIX:::Move the clipping to the abstract function
-
-	if (locSample->GetSize() >= locActualSize) {
-		//Do float to int conversion with clipping
-		float SINT_MAX_AS_FLOAT = 32767.0f;
-		for (unsigned long i = 0; i < locTotalFrameCount; i++) {
-			//Clipping because vorbis puts out floats out of range -1 to 1
-			if (((float*)inPCM)[i] <= -1.0f) {
-				tempInt = SINT_MIN;	
-			} else if (((float*)inPCM)[i] >= 1.0f) {
-				tempInt = SINT_MAX;
-			} else {
-				//FIX:::Take out the unnescessary variable.
-				tempFloat = ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
-				//ASSERT((tempFloat <= 32767.0f) && (tempFloat >= -32786.0f));
-				tempInt = (signed short)(tempFloat);
-				//tempInt = (signed short) ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+		if (locBufferRemaining >= locActualSize) {
+			//Do float to int conversion with clipping
+			const float SINT_MAX_AS_FLOAT = 32767.0f;
+			for (unsigned long i = 0; i < locTotalFrameCount; i++) {
+				//Clipping because vorbis puts out floats out of range -1 to 1
+				if (((float*)inPCM)[i] <= -1.0f) {
+					tempInt = SINT_MIN;	
+				} else if (((float*)inPCM)[i] >= 1.0f) {
+					tempInt = SINT_MAX;
+				} else {
+					//FIX:::Take out the unnescessary variable.
+					tempFloat = ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+					//ASSERT((tempFloat <= 32767.0f) && (tempFloat >= -32786.0f));
+					tempInt = (signed short)(tempFloat);
+					//tempInt = (signed short) ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+				}
+				
+				*locShortBuffer = tempInt;
+				locShortBuffer++;
 			}
+
+			locThis->mDecodedByteCount += locActualSize;
 			
-			*locShortBuffer = tempInt;
-			locShortBuffer++;
+			return 0;
+		} else {
+			throw 0;
 		}
-		
-		//Set the sample parameters.
-		locThis->SetSampleParams(locSample, locActualSize, &locFrameStart, &locFrameEnd);
-
-		{
-			CAutoLock locLock(locThis->m_pLock);
-			HRESULT locHR = ((SpeexDecodeOutputPin*)(locThis->mOutputPin))->mDataQueue->Receive(locSample);
-			if (locHR != S_OK) {
-				return locHR;				
-			}
-		}
-
-		
-		return 0;
 	} else {
-		throw 0;
+		DbgLog((LOG_TRACE,1,TEXT("Fishsound sending stuff we aren't ready for...")));
+		return -1;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	////Do we need to delete the pcm structure ???? 
+	////More of this can go to the abstract class.
+
+	////For convenience we do all these cast once and for all here.
+	//SpeexDecodeInputPin* locThis = reinterpret_cast<SpeexDecodeInputPin*> (inThisPointer);
+	//SpeexDecodeFilter* locFilter = reinterpret_cast<SpeexDecodeFilter*>(locThis->m_pFilter);
+	//
+
+	//if (! locThis->mBegun) {
+	//
+	//	fish_sound_command (locThis->mFishSound, FISH_SOUND_GET_INFO, &(locThis->mFishInfo), sizeof (FishSoundInfo)); 
+	//	locThis->mBegun = true;
+	//	
+	//	locThis->mNumChannels = locThis->mFishInfo.channels;
+	//	locThis->mFrameSize = locThis->mNumChannels * SIZE_16_BITS;
+	//	locThis->mSampleRate = locThis->mFishInfo.samplerate;
+
+	//}
+	//
+	////TO DO::: Move this somewhere else
+	//unsigned long locActualSize = inFrames * locThis->mFrameSize;
+	//unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
+
+	//REFERENCE_TIME locFrameStart = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
+	////Increment the frame counter
+	//locThis->mUptoFrame += inFrames;
+	////Make the end frame counter
+
+	//
+	//REFERENCE_TIME locFrameEnd = (((__int64)(locThis->mUptoFrame * UNITS)) / locThis->mSampleRate);
+
+
+	//IMediaSample* locSample;
+	//HRESULT locHR = locThis->mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, NULL);
+
+	//if (locHR != S_OK) {
+	//	return locHR;
+	//}	
+	//
+	////Create pointers for the samples buffer to be assigned to
+	//BYTE* locBuffer = NULL;
+	//signed short* locShortBuffer = NULL;
+	//
+	////Make our pointers set to point to the samples buffer
+	//locSample->GetPointer(&locBuffer);
+	//locShortBuffer = (short *) locBuffer;
+	//
+	//signed short tempInt = 0;
+	//float tempFloat = 0;
+	//
+	////FIX:::Move the clipping to the abstract function
+
+	//if (locSample->GetSize() >= locActualSize) {
+	//	//Do float to int conversion with clipping
+	//	float SINT_MAX_AS_FLOAT = 32767.0f;
+	//	for (unsigned long i = 0; i < locTotalFrameCount; i++) {
+	//		//Clipping because vorbis puts out floats out of range -1 to 1
+	//		if (((float*)inPCM)[i] <= -1.0f) {
+	//			tempInt = SINT_MIN;	
+	//		} else if (((float*)inPCM)[i] >= 1.0f) {
+	//			tempInt = SINT_MAX;
+	//		} else {
+	//			//FIX:::Take out the unnescessary variable.
+	//			tempFloat = ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+	//			//ASSERT((tempFloat <= 32767.0f) && (tempFloat >= -32786.0f));
+	//			tempInt = (signed short)(tempFloat);
+	//			//tempInt = (signed short) ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
+	//		}
+	//		
+	//		*locShortBuffer = tempInt;
+	//		locShortBuffer++;
+	//	}
+	//	
+	//	//Set the sample parameters.
+	//	locThis->SetSampleParams(locSample, locActualSize, &locFrameStart, &locFrameEnd);
+
+	//	{
+	//		CAutoLock locLock(locThis->m_pLock);
+	//		HRESULT locHR = ((SpeexDecodeOutputPin*)(locThis->mOutputPin))->mDataQueue->Receive(locSample);
+	//		if (locHR != S_OK) {
+	//			return locHR;				
+	//		}
+	//	}
+
+	//	
+	//	return 0;
+	//} else {
+	//	throw 0;
+	//}
 
 }
 
@@ -393,6 +462,13 @@ IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket
 			//if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
 				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 					mSetupState = VSS_ALL_HEADERS_SEEN;
+
+					mBegun = true;
+			
+					mNumChannels = mFishInfo.channels;
+					mFrameSize = mNumChannels * SIZE_16_BITS;
+					mSampleRate = mFishInfo.samplerate;
+
 					return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
 				}
 				
