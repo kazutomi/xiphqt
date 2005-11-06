@@ -412,7 +412,7 @@ main (int argc, char *argv[])
 	  /* Unknown option  */
 	case '?':
 	  fprintf (stderr, "\n||  Unknown option `-%c'.\n", optopt);
-	  fprintf (stderr, "||  Usage: vorbisrtp-client [-i ip address] [-p port] [-f filename]");
+	  fprintf (stderr, "||  Usage: vorbisrtp-client [-i ip address] [-p port] [-f filename]\n");
 	  return 1;
 	}
     }
