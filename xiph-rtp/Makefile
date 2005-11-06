@@ -1,14 +1,16 @@
 # GNU Makefile for xiph rtp example code
 
-CC = gcc -g -O2 -Wall
+CC = gcc -g -O2 -Wall -DDEBUG
 PROGS = vorbisrtp vorbisrtp-client theorartp-client
 
-OGG_CFLAGS = $(shell pkg-config --cflags ogg)
-OGG_LIBS = $(shell pkg-config --libs ogg)
-VORBIS_CFLAGS = $(shell pkg-config --cflags vorbis)
-VORBIS_LIBS = $(shell pkg-config --libs vorbis)
-THEORA_CFLAGS = $(shell pkg-config --cflags theora)
-THEORA_LIBS = $(shell pkg-config --libs theora)
+vorbisrtp_SRCS = vorbisrtp.c
+vorbisrtp_PKGS = ogg vorbis
+
+vorbisrtp-client_SRCS = vorbisrtp-client.c
+vorbisrtp-client_PKGS = ogg vorbis
+
+theorartp-client_SRCS = theorartp-client.c
+theorartp-client_PKGS = ogg
 
 all : $(PROGS)
 
@@ -17,12 +19,13 @@ clean:
 	-$(RM) $(PROGS)
 
 vorbisrtp : vorbisrtp.c
-	$(CC) -fpack-struct -o $@ $(OGG_CFLAGS) $(VORBIS_CFLAGS) \
-		$< $(VORBIS_LIBS) $(OGG_LIBS)
+	$(CC) -fpack-struct -o $@ `pkg-config --cflags $($@_PKGS)` \
+		$< `pkg-config --libs $($@_PKGS)`
 
 vorbisrtp-client : vorbisrtp-client.c
-	$(CC) -fpack-struct -o $@ $(OGG_CFLAGS) $(VORBIS_CFLAGS) \
-		$< $(VORBIS_LIBS) $(OGG_LIBS)
+	$(CC) -fpack-struct -o $@  `pkg-config --cflags $($@_PKGS)` \
+		$< `pkg-config --libs $($@_PKGS)`
 
 theorartp-client :theorartp-client.c
-	$(CC) -fpack-struct -o $@ $(OGG_CFLAGS) $< $(OGG_LIBS)
+	$(CC) -fpack-struct -o $@ `pkg-config --cflags $($@_PKGS)` \
+		$< `pkg-config --libs $($@_PKGS)`
