@@ -68,7 +68,8 @@
 /*  Data structs and variables                                               */
 /*****************************************************************************/
 
-ogg_int16_t convbuffer [4096];
+#define BUFFER_SIZE	4096
+ogg_int16_t convbuffer [BUFFER_SIZE];
 
 struct sockaddr_in rtpsock;
 int rtpsocket;
@@ -625,14 +626,14 @@ int main (int argc, char **argv)
 
     int eos = 0;
 
-    buffer = ogg_sync_buffer (&oy, 4096);
+    buffer = ogg_sync_buffer (&oy, BUFFER_SIZE);
 
-    bytes = fread (buffer, 1, 4096, file);
+    bytes = fread (buffer, 1, BUFFER_SIZE, file);
 
     ogg_sync_wrote (&oy, bytes);
     
     if (ogg_sync_pageout (&oy, &og) != 1) {
-        if (bytes < 4096) {
+        if (bytes < BUFFER_SIZE) {
             fprintf (stdout, "||  Done\n");
             exit (0);
         }
@@ -671,10 +672,10 @@ int main (int argc, char **argv)
         while (i < 2) {
             int result = ogg_sync_pageout (&oy, &og);
 
-        	if (result == 0) break; /* Need more data  */
+	    if (result == 0) break; /* Need more data  */
 
-        	if (result == 1) {
-        	    ogg_stream_pagein (&os, &og); 
+            if (result == 1) {
+		ogg_stream_pagein (&os, &og); 
 
                 while(i < 2) {
             	    result = ogg_stream_packetout (&os, &op);
@@ -686,7 +687,6 @@ int main (int argc, char **argv)
                         exit (1);
     	            }
 
-
                     vorbis_synthesis_headerin (&vi, &vc, &op);
                     i++;
 
@@ -695,8 +695,8 @@ int main (int argc, char **argv)
             }
         }
 
-        buffer = ogg_sync_buffer (&oy, 4096);
-        bytes = fread (buffer, 1, 4096, file);
+        buffer = ogg_sync_buffer (&oy, BUFFER_SIZE);
+        bytes = fread (buffer, 1, BUFFER_SIZE, file);
 
         if (bytes == 0 && i < 2) {
             fprintf (stderr, "||  End of file before finding all Vorbis headers!\n");
@@ -751,7 +751,7 @@ free(conf_packet);
             if (result < 0) {
                 fprintf (stderr, "\n||  Corrupt or missing data in bitstream; continuing....\n||  ");
             } else {
-                ogg_stream_pagein (&os, &og); 
+                ogg_stream_pagein (&os, &og);
 
                 while (1) {
                     result = ogg_stream_packetout (&os, &op);
@@ -776,8 +776,8 @@ free(conf_packet);
         }
 
         if (!eos) {
-            buffer = ogg_sync_buffer (&oy, 4096);
-            bytes = fread (buffer, 1, 4096, file);
+            buffer = ogg_sync_buffer (&oy, BUFFER_SIZE);
+            bytes = fread (buffer, 1, BUFFER_SIZE, file);
 
             ogg_sync_wrote (&oy, bytes);
     
