@@ -34,7 +34,7 @@
 ||
 ||*****************************************************************************
 ||
-||  Compile:  gcc vorbisrtp.c -o vorbisrtp -lvorbis -logg -fpack-struct -Wall
+||  Compile:  gcc -Wall vorbisrtp.c -o vorbisrtp -lvorbis -logg
 ||
 ||  $Id:$                                                       
 ||                  
