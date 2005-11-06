@@ -321,7 +321,7 @@ else
             packet = malloc (framesize + 4 + 2);
 
             makevorbisheader (packet, framesize + 2 + 4, vorbheader);
- //           memcpy (packet + 4, &framesize, 2);
+	    /* write 16-bit network order fragment length */
             packet[4]=(framesize&0xff00)>>8;
 	    packet[5]=framesize&0xff;
             memcpy (packet + 4 + 2, vorbdata + position, framesize);
@@ -425,7 +425,7 @@ else
             else
                 progressmarker (5);
 
-            usleep (sleeptime);
+            usleep (sleeptime); /* WRONG */
 
             RTPHeaders.sequence++;
             RTPHeaders.timestamp += sleeptime;
@@ -470,6 +470,8 @@ else
         RTPHeaders.sequence = htons (RTPHeaders.sequence);
         RTPHeaders.timestamp = ntohl (RTPHeaders.timestamp);
 
+	/* WRONG. We need to sleep something like 1/2 the time to the
+	   next packet. The caller should probably handle this. */
         sleeptime = timestamp;
         usleep (sleeptime);
 
