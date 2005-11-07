@@ -52,6 +52,7 @@
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
+/* print a hexdump of a buffer */
 int dump_packet_raw(unsigned char *data, const int len, FILE *out)
 {
   int i, j, n;
@@ -148,7 +149,7 @@ int dump_packet_rtp_vorbis(rtp_header *rtp, FILE *out)
 {
   const unsigned char *payload = rtp->payload;
   unsigned int ident;
-  int C,F,R,pkts;
+  int CF,R,pkts;
   int offset, length;
   int i;
   
@@ -156,23 +157,20 @@ int dump_packet_rtp_vorbis(rtp_header *rtp, FILE *out)
   offset = rtp->offset;
   ident = ntohl(*(unsigned int *)payload);
   offset += 4;
-  C = (payload[offset] & 0x80) >> 7;
-  F = (payload[offset] & 0x40) >> 6;
-  R = (payload[offset] & 0x20) >> 5;
+  CF = (payload[offset] & 0xC0) >> 6;
+  R =  (payload[offset] & 0x20) >> 5;
   pkts = (payload[offset] & 0x1F);
   offset++;
 
-  fprintf(out, " Vorbis payload ident 0x%08x  C:%d F:%d R:%d",
-    ident, C, F, R);
+  fprintf(out, " Vorbis payload ident 0x%08x  CF:%d R:%d",
+    ident, CF, R);
   fprintf(out, "   packets:");
-  if (C == 0 && F == 0)
-    fprintf(out, " %d\n", pkts);
-  else if (C == 0 && F == 1)
-    fprintf(out, " frag start\n");
-  else if (C == 1 && F == 0) 
-    fprintf(out, " frag cont.\n");
-  else /* C == 1 && F == 1 */
-    fprintf(out, " frag end\n");
+  switch (CF) {
+    case 0: fprintf(out, " %d\n", pkts);   break;
+    case 1: fprintf(out, " frag start\n"); break;
+    case 2: fprintf(out, " frag cont.\n"); break;
+    case 3: fprintf(out, " frag end\n");   break;
+  }
 
   for (i = 0; i < pkts; i++) {
     if (offset >= rtp->plen) {
@@ -201,39 +199,35 @@ int dump_packet_rtp_theora(rtp_header *rtp, FILE *out)
   const unsigned char *payload = rtp->payload;
   unsigned int ident;
   unsigned char reserved;
-  int C,F,R,pkts;
+  int CF,R,pkts;
   int offset, length;
   int i;
 
   /* parse 4 byte Theora payload header */
-  /* || setup ident || reserved || C | F | R | #pkts || */
-  /*   C F flag interpretation 
-   *   0 0  Unfragmented packet (aka multi-packet..packet)
-   *   0 1  First fragmented packet
-   *   1 0  Middle fragment
-   *   1 1  Last fragment.
+  /* || setup ident || reserved || CF | R | #pkts || */
+  /*   CF flag interpretation 
+   *   00  Unfragmented packet (aka multi-packet..packet)
+   *   01  First fragmented packet
+   *   10  Middle fragment
+   *   11  Last fragment.
    */
   offset = rtp->offset;
   ident = ntohs(*(unsigned short *)payload);
   reserved = payload[2];
-  C = (payload[3] & 0x80) >> 7;
-  F = (payload[3] & 0x40) >> 6;
-  R = (payload[3] & 0x20) >> 5;
+  CF = (payload[3] & 0xC0) >> 6;
+  R =  (payload[3] & 0x20) >> 5;
   pkts = (payload[3] & 0x1F);
   offset += 4;
 
-
-  fprintf(out, " Theora payload ident 0x%08x  C:%d F:%d R:%d",
-    ident, C, F, R);
+  fprintf(out, " Theora payload ident 0x%08x  CF:%d R:%d",
+    ident, CF, R);
   fprintf(out, "   packets:");
-  if (C == 0 && F == 0)
-    fprintf(out, " %d\n", pkts);
-  else if (C == 0 && F == 1)
-    fprintf(out, " frag start\n");
-  else if (C == 1 && F == 0) 
-    fprintf(out, " frag cont.\n");
-  else /* C == 1 && F == 1 */
-    fprintf(out, " frag end\n");
+  switch (CF) {
+    case 0: fprintf(out, " %d\n", pkts);   break;
+    case 1: fprintf(out, " frag start\n"); break;
+    case 2: fprintf(out, " frag cont.\n"); break;
+    case 3: fprintf(out, " frag end\n");   break;
+  }
 
   for (i = 0; i < pkts; i++) {
     if (offset >= rtp->plen) {
