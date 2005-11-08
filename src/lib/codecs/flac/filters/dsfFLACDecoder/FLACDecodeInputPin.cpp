@@ -507,6 +507,42 @@ IOggDecoder::eAcceptHeaderResult FLACDecodeInputPin::showHeaderPacket(OggPacket*
 				default:
 					return IOggDecoder::AHR_UNEXPECTED;
 			}
+
+		case FT_OGG_FLAC_1:
+			switch(mSetupState) {
+				case VSS_SEEN_NOTHING:
+					if (strncmp((char*)inCodecHeaderPacket->packetData(),  "\177FLAC", 5) == 0) {
+						mSetupState = VSS_SEEN_BOS;
+						delete mMetadataPacket;
+						unsigned char* locBuff = new unsigned char[inCodecHeaderPacket->packetSize() - 9];
+						memcpy((void*)locBuff, (const void*)(inCodecHeaderPacket->packetData() + 9), inCodecHeaderPacket->packetSize() - 9);
+						mMetadataPacket = new OggPacket(locBuff, inCodecHeaderPacket->packetSize() - 9,  false, false);
+						return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+					}
+
+					
+					mSetupState = VSS_ERROR;
+					return IOggDecoder::AHR_INVALID_HEADER;
+				case VSS_SEEN_BOS:
+					mMetadataPacket->merge(inCodecHeaderPacket);
+					if ((inCodecHeaderPacket->packetData()[0] & MORE_HEADERS_MASK) != 0) {
+						//Last packet
+						mSetupState = VSS_ALL_HEADERS_SEEN; 
+						((FLACDecodeFilter*)mParentFilter)->setFLACFormatBlock(mMetadataPacket->packetData());
+						mFLACDecoder.acceptMetadata(mMetadataPacket);
+						mMetadataPacket = NULL;
+				
+						//TODO::: Give it to the codec
+
+						return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
+					}
+
+					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+				default:
+					return IOggDecoder::AHR_UNEXPECTED;
+
+
+			};
 		default:
 			return IOggDecoder::AHR_INVALID_HEADER;
 
