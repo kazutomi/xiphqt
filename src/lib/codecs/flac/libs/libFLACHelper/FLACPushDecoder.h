@@ -20,6 +20,7 @@ public:
 	unsigned long mNumChannels;
 	unsigned long mFrameSize;
 	unsigned long mSampleRate;
+	bool mBegun;
 protected:
 	static const int SIZE_16_BITS = 2;
 	//Virtuals frmo FLAC decoder
@@ -30,7 +31,7 @@ protected:
 
 	OggPacket* mInPacket;
 	StampedOggPacket* mOutPacket;
-	bool mBegun;
+	
 	bool mGotMetaData;
 	
 };
