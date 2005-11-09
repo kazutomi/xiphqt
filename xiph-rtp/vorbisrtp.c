@@ -68,9 +68,6 @@
 /*  Data structs and variables                                               */
 /*****************************************************************************/
 
-#define BUFFER_SIZE	4096
-ogg_int16_t convbuffer [BUFFER_SIZE];
-
 struct sockaddr_in rtpsock;
 int rtpsocket;
 
@@ -79,11 +76,11 @@ int rtpsocket;
 /*                                                                           */
 /*  fragmentation flags work like so:                                        */
 /*                                                                           */
-/*  C F                                                                      */
-/*  0 0  Unfragmented packet (aka multi-packet..packet)                      */
-/*  0 1  First fragmented packet                                             */
-/*  1 0  Middle fragment                                                     */
-/*  1 1  Last fragment.                                                      */
+/*  frag_type                                                                */
+/*  00   Unfragmented packet (aka multi-packet..packet)                      */
+/*  01   First fragmented packet                                             */
+/*  10   Middle fragment                                                     */
+/*  11   Last fragment.                                                      */
 /*                                                                           */
 /*****************************************************************************/
 
@@ -544,6 +541,7 @@ int main (int argc, char **argv)
 
     char *filename;
     FILE *file;
+    
     ogg_sync_init (&oy);
 
     int i = 0;
