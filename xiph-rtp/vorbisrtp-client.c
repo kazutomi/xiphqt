@@ -58,6 +58,7 @@ typedef struct ogg_context {
 	ogg_packet op;
 	ogg_stream_state os;
 	ogg_page og;
+	long long int last_gp;
 
 	vorbis_info vi;
 	vorbis_comment vc;
@@ -349,7 +350,10 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       op->bytes += data[offset++];
       op->packet = &data[offset];
       //FIXME should be a better way
-      op->granulepos+=timestamp*ogg->vi.rate/1000000L;
+      if (i == 0)
+	      op->granulepos = ogg->last_gp+=timestamp*ogg->vi.rate/1000000L;
+      else
+	      op->granulepos = -1;
       op->packetno++;
       count += pkt_repack(ogg,out);
       offset += op->bytes;
@@ -373,7 +377,7 @@ int
 main (int argc, char *argv[])
 {
   int RTPSocket, ret;
-  FILE *file;
+  FILE *file=stdout;
   int optval = 0, decode = 0, dump = 0, opt;
   struct sockaddr_in us, them;
   struct ip_mreq group;
@@ -474,7 +478,7 @@ main (int argc, char *argv[])
 	      file = stdout;
 	      filename = "Standard Output";
       }
-      
+
       fprintf (stderr, "Dumping the stream to %s\n", filename);
     }
 

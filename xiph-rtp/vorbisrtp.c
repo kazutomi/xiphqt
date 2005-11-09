@@ -71,6 +71,8 @@
 struct sockaddr_in rtpsock;
 int rtpsocket;
 
+#define BUFFER_SIZE 4096
+
 /*****************************************************************************/
 /*  Vorbis packet header                                                     */
 /*                                                                           */
