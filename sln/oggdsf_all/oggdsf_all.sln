@@ -1206,6 +1206,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOggDemux2", "..\..\src\l
 		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOGMDecoder", "..\..\src\lib\codecs\ogm\filters\dsfOGMDecoder\dsfOGMDecoder.vcproj", "{1C4F9412-B1DE-4E65-96C1-89522EF02997}"
+	ProjectSection(ProjectDependencies) = postProject
+		{223ACC19-608E-4E1B-A054-067F0CACB272} = {223ACC19-608E-4E1B-A054-067F0CACB272}
+		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -2775,6 +2781,26 @@ Global
 		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE.Build.0 = Release|Win32
 		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE2.ActiveCfg = Release|Win32
 		{304B710A-7355-471C-A4A8-9E8F6D640E6D}.Release_SSE2.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Debug.ActiveCfg = Debug|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Debug.Build.0 = Debug|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Debug Unicode.ActiveCfg = Debug|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Debug Unicode.Build.0 = Debug|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Debug__cdecl.ActiveCfg = Debug|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Debug__cdecl.Build.0 = Debug|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.MakeFile.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.MakeFile.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release Unicode.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release Unicode.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release__cdecl.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release__cdecl.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_NoDotNET.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_NoDotNET.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE.Build.0 = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE2.ActiveCfg = Release|Win32
+		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE2.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
 	EndGlobalSection
