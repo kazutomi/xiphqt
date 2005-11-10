@@ -62,6 +62,13 @@ typedef struct rtp_headers {
 } rtp_headers_t;
 
 
+typedef struct framestack {
+	int stacksize;
+	int stackcount;
+	unsigned char* framestack;
+} framestack_t;
+
+
 /**
  * Context structure for rtp transmission
  */
@@ -73,12 +80,16 @@ typedef struct xiph_rtp {
 	int socket;
 	header_bitfield_t bitfield;
 	rtp_headers_t headers;
+	/* rtp related*/
+	framestack_t fs;
 	/* stream related */
 	ogg_sync_state oy;
 	ogg_stream_state os;
 	ogg_page og;
 	ogg_packet op;
 	ogg_packet header[3];
+	/* codec generic */
+	int codec; // 0 = vorbis, 1 = theora, 2 =speex
 	/* codec specific (vorbis)*/
 	vorbis_info vi; 
 	vorbis_comment vc;
@@ -91,12 +102,13 @@ typedef struct xiph_rtp {
 	/* codec specific (speex) */
 	//FIXME
 	
-} xiph_rtp_t
+} xiph_rtp_t;
 
 int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port,
 		  unsigned char TTL);
 
-void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length, long timestamp, int type);
+void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
+		long timestamp, int type);
 
 int sendrtp (xiph_rtp_t *xr, const void *data, int len);
 
