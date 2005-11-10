@@ -50,7 +50,7 @@ void update_push(Gameboard *g, cairo_t *c){
 		    min(SCOREHEIGHT,h));
     cairo_fill(c);
     
-    cairo_set_source_surface(c,g->forebutton,0,g->w.allocation.height-SCOREHEIGHT);
+    cairo_set_source_surface(c,g->forebutton,0,h-SCOREHEIGHT);
     cairo_rectangle(c, 0,0,w,h);
     cairo_fill(c);
     

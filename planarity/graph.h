@@ -143,3 +143,4 @@ extern int   graphscore_get_raw_score(graph *g);
 extern int   graphscore_get_multiplier_percent(graph *g);
 extern int   graphscore_get_bonus(graph *g);
 extern char *graphscore_objective_string(graph *g);
+extern void graph_resize(graph *g, int width, int height);

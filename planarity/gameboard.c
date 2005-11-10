@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 #include <string.h>
 
 #include "graph.h"
@@ -44,6 +45,9 @@ static void gameboard_init (Gameboard *g){
   // instance initialization
   g->g.width=g->g.orig_width=800;
   g->g.height=g->g.orig_height=600;
+  g->resize_w = g->g.width;
+  g->resize_h = g->g.height;
+  g->resize_timeout = 0;
 }
 
 static void gameboard_destroy (GtkObject *object){
@@ -53,11 +57,37 @@ static void gameboard_destroy (GtkObject *object){
   // free local resources
 }
 
+
 static gint gameboard_expose (GtkWidget      *widget,
 			      GdkEventExpose *event){
-  Gameboard *g = GAMEBOARD (widget);
-  gameboard_draw(g,event->area.x,event->area.y,
-		 event->area.width,event->area.height);
+  if (GTK_WIDGET_REALIZED (widget)){
+    Gameboard *g = GAMEBOARD (widget);
+    gameboard_draw(g,event->area.x,event->area.y,
+		   event->area.width,event->area.height);
+
+
+    if(g->resize_h>0 && g->resize_w>0){
+      if(widget->allocation.width != g->resize_w ||
+	 widget->allocation.height != g->resize_h){
+	if(time(NULL) > g->resize_timeout){
+	  fprintf(stderr,"\n\nERROR: The windowmanager appears to be ignoring resize requests.\n"
+		  "This stands a pretty good chance of scrambling any saved board larger\n"
+		  "than the default window size.\n\n"
+		  "Clipping and/or expanding this board to the current window size...\n\n");
+	  g->resize_w = 0;
+	  g->resize_h = 0;
+	  resize_buttons(g,g->g.width, g->g.height, widget->allocation.width, widget->allocation.height);
+	  graph_resize(&g->g, widget->allocation.width, widget->allocation.height);
+	  update_score(g);
+	  draw_buttonbar_box(g);
+	  update_full(g);
+	}
+      }else{
+	g->resize_h=0;
+	g->resize_w=0;
+      }
+    }
+  }
   return FALSE;
 }
 
@@ -142,20 +172,31 @@ static void gameboard_realize (GtkWidget *widget){
 void gameboard_size_allocate (GtkWidget     *widget,
 			      GtkAllocation *allocation){
   Gameboard *g = GAMEBOARD (widget);
-  widget->allocation = *allocation;
 
   if (GTK_WIDGET_REALIZED (widget)){
-    int oldw=g->g.width;
-    int oldh=g->g.height;
 
-    if(oldw == allocation->width &&
-       oldh == allocation->height) return;
+    if(allocation->width != g->resize_w &&
+       allocation->height != g->resize_h &&
+       g->resize_timeout == 0 ){
 
-    g->g.width = allocation->width;
-    g->g.height = allocation->height;
+      fprintf(stderr,"\n\nERROR: The window size granted by the windowmanager is not the\n"
+	      "window size gPlanarity requested.  If the windowmanager is\n"
+	      "configured to ignore application sizing requests, this stands\n"
+	      "a pretty good chance of scrambling saved boards later (and\n"
+	      "making everything look funny now).\n\n"
+	      "Clipping and/or expanding this board to the current window size...\n\n");
 
-    if(g->wc)cairo_destroy(g->wc);
+      g->resize_h=0;
+      g->resize_w=0;
+    }
 
+    g->resize_timeout=1;
+
+    if(widget->allocation.width == allocation->width &&
+       widget->allocation.height == allocation->height) return;
+
+    if(g->wc)
+      cairo_destroy(g->wc);
     if (g->forescore)
       cairo_surface_destroy(g->forescore);
     if (g->forebutton)
@@ -164,7 +205,6 @@ void gameboard_size_allocate (GtkWidget     *widget,
       cairo_surface_destroy(g->background);
     if (g->foreground)
       cairo_surface_destroy(g->foreground);
-    
     if (g->curtainp)
       cairo_pattern_destroy(g->curtainp);
     if (g->curtains)
@@ -179,65 +219,36 @@ void gameboard_size_allocate (GtkWidget     *widget,
     g->background = 
       cairo_surface_create_similar (cairo_get_target (g->wc),
 				    CAIRO_CONTENT_COLOR, // don't need alpha
-				    widget->allocation.width,
-				    widget->allocation.height);
+				    allocation->width,
+				    allocation->height);
     g->forescore = 
       cairo_surface_create_similar (cairo_get_target (g->wc),
 				    CAIRO_CONTENT_COLOR_ALPHA,
-				    widget->allocation.width,
+				    allocation->width,
 				    SCOREHEIGHT);
     g->forebutton = 
       cairo_surface_create_similar (cairo_get_target (g->wc),
 				    CAIRO_CONTENT_COLOR_ALPHA,
-				    widget->allocation.width,
+				    allocation->width,
 				    SCOREHEIGHT);
 
     g->foreground = 
       cairo_surface_create_similar (cairo_get_target (g->wc),
 				    CAIRO_CONTENT_COLOR, // don't need alpha
-				    widget->allocation.width,
-				    widget->allocation.height);  
+				    allocation->width,
+				    allocation->height);  
 
     cache_curtain(g);
 
-    {
-      vertex *v=g->g.verticies;
-      edge *e=g->g.edges;
-      int xd=(widget->allocation.width-oldw)*.5;
-      int yd=(widget->allocation.height-oldh)*.5;
-
-      // recenter all the verticies; doesn't require recomputation
-      while(v){
-	v->x+=xd;
-	v->y+=yd;
-	v=v->next;
-      }
-   
-      // recenter associated intersections as well; they all have
-      // cached location (used only for drawing)
-      while(e){
-	intersection *i = e->i.next;
-	while(i){
-	  if(i->paired > i){
-	    i->x+=xd;
-	    i->y+=yd;    
-	  }
-	  i=i->next;
-	}
-	e=e->next;
-      }
-    }
-
-    // verify all verticies are onscreen
-    check_verticies(&g->g);
-
+    resize_buttons(g,g->g.width, g->g.height, allocation->width, allocation->height);
+    graph_resize(&g->g, allocation->width, allocation->height);
+  
     draw_buttonbar_box(g);
     update_score(g);
     update_full(g);
     
-    resize_buttons(g,oldw,oldh,widget->allocation.width,widget->allocation.height);
-
   }
+  widget->allocation = *allocation;
 }
 
 static void gameboard_class_init (GameboardClass * class) {

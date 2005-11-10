@@ -336,10 +336,12 @@ void reset_action(Gameboard *g){
   int *target_y = alloca(g->g.vertex_num * sizeof(*target_y));
   float *target_m = alloca(g->g.vertex_num * sizeof(*target_m));
   int i=0;
+  int xd = (g->g.width-g->g.orig_width)>>1;
+  int yd = (g->g.height-g->g.orig_height)>>1;
 
   while(v){
-    target_x[i]=v->orig_x;
-    target_y[i]=v->orig_y;
+    target_x[i]=v->orig_x+xd;
+    target_y[i]=v->orig_y+yd;
     target_m[i++]=RESET_DELTA;
     v=v->next;
   }
@@ -420,6 +422,7 @@ int gameboard_read(char *basename, Gameboard *g){
   fclose (f);
   free(line);
   request_resize(g->g.width,g->g.height);
+  activate_verticies(&g->g);
 
   return 0;
 }

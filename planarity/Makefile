@@ -38,14 +38,14 @@ OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o
 	gameboard_logic_fade.o graph_generate_mesh2.o graph_region.o
 CAIROVER =  >= 1.0.0
 GTKVER   =  >= 2.7.2
-GCF  = `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)"`
-LDF  = `pkg-config --static --libs "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)"`
+GCF  = `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
+LDF  = `pkg-config --static --libs "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
 
 # a build with static Gtk 2.7+ generally requires that all of the Gtk
 # dependencies were built with static dependencies also pointing to
 # the local install
 
-SLDF  = `pkg-config --static --libs-only-L "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)"`
+SLDF  = `pkg-config --static --libs-only-L "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
 GTK   = /usr/local/lib
 EXPAT= /usr/lib/libexpat.a
 XINERAMA = /usr/X11R6/lib/libXinerama.a
@@ -63,21 +63,21 @@ SLIBS = $(GTK)/libgtk-x11-2.0.a \
 	-lXft $(PNG)
 
 all:    
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'
 	$(STRIP) $(TARGET)
 
 static:    
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) static-target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'	
-	$(STRIP) $(TARGET)
+#	$(STRIP) $(TARGET)
 
 debug:
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
 
 profile:
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER)" 1>/dev/null
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper'
 
 clean:

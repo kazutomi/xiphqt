@@ -926,7 +926,40 @@ int graph_read(graph *g,FILE *f){
   
   rewind(f);
   free(line);
-  activate_verticies(g);
 
   return 0;
+}
+
+void graph_resize(graph *g, int width, int height){
+  vertex *v=g->verticies;
+  edge *e=g->edges;
+  int xd=(width-g->width)*.5;
+  int yd=(height-g->height)*.5;
+  
+  // recenter all the verticies; doesn't require recomputation
+  while(v){
+    v->x+=xd;
+    v->y+=yd;
+    v=v->next;
+  }
+  
+  // recenter associated intersections as well; they all have
+  // cached location (used only for drawing)
+  while(e){
+    intersection *i = e->i.next;
+    while(i){
+      if(i->paired > i){
+	i->x+=xd;
+	i->y+=yd;    
+      }
+      i=i->next;
+    }
+    e=e->next;
+  }
+
+  g->width=width;
+  g->height=height;
+  
+  // verify all verticies are onscreen
+  check_verticies(g);
 }
