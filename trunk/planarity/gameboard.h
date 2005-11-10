@@ -28,6 +28,7 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <time.h>
 
 #define V_RADIUS 8
 #define V_LINE 2
@@ -217,6 +218,9 @@ struct _Gameboard{
   gint button_timer; // used for buttons and icons
   void (*button_callback)(Gameboard *);
 
+  time_t resize_timeout; // watch for ignored resize events
+  int    resize_w;       // watch for ignored resize events
+  int    resize_h;       // watch for ignored resize events
 };
 
 struct _GameboardClass{

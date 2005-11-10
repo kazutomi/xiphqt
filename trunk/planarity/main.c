@@ -34,7 +34,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <gtk/gtk.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <cairo-ft.h>
+#include <time.h>
 #include <fontconfig/fontconfig.h>
 #include "version.h"
 #include "graph.h"
@@ -77,20 +79,11 @@ static int dir_create(char *name){
 }     
 
 void request_resize(int width, int height){
-  GtkWidget *w = GTK_WIDGET(gameboard);
-
   gtk_window_resize(GTK_WINDOW(toplevel_window),width,height);
-
-  // the toplevel resize *could* fail, for example, if the
-  // windowmanager has forced 'maximize'.  In this case, our graph
-  // size is set to what it wanted to be, but the gameboard window size
-  // is unchanged.  Force the graph to resize itself to the window in
-  // this case.
-
-  if(w->allocation.width != width ||
-     w->allocation.height != height)
-    gameboard_size_allocate (GTK_WIDGET(gameboard),&w->allocation);
-
+  if(gameboard->resize_timeout)
+    gameboard->resize_timeout = time(NULL)+3;
+  gameboard->resize_w = width;
+  gameboard->resize_h = height;
 }
 
 static void clean_exit(int sig){
@@ -254,6 +247,28 @@ void set_font (cairo_t *c, float w, float h, int slant, int bold){
 
 }
 
+#include "icon.h"
+void set_icons(){
+  GError *error=NULL;
+  GList *pb=NULL;
+  GdkPixbufLoader *pbl1 = gdk_pixbuf_loader_new();
+  GdkPixbufLoader *pbl2 = gdk_pixbuf_loader_new();
+  GdkPixbufLoader *pbl3 = gdk_pixbuf_loader_new();
+
+  gdk_pixbuf_loader_write(pbl1,icon134,sizeof(icon134),&error);
+  gdk_pixbuf_loader_write(pbl2,icon64,sizeof(icon64),&error);
+  gdk_pixbuf_loader_write(pbl3,icon32,sizeof(icon32),&error);
+  gdk_pixbuf_loader_close(pbl1,NULL);
+  gdk_pixbuf_loader_close(pbl2,NULL);
+  gdk_pixbuf_loader_close(pbl3,NULL);
+
+  pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl1));
+  pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl2));
+  pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl3));
+  gtk_window_set_icon_list(GTK_WINDOW(toplevel_window),pb);
+
+}
+
 int main(int argc, char *argv[]){
   char *homedir = getenv("home");
   if(!homedir)
@@ -307,15 +322,22 @@ int main(int argc, char *argv[]){
   levelstate_read();
 
   gtk_container_add (GTK_CONTAINER (toplevel_window), GTK_WIDGET(gameboard));
-  gtk_widget_show_all (toplevel_window);
+  gtk_widget_realize(toplevel_window);
+  gtk_widget_realize(GTK_WIDGET(gameboard));
+
   memset(&maingraph,0,sizeof(maingraph));
 
   /* get the setup processed before we fire up animations */
-  while (gtk_events_pending ())
+  while (gtk_events_pending ()){
     gtk_main_iteration ();
-  gdk_flush();
+    gdk_window_process_updates(toplevel_window->window,1);
+    gdk_flush();
+  }
 
   levelstate_resume();
+  set_icons();
+
+  gtk_widget_show_all(toplevel_window);
   signal(SIGINT,clean_exit);
 
   //signal(SIGSEGV,clean_exit); /* would be a bad idea; corrupt state
