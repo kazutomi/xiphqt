@@ -65,6 +65,8 @@ public:
 
 	virtual HRESULT Receive(IMediaSample* inSample);
 
+	virtual HRESULT NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate);
+
 	virtual CBasePin* GetPin(int inPinNo);
 
 
@@ -82,6 +84,10 @@ protected:
 		
 	};
 	unsigned long mFramesBuffered;
+
+	__int64 mSegStart;
+	__int64 mSegEnd;
+	double mSegRate;
 
 	vector<sSimplePack> mPacketBuffer;
 };

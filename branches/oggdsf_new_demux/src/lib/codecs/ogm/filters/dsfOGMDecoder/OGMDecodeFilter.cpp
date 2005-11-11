@@ -56,6 +56,9 @@ OGMDecodeFilter::OGMDecodeFilter()
 	,	mInputPin(NULL)
 	,	mOutputPin(NULL)
 	,	mFramesBuffered(0)
+	,	mSegStart(0)
+	,	mSegEnd(0)
+	,	mSegRate(0)
 	
 {
 
@@ -136,6 +139,14 @@ HRESULT OGMDecodeFilter::DecideBufferSize(IMemAllocator* inAllocator, ALLOCATOR_
 	}
 	
 }
+
+HRESULT OGMDecodeFilter::NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate)
+{
+	mSegStart = inStartTime;
+	mSegEnd = inStopTime;
+	mSegRate = inRate;
+	return CTransformFilter::NewSegment(inStartTime, inStopTime, inRate);
+}
 HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 {
 	
@@ -183,13 +194,17 @@ HRESULT OGMDecodeFilter::Receive(IMediaSample* inSample)
 		
 		
 		//Find out how many bytes of the header are the length field
-		const unsigned char LEN_MASK = 0x43; //01000011
+		const unsigned char LEN_MASK = 0xC2; //11000010
 		locNumLenBytes &= LEN_MASK;
 		locNumLenBytes = (locNumLenBytes >> 6) | ((locNumLenBytes&2) << 1);
 
 		__int64 locPackTime = 0;
-		for (int i = 0; i <  locNumLenBytes; i++) {
-			locPackTime |= ((__int64)locInBuff[1+i] << (i * 8));
+		if (locNumLenBytes != 0) {
+			for (int i = 0; i <  locNumLenBytes; i++) {
+				locPackTime |= ((__int64)locInBuff[1+i] << (i * 8));
+			}
+		} else {
+			locPackTime = 1;
 		}
 		
 		mFramesBuffered += locPackTime;
@@ -211,14 +226,20 @@ HRESULT OGMDecodeFilter::Receive(IMediaSample* inSample)
 
 			__int64 locUptoStart = locGlobalStart;
 			__int64 locUptoEnd = locGlobalStart;
+
+			__int64 locAdjustedStart = 0;
+			__int64 locAdjustedEnd = 0;
 			for (int i = 0; i < locNumBuffered; i++) {
 				IMediaSample* locOutSample = NULL;
 				
 				locHR = InitializeOutputSample(inSample, &locOutSample);
 				if (locHR == S_OK) {
 					locUptoEnd = locUptoStart + (mPacketBuffer[i].mDuration * locFrameDuration);
-					locOutSample->SetTime(&locUptoStart, &locUptoEnd);
-					locOutSample->SetMediaTime(&locUptoStart, &locUptoEnd);
+
+					locAdjustedStart = locUptoStart - mSegStart;
+					locAdjustedEnd = locUptoEnd - mSegStart;
+					locOutSample->SetTime(&locAdjustedStart, &locAdjustedEnd);
+					locOutSample->SetMediaTime(&locAdjustedStart, &locAdjustedEnd);
 					locOutSample->SetSyncPoint(mPacketBuffer[i].mIsKeyframe);
 					locOutSample->SetActualDataLength(mPacketBuffer[i].mLength - mPacketBuffer[i].mHeaderSize);
 					BYTE* locOutBuff = NULL;
@@ -233,7 +254,7 @@ HRESULT OGMDecodeFilter::Receive(IMediaSample* inSample)
 					}
 
 					
-
+					locUptoStart = locUptoEnd;
 
 					
 				} else {
