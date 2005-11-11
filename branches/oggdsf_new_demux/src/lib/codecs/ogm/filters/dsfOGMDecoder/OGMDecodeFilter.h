@@ -63,11 +63,25 @@ public:
 	virtual HRESULT GetMediaType(int iPosition, CMediaType* outMediaType);
 	virtual HRESULT Transform(IMediaSample* inInputSample, IMediaSample* inOutputSample);
 
+	virtual HRESULT Receive(IMediaSample* inSample);
+
 	virtual CBasePin* GetPin(int inPinNo);
 
 
 protected:
+	void deleteBufferedPackets();
+
 	OGMDecodeInputPin* mInputPin;
 	CTransformOutputPin* mOutputPin;
-	
+	struct sSimplePack {
+		unsigned char* mBuff;
+		unsigned long mLength;
+		unsigned long mDuration;
+		unsigned long mHeaderSize;
+		bool mIsKeyframe;
+		
+	};
+	unsigned long mFramesBuffered;
+
+	vector<sSimplePack> mPacketBuffer;
 };

@@ -37,6 +37,7 @@
 				OutputFile="$(OutDir)/dsfOGMDecoder.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;C:\DXSDK\Samples\C++\DirectShow\BaseClasses\Debug&quot;"
+				ModuleDefinitionFile="ogmdecoder.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/dsfOGMDecoder.pdb"
 				SubSystem="2"
@@ -86,6 +87,7 @@
 				OutputFile="$(OutDir)/dsfOGMDecoder.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\DXSDK\Samples\C++\DirectShow\BaseClasses\Release&quot;"
+				ModuleDefinitionFile="ogmdecoder.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -129,6 +131,9 @@
 			</File>
 			<File
 				RelativePath=".\OGMDecodeOutputPin.cpp">
+			</File>
+			<File
+				RelativePath=".\ogmdecoder.def">
 			</File>
 			<File
 				RelativePath=".\ogmdecoderdllstuff.cpp">

@@ -70,10 +70,10 @@ DEFINE_GUID(FORMAT_OggIdentHeader,
 // {43F0F818-10B0-4c86-B9F1-F6B6E2D33462}
 DEFINE_GUID(IID_IOggDecoder, 
 0x43f0f818, 0x10b0, 0x4c86, 0xb9, 0xf1, 0xf6, 0xb6, 0xe2, 0xd3, 0x34, 0x62);
-
-//const REGPINTYPES SpeexDecodeOutputTypes = {
-//    &MEDIATYPE_Video,
-//	&MEDIASUBTYPE_PCM
+//
+//const REGPINTYPES OGMDecodeOutputTypes = {
+//    &MEDIATYPE_None,
+//	&MEDIASUBTYPE_None
 //};
 
 const REGPINTYPES OGMDecodeInputTypes = {

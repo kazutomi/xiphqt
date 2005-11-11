@@ -35,6 +35,7 @@
 OGMDecodeInputPin::OGMDecodeInputPin(OGMDecodeFilter* inParentFilter, HRESULT* outHR)
 	:	CTransformInputPin(NAME("OGMDecodeInputPin"), inParentFilter, outHR, L"OGM In")
 	,	mVideoFormatBlock(NULL)
+	,	mSetupState(VSS_SEEN_NOTHING)
 {
 
 }
@@ -44,7 +45,21 @@ OGMDecodeInputPin::~OGMDecodeInputPin(void)
 
 }
 
+STDMETHODIMP OGMDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void **ppv)
+{
+	if (riid == IID_IMediaSeeking) {
+		*ppv = (IMediaSeeking*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+	} else if (riid == IID_IOggDecoder) {
+		*ppv = (IOggDecoder*)this;
+		//((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
 
+	}
+
+	return CBaseInputPin::NonDelegatingQueryInterface(riid, ppv); 
+}
 
 HRESULT OGMDecodeInputPin::SetMediaType(const CMediaType* inMediaType) 
 {
@@ -86,7 +101,7 @@ HRESULT OGMDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outReq
 }
 LOOG_INT64 OGMDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
 {
-	return inGranule;
+	return inGranule * mVideoFormatBlock->AvgTimePerFrame;
 }
 
 LOOG_INT64 OGMDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
@@ -100,11 +115,18 @@ IOggDecoder::eAcceptHeaderResult OGMDecodeInputPin::showHeaderPacket(OggPacket* 
 		case VSS_SEEN_NOTHING:
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\001video\000\000\000", 9) == 0) {
 				handleHeaderPacket(inCodecHeaderPacket);
+				mSetupState = VSS_SEEN_BOS;
+				return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
+			}
+			mSetupState = VSS_ERROR;
+			return IOggDecoder::AHR_INVALID_HEADER;
+			
+		case VSS_SEEN_BOS:
+			if (inCodecHeaderPacket->packetData()[0] == 0x03) {
+				mSetupState = VSS_ALL_HEADERS_SEEN;
 				return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
 			}
 			return IOggDecoder::AHR_INVALID_HEADER;
-			
-			
 		
 	
 		case VSS_ALL_HEADERS_SEEN:
@@ -114,7 +136,7 @@ IOggDecoder::eAcceptHeaderResult OGMDecodeInputPin::showHeaderPacket(OggPacket* 
 	}
 }
 
-	
+
 
 bool OGMDecodeInputPin::handleHeaderPacket(OggPacket* inHeaderPack)
 {
