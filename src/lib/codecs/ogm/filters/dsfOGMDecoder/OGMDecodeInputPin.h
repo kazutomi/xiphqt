@@ -10,12 +10,18 @@ class OGMDecodeInputPin
 	,	public IOggDecoder
 {
 public:
+	DECLARE_IUNKNOWN
+	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
+
 	OGMDecodeInputPin(OGMDecodeFilter* inParent, HRESULT* outHR);
 	virtual ~OGMDecodeInputPin(void);
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
+
+	
+
 	//IOggDecoder Interface
 	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
 	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule);
@@ -38,7 +44,7 @@ protected:
 
 	VIDEOINFOHEADER* mVideoFormatBlock;
 
-	static const unsigned long OGM_IDENT_HEADER_SIZE = 80;
+	static const unsigned long OGM_IDENT_HEADER_SIZE = 57;
 	static const unsigned long OGM_NUM_BUFFERS = 50;
 	static const unsigned long OGM_BUFFER_SIZE = 1024*512*3;;
 

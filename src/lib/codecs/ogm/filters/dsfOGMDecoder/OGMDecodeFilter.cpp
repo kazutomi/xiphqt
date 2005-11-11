@@ -55,6 +55,7 @@ OGMDecodeFilter::OGMDecodeFilter()
 	:	CTransformFilter(NAME("OGM Video Decoder"), NULL, CLSID_OGMDecodeFilter)
 	,	mInputPin(NULL)
 	,	mOutputPin(NULL)
+	,	mFramesBuffered(0)
 	
 {
 
@@ -87,10 +88,53 @@ HRESULT OGMDecodeFilter::CheckTransform(const CMediaType* inInputMediaType, cons
 
 	return S_OK;
 }
-HRESULT OGMDecodeFilter::DecideBufferSize(IMemAllocator* inAllocator, ALLOCATOR_PROPERTIES* inPropInputRequest)
+HRESULT OGMDecodeFilter::DecideBufferSize(IMemAllocator* inAllocator, ALLOCATOR_PROPERTIES* inPropertyRequest)
 {
+	HRESULT locHR = S_OK;
 
-	return S_OK;
+	ALLOCATOR_PROPERTIES locReqAlloc;
+	ALLOCATOR_PROPERTIES locActualAlloc;
+	
+	if (inPropertyRequest->cbAlign <= 0) {
+		locReqAlloc.cbAlign = 1;
+	} else {
+		locReqAlloc.cbAlign = inPropertyRequest->cbAlign;
+	}
+
+
+	if (inPropertyRequest->cbBuffer == 0) {
+		locReqAlloc.cbBuffer = 65536*16;
+	} else {
+		locReqAlloc.cbBuffer = inPropertyRequest->cbBuffer;
+	}
+	
+
+	if (inPropertyRequest->cbPrefix < 0) {
+			locReqAlloc.cbPrefix = 0;
+	} else {
+		locReqAlloc.cbPrefix = inPropertyRequest->cbPrefix;
+	}
+	
+	if (inPropertyRequest->cBuffers == 0) {
+		locReqAlloc.cBuffers = 5;
+	} else {
+		locReqAlloc.cBuffers = inPropertyRequest->cBuffers;
+	}
+
+	
+	locHR = inAllocator->SetProperties(&locReqAlloc, &locActualAlloc);
+
+	if (locHR != S_OK) {
+		//TODO::: Handle a fail state here.
+		return locHR;
+	} else {
+		//TODO::: Need to save this pointer to decommit in destructor ???
+		locHR = inAllocator->Commit();
+
+	
+		return locHR;
+	}
+	
 }
 HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 {
@@ -104,6 +148,9 @@ HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 		VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
 		*locVideoFormat = *mInputPin->getVideoFormatBlock();
 		//FillMediaType(outMediaType, locVideoFormat->bmiHeader.biSizeImage);
+		outMediaType->majortype = MEDIATYPE_Video;
+		outMediaType->subtype = (GUID)(FOURCCMap(locVideoFormat->bmiHeader.biCompression));;
+		outMediaType->formattype = FORMAT_VideoInfo;
 
 		return S_OK;
 	} else {
@@ -112,8 +159,136 @@ HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 
 
 }
+
+HRESULT OGMDecodeFilter::Receive(IMediaSample* inSample)
+{
+	BYTE* locInBuff = NULL;
+	HRESULT locHR = inSample->GetPointer(&locInBuff);
+
+	if (locHR == S_OK) {
+		REFERENCE_TIME locStart = -1;
+		REFERENCE_TIME locEnd = -1;
+		inSample->GetTime(&locStart, &locEnd);
+		if ((locInBuff[0] & 1) != 0) {
+			return S_OK;
+		}
+		unsigned long locLength = inSample->GetActualDataLength();
+		unsigned char* locBuff = new unsigned char[locLength];
+		sSimplePack locPack;
+		memcpy((void*)locBuff, (const void*)locInBuff, locLength);
+		locPack.mBuff = locBuff;
+		locPack.mLength = locLength;
+
+		unsigned long locNumLenBytes = locInBuff[0];
+		
+		
+		//Find out how many bytes of the header are the length field
+		const unsigned char LEN_MASK = 0x43; //01000011
+		locNumLenBytes &= LEN_MASK;
+		locNumLenBytes = (locNumLenBytes >> 6) | ((locNumLenBytes&2) << 1);
+
+		__int64 locPackTime = 0;
+		for (int i = 0; i <  locNumLenBytes; i++) {
+			locPackTime |= ((__int64)locInBuff[1+i] << (i * 8));
+		}
+		
+		mFramesBuffered += locPackTime;
+		locPack.mDuration = locPackTime;
+		locPack.mHeaderSize = locNumLenBytes + 1;
+		locPack.mIsKeyframe = ((locInBuff[0] & (1<<3)) != 0);
+
+		mPacketBuffer.push_back(locPack);
+
+		if (locEnd > 0) {
+			REFERENCE_TIME locGlobalStart = 0;
+			REFERENCE_TIME locGlobalEnd = 0;
+
+			__int64 locFrameDuration = mInputPin->getVideoFormatBlock()->AvgTimePerFrame;
+			__int64 locNumBuffered = mPacketBuffer.size();
+
+			locGlobalEnd = locEnd * locFrameDuration;
+			locGlobalStart = locGlobalEnd - (mFramesBuffered * locFrameDuration);
+
+			__int64 locUptoStart = locGlobalStart;
+			__int64 locUptoEnd = locGlobalStart;
+			for (int i = 0; i < locNumBuffered; i++) {
+				IMediaSample* locOutSample = NULL;
+				
+				locHR = InitializeOutputSample(inSample, &locOutSample);
+				if (locHR == S_OK) {
+					locUptoEnd = locUptoStart + (mPacketBuffer[i].mDuration * locFrameDuration);
+					locOutSample->SetTime(&locUptoStart, &locUptoEnd);
+					locOutSample->SetMediaTime(&locUptoStart, &locUptoEnd);
+					locOutSample->SetSyncPoint(mPacketBuffer[i].mIsKeyframe);
+					locOutSample->SetActualDataLength(mPacketBuffer[i].mLength - mPacketBuffer[i].mHeaderSize);
+					BYTE* locOutBuff = NULL;
+					locOutSample->GetPointer(&locOutBuff);
+					memcpy((void*)locOutBuff, (const void*)(mPacketBuffer[i].mBuff + mPacketBuffer[i].mHeaderSize), mPacketBuffer[i].mLength - mPacketBuffer[i].mHeaderSize);
+					locHR = m_pOutput->Deliver(locOutSample);
+					locOutSample->Release();
+
+					if (locHR != S_OK) {
+						deleteBufferedPackets();
+						return S_FALSE;
+					}
+
+					
+
+
+					
+				} else {
+					deleteBufferedPackets();
+					return S_FALSE;
+				}
+
+			}
+
+			deleteBufferedPackets();
+			return S_OK;
+
+
+
+
+
+		} else {
+			return S_OK;
+		}
+
+	}
+}
+
+void OGMDecodeFilter::deleteBufferedPackets()
+{
+	for (size_t i = 0; i < mPacketBuffer.size(); i++) {
+		delete[] mPacketBuffer[i].mBuff;
+	}
+	mPacketBuffer.clear();
+	mFramesBuffered = 0;
+}
 HRESULT OGMDecodeFilter::Transform(IMediaSample* inInputSample, IMediaSample* inOutputSample)
 {
+
+	//BYTE* locInBuff = NULL;
+	//HRESULT locHR = inInputSample->GetPointer(&locInBuff);
+
+	//if (locHR == S_OK) {
+	//	REFERENCE_TIME locStart = -1;
+	//	REFERENCE_TIME locEnd = -1;
+	//	inInputSample->GetTime(&locStart, &locEnd);
+	//	unsigned long locLength = inInputSample->GetActualDataLength();
+	//	unsigned char* locBuff = new unsigned char[locLength];
+	//	sSimplePack locPack;
+	//	memcpy((void*)locBuff, (const void*)locInBuff, locLength);
+	//	locPack.mBuff = locBuff;
+	//	locPack.mLength = locLength;
+	//	mPacketBuffer.push_back(sSimplePack);
+
+
+
+	//	
+
+	//}
+
 
 	return S_OK;
 }
