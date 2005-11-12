@@ -18,9 +18,9 @@ clean:
 	-$(RM) *.o
 	-$(RM) $(PROGS)
 
-vorbisrtp : vorbisrtp.c
+vorbisrtp : vorbisrtp.c xiph_rtp.c
 	$(CC) -o $@ `pkg-config --cflags $($@_PKGS)` \
-		$< `pkg-config --libs $($@_PKGS)`
+		$? `pkg-config --libs $($@_PKGS)`
 
 vorbisrtp-client : vorbisrtp-client.c
 	$(CC) -o $@  `pkg-config --cflags $($@_PKGS)` \
