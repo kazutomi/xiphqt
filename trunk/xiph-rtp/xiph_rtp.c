@@ -98,7 +98,6 @@ void progressmarker (int type)
 
 
 
-//FIXME remove the exit
 int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port, 
 		  unsigned char TTL)
 {
@@ -125,7 +124,7 @@ int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port,
 
 	if (xr->socket < 0) {
 		fprintf (stderr, "Socket creation failed.\n");
-		exit (1);
+		return -1;
 	}
 
 	xr->rtpsock.sin_family = sin.sin_family = AF_INET;
@@ -136,7 +135,7 @@ int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port,
 
 	if (ret < 0) {
 		fprintf (stderr, "setsockopt SO_REUSEADDR error\n");
-		exit (1);
+		return -1;
 	}
 
 /*  Set multicast parameters */
@@ -147,7 +146,7 @@ int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port,
 
 		if (ret < 0) {
 			fprintf (stderr, "Multicast setsockopt TTL failed.\n");
-			exit (1);
+			return -1;
 		}
 
 		optval = 1; 
@@ -156,11 +155,11 @@ int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port,
 
 		if (ret < 0) {
 			fprintf (stderr, "Multicast setsockopt LOOP failed.\n");
-			exit (1);
+			return -1;
 		}
 	} 
 
-	return xr->socket;
+	return 0;
 }
 
 int sendrtp (xiph_rtp_t *xr, const void *data, int len)
@@ -395,5 +394,25 @@ int makeheader (xiph_rtp_t *xr, unsigned char *packet, int length)
 	
 	return 0;
 
+}
+
+int ogg_copy_packet(ogg_packet *dst, ogg_packet *src)
+{
+	
+	dst->packet = malloc(src->bytes);
+	memcpy(dst->packet, src->packet, src->bytes);
+	dst->bytes = src->bytes;
+	dst->b_o_s = src->b_o_s;
+	dst->e_o_s = src->e_o_s;
+
+	dst->granulepos = src->granulepos;
+	dst->packetno = src->packetno;
+
+#ifdef DEBUG
+  	printf(" bytes %ld bos %ld eos %ld gp %lld pno %lld\n",
+  	dst->bytes, dst->b_o_s, dst->e_o_s, dst->granulepos, dst->packetno);
+#endif
+
+	return 0;
 }
 

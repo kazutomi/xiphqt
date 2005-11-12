@@ -90,15 +90,19 @@ typedef struct xiph_rtp {
 	ogg_packet header[3];
 	/* codec generic */
 	int codec; // 0 = vorbis, 1 = theora, 2 =speex
+#ifdef HAVE_VORBIS
 	/* codec specific (vorbis)*/
 	vorbis_info vi; 
 	vorbis_comment vc;
 	vorbis_dsp_state vd;
 	vorbis_block vb;
+#endif
+#ifdef HAVE_THEORA
 	/* codec specific (theora)*/
 	theora_info      ti;
 	theora_comment   tc;
 	theora_state     td;
+#endif
 	/* codec specific (speex) */
 	//FIXME
 	
@@ -113,5 +117,7 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 int sendrtp (xiph_rtp_t *xr, const void *data, int len);
 
 int makeheader (xiph_rtp_t *xr, unsigned char *packet, int length);
+
+int ogg_copy_packet(ogg_packet *dst, ogg_packet *src);
 
 #endif
