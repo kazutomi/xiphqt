@@ -77,6 +77,7 @@ int main (int argc, char **argv)
 
 	int i = 0;
 	int opt;
+	long int acc=0;
 
 	char *ip = "227.0.0.1";
 	unsigned int port = 4044;

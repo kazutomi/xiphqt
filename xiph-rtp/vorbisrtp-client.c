@@ -59,6 +59,8 @@ typedef struct ogg_context {
 	ogg_stream_state os;
 	ogg_page og;
 	long long int last_gp;
+	long int prev_bs;
+	long int curr_bs;
 
 	vorbis_info vi;
 	vorbis_comment vc;
@@ -227,7 +229,7 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
   ogg->vi.rate+=id.packet[12+2]<<8;
   ogg->vi.rate+=id.packet[12+3]<<24;
 #if CHECK
-  fprintf(stderr,"parsed rate: %d\n",ogg->vi.rate);
+  fprintf(stderr,"parsed rate: %ld\n",ogg->vi.rate);
   vorbis_info_init(&ogg->vi);
   vorbis_comment_init(&ogg->vc);
   if(vorbis_synthesis_headerin(&ogg->vi,&ogg->vc,&id)<0){
@@ -242,7 +244,7 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
 	      /* error case; not a vorbis header */
 	  fprintf(stderr,"Not valid setup\n");
   } else fprintf(stderr,"  Valid setup\n");
-  fprintf(stderr,"decoded rate: %d\n",ogg->vi.rate);
+  fprintf(stderr,"decoded rate: %ld\n",ogg->vi.rate);
 #endif
 /* start the ogg*/
   ogg_stream_init(&ogg->os,rand());
@@ -315,7 +317,7 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     break;
   case 1:
     op->bytes = 0;
-    
+    op->packetno++;
   case 2:
     length = data[offset++] << 8;
     length += data[offset++];
@@ -324,6 +326,7 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     op->bytes += length;
     return 0;
   case 3:
+    op->packetno++;
     length = data[offset++] << 8;
     length += data[offset++];
     op->packet = realloc (op->packet, length+op->bytes);
@@ -349,12 +352,21 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       op->bytes = data[offset++]<<8;
       op->bytes += data[offset++];
       op->packet = &data[offset];
-      //FIXME should be a better way
+      //FIXME do not use libvorbis if possible
+      op->packetno++;
+
+#ifdef CHECK
+      ogg->curr_bs = vorbis_packet_blocksize(&ogg->vi,op);
+      if(ogg->prev_bs)
+	      op->granulepos += (ogg->curr_bs + ogg->prev_bs)/4;
+      fprintf(stderr,"gp %lld, ss %ld, pno %lld\n", op->granulepos, (ogg->curr_bs + ogg->prev_bs)/4, op->packetno);
+      ogg->prev_bs = ogg->curr_bs;
+#else
       if (i == 0)
 	      op->granulepos = ogg->last_gp+=timestamp*ogg->vi.rate/1000000L;
       else
 	      op->granulepos = -1;
-      op->packetno++;
+#endif
       count += pkt_repack(ogg,out);
       offset += op->bytes;
       op->b_o_s=0;
@@ -378,7 +390,7 @@ main (int argc, char *argv[])
 {
   int RTPSocket, ret;
   FILE *file=stdout;
-  int optval = 0, decode = 0, dump = 0, opt;
+  int verbose = 0, dump = 0, opt;
   struct sockaddr_in us, them;
   struct ip_mreq group;
   unsigned char data[MAX_PACKET];
@@ -392,7 +404,7 @@ main (int argc, char *argv[])
 
   fprintf (stderr, "||  Vorbis RTP Client (draft-kerr-avt-vorbis-rtp-05)\n");
 
-  while ((opt = getopt (argc, argv, "i:p:f:")) != -1)
+  while ((opt = getopt (argc, argv, "i:p:f:v")) != -1)
     {
       switch (opt)
 	{
@@ -411,6 +423,9 @@ main (int argc, char *argv[])
 	case 'f':
 	  filename = optarg;
 	  dump = 1;
+	  break;
+	case 'v':
+	  verbose=1;
 	  break;
 
 	  /* Unknown option  */
@@ -487,7 +502,7 @@ main (int argc, char *argv[])
       ret = recvfrom (RTPSocket, data, MAX_PACKET, 0, NULL, 0);
       fprintf (stderr, "read %d bytes of data\n", ret);
       
-      dump_packet_rtp (data, ret, stderr);
+      if (verbose) dump_packet_rtp (data, ret, stderr);
       if (dump){
 	dump_packet_ogg (data, ret, file, &ogg);
 	fflush(NULL);

@@ -1,6 +1,6 @@
 # GNU Makefile for xiph rtp example code
 
-CC = gcc -g -O2 -Wall #-DDEBUG
+CC = gcc -g -O2 -Wall -DCHECK #-DDEBUG
 PROGS = vorbisrtp vorbisrtp-client theorartp-client
 
 vorbisrtp_SRCS = vorbisrtp.c
@@ -20,7 +20,7 @@ clean:
 
 vorbisrtp : vorbisrtp.c xiph_rtp.c
 	$(CC) -o $@ `pkg-config --cflags $($@_PKGS)` \
-		$? `pkg-config --libs $($@_PKGS)`
+		$^ `pkg-config --libs $($@_PKGS)`
 
 vorbisrtp-client : vorbisrtp-client.c
 	$(CC) -o $@  `pkg-config --cflags $($@_PKGS)` \
