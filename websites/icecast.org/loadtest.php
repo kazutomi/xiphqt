@@ -18,7 +18,7 @@ these results, please feel free to stop by #icecast.</p>
 <tr><td></td><td></td><td><b>Load test</b></td><td><b>Date performed</b></td><td><b>Icecast version</b></td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><a href="loadtest1.php">view</a><td>Maximum listener test</td><td>September 22, 2005</td><td>2.3.0 RC3</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><a href="loadtest2.php">view</a><td>Maximum source/listener test</td><td>November 12, 2005</td><td>2.3.0 trunk (as of 11/14/2005)</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><a href="loadtest3.php">view</a><td>Icecast / Shoutcast comparassion</td><td>November 14, 2005</td><td>2.3.0 trunk (as of 11/14/2005) / shoutcast-1-9-5 linux glibc6</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><a href="loadtest3.php">view</a><td>Icecast / Shoutcast comparison</td><td>November 14, 2005</td><td>2.3.0 trunk (as of 11/14/2005) / shoutcast-1-9-5 linux glibc6</td></tr>
 </table>
 </center>
 </p>

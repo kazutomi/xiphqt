@@ -7,7 +7,7 @@
 <h3>More Load Test Reports</h3>
 <p>
 We've done another round of load testing, this time going through a "large number of sources" test
-as well as a comparassion test with Shoutcast.
+as well as a comparison test with Shoutcast.
 </p>
 <p>All our load testing reports can be found <a href="loadtest.php">Here</a></p>
 <div class="poster">

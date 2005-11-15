@@ -10,7 +10,7 @@
 <br></br>
 <p>
 This load test was performed to get an idea as to how well icecast performs relative to Shoutcast.  The test
-used for this comparassion is the "Max Listener" test that we used for load test #1.  In order to get the most
+used for this comparison is the "Max Listener" test that we used for load test #1.  In order to get the most
 accurrate results, I decided to re-run the max listener test completely for icecast (instead of just taking the 
 numbers from the previous test.
 </p>
