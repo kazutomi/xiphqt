@@ -4,6 +4,28 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>More Load Test Reports</h3>
+<p>
+We've done another round of load testing, this time going through a "large number of sources" test
+as well as a comparassion test with Shoutcast.
+</p>
+<p>All our load testing reports can be found <a href="loadtest.php">Here</a></p>
+<div class="poster">
+Posted November 14, 2005 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+<br>
+<br>
+
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Icecast Release 2.3.0</h3>
 <p>We are pleased to announce the next release of Icecast.
 </p>
