@@ -40,6 +40,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -53,6 +54,18 @@
 
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
+
+
+
+
+int _ilog(unsigned int v){
+  int ret=0;
+  while(v){
+    ret++;
+    v>>=1;
+  }
+  return(ret);
+}
 
 typedef struct ogg_context {
 	ogg_packet op;
@@ -69,8 +82,154 @@ typedef struct ogg_context {
 	int frag;
 	float **pcm;
 	unsigned int timestamp;
+	//
+	int modes;
+	long blocksizes[2];
+	int param_blockflag[64];
 } ogg_context_t; 
 
+/*
+int pkt_granulepos( ogg_context_t *ogg )
+{
+	ogg_packet *op = ogg->op;
+	vorbis_info *vi = ogg->vi;
+	
+}
+*/
+long _book_maptype1_quantvals(int entries, int dim){
+  long vals=floor(pow((float)entries,1.f/dim));
+
+  /* the above *should* be reliable, but we'll not assume that FP is
+     ever reliable when bitstream sync is at stake; verify via integer
+     means that vals really is the greatest value of dim for which
+     vals^b->bim <= b->entries */
+  /* treat the above as an initial guess */
+  while(1){
+    long acc=1;
+    long acc1=1;
+    int i;
+    for(i=0;i<dim;i++){
+      acc*=vals;
+      acc1*=vals+1;
+    }
+    if(acc<=entries && acc1>entries){
+      return(vals);
+    }else{
+      if(acc>entries){
+	vals--;
+      }else{
+	vals++;
+      }
+    }
+  }
+}
+
+long pkt_blocksize(ogg_context_t *ogg)
+{
+	int mode;
+	oggpack_buffer opb;
+	oggpack_readinit(&opb,ogg->op.packet,ogg->op.bytes);
+
+	oggpack_read(&opb,1);
+
+	mode = oggpack_read(&opb,_ilog(ogg->modes));
+	return ogg->blocksizes[ogg->param_blockflag[mode]];
+}
+
+int cfg_parse( ogg_context_t *ogg )
+{
+	oggpack_buffer opb;
+	int num, i;
+	
+	ogg->blocksizes[0] = 1<<(ogg->op.packet[28]&0x0f);
+	ogg->blocksizes[1] = 1<<((ogg->op.packet[28]&0xf0)>>4);
+	oggpack_readinit(&opb, ogg->op.packet + 30, ogg->op.bytes - 30);
+	oggpack_read(&opb,8+8*6);
+	
+	num = oggpack_read(&opb,8)+1;
+	for(;num>0;num--)
+	{
+		int entries, quantvals, maptype, q_quant, dim;
+		oggpack_read(&opb,24);
+		dim = oggpack_read(&opb,16);
+		entries = oggpack_read(&opb,24);
+		switch(oggpack_read(&opb,1)){
+		case 0:
+			if(oggpack_read(&opb,1))
+			{
+				for(i=0; i<entries; i++)
+					if(oggpack_read(&opb,1))
+						oggpack_read(&opb,5);
+			}
+			else
+				for(i=0; i<entries; i++)
+					oggpack_read(&opb,5);
+			break;
+		case 1:
+			oggpack_read(&opb,5);
+			for(i=0; i<entries; i++)
+				oggpack_read(&opb,_ilog(entries-i));
+			break;
+		}
+		switch((maptype=oggpack_read(&opb,4))){
+		case 0:
+			break;
+
+		case 1: case 2:
+			oggpack_read(&opb,32);
+			oggpack_read(&opb,32);
+			q_quant=oggpack_read(&opb,4);
+			oggpack_read(&opb,1);
+			
+			switch (maptype){
+			case 1:
+				quantvals =
+					_book_maptype1_quantvals(entries,dim);
+				break;
+			
+			case 2:
+				quantvals = entries*dim;
+				break;
+			}
+			
+			for(i=0;i<quantvals;i++)
+				oggpack_read(&opb,q_quant);
+
+		}
+	}
+	
+	//times
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+	
+	//floors
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+
+	//residues
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+
+	//maps
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+
+	//modes
+	ogg->modes = oggpack_read(&opb,6)+1;
+	for(i=0;i<ogg->modes;i++)
+	{
+		ogg->param_blockflag[i] = oggpack_read(&opb,1); //blockflag
+		oggpack_read(&opb,16);
+		oggpack_read(&opb,16);
+		oggpack_read(&opb,8);
+	}
+
+	return 0; //FIXME add some checks and return -1 on failure
+}
 
 int
 dump_packet_raw (unsigned char *data, const int len, FILE * out)
