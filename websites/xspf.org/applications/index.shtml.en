@@ -38,6 +38,39 @@
 <dd>A Flash application for playing music in web pages. Skinnable and slick.</dd>
 <dt><a href="http://plurn.com/app/Download">Spiffy</a> (Windows)</dt>
 <dd>A client application that downloads XSPF playlist content, effectively localizing the playlist. In an alpha state as of this writing (Jun 4, 2005), but potentially very useful when it grows up.</dd>
+	  <dt><a href="plext.blogspot.com">Plext</a> (Windows; Winamp)</dt>
+          <dd>Winamp plugin for advanced playlist functionality, including XSPF.  Notable for supporting recursive playlists.  (The author of this document uses this plugin often).</dd>
+
+
+  <dt><a href="http://bmpx.berlios.de/">BMPx</a> (Linux and other Gnu-oriented Unixes)</dt>
+          <dd><cite
+src="http://www.sosdg.org/~larne/w/Introduction">BMP, or Beep Media
+Player, is a compact media player that was originally forked from XMMS
+(http://www.xmms.org) with the goal of porting XMMS to GTK2 and make
+use of more modern desktop standards.</cite>  <cite src="http://bmpx.berlios.de/w/index.php/FAQ">BMPx is the codename for the next generation of BMP. It has been rewritten from scratch to shed the XMMS legacy. </cite> </dd>
+
+          <dt><a href="http://openvision.tv/home/home.html">I/ON</a> (Java, runs on MacOS X and Windows XP)</dt>
+          <dd>A media player oriented towards internet based content rather than locally stored content.  Support for video formats like Quicktime, Windows Media, Flash, Ogg and MPEG formats; RSS/podcasts; BitTorrent.  Makes available <a href="https://ion.dev.java.net/source/browse/ion/IonXSPF/tv/openvision/xspf/">Java source for XSPF support based on JDOM</a>.
+	  </dd>
+
+	  <dt><a href="http://drupal.org/handbook/modules/playlist">Drupal playlist module</a> (blog/web publishing)</dt>
+          <dd><cite src="http://drupal.org/handbook/modules/playlist">The playlist module allows [publishers] to arrange content into personal playlists. This module empowers users to become organizers of content as they re-order content from the site and create lists of their favorite content items.</cite>  See also: <a href="http://drupal.org/node/32345">Audio and Playlist Modules for Drupal</a> and <a href="http://playlist-demo.drupalart.org/">Drupal playlist demo page</a>.</dd>
+
+	  <dt><a href="http://www.boriel.com/?page_id=12">Wordpress</a> (blog publishing; uses Musicplayer Flash app)</dt>
+          <dd>A popular tool for publishing weblogs.  The XSPF plugin allows bloggers to edit and publish XSPF documents, then embed a Flash player in their weblog to render the XSPF.  </dd>
+
+
+	  <dt><a href="http://developerdocumentation.ning.com/post.php?Post:slug=XNC_Alpha-XNC_Alpha_Format_XSPF">Ning</a> (web development framework)</dt>
+          <dd>A hosted software development framework for web applications.  The XSPF module allows applications to edit, parse, and publish XSPF documents.</dd>
+
+          <dt><a href="http://mfdz.com">Music for Dozens</a> (web site; Flash player)</dt>
+          <dd>Pay-per-download no-DRM music store emphasizing independent artists.  Sample songs use custom Flash player which accepts XSPF.</dd>
+
+          <dt><a href="http://musicmobs.com">Musicmobs</a> (OS X player; Windows XP expected)</dt>
+          <dd>A DRM music player and XSPF content resolver.
+	    <blockquote>When you click on any pink play button, you'll download a .xspf file. If you're on OS X and have Mobster installed, you can double click this file and play any of the songs you have in your library.
+Songs with green dots, you have and will end up in your playlist when you click Play (or you can double click them to play the single song). Songs with red dots, you don't have and you'll have to find somewhere (don't steal!). Once you've added them to your library, Mobster will show them as green dots.</blockquote>
+	  </dd>
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
