@@ -55,18 +55,6 @@
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
-
-
-
-int _ilog(unsigned int v){
-  int ret=0;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
-
 typedef struct ogg_context {
 	ogg_packet op;
 	ogg_stream_state os;
@@ -82,153 +70,18 @@ typedef struct ogg_context {
 	int frag;
 	float **pcm;
 	unsigned int timestamp;
-	//
 	int modes;
 	long blocksizes[2];
 	int param_blockflag[64];
 } ogg_context_t; 
 
-/*
-int pkt_granulepos( ogg_context_t *ogg )
-{
-	ogg_packet *op = ogg->op;
-	vorbis_info *vi = ogg->vi;
-	
-}
-*/
-long _book_maptype1_quantvals(int entries, int dim){
-  long vals=floor(pow((float)entries,1.f/dim));
-
-  /* the above *should* be reliable, but we'll not assume that FP is
-     ever reliable when bitstream sync is at stake; verify via integer
-     means that vals really is the greatest value of dim for which
-     vals^b->bim <= b->entries */
-  /* treat the above as an initial guess */
-  while(1){
-    long acc=1;
-    long acc1=1;
-    int i;
-    for(i=0;i<dim;i++){
-      acc*=vals;
-      acc1*=vals+1;
-    }
-    if(acc<=entries && acc1>entries){
-      return(vals);
-    }else{
-      if(acc>entries){
-	vals--;
-      }else{
-	vals++;
-      }
-    }
+int _ilog(unsigned int v){
+  int ret=0;
+  while(v){
+    ret++;
+    v>>=1;
   }
-}
-
-long pkt_blocksize(ogg_context_t *ogg)
-{
-	int mode;
-	oggpack_buffer opb;
-	oggpack_readinit(&opb,ogg->op.packet,ogg->op.bytes);
-
-	oggpack_read(&opb,1);
-
-	mode = oggpack_read(&opb,_ilog(ogg->modes));
-	return ogg->blocksizes[ogg->param_blockflag[mode]];
-}
-
-int cfg_parse( ogg_context_t *ogg )
-{
-	oggpack_buffer opb;
-	int num, i;
-	
-	ogg->blocksizes[0] = 1<<(ogg->op.packet[28]&0x0f);
-	ogg->blocksizes[1] = 1<<((ogg->op.packet[28]&0xf0)>>4);
-	oggpack_readinit(&opb, ogg->op.packet + 30, ogg->op.bytes - 30);
-	oggpack_read(&opb,8+8*6);
-	
-	num = oggpack_read(&opb,8)+1;
-	for(;num>0;num--)
-	{
-		int entries, quantvals, maptype, q_quant, dim;
-		oggpack_read(&opb,24);
-		dim = oggpack_read(&opb,16);
-		entries = oggpack_read(&opb,24);
-		switch(oggpack_read(&opb,1)){
-		case 0:
-			if(oggpack_read(&opb,1))
-			{
-				for(i=0; i<entries; i++)
-					if(oggpack_read(&opb,1))
-						oggpack_read(&opb,5);
-			}
-			else
-				for(i=0; i<entries; i++)
-					oggpack_read(&opb,5);
-			break;
-		case 1:
-			oggpack_read(&opb,5);
-			for(i=0; i<entries; i++)
-				oggpack_read(&opb,_ilog(entries-i));
-			break;
-		}
-		switch((maptype=oggpack_read(&opb,4))){
-		case 0:
-			break;
-
-		case 1: case 2:
-			oggpack_read(&opb,32);
-			oggpack_read(&opb,32);
-			q_quant=oggpack_read(&opb,4);
-			oggpack_read(&opb,1);
-			
-			switch (maptype){
-			case 1:
-				quantvals =
-					_book_maptype1_quantvals(entries,dim);
-				break;
-			
-			case 2:
-				quantvals = entries*dim;
-				break;
-			}
-			
-			for(i=0;i<quantvals;i++)
-				oggpack_read(&opb,q_quant);
-
-		}
-	}
-	
-	//times
-	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
-	
-	//floors
-	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
-
-	//residues
-	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
-
-	//maps
-	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
-
-	//modes
-	ogg->modes = oggpack_read(&opb,6)+1;
-	for(i=0;i<ogg->modes;i++)
-	{
-		ogg->param_blockflag[i] = oggpack_read(&opb,1); //blockflag
-		oggpack_read(&opb,16);
-		oggpack_read(&opb,16);
-		oggpack_read(&opb,8);
-	}
-
-	return 0; //FIXME add some checks and return -1 on failure
+  return(ret);
 }
 
 int
@@ -331,11 +184,158 @@ dump_packet_rtp (unsigned char *data, const int len, FILE * out)
   return 0;
 }
 
+long 
+maptype_quantvals(int entries, int dim)
+{
+  long vals=floor(pow((float)entries,1.f/dim));
+
+  /* the above *should* be reliable, but we'll not assume that FP is
+     ever reliable when bitstream sync is at stake; verify via integer
+     means that vals really is the greatest value of dim for which
+     vals^b->bim <= b->entries */
+  /* treat the above as an initial guess */
+  while(1){
+    long acc=1;
+    long acc1=1;
+    int i;
+    for(i=0;i<dim;i++){
+      acc*=vals;
+      acc1*=vals+1;
+    }
+    if(acc<=entries && acc1>entries){
+      return(vals);
+    }else{
+      if(acc>entries){
+	vals--;
+      }else{
+	vals++;
+      }
+    }
+  }
+}
+
+int cfg_parse( ogg_context_t *ogg )
+{
+	oggpack_buffer opb;
+	int num, i;
+	
+	ogg->blocksizes[0] = 1<<(ogg->op.packet[28]&0x0f);
+	ogg->blocksizes[1] = 1<<((ogg->op.packet[28]&0xf0)>>4);
+	oggpack_readinit(&opb, ogg->op.packet + 30, ogg->op.bytes - 30);
+	oggpack_read(&opb,8+8*6);
+	
+	num = oggpack_read(&opb,8)+1;
+	for(;num>0;num--)
+	{
+		int entries, quantvals=0, maptype, q_quant, dim;
+		oggpack_read(&opb,24);
+		dim = oggpack_read(&opb,16);
+		entries = oggpack_read(&opb,24);
+		switch(oggpack_read(&opb,1)){
+		case 0:
+			if(oggpack_read(&opb,1))
+			{
+				for(i=0; i<entries; i++)
+					if(oggpack_read(&opb,1))
+						oggpack_read(&opb,5);
+			}
+			else
+				for(i=0; i<entries; i++)
+					oggpack_read(&opb,5);
+			break;
+		case 1:
+			oggpack_read(&opb,5);
+			for(i=0; i<entries; i++)
+				oggpack_read(&opb,_ilog(entries-i));
+			break;
+		}
+		switch((maptype=oggpack_read(&opb,4))){
+		case 0:
+			break;
+
+		case 1: case 2:
+			oggpack_read(&opb,32);
+			oggpack_read(&opb,32);
+			q_quant=oggpack_read(&opb,4);
+			oggpack_read(&opb,1);
+			
+			switch (maptype){
+			case 1:
+				quantvals = maptype_quantvals(entries,dim);
+				break;
+			
+			case 2:
+				quantvals = entries*dim;
+				break;
+			}
+			
+			for(i=0;i<quantvals;i++)
+				oggpack_read(&opb,q_quant);
+
+		}
+	}
+	
+	//times
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+	
+	//floors
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+
+	//residues
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+
+	//maps
+	num = oggpack_read(&opb,6)+1;
+	//for(;num>0;num--)
+		oggpack_read(&opb,16*num);
+
+	//modes
+	ogg->modes = oggpack_read(&opb,6)+1;
+	for(i=0;i<ogg->modes;i++)
+	{
+		ogg->param_blockflag[i] = oggpack_read(&opb,1); //blockflag
+		oggpack_read(&opb,16);
+		oggpack_read(&opb,16);
+		oggpack_read(&opb,8);
+	}
+
+	return 0; //FIXME add some checks and return -1 on failure
+}
+
+
+long pkt_blocksize(ogg_context_t *ogg)
+{
+	int mode;
+	oggpack_buffer opb;
+	oggpack_readinit(&opb,ogg->op.packet,ogg->op.bytes);
+
+	oggpack_read(&opb,1);
+
+	{
+	    int modebits=0;
+	    int v=ogg->modes;
+	    while(v>1){
+	    	modebits++;
+		v>>=1;
+	    }
+
+	mode = oggpack_read(&opb,modebits);
+	}
+	return ogg->blocksizes[ogg->param_blockflag[mode]];
+}
+
+	
 int
 cfg_repack(ogg_context_t *ogg, FILE* out)
 {
   ogg_packet id,co,cb;
-  char comment[] = 
+  unsigned char comment[] = 
 /*  Example
  *  {3,118,111,114,98,105,115,
 	  29,0,0,0,
@@ -387,8 +387,22 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
   ogg->vi.rate+=id.packet[12+1]<<8;
   ogg->vi.rate+=id.packet[12+2]<<8;
   ogg->vi.rate+=id.packet[12+3]<<24;
+  
+  cfg_parse(ogg);
+
 #if CHECK
-  fprintf(stderr,"parsed rate: %ld\n",ogg->vi.rate);
+  fprintf(stderr,"parsed: rate %ld, blocksizes %ld %ld\n ",
+		  ogg->vi.rate,
+		  ogg->blocksizes[0],
+		  ogg->blocksizes[1]
+		  );
+  {
+	  int i;
+	  for (i=0;i<ogg->modes;i++)
+		  fprintf(stderr," %d ", ogg->param_blockflag[i]);
+	  fprintf(stderr,"\n");
+  }
+  
   vorbis_info_init(&ogg->vi);
   vorbis_comment_init(&ogg->vc);
   if(vorbis_synthesis_headerin(&ogg->vi,&ogg->vc,&id)<0){
@@ -403,7 +417,7 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
 	      /* error case; not a vorbis header */
 	  fprintf(stderr,"Not valid setup\n");
   } else fprintf(stderr,"  Valid setup\n");
-  fprintf(stderr,"decoded rate: %ld\n",ogg->vi.rate);
+  fprintf(stderr,"decoded: rate %ld\n",ogg->vi.rate);
 #endif
 /* start the ogg*/
   ogg_stream_init(&ogg->os,rand());
@@ -518,7 +532,7 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       ogg->curr_bs = vorbis_packet_blocksize(&ogg->vi,op);
       if(ogg->prev_bs)
 	      op->granulepos += (ogg->curr_bs + ogg->prev_bs)/4;
-      fprintf(stderr,"gp %lld, ss %ld, pno %lld\n", op->granulepos, (ogg->curr_bs + ogg->prev_bs)/4, op->packetno);
+      fprintf(stderr,"gp %lld, d_bs %ld, p_bs %ld, pno %lld\n", op->granulepos, ogg->curr_bs, pkt_blocksize(ogg), op->packetno);
       ogg->prev_bs = ogg->curr_bs;
 #else
       if (i == 0)
