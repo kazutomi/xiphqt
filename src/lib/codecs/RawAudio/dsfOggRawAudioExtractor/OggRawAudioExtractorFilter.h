@@ -28,54 +28,58 @@
 //NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
+
 #pragma once
+//Include Files
+#include "oggrawaudioextractordllstuff.h"
+#include "OggRawAudioExtractorInputPin.h"
+#include <libilliCore/iBE_Math.h>
 
-#include "ogmdecoderdllstuff.h"
-#include "IOggDecoder.h"
+//Forward Declarations
+struct sOggRawAudioFormatBlock;
+class OggRawAudioExtractorInputPin;
+class OggRawAudioExtractorOutputPin;
 
-class OGMDecodeFilter;
-
-class OGMDecodeInputPin
-	:	public CTransformInputPin
-	,	public IOggDecoder
+//Class Interface
+class OggRawAudioExtractorFilter
+	//Base Classes
+	:	public CTransformFilter
 {
 public:
-	DECLARE_IUNKNOWN
-	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
+	//Friends
+	//friend class OGMDecodeInputPin;
+	//friend class OGMDecodeOutputPin;
 
-	OGMDecodeInputPin(OGMDecodeFilter* inParent, HRESULT* outHR);
-	virtual ~OGMDecodeInputPin(void);
+	//Constructors and Destructors
+	OggRawAudioExtractorFilter(void);
+	virtual ~OggRawAudioExtractorFilter(void);
 
-	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
-	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
-	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
+	//COM Creator Function
+	static CUnknown* WINAPI CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr);
 
-	
+	virtual HRESULT CheckInputType(const CMediaType* inMediaType);
+	virtual HRESULT CheckTransform(const CMediaType* inInputMediaType, const CMediaType* inOutputMediaType);
+	virtual HRESULT DecideBufferSize(IMemAllocator* inAllocator, ALLOCATOR_PROPERTIES* inPropInputRequest);
+	virtual HRESULT GetMediaType(int iPosition, CMediaType* outMediaType);
+	virtual HRESULT Transform(IMediaSample* inInputSample, IMediaSample* inOutputSample);
 
-	//IOggDecoder Interface
-	virtual LOOG_INT64 convertGranuleToTime(LOOG_INT64 inGranule);
-	virtual LOOG_INT64 mustSeekBefore(LOOG_INT64 inGranule);
-	virtual IOggDecoder::eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket);
-	virtual string getCodecShortName();
-	virtual string getCodecIdentString();
+	virtual HRESULT Receive(IMediaSample* inSample);
 
-	VIDEOINFOHEADER* getVideoFormatBlock()		{		return mVideoFormatBlock;	}
+	virtual HRESULT NewSegment(REFERENCE_TIME inStartTime, REFERENCE_TIME inStopTime, double inRate);
+
+	virtual CBasePin* GetPin(int inPinNo);
+
+
 protected:
-	enum eOGMSetupState {
-		VSS_SEEN_NOTHING,
-		VSS_SEEN_BOS,
-		VSS_SEEN_COMMENT,
-		VSS_ALL_HEADERS_SEEN,
-		VSS_ERROR
-	};
 
-	eOGMSetupState mSetupState;
-	bool handleHeaderPacket(OggPacket* inHeaderPack);
+	OggRawAudioExtractorInputPin* mInputPin;
+	CTransformOutputPin* mOutputPin;
 
-	VIDEOINFOHEADER* mVideoFormatBlock;
+	unsigned char* mWorkingBuff;
+	unsigned long mBytesBuffered;
 
-	static const unsigned long OGM_IDENT_HEADER_SIZE = 57;
-	static const unsigned long OGM_NUM_BUFFERS = 50;
-	static const unsigned long OGM_BUFFER_SIZE = 1024*512*3;;
+	__int64 mSegStart;
+	__int64 mSegEnd;
+	double mSegRate;
 
 };

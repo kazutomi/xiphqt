@@ -1219,6 +1219,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOggRawAudioInserter", ".
 		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOggRawAudioExtractor", "..\..\src\lib\codecs\RawAudio\dsfOggRawAudioExtractor\dsfOggRawAudioExtractor.vcproj", "{20DC77C5-8396-4C6D-A805-959CF8DFABB3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{223ACC19-608E-4E1B-A054-067F0CACB272} = {223ACC19-608E-4E1B-A054-067F0CACB272}
+		{4CBC0173-27E6-4218-AE06-5EFDCA7B2547} = {4CBC0173-27E6-4218-AE06-5EFDCA7B2547}
+		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -2828,6 +2835,26 @@ Global
 		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE.Build.0 = Release|Win32
 		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE2.ActiveCfg = Release|Win32
 		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE2.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Debug.ActiveCfg = Debug|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Debug.Build.0 = Debug|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Debug Unicode.ActiveCfg = Debug|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Debug Unicode.Build.0 = Debug|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Debug__cdecl.ActiveCfg = Debug|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Debug__cdecl.Build.0 = Debug|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.MakeFile.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.MakeFile.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release Unicode.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release Unicode.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release__cdecl.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release__cdecl.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release_NoDotNET.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release_NoDotNET.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release_SSE.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release_SSE.Build.0 = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release_SSE2.ActiveCfg = Release|Win32
+		{20DC77C5-8396-4C6D-A805-959CF8DFABB3}.Release_SSE2.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
 	EndGlobalSection
