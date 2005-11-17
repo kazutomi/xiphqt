@@ -138,7 +138,7 @@ HRESULT OggRawAudioInserterInputPin::TransformData(unsigned char* inBuf, long in
 {
 
 	if (!mSentHeaders) {
-		mFramesPerPacket = 1024;
+		
 
 		unsigned char* locHeader = NULL;
 		unsigned long locHeaderLength = 0;
@@ -347,11 +347,15 @@ HRESULT OggRawAudioInserterInputPin::SetMediaType(const CMediaType* inMediaType)
 			(inMediaType->formattype == FORMAT_WaveFormatEx)) {
 
 		WAVEFORMATEX* locWaveFormat = (WAVEFORMATEX*)inMediaType->pbFormat;
+
+		mFramesPerPacket = 1024;
+
 		//TODO::: This needs to change with channel conversion/mapping headers
 		((OggRawAudioInserterFilter*)mParentFilter)->mOggRawAudioFormatBlock.numHeaders = 2;
 		((OggRawAudioInserterFilter*)mParentFilter)->mOggRawAudioFormatBlock.samplesPerSec = locWaveFormat->nSamplesPerSec;
 		((OggRawAudioInserterFilter*)mParentFilter)->mOggRawAudioFormatBlock.numChannels = locWaveFormat->nChannels;
 		((OggRawAudioInserterFilter*)mParentFilter)->mOggRawAudioFormatBlock.bitsPerSample = locWaveFormat->wBitsPerSample;
+		((OggRawAudioInserterFilter*)mParentFilter)->mOggRawAudioFormatBlock.maxFramesPerPacket = 1024;
 
 		
 	} else {

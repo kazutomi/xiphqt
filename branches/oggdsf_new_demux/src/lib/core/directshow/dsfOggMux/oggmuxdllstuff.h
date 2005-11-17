@@ -238,6 +238,7 @@ struct sOggRawAudioFormatBlock {
 	unsigned long numHeaders;
 	unsigned long numChannels;
 	unsigned long bitsPerSample;
+	unsigned long maxFramesPerPacket;
 
 
 };
