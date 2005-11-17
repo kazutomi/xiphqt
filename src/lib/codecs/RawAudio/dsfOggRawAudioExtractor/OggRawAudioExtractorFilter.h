@@ -46,9 +46,6 @@ class OggRawAudioExtractorFilter
 	:	public CTransformFilter
 {
 public:
-	//Friends
-	//friend class OGMDecodeInputPin;
-	//friend class OGMDecodeOutputPin;
 
 	//Constructors and Destructors
 	OggRawAudioExtractorFilter(void);

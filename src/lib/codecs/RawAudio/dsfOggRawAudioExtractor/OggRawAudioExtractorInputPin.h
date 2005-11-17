@@ -70,6 +70,6 @@ protected:
 
 		
 	};
-	//static const unsigned long OGM_BUFFER_SIZE = 1024*512*3;;
+
 
 };

@@ -51,7 +51,6 @@ public:
 	OggRawAudioInserterInputPin(AbstractTransformFilter* inFilter, CCritSec* inFilterLock, AbstractTransformOutputPin* inOutputPin, vector<CMediaType*> inAcceptableMediaTypes);
 	virtual ~OggRawAudioInserterInputPin(void);
 
-	//static int __cdecl OggRawAudioInserterInputPin::SpeexEncoded (FishSound* inFishSound, unsigned char* inPacketData, long inNumBytes, void* inThisPointer) ;
 	
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 
@@ -71,7 +70,7 @@ protected:
 	virtual void DestroyCodec();
 
 
-	//WAVEFORMATEX* mWaveFormat;
+
 	__int64 mUptoFrame;
 
 	enum eRawAudioFormat {

@@ -177,53 +177,7 @@ bool OggRawAudioExtractorInputPin::handleHeaderPacket(OggPacket* inHeaderPack)
 	}
 	
 	
-	//__int64 locTimePerBlock = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 17);
 
-	//
-	//__int64 locSamplesPerBlock = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 25);
-
-	////debugLog<<"t/block = "<<locTimePerBlock<<"        Sam/block = "<<locSamplesPerBlock<<endl;
-
-	//mVideoFormatBlock->AvgTimePerFrame = locTimePerBlock / locSamplesPerBlock;
-
-	////debugLog<<"Time per frame = "<<mVideoFormatBlock->AvgTimePerFrame<<endl;
-
-	//__int64 locFPSec = (UNITS / locTimePerBlock) * locSamplesPerBlock;
-
-	////debugLog<<"Rate = "<<locFPSec<<" fps"<<endl;
-	//unsigned short locBPSample = ((unsigned char)(inHeaderPack->packetData()[41])) + (((unsigned short)(inHeaderPack->packetData()[42])) * 256);
-
-	//
-	//
-	//mVideoFormatBlock->bmiHeader.biBitCount = locBPSample;
-	//mVideoFormatBlock->bmiHeader.biClrImportant = 0;   //All colours important
-	//mVideoFormatBlock->bmiHeader.biClrUsed = 0;        //Use max colour depth
-	//mVideoFormatBlock->bmiHeader.biCompression = MAKEFOURCC(inHeaderPack->packetData()[9], inHeaderPack->packetData()[10], inHeaderPack->packetData()[11], inHeaderPack->packetData()[12]);;
-
-	//unsigned long locHeight = iLE_Math::charArrToULong(inHeaderPack->packetData() + 49);
-	//unsigned long locWidth =  iLE_Math::charArrToULong(inHeaderPack->packetData() + 45);
-
-	//mVideoFormatBlock->dwBitRate = 0;
-
-	//mVideoFormatBlock->bmiHeader.biHeight = locHeight;
-	//mVideoFormatBlock->bmiHeader.biPlanes = 1;    //Must be 1
-	//mVideoFormatBlock->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);    //????? Size of what ?
-	//mVideoFormatBlock->bmiHeader.biSizeImage = (locHeight * locWidth * locBPSample) / 8;    //Size in bytes of image ??
-	//mVideoFormatBlock->bmiHeader.biWidth = locWidth;
-	//mVideoFormatBlock->bmiHeader.biXPelsPerMeter = 2000;   //Fuck knows
-	//mVideoFormatBlock->bmiHeader.biYPelsPerMeter = 2000;   //" " " " " 
-	//
-	//mVideoFormatBlock->rcSource.top = 0;
-	//mVideoFormatBlock->rcSource.bottom = locHeight;
-	//mVideoFormatBlock->rcSource.left = 0;
-	//mVideoFormatBlock->rcSource.right = locWidth;
-
-	//mVideoFormatBlock->rcTarget.top = 0;
-	//mVideoFormatBlock->rcTarget.bottom = locHeight;
-	//mVideoFormatBlock->rcTarget.left = 0;
-	//mVideoFormatBlock->rcTarget.right = locWidth;
-
-	//mVideoFormatBlock->dwBitErrorRate=0;
 	return true;
 }
 string OggRawAudioExtractorInputPin::getCodecShortName()

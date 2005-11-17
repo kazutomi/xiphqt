@@ -249,95 +249,15 @@ HRESULT OggRawAudioInserterInputPin::sendPacket(unsigned char* inPacketData, uns
 
 }
 bool OggRawAudioInserterInputPin::ConstructCodec() {
-	//mFishInfo.channels = mWaveFormat->nChannels;
-	//mFishInfo.format = FISH_SOUND_SPEEX;
-	//mFishInfo.samplerate = mWaveFormat->nSamplesPerSec;
 
-	////Change to fill in vorbis format block so muxer can work
-	//((SpeexEncodeFilter*)mParentFilter)->mSpeexFormatBlock.numChannels = mWaveFormat->nChannels;
-	//((SpeexEncodeFilter*)mParentFilter)->mSpeexFormatBlock.samplesPerSec = mWaveFormat->nSamplesPerSec;
-	//
-	////
-	//
-	//mFishSound = fish_sound_new (FISH_SOUND_ENCODE, &mFishInfo);
-
-	//int i = 1;
-	////FIX::: Use new API for interleave setting
-	//fish_sound_command(mFishSound, FISH_SOUND_SET_INTERLEAVE, &i, sizeof(int));
-
-	//fish_sound_set_encoded_callback (mFishSound, SpeexEncodeInputPin::SpeexEncoded, this);
-	//FIX::: Proper return value
 	return true;
 
 }
 void OggRawAudioInserterInputPin::DestroyCodec() {
-	//fish_sound_delete(mFishSound);
-	//mFishSound = NULL;
+
 }
 
 
-//Encoded callback
-//int OggRawAudioInserterInputPin::SpeexEncoded (FishSound* inFishSound, unsigned char* inPacketData, long inNumBytes, void* inThisPointer) 
-//{
-//
-//
-//	SpeexEncodeInputPin* locThis = reinterpret_cast<SpeexEncodeInputPin*> (inThisPointer);
-//	SpeexEncodeFilter* locFilter = reinterpret_cast<SpeexEncodeFilter*>(locThis->m_pFilter);
-//	//locThis->debugLog << "SpeexEncoded called with "<<inNumBytes<< " byte of data"<<endl;
-//
-//	//Time stamps are granule pos not directshow times
-//	LONGLONG locFrameStart = locThis->mUptoFrame;
-//	LONGLONG locFrameEnd	= locThis->mUptoFrame
-//							= fish_sound_get_frameno(locThis->mFishSound);
-//
-//	
-//	//locThis->debugLog << "Stamping packet "<<locFrameStart<< " to "<<locFrameEnd<<endl;
-//	//Get a pointer to a new sample stamped with our time
-//	IMediaSample* locSample;
-//	HRESULT locHR = locThis->mOutputPin->GetDeliveryBuffer(&locSample, &locFrameStart, &locFrameEnd, NULL);
-//
-//	if (FAILED(locHR)) {
-//		//We get here when the application goes into stop mode usually.
-//		//locThis->debugLog<<"Getting buffer failed"<<endl;
-//		return locHR;
-//	}	
-//	
-//	BYTE* locBuffer = NULL;
-//
-//	
-//	//Make our pointers set to point to the samples buffer
-//	locSample->GetPointer(&locBuffer);
-//
-//	
-//
-//	if (locSample->GetSize() >= inNumBytes) {
-//
-//		memcpy((void*)locBuffer, (const void*)inPacketData, inNumBytes);
-//		
-//		//Set the sample parameters.
-//		locThis->SetSampleParams(locSample, inNumBytes, &locFrameStart, &locFrameEnd);
-//
-//		{
-//			CAutoLock locLock(locThis->m_pLock);
-//
-//			//Add a reference so it isn't deleted en route.
-//			//locSample->AddRef();
-//			//NO - It alrady has a ref on it.
-//
-//			//TODO::: Need to propagate error states.
-//			HRESULT locHR = ((SpeexEncodeOutputPin*)(locThis->mOutputPin))->mDataQueue->Receive(locSample);						//->DownstreamFilter()->Receive(locSample);
-//			if (locHR != S_OK) {
-//				//locThis->debugLog<<"Sample rejected"<<endl;
-//			} else {
-//				//locThis->debugLog<<"Sample Delivered"<<endl;
-//			}
-//		}
-//
-//		return 0;
-//	} else {
-//		throw 0;
-//	}
-//}
 
 
 HRESULT OggRawAudioInserterInputPin::SetMediaType(const CMediaType* inMediaType) 
