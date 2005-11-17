@@ -1212,6 +1212,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOGMDecoder", "..\..\src\
 		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsfOggRawAudioInserter", "..\..\src\lib\codecs\RawAudio\dsfOggRawAudioInserter\dsfOggRawAudioInserter.vcproj", "{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4CBC0173-27E6-4218-AE06-5EFDCA7B2547} = {4CBC0173-27E6-4218-AE06-5EFDCA7B2547}
+		{EA7091BB-9906-41DF-9738-F4858A136086} = {EA7091BB-9906-41DF-9738-F4858A136086}
+		{2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4} = {2DA569EC-3E22-4BC9-A242-C7A56EB9C6F4}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -2801,6 +2808,26 @@ Global
 		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE.Build.0 = Release|Win32
 		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE2.ActiveCfg = Release|Win32
 		{1C4F9412-B1DE-4E65-96C1-89522EF02997}.Release_SSE2.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Debug.ActiveCfg = Debug|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Debug.Build.0 = Debug|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Debug Unicode.ActiveCfg = Debug|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Debug Unicode.Build.0 = Debug|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Debug__cdecl.ActiveCfg = Debug|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Debug__cdecl.Build.0 = Debug|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.MakeFile.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.MakeFile.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release Unicode.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release Unicode.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release__cdecl.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release__cdecl.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_NoDotNET.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_NoDotNET.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE.Build.0 = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE2.ActiveCfg = Release|Win32
+		{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}.Release_SSE2.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
 	EndGlobalSection
