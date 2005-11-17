@@ -130,7 +130,7 @@
         "Entry"
         {
         "MsmKey" = "8:_46A378A9B03E4612A645053EDB884C20"
-        "OwnerKey" = "8:_0CADC4E67409461481DE8E39EA059436"
+        "OwnerKey" = "8:_D11B66B126844E2B8ED91008BCC029FA"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -340,6 +340,12 @@
         "Entry"
         {
         "MsmKey" = "8:_46A378A9B03E4612A645053EDB884C20"
+        "OwnerKey" = "8:_0CADC4E67409461481DE8E39EA059436"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_46A378A9B03E4612A645053EDB884C20"
         "OwnerKey" = "8:_0A1E63E5852E4F759F1A27E8F097727B"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -412,7 +418,7 @@
         "Entry"
         {
         "MsmKey" = "8:_655D5383153A6AB10D15352A7EABCC7A"
-        "OwnerKey" = "8:_0CADC4E67409461481DE8E39EA059436"
+        "OwnerKey" = "8:_D11B66B126844E2B8ED91008BCC029FA"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -652,6 +658,12 @@
         "Entry"
         {
         "MsmKey" = "8:_655D5383153A6AB10D15352A7EABCC7A"
+        "OwnerKey" = "8:_0CADC4E67409461481DE8E39EA059436"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_655D5383153A6AB10D15352A7EABCC7A"
         "OwnerKey" = "8:_0A1E63E5852E4F759F1A27E8F097727B"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -748,6 +760,12 @@
         "Entry"
         {
         "MsmKey" = "8:_CC5E9D059E6044FA954061CAC6A8A1C0"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_D11B66B126844E2B8ED91008BCC029FA"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -3881,7 +3899,7 @@
             }
             "{8062640A-2EEE-46E9-AB67-688E9A886E9F}:_0CADC4E67409461481DE8E39EA059436"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\ogm\\filters\\dsfogmdecoder\\debug\\dsfOGMDecoder.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\ogm\\filters\\dsfOGMDecoder\\Debug\\dsfOGMDecoder.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_371AD289B6DB4693BDF7568485051F1E"
@@ -4742,6 +4760,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{304B710A-7355-471C-A4A8-9E8F6D640E6D}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{8062640A-2EEE-46E9-AB67-688E9A886E9F}:_D11B66B126844E2B8ED91008BCC029FA"
+            {
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\rawaudio\\dsfoggrawaudioinserter\\debug\\dsfOggRawAudioInserter.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_371AD289B6DB4693BDF7568485051F1E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:4"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{EEEBA51F-0499-4AD0-A25C-36C3AF2956C9}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
