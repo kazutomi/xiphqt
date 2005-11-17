@@ -73,8 +73,7 @@ OggRawAudioInserterFilter::~OggRawAudioInserterFilter(void)
 
 bool OggRawAudioInserterFilter::ConstructPins() 
 {
-	//Inputs Audio / PCM / WaveFormatEx
-	//Outputs Audio / Speex / Speex
+
 
 	//Vector to hold our set of media types we want to accept.
 	vector<CMediaType*> locAcceptableTypes;
