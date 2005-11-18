@@ -211,7 +211,8 @@ HRESULT OggRawAudioExtractorFilter::Receive(IMediaSample* inSample)
 
 			locStart = mInputPin->convertGranuleToTime(locEnd) - (((mBytesBuffered / locFrameSize) * UNITS) / locSampleRate);
 			do {
-				HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
+				//HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
+				HRESULT locHR = InitializeOutputSample(inSample, &locSample);
 				if (locHR != S_OK) {
 					return locHR;
 				}
