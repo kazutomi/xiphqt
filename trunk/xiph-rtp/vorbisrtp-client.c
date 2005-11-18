@@ -75,10 +75,19 @@ typedef struct ogg_context {
 	int param_blockflag[64];
 } ogg_context_t; 
 
-int _ilog(unsigned int v){
+static int _ilog(unsigned int v){
   int ret=0;
   while(v){
     ret++;
+    v>>=1;
+  }
+  return(ret);
+}
+
+static int icount(unsigned int v){
+  int ret=0;
+  while(v){
+    ret+=v&1;
     v>>=1;
   }
   return(ret);
@@ -155,7 +164,7 @@ dump_packet_rtp (unsigned char *data, const int len, FILE * out)
   offset++;
   
   fprintf(out,"ident %06x, frag type %d, data type %d, pkts %d, size %d\n",
-		  ident,F,VDT,pkts,len-4*(CC+3));
+		 ident,F,VDT,pkts,len-4*(CC+3));
  
   for (i = 0; i < pkts; i++)
     {
@@ -217,12 +226,16 @@ maptype_quantvals(int entries, int dim)
 int cfg_parse( ogg_context_t *ogg )
 {
 	oggpack_buffer opb;
-	int num, i;
+	int num, i, j, k=-1, channels;
 	
+	//id packet
 	ogg->blocksizes[0] = 1<<(ogg->op.packet[28]&0x0f);
-	ogg->blocksizes[1] = 1<<((ogg->op.packet[28]&0xf0)>>4);
+	ogg->blocksizes[1] = 1<<(ogg->op.packet[28]>>4);
+	channels = ogg->op.packet[11];
+	//cb packet
 	oggpack_readinit(&opb, ogg->op.packet + 30, ogg->op.bytes - 30);
-	oggpack_read(&opb,8+8*6);
+	oggpack_read(&opb,8);
+	for(i=6;i<0;i--) oggpack_read(&opb,8);
 	
 	num = oggpack_read(&opb,8)+1;
 	for(;num>0;num--)
@@ -277,23 +290,96 @@ int cfg_parse( ogg_context_t *ogg )
 	
 	//times
 	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
+	for(;num>0;num--)
+		oggpack_read(&opb,16);
 	
 	//floors
 	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
+	for(;num>0;num--)
+		switch(oggpack_read(&opb,16)){
+			
+		case 0:
+			oggpack_read(&opb,8);
+			oggpack_read(&opb,16);
+			oggpack_read(&opb,16);
+			oggpack_read(&opb,6);
+			oggpack_read(&opb,8);
+			for(i=oggpack_read(&opb,4)+1;i>0;i--)
+				oggpack_read(&opb,8);
+			break;
+		case 1:
+		{
+				int partitionclass[31], dim[16],
+				    rangebits, count=0,
+				    partitions=oggpack_read(&opb,5);
+			for(i=0;i<partitions;i++)
+			{	
+				partitionclass[i]=oggpack_read(&opb,4);
+				if(k<partitionclass[i])k=partitionclass[i];
+			}
+			for(j=0;j<k+1;j++){
+				int subs;
+				dim[j] = oggpack_read(&opb,3)+1; // dim
+				subs=oggpack_read(&opb,2);
+				if(subs) oggpack_read(&opb,8); // book
+				for(i=0;i<(1<<subs);i++)
+					oggpack_read(&opb,8);
+			}
+
+			oggpack_read(&opb,2);
+			rangebits=oggpack_read(&opb,4);
+			for(j=0,k=0;j<partitions;j++)
+			{
+				count+=dim[partitionclass[j]];
+				for(;k<count;k++)
+					oggpack_read(&opb,rangebits);
+			}
+		}
+	}
 
 	//residues
 	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
-
+	for(;num>0;num--)
+	{
+		int partitions,acc=0;
+		oggpack_read(&opb,16); // unpack is always the same
+		oggpack_read(&opb,24); // begin
+		oggpack_read(&opb,24); // end
+		oggpack_read(&opb,24); // grouping
+		partitions=oggpack_read(&opb,6)+1;
+		oggpack_read(&opb,8); // groupbook
+		for(j=0;j<partitions;j++){
+			int cascade=oggpack_read(&opb,3);
+			if(oggpack_read(&opb,1))
+				cascade|=(oggpack_read(&opb,5)<<3);
+			acc+=icount(cascade);
+		}
+		for(j=0;j<acc;j++)
+			oggpack_read(&opb,8);
+	}
 	//maps
-	num = oggpack_read(&opb,6)+1;
-	//for(;num>0;num--)
-		oggpack_read(&opb,16*num);
+	num = oggpack_read(&opb,6)+1;  
+	for(;num>0;num--)
+	{
+		int submaps=1;
+		oggpack_read(&opb,16); // maps is just mapping0
+		if(oggpack_read(&opb,1))
+			submaps=oggpack_read(&opb,4)+1;
+		if(oggpack_read(&opb,1))
+			for(i=oggpack_read(&opb,8)+1;i>0;i--){
+				oggpack_read(&opb,_ilog(channels-1));
+				oggpack_read(&opb,_ilog(channels-1));
+			}
+		oggpack_read(&opb,2);
+		if(submaps>1)
+			for(i=0;i<channels;i++)
+				oggpack_read(&opb,4);
+		for(i=0;i<submaps;i++){
+			oggpack_read(&opb,8);
+			oggpack_read(&opb,8);
+			oggpack_read(&opb,8);
+		}
+	}
 
 	//modes
 	ogg->modes = oggpack_read(&opb,6)+1;
