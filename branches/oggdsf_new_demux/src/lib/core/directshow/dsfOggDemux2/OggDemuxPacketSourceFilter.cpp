@@ -104,6 +104,7 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	,	mPendingPage(NULL)
 	,	mJustReset(true)
 	,	mSeekTable(NULL)
+	,	mGlobalBaseTime(0)
 {
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
@@ -266,6 +267,7 @@ bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
 		mBufferedPages.push_back(inOggPage);
 		return true;
 	} else {
+		//OGGCHAIN::: Here, need to check for an eos, and reset stream, else do it in strmapper
 		return mStreamMapper->acceptOggPage(inOggPage);
 	}
 }
@@ -706,4 +708,19 @@ STDMETHODIMP OggDemuxPacketSourceFilter::IsUsingTimeFormat(const GUID *pFormat) 
 
 
 }
+
+
+//HHHH:::
+bool OggDemuxPacketSourceFilter::notifyStreamBaseTime(__int64 inStreamBaseTime)
+{
+	if (inStreamBaseTime > mGlobalBaseTime) {
+		mGlobalBaseTime = inStreamBaseTime;
+	}
+	return true;
+}
+__int64 OggDemuxPacketSourceFilter::getGlobalBaseTime()
+{
+	return mGlobalBaseTime;
+}
+
 

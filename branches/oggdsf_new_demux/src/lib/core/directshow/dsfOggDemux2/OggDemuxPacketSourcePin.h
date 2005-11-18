@@ -34,10 +34,13 @@
 #include <libOOOgg/IOggCallback.h>
 #include <libOOOgg/OggPacketiser.h>
 #include "IOggDecoder.h"
+#include "IOggOutputPin.h"
+
 class OggDemuxPacketSourcePin
 	:	public CBaseOutputPin
 	,	public BasicSeekPassThrough
 	,	public IOggCallback
+	,	public IOggOutputPin
 	,	protected IStampedOggPacketSink
 {
 public:
@@ -83,6 +86,10 @@ public:
 	virtual HRESULT DeliverEndOfStream(void);
 	virtual HRESULT DeliverEndFlush(void);
 	virtual HRESULT DeliverBeginFlush(void);
+
+	//IOggOutputPin interface
+	virtual bool notifyStreamBaseTime(__int64 inStreamTime);
+	virtual __int64 getGlobalBaseTime();
 protected:
 	//IStampedOggPacketSink
 	virtual bool acceptStampedOggPacket(StampedOggPacket* inPacket);
