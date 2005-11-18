@@ -28,6 +28,7 @@ struct sOggRawAudioFormatBlock {
 #include "libOOOgg/OggPacket.h"
 
 #include "OggRawAudioExtractorInputPin.h"
+#include "OggRawAudioExtractorOutputPin.h"
 
 #include "OggRawAudioExtractorFilter.h"
 
