@@ -57,6 +57,8 @@ VorbisDecodeInputPin::VorbisDecodeInputPin	(		AbstractTransformFilter* inFilter
 	,	mDecodedBuffer(NULL)
 	,	mDecodedByteCount(0)
 	,	mRateNumerator(RATE_DENOMINATOR)
+	,	mOggOutputPinInterface(NULL)
+	,	mSentStreamOffset(false)
 		
 {
 	//debugLog.open("g:\\logs\\vorbislog.log", ios_base::out);
@@ -218,6 +220,18 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 				unsigned long locBytesToCopy = 0;
 
 				locStart = convertGranuleToTime(locEnd) - (((mDecodedByteCount / mFrameSize) * UNITS) / mSampleRate);
+
+				REFERENCE_TIME locGlobalOffset = 0;
+				//Handle stream offsetting
+				if (!mSentStreamOffset && (mOggOutputPinInterface != NULL)) {
+					mOggOutputPinInterface->notifyStreamBaseTime(locStart);
+					mSentStreamOffset = true;
+					
+				}
+
+				if (mOggOutputPinInterface != NULL) {
+					locGlobalOffset = mOggOutputPinInterface->getGlobalBaseTime();
+				}
 				do {
 					HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
 					if (locHR != S_OK) {
@@ -240,8 +254,8 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 					//Adjust the time stamps for rate and seeking
 					REFERENCE_TIME locAdjustedStart = (locStart * RATE_DENOMINATOR) / mRateNumerator;
 					REFERENCE_TIME locAdjustedEnd = (locEnd * RATE_DENOMINATOR) / mRateNumerator;
-					locAdjustedStart -= m_tStart;
-					locAdjustedEnd -= m_tStart;
+					locAdjustedStart -= (m_tStart + locGlobalOffset);
+					locAdjustedEnd -= (m_tStart + locGlobalOffset);
 
 					__int64 locSeekStripOffset = 0;
 					if (locAdjustedEnd < 0) {
@@ -419,4 +433,19 @@ string VorbisDecodeInputPin::getCodecIdentString()
 {
 	//TODO:::
 	return "vorbis";
+}
+
+HRESULT VorbisDecodeInputPin::CompleteConnect(IPin *inReceivePin)
+{
+	IOggOutputPin* locOggOutput = NULL;
+	mSentStreamOffset = false;
+	HRESULT locHR = inReceivePin->QueryInterface(IID_IOggOutputPin, (void**)&locOggOutput);
+	if (locHR == S_OK) {
+		mOggOutputPinInterface = locOggOutput;
+		
+	} else {
+		mOggOutputPinInterface = NULL;
+	}
+	return AbstractTransformInputPin::CompleteConnect(inReceivePin);
+	
 }

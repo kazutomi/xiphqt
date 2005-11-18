@@ -197,6 +197,9 @@
 				RelativePath=".\IOggDecoder.h">
 			</File>
 			<File
+				RelativePath=".\IOggOutputPin.h">
+			</File>
+			<File
 				RelativePath=".\OggDemuxPacketSourceFilter.h">
 			</File>
 			<File

@@ -38,6 +38,7 @@ using namespace std;
 
 
 #include "IOggDecoder.h"
+#include "IOggOutputPin.h"
 #include "AbstractTransformInputPin.h"
 #include "VorbisDecodeInputPin.h"
 
@@ -68,6 +69,7 @@ public:
 	virtual STDMETHODIMP EndFlush();
 
 	virtual STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRequestedProps);
+	virtual HRESULT CompleteConnect(IPin *inReceivePin);
 
 	//Overriden from AbstractTransform input pin
 	virtual STDMETHODIMP Receive(IMediaSample* inSample);
@@ -121,6 +123,9 @@ protected:
 
 	__int64 mRateNumerator;
 	static const __int64 RATE_DENOMINATOR = 65536;
+
+	IOggOutputPin* mOggOutputPinInterface;
+	bool mSentStreamOffset;
 
 };
 

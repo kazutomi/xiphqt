@@ -112,6 +112,11 @@ public:
 	CCritSec* streamLock()			{		return mStreamLock;		}
 
 	virtual void notifyPinConnected();
+
+	//HHHH:::
+	virtual bool notifyStreamBaseTime(__int64 inStreamBaseTime);
+	virtual __int64 getGlobalBaseTime();
+	//
 protected:
 	static const unsigned long SETUP_BUFFER_SIZE = 24;
 	virtual HRESULT SetUpPins();
@@ -143,6 +148,9 @@ protected:
 
 
 	bool mJustReset;
+
+	//HHHH:::
+	__int64 mGlobalBaseTime;
 
 	//double mPlaybackRate;
 };

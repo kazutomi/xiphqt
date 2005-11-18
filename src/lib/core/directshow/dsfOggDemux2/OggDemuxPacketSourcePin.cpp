@@ -69,6 +69,10 @@ STDMETHODIMP OggDemuxPacketSourcePin::NonDelegatingQueryInterface(REFIID riid, v
 		*ppv = (IMediaSeeking*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
+	} else if (riid == IID_IOggOutputPin) {
+		*ppv = (IOggOutputPin*)this;
+		//((IUnknown*)*ppv)->AddRef();
+		return NOERROR;		
 	}
 
 	return CBaseOutputPin::NonDelegatingQueryInterface(riid, ppv); 
@@ -341,4 +345,13 @@ HRESULT OggDemuxPacketSourcePin::DeliverBeginFlush(void)
 	mDataQueue->BeginFlush();
 	
     return S_OK;
+}
+
+bool OggDemuxPacketSourcePin::notifyStreamBaseTime(__int64 inStreamTime)
+{
+	return ((OggDemuxPacketSourceFilter*)m_pFilter)->notifyStreamBaseTime(inStreamTime);
+}
+__int64 OggDemuxPacketSourcePin::getGlobalBaseTime()
+{
+	return ((OggDemuxPacketSourceFilter*)m_pFilter)->getGlobalBaseTime();
 }
