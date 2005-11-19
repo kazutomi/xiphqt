@@ -31,6 +31,7 @@
 
 #pragma once
 #include "IOggDecoder.h"
+#include "IOggOutputPin.h"
 #include "Theoradecoderdllstuff.h"
 #include "BasicSeekPassThrough.h"
 
@@ -69,6 +70,9 @@ public:
 	virtual string getCodecIdentString();
 	//fstream debugLog;
 
+	virtual IOggOutputPin* getOutputPinInterface()		{		return mOggOutputPinInterface;	}
+	virtual bool getSentStreamOffset()					{		return mSentStreamOffset;		}
+	virtual void setSentStreamOffset(bool inSentStreamOffset)	{	mSentStreamOffset = inSentStreamOffset;	}
 protected:
 	static const unsigned long THEORA_NUM_BUFFERS = 50;
 	enum eTheoraSetupState {
@@ -80,4 +84,8 @@ protected:
 	};
 
 	eTheoraSetupState mSetupState;
+
+
+	IOggOutputPin* mOggOutputPinInterface;
+	bool mSentStreamOffset;
 };
