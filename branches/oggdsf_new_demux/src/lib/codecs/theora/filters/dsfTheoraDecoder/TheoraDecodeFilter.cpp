@@ -394,6 +394,20 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 			REFERENCE_TIME locGlobalStart = locGlobalEnd - (locNumBufferedFrames * mFrameDuration);
 
 			locStart = locGlobalStart;
+
+
+			//Offsetting
+			REFERENCE_TIME locGlobalOffset = 0;
+			//Handle stream offsetting
+			if (!locInputPin->getSentStreamOffset() && (locInputPin->getOutputPinInterface() != NULL)) {
+				locInputPin->getOutputPinInterface()->notifyStreamBaseTime(locStart);
+				locInputPin->setSentStreamOffset(true);
+				
+			}
+
+			if (locInputPin->getOutputPinInterface() != NULL) {
+				locGlobalOffset = locInputPin->getOutputPinInterface()->getGlobalBaseTime();
+			}
 			
 			debugLog<<"Theora::Receive - "<<locNumBufferedFrames<<" frames buffered"<<endl;
 			for (unsigned long i = 0; i < locNumBufferedFrames; i++) {
@@ -401,8 +415,8 @@ HRESULT TheoraDecodeFilter::Receive(IMediaSample* inInputSample)
 				bool locIsKeyFrame = mTheoraDecoder->isKeyFrame(mBufferedPackets[i]);
 				yuv_buffer* locYUV = mTheoraDecoder->decodeTheora(mBufferedPackets[i]);		//This accept the packet and deletes it
 				locEnd = locStart + mFrameDuration;
-				REFERENCE_TIME locAdjustedStart = locStart - mSegStart;
-				REFERENCE_TIME locAdjustedEnd = locEnd - mSegStart;
+				REFERENCE_TIME locAdjustedStart = locStart - mSegStart - locGlobalOffset;
+				REFERENCE_TIME locAdjustedEnd = locEnd - mSegStart - locGlobalOffset;
 
 				if (locAdjustedStart < 0) {
 					locAdjustedStart = 0;

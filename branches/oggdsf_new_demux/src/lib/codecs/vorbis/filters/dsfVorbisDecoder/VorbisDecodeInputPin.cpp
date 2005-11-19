@@ -232,6 +232,7 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 				if (mOggOutputPinInterface != NULL) {
 					locGlobalOffset = mOggOutputPinInterface->getGlobalBaseTime();
 				}
+
 				do {
 					HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
 					if (locHR != S_OK) {

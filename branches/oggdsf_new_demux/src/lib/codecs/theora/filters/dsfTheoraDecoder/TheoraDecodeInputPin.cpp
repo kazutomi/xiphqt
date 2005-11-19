@@ -36,6 +36,8 @@
 TheoraDecodeInputPin::TheoraDecodeInputPin(CTransformFilter* inParentFilter, HRESULT* outHR) 
 	:	CTransformInputPin(NAME("Theora Input Pin"), inParentFilter, outHR, L"Theora In")
 	,	mSetupState(VSS_SEEN_NOTHING)
+	,	mOggOutputPinInterface(NULL)
+	,	mSentStreamOffset(false)
 {
 	//debugLog.open("G:\\logs\\theoinput.log", ios_base::out);
 }
@@ -86,6 +88,19 @@ HRESULT TheoraDecodeInputPin::BreakConnect() {
 }
 HRESULT TheoraDecodeInputPin::CompleteConnect (IPin *inReceivePin) {
 	CAutoLock locLock(m_pLock);
+
+	//Offsets
+	IOggOutputPin* locOggOutput = NULL;
+	mSentStreamOffset = false;
+	HRESULT locHR = inReceivePin->QueryInterface(IID_IOggOutputPin, (void**)&locOggOutput);
+	if (locHR == S_OK) {
+		mOggOutputPinInterface = locOggOutput;
+		
+	} else {
+		mOggOutputPinInterface = NULL;
+	}
+
+
 	//debugLog<<"Complete conenct"<<endl;
 	IMediaSeeking* locSeeker = NULL;
 	inReceivePin->QueryInterface(IID_IMediaSeeking, (void**)&locSeeker);
