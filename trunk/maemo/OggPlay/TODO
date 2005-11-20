@@ -1,0 +1,5 @@
+- add some buttons such as PLAY, STOP, PAUSE, PREVIOUS, NEXT
+- add playlist support
+- implement an additional backend so that MP3 and other formats can be played
+  as well
+- integrate well with the maemo look'n feel
