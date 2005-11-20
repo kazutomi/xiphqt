@@ -1,0 +1,11 @@
+Source: oggplay
+Section: unknown
+Priority: optional
+Maintainer: Martin Grimme <martin.grimme@lintegra.de>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.0
+
+Package: oggplay
+Architecture: any
+Depends: maemo
+Description: Ogg Vorbis player for Nokia 770

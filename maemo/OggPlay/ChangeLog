@@ -1,0 +1,28 @@
+2005-11-19  Martin Grimme  <martin@pycage.de>
+
+	* src/decoder.c: Fixed some bugs.
+
+	* src/stream.c: Implemented seeking in the stream.
+
+2005-11-17  Martin Grimme  <martin@pycage.de>
+
+	* src/audio.c: Implemented time tagging of the audio data. This is
+	needed for reporting the correct position of the audio playback
+	instead of the current decoding position, which is some seconds ahead.
+
+2005-11-16  Martin Grimme  <martin@pycage.de>
+
+	* src/audio.c: Switched to SDL for audio output.
+	Implemented volume control.
+
+2005-11-15  Martin Grimme  <martin@pycage.de>
+
+	* src/decoder.c: Go to sleep when there's no data to play.
+
+	* oggplay.desktop (X-Osso-Service): 
+	* oggplay.service (Name): Changes service name since OSSO currently
+	only accepts com.nokia.
+
+2005-11-05  Martin Grimme  <martin@pycage.de>
+
+	* Initial Release 0.10

@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.nokia.oggplay
+Exec=/var/lib/install/usr/bin/oggplay

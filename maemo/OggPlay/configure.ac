@@ -1,0 +1,20 @@
+AC_INIT(Makefile.am)
+AM_INIT_AUTOMAKE(OggPlay, 0.12)
+
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LIBTOOL
+
+PKG_CHECK_MODULES(GTK, gtk+-2.0)
+AC_SUBST(GTK_LIBS)
+AC_SUBST(GTK_CFLAGS)
+
+PKG_CHECK_MODULES(OSSO, libosso >= 0.8.4 hildon-libs glib-2.0 gnome-vfs-2.0)
+AC_SUBST(OSSO_LIBS)
+AC_SUBST(OSSO_CFLAGS)
+
+
+AC_OUTPUT([
+src/Makefile
+Makefile
+])
