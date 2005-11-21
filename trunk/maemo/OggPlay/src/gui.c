@@ -114,6 +114,24 @@ open_cb(GtkWidget *src,
 }
 
 
+static void
+play_cb(GtkWidget *src,
+	Gui *gui) {
+
+  (gui->control_cb)(gui->control_cb_data, PLAY);
+
+}
+
+
+static void
+stop_cb(GtkWidget *src,
+	Gui *gui) {
+
+  (gui->control_cb)(gui->control_cb_data, STOP);
+
+}
+
+
 
 Gui *
 gui_new() {
@@ -122,6 +140,8 @@ gui_new() {
   GtkWidget *hbox;
   GtkWidget *toolbar;
   GtkToolItem *tb_open;
+  GtkToolItem *tb_play;
+  GtkToolItem *tb_stop;
   GtkToolItem *tb_seekbar;
   GtkToolItem *tb_timelabel;
 
@@ -146,6 +166,8 @@ gui_new() {
   gtk_box_pack_end(GTK_BOX(gui->appview->vbox), toolbar, TRUE, TRUE, 0);
 
   tb_open = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+  gui->tb_play = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PLAY);
+  tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
 
   gui->seekbar = hildon_seekbar_new();
   gtk_widget_set_size_request(gui->seekbar, 400, -1);
@@ -156,7 +178,9 @@ gui_new() {
   tb_timelabel = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(tb_timelabel), gui->timelabel);
 
-  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_open, -1);  
+  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_open, -1);
+  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gui->tb_play, -1);
+  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_stop, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_seekbar, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_timelabel, -1);
 
@@ -176,6 +200,12 @@ gui_new() {
 
   g_signal_connect(G_OBJECT(tb_open), "clicked",
 		   G_CALLBACK(open_cb), gui);
+
+  g_signal_connect(G_OBJECT(gui->tb_play), "clicked",
+		   G_CALLBACK(play_cb), gui);
+
+  g_signal_connect(G_OBJECT(tb_stop), "clicked",
+		   G_CALLBACK(stop_cb), gui);
 
   
   gtk_widget_show_all(GTK_WIDGET(gui->appwindow));
@@ -235,6 +265,17 @@ gui_set_volume_cb(Gui *gui,
 
 
 void
+gui_set_control_cb(Gui *gui,
+		   CONTROL_CB,
+		   void *userdata) {
+
+  gui->control_cb = control_cb;
+  gui->control_cb_data = userdata;
+
+}
+
+
+void
 gui_set_title(Gui *gui,
 	      const char *title,
 	      const char *artist,
@@ -269,4 +310,18 @@ gui_set_time(Gui *gui,
   gtk_label_set_text(GTK_LABEL(gui->timelabel), time);
   g_free(time);
 
+}
+
+
+void
+gui_set_paused(Gui *gui,
+	       gboolean value) {
+
+  if (value)
+    gtk_tool_button_set_stock_id(GTK_TOOL_BUTTON(gui->tb_play),
+				 GTK_STOCK_MEDIA_PAUSE);
+  else
+    gtk_tool_button_set_stock_id(GTK_TOOL_BUTTON(gui->tb_play),
+				 GTK_STOCK_MEDIA_PLAY);
+      
 }

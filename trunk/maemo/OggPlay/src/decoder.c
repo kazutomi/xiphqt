@@ -32,7 +32,6 @@ decoder_thread(Decoder *dec) {
   char pcmout[128];
   long ret = 1;
   int current_section;
-  int cnt = 0;
   gboolean running = TRUE;
 
   while (running) {
@@ -55,11 +54,12 @@ decoder_thread(Decoder *dec) {
       if (ret == 0) {
 	fprintf(stderr, "End of stream.\n");
 	dec->is_playing = FALSE;
+	audio_play(dec->audio, pcmout, 0, 0);
       } else if (ret < 0) {
 	//fprintf(stderr, "Error in stream %d.\n", current_section);
       } else {
 	dec->millisecs = (long) ov_time_tell(&(dec->vf));
-	audio_play(dec->audio, pcmout, (int) ret, dec->millisecs);	
+	audio_play(dec->audio, pcmout, (int) ret, dec->millisecs);
       }
     }
 
@@ -184,7 +184,6 @@ decoder_open_stream(Decoder *dec, Stream *stream) {
 
   parse_comments(dec, ov_comment(&(dec->vf), -1));
   dec->total = (long) ov_time_total(&(dec->vf), -1);
-  dec->is_playing = TRUE;
 
   pthread_mutex_unlock(&mutex);
   decoder_seek(dec, 0);
@@ -237,15 +236,38 @@ decoder_set_volume(Decoder *dec,
 }
 
 
+gboolean
+decoder_is_playing(Decoder *dec) {
+
+  return dec->is_playing;
+
+}
+
+
 void
-decoder_seek(Decoder *dec, long millisecs) {
+decoder_play(Decoder *dec) {
+
+  dec->is_playing = TRUE;
+
+}
+
+
+void
+decoder_stop(Decoder *dec) {
+
+  dec->is_playing = FALSE;
+
+}
+
+
+void
+decoder_seek(Decoder *dec,
+	     long millisecs) {
 
   int success;
 
   pthread_mutex_lock(&mutex);
-  printf ("SEEK TO %d ===========================\n", (ogg_int64_t) millisecs);
   success = ov_time_seek_page(&(dec->vf), (ogg_int64_t) millisecs);
-  printf ("SUCCESS %d\n", success);
   audio_flush(dec->audio);
   pthread_mutex_unlock(&mutex);  
 
