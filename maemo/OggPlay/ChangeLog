@@ -1,6 +1,7 @@
 2005-11-21  Martin Grimme  <martin@pycage.de>
 
 	* src/gui.c: Implemented fullscreen mode.
+	Added [Play] and [Stop] buttons.
 
 	* src/decoder.c: Applied patch by Ralph Giles <giles@xiph.org> for
 	case insensitive comment tag names.

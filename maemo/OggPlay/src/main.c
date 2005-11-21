@@ -26,7 +26,7 @@
 
 
 #define SERVICE_NAME "oggplay"
-#define VERSION "0.12"
+#define VERSION "0.20"
 
 
 struct _AppData {
@@ -48,9 +48,11 @@ status_cb(AppData *appdata) {
 
   int p, t;
   
-  p = decoder_get_position(appdata->decoder);
-  t = decoder_get_total(appdata->decoder);
-  gui_set_time(appdata->gui, p, t);
+  if (decoder_is_playing(appdata->decoder)) {
+    p = decoder_get_position(appdata->decoder);
+    t = decoder_get_total(appdata->decoder);
+    gui_set_time(appdata->gui, p, t);
+  }
 
   return TRUE;
 
@@ -70,11 +72,13 @@ open_cb(AppData *appdata,
   /* open new stream */
   appdata->stream = stream_new_from_uri(uri);
   decoder_open_stream(appdata->decoder, appdata->stream);
+  decoder_play(appdata->decoder);
 
   gui_set_title(appdata->gui,
 		appdata->decoder->tag_title,
 		appdata->decoder->tag_artist,
 		appdata->decoder->tag_album);
+
 
 }
 
@@ -85,6 +89,8 @@ seek_cb(AppData *appdata,
 	int seconds) {
 
   decoder_seek(appdata->decoder, seconds * 1000);
+  decoder_play(appdata->decoder);
+  gui_set_paused(appdata->gui, FALSE);
 
 }
 
@@ -95,6 +101,37 @@ volume_cb(AppData *appdata,
 	  int volume) {
 
   decoder_set_volume(appdata->decoder, volume);
+
+}
+
+
+/* callback for control buttons */
+static void
+control_cb(AppData *appdata,
+	   int command) {
+
+  switch (command) {
+  case (PLAY):
+    if (decoder_is_playing(appdata->decoder)) {
+      decoder_stop(appdata->decoder);
+      gui_set_paused(appdata->gui, TRUE);
+    } else {
+      decoder_play(appdata->decoder);
+      gui_set_paused(appdata->gui, FALSE);
+    }
+    break;
+
+  case (STOP):
+    decoder_stop(appdata->decoder);
+    decoder_seek(appdata->decoder, 0);
+    appdata->current_position = decoder_get_position(appdata->decoder);
+    gui_set_time(appdata->gui, 0, decoder_get_total(appdata->decoder));
+    gui_set_paused(appdata->gui, FALSE);
+    break;
+
+  default:
+    break;
+  }
 
 }
 
@@ -123,6 +160,7 @@ main(int argc,
   gui_set_open_cb(appdata->gui, open_cb, (void *) appdata);
   gui_set_volume_cb(appdata->gui, volume_cb, (void *) appdata);
   gui_set_seek_cb(appdata->gui, seek_cb, (void *) appdata);
+  gui_set_control_cb(appdata->gui, control_cb, (void *) appdata);
 
   g_timeout_add(500, (GSourceFunc) status_cb, appdata);
 

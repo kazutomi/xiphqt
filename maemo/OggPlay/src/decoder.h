@@ -62,5 +62,8 @@ void decoder_decode(Decoder *dec, const char *data, int size);
 long decoder_get_total(Decoder *dec);
 long decoder_get_position(Decoder *dec);
 void decoder_set_volume(Decoder *dec, int volume);
+gboolean decoder_is_playing(Decoder *dec);
+void decoder_play(Decoder *dec);
+void decoder_stop(Decoder *dec);
 void decoder_seek(Decoder *dec, long millisecs);
 #endif

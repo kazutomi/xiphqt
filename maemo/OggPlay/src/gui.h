@@ -34,10 +34,12 @@
 #include "decoder.h"
 
 
-#define OPEN_CB   void (*open_cb)   (void *userdata, const char *uri)
-#define SEEK_CB   void (*seek_cb)   (void *userdata, int seconds)
-#define VOLUME_CB void (*volume_cb) (void *userdata, int volume)
+#define OPEN_CB    void (*open_cb)    (void *userdata, const char *uri)
+#define SEEK_CB    void (*seek_cb)    (void *userdata, int seconds)
+#define VOLUME_CB  void (*volume_cb)  (void *userdata, int volume)
+#define CONTROL_CB void (*control_cb) (void *userdata, int command)
 
+enum Command { PLAY, STOP };
 
 
 struct _Gui {
@@ -48,6 +50,9 @@ struct _Gui {
   void *seek_cb_data;
   VOLUME_CB;
   void *volume_cb_data;
+  CONTROL_CB;
+  void *control_cb_data;
+
 
   int seek_position;
 
@@ -57,6 +62,7 @@ struct _Gui {
   GtkWidget *songlabel;
   GtkWidget *seekbar;
   GtkWidget *timelabel;
+  GtkWidget *tb_play;
 
 };
 typedef struct _Gui Gui;
@@ -69,11 +75,11 @@ void gui_quit();
 void gui_set_open_cb(Gui *gui, OPEN_CB, void *userdata);
 void gui_set_seek_cb(Gui *gui, SEEK_CB, void *userdata);
 void gui_set_volume_cb(Gui *gui, VOLUME_CB, void *userdata);
+void gui_set_control_cb(Gui *gui, CONTROL_CB, void *userdata);
 
 void gui_set_title(Gui *gui, const char *title, const char *artist,
 		   const char *album);
 void gui_set_time(Gui *gui, int seconds, int total);
-
-
+void gui_set_paused(Gui *gui, gboolean value);
 
 #endif
