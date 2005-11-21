@@ -1,3 +1,18 @@
+2005-11-21  Martin Grimme  <martin@pycage.de>
+
+	* src/gui.c: Implemented fullscreen mode.
+
+	* src/decoder.c: Applied patch by Ralph Giles <giles@xiph.org> for
+	case insensitive comment tag names.
+
+	* src/gui.c: Applied patch by Ralph Giles <giles@xiph.org> for volume
+	control with the [+] and [-] keys.
+
+2005-11-20  Martin Grimme  <martin@pycage.de>
+
+	* src/main.c (main): Cleaned up and finally separated the GUI from
+	functionality.
+
 2005-11-19  Martin Grimme  <martin@pycage.de>
 
 	* src/decoder.c: Fixed some bugs.

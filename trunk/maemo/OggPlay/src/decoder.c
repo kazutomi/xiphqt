@@ -1,4 +1,7 @@
 /*
+ *    Ogg vorbis decoder using the Tremor library
+ *    Copyright (c) 2005 Martin Grimme  <martin.grimme@lintegra.de>
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -121,12 +124,12 @@ parse_comments(Decoder *dec, vorbis_comment *comment) {
 
   for (i = 0; i < comment->comments; i++) {
     printf("%s\n", comment->user_comments[i]);
-    parts = g_strsplit(comment->user_comments[i], "=", 0);
-    if (g_str_equal(parts[0], "TITLE"))
+    parts = g_strsplit(comment->user_comments[i], "=", 2);
+    if (g_strcasecmp(parts[0], "TITLE") == 0)
       dec->tag_title = g_strdup(parts[1]);
-    else if (g_str_equal(parts[0], "ARTIST"))
+    else if (g_strcasecmp(parts[0], "ARTIST") == 0)
       dec->tag_artist = g_strdup(parts[1]);
-    else if (g_str_equal(parts[0], "ALBUM"))
+    else if (g_strcasecmp(parts[0], "ALBUM") == 0)
       dec->tag_album = g_strdup(parts[1]);
 
     g_strfreev(parts);
