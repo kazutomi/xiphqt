@@ -71,6 +71,13 @@ use of more modern desktop standards.</cite>  <cite src="http://bmpx.berlios.de/
 Playlist publication community and XSPF content resolver. Mobster  creates iTunes playlists based on XSPF metadata by searching the  local music collection for available tracks. The focus is on  portability since the file location is ignored. Musicmobs acts as a  playlist trading community by accepting XSPFs from Mobster or manual  upload. 
 </dd>
 
+          <dt><a href="http://beep-media-player.org">BMPx</a> (GNU/Linux)</dt>
+          <dd>A media player for GNU/Linux systems.  A rewrite of <a
+href="http://www.sosdg.org/~larne/w/BMP_Homepage">BMP</a>, a compact
+media player that was originally forked from XMMS
+(http://www.xmms.org) with the goal of porting XMMS to GTK2 and make
+use of more modern desktop standards.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
