@@ -83,7 +83,7 @@ int oc_quant_params_unpack(oggpack_buffer *_opb,
     theora_read(_opb,nbits,&val);
     indices[0]=(int)val;
     for(qi=qri=0;qi<63;){
-      theora_read(_opb,oc_ilog(63-qi),&val);
+      theora_read(_opb,oc_ilog(62-qi),&val);
       sizes[qri]=(int)val+1;
       qi+=(int)val+1;
       theora_read(_opb,nbits,&val);

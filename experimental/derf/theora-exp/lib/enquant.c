@@ -821,7 +821,7 @@ void oc_quant_params_pack(oggpack_buffer *_opb,
     }
     oggpackB_write(_opb,indices[qti][pli][0],nbits);
     for(qi=qri=0;qi<63;qri++){
-      oggpackB_write(_opb,qranges->sizes[qri]-1,oc_ilog(63-qi));
+      oggpackB_write(_opb,qranges->sizes[qri]-1,oc_ilog(62-qi));
       qi+=qranges->sizes[qri];
       oggpackB_write(_opb,indices[qti][pli][qri+1],nbits);
     }
