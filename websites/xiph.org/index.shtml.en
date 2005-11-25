@@ -77,6 +77,8 @@
 			<ul>
 				<li><a href="http://www.xspf.org/">XSPF:</a> XSPF is the XML format for sharing playlists.</li>
 				<li><a href="/ao/">libao:</a> A cross platform audio library.</li>
+				<li><a href="/quicktime/">XiphQT:</a> An implementation of our codecs for Apple's Quicktime and Core Audio.</li>
+				<li><a href="http://www.illiminable.com/ogg/">oggdsf:</a> An implementation of our codecs for MS Windows.</li>
 			</ul>
 		</div>
 
