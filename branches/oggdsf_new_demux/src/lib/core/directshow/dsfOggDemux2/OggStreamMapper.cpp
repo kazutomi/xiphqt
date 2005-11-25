@@ -5,6 +5,8 @@ OggStreamMapper::OggStreamMapper(OggDemuxPacketSourceFilter* inParentFilter, CCr
 	:	mStreamState(eStreamState::STRMAP_READY)
 	,	mParentFilter(inParentFilter)
 	,	mParentFilterLock(inParentFilterLock)
+	,	mFishHeadPacket(NULL)
+	,	mSkeletonSerialNo(0)
 {
 }
 
@@ -48,8 +50,20 @@ bool OggStreamMapper::acceptOggPage(OggPage* inOggPage)
 			//Partial fall through
 		case STRMAP_DATA:
 			{
+				if (mFishHeadPacket != NULL) {
+					if (inOggPage->header()->StreamSerialNo() == mSkeletonSerialNo) {
+						int x= 2;
+					}
+				}
 				OggDemuxPacketSourcePin* locPin = getMatchingPin(inOggPage->header()->StreamSerialNo());
-				return locPin->acceptOggPage(inOggPage);
+				if (locPin != NULL) {
+					return locPin->acceptOggPage(inOggPage);
+				} else {
+					//Ignore unknown streams
+					delete inOggPage;
+					return true;
+				}
+				
 			}
 		case STRMAP_FINISHED:
 			return false;
@@ -72,13 +86,40 @@ bool OggStreamMapper::allStreamsReady()
 	return locAllReady && (mPins.size() > 0);
 }
 
+bool OggStreamMapper::isFishHead(OggPage* inOggPage)
+{
+	StampedOggPacket* locPacket = inOggPage->getStampedPacket(0);
+
+	if (locPacket == NULL) {
+		return false;
+	} else {
+		if ((strncmp((const char*)locPacket->packetData(), "fishead\0", 8)) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool OggStreamMapper::handleFishHead(OggPage* inOggPage)
+{
+	mFishHeadPacket = inOggPage->getStampedPacket(0)->clone();
+	mSkeletonSerialNo = inOggPage->header()->StreamSerialNo();
+	delete inOggPage;
+	return true;
+}
 bool OggStreamMapper::addNewPin(OggPage* inOggPage)
 {
-	OggDemuxPacketSourcePin* locNewPin = new OggDemuxPacketSourcePin(NAME("OggPageSourcePin"), mParentFilter, mParentFilterLock, inOggPage->getPacket(0)->clone(), inOggPage->header()->StreamSerialNo());
-	//locNewPin->AddRef();
-	delete inOggPage;
-	mPins.push_back(locNewPin);
-	return true;
+	//FISH::: Catch the fishead here.
+
+	if (isFishHead(inOggPage)) {
+		return handleFishHead(inOggPage);
+	} else {
+		OggDemuxPacketSourcePin* locNewPin = new OggDemuxPacketSourcePin(NAME("OggPageSourcePin"), mParentFilter, mParentFilterLock, inOggPage->getPacket(0)->clone(), inOggPage->header()->StreamSerialNo());
+		//locNewPin->AddRef();
+		delete inOggPage;
+		mPins.push_back(locNewPin);
+		return true;
+	}
 }
 
 OggDemuxPacketSourcePin* OggStreamMapper::getMatchingPin(unsigned long inSerialNo)

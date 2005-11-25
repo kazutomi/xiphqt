@@ -41,6 +41,12 @@ protected:
 	OggDemuxPacketSourceFilter* mParentFilter;
 	CCritSec* mParentFilterLock;
 
+	OggPacket* mFishHeadPacket;
+	unsigned long mSkeletonSerialNo;
+
 	bool addNewPin(OggPage* inOggPage);
 	OggDemuxPacketSourcePin* getMatchingPin(unsigned long inSerialNo);
+
+	bool handleFishHead(OggPage* inOggPage);
+	bool isFishHead(OggPage* inOggPage);
 };
