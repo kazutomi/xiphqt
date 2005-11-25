@@ -60,6 +60,7 @@ CMMLDecodeFilter::CMMLDecodeFilter(void)
 	,	mSeenHead(false)
 	,	mHeadTag(NULL)
 	,	mCMMLCallbacks(NULL)
+	,	mInputPin(NULL)
 {
 	//debugLog.open("G:\\logs\\cmml_decode.logs", ios_base::out);
 		mCMMLParser = new CMMLParser;
@@ -94,30 +95,70 @@ STDMETHODIMP CMMLDecodeFilter::NonDelegatingQueryInterface(REFIID riid, void **p
 	return CTransformFilter::NonDelegatingQueryInterface(riid, ppv);
 }
 
-HRESULT CMMLDecodeFilter::CheckInputType(const CMediaType* inInputMediaType) {
-	if (	(inInputMediaType->majortype == MEDIATYPE_Text)	&&
-			(inInputMediaType->subtype == MEDIASUBTYPE_CMML) &&
-			(inInputMediaType->formattype == FORMAT_CMML) ){
+HRESULT CMMLDecodeFilter::CheckInputType(const CMediaType* inInputMediaType) 
+{
+	return mInputPin->CheckMediaType(inInputMediaType);
+	//if (	(inInputMediaType->majortype == MEDIATYPE_OggPacketStream)	&&
+	//		(inInputMediaType->subtype == MEDIASUBTYPE_None) &&
+	//		(inInputMediaType->formattype == FORMAT_OggIdentHeader) ){
 
-		//debugLog<<"Input Type Accepted"<<endl;
-		return S_OK;
-	} else {
-		return VFW_E_TYPE_NOT_ACCEPTED;
-	}
+	//	//debugLog<<"Input Type Accepted"<<endl;
+	//	return S_OK;
+	//} else {
+	//	return VFW_E_TYPE_NOT_ACCEPTED;
+	//}
 }
 HRESULT CMMLDecodeFilter::CheckTransform(const CMediaType* inInputMediaType, const CMediaType* inOutputMediaType) {
-	if (	(inInputMediaType->majortype == MEDIATYPE_Text)	&&
-			(inInputMediaType->subtype == MEDIASUBTYPE_CMML) &&
-			(inInputMediaType->formattype == FORMAT_CMML) &&
-			(inOutputMediaType->majortype == MEDIATYPE_Text) &&
-			(inOutputMediaType->subtype == MEDIASUBTYPE_SubtitleVMR9) ){
+	//if (	(inInputMediaType->majortype == MEDIATYPE_Text)	&&
+	//		(inInputMediaType->subtype == MEDIASUBTYPE_CMML) &&
+	//		(inInputMediaType->formattype == FORMAT_CMML) &&
+	//		(inOutputMediaType->majortype == MEDIATYPE_Text) &&
+	//		(inOutputMediaType->subtype == MEDIASUBTYPE_SubtitleVMR9) ){
 
-		//debugLog << "Transform Accepted"<<endl;
+	//	//debugLog << "Transform Accepted"<<endl;
 		return S_OK;
-	} else {
-		return VFW_E_TYPE_NOT_ACCEPTED;
-	}
+//	} else {
+//		return VFW_E_TYPE_NOT_ACCEPTED;
+//	}
 	
+}
+
+CBasePin* CMMLDecodeFilter::GetPin(int inPinNo)
+{
+
+    HRESULT locHR = S_OK;
+
+    // Create an input pin if necessary
+
+    if (m_pInput == NULL) {
+
+        m_pInput = new CMMLDecodeInputPin(this, &locHR);		//Deleted in base destructor
+
+        
+        if (m_pInput == NULL) {
+            return NULL;
+        }
+
+		mInputPin = (CMMLDecodeInputPin*)m_pInput;
+        m_pOutput = new CTransformOutputPin(NAME("CMML Out"), this, &locHR, L"CMML Out");	//Deleted in base destructor
+			
+
+        if (m_pOutput == NULL) {
+            delete m_pInput;
+            m_pInput = NULL;
+        }
+    }
+
+    // Return the pin
+
+    if (inPinNo == 0) {
+        return m_pInput;
+    } else if (inPinNo == 1) {
+        return m_pOutput;
+    } else {
+        return NULL;
+    }
+
 }
 HRESULT CMMLDecodeFilter::DecideBufferSize(IMemAllocator* inAllocator, ALLOCATOR_PROPERTIES* inPropertyRequest) {
 	//FIX::: Abstract this out properly	

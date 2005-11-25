@@ -245,4 +245,5 @@ struct sOggRawAudioFormatBlock {
 struct sCMMLFormatBlock {
 	__int64 granuleNumerator;
 	__int64 granuleDenominator;
+	unsigned short granuleSplitBits;
 };
