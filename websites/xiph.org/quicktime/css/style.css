@@ -1,0 +1,304 @@
+/* CSS document */
+
+body {
+    border: 0px;
+    margin:  0;
+    padding: 0;
+    background-color: #fff;
+    color: #000;
+}
+
+body, html {
+    /* font-family: Verdana, Geneva, Arial, sans-serif; */
+    font-family: "Lucida Grande", Verdana, Geneva, Arial, sans-serif;
+    font-size: 11px;
+    /* font-size-adjust-a: 0.58; */
+}
+
+h1 {
+    font-size: 2em;
+    margin: .67em 0;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin: .75em 0;
+}
+
+h2.news {
+    margin-top: 2.0em;
+}
+
+h3 {
+    font-size: 1.17em;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #9c92ce;
+}
+
+img {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+p+ul, p+dl, p+ol {
+    margin-top: -0.5em;
+}
+
+p.strong {
+    font-weight: bolder;
+    font-size: 1.1em;
+}
+
+.current-version {
+    font-weight: bolder;
+}
+
+.note {
+    border: 1px solid #ff9900;;
+    background-color: yellow;
+    padding: 0.5em;
+}
+
+ul.spread li {
+    margin-bottom: 0.5em;
+}
+
+p.bugreport {
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+div.footnote {
+    font-size: 0.9em;
+    border-top: 1px solid black;
+    margin-top: 5em;
+}
+
+div.footnote p {
+    margin-top: 0.5em;
+}
+
+span.bugreport {
+    font-weight: bold;
+}
+
+div.contacts {
+    background-color: #f4f5f7;
+    border: 1px dashed #d8dade;
+    padding: 0;
+}
+
+div.contacts p {
+    margin-top: 0.2em;
+    margin-left: 0.5em;
+}
+
+div.contacts ul {
+    font-size: 0.9em;
+    margin-bottom: 0.5em;
+}
+
+#the-container {
+    width: 59em;
+    margin: 3.5em auto 0 auto;
+    padding: 0;
+}
+
+#the-header {
+    margin: 0 0 3em 0;
+}
+
+#the-header h1 {
+    color: white;
+    margin: 0 3.4em;
+}
+
+#the-header .icon img {
+    margin: -14px 0 -14px 0;
+}
+
+#the-header table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#the-header td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    height: 68px;
+}
+
+td.head-b-l, td.head-b-r {
+    width: 5px;
+    background-repeat: no-repeat;
+}
+
+td.head-b-l {
+    background-image: url("img/hlogo-l.png");
+}
+
+td.head-b-r {
+    background-image: url("img/hlogo-r.png");
+}
+
+td.head-b-c {
+    background-image: url("img/hlogo-c.png");
+    background-repeat: repeat-x;
+    vertical-align: middle;
+}
+
+td.head-b-icon {
+    text-align: right;
+    width: 99px;
+}
+
+.sidenote {
+    /* border: 1px solid #d7d7d7; */
+    width: 14em;
+    float: right;
+    clear: right;
+    margin: 0.3em 0 0 0;
+    padding: 0;
+    border-bottom: 1px solid #bcb2ee;
+    background-color: #f2f4f7;
+}
+
+.sn-head {
+    border-top: 1px solid #bcb2ee;
+    border-bottom: 1px solid #8c82ce;
+    background-image: url("img/s-h-c.png");
+    background-repeat: repeat-x;
+    background-color: #959ddb;
+    font-size: 1.0em;
+    color: black;
+    padding: 0 0.2em 0.1em 0.2em;
+    line-height: 1.3em;
+    font-weight: bolder;
+}
+
+#the-navigation a {
+    text-decoration: none;
+}
+
+#the-navigation a:hover {
+    text-decoration: underline;
+}
+
+#the-navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.2em 0 0.3em 0;
+}
+
+#the-navigation ul li {
+    padding: 0 0.3em;
+    line-height: 1.3em;
+}
+
+#the-navigation li:before {
+    display: marker;
+    content: "\00BB  ";
+    color: #FF9900;;
+}
+
+#the-navigation li:hover {
+    background-color: #e2e4e7;
+}
+
+#the-content {
+    width: 43em;
+    margin: 0 0 0 0;
+    padding: 0;
+}
+
+#the-content h2 {
+    margin-bottom: 1.5em;
+}
+
+#the-content h3 {
+    border-bottom: 1px solid black;
+    margin-top: 2.5em;
+}
+
+.loremipsum {
+    width: 30em;
+    margin-left: 4em;
+}
+
+/* ft: filetable style attributes */
+table.ft {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.ft a {
+    color: blue;
+}
+
+table.ft td, table.ft th {
+    border: 1px solid #d0d3d8;
+}
+
+table.ft th {
+    background-color: #e8eaee;
+}
+
+table.ft td {
+    vertical-align: bottom;
+}
+
+table.ft th.ft-link {
+    width: 17em;
+}
+
+table.ft th.ft-size {
+    width: 5em;
+}
+
+table.ft th.ft-md5 {
+    width: auto;
+}
+
+/*
+table.ft td.ft-size {
+    text-align-a: right;
+}
+*/
+
+span.md5 {
+    font-family: Courier, "Courier New", monospace;
+    font-size: 0.91em;
+    font-size-adjust: 0.49;
+}
+
+#the-footer {
+    border-top: 1px solid #c0c4cc;
+    margin: 4em 0 2em 0;
+    color: #c0c4cc;
+    padding: 1em 0;
+}
+
+#the-footer p {
+    margin: 0.1em 0;
+    text-align: center;
+}
+
+#the-footer .link {
+    margin: 0 0.7em;
+}
+
+div.news {
+    margin-top: -1.3em;
+}

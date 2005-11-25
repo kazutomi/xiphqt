@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Xiph.Org: QuickTime Components :: Release notes</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style type="text/css" media="all">@import "css/style.css"; @import "css/xiphbar.css";</style>
+    <!--[if gte ie 5.5000]>
+        <link rel="stylesheet" type="text/css" href="css/ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    
+    <div id="xiphbar-outer">
+      <table id="xiphbar">
+        <tr>
+          <td>
+            <img id="xiphbanner" src="http://xiph.org/images/logos/xiphbar.png" alt="Xiph logo" width="231" height="17" />
+          </td>
+          <td id="xiphlinks">
+            <a href="http://www.xiph.org/">Xiph.org</a>
+            <a href="http://www.vorbis.com/">Vorbis</a>
+            <a href="http://www.theora.org/">Theora</a>
+            <a href="http://www.icecast.org/">Icecast</a>
+            <a href="http://www.speex.org/">Speex</a>
+            <a href="http://flac.sourceforge.net/">FLAC</a>
+            <a href="http://www.xspf.org/">XSPF</a>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <div id="the-container">
+      <div id="the-header">
+        <table>
+          <tr>
+            <td class="head-b-l"></td>
+            <td class="head-b-c head-b-icon"><div class="icon"><a href="./"><img src="img/xiph-qt.png" width="96px" height="96px" alt="XiphQT logo" /></a></div></td>
+            <td class="head-b-c"><h1>QuickTime Components</h1></td>
+            <td class="head-b-r"></td>
+          </tr>
+        </table>
+      </div>
+      <div id="the-navigation" class="sidenote">
+        <div class="sn-head">navigate :</div>
+        <ul>
+          <li><a href="./">news</a></li>
+          <li><a href="about.html">about</a></li>
+          <li><a href="download.html">downloads</a></li>
+          <li><a href="bugreport.html">report problems</a></li>
+          <li><a href="development.html">for developers</a></li>
+          <li><a href="contact.html">contact</a></li>
+        </ul>
+      </div>
+      <div id="the-content">
+        <h2>Release notes.</h2>
+        <div>
+          <h3>version 0.1.1 (25.11.2005)</h3>
+          <div>
+            <p>Only Mac OS X support in this release. Requires QuickTime 7 and tested with all its latest
+              minor revisions up to 7.0.3. Tested on OS X 10.4.2 and 10.4.3, but theoretically should work on
+              all system revisions starting with 10.3.9.</p>
+            <p>Things implemented:</p>
+            <ul>
+              <li>Ogg demuxing, implemented as a QuickTime Movie Importer:
+                <ul>
+                  <li>Vorbis and Speex streams recognized and imported;</li>
+                  <li>multiple logical streams (grouped and chained) partially supported: the current
+                    implementation imports them all as starting at time 0 - the beginning of the file;</li>
+                  <li>progressive loading (partially) implemented, but disabled in the code by default for most
+                    data transport types;</li>
+                  <li>Vorbis stream comments imported as meta-data into resulting QuickTime movie and tracks.</li>
+                </ul>
+              </li>
+              <li>Vorbis and Speex decompression, implemented as CoreAudio AudioCodecs:
+                <ul>
+                  <li>two actual codecs per each format: one for compressed packets framed in ogg pages
+                    (as received on the output of the ogg importer) and one for "pure" format packets (relies
+                    on QT mechanisms for providing the framing information);</li>
+                  <li>two types of output: integers and floats (avoids unnecessary conversions in some cases).</li>
+                </ul>
+              </li>
+            </ul>
+            <p>Any functionality not explicitly mentioned above is not yet implemented.</p>
+          </div>
+        </div>
+      </div>
+      <div id="the-footer">
+        <p><a href="./" class="link">Home</a> | <a href="http://www.xiph.org/" class="link">xiph.org</a> | <a href="contact.html" class="link">Contact</a></p>
+        <p>Copyright &copy; 2005 Xiph.Org Foundation. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
