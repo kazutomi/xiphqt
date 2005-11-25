@@ -74,11 +74,12 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;C:\DXSDK\Samples\C++\DirectShow\BaseClasses&quot;;C:\DXSDK\Include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFOGMDECODER_EXPORTS"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="3"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+				CallingConvention="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
