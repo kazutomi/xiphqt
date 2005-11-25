@@ -13,6 +13,9 @@
 <h2>Playback:</h2>
 
 <ul>
+  <li><a href="http://www.xiph.org/quicktime/">XiphQT</a>:
+  Xiph QuickTime Components (XiphQT) is a set of QuickTime plug-ins that allow
+  iTunes, and other QuickTime-based applications, to play ogg vorbis files.</li>
   <li><a href="http://www.videolan.org/vlc/">VLC media player</a>:
   VLC is a highly portable multimedia player for various
   audio and video formats.</li>
