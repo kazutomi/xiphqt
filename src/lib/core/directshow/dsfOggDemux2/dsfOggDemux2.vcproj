@@ -84,8 +84,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Strmbase.lib Winmm.lib  Strmiids.lib  Quartz.lib wsock32.lib shlwapi.lib"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="C:\DXSDK\Lib;&quot;C:\DXSDK\Samples\C++\DirectShow\BaseClasses\Release&quot;"
 				ModuleDefinitionFile="dsfOggDemux2.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
