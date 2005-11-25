@@ -98,6 +98,8 @@ bool OggDemuxPacketSourcePin::acceptOggPage(OggPage* inOggPage)
 	if (mIsStreamReady) {
 		mAcceptingData = true;
 		return mPacketiser.acceptOggPage(inOggPage);
+	} else {
+		delete inOggPage;
 	}
 	return false;
 }
@@ -320,13 +322,17 @@ HRESULT OggDemuxPacketSourcePin::DeliverNewSegment(REFERENCE_TIME tStart, REFERE
 {
 	NewSegment(tStart, tStop, dRate);
 
-	mDataQueue->NewSegment(tStart, tStop, dRate);
+	if (mDataQueue != NULL) {
+		mDataQueue->NewSegment(tStart, tStop, dRate);
+	}
 
 	return S_OK;
 }
 HRESULT OggDemuxPacketSourcePin::DeliverEndOfStream(void)
 {
-	mDataQueue->EOS();
+	if (mDataQueue != NULL) {
+		mDataQueue->EOS();
+	}
     return S_OK;
 }
 
@@ -334,7 +340,9 @@ HRESULT OggDemuxPacketSourcePin::DeliverEndFlush(void)
 {
 	CAutoLock locPackLock(mPacketiserLock);
 	
-	mDataQueue->EndFlush();
+	if (mDataQueue != NULL) {
+		mDataQueue->EndFlush();
+	}
 
 	mPacketiser.reset();
     return S_OK;
@@ -342,7 +350,9 @@ HRESULT OggDemuxPacketSourcePin::DeliverEndFlush(void)
 
 HRESULT OggDemuxPacketSourcePin::DeliverBeginFlush(void)
 {
-	mDataQueue->BeginFlush();
+	if (mDataQueue != NULL) {
+		mDataQueue->BeginFlush();
+	}
 	
     return S_OK;
 }
