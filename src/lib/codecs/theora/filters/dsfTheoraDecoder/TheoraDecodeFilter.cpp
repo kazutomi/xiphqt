@@ -677,7 +677,9 @@ HRESULT TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample
 	//NEW WAY with offsets Y Data
 	long locTopPad = inYUVBuffer->y_height - mHeight - mYOffset;
 	//debugLog<<"--------- PAD = "<<locTopPad<<endl;
-	ASSERT(locTopPad >= 0);
+
+
+	//ASSERT(locTopPad >= 0);
 	if (locTopPad < 0) {
 		locTopPad = 0;
 	} else {
