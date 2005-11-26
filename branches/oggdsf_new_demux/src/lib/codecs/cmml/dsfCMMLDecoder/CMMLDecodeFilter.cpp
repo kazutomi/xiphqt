@@ -259,7 +259,10 @@ HRESULT CMMLDecodeFilter::Transform(IMediaSample* inSample, IMediaSample* outSam
 		locHR = inSample->GetPointer(&locInBuff);
 		memcpy((void*)locCMML, (const void*) locInBuff, locSize);
 		//debugLog<<"           : Sample Text = "<<locCMML<<endl<<endl;
-		locWCMML = toWStr(locCMML);
+
+		string locNarrowCMML = locCMML;
+		delete[] locCMML;
+		locWCMML = toWStr(locNarrowCMML);
 		if (mSeenHead == false) {
 			//debugLog << "           : Processing a head tag"<<endl;
 			//Head tag... needs error checks
@@ -325,13 +328,13 @@ HRESULT CMMLDecodeFilter::Transform(IMediaSample* inSample, IMediaSample* outSam
 
 			} else {
 				//debugLog<<"          : Parse FAILED"<<endl;
-				delete[] locCMML;
+				//delete[] locCMML;
 				return S_FALSE;
 			}
 		}
 
 		//debugLog<<"Returning... "<<endl<<endl;
-		delete[] locCMML;
+		//delete[] locCMML;
 		return S_OK;
 
 	} else {
