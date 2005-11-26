@@ -105,7 +105,10 @@ HRESULT CMMLDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outRe
 LOOG_INT64 CMMLDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
 {
 	//return inGranule * mVideoFormatBlock->AvgTimePerFrame;
-	return ((inGranule * mCMMLFormatBlock->granuleDenominator) / mCMMLFormatBlock->granuleNumerator);
+	LOOG_INT64 locMask = 0xffffffffffffffff >> (64 - mCMMLFormatBlock->granuleSplitBits);
+	LOOG_INT64 locTime = ((inGranule & locMask) + (inGranule >> mCMMLFormatBlock->granuleSplitBits));
+
+	return ((locTime * mCMMLFormatBlock->granuleDenominator * UNITS) / mCMMLFormatBlock->granuleNumerator);
 }
 
 LOOG_INT64 CMMLDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
@@ -155,7 +158,7 @@ bool CMMLDecodeInputPin::handleHeaderPacket(OggPacket* inHeaderPack)
 	delete mCMMLFormatBlock;
 	mCMMLFormatBlock = new sCMMLFormatBlock;
 	mCMMLFormatBlock->granuleNumerator = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 12);
-	mCMMLFormatBlock->granuleDenominator = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 16);
+	mCMMLFormatBlock->granuleDenominator = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 20);
 	mCMMLFormatBlock->granuleSplitBits = inHeaderPack->packetData()[28];
 	return true;
 	
