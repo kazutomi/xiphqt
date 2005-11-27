@@ -404,16 +404,8 @@ long pkt_blocksize(ogg_context_t *ogg)
 
 	oggpack_read(&opb,1);
 
-	{
-	    int modebits=0;
-	    int v=ogg->modes;
-	    while(v>1){
-	    	modebits++;
-		v>>=1;
-	    }
-
-	mode = oggpack_read(&opb,modebits);
-	}
+	mode = oggpack_read(&opb,rtp_ilog(ogg->modes));
+	
 	return ogg->blocksizes[ogg->param_blockflag[mode]];
 }
 
@@ -423,23 +415,6 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
 {
   ogg_packet id,co,cb;
   unsigned char comment[] = 
-/*  Example
- *  {3,118,111,114,98,105,115,
-	  29,0,0,0,
-	  	88,105,112,104,46,79,114,103,32,108,105,98,86,111,114,98,105,115,32,73,32,50,48,48,50,48,55,49,55,
-	  5,0,0,0, 
-	  	18,0,0,0,
-			65,114,116,105,115,116,61,76,97,99,117,110,97,32,67,111,105,108,
-		10,0,0,0,
-			84,105,116,108,101,61,67,111,108,100,
-		18,0,0,0,
-			65,108,98,117,109,61,73,110,32,97,32,82,101,118,101,114,105,101,
-		15,0,0,0,
-			71,101,110,114,101,61,72,97,114,100,32,82,111,99,107,
-		9,0,0,0,
-			89,101,97,114,61,49,57,57,57,
-  1};
-*/
    /*quite minimal comment*/
    { 3,'v','o','r','b','i','s', 
    	10,0,0,0, 
@@ -612,21 +587,15 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       op->bytes = data[offset++]<<8;
       op->bytes += data[offset++];
       op->packet = &data[offset];
-      //FIXME do not use libvorbis if possible
       op->packetno++;
 
-#ifdef CHECK
-      ogg->curr_bs = vorbis_packet_blocksize(&ogg->vi,op);
+      ogg->curr_bs = pkt_blocksize(ogg);
       if(ogg->prev_bs)
 	      op->granulepos += (ogg->curr_bs + ogg->prev_bs)/4;
+#if DEBUG
       fprintf(stderr,"gp %lld, d_bs %ld, p_bs %ld, pno %lld\n", op->granulepos, ogg->curr_bs, pkt_blocksize(ogg), op->packetno);
-      ogg->prev_bs = ogg->curr_bs;
-#else
-      if (i == 0)
-	      op->granulepos = ogg->last_gp+=timestamp*ogg->vi.rate/1000000L;
-      else
-	      op->granulepos = -1;
 #endif
+      ogg->prev_bs = ogg->curr_bs;
       count += pkt_repack(ogg,out);
       offset += op->bytes;
       op->b_o_s=0;

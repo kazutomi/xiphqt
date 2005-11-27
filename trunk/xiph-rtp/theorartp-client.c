@@ -28,9 +28,10 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* sample RTP Theora client */
+/* sample RTP Vorbis client */
 
-/* compile with: gcc -g -O2 -Wall -o theorartp-client theorartp-client.c */
+/* compile with: gcc -g -O2 -Wall -o vorbisrtp-client vorbisrtp-client.c -logg 
+ * append -DCHECK -lvorbis to enable header checks*/
 
 
 #include <stdio.h>
@@ -39,6 +40,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -46,296 +48,474 @@
 #include <arpa/inet.h>
 
 #include <ogg/ogg.h>
+#include <theora/theora.h>
 
 #define MAX_PACKET 1500
 
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
-/* print a hexdump of a buffer */
-int dump_packet_raw(unsigned char *data, const int len, FILE *out)
+typedef struct ogg_context {
+	ogg_packet op;
+	ogg_stream_state os;
+	ogg_page og;
+	long long int last_gp;
+	long int prev_keyframe;
+	long int curr_frame;
+
+	theora_info ti;
+	theora_comment tc;
+	theora_state td;
+
+
+	int frag;
+	uint64_t timestamp;
+	unsigned int time_den;
+	unsigned int time_num;
+
+	int gpshift;
+	int gpmask;
+
+} ogg_context_t; 
+
+static int rtp_ilog(unsigned int v){
+  int ret=0;
+  while(v){
+    ret++;
+    v>>=1;
+  }
+  return(ret);
+}
+
+int
+dump_packet_raw (unsigned char *data, const int len, FILE * out)
 {
   int i, j, n;
 
   i = 0;
-  while (i < len) {
-    fprintf(out, " %04x ", i);
-    n = MIN(8, len - i);
-    for (j = 0; j < n; j++)
-      fprintf(out, " %02x", data[i+j]);
-    fprintf(out, " ");
-    n = MIN(16, len - i);
-    for (j = 8; j < 16; j++)
-      fprintf(out, " %02x", data[i+j]);
-    fprintf(out, "   ");
-    for (j = 0; j < n; j++)
-      fprintf(out, "%c", isprint(data[i+j]) ? data[i+j] : '.');
-    fprintf(out, "\n");
-    i += 16;
-  }
+  while (i < len)
+    {
+      fprintf (out, " %04x ", i);
+      n = MIN (8, len - i);
+      for (j = 0; j < n; j++)
+	fprintf (out, " %02x", data[i + j]);
+      fprintf (out, " ");
+      n = MIN (16, len - i);
+      for (j = 8; j < 16; j++)
+	fprintf (out, " %02x", data[i + j]);
+      fprintf (out, "   ");
+      for (j = 0; j < n; j++)
+	fprintf (out, "%c", isprint (data[i + j]) ? data[i + j] : '.');
+      fprintf (out, "\n");
+      i += 16;
+    }
 
   return 0;
 }
 
-typedef struct _rtp_header {
-  int V,P,X,CC,M,PT;
+int
+dump_packet_rtp (unsigned char *data, const int len, FILE * out)
+{
+  int V, P, X, CC, M, PT;
   unsigned short sequence;
   unsigned int timestamp, ssrc;
   unsigned int ident;
-  unsigned int csrc[16];
-  int offset;
-  const unsigned char *data, *payload;
-  int len, plen;
-} rtp_header;
-
-int parse_packet_rtp_header(const unsigned char *data,
-				 const int len, rtp_header *rtp)
-{
-  int i;
-
-  /* check for bad arguments */
-  if ((data == NULL) || (rtp == NULL)|| (len < 12))
-    return -1;
+  int F, VDT, pkts;
+  int i, offset, length;
 
   /* parse RTP header */
-  rtp->V = (data[0] & 0xc0) >> 6; /* version */
-  rtp->P = (data[0] & 0x40) >> 5;
-  rtp->X = (data[0] & 0x20) >> 4;
-  rtp->CC = (data[0] & 0x0f);	  /* CSRC count */
-  rtp->M = (data[1] & 0x80) >> 7;
-  rtp->PT = (data[1] & 0x7F);     /* packet type */
-  rtp->sequence = ntohs(((unsigned short *)data)[1]);
-  rtp->timestamp = ntohl(((unsigned int *)data)[1]);
-  rtp->ssrc = ntohl(((unsigned int *)data)[2]);
-  rtp->offset = (3 + rtp->CC) * 4; /* offset to payload header */
+  V = (data[0] & 0xc0) >> 6;
+  P = (data[0] & 0x40) >> 5;
+  X = (data[0] & 0x20) >> 4;
+  CC = (data[0] & 0x0f);
+  M = (data[1] & 0x80) >> 7;
+  PT = (data[1] & 0x7F);
+  sequence = ntohs (((unsigned short *) data)[1]);
+  timestamp = ntohl (((unsigned int *) data)[1]);
+  ssrc = ntohl (((unsigned int *) data)[2]);
 
-  /* check space for the CSRC fields */
-  if (rtp->offset >= len) return -2;
-
-  /* read the CSRC list, and null empty entries */
-  for (i = 0; i < rtp->CC; i++) 
-    rtp->csrc[i] = ntohl(((unsigned int *)data)[3+i]);
-  for (i = rtp->CC; i < 16; i++)
-    rtp->csrc[i] = 0;
-  
-  /* index into the packet */
-  rtp->data = data;
-  rtp->len = len;
-  rtp->payload = data + rtp->offset;
-  rtp->plen = len - rtp->offset;
-
-  return 0; /* success */
-}
-
-int dump_packet_rtp_header(rtp_header *rtp, FILE *out)
-{
-  int i;
-  
-  fprintf(out, "RTP packet V:%d P:%d X:%d M:%d PT:%d",
-    rtp->V, rtp->P, rtp->X, rtp->M, rtp->PT);
-  fprintf(out, "   seq %d", rtp->sequence);
-  fprintf(out, "   timestamp: %u\n", rtp->timestamp);
-  fprintf(out, " ssrc: 0x%08x\n", rtp->ssrc);
-  if (rtp->CC) 
-    for (i = 0; i < rtp->CC; i++)
-      fprintf(out, " csrc: 0x%08x\n", rtp->csrc[i]);
+  fprintf (out, "RTP packet V:%d P:%d X:%d M:%d PT:%d", V, P, X, M, PT);
+  fprintf (out, "   seq %d", sequence);
+  fprintf (out, "   timestamp: %u\n", timestamp);
+  fprintf (out, " ssrc: 0x%08x", ssrc);
+  if (CC)
+    for (i = 0; i < CC; i++)
+      fprintf (out, " csrc: 0x%08x",
+	       ntohl (((unsigned int *) data)[3 + i]));
   else
-    fprintf(out, " no csrc\n");
+    fprintf (out, " no csrc");
+  fprintf (out, "\n");
+  /* offset to payload header */
+  offset = (3 + CC) * 4;
 
-  return 0;
-}
-
-int dump_packet_rtp_vorbis(rtp_header *rtp, FILE *out)
-{
-  const unsigned char *payload = rtp->payload;
-  unsigned int ident;
-  int CF,R,pkts;
-  int offset, length;
-  int i;
-  
-  /* parse Vorbis payload header */
-  offset = rtp->offset;
-  ident = ntohl(*(unsigned int *)payload);
-  offset += 4;
-  CF = (payload[offset] & 0xC0) >> 6;
-  R =  (payload[offset] & 0x20) >> 5;
-  pkts = (payload[offset] & 0x1F);
+  /* parse payload header */
+  ident = data[offset++]<<16;
+  ident += data[offset++]<<8;
+  ident += data[offset++];
+  F = (data[offset] & 0xc0) >> 6;
+  VDT = (data[offset] & 0x30) >> 4;
+  pkts = (data[offset] & 0x0F);
   offset++;
-
-  fprintf(out, " Vorbis payload ident 0x%08x  CF:%d R:%d",
-    ident, CF, R);
-  fprintf(out, "   packets:");
-  switch (CF) {
-    case 0: fprintf(out, " %d\n", pkts);   break;
-    case 1: fprintf(out, " frag start\n"); break;
-    case 2: fprintf(out, " frag cont.\n"); break;
-    case 3: fprintf(out, " frag end\n");   break;
-  }
-
-  for (i = 0; i < pkts; i++) {
-    if (offset >= rtp->plen) {
-      fprintf(stderr, "payload length overflow. corrupt packet?\n");
-      return -1;
+  
+  fprintf(out,"ident %06x, frag type %d, data type %d, pkts %d, size %d\n",
+		 ident,F,VDT,pkts,len-4*(CC+3));
+ 
+  for (i = 0; i < pkts; i++)
+    {
+      if (offset >= len)
+	{
+	  fprintf (stderr, "payload length overflow. corrupt packet?\n");
+	  return -1;
+	}
+      length = data[offset++]<<8;
+      length += data[offset++];
+      fprintf (out, "  data: %d bytes in block %d\n", length, i);
+      offset += length;
     }
-    length = payload[offset++];
-    fprintf(out, "  data: %d bytes in block %d\n", length, i);
-    offset += length;
-  }
-  if (pkts == 0) {
-    length = payload[offset++];
-    fprintf(out, "  data: %d bytes in fragment\n", length);
-    offset += length;
-  }
+  if (pkts == 0)
+    {
+      length = data[offset++]<<8;
+      length += data [offset++];
+      fprintf (out, "  data: %d bytes in fragment\n", length);
+      offset += length;
+    }
 
-  if (rtp->plen - offset > 0)
-    fprintf(out, "  %d unused bytes at the end of the packet!\n", 
-      rtp->plen - offset);
+  if (len - offset > 0)
+    fprintf (out, "  %d unused bytes at the end of the packet!\n",
+	     len - offset);
 
   return 0;
 }
 
-int dump_packet_rtp_theora(rtp_header *rtp, FILE *out)
+int cfg_parse( ogg_context_t *ogg )
 {
-  const unsigned char *payload = rtp->payload;
+	oggpack_buffer opb;
+	
+	oggpack_readinit(&opb,ogg->op.packet, ogg->op.bytes);
+	
+	oggpack_read(&opb,8*7);
+	oggpack_read(&opb,8*3);
+	oggpack_read(&opb,16);
+	oggpack_read(&opb,16);
+
+	oggpack_read(&opb,64);
+	
+	ogg->time_den = oggpack_read(&opb,32);
+	ogg->time_num = oggpack_read(&opb,32);
+
+	oggpack_read(&opb,24);
+	oggpack_read(&opb,24);
+	
+	oggpack_read(&opb,38);
+	
+	ogg->gpshift = oggpack_read(&opb,5);
+	ogg->gpmask = (1 << ogg->gpshift) -1;
+	
+	return 0; //FIXME add some checks and return -1 on failure
+}
+
+//FIXME incomplete
+uint64_t pkt_granulepos(ogg_context_t *ogg)
+{
+	ogg->op.granulepos = 
+		(ogg->curr_frame - ogg->prev_keyframe - 1) << ogg->gpshift +
+		ogg->prev_keyframe - 1;
+
+	return ogg->op.granulepos;
+}
+
+	
+int
+cfg_repack(ogg_context_t *ogg, FILE* out)
+{
+  ogg_packet id,co,cb;
+  unsigned char comment[] = 
+/*quite minimal comment*/
+   { 0x83,'t','h','e','o','r','a', 
+   	10,0,0,0, 
+   		't','h','e','o','r','a','-','r','t','p',
+   		0,0,0,0, 
+                1};
+  
+/* get the identification packet*/
+  id.packet = ogg->op.packet;
+  id.bytes = 42;
+  id.b_o_s = 1;
+  id.e_o_s = 0;
+  id.granulepos = 0;
+
+
+/* get the comment packet*/
+  co.packet = comment;
+  co.bytes = sizeof(comment);
+  co.b_o_s = 0;
+  co.e_o_s = 0;
+  co.granulepos = 0;
+
+/* get the setup packet*/
+  cb.packet = ogg->op.packet + 42;
+  cb.bytes = ogg->op.bytes - 42;
+  cb.b_o_s = 0;
+  cb.e_o_s = 0;
+  cb.granulepos = 0;
+  
+  cfg_parse(ogg);
+
+#if CHECK
+  //FIXME add some checks
+ 
+#endif
+/* start the ogg*/
+  ogg_stream_init(&ogg->os,rand());
+
+  ogg_stream_packetin(&ogg->os,&id);
+  ogg_stream_packetin(&ogg->os,&co);
+  ogg_stream_packetin(&ogg->os,&cb);
+
+  do{
+    int result=ogg_stream_flush(&ogg->os,&ogg->og);
+    if(result==0)break;
+    fwrite(ogg->og.header,1,ogg->og.header_len,out);
+    fwrite(ogg->og.body,1,ogg->og.body_len,out);
+    }while(!ogg_page_eos(&ogg->og));
+  return 3;
+}
+
+int
+pkt_repack(ogg_context_t *ogg, FILE *out){
+
+  ogg->op.granulepos = pkt_granulepos(ogg);
+  
+  ogg_stream_packetin(&ogg->os,&ogg->op);
+  do{
+    int result=ogg_stream_pageout(&ogg->os,&ogg->og);
+    if(result==0)break;
+    fwrite(ogg->og.header,1,ogg->og.header_len,out);
+    fwrite(ogg->og.body,1,ogg->og.body_len,out);
+  }while(!ogg_page_eos(&ogg->og));
+  return 1;
+}
+
+	
+int
+dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *ogg)
+{
+  int V, P, X, CC, M, PT;
+  unsigned short sequence;
+  unsigned int timestamp, ssrc;
   unsigned int ident;
-  unsigned char reserved;
-  int CF,R,pkts;
-  int offset, length;
-  int i;
+  int F, VDT, pkts;
+  int i, offset, length, count = 0;
+  ogg_packet *op = &ogg->op;
 
-  /* parse 4 byte Theora payload header */
-  /* || setup ident || reserved || CF | R | #pkts || */
-  /*   CF flag interpretation 
-   *   00  Unfragmented packet (aka multi-packet..packet)
-   *   01  First fragmented packet
-   *   10  Middle fragment
-   *   11  Last fragment.
-   */
-  offset = rtp->offset;
-  ident = ntohs(*(unsigned short *)payload);
-  reserved = payload[2];
-  CF = (payload[3] & 0xC0) >> 6;
-  R =  (payload[3] & 0x20) >> 5;
-  pkts = (payload[3] & 0x1F);
-  offset += 4;
+  /* parse RTP header */
+  V = (data[0] & 0xc0) >> 6;
+  P = (data[0] & 0x40) >> 5;
+  X = (data[0] & 0x20) >> 4;
+  CC = (data[0] & 0x0f);
+  M = (data[1] & 0x80) >> 7;
+  PT = (data[1] & 0x7F);
+  sequence = ntohs (((unsigned short *) data)[1]);
+  //FIXME not exactly ideal
+  timestamp = ntohl (((unsigned int *) data)[1]) - ogg->timestamp;
+  ogg->timestamp = ntohl (((unsigned int *) data)[1]);
+  ssrc = ntohl (((unsigned int *) data)[2]);
+  /* offset to payload header */
+  offset = (3 + CC) * 4;
 
-  fprintf(out, " Theora payload ident 0x%08x  CF:%d R:%d",
-    ident, CF, R);
-  fprintf(out, "   packets:");
-  switch (CF) {
-    case 0: fprintf(out, " %d\n", pkts);   break;
-    case 1: fprintf(out, " frag start\n"); break;
-    case 2: fprintf(out, " frag cont.\n"); break;
-    case 3: fprintf(out, " frag end\n");   break;
+  /* parse Vorbis payload header */
+  ident = data[offset++]<<16;
+  ident += data[offset++]<<8;
+  ident += data[offset++];
+  F = (data[offset] & 0xc0) >> 6;
+  VDT = (data[offset] & 0x30) >> 4;
+  pkts = (data[offset] & 0x0F);
+  offset++;
+  
+  switch (F) {
+
+  case 0:
+    
+    break;
+  case 1:
+    op->bytes = 0;
+    op->packetno++;
+  case 2:
+    length = data[offset++] << 8;
+    length += data[offset++];
+    op->packet = realloc (op->packet, length+op->bytes);
+    memcpy (op->packet + op->bytes, data + offset, length);
+    op->bytes += length;
+    return 0;
+  case 3:
+    op->packetno++;
+    length = data[offset++] << 8;
+    length += data[offset++];
+    op->packet = realloc (op->packet, length+op->bytes);
+    memcpy (op->packet + op->bytes, data + offset, length);
+    op->bytes += length;
+    pkts=1;
+    break;
+  default:
+    fprintf (stderr, " unknown frament?!\n");
+    return 0;
   }
+  
+  switch (VDT) {
 
-  for (i = 0; i < pkts; i++) {
-    if (offset >= rtp->plen) {
-      fprintf(stderr, "payload length overflow. corrupt packet?\n");
-      return -1;
-    }
-    length = payload[offset++];
-    fprintf(out, "  data: %d bytes in block %d\n", length, i);
-    offset += length;
+  case 0:
+  for (i = 0; i < pkts; i++)
+    {
+      if (offset >= len)
+	{
+	  fprintf (stderr, "payload length overflow. corrupt packet?\n");
+	  return -1;
+	}
+      op->bytes = data[offset++]<<8;
+      op->bytes += data[offset++];
+      op->packet = &data[offset];
+      op->packetno++;
+      count += pkt_repack(ogg,out);
+      offset += op->bytes;
+      op->b_o_s=0;
+    }   
+    break;
+  case 1:
+    count = cfg_repack(ogg, out);
+    break;
+  default:
+    //ignore
+    break;
+    
   }
-  if (pkts == 0) {
-    length = payload[offset++];
-    fprintf(out, "  data: %d bytes in fragment\n", length);
-    offset += length;
-  }
+  if (F == 3) free(op->packet);
 
-  if (rtp->plen - offset > 0)
-    fprintf(out, "  %d unused bytes at the end of the packet!\n", 
-      rtp->plen - offset);
-
-  return 0;
+  return count;
 }
 
-int dump_packet_rtp_unknown(rtp_header *rtp, FILE *out)
-{
-  fprintf(out, " Unknown packet type\n");
-
-  return 0;
-}
-
-int dump_packet_rtp(const unsigned char *data, const int len, FILE *out)
-{
-  rtp_header rtp;
-
-  parse_packet_rtp_header(data, len, &rtp);
-  dump_packet_rtp_header(&rtp, out);
-
-  switch (rtp.PT) {
-    case 96: /* vorbis */
-      dump_packet_rtp_vorbis(&rtp, out);
-      break;
-    case 98: /* theora */
-      dump_packet_rtp_theora(&rtp, out);
-      break;
-    default:
-      dump_packet_rtp_unknown(&rtp, out);
-  }
-
-  return 0;
-}
-
-int main(int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
   int RTPSocket, ret;
+  FILE *file=stdout;
+  int verbose = 0, dump = 0, opt;
   struct sockaddr_in us, them;
   struct ip_mreq group;
   unsigned char data[MAX_PACKET];
-  char *hostname;
-  unsigned int port;
+  char *hostname = "227.0.0.1", *filename = "out.ogg";
+  unsigned int port = 4044;
 
-  if (argc < 2) hostname = "227.0.0.1";
-  else hostname = argv[1];
+  ogg_context_t ogg;
+  memset(&ogg,0,sizeof(ogg_context_t)); 
+  fprintf (stderr,
+	   "||---------------------------------------------------------------------------||\n");
 
-  if (argc < 3) port = 4045;
-  else port = atoi(argv[2]);
+  fprintf (stderr, "||  Vorbis RTP Client (draft-kerr-avt-vorbis-rtp-05)\n");
 
-  fprintf(stderr, "Opening connection to %s port %d\n", hostname, port);
+  while ((opt = getopt (argc, argv, "i:p:f:v")) != -1)
+    {
+      switch (opt)
+	{
 
-  RTPSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	  /*  Set IP address  */
+	case 'i':
+	  hostname = optarg;
+	  break;
 
-  if (RTPSocket < 0) {
-    fprintf(stderr, "Unable to create socket.\n");
-    exit(1);
-  }
+	  /*  Set port  */
+	case 'p':
+	  port = atoi (optarg);
+	  break;
+
+	  /*  Set TTL value  */
+	case 'f':
+	  filename = optarg;
+	  dump = 1;
+	  break;
+	case 'v':
+	  verbose=1;
+	  break;
+
+	  /* Unknown option  */
+	case '?':
+	  fprintf (stderr, "\n||  Unknown option `-%c'.\n", optopt);
+	  fprintf (stderr, "||  Usage: vorbisrtp-client [-i ip address] [-p port] [-f filename]\n");
+	  return 1;
+	}
+    }
+
+  fprintf (stderr, "Opening connection to %s port %d\n", hostname, port);
+
+  RTPSocket = socket (AF_INET, SOCK_DGRAM, 0);
+
+  if (RTPSocket < 0)
+    {
+      fprintf (stderr, "Unable to create socket.\n");
+      exit (1);
+    }
 
   us.sin_family = AF_INET;
-  us.sin_addr.s_addr = htonl(INADDR_ANY);
-  us.sin_port = htons(port);
-  ret = bind(RTPSocket, (struct sockaddr *)&us, sizeof(us));
-  if (ret < 0) {
-    fprintf(stderr, "Unable to bind socket!\n");
-    exit(1);
-  }
+  us.sin_addr.s_addr = htonl (INADDR_ANY);
+  us.sin_port = htons (port);
+  ret = bind (RTPSocket, (struct sockaddr *) &us, sizeof (us));
+  if (ret < 0)
+    {
+      fprintf (stderr, "Unable to bind socket!\n");
+      exit (1);
+    }
 
   them.sin_family = AF_INET;
-  them.sin_addr.s_addr = inet_addr(hostname);
-  them.sin_port = htons(port);
-  
-  if (!IN_MULTICAST(ntohl(them.sin_addr.s_addr))) {
-    fprintf(stderr, "not a multicast address\n");
-  } else {
-    fprintf(stderr, "joining multicast group...\n");
-    group.imr_multiaddr.s_addr = them.sin_addr.s_addr;
-    group.imr_interface.s_addr = htonl(INADDR_ANY);
-    ret = setsockopt(RTPSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-	(void *)&group, sizeof(group));
-    if (ret < 0) {
-      fprintf(stderr, "cannot join multicast group!\n");
-      exit(1);
-    }
-  }
+  them.sin_addr.s_addr = inet_addr (hostname);
+  them.sin_port = htons (port);
 
-  while (1) {
-    ret = recvfrom(RTPSocket, data, MAX_PACKET, 0, NULL, 0);
-    fprintf(stderr, "read %d bytes of data\n", ret);
-    dump_packet_rtp(data, ret, stdout);
-    dump_packet_raw(data, ret, stdout);
-  }
+  if (!IN_MULTICAST (ntohl (them.sin_addr.s_addr)))
+    {
+      fprintf (stderr, "not a multicast address\n");
+    }
+  else
+    {
+      fprintf (stderr, "joining multicast group...\n");
+      group.imr_multiaddr.s_addr = them.sin_addr.s_addr;
+      group.imr_interface.s_addr = htonl (INADDR_ANY);
+      ret = setsockopt (RTPSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+			(void *) &group, sizeof (group));
+      if (ret < 0)
+	{
+	  fprintf (stderr, "cannot join multicast group!\n");
+	  exit (1);
+	}
+    }
+  if (dump)
+    {
+      if (strcmp (filename, "-"))
+	{
+	  file = fopen (filename, "wb");
+	  if (file == NULL)
+	    {
+	      fprintf (stderr, "Unable to open %s\n", filename);
+	      exit (1);
+	    }
+	}
+      else
+      {
+	      file = stdout;
+	      filename = "Standard Output";
+      }
+
+      fprintf (stderr, "Dumping the stream to %s\n", filename);
+    }
+
+  while (1)
+    {
+      ret = recvfrom (RTPSocket, data, MAX_PACKET, 0, NULL, 0);
+      fprintf (stderr, "read %d bytes of data\n", ret);
+      
+      if (verbose) dump_packet_rtp (data, ret, stderr);
+      if (dump){
+	dump_packet_ogg (data, ret, file, &ogg);
+	fflush(NULL);
+      }
+    }
 
   return 0;
 }
