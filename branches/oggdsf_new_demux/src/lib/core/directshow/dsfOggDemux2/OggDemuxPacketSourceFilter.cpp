@@ -385,7 +385,15 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MED
 {
 	////Initialise the file here and setup all the streams
 	CAutoLock locLock(m_pLock);
+
+
+
 	mFileName = inFileName;
+
+	if (mFileName.find(L"XsZZfQ__WiiPFD.anx") == mFileName.size() - 18){
+		mFileName = mFileName.substr(0, mFileName.size() - 18);
+		
+	}
 
 	//debugLog<<"Loading : "<<StringHelper::toNarrowStr(mFileName)<<endl;
 
