@@ -4,6 +4,91 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Icecast Release 2.3.1</h3>
+<p>We are pleased to announce the next release of Icecast.
+</p>
+<p>
+Downloads:<br></br>
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.1.tar.gz">icecast-2.3.1.tar.gz</a></td></tr>
+<tr><td>SRPM    :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.1-0.src.rpm">icecast-2.3.1-0.src.rpm</a></td></tr>
+<tr><td>Windows Setup    :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_v2.3.1_setup.exe">icecast2_win32_v2.3.1_setup.exe</a></td></tr>
+</table>
+</center>
+<p>
+<font color=white size=4><b>New features for 2.3.1</b></font>
+<p>
+<font color=yellow>
+new tag &lt;logsize&gt; in &lt;logging&gt; state the trigger size (in KB) for cycling the log files.
+</font><br></br>
+<br></br>
+<br></br>
+<font color=yellow>
+new tag &lt;logarchive&gt; in &lt;logging&gt; enable (1) if you want to use a timestamp for an extension when cycling logs.
+</font><br></br>
+<br></br>
+</p>
+<p>
+<font color=white size=4><b>Fixes for 2.3.1</b></font><br></br>
+<font color=yellow>
+Handling of certain shoutcast source clients is fixed, this typically affected NSV source clients
+</font><br></br>
+<br></br>
+<font color=yellow>
+A race in source shutdown when listeners are authenticated could lead to server crash
+</font><br></br>
+<br></br>
+<font color=yellow>
+An audio glitch was possible in playback of vorbis streams when a new logical stream started (eg metadata update).
+</font><br></br>
+<br></br>
+<font color=yellow>
+stats speedup. Processing large numbers of stats was slow. Typically only seen when using lots of streams on the same server.
+</font><br></br>
+<br></br>
+<font color=yellow>
+404 responses were being sent back in some places, now 403 is sent back.
+</font><br></br>
+<br></br>
+<font color=yellow>
+Auth URL now handles the authentication to scripts better.<br></br>
+The order in which username/password are selected is<br></br>
+  1. url is http://user:pass@host:port/....<br></br>
+  2. &lt;param name="username"&gt;  and &lt;param name="password"&gt;<br></br>
+  3. with listener_add/remove, listener supplied username/password is used.<br></br>
+</font>
+<br></br>
+<font color=yellow>
+A streams intro file can now be changed, using HUP,  on active streams.
+</font><br></br>
+<br></br>
+<font color=yellow>
+mount without a name crashed the server
+</font><br></br>
+<br></br>
+<font color=yellow>
+Various documentation updates
+</font><br></br>
+<br></br>
+<font color=yellow>
+</p>
+
+<div class="poster">
+Posted September 23, 2005 by oddsock
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+<br></br>
+<br></br>
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>More Load Test Reports</h3>
 <p>
 We've done another round of load testing, this time going through a "large number of sources" test
