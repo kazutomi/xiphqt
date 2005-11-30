@@ -75,7 +75,7 @@ Various documentation updates
 </p>
 
 <div class="poster">
-Posted September 23, 2005 by oddsock
+Posted November 30, 2005 by oddsock
 </div> 
 </div>
 <div class="roundbottom">
