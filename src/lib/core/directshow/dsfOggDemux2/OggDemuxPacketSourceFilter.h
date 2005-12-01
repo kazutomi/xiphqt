@@ -44,6 +44,7 @@ class OggDemuxPacketSourceFilter
 	,	public CAMThread
 	,	public IFileSourceFilter
 	,	public IOggCallback
+	,	public IOggBaseTime
 	,	public BasicSeekPassThrough
 	//,	public ISpecifyPropertyPages
 	,	public IAMFilterMiscFlags
@@ -115,6 +116,8 @@ public:
 
 	//HHHH:::
 	virtual bool notifyStreamBaseTime(__int64 inStreamBaseTime);
+
+	//IOggBaseTime Interface
 	virtual __int64 getGlobalBaseTime();
 	//
 protected:

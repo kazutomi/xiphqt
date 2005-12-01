@@ -204,5 +204,6 @@ bool HTTPSocket::splitURL(string inURL) {
 }
 void HTTPSocket::closeSocket() {
 	//debugLog2<<"Close Socket:"<<endl;
-	closesocket(mSocket);
+	int ret = closesocket(mSocket);
+	ret = ret;
 }

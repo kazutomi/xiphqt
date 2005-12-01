@@ -127,6 +127,9 @@ OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 	delete mDemuxLock;
 	delete mStreamLock;
 	delete mSourceFileLock;
+
+	mDataSource->close();
+	delete mDataSource;
 }
 //IMEdiaStreaming
 STDMETHODIMP OggDemuxPacketSourceFilter::Run(REFERENCE_TIME tStart) 
